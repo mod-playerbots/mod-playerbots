@@ -4,7 +4,7 @@
 #include "PlayerbotAI.h"
 #include "RtiTargetValue.h"
 
-enum class GruulsLairSpells
+enum GruulsLairSpells
 {
 	// High King Maulgar
 	WHIRLWIND  	   = 33238,

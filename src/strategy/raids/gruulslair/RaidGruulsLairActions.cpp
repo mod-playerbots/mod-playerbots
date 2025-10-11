@@ -199,12 +199,12 @@ bool HighKingMaulgarKroshMageTankAction::Execute(Event event)
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(krosh);
     }
 
-    if (krosh->HasAura(static_cast<uint32>(GruulsLairSpells::SPELL_SHIELD)) && botAI->CanCastSpell("spellsteal", krosh))
+    if (krosh->HasAura(SPELL_SHIELD) && botAI->CanCastSpell("spellsteal", krosh))
     {
         botAI->CastSpell("spellsteal", krosh);
     }
 
-    if (!bot->HasAura(static_cast<uint32>(GruulsLairSpells::SPELL_SHIELD)) && botAI->CanCastSpell("fire ward", bot))
+    if (!bot->HasAura(SPELL_SHIELD) && botAI->CanCastSpell("fire ward", bot))
     {
         botAI->CastSpell("fire ward", bot);
     }
@@ -665,7 +665,7 @@ bool HighKingMaulgarWhirlwindRunAwayAction::isUseful()
 {
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
 
-    return maulgar && maulgar->IsAlive() && maulgar->HasAura(static_cast<uint32>(GruulsLairSpells::WHIRLWIND)) && !botAI->IsMainTank(bot);
+    return maulgar && maulgar->IsAlive() && maulgar->HasAura(WHIRLWIND) && !botAI->IsMainTank(bot);
 }
 
 bool HighKingMaulgarBanishFelstalkerAction::Execute(Event event)
@@ -683,7 +683,7 @@ bool HighKingMaulgarBanishFelstalkerAction::isUseful()
 {
     Unit* felStalker = AI_VALUE2(Unit*, "find target", "wild fel stalker");
 
-    return felStalker && felStalker->IsAlive() && !felStalker->HasAura(static_cast<uint32>(GruulsLairSpells::BANISH)) && 
+    return felStalker && felStalker->IsAlive() && !felStalker->HasAura(BANISH) && 
            bot->getClass() == CLASS_WARLOCK;
 }
 
@@ -728,7 +728,7 @@ bool HighKingMaulgarHunterMisdirectionAction::Execute(Event event)
     {
         case 0:
             botAI->CastSpell("misdirection", olmTank);
-            if (bot->HasAura(static_cast<uint32>(GruulsLairSpells::MISDIRECTION)))
+            if (bot->HasAura(MISDIRECTION))
             {
                 Pet* pet = bot->GetPet();
                 if (pet && pet->IsAlive() && pet->GetVictim() != blindeye)
@@ -752,7 +752,7 @@ bool HighKingMaulgarHunterMisdirectionAction::Execute(Event event)
 
         case 1:
             botAI->CastSpell("misdirection", blindeyeTank);
-            if (bot->HasAura(static_cast<uint32>(GruulsLairSpells::MISDIRECTION)))
+            if (bot->HasAura(MISDIRECTION))
             {
                 botAI->CastSpell("steady shot", blindeye);
             }
@@ -1036,6 +1036,6 @@ bool GruulTheDragonkillerShatterSpreadAction::isUseful()
     Group* group = bot->GetGroup();
 
     return gruul && gruul->IsAlive() && group &&
-           (bot->HasAura(static_cast<uint32>(GruulsLairSpells::GROUND_SLAM_1)) || 
-            bot->HasAura(static_cast<uint32>(GruulsLairSpells::GROUND_SLAM_2)));
+           (bot->HasAura(GROUND_SLAM_1) || 
+            bot->HasAura(GROUND_SLAM_2));
 }

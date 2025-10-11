@@ -32,7 +32,7 @@ float HighKingMaulgarMultiplier::GetValue(Action* action)
         return 0.0f;
     }
     
-    if (maulgar && maulgar->HasAura(static_cast<uint32>(GruulsLairSpells::WHIRLWIND)) &&
+    if (maulgar && maulgar->HasAura(WHIRLWIND) &&
         (!kiggler || !kiggler->IsAlive()) &&
         (!krosh || !krosh->IsAlive()) &&
         (!olm || !olm->IsAlive()) &&
@@ -70,8 +70,8 @@ float GruulTheDragonkillerMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (bot->HasAura(static_cast<uint32>(GruulsLairSpells::GROUND_SLAM_1)) || 
-        bot->HasAura(static_cast<uint32>(GruulsLairSpells::GROUND_SLAM_2)))
+    if (bot->HasAura(GROUND_SLAM_1) || 
+        bot->HasAura(GROUND_SLAM_2))
     {
         if ((dynamic_cast<MovementAction*>(action) && !dynamic_cast<GruulTheDragonkillerShatterSpreadAction*>(action)) ||
             IsChargeAction(action))
