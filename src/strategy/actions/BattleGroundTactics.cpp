@@ -3744,10 +3744,6 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
             continue;
 
         // Special handling for WSG and EY base flags
-        /*bool atBase = bgType == BATTLEGROUND_WS ? go->GetEntry() == vFlagsWS[bot->GetTeamId()]
-                   : bgType == BATTLEGROUND_EY ? go->GetEntry() == vFlagsEY[0]
-                   : false;*/
-
         bool isWsBaseFlag = bgType == BATTLEGROUND_WS && go->GetEntry() == vFlagsWS[bot->GetTeamId()];
         bool isEyBaseFlag = bgType == BATTLEGROUND_EY && go->GetEntry() == vFlagsEY[0];
 
