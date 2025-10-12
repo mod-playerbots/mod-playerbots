@@ -742,7 +742,7 @@ bool MagtheridonSpreadRangedAction::isUseful()
     }
 
     Group* group = bot->GetGroup();
-    if (!group || !botAI->IsRanged(bot) || botAI->IsHeal(bot) || !magtheridon->IsAlive() || 
+    if (!group || !botAI->IsRanged(bot) || botAI->IsHeal(bot) || !magtheridon || !magtheridon->IsAlive() || 
         magtheridon->HasAura(static_cast<uint32>(MagtheridonSpells::SHADOW_CAGE)))
     {
         return false;
@@ -888,8 +888,8 @@ bool MagtheridonSpreadHealerAction::isUseful()
     }
 
     Group* group = bot->GetGroup();
-    if (!group || !magtheridon->IsAlive() || magtheridon->HasAura(static_cast<uint32>(MagtheridonSpells::SHADOW_CAGE)) || 
-        !botAI->IsHeal(bot))
+    if (!botAI->IsHeal(bot) || !group || !magtheridon || !magtheridon->IsAlive() || 
+        magtheridon->HasAura(static_cast<uint32>(MagtheridonSpells::SHADOW_CAGE)))
     {
         return false;
     }
