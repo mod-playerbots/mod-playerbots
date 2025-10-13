@@ -29,9 +29,7 @@ float HighKingMaulgarDisableTankAssistMultiplier::GetValue(Action* action)
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
 
     if (IsAnyOgreBossAlive(botAI) && dynamic_cast<TankAssistAction*>(action))
-    {
         return 0.0f;
-    }
 
     return 1.0f;
 }
@@ -52,9 +50,7 @@ float HighKingMaulgarAvoidWhirlwindMultiplier::GetValue(Action* action)
     {
         if (IsChargeAction(action) || (dynamic_cast<MovementAction*>(action) &&
             !dynamic_cast<HighKingMaulgarWhirlwindRunAwayAction*>(action)))
-        {
             return 0.0f;
-        }
     }
 
     return 1.0f;
@@ -64,10 +60,9 @@ float HighKingMaulgarDisableArcaneShotOnKroshMultiplier::GetValue(Action* action
 {
     Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
     Unit* target = AI_VALUE(Unit*, "current target");
+
     if (krosh && target && target->GetGUID() == krosh->GetGUID() && dynamic_cast<CastArcaneShotAction*>(action))
-    {
         return 0.0f;
-    }
 
     return 1.0f;
 }
@@ -78,9 +73,7 @@ float HighKingMaulgarDisableMageTankAOEMultiplier::GetValue(Action* action)
         (dynamic_cast<CastFrostNovaAction*>(action) || dynamic_cast<CastBlizzardAction*>(action) ||
         dynamic_cast<CastConeOfColdAction*>(action) || dynamic_cast<CastFlamestrikeAction*>(action) ||
         dynamic_cast<CastDragonsBreathAction*>(action) || dynamic_cast<CastBlastWaveAction*>(action)))
-    {
         return 0.0f;
-    }
 
     return 1.0f;
 }
@@ -89,9 +82,7 @@ float GruulTheDragonkillerTankPositionMultiplier::GetValue(Action* action)
 {
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
     if (!gruul) 
-    {
         return 1.0f;
-    }
 
     const Location& tankPosition = GruulsLairLocations::GruulTankPosition;
     const float positionThreshold = 3.0f;
@@ -109,9 +100,7 @@ float GruulTheDragonkillerTankPositionMultiplier::GetValue(Action* action)
         distanceToTankPosition < positionThreshold && orientationDifference < orientationLeeway)
     {
         if (dynamic_cast<CombatFormationMoveAction*>(action))
-        {
             return 0.0f;
-        }
     }
 
     return 1.0f;
@@ -121,18 +110,14 @@ float GruulTheDragonkillerGroundSlamMultiplier::GetValue(Action* action)
 {
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
     if (!gruul) 
-    {
         return 1.0f;
-    }
 
     if (bot->HasAura(SPELL_GROUND_SLAM_1) || 
         bot->HasAura(SPELL_GROUND_SLAM_2))
     {
         if ((dynamic_cast<MovementAction*>(action) && !dynamic_cast<GruulTheDragonkillerShatterSpreadAction*>(action)) ||
             IsChargeAction(action))
-        {
             return 0.0f;
-        }
     }
 
     return 1.0f;

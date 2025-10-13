@@ -30,7 +30,6 @@ public:
    
 private:
     // High King Maulgar
-    static Trigger* high_king_maulgar_set_bot_sight(PlayerbotAI* botAI) { return new HighKingMaulgarSetBotSightTrigger(botAI); }
     static Trigger* high_king_maulgar_maulgar_tank(PlayerbotAI* botAI) { return new HighKingMaulgarMaulgarTankTrigger(botAI); }
     static Trigger* high_king_maulgar_olm_tank(PlayerbotAI* botAI) { return new HighKingMaulgarOlmTankTrigger(botAI); }
     static Trigger* high_king_maulgar_blindeye_tank(PlayerbotAI* botAI) { return new HighKingMaulgarBlindeyeTankTrigger(botAI); }

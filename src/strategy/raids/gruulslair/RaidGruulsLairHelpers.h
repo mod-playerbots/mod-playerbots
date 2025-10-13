@@ -38,7 +38,7 @@ bool IsAnyOgreBossAlive(PlayerbotAI* botAI);
 bool IsKroshMageTank(PlayerbotAI* botAI, Player* bot);
 bool IsKigglerMoonkinTank(PlayerbotAI* botAI, Player* bot);
 bool IsPositionSafe(PlayerbotAI* botAI, Player* bot, Position pos);
-bool FindSafePosition(PlayerbotAI* botAI, Player* bot, Position& outPos);
+bool TryGetNewSafePosition(PlayerbotAI* botAI, Player* bot, Position& outPos);
 
 struct Location 
 {

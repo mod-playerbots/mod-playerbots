@@ -3,13 +3,6 @@
 
 #include "Trigger.h"
 
-class HighKingMaulgarSetBotSightTrigger : public Trigger
-{
-public:
-    HighKingMaulgarSetBotSightTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar set bot sight") {}
-    bool IsActive() override;
-};
-
 class HighKingMaulgarMaulgarTankTrigger : public Trigger
 {
 public:

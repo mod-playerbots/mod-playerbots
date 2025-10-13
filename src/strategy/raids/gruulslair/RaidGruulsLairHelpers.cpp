@@ -39,9 +39,7 @@ bool IsKroshMageTank(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
-    {
         return false;
-    }
 
     Player* highestHpMage = nullptr;
     uint32 highestHp = 0;
@@ -49,9 +47,8 @@ bool IsKroshMageTank(PlayerbotAI* botAI, Player* bot)
     {
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
-        {
             continue;
-        }
+        
         if (member->getClass() == CLASS_MAGE)
         {
             uint32 hp = member->GetMaxHealth();
@@ -70,9 +67,7 @@ bool IsKigglerMoonkinTank(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
-    {
         return false;
-    }
 
     Player* highestHpMoonkin = nullptr;
     uint32 highestHp = 0;
@@ -81,9 +76,8 @@ bool IsKigglerMoonkinTank(PlayerbotAI* botAI, Player* bot)
     {
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
-        {
             continue;
-        }
+        
         if (member->getClass() == CLASS_DRUID)
         {
             int tab = AiFactory::GetPlayerSpecTab(member);
@@ -111,44 +105,37 @@ bool IsPositionSafe(PlayerbotAI* botAI, Player* bot, Position pos)
     Unit* krosh = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "krosh firehand")->Get();
     if (krosh && krosh->IsAlive())
     {
-        float dist = sqrt(pow(pos.GetPositionX() - krosh->GetPositionX(), 2) + 
-                          pow(pos.GetPositionY() - krosh->GetPositionY(), 2));
+        float dist = sqrt(pow(pos.GetPositionX() - krosh->GetPositionX(), 2) + pow(pos.GetPositionY() - krosh->GetPositionY(), 2));
         if (dist < KROSH_SAFE_DISTANCE)
-        {
             isSafe = false;
-        }
     }
 
-    if (botAI->IsRanged(bot))
+    Unit* maulgar = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "high king maulgar")->Get();
+    if (botAI->IsRanged(bot) && maulgar && maulgar->IsAlive())
     {
-        Unit* maulgar = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "high king maulgar")->Get();
-        if (maulgar && maulgar->IsAlive())
-        {
-            float dist = sqrt(pow(pos.GetPositionX() - maulgar->GetPositionX(), 2) + 
-                              pow(pos.GetPositionY() - maulgar->GetPositionY(), 2));
-            if (dist < MAULGAR_SAFE_DISTANCE)
-            {
-                isSafe = false;
-            }
-        }
+        float dist = sqrt(pow(pos.GetPositionX() - maulgar->GetPositionX(), 2) + pow(pos.GetPositionY() - maulgar->GetPositionY(), 2));
+        if (dist < MAULGAR_SAFE_DISTANCE)
+            isSafe = false;
     }
 
     return isSafe;
 }
 
-bool FindSafePosition(PlayerbotAI* botAI, Player* bot, Position& outPos)
+bool TryGetNewSafePosition(PlayerbotAI* botAI, Player* bot, Position& outPos)
 {
     const float SEARCH_RADIUS = 30.0f;
     const int NUM_POSITIONS = 32;
-    outPos = { bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ() };
 
+    outPos = { bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ() };
     if (IsPositionSafe(botAI, bot, outPos))
     {
+        outPos = Position();
         return false;
     }
 
     float bestScore = std::numeric_limits<float>::max();
     bool foundSafeSpot = false;
+    Position bestPos;
 
     for (int i = 0; i < NUM_POSITIONS; ++i)
     {
@@ -161,13 +148,10 @@ bool FindSafePosition(PlayerbotAI* botAI, Player* bot, Position& outPos)
         float destX = candidatePos.m_positionX, destY = candidatePos.m_positionY, destZ = candidatePos.m_positionZ;
         if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(),
             bot->GetPositionZ(), destX, destY, destZ, true))
-        {
             continue;
-        }
+
         if (destX != candidatePos.m_positionX || destY != candidatePos.m_positionY)
-        {
             continue;
-        }
 
         candidatePos.m_positionX = destX;
         candidatePos.m_positionY = destY;
@@ -179,13 +163,20 @@ bool FindSafePosition(PlayerbotAI* botAI, Player* bot, Position& outPos)
             if (movementDistance < bestScore)
             {
                 bestScore = movementDistance;
-                outPos = candidatePos;
+                bestPos = candidatePos;
                 foundSafeSpot = true;
             }
         }
     }
 
-    return foundSafeSpot;
+    if (foundSafeSpot)
+    {
+        outPos = bestPos;
+        return true;
+    }
+
+    outPos = Position();
+    return false;
 }
 
 }
