@@ -4,13 +4,6 @@
 #include "Trigger.h"
 #include "PlayerbotAI.h"
 
-class MagtheridonSetBotSightTrigger : public Trigger
-{
-public:
-    MagtheridonSetBotSightTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon set bot sight") {};
-    bool IsActive() override;
-};
-
 class MagtheridonHellfireChannelerMainTankTrigger : public Trigger
 {
 public:
@@ -67,13 +60,6 @@ public:
     bool IsActive() override;
 };
 
-class MagtheridonSpreadHealerTrigger : public Trigger
-{
-public:
-    MagtheridonSpreadHealerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon spread healer") {};
-    bool IsActive() override;
-};
-
 class MagtheridonUseManticronCubeTrigger : public Trigger
 {
 public:
@@ -81,10 +67,10 @@ public:
     bool IsActive() override;
 };
 
-class MagtheridonUpdateTransitionTimerTrigger : public Trigger
+class MagtheridonResetTimersAndAssignmentsTrigger : public Trigger
 {
 public:
-    MagtheridonUpdateTransitionTimerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon update transition timer") {};
+    MagtheridonResetTimersAndAssignmentsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon reset timers and assignments") {};
     bool IsActive() override;
 };
 

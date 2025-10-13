@@ -31,6 +31,11 @@ enum MagtheridonNPCs
     NPC_TARGET_TRIGGER     = 17474,
 };
 
+enum MagtheridonObjects
+{
+    GAMEOBJECT_BLAZE       = 181832,
+};
+
 namespace MagtheridonHelpers
 {
 
@@ -48,8 +53,6 @@ inline constexpr uint8 triangleIcon = RtiTargetValue::triangleIndex;
 inline constexpr uint8 crossIcon = RtiTargetValue::crossIndex;
 
 Creature* GetChanneler(Player* bot, uint32 dbGuid);
-void UpdateTransitionTimer(Unit* unit, bool transitionCondition, std::unordered_map<uint32, bool>& lastStateMap, 
-                           std::unordered_map<uint32, time_t>& timerMap);
 bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float z);
 
 struct Location

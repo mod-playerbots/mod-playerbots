@@ -72,17 +72,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class MagtheridonSpreadHealerAction : public MovementAction
-{
-public:
-    static std::unordered_map<ObjectGuid, Position> initialPositions;
-    static std::unordered_map<ObjectGuid, bool> hasReachedInitialPosition;
-
-    MagtheridonSpreadHealerAction(PlayerbotAI* botAI, std::string const name = "magtheridon spread healer") : MovementAction(botAI, name) {};
-
-    bool Execute(Event event) override;
-};
-
 class MagtheridonUseManticronCubeAction : public MovementAction
 {
 public:
@@ -91,10 +80,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class MagtheridonUpdateTransitionTimerAction : public Action
+class MagtheridonResetTimersAndAssignmentsAction : public Action
 {
 public:
-    MagtheridonUpdateTransitionTimerAction(PlayerbotAI* botAI, std::string const name = "magtheridon update transition timer") : Action(botAI, name) {};
+    MagtheridonResetTimersAndAssignmentsAction(PlayerbotAI* botAI, std::string const name = "magtheridon reset timers and assignments") : Action(botAI, name) {};
 
     bool Execute(Event event) override;
 };

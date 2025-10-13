@@ -17,9 +17,8 @@ public:
         creators["magtheridon burning abyssal warlock cc"] = &RaidMagtheridonActionContext::magtheridon_burning_abyssal_warlock_cc;
         creators["magtheridon position boss"] = &RaidMagtheridonActionContext::magtheridon_position_boss;
         creators["magtheridon spread ranged"] = &RaidMagtheridonActionContext::magtheridon_spread_ranged;
-        creators["magtheridon spread healer"] = &RaidMagtheridonActionContext::magtheridon_spread_healer;
         creators["magtheridon use manticron cube"] = &RaidMagtheridonActionContext::magtheridon_use_manticron_cube;
-        creators["magtheridon update transition timer"] = &RaidMagtheridonActionContext::magtheridon_update_transition_timer;
+        creators["magtheridon reset timers and assignments"] = &RaidMagtheridonActionContext::magtheridon_reset_timers_and_assignments;
     }
 
 private:
@@ -31,9 +30,8 @@ private:
     static Action* magtheridon_burning_abyssal_warlock_cc(PlayerbotAI* botAI) { return new MagtheridonBurningAbyssalWarlockCCAction(botAI); }
     static Action* magtheridon_position_boss(PlayerbotAI* botAI) { return new MagtheridonPositionBossAction(botAI); }
     static Action* magtheridon_spread_ranged(PlayerbotAI* botAI) { return new MagtheridonSpreadRangedAction(botAI); }
-    static Action* magtheridon_spread_healer(PlayerbotAI* botAI) { return new MagtheridonSpreadHealerAction(botAI); }
     static Action* magtheridon_use_manticron_cube(PlayerbotAI* botAI) { return new MagtheridonUseManticronCubeAction(botAI); }
-    static Action* magtheridon_update_transition_timer(PlayerbotAI* botAI) { return new MagtheridonUpdateTransitionTimerAction(botAI); }
+    static Action* magtheridon_reset_timers_and_assignments(PlayerbotAI* botAI) { return new MagtheridonResetTimersAndAssignmentsAction(botAI); }
 };
 
 #endif

@@ -6,17 +6,14 @@ void RaidMagtheridonStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("magtheridon use manticron cube", NextAction::array(0,
         new NextAction("magtheridon use manticron cube", ACTION_EMERGENCY + 10), nullptr)));
 
-    triggers.push_back(new TriggerNode("magtheridon update transition timer", NextAction::array(0,
-        new NextAction("magtheridon update transition timer", ACTION_EMERGENCY), nullptr)));
+    triggers.push_back(new TriggerNode("magtheridon reset timers and assignments", NextAction::array(0,
+        new NextAction("magtheridon reset timers and assignments", ACTION_EMERGENCY), nullptr)));
 
     triggers.push_back(new TriggerNode("magtheridon burning abyssal warlock cc", NextAction::array(0,
         new NextAction("magtheridon burning abyssal warlock cc", ACTION_RAID + 3), nullptr)));
 
     triggers.push_back(new TriggerNode("magtheridon spread ranged", NextAction::array(0,
         new NextAction("magtheridon spread ranged", ACTION_RAID + 2), nullptr)));
-
-    triggers.push_back(new TriggerNode("magtheridon spread healer", NextAction::array(0,
-        new NextAction("magtheridon spread healer", ACTION_RAID + 2), nullptr)));
 
     triggers.push_back(new TriggerNode("magtheridon hellfire channeler misdirection", NextAction::array(0,
         new NextAction("magtheridon hellfire channeler misdirection", ACTION_RAID + 2), nullptr)));
