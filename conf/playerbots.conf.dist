@@ -1059,7 +1059,8 @@ AiPlayerbot.ZoneBracket.4197 = 79,80
 #
 #
 
-# Maps where bots can be teleported to
+# Map IDs where bots can be teleported to
+# Defaults: 0 = Eastern Kingdoms, 1 = Kalimdor, 530 = Outland, 571 = Northrend
 AiPlayerbot.RandomBotMaps = 0,1,530,571
 
 # Probabilty bots teleport to banker (city)
