@@ -5,7 +5,7 @@
 # Overview
 # "Randombot": randomly generated bots that log in separately from players and populate the world. Depending on settings, randombots may automatically grind, quest, and upgrade equipment and can be invited to groups and given commands.
 # "Altbot": characters created on player accounts, which may be logged in by the player and invited to groups and given commands like randombots. Depending on settings, altbots can be limited to characters on the active player's account or in the active player's guild.
-# Information about commands to control bots and set their strategies can be found on the wiki at https://github.com/liyunfan1223/mod-playerbots/wiki/Playerbot-Commands.
+# Information about commands to control bots and set their strategies can be found on the wiki at https://github.com/mod-playerbots/mod-playerbots/wiki/Playerbot-Commands.
 
 ####################################################################################################
 # SECTION INDEX
