@@ -10,27 +10,25 @@
 #include "PlayerbotAI.h"
 #include "RtiTargetValue.h"
 
-enum class MagtheridonSpells
+enum MagtheridonSpells
 {
     // Magtheridon
-    SHADOW_CAGE        = 30205,
-    BLAST_NOVA         = 30616,
-    SHADOW_GRASP      = 30410,
+    SPELL_SHADOW_CAGE  = 30205,
+    SPELL_BLAST_NOVA   = 30616,
+    SPELL_SHADOW_GRASP = 30410,
 
     // Warlock
-    BANISH             = 18647,
-    CURSE_OF_TONGUES   = 11719,
-    FEAR               =  6215,
+    SPELL_BANISH       = 18647,
+    SPELL_FEAR         =  6215,
 
     // Hunter
-    MISDIRECTION  = 34477,
+    SPELL_MISDIRECTION = 34477,
 };
 
-enum class MagtheridonNPCs
+enum MagtheridonNPCs
 {
-    BURNING_ABYSSAL      = 17454,
-    HELLFIRE_CHANNELER   = 17256,
-    TARGET_TRIGGER       = 17474,
+    NPC_BURNING_ABYSSAL    = 17454,
+    NPC_TARGET_TRIGGER     = 17474,
 };
 
 namespace MagtheridonHelpers
@@ -42,29 +40,31 @@ constexpr uint32 NORTHWEST_CHANNELER = 90980;
 constexpr uint32 EAST_CHANNELER      = 90982;
 constexpr uint32 NORTHEAST_CHANNELER = 90981;
 
-inline constexpr int8 squareIcon = RtiTargetValue::squareIndex;
-inline constexpr int8 starIcon = RtiTargetValue::starIndex;
-inline constexpr int8 circleIcon = RtiTargetValue::circleIndex;
-inline constexpr int8 diamondIcon = RtiTargetValue::diamondIndex;
-inline constexpr int8 triangleIcon = RtiTargetValue::triangleIndex;
-inline constexpr int8 crossIcon = RtiTargetValue::crossIndex;
+inline constexpr uint8 squareIcon = RtiTargetValue::squareIndex;
+inline constexpr uint8 starIcon = RtiTargetValue::starIndex;
+inline constexpr uint8 circleIcon = RtiTargetValue::circleIndex;
+inline constexpr uint8 diamondIcon = RtiTargetValue::diamondIndex;
+inline constexpr uint8 triangleIcon = RtiTargetValue::triangleIndex;
+inline constexpr uint8 crossIcon = RtiTargetValue::crossIndex;
 
 Creature* GetChanneler(Player* bot, uint32 dbGuid);
 void UpdateTransitionTimer(Unit* unit, bool transitionCondition, std::unordered_map<uint32, bool>& lastStateMap, 
                            std::unordered_map<uint32, time_t>& timerMap);
 bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float z);
 
-struct TankSpot
+struct Location
 {
     float x, y, z, orientation;
 };
 
-namespace MagtheridonTankSpots 
+namespace MagtheridonsLairLocations 
 {
-    extern const TankSpot WaitingForMagtheridon;
-    extern const TankSpot Magtheridon;
-    extern const TankSpot NWChanneler;
-    extern const TankSpot NEChanneler;
+    extern const Location WaitingForMagtheridonPosition;
+    extern const Location MagtheridonTankPosition;
+    extern const Location NWChannelerTankPosition;
+    extern const Location NEChannelerTankPosition;
+    extern const Location RangedSpreadPosition;
+    extern const Location HealerSpreadPosition;
 }
 
 struct CubeInfo
@@ -79,6 +79,9 @@ std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, const std::vector<uint3
 void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>& cubes, PlayerbotAI* botAI);
 extern std::unordered_map<uint32, bool> lastShadowCageState;
 extern std::unordered_map<uint32, bool> lastBlastNovaState;
+extern std::unordered_map<uint32, time_t> magtheridonBlastNovaTimer;
+extern std::unordered_map<uint32, time_t> magtheridonSpreadWaitTimer;
+extern std::unordered_map<uint32, time_t> magtheridonAggroWaitTimer;
 
 }
 

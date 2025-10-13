@@ -9,6 +9,7 @@
 namespace MagtheridonHelpers
 {
 
+// Identify channelers by their database GUIDs
 Creature* GetChanneler(Player* bot, uint32 dbGuid)
 {
     Map* map = bot->GetMap();
@@ -27,16 +28,19 @@ Creature* GetChanneler(Player* bot, uint32 dbGuid)
     return creature;
 }
 
-namespace MagtheridonTankSpots
+namespace MagtheridonsLairLocations
 {
-    const TankSpot WaitingForMagtheridon = {  -3.312f,   1.857f, -0.406f, 3.149f };
-    const TankSpot Magtheridon =           {  23.624f,   1.905f, -0.406f, 3.189f };
-    const TankSpot NWChanneler =           { -11.764f,  30.818f, -0.411f,   0.0f };
-    const TankSpot NEChanneler =           { -12.490f, -26.211f, -0.411f,   0.0f };
+    const Location WaitingForMagtheridonPosition = {  -3.312f,   1.857f, -0.406f, 3.149f };
+    const Location MagtheridonTankPosition =       {  23.624f,   1.905f, -0.406f, 3.189f };
+    const Location NWChannelerTankPosition =       { -11.764f,  30.818f, -0.411f,   0.0f };
+    const Location NEChannelerTankPosition =       { -12.490f, -26.211f, -0.411f,   0.0f };
+    const Location RangedSpreadPosition =          { -14.890f,   1.995f, -0.406f,   0.0f };
+    const Location HealerSpreadPosition =          {  -2.265f,   1.874f, -0.404f,   0.0f };
 }
 
 const std::vector<uint32> MANTICRON_CUBE_DB_GUIDS = { 43157, 43158, 43159, 43160, 43161 };
 
+// Get the positions of all Manticron Cubes by their database GUIDs
 std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, const std::vector<uint32>& cubeDbGuids)
 {
     std::vector<CubeInfo> cubes;
@@ -81,6 +85,7 @@ void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>&
     size_t cubeIndex = 0;
     std::vector<Player*> candidates;
 
+    // Assign ranged DPS (excluding Warlocks) to cubes first
     for (GroupReference* ref = group->GetFirstMember(); ref && cubeIndex < cubes.size(); ref = ref->next())
     {
         Player* member = ref->GetSource();
@@ -93,6 +98,7 @@ void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>&
         if (candidates.size() >= cubes.size()) break;
     }
 
+    // If there are still cubes left, assign any other non-tank bots
     if (candidates.size() < cubes.size())
     {
         for (GroupReference* ref = group->GetFirstMember(); ref && candidates.size() < cubes.size(); ref = ref->next())
@@ -124,6 +130,10 @@ void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>&
 
 std::unordered_map<uint32, bool> lastShadowCageState;
 std::unordered_map<uint32, bool> lastBlastNovaState;
+std::unordered_map<uint32, time_t> magtheridonAggroWaitTimer;
+std::unordered_map<uint32, time_t> magtheridonSpreadWaitTimer;
+std::unordered_map<uint32, time_t> magtheridonBlastNovaTimer;
+
 void UpdateTransitionTimer(Unit* unit, bool transitionCondition, std::unordered_map<uint32, bool>& lastStateMap, 
                            std::unordered_map<uint32, time_t>& timerMap)
 {
@@ -144,7 +154,7 @@ bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, floa
     for (const auto& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
-        if (!unit || unit->GetEntry() != static_cast<uint32>(MagtheridonNPCs::TARGET_TRIGGER))
+        if (!unit || unit->GetEntry() != NPC_TARGET_TRIGGER)
         {
             continue;
         }
@@ -164,7 +174,7 @@ bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, floa
     for (const auto& goGuid : gos)
     {
         GameObject* go = botAI->GetGameObject(goGuid);
-        if (!go || go->GetEntry() != 181832)
+        if (!go || go->GetEntry() != 181832) // Invisible game object at the center of Conflagration
         {
             continue;
         }

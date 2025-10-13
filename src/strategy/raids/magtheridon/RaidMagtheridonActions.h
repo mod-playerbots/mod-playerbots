@@ -11,25 +11,22 @@ public:
     MagtheridonHellfireChannelerMainTankAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler main tank") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
-    bool isUseful() override;
 };
 
 class MagtheridonHellfireChannelerNWChannelerTankAction : public AttackAction
 {
 public:
-    MagtheridonHellfireChannelerNWChannelerTankAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler northwest channeler tank") : AttackAction(botAI, name) {};
+    MagtheridonHellfireChannelerNWChannelerTankAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler nw channeler tank") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
-    bool isUseful() override;
 };
 
 class MagtheridonHellfireChannelerNEChannelerTankAction : public AttackAction
 {
 public:
-    MagtheridonHellfireChannelerNEChannelerTankAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler northeast channeler tank") : AttackAction(botAI, name) {};
+    MagtheridonHellfireChannelerNEChannelerTankAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler ne channeler tank") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
-    bool isUseful() override;
 };
 
 class MagtheridonHellfireChannelerMisdirectionAction : public AttackAction
@@ -38,7 +35,6 @@ public:
     MagtheridonHellfireChannelerMisdirectionAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler misdirection") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
-    bool isUseful() override;
 };
 
 class MagtheridonHellfireChannelerDPSPriorityAction : public AttackAction
@@ -47,16 +43,14 @@ public:
     MagtheridonHellfireChannelerDPSPriorityAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler dps priority") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
-    bool isUseful() override;
 };
 
-class MagtheridonHellfireChannelerWarlockAction : public AttackAction
+class MagtheridonBurningAbyssalWarlockCCAction : public AttackAction
 {
 public:
-    MagtheridonHellfireChannelerWarlockAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler warlock") : AttackAction(botAI, name) {};
+    MagtheridonBurningAbyssalWarlockCCAction(PlayerbotAI* botAI, std::string const name = "magtheridon burning abyssal warlock cc") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
-    bool isUseful() override;
 };
 
 class MagtheridonPositionBossAction : public AttackAction
@@ -65,25 +59,28 @@ public:
     MagtheridonPositionBossAction(PlayerbotAI* botAI, std::string const name = "magtheridon position boss") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
-    bool isUseful() override;
 };
 
 class MagtheridonSpreadRangedAction : public MovementAction
 {
 public:
+    static std::unordered_map<ObjectGuid, Position> initialPositions;
+    static std::unordered_map<ObjectGuid, bool> hasReachedInitialPosition;
+
     MagtheridonSpreadRangedAction(PlayerbotAI* botAI, std::string const name = "magtheridon spread ranged") : MovementAction(botAI, name) {};
 
     bool Execute(Event event) override;
-    bool isUseful() override;
 };
 
 class MagtheridonSpreadHealerAction : public MovementAction
 {
 public:
+    static std::unordered_map<ObjectGuid, Position> initialPositions;
+    static std::unordered_map<ObjectGuid, bool> hasReachedInitialPosition;
+
     MagtheridonSpreadHealerAction(PlayerbotAI* botAI, std::string const name = "magtheridon spread healer") : MovementAction(botAI, name) {};
 
     bool Execute(Event event) override;
-    bool isUseful() override;
 };
 
 class MagtheridonUseManticronCubeAction : public MovementAction
@@ -92,7 +89,14 @@ public:
     MagtheridonUseManticronCubeAction(PlayerbotAI* botAI, std::string const name = "magtheridon use manticron cube") : MovementAction(botAI, name) {};
 
     bool Execute(Event event) override;
-    bool isUseful() override;
+};
+
+class MagtheridonUpdateTransitionTimerAction : public Action
+{
+public:
+    MagtheridonUpdateTransitionTimerAction(PlayerbotAI* botAI, std::string const name = "magtheridon update transition timer") : Action(botAI, name) {};
+
+    bool Execute(Event event) override;
 };
 
 #endif
