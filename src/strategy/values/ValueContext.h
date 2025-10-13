@@ -316,6 +316,7 @@ public:
 
         creators["can fish"] = &ValueContext::can_fish;
         creators["can use fishing bobber"] = &ValueContext::can_use_fishing_bobber;
+        creators["fishing spot"] = &ValueContext::fishing_spot;
     }
 
 private:
@@ -561,6 +562,7 @@ private:
     static UntypedValue* recently_flee_info(PlayerbotAI* ai) { return new RecentlyFleeInfo(ai); }
     static UntypedValue* can_fish(PlayerbotAI* ai) { return new CanFishValue(ai); }
     static UntypedValue* can_use_fishing_bobber(PlayerbotAI* ai) { return new CanUseFishingBobberValue(ai); }
+    static UntypedValue* fishing_spot(PlayerbotAI* ai) { return new FishingSpotValue(ai); }
     // -------------------------------------------------------
     // Flag for cutom glyphs : true when /w bot glyph equip
     // -------------------------------------------------------

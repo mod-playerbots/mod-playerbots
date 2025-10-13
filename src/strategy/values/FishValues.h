@@ -25,4 +25,11 @@ public:
     bool Calculate() override;
 };
 
+class FishingSpotValue : public WorldPositionValue
+{
+public:
+    FishingSpotValue(PlayerbotAI* botAI, WorldPosition const pos = WorldPosition(), std::string const name = "fishing spot")
+     : WorldPositionValue(botAI, pos, name) {};
+};
+
 #endif

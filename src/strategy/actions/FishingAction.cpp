@@ -4,6 +4,7 @@
  */
 
 #include "FishingAction.h"
+#include "FishValues.h"
 #include "Event.h"
 
 #include "GridNotifiers.h"
@@ -17,6 +18,7 @@
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "Position.h"
+#
 
 
 const uint32 FISHING_SPELL = 7620;
@@ -256,7 +258,10 @@ bool MoveNearWaterAction::Execute(Event event)
 
 bool MoveNearWaterAction::isUseful()
 {
-    return (AI_VALUE(bool, "can fish"));
+    if (!AI_VALUE(bool, "can fish"))
+        return false;
+    FishingSpotValue* fishingSpotValueObject =  context->GetValue<WorldPosition>("fishing spot"); 
+    return (fishingSpotValueObject->isStale(180000));
 }
 
 bool MoveNearWaterAction::isPossible()
@@ -284,8 +289,10 @@ bool MoveNearWaterAction::isPossible()
                 if (master && botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT))
                 {
                     if (master->GetExactDist2d(bot) < sPlayerbotAIConfig->fishingDistance)
+                        SET_AI_VALUE(FishingSpotValue, "fishing spot", landSpot);
                         return true;
                 }
+                SET_AI_VALUE(FishingSpotValue, "fishing spot", landSpot);
                 return true;
             }
         }
@@ -317,8 +324,11 @@ bool MoveNearWaterAction::isPossible()
         {
             if (master && botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT))
             {
-                return (master->GetExactDist2d(bot) < sPlayerbotAIConfig->fishingDistance);
+                if (master->GetExactDist2d(bot) < sPlayerbotAIConfig->fishingDistance)
+                SET_AI_VALUE(FishingSpotValue, "fishing spot", landSpot);
+                return true;
             }
+            SET_AI_VALUE(FishingSpotValue, "fishing spot", landSpot);
             return true;
         }
     }
@@ -435,7 +445,11 @@ bool FishingAction::Execute(Event event)
 
 bool FishingAction::isUseful()
 {
-    return (AI_VALUE(bool, "can fish"));
+    if (!AI_VALUE(bool, "can fish"))
+        return false;
+    FishingSpotValue* fishingSpotValueObject =  context->GetValue<WorldPosition>("fishing spot"); 
+    return (!fishingSpotValueObject->isStale(180000));
+    
 }
 
 

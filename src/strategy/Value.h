@@ -416,4 +416,23 @@ private:
     std::list<FleeInfo> data = {};
 };
 
+class WorldPositionValue : public ManualSetValue<WorldPosition>
+{
+public:
+    WorldPositionValue(PlayerbotAI* botAI, WorldPosition const pos = WorldPosition(), std::string const name = "world position")
+        : ManualSetValue<WorldPosition>(botAI, pos, name)
+    {
+    }
+    void Set(WorldPosition val) override
+    {
+        value = val;
+        SetTime = getMSTime();
+    }
+    uint32 lastUpdated() const {return SetTime;}
+    bool isStale(uint32 maxDuration) const { return getMSTime() - SetTime > maxDuration; }
+
+private:
+    uint32 SetTime = 0;
+};
+
 #endif
