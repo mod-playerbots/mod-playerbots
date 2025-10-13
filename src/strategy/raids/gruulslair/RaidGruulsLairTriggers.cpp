@@ -91,15 +91,14 @@ bool HighKingMaulgarWhirlwindRunAwayTrigger::IsActive()
 {
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
 
-    return maulgar && maulgar->IsAlive() && maulgar->HasAura(WHIRLWIND) && !botAI->IsMainTank(bot);
+    return maulgar && maulgar->IsAlive() && maulgar->HasAura(SPELL_WHIRLWIND) && !botAI->IsMainTank(bot);
 }
 
 bool HighKingMaulgarBanishFelstalkerTrigger::IsActive()
 {
     Unit* felStalker = AI_VALUE2(Unit*, "find target", "wild fel stalker");
 
-    return felStalker && felStalker->IsAlive() && !felStalker->HasAura(BANISH) && 
-           bot->getClass() == CLASS_WARLOCK;
+    return felStalker && felStalker->IsAlive() && bot->getClass() == CLASS_WARLOCK;
 }
 
 bool HighKingMaulgarHunterMisdirectionTrigger::IsActive()
@@ -188,6 +187,6 @@ bool GruulTheDragonkillerShatterSpreadTrigger::IsActive()
     Group* group = bot->GetGroup();
 
     return gruul && gruul->IsAlive() && group &&
-           (bot->HasAura(GROUND_SLAM_1) || 
-            bot->HasAura(GROUND_SLAM_2));
+           (bot->HasAura(SPELL_GROUND_SLAM_1) || 
+            bot->HasAura(SPELL_GROUND_SLAM_2));
 }

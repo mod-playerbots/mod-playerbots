@@ -3,18 +3,46 @@
 
 #include "Multiplier.h"
 
-class HighKingMaulgarMultiplier : public Multiplier
+class HighKingMaulgarDisableTankAssistMultiplier : public Multiplier
 {
 public:
-    HighKingMaulgarMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar multiplier") {}
-    virtual float GetValue(Action* action);
+    HighKingMaulgarDisableTankAssistMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar disable tank assist multiplier") {}
+    float GetValue(Action* action) override;
 };
 
-class GruulTheDragonkillerMultiplier : public Multiplier
+class HighKingMaulgarAvoidWhirlwindMultiplier : public Multiplier
 {
 public:
-    GruulTheDragonkillerMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "gruul the dragonkiller multiplier") {}
-    virtual float GetValue(Action* action);
+    HighKingMaulgarAvoidWhirlwindMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar avoid whirlwind multiplier") {}
+    float GetValue(Action* action) override;
+};
+
+class HighKingMaulgarDisableArcaneShotOnKroshMultiplier : public Multiplier
+{
+public:
+    HighKingMaulgarDisableArcaneShotOnKroshMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar disable arcane shot on krosh multiplier") {}
+    float GetValue(Action* action) override;
+};
+
+class HighKingMaulgarDisableMageTankAOEMultiplier : public Multiplier
+{
+public:
+    HighKingMaulgarDisableMageTankAOEMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar disable mage tank aoe multiplier") {}
+    float GetValue(Action* action) override;
+};
+
+class GruulTheDragonkillerTankPositionMultiplier : public Multiplier
+{
+public:
+    GruulTheDragonkillerTankPositionMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "gruul the dragonkiller tank position multiplier") {}
+    float GetValue(Action* action) override;
+};
+
+class GruulTheDragonkillerGroundSlamMultiplier : public Multiplier
+{
+public:
+    GruulTheDragonkillerGroundSlamMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "gruul the dragonkiller ground slam multiplier") {}
+    float GetValue(Action* action) override;
 };
 
 #endif

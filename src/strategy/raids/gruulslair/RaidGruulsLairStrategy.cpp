@@ -50,6 +50,10 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void RaidGruulsLairStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
-    multipliers.push_back(new HighKingMaulgarMultiplier(botAI));
-    multipliers.push_back(new GruulTheDragonkillerMultiplier(botAI));
+    multipliers.push_back(new HighKingMaulgarDisableTankAssistMultiplier(botAI));
+    multipliers.push_back(new HighKingMaulgarAvoidWhirlwindMultiplier(botAI));
+    multipliers.push_back(new HighKingMaulgarDisableArcaneShotOnKroshMultiplier(botAI));
+    multipliers.push_back(new HighKingMaulgarDisableMageTankAOEMultiplier(botAI));
+    multipliers.push_back(new GruulTheDragonkillerTankPositionMultiplier(botAI));
+    multipliers.push_back(new GruulTheDragonkillerGroundSlamMultiplier(botAI));
 }

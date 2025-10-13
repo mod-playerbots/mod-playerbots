@@ -7,21 +7,23 @@
 enum GruulsLairSpells
 {
 	// High King Maulgar
-	WHIRLWIND  	   = 33238,
+	SPELL_WHIRLWIND  	   = 33238,
 
 	// Krosh Firehand
-	SPELL_SHIELD   = 33054,
+	SPELL_SPELL_SHIELD   = 33054,
 
 	// Hunter
-	MISDIRECTION   = 34477,
+	SPELL_MISDIRECTION   = 34477,
 
 	// Warlock
-	BANISH     	   = 18647, // Rank 2
+	SPELL_BANISH     	   = 18647, // Rank 2
 
 	// Gruul the Dragonkiller
-	GROUND_SLAM_1  = 33525,
-	GROUND_SLAM_2  = 39187,
+	SPELL_GROUND_SLAM_1  = 33525,
+	SPELL_GROUND_SLAM_2  = 39187,
 };
+
+constexpr uint32 NPC_WILD_FEL_STALKER = 18847;
 
 namespace GruulsLairHelpers
 {
@@ -38,19 +40,19 @@ bool IsKigglerMoonkinTank(PlayerbotAI* botAI, Player* bot);
 bool IsPositionSafe(PlayerbotAI* botAI, Player* bot, Position pos);
 bool FindSafePosition(PlayerbotAI* botAI, Player* bot, Position& outPos);
 
-struct TankSpot 
+struct Location 
 {
 	float x, y, z;
 };
 
-namespace GruulsLairTankSpots 
+namespace GruulsLairLocations 
 {
-    extern const TankSpot Maulgar;
-    extern const TankSpot Olm;
-    extern const TankSpot Blindeye;
-	extern const TankSpot Krosh;
-	extern const TankSpot MaulgarRoomCenter;
-    extern const TankSpot Gruul;
+    extern const Location MaulgarTankPosition;
+    extern const Location OlmTankPosition;
+    extern const Location BlindeyeTankPosition;
+	extern const Location KroshTankPosition;
+	extern const Location MaulgarRoomCenter;
+    extern const Location GruulTankPosition;
 }
 
 }
