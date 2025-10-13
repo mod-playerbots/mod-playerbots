@@ -1,7 +1,8 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
- */ 
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
+ */
+
 #include "FishingAction.h"
 #include "Event.h"
 
@@ -27,7 +28,6 @@ const float MIN_WATER_SEARCH_DISTANCE = 10.0f;
 const float MAX_WATER_SEARCH_DISTANCE = 40.0f;
 const float HEIGHT_ABOVE_WATER_TOLERANCE = 0.2f;
 const float SEARCH_INCREMENT = 2.5f;
-const float MAX_MASTER_DISTANCE = 5.0f;
 const float HEIGHT_SEARCH_BUFFER = 10.0f;
 
 
@@ -163,7 +163,7 @@ WorldPosition findLandRadialFromPosition (Player* bot, WorldPosition targetPos, 
     if (boundaryPoints.size() == 1)
         return boundaryPoints[0];
 
-    float minDistance = 100000;
+    float minDistance = MAX_FLOAT;
     WorldLocation closestPoint = WorldPosition();
     for (const auto& pos : boundaryPoints)
     {
@@ -283,7 +283,8 @@ bool MoveNearWaterAction::isPossible()
             {
                 if (master && botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT))
                 {
-                    return (master->GetExactDist2d(bot) < MAX_MASTER_DISTANCE);
+                    if (master->GetExactDist2d(bot) < sPlayerbotAIConfig->fishingDistance)
+                        return true;
                 }
                 return true;
             }
@@ -316,7 +317,7 @@ bool MoveNearWaterAction::isPossible()
         {
             if (master && botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT))
             {
-                return (master->GetExactDist2d(bot) < MAX_MASTER_DISTANCE);
+                return (master->GetExactDist2d(bot) < sPlayerbotAIConfig->fishingDistance);
             }
             return true;
         }
@@ -381,7 +382,7 @@ bool EquipFishingPoleAction::isUseful()
     }
 
     std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
-    "no_fishing_pole_error", "I don't Have a Fishing Pole",{});
+    "no_fishing_pole_error", "I don't have a Fishing Pole",{});
     std::string master = botAI->GetMaster()->GetName();
     botAI->Whisper(text, master);
     return false;
