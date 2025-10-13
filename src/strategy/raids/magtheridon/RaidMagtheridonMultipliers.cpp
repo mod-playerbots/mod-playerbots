@@ -15,7 +15,7 @@ using namespace MagtheridonHelpers;
 float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (magtheridon->HasUnitState(UNIT_STATE_CASTING) &&
+    if (magtheridon && magtheridon->HasUnitState(UNIT_STATE_CASTING) &&
         magtheridon->FindCurrentSpellBySpellId(SPELL_BLAST_NOVA))
     {
         auto it = botToCubeAssignment.find(bot->GetGUID());
