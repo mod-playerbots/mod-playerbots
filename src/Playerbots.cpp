@@ -88,7 +88,7 @@ public:
         PLAYERHOOK_ON_BEFORE_ACHI_COMPLETE,
         PLAYERHOOK_CAN_PLAYER_USE_PRIVATE_CHAT,
         PLAYERHOOK_ON_GIVE_EXP,
-        PLAYERHOOK_ON_LEVEL_CHANGED
+        PLAYERHOOK_ON_BEFORE_TELEPORT
     }) {}
 
     void OnPlayerLogin(Player* player) override
@@ -106,7 +106,7 @@ public:
             {
                 ChatHandler(player->GetSession()).SendSysMessage(
                     "|cff00ff00This server runs with |cff00ccffmod-playerbots|r "
-                    "|cffcccccchttps://github.com/liyunfan1223/mod-playerbots|r");
+                    "|cffcccccchttps://github.com/mod-playerbots/mod-playerbots|r");
             }
 
             if (sPlayerbotAIConfig->enabled || sPlayerbotAIConfig->randomBotAutologin)
@@ -122,31 +122,24 @@ public:
         }
     }
 
-    void OnPlayerLevelChanged(Player* player, uint8 oldLevel) override
+    bool OnPlayerBeforeTeleport(Player* player, uint32 mapid, float /*x*/, float /*y*/, float /*z*/, float /*orientation*/, uint32 /*options*/, Unit* /*target*/) override
     {
-        // Check if feature is enabled and required objects are valid
-        if (!sPlayerbotAIConfig || !sPlayerbotAIConfig->randomBotLogoutOutsideLoginRange || !sRandomPlayerbotMgr)
-            return;
+        // Only apply to bots to prevent affecting real players
+        if (!player || !player->GetSession()->IsBot())
+            return true;
 
-        // Only apply to bots from rndBotTypeAccounts (type 1)
-        uint32 accountId = player->GetSession()->GetAccountId();
-        if (!sRandomPlayerbotMgr->IsAccountType(accountId, 1))
-            return;
-
-        uint32 newLevel = player->GetLevel();
-
-        // Check if the new level is outside the allowed login range
-        if (newLevel < sPlayerbotAIConfig->randomBotMinLoginLevel ||
-            newLevel > sPlayerbotAIConfig->randomBotMaxLoginLevel)
+        // If changing maps, proactively clean visibility references to prevent
+        // stale pointers in other players' visibility maps during the teleport.
+        // This fixes a race condition where:
+        // 1. Bot A teleports and its visible objects start getting cleaned up
+        // 2. Bot B is simultaneously updating visibility and tries to access objects in Bot A's old visibility map
+        // 3. Those objects may already be freed, causing a segmentation fault
+        if (player->GetMapId() != mapid && player->IsInWorld())
         {
-            LOG_INFO("playerbots", "Bot {} changed levels from {} to {}, outside login range ({}-{}). Marking for logout",
-                    player->GetName(), oldLevel, newLevel,
-                    sPlayerbotAIConfig->randomBotMinLoginLevel, sPlayerbotAIConfig->randomBotMaxLoginLevel);
-
-            // Mark the bot for removal in the next update cycle
-            sRandomPlayerbotMgr->MarkBotForLogout(player->GetGUID().GetCounter());
-            sRandomPlayerbotMgr->ForceRecount();
+            player->GetObjectVisibilityContainer().CleanVisibilityReferences();
         }
+
+        return true;  // Allow teleport to continue
     }
 
     void OnPlayerAfterUpdate(Player* player, uint32 diff) override
@@ -323,7 +316,7 @@ public:
         LOG_INFO("server.loading", "║     mod-playerbots is a community-driven open-source     ║");
         LOG_INFO("server.loading", "║  project based on AzerothCore, licensed under AGPLv3.0   ║");
         LOG_INFO("server.loading", "╟──────────────────────────────────────────────────────────╢");
-        LOG_INFO("server.loading", "║      https://github.com/liyunfan1223/mod-playerbots      ║");
+        LOG_INFO("server.loading", "║      https://github.com/mod-playerbots/mod-playerbots    ║");
         LOG_INFO("server.loading", "╚══════════════════════════════════════════════════════════╝");
 
         uint32 oldMSTime = getMSTime();
