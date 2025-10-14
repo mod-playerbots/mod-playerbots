@@ -5,7 +5,7 @@
 # Overview
 # "Randombot": randomly generated bots that log in separately from players and populate the world. Depending on settings, randombots may automatically grind, quest, and upgrade equipment and can be invited to groups and given commands.
 # "Altbot": characters created on player accounts, which may be logged in by the player and invited to groups and given commands like randombots. Depending on settings, altbots can be limited to characters on the active player's account or in the active player's guild.
-# Information about commands to control bots and set their strategies can be found on the wiki at https://github.com/liyunfan1223/mod-playerbots/wiki/Playerbot-Commands.
+# Information about commands to control bots and set their strategies can be found on the wiki at https://github.com/mod-playerbots/mod-playerbots/wiki/Playerbot-Commands.
 
 ####################################################################################################
 # SECTION INDEX
@@ -501,9 +501,9 @@ AiPlayerbot.AltMaintenanceBags = 1
 AiPlayerbot.AltMaintenanceMounts = 1
 AiPlayerbot.AltMaintenanceSkills = 1
 
-AiPlayerbot.AltMaintenanceClassSpells = 1	# Spells from quests (tame/summon pets, totems, druid forms, etc)
-AiPlayerbot.AltMaintenanceAvailableSpells = 1	# Spells learnable from trainer
-AiPlayerbot.AltMaintenanceSpecialSpells = 1	# Leave DK starting area
+AiPlayerbot.AltMaintenanceClassSpells = 1
+AiPlayerbot.AltMaintenanceAvailableSpells = 1
+AiPlayerbot.AltMaintenanceSpecialSpells = 1
 AiPlayerbot.AltMaintenanceTalentTree = 1
 AiPlayerbot.AltMaintenanceGlyphs = 1
 AiPlayerbot.AltMaintenanceGemsEnchants = 1
@@ -597,20 +597,9 @@ AiPlayerbot.RandomBotRandomPassword = 0
 # Prefix for account names to create for randombots
 AiPlayerbot.RandomBotAccountPrefix = "rndbot"
 
-# Minimum and maximum initialization levels for randombots
+# Minimum and maximum levels for randombots
 AiPlayerbot.RandomBotMinLevel = 1
 AiPlayerbot.RandomBotMaxLevel = 80
-
-# Minimum and maximum level range for randombots allowed to login
-# If level filtration is used, minRandomBots and maxRandomBots might be automatically adjusted to lower values,
-# depending on available eligible bots in the database
-# Default Min,Max: 1,80 (no level filtration)
-AiPlayerbot.RandomBotMinLoginLevel = 1
-AiPlayerbot.RandomBotMaxLoginLevel = 80
-
-# log-out randombots if they they level outside the allowed login range
-# Default: 0 (disabled)
-AiPlayerbot.RandomBotLogoutOutsideLoginRange = 0
 
 # Sync max randombot level with max level of online players
 # Default: 0 (disabled)
