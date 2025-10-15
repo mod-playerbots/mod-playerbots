@@ -86,10 +86,12 @@ bool hasLosToWater(Player* bot, float wx, float wy, float waterZ)
         VMAP::ModelIgnoreFlags::Nothing);
 }
 
-WorldPosition findLandFromPosition(Player* bot, float startDistance, float endDistance, float increment, float orientation, WorldPosition targetPos, bool checkLOS = true)
+WorldPosition findLandFromPosition(PlayerbotAI* botAI, float startDistance, float endDistance, float increment, float orientation, WorldPosition targetPos, float fishingSearchWindow, bool checkLOS = true)
 {
+    Player* bot = botAI->GetBot();
     Map* map = bot->GetMap();
     uint32 phaseMask = bot->GetPhaseMask();
+    Player* master = botAI->GetMaster();
 
     float targetX = targetPos.GetPositionX();
     float targetY = targetPos.GetPositionY();
@@ -119,6 +121,11 @@ WorldPosition findLandFromPosition(Player* bot, float startDistance, float endDi
                 if (!hasLOS)
                     continue;
             }
+            if (master && botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT))
+            {
+                if (master->GetExactDist2d(bot) > fishingSearchWindow - 0.5)
+                    continue;
+            }
             return WorldPosition(bot->GetMapId(), checkX, checkY, groundZ);
         }
         dist += increment;
@@ -127,10 +134,12 @@ WorldPosition findLandFromPosition(Player* bot, float startDistance, float endDi
     return WorldPosition();
 }
 
-WorldPosition findLandRadialFromPosition (Player* bot, WorldPosition targetPos, float startDistance, float endDistance, float increment, int angles = 16)
+WorldPosition findLandRadialFromPosition (PlayerbotAI* botAI, WorldPosition targetPos, float startDistance, float endDistance, float increment, float fishingSearchWindow, int angles = 16)
 {
+    Player* bot = botAI->GetBot();
     const int numDirections = angles;
     std::vector<WorldPosition> boundaryPoints;
+    Player* master = botAI->GetMaster();
 
     Map* map = bot->GetMap();
     uint32 phaseMask = bot->GetPhaseMask();
@@ -154,6 +163,11 @@ WorldPosition findLandRadialFromPosition (Player* bot, WorldPosition targetPos, 
 
             if (map->isInLineOfSight(checkX, checkY, groundZ, targetX, targetY, targetZ, phaseMask, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::Nothing))
             {
+                if (master && botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT))
+                {
+                    if (master->GetExactDist2d(bot) > fishingSearchWindow - 0.5)
+                        continue;
+                }
                 boundaryPoints.emplace_back(WorldPosition(bot->GetMapId(), checkX, checkY, groundZ));
             }
         }
@@ -298,17 +312,9 @@ bool MoveNearWaterAction::isPossible()
         if (distance > MAX_DISTANCE_TO_WATER || distance < MIN_DISTANCE_TO_WATER)
         {
             float angle = bot->GetAngle(fishingHole.GetPositionX(), fishingHole.GetPositionY());
-            WorldPosition landSpot = findLandRadialFromPosition(bot, fishingHole, MIN_DISTANCE_TO_WATER, MAX_DISTANCE_TO_WATER, SEARCH_INCREMENT, 32);
+            WorldPosition landSpot = findLandRadialFromPosition(botAI, fishingHole, MIN_DISTANCE_TO_WATER, MAX_DISTANCE_TO_WATER, SEARCH_INCREMENT, fishingSearchWindow, 32);
             if (IsValid(landSpot))
             {
-                if (master && botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT))
-                {
-                    if (master->GetExactDist2d(bot) < fishingSearchWindow)
-                        SET_AI_VALUE(WorldPosition, "fishing spot", landSpot);
-                        FishingSpotValue* fishingSpotValueObject =  (FishingSpotValue*)context->GetValue<WorldPosition>("fishing spot"); 
-
-                        return true;
-                }
                 SET_AI_VALUE(WorldPosition, "fishing spot", landSpot);
                 return true;
             }
@@ -328,21 +334,13 @@ bool MoveNearWaterAction::isPossible()
         bool hasLOS = bot->IsWithinLOS(water.GetPositionX(), water.GetPositionY(), water.GetPositionZ());
 
         float angle = bot->GetAngle(water.GetPositionX(), water.GetPositionY());
-        WorldPosition landSpot = findLandFromPosition(bot, 0.0f,
+        WorldPosition landSpot = findLandFromPosition(botAI, 0.0f,
             MAX_DISTANCE_TO_WATER, 1.0f,
-            angle, water, false);
+            angle, water, fishingSearchWindow,false);
 
         if (IsValid(landSpot))
         {
-            if (master && botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT))
-            {
-                if (master->GetExactDist2d(bot) < fishingSearchWindow - 0.5f)
-                SET_AI_VALUE(WorldPosition, "fishing spot", landSpot);
-                FishingSpotValue* fishingSpotValueObject =  (FishingSpotValue*)context->GetValue<WorldPosition>("fishing spot"); 
-                return true;
-            }
             SET_AI_VALUE(WorldPosition, "fishing spot", landSpot);
-            FishingSpotValue* fishingSpotValueObject =  (FishingSpotValue*)context->GetValue<WorldPosition>("fishing spot"); 
             return true;
         }
     }
