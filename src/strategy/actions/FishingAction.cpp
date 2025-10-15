@@ -97,8 +97,7 @@ WorldPosition findLandFromPosition(PlayerbotAI* botAI, float startDistance, floa
     float targetY = targetPos.GetPositionY();
     float targetZ = targetPos.GetPositionZ();
 
-    float dist = startDistance;
-    while (dist <= endDistance) 
+    for (float dist = startDistance; dist <= endDistance, dist += increment;) 
     {
         //step backwards from pos to bot to find edge of shore.
         float checkX = targetX - dist * cos(orientation);
@@ -128,7 +127,6 @@ WorldPosition findLandFromPosition(PlayerbotAI* botAI, float startDistance, floa
             }
             return WorldPosition(bot->GetMapId(), checkX, checkY, groundZ);
         }
-        dist += increment;
     }
 
     return WorldPosition();
@@ -147,8 +145,8 @@ WorldPosition findLandRadialFromPosition (PlayerbotAI* botAI, WorldPosition targ
     float targetX = targetPos.GetPositionX();
     float targetY = targetPos.GetPositionY();
     float targetZ = targetPos.GetPositionZ();
-    float dist = startDistance;
-    while (dist <= endDistance)
+
+    for (float dist = startDistance, dist <= endDistance, dist += increment)
     {
         for (int i = 0; i < numDirections; ++i) 
         {
@@ -171,11 +169,9 @@ WorldPosition findLandRadialFromPosition (PlayerbotAI* botAI, WorldPosition targ
                 boundaryPoints.emplace_back(WorldPosition(bot->GetMapId(), checkX, checkY, groundZ));
             }
         }
-        
+
         if (!boundaryPoints.empty())
             break;
-        
-        dist += increment;
     }
 
     if (boundaryPoints.empty())
