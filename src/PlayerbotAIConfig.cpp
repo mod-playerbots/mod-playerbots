@@ -57,7 +57,7 @@ void LoadListString(std::string const value, T& list)
 
 bool PlayerbotAIConfig::Initialize()
 {
-    LOG_INFO("server.loading", "Initializing AI Playerbots by ike3, based on the original Playerbots by blueboy");
+    LOG_INFO("server.loading", "Initializing mod-playerbots, based on AI Playerbots by ike and the original Playerbots by blueboy");
 
     enabled = sConfigMgr->GetOption<bool>("AiPlayerbot.Enabled", true);
     if (!enabled)
@@ -678,7 +678,7 @@ bool PlayerbotAIConfig::Initialize()
     LoadList<std::vector<uint32>>(sConfigMgr->GetOption<std::string>("AiPlayerbot.ExcludedHunterPetFamilies", ""), excludedHunterPetFamilies);
 
     LOG_INFO("server.loading", "---------------------------------------");
-    LOG_INFO("server.loading", "        AI Playerbots initialized       ");
+    LOG_INFO("server.loading", "       mod-playerbots initialized      ");
     LOG_INFO("server.loading", "---------------------------------------");
 
     return true;
