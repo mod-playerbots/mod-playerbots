@@ -7,6 +7,7 @@
 #define _PLAYERBOT_FISHVALUES_H
 
 #include "Value.h"
+#include "TravelMgr.h"
 #include "NamedObjectContext.h"
 
 class PlayerbotAI;
@@ -25,11 +26,23 @@ public:
     bool Calculate() override;
 };
 
-class FishingSpotValue : public WorldPositionValue
+class FishingSpotValue : public ManualSetValue<WorldPosition>
 {
 public:
     FishingSpotValue(PlayerbotAI* botAI, WorldPosition const pos = WorldPosition(), std::string const name = "fishing spot")
-     : WorldPositionValue(botAI, pos, name) {};
+     : ManualSetValue<WorldPosition>(botAI, pos, name) {}
+
+    void Set(WorldPosition val) override
+    {
+        value = val;
+        SetTime = getMSTime();
+    }
+    uint32 lastUpdated() const {return SetTime;}
+    bool isStale(uint32 maxDuration) const { return getMSTime() - SetTime > maxDuration; }
+
+private:
+    uint32 SetTime = 0;
 };
+
 
 #endif

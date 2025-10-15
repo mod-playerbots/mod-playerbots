@@ -45,10 +45,6 @@ public:
     bool Execute(Event event) override;
     bool isUseful() override;
     bool isPossible() override;
-
-private:
-    WorldPosition fishingPosition;
-    WorldPosition landSpot = WorldPosition();
 };
 
 class UseBobber : public Action
