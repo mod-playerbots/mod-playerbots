@@ -97,7 +97,7 @@ WorldPosition findLandFromPosition(PlayerbotAI* botAI, float startDistance, floa
     float targetY = targetPos.GetPositionY();
     float targetZ = targetPos.GetPositionZ();
 
-    for (float dist = startDistance; dist <= endDistance; dist += increment;) 
+    for (float dist = startDistance; dist <= endDistance; dist += increment) 
     {
         //step backwards from pos to bot to find edge of shore.
         float checkX = targetX - dist * cos(orientation);
@@ -122,7 +122,7 @@ WorldPosition findLandFromPosition(PlayerbotAI* botAI, float startDistance, floa
             }
             if (master && botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT))
             {
-                if (master->GetExactDist2d(bot) > fishingSearchWindow - 0.5)
+                if (master->GetDistance(checkX, checkY, groundZ) > fishingSearchWindow - 0.5)
                     continue;
             }
             return WorldPosition(bot->GetMapId(), checkX, checkY, groundZ);
@@ -163,7 +163,7 @@ WorldPosition findLandRadialFromPosition (PlayerbotAI* botAI, WorldPosition targ
             {
                 if (master && botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT))
                 {
-                    if (master->GetExactDist2d(bot) > fishingSearchWindow - 0.5)
+                    if (master->GetDistance(checkX, checkY, groundZ) > fishingSearchWindow - 0.5)
                         continue;
                 }
                 boundaryPoints.emplace_back(WorldPosition(bot->GetMapId(), checkX, checkY, groundZ));
@@ -326,7 +326,6 @@ bool MoveNearWaterAction::isPossible()
     
     if (IsValid(water))
     {
-        float distance = bot->GetExactDist2d(&water);
         bool hasLOS = bot->IsWithinLOS(water.GetPositionX(), water.GetPositionY(), water.GetPositionZ());
 
         float angle = bot->GetAngle(water.GetPositionX(), water.GetPositionY());
