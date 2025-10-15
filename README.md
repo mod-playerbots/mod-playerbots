@@ -1,7 +1,7 @@
 <p align="center">
-    <a href="https://github.com/liyunfan1223/mod-playerbots/blob/master/README.md">English</a>
+    <a href="https://github.com/mod-playerbots/mod-playerbots/blob/master/README.md">English</a>
     |
-    <a href="https://github.com/liyunfan1223/mod-playerbots/blob/master/README_CN.md">中文</a>
+    <a href="https://github.com/mod-playerbots/mod-playerbots/blob/master/README_CN.md">中文</a>
     |
     <a href="https://github.com/brighton-chi/mod-playerbots/blob/readme/README_ES.md">Español</a>
 </p>
@@ -12,13 +12,13 @@
 </div>
 
 <div align="center">
-    <img src="https://github.com/liyunfan1223/mod-playerbots/actions/workflows/macos_build.yml/badge.svg">
-    <img src="https://github.com/liyunfan1223/mod-playerbots/actions/workflows/core_build.yml/badge.svg">
-    <img src="https://github.com/liyunfan1223/mod-playerbots/actions/workflows/windows_build.yml/badge.svg">
+    <img src="https://github.com/mod-playerbots/mod-playerbots/actions/workflows/macos_build.yml/badge.svg">
+    <img src="https://github.com/mod-playerbots/mod-playerbots/actions/workflows/core_build.yml/badge.svg">
+    <img src="https://github.com/mod-playerbots/mod-playerbots/actions/workflows/windows_build.yml/badge.svg">
 </div>
 
 # Playerbots Module
-`mod-playerbots` is an [AzerothCore](https://www.azerothcore.org/) module that adds player-like bots to a server. The project is based off [IKE3's Playerbots](https://github.com/ike3/mangosbot) and requires a custom branch of AzerothCore to compile and run: [liyunfan1223/azerothcore-wotlk/tree/Playerbot](https://github.com/liyunfan1223/azerothcore-wotlk/tree/Playerbot).
+`mod-playerbots` is an [AzerothCore](https://www.azerothcore.org/) module that adds player-like bots to a server. The project is based off [IKE3's Playerbots](https://github.com/ike3/mangosbot) and requires a custom branch of AzerothCore to compile and run: [mod-playerbots/azerothcore-wotlk/tree/Playerbot](https://github.com/mod-playerbots/azerothcore-wotlk/tree/Playerbot).
 
 Features include:
 
@@ -28,7 +28,7 @@ Features include:
 - Highly configurable settings to define how bots behave;
 - Excellent performance, even when running thousands of bots.
 
-**This project is still under development**. If you encounter any errors or experience crashes, we kindly request that you [report them as GitHub issues](https://github.com/liyunfan1223/mod-playerbots/issues/new?template=bug_report.md). Your valuable feedback will help us improve this project collaboratively.
+**This project is still under development**. If you encounter any errors or experience crashes, we kindly request that you [report them as GitHub issues](https://github.com/mod-playerbots/mod-playerbots/issues/new?template=bug_report.md). Your valuable feedback will help us improve this project collaboratively.
 
 `mod-playerbots` has a **[Discord server](https://discord.gg/NQm5QShwf9)** where you can discuss the project, ask questions, and get involved in the community!
 
@@ -36,12 +36,12 @@ Features include:
 
 ### Classic Installation
 
-As noted above, `mod-playerbots` requires a custom branch of AzerothCore: [liyunfan1223/azerothcore-wotlk/tree/Playerbot](https://github.com/liyunfan1223/azerothcore-wotlk/tree/Playerbot). To install the module, simply run:
+As noted above, `mod-playerbots` requires a custom branch of AzerothCore: [mod-playerbots/azerothcore-wotlk/tree/Playerbot](https://github.com/mod-playerbots/azerothcore-wotlk/tree/Playerbot). To install the module, simply run:
 
 ```bash
-git clone https://github.com/liyunfan1223/azerothcore-wotlk.git --branch=Playerbot
+git clone https://github.com/mod-playerbots/azerothcore-wotlk.git --branch=Playerbot
 cd azerothcore-wotlk/modules
-git clone https://github.com/liyunfan1223/mod-playerbots.git --branch=master
+git clone https://github.com/mod-playerbots/mod-playerbots.git --branch=master
 ```
 
 For more information, refer to the [AzerothCore Installation Guide](https://www.azerothcore.org/wiki/installation) and [Installing a Module](https://www.azerothcore.org/wiki/installing-a-module) pages.
@@ -51,9 +51,9 @@ For more information, refer to the [AzerothCore Installation Guide](https://www.
 **Docker installation is considered experimental.** To install the module on a Docker installation, run:
 
 ```bash
-git clone https://github.com/liyunfan1223/azerothcore-wotlk.git --branch=Playerbot
+git clone https://github.com/mod-playerbots/azerothcore-wotlk.git --branch=Playerbot
 cd azerothcore-wotlk/modules
-git clone https://github.com/liyunfan1223/mod-playerbots.git --branch=master
+git clone https://github.com/mod-playerbots/mod-playerbots.git --branch=master
 ```
 
 Afterwards, create a `docker-compose.override.yml` file in the `azerothcore-wotlk` directory. This override file allows for mounting the modules directory to the `ac-worldserver` service which is required for it to run. Put the following inside and save:
@@ -77,21 +77,21 @@ services:
       - ./modules:/azerothcore/modules:ro
 ```
 
-For example, to double the experience gain rate per kill, take the setting `Rate.XP.Kill = 1` from [woldserver.conf](https://github.com/liyunfan1223/azerothcore-wotlk/blob/Playerbot/src/server/apps/worldserver/worldserver.conf.dist), convert it to an environment variable, and change it to the desired setting in the override file to get `AC_RATE_XP_KILL: "2"`. If you wanted to disable random bots from logging in automatically, take the `AiPlayerbot.RandomBotAutologin = 1` setting from [playerbots.conf](https://github.com/liyunfan1223/mod-playerbots/blob/master/conf/playerbots.conf.dist) and do the same to get `AC_AI_PLAYERBOT_RANDOM_BOT_AUTOLOGIN: "0"`. For more information on how to configure Azerothcore, Playerbots, and other module settings as environment variables in Docker Compose, see the "Configuring AzerothCore in Containers" section in the [Install With Docker](https://www.azerothcore.org/wiki/install-with-docker) guide.
+For example, to double the experience gain rate per kill, take the setting `Rate.XP.Kill = 1` from [woldserver.conf](https://github.com/mod-playerbots/azerothcore-wotlk/blob/Playerbot/src/server/apps/worldserver/worldserver.conf.dist), convert it to an environment variable, and change it to the desired setting in the override file to get `AC_RATE_XP_KILL: "2"`. If you wanted to disable random bots from logging in automatically, take the `AiPlayerbot.RandomBotAutologin = 1` setting from [playerbots.conf](https://github.com/mod-playerbots/mod-playerbots/blob/master/conf/playerbots.conf.dist) and do the same to get `AC_AI_PLAYERBOT_RANDOM_BOT_AUTOLOGIN: "0"`. For more information on how to configure Azerothcore, Playerbots, and other module settings as environment variables in Docker Compose, see the "Configuring AzerothCore in Containers" section in the [Install With Docker](https://www.azerothcore.org/wiki/install-with-docker) guide.
 
-Before building, consider setting the database password. One way to do this is to create a `.env` file in the root `azerothcore-wotlk` directory using the [template](https://github.com/liyunfan1223/azerothcore-wotlk/blob/Playerbot/conf/dist/env.docker). This file also allows you to set the user and group Docker uses for the services in case you run into any permissions issues, which are the most common cause for Docker installation problems.
+Before building, consider setting the database password. One way to do this is to create a `.env` file in the root `azerothcore-wotlk` directory using the [template](https://github.com/mod-playerbots/azerothcore-wotlk/blob/Playerbot/conf/dist/env.docker). This file also allows you to set the user and group Docker uses for the services in case you run into any permissions issues, which are the most common cause for Docker installation problems.
 
 Use `docker compose up -d --build` to build and run the server. For more information, including how to create an account and taking backups, refer to the [Install With Docker](https://www.azerothcore.org/wiki/install-with-docker) page.
 
 ## Documentation
 
-The [Playerbots Wiki](https://github.com/liyunfan1223/mod-playerbots/wiki) contains an extensive overview of addons, commands, raids with programmed bot strategies, and recommended performance configurations. Please note that documentation may be incomplete or out-of-date in some sections. Contributions are welcome.
+The [Playerbots Wiki](https://github.com/mod-playerbots/mod-playerbots/wiki) contains an extensive overview of addons, commands, raids with programmed bot strategies, and recommended performance configurations. Please note that documentation may be incomplete or out-of-date in some sections. Contributions are welcome.
 
 ## Frequently Asked Questions
 
 - **Why aren't my bots casting spells?** Please make sure that the necessary English DBC file (enUS) is present.
 - **What platforms are supported?** We support Ubuntu, Windows, and macOS. Other Linux distros may work, but will not receive support.
-- **Why isn't my source compiling?** Please ensure that you are compiling with the required [custom branch of AzerothCore](https://github.com/liyunfan1223/azerothcore-wotlk/tree/Playerbot). Additionally, please [check the build status of our CI](https://github.com/liyunfan1223/mod-playerbots/actions). If the latest build is failing, rever to the last successful commit until we address the issue.
+- **Why isn't my source compiling?** Please ensure that you are compiling with the required [custom branch of AzerothCore](https://github.com/mod-playerbots/azerothcore-wotlk/tree/Playerbot). Additionally, please [check the build status of our CI](https://github.com/mod-playerbots/mod-playerbots/actions). If the latest build is failing, rever to the last successful commit until we address the issue.
 
 ## Addons
 
@@ -107,6 +107,6 @@ Typically, bots are controlled via chat commands. For larger bot groups, this ca
 
 Also, a thank you to the many contributors who've helped build this project:
 
-<a href="https://github.com/liyunfan1223/mod-playerbots/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=liyunfan1223/mod-playerbots" />
+<a href="https://github.com/mod-playerbots/mod-playerbots/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=mod-playerbots/mod-playerbots" />
 </a>

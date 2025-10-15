@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU GPL v2 license, you may redistribute it
- * and/or modify it under version 2 of the License, or (at your option), any later version.
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
 #ifndef PLAYERBOT_RELEASESPIRITACTION_H
@@ -38,7 +38,6 @@ private:
     bool ShouldAutoRelease() const;
     bool ShouldDelayBattlegroundRelease() const;
 
-    inline static std::unordered_map<uint32_t, time_t> m_botReleaseTimes;
     time_t m_bgGossipTime = 0;
 };
 
