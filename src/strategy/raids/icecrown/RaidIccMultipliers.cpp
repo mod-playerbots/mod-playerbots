@@ -472,7 +472,6 @@ float IccBqlMultiplier::GetValue(Action* action)
         else
             return 0.0f;  // Cancel all other actions when we need to handle Swarming Shadows
     }
-    return 1.0f;
 
     if ((boss->GetExactDist2d(ICC_BQL_TANK_POSITION.GetPositionX(), ICC_BQL_TANK_POSITION.GetPositionY()) > 10.0f) &&
         botAI->IsRanged(bot) && !((boss->GetPositionZ() - bot->GetPositionZ()) > 5.0f))
@@ -481,6 +480,7 @@ float IccBqlMultiplier::GetValue(Action* action)
             return 0.0f;
     }
 
+    return 1.0f;
 }
 
 //VDW
