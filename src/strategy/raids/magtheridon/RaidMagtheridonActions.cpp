@@ -507,7 +507,7 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
         return false;
     }
 
-    const int spreadWaitSeconds = 8;
+    const uint8 spreadWaitSeconds = 8;
     auto it = magtheridonSpreadWaitTimer.find(bot->GetMapId());
     if (it != magtheridonSpreadWaitTimer.end())
     {
@@ -551,8 +551,8 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
     if (!initialPositions.count(bot->GetGUID()))
     {
         auto it = std::find(members.begin(), members.end(), bot);
-        uint32 botIndex = (it != members.end()) ? std::distance(members.begin(), it) : 0;
-        uint32 count = members.size();
+        uint8 botIndex = (it != members.end()) ? std::distance(members.begin(), it) : 0;
+        uint8 count = members.size();
 
         float angle = 2 * M_PI * botIndex / count;
         float radius = static_cast<float>(rand()) / RAND_MAX * maxSpreadRadius;

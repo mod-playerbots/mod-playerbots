@@ -43,7 +43,7 @@ float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
     if (!magtheridon || magtheridon->HasAura(SPELL_SHADOW_CAGE) || !group)
         return 1.0f;
 
-    const int aggroWaitSeconds = 8;
+    const uint8 aggroWaitSeconds = 8;
     auto it = magtheridonAggroWaitTimer.find(bot->GetMapId());
     if (it != magtheridonAggroWaitTimer.end())
     {
