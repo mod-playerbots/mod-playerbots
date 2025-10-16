@@ -20,13 +20,13 @@ bool MagtheridonHellfireChannelerMainTankAction::Execute(Event event)
     Creature* channelerCircle = GetChanneler(bot, EAST_CHANNELER);
 
     if (channelerSquare && channelerSquare->IsAlive())
-        MarkTargetWithSquare(channelerSquare);
+        MarkTargetWithSquare(bot, channelerSquare);
 
     if (channelerStar && channelerStar->IsAlive())
-        MarkTargetWithStar(channelerStar);
+        MarkTargetWithStar(bot, channelerStar);
 
     if (channelerCircle && channelerCircle->IsAlive())
-        MarkTargetWithCircle(*channelerCircle);
+        MarkTargetWithCircle(bot, channelerCircle);
 
     // After first three channelers are dead, wait for Magtheridon to activate
     if ((!channelerSquare || !channelerSquare->IsAlive()) &&
@@ -86,7 +86,7 @@ bool MagtheridonHellfireChannelerNWChannelerTankAction::Execute(Event event)
     if (!channelerDiamond || !channelerDiamond->IsAlive())
         return false;
 
-    MarkTargetWithDiamond(channelerDiamond);
+    MarkTargetWithDiamond(bot, channelerDiamond);
 
     if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "diamond" ||
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != channelerDiamond)
@@ -130,7 +130,7 @@ bool MagtheridonHellfireChannelerNEChannelerTankAction::Execute(Event event)
     if (!channelerTriangle || !channelerTriangle->IsAlive())
         return false;
 
-    MarkTargetWithTriangle(channelerTriangle);
+    MarkTargetWithTriangle(bot, channelerTriangle);
 
     if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "triangle" ||
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != channelerTriangle)
@@ -379,8 +379,7 @@ bool MagtheridonBurningAbyssalWarlockCCAction::Execute(Event event)
     }
 
     std::vector<Player*> warlocks;
-    Group* group = bot->GetGroup();
-    if (group)
+    if (Group* group = bot->GetGroup())
     {
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
@@ -425,7 +424,7 @@ bool MagtheridonPositionBossAction::Execute(Event event)
     if (!magtheridon)
         return false;
 
-    MarkTargetWithCross(magtheridon);
+    MarkTargetWithCross(bot, magtheridon);
 
     Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
     std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
@@ -493,9 +492,8 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
         }
     }
 
-    Group* group = bot->GetGroup();
     std::vector<Player*> members;
-    if (group)
+    if (Group* group = bot->GetGroup())
     {
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {

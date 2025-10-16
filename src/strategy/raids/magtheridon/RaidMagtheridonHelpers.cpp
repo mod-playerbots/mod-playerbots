@@ -34,7 +34,7 @@ Creature* GetChanneler(Player* bot, uint32 dbGuid)
     return creature;
 }
 
-void MarkTargetWithIcon(Unit* target, uint8 iconId)
+void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
 {
     if (!target)
         return;
@@ -49,34 +49,34 @@ void MarkTargetWithIcon(Unit* target, uint8 iconId)
     }
 }
 
-void MarkTargetWithSquare(Unit* target)
+void MarkTargetWithSquare(Player* bot, Unit* target)
 {
-    MarkTargetWithIcon(target, RtiTargetValue::squareIndex);
+    MarkTargetWithIcon(bot, target, RtiTargetValue::squareIndex);
 }
 
-void MarkTargetWithStar(Unit* target)
+void MarkTargetWithStar(Player* bot, Unit* target)
 {
-    MarkTargetWithIcon(target, RtiTargetValue::starIndex);
+    MarkTargetWithIcon(bot, target, RtiTargetValue::starIndex);
 }
 
-void MarkTargetWithCircle(Unit* target)
+void MarkTargetWithCircle(Player* bot, Unit* target)
 {
-    MarkTargetWithIcon(target, RtiTargetValue::circleIndex);
+    MarkTargetWithIcon(bot, target, RtiTargetValue::circleIndex);
 }
 
-void MarkTargetWithDiamond(Unit* target)
+void MarkTargetWithDiamond(Player* bot, Unit* target)
 {
-    MarkTargetWithIcon(target, RtiTargetValue::diamondIndex);
+    MarkTargetWithIcon(bot, target, RtiTargetValue::diamondIndex);
 }
 
-void MarkTargetWithTriangle(Unit* target)
+void MarkTargetWithTriangle(Player* bot, Unit* target)
 {
-    MarkTargetWithIcon(target, RtiTargetValue::triangleIndex);
+    MarkTargetWithIcon(bot, target, RtiTargetValue::triangleIndex);
 }
 
-void MarkTargetWithCross(Unit* target)
+void MarkTargetWithCross(Player* bot, Unit* target)
 {
-    MarkTargetWithIcon(target, RtiTargetValue::crossIndex);
+    MarkTargetWithIcon(bot, target, RtiTargetValue::crossIndex);
 }
 
 const std::vector<uint32> MANTICRON_CUBE_DB_GUIDS = { 43157, 43158, 43159, 43160, 43161 };

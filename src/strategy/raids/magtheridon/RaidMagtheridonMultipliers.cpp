@@ -15,8 +15,7 @@ using namespace MagtheridonHelpers;
 float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    Group* group = bot->GetGroup();
-    if (!magtheridon || !group)
+    if (!magtheridon)
         return 1.0f;
 
     if (magtheridon->HasUnitState(UNIT_STATE_CASTING) &&
@@ -39,8 +38,7 @@ float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
 float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    Group* group = bot->GetGroup();
-    if (!magtheridon || magtheridon->HasAura(SPELL_SHADOW_CAGE) || !group)
+    if (!magtheridon || magtheridon->HasAura(SPELL_SHADOW_CAGE))
         return 1.0f;
 
     const uint8 aggroWaitSeconds = 8;
@@ -66,8 +64,7 @@ float MagtheridonDisableOffTankAssistMultiplier::GetValue(Action* action)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     Unit* channeler = AI_VALUE2(Unit*, "find target", "hellfire channeler");
-    Group* group = bot->GetGroup();
-    if (!magtheridon || !channeler || !channeler->IsAlive() || !group)
+    if (!magtheridon || !channeler || !channeler->IsAlive())
         return 1.0f;
 
     if ((botAI->IsAssistTankOfIndex(bot, 0) || botAI->IsAssistTankOfIndex(bot, 1)) && 
