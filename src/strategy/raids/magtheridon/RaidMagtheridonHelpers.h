@@ -33,7 +33,7 @@ enum MagtheridonNPCs
 
 enum MagtheridonObjects
 {
-    GAMEOBJECT_BLAZE       = 181832,
+    GO_BLAZE       = 181832,
 };
 
 namespace MagtheridonHelpers
@@ -45,14 +45,14 @@ constexpr uint32 NORTHWEST_CHANNELER = 90980;
 constexpr uint32 EAST_CHANNELER      = 90982;
 constexpr uint32 NORTHEAST_CHANNELER = 90981;
 
-inline constexpr uint8 squareIcon = RtiTargetValue::squareIndex;
-inline constexpr uint8 starIcon = RtiTargetValue::starIndex;
-inline constexpr uint8 circleIcon = RtiTargetValue::circleIndex;
-inline constexpr uint8 diamondIcon = RtiTargetValue::diamondIndex;
-inline constexpr uint8 triangleIcon = RtiTargetValue::triangleIndex;
-inline constexpr uint8 crossIcon = RtiTargetValue::crossIndex;
-
 Creature* GetChanneler(Player* bot, uint32 dbGuid);
+void MarkTargetWithIcon(Unit* target, uint8 iconId);
+void MarkTargetWithSquare(Unit* target);
+void MarkTargetWithStar(Unit* target);
+void MarkTargetWithCircle(Unit* target);
+void MarkTargetWithDiamond(Unit* target);
+void MarkTargetWithTriangle(Unit* target);
+void MarkTargetWithCross(Unit* target);
 bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float z);
 
 struct Location

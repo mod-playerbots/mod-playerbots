@@ -9,6 +9,16 @@
 namespace MagtheridonHelpers
 {
 
+namespace MagtheridonsLairLocations
+{
+    const Location WaitingForMagtheridonPosition = {  -3.312f,   1.857f, -0.406f, 3.149f };
+    const Location MagtheridonTankPosition =       {  23.624f,   1.905f, -0.406f, 3.189f };
+    const Location NWChannelerTankPosition =       { -11.764f,  30.818f, -0.411f,   0.0f };
+    const Location NEChannelerTankPosition =       { -12.490f, -26.211f, -0.411f,   0.0f };
+    const Location RangedSpreadPosition =          { -14.890f,   1.995f, -0.406f,   0.0f };
+    const Location HealerSpreadPosition =          {  -2.265f,   1.874f, -0.404f,   0.0f };
+}
+
 // Identify channelers by their database GUIDs
 Creature* GetChanneler(Player* bot, uint32 dbGuid)
 {
@@ -24,14 +34,49 @@ Creature* GetChanneler(Player* bot, uint32 dbGuid)
     return creature;
 }
 
-namespace MagtheridonsLairLocations
+void MarkTargetWithIcon(Unit* target, uint8 iconId)
 {
-    const Location WaitingForMagtheridonPosition = {  -3.312f,   1.857f, -0.406f, 3.149f };
-    const Location MagtheridonTankPosition =       {  23.624f,   1.905f, -0.406f, 3.189f };
-    const Location NWChannelerTankPosition =       { -11.764f,  30.818f, -0.411f,   0.0f };
-    const Location NEChannelerTankPosition =       { -12.490f, -26.211f, -0.411f,   0.0f };
-    const Location RangedSpreadPosition =          { -14.890f,   1.995f, -0.406f,   0.0f };
-    const Location HealerSpreadPosition =          {  -2.265f,   1.874f, -0.404f,   0.0f };
+    if (!target)
+        return;
+
+    if (Group* group = bot->GetGroup())
+    {
+        ObjectGuid currentGuid = group->GetTargetIcon(iconId);
+        if (currentGuid != target->GetGUID())
+        {
+            group->SetTargetIcon(iconId, bot->GetGUID(), target->GetGUID());
+        }
+    }
+}
+
+void MarkTargetWithSquare(Unit* target)
+{
+    MarkTargetWithIcon(target, RtiTargetValue::squareIndex);
+}
+
+void MarkTargetWithStar(Unit* target)
+{
+    MarkTargetWithIcon(target, RtiTargetValue::starIndex);
+}
+
+void MarkTargetWithCircle(Unit* target)
+{
+    MarkTargetWithIcon(target, RtiTargetValue::circleIndex);
+}
+
+void MarkTargetWithDiamond(Unit* target)
+{
+    MarkTargetWithIcon(target, RtiTargetValue::diamondIndex);
+}
+
+void MarkTargetWithTriangle(Unit* target)
+{
+    MarkTargetWithIcon(target, RtiTargetValue::triangleIndex);
+}
+
+void MarkTargetWithCross(Unit* target)
+{
+    MarkTargetWithIcon(target, RtiTargetValue::crossIndex);
 }
 
 const std::vector<uint32> MANTICRON_CUBE_DB_GUIDS = { 43157, 43158, 43159, 43160, 43161 };
@@ -144,7 +189,7 @@ bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, floa
     for (const auto& goGuid : gos)
     {
         GameObject* go = botAI->GetGameObject(goGuid);
-        if (!go || go->GetEntry() != GAMEOBJECT_BLAZE)
+        if (!go || go->GetEntry() != GO_BLAZE)
             continue;
         
         float dist = std::sqrt(std::pow(x - go->GetPositionX(), 2) + std::pow(y - go->GetPositionY(), 2));

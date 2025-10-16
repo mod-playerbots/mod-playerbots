@@ -15,29 +15,18 @@ bool MagtheridonHellfireChannelerMainTankAction::Execute(Event event)
     if (!magtheridon)
         return false;
 
-    Group* group = bot->GetGroup();
     Creature* channelerSquare = GetChanneler(bot, SOUTH_CHANNELER);
     Creature* channelerStar   = GetChanneler(bot, WEST_CHANNELER);
     Creature* channelerCircle = GetChanneler(bot, EAST_CHANNELER);
 
     if (channelerSquare && channelerSquare->IsAlive())
-    {
-        ObjectGuid currentIconGuid = group->GetTargetIcon(squareIcon);
-        if (currentIconGuid.IsEmpty() || currentIconGuid != channelerSquare->GetGUID())
-            group->SetTargetIcon(squareIcon, bot->GetGUID(), channelerSquare->GetGUID());
-    }
+        MarkTargetWithSquare(channelerSquare);
+
     if (channelerStar && channelerStar->IsAlive())
-    {
-        ObjectGuid currentIconGuid = group->GetTargetIcon(starIcon);
-        if (currentIconGuid.IsEmpty() || currentIconGuid != channelerStar->GetGUID())
-            group->SetTargetIcon(starIcon, bot->GetGUID(), channelerStar->GetGUID());
-    }
+        MarkTargetWithStar(channelerStar);
+
     if (channelerCircle && channelerCircle->IsAlive())
-    {
-        ObjectGuid currentIconGuid = group->GetTargetIcon(circleIcon);
-        if (currentIconGuid.IsEmpty() || currentIconGuid != channelerCircle->GetGUID())
-            group->SetTargetIcon(circleIcon, bot->GetGUID(), channelerCircle->GetGUID());
-    }
+        MarkTargetWithCircle(*channelerCircle);
 
     // After first three channelers are dead, wait for Magtheridon to activate
     if ((!channelerSquare || !channelerSquare->IsAlive()) &&
@@ -93,16 +82,11 @@ bool MagtheridonHellfireChannelerMainTankAction::Execute(Event event)
 
 bool MagtheridonHellfireChannelerNWChannelerTankAction::Execute(Event event)
 {
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (!magtheridon)
+    Creature* channelerDiamond = GetChanneler(bot, NORTHWEST_CHANNELER);
+    if (!channelerDiamond || !channelerDiamond->IsAlive())
         return false;
 
-    Group* group = bot->GetGroup();
-    Creature* channelerDiamond = GetChanneler(bot, NORTHWEST_CHANNELER);
-
-    ObjectGuid currentIconGuid = group->GetTargetIcon(diamondIcon);
-    if (currentIconGuid.IsEmpty() || currentIconGuid != channelerDiamond->GetGUID())
-        group->SetTargetIcon(diamondIcon, bot->GetGUID(), channelerDiamond->GetGUID());
+    MarkTargetWithDiamond(channelerDiamond);
 
     if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "diamond" ||
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != channelerDiamond)
@@ -142,16 +126,11 @@ bool MagtheridonHellfireChannelerNWChannelerTankAction::Execute(Event event)
 
 bool MagtheridonHellfireChannelerNEChannelerTankAction::Execute(Event event)
 {
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (!magtheridon)
-        return false;
-    
-    Group* group = bot->GetGroup();
     Creature* channelerTriangle = GetChanneler(bot, NORTHEAST_CHANNELER);
+    if (!channelerTriangle || !channelerTriangle->IsAlive())
+        return false;
 
-    ObjectGuid currentIconGuid = group->GetTargetIcon(triangleIcon);
-    if (currentIconGuid.IsEmpty() || currentIconGuid != channelerTriangle->GetGUID())
-        group->SetTargetIcon(triangleIcon, bot->GetGUID(), channelerTriangle->GetGUID());
+    MarkTargetWithTriangle(channelerTriangle);
 
     if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "triangle" ||
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != channelerTriangle)
@@ -192,11 +171,10 @@ bool MagtheridonHellfireChannelerNEChannelerTankAction::Execute(Event event)
 // Misdirect West & East Channelers to Main Tank
 bool MagtheridonHellfireChannelerMisdirectionAction::Execute(Event event)
 {
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (!magtheridon)
-        return false;
-    
     Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
     std::vector<Player*> hunters;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -269,11 +247,7 @@ bool MagtheridonHellfireChannelerMisdirectionAction::Execute(Event event)
 }
 
 bool MagtheridonHellfireChannelerDPSPriorityAction::Execute(Event event)
-{
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (!magtheridon)
-        return false;
-    
+{ 
     // Listed in order of priority
     Creature* channelerSquare   = GetChanneler(bot, SOUTH_CHANNELER);
     Creature* channelerStar = GetChanneler(bot, WEST_CHANNELER);
@@ -366,8 +340,8 @@ bool MagtheridonHellfireChannelerDPSPriorityAction::Execute(Event event)
         return false;
     }
 
-    if (magtheridon && magtheridon->IsAlive() && 
-        !magtheridon->HasAura(SPELL_SHADOW_CAGE) &&
+    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    if (magtheridon && !magtheridon->HasAura(SPELL_SHADOW_CAGE) &&
         (!channelerSquare || !channelerSquare->IsAlive()) &&
         (!channelerStar || !channelerStar->IsAlive()) &&
         (!channelerCircle || !channelerCircle->IsAlive()) &&
@@ -394,10 +368,6 @@ bool MagtheridonHellfireChannelerDPSPriorityAction::Execute(Event event)
 // Burning Abyssals in excess of Warlocks in party will be Feared
 bool MagtheridonBurningAbyssalWarlockCCAction::Execute(Event event)
 {
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (!magtheridon)
-        return false;
-
     const GuidVector& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
 
     std::vector<Unit*> abyssals;
@@ -410,11 +380,14 @@ bool MagtheridonBurningAbyssalWarlockCCAction::Execute(Event event)
 
     std::vector<Player*> warlocks;
     Group* group = bot->GetGroup();
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (group)
     {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && member->getClass() == CLASS_WARLOCK && GET_PLAYERBOT_AI(member))
-            warlocks.push_back(member);
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive() && member->getClass() == CLASS_WARLOCK && GET_PLAYERBOT_AI(member))
+                warlocks.push_back(member);
+        }
     }
 
     int warlockIndex = -1;
@@ -452,10 +425,7 @@ bool MagtheridonPositionBossAction::Execute(Event event)
     if (!magtheridon)
         return false;
 
-    Group* group = bot->GetGroup();
-    ObjectGuid currentIconGuid = group->GetTargetIcon(crossIcon);
-    if (currentIconGuid.IsEmpty() || currentIconGuid != magtheridon->GetGUID())
-        group->SetTargetIcon(crossIcon, bot->GetGUID(), magtheridon->GetGUID());
+    MarkTargetWithCross(magtheridon);
 
     Unit* rtiTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
     std::string rtiValue = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
@@ -501,12 +471,6 @@ std::unordered_map<ObjectGuid, bool> MagtheridonSpreadRangedAction::hasReachedIn
 
 bool MagtheridonSpreadRangedAction::Execute(Event event)
 {
-    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    if (!magtheridon)
-    {
-        return false;
-    }
-
     const uint8 spreadWaitSeconds = 8;
     auto it = magtheridonSpreadWaitTimer.find(bot->GetMapId());
     if (it != magtheridonSpreadWaitTimer.end())
@@ -531,11 +495,14 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
 
     Group* group = bot->GetGroup();
     std::vector<Player*> members;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (group)
     {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive())
-            members.push_back(member);
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive())
+                members.push_back(member);
+        }
     }
 
     bool isHealer = botAI->IsHeal(bot);
