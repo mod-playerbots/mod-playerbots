@@ -13,9 +13,7 @@ bool HighKingMaulgarMaulgarTankAction::Execute(Event event)
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
     Group* group = bot->GetGroup();
 
-    ObjectGuid currentIconGuid = group->GetTargetIcon(squareIcon);
-    if (currentIconGuid.IsEmpty() || currentIconGuid != maulgar->GetGUID())
-        group->SetTargetIcon(squareIcon, bot->GetGUID(), maulgar->GetGUID());
+    MarkTargetWithSquare(maulgar);
 
     if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "square" && 
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != maulgar)
@@ -61,9 +59,7 @@ bool HighKingMaulgarOlmTankAction::Execute(Event event)
     Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
     Group* group = bot->GetGroup();
 
-    ObjectGuid currentIconGuid = group->GetTargetIcon(circleIcon);
-    if (currentIconGuid.IsEmpty() || currentIconGuid != olm->GetGUID())
-        group->SetTargetIcon(circleIcon, bot->GetGUID(), olm->GetGUID());
+    MarkTargetWithCircle(olm);
 
     if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "circle" && 
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != olm)
@@ -106,9 +102,7 @@ bool HighKingMaulgarBlindeyeTankAction::Execute(Event event)
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
     Group* group = bot->GetGroup();
 
-    ObjectGuid currentIconGuid = group->GetTargetIcon(starIcon);
-    if (currentIconGuid.IsEmpty() || currentIconGuid != blindeye->GetGUID())
-        group->SetTargetIcon(starIcon, bot->GetGUID(), blindeye->GetGUID());
+    MarkTargetWithStar(blindeye);
 
     if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "star" && 
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != blindeye)
@@ -154,9 +148,7 @@ bool HighKingMaulgarKroshMageTankAction::Execute(Event event)
     Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
     Group* group = bot->GetGroup();
 
-    ObjectGuid currentIconGuid = group->GetTargetIcon(triangleIcon);
-    if (currentIconGuid.IsEmpty() || currentIconGuid != krosh->GetGUID())
-        group->SetTargetIcon(triangleIcon, bot->GetGUID(), krosh->GetGUID());
+    MarkTargetWithTriangle(krosh);
 
     if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "triangle" && 
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != krosh)
@@ -208,9 +200,7 @@ bool HighKingMaulgarKigglerMoonkinTankAction::Execute(Event event)
     Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
     Group* group = bot->GetGroup();
 
-    ObjectGuid currentIconGuid = group->GetTargetIcon(diamondIcon);
-    if (currentIconGuid.IsEmpty() || currentIconGuid != kiggler->GetGUID())
-        group->SetTargetIcon(diamondIcon, bot->GetGUID(), kiggler->GetGUID());
+    MarkTargetWithDiamond(kiggler);
 
     if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "diamond" && 
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != kiggler)

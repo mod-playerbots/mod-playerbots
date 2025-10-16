@@ -23,18 +23,21 @@ enum GruulsLairSpells
 	SPELL_GROUND_SLAM_2  = 39187,
 };
 
-constexpr uint32 NPC_WILD_FEL_STALKER = 18847;
+enum GruulsLairNPCs
+{
+	NPC_WILD_FEL_STALKER = 18847,
+};
 
 namespace GruulsLairHelpers
 {
 
-inline constexpr uint8 squareIcon = RtiTargetValue::squareIndex;
-inline constexpr uint8 starIcon = RtiTargetValue::starIndex;
-inline constexpr uint8 circleIcon = RtiTargetValue::circleIndex;
-inline constexpr uint8 diamondIcon = RtiTargetValue::diamondIndex;
-inline constexpr uint8 triangleIcon = RtiTargetValue::triangleIndex;
-
 bool IsAnyOgreBossAlive(PlayerbotAI* botAI);
+void MarkTargetWithIcon(Unit* target, uint8 iconId);
+void MarkTargetWithSquare(Unit* target);
+void MarkTargetWithStar(Unit* target);
+void MarkTargetWithCircle(Unit* target);
+void MarkTargetWithDiamond(Unit* target);
+void MarkTargetWithTriangle(Unit* target);
 bool IsKroshMageTank(PlayerbotAI* botAI, Player* bot);
 bool IsKigglerMoonkinTank(PlayerbotAI* botAI, Player* bot);
 bool IsPositionSafe(PlayerbotAI* botAI, Player* bot, Position pos);

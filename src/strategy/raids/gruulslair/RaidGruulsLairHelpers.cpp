@@ -35,6 +35,46 @@ bool IsAnyOgreBossAlive(PlayerbotAI* botAI)
            (blindeye && blindeye->IsAlive());
 }
 
+void MarkTargetWithIcon(Unit* target, uint8 iconId)
+{
+    if (!target)
+        return;
+
+    if (Group* group = bot->GetGroup())
+    {
+        ObjectGuid currentGuid = group->GetTargetIcon(iconId);
+        if (currentGuid != target->GetGUID())
+        {
+            group->SetTargetIcon(iconId, bot->GetGUID(), target->GetGUID());
+        }
+    }
+}
+
+void MarkTargetWithSquare(Unit* target)
+{
+    MarkTargetWithIcon(target, RtiTargetValue::squareIndex);
+}
+
+void MarkTargetWithStar(Unit* target)
+{
+    MarkTargetWithIcon(target, RtiTargetValue::starIndex);
+}
+
+void MarkTargetWithCircle(Unit* target)
+{
+    MarkTargetWithIcon(target, RtiTargetValue::circleIndex);
+}
+
+void MarkTargetWithDiamond(Unit* target)
+{
+    MarkTargetWithIcon(target, RtiTargetValue::diamondIndex);
+}
+
+void MarkTargetWithTriangle(Unit* target)
+{
+    MarkTargetWithIcon(target, RtiTargetValue::triangleIndex);
+}
+
 bool IsKroshMageTank(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();
