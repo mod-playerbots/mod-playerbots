@@ -13,7 +13,7 @@ bool HighKingMaulgarMaulgarTankAction::Execute(Event event)
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
     Group* group = bot->GetGroup();
 
-    MarkTargetWithSquare(maulgar);
+    MarkTargetWithSquare(bot, maulgar);
 
     if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "square" && 
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != maulgar)
@@ -59,7 +59,7 @@ bool HighKingMaulgarOlmTankAction::Execute(Event event)
     Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
     Group* group = bot->GetGroup();
 
-    MarkTargetWithCircle(olm);
+    MarkTargetWithCircle(bot, olm);
 
     if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "circle" && 
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != olm)
@@ -102,7 +102,7 @@ bool HighKingMaulgarBlindeyeTankAction::Execute(Event event)
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
     Group* group = bot->GetGroup();
 
-    MarkTargetWithStar(blindeye);
+    MarkTargetWithStar(bot, blindeye);
 
     if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "star" && 
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != blindeye)
@@ -148,7 +148,7 @@ bool HighKingMaulgarKroshMageTankAction::Execute(Event event)
     Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
     Group* group = bot->GetGroup();
 
-    MarkTargetWithTriangle(krosh);
+    MarkTargetWithTriangle(bot, krosh);
 
     if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "triangle" && 
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != krosh)
@@ -200,7 +200,7 @@ bool HighKingMaulgarKigglerMoonkinTankAction::Execute(Event event)
     Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
     Group* group = bot->GetGroup();
 
-    MarkTargetWithDiamond(kiggler);
+    MarkTargetWithDiamond(bot, kiggler);
 
     if (botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != "diamond" && 
         botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get() != kiggler)
@@ -533,12 +533,14 @@ bool HighKingMaulgarBanishFelstalkerAction::Execute(Event event)
     }
 
     std::vector<Player*> warlocks;
-    Group* group = bot->GetGroup();
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (Group* group = bot->GetGroup())
     {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && member->getClass() == CLASS_WARLOCK && GET_PLAYERBOT_AI(member))
-            warlocks.push_back(member);
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (member && member->IsAlive() && member->getClass() == CLASS_WARLOCK && GET_PLAYERBOT_AI(member))
+                warlocks.push_back(member);
+        }
     }
 
     int warlockIndex = -1;
@@ -564,6 +566,9 @@ bool HighKingMaulgarBanishFelstalkerAction::Execute(Event event)
 bool HighKingMaulgarHunterMisdirectionAction::Execute(Event event)
 {
     Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
     std::vector<Player*> hunters;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -697,21 +702,23 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
     std::vector<Player*> members;
     Player* closestMember = nullptr;
     float closestDist = std::numeric_limits<float>::max();
-    Group* group = bot->GetGroup();
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (Group* group = bot->GetGroup())
     {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive())
-            continue;
-
-        members.push_back(member);
-        if (member != bot)
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            float dist = bot->GetExactDist2d(member);
-            if (dist < closestDist)
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+
+            members.push_back(member);
+            if (member != bot)
             {
-                closestDist = dist;
-                closestMember = member;
+                float dist = bot->GetExactDist2d(member);
+                if (dist < closestDist)
+                {
+                    closestDist = dist;
+                    closestMember = member;
+                }
             }
         }
     }
@@ -762,6 +769,10 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
 
 bool GruulTheDragonkillerShatterSpreadAction::Execute(Event event)
 {
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
     GuidVector members = AI_VALUE(GuidVector, "group members");
     Unit* closestMember = nullptr;
     float closestDist = std::numeric_limits<float>::max();

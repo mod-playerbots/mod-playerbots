@@ -32,12 +32,12 @@ namespace GruulsLairHelpers
 {
 
 bool IsAnyOgreBossAlive(PlayerbotAI* botAI);
-void MarkTargetWithIcon(Unit* target, uint8 iconId);
-void MarkTargetWithSquare(Unit* target);
-void MarkTargetWithStar(Unit* target);
-void MarkTargetWithCircle(Unit* target);
-void MarkTargetWithDiamond(Unit* target);
-void MarkTargetWithTriangle(Unit* target);
+void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
+void MarkTargetWithSquare(Player* bot, Unit* target);
+void MarkTargetWithStar(Player* bot, Unit* target);
+void MarkTargetWithCircle(Player* bot, Unit* target);
+void MarkTargetWithDiamond(Player* bot, Unit* target);
+void MarkTargetWithTriangle(Player* bot, Unit* target);
 bool IsKroshMageTank(PlayerbotAI* botAI, Player* bot);
 bool IsKigglerMoonkinTank(PlayerbotAI* botAI, Player* bot);
 bool IsPositionSafe(PlayerbotAI* botAI, Player* bot, Position pos);

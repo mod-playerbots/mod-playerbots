@@ -35,7 +35,7 @@ bool IsAnyOgreBossAlive(PlayerbotAI* botAI)
            (blindeye && blindeye->IsAlive());
 }
 
-void MarkTargetWithIcon(Unit* target, uint8 iconId)
+void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
 {
     if (!target)
         return;
@@ -50,90 +50,92 @@ void MarkTargetWithIcon(Unit* target, uint8 iconId)
     }
 }
 
-void MarkTargetWithSquare(Unit* target)
+void MarkTargetWithSquare(Player* bot, Unit* target)
 {
-    MarkTargetWithIcon(target, RtiTargetValue::squareIndex);
+    MarkTargetWithIcon(bot, target, RtiTargetValue::squareIndex);
 }
 
-void MarkTargetWithStar(Unit* target)
+void MarkTargetWithStar(Player* bot, Unit* target)
 {
-    MarkTargetWithIcon(target, RtiTargetValue::starIndex);
+    MarkTargetWithIcon(bot, target, RtiTargetValue::starIndex);
 }
 
-void MarkTargetWithCircle(Unit* target)
+void MarkTargetWithCircle(Player* bot, Unit* target)
 {
-    MarkTargetWithIcon(target, RtiTargetValue::circleIndex);
+    MarkTargetWithIcon(bot, target, RtiTargetValue::circleIndex);
 }
 
-void MarkTargetWithDiamond(Unit* target)
+void MarkTargetWithDiamond(Player* bot, Unit* target)
 {
-    MarkTargetWithIcon(target, RtiTargetValue::diamondIndex);
+    MarkTargetWithIcon(bot, target, RtiTargetValue::diamondIndex);
 }
 
-void MarkTargetWithTriangle(Unit* target)
+void MarkTargetWithTriangle(Player* bot, Unit* target)
 {
-    MarkTargetWithIcon(target, RtiTargetValue::triangleIndex);
+    MarkTargetWithIcon(bot, target, RtiTargetValue::triangleIndex);
 }
 
 bool IsKroshMageTank(PlayerbotAI* botAI, Player* bot)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
     Player* highestHpMage = nullptr;
     uint32 highestHp = 0;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    if (Group* group = bot->GetGroup())
     {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
-            continue;
-        
-        if (member->getClass() == CLASS_MAGE)
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            uint32 hp = member->GetMaxHealth();
-            if (!highestHpMage || hp > highestHp)
-            {
-                highestHpMage = member;
-                highestHp = hp;
-            }
-        }
-    }
-
-    return highestHpMage == bot;
-}
-
-bool IsKigglerMoonkinTank(PlayerbotAI* botAI, Player* bot)
-{
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    Player* highestHpMoonkin = nullptr;
-    uint32 highestHp = 0;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
-            continue;
-        
-        if (member->getClass() == CLASS_DRUID)
-        {
-            int tab = AiFactory::GetPlayerSpecTab(member);
-            if (tab == DRUID_TAB_BALANCE)
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
+                continue;
+            
+            if (member->getClass() == CLASS_MAGE)
             {
                 uint32 hp = member->GetMaxHealth();
-                if (!highestHpMoonkin || hp > highestHp)
+                if (!highestHpMage || hp > highestHp)
                 {
-                    highestHpMoonkin = member;
+                    highestHpMage = member;
                     highestHp = hp;
                 }
             }
         }
+
+        return highestHpMage == bot;
     }
 
-    return highestHpMoonkin == bot;
+    return false;
+}
+
+bool IsKigglerMoonkinTank(PlayerbotAI* botAI, Player* bot)
+{
+    Player* highestHpMoonkin = nullptr;
+    uint32 highestHp = 0;
+
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
+                continue;
+            
+            if (member->getClass() == CLASS_DRUID)
+            {
+                int tab = AiFactory::GetPlayerSpecTab(member);
+                if (tab == DRUID_TAB_BALANCE)
+                {
+                    uint32 hp = member->GetMaxHealth();
+                    if (!highestHpMoonkin || hp > highestHp)
+                    {
+                        highestHpMoonkin = member;
+                        highestHp = hp;
+                    }
+                }
+            }
+        }
+
+        return highestHpMoonkin == bot;
+    }
+
+    return false;
 }
 
 bool IsPositionSafe(PlayerbotAI* botAI, Player* bot, Position pos)
