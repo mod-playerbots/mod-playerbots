@@ -34,6 +34,7 @@ float HighKingMaulgarDisableTankAssistMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// Don't run back in during Whirlwind
 float HighKingMaulgarAvoidWhirlwindMultiplier::GetValue(Action* action)
 {
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
@@ -56,6 +57,7 @@ float HighKingMaulgarAvoidWhirlwindMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// Arcane Shot will remove Spell Shield, which the mage tank needs to survive
 float HighKingMaulgarDisableArcaneShotOnKroshMultiplier::GetValue(Action* action)
 {
     Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
@@ -78,28 +80,18 @@ float HighKingMaulgarDisableMageTankAOEMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float GruulTheDragonkillerTankPositionMultiplier::GetValue(Action* action)
+float GruulTheDragonkillerMainTankMovementMultiplier::GetValue(Action* action)
 {
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
     if (!gruul) 
         return 1.0f;
 
-    const Location& tankPosition = GruulsLairLocations::GruulTankPosition;
-    const float positionThreshold = 3.0f;
-    const float orientationLeeway = 30.0f * M_PI / 180.0f;
-
-    float distanceToTankPosition = bot->GetExactDist2d(tankPosition.x, tankPosition.y);
-    float desiredOrientation = atan2(gruul->GetPositionY() - bot->GetPositionY(), gruul->GetPositionX() - bot->GetPositionX());
-    float currentOrientation = bot->GetOrientation();
-    float delta = desiredOrientation - currentOrientation;
-    while (delta > M_PI) delta -= 2 * M_PI;
-    while (delta < -M_PI) delta += 2 * M_PI;
-    float orientationDifference = fabs(delta);
-
-    if (botAI->IsMainTank(bot) && gruul->GetVictim() == bot &&
-        distanceToTankPosition < positionThreshold && orientationDifference < orientationLeeway)
+    if (botAI->IsMainTank(bot))
     {
-        if (dynamic_cast<CombatFormationMoveAction*>(action))
+        if (gruul->GetVictim() == bot && dynamic_cast<CombatFormationMoveAction*>(action))
+            return 0.0f;
+
+        if (dynamic_cast<AvoidAoeAction*>(action))
             return 0.0f;
     }
 

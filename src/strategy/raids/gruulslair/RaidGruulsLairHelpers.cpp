@@ -75,6 +75,21 @@ void MarkTargetWithTriangle(Player* bot, Unit* target)
     MarkTargetWithIcon(bot, target, RtiTargetValue::triangleIndex);
 }
 
+void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
+{
+    if (!target)
+        return;
+
+    std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
+    Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
+
+    if (currentRti != rtiName || currentTarget != target)
+    {
+        botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(rtiName);
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
+    }
+}
+
 bool IsKroshMageTank(PlayerbotAI* botAI, Player* bot)
 {
     Player* highestHpMage = nullptr;

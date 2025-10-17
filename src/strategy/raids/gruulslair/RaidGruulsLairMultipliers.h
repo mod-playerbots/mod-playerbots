@@ -31,10 +31,10 @@ public:
     float GetValue(Action* action) override;
 };
 
-class GruulTheDragonkillerTankPositionMultiplier : public Multiplier
+class GruulTheDragonkillerMainTankMovementMultiplier : public Multiplier
 {
 public:
-    GruulTheDragonkillerTankPositionMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "gruul the dragonkiller tank position multiplier") {}
+    GruulTheDragonkillerMainTankMovementMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "gruul the dragonkiller main tank movement multiplier") {}
     float GetValue(Action* action) override;
 };
 
