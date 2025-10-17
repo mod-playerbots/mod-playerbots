@@ -122,26 +122,32 @@ static bool IsLockbox(ItemTemplate const* proto)
 }
 
 // Local helper: not a class member
-static bool HasAnyStat(ItemTemplate const* proto, std::initializer_list<ItemModType> mods)
+static bool HasAnyStat(ItemTemplate const* proto,
+                       std::initializer_list<ItemModType> mods)
 {
     if (!proto)
     {
         return false;
     }
-	
+
     for (uint32 i = 0; i < MAX_ITEM_PROTO_STATS; ++i)
     {
         if (!proto->ItemStat[i].ItemStatValue)
             continue;
-        ItemModType t = ItemModType(proto->ItemStat[i].ItemStatType);
-        for (auto m : mods)
+
+        ItemModType const t = ItemModType(proto->ItemStat[i].ItemStatType);
+        for (ItemModType const m : mods)
+        {
             if (t == m)
+            {
                 return true;
+            }
+        }
     }
     return false;
 }
 
-// SPECIAL ITEMS PRIORITY PATERNS //
+// SPECIAL ITEMS PRIORITY PATTERNS //
 // "Priority" players for items example: Items with INT+AP (Ret / Hunter / Enh)
 static bool GroupHasPreferredIntApUser(Player* self)
 {
@@ -167,12 +173,12 @@ static bool GroupHasPreferredIntApUser(Player* self)
         const bool isProtPal = t.isProtPal || (t.cls == CLASS_PALADIN && t.isTank);  // fallback
         if (t.isRetPal || isProtPal || t.cls == CLASS_HUNTER || t.isEnhSham)
         {
-            LOG_DEBUG("playerbots", "[LootPaternDBG] INT+AP group check: prioritaire présent -> {} (spec='{}')",
+            LOG_DEBUG("playerbots", "[LootPaternDBG] INT+AP group check: priority looter present -> {} (spec='{}')",
                       p->GetName(), t.spec);
             return true;
         }
     }
-    LOG_DEBUG("playerbots", "[LootPaternDBG] INT+AP group check: aucun prioritaire bot présent");
+    LOG_DEBUG("playerbots", "[LootPaternDBG] INT+AP group check: no loot-priority bot present");
     return false;
 }
 
@@ -223,7 +229,7 @@ static bool GroupHasPreferredIntApUserLikelyToNeed(Player* self, ItemTemplate co
             return true;  // a priority bot will probably NEED
         }
     }
-    LOG_DEBUG("playerbots", "[LootPaternDBG] INT+AP likely-to-need: aucun prioritaire bot en position de NEED");
+    LOG_DEBUG("playerbots", "[LootPaternDBG] INT+AP likely-to-need: no loot-priority bot in a position to NEED");
     return false;
 }
 
@@ -248,8 +254,7 @@ static bool Match_IntAndAp(ItemTemplate const* proto)
     return match;
 }
 
-// Decision: Ret/Hunter/Enh -> primary; non-caster physiques -> not primary, casters -> primary only if no priority in
-// the group.
+// Decision: Ret/Hunter/Enh -> primary; non-caster physical -> not primary; casters -> primary only if no priority in group/raid
 static bool Decide_IntAndAp(Player* bot, ItemTemplate const* proto, const SpecTraits& traits, bool& outPrimary)
 {
     LOG_DEBUG("playerbots", "[LootPaternDBG] patterns: evaluation bot={} item={} \"{}\"", bot->GetName(), proto->ItemId,
@@ -304,7 +309,7 @@ static bool ApplyStatPatternsForPrimary(Player* bot, ItemTemplate const* proto, 
             }
         }
     }
-    LOG_DEBUG("playerbots", "[LootPaternDBG] patterns: aucun pattern applicable bot={} item={} \"{}\"", bot->GetName(),
+    LOG_DEBUG("playerbots", "[LootPaternDBG] patterns: no applicable pattern bot={} item={} \"{}\"", bot->GetName(),
               proto->ItemId, proto->Name1);
     return false;
 }
@@ -1042,7 +1047,7 @@ bool LootRollAction::Execute(Event event)
             continue;
 
         LOG_DEBUG("playerbots",
-                  "[LootRoolDBG] start bot={} item={} \"{}\" class={} q={} lootMethod={} enchSkill={} rp={}",
+                  "[LootRollDBG] start bot={} item={} \"{}\" class={} q={} lootMethod={} enchSkill={} rp={}",
                   bot->GetName(), itemId, proto->Name1, proto->Class, proto->Quality, (int)group->GetLootMethod(),
                   bot->HasSkill(SKILL_ENCHANTING), randomProperty);
 
@@ -1059,7 +1064,7 @@ bool LootRollAction::Execute(Event event)
         }
         ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", itemUsageParam);
 
-        LOG_DEBUG("playerbots", "[LootRoolDBG] usage={} (EQUIP=1 REPLACE=2 BAD_EQUIP=8 DISENCHANT=13)", (int)usage);
+        LOG_DEBUG("playerbots", "[LootRollDBG] usage={} (EQUIP=1 REPLACE=2 BAD_EQUIP=8 DISENCHANT=13)", (int)usage);
 
         // Armor Tokens are classed as MISC JUNK (Class 15, Subclass 0), but no other items have class bits and epic
         // quality.
@@ -1095,7 +1100,7 @@ bool LootRollAction::Execute(Event event)
         {
             // Lets CalculateRollVote decide (includes SmartNeedBySpec, BoE/BoU, unique, cross-armor)
             vote = CalculateRollVote(proto, randomProperty);
-            LOG_DEBUG("playerbots", "[LootRoolDBG] after CalculateRollVote: vote={}", VoteTxt(vote));
+            LOG_DEBUG("playerbots", "[LootRollDBG] after CalculateRollVote: vote={}", VoteTxt(vote));
         }
 
         // Disenchant (Need-Before-Greed):
@@ -1110,7 +1115,7 @@ bool LootRollAction::Execute(Event event)
         }
         else
         {
-            LOG_DEBUG("playerbots", "[LootRoolDBG] no DE: vote={} lootMethod={} enchSkill={} deOK={}", VoteTxt(vote),
+            LOG_DEBUG("playerbots", "[LootRollDBG] no DE: vote={} lootMethod={} enchSkill={} deOK={}", VoteTxt(vote),
                       (int)group->GetLootMethod(), bot->HasSkill(SKILL_ENCHANTING), IsLikelyDisenchantable(proto));
         }
 
