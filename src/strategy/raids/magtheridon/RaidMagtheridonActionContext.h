@@ -13,12 +13,12 @@ public:
         creators["magtheridon hellfire channeler nw channeler tank"] = &RaidMagtheridonActionContext::magtheridon_hellfire_channeler_nw_channeler_tank;
         creators["magtheridon hellfire channeler ne channeler tank"] = &RaidMagtheridonActionContext::magtheridon_hellfire_channeler_ne_channeler_tank;
         creators["magtheridon hellfire channeler misdirection"] = &RaidMagtheridonActionContext::magtheridon_hellfire_channeler_misdirection;
-        creators["magtheridon hellfire channeler dps priority"] = &RaidMagtheridonActionContext::magtheridon_hellfire_channeler_dps_priority;
+        creators["magtheridon dps priority"] = &RaidMagtheridonActionContext::magtheridon_dps_priority;
         creators["magtheridon burning abyssal warlock cc"] = &RaidMagtheridonActionContext::magtheridon_burning_abyssal_warlock_cc;
         creators["magtheridon position boss"] = &RaidMagtheridonActionContext::magtheridon_position_boss;
         creators["magtheridon spread ranged"] = &RaidMagtheridonActionContext::magtheridon_spread_ranged;
         creators["magtheridon use manticron cube"] = &RaidMagtheridonActionContext::magtheridon_use_manticron_cube;
-        creators["magtheridon reset timers and assignments"] = &RaidMagtheridonActionContext::magtheridon_reset_timers_and_assignments;
+        creators["magtheridon manage timers and assignments"] = &RaidMagtheridonActionContext::magtheridon_manage_timers_and_assignments;
     }
 
 private:
@@ -26,12 +26,12 @@ private:
     static Action* magtheridon_hellfire_channeler_nw_channeler_tank(PlayerbotAI* botAI) { return new MagtheridonHellfireChannelerNWChannelerTankAction(botAI); }
     static Action* magtheridon_hellfire_channeler_ne_channeler_tank(PlayerbotAI* botAI) { return new MagtheridonHellfireChannelerNEChannelerTankAction(botAI); }
     static Action* magtheridon_hellfire_channeler_misdirection(PlayerbotAI* botAI) { return new MagtheridonHellfireChannelerMisdirectionAction(botAI); }
-    static Action* magtheridon_hellfire_channeler_dps_priority(PlayerbotAI* botAI) { return new MagtheridonHellfireChannelerDPSPriorityAction(botAI); }
+    static Action* magtheridon_dps_priority(PlayerbotAI* botAI) { return new MagtheridonDPSPriorityAction(botAI); }
     static Action* magtheridon_burning_abyssal_warlock_cc(PlayerbotAI* botAI) { return new MagtheridonBurningAbyssalWarlockCCAction(botAI); }
     static Action* magtheridon_position_boss(PlayerbotAI* botAI) { return new MagtheridonPositionBossAction(botAI); }
     static Action* magtheridon_spread_ranged(PlayerbotAI* botAI) { return new MagtheridonSpreadRangedAction(botAI); }
     static Action* magtheridon_use_manticron_cube(PlayerbotAI* botAI) { return new MagtheridonUseManticronCubeAction(botAI); }
-    static Action* magtheridon_reset_timers_and_assignments(PlayerbotAI* botAI) { return new MagtheridonResetTimersAndAssignmentsAction(botAI); }
+    static Action* magtheridon_manage_timers_and_assignments(PlayerbotAI* botAI) { return new MagtheridonManageTimersAndAssignmentsAction(botAI); }
 };
 
 #endif

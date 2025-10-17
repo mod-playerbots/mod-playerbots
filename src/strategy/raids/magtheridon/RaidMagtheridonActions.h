@@ -1,9 +1,12 @@
 #ifndef _PLAYERBOT_RAIDMAGTHERIDONACTIONS_H
 #define _PLAYERBOT_RAIDMAGTHERIDONACTIONS_H
 
+#include "RaidMagtheridonHelpers.h"
 #include "Action.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
+
+using namespace MagtheridonHelpers;
 
 class MagtheridonHellfireChannelerMainTankAction : public AttackAction
 {
@@ -37,10 +40,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class MagtheridonHellfireChannelerDPSPriorityAction : public AttackAction
+class MagtheridonDPSPriorityAction : public AttackAction
 {
 public:
-    MagtheridonHellfireChannelerDPSPriorityAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler dps priority") : AttackAction(botAI, name) {};
+    MagtheridonDPSPriorityAction(PlayerbotAI* botAI, std::string const name = "magtheridon dps priority") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
 };
@@ -78,12 +81,18 @@ public:
     MagtheridonUseManticronCubeAction(PlayerbotAI* botAI, std::string const name = "magtheridon use manticron cube") : MovementAction(botAI, name) {};
 
     bool Execute(Event event) override;
+
+private:
+    bool HandleCubeRelease(Unit* magtheridon, GameObject* cube);
+    bool ShouldActivateCubeLogic(Unit* magtheridon);
+    bool HandleWaitingPhase(const CubeInfo& cubeInfo);
+    bool HandleCubeInteraction(const CubeInfo& cubeInfo, GameObject* cube);
 };
 
-class MagtheridonResetTimersAndAssignmentsAction : public Action
+class MagtheridonManageTimersAndAssignmentsAction : public Action
 {
 public:
-    MagtheridonResetTimersAndAssignmentsAction(PlayerbotAI* botAI, std::string const name = "magtheridon reset timers and assignments") : Action(botAI, name) {};
+    MagtheridonManageTimersAndAssignmentsAction(PlayerbotAI* botAI, std::string const name = "magtheridon manage timers and assignments") : Action(botAI, name) {};
 
     bool Execute(Event event) override;
 };

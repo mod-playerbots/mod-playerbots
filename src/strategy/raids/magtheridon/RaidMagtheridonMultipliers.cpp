@@ -34,25 +34,22 @@ float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// Bots will wait for 8 seconds after Magtheridon becomes attackable before engaging
+// Bots will wait for 7 seconds after Magtheridon becomes attackable before engaging
 float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (!magtheridon || magtheridon->HasAura(SPELL_SHADOW_CAGE))
         return 1.0f;
 
-    const uint8 aggroWaitSeconds = 8;
+    const uint8 aggroWaitSeconds = 7;
     auto it = magtheridonAggroWaitTimer.find(bot->GetMapId());
-    if (it != magtheridonAggroWaitTimer.end())
+    if (it == magtheridonAggroWaitTimer.end() ||
+        (time(nullptr) - it->second) < aggroWaitSeconds)
     {
-        time_t since = time(nullptr) - it->second;
-        if (since < aggroWaitSeconds)
-        {
-            if (!botAI->IsMainTank(bot) && 
-                (dynamic_cast<AttackAction*>(action) || 
-                (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
-                return 0.0f;
-        }
+        if (!botAI->IsMainTank(bot) && 
+            (dynamic_cast<AttackAction*>(action) || 
+            (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
+            return 0.0f;
     }
 
     return 1.0f;

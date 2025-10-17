@@ -32,10 +32,10 @@ public:
     bool IsActive() override;
 };
 
-class MagtheridonHellfireChannelerDPSPriorityTrigger : public Trigger
+class MagtheridonDPSPriorityTrigger : public Trigger
 {
 public:
-    MagtheridonHellfireChannelerDPSPriorityTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon hellfire channeler dps priority") {};
+    MagtheridonDPSPriorityTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon dps priority") {};
     bool IsActive() override;
 };
 
@@ -67,10 +67,10 @@ public:
     bool IsActive() override;
 };
 
-class MagtheridonResetTimersAndAssignmentsTrigger : public Trigger
+class MagtheridonManageTimersAndAssignmentsTrigger : public Trigger
 {
 public:
-    MagtheridonResetTimersAndAssignmentsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon reset timers and assignments") {};
+    MagtheridonManageTimersAndAssignmentsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon manage timers and assignments") {};
     bool IsActive() override;
 };
 

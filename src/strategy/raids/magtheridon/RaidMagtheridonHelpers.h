@@ -53,7 +53,9 @@ void MarkTargetWithCircle(Player* bot, Unit* target);
 void MarkTargetWithDiamond(Player* bot, Unit* target);
 void MarkTargetWithTriangle(Player* bot, Unit* target);
 void MarkTargetWithCross(Player* bot, Unit* target);
+void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
 bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float z);
+bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
 
 struct Location
 {
@@ -80,7 +82,6 @@ extern const std::vector<uint32> MANTICRON_CUBE_DB_GUIDS;
 extern std::unordered_map<ObjectGuid, CubeInfo> botToCubeAssignment;
 std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, const std::vector<uint32>& cubeDbGuids);
 void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>& cubes, PlayerbotAI* botAI);
-extern std::unordered_map<uint32, bool> lastShadowCageState;
 extern std::unordered_map<uint32, bool> lastBlastNovaState;
 extern std::unordered_map<uint32, time_t> magtheridonBlastNovaTimer;
 extern std::unordered_map<uint32, time_t> magtheridonSpreadWaitTimer;

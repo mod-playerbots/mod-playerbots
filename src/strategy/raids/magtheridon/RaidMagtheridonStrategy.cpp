@@ -6,8 +6,8 @@ void RaidMagtheridonStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("magtheridon use manticron cube", NextAction::array(0,
         new NextAction("magtheridon use manticron cube", ACTION_EMERGENCY + 10), nullptr)));
 
-    triggers.push_back(new TriggerNode("magtheridon reset timers and assignments", NextAction::array(0,
-        new NextAction("magtheridon reset timers and assignments", ACTION_EMERGENCY), nullptr)));
+    triggers.push_back(new TriggerNode("magtheridon manage timers and assignments", NextAction::array(0,
+        new NextAction("magtheridon manage timers and assignments", ACTION_EMERGENCY), nullptr)));
 
     triggers.push_back(new TriggerNode("magtheridon burning abyssal warlock cc", NextAction::array(0,
         new NextAction("magtheridon burning abyssal warlock cc", ACTION_RAID + 3), nullptr)));
@@ -30,8 +30,8 @@ void RaidMagtheridonStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("magtheridon hellfire channeler ne channeler tank", NextAction::array(0,
         new NextAction("magtheridon hellfire channeler ne channeler tank", ACTION_RAID + 1), nullptr)));
 
-    triggers.push_back(new TriggerNode("magtheridon hellfire channeler dps priority", NextAction::array(0,
-        new NextAction("magtheridon hellfire channeler dps priority", ACTION_RAID + 1), nullptr)));
+    triggers.push_back(new TriggerNode("magtheridon dps priority", NextAction::array(0,
+        new NextAction("magtheridon dps priority", ACTION_RAID + 1), nullptr)));
 }
 
 void RaidMagtheridonStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
