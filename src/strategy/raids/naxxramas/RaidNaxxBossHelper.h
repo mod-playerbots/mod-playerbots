@@ -60,7 +60,7 @@ public:
         {
             return false;
         }
-        _timer = 0; //_event_map->GetTimer(); TODO: change back, still testing
+        _timer = _event_map->GetTimer();
         return true;
     }
     virtual void Reset()
@@ -218,7 +218,7 @@ public:
 private:
     const uint32 POSITION_TIME_AFTER_LANDED = 5000;
     const uint32 EVENT_FLIGHT_INTERVAL = 45000;
-    Milliseconds lastEventGround = 0ms;
+    Milliseconds lastEventGround = Milliseconds(0);
 };
 
 class GluthBossHelper : public GenericBossHelper<Gluth::boss_gluth::boss_gluthAI>
@@ -298,7 +298,7 @@ public:
         lady = nullptr;
         ladyAI = nullptr;
         ladyEvent = nullptr;
-        lastEventVoidZone = 0ms;
+        lastEventVoidZone = Milliseconds(0);
         voidZoneCounter = 0;
         posToGo = 0;
     }
@@ -367,7 +367,7 @@ protected:
     Unit* lady = nullptr;
     FourHorsemen::boss_four_horsemen::boss_four_horsemenAI* ladyAI = nullptr;
     EventMap* ladyEvent = nullptr;
-    Milliseconds lastEventVoidZone = 0ms;
+    Milliseconds lastEventVoidZone = Milliseconds(0);
     uint32 voidZoneCounter = 0;
     int posToGo = 0;
 };

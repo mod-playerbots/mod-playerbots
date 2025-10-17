@@ -9,6 +9,7 @@
 #include "Playerbots.h"
 #include "RaidNaxxBossHelper.h"
 #include "RaidNaxxScripts.h"
+#include "SharedDefines.h"
 
 // just for test
 // class TryToGetBossAIAction : public Action
@@ -62,8 +63,8 @@ public:
     HeiganDanceAction(PlayerbotAI* ai) : MovementAction(ai, "heigan dance")
     {
         this->prev_phase = 0;
-        this->prev_erupt = 0;
-        this->prev_timer = 0;
+        this->prev_erupt = Milliseconds(0);
+        this->prev_timer = Milliseconds(0);
         ResetSafe();
         waypoints.push_back(std::make_pair(2794.88f, -3668.12f));
         waypoints.push_back(std::make_pair(2775.49f, -3674.43f));
@@ -86,7 +87,8 @@ protected:
             curr_dir = -curr_dir;
         }
     }
-    uint32 prev_phase, prev_erupt, prev_timer;
+    uint32 prev_phase;
+    Milliseconds prev_erupt, prev_timer;
     uint32 curr_safe, curr_dir;
     std::vector<std::pair<float, float>> waypoints;
 };
