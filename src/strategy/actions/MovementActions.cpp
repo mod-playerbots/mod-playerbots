@@ -210,7 +210,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
             mm.Clear();
             if (!backwards)
             {
-                mm.MovePoint(0, x, y, z, generatePath);
+                mm.MovePoint(0, x, y, z, FORCED_MOVEMENT_NONE, 0.0f, 0.0f, generatePath);
             }
             else
             {
@@ -245,7 +245,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
             mm.Clear();
             if (!backwards)
             {
-                mm.MovePoint(0, x, y, z, generatePath);
+                mm.MovePoint(0, x, y, z, FORCED_MOVEMENT_NONE, 0.0f, 0.0f, generatePath);
             }
             else
             {
@@ -287,7 +287,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
             mm.Clear();
             if (!backwards)
             {
-                mm.MovePoint(0, x, y, z, generatePath);
+                mm.MovePoint(0, x, y, z, FORCED_MOVEMENT_NONE, 0.0f, 0.0f, generatePath);
             }
             else
             {
