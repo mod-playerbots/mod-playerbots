@@ -121,7 +121,7 @@ std::vector<uint32> const vFlagsAV = {
     BG_AV_OBJECTID_BANNER_CONT_H_B, BG_AV_OBJECTID_BANNER_CONT_H, BG_AV_OBJECTID_BANNER_SNOWFALL_N};
 
 std::vector<uint32> const vFlagsAB = {
-   BG_AB_OBJECTID_BANNER_A,
+    BG_AB_OBJECTID_BANNER_A,
     BG_AB_OBJECTID_BANNER_CONT_A,
     BG_AB_OBJECTID_BANNER_H,
     BG_AB_OBJECTID_BANNER_CONT_H,
@@ -697,15 +697,17 @@ BattleBotPath vPath_AV_SnowfallGraveyard_To_HordeCaptain = {
     {-477.910f, -193.219f, 54.985f, nullptr}, {-488.230f, -187.985f, 56.729f, nullptr}
 };
 
-BattleBotPath vPath_AV_HordeCrossroad3_To_IcebloodTower = {{-533.792f, -341.435f, 35.860f, nullptr},
-                                                           {-551.527f, -332.298f, 38.432f, nullptr},
-                                                           {-574.093f, -312.653f, 44.791f, nullptr}};
+BattleBotPath vPath_AV_HordeCrossroad3_To_IcebloodTower = {
+    {-533.792f, -341.435f, 35.860f, nullptr}, {-551.527f, -332.298f, 38.432f, nullptr},
+    {-574.093f, -312.653f, 44.791f, nullptr}
+};
 
 BattleBotPath vPath_AV_IcebloodTower_To_HordeCaptain = {
     {-569.690f, -295.928f, 49.096f, nullptr}, {-559.809f, -282.641f, 52.074f, nullptr},
     {-546.890f, -261.488f, 53.194f, nullptr}, {-529.471f, -236.931f, 56.746f, nullptr},
     {-518.182f, -222.736f, 56.922f, nullptr}, {-500.372f, -205.938f, 57.364f, nullptr},
-    {-494.455f, -190.473f, 57.190f, nullptr}};
+    {-494.455f, -190.473f, 57.190f, nullptr}
+};
 
 BattleBotPath vPath_AV_IcebloodTower_To_IcebloodGrave = {
     {-584.305f, -313.025f, 47.651f, nullptr}, {-600.831f, -327.032f, 51.026f, nullptr},
@@ -3961,8 +3963,6 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
                         spell->prepare(&spell->m_targets);
 
                         botAI->WaitForSpellCast(spell);
-                        // return true; Intended to make a bot cast SPELL_CAPTURE_BANNER and wait for spell finish, but
-                        // doesn't work and causes infinite loop
                         resetObjective();
                         return true;
                     }
