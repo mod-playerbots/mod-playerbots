@@ -41,12 +41,13 @@ public:
     {
         this->boss_entry = boss_entry;
         this->event_id = event_id;
-        this->last_event_time = -1;
+        this->last_event_time = Milliseconds(0);
     }
     virtual bool IsActive();
 
 protected:
-    uint32 boss_entry, event_id, last_event_time;
+    uint32 boss_entry, event_id;
+    Milliseconds last_event_time;
 };
 
 class GrobbulusCloudTrigger : public BossEventTrigger<Grobbulus::boss_grobbulus::boss_grobbulusAI>

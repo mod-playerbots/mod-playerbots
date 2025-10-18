@@ -4,6 +4,7 @@
 #include "Playerbots.h"
 #include "ScriptedCreature.h"
 #include "Trigger.h"
+#include "SharedDefines.h"
 
 bool AuraRemovedTrigger::IsActive()
 {
@@ -41,12 +42,16 @@ bool BossEventTrigger<T>::IsActive()
     {
         return false;
     }
-    const uint32 event_time = eventMap->GetNextEventTime(event_id);
-    if (event_time != last_event_time)
+    Milliseconds event_time = eventMap->GetTimeUntilEvent(event_id);
+    if (event_time == Milliseconds::max())
+        return false;
+
+    if (last_event_time.count() == 0 || event_time != last_event_time)
     {
         last_event_time = event_time;
         return true;
     }
+
     return false;
 }
 
