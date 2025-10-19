@@ -220,7 +220,8 @@ public:
 
     bool OnPlayerBeforeAchievementComplete(Player* player, AchievementEntry const* achievement) override
     {
-        if (sRandomPlayerbotMgr->IsRandomBot(player) && (achievement->flags == 256 || achievement->flags == 768))
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+        if (botAI && !botAI->IsRealPlayer() && (achievement->flags == 256 || achievement->flags == 768))
         {
             return false;
         }
