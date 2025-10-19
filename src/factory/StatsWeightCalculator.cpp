@@ -103,7 +103,8 @@ float StatsWeightCalculator::CalculateItem(uint32 itemId, int32 randomPropertyId
 
         return weight_;
     }
-
+    // If quality/level blending is disabled, also return the calculated weight.
+    return weight_;
 }
 
 float StatsWeightCalculator::CalculateEnchant(uint32 enchantId)
