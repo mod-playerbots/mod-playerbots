@@ -211,7 +211,7 @@ void TalkToQuestGiverAction::RewardMultipleItem(Quest const* quest, Object* ques
         if (bestIds.size() > 1)
             AskToSelectReward(quest, out, true);
 
-        else
+        else if (!bestIds.empty())
         {
             // Pick the first item
             uint32 firstId = *bestIds.begin();
