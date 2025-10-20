@@ -249,17 +249,30 @@ public:
         float orientation = master->GetOrientation();
 
         std::vector<Player*> players;
+        // take current state of GUIDs first to avoid invalid pointers
+        std::vector<ObjectGuid> guids;
+        guids.reserve(group->GetMembersCount());
         GroupReference* gref = group->GetFirstMember();
         while (gref)
         {
             Player* member = gref->GetSource();
             if (member != master)
-                players.push_back(member);
+                guids.push_back(member->GetGUID());
 
             gref = gref->next();
         }
 
-        players.insert(players.begin() + group->GetMembersCount() / 2, master);
+        // resolve players guids
+        players.reserve(guids.size());
+        for (const ObjectGuid& guid : guids)
+        {
+            Player* p = ObjectAccessor::FindPlayer(guid);
+            if (p && p != master)
+                players.push_back(p);
+        }
+
+        size_t insertIndex = std::min(players.size(), static_cast<size_t>(guids.size() / 2));
+        players.insert(players.begin() + insertIndex, master);
 
         return MoveLine(players, 0.0f, x, y, z, orientation, range);
     }
@@ -289,6 +302,13 @@ public:
 
         std::vector<Player*> tanks;
         std::vector<Player*> dps;
+
+        // take current state of GUIDs first to avoid invalid pointers
+        std::vector<ObjectGuid> tanksGuids;
+        std::vector<ObjectGuid> dpsGuids;
+        tanksGuids.reserve(group->GetMembersCount());
+        dpsGuids.reserve(group->GetMembersCount());
+
         GroupReference* gref = group->GetFirstMember();
         while (gref)
         {
@@ -296,12 +316,30 @@ public:
             if (member != master)
             {
                 if (botAI->IsTank(member))
-                    tanks.push_back(member);
+                    tanksGuids.push_back(member->GetGUID());
                 else
-                    dps.push_back(member);
+                    dpsGuids.push_back(member->GetGUID());
             }
 
             gref = gref->next();
+        }
+
+        // resolve tanks based on GUIDs
+        tanks.reserve(tanksGuids.size());
+        for (auto& guid : tanksGuids)
+        {
+            Player* p = ObjectAccessor::FindPlayer(guid);
+            if (p)
+                tanks.push_back(p);
+        }
+
+        // resolve dps based on GUIDs
+        dps.reserve(dpsGuids.size());
+        for (auto& guid : dpsGuids)
+        {
+            Player* p = ObjectAccessor::FindPlayer(guid);
+            if (p)
+                dps.push_back(p);
         }
 
         if (botAI->IsTank(master))
@@ -670,7 +708,8 @@ WorldLocation MoveFormation::MoveSingleLine(std::vector<Player*> line, float dif
             float lz = cz;
 
             Player* master = botAI->GetMaster();
-            if (!master || !master->GetMap()->CheckCollisionAndGetValidCoords(
+            if (!master ||
+                !master->GetMap()->CheckCollisionAndGetValidCoords(
                     master, master->GetPositionX(), master->GetPositionY(), master->GetPositionZ(), lx, ly, lz))
             {
                 lx = x + cos(angle) * radius;
