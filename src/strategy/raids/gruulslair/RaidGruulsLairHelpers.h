@@ -7,7 +7,7 @@
 enum GruulsLairSpells
 {
 	// High King Maulgar
-	SPELL_WHIRLWIND  	   = 33238,
+	SPELL_WHIRLWIND  	 = 33238,
 
 	// Krosh Firehand
 	SPELL_SPELL_SHIELD   = 33054,
@@ -16,7 +16,7 @@ enum GruulsLairSpells
 	SPELL_MISDIRECTION   = 34477,
 
 	// Warlock
-	SPELL_BANISH     	   = 18647, // Rank 2
+	SPELL_BANISH     	 = 18647, // Rank 2
 
 	// Gruul the Dragonkiller
 	SPELL_GROUND_SLAM_1  = 33525,

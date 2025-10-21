@@ -6,42 +6,42 @@ using namespace GruulsLairHelpers;
 
 // High King Maulgar Triggers
 
-bool HighKingMaulgarMaulgarTankTrigger::IsActive()
+bool HighKingMaulgarIsMainTankTrigger::IsActive()
 {
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
 
     return botAI->IsMainTank(bot) && maulgar && maulgar->IsAlive();
 }
 
-bool HighKingMaulgarOlmTankTrigger::IsActive()
+bool HighKingMaulgarIsFirstAssistTankTrigger::IsActive()
 {
     Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
 
     return botAI->IsAssistTankOfIndex(bot, 0) && olm && olm->IsAlive();
 }
 
-bool HighKingMaulgarBlindeyeTankTrigger::IsActive()
+bool HighKingMaulgarIsSecondAssistTankTrigger::IsActive()
 {
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
 
     return botAI->IsAssistTankOfIndex(bot, 1) && blindeye && blindeye->IsAlive();
 }
 
-bool HighKingMaulgarKroshMageTankTrigger::IsActive()
+bool HighKingMaulgarIsMageTankTrigger::IsActive()
 {
     Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
 
     return IsKroshMageTank(botAI, bot) && krosh && krosh->IsAlive();
 }
 
-bool HighKingMaulgarKigglerMoonkinTankTrigger::IsActive()
+bool HighKingMaulgarIsMoonkinTankTrigger::IsActive()
 {
     Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
 
     return IsKigglerMoonkinTank(botAI, bot) && kiggler && kiggler->IsAlive();
 }
 
-bool HighKingMaulgarMeleeDPSPriorityTrigger::IsActive()
+bool HighKingMaulgarDeterminingMeleeDPSKillOrderTrigger::IsActive()
 {
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
     Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
@@ -54,7 +54,7 @@ bool HighKingMaulgarMeleeDPSPriorityTrigger::IsActive()
            !(botAI->IsAssistTankOfIndex(bot, 1) && blindeye && blindeye->IsAlive());
 }
 
-bool HighKingMaulgarRangedDPSPriorityTrigger::IsActive()
+bool HighKingMaulgarDeterminingRangedDPSKillOrderTrigger::IsActive()
 {
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
     Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
@@ -67,12 +67,12 @@ bool HighKingMaulgarRangedDPSPriorityTrigger::IsActive()
            !(IsKigglerMoonkinTank(botAI, bot) && kiggler && kiggler->IsAlive());
 }
 
-bool HighKingMaulgarHealerAvoidanceTrigger::IsActive()
+bool HighKingMaulgarHealerInDangerTrigger::IsActive()
 {
     return botAI->IsHeal(bot) && IsAnyOgreBossAlive(botAI);
 }
 
-bool HighKingMaulgarWhirlwindRunAwayTrigger::IsActive()
+bool HighKingMaulgarBossChannelingWhirlwindTrigger::IsActive()
 {
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
 
@@ -80,14 +80,14 @@ bool HighKingMaulgarWhirlwindRunAwayTrigger::IsActive()
            !botAI->IsMainTank(bot);
 }
 
-bool HighKingMaulgarBanishFelstalkerTrigger::IsActive()
+bool HighKingMaulgarWildFelstalkerSpawnedTrigger::IsActive()
 {
     Unit* felStalker = AI_VALUE2(Unit*, "find target", "wild fel stalker");
 
     return felStalker && felStalker->IsAlive() && bot->getClass() == CLASS_WARLOCK;
 }
 
-bool HighKingMaulgarHunterMisdirectionTrigger::IsActive()
+bool HighKingMaulgarPullingOlmAndBlindeyeTrigger::IsActive()
 {
     Group* group = bot->GetGroup();
     if (!group || bot->getClass() != CLASS_HUNTER)
@@ -129,16 +129,16 @@ bool HighKingMaulgarHunterMisdirectionTrigger::IsActive()
 
     switch (hunterIndex)
     {
-        case 0:
+    case 0:
         return olm && olm->IsAlive() && olm->GetHealth() > 0.98f * olm->GetMaxHealth() && 
                olmTank && olmTank->IsAlive() && botAI->CanCastSpell("misdirection", olmTank);
 
-        case 1:
+    case 1:
         return blindeye && blindeye->IsAlive() && blindeye->GetHealth() > 0.90f * blindeye->GetMaxHealth() && 
                blindeyeTank && blindeyeTank->IsAlive() && botAI->CanCastSpell("misdirection", blindeyeTank);
 
-        default:
-            break;
+    default:
+        break;
     }
 
     return false;
@@ -146,21 +146,21 @@ bool HighKingMaulgarHunterMisdirectionTrigger::IsActive()
 
 // Gruul the Dragonkiller Triggers
 
-bool GruulTheDragonkillerPositionBossTrigger::IsActive()
+bool GruulTheDragonkillerBossEngagedByMainTankTrigger::IsActive()
 {
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
 
     return gruul && gruul->IsAlive() && botAI->IsMainTank(bot);
 }
 
-bool GruulTheDragonkillerSpreadRangedTrigger::IsActive()
+bool GruulTheDragonkillerBossEngagedByRangeTrigger::IsActive()
 {
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
 
     return gruul && gruul->IsAlive() && botAI->IsRanged(bot);
 }
 
-bool GruulTheDragonkillerShatterSpreadTrigger::IsActive()
+bool GruulTheDragonkillerIncomingShatterTrigger::IsActive()
 {
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
 

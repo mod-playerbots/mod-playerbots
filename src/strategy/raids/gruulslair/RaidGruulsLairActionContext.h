@@ -10,40 +10,40 @@ public:
     RaidGruulsLairActionContext()
     {
         // High King Maulgar
-        creators["high king maulgar maulgar tank"] = &RaidGruulsLairActionContext::high_king_maulgar_maulgar_tank;
-        creators["high king maulgar olm tank"] = &RaidGruulsLairActionContext::high_king_maulgar_olm_tank;
-        creators["high king maulgar blindeye tank"] = &RaidGruulsLairActionContext::high_king_maulgar_blindeye_tank;
-        creators["high king maulgar krosh mage tank"] = &RaidGruulsLairActionContext::high_king_maulgar_krosh_mage_tank;
-        creators["high king maulgar kiggler moonkin tank"] = &RaidGruulsLairActionContext::high_king_maulgar_kiggler_moonkin_tank;
-        creators["high king maulgar melee dps priority"] = &RaidGruulsLairActionContext::high_king_maulgar_melee_dps_priority;
-        creators["high king maulgar ranged dps priority"] = &RaidGruulsLairActionContext::high_king_maulgar_ranged_dps_priority;
-        creators["high king maulgar healer avoidance"] = &RaidGruulsLairActionContext::high_king_maulgar_healer_avoidance;
-        creators["high king maulgar whirlwind run away"] = &RaidGruulsLairActionContext::high_king_maulgar_whirlwind_run_away;
+        creators["high king maulgar main tank attack maulgar"] = &RaidGruulsLairActionContext::high_king_maulgar_main_tank_attack_maulgar;
+        creators["high king maulgar first assist tank attack olm"] = &RaidGruulsLairActionContext::high_king_maulgar_first_assist_tank_attack_olm;
+        creators["high king maulgar second assist tank attack blindeye"] = &RaidGruulsLairActionContext::high_king_maulgar_second_assist_tank_attack_blindeye;
+        creators["high king maulgar mage tank attack krosh"] = &RaidGruulsLairActionContext::high_king_maulgar_mage_tank_attack_krosh;
+        creators["high king maulgar moonkin tank attack kiggler"] = &RaidGruulsLairActionContext::high_king_maulgar_moonkin_tank_attack_kiggler;
+        creators["high king maulgar assign melee dps priority"] = &RaidGruulsLairActionContext::high_king_maulgar_assign_melee_dps_priority;
+        creators["high king maulgar assign ranged dps priority"] = &RaidGruulsLairActionContext::high_king_maulgar_assign_ranged_dps_priority;
+        creators["high king maulgar healer find safe position"] = &RaidGruulsLairActionContext::high_king_maulgar_healer_find_safe_position;
+        creators["high king maulgar run away from whirlwind"] = &RaidGruulsLairActionContext::high_king_maulgar_run_away_from_whirlwind;
         creators["high king maulgar banish felstalker"] = &RaidGruulsLairActionContext::high_king_maulgar_banish_felstalker;
-        creators["high king maulgar hunter misdirection"] = &RaidGruulsLairActionContext::high_king_maulgar_hunter_misdirection;
+        creators["high king maulgar misdirect olm and blindeye"] = &RaidGruulsLairActionContext::high_king_maulgar_misdirect_olm_and_blindeye;
 
         // Gruul the Dragonkiller
-        creators["gruul the dragonkiller position boss"] = &RaidGruulsLairActionContext::gruul_the_dragonkiller_position_boss;
+        creators["gruul the dragonkiller main tank position boss"] = &RaidGruulsLairActionContext::gruul_the_dragonkiller_main_tank_position_boss;
         creators["gruul the dragonkiller spread ranged"] = &RaidGruulsLairActionContext::gruul_the_dragonkiller_spread_ranged;
         creators["gruul the dragonkiller shatter spread"] = &RaidGruulsLairActionContext::gruul_the_dragonkiller_shatter_spread;
     }
 
 private:
     // High King Maulgar
-    static Action* high_king_maulgar_maulgar_tank(PlayerbotAI* botAI) { return new HighKingMaulgarMaulgarTankAction(botAI); }
-    static Action* high_king_maulgar_olm_tank(PlayerbotAI* botAI) { return new HighKingMaulgarOlmTankAction(botAI); }
-    static Action* high_king_maulgar_blindeye_tank(PlayerbotAI* botAI) { return new HighKingMaulgarBlindeyeTankAction(botAI); }
-    static Action* high_king_maulgar_krosh_mage_tank(PlayerbotAI* botAI) { return new HighKingMaulgarKroshMageTankAction(botAI); }
-    static Action* high_king_maulgar_kiggler_moonkin_tank(PlayerbotAI* botAI) { return new HighKingMaulgarKigglerMoonkinTankAction(botAI); }
-    static Action* high_king_maulgar_melee_dps_priority(PlayerbotAI* botAI) { return new HighKingMaulgarMeleeDPSPriorityAction(botAI); }
-    static Action* high_king_maulgar_ranged_dps_priority(PlayerbotAI* botAI) { return new HighKingMaulgarRangedDPSPriorityAction(botAI); }
-    static Action* high_king_maulgar_healer_avoidance(PlayerbotAI* botAI) { return new HighKingMaulgarHealerAvoidanceAction(botAI); }
-    static Action* high_king_maulgar_whirlwind_run_away(PlayerbotAI* botAI) { return new HighKingMaulgarWhirlwindRunAwayAction(botAI); }
+    static Action* high_king_maulgar_main_tank_attack_maulgar(PlayerbotAI* botAI) { return new HighKingMaulgarMainTankAttackMaulgarAction(botAI); }
+    static Action* high_king_maulgar_first_assist_tank_attack_olm(PlayerbotAI* botAI) { return new HighKingMaulgarFirstAssistTankAttackOlmAction(botAI); }
+    static Action* high_king_maulgar_second_assist_tank_attack_blindeye(PlayerbotAI* botAI) { return new HighKingMaulgarSecondAssistTankAttackBlindeyeAction(botAI); }
+    static Action* high_king_maulgar_mage_tank_attack_krosh(PlayerbotAI* botAI) { return new HighKingMaulgarMageTankAttackKroshAction(botAI); }
+    static Action* high_king_maulgar_moonkin_tank_attack_kiggler(PlayerbotAI* botAI) { return new HighKingMaulgarMoonkinTankAttackKigglerAction(botAI); }
+    static Action* high_king_maulgar_assign_melee_dps_priority(PlayerbotAI* botAI) { return new HighKingMaulgarAssignMeleeDPSPriorityAction(botAI); }
+    static Action* high_king_maulgar_assign_ranged_dps_priority(PlayerbotAI* botAI) { return new HighKingMaulgarAssignRangedDPSPriorityAction(botAI); }
+    static Action* high_king_maulgar_healer_find_safe_position(PlayerbotAI* botAI) { return new HighKingMaulgarHealerFindSafePositionAction(botAI); }
+    static Action* high_king_maulgar_run_away_from_whirlwind(PlayerbotAI* botAI) { return new HighKingMaulgarRunAwayFromWhirlwindAction(botAI); }
     static Action* high_king_maulgar_banish_felstalker(PlayerbotAI* botAI) { return new HighKingMaulgarBanishFelstalkerAction(botAI); }
-    static Action* high_king_maulgar_hunter_misdirection(PlayerbotAI* botAI) { return new HighKingMaulgarHunterMisdirectionAction(botAI); }
+    static Action* high_king_maulgar_misdirect_olm_and_blindeye(PlayerbotAI* botAI) { return new HighKingMaulgarMisdirectOlmAndBlindeyeAction(botAI); }
 
     // Gruul the Dragonkiller
-    static Action* gruul_the_dragonkiller_position_boss(PlayerbotAI* botAI) { return new GruulTheDragonkillerPositionBossAction(botAI); }
+    static Action* gruul_the_dragonkiller_main_tank_position_boss(PlayerbotAI* botAI) { return new GruulTheDragonkillerMainTankPositionBossAction(botAI); }
     static Action* gruul_the_dragonkiller_spread_ranged(PlayerbotAI* botAI) { return new GruulTheDragonkillerSpreadRangedAction(botAI); }
     static Action* gruul_the_dragonkiller_shatter_spread(PlayerbotAI* botAI) { return new GruulTheDragonkillerShatterSpreadAction(botAI); }
 };

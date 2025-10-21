@@ -50,7 +50,7 @@ float HighKingMaulgarAvoidWhirlwindMultiplier::GetValue(Action* action)
         (!blindeye || !blindeye->IsAlive()))
     {
         if (IsChargeAction(action) || (dynamic_cast<MovementAction*>(action) &&
-            !dynamic_cast<HighKingMaulgarWhirlwindRunAwayAction*>(action)))
+            !dynamic_cast<HighKingMaulgarRunAwayFromWhirlwindAction*>(action)))
             return 0.0f;
     }
 
