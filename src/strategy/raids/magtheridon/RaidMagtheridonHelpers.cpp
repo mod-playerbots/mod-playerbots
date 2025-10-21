@@ -26,26 +26,23 @@ Creature* GetChanneler(Player* bot, uint32 dbGuid)
     if (!map)
         return nullptr;
 
-    auto bounds = map->GetCreatureBySpawnIdStore().equal_range(dbGuid);
-    if (bounds.first == bounds.second)
+    auto it = map->GetCreatureBySpawnIdStore().find(dbGuid);
+    if (it == map->GetCreatureBySpawnIdStore().end())
         return nullptr;
 
-    Creature* creature = bounds.first->second;
-    return creature;
+    return it->second;
 }
 
 void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
 {
-    if (!target)
+    Group* group = bot->GetGroup();
+    if (!target || !group)
         return;
 
-    if (Group* group = bot->GetGroup())
+    ObjectGuid currentGuid = group->GetTargetIcon(iconId);
+    if (currentGuid != target->GetGUID())
     {
-        ObjectGuid currentGuid = group->GetTargetIcon(iconId);
-        if (currentGuid != target->GetGUID())
-        {
-            group->SetTargetIcon(iconId, bot->GetGUID(), target->GetGUID());
-        }
+        group->SetTargetIcon(iconId, bot->GetGUID(), target->GetGUID());
     }
 }
 

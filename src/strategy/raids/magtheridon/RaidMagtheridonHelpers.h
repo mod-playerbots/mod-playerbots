@@ -13,27 +13,27 @@
 enum MagtheridonSpells
 {
     // Magtheridon
-    SPELL_SHADOW_CAGE  = 30205,
-    SPELL_BLAST_NOVA   = 30616,
-    SPELL_SHADOW_GRASP = 30410,
+    SPELL_SHADOW_CAGE   = 30205,
+    SPELL_BLAST_NOVA    = 30616,
+    SPELL_SHADOW_GRASP  = 30410,
 
     // Warlock
-    SPELL_BANISH       = 18647,
-    SPELL_FEAR         =  6215,
+    SPELL_BANISH        = 18647,
+    SPELL_FEAR          =  6215,
 
     // Hunter
-    SPELL_MISDIRECTION = 34477,
+    SPELL_MISDIRECTION  = 34477,
 };
 
 enum MagtheridonNPCs
 {
-    NPC_BURNING_ABYSSAL    = 17454,
-    NPC_TARGET_TRIGGER     = 17474,
+    NPC_BURNING_ABYSSAL = 17454,
+    NPC_TARGET_TRIGGER  = 17474,
 };
 
 enum MagtheridonObjects
 {
-    GO_BLAZE       = 181832,
+    GO_BLAZE            = 181832,
 };
 
 namespace MagtheridonHelpers

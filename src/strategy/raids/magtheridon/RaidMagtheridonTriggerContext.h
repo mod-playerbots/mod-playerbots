@@ -9,29 +9,29 @@ class RaidMagtheridonTriggerContext : public NamedObjectContext<Trigger>
 public:
     RaidMagtheridonTriggerContext() : NamedObjectContext<Trigger>()
     {
-        creators["magtheridon hellfire channeler main tank"] = &RaidMagtheridonTriggerContext::magtheridon_hellfire_channeler_main_tank;
-        creators["magtheridon hellfire channeler nw channeler tank"] = &RaidMagtheridonTriggerContext::magtheridon_hellfire_channeler_nw_channeler_tank;
-        creators["magtheridon hellfire channeler ne channeler tank"] = &RaidMagtheridonTriggerContext::magtheridon_hellfire_channeler_ne_channeler_tank;
-        creators["magtheridon hellfire channeler misdirection"] = &RaidMagtheridonTriggerContext::magtheridon_hellfire_channeler_misdirection;
-        creators["magtheridon dps priority"] = &RaidMagtheridonTriggerContext::magtheridon_dps_priority;
-        creators["magtheridon burning abyssal warlock cc"] = &RaidMagtheridonTriggerContext::magtheridon_burning_abyssal_warlock_cc;
-        creators["magtheridon position boss"] = &RaidMagtheridonTriggerContext::magtheridon_position_boss;
-        creators["magtheridon spread ranged"] = &RaidMagtheridonTriggerContext::magtheridon_spread_ranged;
-        creators["magtheridon use manticron cube"] = &RaidMagtheridonTriggerContext::magtheridon_use_manticron_cube;
-        creators["magtheridon manage timers and assignments"] = &RaidMagtheridonTriggerContext::magtheridon_manage_timers_and_assignments;
+        creators["magtheridon first three channelers engaged by main tank"] = &RaidMagtheridonTriggerContext::magtheridon_first_three_channelers_engaged_by_main_tank;
+        creators["magtheridon nw channeler engaged by first assist tank"] = &RaidMagtheridonTriggerContext::magtheridon_nw_channeler_engaged_by_first_assist_tank;
+        creators["magtheridon ne channeler engaged by second assist tank"] = &RaidMagtheridonTriggerContext::magtheridon_ne_channeler_engaged_by_second_assist_tank;
+        creators["magtheridon pulling west and east channelers"] = &RaidMagtheridonTriggerContext::magtheridon_pull_west_and_east_channelers;
+        creators["magtheridon determining kill order"] = &RaidMagtheridonTriggerContext::magtheridon_determining_kill_order;
+        creators["magtheridon burning abyssal spawned"] = &RaidMagtheridonTriggerContext::magtheridon_burning_abyssal_spawned;
+        creators["magtheridon boss engaged by main tank"] = &RaidMagtheridonTriggerContext::magtheridon_boss_engaged_by_main_tank;
+        creators["magtheridon boss engaged by ranged"] = &RaidMagtheridonTriggerContext::magtheridon_boss_engaged_by_ranged;
+        creators["magtheridon incoming blast nova"] = &RaidMagtheridonTriggerContext::magtheridon_incoming_blast_nova;
+        creators["magtheridon need to manage timers and assignments"] = &RaidMagtheridonTriggerContext::magtheridon_need_to_manage_timers_and_assignments;
     }
 
 private:
-    static Trigger* magtheridon_hellfire_channeler_main_tank(PlayerbotAI* botAI) { return new MagtheridonHellfireChannelerMainTankTrigger(botAI); }
-    static Trigger* magtheridon_hellfire_channeler_nw_channeler_tank(PlayerbotAI* botAI) { return new MagtheridonHellfireChannelerNWChannelerTankTrigger(botAI); }
-    static Trigger* magtheridon_hellfire_channeler_ne_channeler_tank(PlayerbotAI* botAI) { return new MagtheridonHellfireChannelerNEChannelerTankTrigger(botAI); }
-    static Trigger* magtheridon_hellfire_channeler_misdirection(PlayerbotAI* botAI) { return new MagtheridonHellfireChannelerMisdirectionTrigger(botAI); }
-    static Trigger* magtheridon_dps_priority(PlayerbotAI* botAI) { return new MagtheridonDPSPriorityTrigger(botAI); }
-    static Trigger* magtheridon_burning_abyssal_warlock_cc(PlayerbotAI* botAI) { return new MagtheridonBurningAbyssalWarlockCCTrigger(botAI); }
-    static Trigger* magtheridon_position_boss(PlayerbotAI* botAI) { return new MagtheridonPositionBossTrigger(botAI); }
-    static Trigger* magtheridon_spread_ranged(PlayerbotAI* botAI) { return new MagtheridonSpreadRangedTrigger(botAI); }
-    static Trigger* magtheridon_use_manticron_cube(PlayerbotAI* botAI) { return new MagtheridonUseManticronCubeTrigger(botAI); }
-    static Trigger* magtheridon_manage_timers_and_assignments(PlayerbotAI* botAI) { return new MagtheridonManageTimersAndAssignmentsTrigger(botAI); }
+    static Trigger* magtheridon_first_three_channelers_engaged_by_main_tank(PlayerbotAI* botAI) { return new MagtheridonFirstThreeChannelersEngagedByMainTankTrigger(botAI); }
+    static Trigger* magtheridon_nw_channeler_engaged_by_first_assist_tank(PlayerbotAI* botAI) { return new MagtheridonNWChannelerEngagedByFirstAssistTankTrigger(botAI); }
+    static Trigger* magtheridon_ne_channeler_engaged_by_second_assist_tank(PlayerbotAI* botAI) { return new MagtheridonNEChannelerEngagedBySecondAssistTankTrigger(botAI); }
+    static Trigger* magtheridon_pull_west_and_east_channelers(PlayerbotAI* botAI) { return new MagtheridonPullingWestAndEastChannelersTrigger(botAI); }
+    static Trigger* magtheridon_determining_kill_order(PlayerbotAI* botAI) { return new MagtheridonDeterminingKillOrderTrigger(botAI); }
+    static Trigger* magtheridon_burning_abyssal_spawned(PlayerbotAI* botAI) { return new MagtheridonBurningAbyssalSpawnedTrigger(botAI); }
+    static Trigger* magtheridon_boss_engaged_by_main_tank(PlayerbotAI* botAI) { return new MagtheridonBossEngagedByMainTankTrigger(botAI); }
+    static Trigger* magtheridon_boss_engaged_by_ranged(PlayerbotAI* botAI) { return new MagtheridonBossEngagedByRangedTrigger(botAI); }
+    static Trigger* magtheridon_incoming_blast_nova(PlayerbotAI* botAI) { return new MagtheridonIncomingBlastNovaTrigger(botAI); }
+    static Trigger* magtheridon_need_to_manage_timers_and_assignments(PlayerbotAI* botAI) { return new MagtheridonNeedToManageTimersAndAssignmentsTrigger(botAI); }
 };
 
 #endif

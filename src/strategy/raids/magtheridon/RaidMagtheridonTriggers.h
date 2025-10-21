@@ -4,73 +4,73 @@
 #include "Trigger.h"
 #include "PlayerbotAI.h"
 
-class MagtheridonHellfireChannelerMainTankTrigger : public Trigger
+class MagtheridonFirstThreeChannelersEngagedByMainTankTrigger : public Trigger
 {
 public:
-    MagtheridonHellfireChannelerMainTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon hellfire channeler main tank") {};
+    MagtheridonFirstThreeChannelersEngagedByMainTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon first three channelers engaged by main tank") {};
     bool IsActive() override;
 };
 
-class MagtheridonHellfireChannelerNWChannelerTankTrigger : public Trigger
+class MagtheridonNWChannelerEngagedByFirstAssistTankTrigger : public Trigger
 {
 public:
-    MagtheridonHellfireChannelerNWChannelerTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon hellfire channeler nw channeler tank") {};
+    MagtheridonNWChannelerEngagedByFirstAssistTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon nw channeler engaged by first assist tank") {};
     bool IsActive() override;
 };
 
-class MagtheridonHellfireChannelerNEChannelerTankTrigger : public Trigger
+class MagtheridonNEChannelerEngagedBySecondAssistTankTrigger : public Trigger
 {
 public:
-    MagtheridonHellfireChannelerNEChannelerTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon hellfire channeler ne channeler tank") {};
+    MagtheridonNEChannelerEngagedBySecondAssistTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon ne channeler engaged by second assist tank") {};
     bool IsActive() override;
 };
 
-class MagtheridonHellfireChannelerMisdirectionTrigger : public Trigger
+class MagtheridonPullingWestAndEastChannelersTrigger : public Trigger
 {
 public:
-    MagtheridonHellfireChannelerMisdirectionTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon hellfire channeler misdirection") {};
+    MagtheridonPullingWestAndEastChannelersTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon pulling west and east channelers") {};
     bool IsActive() override;
 };
 
-class MagtheridonDPSPriorityTrigger : public Trigger
+class MagtheridonDeterminingKillOrderTrigger : public Trigger
 {
 public:
-    MagtheridonDPSPriorityTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon dps priority") {};
+    MagtheridonDeterminingKillOrderTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon determining kill order") {};
     bool IsActive() override;
 };
 
-class MagtheridonBurningAbyssalWarlockCCTrigger : public Trigger
+class MagtheridonBurningAbyssalSpawnedTrigger : public Trigger
 {
 public:
-    MagtheridonBurningAbyssalWarlockCCTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon burning abyssal warlock cc") {};
+    MagtheridonBurningAbyssalSpawnedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon burning abyssal spawned") {};
     bool IsActive() override;
 };
 
-class MagtheridonPositionBossTrigger : public Trigger
+class MagtheridonBossEngagedByMainTankTrigger : public Trigger
 {
 public:
-    MagtheridonPositionBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon position boss") {};
+    MagtheridonBossEngagedByMainTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon boss engaged by main tank") {};
     bool IsActive() override;
 };
 
-class MagtheridonSpreadRangedTrigger : public Trigger
+class MagtheridonBossEngagedByRangedTrigger : public Trigger
 {
 public:
-    MagtheridonSpreadRangedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon spread ranged") {};
+    MagtheridonBossEngagedByRangedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon boss engaged by ranged") {};
     bool IsActive() override;
 };
 
-class MagtheridonUseManticronCubeTrigger : public Trigger
+class MagtheridonIncomingBlastNovaTrigger : public Trigger
 {
 public:
-    MagtheridonUseManticronCubeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon use manticron cube") {};
+    MagtheridonIncomingBlastNovaTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon incoming blast nova") {};
     bool IsActive() override;
 };
 
-class MagtheridonManageTimersAndAssignmentsTrigger : public Trigger
+class MagtheridonNeedToManageTimersAndAssignmentsTrigger : public Trigger
 {
 public:
-    MagtheridonManageTimersAndAssignmentsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon manage timers and assignments") {};
+    MagtheridonNeedToManageTimersAndAssignmentsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon need to manage timers and assignments") {};
     bool IsActive() override;
 };
 

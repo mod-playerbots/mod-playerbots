@@ -8,58 +8,58 @@
 
 using namespace MagtheridonHelpers;
 
-class MagtheridonHellfireChannelerMainTankAction : public AttackAction
+class MagtheridonMainTankAttackFirstThreeChannelersAction : public AttackAction
 {
 public:
-    MagtheridonHellfireChannelerMainTankAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler main tank") : AttackAction(botAI, name) {};
+    MagtheridonMainTankAttackFirstThreeChannelersAction(PlayerbotAI* botAI, std::string const name = "magtheridon main tank attack first three channelers") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
 };
 
-class MagtheridonHellfireChannelerNWChannelerTankAction : public AttackAction
+class MagtheridonFirstAssistTankAttackNWChannelerAction : public AttackAction
 {
 public:
-    MagtheridonHellfireChannelerNWChannelerTankAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler nw channeler tank") : AttackAction(botAI, name) {};
+    MagtheridonFirstAssistTankAttackNWChannelerAction(PlayerbotAI* botAI, std::string const name = "magtheridon first assist tank attack nw channeler") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
 };
 
-class MagtheridonHellfireChannelerNEChannelerTankAction : public AttackAction
+class MagtheridonSecondAssistTankAttackNEChannelerAction : public AttackAction
 {
 public:
-    MagtheridonHellfireChannelerNEChannelerTankAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler ne channeler tank") : AttackAction(botAI, name) {};
+    MagtheridonSecondAssistTankAttackNEChannelerAction(PlayerbotAI* botAI, std::string const name = "magtheridon second assist tank attack ne channeler") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
 };
 
-class MagtheridonHellfireChannelerMisdirectionAction : public AttackAction
+class MagtheridonMisdirectHellfireChannelers : public AttackAction
 {
 public:
-    MagtheridonHellfireChannelerMisdirectionAction(PlayerbotAI* botAI, std::string const name = "magtheridon hellfire channeler misdirection") : AttackAction(botAI, name) {};
+    MagtheridonMisdirectHellfireChannelers(PlayerbotAI* botAI, std::string const name = "magtheridon misdirect hellfire channelers") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
 };
 
-class MagtheridonDPSPriorityAction : public AttackAction
+class MagtheridonAssignDPSPriorityAction : public AttackAction
 {
 public:
-    MagtheridonDPSPriorityAction(PlayerbotAI* botAI, std::string const name = "magtheridon dps priority") : AttackAction(botAI, name) {};
+    MagtheridonAssignDPSPriorityAction(PlayerbotAI* botAI, std::string const name = "magtheridon assign dps priority") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
 };
 
-class MagtheridonBurningAbyssalWarlockCCAction : public AttackAction
+class MagtheridonWarlockCCBurningAbyssalAction : public AttackAction
 {
 public:
-    MagtheridonBurningAbyssalWarlockCCAction(PlayerbotAI* botAI, std::string const name = "magtheridon burning abyssal warlock cc") : AttackAction(botAI, name) {};
+    MagtheridonWarlockCCBurningAbyssalAction(PlayerbotAI* botAI, std::string const name = "magtheridon warlock cc burning abyssal") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
 };
 
-class MagtheridonPositionBossAction : public AttackAction
+class MagtheridonMainTankPositionBossAction : public AttackAction
 {
 public:
-    MagtheridonPositionBossAction(PlayerbotAI* botAI, std::string const name = "magtheridon position boss") : AttackAction(botAI, name) {};
+    MagtheridonMainTankPositionBossAction(PlayerbotAI* botAI, std::string const name = "magtheridon main tank position boss") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
 };
