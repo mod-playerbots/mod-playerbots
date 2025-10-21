@@ -41,6 +41,11 @@ class ShamanCombatStrategyFactoryInternal : public NamedObjectContext<Strategy>
 public:
     ShamanCombatStrategyFactoryInternal() : NamedObjectContext<Strategy>(false, true)
     {
+        creators["heal"] = &ShamanCombatStrategyFactoryInternal::resto;
+        creators["melee"] = &ShamanCombatStrategyFactoryInternal::enh;
+        creators["dps"] = &ShamanCombatStrategyFactoryInternal::enh;
+        creators["caster"] = &ShamanCombatStrategyFactoryInternal::ele;
+        //creators["offheal"] = &ShamanCombatStrategyFactoryInternal::offheal;
         creators["resto"] = &ShamanCombatStrategyFactoryInternal::resto;
         creators["enh"] = &ShamanCombatStrategyFactoryInternal::enh;
         creators["ele"] = &ShamanCombatStrategyFactoryInternal::ele;

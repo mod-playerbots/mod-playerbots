@@ -93,6 +93,9 @@ The [Playerbots Wiki](https://github.com/mod-playerbots/mod-playerbots/wiki) con
 - **What platforms are supported?** We support Ubuntu, Windows, and macOS. Other Linux distros may work, but will not receive support.
 - **Why isn't my source compiling?** Please ensure that you are compiling with the required [custom branch of AzerothCore](https://github.com/mod-playerbots/azerothcore-wotlk/tree/Playerbot). Additionally, please [check the build status of our CI](https://github.com/mod-playerbots/mod-playerbots/actions). If the latest build is failing, rever to the last successful commit until we address the issue.
 
+## Code standards
+- https://www.azerothcore.org/wiki/cpp-code-standards
+
 ## Addons
 
 Typically, bots are controlled via chat commands. For larger bot groups, this can be unwieldy. As an alternative, community members have developed client Add-Ons to allow controlling bots through the in-game UI. We recommend you check out their projects:
