@@ -42,6 +42,11 @@
 #include "Vehicle.h"
 #include "WaypointMovementGenerator.h"
 #include "Corpse.h"
+#include "GameTime.h"     // GameTime::GetGameTimeMS()
+#include <map>            // cooldown per bot for toggle fly/ground
+
+// // Per bot flight/ground toggle cooldown (ms)
+static std::map<uint32 /*guidLow*/, uint32 /*lastToggleMs*/> s_flightToggleMs;
 
 MovementAction::MovementAction(PlayerbotAI* botAI, std::string const name) : Action(botAI, name)
 {
@@ -208,12 +213,26 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
         if (distance > 0.01f)
         {
             MotionMaster& mm = *vehicleBase->GetMotionMaster();  // need to move vehicle, not bot
-            // Disable ground pathing if the bot/master/vehicle are flying
+            // Core rule:
+            // if (bot/master/vehicle) are flying -> use vmap 3D (allowPath = false)
+            // if the master is ON THE GROUND -> force mmaps 2D (allowPath = true), even if bot/vehicle still have flight flags
             auto isFlying = [](Unit* u){ return u && (u->HasUnitMovementFlag(MOVEMENTFLAG_FLYING) || u->IsInFlight()); };
+            auto altAboveGround = [](Unit* u)->float {
+                if (!u) return 0.f;
+                float x=u->GetPositionX(), y=u->GetPositionY(), z=u->GetPositionZ();
+                float gz=u->GetMap()->GetHeight(u->GetPhaseMask(), x, y, z, true);
+                float alt=z-gz; return alt < 0.f ? 0.f : alt;
+            };
+            const float MASTER_GROUND_LOCK = 2.5f;
+
             bool allowPathVeh = generatePath;
             Unit* masterVeh = botAI ? botAI->GetMaster() : nullptr;
+            bool masterGroundedVeh = masterVeh && !isFlying(masterVeh) && (altAboveGround(masterVeh) <= MASTER_GROUND_LOCK);
+
             if (isFlying(vehicleBase) || isFlying(bot) || isFlying(masterVeh))
-                allowPathVeh = false;
+                allowPathVeh = false;            // Fly -> vmap 3D
+            if (masterGroundedVeh)
+                allowPathVeh = true;     // master in ground -> force mmaps 2D
             mm.Clear();
             if (!backwards)
             {
@@ -250,12 +269,24 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
             // }
             
             MotionMaster& mm = *bot->GetMotionMaster();
-            // No ground pathfinding if the bot/master are flying => allow true 3D (Z) movement
+            // Core rule
             auto isFlying = [](Unit* u){ return u && (u->HasUnitMovementFlag(MOVEMENTFLAG_FLYING) || u->IsInFlight()); };
+            auto altAboveGround = [](Unit* u)->float {
+                if (!u) return 0.f;
+                float x=u->GetPositionX(), y=u->GetPositionY(), z=u->GetPositionZ();
+                float gz=u->GetMap()->GetHeight(u->GetPhaseMask(), x, y, z, true);
+                float alt=z-gz; return alt < 0.f ? 0.f : alt;
+            };
+            const float MASTER_GROUND_LOCK = 2.5f;
+
             bool allowPath = generatePath;
             Unit* master = botAI ? botAI->GetMaster() : nullptr;
+            bool masterGrounded = master && !isFlying(master) && (altAboveGround(master) <= MASTER_GROUND_LOCK);
+
             if (isFlying(bot) || isFlying(master))
-                allowPath = false;
+                allowPath = false;           // Fly -> vmap 3D
+            if (masterGrounded)
+                allowPath = true;            // master in ground -> force mmaps 2D
             mm.Clear();
             if (!backwards)
             {
@@ -299,12 +330,24 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
 
             MotionMaster& mm = *bot->GetMotionMaster();
             G3D::Vector3 endP = path.back();
-            // No ground pathfinding if the bot/master are flying => allow true 3D (Z) movement
+            // Core rule
             auto isFlying = [](Unit* u){ return u && (u->HasUnitMovementFlag(MOVEMENTFLAG_FLYING) || u->IsInFlight()); };
+            auto altAboveGround = [](Unit* u)->float {
+                if (!u) return 0.f;
+                float x=u->GetPositionX(), y=u->GetPositionY(), z=u->GetPositionZ();
+                float gz=u->GetMap()->GetHeight(u->GetPhaseMask(), x, y, z, true);
+                float alt=z-gz; return alt < 0.f ? 0.f : alt;
+            };
+            const float MASTER_GROUND_LOCK = 2.5f;
+
             bool allowPath = generatePath;
             Unit* master = botAI ? botAI->GetMaster() : nullptr;
+            bool masterGrounded = master && !isFlying(master) && (altAboveGround(master) <= MASTER_GROUND_LOCK);
+
             if (isFlying(bot) || isFlying(master))
-                allowPath = false;
+                allowPath = false;           // Fly -> vmap 3D
+            if (masterGrounded)
+                allowPath = true;            // master in ground -> force mmaps 2D
             mm.Clear();
             if (!backwards)
             {
@@ -1033,30 +1076,119 @@ void MovementAction::UpdateMovementState()
     bool onGround = bot->GetPositionZ() <
                     bot->GetMapWaterOrGroundLevel(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ()) + 1.0f;
 
-    // Keep bot->SendMovementFlagUpdate() withing the if statements to not intefere with bot behavior on ground/(shallow) waters
+    // Flight = flying mount OR druid flight form
+    // Anti "ping-pong" hysteresis + cooldown:
+    // walk when |ΔZ_ground| < 4 m; switch back to flight when |ΔZ_ground| > 7 m
+    // 200 ms cooldown on the toggle
+    const float ALT_LOW  = 4.0f;
+    const float ALT_HIGH = 7.0f;
+    const uint32 TOGGLE_COOLDOWN_MS = 200;
 
-    bool hasFlightAura = bot->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || bot->HasAuraType(SPELL_AURA_FLY);
-    if (hasFlightAura)
+    const bool hasFlightAura =
+        bot->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) ||
+        bot->HasAuraType(SPELL_AURA_FLY);
+
+    // Altitude relative to the ground (via vmaps)
+    float gx = bot->GetPositionX();
+    float gy = bot->GetPositionY();
+    float gz = bot->GetPositionZ();
+    float groundZ = bot->GetMap()->GetHeight(bot->GetPhaseMask(), gx, gy, gz, true);
+    float altAboveGround = gz - groundZ;
+    if (altAboveGround < 0.0f) altAboveGround = 0.0f;
+
+    // Master's state used to lock ground mode when the master is on the ground
+    Unit* master = botAI ? botAI->GetMaster() : nullptr;
+    bool masterFlying = false;
+    float masterAltAboveGround = 0.0f;
+    if (master)
     {
-        bool changed = false;
+        float mx = master->GetPositionX();
+        float my = master->GetPositionY();
+        float mz = master->GetPositionZ();
+        float mGroundZ = master->GetMap()->GetHeight(master->GetPhaseMask(), mx, my, mz, true);
+        masterAltAboveGround = mz - mGroundZ;
+        if (masterAltAboveGround < 0.0f) masterAltAboveGround = 0.0f;
+        // Do not count CAN_FLY for "masterFlying" (flying mount on the ground)
+        // we only want to trigger bot flight if the master is ACTUALLY flying.
+        masterFlying =
+            master->HasUnitMovementFlag(MOVEMENTFLAG_FLYING) ||
+            master->IsInFlight();
+    }
+
+    bool isFlying = bot->HasUnitMovementFlag(MOVEMENTFLAG_FLYING);
+    bool wantFly  = false;
+    if (hasFlightAura)
+        wantFly = isFlying ? (altAboveGround > ALT_LOW) : (altAboveGround > ALT_HIGH);
+    else
+        wantFly = false;
+
+    // As long as the master is on the ground (not flying and very close to the ground), force the bot to stay on the ground.
+    // Prevents "skimming flight" when the master is walking with a flying mount.
+    const float MASTER_GROUND_LOCK = 2.5f; // Tolerance height
+    if (master && !masterFlying && masterAltAboveGround <= MASTER_GROUND_LOCK)
+        wantFly = false;
+
+    uint32 nowMs  = getMSTime();
+    uint32& lastMs = s_flightToggleMs[bot->GetGUID().GetCounter()];
+    bool canToggle = (nowMs - lastMs >= TOGGLE_COOLDOWN_MS);
+
+    bool changed = false;
+    // Only start flying if the master "wants" the air (has flight flags OR is above the ground-lock threshold).
+    bool masterWantsAir = (master && (masterFlying || masterAltAboveGround > MASTER_GROUND_LOCK));
+    if (hasFlightAura && !isFlying && canToggle && masterWantsAir)
+    {
+        // Enable *all* the flags required for true 3D flight (even while on the ground)
         if (!bot->HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY))
         {
-            bot->AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
-            changed = true;
+            bot->AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY), changed = true;
         }
         if (!bot->HasUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY))
         {
-            bot->AddUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
-            changed = true;
+            bot->AddUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY), changed = true;
         }
         if (!bot->HasUnitMovementFlag(MOVEMENTFLAG_FLYING))
         {
-            bot->AddUnitMovementFlag(MOVEMENTFLAG_FLYING);
-            changed = true;
+            bot->AddUnitMovementFlag(MOVEMENTFLAG_FLYING), changed = true;
         }
-        if (changed)
-            bot->SendMovementFlagUpdate();
     }
+    // Landing: if we don't want to fly and we're currently flying, then land.
+    // Ignore the cooldown when the master is firmly on the ground to prevent hovering.
+    else if (!wantFly && isFlying && (canToggle || (master && !masterFlying && masterAltAboveGround <= MASTER_GROUND_LOCK)))
+    {
+        if (bot->HasUnitMovementFlag(MOVEMENTFLAG_FLYING))
+        {
+            bot->RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING), changed = true;
+        }
+        if (bot->HasUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY))
+        {
+            bot->RemoveUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY), changed = true;
+        }
+        if (bot->HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY))
+        {
+            bot->RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY), changed = true;
+        }
+    }
+
+    // Ground clamp: if the bot is NOT flying but still has flight flags (CAN_FLY/NO_GRAVITY),
+    // and the master is definitely on the ground, clear those flags to prevent hovering/jumps.
+    else if (!isFlying && master && !masterFlying && masterAltAboveGround <= MASTER_GROUND_LOCK)
+    {
+        if (bot->HasUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY))
+        {
+            bot->RemoveUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY), changed = true;
+        }
+        if (bot->HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY))
+        {
+            bot->RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY), changed = true;
+        }
+    }
+	
+    if (changed)
+    {
+        lastMs = nowMs;
+        bot->SendMovementFlagUpdate();
+    }
+	
     else if (!hasFlightAura)
     {
         bool changed = false;
