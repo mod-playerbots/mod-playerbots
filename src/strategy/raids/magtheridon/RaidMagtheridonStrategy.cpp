@@ -15,7 +15,7 @@ void RaidMagtheridonStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("magtheridon boss engaged by ranged", NextAction::array(0,
         new NextAction("magtheridon spread ranged", ACTION_RAID + 2), nullptr)));
 
-    triggers.push_back(new TriggerNode("magtheridon need to pull west and east channelers", NextAction::array(0,
+    triggers.push_back(new TriggerNode("magtheridon pulling west and east channelers", NextAction::array(0,
         new NextAction("magtheridon misdirect hellfire channelers", ACTION_RAID + 2), nullptr)));
 
     triggers.push_back(new TriggerNode("magtheridon boss engaged by main tank", NextAction::array(0,

@@ -38,8 +38,8 @@ bool MagtheridonPullingWestAndEastChannelersTrigger::IsActive()
     Creature* channelerCircle = GetChanneler(bot, EAST_CHANNELER);
 
     return magtheridon && bot->getClass() == CLASS_HUNTER &&
-           (channelerStar && channelerStar->IsAlive() || 
-            channelerCircle && channelerCircle->IsAlive());
+           ((channelerStar && channelerStar->IsAlive()) || 
+            (channelerCircle && channelerCircle->IsAlive()));
 }
 
 bool MagtheridonDeterminingKillOrderTrigger::IsActive()
@@ -51,12 +51,12 @@ bool MagtheridonDeterminingKillOrderTrigger::IsActive()
     Creature* channelerTriangle = GetChanneler(bot, NORTHEAST_CHANNELER);
 
     if (!magtheridon || botAI->IsHeal(bot) || botAI->IsMainTank(bot) || 
-        botAI->IsAssistTankOfIndex(bot, 0) && channelerDiamond && channelerDiamond->IsAlive() ||
-        botAI->IsAssistTankOfIndex(bot, 1) && channelerTriangle && channelerTriangle->IsAlive())
+        (botAI->IsAssistTankOfIndex(bot, 0) && channelerDiamond && channelerDiamond->IsAlive()) ||
+        (botAI->IsAssistTankOfIndex(bot, 1) && channelerTriangle && channelerTriangle->IsAlive()))
         return false;
 
-    return channeler && channeler->IsAlive() || magtheridon && 
-           !magtheridon->HasAura(SPELL_SHADOW_CAGE);
+    return (channeler && channeler->IsAlive()) || (magtheridon && 
+           !magtheridon->HasAura(SPELL_SHADOW_CAGE));
 }
 
 bool MagtheridonBurningAbyssalSpawnedTrigger::IsActive()
