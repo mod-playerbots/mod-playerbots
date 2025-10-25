@@ -220,7 +220,8 @@ public:
 
     bool OnPlayerBeforeAchievementComplete(Player* player, AchievementEntry const* achievement) override
     {
-        if (sRandomPlayerbotMgr->IsRandomBot(player) && (achievement->flags == 256 || achievement->flags == 768))
+        if ((sRandomPlayerbotMgr->IsRandomBot(player) || sRandomPlayerbotMgr->IsAddclassBot(player)) &&
+            (achievement->flags & (ACHIEVEMENT_FLAG_REALM_FIRST_REACH | ACHIEVEMENT_FLAG_REALM_FIRST_KILL)))
         {
             return false;
         }
