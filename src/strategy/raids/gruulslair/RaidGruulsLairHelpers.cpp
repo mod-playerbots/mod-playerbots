@@ -8,16 +8,16 @@ namespace GruulsLairHelpers
 {
 namespace GruulsLairLocations
 {
-	const Location MaulgarTankPosition  = { 90.686f, 167.047f, -13.234f };
     // Olm does not chase properly due to the Core's caster movement issues
     // Thus, the below "OlmTankPosition" is beyond the actual desired tanking location
     // It is the spot to which the OlmTank runs to to pull Olm to a decent tanking location
-    const Location OlmTankPosition      = { 87.485f, 234.942f, -3.635f };
-    const Location BlindeyeTankPosition = { 99.681f, 213.989f, -10.345f };
-    const Location KroshTankPosition    = { 116.880f, 166.208f, -14.231f };
     // "MaulgarRoomCenter" is to keep healers in a centralized location
-    const Location MaulgarRoomCenter    = { 88.754f, 150.759f, -11.569f };
-	const Location GruulTankPosition    = { 241.238f, 365.025f, -4.220f };
+	const Location MaulgarTankPosition  = {  90.686f, 167.047f, -13.234f };
+    const Location OlmTankPosition      = {  87.485f, 234.942f,  -3.635f };
+    const Location BlindeyeTankPosition = {  99.681f, 213.989f, -10.345f };
+    const Location KroshTankPosition    = { 116.880f, 166.208f, -14.231f };
+    const Location MaulgarRoomCenter    = {  88.754f, 150.759f, -11.569f };
+	const Location GruulTankPosition    = { 241.238f, 365.025f,  -4.220f };
 }
 
 bool IsAnyOgreBossAlive(PlayerbotAI* botAI)
