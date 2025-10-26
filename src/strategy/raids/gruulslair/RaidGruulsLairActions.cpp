@@ -86,7 +86,6 @@ bool HighKingMaulgarFirstAssistTankAttackOlmAction::Execute(Event event)
         return MoveTo(olm->GetMapId(), olm->GetPositionX(), olm->GetPositionY(), 
                       olm->GetPositionZ(), false, false, false, false, 
                       MovementPriority::MOVEMENT_COMBAT, true, false);
-
     }
 
     return false;
@@ -127,10 +126,9 @@ bool HighKingMaulgarSecondAssistTankAttackBlindeyeAction::Execute(Event event)
     }
     else if (!bot->IsWithinMeleeRange(blindeye))
     {
-        return MoveTo(blindeye->GetMapId(), blindeye->GetPositionX(), blindeye->GetPositionY(), 
-                      blindeye->GetPositionZ(), false, false, false, false, 
+        return MoveTo(blindeye->GetMapId(), blindeye->GetPositionX(), blindeye->GetPositionY(),
+                      blindeye->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_COMBAT, true, false);
-
     }
 
     return false;
@@ -145,13 +143,13 @@ bool HighKingMaulgarMageTankAttackKroshAction::Execute(Event event)
     SetRtiTarget(botAI, "triangle", krosh);
 
     if (krosh->HasAura(SPELL_SPELL_SHIELD) && botAI->CanCastSpell("spellsteal", krosh))
-        botAI->CastSpell("spellsteal", krosh);
+        return botAI->CastSpell("spellsteal", krosh);
 
     if (!bot->HasAura(SPELL_SPELL_SHIELD) && botAI->CanCastSpell("fire ward", bot))
-        botAI->CastSpell("fire ward", bot);
+        return botAI->CastSpell("fire ward", bot);
 
     if (bot->GetVictim() != krosh)
-        return Attack(krosh);
+        Attack(krosh);
 
     if (krosh->GetVictim() == bot)
     {
@@ -196,7 +194,7 @@ bool HighKingMaulgarMoonkinTankAttackKigglerAction::Execute(Event event)
     SetRtiTarget(botAI, "diamond", kiggler);
 
     if (bot->GetVictim() != kiggler)
-        return Attack(kiggler);
+        Attack(kiggler);
 
     Position safePos;
     if (TryGetNewSafePosition(botAI, bot, safePos))
@@ -313,7 +311,7 @@ bool HighKingMaulgarAssignRangedDPSPriorityAction::Execute(Event event)
         SetRtiTarget(botAI, "star", blindeye);
 
         if (bot->GetVictim() != blindeye)
-            return Attack(blindeye);
+            Attack(blindeye);
 
         return false;
     }
@@ -334,7 +332,7 @@ bool HighKingMaulgarAssignRangedDPSPriorityAction::Execute(Event event)
         SetRtiTarget(botAI, "circle", olm);
 
         if (bot->GetVictim() != olm)
-            return Attack(olm);
+            Attack(olm);
 
         return false;
     }
@@ -355,7 +353,7 @@ bool HighKingMaulgarAssignRangedDPSPriorityAction::Execute(Event event)
         SetRtiTarget(botAI, "triangle", krosh);
 
         if (bot->GetVictim() != krosh)
-            return Attack(krosh);
+            Attack(krosh);
 
         return false;
     }
@@ -376,7 +374,7 @@ bool HighKingMaulgarAssignRangedDPSPriorityAction::Execute(Event event)
         SetRtiTarget(botAI, "diamond", kiggler);
 
         if (bot->GetVictim() != kiggler)
-            return Attack(kiggler);
+            Attack(kiggler);
 
         return false;
     }
@@ -397,7 +395,7 @@ bool HighKingMaulgarAssignRangedDPSPriorityAction::Execute(Event event)
         SetRtiTarget(botAI, "square", maulgar);
 
         if (bot->GetVictim() != maulgar)
-            return Attack(maulgar);
+            Attack(maulgar);
     }
 
     return false;
@@ -429,7 +427,7 @@ bool HighKingMaulgarHealerFindSafePositionAction::Execute(Event event)
     if (TryGetNewSafePosition(botAI, bot, safePos))
     {
         bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
+        bot->InterruptNonMeleeSpells(false);
         return MoveTo(bot->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
                       false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
