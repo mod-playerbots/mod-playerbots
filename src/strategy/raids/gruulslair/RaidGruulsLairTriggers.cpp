@@ -41,28 +41,18 @@ bool HighKingMaulgarIsMoonkinTankTrigger::IsActive()
     return IsKigglerMoonkinTank(botAI, bot) && kiggler && kiggler->IsAlive();
 }
 
-bool HighKingMaulgarDeterminingMeleeDPSKillOrderTrigger::IsActive()
+bool HighKingMaulgarDeterminingKillOrderTrigger::IsActive()
 {
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
     Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
     Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
+    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
 
-    return botAI->IsMelee(bot) &&
+    return (botAI->IsDps(bot) || botAI->IsTank(bot)) &&
            !(botAI->IsMainTank(bot) && maulgar && maulgar->IsAlive()) &&
            !(botAI->IsAssistTankOfIndex(bot, 0) && olm && olm->IsAlive()) &&
-           !(botAI->IsAssistTankOfIndex(bot, 1) && blindeye && blindeye->IsAlive());
-}
-
-bool HighKingMaulgarDeterminingRangedDPSKillOrderTrigger::IsActive()
-{
-    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-    Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
-    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
-    Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
-    Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-
-    return botAI->IsRanged(bot) && !botAI->IsHeal(bot) &&
+           !(botAI->IsAssistTankOfIndex(bot, 1) && blindeye && blindeye->IsAlive()) &&
            !(IsKroshMageTank(botAI, bot) && krosh && krosh->IsAlive()) &&
            !(IsKigglerMoonkinTank(botAI, bot) && kiggler && kiggler->IsAlive());
 }

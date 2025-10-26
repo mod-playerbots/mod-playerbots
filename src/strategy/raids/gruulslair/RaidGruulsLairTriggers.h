@@ -38,17 +38,10 @@ public:
     bool IsActive() override;
 };
 
-class HighKingMaulgarDeterminingMeleeDPSKillOrderTrigger : public Trigger
+class HighKingMaulgarDeterminingKillOrderTrigger : public Trigger
 {
 public:
-    HighKingMaulgarDeterminingMeleeDPSKillOrderTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar determining melee dps kill order") {}
-    bool IsActive() override;
-};
-
-class HighKingMaulgarDeterminingRangedDPSKillOrderTrigger : public Trigger
-{
-public:
-    HighKingMaulgarDeterminingRangedDPSKillOrderTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar determining ranged dps kill order") {}
+    HighKingMaulgarDeterminingKillOrderTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar determining kill order") {}
     bool IsActive() override;
 };
 

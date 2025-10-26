@@ -148,8 +148,11 @@ bool HighKingMaulgarMageTankAttackKroshAction::Execute(Event event)
     if (!bot->HasAura(SPELL_SPELL_SHIELD) && botAI->CanCastSpell("fire ward", bot))
         return botAI->CastSpell("fire ward", bot);
 
-    if (bot->GetVictim() != krosh)
-        Attack(krosh);
+    if (bot->GetTarget() != krosh->GetGUID())
+    {
+        bot->SetSelection(krosh->GetGUID());
+        return true;
+    }
 
     if (krosh->GetVictim() == bot)
     {
@@ -193,8 +196,11 @@ bool HighKingMaulgarMoonkinTankAttackKigglerAction::Execute(Event event)
     MarkTargetWithDiamond(bot, kiggler);
     SetRtiTarget(botAI, "diamond", kiggler);
 
-    if (bot->GetVictim() != kiggler)
-        Attack(kiggler);
+    if (bot->GetTarget() != kiggler->GetGUID())
+    {
+        bot->SetSelection(kiggler->GetGUID());
+        return true;
+    }
 
     Position safePos;
     if (TryGetNewSafePosition(botAI, bot, safePos))
@@ -206,9 +212,9 @@ bool HighKingMaulgarMoonkinTankAttackKigglerAction::Execute(Event event)
     return false;
 }
 
-bool HighKingMaulgarAssignMeleeDPSPriorityAction::Execute(Event event)
+bool HighKingMaulgarAssignDPSPriorityAction::Execute(Event event)
 {
-    // Melee target priority 1: Blindeye
+    // Target priority 1: Blindeye
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
     if (blindeye && blindeye->IsAlive())
     {
@@ -223,13 +229,16 @@ bool HighKingMaulgarAssignMeleeDPSPriorityAction::Execute(Event event)
 
         SetRtiTarget(botAI, "star", blindeye);
 
-        if (bot->GetVictim() != blindeye)
+        if (bot->GetTarget() != blindeye->GetGUID())
+        {
+            bot->SetSelection(blindeye->GetGUID());
             return Attack(blindeye);
+        }
 
         return false;
     }
 
-    // Melee target priority 2: Olm
+    // Target priority 2: Olm
     Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
     if (olm && olm->IsAlive())
     {
@@ -244,102 +253,18 @@ bool HighKingMaulgarAssignMeleeDPSPriorityAction::Execute(Event event)
 
         SetRtiTarget(botAI, "circle", olm);
 
-        if (bot->GetVictim() != olm)
+        if (bot->GetTarget() != olm->GetGUID())
+        {
+            bot->SetSelection(olm->GetGUID());
             return Attack(olm);
+        }
 
         return false;
     }
 
-    // Melee target priority 3: Kiggler
-    Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
-    if (kiggler && kiggler->IsAlive())
-    {
-        Position safePos;
-        if (TryGetNewSafePosition(botAI, bot, safePos))
-        {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(false);
-            return MoveTo(kiggler->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-
-        SetRtiTarget(botAI, "diamond", kiggler);
-
-        if (bot->GetVictim() != kiggler)
-            return Attack(kiggler);
-
-        return false;
-    }
-
-    // Melee target priority 4: Maulgar
-    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-    if (maulgar && maulgar->IsAlive())
-    {
-        Position safePos;
-        if (TryGetNewSafePosition(botAI, bot, safePos))
-        {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(false);
-            return MoveTo(maulgar->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-
-        SetRtiTarget(botAI, "square", maulgar);
-
-        if (bot->GetVictim() != maulgar)
-            return Attack(maulgar);
-    }
-
-    return false;
-}
-
-bool HighKingMaulgarAssignRangedDPSPriorityAction::Execute(Event event)
-{
-    // Ranged target priority 1: Blindeye
-    Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-    if (blindeye && blindeye->IsAlive())
-    {
-        Position safePos;
-        if (TryGetNewSafePosition(botAI, bot, safePos))
-        {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(false);
-            return MoveTo(blindeye->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-
-        SetRtiTarget(botAI, "star", blindeye);
-
-        if (bot->GetVictim() != blindeye)
-            Attack(blindeye);
-
-        return false;
-    }
-
-    // Ranged target priority 2: Olm
-    Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
-    if (olm && olm->IsAlive())
-    {
-        Position safePos;
-        if (TryGetNewSafePosition(botAI, bot, safePos))
-        {
-            bot->AttackStop();
-            bot->InterruptNonMeleeSpells(false);
-            return MoveTo(olm->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
-
-        SetRtiTarget(botAI, "circle", olm);
-
-        if (bot->GetVictim() != olm)
-            Attack(olm);
-
-        return false;
-    }
-
-    // Ranged target priority 3: Krosh
+    // Target priority 3a: Krosh (ranged only)
     Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
-    if (krosh && krosh->IsAlive())
+    if (krosh && krosh->IsAlive() && botAI->IsRanged(bot))
     {
         Position safePos;
         if (TryGetNewSafePosition(botAI, bot, safePos))
@@ -352,13 +277,16 @@ bool HighKingMaulgarAssignRangedDPSPriorityAction::Execute(Event event)
 
         SetRtiTarget(botAI, "triangle", krosh);
 
-        if (bot->GetVictim() != krosh)
-            Attack(krosh);
+        if (bot->GetTarget() != krosh->GetGUID())
+        {
+            bot->SetSelection(krosh->GetGUID());
+            return Attack(krosh);
+        }
 
         return false;
     }
 
-    // Ranged target priority 4: Kiggler
+    // Target priority 3b: Kiggler
     Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
     if (kiggler && kiggler->IsAlive())
     {
@@ -373,13 +301,16 @@ bool HighKingMaulgarAssignRangedDPSPriorityAction::Execute(Event event)
 
         SetRtiTarget(botAI, "diamond", kiggler);
 
-        if (bot->GetVictim() != kiggler)
-            Attack(kiggler);
+        if (bot->GetTarget() != kiggler->GetGUID())
+        {
+            bot->SetSelection(kiggler->GetGUID());
+            return Attack(kiggler);
+        }
 
         return false;
     }
 
-    // Ranged target priority 5: Maulgar
+    // Target priority 4: Maulgar
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
     if (maulgar && maulgar->IsAlive())
     {
@@ -394,8 +325,11 @@ bool HighKingMaulgarAssignRangedDPSPriorityAction::Execute(Event event)
 
         SetRtiTarget(botAI, "square", maulgar);
 
-        if (bot->GetVictim() != maulgar)
-            Attack(maulgar);
+        if (bot->GetTarget() != maulgar->GetGUID())
+        {
+            bot->SetSelection(maulgar->GetGUID());
+            return Attack(maulgar);
+        }
     }
 
     return false;
@@ -597,10 +531,10 @@ bool HighKingMaulgarMisdirectOlmAndBlindeyeAction::Execute(Event event)
 bool GruulTheDragonkillerMainTankPositionBossAction::Execute(Event event)
 {
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-    
+
     if (bot->GetVictim() != gruul)
         return Attack(gruul);
-    
+
     if (gruul->GetVictim() == bot)
     {
         const Location& tankPosition = GruulsLairLocations::GruulTankPosition;

@@ -45,18 +45,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class HighKingMaulgarAssignMeleeDPSPriorityAction : public AttackAction
+class HighKingMaulgarAssignDPSPriorityAction : public AttackAction
 {
 public:
-    HighKingMaulgarAssignMeleeDPSPriorityAction(PlayerbotAI* botAI, std::string const name = "high king maulgar assign melee dps priority") : AttackAction(botAI, name) {};
-
-    bool Execute(Event event) override;
-};
-
-class HighKingMaulgarAssignRangedDPSPriorityAction : public AttackAction
-{
-public:
-    HighKingMaulgarAssignRangedDPSPriorityAction(PlayerbotAI* botAI, std::string const name = "high king maulgar assign ranged dps priority") : AttackAction(botAI, name) {};
+    HighKingMaulgarAssignDPSPriorityAction(PlayerbotAI* botAI, std::string const name = "high king maulgar assign dps priority") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
 };

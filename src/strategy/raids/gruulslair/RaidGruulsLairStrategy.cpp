@@ -19,11 +19,8 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("high king maulgar is moonkin tank", NextAction::array(0,
         new NextAction("high king maulgar moonkin tank attack kiggler", ACTION_RAID + 1), nullptr)));
 
-    triggers.push_back(new TriggerNode("high king maulgar determining melee dps kill order", NextAction::array(0,
-        new NextAction("high king maulgar assign melee dps priority", ACTION_RAID + 1), nullptr)));
-
-    triggers.push_back(new TriggerNode("high king maulgar determining ranged dps kill order", NextAction::array(0,
-        new NextAction("high king maulgar assign ranged dps priority", ACTION_RAID + 1), nullptr)));
+    triggers.push_back(new TriggerNode("high king maulgar determining kill order", NextAction::array(0,
+        new NextAction("high king maulgar assign dps priority", ACTION_RAID + 1), nullptr)));
 
     triggers.push_back(new TriggerNode("high king maulgar healer in danger", NextAction::array(0,
         new NextAction("high king maulgar healer find safe position", ACTION_RAID + 1), nullptr)));

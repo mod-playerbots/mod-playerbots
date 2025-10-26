@@ -12,7 +12,7 @@ namespace GruulsLairLocations
     // Thus, the below "OlmTankPosition" is beyond the actual desired tanking location
     // It is the spot to which the OlmTank runs to to pull Olm to a decent tanking location
     // "MaulgarRoomCenter" is to keep healers in a centralized location
-	const Location MaulgarTankPosition  = {  90.686f, 167.047f, -13.234f };
+    const Location MaulgarTankPosition  = {  90.686f, 167.047f, -13.234f };
     const Location OlmTankPosition      = {  87.485f, 234.942f,  -3.635f };
     const Location BlindeyeTankPosition = {  99.681f, 213.989f, -10.345f };
     const Location KroshTankPosition    = { 116.880f, 166.208f, -14.231f };

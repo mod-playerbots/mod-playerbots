@@ -15,8 +15,7 @@ public:
         creators["high king maulgar second assist tank attack blindeye"] = &RaidGruulsLairActionContext::high_king_maulgar_second_assist_tank_attack_blindeye;
         creators["high king maulgar mage tank attack krosh"] = &RaidGruulsLairActionContext::high_king_maulgar_mage_tank_attack_krosh;
         creators["high king maulgar moonkin tank attack kiggler"] = &RaidGruulsLairActionContext::high_king_maulgar_moonkin_tank_attack_kiggler;
-        creators["high king maulgar assign melee dps priority"] = &RaidGruulsLairActionContext::high_king_maulgar_assign_melee_dps_priority;
-        creators["high king maulgar assign ranged dps priority"] = &RaidGruulsLairActionContext::high_king_maulgar_assign_ranged_dps_priority;
+        creators["high king maulgar assign dps priority"] = &RaidGruulsLairActionContext::high_king_maulgar_assign_dps_priority;
         creators["high king maulgar healer find safe position"] = &RaidGruulsLairActionContext::high_king_maulgar_healer_find_safe_position;
         creators["high king maulgar run away from whirlwind"] = &RaidGruulsLairActionContext::high_king_maulgar_run_away_from_whirlwind;
         creators["high king maulgar banish felstalker"] = &RaidGruulsLairActionContext::high_king_maulgar_banish_felstalker;
@@ -35,8 +34,7 @@ private:
     static Action* high_king_maulgar_second_assist_tank_attack_blindeye(PlayerbotAI* botAI) { return new HighKingMaulgarSecondAssistTankAttackBlindeyeAction(botAI); }
     static Action* high_king_maulgar_mage_tank_attack_krosh(PlayerbotAI* botAI) { return new HighKingMaulgarMageTankAttackKroshAction(botAI); }
     static Action* high_king_maulgar_moonkin_tank_attack_kiggler(PlayerbotAI* botAI) { return new HighKingMaulgarMoonkinTankAttackKigglerAction(botAI); }
-    static Action* high_king_maulgar_assign_melee_dps_priority(PlayerbotAI* botAI) { return new HighKingMaulgarAssignMeleeDPSPriorityAction(botAI); }
-    static Action* high_king_maulgar_assign_ranged_dps_priority(PlayerbotAI* botAI) { return new HighKingMaulgarAssignRangedDPSPriorityAction(botAI); }
+    static Action* high_king_maulgar_assign_dps_priority(PlayerbotAI* botAI) { return new HighKingMaulgarAssignDPSPriorityAction(botAI); }
     static Action* high_king_maulgar_healer_find_safe_position(PlayerbotAI* botAI) { return new HighKingMaulgarHealerFindSafePositionAction(botAI); }
     static Action* high_king_maulgar_run_away_from_whirlwind(PlayerbotAI* botAI) { return new HighKingMaulgarRunAwayFromWhirlwindAction(botAI); }
     static Action* high_king_maulgar_banish_felstalker(PlayerbotAI* botAI) { return new HighKingMaulgarBanishFelstalkerAction(botAI); }

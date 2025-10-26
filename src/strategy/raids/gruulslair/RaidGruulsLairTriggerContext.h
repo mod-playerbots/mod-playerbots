@@ -15,8 +15,7 @@ public:
         creators["high king maulgar is second assist tank"] = &RaidGruulsLairTriggerContext::high_king_maulgar_is_second_assist_tank;
         creators["high king maulgar is mage tank"] = &RaidGruulsLairTriggerContext::high_king_maulgar_is_mage_tank;
         creators["high king maulgar is moonkin tank"] = &RaidGruulsLairTriggerContext::high_king_maulgar_is_moonkin_tank;
-        creators["high king maulgar determining melee dps kill order"] = &RaidGruulsLairTriggerContext::high_king_maulgar_melee_dps_kill_order;
-        creators["high king maulgar determining ranged dps kill order"] = &RaidGruulsLairTriggerContext::high_king_maulgar_ranged_dps_kill_order;
+        creators["high king maulgar determining kill order"] = &RaidGruulsLairTriggerContext::high_king_maulgar_determining_kill_order;
         creators["high king maulgar healer in danger"] = &RaidGruulsLairTriggerContext::high_king_maulgar_healer_in_danger;
         creators["high king maulgar boss channeling whirlwind"] = &RaidGruulsLairTriggerContext::high_king_maulgar_boss_channeling_whirlwind;
         creators["high king maulgar wild felstalker spawned"] = &RaidGruulsLairTriggerContext::high_king_maulgar_wild_felstalker_spawned;
@@ -35,8 +34,7 @@ private:
     static Trigger* high_king_maulgar_is_second_assist_tank(PlayerbotAI* botAI) { return new HighKingMaulgarIsSecondAssistTankTrigger(botAI); }
     static Trigger* high_king_maulgar_is_mage_tank(PlayerbotAI* botAI) { return new HighKingMaulgarIsMageTankTrigger(botAI); }
     static Trigger* high_king_maulgar_is_moonkin_tank(PlayerbotAI* botAI) { return new HighKingMaulgarIsMoonkinTankTrigger(botAI); }
-    static Trigger* high_king_maulgar_melee_dps_kill_order(PlayerbotAI* botAI) { return new HighKingMaulgarDeterminingMeleeDPSKillOrderTrigger(botAI); }
-    static Trigger* high_king_maulgar_ranged_dps_kill_order(PlayerbotAI* botAI) { return new HighKingMaulgarDeterminingRangedDPSKillOrderTrigger(botAI); }
+    static Trigger* high_king_maulgar_determining_kill_order(PlayerbotAI* botAI) { return new HighKingMaulgarDeterminingKillOrderTrigger(botAI); }
     static Trigger* high_king_maulgar_healer_in_danger(PlayerbotAI* botAI) { return new HighKingMaulgarHealerInDangerTrigger(botAI); }
     static Trigger* high_king_maulgar_boss_channeling_whirlwind(PlayerbotAI* botAI) { return new HighKingMaulgarBossChannelingWhirlwindTrigger(botAI); }
     static Trigger* high_king_maulgar_wild_felstalker_spawned(PlayerbotAI* botAI) { return new HighKingMaulgarWildFelstalkerSpawnedTrigger(botAI); }
