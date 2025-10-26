@@ -219,8 +219,11 @@ bool MagtheridonAssignDPSPriorityAction::Execute(Event event)
     {
         SetRtiTarget(botAI, "square", channelerSquare);
 
-        if (bot->GetVictim() != channelerSquare)
-            Attack(channelerSquare);
+        if (bot->GetTarget() != channelerSquare->GetGUID())
+        {
+            bot->SetSelection(channelerSquare->GetGUID());
+            return Attack(channelerSquare);
+        }
 
         return false;
     }
@@ -230,8 +233,11 @@ bool MagtheridonAssignDPSPriorityAction::Execute(Event event)
     {
         SetRtiTarget(botAI, "star", channelerStar);
 
-        if (bot->GetVictim() != channelerStar)
-            Attack(channelerStar);
+        if (bot->GetTarget() != channelerStar->GetGUID())
+        {
+            bot->SetSelection(channelerStar->GetGUID());
+            return Attack(channelerStar);
+        }
 
         return false;
     }
@@ -241,8 +247,11 @@ bool MagtheridonAssignDPSPriorityAction::Execute(Event event)
     {
         SetRtiTarget(botAI, "circle", channelerCircle);
 
-        if (bot->GetVictim() != channelerCircle)
-            Attack(channelerCircle);
+        if (bot->GetTarget() != channelerCircle->GetGUID())
+        {
+            bot->SetSelection(channelerCircle->GetGUID());
+            return Attack(channelerCircle);
+        }
 
         return false;
     }
@@ -252,8 +261,11 @@ bool MagtheridonAssignDPSPriorityAction::Execute(Event event)
     {
         SetRtiTarget(botAI, "diamond", channelerDiamond);
 
-        if (bot->GetVictim() != channelerDiamond)
-            Attack(channelerDiamond);
+        if (bot->GetTarget() != channelerDiamond->GetGUID())
+        {
+            bot->SetSelection(channelerDiamond->GetGUID());
+            return Attack(channelerDiamond);
+        }
 
         return false;
     }
@@ -263,8 +275,11 @@ bool MagtheridonAssignDPSPriorityAction::Execute(Event event)
     {
         SetRtiTarget(botAI, "triangle", channelerTriangle);
 
-        if (bot->GetVictim() != channelerTriangle)
-            Attack(channelerTriangle);
+        if (bot->GetTarget() != channelerTriangle->GetGUID())
+        {
+            bot->SetSelection(channelerTriangle->GetGUID());
+            return Attack(channelerTriangle);
+        }
 
         return false;
     }
@@ -279,8 +294,11 @@ bool MagtheridonAssignDPSPriorityAction::Execute(Event event)
     {
         SetRtiTarget(botAI, "cross", magtheridon);
 
-        if (bot->GetVictim() != magtheridon)
-            Attack(magtheridon);
+        if (bot->GetTarget() != magtheridon->GetGUID())
+        {
+            bot->SetSelection(magtheridon->GetGUID());
+            return Attack(magtheridon);
+        }
     }
 
     return false;
@@ -370,9 +388,7 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event event)
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
 
-        float orientation = atan2(magtheridon->GetPositionY() - bot->GetPositionY(), 
-                            magtheridon->GetPositionX() - bot->GetPositionX());
-        bot->SetFacingTo(orientation);
+        bot->SetFacingTo(position.orientation);
     }
 
     return false;
