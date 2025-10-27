@@ -70,7 +70,7 @@ float StatsWeightCalculator::CalculateItem(uint32 itemId, int32 randomPropertyId
 
     Reset();
 
-    collector_->CollectItemStats(proto);
+    collector_->CollectItemStats(proto, lvl);
 
     if (randomPropertyIds != 0)
         CalculateRandomProperty(randomPropertyIds, itemId);

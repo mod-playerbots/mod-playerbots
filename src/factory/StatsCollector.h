@@ -64,7 +64,7 @@ public:
     StatsCollector(CollectorType type, int32 cls = -1);
     StatsCollector(StatsCollector& stats) = default;
     void Reset();
-    void CollectItemStats(ItemTemplate const* proto);
+    void CollectItemStats(ItemTemplate const* proto, uint8 playerLevel);
     void CollectSpellStats(uint32 spellId, float multiplier = 1.0f, int32 spellCooldown = -1);
     void CollectEnchantStats(SpellItemEnchantmentEntry const* enchant, uint32 default_enchant_amount = 0);
     bool CanBeTriggeredByType(SpellInfo const* spellInfo, uint32 procFlags, bool strict = true);

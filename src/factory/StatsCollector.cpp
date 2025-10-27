@@ -25,8 +25,24 @@ void StatsCollector::Reset()
     }
 }
 
-void StatsCollector::CollectItemStats(ItemTemplate const* proto)
+void StatsCollector::CollectItemStats(ItemTemplate const* proto, uint8 playerLevel)
 {
+    ScalingStatDistributionEntry const* ssd =
+        proto->ScalingStatDistribution ? sScalingStatDistributionStore.LookupEntry(proto->ScalingStatDistribution)
+                                       : nullptr;
+
+    uint32 ScalingStatValue = proto->ScalingStatValue > 0 ? proto->ScalingStatValue : 0;
+    uint32 ssdLevel = playerLevel;
+
+    if (ssd != nullptr)
+    {
+        if (ssdLevel > ssd->MaxLevel)
+            ssdLevel = ssd->MaxLevel;
+    }
+
+    ScalingStatValuesEntry const* ssv =
+        proto->ScalingStatValue ? sScalingStatValuesStore.LookupEntry(ssdLevel) : nullptr;
+
     if (proto->IsRangedWeapon())
     {
         float val = (proto->Damage[0].DamageMin + proto->Damage[0].DamageMax) * 1000 / 2 / proto->Delay;
@@ -39,11 +55,22 @@ void StatsCollector::CollectItemStats(ItemTemplate const* proto)
     }
     stats[STATS_TYPE_ARMOR] += proto->Armor;
     stats[STATS_TYPE_BLOCK_VALUE] += proto->Block;
-    for (int i = 0; i < proto->StatsCount; i++)
+    for (int i = 0; i < MAX_ITEM_PROTO_STATS; i++)
     {
         const _ItemStat& stat = proto->ItemStat[i];
-        const int32& val = stat.ItemStatValue;
-        CollectByItemStatType(stat.ItemStatType, val);
+        uint32 statType = stat.ItemStatType;
+        int32 val;
+
+        if (ssv && ssd && ssd->StatMod[i] >= 0)
+        {
+            statType = ssd->StatMod[i];
+            uint32 mul = ssv->getssdMultiplier(ScalingStatValue);
+            val = mul * ssd->Modifier[i] / 10000;
+        }
+        else if (i < proto->StatsCount)
+            val = stat.ItemStatValue;
+
+        CollectByItemStatType(statType, val);
     }
     for (uint8 j = 0; j < MAX_ITEM_PROTO_SPELLS; j++)
     {
