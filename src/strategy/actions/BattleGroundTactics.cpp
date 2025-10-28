@@ -3769,16 +3769,6 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
 
     // Area is clear of enemies and no friendlies are capturing
     // Proceed with capture mechanics
-    if (!eyeBg && bgType == BATTLEGROUND_EY)
-    {
-        eyeBg = static_cast<BattlegroundEY*>(bg);
-    }
-
-    if (!eyCenterFlag && eyeBg)
-    {
-        eyCenterFlag = eyeBg->GetBGObject(BG_EY_OBJECT_FLAG_NETHERSTORM);
-    }
-
     for (ObjectGuid const guid : closeObjects)
     {
         GameObject* go = botAI->GetGameObject(guid);
@@ -3943,7 +3933,8 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
                         {
                             if (Spell* currentSpell = bot->GetCurrentSpell(static_cast<CurrentSpellTypes>(type)))
                             {
-                                if (currentSpell->m_spellInfo->Id == SPELL_CAPTURE_BANNER)
+                                // m_spellInfo may be null in some states: protect access
+                                if (currentSpell->m_spellInfo && currentSpell->m_spellInfo->Id == SPELL_CAPTURE_BANNER)
                                 {
                                     bot->StopMoving();
                                     botAI->SetNextCheckDelay(500);
