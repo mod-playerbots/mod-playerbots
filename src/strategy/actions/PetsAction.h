@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PETACTION_H
-#define _PLAYERBOT_PETACTION_H
+#ifndef _PLAYERBOT_PETSACTION_H
+#define _PLAYERBOT_PETSACTION_H
 
 #include <string>
 
@@ -14,10 +14,10 @@
 
 class PlayerbotAI;
 
-class PetAction : public Action
+class PetsAction : public Action
 {
 public:
-    PetAction(PlayerbotAI* botAI, const std::string& defaultCmd = "") : Action(botAI, "pet"), defaultCmd(defaultCmd) {}
+    PetsAction(PlayerbotAI* botAI, const std::string& defaultCmd = "") : Action(botAI, "pet"), defaultCmd(defaultCmd) {}
 
     bool Execute(Event event) override;
 
