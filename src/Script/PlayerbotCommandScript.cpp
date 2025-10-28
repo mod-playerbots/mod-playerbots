@@ -34,11 +34,15 @@ public:
             {"bg", HandleDebugBGCommand, SEC_GAMEMASTER, Console::Yes},
         };
 
-        static ChatCommandTable playerbotsAccountCommandTable = {
-            {"setKey", HandleSetSecurityKeyCommand, SEC_PLAYER, Console::No},
-            {"link", HandleLinkAccountCommand, SEC_PLAYER, Console::No},
-            {"linkedAccounts", HandleViewLinkedAccountsCommand, SEC_PLAYER, Console::No},
-            {"unlink", HandleUnlinkAccountCommand, SEC_PLAYER, Console::No},
+        static ChatCommandTable playerbotsAccountLinkCommandTable = {
+            // Invite code system
+            {"generate", HandleGenerateCommand, SEC_PLAYER, Console::No},
+            {"connect", HandleConnectCommand, SEC_PLAYER, Console::No},
+            {"codes", HandleCodesCommand, SEC_PLAYER, Console::No},
+            {"remove", HandleRemoveCommand, SEC_PLAYER, Console::No},
+            // Account management
+            {"activelinks", HandleActiveLinksCommand, SEC_PLAYER, Console::No},
+            {"disconnect", HandleDisconnectCommand, SEC_PLAYER, Console::No},
         };
 
         static ChatCommandTable playerbotsCommandTable = {
@@ -47,7 +51,7 @@ public:
             {"pmon", HandlePerfMonCommand, SEC_GAMEMASTER, Console::Yes},
             {"rndbot", HandleRandomPlayerbotCommand, SEC_GAMEMASTER, Console::Yes},
             {"debug", playerbotsDebugCommandTable},
-            {"account", playerbotsAccountCommandTable},
+            {"accountlink", playerbotsAccountLinkCommandTable},
         };
 
         static ChatCommandTable commandTable = {
@@ -111,102 +115,24 @@ public:
         return BGTactics::HandleConsoleCommand(handler, args);
     }
 
-    static bool HandleSetSecurityKeyCommand(ChatHandler* handler, char const* args)
+    // Generic helper for account link commands
+    static bool HandleAccountLinkCommand(ChatHandler* handler, char const* args, const char* command)
     {
-        if (!args || !*args)
-        {
-            handler->PSendSysMessage("Usage: .playerbots account setKey <securityKey>");
-            return false;
+        std::string commandArgs = command;
+        if (args && *args) {
+            commandArgs += " ";
+            commandArgs += args;
         }
-
-        Player* player = handler->GetSession()->GetPlayer();
-        std::string key = args;
-
-        PlayerbotMgr* mgr = PlayerbotsMgr::instance().GetPlayerbotMgr(player);
-        if (mgr)
-        {
-            mgr->HandleSetSecurityKeyCommand(player, key);
-            return true;
-        }
-        else
-        {
-            handler->PSendSysMessage("PlayerbotMgr instance not found.");
-            return false;
-        }
+        return PlayerbotMgr::HandleConsoleCommand(handler, commandArgs.c_str());
     }
 
-    static bool HandleLinkAccountCommand(ChatHandler* handler, char const* args)
-    {
-        if (!args || !*args)
-            return false;
-
-        char* accountName = strtok((char*)args, " ");
-        char* key = strtok(nullptr, " ");
-
-        if (!accountName || !key)
-        {
-            handler->PSendSysMessage("Usage: .playerbots account link <accountName> <securityKey>");
-            return false;
-        }
-
-        Player* player = handler->GetSession()->GetPlayer();
-
-        PlayerbotMgr* mgr = PlayerbotsMgr::instance().GetPlayerbotMgr(player);
-        if (mgr)
-        {
-            mgr->HandleLinkAccountCommand(player, accountName, key);
-            return true;
-        }
-        else
-        {
-            handler->PSendSysMessage("PlayerbotMgr instance not found.");
-            return false;
-        }
-    }
-
-    static bool HandleViewLinkedAccountsCommand(ChatHandler* handler, char const* /*args*/)
-    {
-        Player* player = handler->GetSession()->GetPlayer();
-
-        PlayerbotMgr* mgr = PlayerbotsMgr::instance().GetPlayerbotMgr(player);
-        if (mgr)
-        {
-            mgr->HandleViewLinkedAccountsCommand(player);
-            return true;
-        }
-        else
-        {
-            handler->PSendSysMessage("PlayerbotMgr instance not found.");
-            return false;
-        }
-    }
-
-    static bool HandleUnlinkAccountCommand(ChatHandler* handler, char const* args)
-    {
-        if (!args || !*args)
-            return false;
-
-        char* accountName = strtok((char*)args, " ");
-        if (!accountName)
-        {
-            handler->PSendSysMessage("Usage: .playerbots account unlink <accountName>");
-            return false;
-        }
-
-        Player* player = handler->GetSession()->GetPlayer();
-
-        PlayerbotMgr* mgr = PlayerbotsMgr::instance().GetPlayerbotMgr(player);
-        if (mgr)
-        {
-            mgr->HandleUnlinkAccountCommand(player, accountName);
-            return true;
-        }
-        else
-        {
-            handler->PSendSysMessage("PlayerbotMgr instance not found.");
-            return false;
-        }
-    }
+    // Simplified account link command handlers
+    static bool HandleGenerateCommand(ChatHandler* handler, char const* args) { return HandleAccountLinkCommand(handler, args, "generate"); }
+    static bool HandleConnectCommand(ChatHandler* handler, char const* args) { return HandleAccountLinkCommand(handler, args, "connect"); }
+    static bool HandleCodesCommand(ChatHandler* handler, char const* args) { return HandleAccountLinkCommand(handler, args, "codes"); }
+    static bool HandleRemoveCommand(ChatHandler* handler, char const* args) { return HandleAccountLinkCommand(handler, args, "remove"); }
+    static bool HandleActiveLinksCommand(ChatHandler* handler, char const* args) { return HandleAccountLinkCommand(handler, args, "activelinks"); }
+    static bool HandleDisconnectCommand(ChatHandler* handler, char const* args) { return HandleAccountLinkCommand(handler, args, "disconnect"); }
 };
 
 void AddPlayerbotsCommandscripts() { new playerbots_commandscript(); }
