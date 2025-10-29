@@ -14,12 +14,12 @@
 #include <algorithm>
 #include <chrono>
 #include <unordered_map>
-#include <random>
 
 #include "ChannelMgr.h"
 #include "CharacterCache.h"
 #include "CharacterPackets.h"
 #include "Common.h"
+#include "CryptoRandom.h"
 #include "Define.h"
 #include "Group.h"
 #include "GroupMgr.h"
@@ -61,23 +61,33 @@ namespace {
         handler.PSendSysMessage("Unable to complete {} operation. Please verify your parameters and try again.", operation.c_str());
     }
 
-    // Helper function to generate secure invite code
+    // Helper function to generate secure invite code using AzerothCore's OpenSSL-based crypto random
     std::string GenerateInviteCode() {
         const char chars[] = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Excluded confusing chars (0,O,1,I)
         const size_t charCount = sizeof(chars) - 1;
 
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_int_distribution<> dis(0, charCount - 1);
+        // Generate 12 cryptographically secure random bytes for character selection
+        std::array<uint8, 12> randomBytes;
+        Acore::Crypto::GetRandomBytes(randomBytes);
 
+        // Generate code in format XXXX-XXXX-XXXX using OpenSSL's secure random generator
         std::string code;
         for (int i = 0; i < 12; ++i) {
             if (i == 4 || i == 8) {
                 code += '-';
             }
-            code += chars[dis(gen)];
+            // Use secure random bytes from OpenSSL
+            code += chars[randomBytes[i] % charCount];
         }
+
         return code;
+    }
+
+    // Helper function to check if invite code exists in database
+    bool InviteCodeExists(const std::string& code) {
+        QueryResult existing = PlayerbotsDatabase.Query(
+            "SELECT 1 FROM playerbots_invite_codes WHERE code = '{}' AND status = 'ACTIVE'", code);
+        return existing != nullptr;
     }
 
     // Helper function to validate invite code format
@@ -1992,22 +2002,19 @@ void PlayerbotMgr::HandleGenerateInviteCommand(Player* player)
             }
         }
 
-        // Generate unique invite code
+        // Generate unique invite code with collision detection
         std::string inviteCode;
-        bool isUnique = false;
+        constexpr int maxAttempts = 10;
         int attempts = 0;
 
         do {
             inviteCode = GenerateInviteCode();
-            QueryResult existingResult = PlayerbotsDatabase.Query(
-                "SELECT 1 FROM playerbots_invite_codes WHERE code = '{}' AND status = 'ACTIVE'",
-                inviteCode);
-            isUnique = !existingResult;
             attempts++;
-        } while (!isUnique && attempts < 10);
+        } while (InviteCodeExists(inviteCode) && attempts < maxAttempts);
 
-        if (!isUnique) {
-            handler.PSendSysMessage("Failed to generate unique invite code. Please try again.");
+        if (attempts >= maxAttempts) {
+            LOG_ERROR("playerbots", "Failed to generate unique invite code after {} attempts", maxAttempts);
+            handler.PSendSysMessage("Failed to generate unique invite code after {} attempts. Please try again.", maxAttempts);
             return;
         }
 
