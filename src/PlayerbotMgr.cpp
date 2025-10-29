@@ -1602,8 +1602,44 @@ void PlayerbotMgr::OnBotLoginInternal(Player* const bot)
 
 void PlayerbotMgr::OnPlayerLogin(Player* player)
 {
+    if (!player)
+    {
+        return;
+    }
+
+    WorldSession* session = player->GetSession();
+    if (!session)
+    {
+        LOG_WARN("playerbots", "Unable to register locale priority for player {} because the session is missing", player->GetName());
+        return;
+    }
+
+    LocaleConstant const dbcLocale = session->GetSessionDbcLocale();
+    LocaleConstant const dbLocale = session->GetSessionDbLocaleIndex();
+
+    LocaleConstant locale = dbcLocale;
+    if (dbcLocale >= MAX_LOCALES && dbLocale < MAX_LOCALES)
+    {
+        locale = dbLocale;
+    }
+    else if (dbLocale < MAX_LOCALES && dbcLocale < MAX_LOCALES && dbcLocale != dbLocale)
+    {
+        if (dbcLocale == LOCALE_enUS && dbLocale != LOCALE_enUS)
+        {
+            locale = dbLocale;
+        }
+    }
+
+    if (locale >= MAX_LOCALES)
+    {
+        locale = LOCALE_enUS;
+    }
+
+    LOG_DEBUG("playerbots", "Registering locales for player {}: dbc={}, db={}, used={}", player->GetName(),
+        static_cast<uint32>(dbcLocale), static_cast<uint32>(dbLocale), static_cast<uint32>(locale));
+	
     // set locale priority for bot texts
-    sPlayerbotTextMgr->AddLocalePriority(player->GetSession()->GetSessionDbcLocale());
+	sPlayerbotTextMgr->AddLocalePriority(locale);
 
     if (sPlayerbotAIConfig->selfBotLevel > 2)
         HandlePlayerbotCommand("self", player);

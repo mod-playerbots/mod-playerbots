@@ -5,6 +5,8 @@
 
 #include "PlayerbotTextMgr.h"
 
+#include <sstream>
+
 #include "Playerbots.h"
 #include "WorldSessionMgr.h"
 
@@ -190,29 +192,61 @@ bool PlayerbotTextMgr::GetBotText(std::string name, std::string& text, std::map<
 
 void PlayerbotTextMgr::AddLocalePriority(uint32 locale)
 {
-    if (!locale)
+    if (locale >= MAX_LOCALES)
+    {
+        LOG_WARN("playerbots", "Ignoring locale {} for bot texts because it exceeds MAX_LOCALES ({})", locale, MAX_LOCALES - 1);
         return;
+    }
 
-    botTextLocalePriority[locale]++;
+    ++botTextLocalePriority[locale];
+    LOG_DEBUG("playerbots", "Locale priority incremented for locale {}. New count: {}", locale, botTextLocalePriority[locale]);
 }
 
 uint32 PlayerbotTextMgr::GetLocalePriority()
 {
     uint32 topLocale = 0;
+    uint32 topLocaleCount = 0;
+
+    auto const buildLocaleCounts = [this]() -> std::string
+    {
+        std::ostringstream stream;
+        stream << '[';
+        for (uint8 i = 0; i < MAX_LOCALES; ++i)
+        {
+            if (i)
+            {
+                stream << ", ";
+            }
+
+            stream << static_cast<uint32>(i) << ':' << botTextLocalePriority[i];
+        }
+
+        stream << ']';
+        return stream.str();
+    };
 
     // if no real players online, reset top locale
-    if (!sWorldSessionMgr->GetActiveSessionCount())
+    uint32 const activeSessions = sWorldSessionMgr->GetActiveSessionCount();
+    if (!activeSessions)
     {
+        LOG_DEBUG("playerbots", "Locale priority reset because no active sessions. Previous counts: {}", buildLocaleCounts());
         ResetLocalePriority();
         return 0;
     }
 
     for (uint8 i = 0; i < MAX_LOCALES; ++i)
     {
-        if (botTextLocalePriority[i] > topLocale)
+        uint32 const localeCount = botTextLocalePriority[i];
+        if (localeCount > topLocaleCount)
+        {
             topLocale = i;
+            topLocaleCount = localeCount;
+        }
     }
 
+    LOG_DEBUG("playerbots", "Locale priority check: active sessions {}, counts {}, chosen locale {} with {} votes", activeSessions,
+        buildLocaleCounts(), topLocale, topLocaleCount);
+		
     return topLocale;
 }
 
