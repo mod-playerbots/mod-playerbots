@@ -214,9 +214,7 @@ uint32 PlayerbotTextMgr::GetLocalePriority()
         for (uint8 i = 0; i < MAX_LOCALES; ++i)
         {
             if (i)
-            {
                 stream << ", ";
-            }
 
             stream << static_cast<uint32>(i) << ':' << botTextLocalePriority[i];
         }
