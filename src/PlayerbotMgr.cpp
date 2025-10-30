@@ -1603,9 +1603,7 @@ void PlayerbotMgr::OnBotLoginInternal(Player* const bot)
 void PlayerbotMgr::OnPlayerLogin(Player* player)
 {
     if (!player)
-    {
         return;
-    }
 
     WorldSession* session = player->GetSession();
     if (!session)
@@ -1619,21 +1617,13 @@ void PlayerbotMgr::OnPlayerLogin(Player* player)
 
     LocaleConstant locale = dbcLocale;
     if (dbcLocale >= MAX_LOCALES && dbLocale < MAX_LOCALES)
-    {
         locale = dbLocale;
-    }
     else if (dbLocale < MAX_LOCALES && dbcLocale < MAX_LOCALES && dbcLocale != dbLocale)
-    {
         if (dbcLocale == LOCALE_enUS && dbLocale != LOCALE_enUS)
-        {
             locale = dbLocale;
-        }
-    }
 
     if (locale >= MAX_LOCALES)
-    {
         locale = LOCALE_enUS;
-    }
 
     LOG_DEBUG("playerbots", "Registering locales for player {}: dbc={}, db={}, used={}", player->GetName(),
         static_cast<uint32>(dbcLocale), static_cast<uint32>(dbLocale), static_cast<uint32>(locale));
