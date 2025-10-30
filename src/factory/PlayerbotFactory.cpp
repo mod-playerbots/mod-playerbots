@@ -4182,7 +4182,18 @@ void PlayerbotFactory::InitArenaTeam()
             if (botcaptain && botcaptain->GetTeamId() == bot->GetTeamId())  // need?
             {
                 arenateam->AddMember(bot->GetGUID());
-                arenateam->SaveToDB();
+
+                // Set bot's personal rating to match team rating
+                ArenaTeamMember* member = arenateam->GetMember(bot->GetGUID());
+                if (member)
+                {
+                    uint32 teamRating = arenateam->GetRating();
+                    member->PersonalRating = teamRating;
+                }
+
+                // Save arena team data first, force member save for bots with no games played
+                // Note: SaveToDB() only saves member data if WeekGames > 0 or forceMemberSave = true
+                arenateam->SaveToDB(true);
             }
         }
         arenateams.erase(arenateams.begin() + index);
