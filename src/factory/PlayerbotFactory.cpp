@@ -4181,18 +4181,11 @@ void PlayerbotFactory::InitArenaTeam()
 
             if (botcaptain && botcaptain->GetTeamId() == bot->GetTeamId())  // need?
             {
+                // AzerothCore's AddMember() automatically handles personal rating assignment
+                // based on CONFIG_ARENA_START_PERSONAL_RATING configuration
                 arenateam->AddMember(bot->GetGUID());
 
-                // Set bot's personal rating to match team rating
-                ArenaTeamMember* member = arenateam->GetMember(bot->GetGUID());
-                if (member)
-                {
-                    uint32 teamRating = arenateam->GetRating();
-                    member->PersonalRating = teamRating;
-                }
-
-                // Save arena team data first, force member save for bots with no games played
-                // Note: SaveToDB() only saves member data if WeekGames > 0 or forceMemberSave = true
+                // Force save member data to database (required for bots with WeekGames = 0)
                 arenateam->SaveToDB(true);
             }
         }
