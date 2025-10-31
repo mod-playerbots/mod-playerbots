@@ -1612,24 +1612,29 @@ void PlayerbotMgr::OnPlayerLogin(Player* player)
         return;
     }
 
-    LocaleConstant const dbcLocale = session->GetSessionDbcLocale();
-    LocaleConstant const dbLocale = session->GetSessionDbLocaleIndex();
+    // Récupération explicite des 2 indices de locale (DBC et DB)
+    LocaleConstant const dbcLocaleIndex = session->GetSessionDbcLocale();
+    LocaleConstant const dbLocaleIndex  = session->GetSessionDbLocaleIndex();
 
-    LocaleConstant locale = dbcLocale;
-    if (dbcLocale >= MAX_LOCALES && dbLocale < MAX_LOCALES)
-        locale = dbLocale;
-    else if (dbLocale < MAX_LOCALES && dbcLocale < MAX_LOCALES && dbcLocale != dbLocale)
-        if (dbcLocale == LOCALE_enUS && dbLocale != LOCALE_enUS)
-            locale = dbLocale;
+    LocaleConstant usedLocale = dbcLocaleIndex;
 
-    if (locale >= MAX_LOCALES)
-        locale = LOCALE_enUS;
+    // Combine les conditions pour éviter l'imbrication :
+    // - préférer DB si DBC est invalide et DB valide
+    // - ou si les deux sont valides mais DBC == enUS et DB != enUS
+    bool const dbcValid = dbcLocaleIndex < MAX_LOCALES;
+    bool const dbValid  = dbLocaleIndex  < MAX_LOCALES;
+    if ((!dbcValid && dbValid) ||
+        (dbcValid && dbValid && dbcLocaleIndex == LOCALE_enUS && dbLocaleIndex != LOCALE_enUS))
+        usedLocale = dbLocaleIndex;
+
+    if (usedLocale >= MAX_LOCALES)
+        usedLocale = LOCALE_enUS;
 
     LOG_DEBUG("playerbots", "Registering locales for player {}: dbc={}, db={}, used={}", player->GetName(),
-        static_cast<uint32>(dbcLocale), static_cast<uint32>(dbLocale), static_cast<uint32>(locale));
-	
+        static_cast<uint32>(dbcLocaleIndex), static_cast<uint32>(dbLocaleIndex), static_cast<uint32>(usedLocale));
+
     // set locale priority for bot texts
-	sPlayerbotTextMgr->AddLocalePriority(locale);
+    sPlayerbotTextMgr->AddLocalePriority(usedLocale);
 
     if (sPlayerbotAIConfig->selfBotLevel > 2)
         HandlePlayerbotCommand("self", player);
