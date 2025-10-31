@@ -47,21 +47,18 @@ static inline bool ShouldLogForThisBot(Player* bot)
 static inline bool IsTankRole(Player* p)
 {
     if (!p)
-	{
         return false;
-	}
     if (p->HasTankSpec())
-	{
         return true;
-	}
     if (PlayerbotAI* otherAI = GET_PLAYERBOT_AI(p))
-    {
+    {	
         if (otherAI->HasStrategy("tank", BOT_STATE_NON_COMBAT) || otherAI->HasStrategy("tank", BOT_STATE_COMBAT) ||
             otherAI->HasStrategy("tank face", BOT_STATE_NON_COMBAT) ||
             otherAI->HasStrategy("tank face", BOT_STATE_COMBAT) || otherAI->HasStrategy("bear", BOT_STATE_NON_COMBAT) ||
             otherAI->HasStrategy("bear", BOT_STATE_COMBAT))
             return true;
     }
+	
     return false;
 }
 
@@ -70,26 +67,20 @@ static inline bool IsOnlyPaladinInGroup(Player* bot)
 {
     // Logging de coordination des rôles
     if (!bot)
-	{
         return false;
-	}
+
     Group* g = bot->GetGroup();
     if (!g)
-	{
         return true;
-	}
+
     uint32 pals = 0u;
     for (GroupReference* r = g->GetFirstMember(); r; r = r->next())
     {
         Player* p = r->GetSource();
         if (!p || !p->IsInWorld())
-		{
             continue;
-		}
         if (p->getClass() == CLASS_PALADIN)
-		{
             ++pals;
-		}
     }
     return pals == 1u;
 }
@@ -98,28 +89,20 @@ static inline bool IsOnlyPaladinInGroup(Player* bot)
 static inline uint32 CountPaladinsInGroup(Player* bot)
 {
     if (!bot)
-	{
         return 0u;
-	}
 	
     Group* g = bot->GetGroup();
     if (!g)
-	{
         return (bot->getClass() == CLASS_PALADIN) ? 1u : 0u;
-	}
 	
     uint32 pals = 0u;
     for (GroupReference* r = g->GetFirstMember(); r; r = r->next())
     {
         Player* p = r->GetSource();
         if (!p || !p->IsInWorld())
-		{
             continue;
-		}
         if (p->getClass() == CLASS_PALADIN)
-		{
             ++pals;
-		}
     }
     return pals;
 }
@@ -162,16 +145,12 @@ static inline bool ShouldReceiveMight(Player* p, Player* caster)
 static inline bool IsDesignatedRolePaladin(Player* bot, const char* roleName)
 {
     if (!bot)
-	{
         return true;
-	}
 	
     Group* g = bot->GetGroup();
     const std::string gtag = MakeGroupTag(g);
     if (!g)
-	{
         return true;
-	}
 	
     const bool doLog = ShouldLogForThisBot(bot);
 
@@ -182,9 +161,7 @@ static inline bool IsDesignatedRolePaladin(Player* bot, const char* roleName)
     {
         Player* p = r->GetSource();
         if (!p || !p->IsInWorld() || p->getClass() != CLASS_PALADIN)
-		{
             continue;
-		}
 
         if (PlayerbotAI* otherAI = GET_PLAYERBOT_AI(p))
         {
@@ -455,10 +432,8 @@ Value<Unit*>* CastBlessingOfWisdomOnPartyAction::GetTargetValue()
 bool CastBlessingOfWisdomOnPartyAction::Execute(Event event)
 {
     // Single-role coordinator: only one paladin with "bmana" does party-wide buffs
-    if (!IsDesignatedRolePaladin(bot, "bmana"))
-	{	
+    if (!IsDesignatedRolePaladin(bot, "bmana"))	
         return false;
-	}
 
     if (ShouldLogForThisBot(bot))
     {
@@ -467,16 +442,13 @@ bool CastBlessingOfWisdomOnPartyAction::Execute(Event event)
     }
 
     Unit* target = GetTarget();
-    if (!target)
-	{	
+    if (!target)	
         return false;
-	}
 
     Player* targetPlayer = target->ToPlayer();
 	
-    if (Group* g = bot->GetGroup(); g && targetPlayer && !g->IsMember(targetPlayer->GetGUID())) {
-        return false;
-    }	
+    if (Group* g = bot->GetGroup(); g && targetPlayer && !g->IsMember(targetPlayer->GetGUID()))
+        return false;	
 
     if (botAI->HasStrategy("bmana", BOT_STATE_NON_COMBAT) && targetPlayer && IsTankRole(targetPlayer))
     {
@@ -487,9 +459,7 @@ bool CastBlessingOfWisdomOnPartyAction::Execute(Event event)
     // Force Wisdom into party mode (no redirection based on class)
     std::string castName = "blessing of wisdom";
     if (castName.empty())
-	{	
         return false;
-	}
 
     auto RP = ai::chat::MakeGroupAnnouncer(bot);
     castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName, /*announceOnMissing=*/true, RP);
@@ -504,15 +474,11 @@ Value<Unit*>* CastBlessingOfSanctuaryOnPartyAction::GetTargetValue()
 bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event event)
 {
     if (!bot->HasSpell(SPELL_BLESSING_OF_SANCTUARY))
-	{
         return false;
-	}
 
     Unit* target = GetTarget();
     if (!target)
-    {
         target = bot;
-    }
 
     Player* targetPlayer = target ? target->ToPlayer() : nullptr;
 
@@ -587,9 +553,7 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event event)
     // If after retargeting we still don't have a valid tank without Sanctuary, we stop and avoid calling the
     // resolver/logger no sanct
     if (!targetOk)
-	{
         return false;
-	}
 
     {
         bool hasKings = HasKingsAura(target);
@@ -603,14 +567,11 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event event)
 
     // no point in switching to Greater here, to avoid any collision
     if (castName.empty())
-	{
         castName = "blessing of sanctuary";
-	}
+	
     // For safety, if ever a non-tank arrives here
     if (targetPlayer && !IsTankRole(targetPlayer))
-	{
         return false;
-	}
 	
     castName = "blessing of sanctuary";
 
@@ -634,9 +595,8 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
     const bool actAsBstats = electedBstats && hasBstats;
     const bool actAsBmana = electedBmana && hasBmana;
     if (!actAsBstats && !actAsBmana)
-	{	
         return false;
-	}	
+
     if (ShouldLogForThisBot(bot))
     {
         const std::string gtag = MakeGroupTag(bot->GetGroup());
@@ -646,17 +606,13 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
 
     Unit* target = GetTarget();
     if (!target)
-	{	
         return false;
-	}
 
     Player* targetPlayer = target->ToPlayer();  // <-- déclare targetPlayer ici
 
     Group* g = bot->GetGroup();
     if (!g)
-	{	
         return false;
-	}
 
     // Only one paladin in the party, case with active bstats, avoid self-targeting and ensure that Kings covers the
     // others, Greater if possible.
@@ -677,17 +633,14 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
             {
                 Player* p = r->GetSource();
                 if (!isEligibleNonTank(p))
-				{	
                     continue;
-				}
+
                 if (!lacksKings(p))
-				{	
                     continue;
-				}
+
                 if (p->GetGUID() == bot->GetGUID())
-				{	
                     continue;  // do not target itself
-				}
+
                 best = p;
                 break;
             }
@@ -703,19 +656,15 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
 
     // Solo paladin, never buff itself to not remove his sanctuary buff
     if (botAI->HasStrategy("bstats", BOT_STATE_NON_COMBAT) && IsOnlyPaladinInGroup(bot))
-    {
         if (target->GetGUID() == bot->GetGUID())
         {
             LOG_DEBUG("playerbots", "[Kings/bstats-solo] Skip self to keep Sanctuary on {}", bot->GetName());
             return false;
         }
-    }
 
     targetPlayer = target->ToPlayer();
     if (targetPlayer && !g->IsMember(targetPlayer->GetGUID()))
-	{	
         return false;
-	}
 
     // If we act in bmana mode => Kings MONO on TANKS only
     if (actAsBmana && (!targetPlayer || !IsTankRole(targetPlayer)))
@@ -750,15 +699,11 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
     bool allowGreater = true;
 
     if (actAsBmana)
-	{
         allowGreater = false;
-	}
 
     // In solo-paladin (bstats), we want to favor the Greater to cover the target class.
     if (actAsBstats && IsOnlyPaladinInGroup(bot))
-	{
         allowGreater = true;
-	}
 
     if (allowGreater && actAsBstats && targetPlayer && !IsOnlyPaladinInGroup(bot))
     {
@@ -792,9 +737,8 @@ Unit* CastRighteousDefenseAction::GetTarget()
 {
     Unit* current_target = AI_VALUE(Unit*, "current target");
     if (!current_target)
-    {
         return NULL;
-    }
+
     return current_target->GetVictim();
 }
 
