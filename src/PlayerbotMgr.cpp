@@ -1630,7 +1630,7 @@ void PlayerbotMgr::OnPlayerLogin(Player* player)
     if (usedLocale >= MAX_LOCALES)
         usedLocale = LOCALE_enUS;
 
-    LOG_DEBUG("playerbots", "Registering locales for player {}: dbc={}, db={}, used={}", player->GetName(),
+    LOG_INFO("playerbots", "Registering locales for player {}: dbc={}, db={}, used={}", player->GetName(),
         static_cast<uint32>(dbcLocaleIndex), static_cast<uint32>(dbLocaleIndex), static_cast<uint32>(usedLocale));
 
     // set locale priority for bot texts
