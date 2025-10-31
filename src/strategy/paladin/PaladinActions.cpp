@@ -115,7 +115,7 @@ static inline bool ShouldReceiveMight(Player* targetPlayer, Player* caster)
         return false;
 	}
 	
-    int tab = AiFactory::GetPlayerSpecTab(targetPlayer);
+    int specTab = AiFactory::GetPlayerSpecTab(targetPlayer);
     switch (targetPlayer->getClass())
     {
         case CLASS_WARRIOR:
@@ -127,13 +127,13 @@ static inline bool ShouldReceiveMight(Player* targetPlayer, Player* caster)
         case CLASS_HUNTER:
             return true;  // remote physics
         case CLASS_SHAMAN:
-            return tab == SHAMAN_TAB_ENHANCEMENT;  // melee
+            return specTab == SHAMAN_TAB_ENHANCEMENT;  // melee
         case CLASS_DRUID:
-            return tab == DRUID_TAB_FERAL;  // feral
+            return specTab == DRUID_TAB_FERAL;  // feral
         case CLASS_PALADIN:
-            if (tab == PALADIN_TAB_RETRIBUTION)
+            if (specTab == PALADIN_TAB_RETRIBUTION)
                 return true;
-            if (tab == PALADIN_TAB_PROTECTION)
+            if (specTab == PALADIN_TAB_PROTECTION)
                 return CountPaladinsInGroup(caster) >= 3u;
             return false;
         default:
@@ -148,7 +148,7 @@ static inline bool IsDesignatedRolePaladin(Player* bot, const char* roleName)
         return true;
 	
     Group* group = bot->GetGroup();
-    const std::string gtag = MakeGroupTag(group);
+    const std::string groupTag = MakeGroupTag(group);
     if (!group)
         return true;
 	
@@ -176,14 +176,14 @@ static inline bool IsDesignatedRolePaladin(Player* bot, const char* roleName)
     if (contenders.empty())
     {
         if (doLog)
-            LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> aucun paladin porteur (proceed)", gtag, roleName);
+            LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> aucun paladin porteur (proceed)", groupTag, roleName);
         return true;
     }
     if (contenders.size() == 1u)
     {
         const bool designated = (bot->GetGUID() == contenders.front());
         if (doLog)
-            LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> unique porteur: {} | moi={} -> {}", gtag, roleName,
+            LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> unique porteur: {} | moi={} -> {}", groupTag, roleName,
                       contenderNames.front(), bot->GetName(), (designated ? "OUI" : "NON"));
         return designated;  // seul le porteur agit
     }
@@ -203,7 +203,7 @@ static inline bool IsDesignatedRolePaladin(Player* bot, const char* roleName)
     }
     bool designated = (bot->GetGUID() == winner);
     if (doLog)
-        LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> candidats=[{}] | élu={} | moi={} -> {}", gtag, roleName,
+        LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> candidats=[{}] | élu={} | moi={} -> {}", groupTag, roleName,
                   fmt::join(contenderNames, ", "), winnerName, bot->GetName(), (designated ? "OUI" : "NON"));
     return designated;
 }
@@ -221,7 +221,7 @@ inline std::string const GetActualBlessingOfMight(Unit* target)
         result = "blessing of might";
     else
     {
-        int tab = AiFactory::GetPlayerSpecTab(targetPlayer);
+        int specTab = AiFactory::GetPlayerSpecTab(targetPlayer);
         switch (targetPlayer->getClass())
         {
             case CLASS_MAGE:
@@ -230,15 +230,15 @@ inline std::string const GetActualBlessingOfMight(Unit* target)
                 result = "blessing of wisdom";
                 break;
             case CLASS_SHAMAN:
-                if (tab == SHAMAN_TAB_ELEMENTAL || tab == SHAMAN_TAB_RESTORATION)
+                if (specTab == SHAMAN_TAB_ELEMENTAL || specTab == SHAMAN_TAB_RESTORATION)
                     result = "blessing of wisdom";
                 break;
             case CLASS_DRUID:
-                if (tab == DRUID_TAB_RESTORATION || tab == DRUID_TAB_BALANCE)
+                if (specTab == DRUID_TAB_RESTORATION || specTab == DRUID_TAB_BALANCE)
                     result = "blessing of wisdom";
                 break;
             case CLASS_PALADIN:
-                if (tab == PALADIN_TAB_HOLY)
+                if (specTab == PALADIN_TAB_HOLY)
                     result = "blessing of wisdom";
                 break;
             default:
@@ -262,7 +262,7 @@ inline std::string const GetActualBlessingOfWisdom(Unit* target)
         result = "blessing of might";
     else
     {
-        int tab = AiFactory::GetPlayerSpecTab(targetPlayer);
+        int specTab = AiFactory::GetPlayerSpecTab(targetPlayer);
         switch (targetPlayer->getClass())
         {
             case CLASS_WARRIOR:
@@ -272,15 +272,15 @@ inline std::string const GetActualBlessingOfWisdom(Unit* target)
                 result = "blessing of might";
                 break;
             case CLASS_SHAMAN:
-                if (tab == SHAMAN_TAB_ENHANCEMENT)
+                if (specTab == SHAMAN_TAB_ENHANCEMENT)
                     result = "blessing of might";
                 break;
             case CLASS_DRUID:
-                if (tab == DRUID_TAB_FERAL)
+                if (specTab == DRUID_TAB_FERAL)
                     result = "blessing of might";
                 break;
             case CLASS_PALADIN:
-                if (tab == PALADIN_TAB_PROTECTION || tab == PALADIN_TAB_RETRIBUTION)
+                if (specTab == PALADIN_TAB_PROTECTION || specTab == PALADIN_TAB_RETRIBUTION)
                     result = "blessing of might";
                 break;
             default:
@@ -360,8 +360,8 @@ bool CastBlessingOfMightOnPartyAction::Execute(Event event)
     // Log only my bots
     if (ShouldLogForThisBot(bot))
     {
-        const std::string gtag = MakeGroupTag(bot->GetGroup());
-        LOG_DEBUG("playerbots", "[RoleCoord:{}] role=bdps -> {} est autorisé à poser Might", gtag, bot->GetName());
+        const std::string groupTag = MakeGroupTag(bot->GetGroup());
+        LOG_DEBUG("playerbots", "[RoleCoord:{}] role=bdps -> {} est autorisé à poser Might", groupTag, bot->GetName());
     }
 
     Unit* target = GetTarget();
@@ -437,8 +437,8 @@ bool CastBlessingOfWisdomOnPartyAction::Execute(Event event)
 
     if (ShouldLogForThisBot(bot))
     {
-        const std::string gtag = MakeGroupTag(bot->GetGroup());
-        LOG_DEBUG("playerbots", "[RoleCoord:{}] role=bmana -> {} est autorisé à poser Wisdom", gtag, bot->GetName());
+        const std::string groupTag = MakeGroupTag(bot->GetGroup());
+        LOG_DEBUG("playerbots", "[RoleCoord:{}] role=bmana -> {} est autorisé à poser Wisdom", groupTag, bot->GetName());
     }
 
     Unit* target = GetTarget();
@@ -599,8 +599,8 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
 
     if (ShouldLogForThisBot(bot))
     {
-        const std::string gtag = MakeGroupTag(bot->GetGroup());
-        LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> {} est autorisé à poser Kings", gtag,
+        const std::string groupTag = MakeGroupTag(bot->GetGroup());
+        LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> {} est autorisé à poser Kings", groupTag,
                   (actAsBmana ? "bmana" : "bstats"), bot->GetName());
     }
 
