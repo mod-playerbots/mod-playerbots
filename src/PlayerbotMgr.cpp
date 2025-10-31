@@ -1618,19 +1618,15 @@ void PlayerbotMgr::OnPlayerLogin(Player* player)
 
     LocaleConstant usedLocale = dbcLocaleIndex;
 
-    // Combine conditions to avoid nesting:
-    // - prefer DB if DBC is invalid and DB is valid
-    // - or if both are valid but DBC == enUS and DB != enUS
-    bool const dbcValid = dbcLocaleIndex < MAX_LOCALES;
-    bool const dbValid  = dbLocaleIndex  < MAX_LOCALES;
-    if ((!dbcValid && dbValid) ||
-        (dbcValid && dbValid && dbcLocaleIndex == LOCALE_enUS && dbLocaleIndex != LOCALE_enUS))
+    // Préférer la DB si DBC est invalide OU si DBC == enUS et DB != enUS.
+    if (dbcLocaleIndex >= MAX_LOCALES || (dbcLocaleIndex == LOCALE_enUS && dbLocaleIndex != LOCALE_enUS))
         usedLocale = dbLocaleIndex;
 
+    // Garde-fou si la DB est invalide (ou si tout est invalide) : bascule en enUS.
     if (usedLocale >= MAX_LOCALES)
         usedLocale = LOCALE_enUS;
 
-    LOG_DEBUG("playerbots", "Registering locales for player {}: dbc={}, db={}, used={}", player->GetName(),
+    LOG_INFO("playerbots", "Registering locales for player {}: dbc={}, db={}, used={}", player->GetName(),
         static_cast<uint32>(dbcLocaleIndex), static_cast<uint32>(dbLocaleIndex), static_cast<uint32>(usedLocale));
 
     // set locale priority for bot texts
