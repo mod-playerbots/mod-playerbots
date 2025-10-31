@@ -11,6 +11,12 @@
 #include "Playerbots.h"
 #include "ItemPackets.h"
 
+namespace
+{
+    // Eternal Belt Buckle -> adds 1 prismatic socket (enchant "Socket Belt")
+    constexpr uint32 ENCHANT_SOCKET_BELT = 3729;
+}
+
 bool UseItemAction::Execute(Event event)
 {
     std::string name = event.getParam();
@@ -328,6 +334,10 @@ bool UseItemAction::SocketItem(Item* item, Item* gem, bool replace)
     WorldPacket packet(CMSG_SOCKET_GEMS);
     packet << item->GetGUID();
 
+    // Does the belt have an active "buckle" (prismatic hunt)?
+    const bool hasPrismaticBeltSocket =
+        item->GetEnchantmentId(PRISMATIC_ENCHANTMENT_SLOT) == ENCHANT_SOCKET_BELT;
+
     bool fits = false;
     for (uint32 enchant_slot = SOCK_ENCHANTMENT_SLOT; enchant_slot < SOCK_ENCHANTMENT_SLOT + MAX_GEM_SOCKETS;
          ++enchant_slot)
@@ -379,9 +389,35 @@ bool UseItemAction::SocketItem(Item* item, Item* gem, bool replace)
         WorldPackets::Item::SocketGems nicePacket(std::move(packet));
         nicePacket.Read();
         bot->GetSession()->HandleSocketOpcode(nicePacket);
+        
+		return true;
     }
 
-    return fits;
+    // Prismatic fallback (belt): if the buckle (3729) is installed and no normal socket has "matched",
+    // the gem is applied directly to PRISMATIC_ENCHANTMENT_SLOT.
+    if (item->GetEnchantmentId(PRISMATIC_ENCHANTMENT_SLOT) == ENCHANT_SOCKET_BELT)
+    {
+        if (GemPropertiesEntry const* gp = sGemPropertiesStore.LookupEntry(gem->GetTemplate()->GemProperties))
+        {
+            if (uint32 enchantGem = gp->spellitemenchantement)
+            {
+                bot->ApplyEnchantment(item, PRISMATIC_ENCHANTMENT_SLOT, false);
+                item->SetEnchantment(PRISMATIC_ENCHANTMENT_SLOT, enchantGem, 0, 0, bot->GetGUID());
+                bot->ApplyEnchantment(item, PRISMATIC_ENCHANTMENT_SLOT, true);
+
+                // Consume 1 gem
+                bot->DestroyItemCount(gem->GetEntry(), 1, true);
+
+                std::ostringstream out;
+                out << "Socketing " << chat->FormatItem(item->GetTemplate()) << " (prismatic)";
+                out << " with " << chat->FormatItem(gem->GetTemplate());
+                botAI->TellMaster(out);
+                return true;
+            }
+        }
+    }
+ 
+    return false;
 }
 
 bool UseItemAction::isPossible() { return getName() == "use" || AI_VALUE2(uint32, "item count", getName()) > 0; }
