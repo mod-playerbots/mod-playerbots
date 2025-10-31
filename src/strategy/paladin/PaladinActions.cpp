@@ -176,16 +176,16 @@ static inline bool IsDesignatedRolePaladin(Player* bot, const char* roleName)
     if (contenders.empty())
     {
         if (doLog)
-            LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> aucun paladin porteur (proceed)", groupTag, roleName);
+            LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> no paladin wearer (proceed)", groupTag, roleName);
         return true;
     }
     if (contenders.size() == 1u)
     {
         const bool designated = (bot->GetGUID() == contenders.front());
         if (doLog)
-            LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> unique porteur: {} | moi={} -> {}", groupTag, roleName,
-                      contenderNames.front(), bot->GetName(), (designated ? "OUI" : "NON"));
-        return designated;  // seul le porteur agit
+            LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> unic wearer: {} | moi={} -> {}", groupTag, roleName,
+                      contenderNames.front(), bot->GetName(), (designated ? "YES" : "NO"));
+        return designated;  // only the wearer acts
     }
 
     // Deterministic winner: smallest GUID
@@ -204,7 +204,7 @@ static inline bool IsDesignatedRolePaladin(Player* bot, const char* roleName)
     bool designated = (bot->GetGUID() == winner);
     if (doLog)
         LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> candidats=[{}] | élu={} | moi={} -> {}", groupTag, roleName,
-                  fmt::join(contenderNames, ", "), winnerName, bot->GetName(), (designated ? "OUI" : "NON"));
+                  fmt::join(contenderNames, ", "), winnerName, bot->GetName(), (designated ? "YES" : "NO"));
     return designated;
 }
 
@@ -361,7 +361,7 @@ bool CastBlessingOfMightOnPartyAction::Execute(Event event)
     if (ShouldLogForThisBot(bot))
     {
         const std::string groupTag = MakeGroupTag(bot->GetGroup());
-        LOG_DEBUG("playerbots", "[RoleCoord:{}] role=bdps -> {} est autorisé à poser Might", groupTag, bot->GetName());
+        LOG_DEBUG("playerbots", "[RoleCoord:{}] role=bdps -> {} is allowed to pose Might", groupTag, bot->GetName());
     }
 
     Unit* target = GetTarget();
@@ -394,7 +394,7 @@ bool CastBlessingOfMightOnPartyAction::Execute(Event event)
                 target = bestCandidate;
                 targetPlayer = bestCandidate->ToPlayer();
                 if (ShouldLogForThisBot(bot))
-                    LOG_DEBUG("playerbots", "[Might] Re-ciblage vers {}", targetPlayer->GetName());
+                    LOG_DEBUG("playerbots", "[Might] Retargeting towards {}", targetPlayer->GetName());
             }
         }
         // if still no valid target -> abandon
@@ -438,7 +438,7 @@ bool CastBlessingOfWisdomOnPartyAction::Execute(Event event)
     if (ShouldLogForThisBot(bot))
     {
         const std::string groupTag = MakeGroupTag(bot->GetGroup());
-        LOG_DEBUG("playerbots", "[RoleCoord:{}] role=bmana -> {} est autorisé à poser Wisdom", groupTag, bot->GetName());
+        LOG_DEBUG("playerbots", "[RoleCoord:{}] role=bmana -> {} is allowed to buff Wisdom", groupTag, bot->GetName());
     }
 
     Unit* target = GetTarget();
@@ -600,7 +600,7 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
     if (ShouldLogForThisBot(bot))
     {
         const std::string groupTag = MakeGroupTag(bot->GetGroup());
-        LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> {} est autorisé à poser Kings", groupTag,
+        LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> {} is alloxed to buff Kings", groupTag,
                   (actAsBmana ? "bmana" : "bstats"), bot->GetName());
     }
 
@@ -649,7 +649,7 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
                 target = bestCandidate;
                 targetPlayer = bestCandidate->ToPlayer();
                 if (ShouldLogForThisBot(bot))
-                    LOG_DEBUG("playerbots", "[Kings/bstats-solo] Re-ciblage vers {}", targetPlayer->GetName());
+                    LOG_DEBUG("playerbots", "[Kings/bstats-solo] Retargeting towards {}", targetPlayer->GetName());
             }
         }
     }
@@ -669,7 +669,7 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
     // If we act in bmana mode => Kings MONO on TANKS only
     if (actAsBmana && (!targetPlayer || !IsTankRole(targetPlayer)))
     {
-        LOG_DEBUG("playerbots", "[Kings/bmana] Skip non-tank {}", target->GetName());
+        LOG_DEBUG("playerbots", "[Kings/bmana] Skip no-tank {}", target->GetName());
         return false;
     }
 
