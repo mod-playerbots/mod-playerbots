@@ -61,7 +61,7 @@ namespace MagtheridonHelpers
         float x, y, z, orientation;
     };
 
-    namespace MagtheridonsLairLocations 
+    namespace MagtheridonsLairLocations
     {
         extern const Location WaitingForMagtheridonPosition;
         extern const Location MagtheridonTankPosition;

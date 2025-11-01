@@ -133,19 +133,19 @@ namespace MagtheridonHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref && cubeIndex < cubes.size(); ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !botAI->IsRangedDps(member, true) || 
+            if (!member || !member->IsAlive() || !botAI->IsRangedDps(member, true) ||
                 member->getClass() == CLASS_WARLOCK || !GET_PLAYERBOT_AI(member))
                 continue;
 
             candidates.push_back(member);
-            if (candidates.size() >= cubes.size()) 
+            if (candidates.size() >= cubes.size())
                 break;
         }
 
         // If there are still cubes left, assign any other non-tank bots
         if (candidates.size() < cubes.size())
         {
-            for (GroupReference* ref = group->GetFirstMember(); 
+            for (GroupReference* ref = group->GetFirstMember();
                 ref && candidates.size() < cubes.size(); ref = ref->next())
             {
                 Player* member = ref->GetSource();
@@ -161,7 +161,7 @@ namespace MagtheridonHelpers
         {
             if (cubeIndex >= cubes.size())
                 break;
-            
+
             if (!member || !member->IsAlive())
                 continue;
 
@@ -179,7 +179,7 @@ namespace MagtheridonHelpers
         // Debris
         std::vector<Unit*> debrisHazards;
         const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        for (const auto& npcGuid : npcs)
+        for (auto const& npcGuid : npcs)
         {
             Unit* unit = botAI->GetUnit(npcGuid);
             if (!unit || unit->GetEntry() != NPC_TARGET_TRIGGER)
@@ -195,12 +195,12 @@ namespace MagtheridonHelpers
 
         // Conflagration
         GuidVector gos = *botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest game objects");
-        for (const auto& goGuid : gos)
+        for (auto const& goGuid : gos)
         {
             GameObject* go = botAI->GetGameObject(goGuid);
             if (!go || go->GetEntry() != GO_BLAZE)
                 continue;
-            
+
             float dist = std::sqrt(std::pow(x - go->GetPositionX(), 2) + std::pow(y - go->GetPositionY(), 2));
             if (dist < 5.0f)
                 return false;

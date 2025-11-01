@@ -46,7 +46,7 @@ float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
     if (it == magtheridonAggroWaitTimer.end() ||
         (time(nullptr) - it->second) < aggroWaitSeconds)
     {
-        if (!botAI->IsMainTank(bot) && (dynamic_cast<AttackAction*>(action) || 
+        if (!botAI->IsMainTank(bot) && (dynamic_cast<AttackAction*>(action) ||
             (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
             return 0.0f;
     }
@@ -63,7 +63,7 @@ float MagtheridonDisableOffTankAssistMultiplier::GetValue(Action* action)
     if (!magtheridon)
         return 1.0f;
 
-    if ((botAI->IsAssistTankOfIndex(bot, 0) || botAI->IsAssistTankOfIndex(bot, 1)) && 
+    if ((botAI->IsAssistTankOfIndex(bot, 0) || botAI->IsAssistTankOfIndex(bot, 1)) &&
         dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 

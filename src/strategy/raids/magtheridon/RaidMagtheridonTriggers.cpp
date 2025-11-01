@@ -8,7 +8,7 @@ bool MagtheridonFirstThreeChannelersEngagedByMainTankTrigger::IsActive()
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
 
-    return magtheridon && botAI->IsMainTank(bot) && 
+    return magtheridon && botAI->IsMainTank(bot) &&
            magtheridon->HasAura(SPELL_SHADOW_CAGE);
 }
 
@@ -17,7 +17,7 @@ bool MagtheridonNWChannelerEngagedByFirstAssistTankTrigger::IsActive()
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     Creature* channelerDiamond = GetChanneler(bot, NORTHWEST_CHANNELER);
 
-    return magtheridon && botAI->IsAssistTankOfIndex(bot, 0) && 
+    return magtheridon && botAI->IsAssistTankOfIndex(bot, 0) &&
            channelerDiamond && channelerDiamond->IsAlive();
 }
 
@@ -38,7 +38,7 @@ bool MagtheridonPullingWestAndEastChannelersTrigger::IsActive()
     Creature* channelerCircle = GetChanneler(bot, EAST_CHANNELER);
 
     return magtheridon && bot->getClass() == CLASS_HUNTER &&
-           ((channelerStar && channelerStar->IsAlive()) || 
+           ((channelerStar && channelerStar->IsAlive()) ||
             (channelerCircle && channelerCircle->IsAlive()));
 }
 
@@ -50,12 +50,12 @@ bool MagtheridonDeterminingKillOrderTrigger::IsActive()
     Creature* channelerDiamond  = GetChanneler(bot, NORTHWEST_CHANNELER);
     Creature* channelerTriangle = GetChanneler(bot, NORTHEAST_CHANNELER);
 
-    if (!magtheridon || botAI->IsHeal(bot) || botAI->IsMainTank(bot) || 
+    if (!magtheridon || botAI->IsHeal(bot) || botAI->IsMainTank(bot) ||
         (botAI->IsAssistTankOfIndex(bot, 0) && channelerDiamond && channelerDiamond->IsAlive()) ||
         (botAI->IsAssistTankOfIndex(bot, 1) && channelerTriangle && channelerTriangle->IsAlive()))
         return false;
 
-    return (channeler && channeler->IsAlive()) || (magtheridon && 
+    return (channeler && channeler->IsAlive()) || (magtheridon &&
            !magtheridon->HasAura(SPELL_SHADOW_CAGE));
 }
 
@@ -66,7 +66,7 @@ bool MagtheridonBurningAbyssalSpawnedTrigger::IsActive()
         return false;
 
     const GuidVector& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
-        return std::any_of(npcs.begin(), npcs.end(), [this](const ObjectGuid& npc) 
+        return std::any_of(npcs.begin(), npcs.end(), [this](const ObjectGuid& npc)
         {
             Unit* unit = botAI->GetUnit(npc);
             return unit && unit->GetEntry() == NPC_BURNING_ABYSSAL;
@@ -86,7 +86,7 @@ bool MagtheridonBossEngagedByRangedTrigger::IsActive()
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     Unit* channeler = AI_VALUE2(Unit*, "find target", "hellfire channeler");
 
-    return magtheridon && botAI->IsRanged(bot) && 
+    return magtheridon && botAI->IsRanged(bot) &&
            !(channeler && channeler->IsAlive());
 }
 
@@ -100,7 +100,7 @@ bool MagtheridonIncomingBlastNovaTrigger::IsActive()
     bool needsReassign = botToCubeAssignment.empty();
     if (!needsReassign)
     {
-        for (const auto& pair : botToCubeAssignment)
+        for (auto const& pair : botToCubeAssignment)
         {
             Player* assigned = ObjectAccessor::FindPlayer(pair.first);
             if (!assigned || !assigned->IsAlive())
