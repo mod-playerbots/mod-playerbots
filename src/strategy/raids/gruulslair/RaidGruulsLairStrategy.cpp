@@ -24,7 +24,7 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("high king maulgar healer in danger", NextAction::array(0,
         new NextAction("high king maulgar healer find safe position", ACTION_RAID + 1), nullptr)));
-    
+
     triggers.push_back(new TriggerNode("high king maulgar boss channeling whirlwind", NextAction::array(0,
         new NextAction("high king maulgar run away from whirlwind", ACTION_EMERGENCY + 6), nullptr)));
 

@@ -66,7 +66,7 @@ bool HighKingMaulgarBossChannelingWhirlwindTrigger::IsActive()
 {
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
 
-    return maulgar && maulgar->IsAlive() && maulgar->HasAura(SPELL_WHIRLWIND) && 
+    return maulgar && maulgar->IsAlive() && maulgar->HasAura(SPELL_WHIRLWIND) &&
            !botAI->IsMainTank(bot);
 }
 
@@ -120,11 +120,11 @@ bool HighKingMaulgarPullingOlmAndBlindeyeTrigger::IsActive()
     switch (hunterIndex)
     {
     case 0:
-        return olm && olm->IsAlive() && olm->GetHealth() > 0.98f * olm->GetMaxHealth() && 
+        return olm && olm->IsAlive() && olm->GetHealthPct() > 98.0f &&
                olmTank && olmTank->IsAlive() && botAI->CanCastSpell("misdirection", olmTank);
 
     case 1:
-        return blindeye && blindeye->IsAlive() && blindeye->GetHealth() > 0.90f * blindeye->GetMaxHealth() && 
+        return blindeye && blindeye->IsAlive() && blindeye->GetHealthPct() > 90.0f &&
                blindeyeTank && blindeyeTank->IsAlive() && botAI->CanCastSpell("misdirection", blindeyeTank);
 
     default:
@@ -155,6 +155,6 @@ bool GruulTheDragonkillerIncomingShatterTrigger::IsActive()
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
 
     return gruul && gruul->IsAlive() &&
-           (bot->HasAura(SPELL_GROUND_SLAM_1) || 
+           (bot->HasAura(SPELL_GROUND_SLAM_1) ||
             bot->HasAura(SPELL_GROUND_SLAM_2));
 }

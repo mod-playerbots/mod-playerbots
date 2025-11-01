@@ -22,12 +22,6 @@ static bool IsChargeAction(Action* action)
 
 float HighKingMaulgarDisableTankAssistMultiplier::GetValue(Action* action)
 {
-    Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
-    Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
-    Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
-    Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
-    Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
-
     if (IsAnyOgreBossAlive(botAI) && dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
@@ -71,7 +65,7 @@ float HighKingMaulgarDisableArcaneShotOnKroshMultiplier::GetValue(Action* action
 
 float HighKingMaulgarDisableMageTankAOEMultiplier::GetValue(Action* action)
 {
-    if (IsKroshMageTank(botAI, bot) && 
+    if (IsKroshMageTank(botAI, bot) &&
         (dynamic_cast<CastFrostNovaAction*>(action) || dynamic_cast<CastBlizzardAction*>(action) ||
         dynamic_cast<CastConeOfColdAction*>(action) || dynamic_cast<CastFlamestrikeAction*>(action) ||
         dynamic_cast<CastDragonsBreathAction*>(action) || dynamic_cast<CastBlastWaveAction*>(action)))
@@ -83,7 +77,7 @@ float HighKingMaulgarDisableMageTankAOEMultiplier::GetValue(Action* action)
 float GruulTheDragonkillerMainTankMovementMultiplier::GetValue(Action* action)
 {
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-    if (!gruul) 
+    if (!gruul)
         return 1.0f;
 
     if (botAI->IsMainTank(bot))
@@ -101,10 +95,10 @@ float GruulTheDragonkillerMainTankMovementMultiplier::GetValue(Action* action)
 float GruulTheDragonkillerGroundSlamMultiplier::GetValue(Action* action)
 {
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-    if (!gruul) 
+    if (!gruul)
         return 1.0f;
 
-    if (bot->HasAura(SPELL_GROUND_SLAM_1) || 
+    if (bot->HasAura(SPELL_GROUND_SLAM_1) ||
         bot->HasAura(SPELL_GROUND_SLAM_2))
     {
         if ((dynamic_cast<MovementAction*>(action) && !dynamic_cast<GruulTheDragonkillerShatterSpreadAction*>(action)) ||

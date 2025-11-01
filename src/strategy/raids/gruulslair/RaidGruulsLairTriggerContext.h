@@ -26,7 +26,7 @@ public:
         creators["gruul the dragonkiller boss engaged by range"] = &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_boss_engaged_by_range;
         creators["gruul the dragonkiller incoming shatter"] = &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_incoming_shatter;
     }
-   
+
 private:
     // High King Maulgar
     static Trigger* high_king_maulgar_is_main_tank(PlayerbotAI* botAI) { return new HighKingMaulgarIsMainTankTrigger(botAI); }

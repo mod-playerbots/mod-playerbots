@@ -43,12 +43,12 @@ namespace GruulsLairHelpers
 	bool IsPositionSafe(PlayerbotAI* botAI, Player* bot, Position pos);
 	bool TryGetNewSafePosition(PlayerbotAI* botAI, Player* bot, Position& outPos);
 
-	struct Location 
+	struct Location
 	{
 		float x, y, z;
 	};
 
-	namespace GruulsLairLocations 
+	namespace GruulsLairLocations
 	{
 		extern const Location MaulgarTankPosition;
 		extern const Location OlmTankPosition;

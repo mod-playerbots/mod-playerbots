@@ -22,17 +22,24 @@ namespace GruulsLairHelpers
 
     bool IsAnyOgreBossAlive(PlayerbotAI* botAI)
     {
-        Unit* maulgar = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "high king maulgar")->Get();
-        Unit* kiggler = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kiggler the crazed")->Get();
-        Unit* krosh = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "krosh firehand")->Get();
-        Unit* olm = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "olm the summoner")->Get();
-        Unit* blindeye = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "blindeye the seer")->Get();
+        const char* ogreBossNames[] =
+        {
+            "high king maulgar",
+            "kiggler the crazed",
+            "krosh firehand",
+            "olm the summoner",
+            "blindeye the seer"
+        };
 
-        return (maulgar && maulgar->IsAlive()) ||
-               (kiggler && kiggler->IsAlive()) ||
-               (krosh && krosh->IsAlive()) ||
-               (olm && olm->IsAlive()) ||
-               (blindeye && blindeye->IsAlive());
+        for (const char* name : ogreBossNames)
+        {
+            Unit* boss = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", name)->Get();
+            if (!boss || !boss->IsAlive())
+                continue;
+            return true;
+        }
+
+        return false;
     }
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
@@ -101,7 +108,7 @@ namespace GruulsLairHelpers
             Player* member = ref->GetSource();
             if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
                 continue;
-            
+
             if (member->getClass() == CLASS_MAGE)
             {
                 uint32 hp = member->GetMaxHealth();
@@ -130,7 +137,7 @@ namespace GruulsLairHelpers
             Player* member = ref->GetSource();
             if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
                 continue;
-            
+
             if (member->getClass() == CLASS_DRUID)
             {
                 int tab = AiFactory::GetPlayerSpecTab(member);
