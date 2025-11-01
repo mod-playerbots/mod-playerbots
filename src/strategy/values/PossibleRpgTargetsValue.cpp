@@ -60,12 +60,12 @@ bool PossibleRpgTargetsValue::AcceptUnit(Unit* unit)
     if (sServerFacade->GetDistance2d(bot, unit) <= sPlayerbotAIConfig->tooCloseDistance)
         return false;
 
-    if (unit->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPIRITHEALER))
+    if (unit->HasNpcFlag(UNIT_NPC_FLAG_SPIRITHEALER))
         return false;
 
     for (uint32 npcFlag : allowedNpcFlags)
     {
-        if (unit->HasFlag(UNIT_NPC_FLAGS, npcFlag))
+        if (unit->HasNpcFlag(npcFlag))
             return true;
     }
 
@@ -149,12 +149,12 @@ bool PossibleNewRpgTargetsValue::AcceptUnit(Unit* unit)
     if (unit->IsHostileTo(bot) || unit->GetTypeId() == TYPEID_PLAYER)
         return false;
 
-    if (unit->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPIRITHEALER))
+    if (unit->HasNpcFlag(UNIT_NPC_FLAG_SPIRITHEALER))
         return false;
 
     for (uint32 npcFlag : allowedNpcFlags)
     {
-        if (unit->HasFlag(UNIT_NPC_FLAGS, npcFlag))
+        if (unit->HasNpcFlag(npcFlag))
             return true;
     }
 

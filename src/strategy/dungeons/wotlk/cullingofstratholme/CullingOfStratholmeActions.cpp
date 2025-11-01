@@ -2,7 +2,6 @@
 #include "CullingOfStratholmeActions.h"
 #include "CullingOfStratholmeStrategy.h"
 
-
 bool ExplodeGhoulSpreadAction::Execute(Event event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "salramm the fleshcrafter");

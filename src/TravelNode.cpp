@@ -1351,7 +1351,7 @@ TravelNodeRoute TravelNodeMap::getRoute(WorldPosition startPos, WorldPosition en
     std::vector<WorldPosition> newStartPath;
     std::vector<TravelNode*> startNodes = m_nodes, endNodes = m_nodes;
 
-    if(!startNodes.size() || !endNodes.size())
+    if (!startNodes.size() || !endNodes.size())
          return TravelNodeRoute();
 
     // Partial sort to get the closest 5 nodes at the begin of the array.
@@ -1902,7 +1902,7 @@ void TravelNodeMap::generateTransportNodes()
 
                     // if (data->displayId == 3015)
                     //     pos.setZ(pos.getZ() + 6.0f);
-                    // else if(data->displayId == 3031)
+                    // else if (data->displayId == 3031)
                     //     pos.setZ(pos.getZ() - 17.0f);
 
                     if (prevNode)

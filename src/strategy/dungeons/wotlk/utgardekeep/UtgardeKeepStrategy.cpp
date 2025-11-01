@@ -1,7 +1,6 @@
 #include "UtgardeKeepStrategy.h"
 #include "UtgardeKeepMultipliers.h"
 
-
 void WotlkDungeonUKStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 {
     // Prince Keleseth

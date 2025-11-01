@@ -17,7 +17,6 @@ bool MoveFromBronjahmAction::Execute(Event event)
     return false;
 }
 
-
 bool AttackCorruptedSoulFragmentAction::Execute(Event event)
 {
     Unit* currentTarget = AI_VALUE(Unit*, "current target");
@@ -51,7 +50,6 @@ bool AttackCorruptedSoulFragmentAction::Execute(Event event)
 
     return false;
 }
-
 
 bool BronjahmGroupPositionAction::Execute(Event event)
 {
@@ -165,5 +163,3 @@ bool DevourerOfSoulsAction::Execute(Event event)
 
     return false;
 }
-
-
