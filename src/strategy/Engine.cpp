@@ -77,7 +77,8 @@ Engine::~Engine(void)
     // for (std::map<std::string, Strategy*>::iterator i = strategies.begin(); i != strategies.end(); i++)
     // {
     //     Strategy* strategy = i->second;
-    //     if (strategy) {
+    //     if (strategy)
+    //     {
     //         delete strategy;
     //     }
     // }

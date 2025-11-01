@@ -140,15 +140,18 @@ float ThaddiusGenericMultiplier::GetValue(Action* action)
     }
     // magnetic pull
     // uint32 curr_timer = eventMap->GetTimer();
-    // // if (curr_phase == 2 && bot->GetPositionZ() > 312.5f && dynamic_cast<MovementAction*>(action)) {
+    // // if (curr_phase == 2 && bot->GetPositionZ() > 312.5f && dynamic_cast<MovementAction*>(action))
+    // {
     // if (curr_phase == 2 && (curr_timer % 20000 >= 18000 || curr_timer % 20000 <= 2000) &&
-    // dynamic_cast<MovementAction*>(action)) {
+    // dynamic_cast<MovementAction*>(action))
+    // {
     //     // MotionMaster *mm = bot->GetMotionMaster();
     //     // mm->Clear();
     //     return 0.0f;
     // }
     // thaddius phase
-    // if (curr_phase == 8 && dynamic_cast<FleeAction*>(action)) {
+    // if (curr_phase == 8 && dynamic_cast<FleeAction*>(action))
+    // {
     //         return 0.0f;
     // }
     return 1.0f;
@@ -263,18 +266,22 @@ float FourhorsemanGenericMultiplier::GetValue(Action* action)
 // float GothikGenericMultiplier::GetValue(Action* action)
 // {
 //     Unit* boss = AI_VALUE2(Unit*, "find target", "gothik the harvester");
-//     if (!boss) {
+//     if (!boss)
+//     {
 //         return 1.0f;
 //     }
 //     BossAI* boss_ai = dynamic_cast<BossAI*>(boss->GetAI());
 //     EventMap* eventMap = boss_botAI->GetEvents();
 //     uint32 curr_phase = eventMap->GetPhaseMask();
-//     if (curr_phase == 1 && (dynamic_cast<FollowAction*>(action))) {
+//     if (curr_phase == 1 && (dynamic_cast<FollowAction*>(action)))
+//     {
 //         return 0.0f;
 //     }
-//     if (curr_phase == 1 && (dynamic_cast<AttackAction*>(action))) {
+//     if (curr_phase == 1 && (dynamic_cast<AttackAction*>(action)))
+//     {
 //         Unit* target = action->GetTarget();
-//         if (target == boss) {
+//         if (target == boss)
+//         {
 //             return 0.0f;
 //         }
 //     }

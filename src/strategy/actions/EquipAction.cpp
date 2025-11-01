@@ -338,9 +338,12 @@ bool EquipUpgradesAction::Execute(Event event)
         int32 randomProperty = item->GetItemRandomPropertyId();
         uint32 itemId = item->GetTemplate()->ItemId;
         std::string itemUsageParam;
-        if (randomProperty != 0) {
+        if (randomProperty != 0)
+        {
             itemUsageParam = std::to_string(itemId) + "," + std::to_string(randomProperty);
-        } else {
+        }
+        else
+        {
             itemUsageParam = std::to_string(itemId);
         }
         ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", itemUsageParam);

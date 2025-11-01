@@ -22,10 +22,13 @@ ItemUsage ItemUsageValue::Calculate()
     uint32 itemId = 0;
     uint32 randomPropertyId = 0;
     size_t pos = qualifier.find(",");
-    if (pos != std::string::npos) {
+    if (pos != std::string::npos)
+    {
         itemId = atoi(qualifier.substr(0, pos).c_str());
         randomPropertyId = atoi(qualifier.substr(pos + 1).c_str());
-    } else {
+    }
+    else
+    {
         itemId = atoi(qualifier.c_str());
     }
 
