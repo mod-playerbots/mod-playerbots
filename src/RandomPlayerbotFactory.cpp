@@ -163,7 +163,7 @@ Player* RandomPlayerbotFactory::CreateRandomBot(WorldSession* session, uint8 cls
     uint8 gender = rand() % 2 ? GENDER_MALE : GENDER_FEMALE;
     bool alliance = rand() % 2 ? true : false;
     std::vector<uint8> raceOptions;
-    for (const auto& race : availableRaces[cls])
+    for (auto const& race : availableRaces[cls])
     {
         if (alliance == IsAlliance(race))
         {
