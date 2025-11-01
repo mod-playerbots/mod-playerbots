@@ -83,7 +83,7 @@ Unit* EnemyPlayerValue::Calculate()
 
     GuidVector players = AI_VALUE(GuidVector, "nearest enemy players");
     float const maxAggroDistance = GetMaxAttackDistance();
-    for (const auto& gTarget : players)
+    for (auto const& gTarget : players)
     {
         Unit* pUnit = botAI->GetUnit(gTarget);
         if (!pUnit)

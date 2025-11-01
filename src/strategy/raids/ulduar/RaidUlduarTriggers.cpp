@@ -211,7 +211,7 @@ bool RazorscaleHarpoonAvailableTrigger::IsActive()
     }
 
     // Check each harpoon entry
-    for (const auto& harpoon : harpoonData)
+    for (auto const& harpoon : harpoonData)
     {
         // Skip harpoons whose chain spell is already active on the boss
         if (razorscaleHelper.IsHarpoonFired(harpoon.chainSpellId))

@@ -1367,7 +1367,7 @@ uint32 RandomItemMgr::CalculateStatWeight(uint8 playerclass, uint8 spec, ItemTem
     }
 
     // check item spells
-    for (const auto& spellData : proto->Spells)
+    for (auto const& spellData : proto->Spells)
     {
         // no spell
         if (!spellData.SpellId)

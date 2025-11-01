@@ -373,7 +373,7 @@ private:
     bool ParseSpecPrefix(const std::string& message, std::string& specPrefix, std::string& rest)
     {
         std::string msgLower = ToLower(message);
-        for (const auto& entry : specTabNames)
+        for (auto const& entry : specTabNames)
         {
             std::string prefix = "@" + entry.second;
             if (msgLower.find(ToLower(prefix)) == 0)
@@ -555,7 +555,7 @@ public:
         const float radius = 100.0f;
         GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
         bool match = false;
-        for (const auto& guid : npcs)
+        for (auto const& guid : npcs)
         {
             Creature* c = botAI->GetCreature(guid);
             if (!c)

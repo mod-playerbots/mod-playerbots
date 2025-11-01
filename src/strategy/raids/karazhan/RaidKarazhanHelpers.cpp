@@ -68,7 +68,7 @@ Unit* RaidKarazhanHelpers::GetFirstAliveUnitByEntry(uint32 entry)
 {
     const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
 
-    for (const auto& npcGuid : npcs)
+    for (auto const& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
 
@@ -327,7 +327,7 @@ std::vector<Unit*> RaidKarazhanHelpers::GetAllVoidZones()
     std::vector<Unit*> voidZones;
     const float radius = 30.0f;
     const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-    for (const auto& npcGuid : npcs)
+    for (auto const& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
         if (!unit || unit->GetEntry() != NPC_VOID_ZONE)
@@ -363,7 +363,7 @@ std::vector<Unit*> RaidKarazhanHelpers::GetSpawnedInfernals() const
 {
     std::vector<Unit*> infernals;
     const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-    for (const auto& npcGuid : npcs)
+    for (auto const& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
         if (unit && unit->GetEntry() == NPC_NETHERSPITE_INFERNAL)

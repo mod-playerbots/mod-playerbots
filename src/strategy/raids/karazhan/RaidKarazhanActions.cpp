@@ -131,7 +131,7 @@ bool KarazhanMaidenOfVirtuePositionRangedAction::Execute(Event event)
 
     const GuidVector members = AI_VALUE(GuidVector, "group members");
 
-    for (const auto& memberGuid : members)
+    for (auto const& memberGuid : members)
     {
         Unit* member = botAI->GetUnit(memberGuid);
 
@@ -845,7 +845,7 @@ bool KarazhanNetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
         beams.push_back({greenPortal, 0.0f, length});
     }
     bool nearBeam = false;
-    for (const auto& beam : beams)
+    for (auto const& beam : beams)
     {
         float bx = boss->GetPositionX(), by = boss->GetPositionY();
         float px = beam.portal->GetPositionX(), py = beam.portal->GetPositionY();
@@ -888,7 +888,7 @@ bool KarazhanNetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
                 continue;
             }
             bool tooCloseToBeam = false;
-            for (const auto& beam : beams)
+            for (auto const& beam : beams)
             {
                 float bx = boss->GetPositionX(), by = boss->GetPositionY();
                 float px = beam.portal->GetPositionX(), py = beam.portal->GetPositionY();

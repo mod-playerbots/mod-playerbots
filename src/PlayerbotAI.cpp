@@ -5441,7 +5441,7 @@ Item* PlayerbotAI::FindOilFor(Item* weapon) const
 
     if (prioritizedOils)
     {
-        for (const auto& id : *prioritizedOils)
+        for (auto const& id : *prioritizedOils)
         {
             oil = FindConsumable(id);
             if (oil)

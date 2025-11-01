@@ -128,7 +128,7 @@ bool AutoReleaseSpiritAction::HandleBattlegroundSpiritHealer()
     GuidVector npcs = NearestNpcsValue(botAI, bgRange);
     Unit* spiritHealer = nullptr;
 
-    for (const auto& guid : npcs)
+    for (auto const& guid : npcs)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (unit && unit->IsFriendlyTo(bot) && unit->IsSpiritService())

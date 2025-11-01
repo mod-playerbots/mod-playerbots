@@ -370,7 +370,7 @@ bool CheckMountStateAction::TryPreferredMount(Player* master) const
 
 bool CheckMountStateAction::TryRandomMountFiltered(const std::map<int32, std::vector<uint32>>& spells, int32 masterSpeed) const
 {
-    for (const auto& pair : spells)
+    for (auto const& pair : spells)
     {
         int32 currentSpeed = pair.first;
 
@@ -378,7 +378,7 @@ bool CheckMountStateAction::TryRandomMountFiltered(const std::map<int32, std::ve
             continue;
 
         // Pick a random mount from the candidate group.
-        const auto& ids = pair.second;
+        auto const& ids = pair.second;
         if (!ids.empty())
         {
             // Required here as otherwise bots won't mount in BG's due to them constant moving

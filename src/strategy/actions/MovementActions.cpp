@@ -2818,7 +2818,7 @@ bool MoveAwayFromCreatureAction::Execute(Event event)
 
     // Find all creatures with the specified Id
     std::vector<Unit*> creatures;
-    for (const auto& guid : targets)
+    for (auto const& guid : targets)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (unit && (alive && unit->IsAlive()) && unit->GetEntry() == creatureId)

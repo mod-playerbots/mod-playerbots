@@ -51,7 +51,7 @@ float IccLadyDeathwhisperMultiplier::GetValue(Action* action)
     if (dynamic_cast<IccShadeLadyDeathwhisperAction*>(action))
         return 1.0f;
 
-    for (const auto& npcGuid : npcs)
+    for (auto const& npcGuid : npcs)
     {
         Unit* shade = botAI->GetUnit(npcGuid);
 
@@ -375,7 +375,7 @@ float IccBpcAssistMultiplier::GetValue(Action* action)
 
     for (const auto entry : bombEntries)
     {
-        for (const auto& guid : bombs)
+        for (auto const& guid : bombs)
         {
             if (Unit* unit = botAI->GetUnit(guid))
             {

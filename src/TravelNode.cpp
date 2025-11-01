@@ -1302,7 +1302,7 @@ TravelNodeRoute TravelNodeMap::getRoute(TravelNode* start, TravelNode* goal, Pla
             return TravelNodeRoute(path);
         }
 
-        for (const auto& link : *currentNode->dataNode->getLinks())  // for each successor n' of n
+        for (auto const& link : *currentNode->dataNode->getLinks())  // for each successor n' of n
         {
             TravelNode* linkNode = link.first;
             float linkCost = link.second->getCost(bot, currentNode->currentGold);

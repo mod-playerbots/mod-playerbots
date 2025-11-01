@@ -127,11 +127,11 @@ GuidVector PossibleNewRpgTargetsValue::Calculate()
             guidDistancePairs.push_back({unit->GetGUID(), bot->GetExactDist(unit)});
     }
     // Override to sort by distance
-    std::sort(guidDistancePairs.begin(), guidDistancePairs.end(), [](const auto& a, const auto& b) {
+    std::sort(guidDistancePairs.begin(), guidDistancePairs.end(), [](auto const& a, auto const& b) {
         return a.second < b.second;
     });
 
-    for (const auto& pair : guidDistancePairs) {
+    for (auto const& pair : guidDistancePairs) {
         results.push_back(pair.first);
     }
     return results;
@@ -194,11 +194,11 @@ GuidVector PossibleNewRpgGameObjectsValue::Calculate()
     GuidVector results;
 
     // Sort by distance
-    std::sort(guidDistancePairs.begin(), guidDistancePairs.end(), [](const auto& a, const auto& b) {
+    std::sort(guidDistancePairs.begin(), guidDistancePairs.end(), [](auto const& a, auto const& b) {
         return a.second < b.second;
     });
 
-    for (const auto& pair : guidDistancePairs) {
+    for (auto const& pair : guidDistancePairs) {
         results.push_back(pair.first);
     }
     return results;
