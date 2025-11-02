@@ -1,7 +1,6 @@
 #include "AzjolNerubStrategy.h"
 #include "AzjolNerubMultipliers.h"
 
-
 void WotlkDungeonANStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 {
     // Krik'thir the Gatewatcher

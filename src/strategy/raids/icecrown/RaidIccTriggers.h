@@ -336,7 +336,6 @@ public:
     bool IsActive() override;
 };
 
-
 class IccRotfaceMoveAwayFromExplosionTrigger : public Trigger
 {
 public:
@@ -358,7 +357,6 @@ public:
     IccPutricideGasCloudTrigger(PlayerbotAI* botAI) : Trigger(botAI, "icc putricide gas cloud") {}
     bool IsActive() override;
 };
-
 
 class IccPutricideGrowingOozePuddleTrigger : public Trigger
 {
@@ -454,7 +452,6 @@ public:
     bool IsActive() override;
 };
 
-
 // Valithria Dreamwalker
 
 class IccValithriaGroupTrigger : public Trigger
@@ -484,7 +481,6 @@ public:
     IccValithriaDreamCloudTrigger(PlayerbotAI* botAI) : Trigger(botAI, "icc valithria dream cloud") {}
     bool IsActive() override;
 };
-
 
 //SINDRAGOSA
 class IccSindragosaGroupPositionTrigger : public Trigger
@@ -549,7 +545,6 @@ public:
     IccSindragosaFrostBombTrigger(PlayerbotAI* botAI) : Trigger(botAI, "icc sindragosa frost bomb") {}
     bool IsActive() override;
 };
-
 
 //LICH KING
 class IccLichKingShadowTrapTrigger : public Trigger

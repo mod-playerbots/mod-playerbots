@@ -156,7 +156,6 @@ float IccFestergutMultiplier::GetValue(Action* action)
     if (bot->HasAura(SPELL_GAS_SPORE))
         return 0.0f;
 
-
     return 1.0f;
 }
 
@@ -490,7 +489,6 @@ float IccValithriaDreamCloudMultiplier::GetValue(Action* action)
 
     Aura* twistedNightmares = botAI->GetAura("Twisted Nightmares", bot);
     Aura* emeraldVigor = botAI->GetAura("Emerald Vigor", bot);
-
 
     if (!boss && !bot->HasAura(SPELL_DREAM_STATE))
         return 1.0f;

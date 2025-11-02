@@ -1,7 +1,6 @@
 #include "OculusStrategy.h"
 #include "OculusMultipliers.h"
 
-
 void WotlkDungeonOccStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 {
     // Drakos the Interrogator

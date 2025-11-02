@@ -1006,8 +1006,6 @@ bool IccDbsTankPositionAction::Execute(Event event)
                           ICC_DBS_TANK_POSITION.GetPositionZ(), false, false, false, true,
                           MovementPriority::MOVEMENT_NORMAL);
 
-
-
         // Early return if this tank has Rune of Blood
         if (botAI->GetAura("Rune of Blood", bot))
             return true;
@@ -1702,7 +1700,6 @@ bool IccRotfaceTankPositionAction::HandleAssistTankPositioning(Unit* boss)
     return HandleBigOozePositioning(boss);
 }
 
-
 bool IccRotfaceTankPositionAction::HandleBigOozePositioning(Unit* boss)
 {
     // Find all big oozes
@@ -1826,7 +1823,6 @@ bool IccRotfaceTankPositionAction::HandleBigOozePositioning(Unit* boss)
 
     return false;
 }
-
 
 bool IccRotfaceGroupPositionAction::Execute(Event event)
 {
@@ -2091,7 +2087,7 @@ bool IccRotfaceGroupPositionAction::FindAndMoveFromClosestMember(Unit* boss, Uni
     {
         Unit* member = botAI->GetUnit(memberGuid);
         if (!member || !member->IsAlive() || member == bot || (smallOoze && smallOoze->GetVictim() == member) ||
-            (member->GetTypeId() == TYPEID_PLAYER && botAI->IsAssistTank(static_cast<Player*>(member))))
+            (member->IsPlayer() && botAI->IsAssistTank(static_cast<Player*>(member))))
             continue;
 
         const float distance = bot->GetExactDist2d(member);
@@ -2532,7 +2528,6 @@ Unit* IccPutricideVolatileOozeAction::FindAuraTarget()
 
     return nullptr;
 }
-
 
 bool IccPutricideGasCloudAction::Execute(Event event)
 {
@@ -3047,7 +3042,6 @@ bool IccPutricideAvoidMalleableGooAction::HandleUnboundPlague(Unit* boss)
 
     return false;
 }
-
 
 bool IccPutricideAvoidMalleableGooAction::HandleBossPositioning(Unit* boss)
 {
@@ -3763,7 +3757,6 @@ bool IccBpcKineticBombAction::IsBombAlreadyHandled(Unit* bomb, Group* group)
 
     return false;
 }
-
 
 bool IccBpcBallOfFlameAction::Execute(Event event)
 {
@@ -4605,7 +4598,6 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
         return true;
     }
 
-
     return false;
 }
 
@@ -4965,7 +4957,7 @@ bool IccValithriaGroupAction::Execute(Event event)
                     // Skip if unit is already attacking any tank
                     if (Unit* victim = unit->GetVictim())
                     {
-                        if (victim->GetTypeId() == TYPEID_PLAYER && botAI->IsTank(static_cast<Player*>(victim)))
+                        if (victim->IsPlayer() && botAI->IsTank(static_cast<Player*>(victim)))
                         {
                             continue;
                         }
@@ -5167,7 +5159,6 @@ bool IccValithriaGroupAction::Handle25ManGroupLogic()
     // Marking logic for tanks and DPS
     if (botAI->IsTank(bot) || botAI->IsDps(bot))
         HandleMarkingLogic(inGroup1, inGroup2, group1Pos, group2Pos);
-
 
     // Movement logic for non-healers
     if (!botAI->IsHeal(bot))
@@ -5614,7 +5605,6 @@ bool IccValithriaDreamCloudAction::Execute(Event event)
             }
         }
     }
-
 
     // All stacked: leader (lowest guid) moves to next cloud, others follow and stack at leader's new position
     // Find all dream and nightmare clouds
@@ -6517,7 +6507,6 @@ bool IccSindragosaMysticBuffetAction::Execute(Event event)
         {
             return true;
         }
-
 
         botAI->Reset();
         // Move to LOS2 position
@@ -8166,7 +8155,7 @@ void IccLichKingAddsAction::HandleSpiritMarkingAndTargeting(Difficulty diff, Uni
     if (currentMarkedTarget && currentMarkedTarget->IsAlive())
     {
         Unit* spiritTarget = currentMarkedTarget->GetVictim();
-        if (spiritTarget && spiritTarget->GetTypeId() == TYPEID_PLAYER)
+        if (spiritTarget && spiritTarget->IsPlayer())
         {
             if (Group* spiritTargetGroup = spiritTarget->ToPlayer()->GetGroup())
             {
@@ -8206,7 +8195,7 @@ void IccLichKingAddsAction::HandleSpiritMarkingAndTargeting(Difficulty diff, Uni
                     // Check if this spirit is targeting a group member
                     bool targetingGroupMember = false;
                     Unit* spiritTarget = unit->GetVictim();
-                    if (spiritTarget && spiritTarget->GetTypeId() == TYPEID_PLAYER)
+                    if (spiritTarget && spiritTarget->IsPlayer())
                     {
                         if (Group* spiritTargetGroup = spiritTarget->ToPlayer()->GetGroup())
                         {
@@ -9347,4 +9336,3 @@ void IccLichKingAddsAction::HandleVileSpiritMechanics()
         }
     }
 }
-
