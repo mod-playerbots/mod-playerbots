@@ -158,7 +158,6 @@ bool RazorscaleBossHelper::CanSwapRoles() const
     return (currentTime - lastSwapTime) >= _roleSwapCooldown;
 }
 
-
 void RazorscaleBossHelper::AssignRolesBasedOnHealth()
 {
     // Check if enough time has passed since last swap

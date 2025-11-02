@@ -808,7 +808,6 @@ bool ThorimMarkDpsTargetTrigger::IsActive()
         if (!boss || !boss->IsAlive() || !boss->IsHostileTo(bot))
             return false;
 
-
         if (boss->GetPositionZ() < ULDUAR_THORIM_AXIS_Z_FLOOR_THRESHOLD && (!currentSkullUnit || !currentSkullUnit->IsAlive()))
         {
             group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), boss->GetGUID());

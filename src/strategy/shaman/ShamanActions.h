@@ -286,7 +286,6 @@ public:
     bool isUseful() override;
 };
 
-
 // Healing Actions
 
 class CastLesserHealingWaveAction : public CastHealingSpellAction
