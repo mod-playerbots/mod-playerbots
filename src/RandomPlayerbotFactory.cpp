@@ -1118,6 +1118,46 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams(ArenaType type, uint32 count
         // arenateam->SetStats(STAT_TYPE_GAMES_SEASON, urand(arenateam->GetStats().games_week,
         // arenateam->GetStats().games_week * 5)); arenateam->SetStats(STAT_TYPE_WINS_SEASON,
         // urand(arenateam->GetStats().wins_week, arenateam->GetStats().games
+
+        uint32 desiredSize = (uint32)type;  // 2 for 2v2, 3 for 3v3, 5 for 5v5
+        GuidVector availableMembers;
+
+        for (uint32 botGuid : randomBots)
+        {
+            ObjectGuid guid = ObjectGuid::Create<HighGuid::Player>(botGuid);
+            if (guid == captain)  // jump caption
+                continue;
+
+            Player* candidate = ObjectAccessor::FindConnectedPlayer(guid);
+            if (!candidate || candidate->GetLevel() < 70)
+                continue;
+
+            // do check is in other team
+            bool alreadyInTeam = false;
+            for (uint32 slot = 0; slot < MAX_ARENA_SLOT; ++slot)
+            {
+                if (candidate->GetArenaTeamId(slot) != 0)
+                {
+                    alreadyInTeam = true;
+                    break;
+                }
+            }
+
+            if (!alreadyInTeam && candidate->GetTeamId() == player->GetTeamId())
+                availableMembers.push_back(guid);
+        }
+
+        // add until full
+        for (ObjectGuid guid : availableMembers)
+        {
+            if (arenateam->GetMembersSize() >= desiredSize)
+                break;
+
+            arenateam->AddMember(guid);
+            LOG_INFO("playerbots", "Added bot {} to ArenaTeam #{} ({}/{})", guid.ToString(), arenateam->GetId(),
+            arenateam->GetMembersSize(), desiredSize);
+        }
+        
         arenateam->SaveToDB();
 
         sArenaTeamMgr->AddArenaTeam(arenateam);
