@@ -2076,7 +2076,6 @@ void TravelMgr::LoadQuestTravelTable()
                     continue;
                 }
 
-
                 if (r.role == 0)
                 {
                     container->questGivers.push_back(loc);

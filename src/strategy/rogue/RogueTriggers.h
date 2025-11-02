@@ -42,7 +42,6 @@ public:
     BladeFuryTrigger(PlayerbotAI* botAI) : BoostTrigger(botAI, "blade fury") {}
 };
 
-
 class RuptureTrigger : public DebuffTrigger
 {
 public:
@@ -126,7 +125,5 @@ class TricksOfTheTradeOnMainTankTrigger : public BuffOnMainTankTrigger
 public:
     TricksOfTheTradeOnMainTankTrigger(PlayerbotAI* ai) : BuffOnMainTankTrigger(ai, "tricks of the trade", true) {}
 };
-
-
 
 #endif

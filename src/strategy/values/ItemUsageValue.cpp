@@ -376,7 +376,6 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
         }
     }
 
-
     for (uint8 i = 0; i < possibleSlots; i++)
     {
         bool shouldEquipInSlot = shouldEquip;

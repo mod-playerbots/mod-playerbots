@@ -410,7 +410,6 @@ bool BroadcastHelper::BroadcastQuestUpdateComplete(PlayerbotAI* ai, Player* bot,
         placeholders["%my_race"] = ai->GetChatHelper()->FormatRace(bot->getRace());
         placeholders["%my_level"] = std::to_string(bot->GetLevel());
 
-
         return BroadcastToChannelWithGlobalChance(
             ai,
             BOT_TEXT2("broadcast_quest_update_complete", placeholders),

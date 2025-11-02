@@ -180,7 +180,7 @@ uint32 TravelNodePath::getPrice()
 
     if (!taxiPath)
         return 0;
-	
+
     return taxiPath->price;
 }
 
@@ -469,7 +469,6 @@ bool TravelNode::cropUselessLinks()
     //std::vector<std::pair<TravelNode*, TravelNode*>> toRemove;
     for (auto& firstLink : getLinks())
     {
-
 
         TravelNode* firstNode = firstLink.first;
         float firstLength = firstLink.second.getDistance();

@@ -403,7 +403,6 @@ void Engine::addStrategiesNoInit(std::string first, ...)
     va_end(vl);
 }
 
-
 bool Engine::removeStrategy(std::string const name, bool init)
 {
     std::map<std::string, Strategy*>::iterator i = strategies.find(name);

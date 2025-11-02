@@ -1576,7 +1576,7 @@ bool RandomPlayerbotMgr::ProcessBot(Player* bot)
     {
         idleBot = true;
     }
-    
+
     if (idleBot)
     {
         // randomize
@@ -1703,7 +1703,6 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot, std::vector<WorldLocation>&
         LOG_DEBUG("playerbots", "Cannot teleport bot {} - all locations removed by filter", bot->GetName().c_str());
         return;
     }
-
 
     PerformanceMonitorOperation* pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "RandomTeleportByLocations");
 

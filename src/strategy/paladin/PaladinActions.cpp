@@ -250,7 +250,6 @@ bool CastBlessingOfWisdomOnPartyAction::Execute(Event event)
     return botAI->CastSpell(castName, target);
 }
 
-
 Value<Unit*>* CastBlessingOfSanctuaryOnPartyAction::GetTargetValue()
 {
     return context->GetValue<Unit*>(
@@ -487,7 +486,6 @@ Unit* CastRighteousDefenseAction::GetTarget()
     }
     return current_target->GetVictim();
 }
-
 
 bool CastDivineSacrificeAction::isUseful()
 {

@@ -82,7 +82,6 @@ bool PossibleRpgTargetsValue::AcceptUnit(Unit* unit)
     return false;
 }
 
-
 std::vector<uint32> PossibleNewRpgTargetsValue::allowedNpcFlags;
 
 PossibleNewRpgTargetsValue::PossibleNewRpgTargetsValue(PlayerbotAI* botAI, float range)
@@ -169,7 +168,6 @@ GuidVector PossibleNewRpgGameObjectsValue::Calculate()
     AnyGameObjectInObjectRangeCheck u_check(bot, range);
     Acore::GameObjectListSearcher<AnyGameObjectInObjectRangeCheck> searcher(bot, targets, u_check);
     Cell::VisitObjects(bot, searcher, range);
-
 
     std::vector<std::pair<ObjectGuid, float>> guidDistancePairs;
     for (GameObject* go : targets)

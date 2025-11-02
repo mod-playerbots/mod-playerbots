@@ -2374,7 +2374,6 @@ void RandomItemMgr::BuildPotionCache()
                 if (proto->Duration & 0x80000000)
                     continue;
 
-
                 if (proto->AllowableClass != -1)
                     continue;
 
