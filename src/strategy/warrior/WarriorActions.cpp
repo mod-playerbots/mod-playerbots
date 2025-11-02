@@ -126,7 +126,7 @@ bool CastRetaliationAction::isUseful()
             continue;
 
         // Check if the attacker is melee-based using unit_class
-        if (attacker->GetTypeId() == TYPEID_UNIT)
+        if (attacker->IsCreature())
         {
             Creature* creature = attacker->ToCreature();
             if (creature && (creature->IsClass(CLASS_WARRIOR)
@@ -136,7 +136,7 @@ bool CastRetaliationAction::isUseful()
                 ++meleeAttackers;
             }
         }
-        else if (attacker->GetTypeId() == TYPEID_PLAYER)
+        else if (attacker->IsPlayer())
         {
             Player* playerAttacker = attacker->ToPlayer();
             if (playerAttacker && botAI->IsMelee(playerAttacker)) // Reuse existing Player melee check

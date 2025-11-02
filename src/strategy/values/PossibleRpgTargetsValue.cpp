@@ -54,7 +54,7 @@ void PossibleRpgTargetsValue::FindUnits(std::list<Unit*>& targets)
 
 bool PossibleRpgTargetsValue::AcceptUnit(Unit* unit)
 {
-    if (unit->IsHostileTo(bot) || unit->GetTypeId() == TYPEID_PLAYER)
+    if (unit->IsHostileTo(bot) || unit->IsPlayer())
         return false;
 
     if (sServerFacade->GetDistance2d(bot, unit) <= sPlayerbotAIConfig->tooCloseDistance)
@@ -145,7 +145,7 @@ void PossibleNewRpgTargetsValue::FindUnits(std::list<Unit*>& targets)
 
 bool PossibleNewRpgTargetsValue::AcceptUnit(Unit* unit)
 {
-    if (unit->IsHostileTo(bot) || unit->GetTypeId() == TYPEID_PLAYER)
+    if (unit->IsHostileTo(bot) || unit->IsPlayer())
         return false;
 
     if (unit->HasNpcFlag(UNIT_NPC_FLAG_SPIRITHEALER))

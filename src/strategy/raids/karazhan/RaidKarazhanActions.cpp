@@ -378,7 +378,7 @@ bool KarazhanTerestianIllhoofMarkTargetAction::Execute(Event event)
         }
     }
     karazhanHelper.MarkTargetWithSkull(target);
-    
+
     return false;
 }
 
@@ -420,7 +420,7 @@ bool KarazhanShadeOfAranFlameWreathStopMovementAction::Execute(Event event)
         }
         return true;
     }
-    
+
     return false;
 }
 
@@ -602,7 +602,7 @@ bool KarazhanNetherspiteBlockBlueBeamAction::Execute(Event event)
             "netherspite_beam_leaving_blue", "%player is leaving the blue beam--next blocker up!", ph);
         bot->Yell(text, LANG_UNIVERSAL);
         wasBlockingBlueBeam[botGuid] = false;
-        
+
         return false;
     }
 
@@ -936,7 +936,7 @@ bool KarazhanNetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
         return MoveTo(bot->GetMapId(), bestCandidate.GetPositionX(), bestCandidate.GetPositionY(),
                       bestCandidate.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
     }
-    
+
     return false;
 }
 
@@ -1135,7 +1135,7 @@ bool KarazhanPrinceMalchezaarNonTankAvoidHazardAction::Execute(Event event)
 bool KarazhanPrinceMalchezaarNonTankAvoidHazardAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "prince malchezaar");
-    
+
     return boss && !(botAI->IsTank(bot) && botAI->HasAggro(boss) && boss->GetVictim() == bot);
 }
 
@@ -1266,6 +1266,6 @@ bool KarazhanPrinceMalchezaarTankAvoidHazardAction::Execute(Event event)
 bool KarazhanPrinceMalchezaarTankAvoidHazardAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "prince malchezaar");
-    
+
     return boss && botAI->IsTank(bot) && botAI->HasAggro(boss) && boss->GetVictim() == bot;
 }

@@ -232,7 +232,7 @@ float KarazhanNetherspiteRedBeamMultiplier::GetValue(Action* action)
             }
         }
     }
-    
+
     return 1.0f;
 }
 

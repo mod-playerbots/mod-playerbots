@@ -248,7 +248,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
             //     bot->CastStop();
             //     botAI->InterruptSpell();
             // }
-            
+
             MotionMaster& mm = *bot->GetMotionMaster();
             // No ground pathfinding if the bot/master are flying => allow true 3D (Z) movement
             auto isFlying = [](Unit* u){ return u && (u->HasUnitMovementFlag(MOVEMENTFLAG_FLYING) || u->IsInFlight()); };
@@ -1111,7 +1111,7 @@ void MovementAction::UpdateMovementState()
     // {
     //     if (Unit* pTarget = sServerFacade->GetChaseTarget(bot))
     //     {
-    //         if (!bot->IsWithinMeleeRange(pTarget) && pTarget->GetTypeId() == TYPEID_UNIT)
+    //         if (!bot->IsWithinMeleeRange(pTarget) && pTarget->IsCreature())
     //         {
     //             float angle = bot->GetAngle(pTarget);
     //             float distance = 5.0f;
@@ -1767,7 +1767,8 @@ bool MovementAction::MoveInside(uint32 mapId, float x, float y, float z, float d
 //         modified_z = bot->GetMapWaterOrGroundLevel(x, y, z + delta);
 //         PathGenerator gen(bot);
 //         gen.CalculatePath(x, y, modified_z);
-//         if (gen.GetPathType() == PATHFIND_NORMAL && gen.getPathLength() < min_length) {
+//         if (gen.GetPathType() == PATHFIND_NORMAL && gen.getPathLength() < min_length)
+//         {
 //             min_length = gen.getPathLength();
 //             current_z = modified_z;
 //             if (abs(current_z - z) < 0.5f)

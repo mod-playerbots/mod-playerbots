@@ -388,7 +388,7 @@ bool RaidKarazhanHelpers::IsStraightPathSafe(const Position& start, const Positi
     {
         return true;
     }
-    
+
     for (float checkDist = 0.0f; checkDist <= totalDist; checkDist += stepSize)
     {
         float t = checkDist / totalDist;
@@ -404,6 +404,6 @@ bool RaidKarazhanHelpers::IsStraightPathSafe(const Position& start, const Positi
             }
         }
     }
-    
+
     return true;
 }

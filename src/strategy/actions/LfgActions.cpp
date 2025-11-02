@@ -16,7 +16,6 @@
 
 using namespace lfg;
 
-
 bool LfgJoinAction::Execute(Event event) { return JoinLFG(); }
 
 uint32 LfgJoinAction::GetRoles()
@@ -180,7 +179,6 @@ bool LfgRoleCheckAction::Execute(Event event)
         // if (currentRoles == newRoles)
         //     return false;
 
-
         WorldPacket* packet = new WorldPacket(CMSG_LFG_SET_ROLES);
         *packet << (uint8)newRoles;
         bot->GetSession()->QueuePacket(packet);
@@ -266,7 +264,6 @@ bool LfgAcceptAction::Execute(Event event)
 
     return false;
 }
-
 
 bool LfgLeaveAction::Execute(Event event)
 {

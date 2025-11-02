@@ -45,7 +45,6 @@ public:
         creators["quest update complete"] = &WorldPacketTriggerContext::quest_update_complete;
         creators["questgiver quest details"] = &WorldPacketTriggerContext::questgiver_quest_details;
 
-
         creators["item push result"] = &WorldPacketTriggerContext::item_push_result;
         creators["party command"] = &WorldPacketTriggerContext::party_command;
         creators["taxi done"] = &WorldPacketTriggerContext::taxi_done;

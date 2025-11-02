@@ -123,7 +123,6 @@ bool LootRollAction::Execute(Event event)
     return false;
 }
 
-
 RollVote LootRollAction::CalculateRollVote(ItemTemplate const* proto)
 {
     std::ostringstream out;

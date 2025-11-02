@@ -19,7 +19,7 @@ bool MainHandWeaponNoImbueTrigger::IsActive()
     Item* const itemForSpell = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
     if (!itemForSpell || itemForSpell->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
         return false;
-    
+
     return true;
 }
 
@@ -28,12 +28,12 @@ bool OffHandWeaponNoImbueTrigger::IsActive()
     Item* const itemForSpell = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
     if (!itemForSpell)
         return false;
-    
+
     uint32 invType = itemForSpell->GetTemplate()->InventoryType;
     bool allowedType = (invType == INVTYPE_WEAPON) || (invType == INVTYPE_WEAPONOFFHAND);
     if (itemForSpell->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT) || !allowedType)
         return false;
-    
+
     return true;
 }
 
@@ -64,7 +64,7 @@ bool EarthShockExecuteTrigger::IsActive()
 
 bool TotemTrigger::IsActive()
 {
-    return AI_VALUE(uint8, "attacker count") >= attackerCount && 
+    return AI_VALUE(uint8, "attacker count") >= attackerCount &&
         !AI_VALUE2(bool, "has totem", name) &&
         !botAI->HasAura(name, bot);
 }
@@ -123,7 +123,7 @@ bool SpiritWalkTrigger::IsActive()
             }
         }
     }
-    
+
     return false;
 }
 
@@ -213,7 +213,7 @@ bool TotemicRecallTrigger::IsActive()
 
             if (member->IsInCombat())
                 return false;
-            
+
             Pet* pet = member->GetPet();
             if (pet && pet->IsInCombat())
                 return false;
@@ -279,7 +279,7 @@ static uint32 GetRequiredTotemSpellId(PlayerbotAI* ai, const char* strategies[],
             }
         }
     }
-    
+
     return 0;  // No relevant strategy active, or bot doesn't know any rank
 }
 
@@ -289,11 +289,11 @@ static uint32 GetSummonedTotemSpellId(Player* bot, uint8 slot)
     ObjectGuid guid = bot->m_SummonSlot[slot];
     if (guid.IsEmpty())
         return 0;
-    
+
     Creature* totem = bot->GetMap()->GetCreature(guid);
     if (!totem)
         return 0;
-    
+
     return totem->GetUInt32Value(UNIT_CREATED_BY_SPELL);
 }
 
@@ -320,7 +320,7 @@ bool NoEarthTotemTrigger::IsActive()
     static const uint32* spells[] = {STRENGTH_OF_EARTH_TOTEM, STONESKIN_TOTEM, TREMOR_TOTEM, EARTHBIND_TOTEM};
     static const size_t counts[] = {STRENGTH_OF_EARTH_TOTEM_COUNT, STONESKIN_TOTEM_COUNT, TREMOR_TOTEM_COUNT,
                                     EARTHBIND_TOTEM_COUNT};
-    
+
     uint32 requiredSpell = GetRequiredTotemSpellId(botAI, names, spells, counts, 4);
 
     // EXCEPTION: If Stoneclaw Totem is out and in range, consider the slot "occupied" (do not fire the trigger)
