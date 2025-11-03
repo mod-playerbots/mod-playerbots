@@ -4206,7 +4206,7 @@ void PlayerbotFactory::InitArenaTeam()
                     }
 
                     // Set MMR respecting AzerothCore configuration
-                    uint32 configMMR = sWorld->getIntConfig(CONFIG_ARENA_START_MATCHMAKER_RATING);
+                    uint16 configMMR = (uint16)sWorld->getIntConfig(CONFIG_ARENA_START_MATCHMAKER_RATING);
                     member->MatchMakerRating = std::max(member->PersonalRating, configMMR);
                     member->MaxMMR = std::max(member->MaxMMR, member->MatchMakerRating);
                 }
