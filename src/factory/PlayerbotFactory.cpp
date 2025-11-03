@@ -4095,8 +4095,6 @@ void PlayerbotFactory::InitImmersive()
 
 void PlayerbotFactory::InitArenaTeam()
 {
-    // Arena rating adjustment constants
-    static constexpr float ARENA_GAP_THRESHOLD_PERCENT = 0.20f;      // 20% rating gap triggers adjustment
 
     if (!sPlayerbotAIConfig->IsInRandomAccountList(bot->GetSession()->GetAccountId()))
         return;
@@ -4186,35 +4184,38 @@ void PlayerbotFactory::InitArenaTeam()
             {
                 // Add bot to arena team
                 arenateam->AddMember(bot->GetGUID());
-
-                ArenaTeamMember* member = arenateam->GetMember(bot->GetGUID());
-                if (member)
-                {
-                    uint32 teamRating = arenateam->GetRating();
-                    uint32 personalRating = member->PersonalRating;
-
-                    // Check for rating mismatch between team and personal rating
-                    uint32 ratingGap = (teamRating > personalRating) ?
-                        (teamRating - personalRating) : (personalRating - teamRating);
-
-                    // Use percentage-based threshold to detect significant mismatches
-                    uint32 gapThreshold = (uint32)(teamRating * ARENA_GAP_THRESHOLD_PERCENT);
-
-                    if (ratingGap > gapThreshold)
-                    {
-                        member->PersonalRating = teamRating;
-                    }
-
-                    // Set MMR respecting AzerothCore configuration
-                    uint16 configMMR = (uint16)sWorld->getIntConfig(CONFIG_ARENA_START_MATCHMAKER_RATING);
-                    member->MatchMakerRating = std::max(member->PersonalRating, configMMR);
-                    member->MaxMMR = std::max(member->MaxMMR, member->MatchMakerRating);
-                }
-
-                // Force save member data to database (required for bots with WeekGames = 0)
-                arenateam->SaveToDB(true);
             }
         }
+
+        // After all members are added to this team, apply proper rating alignment
+        if (arenateam)
+        {
+            uint32 teamRating = arenateam->GetRating();
+
+            // Use SetRatingForAll to align all members with team rating
+            arenateam->SetRatingForAll(teamRating);
+
+            // Set MMR for all members respecting AzerothCore configuration
+            uint16 configMMR = (uint16)sWorld->getIntConfig(CONFIG_ARENA_START_MATCHMAKER_RATING);
+            for (auto const& memberPair : arenateam->GetMembers())
+            {
+                ArenaTeamMember* memberPtr = arenateam->GetMember(memberPair.first);
+                if (!memberPtr)
+                    continue;
+
+                // For artificial bot teams with ratings above default, MMR should match team context
+                // If team rating is artificial (> configMMR), use team-appropriate MMR
+                // Otherwise, use standard config MMR (typically 1500)
+                uint16 personalRating = memberPtr->PersonalRating;
+                uint16 appropriateMMR = (personalRating > configMMR) ? personalRating : configMMR;
+
+                memberPtr->MatchMakerRating = appropriateMMR;
+                memberPtr->MaxMMR = std::max(memberPtr->MaxMMR, appropriateMMR);
+            }
+            // Force save all member data to database
+            arenateam->SaveToDB(true);
+        }
+
         arenateams.erase(arenateams.begin() + index);
     }
 
