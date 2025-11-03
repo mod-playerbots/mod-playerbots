@@ -37,6 +37,7 @@
 #include "PlayerbotGuildMgr.h"
 #include "RandomPlayerbotMgr.h"
 #include "SharedDefines.h"
+#include "Timer.h"
 #include "WorldSession.h"
 #include "BroadcastHelper.h"
 #include "WorldSessionMgr.h"
@@ -50,11 +51,8 @@ namespace {
 
     // Helper function to get current timestamp
     uint64 GetCurrentTimestamp() {
-        return std::chrono::duration_cast<std::chrono::seconds>(
-            std::chrono::system_clock::now().time_since_epoch()).count();
+        return GetEpochTime().count();
     }
-
-
 
     // Generic error response to prevent information leakage
     void SendGenericError(ChatHandler& handler, const std::string& operation) {
@@ -1895,10 +1893,6 @@ PlayerbotMgr* PlayerbotsMgr::GetPlayerbotMgr(Player* player)
     return nullptr;
 }
 
-
-
-
-
 void PlayerbotMgr::HandleViewLinkedAccountsCommand(Player* player)
 {
     ChatHandler handler(player->GetSession());
@@ -1978,10 +1972,6 @@ void PlayerbotMgr::HandleUnlinkAccountCommand(Player* player, const std::string&
         SendGenericError(handler, "account unlinking");
     }
 }
-
-
-
-
 
 void PlayerbotMgr::HandleGenerateInviteCommand(Player* player)
 {
@@ -2110,7 +2100,8 @@ void PlayerbotMgr::HandleLinkWithInviteCommand(Player* player, const std::string
 
         PlayerbotsDatabase.Execute(
             "INSERT INTO playerbots_account_links (account_id, linked_account_id, short_name) VALUES ({}, {}, '{}')",
-            targetAccountId, requestingAccountId, shortName);        handler.PSendSysMessage("Accounts linked successfully as '{}'! You can now manage each other's player bots.", shortName.c_str());
+            targetAccountId, requestingAccountId, shortName);
+            handler.PSendSysMessage("Accounts linked successfully as '{}'! You can now manage each other's player bots.", shortName.c_str());
     }
     catch (const std::exception& e) {
         SendGenericError(handler, "invite code linking");
