@@ -4095,6 +4095,9 @@ void PlayerbotFactory::InitImmersive()
 
 void PlayerbotFactory::InitArenaTeam()
 {
+    // Arena rating adjustment constants
+    static constexpr float ARENA_GAP_THRESHOLD_PERCENT = 0.20f;      // 20% rating gap triggers adjustment
+
     if (!sPlayerbotAIConfig->IsInRandomAccountList(bot->GetSession()->GetAccountId()))
         return;
 
@@ -4181,9 +4184,32 @@ void PlayerbotFactory::InitArenaTeam()
 
             if (botcaptain && botcaptain->GetTeamId() == bot->GetTeamId())  // need?
             {
-                // AzerothCore's AddMember() automatically handles personal rating assignment
-                // based on CONFIG_ARENA_START_PERSONAL_RATING configuration
+                // Add bot to arena team
                 arenateam->AddMember(bot->GetGUID());
+
+                ArenaTeamMember* member = arenateam->GetMember(bot->GetGUID());
+                if (member)
+                {
+                    uint32 teamRating = arenateam->GetRating();
+                    uint32 personalRating = member->PersonalRating;
+
+                    // Check for rating mismatch between team and personal rating
+                    uint32 ratingGap = (teamRating > personalRating) ?
+                        (teamRating - personalRating) : (personalRating - teamRating);
+
+                    // Use percentage-based threshold to detect significant mismatches
+                    uint32 gapThreshold = (uint32)(teamRating * ARENA_GAP_THRESHOLD_PERCENT);
+
+                    if (ratingGap > gapThreshold)
+                    {
+                        member->PersonalRating = teamRating;
+                    }
+
+                    // Set MMR respecting AzerothCore configuration
+                    uint32 configMMR = sWorld->getIntConfig(CONFIG_ARENA_START_MATCHMAKER_RATING);
+                    member->MatchMakerRating = std::max(member->PersonalRating, configMMR);
+                    member->MaxMMR = std::max(member->MaxMMR, member->MatchMakerRating);
+                }
 
                 // Force save member data to database (required for bots with WeekGames = 0)
                 arenateam->SaveToDB(true);
