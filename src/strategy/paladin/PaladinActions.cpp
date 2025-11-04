@@ -442,7 +442,7 @@ bool CastBlessingOfWisdomOnPartyAction::Execute(Event event)
     }
 
     Unit* target = GetTarget();
-    if (!target)	
+    if (!target)
         return false;
 
     Player* targetPlayer = target->ToPlayer();
