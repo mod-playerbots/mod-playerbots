@@ -58,7 +58,6 @@ static inline bool IsTankRole(Player* player)
             otherAI->HasStrategy("bear", BOT_STATE_COMBAT))
             return true;
     }
-	
     return false;
 }
 
@@ -247,7 +246,6 @@ inline std::string const GetActualBlessingOfMight(Unit* target)
         if (result.empty())
             result = "blessing of might";
     }
-
     LOG_DEBUG("playerbots", "[BlessingDecision] Might resolver -> target={} class={} specTab={} => {}",
               (targetPlayer ? targetPlayer->GetName() : "non-player"), (targetPlayer ? int(targetPlayer->getClass()) : -1),
               (targetPlayer ? AiFactory::GetPlayerSpecTab(targetPlayer) : -1), result);
@@ -289,7 +287,6 @@ inline std::string const GetActualBlessingOfWisdom(Unit* target)
         if (result.empty())
             result = "blessing of wisdom";
     }
-
     LOG_DEBUG("playerbots", "[BlessingDecision] Wisdom resolver -> target={} class={} specTab={} => {}",
               (targetPlayer ? targetPlayer->GetName() : "non-player"), (targetPlayer ? int(targetPlayer->getClass()) : -1),
               (targetPlayer ? AiFactory::GetPlayerSpecTab(targetPlayer) : -1), result);
