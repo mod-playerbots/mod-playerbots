@@ -166,7 +166,7 @@ bool BroadcastHelper::BroadcastToChannelWithGlobalChance(PlayerbotAI* ai, std::s
     return false;
 }
 
-bool BroadcastHelper::BroadcastLootingItem(PlayerbotAI* ai, Player* bot, const ItemTemplate *proto)
+bool BroadcastHelper::BroadcastLootingItem(PlayerbotAI* ai, Player* bot, ItemTemplate const* proto)
 {
     if (!sPlayerbotAIConfig->enableBroadcasts)
         return false;
