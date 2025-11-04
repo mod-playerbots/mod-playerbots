@@ -550,7 +550,7 @@ public:
     bool IsActive() override;
 };
 
-BEGIN_TRIGGER(PanicTrigger, Trigger)
+BEGIN_TRIGGER(PanicTrigger, Trigger) // cppcheck-suppress unknownMacro
 std::string const getName() override { return "panic"; }
 END_TRIGGER()
 
