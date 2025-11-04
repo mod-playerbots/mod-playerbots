@@ -2219,58 +2219,7 @@ bool PlayerbotAI::IsMainTank(Player* player)
 
 bool PlayerbotAI::IsBotMainTank(Player* player)
 {
-    if (!player->GetSession()->IsBot() || !IsTank(player))
-    {
-        return false;
-    }
-
-    if (IsMainTank(player))
-    {
-        return true;
-    }
-
-    Group* group = player->GetGroup();
-    if (!group)
-    {
-        return true;  // If no group, consider the bot as main tank
-    }
-
-    uint32 botAssistTankIndex = GetAssistTankIndex(player);
-
-    if (botAssistTankIndex == -1)
-    {
-        return false;
-    }
-
-    for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
-    {
-        Player* member = gref->GetSource();
-        if (!member)
-        {
-            continue;
-        }
-
-        uint32 memberAssistTankIndex = GetAssistTankIndex(member);
-
-        if (memberAssistTankIndex == -1)
-        {
-            continue;
-        }
-
-        if (memberAssistTankIndex == botAssistTankIndex && player == member)
-        {
-            return true;
-        }
-
-        if (memberAssistTankIndex < botAssistTankIndex && member->GetSession()->IsBot())
-        {
-            return false;
-        }
-
-        return false;
-    }
-
-    return false;
+    return player->GetSession()->IsBot() && IsMainTank(player);
 }
 
 uint32 PlayerbotAI::GetGroupTankNum(Player* player)
