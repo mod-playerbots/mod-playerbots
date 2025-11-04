@@ -264,7 +264,7 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
     {
         needToCheckUnique = true;
     }
-    else if (itemProto->Flags & ITEM_FLAG_UNIQUE_EQUIPPABLE)
+    else if (itemProto->HasFlag(ITEM_FLAG_UNIQUE_EQUIPPABLE))
     {
         needToCheckUnique = true;
     }

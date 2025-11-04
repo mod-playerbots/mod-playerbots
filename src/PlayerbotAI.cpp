@@ -5294,7 +5294,7 @@ Item* PlayerbotAI::FindOpenableItem() const
     return FindItemInInventory(
         [this](ItemTemplate const* itemTemplate) -> bool
         {
-            return (itemTemplate->Flags & ITEM_FLAG_HAS_LOOT) &&
+            return itemTemplate->HasFlag(ITEM_FLAG_HAS_LOOT) &&
                    (itemTemplate->LockID == 0 || !this->bot->GetItemByEntry(itemTemplate->ItemId)->IsLocked());
         });
 }

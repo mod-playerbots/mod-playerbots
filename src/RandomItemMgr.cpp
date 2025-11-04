@@ -982,7 +982,7 @@ void RandomItemMgr::BuildItemInfoCache()
             continue;
         }
 
-        if (proto->Flags & ITEM_FLAG_DEPRECATED)
+        if (proto->HasFlag(ITEM_FLAG_DEPRECATED))
         {
             itemForTest.insert(proto->ItemId);
             continue;
@@ -1072,10 +1072,10 @@ void RandomItemMgr::BuildItemInfoCache()
         // cacheInfo.team = TEAM_NEUTRAL;
 
         // // check faction
-        // if (proto->Flags2 & ITEM_FLAG2_FACTION_HORDE)
+        // if (proto->HasFlag2(ITEM_FLAG2_FACTION_HORDE))
         //     cacheInfo.team = TEAM_HORDE;
 
-        // if (proto->Flags2 & ITEM_FLAG2_FACTION_ALLIANCE)
+        // if (proto->HasFlag2(ITEM_FLAG2_FACTION_ALLIANCE))
         //     cacheInfo.team = TEAM_ALLIANCE;
 
         // if (cacheInfo.team == TEAM_NEUTRAL && proto->AllowableRace > 1 && proto->AllowableRace < 8388607)
@@ -1099,7 +1099,7 @@ void RandomItemMgr::BuildItemInfoCache()
 
         // // check item source
 
-        // if (proto->Flags & ITEM_FLAG_NO_DISENCHANT)
+        // if (proto->HasFlag(ITEM_FLAG_NO_DISENCHANT))
         // {
         //     cacheInfo.source = ITEM_SOURCE_PVP;
         //     LOG_DEBUG("playerbots", "Item: {}, source: PvP Reward", proto->ItemId);

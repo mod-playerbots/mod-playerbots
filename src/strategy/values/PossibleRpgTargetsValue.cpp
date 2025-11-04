@@ -65,7 +65,7 @@ bool PossibleRpgTargetsValue::AcceptUnit(Unit* unit)
 
     for (uint32 npcFlag : allowedNpcFlags)
     {
-        if (unit->HasNpcFlag(npcFlag))
+        if (unit->HasNpcFlag(static_cast<NPCFlags>(npcFlag)))
             return true;
     }
 
@@ -153,7 +153,7 @@ bool PossibleNewRpgTargetsValue::AcceptUnit(Unit* unit)
 
     for (uint32 npcFlag : allowedNpcFlags)
     {
-        if (unit->HasNpcFlag(npcFlag))
+        if (unit->HasNpcFlag(static_cast<NPCFlags>(npcFlag)))
             return true;
     }
 

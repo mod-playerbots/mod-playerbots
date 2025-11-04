@@ -134,7 +134,7 @@ bool SummonAction::SummonUsingNpcs(Player* summoner, Player* player)
 
     for (Unit* unit : targets)
     {
-        if (unit && unit->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_INNKEEPER))
+        if (unit && unit->HasNpcFlag(UNIT_NPC_FLAG_INNKEEPER))
         {
             if (!player->HasItemCount(6948, 1, false))
             {

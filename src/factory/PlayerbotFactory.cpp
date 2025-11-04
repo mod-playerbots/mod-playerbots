@@ -180,7 +180,7 @@ void PlayerbotFactory::Init()
             continue;
         }
 
-        if (proto->Flags & ITEM_FLAG_UNIQUE_EQUIPPABLE)
+        if (proto->HasFlag(ITEM_FLAG_UNIQUE_EQUIPPABLE))
         {
             continue;
         }
