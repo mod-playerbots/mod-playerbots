@@ -84,7 +84,7 @@ namespace {
     // Helper function to check if invite code exists in database
     bool InviteCodeExists(const std::string& code) {
         QueryResult existing = PlayerbotsDatabase.Query(
-            "SELECT 1 FROM playerbots_invite_codes WHERE code = '{}' AND status = 'ACTIVE'", code);
+            "SELECT 1 FROM playerbots_invite_codes WHERE code = '{}' AND status = 1", code);
         return existing != nullptr;
     }
 
@@ -1981,8 +1981,8 @@ void PlayerbotMgr::HandleGenerateInviteCommand(Player* player)
     try {
         // Check how many active invite codes this account has
         QueryResult activeCodesResult = PlayerbotsDatabase.Query(
-            "SELECT COUNT(*) FROM playerbots_invite_codes WHERE account_id = {} AND expires_at > NOW() AND status = 'ACTIVE'",
-            accountId);
+            "SELECT COUNT(*) FROM playerbots_invite_codes WHERE account_id = {} AND expires_at > {} AND status = 1",
+            accountId, GetCurrentTimestamp());
 
         if (activeCodesResult) {
             uint32 activeCount = activeCodesResult->Fetch()[0].Get<uint32>();
@@ -2009,9 +2009,10 @@ void PlayerbotMgr::HandleGenerateInviteCommand(Player* player)
         }
 
         // Store invite code in database
+        uint64 expiresAt = GetCurrentTimestamp() + (INVITE_CODE_EXPIRY_MINUTES * 60);
         PlayerbotsDatabase.Execute(
-            "INSERT INTO playerbots_invite_codes (account_id, code, expires_at, status) VALUES ({}, '{}', DATE_ADD(NOW(), INTERVAL {} MINUTE), 'ACTIVE')",
-            accountId, inviteCode, INVITE_CODE_EXPIRY_MINUTES);
+            "INSERT INTO playerbots_invite_codes (account_id, code, created_at, expires_at, status) VALUES ({}, '{}', {}, {}, 1)",
+            accountId, inviteCode, GetCurrentTimestamp(), expiresAt);
 
         handler.PSendSysMessage("|cFF32CD32[Invite Code Generated]|r");
         handler.PSendSysMessage("Code: |cFFFFFF00{}|r", inviteCode.c_str());
@@ -2066,8 +2067,8 @@ void PlayerbotMgr::HandleLinkWithInviteCommand(Player* player, const std::string
     try {
         // Check if invite code exists and is valid
         QueryResult inviteResult = PlayerbotsDatabase.Query(
-            "SELECT account_id, UNIX_TIMESTAMP(created_at) as created_timestamp, UNIX_TIMESTAMP(expires_at) as expiry_timestamp FROM playerbots_invite_codes WHERE code = '{}' AND status = 'ACTIVE' AND expires_at > NOW()",
-            inviteCode);
+            "SELECT account_id, created_at, expires_at FROM playerbots_invite_codes WHERE code = '{}' AND status = 1 AND expires_at > {}",
+            inviteCode, GetCurrentTimestamp());
 
         if (!inviteResult) {
             handler.PSendSysMessage("Invalid or expired invite code.");
@@ -2115,10 +2116,10 @@ void PlayerbotMgr::HandleViewInviteCodesCommand(Player* player)
 
     try {
         QueryResult activeCodesResult = PlayerbotsDatabase.Query(
-            "SELECT code as invite_code, UNIX_TIMESTAMP(created_at) as created_timestamp, UNIX_TIMESTAMP(expires_at) as expiry_timestamp FROM playerbots_invite_codes "
-            "WHERE account_id = {} AND status = 'ACTIVE' AND expires_at > NOW() "
+            "SELECT code, created_at, expires_at FROM playerbots_invite_codes "
+            "WHERE account_id = {} AND status = 1 AND expires_at > {} "
             "ORDER BY created_at DESC",
-            accountId);
+            accountId, GetCurrentTimestamp());
 
         if (!activeCodesResult) {
             handler.PSendSysMessage("No active invite codes found. Use '.playerbots accountlink generate' to create one.");
@@ -2154,7 +2155,7 @@ void PlayerbotMgr::HandleRevokeInviteCommand(Player* player, const std::string& 
     try {
         // Check if the code belongs to this account and is active
         QueryResult codeResult = PlayerbotsDatabase.Query(
-            "SELECT 1 FROM playerbots_invite_codes WHERE account_id = {} AND code = '{}' AND status = 'ACTIVE'",
+            "SELECT 1 FROM playerbots_invite_codes WHERE account_id = {} AND code = '{}' AND status = 1",
             accountId, inviteCode);
 
         if (!codeResult) {
@@ -2164,7 +2165,7 @@ void PlayerbotMgr::HandleRevokeInviteCommand(Player* player, const std::string& 
 
         // Revoke the code
         PlayerbotsDatabase.Execute(
-            "UPDATE playerbots_invite_codes SET status = 'REVOKED' WHERE account_id = {} AND code = '{}'",
+            "UPDATE playerbots_invite_codes SET status = 0 WHERE account_id = {} AND code = '{}'",
             accountId, inviteCode);
 
         handler.PSendSysMessage("Invite code |cFFFFFF00{}|r has been revoked.", inviteCode.c_str());
@@ -2267,6 +2268,6 @@ bool PlayerbotMgr::HandleConsoleCommand(ChatHandler* handler, char const* args)
 
 void PlayerbotMgr::CleanupExpiredInviteCodes()
 {
-    PlayerbotsDatabase.Execute("DELETE FROM playerbots_invite_codes WHERE expires_at < NOW()");
+    PlayerbotsDatabase.Execute("DELETE FROM playerbots_invite_codes WHERE expires_at < {}", GetCurrentTimestamp());
     LOG_DEBUG("mod-playerbots", "Cleaned up expired invite codes on server startup");
 }

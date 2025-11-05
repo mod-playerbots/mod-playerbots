@@ -34,14 +34,13 @@ DEALLOCATE PREPARE stmt;
 -- Invite codes table
 CREATE TABLE IF NOT EXISTS `playerbots_invite_codes` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `code` varchar(16) NOT NULL UNIQUE,
+    `code` varchar(16) NOT NULL,
     `account_id` INT NOT NULL,
-    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    `expires_at` TIMESTAMP NOT NULL,
-    `status` enum('ACTIVE', 'REVOKED') NOT NULL DEFAULT 'ACTIVE',
+    `created_at` INT NOT NULL,
+    `expires_at` INT NOT NULL,
+    `status` TINYINT NOT NULL DEFAULT 1,
     KEY `idx_account_id` (`account_id`),
-    KEY `idx_expires_at` (`expires_at`),
-    KEY `idx_status` (`status`)
+    KEY `idx_expires_at` (`expires_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- Drop legacy tables that are no longer needed
