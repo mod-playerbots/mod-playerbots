@@ -107,8 +107,6 @@ void AttackersValue::AddAttackersOf(Player* player, std::unordered_set<Unit*>& t
     {
         ThreatMgr* threatMgr = ref->GetSource();
         Unit* attacker = threatMgr->GetOwner();
-        Unit* victim = attacker->GetVictim();
-
         if (player->IsValidAttackTarget(attacker) &&
             player->GetDistance2d(attacker) < sPlayerbotAIConfig->sightDistance)
         {
@@ -142,7 +140,7 @@ bool AttackersValue::hasRealThreat(Unit* attacker)
     (attacker->GetThreatMgr().getCurrentVictim() || dynamic_cast<Player*>(attacker));
 }
 
-bool AttackersValue::IsPossibleTarget(Unit* attacker, Player* bot, float range)
+bool AttackersValue::IsPossibleTarget(Unit* attacker, Player* bot, float /*range*/)
 {
     // Basic null check
     if (!attacker)
@@ -150,10 +148,6 @@ bool AttackersValue::IsPossibleTarget(Unit* attacker, Player* bot, float range)
 
     Creature* c = attacker->ToCreature();
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-
-    bool rti = false;
-    if (bot->GetGroup())
-        rti = bot->GetGroup()->GetTargetIcon(7) == attacker->GetGUID();
 
     // bool inCannon = botAI->IsInVehicle(false, true);
     // bool enemy = botAI->GetAiObjectContext()->GetValue<Unit*>("enemy player target")->Get();
