@@ -1,7 +1,6 @@
 #include "DrakTharonKeepStrategy.h"
 #include "DrakTharonKeepMultipliers.h"
 
-
 void WotlkDungeonDTKStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 {
     // Trollgore

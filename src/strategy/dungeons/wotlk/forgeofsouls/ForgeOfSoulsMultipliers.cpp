@@ -6,7 +6,6 @@
 #include "ForgeOfSoulsTriggers.h"
 #include "ForgeOfSoulsActions.h"
 
-
 float BronjahmMultiplier::GetValue(Action* action) {
     Unit* boss = AI_VALUE2(Unit *, "find target", "bronjahm");
     if (!boss)

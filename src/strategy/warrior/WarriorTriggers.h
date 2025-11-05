@@ -80,7 +80,6 @@ public:
     bool IsActive() override;
 };
 
-
 // class SlamTrigger : public HasAuraTrigger
 // {
 // public:

@@ -126,7 +126,7 @@ bool LokenStackAction::isUseful()
     // Minimum hunter range is 5, but values too close to this seem to cause issues..
     // Hunter bots will try and melee in between ranged attacks, or just melee entirely at 5 as they are in range.
     // 6.5 or 7.0 solves this for this boss.
-    if(bot->getClass() == CLASS_HUNTER)
+    if (bot->getClass() == CLASS_HUNTER)
     {
         return AI_VALUE2(float, "distance", "current target") > 6.5f;
     }
@@ -141,7 +141,7 @@ bool LokenStackAction::Execute(Event event)
     float maxMovement = 10.0f;
     if (!boss->HasUnitState(UNIT_STATE_CASTING))
     {
-        if(bot->getClass() == CLASS_HUNTER)
+        if (bot->getClass() == CLASS_HUNTER)
         {
             return Move(bot->GetAngle(boss), fmin(bot->GetExactDist2d(boss) - 6.5f, maxMovement));
         }
@@ -151,7 +151,6 @@ bool LokenStackAction::Execute(Event event)
 
     return false;
 }
-
 
 bool AvoidLightningNovaAction::Execute(Event event)
 {

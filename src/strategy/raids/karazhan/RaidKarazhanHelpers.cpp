@@ -22,11 +22,11 @@ const Position KARAZHAN_MAIDEN_OF_VIRTUE_RANGED_POSITION[8] =
 };
 
 const Position KARAZHAN_BIG_BAD_WOLF_BOSS_POSITION = Position(-10913.391f, -1773.508f, 90.477f);
-const Position KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[4] = 
+const Position KARAZHAN_BIG_BAD_WOLF_RUN_POSITION[4] =
 {
     { -10875.456f, -1779.036f, 90.477f },
     { -10872.281f, -1751.638f, 90.477f },
-    { -10910.492f, -1747.401f, 90.477f },    
+    { -10910.492f, -1747.401f, 90.477f },
     { -10913.391f, -1773.508f, 90.477f },
 };
 
@@ -68,7 +68,7 @@ Unit* RaidKarazhanHelpers::GetFirstAliveUnitByEntry(uint32 entry)
 {
     const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
 
-    for (const auto& npcGuid : npcs)
+    for (auto const& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
 
@@ -253,7 +253,7 @@ std::tuple<Player*, Player*, Player*> RaidKarazhanHelpers::GetCurrentBeamBlocker
     std::vector<Player*> redBlockers = GetRedBlockers();
     if (!redBlockers.empty())
     {
-        auto it = std::find_if(redBlockers.begin(), redBlockers.end(), [](Player* p) 
+        auto it = std::find_if(redBlockers.begin(), redBlockers.end(), [](Player* p)
         {
             return p && p->GetGUID() == currentRedBlocker;
         });
@@ -276,7 +276,7 @@ std::tuple<Player*, Player*, Player*> RaidKarazhanHelpers::GetCurrentBeamBlocker
     std::vector<Player*> greenBlockers = GetGreenBlockers();
     if (!greenBlockers.empty())
     {
-        auto it = std::find_if(greenBlockers.begin(), greenBlockers.end(), [](Player* p) 
+        auto it = std::find_if(greenBlockers.begin(), greenBlockers.end(), [](Player* p)
         {
             return p && p->GetGUID() == currentGreenBlocker;
         });
@@ -299,7 +299,7 @@ std::tuple<Player*, Player*, Player*> RaidKarazhanHelpers::GetCurrentBeamBlocker
         std::vector<Player*> blueBlockers = GetBlueBlockers();
         if (!blueBlockers.empty())
         {
-            auto it = std::find_if(blueBlockers.begin(), blueBlockers.end(), [](Player* p) 
+            auto it = std::find_if(blueBlockers.begin(), blueBlockers.end(), [](Player* p)
             {
                 return p && p->GetGUID() == currentBlueBlocker;
             });
@@ -327,7 +327,7 @@ std::vector<Unit*> RaidKarazhanHelpers::GetAllVoidZones()
     std::vector<Unit*> voidZones;
     const float radius = 30.0f;
     const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-    for (const auto& npcGuid : npcs)
+    for (auto const& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
         if (!unit || unit->GetEntry() != NPC_VOID_ZONE)
@@ -363,7 +363,7 @@ std::vector<Unit*> RaidKarazhanHelpers::GetSpawnedInfernals() const
 {
     std::vector<Unit*> infernals;
     const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-    for (const auto& npcGuid : npcs)
+    for (auto const& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
         if (unit && unit->GetEntry() == NPC_NETHERSPITE_INFERNAL)
@@ -388,7 +388,7 @@ bool RaidKarazhanHelpers::IsStraightPathSafe(const Position& start, const Positi
     {
         return true;
     }
-    
+
     for (float checkDist = 0.0f; checkDist <= totalDist; checkDist += stepSize)
     {
         float t = checkDist / totalDist;
@@ -404,6 +404,6 @@ bool RaidKarazhanHelpers::IsStraightPathSafe(const Position& start, const Positi
             }
         }
     }
-    
+
     return true;
 }

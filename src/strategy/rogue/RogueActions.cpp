@@ -19,7 +19,6 @@ bool CastStealthAction::isUseful()
     return true;
 }
 
-
 bool CastStealthAction::isPossible()
 {
     // do not use with WSG flag or EYE flag

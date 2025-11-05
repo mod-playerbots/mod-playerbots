@@ -49,3 +49,4 @@ local.properties
 .project
 .cproject
 .vscode
+.idea

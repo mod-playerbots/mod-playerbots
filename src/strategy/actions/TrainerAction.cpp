@@ -172,7 +172,7 @@ bool MaintenanceAction::Execute(Event event)
     PlayerbotFactory factory(bot, bot->GetLevel());
 
     if (!botAI->IsAlt())
-    {    
+    {
         factory.InitAttunementQuests();
         factory.InitBags(false);
         factory.InitAmmo();
@@ -194,7 +194,7 @@ bool MaintenanceAction::Execute(Event event)
         if (bot->GetLevel() >= sPlayerbotAIConfig->minEnchantingBotLevel)
             factory.ApplyEnchantAndGemsNew();
     }
-    else 
+    else
     {
         if (sPlayerbotAIConfig->altMaintenanceAttunementQs)
             factory.InitAttunementQuests();

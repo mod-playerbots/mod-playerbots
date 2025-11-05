@@ -56,7 +56,7 @@ Unit* ServerFacade::GetChaseTarget(Unit* target)
     MovementGenerator* movementGen = target->GetMotionMaster()->top();
     if (movementGen && movementGen->GetMovementGeneratorType() == CHASE_MOTION_TYPE)
     {
-        if (target->GetTypeId() == TYPEID_PLAYER)
+        if (target->IsPlayer())
         {
             return static_cast<ChaseMovementGenerator<Player> const*>(movementGen)->GetTarget();
         }

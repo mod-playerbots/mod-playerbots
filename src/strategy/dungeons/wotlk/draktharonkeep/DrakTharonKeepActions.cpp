@@ -2,7 +2,6 @@
 #include "DrakTharonKeepActions.h"
 #include "DrakTharonKeepStrategy.h"
 
-
 bool CorpseExplodeSpreadAction::Execute(Event event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "trollgore");

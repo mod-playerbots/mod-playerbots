@@ -195,7 +195,7 @@ void ChatReplyAction::ChatReplyDo(Player* bot, uint32& type, uint32& guid1, uint
     }
 
     ChatChannelSource chatChannelSource = GET_PLAYERBOT_AI(bot)->GetChatChannelSource(bot, type, chanName);
-    if ( (msg.starts_with("LFG") || msg.starts_with("LFM")) && HandleLFGQuestsReply(bot, chatChannelSource, msg, name))
+    if ((msg.starts_with("LFG") || msg.starts_with("LFM")) && HandleLFGQuestsReply(bot, chatChannelSource, msg, name))
     {
         return;
     }

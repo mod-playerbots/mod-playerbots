@@ -119,7 +119,6 @@ protected:
     int moveInterval;
 };
 
-
 class CombatFormationMoveAction : public MovementAction
 {
 public:

@@ -1,7 +1,6 @@
 #include "NexusStrategy.h"
 #include "NexusMultipliers.h"
 
-
 void WotlkDungeonNexStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 {
     // Horde Commander (Alliance N)/Commander Kolurg (Alliance H)

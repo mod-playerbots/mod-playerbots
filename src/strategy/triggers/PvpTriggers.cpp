@@ -217,7 +217,6 @@ bool TeamHasFlag::IsActive()
     return ownTeamHasFlag && !enemyTeamHasFlag;
 }
 
-
 bool EnemyTeamHasFlag::IsActive()
 {
     if (botAI->GetBot()->InBattleground())

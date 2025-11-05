@@ -3,7 +3,6 @@
 #include "AiObject.h"
 #include "AiObjectContext.h"
 
-
 bool NadoxGuardianTrigger::IsActive()
 {
     if (botAI->IsHeal(bot)) { return false; }

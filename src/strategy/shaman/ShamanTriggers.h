@@ -374,7 +374,7 @@ public:
 private:
     uint32 requiredSpellId;
     uint32 const* totemSpellIds;
-	size_t totemSpellIdsCount;
+    size_t totemSpellIdsCount;
     int actionButtonId;
 };
 

@@ -97,4 +97,3 @@ std::vector<uint32> WorldBuffAction::NeedWorldBuffs(Unit* unit)
 
     return retVec;
 }
-

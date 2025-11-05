@@ -11,8 +11,11 @@
 
 bool LeaveGroupAction::Execute(Event event)
 {
-    Player* master = event.getOwner();
-    return Leave(master);
+    Player* player = event.getOwner();
+    if (player == botAI->GetMaster())
+        return Leave();
+
+    return false;
 }
 
 bool PartyCommandAction::Execute(Event event)
@@ -26,13 +29,21 @@ bool PartyCommandAction::Execute(Event event)
 
     if (operation != PARTY_OP_LEAVE)
         return false;
-
+    // Only leave if master has left the party, and randombot cannot set new master.
     Player* master = GetMaster();
     if (master && member == master->GetName())
-        return Leave(bot);
-
-    botAI->Reset();
-
+    {
+        if (sRandomPlayerbotMgr->IsRandomBot(bot))
+        {
+            Player* newMaster = botAI->FindNewMaster();
+            if (newMaster || bot->InBattleground())
+            {
+                botAI->SetMaster(newMaster);
+                return false;
+            }
+        }
+        return Leave();
+    }
     return false;
 }
 
@@ -42,17 +53,17 @@ bool UninviteAction::Execute(Event event)
     if (p.GetOpcode() == CMSG_GROUP_UNINVITE)
     {
         p.rpos(0);
-        std::string membername;
-        p >> membername;
+        std::string memberName;
+        p >> memberName;
 
         // player not found
-        if (!normalizePlayerName(membername))
+        if (!normalizePlayerName(memberName))
         {
             return false;
         }
 
-        if (bot->GetName() == membername)
-            return Leave(bot);
+        if (bot->GetName() == memberName)
+            return Leave();
     }
 
     if (p.GetOpcode() == CMSG_GROUP_UNINVITE_GUID)
@@ -62,50 +73,29 @@ bool UninviteAction::Execute(Event event)
         p >> guid;
 
         if (bot->GetGUID() == guid)
-            return Leave(bot);
+            return Leave();
     }
-
-    botAI->Reset();
 
     return false;
 }
 
-bool LeaveGroupAction::Leave(Player* player)
+bool LeaveGroupAction::Leave()
 {
-    if (player &&
-        !botAI &&
-        !botAI->GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_INVITE, false, player))
-
+    if (!botAI)
         return false;
 
-    bool aiMaster = GET_PLAYERBOT_AI(botAI->GetMaster()) != nullptr;
+    Player* master = botAI -> GetMaster();
+    if (master)
+        botAI->TellMaster("Goodbye!", PLAYERBOT_SECURITY_TALK);
 
-    botAI->TellMaster("Goodbye!", PLAYERBOT_SECURITY_TALK);
-
-    bool randomBot = sRandomPlayerbotMgr->IsRandomBot(bot);
-    bool shouldStay = randomBot && bot->GetGroup() && player == bot;
-    if (!shouldStay)
-    {
-        botAI->LeaveOrDisbandGroup();
-    }
-
-    if (randomBot)
-    {
-        GET_PLAYERBOT_AI(bot)->SetMaster(nullptr);
-    }
-
-    if (!aiMaster)
-        botAI->ResetStrategies(!randomBot);
-
-    botAI->Reset();
-
+    botAI->LeaveOrDisbandGroup();
     return true;
 }
 
 bool LeaveFarAwayAction::Execute(Event event)
 {
     // allow bot to leave party when they want
-    return Leave(botAI->GetGroupMaster());
+    return Leave();
 }
 
 bool LeaveFarAwayAction::isUseful()
@@ -164,8 +154,6 @@ bool LeaveFarAwayAction::isUseful()
     {
         return true;
     }
-
-    botAI->Reset();
 
     return false;
 }

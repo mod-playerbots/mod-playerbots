@@ -9,6 +9,7 @@
 #include "Event.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
+#include "NearestGameObjects.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "PositionValue.h"
@@ -53,24 +54,6 @@ bool UseMeetingStoneAction::Execute(Event event)
 
     return Teleport(master, bot);
 }
-
-class AnyGameObjectInObjectRangeCheck
-{
-public:
-    AnyGameObjectInObjectRangeCheck(WorldObject const* obj, float range) : i_obj(obj), i_range(range) {}
-    WorldObject const& GetFocusObject() const { return *i_obj; }
-    bool operator()(GameObject* go)
-    {
-        if (go && i_obj->IsWithinDistInMap(go, i_range) && go->isSpawned() && go->GetGOInfo())
-            return true;
-
-        return false;
-    }
-
-private:
-    WorldObject const* i_obj;
-    float i_range;
-};
 
 bool SummonAction::Execute(Event event)
 {
@@ -134,7 +117,7 @@ bool SummonAction::SummonUsingNpcs(Player* summoner, Player* player)
 
     for (Unit* unit : targets)
     {
-        if (unit && unit->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_INNKEEPER))
+        if (unit && unit->HasNpcFlag(UNIT_NPC_FLAG_INNKEEPER))
         {
             if (!player->HasItemCount(6948, 1, false))
             {
@@ -242,7 +225,7 @@ bool SummonAction::Teleport(Player* summoner, Player* player)
         }
     }
 
-    if(summoner != player)
+    if (summoner != player)
          botAI->TellError("Not enough place to summon");
     return false;
 }

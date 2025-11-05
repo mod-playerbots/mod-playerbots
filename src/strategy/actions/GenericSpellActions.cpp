@@ -190,8 +190,8 @@ CastEnchantItemAction::CastEnchantItemAction(PlayerbotAI* botAI, std::string con
 
 bool CastEnchantItemAction::isPossible()
 {
-    // if (!CastSpellAction::isPossible()) {
-
+    // if (!CastSpellAction::isPossible())
+    // {
     //     botAI->TellMasterNoFacing("Impossible: " + spell);
     //     return false;
     // }
@@ -364,7 +364,8 @@ bool UseTrinketAction::UseTrinket(Item* item)
             for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
             {
                 const SpellEffectInfo& effectInfo = spellInfo->Effects[i];
-                if (effectInfo.Effect == SPELL_EFFECT_APPLY_AURA) {
+                if (effectInfo.Effect == SPELL_EFFECT_APPLY_AURA)
+                {
                     applyAura = true;
                     break;
                 }

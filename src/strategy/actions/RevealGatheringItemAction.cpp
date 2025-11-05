@@ -12,24 +12,7 @@
 #include "GridNotifiersImpl.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
-
-class AnyGameObjectInObjectRangeCheck
-{
-public:
-    AnyGameObjectInObjectRangeCheck(WorldObject const* obj, float range) : i_obj(obj), i_range(range) {}
-    WorldObject const& GetFocusObject() const { return *i_obj; }
-    bool operator()(GameObject* go)
-    {
-        if (go && i_obj->IsWithinDistInMap(go, i_range) && go->isSpawned() && go->GetGOInfo())
-            return true;
-
-        return false;
-    }
-
-private:
-    WorldObject const* i_obj;
-    float i_range;
-};
+#include "NearestGameObjects.h"
 
 bool RevealGatheringItemAction::Execute(Event event)
 {

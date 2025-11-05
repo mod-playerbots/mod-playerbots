@@ -29,7 +29,6 @@ namespace ai::buff
     // Returns false if the spellId is invalid.
     bool HasRequiredReagents(Player* bot, uint32 spellId);
 
-
     // Applies the "switch to group buff" policy if: the bot is in a group of size x+,
     // the group variant is known/useful, and reagents are available. Otherwise, returns baseName.
     // If announceOnMissing == true and reagents are missing, calls the 'announce' callback
