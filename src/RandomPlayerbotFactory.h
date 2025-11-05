@@ -44,9 +44,9 @@ public:
         BloodelfFemale
     };
 
-    static constexpr NameRaceAndGender CombineRaceAndGender(uint8 gender, uint8 race);
+    static constexpr NameRaceAndGender CombineRaceAndGender(uint8 race, uint8 gender);
 
-    RandomPlayerbotFactory(uint32 accountId);
+    RandomPlayerbotFactory() {};
     virtual ~RandomPlayerbotFactory() {}
 
     Player* CreateRandomBot(WorldSession* session, uint8 cls, std::unordered_map<NameRaceAndGender, std::vector<std::string>>& names);
@@ -58,11 +58,9 @@ public:
     static uint32 CalculateAvailableCharsPerAccount();
 
 private:
+    static bool IsValidRaceClassCombination(uint8 race, uint8 class_, uint32 expansion);
     std::string const CreateRandomBotName(NameRaceAndGender raceAndGender);
     static std::string const CreateRandomArenaTeamName();
-
-    uint32 accountId;
-    static std::map<uint8, std::vector<uint8>> availableRaces;
 };
 
 #endif
