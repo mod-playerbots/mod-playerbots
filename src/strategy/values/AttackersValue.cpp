@@ -107,6 +107,7 @@ void AttackersValue::AddAttackersOf(Player* player, std::unordered_set<Unit*>& t
     {
         ThreatMgr* threatMgr = ref->GetSource();
         Unit* attacker = threatMgr->GetOwner();
+        
         if (player->IsValidAttackTarget(attacker) &&
             player->GetDistance2d(attacker) < sPlayerbotAIConfig->sightDistance)
         {
