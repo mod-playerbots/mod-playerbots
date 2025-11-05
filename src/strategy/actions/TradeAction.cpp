@@ -15,7 +15,7 @@ bool TradeAction::Execute(Event event)
     std::string const text = event.getParam();
 
     // If text starts with any excluded prefix, don't process it further.
-    for (const auto& prefix : sPlayerbotAIConfig->tradeActionExcludedPrefixes)
+    for (auto const& prefix : sPlayerbotAIConfig->tradeActionExcludedPrefixes)
     {
         if (text.find(prefix) == 0)
             return false;

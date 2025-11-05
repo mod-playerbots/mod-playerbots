@@ -40,7 +40,7 @@ float KarazhanBigBadWolfMultiplier::GetValue(Action* action)
 
     if (bot->HasAura(SPELL_LITTLE_RED_RIDING_HOOD))
     {
-        if ((dynamic_cast<MovementAction*>(action) && !dynamic_cast<KarazhanBigBadWolfRunAwayAction*>(action)) || 
+        if ((dynamic_cast<MovementAction*>(action) && !dynamic_cast<KarazhanBigBadWolfRunAwayAction*>(action)) ||
            (dynamic_cast<AttackAction*>(action)))
         {
             return 0.0f;
@@ -58,7 +58,7 @@ float KarazhanShadeOfAranMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (boss->HasUnitState(UNIT_STATE_CASTING) && boss->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION)) 
+    if (boss->HasUnitState(UNIT_STATE_CASTING) && boss->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION))
     {
         if (IsChargeAction(action))
         {
@@ -120,7 +120,7 @@ float KarazhanNetherspiteBlueAndGreenBeamMultiplier::GetValue(Action* action)
         Unit* bluePortal = bot->FindNearestCreature(NPC_BLUE_PORTAL, 150.0f);
         Unit* greenPortal = bot->FindNearestCreature(NPC_GREEN_PORTAL, 150.0f);
         bool inBeam = false;
-        for (Unit* portal : {bluePortal, greenPortal}) 
+        for (Unit* portal : {bluePortal, greenPortal})
         {
             if (!portal)
             {
@@ -139,7 +139,7 @@ float KarazhanNetherspiteBlueAndGreenBeamMultiplier::GetValue(Action* action)
             float t = (botdx * dx + botdy * dy);
             float beamX = bx + dx * t, beamY = by + dy * t;
             float distToBeam = sqrt(pow(bot->GetPositionX() - beamX, 2) + pow(bot->GetPositionY() - beamY, 2));
-            if (distToBeam < 0.3f && t > 0.0f && t < length) 
+            if (distToBeam < 0.3f && t > 0.0f && t < length)
             {
                 inBeam = true;
                 break;
@@ -149,7 +149,7 @@ float KarazhanNetherspiteBlueAndGreenBeamMultiplier::GetValue(Action* action)
         {
             std::vector<Unit*> voidZones = karazhanHelper.GetAllVoidZones();
             bool inVoidZone = false;
-            for (Unit* vz : voidZones) 
+            for (Unit* vz : voidZones)
             {
                 if (bot->GetExactDist2d(vz) < 4.0f)
                 {
@@ -232,7 +232,7 @@ float KarazhanNetherspiteRedBeamMultiplier::GetValue(Action* action)
             }
         }
     }
-    
+
     return 1.0f;
 }
 

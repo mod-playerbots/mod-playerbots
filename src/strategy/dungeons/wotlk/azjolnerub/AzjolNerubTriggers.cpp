@@ -3,7 +3,6 @@
 #include "AiObject.h"
 #include "AiObjectContext.h"
 
-
 bool KrikthirWebWrapTrigger::IsActive()
 {
     if (!botAI->IsDps(bot)) { return false; }

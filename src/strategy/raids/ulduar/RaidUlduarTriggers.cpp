@@ -211,7 +211,7 @@ bool RazorscaleHarpoonAvailableTrigger::IsActive()
     }
 
     // Check each harpoon entry
-    for (const auto& harpoon : harpoonData)
+    for (auto const& harpoon : harpoonData)
     {
         // Skip harpoons whose chain spell is already active on the boss
         if (razorscaleHelper.IsHarpoonFired(harpoon.chainSpellId))
@@ -807,7 +807,6 @@ bool ThorimMarkDpsTargetTrigger::IsActive()
         // Check boss and it is alive
         if (!boss || !boss->IsAlive() || !boss->IsHostileTo(bot))
             return false;
-
 
         if (boss->GetPositionZ() < ULDUAR_THORIM_AXIS_Z_FLOOR_THRESHOLD && (!currentSkullUnit || !currentSkullUnit->IsAlive()))
         {

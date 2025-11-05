@@ -530,7 +530,7 @@ public:
     Player* GetBot() { return bot; }
     Player* GetMaster() { return master; }
     Player* FindNewMaster();
-    
+
     // Checks if the bot is really a player. Players always have themselves as master.
     bool IsRealPlayer() { return master ? (master == bot) : false; }
     // Bot has a master that is a player.

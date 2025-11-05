@@ -1,7 +1,6 @@
 #include "TrialOfTheChampionStrategy.h"
 #include "TrialOfTheChampionMultipliers.h"
 
-
 void WotlkDungeonToCStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 {
     triggers.push_back(new TriggerNode("toc lance",

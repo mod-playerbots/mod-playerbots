@@ -2,7 +2,6 @@
 #include "OldKingdomActions.h"
 #include "OldKingdomStrategy.h"
 
-
 bool AttackNadoxGuardianAction::Execute(Event event)
 {
     Unit* target = AI_VALUE2(Unit*, "find target", "ahn'kahar guardian");

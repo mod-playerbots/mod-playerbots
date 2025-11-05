@@ -40,7 +40,7 @@ float OccFlyingMultiplier::GetValue(Action* action)
 
 float UromMultiplier::GetValue(Action* action)
 {
-    if(GetPhaseByCurrentPosition(bot) < 3)
+    if (GetPhaseByCurrentPosition(bot) < 3)
     {
         Unit* target = action->GetTarget();
         if (target && target->GetEntry() == NPC_MAGE_LORD_UROM)
