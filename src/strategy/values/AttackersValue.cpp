@@ -144,67 +144,88 @@ bool AttackersValue::hasRealThreat(Unit* attacker)
 
 bool AttackersValue::IsPossibleTarget(Unit* attacker, Player* bot, float range)
 {
-    Creature* c = attacker->ToCreature();
-    bool rti = false;
-    if (attacker && bot->GetGroup())
-        rti = bot->GetGroup()->GetTargetIcon(7) == attacker->GetGUID();
+    // Basic null check
+    if (!attacker)
+        return false;
 
+    Creature* c = attacker->ToCreature();
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+
+    bool rti = false;
+    if (bot->GetGroup())
+        rti = bot->GetGroup()->GetTargetIcon(7) == attacker->GetGUID();
 
     // bool inCannon = botAI->IsInVehicle(false, true);
     // bool enemy = botAI->GetAiObjectContext()->GetValue<Unit*>("enemy player target")->Get();
 
-    // Group leader threat check
-    bool leaderHasThreat = false;
-    if (attacker && bot->GetGroup() && botAI->GetMaster())
-        leaderHasThreat = attacker->GetThreatMgr().GetThreat(botAI->GetMaster());
+    // Basic validity checks
+    if (!attacker->IsVisible() || !attacker->IsInWorld() || attacker->GetMapId() != bot->GetMapId())
+        return false;
 
-    // Bot-controlled group check
-    bool isMemberBotGroup = false;
-    if (bot->GetGroup() && botAI->GetMaster())
-    {
-        PlayerbotAI* masterBotAI = GET_PLAYERBOT_AI(botAI->GetMaster());
-        if (masterBotAI && !masterBotAI->IsRealPlayer())
-            isMemberBotGroup = true;
-    }
+    if (attacker->isDead() || attacker->HasSpiritOfRedemptionAura())
+        return false;
 
-    // Basic attacker validity
-    bool isAttackerValid = attacker &&
-        attacker->IsVisible() &&
-        attacker->IsInWorld() &&
-        attacker->GetMapId() == bot->GetMapId() &&
-        !attacker->isDead();
+    // Flag checks
+    if (attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NON_ATTACKABLE_2))
+        return false;
 
-    // Flag and state checks
-    bool hasValidFlags = !attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NON_ATTACKABLE_2) &&
-        !attacker->HasUnitFlag(UNIT_FLAG_IMMUNE_TO_PC) &&
-        !attacker->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE);
+    if (attacker->HasUnitFlag(UNIT_FLAG_IMMUNE_TO_PC) || attacker->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
+        return false;
 
     // Relationship checks
-    bool isValidTarget = !attacker->IsFriendlyTo(bot) &&
-        !attacker->HasSpiritOfRedemptionAura() &&
-        !(attacker->GetCreatureType() == CREATURE_TYPE_CRITTER && !attacker->IsInCombat()) &&
-        bot->CanSeeOrDetect(attacker);
+    if (attacker->IsFriendlyTo(bot))
+        return false;
 
-    // PvP checks
-    bool isPvpBlocked = (sPlayerbotAIConfig->IsPvpProhibited(attacker->GetZoneId(), attacker->GetAreaId()) &&
-            (attacker->GetGUID().IsPlayer() || attacker->GetGUID().IsPet())) ||
-        (attacker->IsPlayer() && !attacker->IsPvP() && !attacker->IsFFAPvP() &&
-            (!bot->duel || bot->duel->Opponent != attacker));
+    // Critter exception
+    if (attacker->GetCreatureType() == CREATURE_TYPE_CRITTER && !attacker->IsInCombat())
+        return false;
 
-    // Creature loot/combat checks
-    bool isCreatureTargetable = !c ||
-        (!c->IsInEvadeMode() &&
-            ((!isMemberBotGroup && botAI->HasStrategy("attack tagged", BOT_STATE_NON_COMBAT)) ||
-                leaderHasThreat ||
-                (!c->hasLootRecipient() &&
-                    (!c->GetVictim() ||
-                        (c->GetVictim() &&
-                            ((!c->GetVictim()->IsPlayer() || bot->IsInSameGroupWith(c->GetVictim()->ToPlayer())) ||
-                                (botAI->GetMaster() && c->GetVictim() == botAI->GetMaster()))))) ||
-                c->isTappedBy(bot)));
+    // Visibility check
+    if (!bot->CanSeeOrDetect(attacker))
+        return false;
 
-    return isAttackerValid && hasValidFlags && isValidTarget && !isPvpBlocked && isCreatureTargetable;
+    // PvP prohibition checks
+    if ((attacker->GetGUID().IsPlayer() || attacker->GetGUID().IsPet()) &&
+        sPlayerbotAIConfig->IsPvpProhibited(attacker->GetZoneId(), attacker->GetAreaId()))
+        return false;
+
+    // Unflagged player check
+    if (attacker->IsPlayer() && !attacker->IsPvP() && !attacker->IsFFAPvP() &&
+        (!bot->duel || bot->duel->Opponent != attacker))
+        return false;
+
+    // Creature-specific checks
+    if (c)
+    {
+        if (c->IsInEvadeMode())
+            return false;
+
+        bool leaderHasThreat = false;
+        if (bot->GetGroup() && botAI->GetMaster())
+            leaderHasThreat = attacker->GetThreatMgr().GetThreat(botAI->GetMaster());
+
+        bool isMemberBotGroup = false;
+        if (bot->GetGroup() && botAI->GetMaster())
+        {
+            PlayerbotAI* masterBotAI = GET_PLAYERBOT_AI(botAI->GetMaster());
+            if (masterBotAI && !masterBotAI->IsRealPlayer())
+                isMemberBotGroup = true;
+        }
+
+        bool canAttack = (!isMemberBotGroup && botAI->HasStrategy("attack tagged", BOT_STATE_NON_COMBAT)) ||
+            leaderHasThreat ||
+            (!c->hasLootRecipient() &&
+                (!c->GetVictim() ||
+                    (c->GetVictim() &&
+                        ((!c->GetVictim()->IsPlayer() || bot->IsInSameGroupWith(c->GetVictim()->ToPlayer())) ||
+                            (botAI->GetMaster() && c->GetVictim() == botAI->GetMaster()))))) ||
+            c->isTappedBy(bot);
+
+        if (!canAttack)
+            return false;
+    }
+
+    return true;
 }
 
 bool AttackersValue::IsValidTarget(Unit* attacker, Player* bot)
