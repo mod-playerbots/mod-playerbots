@@ -119,7 +119,8 @@ public:
     static bool HandleAccountLinkCommand(ChatHandler* handler, char const* args, const char* command)
     {
         std::string commandArgs = command;
-        if (args && *args) {
+        if (args && *args)
+        {
             commandArgs += " ";
             commandArgs += args;
         }
