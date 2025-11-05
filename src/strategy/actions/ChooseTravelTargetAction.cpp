@@ -120,7 +120,6 @@ void ChooseTravelTargetAction::getNewTarget(TravelTarget* newTarget, TravelTarge
         }
     }
 
-
     //Continue current target. 90% chance
     if (!foundTarget && urand(1, 100) > 10)
     {
@@ -673,7 +672,7 @@ bool ChooseTravelTargetAction::SetExploreTarget(TravelTarget* target)
         //271 south shore
         //35 booty bay
         //380 The Barrens The Crossroads
-        if(((ExploreTravelDestination * )activeTarget)->getAreaId() == 380)
+        if (((ExploreTravelDestination * )activeTarget)->getAreaId() == 380)
         {
             activePoints.push_back(activeTarget->getPoints(true)[0]);
         }

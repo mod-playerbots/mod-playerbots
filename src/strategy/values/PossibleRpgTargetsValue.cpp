@@ -54,18 +54,18 @@ void PossibleRpgTargetsValue::FindUnits(std::list<Unit*>& targets)
 
 bool PossibleRpgTargetsValue::AcceptUnit(Unit* unit)
 {
-    if (unit->IsHostileTo(bot) || unit->GetTypeId() == TYPEID_PLAYER)
+    if (unit->IsHostileTo(bot) || unit->IsPlayer())
         return false;
 
     if (sServerFacade->GetDistance2d(bot, unit) <= sPlayerbotAIConfig->tooCloseDistance)
         return false;
 
-    if (unit->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPIRITHEALER))
+    if (unit->HasNpcFlag(UNIT_NPC_FLAG_SPIRITHEALER))
         return false;
 
     for (uint32 npcFlag : allowedNpcFlags)
     {
-        if (unit->HasFlag(UNIT_NPC_FLAGS, npcFlag))
+        if (unit->HasNpcFlag(static_cast<NPCFlags>(npcFlag)))
             return true;
     }
 
@@ -81,7 +81,6 @@ bool PossibleRpgTargetsValue::AcceptUnit(Unit* unit)
 
     return false;
 }
-
 
 std::vector<uint32> PossibleNewRpgTargetsValue::allowedNpcFlags;
 
@@ -127,11 +126,11 @@ GuidVector PossibleNewRpgTargetsValue::Calculate()
             guidDistancePairs.push_back({unit->GetGUID(), bot->GetExactDist(unit)});
     }
     // Override to sort by distance
-    std::sort(guidDistancePairs.begin(), guidDistancePairs.end(), [](const auto& a, const auto& b) {
+    std::sort(guidDistancePairs.begin(), guidDistancePairs.end(), [](auto const& a, auto const& b) {
         return a.second < b.second;
     });
 
-    for (const auto& pair : guidDistancePairs) {
+    for (auto const& pair : guidDistancePairs) {
         results.push_back(pair.first);
     }
     return results;
@@ -146,15 +145,15 @@ void PossibleNewRpgTargetsValue::FindUnits(std::list<Unit*>& targets)
 
 bool PossibleNewRpgTargetsValue::AcceptUnit(Unit* unit)
 {
-    if (unit->IsHostileTo(bot) || unit->GetTypeId() == TYPEID_PLAYER)
+    if (unit->IsHostileTo(bot) || unit->IsPlayer())
         return false;
 
-    if (unit->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPIRITHEALER))
+    if (unit->HasNpcFlag(UNIT_NPC_FLAG_SPIRITHEALER))
         return false;
 
     for (uint32 npcFlag : allowedNpcFlags)
     {
-        if (unit->HasFlag(UNIT_NPC_FLAGS, npcFlag))
+        if (unit->HasNpcFlag(static_cast<NPCFlags>(npcFlag)))
             return true;
     }
 
@@ -169,7 +168,6 @@ GuidVector PossibleNewRpgGameObjectsValue::Calculate()
     AnyGameObjectInObjectRangeCheck u_check(bot, range);
     Acore::GameObjectListSearcher<AnyGameObjectInObjectRangeCheck> searcher(bot, targets, u_check);
     Cell::VisitObjects(bot, searcher, range);
-
 
     std::vector<std::pair<ObjectGuid, float>> guidDistancePairs;
     for (GameObject* go : targets)
@@ -194,11 +192,11 @@ GuidVector PossibleNewRpgGameObjectsValue::Calculate()
     GuidVector results;
 
     // Sort by distance
-    std::sort(guidDistancePairs.begin(), guidDistancePairs.end(), [](const auto& a, const auto& b) {
+    std::sort(guidDistancePairs.begin(), guidDistancePairs.end(), [](auto const& a, auto const& b) {
         return a.second < b.second;
     });
 
-    for (const auto& pair : guidDistancePairs) {
+    for (auto const& pair : guidDistancePairs) {
         results.push_back(pair.first);
     }
     return results;

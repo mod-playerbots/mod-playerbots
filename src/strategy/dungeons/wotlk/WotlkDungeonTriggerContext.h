@@ -18,5 +18,4 @@
 #include "trialofthechampion/TrialOfTheChampionTriggerContext.h"
 // #include "hallsofreflection/HallsOfReflectionTriggerContext.h"
 
-
 #endif

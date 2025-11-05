@@ -84,7 +84,7 @@ GameObject* RazorscaleBossHelper::FindNearestHarpoon(float x, float y, float z) 
     GameObject* nearestHarpoon = nullptr;
     float minDistanceSq = std::numeric_limits<float>::max();
 
-    for (const auto& harpoon : GetHarpoonData())
+    for (auto const& harpoon : GetHarpoonData())
     {
         if (GameObject* harpoonGO = bot->FindNearestGameObject(harpoon.gameObjectEntry, 200.0f))
         {
@@ -157,7 +157,6 @@ bool RazorscaleBossHelper::CanSwapRoles() const
 
     return (currentTime - lastSwapTime) >= _roleSwapCooldown;
 }
-
 
 void RazorscaleBossHelper::AssignRolesBasedOnHealth()
 {

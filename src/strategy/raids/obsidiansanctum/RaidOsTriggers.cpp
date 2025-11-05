@@ -17,7 +17,6 @@ bool FlameTsunamiTrigger::IsActive()
     Unit* boss = AI_VALUE2(Unit*, "find target", "sartharion");
     if (!boss) { return false; }
 
-
     GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
     for (auto& npc : npcs)
     {
@@ -38,7 +37,6 @@ bool TwilightFissureTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "sartharion");
     if (!boss) { return false; }
-
 
     GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
     for (auto& npc : npcs)
@@ -97,7 +95,6 @@ bool TwilightPortalEnterTrigger::IsActive()
     //         return false;
     //     }
     // }
-
 
     // Don't enter portal until drakes are dead
     if (bot->HasAura(SPELL_POWER_OF_SHADRON) ||

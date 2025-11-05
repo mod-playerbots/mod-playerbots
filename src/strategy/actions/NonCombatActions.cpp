@@ -47,16 +47,16 @@ bool DrinkAction::Execute(Event event)
     return UseItemAction::Execute(event);
 }
 
-bool DrinkAction::isUseful() 
-{ 
-    return UseItemAction::isUseful() && 
+bool DrinkAction::isUseful()
+{
+    return UseItemAction::isUseful() &&
         AI_VALUE2(bool, "has mana", "self target") &&
         AI_VALUE2(uint8, "mana", "self target") < 100;
 }
 
 bool DrinkAction::isPossible()
 {
-    return !bot->IsInCombat() && 
+    return !bot->IsInCombat() &&
         !bot->IsMounted() &&
         !botAI->HasAnyAuraOf(GetTarget(), "dire bear form", "bear form", "cat form", "travel form",
             "aquatic form","flight form", "swift flight form", nullptr) &&
@@ -102,15 +102,15 @@ bool EatAction::Execute(Event event)
     return UseItemAction::Execute(event);
 }
 
-bool EatAction::isUseful() 
-{ 
-    return UseItemAction::isUseful() && 
+bool EatAction::isUseful()
+{
+    return UseItemAction::isUseful() &&
         AI_VALUE2(uint8, "health", "self target") < 100;
 }
 
 bool EatAction::isPossible()
 {
-    return !bot->IsInCombat() && 
+    return !bot->IsInCombat() &&
         !bot->IsMounted() &&
         !botAI->HasAnyAuraOf(GetTarget(), "dire bear form", "bear form", "cat form", "travel form",
             "aquatic form","flight form", "swift flight form", nullptr) &&

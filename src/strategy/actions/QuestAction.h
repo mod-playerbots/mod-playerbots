@@ -49,7 +49,7 @@ class QuestUpdateAddItemAction : public Action
 {
 public:
     QuestUpdateAddItemAction(PlayerbotAI* ai) : Action(ai, "quest update add item") {}
-    bool Execute(Event event) override;;
+    bool Execute(Event event) override;
 };
 
 class QuestUpdateFailedAction : public Action
@@ -70,7 +70,7 @@ class QuestItemPushResultAction : public Action
 {
 public:
     QuestItemPushResultAction(PlayerbotAI* ai) : Action(ai, "quest item push result") {}
-    bool Execute(Event event) override;;
+    bool Execute(Event event) override;
 };
 
 #endif

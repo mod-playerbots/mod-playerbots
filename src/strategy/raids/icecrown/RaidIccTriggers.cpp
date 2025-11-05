@@ -299,7 +299,7 @@ bool IccPutricideGrowingOozePuddleTrigger::IsActive()
     }
 
     const GuidVector& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
-    for (const auto& npc : npcs)
+    for (auto const& npc : npcs)
     {
         if (Unit* unit = botAI->GetUnit(npc))
         {
@@ -477,7 +477,7 @@ bool IccBpcKineticBombTrigger::IsActive()
 
     for (const auto entry : bombEntries)
     {
-        for (const auto& guid : bombs)
+        for (auto const& guid : bombs)
         {
             if (Unit* unit = botAI->GetUnit(guid))
             {

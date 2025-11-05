@@ -178,7 +178,6 @@ private:
     SapphironBossHelper helper;
 };
 
-
 class SapphironFlightTrigger : public Trigger
 {
 public:

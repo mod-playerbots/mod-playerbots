@@ -2,7 +2,6 @@
 #include "VioletHoldActions.h"
 #include "VioletHoldStrategy.h"
 
-
 bool AttackErekemAction::Execute(Event event)
 {
     // Focus boss first, adds after

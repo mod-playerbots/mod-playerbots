@@ -1001,7 +1001,7 @@ bool RazorscaleHarpoonAction::Execute(Event event)
     float minDistance = std::numeric_limits<float>::max();
 
     // Find the nearest harpoon that hasn't been fired and is not on cooldown
-    for (const auto& harpoon : harpoonData)
+    for (auto const& harpoon : harpoonData)
     {
         if (razorscaleHelper.IsHarpoonFired(harpoon.chainSpellId))
             continue;
@@ -1087,7 +1087,7 @@ bool RazorscaleHarpoonAction::isUseful()
 
     const std::vector<RazorscaleBossHelper::HarpoonData>& harpoonData = razorscaleHelper.GetHarpoonData();
 
-    for (const auto& harpoon : harpoonData)
+    for (auto const& harpoon : harpoonData)
     {
         if (razorscaleHelper.IsHarpoonFired(harpoon.chainSpellId))
             continue;

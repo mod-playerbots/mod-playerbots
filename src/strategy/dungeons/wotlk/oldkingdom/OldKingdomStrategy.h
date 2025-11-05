@@ -5,7 +5,6 @@
 #include "AiObjectContext.h"
 #include "Strategy.h"
 
-
 class WotlkDungeonOKStrategy : public Strategy
 {
 public:

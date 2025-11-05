@@ -1442,22 +1442,22 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
     switch (mapId)
     {
         case 249:
-			strategyName = "onyxia";  // Onyxia's Lair
+            strategyName = "onyxia";  // Onyxia's Lair
             break;
         case 409:
-			strategyName = "mc";  // Molten Core
+            strategyName = "mc";  // Molten Core
             break;
         case 469:
-			strategyName = "bwl";  // Blackwing Lair
+            strategyName = "bwl";  // Blackwing Lair
             break;
         case 509:
-			strategyName = "aq20";  // Ruins of Ahn'Qiraj
+            strategyName = "aq20";  // Ruins of Ahn'Qiraj
             break;
         case 532:
             strategyName = "karazhan";  // Karazhan
             break;
         case 533:
-			strategyName = "naxx";  // Naxxramas
+            strategyName = "naxx";  // Naxxramas
             break;
         case 544:
             strategyName = "magtheridon";  // Magtheridon's Lair
@@ -3097,8 +3097,10 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
     SpellCastResult result = spell->CheckCast(true);
     delete spell;
 
-    // if (!sPlayerbotAIConfig->logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster())) {
-    //     if (result != SPELL_FAILED_NOT_READY && result != SPELL_CAST_OK) {
+    // if (!sPlayerbotAIConfig->logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
+    // {
+    //     if (result != SPELL_FAILED_NOT_READY && result != SPELL_CAST_OK)
+    //     {
     //         LOG_DEBUG("playerbots", "CanCastSpell - target name: {}, spellid: {}, bot name: {}, result: {}",
     //             target->GetName(), spellid, bot->GetName(), result);
     //     }
@@ -3121,7 +3123,6 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
         default:
             if (!sPlayerbotAIConfig->logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
             {
-                // if (result != SPELL_FAILED_NOT_READY && result != SPELL_CAST_OK) {
                 LOG_DEBUG("playerbots",
                           "CanCastSpell Check Failed. - target name: {}, spellid: {}, bot name: {}, result: {}",
                           target->GetName(), spellid, bot->GetName(), result);
@@ -3304,7 +3305,8 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
 
     if (bot->IsFlying() || bot->HasUnitState(UNIT_STATE_IN_FLIGHT))
     {
-        // if (!sPlayerbotAIConfig->logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster())) {
+        // if (!sPlayerbotAIConfig->logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
+        // {
         //     LOG_DEBUG("playerbots", "Spell cast is flying - target name: {}, spellid: {}, bot name: {}}",
         //         target->GetName(), spellId, bot->GetName());
         // }
@@ -3349,7 +3351,8 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
         {
             bot->GetTradeData()->SetSpell(spellId);
             delete spell;
-            // if (!sPlayerbotAIConfig->logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster())) {
+            // if (!sPlayerbotAIConfig->logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
+            // {
             //     LOG_DEBUG("playerbots", "Spell cast no item - target name: {}, spellid: {}, bot name: {}",
             //         target->GetName(), spellId, bot->GetName());
             // }
@@ -3418,7 +3421,8 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
 
     // spell->m_targets.SetUnitTarget(target);
     // SpellCastResult spellSuccess = spell->CheckCast(true);
-    // if (!sPlayerbotAIConfig->logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster())) {
+    // if (!sPlayerbotAIConfig->logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
+    // {
     //     LOG_DEBUG("playerbots", "Spell cast result - target name: {}, spellid: {}, bot name: {}, result: {}",
     //         target->GetName(), spellId, bot->GetName(), spellSuccess);
     // }
@@ -3429,7 +3433,8 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
 
     if (result != SPELL_CAST_OK)
     {
-        // if (!sPlayerbotAIConfig->logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster())) {
+        // if (!sPlayerbotAIConfig->logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
+        // {
         //     LOG_DEBUG("playerbots", "Spell cast failed. - target name: {}, spellid: {}, bot name: {}, result: {}",
         //         target->GetName(), spellId, bot->GetName(), result);
         // }
@@ -3496,7 +3501,8 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
     //     {
     //         spell->cancel();
     //         delete spell;
-    //         if (!sPlayerbotAIConfig->logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster())) {
+    //         if (!sPlayerbotAIConfig->logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
+    //         {
     //             LOG_DEBUG("playerbots", "Spell cast loot - target name: {}, spellid: {}, bot name: {}",
     //                 target->GetName(), spellId, bot->GetName());
     //         }
@@ -4727,7 +4733,6 @@ uint32 PlayerbotAI::GetEquipGearScore(Player* player)
         sum += gearScore[i];
     }
 
-
     if (count)
     {
         uint32 res = uint32(sum / count);
@@ -5264,7 +5269,7 @@ Item* PlayerbotAI::FindOpenableItem() const
     return FindItemInInventory(
         [this](ItemTemplate const* itemTemplate) -> bool
         {
-            return (itemTemplate->Flags & ITEM_FLAG_HAS_LOOT) &&
+            return itemTemplate->HasFlag(ITEM_FLAG_HAS_LOOT) &&
                    (itemTemplate->LockID == 0 || !this->bot->GetItemByEntry(itemTemplate->ItemId)->IsLocked());
         });
 }
@@ -5415,7 +5420,7 @@ Item* PlayerbotAI::FindOilFor(Item* weapon) const
 
     if (prioritizedOils)
     {
-        for (const auto& id : *prioritizedOils)
+        for (auto const& id : *prioritizedOils)
         {
             oil = FindConsumable(id);
             if (oil)

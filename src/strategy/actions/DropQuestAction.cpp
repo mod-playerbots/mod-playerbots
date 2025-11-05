@@ -58,7 +58,6 @@ bool DropQuestAction::Execute(Event event)
     return true;
 }
 
-
 bool CleanQuestLogAction::Execute(Event event)
 {
     Player* requester = event.getOwner() ? event.getOwner() : GetMaster();
@@ -164,7 +163,6 @@ bool CleanQuestLogAction::Execute(Event event)
 
     return true;
 }
-
 
 void CleanQuestLogAction::DropQuestType(uint8& numQuest, uint8 wantNum, bool isGreen, bool hasProgress, bool isComplete)
 {

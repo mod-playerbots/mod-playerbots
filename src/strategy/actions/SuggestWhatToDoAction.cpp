@@ -120,7 +120,8 @@ void SuggestWhatToDoAction::grindMaterials()
 
     for (std::map<std::string, double>::iterator i = categories.begin(); i != categories.end(); ++i)
     {
-        if (urand(0, 10) < 3) {
+        if (urand(0, 10) < 3)
+        {
             std::string name = i->first;
             double multiplier = i->second;
 
