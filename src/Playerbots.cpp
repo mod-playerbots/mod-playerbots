@@ -408,7 +408,7 @@ public:
             PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
             if (!botAI || botAI->IsRealPlayer())
             {
-                playerbotMgr->LogoutAllBots();
+                playerbotMgr->EnqueueLogoutAllBots();
             }
         }
 
@@ -418,7 +418,7 @@ public:
     void OnPlayerbotLogoutBots() override
     {
         LOG_INFO("playerbots", "Logging out all bots...");
-        sRandomPlayerbotMgr->LogoutAllBots();
+        sRandomPlayerbotMgr->EnqueueLogoutAllBots();
     }
 };
 

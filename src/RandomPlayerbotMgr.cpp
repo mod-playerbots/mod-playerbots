@@ -429,7 +429,7 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 elapsed, bool /*minimal*/)
             if (RealPlayerLastTimeSeen != 0 && onlineBotCount > 0 &&
                 time(nullptr) > RealPlayerLastTimeSeen + sPlayerbotAIConfig->disabledWithoutRealPlayerLogoutDelay)
             {
-                LogoutAllBots();
+                EnqueueLogoutAllBots();
                 LOG_INFO("playerbots", "Logout all bots due no real player session.");
             }
         }
@@ -502,7 +502,7 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 elapsed, bool /*minimal*/)
                 break;
         }
 
-        if (loginBots && botLoading.empty())
+        if (loginBots && IsAnyBotLoading())
         {
             loginBots += updateBots;
             loginBots = std::min(loginBots, maxNewBots);
@@ -1428,7 +1428,7 @@ bool RandomPlayerbotMgr::ProcessBot(uint32 bot)
             currentBots.erase(std::remove(currentBots.begin(), currentBots.end(), bot), currentBots.end());
 
             if (player)
-                LogoutPlayerBot(botGUID);
+                EnqueueLogout(botGUID);
         }
 
         return false;
@@ -1507,7 +1507,7 @@ bool RandomPlayerbotMgr::ProcessBot(uint32 bot)
     {
         LOG_DEBUG("playerbots", "Bot #{} {}:{} <{}>: log out", bot, IsAlliance(player->getRace()) ? "A" : "H",
                   player->GetLevel(), player->GetName().c_str());
-        LogoutPlayerBot(botGUID);
+        EnqueueLogout(botGUID);
         currentBots.remove(bot);
         SetEventValue(bot, "logout", 1,
                       urand(sPlayerbotAIConfig->minRandomBotInWorldTime, sPlayerbotAIConfig->maxRandomBotInWorldTime));
@@ -3500,7 +3500,7 @@ void RandomPlayerbotMgr::Remove(Player* bot)
 
     eventCache[owner.GetCounter()].clear();
 
-    LogoutPlayerBot(owner);
+    EnqueueLogout(owner);
 }
 
 CreatureData const* RandomPlayerbotMgr::GetCreatureDataByEntry(uint32 entry)
