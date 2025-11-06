@@ -264,24 +264,6 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     if (!CanUpdateAI())
         return;
 
-    // Handle floating addClass bots
-    if (sRandomPlayerbotMgr->IsAddclassBot(bot))
-    {
-        Player* master = GetMaster();
-        if (master && master->IsInWorld())
-        {
-            Group* group = bot->GetGroup();
-            const bool masterInGroup = (group && group->IsMember(master->GetGUID()));
-            if (!group || !masterInGroup)
-            {
-                if (auto* mgr = GET_PLAYERBOT_MGR(master))
-                    mgr->EnqueueLogout(bot->GetGUID());
-
-                return; // stop AI update
-            }
-        }
-    }
-
     // Handle the current spell
     Spell* currentSpell = bot->GetCurrentSpell(CURRENT_GENERIC_SPELL);
     if (!currentSpell)
@@ -372,12 +354,49 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
         }
     }
 
+    // Handle floating addClass bots
+    if (sRandomPlayerbotMgr->IsAddclassBot(bot))
+    {
+        Player* master = GetMaster();
+        if (master && master->IsInWorld())
+        {
+            Group* group = bot->GetGroup();
+            const bool masterInGroup = (group && group->IsMember(master->GetGUID()));
+            if (!group || !masterInGroup)
+            {
+                if (auto* mgr = GET_PLAYERBOT_MGR(master))
+                    mgr->EnqueueLogout(bot->GetGUID());
+            }
+        }
+    }
+
+    // Handle any addClass bots which are not lost; and log them out
+    HandleFloatingAddClassBots();
+
     // Update the bot's group status (moved to helper function)
     UpdateAIGroupAndMaster();
 
     // Update internal AI
     UpdateAIInternal(elapsed, minimal);
     YieldThread(GetReactDelay());
+}
+
+void PlayerbotAI::HandleFloatingAddClassBots()
+{
+    if (sRandomPlayerbotMgr->IsAddclassBot(bot))
+    {
+        Player* master = GetMaster();
+        if (master && master->IsInWorld())
+        {
+            Group* group = bot->GetGroup();
+            const bool masterInGroup = (group && group->IsMember(master->GetGUID()));
+            if (!group || !masterInGroup)
+            {
+                if (auto* mgr = GET_PLAYERBOT_MGR(master))
+                    mgr->EnqueueLogout(bot->GetGUID());
+            }
+        }
+    }
 }
 
 // Helper function for UpdateAI to check group membership and handle removal if necessary
