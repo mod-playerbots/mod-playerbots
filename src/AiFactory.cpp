@@ -413,10 +413,12 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
 
             break;
     }
-    if (PlayerbotAI::IsTank(player, true)) {
+    if (PlayerbotAI::IsTank(player, true))
+    {
         engine->addStrategy("tank face", false);
     }
-    if (PlayerbotAI::IsMelee(player, true) && PlayerbotAI::IsDps(player, true)) {
+    if (PlayerbotAI::IsMelee(player, true) && PlayerbotAI::IsDps(player, true))
+    {
         engine->addStrategy("behind", false);
     }
     if (PlayerbotAI::IsHeal(player, true))
@@ -706,7 +708,9 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
                         // {
                         //     // nonCombatEngine->addStrategy("travel");
                         //     nonCombatEngine->addStrategy("rpg");
-                        // } else {
+                        // }
+                        // else
+                        // {
                         //     nonCombatEngine->addStrategy("move random");
                         // }
 

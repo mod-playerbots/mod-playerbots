@@ -78,7 +78,7 @@ public:
     bool IsSafePosition (float x, float y, float z,
          const std::vector<Unit*>& hazards, float hazardRadius);
     std::vector<Unit*> GetSpawnedInfernals() const;
-    bool IsStraightPathSafe(const Position& start, const Position& target, 
+    bool IsStraightPathSafe(const Position& start, const Position& target,
          const std::vector<Unit*>& hazards, float hazardRadius, float stepSize);
 };
 

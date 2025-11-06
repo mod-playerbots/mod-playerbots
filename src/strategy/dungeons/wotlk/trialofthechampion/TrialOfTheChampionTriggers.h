@@ -16,19 +16,15 @@ enum TocC_IDs
     //Eadric
     SPELL_RADIANCE                  = 66935,
 
-
     // Objects
     OBJECT_LANCE_RACK               = 196398,
-
 
     // Items
     ITEM_LANCE                      = 46106,
 
-
     // Vehicles
     NPC_ARGENT_WARHORSE             = 35644,
     NPC_ARGENT_BATTLEWORG           = 36558,
-
 
     // Horde Champions
     NPC_MOKRA                       = 35572,
@@ -37,14 +33,12 @@ enum TocC_IDs
     NPC_ZULTORE                     = 35570,
     NPC_VISCERI                     = 35617,
 
-
     // Alliance Champions
     NPC_JACOB                       = 34705,
     NPC_AMBROSE                     = 34702,
     NPC_COLOSOS                     = 34701,
     NPC_JAELYNE                     = 34657,
     NPC_LANA                        = 34703,
-
 
     // Grand Champion Minions
     NPC_IRONFORGE_MINION            = 35329,
@@ -57,7 +51,6 @@ enum TocC_IDs
     NPC_THUNDER_BLUFF_MINION        = 35325,
     NPC_SENJIN_MINION               = 35323,
     NPC_UNDERCITY_MINION            = 35327,
-
 
     // Rest of the bosses and npcs
     NPC_EADRIC                      = 35119,

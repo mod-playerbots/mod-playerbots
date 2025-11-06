@@ -99,5 +99,4 @@ public:
     virtual float GetValue(Action* action);
 };
 
-
 #endif

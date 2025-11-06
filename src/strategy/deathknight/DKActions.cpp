@@ -43,7 +43,7 @@ bool CastRaiseDeadAction::Execute(Event event)
         return false;
     }
     uint32 spellId = AI_VALUE2(uint32, "spell id", spell);
-    // const SpellInfo *spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    // SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
     bot->AddSpellCooldown(spellId, 0, 3 * 60 * 1000);
     return true;
 }

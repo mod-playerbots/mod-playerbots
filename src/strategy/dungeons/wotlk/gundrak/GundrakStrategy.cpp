@@ -1,7 +1,6 @@
 #include "GundrakStrategy.h"
 #include "GundrakMultipliers.h"
 
-
 void WotlkDungeonGDStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 {
     // Moorabi

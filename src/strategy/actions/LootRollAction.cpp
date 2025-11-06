@@ -41,9 +41,12 @@ bool LootRollAction::Execute(Event event)
             continue;
 
         std::string itemUsageParam;
-        if (randomProperty != 0) {
+        if (randomProperty != 0)
+        {
             itemUsageParam = std::to_string(itemId) + "," + std::to_string(randomProperty);
-        } else {
+        }
+        else
+        {
             itemUsageParam = std::to_string(itemId);
         }
         ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", itemUsageParam);
@@ -119,7 +122,6 @@ bool LootRollAction::Execute(Event event)
 
     return false;
 }
-
 
 RollVote LootRollAction::CalculateRollVote(ItemTemplate const* proto)
 {

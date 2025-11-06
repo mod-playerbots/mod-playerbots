@@ -837,8 +837,8 @@ uint32 TalkAction::GetRandomEmote(Unit* unit, bool textEmote)
             types.push_back(TEXT_EMOTE_TALKEX);
             types.push_back(TEXT_EMOTE_TALKQ);
 
-            if (unit && (unit->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_TRAINER) ||
-                         unit->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER)))
+            if (unit && (unit->HasNpcFlag(UNIT_NPC_FLAG_TRAINER) ||
+                         unit->HasNpcFlag(UNIT_NPC_FLAG_QUESTGIVER)))
             {
                 types.push_back(TEXT_EMOTE_SALUTE);
             }
@@ -864,8 +864,8 @@ uint32 TalkAction::GetRandomEmote(Unit* unit, bool textEmote)
         types.push_back(EMOTE_ONESHOT_EXCLAMATION);
         types.push_back(EMOTE_ONESHOT_QUESTION);
 
-        if (unit && (unit->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_TRAINER) ||
-                     unit->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER)))
+        if (unit && (unit->HasNpcFlag(UNIT_NPC_FLAG_TRAINER) ||
+                     unit->HasNpcFlag(UNIT_NPC_FLAG_QUESTGIVER)))
         {
             types.push_back(EMOTE_ONESHOT_SALUTE);
         }

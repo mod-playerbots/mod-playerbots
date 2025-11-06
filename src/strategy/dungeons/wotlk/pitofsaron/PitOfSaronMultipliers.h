@@ -20,5 +20,4 @@ public:
     float GetValue(Action* action) override;
 };
 
-
 #endif
