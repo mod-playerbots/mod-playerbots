@@ -177,6 +177,8 @@ public:
     std::map<uint8, std::vector<WorldLocation>> hordeStarterPerLevelCache;
     std::vector<uint32> allianceFlightMasterCache;
     std::vector<uint32> hordeFlightMasterCache;
+    std::unordered_map<uint32, std::vector<WorldPosition>> flightMastersByMap;
+    std::unordered_map<uint32, std::vector<WorldPosition>> innkeepersByMap;
     struct LevelBracket {
         uint32 low;
         uint32 high;

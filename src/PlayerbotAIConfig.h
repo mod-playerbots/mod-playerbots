@@ -72,9 +72,10 @@ public:
     bool Initialize();
     bool IsInRandomAccountList(uint32 id);
     bool IsInRandomQuestItemList(uint32 id);
-    bool IsPvpProhibited(uint32 zoneId, uint32 areaId);
+    bool IsPvpProhibited(uint32 zoneId, uint32 areaId, Player* bot = nullptr);
     bool IsInPvpProhibitedZone(uint32 id);
     bool IsInPvpProhibitedArea(uint32 id);
+    bool IsNearProtectedNPC(Player* bot);
 
     bool enabled;
     bool disabledWithoutRealPlayer;
@@ -272,6 +273,8 @@ public:
     std::vector<uint32> randomBotGuilds;
     std::vector<uint32> pvpProhibitedZoneIds;
     std::vector<uint32> pvpProhibitedAreaIds;
+    float pvpProhibitedFlightMasterDistance;
+    float pvpProhibitedInnkeeperDistance;
     bool fastReactInBG;
 
     bool randombotsWalkingRPG;

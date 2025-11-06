@@ -167,6 +167,8 @@ bool PlayerbotAIConfig::Initialize()
         sConfigMgr->GetOption<std::string>("AiPlayerbot.PvpProhibitedAreaIds",
                                            "976,35,392,2268,4161,4010,4317,4312,3649,3887,3958,3724,4080,3938,3754"),
         pvpProhibitedAreaIds);
+    pvpProhibitedFlightMasterDistance = sConfigMgr->GetOption<float>("AiPlayerbot.PvpProhibitedFlightMasterDistance", 0.0f);
+    pvpProhibitedInnkeeperDistance = sConfigMgr->GetOption<float>("AiPlayerbot.PvpProhibitedInnkeeperDistance", 0.0f);
     fastReactInBG = sConfigMgr->GetOption<bool>("AiPlayerbot.FastReactInBG", true);
     LoadList<std::vector<uint32>>(
         sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotQuestIds", "3802,5505,6502,7761,7848,10277,10285,11492,13188,13189,24499,24511,24710,24712"),
@@ -694,9 +696,15 @@ bool PlayerbotAIConfig::IsInRandomQuestItemList(uint32 id)
     return find(randomBotQuestItems.begin(), randomBotQuestItems.end(), id) != randomBotQuestItems.end();
 }
 
-bool PlayerbotAIConfig::IsPvpProhibited(uint32 zoneId, uint32 areaId)
+bool PlayerbotAIConfig::IsPvpProhibited(uint32 zoneId, uint32 areaId, Player* bot)
 {
-    return IsInPvpProhibitedZone(zoneId) || IsInPvpProhibitedArea(areaId) || IsInPvpProhibitedZone(areaId);
+    if (IsInPvpProhibitedZone(zoneId) || IsInPvpProhibitedArea(areaId) || IsInPvpProhibitedZone(areaId))
+        return true;
+
+    if (bot && IsNearProtectedNPC(bot))
+        return true;
+
+    return false;
 }
 
 bool PlayerbotAIConfig::IsInPvpProhibitedZone(uint32 id)
@@ -707,6 +715,46 @@ bool PlayerbotAIConfig::IsInPvpProhibitedZone(uint32 id)
 bool PlayerbotAIConfig::IsInPvpProhibitedArea(uint32 id)
 {
     return find(pvpProhibitedAreaIds.begin(), pvpProhibitedAreaIds.end(), id) != pvpProhibitedAreaIds.end();
+}
+
+bool PlayerbotAIConfig::IsNearProtectedNPC(Player* bot)
+{
+    if (!bot)
+        return false;
+
+    if (pvpProhibitedInnkeeperDistance <= 0.0f && pvpProhibitedFlightMasterDistance <= 0.0f)
+        return false;
+
+    WorldPosition botPos(bot);
+    uint32 mapId = bot->GetMapId();
+
+    if (pvpProhibitedFlightMasterDistance > 0.0f)
+    {
+        auto it = sRandomPlayerbotMgr->flightMastersByMap.find(mapId);
+        if (it != sRandomPlayerbotMgr->flightMastersByMap.end())
+        {
+            for (const WorldPosition& fmPos : it->second)
+            {
+                if (botPos.distance(fmPos) <= pvpProhibitedFlightMasterDistance)
+                    return true;
+            }
+        }
+    }
+
+    if (pvpProhibitedInnkeeperDistance > 0.0f)
+    {
+        auto it = sRandomPlayerbotMgr->innkeepersByMap.find(mapId);
+        if (it != sRandomPlayerbotMgr->innkeepersByMap.end())
+        {
+            for (const WorldPosition& innkeeperPos : it->second)
+            {
+                if (botPos.distance(innkeeperPos) <= pvpProhibitedInnkeeperDistance)
+                    return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 bool PlayerbotAIConfig::IsRestrictedHealerDPSMap(uint32 mapId) const
