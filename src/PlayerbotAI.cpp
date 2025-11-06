@@ -370,7 +370,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
         }
     }
 
-    // Handle any addClass bots which are not lost; and log them out
+    // Handle any addClass bots which are lost without a master or group
     HandleFloatingAddClassBots();
 
     // Update the bot's group status (moved to helper function)

@@ -77,7 +77,6 @@ private:
     void InsertBotLoading(ObjectGuid const& guid);    // thread-safe
     void EraseBotLoading(ObjectGuid const& guid);     // thread-safe
     uint32 GetBotLoadingCount() const; // thread-safe
-    static std::mutex initMutex;
     void LogoutPlayerBot(ObjectGuid guid);
 };
 
