@@ -389,8 +389,7 @@ bool UseItemAction::SocketItem(Item* item, Item* gem, bool replace)
         WorldPackets::Item::SocketGems nicePacket(std::move(packet));
         nicePacket.Read();
         bot->GetSession()->HandleSocketOpcode(nicePacket);
-        
-		return true;
+        return true;
     }
 
     // Prismatic fallback (belt): if the buckle (3729) is installed and no normal socket has "matched",
@@ -416,7 +415,6 @@ bool UseItemAction::SocketItem(Item* item, Item* gem, bool replace)
             }
         }
     }
- 
     return false;
 }
 
