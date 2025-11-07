@@ -94,32 +94,32 @@ bool AttackAction::Attack(Unit* target, bool with_pet /*true*/)
     }
 
     // Check if target is in prohibited area
-	if (target->IsPlayer() || target->IsPet())
-	{
-		Player* targetPlayer = nullptr;
+    if (target->IsPlayer() || target->IsPet())
+    {
+        Player* targetPlayer = nullptr;
 
-		if (target->IsPlayer())
-		{
-			targetPlayer = target->ToPlayer();
-		}
-		else if (target->IsPet())
-		{
-			Pet* pet = target->ToPet();
-			if (pet)
-			{
-				Unit* owner = pet->GetOwner();
-				if (owner && owner->IsPlayer())
-					targetPlayer = owner->ToPlayer();
-			}
-		}
+        if (target->IsPlayer())
+        {
+            targetPlayer = target->ToPlayer();
+        }
+        else if (target->IsPet())
+        {
+            Pet* pet = target->ToPet();
+            if (pet)
+            {
+                Unit* owner = pet->GetOwner();
+                if (owner && owner->IsPlayer())
+                    targetPlayer = owner->ToPlayer();
+            }
+        }
 
-		if (targetPlayer && sPlayerbotAIConfig->IsPvpProhibited(target->GetZoneId(), target->GetAreaId(), targetPlayer))
-		{
-			if (verbose)
-				botAI->TellError("I cannot attack players who are in PvP prohibited areas.");
-			return false;
-		}
-	}
+        if (targetPlayer && sPlayerbotAIConfig->IsPvpProhibited(target->GetZoneId(), target->GetAreaId(), targetPlayer))
+        {
+            if (verbose)
+                botAI->TellError("I cannot attack players who are in PvP prohibited areas.");
+            return false;
+        }
+    }
 
     if (bot->IsFriendlyTo(target))
     {
