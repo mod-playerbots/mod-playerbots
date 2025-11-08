@@ -188,7 +188,7 @@ bool AttackersValue::IsPossibleTarget(Unit* attacker, Player* bot, float /*range
         // This will stop aggresive pets from starting an attack.
         // This will stop currently attacking pets from continuing their attack.
         // This will first require the bot to change from a combat strat. It will
-        // not be reached if the bot only switches targets.
+        // not be reached if the bot only switches targets, including NPC targets.
         for (Unit::ControlSet::const_iterator itr = bot->m_Controlled.begin();
             itr != bot->m_Controlled.end(); ++itr)
         {

@@ -696,12 +696,12 @@ bool PlayerbotAIConfig::IsInRandomQuestItemList(uint32 id)
     return find(randomBotQuestItems.begin(), randomBotQuestItems.end(), id) != randomBotQuestItems.end();
 }
 
-bool PlayerbotAIConfig::IsPvpProhibited(uint32 zoneId, uint32 areaId, Player* bot)
+bool PlayerbotAIConfig::IsPvpProhibited(uint32 zoneId, uint32 areaId, Player* player)
 {
     if (IsInPvpProhibitedZone(zoneId) || IsInPvpProhibitedArea(areaId) || IsInPvpProhibitedZone(areaId))
         return true;
 
-    if (bot && IsNearProtectedNPC(bot))
+    if (player && IsNearProtectedNPC(player))
         return true;
 
     return false;
@@ -717,16 +717,16 @@ bool PlayerbotAIConfig::IsInPvpProhibitedArea(uint32 id)
     return find(pvpProhibitedAreaIds.begin(), pvpProhibitedAreaIds.end(), id) != pvpProhibitedAreaIds.end();
 }
 
-bool PlayerbotAIConfig::IsNearProtectedNPC(Player* bot)
+bool PlayerbotAIConfig::IsNearProtectedNPC(Player* player)
 {
-    if (!bot)
+    if (!player)
         return false;
 
     if (pvpProhibitedInnkeeperDistance <= 0.0f && pvpProhibitedFlightMasterDistance <= 0.0f)
         return false;
 
-    WorldPosition botPos(bot);
-    uint32 mapId = bot->GetMapId();
+    WorldPosition botPos(player);
+    uint32 mapId = player->GetMapId();
 
     if (pvpProhibitedFlightMasterDistance > 0.0f)
     {
