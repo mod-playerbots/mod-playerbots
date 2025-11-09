@@ -40,7 +40,11 @@ bool ReachAreaTriggerAction::Execute(Event event)
         return true;
     }
 
-    bot->GetMotionMaster()->MovePoint(at->map, at->x, at->y, at->z);
+    // Use explicit new-API order: forcedMovement, speed, orientation, generatePath, forceDestination
+    bot->GetMotionMaster()->MovePoint(
+        at->map, at->x, at->y, at->z,
+        FORCED_MOVEMENT_NONE, 0.0f, 0.0f,
+        /*generatePath*/ true, /*forceDestination*/ false);
 
     float distance = bot->GetDistance(at->x, at->y, at->z);
     float delay = 1000.0f * distance / bot->GetSpeed(MOVE_RUN) + sPlayerbotAIConfig->reactDelay;

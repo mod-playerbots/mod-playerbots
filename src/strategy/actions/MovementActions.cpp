@@ -199,25 +199,32 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
     {
         VehicleSeatEntry const* seat = vehicle->GetSeatForPassenger(bot);
         Unit* vehicleBase = vehicle->GetBase();
-        // If the mover (vehicle) can fly, we DO NOT want an mmaps path (2D ground) => disable pathfinding
+        // If the mover (vehicle) can fly, disable ground mmaps pathfinding (2D).
         generatePath = !vehicleBase || !vehicleBase->CanFly();
-        if (!vehicleBase || !seat || !seat->CanControl())  // is passenger and cant move anyway
+        
+		if (!vehicleBase || !seat || !seat->CanControl())  // is passenger and cant move anyway
             return false;
 
         float distance = vehicleBase->GetExactDist(x, y, z);  // use vehicle distance, not bot
         if (distance > 0.01f)
         {
             MotionMaster& mm = *vehicleBase->GetMotionMaster();  // need to move vehicle, not bot
-            // Disable ground pathing if the bot/master/vehicle are flying
-            auto isFlying = [](Unit* u){ return u && (u->HasUnitMovementFlag(MOVEMENTFLAG_FLYING) || u->IsInFlight()); };
+            // Only disable mmaps if the actual mover (vehicle) is flying/can fly.
+            auto isFlying = [](Unit* u)
+            {
+                return u && (u->HasUnitMovementFlag(MOVEMENTFLAG_FLYING) || u->IsInFlight());
+            };
             bool allowPathVeh = generatePath;
-            Unit* masterVeh = botAI ? botAI->GetMaster() : nullptr;
-            if (isFlying(vehicleBase) || isFlying(bot) || isFlying(masterVeh))
+            if (vehicleBase && (isFlying(vehicleBase) || vehicleBase->CanFly()))
                 allowPathVeh = false;
             mm.Clear();
             if (!backwards)
             {
-                mm.MovePoint(0, x, y, z, FORCED_MOVEMENT_NONE, 0.0f, 0.0f, allowPathVeh);
+                mm.MovePoint(
+                    0, x, y, z,
+                    FORCED_MOVEMENT_NONE, 0.0f, 0.0f,
+                    /*generatePath*/ allowPathVeh,
+                    /*forceDestination*/ false);
             }
             else
             {
@@ -250,16 +257,23 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
             // }
 
             MotionMaster& mm = *bot->GetMotionMaster();
-            // No ground pathfinding if the bot/master are flying => allow true 3D (Z) movement
-            auto isFlying = [](Unit* u){ return u && (u->HasUnitMovementFlag(MOVEMENTFLAG_FLYING) || u->IsInFlight()); };
+            // Do not use ground mmaps only if the BOT itself is flying/can fly (true 3D).
+            auto isFlying = [](Unit* u)
+            {
+                return u && (u->HasUnitMovementFlag(MOVEMENTFLAG_FLYING) || u->IsInFlight());
+            };
             bool allowPath = generatePath;
-            Unit* master = botAI ? botAI->GetMaster() : nullptr;
-            if (isFlying(bot) || isFlying(master))
+            if (isFlying(bot) || bot->HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY))
                 allowPath = false;
+
             mm.Clear();
             if (!backwards)
             {
-                mm.MovePoint(0, x, y, z, FORCED_MOVEMENT_NONE, 0.0f, 0.0f, allowPath);
+                mm.MovePoint(
+                    0, x, y, z,
+                    FORCED_MOVEMENT_NONE, 0.0f, 0.0f,
+                    /*generatePath*/ allowPath,
+                    /*forceDestination*/ false);
             }
             else
             {
@@ -299,16 +313,23 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
 
             MotionMaster& mm = *bot->GetMotionMaster();
             G3D::Vector3 endP = path.back();
-            // No ground pathfinding if the bot/master are flying => allow true 3D (Z) movement
-            auto isFlying = [](Unit* u){ return u && (u->HasUnitMovementFlag(MOVEMENTFLAG_FLYING) || u->IsInFlight()); };
+            // Do not use ground mmaps only if the BOT itself is flying/can fly (true 3D).
+            auto isFlying = [](Unit* u)
+            {
+                return u && (u->HasUnitMovementFlag(MOVEMENTFLAG_FLYING) || u->IsInFlight());
+            };
             bool allowPath = generatePath;
-            Unit* master = botAI ? botAI->GetMaster() : nullptr;
-            if (isFlying(bot) || isFlying(master))
+            if (isFlying(bot) || bot->HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY))
                 allowPath = false;
+			
             mm.Clear();
             if (!backwards)
             {
-                mm.MovePoint(0, x, y, z, FORCED_MOVEMENT_NONE, 0.0f, 0.0f, allowPath);
+                mm.MovePoint(
+                    0, x, y, z,
+                    FORCED_MOVEMENT_NONE, 0.0f, 0.0f,
+                    /*generatePath*/ allowPath,
+                    /*forceDestination*/ false);
             }
             else
             {
