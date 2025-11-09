@@ -148,7 +148,7 @@ public:
     void Add(NamedObjectContext<T>* context)
     {
         contexts.push_back(context);
-        for (const auto& iter : context->creators)
+        for (auto const& iter : context->creators)
             creators[iter.first] = iter.second;
     }
 };
@@ -294,7 +294,7 @@ public:
     void Add(NamedObjectFactory<T>* context)
     {
         factories.push_back(context);
-        for (const auto& iter : context->creators)
+        for (auto const& iter : context->creators)
             creators[iter.first] = iter.second;
     }
 

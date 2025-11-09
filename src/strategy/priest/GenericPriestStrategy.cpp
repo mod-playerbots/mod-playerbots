@@ -109,4 +109,3 @@ void PriestHealerDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
                             new NextAction("mind sear", ACTION_DEFAULT + 0.5f),
                             nullptr)));
 }
-

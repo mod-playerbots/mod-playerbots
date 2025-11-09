@@ -3,7 +3,6 @@
 #include "AiObject.h"
 #include "AiObjectContext.h"
 
-
 bool ErekemTargetTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "erekem");

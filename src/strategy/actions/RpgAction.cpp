@@ -50,7 +50,6 @@ bool RpgAction::SetNextRpgAction()
     std::vector<uint32> relevances;
     std::vector<TriggerNode*> triggerNodes;
 
-
     for (auto& strategy : botAI->GetAiObjectContext()->GetSupportedStrategies())
     {
         if (strategy.find("rpg") == std::string::npos)

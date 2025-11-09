@@ -1,7 +1,6 @@
 #include "HallsOfLightningStrategy.h"
 #include "HallsOfLightningMultipliers.h"
 
-
 void WotlkDungeonHoLStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 {
     // General Bjarngrim

@@ -329,9 +329,11 @@ ItemWithRandomProperty ChatHelper::parseItemWithRandomProperty(std::string const
 
     while (currentPos < text.length()) {
         size_t nextColon = text.find(':', currentPos);
-        if (nextColon == std::string::npos) {
+        if (nextColon == std::string::npos)
+        {
             size_t hTag = text.find("|h", currentPos);
-            if (hTag != std::string::npos) {
+            if (hTag != std::string::npos)
+            {
                 params.push_back(text.substr(currentPos, hTag - currentPos));
             }
             break;
@@ -341,7 +343,8 @@ ItemWithRandomProperty ChatHelper::parseItemWithRandomProperty(std::string const
         currentPos = nextColon + 1;
     }
 
-    if (params.size() >= 6) {
+    if (params.size() >= 6)
+    {
         res.randomPropertyId = atoi(params[5].c_str());
     }
 

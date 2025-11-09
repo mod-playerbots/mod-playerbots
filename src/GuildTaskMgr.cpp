@@ -1067,7 +1067,7 @@ void GuildTaskMgr::SendCompletionMessage(Player* player, std::string const verb)
 void GuildTaskMgr::CheckKillTaskInternal(Player* player, Unit* victim)
 {
     ObjectGuid::LowType owner = player->GetGUID().GetCounter();
-    if (victim->GetTypeId() != TYPEID_UNIT)
+    if (!victim->IsCreature())
         return;
 
     Creature* creature = reinterpret_cast<Creature*>(victim);

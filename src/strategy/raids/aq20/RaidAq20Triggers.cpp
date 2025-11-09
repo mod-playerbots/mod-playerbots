@@ -3,7 +3,6 @@
 #include "SharedDefines.h"
 #include "RaidAq20Utils.h"
 
-
 bool Aq20MoveToCrystalTrigger::IsActive()
 {
     if (Unit* boss = AI_VALUE2(Unit*, "find target", "ossirian the unscarred"))

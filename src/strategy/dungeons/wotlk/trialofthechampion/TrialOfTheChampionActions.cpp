@@ -9,7 +9,6 @@
 #include "GenericActions.h"
 #include <fstream>
 
-
 bool ToCLanceAction::Execute(Event event)
 {
     // If already has lance equipped, do nothing

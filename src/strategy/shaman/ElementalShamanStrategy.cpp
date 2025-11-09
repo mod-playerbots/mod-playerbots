@@ -73,4 +73,3 @@ void ElementalShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // Range Triggers
     triggers.push_back(new TriggerNode("enemy is close", NextAction::array(0, new NextAction("thunderstorm", 19.0f), nullptr)));
 }
-

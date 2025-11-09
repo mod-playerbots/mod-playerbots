@@ -97,7 +97,7 @@ float StatsWeightCalculator::CalculateItem(uint32 itemId, int32 randomPropertyId
         // Use player level as effective item level for heirlooms - Quality EPIC
         // Else - Blend with item quality and level for normal items
         if (proto->Quality == ITEM_QUALITY_HEIRLOOM)
-            weight_ *= PlayerbotFactory::CalcMixedGearScore(lvl, ITEM_QUALITY_EPIC); 
+            weight_ *= PlayerbotFactory::CalcMixedGearScore(lvl, ITEM_QUALITY_EPIC);
         else
             weight_ *= PlayerbotFactory::CalcMixedGearScore(proto->ItemLevel, proto->Quality);
 

@@ -123,4 +123,3 @@ float LokenMultiplier::GetValue(Action* action)
 
     return 1.0f; // Default multiplier value for other cases.
 }
-
