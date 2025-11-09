@@ -320,7 +320,6 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
             bool allowPath = generatePath;
             if (isFlying(bot) || bot->HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY))
                 allowPath = false;
-            
             mm.Clear();
             if (!backwards)
             {
