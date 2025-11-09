@@ -201,8 +201,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
         Unit* vehicleBase = vehicle->GetBase();
         // If the mover (vehicle) can fly, disable ground mmaps pathfinding (2D).
         generatePath = !vehicleBase || !vehicleBase->CanFly();
-        
-		if (!vehicleBase || !seat || !seat->CanControl())  // is passenger and cant move anyway
+        if (!vehicleBase || !seat || !seat->CanControl())  // is passenger and cant move anyway
             return false;
 
         float distance = vehicleBase->GetExactDist(x, y, z);  // use vehicle distance, not bot
