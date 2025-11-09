@@ -1612,19 +1612,14 @@ void PlayerbotMgr::OnPlayerLogin(Player* player)
         return;
     }
 
-    // Retrieve locales from the client (DBC) and from the database
+    // Locales: DBC (client files) vs DB (translations for bot texts)
     LocaleConstant const clientLocale   = session->GetSessionDbcLocale();
     LocaleConstant const databaseLocale = session->GetSessionDbLocaleIndex();
 
-    LocaleConstant usedLocale = clientLocale;
-
-    // Prefer the DB if the client is invalid OR if client == enUS and DB != enUS.
-    if (clientLocale >= MAX_LOCALES || (clientLocale == LOCALE_enUS && databaseLocale != LOCALE_enUS))
-        usedLocale = databaseLocale;
-
-    // Safeguard if the DB is invalid (or if everything is invalid): switches to enUS.
+    // For bot texts (DB-driven), prefer the database locale with a safe fallback.
+    LocaleConstant usedLocale = databaseLocale;
     if (usedLocale >= MAX_LOCALES)
-        usedLocale = LOCALE_enUS;
+        usedLocale = LOCALE_enUS; // fallback
 
     LOG_DEBUG("playerbots", "Registering locales for player {}: dbc={}, db={}, used={}", player->GetName(),
         static_cast<uint32>(clientLocale), static_cast<uint32>(databaseLocale), static_cast<uint32>(usedLocale));
