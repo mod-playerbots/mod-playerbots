@@ -16,6 +16,8 @@
  */
 
 #include "Playerbots.h"
+#include <cstdint>
+#include <unordered_set>
 
 #include "Channel.h"
 #include "Config.h"
@@ -24,12 +26,18 @@
 #include "GuildTaskMgr.h"
 #include "Metric.h"
 #include "PlayerScript.h"
+#include "GuildScript.h"
 #include "PlayerbotAIConfig.h"
 #include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
 #include "cs_playerbots.h"
 #include "cmath"
 #include "BattleGroundTactics.h"
+#include "PlayerGuildRegistry.h"
+#include "Log.h"
+#include "registry/PlayerGuildRegistry.h"
+#include "repository/PlayerGuildRepository.h"
+#include "Guild.h"
 
 class PlayerbotsDatabaseScript : public DatabaseScript
 {
@@ -329,6 +337,12 @@ public:
 
         LOG_INFO("server.loading", ">> Loaded playerbots config in {} ms", GetMSTimeDiffToNow(oldMSTime));
         LOG_INFO("server.loading", " ");
+
+        uint32_t beforeGuildRegistryInit = getMSTime();
+
+		sPlayerGuildRegistry.Initialize();
+
+        LOG_INFO("server.loading", ">> Initialized PlayerGuildRegistry in {} ms", GetMSTimeDiffToNow(beforeGuildRegistryInit));
     }
 };
 
@@ -459,6 +473,82 @@ public:
     void OnBattlegroundEnd(Battleground* bg, TeamId /*winnerTeam*/) override { bgStrategies.erase(bg->GetInstanceID()); }
 };
 
+class PlayerbotsGuildScript : public GuildScript
+{
+	public:
+
+	PlayerbotsGuildScript() : GuildScript("PlayerbotsGuildScript") {}
+
+	void OnAddMember(Guild* guild, Player* player, [[maybe_unused]] uint8_t& plRank)
+	{
+		if (sRandomPlayerbotMgr->IsRandomBot(player))
+			return;
+
+		uint32_t guildId = guild->GetId();
+
+		if (sPlayerGuildRegistry.Contains(guildId))
+			return;
+
+		sPlayerGuildRegistry.Add(guildId);
+
+		LOG_DEBUG("playerbots", "Added guild with id {} to PlayerGuildRegistry because it now contains a non random bot.", guildId);
+	}
+
+	/**
+	 * @brief Handles the player guilds registry maintenance when a member is removed from a guild.
+	 *
+	 * This hook is executed BEFORE the member is removed within the core. This method handles this properly and already handles
+	 * the eventual change where the hook is being ran AFTER the removal making it future-proof.
+	 */
+	void OnGuildRemoveMember(Guild* guild, Player* player)
+	{
+		if (sRandomPlayerbotMgr->IsRandomBot(player))
+			return;
+
+		uint32_t guildId = guild->GetId();
+
+		if (!sPlayerGuildRegistry.Contains(guildId))
+			return;
+
+		// This does a non prepared database query. Since this event should be quite rare, it does not need to be overly optimised for now.
+		std::unordered_set<uint64_t> memberIds = sPlayerGuildRepository.GetGuildMembersIds(guildId);
+
+		uint64_t removedCharacterId = player->GetGUID().GetRawValue();
+
+		bool noNonRandomBotMember = memberIds.empty();
+		bool removedPlayerWasLastNonBotMember = memberIds.size() == 1 && memberIds.find(removedCharacterId) != memberIds.end();
+
+		if (noNonRandomBotMember || removedPlayerWasLastNonBotMember)
+		{
+			sPlayerGuildRegistry.Remove(guildId);
+		}
+	}
+
+	void OnGuildDisband(Guild* guild)
+	{
+		uint32_t guildId = guild->GetId();
+
+		if (!sPlayerGuildRegistry.Contains(guildId))
+			return;
+
+		sPlayerGuildRegistry.Remove(guildId);
+	}
+
+	void OnGuildCreate(Guild* guild, [[maybe_unused]] Player* leader, [[maybe_unused]] const std::string& name)
+	{
+		uint32_t guildId = guild->GetId();
+
+		std::unordered_set<uint64_t> memberIds = sPlayerGuildRepository.GetGuildMembersIds(guildId);
+
+		bool nonRandomBotMember = !memberIds.empty();
+
+		if (nonRandomBotMember)
+		{
+			sPlayerGuildRegistry.Add(guildId);
+		}
+	}
+};
+
 void AddPlayerbotsScripts()
 {
     new PlayerbotsDatabaseScript();
@@ -468,6 +558,7 @@ void AddPlayerbotsScripts()
     new PlayerbotsWorldScript();
     new PlayerbotsScript();
     new PlayerBotsBGScript();
+	new PlayerbotsGuildScript();
 
     AddSC_playerbots_commandscript();
 }

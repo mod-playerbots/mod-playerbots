@@ -177,13 +177,15 @@ public:
     std::map<uint8, std::vector<WorldLocation>> hordeStarterPerLevelCache;
     std::vector<uint32> allianceFlightMasterCache;
     std::vector<uint32> hordeFlightMasterCache;
-    struct LevelBracket {
+    struct LevelBracket
+    {
         uint32 low;
         uint32 high;
         bool InsideBracket(uint32 val) { return val >= low && val <= high; }
     };
     std::map<uint32, LevelBracket> zone2LevelBracket;
-    struct BankerLocation {
+    struct BankerLocation
+    {
         WorldLocation loc;
         uint32 entry;
     };
@@ -217,6 +219,8 @@ private:
     time_t printStatsTimer;
     uint32 AddRandomBots();
     bool ProcessBot(uint32 bot);
+	bool ProcessBotRandomization(Player* bot);
+	bool ProcessBotTeleportation(Player* bot);
     void ScheduleRandomize(uint32 bot, uint32 time);
     void RandomTeleport(Player* bot);
     void RandomTeleport(Player* bot, std::vector<WorldLocation>& locs, bool hearth = false);
@@ -234,10 +238,8 @@ private:
     uint32 playersLevel;
 
     // Account lists
-    std::vector<uint32> rndBotTypeAccounts;             // Accounts marked as RNDbot (type 1)
-    std::vector<uint32> addClassTypeAccounts;           // Accounts marked as AddClass (type 2)
-
-    //void ScaleBotActivity();      // Deprecated function
+    std::vector<uint32> rndBotTypeAccounts;    // Accounts marked as RNDbot (type 1)
+    std::vector<uint32> addClassTypeAccounts;  // Accounts marked as AddClass (type 2)
 };
 
 #define sRandomPlayerbotMgr RandomPlayerbotMgr::instance()

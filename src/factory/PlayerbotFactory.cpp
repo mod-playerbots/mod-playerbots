@@ -10,6 +10,7 @@
 
 #include "AccountMgr.h"
 #include "AiFactory.h"
+#include "AiObjectContext.h"
 #include "ArenaTeam.h"
 #include "ArenaTeamMgr.h"
 #include "DBCStores.h"
@@ -17,6 +18,7 @@
 #include "GuildMgr.h"
 #include "InventoryAction.h"
 #include "Item.h"
+#include "ItemPackets.h"
 #include "ItemTemplate.h"
 #include "ItemVisitors.h"
 #include "Log.h"
@@ -39,16 +41,16 @@
 #include "SpellAuraDefines.h"
 #include "StatsWeightCalculator.h"
 #include "World.h"
-#include "AiObjectContext.h"
-#include "ItemPackets.h"
 
 const uint64 diveMask = (1LL << 7) | (1LL << 44) | (1LL << 37) | (1LL << 38) | (1LL << 26) | (1LL << 30) | (1LL << 27) |
                         (1LL << 33) | (1LL << 24) | (1LL << 34);
 
-static std::vector<uint32> initSlotsOrder = {EQUIPMENT_SLOT_TRINKET1, EQUIPMENT_SLOT_TRINKET2, EQUIPMENT_SLOT_MAINHAND,
-    EQUIPMENT_SLOT_OFFHAND, EQUIPMENT_SLOT_RANGED, EQUIPMENT_SLOT_HEAD, EQUIPMENT_SLOT_SHOULDERS, EQUIPMENT_SLOT_CHEST,
-    EQUIPMENT_SLOT_LEGS, EQUIPMENT_SLOT_HANDS, EQUIPMENT_SLOT_NECK, EQUIPMENT_SLOT_BODY, EQUIPMENT_SLOT_WAIST,
-    EQUIPMENT_SLOT_FEET, EQUIPMENT_SLOT_WRISTS, EQUIPMENT_SLOT_FINGER1, EQUIPMENT_SLOT_FINGER2, EQUIPMENT_SLOT_BACK};
+static std::vector<uint32> initSlotsOrder = {EQUIPMENT_SLOT_TRINKET1,  EQUIPMENT_SLOT_TRINKET2, EQUIPMENT_SLOT_MAINHAND,
+                                             EQUIPMENT_SLOT_OFFHAND,   EQUIPMENT_SLOT_RANGED,   EQUIPMENT_SLOT_HEAD,
+                                             EQUIPMENT_SLOT_SHOULDERS, EQUIPMENT_SLOT_CHEST,    EQUIPMENT_SLOT_LEGS,
+                                             EQUIPMENT_SLOT_HANDS,     EQUIPMENT_SLOT_NECK,     EQUIPMENT_SLOT_BODY,
+                                             EQUIPMENT_SLOT_WAIST,     EQUIPMENT_SLOT_FEET,     EQUIPMENT_SLOT_WRISTS,
+                                             EQUIPMENT_SLOT_FINGER1,   EQUIPMENT_SLOT_FINGER2,  EQUIPMENT_SLOT_BACK};
 
 uint32 PlayerbotFactory::tradeSkills[] = {SKILL_ALCHEMY,        SKILL_ENCHANTING,  SKILL_SKINNING,  SKILL_TAILORING,
                                           SKILL_LEATHERWORKING, SKILL_ENGINEERING, SKILL_HERBALISM, SKILL_MINING,
@@ -124,17 +126,17 @@ void PlayerbotFactory::Init()
         if (id == 47181 || id == 50358 || id == 47242 || id == 52639 || id == 47147 || id == 7218)  // Test Enchant
             continue;
 
-        if (id == 15463 || id == 15490) // Legendary Arcane Amalgamation
+        if (id == 15463 || id == 15490)  // Legendary Arcane Amalgamation
             continue;
 
-        if (id == 29467 || id == 29475 || id == 29480 || id == 29483) // Naxx40 Sapphiron Shoulder Enchants
+        if (id == 29467 || id == 29475 || id == 29480 || id == 29483)  // Naxx40 Sapphiron Shoulder Enchants
             continue;
 
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(id);
         if (!spellInfo)
             continue;
 
-        //uint32 requiredLevel = spellInfo->BaseLevel; //not used, line marked for removal.
+        // uint32 requiredLevel = spellInfo->BaseLevel; //not used, line marked for removal.
 
         for (uint8 j = 0; j < MAX_SPELL_EFFECTS; ++j)
         {
@@ -187,7 +189,7 @@ void PlayerbotFactory::Init()
 
         if (sRandomItemMgr->IsTestItem(gemId))
         {
-           continue;
+            continue;
         }
 
         if (!sGemPropertiesStore.LookupEntry(proto->GemProperties))
@@ -231,7 +233,7 @@ void PlayerbotFactory::Randomize(bool incremental)
     //     return;
     // }
     LOG_DEBUG("playerbots", "{} randomizing {} (level {} class = {})...", (incremental ? "Incremental" : "Full"),
-             bot->GetName().c_str(), level, bot->getClass());
+              bot->GetName().c_str(), level, bot->getClass());
     // LOG_DEBUG("playerbots", "Preparing to {} randomize...", (incremental ? "incremental" : "full"));
     Prepare();
     LOG_DEBUG("playerbots", "Resetting player...");
@@ -481,6 +483,9 @@ void PlayerbotFactory::Randomize(bool incremental)
     bot->SetPower(POWER_MANA, bot->GetMaxPower(POWER_MANA));
     bot->SaveToDB(false, false);
     LOG_DEBUG("playerbots", "Initialization Done.");
+
+    LOG_DEBUG("playerbots", "Bot #{} {}:{} <{}>: randomized", bot->GetGUID().GetRawValue(),
+              bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName().c_str());
     if (pmo)
         pmo->finish();
 }
@@ -537,7 +542,8 @@ void PlayerbotFactory::InitConsumables()
             // Discipline or Holy: Mana Oil
             if (specTab == 0 || specTab == 1)
             {
-                std::vector<uint32> mana_oils = {BRILLIANT_MANA_OIL, SUPERIOR_MANA_OIL, LESSER_MANA_OIL, MINOR_MANA_OIL};
+                std::vector<uint32> mana_oils = {BRILLIANT_MANA_OIL, SUPERIOR_MANA_OIL, LESSER_MANA_OIL,
+                                                 MINOR_MANA_OIL};
                 for (uint32 itemId : mana_oils)
                 {
                     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
@@ -550,7 +556,8 @@ void PlayerbotFactory::InitConsumables()
             // Shadow: Wizard Oil
             if (specTab == 2)
             {
-                std::vector<uint32> wizard_oils = {BRILLIANT_WIZARD_OIL, SUPERIOR_WIZARD_OIL, WIZARD_OIL, LESSER_WIZARD_OIL, MINOR_WIZARD_OIL};
+                std::vector<uint32> wizard_oils = {BRILLIANT_WIZARD_OIL, SUPERIOR_WIZARD_OIL, WIZARD_OIL,
+                                                   LESSER_WIZARD_OIL, MINOR_WIZARD_OIL};
                 for (uint32 itemId : wizard_oils)
                 {
                     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
@@ -565,7 +572,8 @@ void PlayerbotFactory::InitConsumables()
         case CLASS_MAGE:
         {
             // Always Wizard Oil
-            std::vector<uint32> wizard_oils = {BRILLIANT_WIZARD_OIL, SUPERIOR_WIZARD_OIL, WIZARD_OIL, LESSER_WIZARD_OIL, MINOR_WIZARD_OIL};
+            std::vector<uint32> wizard_oils = {BRILLIANT_WIZARD_OIL, SUPERIOR_WIZARD_OIL, WIZARD_OIL, LESSER_WIZARD_OIL,
+                                               MINOR_WIZARD_OIL};
             for (uint32 itemId : wizard_oils)
             {
                 ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
@@ -581,7 +589,8 @@ void PlayerbotFactory::InitConsumables()
             // Balance: Wizard Oil
             if (specTab == 0)
             {
-                std::vector<uint32> wizard_oils = {BRILLIANT_WIZARD_OIL, SUPERIOR_WIZARD_OIL, WIZARD_OIL, LESSER_WIZARD_OIL, MINOR_WIZARD_OIL};
+                std::vector<uint32> wizard_oils = {BRILLIANT_WIZARD_OIL, SUPERIOR_WIZARD_OIL, WIZARD_OIL,
+                                                   LESSER_WIZARD_OIL, MINOR_WIZARD_OIL};
                 for (uint32 itemId : wizard_oils)
                 {
                     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
@@ -594,8 +603,13 @@ void PlayerbotFactory::InitConsumables()
             // Feral: Sharpening Stones & Weightstones
             else if (specTab == 1)
             {
-                std::vector<uint32> sharpening_stones = {ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE, DENSE_SHARPENING_STONE, SOLID_SHARPENING_STONE, HEAVY_SHARPENING_STONE, COARSE_SHARPENING_STONE, ROUGH_SHARPENING_STONE};
-                std::vector<uint32> weightstones = {ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE, DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE, HEAVY_WEIGHTSTONE, COARSE_WEIGHTSTONE, ROUGH_WEIGHTSTONE};
+                std::vector<uint32> sharpening_stones = {ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE,
+                                                         DENSE_SHARPENING_STONE,      SOLID_SHARPENING_STONE,
+                                                         HEAVY_SHARPENING_STONE,      COARSE_SHARPENING_STONE,
+                                                         ROUGH_SHARPENING_STONE};
+                std::vector<uint32> weightstones = {ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE,   DENSE_WEIGHTSTONE,
+                                                    SOLID_WEIGHTSTONE,      HEAVY_WEIGHTSTONE, COARSE_WEIGHTSTONE,
+                                                    ROUGH_WEIGHTSTONE};
                 for (uint32 itemId : sharpening_stones)
                 {
                     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
@@ -616,7 +630,8 @@ void PlayerbotFactory::InitConsumables()
             // Restoration: Mana Oil
             else if (specTab == 2)
             {
-                std::vector<uint32> mana_oils = {BRILLIANT_MANA_OIL, SUPERIOR_MANA_OIL, LESSER_MANA_OIL, MINOR_MANA_OIL};
+                std::vector<uint32> mana_oils = {BRILLIANT_MANA_OIL, SUPERIOR_MANA_OIL, LESSER_MANA_OIL,
+                                                 MINOR_MANA_OIL};
                 for (uint32 itemId : mana_oils)
                 {
                     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
@@ -633,7 +648,8 @@ void PlayerbotFactory::InitConsumables()
             // Holy: Mana Oil
             if (specTab == 0)
             {
-                std::vector<uint32> mana_oils = {BRILLIANT_MANA_OIL, SUPERIOR_MANA_OIL, LESSER_MANA_OIL, MINOR_MANA_OIL};
+                std::vector<uint32> mana_oils = {BRILLIANT_MANA_OIL, SUPERIOR_MANA_OIL, LESSER_MANA_OIL,
+                                                 MINOR_MANA_OIL};
                 for (uint32 itemId : mana_oils)
                 {
                     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
@@ -646,7 +662,8 @@ void PlayerbotFactory::InitConsumables()
             // Protection: Wizard Oil (Protection prioritizes Superior over Brilliant)
             else if (specTab == 1)
             {
-                std::vector<uint32> wizard_oils = {BRILLIANT_WIZARD_OIL, SUPERIOR_WIZARD_OIL, WIZARD_OIL, LESSER_WIZARD_OIL, MINOR_WIZARD_OIL};
+                std::vector<uint32> wizard_oils = {BRILLIANT_WIZARD_OIL, SUPERIOR_WIZARD_OIL, WIZARD_OIL,
+                                                   LESSER_WIZARD_OIL, MINOR_WIZARD_OIL};
                 for (uint32 itemId : wizard_oils)
                 {
                     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
@@ -659,8 +676,13 @@ void PlayerbotFactory::InitConsumables()
             // Retribution: Sharpening Stones & Weightstones
             else if (specTab == 2)
             {
-                std::vector<uint32> sharpening_stones = {ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE, DENSE_SHARPENING_STONE, SOLID_SHARPENING_STONE, HEAVY_SHARPENING_STONE, COARSE_SHARPENING_STONE, ROUGH_SHARPENING_STONE};
-                std::vector<uint32> weightstones = {ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE, DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE, HEAVY_WEIGHTSTONE, COARSE_WEIGHTSTONE, ROUGH_WEIGHTSTONE};
+                std::vector<uint32> sharpening_stones = {ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE,
+                                                         DENSE_SHARPENING_STONE,      SOLID_SHARPENING_STONE,
+                                                         HEAVY_SHARPENING_STONE,      COARSE_SHARPENING_STONE,
+                                                         ROUGH_SHARPENING_STONE};
+                std::vector<uint32> weightstones = {ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE,   DENSE_WEIGHTSTONE,
+                                                    SOLID_WEIGHTSTONE,      HEAVY_WEIGHTSTONE, COARSE_WEIGHTSTONE,
+                                                    ROUGH_WEIGHTSTONE};
                 for (uint32 itemId : sharpening_stones)
                 {
                     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
@@ -684,8 +706,12 @@ void PlayerbotFactory::InitConsumables()
         case CLASS_HUNTER:
         {
             // Sharpening Stones & Weightstones
-            std::vector<uint32> sharpening_stones = {ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE, DENSE_SHARPENING_STONE, SOLID_SHARPENING_STONE, HEAVY_SHARPENING_STONE, COARSE_SHARPENING_STONE, ROUGH_SHARPENING_STONE};
-            std::vector<uint32> weightstones = {ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE, DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE, HEAVY_WEIGHTSTONE, COARSE_WEIGHTSTONE, ROUGH_WEIGHTSTONE};
+            std::vector<uint32> sharpening_stones = {
+                ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE,    DENSE_SHARPENING_STONE, SOLID_SHARPENING_STONE,
+                HEAVY_SHARPENING_STONE,      COARSE_SHARPENING_STONE, ROUGH_SHARPENING_STONE};
+            std::vector<uint32> weightstones = {ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE,   DENSE_WEIGHTSTONE,
+                                                SOLID_WEIGHTSTONE,      HEAVY_WEIGHTSTONE, COARSE_WEIGHTSTONE,
+                                                ROUGH_WEIGHTSTONE};
             for (uint32 itemId : sharpening_stones)
             {
                 ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
@@ -707,8 +733,12 @@ void PlayerbotFactory::InitConsumables()
         case CLASS_ROGUE:
         {
             // Poisons
-            std::vector<uint32> instant_poisons = {INSTANT_POISON_IX, INSTANT_POISON_VIII, INSTANT_POISON_VII, INSTANT_POISON_VI, INSTANT_POISON_V, INSTANT_POISON_IV, INSTANT_POISON_III, INSTANT_POISON_II, INSTANT_POISON};
-            std::vector<uint32> deadly_poisons = {DEADLY_POISON_IX, DEADLY_POISON_VIII, DEADLY_POISON_VII, DEADLY_POISON_VI, DEADLY_POISON_V, DEADLY_POISON_IV, DEADLY_POISON_III, DEADLY_POISON_II, DEADLY_POISON};
+            std::vector<uint32> instant_poisons = {INSTANT_POISON_IX,  INSTANT_POISON_VIII, INSTANT_POISON_VII,
+                                                   INSTANT_POISON_VI,  INSTANT_POISON_V,    INSTANT_POISON_IV,
+                                                   INSTANT_POISON_III, INSTANT_POISON_II,   INSTANT_POISON};
+            std::vector<uint32> deadly_poisons = {DEADLY_POISON_IX,  DEADLY_POISON_VIII, DEADLY_POISON_VII,
+                                                  DEADLY_POISON_VI,  DEADLY_POISON_V,    DEADLY_POISON_IV,
+                                                  DEADLY_POISON_III, DEADLY_POISON_II,   DEADLY_POISON};
             for (uint32 itemId : deadly_poisons)
             {
                 ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
@@ -953,7 +983,7 @@ void PlayerbotFactory::InitPet()
             uint32 pet_number = sObjectMgr->GeneratePetNumber();
             if (bot->GetPetStable() && bot->GetPetStable()->CurrentPet)
             {
-                auto petGuid = bot->GetPetStable()->CurrentPet.value(); // To correct the build warnin in VS
+                auto petGuid = bot->GetPetStable()->CurrentPet.value();  // To correct the build warnin in VS
                 // bot->GetPetStable()->CurrentPet.value();
                 // bot->GetPetStable()->CurrentPet.reset();
                 bot->RemovePet(nullptr, PET_SAVE_AS_CURRENT);
@@ -1066,7 +1096,7 @@ void PlayerbotFactory::ClearSpells()
     for (PlayerSpellMap::iterator itr = bot->GetSpellMap().begin(); itr != bot->GetSpellMap().end(); ++itr)
     {
         uint32 spellId = itr->first;
-        //const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(spellId); //not used, line marked for removal.
+        // const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(spellId); //not used, line marked for removal.
         if (itr->second->State == PLAYERSPELL_REMOVED)
         {
             continue;
@@ -1098,7 +1128,6 @@ void PlayerbotFactory::ResetQuests()
 
         bot->RemoveRewardedQuest(entry);
         bot->RemoveActiveQuest(entry, false);
-
     }
 }
 
@@ -1709,7 +1738,8 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
     if (level < 5)
     {
         // original items
-        if (CharStartOutfitEntry const* oEntry = GetCharStartOutfitEntry(bot->getRace(), bot->getClass(), bot->getGender()))
+        if (CharStartOutfitEntry const* oEntry =
+                GetCharStartOutfitEntry(bot->getRace(), bot->getClass(), bot->getGender()))
         {
             for (int j = 0; j < MAX_OUTFIT_ITEMS; ++j)
             {
@@ -2352,7 +2382,7 @@ void PlayerbotFactory::UpdateTradeSkills()
 
 void PlayerbotFactory::InitSkills()
 {
-    //uint32 maxValue = level * 5; //not used, line marked for removal.
+    // uint32 maxValue = level * 5; //not used, line marked for removal.
     bot->UpdateSkillsForLevel();
 
     bot->SetSkill(SKILL_RIDING, 0, 0, 0);
@@ -2509,7 +2539,7 @@ void PlayerbotFactory::SetRandomSkill(uint16 id)
 
     // uint32 value = urand(maxValue - level, maxValue);
     uint32 value = maxValue;
-    //uint32 curValue = bot->GetSkillValue(id); //not used, line marked for removal.
+    // uint32 curValue = bot->GetSkillValue(id); //not used, line marked for removal.
 
     uint16 step = bot->GetSkillValue(id) ? bot->GetSkillStep(id) : 1;
 
@@ -2812,10 +2842,12 @@ void PlayerbotFactory::InitTalentsByTemplate(uint32 specTab)
         for (std::vector<uint32>& p : sPlayerbotAIConfig->parsedSpecLinkOrder[cls][specIndex][level])
         {
             uint32 tab = p[0], row = p[1], col = p[2], lvl = p[3];
-            if (sPlayerbotAIConfig->limitTalentsExpansion && bot->GetLevel() <= 60 && (row > 6 || (row == 6 && col != 1)))
+            if (sPlayerbotAIConfig->limitTalentsExpansion && bot->GetLevel() <= 60 &&
+                (row > 6 || (row == 6 && col != 1)))
                 continue;
 
-            if (sPlayerbotAIConfig->limitTalentsExpansion && bot->GetLevel() <= 70 && (row > 8 || (row == 8 && col != 1)))
+            if (sPlayerbotAIConfig->limitTalentsExpansion && bot->GetLevel() <= 70 &&
+                (row > 8 || (row == 8 && col != 1)))
                 continue;
 
             uint32 talentID = 0;
@@ -3323,45 +3355,45 @@ void PlayerbotFactory::InitReagents()
     switch (bot->getClass())
     {
         case CLASS_DEATH_KNIGHT:
-        if (level >= 56)
-                items.push_back({37201, 40});   // Corpse Dust
+            if (level >= 56)
+                items.push_back({37201, 40});  // Corpse Dust
             break;
         case CLASS_DRUID:
             if (level >= 20 && level < 30)
-                items.push_back({17034, 20});   // Maple Seed
+                items.push_back({17034, 20});  // Maple Seed
             else if (level >= 30 && level < 40)
-                items.push_back({17035, 20});   // Stranglethorn Seed
+                items.push_back({17035, 20});  // Stranglethorn Seed
             else if (level >= 40 && level < 50)
-                items.push_back({17036, 20});   // Ashwood Seed
+                items.push_back({17036, 20});  // Ashwood Seed
             else if (level >= 50 && level < 60)
             {
-                items.push_back({17037, 20});   // Hornbeam Seed
-                items.push_back({17021, 20});   // Wild Berries
+                items.push_back({17037, 20});  // Hornbeam Seed
+                items.push_back({17021, 20});  // Wild Berries
             }
             else if (level >= 60 && level < 69)
             {
-                items.push_back({17038, 20});   // Ironwood Seed
-                items.push_back({17026, 20});   // Wild Thornroot
+                items.push_back({17038, 20});  // Ironwood Seed
+                items.push_back({17026, 20});  // Wild Thornroot
             }
             else if (level == 69)
             {
-                items.push_back({22147, 20});   // Flintweed Seed
-                items.push_back({17026, 20});   // Wild Thornroot
+                items.push_back({22147, 20});  // Flintweed Seed
+                items.push_back({17026, 20});  // Wild Thornroot
             }
             else if (level >= 70 && level < 79)
             {
-                items.push_back({22147, 20});   // Flintweed Seed
-                items.push_back({22148, 20});   // Wild Quillvine
+                items.push_back({22147, 20});  // Flintweed Seed
+                items.push_back({22148, 20});  // Wild Quillvine
             }
             else if (level == 79)
             {
-                items.push_back({44614, 20});   // Starleaf Seed
-                items.push_back({22148, 20});   // Wild Quillvine
+                items.push_back({44614, 20});  // Starleaf Seed
+                items.push_back({22148, 20});  // Wild Quillvine
             }
             else if (level >= 80)
             {
-                items.push_back({44614, 20});   // Starleaf Seed
-                items.push_back({44605, 20});   // Wild Spineleaf
+                items.push_back({44614, 20});  // Starleaf Seed
+                items.push_back({44605, 20});  // Wild Spineleaf
             }
             break;
         case CLASS_MAGE:
@@ -3374,7 +3406,7 @@ void PlayerbotFactory::InitReagents()
             break;
         case CLASS_PALADIN:
             if (level >= 52)
-                items.push_back({21177, 80});   // Symbol of Kings
+                items.push_back({21177, 80});  // Symbol of Kings
             break;
         case CLASS_PRIEST:
             if (level >= 48 && level < 56)
@@ -3403,7 +3435,7 @@ void PlayerbotFactory::InitReagents()
                 items.push_back({5177, 1});  // Water Totem
             if (level >= 30)
             {
-                items.push_back({5178, 1});  // Air Totem
+                items.push_back({5178, 1});    // Air Totem
                 items.push_back({17030, 20});  // Ankh
             }
             break;
@@ -3421,7 +3453,7 @@ void PlayerbotFactory::InitReagents()
     }
 }
 
-void PlayerbotFactory::CleanupConsumables() // remove old consumables as part of randombot level-up maintenance
+void PlayerbotFactory::CleanupConsumables()  // remove old consumables as part of randombot level-up maintenance
 {
     std::vector<Item*> itemsToDelete;
 
@@ -3439,7 +3471,8 @@ void PlayerbotFactory::CleanupConsumables() // remove old consumables as part of
     for (Item* item : items)
     {
         ItemTemplate const* proto = item->GetTemplate();
-        if (!proto) continue;
+        if (!proto)
+            continue;
 
         // Remove ammo
         if (proto->Class == ITEM_CLASS_PROJECTILE)
@@ -3454,27 +3487,58 @@ void PlayerbotFactory::CleanupConsumables() // remove old consumables as part of
             itemsToDelete.push_back(item);
 
         // Remove reagents
-        if (proto->Class == ITEM_CLASS_REAGENT || (proto->Class == ITEM_CLASS_MISC && proto->SubClass == ITEM_SUBCLASS_REAGENT))
+        if (proto->Class == ITEM_CLASS_REAGENT ||
+            (proto->Class == ITEM_CLASS_MISC && proto->SubClass == ITEM_SUBCLASS_REAGENT))
             itemsToDelete.push_back(item);
     }
 
-    std::set<uint32> idsToDelete = {
-        BRILLIANT_MANA_OIL, SUPERIOR_MANA_OIL, LESSER_MANA_OIL, MINOR_MANA_OIL,
-        BRILLIANT_WIZARD_OIL, SUPERIOR_WIZARD_OIL, WIZARD_OIL, LESSER_WIZARD_OIL, MINOR_WIZARD_OIL,
-        ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE, DENSE_SHARPENING_STONE, SOLID_SHARPENING_STONE,
-        HEAVY_SHARPENING_STONE, COARSE_SHARPENING_STONE, ROUGH_SHARPENING_STONE,
-        ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE, DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE,
-        HEAVY_WEIGHTSTONE, COARSE_WEIGHTSTONE, ROUGH_WEIGHTSTONE,
-        INSTANT_POISON_IX, INSTANT_POISON_VIII, INSTANT_POISON_VII, INSTANT_POISON_VI, INSTANT_POISON_V,
-        INSTANT_POISON_IV, INSTANT_POISON_III, INSTANT_POISON_II, INSTANT_POISON,
-        DEADLY_POISON_IX, DEADLY_POISON_VIII, DEADLY_POISON_VII, DEADLY_POISON_VI, DEADLY_POISON_V,
-        DEADLY_POISON_IV, DEADLY_POISON_III, DEADLY_POISON_II, DEADLY_POISON
-    };
+    std::set<uint32> idsToDelete = {BRILLIANT_MANA_OIL,
+                                    SUPERIOR_MANA_OIL,
+                                    LESSER_MANA_OIL,
+                                    MINOR_MANA_OIL,
+                                    BRILLIANT_WIZARD_OIL,
+                                    SUPERIOR_WIZARD_OIL,
+                                    WIZARD_OIL,
+                                    LESSER_WIZARD_OIL,
+                                    MINOR_WIZARD_OIL,
+                                    ADAMANTITE_SHARPENING_STONE,
+                                    FEL_SHARPENING_STONE,
+                                    DENSE_SHARPENING_STONE,
+                                    SOLID_SHARPENING_STONE,
+                                    HEAVY_SHARPENING_STONE,
+                                    COARSE_SHARPENING_STONE,
+                                    ROUGH_SHARPENING_STONE,
+                                    ADAMANTITE_WEIGHTSTONE,
+                                    FEL_WEIGHTSTONE,
+                                    DENSE_WEIGHTSTONE,
+                                    SOLID_WEIGHTSTONE,
+                                    HEAVY_WEIGHTSTONE,
+                                    COARSE_WEIGHTSTONE,
+                                    ROUGH_WEIGHTSTONE,
+                                    INSTANT_POISON_IX,
+                                    INSTANT_POISON_VIII,
+                                    INSTANT_POISON_VII,
+                                    INSTANT_POISON_VI,
+                                    INSTANT_POISON_V,
+                                    INSTANT_POISON_IV,
+                                    INSTANT_POISON_III,
+                                    INSTANT_POISON_II,
+                                    INSTANT_POISON,
+                                    DEADLY_POISON_IX,
+                                    DEADLY_POISON_VIII,
+                                    DEADLY_POISON_VII,
+                                    DEADLY_POISON_VI,
+                                    DEADLY_POISON_V,
+                                    DEADLY_POISON_IV,
+                                    DEADLY_POISON_III,
+                                    DEADLY_POISON_II,
+                                    DEADLY_POISON};
 
     for (Item* item : items)
     {
         ItemTemplate const* proto = item->GetTemplate();
-        if (!proto) continue;
+        if (!proto)
+            continue;
 
         if (idsToDelete.find(proto->ItemId) != idsToDelete.end())
             itemsToDelete.push_back(item);
@@ -3487,9 +3551,8 @@ void PlayerbotFactory::CleanupConsumables() // remove old consumables as part of
 void PlayerbotFactory::InitGlyphs(bool increment)
 {
     bot->InitGlyphsForLevel();
-    if (!increment && botAI &&
-        botAI->GetAiObjectContext()->GetValue<bool>("custom_glyphs")->Get())
-        return;   // // Added for custom Glyphs - custom glyphs flag test
+    if (!increment && botAI && botAI->GetAiObjectContext()->GetValue<bool>("custom_glyphs")->Get())
+        return;  // // Added for custom Glyphs - custom glyphs flag test
 
     if (!increment)
     {
@@ -3586,7 +3649,8 @@ void PlayerbotFactory::InitGlyphs(bool increment)
         // Marksmanship PvP (spec index 4): If the bot has the Concussive Barrage talent
         else if (bot->HasAura(35102))
             tab = 4;
-        // Survival PvP (spec index 5): If the bot has the Entrapment talent and does NOT have the Concussive Barrage talent
+        // Survival PvP (spec index 5): If the bot has the Entrapment talent and does NOT have the Concussive Barrage
+        // talent
         else if (bot->HasAura(19388) && !bot->HasAura(35102))
             tab = 5;
     }
@@ -3703,7 +3767,7 @@ void PlayerbotFactory::InitGlyphs(bool increment)
     ItemTemplateContainer const* itemTemplates = sObjectMgr->GetItemTemplateStore();
     for (ItemTemplateContainer::const_iterator i = itemTemplates->begin(); i != itemTemplates->end(); ++i)
     {
-        //uint32 itemId = i->first; //not used, line marked for removal.
+        // uint32 itemId = i->first; //not used, line marked for removal.
         ItemTemplate const* proto = &i->second;
         if (!proto)
             continue;
@@ -3803,9 +3867,9 @@ void PlayerbotFactory::InitGlyphs(bool increment)
                 ids.push_back(id);
             }
 
-            //int maxCount = urand(0, 3); //not used, line marked for removal.
-            //int count = 0; //not used, line marked for removal.
-            //bool found = false; //not used, line marked for removal.
+            // int maxCount = urand(0, 3); //not used, line marked for removal.
+            // int count = 0; //not used, line marked for removal.
+            // bool found = false; //not used, line marked for removal.
             for (int attempts = 0; attempts < 15; ++attempts)
             {
                 uint32 index = urand(0, ids.size() - 1);
@@ -3823,7 +3887,7 @@ void PlayerbotFactory::InitGlyphs(bool increment)
                                                 ~(TRIGGERED_IGNORE_SHAPESHIFT | TRIGGERED_IGNORE_CASTER_AURASTATE)));
 
                 bot->SetGlyph(realSlot, id, true);
-                //found = true; //not used, line marked for removal.
+                // found = true; //not used, line marked for removal.
                 break;
             }
         }
@@ -3870,7 +3934,7 @@ void PlayerbotFactory::InitInventorySkill()
 
 Item* PlayerbotFactory::StoreItem(uint32 itemId, uint32 count)
 {
-    //ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId); //not used, line marked for removal.
+    // ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId); //not used, line marked for removal.
     ItemPosCountVec sDest;
     InventoryResult msg = bot->CanStoreNewItem(INVENTORY_SLOT_BAG_0, NULL_SLOT, sDest, itemId, count);
     if (msg != EQUIP_ERR_OK)
@@ -4293,8 +4357,8 @@ void PlayerbotFactory::ApplyEnchantTemplate(uint8 spec)
 
 void PlayerbotFactory::ApplyEnchantAndGemsNew(bool destroyOld)
 {
-    //int32 bestGemEnchantId[4] = {-1, -1, -1, -1};  // 1, 2, 4, 8 color //not used, line marked for removal.
-    //float bestGemScore[4] = {0, 0, 0, 0}; //not used, line marked for removal.
+    // int32 bestGemEnchantId[4] = {-1, -1, -1, -1};  // 1, 2, 4, 8 color //not used, line marked for removal.
+    // float bestGemScore[4] = {0, 0, 0, 0}; //not used, line marked for removal.
     std::vector<uint32> curCount = GetCurrentGemsCount();
     uint8 jewelersCount = 0;
     int requiredActive = 2;
@@ -4453,7 +4517,8 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool destroyOld)
                 if (!enchant_id)
                     continue;
 
-                //SpellItemEnchantmentEntry const* enchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id); //not used, line marked for removal.
+                // SpellItemEnchantmentEntry const* enchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id); //not
+                // used, line marked for removal.
                 StatsWeightCalculator calculator(bot);
                 float score = calculator.CalculateEnchant(enchant_id);
                 if (curCount[0] != 0)
@@ -4669,25 +4734,27 @@ void PlayerbotFactory::InitKeyring()
     if (bot->GetLevel() < 70)
         return;
 
-    ReputationMgr& repMgr = bot->GetReputationMgr(); // Reference, use . instead of ->
+    ReputationMgr& repMgr = bot->GetReputationMgr();  // Reference, use . instead of ->
 
     std::vector<std::pair<uint32, uint32>> keysToCheck;
 
     // Reputation-based Keys (Honored requirement)
     if (repMgr.GetRank(sFactionStore.LookupEntry(1011)) >= REP_HONORED && !bot->HasItemCount(30633, 1))
-        keysToCheck.emplace_back(1011, 30633); // Lower City - Auchenai Key
+        keysToCheck.emplace_back(1011, 30633);  // Lower City - Auchenai Key
     if (repMgr.GetRank(sFactionStore.LookupEntry(942)) >= REP_HONORED && !bot->HasItemCount(30623, 1))
-        keysToCheck.emplace_back(942, 30623); // Cenarion Expedition - Reservoir Key
+        keysToCheck.emplace_back(942, 30623);  // Cenarion Expedition - Reservoir Key
     if (repMgr.GetRank(sFactionStore.LookupEntry(989)) >= REP_HONORED && !bot->HasItemCount(30635, 1))
-        keysToCheck.emplace_back(989, 30635); // Keepers of Time - Key of Time
+        keysToCheck.emplace_back(989, 30635);  // Keepers of Time - Key of Time
     if (repMgr.GetRank(sFactionStore.LookupEntry(935)) >= REP_HONORED && !bot->HasItemCount(30634, 1))
-        keysToCheck.emplace_back(935, 30634); // The Sha'tar - Warpforged Key
+        keysToCheck.emplace_back(935, 30634);  // The Sha'tar - Warpforged Key
 
     // Faction-specific Keys (Honored requirement)
-    if (bot->GetTeamId() == TEAM_ALLIANCE && repMgr.GetRank(sFactionStore.LookupEntry(946)) >= REP_HONORED && !bot->HasItemCount(30622, 1))
-        keysToCheck.emplace_back(946, 30622); // Honor Hold - Flamewrought Key (Alliance)
-    if (bot->GetTeamId() == TEAM_HORDE && repMgr.GetRank(sFactionStore.LookupEntry(947)) >= REP_HONORED && !bot->HasItemCount(30637, 1))
-        keysToCheck.emplace_back(947, 30637); // Thrallmar - Flamewrought Key (Horde)
+    if (bot->GetTeamId() == TEAM_ALLIANCE && repMgr.GetRank(sFactionStore.LookupEntry(946)) >= REP_HONORED &&
+        !bot->HasItemCount(30622, 1))
+        keysToCheck.emplace_back(946, 30622);  // Honor Hold - Flamewrought Key (Alliance)
+    if (bot->GetTeamId() == TEAM_HORDE && repMgr.GetRank(sFactionStore.LookupEntry(947)) >= REP_HONORED &&
+        !bot->HasItemCount(30637, 1))
+        keysToCheck.emplace_back(947, 30637);  // Thrallmar - Flamewrought Key (Horde)
 
     // Keys that do not require Rep or Faction
     // Shattered Halls Key, Shadow Labyrinth Key, Key to the Arcatraz, Master's Key
@@ -4704,7 +4771,7 @@ void PlayerbotFactory::InitKeyring()
         uint32 keyId = keyPair.second;
         if (keyId > 0)
         {
-            if (Item* newItem = StoreNewItemInInventorySlot(bot,keyId, 1))
+            if (Item* newItem = StoreNewItemInInventorySlot(bot, keyId, 1))
             {
                 newItem->AddToUpdateQueueOf(bot);
             }
@@ -4717,23 +4784,23 @@ void PlayerbotFactory::InitReputation()
         return;
 
     if (bot->GetLevel() < 70)
-        return; // Only apply for level 70+ bots
+        return;  // Only apply for level 70+ bots
 
     ReputationMgr& repMgr = bot->GetReputationMgr();
 
     // List of factions that require Honored reputation for heroic keys
     std::vector<uint32> factions = {
-        1011, // Lower City
-        942,  // Cenarion Expedition
-        989,  // Keepers of Time
-        935   // The Sha'tar
+        1011,  // Lower City
+        942,   // Cenarion Expedition
+        989,   // Keepers of Time
+        935    // The Sha'tar
     };
 
     // Add faction-specific reputation
     if (bot->GetTeamId() == TEAM_ALLIANCE)
-        factions.push_back(946); // Honor Hold (Alliance)
+        factions.push_back(946);  // Honor Hold (Alliance)
     else if (bot->GetTeamId() == TEAM_HORDE)
-        factions.push_back(947); // Thrallmar (Horde)
+        factions.push_back(947);  // Thrallmar (Horde)
 
     // Set reputation to Honored for each required faction
     for (uint32 factionId : factions)
@@ -4760,33 +4827,33 @@ void PlayerbotFactory::InitAttunementQuests()
 {
     uint32 level = bot->GetLevel();
     if (level < 55)
-        return; // Only apply for level 55+ bots
+        return;  // Only apply for level 55+ bots
 
     uint32 currentXP = bot->GetUInt32Value(PLAYER_XP);
 
     // List of attunement quest IDs
     std::list<uint32> attunementQuestsTBC = {
         // Caverns of Time - Part 1
-        10279, // To The Master's Lair
-        10277, // The Caverns of Time
+        10279,  // To The Master's Lair
+        10277,  // The Caverns of Time
 
         // Caverns of Time - Part 2 (Escape from Durnholde Keep)
-        10282, // Old Hillsbrad
-        10283, // Taretha's Diversion
-        10284, // Escape from Durnholde
-        10285, // Return to Andormu
+        10282,  // Old Hillsbrad
+        10283,  // Taretha's Diversion
+        10284,  // Escape from Durnholde
+        10285,  // Return to Andormu
 
         // Caverns of Time - Part 2 (The Black Morass)
-        10296, // The Black Morass
-        10297, // The Opening of the Dark Portal
-        10298, // Hero of the Brood
+        10296,  // The Black Morass
+        10297,  // The Opening of the Dark Portal
+        10298,  // Hero of the Brood
 
         // Magister's Terrace Attunement
-        11481, // Crisis at the Sunwell
-        11482, // Duty Calls
-        11488, // Magisters' Terrace
-        11490, // The Scryer's Scryer
-        11492  // Hard to Kill
+        11481,  // Crisis at the Sunwell
+        11482,  // Duty Calls
+        11488,  // Magisters' Terrace
+        11490,  // The Scryer's Scryer
+        11492   // Hard to Kill
     };
 
     // Complete all level-appropriate attunement quests for the bot
@@ -4799,7 +4866,7 @@ void PlayerbotFactory::InitAttunementQuests()
         {
             QuestStatus questStatus = bot->GetQuestStatus(questId);
 
-            if (questStatus == QUEST_STATUS_NONE) // Quest not yet taken/completed
+            if (questStatus == QUEST_STATUS_NONE)  // Quest not yet taken/completed
             {
                 questsToComplete.push_back(questId);
             }

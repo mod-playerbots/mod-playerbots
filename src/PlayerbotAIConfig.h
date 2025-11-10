@@ -302,6 +302,9 @@ public:
     std::vector<std::string> botCheats;
     uint32 botCheatMask = 0;
 
+	bool disableRandomBotPeriodicRandomization;
+	bool disableRandomBotPeriodicTeleportation;
+
     struct worldBuff
     {
         uint32 spellId;

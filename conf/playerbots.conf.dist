@@ -630,7 +630,7 @@ AiPlayerbot.RandomBotHordeRatio = 50
 AiPlayerbot.DisableDeathKnightLogin = 0
 
 # Enable simulated expansion limitation for talents and glyphs
-# If enabled, limits talent trees to 5 rows plus the middle talent of the 6th row for bots until level 61 
+# If enabled, limits talent trees to 5 rows plus the middle talent of the 6th row for bots until level 61
 # and 7 rows plus the middle talent of the 8th row for bots from level 61 until level 71
 # Default: 0 (disabled)
 AiPlayerbot.LimitTalentsExpansion = 0
@@ -641,6 +641,17 @@ AiPlayerbot.EnableRandomBotTrading = 1
 
 # Configure message prefixes which will be excluded in analysis in trade action to open trade window
 AiPlayerbot.TradeActionExcludedPrefixes = "RPLL_H_,DBMv4,{звезда} Questie,{rt1} Questie"
+
+# This option will prevent ALL random bots from being randomized.
+# It does not prevent periodic teleport.
+# Without it, random bots will be periodically randomized unless they are in a guild
+# with at least one character who is not a random bot.
+AiPlayerbot.DisableRandomBotPeriodicRandomization = 1
+
+# This option will prevent ALL random bots from being periodically teleported.
+# THIS SHOULD NOT BE ENABLED AT ALL TIMES. It exists mostly for debugging purposes.
+# Disabling periodic teleport will make the bots almost unable to reach new areas.
+AiPlayerbot.DisableRandomBotPeriodicTeleportation = 0
 
 #
 #
