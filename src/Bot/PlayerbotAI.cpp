@@ -883,8 +883,6 @@ void PlayerbotAI::LeaveOrDisbandGroup()
     bot->GetSession()->QueuePacket(packet);
 }
 
-}
-
 bool PlayerbotAI::IsMasterOnTransport()
 {
     return master && master->GetTransport();
