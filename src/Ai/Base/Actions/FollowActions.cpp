@@ -14,11 +14,55 @@
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "SharedDefines.h"
+#include "Transport.h"
 
 bool FollowAction::Execute(Event event)
 {
     Formation* formation = AI_VALUE(Formation*, "formation");
     std::string const target = formation->GetTargetName();
+
+    // Transport (Zep + Boats) Fix
+    Player* master = botAI->GetMaster();
+    if (master && master->GetTransport())
+    {
+        Transport* transport = master->GetTransport();
+
+        // If the bot is not already a passenger on this transport
+        if (bot->GetTransport() != transport)
+        {
+            // Offset to avoid landing under the floor
+            float offsetX = 1.0f, offsetY = 0.5f, offsetZ = 0.2f;
+            float x = master->GetPositionX() + offsetX;
+            float y = master->GetPositionY() + offsetY;
+            float z = master->GetPositionZ() + offsetZ;
+
+            // Teleports to a position close to the master (world coordinates)
+            bot->TeleportTo(transport->GetMapId(), x, y, z, master->GetOrientation());
+
+            // Add as a passenger (server-side)
+            transport->AddPassenger(bot, true);
+
+            // Force complete cleanup of the movement and flags to avoid
+            // wrestling between MoveSpline/MotionMaster and the transport driver.
+            bot->StopMoving();
+            // MotionMaster current clear (true to force) then idle to stabilize
+            bot->GetMotionMaster()->Clear(true);
+            bot->GetMotionMaster()->MoveIdle();
+
+            // Ensure that the march/mounted flags are no longer active
+            bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_FORWARD);
+            bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_WALKING);
+
+            // Allow a slightly longer verification period; during this time
+            // the server will update the transport status and relative positions.
+            botAI->SetNextCheckDelay(urand(1000, 2500));
+
+            LOG_DEBUG("playerbots", "Bot {} boarded transport {} near master {} at {:.2f},{:.2f},{:.2f}",
+                     bot->GetName(), transport->GetGUID().GetCounter(), master->GetName(), x, y, z);
+
+            return true;
+        }
+    } // End Transport (Zep + Boats) Fix
 
     bool moved = false;
     if (!target.empty())
