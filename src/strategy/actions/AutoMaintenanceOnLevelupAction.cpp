@@ -176,4 +176,3 @@ void AutoMaintenanceOnLevelupAction::AutoUpgradeEquip()
             factory.InitEquipment(true);
     }
 }
-

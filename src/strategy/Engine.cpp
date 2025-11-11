@@ -77,7 +77,8 @@ Engine::~Engine(void)
     // for (std::map<std::string, Strategy*>::iterator i = strategies.begin(); i != strategies.end(); i++)
     // {
     //     Strategy* strategy = i->second;
-    //     if (strategy) {
+    //     if (strategy)
+    //     {
     //         delete strategy;
     //     }
     // }
@@ -401,7 +402,6 @@ void Engine::addStrategiesNoInit(std::string first, ...)
 
     va_end(vl);
 }
-
 
 bool Engine::removeStrategy(std::string const name, bool init)
 {

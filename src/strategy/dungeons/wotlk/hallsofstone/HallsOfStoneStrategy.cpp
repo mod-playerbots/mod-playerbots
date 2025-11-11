@@ -1,7 +1,6 @@
 #include "HallsOfStoneStrategy.h"
 #include "HallsOfStoneMultipliers.h"
 
-
 void WotlkDungeonHoSStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 {
     // Maiden of Grief

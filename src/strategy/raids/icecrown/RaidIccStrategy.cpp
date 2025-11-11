@@ -115,7 +115,6 @@ void RaidIccStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("icc sister svalna",
         NextAction::array(0, new NextAction("icc sister svalna", ACTION_RAID + 5), nullptr)));
 
-
     //VDW
     triggers.push_back(new TriggerNode("icc valithria group",
         NextAction::array(0, new NextAction("icc valithria group", ACTION_RAID + 1), nullptr)));

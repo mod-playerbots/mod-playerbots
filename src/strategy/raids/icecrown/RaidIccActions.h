@@ -311,8 +311,6 @@ public:
     Unit* FindClosestThreateningPuddle();
     Position CalculateSafeMovePosition(Unit* closestPuddle);
     bool IsPositionTooCloseToOtherPuddles(float x, float y, Unit* ignorePuddle);
-
-
 };
 
 class IccPutricideVolatileOozeAction : public AttackAction
@@ -599,7 +597,6 @@ class IccSindragosaTankSwapPositionAction : public AttackAction
         bool Execute(Event event) override;
 };
 
-
 //LK
 class IccLichKingShadowTrapAction : public MovementAction
 {
@@ -632,7 +629,6 @@ class IccLichKingWinterAction : public AttackAction
         void HandleRangedPositioning();
         void HandleMainTankAddManagement(Unit* boss, const Position* tankPos);
         void HandleAssistTankAddManagement(Unit* boss, const Position* tankPos);
-
 
     private:
         const Position* GetMainTankPosition();
@@ -669,7 +665,5 @@ class IccLichKingAddsAction : public AttackAction
         bool IsValkyr(Unit* unit);
         void HandleVileSpiritMechanics();
 };
-
-
 
 #endif

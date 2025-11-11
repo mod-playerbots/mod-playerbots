@@ -94,4 +94,3 @@ float OrmorokMultiplier::GetValue(Action* action)
         }
     return 1.0f;
 }
-

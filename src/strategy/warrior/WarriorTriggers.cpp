@@ -119,4 +119,3 @@ bool ShatteringThrowTrigger::IsActive()
 
     return false; // No valid targets within range
 }
-

@@ -1,7 +1,6 @@
 #include "CullingOfStratholmeStrategy.h"
 #include "CullingOfStratholmeMultipliers.h"
 
-
 void WotlkDungeonCoSStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 {
     // Meathook

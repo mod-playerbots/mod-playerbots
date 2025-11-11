@@ -17,7 +17,7 @@ bool BankAction::Execute(Event event)
     for (GuidVector::iterator i = npcs.begin(); i != npcs.end(); i++)
     {
         Unit* npc = botAI->GetUnit(*i);
-        if (!npc || !npc->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_BANKER))
+        if (!npc || !npc->HasNpcFlag(UNIT_NPC_FLAG_BANKER))
             continue;
 
         return ExecuteBank(text, npc);

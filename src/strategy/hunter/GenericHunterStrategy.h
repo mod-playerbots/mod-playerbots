@@ -21,7 +21,6 @@ public:
     uint32 GetType() const override { return CombatStrategy::GetType() | STRATEGY_TYPE_RANGED | STRATEGY_TYPE_DPS; }
 };
 
-
 class AoEHunterStrategy : public CombatStrategy
 {
 public:
@@ -57,6 +56,5 @@ public:
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
     std::string const getName() override { return "trap weave"; }
 };
-
 
 #endif

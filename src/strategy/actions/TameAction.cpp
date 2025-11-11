@@ -81,7 +81,7 @@ bool TameAction::Execute(Event event)
         std::ostringstream oss;
         oss << "Available pet families: ";
         size_t count = 0;
-        for (const auto& name : normalFamilies)
+        for (auto const& name : normalFamilies)
         {
             if (count++ != 0)
                 oss << ", ";
@@ -93,7 +93,7 @@ bool TameAction::Execute(Event event)
                 oss << " | ";
             oss << "Exotic: ";
             count = 0;
-            for (const auto& name : exoticFamilies)
+            for (auto const& name : exoticFamilies)
             {
                 if (count++ != 0)
                     oss << ", ";

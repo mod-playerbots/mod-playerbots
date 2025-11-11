@@ -14,7 +14,7 @@ jobs:
   triage:
     runs-on: ubuntu-latest
     name: C++
-    if: github.repository == 'mod-playerbots/mod-playerbots' && !github.event.pull_request.draft
+    if: github.event.pull_request.draft == false
     steps:
       - uses: actions/checkout@v4
       - name: Setup python

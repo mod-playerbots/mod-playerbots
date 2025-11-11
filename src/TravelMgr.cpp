@@ -480,7 +480,7 @@ std::string const WorldPosition::getAreaName(bool fullName, bool zoneName)
 std::set<Transport*> WorldPosition::getTransports(uint32 entry)
 {
     /*
-    if(!entry)
+    if (!entry)
         return getMap()->m_transports;
     else
     {
@@ -488,7 +488,7 @@ std::set<Transport*> WorldPosition::getTransports(uint32 entry)
     std::set<Transport*> transports;
     /*
     for (auto transport : getMap()->m_transports)
-        if(transport->GetEntry() == entry)
+        if (transport->GetEntry() == entry)
             transports.insert(transport);
 
     return transports;
@@ -1272,7 +1272,7 @@ std::string const RpgTravelDestination::getTitle()
 {
     std::ostringstream out;
 
-    if(entry > 0)
+    if (entry > 0)
         out << "rpg npc ";
 
     out << " " << ChatHelper::FormatWorldEntry(entry);
@@ -2076,7 +2076,6 @@ void TravelMgr::LoadQuestTravelTable()
                     continue;
                 }
 
-
                 if (r.role == 0)
                 {
                     container->questGivers.push_back(loc);
@@ -2591,7 +2590,7 @@ void TravelMgr::LoadQuestTravelTable()
 
                         //if (data->displayId == 3015)
                         //    pos.setZ(pos.getZ() + 6.0f);
-                        //else if(data->displayId == 3031)
+                        //else if (data->displayId == 3031)
                        //     pos.setZ(pos.getZ() - 17.0f);
 
                         if (prevNode)

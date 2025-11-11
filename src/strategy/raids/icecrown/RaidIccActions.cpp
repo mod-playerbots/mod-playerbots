@@ -116,7 +116,7 @@ bool IccSpikeAction::HandleSpikeTargeting(Unit* boss)
     // First check for alive spikes
     for (const auto entry : spikeEntries)
     {
-        for (const auto& guid : spikes)
+        for (auto const& guid : spikes)
         {
             if (Unit* unit = botAI->GetUnit(guid))
             {
@@ -238,7 +238,7 @@ bool IccRangedPositionLadyDeathwhisperAction::MaintainRangedSpacing()
     float totalY = 0.0f;
     int nearbyCount = 0;
 
-    for (const auto& memberGuid : members)
+    for (auto const& memberGuid : members)
     {
         Unit* member = botAI->GetUnit(memberGuid);
         if (!member || !member->IsAlive() || member == bot)
@@ -340,7 +340,7 @@ bool IccAddsLadyDeathwhisperAction::Execute(Event event)
 bool IccAddsLadyDeathwhisperAction::IsTargetedByShade(uint32 shadeEntry)
 {
     const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
-    for (const auto& npcGuid : npcs)
+    for (auto const& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
         if (unit && unit->GetEntry() == shadeEntry && unit->GetVictim() == bot)
@@ -376,9 +376,9 @@ bool IccAddsLadyDeathwhisperAction::HandleAddTargeting(Unit* boss)
     bool hasValidAdds = false;
 
     // First check for alive adds
-    for (const auto& entry : addEntriesLady)
+    for (auto const& entry : addEntriesLady)
     {
-        for (const auto& guid : targets)
+        for (auto const& guid : targets)
         {
             Unit* unit = botAI->GetUnit(guid);
             if (unit && unit->IsAlive() && unit->GetEntry() == entry)
@@ -427,7 +427,7 @@ bool IccShadeLadyDeathwhisperAction::Execute(Event event)
     // Get the nearest hostile NPCs
     const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
 
-    for (const auto& npcGuid : npcs)
+    for (auto const& npcGuid : npcs)
     {
         Unit* shade = botAI->GetUnit(npcGuid);
 
@@ -506,7 +506,7 @@ bool IccRottingFrostGiantTankPositionAction::Execute(Event event)
         std::map<ObjectGuid, int> targetCounts;
 
         // First, identify all infected bots and their current targets (approximate)
-        for (const auto& memberGuid : members)
+        for (auto const& memberGuid : members)
         {
             Unit* member = botAI->GetUnit(memberGuid);
             if (!member || !member->IsAlive() || member == bot)
@@ -520,7 +520,7 @@ bool IccRottingFrostGiantTankPositionAction::Execute(Event event)
                 float minDist = 5.0f;  // Only count if they're close enough to likely be targeting
                 Unit* likelyTarget = nullptr;
 
-                for (const auto& targetGuid : members)
+                for (auto const& targetGuid : members)
                 {
                     Unit* potentialTarget = botAI->GetUnit(targetGuid);
                     if (!potentialTarget || !potentialTarget->IsAlive() || potentialTarget == member)
@@ -551,7 +551,7 @@ bool IccRottingFrostGiantTankPositionAction::Execute(Event event)
         std::vector<std::pair<Unit*, float>> viableTargets;
 
         // First try to find ranged, non-infected, non-cured bots
-        for (const auto& memberGuid : members)
+        for (auto const& memberGuid : members)
         {
             Unit* member = botAI->GetUnit(memberGuid);
             if (!member || !member->IsAlive() || member == bot)
@@ -630,7 +630,7 @@ bool IccRottingFrostGiantTankPositionAction::Execute(Event event)
         float totalY = 0.0f;
         int nearbyCount = 0;
 
-        for (const auto& memberGuid : members)
+        for (auto const& memberGuid : members)
         {
             Unit* member = botAI->GetUnit(memberGuid);
             if (!member || !member->IsAlive() || member == bot)
@@ -726,7 +726,7 @@ Unit* IccCannonFireAction::FindValidCannonTarget()
 {
     const GuidVector attackers = AI_VALUE(GuidVector, "possible targets no los");
 
-    for (const auto& attackerGuid : attackers)
+    for (auto const& attackerGuid : attackers)
     {
         Unit* unit = botAI->GetUnit(attackerGuid);
         if (!unit)
@@ -774,7 +774,7 @@ Unit* IccGunshipEnterCannonAction::FindBestAvailableCannon()
     Unit* bestVehicle = nullptr;
 
     const GuidVector npcs = AI_VALUE(GuidVector, "nearest vehicles");
-    for (const auto& npcGuid : npcs)
+    for (auto const& npcGuid : npcs)
     {
         Unit* vehicleBase = botAI->GetUnit(npcGuid);
         if (!IsValidCannon(vehicleBase, validCannonEntries))
@@ -1006,8 +1006,6 @@ bool IccDbsTankPositionAction::Execute(Event event)
                           ICC_DBS_TANK_POSITION.GetPositionZ(), false, false, false, true,
                           MovementPriority::MOVEMENT_NORMAL);
 
-
-
         // Early return if this tank has Rune of Blood
         if (botAI->GetAura("Rune of Blood", bot))
             return true;
@@ -1041,7 +1039,7 @@ bool IccDbsTankPositionAction::CrowdControlBloodBeasts()
 
     bool appliedCC = false;
 
-    for (const auto& npc : npcs)
+    for (auto const& npc : npcs)
     {
         Unit* unit = botAI->GetUnit(npc);
         if (!unit || !unit->IsAlive())
@@ -1143,7 +1141,7 @@ bool IccDbsTankPositionAction::EvadeBloodBeasts()
     // Get the nearest hostile NPCs
     const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
 
-    for (const auto& npc : npcs)
+    for (auto const& npc : npcs)
     {
         Unit* unit = botAI->GetUnit(npc);
         if (!unit)
@@ -1326,7 +1324,7 @@ bool IccFestergutGroupPositionAction::HasSporesInGroup()
 {
     const GuidVector members = AI_VALUE(GuidVector, "group members");
 
-    for (const auto& memberGuid : members)
+    for (auto const& memberGuid : members)
     {
         Unit* unit = botAI->GetUnit(memberGuid);
         if (unit && unit->HasAura(SPELL_GAS_SPORE))
@@ -1564,7 +1562,7 @@ IccFestergutSporeAction::SporeInfo IccFestergutSporeAction::FindSporedPlayers()
     SporeInfo info;
     const GuidVector members = AI_VALUE(GuidVector, "group members");
 
-    for (const auto& memberGuid : members)
+    for (auto const& memberGuid : members)
     {
         Unit* unit = botAI->GetUnit(memberGuid);
         if (!unit)
@@ -1612,7 +1610,7 @@ bool IccFestergutSporeAction::CheckMainTankSpore()
 {
     const GuidVector members = AI_VALUE(GuidVector, "group members");
 
-    for (const auto& memberGuid : members)
+    for (auto const& memberGuid : members)
     {
         Unit* unit = botAI->GetUnit(memberGuid);
         if (!unit)
@@ -1702,14 +1700,13 @@ bool IccRotfaceTankPositionAction::HandleAssistTankPositioning(Unit* boss)
     return HandleBigOozePositioning(boss);
 }
 
-
 bool IccRotfaceTankPositionAction::HandleBigOozePositioning(Unit* boss)
 {
     // Find all big oozes
     GuidVector bigOozes = AI_VALUE(GuidVector, "nearest hostile npcs");
     std::vector<Unit*> activeBigOozes;
 
-    for (const auto& guid : bigOozes)
+    for (auto const& guid : bigOozes)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (unit && unit->IsAlive() && unit->GetEntry() == NPC_BIG_OOZE && unit->IsVisible())
@@ -1799,7 +1796,7 @@ bool IccRotfaceTankPositionAction::HandleBigOozePositioning(Unit* boss)
                     GuidVector puddles = AI_VALUE(GuidVector, "nearest hostile npcs");
                     bool isSafeFromPuddles = true;
 
-                    for (const auto& puddleGuid : puddles)
+                    for (auto const& puddleGuid : puddles)
                     {
                         Unit* puddle = botAI->GetUnit(puddleGuid);
                         if (puddle && botAI->GetAura("Ooze Flood", puddle))
@@ -1827,7 +1824,6 @@ bool IccRotfaceTankPositionAction::HandleBigOozePositioning(Unit* boss)
     return false;
 }
 
-
 bool IccRotfaceGroupPositionAction::Execute(Event event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "rotface");
@@ -1837,7 +1833,7 @@ bool IccRotfaceGroupPositionAction::Execute(Event event)
     const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
     bool floodPresent = false;
 
-    for (const auto& npc : npcs)
+    for (auto const& npc : npcs)
     {
         Unit* unit = botAI->GetUnit(npc);
         if (!unit || !botAI->HasAura("Ooze Flood", unit))
@@ -1876,7 +1872,7 @@ bool IccRotfaceGroupPositionAction::HandlePuddleAvoidance(Unit* boss)
 {
     const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
 
-    for (const auto& npc : npcs)
+    for (auto const& npc : npcs)
     {
         Unit* unit = botAI->GetUnit(npc);
         if (!unit || !botAI->HasAura("Ooze Flood", unit))
@@ -2062,7 +2058,7 @@ bool IccRotfaceGroupPositionAction::FindAndMoveFromClosestMember(Unit* boss, Uni
     const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
     Unit* puddle = nullptr;
 
-    for (const auto& npc : npcs)
+    for (auto const& npc : npcs)
     {
         Unit* unit = botAI->GetUnit(npc);
         if (!unit || !botAI->HasAura("Ooze Flood", unit))
@@ -2087,11 +2083,11 @@ bool IccRotfaceGroupPositionAction::FindAndMoveFromClosestMember(Unit* boss, Uni
     float totalY = 0.0f;
     int nearbyCount = 0;
 
-    for (const auto& memberGuid : members)
+    for (auto const& memberGuid : members)
     {
         Unit* member = botAI->GetUnit(memberGuid);
         if (!member || !member->IsAlive() || member == bot || (smallOoze && smallOoze->GetVictim() == member) ||
-            (member->GetTypeId() == TYPEID_PLAYER && botAI->IsAssistTank(static_cast<Player*>(member))))
+            (member->IsPlayer() && botAI->IsAssistTank(static_cast<Player*>(member))))
             continue;
 
         const float distance = bot->GetExactDist2d(member);
@@ -2202,7 +2198,7 @@ bool IccRotfaceMoveAwayFromExplosionAction::MoveToRandomSafeLocation()
 
     // Ensure the position is at least 30 yards away from any puddle
     const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
-    for (const auto& npc : npcs)
+    for (auto const& npc : npcs)
     {
         Unit* puddle = botAI->GetUnit(npc);
         if (!puddle || !botAI->HasAura("Ooze Flood", puddle))
@@ -2287,7 +2283,7 @@ Unit* IccPutricideGrowingOozePuddleAction::FindClosestThreateningPuddle()
     float closestDistance = FLT_MAX;
     float closestSafeDistance = BASE_RADIUS;
 
-    for (const auto& npc : npcs)
+    for (auto const& npc : npcs)
     {
         Unit* unit = botAI->GetUnit(npc);
         if (!unit || unit->GetEntry() != NPC_GROWING_OOZE_PUDDLE)
@@ -2402,7 +2398,7 @@ bool IccPutricideGrowingOozePuddleAction::IsPositionTooCloseToOtherPuddles(float
     static const float STACK_MULTIPLIER = 0.6f;
 
     GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
-    for (const auto& npc : npcs)
+    for (auto const& npc : npcs)
     {
         Unit* unit = botAI->GetUnit(npc);
         if (!unit || unit == ignorePuddle || unit->GetEntry() != NPC_GROWING_OOZE_PUDDLE)
@@ -2445,7 +2441,7 @@ bool IccPutricideVolatileOozeAction::Execute(Event event)
     // Find all alive oozes
     std::vector<Unit*> aliveOozes;
     const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
-    for (const auto& guid : npcs)
+    for (auto const& guid : npcs)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (unit && unit->IsAlive() && unit->GetEntry() == ooze->GetEntry())
@@ -2533,7 +2529,6 @@ Unit* IccPutricideVolatileOozeAction::FindAuraTarget()
     return nullptr;
 }
 
-
 bool IccPutricideGasCloudAction::Execute(Event event)
 {
     Unit* gasCloud = AI_VALUE2(Unit*, "find target", "gas cloud");
@@ -2560,7 +2555,7 @@ bool IccPutricideGasCloudAction::Execute(Event event)
     // Find all alive gasCloud
     std::vector<Unit*> aliveGasCloud;
     const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
-    for (const auto& guid : npcs)
+    for (auto const& guid : npcs)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (unit && unit->IsAlive() && unit->GetEntry() == gasCloud->GetEntry())
@@ -2613,7 +2608,7 @@ bool IccPutricideGasCloudAction::HandleGaseousBloatMovement(Unit* gasCloud)
     // Gather all choking gas bombs
     GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
     std::vector<Unit*> gasBombs;
-    for (const auto& guid : npcs)
+    for (auto const& guid : npcs)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (unit && unit->IsAlive() && unit->GetEntry() == NPC_CHOKING_GAS_BOMB)
@@ -3048,7 +3043,6 @@ bool IccPutricideAvoidMalleableGooAction::HandleUnboundPlague(Unit* boss)
     return false;
 }
 
-
 bool IccPutricideAvoidMalleableGooAction::HandleBossPositioning(Unit* boss)
 {
     if (botAI->IsTank(bot))
@@ -3128,7 +3122,7 @@ Position IccPutricideAvoidMalleableGooAction::CalculateBossPosition(Unit* boss, 
 bool IccPutricideAvoidMalleableGooAction::HasObstacleBetween(const Position& from, const Position& to)
 {
     GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
-    for (const auto& npc : npcs)
+    for (auto const& npc : npcs)
     {
         Unit* unit = botAI->GetUnit(npc);
         if (!unit || !unit->IsAlive())
@@ -3261,7 +3255,7 @@ bool IccBpcKelesethTankAction::Execute(Event event)
     if (boss->GetVictim() == bot)
     {
         GuidVector targets = AI_VALUE(GuidVector, "possible targets");
-        for (const auto& targetGuid : targets)
+        for (auto const& targetGuid : targets)
         {
             Unit* nucleus = botAI->GetUnit(targetGuid);
             if (nucleus && nucleus->IsAlive() && nucleus->GetEntry() == NPC_DARK_NUCLEUS)
@@ -3392,7 +3386,7 @@ void IccBpcMainTankAction::MarkEmpoweredPrince()
     Unit* empoweredPrince = nullptr;
     const GuidVector& targets = AI_VALUE(GuidVector, "possible targets");
 
-    for (const auto& targetGuid : targets)
+    for (auto const& targetGuid : targets)
     {
         Unit* unit = botAI->GetUnit(targetGuid);
         if (!unit || !unit->IsAlive())
@@ -3478,7 +3472,7 @@ bool IccBpcEmpoweredVortexAction::MaintainRangedSpacing()
     float totalY = 0.0f;
     int nearbyCount = 0;
 
-    for (const auto& memberGuid : members)
+    for (auto const& memberGuid : members)
     {
         Unit* member = botAI->GetUnit(memberGuid);
         if (!member || !member->IsAlive() || member == bot)
@@ -3557,7 +3551,7 @@ bool IccBpcEmpoweredVortexAction::HandleEmpoweredVortexSpread()
     float totalY = 0.0f;
     int nearbyCount = 0;
 
-    for (const auto& memberGuid : members)
+    for (auto const& memberGuid : members)
     {
         Unit* member = botAI->GetUnit(memberGuid);
         if (!member || !member->IsAlive() || member == bot)
@@ -3676,7 +3670,7 @@ Unit* IccBpcKineticBombAction::FindOptimalKineticBomb()
 
     // Gather all valid kinetic bombs
     std::vector<Unit*> kineticBombs;
-    for (const auto& guid : targets)
+    for (auto const& guid : targets)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (!unit || !unit->IsAlive())
@@ -3764,7 +3758,6 @@ bool IccBpcKineticBombAction::IsBombAlreadyHandled(Unit* bomb, Group* group)
     return false;
 }
 
-
 bool IccBpcBallOfFlameAction::Execute(Event event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "prince taldaram");
@@ -3814,7 +3807,7 @@ bool IccBpcBallOfFlameAction::Execute(Event event)
     {
         const float SAFE_DIST = 15.0f;
         GuidVector members = AI_VALUE(GuidVector, "group members");
-        for (const auto& memberGuid : members)
+        for (auto const& memberGuid : members)
         {
             Unit* member = botAI->GetUnit(memberGuid);
             if (!member || !member->IsAlive() || member == bot)
@@ -4341,7 +4334,7 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
         // Gather all ranged and healers, sort by GUID for deterministic assignment
         std::vector<Player*> rangedBots;
         std::vector<Player*> healers;
-        for (const auto& guid : members)
+        for (auto const& guid : members)
         {
             Unit* member = botAI->GetUnit(guid);
             if (!member || !member->IsAlive())
@@ -4457,7 +4450,7 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
             }
             // Also spread from swarming shadows
             GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
-            for (const auto& npcGuid : npcs)
+            for (auto const& npcGuid : npcs)
             {
                 Unit* unit = botAI->GetUnit(npcGuid);
                 if (unit && unit->IsAlive() && unit->GetEntry() == NPC_SWARMING_SHADOWS)
@@ -4604,7 +4597,6 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
         }
         return true;
     }
-
 
     return false;
 }
@@ -4798,7 +4790,7 @@ Player* IccBqlVampiricBiteAction::FindBestBiteTarget(Group* group)
     }
 
     // Sort by distance
-    auto sortByDistance = [](const auto& a, const auto& b) { return a.second < b.second; };
+    auto sortByDistance = [](auto const& a, auto const& b) { return a.second < b.second; };
     std::sort(dpsTargets.begin(), dpsTargets.end(), sortByDistance);
     std::sort(healTargets.begin(), healTargets.end(), sortByDistance);
 
@@ -4955,7 +4947,7 @@ bool IccValithriaGroupAction::Execute(Event event)
     // Tank behavior
     if (botAI->IsTank(bot))
     {
-        for (const auto& targetGuid : AI_VALUE(GuidVector, "possible targets"))
+        for (auto const& targetGuid : AI_VALUE(GuidVector, "possible targets"))
         {
             if (Unit* unit = botAI->GetUnit(targetGuid))
             {
@@ -4965,7 +4957,7 @@ bool IccValithriaGroupAction::Execute(Event event)
                     // Skip if unit is already attacking any tank
                     if (Unit* victim = unit->GetVictim())
                     {
-                        if (victim->GetTypeId() == TYPEID_PLAYER && botAI->IsTank(static_cast<Player*>(victim)))
+                        if (victim->IsPlayer() && botAI->IsTank(static_cast<Player*>(victim)))
                         {
                             continue;
                         }
@@ -5133,7 +5125,7 @@ bool IccValithriaGroupAction::Handle25ManGroupLogic()
     }
 
     // Sort by GUID for consistent ordering
-    std::sort(nonHeals.begin(), nonHeals.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
+    std::sort(nonHeals.begin(), nonHeals.end(), [](auto const& a, auto const& b) { return a.first < b.first; });
 
     // Assign to groups
     std::vector<Player*> group1, group2;
@@ -5167,7 +5159,6 @@ bool IccValithriaGroupAction::Handle25ManGroupLogic()
     // Marking logic for tanks and DPS
     if (botAI->IsTank(bot) || botAI->IsDps(bot))
         HandleMarkingLogic(inGroup1, inGroup2, group1Pos, group2Pos);
-
 
     // Movement logic for non-healers
     if (!botAI->IsHeal(bot))
@@ -5230,7 +5221,7 @@ bool IccValithriaGroupAction::HandleMarkingLogic(bool inGroup1, bool inGroup2, c
 
     for (uint32 entry : addPriority)
     {
-        for (const auto& guid : adds)
+        for (auto const& guid : adds)
         {
             if (Unit* unit = botAI->GetUnit(guid))
             {
@@ -5291,7 +5282,7 @@ bool IccValithriaGroupAction::Handle10ManGroupLogic()
 
         for (uint32 entry : addPriority)
         {
-            for (const auto& guid : adds)
+            for (auto const& guid : adds)
             {
                 if (Unit* unit = botAI->GetUnit(guid))
                 {
@@ -5337,7 +5328,7 @@ bool IccValithriaPortalAction::Execute(Event event)
     GuidVector npcs = AI_VALUE(GuidVector, "nearest npcs");
     std::vector<Creature*> preEffectPortals;
     std::vector<Creature*> realPortals;
-    for (const auto& guid : npcs)
+    for (auto const& guid : npcs)
     {
         Creature* c = dynamic_cast<Creature*>(botAI->GetUnit(guid));
         if (!c)
@@ -5564,7 +5555,7 @@ bool IccValithriaDreamCloudAction::Execute(Event event)
     // Gather all group members with dream state
     const GuidVector members = AI_VALUE(GuidVector, "group members");
     std::vector<Unit*> dreamBots;
-    for (const auto& guid : members)
+    for (auto const& guid : members)
     {
         Unit* member = botAI->GetUnit(guid);
         if (member && member->IsAlive() && member->HasAura(SPELL_DREAM_STATE))
@@ -5614,7 +5605,6 @@ bool IccValithriaDreamCloudAction::Execute(Event event)
             }
         }
     }
-
 
     // All stacked: leader (lowest guid) moves to next cloud, others follow and stack at leader's new position
     // Find all dream and nightmare clouds
@@ -5997,7 +5987,7 @@ bool IccSindragosaGroupPositionAction::HandleNonTankPositioning()
 
         for (const auto entry : tombEntries)
         {
-            for (const auto& guid : tombGuids)
+            for (auto const& guid : tombGuids)
             {
                 if (Unit* unit = botAI->GetUnit(guid))
                 {
@@ -6160,7 +6150,7 @@ void IccSindragosaFrostBeaconAction::HandleSupportActions()
     if (botAI->IsHeal(bot) && !bot->HasAura(FROST_BEACON_AURA_ID))
     {
         const auto members = AI_VALUE(GuidVector, "group members");
-        for (const auto& memberGuid : members)
+        for (auto const& memberGuid : members)
         {
             Unit* member = botAI->GetUnit(memberGuid);
             if (!member || !member->IsAlive() || !member->HasAura(FROST_BEACON_AURA_ID))
@@ -6266,7 +6256,7 @@ bool IccSindragosaFrostBeaconAction::HandleNonBeaconedPlayer(const Unit* boss)
     // Collect beaconed players
     std::vector<Unit*> beaconedPlayers;
     const auto members = AI_VALUE(GuidVector, "group members");
-    for (const auto& memberGuid : members)
+    for (auto const& memberGuid : members)
     {
         Unit* player = botAI->GetUnit(memberGuid);
         if (player && player->GetGUID() != bot->GetGUID() && player->HasAura(FROST_BEACON_AURA_ID))
@@ -6474,7 +6464,7 @@ bool IccSindragosaMysticBuffetAction::Execute(Event event)
 
     for (const auto entry : tombEntries)
     {
-        for (const auto& guid : tombGuids)
+        for (auto const& guid : tombGuids)
         {
             if (Unit* unit = botAI->GetUnit(guid))
             {
@@ -6517,7 +6507,6 @@ bool IccSindragosaMysticBuffetAction::Execute(Event event)
         {
             return true;
         }
-
 
         botAI->Reset();
         // Move to LOS2 position
@@ -8062,7 +8051,7 @@ bool IccLichKingAddsAction::HandleSpiritBombAvoidance(Difficulty diff, Unit* ter
                 float minDistAtPos = std::numeric_limits<float>::max();
                 int bombCountInVicinity = 0;
 
-                for (const auto& bombPair : spiritBombs)
+                for (auto const& bombPair : spiritBombs)
                 {
                     Unit* bomb = bombPair.second;
                     if (!bomb || !bomb->IsAlive())
@@ -8166,7 +8155,7 @@ void IccLichKingAddsAction::HandleSpiritMarkingAndTargeting(Difficulty diff, Uni
     if (currentMarkedTarget && currentMarkedTarget->IsAlive())
     {
         Unit* spiritTarget = currentMarkedTarget->GetVictim();
-        if (spiritTarget && spiritTarget->GetTypeId() == TYPEID_PLAYER)
+        if (spiritTarget && spiritTarget->IsPlayer())
         {
             if (Group* spiritTargetGroup = spiritTarget->ToPlayer()->GetGroup())
             {
@@ -8206,7 +8195,7 @@ void IccLichKingAddsAction::HandleSpiritMarkingAndTargeting(Difficulty diff, Uni
                     // Check if this spirit is targeting a group member
                     bool targetingGroupMember = false;
                     Unit* spiritTarget = unit->GetVictim();
-                    if (spiritTarget && spiritTarget->GetTypeId() == TYPEID_PLAYER)
+                    if (spiritTarget && spiritTarget->IsPlayer())
                     {
                         if (Group* spiritTargetGroup = spiritTarget->ToPlayer()->GetGroup())
                         {
@@ -9347,4 +9336,3 @@ void IccLichKingAddsAction::HandleVileSpiritMechanics()
         }
     }
 }
-

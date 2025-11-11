@@ -24,7 +24,7 @@ bool SetHomeAction::Execute(Event event)
     }
 
     if (Unit* unit = botAI->GetUnit(selection))
-        if (unit->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_INNKEEPER))
+        if (unit->HasNpcFlag(UNIT_NPC_FLAG_INNKEEPER))
         {
             if (isRpgAction)
             {

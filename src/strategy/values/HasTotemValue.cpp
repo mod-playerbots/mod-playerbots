@@ -57,7 +57,8 @@ bool HasTotemValue::Calculate()
 //             continue;
 //         Creature* creature = dynamic_cast<Creature*>(unit);
 
-//         if (creature->GetOwner() != bot) {
+//         if (creature->GetOwner() != bot)
+//         {
 //             continue;
 //         }
 
