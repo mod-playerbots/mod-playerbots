@@ -22,6 +22,7 @@ bool FollowAction::Execute(Event event)
     std::string const target = formation->GetTargetName();
 
     // Transport (Zep + Boats) Fix
+    // TODO: Smooth out bot boarding on transports (boats, zeppelins, tram).
     Player* master = botAI->GetMaster();
     if (master && master->GetTransport())
     {
