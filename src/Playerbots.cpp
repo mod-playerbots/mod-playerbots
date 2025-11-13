@@ -1005,6 +1005,5 @@ void AddPlayerbotsScripts()
     new PlayerbotsScript();
     new PlayerBotsBGScript();
 
-    // Register the playerbots .commands (chat/console command script).
     AddSC_playerbots_commandscript();
 }
