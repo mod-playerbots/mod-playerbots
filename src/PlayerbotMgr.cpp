@@ -1623,7 +1623,7 @@ void PlayerbotMgr::OnPlayerLogin(Player* player)
 
     LOG_DEBUG("playerbots", "Registering locales for player {}: dbc={}, db={}, used={}", player->GetName(),
         static_cast<uint32>(clientLocale), static_cast<uint32>(databaseLocale), static_cast<uint32>(usedLocale));
-		
+    
     // set locale priority for bot texts
     sPlayerbotTextMgr->AddLocalePriority(usedLocale);
 
