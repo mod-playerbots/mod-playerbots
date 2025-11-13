@@ -182,7 +182,8 @@ bool AttackersValue::IsPossibleTarget(Unit* attacker, Player* bot, float /*range
 
     // PvP prohibition checks
     if ((attacker->GetGUID().IsPlayer() || attacker->GetGUID().IsPet()) &&
-        sPlayerbotAIConfig->IsPvpProhibited(attacker->GetZoneId(), attacker->GetAreaId()))
+        (sPlayerbotAIConfig->IsPvpProhibited(attacker->GetZoneId(), attacker->GetAreaId()) ||
+        sPlayerbotAIConfig->IsPvpProhibited(bot->GetZoneId(), bot->GetAreaId())))
     {
         // This will stop aggresive pets from starting an attack.
         // This will stop currently attacking pets from continuing their attack.
