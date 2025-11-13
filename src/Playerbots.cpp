@@ -17,7 +17,6 @@
 
 #include "Playerbots.h"
 
-#include "BattleGroundTactics.h"
 #include "Channel.h"
 #include "Config.h"
 #include "DatabaseEnv.h"
@@ -28,8 +27,9 @@
 #include "PlayerbotAIConfig.h"
 #include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
-#include "cmath"
 #include "cs_playerbots.h"
+#include "cmath"
+#include "BattleGroundTactics.h"
 
 ///**********************************************************************
 /// PlayerbotsDatabaseScript
