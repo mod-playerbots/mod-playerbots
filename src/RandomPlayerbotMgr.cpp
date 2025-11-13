@@ -822,7 +822,7 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
             uint32 add_time = sPlayerbotAIConfig->enablePeriodicOnlineOffline
                                 ? urand(sPlayerbotAIConfig->minRandomBotInWorldTime,
                                         sPlayerbotAIConfig->maxRandomBotInWorldTime)
-                                : sPlayerbotAIConfig->permanantlyInWorldTime;
+                                : sPlayerbotAIConfig->permanentlyInWorldTime;
 
             SetEventValue(charInfo.guid, "add", 1, add_time);
             SetEventValue(charInfo.guid, "logout", 0, 0);
