@@ -22,7 +22,7 @@ bool FollowAction::Execute(Event event)
     Formation* formation = AI_VALUE(Formation*, "formation");
     std::string const target = formation->GetTargetName();
     /*
-	// Transport (Zep + Boats) Fix
+    // Transport (Zep + Boats) Fix
     // TODO: Smooth out bot boarding on transports (boats, zeppelins, tram).
     // TODO: Handle bot's pets
     Player* master = botAI->GetMaster();
