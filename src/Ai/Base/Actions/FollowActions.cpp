@@ -21,11 +21,10 @@ bool FollowAction::Execute(Event event)
 {
     Formation* formation = AI_VALUE(Formation*, "formation");
     std::string const target = formation->GetTargetName();
-	
     /*
 	// Transport (Zep + Boats) Fix
     // TODO: Smooth out bot boarding on transports (boats, zeppelins, tram).
-	// TODO: Handle bot's pets
+    // TODO: Handle bot's pets
     Player* master = botAI->GetMaster();
     if (master && master->GetTransport())
     {
@@ -34,7 +33,6 @@ bool FollowAction::Execute(Event event)
         // Vérification de map : le bot doit être sur la même map que le maître
         if (bot->GetMap() != master->GetMap())
             return false;
-	
         // If the bot is not already a passenger on this transport
         if (bot->GetTransport() != transport)
         {
@@ -72,7 +70,6 @@ bool FollowAction::Execute(Event event)
         }
     } // End Transport (Zep + Boats) Fix
 	*/
-
     // Unified Transport Handling (boats, zeppelins, elevators, platforms)
     Player* master = botAI->GetMaster();
     if (master && master->IsInWorld())
