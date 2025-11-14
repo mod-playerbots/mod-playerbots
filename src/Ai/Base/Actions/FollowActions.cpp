@@ -15,19 +15,26 @@
 #include "ServerFacade.h"
 #include "SharedDefines.h"
 #include "Transport.h"
+#include "Map.h"
 
 bool FollowAction::Execute(Event event)
 {
     Formation* formation = AI_VALUE(Formation*, "formation");
     std::string const target = formation->GetTargetName();
-
-    // Transport (Zep + Boats) Fix
+	
+    /*
+	// Transport (Zep + Boats) Fix
     // TODO: Smooth out bot boarding on transports (boats, zeppelins, tram).
+	// TODO: Handle bot's pets
     Player* master = botAI->GetMaster();
     if (master && master->GetTransport())
     {
         Transport* transport = master->GetTransport();
 
+        // Vérification de map : le bot doit être sur la même map que le maître
+        if (bot->GetMap() != master->GetMap())
+            return false;
+	
         // If the bot is not already a passenger on this transport
         if (bot->GetTransport() != transport)
         {
@@ -64,6 +71,61 @@ bool FollowAction::Execute(Event event)
             return true;
         }
     } // End Transport (Zep + Boats) Fix
+	*/
+
+    // Unified Transport Handling (boats, zeppelins, elevators, platforms)
+    Player* master = botAI->GetMaster();
+    if (master && master->IsInWorld())
+    {
+        Map* map = master->GetMap();
+        if (map && bot->GetMap() == map)
+        {
+            // Detect any kind of moving transport the master is currently standing on
+            Transport* transport = master->GetTransport();
+
+            // Some moving platforms/elevators do not expose a direct Transport* on the master.
+            // In that case we fall back to a positional lookup on the map while the master
+            // has the ONTRANSPORT movement flag.
+            if (!transport && master->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
+            {
+                transport = map->GetTransportForPos(master->GetPhaseMask(),
+                                                    master->GetPositionX(),
+                                                    master->GetPositionY(),
+                                                    master->GetPositionZ(),
+                                                    master);
+            }
+
+            // If we found a transport and the bot is not yet attached, board it.
+            if (transport && bot->GetTransport() != transport)
+            {
+                float const offsetX = 1.0f;
+                float const offsetY = 0.5f;
+                float const offsetZ = 0.2f;
+
+                float const x = master->GetPositionX() + offsetX;
+                float const y = master->GetPositionY() + offsetY;
+                float const z = master->GetPositionZ() + offsetZ;
+
+                // Teleport close to the master (world coordinates) and attach as passenger (server-side).
+                bot->TeleportTo(transport->GetMapId(), x, y, z, master->GetOrientation());
+                transport->AddPassenger(bot, true);
+
+                // Reset movement state so the transport driver fully takes over.
+                bot->StopMoving();
+                bot->GetMotionMaster()->Clear(true);
+                bot->GetMotionMaster()->MoveIdle();
+                bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_FORWARD);
+                bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_WALKING);
+
+                botAI->SetNextCheckDelay(urand(1000, 2500));
+                LOG_INFO("playerbots",
+                          "Bot {} boarded transport {} near master {} at {:.2f},{:.2f},{:.2f}",
+                          bot->GetName(), transport->GetGUID().GetCounter(), master->GetName(), x, y, z);
+                return true;
+            }
+        }
+    }
+    // end unified transport handling
 
     bool moved = false;
     if (!target.empty())
