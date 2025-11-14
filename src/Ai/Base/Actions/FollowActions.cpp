@@ -69,7 +69,7 @@ bool FollowAction::Execute(Event event)
             return true;
         }
     } // End Transport (Zep + Boats) Fix
-	*/
+    */
     // Unified Transport Handling (boats, zeppelins, elevators, platforms)
     Player* master = botAI->GetMaster();
     if (master && master->IsInWorld())
