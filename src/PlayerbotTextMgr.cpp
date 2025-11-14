@@ -244,7 +244,6 @@ uint32 PlayerbotTextMgr::GetLocalePriority()
 
     LOG_DEBUG("playerbots", "Locale priority check: active sessions {}, counts {}, chosen locale {} with {} votes", activeSessions,
         buildLocaleCounts(), topLocale, topLocaleCount);
-		
     return topLocale;
 }
 
