@@ -486,6 +486,9 @@ void PlayerbotFactory::Randomize(bool incremental)
     bot->SetPower(POWER_MANA, bot->GetMaxPower(POWER_MANA));
     bot->SaveToDB(false, false);
     LOG_DEBUG("playerbots", "Initialization Done.");
+
+    LOG_DEBUG("playerbots", "Bot #{} {}:{} <{}>: randomized", bot->GetGUID().GetRawValue(),
+              bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName().c_str());
     if (pmo)
         pmo->finish();
 }

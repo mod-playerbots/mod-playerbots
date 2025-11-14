@@ -51,6 +51,7 @@
 #include "Unit.h"
 #include "UpdateTime.h"
 #include "World.h"
+#include "PlayerGuildRegistry.h"
 
 struct GuidClassRaceInfo
 {
@@ -1516,10 +1517,64 @@ bool RandomPlayerbotMgr::ProcessBot(uint32 bot)
     return false;
 }
 
+bool RandomPlayerbotMgr::ProcessBotRandomization(Player* bot)
+{
+	if (sPlayerbotAIConfig->disableRandomBotPeriodicRandomization)
+		return false;
+
+	uint64_t botId = bot->GetGUID().GetRawValue();
+	uint32_t botGuildId = bot->GetGuildId();
+
+	if (sPlayerGuildRegistry.Contains(botGuildId))
+	{
+        LOG_DEBUG("playerbots", "Bot #{} {}:{} <{}>: Randomization skipped because it is part of a guild with at least one non random bot.", bot->GetGUID().GetRawValue(), IsAlliance(bot->getRace()) ? "A" : "H",
+                  bot->GetLevel(), bot->GetName().c_str());
+
+		return false;
+	}
+
+    uint32_t timeUntilRandomize = GetEventValue(botId, "randomize");
+
+    if (timeUntilRandomize > 0)
+        return false;
+
+    Randomize(bot);
+
+    uint32 time = urand(sPlayerbotAIConfig->minRandomBotRandomizeTime, sPlayerbotAIConfig->maxRandomBotRandomizeTime);
+
+    ScheduleRandomize(botId, time);
+
+    return true;
+}
+
+bool RandomPlayerbotMgr::ProcessBotTeleportation(Player* bot)
+{
+	if (sPlayerbotAIConfig->disableRandomBotPeriodicTeleportation)
+		return false;
+
+	uint64_t botId = bot->GetGUID().GetRawValue();
+	uint32_t timeUntilTeleport = GetEventValue(botId, "teleport");
+
+	if (timeUntilTeleport > 0)
+		return false;
+
+	LOG_DEBUG("playerbots", "Bot #{} <{}>: teleport for level and refresh", botId, bot->GetName());
+
+	Refresh(bot);
+	RandomTeleportForLevel(bot);
+
+	uint32_t time = urand(sPlayerbotAIConfig->minRandomBotTeleportInterval,
+						sPlayerbotAIConfig->maxRandomBotTeleportInterval);
+
+	ScheduleTeleport(botId, time);
+
+	return true;
+}
+
 bool RandomPlayerbotMgr::ProcessBot(Player* bot)
 {
-
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+
     if (!botAI)
         return false;
 
@@ -1556,6 +1611,7 @@ bool RandomPlayerbotMgr::ProcessBot(Player* bot)
 
     // leave group if leader is rndbot
     Group* group = bot->GetGroup();
+
     if (group && !group->isLFGGroup() && IsRandomBot(group->GetLeader()))
     {
         botAI->LeaveOrDisbandGroup();
@@ -1564,6 +1620,7 @@ bool RandomPlayerbotMgr::ProcessBot(Player* bot)
 
     // only randomize and teleport idle bots
     bool idleBot = false;
+
     if (TravelTarget* target = botAI->GetAiObjectContext()->GetValue<TravelTarget*>("travel target")->Get())
     {
         if (target->getTravelState() == TravelState::TRAVEL_STATE_IDLE)
@@ -1578,59 +1635,15 @@ bool RandomPlayerbotMgr::ProcessBot(Player* bot)
 
     if (idleBot)
     {
-        // randomize
-        uint32 randomize = GetEventValue(botId, "randomize");
-        if (!randomize)
-        {
-            // bool randomiser = true;
-            // if (player->GetGuildId())
-            // {
-            //     if (Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId()))
-            //     {
-            //         if (guild->GetLeaderGUID() == player->GetGUID())
-            //         {
-            //             for (std::vector<Player*>::iterator i = players.begin(); i != players.end(); ++i)
-            //                 sGuildTaskMgr->Update(*i, player);
-            //         }
+        bool hasBeenRandomized = ProcessBotRandomization(bot);
 
-            //         uint32 accountId = sCharacterCache->GetCharacterAccountIdByGuid(guild->GetLeaderGUID());
-            //         if (!sPlayerbotAIConfig->IsInRandomAccountList(accountId))
-            //         {
-            //             uint8 rank = player->GetRank();
-            //             randomiser = rank < 4 ? false : true;
-            //         }
-            //     }
-            // }
-            // if (randomiser)
-            // {
-            Randomize(bot);
-            LOG_DEBUG("playerbots", "Bot #{} {}:{} <{}>: randomized", botId,
-                      bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName());
-            uint32 randomTime =
-                urand(sPlayerbotAIConfig->minRandomBotRandomizeTime, sPlayerbotAIConfig->maxRandomBotRandomizeTime);
-            ScheduleRandomize(botId, randomTime);
-            return true;
-        }
+		if (hasBeenRandomized)
+			return true;
 
-        // uint32 changeStrategy = GetEventValue(bot, "change_strategy");
-        // if (!changeStrategy)
-        // {
-        //     LOG_INFO("playerbots", "Changing strategy for bot  #{} <{}>", bot, player->GetName().c_str());
-        //     ChangeStrategy(player);
-        //     return true;
-        // }
+		bool hasBeenTeleported = ProcessBotTeleportation(bot);
 
-        uint32 teleport = GetEventValue(botId, "teleport");
-        if (!teleport)
-        {
-            LOG_DEBUG("playerbots", "Bot #{} <{}>: teleport for level and refresh", botId, bot->GetName());
-            Refresh(bot);
-            RandomTeleportForLevel(bot);
-            uint32 time = urand(sPlayerbotAIConfig->minRandomBotTeleportInterval,
-                                sPlayerbotAIConfig->maxRandomBotTeleportInterval);
-            ScheduleTeleport(botId, time);
-            return true;
-        }
+		if (hasBeenTeleported)
+			return true;
     }
 
     return false;
@@ -1640,7 +1653,6 @@ void RandomPlayerbotMgr::Revive(Player* player)
 {
     uint32 bot = player->GetGUID().GetCounter();
 
-    // LOG_INFO("playerbots", "Bot {} revived", player->GetName().c_str());
     SetEventValue(bot, "dead", 0, 0);
     SetEventValue(bot, "revive", 0, 0);
 
@@ -2336,24 +2348,28 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot)
 
 void RandomPlayerbotMgr::Randomize(Player* bot)
 {
+    uint8 level = bot->GetLevel();
+
     if (bot->InBattleground())
         return;
 
     if (bot->GetLevel() < 3 || (bot->GetLevel() < 56 && bot->getClass() == CLASS_DEATH_KNIGHT))
     {
         RandomizeFirst(bot);
+
+        return;
     }
-    else if (bot->GetLevel() < sPlayerbotAIConfig->randomBotMaxLevel || !sPlayerbotAIConfig->downgradeMaxLevelBot)
+
+    if (bot->GetLevel() < sPlayerbotAIConfig->randomBotMaxLevel || !sPlayerbotAIConfig->downgradeMaxLevelBot)
     {
-        uint8 level = bot->GetLevel();
         PlayerbotFactory factory(bot, level);
+
         factory.Randomize(true);
-        // IncreaseLevel(bot);
+
+        return;
     }
-    else
-    {
-        RandomizeFirst(bot);
-    }
+
+    RandomizeFirst(bot);
 }
 
 void RandomPlayerbotMgr::IncreaseLevel(Player* bot)

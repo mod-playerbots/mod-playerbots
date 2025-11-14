@@ -653,6 +653,9 @@ bool PlayerbotAIConfig::Initialize()
 
     selfBotLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.SelfBotLevel", 1);
 
+    disableRandomBotPeriodicRandomization = sConfigMgr->GetOption<bool>("AiPlayerbot.DisableRandomBotPeriodicRandomization", false);
+    disableRandomBotPeriodicTeleportation = sConfigMgr->GetOption<bool>("AiPlayerbot.DisableRandomBotPeriodicTeleportation", false);
+
     RandomPlayerbotFactory::CreateRandomBots();
     if (World::IsStopped())
     {

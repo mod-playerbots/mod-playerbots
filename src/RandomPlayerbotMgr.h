@@ -214,6 +214,8 @@ private:
     time_t printStatsTimer;
     uint32 AddRandomBots();
     bool ProcessBot(uint32 bot);
+	bool ProcessBotRandomization(Player* bot);
+	bool ProcessBotTeleportation(Player* bot);
     void ScheduleRandomize(uint32 bot, uint32 time);
     void RandomTeleport(Player* bot);
     void RandomTeleport(Player* bot, std::vector<WorldLocation>& locs, bool hearth = false);

@@ -676,6 +676,17 @@ AiPlayerbot.EnableRandomBotTrading = 1
 # Configure message prefixes which will be excluded in analysis in trade action to open trade window
 AiPlayerbot.TradeActionExcludedPrefixes = "RPLL_H_,DBMv4,{звезда} Questie,{rt1} Questie"
 
+# This option will prevent ALL random bots from being randomized.
+# It does not prevent periodic teleport.
+# Without it, random bots will be periodically randomized unless they are in a guild
+# with at least one character who is not a random bot.
+AiPlayerbot.DisableRandomBotPeriodicRandomization = 1
+
+# This option will prevent ALL random bots from being periodically teleported.
+# THIS SHOULD NOT BE ENABLED AT ALL TIMES. It exists mostly for debugging purposes.
+# Disabling periodic teleport will make the bots almost unable to reach new areas.
+AiPlayerbot.DisableRandomBotPeriodicTeleportation = 0
+
 #
 #
 #
