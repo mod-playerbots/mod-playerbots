@@ -1612,8 +1612,7 @@ void PlayerbotMgr::OnPlayerLogin(Player* player)
         return;
     }
 
-    // Locales: DBC (client files) vs DB (translations for bot texts)
-    LocaleConstant const clientLocale   = session->GetSessionDbcLocale();
+    // DB locale (source of bot text translation)
     LocaleConstant const databaseLocale = session->GetSessionDbLocaleIndex();
 
     // For bot texts (DB-driven), prefer the database locale with a safe fallback.
@@ -1621,8 +1620,6 @@ void PlayerbotMgr::OnPlayerLogin(Player* player)
     if (usedLocale >= MAX_LOCALES)
         usedLocale = LOCALE_enUS; // fallback
 
-    LOG_DEBUG("playerbots", "Registering locales for player {}: dbc={}, db={}, used={}", player->GetName(),
-        static_cast<uint32>(clientLocale), static_cast<uint32>(databaseLocale), static_cast<uint32>(usedLocale));
     // set locale priority for bot texts
     sPlayerbotTextMgr->AddLocalePriority(usedLocale);
 
@@ -1632,7 +1629,7 @@ void PlayerbotMgr::OnPlayerLogin(Player* player)
     if (!sPlayerbotAIConfig->botAutologin)
         return;
 
-    uint32 accountId = player->GetSession()->GetAccountId();
+    uint32 accountId = session->GetAccountId();
     QueryResult results = CharacterDatabase.Query("SELECT name FROM characters WHERE account = {}", accountId);
     if (results)
     {

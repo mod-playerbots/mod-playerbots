@@ -198,8 +198,7 @@ void PlayerbotTextMgr::AddLocalePriority(uint32 locale)
         return;
     }
 
-    ++botTextLocalePriority[locale];
-    LOG_DEBUG("playerbots", "Locale priority incremented for locale {}. New count: {}", locale, botTextLocalePriority[locale]);
+    botTextLocalePriority[locale]++;
 }
 
 uint32 PlayerbotTextMgr::GetLocalePriority()
@@ -207,27 +206,10 @@ uint32 PlayerbotTextMgr::GetLocalePriority()
     uint32 topLocale = 0;
     uint32 topLocaleCount = 0;
 
-    auto const buildLocaleCounts = [this]() -> std::string
-    {
-        std::ostringstream stream;
-        stream << '[';
-        for (uint8 i = 0; i < MAX_LOCALES; ++i)
-        {
-            if (i)
-                stream << ", ";
-
-            stream << static_cast<uint32>(i) << ':' << botTextLocalePriority[i];
-        }
-
-        stream << ']';
-        return stream.str();
-    };
-
     // if no real players online, reset top locale
     uint32 const activeSessions = sWorldSessionMgr->GetActiveSessionCount();
     if (!activeSessions)
     {
-        LOG_DEBUG("playerbots", "Locale priority reset because no active sessions. Previous counts: {}", buildLocaleCounts());
         ResetLocalePriority();
         return 0;
     }
@@ -242,8 +224,6 @@ uint32 PlayerbotTextMgr::GetLocalePriority()
         }
     }
 
-    LOG_DEBUG("playerbots", "Locale priority check: active sessions {}, counts {}, chosen locale {} with {} votes", activeSessions,
-        buildLocaleCounts(), topLocale, topLocaleCount);
     return topLocale;
 }
 
