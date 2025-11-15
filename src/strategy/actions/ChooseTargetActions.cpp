@@ -10,6 +10,7 @@
 #include "LootObjectStack.h"
 #include "NewRpgStrategy.h"
 #include "Playerbots.h"
+#include "RtiTargetValue.h"
 #include "PossibleRpgTargetsValue.h"
 #include "PvpTriggers.h"
 #include "ServerFacade.h"
@@ -141,6 +142,23 @@ bool DpsAssistAction::isUseful()
 bool AttackRtiTargetAction::Execute(Event event)
 {
     Unit* rtiTarget = AI_VALUE(Unit*, "rti target");
+
+    // Fallback: when RTI targets are ignored out of combat by RtiTargetValue,
+    // resolve the RTI target directly from the group's raid icon.
+    if (!rtiTarget)
+    {
+        if (Group* group = bot->GetGroup())
+        {
+            std::string const rti = AI_VALUE(std::string, "rti");
+            int32 index = RtiTargetValue::GetRtiIndex(rti);
+            if (index >= 0)
+            {
+                ObjectGuid guid = group->GetTargetIcon(index);
+                if (!guid.IsEmpty())
+                    rtiTarget = botAI->GetUnit(guid);
+            }
+        }
+    }
 
     if (rtiTarget && rtiTarget->IsInWorld() && rtiTarget->GetMapId() == bot->GetMapId())
     {

@@ -51,18 +51,33 @@ Unit* RtiTargetValue::Calculate()
     //////////////////////////////////////////////////////begin: delete below check
     // Some units that need to be killed in battle are not on the list of attackers,
     // such as the Kor'kron Battle-Mage in Icecrown Citadel.
-
+    //
     // GuidVector attackers = context->GetValue<GuidVector >("attackers")->Get();
     // if (find(attackers.begin(), attackers.end(), guid) == attackers.end())
     //     return nullptr;
     //
     //////////////////////////////////////////////////////end: delete below check
 
-    Unit* unit = botAI->GetUnit(guid);
-    if (!unit || unit->isDead() || !bot->IsWithinLOSInMap(unit) || !AttackersValue::IsValidTarget(unit, bot) ||
-        sServerFacade->IsDistanceGreaterThan(sServerFacade->GetDistance2d(bot, unit),
-                                             sPlayerbotAIConfig->sightDistance))
+    // Ignore raid icons as a targeting hint while the bot is not in combat
+    // to prevent running after stale marked units out of combat.
+    if (!bot->IsInCombat())
         return nullptr;
+
+     Unit* unit = botAI->GetUnit(guid);
+     if (!unit || unit->isDead() || !bot->IsWithinLOSInMap(unit) || !AttackersValue::IsValidTarget(unit, bot) ||
+         sServerFacade->IsDistanceGreaterThan(sServerFacade->GetDistance2d(bot, unit),
+                                              sPlayerbotAIConfig->sightDistance))
+         return nullptr;
+
+    // Also prevent chasing raid icon targets that are too far away from the master,
+    // even if they are technically visible to the bot.
+    if (Player* master = botAI->GetMaster())
+    {
+        if (master->IsInWorld() && master->GetMapId() == unit->GetMapId() &&
+            sServerFacade->IsDistanceGreaterThan(sServerFacade->GetDistance2d(master, unit),
+                                                 sPlayerbotAIConfig->sightDistance))
+            return nullptr;
+    }
 
     return unit;
 }
