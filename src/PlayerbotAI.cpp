@@ -14,6 +14,7 @@
 #include "BudgetValues.h"
 #include "ChannelMgr.h"
 #include "CharacterPackets.h"
+#include "ChatHelper.h"
 #include "Common.h"
 #include "CreatureAIImpl.h"
 #include "CreatureData.h"
@@ -277,6 +278,15 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
             Unit* spellTarget = currentSpell->m_targets.GetUnitTarget();
             // Interrupt if target is dead or spell can't target dead units
             if (spellTarget && !spellTarget->IsAlive() && !spellInfo->IsAllowingDeadTarget())
+            {
+                InterruptSpell();
+                YieldThread(GetReactDelay());
+                return;
+            }
+
+            GameObject* goSpellTarget = currentSpell->m_targets.GetGOTarget();
+
+            if (goSpellTarget && !goSpellTarget->isSpawned())
             {
                 InterruptSpell();
                 YieldThread(GetReactDelay());
