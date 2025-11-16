@@ -98,9 +98,7 @@ public:
         creators["quests"] = &ChatActionContext::quests;
         creators["leave"] = &ChatActionContext::leave;
         creators["reputation"] = &ChatActionContext::reputation;
-        // PVP currencies + teams
         creators["pvp"] = &ChatActionContext::pvp;
-        creators["arena"] = &ChatActionContext::pvp;
         creators["log"] = &ChatActionContext::log;
         creators["los"] = &ChatActionContext::los;
         creators["rpg status"] = &ChatActionContext::rpg_status;
@@ -284,7 +282,6 @@ private:
     static Action* quests(PlayerbotAI* botAI) { return new ListQuestsAction(botAI); }
     static Action* leave(PlayerbotAI* botAI) { return new LeaveGroupAction(botAI); }
     static Action* reputation(PlayerbotAI* botAI) { return new TellReputationAction(botAI); }
-    // factory for 'pvp' / 'arena' command
     static Action* pvp(PlayerbotAI* botAI) { return new TellPvpAction(botAI); }
     static Action* log(PlayerbotAI* botAI) { return new LogLevelAction(botAI); }
     static Action* los(PlayerbotAI* botAI) { return new TellLosAction(botAI); }
