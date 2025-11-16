@@ -1,7 +1,6 @@
 #include "VioletHoldStrategy.h"
 #include "VioletHoldMultipliers.h"
 
-
 void WotlkDungeonVHStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 {
     // Erekem

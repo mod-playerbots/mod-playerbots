@@ -18,7 +18,7 @@ public:
 
     bool Execute(Event event) override;
 
-    virtual bool Leave(Player* player);
+    virtual bool Leave();
 };
 
 class PartyCommandAction : public LeaveGroupAction

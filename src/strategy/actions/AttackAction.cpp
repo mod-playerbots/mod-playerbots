@@ -161,17 +161,21 @@ bool AttackAction::Attack(Unit* target, bool with_pet /*true*/)
 
     bot->Attack(target, shouldMelee);
     /* prevent pet dead immediately in group */
-    // if (bot->GetMap()->IsDungeon() && bot->GetGroup() && !target->IsInCombat()) {
+    // if (bot->GetMap()->IsDungeon() && bot->GetGroup() && !target->IsInCombat())
+    // {
     //     with_pet = false;
     // }
     // if (Pet* pet = bot->GetPet())
     // {
-    //     if (with_pet) {
+    //     if (with_pet)
+    //     {
     //         pet->SetReactState(REACT_DEFENSIVE);
     //         pet->SetTarget(target->GetGUID());
     //         pet->GetCharmInfo()->SetIsCommandAttack(true);
     //         pet->AI()->AttackStart(target);
-    //     } else {
+    //     }
+    //     else
+    //     {
     //         pet->SetReactState(REACT_PASSIVE);
     //         pet->GetCharmInfo()->SetIsCommandFollow(true);
     //         pet->GetCharmInfo()->IsReturning();

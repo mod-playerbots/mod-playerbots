@@ -271,19 +271,38 @@ void EquipAction::EquipItem(Item* item)
             {
                 if (equippedItems[1])
                 {
-                    // Both slots are full - pick the worst item to replace
+                    // Both slots are full - pick the worst item to replace, but only if new item is better
                     StatsWeightCalculator calc(bot);
                     calc.SetItemSetBonus(false);
                     calc.SetOverflowPenalty(false);
 
-                    float firstItemScore = calc.CalculateItem(equippedItems[0]->GetTemplate()->ItemId);
-                    float secondItemScore = calc.CalculateItem(equippedItems[1]->GetTemplate()->ItemId);
+                    // Calculate new item score with random properties
+                    int32 newItemRandomProp = item->GetItemRandomPropertyId();
+                    float newItemScore = calc.CalculateItem(itemId, newItemRandomProp);
 
-                    // If the second slot is worse, place the new item there
-                    if (firstItemScore > secondItemScore)
+                    // Calculate equipped items scores with random properties
+                    int32 firstRandomProp = equippedItems[0]->GetItemRandomPropertyId();
+                    int32 secondRandomProp = equippedItems[1]->GetItemRandomPropertyId();
+                    float firstItemScore = calc.CalculateItem(equippedItems[0]->GetTemplate()->ItemId, firstRandomProp);
+                    float secondItemScore = calc.CalculateItem(equippedItems[1]->GetTemplate()->ItemId, secondRandomProp);
+
+                    // Determine which slot (if any) should be replaced
+                    bool betterThanFirst = newItemScore > firstItemScore;
+                    bool betterThanSecond = newItemScore > secondItemScore;
+
+                    // Early return if new item is not better than either equipped item
+                    if (!betterThanFirst && !betterThanSecond)
+                        return;
+
+                    if (betterThanFirst && betterThanSecond)
                     {
-                        dstSlot++;
+                        // New item is better than both - replace the worse of the two equipped items
+                        if (firstItemScore > secondItemScore)
+                            dstSlot++; // Replace second slot (worse)
+                        // else: keep dstSlot as-is (replace first slot)
                     }
+                    else if (betterThanSecond)
+                        dstSlot++; // Only better than second slot - replace it
                 }
                 else
                 {
@@ -308,7 +327,6 @@ void EquipAction::EquipItem(Item* item)
     out << "Equipping " << chat->FormatItem(itemProto);
     botAI->TellMaster(out);
 }
-
 
 bool EquipUpgradesAction::Execute(Event event)
 {
@@ -338,9 +356,12 @@ bool EquipUpgradesAction::Execute(Event event)
         int32 randomProperty = item->GetItemRandomPropertyId();
         uint32 itemId = item->GetTemplate()->ItemId;
         std::string itemUsageParam;
-        if (randomProperty != 0) {
+        if (randomProperty != 0)
+        {
             itemUsageParam = std::to_string(itemId) + "," + std::to_string(randomProperty);
-        } else {
+        }
+        else
+        {
             itemUsageParam = std::to_string(itemId);
         }
         ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", itemUsageParam);
@@ -369,9 +390,12 @@ bool EquipUpgradeAction::Execute(Event event)
         int32 randomProperty = item->GetItemRandomPropertyId();
         uint32 itemId = item->GetTemplate()->ItemId;
         std::string itemUsageParam;
-        if (randomProperty != 0) {
+        if (randomProperty != 0)
+        {
             itemUsageParam = std::to_string(itemId) + "," + std::to_string(randomProperty);
-        } else {
+        }
+        else
+        {
             itemUsageParam = std::to_string(itemId);
         }
         ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", itemUsageParam);

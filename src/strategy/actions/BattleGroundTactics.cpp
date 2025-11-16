@@ -4,10 +4,12 @@
  */
 
 #include "BattleGroundTactics.h"
-#include "BattleGroundJoinAction.h"
+
+#include <algorithm>
 
 #include "ArenaTeam.h"
 #include "ArenaTeamMgr.h"
+#include "BattleGroundJoinAction.h"
 #include "Battleground.h"
 #include "BattlegroundAB.h"
 #include "BattlegroundAV.h"
@@ -22,11 +24,12 @@
 #include "BattlegroundSA.h"
 #include "BattlegroundWS.h"
 #include "Event.h"
+#include "GameObject.h"
 #include "IVMapMgr.h"
+#include "PathGenerator.h"
 #include "Playerbots.h"
 #include "PositionValue.h"
 #include "PvpTriggers.h"
-#include "PathGenerator.h"
 #include "ServerFacade.h"
 #include "Vehicle.h"
 
@@ -1754,7 +1757,7 @@ bool BGTactics::moveToStart(bool force)
                        WS_WAITING_POS_ALLIANCE_2.GetPositionY() + frand(-4.0f, 4.0f),
                        WS_WAITING_POS_ALLIANCE_2.GetPositionZ());
         }
-        else // BB_WSG_WAIT_SPOT_SPAWN
+        else  // BB_WSG_WAIT_SPOT_SPAWN
         {
             if (bot->GetTeamId() == TEAM_HORDE)
                 MoveTo(bg->GetMapId(), WS_WAITING_POS_HORDE_3.GetPositionX() + frand(-10.0f, 10.0f),
@@ -1894,13 +1897,13 @@ bool BGTactics::selectObjective(bool reset)
             bool isDefender = role < defendersProhab;
             bool isAdvanced = !isDefender && role > 8;
 
-            const auto& attackObjectives =
+            auto const& attackObjectives =
                 (team == TEAM_HORDE) ? AV_AttackObjectives_Horde : AV_AttackObjectives_Alliance;
-            const auto& defendObjectives =
+            auto const& defendObjectives =
                 (team == TEAM_HORDE) ? AV_DefendObjectives_Horde : AV_DefendObjectives_Alliance;
 
             uint32 destroyedNodes = 0;
-            for (const auto& [nodeId, _] : defendObjectives)
+            for (auto const& [nodeId, _] : defendObjectives)
                 if (av->GetAVNodeInfo(nodeId).State == POINT_DESTROYED)
                     destroyedNodes++;
 
@@ -2000,7 +2003,7 @@ bool BGTactics::selectObjective(bool reset)
                 std::vector<GameObject*> contestedObjectives;
                 std::vector<GameObject*> availableObjectives;
 
-                for (const auto& [nodeId, goId] : defendObjectives)
+                for (auto const& [nodeId, goId] : defendObjectives)
                 {
                     const BG_AV_NodeInfo& node = av->GetAVNodeInfo(nodeId);
                     if (node.State == POINT_DESTROYED)
@@ -2026,7 +2029,7 @@ bool BGTactics::selectObjective(bool reset)
             if (!BgObjective)
             {
                 uint32 towersDown = 0;
-                for (const auto& [nodeId, _] : attackObjectives)
+                for (auto const& [nodeId, _] : attackObjectives)
                     if (av->GetAVNodeInfo(nodeId).State == POINT_DESTROYED)
                         towersDown++;
 
@@ -2053,7 +2056,7 @@ bool BGTactics::selectObjective(bool reset)
             {
                 std::vector<GameObject*> candidates;
 
-                for (const auto& [nodeId, goId] : attackObjectives)
+                for (auto const& [nodeId, goId] : attackObjectives)
                 {
                     const BG_AV_NodeInfo& node = av->GetAVNodeInfo(nodeId);
                     GameObject* go = bg->GetBGObject(goId);
@@ -2105,13 +2108,13 @@ bool BGTactics::selectObjective(bool reset)
                 Position objPos = BgObjective->GetPosition();
 
                 Optional<uint8> linkedNodeId;
-                for (const auto& [nodeId, goId] : attackObjectives)
+                for (auto const& [nodeId, goId] : attackObjectives)
                     if (bg->GetBGObject(goId) == BgObjective)
                         linkedNodeId = nodeId;
 
                 if (!linkedNodeId)
                 {
-                    for (const auto& [nodeId, goId] : defendObjectives)
+                    for (auto const& [nodeId, goId] : defendObjectives)
                         if (bg->GetBGObject(goId) == BgObjective)
                             linkedNodeId = nodeId;
                 }
@@ -2543,7 +2546,7 @@ bool BGTactics::selectObjective(bool reset)
                 float bestDist = FLT_MAX;
                 uint32 bestTrigger = 0;
 
-                for (const auto& [nodeId, _, areaTrigger] : EY_AttackObjectives)
+                for (auto const& [nodeId, _, areaTrigger] : EY_AttackObjectives)
                 {
                     if (!IsOwned(nodeId))
                         continue;
@@ -2610,7 +2613,7 @@ bool BGTactics::selectObjective(bool reset)
             // --- PRIORITY 2: Nearby unowned contested node ---
             if (!foundObjective)
             {
-                for (const auto& [nodeId, _, __] : EY_AttackObjectives)
+                for (auto const& [nodeId, _, __] : EY_AttackObjectives)
                 {
                     if (IsOwned(nodeId))
                         continue;
@@ -2711,7 +2714,7 @@ bool BGTactics::selectObjective(bool reset)
             if (!foundObjective && strategy == EY_STRATEGY_FLAG_FOCUS)
             {
                 bool ownsAny = false;
-                for (const auto& [nodeId, _, __] : EY_AttackObjectives)
+                for (auto const& [nodeId, _, __] : EY_AttackObjectives)
                 {
                     if (IsOwned(nodeId))
                     {
@@ -2739,7 +2742,7 @@ bool BGTactics::selectObjective(bool reset)
                     float bestDist = FLT_MAX;
                     Optional<uint32> bestNode;
 
-                    for (const auto& [nodeId, _, __] : EY_AttackObjectives)
+                    for (auto const& [nodeId, _, __] : EY_AttackObjectives)
                     {
                         if (IsOwned(nodeId))
                             continue;
@@ -2974,7 +2977,7 @@ bool BGTactics::selectObjective(bool reset)
                     uint32 len = end(IC_AttackObjectives) - begin(IC_AttackObjectives);
                     for (uint32 i = 0; i < len; i++)
                     {
-                        const auto& objective =
+                        auto const& objective =
                             IC_AttackObjectives[(i + role) %
                                                 len];  // use role to determine which objective checked first
                         if (isleOfConquestBG->GetICNodePoint(objective.first).nodeState != NODE_STATE_CONTROLLED_H)
@@ -3126,7 +3129,7 @@ bool BGTactics::selectObjective(bool reset)
                     uint32 len = end(IC_AttackObjectives) - begin(IC_AttackObjectives);
                     for (uint32 i = 0; i < len; i++)
                     {
-                        const auto& objective =
+                        auto const& objective =
                             IC_AttackObjectives[(i + role) %
                                                 len];  // use role to determine which objective checked first
                         if (isleOfConquestBG->GetICNodePoint(objective.first).nodeState != NODE_STATE_CONTROLLED_H)
@@ -3365,12 +3368,12 @@ bool BGTactics::resetObjective()
         return false;
 
     // Adjust role-change chance based on battleground type
-    uint32 oddsToChangeRole = 1; // default low
+    uint32 oddsToChangeRole = 1;  // default low
     BattlegroundTypeId bgType = bg->GetBgTypeID();
 
     if (bgType == BATTLEGROUND_WS)
         oddsToChangeRole = 2;
-    else if (bgType == BATTLEGROUND_EY || bgType == BATTLEGROUND_IC || bgType ==  BATTLEGROUND_AB)
+    else if (bgType == BATTLEGROUND_EY || bgType == BATTLEGROUND_IC || bgType == BATTLEGROUND_AB)
         oddsToChangeRole = 1;
     else if (bgType == BATTLEGROUND_AV)
         oddsToChangeRole = 0;
@@ -3578,6 +3581,16 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
     GuidVector closePlayers;
     float flagRange = 0.0f;
 
+    // Eye of the Storm helpers used later when handling capture positioning
+    BattlegroundEY* eyeBg = nullptr;
+    GameObject* eyCenterFlag = nullptr;
+    if (bgType == BATTLEGROUND_EY)
+    {
+        eyeBg = static_cast<BattlegroundEY*>(bg);
+        if (eyeBg)
+            eyCenterFlag = eyeBg->GetBGObject(BG_EY_OBJECT_FLAG_NETHERSTORM);
+    }
+
     // Set up appropriate search ranges and object lists based on BG type
     switch (bgType)
     {
@@ -3607,27 +3620,82 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
     if (closeObjects.empty())
         return false;
 
+    auto keepStationaryWhileCapturing = [&](CurrentSpellTypes spellType)
+    {
+        Spell* currentSpell = bot->GetCurrentSpell(spellType);
+        if (!currentSpell || !currentSpell->m_spellInfo || currentSpell->m_spellInfo->Id != SPELL_CAPTURE_BANNER)
+            return false;
+
+        // If the capture target is no longer available (another bot already captured it), stop channeling
+        if (GameObject* targetFlag = currentSpell->m_targets.GetGOTarget())
+        {
+            if (!targetFlag->isSpawned() || targetFlag->GetGoState() != GO_STATE_READY)
+            {
+                bot->InterruptNonMeleeSpells(true);
+                resetObjective();
+                return false;
+            }
+        }
+        else
+        {
+            bot->InterruptNonMeleeSpells(true);
+            resetObjective();
+            return false;
+        }
+
+        if (bot->IsMounted())
+        {
+            bot->RemoveAurasByType(SPELL_AURA_MOUNTED);
+        }
+
+        if (bot->IsInDisallowedMountForm())
+        {
+            bot->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);
+        }
+
+        if (bot->isMoving())
+        {
+            bot->StopMoving();
+        }
+
+        return true;
+    };
+
+    // If we are already channeling the capture spell, keep the bot stationary and dismounted
+    if (keepStationaryWhileCapturing(CURRENT_CHANNELED_SPELL) || keepStationaryWhileCapturing(CURRENT_GENERIC_SPELL))
+        return true;
+
     // First identify which flag/base we're trying to interact with
     GameObject* targetFlag = nullptr;
     for (ObjectGuid const guid : closeObjects)
     {
         GameObject* go = botAI->GetGameObject(guid);
         if (!go)
+        {
             continue;
+        }
+
+        bool const isEyCenterFlag = eyeBg && eyCenterFlag && eyCenterFlag->GetGUID() == go->GetGUID();
 
         // Check if this object is a valid capture target
-        std::vector<uint32>::const_iterator f = find(vFlagIds.begin(), vFlagIds.end(), go->GetEntry());
-        if (f == vFlagIds.end())
+        std::vector<uint32>::const_iterator f = std::find(vFlagIds.begin(), vFlagIds.end(), go->GetEntry());
+        if (f == vFlagIds.end() && !isEyCenterFlag)
+        {
             continue;
+        }
 
         // Verify the object is active and ready
         if (!go->isSpawned() || go->GetGoState() != GO_STATE_READY)
+        {
             continue;
+        }
 
         // Check if we're in range (using double range for enemy detection)
         float const dist = bot->GetDistance(go);
         if (flagRange && dist > flagRange * 2.0f)
+        {
             continue;
+        }
 
         targetFlag = go;
         break;
@@ -3655,7 +3723,7 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
     }
 
     // Check if friendly players are already capturing
-    if (!closePlayers.empty())
+    if (!closePlayers.empty() && bgType != BATTLEGROUND_EY)
     {
         // Track number of friendly players capturing and the closest one
         uint32 numCapturing = 0;
@@ -3664,14 +3732,17 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
         {
             if (Unit* pFriend = botAI->GetUnit(guid))
             {
-                // Check if they're casting the capture spell
-                if (Spell* spell = pFriend->GetCurrentSpell(CURRENT_GENERIC_SPELL))
+                // Check if they're casting or channeling the capture spell
+                Spell* spell = pFriend->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+                if (!spell)
                 {
-                    if (spell->m_spellInfo->Id == SPELL_CAPTURE_BANNER)
-                    {
-                        numCapturing++;
-                        capturingPlayer = pFriend;
-                    }
+                    spell = pFriend->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
+                }
+
+                if (spell && spell->m_spellInfo && spell->m_spellInfo->Id == SPELL_CAPTURE_BANNER)
+                {
+                    numCapturing++;
+                    capturingPlayer = pFriend;
                 }
             }
         }
@@ -3704,9 +3775,11 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
         if (!go)
             continue;
 
+        bool const isEyCenterFlag = eyeBg && eyCenterFlag && eyCenterFlag->GetGUID() == go->GetGUID();
+
         // Validate this is a capture target
-        std::vector<uint32>::const_iterator f = find(vFlagIds.begin(), vFlagIds.end(), go->GetEntry());
-        if (f == vFlagIds.end())
+        std::vector<uint32>::const_iterator f = std::find(vFlagIds.begin(), vFlagIds.end(), go->GetEntry());
+        if (f == vFlagIds.end() && !isEyCenterFlag)
             continue;
 
         // Check object is active
@@ -3722,12 +3795,40 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
             continue;
 
         // Special handling for WSG and EY base flags
-        bool atBase = bgType == BATTLEGROUND_WS ? go->GetEntry() == vFlagsWS[bot->GetTeamId()]
-                   : bgType == BATTLEGROUND_EY ? go->GetEntry() == vFlagsEY[0]
-                   : false;
+        bool isWsBaseFlag = bgType == BATTLEGROUND_WS && go->GetEntry() == vFlagsWS[bot->GetTeamId()];
+        bool isEyBaseFlag = bgType == BATTLEGROUND_EY && go->GetEntry() == vFlagsEY[0];
+
+        // Ensure bots are inside the Eye of the Storm capture circle before casting
+        if (bgType == BATTLEGROUND_EY)
+        {
+            GameObject* captureFlag = (isEyBaseFlag && eyCenterFlag) ? eyCenterFlag : go;
+            float const requiredRange = 2.5f;
+            if (!bot->IsWithinDistInMap(captureFlag, requiredRange))
+            {
+                // Stay mounted while relocating to avoid mount/dismount loops
+                return MoveTo(bot->GetMapId(), captureFlag->GetPositionX(), captureFlag->GetPositionY(),
+                              captureFlag->GetPositionZ());
+            }
+
+            // Once inside the circle, dismount and stop before starting the channel
+            if (bot->IsMounted())
+            {
+                bot->RemoveAurasByType(SPELL_AURA_MOUNTED);
+            }
+
+            if (bot->IsInDisallowedMountForm())
+            {
+                bot->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);
+            }
+
+            if (bot->isMoving())
+            {
+                bot->StopMoving();
+            }
+        }
 
         // Don't capture own flag in WSG unless carrying enemy flag
-        if (atBase && bgType == BATTLEGROUND_WS &&
+        if (isWsBaseFlag && bgType == BATTLEGROUND_WS &&
             !(bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG)))
             continue;
 
@@ -3743,7 +3844,7 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
                 {
                     float const moveDist = bot->GetObjectSize() + go->GetObjectSize() + 0.1f;
                     return MoveTo(bot->GetMapId(), go->GetPositionX() + (urand(0, 1) ? -moveDist : moveDist),
-                               go->GetPositionY() + (urand(0, 1) ? -moveDist : moveDist), go->GetPositionZ());
+                                  go->GetPositionY() + (urand(0, 1) ? -moveDist : moveDist), go->GetPositionZ());
                 }
 
                 // Dismount before capturing
@@ -3772,7 +3873,7 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
                 if (dist < INTERACTION_DISTANCE)
                 {
                     // Handle flag capture at base
-                    if (atBase)
+                    if (isWsBaseFlag)
                     {
                         if (bot->GetTeamId() == TEAM_HORDE)
                         {
@@ -3811,28 +3912,50 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
                 }
             }
             case BATTLEGROUND_EY:
-            { // Issue: Currently bots in EY take flag instantly without casttime
+            {  // Handle Netherstorm flag capture requiring a channel
                 if (dist < INTERACTION_DISTANCE)
                 {
                     // Dismount before interacting
                     if (bot->IsMounted())
+                    {
                         bot->RemoveAurasByType(SPELL_AURA_MOUNTED);
+                    }
 
                     if (bot->IsInDisallowedMountForm())
+                    {
                         bot->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);
+                    }
 
                     // Handle center flag differently (requires spell cast)
-                    if (atBase)
+                    if (isEyCenterFlag)
                     {
+                        for (uint8 type = CURRENT_MELEE_SPELL; type <= CURRENT_CHANNELED_SPELL; ++type)
+                        {
+                            if (Spell* currentSpell = bot->GetCurrentSpell(static_cast<CurrentSpellTypes>(type)))
+                            {
+                                // m_spellInfo may be null in some states: protect access
+                                if (currentSpell->m_spellInfo && currentSpell->m_spellInfo->Id == SPELL_CAPTURE_BANNER)
+                                {
+                                    bot->StopMoving();
+                                    botAI->SetNextCheckDelay(500);
+                                    return true;
+                                }
+                            }
+                        }
+
                         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SPELL_CAPTURE_BANNER);
                         if (!spellInfo)
                             return false;
 
                         Spell* spell = new Spell(bot, spellInfo, TRIGGERED_NONE);
                         spell->m_targets.SetGOTarget(go);
+
+                        bot->StopMoving();
                         spell->prepare(&spell->m_targets);
+
                         botAI->WaitForSpellCast(spell);
-                        //return true; Intended to make a bot cast SPELL_CAPTURE_BANNER and wait for spell finish, but doesn't work and causes infinite loop
+                        resetObjective();
+                        return true;
                     }
 
                     // Pick up dropped flag
@@ -3849,8 +3972,8 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
                     return MoveTo(bot->GetMapId(), go->GetPositionX(), go->GetPositionY(), go->GetPositionZ());
                 }
             }
-        default:
-            break;
+            default:
+                break;
         }
     }
 

@@ -3,7 +3,6 @@
 #include "AiObject.h"
 #include "AiObjectContext.h"
 
-
 bool ToCLanceTrigger::IsActive()
 {
     if (bot->GetVehicle())
@@ -82,4 +81,3 @@ bool ToCEadricTrigger::IsActive()
 
     return true;
 }
-

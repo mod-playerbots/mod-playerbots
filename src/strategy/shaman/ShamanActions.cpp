@@ -29,7 +29,7 @@ bool CastFireNovaAction::isUseful() {
     Unit* target = AI_VALUE(Unit*, "current target");
     if (!target)
         return false;
-    
+
     Creature* fireTotem = bot->GetMap()->GetCreature(bot->m_SummonSlot[1]);
     if (!fireTotem)
         return false;
@@ -46,9 +46,9 @@ bool CastCleansingTotemAction::isUseful()
 }
 
 // Will only cast Stoneclaw Totem if low on health and not in a group
-bool CastStoneclawTotemAction::isUseful() 
-{ 
-    return !bot->GetGroup(); 
+bool CastStoneclawTotemAction::isUseful()
+{
+    return !bot->GetGroup();
 }
 
 // Will only cast Lava Burst if Flame Shock is on the target

@@ -5,8 +5,6 @@
 #include "MovementActions.h"
 #include "PitOfSaronTriggers.h"
 
-
-
 float IckAndKrickMultiplier::GetValue(Action* action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "ick");

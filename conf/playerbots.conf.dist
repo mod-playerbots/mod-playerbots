@@ -36,7 +36,7 @@
 #        RPG STRATEGY
 #        TELEPORTS
 #        BATTLEGROUND & ARENA & PVP
-#        INTERVALS
+#        RANDOM BOT TIMING AND BEHAVIOR
 #    PREMADE SPECS
 #        INFORMATION
 #        WARRIOR
@@ -1196,24 +1196,46 @@ AiPlayerbot.FastReactInBG = 1
 ####################################################################################################
 
 ####################################################################################################
-# INTERVALS
+# RANDOM BOT TIMING AND BEHAVIOR
 #
 #
 
-# All in seconds
+# How often (in seconds) the random bot manager runs its main update loop
+# Default: 20
 AiPlayerbot.RandomBotUpdateInterval = 20
+
+# Minimum and maximum seconds before the manager re-evaluates and adjusts total random bot count
+# Defaults: 1800 (min), 7200 (max)
 AiPlayerbot.RandomBotCountChangeMinInterval = 1800
 AiPlayerbot.RandomBotCountChangeMaxInterval = 7200
+
+# Minimum and maximum seconds a random bot will stay online before logging out
+# Defaults: 600 (min), 28800 (max)
 AiPlayerbot.MinRandomBotInWorldTime = 600
 AiPlayerbot.MaxRandomBotInWorldTime = 28800
+
+# Minimum and maximum seconds before a bot is eligible for re-randomization (gear, class, talents, etc.)
+# Defaults: 7200 (min), 1209600 (max)
 AiPlayerbot.MinRandomBotRandomizeTime = 7200
 AiPlayerbot.MaxRandomBotRandomizeTime = 1209600
+
+# Number of bots processed (login, logout, update) per manager update cycle
+# Default: 60
 AiPlayerbot.RandomBotsPerInterval = 60
+
+# Minimum and maximum seconds after death before a bot revives
+# Defaults: 60 (min), 300 (max)
 AiPlayerbot.MinRandomBotReviveTime = 60
 AiPlayerbot.MaxRandomBotReviveTime = 300
+
+# Minimum and maximum seconds between bot teleports to new areas or zones
+# Defaults: 3600 (min), 18000 (max)
 AiPlayerbot.MinRandomBotTeleportInterval = 3600
 AiPlayerbot.MaxRandomBotTeleportInterval = 18000
-AiPlayerbot.PermanantlyInWorldTime = 31104000
+
+# Number of seconds bots flagged as permanent stay in the world (31,104,000 ≈ 1 year)
+# Default: 31104000
+AiPlayerbot.PermanentlyInWorldTime = 31104000
 
 #
 #

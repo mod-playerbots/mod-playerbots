@@ -1,7 +1,6 @@
 #include "UtgardePinnacleStrategy.h"
 #include "UtgardePinnacleMultipliers.h"
 
-
 void WotlkDungeonUPStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 {
     // Svala Sorrowgrave

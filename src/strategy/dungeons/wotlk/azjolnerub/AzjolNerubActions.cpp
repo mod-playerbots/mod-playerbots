@@ -2,7 +2,6 @@
 #include "AzjolNerubActions.h"
 #include "AzjolNerubStrategy.h"
 
-
 bool AttackWebWrapAction::isUseful() { return !botAI->IsHeal(bot); }
 bool AttackWebWrapAction::Execute(Event event)
 {

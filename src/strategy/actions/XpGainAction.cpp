@@ -15,7 +15,6 @@ bool XpGainAction::Execute(Event event)
 {
     context->GetValue<uint32>("death count")->Set(0);
 
-
     WorldPacket p(event.getPacket());  // (8+4+1+4+8)
     ObjectGuid guid;
     // uint32 xpgain;

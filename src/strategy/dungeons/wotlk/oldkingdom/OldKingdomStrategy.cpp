@@ -1,7 +1,6 @@
 #include "OldKingdomStrategy.h"
 #include "OldKingdomMultipliers.h"
 
-
 void WotlkDungeonOKStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 {
     // Elder Nadox

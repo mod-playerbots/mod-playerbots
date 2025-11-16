@@ -311,7 +311,6 @@ public:
     CastEnrageAction(PlayerbotAI* ai) : CastBuffSpellAction(ai, "enrage") {}
 };
 
-
 class CastRejuvenationOnNotFullAction : public HealPartyMemberAction
 {
 public:

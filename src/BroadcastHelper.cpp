@@ -70,7 +70,7 @@ bool BroadcastHelper::BroadcastToChannelWithGlobalChance(PlayerbotAI* ai, std::s
         return false;
     }
 
-    for (const auto& pair : toChannels)
+    for (auto const& pair : toChannels)
     {
         uint32 roll = urand(1, 100);
         uint32 chance = pair.second;
@@ -166,7 +166,7 @@ bool BroadcastHelper::BroadcastToChannelWithGlobalChance(PlayerbotAI* ai, std::s
     return false;
 }
 
-bool BroadcastHelper::BroadcastLootingItem(PlayerbotAI* ai, Player* bot, const ItemTemplate *proto)
+bool BroadcastHelper::BroadcastLootingItem(PlayerbotAI* ai, Player* bot, ItemTemplate const* proto)
 {
     if (!sPlayerbotAIConfig->enableBroadcasts)
         return false;
@@ -409,7 +409,6 @@ bool BroadcastHelper::BroadcastQuestUpdateComplete(PlayerbotAI* ai, Player* bot,
         placeholders["%my_class"] = ai->GetChatHelper()->FormatClass(bot->getClass());
         placeholders["%my_race"] = ai->GetChatHelper()->FormatRace(bot->getRace());
         placeholders["%my_level"] = std::to_string(bot->GetLevel());
-
 
         return BroadcastToChannelWithGlobalChance(
             ai,

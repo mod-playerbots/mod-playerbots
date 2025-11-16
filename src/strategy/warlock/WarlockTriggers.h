@@ -121,7 +121,6 @@ public:
     bool IsActive() override;
 };
 
-
 // CC and Pet Triggers
 
 class BanishTrigger : public HasCcTargetTrigger
