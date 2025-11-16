@@ -5,8 +5,6 @@
 
 #include "PlayerbotTextMgr.h"
 
-#include <sstream>
-
 #include "Playerbots.h"
 #include "WorldSessionMgr.h"
 
