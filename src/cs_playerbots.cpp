@@ -18,6 +18,7 @@
 #include "GuildTaskMgr.h"
 #include "PerformanceMonitor.h"
 #include "PlayerbotMgr.h"
+#include "PlayerbotTextMgr.h"
 #include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
 
@@ -115,7 +116,7 @@ public:
     {
         if (!args || !*args)
         {
-            handler->PSendSysMessage("Usage: .playerbots account setKey <securityKey>");
+            handler->PSendSysMessage(LOCALE_TEXT("cmd_setkey_usage", handler->GetSession()).c_str());
             return false;
         }
 
@@ -130,7 +131,7 @@ public:
         }
         else
         {
-            handler->PSendSysMessage("PlayerbotMgr instance not found.");
+            handler->PSendSysMessage(LOCALE_TEXT("cmd_mgr_not_found", handler->GetSession()).c_str());
             return false;
         }
     }
@@ -145,7 +146,7 @@ public:
 
         if (!accountName || !key)
         {
-            handler->PSendSysMessage("Usage: .playerbots account link <accountName> <securityKey>");
+            handler->PSendSysMessage(LOCALE_TEXT("cmd_link_usage", handler->GetSession()).c_str());
             return false;
         }
 
@@ -159,7 +160,7 @@ public:
         }
         else
         {
-            handler->PSendSysMessage("PlayerbotMgr instance not found.");
+            handler->PSendSysMessage(LOCALE_TEXT("cmd_mgr_not_found", handler->GetSession()).c_str());
             return false;
         }
     }
@@ -176,7 +177,7 @@ public:
         }
         else
         {
-            handler->PSendSysMessage("PlayerbotMgr instance not found.");
+            handler->PSendSysMessage(LOCALE_TEXT("cmd_mgr_not_found", handler->GetSession()).c_str());
             return false;
         }
     }
@@ -189,7 +190,7 @@ public:
         char* accountName = strtok((char*)args, " ");
         if (!accountName)
         {
-            handler->PSendSysMessage("Usage: .playerbots account unlink <accountName>");
+            handler->PSendSysMessage(LOCALE_TEXT("cmd_unlink_usage_old", handler->GetSession()).c_str());
             return false;
         }
 
@@ -203,7 +204,7 @@ public:
         }
         else
         {
-            handler->PSendSysMessage("PlayerbotMgr instance not found.");
+            handler->PSendSysMessage(LOCALE_TEXT("cmd_mgr_not_found", handler->GetSession()).c_str());
             return false;
         }
     }

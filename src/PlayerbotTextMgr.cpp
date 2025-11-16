@@ -49,6 +49,39 @@ void PlayerbotTextMgr::LoadBotTexts()
     LOG_INFO("playerbots", "{} playerbots texts loaded", count);
 }
 
+void PlayerbotTextMgr::LoadCommandTexts()
+{
+    LOG_INFO("playerbots", "Loading playerbots command texts...");
+
+    commandTexts.clear();
+
+    QueryResult results = PlayerbotsDatabase.Query("SELECT name, text, text_loc1, text_loc2, text_loc3, text_loc4, text_loc5, text_loc6, text_loc7, text_loc8 FROM playerbots_command_texts");
+    if (!results)
+    {
+        LOG_INFO("playerbots", ">> Loaded 0 command texts. Table `playerbots_command_texts` is empty.");
+        return;
+    }
+
+    uint32 count = 0;
+    do
+    {
+        Field* fields = results->Fetch();
+
+        std::string name = fields[0].Get<std::string>();
+        CommandText& entry = commandTexts[name];
+
+        entry.text = fields[1].Get<std::string>();
+        for (uint32 i = 0; i < 8; ++i)
+        {
+            entry.text_loc[i] = fields[2 + i].Get<std::string>();
+        }
+
+        ++count;
+    } while (results->NextRow());
+
+    LOG_INFO("playerbots", ">> Loaded {} command texts", count);
+}
+
 void PlayerbotTextMgr::LoadBotTextChance()
 {
     if (botTextChance.empty())
@@ -222,4 +255,60 @@ void PlayerbotTextMgr::ResetLocalePriority()
     {
         botTextLocalePriority[i] = 0;
     }
+}
+
+std::string PlayerbotTextMgr::GetCommandText(std::string name, uint32 locale, const std::vector<std::string>& args)
+{
+    auto it = commandTexts.find(name);
+    if (it == commandTexts.end())
+    {
+        LOG_ERROR("playerbots", "PlayerbotTextMgr: Command text '{}' not found", name);
+        return name; // Return the identifier as fallback
+    }
+
+    const CommandText& entry = it->second;
+    std::string text;
+
+    // Try to get localized version
+    if (locale > 0 && locale <= 8 && !entry.text_loc[locale - 1].empty())
+    {
+        text = entry.text_loc[locale - 1];
+    }
+    else
+    {
+        // Fall back to English
+        text = entry.text;
+    }
+
+    // Format with arguments
+    if (!args.empty())
+    {
+        text = FormatCommandText(text, args);
+    }
+
+    return text;
+}
+
+std::string PlayerbotTextMgr::FormatCommandText(std::string text, const std::vector<std::string>& args)
+{
+    // Replace {} placeholders with arguments in order
+    size_t argIndex = 0;
+    size_t pos = 0;
+
+    while ((pos = text.find("{}", pos)) != std::string::npos)
+    {
+        if (argIndex < args.size())
+        {
+            text.replace(pos, 2, args[argIndex]);
+            pos += args[argIndex].length();
+            ++argIndex;
+        }
+        else
+        {
+            // No more arguments, leave placeholder
+            break;
+        }
+    }
+
+    return text;
 }

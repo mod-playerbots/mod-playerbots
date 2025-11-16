@@ -28,6 +28,7 @@
 #include "IVMapMgr.h"
 #include "PathGenerator.h"
 #include "Playerbots.h"
+#include "PlayerbotTextMgr.h"
 #include "PositionValue.h"
 #include "PvpTriggers.h"
 #include "ServerFacade.h"
@@ -1278,13 +1279,13 @@ bool BGTactics::HandleConsoleCommand(ChatHandler* handler, char const* args)
 {
     if (!sPlayerbotAIConfig->enabled)
     {
-        handler->PSendSysMessage("|cffff0000Playerbot system is currently disabled!");
+        handler->PSendSysMessage(LOCALE_TEXT("cmd_system_disabled", handler->GetSession()).c_str());
         return true;
     }
     WorldSession* session = handler->GetSession();
     if (!session)
     {
-        handler->PSendSysMessage("Command can only be used from an active session");
+        handler->PSendSysMessage(LOCALE_TEXT("cmd_console_session_required", handler->GetSession()).c_str());
         return true;
     }
     std::string const commandOutput = HandleConsoleCommandPrivate(session, args);

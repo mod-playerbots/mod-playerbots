@@ -13,6 +13,7 @@
 
 #define BOT_TEXT1(name) sPlayerbotTextMgr->GetBotText(name)
 #define BOT_TEXT2(name, replace) sPlayerbotTextMgr->GetBotText(name, replace)
+#define LOCALE_TEXT(name, session, ...) sPlayerbotTextMgr->GetLocalizedCommandText(name, session, {__VA_ARGS__})
 
 struct BotTextEntry
 {
@@ -87,6 +88,12 @@ public:
                                     std::map<std::string, std::string> placeholders);
     void LoadBotTexts();
     void LoadBotTextChance();
+    void LoadCommandTexts();
+    std::string GetCommandText(std::string name, uint32 locale, const std::vector<std::string>& args = {});
+    std::string GetLocalizedCommandText(const std::string& name, WorldSession* session, const std::vector<std::string>& args = {})
+    {
+        return GetCommandText(name, session ? session->GetSessionDbcLocale() : 0, args);
+    }
     static void replaceAll(std::string& str, const std::string& from, const std::string& to);
     bool rollTextChance(std::string text);
 
@@ -98,6 +105,14 @@ private:
     std::map<std::string, std::vector<BotTextEntry>> botTexts;
     std::map<std::string, uint32> botTextChance;
     uint32 botTextLocalePriority[MAX_LOCALES];
+
+    struct CommandText
+    {
+        std::string text;           // English (default)
+        std::string text_loc[8];    // Localized versions
+    };
+    std::map<std::string, CommandText> commandTexts;
+    std::string FormatCommandText(std::string text, const std::vector<std::string>& args);
 };
 
 #define sPlayerbotTextMgr PlayerbotTextMgr::instance()

@@ -28,6 +28,7 @@
 #include "PlayerbotDbStore.h"
 #include "PlayerbotFactory.h"
 #include "PlayerbotSecurity.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "RandomPlayerbotMgr.h"
 #include "SharedDefines.h"
@@ -861,14 +862,14 @@ bool PlayerbotMgr::HandlePlayerbotMgrCommand(ChatHandler* handler, char const* a
 {
     if (!sPlayerbotAIConfig->enabled)
     {
-        handler->PSendSysMessage("|cffff0000Playerbot system is currently disabled!");
+        handler->PSendSysMessage(LOCALE_TEXT("cmd_system_disabled", handler->GetSession()).c_str());
         return false;
     }
 
     WorldSession* m_session = handler->GetSession();
     if (!m_session)
     {
-        handler->PSendSysMessage("You may only add bots from an active session");
+        handler->PSendSysMessage(LOCALE_TEXT("cmd_session_required", handler->GetSession()).c_str());
         return false;
     }
 
@@ -876,7 +877,7 @@ bool PlayerbotMgr::HandlePlayerbotMgrCommand(ChatHandler* handler, char const* a
     PlayerbotMgr* mgr = GET_PLAYERBOT_MGR(player);
     if (!mgr)
     {
-        handler->PSendSysMessage("You cannot control bots yet");
+        handler->PSendSysMessage(LOCALE_TEXT("cmd_mgr_required", handler->GetSession()).c_str());
         return false;
     }
 
@@ -1784,7 +1785,7 @@ void PlayerbotMgr::HandleSetSecurityKeyCommand(Player* player, const std::string
         "REPLACE INTO playerbots_account_keys (account_id, security_key) VALUES ({}, '{}')",
         accountId, hashedKey.str());
 
-    ChatHandler(player->GetSession()).PSendSysMessage("Security key set successfully.");
+    ChatHandler(player->GetSession()).PSendSysMessage(LOCALE_TEXT("cmd_security_key_set", player->GetSession()).c_str());
 }
 
 void PlayerbotMgr::HandleLinkAccountCommand(Player* player, const std::string& accountName, const std::string& key)
@@ -1792,7 +1793,7 @@ void PlayerbotMgr::HandleLinkAccountCommand(Player* player, const std::string& a
     QueryResult result = LoginDatabase.Query("SELECT id FROM account WHERE username = '{}'", accountName);
     if (!result)
     {
-        ChatHandler(player->GetSession()).PSendSysMessage("Account not found.");
+        ChatHandler(player->GetSession()).PSendSysMessage(LOCALE_TEXT("cmd_account_not_found", player->GetSession()).c_str());
         return;
     }
 
@@ -1802,7 +1803,7 @@ void PlayerbotMgr::HandleLinkAccountCommand(Player* player, const std::string& a
     result = PlayerbotsDatabase.Query("SELECT security_key FROM playerbots_account_keys WHERE account_id = {}", linkedAccountId);
     if (!result)
     {
-        ChatHandler(player->GetSession()).PSendSysMessage("Invalid security key.");
+        ChatHandler(player->GetSession()).PSendSysMessage(LOCALE_TEXT("cmd_invalid_security_key", player->GetSession()).c_str());
         return;
     }
 
@@ -1819,7 +1820,7 @@ void PlayerbotMgr::HandleLinkAccountCommand(Player* player, const std::string& a
     std::string storedKey = result->Fetch()->Get<std::string>();
     if (hashedKey.str() != storedKey)
     {
-        ChatHandler(player->GetSession()).PSendSysMessage("Invalid security key.");
+        ChatHandler(player->GetSession()).PSendSysMessage(LOCALE_TEXT("cmd_invalid_security_key", player->GetSession()).c_str());
         return;
     }
 
@@ -1831,7 +1832,7 @@ void PlayerbotMgr::HandleLinkAccountCommand(Player* player, const std::string& a
         "INSERT IGNORE INTO playerbots_account_links (account_id, linked_account_id) VALUES ({}, {})",
         linkedAccountId, accountId);
 
-    ChatHandler(player->GetSession()).PSendSysMessage("Account linked successfully.");
+    ChatHandler(player->GetSession()).PSendSysMessage(LOCALE_TEXT("cmd_account_linked", player->GetSession()).c_str());
 }
 
 void PlayerbotMgr::HandleViewLinkedAccountsCommand(Player* player)
@@ -1841,11 +1842,11 @@ void PlayerbotMgr::HandleViewLinkedAccountsCommand(Player* player)
 
     if (!result)
     {
-        ChatHandler(player->GetSession()).PSendSysMessage("No linked accounts.");
+        ChatHandler(player->GetSession()).PSendSysMessage(LOCALE_TEXT("cmd_no_linked_accounts", player->GetSession()).c_str());
         return;
     }
 
-    ChatHandler(player->GetSession()).PSendSysMessage("Linked accounts:");
+    ChatHandler(player->GetSession()).PSendSysMessage(LOCALE_TEXT("cmd_linked_accounts_header", player->GetSession()).c_str());
     do
     {
         Field* fields = result->Fetch();
@@ -1856,11 +1857,11 @@ void PlayerbotMgr::HandleViewLinkedAccountsCommand(Player* player)
         {
             Field* accountFields = accountResult->Fetch();
             std::string username = accountFields[0].Get<std::string>();
-            ChatHandler(player->GetSession()).PSendSysMessage("- {}", username.c_str());
+            ChatHandler(player->GetSession()).PSendSysMessage(LOCALE_TEXT("cmd_linked_account_entry", player->GetSession(), username).c_str());
         }
         else
         {
-            ChatHandler(player->GetSession()).PSendSysMessage("- Unknown account");
+            ChatHandler(player->GetSession()).PSendSysMessage(LOCALE_TEXT("cmd_unknown_account", player->GetSession()).c_str());
         }
     } while (result->NextRow());
 }
@@ -1870,7 +1871,7 @@ void PlayerbotMgr::HandleUnlinkAccountCommand(Player* player, const std::string&
     QueryResult result = LoginDatabase.Query("SELECT id FROM account WHERE username = '{}'", accountName);
     if (!result)
     {
-        ChatHandler(player->GetSession()).PSendSysMessage("Account not found.");
+        ChatHandler(player->GetSession()).PSendSysMessage(LOCALE_TEXT("cmd_account_not_found", player->GetSession()).c_str());
         return;
     }
 
@@ -1881,5 +1882,5 @@ void PlayerbotMgr::HandleUnlinkAccountCommand(Player* player, const std::string&
     PlayerbotsDatabase.Execute("DELETE FROM playerbots_account_links WHERE (account_id = {} AND linked_account_id = {}) OR (account_id = {} AND linked_account_id = {})",
                                 accountId, linkedAccountId, linkedAccountId, accountId);
 
-    ChatHandler(player->GetSession()).PSendSysMessage("Account unlinked successfully.");
+    ChatHandler(player->GetSession()).PSendSysMessage(LOCALE_TEXT("cmd_account_unlinked", player->GetSession()).c_str());
 }
