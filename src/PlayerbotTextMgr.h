@@ -92,10 +92,7 @@ public:
     void LoadBotTextChance();
     void LoadCommandTexts();
     std::string GetCommandText(std::string name, uint32 locale, const std::vector<std::string>& args = {});
-    std::string GetLocalizedCommandText(const std::string& name, WorldSession* session, const std::vector<std::string>& args = {})
-    {
-        return GetCommandText(name, session ? session->GetSessionDbcLocale() : 0, args);
-    }
+    std::string GetLocalizedCommandText(const std::string& name, WorldSession* session, const std::vector<std::string>& args = {});
     static void replaceAll(std::string& str, const std::string& from, const std::string& to);
     bool rollTextChance(std::string text);
 

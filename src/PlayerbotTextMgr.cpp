@@ -312,3 +312,8 @@ std::string PlayerbotTextMgr::FormatCommandText(std::string text, const std::vec
 
     return text;
 }
+
+std::string PlayerbotTextMgr::GetLocalizedCommandText(const std::string& name, WorldSession* session, const std::vector<std::string>& args)
+{
+    return GetCommandText(name, session ? session->GetSessionDbcLocale() : 0, args);
+}
