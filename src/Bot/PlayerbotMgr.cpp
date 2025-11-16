@@ -90,7 +90,7 @@ namespace {
     bool InviteCodeExists(const std::string& code)
     {
         QueryResult existing = PlayerbotsDatabase.Query(
-            "SELECT 1 FROM playerbots_invite_codes WHERE code = '{}' AND status = 1", code);
+            "SELECT 1 FROM playerbots_invite_codes WHERE code = '{}' AND status = 1 LIMIT 1", code);
         return existing != nullptr;
     }
 
