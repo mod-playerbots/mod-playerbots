@@ -4192,29 +4192,26 @@ void PlayerbotFactory::InitArenaTeam()
         }
 
         // After all members are added to this team, apply proper rating alignment
-        if (arenateam)
+        uint32 teamRating = arenateam->GetRating();
+
+        // Use SetRatingForAll to align all members with team rating
+        arenateam->SetRatingForAll(teamRating);
+
+        // Set MMR for all members respecting AzerothCore configuration
+        uint16 configMMR = (uint16)sWorld->getIntConfig(CONFIG_ARENA_START_MATCHMAKER_RATING);
+        for (auto& member : arenateam->GetMembers())
         {
-            uint32 teamRating = arenateam->GetRating();
+            // For artificial bot teams with ratings above default, MMR should match team context
+            // If team rating is artificial (> configMMR), use team-appropriate MMR
+            // Otherwise, use standard config MMR (typically 1500)
+            uint16 personalRating = member.PersonalRating;
+            uint16 appropriateMMR = (personalRating > configMMR) ? personalRating : configMMR;
 
-            // Use SetRatingForAll to align all members with team rating
-            arenateam->SetRatingForAll(teamRating);
-
-            // Set MMR for all members respecting AzerothCore configuration
-            uint16 configMMR = (uint16)sWorld->getIntConfig(CONFIG_ARENA_START_MATCHMAKER_RATING);
-            for (auto& member : arenateam->GetMembers())
-            {
-                // For artificial bot teams with ratings above default, MMR should match team context
-                // If team rating is artificial (> configMMR), use team-appropriate MMR
-                // Otherwise, use standard config MMR (typically 1500)
-                uint16 personalRating = member.PersonalRating;
-                uint16 appropriateMMR = (personalRating > configMMR) ? personalRating : configMMR;
-
-                member.MatchMakerRating = appropriateMMR;
-                member.MaxMMR = std::max(member.MaxMMR, appropriateMMR);
-            }
-            // Force save all member data to database
-            arenateam->SaveToDB(true);
+            member.MatchMakerRating = appropriateMMR;
+            member.MaxMMR = std::max(member.MaxMMR, appropriateMMR);
         }
+        // Force save all member data to database
+        arenateam->SaveToDB(true);
 
         arenateams.erase(arenateams.begin() + index);
     }
