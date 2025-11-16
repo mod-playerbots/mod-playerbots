@@ -5,13 +5,14 @@
 
 #include "TellPvpAction.h"
 
-#include <sstream>
+#include <map>
 
 #include "ArenaTeam.h"
 #include "ArenaTeamMgr.h"
 #include "Event.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
 
@@ -33,17 +34,20 @@ namespace
 bool TellPvpAction::Execute(Event /*event*/)
 {
     Player* const master = GetMaster();
-    Player* const bot = botAI->GetBot();
     if (!master || !bot)
         return false;
 
-    // Currencies
-    {
-        std::ostringstream line;
-        line << "[PVP] Arena points: " << bot->GetArenaPoints()
-             << " | Honor Points: " << bot->GetHonorPoints();
-        botAI->TellMaster(line.str());
-    }
+    // PVP currencies
+    std::map<std::string, std::string> currencyPlaceholders;
+    currencyPlaceholders["%arena_points"] = std::to_string(bot->GetArenaPoints());
+    currencyPlaceholders["%honor_points"] = std::to_string(bot->GetHonorPoints());
+
+    std::string const currencyText = sPlayerbotTextMgr->GetBotTextOrDefault(
+        "pvp_currency",
+        "[PVP] Arena points: %arena_points | Honor Points: %honor_points",
+        currencyPlaceholders);
+
+    botAI->TellMaster(currencyText);
 
     // Arena Teams by slot
     bool anyTeam = false;
@@ -56,15 +60,28 @@ bool TellPvpAction::Execute(Event /*event*/)
         if (ArenaTeam* team = sArenaTeamMgr->GetArenaTeamById(teamId))
         {
             anyTeam = true;
-            std::ostringstream line;
-            line << "[PVP] " << BracketName(slot) << ": <" << team->GetName() << "> (rating " << team->GetRating() << ")";
-            botAI->TellMaster(line.str());
+            std::map<std::string, std::string> placeholders;
+            placeholders["%bracket"] = BracketName(slot);
+            placeholders["%team_name"] = team->GetName();
+            placeholders["%team_rating"] = std::to_string(team->GetRating());
+
+            std::string const teamText = sPlayerbotTextMgr->GetBotTextOrDefault(
+                "pvp_arena_team",
+                "[PVP] %bracket: <%team_name> (rating %team_rating)",
+                placeholders);
+
+            botAI->TellMaster(teamText);
         }
     }
 
     if (!anyTeam)
     {
-        botAI->TellMaster("[PVP] I have no Arena Team.");
+        std::string const noTeamText = sPlayerbotTextMgr->GetBotTextOrDefault(
+            "pvp_no_arena_team",
+            "[PVP] I have no Arena Team.",
+            std::map<std::string, std::string>());
+
+        botAI->TellMaster(noTeamText);
     }
 
     return true;
