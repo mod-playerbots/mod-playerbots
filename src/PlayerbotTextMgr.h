@@ -11,6 +11,8 @@
 
 #include "Common.h"
 
+class WorldSession;
+
 #define BOT_TEXT1(name) sPlayerbotTextMgr->GetBotText(name)
 #define BOT_TEXT2(name, replace) sPlayerbotTextMgr->GetBotText(name, replace)
 #define LOCALE_TEXT(name, session, ...) sPlayerbotTextMgr->GetLocalizedCommandText(name, session, {__VA_ARGS__})
