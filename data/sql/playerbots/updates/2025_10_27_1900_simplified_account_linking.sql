@@ -34,7 +34,7 @@ DEALLOCATE PREPARE stmt;
 -- Invite codes table
 CREATE TABLE IF NOT EXISTS `playerbots_invite_codes` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `code` varchar(16) NOT NULL,
+    `code` varchar(14) NOT NULL,
     `account_id` INT NOT NULL,
     `created_at` INT NOT NULL,
     `expires_at` INT NOT NULL,
