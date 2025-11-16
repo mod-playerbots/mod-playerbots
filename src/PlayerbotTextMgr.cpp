@@ -203,9 +203,6 @@ void PlayerbotTextMgr::AddLocalePriority(uint32 locale)
 
 uint32 PlayerbotTextMgr::GetLocalePriority()
 {
-    uint32 topLocale = 0;
-    uint32 topLocaleCount = 0;
-
     // if no real players online, reset top locale
     uint32 const activeSessions = sWorldSessionMgr->GetActiveSessionCount();
     if (!activeSessions)
@@ -214,17 +211,14 @@ uint32 PlayerbotTextMgr::GetLocalePriority()
         return 0;
     }
 
+    uint32 topLocale = 0;
     for (uint8 i = 0; i < MAX_LOCALES; ++i)
     {
-        uint32 const localeCount = botTextLocalePriority[i];
-        if (localeCount > topLocaleCount)
-        {
+        if (botTextLocalePriority[i] > botTextLocalePriority[topLocale])
             topLocale = i;
-            topLocaleCount = localeCount;
-        }
     }
 
-    return topLocale;
+    return topLocale
 }
 
 void PlayerbotTextMgr::ResetLocalePriority()
