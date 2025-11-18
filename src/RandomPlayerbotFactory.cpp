@@ -1003,7 +1003,7 @@ std::string const RandomPlayerbotFactory::CreateRandomGuildName()
 
     if (guildName.empty())
         guildName = baseName;
-	
+
     return guildName;
 }
 
