@@ -943,7 +943,7 @@ std::string const RandomPlayerbotFactory::CreateRandomGuildName()
     if (!result)
     {
         LOG_ERROR("playerbots", "No more names left for random guilds");
-        return std::move(guildName);
+        return guildName;
     }
 
     Field* fields = result->Fetch();
@@ -951,19 +951,60 @@ std::string const RandomPlayerbotFactory::CreateRandomGuildName()
 
     uint32 id = urand(0, maxId);
     result = CharacterDatabase.Query(
-        "SELECT n.name FROM playerbots_guild_names n "
-        "LEFT OUTER JOIN guild e ON e.name = n.name WHERE e.guildid IS NULL AND n.name_id >= {} LIMIT 1",
+        "SELECT "
+        "  n.name, "        // 0  enUS (base)
+        "  n.name_koKR, "   // 1  koKR
+        "  n.name_frFR, "   // 2  frFR
+        "  n.name_deDE, "   // 3  deDE
+        "  n.name_zhCN, "   // 4  zhCN
+        "  n.name_zhTW, "   // 5  zhTW
+        "  n.name_esES, "   // 6  esES
+        "  n.name_esMX, "   // 7  esMX
+        "  n.name_ruRU "    // 8  ruRU
+        "FROM playerbots_guild_names n "
+        "LEFT OUTER JOIN guild e ON e.name = n.name "
+        "WHERE e.guildid IS NULL AND n.name_id >= {} LIMIT 1",
         id);
     if (!result)
     {
         LOG_ERROR("playerbots", "No more names left for random guilds");
-        return std::move(guildName);
+        return guildName;
     }
 
     fields = result->Fetch();
-    guildName = fields[0].Get<std::string>();
 
-    return std::move(guildName);
+    std::string baseName  = fields[0].Get<std::string>(); // enUS
+    std::string koName    = fields[1].Get<std::string>();
+    std::string frName    = fields[2].Get<std::string>();
+    std::string deName    = fields[3].Get<std::string>();
+    std::string zhCNName  = fields[4].Get<std::string>();
+    std::string zhTWName  = fields[5].Get<std::string>();
+    std::string esName    = fields[6].Get<std::string>();
+    std::string esMxName  = fields[7].Get<std::string>();
+    std::string ruName    = fields[8].Get<std::string>();
+
+    LocaleConstant locale = LOCALE_enUS;
+    int32 confLocale = sPlayerbotAIConfig->randomBotGuildArenaNamesLocale;
+    if (confLocale >= 0 && confLocale < MAX_LOCALES)
+        locale = static_cast<LocaleConstant>(confLocale);
+
+    switch (locale)
+    {
+        case LOCALE_koKR: guildName = koName;    break;
+        case LOCALE_frFR: guildName = frName;    break;
+        case LOCALE_deDE: guildName = deName;    break;
+        case LOCALE_zhCN: guildName = zhCNName;  break;
+        case LOCALE_zhTW: guildName = zhTWName;  break;
+        case LOCALE_esES: guildName = esName;    break;
+        case LOCALE_esMX: guildName = esMxName;  break;
+        case LOCALE_ruRU: guildName = ruName;    break;
+        default:           guildName = baseName; break;
+    }
+
+    if (guildName.empty())
+        guildName = baseName;
+	
+    return guildName;
 }
 
 void RandomPlayerbotFactory::CreateRandomArenaTeams(ArenaType type, uint32 count)
@@ -1079,32 +1120,79 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams(ArenaType type, uint32 count
 
 std::string const RandomPlayerbotFactory::CreateRandomArenaTeamName()
 {
-    std::string arenaTeamName = "";
+    std::string arenaTeamName;
 
     QueryResult result = CharacterDatabase.Query("SELECT MAX(name_id) FROM playerbots_arena_team_names");
     if (!result)
     {
         LOG_ERROR("playerbots", "No more names left for random arena teams");
-        return std::move(arenaTeamName);
+        return arenaTeamName;
     }
 
     Field* fields = result->Fetch();
     uint32 maxId = fields[0].Get<uint32>();
 
     uint32 id = urand(0, maxId);
+
     result = CharacterDatabase.Query(
-        "SELECT n.name FROM playerbots_arena_team_names n LEFT OUTER JOIN arena_team e ON e.name = n.name "
+        "SELECT "
+        "  n.name, "        // 0  enUS (base)
+        "  n.name_koKR, "   // 1  koKR
+        "  n.name_frFR, "   // 2  frFR
+        "  n.name_deDE, "   // 3  deDE
+        "  n.name_zhCN, "   // 4  zhCN
+        "  n.name_zhTW, "   // 5  zhTW
+        "  n.name_esES, "   // 6  esES
+        "  n.name_esMX, "   // 7  esMX
+        "  n.name_ruRU "    // 8  ruRU
+        "FROM playerbots_arena_team_names n "
+        "LEFT OUTER JOIN arena_team e ON e.name = n.name "
         "WHERE e.arenateamid IS NULL AND n.name_id >= {} LIMIT 1",
         id);
 
     if (!result)
     {
         LOG_ERROR("playerbots", "No more names left for random arena teams");
-        return std::move(arenaTeamName);
+        return arenaTeamName;
     }
 
     fields = result->Fetch();
-    arenaTeamName = fields[0].Get<std::string>();
 
-    return std::move(arenaTeamName);
+    std::string baseName  = fields[0].Get<std::string>(); // enUS (base)
+    std::string koName    = fields[1].Get<std::string>();
+    std::string frName    = fields[2].Get<std::string>();
+    std::string deName    = fields[3].Get<std::string>();
+    std::string zhCNName  = fields[4].Get<std::string>();
+    std::string zhTWName  = fields[5].Get<std::string>();
+    std::string esName    = fields[6].Get<std::string>();
+    std::string esMxName  = fields[7].Get<std::string>();
+    std::string ruName    = fields[8].Get<std::string>();
+
+    LocaleConstant locale = LOCALE_enUS;
+    int32 confLocale = sPlayerbotAIConfig->randomBotGuildArenaNamesLocale;
+
+    if (confLocale >= 0 && confLocale < MAX_LOCALES)
+        locale = static_cast<LocaleConstant>(confLocale);
+
+    std::string chosenName;
+
+    switch (locale)
+    {
+        case LOCALE_koKR: chosenName = koName;    break;
+        case LOCALE_frFR: chosenName = frName;    break;
+        case LOCALE_deDE: chosenName = deName;    break;
+        case LOCALE_zhCN: chosenName = zhCNName;  break;
+        case LOCALE_zhTW: chosenName = zhTWName;  break;
+        case LOCALE_esES: chosenName = esName;    break;
+        case LOCALE_esMX: chosenName = esMxName;  break;
+        case LOCALE_ruRU: chosenName = ruName;    break;
+        default:          chosenName = baseName;  break;
+    }
+
+    if (chosenName.empty())
+        chosenName = baseName;
+
+    arenaTeamName = std::move(chosenName);
+
+    return arenaTeamName;
 }

@@ -159,6 +159,19 @@ AiPlayerbot.RandomBotGuildNearby = 0
 # Number of guilds created by randombots
 AiPlayerbot.RandomBotGuildCount = 20
 
+# Locale for bots guilds names, bots arena teams name
+# -1 = default (enUS)
+#  0 = enUS
+#  1 = koKR
+#  2 = frFR
+#  3 = deDE
+#  4 = zhCN
+#  5 = zhTW
+#  6 = esES
+#  7 = esMX
+#  8 = ruRU
+AiPlayerbot.RandomBotGuildArenaNamesLocale = -1
+
 # Maximum number of members in randombot guilds (minimum is hardcoded to 10)
 AiPlayerbot.RandomBotGuildSizeMax = 15
 
