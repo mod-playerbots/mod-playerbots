@@ -143,19 +143,21 @@ bool AttackRtiTargetAction::Execute(Event event)
 {
     Unit* rtiTarget = AI_VALUE(Unit*, "rti target");
 
-    // Fallback: when RTI targets are ignored out of combat by RtiTargetValue,
-    // resolve the RTI target directly from the group's raid icon.
+    // Fallback: if the "rti target" value did not resolve a valid unit yet,
+    // try to resolve the raid icon directly from the group.
     if (!rtiTarget)
     {
         if (Group* group = bot->GetGroup())
         {
             std::string const rti = AI_VALUE(std::string, "rti");
-            int32 index = RtiTargetValue::GetRtiIndex(rti);
+            int32 const index = RtiTargetValue::GetRtiIndex(rti);
             if (index >= 0)
             {
-                ObjectGuid guid = group->GetTargetIcon(index);
+                ObjectGuid const guid = group->GetTargetIcon(index);
                 if (!guid.IsEmpty())
+                {
                     rtiTarget = botAI->GetUnit(guid);
+                }
             }
         }
     }

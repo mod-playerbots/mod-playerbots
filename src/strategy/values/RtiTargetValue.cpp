@@ -64,5 +64,15 @@ Unit* RtiTargetValue::Calculate()
                                              sPlayerbotAIConfig->sightDistance))
         return nullptr;
 
+    // Also prevent chasing raid icon targets that are too far away from the master,
+    // even if they are technically visible to the bot.
+    if (Player* master = botAI->GetMaster())
+    {
+        if (master->IsInWorld() && master->GetMapId() == unit->GetMapId() &&
+            sServerFacade->IsDistanceGreaterThan(sServerFacade->GetDistance2d(master, unit),
+                sPlayerbotAIConfig->sightDistance))
+            return nullptr;
+    }
+
     return unit;
 }
