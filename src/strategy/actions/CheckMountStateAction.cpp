@@ -81,7 +81,7 @@ bool CheckMountStateAction::isUseful()
     // to mostly be an issue in tunnels of WSG and AV)
     float posZ = bot->GetPositionZ();
     float groundLevel = bot->GetMapWaterOrGroundLevel(bot->GetPositionX(), bot->GetPositionY(), posZ);
-    if (!bot->IsMounted() && posZ < groundLevel)
+    if (!bot->IsMounted() && !bot->HasWaterWalkAura() && posZ < groundLevel)
         return false;
 
     // Not useful when bot does not have mount strat and is not currently mounted
@@ -122,18 +122,21 @@ bool CheckMountStateAction::Execute(Event /*event*/)
     bool shouldMount = false;
 
     Unit* currentTarget = AI_VALUE(Unit*, "current target");
-    if (currentTarget)
+    bool masterInCombat = master && master->IsInCombat();
+
+    if (currentTarget && (bot->IsInCombat() || masterInCombat))
     {
+        // Use target-based logic if bot is in combat OR master is in combat and needs assistance
         float dismountDistance = CalculateDismountDistance();
         float mountDistance = CalculateMountDistance();
-        float combatReach = bot->GetCombatReach() + currentTarget->GetCombatReach();
         float distanceToTarget = bot->GetExactDist(currentTarget);
 
-        shouldDismount = (distanceToTarget <= dismountDistance + combatReach);
-        shouldMount = (distanceToTarget > mountDistance + combatReach);
+        shouldDismount = (distanceToTarget <= dismountDistance);
+        shouldMount = (distanceToTarget > mountDistance);
     }
     else
     {
+        // If neither bot nor master is in combat, prioritize master-following
         shouldMount = true;
     }
 
@@ -160,9 +163,18 @@ bool CheckMountStateAction::Execute(Event /*event*/)
 
         else if (ShouldDismountForMaster(master) && bot->IsMounted())
         {
+            // If master dismounted, stay mounted until close enough to assist
+            if (StayMountedToCloseDistance())
+                return false;
+
             Dismount();
             return true;
         }
+
+        // Mount up to close distance to master if beneficial - allow mounting even if master is in combat
+        // as long as the bot itself is not in combat and has no attackers
+        else if (!bot->IsMounted() && noAttackers && !bot->IsInCombat() && ShouldMountToCloseDistance())
+            return Mount();
 
         return false;
     }
@@ -395,6 +407,50 @@ bool CheckMountStateAction::TryRandomMountFiltered(const std::map<int32, std::ve
         }
     }
     return false;
+}
+
+bool CheckMountStateAction::StayMountedToCloseDistance() const
+{
+    // Keep the bot mounted while closing distance to a recently dismounted master.
+    // Rationale: if the master dismounts far away, immediately dismounting slows the bot down
+    // and delays assistance. Instead, remain mounted until within reasonable proximity
+    // of the master, then dismount to help.
+
+    if (!master)
+        return false;
+
+    float distToMaster = sServerFacade->GetDistance2d(bot, master);
+
+    // If master is in combat, dismount at combat assist range to help immediately
+    if (master->IsInCombat())
+    {
+        float assistRange = CalculateDismountDistance();
+        return distToMaster > assistRange;
+    }
+
+    // If master is not in combat, use smaller proximity range for general following
+    float masterProximityRange = 10.0f; // Close enough to be near master but not attack range
+    return distToMaster > masterProximityRange;
+}
+
+bool CheckMountStateAction::ShouldMountToCloseDistance() const
+{
+    // Mount up to close distance to master if beneficial
+    // Uses the same logic as CalculateMountDistance() which already considers the 2-second mount cast time
+    // This handles cases where master is in combat but bot isn't, and bot needs to mount to reach master
+
+    if (!master)
+        return false;
+
+    // Only mount to close distance when actively following
+    if (!botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT))
+        return false;
+
+    float distToMaster = sServerFacade->GetDistance2d(bot, master);
+    float mountDistance = CalculateMountDistance();
+
+    // Mount if distance is greater than the calculated mount distance threshold
+    return distToMaster > mountDistance;
 }
 
 float CheckMountStateAction::CalculateDismountDistance() const
