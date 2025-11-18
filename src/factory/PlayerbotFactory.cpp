@@ -4197,18 +4197,14 @@ void PlayerbotFactory::InitArenaTeam()
         // Use SetRatingForAll to align all members with team rating
         arenateam->SetRatingForAll(teamRating);
 
-        // Set MMR for all members respecting AzerothCore configuration
-        uint16 configMMR = (uint16)sWorld->getIntConfig(CONFIG_ARENA_START_MATCHMAKER_RATING);
+        // For bot-only teams, keep MMR synchronized with team rating
+        // This ensures matchmaking reflects the artificial team strength (1000-2000 range)
+        // instead of being influenced by the global CONFIG_ARENA_START_MATCHMAKER_RATING
         for (auto& member : arenateam->GetMembers())
         {
-            // For artificial bot teams with ratings above default, MMR should match team context
-            // If team rating is artificial (> configMMR), use team-appropriate MMR
-            // Otherwise, use standard config MMR (typically 1500)
-            uint16 personalRating = member.PersonalRating;
-            uint16 appropriateMMR = (personalRating > configMMR) ? personalRating : configMMR;
-
-            member.MatchMakerRating = appropriateMMR;
-            member.MaxMMR = std::max(member.MaxMMR, appropriateMMR);
+            // Set MMR to match personal rating (which already matches team rating)
+            member.MatchMakerRating = member.PersonalRating;
+            member.MaxMMR = std::max(member.MaxMMR, member.PersonalRating);
         }
         // Force save all member data to database
         arenateam->SaveToDB(true);
