@@ -9,7 +9,6 @@
 
 bool NoRtiTrigger::IsActive()
 {
-    //return !AI_VALUE(Unit*, "rti target");
     // Do not auto-react to raid icons while out of combat.
     // Out-of-combat RTI usage (explicit chat commands) is handled by chat triggers,
     // not by this generic trigger.
