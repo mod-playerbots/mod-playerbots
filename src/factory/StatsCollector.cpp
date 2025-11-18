@@ -43,19 +43,51 @@ void StatsCollector::CollectItemStats(ItemTemplate const* proto, uint8 playerLev
     ScalingStatValuesEntry const* ssv =
         proto->ScalingStatValue ? sScalingStatValuesStore.LookupEntry(ssdLevel) : nullptr;
 
-    if (proto->IsRangedWeapon())
+    for (uint8 i = 0; i < MAX_ITEM_PROTO_DAMAGES; ++i)
     {
-        float val = (proto->Damage[0].DamageMin + proto->Damage[0].DamageMax) * 1000 / 2 / proto->Delay;
-        stats[STATS_TYPE_RANGED_DPS] += val;
+        float minDamage = proto->Damage[i].DamageMin;
+        float maxDamage = proto->Damage[i].DamageMax;
+
+        if (ssv && i == 0)
+        {
+            int extraDPS = ssv->getDPSMod(ScalingStatValue);
+            if (extraDPS)
+            {
+                float average = extraDPS * proto->Delay / 1000.0f;
+                float mod = ssv->IsTwoHand(proto->ScalingStatValue) ? 0.2 : 0.3f;
+
+                minDamage = (1.0 - mod) * average;
+                maxDamage = (1.0 + mod) * average;
+            }
+        }
+
+        if (proto->IsRangedWeapon())
+        {
+            float val = (minDamage + maxDamage) * 1000 / 2 / proto->Delay;
+            stats[STATS_TYPE_RANGED_DPS] += val;
+        }
+        else if (proto->IsWeapon())
+        {
+            float val = (minDamage + maxDamage) * 1000 / 2 / proto->Delay;
+            stats[STATS_TYPE_MELEE_DPS] += val;
+        }
     }
-    else if (proto->IsWeapon())
-    {
-        float val = (proto->Damage[0].DamageMin + proto->Damage[0].DamageMax) * 1000 / 2 / proto->Delay;
-        stats[STATS_TYPE_MELEE_DPS] += val;
-    }
-    stats[STATS_TYPE_ARMOR] += proto->Armor;
+
     stats[STATS_TYPE_BLOCK_VALUE] += proto->Block;
-    for (int i = 0; i < MAX_ITEM_PROTO_STATS; i++)
+
+    uint32 armor = proto->Armor;
+    if (ssv)
+    {
+        uint32 ssvarmor = ssv->getArmorMod(ScalingStatValue);
+        if (proto->ScalingStatValue > 0 || ssvarmor < proto->Armor)
+            armor = ssvarmor;
+    }
+    else if (armor && proto->ArmorDamageModifier)
+        armor -= uint32(proto->ArmorDamageModifier);
+
+    stats[STATS_TYPE_ARMOR] += armor;
+
+    for (uint8 i = 0; i < MAX_ITEM_PROTO_STATS; i++)
     {
         const _ItemStat& stat = proto->ItemStat[i];
         uint32 statType = stat.ItemStatType;
@@ -69,9 +101,19 @@ void StatsCollector::CollectItemStats(ItemTemplate const* proto, uint8 playerLev
         }
         else if (i < proto->StatsCount)
             val = stat.ItemStatValue;
+        else
+            continue;
 
         CollectByItemStatType(statType, val);
     }
+
+    uint32 spellBonus = ssv ? ssv->getSpellBonus(ScalingStatValue) : 0;
+    if (ssv && spellBonus)
+    {
+        stats[STATS_TYPE_SPELL_POWER] += spellBonus;
+        stats[STATS_TYPE_HEAL_POWER] += spellBonus;
+    }
+
     for (uint8 j = 0; j < MAX_ITEM_PROTO_SPELLS; j++)
     {
         switch (proto->Spells[j].SpellTrigger)
