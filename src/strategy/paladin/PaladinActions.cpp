@@ -566,7 +566,7 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event event)
     // no point in switching to Greater here, to avoid any collision
     if (castName.empty())
         castName = "blessing of sanctuary";
-	
+
     // For safety, if ever a non-tank arrives here
     if (targetPlayer && !IsTankRole(targetPlayer))
         return false;
