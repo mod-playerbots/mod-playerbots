@@ -89,11 +89,11 @@ static inline uint32 CountPaladinsInGroup(Player* bot)
 {
     if (!bot)
         return 0u;
-	
+
     Group* group = bot->GetGroup();
     if (!group)
         return (bot->getClass() == CLASS_PALADIN) ? 1u : 0u;
-	
+
     uint32 paladinCount = 0u;
     for (GroupReference* memberRef = group->GetFirstMember(); memberRef; memberRef = memberRef->next())
     {
@@ -110,10 +110,10 @@ static inline uint32 CountPaladinsInGroup(Player* bot)
 static inline bool ShouldReceiveMight(Player* targetPlayer, Player* caster)
 {
     if (!targetPlayer)
-	{
+    {
         return false;
-	}
-	
+    }
+
     int specTab = AiFactory::GetPlayerSpecTab(targetPlayer);
     switch (targetPlayer->getClass())
     {
@@ -145,12 +145,12 @@ static inline bool IsDesignatedRolePaladin(Player* bot, const char* roleName)
 {
     if (!bot)
         return true;
-	
+
     Group* group = bot->GetGroup();
     const std::string groupTag = MakeGroupTag(group);
     if (!group)
         return true;
-	
+
     const bool doLog = ShouldLogForThisBot(bot);
 
     // Gather paladins with the same role strategy
@@ -443,7 +443,7 @@ bool CastBlessingOfWisdomOnPartyAction::Execute(Event event)
         return false;
 
     Player* targetPlayer = target->ToPlayer();
-	
+
     if (Group* group = bot->GetGroup(); group && targetPlayer && !group->IsMember(targetPlayer->GetGUID()))
         return false;	
 
@@ -486,7 +486,8 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event event)
     { return botAI->HasAura("blessing of sanctuary", u) || botAI->HasAura("greater blessing of sanctuary", u); };
 
     Group* group = bot->GetGroup();
-    if (group && targetPlayer && !group->IsMember(targetPlayer->GetGUID())) {
+    if (group && targetPlayer && !group->IsMember(targetPlayer->GetGUID()))
+    {
         LOG_DEBUG("playerbots", "[Sanct] Initial target not in group, ignoring");
         target = bot;
         targetPlayer = bot->ToPlayer();
@@ -523,17 +524,17 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event event)
             {
                 Player* memberPlayer = memberRef->GetSource();
                 if (!memberPlayer)
-				{
+                {
                     continue;
-				}
+                }
                 if (!memberPlayer->IsInWorld() || !memberPlayer->IsAlive())
-				{	
+                {	
                     continue;
-				}
+                }
                 if (!IsTankRole(memberPlayer))
-				{
+                {
                     continue;
-				}
+                }
 
                 bool hasSanct = HasSanctAura(memberPlayer);
                 if (!hasSanct)
@@ -569,7 +570,7 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event event)
     // For safety, if ever a non-tank arrives here
     if (targetPlayer && !IsTankRole(targetPlayer))
         return false;
-	
+
     castName = "blessing of sanctuary";
 
     bool ok = botAI->CastSpell(castName, target);
