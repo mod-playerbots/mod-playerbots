@@ -15,26 +15,26 @@
 
 bool LootRollAction::isUseful()
 {
-	Group* group = bot->GetGroup();
+    Group* group = bot->GetGroup();
 
-	if (!group)
-		return false;
+    if (!group)
+        return false;
 
-	std::vector<Roll*> rolls = group->GetRolls();
+    std::vector<Roll*> rolls = group->GetRolls();
 
-	bool isUseful = false;
+    bool isUseful = false;
 
-	for (Roll*& roll : rolls)
-	{
-		if (roll->playerVote.find(bot->GetGUID())->second == NOT_EMITED_YET)
-		{
-			isUseful = true;
+    for (Roll*& roll : rolls)
+    {
+        if (roll->playerVote.find(bot->GetGUID())->second == NOT_EMITED_YET)
+        {
+            isUseful = true;
 
-			break;
-		}
-	}
+            break;
+        }
+    }
 
-	return isUseful;
+    return isUseful;
 }
 
 bool LootRollAction::Execute(Event event)
