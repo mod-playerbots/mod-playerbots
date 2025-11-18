@@ -146,9 +146,8 @@ bool AttackersValue::IsPossibleTarget(Unit* attacker, Player* bot, float range)
 {
     Creature* c = attacker->ToCreature();
     bool rti = false;
-    // Restrict skull (RTI) handling to in-combat situations so that any future
-    // use of 'rti' does not cause bots to chase marks while out of combat.
-    if (attacker && bot->GetGroup() && bot->IsInCombat())
+    
+    if (attacker && bot->GetGroup())
         rti = bot->GetGroup()->GetTargetIcon(7) == attacker->GetGUID();
 
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
