@@ -43,6 +43,7 @@
 #include "MoveToTravelTargetAction.h"
 #include "MovementActions.h"
 #include "NonCombatActions.h"
+#include "DrinkAction.h"
 #include "OutfitAction.h"
 #include "PositionAction.h"
 #include "DropQuestAction.h"

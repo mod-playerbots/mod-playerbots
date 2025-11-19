@@ -16,7 +16,6 @@
 #include "CharacterPackets.h"
 #include "ChatHelper.h"
 #include "Common.h"
-#include "CreatureAIImpl.h"
 #include "CreatureData.h"
 #include "EmoteAction.h"
 #include "Engine.h"
@@ -33,7 +32,6 @@
 #include "LootObjectStack.h"
 #include "MapMgr.h"
 #include "MotionMaster.h"
-#include "MoveSpline.h"
 #include "MoveSplineInit.h"
 #include "NewRpgStrategy.h"
 #include "ObjectGuid.h"
@@ -45,7 +43,6 @@
 #include "PlayerbotMgr.h"
 #include "PlayerbotGuildMgr.h"
 #include "Playerbots.h"
-#include "PointMovementGenerator.h"
 #include "PositionValue.h"
 #include "RandomPlayerbotMgr.h"
 #include "SayAction.h"
@@ -59,6 +56,9 @@
 #include "Unit.h"
 #include "UpdateTime.h"
 #include "Vehicle.h"
+#include "isDrinking.h"
+#include "isDrinking.h"
+#include "shouldKeepDrinking.h"
 
 const int SPELL_TITAN_GRIP = 49152;
 
@@ -1447,6 +1447,15 @@ void PlayerbotAI::DoNextAction(bool min)
 
     bool minimal = !AllowActivity();
 
+	if (!minimal && isDrinking(bot) && shouldKeepDrinking(this))
+	{
+		std::string name = bot->GetName().c_str();
+
+		SetNextCheckDelay(1000);
+
+		return;
+	}
+
     currentEngine->DoNextAction(nullptr, 0, (minimal || min));
 
     if (minimal)
@@ -1463,6 +1472,7 @@ void PlayerbotAI::DoNextAction(bool min)
     if (master && master->IsInWorld())
     {
         float distance = sServerFacade->GetDistance2d(bot, master);
+
         if (master->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_WALKING) && distance < 20.0f)
             bot->m_movementInfo.AddMovementFlag(MOVEMENTFLAG_WALKING);
         else
