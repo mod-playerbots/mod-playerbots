@@ -34,7 +34,7 @@ We also have a **[Discord server](https://discord.gg/NQm5QShwf9)** where you can
 
 Supported platforms are Ubuntu, Windows, and macOS. Other Linux distributions may work, but may not receive support. 
 
-**All `mod-playerbots` installations require a custom branch of AzerothCore: [mod-playerbots/azerothcore-wotlk/tree/Playerbot](https://github.com/mod-playerbots/azerothcore-wotlk/tree/Playerbot).** This branch allows the playerbots module to build and function. Updates from the upstream are implemneted regularly to this branch. Instructions for installing this required branch and this module are provided below.
+**All `mod-playerbots` installations require a custom branch of AzerothCore: [mod-playerbots/azerothcore-wotlk/tree/Playerbot](https://github.com/mod-playerbots/azerothcore-wotlk/tree/Playerbot).** This branch allows the `mod-playerbots` module to build and function. Updates from the upstream are implemented regularly to this branch. Instructions for installing this required branch and this module are provided below.
 
 ### Cloning the Repositories
 
@@ -50,7 +50,7 @@ For more information, refer to the [AzerothCore Installation Guide](https://www.
 
 ### Docker Installation
 
-Docker installations are considered experimental (unofficial with limited support), and previous Docker experience is recommended. To install the `mod-playerbots` on Docker, first clone the required branch of AzerothCore and this module:
+Docker installations are considered experimental (unofficial with limited support), and previous Docker experience is recommended. To install `mod-playerbots` on Docker, first clone the required branch of AzerothCore and this module:
 
 ```bash
 git clone https://github.com/mod-playerbots/azerothcore-wotlk.git --branch=Playerbot
@@ -103,7 +103,7 @@ Please click on the "⭐" button to stay up to date and help us gain more visibi
 
 ## Acknowledgements
 
-`mod-playerbots` is is based off [ZhengPeiRu21/mod-playerbots](https://github.com/ZhengPeiRu21/mod-playerbots) and [celguar/mangosbot-bots](https://github.com/celguar/mangosbot-bots). We extend our gratitude to [@ZhengPeiRu21](https://github.com/ZhengPeiRu21) and [@celguar](https://github.com/celguar) for the continued efforts in maintaining the module.
+`mod-playerbots` is based on [ZhengPeiRu21/mod-playerbots](https://github.com/ZhengPeiRu21/mod-playerbots) and [celguar/mangosbot-bots](https://github.com/celguar/mangosbot-bots). We extend our gratitude to [@ZhengPeiRu21](https://github.com/ZhengPeiRu21) and [@celguar](https://github.com/celguar) for their continued efforts in maintaining the module.
 
 Also, a thank you to the many contributors who've helped build this project:
 
