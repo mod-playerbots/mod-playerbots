@@ -8,6 +8,7 @@
 
 #include <queue>
 #include <stack>
+#include <mutex>
 
 #include "Chat.h"
 #include "ChatFilter.h"
@@ -354,6 +355,7 @@ public:
 private:
     std::map<uint16, std::string> handlers;
     std::stack<WorldPacket> queue;
+	std::mutex queueMutex;
 };
 
 class ChatCommandHolder

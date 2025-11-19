@@ -86,22 +86,51 @@ void PacketHandlingHelper::AddHandler(uint16 opcode, std::string const handler) 
 
 void PacketHandlingHelper::Handle(ExternalEventHelper& helper)
 {
-    while (!queue.empty())
+    size_t processed = 0;
+
+    while (true)
     {
-        helper.HandlePacket(handlers, queue.top());
-        queue.pop();
+        WorldPacket packet;
+
+        {
+            std::lock_guard<std::mutex> lock(queueMutex);
+            if (queue.empty())
+                break;
+
+            // Copy the packet so we can process it outside the lock
+            packet = queue.top();
+            queue.pop();
+        }
+
+        // Process packet outside the lock to avoid re-entrancy issues
+        helper.HandlePacket(handlers, packet);
+        ++processed;
     }
+
+    if (processed > 0)
+        LOG_DEBUG("playerbots", "Processed %zu packets in Handle()", processed);
 }
 
 void PacketHandlingHelper::AddPacket(WorldPacket const& packet)
 {
     if (packet.empty())
+    {
+        LOG_ERROR("playerbots", "Intercepted empty packet, ignored to prevent crash.");
         return;
+    }
     // assert(handlers);
     // assert(packet);
     // assert(packet.GetOpcode());
-    if (handlers.find(packet.GetOpcode()) != handlers.end())
-        queue.push(WorldPacket(packet));
+    // Only enqueue packets we actually handle
+    // Only enqueue packets we actually handle
+    if (handlers.find(packet.GetOpcode()) == handlers.end())
+    {
+        LOG_ERROR("playerbots", "Intercepted unhandled packet (opcode: %u), ignored to prevent crash.", packet.GetOpcode());
+        return;
+    }
+
+    std::lock_guard<std::mutex> lock(queueMutex);
+    queue.push(WorldPacket(packet));
 }
 
 PlayerbotAI::PlayerbotAI()
