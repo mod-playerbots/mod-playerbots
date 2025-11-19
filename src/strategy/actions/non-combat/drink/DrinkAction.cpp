@@ -20,8 +20,6 @@ bool DrinkAction::isPossible()
 
 bool DrinkAction::isUseful()
 {
-    std::string name = bot->GetName().c_str();
-
     if (isDrinking(bot))
         return false;
 
