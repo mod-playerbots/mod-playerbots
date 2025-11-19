@@ -985,9 +985,7 @@ std::string const RandomPlayerbotFactory::CreateRandomGuildName()
     std::string ruName    = fields[8].Get<std::string>();
 
     int32 dbcLocale = sConfigMgr->GetOption<int32>("DBC.Locale", 0);
-    
     LocaleConstant locale = LOCALE_enUS;
-    
     if (dbcLocale >= 0 && dbcLocale < MAX_LOCALES)
         locale = static_cast<LocaleConstant>(dbcLocale);
     else if (dbcLocale == 255)
@@ -1173,11 +1171,9 @@ std::string const RandomPlayerbotFactory::CreateRandomArenaTeamName()
     std::string esMxName  = fields[7].Get<std::string>();
     std::string ruName    = fields[8].Get<std::string>();
 
-    // DB locale (source of bot text translation)
+    // DB locale
     int32 dbcLocale = sConfigMgr->GetOption<int32>("DBC.Locale", 0);
-    
     LocaleConstant locale = LOCALE_enUS;
-    
     if (dbcLocale >= 0 && dbcLocale < MAX_LOCALES)
         locale = static_cast<LocaleConstant>(dbcLocale);
     else if (dbcLocale == 255)
