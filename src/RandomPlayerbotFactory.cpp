@@ -18,6 +18,7 @@
 #include "Guild.h"            // EmblemInfo::SaveToDB
 #include "Log.h"
 #include "GuildMgr.h"
+#include "Config.h"
 
 constexpr RandomPlayerbotFactory::NameRaceAndGender RandomPlayerbotFactory::CombineRaceAndGender(uint8 race,
                                                                                                 uint8 gender)
@@ -983,10 +984,14 @@ std::string const RandomPlayerbotFactory::CreateRandomGuildName()
     std::string esMxName  = fields[7].Get<std::string>();
     std::string ruName    = fields[8].Get<std::string>();
 
+    int32 dbcLocale = sConfigMgr->GetOption<int32>("DBC.Locale", 0);
+    
     LocaleConstant locale = LOCALE_enUS;
-    int32 confLocale = sPlayerbotAIConfig->randomBotGuildArenaNamesLocale;
-    if (confLocale >= 0 && confLocale < MAX_LOCALES)
-        locale = static_cast<LocaleConstant>(confLocale);
+    
+    if (dbcLocale >= 0 && dbcLocale < MAX_LOCALES)
+        locale = static_cast<LocaleConstant>(dbcLocale);
+    else if (dbcLocale == 255)
+        locale = LOCALE_enUS;
 
     switch (locale)
     {
@@ -1168,11 +1173,15 @@ std::string const RandomPlayerbotFactory::CreateRandomArenaTeamName()
     std::string esMxName  = fields[7].Get<std::string>();
     std::string ruName    = fields[8].Get<std::string>();
 
+    // DB locale (source of bot text translation)
+    int32 dbcLocale = sConfigMgr->GetOption<int32>("DBC.Locale", 0);
+    
     LocaleConstant locale = LOCALE_enUS;
-    int32 confLocale = sPlayerbotAIConfig->randomBotGuildArenaNamesLocale;
-
-    if (confLocale >= 0 && confLocale < MAX_LOCALES)
-        locale = static_cast<LocaleConstant>(confLocale);
+    
+    if (dbcLocale >= 0 && dbcLocale < MAX_LOCALES)
+        locale = static_cast<LocaleConstant>(dbcLocale);
+    else if (dbcLocale == 255)
+    locale = LOCALE_enUS;
 
     std::string chosenName;
 
