@@ -6,6 +6,7 @@
 #include "WorldPacketHandlerStrategy.h"
 
 #include "Playerbots.h"
+#include "Strategy.h"
 
 void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
@@ -69,7 +70,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     triggers.push_back(new TriggerNode("questgiver quest details", NextAction::array(0, new NextAction("turn in query quest", relevance), nullptr)));
 
     // loot roll
-    triggers.push_back(new TriggerNode("very often", NextAction::array(0, new NextAction("loot roll", 10.0f), nullptr)));
+    triggers.push_back(new TriggerNode("very often", NextAction::array(0, new NextAction("loot roll", ACTION_EMERGENCY), nullptr)));
 }
 
 WorldPacketHandlerStrategy::WorldPacketHandlerStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI)

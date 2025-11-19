@@ -246,21 +246,6 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
         bot->IsDuringRemoveFromWorld())
         return;
 
-
-	// Rolling on loot is a meta action that can be executed at any time and is extremely fast
-	// so it should be done as early as possible to avoid locking loots unnecessarily
-    Group* group = bot->GetGroup();
-
-	if (group && group->isRollLootActive() && engines[BOT_STATE_NON_COMBAT])
-	{
-		ActionResult actionResult = engines[BOT_STATE_NON_COMBAT]->ExecuteAction("loot roll");
-
-		if (actionResult == ACTION_RESULT_OK || actionResult == ACTION_RESULT_UNKNOWN)
-		{
-			return;
-		}
-	}
-
     // Handle cheat options (set bot health and power if cheats are enabled)
     if (bot->IsAlive() &&
         (static_cast<uint32>(GetCheat()) > 0 || static_cast<uint32>(sPlayerbotAIConfig->botCheatMask) > 0))
