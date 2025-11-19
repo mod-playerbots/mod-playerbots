@@ -21,8 +21,6 @@ public:
 
     bool Execute(Event event) override;
 
-	bool isUseful();
-
 protected:
     RollVote CalculateRollVote(ItemTemplate const* proto);
 };

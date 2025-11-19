@@ -13,30 +13,6 @@
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 
-bool LootRollAction::isUseful()
-{
-    Group* group = bot->GetGroup();
-
-    if (!group)
-        return false;
-
-    std::vector<Roll*> rolls = group->GetRolls();
-
-    bool isUseful = false;
-
-    for (Roll*& roll : rolls)
-    {
-        if (roll->playerVote.find(bot->GetGUID())->second == NOT_EMITED_YET)
-        {
-            isUseful = true;
-
-            break;
-        }
-    }
-
-    return isUseful;
-}
-
 bool LootRollAction::Execute(Event event)
 {
     Group* group = bot->GetGroup();
