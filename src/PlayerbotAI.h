@@ -423,6 +423,7 @@ public:
     static bool IsMelee(Player* player, bool bySpec = false);
     static bool IsCaster(Player* player, bool bySpec = false);
     static bool IsRangedDps(Player* player, bool bySpec = false);
+    static bool IsMeleeDps(Player* player, bool bySpec = false);
     static bool IsCombo(Player* player);
     static bool IsBotMainTank(Player* player);
     static bool IsMainTank(Player* player);
