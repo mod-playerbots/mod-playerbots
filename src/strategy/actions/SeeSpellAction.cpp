@@ -32,61 +32,54 @@ Creature* SeeSpellAction::CreateWps(Player* wpOwner, float x, float y, float z, 
 
 bool SeeSpellAction::Execute(Event event)
 {
-    WorldPacket p(event.getPacket());  //
+    // RTSC packet data
+    WorldPacket p(event.getPacket());
+    uint8 castCount;
     uint32 spellId;
-    uint8 castCount, castFlags;
-    Player* master = botAI->GetMaster();
+    uint8 castFlags;
 
-    // Reset read position to start of the RTSC payload before decoding it
-    p.rpos(0);
-
-    // RTSC header = castCount (uint8) + spellId (uint32) + castFlags (uint8)
+    // check RTSC header size = castCount (uint8) + spellId (uint32) + castFlags (uint8)
     uint32 const rtscHeaderSize = sizeof(uint8) + sizeof(uint32) + sizeof(uint8);
-
-    // Prevent out-of-bounds reads when the RTSC packet is empty or truncated
     if (p.size() < rtscHeaderSize)
-        return false;
-
-    try
     {
-        // Protect header deserialization from ByteBufferException on malformed RTSC packets
-        p >> castCount >> spellId >> castFlags;
-    }
-    catch (ByteBufferException const&)
-    {
-        // Abort safely instead of letting the exception crash the map thread
+        LOG_WARN("playerbots", "SeeSpellAction: Corrupt RTSC packet size={}, expected>={}", p.size(), rtscHeaderSize);
         return false;
     }
 
+    Player* master = botAI->GetMaster();
     if (!master)
         return false;
+
+    // read RTSC packet data
+    p.rpos(0); // set read position to start
+    p >> castCount >> spellId >> castFlags;
 
     // if (!botAI->HasStrategy("RTSC", botAI->GetState()))
     //     return false;
 
     if (spellId != RTSC_MOVE_SPELL)
         return false;
-
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    //SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId) // no need to check hardcoded value every single time.
 
     SpellCastTargets targets;
-
     //WorldPosition spellPosition(master->GetMapId(), targets.GetDst()->_position);
 
+
+    // should not throw exception,just defense measure to prevent any crashes when core function breaks.
     try
     {
-        // Guard SpellCastTargets deserialization to avoid exceptions on truncated RTSC payloads
-        targets.Read(p, botAI->GetMaster());
+        targets.Read(p, master);
+        if (!targets.GetDst())
+        {
+            // do not dereference a null destination; ignore malformed RTSC packets instead of crashing
+            LOG_WARN("playerbots", "SeeSpellAction: (malformed) RTSC payload does not contain full targets data");
+            return false;
+        }
     }
     catch (ByteBufferException const&)
     {
-        // Stop processing gracefully if the RTSC payload does not contain full targets data
-        return false;
-    }
-
-    if (!targets.GetDst())
-    {
-        // Do not dereference a null destination; ignore malformed RTSC packets instead of crashing
+        // ignore malformed RTSC packets instead of crashing
+        LOG_WARN("playerbots", "SeeSpellAction: Failed deserialization (malformed) RTSC payload");
         return false;
     }
 
