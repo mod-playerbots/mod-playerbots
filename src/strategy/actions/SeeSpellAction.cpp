@@ -60,9 +60,6 @@ bool SeeSpellAction::Execute(Event event)
     if (spellId != RTSC_MOVE_SPELL)
         return false;
 
-    //SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId) // no need to check hardcoded value every single time.
-    //WorldPosition spellPosition(master->GetMapId(), targets.GetDst()->_position);
-
     // should not throw exception,just defensive measure to prevent any crashes when core function breaks.
     SpellCastTargets targets;
     try
