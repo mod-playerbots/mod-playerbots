@@ -3,7 +3,7 @@
 #include "Event.h"
 
 #include "DrinkAuraEnum.h"
-#include "isDrinking.h"
+#include "isEatingOrDrinking.h"
 #include "shouldKeepDrinking.h"
 
 
@@ -20,7 +20,7 @@ bool DrinkAction::isPossible()
 
 bool DrinkAction::isUseful()
 {
-    if (isDrinking(bot))
+    if (isEatingOrDrinking(bot))
         return false;
 
     bool keepDrinking = shouldKeepDrinking(botAI);

@@ -56,8 +56,7 @@
 #include "Unit.h"
 #include "UpdateTime.h"
 #include "Vehicle.h"
-#include "isDrinking.h"
-#include "isDrinking.h"
+#include "isEatingOrDrinking.h"
 #include "shouldKeepDrinking.h"
 
 const int SPELL_TITAN_GRIP = 49152;
@@ -1447,7 +1446,7 @@ void PlayerbotAI::DoNextAction(bool min)
 
     bool minimal = !AllowActivity();
 
-	if (!minimal && isDrinking(bot) && shouldKeepDrinking(this))
+	if (!minimal && isEatingOrDrinking(bot) && shouldKeepDrinking(this))
 	{
 		std::string name = bot->GetName().c_str();
 
