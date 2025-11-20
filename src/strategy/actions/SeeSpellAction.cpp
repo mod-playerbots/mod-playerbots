@@ -12,7 +12,7 @@
 #include "RTSCValues.h"
 #include "RtscAction.h"
 #include "PositionValue.h"
-#include "ByteBuffer.h" // For ByteBufferException and safe RTSC WorldPacket parsing
+#include "ByteBuffer.h"
 
 Creature* SeeSpellAction::CreateWps(Player* wpOwner, float x, float y, float z, float o, uint32 entry, Creature* lastWp,
                                     bool important)
