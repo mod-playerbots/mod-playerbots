@@ -1717,7 +1717,7 @@ bool PlayerbotAI::IsCombo(Player* player)
 
 bool PlayerbotAI::IsRangedDps(Player* player, bool bySpec) { return IsRanged(player, bySpec) && IsDps(player, bySpec); }
 
-bool PlayerbotAI::IsMeleeDps(Player* player, bool bySpec) { return !IsRanged(player, bySpec) && IsDps(player, bySpec); }
+bool PlayerbotAI::IsMeleeDps(Player* player, bool bySpec) { return IsMelee(player, bySpec) && IsDps(player, bySpec); }
 
 bool PlayerbotAI::IsHealAssistantOfIndex(Player* player, int index)
 {

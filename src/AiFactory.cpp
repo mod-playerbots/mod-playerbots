@@ -417,7 +417,7 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
     {
         engine->addStrategy("tank face", false);
     }
-    if (PlayerbotAI::IsMelee(player, true) && PlayerbotAI::IsDps(player, true))
+    if (PlayerbotAI::IsMeleeDps(player, true))
     {
         engine->addStrategy("behind", false);
     }

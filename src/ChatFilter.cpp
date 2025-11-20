@@ -44,7 +44,7 @@ public:
             return "";
 
         bool dps = msgLower.find("@dps") == 0;
-        if (dps && (botAI->IsTank(bot) || botAI->IsHeal(bot)))
+        if (dps && !botAI->IsDps(bot))
             return "";
 
         bool heal = msgLower.find("@heal") == 0;
@@ -56,15 +56,15 @@ public:
             return "";
 
         bool melee = msgLower.find("@melee") == 0;
-        if (melee && botAI->IsRanged(bot))
+        if (melee && !botAI->IsMelee(bot))
             return "";
 
         bool rangeddps = msgLower.find("@rangeddps") == 0;
-        if (rangeddps && (!botAI->IsRanged(bot) || botAI->IsTank(bot) || botAI->IsHeal(bot)))
+        if (rangeddps && !botAI->IsRangedDps(bot))
             return "";
 
         bool meleedps = msgLower.find("@meleedps") == 0;
-        if (meleedps && (!botAI->IsMelee(bot) || botAI->IsTank(bot) || botAI->IsHeal(bot)))
+        if (meleedps && !botAI->IsMeleeDps(bot))
             return "";
 
         if (tank || dps || heal || ranged || melee)

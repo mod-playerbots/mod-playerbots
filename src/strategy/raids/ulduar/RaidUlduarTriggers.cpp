@@ -2341,7 +2341,7 @@ bool YoggSaronPhase3PositioningTrigger::IsActive()
         return true;
     }
 
-    if (botAI->IsMelee(bot) && !botAI->IsTank(bot) &&
+    if (botAI->IsMeleeDps(bot) &&
         bot->GetDistance2d(ULDUAR_YOGG_SARON_PHASE_3_MELEE_SPOT.GetPositionX(),
             ULDUAR_YOGG_SARON_PHASE_3_MELEE_SPOT.GetPositionY()) > 15.0f)
     {

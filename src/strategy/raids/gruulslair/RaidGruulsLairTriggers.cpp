@@ -49,7 +49,7 @@ bool HighKingMaulgarDeterminingKillOrderTrigger::IsActive()
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
     Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
 
-    return (botAI->IsDps(bot) || botAI->IsTank(bot)) &&
+    return (!botAI->IsHeal(bot)) &&
            !(botAI->IsMainTank(bot) && maulgar && maulgar->IsAlive()) &&
            !(botAI->IsAssistTankOfIndex(bot, 0) && olm && olm->IsAlive()) &&
            !(botAI->IsAssistTankOfIndex(bot, 1) && blindeye && blindeye->IsAlive()) &&

@@ -1023,7 +1023,7 @@ bool RazorscaleHarpoonAction::Execute(Event event)
     if (!closestHarpoon)
         return false;
 
-    // Find the nearest ranged DPS (not a healer) to the harpoon
+    // Find the nearest ranged DPS to the harpoon
     Player* closestRangedDPS = nullptr;
     minDistance = std::numeric_limits<float>::max();
     GuidVector groupBots = AI_VALUE(GuidVector, "group members");
@@ -1031,7 +1031,7 @@ bool RazorscaleHarpoonAction::Execute(Event event)
     for (auto& guid : groupBots)
     {
         Player* member = ObjectAccessor::FindPlayer(guid);
-        if (member && member->IsAlive() && botAI->IsRanged(member) && botAI->IsDps(member) && !botAI->IsHeal(member))
+        if (member && member->IsAlive() && botAI->IsRangedDps(member))
         {
             float distance = member->GetDistance2d(closestHarpoon);
             if (distance < minDistance)
@@ -1096,8 +1096,8 @@ bool RazorscaleHarpoonAction::isUseful()
         {
             if (RazorscaleBossHelper::IsHarpoonReady(harpoonGO))
             {
-                // Check if this bot is a ranged DPS (not a healer)
-                if (botAI->IsRanged(bot) && botAI->IsDps(bot) && !botAI->IsHeal(bot))
+                // Check if this bot is a ranged DPS
+                if (botAI->IsRangedDps(bot))
                     return true;
             }
         }
@@ -3249,7 +3249,7 @@ bool YoggSaronPhase3PositioningAction::Execute(Event event)
         }
     }
 
-    if (botAI->IsMelee(bot) && !botAI->IsTank(bot))
+    if (botAI->IsMeleeDps(bot))
     {
         if (botAI->HasCheat(BotCheatMask::raid))
         {

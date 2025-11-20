@@ -64,7 +64,7 @@ bool SartharionDpsTrigger::IsActive()
 
 bool SartharionMeleePositioningTrigger::IsActive()
 {
-    if (!botAI->IsMelee(bot) || !botAI->IsDps(bot)) { return false; }
+    if (botAI->IsMeleeDps(bot)) { return false; }
 
     Unit* boss = AI_VALUE2(Unit*, "find target", "sartharion");
     if (!boss) { return false; }
