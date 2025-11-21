@@ -4604,7 +4604,7 @@ void PlayerbotAI::RemoveShapeshift()
     RemoveAura("swift flight form");
     RemoveAura("aquatic form");
     RemoveAura("ghost wolf");
-    // RemoveAura("tree of life");
+    RemoveAura("tree of life");
 }
 
 // Mirrors Blizzard’s GetAverageItemLevel rules :
