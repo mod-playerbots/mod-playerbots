@@ -19,6 +19,7 @@
 #include "PlayerbotFactory.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
+#include "Player.h"
 
 using ai::buff::MakeAuraQualifierForBuff;
 using ai::buff::UpgradeToGroupIfAppropriate;
@@ -36,35 +37,29 @@ static inline std::string MakeGroupTag(Group* group)
 // Log ONLY bots whose master is the leader of their group/raid == my raid
 static inline bool ShouldLogForThisBot(Player* bot)
 {
-    PlayerbotAI* ai = bot ? GET_PLAYERBOT_AI(bot) : nullptr;
+    if (!bot)
+        return false;
+
+    // Skip extra work if debug logging for playerbots is disabled
+    if (!sLog->ShouldLog("playerbots", LogLevel::LOG_LEVEL_DEBUG))
+        return false;
+
+    PlayerbotAI* ai = GET_PLAYERBOT_AI(bot);
     Player* master = ai ? ai->GetMaster() : nullptr;
-    Group* group = bot ? bot->GetGroup() : nullptr;
+    Group* group = bot->GetGroup();
     return master && group && (group->GetLeaderGUID() == master->GetGUID());
 }
 
-// Helper : detect tank role on the target (player bot or not) return true if spec is tank or if the bot have tank
-// strategies (bear/tank/tank face).
+// Detect tank role on the target
 static inline bool IsTankRole(Player* player)
 {
-    if (!player)
-        return false;
-    if (player->HasTankSpec())
-        return true;
-    if (PlayerbotAI* otherAI = GET_PLAYERBOT_AI(player))
-    {	
-        if (otherAI->HasStrategy("tank", BOT_STATE_NON_COMBAT) || otherAI->HasStrategy("tank", BOT_STATE_COMBAT) ||
-            otherAI->HasStrategy("tank face", BOT_STATE_NON_COMBAT) ||
-            otherAI->HasStrategy("tank face", BOT_STATE_COMBAT) || otherAI->HasStrategy("bear", BOT_STATE_NON_COMBAT) ||
-            otherAI->HasStrategy("bear", BOT_STATE_COMBAT))
-            return true;
-    }
-    return false;
+    return player && PlayerbotAI::IsTank(player, /*bySpec=*/false);
 }
 
 // Added for solo paladin patch : determine if he's the only paladin on party
 static inline bool IsOnlyPaladinInGroup(Player* bot)
 {
-    // Logging de coordination des rôles
+    // Logging of Role Coordination
     if (!bot)
         return false;
 
@@ -110,9 +105,7 @@ static inline uint32 CountPaladinsInGroup(Player* bot)
 static inline bool ShouldReceiveMight(Player* targetPlayer, Player* caster)
 {
     if (!targetPlayer)
-    {
         return false;
-    }
 
     int specTab = AiFactory::GetPlayerSpecTab(targetPlayer);
     switch (targetPlayer->getClass())
@@ -151,8 +144,6 @@ static inline bool IsDesignatedRolePaladin(Player* bot, const char* roleName)
     if (!group)
         return true;
 
-    const bool doLog = ShouldLogForThisBot(bot);
-
     // Gather paladins with the same role strategy
     std::vector<ObjectGuid> contenders;
     std::vector<std::string> contenderNames;
@@ -162,28 +153,28 @@ static inline bool IsDesignatedRolePaladin(Player* bot, const char* roleName)
         if (!memberPlayer || !memberPlayer->IsInWorld() || memberPlayer->getClass() != CLASS_PALADIN)
             continue;
 
-        if (PlayerbotAI* otherAI = GET_PLAYERBOT_AI(memberPlayer))
+        if (PlayerbotAI* otherAI = GET_PLAYERBOT_AI(memberPlayer);
+            otherAI && otherAI->HasStrategy(roleName, BOT_STATE_NON_COMBAT))
         {
-            if (otherAI->HasStrategy(roleName, BOT_STATE_NON_COMBAT))
-            {
-                contenders.push_back(memberPlayer->GetGUID());
-                contenderNames.emplace_back(memberPlayer->GetName());
-            }
+            contenders.push_back(memberPlayer->GetGUID());
+            contenderNames.emplace_back(memberPlayer->GetName());
         }
     }
 
     if (contenders.empty())
     {
-        if (doLog)
+        if (ShouldLogForThisBot(bot))
             LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> no paladin wearer (proceed)", groupTag, roleName);
         return true;
     }
     if (contenders.size() == 1u)
     {
         const bool designated = (bot->GetGUID() == contenders.front());
-        if (doLog)
-            LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> unic wearer: {} | moi={} -> {}", groupTag, roleName,
+        if (ShouldLogForThisBot(bot))
+        {
+            LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> unic wearer: {} | me={} -> {}", groupTag, roleName,
                       contenderNames.front(), bot->GetName(), (designated ? "YES" : "NO"));
+        }
         return designated;  // only the wearer acts
     }
 
@@ -201,8 +192,8 @@ static inline bool IsDesignatedRolePaladin(Player* bot, const char* roleName)
         }
     }
     bool designated = (bot->GetGUID() == winner);
-    if (doLog)
-        LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> candidats=[{}] | élu={} | moi={} -> {}", groupTag, roleName,
+    if (ShouldLogForThisBot(bot))
+        LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> candidates=[{}] | winner={} | self={} -> {}", groupTag, roleName,
                   fmt::join(contenderNames, ", "), winnerName, bot->GetName(), (designated ? "YES" : "NO"));
     return designated;
 }
@@ -455,9 +446,6 @@ bool CastBlessingOfWisdomOnPartyAction::Execute(Event event)
 
     // Force Wisdom into party mode (no redirection based on class)
     std::string castName = "blessing of wisdom";
-    if (castName.empty())
-        return false;
-
     auto RP = ai::chat::MakeGroupAnnouncer(bot);
     castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName, /*announceOnMissing=*/true, RP);
     return botAI->CastSpell(castName, target);
@@ -516,34 +504,27 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event event)
         targetOk = IsTankRole(targetPlayer) && !hasSanct;
     }
 
-    if (!targetOk)
+    if (Group* group = bot->GetGroup(); !targetOk && group)
     {
-        if (Group* group = bot->GetGroup())
+        for (GroupReference* memberRef = group->GetFirstMember(); memberRef; memberRef = memberRef->next())
         {
-            for (GroupReference* memberRef = group->GetFirstMember(); memberRef; memberRef = memberRef->next())
-            {
-                Player* memberPlayer = memberRef->GetSource();
-                if (!memberPlayer)
-                {
-                    continue;
-                }
-                if (!memberPlayer->IsInWorld() || !memberPlayer->IsAlive())
-                {	
-                    continue;
-                }
-                if (!IsTankRole(memberPlayer))
-                {
-                    continue;
-                }
+            Player* memberPlayer = memberRef->GetSource();
+            if (!memberPlayer)
+                continue;
 
-                bool hasSanct = HasSanctAura(memberPlayer);
-                if (!hasSanct)
-                {
-                    target = memberPlayer;  // prioritize this tank
-                    targetPlayer = memberPlayer;
-                    targetOk = true;
-                    break;
-                }
+            if (!memberPlayer->IsInWorld() || !memberPlayer->IsAlive())
+                continue;
+
+            if (!IsTankRole(memberPlayer))
+                continue;
+
+            bool hasSanct = HasSanctAura(memberPlayer);
+            if (!hasSanct)
+            {
+                target = memberPlayer;  // prioritize this tank
+                targetPlayer = memberPlayer;
+                targetOk = true;
+                break;
             }
         }
     }
@@ -598,7 +579,7 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
     if (ShouldLogForThisBot(bot))
     {
         const std::string groupTag = MakeGroupTag(bot->GetGroup());
-        LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> {} is alloxed to buff Kings", groupTag,
+        LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> {} is allowed to buff Kings", groupTag,
                   (actAsBmana ? "bmana" : "bstats"), bot->GetName());
     }
 
@@ -606,7 +587,7 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
     if (!target)
         return false;
 
-    Player* targetPlayer = target->ToPlayer();  // <-- déclare targetPlayer ici
+    Player* targetPlayer = target->ToPlayer();
 
     Group* group = bot->GetGroup();
     if (!group)
@@ -667,7 +648,7 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
     // If we act in bmana mode => Kings MONO on TANKS only
     if (actAsBmana && (!targetPlayer || !IsTankRole(targetPlayer)))
     {
-        LOG_DEBUG("playerbots", "[Kings/bmana] Skip no-tank {}", target->GetName());
+        LOG_DEBUG("playerbots", "[Kings/bmana] Skip non-tank {}", target->GetName());
         return false;
     }
 
