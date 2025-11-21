@@ -173,4 +173,8 @@ void BearTankDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(
         new TriggerNode("bash on enemy healer",
                         NextAction::array(0, new NextAction("bash on enemy healer", ACTION_INTERRUPT + 1), nullptr)));
+    // Out of combat: if there are no attackers anymore, try to return to caster form
+    triggers.push_back(
+        new TriggerNode("no attackers",
+                        NextAction::array(0, new NextAction("caster form", ACTION_HIGH + 8), nullptr)));
 }

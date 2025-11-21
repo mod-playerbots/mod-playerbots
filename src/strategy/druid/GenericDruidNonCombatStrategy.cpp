@@ -122,6 +122,11 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
 
     triggers.push_back(new TriggerNode("often", NextAction::array(0, new NextAction("apply oil", 1.0f), nullptr)));
 
+    // Out of combat: regularly force a return to caster form if shapeshifted
+    triggers.push_back(
+        new TriggerNode("often",
+                        NextAction::array(0, new NextAction("caster form", ACTION_HIGH + 9), nullptr)));
+
     triggers.push_back(
         new TriggerNode("party member critical health",
                         NextAction::array(0,
