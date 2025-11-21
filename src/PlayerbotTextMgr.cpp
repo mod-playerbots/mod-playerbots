@@ -55,7 +55,9 @@ void PlayerbotTextMgr::LoadCommandTexts()
 
     commandTexts.clear();
 
-    QueryResult results = PlayerbotsDatabase.Query("SELECT name, text, text_loc1, text_loc2, text_loc3, text_loc4, text_loc5, text_loc6, text_loc7, text_loc8 FROM playerbots_command_texts");
+    QueryResult results = PlayerbotsDatabase.Query(
+        "SELECT name, text, text_loc1, text_loc2, text_loc3, text_loc4, text_loc5, text_loc6, text_loc7, text_loc8 "
+        "FROM playerbots_command_texts");
     if (!results)
     {
         LOG_INFO("playerbots", ">> Loaded 0 command texts. Table `playerbots_command_texts` is empty.");
@@ -71,7 +73,7 @@ void PlayerbotTextMgr::LoadCommandTexts()
         CommandText& entry = commandTexts[name];
 
         entry.text = fields[1].Get<std::string>();
-        for (uint32 i = 0; i < 8; ++i)
+        for (uint32 i = 0; i < MAX_LOCALES; ++i)
         {
             entry.text_loc[i] = fields[2 + i].Get<std::string>();
         }
@@ -135,7 +137,7 @@ std::string PlayerbotTextMgr::GetBotText(std::string name, std::map<std::string,
 }
 
 std::string PlayerbotTextMgr::GetBotTextOrDefault(std::string name, std::string defaultText,
-    std::map<std::string, std::string> placeholders)
+                                                  std::map<std::string, std::string> placeholders)
 {
     std::string botText = GetBotText(name, placeholders);
     if (botText.empty())
@@ -263,16 +265,16 @@ std::string PlayerbotTextMgr::GetCommandText(std::string name, uint32 locale, co
     if (it == commandTexts.end())
     {
         LOG_ERROR("playerbots", "PlayerbotTextMgr: Command text '{}' not found", name);
-        return name; // Return the identifier as fallback
+        return name;  // Return the identifier as fallback
     }
 
     const CommandText& entry = it->second;
     std::string text;
 
     // Try to get localized version
-    if (locale > 0 && locale <= 8 && !entry.text_loc[locale - 1].empty())
+    if (locale < MAX_LOCALES && !entry.text_loc[locale].empty())
     {
-        text = entry.text_loc[locale - 1];
+        text = entry.text_loc[locale];
     }
     else
     {
@@ -313,7 +315,8 @@ std::string PlayerbotTextMgr::FormatCommandText(std::string text, const std::vec
     return text;
 }
 
-std::string PlayerbotTextMgr::GetLocalizedCommandText(const std::string& name, WorldSession* session, const std::vector<std::string>& args)
+std::string PlayerbotTextMgr::GetLocalizedCommandText(const std::string& name, WorldSession* session,
+                                                      const std::vector<std::string>& args)
 {
     return GetCommandText(name, session ? session->GetSessionDbcLocale() : 0, args);
 }

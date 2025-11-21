@@ -73,7 +73,7 @@ public:
             botTextLocalePriority[i] = 0;
         }
     };
-    virtual ~PlayerbotTextMgr(){};
+    virtual ~PlayerbotTextMgr() {};
     static PlayerbotTextMgr* instance()
     {
         static PlayerbotTextMgr instance;
@@ -92,7 +92,8 @@ public:
     void LoadBotTextChance();
     void LoadCommandTexts();
     std::string GetCommandText(std::string name, uint32 locale, const std::vector<std::string>& args = {});
-    std::string GetLocalizedCommandText(const std::string& name, WorldSession* session, const std::vector<std::string>& args = {});
+    std::string GetLocalizedCommandText(const std::string& name, WorldSession* session,
+                                        const std::vector<std::string>& args = {});
     static void replaceAll(std::string& str, const std::string& from, const std::string& to);
     bool rollTextChance(std::string text);
 
@@ -107,8 +108,8 @@ private:
 
     struct CommandText
     {
-        std::string text;           // English (default)
-        std::string text_loc[8];    // Localized versions
+        std::string text;                   // English (default)
+        std::string text_loc[MAX_LOCALES];  // Localized versions
     };
     std::map<std::string, CommandText> commandTexts;
     std::string FormatCommandText(std::string text, const std::vector<std::string>& args);
