@@ -126,7 +126,7 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
     triggers.push_back(
         new TriggerNode("no more attackers",
                         NextAction::array(0, new NextAction("cancel tree form", ACTION_HIGH + 8), nullptr)));
-						
+
     triggers.push_back(
         new TriggerNode("party member critical health",
                         NextAction::array(0,
