@@ -116,6 +116,8 @@ public:
     }
 
     // Generic helper for account link commands
+    // Forwards subcommands to PlayerbotMgr::HandleConsoleCommand with the command name prepended
+    // Example: HandleGenerateCommand("mycode") -> PlayerbotMgr::HandleConsoleCommand("generate mycode")
     static bool HandleAccountLinkCommand(ChatHandler* handler, char const* args, const char* command)
     {
         std::string commandArgs = command;
@@ -127,13 +129,16 @@ public:
         return PlayerbotMgr::HandleConsoleCommand(handler, commandArgs.c_str());
     }
 
-    // Simplified account link command handlers
-    static bool HandleGenerateCommand(ChatHandler* handler, char const* args) { return HandleAccountLinkCommand(handler, args, "generate"); }
-    static bool HandleConnectCommand(ChatHandler* handler, char const* args) { return HandleAccountLinkCommand(handler, args, "connect"); }
-    static bool HandleCodesCommand(ChatHandler* handler, char const* args) { return HandleAccountLinkCommand(handler, args, "codes"); }
-    static bool HandleRemoveCommand(ChatHandler* handler, char const* args) { return HandleAccountLinkCommand(handler, args, "remove"); }
-    static bool HandleActiveLinksCommand(ChatHandler* handler, char const* args) { return HandleAccountLinkCommand(handler, args, "activelinks"); }
-    static bool HandleDisconnectCommand(ChatHandler* handler, char const* args) { return HandleAccountLinkCommand(handler, args, "disconnect"); }
+    // Wrapper functions for account linking subcommands
+    // Each function forwards to HandleAccountLinkCommand which delegates to PlayerbotMgr::HandleConsoleCommand
+    // This pattern allows the command table to use simple function pointers while keeping implementation centralized
+
+    static bool HandleGenerateCommand(ChatHandler* handler, char const* args) { return HandleAccountLinkCommand(handler, args, "generate"); }           // Generate new invite code
+    static bool HandleConnectCommand(ChatHandler* handler, char const* args) { return HandleAccountLinkCommand(handler, args, "connect"); }             // Connect using invite code
+    static bool HandleCodesCommand(ChatHandler* handler, char const* args) { return HandleAccountLinkCommand(handler, args, "codes"); }                 // List available codes
+    static bool HandleRemoveCommand(ChatHandler* handler, char const* args) { return HandleAccountLinkCommand(handler, args, "remove"); }               // Remove invite code
+    static bool HandleActiveLinksCommand(ChatHandler* handler, char const* args) { return HandleAccountLinkCommand(handler, args, "activelinks"); }     // List active connections
+    static bool HandleDisconnectCommand(ChatHandler* handler, char const* args) { return HandleAccountLinkCommand(handler, args, "disconnect"); }       // Disconnect linked account
 };
 
 void AddPlayerbotsCommandscripts() { new playerbots_commandscript(); }
