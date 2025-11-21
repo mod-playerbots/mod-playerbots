@@ -192,6 +192,31 @@ bool NoAttackersTrigger::IsActive()
     return !AI_VALUE(Unit*, "current target") && AI_VALUE(uint8, "my attacker count") > 0;
 }
 
+bool NoMoreAttackersTrigger::IsActive()
+{
+    // Trigger is active only when the bot is fully out of combat,
+    // has no attackers left and no valid hostile target to attack.
+
+    // If the bot (or its nearby group) is still in combat, stay in bear.
+    if (AI_VALUE2(bool, "combat", "self target"))
+        return false;
+
+    // If somebody is still hitting the bot, stay in bear.
+    if (AI_VALUE(uint8, "my attacker count") != 0)
+        return false;
+
+    Player* bot = botAI->GetBot();
+    Unit* target = AI_VALUE(Unit*, "current target");
+
+    // If we still have a living enemy target (for example after "attack my target"),
+    // stay in bear while running to it.
+    if (bot && target && target->IsAlive() && bot->IsValidAttackTarget(target))
+        return false;
+
+    // Out of combat, no attackers, no hostile target: it is safe to go back to caster.
+    return true;
+}
+
 bool InvalidTargetTrigger::IsActive() { return AI_VALUE2(bool, "invalid target", "current target"); }
 
 bool NoTargetTrigger::IsActive() { return !AI_VALUE(Unit*, "current target"); }

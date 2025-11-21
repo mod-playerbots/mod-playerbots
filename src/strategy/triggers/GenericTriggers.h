@@ -364,6 +364,14 @@ public:
     bool IsActive() override;
 };
 
+class NoMoreAttackersTrigger : public Trigger
+{
+public:
+    NoMoreAttackersTrigger(PlayerbotAI* botAI) : Trigger(botAI, "no more attackers") {}
+
+    bool IsActive() override;
+};
+
 class NoTargetTrigger : public Trigger
 {
 public:

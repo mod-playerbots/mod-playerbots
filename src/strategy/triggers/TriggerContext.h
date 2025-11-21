@@ -73,6 +73,7 @@ public:
 
         creators["loot available"] = &TriggerContext::LootAvailable;
         creators["no attackers"] = &TriggerContext::NoAttackers;
+        creators["no more attackers"] = &TriggerContext::NoMoreAttackers;
         creators["no target"] = &TriggerContext::NoTarget;
         creators["target in sight"] = &TriggerContext::TargetInSight;
         creators["not dps target active"] = &TriggerContext::not_dps_target_active;
@@ -308,6 +309,7 @@ private:
     static Trigger* AlmostFullEnergyAvailable(PlayerbotAI* botAI) { return new EnergyAvailable(botAI, 90); }
     static Trigger* LootAvailable(PlayerbotAI* botAI) { return new LootAvailableTrigger(botAI); }
     static Trigger* NoAttackers(PlayerbotAI* botAI) { return new NoAttackersTrigger(botAI); }
+    static Trigger* NoMoreAttackers(PlayerbotAI* botAI) { return new NoMoreAttackersTrigger(botAI); }
     static Trigger* TankAssist(PlayerbotAI* botAI) { return new TankAssistTrigger(botAI); }
     static Trigger* Timer(PlayerbotAI* botAI) { return new TimerTrigger(botAI); }
     static Trigger* TimerBG(PlayerbotAI* botAI) { return new TimerBGTrigger(botAI); }
