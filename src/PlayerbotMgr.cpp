@@ -1602,8 +1602,26 @@ void PlayerbotMgr::OnBotLoginInternal(Player* const bot)
 
 void PlayerbotMgr::OnPlayerLogin(Player* player)
 {
+    if (!player)
+        return;
+
+    WorldSession* session = player->GetSession();
+    if (!session)
+    {
+        LOG_WARN("playerbots", "Unable to register locale priority for player {} because the session is missing", player->GetName());
+        return;
+    }
+
+    // DB locale (source of bot text translation)
+    LocaleConstant const databaseLocale = session->GetSessionDbLocaleIndex();
+
+    // For bot texts (DB-driven), prefer the database locale with a safe fallback.
+    LocaleConstant usedLocale = databaseLocale;
+    if (usedLocale >= MAX_LOCALES)
+        usedLocale = LOCALE_enUS; // fallback
+
     // set locale priority for bot texts
-    sPlayerbotTextMgr->AddLocalePriority(player->GetSession()->GetSessionDbcLocale());
+    sPlayerbotTextMgr->AddLocalePriority(usedLocale);
 
     if (sPlayerbotAIConfig->selfBotLevel > 2)
         HandlePlayerbotCommand("self", player);
@@ -1611,7 +1629,7 @@ void PlayerbotMgr::OnPlayerLogin(Player* player)
     if (!sPlayerbotAIConfig->botAutologin)
         return;
 
-    uint32 accountId = player->GetSession()->GetAccountId();
+    uint32 accountId = session->GetAccountId();
     QueryResult results = CharacterDatabase.Query("SELECT name FROM characters WHERE account = {}", accountId);
     if (results)
     {
