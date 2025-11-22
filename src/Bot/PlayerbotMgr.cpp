@@ -1950,8 +1950,9 @@ void PlayerbotMgr::HandleViewLinkedAccountsCommand(Player* player)
             handler.PSendSysMessage("{} (linked: {})", shortName.c_str(), dateBuffer);
         } while (linkedResult->NextRow());
     }
-    catch (const std::exception&)
+    catch (const std::exception& e)
     {
+        LOG_ERROR("playerbots", "Exception in HandleViewLinkedAccountsCommand: {}", e.what());
         SendGenericError(handler, "viewing linked accounts");
     }
 }
@@ -2198,8 +2199,9 @@ void PlayerbotMgr::HandleLinkWithInviteCommand(Player* player, const std::string
         handler.PSendSysMessage("Accounts linked successfully as '{}'! You can now manage each other's player bots.",
                                 shortName.c_str());
     }
-    catch (const std::exception&)
+    catch (const std::exception& e)
     {
+        LOG_ERROR("playerbots", "Exception in HandleLinkWithInviteCommand: {}", e.what());
         SendGenericError(handler, "invite code linking");
     }
 }
