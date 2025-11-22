@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS `playerbots_invite_codes` (
     `expires_at` INT NOT NULL,
     `status` TINYINT NOT NULL DEFAULT 1,
     KEY `idx_account_id` (`account_id`),
+    UNIQUE KEY `idx_unique_code` (`code`),
     KEY `idx_expires_at` (`expires_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
