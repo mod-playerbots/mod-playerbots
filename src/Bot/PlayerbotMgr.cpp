@@ -2078,6 +2078,9 @@ void PlayerbotMgr::HandleLinkWithInviteCommand(Player* player, const std::string
         shortName = shortName.substr(1, shortName.size() - 2);
     }
 
+    // Trim leading/trailing whitespace using AzerothCore helper
+    Acore::StringTrim(shortName);
+
     if (inviteCode.empty() || shortName.empty())
     {
         handler.PSendSysMessage("Usage: connect <inviteCode> <shortName>");
@@ -2085,10 +2088,28 @@ void PlayerbotMgr::HandleLinkWithInviteCommand(Player* player, const std::string
         return;
     }
 
-    // Validate shortName
+    // Validate shortName length
     if (shortName.length() > 32)
     {
         handler.PSendSysMessage("Short name must be 32 characters or less.");
+        return;
+    }
+
+    // Validate shortName content: only allow alphanumeric, spaces, hyphens, and underscores
+    // This prevents SQL injection, special characters, and ensures clean display names
+    bool isValidShortName = true;
+    for (char c : shortName)
+    {
+        if (!std::isalnum(static_cast<unsigned char>(c)) && c != ' ' && c != '-' && c != '_')
+        {
+            isValidShortName = false;
+            break;
+        }
+    }
+
+    if (!isValidShortName)
+    {
+        handler.PSendSysMessage("Short name can only contain letters, numbers, spaces, hyphens, and underscores.");
         return;
     }
 
