@@ -8,12 +8,15 @@ AND TABLE_NAME = 'playerbots_account_links'
 AND COLUMN_NAME = 'short_name';
 
 SET @sql = IF(@col_exists = 0,
-    'ALTER TABLE playerbots_account_links ADD COLUMN `short_name` varchar(32) NOT NULL DEFAULT ''LegacyLink'' COMMENT ''Friendly name for this connection (same for both users)''',
+    'ALTER TABLE playerbots_account_links ADD COLUMN `short_name` varchar(32) NULL COMMENT ''Friendly name for this connection (same for both users)''',
     'SELECT ''Column short_name already exists'' AS msg');
 
 PREPARE stmt FROM @sql;
 EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
+
+-- Assign unique short_name to existing records
+UPDATE playerbots_account_links SET short_name = CONCAT('LegacyLink_', id) WHERE short_name IS NULL;
 
 -- Add index for shortName lookups (if it doesn't exist)
 SET @index_exists = 0;
