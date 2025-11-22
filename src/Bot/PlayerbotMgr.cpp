@@ -2140,7 +2140,8 @@ void PlayerbotMgr::HandleLinkWithInviteCommand(Player* player, const std::string
         PlayerbotsDatabase.Execute(
             "INSERT INTO playerbots_account_links (account_id, linked_account_id, short_name) VALUES ({}, {}, '{}')",
             targetAccountId, requestingAccountId, shortName);
-            handler.PSendSysMessage("Accounts linked successfully as '{}'! You can now manage each other's player bots.", shortName.c_str());
+
+        handler.PSendSysMessage("Accounts linked successfully as '{}'! You can now manage each other's player bots.", shortName.c_str());
     }
     catch (const std::exception&)
     {
