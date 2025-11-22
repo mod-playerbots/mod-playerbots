@@ -44,9 +44,13 @@
 #include "DatabaseEnv.h"
 
 namespace {
-    // Invite code constants
-    constexpr uint32 INVITE_CODE_LENGTH = 14; // Format: XXXX-XXXX-XXXX
+    // Length of invite codes in format XXXX-XXXX-XXXX (12 chars + 2 dashes = 14 total)
+    constexpr uint32 INVITE_CODE_LENGTH = 14;
+
+    // Invite codes expire after 60 minutes (1 hour)
     constexpr uint32 INVITE_CODE_EXPIRY_MINUTES = 60;
+
+    // Maximum number of active invite codes per account at any time
     constexpr uint32 MAX_INVITE_CODES_PER_ACCOUNT = 3;
 
     // Helper function to get current timestamp
@@ -64,7 +68,11 @@ namespace {
     // Helper function to generate secure invite code using AzerothCore's OpenSSL-based crypto random
     std::string GenerateInviteCode()
     {
-        const char chars[] = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Excluded confusing chars (0,O,1,I)
+        // Character set excludes visually confusing characters to prevent user errors:
+        // - '0' (zero) vs 'O' (letter O)
+        // - '1' (one) vs 'I' (letter I) vs 'l' (lowercase L)
+        // This improves usability when codes are communicated verbally or in screenshots
+        const char chars[] = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
         const size_t charCount = sizeof(chars) - 1;
 
         // Generate 12 cryptographically secure random bytes for character selection
