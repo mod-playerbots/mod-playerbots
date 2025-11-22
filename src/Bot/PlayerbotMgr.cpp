@@ -45,6 +45,16 @@
 #include "DatabaseEnv.h"
 
 namespace {
+    // Helper to remove surrounding quotes from a string
+    std::string RemoveQuotes(const std::string& input)
+    {
+        if (input.size() >= 2 && input.front() == '"' && input.back() == '"')
+        {
+            return input.substr(1, input.size() - 2);
+        }
+        return input;
+    }
+
     // Length of invite codes in format XXXX-XXXX-XXXX (12 chars + 2 dashes = 14 total)
     constexpr uint32 INVITE_CODE_LENGTH = 14;
 
@@ -88,7 +98,6 @@ namespace {
             {
                 code += '-';
             }
-            // Use secure random bytes from OpenSSL
             code += chars[randomBytes[i] % charCount];
         }
 
@@ -1970,11 +1979,7 @@ void PlayerbotMgr::HandleUnlinkAccountCommand(Player* player, const std::string&
     }
 
     // Remove quotes if present
-    std::string cleanShortName = shortName;
-    if (cleanShortName.size() >= 2 && cleanShortName.front() == '"' && cleanShortName.back() == '"')
-    {
-        cleanShortName = cleanShortName.substr(1, cleanShortName.size() - 2);
-    }
+    std::string cleanShortName = RemoveQuotes(shortName);
 
     try
     {
@@ -2093,10 +2098,7 @@ void PlayerbotMgr::HandleLinkWithInviteCommand(Player* player, const std::string
     }
 
     // Remove quotes if present
-    if (shortName.size() >= 2 && shortName.front() == '"' && shortName.back() == '"')
-    {
-        shortName = shortName.substr(1, shortName.size() - 2);
-    }
+    shortName = RemoveQuotes(shortName);
 
     // Check for empty string after quote removal
     if (shortName.empty())
