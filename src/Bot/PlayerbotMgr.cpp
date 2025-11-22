@@ -2223,7 +2223,7 @@ void PlayerbotMgr::HandleViewInviteCodesCommand(Player* player)
             std::string code = fields[0].Get<std::string>();
             uint64 expiry = fields[2].Get<uint64>();
 
-            uint64 minutesLeft = (expiry - GetCurrentTimestamp()) / 60;
+            uint64 minutesLeft = expiry > GetCurrentTimestamp() ? (expiry - GetCurrentTimestamp()) / 60 : 0;
             handler.PSendSysMessage("- |cFFFFFF00{}|r (expires in {} minutes)", code.c_str(), minutesLeft);
         } while (activeCodesResult->NextRow());
     }
