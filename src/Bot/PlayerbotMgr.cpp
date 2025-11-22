@@ -1943,9 +1943,9 @@ void PlayerbotMgr::HandleViewLinkedAccountsCommand(Player* player)
 
             // Convert timestamp to readable date
             time_t rawTime = static_cast<time_t>(linkTimestamp);
-            struct tm* timeInfo = std::localtime(&rawTime);
+            std::tm timeInfo = Acore::Time::TimeBreakdown(rawTime);
             char dateBuffer[64];
-            std::strftime(dateBuffer, sizeof(dateBuffer), "%Y-%m-%d %H:%M:%S", timeInfo);
+            std::strftime(dateBuffer, sizeof(dateBuffer), "%Y-%m-%d %H:%M:%S", &timeInfo);
 
             handler.PSendSysMessage("{} (linked: {})", shortName.c_str(), dateBuffer);
         } while (linkedResult->NextRow());
