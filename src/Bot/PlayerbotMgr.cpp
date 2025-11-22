@@ -2097,6 +2097,13 @@ void PlayerbotMgr::HandleLinkWithInviteCommand(Player* player, const std::string
         shortName = shortName.substr(1, shortName.size() - 2);
     }
 
+    // Check for empty string after quote removal
+    if (shortName.empty())
+    {
+        handler.PSendSysMessage("Short name cannot be empty after removing quotes. Please provide a valid name.");
+        return;
+    }
+
     // Trim leading/trailing whitespace using AzerothCore helper
     Acore::StringTrim(shortName);
 
