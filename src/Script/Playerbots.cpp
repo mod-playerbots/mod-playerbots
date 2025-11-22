@@ -33,6 +33,7 @@
 #include "PlayerbotCommandScript.h"
 #include "cmath"
 #include "BattleGroundTactics.h"
+#include "PlayerbotsStatements.h"
 
 class PlayerbotsDatabaseScript : public DatabaseScript
 {
@@ -46,6 +47,65 @@ public:
                                            ? DatabaseLoader::DATABASE_PLAYERBOTS
                                            : 0);
         playerbotLoader.AddDatabase(PlayerbotsDatabase, "Playerbots");
+
+        PlayerbotsDatabase.PrepareStatement(
+            PLAYERBOTS_SEL_TEXT,
+            "SELECT name, text, say_type, reply_type, text_loc1, text_loc2, text_loc3, text_loc4, text_loc5, "
+            "text_loc6, text_loc7, text_loc8 FROM ai_playerbot_texts",
+            CONNECTION_SYNCH);
+
+        // Invite Code System
+        PlayerbotsDatabase.PrepareStatement(
+            PLAYERBOTS_SEL_INVITE_CODES_COUNT,
+            "SELECT COUNT(*) FROM playerbots_invite_codes WHERE account_id = ? AND expires_at > ? AND status = 1",
+            CONNECTION_SYNCH);
+        PlayerbotsDatabase.PrepareStatement(PLAYERBOTS_INS_INVITE_CODE,
+                                            "INSERT INTO playerbots_invite_codes (account_id, code, created_at, "
+                                            "expires_at, status) VALUES (?, ?, ?, ?, 1)",
+                                            CONNECTION_SYNCH);
+        PlayerbotsDatabase.PrepareStatement(PLAYERBOTS_SEL_INVITE_CODE_VALID,
+                                            "SELECT account_id, created_at, expires_at FROM playerbots_invite_codes "
+                                            "WHERE code = ? AND status = 1 AND expires_at > ?",
+                                            CONNECTION_SYNCH);
+        PlayerbotsDatabase.PrepareStatement(PLAYERBOTS_SEL_INVITE_CODE_EXISTS_ANY,
+                                            "SELECT 1 FROM playerbots_invite_codes WHERE code = ? AND status = 1",
+                                            CONNECTION_SYNCH);
+        PlayerbotsDatabase.PrepareStatement(
+            PLAYERBOTS_SEL_LINK_EXIST,
+            "SELECT 1 FROM playerbots_account_links WHERE account_id = ? AND linked_account_id = ?", CONNECTION_SYNCH);
+        PlayerbotsDatabase.PrepareStatement(
+            PLAYERBOTS_INS_ACCOUNT_LINK,
+            "INSERT INTO playerbots_account_links (account_id, linked_account_id, short_name) VALUES (?, ?, ?)",
+            CONNECTION_SYNCH);
+        PlayerbotsDatabase.PrepareStatement(PLAYERBOTS_SEL_INVITE_CODES_BY_ACCOUNT,
+                                            "SELECT code, created_at, expires_at FROM playerbots_invite_codes WHERE "
+                                            "account_id = ? AND status = 1 AND expires_at > ? ORDER BY created_at DESC",
+                                            CONNECTION_SYNCH);
+        PlayerbotsDatabase.PrepareStatement(
+            PLAYERBOTS_SEL_INVITE_CODE_BY_CODE,
+            "SELECT 1 FROM playerbots_invite_codes WHERE account_id = ? AND code = ? AND status = 1", CONNECTION_SYNCH);
+        PlayerbotsDatabase.PrepareStatement(
+            PLAYERBOTS_UPD_INVITE_CODE_REVOKE,
+            "UPDATE playerbots_invite_codes SET status = 0 WHERE account_id = ? AND code = ?", CONNECTION_SYNCH);
+
+        // Account Management
+        PlayerbotsDatabase.PrepareStatement(PLAYERBOTS_SEL_LINKED_ACCOUNTS,
+                                            "SELECT short_name, UNIX_TIMESTAMP(created_at) FROM "
+                                            "playerbots_account_links WHERE account_id = ? ORDER BY created_at DESC",
+                                            CONNECTION_SYNCH);
+        PlayerbotsDatabase.PrepareStatement(
+            PLAYERBOTS_SEL_LINK_BY_SHORTNAME,
+            "SELECT linked_account_id FROM playerbots_account_links WHERE account_id = ? AND short_name = ?",
+            CONNECTION_SYNCH);
+        PlayerbotsDatabase.PrepareStatement(PLAYERBOTS_DEL_ACCOUNT_LINK,
+                                            "DELETE FROM playerbots_account_links WHERE (account_id = ? AND "
+                                            "linked_account_id = ?) OR (account_id = ? AND linked_account_id = ?)",
+                                            CONNECTION_SYNCH);
+
+        // Cleanup
+        PlayerbotsDatabase.PrepareStatement(PLAYERBOTS_DEL_EXPIRED_INVITE_CODES,
+                                            "DELETE FROM playerbots_invite_codes WHERE expires_at < ?",
+                                            CONNECTION_SYNCH);
 
         return playerbotLoader.Load();
     }

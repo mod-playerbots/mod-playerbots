@@ -35,6 +35,7 @@
 #include "PlayerbotWorldThreadProcessor.h"
 #include "Playerbots.h"
 #include "PlayerbotGuildMgr.h"
+#include "PlayerbotsStatements.h"
 #include "RandomPlayerbotMgr.h"
 #include "SharedDefines.h"
 #include "Timer.h"
@@ -94,13 +95,14 @@ namespace {
         return code;
     }
 
-    // Helper function to check if invite code exists in database
-    bool InviteCodeExists(const std::string& code)
-    {
-        QueryResult existing = PlayerbotsDatabase.Query(
-            "SELECT 1 FROM playerbots_invite_codes WHERE code = '{}' AND status = 1 LIMIT 1", code);
-        return existing != nullptr;
-    }
+// Helper function to check if invite code exists in database
+bool InviteCodeExists(const std::string& code)
+{
+    PreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_INVITE_CODE_EXISTS_ANY);
+    stmt->SetString(0, code);
+    PreparedQueryResult existing = PlayerbotsDatabase.Query(stmt);
+    return existing != nullptr;
+}
 
     // Helper function to validate invite code format
     bool IsValidInviteCodeFormat(const std::string& code)
@@ -129,7 +131,7 @@ namespace {
         return true;
     }
 
-}
+}  // namespace
 
 class BotInitGuard
 {
@@ -278,8 +280,10 @@ void PlayerbotHolder::AddPlayerBot(ObjectGuid playerGuid, uint32 masterAccountId
 
 bool PlayerbotHolder::IsAccountLinked(uint32 accountId, uint32 linkedAccountId)
 {
-    QueryResult result = PlayerbotsDatabase.Query(
-        "SELECT 1 FROM playerbots_account_links WHERE account_id = {} AND linked_account_id = {}", accountId, linkedAccountId);
+    PreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_LINK_EXIST);
+    stmt->SetUInt32(0, accountId);
+    stmt->SetUInt32(1, linkedAccountId);
+    PreparedQueryResult result = PlayerbotsDatabase.Query(stmt);
     return result != nullptr;
 }
 
@@ -1919,9 +1923,9 @@ void PlayerbotMgr::HandleViewLinkedAccountsCommand(Player* player)
 
     try {
         // Get confirmed links with shortNames
-        QueryResult linkedResult = PlayerbotsDatabase.Query(
-            "SELECT short_name, UNIX_TIMESTAMP(created_at) FROM playerbots_account_links WHERE account_id = {} ORDER BY created_at DESC",
-            accountId);
+        PreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_LINKED_ACCOUNTS);
+        stmt->SetUInt32(0, accountId);
+        PreparedQueryResult linkedResult = PlayerbotsDatabase.Query(stmt);
 
         if (!linkedResult)
         {
@@ -1931,7 +1935,8 @@ void PlayerbotMgr::HandleViewLinkedAccountsCommand(Player* player)
 
         // Display confirmed links using shortNames
         handler.PSendSysMessage("=== Active Account Links ===");
-        do {
+        do
+        {
             Field* fields = linkedResult->Fetch();
             std::string shortName = fields[0].Get<std::string>();
             uint32 linkTimestamp = fields[1].Get<uint32>();
@@ -1970,11 +1975,13 @@ void PlayerbotMgr::HandleUnlinkAccountCommand(Player* player, const std::string&
         cleanShortName = cleanShortName.substr(1, cleanShortName.size() - 2);
     }
 
-    try {
+    try
+    {
         // Find the linked account by shortName
-        QueryResult linkCheck = PlayerbotsDatabase.Query(
-            "SELECT linked_account_id FROM playerbots_account_links WHERE account_id = {} AND short_name = '{}'",
-            accountId, cleanShortName);
+        PreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_LINK_BY_SHORTNAME);
+        stmt->SetUInt32(0, accountId);
+        stmt->SetString(1, cleanShortName);
+        PreparedQueryResult linkCheck = PlayerbotsDatabase.Query(stmt);
 
         if (!linkCheck)
         {
@@ -1986,9 +1993,12 @@ void PlayerbotMgr::HandleUnlinkAccountCommand(Player* player, const std::string&
         uint32 targetAccountId = linkCheck->Fetch()[0].Get<uint32>();
 
         // Remove bidirectional links
-        PlayerbotsDatabase.Execute(
-            "DELETE FROM playerbots_account_links WHERE (account_id = {} AND linked_account_id = {}) OR (account_id = {} AND linked_account_id = {})",
-            accountId, targetAccountId, targetAccountId, accountId);
+        PreparedStatement* delStmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_DEL_ACCOUNT_LINK);
+        delStmt->SetUInt32(0, accountId);
+        delStmt->SetUInt32(1, targetAccountId);
+        delStmt->SetUInt32(2, targetAccountId);
+        delStmt->SetUInt32(3, accountId);
+        PlayerbotsDatabase.Execute(delStmt);
 
         handler.PSendSysMessage("Account link '{}' disconnected successfully.", cleanShortName.c_str());
     }
@@ -2006,16 +2016,19 @@ void PlayerbotMgr::HandleGenerateInviteCommand(Player* player)
     try
     {
         // Check how many active invite codes this account has
-        QueryResult activeCodesResult = PlayerbotsDatabase.Query(
-            "SELECT COUNT(*) FROM playerbots_invite_codes WHERE account_id = {} AND expires_at > {} AND status = 1",
-            accountId, GetCurrentTimestamp());
+        PreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_INVITE_CODES_COUNT);
+        stmt->SetUInt32(0, accountId);
+        stmt->SetUInt64(1, GetCurrentTimestamp());
+        PreparedQueryResult activeCodesResult = PlayerbotsDatabase.Query(stmt);
 
         if (activeCodesResult)
         {
             uint32 activeCount = activeCodesResult->Fetch()[0].Get<uint32>();
             if (activeCount >= MAX_INVITE_CODES_PER_ACCOUNT)
             {
-                handler.PSendSysMessage("You have reached the maximum number of active invite codes ({}). Revoke some codes first.", MAX_INVITE_CODES_PER_ACCOUNT);
+                handler.PSendSysMessage(
+                    "You have reached the maximum number of active invite codes ({}). Revoke some codes first.",
+                    MAX_INVITE_CODES_PER_ACCOUNT);
                 return;
             }
         }
@@ -2025,7 +2038,8 @@ void PlayerbotMgr::HandleGenerateInviteCommand(Player* player)
         constexpr int maxAttempts = 10;
         int attempts = 0;
 
-        do {
+        do
+        {
             inviteCode = GenerateInviteCode();
             attempts++;
         } while (InviteCodeExists(inviteCode) && attempts < maxAttempts);
@@ -2033,21 +2047,26 @@ void PlayerbotMgr::HandleGenerateInviteCommand(Player* player)
         if (attempts >= maxAttempts)
         {
             LOG_ERROR("playerbots", "Failed to generate unique invite code after {} attempts", maxAttempts);
-            handler.PSendSysMessage("Failed to generate unique invite code after {} attempts. Please try again.", maxAttempts);
+            handler.PSendSysMessage("Failed to generate unique invite code after {} attempts. Please try again.",
+                                    maxAttempts);
             return;
         }
 
         // Store invite code in database
         uint64 expiresAt = GetCurrentTimestamp() + (INVITE_CODE_EXPIRY_MINUTES * 60);
-        PlayerbotsDatabase.Execute(
-            "INSERT INTO playerbots_invite_codes (account_id, code, created_at, expires_at, status) VALUES ({}, '{}', {}, {}, 1)",
-            accountId, inviteCode, GetCurrentTimestamp(), expiresAt);
+        PreparedStatement* insStmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_INS_INVITE_CODE);
+        insStmt->SetUInt32(0, accountId);
+        insStmt->SetString(1, inviteCode);
+        insStmt->SetUInt64(2, GetCurrentTimestamp());
+        insStmt->SetUInt64(3, expiresAt);
+        PlayerbotsDatabase.Execute(insStmt);
 
         handler.PSendSysMessage("|cFF32CD32[Invite Code Generated]|r");
         handler.PSendSysMessage("Code: |cFFFFFF00{}|r", inviteCode.c_str());
         handler.PSendSysMessage("Valid for: {} minutes", INVITE_CODE_EXPIRY_MINUTES);
         handler.PSendSysMessage("Share this code with trusted players to allow them to link to your account.");
-        handler.PSendSysMessage("They can use: |cFFFFFFFF.playerbots accountlink connect {} \"FriendlyName\"|r", inviteCode.c_str());
+        handler.PSendSysMessage("They can use: |cFFFFFFFF.playerbots accountlink connect {} \"FriendlyName\"|r",
+                                inviteCode.c_str());
     }
     catch (const std::exception&)
     {
@@ -2069,7 +2088,7 @@ void PlayerbotMgr::HandleLinkWithInviteCommand(Player* player, const std::string
     std::getline(iss, shortName);
     if (!shortName.empty() && shortName[0] == ' ')
     {
-        shortName = shortName.substr(1); // Remove leading space
+        shortName = shortName.substr(1);  // Remove leading space
     }
 
     // Remove quotes if present
@@ -2120,11 +2139,13 @@ void PlayerbotMgr::HandleLinkWithInviteCommand(Player* player, const std::string
         return;
     }
 
-    try {
+    try
+    {
         // Check if invite code exists and is valid
-        QueryResult inviteResult = PlayerbotsDatabase.Query(
-            "SELECT account_id, created_at, expires_at FROM playerbots_invite_codes WHERE code = '{}' AND status = 1 AND expires_at > {}",
-            inviteCode, GetCurrentTimestamp());
+        PreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_INVITE_CODE_VALID);
+        stmt->SetString(0, inviteCode);
+        stmt->SetUInt64(1, GetCurrentTimestamp());
+        PreparedQueryResult inviteResult = PlayerbotsDatabase.Query(stmt);
 
         if (!inviteResult)
         {
@@ -2143,9 +2164,10 @@ void PlayerbotMgr::HandleLinkWithInviteCommand(Player* player, const std::string
         }
 
         // Check if accounts are already linked
-        QueryResult existingLink = PlayerbotsDatabase.Query(
-            "SELECT 1 FROM playerbots_account_links WHERE account_id = {} AND linked_account_id = {}",
-            requestingAccountId, targetAccountId);
+        PreparedStatement* linkCheckStmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_LINK_EXIST);
+        linkCheckStmt->SetUInt32(0, requestingAccountId);
+        linkCheckStmt->SetUInt32(1, targetAccountId);
+        PreparedQueryResult existingLink = PlayerbotsDatabase.Query(linkCheckStmt);
         if (existingLink)
         {
             handler.PSendSysMessage("Accounts are already linked.");
@@ -2154,15 +2176,20 @@ void PlayerbotMgr::HandleLinkWithInviteCommand(Player* player, const std::string
 
         // Create immediate bidirectional account link with same shortName for both sides
         // Insert both directions of the link using the same shortName
-        PlayerbotsDatabase.Execute(
-            "INSERT INTO playerbots_account_links (account_id, linked_account_id, short_name) VALUES ({}, {}, '{}')",
-            requestingAccountId, targetAccountId, shortName);
+        PreparedStatement* insStmt1 = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_INS_ACCOUNT_LINK);
+        insStmt1->SetUInt32(0, requestingAccountId);
+        insStmt1->SetUInt32(1, targetAccountId);
+        insStmt1->SetString(2, shortName);
+        PlayerbotsDatabase.Execute(insStmt1);
 
-        PlayerbotsDatabase.Execute(
-            "INSERT INTO playerbots_account_links (account_id, linked_account_id, short_name) VALUES ({}, {}, '{}')",
-            targetAccountId, requestingAccountId, shortName);
+        PreparedStatement* insStmt2 = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_INS_ACCOUNT_LINK);
+        insStmt2->SetUInt32(0, targetAccountId);
+        insStmt2->SetUInt32(1, requestingAccountId);
+        insStmt2->SetString(2, shortName);
+        PlayerbotsDatabase.Execute(insStmt2);
 
-        handler.PSendSysMessage("Accounts linked successfully as '{}'! You can now manage each other's player bots.", shortName.c_str());
+        handler.PSendSysMessage("Accounts linked successfully as '{}'! You can now manage each other's player bots.",
+                                shortName.c_str());
     }
     catch (const std::exception&)
     {
@@ -2175,21 +2202,23 @@ void PlayerbotMgr::HandleViewInviteCodesCommand(Player* player)
     ChatHandler handler(player->GetSession());
     uint32 accountId = player->GetSession()->GetAccountId();
 
-    try {
-        QueryResult activeCodesResult = PlayerbotsDatabase.Query(
-            "SELECT code, created_at, expires_at FROM playerbots_invite_codes "
-            "WHERE account_id = {} AND status = 1 AND expires_at > {} "
-            "ORDER BY created_at DESC",
-            accountId, GetCurrentTimestamp());
+    try
+    {
+        PreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_INVITE_CODES_BY_ACCOUNT);
+        stmt->SetUInt32(0, accountId);
+        stmt->SetUInt64(1, GetCurrentTimestamp());
+        PreparedQueryResult activeCodesResult = PlayerbotsDatabase.Query(stmt);
 
         if (!activeCodesResult)
         {
-            handler.PSendSysMessage("No active invite codes found. Use '.playerbots accountlink generate' to create one.");
+            handler.PSendSysMessage(
+                "No active invite codes found. Use '.playerbots accountlink generate' to create one.");
             return;
         }
 
         handler.PSendSysMessage("=== Active Invite Codes ===");
-        do {
+        do
+        {
             Field* fields = activeCodesResult->Fetch();
             std::string code = fields[0].Get<std::string>();
             uint64 expiry = fields[2].Get<uint64>();
@@ -2197,7 +2226,6 @@ void PlayerbotMgr::HandleViewInviteCodesCommand(Player* player)
             uint64 minutesLeft = (expiry - GetCurrentTimestamp()) / 60;
             handler.PSendSysMessage("- |cFFFFFF00{}|r (expires in {} minutes)", code.c_str(), minutesLeft);
         } while (activeCodesResult->NextRow());
-
     }
     catch (const std::exception&)
     {
@@ -2216,11 +2244,13 @@ void PlayerbotMgr::HandleRevokeInviteCommand(Player* player, const std::string& 
         return;
     }
 
-    try {
+    try
+    {
         // Check if the code belongs to this account and is active
-        QueryResult codeResult = PlayerbotsDatabase.Query(
-            "SELECT 1 FROM playerbots_invite_codes WHERE account_id = {} AND code = '{}' AND status = 1",
-            accountId, inviteCode);
+        PreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_INVITE_CODE_BY_CODE);
+        stmt->SetUInt32(0, accountId);
+        stmt->SetString(1, inviteCode);
+        PreparedQueryResult codeResult = PlayerbotsDatabase.Query(stmt);
 
         if (!codeResult)
         {
@@ -2229,9 +2259,10 @@ void PlayerbotMgr::HandleRevokeInviteCommand(Player* player, const std::string& 
         }
 
         // Revoke the code
-        PlayerbotsDatabase.Execute(
-            "UPDATE playerbots_invite_codes SET status = 0 WHERE account_id = {} AND code = '{}'",
-            accountId, inviteCode);
+        PreparedStatement* updStmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_UPD_INVITE_CODE_REVOKE);
+        updStmt->SetUInt32(0, accountId);
+        updStmt->SetString(1, inviteCode);
+        PlayerbotsDatabase.Execute(updStmt);
 
         handler.PSendSysMessage("Invite code |cFFFFFF00{}|r has been revoked.", inviteCode.c_str());
     }
@@ -2259,7 +2290,7 @@ bool PlayerbotMgr::HandleConsoleCommand(ChatHandler* handler, char const* args)
     std::getline(iss, remainingArgs);
     if (!remainingArgs.empty() && remainingArgs[0] == ' ')
     {
-        remainingArgs = remainingArgs.substr(1); // Remove leading space
+        remainingArgs = remainingArgs.substr(1);  // Remove leading space
     }
 
     WorldSession* session = handler->GetSession();
@@ -2283,7 +2314,8 @@ bool PlayerbotMgr::HandleConsoleCommand(ChatHandler* handler, char const* args)
         return false;
     }
 
-    try {
+    try
+    {
         // Invite code system commands
         if (command == "generate")
         {
@@ -2350,6 +2382,8 @@ bool PlayerbotMgr::HandleConsoleCommand(ChatHandler* handler, char const* args)
 
 void PlayerbotMgr::CleanupExpiredInviteCodes()
 {
-    PlayerbotsDatabase.Execute("DELETE FROM playerbots_invite_codes WHERE expires_at < {}", GetCurrentTimestamp());
+    PreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_DEL_EXPIRED_INVITE_CODES);
+    stmt->SetUInt64(0, GetCurrentTimestamp());
+    PlayerbotsDatabase.Execute(stmt);
     LOG_DEBUG("mod-playerbots", "Cleaned up expired invite codes on server startup");
 }
