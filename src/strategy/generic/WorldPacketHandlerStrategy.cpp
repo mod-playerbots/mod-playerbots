@@ -5,9 +5,6 @@
 
 #include "WorldPacketHandlerStrategy.h"
 
-#include "Playerbots.h"
-#include "Strategy.h"
-
 void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     PassTroughStrategy::InitTriggers(triggers);

@@ -1384,8 +1384,6 @@ void PlayerbotAI::DoNextAction(bool min)
     else if (bot->isAFK())
         bot->ToggleAFK();
 
-    PlayerbotAI* masterBotAI = nullptr;
-
     if (master && master->IsInWorld())
     {
         float distance = sServerFacade->GetDistance2d(bot, master);
