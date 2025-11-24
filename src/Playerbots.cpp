@@ -164,9 +164,9 @@ public:
             {
                 botAI->HandleCommand(type, msg, player);
 
-                // hotfix; otherwise the server will crash when whispering logout, does not seem in party chat though
+                // hotfix; otherwise the server will crash when whispering logout
                 // https://github.com/mod-playerbots/mod-playerbots/pull/1838
-                // TODO: find the root cause and solve it.
+                // TODO: find the root cause and solve it. (does not happen in party chat)
                 if (msg == "logout")
                     return false;
             }
