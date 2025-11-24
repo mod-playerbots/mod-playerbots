@@ -122,7 +122,6 @@ void PacketHandlingHelper::AddPacket(WorldPacket const& packet)
     // assert(packet);
     // assert(packet.GetOpcode());
     // Only enqueue packets we actually handle
-    // Only enqueue packets we actually handle
     if (handlers.find(packet.GetOpcode()) == handlers.end())
     {
         LOG_ERROR("playerbots",
