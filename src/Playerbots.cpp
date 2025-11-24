@@ -163,6 +163,8 @@ public:
             if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(receiver))
             {
                 botAI->HandleCommand(type, msg, player);
+                if (msg == "logout")
+                    return false;
             }
         }
         return true;
