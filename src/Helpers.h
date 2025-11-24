@@ -25,7 +25,7 @@ std::string& ltrim(std::string& s);
 std::string& rtrim(std::string& s);
 std::string& trim(std::string& s);
 
-void split(std::vector<std::string>& dest, std::string const str, char const* delim)
+inline void split(std::vector<std::string>& dest, std::string const str, char const* delim)
 {
     char* pTempStr = strdup(str.c_str());
     char* pWord = strtok(pTempStr, delim);
@@ -39,7 +39,7 @@ void split(std::vector<std::string>& dest, std::string const str, char const* de
     free(pTempStr);
 }
 
-std::vector<std::string>& split(std::string const s, char delim, std::vector<std::string>& elems)
+inline std::vector<std::string>& split(std::string const s, char delim, std::vector<std::string>& elems)
 {
     std::stringstream ss(s);
     std::string item;
@@ -52,7 +52,7 @@ std::vector<std::string>& split(std::string const s, char delim, std::vector<std
     return elems;
 }
 
-std::vector<std::string> split(std::string const s, char delim)
+inline std::vector<std::string> split(std::string const s, char delim)
 {
     std::vector<std::string> elems;
     return split(s, delim, elems);
