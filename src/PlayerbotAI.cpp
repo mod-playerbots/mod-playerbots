@@ -125,7 +125,9 @@ void PacketHandlingHelper::AddPacket(WorldPacket const& packet)
     // Only enqueue packets we actually handle
     if (handlers.find(packet.GetOpcode()) == handlers.end())
     {
-        LOG_ERROR("playerbots", "Intercepted unhandled packet (opcode: %u), ignored to prevent crash.", packet.GetOpcode());
+        LOG_ERROR("playerbots",
+            "Intercepted unhandled packet (opcode: {}), ignored to prevent crash.",
+            static_cast<uint32>(packet.GetOpcode()));
         return;
     }
 
