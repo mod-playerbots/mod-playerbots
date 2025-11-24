@@ -1,7 +1,7 @@
 #ifndef PLAYERBOTS_STATEMENTS_H
 #define PLAYERBOTS_STATEMENTS_H
 
-enum PlayerbotsDatabaseStatements
+enum PlayerbotsDatabaseStatements : uint32
 {
     PLAYERBOTS_SEL_TEXT,
 

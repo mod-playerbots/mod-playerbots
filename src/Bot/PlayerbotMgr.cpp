@@ -2107,8 +2107,8 @@ void PlayerbotMgr::HandleLinkWithInviteCommand(Player* player, const std::string
         return;
     }
 
-    // Trim leading/trailing whitespace using AzerothCore helper
-    Acore::StringTrim(shortName);
+    // Trim leading/trailing whitespace using local helper
+    trim(shortName);
 
     if (inviteCode.empty() || shortName.empty())
     {
