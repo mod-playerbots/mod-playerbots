@@ -37,6 +37,7 @@
 #include "PlayerbotGuildMgr.h"
 #include "PlayerbotsStatements.h"
 #include "RandomPlayerbotMgr.h"
+#include "Helpers.h"
 #include "SharedDefines.h"
 #include "Timer.h"
 #include "WorldSession.h"

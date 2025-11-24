@@ -3,8 +3,6 @@
 
 enum PlayerbotsDatabaseStatements : uint32
 {
-    PLAYERBOTS_SEL_TEXT,
-
     // Invite Code System
     PLAYERBOTS_SEL_INVITE_CODES_COUNT,
     PLAYERBOTS_INS_INVITE_CODE,
