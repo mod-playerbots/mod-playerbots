@@ -58,6 +58,14 @@ Player* GuidManageAction::GetPlayer(Event event)
     return nullptr;
 }
 
+void GuidManageAction::SendPacket(WorldPacket const& packet)
+{
+    // make a heap copy because QueuePacket takes ownership
+    WorldPacket* data = new WorldPacket(packet);
+
+    bot->GetSession()->QueuePacket(data);
+}
+
 bool GuidManageAction::Execute(Event event)
 {
     Player* player = GetPlayer(event);
@@ -84,12 +92,6 @@ bool GuildInviteAction::isUseful()
     return bot->GetGuildId() && sGuildMgr->GetGuildById(bot->GetGuildId())->HasRankRight(bot, GR_RIGHT_INVITE);
 }
 
-void GuildInviteAction::SendPacket(WorldPacket packet)
-{
-    WorldPackets::Guild::GuildInviteByName data = WorldPacket(packet);
-    bot->GetSession()->HandleGuildInviteOpcode(data);
-}
-
 bool GuildInviteAction::PlayerIsValid(Player* member)
 {
     return !member->GetGuildId() && (sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD) ||
@@ -99,12 +101,6 @@ bool GuildInviteAction::PlayerIsValid(Player* member)
 bool GuildPromoteAction::isUseful()
 {
     return bot->GetGuildId() && sGuildMgr->GetGuildById(bot->GetGuildId())->HasRankRight(bot, GR_RIGHT_PROMOTE);
-}
-
-void GuildPromoteAction::SendPacket(WorldPacket packet)
-{
-    WorldPackets::Guild::GuildPromoteMember data = WorldPacket(packet);
-    bot->GetSession()->HandleGuildPromoteOpcode(data);
 }
 
 bool GuildPromoteAction::PlayerIsValid(Player* member)
@@ -117,12 +113,6 @@ bool GuildDemoteAction::isUseful()
     return bot->GetGuildId() && sGuildMgr->GetGuildById(bot->GetGuildId())->HasRankRight(bot, GR_RIGHT_DEMOTE);
 }
 
-void GuildDemoteAction::SendPacket(WorldPacket packet)
-{
-    WorldPackets::Guild::GuildDemoteMember data = WorldPacket(packet);
-    bot->GetSession()->HandleGuildDemoteOpcode(data);
-}
-
 bool GuildDemoteAction::PlayerIsValid(Player* member)
 {
     return member->GetGuildId() == bot->GetGuildId() && GetRankId(bot) < GetRankId(member);
@@ -131,12 +121,6 @@ bool GuildDemoteAction::PlayerIsValid(Player* member)
 bool GuildRemoveAction::isUseful()
 {
     return bot->GetGuildId() && sGuildMgr->GetGuildById(bot->GetGuildId())->HasRankRight(bot, GR_RIGHT_REMOVE);
-}
-
-void GuildRemoveAction::SendPacket(WorldPacket packet)
-{
-    WorldPackets::Guild::GuildOfficerRemoveMember data = WorldPacket(packet);
-    bot->GetSession()->HandleGuildRemoveOpcode(data);
 }
 
 bool GuildRemoveAction::PlayerIsValid(Player* member)
