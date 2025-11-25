@@ -16,6 +16,7 @@ public:
         creators["attumen the huntsman stack behind"] = &RaidKarazhanActionContext::attumen_the_huntsman_stack_behind;
         creators["attumen the huntsman manage dps timer"] = &RaidKarazhanActionContext::attumen_the_huntsman_manage_dps_timer;
 
+        creators["moroes main tank attack boss"] = &RaidKarazhanActionContext::moroes_main_tank_attack_boss;
         creators["moroes mark target"] = &RaidKarazhanActionContext::moroes_mark_target;
 
         creators["maiden of virtue move boss to healer"] = &RaidKarazhanActionContext::maiden_of_virtue_move_boss_to_healer;
@@ -67,6 +68,7 @@ private:
     static Action* attumen_the_huntsman_stack_behind(PlayerbotAI* botAI) { return new AttumenTheHuntsmanStackBehindAction(botAI); }
     static Action* attumen_the_huntsman_manage_dps_timer(PlayerbotAI* botAI) { return new AttumenTheHuntsmanManageDpsTimerAction(botAI); }
 
+    static Action* moroes_main_tank_attack_boss(PlayerbotAI* botAI) { return new MoroesMainTankAttackBossAction(botAI); }
     static Action* moroes_mark_target(PlayerbotAI* botAI) { return new MoroesMarkTargetAction(botAI); }
 
     static Action* maiden_of_virtue_move_boss_to_healer(PlayerbotAI* botAI) { return new MaidenOfVirtueMoveBossToHealerAction(botAI); }

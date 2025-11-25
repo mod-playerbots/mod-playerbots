@@ -38,6 +38,13 @@ public:
     bool IsActive() override;
 };
 
+class MoroesBossEngagedByMainTankTrigger : public Trigger
+{
+public:
+    MoroesBossEngagedByMainTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "moroes boss engaged by main tank") {}
+    bool IsActive() override;
+};
+
 class MoroesNeedTargetPriorityTrigger : public Trigger
 {
 public:

@@ -16,6 +16,7 @@ public:
         creators["attumen the huntsman attumen is mounted"] = &RaidKarazhanTriggerContext::attumen_the_huntsman_attumen_is_mounted;
         creators["attumen the huntsman boss wipes aggro when mounting"] = &RaidKarazhanTriggerContext::attumen_the_huntsman_boss_wipes_aggro_when_mounting;
 
+        creators["moroes boss engaged by main tank"] = &RaidKarazhanTriggerContext::moroes_boss_engaged_by_main_tank;
         creators["moroes need target priority"] = &RaidKarazhanTriggerContext::moroes_need_target_priority;
 
         creators["maiden of virtue healers are stunned by repentance"] = &RaidKarazhanTriggerContext::maiden_of_virtue_healers_are_stunned_by_repentance;
@@ -67,6 +68,7 @@ private:
     static Trigger* attumen_the_huntsman_attumen_is_mounted(PlayerbotAI* botAI) { return new AttumenTheHuntsmanAttumenIsMountedTrigger(botAI); }
     static Trigger* attumen_the_huntsman_boss_wipes_aggro_when_mounting(PlayerbotAI* botAI) { return new AttumenTheHuntsmanBossWipesAggroWhenMountingTrigger(botAI); }
 
+    static Trigger* moroes_boss_engaged_by_main_tank(PlayerbotAI* botAI) { return new MoroesBossEngagedByMainTankTrigger(botAI); }
     static Trigger* moroes_need_target_priority(PlayerbotAI* botAI) { return new MoroesNeedTargetPriorityTrigger(botAI); }
 
     static Trigger* maiden_of_virtue_healers_are_stunned_by_repentance(PlayerbotAI* botAI) { return new MaidenOfVirtueHealersAreStunnedByRepentanceTrigger(botAI); }

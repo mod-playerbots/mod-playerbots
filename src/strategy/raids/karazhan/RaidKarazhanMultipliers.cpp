@@ -4,26 +4,16 @@
 #include "AttackAction.h"
 #include "ChooseTargetActions.h"
 #include "DruidActions.h"
-#include "DruidBearActions.h"
-#include "DruidCatActions.h"
 #include "GenericActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
 #include "Playerbots.h"
 #include "PriestActions.h"
+#include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
-#include "WarriorActions.h"
 
 using namespace KarazhanHelpers;
-
-static bool IsChargeAction(Action* action)
-{
-    return dynamic_cast<CastChargeAction*>(action) ||
-           dynamic_cast<CastInterceptAction*>(action) ||
-           dynamic_cast<CastFeralChargeBearAction*>(action) ||
-           dynamic_cast<CastFeralChargeCatAction*>(action);
-}
 
 // Keep tanks from jumping back and forth between Attumen and Midnight
 float AttumenTheHuntsmanDisableTankAssistMultiplier::GetValue(Action* action)
@@ -53,7 +43,7 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValue(Action* action)
             dynamic_cast<FleeAction*>(action) ||
             dynamic_cast<CastBlinkBackAction*>(action) ||
             dynamic_cast<CastDisengageAction*>(action) ||
-            IsChargeAction(action))
+            dynamic_cast<CastReachTargetSpellAction*>(action))
             return 0.0f;
     }
 
@@ -68,11 +58,10 @@ float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
     if (!attumenMounted || !attumenMounted->IsAlive())
         return 1.0f;
 
-    const uint32 mapId = attumenMounted->GetMapId();
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 8;
 
-    auto it = attumenDpsWaitTimer.find(mapId);
+    auto it = attumenDpsWaitTimer.find(attumenMounted->GetMapId());
     if (it == attumenDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         if ((!botAI->IsMainTank(bot)))
@@ -109,7 +98,7 @@ float ShadeOfAranArcaneExplosionDisableChargeMultiplier::GetValue(Action* action
     if (aran->HasUnitState(UNIT_STATE_CASTING) &&
         aran->FindCurrentSpellBySpellId(SPELL_ARCANE_EXPLOSION))
     {
-        if (IsChargeAction(action))
+        if (dynamic_cast<CastReachTargetSpellAction*>(action))
             return 0.0f;
 
         if (dynamic_cast<MovementAction*>(action))
@@ -134,7 +123,7 @@ float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValue(Action* action)
     {
         if (dynamic_cast<MovementAction*>(action) || dynamic_cast<CastKillingSpreeAction*>(action) ||
             dynamic_cast<CastBlinkBackAction*>(action) || dynamic_cast<CastDisengageAction*>(action) ||
-            IsChargeAction(action))
+            dynamic_cast<CastReachTargetSpellAction*>(action))
             return 0.0f;
     }
 
@@ -169,7 +158,7 @@ float NetherspiteKeepBlockingBeamMultiplier::GetValue(Action* action)
             dynamic_cast<ReachTargetAction*>(action) ||
             dynamic_cast<FleeAction*>(action) ||
             dynamic_cast<CastKillingSpreeAction*>(action) ||
-            IsChargeAction(action))
+            dynamic_cast<CastReachTargetSpellAction*>(action))
             return 0.0f;
     }
 
@@ -183,11 +172,10 @@ float NetherspiteWaitForDpsMultiplier::GetValue(Action* action)
     if (!netherspite || netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
         return 1.0f;
 
-    const uint32 mapId = netherspite->GetMapId();
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 5;
 
-    auto it = netherspiteDpsWaitTimer.find(mapId);
+    auto it = netherspiteDpsWaitTimer.find(netherspite->GetMapId());
     if (it == netherspiteDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         if (!botAI->IsTank(bot))
@@ -265,11 +253,10 @@ float NightbaneWaitForDpsMultiplier::GetValue(Action* action)
     if (!nightbane || nightbane->GetPositionZ() > 95.0f)
         return 1.0f;
 
-    const uint32 mapId = nightbane->GetMapId();
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 8;
 
-    auto it = nightbaneDpsWaitTimer.find(mapId);
+    auto it = nightbaneDpsWaitTimer.find(nightbane->GetMapId());
     if (it == nightbaneDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         if (!botAI->IsMainTank(bot))

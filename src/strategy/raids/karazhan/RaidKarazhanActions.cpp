@@ -94,31 +94,30 @@ bool AttumenTheHuntsmanSplitBossesAction::Execute(Event event)
 
     if (attumen->GetVictim() == bot && midnight->GetVictim() != bot)
     {
-        const float minDistance = 6.0f;
-        const float safeDistance = 8.0f;
-        Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance);
-        if (nearestPlayer)
-            return MoveAway(nearestPlayer, safeDistance - minDistance);
+        const float safeDistance = 6.0f;
+        Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
+        if (nearestPlayer && attumen->GetExactDist2d(nearestPlayer) < safeDistance)
+            return MoveFromGroup(safeDistance + 2.0f);
     }
 
     return false;
 }
 
-// Stack 1-5 yards behind mounted Attumen (inside minimum range of Berserker Charge)
+// Stack behind mounted Attumen (inside minimum range of Berserker Charge)
 bool AttumenTheHuntsmanStackBehindAction::Execute(Event event)
 {
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
     if (!attumenMounted)
         return false;
 
-    const float distanceBehind = 3.0f;
+    const float distanceBehind = botAI->IsRanged(bot) ? 6.0f : 2.0f;
     float orientation = attumenMounted->GetOrientation() + M_PI;
     float x = attumenMounted->GetPositionX();
     float y = attumenMounted->GetPositionY();
-    float rx = x + cos(orientation) * distanceBehind;
-    float ry = y + sin(orientation) * distanceBehind;
+    float rx = x + std::cos(orientation) * distanceBehind;
+    float ry = y + std::sin(orientation) * distanceBehind;
 
-    if (bot->GetExactDist2d(rx, ry) > 2.0f)
+    if (bot->GetExactDist2d(rx, ry) > 1.0f)
     {
         return MoveTo(bot->GetMapId(), rx, ry, attumenMounted->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
@@ -138,16 +137,31 @@ bool AttumenTheHuntsmanManageDpsTimerAction::Execute(Event event)
     const uint32 mapId = midnight ? midnight->GetMapId() : attumenMounted->GetMapId();
     const time_t now = std::time(nullptr);
 
-    if (midnight && !attumenMounted && attumenDpsWaitTimer.count(mapId))
+    if (midnight && midnight->GetHealth() == midnight->GetMaxHealth())
         attumenDpsWaitTimer.erase(mapId);
 
-    if (attumenMounted && attumenDpsWaitTimer.count(mapId) == 0)
-        attumenDpsWaitTimer[mapId] = now;
+    if (attumenMounted)
+        attumenDpsWaitTimer.emplace(mapId, now);
 
     return false;
 }
 
 // Moroes
+
+bool MoroesMainTankAttackBossAction::Execute(Event event)
+{
+    Unit* moroes = AI_VALUE2(Unit*, "find target", "moroes");
+    if (!moroes)
+        return false;
+
+    MarkTargetWithCircle(bot, moroes);
+    SetRtiTarget(botAI, "circle", moroes);
+
+    if (bot->GetVictim() != moroes)
+        return Attack(moroes);
+
+    return false;
+}
 
 // Mark targets with skull in the recommended kill order
 bool MoroesMarkTargetAction::Execute(Event event)
@@ -161,7 +175,12 @@ bool MoroesMarkTargetAction::Execute(Event event)
     Unit* target = GetFirstAliveUnit({dorothea, catriona, keira, rafe, robin, crispin});
 
     if (target)
-        MarkTargetWithSkull(bot, target);
+    {
+        if (IsMapIDTimerManager(botAI, bot))
+            MarkTargetWithSkull(bot, target);
+
+        SetRtiTarget(botAI, "skull", target);
+    }
 
     return false;
 }
@@ -195,8 +214,8 @@ bool MaidenOfVirtueMoveBossToHealerAction::Execute(Event event)
     if (healer)
     {
         float angle = healer->GetOrientation();
-        float targetX = healer->GetPositionX() + cos(angle) * 6.0f;
-        float targetY = healer->GetPositionY() + sin(angle) * 6.0f;
+        float targetX = healer->GetPositionX() + std::cos(angle) * 6.0f;
+        float targetY = healer->GetPositionY() + std::sin(angle) * 6.0f;
         float targetZ = healer->GetPositionZ();
         {
             return MoveTo(bot->GetMapId(), targetX, targetY, targetZ, false, false, false, false,
@@ -383,7 +402,10 @@ bool TheCuratorMarkAstralFlareAction::Execute(Event event)
     if (!target)
         return false;
 
-    MarkTargetWithSkull(bot, target);
+    if (IsMapIDTimerManager(botAI, bot))
+        MarkTargetWithSkull(bot, target);
+
+    SetRtiTarget(botAI, "skull", target);
 
     return false;
 }
@@ -395,6 +417,9 @@ bool TheCuratorPositionBossAction::Execute(Event event)
     Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
     if (!curator)
         return false;
+
+    MarkTargetWithCircle(bot, curator);
+    SetRtiTarget(botAI, "circle", curator);
 
     if (bot->GetVictim() != curator)
         return Attack(curator);
@@ -526,8 +551,8 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event event)
     {
         for (float angle = 0; angle < 2 * M_PI; angle += ringIncrement)
         {
-            float x = aran->GetPositionX() + cos(angle) * dist;
-            float y = aran->GetPositionY() + sin(angle) * dist;
+            float x = aran->GetPositionX() + std::cos(angle) * dist;
+            float y = aran->GetPositionY() + std::sin(angle) * dist;
 
             bool tooClose = false;
             for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -612,7 +637,7 @@ bool NetherspiteBlockRedBeamAction::Execute(Event event)
             float py = redPortal->GetPositionY();
             float dx = px - bx;
             float dy = py - by;
-            float length = sqrt(dx*dx + dy*dy);
+            float length = std::hypot(dx, dy);
             if (length == 0.0f)
                 return false;
 
@@ -643,7 +668,7 @@ Position NetherspiteBlockRedBeamAction::GetPositionOnBeam(Unit* boss, Unit* port
 
     float dx = px - bx;
     float dy = py - by;
-    float length = sqrt(dx*dx + dy*dy);
+    float length = std::hypot(dx, dy);
     if (length == 0.0f)
         return Position(bx, by, bz);
 
@@ -701,7 +726,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event event)
         float py = bluePortal->GetPositionY();
         float dx = px - bx;
         float dy = py - by;
-        float length = sqrt(dx*dx + dy*dy);
+        float length = std::hypot(dx, dy);
         if (length == 0.0f)
             return false;
 
@@ -788,7 +813,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event event)
         float py = greenPortal->GetPositionY();
         float dx = px - bx;
         float dy = py - by;
-        float length = sqrt(dx*dx + dy*dy);
+        float length = std::hypot(dx, dy);
         if (length == 0.0f)
             return false;
 
@@ -853,7 +878,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
         float bx = netherspite->GetPositionX(), by = netherspite->GetPositionY();
         float px = redPortal->GetPositionX(), py = redPortal->GetPositionY();
         float dx = px - bx, dy = py - by;
-        float length = sqrt(dx*dx + dy*dy);
+        float length = std::hypot(dx, dy);
         beams.push_back({redPortal, 0.0f, length});
     }
 
@@ -862,7 +887,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
         float bx = netherspite->GetPositionX(), by = netherspite->GetPositionY();
         float px = bluePortal->GetPositionX(), py = bluePortal->GetPositionY();
         float dx = px - bx, dy = py - by;
-        float length = sqrt(dx*dx + dy*dy);
+        float length = std::hypot(dx, dy);
         beams.push_back({bluePortal, 0.0f, length});
     }
 
@@ -871,7 +896,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
         float bx = netherspite->GetPositionX(), by = netherspite->GetPositionY();
         float px = greenPortal->GetPositionX(), py = greenPortal->GetPositionY();
         float dx = px - bx, dy = py - by;
-        float length = sqrt(dx*dx + dy*dy);
+        float length = std::hypot(dx, dy);
         beams.push_back({greenPortal, 0.0f, length});
     }
 
@@ -880,7 +905,6 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
     if (!nearVoidZone && !nearBeam)
         return false;
 
-    // use squared distances to avoid pow/sqrt
     const float minMoveDist = 2.0f;
     const float minMoveDistSq = minMoveDist * minMoveDist;
     const float maxSearchDist = 30.0f, stepAngle = M_PI/18.0f, stepDist = 0.5f;
@@ -896,8 +920,8 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
     {
         for (float dist = 2.0f; dist <= maxSearchDist; dist += stepDist)
         {
-            float cx = botX + cos(angle) * dist;
-            float cy = botY + sin(angle) * dist;
+            float cx = botX + std::cos(angle) * dist;
+            float cy = botY + std::sin(angle) * dist;
             float cz = netherspiteZ;
 
             if (!IsSafePosition(cx, cy, cz, voidZones, 4.0f) ||
@@ -939,7 +963,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::IsAwayFromBeams(
         float bx = netherspite->GetPositionX(), by = netherspite->GetPositionY();
         float px = beam.portal->GetPositionX(), py = beam.portal->GetPositionY();
         float dx = px - bx, dy = py - by;
-        float length = sqrt(dx*dx + dy*dy);
+        float length = std::hypot(dx, dy);
 
         if (length == 0.0f)
             continue;
@@ -948,7 +972,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::IsAwayFromBeams(
         float botdx = x - bx, botdy = y - by;
         float t = (botdx * dx + botdy * dy);
         float beamX = bx + dx * t, beamY = by + dy * t;
-        float distToBeam = sqrt(pow(x - beamX, 2) + pow(y - beamY, 2));
+        float distToBeam = std::hypot(x - beamX, y - beamY);
 
         if (distToBeam < 5.0f && t > beam.minDist && t < beam.maxDist)
             return false;
@@ -982,14 +1006,24 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event event)
 
     // DpsWaitTimer is for pausing DPS during phase transitions
     // redBeamMoveTimer and lastBeamMoveSideways are for tank dancing in/out of the red beam
-    if (netherspite->HasAura(SPELL_NETHERSPITE_BANISHED) ||
-        (netherspite->GetHealth() == netherspite->GetMaxHealth() &&
-         !netherspite->HasAura(SPELL_GREEN_BEAM_HEAL)))
+    if (netherspite->GetHealth() == netherspite->GetMaxHealth() &&
+        !netherspite->HasAura(SPELL_GREEN_BEAM_HEAL))
     {
-        if (IsMapIDTimerManager(botAI, bot) && netherspiteDpsWaitTimer.count(mapId))
+        if (IsMapIDTimerManager(botAI, bot))
+            netherspiteDpsWaitTimer.insert_or_assign(mapId, now);
+
+        if (botAI->IsTank(bot) && !bot->HasAura(SPELL_RED_BEAM_DEBUFF))
+        {
+            redBeamMoveTimer.erase(botGuid);
+            lastBeamMoveSideways.erase(botGuid);
+        }
+    }
+    else if (netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
+    {
+        if (IsMapIDTimerManager(botAI, bot))
             netherspiteDpsWaitTimer.erase(mapId);
 
-        if (botAI->IsTank(bot) && redBeamMoveTimer.count(botGuid))
+        if (botAI->IsTank(bot))
         {
             redBeamMoveTimer.erase(botGuid);
             lastBeamMoveSideways.erase(botGuid);
@@ -997,14 +1031,13 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event event)
     }
     else if (!netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
     {
-        if (IsMapIDTimerManager(botAI, bot) && netherspiteDpsWaitTimer.count(mapId) == 0)
-            netherspiteDpsWaitTimer[mapId] = now;
+        if (IsMapIDTimerManager(botAI, bot))
+            netherspiteDpsWaitTimer.emplace(mapId, now);
 
-        if (botAI->IsTank(bot) && bot->HasAura(SPELL_RED_BEAM_DEBUFF) &&
-            !redBeamMoveTimer.count(botGuid))
+        if (botAI->IsTank(bot) && bot->HasAura(SPELL_RED_BEAM_DEBUFF))
         {
-            redBeamMoveTimer[botGuid] = now;
-            lastBeamMoveSideways[botGuid] = false;
+            redBeamMoveTimer.emplace(botGuid, now);
+            lastBeamMoveSideways.emplace(botGuid, false);
         }
     }
 
@@ -1042,8 +1075,8 @@ bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event event)
     for (int i = 0; i < numAngles; ++i)
     {
         float angle = (2 * M_PI * i) / numAngles;
-        float dx = cos(angle);
-        float dy = sin(angle);
+        float dx = std::cos(angle);
+        float dy = std::sin(angle);
 
         for (float dist = minSafeBossDistance; dist <= maxSafeBossDistance; dist += distIncrement)
         {
@@ -1420,35 +1453,45 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
     const ObjectGuid botGuid = bot->GetGUID();
     const time_t now = std::time(nullptr);
 
-    // Erase DPS wait timer and tank and ranged position tracking on encounter reset or flight
-    if (nightbane->GetPositionZ() > 95.0f || nightbane->GetHealth() == nightbane->GetMaxHealth())
+    // Erase DPS wait timer and tank and ranged position tracking on encounter reset
+    if (nightbane->GetHealth() == nightbane->GetMaxHealth())
     {
-        if (botAI->IsMainTank(bot) && nightbaneTankStep.count(botGuid))
+        if (botAI->IsMainTank(bot))
             nightbaneTankStep.erase(botGuid);
 
-        if (botAI->IsRanged(bot) && nightbaneRangedStep.count(botGuid))
+        if (botAI->IsRanged(bot))
             nightbaneRangedStep.erase(botGuid);
 
-        if (IsMapIDTimerManager(botAI, bot) && nightbaneDpsWaitTimer.count(mapId))
+        if (IsMapIDTimerManager(botAI, bot))
             nightbaneDpsWaitTimer.erase(mapId);
     }
     // Erase flight phase timer and Rain of Bones tracker on ground phase and start DPS wait timer
     else if (nightbane->GetPositionZ() <= 95.0f)
     {
-        if (IsMapIDTimerManager(botAI, bot) && nightbaneFlightPhaseStartTimer.count(mapId))
+        nightbaneRainOfBonesHit.erase(botGuid);
+
+        if (IsMapIDTimerManager(botAI, bot))
+        {
             nightbaneFlightPhaseStartTimer.erase(mapId);
-
-        if (nightbaneRainOfBonesHit.count(botGuid))
-            nightbaneRainOfBonesHit.erase(botGuid);
-
-        if (IsMapIDTimerManager(botAI, bot) && nightbaneDpsWaitTimer.count(mapId) == 0)
-            nightbaneDpsWaitTimer[mapId] = now;
+            nightbaneDpsWaitTimer.emplace(mapId, now);
+        }
     }
+    // Erase DPS wait timer and tank and ranged position tracking and start flight phase timer
+    // at beginning of flight phase
+    else if (nightbane->GetPositionZ() > 95.0f)
+    {
+        if (botAI->IsMainTank(bot))
+            nightbaneTankStep.erase(botGuid);
 
-    // Start flight phase timer at beginning of flight phase
-    if (nightbane->GetPositionZ() > 95.0f && IsMapIDTimerManager(botAI, bot) &&
-        nightbaneFlightPhaseStartTimer.count(mapId) == 0)
-        nightbaneFlightPhaseStartTimer[mapId] = now;
+        if (botAI->IsRanged(bot))
+            nightbaneRangedStep.erase(botGuid);
+
+        if (IsMapIDTimerManager(botAI, bot))
+        {
+            nightbaneDpsWaitTimer.erase(mapId);
+            nightbaneFlightPhaseStartTimer.emplace(mapId, now);
+        }
+    }
 
     return false;
 }

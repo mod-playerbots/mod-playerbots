@@ -23,6 +23,9 @@ void RaidKarazhanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     ));
 
     // Moroes
+    triggers.push_back(new TriggerNode("moroes boss engaged by main tank",
+        NextAction::array(0, new NextAction("moroes main tank attack boss", ACTION_RAID + 1), nullptr)
+    ));
     triggers.push_back(new TriggerNode("moroes need target priority",
         NextAction::array(0, new NextAction("moroes mark target", ACTION_RAID + 1), nullptr)
     ));

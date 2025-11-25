@@ -54,6 +54,15 @@ bool AttumenTheHuntsmanBossWipesAggroWhenMountingTrigger::IsActive()
     return IsMapIDTimerManager(botAI, bot);
 }
 
+bool MoroesBossEngagedByMainTankTrigger::IsActive()
+{
+    if (!botAI->IsMainTank(bot))
+        return false;
+
+    Unit* moroes = AI_VALUE2(Unit*, "find target", "moroes");
+    return moroes != nullptr;
+}
+
 bool MoroesNeedTargetPriorityTrigger::IsActive()
 {
     Unit* dorothea = AI_VALUE2(Unit*, "find target", "baroness dorothea millstipe");
@@ -67,7 +76,7 @@ bool MoroesNeedTargetPriorityTrigger::IsActive()
     if (!target)
         return false;
 
-    return IsMapIDTimerManager(botAI, bot);
+    return botAI->IsDps(bot);
 }
 
 bool MaidenOfVirtueHealersAreStunnedByRepentanceTrigger::IsActive()
@@ -147,7 +156,7 @@ bool TheCuratorAstralFlareSpawnedTrigger::IsActive()
     if (!curator || !target)
         return false;
 
-    return IsMapIDTimerManager(botAI, bot);
+    return botAI->IsDps(bot);
 }
 
 bool TheCuratorBossEngagedByTanksTrigger::IsActive()
