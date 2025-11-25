@@ -5,6 +5,7 @@
 
 #include "PositionValue.h"
 
+#include "Helpers.h"
 #include "Playerbots.h"
 
 PositionValue::PositionValue(PlayerbotAI* botAI, std::string const name)

@@ -7,6 +7,7 @@
 
 #include "ChatHelper.h"
 #include "Event.h"
+#include "Helpers.h"
 #include "ItemVisitors.h"
 #include "Mail.h"
 #include "Playerbots.h"

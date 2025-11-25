@@ -5,6 +5,7 @@
 
 #include "AlwaysLootListValue.h"
 
+#include "Helpers.h"
 #include "Playerbots.h"
 
 std::string const AlwaysLootListValue::Save()

@@ -5,6 +5,7 @@
 
 #include "GroupValues.h"
 
+#include "Helpers.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 

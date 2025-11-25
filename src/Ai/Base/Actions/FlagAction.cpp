@@ -6,6 +6,7 @@
 #include "FlagAction.h"
 
 #include "Event.h"
+#include "Helpers.h"
 #include "Playerbots.h"
 
 bool FlagAction::TellUsage()
