@@ -420,7 +420,7 @@ void PlayerbotAI::UpdateAIGroupAndMaster()
             {
                 botAI->ChangeStrategy("+follow", BOT_STATE_NON_COMBAT);
 
-                if (botAI->GetMaster() == botAI->GetGroupMaster())
+                if (botAI->GetMaster() == botAI->GetGroupLeader())
                     botAI->TellMaster("Hello, I follow you!");
                 else
                     botAI->TellMaster(!urand(0, 2) ? "Hello!" : "Hi!");
@@ -4092,7 +4092,7 @@ Player* PlayerbotAI::FindNewMaster()
     if (!group)
         return nullptr;
 
-    Player* groupLeader = GetGroupMaster();
+    Player* groupLeader = GetGroupLeader();
     PlayerbotAI* leaderBotAI = GET_PLAYERBOT_AI(groupLeader);
     if (!leaderBotAI || leaderBotAI->IsRealPlayer())
         return groupLeader;
@@ -4143,7 +4143,7 @@ bool PlayerbotAI::HasActivePlayerMaster() { return master && !GET_PLAYERBOT_AI(m
 
 bool PlayerbotAI::IsAlt() { return HasRealPlayerMaster() && !sRandomPlayerbotMgr->IsRandomBot(bot); }
 
-Player* PlayerbotAI::GetGroupMaster()
+Player* PlayerbotAI::GetGroupLeader()
 {
     if (!bot->InBattleground())
         if (Group* group = bot->GetGroup())

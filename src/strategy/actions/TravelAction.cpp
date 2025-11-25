@@ -64,7 +64,7 @@ bool MoveToDarkPortalAction::Execute(Event event)
 {
     if (bot->GetGroup())
         if (bot->GetGroup()->GetLeaderGUID() != bot->GetGUID() &&
-            !GET_PLAYERBOT_AI(GET_PLAYERBOT_AI(bot)->GetGroupMaster()))
+            !GET_PLAYERBOT_AI(GET_PLAYERBOT_AI(bot)->GetGroupLeader()))
             return false;
 
     if (bot->GetLevel() > 57)

@@ -76,7 +76,7 @@ void RpgHelper::setFacing(GuidPosition guidPosition)
 
 void RpgHelper::setDelay(bool waitForGroup)
 {
-    if (!botAI->HasRealPlayerMaster() || (waitForGroup && botAI->GetGroupMaster() == bot && bot->GetGroup()))
+    if (!botAI->HasRealPlayerMaster() || (waitForGroup && botAI->GetGroupLeader() == bot && bot->GetGroup()))
         botAI->SetNextCheckDelay(sPlayerbotAIConfig->rpgDelay);
     else
         botAI->SetNextCheckDelay(sPlayerbotAIConfig->rpgDelay / 5);

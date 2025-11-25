@@ -251,9 +251,9 @@ bool PlayerbotSecurity::CheckLevelFor(PlayerbotSecurityLevel level, bool silent,
                     out << "I am currently leading a group. I can invite you if you want.";
                     break;
                 case PLAYERBOT_DENY_NOT_LEADER:
-                    if (botAI->GetGroupMaster())
+                    if (botAI->GetGroupLeader())
                     {
-                        out << "I am in a group with " << botAI->GetGroupMaster()->GetName()
+                        out << "I am in a group with " << botAI->GetGroupLeader()->GetName()
                             << ". You can ask him for invite.";
                     }
                     else
