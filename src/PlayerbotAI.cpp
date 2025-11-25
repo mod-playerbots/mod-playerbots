@@ -365,7 +365,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     }
 
     // Update the bot's group status (moved to helper function)
-    UpdateAIGroupAndMaster();
+    UpdateAIGroupMaster();
 
     // Update internal AI
     UpdateAIInternal(elapsed, minimal);
@@ -373,7 +373,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 }
 
 // Helper function for UpdateAI to check group membership and handle removal if necessary
-void PlayerbotAI::UpdateAIGroupAndMaster()
+void PlayerbotAI::UpdateAIGroupMaster()
 {
     if (!bot)
         return;
@@ -431,8 +431,6 @@ void PlayerbotAI::UpdateAIGroupAndMaster()
                 botAI->ChangeStrategy("-follow", BOT_STATE_NON_COMBAT);
             }
         }
-        else if (!newMaster && !bot->InBattleground())
-            LeaveOrDisbandGroup();
     }
 }
 
