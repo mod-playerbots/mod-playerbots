@@ -25,6 +25,7 @@
 #include "GameTime.h"
 #include "GuildMgr.h"
 #include "GuildTaskMgr.h"
+#include "Helpers.h"
 #include "LFGMgr.h"
 #include "LastMovementValue.h"
 #include "LastSpellCastValue.h"
@@ -63,11 +64,6 @@ std::vector<std::string> PlayerbotAI::dispel_whitelist = {
     "mutating injection",
     "frostbolt",
 };
-
-std::vector<std::string>& split(std::string const s, char delim, std::vector<std::string>& elems);
-std::vector<std::string> split(std::string const s, char delim);
-char* strstri(char const* str1, char const* str2);
-std::string& trim(std::string& s);
 
 std::set<std::string> PlayerbotAI::unsecuredCommands;
 

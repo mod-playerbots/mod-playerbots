@@ -8,13 +8,11 @@
 #include "ChooseTravelTargetAction.h"
 #include "Event.h"
 #include "Formations.h"
+#include "Helpers.h"
 #include "PathGenerator.h"
 #include "Playerbots.h"
 #include "PositionValue.h"
 #include "ServerFacade.h"
-
-std::vector<std::string> split(std::string const s, char delim);
-char* strstri(char const* haystack, char const* needle);
 
 bool GoAction::Execute(Event event)
 {

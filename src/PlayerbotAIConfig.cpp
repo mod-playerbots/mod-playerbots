@@ -6,6 +6,7 @@
 #include "PlayerbotAIConfig.h"
 #include <iostream>
 #include "Config.h"
+#include "Helpers.h"
 #include "NewRpgInfo.h"
 #include "PlayerbotDungeonRepository.h"
 #include "PlayerbotFactory.h"

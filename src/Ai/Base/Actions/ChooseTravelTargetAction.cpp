@@ -6,6 +6,7 @@
 #include "ChooseTravelTargetAction.h"
 
 #include "ChatHelper.h"
+#include "Helpers.h"
 #include "LootObjectStack.h"
 #include "Playerbots.h"
 
@@ -817,8 +818,6 @@ bool ChooseTravelTargetAction::SetNullTarget(TravelTarget* target)
 
     return true;
 }
-
-std::vector<std::string> split(std::string const s, char delim);
 char* strstri(char const* haystack, char const* needle);
 
 TravelDestination* ChooseTravelTargetAction::FindDestination(Player* bot, std::string const name, bool zones, bool npcs, bool quests, bool mobs, bool bosses)

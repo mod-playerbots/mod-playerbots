@@ -6,10 +6,9 @@
 #include "GiveItemAction.h"
 
 #include "Event.h"
+#include "Helpers.h"
 #include "ItemCountValue.h"
 #include "Playerbots.h"
-
-std::vector<std::string> split(std::string const s, char delim);
 
 bool GiveItemAction::Execute(Event event)
 {
