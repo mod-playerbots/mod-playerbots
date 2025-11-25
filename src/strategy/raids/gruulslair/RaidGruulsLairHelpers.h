@@ -15,7 +15,7 @@ namespace GruulsLairHelpers
         SPELL_SPELL_SHIELD = 33054,
 
         // Hunter
-        SPELL_MISDIRECTION = 34477,
+        SPELL_MISDIRECTION = 35079,
 
         // Warlock
         SPELL_BANISH = 18647, // Rank 2
