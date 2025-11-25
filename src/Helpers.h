@@ -8,7 +8,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <string>
 
 #include <algorithm>
 #include <cctype>
@@ -16,6 +15,7 @@
 #include <locale>
 #include <map>
 #include <sstream>
+#include <string>
 #include <vector>
 
 #include "Common.h"
@@ -24,6 +24,9 @@
 std::string& ltrim(std::string& s);
 std::string& rtrim(std::string& s);
 std::string& trim(std::string& s);
+
+// Case-insensitive string search (implemented in Helpers.cpp)
+char* strstri(char const* haystack, char const* needle);
 
 inline void split(std::vector<std::string>& dest, std::string const str, char const* delim)
 {

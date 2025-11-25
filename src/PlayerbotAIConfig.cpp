@@ -855,6 +855,8 @@ void PlayerbotAIConfig::loadWorldBuff()
     }
 }
 
+// Local helper function for splitting by multi-character string patterns
+// This is different from the split() in Helpers.h which only handles single-char delimiters
 static std::vector<std::string> split(const std::string& str, const std::string& pattern)
 {
     std::vector<std::string> res;
