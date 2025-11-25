@@ -8,6 +8,7 @@
 #include <regex>
 #include <stdexcept>
 
+#include "Helpers.h"
 #include "Playerbots.h"
 
 std::map<std::string, std::string> CustomStrategy::actionLinesCache;
