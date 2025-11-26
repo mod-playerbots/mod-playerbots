@@ -229,7 +229,7 @@ public:
 class NightbaneRangedBotsAreInCharredEarthTrigger : public Trigger
 {
 public:
-NightbaneRangedBotsAreInCharredEarthTrigger(PlayerbotAI* botAI) : Trigger(botAI, "nightbane ranged bots are in charred earth") {}
+    NightbaneRangedBotsAreInCharredEarthTrigger(PlayerbotAI* botAI) : Trigger(botAI, "nightbane ranged bots are in charred earth") {}
     bool IsActive() override;
 };
 
