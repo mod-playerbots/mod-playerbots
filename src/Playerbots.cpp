@@ -158,19 +158,35 @@ public:
 
     bool OnPlayerCanUseChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Player* receiver) override
     {
-        if (type == CHAT_MSG_WHISPER)
+        if (type == CHAT_MSG_WHISPER && receiver)
         {
             if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(receiver))
             {
+                // Store receiver GUID before executing any command that may log the bot out.
+                // Root cause: "logout" and similar commands can destroy the bot Player inside HandleCommand.
+                // If the core then continues normal whisper handling with the stale Player*, it will crash
+                // in ChatHandler::BuildChatPacket / Object::GetGuidValue (use-after-free). This does not
+                // happen for party chat because there is no single "receiver" Player* in that path.
+                ObjectGuid const receiverGuid = receiver->GetGUID();
+
                 botAI->HandleCommand(type, msg, player);
 
-                // hotfix; otherwise the server will crash when whispering logout
-                // https://github.com/mod-playerbots/mod-playerbots/pull/1838
-                // TODO: find the root cause and solve it. (does not happen in party chat)
-                if (msg == "logout")
+                // If the bot logged out during HandleCommand, abort further chat handling to avoid
+                // dereferencing an invalid Player* in the core whisper pipeline.
+                if (!ObjectAccessor::FindPlayer(receiverGuid))
+                {
                     return false;
+                }
+
+                // Bot control commands should not be sent as normal whispers.
+                // Keep explicit checks for logout commands for extra safety.
+                if (msg == "logout" || msg == "logout cancel")
+                {
+                    return false;
+                }
             }
         }
+
         return true;
     }
 
