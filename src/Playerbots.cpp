@@ -158,8 +158,11 @@ public:
 
     bool OnPlayerCanUseChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Player* receiver) override
     {
-        // This hook is only called for private messages (whispers) according to PlayerScript.
-        // If, for any reason, there is no receiver, abort further processing to be safe.
+        // Only handle private messages (whispers). Other chat types are left to the core.
+        if (type != CHAT_MSG_WHISPER)
+            return true;
+
+        // Be defensive: if there is no receiver for a whisper, abort processing.
         if (!receiver)
             return false;
 
@@ -167,10 +170,10 @@ public:
         if (!botAI)
             return true;
 
-        // Treat all whispers to bots as control commands handled by the AI.
-        // Bots do not require normal whisper delivery (BuildChatPacket / Player::Whisper).
-        // Returning false prevents the core from continuing the whisper pipeline with a Player*
-        // that may have been destroyed by a logout command inside HandleCommand (e.g. "logout").
+        // Whispers to playerbots are treated as control commands handled by the AI.
+        // They are not delivered as normal whispers to avoid continuing the whisper
+        // pipeline with a Player* that may have been destroyed by a command such as
+        // "logout" inside HandleCommand.
         botAI->HandleCommand(type, msg, player);
         return false;
     }
