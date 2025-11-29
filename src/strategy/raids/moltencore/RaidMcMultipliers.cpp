@@ -75,10 +75,39 @@ float BaronGeddonAbilityMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float GolemaggDisableDpsAoeMultiplier::GetValue(Action* action)
+static bool IsSingleLivingTankInGroup(Player* bot)
+{
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+        {
+            Player* member = itr->GetSource();
+            if (!member || !member->IsAlive() || member == bot)
+                continue;
+            if (PlayerbotAI::IsTank(member))
+                return false;
+        }
+    }
+    return true;
+}
+
+float GolemaggMultiplier::GetValue(Action* action)
 {
     if (AI_VALUE2(Unit*, "find target", "golemagg the incinerator"))
     {
+        if (PlayerbotAI::IsTank(bot) && IsSingleLivingTankInGroup(bot))
+        {
+            // Only one tank => Pick up Golemagg and the two Core Ragers
+            if (dynamic_cast<McGolemaggMainTankAttackGolemaggAction*>(action) ||
+                dynamic_cast<McGolemaggAssistTankAttackCoreRagerAction*>(action))
+                return 0.0f;
+        }
+        if (PlayerbotAI::IsAssistTank(bot))
+        {
+            // The first two assist tanks manage the Core Ragers. The remaining assist tanks attack the boss.
+            if (dynamic_cast<TankAssistAction*>(action))
+                return 0.0f;
+        }
         if (IsDpsBotWithAoeAction(bot, action))
             return 0.0f;
     }

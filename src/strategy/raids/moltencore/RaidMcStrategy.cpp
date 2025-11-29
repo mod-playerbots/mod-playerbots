@@ -52,6 +52,15 @@ void RaidMcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(
         new TriggerNode("mc golemagg fire resistance",
                         NextAction::array(0, new NextAction("mc golemagg fire resistance", ACTION_RAID), nullptr)));
+    triggers.push_back(
+        new TriggerNode("mc golemagg mark boss",
+                        NextAction::array(0, new NextAction("mc golemagg mark boss", ACTION_RAID), nullptr)));
+    triggers.push_back(
+        new TriggerNode("mc golemagg is main tank",
+                        NextAction::array(0, new NextAction("mc golemagg main tank attack golemagg", ACTION_RAID), nullptr)));
+    triggers.push_back(
+        new TriggerNode("mc golemagg is assist tank",
+                        NextAction::array(0, new NextAction("mc golemagg assist tank attack core rager", ACTION_RAID), nullptr)));
 
     // Majordomo Executus
     triggers.push_back(
@@ -68,5 +77,5 @@ void RaidMcStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new GarrDisableDpsAoeMultiplier(botAI));
     multipliers.push_back(new BaronGeddonAbilityMultiplier(botAI));
-    multipliers.push_back(new GolemaggDisableDpsAoeMultiplier(botAI));
+    multipliers.push_back(new GolemaggMultiplier(botAI));
 }

@@ -22,3 +22,19 @@ bool McShazzrahRangedTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "shazzrah") && PlayerbotAI::IsRanged(bot);
 }
+
+bool McGolemaggMarkBossTrigger::IsActive()
+{
+    // any tank may mark the boss
+    return AI_VALUE2(Unit*, "find target", "golemagg the incinerator") && PlayerbotAI::IsTank(bot);
+}
+
+bool McGolemaggIsMainTankTrigger::IsActive()
+{
+    return AI_VALUE2(Unit*, "find target", "golemagg the incinerator") && PlayerbotAI::IsMainTank(bot);
+}
+
+bool McGolemaggIsAssistTankTrigger::IsActive()
+{
+    return AI_VALUE2(Unit*, "find target", "golemagg the incinerator") && PlayerbotAI::IsAssistTank(bot);
+}

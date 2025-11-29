@@ -17,10 +17,10 @@ public:
     float GetValue(Action* action) override;
 };
 
-class GolemaggDisableDpsAoeMultiplier : public Multiplier
+class GolemaggMultiplier : public Multiplier
 {
 public:
-    GolemaggDisableDpsAoeMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "golemagg disable dps aoe multiplier") {}
+    GolemaggMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "golemagg multiplier") {}
     float GetValue(Action* action) override;
 };
 
