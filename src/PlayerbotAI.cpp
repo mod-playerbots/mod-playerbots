@@ -2248,7 +2248,7 @@ uint32 PlayerbotAI::GetGroupTankNum(Player* player)
 
 bool PlayerbotAI::IsAssistTank(Player* player) { return IsTank(player) && !IsMainTank(player); }
 
-bool PlayerbotAI::IsAssistTankOfIndex(Player* player, int index)
+bool PlayerbotAI::IsAssistTankOfIndex(Player* player, int index, bool ignoreDeadPlayers)
 {
     Group* group = player->GetGroup();
     if (!group)
@@ -2261,6 +2261,11 @@ bool PlayerbotAI::IsAssistTankOfIndex(Player* player, int index)
         Player* member = ref->GetSource();
 
         if (!member)
+        {
+            continue;
+        }
+
+        if (ignoreDeadPlayers && !member->IsAlive())
         {
             continue;
         }
@@ -2280,6 +2285,11 @@ bool PlayerbotAI::IsAssistTankOfIndex(Player* player, int index)
         Player* member = ref->GetSource();
 
         if (!member)
+        {
+            continue;
+        }
+
+        if (ignoreDeadPlayers && !member->IsAlive())
         {
             continue;
         }

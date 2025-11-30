@@ -428,7 +428,7 @@ public:
     static bool IsMainTank(Player* player);
     static uint32 GetGroupTankNum(Player* player);
     static bool IsAssistTank(Player* player);
-    static bool IsAssistTankOfIndex(Player* player, int index);
+    static bool IsAssistTankOfIndex(Player* player, int index, bool ignoreDeadPlayers = false);
     static bool IsHealAssistantOfIndex(Player* player, int index);
     static bool IsRangedDpsAssistantOfIndex(Player* player, int index);
     bool HasAggro(Unit* unit);

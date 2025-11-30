@@ -70,7 +70,8 @@ bool McGolemaggMarkBossAction::Execute(Event event)
     return false;
 }
 
-bool McGolemaggTankAction::MoveUnitToPosition(Unit* target, const Position& tankPosition, float maxDistance)
+bool McGolemaggTankAction::MoveUnitToPosition(Unit* target, const Position& tankPosition, float maxDistance,
+                                              float stepDistance)
 {
     if (bot->GetVictim() != target)
         return Attack(target);
@@ -82,23 +83,15 @@ bool McGolemaggTankAction::MoveUnitToPosition(Unit* target, const Position& tank
             float dX = tankPosition.GetPositionX() - bot->GetPositionX();
             float dY = tankPosition.GetPositionY() - bot->GetPositionY();
             float dist = sqrt(dX * dX + dY * dY);
-            float moveX = bot->GetPositionX() + (dX / dist) * maxDistance;
-            float moveY = bot->GetPositionY() + (dY / dist) * maxDistance;
+            float moveX = bot->GetPositionX() + (dX / dist) * stepDistance;
+            float moveY = bot->GetPositionY() + (dY / dist) * stepDistance;
             return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false,
                           false, false, MovementPriority::MOVEMENT_COMBAT, true,
                           true);
         }
-
-        float orientation = atan2(target->GetPositionY() - bot->GetPositionY(),
-                                  target->GetPositionX() - bot->GetPositionX());
-        bot->SetFacingTo(orientation);
     }
-    else if (!bot->IsWithinMeleeRange(target))
-    {
-        return MoveTo(target->GetMapId(), target->GetPositionX(), target->GetPositionY(),
-                      target->GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
-    }
+    else if (botAI->DoSpecificAction("taunt spell", Event(), true))
+        return true;
     return false;
 }
 
@@ -146,7 +139,9 @@ bool McGolemaggAssistTankAttackCoreRagerAction::Execute(Event event)
         return false;
 
     // Step 0: Filter additional assist tanks. We only need 2.
-    if (PlayerbotAI::GetAssistTankIndex(bot) > 1)
+    bool isFirstAssistTank = PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
+    bool isSecondAssistTank = PlayerbotAI::IsAssistTankOfIndex(bot, 1, true);
+    if (!isFirstAssistTank && !isSecondAssistTank)
         return Attack(boss);
 
     // Step 1: Find both Core Ragers
@@ -158,42 +153,45 @@ bool McGolemaggAssistTankAttackCoreRagerAction::Execute(Event event)
     // Step 2: Assign Core Rager to bot
     Unit* myCoreRager = nullptr;
     Unit* otherCoreRager = nullptr;
-    if (PlayerbotAI::IsAssistTankOfIndex(bot, 0))
+    if (isFirstAssistTank)
     {
         myCoreRager = coreRager1;
         otherCoreRager = coreRager2;
     }
-    else if (PlayerbotAI::IsAssistTankOfIndex(bot, 1))
+    else // isSecondAssistTank is always true here
     {
         myCoreRager = coreRager2;
         otherCoreRager = coreRager1;
     }
-    else
-        return false; // safety check
 
     // Step 3: Select the right target
     if (myCoreRager->GetVictim() != bot)
     {
-        // My Core Rager isn't attacking me. Attack until it does.
-        return Attack(myCoreRager);
+        // Step 3.1: My Core Rager isn't attacking me. Attack until it does.
+        if (bot->GetVictim() != myCoreRager)
+            return Attack(myCoreRager);
+        return botAI->DoSpecificAction("taunt spell", event, true);
     }
 
     Unit* otherCoreRagerVictim = otherCoreRager->GetVictim();
     if (otherCoreRagerVictim) // Core Rager victim can be NULL
     {
+        // Step 3.2: Check if the other Core Rager isn't attacking its assist tank.
         Player* otherCoreRagerPlayerVictim = otherCoreRagerVictim->ToPlayer();
         if (otherCoreRagerPlayerVictim &&
-            !PlayerbotAI::IsAssistTankOfIndex(otherCoreRagerPlayerVictim, 0) &&
-            !PlayerbotAI::IsAssistTankOfIndex(otherCoreRagerPlayerVictim, 1))
+            !PlayerbotAI::IsAssistTankOfIndex(otherCoreRagerPlayerVictim, 0, true) &&
+            !PlayerbotAI::IsAssistTankOfIndex(otherCoreRagerPlayerVictim, 1, true))
         {
             // Assume we are the only assist tank or the other assist tank is dead => pick up other Core Rager!
-            return Attack(otherCoreRager);
+            if (bot->GetVictim() != otherCoreRager)
+                return Attack(otherCoreRager);
+            return botAI->DoSpecificAction("taunt spell", event, true);
         }
     }
 
-    if (bot->GetVictim() == nullptr)
+    if (bot->GetVictim() != myCoreRager)
     {
-        // Make sure, we are attacking something. Otherwise, we might start moving without ever attacking.
+        // Step 3.3: Attack our Core Rager in case we previously switched in 3.2.
         return Attack(myCoreRager);
     }
 
