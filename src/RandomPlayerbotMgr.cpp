@@ -2351,6 +2351,11 @@ void RandomPlayerbotMgr::Randomize(Player* bot)
     {
         RandomizeFirst(bot);
     }
+
+    if (loginedBotsCount >= sPlayerbotAIConfig->minRandomBots)
+    {
+        InitArenaTeam();
+    }
 }
 
 void RandomPlayerbotMgr::IncreaseLevel(Player* bot)
@@ -3009,6 +3014,8 @@ void RandomPlayerbotMgr::OnBotLoginInternal(Player* const bot)
         {
             _isBotLogging = false;
         }
+
+        loginedBotsCount++;
     }
 
     if (sPlayerbotAIConfig->randomBotFixedLevel)
@@ -3580,4 +3587,175 @@ ObjectGuid const RandomPlayerbotMgr::GetBattleMasterGUID(Player* bot, Battlegrou
     }
 
     return battleMasterGUID;
+}
+
+void RandomPlayerbotMgr::FillArenaTeams() {
+    LOG_INFO("playerbots", "------------RandomPlayerbotMgr::FillArenaTeams: Filling incomplete arena teams");
+
+    for (uint32 teamId : sPlayerbotAIConfig->randomBotArenaTeams)
+    {
+        ArenaTeam* team = sArenaTeamMgr->GetArenaTeamById(teamId);
+        if (!team)
+        {
+            LOG_ERROR("playerbots", "Arena team ID {} not found", teamId);
+            continue;
+        }
+
+        uint32 requiredSize = (uint32)team->GetType();
+        if (team->GetMembersSize() >= requiredSize)
+            continue;
+
+        Player* captain = ObjectAccessor::FindPlayer(team->GetCaptain());
+        if (!captain)
+        {
+            LOG_ERROR("playerbots", "Captain not found for team '{}'", team->GetName());
+            continue;
+        }
+
+        for (auto const& [guid, bot] : sRandomPlayerbotMgr->GetAllBots())
+        {
+            //if (!bot || !bot->IsInWorld() || bot->GetLevel() < 70)
+            if (!bot || !bot->IsInWorld() || bot->GetLevel() < 60)
+                continue;
+
+            // Already in another Arena team
+            bool alreadyInTeam = false;
+            for (uint32 slot = 0; slot < MAX_ARENA_SLOT; ++slot)
+            {
+                if (bot->GetArenaTeamId(slot))
+                {
+                    alreadyInTeam = true;
+                    break;
+                }
+            }
+            if (alreadyInTeam)
+                continue;
+
+            // Factions are aligned.
+            if (bot->GetTeamId() != captain->GetTeamId())
+                continue;
+
+            // add member
+            team->AddMember(bot->GetGUID());
+            team->SaveToDB();
+
+            LOG_INFO("playerbots", "Added bot {} to arena team '{}': {}/{}", bot->GetName(), team->GetName(),
+                     team->GetMembersSize(), requiredSize);
+
+            if (team->GetMembersSize() >= requiredSize)
+                // Exit after successful addition and wait for the next bot to fill other teams
+                break;
+        }
+
+        if (team->GetMembersSize() < requiredSize)
+        {
+            LOG_INFO("playerbots", "Arena team '{}' still incomplete: {}/{}", team->GetName(), team->GetMembersSize(),
+                     requiredSize);
+        }
+    }
+}
+
+void RandomPlayerbotMgr::InitArenaTeam()
+{
+    //if (!sPlayerbotAIConfig->IsInRandomAccountList(bot->GetSession()->GetAccountId()))
+    //    return;
+
+    // Currently the teams are only remade after a server restart and if deleteRandomBotArenaTeams = 1
+    // This is because randomBotArenaTeams is only empty on server restart.
+    // A manual reinitalization (.playerbots rndbot init) is also required after the teams have been deleted.
+    if (sPlayerbotAIConfig->randomBotArenaTeams.empty())
+    {
+        if (sPlayerbotAIConfig->deleteRandomBotArenaTeams)
+        {
+            LOG_INFO("playerbots", "Deleting random bot arena teams...");
+
+            for (auto it = sArenaTeamMgr->GetArenaTeams().begin(); it != sArenaTeamMgr->GetArenaTeams().end(); ++it)
+            {
+                ArenaTeam* arenateam = it->second;
+                if (arenateam->GetCaptain() && arenateam->GetCaptain().IsPlayer())
+                {
+                    Player* bot = ObjectAccessor::FindPlayer(arenateam->GetCaptain());
+                    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+                    if (!botAI || botAI->IsRealPlayer())
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        arenateam->Disband(nullptr);
+                    }
+                }
+            }
+
+            LOG_INFO("playerbots", "Random bot arena teams deleted");
+        }
+
+        RandomPlayerbotFactory::CreateRandomArenaTeams(ARENA_TYPE_2v2, sPlayerbotAIConfig->randomBotArenaTeam2v2Count);
+        RandomPlayerbotFactory::CreateRandomArenaTeams(ARENA_TYPE_3v3, sPlayerbotAIConfig->randomBotArenaTeam3v3Count);
+        RandomPlayerbotFactory::CreateRandomArenaTeams(ARENA_TYPE_5v5, sPlayerbotAIConfig->randomBotArenaTeam5v5Count);
+    }
+
+    std::vector<uint32> arenateams;
+    for (std::vector<uint32>::iterator i = sPlayerbotAIConfig->randomBotArenaTeams.begin();
+         i != sPlayerbotAIConfig->randomBotArenaTeams.end(); ++i)
+        arenateams.push_back(*i);
+
+    if (arenateams.empty())
+    {
+        LOG_ERROR("playerbots", "No random arena team available");
+        return;
+    }
+
+    //while (!arenateams.empty())
+    //{
+    //    int index = urand(0, arenateams.size() - 1);
+    //    uint32 arenateamID = arenateams[index];
+    //    ArenaTeam* arenateam = sArenaTeamMgr->GetArenaTeamById(arenateamID);
+    //    // Remove in advance to prevent duplication
+    //    arenateams.erase(arenateams.begin() + index);  
+
+    //    if (!arenateam)
+    //    {
+    //        LOG_ERROR("playerbots", "Invalid arena team {}", arenateamID);
+    //        //arenateams.erase(arenateams.begin() + index);
+    //        continue;
+    //    }
+
+    //    while (arenateam->GetMembersSize() < (uint32)arenateam->GetType())
+    //    {
+
+    //        // Check if the bot is already in another team
+    //        bool alreadyInTeam = false;
+    //        for (uint32 arena_slot = 0; arena_slot < MAX_ARENA_SLOT; ++arena_slot)
+    //        {
+    //            uint32 arenaTeamId = bot->GetArenaTeamId(arena_slot);
+    //            
+    //            if (arenaTeamId)
+    //            {
+    //                alreadyInTeam = true;
+    //                break;
+    //            }
+    //        }
+
+    //        if (alreadyInTeam)
+    //            break;
+
+    //       
+    //        //  Check if the factions match
+    //        ObjectGuid capt = arenateam->GetCaptain();
+    //        Player* botcaptain = ObjectAccessor::FindPlayer(capt);
+    //        if (!botcaptain || botcaptain->GetTeamId() != bot->GetTeamId())
+    //            break;
+    //        // add member
+    //        arenateam->AddMember(bot->GetGUID());
+    //        LOG_INFO("playerbots", "Added bot {} to arena team '{}': {}/{}", bot->GetName(), arenateam->GetName(),
+    //                  arenateam->GetMembersSize(), (uint32)arenateam->GetType());
+    //        arenateam->SaveToDB();
+    //        // Exit after successful addition and wait for the next bot to fill other teams.
+    //        break;  
+    //    }
+    //    
+    //}
+    FillArenaTeams();
+    // bot->SaveToDB(false, false);
 }
