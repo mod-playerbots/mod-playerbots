@@ -3706,56 +3706,6 @@ void RandomPlayerbotMgr::InitArenaTeam()
         return;
     }
 
-    //while (!arenateams.empty())
-    //{
-    //    int index = urand(0, arenateams.size() - 1);
-    //    uint32 arenateamID = arenateams[index];
-    //    ArenaTeam* arenateam = sArenaTeamMgr->GetArenaTeamById(arenateamID);
-    //    // Remove in advance to prevent duplication
-    //    arenateams.erase(arenateams.begin() + index);  
-
-    //    if (!arenateam)
-    //    {
-    //        LOG_ERROR("playerbots", "Invalid arena team {}", arenateamID);
-    //        //arenateams.erase(arenateams.begin() + index);
-    //        continue;
-    //    }
-
-    //    while (arenateam->GetMembersSize() < (uint32)arenateam->GetType())
-    //    {
-
-    //        // Check if the bot is already in another team
-    //        bool alreadyInTeam = false;
-    //        for (uint32 arena_slot = 0; arena_slot < MAX_ARENA_SLOT; ++arena_slot)
-    //        {
-    //            uint32 arenaTeamId = bot->GetArenaTeamId(arena_slot);
-    //            
-    //            if (arenaTeamId)
-    //            {
-    //                alreadyInTeam = true;
-    //                break;
-    //            }
-    //        }
-
-    //        if (alreadyInTeam)
-    //            break;
-
-    //       
-    //        //  Check if the factions match
-    //        ObjectGuid capt = arenateam->GetCaptain();
-    //        Player* botcaptain = ObjectAccessor::FindPlayer(capt);
-    //        if (!botcaptain || botcaptain->GetTeamId() != bot->GetTeamId())
-    //            break;
-    //        // add member
-    //        arenateam->AddMember(bot->GetGUID());
-    //        LOG_INFO("playerbots", "Added bot {} to arena team '{}': {}/{}", bot->GetName(), arenateam->GetName(),
-    //                  arenateam->GetMembersSize(), (uint32)arenateam->GetType());
-    //        arenateam->SaveToDB();
-    //        // Exit after successful addition and wait for the next bot to fill other teams.
-    //        break;  
-    //    }
-    //    
-    //}
     FillArenaTeams();
     // bot->SaveToDB(false, false);
 }
