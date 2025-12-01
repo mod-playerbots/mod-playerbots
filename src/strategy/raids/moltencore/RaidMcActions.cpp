@@ -29,7 +29,7 @@ bool McMoveFromBaronGeddonAction::Execute(Event event)
 {
     if (Unit* boss = AI_VALUE2(Unit*, "find target", "baron geddon"))
     {
-        float distToTravel = INFERNO_DISTANCE - bot->GetDistance(boss);
+        float distToTravel = INFERNO_DISTANCE - bot->GetDistance2d(boss);
         if (distToTravel > 0)
         {
             // Stop current spell first
@@ -46,7 +46,7 @@ bool McShazzrahMoveAwayAction::Execute(Event event)
 {
     if (Unit* boss = AI_VALUE2(Unit*, "find target", "shazzrah"))
     {
-        float distToTravel = ARCANE_EXPLOSION_DISTANCE - bot->GetDistance(boss);
+        float distToTravel = ARCANE_EXPLOSION_DISTANCE - bot->GetDistance2d(boss);
         if (distToTravel > 0)
             return MoveAway(boss, distToTravel);
     }
