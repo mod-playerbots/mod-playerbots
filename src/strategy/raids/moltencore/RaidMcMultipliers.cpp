@@ -25,8 +25,10 @@ static bool IsDpsBotWithAoeAction(Player* bot, Action* action)
             return true;
 
         if (auto castSpellAction = dynamic_cast<CastSpellAction*>(action))
+        {
             if (castSpellAction->getThreatType() == Action::ActionThreatType::Aoe)
                 return true;
+        }
     }
     return false;
 }
