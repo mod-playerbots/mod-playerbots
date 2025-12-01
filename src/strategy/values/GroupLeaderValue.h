@@ -14,7 +14,7 @@ class Unit;
 class GroupLeaderValue : public UnitCalculatedValue
 {
 public:
-    GroupLeaderValue(PlayerbotAI* botAI, std::string const name = "master target") : UnitCalculatedValue(botAI, name)
+    GroupLeaderValue(PlayerbotAI* botAI, std::string const name = "group leader") : UnitCalculatedValue(botAI, name)
     {
     }
 

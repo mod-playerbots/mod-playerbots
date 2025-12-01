@@ -114,7 +114,7 @@ bool FollowAction::CanDeadFollow(Unit* target)
     return true;
 }
 
-bool FleeToMasterAction::Execute(Event event)
+bool FleeToGroupLeaderAction::Execute(Event event)
 {
     Unit* fTarget = AI_VALUE(Unit*, "group leader");
     bool canFollow = Follow(fTarget);
@@ -146,7 +146,7 @@ bool FleeToMasterAction::Execute(Event event)
     return true;
 }
 
-bool FleeToMasterAction::isUseful()
+bool FleeToGroupLeaderAction::isUseful()
 {
     if (!botAI->GetGroupLeader())
         return false;
