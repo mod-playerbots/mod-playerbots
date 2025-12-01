@@ -448,14 +448,14 @@ void PlayerbotFactory::Randomize(bool incremental)
     if (pmo)
         pmo->finish();
 
-    if (bot->GetLevel() >= 70)
+    /*if (bot->GetLevel() >= 70)
     {
         pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Arenas");
         // LOG_INFO("playerbots", "Initializing arena teams...");
         InitArenaTeam();
         if (pmo)
             pmo->finish();
-    }
+    }*/
 
     if (!incremental)
     {
