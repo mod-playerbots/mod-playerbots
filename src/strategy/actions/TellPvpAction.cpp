@@ -20,14 +20,13 @@ namespace
 {
     inline char const* BracketName(uint8 slot)
     {
-        // Slots order in AzerothCore: 2v2, 3v3, 5v5
         switch (slot)
         {
-            case 0: return "2v2";
-            case 1: return "3v3";
-            case 2: return "5v5";
+            case 0: return "2v2"; // 2v2
+            case 1: return "3v3"; // 3v3
+            case 2: return "5v5"; // 5v5
+            default: return "?v?";
         }
-        return "?v?";
     }
 }
 
