@@ -17,5 +17,4 @@ public:
 
     bool Execute(Event event) override;
 };
-
 #endif
