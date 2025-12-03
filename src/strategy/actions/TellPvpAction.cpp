@@ -25,7 +25,7 @@ namespace
             case ARENA_SLOT_2v2: return "2v2";
             case ARENA_SLOT_3v3: return "3v3";
             default:             return "5v5"; // ARENA_SLOT_5v5
-        }      
+        }
     }
 }
 
