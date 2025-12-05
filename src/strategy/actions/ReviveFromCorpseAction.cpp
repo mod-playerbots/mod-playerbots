@@ -17,14 +17,14 @@
 
 bool ReviveFromCorpseAction::Execute(Event event)
 {
-    Player* master = botAI->GetGroupMaster();
+    Player* groupLeader = botAI->GetGroupLeader();
     Corpse* corpse = bot->GetCorpse();
 
-    // follow master when master revives
+    // follow group Leader when group Leader revives
     WorldPacket& p = event.getPacket();
-    if (!p.empty() && p.GetOpcode() == CMSG_RECLAIM_CORPSE && master && !corpse && bot->IsAlive())
+    if (!p.empty() && p.GetOpcode() == CMSG_RECLAIM_CORPSE && groupLeader && !corpse && bot->IsAlive())
     {
-        if (sServerFacade->IsDistanceLessThan(AI_VALUE2(float, "distance", "master target"),
+        if (sServerFacade->IsDistanceLessThan(AI_VALUE2(float, "distance", "group leader"),
                                               sPlayerbotAIConfig->farDistance))
         {
             if (!botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT))
@@ -43,10 +43,10 @@ bool ReviveFromCorpseAction::Execute(Event event)
     // time(nullptr))
     //     return false;
 
-    if (master)
+    if (groupLeader)
     {
-        if (!GET_PLAYERBOT_AI(master) && master->isDead() && master->GetCorpse() &&
-            sServerFacade->IsDistanceLessThan(AI_VALUE2(float, "distance", "master target"),
+        if (!GET_PLAYERBOT_AI(groupLeader) && groupLeader->isDead() && groupLeader->GetCorpse() &&
+            sServerFacade->IsDistanceLessThan(AI_VALUE2(float, "distance", "group leader"),
                                               sPlayerbotAIConfig->farDistance))
             return false;
     }
@@ -79,15 +79,15 @@ bool FindCorpseAction::Execute(Event event)
     if (bot->InBattleground())
         return false;
 
-    Player* master = botAI->GetGroupMaster();
+    Player* groupLeader = botAI->GetGroupLeader();
     Corpse* corpse = bot->GetCorpse();
     if (!corpse)
         return false;
 
-    // if (master)
+    // if (groupLeader)
     // {
-    //     if (!GET_PLAYERBOT_AI(master) &&
-    //         sServerFacade->IsDistanceLessThan(AI_VALUE2(float, "distance", "master target"),
+    //     if (!GET_PLAYERBOT_AI(groupLeader) &&
+    //         sServerFacade->IsDistanceLessThan(AI_VALUE2(float, "distance", "group leader"),
     //         sPlayerbotAIConfig->farDistance)) return false;
     // }
 
@@ -110,20 +110,20 @@ bool FindCorpseAction::Execute(Event event)
     WorldPosition botPos(bot);
     WorldPosition corpsePos(corpse);
     WorldPosition moveToPos = corpsePos;
-    WorldPosition masterPos(master);
+    WorldPosition leaderPos(groupLeader);
 
     float reclaimDist = CORPSE_RECLAIM_RADIUS - 5.0f;
     float corpseDist = botPos.distance(corpsePos);
     int64 deadTime = time(nullptr) - corpse->GetGhostTime();
 
-    bool moveToMaster = master && master != bot && masterPos.fDist(corpsePos) < reclaimDist;
+    bool moveToLeader = groupLeader && groupLeader != bot && leaderPos.fDist(corpsePos) < reclaimDist;
 
     // Should we ressurect? If so, return false.
     if (corpseDist < reclaimDist)
     {
-        if (moveToMaster)  // We are near master.
+        if (moveToLeader)  // We are near group leader.
         {
-            if (botPos.fDist(masterPos) < sPlayerbotAIConfig->spellDistance)
+            if (botPos.fDist(leaderPos) < sPlayerbotAIConfig->spellDistance)
                 return false;
         }
         else if (deadTime > 8 * MINUTE)  // We have walked too long already.
@@ -140,8 +140,8 @@ bool FindCorpseAction::Execute(Event event)
     // If we are getting close move to a save ressurrection spot instead of just the corpse.
     if (corpseDist < sPlayerbotAIConfig->reactDistance)
     {
-        if (moveToMaster)
-            moveToPos = masterPos;
+        if (moveToLeader)
+            moveToPos = leaderPos;
         else
         {
             FleeManager manager(bot, reclaimDist, 0.0, urand(0, 1), moveToPos);
@@ -215,12 +215,12 @@ GraveyardStruct const* SpiritHealerAction::GetGrave(bool startZone)
     if (!startZone && ClosestGrave)
         return ClosestGrave;
 
-    if (botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT) && botAI->GetGroupMaster() && botAI->GetGroupMaster() != bot)
+    if (botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT) && botAI->GetGroupLeader() && botAI->GetGroupLeader() != bot)
     {
-        Player* master = botAI->GetGroupMaster();
-        if (master && master != bot)
+        Player* groupLeader = botAI->GetGroupLeader();
+        if (groupLeader && groupLeader != bot)
         {
-            ClosestGrave = sGraveyard->GetClosestGraveyard(master, bot->GetTeamId());
+            ClosestGrave = sGraveyard->GetClosestGraveyard(groupLeader, bot->GetTeamId());
 
             if (ClosestGrave)
                 return ClosestGrave;

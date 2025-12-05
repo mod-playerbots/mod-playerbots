@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include "MasterTargetValue.h"
+#include "GroupLeaderValue.h"
 
 #include "Playerbots.h"
 
-Unit* MasterTargetValue::Calculate() { return botAI->GetGroupMaster(); }
+Unit* GroupLeaderValue::Calculate() { return botAI->GetGroupLeader(); }

@@ -540,7 +540,7 @@ public:
     // Get the group leader or the master of the bot.
     // Checks if the bot is summoned as alt of a player
     bool IsAlt();
-    Player* GetGroupMaster();
+    Player* GetGroupLeader();
     // Returns a semi-random (cycling) number that is fixed for each bot.
     uint32 GetFixedBotNumer(uint32 maxNum = 100, float cyclePerMin = 1);
     GrouperType GetGrouperType();

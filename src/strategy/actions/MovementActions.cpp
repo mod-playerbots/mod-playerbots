@@ -1102,7 +1102,7 @@ void MovementAction::UpdateMovementState()
     // {
     //     if (Unit* pTarget = sServerFacade->GetChaseTarget(bot))
     //     {
-    //         if (pTarget != botAI->GetGroupMaster())
+    //         if (pTarget != botAI->GetGroupLeader())
     //             return;
 
     //         if (!bot->IsWithinMeleeRange(pTarget))
@@ -2663,7 +2663,7 @@ bool DisperseSetAction::Execute(Event event)
     return true;
 }
 
-bool RunAwayAction::Execute(Event event) { return Flee(AI_VALUE(Unit*, "master target")); }
+bool RunAwayAction::Execute(Event event) { return Flee(AI_VALUE(Unit*, "group leader")); }
 
 bool MoveToLootAction::Execute(Event event)
 {

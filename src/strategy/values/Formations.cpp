@@ -62,7 +62,7 @@ class MeleeFormation : public FollowFormation
 public:
     MeleeFormation(PlayerbotAI* botAI) : FollowFormation(botAI, "melee") {}
 
-    std::string const GetTargetName() override { return "master target"; }
+    std::string const GetTargetName() override { return "group leader"; }
 };
 
 class QueueFormation : public FollowFormation

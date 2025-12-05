@@ -28,7 +28,7 @@ GuidVector GroupMembersValue::Calculate()
 
 bool IsFollowingPartyValue::Calculate()
 {
-    if (botAI->GetGroupMaster() == bot)
+    if (botAI->GetGroupLeader() == bot)
         return true;
 
     if (botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT))
@@ -39,15 +39,15 @@ bool IsFollowingPartyValue::Calculate()
 
 bool IsNearLeaderValue::Calculate()
 {
-    Player* groupMaster = botAI->GetGroupMaster();
+    Player* groupLeader = botAI->GetGroupLeader();
 
-    if (!groupMaster)
+    if (!groupLeader)
         return false;
 
-    if (groupMaster == bot)
+    if (groupLeader == bot)
         return true;
 
-    return sServerFacade->GetDistance2d(bot, botAI->GetGroupMaster()) < sPlayerbotAIConfig->sightDistance;
+    return sServerFacade->GetDistance2d(bot, botAI->GetGroupLeader()) < sPlayerbotAIConfig->sightDistance;
 }
 
 bool BoolANDValue::Calculate()
@@ -154,8 +154,8 @@ bool GroupReadyValue::Calculate()
 
         // We only wait for members that are in range otherwise we might be waiting for bots stuck in dead loops
         // forever.
-        if (botAI->GetGroupMaster() &&
-            sServerFacade->GetDistance2d(member, botAI->GetGroupMaster()) > sPlayerbotAIConfig->sightDistance)
+        if (botAI->GetGroupLeader() &&
+            sServerFacade->GetDistance2d(member, botAI->GetGroupLeader()) > sPlayerbotAIConfig->sightDistance)
             continue;
 
         if (member->GetHealthPct() < sPlayerbotAIConfig->almostFullHealth)

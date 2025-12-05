@@ -20,10 +20,10 @@ public:
     bool CanDeadFollow(Unit* target);
 };
 
-class FleeToMasterAction : public FollowAction
+class FleeToGroupLeaderAction : public FollowAction
 {
 public:
-    FleeToMasterAction(PlayerbotAI* botAI) : FollowAction(botAI, "flee to master") {}
+    FleeToGroupLeaderAction(PlayerbotAI* botAI) : FollowAction(botAI, "flee to group leader") {}
 
     bool Execute(Event event) override;
     bool isUseful() override;

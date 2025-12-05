@@ -126,7 +126,8 @@ float ShadeOfAranArcaneExplosionDisableChargeMultiplier::GetValue(Action* action
             if (dynamic_cast<CombatFormationMoveAction*>(action) ||
                 dynamic_cast<FleeAction*>(action) ||
                 dynamic_cast<FollowAction*>(action) ||
-                dynamic_cast<ReachTargetAction*>(action))
+                dynamic_cast<ReachTargetAction*>(action) ||
+                dynamic_cast<AvoidAoeAction*>(action))
                 return 0.0f;
         }
     }

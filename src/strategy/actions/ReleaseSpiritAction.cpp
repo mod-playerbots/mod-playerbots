@@ -168,15 +168,15 @@ bool AutoReleaseSpiritAction::ShouldAutoRelease() const
     if (!bot->GetGroup())
         return true;
 
-    Player* groupMaster = botAI->GetGroupMaster();
-    if (!groupMaster || groupMaster == bot)
+    Player* groupLeader = botAI->GetGroupLeader();
+    if (!groupLeader || groupLeader == bot)
         return true;
 
     if (!botAI->HasActivePlayerMaster())
         return true;
 
     if (botAI->HasActivePlayerMaster() &&
-        groupMaster->GetMapId() == bot->GetMapId() &&
+        groupLeader->GetMapId() == bot->GetMapId() &&
         bot->GetMap() &&
         (bot->GetMap()->IsRaid() || bot->GetMap()->IsDungeon()))
     {
@@ -184,7 +184,7 @@ bool AutoReleaseSpiritAction::ShouldAutoRelease() const
     }
 
     return sServerFacade->IsDistanceGreaterThan(
-        AI_VALUE2(float, "distance", "master target"),
+        AI_VALUE2(float, "distance", "group leader"),
         sPlayerbotAIConfig->sightDistance);
 }
 
