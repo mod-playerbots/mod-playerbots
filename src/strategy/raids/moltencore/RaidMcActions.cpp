@@ -190,10 +190,7 @@ bool McGolemaggAssistTankAttackCoreRagerAction::Execute(Event event)
     }
 
     if (bot->GetVictim() != myCoreRager)
-    {
-        // Step 3.3: Attack our Core Rager in case we previously switched in 3.2.
-        return Attack(myCoreRager);
-    }
+        return Attack(myCoreRager); // Step 3.3: Attack our Core Rager in case we previously switched in 3.2.
 
     // Step 4: Prevent Golemagg's Trust on Core Ragers
     if (myCoreRager->HasAura(SPELL_GOLEMAGGS_TRUST) ||

@@ -2266,9 +2266,7 @@ bool PlayerbotAI::IsAssistTankOfIndex(Player* player, int index, bool ignoreDead
         }
 
         if (ignoreDeadPlayers && !member->IsAlive())
-        {
             continue;
-        }
 
         if (group->IsAssistant(member->GetGUID()) && IsAssistTank(member))
         {
@@ -2290,9 +2288,7 @@ bool PlayerbotAI::IsAssistTankOfIndex(Player* player, int index, bool ignoreDead
         }
 
         if (ignoreDeadPlayers && !member->IsAlive())
-        {
             continue;
-        }
 
         if (!group->IsAssistant(member->GetGUID()) && IsAssistTank(member))
         {
