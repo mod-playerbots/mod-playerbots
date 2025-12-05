@@ -167,7 +167,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    Position GetPositionOnBeam(Unit* boss, Unit* portal, float distanceFromBoss);
+    Position GetPositionOnBeam(Unit* netherspite, Unit* portal, float distanceFromBoss);
     std::unordered_map<ObjectGuid, bool> _wasBlockingRedBeam;
 };
 

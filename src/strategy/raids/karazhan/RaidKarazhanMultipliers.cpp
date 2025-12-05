@@ -4,6 +4,7 @@
 #include "AttackAction.h"
 #include "ChooseTargetActions.h"
 #include "DruidActions.h"
+#include "FollowActions.h"
 #include "GenericActions.h"
 #include "HunterActions.h"
 #include "MageActions.h"
@@ -19,12 +20,14 @@ using namespace KarazhanHelpers;
 float AttumenTheHuntsmanDisableTankAssistMultiplier::GetValue(Action* action)
 {
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
-    Unit* attumen = AI_VALUE2(Unit*, "find target", "attumen the huntsman");
-
-    if (!midnight && !attumen)
+    if (!midnight)
         return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action))
+    Unit* attumen = AI_VALUE2(Unit*, "find target", "attumen the huntsman");
+    if (!attumen)
+        return 1.0f;
+
+    if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -34,7 +37,7 @@ float AttumenTheHuntsmanDisableTankAssistMultiplier::GetValue(Action* action)
 float AttumenTheHuntsmanStayStackedMultiplier::GetValue(Action* action)
 {
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
-    if (!attumenMounted || !attumenMounted->IsAlive())
+    if (!attumenMounted)
         return 1.0f;
 
     if (!botAI->IsMainTank(bot) && attumenMounted->GetVictim() != bot)
@@ -55,16 +58,16 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValue(Action* action)
 float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
 {
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
-    if (!attumenMounted || !attumenMounted->IsAlive())
+    if (!attumenMounted)
         return 1.0f;
 
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 8;
 
-    auto it = attumenDpsWaitTimer.find(attumenMounted->GetMapId());
+    auto it = attumenDpsWaitTimer.find(KARAZHAN_MAP_ID);
     if (it == attumenDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
-        if ((!botAI->IsMainTank(bot)))
+        if (!botAI->IsMainTank(bot))
         {
             if (dynamic_cast<AttackAction*>(action) || (dynamic_cast<CastSpellAction*>(action) &&
                 !dynamic_cast<CastHealingSpellAction*>(action)))
@@ -82,8 +85,25 @@ float TheCuratorDisableTankAssistMultiplier::GetValue(Action* action)
     if (!curator)
         return 1.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action))
+    if (bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
+
+    return 1.0f;
+}
+
+// Save Bloodlust/Heroism for Evocation (100% increased damage)
+float TheCuratorDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
+{
+    Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
+    if (!curator)
+        return 1.0f;
+
+    if (!curator->HasAura(SPELL_CURATOR_EVOCATION))
+    {
+        if (dynamic_cast<CastBloodlustAction*>(action) ||
+            dynamic_cast<CastHeroismAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -101,9 +121,12 @@ float ShadeOfAranArcaneExplosionDisableChargeMultiplier::GetValue(Action* action
         if (dynamic_cast<CastReachTargetSpellAction*>(action))
             return 0.0f;
 
-        if (dynamic_cast<MovementAction*>(action))
+        if (bot->GetDistance2d(aran) >= 20.0f)
         {
-            if (bot->GetDistance2d(aran) >= 20.0f)
+            if (dynamic_cast<CombatFormationMoveAction*>(action) ||
+                dynamic_cast<FleeAction*>(action) ||
+                dynamic_cast<FollowAction*>(action) ||
+                dynamic_cast<ReachTargetAction*>(action))
                 return 0.0f;
         }
     }
@@ -115,14 +138,19 @@ float ShadeOfAranArcaneExplosionDisableChargeMultiplier::GetValue(Action* action
 float ShadeOfAranFlameWreathDisableMovementMultiplier::GetValue(Action* action)
 {
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
-    Group* group = bot->GetGroup();
-    if (!aran || !group)
+    if (!aran)
         return 1.0f;
 
     if (IsFlameWreathActive(botAI, bot))
     {
-        if (dynamic_cast<MovementAction*>(action) || dynamic_cast<CastKillingSpreeAction*>(action) ||
-            dynamic_cast<CastBlinkBackAction*>(action) || dynamic_cast<CastDisengageAction*>(action) ||
+        if (dynamic_cast<CombatFormationMoveAction*>(action) ||
+            dynamic_cast<FleeAction*>(action) ||
+            dynamic_cast<FollowAction*>(action) ||
+            dynamic_cast<ReachTargetAction*>(action) ||
+            dynamic_cast<AvoidAoeAction*>(action) ||
+            dynamic_cast<CastKillingSpreeAction*>(action) ||
+            dynamic_cast<CastBlinkBackAction*>(action) ||
+            dynamic_cast<CastDisengageAction*>(action) ||
             dynamic_cast<CastReachTargetSpellAction*>(action))
             return 0.0f;
     }
@@ -175,7 +203,7 @@ float NetherspiteWaitForDpsMultiplier::GetValue(Action* action)
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 5;
 
-    auto it = netherspiteDpsWaitTimer.find(netherspite->GetMapId());
+    auto it = netherspiteDpsWaitTimer.find(KARAZHAN_MAP_ID);
     if (it == netherspiteDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         if (!botAI->IsTank(bot))
@@ -219,6 +247,23 @@ float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+// Wait until Phase 3 to use Bloodlust/Heroism
+float PrinceMalchezaarDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
+{
+    Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
+    if (!malchezaar)
+        return 1.0f;
+
+    if (malchezaar->GetHealthPct() > 30.0f)
+    {
+        if (dynamic_cast<CastBloodlustAction*>(action) ||
+            dynamic_cast<CastHeroismAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 // Pets tend to run out of bounds and cause skeletons to spawn off the map
 // Pets also tend to pull adds from inside of the tower through the floor
 // This multiplier DOES NOT impact Hunter and Warlock pets
@@ -237,7 +282,7 @@ float NightbaneDisablePetsMultiplier::GetValue(Action* action)
         dynamic_cast<CastShadowfiendAction*>(action))
         return 0.0f;
 
-    if (nightbane->GetPositionZ() > 95.0f)
+    if (nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
     {
         if (dynamic_cast<PetAttackAction*>(action))
             return 0.0f;
@@ -250,13 +295,13 @@ float NightbaneDisablePetsMultiplier::GetValue(Action* action)
 float NightbaneWaitForDpsMultiplier::GetValue(Action* action)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
-    if (!nightbane || nightbane->GetPositionZ() > 95.0f)
+    if (!nightbane || nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
         return 1.0f;
 
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 8;
 
-    auto it = nightbaneDpsWaitTimer.find(nightbane->GetMapId());
+    auto it = nightbaneDpsWaitTimer.find(KARAZHAN_MAP_ID);
     if (it == nightbaneDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         if (!botAI->IsMainTank(bot))
@@ -272,13 +317,14 @@ float NightbaneWaitForDpsMultiplier::GetValue(Action* action)
 
 // The "avoid aoe" strategy must be disabled for the main tank
 // Otherwise, the main tank will spin Nightbane to avoid Charred Earth and wipe the raid
+// It is also disabled for all bots during the flight phase
 float NightbaneDisableAvoidAoeMultiplier::GetValue(Action* action)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
     if (!nightbane)
         return 1.0f;
 
-    if (nightbane->GetPositionZ() > 95.0f || botAI->IsMainTank(bot))
+    if (nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z || botAI->IsMainTank(bot))
     {
         if (dynamic_cast<AvoidAoeAction*>(action))
             return 0.0f;
@@ -302,7 +348,8 @@ float NightbaneDisableMovementMultiplier::GetValue(Action* action)
     // Disable CombatFormationMoveAction for all bots except:
     // (1) main tank and (2) only during the ground phase, other melee
     if (botAI->IsRanged(bot) ||
-        (botAI->IsMelee(bot) && !botAI->IsMainTank(bot) && nightbane->GetPositionZ() > 95.0f))
+        (botAI->IsMelee(bot) && !botAI->IsMainTank(bot) &&
+         nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z))
     {
         if (dynamic_cast<CombatFormationMoveAction*>(action))
             return 0.0f;

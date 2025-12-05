@@ -18,6 +18,9 @@ namespace KarazhanHelpers
         // Opera Event
         SPELL_LITTLE_RED_RIDING_HOOD     = 30756,
 
+        // The Curator
+        SPELL_CURATOR_EVOCATION          = 30254,
+
         // Shade of Aran
         SPELL_FLAME_WREATH_CAST          = 30004,
         SPELL_FLAME_WREATH_AURA          = 29946,
@@ -71,6 +74,9 @@ namespace KarazhanHelpers
         NPC_NETHERSPITE_INFERNAL         = 17646,
     };
 
+    const uint32 KARAZHAN_MAP_ID = 532;
+    const float NIGHTBANE_FLIGHT_Z = 95.0f;
+
     // Attumen the Huntsman
     extern std::unordered_map<uint32, time_t> attumenDpsWaitTimer;
     // Big Bad Wolf
@@ -86,21 +92,18 @@ namespace KarazhanHelpers
     extern std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
     extern std::unordered_map<ObjectGuid, bool> nightbaneRainOfBonesHit;
 
-    namespace KarazhanPositions
-    {
-        extern const Position MaidenOfVirtueBossPosition;
-        extern const Position MaidenOfVirtueRangedPosition[8];
-        extern const Position BigBadWolfBossPosition;
-        extern const Position BigBadWolfRunPosition[4];
-        extern const Position TheCuratorBossPosition;
-        extern const Position NightbaneTransitionBossPosition;
-        extern const Position NightbaneFinalBossPosition;
-        extern const Position NightbaneRangedPosition1;
-        extern const Position NightbaneRangedPosition2;
-        extern const Position NightbaneRangedPosition3;
-        extern const Position NightbaneFlightStackPosition;
-        extern const Position NightbaneRainOfBonesPosition;
-    }
+    extern const Position MAIDEN_OF_VIRTUE_BOSS_POSITION;
+    extern const Position MAIDEN_OF_VIRTUE_RANGED_POSITION[8];
+    extern const Position BIG_BAD_WOLF_BOSS_POSITION;
+    extern const Position BIG_BAD_WOLF_RUN_POSITION[4];
+    extern const Position THE_CURATOR_BOSS_POSITION;
+    extern const Position NIGHTBANE_TRANSITION_BOSS_POSITION;
+    extern const Position NIGHTBANE_FINAL_BOSS_POSITION;
+    extern const Position NIGHTBANE_RANGED_POSITION1;
+    extern const Position NIGHTBANE_RANGED_POSITION2;
+    extern const Position NIGHTBANE_RANGED_POSITION3;
+    extern const Position NIGHTBANE_FLIGHT_STACK_POSITION;
+    extern const Position NIGHTBANE_RAIN_OF_BONES_POSITION;
 
     void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
     void MarkTargetWithSkull(Player* bot, Unit* target);
@@ -121,12 +124,13 @@ namespace KarazhanHelpers
     std::vector<Unit*> GetAllVoidZones(PlayerbotAI *botAI, Player* bot);
     bool IsSafePosition (float x, float y, float z, const std::vector<Unit*>& hazards, float hazardRadius);
     std::vector<Unit*> GetSpawnedInfernals(PlayerbotAI* botAI);
-    bool IsStraightPathSafe(const Position& start, const Position& target,
+    bool IsStraightPathSafe(
+        const Position& start, const Position& target,
         const std::vector<Unit*>& hazards, float hazardRadius, float stepSize);
-    bool TryFindSafePositionWithSafePath( Player* bot, float originX, float originY, float originZ,
-        float centerX, float centerY, float centerZ, const std::vector<Unit*>& hazards,
-        float safeDistance, float stepSize, uint8 numAngles, float maxSampleDist, bool requireSafePath,
-        float& bestDestX, float& bestDestY, float& bestDestZ);
+    bool TryFindSafePositionWithSafePath(
+        Player* bot, float originX, float originY, float originZ, float centerX, float centerY, float centerZ,
+        const std::vector<Unit*>& hazards, float safeDistance, float stepSize, uint8 numAngles,
+        float maxSampleDist, bool requireSafePath, float& bestDestX, float& bestDestY, float& bestDestZ);
 }
 
 #endif

@@ -31,6 +31,13 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class TheCuratorDelayBloodlustAndHeroismMultiplier : public Multiplier
+{
+public:
+    TheCuratorDelayBloodlustAndHeroismMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "the curator delay bloodlust and heroism multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class ShadeOfAranArcaneExplosionDisableChargeMultiplier : public Multiplier
 {
 public:
@@ -70,6 +77,13 @@ class PrinceMalchezaarEnfeebleKeepDistanceMultiplier : public Multiplier
 {
 public:
     PrinceMalchezaarEnfeebleKeepDistanceMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "prince malchezaar enfeeble keep distance multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class PrinceMalchezaarDelayBloodlustAndHeroismMultiplier : public Multiplier
+{
+public:
+    PrinceMalchezaarDelayBloodlustAndHeroismMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "prince malchezaar delay bloodlust and heroism multiplier") {}
     virtual float GetValue(Action* action);
 };
 
