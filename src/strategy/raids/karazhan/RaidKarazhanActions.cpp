@@ -55,23 +55,19 @@ bool AttumenTheHuntsmanMarkTargetAction::Execute(Event event)
             return Attack(attumenMounted);
         }
     }
-    else
+    else if (Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight"))
     {
-        Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
-        if (midnight)
+        if (IsMapIDTimerManager(botAI, bot))
+            MarkTargetWithStar(bot, midnight);
+
+        if (!botAI->IsAssistTankOfIndex(bot, 0))
         {
-            if (IsMapIDTimerManager(botAI, bot))
-                MarkTargetWithStar(bot, midnight);
+            SetRtiTarget(botAI, "star", midnight);
 
-            if (!botAI->IsAssistTankOfIndex(bot, 0))
+            if (bot->GetTarget() != midnight->GetGUID())
             {
-                SetRtiTarget(botAI, "star", midnight);
-
-                if (bot->GetTarget() != midnight->GetGUID())
-                {
-                    bot->SetTarget(midnight->GetGUID());
-                    return Attack(midnight);
-                }
+                bot->SetTarget(midnight->GetGUID());
+                return Attack(midnight);
             }
         }
     }
