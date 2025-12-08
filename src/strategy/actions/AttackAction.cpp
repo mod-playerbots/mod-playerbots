@@ -22,9 +22,8 @@ bool AttackAction::Execute(Event event)
         return false;
 
     if (!target->IsInWorld())
-    {
         return false;
-    }
+
     return Attack(target);
 }
 
@@ -81,6 +80,7 @@ bool AttackAction::Attack(Unit* target, bool with_pet /*true*/)
     {
         if (verbose)
             botAI->TellError(std::string(target->GetName()) + " is no longer in the world.");
+
         return false;
     }
 
@@ -92,6 +92,7 @@ bool AttackAction::Attack(Unit* target, bool with_pet /*true*/)
     {
         if (verbose)
             botAI->TellError("I cannot attack other players in PvP prohibited areas.");
+
         return false;
     }
 
@@ -99,6 +100,7 @@ bool AttackAction::Attack(Unit* target, bool with_pet /*true*/)
     {
         if (verbose)
             botAI->TellError(std::string(target->GetName()) + " is friendly to me.");
+
         return false;
     }
 
@@ -106,6 +108,7 @@ bool AttackAction::Attack(Unit* target, bool with_pet /*true*/)
     {
         if (verbose)
             botAI->TellError(std::string(target->GetName()) + " is dead.");
+
         return false;
     }
 
@@ -113,6 +116,7 @@ bool AttackAction::Attack(Unit* target, bool with_pet /*true*/)
     {
         if (verbose)
             botAI->TellError(std::string(target->GetName()) + " is not in my sight.");
+
         return false;
     }
 
@@ -120,6 +124,7 @@ bool AttackAction::Attack(Unit* target, bool with_pet /*true*/)
     {
         if (verbose)
             botAI->TellError("I am already attacking " + std::string(target->GetName()) + ".");
+
         return false;
     }
 
