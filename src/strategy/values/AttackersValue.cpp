@@ -182,7 +182,7 @@ bool AttackersValue::IsPossibleTarget(Unit* attacker, Player* bot, float /*range
 
     // PvP prohibition checks (skip for duel opponents)
     if ((attacker->GetGUID().IsPlayer() || attacker->GetGUID().IsPet()) &&
-        (!bot->duel || bot->duel->Opponent != attacker) &&  // ADD duel exception
+        (!bot->duel || bot->duel->Opponent != attacker) &&
         (sPlayerbotAIConfig->IsPvpProhibited(attacker->GetZoneId(), attacker->GetAreaId()) ||
         sPlayerbotAIConfig->IsPvpProhibited(bot->GetZoneId(), bot->GetAreaId())))
     {
