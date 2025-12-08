@@ -192,6 +192,8 @@ public:
     // Account type management
     void AssignAccountTypes();
     bool IsAccountType(uint32 accountId, uint8 accountType);
+    void InitArenaTeam();
+    void FillArenaTeams();
 
 protected:
     void OnBotLoginInternal(Player* const bot) override;
@@ -232,6 +234,7 @@ private:
     std::list<uint32> currentBots;
     uint32 bgBotsCount;
     uint32 playersLevel;
+    uint32 loginedBotsCount = 0;
 
     // Account lists
     std::vector<uint32> rndBotTypeAccounts;             // Accounts marked as RNDbot (type 1)
