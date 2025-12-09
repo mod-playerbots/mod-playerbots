@@ -4345,6 +4345,9 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
         return true;
     }
 
+    if (!bot)
+        return false;
+
     // Is in combat. Always defend yourself.
     if (activityType != OUT_OF_PARTY_ACTIVITY && activityType != PACKET_ACTIVITY)
     {
@@ -4429,30 +4432,24 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
         for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
         {
             Player* member = gref->GetSource();
-            if ((!member || !member->IsInWorld()) && member->GetMapId() != bot->GetMapId())
-            {
+
+            // Исправлено: не трогаем nullptr и тех, кто не в мире/не на той карте
+            if (!member || !member->IsInWorld() || member->GetMapId() != bot->GetMapId())
                 continue;
-            }
 
             if (member == bot)
-            {
                 continue;
-            }
 
             PlayerbotAI* memberBotAI = GET_PLAYERBOT_AI(member);
-            {
-                if (!memberBotAI || memberBotAI->HasRealPlayerMaster())
-                {
-                    return true;
-                }
-            }
+            // Если в группе есть живой игрок или бот с реальным мастером — активность разрешена
+            if (!memberBotAI || memberBotAI->HasRealPlayerMaster())
+                return true;
 
+            // Лидер группы может ограничивать активность
             if (group->IsLeader(member->GetGUID()))
             {
                 if (!memberBotAI->AllowActivity(PARTY_ACTIVITY))
-                {
                     return false;
-                }
             }
         }
     }
@@ -4549,15 +4546,24 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
 
 bool PlayerbotAI::AllowActivity(ActivityType activityType, bool checkNow)
 {
-    if (!allowActiveCheckTimer[activityType])
-        allowActiveCheckTimer[activityType] = time(nullptr);
+    // Аккуратно переводим enum в индекс массива и проверяем границы
+    const int idx = static_cast<int>(activityType);
+    if (idx < 0 || idx >= MAX_ACTIVITY_TYPE)
+    {
+        // Некорректное значение активити — не блокируем бота, просто считаем активным
+        return true;
+    }
 
-    if (!checkNow && time(nullptr) < (allowActiveCheckTimer[activityType] + 5))
-        return allowActive[activityType];
+    if (!allowActiveCheckTimer[idx])
+        allowActiveCheckTimer[idx] = time(nullptr);
+
+    if (!checkNow && time(nullptr) < (allowActiveCheckTimer[idx] + 5))
+        return allowActive[idx];
 
     bool allowed = AllowActive(activityType);
-    allowActive[activityType] = allowed;
-    allowActiveCheckTimer[activityType] = time(nullptr);
+    allowActive[idx] = allowed;
+    allowActiveCheckTimer[idx] = time(nullptr);
+
     return allowed;
 }
 
