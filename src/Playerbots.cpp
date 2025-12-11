@@ -136,10 +136,10 @@ public:
         // 1. Bot A teleports and its visible objects start getting cleaned up
         // 2. Bot B is simultaneously updating visibility and tries to access objects in Bot A's old visibility map
         // 3. Those objects may already be freed, causing a segmentation fault
-        if (player->GetMapId() != mapid && player->IsInWorld())
-        {
-            player->GetObjectVisibilityContainer().CleanVisibilityReferences();
-        }
+        //if (player->GetMapId() != mapid && player->IsInWorld())
+        //{
+        //    player->GetObjectVisibilityContainer().CleanVisibilityReferences();
+        //}
 
         return true;  // Allow teleport to continue
     }
