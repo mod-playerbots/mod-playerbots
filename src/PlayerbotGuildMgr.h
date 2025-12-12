@@ -5,16 +5,6 @@
 #include "Player.h"
 #include "PlayerbotAI.h"
 
-constexpr std::array<GuilderType, 6> GuilderMap =
-{
-    GuilderType::SOLO,
-    GuilderType::TINY,
-    GuilderType::SMALL,
-    GuilderType::MEDIUM,
-    GuilderType::LARGE,
-    GuilderType::VERY_LARGE
-};
-
 class PlayerbotAI;
 
 class PlayerbotGuildMgr

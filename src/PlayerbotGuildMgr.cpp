@@ -92,7 +92,7 @@ std::string PlayerbotGuildMgr::AssignToGuild(Player* player)
     if (!player)
         return "";
 
-    int playerFaction = player->GetTeamId();
+    uint8_t playerFaction = player->GetTeamId();
     std::vector<GuildCache*> partiallyfilledguilds;
     partiallyfilledguilds.reserve(_guildCache.size());
 
@@ -119,7 +119,7 @@ std::string PlayerbotGuildMgr::AssignToGuild(Player* player)
 
     if (count < _randomBotGuildCount)
     {
-        for (auto key : _shuffled_guild_keys)
+        for (auto& key : _shuffled_guild_keys)
         {
             if (_guildNames[key])
             {
@@ -143,7 +143,7 @@ void PlayerbotGuildMgr::OnGuildUpdate(Guild* guild)
     if (entry.memberCount >= entry.maxMembers)
         entry.status = 2; // Full
     std::string guildName = guild->GetName();
-    for (auto it : _guildNames)
+    for (auto& it : _guildNames)
     {
         if (it.first == guildName)
         {
@@ -236,7 +236,7 @@ void PlayerbotGuildMgr::ValidateGuildCache()
             cache.status = 2; // full
 
         _guildCache.insert_or_assign(guildId, cache);
-        for (auto it : _guildNames)
+        for (auto& it : _guildNames)
         {
             if (it.first == cache.name)
             {
@@ -300,14 +300,6 @@ class BotGuildCacheWorldScript : public WorldScript
     public:
 
         BotGuildCacheWorldScript() : WorldScript("BotGuildCacheWorldScript"), _validateTimer(0){}
-
-        void OnStartup() override
-        {
-            sPlayerbotGuildMgr->LoadGuildNames();
-            LOG_INFO("server.loading", "Bot guild cache initialized");
-            sPlayerbotGuildMgr->ValidateGuildCache();
-            LOG_INFO("server.loading", "Bot guild cache validated");
-        }
 
         void OnUpdate(uint32 diff) override
         {
