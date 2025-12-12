@@ -5815,11 +5815,6 @@ bool PlayerbotAI::CanMove()
 
     return bot->GetMotionMaster()->GetCurrentMovementGeneratorType() != FLIGHT_MOTION_TYPE;
 }
-//TODO Verify where this is actually called and the implementation of it.
-bool PlayerbotAI::IsRealGuild(uint32 guildId)
-{
-    return sPlayerbotGuildMgr->IsRealGuild(guildId);
-}
 
 bool PlayerbotAI::IsInRealGuild()
 {
