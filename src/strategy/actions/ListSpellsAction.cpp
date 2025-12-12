@@ -93,35 +93,6 @@ void ListSpellsAction::InitStaticCaches()
 
 std::vector<std::pair<uint32, std::string>> ListSpellsAction::GetSpellList(std::string filter)
 {
-/*    if (skillSpells.empty())
-    {
-        for (uint32 j = 0; j < sSkillLineAbilityStore.GetNumRows(); ++j)
-        {
-            if (SkillLineAbilityEntry const* skillLine = sSkillLineAbilityStore.LookupEntry(j))
-                skillSpells[skillLine->Spell] = skillLine;
-        }
-    }
-
-    if (vendorItems.empty())
-    {
-        QueryResult results = WorldDatabase.Query("SELECT item FROM npc_vendor WHERE maxcount = 0");
-        if (results)
-        {
-            do
-            {
-                Field* fields = results->Fetch();
-                int32 entry = fields[0].Get<int32>();
-                if (entry <= 0)
-                    continue;
-
-                vendorItems.insert(entry);
-            } while (results->NextRow());
-        }
-    }*/
-
-    // Ensure static caches are initialized. In normal operation this should
-    // already have been done from a WorldScript at startup, but this call
-    // keeps the function safe even if the startup hook is disabled.
     InitStaticCaches();
 
     std::ostringstream posOut;
@@ -138,7 +109,7 @@ std::vector<std::pair<uint32, std::string>> ListSpellsAction::GetSpellList(std::
             filter = ss.size() > 1 ? ss[1] : "";
         }
 
-        // CHANGE: Guard access to ss[1]/ss[2] to avoid out-of-bounds
+        // Guard access to ss[1]/ss[2] to avoid out-of-bounds
         // when the player only types "first" without "aid".
         if (ss[0] == "first" && ss.size() > 1 && ss[1] == "aid")
         {
