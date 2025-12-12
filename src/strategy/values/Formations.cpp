@@ -111,58 +111,49 @@ public:
     WorldLocation GetLocationInternal() override
     {
         Player* master = GetMaster();
-        if (!master)
-            return WorldLocation();
+
+        // Safety checks to avoid using invalid pointers / maps during teleports or map changes
+        if (!master || !bot)
+            return Formation::NullLocation;
+
+        if (!master->IsInWorld() || !bot->IsInWorld())
+            return Formation::NullLocation;
+
+        if (master->GetMapId() != bot->GetMapId())
+            return Formation::NullLocation;
+
+        Map* map = master->GetMap();
+        if (!map)
+            return Formation::NullLocation;
 
         float range = sPlayerbotAIConfig->followDistance;
         float angle = GetFollowAngle();
 
         time_t now = time(nullptr);
+        // Recalculate random offset around the master every 3 seconds
         if (!lastChangeTime || now - lastChangeTime >= 3)
         {
-            Player* master = GetMaster();
-            if (!master)
-                return WorldLocation();
-
-            float range = sPlayerbotAIConfig->followDistance;
-            float angle = GetFollowAngle();
-
-            time_t now = time(nullptr);
-            if (!lastChangeTime || now - lastChangeTime >= 3)
-            {
-                lastChangeTime = now;
-                dx = (urand(0, 10) / 10.0 - 0.5) * sPlayerbotAIConfig->tooCloseDistance;
-                dy = (urand(0, 10) / 10.0 - 0.5) * sPlayerbotAIConfig->tooCloseDistance;
-                dr = sqrt(dx * dx + dy * dy);
-            }
-
-            float x = master->GetPositionX() + cos(angle) * range + dx;
-            float y = master->GetPositionY() + sin(angle) * range + dy;
-            float z = master->GetPositionZ() + master->GetHoverHeight();
-            if (!master->GetMap()->CheckCollisionAndGetValidCoords(
-                    master, master->GetPositionX(), master->GetPositionY(), master->GetPositionZ(), x, y, z))
-            {
-                x = master->GetPositionX() + cos(angle) * range + dx;
-                y = master->GetPositionY() + sin(angle) * range + dy;
-                z = master->GetPositionZ() + master->GetHoverHeight();
-                master->UpdateAllowedPositionZ(x, y, z);
-            }
-            // bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(),
-            // bot->GetPositionZ(), x, y, z);
-            return WorldLocation(master->GetMapId(), x, y, z);
+            lastChangeTime = now;
+            dx = (urand(0, 10) / 10.0f - 0.5f) * sPlayerbotAIConfig->tooCloseDistance;
+            dy = (urand(0, 10) / 10.0f - 0.5f) * sPlayerbotAIConfig->tooCloseDistance;
+            dr = sqrt(dx * dx + dy * dy);
         }
 
         float x = master->GetPositionX() + cos(angle) * range + dx;
         float y = master->GetPositionY() + sin(angle) * range + dy;
         float z = master->GetPositionZ() + master->GetHoverHeight();
-        if (!master->GetMap()->CheckCollisionAndGetValidCoords(master, master->GetPositionX(), master->GetPositionY(),
-                                                               master->GetPositionZ(), x, y, z))
+
+        // Try to project the point to valid ground using map's collision / navmesh
+        if (!map->CheckCollisionAndGetValidCoords(master, master->GetPositionX(), master->GetPositionY(),
+                                                  master->GetPositionZ(), x, y, z))
         {
+            // Fallback: keep the same horizontal offset and just fix Z using UpdateAllowedPositionZ
             x = master->GetPositionX() + cos(angle) * range + dx;
             y = master->GetPositionY() + sin(angle) * range + dy;
             z = master->GetPositionZ() + master->GetHoverHeight();
             master->UpdateAllowedPositionZ(x, y, z);
         }
+
         return WorldLocation(master->GetMapId(), x, y, z);
     }
 
@@ -670,7 +661,8 @@ WorldLocation MoveFormation::MoveSingleLine(std::vector<Player*> line, float dif
             float lz = cz;
 
             Player* master = botAI->GetMaster();
-            if (!master || !master->GetMap()->CheckCollisionAndGetValidCoords(
+            if (!master ||
+                !master->GetMap()->CheckCollisionAndGetValidCoords(
                     master, master->GetPositionX(), master->GetPositionY(), master->GetPositionZ(), lx, ly, lz))
             {
                 lx = x + cos(angle) * radius;
