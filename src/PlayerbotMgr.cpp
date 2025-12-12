@@ -68,6 +68,8 @@ private:
 };
 
 std::unordered_set<ObjectGuid> BotInitGuard::botsBeingInitialized;
+std::unordered_set<ObjectGuid> BotInitGuard::botsBeingInitialized;
+std::unordered_set<ObjectGuid> PlayerbotHolder::botLoading;
 
 PlayerbotHolder::PlayerbotHolder() : PlayerbotAIBase(false) {}
 class PlayerbotLoginQueryHolder : public LoginQueryHolder
@@ -181,7 +183,11 @@ void PlayerbotHolder::HandlePlayerBotLoginCallback(PlayerbotLoginQueryHolder con
         LOG_DEBUG("mod-playerbots", "Bot player could not be loaded for account ID: {}", botAccountId);
         botSession->LogoutPlayer(true);
         delete botSession;
-        botLoading.erase(holder.GetGuid());
+
+        auto it = PlayerbotHolder::botLoading.find(holder.GetGuid());
+        if (it != PlayerbotHolder::botLoading.end())
+            PlayerbotHolder::botLoading.erase(it);
+
         return;
     }
 
@@ -200,7 +206,9 @@ void PlayerbotHolder::HandlePlayerBotLoginCallback(PlayerbotLoginQueryHolder con
     auto op = std::make_unique<OnBotLoginOperation>(bot->GetGUID(), this);
     sPlayerbotWorldProcessor->QueueOperation(std::move(op));
 
-    botLoading.erase(holder.GetGuid());
+    auto it2 = PlayerbotHolder::botLoading.find(holder.GetGuid());
+    if (it2 != PlayerbotHolder::botLoading.end())
+        PlayerbotHolder::botLoading.erase(it2);
 }
 
 void PlayerbotHolder::UpdateSessions()
