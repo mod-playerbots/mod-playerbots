@@ -8,8 +8,17 @@
 #include "Event.h"
 #include "Playerbots.h"
 
+#include <mutex>
+
 std::map<uint32, SkillLineAbilityEntry const*> ListSpellsAction::skillSpells;
 std::set<uint32> ListSpellsAction::vendorItems;
+
+namespace
+{
+    // Ensure static caches are initialized exactly once, even if
+    // InitStaticCaches is called from multiple threads.
+    std::once_flag g_listSpellsCacheInitFlag;
+}
 
 // Lightweight alias for a single entry in the spell list used below.
 
@@ -47,9 +56,44 @@ static bool CompareSpells(SpellListEntry const& lhs, SpellListEntry const& rhs)
     return lhsKey > rhsKey;
 }
 
+void ListSpellsAction::InitStaticCaches()
+{
+    // This method is intended to be called from the world thread at startup,
+    // but it is also safe to call lazily from GetSpellList().
+    std::call_once(g_listSpellsCacheInitFlag, []()
+    {
+        // Build a map SpellId -> SkillLineAbilityEntry for quick lookup.
+        for (uint32 j = 0; j < sSkillLineAbilityStore.GetNumRows(); ++j)
+        {
+            if (SkillLineAbilityEntry const* skillLine = sSkillLineAbilityStore.LookupEntry(j))
+                skillSpells[skillLine->Spell] = skillLine;
+        }
+
+        // Fill the vendorItems cache once from the world database.
+        QueryResult results = WorldDatabase.Query("SELECT item FROM npc_vendor WHERE maxcount = 0");
+        if (results)
+        {
+            do
+            {
+                Field* fields = results->Fetch();
+                int32 entry = fields[0].Get<int32>();
+                if (entry <= 0)
+                    continue;
+
+                vendorItems.insert(static_cast<uint32>(entry));
+            }
+            while (results->NextRow());
+        }
+
+        LOG_DEBUG("playerbots",
+            "ListSpellsAction: initialized caches (skillSpells={}, vendorItems={}).",
+            skillSpells.size(), vendorItems.size());
+    });
+}
+
 std::vector<std::pair<uint32, std::string>> ListSpellsAction::GetSpellList(std::string filter)
 {
-    if (skillSpells.empty())
+/*    if (skillSpells.empty())
     {
         for (uint32 j = 0; j < sSkillLineAbilityStore.GetNumRows(); ++j)
         {
@@ -73,7 +117,12 @@ std::vector<std::pair<uint32, std::string>> ListSpellsAction::GetSpellList(std::
                 vendorItems.insert(entry);
             } while (results->NextRow());
         }
-    }
+    }*/
+
+    // Ensure static caches are initialized. In normal operation this should
+    // already have been done from a WorldScript at startup, but this call
+    // keeps the function safe even if the startup hook is disabled.
+    InitStaticCaches();
 
     std::ostringstream posOut;
     std::ostringstream negOut;

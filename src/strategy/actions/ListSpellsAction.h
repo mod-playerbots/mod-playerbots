@@ -18,6 +18,11 @@ public:
     bool Execute(Event event) override;
     virtual std::vector<std::pair<uint32, std::string>> GetSpellList(std::string filter = "");
 
+    // Initialize static caches used by GetSpellList (skillSpells and vendorItems).
+    // Intended to be called from a WorldScript at server startup to avoid
+    // synchronous database queries from MapUpdater worker threads.
+    static void InitStaticCaches();
+
 private:
     static std::map<uint32, SkillLineAbilityEntry const*> skillSpells;
     static std::set<uint32> vendorItems;

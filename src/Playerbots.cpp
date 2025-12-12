@@ -29,6 +29,7 @@
 #include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
 #include "cs_playerbots.h"
+#include "ListSpellsAction.h"
 #include "cmath"
 #include "BattleGroundTactics.h"
 
@@ -337,6 +338,13 @@ public:
 
         LOG_INFO("server.loading", ">> Loaded playerbots config in {} ms", GetMSTimeDiffToNow(oldMSTime));
         LOG_INFO("server.loading", " ");
+
+        // Pre-warm ListSpellsAction caches to avoid synchronous database queries
+        // from MapUpdater worker threads when using the "spells" command.
+        ListSpellsAction::InitStaticCaches();
+        LOG_INFO("playerbots",
+            "Playerbots: ListSpellsAction caches initialized at world startup.");
+
         LOG_INFO("server.loading", "Playerbots World Thread Processor initialized");
     }
 
