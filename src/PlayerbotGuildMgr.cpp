@@ -139,8 +139,10 @@ void PlayerbotGuildMgr::OnGuildUpdate(Guild* guild)
         return;
 
     GuildCache& entry = it->second;
-    entry.memberCount++;
-    if (entry.memberCount >= entry.maxMembers)
+    entry.memberCount = guild->GetMemberCount();
+    if (entry.memberCount < entry.maxMembers)
+        entry.status = 1;
+    else if (entry.memberCount >= entry.maxMembers)
         entry.status = 2; // Full
     std::string guildName = guild->GetName();
     for (auto& it : _guildNames)
