@@ -92,8 +92,6 @@ std::string PlayerbotGuildMgr::AssignToGuild(Player* player)
     if (!player)
         return "";
 
-    LOG_DEBUG("playerbots", "Assigning player [{}] to a guild", player->GetName());
-
     int playerFaction = player->GetTeamId();
     std::vector<GuildCache*> partiallyfilledguilds;
     partiallyfilledguilds.reserve(_guildCache.size());
@@ -111,15 +109,26 @@ std::string PlayerbotGuildMgr::AssignToGuild(Player* player)
         return (partiallyfilledguilds[idx]->name);
     }
 
-    for (auto key : _shuffled_guild_keys)
-    {
-        if (_guildNames[key])
+    size_t count = std::count_if(
+        _guildCache.begin(), _guildCache.end(),
+        [](const std::pair<const uint32, GuildCache>& pair)
         {
-            LOG_INFO("playerbots","Assigning player [{}] to guild [{}]", player->GetName(), key);
-            return key;
+            return !pair.second.hasRealPlayer;
         }
+        );
+
+    if (count < _randomBotGuildCount)
+    {
+        for (auto key : _shuffled_guild_keys)
+        {
+            if (_guildNames[key])
+            {
+                LOG_INFO("playerbots","Assigning player [{}] to guild [{}]", player->GetName(), key);
+                return key;
+            }
+        }
+        LOG_ERROR("playerbots","No available guild names left.");
     }
-    LOG_ERROR("playerbots","No available guild names left.");
     return "";
 }
 

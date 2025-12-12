@@ -3986,10 +3986,7 @@ void PlayerbotFactory::InitGuild()
     else
     {
         if (guild->AddMember(bot->GetGUID(),urand(GR_OFFICER, GR_INITIATE)))
-        {
-            LOG_DEBUG("playerbots","Bot {} joined guild {}.", bot->GetName(), guildName);
             sPlayerbotGuildMgr->OnGuildUpdate(guild);
-        }
         else
             LOG_ERROR("playerbots","Bot {} failed to join guild {}.", bot->GetName(), guildName);
     }
