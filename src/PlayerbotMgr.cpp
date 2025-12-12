@@ -68,7 +68,6 @@ private:
 };
 
 std::unordered_set<ObjectGuid> BotInitGuard::botsBeingInitialized;
-std::unordered_set<ObjectGuid> BotInitGuard::botsBeingInitialized;
 std::unordered_set<ObjectGuid> PlayerbotHolder::botLoading;
 
 PlayerbotHolder::PlayerbotHolder() : PlayerbotAIBase(false) {}
