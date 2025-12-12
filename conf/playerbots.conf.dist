@@ -630,7 +630,7 @@ AiPlayerbot.RandomBotHordeRatio = 50
 AiPlayerbot.DisableDeathKnightLogin = 0
 
 # Enable simulated expansion limitation for talents and glyphs
-# If enabled, limits talent trees to 5 rows plus the middle talent of the 6th row for bots until level 61 
+# If enabled, limits talent trees to 5 rows plus the middle talent of the 6th row for bots until level 61
 # and 7 rows plus the middle talent of the 8th row for bots from level 61 until level 71
 # Default: 0 (disabled)
 AiPlayerbot.LimitTalentsExpansion = 0
