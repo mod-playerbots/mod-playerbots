@@ -24,7 +24,7 @@ public:
         creators["leave"] = &ChatTriggerContext::leave;
         creators["rep"] = &ChatTriggerContext::reputation;
         creators["reputation"] = &ChatTriggerContext::reputation;
-        creators["pvp"] = &ChatTriggerContext::pvp;
+        creators["pvp stats"] = &ChatTriggerContext::pvp;
         creators["log"] = &ChatTriggerContext::log;
         creators["los"] = &ChatTriggerContext::los;
         creators["rpg status"] = &ChatTriggerContext::rpg_status;
@@ -226,7 +226,7 @@ private:
     static Trigger* stats(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "stats"); }
     static Trigger* leave(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "leave"); }
     static Trigger* reputation(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "reputation"); }
-    static Trigger* pvp(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "pvp"); }
+    static Trigger* pvp(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "pvp stats"); }
     static Trigger* log(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "log"); }
     static Trigger* los(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "los"); }
     static Trigger* rpg_status(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "rpg status"); }
