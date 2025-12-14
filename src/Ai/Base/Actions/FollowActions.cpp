@@ -21,69 +21,28 @@ bool FollowAction::Execute(Event event)
 {
     Formation* formation = AI_VALUE(Formation*, "formation");
     std::string const target = formation->GetTargetName();
-    /*
-    // Transport (Zep + Boats) Fix
-    // TODO: Smooth out bot boarding on transports (boats, zeppelins, tram).
-    // TODO: Handle bot's pets
+
+    // Transport Handling (boats, zeppelins, elevators, platforms)
+    // Let normal follow movement bring the bot close to the master
+    // Attach the bot as a passenger once it is on (or very close to) the same transport
+    // Support classic transports (boats, zeppelins, tram) and moving platforms/elevators
     Player* master = botAI->GetMaster();
-    if (master && master->GetTransport())
+    if (master && master->IsInWorld() && bot->IsInWorld())
     {
-        Transport* transport = master->GetTransport();
-
-        // Vérification de map : le bot doit être sur la même map que le maître
-        if (bot->GetMap() != master->GetMap())
-            return false;
-        // If the bot is not already a passenger on this transport
-        if (bot->GetTransport() != transport)
+        // check master/map
+        if (bot->GetMapId() == master->GetMapId())
         {
-            // Offset to avoid landing under the floor
-            float offsetX = 1.0f, offsetY = 0.5f, offsetZ = 0.2f;
-            float x = master->GetPositionX() + offsetX;
-            float y = master->GetPositionY() + offsetY;
-            float z = master->GetPositionZ() + offsetZ;
+            Map* map = master->GetMap();
+            Transport* transport = nullptr;
 
-            // Teleports to a position close to the master (world coordinates)
-            bot->TeleportTo(transport->GetMapId(), x, y, z, master->GetOrientation());
-
-            // Add as a passenger (server-side)
-            transport->AddPassenger(bot, true);
-
-            // Force complete cleanup of the movement and flags to avoid
-            // wrestling between MoveSpline/MotionMaster and the transport driver.
-            bot->StopMoving();
-            // MotionMaster current clear (true to force) then idle to stabilize
-            bot->GetMotionMaster()->Clear(true);
-            bot->GetMotionMaster()->MoveIdle();
-
-            // Ensure that the march/mounted flags are no longer active
-            bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_FORWARD);
-            bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_WALKING);
-
-            // Allow a slightly longer verification period; during this time
-            // the server will update the transport status and relative positions.
-            botAI->SetNextCheckDelay(urand(1000, 2500));
-
-            LOG_DEBUG("playerbots", "Bot {} boarded transport {} near master {} at {:.2f},{:.2f},{:.2f}",
-                     bot->GetName(), transport->GetGUID().GetCounter(), master->GetName(), x, y, z);
-
-            return true;
-        }
-    } // End Transport (Zep + Boats) Fix
-    */
-    // Unified Transport Handling (boats, zeppelins, elevators, platforms)
-    Player* master = botAI->GetMaster();
-    if (master && master->IsInWorld())
-    {
-        Map* map = master->GetMap();
-        if (map && bot->GetMap() == map)
-        {
-            // Detect any kind of moving transport the master is currently standing on
-            Transport* transport = master->GetTransport();
-
-            // Some moving platforms/elevators do not expose a direct Transport* on the master.
-            // In that case we fall back to a positional lookup on the map while the master
-            // has the ONTRANSPORT movement flag.
-            if (!transport && master->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
+            // Prefer the direct pointer from the master if available
+            if (master->GetTransport())
+            {
+                transport = master->GetTransport();
+            }
+            // Some elevators & moving platforms set ONTRANSPORT without exposing a direct Transport* on the master.
+            // In that case use the same helper Map API used in PlayerbotAI::UpdateAI to find the active transport.
+            else if (map && master->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
             {
                 transport = map->GetTransportForPos(master->GetPhaseMask(),
                                                     master->GetPositionX(),
@@ -92,33 +51,24 @@ bool FollowAction::Execute(Event event)
                                                     master);
             }
 
-            // If we found a transport and the bot is not yet attached, board it.
+            // If the master is on a transport we could identify and the bot is not yet attached:
             if (transport && bot->GetTransport() != transport)
             {
-                float const offsetX = 1.0f;
-                float const offsetY = 0.5f;
-                float const offsetZ = 0.2f;
+                // Attach the bot when it is already close enough to the master.
+                // Follow movement is responsible for bringing the bot into range.
+                float const attachDistance = 5.0f;
+                if (bot->IsWithinDistInMap(master, attachDistance))
+                {
+                    transport->AddPassenger(bot, true);
+                    bot->StopMovingOnCurrentPos();
 
-                float const x = master->GetPositionX() + offsetX;
-                float const y = master->GetPositionY() + offsetY;
-                float const z = master->GetPositionZ() + offsetZ;
+                    LOG_DEBUG("playerbots", "Bot {} attached to master's transport {} at follow time",
+                        bot->GetName(), transport->GetGUID().GetCounter());
 
-                // Teleport close to the master (world coordinates) and attach as passenger (server-side).
-                bot->TeleportTo(transport->GetMapId(), x, y, z, master->GetOrientation());
-                transport->AddPassenger(bot, true);
-
-                // Reset movement state so the transport driver fully takes over.
-                bot->StopMoving();
-                bot->GetMotionMaster()->Clear(true);
-                bot->GetMotionMaster()->MoveIdle();
-                bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_FORWARD);
-                bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_WALKING);
-
-                botAI->SetNextCheckDelay(urand(1000, 2500));
-                LOG_INFO("playerbots",
-                          "Bot {} boarded transport {} near master {} at {:.2f},{:.2f},{:.2f}",
-                          bot->GetName(), transport->GetGUID().GetCounter(), master->GetName(), x, y, z);
-                return true;
+                    // Return true to indicate that follow did something this tick.
+                    // Bot is now locked to the transport and will move with it via core logic.
+                    return true;
+                }
             }
         }
     }

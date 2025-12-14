@@ -885,7 +885,13 @@ void PlayerbotAI::LeaveOrDisbandGroup()
 
 bool PlayerbotAI::IsMasterOnTransport()
 {
-    return master && master->GetTransport();
+    if (!master || !master->IsInWorld())
+        return false;
+
+    if (master->GetTransport())
+        return true;
+
+    return master->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
 }
 
 bool PlayerbotAI::IsAllowedCommand(std::string const text)
