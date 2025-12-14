@@ -12,6 +12,7 @@
 #include "Queue.h"
 #include "Strategy.h"
 #include "Timer.h"
+#include <algorithm>
 
 Engine::Engine(PlayerbotAI* botAI, AiObjectContext* factory) : PlayerbotAIAware(botAI), aiObjectContext(factory)
 {
@@ -154,7 +155,12 @@ bool Engine::DoNextAction(Unit* unit, uint32 depth, bool minimal)
     PushDefaultActions();
 
     uint32 iterations = 0;
-    uint32 iterationsPerTick = queue.Size() * (minimal ? 2 : sPlayerbotAIConfig->iterationsPerTick);
+
+    // фиксированный бюджет на тик (НЕ зависит от размера очереди)
+    uint32 maxIterations = minimal ? 2 : sPlayerbotAIConfig->iterationsPerTick;
+
+    // и не больше, чем реально есть в очереди
+    uint32 iterationsPerTick = std::min<uint32>(maxIterations, queue.Size());
 
     while (++iterations <= iterationsPerTick)
     {
@@ -166,7 +172,7 @@ bool Engine::DoNextAction(Unit* unit, uint32 depth, bool minimal)
         bool skipPrerequisites = basket->isSkipPrerequisites();
 
         if (minimal && (relevance < 100))
-            continue;
+            break;
 
         Event event = basket->getEvent();
         ActionNode* actionNode = queue.Pop();  // NOTE: Pop() deletes basket
