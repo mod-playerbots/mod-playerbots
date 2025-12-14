@@ -229,6 +229,7 @@ private:
     std::map<uint32, std::map<uint32, std::vector<WorldLocation>>> rpgLocsCacheLevel;
     std::map<TeamId, std::map<BattlegroundTypeId, std::vector<uint32>>> BattleMastersCache;
     std::map<uint32, std::map<std::string, CachedEvent>> eventCache;
+    std::unordered_set<uint32> eventCacheLoaded;
     std::list<uint32> currentBots;
     uint32 bgBotsCount;
     uint32 playersLevel;

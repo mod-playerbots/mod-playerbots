@@ -2711,13 +2711,17 @@ std::vector<uint32> RandomPlayerbotMgr::GetBgBots(uint32 bracket)
 
 uint32 RandomPlayerbotMgr::GetEventValue(uint32 bot, std::string const event)
 {
-    // load all events at once on first event load
-    if (eventCache[bot].empty())
+    // Грузим события из БД один раз на бота (даже если в БД 0 строк)
+    if (eventCacheLoaded.find(bot) == eventCacheLoaded.end())
     {
+        auto& botCache = eventCache[bot];
+        botCache.clear();
+
         PlayerbotsDatabasePreparedStatement* stmt =
             PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_RANDOM_BOTS_BY_OWNER_AND_BOT);
         stmt->SetData(0, 0);
         stmt->SetData(1, bot);
+
         if (PreparedQueryResult result = PlayerbotsDatabase.Query(stmt))
         {
             do
@@ -2730,27 +2734,26 @@ uint32 RandomPlayerbotMgr::GetEventValue(uint32 bot, std::string const event)
                 e.lastChangeTime = fields[2].Get<uint32>();
                 e.validIn = fields[3].Get<uint32>();
                 e.data = fields[4].Get<std::string>();
-                eventCache[bot][eventName] = std::move(e);
+
+                botCache[eventName] = std::move(e);
             } while (result->NextRow());
         }
+
+        eventCacheLoaded.insert(bot);
     }
 
-    CachedEvent& e = eventCache[bot][event];
-    /*if (e.IsEmpty())
-    {
-        QueryResult results = PlayerbotsDatabase.Query("SELECT `value`, `time`, validIn, `data` FROM
-    playerbots_random_bots WHERE owner = 0 AND bot = {} AND event = {}", bot, event.c_str());
+    auto botIt = eventCache.find(bot);
+    if (botIt == eventCache.end())
+        return 0;
 
-        if (results)
-        {
-            Field* fields = results->Fetch();
-            e.value = fields[0].Get<uint32>();
-            e.lastChangeTime = fields[1].Get<uint32>();
-            e.validIn = fields[2].Get<uint32>();
-            e.data = fields[3].Get<std::string>();
-        }
-    }
-    */
+    auto& botEvents = botIt->second;
+    auto it = botEvents.find(event);
+
+    // ВАЖНО: не создаём запись на чтении
+    if (it == botEvents.end())
+        return 0;
+
+    CachedEvent& e = it->second;
 
     if ((time(0) - e.lastChangeTime) >= e.validIn && event != "specNo" && event != "specLink")
         e.value = 0;
@@ -2758,17 +2761,23 @@ uint32 RandomPlayerbotMgr::GetEventValue(uint32 bot, std::string const event)
     return e.value;
 }
 
+
 std::string const RandomPlayerbotMgr::GetEventData(uint32 bot, std::string const event)
 {
-    std::string data = "";
-    if (GetEventValue(bot, event))
-    {
-        CachedEvent e = eventCache[bot][event];
-        data = e.data;
-    }
+    if (!GetEventValue(bot, event))
+        return "";
 
-    return data;
+    auto botIt = eventCache.find(bot);
+    if (botIt == eventCache.end())
+        return "";
+
+    auto it = botIt->second.find(event);
+    if (it == botIt->second.end())
+        return "";
+
+    return it->second.data;
 }
+
 
 uint32 RandomPlayerbotMgr::SetEventValue(uint32 bot, std::string const event, uint32 value, uint32 validIn,
                                          std::string const data)
@@ -3494,7 +3503,9 @@ void RandomPlayerbotMgr::Remove(Player* bot)
     stmt->SetData(1, owner.GetCounter());
     PlayerbotsDatabase.Execute(stmt);
 
-    eventCache[owner.GetCounter()].clear();
+    uint32 botId = owner.GetCounter();
+    eventCache.erase(botId);
+    eventCacheLoaded.erase(botId);
 
     LogoutPlayerBot(owner);
 }
