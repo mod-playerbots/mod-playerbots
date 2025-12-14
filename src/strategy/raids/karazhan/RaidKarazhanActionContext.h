@@ -54,6 +54,7 @@ public:
         // The Wizard of Oz
         creators["wizard of oz mark target"] =
             &RaidKarazhanActionContext::wizard_of_oz_mark_target;
+
         creators["wizard of oz scorch strawman"] =
             &RaidKarazhanActionContext::wizard_of_oz_scorch_strawman;
 
