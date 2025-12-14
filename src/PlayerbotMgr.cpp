@@ -1755,6 +1755,10 @@ void PlayerbotsMgr::AddPlayerbotData(Player* player, bool isBotAI)
         ASSERT(_playerbotsMgrMap.emplace(player->GetGUID(), playerbotMgr).second);
 
         playerbotMgr->OnPlayerLogin(player);
+        #ifdef MOD_PLAYERBOTS
+        if (WorldSession * sess = player->GetSession())
+            sess->SetHasPlayerbotMgr(true);
+        #endif
     }
     else
     {
@@ -1784,6 +1788,11 @@ void PlayerbotsMgr::RemovePlayerBotData(ObjectGuid const& guid, bool is_AI)
         if (itr != _playerbotsMgrMap.end())
         {
             _playerbotsMgrMap.erase(itr);
+            #ifdef MOD_PLAYERBOTS
+            if (Player* p = ObjectAccessor::FindConnectedPlayer(guid))
+                if (WorldSession* sess = p->GetSession())
+                    sess->SetHasPlayerbotMgr(false);
+            #endif
         }
     }
 }
