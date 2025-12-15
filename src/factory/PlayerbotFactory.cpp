@@ -302,7 +302,16 @@ void PlayerbotFactory::Randomize(bool incremental)
     if (!incremental || !sPlayerbotAIConfig->equipmentPersistence ||
         bot->GetLevel() < sPlayerbotAIConfig->equipmentPersistenceLevel)
     {
-        InitTalentsTree();
+        // FIX: init=auto должен лечить "таланты во 2-м спеке / пусто в 1-м", как talents autopick.
+        // 1) Гарантируем, что активен primary spec (spec 0)
+        if (bot->GetSpecsCount() >= 2 && bot->GetActiveSpec() != 0)
+            bot->ActivateSpec(0);
+
+        // 2) После setlevel/даунгрейда/апгрейда очки талантов могут быть несогласованы — пересчитываем
+        bot->InitTalentForLevel();
+
+        // 3) Инициализация талантов ДОЛЖНА начинаться с reset, иначе на "кривых" персонажах ничего не раскладывается
+        InitTalentsTree(false, true, true);
     }
     sRandomPlayerbotMgr->SetValue(bot->GetGUID().GetCounter(), "specNo", 0);
     if (botAI)
@@ -1216,11 +1225,12 @@ void PlayerbotFactory::InitTalentsBySpecNo(Player* bot, int specNo, bool reset)
             uint32 tab = p[0], row = p[1], col = p[2], lvl = p[3];
             uint32 talentID = -1;
 
-            std::vector<TalentEntry const*>& spells = spells_row[row];
-            if (spells.size() <= 0)
-            {
-                return;
-            }
+            auto it = spells_row.find(row);
+            if (it == spells_row.end() || it->second.empty())
+                continue;
+
+            auto& spells = it->second;
+
             for (TalentEntry const* talentInfo : spells)
             {
                 if (talentInfo->Col != col)
@@ -1282,11 +1292,12 @@ void PlayerbotFactory::InitTalentsByParsedSpecLink(Player* bot, std::vector<std:
         uint32 tab = p[0], row = p[1], col = p[2], lvl = p[3];
         uint32 talentID = -1;
 
-        std::vector<TalentEntry const*>& spells = spells_row[row];
-        if (spells.size() <= 0)
-        {
-            return;
-        }
+        auto it = spells_row.find(row);
+        if (it == spells_row.end() || it->second.empty())
+            continue;
+
+        auto& spells = it->second;
+
         for (TalentEntry const* talentInfo : spells)
         {
             if (talentInfo->Col != col)
@@ -2820,11 +2831,15 @@ void PlayerbotFactory::InitTalentsByTemplate(uint32 specTab)
 
             uint32 talentID = 0;
             uint32 learnLevel = 0;
-            std::vector<TalentEntry const*>& spells = spells_row[row];
-            if (spells.size() <= 0)
+
+            auto it = spells_row.find(row);
+            if (it == spells_row.end() || it->second.empty())
             {
-                return;
+                // один кривой шаг не должен убивать всю раскладку
+                continue;
             }
+            auto& spells = it->second;
+
             for (TalentEntry const* talentInfo : spells)
             {
                 if (talentInfo->Col != col)

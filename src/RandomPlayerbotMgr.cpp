@@ -2442,6 +2442,41 @@ void RandomPlayerbotMgr::RandomizeFirst(Player* bot)
     PlayerbotFactory factory(bot, level);
     factory.Randomize(false);
 
+    // ---- Talent spec auto-fix (same idea as talents autopick) ----
+    if (bot->GetLevel() >= 10)
+    {
+        auto CountTalents = [](Player* p, uint32 mask) -> uint32
+        {
+            uint32 c = 0;
+            const PlayerTalentMap& tm = p->GetTalentMap();
+            for (auto const& it : tm)
+                if (it.second && (it.second->specMask & mask))
+                    ++c;
+            return c;
+        };
+
+        uint32 c1 = CountTalents(bot, 1);
+        uint32 c2 = CountTalents(bot, 2);
+
+        // Типичный слом: первый спек пустой, а таланты записаны во второй (specMask=2)
+        if (c1 == 0 && c2 > 0 && bot->GetSpecsCount() >= 2)
+        {
+            bot->ActivateSpec(1);
+            bot->resetTalents(true);  // чистим второй спек, чтобы больше не "залипало" туда
+            bot->ActivateSpec(0);
+        }
+
+        // Гарантируем, что таланты кладём в первый спек
+        if (bot->GetActiveSpec() != 0)
+            bot->ActivateSpec(0);
+
+        PlayerbotFactory fixFactory(bot, bot->GetLevel());
+        fixFactory.InitTalentsTree(false, true, true);  // reset=true
+        fixFactory.InitPetTalents();
+
+        bot->SaveToDB(false, false);  // важно: чтобы в БД стало specMask=1, а не "исправилось до релога"
+    }
+
     uint32 randomTime =
         urand(sPlayerbotAIConfig->minRandomBotRandomizeTime, sPlayerbotAIConfig->maxRandomBotRandomizeTime);
     uint32 inworldTime =
@@ -2482,6 +2517,41 @@ void RandomPlayerbotMgr::RandomizeMin(Player* bot)
     SetValue(bot, "level", level);
     PlayerbotFactory factory(bot, level);
     factory.Randomize(false);
+
+    // ---- Talent spec auto-fix (same idea as talents autopick) ----
+    if (bot->GetLevel() >= 10)
+    {
+        auto CountTalents = [](Player* p, uint32 mask) -> uint32
+        {
+            uint32 c = 0;
+            const PlayerTalentMap& tm = p->GetTalentMap();
+            for (auto const& it : tm)
+                if (it.second && (it.second->specMask & mask))
+                    ++c;
+            return c;
+        };
+
+        uint32 c1 = CountTalents(bot, 1);
+        uint32 c2 = CountTalents(bot, 2);
+
+        // Типичный слом: первый спек пустой, а таланты записаны во второй (specMask=2)
+        if (c1 == 0 && c2 > 0 && bot->GetSpecsCount() >= 2)
+        {
+            bot->ActivateSpec(1);
+            bot->resetTalents(true);  // чистим второй спек, чтобы больше не "залипало" туда
+            bot->ActivateSpec(0);
+        }
+
+        // Гарантируем, что таланты кладём в первый спек
+        if (bot->GetActiveSpec() != 0)
+            bot->ActivateSpec(0);
+
+        PlayerbotFactory fixFactory(bot, bot->GetLevel());
+        fixFactory.InitTalentsTree(false, true, true);  // reset=true
+        fixFactory.InitPetTalents();
+
+        bot->SaveToDB(false, false);  // важно: чтобы в БД стало specMask=1, а не "исправилось до релога"
+    }
 
     uint32 randomTime =
         urand(sPlayerbotAIConfig->minRandomBotRandomizeTime, sPlayerbotAIConfig->maxRandomBotRandomizeTime);
@@ -3018,6 +3088,70 @@ void RandomPlayerbotMgr::OnBotLoginInternal(Player* const bot)
     else
     {
         bot->RemovePlayerFlag(PLAYER_FLAGS_NO_XP_GAIN);
+    }
+    if (bot->GetLevel() >= 10)
+    {
+        bot->InitTalentForLevel();
+
+        // Посчитаем, есть ли таланты в активном спеке
+        auto CountTalentsForMask = [&](uint32 mask) -> uint32
+        {
+            uint32 c = 0;
+            const PlayerTalentMap& tm = bot->GetTalentMap();
+            for (auto const& it : tm)
+            {
+                if (it.second && (it.second->specMask & mask))
+                    ++c;
+            }
+            return c;
+        };
+
+        uint32 activeMask = bot->GetActiveSpecMask();  // 1 или 2
+        uint32 activeCnt = CountTalentsForMask(activeMask);
+
+        // Если активный спек пустой — лечим (это и есть твой случай)
+        if (activeCnt == 0 && bot->GetFreeTalentPoints() > 0)
+        {
+            // принудительно используем 1-й спек, чтобы таланты писались в specMask=1
+            if (bot->GetActiveSpec() != 0)
+                bot->ActivateSpec(0);
+
+            PlayerbotFactory factory(bot, bot->GetLevel());
+            factory.InitTalentsTree(false, true, true);
+            factory.InitPetTalents();
+        }
+    }
+    if (bot->GetLevel() >= 10)
+    {
+        bot->InitTalentForLevel();
+
+        // Посчитаем, есть ли таланты в активном спеке
+        auto CountTalentsForMask = [&](uint32 mask) -> uint32
+        {
+            uint32 c = 0;
+            const PlayerTalentMap& tm = bot->GetTalentMap();
+            for (auto const& it : tm)
+            {
+                if (it.second && (it.second->specMask & mask))
+                    ++c;
+            }
+            return c;
+        };
+
+        uint32 activeMask = bot->GetActiveSpecMask();  // 1 или 2
+        uint32 activeCnt = CountTalentsForMask(activeMask);
+
+        // Если активный спек пустой — лечим (это и есть твой случай)
+        if (activeCnt == 0 && bot->GetFreeTalentPoints() > 0)
+        {
+            // принудительно используем 1-й спек, чтобы таланты писались в specMask=1
+            if (bot->GetActiveSpec() != 0)
+                bot->ActivateSpec(0);
+
+            PlayerbotFactory factory(bot, bot->GetLevel());
+            factory.InitTalentsTree(false, true, true);
+            factory.InitPetTalents();
+        }
     }
 }
 

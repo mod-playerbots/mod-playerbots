@@ -55,8 +55,39 @@ bool ChangeTalentsAction::Execute(Event event)
         }
         else if (param.find("autopick") != std::string::npos)
         {
+            auto CountTalents = [](Player* p, uint32 mask) -> uint32
+            {
+                uint32 c = 0;
+                auto const& tm = p->GetTalentMap();
+                for (auto const& kv : tm)
+                    if (kv.second && (kv.second->specMask & mask))
+                        ++c;
+                return c;
+            };
+
+            // После setlevel/понижения/повышения у некоторых персонажей очки талантов/спек могут быть несогласованы
+            bot->InitTalentForLevel();
+
+            uint32 c1 = CountTalents(bot, 1);
+            uint32 c2 = CountTalents(bot, 2);
+
+            // Типичный слом: таланты лежат во 2-м спеке (specMask=2), а 1-й пустой.
+            // Чистим 2-й спек, чтобы сброс/инициализация снова работали корректно.
+            if (bot->GetSpecsCount() >= 2 && c1 == 0 && c2 > 0)
+            {
+                bot->ActivateSpec(1);
+                bot->resetTalents(true);
+                bot->ActivateSpec(0);
+            }
+
+            // Гарантируем раскладку в первый спек
+            if (bot->GetActiveSpec() != 0)
+                bot->ActivateSpec(0);
+
             PlayerbotFactory factory(bot, bot->GetLevel());
-            factory.InitTalentsTree(true);
+            factory.InitTalentsTree(false, true, true);  // increment=false, use_template=true, reset=true
+            factory.InitPetTalents();
+
             out << "Auto pick talents";
             botAI->ResetStrategies();
         }
