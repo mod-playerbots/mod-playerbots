@@ -1,43 +1,215 @@
 #include "RaidMcActions.h"
 
 #include "Playerbots.h"
+#include "RtiTargetValue.h"
+#include "RaidMcTriggers.h"
+#include "RaidMcHelpers.h"
 
-bool McCheckShouldMoveFromGroupAction::Execute(Event event)
+static constexpr float LIVING_BOMB_DISTANCE = 20.0f;
+static constexpr float INFERNO_DISTANCE = 20.0f;
+
+// don't get hit by Arcane Explosion but still be in casting range
+static constexpr float ARCANE_EXPLOSION_DISTANCE = 26.0f;
+
+// dedicated tank positions; prevents assist tanks from positioning Core Ragers on steep walls on pull
+static const Position GOLEMAGG_TANK_POSITION{795.7308, -994.8848, -207.18661};
+static const Position CORE_RAGER_TANK_POSITION{846.6453, -1019.0639, -198.9819};
+
+static constexpr float GOLEMAGGS_TRUST_DISTANCE = 30.0f;
+static constexpr float CORE_RAGER_STEP_DISTANCE = 5.0f;
+
+using namespace MoltenCoreHelpers;
+
+bool McMoveFromGroupAction::Execute(Event event)
 {
-    if (bot->HasAura(20475))  // barron geddon's living bomb
-    {
-        if (!botAI->HasStrategy("move from group", BotState::BOT_STATE_COMBAT))
-        {
-            // add/remove from both for now as it will make it more obvious to
-            // player if this strat remains on after fight somehow
-            botAI->ChangeStrategy("+move from group", BOT_STATE_NON_COMBAT);
-            botAI->ChangeStrategy("+move from group", BOT_STATE_COMBAT);
-            return true;
-        }
-    }
-    else if (botAI->HasStrategy("move from group", BotState::BOT_STATE_COMBAT))
-    {
-        // add/remove from both for now as it will make it more obvious to
-        // player if this strat remains on after fight somehow
-        botAI->ChangeStrategy("-move from group", BOT_STATE_NON_COMBAT);
-        botAI->ChangeStrategy("-move from group", BOT_STATE_COMBAT);
-        return true;
-    }
-    return false;
+    return MoveFromGroup(LIVING_BOMB_DISTANCE);
 }
 
 bool McMoveFromBaronGeddonAction::Execute(Event event)
 {
-    const float radius = 25.0f;  // more than should be needed but bots keep trying to run back in
     if (Unit* boss = AI_VALUE2(Unit*, "find target", "baron geddon"))
     {
-        long distToTravel = radius - bot->GetDistance(boss);
+        float distToTravel = INFERNO_DISTANCE - bot->GetDistance2d(boss);
         if (distToTravel > 0)
         {
-            // float angle = bot->GetAngle(boss) + M_PI;
-            // return Move(angle, distToTravel);
+            // Stop current spell first
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(false);
+
             return MoveAway(boss, distToTravel);
         }
     }
+    return false;
+}
+
+bool McShazzrahMoveAwayAction::Execute(Event event)
+{
+    if (Unit* boss = AI_VALUE2(Unit*, "find target", "shazzrah"))
+    {
+        float distToTravel = ARCANE_EXPLOSION_DISTANCE - bot->GetDistance2d(boss);
+        if (distToTravel > 0)
+            return MoveAway(boss, distToTravel);
+    }
+    return false;
+}
+
+bool McGolemaggMarkBossAction::Execute(Event event)
+{
+    if (Unit* boss = AI_VALUE2(Unit*, "find target", "golemagg the incinerator"))
+    {
+        if (Group* group = bot->GetGroup())
+        {
+            ObjectGuid currentSkullGuid = group->GetTargetIcon(RtiTargetValue::skullIndex);
+            if (currentSkullGuid.IsEmpty() || currentSkullGuid != boss->GetGUID())
+            {
+                group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), boss->GetGUID());
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool McGolemaggTankAction::MoveUnitToPosition(Unit* target, const Position& tankPosition, float maxDistance,
+                                              float stepDistance)
+{
+    if (bot->GetVictim() != target)
+        return Attack(target);
+    if (target->GetVictim() == bot)
+    {
+        float distanceToTankPosition = bot->GetExactDist2d(tankPosition.GetPositionX(), tankPosition.GetPositionY());
+        if (distanceToTankPosition > maxDistance)
+        {
+            float dX = tankPosition.GetPositionX() - bot->GetPositionX();
+            float dY = tankPosition.GetPositionY() - bot->GetPositionY();
+            float dist = sqrt(dX * dX + dY * dY);
+            float moveX = bot->GetPositionX() + (dX / dist) * stepDistance;
+            float moveY = bot->GetPositionY() + (dY / dist) * stepDistance;
+            return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false,
+                          false, false, MovementPriority::MOVEMENT_COMBAT, true,
+                          true);
+        }
+    }
+    else if (botAI->DoSpecificAction("taunt spell", Event(), true))
+        return true;
+    return false;
+}
+
+bool McGolemaggTankAction::FindCoreRagers(Unit*& coreRager1, Unit*& coreRager2) const
+{
+    coreRager1 = coreRager2 = nullptr;
+    for (auto const& target : AI_VALUE(GuidVector, "possible targets no los"))
+    {
+        Unit* unit = botAI->GetUnit(target);
+        if (unit && unit->IsAlive() && unit->GetEntry() == NPC_CORE_RAGER)
+        {
+            if (coreRager1 == nullptr)
+                coreRager1 = unit;
+            else if (coreRager2 == nullptr)
+            {
+                coreRager2 = unit;
+                break; // There should be no third Core Rager.
+            }
+        }
+    }
+    return coreRager1 != nullptr && coreRager2 != nullptr;
+}
+
+bool McGolemaggMainTankAttackGolemaggAction::Execute(Event event)
+{
+    // At this point, we know we are not the last living tank in the group.
+    if (Unit* boss = AI_VALUE2(Unit*, "find target", "golemagg the incinerator"))
+    {
+        Unit* coreRager1;
+        Unit* coreRager2;
+        if (!FindCoreRagers(coreRager1, coreRager2))
+            return false; // safety check
+
+        // We only need to move if the Core Ragers still have Golemagg's Trust
+        if (coreRager1->HasAura(SPELL_GOLEMAGGS_TRUST) || coreRager2->HasAura(SPELL_GOLEMAGGS_TRUST))
+            return MoveUnitToPosition(boss, GOLEMAGG_TANK_POSITION, boss->GetCombatReach());
+    }
+    return false;
+}
+
+bool McGolemaggAssistTankAttackCoreRagerAction::Execute(Event event)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "golemagg the incinerator");
+    if (!boss)
+        return false;
+
+    // Step 0: Filter additional assist tanks. We only need 2.
+    bool isFirstAssistTank = PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
+    bool isSecondAssistTank = PlayerbotAI::IsAssistTankOfIndex(bot, 1, true);
+    if (!isFirstAssistTank && !isSecondAssistTank)
+        return Attack(boss);
+
+    // Step 1: Find both Core Ragers
+    Unit* coreRager1;
+    Unit* coreRager2;
+    if (!FindCoreRagers(coreRager1, coreRager2))
+        return false; // safety check
+
+    // Step 2: Assign Core Rager to bot
+    Unit* myCoreRager = nullptr;
+    Unit* otherCoreRager = nullptr;
+    if (isFirstAssistTank)
+    {
+        myCoreRager = coreRager1;
+        otherCoreRager = coreRager2;
+    }
+    else // isSecondAssistTank is always true here
+    {
+        myCoreRager = coreRager2;
+        otherCoreRager = coreRager1;
+    }
+
+    // Step 3: Select the right target
+    if (myCoreRager->GetVictim() != bot)
+    {
+        // Step 3.1: My Core Rager isn't attacking me. Attack until it does.
+        if (bot->GetVictim() != myCoreRager)
+            return Attack(myCoreRager);
+        return botAI->DoSpecificAction("taunt spell", event, true);
+    }
+
+    Unit* otherCoreRagerVictim = otherCoreRager->GetVictim();
+    if (otherCoreRagerVictim) // Core Rager victim can be NULL
+    {
+        // Step 3.2: Check if the other Core Rager isn't attacking its assist tank.
+        Player* otherCoreRagerPlayerVictim = otherCoreRagerVictim->ToPlayer();
+        if (otherCoreRagerPlayerVictim &&
+            !PlayerbotAI::IsAssistTankOfIndex(otherCoreRagerPlayerVictim, 0, true) &&
+            !PlayerbotAI::IsAssistTankOfIndex(otherCoreRagerPlayerVictim, 1, true))
+        {
+            // Assume we are the only assist tank or the other assist tank is dead => pick up other Core Rager!
+            if (bot->GetVictim() != otherCoreRager)
+                return Attack(otherCoreRager);
+            return botAI->DoSpecificAction("taunt spell", event, true);
+        }
+    }
+
+    if (bot->GetVictim() != myCoreRager)
+        return Attack(myCoreRager); // Step 3.3: Attack our Core Rager in case we previously switched in 3.2.
+
+    // Step 4: Prevent Golemagg's Trust on Core Ragers
+    if (myCoreRager->HasAura(SPELL_GOLEMAGGS_TRUST) ||
+        (otherCoreRagerVictim == bot && otherCoreRager->HasAura(SPELL_GOLEMAGGS_TRUST)))
+    {
+        // Step 4.1: Move Core Ragers to dedicated tank position (only if Golemagg is far enough away from said position)
+        float bossDistanceToCoreRagerTankPosition = boss->GetExactDist2d(
+            CORE_RAGER_TANK_POSITION.GetPositionX(), CORE_RAGER_TANK_POSITION.GetPositionY());
+        if (bossDistanceToCoreRagerTankPosition > GOLEMAGGS_TRUST_DISTANCE)
+        {
+            float distanceToTankPosition = bot->GetExactDist2d(CORE_RAGER_TANK_POSITION.GetPositionX(),
+                                                               CORE_RAGER_TANK_POSITION.GetPositionY());
+            if (distanceToTankPosition > CORE_RAGER_STEP_DISTANCE)
+                return MoveUnitToPosition(myCoreRager, CORE_RAGER_TANK_POSITION, CORE_RAGER_STEP_DISTANCE);
+        }
+
+        // Step 4.2: if boss is too close to tank position, or we are already there, move away from Golemagg to try to out-range Golemagg's Trust
+        return MoveAway(boss, CORE_RAGER_STEP_DISTANCE, true);
+    }
+
     return false;
 }

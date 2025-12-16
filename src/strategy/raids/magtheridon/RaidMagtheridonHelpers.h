@@ -24,7 +24,7 @@ namespace MagtheridonHelpers
         SPELL_FEAR          =  6215,
 
         // Hunter
-        SPELL_MISDIRECTION  = 34477,
+        SPELL_MISDIRECTION  = 35079,
     };
 
     enum MagtheridonNPCs

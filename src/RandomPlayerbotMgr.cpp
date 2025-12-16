@@ -822,7 +822,7 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
             uint32 add_time = sPlayerbotAIConfig->enablePeriodicOnlineOffline
                                 ? urand(sPlayerbotAIConfig->minRandomBotInWorldTime,
                                         sPlayerbotAIConfig->maxRandomBotInWorldTime)
-                                : sPlayerbotAIConfig->permanantlyInWorldTime;
+                                : sPlayerbotAIConfig->permanentlyInWorldTime;
 
             SetEventValue(charInfo.guid, "add", 1, add_time);
             SetEventValue(charInfo.guid, "logout", 0, 0);
@@ -1480,10 +1480,10 @@ bool RandomPlayerbotMgr::ProcessBot(uint32 bot)
             if (!sRandomPlayerbotMgr->IsRandomBot(player))
                 update = false;
 
-            if (player->GetGroup() && botAI->GetGroupMaster())
+            if (player->GetGroup() && botAI->GetGroupLeader())
             {
-                PlayerbotAI* groupMasterBotAI = GET_PLAYERBOT_AI(botAI->GetGroupMaster());
-                if (!groupMasterBotAI || groupMasterBotAI->IsRealPlayer())
+                PlayerbotAI* groupLeaderBotAI = GET_PLAYERBOT_AI(botAI->GetGroupLeader());
+                if (!groupLeaderBotAI || groupLeaderBotAI->IsRealPlayer())
                 {
                     update = false;
                 }

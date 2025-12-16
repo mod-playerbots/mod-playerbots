@@ -81,7 +81,7 @@ bool CheckMountStateAction::isUseful()
     // to mostly be an issue in tunnels of WSG and AV)
     float posZ = bot->GetPositionZ();
     float groundLevel = bot->GetMapWaterOrGroundLevel(bot->GetPositionX(), bot->GetPositionY(), posZ);
-    if (!bot->IsMounted() && posZ < groundLevel)
+    if (!bot->IsMounted() && !bot->HasWaterWalkAura() && posZ < groundLevel)
         return false;
 
     // Not useful when bot does not have mount strat and is not currently mounted

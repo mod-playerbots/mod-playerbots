@@ -12,6 +12,7 @@
 #include "RTSCValues.h"
 #include "RtscAction.h"
 #include "PositionValue.h"
+#include "ByteBuffer.h"
 
 Creature* SeeSpellAction::CreateWps(Player* wpOwner, float x, float y, float z, float o, uint32 entry, Creature* lastWp,
                                     bool important)
@@ -31,16 +32,27 @@ Creature* SeeSpellAction::CreateWps(Player* wpOwner, float x, float y, float z, 
 
 bool SeeSpellAction::Execute(Event event)
 {
-    WorldPacket p(event.getPacket());  //
+    // RTSC packet data
+    WorldPacket p(event.getPacket());
+    uint8 castCount;
     uint32 spellId;
-    uint8 castCount, castFlags;
+    uint8 castFlags;
+
+    // check RTSC header size = castCount (uint8) + spellId (uint32) + castFlags (uint8)
+    uint32 const rtscHeaderSize = sizeof(uint8) + sizeof(uint32) + sizeof(uint8);
+    if (p.size() < rtscHeaderSize)
+    {
+        LOG_WARN("playerbots", "SeeSpellAction: Corrupt RTSC packet size={}, expected>={}", p.size(), rtscHeaderSize);
+        return false;
+    }
+
     Player* master = botAI->GetMaster();
-
-    p.rpos(0);
-    p >> castCount >> spellId >> castFlags;
-
     if (!master)
         return false;
+
+    // read RTSC packet data
+    p.rpos(0); // set read position to start
+    p >> castCount >> spellId >> castFlags;
 
     // if (!botAI->HasStrategy("RTSC", botAI->GetState()))
     //     return false;
@@ -48,10 +60,24 @@ bool SeeSpellAction::Execute(Event event)
     if (spellId != RTSC_MOVE_SPELL)
         return false;
 
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-
+    // should not throw exception,just defensive measure to prevent any crashes when core function breaks.
     SpellCastTargets targets;
-    targets.Read(p, botAI->GetMaster());
+    try
+    {
+        targets.Read(p, master);
+        if (!targets.GetDst())
+        {
+            // do not dereference a null destination; ignore malformed RTSC packets instead of crashing
+            LOG_WARN("playerbots", "SeeSpellAction: (malformed) RTSC payload does not contain full targets data");
+            return false;
+        }
+    }
+    catch (ByteBufferException const&)
+    {
+        // ignore malformed RTSC packets instead of crashing
+        LOG_WARN("playerbots", "SeeSpellAction: Failed deserialization (malformed) RTSC payload");
+        return false;
+    }
 
     WorldPosition spellPosition(master->GetMapId(), targets.GetDst()->_position);
     SET_AI_VALUE(WorldPosition, "see spell location", spellPosition);

@@ -5,10 +5,15 @@ on:
       - opened
       - reopened
       - synchronize
+      - ready_for_review
     paths:
       - src/**
       - "!README.md"
       - "!docs/**"
+
+concurrency:
+  group: "codestyle-cppcheck-${{ github.event.pull_request.number }}"
+  cancel-in-progress: true
 
 jobs:
   triage:

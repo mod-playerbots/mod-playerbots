@@ -14,6 +14,7 @@
 #include "BudgetValues.h"
 #include "ChannelMgr.h"
 #include "CharacterPackets.h"
+#include "ChatHelper.h"
 #include "Common.h"
 #include "CreatureAIImpl.h"
 #include "CreatureData.h"
@@ -106,14 +107,14 @@ void PacketHandlingHelper::AddPacket(WorldPacket const& packet)
 PlayerbotAI::PlayerbotAI()
     : PlayerbotAIBase(true),
       bot(nullptr),
+      master(nullptr),
+      accountId(0),
       aiObjectContext(nullptr),
       currentEngine(nullptr),
+      currentState(BOT_STATE_NON_COMBAT),
       chatHelper(this),
       chatFilter(this),
-      accountId(0),
-      security(nullptr),
-      master(nullptr),
-      currentState(BOT_STATE_NON_COMBAT)
+      security(nullptr)
 {
     for (uint8 i = 0; i < BOT_STATE_MAX; i++)
         engines[i] = nullptr;
@@ -128,9 +129,9 @@ PlayerbotAI::PlayerbotAI()
 PlayerbotAI::PlayerbotAI(Player* bot)
     : PlayerbotAIBase(true),
       bot(bot),
+      master(nullptr),
       chatHelper(this),
       chatFilter(this),
-      master(nullptr),
       security(bot)  // reorder args - whipowill
 {
     if (!bot->isTaxiCheater() && HasCheat((BotCheatMask::taxi)))
@@ -283,6 +284,15 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
                 return;
             }
 
+            GameObject* goSpellTarget = currentSpell->m_targets.GetGOTarget();
+
+            if (goSpellTarget && !goSpellTarget->isSpawned())
+            {
+                InterruptSpell();
+                YieldThread(GetReactDelay());
+                return;
+            }
+
             bool isHeal = false;
             bool isSingleTarget = true;
 
@@ -355,7 +365,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     }
 
     // Update the bot's group status (moved to helper function)
-    UpdateAIGroupAndMaster();
+    UpdateAIGroupMaster();
 
     // Update internal AI
     UpdateAIInternal(elapsed, minimal);
@@ -363,18 +373,23 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 }
 
 // Helper function for UpdateAI to check group membership and handle removal if necessary
-void PlayerbotAI::UpdateAIGroupAndMaster()
+void PlayerbotAI::UpdateAIGroupMaster()
 {
     if (!bot)
         return;
+
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     if (!botAI)
         return;
+
     Group* group = bot->GetGroup();
+
+    bool IsRandomBot = sRandomPlayerbotMgr->IsRandomBot(bot);
+
     // If bot is not in group verify that for is RandomBot before clearing  master and resetting.
     if (!group)
     {
-        if (master && (sRandomPlayerbotMgr->IsRandomBot(bot) || (botAI->IsAlt() && sPlayerbotAIConfig->enableAltRoaming)))
+        if (master && (IsRandomBot || (botAI->IsAlt() && sPlayerbotAIConfig->enableAltRoaming)))
         {
             SetMaster(nullptr);
             Reset(true);
@@ -383,8 +398,10 @@ void PlayerbotAI::UpdateAIGroupAndMaster()
         return;
     }
 
-    if (bot->InBattleground() && bot->GetBattleground()->GetBgTypeID() != BATTLEGROUND_AV)
-        return;
+    // Bot in BG, but master no longer part of a group: release master
+    // Exclude alt and addclass bots as they rely on current (real player) master, security-wise.
+    if (bot->InBattleground() && IsRandomBot && master && !master->GetGroup())
+        SetMaster(nullptr);
 
     PlayerbotAI* masterBotAI = nullptr;
     if (master)
@@ -403,7 +420,7 @@ void PlayerbotAI::UpdateAIGroupAndMaster()
             {
                 botAI->ChangeStrategy("+follow", BOT_STATE_NON_COMBAT);
 
-                if (botAI->GetMaster() == botAI->GetGroupMaster())
+                if (botAI->GetMaster() == botAI->GetGroupLeader())
                     botAI->TellMaster("Hello, I follow you!");
                 else
                     botAI->TellMaster(!urand(0, 2) ? "Hello!" : "Hi!");
@@ -414,8 +431,6 @@ void PlayerbotAI::UpdateAIGroupAndMaster()
                 botAI->ChangeStrategy("-follow", BOT_STATE_NON_COMBAT);
             }
         }
-        else if (!newMaster && !bot->InBattleground())
-            LeaveOrDisbandGroup();
     }
 }
 
@@ -1369,9 +1384,6 @@ void PlayerbotAI::DoNextAction(bool min)
     else if (bot->isAFK())
         bot->ToggleAFK();
 
-    Group* group = bot->GetGroup();
-    PlayerbotAI* masterBotAI = nullptr;
-
     if (master && master->IsInWorld())
     {
         float distance = sServerFacade->GetDistance2d(bot, master);
@@ -1444,7 +1456,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             strategyName = "onyxia";  // Onyxia's Lair
             break;
         case 409:
-            strategyName = "mc";  // Molten Core
+            strategyName = "moltencore";  // Molten Core
             break;
         case 469:
             strategyName = "bwl";  // Blackwing Lair
@@ -1460,6 +1472,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             break;
         case 544:
             strategyName = "magtheridon";  // Magtheridon's Lair
+            break;
         case 565:
             strategyName = "gruulslair";  // Gruul's Lair
             break;
@@ -1794,11 +1807,11 @@ int32 PlayerbotAI::GetAssistTankIndex(Player* player)
     {
         return -1;
     }
+
     int counter = 0;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-
         if (!member)
         {
             continue;
@@ -1808,11 +1821,13 @@ int32 PlayerbotAI::GetAssistTankIndex(Player* player)
         {
             return counter;
         }
+
         if (IsTank(member, true) && group->IsAssistant(member->GetGUID()))
         {
             counter++;
         }
     }
+
     return 0;
 }
 
@@ -2125,14 +2140,15 @@ bool PlayerbotAI::IsMainTank(Player* player)
             break;
         }
     }
+
     if (mainTank != ObjectGuid::Empty)
     {
         return player->GetGUID() == mainTank;
     }
+
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-
         if (!member)
         {
             continue;
@@ -2143,6 +2159,7 @@ bool PlayerbotAI::IsMainTank(Player* player)
             return player->GetGUID() == member->GetGUID();
         }
     }
+
     return false;
 }
 
@@ -2164,8 +2181,7 @@ bool PlayerbotAI::IsBotMainTank(Player* player)
         return true;  // If no group, consider the bot as main tank
     }
 
-    uint32 botAssistTankIndex = GetAssistTankIndex(player);
-
+    int32 botAssistTankIndex = GetAssistTankIndex(player);
     if (botAssistTankIndex == -1)
     {
         return false;
@@ -2179,8 +2195,7 @@ bool PlayerbotAI::IsBotMainTank(Player* player)
             continue;
         }
 
-        uint32 memberAssistTankIndex = GetAssistTankIndex(member);
-
+        int32 memberAssistTankIndex = GetAssistTankIndex(member);
         if (memberAssistTankIndex == -1)
         {
             continue;
@@ -2229,7 +2244,7 @@ uint32 PlayerbotAI::GetGroupTankNum(Player* player)
 
 bool PlayerbotAI::IsAssistTank(Player* player) { return IsTank(player) && !IsMainTank(player); }
 
-bool PlayerbotAI::IsAssistTankOfIndex(Player* player, int index)
+bool PlayerbotAI::IsAssistTankOfIndex(Player* player, int index, bool ignoreDeadPlayers)
 {
     Group* group = player->GetGroup();
     if (!group)
@@ -2245,6 +2260,9 @@ bool PlayerbotAI::IsAssistTankOfIndex(Player* player, int index)
         {
             continue;
         }
+
+        if (ignoreDeadPlayers && !member->IsAlive())
+            continue;
 
         if (group->IsAssistant(member->GetGUID()) && IsAssistTank(member))
         {
@@ -2264,6 +2282,9 @@ bool PlayerbotAI::IsAssistTankOfIndex(Player* player, int index)
         {
             continue;
         }
+
+        if (ignoreDeadPlayers && !member->IsAlive())
+            continue;
 
         if (!group->IsAssistant(member->GetGUID()) && IsAssistTank(member))
         {
@@ -4073,7 +4094,7 @@ Player* PlayerbotAI::FindNewMaster()
     if (!group)
         return nullptr;
 
-    Player* groupLeader = GetGroupMaster();
+    Player* groupLeader = GetGroupLeader();
     PlayerbotAI* leaderBotAI = GET_PLAYERBOT_AI(groupLeader);
     if (!leaderBotAI || leaderBotAI->IsRealPlayer())
         return groupLeader;
@@ -4122,7 +4143,9 @@ bool PlayerbotAI::HasRealPlayerMaster()
 
 bool PlayerbotAI::HasActivePlayerMaster() { return master && !GET_PLAYERBOT_AI(master); }
 
-Player* PlayerbotAI::GetGroupMaster()
+bool PlayerbotAI::IsAlt() { return HasRealPlayerMaster() && !sRandomPlayerbotMgr->IsRandomBot(bot); }
+
+Player* PlayerbotAI::GetGroupLeader()
 {
     if (!bot->InBattleground())
         if (Group* group = bot->GetGroup())
