@@ -946,25 +946,37 @@ bool MovementAction::IsWaitingForLastMove(MovementPriority priority)
 
 bool MovementAction::IsMovingAllowed()
 {
-    // do not allow if not vehicle driver
-    if (botAI->IsInVehicle() && !botAI->IsInVehicle(true))
+    // Most common checks: confused, stunned, fleeing, jumping, charging. All these
+    // states are set when handling certain aura effects. We don't check against
+    // UNIT_STATE_ROOT here, because this state is used by vehicles.
+    if (bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
         return false;
 
-    if (bot->isFrozen() || bot->IsPolymorphed() || (bot->isDead() && !bot->HasPlayerFlag(PLAYER_FLAGS_GHOST)) ||
-        bot->IsBeingTeleported() || bot->HasRootAura() || bot->HasSpiritOfRedemptionAura() || bot->HasConfuseAura() ||
-        bot->IsCharmed() || bot->HasStunAura() || bot->IsInFlight() || bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
+    // Death state (w/o spirit release) and Spirit of Redemption aura (priest)
+    if ((bot->isDead() && !bot->HasPlayerFlag(PLAYER_FLAGS_GHOST)) || bot->HasSpiritOfRedemptionAura())
         return false;
 
+    // Common CC effects, ordered by frequency: rooted > frozen > polymorphed
+    if (bot->IsRooted() || bot->isFrozen() || bot->IsPolymorphed())
+        return false;
+
+    // Check for the MM controlled slot types: feared, confused, fleeing, etc.
     if (bot->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_CONTROLLED) != NULL_MOTION_TYPE)
-    {
         return false;
-    }
 
-    // if (bot->HasUnitMovementFlag(MOVEMENTFLAG_FALLING))
-    // {
-    //     return false;
-    // }
-    return bot->GetMotionMaster()->GetCurrentMovementGeneratorType() != FLIGHT_MOTION_TYPE;
+    // Traveling state: taxi flight and being teleported (relatively rare)
+    if (bot->IsInFlight() || bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE ||
+        bot->IsBeingTeleported())
+        return false;
+
+    // Vehicle state: is in the vehicle and can control it (rare, content-specific).
+    // We need to check charmed state AFTER vehicle one, cuz that's how it works:
+    // passengers are set to charmed by vehicle with CHARM_TYPE_VEHICLE.
+    if ((bot->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT) && !botAI->IsInVehicle(true)) ||
+        bot->IsCharmed())
+        return false;
+
+    return true;
 }
 
 bool MovementAction::Follow(Unit* target, float distance) { return Follow(target, distance, GetFollowAngle()); }
@@ -972,12 +984,10 @@ bool MovementAction::Follow(Unit* target, float distance) { return Follow(target
 void MovementAction::UpdateMovementState()
 {
     const bool isCurrentlyRestricted = // see if the bot is currently slowed, rooted, or otherwise unable to move
+        bot->HasUnitState(UNIT_STATE_LOST_CONTROL) ||
+        bot->IsRooted() ||
         bot->isFrozen() ||
-        bot->IsPolymorphed() ||
-        bot->HasRootAura() ||
-        bot->HasStunAura() ||
-        bot->HasConfuseAura() ||
-        bot->HasUnitState(UNIT_STATE_LOST_CONTROL);
+        bot->IsPolymorphed();
 
     // no update movement flags while movement is current restricted.
     if (!isCurrentlyRestricted && bot->IsAlive())
@@ -1102,7 +1112,7 @@ void MovementAction::UpdateMovementState()
     // {
     //     if (Unit* pTarget = sServerFacade->GetChaseTarget(bot))
     //     {
-    //         if (pTarget != botAI->GetGroupMaster())
+    //         if (pTarget != botAI->GetGroupLeader())
     //             return;
 
     //         if (!bot->IsWithinMeleeRange(pTarget))
@@ -2663,7 +2673,7 @@ bool DisperseSetAction::Execute(Event event)
     return true;
 }
 
-bool RunAwayAction::Execute(Event event) { return Flee(AI_VALUE(Unit*, "master target")); }
+bool RunAwayAction::Execute(Event event) { return Flee(AI_VALUE(Unit*, "group leader")); }
 
 bool MoveToLootAction::Execute(Event event)
 {

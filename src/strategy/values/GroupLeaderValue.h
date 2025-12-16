@@ -3,18 +3,18 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_MASTERTARGETVALUE_H
-#define _PLAYERBOT_MASTERTARGETVALUE_H
+#ifndef _PLAYERBOT_GROUPLEADERVALUE_H
+#define _PLAYERBOT_GROUPLEADERVALUE_H
 
 #include "Value.h"
 
 class PlayerbotAI;
 class Unit;
 
-class MasterTargetValue : public UnitCalculatedValue
+class GroupLeaderValue : public UnitCalculatedValue
 {
 public:
-    MasterTargetValue(PlayerbotAI* botAI, std::string const name = "master target") : UnitCalculatedValue(botAI, name)
+    GroupLeaderValue(PlayerbotAI* botAI, std::string const name = "group leader") : UnitCalculatedValue(botAI, name)
     {
     }
 
