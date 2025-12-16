@@ -7,7 +7,7 @@
 class RaidKarazhanStrategy : public Strategy
 {
 public:
-    RaidKarazhanStrategy(PlayerbotAI* ai) : Strategy(ai) {}
+    RaidKarazhanStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 
     std::string const getName() override { return "karazhan"; }
 

@@ -311,7 +311,7 @@ bool ChooseRpgTargetAction::isFollowValid(Player* bot, WorldObject* target)
 bool ChooseRpgTargetAction::isFollowValid(Player* bot, WorldPosition pos)
 {
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-    Player* gmaster = botAI->GetGroupMaster();
+    Player* groupLeader = botAI->GetGroupLeader();
     Player* realMaster = botAI->GetMaster();
     AiObjectContext* context = botAI->GetAiObjectContext();
 
@@ -327,30 +327,30 @@ bool ChooseRpgTargetAction::isFollowValid(Player* bot, WorldPosition pos)
             return false;
     }
 
-    if (!gmaster || bot == gmaster)
+    if (!groupLeader || bot == groupLeader)
         return true;
 
     if (!botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT))
         return true;
 
-    if (bot->GetDistance(gmaster) > sPlayerbotAIConfig->rpgDistance * 2)
+    if (bot->GetDistance(groupLeader) > sPlayerbotAIConfig->rpgDistance * 2)
         return false;
 
     Formation* formation = AI_VALUE(Formation*, "formation");
-    float distance = gmaster->GetDistance2d(pos.getX(), pos.getY());
+    float distance = groupLeader->GetDistance2d(pos.getX(), pos.getY());
 
     if (!botAI->HasActivePlayerMaster() && distance < 50.0f)
     {
-        Player* player = gmaster;
-        if (gmaster && !gmaster->isMoving() ||
+        Player* player = groupLeader;
+        if (groupLeader && !groupLeader->isMoving() ||
             PAI_VALUE(WorldPosition, "last long move").distance(pos) < sPlayerbotAIConfig->reactDistance)
             return true;
     }
 
-    if ((inDungeon || !gmaster->HasPlayerFlag(PLAYER_FLAGS_RESTING)) && realMaster == gmaster && distance > 5.0f)
+    if ((inDungeon || !groupLeader->HasPlayerFlag(PLAYER_FLAGS_RESTING)) && realMaster == groupLeader && distance > 5.0f)
         return false;
 
-    if (!gmaster->isMoving() && distance < 25.0f)
+    if (!groupLeader->isMoving() && distance < 25.0f)
         return true;
 
     if (distance < formation->GetMaxDistance())

@@ -180,7 +180,7 @@ void ChooseTravelTargetAction::getNewTarget(TravelTarget* newTarget, TravelTarge
 void ChooseTravelTargetAction::setNewTarget(TravelTarget* newTarget, TravelTarget* oldTarget)
 {
     // Tell the master where we are going.
-    if (!bot->GetGroup() || (botAI->GetGroupMaster() == bot))
+    if (!bot->GetGroup() || (botAI->GetGroupLeader() == bot))
         ReportTravelTarget(newTarget, oldTarget);
 
     // If we are heading to a creature/npc clear it from the ignore list.

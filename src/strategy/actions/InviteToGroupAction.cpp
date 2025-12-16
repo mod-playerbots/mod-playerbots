@@ -141,7 +141,7 @@ bool InviteNearbyToGroupAction::isUseful()
         if (group->isRaidGroup() && group->IsFull())
             return false;
 
-        if (botAI->GetGroupMaster() != bot)
+        if (botAI->GetGroupLeader() != bot)
             return false;
 
         uint32 memberCount = group->GetMembersCount();
