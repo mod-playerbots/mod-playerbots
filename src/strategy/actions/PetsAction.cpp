@@ -25,7 +25,9 @@ bool PetsAction::Execute(Event event)
     if (param.empty())
     {
         // If no parameter is provided, show usage instructions and return.
-        botAI->TellError("Usage: pet <aggressive|defensive|passive|stance|attack|follow|stay>");
+        std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
+            "pet_usage_error", "Usage: pet <aggressive|defensive|passive|stance|attack|follow|stay>", {});
+        botAI->TellError(text);
         return false;
     }
 
@@ -52,7 +54,9 @@ bool PetsAction::Execute(Event event)
     // If no pets or guardians are found, notify and return.
     if (targets.empty())
     {
-        botAI->TellError("You have no pet or guardian pet.");
+        std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
+            "pet_no_pet_error", "You have no pet or guardian pet.", {});
+        botAI->TellError(text);
         return false;
     }
 
@@ -63,42 +67,54 @@ bool PetsAction::Execute(Event event)
     if (param == "aggressive")
     {
         react = REACT_AGGRESSIVE;
-        stanceText = "aggressive";
+        stanceText = sPlayerbotTextMgr->GetBotTextOrDefault(
+            "pet_stance_aggressive", "aggressive", {});
     }
     else if (param == "defensive")
     {
         react = REACT_DEFENSIVE;
-        stanceText = "defensive";
+        stanceText = sPlayerbotTextMgr->GetBotTextOrDefault(
+            "pet_stance_defensive", "defensive", {});
     }
     else if (param == "passive")
     {
         react = REACT_PASSIVE;
-        stanceText = "passive";
+        stanceText = sPlayerbotTextMgr->GetBotTextOrDefault(
+            "pet_stance_passive", "passive", {});
     }
     // The "stance" command simply reports the current stance of each pet/guardian.
     else if (param == "stance")
     {
         for (Creature* target : targets)
         {
-            std::string type = target->IsPet() ? "pet" : "guardian";
+            std::string type = target->IsPet() ?
+                sPlayerbotTextMgr->GetBotTextOrDefault("pet_type_pet", "pet", {}) :
+                sPlayerbotTextMgr->GetBotTextOrDefault("pet_type_guardian", "guardian", {});
             std::string name = target->GetName();
             std::string stance;
             switch (target->GetReactState())
             {
                 case REACT_AGGRESSIVE:
-                    stance = "aggressive";
+                    stance = sPlayerbotTextMgr->GetBotTextOrDefault(
+                        "pet_stance_aggressive", "aggressive", {});
                     break;
                 case REACT_DEFENSIVE:
-                    stance = "defensive";
+                    stance = sPlayerbotTextMgr->GetBotTextOrDefault(
+                        "pet_stance_defensive", "defensive", {});
                     break;
                 case REACT_PASSIVE:
-                    stance = "passive";
+                    stance = sPlayerbotTextMgr->GetBotTextOrDefault(
+                        "pet_stance_passive", "passive", {});
                     break;
                 default:
-                    stance = "unknown";
+                    stance = sPlayerbotTextMgr->GetBotTextOrDefault(
+                        "pet_stance_unknown", "unknown", {});
                     break;
             }
-            botAI->TellMaster("Current stance of " + type + " \"" + name + "\": " + stance + ".");
+            std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
+                "pet_stance_report", "Current stance of %type \"%name\": %stance.",
+                {{"type", type}, {"name", name}, {"stance", stance}});
+            botAI->TellMaster(text);
         }
         return true;
     }
@@ -121,17 +137,31 @@ bool PetsAction::Execute(Event event)
         // If no valid target is selected, show an error and return.
         if (!targetUnit)
         {
-            botAI->TellError("No valid target selected by master.");
+            std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
+                "pet_no_target_error", "No valid target selected by master.", {});
+            botAI->TellError(text);
             return false;
         }
         if (!targetUnit->IsAlive())
         {
-            botAI->TellError("Target is not alive.");
+            std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
+                "pet_target_dead_error", "Target is not alive.", {});
+            botAI->TellError(text);
             return false;
         }
         if (!bot->IsValidAttackTarget(targetUnit))
         {
-            botAI->TellError("Target is not a valid attack target for the bot.");
+            std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
+                "pet_invalid_target_error", "Target is not a valid attack target for the bot.", {});
+            botAI->TellError(text);
+            return false;
+        }
+        if (sPlayerbotAIConfig->IsPvpProhibited(bot->GetZoneId(), bot->GetAreaId())
+            && (targetUnit->IsPlayer() || targetUnit->IsPet()))
+        {
+            std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
+                "pet_pvp_prohibited_error", "I cannot command my pet to attack players in PvP prohibited areas.", {});
+            botAI->TellError(text);
             return false;
         }
 
@@ -182,9 +212,17 @@ bool PetsAction::Execute(Event event)
         }
         // Inform the master if the command succeeded or failed.
         if (didAttack && sPlayerbotAIConfig->petChatCommandDebug == 1)
-            botAI->TellMaster("Pet commanded to attack your target.");
+        {
+            std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
+                "pet_attack_success", "Pet commanded to attack your target.", {});
+            botAI->TellMaster(text);
+        }
         else if (!didAttack)
-            botAI->TellError("Pet did not attack. (Already attacking or unable to attack target)");
+        {
+            std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
+                "pet_attack_failed", "Pet did not attack. (Already attacking or unable to attack target)", {});
+            botAI->TellError(text);
+        }
         return didAttack;
     }
     // The "follow" command makes all pets/guardians follow the bot.
@@ -192,7 +230,11 @@ bool PetsAction::Execute(Event event)
     {
         botAI->PetFollow();
         if (sPlayerbotAIConfig->petChatCommandDebug == 1)
-            botAI->TellMaster("Pet commanded to follow.");
+        {
+            std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
+                "pet_follow_success", "Pet commanded to follow.", {});
+            botAI->TellMaster(text);
+        }
         return true;
     }
     // The "stay" command causes all pets/guardians to stop and stay in place.
@@ -229,14 +271,20 @@ bool PetsAction::Execute(Event event)
             }
         }
         if (sPlayerbotAIConfig->petChatCommandDebug == 1)
-            botAI->TellMaster("Pet commanded to stay.");
+        {
+            std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
+                "pet_stay_success", "Pet commanded to stay.", {});
+            botAI->TellMaster(text);
+        }
         return true;
     }
     // Unknown command: show usage instructions and return.
     else
     {
-        botAI->TellError("Unknown pet command: " + param +
-                         ". Use: pet <aggressive|defensive|passive|stance|attack|follow|stay>");
+        std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
+            "pet_unknown_command_error", "Unknown pet command: %param. Use: pet <aggressive|defensive|passive|stance|attack|follow|stay>",
+            {{"param", param}});
+        botAI->TellError(text);
         return false;
     }
 
@@ -251,7 +299,12 @@ bool PetsAction::Execute(Event event)
 
     // Inform the master of the new stance if debug is enabled.
     if (sPlayerbotAIConfig->petChatCommandDebug == 1)
-        botAI->TellMaster("Pet stance set to " + stanceText + ".");
+    {
+        std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
+            "pet_stance_set_success", "Pet stance set to %stance.",
+            {{"stance", stanceText}});
+        botAI->TellMaster(text);
+    }
 
     return true;
 }

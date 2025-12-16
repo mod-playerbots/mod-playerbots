@@ -109,22 +109,22 @@ bool LeaveFarAwayAction::isUseful()
     if (!bot->GetGroup())
         return false;
 
-    Player* master = botAI->GetGroupMaster();
+    Player* groupLeader = botAI->GetGroupLeader();
     Player* trueMaster = botAI->GetMaster();
-    if (!master || (bot == master && !botAI->IsRealPlayer()))
+    if (!groupLeader || (bot == groupLeader && !botAI->IsRealPlayer()))
         return false;
 
-    PlayerbotAI* masterBotAI = nullptr;
-    if (master)
-        masterBotAI = GET_PLAYERBOT_AI(master);
-    if (master && !masterBotAI)
+    PlayerbotAI* groupLeaderBotAI = nullptr;
+    if (groupLeader)
+        groupLeaderBotAI = GET_PLAYERBOT_AI(groupLeader);
+    if (groupLeader && !groupLeaderBotAI)
         return false;
 
     if (trueMaster && !GET_PLAYERBOT_AI(trueMaster))
         return false;
 
     if (botAI->IsAlt() &&
-        (!masterBotAI || masterBotAI->IsRealPlayer()))  // Don't leave group when alt grouped with player master.
+        (!groupLeaderBotAI || groupLeaderBotAI->IsRealPlayer()))  // Don't leave group when alt grouped with player groupLeader.
         return false;
 
     if (botAI->GetGrouperType() == GrouperType::SOLO)
@@ -138,19 +138,19 @@ bool LeaveFarAwayAction::isUseful()
     if (dCount > 4 && !botAI->HasRealPlayerMaster())
         return true;
 
-    if (bot->GetGuildId() == master->GetGuildId())
+    if (bot->GetGuildId() == groupLeader->GetGuildId())
     {
-        if (bot->GetLevel() > master->GetLevel() + 5)
+        if (bot->GetLevel() > groupLeader->GetLevel() + 5)
         {
             if (AI_VALUE(bool, "should get money"))
                 return false;
         }
     }
 
-    if (abs(int32(master->GetLevel() - bot->GetLevel())) > 4)
+    if (abs(int32(groupLeader->GetLevel() - bot->GetLevel())) > 4)
         return true;
 
-    if (bot->GetMapId() != master->GetMapId() || bot->GetDistance2d(master) >= 2 * sPlayerbotAIConfig->rpgDistance)
+    if (bot->GetMapId() != groupLeader->GetMapId() || bot->GetDistance2d(groupLeader) >= 2 * sPlayerbotAIConfig->rpgDistance)
     {
         return true;
     }

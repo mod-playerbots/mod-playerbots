@@ -70,7 +70,7 @@ bool FollowAction::isUseful()
     if (!target.empty())
         fTarget = AI_VALUE(Unit*, target);
     else
-        fTarget = AI_VALUE(Unit*, "master target");
+        fTarget = AI_VALUE(Unit*, "group leader");
 
     if (fTarget)
     {
@@ -114,9 +114,9 @@ bool FollowAction::CanDeadFollow(Unit* target)
     return true;
 }
 
-bool FleeToMasterAction::Execute(Event event)
+bool FleeToGroupLeaderAction::Execute(Event event)
 {
-    Unit* fTarget = AI_VALUE(Unit*, "master target");
+    Unit* fTarget = AI_VALUE(Unit*, "group leader");
     bool canFollow = Follow(fTarget);
     if (!canFollow)
     {
@@ -146,22 +146,22 @@ bool FleeToMasterAction::Execute(Event event)
     return true;
 }
 
-bool FleeToMasterAction::isUseful()
+bool FleeToGroupLeaderAction::isUseful()
 {
-    if (!botAI->GetGroupMaster())
+    if (!botAI->GetGroupLeader())
         return false;
 
-    if (botAI->GetGroupMaster() == bot)
+    if (botAI->GetGroupLeader() == bot)
         return false;
 
     Unit* target = AI_VALUE(Unit*, "current target");
-    if (target && botAI->GetGroupMaster()->GetTarget() == target->GetGUID())
+    if (target && botAI->GetGroupLeader()->GetTarget() == target->GetGUID())
         return false;
 
     if (!botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT))
         return false;
 
-    Unit* fTarget = AI_VALUE(Unit*, "master target");
+    Unit* fTarget = AI_VALUE(Unit*, "group leader");
 
     if (!CanDeadFollow(fTarget))
         return false;

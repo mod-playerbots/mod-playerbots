@@ -30,6 +30,7 @@
 #include "Formations.h"
 #include "GrindTargetValue.h"
 #include "GroupValues.h"
+#include "GroupLeaderValue.h"
 #include "GuildValues.h"
 #include "HasAvailableLootValue.h"
 #include "HasTotemValue.h"
@@ -51,7 +52,6 @@
 #include "LootStrategyValue.h"
 #include "MaintenanceValues.h"
 #include "ManaSaveLevelValue.h"
-#include "MasterTargetValue.h"
 #include "NearestAdsValue.h"
 #include "NearestCorpsesValue.h"
 #include "NearestFriendlyPlayersValue.h"
@@ -130,7 +130,7 @@ public:
         creators["party member to resurrect"] = &ValueContext::party_member_to_resurrect;
         creators["current target"] = &ValueContext::current_target;
         creators["self target"] = &ValueContext::self_target;
-        creators["master target"] = &ValueContext::master;
+        creators["group leader"] = &ValueContext::group_leader;
         creators["line target"] = &ValueContext::line_target;
         creators["tank target"] = &ValueContext::tank_target;
         creators["dps target"] = &ValueContext::dps_target;
@@ -439,7 +439,7 @@ private:
     static UntypedValue* current_target(PlayerbotAI* botAI) { return new CurrentTargetValue(botAI); }
     static UntypedValue* old_target(PlayerbotAI* botAI) { return new CurrentTargetValue(botAI); }
     static UntypedValue* self_target(PlayerbotAI* botAI) { return new SelfTargetValue(botAI); }
-    static UntypedValue* master(PlayerbotAI* botAI) { return new MasterTargetValue(botAI); }
+    static UntypedValue* group_leader(PlayerbotAI* botAI) { return new GroupLeaderValue(botAI); }
     static UntypedValue* line_target(PlayerbotAI* botAI) { return new LineTargetValue(botAI); }
     static UntypedValue* tank_target(PlayerbotAI* botAI) { return new TankTargetValue(botAI); }
     static UntypedValue* dps_target(PlayerbotAI* botAI) { return new DpsTargetValue(botAI); }

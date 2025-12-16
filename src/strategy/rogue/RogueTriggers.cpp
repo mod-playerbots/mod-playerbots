@@ -22,8 +22,8 @@ bool UnstealthTrigger::IsActive()
     return botAI->HasAura("stealth", bot) && !AI_VALUE(uint8, "attacker count") &&
            (AI_VALUE2(bool, "moving", "self target") &&
             ((botAI->GetMaster() &&
-              sServerFacade->IsDistanceGreaterThan(AI_VALUE2(float, "distance", "master target"), 10.0f) &&
-              AI_VALUE2(bool, "moving", "master target")) ||
+              sServerFacade->IsDistanceGreaterThan(AI_VALUE2(float, "distance", "group leader"), 10.0f) &&
+              AI_VALUE2(bool, "moving", "group leader")) ||
              !AI_VALUE(uint8, "attacker count")));
 }
 

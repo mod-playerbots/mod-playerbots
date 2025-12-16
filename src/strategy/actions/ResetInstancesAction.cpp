@@ -16,4 +16,4 @@ bool ResetInstancesAction::Execute(Event event)
     return true;
 }
 
-bool ResetInstancesAction::isUseful() { return botAI->GetGroupMaster() == bot; };
+bool ResetInstancesAction::isUseful() { return botAI->GetGroupLeader() == bot; };
