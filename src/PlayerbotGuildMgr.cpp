@@ -7,11 +7,7 @@
 #include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
 
-PlayerbotGuildMgr::PlayerbotGuildMgr()
-{
-    _randomBotGuildCount = sPlayerbotAIConfig->randomBotGuildCount;
-    _randomBotGuildSizeMax = sPlayerbotAIConfig->randomBotGuildSizeMax;
-}
+PlayerbotGuildMgr::PlayerbotGuildMgr(){}
 
 void PlayerbotGuildMgr::Init()
 {
@@ -42,7 +38,7 @@ bool PlayerbotGuildMgr::CreateGuild(Player* player, std::string guildName)
     entry.name = guildName;
     entry.memberCount = 1;
     entry.status = 1;
-    entry.maxMembers = _randomBotGuildSizeMax;
+    entry.maxMembers = sPlayerbotAIConfig->randomBotGuildSizeMax;
     entry.faction = player->GetTeamId();
 
     _guildCache[guild->GetId()] = entry;
@@ -117,7 +113,7 @@ std::string PlayerbotGuildMgr::AssignToGuild(Player* player)
         }
         );
 
-    if (count < _randomBotGuildCount)
+    if (count < sPlayerbotAIConfig->randomBotGuildCount)
     {
         for (auto& key : _shuffled_guild_keys)
         {
@@ -158,12 +154,12 @@ void PlayerbotGuildMgr::OnGuildUpdate(Guild* guild)
 void PlayerbotGuildMgr::ResetGuildCache()
 {
     for (auto it = _guildCache.begin(); it != _guildCache.end();)
-        {
-            GuildCache& cached = it->second;
-            cached.memberCount = 0;
-            cached.faction = 2;
-            cached.status = 0;
-        }
+    {
+        GuildCache& cached = it->second;
+        cached.memberCount = 0;
+        cached.faction = 2;
+        cached.status = 0;
+    }
 }
 
 void PlayerbotGuildMgr::LoadGuildNames()
@@ -218,7 +214,7 @@ void PlayerbotGuildMgr::ValidateGuildCache()
         uint32 guildId = it->first;
         GuildCache cache;
         cache.name = it->second;
-        cache.maxMembers = _randomBotGuildSizeMax;
+        cache.maxMembers = sPlayerbotAIConfig->randomBotGuildSizeMax;
 
         Guild* guild = sGuildMgr ->GetGuildById(guildId);
         if (!guild)
@@ -311,9 +307,8 @@ class BotGuildCacheWorldScript : public WorldScript
             {
                 _validateTimer = 0;
                 sPlayerbotGuildMgr->ValidateGuildCache();
-                LOG_INFO("playerbots", "Schedueled guild cache validation");
+                LOG_INFO("playerbots", "Scheduled guild cache validation");
             }
-            return;
         }
 
     private:

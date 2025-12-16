@@ -30,9 +30,6 @@ public:
 
 private:
     PlayerbotGuildMgr();
-    int _maxIndex;
-    int _randomBotGuildCount;
-    int _randomBotGuildSizeMax;
     std::unordered_map<std::string, bool> _guildNames;
 
     struct GuildCache
