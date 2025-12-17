@@ -78,13 +78,17 @@ float ChooseRpgTargetAction::getMaxRelevance(GuidPosition guidP)
             if (!trigger->IsActive())
                 continue;
 
-            NextAction** nextActions = triggerNode->getHandlers();
+            std::vector<NextAction*> nextActions = triggerNode->getHandlers();
 
             bool isRpg = false;
 
-            for (int32 i = 0; i < NextAction::size(nextActions); i++)
+            // for (int32 i = 0; i < nextActions.size(); ++i)
+            for (NextAction* nextAction : nextActions)
             {
-                NextAction* nextAction = nextActions[i];
+                // NextAction* nextAction = nextActions[i];
+
+                if (nextAction == nullptr)
+                    break;
 
                 Action* action = botAI->GetAiObjectContext()->GetAction(nextAction->getName());
 

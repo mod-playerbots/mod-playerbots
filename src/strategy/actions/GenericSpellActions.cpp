@@ -265,9 +265,9 @@ CastShootAction::CastShootAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "s
     }
 }
 
-NextAction** CastSpellAction::getPrerequisites()
+std::vector<NextAction*> CastSpellAction::getPrerequisites()
 {
-    return nullptr;
+    return {};
 }
 
 Value<Unit*>* CastDebuffSpellOnAttackerAction::GetTargetValue()

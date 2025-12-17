@@ -32,25 +32,25 @@ private:
     static ActionNode* enraged_regeneration(PlayerbotAI* botAI)
     {
         return new ActionNode("enraged regeneration",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ {},
+                              /*C*/ {});
     }
 
     static ActionNode* retaliation(PlayerbotAI* botAI)
     {
         return new ActionNode("retaliation",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ {},
+                              /*C*/ {});
     }
 
     static ActionNode* shattering_throw(PlayerbotAI* botAI)
     {
         return new ActionNode("shattering throw",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ {},
+                              /*C*/ {});
     }
 };
 
@@ -59,11 +59,11 @@ ArmsWarriorStrategy::ArmsWarriorStrategy(PlayerbotAI* botAI) : GenericWarriorStr
     actionNodeFactories.Add(new ArmsWarriorStrategyActionNodeFactory());
 }
 
-NextAction** ArmsWarriorStrategy::getDefaultActions()
+std::vector<NextAction*> ArmsWarriorStrategy::getDefaultActions()
 {
-    return NextAction::array(0, new NextAction("bladestorm", ACTION_DEFAULT + 0.2f),
+    return { new NextAction("bladestorm", ACTION_DEFAULT + 0.2f),
                             new NextAction("mortal strike", ACTION_DEFAULT + 0.1f),
-                            new NextAction("melee", ACTION_DEFAULT), nullptr);
+                            new NextAction("melee", ACTION_DEFAULT) };
 }
 
 void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -71,73 +71,60 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     GenericWarriorStrategy::InitTriggers(triggers);
 
     triggers.push_back(new TriggerNode("enemy out of melee",
-        NextAction::array(0, new NextAction("charge", ACTION_MOVE + 10), nullptr)));
+        { new NextAction("charge", ACTION_MOVE + 10) }));
 
     triggers.push_back(new TriggerNode("battle stance",
-        NextAction::array(0, new NextAction("battle stance", ACTION_HIGH + 10), nullptr)));
+        { new NextAction("battle stance", ACTION_HIGH + 10) }));
 
     triggers.push_back(new TriggerNode("battle shout",
-        NextAction::array(0, new NextAction("battle shout", ACTION_HIGH + 9), nullptr)));
+        { new NextAction("battle shout", ACTION_HIGH + 9) }));
 
     triggers.push_back(new TriggerNode("rend",
-        NextAction::array(0, new NextAction("rend", ACTION_HIGH + 8), nullptr)));
+        { new NextAction("rend", ACTION_HIGH + 8) }));
 
     triggers.push_back(new TriggerNode("rend on attacker",
-        NextAction::array(0, new NextAction("rend on attacker", ACTION_HIGH + 8), nullptr)));
+        { new NextAction("rend on attacker", ACTION_HIGH + 8) }));
 
     triggers.push_back(new TriggerNode("mortal strike",
-        NextAction::array(0, new NextAction("mortal strike", ACTION_HIGH + 3), nullptr)));
+        { new NextAction("mortal strike", ACTION_HIGH + 3) }));
 
     triggers.push_back(new TriggerNode("target critical health",
-        NextAction::array(0, new NextAction("execute", ACTION_HIGH + 5), nullptr)));
+        { new NextAction("execute", ACTION_HIGH + 5) }));
 
     triggers.push_back(new TriggerNode("sudden death",
-        NextAction::array(0, new NextAction("execute", ACTION_HIGH + 5), nullptr)));
+        { new NextAction("execute", ACTION_HIGH + 5) }));
 
     triggers.push_back(new TriggerNode("hamstring",
-        NextAction::array(0, new NextAction("piercing howl", ACTION_HIGH), nullptr)));
+        { new NextAction("piercing howl", ACTION_HIGH) }));
 
     triggers.push_back(new TriggerNode("overpower",
-        NextAction::array(0, new NextAction("overpower", ACTION_HIGH + 4), nullptr)));
+        { new NextAction("overpower", ACTION_HIGH + 4) }));
 
     triggers.push_back(new TriggerNode("taste for blood",
-        NextAction::array(0, new NextAction("overpower", ACTION_HIGH + 4), nullptr)));
+        { new NextAction("overpower", ACTION_HIGH + 4) }));
 
     triggers.push_back(new TriggerNode("victory rush",
-        NextAction::array(0, new NextAction("victory rush", ACTION_INTERRUPT), nullptr)));
+        { new NextAction("victory rush", ACTION_INTERRUPT) }));
 
     triggers.push_back(new TriggerNode("high rage available",
-        NextAction::array(0, new NextAction("heroic strike", ACTION_HIGH),
-                             new NextAction("slam", ACTION_HIGH + 1),
-                                nullptr)));
-    // triggers.push_back(new TriggerNode("medium rage available",
-    //      NextAction::array(0, new NextAction("slam", ACTION_HIGH + 1),
-    //      new NextAction("thunder clap", ACTION_HIGH),
-    //      nullptr)));
+        { new NextAction("heroic strike", ACTION_HIGH),
+                             new NextAction("slam", ACTION_HIGH + 1) }));
     triggers.push_back(
-        new TriggerNode("bloodrage", NextAction::array(0, new NextAction("bloodrage", ACTION_HIGH + 2), nullptr)));
+        new TriggerNode("bloodrage", { new NextAction("bloodrage", ACTION_HIGH + 2) }));
 
     triggers.push_back(
-        new TriggerNode("death wish", NextAction::array(0, new NextAction("death wish", ACTION_HIGH + 2), nullptr)));
+        new TriggerNode("death wish", { new NextAction("death wish", ACTION_HIGH + 2) }));
 
     triggers.push_back(new TriggerNode("critical health",
-        NextAction::array(0, new NextAction("intimidating shout", ACTION_EMERGENCY), nullptr)));
+        { new NextAction("intimidating shout", ACTION_EMERGENCY) }));
 
     triggers.push_back(new TriggerNode("medium health",
-        NextAction::array(0, new NextAction("enraged regeneration", ACTION_EMERGENCY), nullptr)));
+        { new NextAction("enraged regeneration", ACTION_EMERGENCY) }));
 
     triggers.push_back(new TriggerNode("almost full health",
-        NextAction::array(0, new NextAction("retaliation", ACTION_EMERGENCY + 1), nullptr)));
+        { new NextAction("retaliation", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("shattering throw trigger",
-        NextAction::array(0, new NextAction("shattering throw", ACTION_INTERRUPT + 1), nullptr)));
+        { new NextAction("shattering throw", ACTION_INTERRUPT + 1) }));
 
-    // triggers.push_back(new TriggerNode("medium aoe",
-    //                                   NextAction::array(0, new NextAction("thunder clap", ACTION_HIGH + 2), nullptr)));
-    /*
-    triggers.push_back(new TriggerNode("medium aoe",
-        NextAction::array(0, new NextAction("sweeping strikes", ACTION_HIGH + 7),
-                             new NextAction("bladestorm", ACTION_HIGH + 6),
-                                nullptr)));
-    */
 }

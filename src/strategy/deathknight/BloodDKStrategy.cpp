@@ -39,38 +39,38 @@ private:
     static ActionNode* rune_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("rune strike",
-                              /*P*/ NextAction::array(0, new NextAction("frost presence"), nullptr),
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              { new NextAction("frost presence") },
+                              /*A*/ {},
+                              /*C*/ {});
     }
     static ActionNode* icy_touch([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("icy touch",
-                              /*P*/ NextAction::array(0, new NextAction("frost presence"), nullptr),
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              { new NextAction("frost presence") },
+                              /*A*/ {},
+                              /*C*/ {});
     }
     static ActionNode* heart_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("heart strike",
-                              /*P*/ NextAction::array(0, new NextAction("frost presence"), nullptr),
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              { new NextAction("frost presence") },
+                              /*A*/ {},
+                              /*C*/ {});
     }
 
     static ActionNode* death_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("death strike",
-                              /*P*/ NextAction::array(0, new NextAction("frost presence"), nullptr),
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              { new NextAction("frost presence") },
+                              /*A*/ {},
+                              /*C*/ {});
     }
     static ActionNode* dark_command([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("dark command",
-                              /*P*/ NextAction::array(0, new NextAction("frost presence"), NULL),
-                              /*A*/ NextAction::array(0, new NextAction("death grip"), NULL),
-                              /*C*/ NULL);
+                              { new NextAction("frost presence")  },
+                              /*A*/ { new NextAction("death grip") },
+                              /*C*/ {});
     }
 };
 
@@ -79,33 +79,33 @@ BloodDKStrategy::BloodDKStrategy(PlayerbotAI* botAI) : GenericDKStrategy(botAI)
     actionNodeFactories.Add(new BloodDKStrategyActionNodeFactory());
 }
 
-NextAction** BloodDKStrategy::getDefaultActions()
+std::vector<NextAction*> BloodDKStrategy::getDefaultActions()
 {
-    return NextAction::array(
-        0, new NextAction("rune strike", ACTION_DEFAULT + 0.8f), new NextAction("icy touch", ACTION_DEFAULT + 0.7f),
+    return {
+        new NextAction("rune strike", ACTION_DEFAULT + 0.8f), new NextAction("icy touch", ACTION_DEFAULT + 0.7f),
         new NextAction("heart strike", ACTION_DEFAULT + 0.6f), new NextAction("blood strike", ACTION_DEFAULT + 0.5f),
         new NextAction("dancing rune weapon", ACTION_DEFAULT + 0.4f),
         new NextAction("death coil", ACTION_DEFAULT + 0.3f), new NextAction("plague strike", ACTION_DEFAULT + 0.2f),
-        new NextAction("horn of winter", ACTION_DEFAULT + 0.1f), new NextAction("melee", ACTION_DEFAULT), NULL);
+        new NextAction("horn of winter", ACTION_DEFAULT + 0.1f), new NextAction("melee", ACTION_DEFAULT)
+    };
 }
 
 void BloodDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericDKStrategy::InitTriggers(triggers);
 
+    triggers.push_back(new TriggerNode("rune strike", { new NextAction("rune strike", ACTION_NORMAL + 3) }));
+    triggers.push_back(
+        new TriggerNode("blood tap", { new NextAction("blood tap", ACTION_HIGH + 5) }));
+    triggers.push_back(
+        new TriggerNode("lose aggro", { new NextAction("dark command", ACTION_HIGH + 3) }));
+    triggers.push_back(
+        new TriggerNode("low health", { new NextAction("army of the dead", ACTION_HIGH + 4),
+                                                        new NextAction("death strike", ACTION_HIGH + 3) }));
+    triggers.push_back(
+        new TriggerNode("critical health", { new NextAction("vampiric blood", ACTION_HIGH + 5) }));
+    triggers.push_back(
+        new TriggerNode("icy touch", { new NextAction("icy touch", ACTION_HIGH + 2) }));
     triggers.push_back(new TriggerNode(
-        "rune strike", NextAction::array(0, new NextAction("rune strike", ACTION_NORMAL + 3), nullptr)));
-    triggers.push_back(
-        new TriggerNode("blood tap", NextAction::array(0, new NextAction("blood tap", ACTION_HIGH + 5), nullptr)));
-    triggers.push_back(
-        new TriggerNode("lose aggro", NextAction::array(0, new NextAction("dark command", ACTION_HIGH + 3), nullptr)));
-    triggers.push_back(
-        new TriggerNode("low health", NextAction::array(0, new NextAction("army of the dead", ACTION_HIGH + 4),
-                                                        new NextAction("death strike", ACTION_HIGH + 3), nullptr)));
-    triggers.push_back(
-        new TriggerNode("critical health", NextAction::array(0, new NextAction("vampiric blood", ACTION_HIGH + 5), nullptr)));
-    triggers.push_back(
-        new TriggerNode("icy touch", NextAction::array(0, new NextAction("icy touch", ACTION_HIGH + 2), nullptr)));
-    triggers.push_back(new TriggerNode(
-        "plague strike", NextAction::array(0, new NextAction("plague strike", ACTION_HIGH + 2), nullptr)));
+        "plague strike", { new NextAction("plague strike", ACTION_HIGH + 2) }));
 }

@@ -23,19 +23,19 @@ NextAction* toNextAction(std::string const action)
     return nullptr;
 }
 
-NextAction** toNextActionArray(std::string const actions)
+std::vector<NextAction*> toNextActionArray(const std::string actions)
 {
     std::vector<std::string> tokens = split(actions, ',');
-    NextAction** res = new NextAction*[tokens.size() + 1];
+    std::vector<NextAction*> res = {};
 
-    uint32 index = 0;
+    uint32_t index = 0;
+
     for (std::vector<std::string>::iterator i = tokens.begin(); i != tokens.end(); ++i)
     {
         if (NextAction* na = toNextAction(*i))
-            res[index++] = na;
+            res.push_back(na);
     }
 
-    res[index++] = nullptr;
     return res;
 }
 

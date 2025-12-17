@@ -3409,10 +3409,17 @@ void TravelMgr::LoadQuestTravelTable()
                                     {
                                         Strategy* strat = con->GetStrategy(stratName);
 
-                                        if (strat->getDefaultActions())
-                                            for (uint32 i = 0; i < NextAction::size(strat->getDefaultActions()); i++)
+                                        const std::vector<NextAction*> defaultActions  = strat->getDefaultActions();
+
+                                        if (defaultActions.size() > 0)
+                                        {
+                                            // for (uint32 i = 0; i < defaultActions.size(); i++)
+                                            for (NextAction* nextAction : defaultActions)
                                             {
-                                                NextAction* nextAction = strat->getDefaultActions()[i];
+                                                if (nextAction == nullptr)
+                                                    break;
+
+                                                // NextAction* nextAction = defaultActions[i];
 
                                                 std::ostringstream aout;
                                                 aout << nextAction->getRelevance() << "," << nextAction->getName()
@@ -3427,24 +3434,27 @@ void TravelMgr::LoadQuestTravelTable()
 
                                                 actions.insert_or_assign(aout.str().c_str(), classSpecLevel);
                                             }
+                                        }
 
                                         std::vector<TriggerNode*> triggers;
                                         strat->InitTriggers(triggers);
-                                        for (auto& triggerNode : triggers)
-                                        {
-                                            // out << " TN:" << triggerNode->getName();
 
+                                        for (TriggerNode* triggerNode : triggers)
+                                        {
                                             if (Trigger* trigger = con->GetTrigger(triggerNode->getName()))
                                             {
                                                 triggerNode->setTrigger(trigger);
 
-                                                NextAction** nextActions = triggerNode->getHandlers();
+                                                // std::vector<NextAction*> nextActions = triggerNode->getHandlers();
+                                                std::vector<NextAction*> nextActions = triggerNode->getHandlers();
 
-                                                for (uint32 i = 0; i < NextAction::size(nextActions); i++)
+                                                // for (uint32_t i = 0; i < nextActions.size(); ++i)
+                                                for (NextAction* nextAction : nextActions)
                                                 {
-                                                    NextAction* nextAction = nextActions[i];
-                                                    // out << " A:" << nextAction->getName() << "(" <<
-                                                    // nextAction->getRelevance() << ")";
+                                                    if (nextAction == nullptr)
+                                                        break;
+
+                                                    // NextAction* nextAction = nextActions[i];
 
                                                     std::ostringstream aout;
                                                     aout << nextAction->getRelevance() << "," << nextAction->getName()

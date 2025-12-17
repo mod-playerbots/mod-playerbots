@@ -7,9 +7,9 @@
 #include "PassiveMultiplier.h"
 #include "Playerbots.h"
 
-NextAction** MoveFromGroupStrategy::getDefaultActions()
+std::vector<NextAction*> MoveFromGroupStrategy::getDefaultActions()
 {
-    return NextAction::array(0, new NextAction("move from group", 1.0f), nullptr);
+    return { new NextAction("move from group", 1.0f) };
 }
 
 void MoveFromGroupStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

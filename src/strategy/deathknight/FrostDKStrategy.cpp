@@ -34,48 +34,48 @@ private:
     static ActionNode* icy_touch([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("icy touch",
-                              /*P*/ NextAction::array(0, new NextAction("blood presence"), nullptr),
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ { new NextAction("blood presence") },
+                              /*A*/ {},
+                              /*C*/ {});
     }
 
     static ActionNode* obliterate([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("obliterate",
-                              /*P*/ NextAction::array(0, new NextAction("blood presence"), nullptr),
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ { new NextAction("blood presence") },
+                              /*A*/ {},
+                              /*C*/ {});
     }
 
     static ActionNode* rune_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("rune strike",
-                              /*P*/ NextAction::array(0, new NextAction("blood presence"), nullptr),
-                              /*A*/ NextAction::array(0, new NextAction("melee"), nullptr),
-                              /*C*/ nullptr);
+                              /*P*/ { new NextAction("blood presence") },
+                              /*A*/ { new NextAction("melee") },
+                              /*C*/ {});
     }
 
     static ActionNode* frost_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("frost strike",
-                              /*P*/ NextAction::array(0, new NextAction("blood presence"), nullptr),
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ { new NextAction("blood presence") },
+                              /*A*/ {},
+                              /*C*/ {});
     }
 
     static ActionNode* howling_blast([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("howling blast",
-                              /*P*/ NextAction::array(0, new NextAction("blood presence"), nullptr),
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ { new NextAction("blood presence") },
+                              /*A*/ {},
+                              /*C*/ {});
     }
     static ActionNode* unbreakable_armor([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("unbreakable armor",
-                              /*P*/ NextAction::array(0, new NextAction("blood tap"), nullptr),
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ { new NextAction("blood tap") },
+                              /*A*/ {},
+                              /*C*/ {});
     }
 };
 
@@ -84,13 +84,15 @@ FrostDKStrategy::FrostDKStrategy(PlayerbotAI* botAI) : GenericDKStrategy(botAI)
     actionNodeFactories.Add(new FrostDKStrategyActionNodeFactory());
 }
 
-NextAction** FrostDKStrategy::getDefaultActions()
+std::vector<NextAction*> FrostDKStrategy::getDefaultActions()
 {
-    return NextAction::array(
-        0, new NextAction("obliterate", ACTION_DEFAULT + 0.7f),
+    return {
+        new NextAction("obliterate", ACTION_DEFAULT + 0.7f),
         new NextAction("frost strike", ACTION_DEFAULT + 0.4f),
         new NextAction("empower rune weapon", ACTION_DEFAULT + 0.3f),
-        new NextAction("horn of winter", ACTION_DEFAULT + 0.1f), new NextAction("melee", ACTION_DEFAULT), NULL);
+        new NextAction("horn of winter", ACTION_DEFAULT + 0.1f),
+        new NextAction("melee", ACTION_DEFAULT)
+    };
 }
 
 void FrostDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -98,27 +100,26 @@ void FrostDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     GenericDKStrategy::InitTriggers(triggers);
 
     triggers.push_back(new TriggerNode(
-        "unbreakable armor", NextAction::array(0, new NextAction("unbreakable armor", ACTION_DEFAULT + 0.6f), nullptr)));
+        "unbreakable armor", { new NextAction("unbreakable armor", ACTION_DEFAULT + 0.6f) }));
+
+    triggers.push_back(new TriggerNode("freezing fog", { new NextAction("howling blast", ACTION_DEFAULT + 0.5f) }));
 
     triggers.push_back(new TriggerNode(
-        "freezing fog", NextAction::array(0, new NextAction("howling blast", ACTION_DEFAULT + 0.5f), nullptr)));
+        "high blood rune", { new NextAction("blood strike", ACTION_DEFAULT + 0.2f) }));
 
     triggers.push_back(new TriggerNode(
-        "high blood rune", NextAction::array(0, new NextAction("blood strike", ACTION_DEFAULT + 0.2f), nullptr)));
-
-    triggers.push_back(new TriggerNode(
-        "army of the dead", NextAction::array(0, new NextAction("army of the dead", ACTION_HIGH + 6), nullptr)));
+        "army of the dead", { new NextAction("army of the dead", ACTION_HIGH + 6) }));
 
     triggers.push_back(
-        new TriggerNode("icy touch", NextAction::array(0, new NextAction("icy touch", ACTION_HIGH + 2), nullptr)));
+        new TriggerNode("icy touch", { new NextAction("icy touch", ACTION_HIGH + 2) }));
     triggers.push_back(new TriggerNode(
-        "plague strike", NextAction::array(0, new NextAction("plague strike", ACTION_HIGH + 2), nullptr)));
-    // triggers.push_back(new TriggerNode("empower rune weapon", NextAction::array(0, new NextAction("empower rune
-    // weapon", ACTION_NORMAL + 4), nullptr)));
+        "plague strike", { new NextAction("plague strike", ACTION_HIGH + 2) }));
+    // triggers.push_back(new TriggerNode("empower rune weapon", { new NextAction("empower rune
+    // weapon", ACTION_NORMAL + 4) }));
 }
 
 void FrostDKAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("medium aoe", NextAction::array(0, new NextAction("howling blast", ACTION_HIGH + 4), nullptr)));
+        new TriggerNode("medium aoe", { new NextAction("howling blast", ACTION_HIGH + 4) }));
 }

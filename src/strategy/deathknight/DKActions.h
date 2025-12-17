@@ -34,7 +34,7 @@ class CastDeathchillAction : public CastBuffSpellAction
 public:
     CastDeathchillAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "deathchill") {}
 
-    NextAction** getPrerequisites() override;
+    std::vector<NextAction*> getPrerequisites() override;
 };
 
 class CastDarkCommandAction : public CastSpellAction
@@ -52,7 +52,7 @@ class CastUnholyMeleeSpellAction : public CastMeleeSpellAction
 public:
     CastUnholyMeleeSpellAction(PlayerbotAI* botAI, std::string const spell) : CastMeleeSpellAction(botAI, spell) {}
 
-    NextAction** getPrerequisites() override;
+    std::vector<NextAction*> getPrerequisites() override;
 };
 
 // Frost presence
@@ -61,7 +61,7 @@ class CastFrostMeleeSpellAction : public CastMeleeSpellAction
 public:
     CastFrostMeleeSpellAction(PlayerbotAI* botAI, std::string const spell) : CastMeleeSpellAction(botAI, spell) {}
 
-    NextAction** getPrerequisites() override;
+    std::vector<NextAction*> getPrerequisites() override;
 };
 
 // Blood presence
@@ -70,7 +70,7 @@ class CastBloodMeleeSpellAction : public CastMeleeSpellAction
 public:
     CastBloodMeleeSpellAction(PlayerbotAI* botAI, std::string const spell) : CastMeleeSpellAction(botAI, spell) {}
 
-    NextAction** getPrerequisites() override;
+    std::vector<NextAction*> getPrerequisites() override;
 };
 
 class CastRuneStrikeAction : public CastMeleeSpellAction

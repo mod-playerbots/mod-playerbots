@@ -440,10 +440,6 @@ protected:
         clazz(PlayerbotAI* botAI) : CastProtectSpellAction(botAI, spell) {} \
     }
 
-#define END_RANGED_SPELL_ACTION() \
-    }                             \
-    ;
-
 #define BEGIN_SPELL_ACTION(clazz, name)  \
     class clazz : public CastSpellAction \
     {                                    \
@@ -472,16 +468,6 @@ protected:
     public:                                   \
         clazz(PlayerbotAI* botAI) : CastMeleeSpellAction(botAI, name) {}
 
-#define END_RANGED_SPELL_ACTION() \
-    }                             \
-    ;
-
-#define BEGIN_BUFF_ON_PARTY_ACTION(clazz, name) \
-    class clazz : public BuffOnPartyAction      \
-    {                                           \
-    public:                                     \
-        clazz(PlayerbotAI* botAI) : BuffOnPartyAction(botAI, name) {}
-
 //
 // Action node
 //
@@ -490,24 +476,16 @@ protected:
 #define ACTION_NODE_P(name, spell, pre)                                                                       \
     static ActionNode* name([[maybe_unused]] PlayerbotAI* botAI)                                                               \
     {                                                                                                         \
-        return new ActionNode(spell, /*P*/ NextAction::array(0, new NextAction(pre), nullptr), /*A*/ nullptr, \
-                              /*C*/ nullptr);                                                                 \
+        return new ActionNode(spell, /*P*/ { new NextAction(pre) }, /*A*/ {}, \
+                              /*C*/ {});                                                                 \
     }
 
 // node_name , action, alternative
 #define ACTION_NODE_A(name, spell, alt)                                                                       \
     static ActionNode* name([[maybe_unused]] PlayerbotAI* botAI)                                                               \
     {                                                                                                         \
-        return new ActionNode(spell, /*P*/ nullptr, /*A*/ NextAction::array(0, new NextAction(alt), nullptr), \
-                              /*C*/ nullptr);                                                                 \
-    }
-
-// node_name , action, continuer
-#define ACTION_NODE_C(name, spell, con)                                                  \
-    static ActionNode* name([[maybe_unused]] PlayerbotAI* botAI)                                          \
-    {                                                                                    \
-        return new ActionNode(spell, /*P*/ nullptr, /*A*/ nullptr,                       \
-                              /*C*/ NextAction::array(0, new NextAction(con), nullptr)); \
+        return new ActionNode(spell, /*P*/ {}, /*A*/ {new NextAction(alt)}, \
+                              /*C*/ {});                                                                 \
     }
 
 #endif

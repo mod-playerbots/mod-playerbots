@@ -29,89 +29,89 @@ private:
     static ActionNode* melee([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("melee",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ {},
+                              /*C*/ {});
     }
 
     static ActionNode* healthstone([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("healthstone",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("healing potion"), nullptr),
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ { new NextAction("healing potion") },
+                              /*C*/ {});
     }
 
     static ActionNode* follow_master_random([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("be near",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("follow"), nullptr),
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ { new NextAction("follow") },
+                              /*C*/ {});
     }
 
     static ActionNode* attack_anything([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("attack anything",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ {},
+                              /*C*/ {});
     }
 
     static ActionNode* move_random([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("move random",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("stay line"), nullptr),
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ { new NextAction("stay line") },
+                              /*C*/ {});
     }
 
     static ActionNode* move_to_loot([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("move to loot",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ {},
+                              /*C*/ {});
     }
 
     static ActionNode* food([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("food",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ {},
+                              /*C*/ {});
     }
 
     static ActionNode* drink([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("drink",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ {},
+                              /*C*/ {});
     }
 
     static ActionNode* mana_potion([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("mana potion",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ {},
+                              /*C*/ {});
     }
 
     static ActionNode* healing_potion([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("healing potion",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("food"), nullptr),
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ { new NextAction("food") },
+                              /*C*/ {});
     }
 
     static ActionNode* flee([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("flee",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ {},
+                              /*C*/ {});
     }
 };
 

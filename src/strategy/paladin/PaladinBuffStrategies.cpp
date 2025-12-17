@@ -10,78 +10,74 @@
 void PaladinBuffManaStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode("blessing of wisdom on party",
-        NextAction::array(0, new NextAction("blessing of wisdom on party", 11.0f), NULL)));
+        { new NextAction("blessing of wisdom on party", 11.0f) }));
 
     triggers.push_back(new TriggerNode("blessing of kings on party",
-        NextAction::array(0, new NextAction("blessing of kings on party", 10.5f), NULL)));
+        { new NextAction("blessing of kings on party", 10.5f) }));
 }
 
 void PaladinBuffHealthStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
         new TriggerNode("blessing of sanctuary on party",
-                        NextAction::array(0, new NextAction("blessing of sanctuary on party", 11.0f), nullptr)));
-    // triggers.push_back(new TriggerNode("blessing", NextAction::array(0, new NextAction("blessing of kings",
-    // ACTION_HIGH + 8), nullptr)));
+                        { new NextAction("blessing of sanctuary on party", 11.0f) }));
 }
 
 void PaladinBuffDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
         new TriggerNode("blessing of might on party",
-                        NextAction::array(0, new NextAction("blessing of might on party", 11.0f), nullptr)));
-    // triggers.push_back(new TriggerNode("blessing", NextAction::array(0, new NextAction("blessing of might",
-    // ACTION_HIGH + 8), nullptr)));
+                        { new NextAction("blessing of might on party", 11.0f) }));
 }
 
 void PaladinShadowResistanceStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
         new TriggerNode("shadow resistance aura",
-                        NextAction::array(0, new NextAction("shadow resistance aura", ACTION_NORMAL), nullptr)));
+                        { new NextAction("shadow resistance aura", ACTION_NORMAL) }));
 }
 
 void PaladinFrostResistanceStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
         new TriggerNode("frost resistance aura",
-                        NextAction::array(0, new NextAction("frost resistance aura", ACTION_NORMAL), nullptr)));
+                        { new NextAction("frost resistance aura", ACTION_NORMAL) }));
 }
 
 void PaladinFireResistanceStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode(
-        "fire resistance aura", NextAction::array(0, new NextAction("fire resistance aura", ACTION_NORMAL), nullptr)));
+        "fire resistance aura", { new NextAction("fire resistance aura", ACTION_NORMAL) }));
 }
 
 void PaladinBuffArmorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode("devotion aura",
-                                       NextAction::array(0, new NextAction("devotion aura", ACTION_NORMAL), nullptr)));
+                                       { new NextAction("devotion aura", ACTION_NORMAL) }));
 }
 
 void PaladinBuffAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode(
-        "retribution aura", NextAction::array(0, new NextAction("retribution aura", ACTION_NORMAL), nullptr)));
+        "retribution aura", { new NextAction("retribution aura", ACTION_NORMAL) }));
 }
 
 void PaladinBuffCastStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode(
-        "concentration aura", NextAction::array(0, new NextAction("concentration aura", ACTION_NORMAL), nullptr)));
+        "concentration aura", { new NextAction("concentration aura", ACTION_NORMAL) }));
 }
 
 void PaladinBuffSpeedStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode(
-        "crusader aura", NextAction::array(0, new NextAction("crusader aura", ACTION_NORMAL), nullptr)));
+        "crusader aura", { new NextAction("crusader aura", ACTION_NORMAL) }));
 }
 
 void PaladinBuffThreatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode(
-        "righteous fury", NextAction::array(0, new NextAction("righteous fury", ACTION_HIGH + 8), nullptr)));
+        "righteous fury", { new NextAction("righteous fury", ACTION_HIGH + 8) }));
 }
 
 void PaladinBuffStatsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -89,10 +85,10 @@ void PaladinBuffStatsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // First Sanctuary (prio > Kings)
     triggers.push_back(
         new TriggerNode("blessing of sanctuary on party",
-                        NextAction::array(0, new NextAction("blessing of sanctuary on party", 12.0f), nullptr)));
+                        { new NextAction("blessing of sanctuary on party", 12.0f) }));
 
     // After Kings
     triggers.push_back(
         new TriggerNode("blessing of kings on party",
-                        NextAction::array(0, new NextAction("blessing of kings on party", 11.0f), nullptr)));
+                        { new NextAction("blessing of kings on party", 11.0f) }));
 }

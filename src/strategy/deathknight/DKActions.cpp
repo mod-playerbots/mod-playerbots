@@ -11,27 +11,27 @@
 #include "SpellInfo.h"
 #include "SpellMgr.h"
 
-NextAction** CastDeathchillAction::getPrerequisites()
+std::vector<NextAction*> CastDeathchillAction::getPrerequisites()
 {
-    return NextAction::merge(NextAction::array(0, new NextAction("frost presence"), nullptr),
+    return NextAction::merge({ new NextAction("frost presence") },
                              CastSpellAction::getPrerequisites());
 }
 
-NextAction** CastUnholyMeleeSpellAction::getPrerequisites()
+std::vector<NextAction*> CastUnholyMeleeSpellAction::getPrerequisites()
 {
-    return NextAction::merge(NextAction::array(0, new NextAction("unholy presence"), nullptr),
+    return NextAction::merge({ new NextAction("unholy presence") },
                              CastMeleeSpellAction::getPrerequisites());
 }
 
-NextAction** CastFrostMeleeSpellAction::getPrerequisites()
+std::vector<NextAction*> CastFrostMeleeSpellAction::getPrerequisites()
 {
-    return NextAction::merge(NextAction::array(0, new NextAction("frost presence"), nullptr),
+    return NextAction::merge({ new NextAction("frost presence") },
                              CastMeleeSpellAction::getPrerequisites());
 }
 
-NextAction** CastBloodMeleeSpellAction::getPrerequisites()
+std::vector<NextAction*> CastBloodMeleeSpellAction::getPrerequisites()
 {
-    return NextAction::merge(NextAction::array(0, new NextAction("blood presence"), nullptr),
+    return NextAction::merge({ new NextAction("blood presence") },
                              CastMeleeSpellAction::getPrerequisites());
 }
 

@@ -35,38 +35,38 @@ private:
     static ActionNode* death_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("death strike",
-                              /*P*/ NextAction::array(0, new NextAction("blood presence"), nullptr),
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ { new NextAction("blood presence") },
+                              /*A*/ {},
+                              /*C*/ {});
     }
     static ActionNode* ghoul_frenzy([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("ghoul frenzy",
-                              /*P*/ NextAction::array(0, new NextAction("blood presence"), nullptr),
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ { new NextAction("blood presence") },
+                              /*A*/ {},
+                              /*C*/ {});
     }
     static ActionNode* corpse_explosion([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("corpse explosion",
-                              /*P*/ NextAction::array(0, new NextAction("blood presence"), nullptr),
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ { new NextAction("blood presence") },
+                              /*A*/ {},
+                              /*C*/ {});
     }
 
     static ActionNode* scourge_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("scourge strike",
-                              /*P*/ NextAction::array(0, new NextAction("blood presence"), nullptr),
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ { new NextAction("blood presence") },
+                              /*A*/ {},
+                              /*C*/ {});
     }
     static ActionNode* icy_touch([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("icy touch",
-                              /*P*/ NextAction::array(0, new NextAction("blood presence"), nullptr),
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ { new NextAction("blood presence") },
+                              /*A*/ {},
+                              /*C*/ {});
     }
 };
 
@@ -75,69 +75,70 @@ UnholyDKStrategy::UnholyDKStrategy(PlayerbotAI* botAI) : GenericDKStrategy(botAI
     actionNodeFactories.Add(new UnholyDKStrategyActionNodeFactory());
 }
 
-NextAction** UnholyDKStrategy::getDefaultActions()
+std::vector<NextAction*> UnholyDKStrategy::getDefaultActions()
 {
-    return NextAction::array(
-        0, new NextAction("death and decay", ACTION_HIGH + 5),
+    return {
+        new NextAction("death and decay", ACTION_HIGH + 5),
         new NextAction("summon gargoyle", ACTION_DEFAULT + 0.4f),
-        // new NextAction("empower rune weapon", ACTION_DEFAULT + 0.3f),
         new NextAction("horn of winter", ACTION_DEFAULT + 0.2f),
         new NextAction("death coil", ACTION_DEFAULT + 0.1f),
-        new NextAction("melee", ACTION_DEFAULT), nullptr);
+        new NextAction("melee", ACTION_DEFAULT)
+    };
 }
 
 void UnholyDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericDKStrategy::InitTriggers(triggers);
     triggers.push_back(new TriggerNode(
-        "death and decay cooldown", NextAction::array(0,
+        "death and decay cooldown", {
             new NextAction("ghoul frenzy", ACTION_DEFAULT + 0.9f),
             new NextAction("scourge strike", ACTION_DEFAULT + 0.8f),
             new NextAction("icy touch", ACTION_DEFAULT + 0.7f),
             new NextAction("blood strike", ACTION_DEFAULT + 0.6f),
             new NextAction("plague strike", ACTION_DEFAULT + 0.5f),
-            nullptr)));
+        }
+    ));
 
     triggers.push_back(new TriggerNode("dd cd and no desolation",
-                                       NextAction::array(0, new NextAction("blood strike", ACTION_DEFAULT + 0.75f), nullptr)));
+                                       { new NextAction("blood strike", ACTION_DEFAULT + 0.75f) }));
 
     // triggers.push_back(
-    //     new TriggerNode("icy touch", NextAction::array(0, new NextAction("icy touch", ACTION_HIGH + 2), nullptr)));
+    //     new TriggerNode("icy touch", { new NextAction("icy touch", ACTION_HIGH + 2) }));
     // triggers.push_back(new TriggerNode(
-    //     "plague strike", NextAction::array(0, new NextAction("plague strike", ACTION_HIGH + 1), nullptr)));
+    //     "plague strike", { new NextAction("plague strike", ACTION_HIGH + 1) }));
 
     triggers.push_back(new TriggerNode(
-        "high frost rune", NextAction::array(0,
-        new NextAction("icy touch", ACTION_NORMAL + 3), nullptr)));
+        "high frost rune", {
+        new NextAction("icy touch", ACTION_NORMAL + 3) }));
 
     triggers.push_back(new TriggerNode(
-        "high blood rune", NextAction::array(0, new NextAction("blood strike", ACTION_NORMAL + 2), nullptr)));
+        "high blood rune", { new NextAction("blood strike", ACTION_NORMAL + 2) }));
 
     triggers.push_back(new TriggerNode(
-        "high unholy rune", NextAction::array(0,
-            new NextAction("plague strike", ACTION_NORMAL + 1), nullptr)));
+        "high unholy rune", {
+            new NextAction("plague strike", ACTION_NORMAL + 1) }));
 
     triggers.push_back(
-        new TriggerNode("dd cd and plague strike 3s", NextAction::array(0, new NextAction("plague strike", ACTION_HIGH + 1), nullptr)));
+        new TriggerNode("dd cd and plague strike 3s", { new NextAction("plague strike", ACTION_HIGH + 1) }));
 
     triggers.push_back(
-        new TriggerNode("dd cd and icy touch 3s", NextAction::array(0, new NextAction("icy touch", ACTION_HIGH + 2), nullptr)));
+        new TriggerNode("dd cd and icy touch 3s", { new NextAction("icy touch", ACTION_HIGH + 2) }));
 
     triggers.push_back(
-        new TriggerNode("no rune", NextAction::array(0, new NextAction("empower rune weapon", ACTION_HIGH + 1), nullptr)));
+        new TriggerNode("no rune", { new NextAction("empower rune weapon", ACTION_HIGH + 1) }));
 
-    // triggers.push_back(new TriggerNode("often", NextAction::array(0, new NextAction(, ACTION_NORMAL + 2), nullptr)));
+    // triggers.push_back(new TriggerNode("often", { new NextAction(, ACTION_NORMAL + 2) }));
     triggers.push_back(new TriggerNode(
-        "army of the dead", NextAction::array(0, new NextAction("army of the dead", ACTION_HIGH + 6), nullptr)));
+        "army of the dead", { new NextAction("army of the dead", ACTION_HIGH + 6) }));
     triggers.push_back(
-        new TriggerNode("bone shield", NextAction::array(0, new NextAction("bone shield", ACTION_HIGH + 3), nullptr)));
+        new TriggerNode("bone shield", { new NextAction("bone shield", ACTION_HIGH + 3) }));
 }
 
 void UnholyDKAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode(
-        "loot available", NextAction::array(0, new NextAction("corpse explosion", ACTION_NORMAL + 1), nullptr)));
+        "loot available", { new NextAction("corpse explosion", ACTION_NORMAL + 1) }));
     triggers.push_back(new TriggerNode(
-        "medium aoe", NextAction::array(0, new NextAction("death and decay", ACTION_NORMAL + 3),
-                                        new NextAction("corpse explosion", ACTION_NORMAL + 3), nullptr)));
+        "medium aoe", { new NextAction("death and decay", ACTION_NORMAL + 3),
+                                        new NextAction("corpse explosion", ACTION_NORMAL + 3) }));
 }
