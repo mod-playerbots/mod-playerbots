@@ -17,30 +17,26 @@ PlayerbotSecurity::PlayerbotSecurity(Player* const bot) : bot(bot)
 
 PlayerbotSecurityLevel PlayerbotSecurity::LevelFor(Player* from, DenyReason* reason, bool ignoreGroup)
 {
-    // Базовые проверки на валидность указателей
-    if (!bot)
+    // Basic pointer validity checks
+    if (!bot || !from || !from->GetSession())
     {
         if (reason)
             *reason = PLAYERBOT_DENY_NONE;
+
         return PLAYERBOT_SECURITY_DENY_ALL;
     }
 
-    if (!from || !from->GetSession())
-    {
-        if (reason)
-            *reason = PLAYERBOT_DENY_NONE;
-        return PLAYERBOT_SECURITY_DENY_ALL;
-    }
-
-    // ГМы всегда имеют полный доступ
+    // GMs always have full access
     if (from->GetSession()->GetSecurity() >= SEC_GAMEMASTER)
         return PLAYERBOT_SECURITY_ALLOW_ALL;
+
 
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     if (!botAI)
     {
         if (reason)
             *reason = PLAYERBOT_DENY_NONE;
+
         return PLAYERBOT_SECURITY_DENY_ALL;
     }
 
@@ -48,21 +44,20 @@ PlayerbotSecurityLevel PlayerbotSecurity::LevelFor(Player* from, DenyReason* rea
     {
         if (reason)
             *reason = PLAYERBOT_DENY_OPPOSING;
+
         return PLAYERBOT_SECURITY_DENY_ALL;
     }
 
-    // Рандомные боты — старая логика, но с безопасными проверками
     if (sPlayerbotAIConfig->IsInRandomAccountList(account))
     {
-        // (дублирующая проверка на случай смены фракции)
+        // (duplicate check in case of faction change)
         if (botAI->IsOpposing(from))
         {
             if (reason)
                 *reason = PLAYERBOT_DENY_OPPOSING;
+
             return PLAYERBOT_SECURITY_DENY_ALL;
         }
-
-        // LFG-блок тут по-прежнему закомментирован
 
         Group* fromGroup = from->GetGroup();
         Group* botGroup = bot->GetGroup();
@@ -74,6 +69,7 @@ PlayerbotSecurityLevel PlayerbotSecurity::LevelFor(Player* from, DenyReason* rea
 
             if (reason)
                 *reason = PLAYERBOT_DENY_NOT_YOURS;
+
             return PLAYERBOT_SECURITY_TALK;
         }
 
@@ -81,6 +77,7 @@ PlayerbotSecurityLevel PlayerbotSecurity::LevelFor(Player* from, DenyReason* rea
         {
             if (reason)
                 *reason = PLAYERBOT_DENY_NONE;
+
             return PLAYERBOT_SECURITY_TALK;
         }
 
@@ -93,6 +90,7 @@ PlayerbotSecurityLevel PlayerbotSecurity::LevelFor(Player* from, DenyReason* rea
                 {
                     if (reason)
                         *reason = PLAYERBOT_DENY_LOW_LEVEL;
+
                     return PLAYERBOT_SECURITY_TALK;
                 }
             }
@@ -110,6 +108,7 @@ PlayerbotSecurityLevel PlayerbotSecurity::LevelFor(Player* from, DenyReason* rea
             {
                 if (reason)
                     *reason = PLAYERBOT_DENY_GEARSCORE;
+
                 return PLAYERBOT_SECURITY_TALK;
             }
         }
@@ -120,16 +119,18 @@ PlayerbotSecurityLevel PlayerbotSecurity::LevelFor(Player* from, DenyReason* rea
             {
                 if (reason)
                     *reason = PLAYERBOT_DENY_BG;
+
                 return PLAYERBOT_SECURITY_TALK;
             }
         }
 
-        // Если бот не в группе — предлагаем инвайт
+        // If the bot is not in the group, we offer an invite
         botGroup = bot->GetGroup();
         if (!botGroup)
         {
             if (reason)
                 *reason = PLAYERBOT_DENY_INVITE;
+
             return PLAYERBOT_SECURITY_INVITE;
         }
 
@@ -137,6 +138,7 @@ PlayerbotSecurityLevel PlayerbotSecurity::LevelFor(Player* from, DenyReason* rea
         {
             if (reason)
                 *reason = PLAYERBOT_DENY_FULL_GROUP;
+
             return PLAYERBOT_SECURITY_TALK;
         }
 
@@ -144,27 +146,30 @@ PlayerbotSecurityLevel PlayerbotSecurity::LevelFor(Player* from, DenyReason* rea
         {
             if (reason)
                 *reason = PLAYERBOT_DENY_NOT_LEADER;
+
             return PLAYERBOT_SECURITY_TALK;
         }
 
-        // Бот — лидер группы, можно приглашать инициатора
+        // The bot is the group leader, you can invite the initiator
         if (reason)
             *reason = PLAYERBOT_DENY_IS_LEADER;
+
         return PLAYERBOT_SECURITY_INVITE;
     }
 
-    // Нерандомные боты: только их мастер имеет полный доступ
+    // Non-random bots: only their master has full access
     if (botAI->GetMaster() == from)
         return PLAYERBOT_SECURITY_ALLOW_ALL;
 
     if (reason)
         *reason = PLAYERBOT_DENY_NOT_YOURS;
+
     return PLAYERBOT_SECURITY_INVITE;
 }
 
 bool PlayerbotSecurity::CheckLevelFor(PlayerbotSecurityLevel level, bool silent, Player* from, bool ignoreGroup)
 {
-    // Если что-то не так с указателями — тихо отказываем
+    // If something is wrong with the pointers, we silently refuse
     if (!bot || !from || !from->GetSession())
         return false;
 
@@ -184,13 +189,9 @@ bool PlayerbotSecurity::CheckLevelFor(PlayerbotSecurityLevel level, bool silent,
 
     Player* master = botAI->GetMaster();
     if (master && botAI->IsOpposing(master))
-    {
         if (WorldSession* session = master->GetSession())
-        {
             if (session->GetSecurity() < SEC_GAMEMASTER)
                 return false;
-        }
-    }
 
     std::ostringstream out;
 
@@ -199,7 +200,6 @@ bool PlayerbotSecurity::CheckLevelFor(PlayerbotSecurityLevel level, bool silent,
         case PLAYERBOT_SECURITY_DENY_ALL:
             out << "I'm kind of busy now";
             break;
-
         case PLAYERBOT_SECURITY_TALK:
             switch (reason)
             {
@@ -266,18 +266,15 @@ bool PlayerbotSecurity::CheckLevelFor(PlayerbotSecurityLevel level, bool silent,
                     break;
             }
             break;
-
         case PLAYERBOT_SECURITY_INVITE:
             out << "Invite me to your group first";
             break;
-
         default:
             out << "I can't do that";
             break;
     }
 
     std::string const text = out.str();
-
     ObjectGuid guid = from->GetGUID();
     time_t lastSaid = whispers[guid][text];
 
@@ -285,7 +282,7 @@ bool PlayerbotSecurity::CheckLevelFor(PlayerbotSecurityLevel level, bool silent,
     {
         whispers[guid][text] = time(nullptr);
 
-        // Дополнительная защита от краша при лог-ауте
+        // Additional protection against crashes during logout
         if (bot->IsInWorld() && from->IsInWorld())
             bot->Whisper(text, LANG_UNIVERSAL, from);
     }

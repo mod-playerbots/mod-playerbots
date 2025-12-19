@@ -24,8 +24,18 @@ bool Formation::IsNullLocation(WorldLocation const& loc) { return IsSameLocation
 WorldLocation MoveAheadFormation::GetLocation()
 {
     Player* master = GetMaster();
-    if (!master || master == bot)
-        return WorldLocation();
+    if (!master || master == bot || !bot)
+        return Formation::NullLocation;
+
+    if (!master->IsInWorld() || !bot->IsInWorld())
+        return Formation::NullLocation;
+
+    if (master->IsDuringRemoveFromWorld() || bot->IsDuringRemoveFromWorld())
+        return Formation::NullLocation;
+
+    Map* map = master->GetMap();
+    if (!map || map != bot->GetMap())
+        return Formation::NullLocation;
 
     WorldLocation loc = GetLocationInternal();
     if (Formation::IsNullLocation(loc))
@@ -40,7 +50,7 @@ WorldLocation MoveAheadFormation::GetLocation()
     //     float ori = master->GetOrientation();
     //     float x1 = x + sPlayerbotAIConfig->tooCloseDistance * cos(ori);
     //     float y1 = y + sPlayerbotAIConfig->tooCloseDistance * sin(ori);
-    //     float ground = master->GetMap()->GetHeight(x1, y1, z);
+    //     float ground = map->GetHeight(x1, y1, z);
     //     if (ground > INVALID_HEIGHT)
     //     {
     //         x = x1;
@@ -48,7 +58,7 @@ WorldLocation MoveAheadFormation::GetLocation()
     //     }
     // }
 
-    // float ground = master->GetMap()->GetHeight(x, y, z);
+    // float ground = map->GetHeight(x, y, z);
     // if (ground <= INVALID_HEIGHT)
     //     return Formation::NullLocation;
 
@@ -81,16 +91,27 @@ public:
     WorldLocation GetLocationInternal() override
     {
         Player* master = GetMaster();
-        if (!master)
-            return WorldLocation();
+
+        if (!master || !bot)
+            return Formation::NullLocation;
+
+        if (!master->IsInWorld() || !bot->IsInWorld())
+            return Formation::NullLocation;
+
+        if (master->IsDuringRemoveFromWorld() || bot->IsDuringRemoveFromWorld())
+            return Formation::NullLocation;
+
+        Map* map = master->GetMap();
+        if (!map || map != bot->GetMap())
+            return Formation::NullLocation;
 
         float range = sPlayerbotAIConfig->followDistance;
         float angle = GetFollowAngle();
         float x = master->GetPositionX() + cos(angle) * range;
         float y = master->GetPositionY() + sin(angle) * range;
         float z = master->GetPositionZ() + master->GetHoverHeight();
-        if (!master->GetMap()->CheckCollisionAndGetValidCoords(master, master->GetPositionX(), master->GetPositionY(),
-                                                               master->GetPositionZ(), x, y, z))
+        if (!map->CheckCollisionAndGetValidCoords(master, master->GetPositionX(), master->GetPositionY(),
+                                                  master->GetPositionZ(), x, y, z))
         {
             x = master->GetPositionX() + cos(angle) * range;
             y = master->GetPositionY() + sin(angle) * range;
@@ -112,45 +133,44 @@ public:
     {
         Player* master = GetMaster();
 
-        // Safety checks to avoid using invalid pointers / maps during teleports or map changes
         if (!master || !bot)
             return Formation::NullLocation;
 
         if (!master->IsInWorld() || !bot->IsInWorld())
             return Formation::NullLocation;
 
-        if (master->GetMapId() != bot->GetMapId())
+        if (master->IsDuringRemoveFromWorld() || bot->IsDuringRemoveFromWorld())
             return Formation::NullLocation;
 
         Map* map = master->GetMap();
-        if (!map)
+        if (!map || map != bot->GetMap())
             return Formation::NullLocation;
 
         float range = sPlayerbotAIConfig->followDistance;
         float angle = GetFollowAngle();
 
         time_t now = time(nullptr);
-        // Recalculate random offset around the master every 3 seconds
         if (!lastChangeTime || now - lastChangeTime >= 3)
         {
             lastChangeTime = now;
+
             dx = (urand(0, 10) / 10.0f - 0.5f) * sPlayerbotAIConfig->tooCloseDistance;
             dy = (urand(0, 10) / 10.0f - 0.5f) * sPlayerbotAIConfig->tooCloseDistance;
-            dr = sqrt(dx * dx + dy * dy);
+            dr = std::sqrt(dx * dx + dy * dy);
         }
 
-        float x = master->GetPositionX() + cos(angle) * range + dx;
-        float y = master->GetPositionY() + sin(angle) * range + dy;
+        float x = master->GetPositionX() + std::cos(angle) * range + dx;
+        float y = master->GetPositionY() + std::sin(angle) * range + dy;
         float z = master->GetPositionZ() + master->GetHoverHeight();
 
-        // Try to project the point to valid ground using map's collision / navmesh
         if (!map->CheckCollisionAndGetValidCoords(master, master->GetPositionX(), master->GetPositionY(),
                                                   master->GetPositionZ(), x, y, z))
         {
-            // Fallback: keep the same horizontal offset and just fix Z using UpdateAllowedPositionZ
-            x = master->GetPositionX() + cos(angle) * range + dx;
-            y = master->GetPositionY() + sin(angle) * range + dy;
+            // Recompute a clean fallback and clamp Z
+            x = master->GetPositionX() + std::cos(angle) * range + dx;
+            y = master->GetPositionY() + std::sin(angle) * range + dy;
             z = master->GetPositionZ() + master->GetHoverHeight();
+
             master->UpdateAllowedPositionZ(x, y, z);
         }
 
@@ -177,10 +197,22 @@ public:
 
         Unit* target = AI_VALUE(Unit*, "current target");
         Player* master = GetMaster();
-        if (!target && target != bot)
+
+        // Fix: if no target OR target is the bot, fall back to master
+        if (!target || target == bot)
             target = master;
 
-        if (!target)
+        if (!target || !bot)
+            return Formation::NullLocation;
+
+        if (!target->IsInWorld() || !bot->IsInWorld())
+            return Formation::NullLocation;
+
+        if (target->IsDuringRemoveFromWorld() || bot->IsDuringRemoveFromWorld())
+            return Formation::NullLocation;
+
+        Map* map = target->GetMap();
+        if (!map || map != bot->GetMap())
             return Formation::NullLocation;
 
         switch (bot->getClass())
@@ -205,14 +237,16 @@ public:
         float x = target->GetPositionX() + cos(angle) * range;
         float y = target->GetPositionY() + sin(angle) * range;
         float z = target->GetPositionZ();
-        if (!target->GetMap()->CheckCollisionAndGetValidCoords(target, target->GetPositionX(), target->GetPositionY(),
-                                                               target->GetPositionZ(), x, y, z))
+
+        if (!map->CheckCollisionAndGetValidCoords(target, target->GetPositionX(), target->GetPositionY(),
+                                                  target->GetPositionZ(), x, y, z))
         {
             x = target->GetPositionX() + cos(angle) * range;
             y = target->GetPositionY() + sin(angle) * range;
             z = target->GetPositionZ();
             target->UpdateAllowedPositionZ(x, y, z);
         }
+
         return WorldLocation(bot->GetMapId(), x, y, z);
     }
 };
@@ -240,18 +274,18 @@ public:
         float orientation = master->GetOrientation();
 
         std::vector<Player*> players;
-        GroupReference* gref = group->GetFirstMember();
-        while (gref)
+        players.reserve(group->GetMembersCount());
+
+        for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
         {
             Player* member = gref->GetSource();
-            if (member != master)
-                players.push_back(member);
+            if (!member || member == master)
+                continue;
 
-            gref = gref->next();
+            players.push_back(member);
         }
 
-        players.insert(players.begin() + group->GetMembersCount() / 2, master);
-
+        players.insert(players.begin() + players.size() / 2, master);
         return MoveLine(players, 0.0f, x, y, z, orientation, range);
     }
 };
@@ -280,19 +314,17 @@ public:
 
         std::vector<Player*> tanks;
         std::vector<Player*> dps;
-        GroupReference* gref = group->GetFirstMember();
-        while (gref)
+
+        for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
         {
             Player* member = gref->GetSource();
-            if (member != master)
-            {
-                if (botAI->IsTank(member))
-                    tanks.push_back(member);
-                else
-                    dps.push_back(member);
-            }
+            if (!member || member == master)
+                continue;
 
-            gref = gref->next();
+            if (botAI->IsTank(member))
+                tanks.push_back(member);
+            else
+                dps.push_back(member);
         }
 
         if (botAI->IsTank(master))
@@ -301,25 +333,21 @@ public:
             dps.insert(dps.begin() + (dps.size() + 1) / 2, master);
 
         if (botAI->IsTank(bot) && botAI->IsTank(master))
-        {
             return MoveLine(tanks, 0.0f, x, y, z, orientation, range);
-        }
 
         if (!botAI->IsTank(bot) && !botAI->IsTank(master))
-        {
             return MoveLine(dps, 0.0f, x, y, z, orientation, range);
-        }
 
         if (botAI->IsTank(bot) && !botAI->IsTank(master))
         {
-            float diff = tanks.size() % 2 == 0 ? -sPlayerbotAIConfig->tooCloseDistance / 2.0f : 0.0f;
+            float diff = (tanks.size() % 2 == 0) ? -sPlayerbotAIConfig->tooCloseDistance / 2.0f : 0.0f;
             return MoveLine(tanks, diff, x + cos(orientation) * range, y + sin(orientation) * range, z, orientation,
                             range);
         }
 
         if (!botAI->IsTank(bot) && botAI->IsTank(master))
         {
-            float diff = dps.size() % 2 == 0 ? -sPlayerbotAIConfig->tooCloseDistance / 2.0f : 0.0f;
+            float diff = (dps.size() % 2 == 0) ? -sPlayerbotAIConfig->tooCloseDistance / 2.0f : 0.0f;
             return MoveLine(dps, diff, x - cos(orientation) * range, y - sin(orientation) * range, z, orientation,
                             range);
         }
@@ -335,65 +363,78 @@ public:
 
     WorldLocation GetLocation() override
     {
+        Player* master = GetMaster();
+        if (!master || !bot)
+            return Formation::NullLocation;
+
+        if (!master->IsInWorld() || !bot->IsInWorld())
+            return Formation::NullLocation;
+
+        if (master->IsDuringRemoveFromWorld() || bot->IsDuringRemoveFromWorld())
+            return Formation::NullLocation;
+
+        Map* map = master->GetMap();
+        if (!map || map != bot->GetMap())
+            return Formation::NullLocation;
+
         float range = sPlayerbotAIConfig->farDistance;
         float followRange = sPlayerbotAIConfig->followDistance;
-
-        Player* master = GetMaster();
-        if (!master)
-            return Formation::NullLocation;
 
         if (sServerFacade->GetDistance2d(bot, master) <= range)
             return Formation::NullLocation;
 
-        float angle = master->GetAngle(bot);
+        float angleToBot = master->GetAngle(bot);
         float followAngle = GetFollowAngle();
 
-        float x = master->GetPositionX() + cos(angle) * range + cos(followAngle) * followRange;
-        float y = master->GetPositionY() + sin(angle) * range + sin(followAngle) * followRange;
+        float x = master->GetPositionX() + cos(angleToBot) * range + cos(followAngle) * followRange;
+        float y = master->GetPositionY() + sin(angleToBot) * range + sin(followAngle) * followRange;
         float z = master->GetPositionZ();
 
         float ground = master->GetMapHeight(x, y, z + 30.0f);
         if (ground <= INVALID_HEIGHT)
         {
-            float minDist = 0, minX = 0, minY = 0;
-            for (float angle = 0.0f; angle <= 2 * M_PI; angle += M_PI / 16.0f)
+            float minDist = 0.f;
+            float minX = 0.f, minY = 0.f;
+
+            for (float a = 0.0f; a <= 2 * M_PI; a += M_PI / 16.0f)
             {
-                x = master->GetPositionX() + cos(angle) * range + cos(followAngle) * followRange;
-                y = master->GetPositionY() + sin(angle) * range + sin(followAngle) * followRange;
-                float dist = sServerFacade->GetDistance2d(bot, x, y);
-                float ground = master->GetMapHeight(x, y, z + 30.0f);
-                if (ground > INVALID_HEIGHT && (!minDist || minDist > dist))
+                float tx = master->GetPositionX() + cos(a) * range + cos(followAngle) * followRange;
+                float ty = master->GetPositionY() + sin(a) * range + sin(followAngle) * followRange;
+
+                float dist = sServerFacade->GetDistance2d(bot, tx, ty);
+                float tg = master->GetMapHeight(tx, ty, z + 30.0f);
+
+                if (tg > INVALID_HEIGHT && (!minDist || dist < minDist))
                 {
                     minDist = dist;
-                    minX = x;
-                    minY = y;
+                    minX = tx;
+                    minY = ty;
                 }
             }
 
-            if (minDist)
+            if (!minDist)
+                return Formation::NullLocation;
+
+            float lz = z;
+            if (!map->CheckCollisionAndGetValidCoords(master, master->GetPositionX(), master->GetPositionY(),
+                                                      master->GetPositionZ(), minX, minY, lz))
             {
-                if (!master->GetMap()->CheckCollisionAndGetValidCoords(
-                        master, master->GetPositionX(), master->GetPositionY(), master->GetPositionZ(), x, y, z))
-                {
-                    x = master->GetPositionX() + cos(angle) * range + cos(followAngle) * followRange;
-                    y = master->GetPositionY() + sin(angle) * range + sin(followAngle) * followRange;
-                    z = master->GetPositionZ() + master->GetHoverHeight();
-                    master->UpdateAllowedPositionZ(x, y, z);
-                }
-                return WorldLocation(bot->GetMapId(), minX, minY, z);
+                lz = z + master->GetHoverHeight();
+                master->UpdateAllowedPositionZ(minX, minY, lz);
             }
 
-            return Formation::NullLocation;
+            return WorldLocation(bot->GetMapId(), minX, minY, lz);
         }
 
-        if (!master->GetMap()->CheckCollisionAndGetValidCoords(master, master->GetPositionX(), master->GetPositionY(),
-                                                               master->GetPositionZ(), x, y, z))
+        if (!map->CheckCollisionAndGetValidCoords(master, master->GetPositionX(), master->GetPositionY(),
+                                                  master->GetPositionZ(), x, y, z))
         {
-            x = master->GetPositionX() + cos(angle) * range + cos(followAngle) * followRange;
-            y = master->GetPositionY() + sin(angle) * range + sin(followAngle) * followRange;
+            x = master->GetPositionX() + cos(angleToBot) * range + cos(followAngle) * followRange;
+            y = master->GetPositionY() + sin(angleToBot) * range + sin(followAngle) * followRange;
             z = master->GetPositionZ() + master->GetHoverHeight();
             master->UpdateAllowedPositionZ(x, y, z);
         }
+
         return WorldLocation(bot->GetMapId(), x, y, z);
     }
 };
@@ -644,31 +685,35 @@ WorldLocation MoveFormation::MoveSingleLine(std::vector<Player*> line, float dif
                                             float orientation, float range)
 {
     float count = line.size();
-    float angle = orientation - M_PI / 2.0f;
-    float x = cx + cos(angle) * (range * floor(count / 2.0f) + diff);
-    float y = cy + sin(angle) * (range * floor(count / 2.0f) + diff);
+    float angleLeft = orientation - M_PI / 2.0f;
+    float x0 = cx + std::cos(angleLeft) * (range * std::floor(count / 2.0f) + diff);
+    float y0 = cy + std::sin(angleLeft) * (range * std::floor(count / 2.0f) + diff);
 
     uint32 index = 0;
     for (Player* member : line)
     {
         if (member == bot)
         {
-            float angle = orientation + M_PI / 2.0f;
+            float angleRight = orientation + M_PI / 2.0f;
             float radius = range * index;
 
-            float lx = x + cos(angle) * radius;
-            float ly = y + sin(angle) * radius;
+            float lx = x0 + std::cos(angleRight) * radius;
+            float ly = y0 + std::sin(angleRight) * radius;
             float lz = cz;
 
             Player* master = botAI->GetMaster();
-            if (!master ||
-                !master->GetMap()->CheckCollisionAndGetValidCoords(
-                    master, master->GetPositionX(), master->GetPositionY(), master->GetPositionZ(), lx, ly, lz))
+            Map* map = master ? master->GetMap() : nullptr;
+
+            // if not fully in world ignore collision corrections.
+            if (!master || !map || !bot || map != bot->GetMap() || !master->IsInWorld() ||
+                master->IsDuringRemoveFromWorld() || !bot->IsInWorld() || bot->IsDuringRemoveFromWorld())
             {
-                lx = x + cos(angle) * radius;
-                ly = y + sin(angle) * radius;
-                lz = cz;
+                return WorldLocation(bot->GetMapId(), lx, ly, lz);
             }
+
+            // if fully loaded check collision and applies coordinate corrections if needed
+            map->CheckCollisionAndGetValidCoords(master, master->GetPositionX(), master->GetPositionY(),
+                                                 master->GetPositionZ(), lx, ly, lz);
 
             return WorldLocation(bot->GetMapId(), lx, ly, lz);
         }

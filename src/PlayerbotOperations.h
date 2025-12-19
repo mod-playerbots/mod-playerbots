@@ -478,11 +478,12 @@ public:
 
     bool Execute() override
     {
+        // find and verify bot still exists
         Player* bot = ObjectAccessor::FindConnectedPlayer(m_botGuid);
         if (!bot)
             return false;
 
-        PlayerbotHolder* holder = nullptr;
+        PlayerbotHolder* holder = sRandomPlayerbotMgr;
         if (m_masterAccountId)
         {
             WorldSession* masterSession = sWorldSessionMgr->FindSession(m_masterAccountId);
@@ -490,11 +491,7 @@ public:
             if (masterPlayer)
                 holder = GET_PLAYERBOT_MGR(masterPlayer);
         }
-        else
-        {
-            holder = sRandomPlayerbotMgr;
-        }
-
+   
         if (!holder)
             return false;
 
