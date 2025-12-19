@@ -291,12 +291,12 @@ bool Engine::MultiplyAndPush(
             this->LogAction("PUSH:%s - %f (%s)", action->getName().c_str(), k, pushType);
             queue.Push(new ActionBasket(action, k, skipPrerequisites, event));
             pushed = true;
-            
+
             continue;
         }
-        
+
         delete action;
-        
+
     }
 
     return pushed;
@@ -528,7 +528,7 @@ std::vector<std::string> Engine::GetStrategies()
 void Engine::PushAgain(ActionNode* actionNode, float relevance, Event event)
 {
     std::vector<NextAction> nextAction = { NextAction(actionNode->getName(), relevance) };
-    
+
     MultiplyAndPush(nextAction, relevance, true, event, "again");
 
     delete actionNode;
@@ -559,7 +559,7 @@ Action* Engine::InitializeAction(ActionNode* actionNode)
 bool Engine::ListenAndExecute(Action* action, Event event)
 {
     bool actionExecuted = false;
-    
+
     if (action == nullptr)
     {
         LOG_ERROR("playerbots", "Action is nullptr");

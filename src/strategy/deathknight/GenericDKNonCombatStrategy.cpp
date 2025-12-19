@@ -57,5 +57,5 @@ void GenericDKNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
 
 void DKBuffDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    
+
 }

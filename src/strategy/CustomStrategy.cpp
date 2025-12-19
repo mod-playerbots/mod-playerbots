@@ -26,7 +26,7 @@ NextAction toNextAction(std::string const action)
         return NextAction(tokens[0], ACTION_NORMAL);
 
     LOG_ERROR("playerbots", "Invalid action {}", action.c_str());
-    
+
     throw std::invalid_argument("Invalid action");
 }
 

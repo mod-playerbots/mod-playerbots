@@ -173,7 +173,7 @@ private:
                               /*A*/ { NextAction("fade") },
                               /*C*/ {});
     }
-    
+
     static ActionNode* shadowfiend([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("shadowfiend",

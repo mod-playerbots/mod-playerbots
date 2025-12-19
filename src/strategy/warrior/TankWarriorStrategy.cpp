@@ -103,7 +103,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
-                                                                
+
     triggers.push_back(
         new TriggerNode(
             "thunder clap and rage",

@@ -9,7 +9,7 @@
 
 GenericWarriorStrategy::GenericWarriorStrategy(PlayerbotAI* botAI) : CombatStrategy(botAI)
 {
-    
+
 }
 
 void GenericWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -24,7 +24,7 @@ class WarrirorAoeStrategyActionNodeFactory : public NamedObjectFactory<ActionNod
 public:
     WarrirorAoeStrategyActionNodeFactory()
     {
-        
+
     }
 
 private:

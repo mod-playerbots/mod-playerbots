@@ -72,7 +72,7 @@ void EnhancementShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "call of the elements and enemy within melee",
             {
-                NextAction("call of the elements", 60.0f)        
+                NextAction("call of the elements", 60.0f)
             }
         )
     );

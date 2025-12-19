@@ -36,7 +36,7 @@ std::vector<NextAction> PullStrategy::getDefaultActions()
     return {
         NextAction(action, 105.0f),
         NextAction("follow", 104.0f),
-        NextAction("end pull", 103.0f), 
+        NextAction("end pull", 103.0f),
     };
 }
 

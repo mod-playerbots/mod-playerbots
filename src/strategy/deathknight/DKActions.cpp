@@ -38,13 +38,13 @@ std::vector<NextAction> CastBloodMeleeSpellAction::getPrerequisites()
 bool CastRaiseDeadAction::Execute(Event event)
 {
     const bool result = CastBuffSpellAction::Execute(event);
-    
+
     if (!result)
         return false;
 
     const uint32_t spellId = AI_VALUE2(uint32_t, "spell id", spell);
-    
+
     bot->AddSpellCooldown(spellId, 0, 3 * 60 * 1000);
-    
+
     return true;
 }

@@ -235,7 +235,7 @@ void CasterDruidAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "light aoe",
             {
                 NextAction("insect swarm on attacker", ACTION_NORMAL + 3),
-                NextAction("moonfire on attacker", ACTION_NORMAL + 3)  
+                NextAction("moonfire on attacker", ACTION_NORMAL + 3)
             }
         )
     );
