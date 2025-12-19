@@ -3,17 +3,17 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_TELLPVPACTION_H
-#define _PLAYERBOT_TELLPVPACTION_H
+#ifndef _PLAYERBOT_TELLPVPSTATSACTION_H
+#define _PLAYERBOT_TELLPVPSTATSACTION_H
 
 #include "Action.h"
 
 class PlayerbotAI;
 
-class TellPvpAction : public Action
+class TellPvpStatsAction : public Action
 {
 public:
-    TellPvpAction(PlayerbotAI* botAI) : Action(botAI, "pvp") {}
+    TellPvpStatsAction(PlayerbotAI* botAI) : Action(botAI, "tell pvp stats") {}
 
     bool Execute(Event event) override;
 };

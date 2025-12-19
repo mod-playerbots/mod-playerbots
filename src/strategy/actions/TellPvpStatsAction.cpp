@@ -3,7 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include "TellPvpAction.h"
+#include "TellPvpStatsAction.h"
 
 #include <map>
 
@@ -29,7 +29,7 @@ namespace
     }
 }
 
-bool TellPvpAction::Execute(Event /*event*/)
+bool TellPvpStatsAction::Execute(Event /*event*/)
 {
     Player* const master = GetMaster();
     if (!master || !bot)
