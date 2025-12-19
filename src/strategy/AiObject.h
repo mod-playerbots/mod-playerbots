@@ -285,14 +285,6 @@ protected:
         clazz(PlayerbotAI* botAI) : CastHealingSpellAction(botAI, spell) {} \
     }
 
-#define HEAL_ACTION_U(clazz, spell, useful)                                 \
-    class clazz : public CastHealingSpellAction                             \
-    {                                                                       \
-    public:                                                                 \
-        clazz(PlayerbotAI* botAI) : CastHealingSpellAction(botAI, spell) {} \
-        bool isUseful() override { return useful; }                         \
-    }
-
 #define HEAL_PARTY_ACTION(clazz, spell, estAmount, manaEfficiency)                                    \
     class clazz : public HealPartyMemberAction                                                        \
     {                                                                                                 \
@@ -393,14 +385,6 @@ protected:
         clazz(PlayerbotAI* botAI) : CastReachTargetSpellAction(botAI, spell, range) {} \
     }
 
-#define REACH_ACTION_U(clazz, spell, range, useful)                                    \
-    class clazz : public CastReachTargetSpellAction                                    \
-    {                                                                                  \
-    public:                                                                            \
-        clazz(PlayerbotAI* botAI) : CastReachTargetSpellAction(botAI, spell, range) {} \
-        bool isUseful() override { return useful; }                                    \
-    }
-
 #define ENEMY_HEALER_ACTION(clazz, spell)                                         \
     class clazz : public CastSpellOnEnemyHealerAction                             \
     {                                                                             \
@@ -456,25 +440,5 @@ protected:
     {                                         \
     public:                                   \
         clazz(PlayerbotAI* botAI) : CastMeleeSpellAction(botAI, name) {}
-
-//
-// Action node
-//
-
-// node_name , action, prerequisite
-#define ACTION_NODE_P(name, spell, pre)                                                                       \
-    static ActionNode* name([[maybe_unused]] PlayerbotAI* botAI)                                                               \
-    {                                                                                                         \
-        return new ActionNode(spell, /*P*/ { NextAction(pre) }, /*A*/ {}, \
-                              /*C*/ {});                                                                 \
-    }
-
-// node_name , action, alternative
-#define ACTION_NODE_A(name, spell, alt)                                                                       \
-    static ActionNode* name([[maybe_unused]] PlayerbotAI* botAI)                                                               \
-    {                                                                                                         \
-        return new ActionNode(spell, /*P*/ {}, /*A*/ { NextAction(alt)}, \
-                              /*C*/ {});                                                                 \
-    }
 
 #endif

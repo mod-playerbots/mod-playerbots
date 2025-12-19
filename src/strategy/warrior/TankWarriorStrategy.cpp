@@ -15,7 +15,6 @@ public:
         creators["charge"] = &charge;
         creators["sunder armor"] = &sunder_armor;
         creators["commanding shout"] = &commanding_shout;
-        // creators["shield slam"] = &shield_slam;
         creators["devastate"] = &devastate;
         creators["last stand"] = &last_stand;
         creators["heroic throw on snare target"] = &heroic_throw_on_snare_target;
@@ -27,15 +26,76 @@ public:
     }
 
 private:
-    // ACTION_NODE_A(charge, "charge", "intercept with stance");
-    ACTION_NODE_A(charge, "charge", "reach melee");
-    ACTION_NODE_A(sunder_armor, "sunder armor", "melee");
-    ACTION_NODE_A(commanding_shout, "commanding shout", "battle shout");
-    // ACTION_NODE_A(shield_slam, "shield slam", "heroic strike");
-    ACTION_NODE_A(devastate, "devastate", "sunder armor");
-    ACTION_NODE_A(last_stand, "last stand", "intimidating shout");
-    ACTION_NODE_A(heroic_throw_on_snare_target, "heroic throw on snare target", "taunt on snare target");
-    ACTION_NODE_A(heroic_throw_taunt, "heroic throw", "shield slam");
+    static ActionNode* heroic_throw_taunt(PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "heroic throw",
+            /*P*/ {},
+            /*A*/ { NextAction("shield slam") },
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* heroic_throw_on_snare_target(PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "heroic throw on snare target",
+            /*P*/ {},
+            /*A*/ { NextAction("taunt on snare target") },
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* last_stand(PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "last stand",
+            /*P*/ {},
+            /*A*/ { NextAction("intimidating shout") },
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* devastate(PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "devastate",
+            /*P*/ {},
+            /*A*/ { NextAction("sunder armor") },
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* commanding_shout(PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "commanding shout",
+            /*P*/ {},
+            /*A*/ { NextAction("battle shout") },
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* sunder_armor(PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "sunder armor",
+            /*P*/ {},
+            /*A*/ { NextAction("melee") },
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* charge(PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "charge",
+            /*P*/ {},
+            /*A*/ { NextAction("reach melee") },
+            /*C*/ {}
+        );
+    }
+
     static ActionNode* taunt(PlayerbotAI* botAI)
     {
         return new ActionNode(

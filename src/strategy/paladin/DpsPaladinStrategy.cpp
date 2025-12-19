@@ -77,12 +77,65 @@ private:
         );
     }
 
-    ACTION_NODE_A(repentance, "repentance", "hammer of justice");
-    ACTION_NODE_A(repentance_on_enemy_healer, "repentance on enemy healer", "hammer of justice on enemy healer");
-    ACTION_NODE_A(repentance_on_snare_target, "repentance on snare target", "hammer of justice on snare target");
-    ACTION_NODE_A(sanctity_aura, "sanctity aura", "retribution aura");
-    ACTION_NODE_A(retribution_aura, "retribution aura", "devotion aura");
-    ACTION_NODE_A(repentance_or_shield, "repentance", "divine shield");
+    static ActionNode* repentance([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "repentance",
+            /*P*/ {},
+            /*A*/ { NextAction("hammer of justice") },
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* repentance_on_enemy_healer([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "repentance on enemy healer",
+            /*P*/ {},
+            /*A*/ { NextAction("hammer of justice on enemy healer") },
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* repentance_on_snare_target([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "repentance on snare target",
+            /*P*/ {},
+            /*A*/ { NextAction("hammer of justice on snare target") },
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* sanctity_aura([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "sanctity aura",
+            /*P*/ {},
+            /*A*/ { NextAction("retribution aura") },
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* retribution_aura([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "retribution aura",
+            /*P*/ {},
+            /*A*/ { NextAction("devotion aura") },
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* repentance_or_shield([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "repentance",
+            /*P*/ {},
+            /*A*/ { NextAction("divine shield") },
+            /*C*/ {}
+        );
+    }
 };
 
 DpsPaladinStrategy::DpsPaladinStrategy(PlayerbotAI* botAI) : GenericPaladinStrategy(botAI)
