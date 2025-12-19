@@ -1713,35 +1713,46 @@ bool PlayerbotAI::IsCombo(Player* player)
 
 bool PlayerbotAI::IsRangedDps(Player* player, bool bySpec) { return IsRanged(player, bySpec) && IsDps(player, bySpec); }
 
-bool PlayerbotAI::IsHealAssistantOfIndex(Player* player, int index)
+bool PlayerbotAI::IsAssistHealOfIndex(Player* player, int index, bool ignoreDeadPlayers)
 {
     Group* group = player->GetGroup();
     if (!group)
-    {
         return false;
-    }
 
     int counter = 0;
 
+    // First, assistants
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-
         if (!member)
-        {
             continue;
-        }
 
-        if (IsHeal(member))  // Check if the member is a healer
+        if (ignoreDeadPlayers && !member->IsAlive())
+            continue;
+
+        if (group->IsAssistant(member->GetGUID()) && IsHeal(member))
         {
-            bool isAssistant = group->IsAssistant(member->GetGUID());
-
-            // Check if the index matches for both assistant and non-assistant healers
-            if ((isAssistant && index == counter) || (!isAssistant && index == counter))
-            {
+            if (index == counter)
                 return player == member;
-            }
+            counter++;
+        }
+    }
 
+    // If not enough assistants, get non-assistants
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member)
+            continue;
+
+        if (ignoreDeadPlayers && !member->IsAlive())
+            continue;
+
+        if (!group->IsAssistant(member->GetGUID()) && IsHeal(member))
+        {
+            if (index == counter)
+                return player == member;
             counter++;
         }
     }
@@ -1749,35 +1760,46 @@ bool PlayerbotAI::IsHealAssistantOfIndex(Player* player, int index)
     return false;
 }
 
-bool PlayerbotAI::IsRangedDpsAssistantOfIndex(Player* player, int index)
+bool PlayerbotAI::IsAssistRangedDpsOfIndex(Player* player, int index, bool ignoreDeadPlayers)
 {
     Group* group = player->GetGroup();
     if (!group)
-    {
         return false;
-    }
 
     int counter = 0;
 
+    // First, assistants
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-
         if (!member)
-        {
             continue;
-        }
 
-        if (IsRangedDps(member))  // Check if the member is a ranged DPS
+        if (ignoreDeadPlayers && !member->IsAlive())
+            continue;
+
+        if (group->IsAssistant(member->GetGUID()) && IsRangedDps(member))
         {
-            bool isAssistant = group->IsAssistant(member->GetGUID());
-
-            // Check the index for both assistant and non-assistant ranges
-            if ((isAssistant && index == counter) || (!isAssistant && index == counter))
-            {
+            if (index == counter)
                 return player == member;
-            }
+            counter++;
+        }
+    }
 
+    // If not enough assistants, get non-assistants
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member)
+            continue;
+
+        if (ignoreDeadPlayers && !member->IsAlive())
+            continue;
+
+        if (!group->IsAssistant(member->GetGUID()) && IsRangedDps(member))
+        {
+            if (index == counter)
+                return player == member;
             counter++;
         }
     }
@@ -2248,18 +2270,16 @@ bool PlayerbotAI::IsAssistTankOfIndex(Player* player, int index, bool ignoreDead
 {
     Group* group = player->GetGroup();
     if (!group)
-    {
         return false;
-    }
+
     int counter = 0;
+
+    // First, assistants
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-
         if (!member)
-        {
             continue;
-        }
 
         if (ignoreDeadPlayers && !member->IsAlive())
             continue;
@@ -2267,21 +2287,17 @@ bool PlayerbotAI::IsAssistTankOfIndex(Player* player, int index, bool ignoreDead
         if (group->IsAssistant(member->GetGUID()) && IsAssistTank(member))
         {
             if (index == counter)
-            {
                 return player == member;
-            }
             counter++;
         }
     }
-    // not enough
+
+    // If not enough assistants, get non-assistants
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-
         if (!member)
-        {
             continue;
-        }
 
         if (ignoreDeadPlayers && !member->IsAlive())
             continue;
@@ -2289,9 +2305,7 @@ bool PlayerbotAI::IsAssistTankOfIndex(Player* player, int index, bool ignoreDead
         if (!group->IsAssistant(member->GetGUID()) && IsAssistTank(member))
         {
             if (index == counter)
-            {
                 return player == member;
-            }
             counter++;
         }
     }
