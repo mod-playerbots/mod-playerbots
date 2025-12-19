@@ -7,97 +7,43 @@
 
 #include "Event.h"
 #include "Playerbots.h"
+#include "PlayerbotSpellCache.h"
 
-#include <mutex>
-
-std::map<uint32, SkillLineAbilityEntry const*> ListSpellsAction::skillSpells;
-std::set<uint32> ListSpellsAction::vendorItems;
-
-namespace
-{
-    // Ensure static caches are initialized exactly once, even if
-    // InitStaticCaches is called from multiple threads.
-    std::once_flag g_listSpellsCacheInitFlag;
-}
-
-// Lightweight alias for a single entry in the spell list used below.
-
-// CHANGE: keep declaration explicit to improve readability of signatures.
 using SpellListEntry = std::pair<uint32, std::string>;
 
 // CHANGE: Simplified and cheap comparator used in MapUpdater worker thread.
 // It now avoids scanning the entire SkillLineAbilityStore for each comparison
 // and only relies on spell school and spell name to keep sorting fast and bounded.
 // lhs = the left element, rhs = the right element.
-static bool CompareSpells(SpellListEntry const& lhs, SpellListEntry const& rhs)
+static bool CompareSpells(SpellListEntry const& lhSpell, SpellListEntry const& rhSpell)
 {
-    SpellInfo const* lhsInfo = sSpellMgr->GetSpellInfo(lhs.first);
-    SpellInfo const* rhsInfo = sSpellMgr->GetSpellInfo(rhs.first);
+    SpellInfo const* lhSpellInfo = sSpellMgr->GetSpellInfo(lhSpell.first);
+    SpellInfo const* rhSpellInfo = sSpellMgr->GetSpellInfo(rhSpell.first);
 
-    if (!lhsInfo || !rhsInfo)
+    if (!lhSpellInfo || !rhSpellInfo)
     {
-        LOG_ERROR("playerbots", "SpellInfo missing. {} {}", lhs.first, rhs.first);
+        LOG_ERROR("playerbots", "SpellInfo missing for spell {} or {}", lhSpell.first, rhSpell.first);
         // Fallback: order by spell id to keep comparator strict and deterministic.
-        return lhs.first < rhs.first;
+        return lhSpell.first < rhSpell.first;
     }
 
-    uint32 lhsKey = lhsInfo->SchoolMask;
-    uint32 rhsKey = rhsInfo->SchoolMask;
+    uint32 lhsKey = lhSpellInfo->SchoolMask;
+    uint32 rhsKey = rhSpellInfo->SchoolMask;
 
     if (lhsKey == rhsKey)
     {
         // Defensive check: if DBC data is broken and spell names are nullptr,
         // fall back to id ordering instead of risking a crash in std::strcmp.
-        if (!lhsInfo->SpellName[0] || !rhsInfo->SpellName[0])
-            return lhs.first < rhs.first;
+        if (!lhSpellInfo->SpellName[0] || !rhSpellInfo->SpellName[0])
+            return lhSpell.first < rhSpell.first;
 
-        return std::strcmp(lhsInfo->SpellName[0], rhsInfo->SpellName[0]) > 0;
+        return std::strcmp(lhSpellInfo->SpellName[0], rhSpellInfo->SpellName[0]) > 0;
     }
     return lhsKey > rhsKey;
 }
 
-void ListSpellsAction::InitStaticCaches()
-{
-    // This method is intended to be called from the world thread at startup,
-    // but it is also safe to call lazily from GetSpellList().
-    std::call_once(g_listSpellsCacheInitFlag, []()
-    {
-        // Build a map SpellId -> SkillLineAbilityEntry for quick lookup.
-        for (uint32 j = 0; j < sSkillLineAbilityStore.GetNumRows(); ++j)
-        {
-            if (SkillLineAbilityEntry const* skillLine = sSkillLineAbilityStore.LookupEntry(j))
-                skillSpells[skillLine->Spell] = skillLine;
-        }
-
-        // Fill the vendorItems cache once from the world database.
-        QueryResult results = WorldDatabase.Query("SELECT item FROM npc_vendor WHERE maxcount = 0");
-        if (results)
-        {
-            do
-            {
-                Field* fields = results->Fetch();
-                int32 entry = fields[0].Get<int32>();
-                if (entry <= 0)
-                    continue;
-
-                vendorItems.insert(static_cast<uint32>(entry));
-            }
-            while (results->NextRow());
-        }
-
-        LOG_DEBUG("playerbots",
-            "ListSpellsAction: initialized caches (skillSpells={}, vendorItems={}).",
-            skillSpells.size(), vendorItems.size());
-    });
-}
-
 std::vector<std::pair<uint32, std::string>> ListSpellsAction::GetSpellList(std::string filter)
 {
-    InitStaticCaches();
-
-    std::ostringstream posOut;
-    std::ostringstream negOut;
-
     uint32 skill = 0;
 
     std::vector<std::string> ss = split(filter, ' ');
@@ -135,10 +81,10 @@ std::vector<std::pair<uint32, std::string>> ListSpellsAction::GetSpellList(std::
         filter.clear();
     }
 
-    bool craftableOnly = false;
+    bool canCraftNow = false;
     if (filter.find('+') != std::string::npos)
     {
-        craftableOnly = true;
+        canCraftNow = true;
 
         // Support "+<skill>" syntax (e.g. "spells +tailoring" or "spells tailoring+").
         // If no explicit skill was detected yet, try to parse the filter (without '+')
@@ -188,7 +134,7 @@ std::vector<std::pair<uint32, std::string>> ListSpellsAction::GetSpellList(std::
         if (spellInfo->IsPassive())
             continue;
 
-        SkillLineAbilityEntry const* skillLine = skillSpells[itr->first];
+        SkillLineAbilityEntry const* skillLine = sPlayerbotSpellCache->GetSkillLine(itr->first);
         if (skill != SKILL_NONE && (!skillLine || skillLine->SkillLine != skill))
             continue;
 
@@ -200,7 +146,7 @@ std::vector<std::pair<uint32, std::string>> ListSpellsAction::GetSpellList(std::
             continue;
 
         bool first = true;
-        int32 craftCount = -1;
+        int32 craftsPossible = -1;
         std::ostringstream materials;
         for (uint32 x = 0; x < MAX_SPELL_REAGENTS; ++x)
         {
@@ -227,12 +173,12 @@ std::vector<std::pair<uint32, std::string>> ListSpellsAction::GetSpellList(std::
 
                     FindItemByIdVisitor visitor(itemid);
                     uint32 reagentsInInventory = InventoryAction::GetItemCount(&visitor);
-                    bool buyable = (vendorItems.find(itemid) != vendorItems.end());
+                    bool buyable = sPlayerbotSpellCache->IsItemBuyable(itemid);
                     if (!buyable)
                     {
                         uint32 craftable = reagentsInInventory / reagentsRequired;
-                        if (craftCount < 0 || craftCount > static_cast<int32>(craftable))
-                            craftCount = static_cast<int32>(craftable);
+                        if (craftsPossible < 0 || craftsPossible > static_cast<int32>(craftable))
+                            craftsPossible = static_cast<int32>(craftable);
                     }
 
                     if (reagentsInInventory)
@@ -243,8 +189,8 @@ std::vector<std::pair<uint32, std::string>> ListSpellsAction::GetSpellList(std::
             }
         }
 
-        if (craftCount < 0)
-            craftCount = 0;
+        if (craftsPossible < 0)
+            craftsPossible = 0;
 
         std::ostringstream out;
         bool filtered = false;
@@ -256,8 +202,8 @@ std::vector<std::pair<uint32, std::string>> ListSpellsAction::GetSpellList(std::
                 {
                     if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(spellInfo->Effects[i].ItemType))
                     {
-                        if (craftCount)
-                            out << "|cffffff00(x" << craftCount << ")|r ";
+                        if (craftsPossible)
+                            out << "|cffffff00(x" << craftsPossible << ")|r ";
 
                         out << chat->FormatItem(proto);
 
@@ -284,7 +230,7 @@ std::vector<std::pair<uint32, std::string>> ListSpellsAction::GetSpellList(std::
         if (filtered)
             continue;
 
-        if (craftableOnly && !craftCount)
+        if (canCraftNow && !craftsPossible)
             continue;
 
         out << materials.str();
@@ -313,10 +259,8 @@ std::vector<std::pair<uint32, std::string>> ListSpellsAction::GetSpellList(std::
             continue;
 
         if (itr->first == 0)
-        {
             LOG_ERROR("playerbots", "?! {}", itr->first);
-        }
-        // CHANGE: Use emplace_back for slightly clearer intent.
+
         spells.emplace_back(itr->first, out.str());
         alreadySeenList += spellInfo->SpellName[0];
         alreadySeenList += ",";
@@ -327,7 +271,6 @@ std::vector<std::pair<uint32, std::string>> ListSpellsAction::GetSpellList(std::
 
 bool ListSpellsAction::Execute(Event event)
 {
-    // NOTE: This action is executed from a MapUpdater worker thread.
     Player* master = GetMaster();
     if (!master)
         return false;
