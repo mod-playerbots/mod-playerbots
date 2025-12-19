@@ -77,6 +77,8 @@ std::vector<std::pair<uint32, std::string>> ListSpellsAction::GetSpellList(std::
         {
             minLevel = std::atoi(ff[0].c_str());
             maxLevel = std::atoi(ff[1].c_str());
+            if (minLevel > maxLevel)
+                std::swap(minLevel, maxLevel);
         }
         filter.clear();
     }
