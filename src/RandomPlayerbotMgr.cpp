@@ -2600,7 +2600,7 @@ bool RandomPlayerbotMgr::IsRandomBot(Player* bot)
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     if (!botAI || botAI->IsRealPlayer())
         return false;
-        
+
     return IsRandomBot(bot->GetGUID().GetCounter());
 }
 
