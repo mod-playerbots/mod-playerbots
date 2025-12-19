@@ -718,9 +718,17 @@ void PlayerbotAI::HandleTeleportAck()
     if (bot->IsBeingTeleportedNear())
     {
         // Temporary fix for instance can not enter
+        // When the bot is not yet in world and/or map not loaded yet map may be nullptr.
         if (!bot->IsInWorld())
         {
-            bot->GetMap()->AddPlayerToMap(bot);
+            Map* map = sMapMgr->FindMap(bot->GetMapId(), bot->GetInstanceId());
+            if (!map)
+                map = sMapMgr->CreateMap(bot->GetMapId(), bot);
+
+            if (!map)
+                return;
+
+            map->AddPlayerToMap(bot);
         }
         while (bot->IsInWorld() && bot->IsBeingTeleportedNear())
         {
