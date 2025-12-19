@@ -238,44 +238,39 @@ public:
 
     void OnPlayerGiveXP(Player* player, uint32& amount, Unit* /*victim*/, uint8 /*xpSource*/) override
     {
-        // no XP multiplier, when player is no bot.
-        if (!player || !player->GetSession()->IsBot())
+        if (sPlayerbotAIConfig->randomBotXPRate == 1.0f || !player || !player->IsInWorld())
             return;
 
-        // no XP gain, if master is not a bot and has xp gain disabled.
-        if (const Player* master = GET_PLAYERBOT_AI(player)->GetMaster())
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+        if (!botAI || !sRandomPlayerbotMgr->IsRandomBot(player))
+            return;
+
+        // No XP gain if master is a real player with XP gain disabled
+        if (const Player* master = botAI->GetMaster())
         {
-            if (!master->GetSession()->IsBot() && master->HasPlayerFlag(PLAYER_FLAGS_NO_XP_GAIN))
+            if (WorldSession* masterSession = master->GetSession();
+                masterSession && !masterSession->IsBot() && master->HasPlayerFlag(PLAYER_FLAGS_NO_XP_GAIN))
             {
-                amount = 0;
+                amount = 0; // disable XP multiplier
                 return;
             }
         }
 
-        // early return
-        if (sPlayerbotAIConfig->randomBotXPRate == 1.0 || !sRandomPlayerbotMgr->IsRandomBot(player))
-            return;
-
-        // no XP multiplier, when bot is in a group with a real player.
+        // No XP multiplier if bot is in a group with at least one real player
         if (Group* group = player->GetGroup())
         {
             for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
             {
-                Player* member = gref->GetSource();
-                if (!member)
+                if (Player* member = gref->GetSource())
                 {
-                    continue;
-                }
-
-                if (!member->GetSession()->IsBot())
-                {
-                    return;
+                    if (!member->GetSession()->IsBot())
+                        return;
                 }
             }
         }
 
-        // otherwise apply bot XP multiplier.
-        amount = static_cast<uint32>(std::round(static_cast<float>(amount) * sPlayerbotAIConfig->randomBotXPRate));
+        // Otherwise apply XP multiplier
+        amount = static_cast<uint32>(std::round(amount * sPlayerbotAIConfig->randomBotXPRate));
     }
 };
 
