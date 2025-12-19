@@ -35,8 +35,8 @@ bool RewardAction::Execute(Event event)
                 return true;
     }
 
-    Unit* mtar = AI_VALUE(Unit*, "master target");
-    if (mtar && Reward(itemId, mtar))
+    Unit* groupLeaderUnit = AI_VALUE(Unit*, "group leader");
+    if (groupLeaderUnit && Reward(itemId, groupLeaderUnit))
         return true;
 
     botAI->TellError("Cannot talk to quest giver");
