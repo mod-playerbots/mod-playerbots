@@ -35,7 +35,7 @@ private:
     {
         return new ActionNode("frostbolt",
                               /*P*/ {},
-                              /*A*/ { new NextAction("shoot") },
+                              /*A*/ { NextAction("shoot") },
                               /*C*/ {});
     }
 
@@ -43,7 +43,7 @@ private:
     {
         return new ActionNode("frostfire bolt",
                               /*P*/ {},
-                              /*A*/ { new NextAction("fireball") },
+                              /*A*/ { NextAction("fireball") },
                               /*C*/ {});
     }
 
@@ -67,7 +67,7 @@ private:
     {
         return new ActionNode("scorch",
                               /*P*/ {},
-                              /*A*/ { new NextAction("shoot") },
+                              /*A*/ { NextAction("shoot") },
                               /*C*/ {});
     }
 
@@ -107,7 +107,7 @@ private:
     {
         return new ActionNode("evocation",
                               /*P*/ {},
-                              /*A*/ { new NextAction("mana potion") },
+                              /*A*/ { NextAction("mana potion") },
                               /*C*/ {});
     }
 
@@ -131,7 +131,7 @@ private:
     {
         return new ActionNode("remove curse",
                               /*P*/ {},
-                              /*A*/ { new NextAction("remove lesser curse") },
+                              /*A*/ { NextAction("remove lesser curse") },
                               /*C*/ {});
     }
 
@@ -139,14 +139,14 @@ private:
     {
         return new ActionNode("remove curse on party",
                               /*P*/ {},
-                              /*A*/ { new NextAction("remove lesser curse on party") },
+                              /*A*/ { NextAction("remove lesser curse on party") },
                               /*C*/ {});
     }
     static ActionNode* fireball([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("fireball",
                               /*P*/ {},
-                              /*A*/ { new NextAction("shoot") },
+                              /*A*/ { NextAction("shoot") },
                               /*C*/ {});
     }
 };
@@ -161,44 +161,44 @@ void GenericMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     RangedCombatStrategy::InitTriggers(triggers);
 
     // Threat Triggers
-    triggers.push_back(new TriggerNode("high threat", { new NextAction("mirror image", 60.0f) }));
-    triggers.push_back(new TriggerNode("medium threat", { new NextAction("invisibility", 30.0f) }));
+    triggers.push_back(new TriggerNode("high threat", { NextAction("mirror image", 60.0f) }));
+    triggers.push_back(new TriggerNode("medium threat", { NextAction("invisibility", 30.0f) }));
 
     // Defensive Triggers
-    triggers.push_back(new TriggerNode("critical health", { new NextAction("ice block", 90.0f) }));
-    triggers.push_back(new TriggerNode("low health", { new NextAction("mana shield", 85.0f) }));
-    triggers.push_back(new TriggerNode("fire ward", { new NextAction("fire ward", 90.0f) }));
-    triggers.push_back(new TriggerNode("frost ward", { new NextAction("frost ward", 90.0f) }));
-    triggers.push_back(new TriggerNode("enemy is close and no firestarter strategy", { new NextAction("frost nova", 50.0f) }));
-    triggers.push_back(new TriggerNode("enemy too close for spell and no firestarter strategy", { new NextAction("blink back", 35.0f) }));
+    triggers.push_back(new TriggerNode("critical health", { NextAction("ice block", 90.0f) }));
+    triggers.push_back(new TriggerNode("low health", { NextAction("mana shield", 85.0f) }));
+    triggers.push_back(new TriggerNode("fire ward", { NextAction("fire ward", 90.0f) }));
+    triggers.push_back(new TriggerNode("frost ward", { NextAction("frost ward", 90.0f) }));
+    triggers.push_back(new TriggerNode("enemy is close and no firestarter strategy", { NextAction("frost nova", 50.0f) }));
+    triggers.push_back(new TriggerNode("enemy too close for spell and no firestarter strategy", { NextAction("blink back", 35.0f) }));
 
     // Mana Threshold Triggers
     Player* bot = botAI->GetBot();
     if (bot->HasSpell(42985))  // Mana Sapphire
-        triggers.push_back(new TriggerNode("high mana", { new NextAction("use mana sapphire", 90.0f) }));
+        triggers.push_back(new TriggerNode("high mana", { NextAction("use mana sapphire", 90.0f) }));
     else if (bot->HasSpell(27101))  // Mana Emerald
-        triggers.push_back(new TriggerNode("high mana", { new NextAction("use mana emerald", 90.0f) }));
+        triggers.push_back(new TriggerNode("high mana", { NextAction("use mana emerald", 90.0f) }));
     else if (bot->HasSpell(10054))  // Mana Ruby
-        triggers.push_back(new TriggerNode("high mana", { new NextAction("use mana ruby", 90.0f) }));
+        triggers.push_back(new TriggerNode("high mana", { NextAction("use mana ruby", 90.0f) }));
     else if (bot->HasSpell(10053))  // Mana Citrine
-        triggers.push_back(new TriggerNode("high mana", { new NextAction("use mana citrine", 90.0f) }));
+        triggers.push_back(new TriggerNode("high mana", { NextAction("use mana citrine", 90.0f) }));
     else if (bot->HasSpell(3552))  // Mana Jade
-        triggers.push_back(new TriggerNode("high mana", { new NextAction("use mana jade", 90.0f) }));
+        triggers.push_back(new TriggerNode("high mana", { NextAction("use mana jade", 90.0f) }));
     else if (bot->HasSpell(759))  // Mana Agate
-        triggers.push_back(new TriggerNode("high mana", { new NextAction("use mana agate", 90.0f) }));
+        triggers.push_back(new TriggerNode("high mana", { NextAction("use mana agate", 90.0f) }));
 
-    triggers.push_back(new TriggerNode("medium mana", { new NextAction("mana potion", 90.0f) }));
-    triggers.push_back(new TriggerNode("low mana", { new NextAction("evocation", 90.0f) }));
+    triggers.push_back(new TriggerNode("medium mana", { NextAction("mana potion", 90.0f) }));
+    triggers.push_back(new TriggerNode("low mana", { NextAction("evocation", 90.0f) }));
 
     // Counterspell / Spellsteal Triggers
-    triggers.push_back(new TriggerNode("spellsteal", { new NextAction("spellsteal", 40.0f) }));
-    triggers.push_back(new TriggerNode("counterspell on enemy healer", { new NextAction("counterspell on enemy healer", 40.0f) }));
+    triggers.push_back(new TriggerNode("spellsteal", { NextAction("spellsteal", 40.0f) }));
+    triggers.push_back(new TriggerNode("counterspell on enemy healer", { NextAction("counterspell on enemy healer", 40.0f) }));
 }
 
 void MageCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("remove curse", { new NextAction("remove curse", 41.0f) }));
-    triggers.push_back(new TriggerNode("remove curse on party", { new NextAction("remove curse on party", 40.0f) }));
+    triggers.push_back(new TriggerNode("remove curse", { NextAction("remove curse", 41.0f) }));
+    triggers.push_back(new TriggerNode("remove curse on party", { NextAction("remove curse on party", 40.0f) }));
 }
 
 void MageBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -208,71 +208,71 @@ void MageBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     if (tab == 0)  // Arcane
     {
-        triggers.push_back(new TriggerNode("arcane power", { new NextAction("arcane power", 29.0f) }));
-        triggers.push_back(new TriggerNode("icy veins", { new NextAction("icy veins", 28.5f) }));
-        triggers.push_back(new TriggerNode("mirror image", { new NextAction("mirror image", 28.0f) }));
+        triggers.push_back(new TriggerNode("arcane power", { NextAction("arcane power", 29.0f) }));
+        triggers.push_back(new TriggerNode("icy veins", { NextAction("icy veins", 28.5f) }));
+        triggers.push_back(new TriggerNode("mirror image", { NextAction("mirror image", 28.0f) }));
     }
     else if (tab == 1)
     {
         if (bot->HasSpell(44614) /*Frostfire Bolt*/ && bot->HasAura(15047) /*Ice Shards*/)
         { // Frostfire
-            triggers.push_back(new TriggerNode("combustion", { new NextAction("combustion", 18.0f) }));
-            triggers.push_back(new TriggerNode("icy veins", { new NextAction("icy veins", 17.5f) }));
-            triggers.push_back(new TriggerNode("mirror image", { new NextAction("mirror image", 17.0f) }));
+            triggers.push_back(new TriggerNode("combustion", { NextAction("combustion", 18.0f) }));
+            triggers.push_back(new TriggerNode("icy veins", { NextAction("icy veins", 17.5f) }));
+            triggers.push_back(new TriggerNode("mirror image", { NextAction("mirror image", 17.0f) }));
         }
         else
         { // Fire
-            triggers.push_back(new TriggerNode("combustion", { new NextAction("combustion", 18.0f) }));
-            triggers.push_back(new TriggerNode("mirror image", { new NextAction("mirror image", 17.5f) }));
+            triggers.push_back(new TriggerNode("combustion", { NextAction("combustion", 18.0f) }));
+            triggers.push_back(new TriggerNode("mirror image", { NextAction("mirror image", 17.5f) }));
         }
     }
     else if (tab == 2)  // Frost
     {
-        triggers.push_back(new TriggerNode("cold snap", { new NextAction("cold snap", 28.0f) }));
-        triggers.push_back(new TriggerNode("icy veins", { new NextAction("icy veins", 27.5f) }));
-        triggers.push_back(new TriggerNode("mirror image", { new NextAction("mirror image", 26.0f) }));
+        triggers.push_back(new TriggerNode("cold snap", { NextAction("cold snap", 28.0f) }));
+        triggers.push_back(new TriggerNode("icy veins", { NextAction("icy veins", 27.5f) }));
+        triggers.push_back(new TriggerNode("mirror image", { NextAction("mirror image", 26.0f) }));
     }
 }
 
 void MageCcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("polymorph", { new NextAction("polymorph", 30.0f) }));
+    triggers.push_back(new TriggerNode("polymorph", { NextAction("polymorph", 30.0f) }));
 }
 
 void MageAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("blizzard channel check", { new NextAction("cancel channel", 26.0f) }));
+    triggers.push_back(new TriggerNode("blizzard channel check", { NextAction("cancel channel", 26.0f) }));
 
     Player* bot = botAI->GetBot();
     int tab = AiFactory::GetPlayerSpecTab(bot);
 
     if (tab == 0)  // Arcane
     {
-        triggers.push_back(new TriggerNode("flamestrike active and medium aoe", { new NextAction("blizzard", 24.0f) }));
+        triggers.push_back(new TriggerNode("flamestrike active and medium aoe", { NextAction("blizzard", 24.0f) }));
         triggers.push_back(new TriggerNode("medium aoe", {
-                                                     new NextAction("flamestrike", 23.0f),
-                                                     new NextAction("blizzard", 22.0f) }));
-        triggers.push_back(new TriggerNode("light aoe", { new NextAction("arcane explosion", 21.0f) }));
+                                                     NextAction("flamestrike", 23.0f),
+                                                     NextAction("blizzard", 22.0f) }));
+        triggers.push_back(new TriggerNode("light aoe", { NextAction("arcane explosion", 21.0f) }));
     }
     else if (tab == 1)  // Fire and Frostfire
     {
         triggers.push_back(
             new TriggerNode("medium aoe", {
-                                      new NextAction("dragon's breath", 39.0f),
-                                      new NextAction("blast wave", 38.0f),
-                                      new NextAction("flamestrike", 23.0f),
-                                      new NextAction("blizzard", 22.0f) }));
+                                      NextAction("dragon's breath", 39.0f),
+                                      NextAction("blast wave", 38.0f),
+                                      NextAction("flamestrike", 23.0f),
+                                      NextAction("blizzard", 22.0f) }));
 
-        triggers.push_back(new TriggerNode("flamestrike active and medium aoe", { new NextAction("blizzard", 24.0f) }));
-        triggers.push_back(new TriggerNode("firestarter", { new NextAction("flamestrike", 40.0f) }));
-        triggers.push_back(new TriggerNode("living bomb on attackers", { new NextAction("living bomb on attackers", 21.0f) }));
+        triggers.push_back(new TriggerNode("flamestrike active and medium aoe", { NextAction("blizzard", 24.0f) }));
+        triggers.push_back(new TriggerNode("firestarter", { NextAction("flamestrike", 40.0f) }));
+        triggers.push_back(new TriggerNode("living bomb on attackers", { NextAction("living bomb on attackers", 21.0f) }));
     }
     else if (tab == 2)  // Frost
     {
-        triggers.push_back(new TriggerNode("flamestrike active and medium aoe", { new NextAction("blizzard", 24.0f) }));
+        triggers.push_back(new TriggerNode("flamestrike active and medium aoe", { NextAction("blizzard", 24.0f) }));
         triggers.push_back(new TriggerNode("medium aoe", {
-                                                     new NextAction("flamestrike", 23.0f),
-                                                     new NextAction("blizzard", 22.0f) }));
-        triggers.push_back(new TriggerNode("light aoe", { new NextAction("cone of cold", 21.0f) }));
+                                                     NextAction("flamestrike", 23.0f),
+                                                     NextAction("blizzard", 22.0f) }));
+        triggers.push_back(new TriggerNode("light aoe", { NextAction("cone of cold", 21.0f) }));
     }
 }

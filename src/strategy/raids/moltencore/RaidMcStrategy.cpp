@@ -8,69 +8,69 @@ void RaidMcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // Lucifron
     triggers.push_back(
         new TriggerNode("mc lucifron shadow resistance",
-                        { new NextAction("mc lucifron shadow resistance", ACTION_RAID) }));
+                        { NextAction("mc lucifron shadow resistance", ACTION_RAID) }));
 
     // Magmadar
     // TODO: Fear ward / tremor totem, or general anti-fear strat development. Same as King Dred (Drak'Tharon) and faction commander (Nexus).
     triggers.push_back(
         new TriggerNode("mc magmadar fire resistance",
-                        { new NextAction("mc magmadar fire resistance", ACTION_RAID) }));
+                        { NextAction("mc magmadar fire resistance", ACTION_RAID) }));
 
     // Gehennas
     triggers.push_back(
         new TriggerNode("mc gehennas shadow resistance",
-                        { new NextAction("mc gehennas shadow resistance", ACTION_RAID) }));
+                        { NextAction("mc gehennas shadow resistance", ACTION_RAID) }));
 
     // Garr
     triggers.push_back(
         new TriggerNode("mc garr fire resistance",
-                        { new NextAction("mc garr fire resistance", ACTION_RAID) }));
+                        { NextAction("mc garr fire resistance", ACTION_RAID) }));
 
     // Baron Geddon
     triggers.push_back(
         new TriggerNode("mc baron geddon fire resistance",
-                        { new NextAction("mc baron geddon fire resistance", ACTION_RAID) }));
+                        { NextAction("mc baron geddon fire resistance", ACTION_RAID) }));
     triggers.push_back(
         new TriggerNode("mc living bomb debuff",
-                        { new NextAction("mc move from group", ACTION_RAID) }));
+                        { NextAction("mc move from group", ACTION_RAID) }));
     triggers.push_back(
         new TriggerNode("mc baron geddon inferno",
-                        { new NextAction("mc move from baron geddon", ACTION_RAID) }));
+                        { NextAction("mc move from baron geddon", ACTION_RAID) }));
 
     // Shazzrah
     triggers.push_back(
         new TriggerNode("mc shazzrah ranged",
-                        { new NextAction("mc shazzrah move away", ACTION_RAID) }));
+                        { NextAction("mc shazzrah move away", ACTION_RAID) }));
 
     // Sulfuron Harbinger
     // Alternatively, shadow resistance is also possible.
     triggers.push_back(
         new TriggerNode("mc sulfuron harbinger fire resistance",
-                        { new NextAction("mc sulfuron harbinger fire resistance", ACTION_RAID) }));
+                        { NextAction("mc sulfuron harbinger fire resistance", ACTION_RAID) }));
 
     // Golemagg the Incinerator
     triggers.push_back(
         new TriggerNode("mc golemagg fire resistance",
-                        { new NextAction("mc golemagg fire resistance", ACTION_RAID) }));
+                        { NextAction("mc golemagg fire resistance", ACTION_RAID) }));
     triggers.push_back(
         new TriggerNode("mc golemagg mark boss",
-                        { new NextAction("mc golemagg mark boss", ACTION_RAID) }));
+                        { NextAction("mc golemagg mark boss", ACTION_RAID) }));
     triggers.push_back(
         new TriggerNode("mc golemagg is main tank",
-                        { new NextAction("mc golemagg main tank attack golemagg", ACTION_RAID) }));
+                        { NextAction("mc golemagg main tank attack golemagg", ACTION_RAID) }));
     triggers.push_back(
         new TriggerNode("mc golemagg is assist tank",
-                        { new NextAction("mc golemagg assist tank attack core rager", ACTION_RAID) }));
+                        { NextAction("mc golemagg assist tank attack core rager", ACTION_RAID) }));
 
     // Majordomo Executus
     triggers.push_back(
         new TriggerNode("mc majordomo shadow resistance",
-                        { new NextAction("mc majordomo shadow resistance", ACTION_RAID) }));
+                        { NextAction("mc majordomo shadow resistance", ACTION_RAID) }));
 
     // Ragnaros
     triggers.push_back(
         new TriggerNode("mc ragnaros fire resistance",
-                        { new NextAction("mc ragnaros fire resistance", ACTION_RAID) }));
+                        { NextAction("mc ragnaros fire resistance", ACTION_RAID) }));
 }
 
 void RaidMcStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

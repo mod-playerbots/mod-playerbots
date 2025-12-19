@@ -56,14 +56,14 @@ DemonologyWarlockStrategy::DemonologyWarlockStrategy(PlayerbotAI* botAI) : Gener
 }
 
 // ===== Default Actions =====
-std::vector<NextAction*> DemonologyWarlockStrategy::getDefaultActions()
+std::vector<NextAction> DemonologyWarlockStrategy::getDefaultActions()
 {
     return {
-       new NextAction("corruption", 5.5f),
-       new NextAction("immolate", 5.4f),
-       new NextAction("shadow bolt", 5.3f),
-       new NextAction("incinerate", 5.2f),
-       new NextAction("shoot", 5.0f) };
+       NextAction("corruption", 5.5f),
+       NextAction("immolate", 5.4f),
+       NextAction("shadow bolt", 5.3f),
+       NextAction("incinerate", 5.2f),
+       NextAction("shoot", 5.0f) };
 }
 
 // ===== Trigger Initialization ===
@@ -72,24 +72,101 @@ void DemonologyWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
     GenericWarlockStrategy::InitTriggers(triggers);
 
     // High priority cooldowns
-    triggers.push_back(new TriggerNode("metamorphosis", { new NextAction("metamorphosis", 28.5f) }));
-    triggers.push_back(new TriggerNode("demonic empowerment", { new NextAction("demonic empowerment", 28.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "metamorphosis",
+            {
+                NextAction("metamorphosis", 28.5f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "demonic empowerment",
+            {
+                NextAction("demonic empowerment", 28.0f)
+            }
+        )
+    );
 
     // Main DoT triggers for high uptime
-    triggers.push_back(new TriggerNode("corruption on attacker", { new NextAction("corruption on attacker", 19.5f) }));
-    triggers.push_back(new TriggerNode("immolate on attacker", { new NextAction("immolate on attacker", 19.0f) }));
-    triggers.push_back(new TriggerNode("corruption", { new NextAction("corruption", 18.0f) }));
-    triggers.push_back(new TriggerNode("immolate", { new NextAction("immolate", 17.5f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "corruption on attacker",
+            {
+                NextAction("corruption on attacker", 19.5f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "immolate on attacker",
+            {
+                NextAction("immolate on attacker", 19.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "corruption",
+            {
+                NextAction("corruption", 18.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "immolate",
+            {
+                NextAction("immolate", 17.5f)
+            }
+        )
+    );
 
     // Procs
-    triggers.push_back(new TriggerNode("decimation", { new NextAction("soul fire", 17.0f) }));
-    triggers.push_back(new TriggerNode("molten core", { new NextAction("incinerate", 16.5f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "decimation",
+            {
+                NextAction("soul fire", 17.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "molten core",
+            {
+                NextAction("incinerate", 16.5f)
+            }
+        )
+    );
 
     // Life Tap glyph buff, and Life Tap as filler
-    triggers.push_back(new TriggerNode("life tap glyph buff", { new NextAction("life tap", 29.5f) }));
-    triggers.push_back(new TriggerNode("life tap", { new NextAction("life tap", 5.1f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "life tap glyph buff",
+            {
+                NextAction("life tap", 29.5f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "life tap",
+            {
+                NextAction("life tap", 5.1f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode("meta melee flee check", { new NextAction("flee", 39.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "meta melee flee check",
+            {
+                NextAction("flee", 39.0f)
+            }
+        )
+    );
 }
 
 // Combat strategy to run to melee for Immolation Aura
@@ -100,7 +177,13 @@ MetaMeleeAoeStrategy::MetaMeleeAoeStrategy(PlayerbotAI* botAI) : CombatStrategy(
 
 void MetaMeleeAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("immolation aura active", {
-                       new NextAction("reach melee", 25.5f),
-                       new NextAction("demon charge", 25.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "immolation aura active",
+            {
+                NextAction("reach melee", 25.5f),
+                NextAction("demon charge", 25.0f)
+            }
+        )
+    );
 }

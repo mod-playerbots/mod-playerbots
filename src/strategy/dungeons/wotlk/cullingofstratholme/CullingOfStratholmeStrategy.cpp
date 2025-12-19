@@ -8,12 +8,12 @@ void WotlkDungeonCoSStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 
     // Salramm the Fleshcrafter
     triggers.push_back(new TriggerNode("explode ghoul",
-        { new NextAction("explode ghoul spread", ACTION_MOVE + 5) }));
+        { NextAction("explode ghoul spread", ACTION_MOVE + 5) }));
 
     // Chrono-Lord Epoch
     // Not sure if this actually works, I think I've seen him charge melee characters..?
     triggers.push_back(new TriggerNode("epoch ranged",
-        { new NextAction("epoch stack", ACTION_MOVE + 5) }));
+        { NextAction("epoch stack", ACTION_MOVE + 5) }));
 
     // Mal'Ganis
 

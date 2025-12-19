@@ -17,7 +17,7 @@ private:
     {
         return new ActionNode("healthstone",
                               /*P*/ {},
-                              /*A*/ { new NextAction("healing potion") },
+                              /*A*/ { NextAction("healing potion") },
                               /*C*/ {});
     }
 };
@@ -32,7 +32,7 @@ void UsePotionsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     Strategy::InitTriggers(triggers);
 
     triggers.push_back(new TriggerNode(
-        "critical health", { new NextAction("healthstone", ACTION_MEDIUM_HEAL + 1) }));
+        "critical health", { NextAction("healthstone", ACTION_MEDIUM_HEAL + 1) }));
     triggers.push_back(
-        new TriggerNode("low mana", { new NextAction("mana potion", ACTION_EMERGENCY) }));
+        new TriggerNode("low mana", { NextAction("mana potion", ACTION_EMERGENCY) }));
 }

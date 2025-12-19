@@ -29,42 +29,52 @@ public:
 private:
     static ActionNode* seal_of_corruption([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("seal of corruption",
-                              /*P*/ {},
-                              /*A*/ { new NextAction("seal of vengeance") },
-                              /*C*/ {});
+        return new ActionNode(
+            "seal of corruption",
+            /*P*/ {},
+            /*A*/ { NextAction("seal of vengeance") },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* seal_of_vengeance([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("seal of vengeance",
-                              /*P*/ {},
-                              /*A*/ { new NextAction("seal of command") },
-                              /*C*/ {});
+        return new ActionNode(
+            "seal of vengeance",
+            /*P*/ {},
+            /*A*/ { NextAction("seal of command") },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* seal_of_command([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("seal of command",
-                              /*P*/ {},
-                              /*A*/ { new NextAction("seal of righteousness") },
-                              /*C*/ {});
+        return new ActionNode(
+            "seal of command",
+            /*P*/ {},
+            /*A*/ { NextAction("seal of righteousness") },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* blessing_of_might([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("blessing of might",
-                              /*P*/ {},
-                              /*A*/ { new NextAction("blessing of kings") },
-                              /*C*/ {});
+        return new ActionNode(
+            "blessing of might",
+            /*P*/ {},
+            /*A*/ { NextAction("blessing of kings") },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* crusader_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("crusader strike",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            "crusader strike",
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     ACTION_NODE_A(repentance, "repentance", "hammer of justice");
@@ -80,15 +90,15 @@ DpsPaladinStrategy::DpsPaladinStrategy(PlayerbotAI* botAI) : GenericPaladinStrat
     actionNodeFactories.Add(new DpsPaladinStrategyActionNodeFactory());
 }
 
-std::vector<NextAction*> DpsPaladinStrategy::getDefaultActions()
+std::vector<NextAction> DpsPaladinStrategy::getDefaultActions()
 {
     return {
-        new NextAction("hammer of wrath", ACTION_DEFAULT + 0.6f),
-        new NextAction("judgement of wisdom", ACTION_DEFAULT + 0.5f),
-        new NextAction("crusader strike", ACTION_DEFAULT + 0.4f),
-        new NextAction("divine storm", ACTION_DEFAULT + 0.3f),
-        new NextAction("consecration", ACTION_DEFAULT + 0.1f),
-        new NextAction("melee", ACTION_DEFAULT)
+        NextAction("hammer of wrath", ACTION_DEFAULT + 0.6f),
+        NextAction("judgement of wisdom", ACTION_DEFAULT + 0.5f),
+        NextAction("crusader strike", ACTION_DEFAULT + 0.4f),
+        NextAction("divine storm", ACTION_DEFAULT + 0.3f),
+        NextAction("consecration", ACTION_DEFAULT + 0.1f),
+        NextAction("melee", ACTION_DEFAULT)
     };
 }
 
@@ -97,19 +107,53 @@ void DpsPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     GenericPaladinStrategy::InitTriggers(triggers);
 
     triggers.push_back(
-        new TriggerNode("art of war", { new NextAction("exorcism", ACTION_DEFAULT + 0.2f) }));
+        new TriggerNode(
+            "art of war",
+            {
+                NextAction("exorcism", ACTION_DEFAULT + 0.2f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("seal", { new NextAction("seal of corruption", ACTION_HIGH) }));
+        new TriggerNode(
+            "seal",
+            {
+                NextAction("seal of corruption", ACTION_HIGH)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("low mana", { new NextAction("seal of wisdom", ACTION_HIGH + 5) }));
+        new TriggerNode(
+            "low mana",
+            {
+                NextAction("seal of wisdom", ACTION_HIGH + 5)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "avenging wrath", { new NextAction("avenging wrath", ACTION_HIGH + 2) }));
-    triggers.push_back(new TriggerNode(
-        "medium aoe", {
-        new NextAction("divine storm", ACTION_HIGH + 4),
-        new NextAction("consecration", ACTION_HIGH + 3)
-    }));
-    triggers.push_back(new TriggerNode("enemy out of melee",
-                                       { new NextAction("reach melee", ACTION_HIGH + 1) }));
+    triggers.push_back(
+        new TriggerNode(
+            "avenging wrath",
+            {
+                NextAction("avenging wrath", ACTION_HIGH + 2)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "medium aoe",
+            {
+                NextAction("divine storm", ACTION_HIGH + 4),
+                NextAction("consecration", ACTION_HIGH + 3)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "enemy out of melee",
+            {
+                NextAction("reach melee", ACTION_HIGH + 1)
+            }
+        )
+    );
 }

@@ -10,5 +10,5 @@
 void TankAssistStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("tank assist", { new NextAction("tank assist", 50.0f) }));
+        new TriggerNode("tank assist", { NextAction("tank assist", 50.0f) }));
 }

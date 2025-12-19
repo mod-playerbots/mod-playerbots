@@ -48,18 +48,18 @@ SurvivalHunterStrategy::SurvivalHunterStrategy(PlayerbotAI* botAI) : GenericHunt
 }
 
 // ===== Default Actions =====
-std::vector<NextAction*> SurvivalHunterStrategy::getDefaultActions()
+std::vector<NextAction> SurvivalHunterStrategy::getDefaultActions()
 {
     return {
-        new NextAction("kill command", 5.9f),
-        new NextAction("kill shot", 5.8f),
-        new NextAction("explosive shot", 5.7f),
-        new NextAction("black arrow", 5.6f),
-        new NextAction("serpent sting", 5.5f),
-        new NextAction("aimed shot", 5.4f),
-        new NextAction("arcane shot", 5.3f),
-        new NextAction("steady shot", 5.2f),
-        new NextAction("auto shot", 5.1f)
+        NextAction("kill command", 5.9f),
+        NextAction("kill shot", 5.8f),
+        NextAction("explosive shot", 5.7f),
+        NextAction("black arrow", 5.6f),
+        NextAction("serpent sting", 5.5f),
+        NextAction("aimed shot", 5.4f),
+        NextAction("arcane shot", 5.3f),
+        NextAction("steady shot", 5.2f),
+        NextAction("auto shot", 5.1f)
     };
 }
 
@@ -68,16 +68,92 @@ void SurvivalHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericHunterStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("lock and load", { new NextAction("explosive shot rank 4", 28.0f) }));
-    triggers.push_back(new TriggerNode("lock and load", { new NextAction("explosive shot rank 3", 27.5f) }));
-    triggers.push_back(new TriggerNode("lock and load", { new NextAction("explosive shot rank 2", 27.0f) }));
-    triggers.push_back(new TriggerNode("lock and load", { new NextAction("explosive shot rank 1", 26.5f) }));
-
-    triggers.push_back(new TriggerNode("kill command", { new NextAction("kill command", 18.5f) }));
-    triggers.push_back(new TriggerNode("target critical health", { new NextAction("kill shot", 18.0f) }));
-    triggers.push_back(new TriggerNode("explosive shot", { new NextAction("explosive shot", 17.5f) }));
-    triggers.push_back(new TriggerNode("black arrow", { new NextAction("black arrow", 16.5f) }));
-    triggers.push_back(new TriggerNode("low mana", { new NextAction("viper sting", 16.0f) }));
-    triggers.push_back(new TriggerNode("no stings", { new NextAction("serpent sting", 15.5f) }));
-    triggers.push_back(new TriggerNode("serpent sting on attacker", { new NextAction("serpent sting on attacker", 15.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "lock and load",
+            {
+                NextAction("explosive shot rank 4", 28.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "lock and load",
+            {
+                NextAction("explosive shot rank 3", 27.5f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "lock and load",
+            {
+                NextAction("explosive shot rank 2", 27.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "lock and load",
+            {
+                NextAction("explosive shot rank 1", 26.5f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "kill command",
+            {
+                NextAction("kill command", 18.5f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "target critical health",
+            {
+                NextAction("kill shot", 18.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "explosive shot",
+            {
+                NextAction("explosive shot", 17.5f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "black arrow",
+            {
+                NextAction("black arrow", 16.5f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "low mana",
+            {
+                NextAction("viper sting", 16.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "no stings",
+            {
+                NextAction("serpent sting", 15.5f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "serpent sting on attacker",
+            {
+                NextAction("serpent sting on attacker", 15.0f)
+            }
+        )
+    );
 }

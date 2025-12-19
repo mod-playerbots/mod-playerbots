@@ -31,12 +31,12 @@ float MagePullMultiplier::GetValue(Action* action)
     return PassiveMultiplier::GetValue(action);
 }
 
-std::vector<NextAction*> PullStrategy::getDefaultActions()
+std::vector<NextAction> PullStrategy::getDefaultActions()
 {
     return {
-        new NextAction(action, 105.0f),
-        new NextAction("follow", 104.0f),
-        new NextAction("end pull", 103.0f), 
+        NextAction(action, 105.0f),
+        NextAction("follow", 104.0f),
+        NextAction("end pull", 103.0f), 
     };
 }
 
@@ -53,5 +53,11 @@ void PossibleAddsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     Strategy::InitTriggers(triggers);
 
     triggers.push_back(
-        new TriggerNode("possible adds", { new NextAction("flee with pet", 60) }));
+        new TriggerNode(
+            "possible adds",
+            {
+                NextAction("flee with pet", 60)
+            }
+        )
+    );
 }

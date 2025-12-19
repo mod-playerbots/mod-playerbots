@@ -18,15 +18,15 @@ void GenericPaladinNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& tr
 {
     NonCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("party member dead", { new NextAction("redemption", ACTION_CRITICAL_HEAL + 10) }));
-    triggers.push_back(new TriggerNode("party member almost full health", { new NextAction("flash of light on party", 25.0f) }));
-    triggers.push_back(new TriggerNode("party member medium health", { new NextAction("flash of light on party", 26.0f) }));
-    triggers.push_back(new TriggerNode("party member low health", { new NextAction("holy light on party", 27.0f) }));
-    triggers.push_back(new TriggerNode("party member critical health", { new NextAction("holy light on party", 28.0f) }));
+    triggers.push_back(new TriggerNode("party member dead", { NextAction("redemption", ACTION_CRITICAL_HEAL + 10) }));
+    triggers.push_back(new TriggerNode("party member almost full health", { NextAction("flash of light on party", 25.0f) }));
+    triggers.push_back(new TriggerNode("party member medium health", { NextAction("flash of light on party", 26.0f) }));
+    triggers.push_back(new TriggerNode("party member low health", { NextAction("holy light on party", 27.0f) }));
+    triggers.push_back(new TriggerNode("party member critical health", { NextAction("holy light on party", 28.0f) }));
 
     int specTab = AiFactory::GetPlayerSpecTab(botAI->GetBot());
     if (specTab == 0 || specTab == 1) // Holy or Protection
-        triggers.push_back(new TriggerNode("often", { new NextAction("apply oil", 1.0f) }));
+        triggers.push_back(new TriggerNode("often", { NextAction("apply oil", 1.0f) }));
     if (specTab == 2) // Retribution
-        triggers.push_back(new TriggerNode("often", { new NextAction("apply stone", 1.0f) }));
+        triggers.push_back(new TriggerNode("often", { NextAction("apply stone", 1.0f) }));
 }

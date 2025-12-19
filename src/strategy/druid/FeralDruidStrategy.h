@@ -27,15 +27,15 @@ private:
     static ActionNode* regrowth([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("regrowth",
-                              /*P*/ { new NextAction("caster form") },
-                              /*A*/ { new NextAction("healing touch") },
-                              /*C*/ { new NextAction("melee", 10.0f) });
+                              /*P*/ { NextAction("caster form") },
+                              /*A*/ { NextAction("healing touch") },
+                              /*C*/ { NextAction("melee", 10.0f) });
     }
 
     static ActionNode* rejuvenation([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("rejuvenation",
-                              /*P*/ { new NextAction("caster form") },
+                              /*P*/ { NextAction("caster form") },
                               /*A*/ {},
                               /*C*/ {});
     }
@@ -43,7 +43,7 @@ private:
     static ActionNode* healing_touch([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("healing touch",
-                              /*P*/ { new NextAction("caster form") },
+                              /*P*/ { NextAction("caster form") },
                               /*A*/ {},
                               /*C*/ {});
     }
@@ -51,15 +51,15 @@ private:
     static ActionNode* regrowth_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("regrowth on party",
-                              /*P*/ { new NextAction("caster form") },
-                              /*A*/ { new NextAction("healing touch on party") },
-                              /*C*/ { new NextAction("melee", 10.0f) });
+                              /*P*/ { NextAction("caster form") },
+                              /*A*/ { NextAction("healing touch on party") },
+                              /*C*/ { NextAction("melee", 10.0f) });
     }
 
     static ActionNode* rejuvenation_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("rejuvenation on party",
-                              /*P*/ { new NextAction("caster form") },
+                              /*P*/ { NextAction("caster form") },
                               /*A*/ {},
                               /*C*/ {});
     }
@@ -67,7 +67,7 @@ private:
     static ActionNode* healing_touch_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("healing touch on party",
-                              /*P*/ { new NextAction("caster form") },
+                              /*P*/ { NextAction("caster form") },
                               /*A*/ {},
                               /*C*/ {});
     }

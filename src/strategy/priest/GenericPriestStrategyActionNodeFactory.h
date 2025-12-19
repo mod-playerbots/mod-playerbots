@@ -41,136 +41,136 @@ private:
     static ActionNode* inner_fire([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("inner fire",
-                              /*P*/ { new NextAction("remove shadowform") },
+                              /*P*/ { NextAction("remove shadowform") },
                               /*A*/ {},
                               /*C*/ {});
     }
     static ActionNode* holy_nova([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("holy nova",
-                              /*P*/ { new NextAction("remove shadowform") },
+                              /*P*/ { NextAction("remove shadowform") },
                               /*A*/ {},
                               /*C*/ {});
     }
     static ActionNode* power_word_fortitude([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("power word: fortitude",
-                              /*P*/ { new NextAction("remove shadowform") },
+                              /*P*/ { NextAction("remove shadowform") },
                               /*A*/ {},
                               /*C*/ {});
     }
     static ActionNode* power_word_fortitude_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("power word: fortitude on party",
-                              /*P*/ { new NextAction("remove shadowform") },
+                              /*P*/ { NextAction("remove shadowform") },
                               /*A*/ {},
                               /*C*/ {});
     }
     static ActionNode* divine_spirit([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("divine spirit",
-                              /*P*/ { new NextAction("remove shadowform") },
+                              /*P*/ { NextAction("remove shadowform") },
                               /*A*/ {},
                               /*C*/ {});
     }
     static ActionNode* divine_spirit_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("divine spirit on party",
-                              /*P*/ { new NextAction("remove shadowform") },
+                              /*P*/ { NextAction("remove shadowform") },
                               /*A*/ {},
                               /*C*/ {});
     }
     static ActionNode* power_word_shield([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("power word: shield",
-                              /*P*/ { new NextAction("remove shadowform") },
-                              // /*A*/ { new NextAction("renew", 50.0f) },
+                              /*P*/ { NextAction("remove shadowform") },
+                              // /*A*/ { NextAction("renew", 50.0f) },
                               /*A*/ {},
                               /*C*/ {});
     }
     static ActionNode* power_word_shield_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("power word: shield on party",
-                              /*P*/ { new NextAction("remove shadowform") },
-                              // /*A*/ { new NextAction("renew on party", 50.0f) },
+                              /*P*/ { NextAction("remove shadowform") },
+                              // /*A*/ { NextAction("renew on party", 50.0f) },
                               /*A*/ {},
                               /*C*/ {});
     }
     static ActionNode* renew([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("renew",
-                              /*P*/ { new NextAction("remove shadowform") },
+                              /*P*/ { NextAction("remove shadowform") },
                               /*A*/ {},
                               /*C*/ {});
     }
     static ActionNode* renew_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("renew on party",
-                              /*P*/ { new NextAction("remove shadowform") },
+                              /*P*/ { NextAction("remove shadowform") },
                               /*A*/ {},
                               /*C*/ {});
     }
     static ActionNode* greater_heal([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("greater heal",
-                              /*P*/ { new NextAction("remove shadowform") },
-                              /*A*/ { new NextAction("heal") },
+                              /*P*/ { NextAction("remove shadowform") },
+                              /*A*/ { NextAction("heal") },
                               /*C*/ {});
     }
     static ActionNode* greater_heal_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("greater heal on party",
-                              /*P*/ { new NextAction("remove shadowform") },
-                              /*A*/ { new NextAction("heal on party") },
+                              /*P*/ { NextAction("remove shadowform") },
+                              /*A*/ { NextAction("heal on party") },
                               /*C*/ {});
     }
     static ActionNode* heal([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("heal",
-                              /*P*/ { new NextAction("remove shadowform") },
-                              /*A*/ { new NextAction("lesser heal") },
+                              /*P*/ { NextAction("remove shadowform") },
+                              /*A*/ { NextAction("lesser heal") },
                               /*C*/ {});
     }
     static ActionNode* heal_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("heal on party",
-                              /*P*/ { new NextAction("remove shadowform") },
-                              /*A*/ { new NextAction("lesser heal on party") },
+                              /*P*/ { NextAction("remove shadowform") },
+                              /*A*/ { NextAction("lesser heal on party") },
                               /*C*/ {});
     }
     static ActionNode* lesser_heal([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("lesser heal",
-                              /*P*/ { new NextAction("remove shadowform") },
+                              /*P*/ { NextAction("remove shadowform") },
                               /*A*/ {},
                               /*C*/ {});
     }
     static ActionNode* lesser_heal_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("lesser heal on party",
-                              /*P*/ { new NextAction("remove shadowform") },
+                              /*P*/ { NextAction("remove shadowform") },
                               /*A*/ {},
                               /*C*/ {});
     }
     static ActionNode* flash_heal([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("flash heal",
-                              /*P*/ { new NextAction("remove shadowform") },
-                              /*A*/ { new NextAction("greater heal") },
+                              /*P*/ { NextAction("remove shadowform") },
+                              /*A*/ { NextAction("greater heal") },
                               /*C*/ {});
     }
     static ActionNode* flash_heal_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("flash heal on party",
-                              /*P*/ { new NextAction("remove shadowform") },
-                              /*A*/ { new NextAction("greater heal on party") },
+                              /*P*/ { NextAction("remove shadowform") },
+                              /*A*/ { NextAction("greater heal on party") },
                               /*C*/ {});
     }
     static ActionNode* psychic_scream([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("psychic scream",
                               /*P*/ {},
-                              /*A*/ { new NextAction("fade") },
+                              /*A*/ { NextAction("fade") },
                               /*C*/ {});
     }
     

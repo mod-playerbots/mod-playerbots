@@ -10,5 +10,5 @@
 void RunawayStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("enemy too close for spell", { new NextAction("runaway", 50.0f) }));
+        new TriggerNode("enemy too close for spell", { NextAction("runaway", 50.0f) }));
 }

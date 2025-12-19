@@ -10,64 +10,64 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     PassTroughStrategy::InitTriggers(triggers);
 
     triggers.push_back(
-        new TriggerNode("group invite", { new NextAction("accept invitation", relevance) }));
+        new TriggerNode("group invite", { NextAction("accept invitation", relevance) }));
     triggers.push_back(
-        new TriggerNode("uninvite", { new NextAction("uninvite", relevance) }));
+        new TriggerNode("uninvite", { NextAction("uninvite", relevance) }));
     triggers.push_back(
-        new TriggerNode("uninvite guid", { new NextAction("uninvite", relevance) }));
+        new TriggerNode("uninvite guid", { NextAction("uninvite", relevance) }));
     triggers.push_back(
-        new TriggerNode("group set leader", { /*new NextAction("leader", relevance),*/ }));
+        new TriggerNode("group set leader", { /*NextAction("leader", relevance),*/ }));
     triggers.push_back(new TriggerNode(
-        "not enough money", { new NextAction("tell not enough money", relevance) }));
+        "not enough money", { NextAction("tell not enough money", relevance) }));
     triggers.push_back(
         new TriggerNode("not enough reputation",
-                        { new NextAction("tell not enough reputation", relevance) }));
+                        { NextAction("tell not enough reputation", relevance) }));
     triggers.push_back(
-        new TriggerNode("cannot equip", { new NextAction("tell cannot equip", relevance) }));
+        new TriggerNode("cannot equip", { NextAction("tell cannot equip", relevance) }));
     triggers.push_back(
-        new TriggerNode("use game object", { new NextAction("add loot", relevance),
-                                                             new NextAction("use meeting stone", relevance) }));
+        new TriggerNode("use game object", { NextAction("add loot", relevance),
+                                                             NextAction("use meeting stone", relevance) }));
     triggers.push_back(
-        new TriggerNode("gossip hello", { new NextAction("trainer", relevance) }));
-    triggers.push_back(new TriggerNode("activate taxi", { new NextAction("remember taxi", relevance),
-                                                                          new NextAction("taxi", relevance) }));
-    triggers.push_back(new TriggerNode("taxi done", { new NextAction("taxi", relevance) }));
-    triggers.push_back(new TriggerNode("trade status", { new NextAction("accept trade", relevance), new NextAction("equip upgrades", relevance) }));
-    triggers.push_back(new TriggerNode("trade status extended", { new NextAction("trade status extended", relevance) }));
-    triggers.push_back(new TriggerNode("area trigger", { new NextAction("reach area trigger", relevance) }));
-    triggers.push_back(new TriggerNode("within area trigger", { new NextAction("area trigger", relevance) }));
-    triggers.push_back(new TriggerNode("loot response", { new NextAction("store loot", relevance) }));
-    triggers.push_back(new TriggerNode("item push result", { new NextAction("unlock items", relevance),
-                                                                                new NextAction("open items", relevance),
-                                                                                new NextAction("query item usage", relevance),
-                                                                                new NextAction("equip upgrades", relevance) }));
-    triggers.push_back(new TriggerNode("item push result", { new NextAction("quest item push result", relevance) }));
-    triggers.push_back(new TriggerNode("ready check finished", { new NextAction("finish ready check", relevance) }));
-    // triggers.push_back(new TriggerNode("often", { new NextAction("security check", relevance), new NextAction("check mail", relevance) }));
-    triggers.push_back(new TriggerNode("guild invite", { new NextAction("guild accept", relevance) }));
-    triggers.push_back(new TriggerNode("petition offer", { new NextAction("petition sign", relevance) }));
-    triggers.push_back(new TriggerNode("lfg proposal", { new NextAction("lfg accept", relevance) }));
-    triggers.push_back(new TriggerNode("lfg proposal active", { new NextAction("lfg accept", relevance) }));
-    triggers.push_back(new TriggerNode("arena team invite", { new NextAction("arena team accept", relevance) }));
-    //triggers.push_back(new TriggerNode("no non bot players around", { new NextAction("delay", relevance) }));
-    triggers.push_back(new TriggerNode("bg status", { new NextAction("bg status", relevance) }));
-    triggers.push_back(new TriggerNode("xpgain", { new NextAction("xp gain", relevance) }));
+        new TriggerNode("gossip hello", { NextAction("trainer", relevance) }));
+    triggers.push_back(new TriggerNode("activate taxi", { NextAction("remember taxi", relevance),
+                                                                          NextAction("taxi", relevance) }));
+    triggers.push_back(new TriggerNode("taxi done", { NextAction("taxi", relevance) }));
+    triggers.push_back(new TriggerNode("trade status", { NextAction("accept trade", relevance), NextAction("equip upgrades", relevance) }));
+    triggers.push_back(new TriggerNode("trade status extended", { NextAction("trade status extended", relevance) }));
+    triggers.push_back(new TriggerNode("area trigger", { NextAction("reach area trigger", relevance) }));
+    triggers.push_back(new TriggerNode("within area trigger", { NextAction("area trigger", relevance) }));
+    triggers.push_back(new TriggerNode("loot response", { NextAction("store loot", relevance) }));
+    triggers.push_back(new TriggerNode("item push result", { NextAction("unlock items", relevance),
+                                                                                NextAction("open items", relevance),
+                                                                                NextAction("query item usage", relevance),
+                                                                                NextAction("equip upgrades", relevance) }));
+    triggers.push_back(new TriggerNode("item push result", { NextAction("quest item push result", relevance) }));
+    triggers.push_back(new TriggerNode("ready check finished", { NextAction("finish ready check", relevance) }));
+    // triggers.push_back(new TriggerNode("often", { NextAction("security check", relevance), NextAction("check mail", relevance) }));
+    triggers.push_back(new TriggerNode("guild invite", { NextAction("guild accept", relevance) }));
+    triggers.push_back(new TriggerNode("petition offer", { NextAction("petition sign", relevance) }));
+    triggers.push_back(new TriggerNode("lfg proposal", { NextAction("lfg accept", relevance) }));
+    triggers.push_back(new TriggerNode("lfg proposal active", { NextAction("lfg accept", relevance) }));
+    triggers.push_back(new TriggerNode("arena team invite", { NextAction("arena team accept", relevance) }));
+    //triggers.push_back(new TriggerNode("no non bot players around", { NextAction("delay", relevance) }));
+    triggers.push_back(new TriggerNode("bg status", { NextAction("bg status", relevance) }));
+    triggers.push_back(new TriggerNode("xpgain", { NextAction("xp gain", relevance) }));
     triggers.push_back(
-        new TriggerNode("levelup", { new NextAction("auto maintenance on levelup", relevance + 3) }));
-    // triggers.push_back(new TriggerNode("group destroyed", { new NextAction("reset botAI",
+        new TriggerNode("levelup", { NextAction("auto maintenance on levelup", relevance + 3) }));
+    // triggers.push_back(new TriggerNode("group destroyed", { NextAction("reset botAI",
     // relevance) }));
-    triggers.push_back(new TriggerNode("group list", { new NextAction("reset botAI", relevance) }));
-    triggers.push_back(new TriggerNode("see spell", { new NextAction("see spell", relevance) }));
-    triggers.push_back(new TriggerNode("release spirit", { new NextAction("release", relevance) }));
-    triggers.push_back(new TriggerNode("revive from corpse", { new NextAction("revive from corpse", relevance) }));
-    triggers.push_back(new TriggerNode("master loot roll", { new NextAction("master loot roll", relevance) }));
+    triggers.push_back(new TriggerNode("group list", { NextAction("reset botAI", relevance) }));
+    triggers.push_back(new TriggerNode("see spell", { NextAction("see spell", relevance) }));
+    triggers.push_back(new TriggerNode("release spirit", { NextAction("release", relevance) }));
+    triggers.push_back(new TriggerNode("revive from corpse", { NextAction("revive from corpse", relevance) }));
+    triggers.push_back(new TriggerNode("master loot roll", { NextAction("master loot roll", relevance) }));
 
     // quest ?
-    //triggers.push_back(new TriggerNode("quest confirm", { new NextAction("quest confirm", relevance) }));
-    triggers.push_back(new TriggerNode("questgiver quest details", { new NextAction("turn in query quest", relevance) }));
+    //triggers.push_back(new TriggerNode("quest confirm", { NextAction("quest confirm", relevance) }));
+    triggers.push_back(new TriggerNode("questgiver quest details", { NextAction("turn in query quest", relevance) }));
 
     // loot roll
-    triggers.push_back(new TriggerNode("very often", { new NextAction("loot roll", relevance) }));
+    triggers.push_back(new TriggerNode("very often", { NextAction("loot roll", relevance) }));
 }
 
 WorldPacketHandlerStrategy::WorldPacketHandlerStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI)
@@ -95,5 +95,5 @@ WorldPacketHandlerStrategy::WorldPacketHandlerStrategy(PlayerbotAI* botAI) : Pas
 void ReadyCheckStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("timer", { new NextAction("ready check", relevance) }));
+        new TriggerNode("timer", { NextAction("ready check", relevance) }));
 }

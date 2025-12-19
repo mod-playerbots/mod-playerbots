@@ -6,34 +6,38 @@
 #include "CustomStrategy.h"
 
 #include <regex>
+#include <stdexcept>
 
 #include "Playerbots.h"
 
 std::map<std::string, std::string> CustomStrategy::actionLinesCache;
 
-NextAction* toNextAction(std::string const action)
+NextAction toNextAction(std::string const action)
 {
     std::vector<std::string> tokens = split(action, '!');
-    if (tokens.size() == 2 && !tokens[0].empty())
-        return new NextAction(tokens[0], atof(tokens[1].c_str()));
-    else if (tokens.size() == 1 && !tokens[0].empty())
-        return new NextAction(tokens[0], ACTION_NORMAL);
+
+    if (tokens[0].empty())
+        throw std::invalid_argument("Invalid action");
+
+    if (tokens.size() == 2)
+        return NextAction(tokens[0], atof(tokens[1].c_str()));
+
+    if (tokens.size() == 1)
+        return NextAction(tokens[0], ACTION_NORMAL);
 
     LOG_ERROR("playerbots", "Invalid action {}", action.c_str());
-    return nullptr;
+    
+    throw std::invalid_argument("Invalid action");
 }
 
-std::vector<NextAction*> toNextActionArray(const std::string actions)
+std::vector<NextAction> toNextActionArray(const std::string actions)
 {
-    std::vector<std::string> tokens = split(actions, ',');
-    std::vector<NextAction*> res = {};
+    const std::vector<std::string> tokens = split(actions, ',');
+    std::vector<NextAction> res = {};
 
-    uint32_t index = 0;
-
-    for (std::vector<std::string>::iterator i = tokens.begin(); i != tokens.end(); ++i)
+    for (const std::string token : tokens)
     {
-        if (NextAction* na = toNextAction(*i))
-            res.push_back(na);
+        res.push_back(toNextAction(token));
     }
 
     return res;

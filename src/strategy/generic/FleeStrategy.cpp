@@ -10,15 +10,15 @@
 void FleeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("panic", { new NextAction("flee", ACTION_EMERGENCY + 9) }));
+        new TriggerNode("panic", { NextAction("flee", ACTION_EMERGENCY + 9) }));
     triggers.push_back(
-        new TriggerNode("outnumbered", { new NextAction("flee", ACTION_EMERGENCY + 9) }));
+        new TriggerNode("outnumbered", { NextAction("flee", ACTION_EMERGENCY + 9) }));
     triggers.push_back(
-        new TriggerNode("critical health", { new NextAction("flee", ACTION_MEDIUM_HEAL) }));
+        new TriggerNode("critical health", { NextAction("flee", ACTION_MEDIUM_HEAL) }));
 }
 
 void FleeFromAddsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("has nearest adds", { new NextAction("runaway", 50.0f) }));
+        new TriggerNode("has nearest adds", { NextAction("runaway", 50.0f) }));
 }

@@ -14,27 +14,60 @@ public:
     {
         creators["charge"] = &charge;
         creators["intercept"] = &intercept;
-        // creators["death wish"] = &death_wish;
         creators["piercing howl"] = &piercing_howl;
-        // creators["bloodthirst"] = &bloodthirst;
         creators["pummel"] = &pummel;
         creators["enraged regeneration"] = &enraged_regeneration;
     }
 
 private:
-    ACTION_NODE_A(charge, "charge", "intercept");
-    ACTION_NODE_A(intercept, "intercept", "reach melee");
-    ACTION_NODE_A(piercing_howl, "piercing howl", "hamstring");
-    // ACTION_NODE_A(death_wish, "death wish", "berserker rage");
-    // ACTION_NODE_A(bloodthirst, "bloodthirst", "melee");
-    ACTION_NODE_A(pummel, "pummel", "intercept");
+    static ActionNode* charge(PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "charge",
+            /*P*/ {},
+            /*A*/ { NextAction("intercept" )},
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* intercept(PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "intercept",
+            /*P*/ {},
+            /*A*/ { NextAction("reach melee" )},
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* piercing_howl(PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "piercing howl",
+            /*P*/ {},
+            /*A*/ { NextAction("hamstring" )},
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* pummel(PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "pummel",
+            /*P*/ {},
+            /*A*/ { NextAction("intercept" )},
+            /*C*/ {}
+        );
+    }
 
     static ActionNode* enraged_regeneration(PlayerbotAI* botAI)
     {
-        return new ActionNode("enraged regeneration",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            "enraged regeneration",
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 };
 
@@ -43,13 +76,14 @@ FuryWarriorStrategy::FuryWarriorStrategy(PlayerbotAI* botAI) : GenericWarriorStr
     actionNodeFactories.Add(new FuryWarriorStrategyActionNodeFactory());
 }
 
-std::vector<NextAction*> FuryWarriorStrategy::getDefaultActions()
+std::vector<NextAction> FuryWarriorStrategy::getDefaultActions()
 {
     return {
-        new NextAction("bloodthirst", ACTION_DEFAULT + 0.5f), new NextAction("whirlwind", ACTION_DEFAULT + 0.4f),
-        new NextAction("sunder armor", ACTION_DEFAULT + 0.3f), new NextAction("execute", ACTION_DEFAULT + 0.2f),
-        // new NextAction("overpower", ACTION_DEFAULT + 0.1f),
-        new NextAction("melee", ACTION_DEFAULT)
+        NextAction("bloodthirst", ACTION_DEFAULT + 0.5f),
+        NextAction("whirlwind", ACTION_DEFAULT + 0.4f),
+        NextAction("sunder armor", ACTION_DEFAULT + 0.3f),
+        NextAction("execute", ACTION_DEFAULT + 0.2f),
+        NextAction("melee", ACTION_DEFAULT)
     };
 }
 
@@ -57,34 +91,116 @@ void FuryWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericWarriorStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("enemy out of melee",
-                                       { new NextAction("charge", ACTION_MOVE + 9) }));
-    triggers.push_back(new TriggerNode(
-        "berserker stance", { new NextAction("berserker stance", ACTION_HIGH + 9) }));
-    triggers.push_back(new TriggerNode("battle shout",
-                                       { new NextAction("battle shout", ACTION_HIGH + 8) }));
     triggers.push_back(
-        new TriggerNode("pummel on enemy healer",
-                        { new NextAction("pummel on enemy healer", ACTION_INTERRUPT) }));
+        new TriggerNode(
+            "enemy out of melee",
+            {
+                NextAction("charge", ACTION_MOVE + 9)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("pummel", { new NextAction("pummel", ACTION_INTERRUPT) }));
-    triggers.push_back(new TriggerNode(
-        "victory rush", { new NextAction("victory rush", ACTION_INTERRUPT) }));
+        new TriggerNode(
+            "berserker stance", {
+                NextAction("berserker stance", ACTION_HIGH + 9)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("bloodthirst", { new NextAction("bloodthirst", ACTION_HIGH + 7) }));
+        new TriggerNode(
+            "battle shout",
+            {
+                NextAction("battle shout", ACTION_HIGH + 8)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("whirlwind", { new NextAction("whirlwind", ACTION_HIGH + 6) }));
+        new TriggerNode(
+            "pummel on enemy healer",
+            {
+                NextAction("pummel on enemy healer", ACTION_INTERRUPT)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("instant slam", { new NextAction("slam", ACTION_HIGH + 5) }));
+        new TriggerNode(
+            "pummel",
+            {
+                NextAction("pummel", ACTION_INTERRUPT)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("bloodrage", { new NextAction("bloodrage", ACTION_HIGH + 2) }));
-    triggers.push_back(new TriggerNode("medium rage available",
-                                       { new NextAction("heroic strike", ACTION_DEFAULT + 0.1f) }));
+        new TriggerNode(
+            "victory rush",
+            {
+                NextAction("victory rush", ACTION_INTERRUPT)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "bloodthirst",
+            {
+                NextAction("bloodthirst", ACTION_HIGH + 7)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "whirlwind",
+            {
+                NextAction("whirlwind", ACTION_HIGH + 6)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "instant slam",
+            {
+                NextAction("slam", ACTION_HIGH + 5)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "bloodrage",
+            {
+                NextAction("bloodrage", ACTION_HIGH + 2)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "medium rage available",
+            {
+                NextAction("heroic strike", ACTION_DEFAULT + 0.1f)
+            }
+        )
+    );
 
     triggers.push_back(
-        new TriggerNode("death wish", { new NextAction("death wish", ACTION_HIGH) }));
+        new TriggerNode(
+            "death wish",
+            {
+                NextAction("death wish", ACTION_HIGH)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("recklessness", { new NextAction("recklessness", ACTION_HIGH) }));
-    triggers.push_back(new TriggerNode("critical health",
-        { new NextAction("enraged regeneration", ACTION_EMERGENCY) }));
+        new TriggerNode(
+            "recklessness",
+            {
+                NextAction("recklessness", ACTION_HIGH)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "critical health",
+            {
+                NextAction("enraged regeneration", ACTION_EMERGENCY)
+            }
+        )
+    );
 }

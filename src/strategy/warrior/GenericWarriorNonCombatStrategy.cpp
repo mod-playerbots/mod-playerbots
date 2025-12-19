@@ -11,5 +11,5 @@ void GenericWarriorNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& tr
 {
     NonCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("often", { new NextAction("apply stone", 1.0f) }));
+    triggers.push_back(new TriggerNode("often", { NextAction("apply stone", 1.0f) }));
 }

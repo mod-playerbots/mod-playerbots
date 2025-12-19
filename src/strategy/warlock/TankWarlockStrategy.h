@@ -17,7 +17,7 @@ public:
 
     std::string const getName() override { return "tank"; }
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
-    std::vector<NextAction*> getDefaultActions() override;
+    std::vector<NextAction> getDefaultActions() override;
 };
 
 #endif

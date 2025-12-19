@@ -29,7 +29,7 @@ private:
     {
         return new ActionNode("rapid fire",
                               /*P*/ {},
-                              /*A*/ { new NextAction("readiness") },
+                              /*A*/ { NextAction("readiness") },
                               /*C*/ {});
     }
 
@@ -37,7 +37,7 @@ private:
     {
         return new ActionNode("aspect of the pack",
                               /*P*/ {},
-                              /*A*/ { new NextAction("aspect of the cheetah") },
+                              /*A*/ { NextAction("aspect of the cheetah") },
                               /*C*/ {});
     }
 
@@ -45,7 +45,7 @@ private:
     {
         return new ActionNode("aspect of the dragonhawk",
                               /*P*/ {},
-                              /*A*/ { new NextAction("aspect of the hawk") },
+                              /*A*/ { NextAction("aspect of the hawk") },
                               /*C*/ {});
     }
 
@@ -61,7 +61,7 @@ private:
     {
         return new ActionNode("wing clip",
                               /*P*/ {},
-                              // /*A*/ { new NextAction("mongoose bite") },
+                              // /*A*/ { NextAction("mongoose bite") },
                               {},
                               /*C*/ {});
     }
@@ -70,14 +70,14 @@ private:
     {
         return new ActionNode("mongoose bite",
                               /*P*/ {},
-                              /*A*/ { new NextAction("raptor strike") },
+                              /*A*/ { NextAction("raptor strike") },
                               /*C*/ {});
     }
 
     static ActionNode* raptor_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("raptor strike",
-                              /*P*/ { new NextAction("melee") },
+                              /*P*/ { NextAction("melee") },
                               /*A*/ {},
                               /*C*/ {});
     }
@@ -86,7 +86,7 @@ private:
     {
         return new ActionNode("explosive trap",
                               /*P*/ {},
-                              /*A*/ { new NextAction("immolation trap") },
+                              /*A*/ { NextAction("immolation trap") },
                               /*C*/ {});
     }
 };
@@ -101,34 +101,34 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     CombatStrategy::InitTriggers(triggers);
 
     // Mark/Ammo/Mana Triggers
-    triggers.push_back(new TriggerNode("no ammo", { new NextAction("equip upgrades", 30.0f) }));
-    triggers.push_back(new TriggerNode("hunter's mark", { new NextAction("hunter's mark", 29.5f) }));
-    triggers.push_back(new TriggerNode("rapid fire", { new NextAction("rapid fire", 29.0f) }));
-    triggers.push_back(new TriggerNode("aspect of the viper", { new NextAction("aspect of the viper", 28.0f) }));
-    triggers.push_back(new TriggerNode("aspect of the hawk", { new NextAction("aspect of the dragonhawk", 27.5f) }));
+    triggers.push_back(new TriggerNode("no ammo", { NextAction("equip upgrades", 30.0f) }));
+    triggers.push_back(new TriggerNode("hunter's mark", { NextAction("hunter's mark", 29.5f) }));
+    triggers.push_back(new TriggerNode("rapid fire", { NextAction("rapid fire", 29.0f) }));
+    triggers.push_back(new TriggerNode("aspect of the viper", { NextAction("aspect of the viper", 28.0f) }));
+    triggers.push_back(new TriggerNode("aspect of the hawk", { NextAction("aspect of the dragonhawk", 27.5f) }));
 
     // Aggro/Threat/Defensive Triggers
-    triggers.push_back(new TriggerNode("has aggro", { new NextAction("concussive shot", 20.0f) }));
-    triggers.push_back(new TriggerNode("low tank threat", { new NextAction("misdirection on main tank", 27.0f) }));
-    triggers.push_back(new TriggerNode("low health", { new NextAction("deterrence", 35.0f) }));
-    triggers.push_back(new TriggerNode("concussive shot on snare target", { new NextAction("concussive shot", 20.0f) }));
-    triggers.push_back(new TriggerNode("medium threat", { new NextAction("feign death", 35.0f) }));
-    triggers.push_back(new TriggerNode("hunters pet medium health", { new NextAction("mend pet", 22.0f) }));
-    triggers.push_back(new TriggerNode("hunters pet low health", { new NextAction("mend pet", 21.0f) }));
+    triggers.push_back(new TriggerNode("has aggro", { NextAction("concussive shot", 20.0f) }));
+    triggers.push_back(new TriggerNode("low tank threat", { NextAction("misdirection on main tank", 27.0f) }));
+    triggers.push_back(new TriggerNode("low health", { NextAction("deterrence", 35.0f) }));
+    triggers.push_back(new TriggerNode("concussive shot on snare target", { NextAction("concussive shot", 20.0f) }));
+    triggers.push_back(new TriggerNode("medium threat", { NextAction("feign death", 35.0f) }));
+    triggers.push_back(new TriggerNode("hunters pet medium health", { NextAction("mend pet", 22.0f) }));
+    triggers.push_back(new TriggerNode("hunters pet low health", { NextAction("mend pet", 21.0f) }));
 
     // Dispel Triggers
-    triggers.push_back(new TriggerNode("tranquilizing shot enrage", { new NextAction("tranquilizing shot", 61.0f) }));
-    triggers.push_back(new TriggerNode("tranquilizing shot magic", { new NextAction("tranquilizing shot", 61.0f) }));
+    triggers.push_back(new TriggerNode("tranquilizing shot enrage", { NextAction("tranquilizing shot", 61.0f) }));
+    triggers.push_back(new TriggerNode("tranquilizing shot magic", { NextAction("tranquilizing shot", 61.0f) }));
 
     // Ranged-based Triggers
     triggers.push_back(new TriggerNode("enemy within melee", {
-                                                         new NextAction("explosive trap", 37.0f),
-                                                         new NextAction("mongoose bite", 22.0f),
-                                                         new NextAction("wing clip", 21.0f) }));
+                                                         NextAction("explosive trap", 37.0f),
+                                                         NextAction("mongoose bite", 22.0f),
+                                                         NextAction("wing clip", 21.0f) }));
 
     triggers.push_back(new TriggerNode("enemy too close for auto shot", {
-                                                                    new NextAction("disengage", 35.0f),
-                                                                    new NextAction("flee", 34.0f) }));
+                                                                    NextAction("disengage", 35.0f),
+                                                                    NextAction("flee", 34.0f) }));
 }
 
 // ===== AoE Strategy, 2/3+ enemies =====
@@ -136,9 +136,9 @@ AoEHunterStrategy::AoEHunterStrategy(PlayerbotAI* botAI) : CombatStrategy(botAI)
 
 void AoEHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("volley channel check", { new NextAction("cancel channel", 23.0f) }));
-    triggers.push_back(new TriggerNode("medium aoe", { new NextAction("volley", 22.0f) }));
-    triggers.push_back(new TriggerNode("light aoe", { new NextAction("multi-shot", 21.0f) }));
+    triggers.push_back(new TriggerNode("volley channel check", { NextAction("cancel channel", 23.0f) }));
+    triggers.push_back(new TriggerNode("medium aoe", { NextAction("volley", 22.0f) }));
+    triggers.push_back(new TriggerNode("light aoe", { NextAction("multi-shot", 21.0f) }));
 }
 
 void HunterBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -147,11 +147,11 @@ void HunterBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void HunterCcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("scare beast", { new NextAction("scare beast on cc", 23.0f) }));
-    triggers.push_back(new TriggerNode("freezing trap", { new NextAction("freezing trap on cc", 23.0f) }));
+    triggers.push_back(new TriggerNode("scare beast", { NextAction("scare beast on cc", 23.0f) }));
+    triggers.push_back(new TriggerNode("freezing trap", { NextAction("freezing trap on cc", 23.0f) }));
 }
 
 void HunterTrapWeaveStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("immolation trap no cd", { new NextAction("reach melee", 23.0f) }));
+    triggers.push_back(new TriggerNode("immolation trap no cd", { NextAction("reach melee", 23.0f) }));
 }

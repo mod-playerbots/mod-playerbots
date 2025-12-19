@@ -12,21 +12,21 @@ void DeadStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     PassTroughStrategy::InitTriggers(triggers);
 
     triggers.push_back(
-        new TriggerNode("often", { new NextAction("auto release", relevance) }));
+        new TriggerNode("often", { NextAction("auto release", relevance) }));
     triggers.push_back(
-        new TriggerNode("bg active", { new NextAction("auto release", relevance) }));
+        new TriggerNode("bg active", { NextAction("auto release", relevance) }));
     triggers.push_back(
-        new TriggerNode("dead", { new NextAction("find corpse", relevance) }));
+        new TriggerNode("dead", { NextAction("find corpse", relevance) }));
     triggers.push_back(new TriggerNode(
-        "corpse near", { new NextAction("revive from corpse", relevance - 1.0f) }));
+        "corpse near", { NextAction("revive from corpse", relevance - 1.0f) }));
     triggers.push_back(new TriggerNode("resurrect request",
-                                       { new NextAction("accept resurrect", relevance) }));
+                                       { NextAction("accept resurrect", relevance) }));
     triggers.push_back(
-        new TriggerNode("falling far", { new NextAction("repop", relevance + 1.f) }));
+        new TriggerNode("falling far", { NextAction("repop", relevance + 1.f) }));
     triggers.push_back(
-        new TriggerNode("location stuck", { new NextAction("repop", relevance + 1) }));
+        new TriggerNode("location stuck", { NextAction("repop", relevance + 1) }));
     triggers.push_back(new TriggerNode(
-        "can self resurrect", { new NextAction("self resurrect", relevance + 2.0f) }));
+        "can self resurrect", { NextAction("self resurrect", relevance + 2.0f) }));
 }
 
 DeadStrategy::DeadStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI) {}

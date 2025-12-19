@@ -28,10 +28,12 @@ private:
     static ActionNode* stormstrike(PlayerbotAI*) { return new ActionNode("stormstrike", {}, {}, {}); }
     static ActionNode* lava_lash([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("lava lash",
-                              /*P*/ {},
-                              /*A*/ { new NextAction("melee") },
-                              /*C*/ {});
+        return new ActionNode(
+            "lava lash",
+            /*P*/ {},
+            /*A*/ { NextAction("melee") },
+            /*C*/ {}
+        );
     }
     static ActionNode* feral_spirit(PlayerbotAI*) { return new ActionNode("feral spirit", {}, {}, {}); }
     static ActionNode* lightning_bolt(PlayerbotAI*) { return new ActionNode("lightning bolt", {}, {}, {}); }
@@ -49,14 +51,14 @@ EnhancementShamanStrategy::EnhancementShamanStrategy(PlayerbotAI* botAI) : Gener
 }
 
 // ===== Default Actions =====
-std::vector<NextAction*> EnhancementShamanStrategy::getDefaultActions()
+std::vector<NextAction> EnhancementShamanStrategy::getDefaultActions()
 {
     return {
-       new NextAction("stormstrike", 5.5f),
-       new NextAction("feral spirit", 5.4f),
-       new NextAction("earth shock", 5.3f),
-       new NextAction("lava lash", 5.2f),
-       new NextAction("melee", 5.0f)
+       NextAction("stormstrike", 5.5f),
+       NextAction("feral spirit", 5.4f),
+       NextAction("earth shock", 5.3f),
+       NextAction("lava lash", 5.2f),
+       NextAction("melee", 5.0f)
     };
 }
 
@@ -66,19 +68,82 @@ void EnhancementShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
     GenericShamanStrategy::InitTriggers(triggers);
 
     // Totem Trigger
-    triggers.push_back(new TriggerNode("call of the elements and enemy within melee", { new NextAction("call of the elements", 60.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "call of the elements and enemy within melee",
+            {
+                NextAction("call of the elements", 60.0f)        
+            }
+        )
+    );
 
     // Spirit Walk Trigger
-    triggers.push_back(new TriggerNode("spirit walk ready", { new NextAction("spirit walk", 50.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "spirit walk ready",
+            {
+                NextAction("spirit walk", 50.0f)
+            }
+        )
+    );
 
     // Damage Triggers
-    triggers.push_back(new TriggerNode("enemy out of melee", { new NextAction("reach melee", 40.0f) }));
-    triggers.push_back(new TriggerNode("maelstrom weapon 5", { new NextAction("lightning bolt", 20.0f) }));
-    triggers.push_back(new TriggerNode("maelstrom weapon 4", { new NextAction("lightning bolt", 19.5f) }));
-    triggers.push_back(new TriggerNode("flame shock", { new NextAction("flame shock", 19.0f) }));
-    triggers.push_back(new TriggerNode("lightning shield", { new NextAction("lightning shield", 18.5f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "enemy out of melee",
+            {
+                NextAction("reach melee", 40.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "maelstrom weapon 5",
+            {
+                NextAction("lightning bolt", 20.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "maelstrom weapon 4",
+            {
+                NextAction("lightning bolt", 19.5f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "flame shock",
+            {
+                NextAction("flame shock", 19.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "lightning shield",
+            {
+                NextAction("lightning shield", 18.5f)
+            }
+        )
+    );
 
     // Health/Mana Triggers
-    triggers.push_back(new TriggerNode("medium mana", { new NextAction("shamanistic rage", 23.0f) }));
-    triggers.push_back(new TriggerNode("low health", { new NextAction("shamanistic rage", 23.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "medium mana",
+            {
+                NextAction("shamanistic rage", 23.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "low health",
+            {
+                NextAction("shamanistic rage", 23.0f)
+            }
+        )
+    );
 }

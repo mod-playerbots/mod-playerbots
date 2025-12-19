@@ -45,14 +45,14 @@ FrostMageStrategy::FrostMageStrategy(PlayerbotAI* botAI) : GenericMageStrategy(b
 }
 
 // ===== Default Actions =====
-std::vector<NextAction*> FrostMageStrategy::getDefaultActions()
+std::vector<NextAction> FrostMageStrategy::getDefaultActions()
 {
     return {
-        new NextAction("frostbolt", 5.4f),
-        new NextAction("ice lance", 5.3f),   // cast during movement
-        new NextAction("fire blast", 5.2f),  // cast during movement if ice lance is not learned
-        new NextAction("shoot", 5.1f),
-        new NextAction("fireball", 5.0f)
+        NextAction("frostbolt", 5.4f),
+        NextAction("ice lance", 5.3f),   // cast during movement
+        NextAction("fire blast", 5.2f),  // cast during movement if ice lance is not learned
+        NextAction("shoot", 5.1f),
+        NextAction("fireball", 5.0f)
     };
 }
 
@@ -62,24 +62,81 @@ void FrostMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     GenericMageStrategy::InitTriggers(triggers);
 
     // Pet/Defensive triggers
-    triggers.push_back(new TriggerNode("no pet", { new NextAction("summon water elemental", 30.0f) }));
-    triggers.push_back(new TriggerNode("has pet", { new NextAction("toggle pet spell", 60.0f) }));
-    triggers.push_back(new TriggerNode("new pet", { new NextAction("set pet stance", 60.0f) }));
-    triggers.push_back(new TriggerNode("medium health", { new NextAction("ice barrier", 29.0f) }));
-    triggers.push_back(new TriggerNode("being attacked", { new NextAction("ice barrier", 29.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "no pet",
+            {
+                NextAction("summon water elemental", 30.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "has pet",
+            {
+                NextAction("toggle pet spell", 60.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "new pet",
+            {
+                NextAction("set pet stance", 60.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "medium health",
+            {
+                NextAction("ice barrier", 29.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "being attacked",
+            {
+                NextAction("ice barrier", 29.0f)
+            }
+        )
+    );
 
     // Proc/Freeze triggers
-    triggers.push_back(new TriggerNode("brain freeze", { new NextAction("frostfire bolt", 19.5f) }));
-    triggers.push_back(new TriggerNode("fingers of frost", {
-                                                       new NextAction("deep freeze", 19.0f),
-                                                       new NextAction("frostbolt", 18.0f) }));
-
-    triggers.push_back(new TriggerNode("frostbite on target", {
-                                                          new NextAction("deep freeze", 19.0f),
-                                                          new NextAction("frostbolt", 18.0f) }));
-
-    triggers.push_back(new TriggerNode("frost nova on target", {
-                                                           new NextAction("deep freeze", 19.0f),
-                                                           new NextAction("frostbolt", 18.0f) }));
-
+    triggers.push_back(
+        new TriggerNode(
+            "brain freeze",
+            {
+                NextAction("frostfire bolt", 19.5f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "fingers of frost",
+            {
+                NextAction("deep freeze", 19.0f),
+                NextAction("frostbolt", 18.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "frostbite on target",
+            {
+                NextAction("deep freeze", 19.0f),
+                NextAction("frostbolt", 18.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "frost nova on target",
+            {
+                NextAction("deep freeze", 19.0f),
+                NextAction("frostbolt", 18.0f)
+            }
+        )
+    );
 }

@@ -9,14 +9,31 @@
 
 void StayStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode(
-        "return to stay position",
-        { new NextAction("return to stay position", ACTION_MOVE) }));
+    triggers.push_back(
+        new TriggerNode(
+            "return to stay position",
+            {
+                NextAction("return to stay position", ACTION_MOVE)
+            }
+        )
+    );
 }
 
-std::vector<NextAction*> StayStrategy::getDefaultActions() { return { new NextAction("stay", 1.0f) }; }
+std::vector<NextAction> StayStrategy::getDefaultActions()
+{
+    return {
+        NextAction("stay", 1.0f)
+    };
+}
 
 void SitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("sit", { new NextAction("sit", 1.5f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "sit",
+            {
+                NextAction("sit", 1.5f)
+            }
+        )
+    );
 }

@@ -10,31 +10,59 @@
 
 void CombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("enemy out of spell",
-                                       { new NextAction("reach spell", ACTION_HIGH) }));
+    triggers.push_back(
+        new TriggerNode(
+            "enemy out of spell",
+            {
+                NextAction("reach spell", ACTION_HIGH)
+            }
+        )
+    );
     // drop target relevance 99 (lower than Worldpacket triggers)
     triggers.push_back(
-        new TriggerNode("invalid target", { new NextAction("drop target", 99) }));
+        new TriggerNode(
+            "invalid target",
+            {
+                NextAction("drop target", 99)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("mounted", { new NextAction("check mount state", 54) }));
-    // triggers.push_back(new TriggerNode("out of react range", { new NextAction("flee to master",
-    // 55) }));
-    triggers.push_back(new TriggerNode("combat stuck", { new NextAction("reset", 1.0f) }));
-    triggers.push_back(new TriggerNode("not facing target",
-                                       { new NextAction("set facing", ACTION_MOVE + 7) }));
-    // triggers.push_back(new TriggerNode("pet attack", { new NextAction("pet attack", 40.0f) }));
+        new TriggerNode(
+            "mounted",
+            {
+                NextAction("check mount state", 54)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "combat stuck",
+            {
+                NextAction("reset", 1.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "not facing target",
+            {
+                NextAction("set facing", ACTION_MOVE + 7)
+            }
+        )
+    );
     // The pet-attack trigger is commented out because it was forcing the bot's pet to attack, overriding stay and follow commands.
     // Pets will automatically attack the bot's enemy if they are in "defensive" or "aggressive"
     // stance, or if the master issues an attack command.
-    // triggers.push_back(new TriggerNode("combat long stuck", { new NextAction("hearthstone", 0.9f),
-    // new NextAction("repop", 0.8f) }));
 }
 
 AvoidAoeStrategy::AvoidAoeStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 
-std::vector<NextAction*> AvoidAoeStrategy::getDefaultActions()
+std::vector<NextAction> AvoidAoeStrategy::getDefaultActions()
 {
-    return { new NextAction("avoid aoe", ACTION_EMERGENCY) };
+    return {
+        NextAction("avoid aoe", ACTION_EMERGENCY)
+    };
 }
 
 void AvoidAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -47,16 +75,20 @@ void AvoidAoeStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
 TankFaceStrategy::TankFaceStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 
-std::vector<NextAction*> TankFaceStrategy::getDefaultActions()
+std::vector<NextAction> TankFaceStrategy::getDefaultActions()
 {
-    return { new NextAction("tank face", ACTION_MOVE) };
+    return {
+        NextAction("tank face", ACTION_MOVE)
+    };
 }
 
 void TankFaceStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
 }
 
-std::vector<NextAction*> CombatFormationStrategy::getDefaultActions()
+std::vector<NextAction> CombatFormationStrategy::getDefaultActions()
 {
-    return { new NextAction("combat formation move", ACTION_NORMAL) };
+    return {
+        NextAction("combat formation move", ACTION_NORMAL)
+    };
 }

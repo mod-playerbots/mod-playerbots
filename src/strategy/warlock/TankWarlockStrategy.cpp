@@ -33,10 +33,13 @@ TankWarlockStrategy::TankWarlockStrategy(PlayerbotAI* botAI) : GenericWarlockStr
     actionNodeFactories.Add(new TankWarlockStrategyActionNodeFactory());
 }
 
-std::vector<NextAction*> TankWarlockStrategy::getDefaultActions()
+std::vector<NextAction> TankWarlockStrategy::getDefaultActions()
 {
     // Shadow Ward is the highest priority, Searing Pain next.
-    return { new NextAction("shadow ward", 27.5f), new NextAction("searing pain", 27.0f) };
+    return {
+        NextAction("shadow ward", 27.5f),
+        NextAction("searing pain", 27.0f)
+    };
 }
 
 void TankWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

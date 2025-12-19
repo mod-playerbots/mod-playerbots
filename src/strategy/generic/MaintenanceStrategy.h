@@ -17,7 +17,7 @@ public:
 
     std::string const getName() override { return "maintenance"; }
     uint32 GetType() const override { return STRATEGY_TYPE_NONCOMBAT; }
-    std::vector<NextAction*> getDefaultActions() override;
+    std::vector<NextAction> getDefaultActions() override;
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
 };
 

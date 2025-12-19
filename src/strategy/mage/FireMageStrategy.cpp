@@ -39,13 +39,13 @@ FireMageStrategy::FireMageStrategy(PlayerbotAI* botAI) : GenericMageStrategy(bot
 }
 
 // ===== Default Actions =====
-std::vector<NextAction*> FireMageStrategy::getDefaultActions()
+std::vector<NextAction> FireMageStrategy::getDefaultActions()
 {
     return {
-        new NextAction("fireball", 5.3f),
-        new NextAction("frostbolt", 5.2f),   // fire immune target
-        new NextAction("fire blast", 5.1f),  // cast during movement
-        new NextAction("shoot", 5.0f)
+        NextAction("fireball", 5.3f),
+        NextAction("frostbolt", 5.2f),   // fire immune target
+        NextAction("fire blast", 5.1f),  // cast during movement
+        NextAction("shoot", 5.0f)
     };
 }
 
@@ -55,11 +55,32 @@ void FireMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     GenericMageStrategy::InitTriggers(triggers);
 
     // Debuff Triggers
-    triggers.push_back(new TriggerNode("improved scorch", { new NextAction("scorch", 19.0f) }));
-    triggers.push_back(new TriggerNode("living bomb", { new NextAction("living bomb", 18.5f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "improved scorch",
+            {
+                NextAction("scorch", 19.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "living bomb",
+            {
+                NextAction("living bomb", 18.5f)
+            }
+        )
+    );
 
     // Proc Trigger
-    triggers.push_back(new TriggerNode("hot streak", { new NextAction("pyroblast", 25.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "hot streak",
+            {
+                NextAction("pyroblast", 25.0f)
+            }
+        )
+    );
 }
 
 // Combat strategy to run to melee for Dragon's Breath and Blast Wave
@@ -70,7 +91,12 @@ FirestarterStrategy::FirestarterStrategy(PlayerbotAI* botAI) : CombatStrategy(bo
 
 void FirestarterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode(
-        "blast wave off cd and medium aoe",
-        { new NextAction("reach melee", 25.5f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "blast wave off cd and medium aoe",
+            {
+                NextAction("reach melee", 25.5f)
+            }
+        )
+    );
 }

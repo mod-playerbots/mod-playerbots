@@ -14,7 +14,7 @@ void QuestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     PassTroughStrategy::InitTriggers(triggers);
 
     triggers.push_back(
-        new TriggerNode("quest share", {  new NextAction("accept quest share", relevance) }));
+        new TriggerNode("quest share", {  NextAction("accept quest share", relevance) }));
 }
 
 void DefaultQuestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -22,11 +22,11 @@ void DefaultQuestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     QuestStrategy::InitTriggers(triggers);
 
     triggers.push_back(new TriggerNode(
-        "use game object", {  new NextAction("talk to quest giver", relevance) }));
+        "use game object", {  NextAction("talk to quest giver", relevance) }));
     triggers.push_back(new TriggerNode(
-        "gossip hello", {  new NextAction("talk to quest giver", relevance) }));
+        "gossip hello", {  NextAction("talk to quest giver", relevance) }));
     triggers.push_back(new TriggerNode(
-        "complete quest", {  new NextAction("talk to quest giver", relevance) }));
+        "complete quest", {  NextAction("talk to quest giver", relevance) }));
 }
 
 DefaultQuestStrategy::DefaultQuestStrategy(PlayerbotAI* botAI) : QuestStrategy(botAI) {}
@@ -36,14 +36,14 @@ void AcceptAllQuestsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     QuestStrategy::InitTriggers(triggers);
 
     triggers.push_back(
-        new TriggerNode("use game object", {  new NextAction("talk to quest giver", relevance),
-                                                             new NextAction("accept all quests", relevance) }));
+        new TriggerNode("use game object", {  NextAction("talk to quest giver", relevance),
+                                                             NextAction("accept all quests", relevance) }));
     triggers.push_back(
-        new TriggerNode("gossip hello", {  new NextAction("talk to quest giver", relevance),
-                                                          new NextAction("accept all quests", relevance) }));
+        new TriggerNode("gossip hello", {  NextAction("talk to quest giver", relevance),
+                                                          NextAction("accept all quests", relevance) }));
     triggers.push_back(
-        new TriggerNode("complete quest", {  new NextAction("talk to quest giver", relevance),
-                                                            new NextAction("accept all quests", relevance) }));
+        new TriggerNode("complete quest", {  NextAction("talk to quest giver", relevance),
+                                                            NextAction("accept all quests", relevance) }));
 }
 
 AcceptAllQuestsStrategy::AcceptAllQuestsStrategy(PlayerbotAI* botAI) : QuestStrategy(botAI) {}

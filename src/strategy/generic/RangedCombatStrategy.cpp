@@ -12,5 +12,5 @@ void RangedCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     CombatStrategy::InitTriggers(triggers);
 
     triggers.push_back(new TriggerNode("enemy too close for spell",
-                                        { new NextAction("flee", ACTION_MOVE + 4) }));
+                                        { NextAction("flee", ACTION_MOVE + 4) }));
 }

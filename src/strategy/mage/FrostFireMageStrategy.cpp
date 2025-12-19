@@ -38,12 +38,12 @@ FrostFireMageStrategy::FrostFireMageStrategy(PlayerbotAI* botAI) : GenericMageSt
 }
 
 // ===== Default Actions =====
-std::vector<NextAction*> FrostFireMageStrategy::getDefaultActions()
+std::vector<NextAction> FrostFireMageStrategy::getDefaultActions()
 {
     return {
-        new NextAction("frostfire bolt", 5.2f),
-        new NextAction("fire blast", 5.1f),  // cast during movement
-        new NextAction("shoot", 5.0f)
+        NextAction("frostfire bolt", 5.2f),
+        NextAction("fire blast", 5.1f),  // cast during movement
+        NextAction("shoot", 5.0f)
     };
 }
 
@@ -53,9 +53,30 @@ void FrostFireMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     GenericMageStrategy::InitTriggers(triggers);
 
     // Debuff Triggers
-    triggers.push_back(new TriggerNode("improved scorch", { new NextAction("scorch", 19.0f) }));
-    triggers.push_back(new TriggerNode("living bomb", { new NextAction("living bomb", 18.5f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "improved scorch",
+            {
+                NextAction("scorch", 19.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "living bomb",
+            {
+                NextAction("living bomb", 18.5f)
+            }
+        )
+    );
 
     // Proc Trigger
-    triggers.push_back(new TriggerNode("hot streak", { new NextAction("pyroblast", 25.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "hot streak",
+            {
+                NextAction("pyroblast", 25.0f)
+            }
+        )
+    );
 }

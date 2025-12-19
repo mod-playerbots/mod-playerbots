@@ -9,11 +9,11 @@
 
 void LfgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("random", { new NextAction("lfg join", relevance) }));
+    triggers.push_back(new TriggerNode("random", { NextAction("lfg join", relevance) }));
     triggers.push_back(
-        new TriggerNode("seldom", { new NextAction("lfg leave", relevance) }));
+        new TriggerNode("seldom", { NextAction("lfg leave", relevance) }));
     triggers.push_back(new TriggerNode(
-        "unknown dungeon", { new NextAction("give leader in dungeon", relevance) }));
+        "unknown dungeon", { NextAction("give leader in dungeon", relevance) }));
 }
 
 LfgStrategy::LfgStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI) {}

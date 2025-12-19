@@ -21,17 +21,17 @@ private:
     static ActionNode* rapid_fire([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("rapid fire",
-                              /*P*/ {nullptr},
-                              /*A*/ { new NextAction("readiness")},
-                              /*C*/ {nullptr});
+                              /*P*/ {},
+                              /*A*/ { NextAction("readiness")},
+                              /*C*/ {});
     }
 
     static ActionNode* aspect_of_the_pack([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("aspect of the pack",
-                              /*P*/ {nullptr},
-                              /*A*/ { new NextAction("aspect of the cheetah")},
-                              /*C*/ {nullptr});
+                              /*P*/ {},
+                              /*A*/ { NextAction("aspect of the cheetah")},
+                              /*C*/ {});
     }
 };
 
@@ -44,22 +44,22 @@ void GenericHunterNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& tri
 {
     NonCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("trueshot aura", { new NextAction("trueshot aura", 2.0f)}));
+    triggers.push_back(new TriggerNode("trueshot aura", { NextAction("trueshot aura", 2.0f)}));
     triggers.push_back(new TriggerNode("often", {
-                       new NextAction("apply stone", 1.0f),
-                       new NextAction("apply oil", 1.0f),
+                       NextAction("apply stone", 1.0f),
+                       NextAction("apply oil", 1.0f),
                        }));
-    triggers.push_back(new TriggerNode("low ammo", { new NextAction("say::low ammo", ACTION_NORMAL)}));
-    triggers.push_back(new TriggerNode("no track", { new NextAction("track humanoids", ACTION_NORMAL)}));
-    triggers.push_back(new TriggerNode("no ammo", { new NextAction("equip upgrades", ACTION_HIGH + 1)}));
+    triggers.push_back(new TriggerNode("low ammo", { NextAction("say::low ammo", ACTION_NORMAL)}));
+    triggers.push_back(new TriggerNode("no track", { NextAction("track humanoids", ACTION_NORMAL)}));
+    triggers.push_back(new TriggerNode("no ammo", { NextAction("equip upgrades", ACTION_HIGH + 1)}));
 }
 
 void HunterPetStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("no pet", { new NextAction("call pet", 60.0f)}));
-    triggers.push_back(new TriggerNode("has pet", { new NextAction("toggle pet spell", 60.0f)}));
-    triggers.push_back(new TriggerNode("new pet", { new NextAction("set pet stance", 60.0f)}));
-    triggers.push_back(new TriggerNode("pet not happy", { new NextAction("feed pet", 60.0f)}));
-    triggers.push_back(new TriggerNode("hunters pet medium health", { new NextAction("mend pet", 60.0f)}));
-    triggers.push_back(new TriggerNode("hunters pet dead", { new NextAction("revive pet", 60.0f)}));
+    triggers.push_back(new TriggerNode("no pet", { NextAction("call pet", 60.0f)}));
+    triggers.push_back(new TriggerNode("has pet", { NextAction("toggle pet spell", 60.0f)}));
+    triggers.push_back(new TriggerNode("new pet", { NextAction("set pet stance", 60.0f)}));
+    triggers.push_back(new TriggerNode("pet not happy", { NextAction("feed pet", 60.0f)}));
+    triggers.push_back(new TriggerNode("hunters pet medium health", { NextAction("mend pet", 60.0f)}));
+    triggers.push_back(new TriggerNode("hunters pet dead", { NextAction("revive pet", 60.0f)}));
 }

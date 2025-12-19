@@ -9,14 +9,14 @@
 
 void NonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("random", { new NextAction("clean quest log", 1.0f) }));
-    triggers.push_back(new TriggerNode("timer", { new NextAction("check mount state", 1.0f) }));
+    triggers.push_back(new TriggerNode("random", { NextAction("clean quest log", 1.0f) }));
+    triggers.push_back(new TriggerNode("timer", { NextAction("check mount state", 1.0f) }));
 }
 
 void CollisionStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("collision", { new NextAction("move out of collision", 2.0f) }));
+        new TriggerNode("collision", { NextAction("move out of collision", 2.0f) }));
 }
 
 void MountStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -29,7 +29,7 @@ void WorldBuffStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "need world buff",
             {
-                new NextAction("world buff", 1.0f)
+                NextAction("world buff", 1.0f)
             }
         )
     );
@@ -41,7 +41,7 @@ void MasterFishingStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "very often",
             {
-                new NextAction("move near water" , 10.0f)
+                NextAction("move near water" , 10.0f)
             }
         )
     );
@@ -49,7 +49,7 @@ void MasterFishingStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "very often",
             {
-                new NextAction("go fishing" , 10.0f)
+                NextAction("go fishing" , 10.0f)
             }
         )
     );
@@ -57,8 +57,8 @@ void MasterFishingStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "random",
             {
-                new NextAction("end master fishing", 12.0f),
-                new NextAction("equip upgrades", 6.0f)
+                NextAction("end master fishing", 12.0f),
+                NextAction("equip upgrades", 6.0f)
             }
         )
     );

@@ -6,28 +6,28 @@ void WotlkDungeonOccStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
     // Drakos the Interrogator
     // TODO: May need work, TBA.
     triggers.push_back(new TriggerNode("unstable sphere",
-        { new NextAction("avoid unstable sphere", ACTION_MOVE + 5) }));
+        { NextAction("avoid unstable sphere", ACTION_MOVE + 5) }));
 
     // DRAKES
     triggers.push_back(new TriggerNode("drake mount",
-        { new NextAction("mount drake", ACTION_RAID + 5) }));
+        { NextAction("mount drake", ACTION_RAID + 5) }));
     triggers.push_back(new TriggerNode("drake dismount",
-        { new NextAction("dismount drake", ACTION_RAID + 5) }));
+        { NextAction("dismount drake", ACTION_RAID + 5) }));
     triggers.push_back(new TriggerNode("group flying",
-        { new NextAction("occ fly drake", ACTION_NORMAL + 1) }));
+        { NextAction("occ fly drake", ACTION_NORMAL + 1) }));
     triggers.push_back(new TriggerNode("drake combat",
-        { new NextAction("occ drake attack", ACTION_NORMAL + 5) }));
+        { NextAction("occ drake attack", ACTION_NORMAL + 5) }));
 
     // Varos Cloudstrider
     // Seems to be no way to identify the marked cores, may need to hook boss AI..
     // triggers.push_back(new TriggerNode("varos cloudstrider",
-    //     { new NextAction("avoid energize cores", ACTION_RAID + 5) }));
+    //     { NextAction("avoid energize cores", ACTION_RAID + 5) }));
 
     // Mage-Lord Urom
     triggers.push_back(new TriggerNode("arcane explosion",
-        { new NextAction("avoid arcane explosion", ACTION_MOVE + 5) }));
+        { NextAction("avoid arcane explosion", ACTION_MOVE + 5) }));
     triggers.push_back(new TriggerNode("time bomb",
-        { new NextAction("time bomb spread", ACTION_MOVE + 4) }));
+        { NextAction("time bomb spread", ACTION_MOVE + 4) }));
 
     // Ley-Guardian Eregos
 }

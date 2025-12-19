@@ -5,32 +5,32 @@ void WotlkDungeonUKStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 {
     // Prince Keleseth
     triggers.push_back(new TriggerNode("keleseth frost tomb",
-             { new NextAction("attack frost tomb", ACTION_RAID + 1) }));
+             { NextAction("attack frost tomb", ACTION_RAID + 1) }));
 
     // Skarvald the Constructor & Dalronn the Controller
     triggers.push_back(new TriggerNode("dalronn priority",
-             { new NextAction("attack dalronn", ACTION_RAID + 1) }));
+             { NextAction("attack dalronn", ACTION_RAID + 1) }));
 
     // Ingvar the Plunderer
 
     // Doesn't work yet, this action doesn't get processed until the existing cast finishes
     // triggers.push_back(new TriggerNode("ingvar staggering roar",
-    //          { new NextAction("ingvar stop casting", ACTION_RAID + 1) }));
+    //          { NextAction("ingvar stop casting", ACTION_RAID + 1) }));
 
     // No easy way to check LoS here, the pillars do not seem to count as gameobjects.
     // Not implemented for now, unsure if this is needed as a good group can probably burst through the boss
     // and just eat the debuff.
     // triggers.push_back(new TriggerNode("ingvar dreadful roar",
-    //          { new NextAction("ingvar hide los", ACTION_RAID + 1) }));
+    //          { NextAction("ingvar hide los", ACTION_RAID + 1) }));
     triggers.push_back(new TriggerNode("ingvar smash tank",
-            { new NextAction("ingvar dodge smash", ACTION_MOVE + 5) }));
+            { NextAction("ingvar dodge smash", ACTION_MOVE + 5) }));
     triggers.push_back(new TriggerNode("ingvar smash tank return",
-            { new NextAction("ingvar smash return", ACTION_MOVE + 5) }));
+            { NextAction("ingvar smash return", ACTION_MOVE + 5) }));
     // Buggy... if not behind target, ai can get stuck running towards and away from target.
     // I think for ranged chars, a custom action should be added that doesn't attempt to run into melee.
     // This is a bandaid for now, needs to be improved.
     triggers.push_back(new TriggerNode("not behind ingvar",
-            { new NextAction("set behind", ACTION_MOVE + 1) }));
+            { NextAction("set behind", ACTION_MOVE + 1) }));
 
 }
 

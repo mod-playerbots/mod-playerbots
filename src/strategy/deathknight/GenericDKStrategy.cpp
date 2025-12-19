@@ -63,7 +63,7 @@ private:
     {
         return new ActionNode("death grip",
                               /*P*/ {},
-                              /*A*/ { new NextAction("icy touch") },
+                              /*A*/ { NextAction("icy touch") },
                               /*C*/ {});
     }
 
@@ -119,7 +119,7 @@ private:
     {
         return new ActionNode("killing machine",
                               /*P*/ {},
-                              /*A*/ { new NextAction("improved icy talons") },
+                              /*A*/ { NextAction("improved icy talons") },
                               /*C*/ {});
     }
 
@@ -143,7 +143,7 @@ private:
     {
         return new ActionNode("anti magic zone",
                               /*P*/ {},
-                              /*A*/ { new NextAction("anti magic shell") },
+                              /*A*/ { NextAction("anti magic shell") },
                               /*C*/ {});
     }
 
@@ -166,28 +166,28 @@ void GenericDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     MeleeCombatStrategy::InitTriggers(triggers);
 
     triggers.push_back(
-        new TriggerNode("no pet", { new NextAction("raise dead", ACTION_NORMAL + 5) }));
+        new TriggerNode("no pet", { NextAction("raise dead", ACTION_NORMAL + 5) }));
     triggers.push_back(
-        new TriggerNode("has pet", { new NextAction("toggle pet spell", 60.0f) }));
+        new TriggerNode("has pet", { NextAction("toggle pet spell", 60.0f) }));
     triggers.push_back(
-        new TriggerNode("new pet", { new NextAction("set pet stance", 60.0f) }));
+        new TriggerNode("new pet", { NextAction("set pet stance", 60.0f) }));
     triggers.push_back(
-        new TriggerNode("mind freeze", { new NextAction("mind freeze", ACTION_HIGH + 1) }));
+        new TriggerNode("mind freeze", { NextAction("mind freeze", ACTION_HIGH + 1) }));
     triggers.push_back(
         new TriggerNode("mind freeze on enemy healer",
-                        { new NextAction("mind freeze on enemy healer", ACTION_HIGH + 1) }));
+                        { NextAction("mind freeze on enemy healer", ACTION_HIGH + 1) }));
     triggers.push_back(new TriggerNode(
-        "horn of winter", { new NextAction("horn of winter", ACTION_NORMAL + 1) }));
+        "horn of winter", { NextAction("horn of winter", ACTION_NORMAL + 1) }));
     triggers.push_back(new TriggerNode("critical health",
-                                       { new NextAction("death pact", ACTION_HIGH + 5) }));
+                                       { NextAction("death pact", ACTION_HIGH + 5) }));
 
     triggers.push_back(
-        new TriggerNode("low health", { new NextAction("icebound fortitude", ACTION_HIGH + 5),
-                                                        new NextAction("rune tap", ACTION_HIGH + 4) }));
+        new TriggerNode("low health", { NextAction("icebound fortitude", ACTION_HIGH + 5),
+                                                        NextAction("rune tap", ACTION_HIGH + 4) }));
     triggers.push_back(
-        new TriggerNode("medium aoe", { new NextAction("death and decay", ACTION_HIGH + 9),
-                                                        new NextAction("pestilence", ACTION_NORMAL + 4),
-                                                        new NextAction("blood boil", ACTION_NORMAL + 3) }));
+        new TriggerNode("medium aoe", { NextAction("death and decay", ACTION_HIGH + 9),
+                                                        NextAction("pestilence", ACTION_NORMAL + 4),
+                                                        NextAction("blood boil", ACTION_NORMAL + 3) }));
     triggers.push_back(
-        new TriggerNode("pestilence glyph", { new NextAction("pestilence", ACTION_HIGH + 9) }));
+        new TriggerNode("pestilence glyph", { NextAction("pestilence", ACTION_HIGH + 9) }));
 }

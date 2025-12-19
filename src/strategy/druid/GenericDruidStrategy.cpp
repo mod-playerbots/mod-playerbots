@@ -83,7 +83,7 @@ private:
     static ActionNode* entangling_roots_on_cc([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("entangling roots on cc",
-                              /*P*/ { new NextAction("caster form") },
+                              /*P*/ { NextAction("caster form") },
                               /*A*/ {},
                               /*C*/ {});
     }
@@ -92,7 +92,7 @@ private:
     {
         return new ActionNode("innervate",
                               /*P*/ {},
-                              /*A*/ { new NextAction("mana potion") },
+                              /*A*/ { NextAction("mana potion") },
                               /*C*/ {});
     }
 };
@@ -107,41 +107,41 @@ void GenericDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     CombatStrategy::InitTriggers(triggers);
 
     triggers.push_back(
-        new TriggerNode("low health", { new NextAction("barkskin", ACTION_HIGH + 7) }));
+        new TriggerNode("low health", { NextAction("barkskin", ACTION_HIGH + 7) }));
 
     triggers.push_back(new TriggerNode("combat party member dead",
-                                       { new NextAction("rebirth", ACTION_HIGH + 9) }));
+                                       { NextAction("rebirth", ACTION_HIGH + 9) }));
     triggers.push_back(new TriggerNode("being attacked",
-                                       { new NextAction("nature's grasp", ACTION_HIGH + 1) }));
-    triggers.push_back(new TriggerNode("new pet", { new NextAction("set pet stance", 60.0f) }));
+                                       { NextAction("nature's grasp", ACTION_HIGH + 1) }));
+    triggers.push_back(new TriggerNode("new pet", { NextAction("set pet stance", 60.0f) }));
 }
 
 void DruidCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
         new TriggerNode("party member cure poison",
-                        { new NextAction("abolish poison on party", ACTION_DISPEL + 1) }));
+                        { NextAction("abolish poison on party", ACTION_DISPEL + 1) }));
 
     triggers.push_back(
         new TriggerNode("party member remove curse",
-                        { new NextAction("remove curse on party", ACTION_DISPEL + 7) }));
+                        { NextAction("remove curse on party", ACTION_DISPEL + 7) }));
 
 }
 
 void DruidBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode(
-        "nature's swiftness", { new NextAction("nature's swiftness", ACTION_HIGH + 9) }));
+        "nature's swiftness", { NextAction("nature's swiftness", ACTION_HIGH + 9) }));
 }
 
 void DruidCcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode(
-        "entangling roots", { new NextAction("entangling roots on cc", ACTION_HIGH + 2) }));
+        "entangling roots", { NextAction("entangling roots on cc", ACTION_HIGH + 2) }));
     triggers.push_back(new TriggerNode(
-        "entangling roots kite", { new NextAction("entangling roots", ACTION_HIGH + 2) }));
+        "entangling roots kite", { NextAction("entangling roots", ACTION_HIGH + 2) }));
     triggers.push_back(new TriggerNode(
-        "hibernate", { new NextAction("hibernate on cc", ACTION_HIGH + 3) }));
+        "hibernate", { NextAction("hibernate on cc", ACTION_HIGH + 3) }));
 }
 
 void DruidHealerDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -149,10 +149,10 @@ void DruidHealerDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(
         new TriggerNode("healer should attack",
                         {
-                            new NextAction("cancel tree form", ACTION_DEFAULT + 0.3f),
-                            new NextAction("moonfire", ACTION_DEFAULT + 0.2f),
-                            new NextAction("wrath", ACTION_DEFAULT + 0.1f),
-                            new NextAction("starfire", ACTION_DEFAULT),
+                            NextAction("cancel tree form", ACTION_DEFAULT + 0.3f),
+                            NextAction("moonfire", ACTION_DEFAULT + 0.2f),
+                            NextAction("wrath", ACTION_DEFAULT + 0.1f),
+                            NextAction("starfire", ACTION_DEFAULT),
 }));
 
 }

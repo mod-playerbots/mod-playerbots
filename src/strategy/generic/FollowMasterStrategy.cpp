@@ -7,9 +7,11 @@
 
 #include "Playerbots.h"
 
-std::vector<NextAction*> FollowMasterStrategy::getDefaultActions()
+std::vector<NextAction> FollowMasterStrategy::getDefaultActions()
 {
-    return { new NextAction("follow", 1.0f) };
+    return {
+        NextAction("follow", 1.0f)
+    };
 }
 
 void FollowMasterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

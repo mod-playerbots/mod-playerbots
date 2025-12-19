@@ -9,15 +9,29 @@
 
 TravelStrategy::TravelStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 
-std::vector<NextAction*> TravelStrategy::getDefaultActions()
+std::vector<NextAction> TravelStrategy::getDefaultActions()
 {
-    return { new NextAction("travel", 1.0f) };
+    return {
+        NextAction("travel", 1.0f)
+    };
 }
 
 void TravelStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("no travel target",
-                                       { new NextAction("choose travel target", 6.f) }));
-    triggers.push_back(new TriggerNode("far from travel target",
-                                       { new NextAction("move to travel target", 1) }));
+    triggers.push_back(
+        new TriggerNode(
+            "no travel target",
+            {
+                NextAction("choose travel target", 6.f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "far from travel target",
+            {
+                NextAction("move to travel target", 1)
+            }
+        )
+    );
 }

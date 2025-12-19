@@ -11,5 +11,5 @@ KiteStrategy::KiteStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 
 void KiteStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("has aggro", { new NextAction("runaway", 51.0f) }));
+    triggers.push_back(new TriggerNode("has aggro", { NextAction("runaway", 51.0f) }));
 }

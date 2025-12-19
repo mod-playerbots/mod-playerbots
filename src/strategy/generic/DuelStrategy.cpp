@@ -12,9 +12,9 @@ void DuelStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     PassTroughStrategy::InitTriggers(triggers);
 
     triggers.push_back(
-        new TriggerNode("duel requested", { new NextAction("accept duel", relevance) }));
+        new TriggerNode("duel requested", { NextAction("accept duel", relevance) }));
     triggers.push_back(
-        new TriggerNode("no attackers", { new NextAction("attack duel opponent", 70.0f) }));
+        new TriggerNode("no attackers", { NextAction("attack duel opponent", 70.0f) }));
 }
 
 DuelStrategy::DuelStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI) {}

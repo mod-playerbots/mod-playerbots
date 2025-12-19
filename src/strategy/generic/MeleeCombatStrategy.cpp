@@ -12,7 +12,7 @@ void MeleeCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     CombatStrategy::InitTriggers(triggers);
 
     triggers.push_back(new TriggerNode(
-        "enemy out of melee", { new NextAction("reach melee", ACTION_HIGH + 1) }));
+        "enemy out of melee", { NextAction("reach melee", ACTION_HIGH + 1) }));
 }
 
 void SetBehindCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -20,5 +20,5 @@ void SetBehindCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     CombatStrategy::InitTriggers(triggers);
 
     triggers.push_back(new TriggerNode("not behind target",
-                                       { new NextAction("set behind", ACTION_MOVE + 7) }));
+                                       { NextAction("set behind", ACTION_MOVE + 7) }));
 }

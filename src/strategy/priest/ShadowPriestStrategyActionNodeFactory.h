@@ -27,7 +27,7 @@ private:
     {
         return new ActionNode("mind blast",
                               /*P*/ {},
-                              /*A*/ { new NextAction("mind flay") },
+                              /*A*/ { NextAction("mind flay") },
                               /*C*/ {});
     }
 
@@ -35,7 +35,7 @@ private:
     {
         return new ActionNode("mind flay",
                               /*P*/ {},
-                              /*A*/ { new NextAction("smite") },
+                              /*A*/ { NextAction("smite") },
                               /*C*/ {});
     }
 
@@ -43,7 +43,7 @@ private:
     {
         return new ActionNode("smite",
                               /*P*/ {},
-                              /*A*/ { new NextAction("shoot") },
+                              /*A*/ { NextAction("shoot") },
                               /*C*/ {});
     }
 
@@ -51,7 +51,7 @@ private:
     {
         return new ActionNode("dispersion",
                               /*P*/ {},
-                              /*A*/ { new NextAction("mana potion") },
+                              /*A*/ { NextAction("mana potion") },
                               /*C*/ {});
     }
 };

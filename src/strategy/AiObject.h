@@ -42,9 +42,6 @@ protected:
 // TRIGGERS
 //
 
-#define NEXT_TRIGGERS(name, relevance) \
-    virtual NextAction* getNextAction() { return new NextAction(name, relevance); }
-
 #define BEGIN_TRIGGER(clazz, super)                 \
     class clazz : public super                      \
     {                                               \
@@ -76,14 +73,6 @@ protected:
     {                                                                   \
     public:                                                             \
         clazz(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, spell) {} \
-    }
-
-#define BUFF_PARTY_TRIGGER_A(clazz, spell)                              \
-    class clazz : public BuffOnPartyTrigger                             \
-    {                                                                   \
-    public:                                                             \
-        clazz(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, spell) {} \
-        bool IsActive() override;                                       \
     }
 
 #define DEBUFF_TRIGGER(clazz, spell)                               \
@@ -476,7 +465,7 @@ protected:
 #define ACTION_NODE_P(name, spell, pre)                                                                       \
     static ActionNode* name([[maybe_unused]] PlayerbotAI* botAI)                                                               \
     {                                                                                                         \
-        return new ActionNode(spell, /*P*/ { new NextAction(pre) }, /*A*/ {}, \
+        return new ActionNode(spell, /*P*/ { NextAction(pre) }, /*A*/ {}, \
                               /*C*/ {});                                                                 \
     }
 
@@ -484,7 +473,7 @@ protected:
 #define ACTION_NODE_A(name, spell, alt)                                                                       \
     static ActionNode* name([[maybe_unused]] PlayerbotAI* botAI)                                                               \
     {                                                                                                         \
-        return new ActionNode(spell, /*P*/ {}, /*A*/ {new NextAction(alt)}, \
+        return new ActionNode(spell, /*P*/ {}, /*A*/ { NextAction(alt)}, \
                               /*C*/ {});                                                                 \
     }
 

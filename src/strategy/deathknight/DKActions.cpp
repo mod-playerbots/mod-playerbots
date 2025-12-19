@@ -11,39 +11,40 @@
 #include "SpellInfo.h"
 #include "SpellMgr.h"
 
-std::vector<NextAction*> CastDeathchillAction::getPrerequisites()
+std::vector<NextAction> CastDeathchillAction::getPrerequisites()
 {
-    return NextAction::merge({ new NextAction("frost presence") },
+    return NextAction::merge({ NextAction("frost presence") },
                              CastSpellAction::getPrerequisites());
 }
 
-std::vector<NextAction*> CastUnholyMeleeSpellAction::getPrerequisites()
+std::vector<NextAction> CastUnholyMeleeSpellAction::getPrerequisites()
 {
-    return NextAction::merge({ new NextAction("unholy presence") },
+    return NextAction::merge({ NextAction("unholy presence") },
                              CastMeleeSpellAction::getPrerequisites());
 }
 
-std::vector<NextAction*> CastFrostMeleeSpellAction::getPrerequisites()
+std::vector<NextAction> CastFrostMeleeSpellAction::getPrerequisites()
 {
-    return NextAction::merge({ new NextAction("frost presence") },
+    return NextAction::merge({ NextAction("frost presence") },
                              CastMeleeSpellAction::getPrerequisites());
 }
 
-std::vector<NextAction*> CastBloodMeleeSpellAction::getPrerequisites()
+std::vector<NextAction> CastBloodMeleeSpellAction::getPrerequisites()
 {
-    return NextAction::merge({ new NextAction("blood presence") },
+    return NextAction::merge({ NextAction("blood presence") },
                              CastMeleeSpellAction::getPrerequisites());
 }
 
 bool CastRaiseDeadAction::Execute(Event event)
 {
-    bool result = CastBuffSpellAction::Execute(event);
+    const bool result = CastBuffSpellAction::Execute(event);
+    
     if (!result)
-    {
         return false;
-    }
-    uint32 spellId = AI_VALUE2(uint32, "spell id", spell);
-    // SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
+
+    const uint32_t spellId = AI_VALUE2(uint32_t, "spell id", spell);
+    
     bot->AddSpellCooldown(spellId, 0, 3 * 60 * 1000);
+    
     return true;
 }

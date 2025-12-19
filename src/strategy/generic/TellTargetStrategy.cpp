@@ -10,5 +10,5 @@
 void TellTargetStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("target changed", { new NextAction("tell target", 51.0f) }));
+        new TriggerNode("target changed", { NextAction("tell target", 51.0f) }));
 }

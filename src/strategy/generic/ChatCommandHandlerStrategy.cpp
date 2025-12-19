@@ -18,7 +18,7 @@ private:
         return new ActionNode("tank attack chat shortcut",
                               /*P*/ {},
                               /*A*/ {},
-                              /*C*/ { new NextAction("attack my target", 100.0f) });
+                              /*C*/ { NextAction("attack my target", 100.0f) });
     }
 };
 
@@ -26,86 +26,86 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
 {
     PassTroughStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("rep", { new NextAction("reputation", relevance) }));
-    triggers.push_back(new TriggerNode("q", { new NextAction("query quest", relevance),
-                                                              new NextAction("query item usage", relevance) }));
-    triggers.push_back(new TriggerNode("add all loot", { new NextAction("add all loot", relevance),
-                                                                         new NextAction("loot", relevance) }));
-    triggers.push_back(new TriggerNode("u", { new NextAction("use", relevance) }));
-    triggers.push_back(new TriggerNode("c", { new NextAction("item count", relevance) }));
+    triggers.push_back(new TriggerNode("rep", { NextAction("reputation", relevance) }));
+    triggers.push_back(new TriggerNode("q", { NextAction("query quest", relevance),
+                                                              NextAction("query item usage", relevance) }));
+    triggers.push_back(new TriggerNode("add all loot", { NextAction("add all loot", relevance),
+                                                                         NextAction("loot", relevance) }));
+    triggers.push_back(new TriggerNode("u", { NextAction("use", relevance) }));
+    triggers.push_back(new TriggerNode("c", { NextAction("item count", relevance) }));
     triggers.push_back(
-        new TriggerNode("items", { new NextAction("item count", relevance) }));
-    triggers.push_back(new TriggerNode("inv", { new NextAction("item count", relevance) }));
-    triggers.push_back(new TriggerNode("e", { new NextAction("equip", relevance) }));
-    triggers.push_back(new TriggerNode("ue", { new NextAction("unequip", relevance) }));
-    triggers.push_back(new TriggerNode("t", { new NextAction("trade", relevance) }));
-    triggers.push_back(new TriggerNode("nt", { new NextAction("trade", relevance) }));
-    triggers.push_back(new TriggerNode("s", { new NextAction("sell", relevance) }));
-    triggers.push_back(new TriggerNode("b", { new NextAction("buy", relevance) }));
-    triggers.push_back(new TriggerNode("r", { new NextAction("reward", relevance) }));
+        new TriggerNode("items", { NextAction("item count", relevance) }));
+    triggers.push_back(new TriggerNode("inv", { NextAction("item count", relevance) }));
+    triggers.push_back(new TriggerNode("e", { NextAction("equip", relevance) }));
+    triggers.push_back(new TriggerNode("ue", { NextAction("unequip", relevance) }));
+    triggers.push_back(new TriggerNode("t", { NextAction("trade", relevance) }));
+    triggers.push_back(new TriggerNode("nt", { NextAction("trade", relevance) }));
+    triggers.push_back(new TriggerNode("s", { NextAction("sell", relevance) }));
+    triggers.push_back(new TriggerNode("b", { NextAction("buy", relevance) }));
+    triggers.push_back(new TriggerNode("r", { NextAction("reward", relevance) }));
     triggers.push_back(
-        new TriggerNode("attack", { new NextAction("attack my target", relevance) }));
+        new TriggerNode("attack", { NextAction("attack my target", relevance) }));
     triggers.push_back(
-        new TriggerNode("accept", { new NextAction("accept quest", relevance) }));
+        new TriggerNode("accept", { NextAction("accept quest", relevance) }));
     triggers.push_back(
-        new TriggerNode("follow", { new NextAction("follow chat shortcut", relevance) }));
+        new TriggerNode("follow", { NextAction("follow chat shortcut", relevance) }));
     triggers.push_back(
-        new TriggerNode("stay", { new NextAction("stay chat shortcut", relevance) }));
+        new TriggerNode("stay", { NextAction("stay chat shortcut", relevance) }));
     triggers.push_back(
-        new TriggerNode("move from group", { new NextAction("move from group chat shortcut", relevance) }));
+        new TriggerNode("move from group", { NextAction("move from group chat shortcut", relevance) }));
     triggers.push_back(
-        new TriggerNode("flee", { new NextAction("flee chat shortcut", relevance) }));
+        new TriggerNode("flee", { NextAction("flee chat shortcut", relevance) }));
     triggers.push_back(new TriggerNode(
-        "tank attack", { new NextAction("tank attack chat shortcut", relevance) }));
+        "tank attack", { NextAction("tank attack chat shortcut", relevance) }));
     triggers.push_back(
-        new TriggerNode("grind", { new NextAction("grind chat shortcut", relevance) }));
+        new TriggerNode("grind", { NextAction("grind chat shortcut", relevance) }));
     triggers.push_back(
-        new TriggerNode("talk", { new NextAction("gossip hello", relevance),
-                                                  new NextAction("talk to quest giver", relevance) }));
+        new TriggerNode("talk", { NextAction("gossip hello", relevance),
+                                                  NextAction("talk to quest giver", relevance) }));
     triggers.push_back(
-        new TriggerNode("enter vehicle", { new NextAction("enter vehicle", relevance) }));
+        new TriggerNode("enter vehicle", { NextAction("enter vehicle", relevance) }));
     triggers.push_back(
-        new TriggerNode("leave vehicle", { new NextAction("leave vehicle", relevance) }));
+        new TriggerNode("leave vehicle", { NextAction("leave vehicle", relevance) }));
     triggers.push_back(
-        new TriggerNode("cast", { new NextAction("cast custom spell", relevance) }));
+        new TriggerNode("cast", { NextAction("cast custom spell", relevance) }));
     triggers.push_back(
-        new TriggerNode("castnc", { new NextAction("cast custom nc spell", relevance) }));
+        new TriggerNode("castnc", { NextAction("cast custom nc spell", relevance) }));
     triggers.push_back(
-        new TriggerNode("revive", { new NextAction("spirit healer", relevance) }));
+        new TriggerNode("revive", { NextAction("spirit healer", relevance) }));
     triggers.push_back(
-        new TriggerNode("runaway", { new NextAction("runaway chat shortcut", relevance) }));
+        new TriggerNode("runaway", { NextAction("runaway chat shortcut", relevance) }));
     triggers.push_back(
-        new TriggerNode("warning", { new NextAction("runaway chat shortcut", relevance) }));
+        new TriggerNode("warning", { NextAction("runaway chat shortcut", relevance) }));
     triggers.push_back(
-        new TriggerNode("max dps", { new NextAction("max dps chat shortcut", relevance) }));
+        new TriggerNode("max dps", { NextAction("max dps chat shortcut", relevance) }));
     triggers.push_back(
-        new TriggerNode("attackers", { new NextAction("tell attackers", relevance) }));
+        new TriggerNode("attackers", { NextAction("tell attackers", relevance) }));
     triggers.push_back(
-        new TriggerNode("target", { new NextAction("tell target", relevance) }));
+        new TriggerNode("target", { NextAction("tell target", relevance) }));
     triggers.push_back(
-        new TriggerNode("ready", { new NextAction("ready check", relevance) }));
+        new TriggerNode("ready", { NextAction("ready check", relevance) }));
     triggers.push_back(
-        new TriggerNode("bwl", { new NextAction("bwl chat shortcut", relevance) }));
+        new TriggerNode("bwl", { NextAction("bwl chat shortcut", relevance) }));
     triggers.push_back(
-        new TriggerNode("dps", { new NextAction("tell estimated dps", relevance) }));
+        new TriggerNode("dps", { NextAction("tell estimated dps", relevance) }));
     triggers.push_back(
-        new TriggerNode("disperse", { new NextAction("disperse set", relevance) }));
+        new TriggerNode("disperse", { NextAction("disperse set", relevance) }));
     triggers.push_back(
-        new TriggerNode("open items", { new NextAction("open items", relevance) }));
+        new TriggerNode("open items", { NextAction("open items", relevance) }));
     triggers.push_back(
-        new TriggerNode("qi", { new NextAction("query item usage", relevance) }));
+        new TriggerNode("qi", { NextAction("query item usage", relevance) }));
     triggers.push_back(
-        new TriggerNode("unlock items", { new NextAction("unlock items", relevance) }));
+        new TriggerNode("unlock items", { NextAction("unlock items", relevance) }));
     triggers.push_back(
-        new TriggerNode("unlock traded item", { new NextAction("unlock traded item", relevance) }));
+        new TriggerNode("unlock traded item", { NextAction("unlock traded item", relevance) }));
     triggers.push_back(
-        new TriggerNode("wipe", { new NextAction("wipe", relevance) }));
-    triggers.push_back(new TriggerNode("tame", { new NextAction("tame", relevance) }));
-    triggers.push_back(new TriggerNode("glyphs", { new NextAction("glyphs", relevance) })); // Added for custom Glyphs
-    triggers.push_back(new TriggerNode("glyph equip", { new NextAction("glyph equip", relevance) })); // Added for custom Glyphs
-    triggers.push_back(new TriggerNode("pet", { new NextAction("pet", relevance) }));
-    triggers.push_back(new TriggerNode("pet attack", { new NextAction("pet attack", relevance) }));
-    triggers.push_back(new TriggerNode("roll", { new NextAction("roll", relevance) }));
+        new TriggerNode("wipe", { NextAction("wipe", relevance) }));
+    triggers.push_back(new TriggerNode("tame", { NextAction("tame", relevance) }));
+    triggers.push_back(new TriggerNode("glyphs", { NextAction("glyphs", relevance) })); // Added for custom Glyphs
+    triggers.push_back(new TriggerNode("glyph equip", { NextAction("glyph equip", relevance) })); // Added for custom Glyphs
+    triggers.push_back(new TriggerNode("pet", { NextAction("pet", relevance) }));
+    triggers.push_back(new TriggerNode("pet attack", { NextAction("pet attack", relevance) }));
+    triggers.push_back(new TriggerNode("roll", { NextAction("roll", relevance) }));
 }
 
 ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI)

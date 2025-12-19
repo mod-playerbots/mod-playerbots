@@ -16,7 +16,7 @@ void GenericWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     CombatStrategy::InitTriggers(triggers);
     triggers.push_back(new TriggerNode(
-        "enemy out of melee", { new NextAction("reach melee", ACTION_HIGH + 1) }));
+        "enemy out of melee", { NextAction("reach melee", ACTION_HIGH + 1) }));
 }
 
 class WarrirorAoeStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
@@ -39,14 +39,14 @@ WarrirorAoeStrategy::WarrirorAoeStrategy(PlayerbotAI* botAI) : CombatStrategy(bo
 void WarrirorAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode(
-        "light aoe", { new NextAction("sweeping strikes", ACTION_HIGH + 7),
-                                       new NextAction("bladestorm", ACTION_HIGH + 6),
-                                       new NextAction("thunder clap", ACTION_HIGH + 5),
-                                       new NextAction("shockwave", ACTION_HIGH + 4),
-                                       new NextAction("demoralizing shout without life time check", ACTION_HIGH + 1),
-                                       new NextAction("cleave", ACTION_HIGH) }));
+        "light aoe", { NextAction("sweeping strikes", ACTION_HIGH + 7),
+                                       NextAction("bladestorm", ACTION_HIGH + 6),
+                                       NextAction("thunder clap", ACTION_HIGH + 5),
+                                       NextAction("shockwave", ACTION_HIGH + 4),
+                                       NextAction("demoralizing shout without life time check", ACTION_HIGH + 1),
+                                       NextAction("cleave", ACTION_HIGH) }));
     triggers.push_back(
         new TriggerNode("shockwave on snare target",
-                        { new NextAction("shockwave on snare target", ACTION_HIGH + 5) }));
+                        { NextAction("shockwave on snare target", ACTION_HIGH + 5) }));
 
 }

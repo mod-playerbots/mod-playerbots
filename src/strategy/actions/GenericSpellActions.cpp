@@ -265,11 +265,6 @@ CastShootAction::CastShootAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "s
     }
 }
 
-std::vector<NextAction*> CastSpellAction::getPrerequisites()
-{
-    return {};
-}
-
 Value<Unit*>* CastDebuffSpellOnAttackerAction::GetTargetValue()
 {
     return context->GetValue<Unit*>("attacker without aura", spell);

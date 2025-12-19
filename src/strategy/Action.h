@@ -23,29 +23,38 @@ public:
     std::string const getName() { return name; }
     float getRelevance() { return relevance; }
 
-    static std::vector<NextAction*> clone(std::vector<NextAction*>& actions);
-    static std::vector<NextAction*> merge(std::vector<NextAction*> what, std::vector<NextAction*> with)
+    static std::vector<NextAction> clone(std::vector<NextAction> actions)
     {
-        what.reserve(what.size() + with.size());
-        what.insert(
-            what.end(),
-            std::make_move_iterator(with.begin()),
-            std::make_move_iterator(with.end())
-        );
+        std::vector<NextAction> clone = {};
 
-        return what;
+        for (NextAction const& action : actions)
+        {
+            clone.push_back(action);
+        }
+
+        return clone;
     };
 
-    // static NextAction** array(uint32 nil, ...);
-    static void destroy(std::vector<NextAction*> actions)
-    {    
-        for (NextAction* action : actions)
-            delete action;
-    }
+    static std::vector<NextAction> merge(std::vector<NextAction> what, std::vector<NextAction> with)
+    {
+        std::vector<NextAction> result = {};
+
+        for (NextAction const& action : what)
+        {
+            result.push_back(action);
+        }
+
+        for (NextAction const& action : with)
+        {
+            result.push_back(action);
+        }
+
+        return result;
+    };
 
 private:
     float relevance;
-    const std::string name;
+    std::string name;
 };
 
 class Action : public AiNamedObject
@@ -65,9 +74,9 @@ public:
     virtual bool Execute([[maybe_unused]] Event event) { return true; }
     virtual bool isPossible() { return true; }
     virtual bool isUseful() { return true; }
-    virtual std::vector<NextAction*> getPrerequisites() { return {}; }
-    virtual std::vector<NextAction*> getAlternatives() { return {}; }
-    virtual std::vector<NextAction*> getContinuers() { return {}; }
+    virtual std::vector<NextAction> getPrerequisites() { return {}; }
+    virtual std::vector<NextAction> getAlternatives() { return {}; }
+    virtual std::vector<NextAction> getContinuers() { return {}; }
     virtual ActionThreatType getThreatType() { return ActionThreatType::None; }
     void Update() {}
     void Reset() {}
@@ -88,9 +97,9 @@ class ActionNode
 public:
     ActionNode(
         std::string name,
-        std::vector<NextAction*> prerequisites = {},
-        std::vector<NextAction*> alternatives = {},
-        std::vector<NextAction*> continuers = {}
+        std::vector<NextAction> prerequisites = {},
+        std::vector<NextAction> alternatives = {},
+        std::vector<NextAction> continuers = {}
     ) :
     name(std::move(name)),
     action(nullptr),
@@ -99,26 +108,21 @@ public:
     prerequisites(prerequisites)
     {}
 
-    virtual ~ActionNode()
-    {
-        NextAction::destroy(prerequisites);
-        NextAction::destroy(alternatives);
-        NextAction::destroy(continuers);
-    }
+    virtual ~ActionNode() = default;
 
     Action* getAction() { return action; }
     void setAction(Action* action) { this->action = action; }
     const std::string getName() { return name; }
 
-    std::vector<NextAction*> getContinuers()
+    std::vector<NextAction> getContinuers()
     {
         return NextAction::merge(NextAction::clone(continuers), action->getContinuers());
     }
-    std::vector<NextAction*> getAlternatives()
+    std::vector<NextAction> getAlternatives()
     {
         return NextAction::merge(NextAction::clone(alternatives), action->getAlternatives());
     }
-    std::vector<NextAction*> getPrerequisites()
+    std::vector<NextAction> getPrerequisites()
     {
         return NextAction::merge(NextAction::clone(prerequisites), action->getPrerequisites());
     }
@@ -126,9 +130,9 @@ public:
 private:
     const std::string name;
     Action* action;
-    std::vector<NextAction*> continuers;
-    std::vector<NextAction*> alternatives;
-    std::vector<NextAction*> prerequisites;
+    std::vector<NextAction> continuers;
+    std::vector<NextAction> alternatives;
+    std::vector<NextAction> prerequisites;
 };
 
 class ActionBasket

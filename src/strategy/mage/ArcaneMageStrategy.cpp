@@ -38,15 +38,15 @@ ArcaneMageStrategy::ArcaneMageStrategy(PlayerbotAI* botAI) : GenericMageStrategy
 }
 
 // ===== Default Actions =====
-std::vector<NextAction*> ArcaneMageStrategy::getDefaultActions()
+std::vector<NextAction> ArcaneMageStrategy::getDefaultActions()
 {
     return {
-        new NextAction("arcane blast", 5.6f),
-        new NextAction("arcane missiles", 5.5f),
-        new NextAction("arcane barrage", 5.4f),   // cast while moving
-        new NextAction("fire blast", 5.3f),       // cast while moving if arcane barrage isn't available/learned
-        new NextAction("frostbolt", 5.2f),        // for arcane immune targets
-        new NextAction("shoot", 5.1f)
+        NextAction("arcane blast", 5.6f),
+        NextAction("arcane missiles", 5.5f),
+        NextAction("arcane barrage", 5.4f),   // cast while moving
+        NextAction("fire blast", 5.3f),       // cast while moving if arcane barrage isn't available/learned
+        NextAction("frostbolt", 5.2f),        // for arcane immune targets
+        NextAction("shoot", 5.1f)
     };
 }
 
@@ -56,5 +56,12 @@ void ArcaneMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     GenericMageStrategy::InitTriggers(triggers);
 
     // Proc Trigger
-    triggers.push_back(new TriggerNode("arcane blast 4 stacks and missile barrage", { new NextAction("arcane missiles", 15.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "arcane blast 4 stacks and missile barrage",
+            {
+                NextAction("arcane missiles", 15.0f)
+            }
+        )
+    );
 }

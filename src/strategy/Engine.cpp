@@ -264,7 +264,7 @@ ActionNode* Engine::CreateActionNode(std::string const name)
 }
 
 bool Engine::MultiplyAndPush(
-    std::vector<NextAction*> actions,
+    std::vector<NextAction> actions,
     float forceRelevance,
     bool skipPrerequisites,
     Event event,
@@ -273,18 +273,13 @@ bool Engine::MultiplyAndPush(
 {
     bool pushed = false;
 
-    // for (uint32 j = 0; actions.size(); j++)
-    for (NextAction* nextAction : actions)
+    for (NextAction nextAction : actions)
     {
-        // NextAction* nextAction = actions[j];
+        ActionNode* action = this->CreateActionNode(nextAction.getName());
 
-        if (nextAction == nullptr)
-            break;
-
-        ActionNode* action = this->CreateActionNode(nextAction->getName());
         this->InitializeAction(action);
 
-        float k = nextAction->getRelevance();
+        float k = nextAction.getRelevance();
 
         if (forceRelevance > 0.0f)
         {
@@ -296,13 +291,12 @@ bool Engine::MultiplyAndPush(
             this->LogAction("PUSH:%s - %f (%s)", action->getName().c_str(), k, pushType);
             queue.Push(new ActionBasket(action, k, skipPrerequisites, event));
             pushed = true;
+            
+            continue;
         }
-        else
-        {
-            delete action;
-        }
-
-        delete nextAction;
+        
+        delete action;
+        
     }
 
     return pushed;
@@ -533,9 +527,10 @@ std::vector<std::string> Engine::GetStrategies()
 
 void Engine::PushAgain(ActionNode* actionNode, float relevance, Event event)
 {
-    std::vector<NextAction*> nextAction = { new NextAction(actionNode->getName(), relevance) };
+    std::vector<NextAction> nextAction = { NextAction(actionNode->getName(), relevance) };
     
     MultiplyAndPush(nextAction, relevance, true, event, "again");
+
     delete actionNode;
 }
 

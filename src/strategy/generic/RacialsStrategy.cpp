@@ -17,7 +17,7 @@ private:
     {
         return new ActionNode("lifeblood",
                               /*P*/ {},
-                              /*A*/ { new NextAction("gift of the naaru") },
+                              /*A*/ { NextAction("gift of the naaru") },
                               /*C*/ {});
     }
 };
@@ -25,16 +25,16 @@ private:
 void RacialsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("low health", { new NextAction("lifeblood", ACTION_NORMAL + 5) }));
+        new TriggerNode("low health", { NextAction("lifeblood", ACTION_NORMAL + 5) }));
     triggers.push_back(
-        new TriggerNode("medium aoe", { new NextAction("war stomp", ACTION_NORMAL + 5) }));
+        new TriggerNode("medium aoe", { NextAction("war stomp", ACTION_NORMAL + 5) }));
     triggers.push_back(new TriggerNode(
-        "low mana", { new NextAction("arcane torrent", ACTION_NORMAL + 5) }));
+        "low mana", { NextAction("arcane torrent", ACTION_NORMAL + 5) }));
 
     triggers.push_back(new TriggerNode(
-        "generic boost", { new NextAction("blood fury", ACTION_NORMAL + 5),
-        new NextAction("berserking", ACTION_NORMAL + 5),
-        new NextAction("use trinket", ACTION_NORMAL + 4) }));
+        "generic boost", { NextAction("blood fury", ACTION_NORMAL + 5),
+        NextAction("berserking", ACTION_NORMAL + 5),
+        NextAction("use trinket", ACTION_NORMAL + 4) }));
 
 }
 

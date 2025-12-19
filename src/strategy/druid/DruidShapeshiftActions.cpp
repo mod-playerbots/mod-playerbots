@@ -17,9 +17,9 @@ bool CastBearFormAction::isUseful()
     return CastBuffSpellAction::isUseful() && !botAI->HasAura("dire bear form", GetTarget());
 }
 
-std::vector<NextAction*> CastDireBearFormAction::getAlternatives()
+std::vector<NextAction> CastDireBearFormAction::getAlternatives()
 {
-    return NextAction::merge({ new NextAction("bear form") },
+    return NextAction::merge({ NextAction("bear form") },
                              CastSpellAction::getAlternatives());
 }
 

@@ -5,7 +5,7 @@ void WotlkDungeonOKStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 {
     // Elder Nadox
     triggers.push_back(new TriggerNode("nadox guardian",
-        { new NextAction("attack nadox guardian", ACTION_RAID + 5) }));
+        { NextAction("attack nadox guardian", ACTION_RAID + 5) }));
 
     // Prince Taldaram
     // Flame Orb spawns in melee, doesn't have a clear direction until it starts moving.
@@ -14,13 +14,13 @@ void WotlkDungeonOKStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 
     // Jedoga Shadowseeker
     triggers.push_back(new TriggerNode("jedoga volunteer",
-        { new NextAction("attack jedoga volunteer", ACTION_RAID + 5) }));
+        { NextAction("attack jedoga volunteer", ACTION_RAID + 5) }));
 
     // Herald Volazj
     // Trash mobs before him have a big telegraphed shadow crash spell,
     // this can be avoided and is intended to be dodged
     triggers.push_back(new TriggerNode("shadow crash",
-        { new NextAction("avoid shadow crash", ACTION_MOVE + 5) }));
+        { NextAction("avoid shadow crash", ACTION_MOVE + 5) }));
     // Volazj is not implemented properly in AC, insanity phase does nothing.
 
     // Amanitar (Heroic Only)

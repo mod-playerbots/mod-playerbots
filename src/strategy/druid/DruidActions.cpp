@@ -11,15 +11,15 @@
 #include "AoeValues.h"
 #include "TargetValue.h"
 
-std::vector<NextAction*> CastAbolishPoisonAction::getAlternatives()
+std::vector<NextAction> CastAbolishPoisonAction::getAlternatives()
 {
-    return NextAction::merge({ new NextAction("cure poison") },
+    return NextAction::merge({ NextAction("cure poison") },
                              CastSpellAction::getPrerequisites());
 }
 
-std::vector<NextAction*> CastAbolishPoisonOnPartyAction::getAlternatives()
+std::vector<NextAction> CastAbolishPoisonOnPartyAction::getAlternatives()
 {
-    return NextAction::merge({ new NextAction("cure poison on party") },
+    return NextAction::merge({ NextAction("cure poison on party") },
                              CastSpellAction::getPrerequisites());
 }
 
@@ -60,15 +60,15 @@ bool CastStarfallAction::isUseful()
     return true;
 }
 
-std::vector<NextAction*> CastReviveAction::getPrerequisites()
+std::vector<NextAction> CastReviveAction::getPrerequisites()
 {
-    return NextAction::merge({ new NextAction("caster form") },
+    return NextAction::merge({ NextAction("caster form") },
                              ResurrectPartyMemberAction::getPrerequisites());
 }
 
-std::vector<NextAction*> CastRebirthAction::getPrerequisites()
+std::vector<NextAction> CastRebirthAction::getPrerequisites()
 {
-    return NextAction::merge({ new NextAction("caster form") },
+    return NextAction::merge({ NextAction("caster form") },
                              ResurrectPartyMemberAction::getPrerequisites());
 }
 

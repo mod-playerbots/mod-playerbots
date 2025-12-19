@@ -9,36 +9,67 @@
 
 NewRpgStrategy::NewRpgStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 
-std::vector<NextAction*> NewRpgStrategy::getDefaultActions()
+std::vector<NextAction> NewRpgStrategy::getDefaultActions()
 {
     // the releavance should be greater than grind
     return {
-        new NextAction("new rpg status update", 11.0f)
+        NextAction("new rpg status update", 11.0f)
     };
 }
 
 void NewRpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("go grind status", { new NextAction("new rpg go grind", 3.0f) }));
-
+        new TriggerNode(
+            "go grind status",
+            {
+                NextAction("new rpg go grind", 3.0f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("go camp status", { new NextAction("new rpg go camp", 3.0f) }));
-
+        new TriggerNode(
+            "go camp status",
+            {
+                NextAction("new rpg go camp", 3.0f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("wander random status", { new NextAction("new rpg wander random", 3.0f) }));
-
+        new TriggerNode(
+            "wander random status",
+            {
+                NextAction("new rpg wander random", 3.0f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("wander npc status", { new NextAction("new rpg wander npc", 3.0f) }));
-
+        new TriggerNode(
+            "wander npc status",
+            {
+                NextAction("new rpg wander npc", 3.0f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("do quest status", { new NextAction("new rpg do quest", 3.0f) }));
-
+        new TriggerNode(
+            "do quest status",
+            {
+                NextAction("new rpg do quest", 3.0f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("travel flight status", { new NextAction("new rpg travel flight", 3.0f) }));
+        new TriggerNode(
+            "travel flight status",
+            {
+                NextAction("new rpg travel flight", 3.0f)
+            }
+        )
+    );
 }
 
 void NewRpgStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
-    // multipliers.push_back(new RpgActionMultiplier(botAI));
+    
 }

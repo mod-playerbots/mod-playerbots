@@ -43,10 +43,12 @@ ElementalShamanStrategy::ElementalShamanStrategy(PlayerbotAI* botAI) : GenericSh
 }
 
 // ===== Default Actions =====
-std::vector<NextAction*> ElementalShamanStrategy::getDefaultActions()
+std::vector<NextAction> ElementalShamanStrategy::getDefaultActions()
 {
-    return { new NextAction("lava burst", 5.2f),
-                                new NextAction("lightning bolt", 5.0f) };
+    return {
+        NextAction("lava burst", 5.2f),
+        NextAction("lightning bolt", 5.0f)
+    };
 }
 
 // ===== Trigger Initialization ===
@@ -55,20 +57,76 @@ void ElementalShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     GenericShamanStrategy::InitTriggers(triggers);
 
     // Totem Triggers
-    triggers.push_back(new TriggerNode("call of the elements", { new NextAction("call of the elements", 60.0f) }));
-    triggers.push_back(new TriggerNode("low health", { new NextAction("stoneclaw totem", 40.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "call of the elements",
+            {
+                NextAction("call of the elements", 60.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "low health",
+            {
+                NextAction("stoneclaw totem", 40.0f)
+            }
+        )
+    );
 
     // Cooldown Trigger
-    triggers.push_back(new TriggerNode("elemental mastery", { new NextAction("elemental mastery", 29.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "elemental mastery",
+            {
+                NextAction("elemental mastery", 29.0f)
+            }
+        )
+    );
 
     // Damage Triggers
-    triggers.push_back(new TriggerNode("earth shock execute", { new NextAction("earth shock", 5.5f) }));
-    triggers.push_back(new TriggerNode("flame shock", { new NextAction("flame shock", 5.3f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "earth shock execute",
+            {
+                NextAction("earth shock", 5.5f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "flame shock",
+            {
+                NextAction("flame shock", 5.3f)
+            }
+        )
+    );
 
     // Mana Triggers
-    triggers.push_back(new TriggerNode("water shield", { new NextAction("water shield", 19.5f) }));
-    triggers.push_back(new TriggerNode("high mana", { new NextAction("thunderstorm", 19.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "water shield",
+            {
+                NextAction("water shield", 19.5f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "high mana",
+            {
+                NextAction("thunderstorm", 19.0f)
+            }
+        )
+    );
 
     // Range Triggers
-    triggers.push_back(new TriggerNode("enemy is close", { new NextAction("thunderstorm", 19.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "enemy is close",
+            {
+                NextAction("thunderstorm", 19.0f)
+            }
+        )
+    );
 }

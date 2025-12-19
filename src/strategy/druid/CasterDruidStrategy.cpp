@@ -28,82 +28,102 @@ public:
 private:
     static ActionNode* faerie_fire([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("faerie fire",
-                              /*P*/ { new NextAction("moonkin form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            "faerie fire",
+            /*P*/ { NextAction("moonkin form") },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* hibernate([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("hibernate",
-                              /*P*/ { new NextAction("moonkin form") },
-                              /*A*/ { new NextAction("entangling roots") },
-                              /*C*/ {});
+        return new ActionNode(
+            "hibernate",
+            /*P*/ { NextAction("moonkin form") },
+            /*A*/ { NextAction("entangling roots") },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* entangling_roots([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("entangling roots",
-                              /*P*/ { new NextAction("moonkin form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            "entangling roots",
+            /*P*/ { NextAction("moonkin form") },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* entangling_roots_on_cc([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("entangling roots on cc",
-                              /*P*/ { new NextAction("moonkin form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            "entangling roots on cc",
+            /*P*/ { NextAction("moonkin form") },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* wrath([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("wrath",
-                              /*P*/ { new NextAction("moonkin form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            "wrath",
+            /*P*/ { NextAction("moonkin form") },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* starfall([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("starfall",
-                              /*P*/ { new NextAction("moonkin form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            "starfall",
+            /*P*/ { NextAction("moonkin form") },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* insect_swarm([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("insect swarm",
-                              /*P*/ { new NextAction("moonkin form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            "insect swarm",
+            /*P*/ { NextAction("moonkin form") },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* moonfire([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("moonfire",
-                              /*P*/ { new NextAction("moonkin form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            "moonfire",
+            /*P*/ { NextAction("moonkin form") },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* starfire([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("starfire",
-                              /*P*/ { new NextAction("moonkin form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            "starfire",
+            /*P*/ { NextAction("moonkin form") },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* moonkin_form([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("moonkin form",
-                              /*P*/ { new NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            "moonkin form",
+            /*P*/ { NextAction("caster form") },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 };
 
@@ -113,12 +133,12 @@ CasterDruidStrategy::CasterDruidStrategy(PlayerbotAI* botAI) : GenericDruidStrat
     actionNodeFactories.Add(new ShapeshiftDruidStrategyActionNodeFactory());
 }
 
-std::vector<NextAction*> CasterDruidStrategy::getDefaultActions()
+std::vector<NextAction> CasterDruidStrategy::getDefaultActions()
 {
     return {
-        new NextAction("starfall", ACTION_HIGH + 1.0f),
-        new NextAction("force of nature", ACTION_DEFAULT + 1.0f),
-        new NextAction("wrath", ACTION_DEFAULT + 0.1f),
+        NextAction("starfall", ACTION_HIGH + 1.0f),
+        NextAction("force of nature", ACTION_DEFAULT + 1.0f),
+        NextAction("wrath", ACTION_DEFAULT + 0.1f),
     };
 }
 
@@ -126,39 +146,109 @@ void CasterDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericDruidStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("eclipse (lunar) cooldown",
-                                       { new NextAction("starfire", ACTION_DEFAULT + 0.2f) }));
-    triggers.push_back(new TriggerNode("eclipse (solar) cooldown",
-                                       { new NextAction("wrath", ACTION_DEFAULT + 0.2f) }));
-
-    triggers.push_back(new TriggerNode(
-        "insect swarm", { new NextAction("insect swarm", ACTION_NORMAL + 5) }));
     triggers.push_back(
-        new TriggerNode("moonfire", { new NextAction("moonfire", ACTION_NORMAL + 4) }));
+        new TriggerNode(
+            "eclipse (lunar) cooldown",
+            {
+                NextAction("starfire", ACTION_DEFAULT + 0.2f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("eclipse (solar)", { new NextAction("wrath", ACTION_NORMAL + 6) }));
-    triggers.push_back(new TriggerNode("eclipse (lunar)",
-                                       { new NextAction("starfire", ACTION_NORMAL + 6) }));
+        new TriggerNode(
+            "eclipse (solar) cooldown",
+            {
+                NextAction("wrath", ACTION_DEFAULT + 0.2f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("medium mana", { new NextAction("innervate", ACTION_HIGH + 9) }));
-
-    triggers.push_back(new TriggerNode("enemy too close for spell",
-                                       { new NextAction("flee", ACTION_MOVE + 9) }));
+        new TriggerNode(
+            "insect swarm",
+            {
+                NextAction("insect swarm", ACTION_NORMAL + 5)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "moonfire",
+            {
+                NextAction("moonfire", ACTION_NORMAL + 4)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "eclipse (solar)",
+            {
+                NextAction("wrath", ACTION_NORMAL + 6)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "eclipse (lunar)",
+            {
+                NextAction("starfire", ACTION_NORMAL + 6)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "medium mana",
+            {
+                NextAction("innervate", ACTION_HIGH + 9)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "enemy too close for spell",
+            {
+                NextAction("flee", ACTION_MOVE + 9)
+            }
+        )
+    );
 }
 
 void CasterDruidAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("hurricane channel check", { new NextAction("cancel channel", ACTION_HIGH + 2) }));
+        new TriggerNode(
+            "hurricane channel check",
+            {
+                NextAction("cancel channel", ACTION_HIGH + 2)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("medium aoe", { new NextAction("hurricane", ACTION_HIGH + 1) }));
-    triggers.push_back(new TriggerNode(
-        "light aoe", { new NextAction("insect swarm on attacker", ACTION_NORMAL + 3),
-                                       new NextAction("moonfire on attacker", ACTION_NORMAL + 3)   }));
+        new TriggerNode(
+            "medium aoe",
+            {
+                NextAction("hurricane", ACTION_HIGH + 1)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "light aoe",
+            {
+                NextAction("insect swarm on attacker", ACTION_NORMAL + 3),
+                NextAction("moonfire on attacker", ACTION_NORMAL + 3)  
+            }
+        )
+    );
 }
 
 void CasterDruidDebuffStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("faerie fire", { new NextAction("faerie fire", ACTION_HIGH) }));
+        new TriggerNode(
+            "faerie fire",
+            {
+                NextAction("faerie fire", ACTION_HIGH)
+            }
+        )
+    );
 }

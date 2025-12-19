@@ -27,14 +27,14 @@ private:
     {
         return new ActionNode("survival instincts",
                               /*P*/ {},
-                              /*A*/ { new NextAction("barkskin") },
+                              /*A*/ { NextAction("barkskin") },
                               /*C*/ {});
     }
 
     static ActionNode* thorns([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("thorns",
-                              /*P*/ { new NextAction("caster form") },
+                              /*P*/ { NextAction("caster form") },
                               /*A*/ {},
                               /*C*/ {});
     }
@@ -42,7 +42,7 @@ private:
     static ActionNode* omen_of_clarity([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("omen of clarity",
-                              /*P*/ { new NextAction("caster form") },
+                              /*P*/ { NextAction("caster form") },
                               /*A*/ {},
                               /*C*/ {});
     }
@@ -50,7 +50,7 @@ private:
     static ActionNode* cure_poison([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("cure poison",
-                              /*P*/ { new NextAction("caster form") },
+                              /*P*/ { NextAction("caster form") },
                               /*A*/ {},
                               /*C*/ {});
     }
@@ -58,7 +58,7 @@ private:
     static ActionNode* cure_poison_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("cure poison on party",
-                              /*P*/ { new NextAction("caster form") },
+                              /*P*/ { NextAction("caster form") },
                               /*A*/ {},
                               /*C*/ {});
     }
@@ -66,7 +66,7 @@ private:
     static ActionNode* abolish_poison([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("abolish poison",
-                              /*P*/ { new NextAction("caster form") },
+                              /*P*/ { NextAction("caster form") },
                               /*A*/ {},
                               /*C*/ {});
     }
@@ -74,7 +74,7 @@ private:
     static ActionNode* abolish_poison_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("abolish poison on party",
-                              /*P*/ { new NextAction("caster form") },
+                              /*P*/ { NextAction("caster form") },
                               /*A*/ {},
                               /*C*/ {});
     }
@@ -82,7 +82,7 @@ private:
     static ActionNode* prowl([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("prowl",
-                              /*P*/ { new NextAction("cat form") },
+                              /*P*/ { NextAction("cat form") },
                               /*A*/ {},
                               /*C*/ {});
     }
@@ -99,15 +99,15 @@ void FeralDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     GenericDruidStrategy::InitTriggers(triggers);
 
     triggers.push_back(new TriggerNode(
-        "enemy out of melee", { new NextAction("reach melee", ACTION_HIGH + 1) }));
+        "enemy out of melee", { NextAction("reach melee", ACTION_HIGH + 1) }));
     triggers.push_back(new TriggerNode(
-        "critical health", { new NextAction("survival instincts", ACTION_EMERGENCY + 1) }));
+        "critical health", { NextAction("survival instincts", ACTION_EMERGENCY + 1) }));
     triggers.push_back(new TriggerNode(
-        "omen of clarity", { new NextAction("omen of clarity", ACTION_HIGH + 9) }));
+        "omen of clarity", { NextAction("omen of clarity", ACTION_HIGH + 9) }));
     triggers.push_back(new TriggerNode("player has flag",
-                                       { new NextAction("dash", ACTION_EMERGENCY + 2) }));
+                                       { NextAction("dash", ACTION_EMERGENCY + 2) }));
     triggers.push_back(new TriggerNode("enemy flagcarrier near",
-                                       { new NextAction("dash", ACTION_EMERGENCY + 2) }));
+                                       { NextAction("dash", ACTION_EMERGENCY + 2) }));
     triggers.push_back(
-        new TriggerNode("berserk", { new NextAction("berserk", ACTION_HIGH + 6) }));
+        new TriggerNode("berserk", { NextAction("berserk", ACTION_HIGH + 6) }));
 }

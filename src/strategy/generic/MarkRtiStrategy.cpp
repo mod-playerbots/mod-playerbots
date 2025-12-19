@@ -10,5 +10,5 @@
 void MarkRtiStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("no rti target", { new NextAction("mark rti", ACTION_NORMAL) }));
+        new TriggerNode("no rti target", { NextAction("mark rti", ACTION_NORMAL) }));
 }

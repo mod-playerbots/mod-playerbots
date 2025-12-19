@@ -10,13 +10,13 @@
 void GuildStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("often", { new NextAction("offer petition nearby", 4.0f) }));
+        new TriggerNode("often", { NextAction("offer petition nearby", 4.0f) }));
     triggers.push_back(
-        new TriggerNode("often", { new NextAction("guild manage nearby", 4.0f) }));
+        new TriggerNode("often", { NextAction("guild manage nearby", 4.0f) }));
     triggers.push_back(
-        new TriggerNode("petition signed", { new NextAction("turn in petition", 10.0f) }));
+        new TriggerNode("petition signed", { NextAction("turn in petition", 10.0f) }));
     triggers.push_back(
-        new TriggerNode("buy tabard", { new NextAction("buy tabard", 10.0f) }));
+        new TriggerNode("buy tabard", { NextAction("buy tabard", 10.0f) }));
     triggers.push_back(
-        new TriggerNode("leave large guild", { new NextAction("guild leave", 4.0f) }));
+        new TriggerNode("leave large guild", { NextAction("guild leave", 4.0f) }));
 }

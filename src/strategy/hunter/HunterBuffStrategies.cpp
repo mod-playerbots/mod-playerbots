@@ -17,7 +17,7 @@ private:
     {
         return new ActionNode("aspect of the hawk",
                               /*P*/ {},
-                              /*A*/ { new NextAction("aspect of the monkey") },
+                              /*A*/ { NextAction("aspect of the monkey") },
                               /*C*/ {});
     }
 };
@@ -30,24 +30,24 @@ HunterBuffDpsStrategy::HunterBuffDpsStrategy(PlayerbotAI* botAI) : NonCombatStra
 void HunterBuffDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("aspect of the hawk", { new NextAction("aspect of the dragonhawk", 20.1f),
-                                                                new NextAction("aspect of the hawk", 20.0f) }));
+        new TriggerNode("aspect of the hawk", { NextAction("aspect of the dragonhawk", 20.1f),
+                                                                NextAction("aspect of the hawk", 20.0f) }));
 }
 
 void HunterNatureResistanceStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode("aspect of the wild",
-                                       { new NextAction("aspect of the wild", 20.0f) }));
+                                       { NextAction("aspect of the wild", 20.0f) }));
 }
 
 void HunterBuffSpeedStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode("aspect of the pack",
-                                       { new NextAction("aspect of the pack", 20.0f) }));
+                                       { NextAction("aspect of the pack", 20.0f) }));
 }
 
 void HunterBuffManaStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode("aspect of the viper",
-                                       { new NextAction("aspect of the viper", 20.0f) }));
+                                       { NextAction("aspect of the viper", 20.0f) }));
 }

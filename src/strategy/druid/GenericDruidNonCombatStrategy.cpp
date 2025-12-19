@@ -29,7 +29,7 @@ private:
     static ActionNode* thorns([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("thorns",
-                              /*P*/ { new NextAction("caster form") },
+                              /*P*/ { NextAction("caster form") },
                               /*A*/ {},
                               /*C*/ {});
     }
@@ -37,7 +37,7 @@ private:
     static ActionNode* thorns_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("thorns on party",
-                              /*P*/ { new NextAction("caster form") },
+                              /*P*/ { NextAction("caster form") },
                               /*A*/ {},
                               /*C*/ {});
     }
@@ -45,7 +45,7 @@ private:
     static ActionNode* mark_of_the_wild([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("mark of the wild",
-                              /*P*/ { new NextAction("caster form") },
+                              /*P*/ { NextAction("caster form") },
                               /*A*/ {},
                               /*C*/ {});
     }
@@ -53,42 +53,42 @@ private:
     static ActionNode* mark_of_the_wild_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("mark of the wild on party",
-                              /*P*/ { new NextAction("caster form") },
+                              /*P*/ { NextAction("caster form") },
                               /*A*/ {},
                               /*C*/ {});
     }
     static ActionNode* regrowth_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("regrowth on party",
-                              /*P*/ { new NextAction("caster form") },
+                              /*P*/ { NextAction("caster form") },
                               /*A*/ {},
                               /*C*/ {});
     }
     static ActionNode* rejuvenation_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("rejuvenation on party",
-                              /*P*/ { new NextAction("caster form") },
+                              /*P*/ { NextAction("caster form") },
                               /*A*/ {},
                               /*C*/ {});
     }
     static ActionNode* remove_curse_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("remove curse on party",
-                              /*P*/ { new NextAction("caster form") },
+                              /*P*/ { NextAction("caster form") },
                               /*A*/ {},
                               /*C*/ {});
     }
     static ActionNode* abolish_poison_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("abolish poison on party",
-                              /*P*/ { new NextAction("caster form") },
+                              /*P*/ { NextAction("caster form") },
                               /*A*/ {},
                               /*C*/ {});
     }
     static ActionNode* revive([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("revive",
-                              /*P*/ { new NextAction("caster form") },
+                              /*P*/ { NextAction("caster form") },
                               /*A*/ {},
                               /*C*/ {});
     }
@@ -103,73 +103,73 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
 {
     NonCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("mark of the wild", { new NextAction("mark of the wild", 14.0f) }));
-    triggers.push_back(new TriggerNode("party member cure poison", { new NextAction("abolish poison on party", 20.0f) }));
-    triggers.push_back(new TriggerNode("party member dead", { new NextAction("revive", ACTION_CRITICAL_HEAL + 10) }));
+    triggers.push_back(new TriggerNode("mark of the wild", { NextAction("mark of the wild", 14.0f) }));
+    triggers.push_back(new TriggerNode("party member cure poison", { NextAction("abolish poison on party", 20.0f) }));
+    triggers.push_back(new TriggerNode("party member dead", { NextAction("revive", ACTION_CRITICAL_HEAL + 10) }));
 
-    triggers.push_back(new TriggerNode("often", { new NextAction("apply oil", 1.0f) }));
+    triggers.push_back(new TriggerNode("often", { NextAction("apply oil", 1.0f) }));
 
     triggers.push_back(
         new TriggerNode("party member critical health",
                         {
-                                          new NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 7),
-                                          new NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 6),
-                                          new NextAction("rejuvenation on party", ACTION_MEDIUM_HEAL + 5),
+                                          NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 7),
+                                          NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 6),
+                                          NextAction("rejuvenation on party", ACTION_MEDIUM_HEAL + 5),
                                           }));
 
     triggers.push_back(
         new TriggerNode("party member low health",
                         {
-                                          new NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 5),
-                                          new NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 4),
-                                          new NextAction("rejuvenation on party", ACTION_MEDIUM_HEAL + 3),
+                                          NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 5),
+                                          NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 4),
+                                          NextAction("rejuvenation on party", ACTION_MEDIUM_HEAL + 3),
                                           }));
 
     triggers.push_back(
         new TriggerNode("party member medium health",
-                        { new NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 3),
-                                          new NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 2),
-                                          new NextAction("rejuvenation on party", ACTION_MEDIUM_HEAL + 1),
+                        { NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 3),
+                                          NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 2),
+                                          NextAction("rejuvenation on party", ACTION_MEDIUM_HEAL + 1),
                                           }));
 
     triggers.push_back(
         new TriggerNode("party member almost full health",
-                        { new NextAction("wild growth on party", ACTION_LIGHT_HEAL + 3), new NextAction("rejuvenation on party", ACTION_LIGHT_HEAL + 2) }));
+                        { NextAction("wild growth on party", ACTION_LIGHT_HEAL + 3), NextAction("rejuvenation on party", ACTION_LIGHT_HEAL + 2) }));
 
     triggers.push_back(
         new TriggerNode("party member remove curse",
-                        { new NextAction("remove curse on party", ACTION_DISPEL + 7) }));
+                        { NextAction("remove curse on party", ACTION_DISPEL + 7) }));
     triggers.push_back(
-        new TriggerNode("new pet", { new NextAction("set pet stance", 60.0f) }));
+        new TriggerNode("new pet", { NextAction("set pet stance", 60.0f) }));
 
     triggers.push_back(new TriggerNode("party member critical health", {
-                       new NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 7),
-                       new NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 6),
-                       new NextAction("rejuvenation on party", ACTION_MEDIUM_HEAL + 5),
+                       NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 7),
+                       NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 6),
+                       NextAction("rejuvenation on party", ACTION_MEDIUM_HEAL + 5),
                        }));
     triggers.push_back(new TriggerNode("party member low health", {
-                       new NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 5),
-                       new NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 4),
-                       new NextAction("rejuvenation on party", ACTION_MEDIUM_HEAL + 3),
+                       NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 5),
+                       NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 4),
+                       NextAction("rejuvenation on party", ACTION_MEDIUM_HEAL + 3),
                        }));
     triggers.push_back(new TriggerNode("party member medium health", {
-                       new NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 3),
-                       new NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 2),
-                       new NextAction("rejuvenation on party", ACTION_MEDIUM_HEAL + 1),
+                       NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 3),
+                       NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 2),
+                       NextAction("rejuvenation on party", ACTION_MEDIUM_HEAL + 1),
                        }));
     triggers.push_back(new TriggerNode("party member almost full health", {
-                       new NextAction("wild growth on party", ACTION_LIGHT_HEAL + 3),
-                       new NextAction("rejuvenation on party", ACTION_LIGHT_HEAL + 2),
+                       NextAction("wild growth on party", ACTION_LIGHT_HEAL + 3),
+                       NextAction("rejuvenation on party", ACTION_LIGHT_HEAL + 2),
                        }));
     triggers.push_back(new TriggerNode("party member remove curse", {
-                       new NextAction("remove curse on party", ACTION_DISPEL + 7),
+                       NextAction("remove curse on party", ACTION_DISPEL + 7),
                        }));
 
     int specTab = AiFactory::GetPlayerSpecTab(botAI->GetBot());
     if (specTab == 0 || specTab == 2) // Balance or Restoration
-        triggers.push_back(new TriggerNode("often", { new NextAction("apply oil", 1.0f) }));
+        triggers.push_back(new TriggerNode("often", { NextAction("apply oil", 1.0f) }));
     if (specTab == 1) // Feral
-        triggers.push_back(new TriggerNode("often", { new NextAction("apply stone", 1.0f) }));
+        triggers.push_back(new TriggerNode("often", { NextAction("apply stone", 1.0f) }));
 
 }
 
@@ -183,12 +183,12 @@ void GenericDruidBuffStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     NonCombatStrategy::InitTriggers(triggers);
 
     triggers.push_back(new TriggerNode("mark of the wild on party", {
-                       new NextAction("mark of the wild on party", 13.0f),
+                       NextAction("mark of the wild on party", 13.0f),
                        }));
     triggers.push_back(new TriggerNode("thorns on main tank", {
-                       new NextAction("thorns on main tank", 11.0f),
+                       NextAction("thorns on main tank", 11.0f),
                        }));
     triggers.push_back(new TriggerNode("thorns", {
-                       new NextAction("thorns", 10.0f),
+                       NextAction("thorns", 10.0f),
                        }));
 }

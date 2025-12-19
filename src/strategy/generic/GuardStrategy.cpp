@@ -7,6 +7,11 @@
 
 #include "Playerbots.h"
 
-std::vector<NextAction*> GuardStrategy::getDefaultActions() { return { new NextAction("guard", 4.0f) }; }
+std::vector<NextAction> GuardStrategy::getDefaultActions()
+{
+    return {
+        NextAction("guard", 4.0f)
+    };
+}
 
 void GuardStrategy::InitTriggers(std::vector<TriggerNode*>& triggers) {}
