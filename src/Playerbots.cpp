@@ -124,7 +124,7 @@ public:
         }
     }
 
-    bool OnPlayerBeforeTeleport(Player* player, uint32 mapid, float, float, float, float, uint32, Unit*) override
+    bool OnPlayerBeforeTeleport(Player* /*player*/, uint32 /*mapid*/, float /*x*/, float /*y*/, float /*z*/, float /*orientation*/, uint32 /*options*/, Unit* /*target*/) override
     {
         /* for now commmented out until proven its actually required
         * havent seen any proof CleanVisibilityReferences() is needed
