@@ -713,47 +713,59 @@ void PlayerbotAI::HandleTeleportAck()
     if (IsRealPlayer())
         return;
 
+    // Clearing motion generators and stopping movement which prevents
+    // conflicts between teleport and any active motion (walk, run, swim, flight, etc.)
     bot->GetMotionMaster()->Clear(true);
     bot->StopMoving();
+
+    // Near teleport (within map/instance)
     if (bot->IsBeingTeleportedNear())
     {
-        // Temporary fix for instance can not enter
-        // When the bot is not yet in world and/or map not loaded yet map may be nullptr.
-        if (!bot->IsInWorld())
-        {
-            Map* map = sMapMgr->FindMap(bot->GetMapId(), bot->GetInstanceId());
-            if (!map)
-                map = sMapMgr->CreateMap(bot->GetMapId(), bot);
+        // Previous versions manually added the bot to the map if it was not in the world.
+        // not needed: HandleMoveTeleportAckOpcode() safely attaches the player to the map
+        // and clears IsBeingTeleportedNear().
 
-            if (!map)
-                return;
+        Player* plMover = bot->m_mover->ToPlayer();
+        if (!plMover)
+            return;
 
-            map->AddPlayerToMap(bot);
-        }
-        while (bot->IsInWorld() && bot->IsBeingTeleportedNear())
-        {
-            Player* plMover = bot->m_mover->ToPlayer();
-            if (!plMover)
-                return;
-            WorldPacket p = WorldPacket(MSG_MOVE_TELEPORT_ACK, 20);
-            p << plMover->GetPackGUID();
-            p << (uint32)0;  // supposed to be flags? not used currently
-            p << (uint32)0;  // time - not currently used
-            bot->GetSession()->HandleMoveTeleportAck(p);
-        };
+        // Send the near teleport ACK packet
+        WorldPacket p(MSG_MOVE_TELEPORT_ACK, 20);
+        p << plMover->GetPackGUID();
+        p << uint32(0);
+        p << uint32(0);
+        bot->GetSession()->HandleMoveTeleportAck(p);
+
+        // Simulate teleport latency and prevent AI from running too early (used cmangos delays)
+        SetNextCheckDelay(urand(1000, 2000));
     }
+
+    // Far teleport (worldport / different map)
     if (bot->IsBeingTeleportedFar())
     {
-        while (bot->IsBeingTeleportedFar())
+        // Handle far teleport ACK:
+        // Moves the bot to the new map, clears IsBeingTeleportedFar(), updates session/map references
+        bot->GetSession()->HandleMoveWorldportAck();
+
+        // Ensure bot now has a valid map. If this fails, there is a core/session bug?
+        if (!bot->GetMap())
         {
-            bot->GetSession()->HandleMoveWorldportAck();
+            LOG_ERROR("playerbot", "Bot {} has no map after worldport ACK", bot->GetGUID().ToString());
         }
-        // SetNextCheckDelay(urand(2000, 5000));
+
+        // Instance strategies after teleport
         if (sPlayerbotAIConfig->applyInstanceStrategies)
             ApplyInstanceStrategies(bot->GetMapId(), true);
+
+        // healer DPS strategies if restrictions are enabled
         if (sPlayerbotAIConfig->restrictHealerDPS)
             EvaluateHealerDpsStrategy();
+
+        // Reset AI state to to before teleport conditions
         Reset(true);
+
+        // Slightly longer delay to simulate far teleport latency (used cmangos delays)
+        SetNextCheckDelay(urand(2000, 5000));
     }
 
     SetNextCheckDelay(sPlayerbotAIConfig->globalCoolDown);

@@ -155,7 +155,7 @@ void PlayerbotHolder::AddPlayerBot(ObjectGuid playerGuid, uint32 masterAccountId
             [](SQLQueryHolderBase const& queryHolder)
             {
                 PlayerbotLoginQueryHolder const& holder = static_cast<PlayerbotLoginQueryHolder const&>(queryHolder);
-                PlayerbotHolder* mgr = sRandomPlayerbotMgr; // could be null
+                PlayerbotHolder* mgr = sRandomPlayerbotMgr;  // could be null
                 uint32 masterAccountId = holder.GetMasterAccountId();
 
                 if (masterAccountId)
@@ -171,7 +171,6 @@ void PlayerbotHolder::AddPlayerBot(ObjectGuid playerGuid, uint32 masterAccountId
                     mgr->HandlePlayerBotLoginCallback(holder);
                 else
                     PlayerbotHolder::botLoading.erase(holder.GetGuid());
-   
             });
 }
 

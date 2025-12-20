@@ -491,7 +491,7 @@ public:
             if (masterPlayer)
                 holder = GET_PLAYERBOT_MGR(masterPlayer);
         }
-   
+
         if (!holder)
             return false;
 
@@ -503,10 +503,7 @@ public:
     uint32 GetPriority() const override { return 100; }
     std::string GetName() const override { return "OnBotLogin"; }
 
-    bool IsValid() const override
-    {
-        return ObjectAccessor::FindConnectedPlayer(m_botGuid) != nullptr;
-    }
+    bool IsValid() const override { return ObjectAccessor::FindConnectedPlayer(m_botGuid) != nullptr; }
 
 private:
     ObjectGuid m_botGuid;
