@@ -42,8 +42,8 @@ float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
         return 1.0f;
 
     const uint8 aggroWaitSeconds = 6;
-    auto it = magtheridonAggroWaitTimer.find(bot->GetMapId());
-    if (it == magtheridonAggroWaitTimer.end() ||
+    auto it = aggroWaitTimer.find(magtheridon->GetMap()->GetInstanceId());
+    if (it == aggroWaitTimer.end() ||
         (time(nullptr) - it->second) < aggroWaitSeconds)
     {
         if (!botAI->IsMainTank(bot) && (dynamic_cast<AttackAction*>(action) ||
