@@ -84,7 +84,7 @@ namespace MagtheridonHelpers
     extern std::unordered_map<uint32, bool> lastBlastNovaState;
     extern std::unordered_map<uint32, time_t> blastNovaTimer;
     extern std::unordered_map<uint32, time_t> spreadWaitTimer;
-    extern std::unordered_map<uint32, time_t> aggroWaitTimer;
+    extern std::unordered_map<uint32, time_t> dpsWaitTimer;
 }
 
 #endif

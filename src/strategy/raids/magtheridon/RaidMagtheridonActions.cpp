@@ -401,11 +401,15 @@ std::unordered_map<ObjectGuid, bool> MagtheridonSpreadRangedAction::hasReachedIn
 
 bool MagtheridonSpreadRangedAction::Execute(Event event)
 {
+    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    if (!magtheridon)
+        return false;
+
     Group* group = bot->GetGroup();
     if (!group)
         return false;
 
-    const uint32 instanceId = magtheridon->GetMap()->GetInstanceId()
+    const uint32 instanceId = magtheridon->GetMap()->GetInstanceId();
 
     // Wait for 6 seconds after Magtheridon activates to spread
     const uint8 spreadWaitSeconds = 6;
@@ -511,7 +515,7 @@ bool MagtheridonUseManticronCubeAction::Execute(Event event)
     if (!magtheridon)
         return false;
 
-    auto it = botToCubeAssignment.find(magtheridon->GetMap()->GetInstanceId());
+    auto it = botToCubeAssignment.find(bot->GetGUID());
     const CubeInfo& cubeInfo = it->second;
     GameObject* cube = botAI->GetGameObject(cubeInfo.guid);
     if (!cube)
@@ -653,27 +657,27 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event event)
         return false;
 
     const uint32 instanceId = magtheridon->GetMap()->GetInstanceId();
+    const time_t now = time(nullptr);
 
     bool blastNovaActive = magtheridon->HasUnitState(UNIT_STATE_CASTING) &&
                            magtheridon->FindCurrentSpellBySpellId(SPELL_BLAST_NOVA);
     bool lastBlastNova = lastBlastNovaState[instanceId];
 
     if (lastBlastNova && !blastNovaActive && IsInstanceTimerManager(botAI, bot))
-        blastNovaTimer[instanceId] = time(nullptr);
+        blastNovaTimer[instanceId] = now;
 
     lastBlastNovaState[instanceId] = blastNovaActive;
 
-    if (IsInstanceTimerManager(botAI, bot))
+    if (!magtheridon->HasAura(SPELL_SHADOW_CAGE))
     {
-        if (!magtheridon->HasAura(SPELL_SHADOW_CAGE))
+        if (IsInstanceTimerManager(botAI, bot))
         {
-            spreadWaitTimer.try_emplace(instanceId, time(nullptr));
-            blastNovaTimer.try_emplace(instanceId, time(nullptr));
-            dpsWaitTimer.try_emplace(instanceId, time(nullptr));
+            spreadWaitTimer.try_emplace(instanceId, now);
+            blastNovaTimer.try_emplace(instanceId, now);
+            dpsWaitTimer.try_emplace(instanceId, now);
         }
     }
-
-    if (magtheridon->HasAura(SPELL_SHADOW_CAGE))
+    else
     {
         MagtheridonSpreadRangedAction::initialPositions.clear();
         MagtheridonSpreadRangedAction::hasReachedInitialPosition.clear();
