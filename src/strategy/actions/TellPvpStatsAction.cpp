@@ -15,6 +15,7 @@
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
+#include "Language.h"
 
 namespace
 {
@@ -29,10 +30,23 @@ namespace
     }
 }
 
-bool TellPvpStatsAction::Execute(Event /*event*/)
+bool TellPvpStatsAction::Execute(Event event)
 {
-    Player* const master = GetMaster();
-    if (!master || !bot)
+    if (!bot)
+        return false;
+
+    // Prefer the actual chat sender (whisper / say / etc.) if available.
+    Player* requester = nullptr;
+
+    if (Unit* owner = event.getOwner())
+        requester = owner->ToPlayer();
+
+    // Fallback to master if event owner is not available.
+    if (!requester)
+        requester = GetMaster();
+
+    // If we still do not have a valid player to answer to, bail out.
+    if (!requester)
         return false;
 
     // PVP currencies
@@ -45,7 +59,7 @@ bool TellPvpStatsAction::Execute(Event /*event*/)
         "[PVP] Arena points: %arena_points | Honor Points: %honor_points",
         currencyPlaceholders);
 
-    botAI->TellMaster(currencyText);
+    bot->Whisper(currencyText, LANG_UNIVERSAL, requester);
 
     // Arena Teams by slot
     bool anyTeam = false;
@@ -68,7 +82,7 @@ bool TellPvpStatsAction::Execute(Event /*event*/)
                 "[PVP] %bracket: <%team_name> (rating %team_rating)",
                 placeholders);
 
-            botAI->TellMaster(teamText);
+            bot->Whisper(teamText, LANG_UNIVERSAL, requester);
         }
     }
 
@@ -79,7 +93,7 @@ bool TellPvpStatsAction::Execute(Event /*event*/)
             "[PVP] I have no Arena Team.",
             std::map<std::string, std::string>());
 
-        botAI->TellMaster(noTeamText);
+        bot->Whisper(noTeamText, LANG_UNIVERSAL, requester);
     }
 
     return true;
