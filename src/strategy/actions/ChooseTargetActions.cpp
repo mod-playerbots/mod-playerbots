@@ -88,9 +88,7 @@ bool DropTargetAction::Execute(Event event)
     {
         Spell const* spell = bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL); // Get the current spell being cast by the bot
         if (spell && spell->m_spellInfo->Id == 75) //Check spell is not nullptr before accessing m_spellInfo
-        {
             bot->InterruptSpell(CURRENT_AUTOREPEAT_SPELL); // Interrupt Auto Shot
-        }
     }
     bot->AttackStop();
 
@@ -155,9 +153,7 @@ bool AttackRtiTargetAction::Execute(Event event)
             {
                 ObjectGuid const guid = group->GetTargetIcon(index);
                 if (!guid.IsEmpty())
-                {
                     rtiTarget = botAI->GetUnit(guid);
-                }
             }
         }
     }
@@ -173,9 +169,7 @@ bool AttackRtiTargetAction::Execute(Event event)
         }
     }
     else
-    {
         botAI->TellError("I dont see my rti attack target");
-    }
 
     return false;
 }
