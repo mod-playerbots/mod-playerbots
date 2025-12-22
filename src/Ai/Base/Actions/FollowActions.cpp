@@ -357,7 +357,7 @@ bool FollowAction::Execute(Event event)
                 float const dzDeck = std::fabs(bot->GetPositionZ() - master->GetPositionZ());
                 if (dzDeck > STATIC_TRANSPORT_SNAP_Z_THRESHOLD)
                 {
-           
+
                     reseatOnStaticTransportDeck(master->GetPositionZ());
                 }
 
@@ -465,7 +465,6 @@ bool FollowAction::Execute(Event event)
                         return false;
 
                     float const dzToPlatform = std::fabs(transport->GetPositionZ() - bot->GetPositionZ());
-					
 
                     // If the leader is already on the platform and the bot is close in XY but far in Z,
                     // we prefer snapping/attaching onto the deck instead of pushing the bot outside.
@@ -535,7 +534,7 @@ bool FollowAction::Execute(Event event)
                 float destX = 0.0f;
                 float destY = 0.0f;
                 float destZ = 0.0f;
- 
+
                 // Always target the platform center to avoid edge collisions,
                 // and to keep followers clustered where they will remain on the platform when it starts moving quickly.
                 if (isStaticTransport)
@@ -544,7 +543,7 @@ bool FollowAction::Execute(Event event)
                     destY = transport->GetPositionY();
                     destZ = transport->GetPositionZ();
                 }
- 
+
                 // If the leader already left the elevator platform, use the transport position as target.
                 // Otherwise, use the leader position to keep the group clustered while boarding.
                 else if (masterOnTransport)
@@ -563,7 +562,7 @@ bool FollowAction::Execute(Event event)
                 float const masterX = master->GetPositionX();
                 float const masterY = master->GetPositionY();
                 float const masterZ = master->GetPositionZ();
- 
+
                 float const botX = bot->GetPositionX();
                 float const botY = bot->GetPositionY();
                 float const botZ = bot->GetPositionZ();
@@ -625,7 +624,7 @@ bool FollowAction::Execute(Event event)
                     {
                         return false;
                     }
- 
+
                     float delay = 1000.0f * MoveDelay(bot->GetExactDist(destX, destY, destZ));
                     delay = std::clamp(delay, 0.0f, static_cast<float>(sPlayerbotAIConfig->maxWaitForMove));
                     if (isStaticTransport)
