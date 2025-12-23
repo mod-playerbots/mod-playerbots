@@ -21,20 +21,36 @@ bool IsSameLocation(WorldLocation const& a, WorldLocation const& b)
 
 bool Formation::IsNullLocation(WorldLocation const& loc) { return IsSameLocation(loc, Formation::NullLocation); }
 
+bool ValidateTargetContext(Unit* a, Unit* b)
+{
+    Map* unused = nullptr;
+    return ValidateTargetContext(a, b, unused);
+}
+
+bool ValidateTargetContext(Unit* a, Unit* b, Map*& outMap)
+{
+    if (!a || !b || a == b)
+        return false;
+
+    if (!a->IsInWorld() || !b->IsInWorld())
+        return false;
+
+    if (a->IsDuringRemoveFromWorld() || b->IsDuringRemoveFromWorld())
+        return false;
+
+    Map* map = a->GetMap();
+    if (!map || map != b->GetMap())
+        return false;
+
+    outMap = map;
+
+    return true;
+}
+
 WorldLocation MoveAheadFormation::GetLocation()
 {
     Player* master = GetMaster();
-    if (!master || master == bot || !bot)
-        return Formation::NullLocation;
-
-    if (!master->IsInWorld() || !bot->IsInWorld())
-        return Formation::NullLocation;
-
-    if (master->IsDuringRemoveFromWorld() || bot->IsDuringRemoveFromWorld())
-        return Formation::NullLocation;
-
-    Map* map = master->GetMap();
-    if (!map || map != bot->GetMap())
+    if (!ValidateTargetContext(master, bot))
         return Formation::NullLocation;
 
     WorldLocation loc = GetLocationInternal();
@@ -91,18 +107,8 @@ public:
     WorldLocation GetLocationInternal() override
     {
         Player* master = GetMaster();
-
-        if (!master || !bot)
-            return Formation::NullLocation;
-
-        if (!master->IsInWorld() || !bot->IsInWorld())
-            return Formation::NullLocation;
-
-        if (master->IsDuringRemoveFromWorld() || bot->IsDuringRemoveFromWorld())
-            return Formation::NullLocation;
-
-        Map* map = master->GetMap();
-        if (!map || map != bot->GetMap())
+        Map* map = nullptr;
+        if (!ValidateTargetContext(master, bot, map))
             return Formation::NullLocation;
 
         float range = sPlayerbotAIConfig->followDistance;
@@ -132,18 +138,8 @@ public:
     WorldLocation GetLocationInternal() override
     {
         Player* master = GetMaster();
-
-        if (!master || !bot)
-            return Formation::NullLocation;
-
-        if (!master->IsInWorld() || !bot->IsInWorld())
-            return Formation::NullLocation;
-
-        if (master->IsDuringRemoveFromWorld() || bot->IsDuringRemoveFromWorld())
-            return Formation::NullLocation;
-
-        Map* map = master->GetMap();
-        if (!map || map != bot->GetMap())
+        Map* map = nullptr;
+        if (!ValidateTargetContext(master, bot, map))
             return Formation::NullLocation;
 
         float range = sPlayerbotAIConfig->followDistance;
@@ -193,8 +189,6 @@ public:
 
     WorldLocation GetLocation() override
     {
-        float range = 2.0f;
-
         Unit* target = AI_VALUE(Unit*, "current target");
         Player* master = GetMaster();
 
@@ -202,19 +196,11 @@ public:
         if (!target || target == bot)
             target = master;
 
-        if (!target || !bot)
+        Map* map = nullptr;
+        if (!ValidateTargetContext(master, bot, map))
             return Formation::NullLocation;
 
-        if (!target->IsInWorld() || !bot->IsInWorld())
-            return Formation::NullLocation;
-
-        if (target->IsDuringRemoveFromWorld() || bot->IsDuringRemoveFromWorld())
-            return Formation::NullLocation;
-
-        Map* map = target->GetMap();
-        if (!map || map != bot->GetMap())
-            return Formation::NullLocation;
-
+        float range = 2.0f;
         switch (bot->getClass())
         {
             case CLASS_HUNTER:
@@ -364,17 +350,8 @@ public:
     WorldLocation GetLocation() override
     {
         Player* master = GetMaster();
-        if (!master || !bot)
-            return Formation::NullLocation;
-
-        if (!master->IsInWorld() || !bot->IsInWorld())
-            return Formation::NullLocation;
-
-        if (master->IsDuringRemoveFromWorld() || bot->IsDuringRemoveFromWorld())
-            return Formation::NullLocation;
-
-        Map* map = master->GetMap();
-        if (!map || map != bot->GetMap())
+        Map* map = nullptr;
+        if (!ValidateTargetContext(master, bot, map))
             return Formation::NullLocation;
 
         float range = sPlayerbotAIConfig->farDistance;
