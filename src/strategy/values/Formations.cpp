@@ -21,12 +21,6 @@ bool IsSameLocation(WorldLocation const& a, WorldLocation const& b)
 
 bool Formation::IsNullLocation(WorldLocation const& loc) { return IsSameLocation(loc, Formation::NullLocation); }
 
-bool ValidateTargetContext(Unit* a, Unit* b)
-{
-    Map* unused = nullptr;
-    return ValidateTargetContext(a, b, unused);
-}
-
 bool ValidateTargetContext(Unit* a, Unit* b, Map*& outMap)
 {
     if (!a || !b || a == b)
@@ -45,6 +39,12 @@ bool ValidateTargetContext(Unit* a, Unit* b, Map*& outMap)
     outMap = map;
 
     return true;
+}
+
+bool ValidateTargetContext(Unit* a, Unit* b)
+{
+    Map* unused = nullptr;
+    return ValidateTargetContext(a, b, unused);
 }
 
 WorldLocation MoveAheadFormation::GetLocation()
