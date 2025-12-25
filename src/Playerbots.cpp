@@ -264,22 +264,12 @@ public:
 
     void OnPlayerGiveXP(Player* player, uint32& amount, Unit* /*victim*/, uint8 /*xpSource*/) override
     {
-        // no XP multiplier, when player is no bot.
-        if (!player || !player->GetSession()->IsBot())
+        // early return
+        if (sPlayerbotAIConfig->randomBotXPRate == 1.0 || !player)
             return;
 
-        // no XP gain, if master is not a bot and has xp gain disabled.
-        if (const Player* master = GET_PLAYERBOT_AI(player)->GetMaster())
-        {
-            if (!master->GetSession()->IsBot() && master->HasPlayerFlag(PLAYER_FLAGS_NO_XP_GAIN))
-            {
-                amount = 0;
-                return;
-            }
-        }
-
-        // early return
-        if (sPlayerbotAIConfig->randomBotXPRate == 1.0 || !sRandomPlayerbotMgr->IsRandomBot(player))
+        // no XP multiplier, when player is no bot.
+        if (!player->GetSession()->IsBot() || !sRandomPlayerbotMgr->IsRandomBot(player))
             return;
 
         // no XP multiplier, when bot is in a group with a real player.
