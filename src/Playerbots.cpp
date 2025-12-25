@@ -264,31 +264,23 @@ public:
 
     void OnPlayerGiveXP(Player* player, uint32& amount, Unit* /*victim*/, uint8 /*xpSource*/) override
     {
-        if (!player || !player->IsInWorld())
-            return;
-
-        if (WorldSession* session = player->GetSession(); !session || !session->IsBot())
+        if (sPlayerbotAIConfig->randomBotXPRate == 1.0f || !player || !player->IsInWorld())
             return;
 
         PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-        if (!botAI)
+        if (!botAI || !sRandomPlayerbotMgr->IsRandomBot(player))
             return;
 
         // No XP gain if master is a real player with XP gain disabled
         if (const Player* master = botAI->GetMaster())
         {
             if (WorldSession* masterSession = master->GetSession();
-                masterSession && !masterSession->IsBot() &&
-                master->HasPlayerFlag(PLAYER_FLAGS_NO_XP_GAIN))
+                masterSession && !masterSession->IsBot() && master->HasPlayerFlag(PLAYER_FLAGS_NO_XP_GAIN))
             {
                 amount = 0; // disable XP multiplier
                 return;
             }
         }
-
-        // From here on we only care about random bots
-        if (sPlayerbotAIConfig->randomBotXPRate == 1.0f || !sRandomPlayerbotMgr->IsRandomBot(player))
-            return;
 
         // No XP multiplier if bot is in a group with at least one real player
         if (Group* group = player->GetGroup())
@@ -297,14 +289,14 @@ public:
             {
                 if (Player* member = gref->GetSource())
                 {
-                    if (WorldSession* session = member->GetSession();session && !session->IsBot())
+                    if (!member->GetSession()->IsBot())
                         return;
                 }
             }
         }
 
         // Otherwise apply XP multiplier
-        amount = static_cast<uint32>(std::round(static_cast<float>(amount) * sPlayerbotAIConfig->randomBotXPRate));
+        amount = static_cast<uint32>(std::round(amount * sPlayerbotAIConfig->randomBotXPRate));
     }
 };
 
