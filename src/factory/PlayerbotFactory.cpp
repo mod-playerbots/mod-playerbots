@@ -121,7 +121,7 @@ void PlayerbotFactory::Init()
     uint32 maxStoreSize = sSpellMgr->GetSpellInfoStoreSize();
     for (uint32 id = 1; id < maxStoreSize; ++id)
     {
-        if (id == 7218 || id == 19927 || id == 44119 || id == 47147 || id == 47181 || 
+        if (id == 7218 || id == 19927 || id == 44119 || id == 47147 || id == 47181 ||
             id == 47242 || id == 50358 || id == 52639)  // Test Enchants
             continue;
 
