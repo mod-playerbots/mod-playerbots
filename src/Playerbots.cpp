@@ -513,7 +513,7 @@ void AddPlayerbotsScripts()
     new PlayerbotsWorldScript();
     new PlayerbotsScript();
     new PlayerBotsBGScript();
-	AddPlayerbotsSecureLoginScripts();
+    AddPlayerbotsSecureLoginScripts();
 
     AddSC_playerbots_commandscript();
 }
