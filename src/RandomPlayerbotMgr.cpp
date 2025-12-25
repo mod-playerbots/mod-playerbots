@@ -2593,14 +2593,17 @@ void RandomPlayerbotMgr::Refresh(Player* bot)
 
 bool RandomPlayerbotMgr::IsRandomBot(Player* bot)
 {
-    if (!bot)
-        return false;
+    if (bot && GET_PLAYERBOT_AI(bot))
+    {
+        if (GET_PLAYERBOT_AI(bot)->IsRealPlayer())
+            return false;
+    }
+    if (bot)
+    {
+        return IsRandomBot(bot->GetGUID().GetCounter());
+    }
 
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-    if (!botAI || botAI->IsRealPlayer())
-        return false;
-
-    return IsRandomBot(bot->GetGUID().GetCounter());
+    return false;
 }
 
 bool RandomPlayerbotMgr::IsRandomBot(ObjectGuid::LowType bot)
