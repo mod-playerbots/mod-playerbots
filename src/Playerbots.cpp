@@ -63,16 +63,45 @@ public:
 
     void OnDatabaseGetDBRevision(std::string& revision) override
     {
+        revision.clear();
+
+        // Preferred: legacy schema where version_db_playerbots contains a 'date' column and one row per update.
         if (QueryResult resultPlayerbot =
                 PlayerbotsDatabase.Query("SELECT date FROM version_db_playerbots ORDER BY date DESC LIMIT 1"))
         {
             Field* fields = resultPlayerbot->Fetch();
-            revision = fields[0].Get<std::string>();
+            if (fields)
+            {
+                revision = fields[0].Get<std::string>();
+            }
         }
 
         if (revision.empty())
         {
-            revision = "Unknown Playerbots Database Revision";
+            // Fallback: AzerothCore-style schema where the latest applied update is typically represented
+            // by the last column name in version_db_* tables.
+            std::string lastColumnName;
+            if (QueryResult columns = PlayerbotsDatabase.Query("SHOW COLUMNS FROM version_db_playerbots"))
+            {
+                do
+                {
+                    Field* fields = columns->Fetch();
+                    if (fields)
+                    {
+                        // SHOW COLUMNS: first field is the column name.
+                        lastColumnName = fields[0].Get<std::string>();
+                    }
+                } while (columns->NextRow());
+            }
+
+            if (!lastColumnName.empty())
+            {
+                revision = lastColumnName;
+            }
+            else
+            {
+                revision = "Unknown Playerbots Database Revision";
+            }
         }
     }
 };
