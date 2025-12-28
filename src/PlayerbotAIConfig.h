@@ -145,6 +145,10 @@ public:
     // Cooldown (seconds) between reagent-missing RP warnings, per bot & per buff. Default: 30
     int32 rpWarningCooldown;
 
+    // Professions
+    bool enableFishingWithMaster;
+    float fishingDistanceFromMaster, fishingDistance, endFishingWithMaster;
+
     // chat
     bool randomBotTalk;
     bool randomBotEmote;
