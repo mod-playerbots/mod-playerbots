@@ -13,32 +13,6 @@
 
 class PlayerbotAI;
 
-inline std::string const GetActualBlessingOfMight(Unit* target)
-{
-    switch (target->getClass())
-    {
-        case CLASS_MAGE:
-        case CLASS_PRIEST:
-        case CLASS_WARLOCK:
-            return "blessing of wisdom";
-    }
-
-    return "blessing of might";
-}
-
-inline std::string const GetActualBlessingOfWisdom(Unit* target)
-{
-    switch (target->getClass())
-    {
-        case CLASS_WARRIOR:
-        case CLASS_ROGUE:
-        case CLASS_DEATH_KNIGHT:
-            return "blessing of might";
-    }
-
-    return "blessing of wisdom";
-}
-
 BUFF_TRIGGER(HolyShieldTrigger, "holy shield");
 BUFF_TRIGGER(RighteousFuryTrigger, "righteous fury");
 
