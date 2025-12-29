@@ -184,7 +184,6 @@ private:
         );
     }
 
-
     static ActionNode* mortal_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
