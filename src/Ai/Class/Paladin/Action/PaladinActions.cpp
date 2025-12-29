@@ -92,7 +92,7 @@ static inline PaladinBlessingState GetBlessingState(PlayerbotAI* botAI)
 {
     if (!botAI)
         return PaladinBlessingState{};
-	
+
     return botAI->GetAiObjectContext()->GetValue<PaladinBlessingState>("paladin blessing state")->Get();
 }
 
