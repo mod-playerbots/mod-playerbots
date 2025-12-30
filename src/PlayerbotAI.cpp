@@ -930,7 +930,6 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
         fromPlayer->SendDirectMessage(&data);
         return;
     }
-
     if (!IsAllowedCommand(filtered) &&
         (!GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_ALLOW_ALL, type != CHAT_MSG_WHISPER, fromPlayer)))
         return;
@@ -1179,7 +1178,26 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
 
             return;
         }
-        case SMSG_MOVE_KNOCK_BACK:  // handle knockbacks
+        case SMSG_FORCE_MOVE_ROOT:      // CMSG_FORCE_MOVE_ROOT_ACK
+        case SMSG_FORCE_MOVE_UNROOT:    // CMSG_FORCE_MOVE_UNROOT_ACK
+        {
+            // Quick fix for CMSG_FORCE_MOVE_ROOT_ACK and CMSG_FORCE_MOVE_UNROOT_ACK:
+            // this should resolve issues with MOVEMENTFLAG_ROOT being permanently set
+            // when rooted during lost client control (charm + root effects)
+            // @see https://github.com/azerothcore/azerothcore-wotlk/pull/23147
+            bool forceRoot = (packet.GetOpcode() == SMSG_FORCE_MOVE_ROOT);
+            if (forceRoot)
+            {
+                bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_MASK_MOVING_FLY);
+                bot->m_movementInfo.AddMovementFlag(MOVEMENTFLAG_ROOT);
+                bot->StopMoving();
+            }
+            else
+                bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_ROOT);
+
+            return;
+        }
+        case SMSG_MOVE_KNOCK_BACK:      // CMSG_MOVE_KNOCK_BACK_ACK
         {
             WorldPacket p(packet);
             p.rpos(0);
@@ -1351,10 +1369,6 @@ void PlayerbotAI::DoNextAction(bool min)
     bool isBotAlive = bot->IsAlive();
     if (currentEngine != engines[BOT_STATE_DEAD] && !isBotAlive)
     {
-        bot->StopMoving();
-        bot->GetMotionMaster()->Clear();
-        bot->GetMotionMaster()->MoveIdle();
-
         // Death Count to prevent skeleton piles
         // Player* master = GetMaster();  // warning here - whipowill
         if (!HasActivePlayerMaster() && !bot->InBattleground())
@@ -1375,6 +1389,8 @@ void PlayerbotAI::DoNextAction(bool min)
     // Change engine if just ressed
     if (currentEngine == engines[BOT_STATE_DEAD] && isBotAlive)
     {
+        bot->SendMovementFlagUpdate();
+
         ChangeEngine(BOT_STATE_NON_COMBAT);
         return;
     }
@@ -2786,7 +2802,12 @@ bool PlayerbotAI::TellMaster(std::ostringstream& stream, PlayerbotSecurityLevel 
 
 bool PlayerbotAI::TellMaster(std::string const text, PlayerbotSecurityLevel securityLevel)
 {
-    if (!master || !TellMasterNoFacing(text, securityLevel))
+    if (!master)
+    {
+        if (sPlayerbotAIConfig->randomBotSayWithoutMaster)
+            return TellMasterNoFacing(text, securityLevel);
+    }
+    if (!TellMasterNoFacing(text, securityLevel))
         return false;
 
     if (!bot->isMoving() && !bot->IsInCombat() && bot->GetMapId() == master->GetMapId() &&
