@@ -582,18 +582,22 @@ AiPlayerbot.BotTaxiGapJitterMs = 100
 
 ####################################################################################################
 # PROFESSIONS
-# Random bots currently do not get professions.
+# Note: Random bots currently do not get professions
 #
 
-# EnableFishingWithMaster automatically adds the 'master fishing' strategy to bots that can fish.
+# Add the 'master fishing' strategy to bots that have the fishing skill and are within the distance
+# from water (in yards) set in EndFishingWithMaster
 # Default: 1 (Enabled)
 AiPlayerbot.EnableFishingWithMaster = 1
 
-# FishingDistance sets how far a bot without a master will search for water, while FishingDistanceFromMaster limits it to a closer range, and overrides the following distance to the same value. 
-AiPlayerbot.FishingDistance = 40.0
+# Distance from itself (in yards) that a bot with a master will search for water to fish
 AiPlayerbot.FishingDistanceFromMaster = 10.0
 
-# EndFishingWithMaster sets the distance from water a bot needs to have to automatically drop the 'master fishing' strategy.
+# Distance from itself (in yards) that a bot without a master will search for water to fish
+# Currently not relevant since masterless bots will not fish
+AiPlayerbot.FishingDistance = 40.0
+
+# Distance from water (in yards) beyond which a bot will remove the 'master fishing' strategy
 AiPlayerbot.EndFishingWithMaster = 30.0
 
 #
