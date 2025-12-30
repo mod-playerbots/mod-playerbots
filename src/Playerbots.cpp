@@ -502,6 +502,8 @@ public:
     void OnBattlegroundEnd(Battleground* bg, TeamId /*winnerTeam*/) override { bgStrategies.erase(bg->GetInstanceID()); }
 };
 
+void AddPlayerbotsSecureLoginScripts();
+
 void AddPlayerbotsScripts()
 {
     new PlayerbotsDatabaseScript();
@@ -511,6 +513,7 @@ void AddPlayerbotsScripts()
     new PlayerbotsWorldScript();
     new PlayerbotsScript();
     new PlayerBotsBGScript();
+    AddPlayerbotsSecureLoginScripts();
 
     AddSC_playerbots_commandscript();
 }
