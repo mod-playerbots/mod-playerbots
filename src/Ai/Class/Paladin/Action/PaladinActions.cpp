@@ -5,7 +5,6 @@
 
 #include "PaladinActions.h"
 
-#include "../../../../../src/server/scripts/Spells/spell_generic.cpp"
 #include "AiFactory.h"
 #include "Config.h"
 #include "Event.h"
@@ -94,6 +93,14 @@ static inline PaladinBlessingState GetBlessingState(PlayerbotAI* botAI)
         return PaladinBlessingState{};
 
     return botAI->GetAiObjectContext()->GetValue<PaladinBlessingState>("paladin blessing state")->Get();
+}
+
+static inline uint32 GetSpellId(PlayerbotAI* botAI, std::string const& name)
+{
+    if (!botAI)
+        return 0u;
+
+    return botAI->GetAiObjectContext()->GetValue<uint32>("spell id", name)->Get();
 }
 
 static inline bool GroupHasTankOfClass(Group* group, uint8 classId)
@@ -246,7 +253,8 @@ Value<Unit*>* CastBlessingOfSanctuaryOnPartyAction::GetTargetValue()
 
 bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event event)
 {
-    if (!bot->HasSpell(SPELL_BLESSING_OF_SANCTUARY))
+    uint32 sanctSpellId = GetSpellId(botAI, "blessing of sanctuary");
+    if (!sanctSpellId || !bot->HasSpell(sanctSpellId))
         return false;
 
     Unit* target = GetTarget();
@@ -325,7 +333,7 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event event)
     {
         bool hasKings = HasKingsAura(target);
         bool hasSanct = HasSanctAura(target);
-        bool knowSanct = bot->HasSpell(SPELL_BLESSING_OF_SANCTUARY);
+        bool knowSanct = bot->HasSpell(sanctSpellId);
         LOG_DEBUG("playerbots", "[Sanct] Final target={} hasKings={} hasSanct={} knowSanct={}", target->GetName(),
                   hasKings, hasSanct, knowSanct);
     }
@@ -444,8 +452,12 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
     if (targetPlayer)
     {
         const bool isTank = IsTankRole(targetPlayer);
-        const bool hasSanctFromMe = target->HasAura(SPELL_BLESSING_OF_SANCTUARY, bot->GetGUID()) ||
-                                    target->HasAura(SPELL_GREATER_BLESSING_OF_SANCTUARY, bot->GetGUID());
+        uint32 sanctSpellId = GetSpellId(botAI, "blessing of sanctuary");
+        uint32 greaterSanctSpellId = GetSpellId(botAI, "greater blessing of sanctuary");
+        const bool hasSanctFromMe =
+            (sanctSpellId && target->HasAura(sanctSpellId, bot->GetGUID())) ||
+            (greaterSanctSpellId && target->HasAura(greaterSanctSpellId, bot->GetGUID()));
+
         const bool hasSanctAny =
             botAI->HasAura("blessing of sanctuary", target) || botAI->HasAura("greater blessing of sanctuary", target);
 
