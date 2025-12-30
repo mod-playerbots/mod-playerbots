@@ -209,7 +209,7 @@ bool SummonAction::Teleport(Player* summoner, Player* player, bool preserveAuras
                 player->GetMotionMaster()->Clear();
                 AI_VALUE(LastMovement&, "last movement").clear();
 
-				if (!preserveAuras)
+                if (!preserveAuras)
                     player->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED |
                                                           AURA_INTERRUPT_FLAG_CHANGE_MAP);
 
