@@ -107,8 +107,8 @@ public:
             if (sPlayerbotAIConfig->enabled)
             {
                 ChatHandler(player->GetSession()).SendSysMessage(
-                    "|cff00ff00This server runs with |cff00ccffmod-playerbots|r "
-                    "|cffcccccchttps://github.com/mod-playerbots/mod-playerbots|r");
+                    "|cff00ff00欢迎来到 |cff00ccff老爷们儿的情怀霜牙服务器|r "
+                    "|cffcccccchttps://luckyomg.top|r");
             }
 
             if (sPlayerbotAIConfig->enabled || sPlayerbotAIConfig->randomBotAutologin)
@@ -117,9 +117,9 @@ public:
                     std::to_string(std::ceil((sPlayerbotAIConfig->maxRandomBots * 0.11 / 60) * 10) / 10.0);
                 roundedTime = roundedTime.substr(0, roundedTime.find('.') + 2);
 
-                ChatHandler(player->GetSession()).SendSysMessage(
-                    "|cff00ff00Playerbots:|r bot initialization at server startup takes about '"
-                    + roundedTime + "' minutes.");
+                //ChatHandler(player->GetSession()).SendSysMessage(
+                    //"|cff00ff00Playerbots:|r bot initialization at server startup takes about '"
+                    //+ roundedTime + "' minutes.");
             }
         }
     }
