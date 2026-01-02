@@ -12,7 +12,8 @@
 
 bool TellEmblemsAction::Execute(Event event)
 {
-    static std::array<uint32, 5> const emblemIds = {
+    static std::array<uint32, 6> const emblemIds = {
+        29434, // Badge of Justice
         40752, // Emblem of Heroism
         40753, // Emblem of Valor
         45624, // Emblem of Conquest
