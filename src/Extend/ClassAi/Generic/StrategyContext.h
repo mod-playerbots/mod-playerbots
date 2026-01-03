@@ -10,6 +10,7 @@
 #include "BattlegroundStrategy.h"
 #include "CastTimeStrategy.h"
 #include "ChatCommandHandlerStrategy.h"
+#include "CombatDelayStrategy.h"
 #include "ConserveManaStrategy.h"
 #include "CustomStrategy.h"
 #include "DeadStrategy.h"
@@ -122,6 +123,7 @@ public:
         creators["worldbuff"] = &StrategyContext::world_buff;
         creators["use bobber"] = &StrategyContext::bobber_strategy;
         creators["master fishing"] = &StrategyContext::master_fishing;
+        creators["combat delay"] = &StrategyContext::combat_delay;
     }
 
 private:
@@ -192,6 +194,7 @@ private:
     static Strategy* world_buff(PlayerbotAI* botAI) { return new WorldBuffStrategy(botAI); }
     static Strategy* bobber_strategy(PlayerbotAI* botAI) { return new UseBobberStrategy(botAI); }
     static Strategy* master_fishing(PlayerbotAI* botAI) { return new MasterFishingStrategy(botAI); }
+    static Strategy* combat_delay(PlayerbotAI* botAI) { return new CombatDelayStrategy(botAI); }
 };
 
 class MovementStrategyContext : public NamedObjectContext<Strategy>

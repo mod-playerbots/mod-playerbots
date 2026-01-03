@@ -64,7 +64,7 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
 
     // Combat delay check - prevent immediate engagement (not for PvP)
     bool isPvPTarget = target->IsPlayer() || (target->IsPet() && target->GetOwner() && target->GetOwner()->IsPlayer());
-    if (sPlayerbotAIConfig->combatDelay > 0 && !sameTarget && !inCombat && !isPvPTarget)
+    if (botAI->HasStrategy("combat delay", BOT_STATE_NON_COMBAT) && sPlayerbotAIConfig->combatDelay > 0 && !sameTarget && !inCombat && !isPvPTarget)
     {
         static std::unordered_map<ObjectGuid, uint32> targetFirstSeenTime;
         ObjectGuid targetGuid = target->GetGUID();
