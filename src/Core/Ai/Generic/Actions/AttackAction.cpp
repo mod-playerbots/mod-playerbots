@@ -62,25 +62,22 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
     bool inCombat = botAI->GetState() == BOT_STATE_COMBAT;
     bool sameAttackMode = bot->HasUnitState(UNIT_STATE_MELEE_ATTACKING) == shouldMelee;
 
-    // Combat delay check - prevent immediate engagement
-    if (sPlayerbotAIConfig->combatDelay > 0 && !sameTarget && !inCombat)
+    // Combat delay check - prevent immediate engagement (not for PvP)
+    bool isPvPTarget = target->IsPlayer() || (target->IsPet() && target->GetOwner() && target->GetOwner()->IsPlayer());
+    if (sPlayerbotAIConfig->combatDelay > 0 && !sameTarget && !inCombat && !isPvPTarget)
     {
         static std::unordered_map<ObjectGuid, uint32> targetFirstSeenTime;
         ObjectGuid targetGuid = target->GetGUID();
         uint32 currentTime = getMSTime();
-
-        // Track when this target was first seen
         if (targetFirstSeenTime.find(targetGuid) == targetFirstSeenTime.end())
         {
             targetFirstSeenTime[targetGuid] = currentTime;
-            return false; // Don't attack yet, delay started
+            return false; 
         }
-
-        // Check if enough time has passed
         uint32 timeSinceFirstSeen = currentTime - targetFirstSeenTime[targetGuid];
         if (timeSinceFirstSeen < sPlayerbotAIConfig->combatDelay)
         {
-            return false; // Still waiting
+            return false; 
         }
 
         // Clean up old entries to prevent memory leak
