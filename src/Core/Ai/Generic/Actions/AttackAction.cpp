@@ -5,15 +5,18 @@
 
 #include "AttackAction.h"
 
+#include <unordered_map>
 #include "CreatureAI.h"
 #include "Event.h"
 #include "LastMovementValue.h"
 #include "LootObjectStack.h"
 #include "PlayerbotAI.h"
+#include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "SharedDefines.h"
 #include "Unit.h"
+#include "Timer.h"
 
 bool AttackAction::Execute(Event /*event*/)
 {
@@ -58,6 +61,34 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
     bool sameTarget = oldTarget == target && bot->GetVictim() == target;
     bool inCombat = botAI->GetState() == BOT_STATE_COMBAT;
     bool sameAttackMode = bot->HasUnitState(UNIT_STATE_MELEE_ATTACKING) == shouldMelee;
+
+    // Combat delay check - prevent immediate engagement
+    if (sPlayerbotAIConfig->combatDelay > 0 && !sameTarget && !inCombat)
+    {
+        static std::unordered_map<ObjectGuid, uint32> targetFirstSeenTime;
+        ObjectGuid targetGuid = target->GetGUID();
+        uint32 currentTime = getMSTime();
+
+        // Track when this target was first seen
+        if (targetFirstSeenTime.find(targetGuid) == targetFirstSeenTime.end())
+        {
+            targetFirstSeenTime[targetGuid] = currentTime;
+            return false; // Don't attack yet, delay started
+        }
+
+        // Check if enough time has passed
+        uint32 timeSinceFirstSeen = currentTime - targetFirstSeenTime[targetGuid];
+        if (timeSinceFirstSeen < sPlayerbotAIConfig->combatDelay)
+        {
+            return false; // Still waiting
+        }
+
+        // Clean up old entries to prevent memory leak
+        if (targetFirstSeenTime.size() > 100)
+        {
+            targetFirstSeenTime.clear();
+        }
+    }
 
     if (bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE ||
         bot->HasUnitState(UNIT_STATE_IN_FLIGHT))

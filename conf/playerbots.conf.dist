@@ -353,6 +353,9 @@ AiPlayerbot.SitDelay = 20000
 # ReturnDelay has a minimum value of 2000 - lower values will cause a crash!
 AiPlayerbot.ReturnDelay = 2000
 AiPlayerbot.LootDelay = 1000
+# Delay in milliseconds before bots engage in combat after detecting a target (0 = no delay)
+# This prevents bots from running into enemies immediately 
+AiPlayerbot.CombatDelay = 3000
 
 #
 #
