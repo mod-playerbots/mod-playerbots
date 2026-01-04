@@ -1,5 +1,8 @@
 !.gitignore
 
+.cache/
+build/
+
 #
 #Generic
 #

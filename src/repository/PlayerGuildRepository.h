@@ -2,9 +2,7 @@
 #define PLAYER_GUILD_REPOSITORY_H
 
 #include <unordered_set>
-#include <vector>
 #include <cstdint>
-#include <mutex>
 
 class PlayerGuildRepository {
 public:

@@ -106,6 +106,7 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     triggers.push_back(new TriggerNode("pet", { NextAction("pet", relevance) }));
     triggers.push_back(new TriggerNode("pet attack", { NextAction("pet attack", relevance) }));
     triggers.push_back(new TriggerNode("roll", { NextAction("roll", relevance) }));
+    triggers.push_back(new TriggerNode("manage inventory", { NextAction("manage inventory", relevance) }));
 }
 
 ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI)
@@ -114,6 +115,7 @@ ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : Pas
 
     supported.push_back("quests");
     supported.push_back("stats");
+    supported.push_back("manage inventory");
     supported.push_back("leave");
     supported.push_back("reputation");
     supported.push_back("log");

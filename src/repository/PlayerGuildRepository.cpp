@@ -2,9 +2,9 @@
 #include <cstdint>
 #include "PlayerGuildRepository.h"
 #include "PlayerbotAIConfig.h"
+#include "QueryResult.h"
 #include "UInt32VectorToString.h"
 #include "DatabaseEnv.h"
-#include "QueryResult.h"
 #include "Log.h"
 
 std::unordered_set<uint32_t> PlayerGuildRepository::GetPlayerGuildsIds()

@@ -566,10 +566,22 @@ bool Engine::ListenAndExecute(Action* action, Event event)
 
         return actionExecuted;
     }
+	const std::string actionName = action->getName();
 
     if (actionExecutionListeners.Before(action, event))
     {
+		if (actionName == "manage inventory")
+		{
+			LOG_ERROR("playerbots", "Starting manage inventory macro level");
+		}
+
         actionExecuted = actionExecutionListeners.AllowExecution(action, event) ? action->Execute(event) : true;
+
+		if (actionName == "manage inventory")
+		{
+			LOG_ERROR("playerbots", "Starting manage inventory macro level");
+		}
+
     }
 
     if (botAI->HasStrategy("debug", BOT_STATE_NON_COMBAT))
@@ -591,8 +603,25 @@ bool Engine::ListenAndExecute(Action* action, Event event)
         botAI->TellMasterNoFacing(out);
     }
 
+	if (actionName == "manage inventory")
+	{
+		LOG_ERROR("playerbots", "Pre override result");
+	}
+
     actionExecuted = actionExecutionListeners.OverrideResult(action, actionExecuted, event);
+
+	if (actionName == "manage inventory")
+	{
+		LOG_ERROR("playerbots", "Post override result");
+	}
+
     actionExecutionListeners.After(action, actionExecuted, event);
+
+	if (actionName == "manage inventory")
+	{
+		LOG_ERROR("playerbots", "post after result");
+	}
+
     return actionExecuted;
 }
 

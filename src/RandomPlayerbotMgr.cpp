@@ -2350,6 +2350,8 @@ void RandomPlayerbotMgr::Randomize(Player* bot)
 {
     uint8 level = bot->GetLevel();
 
+	LOG_ERROR("playerbots", "randomizing bot {}", bot->GetName());
+
     if (bot->InBattleground())
         return;
 

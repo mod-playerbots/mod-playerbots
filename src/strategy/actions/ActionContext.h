@@ -8,6 +8,7 @@
 
 #include "AddLootAction.h"
 #include "AttackAction.h"
+#include "ManageInventoryAction.h"
 #include "ShareQuestAction.h"
 #include "BattleGroundTactics.h"
 #include "AutoMaintenanceOnLevelupAction.h"
@@ -200,6 +201,8 @@ public:
         creators["roll"] = &ActionContext::roll_action;
         creators["cancel channel"] = &ActionContext::cancel_channel;
 
+        creators["manage inventory"] = &ActionContext::manage_inventory;
+
         // BG Tactics
         creators["bg tactics"] = &ActionContext::bg_tactics;
         creators["bg move to start"] = &ActionContext::bg_move_to_start;
@@ -310,6 +313,8 @@ private:
     static Action* mana_tap(PlayerbotAI* botAI) { return new CastManaTapAction(botAI); }
     static Action* end_pull(PlayerbotAI* botAI) { return new ChangeCombatStrategyAction(botAI, "-pull"); }
     static Action* cancel_channel(PlayerbotAI* botAI) { return new CancelChannelAction(botAI); }
+
+	static Action* manage_inventory(PlayerbotAI* botAI) { return new ManageInventoryAction(botAI); }
 
     static Action* emote(PlayerbotAI* botAI) { return new EmoteAction(botAI); }
     static Action* talk(PlayerbotAI* botAI) { return new TalkAction(botAI); }

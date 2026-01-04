@@ -46,6 +46,7 @@ static const std::unordered_set<std::string> noReplyMsgs = {
     "guard",
     "do accept invitation",
     "stats",
+    "manage_inventory",
     "react ?",
     "reset strats",
     "home",
