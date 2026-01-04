@@ -25,6 +25,8 @@
 #include "Metric.h"
 #include "PlayerScript.h"
 #include "PlayerbotAIConfig.h"
+#include "PlayerbotGuildMgr.h"
+#include "PlayerbotSpellCache.h"
 #include "PlayerbotWorldThreadProcessor.h"
 #include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
@@ -123,24 +125,49 @@ public:
         }
     }
 
-    bool OnPlayerBeforeTeleport(Player* player, uint32 mapid, float /*x*/, float /*y*/, float /*z*/, float /*orientation*/, uint32 /*options*/, Unit* /*target*/) override
+    bool OnPlayerBeforeTeleport(Player* /*player*/, uint32 /*mapid*/, float /*x*/, float /*y*/, float /*z*/, float /*orientation*/, uint32 /*options*/, Unit* /*target*/) override
     {
-        // Only apply to bots to prevent affecting real players
-        if (!player || !player->GetSession()->IsBot())
+        /* for now commmented out until proven its actually required
+        * havent seen any proof CleanVisibilityReferences() is needed
+
+        // If the player is not safe to touch, do nothing
+        if (!player)
             return true;
 
-        // If changing maps, proactively clean visibility references to prevent
-        // stale pointers in other players' visibility maps during the teleport.
-        // This fixes a race condition where:
-        // 1. Bot A teleports and its visible objects start getting cleaned up
-        // 2. Bot B is simultaneously updating visibility and tries to access objects in Bot A's old visibility map
-        // 3. Those objects may already be freed, causing a segmentation fault
-        if (player->GetMapId() != mapid && player->IsInWorld())
-        {
-            player->GetObjectVisibilityContainer().CleanVisibilityReferences();
-        }
+        // If same map or not in world do nothing
+        if (!player->IsInWorld() || player->GetMapId() == mapid)
+            return true;
 
-        return true;  // Allow teleport to continue
+        // If real player do nothing
+        PlayerbotAI* ai = GET_PLAYERBOT_AI(player);
+        if (!ai || ai->IsRealPlayer())
+            return true;
+
+        // Cross-map bot teleport: defer visibility reference cleanup.
+        // CleanVisibilityReferences() erases this bot's GUID from other objects' visibility containers.
+        // This is intentionally done via the event queue (instead of directly here) because erasing
+        // from other players' visibility maps inside the teleport call stack can hit unsafe re-entrancy
+        // or iterator invalidation while visibility updates are in progress
+        ObjectGuid guid = player->GetGUID();
+        player->m_Events.AddEventAtOffset(
+            [guid, mapid]()
+            {
+                // do nothing, if the player is not safe to touch
+                Player* p = ObjectAccessor::FindPlayer(guid);
+                if (!p || !p->IsInWorld() || p->IsDuringRemoveFromWorld())
+                    return;
+
+                // do nothing if we are already on the target map
+                if (p->GetMapId() == mapid)
+                    return;
+
+                p->GetObjectVisibilityContainer().CleanVisibilityReferences();
+            },
+            Milliseconds(0));
+
+        */
+
+        return true;
     }
 
     void OnPlayerAfterUpdate(Player* player, uint32 diff) override
@@ -238,22 +265,12 @@ public:
 
     void OnPlayerGiveXP(Player* player, uint32& amount, Unit* /*victim*/, uint8 /*xpSource*/) override
     {
-        // no XP multiplier, when player is no bot.
-        if (!player || !player->GetSession()->IsBot())
+        // early return
+        if (sPlayerbotAIConfig->randomBotXPRate == 1.0 || !player)
             return;
 
-        // no XP gain, if master is not a bot and has xp gain disabled.
-        if (const Player* master = GET_PLAYERBOT_AI(player)->GetMaster())
-        {
-            if (!master->GetSession()->IsBot() && master->HasPlayerFlag(PLAYER_FLAGS_NO_XP_GAIN))
-            {
-                amount = 0;
-                return;
-            }
-        }
-
-        // early return
-        if (sPlayerbotAIConfig->randomBotXPRate == 1.0 || !sRandomPlayerbotMgr->IsRandomBot(player))
+        // no XP multiplier, when player is no bot.
+        if (!player->GetSession()->IsBot() || !sRandomPlayerbotMgr->IsRandomBot(player))
             return;
 
         // no XP multiplier, when bot is in a group with a real player.
@@ -347,6 +364,9 @@ public:
 
         LOG_INFO("server.loading", ">> Loaded playerbots config in {} ms", GetMSTimeDiffToNow(oldMSTime));
         LOG_INFO("server.loading", " ");
+
+        sPlayerbotSpellCache->Initialize();
+
         LOG_INFO("server.loading", "Playerbots World Thread Processor initialized");
     }
 
@@ -483,6 +503,8 @@ public:
     void OnBattlegroundEnd(Battleground* bg, TeamId /*winnerTeam*/) override { bgStrategies.erase(bg->GetInstanceID()); }
 };
 
+void AddPlayerbotsSecureLoginScripts();
+
 void AddPlayerbotsScripts()
 {
     new PlayerbotsDatabaseScript();
@@ -492,6 +514,7 @@ void AddPlayerbotsScripts()
     new PlayerbotsWorldScript();
     new PlayerbotsScript();
     new PlayerBotsBGScript();
-
+    AddPlayerbotsSecureLoginScripts();
     AddSC_playerbots_commandscript();
+    PlayerBotsGuildValidationScript();
 }

@@ -112,7 +112,7 @@ namespace KarazhanHelpers
     void MarkTargetWithCircle(Player* bot, Unit* target);
     void MarkTargetWithMoon(Player* bot, Unit* target);
     void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
-    bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot);
+    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot);
     Unit* GetFirstAliveUnit(const std::vector<Unit*>& units);
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
     Unit* GetNearestPlayerInRadius(Player* bot, float radius);

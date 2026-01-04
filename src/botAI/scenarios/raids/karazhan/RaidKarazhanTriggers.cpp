@@ -40,7 +40,7 @@ bool AttumenTheHuntsmanAttumenIsMountedTrigger::IsActive()
 
 bool AttumenTheHuntsmanBossWipesAggroWhenMountingTrigger::IsActive()
 {
-    if (!IsMapIDTimerManager(botAI, bot))
+    if (!IsInstanceTimerManager(botAI, bot))
         return false;
 
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
@@ -110,7 +110,7 @@ bool BigBadWolfBossIsChasingLittleRedRidingHoodTrigger::IsActive()
 
 bool RomuloAndJulianneBothBossesRevivedTrigger::IsActive()
 {
-    if (!IsMapIDTimerManager(botAI, bot))
+    if (!IsInstanceTimerManager(botAI, bot))
         return false;
 
     Unit* romulo = AI_VALUE2(Unit*, "find target", "romulo");
@@ -126,7 +126,7 @@ bool RomuloAndJulianneBothBossesRevivedTrigger::IsActive()
 
 bool WizardOfOzNeedTargetPriorityTrigger::IsActive()
 {
-    if (!IsMapIDTimerManager(botAI, bot))
+    if (!IsInstanceTimerManager(botAI, bot))
         return false;
 
     Unit* dorothee = AI_VALUE2(Unit*, "find target", "dorothee");
@@ -178,7 +178,7 @@ bool TheCuratorBossAstralFlaresCastArcingSearTrigger::IsActive()
 
 bool TerestianIllhoofNeedTargetPriorityTrigger::IsActive()
 {
-    if (!IsMapIDTimerManager(botAI, bot))
+    if (!IsInstanceTimerManager(botAI, bot))
         return false;
 
     Unit* illhoof = AI_VALUE2(Unit*, "find target", "terestian illhoof");
@@ -202,7 +202,7 @@ bool ShadeOfAranFlameWreathIsActiveTrigger::IsActive()
 // Exclusion of Banish is so the player may Banish elementals if they wish
 bool ShadeOfAranConjuredElementalsSummonedTrigger::IsActive()
 {
-    if (!IsMapIDTimerManager(botAI, bot))
+    if (!IsInstanceTimerManager(botAI, bot))
         return false;
 
     Unit* elemental = AI_VALUE2(Unit*, "find target", "conjured elemental");
@@ -279,7 +279,7 @@ bool NetherspiteBossIsBanishedTrigger::IsActive()
 
 bool NetherspiteNeedToManageTimersAndTrackersTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot) && !IsMapIDTimerManager(botAI, bot))
+    if (!botAI->IsTank(bot) && !IsInstanceTimerManager(botAI, bot))
         return false;
 
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
@@ -370,11 +370,12 @@ bool NightbaneBossIsFlyingTrigger::IsActive()
     if (!nightbane || nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
         return false;
 
+    const uint32 instanceId = nightbane->GetMap()->GetInstanceId();
     const time_t now = std::time(nullptr);
     const uint8 flightPhaseDurationSeconds = 35;
 
-    return nightbaneFlightPhaseStartTimer.find(KARAZHAN_MAP_ID) != nightbaneFlightPhaseStartTimer.end() &&
-           (now - nightbaneFlightPhaseStartTimer[KARAZHAN_MAP_ID] < flightPhaseDurationSeconds);
+    return nightbaneFlightPhaseStartTimer.find(instanceId) != nightbaneFlightPhaseStartTimer.end() &&
+           (now - nightbaneFlightPhaseStartTimer[instanceId] < flightPhaseDurationSeconds);
 }
 
 bool NightbaneNeedToManageTimersAndTrackersTrigger::IsActive()

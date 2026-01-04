@@ -9,6 +9,7 @@
 #include "Group.h"
 #include "GroupMgr.h"
 #include "GuildMgr.h"
+#include "Playerbots.h"
 #include "ObjectAccessor.h"
 #include "PlayerbotOperation.h"
 #include "Player.h"
@@ -16,6 +17,8 @@
 #include "PlayerbotMgr.h"
 #include "PlayerbotDbStore.h"
 #include "RandomPlayerbotMgr.h"
+#include "WorldSession.h"
+#include "WorldSessionMgr.h"
 
 // Group invite operation
 class GroupInviteOperation : public PlayerbotOperation
@@ -468,18 +471,31 @@ private:
 class OnBotLoginOperation : public PlayerbotOperation
 {
 public:
-    OnBotLoginOperation(ObjectGuid botGuid, PlayerbotHolder* holder)
-        : m_botGuid(botGuid), m_holder(holder)
+    OnBotLoginOperation(ObjectGuid botGuid, uint32 masterAccountId)
+        : m_botGuid(botGuid), m_masterAccountId(masterAccountId)
     {
     }
 
     bool Execute() override
     {
+        // find and verify bot still exists
         Player* bot = ObjectAccessor::FindConnectedPlayer(m_botGuid);
-        if (!bot || !m_holder)
+        if (!bot)
             return false;
 
-        m_holder->OnBotLogin(bot);
+        PlayerbotHolder* holder = sRandomPlayerbotMgr;
+        if (m_masterAccountId)
+        {
+            WorldSession* masterSession = sWorldSessionMgr->FindSession(m_masterAccountId);
+            Player* masterPlayer = masterSession ? masterSession->GetPlayer() : nullptr;
+            if (masterPlayer)
+                holder = GET_PLAYERBOT_MGR(masterPlayer);
+        }
+
+        if (!holder)
+            return false;
+
+        holder->OnBotLogin(bot);
         return true;
     }
 
@@ -487,14 +503,11 @@ public:
     uint32 GetPriority() const override { return 100; }
     std::string GetName() const override { return "OnBotLogin"; }
 
-    bool IsValid() const override
-    {
-        return ObjectAccessor::FindConnectedPlayer(m_botGuid) != nullptr;
-    }
+    bool IsValid() const override { return ObjectAccessor::FindConnectedPlayer(m_botGuid) != nullptr; }
 
 private:
     ObjectGuid m_botGuid;
-    PlayerbotHolder* m_holder;
+    uint32 m_masterAccountId = 0;
 };
 
 #endif

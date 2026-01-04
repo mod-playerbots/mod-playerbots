@@ -26,7 +26,6 @@
 #include "DatabaseEnv.h"
 #include "Define.h"
 #include "FleeManager.h"
-#include "GameTime.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "GuildMgr.h"
@@ -670,9 +669,9 @@ void RandomPlayerbotMgr::AssignAccountTypes()
         uint32 toAssign = neededAddClassAccounts - existingAddClassAccounts;
         uint32 assigned = 0;
 
-        for (int i = allRandomBotAccounts.size() - 1; i >= 0 && assigned < toAssign; i--)
+        for (size_t idx = allRandomBotAccounts.size(); idx-- > 0 && assigned < toAssign;)
         {
-            uint32 accountId = allRandomBotAccounts[i];
+            uint32 accountId = allRandomBotAccounts[idx];
             if (currentAssignments[accountId] == 0) // Unassigned
             {
                 PlayerbotsDatabase.Execute("UPDATE playerbots_account_type SET account_type = 2, assignment_date = NOW() WHERE account_id = {}", accountId);
@@ -1425,7 +1424,7 @@ bool RandomPlayerbotMgr::ProcessBot(uint32 bot)
                 LOG_DEBUG("playerbots", "Bot #{}: log out", bot);
 
             SetEventValue(bot, "add", 0, 0);
-            currentBots.erase(std::remove(currentBots.begin(), currentBots.end(), bot), currentBots.end());
+            currentBots.remove(bot);
 
             if (player)
                 LogoutPlayerBot(botGUID);
@@ -2712,69 +2711,73 @@ std::vector<uint32> RandomPlayerbotMgr::GetBgBots(uint32 bracket)
     return std::move(BgBots);
 }
 
-uint32 RandomPlayerbotMgr::GetEventValue(uint32 bot, std::string const event)
+CachedEvent* RandomPlayerbotMgr::FindEvent(uint32 bot, std::string const& event)
 {
-    // load all events at once on first event load
-    if (eventCache[bot].empty())
+    BotEventCache& cache = eventCache[bot];
+
+    // Load once
+    if (!cache.loaded)
     {
+        cache.events.clear();
+
         PlayerbotsDatabasePreparedStatement* stmt =
             PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_RANDOM_BOTS_BY_OWNER_AND_BOT);
         stmt->SetData(0, 0);
         stmt->SetData(1, bot);
+
         if (PreparedQueryResult result = PlayerbotsDatabase.Query(stmt))
         {
             do
             {
                 Field* fields = result->Fetch();
-                std::string const eventName = fields[0].Get<std::string>();
 
                 CachedEvent e;
                 e.value = fields[1].Get<uint32>();
                 e.lastChangeTime = fields[2].Get<uint32>();
                 e.validIn = fields[3].Get<uint32>();
                 e.data = fields[4].Get<std::string>();
-                eventCache[bot][eventName] = std::move(e);
+
+                cache.events.emplace(fields[0].Get<std::string>(), std::move(e));
             } while (result->NextRow());
         }
+
+        cache.loaded = true;
     }
 
-    CachedEvent& e = eventCache[bot][event];
-    /*if (e.IsEmpty())
+    auto it = cache.events.find(event);
+    if (it == cache.events.end())
+        return nullptr;
+
+    CachedEvent& e = it->second;
+
+    // remove expired events
+    if (e.validIn && (NowSeconds() - e.lastChangeTime) >= e.validIn && event != "specNo" && event != "specLink")
     {
-        QueryResult results = PlayerbotsDatabase.Query("SELECT `value`, `time`, validIn, `data` FROM
-    playerbots_random_bots WHERE owner = 0 AND bot = {} AND event = {}", bot, event.c_str());
-
-        if (results)
-        {
-            Field* fields = results->Fetch();
-            e.value = fields[0].Get<uint32>();
-            e.lastChangeTime = fields[1].Get<uint32>();
-            e.validIn = fields[2].Get<uint32>();
-            e.data = fields[3].Get<std::string>();
-        }
+        cache.events.erase(it);
+        return nullptr;
     }
-    */
 
-    if ((time(0) - e.lastChangeTime) >= e.validIn && event != "specNo" && event != "specLink")
-        e.value = 0;
-
-    return e.value;
+    return &e;
 }
 
-std::string const RandomPlayerbotMgr::GetEventData(uint32 bot, std::string const event)
+uint32 RandomPlayerbotMgr::GetEventValue(uint32 bot, std::string const& event)
 {
-    std::string data = "";
-    if (GetEventValue(bot, event))
-    {
-        CachedEvent e = eventCache[bot][event];
-        data = e.data;
-    }
+    if (CachedEvent* e = FindEvent(bot, event))
+        return e->value;
 
-    return data;
+    return 0;
 }
 
-uint32 RandomPlayerbotMgr::SetEventValue(uint32 bot, std::string const event, uint32 value, uint32 validIn,
-                                         std::string const data)
+std::string RandomPlayerbotMgr::GetEventData(uint32 bot, std::string const& event)
+{
+    if (CachedEvent* e = FindEvent(bot, event))
+        return e->data;
+
+    return "";
+}
+
+uint32 RandomPlayerbotMgr::SetEventValue(uint32 bot, std::string const& event, uint32 value, uint32 validIn,
+                                         std::string const& data)
 {
     PlayerbotsDatabaseTransaction trans = PlayerbotsDatabase.BeginTransaction();
 
@@ -2790,43 +2793,55 @@ uint32 RandomPlayerbotMgr::SetEventValue(uint32 bot, std::string const event, ui
         stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_INS_RANDOM_BOTS);
         stmt->SetData(0, 0);
         stmt->SetData(1, bot);
-        stmt->SetData(2, static_cast<uint32>(GameTime::GetGameTime().count()));
+        stmt->SetData(2, NowSeconds());
         stmt->SetData(3, validIn);
         stmt->SetData(4, event.c_str());
         stmt->SetData(5, value);
-        if (data != "")
-        {
+
+        if (!data.empty())
             stmt->SetData(6, data.c_str());
-        }
         else
-        {
-            stmt->SetData(6);
-        }
+            stmt->SetData(6);  // NULL
+
         trans->Append(stmt);
     }
 
     PlayerbotsDatabase.CommitTransaction(trans);
 
-    CachedEvent e(value, (uint32)time(nullptr), validIn, data);
-    eventCache[bot][event] = std::move(e);
+    // Update in-memory cache
+    BotEventCache& cache = eventCache[bot];
+    cache.loaded = true;
+
+    if (!value)
+    {
+        cache.events.erase(event);
+        return 0;
+    }
+
+    CachedEvent& e = cache.events[event];  // create-on-write is OK here
+    e.value = value;
+    e.lastChangeTime = NowSeconds();
+    e.validIn = validIn;
+    e.data = data;
+
     return value;
 }
 
-uint32 RandomPlayerbotMgr::GetValue(uint32 bot, std::string const type) { return GetEventValue(bot, type); }
+uint32 RandomPlayerbotMgr::GetValue(uint32 bot, std::string const& type) { return GetEventValue(bot, type); }
 
-uint32 RandomPlayerbotMgr::GetValue(Player* bot, std::string const type)
+uint32 RandomPlayerbotMgr::GetValue(Player* bot, std::string const& type)
 {
     return GetValue(bot->GetGUID().GetCounter(), type);
 }
 
-std::string const RandomPlayerbotMgr::GetData(uint32 bot, std::string const type) { return GetEventData(bot, type); }
+std::string RandomPlayerbotMgr::GetData(uint32 bot, std::string const& type) { return GetEventData(bot, type); }
 
-void RandomPlayerbotMgr::SetValue(uint32 bot, std::string const type, uint32 value, std::string const data)
+void RandomPlayerbotMgr::SetValue(uint32 bot, std::string const& type, uint32 value, std::string const& data)
 {
     SetEventValue(bot, type, value, sPlayerbotAIConfig->maxRandomBotInWorldTime, data);
 }
 
-void RandomPlayerbotMgr::SetValue(Player* bot, std::string const type, uint32 value, std::string const data)
+void RandomPlayerbotMgr::SetValue(Player* bot, std::string const& type, uint32 value, std::string const& data)
 {
     SetValue(bot->GetGUID().GetCounter(), type, value, data);
 }
@@ -3115,7 +3130,7 @@ void RandomPlayerbotMgr::OnPlayerLogin(Player* player)
 void RandomPlayerbotMgr::OnPlayerLoginError(uint32 bot)
 {
     SetEventValue(bot, "add", 0, 0);
-    currentBots.erase(std::remove(currentBots.begin(), currentBots.end(), bot), currentBots.end());
+    currentBots.remove(bot);
 }
 
 Player* RandomPlayerbotMgr::GetRandomPlayer()
@@ -3497,7 +3512,8 @@ void RandomPlayerbotMgr::Remove(Player* bot)
     stmt->SetData(1, owner.GetCounter());
     PlayerbotsDatabase.Execute(stmt);
 
-    eventCache[owner.GetCounter()].clear();
+    uint32 botId = owner.GetCounter();
+    eventCache.erase(botId);
 
     LogoutPlayerBot(owner);
 }
@@ -3514,7 +3530,7 @@ CreatureData const* RandomPlayerbotMgr::GetCreatureDataByEntry(uint32 entry)
     return nullptr;
 }
 
-ObjectGuid const RandomPlayerbotMgr::GetBattleMasterGUID(Player* bot, BattlegroundTypeId bgTypeId)
+ObjectGuid RandomPlayerbotMgr::GetBattleMasterGUID(Player* bot, BattlegroundTypeId bgTypeId)
 {
     ObjectGuid battleMasterGUID = ObjectGuid::Empty;
 

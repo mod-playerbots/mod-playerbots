@@ -3,8 +3,11 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include "ReadyCheckAction.h"
+#include <memory>
+#include <mutex>
+#include <vector>
 
+#include "ReadyCheckAction.h"
 #include "Event.h"
 #include "Playerbots.h"
 
@@ -27,14 +30,17 @@ std::string const formatPercent(std::string const name, uint8 value, float perce
 class ReadyChecker
 {
 public:
+    virtual ~ReadyChecker() = default;
     virtual bool Check(PlayerbotAI* botAI, AiObjectContext* context) = 0;
     virtual std::string const getName() = 0;
     virtual bool PrintAlways() { return true; }
 
-    static std::vector<ReadyChecker*> checkers;
+    static std::vector<std::unique_ptr<ReadyChecker>> checkers;
+    static std::once_flag initFlag;
 };
 
-std::vector<ReadyChecker*> ReadyChecker::checkers;
+std::vector<std::unique_ptr<ReadyChecker>> ReadyChecker::checkers;
+std::once_flag ReadyChecker::initFlag;
 
 class HealthChecker : public ReadyChecker
 {
@@ -160,25 +166,30 @@ bool ReadyCheckAction::Execute(Event event)
 
 bool ReadyCheckAction::ReadyCheck()
 {
-    if (ReadyChecker::checkers.empty())
-    {
-        ReadyChecker::checkers.push_back(new HealthChecker());
-        ReadyChecker::checkers.push_back(new ManaChecker());
-        ReadyChecker::checkers.push_back(new DistanceChecker());
-        ReadyChecker::checkers.push_back(new HunterChecker());
+    std::call_once(
+        ReadyChecker::initFlag,
+        []()
+        {
+            ReadyChecker::checkers.reserve(8);
 
-        ReadyChecker::checkers.push_back(new ItemCountChecker("food", "Food"));
-        ReadyChecker::checkers.push_back(new ManaPotionChecker("drink", "Water"));
-        ReadyChecker::checkers.push_back(new ItemCountChecker("healing potion", "Hpot"));
-        ReadyChecker::checkers.push_back(new ManaPotionChecker("mana potion", "Mpot"));
-    }
+            ReadyChecker::checkers.emplace_back(std::make_unique<HealthChecker>());
+            ReadyChecker::checkers.emplace_back(std::make_unique<ManaChecker>());
+            ReadyChecker::checkers.emplace_back(std::make_unique<DistanceChecker>());
+            ReadyChecker::checkers.emplace_back(std::make_unique<HunterChecker>());
+
+            ReadyChecker::checkers.emplace_back(std::make_unique<ItemCountChecker>("food", "Food"));
+            ReadyChecker::checkers.emplace_back(std::make_unique<ManaPotionChecker>("drink", "Water"));
+            ReadyChecker::checkers.emplace_back(std::make_unique<ItemCountChecker>("healing potion", "Hpot"));
+            ReadyChecker::checkers.emplace_back(std::make_unique<ManaPotionChecker>("mana potion", "Mpot"));
+        });
 
     bool result = true;
-    for (std::vector<ReadyChecker*>::iterator i = ReadyChecker::checkers.begin(); i != ReadyChecker::checkers.end();
-         ++i)
+    for (auto const& checkerPtr : ReadyChecker::checkers)
     {
-        ReadyChecker* checker = *i;
-        bool ok = checker->Check(botAI, context);
+        if (!checkerPtr)
+            continue;
+
+        bool ok = checkerPtr->Check(botAI, context);
         result = result && ok;
     }
 

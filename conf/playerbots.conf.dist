@@ -25,6 +25,7 @@
 #        CHEATS
 #        SPELLS
 #        FLIGHTPATH
+#        PROFESSIONS
 #    RANDOMBOT-SPECIFIC SETTINGS
 #        GENERAL
 #        LEVELS
@@ -44,7 +45,7 @@
 #        HUNTER
 #        ROGUE
 #        PRIEST
-#        DEATHKNIGHT
+#        DEATH KNIGHT
 #        SHAMAN
 #        MAGE
 #        WARLOCK
@@ -55,7 +56,7 @@
 #        HUNTER
 #        ROGUE
 #        PRIEST
-#        DEATHKNIGHT
+#        DEATH KNIGHT
 #        SHAMAN
 #        MAGE
 #        WARLOCK
@@ -573,6 +574,24 @@ AiPlayerbot.BotTaxiGapMs = 200
 
 # Extra small randomness added to each gap so launches don’t look robotic (ms)
 AiPlayerbot.BotTaxiGapJitterMs = 100
+
+#
+#
+#
+####################################################################################################
+
+####################################################################################################
+# PROFESSIONS
+# Random bots currently do not get professions.
+#
+
+# EnableFishingWithMaster automatically adds the 'master fishing' strategy to bots that can fish that can.
+# Default: 1 (Enabled)
+AiPlayerbot.EnableFishingWithMaster = 1
+#FishingDistance sets how far a bot without a master will search for water, while FishingDistanceFromMaster limits it to a closer range, and overrides the following distance to the same value. EndFishingWithMaster sets the distance from water a bot needs to have to automatically drop the 'master fishing' strategy.
+AiPlayerbot.FishingDistanceFromMaster = 10.0
+AiPlayerbot.FishingDistance = 40.0
+AiPlayerbot.EndFishingWithMaster = 30.0
 
 #
 #
@@ -1455,7 +1474,7 @@ AiPlayerbot.PremadeSpecLink.5.5.80 = 50332031003--005323241223112003102311351
 ####################################################################################################
 
 ####################################################################################################
-# DEATHKNIGHT
+# DEATH KNIGHT
 #
 #
 
@@ -1778,7 +1797,7 @@ AiPlayerbot.RandomClassSpecIndex.5.2 = 2
 ####################################################################################################
 
 ####################################################################################################
-# DEATHKNIGHT
+# DEATH KNIGHT
 #
 #
 
