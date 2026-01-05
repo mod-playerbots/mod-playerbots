@@ -95,7 +95,7 @@ std::string PlayerbotGuildMgr::AssignToGuild(Player* player)
     for (auto& keyValue : _guildCache)
     {
         GuildCache& cached = keyValue.second;
-        if (cached.status == 1 && cached.faction == playerFaction)
+        if (!cached.hasRealPlayer && cached.status == 1 && cached.faction == playerFaction)
             partiallyfilledguilds.push_back(&cached);
     }
 
