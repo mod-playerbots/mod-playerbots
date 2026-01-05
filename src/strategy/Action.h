@@ -23,19 +23,7 @@ public:
     std::string const getName() { return name; }
     float getRelevance() { return relevance; }
 
-    static std::vector<NextAction> clone(std::vector<NextAction> actions)
-    {
-        std::vector<NextAction> clone = {};
-
-        for (NextAction const& action : actions)
-        {
-            clone.push_back(action);
-        }
-
-        return clone;
-    };
-
-    static std::vector<NextAction> merge(std::vector<NextAction> what, std::vector<NextAction> with)
+    static std::vector<NextAction> merge(std::vector<NextAction> const& what, std::vector<NextAction> const& with)
     {
         std::vector<NextAction> result = {};
 
@@ -116,15 +104,15 @@ public:
 
     std::vector<NextAction> getContinuers()
     {
-        return NextAction::merge(NextAction::clone(continuers), action->getContinuers());
+        return NextAction::merge(this->continuers, action->getContinuers());
     }
     std::vector<NextAction> getAlternatives()
     {
-        return NextAction::merge(NextAction::clone(alternatives), action->getAlternatives());
+        return NextAction::merge(this->alternatives, action->getAlternatives());
     }
     std::vector<NextAction> getPrerequisites()
     {
-        return NextAction::merge(NextAction::clone(prerequisites), action->getPrerequisites());
+        return NextAction::merge(this->prerequisites, action->getPrerequisites());
     }
 
 private:
