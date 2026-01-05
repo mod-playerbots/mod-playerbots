@@ -163,43 +163,18 @@ bool RpgRepairTrigger::IsActive()
 
 bool RpgTrainTrigger::IsTrainerOf(CreatureTemplate const* cInfo, Player* pPlayer)
 {
-    switch (cInfo->trainer_type)
+    Trainer::Trainer* trainer = sObjectMgr->GetTrainer(cInfo->Entry);
+
+    if (trainer->GetTrainerType() == Trainer::Type::Mount && trainer->GetTrainerRequirement() != pPlayer->getRace())
     {
-        case TRAINER_TYPE_CLASS:
-            if (pPlayer->getClass() != cInfo->trainer_class)
-            {
-                return false;
-            }
-            break;
-        case TRAINER_TYPE_PETS:
-            if (pPlayer->getClass() != CLASS_HUNTER)
-            {
-                return false;
-            }
-            break;
-        case TRAINER_TYPE_MOUNTS:
-            if (cInfo->trainer_race && pPlayer->getRace() != cInfo->trainer_race)
-            {
-                // Allowed to train if exalted
-                if (FactionTemplateEntry const* faction_template = sFactionTemplateStore.LookupEntry(cInfo->faction))
-                {
-                    if (pPlayer->GetReputationRank(faction_template->faction) == REP_EXALTED)
-                        return true;
-                }
-                return false;
-            }
-            break;
-        case TRAINER_TYPE_TRADESKILLS:
-            if (cInfo->trainer_spell && !pPlayer->HasSpell(cInfo->trainer_spell))
-            {
-                return false;
-            }
-            break;
-        default:
-            return false;  // checked and error output at creature_template loading
+        if (FactionTemplateEntry const* faction_template = sFactionTemplateStore.LookupEntry(cInfo->faction))
+            if (pPlayer->GetReputationRank(faction_template->faction) == REP_EXALTED)
+                return true;
+
+        return false;
     }
 
-    return true;
+    return trainer->IsTrainerValidForPlayer(pPlayer);
 }
 
 bool RpgTrainTrigger::IsActive()
@@ -214,37 +189,17 @@ bool RpgTrainTrigger::IsActive()
     if (!IsTrainerOf(cInfo, bot))
         return false;
 
-    // check present spell in trainer spell list
-    TrainerSpellData const* cSpells = sObjectMgr->GetNpcTrainerSpells(guidP.GetEntry());
-    if (!cSpells)
-    {
-        return false;
-    }
-
+    Trainer::Trainer* trainer = sObjectMgr->GetTrainer(cInfo->Entry);
     FactionTemplateEntry const* factionTemplate = sFactionTemplateStore.LookupEntry(cInfo->faction);
     float fDiscountMod = bot->GetReputationPriceDiscount(factionTemplate);
 
-    TrainerSpellMap trainer_spells;
-    if (cSpells)
-        trainer_spells.insert(cSpells->spellList.begin(), cSpells->spellList.end());
-
-    for (TrainerSpellMap::const_iterator itr = trainer_spells.begin(); itr != trainer_spells.end(); ++itr)
+    for (auto& spell : trainer->GetSpells())
     {
-        TrainerSpell const* tSpell = &itr->second;
-
-        if (!tSpell)
+        if (!trainer->CanTeachSpell(bot, trainer->GetSpell(spell.SpellId)))
             continue;
 
-        TrainerSpellState state = bot->GetTrainerSpellState(tSpell);
-        if (state != TRAINER_SPELL_GREEN)
-            continue;
+        uint32 cost = uint32(floor(spell.MoneyCost * fDiscountMod));
 
-        uint32 spellId = tSpell->spell;
-        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-        if (!spellInfo)
-            continue;
-
-        uint32 cost = uint32(floor(tSpell->spellCost * fDiscountMod));
         if (cost > AI_VALUE2(uint32, "free money for", (uint32)NeedMoneyFor::spells))
             continue;
 
