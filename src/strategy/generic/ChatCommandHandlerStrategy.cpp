@@ -109,23 +109,25 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     triggers.push_back(
         new TriggerNode("unlock traded item", { NextAction("unlock traded item", relevance) }));
     triggers.push_back(
-        new TriggerNode("unlock traded item", NextAction::array(0, new NextAction("unlock traded item", relevance), nullptr)));
+        new TriggerNode("unlock items", { NextAction("unlock items", relevance) }));
     triggers.push_back(
-        new TriggerNode("wipe", NextAction::array(0, new NextAction("wipe", relevance), nullptr)));
+        new TriggerNode("unlock traded item", { NextAction("unlock traded item", relevance) }));
     triggers.push_back(
-        new TriggerNode("tame", NextAction::array(0, new NextAction("tame", relevance), nullptr)));
+        new TriggerNode("wipe", { NextAction("wipe", relevance) }));
     triggers.push_back(
-        new TriggerNode("glyphs", NextAction::array(0, new NextAction("glyphs", relevance), nullptr)));
+        new TriggerNode("tame", { NextAction("tame", relevance) }));
     triggers.push_back(
-        new TriggerNode("glyph equip", NextAction::array(0, new NextAction("glyph equip", relevance), nullptr)));
+        new TriggerNode("glyphs", { NextAction("glyphs", relevance) })); // Added for custom Glyphs
     triggers.push_back(
-        new TriggerNode("pet", NextAction::array(0, new NextAction("pet", relevance), nullptr)));
+        new TriggerNode("glyph equip", { NextAction("glyph equip", relevance) })); // Added for custom Glyphs
     triggers.push_back(
-        new TriggerNode("pet attack", NextAction::array(0, new NextAction("pet attack", relevance), nullptr)));
+        new TriggerNode("pet", { NextAction("pet", relevance) }));
     triggers.push_back(
-        new TriggerNode("roll", NextAction::array(0, new NextAction("roll", relevance), nullptr)));
+        new TriggerNode("pet attack", { NextAction("pet attack", relevance) }));
     triggers.push_back(
-        new TriggerNode("emblems", NextAction::array(0, new NextAction("emblems", relevance), nullptr)));
+        new TriggerNode("roll", { NextAction("roll", relevance) }));
+    triggers.push_back(
+        new TriggerNode("emblems", { NextAction("emblems", relevance) }));
 }
 
 ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI)
