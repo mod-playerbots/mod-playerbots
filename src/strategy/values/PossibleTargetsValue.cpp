@@ -25,8 +25,9 @@ constexpr int32 HIGH_LEVEL_DIFF = 4;     // 25% chance at +/- this difference
 constexpr int32 MID_LEVEL_DIFF = 3;      // 50% chance at +/- this difference
 constexpr int32 LOW_LEVEL_DIFF = 2;      // 75% chance at +/- this difference
 
-// Cache duration before reconsidering attack decision
+// Cache duration before reconsidering attack decision, and old cache cleanup interval
 constexpr uint32 ATTACK_DECISION_CACHE_DURATION = 2 * MINUTE;
+constexpr uint32 ATTACK_DECISION_CACHE_CLEANUP_INTERVAL = 10 * MINUTE;
 
 // Custom hash function for (botGUID, targetGUID) pairs
 struct PairGuidHash
@@ -49,8 +50,29 @@ void PossibleTargetsValue::FindUnits(std::list<Unit*>& targets)
     Cell::VisitObjects(bot, searcher, range);
 }
 
+static void CleanupAttackDecisionCache()
+{
+    time_t currentTime = time(nullptr);
+    for (auto it = attackDecisionCache.begin(); it != attackDecisionCache.end();)
+    {
+        if (currentTime - it->second.second >= ATTACK_DECISION_CACHE_DURATION)
+            it = attackDecisionCache.erase(it);
+        else
+            ++it;
+    }
+}
+
 bool PossibleTargetsValue::AcceptUnit(Unit* unit)
 {
+    // attackDecisionCache cleanup
+    static time_t lastCleanup = 0;
+    time_t currentTime = time(nullptr);
+    if (currentTime - lastCleanup > ATTACK_DECISION_CACHE_CLEANUP_INTERVAL)
+    {
+        CleanupAttackDecisionCache();
+        lastCleanup = currentTime;
+    }
+
     if (!AttackersValue::IsPossibleTarget(unit, bot, range))
         return false;
 
@@ -123,7 +145,6 @@ bool PossibleTargetsValue::AcceptUnit(Unit* unit)
         if (attackChance < 100)
         {
             std::pair<ObjectGuid, ObjectGuid> cacheKey = std::make_pair(bot->GetGUID(), unit->GetGUID());
-            time_t currentTime = time(nullptr);
 
             auto it = attackDecisionCache.find(cacheKey);
             if (it != attackDecisionCache.end())
