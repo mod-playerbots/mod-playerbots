@@ -26,23 +26,34 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
 {
     PassTroughStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("rep", { NextAction("reputation", relevance) }));
-    triggers.push_back(new TriggerNode("q", { NextAction("query quest", relevance),
-                                                              NextAction("query item usage", relevance) }));
-    triggers.push_back(new TriggerNode("add all loot", { NextAction("add all loot", relevance),
-                                                                         NextAction("loot", relevance) }));
-    triggers.push_back(new TriggerNode("u", { NextAction("use", relevance) }));
-    triggers.push_back(new TriggerNode("c", { NextAction("item count", relevance) }));
+    triggers.push_back(
+        new TriggerNode("rep", { NextAction("reputation", relevance) }));
+    triggers.push_back(
+        new TriggerNode("q", { NextAction("query quest", relevance), NextAction("query item usage", relevance) }));
+    triggers.push_back(
+        new TriggerNode("add all loot", { NextAction("add all loot", relevance), NextAction("loot", relevance) }));
+    triggers.push_back(
+        new TriggerNode("u", { NextAction("use", relevance) }));
+    triggers.push_back(
+        new TriggerNode("c", { NextAction("item count", relevance) }));
     triggers.push_back(
         new TriggerNode("items", { NextAction("item count", relevance) }));
-    triggers.push_back(new TriggerNode("inv", { NextAction("item count", relevance) }));
-    triggers.push_back(new TriggerNode("e", { NextAction("equip", relevance) }));
-    triggers.push_back(new TriggerNode("ue", { NextAction("unequip", relevance) }));
-    triggers.push_back(new TriggerNode("t", { NextAction("trade", relevance) }));
-    triggers.push_back(new TriggerNode("nt", { NextAction("trade", relevance) }));
-    triggers.push_back(new TriggerNode("s", { NextAction("sell", relevance) }));
-    triggers.push_back(new TriggerNode("b", { NextAction("buy", relevance) }));
-    triggers.push_back(new TriggerNode("r", { NextAction("reward", relevance) }));
+    triggers.push_back(
+        new TriggerNode("inv", { NextAction("item count", relevance) }));
+    triggers.push_back(
+        new TriggerNode("e", { NextAction("equip", relevance) }));
+    triggers.push_back(
+        new TriggerNode("ue", { NextAction("unequip", relevance) }));
+    triggers.push_back(
+        new TriggerNode("t", { NextAction("trade", relevance) }));
+    triggers.push_back(
+        new TriggerNode("nt", { NextAction("trade", relevance) }));
+    triggers.push_back(
+        new TriggerNode("s", { NextAction("sell", relevance) }));
+    triggers.push_back(
+        new TriggerNode("b", { NextAction("buy", relevance) }));
+    triggers.push_back(
+        new TriggerNode("r", { NextAction("reward", relevance) }));
     triggers.push_back(
         new TriggerNode("attack", { NextAction("attack my target", relevance) }));
     triggers.push_back(
@@ -60,8 +71,7 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     triggers.push_back(
         new TriggerNode("grind", { NextAction("grind chat shortcut", relevance) }));
     triggers.push_back(
-        new TriggerNode("talk", { NextAction("gossip hello", relevance),
-                                                  NextAction("talk to quest giver", relevance) }));
+        new TriggerNode("talk", { NextAction("gossip hello", relevance), NextAction("talk to quest giver", relevance) }));
     triggers.push_back(
         new TriggerNode("enter vehicle", { NextAction("enter vehicle", relevance) }));
     triggers.push_back(
@@ -102,13 +112,20 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode("unlock traded item", NextAction::array(0, new NextAction("unlock traded item", relevance), nullptr)));
     triggers.push_back(
         new TriggerNode("wipe", NextAction::array(0, new NextAction("wipe", relevance), nullptr)));
-    triggers.push_back(new TriggerNode("tame", NextAction::array(0, new NextAction("tame", relevance), nullptr)));
-    triggers.push_back(new TriggerNode("glyphs", NextAction::array(0, new NextAction("glyphs", relevance), nullptr))); // Added for custom Glyphs
-    triggers.push_back(new TriggerNode("glyph equip", NextAction::array(0, new NextAction("glyph equip", relevance), nullptr))); // Added for custom Glyphs
-    triggers.push_back(new TriggerNode("pet", NextAction::array(0, new NextAction("pet", relevance), nullptr)));
-    triggers.push_back(new TriggerNode("pet attack", NextAction::array(0, new NextAction("pet attack", relevance), nullptr)));
-    triggers.push_back(new TriggerNode("roll", NextAction::array(0, new NextAction("roll", relevance), nullptr)));
-    triggers.push_back(new TriggerNode("emblems", NextAction::array(0, new NextAction("emblems", relevance), nullptr)));
+    triggers.push_back(
+        new TriggerNode("tame", NextAction::array(0, new NextAction("tame", relevance), nullptr)));
+    triggers.push_back(
+        new TriggerNode("glyphs", NextAction::array(0, new NextAction("glyphs", relevance), nullptr)));
+    triggers.push_back(
+        new TriggerNode("glyph equip", NextAction::array(0, new NextAction("glyph equip", relevance), nullptr)));
+    triggers.push_back(
+        new TriggerNode("pet", NextAction::array(0, new NextAction("pet", relevance), nullptr)));
+    triggers.push_back(
+        new TriggerNode("pet attack", NextAction::array(0, new NextAction("pet attack", relevance), nullptr)));
+    triggers.push_back(
+        new TriggerNode("roll", NextAction::array(0, new NextAction("roll", relevance), nullptr)));
+    triggers.push_back(
+        new TriggerNode("emblems", NextAction::array(0, new NextAction("emblems", relevance), nullptr)));
 }
 
 ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI)
@@ -190,8 +207,8 @@ ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : Pas
     supported.push_back("unlock items");
     supported.push_back("unlock traded item");
     supported.push_back("tame");
-    supported.push_back("glyphs"); // Added for custom Glyphs
-    supported.push_back("glyph equip"); // Added for custom Glyphs
+    supported.push_back("glyphs");
+    supported.push_back("glyph equip");
     supported.push_back("pet");
     supported.push_back("pet attack");
 }
