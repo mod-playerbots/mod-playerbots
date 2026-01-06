@@ -972,8 +972,7 @@ bool MovementAction::IsMovingAllowed()
     // Vehicle state: is in the vehicle and can control it (rare, content-specific).
     // We need to check charmed state AFTER vehicle one, cuz that's how it works:
     // passengers are set to charmed by vehicle with CHARM_TYPE_VEHICLE.
-    if ((bot->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT) && !botAI->IsInVehicle(true)) ||
-        bot->IsCharmed())
+    if ((bot->GetVehicle() && !botAI->IsInVehicle(true)) || bot->IsCharmed())
         return false;
 
     return true;

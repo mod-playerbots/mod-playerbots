@@ -37,7 +37,7 @@ StatsWeightCalculator::StatsWeightCalculator(Player* player) : player_(player)
     tab = AiFactory::GetPlayerSpecTab(player);
     collector_ = std::make_unique<StatsCollector>(type_, cls);
 
-    if (cls == CLASS_DEATH_KNIGHT && tab == DEATHKNIGHT_TAB_UNHOLY)
+    if (cls == CLASS_DEATH_KNIGHT && tab == DEATH_KNIGHT_TAB_UNHOLY)
         hitOverflowType_ = CollectorType::SPELL;
     else if (cls == CLASS_SHAMAN && tab == SHAMAN_TAB_ENHANCEMENT)
         hitOverflowType_ = CollectorType::SPELL;
@@ -193,7 +193,7 @@ void StatsWeightCalculator::GenerateBasicWeights(Player* player)
     stats_weights_[STATS_TYPE_MELEE_DPS] += 0.01f;
     stats_weights_[STATS_TYPE_RANGED_DPS] += 0.01f;
 
-    if (cls == CLASS_HUNTER && (tab == HUNTER_TAB_BEASTMASTERY || tab == HUNTER_TAB_SURVIVAL))
+    if (cls == CLASS_HUNTER && (tab == HUNTER_TAB_BEAST_MASTERY || tab == HUNTER_TAB_SURVIVAL))
     {
         stats_weights_[STATS_TYPE_AGILITY] += 2.5f;
         stats_weights_[STATS_TYPE_ATTACK_POWER] += 1.0f;
@@ -249,7 +249,7 @@ void StatsWeightCalculator::GenerateBasicWeights(Player* player)
         stats_weights_[STATS_TYPE_EXPERTISE] += 2.1f;
         stats_weights_[STATS_TYPE_MELEE_DPS] += 5.0f;
     }
-    else if (cls == CLASS_WARRIOR && tab == WARRIOR_TAB_FURY)  //  fury
+    else if (cls == CLASS_WARRIOR && tab == WARRIOR_TAB_FURY)
     {
         stats_weights_[STATS_TYPE_AGILITY] += 1.8f;
         stats_weights_[STATS_TYPE_STRENGTH] += 2.6f;
@@ -261,7 +261,7 @@ void StatsWeightCalculator::GenerateBasicWeights(Player* player)
         stats_weights_[STATS_TYPE_EXPERTISE] += 2.5f;
         stats_weights_[STATS_TYPE_MELEE_DPS] += 7.0f;
     }
-    else if (cls == CLASS_WARRIOR && tab == WARRIOR_TAB_ARMS)  // arm
+    else if (cls == CLASS_WARRIOR && tab == WARRIOR_TAB_ARMS)
     {
         stats_weights_[STATS_TYPE_AGILITY] += 1.6f;
         stats_weights_[STATS_TYPE_STRENGTH] += 2.3f;
@@ -273,7 +273,7 @@ void StatsWeightCalculator::GenerateBasicWeights(Player* player)
         stats_weights_[STATS_TYPE_EXPERTISE] += 1.4f;
         stats_weights_[STATS_TYPE_MELEE_DPS] += 7.0f;
     }
-    else if (cls == CLASS_DEATH_KNIGHT && tab == DEATHKNIGHT_TAB_FROST)  // frost dk
+    else if (cls == CLASS_DEATH_KNIGHT && tab == DEATH_KNIGHT_TAB_FROST)
     {
         stats_weights_[STATS_TYPE_AGILITY] += 1.7f;
         stats_weights_[STATS_TYPE_STRENGTH] += 2.8f;
@@ -285,7 +285,7 @@ void StatsWeightCalculator::GenerateBasicWeights(Player* player)
         stats_weights_[STATS_TYPE_EXPERTISE] += 2.5f;
         stats_weights_[STATS_TYPE_MELEE_DPS] += 7.0f;
     }
-    else if (cls == CLASS_DEATH_KNIGHT && tab == DEATHKNIGHT_TAB_UNHOLY)
+    else if (cls == CLASS_DEATH_KNIGHT && tab == DEATH_KNIGHT_TAB_UNHOLY)
     {
         stats_weights_[STATS_TYPE_AGILITY] += 0.9f;
         stats_weights_[STATS_TYPE_STRENGTH] += 2.5f;
@@ -297,7 +297,7 @@ void StatsWeightCalculator::GenerateBasicWeights(Player* player)
         stats_weights_[STATS_TYPE_EXPERTISE] += 1.5f;
         stats_weights_[STATS_TYPE_MELEE_DPS] += 5.0f;
     }
-    else if (cls == CLASS_PALADIN && tab == PALADIN_TAB_RETRIBUTION)  // retribution
+    else if (cls == CLASS_PALADIN && tab == PALADIN_TAB_RETRIBUTION)
     {
         stats_weights_[STATS_TYPE_AGILITY] += 1.6f;
         stats_weights_[STATS_TYPE_STRENGTH] += 2.5f;
@@ -311,7 +311,7 @@ void StatsWeightCalculator::GenerateBasicWeights(Player* player)
         stats_weights_[STATS_TYPE_EXPERTISE] += 2.0f;
         stats_weights_[STATS_TYPE_MELEE_DPS] += 9.0f;
     }
-    else if ((cls == CLASS_SHAMAN && tab == SHAMAN_TAB_ENHANCEMENT))  // enhancement
+    else if ((cls == CLASS_SHAMAN && tab == SHAMAN_TAB_ENHANCEMENT))
     {
         stats_weights_[STATS_TYPE_AGILITY] += 1.4f;
         stats_weights_[STATS_TYPE_STRENGTH] += 1.1f;
@@ -325,9 +325,10 @@ void StatsWeightCalculator::GenerateBasicWeights(Player* player)
         stats_weights_[STATS_TYPE_EXPERTISE] += 2.0f;
         stats_weights_[STATS_TYPE_MELEE_DPS] += 8.5f;
     }
-    else if (cls == CLASS_WARLOCK || (cls == CLASS_MAGE && tab != MAGE_TAB_FIRE) ||
-             (cls == CLASS_PRIEST && tab == PRIEST_TAB_SHADOW) ||  // shadow
-             (cls == CLASS_DRUID && tab == DRUID_TAB_BALANCE))     // balance
+    else if (cls == CLASS_WARLOCK ||
+             (cls == CLASS_MAGE && tab != MAGE_TAB_FIRE) ||
+             (cls == CLASS_PRIEST && tab == PRIEST_TAB_SHADOW) ||
+             (cls == CLASS_DRUID && tab == DRUID_TAB_BALANCE))
     {
         stats_weights_[STATS_TYPE_INTELLECT] += 0.3f;
         stats_weights_[STATS_TYPE_SPIRIT] += 0.6f;
@@ -355,8 +356,8 @@ void StatsWeightCalculator::GenerateBasicWeights(Player* player)
         stats_weights_[STATS_TYPE_CRIT] += 0.8f;
         stats_weights_[STATS_TYPE_HASTE] += 1.0f;
     }
-    else if ((cls == CLASS_PALADIN && tab == PALADIN_TAB_HOLY) ||     // holy
-             (cls == CLASS_SHAMAN && tab == SHAMAN_TAB_RESTORATION))  // heal
+    else if ((cls == CLASS_PALADIN && tab == PALADIN_TAB_HOLY) ||
+             (cls == CLASS_SHAMAN && tab == SHAMAN_TAB_RESTORATION))
     {
         stats_weights_[STATS_TYPE_INTELLECT] += 0.9f;
         stats_weights_[STATS_TYPE_SPIRIT] += 0.15f;
@@ -365,7 +366,7 @@ void StatsWeightCalculator::GenerateBasicWeights(Player* player)
         stats_weights_[STATS_TYPE_CRIT] += 0.6f;
         stats_weights_[STATS_TYPE_HASTE] += 0.8f;
     }
-    else if ((cls == CLASS_PRIEST && tab != PRIEST_TAB_SHADOW) ||  // discipline / holy
+    else if ((cls == CLASS_PRIEST && tab != PRIEST_TAB_SHADOW) ||
              (cls == CLASS_DRUID && tab == DRUID_TAB_RESTORATION))
     {
         stats_weights_[STATS_TYPE_INTELLECT] += 0.8f;
@@ -396,7 +397,7 @@ void StatsWeightCalculator::GenerateBasicWeights(Player* player)
         stats_weights_[STATS_TYPE_EXPERTISE] += 3.0f;
         stats_weights_[STATS_TYPE_MELEE_DPS] += 2.0f;
     }
-    else if (cls == CLASS_DEATH_KNIGHT && tab == DEATHKNIGHT_TAB_BLOOD)
+    else if (cls == CLASS_DEATH_KNIGHT && tab == DEATH_KNIGHT_TAB_BLOOD)
     {
         stats_weights_[STATS_TYPE_AGILITY] += 2.0f;
         stats_weights_[STATS_TYPE_STRENGTH] += 1.0f;
@@ -539,7 +540,7 @@ void StatsWeightCalculator::CalculateItemTypePenalty(ItemTemplate const* proto)
             // spec without double hand
             // enhancement, rogue, ice dk, unholy dk, shield tank, fury warrior without titan's grip but with duel wield
             if (((cls == CLASS_SHAMAN && tab == SHAMAN_TAB_ENHANCEMENT && player_->CanDualWield()) ||
-                 (cls == CLASS_ROGUE) || (cls == CLASS_DEATH_KNIGHT && tab == DEATHKNIGHT_TAB_FROST) ||
+                 (cls == CLASS_ROGUE) || (cls == CLASS_DEATH_KNIGHT && tab == DEATH_KNIGHT_TAB_FROST) ||
                  (cls == CLASS_WARRIOR && tab == WARRIOR_TAB_FURY && !player_->CanTitanGrip() &&
                   player_->CanDualWield()) ||
                  (cls == CLASS_WARRIOR && tab == WARRIOR_TAB_PROTECTION) ||
@@ -556,7 +557,7 @@ void StatsWeightCalculator::CalculateItemTypePenalty(ItemTemplate const* proto)
                 (cls == CLASS_WARRIOR && tab == WARRIOR_TAB_FURY && !player_->CanDualWield()) ||
                 (cls == CLASS_WARRIOR && tab == WARRIOR_TAB_ARMS) || (cls == CLASS_DRUID && tab == DRUID_TAB_FERAL) ||
                 (cls == CLASS_PALADIN && tab == PALADIN_TAB_RETRIBUTION) ||
-                (cls == CLASS_DEATH_KNIGHT && tab == DEATHKNIGHT_TAB_BLOOD) ||
+                (cls == CLASS_DEATH_KNIGHT && tab == DEATH_KNIGHT_TAB_BLOOD) ||
                 (cls == CLASS_SHAMAN && tab == SHAMAN_TAB_ENHANCEMENT && !player_->CanDualWield()))
             {
                 weight_ *= 0.1;

@@ -105,8 +105,8 @@ namespace KarazhanHelpers
         }
     }
 
-    // Only one bot is needed to set/reset mapwide timers
-    bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot)
+    // Only one bot is needed to set/reset instance-wide timers
+    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot)
     {
         if (Group* group = bot->GetGroup())
         {

@@ -68,17 +68,15 @@ bool RpgAction::SetNextRpgAction()
 
                 triggerNode->setTrigger(trigger);
 
-                NextAction** nextActions = triggerNode->getHandlers();
+                std::vector<NextAction> nextActions = triggerNode->getHandlers();
 
                 Trigger* trigger = triggerNode->getTrigger();
 
                 bool isChecked = false;
 
-                for (int32 i = 0; i < NextAction::size(nextActions); i++)
+                for (NextAction nextAction : nextActions)
                 {
-                    NextAction* nextAction = nextActions[i];
-
-                    if (nextAction->getRelevance() > 5.0f)
+                    if (nextAction.getRelevance() > 5.0f)
                         continue;
 
                     if (!isChecked && !trigger->IsActive())
@@ -86,14 +84,13 @@ bool RpgAction::SetNextRpgAction()
 
                     isChecked = true;
 
-                    Action* action = botAI->GetAiObjectContext()->GetAction(nextAction->getName());
+                    Action* action = botAI->GetAiObjectContext()->GetAction(nextAction.getName());
                     if (!dynamic_cast<RpgEnabled*>(action) || !action->isPossible() || !action->isUseful())
                         continue;
 
                     actions.push_back(action);
-                    relevances.push_back((nextAction->getRelevance() - 1) * 500);
+                    relevances.push_back((nextAction.getRelevance() - 1) * 500);
                 }
-                NextAction::destroy(nextActions);
             }
         }
 

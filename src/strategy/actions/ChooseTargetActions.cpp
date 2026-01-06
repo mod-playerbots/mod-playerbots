@@ -10,6 +10,7 @@
 #include "LootObjectStack.h"
 #include "NewRpgStrategy.h"
 #include "Playerbots.h"
+#include "RtiTargetValue.h"
 #include "PossibleRpgTargetsValue.h"
 #include "PvpTriggers.h"
 #include "ServerFacade.h"
@@ -87,9 +88,7 @@ bool DropTargetAction::Execute(Event event)
     {
         Spell const* spell = bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL); // Get the current spell being cast by the bot
         if (spell && spell->m_spellInfo->Id == 75) //Check spell is not nullptr before accessing m_spellInfo
-        {
             bot->InterruptSpell(CURRENT_AUTOREPEAT_SPELL); // Interrupt Auto Shot
-        }
     }
     bot->AttackStop();
 
@@ -142,6 +141,23 @@ bool AttackRtiTargetAction::Execute(Event event)
 {
     Unit* rtiTarget = AI_VALUE(Unit*, "rti target");
 
+    // Fallback: if the "rti target" value did not resolve a valid unit yet,
+    // try to resolve the raid icon directly from the group.
+    if (!rtiTarget)
+    {
+        if (Group* group = bot->GetGroup())
+        {
+            std::string const rti = AI_VALUE(std::string, "rti");
+            int32 const index = RtiTargetValue::GetRtiIndex(rti);
+            if (index >= 0)
+            {
+                ObjectGuid const guid = group->GetTargetIcon(index);
+                if (!guid.IsEmpty())
+                    rtiTarget = botAI->GetUnit(guid);
+            }
+        }
+    }
+
     if (rtiTarget && rtiTarget->IsInWorld() && rtiTarget->GetMapId() == bot->GetMapId())
     {
         botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Set({rtiTarget->GetGUID()});
@@ -153,9 +169,7 @@ bool AttackRtiTargetAction::Execute(Event event)
         }
     }
     else
-    {
         botAI->TellError("I dont see my rti attack target");
-    }
 
     return false;
 }

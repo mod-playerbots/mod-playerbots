@@ -3,8 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_ACTION_H
-#define _PLAYERBOT_ACTION_H
+#pragma once
 
 #include "AiObject.h"
 #include "Common.h"
@@ -24,15 +23,26 @@ public:
     std::string const getName() { return name; }
     float getRelevance() { return relevance; }
 
-    static uint32 size(NextAction** actions);
-    static NextAction** clone(NextAction** actions);
-    static NextAction** merge(NextAction** what, NextAction** with);
-    static NextAction** array(uint32 nil, ...);
-    static void destroy(NextAction** actions);
+    static std::vector<NextAction> merge(std::vector<NextAction> const& what, std::vector<NextAction> const& with)
+    {
+        std::vector<NextAction> result = {};
+
+        for (NextAction const& action : what)
+        {
+            result.push_back(action);
+        }
+
+        for (NextAction const& action : with)
+        {
+            result.push_back(action);
+        }
+
+        return result;
+    };
 
 private:
     float relevance;
-    std::string const name;
+    std::string name;
 };
 
 class Action : public AiNamedObject
@@ -52,9 +62,9 @@ public:
     virtual bool Execute([[maybe_unused]] Event event) { return true; }
     virtual bool isPossible() { return true; }
     virtual bool isUseful() { return true; }
-    virtual NextAction** getPrerequisites() { return nullptr; }
-    virtual NextAction** getAlternatives() { return nullptr; }
-    virtual NextAction** getContinuers() { return nullptr; }
+    virtual std::vector<NextAction> getPrerequisites() { return {}; }
+    virtual std::vector<NextAction> getAlternatives() { return {}; }
+    virtual std::vector<NextAction> getContinuers() { return {}; }
     virtual ActionThreatType getThreatType() { return ActionThreatType::None; }
     void Update() {}
     void Reset() {}
@@ -73,39 +83,44 @@ protected:
 class ActionNode
 {
 public:
-    ActionNode(std::string const name, NextAction** prerequisites = nullptr, NextAction** alternatives = nullptr,
-               NextAction** continuers = nullptr)
-        : name(name), action(nullptr), continuers(continuers), alternatives(alternatives), prerequisites(prerequisites)
-    {
-    }  // reorder arguments - whipowill
+    ActionNode(
+        std::string name,
+        std::vector<NextAction> prerequisites = {},
+        std::vector<NextAction> alternatives = {},
+        std::vector<NextAction> continuers = {}
+    ) :
+    name(std::move(name)),
+    action(nullptr),
+    continuers(continuers),
+    alternatives(alternatives),
+    prerequisites(prerequisites)
+    {}
 
-    virtual ~ActionNode()
-    {
-        NextAction::destroy(prerequisites);
-        NextAction::destroy(alternatives);
-        NextAction::destroy(continuers);
-    }
+    virtual ~ActionNode() = default;
 
     Action* getAction() { return action; }
     void setAction(Action* action) { this->action = action; }
-    std::string const getName() { return name; }
+    const std::string getName() { return name; }
 
-    NextAction** getContinuers() { return NextAction::merge(NextAction::clone(continuers), action->getContinuers()); }
-    NextAction** getAlternatives()
+    std::vector<NextAction> getContinuers()
     {
-        return NextAction::merge(NextAction::clone(alternatives), action->getAlternatives());
+        return NextAction::merge(this->continuers, action->getContinuers());
     }
-    NextAction** getPrerequisites()
+    std::vector<NextAction> getAlternatives()
     {
-        return NextAction::merge(NextAction::clone(prerequisites), action->getPrerequisites());
+        return NextAction::merge(this->alternatives, action->getAlternatives());
+    }
+    std::vector<NextAction> getPrerequisites()
+    {
+        return NextAction::merge(this->prerequisites, action->getPrerequisites());
     }
 
 private:
-    std::string const name;
+    const std::string name;
     Action* action;
-    NextAction** continuers;
-    NextAction** alternatives;
-    NextAction** prerequisites;
+    std::vector<NextAction> continuers;
+    std::vector<NextAction> alternatives;
+    std::vector<NextAction> prerequisites;
 };
 
 class ActionBasket
@@ -121,14 +136,12 @@ public:
     bool isSkipPrerequisites() { return skipPrerequisites; }
     void AmendRelevance(float k) { relevance *= k; }
     void setRelevance(float relevance) { this->relevance = relevance; }
-    bool isExpired(uint32 msecs);
+    bool isExpired(uint32_t msecs);
 
 private:
     ActionNode* action;
     float relevance;
     bool skipPrerequisites;
     Event event;
-    uint32 created;
+    uint32_t created;
 };
-
-#endif

@@ -401,14 +401,20 @@ std::unordered_map<ObjectGuid, bool> MagtheridonSpreadRangedAction::hasReachedIn
 
 bool MagtheridonSpreadRangedAction::Execute(Event event)
 {
+    Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
+    if (!magtheridon)
+        return false;
+
     Group* group = bot->GetGroup();
     if (!group)
         return false;
 
+    const uint32 instanceId = magtheridon->GetMap()->GetInstanceId();
+
     // Wait for 6 seconds after Magtheridon activates to spread
     const uint8 spreadWaitSeconds = 6;
-    auto it = magtheridonSpreadWaitTimer.find(bot->GetMapId());
-    if (it == magtheridonSpreadWaitTimer.end() ||
+    auto it = spreadWaitTimer.find(instanceId);
+    if (it == spreadWaitTimer.end() ||
         (time(nullptr) - it->second) < spreadWaitSeconds)
         return false;
 
@@ -416,8 +422,8 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
     if (cubeIt != botToCubeAssignment.end())
     {
         time_t now = time(nullptr);
-        auto timerIt = magtheridonBlastNovaTimer.find(bot->GetMapId());
-        if (timerIt != magtheridonBlastNovaTimer.end())
+        auto timerIt = blastNovaTimer.find(instanceId);
+        if (timerIt != blastNovaTimer.end())
         {
             time_t lastBlastNova = timerIt->second;
             if (now - lastBlastNova >= 49)
@@ -559,8 +565,8 @@ bool MagtheridonUseManticronCubeAction::HandleCubeRelease(Unit* magtheridon, Gam
 
 bool MagtheridonUseManticronCubeAction::ShouldActivateCubeLogic(Unit* magtheridon)
 {
-    auto timerIt = magtheridonBlastNovaTimer.find(bot->GetMapId());
-    if (timerIt == magtheridonBlastNovaTimer.end())
+    auto timerIt = blastNovaTimer.find(magtheridon->GetMap()->GetInstanceId());
+    if (timerIt == blastNovaTimer.end())
         return false;
 
     time_t now = time(nullptr);
@@ -650,52 +656,38 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event event)
     if (!magtheridon)
         return false;
 
-    uint32 mapId = magtheridon->GetMapId();
+    const uint32 instanceId = magtheridon->GetMap()->GetInstanceId();
+    const time_t now = time(nullptr);
 
     bool blastNovaActive = magtheridon->HasUnitState(UNIT_STATE_CASTING) &&
                            magtheridon->FindCurrentSpellBySpellId(SPELL_BLAST_NOVA);
-    bool lastBlastNova = lastBlastNovaState[mapId];
+    bool lastBlastNova = lastBlastNovaState[instanceId];
 
-    if (lastBlastNova && !blastNovaActive && IsMapIDTimerManager(botAI, bot))
-        magtheridonBlastNovaTimer[mapId] = time(nullptr);
-    lastBlastNovaState[mapId] = blastNovaActive;
+    if (lastBlastNova && !blastNovaActive && IsInstanceTimerManager(botAI, bot))
+        blastNovaTimer[instanceId] = now;
 
-    if (IsMapIDTimerManager(botAI, bot))
+    lastBlastNovaState[instanceId] = blastNovaActive;
+
+    if (!magtheridon->HasAura(SPELL_SHADOW_CAGE))
     {
-        if (!magtheridon->HasAura(SPELL_SHADOW_CAGE))
+        if (IsInstanceTimerManager(botAI, bot))
         {
-            if (magtheridonSpreadWaitTimer.find(mapId) == magtheridonSpreadWaitTimer.end())
-                magtheridonSpreadWaitTimer[mapId] = time(nullptr);
-
-            if (magtheridonBlastNovaTimer.find(mapId) == magtheridonBlastNovaTimer.end())
-                magtheridonBlastNovaTimer[mapId] = time(nullptr);
-
-            if (magtheridonAggroWaitTimer.find(mapId) == magtheridonAggroWaitTimer.end())
-                magtheridonAggroWaitTimer[mapId] = time(nullptr);
+            spreadWaitTimer.try_emplace(instanceId, now);
+            blastNovaTimer.try_emplace(instanceId, now);
+            dpsWaitTimer.try_emplace(instanceId, now);
         }
     }
-
-    if (magtheridon->HasAura(SPELL_SHADOW_CAGE))
+    else
     {
-        if (!MagtheridonSpreadRangedAction::initialPositions.empty())
-            MagtheridonSpreadRangedAction::initialPositions.clear();
+        MagtheridonSpreadRangedAction::initialPositions.clear();
+        MagtheridonSpreadRangedAction::hasReachedInitialPosition.clear();
+        botToCubeAssignment.clear();
 
-        if (!MagtheridonSpreadRangedAction::hasReachedInitialPosition.empty())
-            MagtheridonSpreadRangedAction::hasReachedInitialPosition.clear();
-
-        if (!botToCubeAssignment.empty())
-            botToCubeAssignment.clear();
-
-        if (IsMapIDTimerManager(botAI, bot))
+        if (IsInstanceTimerManager(botAI, bot))
         {
-            if (magtheridonSpreadWaitTimer.find(mapId) != magtheridonSpreadWaitTimer.end())
-                magtheridonSpreadWaitTimer.erase(mapId);
-
-            if (magtheridonBlastNovaTimer.find(mapId) != magtheridonBlastNovaTimer.end())
-                magtheridonBlastNovaTimer.erase(mapId);
-
-            if (magtheridonAggroWaitTimer.find(mapId) != magtheridonAggroWaitTimer.end())
-                magtheridonAggroWaitTimer.erase(mapId);
+            spreadWaitTimer.erase(instanceId);
+            blastNovaTimer.erase(instanceId);
+            dpsWaitTimer.erase(instanceId);
         }
     }
 

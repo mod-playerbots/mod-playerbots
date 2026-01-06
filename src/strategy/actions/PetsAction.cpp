@@ -18,9 +18,7 @@ bool PetsAction::Execute(Event event)
     // Extract the command parameter from the event (e.g., "aggressive", "defensive", "attack", etc.)
     std::string param = event.getParam();
     if (param.empty() && !defaultCmd.empty())
-    {
         param = defaultCmd;
-    }
 
     if (param.empty())
     {
@@ -129,9 +127,7 @@ bool PetsAction::Execute(Event event)
         {
             ObjectGuid masterTargetGuid = master->GetTarget();
             if (!masterTargetGuid.IsEmpty())
-            {
                 targetUnit = botAI->GetUnit(masterTargetGuid);
-            }
         }
 
         // If no valid target is selected, show an error and return.
@@ -156,8 +152,9 @@ bool PetsAction::Execute(Event event)
             botAI->TellError(text);
             return false;
         }
-        if (sPlayerbotAIConfig->IsPvpProhibited(bot->GetZoneId(), bot->GetAreaId())
-            && (targetUnit->IsPlayer() || targetUnit->IsPet()))
+        if (sPlayerbotAIConfig->IsPvpProhibited(bot->GetZoneId(), bot->GetAreaId()) &&
+            (targetUnit->IsPlayer() || targetUnit->IsPet()) &&
+            (!bot->duel || bot->duel->Opponent != targetUnit))
         {
             std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
                 "pet_pvp_prohibited_error", "I cannot command my pet to attack players in PvP prohibited areas.", {});

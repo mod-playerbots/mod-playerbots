@@ -80,7 +80,7 @@ ItemUsage ItemUsageValue::Calculate()
         return ITEM_USAGE_USE;
 
     if (proto->Class == ITEM_CLASS_CONSUMABLE &&
-        (proto->MaxCount == 0 || AI_VALUE2(uint32, "item count", proto->Name1) < proto->MaxCount))
+        (proto->MaxCount == 0 || bot->GetItemCount(itemId, false) < proto->MaxCount))
     {
         std::string const foodType = GetConsumableType(proto, bot->GetPower(POWER_MANA));
 
@@ -520,7 +520,7 @@ bool ItemUsageValue::IsItemUsefulForQuest(Player* player, ItemTemplate const* pr
         {
             if (quest->RequiredItemId[i] == proto->ItemId)
             {
-                if (AI_VALUE2(uint32, "item count", proto->Name1) >= quest->RequiredItemCount[i])
+                if (player->GetItemCount(proto->ItemId, false) >= quest->RequiredItemCount[i])
                     continue;
 
                 return true; // Item is directly required for a quest
@@ -549,7 +549,7 @@ bool ItemUsageValue::IsItemUsefulForQuest(Player* player, ItemTemplate const* pr
                     {
                         if (quest->RequiredItemId[j] == createdItemId)
                         {
-                            if (AI_VALUE2(uint32, "item count", createdItemId) >= quest->RequiredItemCount[j])
+                            if (player->GetItemCount(createdItemId, false) >= quest->RequiredItemCount[j])
                                 continue;
 
                             return true; // Item is useful because it creates a required quest item
