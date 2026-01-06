@@ -2861,7 +2861,7 @@ bool PlayerbotAI::TellMaster(std::string const text, PlayerbotSecurityLevel secu
 
 bool IsRealAura(Player* bot, AuraEffect const* aurEff, Unit const* unit)
 {
-    if (!unit && !unit->IsInWorld() && unit->IsDuringRemoveFromWorld())
+    if (!unit || !unit->IsInWorld() || unit->IsDuringRemoveFromWorld())
         return false;
 
     if (!aurEff)
@@ -3864,7 +3864,7 @@ bool PlayerbotAI::CastVehicleSpell(uint32 spellId, Unit* target)
     if (!spellId)
         return false;
 
-     if (!IsValidUnit(target))
+    if (!IsValidUnit(target))
         return false;
 
     Vehicle* vehicle = bot->GetVehicle();
