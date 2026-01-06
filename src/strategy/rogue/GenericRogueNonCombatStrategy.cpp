@@ -19,9 +19,9 @@ private:
     static ActionNode* use_deadly_poison_on_off_hand([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("use deadly poison on off hand",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("use instant poison on off hand"), nullptr),
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ { NextAction("use instant poison on off hand") },
+                              /*C*/ {});
     }
 };
 
@@ -35,24 +35,16 @@ void GenericRogueNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
     NonCombatStrategy::InitTriggers(triggers);
 
     triggers.push_back(new TriggerNode("player has flag",
-                                       NextAction::array(0, new NextAction("sprint", ACTION_EMERGENCY + 1), nullptr)));
+                                       { NextAction("sprint", ACTION_EMERGENCY + 1) }));
     triggers.push_back(new TriggerNode("enemy flagcarrier near",
-                                       NextAction::array(0, new NextAction("sprint", ACTION_EMERGENCY + 2), nullptr)));
-    // triggers.push_back(new TriggerNode("unstealth", NextAction::array(0, new NextAction("unstealth", 1.0f),
-    // nullptr))); triggers.push_back(new TriggerNode("often", NextAction::array(0, new NextAction("apply
-    // poison", 1.0f), nullptr)));
-
+                                       { NextAction("sprint", ACTION_EMERGENCY + 2) }));
     triggers.push_back(
         new TriggerNode("main hand weapon no enchant",
-                        NextAction::array(0, new NextAction("use instant poison on main hand", 20.0f), NULL)));
+                        { NextAction("use instant poison on main hand", 20.0f) }));
 
     triggers.push_back(
         new TriggerNode("off hand weapon no enchant",
-                        NextAction::array(0, new NextAction("use deadly poison on off hand", 19.0f), NULL)));
+                        { NextAction("use deadly poison on off hand", 19.0f) }));
 
-    // triggers.push_back(new TriggerNode(
-    //     "off hand weapon no enchant",
-    //     NextAction::array(0, new NextAction("use instant poison", 18.0f), NULL)));
-
-    triggers.push_back(new TriggerNode("often", NextAction::array(0, new NextAction("unstealth", 30.0f), NULL)));
+    triggers.push_back(new TriggerNode("often", { NextAction("unstealth", 30.0f) }));
 }

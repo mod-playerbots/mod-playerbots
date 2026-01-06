@@ -23,8 +23,8 @@ public:
     }
 
 private:
-    static ActionNode* shadow_ward(PlayerbotAI*) { return new ActionNode("shadow ward", nullptr, nullptr, nullptr); }
-    static ActionNode* searing_pain(PlayerbotAI*) { return new ActionNode("searing pain", nullptr, nullptr, nullptr); }
+    static ActionNode* shadow_ward(PlayerbotAI*) { return new ActionNode("shadow ward", {}, {}, {}); }
+    static ActionNode* searing_pain(PlayerbotAI*) { return new ActionNode("searing pain", {}, {}, {}); }
 };
 
 // ===== Warlock Tank Combat Strategy =====
@@ -33,10 +33,13 @@ TankWarlockStrategy::TankWarlockStrategy(PlayerbotAI* botAI) : GenericWarlockStr
     actionNodeFactories.Add(new TankWarlockStrategyActionNodeFactory());
 }
 
-NextAction** TankWarlockStrategy::getDefaultActions()
+std::vector<NextAction> TankWarlockStrategy::getDefaultActions()
 {
     // Shadow Ward is the highest priority, Searing Pain next.
-    return NextAction::array(0, new NextAction("shadow ward", 27.5f), new NextAction("searing pain", 27.0f), nullptr);
+    return {
+        NextAction("shadow ward", 27.5f),
+        NextAction("searing pain", 27.0f)
+    };
 }
 
 void TankWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

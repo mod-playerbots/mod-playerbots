@@ -418,7 +418,7 @@ public:
     CastWingClipAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "wing clip") {}
 
     bool isUseful() override;
-    NextAction** getPrerequisites() override;
+    std::vector<NextAction> getPrerequisites() override;
 };
 
 class CastRaptorStrikeAction : public CastSpellAction

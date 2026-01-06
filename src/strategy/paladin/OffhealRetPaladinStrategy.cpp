@@ -25,58 +25,72 @@ public:
 private:
     static ActionNode* retribution_aura([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("retribution aura",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("devotion aura"), nullptr),
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "retribution aura",
+            /*P*/ {},
+            /*A*/ { NextAction("devotion aura") },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* seal_of_corruption([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("seal of corruption",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("seal of vengeance"), nullptr),
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "seal of corruption",
+            /*P*/ {},
+            /*A*/ { NextAction("seal of vengeance") },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* seal_of_vengeance([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("seal of vengeance",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("seal of command"), nullptr),
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "seal of vengeance",
+            /*P*/ {},
+            /*A*/ { NextAction("seal of command") },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* seal_of_command([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("seal of command",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("seal of righteousness"), nullptr),
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "seal of command",
+            /*P*/ {},
+            /*A*/ { NextAction("seal of righteousness") },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* blessing_of_might([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("blessing of might",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("blessing of kings"), nullptr),
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "blessing of might",
+            /*P*/ {},
+            /*A*/ { NextAction("blessing of kings") },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* crusader_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("crusader strike",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "crusader strike",
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* divine_plea([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("divine plea",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "divine plea",
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 };
 
@@ -85,13 +99,15 @@ OffhealRetPaladinStrategy::OffhealRetPaladinStrategy(PlayerbotAI* botAI) : Gener
     actionNodeFactories.Add(new OffhealRetPaladinStrategyActionNodeFactory());
 }
 
-NextAction** OffhealRetPaladinStrategy::getDefaultActions()
+std::vector<NextAction> OffhealRetPaladinStrategy::getDefaultActions()
 {
-    return NextAction::array(0, new NextAction("hammer of wrath", ACTION_DEFAULT + 0.6f),
-                             new NextAction("judgement of wisdom", ACTION_DEFAULT + 0.5f),
-                             new NextAction("crusader strike", ACTION_DEFAULT + 0.4f),
-                             new NextAction("divine storm", ACTION_DEFAULT + 0.3f),
-                             new NextAction("melee", ACTION_DEFAULT), nullptr);
+    return {
+        NextAction("hammer of wrath", ACTION_DEFAULT + 0.6f),
+        NextAction("judgement of wisdom", ACTION_DEFAULT + 0.5f),
+        NextAction("crusader strike", ACTION_DEFAULT + 0.4f),
+        NextAction("divine storm", ACTION_DEFAULT + 0.3f),
+        NextAction("melee", ACTION_DEFAULT)
+    };
 }
 
 void OffhealRetPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -100,44 +116,128 @@ void OffhealRetPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
 
     // Damage Triggers
     triggers.push_back(
-        new TriggerNode("seal", NextAction::array(0, new NextAction("seal of corruption", ACTION_HIGH), nullptr)));
+        new TriggerNode(
+            "seal",
+            {
+                NextAction("seal of corruption", ACTION_HIGH)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("low mana", NextAction::array(0, new NextAction("seal of wisdom", ACTION_HIGH + 5),
-                                                      new NextAction("divine plea", ACTION_HIGH + 4), nullptr)));
+        new TriggerNode(
+            "low mana",
+            {
+                NextAction("seal of wisdom", ACTION_HIGH + 5),
+                NextAction("divine plea", ACTION_HIGH + 4)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("art of war", NextAction::array(0, new NextAction("exorcism", ACTION_HIGH + 1), nullptr)));
-    triggers.push_back(new TriggerNode(
-        "avenging wrath", NextAction::array(0, new NextAction("avenging wrath", ACTION_HIGH + 2), nullptr)));
+        new TriggerNode(
+            "art of war",
+            {
+                NextAction("exorcism", ACTION_HIGH + 1)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("medium aoe", NextAction::array(0, new NextAction("divine storm", ACTION_HIGH + 4),
-                                                        new NextAction("consecration", ACTION_HIGH + 3), nullptr)));
-    triggers.push_back(new TriggerNode("enemy out of melee",
-                                       NextAction::array(0, new NextAction("reach melee", ACTION_HIGH + 1), nullptr)));
-    triggers.push_back(new TriggerNode(
-        "retribution aura", NextAction::array(0, new NextAction("retribution aura", ACTION_NORMAL), nullptr)));
-    triggers.push_back(new TriggerNode(
-        "blessing of might", NextAction::array(0, new NextAction("blessing of might", ACTION_NORMAL + 1), nullptr)));
-    triggers.push_back(new TriggerNode(
-        "low health", NextAction::array(0, new NextAction("holy light", ACTION_CRITICAL_HEAL + 2), nullptr)));
+        new TriggerNode(
+            "avenging wrath",
+            {
+                NextAction("avenging wrath", ACTION_HIGH + 2)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "medium aoe",
+            {
+                NextAction("divine storm", ACTION_HIGH + 4),
+                NextAction("consecration", ACTION_HIGH + 3)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "enemy out of melee",
+            {
+                NextAction("reach melee", ACTION_HIGH + 1)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "retribution aura",
+            {
+                NextAction("retribution aura", ACTION_NORMAL)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "blessing of might",
+            {
+                NextAction("blessing of might", ACTION_NORMAL + 1)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+        "low health",
+            {
+                NextAction("holy light", ACTION_CRITICAL_HEAL + 2)
+            }
+        )
+    );
 
     // Healing Triggers
     triggers.push_back(
-        new TriggerNode("party member critical health",
-                        NextAction::array(0, new NextAction("holy shock on party", ACTION_CRITICAL_HEAL + 6),
-                                          new NextAction("holy light on party", ACTION_CRITICAL_HEAL + 4), nullptr)));
+        new TriggerNode(
+            "party member critical health",
+            {
+                NextAction("holy shock on party", ACTION_CRITICAL_HEAL + 6),
+                NextAction("holy light on party", ACTION_CRITICAL_HEAL + 4)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("party member low health",
-                        NextAction::array(0, new NextAction("holy light on party", ACTION_MEDIUM_HEAL + 5), nullptr)));
-    triggers.push_back(new TriggerNode(
-        "party member medium health",
-        NextAction::array(0, new NextAction("flash of light on party", ACTION_LIGHT_HEAL + 8), nullptr)));
-    triggers.push_back(new TriggerNode(
-        "party member almost full health",
-        NextAction::array(0, new NextAction("flash of light on party", ACTION_LIGHT_HEAL + 3), nullptr)));
-    triggers.push_back(new TriggerNode(
-        "party member to heal out of spell range",
-        NextAction::array(0, new NextAction("reach party member to heal", ACTION_EMERGENCY + 3), nullptr)));
-    triggers.push_back(new TriggerNode(
-        "beacon of light on main tank",
-        NextAction::array(0, new NextAction("beacon of light on main tank", ACTION_CRITICAL_HEAL + 7), nullptr)));
+        new TriggerNode(
+            "party member low health",
+            {
+                NextAction("holy light on party", ACTION_MEDIUM_HEAL + 5)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "party member medium health",
+            {
+                NextAction("flash of light on party", ACTION_LIGHT_HEAL + 8)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "party member almost full health",
+            {
+                NextAction("flash of light on party", ACTION_LIGHT_HEAL + 3)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "party member to heal out of spell range",
+            {
+                NextAction("reach party member to heal", ACTION_EMERGENCY + 3)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "beacon of light on main tank",
+            {
+                NextAction("beacon of light on main tank", ACTION_CRITICAL_HEAL + 7)
+            }
+        )
+    );
 }
