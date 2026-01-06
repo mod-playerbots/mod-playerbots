@@ -276,7 +276,7 @@ enum BotRoles : uint8
 
 enum HUNTER_TABS
 {
-    HUNTER_TAB_BEASTMASTERY,
+    HUNTER_TAB_BEAST_MASTERY,
     HUNTER_TAB_MARKSMANSHIP,
     HUNTER_TAB_SURVIVAL,
 };
@@ -295,11 +295,11 @@ enum PRIEST_TABS
     PRIEST_TAB_SHADOW,
 };
 
-enum DEATHKNIGHT_TABS
+enum DEATH_KNIGHT_TABS
 {
-    DEATHKNIGHT_TAB_BLOOD,
-    DEATHKNIGHT_TAB_FROST,
-    DEATHKNIGHT_TAB_UNHOLY,
+    DEATH_KNIGHT_TAB_BLOOD,
+    DEATH_KNIGHT_TAB_FROST,
+    DEATH_KNIGHT_TAB_UNHOLY,
 };
 
 enum DRUID_TABS
@@ -428,7 +428,7 @@ public:
     static bool IsMainTank(Player* player);
     static uint32 GetGroupTankNum(Player* player);
     static bool IsAssistTank(Player* player);
-    static bool IsAssistTankOfIndex(Player* player, int index);
+    static bool IsAssistTankOfIndex(Player* player, int index, bool ignoreDeadPlayers = false);
     static bool IsHealAssistantOfIndex(Player* player, int index);
     static bool IsRangedDpsAssistantOfIndex(Player* player, int index);
     bool HasAggro(Unit* unit);
@@ -540,7 +540,7 @@ public:
     // Get the group leader or the master of the bot.
     // Checks if the bot is summoned as alt of a player
     bool IsAlt();
-    Player* GetGroupMaster();
+    Player* GetGroupLeader();
     // Returns a semi-random (cycling) number that is fixed for each bot.
     uint32 GetFixedBotNumer(uint32 maxNum = 100, float cyclePerMin = 1);
     GrouperType GetGrouperType();
@@ -579,7 +579,6 @@ public:
     void ResetJumpDestination() { jumpDestination = Position(); }
 
     bool CanMove();
-    static bool IsRealGuild(uint32 guildId);
     bool IsInRealGuild();
     static std::vector<std::string> dispel_whitelist;
     bool EqualLowercaseName(std::string s1, std::string s2);
@@ -612,7 +611,7 @@ private:
     static void _fillGearScoreData(Player* player, Item* item, std::vector<uint32>* gearScore, uint32& twoHandScore,
                                    bool mixed = false);
     bool IsTellAllowed(PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL);
-    void UpdateAIGroupAndMaster();
+    void UpdateAIGroupMaster();
     Item* FindItemInInventory(std::function<bool(ItemTemplate const*)> checkItem) const;
     void HandleCommands();
     void HandleCommand(uint32 type, const std::string& text, Player& fromPlayer, const uint32 lang = LANG_UNIVERSAL);

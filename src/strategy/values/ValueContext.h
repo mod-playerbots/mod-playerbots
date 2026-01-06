@@ -27,9 +27,11 @@
 #include "EnemyHealerTargetValue.h"
 #include "EnemyPlayerValue.h"
 #include "EstimatedLifetimeValue.h"
+#include "FishValues.h"
 #include "Formations.h"
 #include "GrindTargetValue.h"
 #include "GroupValues.h"
+#include "GroupLeaderValue.h"
 #include "GuildValues.h"
 #include "HasAvailableLootValue.h"
 #include "HasTotemValue.h"
@@ -51,7 +53,6 @@
 #include "LootStrategyValue.h"
 #include "MaintenanceValues.h"
 #include "ManaSaveLevelValue.h"
-#include "MasterTargetValue.h"
 #include "NearestAdsValue.h"
 #include "NearestCorpsesValue.h"
 #include "NearestFriendlyPlayersValue.h"
@@ -130,7 +131,7 @@ public:
         creators["party member to resurrect"] = &ValueContext::party_member_to_resurrect;
         creators["current target"] = &ValueContext::current_target;
         creators["self target"] = &ValueContext::self_target;
-        creators["master target"] = &ValueContext::master;
+        creators["group leader"] = &ValueContext::group_leader;
         creators["line target"] = &ValueContext::line_target;
         creators["tank target"] = &ValueContext::tank_target;
         creators["dps target"] = &ValueContext::dps_target;
@@ -312,6 +313,10 @@ public:
         creators["last flee angle"] = &ValueContext::last_flee_angle;
         creators["last flee timestamp"] = &ValueContext::last_flee_timestamp;
         creators["recently flee info"] = &ValueContext::recently_flee_info;
+
+        creators["can fish"] = &ValueContext::can_fish;
+        creators["can use fishing bobber"] = &ValueContext::can_use_fishing_bobber;
+        creators["fishing spot"] = &ValueContext::fishing_spot;
     }
 
 private:
@@ -439,7 +444,7 @@ private:
     static UntypedValue* current_target(PlayerbotAI* botAI) { return new CurrentTargetValue(botAI); }
     static UntypedValue* old_target(PlayerbotAI* botAI) { return new CurrentTargetValue(botAI); }
     static UntypedValue* self_target(PlayerbotAI* botAI) { return new SelfTargetValue(botAI); }
-    static UntypedValue* master(PlayerbotAI* botAI) { return new MasterTargetValue(botAI); }
+    static UntypedValue* group_leader(PlayerbotAI* botAI) { return new GroupLeaderValue(botAI); }
     static UntypedValue* line_target(PlayerbotAI* botAI) { return new LineTargetValue(botAI); }
     static UntypedValue* tank_target(PlayerbotAI* botAI) { return new TankTargetValue(botAI); }
     static UntypedValue* dps_target(PlayerbotAI* botAI) { return new DpsTargetValue(botAI); }
@@ -555,6 +560,9 @@ private:
     static UntypedValue* last_flee_angle(PlayerbotAI* ai) { return new LastFleeAngleValue(ai); }
     static UntypedValue* last_flee_timestamp(PlayerbotAI* ai) { return new LastFleeTimestampValue(ai); }
     static UntypedValue* recently_flee_info(PlayerbotAI* ai) { return new RecentlyFleeInfo(ai); }
+    static UntypedValue* can_fish(PlayerbotAI* ai) { return new CanFishValue(ai); }
+    static UntypedValue* can_use_fishing_bobber(PlayerbotAI* ai) { return new CanUseFishingBobberValue(ai); }
+    static UntypedValue* fishing_spot(PlayerbotAI* ai) { return new FishingSpotValue(ai); }
     // -------------------------------------------------------
     // Flag for cutom glyphs : true when /w bot glyph equip
     // -------------------------------------------------------

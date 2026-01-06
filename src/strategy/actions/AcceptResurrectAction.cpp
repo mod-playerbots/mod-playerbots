@@ -23,7 +23,5 @@ bool AcceptResurrectAction::Execute(Event event)
     packet << uint8(1);                                        // accept
     bot->GetSession()->HandleResurrectResponseOpcode(packet);  // queue the packet to get around race condition
 
-    botAI->ChangeEngine(BOT_STATE_NON_COMBAT);
-
     return true;
 }

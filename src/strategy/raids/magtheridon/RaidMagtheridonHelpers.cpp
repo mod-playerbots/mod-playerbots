@@ -170,9 +170,9 @@ namespace MagtheridonHelpers
     }
 
     std::unordered_map<uint32, bool> lastBlastNovaState;
-    std::unordered_map<uint32, time_t> magtheridonBlastNovaTimer;
-    std::unordered_map<uint32, time_t> magtheridonSpreadWaitTimer;
-    std::unordered_map<uint32, time_t> magtheridonAggroWaitTimer;
+    std::unordered_map<uint32, time_t> blastNovaTimer;
+    std::unordered_map<uint32, time_t> spreadWaitTimer;
+    std::unordered_map<uint32, time_t> dpsWaitTimer;
 
     bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float z)
     {
@@ -209,14 +209,14 @@ namespace MagtheridonHelpers
         return true;
     }
 
-    bool IsMapIDTimerManager(PlayerbotAI* botAI, Player* bot)
+    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot)
     {
         if (Group* group = bot->GetGroup())
         {
             for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             {
                 Player* member = ref->GetSource();
-                if (member && member->IsAlive() && !botAI->IsMainTank(member) && GET_PLAYERBOT_AI(member))
+                if (member && member->IsAlive() && botAI->IsDps(member) && GET_PLAYERBOT_AI(member))
                     return member == bot;
             }
         }

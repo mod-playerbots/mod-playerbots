@@ -24,7 +24,7 @@ class CastDireBearFormAction : public CastBuffSpellAction
 public:
     CastDireBearFormAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "dire bear form") {}
 
-    NextAction** getAlternatives() override;
+    std::vector<NextAction> getAlternatives() override;
 };
 
 class CastCatFormAction : public CastBuffSpellAction

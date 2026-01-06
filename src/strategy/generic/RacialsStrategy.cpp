@@ -16,26 +16,25 @@ private:
     static ActionNode* lifeblood(PlayerbotAI* botAI)
     {
         return new ActionNode("lifeblood",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("gift of the naaru"), nullptr),
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ { NextAction("gift of the naaru") },
+                              /*C*/ {});
     }
 };
 
 void RacialsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("low health", NextAction::array(0, new NextAction("lifeblood", ACTION_NORMAL + 5), nullptr)));
+        new TriggerNode("low health", { NextAction("lifeblood", ACTION_NORMAL + 5) }));
     triggers.push_back(
-        new TriggerNode("medium aoe", NextAction::array(0, new NextAction("war stomp", ACTION_NORMAL + 5), nullptr)));
+        new TriggerNode("medium aoe", { NextAction("war stomp", ACTION_NORMAL + 5) }));
     triggers.push_back(new TriggerNode(
-        "low mana", NextAction::array(0, new NextAction("arcane torrent", ACTION_NORMAL + 5), nullptr)));
+        "low mana", { NextAction("arcane torrent", ACTION_NORMAL + 5) }));
 
     triggers.push_back(new TriggerNode(
-        "generic boost", NextAction::array(0, new NextAction("blood fury", ACTION_NORMAL + 5),
-        new NextAction("berserking", ACTION_NORMAL + 5),
-        new NextAction("use trinket", ACTION_NORMAL + 4),
-        nullptr)));
+        "generic boost", { NextAction("blood fury", ACTION_NORMAL + 5),
+        NextAction("berserking", ACTION_NORMAL + 5),
+        NextAction("use trinket", ACTION_NORMAL + 4) }));
 
 }
 

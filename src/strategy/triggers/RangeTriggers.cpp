@@ -213,7 +213,7 @@ PartyMemberToHealOutOfSpellRangeTrigger::PartyMemberToHealOutOfSpellRangeTrigger
 
 bool FarFromMasterTrigger::IsActive()
 {
-    return sServerFacade->IsDistanceGreaterThan(AI_VALUE2(float, "distance", "master target"), distance);
+    return sServerFacade->IsDistanceGreaterThan(AI_VALUE2(float, "distance", "group leader"), distance);
 }
 
 bool TooCloseToCreatureTrigger::TooCloseToCreature(uint32 creatureId, float range, bool alive)

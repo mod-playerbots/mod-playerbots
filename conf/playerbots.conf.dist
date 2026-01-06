@@ -25,6 +25,7 @@
 #        CHEATS
 #        SPELLS
 #        FLIGHTPATH
+#        PROFESSIONS
 #    RANDOMBOT-SPECIFIC SETTINGS
 #        GENERAL
 #        LEVELS
@@ -44,7 +45,7 @@
 #        HUNTER
 #        ROGUE
 #        PRIEST
-#        DEATHKNIGHT
+#        DEATH KNIGHT
 #        SHAMAN
 #        MAGE
 #        WARLOCK
@@ -55,7 +56,7 @@
 #        HUNTER
 #        ROGUE
 #        PRIEST
-#        DEATHKNIGHT
+#        DEATH KNIGHT
 #        SHAMAN
 #        MAGE
 #        WARLOCK
@@ -579,6 +580,24 @@ AiPlayerbot.BotTaxiGapJitterMs = 100
 #
 ####################################################################################################
 
+####################################################################################################
+# PROFESSIONS
+# Random bots currently do not get professions.
+#
+
+# EnableFishingWithMaster automatically adds the 'master fishing' strategy to bots that can fish that can.
+# Default: 1 (Enabled)
+AiPlayerbot.EnableFishingWithMaster = 1
+#FishingDistance sets how far a bot without a master will search for water, while FishingDistanceFromMaster limits it to a closer range, and overrides the following distance to the same value. EndFishingWithMaster sets the distance from water a bot needs to have to automatically drop the 'master fishing' strategy.
+AiPlayerbot.FishingDistanceFromMaster = 10.0
+AiPlayerbot.FishingDistance = 40.0
+AiPlayerbot.EndFishingWithMaster = 30.0
+
+#
+#
+#
+####################################################################################################
+
 #######################################
 #                                     #
 # RANDOMBOT-SPECIFIC SETTINGS  #
@@ -630,7 +649,7 @@ AiPlayerbot.RandomBotHordeRatio = 50
 AiPlayerbot.DisableDeathKnightLogin = 0
 
 # Enable simulated expansion limitation for talents and glyphs
-# If enabled, limits talent trees to 5 rows plus the middle talent of the 6th row for bots until level 61 
+# If enabled, limits talent trees to 5 rows plus the middle talent of the 6th row for bots until level 61
 # and 7 rows plus the middle talent of the 8th row for bots from level 61 until level 71
 # Default: 0 (disabled)
 AiPlayerbot.LimitTalentsExpansion = 0
@@ -1185,7 +1204,7 @@ AiPlayerbot.DeleteRandomBotArenaTeams = 0
 AiPlayerbot.PvpProhibitedZoneIds = "2255,656,2361,2362,2363,976,35,2268,3425,392,541,1446,3828,3712,3738,3565,3539,3623,4152,3988,4658,4284,4418,4436,4275,4323,4395,3703,4298,3951"
 
 # PvP Restricted Areas (bots don't pvp)
-AiPlayerbot.PvpProhibitedAreaIds = "976,35,392,2268,4161,4010,4317,4312,3649,3887,3958,3724,4080,3938,3754"
+AiPlayerbot.PvpProhibitedAreaIds = "976,35,392,2268,4161,4010,4317,4312,3649,3887,3958,3724,4080,3938,3754,3786,3973"
 
 # Improve reaction speeds in battlegrounds and arenas (may cause lag)
 AiPlayerbot.FastReactInBG = 1
@@ -1455,7 +1474,7 @@ AiPlayerbot.PremadeSpecLink.5.5.80 = 50332031003--005323241223112003102311351
 ####################################################################################################
 
 ####################################################################################################
-# DEATHKNIGHT
+# DEATH KNIGHT
 #
 #
 
@@ -1778,7 +1797,7 @@ AiPlayerbot.RandomClassSpecIndex.5.2 = 2
 ####################################################################################################
 
 ####################################################################################################
-# DEATHKNIGHT
+# DEATH KNIGHT
 #
 #
 

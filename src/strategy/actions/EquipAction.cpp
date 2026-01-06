@@ -344,6 +344,27 @@ bool EquipUpgradesAction::Execute(Event event)
             return false;
     }
 
+    if (event.GetSource() == "item push result")
+    {
+        WorldPacket p(event.getPacket());
+        p.rpos(0);
+        ObjectGuid playerGuid;
+        uint32 received, created, sendChatMessage, itemSlot, itemId;
+        uint8 bagSlot;
+
+        p >> playerGuid;
+        p >> received;
+        p >> created;
+        p >> sendChatMessage;
+        p >> bagSlot;
+        p >> itemSlot;
+        p >> itemId;
+
+        ItemTemplate const* item = sObjectMgr->GetItemTemplate(itemId);
+        if (item->Class == ITEM_CLASS_TRADE_GOODS && item->SubClass == ITEM_SUBCLASS_MEAT)
+            return false;
+    }
+
     CollectItemsVisitor visitor;
     IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);
 

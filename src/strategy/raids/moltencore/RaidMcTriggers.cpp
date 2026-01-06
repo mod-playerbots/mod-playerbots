@@ -1,22 +1,40 @@
 #include "RaidMcTriggers.h"
 
 #include "SharedDefines.h"
+#include "RaidMcHelpers.h"
+
+using namespace MoltenCoreHelpers;
 
 bool McLivingBombDebuffTrigger::IsActive()
 {
-    // if bot has barron geddon's living bomb, we need to add strat, otherwise we need to remove
-    // only do when fighting baron geddon (to avoid modifying strat set by player outside this fight)
-    if (Unit* boss = AI_VALUE2(Unit*, "find target", "baron geddon"))
-    {
-        if (boss->IsInCombat())
-            return bot->HasAura(20475) != botAI->HasStrategy("move from group", BotState::BOT_STATE_COMBAT);
-    }
-    return false;
+    // No check for Baron Geddon, because bots may have the bomb even after Geddon died.
+    return bot->HasAura(SPELL_LIVING_BOMB);
 }
 
 bool McBaronGeddonInfernoTrigger::IsActive()
 {
     if (Unit* boss = AI_VALUE2(Unit*, "find target", "baron geddon"))
-        return boss->HasAura(19695);
+        return boss->HasAura(SPELL_INFERNO);
     return false;
+}
+
+bool McShazzrahRangedTrigger::IsActive()
+{
+    return AI_VALUE2(Unit*, "find target", "shazzrah") && PlayerbotAI::IsRanged(bot);
+}
+
+bool McGolemaggMarkBossTrigger::IsActive()
+{
+    // any tank may mark the boss
+    return AI_VALUE2(Unit*, "find target", "golemagg the incinerator") && PlayerbotAI::IsTank(bot);
+}
+
+bool McGolemaggIsMainTankTrigger::IsActive()
+{
+    return AI_VALUE2(Unit*, "find target", "golemagg the incinerator") && PlayerbotAI::IsMainTank(bot);
+}
+
+bool McGolemaggIsAssistTankTrigger::IsActive()
+{
+    return AI_VALUE2(Unit*, "find target", "golemagg the incinerator") && PlayerbotAI::IsAssistTank(bot);
 }

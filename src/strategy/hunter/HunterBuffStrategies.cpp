@@ -16,9 +16,9 @@ private:
     static ActionNode* aspect_of_the_hawk([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("aspect of the hawk",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("aspect of the monkey"), nullptr),
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ { NextAction("aspect of the monkey") },
+                              /*C*/ {});
     }
 };
 
@@ -30,24 +30,24 @@ HunterBuffDpsStrategy::HunterBuffDpsStrategy(PlayerbotAI* botAI) : NonCombatStra
 void HunterBuffDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("aspect of the hawk", NextAction::array(0, new NextAction("aspect of the dragonhawk", 20.1f),
-                                                                new NextAction("aspect of the hawk", 20.0f), nullptr)));
+        new TriggerNode("aspect of the hawk", { NextAction("aspect of the dragonhawk", 20.1f),
+                                                                NextAction("aspect of the hawk", 20.0f) }));
 }
 
 void HunterNatureResistanceStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode("aspect of the wild",
-                                       NextAction::array(0, new NextAction("aspect of the wild", 20.0f), nullptr)));
+                                       { NextAction("aspect of the wild", 20.0f) }));
 }
 
 void HunterBuffSpeedStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode("aspect of the pack",
-                                       NextAction::array(0, new NextAction("aspect of the pack", 20.0f), nullptr)));
+                                       { NextAction("aspect of the pack", 20.0f) }));
 }
 
 void HunterBuffManaStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode("aspect of the viper",
-                                       NextAction::array(0, new NextAction("aspect of the viper", 20.0f), nullptr)));
+                                       { NextAction("aspect of the viper", 20.0f) }));
 }

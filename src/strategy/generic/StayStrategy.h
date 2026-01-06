@@ -17,7 +17,7 @@ public:
 
     std::string const getName() override { return "stay"; }
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
-    NextAction** getDefaultActions() override;
+    std::vector<NextAction> getDefaultActions() override;
 };
 
 class SitStrategy : public NonCombatStrategy

@@ -22,8 +22,8 @@ bool SecurityCheckAction::Execute(Event event)
         ItemQualities threshold = group->GetLootThreshold();
         if (method == MASTER_LOOT || method == FREE_FOR_ALL || threshold > ITEM_QUALITY_UNCOMMON)
         {
-            if ((botAI->GetGroupMaster()->GetSession()->GetSecurity() == SEC_PLAYER) &&
-                (!bot->GetGuildId() || bot->GetGuildId() != botAI->GetGroupMaster()->GetGuildId()))
+            if ((botAI->GetGroupLeader()->GetSession()->GetSecurity() == SEC_PLAYER) &&
+                (!bot->GetGuildId() || bot->GetGuildId() != botAI->GetGroupLeader()->GetGuildId()))
             {
                 botAI->TellError("I will play with this loot type only if I'm in your guild :/");
                 botAI->ChangeStrategy("+passive,+stay", BOT_STATE_NON_COMBAT);

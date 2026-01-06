@@ -141,6 +141,7 @@ public:
     bool isOverworld();
     bool isInWater();
     bool isUnderWater();
+    bool IsValid();
 
     WorldPosition relPoint(WorldPosition* center);
     WorldPosition offset(WorldPosition* center);
