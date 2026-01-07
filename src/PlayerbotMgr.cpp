@@ -84,21 +84,6 @@ public:
     uint32 GetMasterAccountId() const { return masterAccountId; }
 };
 
-
-class PlayerbotLoginQueryHolder : public CharacterDatabaseQueryHolder
-{
-private:
-    uint32 m_accountId;
-    ObjectGuid m_guid;
-
-public:
-    PlayerbotLoginQueryHolder(uint32 accountId, ObjectGuid guid) : m_accountId(accountId), m_guid(guid) {}
-
-    ObjectGuid GetGuid() const { return m_guid; }
-    uint32 GetAccountId() const { return m_accountId; }
-    bool Initialize();
-};
-
 void PlayerbotHolder::AddPlayerBot(ObjectGuid playerGuid, uint32 masterAccountId)
 {
     if (botLoading.find(playerGuid) != botLoading.end())
