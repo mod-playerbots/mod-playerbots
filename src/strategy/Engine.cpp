@@ -606,7 +606,7 @@ void Engine::LogAction(char const* format, ...)
 
     va_list ap;
     va_start(ap, format);
-    vsnprintf(buf, sizeof(buf), format, ap)
+    vsnprintf(buf, sizeof(buf), format, ap);
     va_end(ap);
 
     lastAction += "|";
