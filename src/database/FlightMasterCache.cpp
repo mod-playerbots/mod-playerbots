@@ -18,7 +18,7 @@ Creature* FlightMasterCache::GetNearestFlightMaster(Player* bot)
     Creature* nearestFlightMaster = nullptr;
     float nearestDistance = std::numeric_limits<float>::max();
 
-    for (const auto& [entry, pos] : flightMasterCache)
+    for (auto const& [entry, pos] : flightMasterCache)
     {
         float distance = bot->GetDistance(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
         if (distance < 500.0f && distance < nearestDistance)
