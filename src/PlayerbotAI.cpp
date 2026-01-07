@@ -2591,7 +2591,7 @@ bool PlayerbotAI::SayToGuild(const std::string& msg)
     {
         if (Guild* guild = sGuildMgr->GetGuildById(bot->GetGuildId()))
         {
-            if (!guild->_HasRankRight(bot, GR_RIGHT_GCHATSPEAK))
+            if (!guild->HasRankRight(bot, GR_RIGHT_GCHATSPEAK))
             {
                 return false;
             }
