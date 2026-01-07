@@ -54,105 +54,105 @@ private:
     static ActionNode* death_coil([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("death coil",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ {},
+                              /*C*/ {});
     }
 
     static ActionNode* death_grip([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("death grip",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("icy touch"), nullptr),
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ { NextAction("icy touch") },
+                              /*C*/ {});
     }
 
     static ActionNode* plague_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("plague strike",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ {},
+                              /*C*/ {});
     }
 
     static ActionNode* icy_touch([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("icy touch",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ {},
+                              /*C*/ {});
     }
 
     static ActionNode* heart_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("heart strike",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ {},
+                              /*C*/ {});
     }
 
     static ActionNode* pestilence([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("pestilence",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ {},
+                              /*C*/ {});
     }
 
     static ActionNode* horn_of_winter([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("horn of winter",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ {},
+                              /*C*/ {});
     }
 
     static ActionNode* bone_shield([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("bone shield",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ {},
+                              /*C*/ {});
     }
 
     static ActionNode* killing_machine([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("killing machine",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("improved icy talons"), nullptr),
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ { NextAction("improved icy talons") },
+                              /*C*/ {});
     }
 
     static ActionNode* corpse_explosion([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("corpse explosion",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ {},
+                              /*C*/ {});
     }
 
     static ActionNode* death_and_decay([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("death and decay",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ {},
+                              /*C*/ {});
     }
 
     static ActionNode* anti_magic_zone([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("anti magic zone",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("anti magic shell"), nullptr),
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ { NextAction("anti magic shell") },
+                              /*C*/ {});
     }
 
     static ActionNode* icebound_fortitude([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("icebound fortitude",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ {},
+                              /*C*/ {});
     }
 };
 
@@ -165,36 +165,29 @@ void GenericDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     MeleeCombatStrategy::InitTriggers(triggers);
 
-    // triggers.push_back(new TriggerNode("high aoe", NextAction::array(0, new NextAction("anti magic shell",
-    // ACTION_NORMAL + 3), nullptr))); triggers.push_back(new TriggerNode("death coil", NextAction::array(0, new
-    // NextAction("death coil", ACTION_NORMAL + 3), nullptr))); triggers.push_back(new TriggerNode("critical aoe heal",
-    // NextAction::array(0, new NextAction("anti magic zone", ACTION_EMERGENCY + 1), nullptr)));
     triggers.push_back(
-        new TriggerNode("no pet", NextAction::array(0, new NextAction("raise dead", ACTION_NORMAL + 5), nullptr)));
+        new TriggerNode("no pet", { NextAction("raise dead", ACTION_NORMAL + 5) }));
     triggers.push_back(
-        new TriggerNode("has pet", NextAction::array(0, new NextAction("toggle pet spell", 60.0f), nullptr)));
+        new TriggerNode("has pet", { NextAction("toggle pet spell", 60.0f) }));
     triggers.push_back(
-        new TriggerNode("new pet", NextAction::array(0, new NextAction("set pet stance", 60.0f), nullptr)));
+        new TriggerNode("new pet", { NextAction("set pet stance", 60.0f) }));
     triggers.push_back(
-        new TriggerNode("mind freeze", NextAction::array(0, new NextAction("mind freeze", ACTION_HIGH + 1), nullptr)));
+        new TriggerNode("mind freeze", { NextAction("mind freeze", ACTION_HIGH + 1) }));
     triggers.push_back(
         new TriggerNode("mind freeze on enemy healer",
-                        NextAction::array(0, new NextAction("mind freeze on enemy healer", ACTION_HIGH + 1), nullptr)));
+                        { NextAction("mind freeze on enemy healer", ACTION_HIGH + 1) }));
     triggers.push_back(new TriggerNode(
-        "horn of winter", NextAction::array(0, new NextAction("horn of winter", ACTION_NORMAL + 1), nullptr)));
+        "horn of winter", { NextAction("horn of winter", ACTION_NORMAL + 1) }));
     triggers.push_back(new TriggerNode("critical health",
-                                       NextAction::array(0, new NextAction("death pact", ACTION_HIGH + 5), nullptr)));
+                                       { NextAction("death pact", ACTION_HIGH + 5) }));
 
     triggers.push_back(
-        new TriggerNode("low health", NextAction::array(0, new NextAction("icebound fortitude", ACTION_HIGH + 5),
-                                                        new NextAction("rune tap", ACTION_HIGH + 4), nullptr)));
+        new TriggerNode("low health", { NextAction("icebound fortitude", ACTION_HIGH + 5),
+                                                        NextAction("rune tap", ACTION_HIGH + 4) }));
     triggers.push_back(
-        new TriggerNode("medium aoe", NextAction::array(0, new NextAction("death and decay", ACTION_HIGH + 9),
-                                                        new NextAction("pestilence", ACTION_NORMAL + 4),
-                                                        new NextAction("blood boil", ACTION_NORMAL + 3), nullptr)));
-    // triggers.push_back(new TriggerNode("light aoe", NextAction::array(0,
-    //     new NextAction("pestilence", ACTION_NORMAL + 4),
-    //     nullptr)));
+        new TriggerNode("medium aoe", { NextAction("death and decay", ACTION_HIGH + 9),
+                                                        NextAction("pestilence", ACTION_NORMAL + 4),
+                                                        NextAction("blood boil", ACTION_NORMAL + 3) }));
     triggers.push_back(
-        new TriggerNode("pestilence glyph", NextAction::array(0, new NextAction("pestilence", ACTION_HIGH + 9), NULL)));
+        new TriggerNode("pestilence glyph", { NextAction("pestilence", ACTION_HIGH + 9) }));
 }

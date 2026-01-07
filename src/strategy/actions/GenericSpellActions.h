@@ -27,7 +27,11 @@ public:
     bool isUseful() override;
     ActionThreatType getThreatType() override { return ActionThreatType::Single; }
 
-    NextAction** getPrerequisites() override;
+    std::vector<NextAction> getPrerequisites() override
+    {
+        return {};
+    }
+
     std::string const getSpell() { return spell; }
 
 protected:
@@ -193,10 +197,12 @@ public:
     ResurrectPartyMemberAction(PlayerbotAI* botAI, std::string const spell) : CastSpellAction(botAI, spell) {}
 
     std::string const GetTargetName() override { return "party member to resurrect"; }
-    NextAction** getPrerequisites() override
+    std::vector<NextAction> getPrerequisites() override
     {
-        return NextAction::merge(NextAction::array(0, new NextAction("reach party member to resurrect"), NULL),
-                                 Action::getPrerequisites());
+        return NextAction::merge(
+            { NextAction("reach party member to resurrect") },
+            Action::getPrerequisites()
+        );
     }
 };
 

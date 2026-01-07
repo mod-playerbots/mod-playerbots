@@ -103,9 +103,7 @@ bool CastScareBeastCcAction::Execute(Event event) { return botAI->CastSpell("sca
 
 bool CastWingClipAction::isUseful() { return CastSpellAction::isUseful() && !botAI->HasAura(spell, GetTarget()); }
 
-NextAction** CastWingClipAction::getPrerequisites() { return nullptr; }
-
-// bool CastRaptorStrikeAction::isUseful()
-// {
-//     return CastMeleeSpellAction::isUseful() && botAI->HasStrategy("close", BOT_STATE_COMBAT);
-// }
+std::vector<NextAction> CastWingClipAction::getPrerequisites()
+{
+    return {};
+}
