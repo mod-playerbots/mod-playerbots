@@ -19,8 +19,6 @@ class ChatHandler;
 
 struct ItemTemplate;
 
-enum EquipmentSlots : uint32;
-
 enum RandomItemType
 {
     RANDOM_ITEM_GUILD_TASK,
