@@ -19,7 +19,7 @@ class ChatHandler;
 
 struct ItemTemplate;
 
-enum EquipmentSlots;
+enum EquipmentSlots : uint32;
 
 enum RandomItemType
 {
