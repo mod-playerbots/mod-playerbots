@@ -661,6 +661,7 @@ bool PlayerbotAIConfig::Initialize()
 
     // Assign account types after accounts are created
     sRandomPlayerbotMgr->AssignAccountTypes();
+
     if (sPlayerbotAIConfig->enabled)
     {
         sRandomPlayerbotMgr->Init();
