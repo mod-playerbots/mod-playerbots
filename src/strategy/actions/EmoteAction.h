@@ -15,8 +15,6 @@ class Player;
 class PlayerbotAI;
 class Unit;
 
-enum TextEmotes : uint32;
-
 class EmoteActionBase : public Action
 {
 public:
