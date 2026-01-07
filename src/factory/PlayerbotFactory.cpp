@@ -1103,8 +1103,6 @@ void PlayerbotFactory::ResetQuests()
     }
 }
 
-void PlayerbotFactory::InitSpells() { InitAvailableSpells(); }
-
 void PlayerbotFactory::InitTalentsTree(bool increment /*false*/, bool use_template /*true*/, bool reset /*false*/)
 {
     uint32 specTab;
