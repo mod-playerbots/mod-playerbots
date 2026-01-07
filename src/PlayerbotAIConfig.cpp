@@ -6,7 +6,6 @@
 #include "PlayerbotAIConfig.h"
 #include <iostream>
 #include "Config.h"
-#include "FlightMasterCache.h"
 #include "NewRpgInfo.h"
 #include "PlayerbotDungeonSuggestionMgr.h"
 #include "PlayerbotFactory.h"
@@ -662,7 +661,6 @@ bool PlayerbotAIConfig::Initialize()
 
     // Assign account types after accounts are created
     sRandomPlayerbotMgr->AssignAccountTypes();
-    sFlightMasterCache->Initialize();
     if (sPlayerbotAIConfig->enabled)
     {
         sRandomPlayerbotMgr->Init();

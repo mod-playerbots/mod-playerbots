@@ -26,6 +26,7 @@
 #include "DatabaseEnv.h"
 #include "Define.h"
 #include "FleeManager.h"
+#include "FlightMasterCache.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "GuildMgr.h"

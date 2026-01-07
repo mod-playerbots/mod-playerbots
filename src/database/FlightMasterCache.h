@@ -3,6 +3,7 @@
 
 #include "Creature.h"
 #include "Player.h"
+#include "TravelMgr.h"
 
 class FlightMasterCache
 {
@@ -13,7 +14,6 @@ public:
         return &instance;
     }
 
-    void Initialize(); // call once on startup
     Creature* GetNearestFlightMaster(Player* bot);
     void AddHordeFlightMaster(uint32 entry, WorldPosition pos);
     void AddAllianceFlightMaster(uint32 entry, WorldPosition pos);
@@ -23,5 +23,5 @@ private:
     std::map<uint32, WorldPosition> hordeFlightMasterCache;
 };
 
-#define sFlightMaster FlightMasterCache::Instance()
+#define sFlightMasterCache FlightMasterCache::Instance()
 #endif
