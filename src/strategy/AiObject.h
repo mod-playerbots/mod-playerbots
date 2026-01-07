@@ -42,9 +42,6 @@ protected:
 // TRIGGERS
 //
 
-#define NEXT_TRIGGERS(name, relevance) \
-    virtual NextAction* getNextAction() { return new NextAction(name, relevance); }
-
 #define BEGIN_TRIGGER(clazz, super)                 \
     class clazz : public super                      \
     {                                               \
@@ -76,14 +73,6 @@ protected:
     {                                                                   \
     public:                                                             \
         clazz(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, spell) {} \
-    }
-
-#define BUFF_PARTY_TRIGGER_A(clazz, spell)                              \
-    class clazz : public BuffOnPartyTrigger                             \
-    {                                                                   \
-    public:                                                             \
-        clazz(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, spell) {} \
-        bool IsActive() override;                                       \
     }
 
 #define DEBUFF_TRIGGER(clazz, spell)                               \
@@ -296,14 +285,6 @@ protected:
         clazz(PlayerbotAI* botAI) : CastHealingSpellAction(botAI, spell) {} \
     }
 
-#define HEAL_ACTION_U(clazz, spell, useful)                                 \
-    class clazz : public CastHealingSpellAction                             \
-    {                                                                       \
-    public:                                                                 \
-        clazz(PlayerbotAI* botAI) : CastHealingSpellAction(botAI, spell) {} \
-        bool isUseful() override { return useful; }                         \
-    }
-
 #define HEAL_PARTY_ACTION(clazz, spell, estAmount, manaEfficiency)                                    \
     class clazz : public HealPartyMemberAction                                                        \
     {                                                                                                 \
@@ -404,14 +385,6 @@ protected:
         clazz(PlayerbotAI* botAI) : CastReachTargetSpellAction(botAI, spell, range) {} \
     }
 
-#define REACH_ACTION_U(clazz, spell, range, useful)                                    \
-    class clazz : public CastReachTargetSpellAction                                    \
-    {                                                                                  \
-    public:                                                                            \
-        clazz(PlayerbotAI* botAI) : CastReachTargetSpellAction(botAI, spell, range) {} \
-        bool isUseful() override { return useful; }                                    \
-    }
-
 #define ENEMY_HEALER_ACTION(clazz, spell)                                         \
     class clazz : public CastSpellOnEnemyHealerAction                             \
     {                                                                             \
@@ -440,10 +413,6 @@ protected:
         clazz(PlayerbotAI* botAI) : CastProtectSpellAction(botAI, spell) {} \
     }
 
-#define END_RANGED_SPELL_ACTION() \
-    }                             \
-    ;
-
 #define BEGIN_SPELL_ACTION(clazz, name)  \
     class clazz : public CastSpellAction \
     {                                    \
@@ -471,43 +440,5 @@ protected:
     {                                         \
     public:                                   \
         clazz(PlayerbotAI* botAI) : CastMeleeSpellAction(botAI, name) {}
-
-#define END_RANGED_SPELL_ACTION() \
-    }                             \
-    ;
-
-#define BEGIN_BUFF_ON_PARTY_ACTION(clazz, name) \
-    class clazz : public BuffOnPartyAction      \
-    {                                           \
-    public:                                     \
-        clazz(PlayerbotAI* botAI) : BuffOnPartyAction(botAI, name) {}
-
-//
-// Action node
-//
-
-// node_name , action, prerequisite
-#define ACTION_NODE_P(name, spell, pre)                                                                       \
-    static ActionNode* name([[maybe_unused]] PlayerbotAI* botAI)                                                               \
-    {                                                                                                         \
-        return new ActionNode(spell, /*P*/ NextAction::array(0, new NextAction(pre), nullptr), /*A*/ nullptr, \
-                              /*C*/ nullptr);                                                                 \
-    }
-
-// node_name , action, alternative
-#define ACTION_NODE_A(name, spell, alt)                                                                       \
-    static ActionNode* name([[maybe_unused]] PlayerbotAI* botAI)                                                               \
-    {                                                                                                         \
-        return new ActionNode(spell, /*P*/ nullptr, /*A*/ NextAction::array(0, new NextAction(alt), nullptr), \
-                              /*C*/ nullptr);                                                                 \
-    }
-
-// node_name , action, continuer
-#define ACTION_NODE_C(name, spell, con)                                                  \
-    static ActionNode* name([[maybe_unused]] PlayerbotAI* botAI)                                          \
-    {                                                                                    \
-        return new ActionNode(spell, /*P*/ nullptr, /*A*/ nullptr,                       \
-                              /*C*/ NextAction::array(0, new NextAction(con), nullptr)); \
-    }
 
 #endif

@@ -90,7 +90,7 @@ public:
     bool testMode;
 
 private:
-    bool MultiplyAndPush(NextAction** actions, float forceRelevance, bool skipPrerequisites, Event event,
+    bool MultiplyAndPush(std::vector<NextAction> actions, float forceRelevance, bool skipPrerequisites, Event event,
                          const char* pushType);
     void Reset();
     void ProcessTriggers(bool minimal);

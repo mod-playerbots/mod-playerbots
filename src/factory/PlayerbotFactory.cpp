@@ -30,6 +30,7 @@
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotDbStore.h"
+#include "PlayerbotGuildMgr.h"
 #include "Playerbots.h"
 #include "QuestDef.h"
 #include "RandomItemMgr.h"
@@ -2525,66 +2526,35 @@ void PlayerbotFactory::InitAvailableSpells()
         for (CreatureTemplateContainer::const_iterator i = creatureTemplateContainer->begin();
              i != creatureTemplateContainer->end(); ++i)
         {
-            CreatureTemplate const& co = i->second;
-            if (co.trainer_type != TRAINER_TYPE_TRADESKILLS && co.trainer_type != TRAINER_TYPE_CLASS)
+            Trainer::Trainer* trainer = sObjectMgr->GetTrainer(i->first);
+
+            if (!trainer)
                 continue;
 
-            if (co.trainer_type == TRAINER_TYPE_CLASS && co.trainer_class != bot->getClass())
+            if (trainer->GetTrainerType() != Trainer::Type::Tradeskill &&
+                trainer->GetTrainerType() != Trainer::Type::Class)
                 continue;
 
-            uint32 trainerId = co.Entry;
-            trainerIdCache[bot->getClass()].push_back(trainerId);
+            if (trainer->GetTrainerType() == Trainer::Type::Class &&
+                !trainer->IsTrainerValidForPlayer(bot))
+                continue;
+
+            trainerIdCache[bot->getClass()].push_back(i->first);
         }
     }
     for (uint32 trainerId : trainerIdCache[bot->getClass()])
     {
-        TrainerSpellData const* trainer_spells = sObjectMgr->GetNpcTrainerSpells(trainerId);
-        if (!trainer_spells)
-            trainer_spells = sObjectMgr->GetNpcTrainerSpells(trainerId);
+        Trainer::Trainer* trainer = sObjectMgr->GetTrainer(trainerId);
 
-        if (!trainer_spells)
-            continue;
-
-        for (TrainerSpellMap::const_iterator itr = trainer_spells->spellList.begin();
-             itr != trainer_spells->spellList.end(); ++itr)
+        for (auto& spell : trainer->GetSpells())
         {
-            TrainerSpell const* tSpell = &itr->second;
-
-            if (!tSpell)
+            if (!trainer->CanTeachSpell(bot, trainer->GetSpell(spell.SpellId)))
                 continue;
 
-            if (tSpell->learnedSpell[0] && !bot->IsSpellFitByClassAndRace(tSpell->learnedSpell[0]))
-                continue;
-
-            TrainerSpellState state = bot->GetTrainerSpellState(tSpell);
-            if (state != TRAINER_SPELL_GREEN)
-                continue;
-
-            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(tSpell->spell);
-            bool learn = true;
-            for (uint8 j = 0; j < 3; ++j)
-            {
-                if (!tSpell->learnedSpell[j] && !bot->IsSpellFitByClassAndRace(tSpell->learnedSpell[j]))
-                    continue;
-
-                if (spellInfo->Effects[j].Effect == SPELL_EFFECT_PROFICIENCY ||
-                    (spellInfo->Effects[j].Effect == SPELL_EFFECT_SKILL_STEP &&
-                     spellInfo->Effects[j].MiscValue != SKILL_RIDING) ||
-                    spellInfo->Effects[j].Effect == SPELL_EFFECT_DUAL_WIELD)
-                {
-                    learn = false;
-                    break;
-                }
-            }
-            if (!learn)
-            {
-                continue;
-            }
-
-            if (tSpell->IsCastable())
-                bot->CastSpell(bot, tSpell->spell, true);
+            if (spell.IsCastable())
+                bot->CastSpell(bot, spell.SpellId, true);
             else
-                bot->learnSpell(tSpell->learnedSpell[0], false);
+                bot->learnSpell(spell.SpellId, false);
         }
     }
 }
@@ -3965,45 +3935,33 @@ void PlayerbotFactory::InitInventoryEquip()
 void PlayerbotFactory::InitGuild()
 {
     if (bot->GetGuildId())
-        return;
-
-    // bot->SaveToDB(false, false);
-
-    // add guild tabard
-    if (bot->GetGuildId() && !bot->HasItemCount(5976, 1))
-        StoreItem(5976, 1);
-
-    if (sPlayerbotAIConfig->randomBotGuilds.empty())
-        RandomPlayerbotFactory::CreateRandomGuilds();
-
-    std::vector<uint32> guilds;
-    for (std::vector<uint32>::iterator i = sPlayerbotAIConfig->randomBotGuilds.begin();
-         i != sPlayerbotAIConfig->randomBotGuilds.end(); ++i)
-        guilds.push_back(*i);
-
-    if (guilds.empty())
     {
-        LOG_ERROR("playerbots", "No random guilds available");
+        if (!bot->HasItemCount(5976, 1) && bot->GetLevel() > 9)
+            StoreItem(5976, 1);
         return;
     }
 
-    int index = urand(0, guilds.size() - 1);
-    uint32 guildId = guilds[index];
-    Guild* guild = sGuildMgr->GetGuildById(guildId);
+    std::string guildName = sPlayerbotGuildMgr->AssignToGuild(bot);
+    if (guildName.empty())
+        return;
+
+    Guild* guild = sGuildMgr->GetGuildByName(guildName);
     if (!guild)
     {
-        LOG_ERROR("playerbots", "Invalid guild {}", guildId);
+        if (!sPlayerbotGuildMgr->CreateGuild(bot, guildName))
+            LOG_ERROR("playerbots","Failed to create guild {} for bot {}", guildName, bot->GetName());
         return;
     }
-
-    if (guild->GetMemberSize() < urand(10, sPlayerbotAIConfig->randomBotGuildSizeMax))
-        guild->AddMember(bot->GetGUID(), urand(GR_OFFICER, GR_INITIATE));
-
+    else
+    {
+        if (guild->AddMember(bot->GetGUID(),urand(GR_OFFICER, GR_INITIATE)))
+            sPlayerbotGuildMgr->OnGuildUpdate(guild);
+        else
+            LOG_ERROR("playerbots","Bot {} failed to join guild {}.", bot->GetName(), guildName);
+    }
     // add guild tabard
     if (bot->GetGuildId() && bot->GetLevel() > 9 && urand(0, 4) && !bot->HasItemCount(5976, 1))
         StoreItem(5976, 1);
-
-    // bot->SaveToDB(false, false);
 }
 
 void PlayerbotFactory::InitImmersive()

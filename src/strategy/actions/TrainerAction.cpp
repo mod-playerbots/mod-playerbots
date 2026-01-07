@@ -10,7 +10,7 @@
 #include "PlayerbotFactory.h"
 #include "Playerbots.h"
 
-void TrainerAction::Learn(uint32 cost, TrainerSpell const* tSpell, std::ostringstream& msg)
+void TrainerAction::Learn(uint32 cost, const Trainer::Spell tSpell, std::ostringstream& msg)
 {
     if (sPlayerbotAIConfig->autoTrainSpells != "free" && !botAI->HasCheat(BotCheatMask::gold))
     {
@@ -23,7 +23,7 @@ void TrainerAction::Learn(uint32 cost, TrainerSpell const* tSpell, std::ostrings
         bot->ModifyMoney(-int32(cost));
     }
 
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(tSpell->spell);
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(tSpell.SpellId);
     if (!spellInfo)
         return;
 
@@ -41,10 +41,8 @@ void TrainerAction::Learn(uint32 cost, TrainerSpell const* tSpell, std::ostrings
         }
     }
 
-    if (!learned && !bot->HasSpell(tSpell->spell))
-    {
-        bot->learnSpell(tSpell->spell);
-    }
+    if (!learned && !bot->HasSpell(tSpell.SpellId))
+        bot->learnSpell(tSpell.SpellId);
 
     msg << " - learned";
 }
@@ -53,37 +51,35 @@ void TrainerAction::Iterate(Creature* creature, TrainerSpellAction action, Spell
 {
     TellHeader(creature);
 
-    TrainerSpellData const* trainer_spells = creature->GetTrainerSpells();
+    Trainer::Trainer* trainer = sObjectMgr->GetTrainer(creature->GetEntry());
+
+    if (!trainer)
+        return;
+
     float fDiscountMod = bot->GetReputationPriceDiscount(creature);
     uint32 totalCost = 0;
 
-    for (TrainerSpellMap::const_iterator itr = trainer_spells->spellList.begin();
-         itr != trainer_spells->spellList.end(); ++itr)
+    for (auto& spell : trainer->GetSpells())
     {
-        TrainerSpell const* tSpell = &itr->second;
-        if (!tSpell)
+        if (!trainer->CanTeachSpell(bot, trainer->GetSpell(spell.SpellId)))
             continue;
 
-        TrainerSpellState state = bot->GetTrainerSpellState(tSpell);
-        if (state != TRAINER_SPELL_GREEN)
+        if (!spells.empty() && spells.find(spell.SpellId) == spells.end())
             continue;
 
-        uint32 spellId = tSpell->spell;
-        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell.SpellId);
+
         if (!spellInfo)
             continue;
 
-        if (!spells.empty() && spells.find(tSpell->spell) == spells.end())
-            continue;
-
-        uint32 cost = uint32(floor(tSpell->spellCost * fDiscountMod));
+        uint32 cost = uint32(floor(spell.MoneyCost * fDiscountMod));
         totalCost += cost;
 
         std::ostringstream out;
         out << chat->FormatSpell(spellInfo) << chat->formatMoney(cost);
 
         if (action)
-            (this->*action)(cost, tSpell, out);
+            (this->*action)(cost, spell, out);
 
         botAI->TellMaster(out);
     }
@@ -112,15 +108,14 @@ bool TrainerAction::Execute(Event event)
     if (!creature || !creature->IsTrainer())
         return false;
 
-    if (!creature->IsValidTrainerForPlayer(bot))
-    {
-        botAI->TellError("This trainer cannot teach me");
-        return false;
-    }
+    Trainer::Trainer* trainer = sObjectMgr->GetTrainer(creature->GetEntry());
 
-    // check present spell in trainer spell list
-    TrainerSpellData const* cSpells = creature->GetTrainerSpells();
-    if (!cSpells)
+    if (!trainer || !trainer->IsTrainerValidForPlayer(bot))
+        return false;
+
+    std::vector<Trainer::Spell> trainer_spells = trainer->GetSpells();
+
+    if (trainer_spells.empty())
     {
         botAI->TellError("No spells can be learned from this trainer");
         return false;
@@ -133,7 +128,7 @@ bool TrainerAction::Execute(Event event)
 
     if (text.find("learn") != std::string::npos || sRandomPlayerbotMgr->IsRandomBot(bot) ||
         (sPlayerbotAIConfig->autoTrainSpells != "no" &&
-         (creature->GetCreatureTemplate()->trainer_type != TRAINER_TYPE_TRADESKILLS ||
+         (trainer->GetTrainerType() != Trainer::Type::Tradeskill ||
           !botAI->HasActivePlayerMaster())))  // Todo rewrite to only exclude start primary profession skills and make
                                               // config dependent.
         Iterate(creature, &TrainerAction::Learn, spells);

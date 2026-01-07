@@ -78,20 +78,17 @@ float ChooseRpgTargetAction::getMaxRelevance(GuidPosition guidP)
             if (!trigger->IsActive())
                 continue;
 
-            NextAction** nextActions = triggerNode->getHandlers();
+            std::vector<NextAction> nextActions = triggerNode->getHandlers();
 
             bool isRpg = false;
 
-            for (int32 i = 0; i < NextAction::size(nextActions); i++)
+            for (NextAction nextAction : nextActions)
             {
-                NextAction* nextAction = nextActions[i];
-
-                Action* action = botAI->GetAiObjectContext()->GetAction(nextAction->getName());
+                Action* action = botAI->GetAiObjectContext()->GetAction(nextAction.getName());
 
                 if (dynamic_cast<RpgEnabled*>(action))
                     isRpg = true;
             }
-            NextAction::destroy(nextActions);
 
             if (isRpg)
             {

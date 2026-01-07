@@ -2834,22 +2834,20 @@ inline bool ContainsInternal(ItemTemplate const* proto, uint32 skillId)
     CreatureTemplateContainer const* creatures = sObjectMgr->GetCreatureTemplates();
     for (CreatureTemplateContainer::const_iterator itr = creatures->begin(); itr != creatures->end(); ++itr)
     {
-        if (itr->second.trainer_type != TRAINER_TYPE_TRADESKILLS)
+        Trainer::Trainer* trainer = sObjectMgr->GetTrainer(itr->first);
+
+        if (!trainer)
             continue;
 
-        uint32 trainerId = itr->second.Entry;
-        TrainerSpellData const* trainer_spells = sObjectMgr->GetNpcTrainerSpells(trainerId);
-        if (!trainer_spells)
+        if (trainer->GetTrainerType() != Trainer::Type::Tradeskill)
             continue;
 
-        for (TrainerSpellMap::const_iterator iter = trainer_spells->spellList.begin();
-             iter != trainer_spells->spellList.end(); ++iter)
+        for (auto& spell : trainer->GetSpells())
         {
-            TrainerSpell const* tSpell = &iter->second;
-            if (!tSpell || tSpell->reqSkill != skillId)
+            if (spell.ReqSkillLine != skillId)
                 continue;
 
-            if (IsCraftedBy(proto, tSpell->spell))
+            if (IsCraftedBy(proto, spell.SpellId))
                 return true;
         }
     }

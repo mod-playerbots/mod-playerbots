@@ -28,90 +28,112 @@ public:
 private:
     static ActionNode* faerie_fire_feral([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("faerie fire (feral)",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "faerie fire (feral)",
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* melee([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("melee",
-                              /*P*/ NextAction::array(0, new NextAction("feral charge - cat"), nullptr),
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "melee",
+            /*P*/ { NextAction("feral charge - cat") },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* feral_charge_cat([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("feral charge - cat",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("reach melee"), nullptr),
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "feral charge - cat",
+            /*P*/ {},
+            /*A*/ { NextAction("reach melee") },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* cat_form([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("cat form",
-                              /*P*/ NextAction::array(0, new NextAction("caster form"), nullptr),
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "cat form",
+            /*P*/ { NextAction("caster form") },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* claw([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("claw",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("melee"), nullptr),
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "claw",
+            /*P*/ {},
+            /*A*/ { NextAction("melee") },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* mangle_cat([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("mangle (cat)",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "mangle (cat)",
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* rake([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("rake",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "rake",
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* ferocious_bite([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("ferocious bite",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("rip"), nullptr),
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "ferocious bite",
+            /*P*/ {},
+            /*A*/ { NextAction("rip") },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* rip([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("rip",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "rip",
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* pounce([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("pounce",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("ravage"), nullptr),
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "pounce",
+            /*P*/ {},
+            /*A*/ { NextAction("ravage") },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* ravage([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("ravage",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("shred"), nullptr),
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "ravage",
+            /*P*/ {},
+            /*A*/ { NextAction("shred") },
+            /*C*/ {}
+        );
     }
 };
 
@@ -120,9 +142,11 @@ CatDpsDruidStrategy::CatDpsDruidStrategy(PlayerbotAI* botAI) : FeralDruidStrateg
     actionNodeFactories.Add(new CatDpsDruidStrategyActionNodeFactory());
 }
 
-NextAction** CatDpsDruidStrategy::getDefaultActions()
+std::vector<NextAction> CatDpsDruidStrategy::getDefaultActions()
 {
-    return NextAction::array(0, new NextAction("tiger's fury", ACTION_DEFAULT + 0.1f), nullptr);
+    return {
+        NextAction("tiger's fury", ACTION_DEFAULT + 0.1f)
+    };
 }
 
 void CatDpsDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -130,50 +154,161 @@ void CatDpsDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     FeralDruidStrategy::InitTriggers(triggers);
 
     // Default priority
-    triggers.push_back(new TriggerNode("almost full energy available",
-                                       NextAction::array(0, new NextAction("shred", ACTION_DEFAULT + 0.4f), nullptr)));
-    triggers.push_back(new TriggerNode("combo points not full",
-                                       NextAction::array(0, new NextAction("shred", ACTION_DEFAULT + 0.4f), nullptr)));
-    triggers.push_back(new TriggerNode("almost full energy available",
-                                       NextAction::array(0, new NextAction("mangle (cat)", ACTION_DEFAULT + 0.3f), nullptr)));
-    triggers.push_back(new TriggerNode("combo points not full and high energy",
-                                       NextAction::array(0, new NextAction("mangle (cat)", ACTION_DEFAULT + 0.3f), nullptr)));
-    triggers.push_back(new TriggerNode("almost full energy available",
-                                       NextAction::array(0, new NextAction("claw", ACTION_DEFAULT + 0.2f), nullptr)));
-    triggers.push_back(new TriggerNode("combo points not full and high energy",
-                                       NextAction::array(0, new NextAction("claw", ACTION_DEFAULT + 0.2f), nullptr)));
     triggers.push_back(
-        new TriggerNode("faerie fire (feral)",
-                        NextAction::array(0, new NextAction("faerie fire (feral)", ACTION_DEFAULT + 0.0f), nullptr)));
+        new TriggerNode(
+            "almost full energy available",
+            {
+                NextAction("shred", ACTION_DEFAULT + 0.4f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "combo points not full",
+            {
+                NextAction("shred", ACTION_DEFAULT + 0.4f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "almost full energy available",
+            {
+                NextAction("mangle (cat)", ACTION_DEFAULT + 0.3f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "combo points not full and high energy",
+            {
+                NextAction("mangle (cat)", ACTION_DEFAULT + 0.3f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "almost full energy available",
+            {
+                NextAction("claw", ACTION_DEFAULT + 0.2f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "combo points not full and high energy",
+            {
+                NextAction("claw", ACTION_DEFAULT + 0.2f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "faerie fire (feral)",
+            {
+                NextAction("faerie fire (feral)", ACTION_DEFAULT + 0.0f)
+            }
+        )
+    );
 
     // Main spell
     triggers.push_back(
-        new TriggerNode("cat form", NextAction::array(0, new NextAction("cat form", ACTION_HIGH + 8), nullptr)));
+        new TriggerNode(
+            "cat form", {
+                NextAction("cat form", ACTION_HIGH + 8)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("savage roar", NextAction::array(0, new NextAction("savage roar", ACTION_HIGH + 7), nullptr)));
-    triggers.push_back(new TriggerNode("combo points available",
-                                       NextAction::array(0, new NextAction("rip", ACTION_HIGH + 6), nullptr)));
-    triggers.push_back(new TriggerNode(
-        "ferocious bite time", NextAction::array(0, new NextAction("ferocious bite", ACTION_HIGH + 5), nullptr)));
+        new TriggerNode(
+            "savage roar", {
+                NextAction("savage roar", ACTION_HIGH + 7)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("target with combo points almost dead",
-                        NextAction::array(0, new NextAction("ferocious bite", ACTION_HIGH + 4), nullptr)));
-    triggers.push_back(new TriggerNode("mangle (cat)",
-                                       NextAction::array(0, new NextAction("mangle (cat)", ACTION_HIGH + 3), nullptr)));
-    triggers.push_back(new TriggerNode("rake", NextAction::array(0, new NextAction("rake", ACTION_HIGH + 2), nullptr)));
+        new TriggerNode(
+            "combo points available",
+            {
+                NextAction("rip", ACTION_HIGH + 6)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("medium threat", NextAction::array(0, new NextAction("cower", ACTION_HIGH + 1), nullptr)));
+        new TriggerNode(
+            "ferocious bite time",
+            {
+                NextAction("ferocious bite", ACTION_HIGH + 5)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "target with combo points almost dead",
+            {
+                NextAction("ferocious bite", ACTION_HIGH + 4)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "mangle (cat)",
+            {
+                NextAction("mangle (cat)", ACTION_HIGH + 3)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "rake",
+            {
+                NextAction("rake", ACTION_HIGH + 2)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "medium threat",
+            {
+                NextAction("cower", ACTION_HIGH + 1)
+            }
+        )
+    );
 
     // AOE
     triggers.push_back(
-        new TriggerNode("medium aoe", NextAction::array(0, new NextAction("swipe (cat)", ACTION_HIGH + 3), nullptr)));
-    triggers.push_back(new TriggerNode(
-        "light aoe", NextAction::array(0, new NextAction("rake on attacker", ACTION_HIGH + 2), nullptr)));
-    // Reach target
-    triggers.push_back(new TriggerNode(
-        "enemy out of melee", NextAction::array(0, new NextAction("feral charge - cat", ACTION_HIGH + 9), nullptr)));
+        new TriggerNode(
+            "medium aoe",
+            {
+                NextAction("swipe (cat)", ACTION_HIGH + 3)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("enemy out of melee", NextAction::array(0, new NextAction("dash", ACTION_HIGH + 8), nullptr)));
+        new TriggerNode(
+            "light aoe",
+            {
+                NextAction("rake on attacker", ACTION_HIGH + 2)
+            }
+        )
+    );
+    // Reach target
+    triggers.push_back(
+        new TriggerNode(
+            "enemy out of melee",
+            {
+                NextAction("feral charge - cat", ACTION_HIGH + 9)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "enemy out of melee",
+            {
+                NextAction("dash", ACTION_HIGH + 8)
+            }
+        )
+    );
 }
 
 void CatAoeDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers) {}

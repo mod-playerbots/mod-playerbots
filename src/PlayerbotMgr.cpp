@@ -32,6 +32,7 @@
 #include "PlayerbotSecurity.h"
 #include "PlayerbotWorldThreadProcessor.h"
 #include "Playerbots.h"
+#include "PlayerbotGuildMgr.h"
 #include "RandomPlayerbotMgr.h"
 #include "SharedDefines.h"
 #include "WorldSession.h"
@@ -1193,7 +1194,7 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
             if (ObjectAccessor::FindConnectedPlayer(guid))
                 continue;
             uint32 guildId = sCharacterCache->GetCharacterGuildIdByGuid(guid);
-            if (guildId && PlayerbotAI::IsRealGuild(guildId))
+            if (guildId && sPlayerbotGuildMgr->IsRealGuild(guildId))
                 continue;
             AddPlayerBot(guid, master->GetSession()->GetAccountId());
             messages.push_back("Add class " + std::string(charname));

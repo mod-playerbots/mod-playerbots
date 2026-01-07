@@ -18,7 +18,7 @@ public:
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
     std::string const getName() override { return "dps"; }
-    NextAction** getDefaultActions() override;
+    std::vector<NextAction> getDefaultActions() override;
     uint32 GetType() const override { return MeleeCombatStrategy::GetType() | STRATEGY_TYPE_DPS; }
 };
 
@@ -29,7 +29,7 @@ public:
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
     std::string const getName() override { return "stealthed"; }
-    NextAction** getDefaultActions() override;
+    std::vector<NextAction> getDefaultActions() override;
 };
 
 class StealthStrategy : public Strategy

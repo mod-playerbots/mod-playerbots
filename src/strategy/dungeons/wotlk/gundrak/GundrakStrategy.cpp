@@ -11,13 +11,13 @@ void WotlkDungeonGDStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
     // TODO: Might need to add target priority for heroic on the snakes or to burn down boss.
     // Will re-test in heroic, decent dps groups should be able to blast him down with no funky strats.
     triggers.push_back(new TriggerNode("poison nova",
-        NextAction::array(0, new NextAction("avoid poison nova", ACTION_RAID + 5), nullptr)));
+        { NextAction("avoid poison nova", ACTION_RAID + 5) }));
     triggers.push_back(new TriggerNode("snake wrap",
-        NextAction::array(0, new NextAction("attack snake wrap", ACTION_RAID + 4), nullptr)));
+        { NextAction("attack snake wrap", ACTION_RAID + 4) }));
 
     // Gal'darah
     triggers.push_back(new TriggerNode("whirling slash",
-        NextAction::array(0, new NextAction("avoid whirling slash", ACTION_RAID + 5), nullptr)));
+        { NextAction("avoid whirling slash", ACTION_RAID + 5) }));
 
     // Eck the Ferocious (Heroic only)
 }

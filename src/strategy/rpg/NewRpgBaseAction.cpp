@@ -302,12 +302,14 @@ bool NewRpgBaseAction::CanInteractWithQuestGiver(Object* questGiver)
             if (creature->GetReactionTo(bot) <= REP_UNFRIENDLY)
                 return false;
 
+            Trainer::Trainer* trainer = sObjectMgr->GetTrainer(creature->GetEntry());
+
             // pussywizard: many npcs have missing conditions for class training and rogue trainer can for eg. train
             // dual wield to a shaman :/ too many to change in sql and watch in the future pussywizard: this function is
             // not used when talking, but when already taking action (buy spell, reset talents, show spell list)
             if (npcflagmask & (UNIT_NPC_FLAG_TRAINER | UNIT_NPC_FLAG_TRAINER_CLASS) &&
-                creature->GetCreatureTemplate()->trainer_type == TRAINER_TYPE_CLASS &&
-                !bot->IsClass((Classes)creature->GetCreatureTemplate()->trainer_class, CLASS_CONTEXT_CLASS_TRAINER))
+                trainer->GetTrainerType() == Trainer::Type::Class &&
+                !trainer->IsTrainerValidForPlayer(bot))
                 return false;
 
             return true;
