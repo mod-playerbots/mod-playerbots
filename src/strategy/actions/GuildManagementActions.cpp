@@ -89,7 +89,7 @@ uint8 GuidManageAction::GetRankId(Player* member)
 
 bool GuildInviteAction::isUseful()
 {
-    return bot->GetGuildId() && sGuildMgr->GetGuildById(bot->GetGuildId())->HasRankRight(bot, GR_RIGHT_INVITE);
+    return bot->GetGuildId() && sGuildMgr->GetGuildById(bot->GetGuildId())->_HasRankRight(bot, GR_RIGHT_INVITE);
 }
 
 bool GuildInviteAction::PlayerIsValid(Player* member)
@@ -100,7 +100,7 @@ bool GuildInviteAction::PlayerIsValid(Player* member)
 
 bool GuildPromoteAction::isUseful()
 {
-    return bot->GetGuildId() && sGuildMgr->GetGuildById(bot->GetGuildId())->HasRankRight(bot, GR_RIGHT_PROMOTE);
+    return bot->GetGuildId() && sGuildMgr->GetGuildById(bot->GetGuildId())->_HasRankRight(bot, GR_RIGHT_PROMOTE);
 }
 
 bool GuildPromoteAction::PlayerIsValid(Player* member)
@@ -110,7 +110,7 @@ bool GuildPromoteAction::PlayerIsValid(Player* member)
 
 bool GuildDemoteAction::isUseful()
 {
-    return bot->GetGuildId() && sGuildMgr->GetGuildById(bot->GetGuildId())->HasRankRight(bot, GR_RIGHT_DEMOTE);
+    return bot->GetGuildId() && sGuildMgr->GetGuildById(bot->GetGuildId())->_HasRankRight(bot, GR_RIGHT_DEMOTE);
 }
 
 bool GuildDemoteAction::PlayerIsValid(Player* member)
@@ -120,7 +120,7 @@ bool GuildDemoteAction::PlayerIsValid(Player* member)
 
 bool GuildRemoveAction::isUseful()
 {
-    return bot->GetGuildId() && sGuildMgr->GetGuildById(bot->GetGuildId())->HasRankRight(bot, GR_RIGHT_REMOVE);
+    return bot->GetGuildId() && sGuildMgr->GetGuildById(bot->GetGuildId())->_HasRankRight(bot, GR_RIGHT_REMOVE);
 }
 
 bool GuildRemoveAction::PlayerIsValid(Player* member)
