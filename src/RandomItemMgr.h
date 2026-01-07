@@ -19,6 +19,8 @@ class ChatHandler;
 
 struct ItemTemplate;
 
+enum EquipmentSlots;
+
 enum RandomItemType
 {
     RANDOM_ITEM_GUILD_TASK,
