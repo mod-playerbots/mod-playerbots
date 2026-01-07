@@ -70,6 +70,20 @@ std::unordered_set<ObjectGuid> BotInitGuard::botsBeingInitialized;
 std::unordered_set<ObjectGuid> PlayerbotHolder::botLoading;
 
 PlayerbotHolder::PlayerbotHolder() : PlayerbotAIBase(false) {}
+class PlayerbotLoginQueryHolder : public LoginQueryHolder
+{
+private:
+    uint32 masterAccountId;
+    PlayerbotHolder* playerbotHolder;
+public:
+    PlayerbotLoginQueryHolder(uint32 masterAccount, uint32 accountId, ObjectGuid guid)
+        : LoginQueryHolder(accountId, guid), masterAccountId(masterAccount)
+    {
+    }
+
+    uint32 GetMasterAccountId() const { return masterAccountId; }
+};
+
 
 class PlayerbotLoginQueryHolder : public CharacterDatabaseQueryHolder
 {
@@ -158,7 +172,7 @@ void PlayerbotHolder::AddPlayerBot(ObjectGuid playerGuid, uint32 masterAccountId
             {
                 PlayerbotLoginQueryHolder const& holder = static_cast<PlayerbotLoginQueryHolder const&>(queryHolder);
                 PlayerbotHolder* mgr = sRandomPlayerbotMgr;  // could be null
-                uint32 masterAccountId = holder.GetAccountId();
+                uint32 masterAccountId = holder.GetMasterAccountId();
 
                 if (masterAccountId)
                 {
@@ -206,7 +220,7 @@ void PlayerbotHolder::HandlePlayerBotLoginCallback(PlayerbotLoginQueryHolder con
         return;
     }
 
-    uint32 masterAccountId = holder.GetAccountId();
+    uint32 masterAccountId = holder.GetMasterAccountId();
     WorldSession* masterSession = masterAccountId ? sWorldSessionMgr->FindSession(masterAccountId) : nullptr;
 
     // Check if masterSession->GetPlayer() is valid
