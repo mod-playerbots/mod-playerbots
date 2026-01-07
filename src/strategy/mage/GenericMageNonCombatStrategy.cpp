@@ -21,25 +21,25 @@ private:
     static ActionNode* molten_armor([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("molten armor",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("mage armor"), nullptr),
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ { NextAction("mage armor") },
+                              /*C*/ {});
     }
 
     static ActionNode* mage_armor([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("mage armor",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("ice armor"), nullptr),
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ { NextAction("ice armor") },
+                              /*C*/ {});
     }
 
     static ActionNode* ice_armor([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("ice armor",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("frost armor"), nullptr),
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ { NextAction("frost armor") },
+                              /*C*/ {});
     }
 };
 
@@ -52,23 +52,23 @@ void GenericMageNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trigg
 {
     NonCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("arcane intellect", NextAction::array(0, new NextAction("arcane intellect", 21.0f), nullptr)));
-    triggers.push_back(new TriggerNode("no focus magic", NextAction::array(0, new NextAction("focus magic on party", 19.0f), nullptr)));
-    triggers.push_back(new TriggerNode("often", NextAction::array(0, new NextAction("apply oil", 1.0f), nullptr)));
-    triggers.push_back(new TriggerNode("no mana gem", NextAction::array(0, new NextAction("conjure mana gem", 20.0f), nullptr)));
+    triggers.push_back(new TriggerNode("arcane intellect", { NextAction("arcane intellect", 21.0f) }));
+    triggers.push_back(new TriggerNode("no focus magic", { NextAction("focus magic on party", 19.0f) }));
+    triggers.push_back(new TriggerNode("often", { NextAction("apply oil", 1.0f) }));
+    triggers.push_back(new TriggerNode("no mana gem", { NextAction("conjure mana gem", 20.0f) }));
 }
 
 void MageBuffManaStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("mage armor", NextAction::array(0, new NextAction("mage armor", 19.0f), nullptr)));
+    triggers.push_back(new TriggerNode("mage armor", { NextAction("mage armor", 19.0f) }));
 }
 
 void MageBuffDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("mage armor", NextAction::array(0, new NextAction("molten armor", 19.0f), nullptr)));
+    triggers.push_back(new TriggerNode("mage armor", { NextAction("molten armor", 19.0f) }));
 }
 
 void MageBuffStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("arcane intellect on party", NextAction::array(0, new NextAction("arcane intellect on party", 20.0f), nullptr)));
+    triggers.push_back(new TriggerNode("arcane intellect on party", { NextAction("arcane intellect on party", 20.0f) }));
 }

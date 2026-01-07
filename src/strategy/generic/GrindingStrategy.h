@@ -17,7 +17,7 @@ public:
 
     std::string const getName() override { return "grind"; }
     uint32 GetType() const override { return STRATEGY_TYPE_DPS; }
-    NextAction** getDefaultActions() override;
+    std::vector<NextAction> getDefaultActions() override;
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
 };
 

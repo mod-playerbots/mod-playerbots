@@ -43,24 +43,176 @@ public:
     }
 
 private:
-    ACTION_NODE_P(charge, "charge", "battle stance");
-    ACTION_NODE_P(mocking_blow, "mocking blow", "battle stance");
-    ACTION_NODE_P(overpower, "overpower", "battle stance");
-    ACTION_NODE_P(berserker_rage, "berserker rage", "berserker stance");
-    ACTION_NODE_P(recklessness, "recklessness", "berserker stance");
-    ACTION_NODE_P(whirlwind, "whirlwind", "berserker stance");
-    ACTION_NODE_P(pummel, "pummel", "berserker stance");
-    ACTION_NODE_P(intercept, "intercept", "berserker stance");
-    ACTION_NODE_P(taunt, "taunt", "defensive stance");
-    ACTION_NODE_P(revenge, "revenge", "defensive stance");
-    ACTION_NODE_P(shield_block, "shield block", "defensive stance");
-    ACTION_NODE_P(disarm, "disarm", "defensive stance");
-    ACTION_NODE_P(shield_wall, "shield wall", "defensive stance");
-    ACTION_NODE_P(intervene, "intervene", "defensive stance");
-    // temp
-    ACTION_NODE_P(mortal_strike, "mortal strike", "battle stance");
-    ACTION_NODE_P(retaliation, "retaliation", "battle stance");
-    ACTION_NODE_P(shattering_throw, "shattering throw", "battle stance");
+
+    static ActionNode* charge([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "charge",
+            /*P*/ { NextAction("battle stance") },
+            /*A*/ {},
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* mocking_blow([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "mocking blow",
+            /*P*/ { NextAction("battle stance") },
+            /*A*/ {},
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* overpower([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "overpower",
+            /*P*/ { NextAction("battle stance") },
+            /*A*/ {},
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* berserker_rage([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "berserker rage",
+            /*P*/ { NextAction("berserker stance") },
+            /*A*/ {},
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* recklessness([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "recklessness",
+            /*P*/ { NextAction("berserker stance") },
+            /*A*/ {},
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* whirlwind([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "whirlwind",
+            /*P*/ { NextAction("berserker stance") },
+            /*A*/ {},
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* pummel([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "pummel",
+            /*P*/ { NextAction("berserker stance") },
+            /*A*/ {},
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* intercept([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "intercept",
+            /*P*/ { NextAction("berserker stance") },
+            /*A*/ {},
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* taunt([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "taunt",
+            /*P*/ { NextAction("defensive stance") },
+            /*A*/ {},
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* revenge([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "revenge",
+            /*P*/ { NextAction("defensive stance") },
+            /*A*/ {},
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* shield_block([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "shield block",
+            /*P*/ { NextAction("defensive stance") },
+            /*A*/ {},
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* disarm([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "disarm",
+            /*P*/ { NextAction("defensive stance") },
+            /*A*/ {},
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* shield_wall([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "shield wall",
+            /*P*/ { NextAction("defensive stance") },
+            /*A*/ {},
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* intervene([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "intervene",
+            /*P*/ { NextAction("defensive stance") },
+            /*A*/ {},
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* mortal_strike([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "mortal strike",
+            /*P*/ { NextAction("battle stance") },
+            /*A*/ {},
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* retaliation([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "retaliation",
+            /*P*/ { NextAction("battle stance") },
+            /*A*/ {},
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* shattering_throw([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "shattering throw",
+            /*P*/ { NextAction("battle stance") },
+            /*A*/ {},
+            /*C*/ {}
+        );
+    }
 };
 
 class GenericWarriorStrategy : public CombatStrategy
