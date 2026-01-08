@@ -27,7 +27,7 @@
 #include "WarriorAiObjectContext.h"
 #include "WorldPacketActionContext.h"
 #include "WorldPacketTriggerContext.h"
-#include "dungeons/DungeonStrategyContext.h"
+#include "DungeonStrategyContext.h"
 #include "WotlkDungeonActionContext.h"
 #include "WotlkDungeonTriggerContext.h"
 #include "RaidStrategyContext.h"
