@@ -138,9 +138,7 @@ void AutoMaintenanceOnLevelupAction::LearnSpell(uint32 spellId, std::ostringstre
             uint32 learnedSpell = proto->Effects[j].TriggerSpell;
 
             if (!sPlayerbotSpellCache->IsSkillSpellAllowed(bot, learnedSpell))
-            {
                 continue;
-            }
 
             if (!bot->HasSpell(learnedSpell))
             {
@@ -155,9 +153,7 @@ void AutoMaintenanceOnLevelupAction::LearnSpell(uint32 spellId, std::ostringstre
     if (!learned && !hasLearnSpellEffect)
     {
         if (!sPlayerbotSpellCache->IsSkillSpellAllowed(bot, spellId))
-        {
             return;
-        }
 
         if (!bot->HasSpell(spellId))
         {
