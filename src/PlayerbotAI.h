@@ -616,7 +616,15 @@ private:
     void HandleCommands();
     void HandleCommand(uint32 type, const std::string& text, Player& fromPlayer, const uint32 lang = LANG_UNIVERSAL);
     bool _isBotInitializing = false;
-
+    inline bool IsValidUnit(const Unit* unit) const
+    {
+        return unit && unit->IsInWorld() && !unit->IsDuringRemoveFromWorld();
+    }
+    inline bool IsValidPlayer(const Player* player) const
+    {
+        return player && player->GetSession() && player->IsInWorld() && !player->IsDuringRemoveFromWorld() &&
+               !player->IsBeingTeleported();
+    }
 protected:
     Player* bot;
     Player* master;
