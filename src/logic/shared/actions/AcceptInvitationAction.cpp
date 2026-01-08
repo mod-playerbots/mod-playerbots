@@ -59,7 +59,7 @@ bool AcceptInvitationAction::Execute(Event event)
 
     if (sPlayerbotAIConfig->summonWhenGroup && bot->GetDistance(inviter) > sPlayerbotAIConfig->sightDistance)
     {
-        Teleport(inviter, bot);
+        Teleport(inviter, bot, true);
     }
     return true;
 }
