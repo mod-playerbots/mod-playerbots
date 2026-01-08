@@ -4,6 +4,7 @@
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotFactory.h"
 #include "Playerbots.h"
+#include "PlayerbotSpellCache.h"
 #include "RandomPlayerbotMgr.h"
 #include "SharedDefines.h"
 #include "BroadcastHelper.h"
@@ -128,11 +129,18 @@ void AutoMaintenanceOnLevelupAction::LearnSpell(uint32 spellId, std::ostringstre
         return;
 
     bool learned = false;
+    bool hasLearnSpellEffect = false;
     for (uint8 j = 0; j < 3; ++j)
     {
         if (proto->Effects[j].Effect == SPELL_EFFECT_LEARN_SPELL)
         {
+            hasLearnSpellEffect = true;
             uint32 learnedSpell = proto->Effects[j].TriggerSpell;
+
+            if (!sPlayerbotSpellCache->IsSkillSpellAllowed(bot, learnedSpell))
+            {
+                continue;
+            }
 
             if (!bot->HasSpell(learnedSpell))
             {
@@ -144,8 +152,13 @@ void AutoMaintenanceOnLevelupAction::LearnSpell(uint32 spellId, std::ostringstre
         }
     }
 
-    if (!learned)
+    if (!learned && !hasLearnSpellEffect)
     {
+        if (!sPlayerbotSpellCache->IsSkillSpellAllowed(bot, spellId))
+        {
+            return;
+        }
+
         if (!bot->HasSpell(spellId))
         {
             bot->learnSpell(spellId);

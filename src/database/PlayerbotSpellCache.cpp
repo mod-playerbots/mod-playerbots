@@ -39,6 +39,27 @@ SkillLineAbilityEntry const* PlayerbotSpellCache::GetSkillLine(uint32 spellId) c
     return nullptr;
 }
 
+bool PlayerbotSpellCache::IsSkillSpellAllowed(Player const* bot, uint32 spellId) const
+{
+    SkillLineAbilityEntry const* skillLine = GetSkillLine(spellId);
+    if (!skillLine)
+    {
+        return true;
+    }
+
+    if (skillLine->ClassMask && (skillLine->ClassMask & bot->getClassMask()) == 0)
+    {
+        return false;
+    }
+
+    if (skillLine->RaceMask && (skillLine->RaceMask & bot->getRaceMask()) == 0)
+    {
+        return false;
+    }
+
+    return true;
+}
+
 bool PlayerbotSpellCache::IsItemBuyable(uint32 itemId) const
 {
     return vendorItems.find(itemId) != vendorItems.end();

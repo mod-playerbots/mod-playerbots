@@ -20,6 +20,7 @@ public:
     void Initialize(); // call once on startup
 
     SkillLineAbilityEntry const* GetSkillLine(uint32 spellId) const;
+    bool IsSkillSpellAllowed(Player const* bot, uint32 spellId) const;
     bool IsItemBuyable(uint32 itemId) const;
 
 private:

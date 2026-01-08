@@ -31,6 +31,7 @@
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotDbStore.h"
 #include "PlayerbotGuildMgr.h"
+#include "PlayerbotSpellCache.h"
 #include "Playerbots.h"
 #include "QuestDef.h"
 #include "RandomItemMgr.h"
@@ -2549,6 +2550,9 @@ void PlayerbotFactory::InitAvailableSpells()
             if (!trainer->CanTeachSpell(bot, trainer->GetSpell(spell.SpellId)))
                 continue;
 
+            if (!sPlayerbotSpellCache->IsSkillSpellAllowed(bot, spell.SpellId))
+                continue;
+
             if (spell.IsCastable())
                 bot->CastSpell(bot, spell.SpellId, true);
             else
@@ -2674,6 +2678,9 @@ void PlayerbotFactory::InitSpecialSpells()
          i != sPlayerbotAIConfig->randomBotSpellIds.end(); ++i)
     {
         uint32 spellId = *i;
+        if (!sPlayerbotSpellCache->IsSkillSpellAllowed(bot, spellId))
+            continue;
+
         bot->learnSpell(spellId);
     }
     // to leave DK starting area
