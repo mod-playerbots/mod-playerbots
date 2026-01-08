@@ -8,6 +8,7 @@
 
 #include "ChatHelper.h"
 #include "InventoryAction.h"
+#include "Item.h"
 
 class FindItemVisitor;
 class Item;
@@ -20,6 +21,7 @@ public:
 
     bool Execute(Event event) override;
     void EquipItems(ItemIds ids);
+    ItemIds SelectInventoryItemsToEquip();
 
 private:
     void EquipItem(FindItemVisitor* visitor);
