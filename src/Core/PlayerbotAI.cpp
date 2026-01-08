@@ -1426,8 +1426,8 @@ void PlayerbotAI::DoNextAction(bool min)
         return;
     }
 
-    // Change engine if just ressed
-    if (currentEngine == engines[BOT_STATE_DEAD] && isBotAlive)
+    // Change engine if just ressed (no movement update when rooted)
+    if (currentEngine == engines[BOT_STATE_DEAD] && isBotAlive && !bot->IsRooted())
     {
         bot->SendMovementFlagUpdate();
 
