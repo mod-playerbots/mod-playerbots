@@ -60,7 +60,7 @@ public:
     Strategy(PlayerbotAI* botAI);
     virtual ~Strategy() {}
 
-    virtual NextAction** getDefaultActions() { return nullptr; }
+    virtual std::vector<NextAction> getDefaultActions() { return {}; }
     virtual void InitTriggers([[maybe_unused]] std::vector<TriggerNode*>& triggers) {}
     virtual void InitMultipliers([[maybe_unused]] std::vector<Multiplier*>& multipliers) {}
     virtual std::string const getName() = 0;

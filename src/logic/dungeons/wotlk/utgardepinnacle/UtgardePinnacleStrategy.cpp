@@ -10,14 +10,14 @@ void WotlkDungeonUPStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
     // Skadi the Ruthless
     // TODO: Harpoons launchable via GameObject. For now players should do them
     triggers.push_back(new TriggerNode("freezing cloud",
-        NextAction::array(0, new NextAction("avoid freezing cloud", ACTION_RAID + 5), nullptr)));
+        { NextAction("avoid freezing cloud", ACTION_RAID + 5) }));
     triggers.push_back(new TriggerNode("skadi whirlwind",
-        NextAction::array(0, new NextAction("avoid skadi whirlwind", ACTION_RAID + 4), nullptr)));
+        { NextAction("avoid skadi whirlwind", ACTION_RAID + 4) }));
 
     // King Ymiron
     // May need to avoid orb.. unclear if the generic avoid AoE does this well
     triggers.push_back(new TriggerNode("ymiron bane",
-        NextAction::array(0, new NextAction("stop attack", ACTION_RAID + 5), nullptr)));
+        { NextAction("stop attack", ACTION_RAID + 5) }));
 }
 
 void WotlkDungeonUPStrategy::InitMultipliers(std::vector<Multiplier*> &multipliers)

@@ -15,32 +15,32 @@ StrengthOfEarthTotemStrategy::StrengthOfEarthTotemStrategy(PlayerbotAI* botAI) :
 void StrengthOfEarthTotemStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericShamanStrategy::InitTriggers(triggers);
-    triggers.push_back(new TriggerNode("set strength of earth totem", NextAction::array(0, new NextAction("set strength of earth totem", 60.0f), nullptr)));
-    triggers.push_back(new TriggerNode("no earth totem", NextAction::array(0, new NextAction("strength of earth totem", 55.0f), nullptr)));
+    triggers.push_back(new TriggerNode("set strength of earth totem", { NextAction("set strength of earth totem", 60.0f) }));
+    triggers.push_back(new TriggerNode("no earth totem", { NextAction("strength of earth totem", 55.0f) }));
 }
 
 StoneclawTotemStrategy::StoneclawTotemStrategy(PlayerbotAI* botAI) : GenericShamanStrategy(botAI) {}
 void StoneclawTotemStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericShamanStrategy::InitTriggers(triggers);
-    triggers.push_back(new TriggerNode("set stoneskin totem", NextAction::array(0, new NextAction("set stoneskin totem", 60.0f), nullptr)));
-    triggers.push_back(new TriggerNode("no earth totem", NextAction::array(0, new NextAction("stoneskin totem", 55.0f), nullptr)));
+    triggers.push_back(new TriggerNode("set stoneskin totem", { NextAction("set stoneskin totem", 60.0f) }));
+    triggers.push_back(new TriggerNode("no earth totem", { NextAction("stoneskin totem", 55.0f) }));
 }
 
 EarthTotemStrategy::EarthTotemStrategy(PlayerbotAI* botAI) : GenericShamanStrategy(botAI) {}
 void EarthTotemStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericShamanStrategy::InitTriggers(triggers);
-    triggers.push_back(new TriggerNode("set tremor totem", NextAction::array(0, new NextAction("set tremor totem", 60.0f), nullptr)));
-    triggers.push_back(new TriggerNode("no earth totem", NextAction::array(0, new NextAction("tremor totem", 55.0f), nullptr)));
+    triggers.push_back(new TriggerNode("set tremor totem", { NextAction("set tremor totem", 60.0f) }));
+    triggers.push_back(new TriggerNode("no earth totem", { NextAction("tremor totem", 55.0f) }));
 }
 
 EarthbindTotemStrategy::EarthbindTotemStrategy(PlayerbotAI* botAI) : GenericShamanStrategy(botAI) {}
 void EarthbindTotemStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericShamanStrategy::InitTriggers(triggers);
-    triggers.push_back(new TriggerNode("set earthbind totem", NextAction::array(0, new NextAction("set earthbind totem", 60.0f), nullptr)));
-    triggers.push_back(new TriggerNode("no earth totem", NextAction::array(0, new NextAction("earthbind totem", 55.0f), nullptr)));
+    triggers.push_back(new TriggerNode("set earthbind totem", { NextAction("set earthbind totem", 60.0f) }));
+    triggers.push_back(new TriggerNode("no earth totem", { NextAction("earthbind totem", 55.0f) }));
 }
 
 // Fire Totems
@@ -48,24 +48,24 @@ SearingTotemStrategy::SearingTotemStrategy(PlayerbotAI* botAI) : GenericShamanSt
 void SearingTotemStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericShamanStrategy::InitTriggers(triggers);
-    triggers.push_back(new TriggerNode("set searing totem", NextAction::array(0, new NextAction("set searing totem", 60.0f), nullptr)));
-    triggers.push_back(new TriggerNode("no fire totem", NextAction::array(0, new NextAction("searing totem", 55.0f), nullptr)));
+    triggers.push_back(new TriggerNode("set searing totem", { NextAction("set searing totem", 60.0f) }));
+    triggers.push_back(new TriggerNode("no fire totem", { NextAction("searing totem", 55.0f) }));
 }
 
 MagmaTotemStrategy::MagmaTotemStrategy(PlayerbotAI* botAI) : GenericShamanStrategy(botAI) {}
 void MagmaTotemStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericShamanStrategy::InitTriggers(triggers);
-    triggers.push_back(new TriggerNode("set magma totem", NextAction::array(0, new NextAction("set magma totem", 60.0f), nullptr)));
-    triggers.push_back(new TriggerNode("no fire totem", NextAction::array(0, new NextAction("magma totem", 55.0f), nullptr)));
+    triggers.push_back(new TriggerNode("set magma totem", { NextAction("set magma totem", 60.0f) }));
+    triggers.push_back(new TriggerNode("no fire totem", { NextAction("magma totem", 55.0f) }));
 }
 
 FlametongueTotemStrategy::FlametongueTotemStrategy(PlayerbotAI* botAI) : GenericShamanStrategy(botAI) {}
 void FlametongueTotemStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericShamanStrategy::InitTriggers(triggers);
-    triggers.push_back(new TriggerNode("set flametongue totem", NextAction::array(0, new NextAction("set flametongue totem", 60.0f), nullptr)));
-    triggers.push_back(new TriggerNode("no fire totem", NextAction::array(0, new NextAction("flametongue totem", 55.0f), nullptr)));
+    triggers.push_back(new TriggerNode("set flametongue totem", { NextAction("set flametongue totem", 60.0f) }));
+    triggers.push_back(new TriggerNode("no fire totem", { NextAction("flametongue totem", 55.0f) }));
 }
 
 TotemOfWrathStrategy::TotemOfWrathStrategy(PlayerbotAI* botAI) : GenericShamanStrategy(botAI) {}
@@ -76,21 +76,21 @@ void TotemOfWrathStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     Player* bot = botAI->GetBot();
     if (bot->HasSpell(30706))
     {
-        triggers.push_back(new TriggerNode("set totem of wrath", NextAction::array(0, new NextAction("set totem of wrath", 60.0f), nullptr)));
+        triggers.push_back(new TriggerNode("set totem of wrath", { NextAction("set totem of wrath", 60.0f) }));
     }
     else if (bot->HasSpell(8227))
     {
-        triggers.push_back(new TriggerNode("set flametongue totem", NextAction::array(0, new NextAction("set flametongue totem", 60.0f), nullptr)));
+        triggers.push_back(new TriggerNode("set flametongue totem", { NextAction("set flametongue totem", 60.0f) }));
     }
-    triggers.push_back(new TriggerNode("no fire totem", NextAction::array(0, new NextAction("totem of wrath", 55.0f), nullptr)));
+    triggers.push_back(new TriggerNode("no fire totem", { NextAction("totem of wrath", 55.0f) }));
 }
 
 FrostResistanceTotemStrategy::FrostResistanceTotemStrategy(PlayerbotAI* botAI) : GenericShamanStrategy(botAI) {}
 void FrostResistanceTotemStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericShamanStrategy::InitTriggers(triggers);
-    triggers.push_back(new TriggerNode("set frost resistance totem", NextAction::array(0, new NextAction("set frost resistance totem", 60.0f), nullptr)));
-    triggers.push_back(new TriggerNode("no fire totem", NextAction::array(0, new NextAction("frost resistance totem", 55.0f), nullptr)));
+    triggers.push_back(new TriggerNode("set frost resistance totem", { NextAction("set frost resistance totem", 60.0f) }));
+    triggers.push_back(new TriggerNode("no fire totem", { NextAction("frost resistance totem", 55.0f) }));
 }
 
 // Water Totems
@@ -98,16 +98,16 @@ HealingStreamTotemStrategy::HealingStreamTotemStrategy(PlayerbotAI* botAI) : Gen
 void HealingStreamTotemStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericShamanStrategy::InitTriggers(triggers);
-    triggers.push_back(new TriggerNode("set healing stream totem", NextAction::array(0, new NextAction("set healing stream totem", 60.0f), nullptr)));
-    triggers.push_back(new TriggerNode("no water totem", NextAction::array(0, new NextAction("healing stream totem", 55.0f), nullptr)));
+    triggers.push_back(new TriggerNode("set healing stream totem", { NextAction("set healing stream totem", 60.0f) }));
+    triggers.push_back(new TriggerNode("no water totem", { NextAction("healing stream totem", 55.0f) }));
 }
 
 ManaSpringTotemStrategy::ManaSpringTotemStrategy(PlayerbotAI* botAI) : GenericShamanStrategy(botAI) {}
 void ManaSpringTotemStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericShamanStrategy::InitTriggers(triggers);
-    triggers.push_back(new TriggerNode("set mana spring totem", NextAction::array(0, new NextAction("set mana spring totem", 60.0f), nullptr)));
-    triggers.push_back(new TriggerNode("no water totem", NextAction::array(0, new NextAction("mana spring totem", 55.0f), nullptr)));
+    triggers.push_back(new TriggerNode("set mana spring totem", { NextAction("set mana spring totem", 60.0f) }));
+    triggers.push_back(new TriggerNode("no water totem", { NextAction("mana spring totem", 55.0f) }));
 }
 
 CleansingTotemStrategy::CleansingTotemStrategy(PlayerbotAI* botAI) : GenericShamanStrategy(botAI) {}
@@ -118,21 +118,21 @@ void CleansingTotemStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     Player* bot = botAI->GetBot();
     if (bot->HasSpell(8170))
     {
-        triggers.push_back(new TriggerNode("set cleansing totem", NextAction::array(0, new NextAction("set cleansing totem", 60.0f), nullptr)));
+        triggers.push_back(new TriggerNode("set cleansing totem", { NextAction("set cleansing totem", 60.0f) }));
     }
     else if (bot->HasSpell(5675))
     {
-        triggers.push_back(new TriggerNode("set mana spring totem", NextAction::array(0, new NextAction("set mana spring totem", 60.0f), nullptr)));
+        triggers.push_back(new TriggerNode("set mana spring totem", { NextAction("set mana spring totem", 60.0f) }));
     }
-    triggers.push_back(new TriggerNode("no water totem", NextAction::array(0, new NextAction("cleansing totem", 55.0f), nullptr)));
+    triggers.push_back(new TriggerNode("no water totem", { NextAction("cleansing totem", 55.0f) }));
 }
 
 FireResistanceTotemStrategy::FireResistanceTotemStrategy(PlayerbotAI* botAI) : GenericShamanStrategy(botAI) {}
 void FireResistanceTotemStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericShamanStrategy::InitTriggers(triggers);
-    triggers.push_back(new TriggerNode("set fire resistance totem", NextAction::array(0, new NextAction("set fire resistance totem", 60.0f), nullptr)));
-    triggers.push_back(new TriggerNode("no water totem", NextAction::array(0, new NextAction("fire resistance totem", 55.0f), nullptr)));
+    triggers.push_back(new TriggerNode("set fire resistance totem", { NextAction("set fire resistance totem", 60.0f) }));
+    triggers.push_back(new TriggerNode("no water totem", { NextAction("fire resistance totem", 55.0f) }));
 }
 
 // Air Totems
@@ -144,14 +144,14 @@ void WrathOfAirTotemStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     Player* bot = botAI->GetBot();
     if (bot->HasSpell(3738))
     {
-        triggers.push_back(new TriggerNode("set wrath of air totem", NextAction::array(0, new NextAction("set wrath of air totem", 60.0f), nullptr)));
+        triggers.push_back(new TriggerNode("set wrath of air totem", { NextAction("set wrath of air totem", 60.0f) }));
     }
     else if (bot->HasSpell(8177))
     {
-        triggers.push_back(new TriggerNode("set grounding totem", NextAction::array(0, new NextAction("set grounding totem", 60.0f), nullptr)));
+        triggers.push_back(new TriggerNode("set grounding totem", { NextAction("set grounding totem", 60.0f) }));
     }
     triggers.push_back(
-        new TriggerNode("no air totem", NextAction::array(0, new NextAction("wrath of air totem", 55.0f), nullptr)));
+        new TriggerNode("no air totem", { NextAction("wrath of air totem", 55.0f) }));
 }
 
 WindfuryTotemStrategy::WindfuryTotemStrategy(PlayerbotAI* botAI) : GenericShamanStrategy(botAI) {}
@@ -162,27 +162,27 @@ void WindfuryTotemStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     Player* bot = botAI->GetBot();
     if (bot->HasSpell(8512))
     {
-        triggers.push_back(new TriggerNode("set windfury totem", NextAction::array(0, new NextAction("set windfury totem", 60.0f), nullptr)));
+        triggers.push_back(new TriggerNode("set windfury totem", { NextAction("set windfury totem", 60.0f) }));
     }
     else if (bot->HasSpell(8177))
     {
-        triggers.push_back(new TriggerNode("set grounding totem", NextAction::array(0, new NextAction("set grounding totem", 60.0f), nullptr)));
+        triggers.push_back(new TriggerNode("set grounding totem", { NextAction("set grounding totem", 60.0f) }));
     }
-    triggers.push_back(new TriggerNode("no air totem", NextAction::array(0, new NextAction("windfury totem", 55.0f), nullptr)));
+    triggers.push_back(new TriggerNode("no air totem", { NextAction("windfury totem", 55.0f) }));
 }
 
 NatureResistanceTotemStrategy::NatureResistanceTotemStrategy(PlayerbotAI* botAI) : GenericShamanStrategy(botAI) {}
 void NatureResistanceTotemStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericShamanStrategy::InitTriggers(triggers);
-    triggers.push_back(new TriggerNode("set nature resistance totem", NextAction::array(0, new NextAction("set nature resistance totem", 60.0f), nullptr)));
-    triggers.push_back(new TriggerNode("no air totem", NextAction::array(0, new NextAction("nature resistance totem", 55.0f), nullptr)));
+    triggers.push_back(new TriggerNode("set nature resistance totem", { NextAction("set nature resistance totem", 60.0f) }));
+    triggers.push_back(new TriggerNode("no air totem", { NextAction("nature resistance totem", 55.0f) }));
 }
 
 GroundingTotemStrategy::GroundingTotemStrategy(PlayerbotAI* botAI) : GenericShamanStrategy(botAI) {}
 void GroundingTotemStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericShamanStrategy::InitTriggers(triggers);
-    triggers.push_back(new TriggerNode("set grounding totem", NextAction::array(0, new NextAction("set grounding totem", 60.0f), nullptr)));
-    triggers.push_back(new TriggerNode("no air totem", NextAction::array(0, new NextAction("grounding totem", 55.0f), nullptr)));
+    triggers.push_back(new TriggerNode("set grounding totem", { NextAction("set grounding totem", 60.0f) }));
+    triggers.push_back(new TriggerNode("no air totem", { NextAction("grounding totem", 55.0f) }));
 }

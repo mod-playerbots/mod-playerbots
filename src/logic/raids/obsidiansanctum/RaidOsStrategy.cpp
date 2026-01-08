@@ -6,24 +6,24 @@ void RaidOsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
         new TriggerNode("sartharion tank",
-                        NextAction::array(0, new NextAction("sartharion tank position", ACTION_MOVE), nullptr)));
+                        { NextAction("sartharion tank position", ACTION_MOVE) }));
     triggers.push_back(
         new TriggerNode("twilight fissure",
-                        NextAction::array(0, new NextAction("avoid twilight fissure", ACTION_RAID + 2), nullptr)));
+                        { NextAction("avoid twilight fissure", ACTION_RAID + 2) }));
     triggers.push_back(
         new TriggerNode("flame tsunami",
-                        NextAction::array(0, new NextAction("avoid flame tsunami", ACTION_RAID + 1), nullptr)));
+                        { NextAction("avoid flame tsunami", ACTION_RAID + 1) }));
     triggers.push_back(
         new TriggerNode("sartharion dps",
-                        NextAction::array(0, new NextAction("sartharion attack priority", ACTION_RAID), nullptr)));
+                        { NextAction("sartharion attack priority", ACTION_RAID) }));
     // Flank dragon positioning
     triggers.push_back(new TriggerNode("sartharion melee positioning",
-        NextAction::array(0, new NextAction("rear flank", ACTION_MOVE + 4), nullptr)));
+        { NextAction("rear flank", ACTION_MOVE + 4) }));
 
     triggers.push_back(new TriggerNode("twilight portal enter",
-        NextAction::array(0, new NextAction("enter twilight portal", ACTION_RAID + 1), nullptr)));
+        { NextAction("enter twilight portal", ACTION_RAID + 1) }));
     triggers.push_back(new TriggerNode("twilight portal exit",
-        NextAction::array(0, new NextAction("exit twilight portal", ACTION_RAID + 1), nullptr)));
+        { NextAction("exit twilight portal", ACTION_RAID + 1) }));
 }
 
 void RaidOsStrategy::InitMultipliers(std::vector<Multiplier*> &multipliers)
