@@ -41,6 +41,9 @@ bool ServerFacade::IsDistanceLessOrEqualThan(float dist1, float dist2) { return 
 
 void ServerFacade::SetFacingTo(Player* bot, WorldObject* wo, bool force)
 {
+    if (!bot || bot->IsRooted())
+        return;
+
     float angle = bot->GetAngle(wo);
     // if (!force && bot->isMoving())
     //     bot->SetFacingTo(bot->GetAngle(wo));
