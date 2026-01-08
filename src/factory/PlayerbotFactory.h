@@ -95,7 +95,6 @@ private:
     void InitTradeSkills();
     void UpdateTradeSkills();
     void SetRandomSkill(uint16 id);
-    void InitSpells();
     void ClearSpells();
     void ClearSkills();
     void InitTalents(uint32 specNo);

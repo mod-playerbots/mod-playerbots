@@ -159,7 +159,7 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
         bot->StopMoving();
     }
 
-    if (IsMovingAllowed() && !bot->HasInArc(CAST_ANGLE_IN_FRONT, target))
+    if (botAI->CanMove() && !bot->HasInArc(CAST_ANGLE_IN_FRONT, target))
         sServerFacade->SetFacingTo(bot, target);
 
     botAI->ChangeEngine(BOT_STATE_COMBAT);

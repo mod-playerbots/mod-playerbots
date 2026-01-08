@@ -19,9 +19,9 @@ public:
     bool Execute(Event event) override;
 
 protected:
-    bool Teleport(Player* summoner, Player* player);
-    bool SummonUsingGos(Player* summoner, Player* player);
-    bool SummonUsingNpcs(Player* summoner, Player* player);
+    bool Teleport(Player* summoner, Player* player, bool preserveAuras);
+    bool SummonUsingGos(Player* summoner, Player* player, bool preserveAuras);
+    bool SummonUsingNpcs(Player* summoner, Player* player, bool preserveAuras);
 };
 
 class UseMeetingStoneAction : public SummonAction
