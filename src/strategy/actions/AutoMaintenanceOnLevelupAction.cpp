@@ -99,11 +99,11 @@ void AutoMaintenanceOnLevelupAction::LearnQuestSpells(std::ostringstream* out)
 
         if (quest->GetRewSpellCast() > 0)
         {
-            LearnSpell(quest->GetRewSpellCast(), out);
+            LearnSpell(quest->GetRewSpellCast(), out, false);
         }
         else if (quest->GetRewSpell() > 0)
         {
-            LearnSpell(quest->GetRewSpell(), out);
+            LearnSpell(quest->GetRewSpell(), out, true);
         }
     }
 }
@@ -121,7 +121,7 @@ std::string const AutoMaintenanceOnLevelupAction::FormatSpell(SpellInfo const* s
     return out.str();
 }
 
-void AutoMaintenanceOnLevelupAction::LearnSpell(uint32 spellId, std::ostringstream* out)
+void AutoMaintenanceOnLevelupAction::LearnSpell(uint32 spellId, std::ostringstream* out, bool allowDirectLearn)
 {
     SpellInfo const* proto = sSpellMgr->GetSpellInfo(spellId);
     if (!proto)
@@ -144,7 +144,7 @@ void AutoMaintenanceOnLevelupAction::LearnSpell(uint32 spellId, std::ostringstre
         }
     }
 
-    if (!learned)
+    if (!learned && allowDirectLearn)
     {
         if (!bot->HasSpell(spellId))
         {

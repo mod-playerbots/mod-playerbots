@@ -28,7 +28,7 @@ protected:
     void LearnSpells(std::ostringstream* out);
     void LearnTrainerSpells(std::ostringstream* out);
     void LearnQuestSpells(std::ostringstream* out);
-    void LearnSpell(uint32 spellId, std::ostringstream* out);
+    void LearnSpell(uint32 spellId, std::ostringstream* out, bool allowDirectLearn);
     std::string const FormatSpell(SpellInfo const* sInfo);
 };
 
