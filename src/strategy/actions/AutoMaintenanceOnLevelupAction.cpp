@@ -1,12 +1,12 @@
 #include "AutoMaintenanceOnLevelupAction.h"
 
+#include "BroadcastHelper.h"
 #include "GuildMgr.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotFactory.h"
 #include "Playerbots.h"
 #include "RandomPlayerbotMgr.h"
 #include "SharedDefines.h"
-#include "BroadcastHelper.h"
 
 bool AutoMaintenanceOnLevelupAction::Execute(Event event)
 {
@@ -117,8 +117,8 @@ void AutoMaintenanceOnLevelupAction::LearnQuestSpells(std::ostringstream* out)
             if (spellInfo->Effects[i].Effect == SPELL_EFFECT_LEARN_SPELL)
             {
                 // fallback: use the spell itself if TriggerSpell is null
-                uint32 learnId = spellInfo->Effects[i].TriggerSpell ?
-                    spellInfo->Effects[i].TriggerSpell : spellInfo->Id;
+                uint32 learnId =
+                    spellInfo->Effects[i].TriggerSpell ? spellInfo->Effects[i].TriggerSpell : spellInfo->Id;
 
                 // skip if bot already knows the spell
                 if (!bot->HasSpell(learnId))
@@ -151,7 +151,6 @@ void AutoMaintenanceOnLevelupAction::LearnQuestSpells(std::ostringstream* out)
 
     // Note: currently leaves a trailing comma, could be trimmed later if needed
 }
-
 
 std::string const AutoMaintenanceOnLevelupAction::FormatSpell(SpellInfo const* sInfo)
 {
