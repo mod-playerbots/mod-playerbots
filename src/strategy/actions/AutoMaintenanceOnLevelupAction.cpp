@@ -83,51 +83,75 @@ void AutoMaintenanceOnLevelupAction::LearnTrainerSpells(std::ostringstream* out)
 
 void AutoMaintenanceOnLevelupAction::LearnQuestSpells(std::ostringstream* out)
 {
-    // CreatureTemplate const* co = sCreatureStorage.LookupEntry<CreatureTemplate>(id);
+    // retrieve all quest templates from the server
     ObjectMgr::QuestMap const& questTemplates = sObjectMgr->GetQuestTemplates();
     for (ObjectMgr::QuestMap::const_iterator i = questTemplates.begin(); i != questTemplates.end(); ++i)
     {
-        //uint32 questId = i->first; //not used, line marked for removal.
         Quest const* quest = i->second;
 
+        // skip quests that are repeatable, too low level, or have no required classes
         if (!quest->GetRequiredClasses() || quest->IsRepeatable() || quest->GetMinLevel() < 10)
             continue;
 
+        // skip if bot doesnt satisfy class, level, or race requirements
         if (!bot->SatisfyQuestClass(quest, false) || quest->GetMinLevel() > bot->GetLevel() ||
             !bot->SatisfyQuestRace(quest, false))
             continue;
 
+        // rewardSpellCast for the quest (expected route)
         int32 spellId = quest->GetRewSpellCast();
         if (!spellId)
             continue;
 
+        // spell info for this reward
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
         if (!spellInfo)
             continue;
 
-        SpellInfo const* triggeredInfo;
-        bool found = false;
+        SpellInfo const* triggeredInfo = nullptr;
+        bool learnableSpellFound = false;
+
+        // iterate over all spell effects to find a learnable spell
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-            if (spellInfo->Effects[i].Effect == SPELL_EFFECT_LEARN_SPELL && spellInfo->Effects[i].TriggerSpell && !bot->HasSpell(spellInfo->Effects[i].TriggerSpell))
+        {
+            if (spellInfo->Effects[i].Effect == SPELL_EFFECT_LEARN_SPELL)
             {
-                triggeredInfo = sSpellMgr->GetSpellInfo(spellInfo->Effects[i].TriggerSpell);
-                if (triggeredInfo && triggeredInfo->Effects[0].Effect == SPELL_EFFECT_TRADE_SKILL)
+                // fallback: use the spell itself if TriggerSpell is null
+                uint32 learnId = spellInfo->Effects[i].TriggerSpell ?
+                    spellInfo->Effects[i].TriggerSpell : spellInfo->Id;
+
+                // skip if bot already knows the spell
+                if (!bot->HasSpell(learnId))
+                {
+                    triggeredInfo = sSpellMgr->GetSpellInfo(learnId);
+
+                    // skip if this is a trade skill spell
+                    if (triggeredInfo && triggeredInfo->Effects[0].Effect == SPELL_EFFECT_TRADE_SKILL)
+                        break;
+
+                    learnableSpellFound = true;
                     break;
-
-                found = true;
-                break;
+                }
             }
+        }
 
-        if (!found)
+        if (!learnableSpellFound)
             continue;
 
+        // skip if bot doesn't satisfy quest skill requirements
         if (!bot->SatisfyQuestSkill(quest, false))
             continue;
 
+        // learn the spell for the bot
         bot->learnSpell(triggeredInfo->Id);
+
+        // append spell to output stream
         *out << FormatSpell(triggeredInfo) << ", ";
     }
+
+    // Note: currently leaves a trailing comma, could be trimmed later if needed
 }
+
 
 std::string const AutoMaintenanceOnLevelupAction::FormatSpell(SpellInfo const* sInfo)
 {
