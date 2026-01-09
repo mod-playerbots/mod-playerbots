@@ -97,14 +97,35 @@ void AutoMaintenanceOnLevelupAction::LearnQuestSpells(std::ostringstream* out)
             !bot->SatisfyQuestRace(quest, false))
             continue;
 
-        if (quest->GetRewSpellCast() > 0)
-        {
-            LearnSpell(quest->GetRewSpellCast(), out);
-        }
-        else if (quest->GetRewSpell() > 0)
-        {
-            LearnSpell(quest->GetRewSpell(), out);
-        }
+        int32 spellId = quest->GetRewSpellCast();
+        if (!spellId)
+            continue;
+
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        if (!spellInfo)
+            continue;
+
+        SpellInfo const* triggeredInfo;
+        bool found = false;
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+            if (spellInfo->Effects[i].Effect == SPELL_EFFECT_LEARN_SPELL && spellInfo->Effects[i].TriggerSpell && !bot->HasSpell(spellInfo->Effects[i].TriggerSpell))
+            {
+                triggeredInfo = sSpellMgr->GetSpellInfo(spellInfo->Effects[i].TriggerSpell);
+                if (triggeredInfo && triggeredInfo->Effects[0].Effect == SPELL_EFFECT_TRADE_SKILL)
+                    break;
+
+                found = true;
+                break;
+            }
+
+        if (!found)
+            continue;
+
+        if (!bot->SatisfyQuestSkill(quest, false))
+            continue;
+
+        bot->learnSpell(triggeredInfo->Id);
+        *out << FormatSpell(triggeredInfo) << ", ";
     }
 }
 
@@ -119,39 +140,6 @@ std::string const AutoMaintenanceOnLevelupAction::FormatSpell(SpellInfo const* s
         out << "|cffffffff|Hspell:" << sInfo->Id << "|h[" << sInfo->SpellName[LOCALE_enUS] << " " << rank << "]|h|r";
 
     return out.str();
-}
-
-void AutoMaintenanceOnLevelupAction::LearnSpell(uint32 spellId, std::ostringstream* out)
-{
-    SpellInfo const* proto = sSpellMgr->GetSpellInfo(spellId);
-    if (!proto)
-        return;
-
-    bool learned = false;
-    for (uint8 j = 0; j < 3; ++j)
-    {
-        if (proto->Effects[j].Effect == SPELL_EFFECT_LEARN_SPELL)
-        {
-            uint32 learnedSpell = proto->Effects[j].TriggerSpell;
-
-            if (!bot->HasSpell(learnedSpell))
-            {
-                bot->learnSpell(learnedSpell);
-                *out << FormatSpell(sSpellMgr->GetSpellInfo(learnedSpell)) << ", ";
-            }
-
-            learned = true;
-        }
-    }
-
-    if (!learned)
-    {
-        if (!bot->HasSpell(spellId))
-        {
-            bot->learnSpell(spellId);
-            *out << FormatSpell(proto) << ", ";
-        }
-    }
 }
 
 void AutoMaintenanceOnLevelupAction::AutoUpgradeEquip()
