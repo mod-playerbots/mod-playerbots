@@ -352,7 +352,7 @@ ItemIds EquipAction::SelectInventoryItemsToEquip()
     return items;
 }
 
-bool EquipUpgradesAction::Execute(Event event)
+bool EquipUpgradesTriggeredAction::Execute(Event event)
 {
     if (!sPlayerbotAIConfig->autoEquipUpgradeLoot && !sRandomPlayerbotMgr->IsRandomBot(bot))
         return false;
@@ -385,7 +385,7 @@ bool EquipUpgradesAction::Execute(Event event)
         p >> itemId;
 
         ItemTemplate const* item = sObjectMgr->GetItemTemplate(itemId);
-        if (item->Class == ITEM_CLASS_TRADE_GOODS && item->SubClass == ITEM_SUBCLASS_MEAT)
+        if (item->InventoryType == INVTYPE_NON_EQUIP)
             return false;
     }
     ItemIds items = SelectInventoryItemsToEquip();

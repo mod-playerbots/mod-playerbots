@@ -29,10 +29,10 @@ private:
     void EquipItem(Item* item);
 };
 
-class EquipUpgradesAction : public EquipAction
+class EquipUpgradesTriggeredAction : public EquipAction
 {
 public:
-    EquipUpgradesAction(PlayerbotAI* botAI, std::string const name = "equip upgrades") : EquipAction(botAI, name) {}
+    EquipUpgradesTriggeredAction(PlayerbotAI* botAI, std::string const name = "equip upgrades") : EquipAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };
