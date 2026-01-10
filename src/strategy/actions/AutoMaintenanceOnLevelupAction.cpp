@@ -90,18 +90,25 @@ void AutoMaintenanceOnLevelupAction::LearnQuestSpells(std::ostringstream* out)
         //uint32 questId = i->first; //not used, line marked for removal.
         Quest const* quest = i->second;
 
-        if (!quest->GetRequiredClasses() || quest->IsRepeatable() || quest->GetMinLevel() < 10)
+        // only process class-specific quests to learn class-related spells, cuz
+        // we don't want all these bunch of entries to be handled!
+        if (!quest->GetRequiredClasses())
             continue;
 
-        if (!bot->SatisfyQuestClass(quest, false) || quest->GetMinLevel() > bot->GetLevel() ||
-            !bot->SatisfyQuestRace(quest, false))
+        // skip quests that are repeatable, too low level, or above bots' level
+        if (quest->IsRepeatable() || quest->GetMinLevel() < 10 || quest->GetMinLevel() > bot->GetLevel())
             continue;
 
-        if (quest->GetRewSpellCast() > 0)
+        // skip if bot doesnt satisfy class, race, or skill requirements
+        if (!bot->SatisfyQuestClass(quest, false) || !bot->SatisfyQuestRace(quest, false) ||
+            !bot->SatisfyQuestSkill(quest, false))
+            continue;
+
+        if (quest->GetRewSpellCast() > 0) // RewardSpell - expected route
         {
             LearnSpell(quest->GetRewSpellCast(), out);
         }
-        else if (quest->GetRewSpell() > 0)
+        else if (quest->GetRewSpell() > 0) // RewardDisplaySpell - fallback
         {
             LearnSpell(quest->GetRewSpell(), out);
         }
@@ -123,35 +130,37 @@ std::string const AutoMaintenanceOnLevelupAction::FormatSpell(SpellInfo const* s
 
 void AutoMaintenanceOnLevelupAction::LearnSpell(uint32 spellId, std::ostringstream* out)
 {
-    SpellInfo const* proto = sSpellMgr->GetSpellInfo(spellId);
-    if (!proto)
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    if (!spellInfo)
         return;
 
-    bool learned = false;
-    for (uint8 j = 0; j < 3; ++j)
+    SpellInfo const* triggeredInfo;
+
+    // find effect with learn spell and check if we have this spell
+    bool found = false;
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
-        if (proto->Effects[j].Effect == SPELL_EFFECT_LEARN_SPELL)
+        if (spellInfo->Effects[i].Effect == SPELL_EFFECT_LEARN_SPELL && spellInfo->Effects[i].TriggerSpell &&
+            !bot->HasSpell(spellInfo->Effects[i].TriggerSpell))
         {
-            uint32 learnedSpell = proto->Effects[j].TriggerSpell;
+            triggeredInfo = sSpellMgr->GetSpellInfo(spellInfo->Effects[i].TriggerSpell);
 
-            if (!bot->HasSpell(learnedSpell))
-            {
-                bot->learnSpell(learnedSpell);
-                *out << FormatSpell(sSpellMgr->GetSpellInfo(learnedSpell)) << ", ";
-            }
+            // do not learn profession specialties!
+            if (!triggeredInfo || triggeredInfo->Effects[0].Effect == SPELL_EFFECT_TRADE_SKILL)
+                break;
 
-            learned = true;
+            found = true;
+            break;
         }
     }
 
-    if (!learned)
-    {
-        if (!bot->HasSpell(spellId))
-        {
-            bot->learnSpell(spellId);
-            *out << FormatSpell(proto) << ", ";
-        }
-    }
+    if (!found)
+        return;
+
+    // NOTE: When rewarding quests, core casts spells instead of learning them,
+    // but we sacrifice safe cast checks here in favor of performance/speed
+    bot->learnSpell(triggeredInfo->Id);
+    *out << FormatSpell(triggeredInfo) << ", ";
 }
 
 void AutoMaintenanceOnLevelupAction::AutoUpgradeEquip()

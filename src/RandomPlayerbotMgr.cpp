@@ -1654,6 +1654,10 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot, std::vector<WorldLocation>&
     if (bot->IsBeingTeleported() || !bot->IsInWorld())
         return;
 
+    // no teleport / movement update when rooted.
+    if (bot->IsRooted())
+        return;
+
     // ignore when in queue for battle grounds.
     if (bot->InBattlegroundQueue())
         return;

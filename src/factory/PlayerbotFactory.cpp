@@ -122,7 +122,11 @@ void PlayerbotFactory::Init()
     uint32 maxStoreSize = sSpellMgr->GetSpellInfoStoreSize();
     for (uint32 id = 1; id < maxStoreSize; ++id)
     {
-        if (id == 47181 || id == 50358 || id == 47242 || id == 52639 || id == 47147 || id == 7218)  // Test Enchant
+        if (id == 7218 || id == 19927 || id == 44119 || id == 47147 || id == 47181 ||
+            id == 47242 || id == 50358 || id == 52639) // Test Enchants
+            continue;
+
+        if (id == 35791 || id == 39405) // Grandfathered TBC Enchants
             continue;
 
         if (id == 15463 || id == 15490) // Legendary Arcane Amalgamation
@@ -1102,8 +1106,6 @@ void PlayerbotFactory::ResetQuests()
 
     }
 }
-
-void PlayerbotFactory::InitSpells() { InitAvailableSpells(); }
 
 void PlayerbotFactory::InitTalentsTree(bool increment /*false*/, bool use_template /*true*/, bool reset /*false*/)
 {
