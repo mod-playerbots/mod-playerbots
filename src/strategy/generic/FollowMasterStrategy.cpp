@@ -7,13 +7,13 @@
 
 #include "Playerbots.h"
 
-NextAction** FollowMasterStrategy::getDefaultActions()
+std::vector<NextAction> FollowMasterStrategy::getDefaultActions()
 {
-    return NextAction::array(0, new NextAction("follow", 1.0f), nullptr);
+    return {
+        NextAction("follow", 1.0f)
+    };
 }
 
 void FollowMasterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    // triggers.push_back(new TriggerNode("out of react range", NextAction::array(0, new NextAction("flee to master",
-    // ACTION_HIGH), nullptr)));
 }

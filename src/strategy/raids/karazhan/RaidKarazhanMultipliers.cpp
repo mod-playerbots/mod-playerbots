@@ -61,10 +61,11 @@ float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
     if (!attumenMounted)
         return 1.0f;
 
+    const uint32 instanceId = attumenMounted->GetMap()->GetInstanceId();
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 8;
 
-    auto it = attumenDpsWaitTimer.find(KARAZHAN_MAP_ID);
+    auto it = attumenDpsWaitTimer.find(instanceId);
     if (it == attumenDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         if (!botAI->IsMainTank(bot))
@@ -201,10 +202,11 @@ float NetherspiteWaitForDpsMultiplier::GetValue(Action* action)
     if (!netherspite || netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
         return 1.0f;
 
+    const uint32 instanceId = netherspite->GetMap()->GetInstanceId();
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 5;
 
-    auto it = netherspiteDpsWaitTimer.find(KARAZHAN_MAP_ID);
+    auto it = netherspiteDpsWaitTimer.find(instanceId);
     if (it == netherspiteDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         if (!botAI->IsTank(bot))
@@ -299,10 +301,11 @@ float NightbaneWaitForDpsMultiplier::GetValue(Action* action)
     if (!nightbane || nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
         return 1.0f;
 
+    const uint32 instanceId = nightbane->GetMap()->GetInstanceId();
     const time_t now = std::time(nullptr);
     const uint8 dpsWaitSeconds = 8;
 
-    auto it = nightbaneDpsWaitTimer.find(KARAZHAN_MAP_ID);
+    auto it = nightbaneDpsWaitTimer.find(instanceId);
     if (it == nightbaneDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
         if (!botAI->IsMainTank(bot))

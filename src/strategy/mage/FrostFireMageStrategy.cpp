@@ -22,13 +22,13 @@ public:
     }
 
 private:
-    static ActionNode* frostfire_bolt(PlayerbotAI*) { return new ActionNode("frostfire bolt", nullptr, nullptr, nullptr); }
-    static ActionNode* fire_blast(PlayerbotAI*) { return new ActionNode("fire blast", nullptr, nullptr, nullptr); }
-    static ActionNode* pyroblast(PlayerbotAI*) { return new ActionNode("pyroblast", nullptr, nullptr, nullptr); }
-    static ActionNode* combustion(PlayerbotAI*) { return new ActionNode("combustion", nullptr, nullptr, nullptr); }
-    static ActionNode* icy_veins(PlayerbotAI*) { return new ActionNode("icy veins", nullptr, nullptr, nullptr); }
-    static ActionNode* scorch(PlayerbotAI*) { return new ActionNode("scorch", nullptr, nullptr, nullptr); }
-    static ActionNode* living_bomb(PlayerbotAI*) { return new ActionNode("living bomb", nullptr, nullptr, nullptr); }
+    static ActionNode* frostfire_bolt(PlayerbotAI*) { return new ActionNode("frostfire bolt", {}, {}, {}); }
+    static ActionNode* fire_blast(PlayerbotAI*) { return new ActionNode("fire blast", {}, {}, {}); }
+    static ActionNode* pyroblast(PlayerbotAI*) { return new ActionNode("pyroblast", {}, {}, {}); }
+    static ActionNode* combustion(PlayerbotAI*) { return new ActionNode("combustion", {}, {}, {}); }
+    static ActionNode* icy_veins(PlayerbotAI*) { return new ActionNode("icy veins", {}, {}, {}); }
+    static ActionNode* scorch(PlayerbotAI*) { return new ActionNode("scorch", {}, {}, {}); }
+    static ActionNode* living_bomb(PlayerbotAI*) { return new ActionNode("living bomb", {}, {}, {}); }
 };
 
 // ===== Single Target Strategy =====
@@ -38,11 +38,13 @@ FrostFireMageStrategy::FrostFireMageStrategy(PlayerbotAI* botAI) : GenericMageSt
 }
 
 // ===== Default Actions =====
-NextAction** FrostFireMageStrategy::getDefaultActions()
+std::vector<NextAction> FrostFireMageStrategy::getDefaultActions()
 {
-    return NextAction::array(0, new NextAction("frostfire bolt", 5.2f),
-                                new NextAction("fire blast", 5.1f),  // cast during movement
-                                new NextAction("shoot", 5.0f), nullptr);
+    return {
+        NextAction("frostfire bolt", 5.2f),
+        NextAction("fire blast", 5.1f),  // cast during movement
+        NextAction("shoot", 5.0f)
+    };
 }
 
 // ===== Trigger Initialization =====
@@ -51,9 +53,30 @@ void FrostFireMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     GenericMageStrategy::InitTriggers(triggers);
 
     // Debuff Triggers
-    triggers.push_back(new TriggerNode("improved scorch", NextAction::array(0, new NextAction("scorch", 19.0f), nullptr)));
-    triggers.push_back(new TriggerNode("living bomb", NextAction::array(0, new NextAction("living bomb", 18.5f), nullptr)));
+    triggers.push_back(
+        new TriggerNode(
+            "improved scorch",
+            {
+                NextAction("scorch", 19.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "living bomb",
+            {
+                NextAction("living bomb", 18.5f)
+            }
+        )
+    );
 
     // Proc Trigger
-    triggers.push_back(new TriggerNode("hot streak", NextAction::array(0, new NextAction("pyroblast", 25.0f), nullptr)));
+    triggers.push_back(
+        new TriggerNode(
+            "hot streak",
+            {
+                NextAction("pyroblast", 25.0f)
+            }
+        )
+    );
 }

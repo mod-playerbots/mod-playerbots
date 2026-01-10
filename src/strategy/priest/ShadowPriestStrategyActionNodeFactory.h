@@ -26,33 +26,33 @@ private:
     static ActionNode* mind_blast([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("mind blast",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("mind flay"), nullptr),
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ { NextAction("mind flay") },
+                              /*C*/ {});
     }
 
     static ActionNode* mind_flay([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("mind flay",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("smite"), nullptr),
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ { NextAction("smite") },
+                              /*C*/ {});
     }
 
     static ActionNode* smite([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("smite",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("shoot"), nullptr),
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ { NextAction("shoot") },
+                              /*C*/ {});
     }
 
     static ActionNode* dispersion([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("dispersion",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("mana potion"), nullptr),
-                              /*C*/ nullptr);
+                              /*P*/ {},
+                              /*A*/ { NextAction("mana potion") },
+                              /*C*/ {});
     }
 };
 

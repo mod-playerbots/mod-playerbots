@@ -7,4 +7,14 @@
 
 #include "Playerbots.h"
 
-bool NoRtiTrigger::IsActive() { return !AI_VALUE(Unit*, "rti target"); }
+bool NoRtiTrigger::IsActive()
+{
+    // Do not auto-react to raid icons while out of combat.
+    // Out-of-combat RTI usage (explicit chat commands) is handled by chat triggers,
+    // not by this generic trigger.
+    if (!bot->IsInCombat())
+        return false;
+
+    Unit* target = AI_VALUE(Unit*, "rti target");
+    return target != nullptr;
+}

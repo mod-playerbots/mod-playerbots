@@ -9,16 +9,24 @@
 
 MeleeDruidStrategy::MeleeDruidStrategy(PlayerbotAI* botAI) : CombatStrategy(botAI) {}
 
-NextAction** MeleeDruidStrategy::getDefaultActions()
+std::vector<NextAction> MeleeDruidStrategy::getDefaultActions()
 {
-    return NextAction::array(0, new NextAction("faerie fire", ACTION_DEFAULT + 0.1f),
-                             new NextAction("melee", ACTION_DEFAULT), nullptr);
+    return {
+        NextAction("faerie fire", ACTION_DEFAULT + 0.1f),
+        NextAction("melee", ACTION_DEFAULT)
+    };
 }
 
 void MeleeDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode(
-        "omen of clarity", NextAction::array(0, new NextAction("omen of clarity", ACTION_HIGH + 9), nullptr)));
+    triggers.push_back(
+        new TriggerNode(
+            "omen of clarity",
+            {
+                NextAction("omen of clarity", ACTION_HIGH + 9)
+            }
+        )
+    );
 
     CombatStrategy::InitTriggers(triggers);
 }

@@ -276,7 +276,7 @@ enum BotRoles : uint8
 
 enum HUNTER_TABS
 {
-    HUNTER_TAB_BEASTMASTERY,
+    HUNTER_TAB_BEAST_MASTERY,
     HUNTER_TAB_MARKSMANSHIP,
     HUNTER_TAB_SURVIVAL,
 };
@@ -295,11 +295,11 @@ enum PRIEST_TABS
     PRIEST_TAB_SHADOW,
 };
 
-enum DEATHKNIGHT_TABS
+enum DEATH_KNIGHT_TABS
 {
-    DEATHKNIGHT_TAB_BLOOD,
-    DEATHKNIGHT_TAB_FROST,
-    DEATHKNIGHT_TAB_UNHOLY,
+    DEATH_KNIGHT_TAB_BLOOD,
+    DEATH_KNIGHT_TAB_FROST,
+    DEATH_KNIGHT_TAB_UNHOLY,
 };
 
 enum DRUID_TABS
@@ -579,7 +579,6 @@ public:
     void ResetJumpDestination() { jumpDestination = Position(); }
 
     bool CanMove();
-    static bool IsRealGuild(uint32 guildId);
     bool IsInRealGuild();
     static std::vector<std::string> dispel_whitelist;
     bool EqualLowercaseName(std::string s1, std::string s2);
@@ -617,7 +616,15 @@ private:
     void HandleCommands();
     void HandleCommand(uint32 type, const std::string& text, Player& fromPlayer, const uint32 lang = LANG_UNIVERSAL);
     bool _isBotInitializing = false;
-
+    inline bool IsValidUnit(const Unit* unit) const
+    {
+        return unit && unit->IsInWorld() && !unit->IsDuringRemoveFromWorld();
+    }
+    inline bool IsValidPlayer(const Player* player) const
+    {
+        return player && player->GetSession() && player->IsInWorld() && !player->IsDuringRemoveFromWorld() &&
+               !player->IsBeingTeleported();
+    }
 protected:
     Player* bot;
     Player* master;

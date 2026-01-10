@@ -7,22 +7,35 @@
 
 #include "Playerbots.h"
 
-NextAction** GrindingStrategy::getDefaultActions()
+std::vector<NextAction> GrindingStrategy::getDefaultActions()
 {
-    return NextAction::array(0,
-        new NextAction("drink", 4.2f),
-        new NextAction("food", 4.1f),
-        nullptr);
+    return {
+        NextAction("drink", 4.2f),
+        NextAction("food", 4.1f),
+    };
 }
 
 void GrindingStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // reduce lower than loot
     triggers.push_back(
-        new TriggerNode("no target", NextAction::array(0, new NextAction("attack anything", 4.0f), nullptr)));
+        new TriggerNode(
+            "no target",
+            {
+                NextAction("attack anything", 4.0f)
+            }
+        )
+    );
 }
 
 void MoveRandomStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("often", NextAction::array(0, new NextAction("move random", 1.5f), NULL)));
+    triggers.push_back(
+        new TriggerNode(
+            "often",
+            {
+                NextAction("move random", 1.5f)
+            }
+        )
+    );
 }

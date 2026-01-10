@@ -16,7 +16,7 @@ public:
     FollowMasterStrategy(PlayerbotAI* botAI) : NonCombatStrategy(botAI) {}
 
     std::string const getName() override { return "follow"; }
-    NextAction** getDefaultActions() override;
+    std::vector<NextAction> getDefaultActions() override;
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
 };
 

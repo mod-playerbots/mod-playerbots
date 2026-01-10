@@ -24,52 +24,72 @@ public:
 private:
     static ActionNode* melee([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("melee",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("mutilate"), nullptr),
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "melee",
+            /*P*/ {},
+            /*A*/ {
+                NextAction("mutilate") },
+            /*C*/ {}
+        );
     }
     static ActionNode* mutilate([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("mutilate",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("sinister strike"), nullptr),
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "mutilate",
+            /*P*/ {},
+            /*A*/ {
+                NextAction("sinister strike") },
+            /*C*/ {}
+        );
     }
     static ActionNode* sinister_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("sinister strike",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("melee"), nullptr),
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "sinister strike",
+            /*P*/ {},
+            /*A*/ {
+                NextAction("melee") },
+            /*C*/ {}
+        );
     }
     static ActionNode* kick([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("kick",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("kidney shot"), nullptr),
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "kick",
+            /*P*/ {},
+            /*A*/ {
+                NextAction("kidney shot") },
+            /*C*/ {}
+        );
     }
     static ActionNode* kidney_shot([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("kidney shot",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "kidney shot",
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* backstab([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("backstab",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("mutilate"), nullptr),
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "backstab",
+            /*P*/ {},
+            /*A*/ {
+                NextAction("mutilate") },
+            /*C*/ {}
+        );
     }
     static ActionNode* rupture([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("rupture",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("eviscerate"), nullptr),
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "rupture",
+            /*P*/ {},
+            /*A*/ {
+                NextAction("eviscerate") },
+            /*C*/ {}
+        );
     }
 };
 
@@ -78,71 +98,157 @@ DpsRogueStrategy::DpsRogueStrategy(PlayerbotAI* botAI) : MeleeCombatStrategy(bot
     actionNodeFactories.Add(new DpsRogueStrategyActionNodeFactory());
 }
 
-NextAction** DpsRogueStrategy::getDefaultActions()
+std::vector<NextAction> DpsRogueStrategy::getDefaultActions()
 {
-    return NextAction::array(0, new NextAction("killing spree", ACTION_DEFAULT + 0.1f),
-                             new NextAction("melee", ACTION_DEFAULT), nullptr);
+    return {
+        NextAction("killing spree", ACTION_DEFAULT + 0.1f),
+        NextAction("melee", ACTION_DEFAULT)
+    };
 }
 
 void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     MeleeCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("high energy available",
-                                       NextAction::array(0, new NextAction("garrote", ACTION_HIGH + 7),
-                                                         new NextAction("ambush", ACTION_HIGH + 6), nullptr)));
-
-    triggers.push_back(new TriggerNode(
-        "high energy available", NextAction::array(0, new NextAction("sinister strike", ACTION_NORMAL + 3), nullptr)));
-
-    triggers.push_back(new TriggerNode(
-        "slice and dice", NextAction::array(0, new NextAction("slice and dice", ACTION_HIGH + 2), nullptr)));
-
-    triggers.push_back(new TriggerNode("combo points available",
-                                       NextAction::array(0, new NextAction("rupture", ACTION_HIGH + 1),
-                                                         new NextAction("eviscerate", ACTION_HIGH), nullptr)));
-
-    triggers.push_back(new TriggerNode("target with combo points almost dead",
-                                       NextAction::array(0, new NextAction("eviscerate", ACTION_HIGH + 2), nullptr)));
+    triggers.push_back(
+        new TriggerNode(
+            "high energy available",
+            {
+                NextAction("garrote", ACTION_HIGH + 7),
+                NextAction("ambush", ACTION_HIGH + 6)
+            }
+        )
+    );
 
     triggers.push_back(
-        new TriggerNode("medium threat", NextAction::array(0, new NextAction("vanish", ACTION_HIGH), nullptr)));
+        new TriggerNode(
+            "high energy available",
+            {
+                NextAction("sinister strike", ACTION_NORMAL + 3)
+            }
+        )
+    );
 
     triggers.push_back(
-        new TriggerNode("low health", NextAction::array(0, new NextAction("evasion", ACTION_HIGH + 9),
-                                                        new NextAction("feint", ACTION_HIGH + 8), nullptr)));
-
-    triggers.push_back(new TriggerNode(
-        "critical health", NextAction::array(0, new NextAction("cloak of shadows", ACTION_HIGH + 7), nullptr)));
-
-    triggers.push_back(
-        new TriggerNode("kick", NextAction::array(0, new NextAction("kick", ACTION_INTERRUPT + 2), nullptr)));
-
-    triggers.push_back(
-        new TriggerNode("kick on enemy healer",
-                        NextAction::array(0, new NextAction("kick on enemy healer", ACTION_INTERRUPT + 1), nullptr)));
-
-    // triggers.push_back(new TriggerNode(
-    //     "behind target",
-    //     NextAction::array(0, new NextAction("backstab", ACTION_NORMAL), nullptr)));
+        new TriggerNode(
+            "slice and dice",
+            {
+                NextAction("slice and dice", ACTION_HIGH + 2)
+            }
+        )
+    );
 
     triggers.push_back(
-        new TriggerNode("light aoe", NextAction::array(0, new NextAction("blade flurry", ACTION_HIGH + 3), nullptr)));
+        new TriggerNode(
+            "combo points available",
+            {
+                NextAction("rupture", ACTION_HIGH + 1),
+                NextAction("eviscerate", ACTION_HIGH)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode("blade flurry",
-                                       NextAction::array(0, new NextAction("blade flurry", ACTION_HIGH + 2), nullptr)));
+    triggers.push_back(
+        new TriggerNode(
+            "target with combo points almost dead",
+            {
+                NextAction("eviscerate", ACTION_HIGH + 2)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "enemy out of melee",
-        NextAction::array(0, new NextAction("stealth", ACTION_HIGH + 3), new NextAction("sprint", ACTION_HIGH + 2),
-                          new NextAction("reach melee", ACTION_HIGH + 1), nullptr)));
+    triggers.push_back(
+        new TriggerNode(
+            "medium threat",
+            {
+                NextAction("vanish", ACTION_HIGH)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode("expose armor",
-                                       NextAction::array(0, new NextAction("expose armor", ACTION_HIGH + 3), nullptr)));
+    triggers.push_back(
+        new TriggerNode(
+            "low health",
+            {
+                NextAction("evasion", ACTION_HIGH + 9),
+                NextAction("feint", ACTION_HIGH + 8)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "low tank threat",
-        NextAction::array(0, new NextAction("tricks of the trade on main tank", ACTION_HIGH + 7), nullptr)));
+    triggers.push_back(
+        new TriggerNode(
+            "critical health",
+            {
+                NextAction("cloak of shadows", ACTION_HIGH + 7)
+            }
+        )
+    );
+
+    triggers.push_back(
+        new TriggerNode(
+            "kick",
+            {
+                NextAction("kick", ACTION_INTERRUPT + 2)
+            }
+        )
+    );
+
+    triggers.push_back(
+        new TriggerNode(
+            "kick on enemy healer",
+            {
+                NextAction("kick on enemy healer", ACTION_INTERRUPT + 1)
+            }
+        )
+    );
+
+    triggers.push_back(
+        new TriggerNode(
+            "light aoe",
+            {
+                NextAction("blade flurry", ACTION_HIGH + 3)
+            }
+        )
+    );
+
+    triggers.push_back(
+        new TriggerNode(
+            "blade flurry",
+                {
+                NextAction("blade flurry", ACTION_HIGH + 2)
+            }
+        )
+    );
+
+    triggers.push_back(
+        new TriggerNode(
+            "enemy out of melee",
+            {
+                NextAction("stealth", ACTION_HIGH + 3),
+                NextAction("sprint", ACTION_HIGH + 2),
+                NextAction("reach melee", ACTION_HIGH + 1)
+            }
+        )
+    );
+
+    triggers.push_back(
+        new TriggerNode(
+            "expose armor",
+            {
+                NextAction("expose armor", ACTION_HIGH + 3)
+            }
+        )
+    );
+
+    triggers.push_back(
+        new TriggerNode(
+            "low tank threat",
+            {
+                NextAction("tricks of the trade on main tank", ACTION_HIGH + 7)
+            }
+        )
+    );
 }
 
 class StealthedRogueStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
@@ -160,42 +266,52 @@ public:
 private:
     static ActionNode* ambush([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("ambush",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("garrote"), nullptr),
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "ambush",
+            /*P*/ {},
+            /*A*/ { NextAction("garrote") },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* cheap_shot([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("cheap shot",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "cheap shot",
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* garrote([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("garrote",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "garrote",
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* sap([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("sap",
-                              /*P*/ nullptr,
-                              /*A*/ nullptr,
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "sap",
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* sinister_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("sinister strike",
-                              /*P*/ nullptr,
-                              /*A*/ NextAction::array(0, new NextAction("cheap shot"), nullptr),
-                              /*C*/ nullptr);
+        return new ActionNode(
+            "sinister strike",
+            /*P*/ {},
+            /*A*/ { NextAction("cheap shot") },
+            /*C*/ {}
+        );
     }
 };
 
@@ -204,60 +320,147 @@ StealthedRogueStrategy::StealthedRogueStrategy(PlayerbotAI* botAI) : Strategy(bo
     actionNodeFactories.Add(new StealthedRogueStrategyActionNodeFactory());
 }
 
-NextAction** StealthedRogueStrategy::getDefaultActions()
+std::vector<NextAction> StealthedRogueStrategy::getDefaultActions()
 {
-    return NextAction::array(
-        0, new NextAction("ambush", ACTION_NORMAL + 4), new NextAction("backstab", ACTION_NORMAL + 3),
-        new NextAction("cheap shot", ACTION_NORMAL + 2), new NextAction("sinister strike", ACTION_NORMAL + 1),
-        new NextAction("melee", ACTION_NORMAL), nullptr);
+    return {
+        NextAction("ambush", ACTION_NORMAL + 4),
+        NextAction("backstab", ACTION_NORMAL + 3),
+        NextAction("cheap shot", ACTION_NORMAL + 2),
+        NextAction("sinister strike", ACTION_NORMAL + 1),
+        NextAction("melee", ACTION_NORMAL)
+    };
 }
 
 void StealthedRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("combo points available",
-                                       NextAction::array(0, new NextAction("eviscerate", ACTION_HIGH), nullptr)));
     triggers.push_back(
-        new TriggerNode("kick", NextAction::array(0, new NextAction("cheap shot", ACTION_INTERRUPT), nullptr)));
-    triggers.push_back(new TriggerNode("kick on enemy healer",
-                                       NextAction::array(0, new NextAction("cheap shot", ACTION_INTERRUPT), nullptr)));
+        new TriggerNode(
+            "combo points available",
+            {
+                NextAction("eviscerate", ACTION_HIGH)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("behind target", NextAction::array(0, new NextAction("ambush", ACTION_HIGH), nullptr)));
+        new TriggerNode(
+            "kick",
+            {
+                NextAction("cheap shot", ACTION_INTERRUPT)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("not behind target", NextAction::array(0, new NextAction("cheap shot", ACTION_HIGH), nullptr)));
-    triggers.push_back(new TriggerNode("enemy flagcarrier near",
-                                       NextAction::array(0, new NextAction("sprint", ACTION_EMERGENCY + 1), nullptr)));
+        new TriggerNode(
+            "kick on enemy healer",
+            {
+                NextAction("cheap shot", ACTION_INTERRUPT)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("unstealth", NextAction::array(0, new NextAction("unstealth", ACTION_NORMAL), nullptr)));
-    /*triggers.push_back(new TriggerNode("low health", NextAction::array(0, new NextAction("food", ACTION_EMERGENCY +
-     * 1), nullptr)));*/
-    triggers.push_back(new TriggerNode(
-        "no stealth", NextAction::array(0, new NextAction("check stealth", ACTION_EMERGENCY), nullptr)));
+        new TriggerNode(
+            "behind target",
+            {
+                NextAction("ambush", ACTION_HIGH)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("sprint", NextAction::array(0, new NextAction("sprint", ACTION_INTERRUPT), nullptr)));
+        new TriggerNode(
+            "not behind target",
+            {
+                NextAction("cheap shot", ACTION_HIGH)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "enemy flagcarrier near",
+            {
+                NextAction("sprint", ACTION_EMERGENCY + 1)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "unstealth",
+            {
+                NextAction("unstealth", ACTION_NORMAL)
+            }
+        )
+    );
+
+    triggers.push_back(
+        new TriggerNode(
+            "no stealth",
+            {
+                NextAction("check stealth", ACTION_EMERGENCY)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "sprint",
+            {
+                NextAction("sprint", ACTION_INTERRUPT)
+            }
+        )
+    );
 }
 
 void StealthStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("stealth", NextAction::array(0, new NextAction("stealth", ACTION_INTERRUPT), nullptr)));
+        new TriggerNode(
+            "stealth",
+            {
+                NextAction("stealth", ACTION_INTERRUPT)
+            }
+        )
+    );
 }
 
 void RogueAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("light aoe", NextAction::array(0, new NextAction("blade flurry", ACTION_HIGH), nullptr)));
-    triggers.push_back(new TriggerNode(
-        "medium aoe", NextAction::array(0, new NextAction("fan of knives", ACTION_NORMAL + 5), nullptr)));
+        new TriggerNode(
+            "light aoe",
+            {
+                NextAction("blade flurry", ACTION_HIGH)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "medium aoe",
+            {
+                NextAction("fan of knives", ACTION_NORMAL + 5)
+            }
+        )
+    );
 }
 
 void RogueBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode(
-        "adrenaline rush", NextAction::array(0, new NextAction("adrenaline rush", ACTION_HIGH + 2), nullptr)));
+    triggers.push_back(
+        new TriggerNode(
+            "adrenaline rush",
+            {
+                NextAction("adrenaline rush", ACTION_HIGH + 2)
+            }
+        )
+    );
 }
 
 void RogueCcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("sap", NextAction::array(0, new NextAction("stealth", ACTION_INTERRUPT),
-                                                                new NextAction("sap", ACTION_INTERRUPT), nullptr)));
+    triggers.push_back(
+        new TriggerNode(
+            "sap",
+            {
+                NextAction("stealth", ACTION_INTERRUPT),
+                NextAction("sap", ACTION_INTERRUPT)
+            }
+        )
+    );
 }
