@@ -5,9 +5,6 @@
 
 #include "PaladinBlessingStateValue.h"
 
-#include <algorithm>
-#include <vector>
-
 #include "Group.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
@@ -20,13 +17,13 @@ namespace
     constexpr char const* BmanaStrategy = "bmana";
     constexpr char const* BdpsStrategy = "bdps";
 
-    void FillRoleState(PaladinBlessingRoleState& roleState, std::vector<ObjectGuid> const& candidates)
+    void UpdateRoleState(PaladinBlessingRoleState& roleState, ObjectGuid const& guid)
     {
-        roleState.hasWearer = !candidates.empty();
-        if (!roleState.hasWearer)
-            return;
-
-        roleState.designated = *std::min_element(candidates.begin(), candidates.end());
+        if (!roleState.hasWearer || guid < roleState.designated)
+        {
+            roleState.hasWearer = true;
+            roleState.designated = guid;
+        }
     }
 }  // namespace
 
@@ -77,10 +74,6 @@ PaladinBlessingState PaladinBlessingStateValue::Calculate()
 
     state.inGroup = true;
 
-    std::vector<ObjectGuid> bstatsCandidates;
-    std::vector<ObjectGuid> bmanaCandidates;
-    std::vector<ObjectGuid> bdpsCandidates;
-
     for (GroupReference* memberRef = group->GetFirstMember(); memberRef; memberRef = memberRef->next())
     {
         Player* member = memberRef->GetSource();
@@ -93,17 +86,13 @@ PaladinBlessingState PaladinBlessingStateValue::Calculate()
         if (!otherAI)
             continue;
 
+        ObjectGuid memberGuid = member->GetGUID();
         if (otherAI->HasStrategy(BstatsStrategy, BOT_STATE_NON_COMBAT))
-            bstatsCandidates.push_back(member->GetGUID());
+            UpdateRoleState(state.bstats, memberGuid);
         if (otherAI->HasStrategy(BmanaStrategy, BOT_STATE_NON_COMBAT))
-            bmanaCandidates.push_back(member->GetGUID());
+            UpdateRoleState(state.bmana, memberGuid);
         if (otherAI->HasStrategy(BdpsStrategy, BOT_STATE_NON_COMBAT))
-            bdpsCandidates.push_back(member->GetGUID());
+            UpdateRoleState(state.bdps, memberGuid);
     }
-
-    FillRoleState(state.bstats, bstatsCandidates);
-    FillRoleState(state.bmana, bmanaCandidates);
-    FillRoleState(state.bdps, bdpsCandidates);
-
     return state;
 }

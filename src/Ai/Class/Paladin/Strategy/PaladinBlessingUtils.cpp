@@ -13,7 +13,7 @@
 
 namespace ai::paladin
 {
-    std::string GetActualBlessingOfMight(Unit* target)
+    std::string GetActualBlessingOfMight(Unit* target, bool log)
     {
         std::string result;
         Player* targetPlayer = target ? target->ToPlayer() : nullptr;
@@ -47,14 +47,17 @@ namespace ai::paladin
             if (result.empty())
                 result = "blessing of might";
         }
-        LOG_DEBUG("playerbots", "[BlessingDecision] Might resolver -> target={} class={} specTab={} => {}",
-                  (targetPlayer ? targetPlayer->GetName() : "non-player"),
-                  (targetPlayer ? int(targetPlayer->getClass()) : -1),
-                  (targetPlayer ? AiFactory::GetPlayerSpecTab(targetPlayer) : -1), result);
+        if (log)
+        {
+            LOG_DEBUG("playerbots", "[BlessingDecision] Might resolver -> target={} class={} specTab={} => {}",
+                      (targetPlayer ? targetPlayer->GetName() : "non-player"),
+                      (targetPlayer ? int(targetPlayer->getClass()) : -1),
+                      (targetPlayer ? AiFactory::GetPlayerSpecTab(targetPlayer) : -1), result);
+        }
         return result;
     }
 
-    std::string GetActualBlessingOfWisdom(Unit* target)
+    std::string GetActualBlessingOfWisdom(Unit* target, bool log)
     {
         std::string result;
         Player* targetPlayer = target ? target->ToPlayer() : nullptr;
@@ -89,38 +92,14 @@ namespace ai::paladin
             if (result.empty())
                 result = "blessing of wisdom";
         }
-        LOG_DEBUG("playerbots", "[BlessingDecision] Wisdom resolver -> target={} class={} specTab={} => {}",
-                  (targetPlayer ? targetPlayer->GetName() : "non-player"),
-                  (targetPlayer ? int(targetPlayer->getClass()) : -1),
-                  (targetPlayer ? AiFactory::GetPlayerSpecTab(targetPlayer) : -1), result);
+        if (log)
+        {
+            LOG_DEBUG("playerbots", "[BlessingDecision] Wisdom resolver -> target={} class={} specTab={} => {}",
+                      (targetPlayer ? targetPlayer->GetName() : "non-player"),
+                      (targetPlayer ? int(targetPlayer->getClass()) : -1),
+                      (targetPlayer ? AiFactory::GetPlayerSpecTab(targetPlayer) : -1), result);
+        }
+
         return result;
-    }
-
-    std::string GetActualBlessingOfSanctuary(Unit* target, Player* bot, PlayerbotAI* botAI)
-    {
-        if (!bot || !botAI)
-            return "";
-
-        Player* targetPlayer = target ? target->ToPlayer() : nullptr;
-        if (!targetPlayer)
-            return "";
-
-        if (Unit* mt = botAI->GetAiObjectContext()->GetValue<Unit*>("main tank")->Get())
-        {
-            if (mt == target)
-                return "blessing of sanctuary";
-        }
-
-        if (targetPlayer->HasTankSpec())
-        {
-            LOG_DEBUG("playerbots", "[BlessingDecision] Sanctuary resolver -> target={} isTankSpec=1 => sanctuary",
-                      targetPlayer->GetName());
-            return "blessing of sanctuary";
-        }
-
-        LOG_DEBUG("playerbots", "[BlessingDecision] Sanctuary resolver -> target={} isTankSpec=0 => '' (no sanct)",
-                  targetPlayer->GetName());
-
-        return "";
     }
 }  // namespace ai::paladin

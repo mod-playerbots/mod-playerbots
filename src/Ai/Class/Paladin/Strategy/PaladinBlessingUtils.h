@@ -7,13 +7,10 @@
 
 #include <string>
 
-class Player;
-class PlayerbotAI;
 class Unit;
 
 namespace ai::paladin
 {
-    std::string GetActualBlessingOfMight(Unit* target);
-    std::string GetActualBlessingOfWisdom(Unit* target);
-    std::string GetActualBlessingOfSanctuary(Unit* target, Player* bot, PlayerbotAI* botAI);
+    std::string GetActualBlessingOfMight(Unit* target, bool log = true);
+    std::string GetActualBlessingOfWisdom(Unit* target, bool log = true);
 }  // namespace ai::paladin

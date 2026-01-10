@@ -61,30 +61,11 @@ static inline bool ShouldReceiveMight(Player* targetPlayer, uint32 paladinCount)
     if (!targetPlayer)
         return false;
 
-    int specTab = AiFactory::GetPlayerSpecTab(targetPlayer);
-    switch (targetPlayer->getClass())
-    {
-        case CLASS_WARRIOR:
-            return true;
-        case CLASS_ROGUE:
-            return true;
-        case CLASS_DEATH_KNIGHT:
-            return true;
-        case CLASS_HUNTER:
-            return true;  // remote physics
-        case CLASS_SHAMAN:
-            return specTab == SHAMAN_TAB_ENHANCEMENT;  // melee
-        case CLASS_DRUID:
-            return specTab == DRUID_TAB_FERAL;  // feral
-        case CLASS_PALADIN:
-            if (specTab == PALADIN_TAB_RETRIBUTION)
-                return true;
-            if (specTab == PALADIN_TAB_PROTECTION)
-                return paladinCount >= 3u;
-            return false;
-        default:
-            return false;  // mages/demos/priests/boomkin/resto/elem....
-    }
+    if (targetPlayer->getClass() == CLASS_PALADIN &&
+        AiFactory::GetPlayerSpecTab(targetPlayer) == PALADIN_TAB_PROTECTION && paladinCount < 3u)
+        return false;
+
+    return ai::paladin::GetActualBlessingOfMight(targetPlayer, /*log=*/false) == "blessing of might";
 }
 
 static inline PaladinBlessingState GetBlessingState(PlayerbotAI* botAI)
@@ -101,11 +82,6 @@ static inline uint32 GetSpellId(PlayerbotAI* botAI, std::string const& name)
         return 0u;
 
     return botAI->GetAiObjectContext()->GetValue<uint32>("spell id", name)->Get();
-}
-
-static inline bool GroupHasTankOfClass(Group* group, uint8 classId)
-{
-    return GroupHasTankOfClass(group, static_cast<Classes>(classId));
 }
 
 Value<Unit*>* CastBlessingOnPartyAction::GetTargetValue()
@@ -338,17 +314,11 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event event)
                   hasKings, hasSanct, knowSanct);
     }
 
-    std::string castName = ai::paladin::GetActualBlessingOfSanctuary(target, bot, botAI);
-
-    // no point in switching to Greater here, to avoid any collision
-    if (castName.empty())
-        castName = "blessing of sanctuary";
-
     // For safety, if ever a non-tank arrives here
     if (targetPlayer && !IsTankRole(targetPlayer))
         return false;
 
-    castName = "blessing of sanctuary";
+    std::string castName = "blessing of sanctuary";
 
     bool ok = botAI->CastSpell(castName, target);
     LOG_DEBUG("playerbots", "[Sanct] Cast {} on {} result={}", castName, target->GetName(), ok);
