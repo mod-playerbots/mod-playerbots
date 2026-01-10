@@ -55,14 +55,25 @@ static inline bool IsTankRole(Player* player)
     return player && PlayerbotAI::IsTank(player, /*bySpec=*/false);
 }
 
+static inline bool IsProtectionPaladin(Player* player)
+{
+    return player && player->getClass() == CLASS_PALADIN && AiFactory::GetPlayerSpecTab(player) == PALADIN_TAB_PROTECTION;
+}
+
+static inline bool ShouldSkipMightOnTanks(PaladinBlessingState const& blessingState)
+{
+    return blessingState.paladinCount == 2u && blessingState.bstats.hasWearer && blessingState.bmana.hasWearer;
+}
+
 // Target eligible for Might: Physical + Hunter + Shaman Enhancement. Tank: Only if >= 3 Paladins (3rd Blessing).
-static inline bool ShouldReceiveMight(Player* targetPlayer, uint32 paladinCount)
+static inline bool ShouldReceiveMight(Player* targetPlayer, PaladinBlessingState const& blessingState)
 {
     if (!targetPlayer)
         return false;
 
     if (targetPlayer->getClass() == CLASS_PALADIN &&
-        AiFactory::GetPlayerSpecTab(targetPlayer) == PALADIN_TAB_PROTECTION && paladinCount < 3u)
+        AiFactory::GetPlayerSpecTab(targetPlayer) == PALADIN_TAB_PROTECTION && blessingState.paladinCount < 3u &&
+        !(blessingState.paladinCount == 2u && blessingState.bstats.hasWearer && blessingState.bdps.hasWearer))
         return false;
 
     return ai::paladin::GetActualBlessingOfMight(targetPlayer, /*log=*/false) == "blessing of might";
@@ -128,7 +139,9 @@ bool CastBlessingOfMightOnPartyAction::Execute(Event event)
 
     // If the current target is not eligible for Might, retarget a party member who is
     Player* targetPlayer = target->ToPlayer();
-    if (!targetPlayer || !ShouldReceiveMight(targetPlayer, blessingState.paladinCount))
+    if (targetPlayer && ShouldSkipMightOnTanks(blessingState) && IsTankRole(targetPlayer))
+        targetPlayer = nullptr;
+    if (!targetPlayer || !ShouldReceiveMight(targetPlayer, blessingState))
     {
         Group* group = bot->GetGroup();
         if (group)
@@ -139,7 +152,9 @@ bool CastBlessingOfMightOnPartyAction::Execute(Event event)
                 Player* memberPlayer = memberRef->GetSource();
                 if (!memberPlayer || !memberPlayer->IsInWorld() || !memberPlayer->IsAlive())
                     continue;
-                if (!ShouldReceiveMight(memberPlayer, blessingState.paladinCount))
+                if (ShouldSkipMightOnTanks(blessingState) && IsTankRole(memberPlayer))
+                    continue;
+                if (!ShouldReceiveMight(memberPlayer, blessingState))
                     continue;
                 // avoid resting Might if already present (greater/mono)
                 if (botAI->HasAura("blessing of might", memberPlayer) || botAI->HasAura("greater blessing of might", memberPlayer))
@@ -156,7 +171,7 @@ bool CastBlessingOfMightOnPartyAction::Execute(Event event)
             }
         }
         // if still no valid target -> abandon
-        if (!targetPlayer || !ShouldReceiveMight(targetPlayer, blessingState.paladinCount))
+        if (!targetPlayer || !ShouldReceiveMight(targetPlayer, blessingState))
             return false;
     }
 
@@ -336,18 +351,23 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
     // Allow Kings on party if the bot is elected for bstats OR for bmana (bmana places MONO Kings on tanks)
     const bool electedBstats = blessingState.IsDesignated(bot, PaladinBlessingRole::Bstats);
     const bool electedBmana = blessingState.IsDesignated(bot, PaladinBlessingRole::Bmana);
+    const bool electedBdps = blessingState.IsDesignated(bot, PaladinBlessingRole::Bdps);
     const bool hasBstats = botAI->HasStrategy("bstats", BOT_STATE_NON_COMBAT);
     const bool hasBmana = botAI->HasStrategy("bmana", BOT_STATE_NON_COMBAT);
+    const bool hasBdps = botAI->HasStrategy("bdps", BOT_STATE_NON_COMBAT);
     const bool actAsBstats = electedBstats && hasBstats;
     const bool actAsBmana = electedBmana && hasBmana;
-    if (!actAsBstats && !actAsBmana)
+    const bool actAsBdpsTankKings =
+        (blessingState.paladinCount == 2u && blessingState.bstats.hasWearer && electedBdps && hasBdps);
+    if (!actAsBstats && !actAsBmana && !actAsBdpsTankKings)
         return false;
 
     if (ShouldLogForThisBot(bot))
     {
         const std::string groupTag = MakeGroupTag(bot->GetGroup());
-        LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> {} is allowed to buff Kings", groupTag,
-                  (actAsBmana ? "bmana" : "bstats"), bot->GetName());
+        std::string roleTag = actAsBmana ? "bmana" : (actAsBstats ? "bstats" : "bdps");
+        LOG_DEBUG("playerbots", "[RoleCoord:{}] role={} -> {} is allowed to buff Kings", groupTag, roleTag,
+                  bot->GetName());
     }
 
     Unit* target = GetTarget();
@@ -412,10 +432,75 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
     if (targetPlayer && !group->IsMember(targetPlayer->GetGUID()))
         return false;
 
+    if (target->GetGUID() == bot->GetGUID() && IsProtectionPaladin(bot->ToPlayer()) &&
+        (botAI->HasAura("blessing of sanctuary", bot) || botAI->HasAura("greater blessing of sanctuary", bot)))
+    {
+        LOG_DEBUG("playerbots", "[Kings] Skip self to keep Sanctuary on protection paladin {}", bot->GetName());
+        return false;
+    }
+
+    if (target->GetGUID() == bot->GetGUID() && IsProtectionPaladin(bot->ToPlayer()) &&
+        (botAI->HasAura("blessing of sanctuary", bot) || botAI->HasAura("greater blessing of sanctuary", bot)))
+    {
+        LOG_DEBUG("playerbots", "[Kings] Skip self to keep Sanctuary on protection paladin {}", bot->GetName());
+        return false;
+    }
+
+    if (actAsBstats && !blessingState.IsSolo())
+    {
+        const bool isTwoPaladinsBstatsBdps =
+            (blessingState.paladinCount == 2u && blessingState.bstats.hasWearer && blessingState.bdps.hasWearer);
+        Player* candidate = targetPlayer;
+        if (candidate && IsTankRole(candidate))
+            candidate = nullptr;
+
+        if (!candidate)
+        {
+            if (isTwoPaladinsBstatsBdps)
+            {
+                for (GroupReference* memberRef = group->GetFirstMember(); memberRef; memberRef = memberRef->next())
+                {
+                    Player* memberPlayer = memberRef->GetSource();
+                    if (!memberPlayer || !memberPlayer->IsInWorld() || !memberPlayer->IsAlive())
+                        continue;
+                    if (IsTankRole(memberPlayer))
+                        continue;
+                    if (botAI->HasAura("blessing of kings", memberPlayer) ||
+                        botAI->HasAura("greater blessing of kings", memberPlayer))
+                        continue;
+                    if (ai::paladin::GetActualBlessingOfMight(memberPlayer, /*log=*/false) != "blessing of might")
+                        continue;
+                    candidate = memberPlayer;
+                    break;
+                }
+            }
+
+            for (GroupReference* memberRef = group->GetFirstMember(); memberRef; memberRef = memberRef->next())
+            {
+                Player* memberPlayer = memberRef->GetSource();
+                if (!memberPlayer || !memberPlayer->IsInWorld() || !memberPlayer->IsAlive())
+                    continue;
+                if (IsTankRole(memberPlayer))
+                    continue;
+                if (botAI->HasAura("blessing of kings", memberPlayer) ||
+                    botAI->HasAura("greater blessing of kings", memberPlayer))
+                    continue;
+                candidate = memberPlayer;
+                break;
+            }
+        }
+
+        if (candidate)
+        {
+            target = candidate;
+            targetPlayer = candidate;
+        }
+    }
+
     // If we act in bmana mode => Kings MONO on TANKS only
     if (actAsBmana && (!targetPlayer || !IsTankRole(targetPlayer)))
     {
-        LOG_DEBUG("playerbots", "[Kings/bmana] Skip non-tank {}", target->GetName());
+        LOG_DEBUG("playerbots", "[Kings] Skip non-tank {}", target->GetName());
         return false;
     }
 
@@ -424,6 +509,7 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
         const bool isTank = IsTankRole(targetPlayer);
         uint32 sanctSpellId = GetSpellId(botAI, "blessing of sanctuary");
         uint32 greaterSanctSpellId = GetSpellId(botAI, "greater blessing of sanctuary");
+        const bool isProtPaladin = IsProtectionPaladin(targetPlayer);
         const bool hasSanctFromMe =
             (sanctSpellId && target->HasAura(sanctSpellId, bot->GetGUID())) ||
             (greaterSanctSpellId && target->HasAura(greaterSanctSpellId, bot->GetGUID()));
@@ -431,13 +517,13 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
         const bool hasSanctAny =
             botAI->HasAura("blessing of sanctuary", target) || botAI->HasAura("greater blessing of sanctuary", target);
 
-        if (!actAsBmana && isTank && hasSanctFromMe)
+        if (!actAsBmana && !actAsBdpsTankKings && isTank && hasSanctFromMe && !isProtPaladin)
         {
             LOG_DEBUG("playerbots", "[Kings] Skip: {} has my Sanctuary and is a tank", target->GetName());
             return false;
         }
 
-        if (actAsBstats && isTank && hasSanctAny)
+        if (actAsBstats && isTank && hasSanctAny && !isProtPaladin)
         {
             LOG_DEBUG("playerbots", "[Kings] Skip (bstats): {} already has Sanctuary and is a tank", target->GetName());
             return false;
@@ -448,14 +534,17 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
 
     bool allowGreater = true;
 
-    if (actAsBmana)
+    if (actAsBmana || actAsBdpsTankKings)
         allowGreater = false;
 
     // In solo-paladin (bstats), we want to favor the Greater to cover the target class.
     if (actAsBstats && blessingState.IsSolo())
         allowGreater = true;
 
-    if (allowGreater && actAsBstats && targetPlayer && !blessingState.IsSolo())
+    const bool isTwoPaladinsBstatsBdps =
+        (blessingState.paladinCount == 2u && blessingState.bstats.hasWearer && blessingState.bdps.hasWearer);
+
+    if (allowGreater && actAsBstats && targetPlayer && !blessingState.IsSolo() && !isTwoPaladinsBstatsBdps)
     {
         switch (targetPlayer->getClass())
         {
