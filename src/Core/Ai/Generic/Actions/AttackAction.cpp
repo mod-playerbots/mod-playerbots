@@ -46,14 +46,14 @@ bool AttackMyTargetAction::Execute(Event /*event*/)
     }
 
     botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Set({guid});
-    bool result = Attack(botAI->GetUnit(guid));
+    bool result = Attack(botAI->GetUnit(guid), true, true); // Skip combat delay for explicit commands
     if (result)
         context->GetValue<ObjectGuid>("pull target")->Set(guid);
 
     return result;
 }
 
-bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
+bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/, bool skipCombatDelay /*false*/)
 {
     Unit* oldTarget = context->GetValue<Unit*>("current target")->Get();
     bool shouldMelee = bot->IsWithinMeleeRange(target) || botAI->IsMelee(bot);
@@ -62,28 +62,28 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
     bool inCombat = botAI->GetState() == BOT_STATE_COMBAT;
     bool sameAttackMode = bot->HasUnitState(UNIT_STATE_MELEE_ATTACKING) == shouldMelee;
 
-    // Combat delay check - prevent immediate engagement (not for PvP)
+    // Combat delay check - prevent immediate engagement (not for PvP or explicit commands)
     bool isPvPTarget = target->IsPlayer() || (target->IsPet() && target->GetOwner() && target->GetOwner()->IsPlayer());
-    if (botAI->HasStrategy("combat delay", BOT_STATE_NON_COMBAT) && sPlayerbotAIConfig->combatDelay > 0 && !sameTarget && !inCombat && !isPvPTarget)
+    if (!skipCombatDelay && botAI->HasStrategy("combat delay", BOT_STATE_NON_COMBAT) && sPlayerbotAIConfig->combatDelay > 0 && !sameTarget && !inCombat && !isPvPTarget)
     {
         static std::unordered_map<ObjectGuid, uint32> targetFirstSeenTime;
         ObjectGuid targetGuid = target->GetGUID();
         uint32 currentTime = getMSTime();
         if (targetFirstSeenTime.find(targetGuid) == targetFirstSeenTime.end())
-        {
             targetFirstSeenTime[targetGuid] = currentTime;
-            return false; 
-        }
+
         uint32 timeSinceFirstSeen = currentTime - targetFirstSeenTime[targetGuid];
         if (timeSinceFirstSeen < sPlayerbotAIConfig->combatDelay)
-        {
-            return false; 
-        }
+            return false;
 
         // Clean up old entries to prevent memory leak
-        if (targetFirstSeenTime.size() > 100)
+        // Remove entries older than combatDelay + threshold
+        for (auto it = targetFirstSeenTime.begin(); it != targetFirstSeenTime.end();)
         {
-            targetFirstSeenTime.clear();
+            if (currentTime - it->second > sPlayerbotAIConfig->combatDelay + 10000)
+                it = targetFirstSeenTime.erase(it);
+            else
+                ++it;
         }
     }
 
@@ -219,4 +219,4 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
 
 bool AttackDuelOpponentAction::isUseful() { return AI_VALUE(Unit*, "duel target"); }
 
-bool AttackDuelOpponentAction::Execute(Event /*event*/) { return Attack(AI_VALUE(Unit*, "duel target")); }
+bool AttackDuelOpponentAction::Execute(Event /*event*/) { return Attack(AI_VALUE(Unit*, "duel target"), true, true); }

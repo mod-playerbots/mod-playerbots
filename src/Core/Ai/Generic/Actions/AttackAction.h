@@ -18,7 +18,7 @@ public:
     bool Execute(Event event) override;
 
 protected:
-    bool Attack(Unit* target, bool with_pet = true);
+    bool Attack(Unit* target, bool with_pet = true, bool skipCombatDelay = false);
 };
 
 class AttackMyTargetAction : public AttackAction
