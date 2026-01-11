@@ -18,6 +18,7 @@
 #include "Unit.h"
 #include "AreaDefines.h"
 #include <unordered_map>
+#include <mutex>
 
 // Level difference thresholds for attack probability
 constexpr int32 EXTREME_LEVEL_DIFF = 5;  // Don't attack if enemy is this much higher
@@ -42,6 +43,7 @@ struct PairGuidHash
 // Cache for probability-based attack decisions (Per-bot: non-global)
 // Map: (botGUID, targetGUID) -> (should attack decision, timestamp)
 static std::unordered_map<std::pair<ObjectGuid, ObjectGuid>, std::pair<bool, time_t>, PairGuidHash> attackDecisionCache;
+static std::mutex attackDecisionCacheMutex;
 
 void PossibleTargetsValue::FindUnits(std::list<Unit*>& targets)
 {
@@ -52,6 +54,7 @@ void PossibleTargetsValue::FindUnits(std::list<Unit*>& targets)
 
 static void CleanupAttackDecisionCache()
 {
+    // Mutex already held by caller in AcceptUnit
     time_t currentTime = time(nullptr);
     for (auto it = attackDecisionCache.begin(); it != attackDecisionCache.end();)
     {
@@ -64,15 +67,6 @@ static void CleanupAttackDecisionCache()
 
 bool PossibleTargetsValue::AcceptUnit(Unit* unit)
 {
-    // attackDecisionCache cleanup
-    static time_t lastCleanup = 0;
-    time_t currentTime = time(nullptr);
-    if (currentTime - lastCleanup > ATTACK_DECISION_CACHE_CLEANUP_INTERVAL)
-    {
-        CleanupAttackDecisionCache();
-        lastCleanup = currentTime;
-    }
-
     if (!AttackersValue::IsPossibleTarget(unit, bot, range))
         return false;
 
@@ -141,10 +135,22 @@ bool PossibleTargetsValue::AcceptUnit(Unit* unit)
         else if (absLevelDifference < MID_LEVEL_DIFF && absLevelDifference >= LOW_LEVEL_DIFF)
             attackChance = 75;
 
-        // If probability check needed, use cache
+        // If probability check needed, use cache (with thread-safe access)
         if (attackChance < 100)
         {
             std::pair<ObjectGuid, ObjectGuid> cacheKey = std::make_pair(bot->GetGUID(), unit->GetGUID());
+            time_t currentTime = time(nullptr);
+
+            // Lock for cache access
+            std::lock_guard<std::mutex> lock(attackDecisionCacheMutex);
+
+            // Cleanup cache while holding lock
+            static time_t lastCleanup = 0;
+            if (currentTime - lastCleanup > ATTACK_DECISION_CACHE_CLEANUP_INTERVAL)
+            {
+                CleanupAttackDecisionCache();
+                lastCleanup = currentTime;
+            }
 
             auto it = attackDecisionCache.find(cacheKey);
             if (it != attackDecisionCache.end())
