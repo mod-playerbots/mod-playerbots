@@ -1,5 +1,5 @@
-#ifndef _PlAYERBOT_FLIGHTMASTER_H
-#define _PlAYERBOT_FLIGHTMASTER_H
+#ifndef _PLAYERBOT_FLIGHTMASTER_H
+#define _PLAYERBOT_FLIGHTMASTER_H
 
 #include "Creature.h"
 #include "Player.h"

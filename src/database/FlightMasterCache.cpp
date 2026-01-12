@@ -20,14 +20,17 @@ Creature* FlightMasterCache::GetNearestFlightMaster(Player* bot)
 
     for (auto const& [entry, pos] : flightMasterCache)
     {
-        float distance = bot->GetDistance(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
-        if (distance < 500.0f && distance < nearestDistance)
+        if (pos.GetMapId() == bot->GetMapId())
         {
-            Creature* flightMaster = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), entry);
-            if (flightMaster)
+            float distance = bot->GetExactDist2dSq(pos);
+            if (distance < 250000.0f && distance < nearestDistance)
             {
-                nearestDistance = distance;
-                nearestFlightMaster = flightMaster;
+                Creature* flightMaster = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), entry);
+                if (flightMaster)
+                {
+                    nearestDistance = distance;
+                    nearestFlightMaster = flightMaster;
+                }
             }
         }
     }
