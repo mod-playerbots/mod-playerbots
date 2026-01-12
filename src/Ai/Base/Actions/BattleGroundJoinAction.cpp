@@ -6,6 +6,7 @@
 #include "BattleGroundJoinAction.h"
 
 #include <unordered_map>
+#include <algorithm>
 
 #include "ArenaTeam.h"
 #include "ArenaTeamMgr.h"
@@ -17,6 +18,99 @@
 #include "PositionValue.h"
 #include "UpdateTime.h"
 #include "PlayerbotFactory.h"
+
+namespace
+{
+    // For Random Battleground queue (RB), the template BG is typically 10v10 and does not reflect the
+    // actual battleground that will be selected (10/15/40). For queue filling we want a safe upper bound
+    // that matches the largest possible battleground size for the current level bracket, while keeping
+    // "bots only queue with real players" behavior unchanged (that logic is controlled elsewhere).
+    static uint32 GetRandomBgMaxPlayersPerTeam(Player* bot, BattlegroundBracketId bracketId)
+    {
+        // Cache per bracket to avoid scanning every tick.
+        static uint32 sCachedSize[MAX_BATTLEGROUND_BRACKETS] = {};
+        static bool sCachedValid[MAX_BATTLEGROUND_BRACKETS] = {};
+
+        uint32 br = uint32(bracketId);
+        if (br < MAX_BATTLEGROUND_BRACKETS && sCachedValid[br] && sCachedSize[br])
+            return sCachedSize[br];
+
+        uint32 level = bot ? bot->GetLevel() : 0;
+        uint32 maxTeamSize = 0;
+
+        // Scan battleground queue types (non-arena, non-RB) and pick the largest team size that is valid
+        // for this bracket and accessible for the bot's level.
+        for (int qt = BATTLEGROUND_QUEUE_AV; qt < MAX_BATTLEGROUND_QUEUE_TYPES; ++qt)
+        {
+            BattlegroundQueueTypeId qid = BattlegroundQueueTypeId(qt);
+
+            // Ignore random battleground and all-arenas pseudo queues.
+            if (qid == BATTLEGROUND_QUEUE_RB)
+                continue;
+
+            // Ignore arenas.
+            if (BattlegroundMgr::BGArenaType(qid) != ARENA_TYPE_NONE)
+                continue;
+
+            BattlegroundTypeId tid = BattlegroundMgr::BGTemplateId(qid);
+            if (tid == BATTLEGROUND_RB)
+                continue;
+
+            if (bot && !bot->GetBGAccessByLevel(tid))
+                continue;
+
+            Battleground* tmpl = sBattlegroundMgr->GetBattlegroundTemplate(tid);
+            if (!tmpl)
+                continue;
+
+            PvPDifficultyEntry const* pvpDiff = GetBattlegroundBracketByLevel(tmpl->GetMapId(), level);
+            if (!pvpDiff || pvpDiff->GetBracketId() != bracketId)
+                continue;
+
+            maxTeamSize = std::max<uint32>(maxTeamSize, tmpl->GetMaxPlayersPerTeam());
+        }
+
+        // Fallback: use RB template size (usually 10) if nothing matched.
+        if (!maxTeamSize)
+        {
+            Battleground* rbTmpl = sBattlegroundMgr->GetBattlegroundTemplate(BATTLEGROUND_RB);
+            maxTeamSize = rbTmpl ? rbTmpl->GetMaxPlayersPerTeam() : 10;
+        }
+
+        // Safety clamp (WotLK max is 40).
+        if (maxTeamSize > 40)
+            maxTeamSize = 40;
+        if (!maxTeamSize)
+            maxTeamSize = 10;
+
+        if (br < MAX_BATTLEGROUND_BRACKETS)
+        {
+            sCachedSize[br] = maxTeamSize;
+            sCachedValid[br] = true;
+        }
+
+        return maxTeamSize;
+    }
+
+    static uint32 GetEffectiveMaxPlayersPerTeam(Player* bot, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracketId, Battleground* bgTemplate)
+    {
+        if (!bgTemplate)
+            return 0;
+
+        uint32 teamSize = bgTemplate->GetMaxPlayersPerTeam();
+
+        // Random BG template size is not representative; use bracket-aware upper bound.
+        if (bgTypeId == BATTLEGROUND_RB)
+            teamSize = GetRandomBgMaxPlayersPerTeam(bot, bracketId);
+
+        if (teamSize > 40)
+            teamSize = 40;
+        if (!teamSize)
+            teamSize = 10;
+
+        return teamSize;
+    }
+} // namespace
 
 bool BGJoinAction::Execute(Event event)
 {
@@ -238,8 +332,8 @@ bool BGJoinAction::shouldJoinBg(BattlegroundQueueTypeId queueTypeId, Battlegroun
         return false;
 
     TeamId teamId = bot->GetTeamId();
-    uint32 BracketSize = bg->GetMaxPlayersPerTeam() * 2;
-    uint32 TeamSize = bg->GetMaxPlayersPerTeam();
+    uint32 TeamSize = GetEffectiveMaxPlayersPerTeam(bot, bgTypeId, bracketId, bg);
+    uint32 BracketSize = TeamSize * 2;
 
     // If the bot is in a group, only the leader can queue
     if (bot->GetGroup() && !bot->GetGroup()->IsLeader(bot->GetGUID()))
@@ -411,9 +505,8 @@ bool BGJoinAction::JoinQueue(uint32 type)
         return false;
 
     bracketId = pvpDiff->GetBracketId();
-
-    uint32 BracketSize = bg->GetMaxPlayersPerTeam() * 2;
-    uint32 TeamSize = bg->GetMaxPlayersPerTeam();
+    uint32 TeamSize = GetEffectiveMaxPlayersPerTeam(bot, bgTypeId, bracketId, bg);
+    uint32 BracketSize = TeamSize * 2;
     TeamId teamId = bot->GetTeamId();
 
     // check if already in queue
@@ -575,9 +668,8 @@ bool FreeBGJoinAction::shouldJoinBg(BattlegroundQueueTypeId queueTypeId, Battleg
         return false;
 
     TeamId teamId = bot->GetTeamId();
-
-    uint32 BracketSize = bg->GetMaxPlayersPerTeam() * 2;
-    uint32 TeamSize = bg->GetMaxPlayersPerTeam();
+    uint32 TeamSize = GetEffectiveMaxPlayersPerTeam(bot, bgTypeId, bracketId, bg);
+    uint32 BracketSize = TeamSize * 2;
 
     // If the bot is in a group, only the leader can queue
     if (bot->GetGroup() && !bot->GetGroup()->IsLeader(bot->GetGUID()))
@@ -963,7 +1055,19 @@ bool BGStatusAction::Execute(Event event)
         if (isArena)
             timer = TIME_TO_AUTOREMOVE;
         else
-            timer = TIME_TO_AUTOREMOVE + 1000 * (bg->GetMaxPlayersPerTeam() * 8);
+        {
+            uint32 teamSize = bg->GetMaxPlayersPerTeam();
+
+            // For Random Battleground queue, use bracket-aware upper bound so bots don't leave too early
+            // when a 15v15 or 40v40 battleground is selected.
+            if (_bgTypeId == BATTLEGROUND_RB)
+            {
+                if (PvPDifficultyEntry const* pvpDiff = GetBattlegroundBracketByLevel(bg->GetMapId(), bot->GetLevel()))
+                    teamSize = GetEffectiveMaxPlayersPerTeam(bot, _bgTypeId, pvpDiff->GetBracketId(), bg);
+            }
+
+            timer = TIME_TO_AUTOREMOVE + 1000 * (teamSize * 8);
+        }
 
         if (Time2 > timer && isArena)  // disabled for BG
             leaveQ = true;
