@@ -279,7 +279,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
             PlayerbotFactory factory(bot, savedLevel, qualityLimit, gs, true);
 
             // Force gear generation; do not touch talents/level/spells/etc.
-            factory.InitEquipment(false);
+            factory.InitEquipment(false, true);
 
             // Apply enchants/gems only.
             if (savedLevel >= sPlayerbotAIConfig->minEnchantingBotLevel)

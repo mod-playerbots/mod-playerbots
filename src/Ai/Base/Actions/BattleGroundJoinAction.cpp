@@ -5,6 +5,8 @@
 
 #include "BattleGroundJoinAction.h"
 
+#include <unordered_map>
+
 #include "ArenaTeam.h"
 #include "ArenaTeamMgr.h"
 #include "BattlegroundMgr.h"
@@ -1096,88 +1098,134 @@ bool BGStatusCheckAction::isUseful() { return bot->InBattlegroundQueue(); }
 
 bool BGStrategyCheckAction::Execute(Event event)
 {
-    bool inside_bg = bot->InBattleground() && bot->GetBattleground();
-    ;
-    if (!inside_bg && botAI->HasStrategy("battleground", BOT_STATE_NON_COMBAT))
-    {
-        botAI->ResetStrategies();
-        return true;
-    }
-    if (inside_bg && !botAI->HasStrategy("battleground", BOT_STATE_NON_COMBAT))
-    {
-        botAI->ResetStrategies();
+    static std::unordered_map<uint32, uint32> s_lastSeenInstanceIdByBot;
+    static std::unordered_map<uint32, uint32> s_lastSwapInstanceIdByBot;
 
-        // Random bots: generate PvP gear + enchants after fully entering BG/arena.
-        // - Wild random bots use RandomGear* limits (AiPlayerbot.RandomGearQualityLimit/RandomGearScoreLimit).
-        // - Random bots with a real player master use AutoGear* limits (AiPlayerbot.AutoGearQualityLimit/AutoGearScoreLimit).
-        // Alt bots are not affected by this logic.
-        if (sRandomPlayerbotMgr->IsRandomBot(bot))
+    uint32 botLow = bot->GetGUID().GetCounter();
+
+    // Note: InBattleground() can be true for a short moment while GetBattleground() is still null during transfer.
+    // Never treat a temporary null Battleground* as "left the battleground", or bots may lose their BG tactics and idle.
+    bool inBg = bot->InBattleground();
+
+    Battleground* bg = bot->GetBattleground();
+    bool inside_bg = inBg && bg;
+
+    // If we left BG/arena, restore normal strategies exactly once.
+    if (!inBg)
+    {
+        auto itSeen = s_lastSeenInstanceIdByBot.find(botLow);
+        auto itSwap = s_lastSwapInstanceIdByBot.find(botLow);
+        if (itSeen != s_lastSeenInstanceIdByBot.end() || itSwap != s_lastSwapInstanceIdByBot.end())
         {
-            bool hasRealMaster = botAI->HasRealPlayerMaster();
-
-            uint32 qualityLimit = hasRealMaster ? sPlayerbotAIConfig->autoGearQualityLimit
-                                                : sPlayerbotAIConfig->randomGearQualityLimit;
-
-            uint32 scoreLimit = hasRealMaster ? sPlayerbotAIConfig->autoGearScoreLimit
-                                              : sPlayerbotAIConfig->randomGearScoreLimit;
-
-            uint32 gs = scoreLimit == 0 ? 0 : PlayerbotFactory::CalcMixedGearScore(scoreLimit, qualityLimit);
-
-            // Additional arena rating-based gear cap (level 80 only).
-            // 1000 rating => ilvl 200, 2400 rating => ilvl 300 (hard cap).
-            // This is an extra restriction on top of the configured gear limit.
-            if (bot->GetLevel() == 80 && bot->InArena())
-            {
-                uint32 rating = 0;
-
-                if (Battleground* bg = bot->GetBattleground())
-                {
-                    if (bg->isArena())
-                    {
-                        uint8 arenaType = bg->GetArenaType(); // 2,3,5
-                        uint8 slot = ArenaTeam::GetSlotByType(arenaType);
-                        uint32 teamId = bot->GetArenaTeamId(slot);
-                        if (teamId)
-                        {
-                            if (ArenaTeam* team = sArenaTeamMgr->GetArenaTeamById(teamId))
-                                rating = team->GetRating();
-                        }
-                    }
-                }
-
-                // Treat unrated/skirmish/unknown as low rating.
-                if (rating == 0)
-                    rating = 1000;
-
-                float ilvlCapF = 200.0f;
-                if (rating >= 2400)
-                    ilvlCapF = 300.0f;
-                else if (rating > 1000)
-                    ilvlCapF = 200.0f + float(rating - 1000) * (100.0f / 1400.0f);
-
-                uint32 ilvlCap = uint32(ilvlCapF + 0.5f);
-
-                // Convert item-level cap to the same "mixed gear score" scale used by PlayerbotFactory.
-                uint32 ratingGsCap = PlayerbotFactory::CalcMixedGearScore(ilvlCap, ITEM_QUALITY_EPIC);
-                if (ratingGsCap == 0)
-                    ratingGsCap = 1;
-
-                if (gs == 0 || ratingGsCap < gs)
-                    gs = ratingGsCap;
-            }
-
-            uint8 savedLevel = bot->GetLevel();
-            PlayerbotFactory factory(bot, savedLevel, qualityLimit, gs, true);
-
-            // Force gear generation; do not touch talents/level/spells/etc.
-            factory.InitEquipment(false, bot->InArena());
-
-            // Apply enchants/gems only.
-            if (savedLevel >= sPlayerbotAIConfig->minEnchantingBotLevel)
-                factory.ApplyEnchantAndGemsNew();
+            s_lastSeenInstanceIdByBot.erase(botLow);
+            s_lastSwapInstanceIdByBot.erase(botLow);
+            botAI->ResetStrategies();
+            return true;
         }
 
         return false;
     }
+
+    // Still entering/loading: wait until Battleground* becomes available.
+    if (!inside_bg)
+        return false;
+
+    uint32 instanceId = bg->GetInstanceID();
+    if (!instanceId)
+        return false;
+
+    // Apply BG/arena tactics once per BG/arena instance.
+    auto itSeen = s_lastSeenInstanceIdByBot.find(botLow);
+    if (itSeen == s_lastSeenInstanceIdByBot.end() || itSeen->second != instanceId)
+    {
+        s_lastSeenInstanceIdByBot[botLow] = instanceId;
+        s_lastSwapInstanceIdByBot.erase(botLow);  // allow swap in this new instance
+        botAI->ResetStrategies();
+        // Do not return: we may swap gear in the same tick once the bot is fully on the BG map.
+    }
+
+    // Wild random bots only.
+    if (!sRandomPlayerbotMgr || !sRandomPlayerbotMgr->IsRandomBot(bot))
+        return false;
+
+    // Wait until the bot is actually on the BG/arena map (avoid swapping during transfer).
+    if (!bot->IsInWorld() || bot->IsBeingTeleported() || bot->IsDuringRemoveFromWorld() || bot->GetMapId() != bg->GetMapId())
+        return false;
+
+    auto itSwap = s_lastSwapInstanceIdByBot.find(botLow);
+    if (itSwap != s_lastSwapInstanceIdByBot.end() && itSwap->second == instanceId)
+        return false;
+
+    // Random bots: generate PvP gear + enchants after fully entering BG/arena.
+    // - Wild random bots use RandomGear* limits (AiPlayerbot.RandomGearQualityLimit/RandomGearScoreLimit).
+    // - Random bots with a real player master use AutoGear* limits (AiPlayerbot.AutoGearQualityLimit/AutoGearScoreLimit).
+    // Alt bots are not affected by this logic.
+    bool hasRealMaster = botAI->HasRealPlayerMaster();
+
+    uint32 qualityLimit = hasRealMaster ? sPlayerbotAIConfig->autoGearQualityLimit
+                                        : sPlayerbotAIConfig->randomGearQualityLimit;
+
+    uint32 scoreLimit = hasRealMaster ? sPlayerbotAIConfig->autoGearScoreLimit
+                                      : sPlayerbotAIConfig->randomGearScoreLimit;
+
+    uint32 gs = scoreLimit == 0 ? 0 : PlayerbotFactory::CalcMixedGearScore(scoreLimit, qualityLimit);
+
+    bool isArena = bg->isArena();
+    bool isRatedArena = isArena && bg->isRated();
+
+    // Additional arena rating-based gear cap (level 80 only).
+    // 1000 rating => ilvl 200, 2400 rating => ilvl 300 (hard cap).
+    // This is an extra restriction on top of the configured gear limit.
+    if (bot->GetLevel() == 80 && isArena)
+    {
+        uint32 rating = 0;
+
+        // Only rated arenas have meaningful team rating. Skirmish stays at rating=0 and will fall back to 1000.
+        if (isRatedArena)
+        {
+            uint8 arenaType = bg->GetArenaType();  // 2,3,5
+            uint8 slot = ArenaTeam::GetSlotByType(arenaType);
+            uint32 teamId = bot->GetArenaTeamId(slot);
+            if (teamId)
+            {
+                if (ArenaTeam* team = sArenaTeamMgr->GetArenaTeamById(teamId))
+                    rating = team->GetRating();
+            }
+        }
+
+        // Treat unrated/skirmish/unknown as low rating.
+        if (rating == 0)
+            rating = 1000;
+
+        float ilvlCapF = 200.0f;
+        if (rating >= 2400)
+            ilvlCapF = 300.0f;
+        else if (rating > 1000)
+            ilvlCapF = 200.0f + float(rating - 1000) * (100.0f / 1400.0f);
+
+        uint32 ilvlCap = uint32(ilvlCapF + 0.5f);
+
+        // Convert item-level cap to the same "mixed gear score" scale used by PlayerbotFactory.
+        uint32 ratingGsCap = PlayerbotFactory::CalcMixedGearScore(ilvlCap, ITEM_QUALITY_EPIC);
+        if (ratingGsCap == 0)
+            ratingGsCap = 1;
+
+        if (gs == 0 || ratingGsCap < gs)
+            gs = ratingGsCap;
+    }
+
+    uint8 savedLevel = bot->GetLevel();
+    PlayerbotFactory factory(bot, savedLevel, qualityLimit, gs, true);
+
+    // Force gear generation; do not touch talents/level/spells/etc.
+    factory.InitEquipment(false, true);
+
+    // Apply enchants/gems only.
+    if (savedLevel >= sPlayerbotAIConfig->minEnchantingBotLevel)
+        factory.ApplyEnchantAndGemsNew();
+
+    // Remember that this bot already swapped gear for this BG/arena instance.
+    s_lastSwapInstanceIdByBot[botLow] = instanceId;
+
     return false;
 }
