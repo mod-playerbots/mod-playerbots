@@ -2550,6 +2550,9 @@ void PlayerbotFactory::InitAvailableSpells()
 
         for (auto& spell : trainer->GetSpells())
         {
+            if (bot->HasSpell(spell.SpellId))
+                continue;
+
             if (!trainer->CanTeachSpell(bot, trainer->GetSpell(spell.SpellId)))
                 continue;
 

@@ -269,7 +269,7 @@ bool NewRpgBaseAction::CanInteractWithQuestGiver(Object* questGiver)
             if (!guid)
                 return false;
 
-            if (!bot->IsInWorld())
+            if (!bot->IsInWorld() || bot->IsDuringRemoveFromWorld())
                 return false;
 
             if (bot->IsInFlight())
