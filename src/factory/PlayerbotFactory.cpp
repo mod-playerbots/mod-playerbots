@@ -2537,13 +2537,13 @@ void PlayerbotFactory::InitAvailableSpells()
                 trainer->GetTrainerType() != Trainer::Type::Class)
                 continue;
 
-            if (trainer->GetTrainerType() == Trainer::Type::Class &&
-                !trainer->IsTrainerValidForPlayer(bot))
+            if (trainer->GetTrainerType() == Trainer::Type::Class && !trainer->IsTrainerValidForPlayer(bot))
                 continue;
 
             trainerIdCache[bot->getClass()].push_back(i->first);
         }
     }
+
     for (uint32 trainerId : trainerIdCache[bot->getClass()])
     {
         Trainer::Trainer* trainer = sObjectMgr->GetTrainer(trainerId);
@@ -2556,10 +2556,27 @@ void PlayerbotFactory::InitAvailableSpells()
             if (!trainer->CanTeachSpell(bot, trainer->GetSpell(spell.SpellId)))
                 continue;
 
-            if (spell.IsCastable())
-                bot->CastSpell(bot, spell.SpellId, true);
-            else
-                bot->learnSpell(spell.SpellId, false);
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell.SpellId);
+            if (!spellInfo)
+                continue;
+
+            uint32 learnSpellId = 0;
+            for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+            {
+                if (spellInfo->Effects[i].Effect == SPELL_EFFECT_LEARN_SPELL && spellInfo->Effects[i].TriggerSpell)
+                    {
+                        learnSpellId = spellInfo->Effects[i].TriggerSpell;
+                        break;
+                    }
+            }
+
+            if (!learnSpellId)
+                learnSpellId = spell.SpellId;
+
+            if (bot->HasSpell(learnSpellId))
+                continue;
+
+            bot->learnSpell(learnSpellId);
         }
     }
 }
