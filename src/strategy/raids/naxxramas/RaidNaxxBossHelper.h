@@ -62,7 +62,7 @@ public:
         {
             return false;
         }
-        _timer = _event_map->GetTimer();
+        _timer = getMSTime();
         return true;
     }
     virtual void Reset()
