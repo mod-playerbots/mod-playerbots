@@ -51,7 +51,8 @@ public:
 		if (totalQuantity < maxStackSize)
 			return {
 				.action = ItemActionEnum::NONE,
-				.inventorySlot = 0,
+				.bagSlot = 0,
+				.containerSlot = 0,
 				.equipmentSlot = 0
 			};
 

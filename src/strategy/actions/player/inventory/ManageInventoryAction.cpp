@@ -21,6 +21,8 @@
 #include "Event.h"
 #include "RandomPlayerbotMgr.h"
 #include "ItemActionStruct.h"
+#include "PlayerInventoryFacadeResultEnum.h"
+#include "PlayerInventoryFacade.h"
 
 using InspectorFactory = std::function<ItemActionStruct(const uint32_t botGUID, const uint64_t itemGUID)>;
 using SubclassMap = std::unordered_map<uint32_t, InspectorFactory>;
@@ -34,6 +36,8 @@ static const ClassMap inspectorFactories = {
 				ManageInventoryAction::ANY_SUBCLASS,
 				[](const uint32_t botGUID, const uint64_t itemGUID)
 				{
+					LOG_ERROR("playerbots", "executing ARMOR inspector");
+
 					return ArmorItemInspector(botGUID, itemGUID).determineItemAction();
 				}
 			}
@@ -47,6 +51,8 @@ static const ClassMap inspectorFactories = {
 					ITEM_SUBCLASS_CONSUMABLE,
 					[](const uint32_t botGUID, const uint64_t itemGUID)
 					{
+						LOG_ERROR("playerbots", "executing CONSUMABLE inspector");
+
 						return ConsumableConsumableInspector(botGUID, itemGUID).determineItemAction();
 					}
 				},
@@ -54,6 +60,8 @@ static const ClassMap inspectorFactories = {
 					ITEM_SUBCLASS_ELIXIR,
 					[](const uint32_t botGUID, const uint64_t itemGUID)
 					{
+						LOG_ERROR("playerbots", "executing ELIXIR inspector");
+
 						return ConsumableElixirInspector(botGUID, itemGUID).determineItemAction();
 					}
 				},
@@ -61,6 +69,8 @@ static const ClassMap inspectorFactories = {
 					ITEM_SUBCLASS_POTION,
 					[](const uint32_t botGUID, const uint64_t itemGUID)
 					{
+						LOG_ERROR("playerbots", "executing POTION inspector");
+
 						return ConsumablePotionInspector(botGUID, itemGUID).determineItemAction();
 					}
 				}
@@ -74,6 +84,8 @@ static const ClassMap inspectorFactories = {
 				ManageInventoryAction::ANY_SUBCLASS,
 				[](const uint32_t botGUID, const uint64_t itemGUID)
 				{
+					LOG_ERROR("playerbots", "executing CONTAINER inspector");
+
 					return ContainerInspector(botGUID, itemGUID).determineItemAction();
 				}
 			}
@@ -86,6 +98,8 @@ static const ClassMap inspectorFactories = {
 				ManageInventoryAction::ANY_SUBCLASS,
 				[](const uint32_t botGUID, const uint64_t itemGUID)
 				{
+					LOG_ERROR("playerbots", "executing GEM inspector");
+
 					return GemInspector(botGUID, itemGUID).determineItemAction();
 				}
 			}
@@ -98,6 +112,8 @@ static const ClassMap inspectorFactories = {
 				ManageInventoryAction::ANY_SUBCLASS,
 				[](const uint32_t botGUID, const uint64_t itemGUID)
 				{
+					LOG_ERROR("playerbots", "executing GENERIC inspector");
+
 					return GenericItemInspector(botGUID, itemGUID).determineItemAction();
 				}
 			}
@@ -110,6 +126,8 @@ static const ClassMap inspectorFactories = {
 				ManageInventoryAction::ANY_SUBCLASS,
 				[](const uint32_t botGUID, const uint64_t itemGUID)
 				{
+					LOG_ERROR("playerbots", "executing GLYPH inspector");
+
 					return GlyphInspector(botGUID, itemGUID).determineItemAction();
 				}
 			}
@@ -122,6 +140,8 @@ static const ClassMap inspectorFactories = {
 				ManageInventoryAction::ANY_SUBCLASS,
 				[](const uint32_t botGUID, const uint64_t itemGUID)
 				{
+					LOG_ERROR("playerbots", "executing KEY inspector");
+
 					return KeyInspector(botGUID, itemGUID).determineItemAction();
 				}
 			}
@@ -134,6 +154,8 @@ static const ClassMap inspectorFactories = {
 				ManageInventoryAction::ANY_SUBCLASS,
 				[](const uint32_t botGUID, const uint64_t itemGUID)
 				{
+					LOG_ERROR("playerbots", "executing MISC inspector");
+
 					return MiscellaneousItemInspector(botGUID, itemGUID).determineItemAction();
 				}
 			}
@@ -146,6 +168,8 @@ static const ClassMap inspectorFactories = {
 				ManageInventoryAction::ANY_SUBCLASS,
 				[](const uint32_t botGUID, const uint64_t itemGUID)
 				{
+					LOG_ERROR("playerbots", "executing MONEY inspector");
+
 					return MoneyInspector(botGUID, itemGUID).determineItemAction();
 				}
 			}
@@ -158,6 +182,8 @@ static const ClassMap inspectorFactories = {
 				ManageInventoryAction::ANY_SUBCLASS,
 				[](const uint32_t botGUID, const uint64_t itemGUID)
 				{
+					LOG_ERROR("playerbots", "executing PERMANENT inspector");
+
 					return PermanentItemInspector(botGUID, itemGUID).determineItemAction();
 				}
 			}
@@ -170,6 +196,8 @@ static const ClassMap inspectorFactories = {
 				ManageInventoryAction::ANY_SUBCLASS,
 				[](const uint32_t botGUID, const uint64_t itemGUID)
 				{
+					LOG_ERROR("playerbots", "executing PROJECTILE inspector");
+
 					return ProjectItemInspector(botGUID, itemGUID).determineItemAction();
 				}
 			}
@@ -182,6 +210,8 @@ static const ClassMap inspectorFactories = {
 				ManageInventoryAction::ANY_SUBCLASS,
 				[](const uint32_t botGUID, const uint64_t itemGUID)
 				{
+					LOG_ERROR("playerbots", "executing QUEST inspector");
+
 					return QuestItemInspector(botGUID, itemGUID).determineItemAction();
 				}
 			}
@@ -194,6 +224,8 @@ static const ClassMap inspectorFactories = {
 				ManageInventoryAction::ANY_SUBCLASS,
 				[](const uint32_t botGUID, const uint64_t itemGUID)
 				{
+					LOG_ERROR("playerbots", "executing QUIVER inspector");
+
 					return QuiverItemInspector(botGUID, itemGUID).determineItemAction();
 				}
 			}
@@ -206,6 +238,8 @@ static const ClassMap inspectorFactories = {
 				ManageInventoryAction::ANY_SUBCLASS,
 				[](const uint32_t botGUID, const uint64_t itemGUID)
 				{
+					LOG_ERROR("playerbots", "executing REAGENT inspector");
+
 					return ReagentItemInspector(botGUID, itemGUID).determineItemAction();
 				}
 			}
@@ -218,6 +252,8 @@ static const ClassMap inspectorFactories = {
 				ManageInventoryAction::ANY_SUBCLASS,
 				[](const uint32_t botGUID, const uint64_t itemGUID)
 				{
+					LOG_ERROR("playerbots", "executing RECIPE inspector");
+
 					return RecipeItemInspector(botGUID, itemGUID).determineItemAction();
 				}
 			}
@@ -230,6 +266,8 @@ static const ClassMap inspectorFactories = {
 				ManageInventoryAction::ANY_SUBCLASS,
 				[](const uint32_t botGUID, const uint64_t itemGUID)
 				{
+					LOG_ERROR("playerbots", "executing TRADE GOODS inspector");
+
 					return TradeGoodItemInspector(botGUID, itemGUID).determineItemAction();
 				}
 			}
@@ -242,6 +280,8 @@ static const ClassMap inspectorFactories = {
 				ManageInventoryAction::ANY_SUBCLASS,
 				[](const uint32_t botGUID, const uint64_t itemGUID)
 				{
+					LOG_ERROR("playerbots", "executing WEAPON inspector");
+
 					return WeaponItemInspector(botGUID, itemGUID).determineItemAction();
 				}
 			}
@@ -253,7 +293,7 @@ bool ManageInventoryAction::Execute(Event event)
 {
 	LOG_ERROR("playerbots", "starting inventory management action");
 
-	std::unordered_map<std::string, ItemActionStruct> itemActions = {};
+	this->itemActions.clear();
 
 	if (this->bot == nullptr)
 	{
@@ -272,6 +312,78 @@ bool ManageInventoryAction::Execute(Event event)
 	this->iterateBags();
 
 	LOG_ERROR("playerbots", "done processing bags for {}", botName);
+
+	PlayerInventoryFacade playerInventoryFacade(this->bot->GetGUID().GetRawValue());
+
+	bool shouldEquipUpgrade = false;
+
+	for (const auto& [itemGUID, action] : this->itemActions)
+	{
+		std::string actionName = "UNKNOWN_ACTION";
+
+		switch (action.action)
+		{
+			case ItemActionEnum::NONE:
+				actionName = "ITEM_ACTION_NONE";
+				break;
+			case ItemActionEnum::EQUIP:
+				actionName = "ITEM_ACTION_EQUIP";
+				break;
+			case ItemActionEnum::SELL:
+				actionName = "ITEM_ACTION_SELL";
+				break;
+			case ItemActionEnum::DESTROY:
+				actionName = "ITEM_ACTION_DESTROY";
+				break;
+		}
+
+		LOG_ERROR("playerbots", "Item {} action: {}, bagSlot: {}, containerSlot: {}, equipmentSlot: {}", std::to_string(itemGUID), actionName, std::to_string(action.bagSlot), std::to_string(action.containerSlot), std::to_string(action.equipmentSlot));
+
+		switch (action.action)
+		{
+			case ItemActionEnum::EQUIP:
+			{
+				// LOG_ERROR("playerbots", "equipping item through facade");
+
+				// const PlayerInventoryFacadeResultEnum result = playerInventoryFacade.equipItem(itemGUID, action.equipmentSlot);
+
+				// LOG_ERROR("playerbots", "Equipped item {}, result: {}", std::to_string(itemGUID), result);
+
+				shouldEquipUpgrade = true;
+
+				break;
+			}
+			case ItemActionEnum::SELL:
+			{
+				LOG_ERROR("playerbots", "selling item through facade");
+				const PlayerInventoryFacadeResultEnum result = playerInventoryFacade.sellItem(itemGUID);
+
+				LOG_ERROR("playerbots", "Sold item {}, result: {}", std::to_string(itemGUID), result);
+
+				break;
+			}
+			case ItemActionEnum::DESTROY:
+			{
+				LOG_ERROR("playerbots", "destroying item through facade");
+				const PlayerInventoryFacadeResultEnum result = playerInventoryFacade.destroyItem(itemGUID);
+
+				LOG_ERROR("playerbots", "Destroyed item {}, result: {}", std::to_string(itemGUID), result);
+
+				break;
+			}
+		}
+	}
+
+	if (shouldEquipUpgrade && this->botAI != nullptr)
+	{
+		LOG_ERROR("playerbots", "Equipping upgrades");
+
+		this->botAI->DoSpecificAction("equip upgrades");
+
+		LOG_ERROR("playerbots", "Done equipping upgrades");
+	}
+
+	LOG_ERROR("playerbots", "Done processing inventory");
 
 	if (this->botAI != nullptr)
 	{
@@ -298,43 +410,17 @@ bool ManageInventoryAction::Execute(Event event)
 		}
 	}
 
-	for (const auto& [itemGUID, action] : this->itemActions)
-	{
-
-		std::string actionName = "UNKNOWN_ACTION";
-
-		switch (action.action)
-		{
-			case ItemActionEnum::NONE:
-				actionName = "ITEM_ACTION_NONE";
-				break;
-			case ItemActionEnum::EQUIP:
-				actionName = "ITEM_ACTION_EQUIP";
-				break;
-			case ItemActionEnum::SELL:
-				actionName = "ITEM_ACTION_SELL";
-				break;
-			case ItemActionEnum::DESTROY:
-				actionName = "ITEM_ACTION_DESTROY";
-				break;
-		}
-
-		LOG_ERROR("playerbots", "Item {} action: {}, inventorySlot: {}, equipmentSlot: {}", std::to_string(itemGUID), actionName, std::to_string(action.inventorySlot), std::to_string(action.equipmentSlot));
-	}
-
-	LOG_ERROR("playerbots", "Done processing inventory");
-
 	return true;
 	// if (this->bot != nullptr)
 	// {
-	// 	bot->SaveToDB(false, false);
+	// 	this->bot->SaveToDB(false, false);
 
 	// 	return true;
 	// }
 
 	// LOG_ERROR("playerbots", "ManageInventoryAction::Execute can't save, bot is nullptr");
 
-	// return false;
+	// return true;
 }
 
 void ManageInventoryAction::iterateBags()
@@ -379,14 +465,14 @@ void ManageInventoryAction::iterateBags()
 			return;
 		}
 
-		const Item* const possibleBag = playerInspector.getItemByPosition(INVENTORY_SLOT_BAG_0, slot);
+		// const Item* const possibleBag = playerInspector.getItemByPosition(INVENTORY_SLOT_BAG_0, slot);
 
-		if (possibleBag == nullptr)
-			continue;
+		// if (possibleBag == nullptr)
+		// 	continue;
 
-		const uint64_t bagLowGUID = possibleBag->GetGUID().GetRawValue();
+		// const uint64_t bagLowGUID = possibleBag->GetGUID().GetRawValue();
 
-		this->iterateBag(bagLowGUID);
+		this->iterateBag(slot);
     }
 
 	if (this->bot == nullptr)
@@ -399,10 +485,11 @@ void ManageInventoryAction::iterateBags()
 	LOG_ERROR("playerbots", "done processing bags for {}", this->bot->GetName());
 }
 
-void ManageInventoryAction::iterateBag(const uint64_t bagGUID)
+void ManageInventoryAction::iterateBag(const uint32_t bagSlot)
 {
 	const GlobalPlayerInspector playerInspector(this->bot->GetGUID().GetRawValue());
-	const Item* const possibleBag = playerInspector.getItemByGUID(bagGUID);
+	// const Item* const possibleBag = playerInspector.getItemByGUID(bagGUID);
+	const Item* const possibleBag = playerInspector.getItemByPosition(INVENTORY_SLOT_BAG_0, bagSlot);
 
 	if (possibleBag == nullptr)
 		return;
@@ -429,7 +516,8 @@ void ManageInventoryAction::iterateBag(const uint64_t bagGUID)
 			return;
 		}
 
-		Item* item = bag->GetItemByPos(slot);
+		// Item* item = bag->GetItemByPos(slot);
+		Item* item = playerInspector.getItemByPosition(bagSlot, slot);
 
 		if (item == nullptr)
 		{
@@ -531,6 +619,7 @@ void ManageInventoryAction::processItem(const uint64_t itemGUID)
 	const InspectorFactory& factoryFunction = subclassIterator->second;
 
 	ItemActionStruct action = factoryFunction(botGUID, itemGUID);
+	this->itemActions.insert({itemGUID, action});
 
 	LOG_ERROR("playerbots", "Done visiting item {}", std::to_string(itemTemplateLowGUID));
 }
@@ -538,6 +627,8 @@ void ManageInventoryAction::processItem(const uint64_t itemGUID)
 template <typename InspectorT>
 void ManageInventoryAction::determineItemAction(const uint32_t botLowGUID, const uint64_t itemLowGUID)
 {
+	LOG_ERROR("playerbots", "Determining action for item {}", std::to_string(itemLowGUID));
+
 	InspectorT inspector(botLowGUID, itemLowGUID);
 	const ItemActionStruct action = inspector.determineItemAction();
 	this->itemActions.insert({itemLowGUID, action});

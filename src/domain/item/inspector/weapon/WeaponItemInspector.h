@@ -59,12 +59,8 @@ public:
 			return this->getDefaultItemAction();
 
 		std::vector<EquipmentSlots> slots = InventoryService::GetInstance().getItemEquipmentSlots(itemTemplate);
-		const ItemTemplate* const refreshedItemTemplate = this->getCurrentItemTemplate();
 
-		if (refreshedItemTemplate == nullptr)
-			return this->getDefaultItemAction();
-
-		const float newItemStatisticsWeight = statisticsWeightCalculator.CalculateItem(refreshedItemTemplate->ItemId);
+		const float newItemStatisticsWeight = statisticsWeightCalculator.CalculateItem(itemTemplate->ItemId);
 
 		statisticsWeightCalculator.Reset();
 
@@ -76,12 +72,13 @@ public:
 			if (player == nullptr)
 				return this->getDefaultItemAction();
 
-			const Item* const currentlyEquippedItem = player->GetItemByPos(equipmentSlot);
+			const Item* const currentlyEquippedItem = player->GetItemByPos(this->getBagSlot(), equipmentSlot);
 
 			if (currentlyEquippedItem == nullptr)
 				return {
 					.action = ItemActionEnum::EQUIP,
-					.inventorySlot = this->getItemInventorySlot(),
+					.bagSlot = this->getBagSlot(),
+					.containerSlot = this->getItemSlot(),
 					.equipmentSlot = equipmentSlot
 				};
 
@@ -96,7 +93,8 @@ public:
 			{
 				return {
 					.action = ItemActionEnum::EQUIP,
-					.inventorySlot = this->getItemInventorySlot(),
+					.bagSlot = this->getBagSlot(),
+					.containerSlot = this->getItemSlot(),
 					.equipmentSlot = equipmentSlot
 				};
 			}

@@ -22,7 +22,7 @@ public:
 		return this->getDefaultItemAction();
 	};
 
-	uint8_t getItemInventorySlot() const
+	uint8_t getBagSlot() const
 	{
 		const Item* const item = this->getCurrentItem();
 
@@ -62,6 +62,16 @@ public:
 		return itemTemplate->Class;
 	}
 
+	uint8_t getCurrentItemInventoryType() const
+	{
+		const ItemTemplate* const itemTemplate = this->getCurrentItemTemplate();
+
+		if (itemTemplate == nullptr)
+			return 0;
+
+		return itemTemplate->InventoryType;
+	}
+
 	uint32_t getCurrentItemSubclass() const
 	{
 		const ItemTemplate* const itemTemplate = this->getCurrentItemTemplate();
@@ -92,14 +102,29 @@ public:
 		return item->GetState();
 	}
 
-	bool itemIsSellable() const
+	uint32_t getItemSellPrice() const
 	{
 		const ItemTemplate* const itemTemplate = this->getCurrentItemTemplate();
 
 		if (itemTemplate == nullptr)
-			return false;
+			return 0;
 
-		return itemTemplate->SellPrice != 0;
+		return itemTemplate->SellPrice;
+	}
+
+	uint32_t getItemCurrentCount() const
+	{
+		const Item* const item = this->getCurrentItem();
+
+		if (item == nullptr)
+			return 0;
+
+		return item->GetCount();
+	}
+
+	bool itemIsSellable() const
+	{
+		return this->getItemSellPrice() != 0;
 	}
 
 	bool itemIsInWorld() const
@@ -218,7 +243,8 @@ protected:
 	{
 		return {
 			.action = ItemActionEnum::NONE,
-			.inventorySlot = 0,
+			.bagSlot = 0,
+			.containerSlot = 0,
 			.equipmentSlot = 0
 		};
 	}
@@ -232,7 +258,8 @@ protected:
 	{
 		return {
 			.action = ItemActionEnum::DESTROY,
-			.inventorySlot = this->getItemInventorySlot(),
+			.bagSlot = this->getBagSlot(),
+			.containerSlot = 0,
 			.equipmentSlot = 0
 		};
 	}
@@ -244,13 +271,15 @@ protected:
 		if (sellable)
 			return {
 				.action = ItemActionEnum::SELL,
-				.inventorySlot = this->getItemInventorySlot(),
+				.bagSlot = this->getBagSlot(),
+				.containerSlot = 0,
 				.equipmentSlot = 0
 			};
 
 		return {
 			.action = ItemActionEnum::DESTROY,
-			.inventorySlot = this->getItemInventorySlot(),
+			.bagSlot = this->getBagSlot(),
+			.containerSlot = 0,
 			.equipmentSlot = 0
 		};
 	}

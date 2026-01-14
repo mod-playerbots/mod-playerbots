@@ -1,3 +1,5 @@
+#pragma once
+
 enum class PlayerInventoryFacadeResultEnum
 {
 	OK = 0,

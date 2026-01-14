@@ -39,13 +39,9 @@ public:
 		if (itemTemplate == nullptr)
 			return this->getDestroyItemAction();
 
-		const ObjectGuid playerGUID = ObjectGuid::Create<HighGuid::Player>(this->playerLowGUID);
-		Player* player = ObjectAccessor::FindPlayer(playerGUID);
+		const GlobalPlayerInspector playerInspector(this->playerLowGUID);
 
-		if (player == nullptr)
-			return this->getDefaultItemAction();
-
-		const uint8_t playerClass = player->getClass();
+		const uint8_t playerClass = playerInspector.getCurrentPlayerClass();
 		const uint32_t inventoryType = itemTemplate->InventoryType;
 
 		// @TODO: Add hunter quiver equipment decision (NOT process) here.
@@ -66,18 +62,13 @@ public:
 
 		for (uint8_t i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; ++i)
 		{
-			const ObjectGuid playerGUID = ObjectGuid::Create<HighGuid::Player>(this->playerLowGUID);
-			Player* player = ObjectAccessor::FindPlayer(playerGUID);
-
-			if (player == nullptr)
-				return this->getDefaultItemAction();
-
-			const Item* const equippedItem = player->GetItemByPos(i);
+			const Item* const equippedItem = playerInspector.getItemByPosition(INVENTORY_SLOT_BAG_0, i);
 
 			if (equippedItem == nullptr)
 				return {
 					.action = ItemActionEnum::EQUIP,
-					.inventorySlot = this->getItemInventorySlot(),
+					.bagSlot = this->getBagSlot(),
+					.containerSlot = this->getItemSlot(),
 					.equipmentSlot = i
 				};
 
@@ -91,10 +82,10 @@ public:
 			if (equippedBagSize < bagSize)
 				return {
 					.action = ItemActionEnum::EQUIP,
-					.inventorySlot = this->getItemInventorySlot(),
+					.bagSlot = this->getBagSlot(),
+					.containerSlot = this->getItemSlot(),
 					.equipmentSlot = i
 				};
-
 		}
 
 		return this->getSellAction();

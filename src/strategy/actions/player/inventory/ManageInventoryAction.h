@@ -94,7 +94,7 @@ private:
 	std::unordered_map<uint64_t, ItemActionStruct> itemActions = {};
 
     void iterateBags();
-	void iterateBag(const uint64_t bagGUID);
+	void iterateBag(const uint32_t bagSlot);
 	void processItem(const uint64_t itemGUID);
 	template <typename InspectorT>
 	void determineItemAction(const uint32_t botLowGUID, const uint64_t itemLowGUID);

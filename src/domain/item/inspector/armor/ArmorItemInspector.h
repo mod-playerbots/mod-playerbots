@@ -30,7 +30,11 @@ public:
 	ItemActionStruct determineItemAction() const override
 	{
 		if (!this->isInspectable())
+		{
+			LOG_ERROR("playerbots", "Item is not inspectable");
+
 			return this->getDefaultItemAction();
+		}
 
 		if (this->isForbiddenItem())
 			return this->getForbiddenItemAction();
@@ -39,36 +43,42 @@ public:
 		Player* player = ObjectAccessor::FindPlayer(playerGUID);
 
 		if (player == nullptr)
+		{
+			LOG_ERROR("playerbots", "player nullptr");
+
 			return this->getDefaultItemAction();
+		}
 
 		Item* const item = this->getMutableCurrentItem();
 
 		if (item == nullptr)
+		{
+			LOG_ERROR("playerbots", "item nullptr");
+
 			return this->getDefaultItemAction();
+		}
 
 		const bool canUseItem = player->CanUseItem(item);
 
 		if (!canUseItem)
+		{
+			LOG_ERROR("playerbots", "player can't use item");
+
 			return this->getDefaultItemAction();
+		}
 
-		player = ObjectAccessor::FindPlayer(playerGUID);
-
-		if (player == nullptr)
-			return this->getDefaultItemAction();
-
-		StatsWeightCalculator statisticsWeightCalculator = StatsWeightCalculator(player);
+		StatsWeightCalculator statisticsWeightCalculator(player);
 		const ItemTemplate* const itemTemplate = this->getCurrentItemTemplate();
 
 		if (itemTemplate == nullptr)
+		{
+			LOG_ERROR("playerbots", "item template nullptr");
+
 			return this->getDefaultItemAction();
+		}
 
 		std::vector<EquipmentSlots> slots = InventoryService::GetInstance().getItemEquipmentSlots(itemTemplate);
-		const ItemTemplate* const refreshedItemTemplate = this->getCurrentItemTemplate();
-
-		if (refreshedItemTemplate == nullptr)
-			return this->getDefaultItemAction();
-
-		const float newItemStatisticsWeight = statisticsWeightCalculator.CalculateItem(refreshedItemTemplate->ItemId);
+		const float newItemStatisticsWeight = statisticsWeightCalculator.CalculateItem(itemTemplate->ItemId);
 
 		statisticsWeightCalculator.Reset();
 
@@ -80,19 +90,24 @@ public:
 			if (player == nullptr)
 				return this->getDefaultItemAction();
 
-			const Item* const currentlyEquippedItem = player->GetItemByPos(equipmentSlot);
+			const Item* const currentlyEquippedItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, equipmentSlot);
 
 			if (currentlyEquippedItem == nullptr)
 				return {
 					.action = ItemActionEnum::EQUIP,
-					.inventorySlot = this->getItemInventorySlot(),
+					.bagSlot = this->getBagSlot(),
+					.containerSlot = this->getItemSlot(),
 					.equipmentSlot = equipmentSlot
 				};
 
 			const ItemTemplate* const currentlyEquippedItemTemplate = currentlyEquippedItem->GetTemplate();
 
 			if (currentlyEquippedItemTemplate == nullptr)
+			{
+				LOG_ERROR("playerbots", "current item template nullptr");
+
 				return this->getDefaultItemAction();
+			}
 
 			const float existingItemStatisticsWeight = statisticsWeightCalculator.CalculateItem(currentlyEquippedItemTemplate->ItemId);
 
@@ -100,7 +115,8 @@ public:
 			{
 				return {
 					.action = ItemActionEnum::EQUIP,
-					.inventorySlot = this->getItemInventorySlot(),
+					.bagSlot = this->getBagSlot(),
+					.containerSlot = this->getItemSlot(),
 					.equipmentSlot = equipmentSlot
 				};
 			}
