@@ -42,6 +42,7 @@ public:
         creators["maexxna"] = &RaidNaxxTriggerContext::maexxna;
         creators["patchwerk tank"] = &RaidNaxxTriggerContext::patchwerk_tank;
         creators["patchwerk non-tank"] = &RaidNaxxTriggerContext::patchwerk_non_tank;
+        creators["patchwerk ranged"] = &RaidNaxxTriggerContext::patchwerk_ranged;
 
         creators["gluth"] = &RaidNaxxTriggerContext::gluth;
         creators["gluth main tank mortal wound"] = &RaidNaxxTriggerContext::gluth_main_tank_mortal_wound;
@@ -74,6 +75,7 @@ private:
     static Trigger* maexxna(PlayerbotAI* ai) { return new MaexxnaTrigger(ai); }
     static Trigger* patchwerk_tank(PlayerbotAI* ai) { return new PatchwerkTankTrigger(ai); }
     static Trigger* patchwerk_non_tank(PlayerbotAI* ai) { return new PatchwerkNonTankTrigger(ai); }
+    static Trigger* patchwerk_ranged(PlayerbotAI* ai) { return new PatchwerkRangedTrigger(ai); }
     static Trigger* gluth(PlayerbotAI* ai) { return new GluthTrigger(ai); }
     static Trigger* gluth_main_tank_mortal_wound(PlayerbotAI* ai) { return new GluthMainTankMortalWoundTrigger(ai); }
     static Trigger* loatheb(PlayerbotAI* ai) { return new LoathebTrigger(ai); }

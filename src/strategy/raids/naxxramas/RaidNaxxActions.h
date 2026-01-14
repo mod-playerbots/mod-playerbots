@@ -319,4 +319,11 @@ private:
     LoathebBossHelper helper;
 };
 
+class PatchwerkRangedPositionAction : public MovementAction
+{
+public:
+    PatchwerkRangedPositionAction(PlayerbotAI* ai) : MovementAction(ai, "patchwerk ranged position") {}
+    bool Execute(Event event) override;
+};
+
 #endif

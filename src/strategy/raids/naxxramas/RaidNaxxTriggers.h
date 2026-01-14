@@ -121,6 +121,13 @@ public:
     bool IsActive() override;
 };
 
+class PatchwerkRangedTrigger : public Trigger
+{
+public:
+    PatchwerkRangedTrigger(PlayerbotAI* ai) : Trigger(ai, "patchwerk ranged") {}
+    bool IsActive() override;
+};
+
 class ThaddiusPhasePetTrigger : public Trigger
 {
 public:

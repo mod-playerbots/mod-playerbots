@@ -59,6 +59,10 @@ void RaidNaxxStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("tank face", ACTION_RAID + 2) }
     ));
 
+    triggers.push_back(new TriggerNode("patchwerk ranged",
+        { NextAction("patchwerk ranged position", ACTION_RAID + 2) }
+    ));
+
     triggers.push_back(new TriggerNode("patchwerk non-tank",
         { NextAction("rear flank", ACTION_RAID + 1) }
     ));
