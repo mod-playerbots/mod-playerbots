@@ -3214,6 +3214,9 @@ void RandomPlayerbotMgr::PrintStats()
         lvlPerRace[bot->getRace()] += bot->GetLevel();
 
         PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+        if (!botAI)
+            continue;
+
         if (botAI->AllowActivity())
             ++active;
 
