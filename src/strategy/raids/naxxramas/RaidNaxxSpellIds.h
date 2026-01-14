@@ -5,6 +5,7 @@
 
 #include "PlayerbotAI.h"
 
+// use src/server/scripts/Northrend/Naxxramas/naxxramas.h for CreatureId, NaxxramasSay, NaxxramasEvent, NaxxramasMisc
 namespace NaxxSpellIds
 {
     // Heigan
@@ -94,9 +95,19 @@ namespace NaxxSpellIds
 /*
     SPELL_IMPALE                    = 28783,
     SPELL_LOCUST_SWARM              = 28785,
-    SPELL_SUMMON_CORPSE_SCRABS_5    = 29105,
-    SPELL_SUMMON_CORPSE_SCRABS_10   = 28864,
+    SPELL_SUMMON_CORPSE_SCARABS_5   = 29105,
+    SPELL_SUMMON_CORPSE_SCARABS_10  = 28864,
     SPELL_BERSERK                   = 26662
+    ACHIEV_TIMED_START_EVENT        = 9891,
+    EVENT_SPAWN_CRYPT_GUARDS_1      = 0,
+    EVENT_BERSERK                   = 1,
+	////
+	Position const cryptguardPositions[] = {
+    { 3299.732f, -3502.489f, 287.077f, 2.378f },
+    { 3299.086f, -3450.929f, 287.077f, 3.999f },
+    { 3331.217f, -3476.607f, 287.074f, 3.269f }
+};
+
 */
     // Loatheb
     static constexpr uint32 NecroticAura10 = 55593;
