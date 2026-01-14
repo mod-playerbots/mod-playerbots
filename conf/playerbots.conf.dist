@@ -21,7 +21,7 @@
 #        THRESHOLDS
 #        QUESTS
 #        COMBAT
-#        PALADIN BUFFS STRATEGIES
+#        GREATER BUFFS STRATEGIES
 #        CHEATS
 #        SPELLS
 #        FLIGHTPATH
@@ -91,17 +91,20 @@ AiPlayerbot.MinRandomBots = 500
 AiPlayerbot.MaxRandomBots = 500
 
 # Randombot accounts
-# If you are not using any expansion at all, you may have to set this manually, in which case please ensure that RandomBotAccountCount is at least greater than (MaxRandomBots / 10 + AddClassAccountPoolSize)
+# If you are not using any expansion at all, you may have to set this manually, in which case please
+# ensure that RandomBotAccountCount is at least greater than (MaxRandomBots / 10 + AddClassAccountPoolSize)
 # Default: 0 (automatic)
 AiPlayerbot.RandomBotAccountCount = 0
 
 # Delete all randombot accounts
-# To apply this, set the number to 1 and run the Worldserver. Once deletion is complete, if you would like to recreate randombots, set the number back to 0 and rerun the Worldserver.
+# To apply this, set the number to 1 and run the Worldserver. Once deletion is complete, if you would
+# like to recreate randombots, set the number back to 0 and rerun the Worldserver.
 AiPlayerbot.DeleteRandomBotAccounts = 0
 
 # Disable randombots when no real players are logged in
 # Default: 0 (randombots will login when server starts)
-# If enabled, randombots will only log in 30 seconds (default) after a real player logs in, and will log out 300 seconds (default) after all real players log out
+# If enabled, randombots will only log in 30 seconds (default) after a real player logs in, and will
+# log out 300 seconds (default) after all real players log out
 AiPlayerbot.DisabledWithoutRealPlayer = 0
 AiPlayerbot.DisabledWithoutRealPlayerLoginDelay = 30
 AiPlayerbot.DisabledWithoutRealPlayerLogoutDelay = 300
@@ -153,7 +156,8 @@ AiPlayerbot.AllowGuildBots = 1
 AiPlayerbot.AllowTrustedAccountBots = 1
 
 # Randombots will create guilds with nearby randombots
-# Note: currently, randombots will not invite more bots after a guild is created (i.e., randombot guilds will have only the 10 initial randombots needed to sign the charter)
+# Note: currently, randombots will not invite more bots after a guild is created,
+# meaning randombot guilds will have only the 10 initial randombots needed to sign the charter
 # Default: 0 (disabled)
 AiPlayerbot.RandomBotGuildNearby = 0
 
@@ -187,7 +191,8 @@ AiPlayerbot.AutoInitOnly = 0
 # Default: 1.0 (same with the player)
 AiPlayerbot.AutoInitEquipLevelLimitRatio = 1.0
 
-# Bot automatically trains spells when talking to trainer (yes = train all available spells as long as the bot has the money, free = auto trains with no money cost, no = only list spells)
+# Bot automatically trains spells when talking to trainer
+# yes = train all available spells as long as the bot has the money, free = auto trains with no money cost, no = only list spells
 AiPlayerbot.AutoTrainSpells = yes
 
 #
@@ -264,7 +269,7 @@ AiPlayerbot.UseFastFlyMountAtMinLevel = 70
 AiPlayerbot.RandomBotShowHelmet = 1
 AiPlayerbot.RandomBotShowCloak = 1
 
-# Randombots and altbots automatically equip upgrades (bots will equip any item obtained from looting or a quest if they are sufficient upgrades)
+# Randombots and altbots automatically equip any items in their inventory that are sufficient upgrades
 # Default: 1 (enabled)
 AiPlayerbot.AutoEquipUpgradeLoot = 1
 
@@ -312,7 +317,8 @@ AiPlayerbot.GlobalCooldown = 500
 # Max wait time when moving
 AiPlayerbot.MaxWaitForMove = 5000
 
-# Disable use of MoveSplinePath for bot movement, will result in more erratic bot movement but means stun/snare/root/etc will work on bots (they wont reliably work when MoveSplinePath is enabled, though slowing effects still work ok)
+# Enable/disable use of MoveSplinePath for bot movement
+# Disabling will result in more erratic movement but is required for stuns, snares, and roots to work on bots
 # Default: 0 - MoveSplinePath enabled
 #          1 - MoveSplinePath disabled in BG/Arena only
 #          2 - MoveSplinePath disabled everywhere
@@ -406,10 +412,11 @@ AiPlayerbot.HighMana = 65
 #
 #
 
-# Bots pick their quest rewards (yes = picks the most useful item, no = list all rewards, ask = pick useful item and lists if multiple)
+# Bots pick their quest rewards
+# yes = picks the most useful item, no = list all rewards, ask = pick useful item and lists if multiple
 AiPlayerbot.AutoPickReward = yes
 
-# Sync quests with player (Bots will complete quests the moment you hand them in and will not loot quest items.)
+# Sync quests with player (bots will complete quests the moment you hand them in and will not loot quest items.)
 # Default: 1 (enabled)
 AiPlayerbot.SyncQuestWithPlayer = 1
 
@@ -434,7 +441,7 @@ AiPlayerbot.DropObsoleteQuests = 1
 # Auto add dungeon/raid strategies when entering the instance if implemented
 AiPlayerbot.ApplyInstanceStrategies = 1
 
-# Enable auto avoid aoe strategy (experimental)
+# Enable auto avoid aoe strategy
 # Default: 1 (enabled)
 AiPlayerbot.AutoAvoidAoe = 1
 
@@ -461,7 +468,7 @@ AiPlayerbot.FleeingEnabled = 1
 ####################################################################################################
 
 ####################################################################################################
-# PALADIN BUFFS STRATEGIES
+# GREATER BUFFS STRATEGIES
 #
 #
 
@@ -484,12 +491,13 @@ AiPlayerbot.RPWarningCooldown = 30
 #
 
 # Enable/Disable maintenance command
-# Learn all available spells and skills, refresh consumables, repair, enchant equipment and socket gems if bot's level is above AiPlayerbot.MinEnchantingBotLevel
+# Learn all available spells and skills, assign talent points, refresh consumables, repair, enchant equipment, socket gems, etc.
+# Applies if bot's level is above AiPlayerbot.MinEnchantingBotLevel
 # Default: 1 (enabled)
 AiPlayerbot.MaintenanceCommand = 1
 
 # Enable/Disable specific maintenance command functionality for alt bots
-# Disable to prevent players from giving free bags, spells, skill levels etc to their alt bots
+# Disable to prevent players from giving free bags, spells, skill levels, etc. to their alt bots
 # Default: 1 (enabled)
 AiPlayerbot.AltMaintenanceAmmo = 1
 AiPlayerbot.AltMaintenanceFood = 1
@@ -501,6 +509,7 @@ AiPlayerbot.AltMaintenanceBags = 1
 AiPlayerbot.AltMaintenanceMounts = 1
 AiPlayerbot.AltMaintenanceSkills = 1
 
+# "Special Spells" consist of any spells listed in AiPlayerbot.RandomBotSpellIds and Death Gate for Death Knights
 AiPlayerbot.AltMaintenanceClassSpells = 1
 AiPlayerbot.AltMaintenanceAvailableSpells = 1
 AiPlayerbot.AltMaintenanceSpecialSpells = 1
@@ -515,8 +524,8 @@ AiPlayerbot.AltMaintenanceReputation = 1
 AiPlayerbot.AltMaintenanceAttunementQuests = 1
 AiPlayerbot.AltMaintenanceKeyring = 1
 
-
-# Enable/Disable autogear command, which automatically upgrades bots' gear; the quality is limited by AutoGearQualityLimit and AutoGearScoreLimit
+# Enable/Disable autogear command, which automatically upgrades bots' gear
+# The quality is limited by AutoGearQualityLimit and AutoGearScoreLimit
 # Default: 1 (enabled)
 AiPlayerbot.AutoGearCommand = 1
 
@@ -582,15 +591,21 @@ AiPlayerbot.BotTaxiGapJitterMs = 100
 
 ####################################################################################################
 # PROFESSIONS
-# Random bots currently do not get professions.
+# Note: Random bots currently do not get professions
 #
 
-# EnableFishingWithMaster automatically adds the 'master fishing' strategy to bots that can fish that can.
+# Automatically adds the 'master fishing' strategy to bots that have the fishing skill when the bots master fishes.
 # Default: 1 (Enabled)
 AiPlayerbot.EnableFishingWithMaster = 1
-#FishingDistance sets how far a bot without a master will search for water, while FishingDistanceFromMaster limits it to a closer range, and overrides the following distance to the same value. EndFishingWithMaster sets the distance from water a bot needs to have to automatically drop the 'master fishing' strategy.
+
+# Distance from itself (in yards) that a bot with a master will search for water to fish
 AiPlayerbot.FishingDistanceFromMaster = 10.0
+
+# Distance from itself (in yards) that a bot without a master will search for water to fish
+# Currently not relevant since masterless bots will not fish
 AiPlayerbot.FishingDistance = 40.0
+
+# Distance from water (in yards) beyond which a bot will remove the 'master fishing' strategy
 AiPlayerbot.EndFishingWithMaster = 30.0
 
 #
@@ -719,7 +734,7 @@ AiPlayerbot.RandomGearQualityLimit = 3
 # Max iLVL Phase 1(MC, Ony, ZG) = 78 | Phase 2(BWL) = 83 | Phase 2.5(AQ40) = 88 | Phase 3(Naxx40) = 92
 # TBC
 # Max iLVL Tier 4 = 120 | Tier 5 = 133 | Tier 6 = 164
-# Max iLVL Phase 1(Kara, Gruul, Mag) = 125 | Phase 1.5(ZA) = 138 | Phase 2(SC, TK) = 141 | Phase 3(Hyjal, BT) = 156 | Phase 4(Sunwell) = 164
+# Max iLVL Phase 1(Kara, Gruul, Mag) = 125 | Phase 2(SSC, TK, ZA) = 141 | Phase 3(Hyjal, BT) = 156 | Phase 4(Sunwell) = 164
 # Wotlk
 # Max iLVL Tier 7(10/25) = 200/213 | Tier 8(10/25) = 225/232 | Tier 9(10/25) = 232/245 | Tier 10(10/25/HC) = 251/264/290
 # Max iLVL Phase 1(Naxx) = 224 | Phase 2(Ulduar) = 245 | Phase 3(ToC) = 258 | Phase 4(ICC) = 290
@@ -730,7 +745,8 @@ AiPlayerbot.RandomGearScoreLimit = 0
 # Default: 1 (enabled)
 AiPlayerbot.IncrementalGearInit = 1
 
-# Set minimum level of bots that will enchant their equipment (if greater than RandomBotMaxlevel, bots will not enchant equipment)
+# Set minimum level of bots that will enchant and socket gems into their equipment with maintenance
+# If greater than RandomBotMaxlevel, bots will not automatically enchant equipment or socket gems
 # Default: 60
 AiPlayerbot.MinEnchantingBotLevel = 60
 
@@ -882,13 +898,15 @@ AiPlayerbot.OpenGoSpell = 6477
 #
 
 # Additional randombot strategies
-# Strategies added here are applied to all randombots, in addition (or subtraction) to spec/role-based default strategies. These rules are processed after the defaults.
+# Strategies added here are applied to all randombots, in addition (or subtraction) to spec/role-based default strategies.
+# These rules are processed after the defaults.
 # Example: "+threat,-potions"
 AiPlayerbot.RandomBotCombatStrategies = ""
 AiPlayerbot.RandomBotNonCombatStrategies = ""
 
 # Additional altbot strategies
-# Strategies added here are applied to all altbots, in addition (or subtraction) to spec/role-based default strategies. These rules are processed after the defaults.
+# Strategies added here are applied to all altbots, in addition (or subtraction) to spec/role-based default strategies.
+# These rules are processed after the defaults.
 AiPlayerbot.CombatStrategies = ""
 AiPlayerbot.NonCombatStrategies = ""
 
