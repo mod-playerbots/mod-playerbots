@@ -5,7 +5,11 @@
 void RaidNaxxStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // Grobbulus
-    triggers.push_back(new TriggerNode("mutating injection",
+    triggers.push_back(new TriggerNode("mutating injection melee",
+        { NextAction("grobbulus move away", ACTION_RAID + 2) }
+    ));
+
+    triggers.push_back(new TriggerNode("mutating injection ranged",
         { NextAction("grobbulus go behind the boss", ACTION_RAID + 2) }
     ));
 

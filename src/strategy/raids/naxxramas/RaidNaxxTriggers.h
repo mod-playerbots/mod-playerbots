@@ -14,6 +14,20 @@ public:
     MutatingInjectionTrigger(PlayerbotAI* ai) : HasAuraTrigger(ai, "mutating injection", 1) {}
 };
 
+class MutatingInjectionMeleeTrigger : public MutatingInjectionTrigger
+{
+public:
+    MutatingInjectionMeleeTrigger(PlayerbotAI* ai) : MutatingInjectionTrigger(ai) {}
+    bool IsActive() override;
+};
+
+class MutatingInjectionRangedTrigger : public MutatingInjectionTrigger
+{
+public:
+    MutatingInjectionRangedTrigger(PlayerbotAI* ai) : MutatingInjectionTrigger(ai) {}
+    bool IsActive() override;
+};
+
 class AuraRemovedTrigger : public Trigger
 {
 public:

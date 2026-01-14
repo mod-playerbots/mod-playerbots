@@ -16,6 +16,10 @@ namespace NaxxSpellIds
     SPELL_PLAGUE_CLOUD              = 29350,
     SPELL_TELEPORT_SELF             = 30211
 */
+
+    // Grobbulus
+    static constexpr uint32 PoisonCloud = 28240;
+
     // Thaddius polarity
     static constexpr uint32 PositiveCharge10 = 28059;
     static constexpr uint32 PositiveCharge25 = 28062;

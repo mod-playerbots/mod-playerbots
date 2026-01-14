@@ -5,6 +5,26 @@
 #include "Timer.h"
 #include "Trigger.h"
 
+bool MutatingInjectionMeleeTrigger::IsActive()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "grobbulus");
+    if (!boss)
+    {
+        return false;
+    }
+    return MutatingInjectionTrigger::IsActive() && !botAI->IsRanged(bot);
+}
+
+bool MutatingInjectionRangedTrigger::IsActive()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "grobbulus");
+    if (!boss)
+    {
+        return false;
+    }
+    return MutatingInjectionTrigger::IsActive() && botAI->IsRanged(bot);
+}
+
 bool AuraRemovedTrigger::IsActive()
 {
     bool check = botAI->HasAura(name, bot, false, false, -1, true);
@@ -45,7 +65,20 @@ bool GrobbulusCloudTrigger::IsActive()
         return false;
     }
     uint32 now = getMSTime();
-    if (last_cloud_ms != 0 && now - last_cloud_ms < CloudRotationDelayMs)
+    bool poison_cloud_casting = false;
+    if (boss->HasUnitState(UNIT_STATE_CASTING))
+    {
+        Spell* spell = boss->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+        if (!spell)
+        {
+            spell = boss->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
+        }
+        if (spell)
+        {
+            poison_cloud_casting = NaxxSpellIds::MatchesAnySpellId(spell->GetSpellInfo(), {NaxxSpellIds::PoisonCloud});
+        }
+    }
+    if (!poison_cloud_casting && last_cloud_ms != 0 && now - last_cloud_ms < CloudRotationDelayMs)
     {
         return false;
     }

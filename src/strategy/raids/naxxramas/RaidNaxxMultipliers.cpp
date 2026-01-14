@@ -29,7 +29,11 @@ float GrobbulusMultiplier::GetValue(Action* action)
     {
         return 1.0f;
     }
-    if (dynamic_cast<AvoidAoeAction*>(action) || dynamic_cast<CombatFormationMoveAction*>(action))
+    if (dynamic_cast<AvoidAoeAction*>(action))
+    {
+        return botAI->IsMainTank(bot) ? 0.0f : 1.0f;
+    }
+    if (dynamic_cast<CombatFormationMoveAction*>(action))
     {
         return 0.0f;
     }

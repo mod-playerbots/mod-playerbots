@@ -55,6 +55,19 @@ public:
     GrobblulusMoveCenterAction(PlayerbotAI* ai) : MoveInsideAction(ai, 3281.23f, -3310.38f, 5.0f) {}
 };
 
+class GrobbulusMoveAwayAction : public MovementAction
+{
+public:
+    GrobbulusMoveAwayAction(PlayerbotAI* ai, float distance = 18.0f)
+        : MovementAction(ai, "grobbulus move away"), distance(distance)
+    {
+    }
+    bool Execute(Event event) override;
+
+private:
+    float distance;
+};
+
 class HeiganDanceAction : public MovementAction
 {
 public:
