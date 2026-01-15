@@ -218,6 +218,11 @@ bool WorldPosition::isUnderWater()
                     : false;
 };
 
+bool WorldPosition::IsValid()
+{
+    return !(GetMapId() == MAPID_INVALID && GetPositionX() == 0 && GetPositionY() == 0 && GetPositionZ() == 0);
+}
+
 WorldPosition WorldPosition::relPoint(WorldPosition* center)
 {
     return WorldPosition(GetMapId(), GetPositionX() - center->GetPositionX(), GetPositionY() - center->GetPositionY(),
@@ -3404,13 +3409,14 @@ void TravelMgr::LoadQuestTravelTable()
                                     {
                                         Strategy* strat = con->GetStrategy(stratName);
 
-                                        if (strat->getDefaultActions())
-                                            for (uint32 i = 0; i < NextAction::size(strat->getDefaultActions()); i++)
-                                            {
-                                                NextAction* nextAction = strat->getDefaultActions()[i];
+                                        const std::vector<NextAction> defaultActions  = strat->getDefaultActions();
 
+                                        if (defaultActions.size() > 0)
+                                        {
+                                            for (NextAction nextAction : defaultActions)
+                                            {
                                                 std::ostringstream aout;
-                                                aout << nextAction->getRelevance() << "," << nextAction->getName()
+                                                aout << nextAction.getRelevance() << "," << nextAction.getName()
                                                      << ",,S:" << stratName;
 
                                                 if (actions.find(aout.str().c_str()) != actions.end())
@@ -3422,27 +3428,24 @@ void TravelMgr::LoadQuestTravelTable()
 
                                                 actions.insert_or_assign(aout.str().c_str(), classSpecLevel);
                                             }
+                                        }
 
                                         std::vector<TriggerNode*> triggers;
                                         strat->InitTriggers(triggers);
-                                        for (auto& triggerNode : triggers)
-                                        {
-                                            // out << " TN:" << triggerNode->getName();
 
+                                        for (TriggerNode*& triggerNode : triggers)
+                                        {
                                             if (Trigger* trigger = con->GetTrigger(triggerNode->getName()))
                                             {
                                                 triggerNode->setTrigger(trigger);
 
-                                                NextAction** nextActions = triggerNode->getHandlers();
+                                                std::vector<NextAction> nextActions = triggerNode->getHandlers();
 
-                                                for (uint32 i = 0; i < NextAction::size(nextActions); i++)
+                                                // for (uint32_t i = 0; i < nextActions.size(); ++i)
+                                                for (NextAction nextAction : nextActions)
                                                 {
-                                                    NextAction* nextAction = nextActions[i];
-                                                    // out << " A:" << nextAction->getName() << "(" <<
-                                                    // nextAction->getRelevance() << ")";
-
                                                     std::ostringstream aout;
-                                                    aout << nextAction->getRelevance() << "," << nextAction->getName()
+                                                    aout << nextAction.getRelevance() << "," << nextAction.getName()
                                                          << "," << triggerNode->getName() << "," << stratName;
 
                                                     if (actions.find(aout.str().c_str()) != actions.end())

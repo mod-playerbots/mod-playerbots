@@ -13,62 +13,130 @@ ShadowPriestStrategy::ShadowPriestStrategy(PlayerbotAI* botAI) : GenericPriestSt
     actionNodeFactories.Add(new ShadowPriestStrategyActionNodeFactory());
 }
 
-NextAction** ShadowPriestStrategy::getDefaultActions()
+std::vector<NextAction> ShadowPriestStrategy::getDefaultActions()
 {
-    return NextAction::array(0, new NextAction("mind blast", ACTION_DEFAULT + 0.3f),
-                             new NextAction("mind flay", ACTION_DEFAULT + 0.2f),
-                             new NextAction("shadow word: death", ACTION_DEFAULT + 0.1f), // cast during movement
-                             new NextAction("shoot", ACTION_DEFAULT), nullptr);
+    return {
+        NextAction("mind blast", ACTION_DEFAULT + 0.3f),
+        NextAction("mind flay", ACTION_DEFAULT + 0.2f),
+        NextAction("shadow word: death", ACTION_DEFAULT + 0.1f), // cast during movement
+        NextAction("shoot", ACTION_DEFAULT)
+    };
 }
 
 void ShadowPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericPriestStrategy::InitTriggers(triggers);
 
-    // triggers.push_back(new TriggerNode("enemy out of spell", NextAction::array(0, new NextAction("reach spell",
-    // ACTION_MOVE + 9), nullptr)));
     triggers.push_back(
-        new TriggerNode("shadowform", NextAction::array(0, new NextAction("shadowform", ACTION_HIGH), nullptr)));
-    triggers.push_back(new TriggerNode("low mana", NextAction::array(0, new NextAction("dispersion", ACTION_HIGH
-        + 5), nullptr)));
-    triggers.push_back(new TriggerNode("critical health", NextAction::array(0, new NextAction("dispersion", ACTION_HIGH
-        + 5), nullptr)));
+        new TriggerNode(
+            "shadowform",
+            {
+                NextAction("shadowform", ACTION_HIGH)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("vampiric embrace", NextAction::array(0, new NextAction("vampiric embrace", 16.0f), nullptr)));
+        new TriggerNode(
+            "low mana",
+            {
+                NextAction("dispersion", ACTION_HIGH + 5)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("silence", NextAction::array(0, new NextAction("silence", ACTION_INTERRUPT + 1), nullptr)));
+        new TriggerNode(
+            "critical health",
+            {
+                NextAction("dispersion", ACTION_HIGH + 5)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("silence on enemy healer",
-                        NextAction::array(0, new NextAction("silence on enemy healer", ACTION_INTERRUPT), nullptr)));
-    // triggers.push_back(new TriggerNode("shadowfiend", NextAction::array(0, new NextAction("shadowfiend",
-    // ACTION_HIGH), nullptr))); triggers.push_back(new TriggerNode("medium mana", NextAction::array(0, new
-    // NextAction("shadowfiend", ACTION_HIGH), nullptr))); triggers.push_back(new TriggerNode("low mana",
-    // NextAction::array(0, new NextAction("mana burn", ACTION_HIGH), nullptr)));
+        new TriggerNode(
+            "vampiric embrace",
+            {
+                NextAction("vampiric embrace", 16.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "silence",
+            {
+                NextAction("silence", ACTION_INTERRUPT + 1)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "silence on enemy healer",
+            {
+                NextAction("silence on enemy healer", ACTION_INTERRUPT)
+            }
+        )
+    );
 }
 
 void ShadowPriestAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode(
-        "shadow word: pain on attacker",
-        NextAction::array(0, new NextAction("shadow word: pain on attacker", ACTION_NORMAL + 5), nullptr)));
-    triggers.push_back(new TriggerNode(
-        "vampiric touch on attacker",
-        NextAction::array(0, new NextAction("vampiric touch on attacker", ACTION_NORMAL + 4), nullptr)));
     triggers.push_back(
-        new TriggerNode("mind sear channel check", NextAction::array(0, new NextAction("cancel channel", ACTION_HIGH + 5), nullptr)));
+        new TriggerNode(
+            "shadow word: pain on attacker",
+            {
+                NextAction("shadow word: pain on attacker", ACTION_NORMAL + 5)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("medium aoe", NextAction::array(0, new NextAction("mind sear", ACTION_HIGH + 4), nullptr)));
+        new TriggerNode(
+            "vampiric touch on attacker",
+            {
+                NextAction("vampiric touch on attacker", ACTION_NORMAL + 4)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "mind sear channel check",
+            {
+                NextAction("cancel channel", ACTION_HIGH + 5)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "medium aoe",
+            {
+                NextAction("mind sear", ACTION_HIGH + 4)
+            }
+        )
+    );
 }
 
 void ShadowPriestDebuffStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode(
-        "vampiric touch", NextAction::array(0, new NextAction("vampiric touch", ACTION_HIGH + 3), nullptr)));
-    triggers.push_back(new TriggerNode(
-        "devouring plague", NextAction::array(0, new NextAction("devouring plague", ACTION_HIGH + 2), nullptr)));
-    triggers.push_back(new TriggerNode(
-        "shadow word: pain", NextAction::array(0, new NextAction("shadow word: pain", ACTION_HIGH + 1), nullptr)));
-    // triggers.push_back(new TriggerNode("feedback", NextAction::array(0, new NextAction("feedback", 80.0f),
-    // nullptr))); triggers.push_back(new TriggerNode("hex of weakness", NextAction::array(0, new NextAction("hex of
-    // weakness", 10.0f), nullptr)));
+    triggers.push_back(
+        new TriggerNode(
+            "vampiric touch",
+            {
+                NextAction("vampiric touch", ACTION_HIGH + 3)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "devouring plague",
+            {
+                NextAction("devouring plague", ACTION_HIGH + 2)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "shadow word: pain",
+            {
+                NextAction("shadow word: pain", ACTION_HIGH + 1)
+            }
+        )
+    );
 }

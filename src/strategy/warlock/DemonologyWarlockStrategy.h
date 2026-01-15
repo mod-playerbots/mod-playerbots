@@ -18,7 +18,7 @@ public:
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
     std::string const getName() override { return "demo"; }
-    NextAction** getDefaultActions() override;
+    std::vector<NextAction> getDefaultActions() override;
 };
 
 class MetaMeleeAoeStrategy : public CombatStrategy
