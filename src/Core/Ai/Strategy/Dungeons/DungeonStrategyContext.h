@@ -9,7 +9,7 @@
 #include "Wotlk/DraktharonKeep/Strategy/DrakTharonKeepStrategy.h"
 #include "Wotlk/VioletHold/Strategy/VioletHoldStrategy.h"
 #include "Wotlk/Gundrak/Strategy/GundrakStrategy.h"
-#include "Wotlk/HallsoOfStone/Strategy/HallsOfStoneStrategy.h"
+#include "Wotlk/HallsOfStone/Strategy/HallsOfStoneStrategy.h"
 #include "Wotlk/HallsOfLightning/Strategy/HallsOfLightningStrategy.h"
 #include "Wotlk/Oculus/Strategy/OculusStrategy.h"
 #include "Wotlk/UtgardePinnacle/Strategy/UtgardePinnacleStrategy.h"
