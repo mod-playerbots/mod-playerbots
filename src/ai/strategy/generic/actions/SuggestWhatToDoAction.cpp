@@ -260,7 +260,7 @@ SuggestDungeonAction::SuggestDungeonAction(PlayerbotAI* botAI) : SuggestWhatToDo
 
 bool SuggestDungeonAction::Execute(Event event)
 {
-    // TODO: use sPlayerbotDungeonSuggestionMgr
+    // TODO: use sPlayerbotDungeonRepository
 
     if (!sPlayerbotAIConfig->randomBotSuggestDungeons || bot->GetGroup())
         return false;

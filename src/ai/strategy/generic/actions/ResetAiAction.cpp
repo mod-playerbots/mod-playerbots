@@ -8,7 +8,7 @@
 #include "Event.h"
 #include "Group.h"
 #include "ObjectGuid.h"
-#include "PlayerbotDbStore.h"
+#include "PlayerbotRepository.h"
 #include "Playerbots.h"
 #include "WorldPacket.h"
 
@@ -44,7 +44,7 @@ bool ResetAiAction::Execute(Event event)
             }
         }
     }
-    sPlayerbotDbStore->Reset(botAI);
+    sPlayerbotRepository->Reset(botAI);
     botAI->ResetStrategies(false);
     botAI->TellMaster("AI was reset to defaults");
     return true;

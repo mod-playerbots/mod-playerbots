@@ -26,7 +26,7 @@
 #include "PlayerScript.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotGuildMgr.h"
-#include "PlayerbotSpellCache.h"
+#include "PlayerbotSpellRepository.h"
 #include "PlayerbotWorldThreadProcessor.h"
 #include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
@@ -365,7 +365,7 @@ public:
         LOG_INFO("server.loading", ">> Loaded playerbots config in {} ms", GetMSTimeDiffToNow(oldMSTime));
         LOG_INFO("server.loading", " ");
 
-        sPlayerbotSpellCache->Initialize();
+        sPlayerbotSpellRepository->Initialize();
 
         LOG_INFO("server.loading", "Playerbots World Thread Processor initialized");
     }

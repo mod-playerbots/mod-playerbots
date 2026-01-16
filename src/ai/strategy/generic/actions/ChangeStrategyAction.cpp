@@ -6,7 +6,7 @@
 #include "ChangeStrategyAction.h"
 
 #include "Event.h"
-#include "PlayerbotDbStore.h"
+#include "PlayerbotRepository.h"
 #include "Playerbots.h"
 
 bool ChangeCombatStrategyAction::Execute(Event event)
@@ -24,7 +24,7 @@ bool ChangeCombatStrategyAction::Execute(Event event)
                 case '+':
                 case '-':
                 case '~':
-                    sPlayerbotDbStore->Save(botAI);
+                    sPlayerbotRepository->Save(botAI);
                     break;
                 case '?':
                     break;
@@ -62,7 +62,7 @@ bool ChangeNonCombatStrategyAction::Execute(Event event)
                 case '+':
                 case '-':
                 case '~':
-                    sPlayerbotDbStore->Save(botAI);
+                    sPlayerbotRepository->Save(botAI);
                     break;
                 case '?':
                     break;
