@@ -84,7 +84,7 @@ public:
 		if (item == nullptr)
 			return PlayerInventoryFacadeResultEnum::IMPOSSIBLE;
 
-		LOG_ERROR("playerbots", "destroying item");
+		LOG_DEBUG("playerbots.player.facade", "destroying item");
 
 		uint32_t itemCount = itemInspector.getItemCurrentCount();
 
@@ -95,21 +95,21 @@ public:
 
 	PlayerInventoryFacadeResultEnum sellItem(uint64_t itemLowGUID)
 	{
-		LOG_ERROR("playerbots", "Selling item {}", std::to_string(itemLowGUID));
+		LOG_DEBUG("playerbots.player.facade", "Selling item {}", std::to_string(itemLowGUID));
 
 		GlobalPlayerInspector playerInspector(this->playerGUID);
 		GlobalItemInspector itemInspector(this->playerGUID, itemLowGUID);
 
 		const uint32_t sellPrice = itemInspector.getItemSellPrice();
 
-		LOG_ERROR("playerbots", "Item sell price {}", std::to_string(sellPrice));
+		LOG_DEBUG("playerbots.player.facade", "Item sell price {}", std::to_string(sellPrice));
 
 		if (sellPrice == 0)
 			return this->destroyItem(itemLowGUID);
 
 		const uint32_t itemCount = itemInspector.getItemCurrentCount();
 
-		LOG_ERROR("playerbots", "Item count {}", std::to_string(itemCount));
+		LOG_DEBUG("playerbots.player.facade", "Item count {}", std::to_string(itemCount));
 
 		Player* const player = this->getCurrentPlayer();
 
@@ -123,21 +123,21 @@ public:
 
 		const uint32_t totalItemStackValue = sellPrice * itemCount;
 
-		LOG_ERROR("playerbots", "Total item stack value {}", std::to_string(totalItemStackValue));
+		LOG_DEBUG("playerbots.player.facade", "Total item stack value {}", std::to_string(totalItemStackValue));
 
-		LOG_ERROR("playerbots", "modifiying player money");
+		LOG_DEBUG("playerbots.player.facade", "modifiying player money");
 		player->ModifyMoney(totalItemStackValue);
-		// LOG_ERROR("playerbots", "destroying item after sell");
+		// LOG_DEBUG("playerbots.player.facade", "destroying item after sell");
 		// player->DestroyItemCount(itemInspector.getBagSlot(), itemInspector.getItemSlot(), true);
 
 
-		LOG_ERROR("playerbots", "removing item");
+		LOG_DEBUG("playerbots.player.facade", "removing item");
 		player->RemoveItem(item->GetBagSlot(), item->GetSlot(), true);
-		LOG_ERROR("playerbots", "removing item from update queue");
+		LOG_DEBUG("playerbots.player.facade", "removing item from update queue");
 		item->RemoveFromUpdateQueueOf(player);
-		LOG_ERROR("playerbots", "adding item to buy back slot");
+		LOG_DEBUG("playerbots.player.facade", "adding item to buy back slot");
 		player->AddItemToBuyBackSlot(item, totalItemStackValue);
-		LOG_ERROR("playerbots", "Done selling item");
+		LOG_DEBUG("playerbots.player.facade", "Done selling item");
 
 		return PlayerInventoryFacadeResultEnum::OK;
 	}

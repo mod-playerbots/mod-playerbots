@@ -48,13 +48,13 @@ public:
 
 	bool isPossible() override
 	{
-		LOG_ERROR("playerbots", "Starting manage inventory isPossible evaluation");
+		LOG_DEBUG("playerbots.action.manage_inventory", "Starting manage inventory isPossible evaluation");
 
 		const Player* const bot = botAI->GetBot();
 
 		if (bot == nullptr)
 		{
-			LOG_ERROR("playerbots", "Manage inventory impossible bot is nullptr");
+			LOG_DEBUG("playerbots.action.manage_inventory", "Manage inventory impossible bot is nullptr");
 
 			return false;
 		}
@@ -63,7 +63,7 @@ public:
 
 		if (!bot->IsInWorld())
 		{
-			LOG_ERROR("playerbots", "Manage inventory impossible bot '{}' is non in world", botName);
+			LOG_DEBUG("playerbots.action.manage_inventory", "Manage inventory impossible bot '{}' is non in world", botName);
 
 			return false;
 		}
@@ -72,14 +72,14 @@ public:
 
 		if (session == nullptr)
 		{
-			LOG_ERROR("playerbots", "Manage inventory impossible bot '{}' session is nullptr", botName);
+			LOG_DEBUG("playerbots.action.manage_inventory", "Manage inventory impossible bot '{}' session is nullptr", botName);
 
 			return false;
 		}
 
 		if (session->isLogingOut())
 		{
-			LOG_ERROR("playerbots", "Manage inventory impossible bot '{}' is logging out", botName);
+			LOG_DEBUG("playerbots.action.manage_inventory", "Manage inventory impossible bot '{}' is logging out", botName);
 
 			return false;
 		}
