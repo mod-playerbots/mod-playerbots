@@ -29,7 +29,7 @@
 #include "PlayerbotSpellCache.h"
 #include "PlayerbotWorldThreadProcessor.h"
 #include "RandomPlayerbotMgr.h"
-#include "ScriptMgr.h"
+#include "PlayerbotCommandScript.h"
 #include "cs_playerbots.h"
 #include "cmath"
 #include "BattleGroundTactics.h"
