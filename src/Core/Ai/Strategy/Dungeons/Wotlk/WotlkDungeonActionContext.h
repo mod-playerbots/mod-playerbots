@@ -13,7 +13,7 @@
 #include "Oculus/OculusActionContext.h"
 #include "UtgardePinnacle/UtgardePinnacleActionContext.h"
 #include "CullingOfStratholme/CullingOfStratholmeActionContext.h"
-#include "GorgeOfSouls/ForgeOfSoulsActionContext.h"
+#include "ForgeOfSouls/ForgeOfSoulsActionContext.h"
 #include "PitOfSaron/PitOfSaronActionContext.h"
 #include "TrialOfTheChampion/TrialOfTheChampionActionContext.h"
 // #include "HallsOfReflection/HallsOfReflectionActionContext.h"
