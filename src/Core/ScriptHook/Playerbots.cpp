@@ -515,6 +515,6 @@ void AddPlayerbotsScripts()
     new PlayerbotsScript();
     new PlayerBotsBGScript();
     AddPlayerbotsSecureLoginScripts();
-    AddSC_playerbots_commandscript();
+    AddPlayerbotsCommandscripts();
     PlayerBotsGuildValidationScript();
 }

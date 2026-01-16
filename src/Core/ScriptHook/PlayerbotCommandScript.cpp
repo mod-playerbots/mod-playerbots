@@ -209,4 +209,4 @@ public:
     }
 };
 
-void AddSC_playerbots_commandscript() { new playerbots_commandscript(); }
+void AddPlayerbotsCommandscripts() { new playerbots_commandscript(); }
