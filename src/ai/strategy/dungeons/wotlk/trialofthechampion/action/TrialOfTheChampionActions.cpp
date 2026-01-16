@@ -1,7 +1,7 @@
 #include "Playerbots.h"
 #include "TrialOfTheChampionActions.h"
 #include "TrialOfTheChampionStrategy.h"
-#include "strategy/generic/values/NearestNpcsValue.h"
+#include "NearestNpcsValue.h"
 #include "ObjectAccessor.h"
 #include "Timer.h"
 #include "Vehicle.h"

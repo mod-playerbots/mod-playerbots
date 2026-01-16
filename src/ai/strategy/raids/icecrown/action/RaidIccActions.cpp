@@ -1,5 +1,5 @@
 #include "RaidIccActions.h"
-#include "strategy/generic/values/NearestNpcsValue.h"
+#include "NearestNpcsValue.h"
 #include "ObjectAccessor.h"
 #include "RaidIccStrategy.h"
 #include "Playerbots.h"
