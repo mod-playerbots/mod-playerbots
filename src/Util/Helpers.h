@@ -6,50 +6,68 @@
 #ifndef _PLAYERBOT_HELPERS_H
 #define _PLAYERBOT_HELPERS_H
 
-#include <stdio.h>
-#include <string.h>
-
-#include <algorithm>
-#include <cctype>
-#include <functional>
-#include <locale>
-#include <map>
-#include <sstream>
+#include <string>
 #include <vector>
 
-#include "Common.h"
+/**
+ * Case-insensitive substring search.
+ *
+ * @param haystack The string to search in
+ * @param needle   The substring to search for
+ * @return Pointer to the first matching position in haystack, or nullptr if not found.
+ */
+char* strstri(char const* haystack, char const* needle);
 
-void split(std::vector<std::string>& dest, std::string const str, char const* delim)
-{
-    char* pTempStr = strdup(str.c_str());
-    char* pWord = strtok(pTempStr, delim);
+/**
+ * Trim whitespace from the left side of a string (in place).
+ *
+ * @param s The string to trim
+ * @return Reference to the modified string
+ */
+std::string& ltrim(std::string& s);
 
-    while (pWord != nullptr)
-    {
-        dest.push_back(pWord);
-        pWord = strtok(nullptr, delim);
-    }
+/**
+ * Trim whitespace from the right side of a string (in place).
+ *
+ * @param s The string to trim
+ * @return Reference to the modified string
+ */
+std::string& rtrim(std::string& s);
 
-    free(pTempStr);
-}
+/**
+ * Trim whitespace from both ends of a string (in place).
+ *
+ * @param s The string to trim
+ * @return Reference to the modified string
+ */
+std::string& trim(std::string& s);
 
-std::vector<std::string>& split(std::string const s, char delim, std::vector<std::string>& elems)
-{
-    std::stringstream ss(s);
-    std::string item;
+/**
+ * Split a string using a C-string delimiter.
+ *
+ * @param dest  Vector to store split tokens
+ * @param str   String to split
+ * @param delim C-string delimiter
+ */
+void split(std::vector<std::string>& dest, std::string const str, char const* delim);
 
-    while (getline(ss, item, delim))
-    {
-        elems.push_back(item);
-    }
+/**
+ * Split a string using a single character delimiter.
+ *
+ * @param s     String to split
+ * @param delim Delimiter character
+ * @param elems Vector to store split tokens
+ * @return Reference to the vector containing tokens
+ */
+std::vector<std::string>& split(std::string const s, char delim, std::vector<std::string>& elems);
 
-    return elems;
-}
-
-std::vector<std::string> split(std::string const s, char delim)
-{
-    std::vector<std::string> elems;
-    return split(s, delim, elems);
-}
+/**
+ * Split a string using a single character delimiter.
+ *
+ * @param s     String to split
+ * @param delim Delimiter character
+ * @return Vector containing split tokens
+ */
+std::vector<std::string> split(std::string const s, char delim);
 
 #endif
