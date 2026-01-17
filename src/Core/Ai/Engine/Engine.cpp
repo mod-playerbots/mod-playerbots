@@ -7,7 +7,7 @@
 
 #include "Action.h"
 #include "Event.h"
-#include "PerformanceMonitor.h"
+#include "PerfMonitor.h"
 #include "Playerbots.h"
 #include "Queue.h"
 #include "Strategy.h"
@@ -204,7 +204,7 @@ bool Engine::DoNextAction(Unit* unit, uint32 depth, bool minimal)
                     }
                 }
 
-                PerformanceMonitorOperation* pmo = sPerformanceMonitor->start(PERF_MON_ACTION, action->getName(), &aiObjectContext->performanceStack);
+                PerfMonitorOperation* pmo = sPerfMonitor->start(PERF_MON_ACTION, action->getName(), &aiObjectContext->performanceStack);
                 actionExecuted = ListenAndExecute(action, event);
                 if (pmo)
                     pmo->finish();
@@ -456,8 +456,8 @@ void Engine::ProcessTriggers(bool minimal)
             if (minimal && node->getFirstRelevance() < 100)
                 continue;
 
-            PerformanceMonitorOperation* pmo =
-                sPerformanceMonitor->start(PERF_MON_TRIGGER, trigger->getName(), &aiObjectContext->performanceStack);
+            PerfMonitorOperation* pmo =
+                sPerfMonitor->start(PERF_MON_TRIGGER, trigger->getName(), &aiObjectContext->performanceStack);
             Event event = trigger->Check();
             if (pmo)
                 pmo->finish();

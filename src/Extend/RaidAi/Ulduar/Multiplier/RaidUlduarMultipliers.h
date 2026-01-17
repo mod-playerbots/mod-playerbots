@@ -3,7 +3,7 @@
 #define _PLAYERRBOT_RAIDULDUARMULTIPLIERS_H_
 
 #include "Multiplier.h"
-#include "Extended/ScenarioAi/Raid/Ulduar/RaidUlduarBossHelper.h"
+#include "Extend/RaidAi/Ulduar/RaidUlduarBossHelper.h"
 
 class FlameLeviathanMultiplier : public Multiplier
 {

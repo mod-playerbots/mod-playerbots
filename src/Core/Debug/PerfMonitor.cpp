@@ -3,11 +3,11 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include "PerformanceMonitor.h"
+#include "PerfMonitor.h"
 
 #include "Playerbots.h"
 
-PerformanceMonitorOperation* PerformanceMonitor::start(PerformanceMetric metric, std::string const name,
+PerfMonitorOperation* PerfMonitor::start(PerformanceMetric metric, std::string const name,
                                                        PerformanceStack* stack)
 {
     if (!sPlayerbotAIConfig->perfMonEnabled)
@@ -45,10 +45,10 @@ PerformanceMonitorOperation* PerformanceMonitor::start(PerformanceMetric metric,
         data[metric][stackName] = pd;
     }
 
-    return new PerformanceMonitorOperation(pd, name, stack);
+    return new PerfMonitorOperation(pd, name, stack);
 }
 
-void PerformanceMonitor::PrintStats(bool perTick, bool fullStack)
+void PerfMonitor::PrintStats(bool perTick, bool fullStack)
 {
     if (data.empty())
         return;
@@ -247,7 +247,7 @@ void PerformanceMonitor::PrintStats(bool perTick, bool fullStack)
     }
 }
 
-void PerformanceMonitor::Reset()
+void PerfMonitor::Reset()
 {
     for (std::map<PerformanceMetric, std::map<std::string, PerformanceData*>>::iterator i = data.begin();
          i != data.end(); ++i)
@@ -265,7 +265,7 @@ void PerformanceMonitor::Reset()
     }
 }
 
-PerformanceMonitorOperation::PerformanceMonitorOperation(PerformanceData* data, std::string const name,
+PerfMonitorOperation::PerfMonitorOperation(PerformanceData* data, std::string const name,
                                                          PerformanceStack* stack)
     : data(data), name(name), stack(stack)
 {
@@ -273,7 +273,7 @@ PerformanceMonitorOperation::PerformanceMonitorOperation(PerformanceData* data, 
                   .time_since_epoch();
 }
 
-void PerformanceMonitorOperation::finish()
+void PerfMonitorOperation::finish()
 {
     std::chrono::microseconds finished =
         (std::chrono::time_point_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()))

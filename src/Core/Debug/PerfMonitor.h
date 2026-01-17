@@ -34,10 +34,10 @@ enum PerformanceMetric
     PERF_MON_TOTAL
 };
 
-class PerformanceMonitorOperation
+class PerfMonitorOperation
 {
 public:
-    PerformanceMonitorOperation(PerformanceData* data, std::string const name, PerformanceStack* stack);
+    PerfMonitorOperation(PerformanceData* data, std::string const name, PerformanceStack* stack);
     void finish();
 
 private:
@@ -47,19 +47,19 @@ private:
     std::chrono::microseconds started;
 };
 
-class PerformanceMonitor
+class PerfMonitor
 {
 public:
-    PerformanceMonitor(){};
-    virtual ~PerformanceMonitor(){};
-    static PerformanceMonitor* instance()
+    PerfMonitor(){};
+    virtual ~PerfMonitor(){};
+    static PerfMonitor* instance()
     {
-        static PerformanceMonitor instance;
+        static PerfMonitor instance;
         return &instance;
     }
 
 public:
-    PerformanceMonitorOperation* start(PerformanceMetric metric, std::string const name,
+    PerfMonitorOperation* start(PerformanceMetric metric, std::string const name,
                                        PerformanceStack* stack = nullptr);
     void PrintStats(bool perTick = false, bool fullStack = false);
     void Reset();
@@ -69,6 +69,6 @@ private:
     std::mutex lock;
 };
 
-#define sPerformanceMonitor PerformanceMonitor::instance()
+#define sPerfMonitor PerfMonitor::instance()
 
 #endif

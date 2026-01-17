@@ -24,7 +24,7 @@
 #include "LootMgr.h"
 #include "MapMgr.h"
 #include "ObjectMgr.h"
-#include "PerformanceMonitor.h"
+#include "PerfMonitor.h"
 #include "PetDefines.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
@@ -240,7 +240,7 @@ void PlayerbotFactory::Randomize(bool incremental)
     // LOG_DEBUG("playerbots", "Preparing to {} randomize...", (incremental ? "incremental" : "full"));
     Prepare();
     LOG_DEBUG("playerbots", "Resetting player...");
-    PerformanceMonitorOperation* pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Reset");
+    PerfMonitorOperation* pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Reset");
     if (!sPlayerbotAIConfig->equipmentPersistence || level < sPlayerbotAIConfig->equipmentPersistenceLevel)
     {
         bot->resetTalents(true);
@@ -266,7 +266,7 @@ void PlayerbotFactory::Randomize(bool incremental)
     if (pmo)
         pmo->finish();
 
-    // pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Immersive");
+    // pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Immersive");
     // LOG_INFO("playerbots", "Initializing immersive...");
     // InitImmersive();
     // if (pmo)
@@ -274,7 +274,7 @@ void PlayerbotFactory::Randomize(bool incremental)
 
     if (sPlayerbotAIConfig->randomBotPreQuests)
     {
-        pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Quests");
+        pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Quests");
         InitInstanceQuests();
         InitAttunementQuests();
         if (pmo)
@@ -282,27 +282,27 @@ void PlayerbotFactory::Randomize(bool incremental)
     }
     else
     {
-        pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Quests");
+        pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Quests");
         InitAttunementQuests();
         if (pmo)
             pmo->finish();
     }
 
     LOG_DEBUG("playerbots", "Initializing skills (step 1)...");
-    pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Skills1");
+    pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Skills1");
     bot->LearnDefaultSkills();
     InitSkills();
     if (pmo)
         pmo->finish();
 
-    pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Spells1");
+    pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Spells1");
     LOG_DEBUG("playerbots", "Initializing spells (step 1)...");
     InitClassSpells();
     InitAvailableSpells();
     if (pmo)
         pmo->finish();
 
-    pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Talents");
+    pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Talents");
     LOG_DEBUG("playerbots", "Initializing talents...");
     if (!incremental || !sPlayerbotAIConfig->equipmentPersistence ||
         bot->GetLevel() < sPlayerbotAIConfig->equipmentPersistenceLevel)
@@ -319,38 +319,38 @@ void PlayerbotFactory::Randomize(bool incremental)
     if (pmo)
         pmo->finish();
 
-    pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Spells2");
+    pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Spells2");
     LOG_DEBUG("playerbots", "Initializing spells (step 2)...");
     InitAvailableSpells();
     if (pmo)
         pmo->finish();
 
-    pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Reputation");
+    pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Reputation");
     LOG_DEBUG("playerbots", "Initializing reputation...");
     InitReputation();
     if (pmo)
         pmo->finish();
 
     LOG_DEBUG("playerbots", "Initializing special spells...");
-    pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Spells3");
+    pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Spells3");
     InitSpecialSpells();
     if (pmo)
         pmo->finish();
 
-    pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Mounts");
+    pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Mounts");
     LOG_DEBUG("playerbots", "Initializing mounts...");
     InitMounts();
     // bot->SaveToDB(false, false);
     if (pmo)
         pmo->finish();
 
-    // pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Skills2");
+    // pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Skills2");
     // LOG_INFO("playerbots", "Initializing skills (step 2)...");
     // UpdateTradeSkills();
     // if (pmo)
     //     pmo->finish();
 
-    pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Equip");
+    pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Equip");
     LOG_DEBUG("playerbots", "Initializing equipmemt...");
     if (!incremental || !sPlayerbotAIConfig->equipmentPersistence ||
         bot->GetLevel() < sPlayerbotAIConfig->equipmentPersistenceLevel)
@@ -364,51 +364,51 @@ void PlayerbotFactory::Randomize(bool incremental)
 
     // if (bot->GetLevel() >= sPlayerbotAIConfig->minEnchantingBotLevel)
     // {
-    //     pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Enchant");
+    //     pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Enchant");
     //     LOG_INFO("playerbots", "Initializing enchant templates...");
     //     LoadEnchantContainer();
     //     if (pmo)
     //         pmo->finish();
     // }
 
-    pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Bags");
+    pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Bags");
     LOG_DEBUG("playerbots", "Initializing bags...");
     InitBags();
     // bot->SaveToDB(false, false);
     if (pmo)
         pmo->finish();
 
-    pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Ammo");
+    pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Ammo");
     LOG_DEBUG("playerbots", "Initializing ammo...");
     InitAmmo();
     if (pmo)
         pmo->finish();
 
-    pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Food");
+    pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Food");
     LOG_DEBUG("playerbots", "Initializing food...");
     InitFood();
     if (pmo)
         pmo->finish();
 
-    pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Potions");
+    pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Potions");
     LOG_DEBUG("playerbots", "Initializing potions...");
     InitPotions();
     if (pmo)
         pmo->finish();
 
-    pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Reagents");
+    pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Reagents");
     LOG_DEBUG("playerbots", "Initializing reagents...");
     InitReagents();
     if (pmo)
         pmo->finish();
 
-    pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Keys");
+    pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Keys");
     LOG_DEBUG("playerbots", "Initializing keys...");
     InitKeyring();
     if (pmo)
         pmo->finish();
 
-    // pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_EqSets");
+    // pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_EqSets");
     // LOG_DEBUG("playerbots", "Initializing second equipment set...");
     //    InitSecondEquipmentSet();
     // if (pmo)
@@ -419,20 +419,20 @@ void PlayerbotFactory::Randomize(bool incremental)
         ApplyEnchantAndGemsNew();
     }
     // {
-    // pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_EnchantTemplate");
+    // pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_EnchantTemplate");
     // LOG_INFO("playerbots", "Initializing enchant templates...");
     // ApplyEnchantTemplate();
     // if (pmo)
     //     pmo->finish();
     // }
 
-    pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Inventory");
+    pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Inventory");
     LOG_DEBUG("playerbots", "Initializing inventory...");
     // InitInventory();
     if (pmo)
         pmo->finish();
 
-    pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Consumable");
+    pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Consumable");
     LOG_DEBUG("playerbots", "Initializing consumables...");
     InitConsumables();
     if (pmo)
@@ -442,7 +442,7 @@ void PlayerbotFactory::Randomize(bool incremental)
     InitGlyphs();
     // bot->SaveToDB(false, false);
 
-    pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Guilds");
+    pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Guilds");
     // bot->SaveToDB(false, false);
     if (sPlayerbotAIConfig->randomBotGuildCount > 0)
     {
@@ -455,7 +455,7 @@ void PlayerbotFactory::Randomize(bool incremental)
 
     if (bot->GetLevel() >= 70)
     {
-        pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Arenas");
+        pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Arenas");
         // LOG_INFO("playerbots", "Initializing arena teams...");
         InitArenaTeam();
         if (pmo)
@@ -470,7 +470,7 @@ void PlayerbotFactory::Randomize(bool incremental)
     }
     if (bot->GetLevel() >= 10)
     {
-        pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Pet");
+        pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Pet");
         LOG_DEBUG("playerbots", "Initializing pet...");
         InitPet();
         // bot->SaveToDB(false, false);
@@ -479,7 +479,7 @@ void PlayerbotFactory::Randomize(bool incremental)
             pmo->finish();
     }
 
-    pmo = sPerformanceMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Save");
+    pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "PlayerbotFactory_Save");
     LOG_DEBUG("playerbots", "Saving to DB...");
     bot->SetMoney(urand(level * 100000, level * 5 * 100000));
     bot->SetHealth(bot->GetMaxHealth());

@@ -43,7 +43,7 @@ struct BattlegroundInfo
 };
 
 class ChatHandler;
-class PerformanceMonitorOperation;
+class PerfMonitorOperation;
 class WorldLocation;
 
 struct CachedEvent

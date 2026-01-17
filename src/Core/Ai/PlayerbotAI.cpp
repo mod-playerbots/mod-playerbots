@@ -38,7 +38,7 @@
 #include "NewRpgStrategy.h"
 #include "ObjectGuid.h"
 #include "ObjectMgr.h"
-#include "PerformanceMonitor.h"
+#include "PerfMonitor.h"
 #include "Player.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotRepository.h"
@@ -441,8 +441,8 @@ void PlayerbotAI::UpdateAIInternal([[maybe_unused]] uint32 elapsed, bool minimal
         return;
 
     std::string const mapString = WorldPosition(bot).isOverworld() ? std::to_string(bot->GetMapId()) : "I";
-    PerformanceMonitorOperation* pmo =
-        sPerformanceMonitor->start(PERF_MON_TOTAL, "PlayerbotAI::UpdateAIInternal " + mapString);
+    PerfMonitorOperation* pmo =
+        sPerfMonitor->start(PERF_MON_TOTAL, "PlayerbotAI::UpdateAIInternal " + mapString);
     ExternalEventHelper helper(aiObjectContext);
 
     // chat replies

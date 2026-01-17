@@ -16,7 +16,7 @@
 #include "BattleGroundTactics.h"
 #include "Chat.h"
 #include "GuildTaskMgr.h"
-#include "PerformanceMonitor.h"
+#include "PerfMonitor.h"
 #include "PlayerbotMgr.h"
 #include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
@@ -76,19 +76,19 @@ public:
     {
         if (!strcmp(args, "reset"))
         {
-            sPerformanceMonitor->Reset();
+            sPerfMonitor->Reset();
             return true;
         }
 
         if (!strcmp(args, "tick"))
         {
-            sPerformanceMonitor->PrintStats(true, false);
+            sPerfMonitor->PrintStats(true, false);
             return true;
         }
 
         if (!strcmp(args, "stack"))
         {
-            sPerformanceMonitor->PrintStats(false, true);
+            sPerfMonitor->PrintStats(false, true);
             return true;
         }
 
@@ -102,7 +102,7 @@ public:
             return true;
         }
 
-        sPerformanceMonitor->PrintStats();
+        sPerfMonitor->PrintStats();
         return true;
     }
 

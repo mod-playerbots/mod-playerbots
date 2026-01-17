@@ -5,7 +5,7 @@
 
 #include "Value.h"
 
-#include "PerformanceMonitor.h"
+#include "PerfMonitor.h"
 #include "Playerbots.h"
 #include "Timer.h"
 
@@ -123,7 +123,7 @@ Unit* UnitCalculatedValue::Get()
 {
     if (checkInterval < 2)
     {
-        PerformanceMonitorOperation* pmo = sPerformanceMonitor->start(
+        PerfMonitorOperation* pmo = sPerfMonitor->start(
             PERF_MON_VALUE, this->getName(), this->context ? &this->context->performanceStack : nullptr);
         value = Calculate();
         if (pmo)
@@ -135,7 +135,7 @@ Unit* UnitCalculatedValue::Get()
         if (!lastCheckTime || now - lastCheckTime >= checkInterval)
         {
             lastCheckTime = now;
-            PerformanceMonitorOperation* pmo = sPerformanceMonitor->start(
+            PerfMonitorOperation* pmo = sPerfMonitor->start(
                 PERF_MON_VALUE, this->getName(), this->context ? &this->context->performanceStack : nullptr);
             value = Calculate();
             if (pmo)

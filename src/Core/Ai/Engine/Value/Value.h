@@ -10,7 +10,7 @@
 
 #include "AiObject.h"
 #include "ObjectGuid.h"
-#include "PerformanceMonitor.h"
+#include "PerfMonitor.h"
 #include "Timer.h"
 #include "Unit.h"
 
@@ -72,7 +72,7 @@ public:
     {
         if (checkInterval < 2)
         {
-            // PerformanceMonitorOperation* pmo = sPerformanceMonitor->start(PERF_MON_VALUE, this->getName(),
+            // PerfMonitorOperation* pmo = sPerfMonitor->start(PERF_MON_VALUE, this->getName(),
             // this->context ? &this->context->performanceStack : nullptr);
             value = Calculate();
             // if (pmo)
@@ -84,7 +84,7 @@ public:
             if (!lastCheckTime || now - lastCheckTime >= checkInterval)
             {
                 lastCheckTime = now;
-                // PerformanceMonitorOperation* pmo = sPerformanceMonitor->start(PERF_MON_VALUE, this->getName(),
+                // PerfMonitorOperation* pmo = sPerfMonitor->start(PERF_MON_VALUE, this->getName(),
                 // this->context ? &this->context->performanceStack : nullptr);
                 value = Calculate();
                 // if (pmo)
@@ -105,7 +105,7 @@ public:
     {
         if (checkInterval < 2)
         {
-            // PerformanceMonitorOperation* pmo = sPerformanceMonitor->start(PERF_MON_VALUE, this->getName(),
+            // PerfMonitorOperation* pmo = sPerfMonitor->start(PERF_MON_VALUE, this->getName(),
             // this->context ? &this->context->performanceStack : nullptr);
             value = Calculate();
             // if (pmo)
@@ -117,7 +117,7 @@ public:
             if (!lastCheckTime || now - lastCheckTime >= checkInterval)
             {
                 lastCheckTime = now;
-                // PerformanceMonitorOperation* pmo = sPerformanceMonitor->start(PERF_MON_VALUE, this->getName(),
+                // PerfMonitorOperation* pmo = sPerfMonitor->start(PERF_MON_VALUE, this->getName(),
                 // this->context ? &this->context->performanceStack : nullptr);
                 value = Calculate();
                 // if (pmo)
@@ -154,7 +154,7 @@ public:
         {
             this->lastCheckTime = now;
 
-            PerformanceMonitorOperation* pmo = sPerformanceMonitor->start(
+            PerfMonitorOperation* pmo = sPerfMonitor->start(
                 PERF_MON_VALUE, this->getName(), this->context ? &this->context->performanceStack : nullptr);
             this->value = this->Calculate();
             if (pmo)
