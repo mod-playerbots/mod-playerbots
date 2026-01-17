@@ -550,6 +550,41 @@ void PlayerbotAI::HandleCommands()
         it = chatCommands.erase(it);
     }
 }
+static uint32 ClearRaidBindsForPlayerOnly(Player* player)
+{
+    if (!player)
+        return 0;
+
+    sInstanceSaveMgr->PlayerCreateBoundInstancesMaps(player->GetGUID());
+
+    uint32 cleared = 0;
+
+    for (uint8 d = 0; d < MAX_DIFFICULTY; ++d)
+    {
+        Difficulty const diff = Difficulty(d);
+
+        // Collect first, then unbind, to avoid iterator invalidation.
+        std::vector<uint32> raidMapIds;
+        raidMapIds.reserve(16);
+
+        for (auto const& [mapId, bind] : sInstanceSaveMgr->PlayerGetBoundInstances(player->GetGUID(), diff))
+        {
+            MapEntry const* entry = sMapStore.LookupEntry(mapId);
+            if (!entry || !entry->Instanceable() || !entry->IsRaid())
+                continue;
+
+            raidMapIds.push_back(mapId);
+        }
+
+        for (uint32 mapId : raidMapIds)
+        {
+            sInstanceSaveMgr->PlayerUnbindInstance(player->GetGUID(), mapId, diff, true, player);
+            ++cleared;
+        }
+    }
+
+    return cleared;
+}
 
 std::map<std::string, ChatMsg> chatMap;
 void PlayerbotAI::HandleCommand(uint32 type, const std::string& text, Player& fromPlayer, const uint32 lang)
@@ -615,6 +650,22 @@ void PlayerbotAI::HandleCommand(uint32 type, const std::string& text, Player& fr
     filtered = chatFilter.Filter(trim((std::string&)filtered));
     if (filtered.empty())
         return;
+
+    if (filtered == "resetraids" || filtered == "reset raid" || filtered == "reset raids" || filtered == "clearraids" ||
+        filtered == "clear raids" || filtered == "clear raid")
+    {
+        // Require that the sender is allowed to control this bot
+        if (!GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_ALLOW_ALL, type != CHAT_MSG_WHISPER, &fromPlayer))
+            return;
+
+        ClearRaidBindsForPlayerOnly(bot);
+        bot->SendRaidInfo();
+
+        std::ostringstream out;
+        out << "Raid lockouts cleared for " << bot->GetName();
+        Whisper(out.str(), fromPlayer.GetName());
+        return;
+    }
 
     if (filtered.substr(0, 6) == "debug ")
     {
@@ -955,6 +1006,26 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
     filtered = chatFilter.Filter(trim(filtered));
     if (filtered.empty())
         return;
+
+        if (filtered == "resetraids" || filtered == "reset raid" || filtered == "reset raids" || filtered == "clearraids" ||
+        filtered == "clear raids" || filtered == "clear raid")
+    {
+        if (!fromPlayer)
+            return;
+
+        // Require that the sender is allowed to fully control this bot
+        if (!GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_ALLOW_ALL, type != CHAT_MSG_WHISPER, fromPlayer))
+            return;
+
+        ClearRaidBindsForPlayerOnly(bot);
+        bot->SendRaidInfo();
+
+        std::ostringstream out;
+        out << "Raid lockouts cleared for " << bot->GetName();
+        Whisper(out.str(), fromPlayer->GetName());
+        return;
+    }
+
 
     if (filtered.substr(0, 6) == "debug ")
     {
