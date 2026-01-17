@@ -67,6 +67,7 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/, bool skipCom
     if (!skipCombatDelay && botAI->HasStrategy("combat delay", BOT_STATE_NON_COMBAT) && sPlayerbotAIConfig->combatDelay > 0 && !sameTarget && !inCombat && !isPvPTarget)
     {
         static std::unordered_map<ObjectGuid, uint32> targetFirstSeenTime;
+        static uint32 lastCleanupTime = 0;
         ObjectGuid targetGuid = target->GetGUID();
         uint32 currentTime = getMSTime();
         if (targetFirstSeenTime.find(targetGuid) == targetFirstSeenTime.end())
@@ -77,13 +78,16 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/, bool skipCom
             return false;
 
         // Clean up old entries to prevent memory leak
-        // Remove entries older than combatDelay + threshold
-        for (auto it = targetFirstSeenTime.begin(); it != targetFirstSeenTime.end();)
+        if (currentTime - lastCleanupTime > 60000)
         {
-            if (currentTime - it->second > sPlayerbotAIConfig->combatDelay + 10000)
-                it = targetFirstSeenTime.erase(it);
-            else
-                ++it;
+            lastCleanupTime = currentTime;
+            for (auto it = targetFirstSeenTime.begin(); it != targetFirstSeenTime.end();)
+            {
+                if (currentTime - it->second > sPlayerbotAIConfig->combatDelay + 10000)
+                    it = targetFirstSeenTime.erase(it);
+                else
+                    ++it;
+            }
         }
     }
 
