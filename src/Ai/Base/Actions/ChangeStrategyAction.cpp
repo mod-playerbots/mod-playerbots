@@ -8,7 +8,6 @@
 #include "Event.h"
 #include "Helpers.h"
 #include "PlayerbotRepository.h"
-#include "PlayerbotDbStore.h"
 #include "Playerbots.h"
 
 bool ChangeCombatStrategyAction::Execute(Event event)
