@@ -9,6 +9,8 @@
 #include <mutex>
 #include <sstream>
 #include <string>
+#include <algorithm>
+#include <cctype>
 
 #include "AiFactory.h"
 #include "BudgetValues.h"
@@ -574,6 +576,12 @@ void PlayerbotAI::HandleCommand(uint32 type, const std::string& text, Player& fr
     if (type == CHAT_MSG_SYSTEM)
         return;
 
+    // Normalize command casing after filtering/prefix stripping
+    std::transform(filtered.begin(), filtered.end(), filtered.begin(),
+        [](unsigned char c) { return std::tolower(c); });
+
+    std::transform(filtered.begin(), filtered.end(), filtered.begin(),
+        [](unsigned char c) { return std::tolower(c); });
     if (filtered.find(sPlayerbotAIConfig->commandSeparator) != std::string::npos)
     {
         std::vector<std::string> commands;
@@ -911,6 +919,10 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
     if (type == CHAT_MSG_SYSTEM)
         return;
 
+    // Normalize command casing after filtering/prefix stripping
+    std::string filtered = text;
+    std::transform(filtered.begin(), filtered.end(), filtered.begin(),
+        [](unsigned char c) { return std::tolower(c); });
     if (text.find(sPlayerbotAIConfig->commandSeparator) != std::string::npos)
     {
         std::vector<std::string> commands;
@@ -923,7 +935,6 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
         return;
     }
 
-    std::string filtered = text;
     if (!sPlayerbotAIConfig->commandPrefix.empty())
     {
         if (filtered.find(sPlayerbotAIConfig->commandPrefix) != 0)
