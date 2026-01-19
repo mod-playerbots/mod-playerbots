@@ -45,11 +45,13 @@ void ServerFacade::SetFacingTo(Player* bot, WorldObject* wo, bool force)
         return;
 
     float angle = bot->GetAngle(wo);
+
     // if (!force && bot->isMoving())
     //     bot->SetFacingTo(bot->GetAngle(wo));
     // else
     // {
     bot->SetOrientation(angle);
+
     if (!bot->IsRooted())
         bot->SendMovementFlagUpdate();
     // }
@@ -64,16 +66,14 @@ Unit* ServerFacade::GetChaseTarget(Unit* target)
         {
             return static_cast<ChaseMovementGenerator<Player> const*>(movementGen)->GetTarget();
         }
-        else
-        {
-            return static_cast<ChaseMovementGenerator<Creature> const*>(movementGen)->GetTarget();
-        }
+
+        return static_cast<ChaseMovementGenerator<Creature> const*>(movementGen)->GetTarget();
     }
 
     return nullptr;
 }
 
-void ServerFacade::SendPacket(Player *player, WorldPacket *packet)
+void ServerFacade::SendPacket(Player* player, WorldPacket* packet)
 {
-    return player->GetSession()->SendPacket(packet);
+    player->GetSession()->SendPacket(packet);
 }
