@@ -542,7 +542,11 @@ void PlayerbotAI::HandleCommands()
             continue;
         }
 
-        if (!helper.ParseChatCommand(command, owner) && it->GetType() == CHAT_MSG_WHISPER)
+        std::string normalizedCommand = command;
+        std::transform(normalizedCommand.begin(), normalizedCommand.end(), normalizedCommand.begin(),
+            [](unsigned char c) { return std::tolower(c); });
+
+        if (!helper.ParseChatCommand(normalizedCommand, owner) && it->GetType() == CHAT_MSG_WHISPER)
         {
             // ostringstream out; out << "Unknown command " << command;
             // TellPlayer(out);
@@ -561,6 +565,10 @@ void PlayerbotAI::HandleCommand(uint32 type, const std::string& text, Player& fr
 
     std::string filtered = text;
 
+    // Normalize command casing after filtering/prefix stripping
+    std::transform(filtered.begin(), filtered.end(), filtered.begin(),
+        [](unsigned char c) { return std::tolower(c); });
+    
     if (!IsAllowedCommand(filtered) && !GetSecurity()->CheckLevelFor(PlayerbotSecurityLevel::PLAYERBOT_SECURITY_INVITE,
                                                                      type != CHAT_MSG_WHISPER, &fromPlayer))
         return;
@@ -576,12 +584,6 @@ void PlayerbotAI::HandleCommand(uint32 type, const std::string& text, Player& fr
     if (type == CHAT_MSG_SYSTEM)
         return;
 
-    // Normalize command casing after filtering/prefix stripping
-    std::transform(filtered.begin(), filtered.end(), filtered.begin(),
-        [](unsigned char c) { return std::tolower(c); });
-
-    std::transform(filtered.begin(), filtered.end(), filtered.begin(),
-        [](unsigned char c) { return std::tolower(c); });
     if (filtered.find(sPlayerbotAIConfig->commandSeparator) != std::string::npos)
     {
         std::vector<std::string> commands;
@@ -910,6 +912,10 @@ bool PlayerbotAI::IsAllowedCommand(std::string const text)
 
 void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fromPlayer)
 {
+    std::string filtered = text;
+    std::transform(filtered.begin(), filtered.end(), filtered.begin(),
+        [](unsigned char c) { return std::tolower(c); });
+
     if (!GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_INVITE, type != CHAT_MSG_WHISPER, fromPlayer))
         return;
 
@@ -919,10 +925,6 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
     if (type == CHAT_MSG_SYSTEM)
         return;
 
-    // Normalize command casing after filtering/prefix stripping
-    std::string filtered = text;
-    std::transform(filtered.begin(), filtered.end(), filtered.begin(),
-        [](unsigned char c) { return std::tolower(c); });
     if (text.find(sPlayerbotAIConfig->commandSeparator) != std::string::npos)
     {
         std::vector<std::string> commands;
