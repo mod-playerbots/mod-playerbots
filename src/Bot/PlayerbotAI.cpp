@@ -924,6 +924,8 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
     }
 
     std::string filtered = text;
+    std::transform(filtered.begin(), filtered.end(), filtered.begin(),
+               [](unsigned char c) { return std::tolower(c); });
     if (!sPlayerbotAIConfig->commandPrefix.empty())
     {
         if (filtered.find(sPlayerbotAIConfig->commandPrefix) != 0)
