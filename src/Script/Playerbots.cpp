@@ -190,11 +190,13 @@ public:
             if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(receiver))
             {
                 botAI->HandleCommand(type, msg, player);
-
+                std::string lowered = msg;
+                std::transform(lowered.begin(), lowered.end(), lowered.begin(),
+                [](unsigned char c) { return std::tolower(c); });
                 // hotfix; otherwise the server will crash when whispering logout
                 // https://github.com/mod-playerbots/mod-playerbots/pull/1838
                 // TODO: find the root cause and solve it. (does not happen in party chat)
-                if (msg == "logout")
+                if (lowered == "logout")
                     return false;
             }
         }
