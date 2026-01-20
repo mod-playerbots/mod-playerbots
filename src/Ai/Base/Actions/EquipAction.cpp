@@ -402,24 +402,6 @@ bool EquipUpgradesTriggeredAction::Execute(Event event)
             return false;
     }
 
-    else if (event.GetSource() == "loot roll won")
-    {
-        WorldPacket p(event.getPacket());
-        p.rpos(0);
-        ObjectGuid itemGuid, playerGuid;
-        uint32 itemSlot, itemId, itemRandomSuffix, itemRandomPropId;
-        uint8 rollNumber, rollType;
-
-        p >> itemGuid;
-        p >> itemId;
-        p >> itemRandomSuffix;
-        p >> itemRandomPropId;
-        p >> playerGuid;
-
-        if (bot->GetGUID() != playerGuid)
-            return false;
-    }
-
     ItemIds items = SelectInventoryItemsToEquip();
     EquipItems(items);
     return true;
