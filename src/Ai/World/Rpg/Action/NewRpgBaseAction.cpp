@@ -970,7 +970,7 @@ WorldPosition NewRpgBaseAction::SelectRandomCampPos(Player* bot)
 bool NewRpgBaseAction::SelectRandomFlightTaxiNode(ObjectGuid& flightMaster, uint32& fromNode, uint32& toNode)
 {
     Creature* nearestFlightMaster = sFlightMasterCache->GetNearestFlightMaster(bot);
-    if (!nearestFlightMaster)
+    if (!nearestFlightMaster || bot->GetDistance(nearestFlightMaster) > 500.0f)
         return false;
 
     fromNode = sObjectMgr->GetNearestTaxiNode(nearestFlightMaster->GetPositionX(), nearestFlightMaster->GetPositionY(),
