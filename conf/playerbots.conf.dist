@@ -269,7 +269,7 @@ AiPlayerbot.UseFastFlyMountAtMinLevel = 70
 AiPlayerbot.RandomBotShowHelmet = 1
 AiPlayerbot.RandomBotShowCloak = 1
 
-# Randombots and altbots automatically equip any items in their inventory that are sufficient upgrades
+# Altbots and addclass bots automatically equip any items in their inventory that are sufficient upgrades when items are looted.
 # Default: 1 (enabled)
 AiPlayerbot.AutoEquipUpgradeLoot = 1
 

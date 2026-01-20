@@ -42,8 +42,11 @@ public:
 
     ItemUsage Calculate() override;
 
-private:
+protected:
     ItemUsage QueryItemUsageForEquip(ItemTemplate const* proto, int32 randomPropertyId = 0);
+    ItemUsage QueryItemUsageForAmmo(ItemTemplate const* proto);
+
+private:
     uint32 GetSmallestBagSize();
     bool IsItemUsefulForQuest(Player* player, ItemTemplate const* proto);
     bool IsItemNeededForSkill(ItemTemplate const* proto);
@@ -59,6 +62,16 @@ public:
     static bool SpellGivesSkillUp(uint32 spellId, Player* bot);
 
     static std::string const GetConsumableType(ItemTemplate const* proto, bool hasMana);
+};
+
+class ItemUpgradeValue : public ItemUsageValue
+{
+public:
+    ItemUpgradeValue(PlayerbotAI* botAI, std::string const name = "item upgrade") : ItemUsageValue(botAI, name)
+    {
+    }
+
+    ItemUsage Calculate() override;
 };
 
 #endif
