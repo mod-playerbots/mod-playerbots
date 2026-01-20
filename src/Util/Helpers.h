@@ -8,16 +8,8 @@
 
 #include "Common.h"
 
-#include <algorithm>
-#include <cctype>
-#include <functional>
-#include <locale>
-#include <map>
-#include <sstream>
 #include <string>
 #include <vector>
-#include <stdio.h>
-#include <string.h>
 
 /**
  * Case-insensitive substring search.
