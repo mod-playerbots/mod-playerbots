@@ -138,7 +138,7 @@ public:
         creators["chat"] = &ChatActionContext::chat;
         creators["home"] = &ChatActionContext::home;
         creators["destroy"] = &ChatActionContext::destroy;
-        creators["reset botAI"] = &ChatActionContext::reset_ai;
+        creators["reset botai"] = &ChatActionContext::reset_ai;
         creators["buff"] = &ChatActionContext::buff;
         creators["help"] = &ChatActionContext::help;
         creators["gb"] = &ChatActionContext::gb;

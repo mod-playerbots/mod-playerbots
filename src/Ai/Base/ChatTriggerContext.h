@@ -68,7 +68,7 @@ public:
         creators["chat"] = &ChatTriggerContext::chat;
         creators["accept"] = &ChatTriggerContext::accept;
         creators["home"] = &ChatTriggerContext::home;
-        creators["reset botAI"] = &ChatTriggerContext::reset_ai;
+        creators["reset botai"] = &ChatTriggerContext::reset_ai;
         creators["destroy"] = &ChatTriggerContext::destroy;
         creators["emote"] = &ChatTriggerContext::emote;
         creators["buff"] = &ChatTriggerContext::buff;
@@ -231,7 +231,7 @@ private:
     static Trigger* aura(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "aura"); }
     static Trigger* loot_all(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "add all loot"); }
     static Trigger* release(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "release"); }
-    static Trigger* reset_ai(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "reset botAI"); }
+    static Trigger* reset_ai(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "reset botai"); }
     static Trigger* spell(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "spell"); }
     static Trigger* ready_check(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "ready check"); }
     static Trigger* give_leader(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "give leader"); }
