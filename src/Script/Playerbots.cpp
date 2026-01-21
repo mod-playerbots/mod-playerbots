@@ -242,6 +242,15 @@ public:
 
     bool OnPlayerCanUseChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Channel* channel) override
     {
+        std::string lowered = msg;
+        std::transform(lowered.begin(), lowered.end(), lowered.begin(),
+                [](unsigned char c) { return std::tolower(c); });
+        // hotfix; otherwise the server will crash when saying logout in channel chat
+        // https://github.com/mod-playerbots/mod-playerbots/pull/1838
+        // TODO: find the root cause and solve it.
+        if (lowered == "logout")
+            return false;
+
         if (PlayerbotMgr* playerbotMgr = GET_PLAYERBOT_MGR(player))
         {
             if (channel->GetFlags() & 0x18)
