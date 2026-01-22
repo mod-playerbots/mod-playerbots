@@ -13,48 +13,53 @@
 #include "Strategy.h"
 #include "Timer.h"
 
+#include "ActionNode.h"
+#include "NextAction.h"
+
 Engine::Engine(PlayerbotAI* botAI, AiObjectContext* factory) : PlayerbotAIAware(botAI), aiObjectContext(factory)
 {
     lastRelevance = 0.0f;
     testMode = false;
 }
 
-bool ActionExecutionListeners::Before(Action* action, Event event)
+bool ActionExecutionListeners::before(Action& action, Event event)
 {
     bool result = true;
-    for (std::list<ActionExecutionListener*>::iterator i = listeners.begin(); i != listeners.end(); i++)
+
+    for (std::list<ActionExecutionListener*>::iterator i = this->listeners.begin(); i != this->listeners.end(); i++)
     {
-        result &= (*i)->Before(action, event);
+        result &= (*i)->before(action, event);
     }
 
     return result;
 }
 
-void ActionExecutionListeners::After(Action* action, bool executed, Event event)
+void ActionExecutionListeners::after(Action& action, bool executed, Event event)
 {
     for (std::list<ActionExecutionListener*>::iterator i = listeners.begin(); i != listeners.end(); i++)
     {
-        (*i)->After(action, executed, event);
+        (*i)->after(action, executed, event);
     }
 }
 
-bool ActionExecutionListeners::OverrideResult(Action* action, bool executed, Event event)
+bool ActionExecutionListeners::overrideResult(Action& action, bool executed, Event event)
 {
     bool result = executed;
     for (std::list<ActionExecutionListener*>::iterator i = listeners.begin(); i != listeners.end(); i++)
     {
-        result = (*i)->OverrideResult(action, result, event);
+        result = (*i)->overrideResult(action, result, event);
     }
 
     return result;
 }
 
-bool ActionExecutionListeners::AllowExecution(Action* action, Event event)
+bool ActionExecutionListeners::allowExecution(Action& action, Event event)
 {
     bool result = true;
+
     for (std::list<ActionExecutionListener*>::iterator i = listeners.begin(); i != listeners.end(); i++)
     {
-        result &= (*i)->AllowExecution(action, event);
+        result &= (*i)->allowExecution(action, event);
     }
 
     return result;
@@ -138,7 +143,7 @@ void Engine::Init()
     }
 }
 
-bool Engine::DoNextAction(Unit*, uint32, bool minimal)
+bool Engine::doNextAction(Unit*, uint32, bool minimal)
 {
     LogAction("--- AI Tick ---");
 
@@ -154,11 +159,12 @@ bool Engine::DoNextAction(Unit*, uint32, bool minimal)
     PushDefaultActions();
 
     uint32 iterations = 0;
-    uint32 iterationsPerTick = queue.Size() * (minimal ? 2 : sPlayerbotAIConfig.iterationsPerTick);
+    uint32 iterationsPerTick = this->queue.Size() * (minimal ? 2 : sPlayerbotAIConfig.iterationsPerTick);
 
     while (++iterations <= iterationsPerTick)
     {
-        basket = queue.Peek();
+        basket = this->queue.Peek();
+
         if (!basket)
             break;
 
@@ -169,71 +175,74 @@ bool Engine::DoNextAction(Unit*, uint32, bool minimal)
             continue;
 
         Event event = basket->getEvent();
-        ActionNode* actionNode = queue.Pop();  // NOTE: Pop() deletes basket
-        Action* action = InitializeAction(actionNode);
+        ActionNode* actionNode = this->queue.Pop();  // NOTE: Pop() deletes basket
+        // Action* action = InitializeAction(actionNode);
+        Action& action = actionNode->getAction();
 
-        if (!action)
+        if (!action.isUseful())
         {
-            LogAction("A:%s - UNKNOWN", actionNode->getName().c_str());
-        }
-        else if (action->isUseful())
-        {
-            // Apply multipliers early to avoid unnecessary iterations
-            for (Multiplier* multiplier : multipliers)
-            {
-                relevance *= multiplier->GetValue(action);
-                action->setRelevance(relevance);
-
-                if (relevance <= 0)
-                {
-                    LogAction("Multiplier %s made action %s useless", multiplier->getName().c_str(), action->getName().c_str());
-                    break;
-                }
-            }
-
-            if (action->isPossible() && relevance > 0)
-            {
-                if (!skipPrerequisites)
-                {
-                    LogAction("A:%s - PREREQ", action->getName().c_str());
-
-                    if (MultiplyAndPush(actionNode->getPrerequisites(), relevance + 0.002f, false, event, "prereq"))
-                    {
-                        PushAgain(actionNode, relevance + 0.001f, event);
-                        continue;
-                    }
-                }
-
-                PerfMonitorOperation* pmo = sPerfMonitor.start(PERF_MON_ACTION, action->getName(), &aiObjectContext->performanceStack);
-                actionExecuted = ListenAndExecute(action, event);
-                if (pmo)
-                    pmo->finish();
-
-                if (actionExecuted)
-                {
-                    LogAction("A:%s - OK", action->getName().c_str());
-                    MultiplyAndPush(actionNode->getContinuers(), relevance, false, event, "cont");
-                    lastRelevance = relevance;
-                    delete actionNode;  // Safe memory management
-                    break;
-                }
-                else
-                {
-                    LogAction("A:%s - FAILED", action->getName().c_str());
-                    MultiplyAndPush(actionNode->getAlternatives(), relevance + 0.003f, false, event, "alt");
-                }
-            }
-            else
-            {
-                LogAction("A:%s - IMPOSSIBLE", action->getName().c_str());
-                MultiplyAndPush(actionNode->getAlternatives(), relevance + 0.003f, false, event, "alt");
-            }
-        }
-        else
-        {
-            LogAction("A:%s - USELESS", action->getName().c_str());
+            LogAction("A:%s - USELESS", action.getName().c_str());
             lastRelevance = relevance;
+            delete actionNode;  // Always delete after processing the action node
+
+            continue;
         }
+
+        // Apply multipliers early to avoid unnecessary iterations
+        for (Multiplier* multiplier : multipliers)
+        {
+            relevance *= multiplier->GetValue(action);
+            action.setRelevance(relevance);
+
+            if (relevance <= 0)
+            {
+                LogAction("Multiplier %s made action %s useless", multiplier->getName().c_str(), action.getName().c_str());
+                break;
+            }
+        }
+
+        if (!action.isPossible())
+        {
+            this->multiplyAndPush(actionNode->getAlternatives(), relevance + 0.003f, false, event, "alt");
+
+            delete actionNode;  // Always delete after processing the action node
+
+            continue;
+        }
+
+        if (!skipPrerequisites)
+        {
+            LogAction("A:%s - PREREQ", action.getName().c_str());
+
+            if (multiplyAndPush(actionNode->getPrerequisites(), relevance + 0.002f, false, event, "prereq"))
+            {
+                PushAgain(actionNode, relevance + 0.001f, event);
+                continue;
+            }
+        }
+
+        PerfMonitorOperation* pmo = sPerfMonitor.start(PERF_MON_ACTION, action.getName(), &aiObjectContext->performanceStack);
+
+        actionExecuted = this->listenAndExecute(action, event);
+
+        if (pmo)
+            pmo->finish();
+
+        if (actionExecuted)
+        {
+            LogAction("A:%s - OK", action.getName().c_str());
+
+            this->multiplyAndPush(actionNode->getContinuers(), relevance, false, event, "cont");
+
+            lastRelevance = relevance;
+
+            delete actionNode;  // Safe memory management
+
+            break;
+        }
+
+        // LogAction("A:%s - FAILED", action->getName().c_str());
+        this->multiplyAndPush(actionNode->getAlternatives(), relevance + 0.003f, false, event, "alt");
 
         delete actionNode;  // Always delete after processing the action node
     }
@@ -246,24 +255,24 @@ bool Engine::DoNextAction(Unit*, uint32, bool minimal)
     if (!actionExecuted)
         LogAction("no actions executed");
 
-    queue.RemoveExpired();
+    this->queue.RemoveExpired();
 
     return actionExecuted;
 }
 
-ActionNode* Engine::CreateActionNode(std::string const name)
-{
-    ActionNode* node = actionNodeFactories.GetContextObject(name, botAI);
-    if (node)
-        return node;
+// ActionNode* Engine::CreateActionNode(NextAction nextAction)
+// {
+//     ActionNode* node = actionNodeFactories.GetContextObject(name, botAI);
+//     if (node)
+//         return node;
 
-    return new ActionNode(name,
-                          /*P*/ {},
-                          /*A*/ {},
-                          /*C*/ {});
-}
+//     return new ActionNode(name,
+//                           /*P*/ {},
+//                           /*A*/ {},
+//                           /*C*/ {});
+// }
 
-bool Engine::MultiplyAndPush(
+bool Engine::multiplyAndPush(
     std::vector<NextAction> actions,
     float forceRelevance,
     bool skipPrerequisites,
@@ -275,11 +284,11 @@ bool Engine::MultiplyAndPush(
 
     for (NextAction nextAction : actions)
     {
-        ActionNode* action = this->CreateActionNode(nextAction.getName());
+        ActionNode* actionNode = new ActionNode({}, {}, {});
 
-        this->InitializeAction(action);
+        actionNode->setAction(nextAction.factory());
 
-        float k = nextAction.getRelevance();
+        float k = nextAction.weight;
 
         if (forceRelevance > 0.0f)
         {
@@ -288,57 +297,47 @@ bool Engine::MultiplyAndPush(
 
         if (k > 0)
         {
-            this->LogAction("PUSH:%s - %f (%s)", action->getName().c_str(), k, pushType);
-            queue.Push(new ActionBasket(action, k, skipPrerequisites, event));
+            queue.Push(new ActionBasket(actionNode, k, skipPrerequisites, event));
             pushed = true;
 
             continue;
         }
 
-        delete action;
+        delete actionNode;
 
     }
 
     return pushed;
 }
 
-ActionResult Engine::ExecuteAction(std::string const name, Event event, std::string const qualifier)
+ActionResult Engine::ExecuteAction(NextAction::Factory actionFactory, Event event)
 {
     bool result = false;
 
-    ActionNode* actionNode = CreateActionNode(name);
-    if (!actionNode)
-        return ACTION_RESULT_UNKNOWN;
+    ActionNode* actionNode = new ActionNode({}, {}, {});
 
-    Action* action = InitializeAction(actionNode);
-    if (!action)
+    actionNode->setAction(actionFactory());
+
+    Action& action = actionNode->getAction();
+
+    if (!action.isPossible())
     {
         delete actionNode;
-        return ACTION_RESULT_UNKNOWN;
-    }
 
-    if (!qualifier.empty())
-    {
-        if (Qualified* q = dynamic_cast<Qualified*>(action))
-            q->Qualify(qualifier);
-    }
-
-    if (!action->isPossible())
-    {
-        delete actionNode;
         return ACTION_RESULT_IMPOSSIBLE;
     }
 
-    if (!action->isUseful())
+    if (!action.isUseful())
     {
         delete actionNode;
+
         return ACTION_RESULT_USELESS;
     }
 
-    action->MakeVerbose();
+    action.MakeVerbose();
 
-    result = ListenAndExecute(action, event);
-    MultiplyAndPush(action->getContinuers(), 0.0f, false, event, "default");
+    result = this->listenAndExecute(action, event);
+    this->multiplyAndPush(action.getContinuers(), 0.0f, false, event, "default");
 
     delete actionNode;
 
@@ -478,7 +477,7 @@ void Engine::ProcessTriggers(bool minimal)
             continue;
 
         Event event = fires[trigger];
-        MultiplyAndPush(node->getHandlers(), 0.0f, false, event, "trigger");
+        this->multiplyAndPush(node->getHandlers(), 0.0f, false, event, "trigger");
     }
 
     for (std::vector<TriggerNode*>::iterator i = triggers.begin(); i != triggers.end(); i++)
@@ -494,7 +493,7 @@ void Engine::PushDefaultActions()
     {
         Strategy* strategy = i->second;
         Event emptyEvent;
-        MultiplyAndPush(strategy->getDefaultActions(), 0.0f, false, emptyEvent, "default");
+        this->multiplyAndPush(strategy->getDefaultActions(), 0.0f, false, emptyEvent, "default");
     }
 }
 
@@ -529,7 +528,7 @@ void Engine::PushAgain(ActionNode* actionNode, float relevance, Event event)
 {
     std::vector<NextAction> nextAction = { NextAction(actionNode->getName(), relevance) };
 
-    MultiplyAndPush(nextAction, relevance, true, event, "again");
+    this->multiplyAndPush(nextAction, relevance, true, event, "again");
 
     delete actionNode;
 }
@@ -544,46 +543,39 @@ bool Engine::ContainsStrategy(StrategyType type)
     return false;
 }
 
-Action* Engine::InitializeAction(ActionNode* actionNode)
-{
-    Action* action = actionNode->getAction();
-    if (!action)
-    {
-        action = aiObjectContext->GetAction(actionNode->getName());
-        actionNode->setAction(action);
-    }
+// Action* Engine::InitializeAction(ActionNode* actionNode)
+// {
+//     Action* action = actionNode->getAction();
+//     if (!action)
+//     {
+//         action = this->aiObjectContext->GetAction(actionNode->getName());
+//         actionNode->setAction(action);
+//     }
 
-    return action;
-}
+//     return action;
+// }
 
-bool Engine::ListenAndExecute(Action* action, Event event)
+bool Engine::listenAndExecute(Action& action, Event event)
 {
     bool actionExecuted = false;
 
-    if (action == nullptr)
+    if (this->actionExecutionListeners.before(action, event))
     {
-        LOG_ERROR("playerbots", "Action is nullptr");
-
-        return actionExecuted;
-    }
-
-    if (actionExecutionListeners.Before(action, event))
-    {
-        actionExecuted = actionExecutionListeners.AllowExecution(action, event) ? action->Execute(event) : true;
+        actionExecuted = this->actionExecutionListeners.allowExecution(action, event) ? action.Execute(event) : true;
     }
 
     if (botAI->HasStrategy("debug", BOT_STATE_NON_COMBAT))
     {
         std::ostringstream out;
         out << "do: ";
-        out << action->getName();
+        out << action.getName();
 
         if (actionExecuted)
             out << " 1 (";
         else
             out << " 0 (";
 
-        out << action->getRelevance() << ")";
+        out << action.getRelevance() << ")";
 
         if (!event.GetSource().empty())
             out << " [" << event.GetSource() << "]";
@@ -591,8 +583,8 @@ bool Engine::ListenAndExecute(Action* action, Event event)
         botAI->TellMasterNoFacing(out);
     }
 
-    actionExecuted = actionExecutionListeners.OverrideResult(action, actionExecuted, event);
-    actionExecutionListeners.After(action, actionExecuted, event);
+    actionExecuted = actionExecutionListeners.overrideResult(action, actionExecuted, event);
+    actionExecutionListeners.after(action, actionExecuted, event);
     return actionExecuted;
 }
 

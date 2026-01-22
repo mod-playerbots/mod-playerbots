@@ -14,6 +14,8 @@
 #include "Strategy.h"
 #include "Trigger.h"
 
+#include "NextAction.h"
+
 class Action;
 class ActionNode;
 class AiObjectContext;
@@ -35,10 +37,10 @@ class ActionExecutionListener
 public:
     virtual ~ActionExecutionListener(){};
 
-    virtual bool Before(Action* action, Event event) = 0;
-    virtual bool AllowExecution(Action* action, Event event) = 0;
-    virtual void After(Action* action, bool executed, Event event) = 0;
-    virtual bool OverrideResult(Action* action, bool executed, Event event) = 0;
+    virtual bool before(Action& action, Event event) = 0;
+    virtual bool allowExecution(Action& action, Event event) = 0;
+    virtual void after(Action& action, bool executed, Event event) = 0;
+    virtual bool overrideResult(Action& action, bool executed, Event event) = 0;
 };
 
 class ActionExecutionListeners : public ActionExecutionListener
@@ -46,10 +48,10 @@ class ActionExecutionListeners : public ActionExecutionListener
 public:
     virtual ~ActionExecutionListeners();
 
-    bool Before(Action* action, Event event) override;
-    bool AllowExecution(Action* action, Event event) override;
-    void After(Action* action, bool executed, Event event) override;
-    bool OverrideResult(Action* action, bool executed, Event event) override;
+    bool before(Action& action, Event event) override;
+    bool allowExecution(Action& action, Event event) override;
+    void after(Action& action, bool executed, Event event) override;
+    bool overrideResult(Action& action, bool executed, Event event) override;
 
     void Add(ActionExecutionListener* listener) { listeners.push_back(listener); }
 
@@ -78,8 +80,8 @@ public:
     void ChangeStrategy(std::string const names);
     std::string const GetLastAction() { return lastAction; }
 
-    virtual bool DoNextAction(Unit*, uint32 depth = 0, bool minimal = false);
-    ActionResult ExecuteAction(std::string const name, Event event = Event(), std::string const qualifier = "");
+    virtual bool doNextAction(Unit*, uint32 depth = 0, bool minimal = false);
+    ActionResult ExecuteAction(NextAction::Factory actionFactory, Event event = Event());
 
     void AddActionExecutionListener(ActionExecutionListener* listener) { actionExecutionListeners.Add(listener); }
 
@@ -90,15 +92,13 @@ public:
     bool testMode;
 
 private:
-    bool MultiplyAndPush(std::vector<NextAction> actions, float forceRelevance, bool skipPrerequisites, Event event,
+    bool multiplyAndPush(std::vector<NextAction> actions, float forceRelevance, bool skipPrerequisites, Event event,
                          const char* pushType);
     void Reset();
     void ProcessTriggers(bool minimal);
     void PushDefaultActions();
     void PushAgain(ActionNode* actionNode, float relevance, Event event);
-    ActionNode* CreateActionNode(std::string const name);
-    Action* InitializeAction(ActionNode* actionNode);
-    bool ListenAndExecute(Action* action, Event event);
+    bool listenAndExecute(Action& action, Event event);
 
     void LogAction(char const* format, ...);
     void LogValues();

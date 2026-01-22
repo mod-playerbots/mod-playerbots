@@ -42,15 +42,17 @@ protected:
     std::unique_ptr<RpgHelper> rpg;
 };
 
-class RpgSubAction : public Action, public RpgEnabled
+class RpgSubAction : public Action
 {
 public:
-    RpgSubAction(PlayerbotAI* botAI, std::string const name = "rpg sub") : Action(botAI, name), RpgEnabled(botAI) {}
+    RpgSubAction(PlayerbotAI* botAI, std::string const name = "rpg sub") : Action(botAI, name) {}
 
     // Long range is possible?
     bool isPossible() override;
     // Short range can we do the action now?
     bool isUseful() override;
+
+    bool isRPG() override { return true; }
 
     bool Execute(Event event) override;
 

@@ -1462,7 +1462,7 @@ void PlayerbotAI::DoNextAction(bool min)
 		return;
 	}
 
-    currentEngine->DoNextAction(nullptr, 0, (minimal || min));
+    currentEngine->doNextAction(nullptr, 0, (minimal || min));
 
     if (minimal)
     {
@@ -1643,13 +1643,13 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
     }
 }
 
-bool PlayerbotAI::DoSpecificAction(std::string const name, Event event, bool silent, std::string const qualifier)
+bool PlayerbotAI::DoSpecificAction(NextAction::Factory actionFactory, Event event, bool silent)
 {
     std::ostringstream out;
 
     for (uint8 i = 0; i < BOT_STATE_MAX; i++)
     {
-        ActionResult res = engines[i]->ExecuteAction(name, event, qualifier);
+        ActionResult res = engines[i]->ExecuteAction(actionFactory, event);
         switch (res)
         {
             case ACTION_RESULT_UNKNOWN:
@@ -1661,7 +1661,7 @@ bool PlayerbotAI::DoSpecificAction(std::string const name, Event event, bool sil
                 }
                 return true;
             case ACTION_RESULT_IMPOSSIBLE:
-                out << name << ": impossible";
+                // out << name << ": impossible";
                 if (!silent)
                 {
                     TellError(out.str());
@@ -1669,7 +1669,7 @@ bool PlayerbotAI::DoSpecificAction(std::string const name, Event event, bool sil
                 }
                 return false;
             case ACTION_RESULT_USELESS:
-                out << name << ": useless";
+                // out << name << ": useless";
                 if (!silent)
                 {
                     TellError(out.str());
@@ -1679,7 +1679,7 @@ bool PlayerbotAI::DoSpecificAction(std::string const name, Event event, bool sil
             case ACTION_RESULT_FAILED:
                 if (!silent)
                 {
-                    out << name << ": failed";
+                    // out << name << ": failed";
                     TellError(out.str());
                 }
                 return false;
@@ -1688,7 +1688,7 @@ bool PlayerbotAI::DoSpecificAction(std::string const name, Event event, bool sil
 
     if (!silent)
     {
-        out << name << ": unknown action";
+        // out << name << ": unknown action";
         TellError(out.str());
     }
 

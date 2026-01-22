@@ -23,6 +23,7 @@
 #include "SpellAuras.h"
 #include "Util.h"
 #include "WorldPacket.h"
+#include "NextAction.h"
 
 class AiObjectContext;
 class Creature;
@@ -400,8 +401,7 @@ public:
     void ChangeEngineOnCombat();
     void ChangeEngineOnNonCombat();
     void DoNextAction(bool minimal = false);
-    virtual bool DoSpecificAction(std::string const name, Event event = Event(), bool silent = false,
-                                  std::string const qualifier = "");
+    virtual bool DoSpecificAction(NextAction::Factory actionFactory, Event event = Event(), bool silent = false);
     void ChangeStrategy(std::string const name, BotState type);
     void ClearStrategies(BotState type);
     std::vector<std::string> GetStrategies(BotState type);

@@ -8,19 +8,16 @@
 #include "Playerbots.h"
 #include "RpgSubActions.h"
 
-float RpgActionMultiplier::GetValue(Action* action)
-{
-    if (action == nullptr)
-        return 1.0f;
+// float RpgActionMultiplier::GetValue(Action& action)
+// {
+//     std::string const nextAction = AI_VALUE(std::string, "next rpg action");
+//     std::string const name = action.getName();
 
-    std::string const nextAction = AI_VALUE(std::string, "next rpg action");
-    std::string const name = action->getName();
+//     if (!nextAction.empty() && dynamic_cast<RpgEnabled*>(action) && name != nextAction)
+//         return 0.0f;
 
-    if (!nextAction.empty() && dynamic_cast<RpgEnabled*>(action) && name != nextAction)
-        return 0.0f;
-
-    return 1.0f;
-}
+//     return 1.0f;
+// }
 
 RpgStrategy::RpgStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 

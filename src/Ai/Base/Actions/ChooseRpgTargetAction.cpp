@@ -15,6 +15,7 @@
 #include "RpgSubActions.h"
 #include "ServerFacade.h"
 #include "PossibleRpgTargetsValue.h"
+#include "RpgSubActions.h"
 
 bool ChooseRpgTargetAction::HasSameTarget(ObjectGuid guid, uint32 max, GuidVector const& nearGuids)
 {
@@ -82,9 +83,9 @@ float ChooseRpgTargetAction::getMaxRelevance(GuidPosition guidP)
 
             for (NextAction nextAction : nextActions)
             {
-                Action* action = botAI->GetAiObjectContext()->GetAction(nextAction.getName());
+                std::unique_ptr<Action> action = nextAction.factory();
 
-                if (dynamic_cast<RpgEnabled*>(action))
+                if (action->isRPG())
                     isRpg = true;
             }
 

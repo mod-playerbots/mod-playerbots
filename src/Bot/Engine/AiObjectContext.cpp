@@ -65,7 +65,7 @@ AiObjectContext::AiObjectContext(PlayerbotAI* botAI, SharedNamedObjectContextLis
                                  SharedNamedObjectContextList<UntypedValue>& sharedValueContext)
     : PlayerbotAIAware(botAI),
       strategyContexts(sharedStrategyContext),
-      actionContexts(sharedActionContext),
+    //   actionContexts(sharedActionContext),
       triggerContexts(sharedTriggerContext),
       valueContexts(sharedValueContext)
 {
@@ -235,7 +235,7 @@ std::set<std::string> AiObjectContext::GetSiblingStrategy(std::string const name
 
 Trigger* AiObjectContext::GetTrigger(std::string const name) { return triggerContexts.GetContextObject(name, botAI); }
 
-Action* AiObjectContext::GetAction(std::string const name) { return actionContexts.GetContextObject(name, botAI); }
+// Action* AiObjectContext::GetAction(std::string const name) { return actionContexts.GetContextObject(name, botAI); }
 
 UntypedValue* AiObjectContext::GetUntypedValue(std::string const name)
 {
@@ -246,7 +246,7 @@ std::set<std::string> AiObjectContext::GetValues() { return valueContexts.GetCre
 
 std::set<std::string> AiObjectContext::GetSupportedStrategies() { return strategyContexts.supports(); }
 
-std::set<std::string> AiObjectContext::GetSupportedActions() { return actionContexts.supports(); }
+// std::set<std::string> AiObjectContext::GetSupportedActions() { return actionContexts.supports(); }
 
 std::string const AiObjectContext::FormatValues()
 {

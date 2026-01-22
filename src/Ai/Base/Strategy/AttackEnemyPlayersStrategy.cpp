@@ -6,9 +6,18 @@
 #include "AttackEnemyPlayersStrategy.h"
 
 #include "Playerbots.h"
+#include "CreateAction.h"
+#include "ChooseTargetActions.h"
+#include "CreateNextAction.h"
 
 void AttackEnemyPlayersStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("enemy player near",
-                                       { NextAction("attack enemy player", 55.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "enemy player near",
+            {
+                CreateNextAction<AttackEnemyPlayerAction>(55.0f)
+            }
+        )
+    );
 }
