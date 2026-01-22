@@ -669,7 +669,7 @@ AiPlayerbot.DisableDeathKnightLogin = 0
 # Default: 0 (disabled)
 AiPlayerbot.LimitTalentsExpansion = 0
 
-# Configure randombots and addClass bot trading (0: Disabled, 1: Enabled, 2: Only Buy, 3: Only Sell)
+# Configure randombot trading (0: Disabled, 1: Enabled, 2: Only Buy, 3: Only Sell)
 # Default: 1 (enabled)
 AiPlayerbot.EnableRandomBotTrading = 1
 
