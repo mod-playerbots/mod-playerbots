@@ -16,7 +16,15 @@ EXECUTE stmt;
 DEALLOCATE PREPARE stmt;
 
 -- Assign unique short_name to existing records
-UPDATE playerbots_account_links SET short_name = CONCAT('LegacyLink_', id) WHERE short_name IS NULL;
+-- Use both account IDs to generate a shared shortName for bidirectional links
+-- Format: LegacyLink_{smaller_account_id}_{larger_account_id}
+-- This ensures both directions of the same link get identical shortNames
+UPDATE playerbots_account_links 
+SET short_name = CONCAT('LegacyLink_', 
+    LEAST(account_id, linked_account_id), 
+    '_', 
+    GREATEST(account_id, linked_account_id))
+WHERE short_name IS NULL;
 
 -- Add index for shortName lookups (if it doesn't exist)
 SET @index_exists = 0;
