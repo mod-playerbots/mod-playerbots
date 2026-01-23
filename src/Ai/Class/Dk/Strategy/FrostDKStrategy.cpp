@@ -6,6 +6,10 @@
 #include "FrostDKStrategy.h"
 
 #include "Playerbots.h"
+#include "ActionNode.h"
+#include "CreateNextAction.h"
+#include "GenericActions.h"
+#include "DKActions.h"
 
 class FrostDKStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -24,8 +28,7 @@ private:
     static ActionNode* icy_touch([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "icy touch",
-            /*P*/ { NextAction("blood presence") },
+            /*P*/ { CreateNextAction<CastBloodPresenceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -34,8 +37,7 @@ private:
     static ActionNode* obliterate([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "obliterate",
-            /*P*/ { NextAction("blood presence") },
+            /*P*/ { CreateNextAction<CastBloodPresenceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -44,9 +46,8 @@ private:
     static ActionNode* rune_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "rune strike",
-            /*P*/ { NextAction("blood presence") },
-            /*A*/ { NextAction("melee") },
+            /*P*/ { CreateNextAction<CastBloodPresenceAction>(1.0f) },
+            /*A*/ { CreateNextAction<MeleeAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -54,8 +55,7 @@ private:
     static ActionNode* frost_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "frost strike",
-            /*P*/ { NextAction("blood presence") },
+            /*P*/ { CreateNextAction<CastBloodPresenceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -64,8 +64,7 @@ private:
     static ActionNode* howling_blast([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "howling blast",
-            /*P*/ { NextAction("blood presence") },
+            /*P*/ { CreateNextAction<CastBloodPresenceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -73,8 +72,7 @@ private:
     static ActionNode* unbreakable_armor([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "unbreakable armor",
-            /*P*/ { NextAction("blood tap") },
+            /*P*/ { CreateNextAction<CastBloodTapAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -89,11 +87,11 @@ FrostDKStrategy::FrostDKStrategy(PlayerbotAI* botAI) : GenericDKStrategy(botAI)
 std::vector<NextAction> FrostDKStrategy::getDefaultActions()
 {
     return {
-        NextAction("obliterate", ACTION_DEFAULT + 0.7f),
-        NextAction("frost strike", ACTION_DEFAULT + 0.4f),
-        NextAction("empower rune weapon", ACTION_DEFAULT + 0.3f),
-        NextAction("horn of winter", ACTION_DEFAULT + 0.1f),
-        NextAction("melee", ACTION_DEFAULT)
+        CreateNextAction<CastObliterateAction>(ACTION_DEFAULT + 0.7f),
+        CreateNextAction<CastFrostStrikeAction>(ACTION_DEFAULT + 0.4f),
+        CreateNextAction<CastEmpowerRuneWeaponAction>(ACTION_DEFAULT + 0.3f),
+        CreateNextAction<CastHornOfWinterAction>(ACTION_DEFAULT + 0.1f),
+        CreateNextAction<MeleeAction>(ACTION_DEFAULT)
     };
 }
 
@@ -105,7 +103,7 @@ void FrostDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "unbreakable armor",
             {
-                NextAction("unbreakable armor", ACTION_DEFAULT + 0.6f)
+                CreateNextAction<CastUnbreakableArmorAction>(ACTION_DEFAULT + 0.6f)
             }
         )
     );
@@ -114,7 +112,7 @@ void FrostDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "freezing fog",
             {
-                NextAction("howling blast", ACTION_DEFAULT + 0.5f)
+                CreateNextAction<CastHowlingBlastAction>(ACTION_DEFAULT + 0.5f)
             }
         )
     );
@@ -123,7 +121,7 @@ void FrostDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "high blood rune",
             {
-                NextAction("blood strike", ACTION_DEFAULT + 0.2f)
+                CreateNextAction<CastBloodStrikeAction>(ACTION_DEFAULT + 0.2f)
             }
         )
     );
@@ -132,7 +130,7 @@ void FrostDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "army of the dead",
             {
-                NextAction("army of the dead", ACTION_HIGH + 6)
+                CreateNextAction<CastArmyOfTheDeadAction>(ACTION_HIGH + 6)
             }
         )
     );
@@ -141,7 +139,7 @@ void FrostDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "icy touch",
             {
-                NextAction("icy touch", ACTION_HIGH + 2)
+                CreateNextAction<CastIcyTouchAction>(ACTION_HIGH + 2)
             }
         )
     );
@@ -149,7 +147,7 @@ void FrostDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "plague strike",
             {
-                NextAction("plague strike", ACTION_HIGH + 2)
+                CreateNextAction<CastPlagueStrikeAction>(ACTION_HIGH + 2)
             }
         )
     );
@@ -162,7 +160,7 @@ void FrostDKAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium aoe",
             {
-                NextAction("howling blast", ACTION_HIGH + 4)
+                CreateNextAction<CastHowlingBlastAction>(ACTION_HIGH + 4)
             }
         )
     );

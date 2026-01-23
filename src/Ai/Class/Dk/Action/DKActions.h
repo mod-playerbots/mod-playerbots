@@ -43,8 +43,11 @@ public:
     CastDarkCommandAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "dark command") {}
 };
 
-BEGIN_RANGED_SPELL_ACTION(CastDeathGripAction, "death grip")
-END_SPELL_ACTION()
+class CastDeathGripAction : public CastSpellAction
+{
+public:
+    CastDeathGripAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "death grip") {}
+};
 
 // Unholy presence
 class CastUnholyMeleeSpellAction : public CastMeleeSpellAction
@@ -155,14 +158,23 @@ public:
     std::string const GetTargetName() override { return "pet target"; }
 };
 
-BEGIN_MELEE_SPELL_ACTION(CastCorpseExplosionAction, "corpse explosion")
-END_SPELL_ACTION()
+class CastCorpseExplosionAction : public CastMeleeSpellAction
+{
+public:
+    CastCorpseExplosionAction(PlayerbotAI* botAI) : CastMeleeSpellAction(botAI, "corpse explosion") {}
+};
 
-BEGIN_MELEE_SPELL_ACTION(CastAntiMagicShellAction, "anti magic shell")
-END_SPELL_ACTION()
+class CastAntiMagicShellAction : public CastMeleeSpellAction
+{
+public:
+    CastAntiMagicShellAction(PlayerbotAI* botAI) : CastMeleeSpellAction(botAI, "anti magic shell") {}
+};
 
-BEGIN_MELEE_SPELL_ACTION(CastAntiMagicZoneAction, "anti magic zone")
-END_SPELL_ACTION()
+class CastAntiMagicZoneAction : public CastMeleeSpellAction
+{
+public:
+    CastAntiMagicZoneAction(PlayerbotAI* botAI) : CastMeleeSpellAction(botAI, "anti magic zone") {}
+};
 
 class CastChainsOfIceAction : public CastSpellAction
 {
@@ -228,7 +240,6 @@ class CastDeathAndDecayAction : public CastSpellAction
 {
 public:
     CastDeathAndDecayAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "death and decay") {}
-    // ActionThreatType getThreatType() override { return ActionThreatType::Aoe; }
 };
 
 class CastHornOfWinterAction : public CastSpellAction
