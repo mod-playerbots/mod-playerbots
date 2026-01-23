@@ -6,6 +6,12 @@
 #include "MaintenanceStrategy.h"
 
 #include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "DropQuestAction.h"
+#include "UseItemAction.h"
+#include "CastCustomSpellAction.h"
+#include "DestroyItemAction.h"
+#include "ShareQuestAction.h"
 
 std::vector<NextAction> MaintenanceStrategy::getDefaultActions() { return {}; }
 
@@ -15,7 +21,7 @@ void MaintenanceStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "random",
             {
-                NextAction("clean quest log", 6.0f)
+                CreateNextAction<CleanQuestLogAction>(6.0f)
             }
         )
     );
@@ -23,7 +29,7 @@ void MaintenanceStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "random",
             {
-                NextAction("use random recipe", 1.0f)
+                CreateNextAction<UseRandomRecipe>(1.0f)
             }
         )
     );
@@ -31,7 +37,7 @@ void MaintenanceStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "random",
             {
-                NextAction("disenchant random item", 1.0f)
+                CreateNextAction<DisEnchantRandomItemAction>(1.0f)
             }
         )
     );
@@ -39,7 +45,7 @@ void MaintenanceStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "random",
             {
-                NextAction("enchant random item", 1.0f)
+                CreateNextAction<EnchantRandomItemAction>(1.0f)
             }
         )
     );
@@ -47,15 +53,24 @@ void MaintenanceStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "random",
             {
-                NextAction("smart destroy item", 1.0f)
+                CreateNextAction<SmartDestroyItemAction>(1.0f)
             }
         )
     );
+    // It seems "reset" has no attached creator
+    // triggers.push_back(
+    //     new TriggerNode(
+    //         "move stuck",
+    //         {
+    //             CreateNextAction("reset", 1.0f)
+    //         }
+    //     )
+    // );
     triggers.push_back(
         new TriggerNode(
-            "move stuck",
+            "random",
             {
-                NextAction("reset", 1.0f)
+                CreateNextAction<UseRandomQuestItem>(0.9f)
             }
         )
     );
@@ -63,15 +78,7 @@ void MaintenanceStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "random",
             {
-                NextAction("use random quest item", 0.9f)
-            }
-        )
-    );
-    triggers.push_back(
-        new TriggerNode(
-            "random",
-            {
-                NextAction("auto share quest", 0.9f)
+                CreateNextAction<AutoShareQuestAction>(0.9f)
             }
         )
     );

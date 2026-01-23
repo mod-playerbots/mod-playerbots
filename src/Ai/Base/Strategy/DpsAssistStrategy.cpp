@@ -6,15 +6,29 @@
 #include "DpsAssistStrategy.h"
 
 #include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "ChooseTargetActions.h"
 
 void DpsAssistStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("not dps target active", { NextAction("dps assist", 50.0f) }));
+        new TriggerNode(
+            "not dps target active",
+            {
+                CreateNextAction<DpsAssistAction>(50.0f)
+            }
+        )
+    );
 }
 
 void DpsAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("not dps aoe target active", { NextAction("dps aoe", 50.0f) }));
+        new TriggerNode(
+            "not dps aoe target active",
+            {
+                CreateNextAction<DpsAoeAction>(50.0f)
+            }
+        )
+    );
 }

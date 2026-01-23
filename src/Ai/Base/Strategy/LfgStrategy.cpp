@@ -6,14 +6,36 @@
 #include "LfgStrategy.h"
 
 #include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "LfgActions.h"
+#include "PassLeadershipToMasterAction.h"
 
 void LfgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("random", { NextAction("lfg join", relevance) }));
     triggers.push_back(
-        new TriggerNode("seldom", { NextAction("lfg leave", relevance) }));
-    triggers.push_back(new TriggerNode(
-        "unknown dungeon", { NextAction("give leader in dungeon", relevance) }));
+        new TriggerNode(
+            "random",
+            {
+                CreateNextAction<LfgJoinAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "seldom",
+            {
+                CreateNextAction<LfgLeaveAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "unknown dungeon",
+            {
+                CreateNextAction<GiveLeaderInDungeonAction>(relevance)
+            }
+        )
+    );
 }
 
 LfgStrategy::LfgStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI) {}

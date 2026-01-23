@@ -6,32 +6,89 @@
 #include "LootNonCombatStrategy.h"
 
 #include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "LootAction.h"
+#include "MovementActions.h"
+#include "AddLootAction.h"
+#include "RevealGatheringItemAction.h"
+#include "FishingAction.h"
 
 void LootNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("loot available", { NextAction("loot", 6.0f) }));
     triggers.push_back(
-        new TriggerNode("far from loot target", { NextAction("move to loot", 7.0f) }));
-    triggers.push_back(new TriggerNode("can loot", { NextAction("open loot", 8.0f) }));
-    triggers.push_back(new TriggerNode("often", { NextAction("add all loot", 5.0f) }));
+        new TriggerNode(
+            "loot available",
+            {
+                CreateNextAction<LootAction>(6.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "far from loot target",
+            {
+                CreateNextAction<MoveToLootAction>(7.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "can loot",
+            {
+                CreateNextAction<OpenLootAction>(8.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "often",
+            {
+                CreateNextAction<AddAllLootAction>(5.0f)
+            }
+        )
+    );
 }
 
 void GatherStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("timer", { NextAction("add gathering loot", 5.0f) }));
+        new TriggerNode(
+            "timer",
+            {
+                CreateNextAction<AddGatheringLootAction>(5.0f)
+            }
+        )
+    );
 }
 
 void RevealStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("often", { NextAction("reveal gathering item", 50.0f) }));
+        new TriggerNode(
+            "often",
+            {
+                CreateNextAction<RevealGatheringItemAction>(50.0f)
+            }
+        )
+    );
 }
 
 void UseBobberStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
      triggers.push_back(
-        new TriggerNode("can use fishing bobber", { NextAction("use fishing bobber", 20.0f) }));
+        new TriggerNode(
+            "can use fishing bobber",
+            {
+                CreateNextAction<UseBobberAction>(20.0f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("random", { NextAction("remove bobber strategy", 20.0f) }));
+        new TriggerNode(
+            "random",
+            {
+                CreateNextAction<RemoveBobberStrategyAction>(20.0f)
+            }
+        )
+    );
 }

@@ -18,7 +18,7 @@ class PassiveMultiplier : public Multiplier
 public:
     PassiveMultiplier(PlayerbotAI* botAI);
 
-    float GetValue(Action* action) override;
+    float GetValue(Action& action) override;
 
 private:
     static std::vector<std::string> allowedActions;

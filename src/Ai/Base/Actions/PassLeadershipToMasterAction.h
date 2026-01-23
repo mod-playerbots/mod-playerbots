@@ -37,4 +37,15 @@ public:
     bool isUseful() override;
 };
 
+class GiveLeaderInDungeonAction : public GiveLeaderAction
+{
+public:
+    GiveLeaderInDungeonAction(PlayerbotAI* botAI, std::string const message = "I don't know this dungeon, lead the way!")
+        : GiveLeaderAction(botAI, message)
+    {
+    }
+
+    bool isUseful() override;
+};
+
 #endif

@@ -5,16 +5,45 @@
 
 #include "NonCombatStrategy.h"
 
+#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "DropQuestAction.h"
+#include "CheckMountStateAction.h"
+#include "MovementActions.h"
+#include "WorldBuffAction.h"
+#include "FishingAction.h"
+#include "EquipAction.h"
+
 void NonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("random", { NextAction("clean quest log", 1.0f) }));
-    triggers.push_back(new TriggerNode("timer", { NextAction("check mount state", 1.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "random",
+            {
+                CreateNextAction<CleanQuestLogAction>(1.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "timer",
+            {
+                CreateNextAction<CheckMountStateAction>(1.0f)
+            }
+        )
+    );
 }
 
 void CollisionStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("collision", { NextAction("move out of collision", 2.0f) }));
+        new TriggerNode(
+            "collision",
+            {
+                CreateNextAction<MoveOutOfCollisionAction>(2.0f)
+            }
+        )
+    );
 }
 
 void MountStrategy::InitTriggers(std::vector<TriggerNode*>&)
@@ -27,7 +56,7 @@ void WorldBuffStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "need world buff",
             {
-                NextAction("world buff", 1.0f)
+                CreateNextAction<WorldBuffAction>(1.0f)
             }
         )
     );
@@ -39,7 +68,7 @@ void MasterFishingStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "very often",
             {
-                NextAction("move near water" , 10.0f)
+                CreateNextAction<MoveNearWaterAction>(10.0f)
             }
         )
     );
@@ -47,7 +76,7 @@ void MasterFishingStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "very often",
             {
-                NextAction("go fishing" , 10.0f)
+                CreateNextAction<FishingAction>(10.0f)
             }
         )
     );
@@ -55,8 +84,8 @@ void MasterFishingStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "random",
             {
-                NextAction("end master fishing", 12.0f),
-                NextAction("equip upgrades", 6.0f)
+                CreateNextAction<EndMasterFishingAction>(12.0f),
+                CreateNextAction<EquipUpgradesAction>(6.0f)
             }
         )
     );

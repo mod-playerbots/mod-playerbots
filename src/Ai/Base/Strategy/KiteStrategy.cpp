@@ -6,10 +6,19 @@
 #include "KiteStrategy.h"
 
 #include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "MovementActions.h"
 
 KiteStrategy::KiteStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 
 void KiteStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("has aggro", { NextAction("runaway", 51.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "has aggro",
+            {
+                CreateNextAction<RunAwayAction>(51.0f)
+            }
+        )
+    );
 }

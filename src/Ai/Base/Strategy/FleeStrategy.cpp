@@ -6,19 +6,45 @@
 #include "FleeStrategy.h"
 
 #include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "MovementActions.h"
 
 void FleeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("panic", { NextAction("flee", ACTION_EMERGENCY + 9) }));
+        new TriggerNode(
+            "panic",
+            {
+                CreateNextAction<FleeAction>(ACTION_EMERGENCY + 9.0f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("outnumbered", { NextAction("flee", ACTION_EMERGENCY + 9) }));
+        new TriggerNode(
+            "outnumbered",
+            {
+                CreateNextAction<FleeAction>(ACTION_EMERGENCY + 9.0f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("critical health", { NextAction("flee", ACTION_MEDIUM_HEAL) }));
+        new TriggerNode(
+            "critical health",
+            {
+                CreateNextAction<FleeAction>(ACTION_MEDIUM_HEAL)
+            }
+        )
+    );
 }
 
 void FleeFromAddsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("has nearest adds", { NextAction("runaway", 50.0f) }));
+        new TriggerNode(
+            "has nearest adds",
+            {
+                CreateNextAction<RunAwayAction>(50.0f)
+            }
+        )
+    );
 }

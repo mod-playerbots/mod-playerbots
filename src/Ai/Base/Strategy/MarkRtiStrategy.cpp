@@ -6,9 +6,17 @@
 #include "MarkRtiStrategy.h"
 
 #include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "RtiAction.h"
 
 void MarkRtiStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("no rti target", { NextAction("mark rti", ACTION_NORMAL) }));
+        new TriggerNode(
+            "no rti target",
+            {
+                CreateNextAction<MarkRtiAction>(ACTION_NORMAL)
+            }
+        )
+    );
 }

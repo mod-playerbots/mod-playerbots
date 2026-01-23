@@ -6,23 +6,26 @@
 #include "GrindingStrategy.h"
 
 #include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "NonCombatActions.h"
+#include "ChooseTargetActions.h"
+#include "MovementActions.h"
 
 std::vector<NextAction> GrindingStrategy::getDefaultActions()
 {
     return {
-        NextAction("drink", 4.2f),
-        NextAction("food", 4.1f),
+        CreateNextAction<DrinkAction>(4.2f),
+        CreateNextAction<EatAction>(4.1f),
     };
 }
 
 void GrindingStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    // reduce lower than loot
     triggers.push_back(
         new TriggerNode(
             "no target",
             {
-                NextAction("attack anything", 4.0f)
+                CreateNextAction<AttackAnythingAction>(4.0f)
             }
         )
     );
@@ -34,7 +37,7 @@ void MoveRandomStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "often",
             {
-                NextAction("move random", 1.5f)
+                CreateNextAction<MoveRandomAction>(1.5f)
             }
         )
     );

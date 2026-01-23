@@ -5,10 +5,14 @@
 
 #include "FollowMasterStrategy.h"
 
+#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "FollowActions.h"
+
 std::vector<NextAction> FollowMasterStrategy::getDefaultActions()
 {
     return {
-        NextAction("follow", 1.0f)
+        CreateNextAction<FollowAction>(1.0f)
     };
 }
 

@@ -6,19 +6,34 @@
 #include "MeleeCombatStrategy.h"
 
 #include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "ReachTargetActions.h"
+#include "MovementActions.h"
 
 void MeleeCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     CombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
-        "enemy out of melee", { NextAction("reach melee", ACTION_HIGH + 1) }));
+    triggers.push_back(
+        new TriggerNode(
+            "enemy out of melee",
+            {
+                CreateNextAction<ReachMeleeAction>(ACTION_HIGH + 1.0f)
+            }
+        )
+    );
 }
 
 void SetBehindCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     CombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("not behind target",
-                                       { NextAction("set behind", ACTION_MOVE + 7) }));
+    triggers.push_back(
+        new TriggerNode(
+            "not behind target",
+            {
+                CreateNextAction<SetBehindTargetAction>(ACTION_MOVE + 7.0f)
+            }
+        )
+    );
 }

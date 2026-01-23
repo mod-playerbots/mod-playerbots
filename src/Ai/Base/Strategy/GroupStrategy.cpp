@@ -6,11 +6,43 @@
 #include "GroupStrategy.h"
 
 #include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "InviteToGroupAction.h"
+#include "LeaveGroupAction.h"
+#include "ResetInstancesAction.h"
 
 void GroupStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("often", { NextAction("invite nearby", 4.0f) }));
-    triggers.push_back(new TriggerNode("random", { NextAction("invite guild", 4.0f) }));
-    triggers.push_back(new TriggerNode("random", { NextAction("leave far away", 4.0f) }));
-    triggers.push_back(new TriggerNode("seldom", { NextAction("reset instances", 1.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "often",
+            {
+                CreateNextAction<InviteNearbyToGroupAction>(4.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "random",
+            {
+                CreateNextAction<InviteGuildToGroupAction>(4.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "random",
+            {
+                CreateNextAction<LeaveFarAwayAction>(4.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "seldom",
+            {
+                CreateNextAction<ResetInstancesAction>(1.0f)
+            }
+        )
+    );
 }

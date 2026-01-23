@@ -6,11 +6,13 @@
 #include "MoveFromGroupStrategy.h"
 #include "PassiveMultiplier.h"
 #include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "MovementActions.h"
 
 std::vector<NextAction> MoveFromGroupStrategy::getDefaultActions()
 {
     return {
-        NextAction("move from group", 1.0f)
+        CreateNextAction<MoveFromGroupAction>(1.0f)
     };
 }
 

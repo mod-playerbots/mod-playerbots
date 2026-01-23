@@ -34,4 +34,12 @@ public:
     bool Execute(Event event) override;
 };
 
+class EndPullAction : public ChangeCombatStrategyAction
+{
+public:
+    EndPullAction(PlayerbotAI* botAI, std::string const name = "-pull") : ChangeCombatStrategyAction(botAI, name) {}
+
+    bool Execute(Event event) override;
+};
+
 #endif
