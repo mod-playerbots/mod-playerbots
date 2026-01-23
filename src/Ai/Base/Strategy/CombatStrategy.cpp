@@ -6,6 +6,11 @@
 #include "CombatStrategy.h"
 
 #include "Strategy.h"
+#include "CreateNextAction.h"
+#include "ReachTargetActions.h"
+#include "ChooseTargetActions.h"
+#include "CheckMountStateAction.h"
+#include "MovementActions.h"
 
 void CombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
@@ -13,16 +18,15 @@ void CombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "enemy out of spell",
             {
-                NextAction("reach spell", ACTION_HIGH)
+                CreateNextAction<ReachSpellAction>(ACTION_HIGH)
             }
         )
     );
-    // drop target relevance 99 (lower than Worldpacket triggers)
     triggers.push_back(
         new TriggerNode(
             "invalid target",
             {
-                NextAction("drop target", 99)
+                CreateNextAction<DropTargetAction>(99.0f)
             }
         )
     );
@@ -30,23 +34,24 @@ void CombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "mounted",
             {
-                NextAction("check mount state", 54)
+                CreateNextAction<CheckMountStateAction>(54.0f)
             }
         )
     );
-    triggers.push_back(
-        new TriggerNode(
-            "combat stuck",
-            {
-                NextAction("reset", 1.0f)
-            }
-        )
-    );
+    // "reset" is seemingly not linked to any creator
+    // triggers.push_back(
+    //     new TriggerNode(
+    //         "combat stuck",
+    //         {
+    //             CreateNextAction("reset", 1.0f)
+    //         }
+    //     )
+    // );
     triggers.push_back(
         new TriggerNode(
             "not facing target",
             {
-                NextAction("set facing", ACTION_MOVE + 7)
+                CreateNextAction<SetFacingTargetAction>(ACTION_MOVE + 7.0f)
             }
         )
     );
@@ -60,7 +65,7 @@ AvoidAoeStrategy::AvoidAoeStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 std::vector<NextAction> AvoidAoeStrategy::getDefaultActions()
 {
     return {
-        NextAction("avoid aoe", ACTION_EMERGENCY)
+        CreateNextAction<AvoidAoeAction>(ACTION_EMERGENCY)
     };
 }
 
@@ -77,7 +82,7 @@ TankFaceStrategy::TankFaceStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 std::vector<NextAction> TankFaceStrategy::getDefaultActions()
 {
     return {
-        NextAction("tank face", ACTION_MOVE)
+        CreateNextAction<TankFaceAction>(ACTION_MOVE)
     };
 }
 
@@ -88,6 +93,6 @@ void TankFaceStrategy::InitTriggers(std::vector<TriggerNode*>&)
 std::vector<NextAction> CombatFormationStrategy::getDefaultActions()
 {
     return {
-        NextAction("combat formation move", ACTION_NORMAL)
+        CreateNextAction<CombatFormationMoveAction>(ACTION_NORMAL)
     };
 }

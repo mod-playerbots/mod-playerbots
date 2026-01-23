@@ -6,27 +6,79 @@
 #include "DeadStrategy.h"
 
 #include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "ReleaseSpiritAction.h"
+#include "ReviveFromCorpseAction.h"
+#include "AcceptResurrectAction.h"
 
 void DeadStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     PassTroughStrategy::InitTriggers(triggers);
 
     triggers.push_back(
-        new TriggerNode("often", { NextAction("auto release", relevance) }));
+        new TriggerNode(
+            "often",
+            {
+                CreateNextAction<AutoReleaseSpiritAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("bg active", { NextAction("auto release", relevance) }));
+        new TriggerNode(
+            "bg active",
+            {
+                CreateNextAction<AutoReleaseSpiritAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("dead", { NextAction("find corpse", relevance) }));
-    triggers.push_back(new TriggerNode(
-        "corpse near", { NextAction("revive from corpse", relevance - 1.0f) }));
-    triggers.push_back(new TriggerNode("resurrect request",
-                                       { NextAction("accept resurrect", relevance) }));
+        new TriggerNode(
+            "dead",
+            {
+                CreateNextAction<FindCorpseAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("falling far", { NextAction("repop", relevance + 1.f) }));
+        new TriggerNode(
+            "corpse near",
+            {
+                CreateNextAction<ReviveFromCorpseAction>(relevance - 1.0f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("location stuck", { NextAction("repop", relevance + 1) }));
-    triggers.push_back(new TriggerNode(
-        "can self resurrect", { NextAction("self resurrect", relevance + 2.0f) }));
+        new TriggerNode(
+            "resurrect request",
+            {
+                CreateNextAction<AcceptResurrectAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "falling far",
+            {
+                CreateNextAction<RepopAction>(relevance + 1.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "location stuck",
+            {
+                CreateNextAction<RepopAction>(relevance + 1.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "can self resurrect",
+            {
+                CreateNextAction<SelfResurrectAction>(relevance + 2.0f)
+            }
+        )
+    );
 }
 
 DeadStrategy::DeadStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI) {}
