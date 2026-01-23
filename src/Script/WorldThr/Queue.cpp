@@ -79,9 +79,7 @@ void Queue::updateExistingBasket(ActionBasket* existing, ActionBasket* newBasket
 ActionBasket* Queue::findHighestRelevanceBasket() const
 {
     if (actions.empty())
-    {
         return nullptr;
-    }
 
     float maxRelevance = -1.0f;
     ActionBasket* selection = nullptr;
@@ -89,9 +87,10 @@ ActionBasket* Queue::findHighestRelevanceBasket() const
     for (ActionBasket* basket : actions)
     {
         if (!basket)
-        {
             continue;
-        }
+
+        if (basket->GetOwner() != ai)
+            continue;
 
         if (basket->getRelevance() > maxRelevance)
         {

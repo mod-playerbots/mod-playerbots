@@ -99,7 +99,10 @@ bool IccGunshipCannonNearTrigger::IsActive()
 bool IccGunshipTeleportAllyTrigger::IsActive()
 {
     Unit* boss = bot->FindNearestCreature(NPC_HIGH_OVERLORD_SAURFANG, 100.0f);
-    if (!boss)
+    if (!boss || !boss->IsInWorld() || boss->IsDuringRemoveFromWorld())
+        return false;
+
+    if (!boss->IsAlive())
         return false;
 
     if (!boss->IsHostileTo(bot))
@@ -111,7 +114,10 @@ bool IccGunshipTeleportAllyTrigger::IsActive()
 bool IccGunshipTeleportHordeTrigger::IsActive()
 {
     Unit* boss = bot->FindNearestCreature(NPC_MURADIN_BRONZEBEARD, 100.0f);
-    if (!boss)
+    if (!boss || !boss->IsInWorld() || boss->IsDuringRemoveFromWorld())
+        return false;
+
+    if (!boss->IsAlive())
         return false;
 
     if (!boss->IsHostileTo(bot))

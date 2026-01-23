@@ -59,26 +59,22 @@ Unit* GrindTargetValue::FindTargetForGrinding(uint32 assistCount)
     for (ObjectGuid const guid : targets)
     {
         Unit* unit = botAI->GetUnit(guid);
-
         if (!unit)
+            continue;
+
+        if (!unit->IsInWorld() || unit->IsDuringRemoveFromWorld())
             continue;
 
         auto& rep = bot->ToPlayer()->GetReputationMgr();
         if (unit->ToCreature() && !unit->ToCreature()->GetCreatureTemplate()->lootid &&
             bot->GetReactionTo(unit) >= REP_NEUTRAL)
-        {
             continue;
-        }
 
         if (!bot->IsHostileTo(unit) && unit->GetNpcFlags() != UNIT_NPC_FLAG_NONE)
-        {
             continue;
-        }
 
         if (!bot->isHonorOrXPTarget(unit))
-        {
             continue;
-        }
 
         if (abs(bot->GetPositionZ() - unit->GetPositionZ()) > INTERACTION_DISTANCE)
             continue;
