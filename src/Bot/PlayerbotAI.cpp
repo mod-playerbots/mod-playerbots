@@ -89,8 +89,10 @@ void PacketHandlingHelper::Handle(ExternalEventHelper& helper)
 {
     while (!queue.empty())
     {
-        helper.HandlePacket(handlers, queue.top());
-        queue.pop();
+        WorldPacket packet = queue.top();
+        queue.pop(); // remove first so handling can't modify the queue while we're using it
+
+        helper.HandlePacket(handlers, packet);
     }
 }
 
@@ -437,8 +439,15 @@ void PlayerbotAI::UpdateAIGroupMaster()
 
 void PlayerbotAI::UpdateAIInternal([[maybe_unused]] uint32 elapsed, bool minimal)
 {
-    if (!bot || bot->IsBeingTeleported() || !bot->IsInWorld())
+
+    if (!bot || !bot->GetSession())
         return;
+
+    if (!bot->IsInWorld() || bot->IsBeingTeleported() || bot->IsDuringRemoveFromWorld())
+        return;
+
+    if (!bot->GetMap())
+        return; // instances are created and destroyed on demand
 
     std::string const mapString = WorldPosition(bot).isOverworld() ? std::to_string(bot->GetMapId()) : "I";
     PerfMonitorOperation* pmo =
