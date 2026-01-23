@@ -5,6 +5,46 @@
 
 #include "ChatCommandHandlerStrategy.h"
 
+#include "Playerbots.h"
+#include "ActionNode.h"
+#include "CreateNextAction.h"
+#include "CastCustomSpellAction.h"
+#include "AttackAction.h"
+#include "TellReputationAction.h"
+#include "QueryQuestAction.h"
+#include "QueryItemUsageAction.h"
+#include "AddLootAction.h"
+#include "LootAction.h"
+#include "UseItemAction.h"
+#include "TellItemCountAction.h"
+#include "EquipAction.h"
+#include "UnequipAction.h"
+#include "TradeAction.h"
+#include "SellAction.h"
+#include "BuyAction.h"
+#include "RewardAction.h"
+#include "AcceptQuestAction.h"
+#include "ChatShortcutActions.h"
+#include "GossipHelloAction.h"
+#include "TalkToQuestGiverAction.h"
+#include "VehicleActions.h"
+#include "ReviveFromCorpseAction.h"
+#include "TellTargetAction.h"
+#include "ReadyCheckAction.h"
+#include "MovementActions.h"
+#include "TellLosAction.h"
+#include "OpenItemAction.h"
+#include "QueryItemUsageAction.h"
+#include "UnlockItemAction.h"
+#include "UnlockTradedItemAction.h"
+#include "WipeAction.h"
+#include "TameAction.h"
+#include "TellGlyphsAction.h"
+#include "EquipGlyphsAction.h"
+#include "PetsAction.h"
+#include "PetAttackAction.h"
+#include "LootRollAction.h"
+
 class ChatCommandActionNodeFactoryInternal : public NamedObjectFactory<ActionNode>
 {
 public:
@@ -13,10 +53,11 @@ public:
 private:
     static ActionNode* tank_attack_chat_shortcut(PlayerbotAI*)
     {
-        return new ActionNode("tank attack chat shortcut",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ { NextAction("attack my target", 100.0f) });
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ { CreateNextAction<AttackMyTargetAction>(100.0f) }
+        );
     }
 };
 
@@ -24,87 +65,401 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
 {
     PassTroughStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("rep", { NextAction("reputation", relevance) }));
-    triggers.push_back(new TriggerNode("pvp stats", { NextAction("tell pvp stats", relevance) }));
-    triggers.push_back(new TriggerNode("q", { NextAction("query quest", relevance),
-                                                              NextAction("query item usage", relevance) }));
-    triggers.push_back(new TriggerNode("add all loot", { NextAction("add all loot", relevance),
-                                                                         NextAction("loot", relevance) }));
-    triggers.push_back(new TriggerNode("u", { NextAction("use", relevance) }));
-    triggers.push_back(new TriggerNode("c", { NextAction("item count", relevance) }));
     triggers.push_back(
-        new TriggerNode("items", { NextAction("item count", relevance) }));
-    triggers.push_back(new TriggerNode("inv", { NextAction("item count", relevance) }));
-    triggers.push_back(new TriggerNode("e", { NextAction("equip", relevance) }));
-    triggers.push_back(new TriggerNode("ue", { NextAction("unequip", relevance) }));
-    triggers.push_back(new TriggerNode("t", { NextAction("trade", relevance) }));
-    triggers.push_back(new TriggerNode("nt", { NextAction("trade", relevance) }));
-    triggers.push_back(new TriggerNode("s", { NextAction("sell", relevance) }));
-    triggers.push_back(new TriggerNode("b", { NextAction("buy", relevance) }));
-    triggers.push_back(new TriggerNode("r", { NextAction("reward", relevance) }));
+        new TriggerNode(
+            "pvp stats",
+            {
+                CreateNextAction<TellPvpStatsAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("attack", { NextAction("attack my target", relevance) }));
+        new TriggerNode(
+            "rep",
+            {
+                CreateNextAction<TellReputationAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("accept", { NextAction("accept quest", relevance) }));
+        new TriggerNode(
+            "q",
+            {
+                CreateNextAction<QueryQuestAction>(relevance),
+                CreateNextAction<QueryItemUsageAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("follow", { NextAction("follow chat shortcut", relevance) }));
+        new TriggerNode(
+            "add all loot",
+            {
+                CreateNextAction<AddAllLootAction>(relevance),
+                CreateNextAction<LootAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("stay", { NextAction("stay chat shortcut", relevance) }));
+        new TriggerNode(
+            "u",
+            {
+                CreateNextAction<UseItemAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("move from group", { NextAction("move from group chat shortcut", relevance) }));
+        new TriggerNode(
+            "c",
+            {
+                CreateNextAction<TellItemCountAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("flee", { NextAction("flee chat shortcut", relevance) }));
-    triggers.push_back(new TriggerNode(
-        "tank attack", { NextAction("tank attack chat shortcut", relevance) }));
+        new TriggerNode(
+            "items",
+            {
+                CreateNextAction<TellItemCountAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("grind", { NextAction("grind chat shortcut", relevance) }));
+        new TriggerNode(
+            "inv",
+            {
+                CreateNextAction<TellItemCountAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("talk", { NextAction("gossip hello", relevance),
-                                                  NextAction("talk to quest giver", relevance) }));
+        new TriggerNode(
+            "e",
+            {
+                CreateNextAction<EquipAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("enter vehicle", { NextAction("enter vehicle", relevance) }));
+        new TriggerNode(
+            "ue",
+            {
+                CreateNextAction<UnequipAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("leave vehicle", { NextAction("leave vehicle", relevance) }));
+        new TriggerNode(
+            "t",
+            {
+                CreateNextAction<TradeAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("cast", { NextAction("cast custom spell", relevance) }));
+        new TriggerNode(
+            "nt",
+            {
+                CreateNextAction<TradeAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("castnc", { NextAction("cast custom nc spell", relevance) }));
+        new TriggerNode(
+            "s",
+            {
+                CreateNextAction<SellAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("revive", { NextAction("spirit healer", relevance) }));
+        new TriggerNode(
+            "b",
+            {
+                CreateNextAction<BuyAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("runaway", { NextAction("runaway chat shortcut", relevance) }));
+        new TriggerNode(
+            "r",
+            {
+                CreateNextAction<RewardAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("warning", { NextAction("runaway chat shortcut", relevance) }));
+        new TriggerNode(
+            "attack",
+            {
+                CreateNextAction<AttackMyTargetAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("max dps", { NextAction("max dps chat shortcut", relevance) }));
+        new TriggerNode(
+            "accept",
+            {
+                CreateNextAction<AcceptQuestAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("attackers", { NextAction("tell attackers", relevance) }));
+        new TriggerNode(
+            "follow",
+            {
+                CreateNextAction<FollowChatShortcutAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("target", { NextAction("tell target", relevance) }));
+        new TriggerNode(
+            "stay",
+            {
+                CreateNextAction<StayChatShortcutAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("ready", { NextAction("ready check", relevance) }));
+        new TriggerNode(
+            "move from group",
+            {
+                CreateNextAction<MoveFromGroupChatShortcutAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("bwl", { NextAction("bwl chat shortcut", relevance) }));
+        new TriggerNode(
+            "flee",
+            {
+                CreateNextAction<FleeChatShortcutAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("dps", { NextAction("tell estimated dps", relevance) }));
+        new TriggerNode(
+        "tank attack",
+        {
+            CreateNextAction<TankAttackChatShortcutAction>(relevance)
+        }
+    )
+);
     triggers.push_back(
-        new TriggerNode("disperse", { NextAction("disperse set", relevance) }));
+        new TriggerNode(
+            "grind",
+            {
+                CreateNextAction<GrindChatShortcutAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("open items", { NextAction("open items", relevance) }));
+        new TriggerNode(
+            "talk",
+            {
+                CreateNextAction<GossipHelloAction>(relevance),
+                CreateNextAction<TalkToQuestGiverAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("qi", { NextAction("query item usage", relevance) }));
+        new TriggerNode(
+            "enter vehicle",
+            {
+                CreateNextAction<EnterVehicleAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("unlock items", { NextAction("unlock items", relevance) }));
+        new TriggerNode(
+            "leave vehicle",
+            {
+                CreateNextAction<LeaveVehicleAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("unlock traded item", { NextAction("unlock traded item", relevance) }));
+        new TriggerNode(
+            "cast",
+            {
+                CreateNextAction<CastCustomSpellAction>(relevance)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("wipe", { NextAction("wipe", relevance) }));
-    triggers.push_back(new TriggerNode("tame", { NextAction("tame", relevance) }));
-    triggers.push_back(new TriggerNode("glyphs", { NextAction("glyphs", relevance) })); // Added for custom Glyphs
-    triggers.push_back(new TriggerNode("glyph equip", { NextAction("glyph equip", relevance) })); // Added for custom Glyphs
-    triggers.push_back(new TriggerNode("pet", { NextAction("pet", relevance) }));
-    triggers.push_back(new TriggerNode("pet attack", { NextAction("pet attack", relevance) }));
-    triggers.push_back(new TriggerNode("roll", { NextAction("roll", relevance) }));
+        new TriggerNode(
+            "castnc",
+            {
+                CreateNextAction<CastCustomNcSpellAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "revive",
+            {
+                CreateNextAction<SpiritHealerAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "runaway",
+            {
+                CreateNextAction<GoawayChatShortcutAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "warning",
+            {
+                CreateNextAction<GoawayChatShortcutAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "max dps",
+            {
+                CreateNextAction<MaxDpsChatShortcutAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "attackers",
+            {
+                CreateNextAction<TellAttackersAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "target",
+            {
+                CreateNextAction<TellTargetAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "ready",
+            {
+                CreateNextAction<ReadyCheckAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "bwl",
+            {
+                CreateNextAction<BwlChatShortcutAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "dps",
+            {
+                CreateNextAction<TellEstimatedDpsAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "disperse",
+            {
+                CreateNextAction<DisperseSetAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "open items",
+            {
+                CreateNextAction<OpenItemAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "qi",
+            {
+                CreateNextAction<QueryItemUsageAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "unlock items",
+            {
+                CreateNextAction<UnlockItemAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "unlock traded item",
+            {
+                CreateNextAction<UnlockTradedItemAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "wipe",
+            {
+                CreateNextAction<WipeAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "tame",
+            {
+                CreateNextAction<TameAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "glyphs",
+            {
+                CreateNextAction<TellGlyphsAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "glyph equip",
+            {
+                CreateNextAction<EquipGlyphsAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "pet",
+            {
+                CreateNextAction<PetsAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "pet attack",
+            {
+                CreateNextAction<PetAttackAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "roll",
+            {
+                CreateNextAction<RollAction>(relevance)
+            }
+        )
+    );
 }
 
 ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI)

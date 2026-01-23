@@ -8,12 +8,12 @@
 #include "GenericSpellActions.h"
 #include "Playerbots.h"
 
-float CastTimeMultiplier::GetValue(Action* action)
+float CastTimeMultiplier::GetValue(Action& action)
 {
-    if (action == nullptr)
+    if (!action.GetTarget() || action.GetTarget() != this->context->GetValue<Unit*>("current target")->Get())
         return 1.0f;
 
-    if (!action->GetTarget() || action->GetTarget() != AI_VALUE(Unit*, "current target"))
+    if (!action.GetTarget() || action.GetTarget() != AI_VALUE(Unit*, "current target"))
         return 1.0f;
 
     if (/*targetHealth < sPlayerbotAIConfig.criticalHealth && */ dynamic_cast<CastSpellAction*>(action))
@@ -39,26 +39,17 @@ float CastTimeMultiplier::GetValue(Action* action)
                 castTime += duration;
         }
 
-        Unit* target = action->GetTarget();
+        Unit* target = action.GetTarget();
         if (!target || !target->IsAlive() || !target->IsInWorld())
         {
             return 1.0f;
         }
 
-        if (castTime > (1000 * target->GetHealth() / AI_VALUE(float, "estimated group dps")))
+        if (castTime > (1000 * target->GetHealth() / this->context->GetValue<float>("estimated group dps")->Get()))
         {
             return 0.1f;
         }
     }
-    // if (castTime >= 3000)
-    //     return 0.0f;
-
-    // if (castTime >= 1500)
-    //     return 0.5f;
-
-    // if (castTime >= 1000)
-    //     return 0.25f;
-    // // }
 
     return 1.0f;
 }
