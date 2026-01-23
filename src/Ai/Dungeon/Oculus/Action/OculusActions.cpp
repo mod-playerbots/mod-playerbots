@@ -62,17 +62,25 @@ bool MountDrakeAction::Execute(Event event)
             break;
     }
 
-    GuidVector members = AI_VALUE(GuidVector, "group members");
-    for (auto& member : members)
+    std::vector<Player*> players = botAI->GetPlayersInGroup();
+    for (Player* player : players)
     {
-        Player* player = botAI->GetPlayer(member);
-        if (!player->GetSession()->IsBot()) { continue; }
+        if (!player || !player->IsInWorld() || player->IsDuringRemoveFromWorld())
+            continue;
 
-        for (int i = 0; i < composition.size(); i++)
+        WorldSession* session = player->GetSession();
+        if (!session || !session->IsBot())
+            continue;
+
+        int slot = botAI->GetGroupSlotIndex(player);
+        if (slot < 0)
+            continue;
+
+        for (uint8 i = 0; i < composition.size(); ++i)
         {
             if (composition[i] > 0)
             {
-                drakeAssignments[botAI->GetGroupSlotIndex(player)] = DRAKE_ITEMS[i];
+                drakeAssignments[slot] = DRAKE_ITEMS[i];
                 composition[i]--;
                 break;
             }

@@ -2238,10 +2238,15 @@ bool PlayerbotAI::IsMainTank(Player* player)
 
 bool PlayerbotAI::IsBotMainTank(Player* player)
 {
-    if (!player->GetSession()->IsBot() || !IsTank(player))
-    {
+    if (!player || !player->IsInWorld() || player->IsDuringRemoveFromWorld())
         return false;
-    }
+
+    WorldSession* session = player->GetSession();
+    if (!session || !session->IsBot())
+        return false;
+
+    if (!IsTank(player))
+        return false;
 
     if (IsMainTank(player))
     {
