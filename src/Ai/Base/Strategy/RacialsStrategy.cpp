@@ -5,34 +5,66 @@
 
 #include "RacialsStrategy.h"
 
+#include "Playerbots.h"
+#include "ActionNode.h"
+#include "CreateNextAction.h"
+#include "GenericSpellActions.h"
+
 class RacialsStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
 public:
-    RacialsStrategyActionNodeFactory() { creators["lifeblood"] = &lifeblood; }
+    RacialsStrategyActionNodeFactory()
+    {
+        creators["lifeblood"] = &lifeblood;
+    }
 
 private:
     static ActionNode* lifeblood(PlayerbotAI*)
     {
-        return new ActionNode("lifeblood",
-                              /*P*/ {},
-                              /*A*/ { NextAction("gift of the naaru") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastGiftOfTheNaaruAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 };
 
 void RacialsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("low health", { NextAction("lifeblood", ACTION_NORMAL + 5) }));
+        new TriggerNode(
+            "low health",
+            {
+                CreateNextAction<CastLifeBloodAction>(ACTION_NORMAL + 5.0f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("medium aoe", { NextAction("war stomp", ACTION_NORMAL + 5) }));
-    triggers.push_back(new TriggerNode(
-        "low mana", { NextAction("arcane torrent", ACTION_NORMAL + 5) }));
-
-    triggers.push_back(new TriggerNode(
-        "generic boost", { NextAction("blood fury", ACTION_NORMAL + 5),
-        NextAction("berserking", ACTION_NORMAL + 5),
-        NextAction("use trinket", ACTION_NORMAL + 4) }));
+        new TriggerNode(
+            "medium aoe",
+            {
+                CreateNextAction<CastWarStompAction>(ACTION_NORMAL + 5.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "low mana",
+            {
+                CreateNextAction<CastArcaneTorrentAction>(ACTION_NORMAL + 5.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "generic boost",
+            {
+                CreateNextAction<CastBloodFuryAction>(ACTION_NORMAL + 5.0f),
+                CreateNextAction<CastBerserkingAction>(ACTION_NORMAL + 5.0f),
+                CreateNextAction<UseTrinketAction>(ACTION_NORMAL + 4.0f)
+            }
+        )
+    );
 
 }
 
