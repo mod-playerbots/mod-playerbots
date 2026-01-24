@@ -445,12 +445,28 @@ protected:
     {
         for (auto const& pillar : pillars)
         {
-            // Simplified: check if pillar is between player and boss
-            float distToPillar = Distance(player, pillar);
-            float distToBoss = Distance(player, boss);
-            float pillarToBoss = Distance(pillar, boss);
+            // Check if pillar center is within pillarRadius of the line segment from player to boss
+            // Using point-to-line-segment distance formula
+            float dx = boss.x - player.x;
+            float dy = boss.y - player.y;
+            float lineLenSq = dx * dx + dy * dy;
 
-            if (distToPillar + pillarToBoss < distToBoss + pillarRadius * 2)
+            if (lineLenSq < 0.001f)
+                continue;  // Player and boss at same position
+
+            // Project pillar onto line, clamped to segment
+            float t = std::max(0.0f, std::min(1.0f,
+                ((pillar.x - player.x) * dx + (pillar.y - player.y) * dy) / lineLenSq));
+
+            // Closest point on line segment to pillar
+            float closestX = player.x + t * dx;
+            float closestY = player.y + t * dy;
+
+            // Distance from pillar center to closest point
+            float distSq = (pillar.x - closestX) * (pillar.x - closestX) +
+                          (pillar.y - closestY) * (pillar.y - closestY);
+
+            if (distSq < pillarRadius * pillarRadius)
                 return false;  // Pillar blocks LoS
         }
         return true;

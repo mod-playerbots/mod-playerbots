@@ -199,10 +199,10 @@ protected:
     {
         rotation_ = {
             {1, "Slice and Dice", 100.0f, false, false, false, true},
-            {2, "Rupture", 90.0f, true, false, false, true},
-            {3, "Eviscerate", 80.0f, true, false, false, false},
+            {2, "Rupture", 85.0f, true, false, false, true},   // DoT finisher, slightly lower than damage finisher
+            {3, "Eviscerate", 90.0f, true, false, false, false}, // Damage finisher, higher base
             {4, "Mutilate", 50.0f, false, true, false, false},
-            {5, "Cold Blood", 200.0f, false, false, true, false},
+            {5, "Cold Blood", 70.0f, false, false, true, false},  // Base priority low, cooldown bonus makes it high
         };
 
         context_ = {0, true, true, 100.0f, false};
@@ -227,7 +227,7 @@ protected:
 
         // Builders when low on combo points
         if (spell.isBuilder && context_.comboPoints < 5)
-            priority += 30.0f;
+            priority += 60.0f;
 
         // Cooldowns during burn phases
         if (spell.isCooldown && !context_.cooldownsActive)

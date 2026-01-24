@@ -259,7 +259,7 @@ protected:
 
     void AddAction(std::string const& name, float priority, int maxRetries = 3)
     {
-        queue_.push_back({name, priority, 0, maxRetries, ActionResult::Success});
+        queue_.push_back({name, priority, 0, maxRetries, ActionResult::InProgress});
     }
 
     void SortQueue()

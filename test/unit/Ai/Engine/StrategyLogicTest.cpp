@@ -37,8 +37,8 @@ protected:
         strategies_["dps"] = {"dps", false, {"tank", "heal"}, {}};
         strategies_["tank"] = {"tank", false, {"dps", "heal"}, {}};
         strategies_["heal"] = {"heal", false, {"dps", "tank"}, {}};
-        strategies_["pvp"] = {"pvp", false, {}, {}};
-        strategies_["pve"] = {"pve", false, {"pvp"}, {}};
+        strategies_["pvp"] = {"pvp", false, {"pve"}, {}};  // pvp conflicts with pve
+        strategies_["pve"] = {"pve", false, {"pvp"}, {}};  // pve conflicts with pvp
         strategies_["aoe"] = {"aoe", false, {}, {"dps"}};  // Requires dps
         strategies_["stealth"] = {"stealth", false, {"mount"}, {}};
         strategies_["mount"] = {"mount", false, {"stealth", "combat"}, {}};

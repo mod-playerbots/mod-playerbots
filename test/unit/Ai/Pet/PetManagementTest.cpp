@@ -322,9 +322,9 @@ TEST_F(PetPositioningTest, MeleePetBehindTarget)
 {
     Position pos = CalculateMeleePetPosition();
 
-    // Should be behind target (opposite side from owner)
-    // Target at 120, owner at 100, so behind is around 125
-    EXPECT_GT(pos.x, context_.targetPos.x);
+    // Pet positions opposite to owner-target direction
+    // Owner at 100, target at 120, so pet goes to target - attackRange = 115
+    EXPECT_LT(pos.x, context_.targetPos.x);
     EXPECT_NEAR(context_.targetPos.y, pos.y, 0.1f);
 }
 

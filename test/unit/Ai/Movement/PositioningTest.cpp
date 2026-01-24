@@ -94,9 +94,9 @@ TEST_F(FormationPositioningTest, RotatesWithLeader)
 
     Position pos = CalculateWorldPosition(formationSlots_[0], leaderPos_);
 
-    // When facing north, -2 Y becomes -2 X
-    EXPECT_NEAR(98.0f, pos.x, 0.01f);
-    EXPECT_NEAR(102.0f, pos.y, 0.01f);
+    // When facing north, local (-2, -2) rotates to world (2, -2)
+    EXPECT_NEAR(102.0f, pos.x, 0.01f);
+    EXPECT_NEAR(98.0f, pos.y, 0.01f);
 }
 
 TEST_F(FormationPositioningTest, InFormationCheck)
@@ -138,7 +138,7 @@ protected:
         context_ = {
             {100.0f, 100.0f},  // Boss at center
             0.0f,              // Boss facing east
-            {95.0f, 100.0f},   // Tank in front
+            {105.0f, 100.0f},  // Tank in front (east of boss)
             true,              // Is melee
             false,
             5.0f               // Optimal range
@@ -324,8 +324,9 @@ TEST_F(AoeAvoidanceTest, DetectsInAoe)
 
 TEST_F(AoeAvoidanceTest, FindsSafePosition)
 {
-    Position unsafe{100.0f, 100.0f};
-    Position safe = FindSafePosition(unsafe, 7.0f, 500);  // 7 yards/sec, 500ms reaction
+    // Start at edge of first AoE, away from second AoE
+    Position unsafe{95.0f, 100.0f};  // 5 yards from center, need to move 5+ yards to escape
+    Position safe = FindSafePosition(unsafe, 7.0f, 1000);  // 7 yards/sec, 1000ms = 7 yards movement
 
     EXPECT_FALSE(IsInAoe(safe));
 }
@@ -345,7 +346,13 @@ TEST_F(AoeAvoidanceTest, CanExitInTime)
     EXPECT_TRUE(WillExitAoeInTime(nearEdge, 7.0f, aoeZones_[0]));
 
     Position center{100.0f, 100.0f};  // 10 yards from edge
-    EXPECT_FALSE(WillExitAoeInTime(center, 7.0f, aoeZones_[0]));  // Won't make it in 5s
+    // At 7 yards/sec, 10 yards takes 1.43 seconds, which is under 5s duration
+    EXPECT_TRUE(WillExitAoeInTime(center, 7.0f, aoeZones_[0]));
+
+    // Test case where you can't make it: slow movement, short duration
+    // aoeZones_[1] has 3000ms duration. At 1 yard/sec, 8 yards takes 8 seconds > 3 seconds
+    Position inSecondAoe{120.0f, 100.0f};  // Center of second AoE (8 yard radius)
+    EXPECT_FALSE(WillExitAoeInTime(inSecondAoe, 1.0f, aoeZones_[1]));
 }
 
 /**
