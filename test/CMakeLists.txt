@@ -33,17 +33,49 @@ include_directories(
 # Test sources
 set(TEST_SOURCES
     TestMain.cpp
+
     # Bot Service tests
     unit/Bot/Service/ConfigProviderTest.cpp
     unit/Bot/Service/RoleServiceTest.cpp
+
     # Bot Core tests
     unit/Bot/Core/ManagerRegistryTest.cpp
-    # AI pattern tests
+
+    # Utility logic tests
+    unit/HealthThresholdTest.cpp
+
+    # AI Base pattern tests
     unit/Ai/Trigger/TriggerLogicTest.cpp
     unit/Ai/Value/ValueLogicTest.cpp
     unit/Ai/Action/ActionLogicTest.cpp
-    # Utility logic tests
-    unit/HealthThresholdTest.cpp
+
+    # AI Engine tests
+    unit/Ai/Engine/StrategyLogicTest.cpp
+    unit/Ai/Engine/EngineTickTest.cpp
+    unit/Ai/Engine/MultiplierTest.cpp
+    unit/Ai/Engine/StateTransitionTest.cpp
+
+    # AI Combat tests
+    unit/Ai/Combat/TargetSelectionTest.cpp
+    unit/Ai/Combat/SpellRotationTest.cpp
+    unit/Ai/Combat/GroupCoordinationTest.cpp
+    unit/Ai/Combat/BuffManagementTest.cpp
+    unit/Ai/Combat/CrowdControlTest.cpp
+
+    # AI Movement tests
+    unit/Ai/Movement/PositioningTest.cpp
+
+    # AI Resource tests
+    unit/Ai/Resource/ResourceManagementTest.cpp
+
+    # AI Pet tests
+    unit/Ai/Pet/PetManagementTest.cpp
+
+    # AI Dungeon/Raid tests
+    unit/Ai/Dungeon/DungeonTacticsTest.cpp
+
+    # Integration tests
+    unit/Ai/Integration/ActionChainTest.cpp
 )
 
 # Create test executable
