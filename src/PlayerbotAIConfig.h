@@ -65,9 +65,31 @@ public:
     PlayerbotAIConfig(){};
     static PlayerbotAIConfig* instance()
     {
+        if (testInstance_)
+            return testInstance_;
         static PlayerbotAIConfig instance;
         return &instance;
     }
+
+    /**
+     * @brief Set a test instance for dependency injection during tests
+     * @param inst Pointer to test instance, or nullptr to reset to default
+     *
+     * This allows tests to inject mock configuration without modifying
+     * the global singleton. Call with nullptr to restore normal behavior.
+     */
+    static void SetTestInstance(PlayerbotAIConfig* inst) { testInstance_ = inst; }
+
+    /**
+     * @brief Check if a test instance is currently active
+     * @return true if using a test instance
+     */
+    static bool HasTestInstance() { return testInstance_ != nullptr; }
+
+private:
+    static inline PlayerbotAIConfig* testInstance_ = nullptr;
+
+public:
 
     bool Initialize();
     bool IsInRandomAccountList(uint32 id);
