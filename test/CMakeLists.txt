@@ -38,6 +38,10 @@ set(TEST_SOURCES
     unit/Bot/Service/RoleServiceTest.cpp
     # Bot Core tests
     unit/Bot/Core/ManagerRegistryTest.cpp
+    # AI pattern tests
+    unit/Ai/Trigger/TriggerLogicTest.cpp
+    unit/Ai/Value/ValueLogicTest.cpp
+    unit/Ai/Action/ActionLogicTest.cpp
     # Utility logic tests
     unit/HealthThresholdTest.cpp
 )
