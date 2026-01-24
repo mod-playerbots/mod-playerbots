@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <cstring>
 #include <istream>
+#include <sstream>
 #include <string>
 #include <unordered_set>
 #include <openssl/sha.h>
@@ -15,6 +16,7 @@
 #include <algorithm>
 
 #include "ChannelMgr.h"
+#include "ChatHelper.h"
 #include "CharacterCache.h"
 #include "CharacterPackets.h"
 #include "Common.h"
@@ -837,7 +839,7 @@ std::string const PlayerbotHolder::ProcessBotCommand(std::string const cmd, Obje
 
         if (cmd == "refresh=raid")
         {  // TODO: This function is not perfect yet. If you are already in a raid,
-            // after the command is executed, the AI ​​needs to go back online or exit the raid and re-enter.
+            // after the command is executed, the AI needs to go back online or exit the raid and re-enter.
             PlayerbotFactory factory(bot, bot->GetLevel());
             factory.UnbindInstance();
             return "ok";
@@ -872,16 +874,46 @@ std::string const PlayerbotHolder::ProcessBotCommand(std::string const cmd, Obje
     return "unknown command";
 }
 
-// Added for gender choice : Returns the gender of an offline character: 0 = male, 1 = female.
-static uint8 GetOfflinePlayerGender(ObjectGuid guid)
+static std::string GetAddClassSpecUsage(uint8 classId)
 {
-    QueryResult result = CharacterDatabase.Query(
-        "SELECT gender FROM characters WHERE guid = {}", guid.GetCounter());
+    std::vector<std::string> specs = ChatHelper::GetSpecNames(classId);
+    if (specs.empty())
+        return "";
 
-    if (result)
-        return (*result)[0].Get<uint8>();       // 0 = male, 1 = female
+    std::ostringstream out;
+    out << ChatHelper::FormatClass(classId) << " specs: ";
 
-    return GENDER_MALE;                         // fallback value
+    for (size_t i = 0; i < specs.size(); ++i)
+    {
+        if (i)
+            out << ", ";
+
+        out << specs[i];
+    }
+
+    return out.str();
+}
+
+static bool TryParseGenderToken(std::string const& token, int8& genderOut)
+{
+    if (token == "male" || token == "0")
+    {
+        genderOut = GENDER_MALE;
+        return true;
+    }
+
+    if (token == "female" || token == "1")
+    {
+        genderOut = GENDER_FEMALE;
+        return true;
+    }
+
+    return false;
+}
+
+static bool TryParseSpecToken(uint8 classId, std::string const& token, int8& specTabOut)
+{
+    return ChatHelper::TryGetSpecTabByName(classId, token, specTabOut);
 }
 
 bool PlayerbotMgr::HandlePlayerbotMgrCommand(ChatHandler* handler, char const* args)
@@ -926,17 +958,18 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
     if (!*args)
     {
         messages.push_back("usage: list/reload/tweak/self or add/addaccount/init/remove PLAYERNAME\n");
-        messages.push_back("usage: addclass CLASSNAME [male|female|0|1]");
+        messages.push_back("usage: addclass CLASSNAME [male|female|0|1] [spec]");
         return messages;
     }
 
     char* cmd = strtok((char*)args, " ");
     char* charname = strtok(nullptr, " ");
-    char* genderArg = strtok(nullptr, " ");    // Added for gender choice [male|female|0|1] optionnel
+    char* genderArg = strtok(nullptr, " ");    // Optional gender token [male|female|0|1]
+    char* specArg = strtok(nullptr, " ");      // Optional spec token
 
     if (!cmd)
     {
-        messages.push_back("usage: list/reload/tweak/self or add/init/remove PLAYERNAME or addclass CLASSNAME [male|female]");
+        messages.push_back("usage: list/reload/tweak/self or add/init/remove PLAYERNAME or addclass CLASSNAME [male|female] [spec]");
         return messages;
     }
 
@@ -1159,35 +1192,84 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
             messages.push_back("Error: Invalid Class. Try again.");
             return messages;
         }
-        //  Added for gender choice : Parsing gender
+        // Parse optional gender/spec tokens
         int8 gender = -1; // -1 = gender will be random
-        if (genderArg)
-        {
-            std::string g = genderArg;
-            std::transform(g.begin(), g.end(), g.begin(), ::tolower);
+        int8 specTab = -1;
 
-            if (g == "male" || g == "0")
-                gender = GENDER_MALE; // 0
-            else if (g == "female" || g == "1")
-                gender = GENDER_FEMALE; // 1
-            else
+        std::string token1 = genderArg ? genderArg : "";
+        std::string token2 = specArg ? specArg : "";
+        std::transform(token1.begin(), token1.end(), token1.begin(), ::tolower);
+        std::transform(token2.begin(), token2.end(), token2.begin(), ::tolower);
+
+        auto applyToken = [&](std::string const& token) -> bool
+        {
+            if (token.empty())
+                return true;
+
+            int8 parsedGender = -1;
+            if (TryParseGenderToken(token, parsedGender))
             {
-                messages.push_back("Unknown gender : " + g + " (male/female/0/1)");
-                return messages;
+                if (gender != -1)
+                {
+                    messages.push_back("Multiple gender options are not allowed.");
+                    return false;
+                }
+
+                gender = parsedGender;
+                return true;
             }
-        } //end
+
+            int8 parsedSpec = -1;
+            if (TryParseSpecToken(claz, token, parsedSpec))
+            {
+                if (specTab != -1)
+                {
+                    messages.push_back("Multiple spec options are not allowed.");
+                    return false;
+                }
+
+                specTab = parsedSpec;
+                return true;
+            }
+
+            messages.push_back("Unknown option: " + token + " (gender/spec)");
+            std::string specUsage = GetAddClassSpecUsage(claz);
+            if (!specUsage.empty())
+                messages.push_back(specUsage);
+            return false;
+        };
+
+        if (!applyToken(token1) || !applyToken(token2))
+            return messages;
 
         if (claz == 6 && master->GetLevel() < sWorld->getIntConfig(CONFIG_START_HEROIC_PLAYER_LEVEL))
         {
             messages.push_back("Your level is too low to summon Deathknight");
             return messages;
         }
+
         uint8 teamId = master->GetTeamId(true);
-        const std::unordered_set<ObjectGuid> &guidCache = sRandomPlayerbotMgr->addclassCache[RandomPlayerbotMgr::GetTeamClassIdx(teamId == TEAM_ALLIANCE, claz)];
-        for (const ObjectGuid &guid: guidCache)
+        const std::unordered_set<ObjectGuid>& guidCache =
+            sRandomPlayerbotMgr->addclassCache[RandomPlayerbotMgr::GetTeamClassIdx(teamId == TEAM_ALLIANCE, claz)];
+
+        bool hasGenderMatch = gender == -1;
+        bool hasSpecMatch = specTab == -1;
+        bool hasCombinedMatch = gender == -1 && specTab == -1;
+        for (ObjectGuid const& guid : guidCache)
         {
-            // If the user requested a specific gender, skip any character that doesn't match.
-            if (gender != -1 && GetOfflinePlayerGender(guid) != gender)
+            bool genderMatch = gender == -1 || sRandomPlayerbotMgr->GetAddclassGender(guid) == gender;
+            bool specMatch = true;
+            if (specTab != -1)
+            {
+                int8 botSpecTab = sRandomPlayerbotMgr->GetAddclassSpecTab(guid);
+                specMatch = botSpecTab == -1 || botSpecTab == specTab;
+            }
+
+            hasGenderMatch = hasGenderMatch || genderMatch;
+            hasSpecMatch = hasSpecMatch || specMatch;
+            hasCombinedMatch = hasCombinedMatch || (genderMatch && specMatch);
+
+            if (!genderMatch || !specMatch)
                 continue;
             if (botLoading.find(guid) != botLoading.end())
                 continue;
@@ -1200,6 +1282,14 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
             messages.push_back("Add class " + std::string(charname));
             return messages;
         }
+
+        if (!hasGenderMatch)
+            messages.push_back("No addclass candidate matches the requested gender.");
+        else if (!hasSpecMatch)
+            messages.push_back("No addclass candidate matches the requested spec.");
+        else if (!hasCombinedMatch)
+            messages.push_back("No addclass candidate matches the requested gender and spec combination.");
+
         messages.push_back("Add class failed, no available characters!");
         return messages;
     }

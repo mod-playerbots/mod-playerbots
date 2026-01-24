@@ -8,11 +8,13 @@
 #include <WorldSessionMgr.h>
 
 #include <algorithm>
+#include <array>
 #include <boost/thread/thread.hpp>
 #include <cstdlib>
 #include <ctime>
 #include <iomanip>
 #include <random>
+#include <sstream>
 
 #include "AccountMgr.h"
 #include "AiFactory.h"
@@ -2120,39 +2122,161 @@ void RandomPlayerbotMgr::PrepareTeleportCache()
     LOG_INFO("playerbots", ">> {} banker locations for level collected.", collected_locs);
 }
 
+bool RandomPlayerbotMgr::IsAllianceRace(uint32 race)
+{
+    switch (race)
+    {
+        case RACE_HUMAN:
+        case RACE_DWARF:
+        case RACE_NIGHTELF:
+        case RACE_GNOME:
+        case RACE_DRAENEI:
+            return true;
+        default:
+            return false;
+    }
+}
+
+int8 RandomPlayerbotMgr::ComputeSpecTabFromTalents(
+    std::unordered_map<uint32, std::array<uint32, 3>> const& talentPoints, ObjectGuid::LowType guid) const
+{
+    auto const itr = talentPoints.find(guid);
+    if (itr == talentPoints.end())
+        return -1;
+
+    uint32 bestPoints = 0;
+    int8 bestTab = -1;
+    for (int8 tab = 0; tab < 3; ++tab)
+    {
+        if (itr->second[tab] > bestPoints)
+        {
+            bestPoints = itr->second[tab];
+            bestTab = tab;
+        }
+    }
+
+    return bestPoints ? bestTab : -1;
+}
+
+uint8 RandomPlayerbotMgr::GetAddclassGender(ObjectGuid guid) const
+{
+    auto const itr = addclassGenderCache.find(guid.GetCounter());
+    return itr != addclassGenderCache.end() ? itr->second : GENDER_MALE;
+}
+
+int8 RandomPlayerbotMgr::GetAddclassSpecTab(ObjectGuid guid) const
+{
+    auto const itr = addclassSpecCache.find(guid.GetCounter());
+    return itr != addclassSpecCache.end() ? itr->second : -1;
+}
+
 void RandomPlayerbotMgr::PrepareAddclassCache()
 {
     // Using accounts marked as type 2 (AddClass)
     int32 collected = 0;
 
+    addclassCache.clear();
+    addclassGenderCache.clear();
+    addclassSpecCache.clear();
+
+    std::unordered_map<uint8, std::vector<uint32>> classGuids;
+
     for (uint32 accountId : addClassTypeAccounts)
     {
-        for (uint8 claz = CLASS_WARRIOR; claz <= CLASS_DRUID; claz++)
+        for (uint8 claz = CLASS_WARRIOR; claz <= CLASS_DRUID; ++claz)
         {
             if (claz == 10)
                 continue;
 
             QueryResult results = CharacterDatabase.Query(
-                "SELECT guid, race FROM characters "
+                "SELECT guid, race, gender FROM characters "
                 "WHERE account = {} AND class = '{}' AND online = 0",
                 accountId, claz);
 
-            if (results)
+            if (!results)
+                continue;
+
+            do
             {
-                do
-                {
-                    Field* fields = results->Fetch();
-                    ObjectGuid guid = ObjectGuid(HighGuid::Player, fields[0].Get<uint32>());
-                    uint32 race = fields[1].Get<uint32>();
-                    bool isAlliance = race == 1 || race == 3 || race == 4 || race == 7 || race == 11;
-                    addclassCache[GetTeamClassIdx(isAlliance, claz)].insert(guid);
-                    collected++;
-                } while (results->NextRow());
-            }
+                Field* fields = results->Fetch();
+                uint32 guidLow = fields[0].Get<uint32>();
+                uint32 race = fields[1].Get<uint32>();
+                uint8 gender = fields[2].Get<uint8>();
+
+                ObjectGuid guid = ObjectGuid(HighGuid::Player, guidLow);
+                bool isAlliance = IsAllianceRace(race);
+                addclassCache[GetTeamClassIdx(isAlliance, claz)].insert(guid);
+                addclassGenderCache[guidLow] = gender;
+                classGuids[claz].push_back(guidLow);
+                ++collected;
+            } while (results->NextRow());
         }
     }
 
-    LOG_INFO("playerbots", ">> {} characters collected for addclass command from {} AddClass accounts.", collected, addClassTypeAccounts.size());
+    for (auto const& [classId, guids] : classGuids)
+    {
+        if (guids.empty())
+            continue;
+
+        uint32 const* talentTabIds = GetTalentTabPages(classId);
+        if (!talentTabIds)
+            continue;
+
+        std::ostringstream guidList;
+        for (size_t i = 0; i < guids.size(); ++i)
+        {
+            if (i)
+                guidList << ',';
+            guidList << guids[i];
+        }
+
+        QueryResult talents = CharacterDatabase.Query(
+            "SELECT guid, spell, specMask FROM character_talent WHERE guid IN ({})",
+            guidList.str());
+
+        std::unordered_map<uint32, std::array<uint32, 3>> talentPoints;
+
+        if (talents)
+        {
+            do
+            {
+                Field* fields = talents->Fetch();
+                uint32 guidLow = fields[0].Get<uint32>();
+                uint32 spellId = fields[1].Get<uint32>();
+                uint8 specMask = fields[2].Get<uint8>();
+
+                if (specMask != 0 && (specMask & 1) == 0)
+                    continue;
+
+                TalentSpellPos const* talentPos = GetTalentSpellPos(spellId);
+                if (!talentPos)
+                    continue;
+
+                TalentEntry const* talentInfo = sTalentStore.LookupEntry(talentPos->talent_id);
+                if (!talentInfo)
+                    continue;
+
+                uint8 tabIndex = 255;
+                if (talentInfo->TalentTab == talentTabIds[0])
+                    tabIndex = 0;
+                else if (talentInfo->TalentTab == talentTabIds[1])
+                    tabIndex = 1;
+                else if (talentInfo->TalentTab == talentTabIds[2])
+                    tabIndex = 2;
+
+                if (tabIndex >= 3)
+                    continue;
+
+                talentPoints[guidLow][tabIndex] += talentPos->rank + 1;
+            } while (talents->NextRow());
+        }
+
+        for (uint32 guidLow : guids)
+            addclassSpecCache[guidLow] = ComputeSpecTabFromTalents(talentPoints, guidLow);
+    }
+
+    LOG_INFO("playerbots", ">> {} characters collected for addclass command from {} AddClass accounts.", collected,
+             addClassTypeAccounts.size());
 }
 
 void RandomPlayerbotMgr::Init()

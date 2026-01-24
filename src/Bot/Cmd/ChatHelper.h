@@ -7,6 +7,7 @@
 #define _PLAYERBOT_CHATHELPER_H
 
 #include <map>
+#include <vector>
 
 #include "Common.h"
 #include "ObjectGuid.h"
@@ -61,6 +62,10 @@ public:
     static std::string const FormatSkill(uint32 skill);
     static std::string const FormatBoolean(bool flag);
 
+    static void EnsureInitialized();
+    static bool TryGetSpecTabByName(uint8 classId, std::string const& name, int8& specTabOut);
+    static std::vector<std::string> GetSpecNames(uint8 classId);
+
     static uint32 parseItemQuality(std::string const text);
     static bool parseItemClass(std::string const text, uint32* itemClass, uint32* itemSubClass);
     static uint32 parseSlot(std::string const text);
@@ -74,6 +79,8 @@ public:
     static std::set<uint32> ExtractAllItemIds(const std::string& text);
 
 private:
+    static void InitStaticMaps();
+    static bool initialized;
     static std::map<std::string, uint32> consumableSubClasses;
     static std::map<std::string, uint32> tradeSubClasses;
     static std::map<std::string, uint32> itemQualities;

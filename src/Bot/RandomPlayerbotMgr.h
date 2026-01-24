@@ -6,6 +6,8 @@
 #ifndef _PLAYERBOT_RANDOMPLAYERBOTMGR_H
 #define _PLAYERBOT_RANDOMPLAYERBOTMGR_H
 
+#include <array>
+
 #include "NewRpgInfo.h"
 #include "ObjectGuid.h"
 #include "PlayerbotMgr.h"
@@ -164,10 +166,14 @@ public:
     static uint8 GetTeamClassIdx(bool isAlliance, uint8 claz) { return isAlliance * 20 + claz; }
 
     void PrepareAddclassCache();
+    int8 GetAddclassSpecTab(ObjectGuid guid) const;
+    uint8 GetAddclassGender(ObjectGuid guid) const;
     void PrepareZone2LevelBracket();
     void PrepareTeleportCache();
     void Init();
     std::map<uint8, std::unordered_set<ObjectGuid>> addclassCache;
+    std::unordered_map<ObjectGuid::LowType, uint8> addclassGenderCache;
+    std::unordered_map<ObjectGuid::LowType, int8> addclassSpecCache;
     std::map<uint8, std::vector<WorldLocation>> locsPerLevelCache;
     std::map<uint8, std::vector<WorldLocation>> allianceStarterPerLevelCache;
     std::map<uint8, std::vector<WorldLocation>> hordeStarterPerLevelCache;
@@ -192,6 +198,8 @@ protected:
     void OnBotLoginInternal(Player* const bot) override;
 
 private:
+    int8 ComputeSpecTabFromTalents(std::unordered_map<uint32, std::array<uint32, 3>> const& talentPoints, ObjectGuid::LowType guid) const;
+    static bool IsAllianceRace(uint32 race);
     // pid values are set in constructor
     botPID pid = botPID(1, 50, -50, 0, 0, 0);
     float activityMod = 0.25;

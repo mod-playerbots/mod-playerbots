@@ -24,6 +24,12 @@ std::map<std::string, ChatMsg> ChatHelper::chats;
 std::map<uint8, std::string> ChatHelper::classes;
 std::map<uint8, std::string> ChatHelper::races;
 std::map<uint8, std::map<uint8, std::string> > ChatHelper::specs;
+bool ChatHelper::initialized = false;
+
+void ChatHelper::EnsureInitialized()
+{
+    InitStaticMaps();
+}
 
 template <class T>
 static bool substrContainsInMap(std::string const searchTerm, std::map<std::string, T> searchIn)
@@ -40,6 +46,16 @@ static bool substrContainsInMap(std::string const searchTerm, std::map<std::stri
 
 ChatHelper::ChatHelper(PlayerbotAI* botAI) : PlayerbotAIAware(botAI)
 {
+    InitStaticMaps();
+}
+
+void ChatHelper::InitStaticMaps()
+{
+    if (initialized)
+        return;
+
+    initialized = true;
+
     itemQualities["poor"] = ITEM_QUALITY_POOR;
     itemQualities["gray"] = ITEM_QUALITY_POOR;
     itemQualities["normal"] = ITEM_QUALITY_NORMAL;
@@ -651,6 +667,46 @@ std::string const ChatHelper::FormatSkill(uint32 skill)
 }
 
 std::string const ChatHelper::FormatBoolean(bool flag) { return flag ? "|cff00ff00ON|r" : "|cffffff00OFF|r"; }
+
+bool ChatHelper::TryGetSpecTabByName(uint8 classId, std::string const& name, int8& specTabOut)
+{
+    EnsureInitialized();
+
+    auto const specIt = specs.find(classId);
+    if (specIt == specs.end())
+        return false;
+
+    for (auto const& specEntry : specIt->second)
+    {
+        std::string specKey = specEntry.second;
+        std::string::size_type spacePos = specKey.find(' ');
+        std::string shortKey = (spacePos == std::string::npos) ? specKey : specKey.substr(0, spacePos);
+
+        if (name == specKey || name == shortKey)
+        {
+            specTabOut = specEntry.first;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+std::vector<std::string> ChatHelper::GetSpecNames(uint8 classId)
+{
+    EnsureInitialized();
+
+    std::vector<std::string> names;
+    auto const specIt = specs.find(classId);
+    if (specIt == specs.end())
+        return names;
+
+    names.reserve(specIt->second.size());
+    for (auto const& specEntry : specIt->second)
+        names.push_back(specEntry.second);
+
+    return names;
+}
 
 void ChatHelper::eraseAllSubStr(std::string& mainStr, std::string const toErase)
 {
