@@ -15,6 +15,7 @@
 #include "Playerbots.h"
 #include "PossibleRpgTargetsValue.h"
 #include "SocialMgr.h"
+#include "BotChatService.h"
 
 void RpgHelper::OnExecute(std::string nextAction)
 {
@@ -370,7 +371,7 @@ bool RpgTradeUsefulAction::Execute(Event event)
         if (bot->GetTradeData() && bot->GetTradeData()->HasItem(item->GetGUID()))
         {
             if (bot->GetGroup() && bot->GetGroup()->IsMember(guidP) && botAI->HasRealPlayerMaster())
-                botAI->TellMasterNoFacing(
+                botAI->GetServices().GetChatService().TellMasterNoFacing(
                     "You can use this " + chat->FormatItem(item->GetTemplate()) + " better than me, " +
                     guidP.GetPlayer()->GetName() /*chat->FormatWorldobject(guidP.GetPlayer())*/ + ".");
             else

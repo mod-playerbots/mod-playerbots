@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "AcceptInvitationAction.h"
 
 #include "Event.h"
@@ -55,7 +56,7 @@ bool AcceptInvitationAction::Execute(Event event)
     botAI->ChangeStrategy("+follow,-lfg,-bg", BOT_STATE_NON_COMBAT);
     botAI->Reset();
 
-    botAI->TellMaster("Hello");
+    botAI->GetServices().GetChatService().TellMaster("Hello");
 
     if (sPlayerbotAIConfig->summonWhenGroup && bot->GetDistance(inviter) > sPlayerbotAIConfig->sightDistance)
     {

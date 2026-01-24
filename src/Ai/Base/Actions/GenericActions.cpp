@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "GenericActions.h"
 #include "BotSpellService.h"
 #include "PlayerbotAI.h"
@@ -115,7 +116,7 @@ bool TogglePetSpellAutoCastAction::Execute(Event event)
 
     // Debug message if pet spells have been toggled and debug is enabled
     if (toggled && sPlayerbotAIConfig->petChatCommandDebug == 1)
-        botAI->TellMaster("Pet autocast spells have been toggled.");
+        botAI->GetServices().GetChatService().TellMaster("Pet autocast spells have been toggled.");
 
     return toggled;
 }
@@ -181,7 +182,7 @@ bool SetPetStanceAction::Execute(Event /*event*/)
     // If there are no controlled pets or guardians, notify the player and exit
     if (targets.empty())
     {
-        botAI->TellError("You have no pet or guardian pet.");
+        botAI->GetServices().GetChatService().TellError("You have no pet or guardian pet.");
         return false;
     }
 
@@ -223,7 +224,7 @@ bool SetPetStanceAction::Execute(Event /*event*/)
 
     // If debug is enabled in config, inform the master of the new stance
     if (sPlayerbotAIConfig->petChatCommandDebug == 1)
-        botAI->TellMaster("Pet stance set to " + stanceText + " (applied to all pets/guardians).");
+        botAI->GetServices().GetChatService().TellMaster("Pet stance set to " + stanceText + " (applied to all pets/guardians).");
 
     return true;
 }

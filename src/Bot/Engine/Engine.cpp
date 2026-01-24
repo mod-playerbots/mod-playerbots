@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "Engine.h"
 
 #include "Action.h"
@@ -588,7 +589,7 @@ bool Engine::ListenAndExecute(Action* action, Event event)
         if (!event.GetSource().empty())
             out << " [" << event.GetSource() << "]";
 
-        botAI->TellMasterNoFacing(out);
+        botAI->GetServices().GetChatService().TellMasterNoFacing(out);
     }
 
     actionExecuted = actionExecutionListeners.OverrideResult(action, actionExecuted, event);
@@ -649,7 +650,7 @@ void Engine::ChangeStrategy(std::string const names)
                 toggleStrategy(name + 1);
                 break;
             case '?':
-                botAI->TellMaster(ListStrategies());
+                botAI->GetServices().GetChatService().TellMaster(ListStrategies());
                 break;
         }
     }

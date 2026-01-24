@@ -28,6 +28,7 @@
 #include "StatsWeightCalculator.h"
 #include "Timer.h"
 #include "TravelMgr.h"
+#include "BotChatService.h"
 
 bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
 {
@@ -237,7 +238,7 @@ bool NewRpgBaseAction::InteractWithNpcOrGameObjectForQuest(ObjectGuid guid)
         {
             AcceptQuest(quest, guid);
             if (botAI->GetMaster())
-                botAI->TellMasterNoFacing("Quest accepted " + ChatHelper::FormatQuest(quest));
+                botAI->GetServices().GetChatService().TellMasterNoFacing("Quest accepted " + ChatHelper::FormatQuest(quest));
             BroadcastHelper::BroadcastQuestAccepted(botAI, bot, quest);
             botAI->rpgStatistic.questAccepted++;
             LOG_DEBUG("playerbots", "[New RPG] {} accept quest {}", bot->GetName(), quest->GetQuestId());
@@ -246,7 +247,7 @@ bool NewRpgBaseAction::InteractWithNpcOrGameObjectForQuest(ObjectGuid guid)
         {
             TurnInQuest(quest, guid);
             if (botAI->GetMaster())
-                botAI->TellMasterNoFacing("Quest rewarded " + ChatHelper::FormatQuest(quest));
+                botAI->GetServices().GetChatService().TellMasterNoFacing("Quest rewarded " + ChatHelper::FormatQuest(quest));
             BroadcastHelper::BroadcastQuestTurnedIn(botAI, bot, quest);
             botAI->rpgStatistic.questRewarded++;
             LOG_DEBUG("playerbots", "[New RPG] {} turned in quest {}", bot->GetName(), quest->GetQuestId());
@@ -538,7 +539,7 @@ bool NewRpgBaseAction::OrganizeQuestLog()
             packet << (uint8)i;
             bot->GetSession()->HandleQuestLogRemoveQuest(packet);
             if (botAI->GetMaster())
-                botAI->TellMasterNoFacing("Quest dropped " + ChatHelper::FormatQuest(quest));
+                botAI->GetServices().GetChatService().TellMasterNoFacing("Quest dropped " + ChatHelper::FormatQuest(quest));
             botAI->rpgStatistic.questDropped++;
             dropped++;
         }
@@ -563,7 +564,7 @@ bool NewRpgBaseAction::OrganizeQuestLog()
             packet << (uint8)i;
             bot->GetSession()->HandleQuestLogRemoveQuest(packet);
             if (botAI->GetMaster())
-                botAI->TellMasterNoFacing("Quest dropped " + ChatHelper::FormatQuest(quest));
+                botAI->GetServices().GetChatService().TellMasterNoFacing("Quest dropped " + ChatHelper::FormatQuest(quest));
             botAI->rpgStatistic.questDropped++;
             dropped++;
         }
@@ -585,7 +586,7 @@ bool NewRpgBaseAction::OrganizeQuestLog()
         packet << (uint8)i;
         bot->GetSession()->HandleQuestLogRemoveQuest(packet);
         if (botAI->GetMaster())
-            botAI->TellMasterNoFacing("Quest dropped " + ChatHelper::FormatQuest(quest));
+            botAI->GetServices().GetChatService().TellMasterNoFacing("Quest dropped " + ChatHelper::FormatQuest(quest));
         botAI->rpgStatistic.questDropped++;
     }
 

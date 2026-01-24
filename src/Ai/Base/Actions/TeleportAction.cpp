@@ -8,6 +8,7 @@
 #include "Event.h"
 #include "LastMovementValue.h"
 #include "Playerbots.h"
+#include "BotChatService.h"
 
 bool TeleportAction::Execute(Event event)
 {
@@ -52,7 +53,7 @@ bool TeleportAction::Execute(Event event)
     {
         std::ostringstream out;
         out << "Using portal: " << closestPortal->GetName();
-        botAI->TellMasterNoFacing(out.str());
+        botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
 
         WorldPacket data(CMSG_GAMEOBJ_USE);
         data << closestPortal->GetGUID();
@@ -80,7 +81,7 @@ bool TeleportAction::Execute(Event event)
 
         std::ostringstream out;
         out << "Teleporting using " << goInfo->name;
-        botAI->TellMasterNoFacing(out.str());
+        botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
 
         botAI->ChangeStrategy("-follow,+stay", BOT_STATE_NON_COMBAT);
 
@@ -106,6 +107,6 @@ bool TeleportAction::Execute(Event event)
     }
 
     // If no teleport option is found
-    botAI->TellError("Cannot find any portal to teleport");
+    botAI->GetServices().GetChatService().TellError("Cannot find any portal to teleport");
     return false;
 }

@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "DestroyItemAction.h"
 
 #include "Event.h"
@@ -31,7 +32,7 @@ void DestroyItemAction::DestroyItem(FindItemVisitor* visitor)
     {
         std::ostringstream out;
         out << chat->FormatItem(item->GetTemplate()) << " destroyed";
-        botAI->TellMaster(out);
+        botAI->GetServices().GetChatService().TellMaster(out);
 
         bot->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
     }

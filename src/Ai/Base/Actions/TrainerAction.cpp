@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "TrainerAction.h"
 
 #include "BudgetValues.h"
@@ -81,7 +82,7 @@ void TrainerAction::Iterate(Creature* creature, TrainerSpellAction action, Spell
         if (action)
             (this->*action)(cost, spell, out);
 
-        botAI->TellMaster(out);
+        botAI->GetServices().GetChatService().TellMaster(out);
     }
 
     TellFooter(totalCost);
@@ -117,7 +118,7 @@ bool TrainerAction::Execute(Event event)
 
     if (trainer_spells.empty())
     {
-        botAI->TellError("No spells can be learned from this trainer");
+        botAI->GetServices().GetChatService().TellError("No spells can be learned from this trainer");
         return false;
     }
 
@@ -142,7 +143,7 @@ void TrainerAction::TellHeader(Creature* creature)
 {
     std::ostringstream out;
     out << "--- Can learn from " << creature->GetName() << " ---";
-    botAI->TellMaster(out);
+    botAI->GetServices().GetChatService().TellMaster(out);
 }
 
 void TrainerAction::TellFooter(uint32 totalCost)
@@ -151,7 +152,7 @@ void TrainerAction::TellFooter(uint32 totalCost)
     {
         std::ostringstream out;
         out << "Total cost: " << chat->formatMoney(totalCost);
-        botAI->TellMaster(out);
+        botAI->GetServices().GetChatService().TellMaster(out);
     }
 }
 
@@ -159,11 +160,11 @@ bool MaintenanceAction::Execute(Event event)
 {
     if (!sPlayerbotAIConfig->maintenanceCommand)
     {
-        botAI->TellError("maintenance command is not allowed, please check the configuration.");
+        botAI->GetServices().GetChatService().TellError("maintenance command is not allowed, please check the configuration.");
         return false;
     }
 
-    botAI->TellMaster("I'm maintaining");
+    botAI->GetServices().GetChatService().TellMaster("I'm maintaining");
     PlayerbotFactory factory(bot, bot->GetLevel());
 
     if (!botAI->IsAlt())
@@ -269,18 +270,18 @@ bool AutoGearAction::Execute(Event event)
 {
     if (!sPlayerbotAIConfig->autoGearCommand)
     {
-        botAI->TellError("autogear command is not allowed, please check the configuration.");
+        botAI->GetServices().GetChatService().TellError("autogear command is not allowed, please check the configuration.");
         return false;
     }
 
     if (!sPlayerbotAIConfig->autoGearCommandAltBots &&
         !sPlayerbotAIConfig->IsInRandomAccountList(bot->GetSession()->GetAccountId()))
     {
-        botAI->TellError("You cannot use autogear on alt bots.");
+        botAI->GetServices().GetChatService().TellError("You cannot use autogear on alt bots.");
         return false;
     }
 
-    botAI->TellMaster("I'm auto gearing");
+    botAI->GetServices().GetChatService().TellMaster("I'm auto gearing");
     uint32 gs = sPlayerbotAIConfig->autoGearScoreLimit == 0
                     ? 0
                     : PlayerbotFactory::CalcMixedGearScore(sPlayerbotAIConfig->autoGearScoreLimit,

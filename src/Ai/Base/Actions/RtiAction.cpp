@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "RtiAction.h"
 
 #include "Event.h"
@@ -25,13 +26,13 @@ bool RtiAction::Execute(Event event)
         outRti << "rti"
                << ": ";
         AppendRti(outRti, "rti");
-        botAI->TellMaster(outRti);
+        botAI->GetServices().GetChatService().TellMaster(outRti);
 
         std::ostringstream outRtiCc;
         outRtiCc << "rti cc"
                  << ": ";
         AppendRti(outRtiCc, "rti cc");
-        botAI->TellMaster(outRtiCc);
+        botAI->GetServices().GetChatService().TellMaster(outRtiCc);
         return true;
     }
 
@@ -40,7 +41,7 @@ bool RtiAction::Execute(Event event)
     std::ostringstream out;
     out << type << " set to: ";
     AppendRti(out, type);
-    botAI->TellMaster(out);
+    botAI->GetServices().GetChatService().TellMaster(out);
     return true;
 }
 

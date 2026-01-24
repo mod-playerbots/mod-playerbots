@@ -11,6 +11,7 @@
 #include "ItemUsageValue.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
+#include "BotChatService.h"
 
 size_t FindLastSeparator(std::string const text, std::string const sep)
 {
@@ -119,7 +120,7 @@ bool CastCustomSpellAction::Execute(Event event)
     if (!spell)
     {
         msg << "Unknown spell " << text;
-        botAI->TellError(msg.str());
+        botAI->GetServices().GetChatService().TellError(msg.str());
         return false;
     }
 
@@ -127,7 +128,7 @@ bool CastCustomSpellAction::Execute(Event event)
     if (!spellInfo)
     {
         msg << "Unknown spell " << text;
-        botAI->TellError(msg.str());
+        botAI->GetServices().GetChatService().TellError(msg.str());
         return false;
     }
 
@@ -156,7 +157,7 @@ bool CastCustomSpellAction::Execute(Event event)
     if (!bot->GetTrader() && !botAI->GetServices().GetSpellService().CanCastSpell(spell, target, true, itemTarget))
     {
         msg << "Cannot cast " << spellName.str();
-        botAI->TellError(msg.str());
+        botAI->GetServices().GetChatService().TellError(msg.str());
         return false;
     }
 
@@ -173,12 +174,12 @@ bool CastCustomSpellAction::Execute(Event event)
             msg << "|cffffff00(x" << (castCount - 1) << " left)|r";
         }
 
-        botAI->TellMasterNoFacing(msg.str());
+        botAI->GetServices().GetChatService().TellMasterNoFacing(msg.str());
     }
     else
     {
         msg << "Cast " << spellName.str() << " is failed";
-        botAI->TellError(msg.str());
+        botAI->GetServices().GetChatService().TellError(msg.str());
     }
 
     return result;

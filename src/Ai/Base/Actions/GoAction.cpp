@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "GoAction.h"
 
 #include "ChooseTravelTargetAction.h"
@@ -31,7 +32,7 @@ bool GoAction::Execute(Event event)
 
         std::ostringstream out;
         out << "I am at " << x << "," << y;
-        botAI->TellMaster(out.str());
+        botAI->GetServices().GetChatService().TellMaster(out.str());
         return true;
     }
 
@@ -54,13 +55,13 @@ bool GoAction::Execute(Event event)
 
             std::ostringstream out;
             out << "Traveling to " << dest->getTitle();
-            botAI->TellMasterNoFacing(out.str());
+            botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
 
             return true;
         }
         else
         {
-            botAI->TellMasterNoFacing("Clearing travel target");
+            botAI->GetServices().GetChatService().TellMasterNoFacing("Clearing travel target");
             target->setTarget(sTravelMgr->nullTravelDestination, sTravelMgr->nullWorldPosition);
             target->setForced(false);
             return true;
@@ -78,13 +79,13 @@ bool GoAction::Execute(Event event)
                     if (sServerFacade->IsDistanceGreaterThan(sServerFacade->GetDistance2d(bot, go),
                                                              sPlayerbotAIConfig->reactDistance))
                     {
-                        botAI->TellError("It is too far away");
+                        botAI->GetServices().GetChatService().TellError("It is too far away");
                         return false;
                     }
 
                     std::ostringstream out;
                     out << "Moving to " << ChatHelper::FormatGameobject(go);
-                    botAI->TellMasterNoFacing(out.str());
+                    botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
                     return MoveNear(bot->GetMapId(), go->GetPositionX(), go->GetPositionY(), go->GetPositionZ() + 0.5f,
                                     sPlayerbotAIConfig->followDistance);
                 }
@@ -104,7 +105,7 @@ bool GoAction::Execute(Event event)
             {
                 std::ostringstream out;
                 out << "Moving to " << unit->GetName();
-                botAI->TellMasterNoFacing(out.str());
+                botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
                 return MoveNear(bot->GetMapId(), unit->GetPositionX(), unit->GetPositionY(),
                                 unit->GetPositionZ() + 0.5f, sPlayerbotAIConfig->followDistance);
             }
@@ -154,7 +155,7 @@ bool GoAction::Execute(Event event)
                 CreateWp(bot, i.x, i.y, i.z, 0.f, 11144);
             }
 
-            botAI->TellMaster(out);
+            botAI->GetServices().GetChatService().TellMaster(out);
         }
 
         if (bot->IsWithinLOS(x, y, z))
@@ -179,20 +180,20 @@ bool GoAction::Execute(Event event)
         if (sServerFacade->IsDistanceGreaterThan(sServerFacade->GetDistance2d(bot, x, y),
                                                  sPlayerbotAIConfig->reactDistance))
         {
-            botAI->TellMaster("It is too far away");
+            botAI->GetServices().GetChatService().TellMaster("It is too far away");
             return false;
         }
 
         if (map->IsInWater(bot->GetPhaseMask(), x, y, z, bot->GetCollisionHeight()))
         {
-            botAI->TellError("It is in water");
+            botAI->GetServices().GetChatService().TellError("It is in water");
             return false;
         }
 
         float ground = map->GetHeight(x, y, z + 0.5f);
         if (ground <= INVALID_HEIGHT)
         {
-            botAI->TellError("I can't go there");
+            botAI->GetServices().GetChatService().TellError("I can't go there");
             return false;
         }
 
@@ -201,7 +202,7 @@ bool GoAction::Execute(Event event)
 
         std::ostringstream out;
         out << "Moving to " << x1 << "," << y1;
-        botAI->TellMasterNoFacing(out.str());
+        botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
 
         return MoveNear(bot->GetMapId(), x, y, z + 0.5f, sPlayerbotAIConfig->followDistance);
     }
@@ -212,16 +213,16 @@ bool GoAction::Execute(Event event)
         if (sServerFacade->IsDistanceGreaterThan(sServerFacade->GetDistance2d(bot, pos.x, pos.y),
                                                  sPlayerbotAIConfig->reactDistance))
         {
-            botAI->TellError("It is too far away");
+            botAI->GetServices().GetChatService().TellError("It is too far away");
             return false;
         }
 
         std::ostringstream out;
         out << "Moving to position " << param;
-        botAI->TellMasterNoFacing(out.str());
+        botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
         return MoveNear(bot->GetMapId(), pos.x, pos.y, pos.z + 0.5f, sPlayerbotAIConfig->followDistance);
     }
 
-    botAI->TellMaster("Whisper 'go x,y', 'go [game object]', 'go unit' or 'go position' and I will go there");
+    botAI->GetServices().GetChatService().TellMaster("Whisper 'go x,y', 'go [game object]', 'go unit' or 'go position' and I will go there");
     return false;
 }

@@ -9,6 +9,7 @@
 #include "PlayerbotOperations.h"
 #include "Playerbots.h"
 #include "PlayerbotWorldThreadProcessor.h"
+#include "BotChatService.h"
 
 bool PassLeadershipToMasterAction::Execute(Event event)
 {
@@ -19,7 +20,7 @@ bool PassLeadershipToMasterAction::Execute(Event event)
             sPlayerbotWorldProcessor->QueueOperation(std::move(setLeaderOp));
 
             if (!message.empty())
-                botAI->TellMasterNoFacing(message);
+                botAI->GetServices().GetChatService().TellMasterNoFacing(message);
 
             if (sRandomPlayerbotMgr->IsRandomBot(bot))
             {

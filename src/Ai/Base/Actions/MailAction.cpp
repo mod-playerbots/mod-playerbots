@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "MailAction.h"
 
 #include "ChatHelper.h"
@@ -17,7 +18,7 @@ class TellMailProcessor : public MailProcessor
 public:
     bool Before(PlayerbotAI* botAI) override
     {
-        botAI->TellMaster("=== Mailbox ===");
+        botAI->GetServices().GetChatService().TellMaster("=== Mailbox ===");
         tells.clear();
         return true;
     }
@@ -64,7 +65,7 @@ public:
     bool After(PlayerbotAI* botAI) override
     {
         for (std::list<std::string>::iterator i = tells.begin(); i != tells.end(); ++i)
-            botAI->TellMaster(*i);
+            botAI->GetServices().GetChatService().TellMaster(*i);
 
         return true;
     }
@@ -83,7 +84,7 @@ public:
         Player* bot = botAI->GetBot();
         if (!CheckBagSpace(bot))
         {
-            botAI->TellError("Not enough bag space");
+            botAI->GetServices().GetChatService().TellError("Not enough bag space");
             return false;
         }
 
@@ -92,7 +93,7 @@ public:
         {
             std::ostringstream out;
             out << mail->subject << ", |cffffff00" << ChatHelper::formatMoney(mail->money) << "|cff00ff00 processed";
-            botAI->TellMaster(out.str());
+            botAI->GetServices().GetChatService().TellMaster(out.str());
 
             WorldPacket packet;
             packet << mailbox;
@@ -120,7 +121,7 @@ public:
                 out << mail->subject << ", " << ChatHelper::FormatItem(item->GetTemplate()) << "|cff00ff00 processed";
 
                 bot->GetSession()->HandleMailTakeItem(packet);
-                botAI->TellMaster(out.str());
+                botAI->GetServices().GetChatService().TellMaster(out.str());
             }
 
             RemoveMail(bot, mail->messageID, mailbox);
@@ -162,7 +163,7 @@ public:
         std::ostringstream out;
         out << "|cffffffff" << mail->subject << "|cffff0000 deleted";
         RemoveMail(botAI->GetBot(), mail->messageID, FindMailbox(botAI));
-        botAI->TellMaster(out.str());
+        botAI->GetServices().GetChatService().TellMaster(out.str());
         return true;
     }
 
@@ -176,7 +177,7 @@ public:
     {
         std::ostringstream out, body;
         out << "|cffffffff" << mail->subject;
-        botAI->TellMaster(out.str());
+        botAI->GetServices().GetChatService().TellMaster(out.str());
 
         return true;
     }
@@ -256,7 +257,7 @@ bool MailAction::Execute(Event event)
 
     if (!MailProcessor::FindMailbox(botAI))
     {
-        botAI->TellError("There is no mailbox nearby");
+        botAI->GetServices().GetChatService().TellError("There is no mailbox nearby");
         return false;
     }
 
@@ -271,7 +272,7 @@ bool MailAction::Execute(Event event)
     std::string const text = event.getParam();
     if (text.empty())
     {
-        botAI->TellMaster(
+        botAI->GetServices().GetChatService().TellMaster(
             "whisper 'mail ?' to query mailbox, 'mail take/delete/read filter' to take/delete/read mails by filter");
         return false;
     }
@@ -285,7 +286,7 @@ bool MailAction::Execute(Event event)
     {
         std::ostringstream out;
         out << action << ": I don't know how to do that";
-        botAI->TellMaster(out.str());
+        botAI->GetServices().GetChatService().TellMaster(out.str());
         return false;
     }
 

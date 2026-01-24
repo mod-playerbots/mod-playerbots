@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "SetHomeAction.h"
 
 #include "Event.h"
@@ -30,14 +31,14 @@ bool SetHomeAction::Execute(Event event)
             {
                 Creature* creature = botAI->GetCreature(selection);
                 bot->GetSession()->SendBindPoint(creature);
-                botAI->TellMaster("This inn is my new home");
+                botAI->GetServices().GetChatService().TellMaster("This inn is my new home");
                 return true;
             }
             else
             {
                 Creature* creature = botAI->GetCreature(selection);
                 bot->GetSession()->SendBindPoint(creature);
-                botAI->TellMaster("This inn is my new home");
+                botAI->GetServices().GetChatService().TellMaster("This inn is my new home");
                 return true;
             }
         }
@@ -50,10 +51,10 @@ bool SetHomeAction::Execute(Event event)
             continue;
 
         bot->GetSession()->SendBindPoint(unit);
-        botAI->TellMaster("This inn is my new home");
+        botAI->GetServices().GetChatService().TellMaster("This inn is my new home");
         return true;
     }
 
-    botAI->TellError("Can't find any innkeeper around");
+    botAI->GetServices().GetChatService().TellError("Can't find any innkeeper around");
     return false;
 }

@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "SaveManaAction.h"
 
 #include "Event.h"
@@ -17,7 +18,7 @@ bool SaveManaAction::Execute(Event event)
     {
         std::ostringstream out;
         out << "Mana save level: " << Format(value);
-        botAI->TellMaster(out);
+        botAI->GetServices().GetChatService().TellMaster(out);
         return true;
     }
 
@@ -56,7 +57,7 @@ bool SaveManaAction::Execute(Event event)
 
     std::ostringstream out;
     out << "Mana save level set: " << Format(value);
-    botAI->TellMaster(out);
+    botAI->GetServices().GetChatService().TellMaster(out);
 
     return true;
 }

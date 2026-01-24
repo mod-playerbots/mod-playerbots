@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "LogLevelAction.h"
 
 #include "Event.h"
@@ -24,7 +25,7 @@ bool LogLevelAction::Execute(Event event)
         out << "My log level is " << logLevel2string(value->Get());
     }
 
-    botAI->TellMaster(out);
+    botAI->GetServices().GetChatService().TellMaster(out);
     return true;
 }
 

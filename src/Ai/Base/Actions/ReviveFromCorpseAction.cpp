@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "ReviveFromCorpseAction.h"
 
 #include "Event.h"
@@ -29,7 +30,7 @@ bool ReviveFromCorpseAction::Execute(Event event)
         {
             if (!botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT))
             {
-                botAI->TellMasterNoFacing("Welcome back!");
+                botAI->GetServices().GetChatService().TellMasterNoFacing("Welcome back!");
                 botAI->ChangeStrategy("+follow,-stay", BOT_STATE_NON_COMBAT);
                 return true;
             }
@@ -298,7 +299,7 @@ bool SpiritHealerAction::Execute(Event event)
     Corpse* corpse = bot->GetCorpse();
     if (!corpse)
     {
-        botAI->TellError("I am not a spirit");
+        botAI->GetServices().GetChatService().TellError("I am not a spirit");
         return false;
     }
 
@@ -323,7 +324,7 @@ bool SpiritHealerAction::Execute(Event event)
                 bot->SpawnCorpseBones();
                 context->GetValue<Unit*>("current target")->Set(nullptr);
                 bot->SetTarget();
-                botAI->TellMaster("Hello");
+                botAI->GetServices().GetChatService().TellMaster("Hello");
 
                 if (dCount > 20)
                     context->GetValue<uint32>("death count")->Set(0);
@@ -358,7 +359,7 @@ bool SpiritHealerAction::Execute(Event event)
     // LOG_INFO("playerbots", "Bot {} {}:{} <{}> can't find a spirit healer", bot->GetGUID().ToString().c_str(),
     //          bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName().c_str());
 
-    // botAI->TellError("Cannot find any spirit healer nearby");
+    // botAI->GetServices().GetChatService().TellError("Cannot find any spirit healer nearby");
     return false;
 }
 

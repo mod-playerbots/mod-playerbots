@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "UnequipAction.h"
 
 #include "Event.h"
@@ -78,5 +79,5 @@ void UnequipAction::UnequipItem(Item* item)
 
     std::ostringstream out;
     out << chat->FormatItem(item->GetTemplate()) << " unequipped";
-    botAI->TellMaster(out);
+    botAI->GetServices().GetChatService().TellMaster(out);
 }

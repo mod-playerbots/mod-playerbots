@@ -1,3 +1,4 @@
+#include "BotChatService.h"
 #include "UnlockItemAction.h"
 #include "PlayerbotAI.h"
 #include "ItemTemplate.h"
@@ -30,10 +31,10 @@ void UnlockItemAction::UnlockItem(Item* item)
     {
         std::ostringstream out;
         out << "Used Pick Lock on: " << item->GetTemplate()->Name1;
-        botAI->TellMaster(out.str());
+        botAI->GetServices().GetChatService().TellMaster(out.str());
     }
     else
     {
-        botAI->TellError("Failed to cast Pick Lock.");
+        botAI->GetServices().GetChatService().TellError("Failed to cast Pick Lock.");
     }
 }

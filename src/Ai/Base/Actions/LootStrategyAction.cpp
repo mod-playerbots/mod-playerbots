@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "LootStrategyAction.h"
 
 #include "ChatHelper.h"
@@ -26,7 +27,7 @@ bool LootStrategyAction::Execute(Event event)
             std::ostringstream out;
             out << "Loot strategy: ";
             out << lootStrategy->Get()->GetName();
-            botAI->TellMaster(out);
+            botAI->GetServices().GetChatService().TellMaster(out);
         }
 
         {
@@ -42,7 +43,7 @@ bool LootStrategyAction::Execute(Event event)
                 out << chat->FormatItem(proto);
             }
 
-            botAI->TellMaster(out);
+            botAI->GetServices().GetChatService().TellMaster(out);
         }
     }
     else
@@ -55,7 +56,7 @@ bool LootStrategyAction::Execute(Event event)
 
             std::ostringstream out;
             out << "Loot strategy set to " << lootStrategy->Get()->GetName();
-            botAI->TellMaster(out);
+            botAI->GetServices().GetChatService().TellMaster(out);
             return true;
         }
 
@@ -71,7 +72,7 @@ bool LootStrategyAction::Execute(Event event)
                     out << (StoreLootAction::IsLootAllowed(itemid, botAI) ? "|cFF000000Will loot "
                                                                           : "|c00FF0000Won't loot ")
                         << ChatHelper::FormatItem(proto);
-                    botAI->TellMaster(out.str());
+                    botAI->GetServices().GetChatService().TellMaster(out.str());
                 }
             }
             else if (remove)
@@ -80,12 +81,12 @@ bool LootStrategyAction::Execute(Event event)
                 if (j != alwaysLootItems.end())
                     alwaysLootItems.erase(j);
 
-                botAI->TellMaster("Item(s) removed from always loot list");
+                botAI->GetServices().GetChatService().TellMaster("Item(s) removed from always loot list");
             }
             else
             {
                 alwaysLootItems.insert(itemid);
-                botAI->TellMaster("Item(s) added to always loot list");
+                botAI->GetServices().GetChatService().TellMaster("Item(s) added to always loot list");
             }
         }
     }

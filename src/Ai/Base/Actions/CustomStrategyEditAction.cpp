@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "CustomStrategyEditAction.h"
 
 #include "CustomStrategy.h"
@@ -31,7 +32,7 @@ bool CustomStrategyEditAction::Execute(Event event)
 
 bool CustomStrategyEditAction::PrintHelp()
 {
-    botAI->TellMaster("=== Custom strategies ===");
+    botAI->GetServices().GetChatService().TellMaster("=== Custom strategies ===");
 
     uint32 owner = botAI->GetBot()->GetGUID().GetCounter();
 
@@ -44,11 +45,11 @@ bool CustomStrategyEditAction::PrintHelp()
         {
             Field* fields = result->Fetch();
             std::string const name = fields[0].Get<std::string>();
-            botAI->TellMaster(name);
+            botAI->GetServices().GetChatService().TellMaster(name);
         } while (result->NextRow());
     }
 
-    botAI->TellMaster("Usage: cs <name> <idx> <command>");
+    botAI->GetServices().GetChatService().TellMaster("Usage: cs <name> <idx> <command>");
     return false;
 }
 
@@ -56,7 +57,7 @@ bool CustomStrategyEditAction::Print(std::string const name)
 {
     std::ostringstream out;
     out << "=== " << name << " ===";
-    botAI->TellMaster(out.str());
+    botAI->GetServices().GetChatService().TellMaster(out.str());
 
     uint32 owner = botAI->GetBot()->GetGUID().GetCounter();
 
@@ -139,6 +140,6 @@ bool CustomStrategyEditAction::PrintActionLine(uint32 idx, std::string const com
 {
     std::ostringstream out;
     out << "#" << idx << " " << command;
-    botAI->TellMaster(out.str());
+    botAI->GetServices().GetChatService().TellMaster(out.str());
     return true;
 }

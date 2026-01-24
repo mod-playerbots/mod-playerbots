@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "Stances.h"
 #include "BotRoleService.h"
 
@@ -238,7 +239,7 @@ bool SetStanceAction::Execute(Event event)
     {
         std::ostringstream str;
         str << "Stance: |cff00ff00" << value->Get()->getName();
-        botAI->TellMaster(str);
+        botAI->GetServices().GetChatService().TellMaster(str);
         return true;
     }
 
@@ -246,7 +247,7 @@ bool SetStanceAction::Execute(Event event)
     {
         WorldLocation loc = value->Get()->GetLocation();
         if (!Formation::IsNullLocation(loc))
-            botAI->Ping(loc.GetPositionX(), loc.GetPositionY());
+            botAI->GetServices().GetChatService().Ping(loc.GetPositionX(), loc.GetPositionY());
 
         return true;
     }
@@ -255,13 +256,13 @@ bool SetStanceAction::Execute(Event event)
     {
         std::ostringstream str;
         str << "Invalid stance: |cffff0000" << stance;
-        botAI->TellMaster(str);
-        botAI->TellMaster("Please set to any of:|cffffffff near (default), tank, turnback, behind");
+        botAI->GetServices().GetChatService().TellMaster(str);
+        botAI->GetServices().GetChatService().TellMaster("Please set to any of:|cffffffff near (default), tank, turnback, behind");
         return false;
     }
 
     std::ostringstream str;
     str << "Stance set to: " << stance;
-    botAI->TellMaster(str);
+    botAI->GetServices().GetChatService().TellMaster(str);
     return true;
 }

@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "ChatShortcutActions.h"
 #include "BotRoleService.h"
 
@@ -90,7 +91,7 @@ bool FollowChatShortcutAction::Execute(Event event)
 
         if (moved)
         {
-            botAI->TellMaster("Following");
+            botAI->GetServices().GetChatService().TellMaster("Following");
             return true;
         }
     }
@@ -102,10 +103,10 @@ bool FollowChatShortcutAction::Execute(Event event)
         if (bot->isDead())
         {
             bot->ResurrectPlayer(1.0f, false);
-            botAI->TellMasterNoFacing("Back from the grave!");
+            botAI->GetServices().GetChatService().TellMasterNoFacing("Back from the grave!");
         }
         else
-            botAI->TellMaster("You are too far away from me! I will there soon.");
+            botAI->GetServices().GetChatService().TellMaster("You are too far away from me! I will there soon.");
 
         bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
         bot->TeleportTo(master->GetMapId(), master->GetPositionX(), master->GetPositionY(), master->GetPositionZ(),
@@ -113,7 +114,7 @@ bool FollowChatShortcutAction::Execute(Event event)
     }
     */
 
-    botAI->TellMaster("Following");
+    botAI->GetServices().GetChatService().TellMaster("Following");
     return true;
 }
 
@@ -130,7 +131,7 @@ bool StayChatShortcutAction::Execute(Event event)
     SetReturnPosition(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
     SetStayPosition(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
 
-    botAI->TellMaster("Staying");
+    botAI->GetServices().GetChatService().TellMaster("Staying");
     return true;
 }
 
@@ -145,7 +146,7 @@ bool MoveFromGroupChatShortcutAction::Execute(Event event)
     botAI->ChangeStrategy("+move from group", BOT_STATE_NON_COMBAT);
     botAI->ChangeStrategy("+move from group", BOT_STATE_COMBAT);
 
-    botAI->TellMaster("Moving away from group");
+    botAI->GetServices().GetChatService().TellMaster("Moving away from group");
     return true;
 }
 
@@ -164,11 +165,11 @@ bool FleeChatShortcutAction::Execute(Event event)
 
     if (bot->GetMapId() != master->GetMapId() || bot->GetDistance(master) > sPlayerbotAIConfig->sightDistance)
     {
-        botAI->TellError("I will not flee with you - too far away");
+        botAI->GetServices().GetChatService().TellError("I will not flee with you - too far away");
         return true;
     }
 
-    botAI->TellMaster("Fleeing");
+    botAI->GetServices().GetChatService().TellMaster("Fleeing");
     return true;
 }
 
@@ -185,7 +186,7 @@ bool GoawayChatShortcutAction::Execute(Event event)
     ResetReturnPosition();
     ResetStayPosition();
 
-    botAI->TellMaster("Running away");
+    botAI->GetServices().GetChatService().TellMaster("Running away");
     return true;
 }
 
@@ -201,7 +202,7 @@ bool GrindChatShortcutAction::Execute(Event event)
     ResetReturnPosition();
     ResetStayPosition();
 
-    botAI->TellMaster("Grinding");
+    botAI->GetServices().GetChatService().TellMaster("Grinding");
     return true;
 }
 
@@ -221,7 +222,7 @@ bool TankAttackChatShortcutAction::Execute(Event event)
     ResetReturnPosition();
     ResetStayPosition();
 
-    botAI->TellMaster("Attacking");
+    botAI->GetServices().GetChatService().TellMaster("Attacking");
     return true;
 }
 
@@ -237,7 +238,7 @@ bool MaxDpsChatShortcutAction::Execute(Event event)
     botAI->Reset();
 
     botAI->ChangeStrategy("-threat,-conserve mana,-cast time,+dps debuff,+boost", BOT_STATE_COMBAT);
-    botAI->TellMaster("Max DPS!");
+    botAI->GetServices().GetChatService().TellMaster("Max DPS!");
 
     return true;
 }
@@ -251,6 +252,6 @@ bool BwlChatShortcutAction::Execute(Event event)
     botAI->Reset();
     botAI->ChangeStrategy("+bwl", BOT_STATE_NON_COMBAT);
     botAI->ChangeStrategy("+bwl", BOT_STATE_COMBAT);
-    botAI->TellMasterNoFacing("Add Bwl Strategies!");
+    botAI->GetServices().GetChatService().TellMasterNoFacing("Add Bwl Strategies!");
     return true;
 }

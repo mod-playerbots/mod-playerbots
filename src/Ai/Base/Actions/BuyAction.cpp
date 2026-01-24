@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "BuyAction.h"
 
 #include "BudgetValues.h"
@@ -198,7 +199,7 @@ bool BuyAction::Execute(Event event)
                 {
                     std::ostringstream out;
                     out << "Nobody sells " << ChatHelper::FormatItem(proto) << " nearby";
-                    botAI->TellMaster(out.str());
+                    botAI->GetServices().GetChatService().TellMaster(out.str());
                     continue;
                 }
 
@@ -215,7 +216,7 @@ bool BuyAction::Execute(Event event)
 
     if (!vendored)
     {
-        botAI->TellError("There are no vendors nearby");
+        botAI->GetServices().GetChatService().TellError("There are no vendors nearby");
         return false;
     }
 
@@ -249,7 +250,7 @@ bool BuyAction::BuyItem(VendorItemData const* tItems, ObjectGuid vendorguid, Ite
         {
             std::ostringstream out;
             out << "Buying " << ChatHelper::FormatItem(proto);
-            botAI->TellMaster(out.str());
+            botAI->GetServices().GetChatService().TellMaster(out.str());
             return true;
         }
 

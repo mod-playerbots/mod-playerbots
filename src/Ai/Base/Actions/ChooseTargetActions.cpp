@@ -4,6 +4,7 @@
  */
 
 #include "ChooseTargetActions.h"
+#include "BotChatService.h"
 
 #include "ChooseRpgTargetAction.h"
 #include "Event.h"
@@ -169,7 +170,7 @@ bool AttackRtiTargetAction::Execute(Event event)
         }
     }
     else
-        botAI->TellError("I dont see my rti attack target");
+        botAI->GetServices().GetChatService().TellError("I dont see my rti attack target");
 
     return false;
 }

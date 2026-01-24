@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "GuildBankAction.h"
 
 #include "GuildMgr.h"
@@ -16,7 +17,7 @@ bool GuildBankAction::Execute(Event event)
 
     if (!bot->GetGuildId() || (GetMaster() && GetMaster()->GetGuildId() != bot->GetGuildId()))
     {
-        botAI->TellMaster("I'm not in your guild!");
+        botAI->GetServices().GetChatService().TellMaster("I'm not in your guild!");
         return false;
     }
 
@@ -30,7 +31,7 @@ bool GuildBankAction::Execute(Event event)
         return Execute(text, go);
     }
 
-    botAI->TellMaster("Cannot find the guild bank nearby");
+    botAI->GetServices().GetChatService().TellMaster("Cannot find the guild bank nearby");
     return false;
 }
 
@@ -72,7 +73,7 @@ bool GuildBankAction::MoveFromCharToBank(Item* item, GameObject* bank)
         guild->SwapItemsWithInventory(bot, false, 0, 255, playerBag, playerSlot, 0);
     }
 
-    botAI->TellMaster(out);
+    botAI->GetServices().GetChatService().TellMaster(out);
 
     return true;
 }

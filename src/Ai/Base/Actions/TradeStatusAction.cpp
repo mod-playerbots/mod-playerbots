@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "TradeStatusAction.h"
 
 #include "CraftValue.h"
@@ -138,7 +139,7 @@ void TradeStatusAction::BeginTrade()
     ListItemsVisitor visitor;
     IterateItems(&visitor);
 
-    botAI->TellMaster("=== Inventory ===");
+    botAI->GetServices().GetChatService().TellMaster("=== Inventory ===");
     TellItems(visitor.items, visitor.soulbound);
 
     if (sRandomPlayerbotMgr->IsRandomBot(bot))
@@ -148,7 +149,7 @@ void TradeStatusAction::BeginTrade()
         {
             std::ostringstream out;
             out << "Discount up to: " << chat->formatMoney(discount);
-            botAI->TellMaster(out);
+            botAI->GetServices().GetChatService().TellMaster(out);
         }
     }
 }
@@ -186,7 +187,7 @@ bool TradeStatusAction::CheckTrade()
         {
             if (bot->GetGroup() && bot->GetGroup()->IsMember(bot->GetTrader()->GetGUID()) &&
                 botAI->HasRealPlayerMaster())
-                botAI->TellMasterNoFacing("Thank you " + chat->FormatWorldobject(bot->GetTrader()));
+                botAI->GetServices().GetChatService().TellMasterNoFacing("Thank you " + chat->FormatWorldobject(bot->GetTrader()));
             else
                 bot->Say("Thank you " + chat->FormatWorldobject(bot->GetTrader()),
                          (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));
@@ -205,7 +206,7 @@ bool TradeStatusAction::CheckTrade()
         int32 playerItemsMoney = CalculateCost(trader, false);
         int32 playerMoney = trader->GetTradeData()->GetMoney() + playerItemsMoney;
         if (playerMoney || botMoney)
-            botAI->PlaySound(playerMoney < botMoney ? TEXT_EMOTE_SIGH : TEXT_EMOTE_THANK);
+            botAI->GetServices().GetChatService().PlaySound(playerMoney < botMoney ? TEXT_EMOTE_SIGH : TEXT_EMOTE_THANK);
 
         return true;
     }
@@ -231,8 +232,8 @@ bool TradeStatusAction::CheckTrade()
         {
             std::ostringstream out;
             out << chat->FormatItem(item->GetTemplate()) << " - This is not for sale";
-            botAI->TellMaster(out);
-            botAI->PlaySound(TEXT_EMOTE_NO);
+            botAI->GetServices().GetChatService().TellMaster(out);
+            botAI->GetServices().GetChatService().PlaySound(TEXT_EMOTE_NO);
             return false;
         }
 
@@ -246,8 +247,8 @@ bool TradeStatusAction::CheckTrade()
             {
                 std::ostringstream out;
                 out << chat->FormatItem(item->GetTemplate()) << " - I don't need this";
-                botAI->TellMaster(out);
-                botAI->PlaySound(TEXT_EMOTE_NO);
+                botAI->GetServices().GetChatService().TellMaster(out);
+                botAI->GetServices().GetChatService().PlaySound(TEXT_EMOTE_NO);
                 return false;
             }
         }
@@ -258,7 +259,7 @@ bool TradeStatusAction::CheckTrade()
 
     if (!botItemsMoney && !playerItemsMoney)
     {
-        botAI->TellError("There are no items to trade");
+        botAI->GetServices().GetChatService().TellError("There are no items to trade");
         return false;
     }
 
@@ -272,8 +273,8 @@ bool TradeStatusAction::CheckTrade()
         {
             if (moneyDelta < 0)
             {
-                botAI->TellError("You can use discount to buy items only");
-                botAI->PlaySound(TEXT_EMOTE_NO);
+                botAI->GetServices().GetChatService().TellError("You can use discount to buy items only");
+                botAI->GetServices().GetChatService().PlaySound(TEXT_EMOTE_NO);
                 return false;
             }
 
@@ -291,27 +292,27 @@ bool TradeStatusAction::CheckTrade()
         switch (urand(0, 4))
         {
             case 0:
-                botAI->TellMaster("A pleasure doing business with you");
+                botAI->GetServices().GetChatService().TellMaster("A pleasure doing business with you");
                 break;
             case 1:
-                botAI->TellMaster("Fair trade");
+                botAI->GetServices().GetChatService().TellMaster("Fair trade");
                 break;
             case 2:
-                botAI->TellMaster("Thanks");
+                botAI->GetServices().GetChatService().TellMaster("Thanks");
                 break;
             case 3:
-                botAI->TellMaster("Off with you");
+                botAI->GetServices().GetChatService().TellMaster("Off with you");
                 break;
         }
 
-        botAI->PlaySound(TEXT_EMOTE_THANK);
+        botAI->GetServices().GetChatService().PlaySound(TEXT_EMOTE_THANK);
         return true;
     }
 
     std::ostringstream out;
     out << "I want " << chat->formatMoney(-(delta + discount)) << " for this";
-    botAI->TellMaster(out);
-    botAI->PlaySound(TEXT_EMOTE_NO);
+    botAI->GetServices().GetChatService().TellMaster(out);
+    botAI->GetServices().GetChatService().PlaySound(TEXT_EMOTE_NO);
     return false;
 }
 

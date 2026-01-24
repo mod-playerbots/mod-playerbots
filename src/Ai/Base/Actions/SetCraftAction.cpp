@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "SetCraftAction.h"
 
 #include "ChatHelper.h"
@@ -24,7 +25,7 @@ bool SetCraftAction::Execute(Event event)
     if (link == "reset")
     {
         data.Reset();
-        botAI->TellMaster("I will not craft anything");
+        botAI->GetServices().GetChatService().TellMaster("I will not craft anything");
         return true;
     }
 
@@ -37,7 +38,7 @@ bool SetCraftAction::Execute(Event event)
     ItemIds itemIds = chat->parseItems(link);
     if (itemIds.empty())
     {
-        botAI->TellMaster("Usage: 'craft [itemId]' or 'craft reset'");
+        botAI->GetServices().GetChatService().TellMaster("Usage: 'craft [itemId]' or 'craft reset'");
         return false;
     }
 
@@ -97,7 +98,7 @@ bool SetCraftAction::Execute(Event event)
 
     if (data.required.empty())
     {
-        botAI->TellMaster("I cannot craft this");
+        botAI->GetServices().GetChatService().TellMaster("I cannot craft this");
         return false;
     }
 
@@ -112,7 +113,7 @@ void SetCraftAction::TellCraft()
     CraftData& data = AI_VALUE(CraftData&, "craft");
     if (data.IsEmpty())
     {
-        botAI->TellMaster("I will not craft anything");
+        botAI->GetServices().GetChatService().TellMaster("I will not craft anything");
         return;
     }
 
@@ -149,7 +150,7 @@ void SetCraftAction::TellCraft()
     }
 
     out << " (craft fee: " << chat->formatMoney(GetCraftFee(data)) << ")";
-    botAI->TellMaster(out.str());
+    botAI->GetServices().GetChatService().TellMaster(out.str());
 }
 
 uint32 SetCraftAction::GetCraftFee(CraftData& data)

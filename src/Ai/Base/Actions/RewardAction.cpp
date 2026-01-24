@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "RewardAction.h"
 
 #include "ChatHelper.h"
@@ -39,7 +40,7 @@ bool RewardAction::Execute(Event event)
     if (groupLeaderUnit && Reward(itemId, groupLeaderUnit))
         return true;
 
-    botAI->TellError("Cannot talk to quest giver");
+    botAI->GetServices().GetChatService().TellError("Cannot talk to quest giver");
     return false;
 }
 
@@ -70,7 +71,7 @@ bool RewardAction::Reward(uint32 itemId, Object* questGiver)
 
                     std::ostringstream out;
                     out << chat->FormatItem(pRewardItem) << " rewarded";
-                    botAI->TellMaster(out);
+                    botAI->GetServices().GetChatService().TellMaster(out);
 
                     return true;
                 }

@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "QueryItemUsageAction.h"
 
 #include "ChatHelper.h"
@@ -36,7 +37,7 @@ bool QueryItemUsageAction::Execute(Event event)
         uint32 total = bot->GetItemCount(itemTemplate->ItemId, true);
         std::string itemInfo = QueryItem(itemTemplate, count, total);
 
-        botAI->TellMaster(itemInfo);
+        botAI->GetServices().GetChatService().TellMaster(itemInfo);
         return true; // Only process the first valid item
     }
 

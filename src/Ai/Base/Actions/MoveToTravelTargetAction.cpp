@@ -9,6 +9,7 @@
 #include "LootObjectStack.h"
 #include "PathGenerator.h"
 #include "Playerbots.h"
+#include "BotChatService.h"
 
 bool MoveToTravelTargetAction::Execute(Event event)
 {
@@ -62,7 +63,7 @@ bool MoveToTravelTargetAction::Execute(Event event)
 
                 out << member->GetName();
 
-                botAI->TellMasterNoFacing(out);
+                botAI->GetServices().GetChatService().TellMasterNoFacing(out);
             }
 
             target->setExpireIn(target->getTimeLeft() + sPlayerbotAIConfig->maxWaitForMove);

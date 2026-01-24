@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "RangeAction.h"
 
 #include "Event.h"
@@ -37,7 +38,7 @@ bool RangeAction::Execute(Event event)
 
     std::ostringstream out;
     out << qualifier << " range set to: " << newVal;
-    botAI->TellMaster(out.str());
+    botAI->GetServices().GetChatService().TellMaster(out.str());
     return true;
 }
 
@@ -53,5 +54,5 @@ void RangeAction::PrintRange(std::string const type)
     else
         out << botAI->GetRange(type) << " (default)";
 
-    botAI->TellMaster(out.str());
+    botAI->GetServices().GetChatService().TellMaster(out.str());
 }

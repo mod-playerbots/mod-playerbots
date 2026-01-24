@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "AreaTriggerAction.h"
 
 #include "Event.h"
@@ -36,7 +37,7 @@ bool ReachAreaTriggerAction::Execute(Event event)
 
     if (bot->GetMapId() != at->map)
     {
-        botAI->TellError("I won't follow: too far away");
+        botAI->GetServices().GetChatService().TellError("I won't follow: too far away");
         return true;
     }
 
@@ -51,7 +52,7 @@ bool ReachAreaTriggerAction::Execute(Event event)
 
     float distance = bot->GetDistance(at->x, at->y, at->z);
     float delay = 1000.0f * distance / bot->GetSpeed(MOVE_RUN) + sPlayerbotAIConfig->reactDelay;
-    botAI->TellError("Wait for me");
+    botAI->GetServices().GetChatService().TellError("Wait for me");
     botAI->SetNextCheckDelay(delay);
     context->GetValue<LastMovement&>("last area trigger")->Get().lastAreaTrigger = triggerId;
 
@@ -76,6 +77,6 @@ bool AreaTriggerAction::Execute(Event event)
     p.rpos(0);
     bot->GetSession()->HandleAreaTriggerOpcode(p);
 
-    botAI->TellMaster("Hello");
+    botAI->GetServices().GetChatService().TellMaster("Hello");
     return true;
 }

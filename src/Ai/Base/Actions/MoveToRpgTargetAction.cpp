@@ -10,6 +10,7 @@
 #include "Event.h"
 #include "LastMovementValue.h"
 #include "Playerbots.h"
+#include "BotChatService.h"
 
 bool MoveToRpgTargetAction::Execute(Event event)
 {
@@ -39,7 +40,7 @@ bool MoveToRpgTargetAction::Execute(Event event)
         std::ostringstream out;
         out << "Heading to: ";
         out << chat->FormatWorldobject(guidP.GetWorldObject());
-        botAI->TellMasterNoFacing(out);
+        botAI->GetServices().GetChatService().TellMasterNoFacing(out);
     }
 
     if (guidP.IsPlayer())

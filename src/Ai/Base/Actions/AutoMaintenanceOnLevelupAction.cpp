@@ -1,3 +1,4 @@
+#include "BotChatService.h"
 #include "AutoMaintenanceOnLevelupAction.h"
 
 #include "GuildMgr.h"
@@ -57,7 +58,7 @@ void AutoMaintenanceOnLevelupAction::AutoLearnSpell()
         out << temp;
         out.seekp(-2, out.cur);
         out << ".";
-        botAI->TellMaster(out);
+        botAI->GetServices().GetChatService().TellMaster(out);
     }
     return;
 }

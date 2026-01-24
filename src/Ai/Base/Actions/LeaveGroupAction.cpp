@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "LeaveGroupAction.h"
 
 #include "Event.h"
@@ -86,7 +87,7 @@ bool LeaveGroupAction::Leave()
 
     Player* master = botAI -> GetMaster();
     if (master)
-        botAI->TellMaster("Goodbye!", PLAYERBOT_SECURITY_TALK);
+        botAI->GetServices().GetChatService().TellMaster("Goodbye!", PLAYERBOT_SECURITY_TALK);
 
     botAI->LeaveOrDisbandGroup();
     return true;

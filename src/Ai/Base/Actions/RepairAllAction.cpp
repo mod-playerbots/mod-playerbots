@@ -8,6 +8,7 @@
 #include "ChatHelper.h"
 #include "Event.h"
 #include "Playerbots.h"
+#include "BotChatService.h"
 
 bool RepairAllAction::Execute(Event event)
 {
@@ -46,7 +47,7 @@ bool RepairAllAction::Execute(Event event)
         {
             std::ostringstream out;
             out << "Repair: " << chat->formatMoney(totalCost) << " (" << unit->GetName() << ")";
-            botAI->TellMasterNoFacing(out.str());
+            botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
 
             bot->PlayDistanceSound(1116);
         }
@@ -56,6 +57,6 @@ bool RepairAllAction::Execute(Event event)
         return true;
     }
 
-    botAI->TellError("Cannot find any npc to repair at");
+    botAI->GetServices().GetChatService().TellError("Cannot find any npc to repair at");
     return false;
 }

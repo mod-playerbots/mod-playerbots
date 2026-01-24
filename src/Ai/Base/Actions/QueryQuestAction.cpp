@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "QueryQuestAction.h"
 
 #include "ChatHelper.h"
@@ -11,7 +12,7 @@
 
 void QueryQuestAction::TellObjective(std::string const name, uint32 available, uint32 required)
 {
-    botAI->TellMaster(chat->FormatQuestObjective(name, available, required));
+    botAI->GetServices().GetChatService().TellMaster(chat->FormatQuestObjective(name, available, required));
 }
 
 bool QueryQuestAction::Execute(Event event)
@@ -60,12 +61,12 @@ bool QueryQuestAction::Execute(Event event)
         if (bot->GetQuestStatus(questId) == QUEST_STATUS_COMPLETE)
         {
             out << "|c0000FF00completed|r ---";
-            botAI->TellMaster(out);
+            botAI->GetServices().GetChatService().TellMaster(out);
         }
         else
         {
             out << "|c00FF0000not completed|r ---";
-            botAI->TellMaster(out);
+            botAI->GetServices().GetChatService().TellMaster(out);
             TellObjectives(questId);
         }
 
@@ -98,7 +99,7 @@ bool QueryQuestAction::Execute(Event event)
                 if (!dest->isActive(bot))
                     out << " not active";
 
-                botAI->TellMaster(out);
+                botAI->GetServices().GetChatService().TellMaster(out);
 
                 limit++;
             }
@@ -117,7 +118,7 @@ void QueryQuestAction::TellObjectives(uint32 questId)
     // Checks if the questTemplate is valid
     if (!questTemplate)
     {
-        botAI->TellMaster("Quest template not found.");
+        botAI->GetServices().GetChatService().TellMaster("Quest template not found.");
         return;
     }
 
@@ -127,7 +128,7 @@ void QueryQuestAction::TellObjectives(uint32 questId)
     {
         // Checks for objective text
         if (!questTemplate->ObjectiveText[i].empty())
-            botAI->TellMaster(questTemplate->ObjectiveText[i]);
+            botAI->GetServices().GetChatService().TellMaster(questTemplate->ObjectiveText[i]);
 
         // Checks for required items
         if (questTemplate->RequiredItemId[i])

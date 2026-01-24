@@ -1,3 +1,4 @@
+#include "BotChatService.h"
 #include "BotSpellService.h"
 /*
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
@@ -36,7 +37,7 @@ bool UseItemAction::Execute(Event event)
             return UseItemOnGameObject(*items.begin(), *gos.begin());
     }
 
-    botAI->TellError("No items (or game objects) available");
+    botAI->GetServices().GetChatService().TellError("No items (or game objects) available");
     return false;
 }
 
@@ -50,7 +51,7 @@ bool UseItemAction::UseGameObject(ObjectGuid guid)
 
     std::ostringstream out;
     out << "Using " << chat->FormatGameobject(go);
-    botAI->TellMasterNoFacing(out.str());
+    botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
     return true;
 }
 
@@ -126,7 +127,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
         {
             bool fit = SocketItem(itemTarget, item) || SocketItem(itemTarget, item, true);
             if (!fit)
-                botAI->TellMaster("Socket does not fit");
+                botAI->GetServices().GetChatService().TellMaster("Socket does not fit");
 
             return fit;
         }
@@ -177,7 +178,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
 
             std::ostringstream out;
             out << "Got quest " << chat->FormatQuest(qInfo);
-            botAI->TellMasterNoFacing(out.str());
+            botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
             return true;
         }
     }
@@ -307,7 +308,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
         return false;
 
     // botAI->SetNextCheckDelay(sPlayerbotAIConfig->globalCoolDown);
-    botAI->TellMasterNoFacing(out.str());
+    botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
     bot->GetSession()->HandleUseItemOpcode(packet);
     return true;
 }
@@ -321,7 +322,7 @@ void UseItemAction::TellConsumableUse(Item* item, std::string const action, floa
         out << "/x" << item->GetCount();
 
     out << " (" << round(percent) << "%)";
-    botAI->TellMasterNoFacing(out.str());
+    botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
 }
 
 bool UseItemAction::SocketItem(Item* item, Item* gem, bool replace)
@@ -375,7 +376,7 @@ bool UseItemAction::SocketItem(Item* item, Item* gem, bool replace)
         std::ostringstream out;
         out << "Socketing " << chat->FormatItem(item->GetTemplate());
         out << " with " << chat->FormatItem(gem->GetTemplate());
-        botAI->TellMaster(out);
+        botAI->GetServices().GetChatService().TellMaster(out);
 
         WorldPackets::Item::SocketGems nicePacket(std::move(packet));
         nicePacket.Read();

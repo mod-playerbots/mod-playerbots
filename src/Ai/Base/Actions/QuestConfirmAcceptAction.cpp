@@ -1,3 +1,4 @@
+#include "BotChatService.h"
 #include "QuestConfirmAcceptAction.h"
 
 #include "WorldPacket.h"
@@ -17,7 +18,7 @@ bool QuestConfirmAcceptAction::Execute(Event event)
     }
     std::ostringstream out;
     out << "Quest: " << chat->FormatQuest(quest) << " confirm accept";
-    botAI->TellMaster(out);
+    botAI->GetServices().GetChatService().TellMaster(out);
     bot->GetSession()->HandleQuestConfirmAccept(sendPacket);
     return true;
 }

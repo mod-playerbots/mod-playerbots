@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include <memory>
 #include <mutex>
 #include <vector>
@@ -97,19 +98,19 @@ public:
         {
             if (!bot->GetUInt32Value(PLAYER_AMMO_ID))
             {
-                botAI->TellError("Out of ammo!");
+                botAI->GetServices().GetChatService().TellError("Out of ammo!");
                 return false;
             }
 
             if (!bot->GetPet())
             {
-                botAI->TellError("No pet!");
+                botAI->GetServices().GetChatService().TellError("No pet!");
                 return false;
             }
 
             if (bot->GetPet()->GetHappinessState() == UNHAPPY)
             {
-                botAI->TellError("Pet is unhappy!");
+                botAI->GetServices().GetChatService().TellError("Pet is unhappy!");
                 return false;
             }
         }
@@ -213,7 +214,7 @@ bool ReadyCheckAction::ReadyCheck()
         out << formatPercent("Water", water, 100.0 * water / 20);
     }
 
-    botAI->TellMaster(out);
+    botAI->GetServices().GetChatService().TellMaster(out);
 
     WorldPacket packet(MSG_RAID_READY_CHECK);
     packet << bot->GetGUID();

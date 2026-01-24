@@ -1,3 +1,4 @@
+#include "BotChatService.h"
 #include "OpenItemAction.h"
 #include "PlayerbotAI.h"
 #include "ItemTemplate.h"
@@ -37,5 +38,5 @@ void OpenItemAction::OpenItem(Item* item, uint8 bag, uint8 slot)
 
     std::ostringstream out;
     out << "Opened item: " << item->GetTemplate()->Name1;
-    botAI->TellMaster(out.str());
+    botAI->GetServices().GetChatService().TellMaster(out.str());
 }

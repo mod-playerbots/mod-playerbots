@@ -4,6 +4,7 @@
  */
 
 #include "ChangeStrategyAction.h"
+#include "BotChatService.h"
 
 #include "Event.h"
 #include "PlayerbotRepository.h"
@@ -45,7 +46,7 @@ bool ChangeNonCombatStrategyAction::Execute(Event event)
     {
         if (text.find("loot") != std::string::npos || text.find("gather") != std::string::npos)
         {
-            botAI->TellError("You can change any strategy except loot and gather");
+            botAI->GetServices().GetChatService().TellError("You can change any strategy except loot and gather");
             return false;
         }
     }

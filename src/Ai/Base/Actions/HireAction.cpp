@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "HireAction.h"
 
 #include "Event.h"
@@ -29,13 +30,13 @@ bool HireAction::Execute(Event event)
 
     if (charCount >= 10)
     {
-        botAI->TellMaster("You already have the maximum number of characters");
+        botAI->GetServices().GetChatService().TellMaster("You already have the maximum number of characters");
         return false;
     }
 
     if (bot->GetLevel() > master->GetLevel())
     {
-        botAI->TellMaster("You cannot hire higher level characters than you");
+        botAI->GetServices().GetChatService().TellMaster("You cannot hire higher level characters than you");
         return false;
     }
 
@@ -47,11 +48,11 @@ bool HireAction::Execute(Event event)
         std::ostringstream out;
         out << "You cannot hire me - I barely know you. Make sure you have at least " << chat->formatMoney(moneyReq)
             << " as a trade discount";
-        botAI->TellMaster(out.str());
+        botAI->GetServices().GetChatService().TellMaster(out.str());
         return false;
     }
 
-    botAI->TellMaster("I will join you at your next relogin");
+    botAI->GetServices().GetChatService().TellMaster("I will join you at your next relogin");
 
     bot->SetMoney(moneyReq);
     sRandomPlayerbotMgr->Remove(bot);

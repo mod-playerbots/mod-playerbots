@@ -4,6 +4,7 @@
  */
 
 #include "RevealGatheringItemAction.h"
+#include "BotChatService.h"
 
 #include "CellImpl.h"
 #include "ChatHelper.h"
@@ -77,7 +78,7 @@ bool RevealGatheringItemAction::Execute(Event event)
     }
 
     // everything is fine, do it
-    botAI->Ping(go->GetPositionX(), go->GetPositionY());
+    botAI->GetServices().GetChatService().Ping(go->GetPositionX(), go->GetPositionY());
     bot->Say(msg.str(), LANG_UNIVERSAL);
     return true;
 }

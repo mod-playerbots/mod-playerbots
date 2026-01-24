@@ -4,6 +4,7 @@
  */
 
 #include "GuildManagementActions.h"
+#include "BotChatService.h"
 
 #include "GuildMgr.h"
 #include "GuildPackets.h"
@@ -299,7 +300,7 @@ bool GuildLeaveAction::Execute(Event event)
     Player* owner = event.getOwner();
     if (owner && !botAI->GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_INVITE, false, owner, true))
     {
-        botAI->TellError("Sorry, I am happy in my guild :)");
+        botAI->GetServices().GetChatService().TellError("Sorry, I am happy in my guild :)");
         return false;
     }
 

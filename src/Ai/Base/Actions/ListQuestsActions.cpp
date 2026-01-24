@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "ListQuestsActions.h"
 
 #include "Event.h"
@@ -44,21 +45,21 @@ void ListQuestsAction::ListQuests(QuestListFilter filter, QuestTravelDetail trav
     bool showCompleted = filter & QUEST_LIST_FILTER_COMPLETED;
 
     if (showIncompleted)
-        botAI->TellMaster("--- Incompleted quests ---");
+        botAI->GetServices().GetChatService().TellMaster("--- Incompleted quests ---");
 
     uint32 incompleteCount = ListQuests(false, !showIncompleted, travelDetail);
 
     if (showCompleted)
-        botAI->TellMaster("--- Completed quests ---");
+        botAI->GetServices().GetChatService().TellMaster("--- Completed quests ---");
 
     uint32 completeCount = ListQuests(true, !showCompleted, travelDetail);
 
-    botAI->TellMaster("--- Summary ---");
+    botAI->GetServices().GetChatService().TellMaster("--- Summary ---");
 
     std::ostringstream out;
     out << "Total: " << (completeCount + incompleteCount) << " / 25 (incompleted: " << incompleteCount
         << ", completed: " << completeCount << ")";
-    botAI->TellMaster(out);
+    botAI->GetServices().GetChatService().TellMaster(out);
 }
 
 uint32 ListQuestsAction::ListQuests(bool completed, bool silent, QuestTravelDetail travelDetail)
@@ -85,7 +86,7 @@ uint32 ListQuestsAction::ListQuests(bool completed, bool silent, QuestTravelDeta
         if (silent)
             continue;
 
-        botAI->TellMaster(chat->FormatQuest(pQuest));
+        botAI->GetServices().GetChatService().TellMaster(chat->FormatQuest(pQuest));
 
         if (travelDetail != QUEST_TRAVEL_DETAIL_NONE && target->getDestination())
         {
@@ -99,7 +100,7 @@ uint32 ListQuestsAction::ListQuests(bool completed, bool silent, QuestTravelDeta
                     std::ostringstream out;
                     out << "[Active] traveling " << target->getPosition()->distance(botPos);
                     out << " to " << QuestDestination->getTitle();
-                    botAI->TellMaster(out);
+                    botAI->GetServices().GetChatService().TellMaster(out);
                 }
             }
         }
@@ -134,7 +135,7 @@ uint32 ListQuestsAction::ListQuests(bool completed, bool silent, QuestTravelDeta
             if (desRange > 0)
                 out << desRange << " out of range.";
 
-            botAI->TellMaster(out);
+            botAI->GetServices().GetChatService().TellMaster(out);
         }
         else if (travelDetail == QUEST_TRAVEL_DETAIL_FULL)
         {
@@ -173,7 +174,7 @@ uint32 ListQuestsAction::ListQuests(bool completed, bool silent, QuestTravelDeta
                 if (dest->isFull(bot))
                     out << " crowded";
 
-                botAI->TellMaster(out);
+                botAI->GetServices().GetChatService().TellMaster(out);
 
                 limit++;
             }

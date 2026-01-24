@@ -22,6 +22,7 @@
 #include "Language.h"
 #include "GenericBuffUtils.h"
 #include "PlayerbotAI.h"
+#include "BotChatService.h"
 
 using ai::buff::MakeAuraQualifierForBuff;
 using ai::buff::UpgradeToGroupIfAppropriate;
@@ -194,7 +195,7 @@ bool CastEnchantItemAction::isPossible()
 {
     // if (!CastSpellAction::isPossible())
     // {
-    //     botAI->TellMasterNoFacing("Impossible: " + spell);
+    //     botAI->GetServices().GetChatService().TellMasterNoFacing("Impossible: " + spell);
     //     return false;
     // }
 
@@ -202,7 +203,7 @@ bool CastEnchantItemAction::isPossible()
 
     // bool ok = AI_VALUE2(Item*, "item for spell", spellId);
     // Item* item = AI_VALUE2(Item*, "item for spell", spellId);
-    // botAI->TellMasterNoFacing("spell: " + spell + ", spell id: " + std::to_string(spellId) + " item for spell: " +
+    // botAI->GetServices().GetChatService().TellMasterNoFacing("spell: " + spell + ", spell id: " + std::to_string(spellId) + " item for spell: " +
     // std::to_string(ok));
     return spellId && AI_VALUE2(Item*, "item for spell", spellId);
 }

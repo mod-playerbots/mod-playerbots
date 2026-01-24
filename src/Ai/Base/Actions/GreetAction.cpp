@@ -4,6 +4,7 @@
  */
 
 #include "GreetAction.h"
+#include "BotChatService.h"
 
 #include "Event.h"
 #include "Playerbots.h"
@@ -26,7 +27,7 @@ bool GreetAction::Execute(Event event)
     ObjectGuid oldSel = bot->GetTarget();
     bot->SetTarget(guid);
     // bot->HandleEmote(EMOTE_ONESHOT_WAVE);
-    botAI->PlayEmote(TEXT_EMOTE_HELLO);
+    botAI->GetServices().GetChatService().PlayEmote(TEXT_EMOTE_HELLO);
     bot->SetTarget(oldSel);
 
     GuidSet& alreadySeenPlayers = botAI->GetAiObjectContext()->GetValue<GuidSet&>("already seen players")->Get();

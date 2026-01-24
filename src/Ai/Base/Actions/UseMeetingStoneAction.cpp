@@ -13,6 +13,7 @@
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "PositionValue.h"
+#include "BotChatService.h"
 
 bool UseMeetingStoneAction::Execute(Event event)
 {
@@ -36,7 +37,7 @@ bool UseMeetingStoneAction::Execute(Event event)
 
     if (bot->IsInCombat())
     {
-        botAI->TellError("I am in combat");
+        botAI->GetServices().GetChatService().TellError("I am in combat");
         return false;
     }
 
@@ -75,13 +76,13 @@ bool SummonAction::Execute(Event event)
 
     if (SummonUsingGos(master, bot, true) || SummonUsingNpcs(master, bot, true))
     {
-        botAI->TellMasterNoFacing("Hello!");
+        botAI->GetServices().GetChatService().TellMasterNoFacing("Hello!");
         return true;
     }
 
     if (SummonUsingGos(bot, master, true) || SummonUsingNpcs(bot, master, true))
     {
-        botAI->TellMasterNoFacing("Welcome!");
+        botAI->GetServices().GetChatService().TellMasterNoFacing("Welcome!");
         return true;
     }
 
@@ -101,7 +102,7 @@ bool SummonAction::SummonUsingGos(Player* summoner, Player* player, bool preserv
             return Teleport(summoner, player, preserveAuras);
     }
 
-    botAI->TellError(summoner == bot ? "There is no meeting stone nearby" : "There is no meeting stone near you");
+    botAI->GetServices().GetChatService().TellError(summoner == bot ? "There is no meeting stone nearby" : "There is no meeting stone near you");
     return false;
 }
 
@@ -121,13 +122,13 @@ bool SummonAction::SummonUsingNpcs(Player* summoner, Player* player, bool preser
         {
             if (!player->HasItemCount(6948, 1, false))
             {
-                botAI->TellError(player == bot ? "I have no hearthstone" : "You have no hearthstone");
+                botAI->GetServices().GetChatService().TellError(player == bot ? "I have no hearthstone" : "You have no hearthstone");
                 return false;
             }
 
             if (player->HasSpellCooldown(8690))
             {
-                botAI->TellError(player == bot ? "My hearthstone is not ready" : "Your hearthstone is not ready");
+                botAI->GetServices().GetChatService().TellError(player == bot ? "My hearthstone is not ready" : "Your hearthstone is not ready");
                 return false;
             }
 
@@ -143,7 +144,7 @@ bool SummonAction::SummonUsingNpcs(Player* summoner, Player* player, bool preser
         }
     }
 
-    botAI->TellError(summoner == bot ? "There are no innkeepers nearby" : "There are no innkeepers near you");
+    botAI->GetServices().GetChatService().TellError(summoner == bot ? "There are no innkeepers nearby" : "There are no innkeepers near you");
     return false;
 }
 
@@ -155,7 +156,7 @@ bool SummonAction::Teleport(Player* summoner, Player* player, bool preserveAuras
 
     if (player->GetVehicle())
     {
-        botAI->TellError("You cannot summon me while I'm on a vehicle");
+        botAI->GetServices().GetChatService().TellError("You cannot summon me while I'm on a vehicle");
         return false;
     }
 
@@ -177,20 +178,20 @@ bool SummonAction::Teleport(Player* summoner, Player* player, bool preserveAuras
 
                 if (summoner->IsInCombat() && !sPlayerbotAIConfig->allowSummonInCombat)
                 {
-                    botAI->TellError("You cannot summon me while you're in combat");
+                    botAI->GetServices().GetChatService().TellError("You cannot summon me while you're in combat");
                     return false;
                 }
 
                 if (!summoner->IsAlive() && !sPlayerbotAIConfig->allowSummonWhenMasterIsDead)
                 {
-                    botAI->TellError("You cannot summon me while you're dead");
+                    botAI->GetServices().GetChatService().TellError("You cannot summon me while you're dead");
                     return false;
                 }
 
                 if (bot->isDead() && !bot->HasPlayerFlag(PLAYER_FLAGS_GHOST) &&
                     !sPlayerbotAIConfig->allowSummonWhenBotIsDead)
                 {
-                    botAI->TellError("You cannot summon me while I'm dead, you need to release my spirit first");
+                    botAI->GetServices().GetChatService().TellError("You cannot summon me while I'm dead, you need to release my spirit first");
                     return false;
                 }
 
@@ -202,7 +203,7 @@ bool SummonAction::Teleport(Player* summoner, Player* player, bool preserveAuras
                 {
                     bot->ResurrectPlayer(1.0f, false);
                     bot->SpawnCorpseBones();
-                    botAI->TellMasterNoFacing("I live, again!");
+                    botAI->GetServices().GetChatService().TellMasterNoFacing("I live, again!");
                     botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Reset();
                 }
 
@@ -230,6 +231,6 @@ bool SummonAction::Teleport(Player* summoner, Player* player, bool preserveAuras
     }
 
     if (summoner != player)
-         botAI->TellError("Not enough place to summon");
+         botAI->GetServices().GetChatService().TellError("Not enough place to summon");
     return false;
 }

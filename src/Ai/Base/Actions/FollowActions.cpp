@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "FollowActions.h"
 
 #include <cstddef>
@@ -133,15 +134,15 @@ bool FleeToGroupLeaderAction::Execute(Event event)
     if (distance < sPlayerbotAIConfig->reactDistance * 3)
     {
         if (!urand(0, 3))
-            botAI->TellMaster("I am close, wait for me!");
+            botAI->GetServices().GetChatService().TellMaster("I am close, wait for me!");
     }
     else if (distance < 1000)
     {
         if (!urand(0, 10))
-            botAI->TellMaster("I heading to your position.");
+            botAI->GetServices().GetChatService().TellMaster("I heading to your position.");
     }
     else if (!urand(0, 20))
-        botAI->TellMaster("I am traveling to your position.");
+        botAI->GetServices().GetChatService().TellMaster("I am traveling to your position.");
 
     botAI->SetNextCheckDelay(3000);
 

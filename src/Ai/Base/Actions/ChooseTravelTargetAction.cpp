@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "ChooseTravelTargetAction.h"
 
 #include "ChatHelper.h"
@@ -79,7 +80,7 @@ void ChooseTravelTargetAction::getNewTarget(TravelTarget* newTarget, TravelTarge
                 target->setForced(true);
 
                 std::ostringstream out; out << "Traveling to " << dest->getTitle();
-                botAI->TellMasterNoFacing(out.str());
+                botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
                 foundTarget = true;
             }
         }
@@ -256,7 +257,7 @@ void ChooseTravelTargetAction::ReportTravelTarget(TravelTarget* newTarget, Trave
 
         out << " to " << QuestDestination->getTitle();
 
-        botAI->TellMaster(out);
+        botAI->GetServices().GetChatService().TellMaster(out);
     }
     else if (destination->getName() == "RpgTravelDestination")
     {
@@ -284,7 +285,7 @@ void ChooseTravelTargetAction::ReportTravelTarget(TravelTarget* newTarget, Trave
 
         out << " to " << RpgDestination->getTitle();
 
-        botAI->TellMaster(out);
+        botAI->GetServices().GetChatService().TellMaster(out);
     }
     else if (destination->getName() == "ExploreTravelDestination")
     {
@@ -305,7 +306,7 @@ void ChooseTravelTargetAction::ReportTravelTarget(TravelTarget* newTarget, Trave
 
         out << " to " << ExploreDestination->getTitle();
 
-        botAI->TellMaster(out);
+        botAI->GetServices().GetChatService().TellMaster(out);
     }
     else if (destination->getName() == "GrindTravelDestination")
     {
@@ -326,7 +327,7 @@ void ChooseTravelTargetAction::ReportTravelTarget(TravelTarget* newTarget, Trave
 
         out << " to " << GrindDestination->getTitle();
 
-        botAI->TellMaster(out);
+        botAI->GetServices().GetChatService().TellMaster(out);
     }
     else if (destination->getName() == "BossTravelDestination")
     {
@@ -347,13 +348,13 @@ void ChooseTravelTargetAction::ReportTravelTarget(TravelTarget* newTarget, Trave
 
         out << " to " << BossDestination->getTitle();
 
-        botAI->TellMaster(out);
+        botAI->GetServices().GetChatService().TellMaster(out);
     }
     else if (destination->getName() == "NullTravelDestination")
     {
         if (!oldTarget->getDestination() || oldTarget->getDestination()->getName() != "NullTravelDestination")
         {
-            botAI->TellMaster("No where to travel. Idling a bit.");
+            botAI->GetServices().GetChatService().TellMaster("No where to travel. Idling a bit.");
         }
     }
 }
@@ -528,7 +529,7 @@ bool ChooseTravelTargetAction::SetQuestTarget(TravelTarget* target, bool onlyCom
         activeDestinations = sTravelMgr->getQuestTravelDestinations(bot, -1, true, false); //If we really don't find any new quests look futher away.
 
     if (botAI->HasStrategy("debug travel", BotState::BOT_STATE_NON_COMBAT))
-        botAI->TellMasterNoFacing(std::to_string(activeDestinations.size()) + " quest destinations found.");
+        botAI->GetServices().GetChatService().TellMasterNoFacing(std::to_string(activeDestinations.size()) + " quest destinations found.");
 
     if (!getBestDestination(&activeDestinations, &activePoints))
         return false;

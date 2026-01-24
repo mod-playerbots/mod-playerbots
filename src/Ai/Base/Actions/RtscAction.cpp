@@ -7,6 +7,7 @@
 
 #include "Playerbots.h"
 #include "RTSCValues.h"
+#include "BotChatService.h"
 
 bool RTSCAction::Execute(Event event)
 {
@@ -20,15 +21,15 @@ bool RTSCAction::Execute(Event event)
     if (command != "reset" && !master->HasSpell(RTSC_MOVE_SPELL))
     {
         master->learnSpell(RTSC_MOVE_SPELL, false);
-        botAI->TellMasterNoFacing("RTS control enabled.");
-        botAI->TellMasterNoFacing("Aedm (Awesome energetic do move) spell trained.");
+        botAI->GetServices().GetChatService().TellMasterNoFacing("RTS control enabled.");
+        botAI->GetServices().GetChatService().TellMasterNoFacing("Aedm (Awesome energetic do move) spell trained.");
     }
     else if (command == "reset")
     {
         if (master->HasSpell(RTSC_MOVE_SPELL))
         {
             master->removeSpell(RTSC_MOVE_SPELL, SPEC_MASK_ALL, false);
-            botAI->TellMasterNoFacing("RTS control spell removed.");
+            botAI->GetServices().GetChatService().TellMasterNoFacing("RTS control spell removed.");
         }
 
         RESET_AI_VALUE(bool, "RTSC selected");
@@ -131,7 +132,7 @@ bool RTSCAction::Execute(Event event)
         out.seekp(-1, out.cur);
         out << ".";
 
-        botAI->TellMasterNoFacing(out);
+        botAI->GetServices().GetChatService().TellMasterNoFacing(out);
     }
 
     if (command.find("go ") != std::string::npos)

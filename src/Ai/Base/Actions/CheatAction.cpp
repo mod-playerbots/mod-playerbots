@@ -6,6 +6,7 @@
 #include "CheatAction.h"
 
 #include "Playerbots.h"
+#include "BotChatService.h"
 
 bool CheatAction::Execute(Event event)
 {
@@ -92,5 +93,5 @@ void CheatAction::ListCheats()
             out << "[" << GetCheatName(BotCheatMask(cheatMask)) << "]";
     }
 
-    botAI->TellMasterNoFacing(out);
+    botAI->GetServices().GetChatService().TellMasterNoFacing(out);
 }

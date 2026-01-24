@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "StatsAction.h"
 
 #include "ChatHelper.h"
@@ -27,7 +28,7 @@ bool StatsAction::Execute(Event event)
         ListXP(out);
     }
 
-    botAI->TellMaster(out);
+    botAI->GetServices().GetChatService().TellMaster(out);
     return true;
 }
 

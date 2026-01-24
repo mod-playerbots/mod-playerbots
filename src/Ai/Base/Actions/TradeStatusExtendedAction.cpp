@@ -1,3 +1,4 @@
+#include "BotChatService.h"
 #include "TradeStatusExtendedAction.h"
 #include "Event.h"
 #include "Player.h"
@@ -76,7 +77,7 @@ bool TradeStatusExtendedAction::Execute(Event event)
             }
             else
             {
-                botAI->TellMaster("I can't unlock this item.");
+                botAI->GetServices().GetChatService().TellMaster("I can't unlock this item.");
             }
         }
     }

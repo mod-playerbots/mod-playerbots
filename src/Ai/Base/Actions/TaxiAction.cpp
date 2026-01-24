@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "TaxiAction.h"
 #include "BotSpellService.h"
 #include "BotRoleService.h"
@@ -26,7 +27,7 @@ bool TaxiAction::Execute(Event event)
     {
         movement.taxiNodes.clear();
         movement.Set(nullptr);
-        botAI->TellMaster("I am ready for the next flight");
+        botAI->GetServices().GetChatService().TellMaster("I am ready for the next flight");
         return true;
     }
 
@@ -84,7 +85,7 @@ bool TaxiAction::Execute(Event event)
 
         if (param == "?")
         {
-            botAI->TellMasterNoFacing("=== Taxi ===");
+            botAI->GetServices().GetChatService().TellMasterNoFacing("=== Taxi ===");
 
             uint32 index = 1;
             for (uint32 node : nodes)
@@ -99,7 +100,7 @@ bool TaxiAction::Execute(Event event)
 
                 std::ostringstream out;
                 out << index++ << ": " << dest->name[0];
-                botAI->TellMasterNoFacing(out.str());
+                botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
             }
 
             return true;
@@ -120,13 +121,13 @@ bool TaxiAction::Execute(Event event)
         {
             movement.taxiNodes.clear();
             movement.Set(nullptr);
-            botAI->TellError("I can't fly with you");
+            botAI->GetServices().GetChatService().TellError("I can't fly with you");
             return false;
         }
 
         return true;
     }
 
-    botAI->TellError("Cannot find any flightmaster to talk");
+    botAI->GetServices().GetChatService().TellError("Cannot find any flightmaster to talk");
     return false;
 }

@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "ChangeChatAction.h"
 
 #include "Event.h"
@@ -16,7 +17,7 @@ bool ChangeChatAction::Execute(Event event)
     {
         std::ostringstream out;
         out << "Current chat is " << chat->FormatChat(*context->GetValue<ChatMsg>("chat"));
-        botAI->TellMaster(out);
+        botAI->GetServices().GetChatService().TellMaster(out);
     }
     else
     {
@@ -24,7 +25,7 @@ bool ChangeChatAction::Execute(Event event)
 
         std::ostringstream out;
         out << "Chat set to " << chat->FormatChat(parsed);
-        botAI->TellMaster(out);
+        botAI->GetServices().GetChatService().TellMaster(out);
     }
 
     return true;

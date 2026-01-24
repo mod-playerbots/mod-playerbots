@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "ListSpellsAction.h"
 
 #include "Event.h"
@@ -284,11 +285,11 @@ bool ListSpellsAction::Execute(Event event)
     if (spells.empty())
     {
         // CHANGE: Give early feedback when no spells match the filter.
-        botAI->TellMaster("No spells found.");
+        botAI->GetServices().GetChatService().TellMaster("No spells found.");
         return true;
     }
 
-    botAI->TellMaster("=== Spells ===");
+    botAI->GetServices().GetChatService().TellMaster("=== Spells ===");
 
     std::sort(spells.begin(), spells.end(), CompareSpells);
 
@@ -300,7 +301,7 @@ bool ListSpellsAction::Execute(Event event)
     // cheap comparator above, sending all lines here is safe and keeps
     // behaviour compatible with existing addons.
     for (std::vector<SpellListEntry>::const_iterator i = spells.begin(); i != spells.end(); ++i)
-        botAI->TellMasterNoFacing(i->second);
+        botAI->GetServices().GetChatService().TellMasterNoFacing(i->second);
 
     return true;
 }

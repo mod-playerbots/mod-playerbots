@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "FlagAction.h"
 
 #include "Event.h"
@@ -10,7 +11,7 @@
 
 bool FlagAction::TellUsage()
 {
-    botAI->TellError("Usage: flag cloak/helm/pvp on/set/off/clear/toggle/?");
+    botAI->GetServices().GetChatService().TellError("Usage: flag cloak/helm/pvp on/set/off/clear/toggle/?");
     return false;
 }
 
@@ -35,7 +36,7 @@ bool FlagAction::Execute(Event event)
 
         std::ostringstream out;
         out << ss[0] << " flag is " << chat->FormatBoolean(bot->IsPvP());
-        botAI->TellMaster(out.str());
+        botAI->GetServices().GetChatService().TellMaster(out.str());
         return true;
     }
 
@@ -57,6 +58,6 @@ bool FlagAction::Execute(Event event)
 
     std::ostringstream out;
     out << ss[0] << " flag is " << chat->FormatBoolean(!bot->HasFlag(PLAYER_FLAGS, playerFlags));
-    botAI->TellMaster(out.str());
+    botAI->GetServices().GetChatService().TellMaster(out.str());
     return true;
 }

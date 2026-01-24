@@ -4,6 +4,7 @@
  */
 
 #include "AttackAction.h"
+#include "BotChatService.h"
 #include "BotRoleService.h"
 
 #include "CreatureAI.h"
@@ -38,7 +39,7 @@ bool AttackMyTargetAction::Execute(Event /*event*/)
     if (!guid)
     {
         if (verbose)
-            botAI->TellError("You have no target");
+            botAI->GetServices().GetChatService().TellError("You have no target");
 
         return false;
     }
@@ -64,7 +65,7 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
         bot->HasUnitState(UNIT_STATE_IN_FLIGHT))
     {
         if (verbose)
-            botAI->TellError("I cannot attack in flight");
+            botAI->GetServices().GetChatService().TellError("I cannot attack in flight");
 
         return false;
     }
@@ -72,7 +73,7 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
     if (!target)
     {
         if (verbose)
-            botAI->TellError("I have no target");
+            botAI->GetServices().GetChatService().TellError("I have no target");
 
         return false;
     }
@@ -80,7 +81,7 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
     if (!target->IsInWorld())
     {
         if (verbose)
-            botAI->TellError(std::string(target->GetName()) + " is no longer in the world.");
+            botAI->GetServices().GetChatService().TellError(std::string(target->GetName()) + " is no longer in the world.");
 
         return false;
     }
@@ -92,7 +93,7 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
         sPlayerbotAIConfig->IsPvpProhibited(target->GetZoneId(), target->GetAreaId())))
     {
         if (verbose)
-            botAI->TellError("I cannot attack other players in PvP prohibited areas.");
+            botAI->GetServices().GetChatService().TellError("I cannot attack other players in PvP prohibited areas.");
 
         return false;
     }
@@ -100,7 +101,7 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
     if (bot->IsFriendlyTo(target))
     {
         if (verbose)
-            botAI->TellError(std::string(target->GetName()) + " is friendly to me.");
+            botAI->GetServices().GetChatService().TellError(std::string(target->GetName()) + " is friendly to me.");
 
         return false;
     }
@@ -108,7 +109,7 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
     if (target->isDead())
     {
         if (verbose)
-            botAI->TellError(std::string(target->GetName()) + " is dead.");
+            botAI->GetServices().GetChatService().TellError(std::string(target->GetName()) + " is dead.");
 
         return false;
     }
@@ -116,7 +117,7 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
     if (!bot->IsWithinLOSInMap(target))
     {
         if (verbose)
-            botAI->TellError(std::string(target->GetName()) + " is not in my sight.");
+            botAI->GetServices().GetChatService().TellError(std::string(target->GetName()) + " is not in my sight.");
 
         return false;
     }
@@ -124,7 +125,7 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
     if (sameTarget && inCombat && sameAttackMode)
     {
         if (verbose)
-            botAI->TellError("I am already attacking " + std::string(target->GetName()) + ".");
+            botAI->GetServices().GetChatService().TellError("I am already attacking " + std::string(target->GetName()) + ".");
 
         return false;
     }
@@ -132,7 +133,7 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
     if (!bot->IsValidAttackTarget(target))
     {
         if (verbose)
-            botAI->TellError("I cannot attack an invalid target.");
+            botAI->GetServices().GetChatService().TellError("I cannot attack an invalid target.");
 
         return false;
     }

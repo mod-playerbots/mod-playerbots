@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "SkipSpellsListAction.h"
 
 #include "Event.h"
@@ -30,7 +31,7 @@ bool SkipSpellsListAction::Execute(Event event)
     if (cmd == "reset")
     {
         skipSpells.clear();
-        botAI->TellMaster("Ignored spell list is empty");
+        botAI->GetServices().GetChatService().TellMaster("Ignored spell list is empty");
         return true;
     }
 
@@ -39,7 +40,7 @@ bool SkipSpellsListAction::Execute(Event event)
         std::ostringstream out;
         if (skipSpells.empty())
         {
-            botAI->TellMaster("Ignored spell list is empty");
+            botAI->GetServices().GetChatService().TellMaster("Ignored spell list is empty");
             return true;
         }
 
@@ -60,7 +61,7 @@ bool SkipSpellsListAction::Execute(Event event)
             out << chat->FormatSpell(spellInfo);
         }
 
-        botAI->TellMaster(out);
+        botAI->GetServices().GetChatService().TellMaster(out);
     }
     else
     {
@@ -71,7 +72,7 @@ bool SkipSpellsListAction::Execute(Event event)
         uint32 spellId = chat->parseSpell(cmd);
         if (!spellId)
         {
-            botAI->TellError("Unknown spell");
+            botAI->GetServices().GetChatService().TellError("Unknown spell");
             return false;
         }
 
@@ -88,7 +89,7 @@ bool SkipSpellsListAction::Execute(Event event)
 
                 std::ostringstream out;
                 out << chat->FormatSpell(spellInfo) << " removed from ignored spells";
-                botAI->TellMaster(out);
+                botAI->GetServices().GetChatService().TellMaster(out);
                 return true;
             }
         }
@@ -101,7 +102,7 @@ bool SkipSpellsListAction::Execute(Event event)
 
                 std::ostringstream out;
                 out << chat->FormatSpell(spellInfo) << " added to ignored spells";
-                botAI->TellMaster(out);
+                botAI->GetServices().GetChatService().TellMaster(out);
                 return true;
             }
         }

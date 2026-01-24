@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "BuffAction.h"
 
 #include "Event.h"
@@ -64,19 +65,19 @@ void BuffAction::TellHeader(uint32 subClass)
     switch (subClass)
     {
         case ITEM_SUBCLASS_ELIXIR:
-            botAI->TellMaster("--- Elixir ---");
+            botAI->GetServices().GetChatService().TellMaster("--- Elixir ---");
             return;
         case ITEM_SUBCLASS_FLASK:
-            botAI->TellMaster("--- Flask ---");
+            botAI->GetServices().GetChatService().TellMaster("--- Flask ---");
             return;
         case ITEM_SUBCLASS_SCROLL:
-            botAI->TellMaster("--- Scroll ---");
+            botAI->GetServices().GetChatService().TellMaster("--- Scroll ---");
             return;
         case ITEM_SUBCLASS_FOOD:
-            botAI->TellMaster("--- Food ---");
+            botAI->GetServices().GetChatService().TellMaster("--- Food ---");
             return;
         case ITEM_SUBCLASS_ITEM_ENHANCEMENT:
-            botAI->TellMaster("--- Enchant ---");
+            botAI->GetServices().GetChatService().TellMaster("--- Enchant ---");
             return;
     }
 }
@@ -107,7 +108,7 @@ bool BuffAction::Execute(Event event)
             Item* item = *j;
             std::ostringstream out;
             out << chat->FormatItem(item->GetTemplate(), item->GetCount());
-            botAI->TellMaster(out);
+            botAI->GetServices().GetChatService().TellMaster(out);
         }
     }
 

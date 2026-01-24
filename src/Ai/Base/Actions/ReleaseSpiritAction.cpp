@@ -14,6 +14,7 @@
 #include "ServerFacade.h"
 #include "Corpse.h"
 #include "Log.h"
+#include "BotChatService.h"
 
 // ReleaseSpiritAction implementation
 bool ReleaseSpiritAction::Execute(Event event)
@@ -22,7 +23,7 @@ bool ReleaseSpiritAction::Execute(Event event)
     {
         if (!bot->InBattleground())
         {
-            botAI->TellMasterNoFacing("I am not dead, will wait here");
+            botAI->GetServices().GetChatService().TellMasterNoFacing("I am not dead, will wait here");
             // -follow in bg is overwriten each tick with +follow
             // +stay in bg causes stuttering effect as bot is cycled between +stay and +follow each tick
             botAI->ChangeStrategy("-follow,+stay", BOT_STATE_NON_COMBAT);
@@ -33,7 +34,7 @@ bool ReleaseSpiritAction::Execute(Event event)
 
     if (bot->GetCorpse() && bot->HasPlayerFlag(PLAYER_FLAGS_GHOST))
     {
-        botAI->TellMasterNoFacing("I am already a spirit");
+        botAI->GetServices().GetChatService().TellMasterNoFacing("I am already a spirit");
         return false;
     }
 
@@ -41,7 +42,7 @@ bool ReleaseSpiritAction::Execute(Event event)
     const std::string message = !packet.empty() && packet.GetOpcode() == CMSG_REPOP_REQUEST
                                 ? "Releasing..."
                                 : "Meet me at the graveyard";
-    botAI->TellMasterNoFacing(message);
+    botAI->GetServices().GetChatService().TellMasterNoFacing(message);
 
     IncrementDeathCount();
     bot->DurabilityRepairAll(false, 1.0f, false);

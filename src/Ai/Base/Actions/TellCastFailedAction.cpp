@@ -4,6 +4,7 @@
  */
 
 #include "TellCastFailedAction.h"
+#include "BotChatService.h"
 
 #include "BotSpellService.h"
 #include "ChatHelper.h"
@@ -52,7 +53,7 @@ bool TellCastFailedAction::Execute(Event event)
     }
 
     if (spellInfo->CalcCastTime() >= 2000)
-        botAI->TellError(out.str());
+        botAI->GetServices().GetChatService().TellError(out.str());
 
     return true;
 }
@@ -70,6 +71,6 @@ bool TellSpellAction::Execute(Event event)
 
     std::ostringstream out;
     out << chat->FormatSpell(spellInfo);
-    botAI->TellError(out.str());
+    botAI->GetServices().GetChatService().TellError(out.str());
     return true;
 }

@@ -4,6 +4,7 @@
  */
 
 #include "LootAction.h"
+#include "BotChatService.h"
 
 #include "ChatHelper.h"
 #include "Event.h"
@@ -446,10 +447,10 @@ bool StoreLootAction::Execute(Event event)
         botAI->SetNextCheckDelay(sPlayerbotAIConfig->lootDelay);
 
         if (proto->Quality > ITEM_QUALITY_NORMAL && !urand(0, 50) && botAI->HasStrategy("emote", BOT_STATE_NON_COMBAT) && sPlayerbotAIConfig->randomBotEmote)
-            botAI->PlayEmote(TEXT_EMOTE_CHEER);
+            botAI->GetServices().GetChatService().PlayEmote(TEXT_EMOTE_CHEER);
 
         if (proto->Quality >= ITEM_QUALITY_RARE && !urand(0, 1) && botAI->HasStrategy("emote", BOT_STATE_NON_COMBAT) && sPlayerbotAIConfig->randomBotEmote)
-            botAI->PlayEmote(TEXT_EMOTE_CHEER);
+            botAI->GetServices().GetChatService().PlayEmote(TEXT_EMOTE_CHEER);
 
         BroadcastHelper::BroadcastLootingItem(botAI, bot, proto);
     }

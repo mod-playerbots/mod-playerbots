@@ -17,6 +17,7 @@
 #include "Util.h"
 #include "ServerFacade.h"
 #include "PossibleRpgTargetsValue.h"
+#include "BotChatService.h"
 
 bool ChooseRpgTargetAction::HasSameTarget(ObjectGuid guid, uint32 max, GuidVector const& nearGuids)
 {
@@ -264,7 +265,7 @@ bool ChooseRpgTargetAction::Execute(Event event)
         out << chat->FormatWorldobject(guidP.GetWorldObject());
         out << " " << relevances.front();
 
-        botAI->TellMasterNoFacing(out);
+        botAI->GetServices().GetChatService().TellMasterNoFacing(out);
     }
 
     SET_AI_VALUE(GuidPosition, "rpg target", guidP);

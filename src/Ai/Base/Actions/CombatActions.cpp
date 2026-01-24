@@ -9,10 +9,11 @@
 #include "LastMovementValue.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
+#include "BotChatService.h"
 
 bool SwitchToMeleeAction::Execute(Event event)
 {
-    // botAI->TellMasterNoFacing("Switching to melee!");
+    // botAI->GetServices().GetChatService().TellMasterNoFacing("Switching to melee!");
     return ChangeCombatStrategyAction::Execute(event);
 }
 
@@ -34,7 +35,7 @@ bool SwitchToMeleeAction::isUseful()
 
 bool SwitchToRangedAction::Execute(Event event)
 {
-    // botAI->TellMasterNoFacing("Switching to ranged!");
+    // botAI->GetServices().GetChatService().TellMasterNoFacing("Switching to ranged!");
     return ChangeCombatStrategyAction::Execute(event);
 }
 

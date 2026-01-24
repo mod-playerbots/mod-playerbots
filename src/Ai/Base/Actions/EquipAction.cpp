@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "EquipAction.h"
 #include <utility>
 
@@ -76,7 +77,7 @@ void EquipAction::EquipItem(Item* item)
         bot->SetAmmo(itemId);
         std::ostringstream out;
         out << "equipping " << chat->FormatItem(itemProto);
-        botAI->TellMaster(out);
+        botAI->GetServices().GetChatService().TellMaster(out);
         return;
     }
 
@@ -113,7 +114,7 @@ void EquipAction::EquipItem(Item* item)
 
             std::ostringstream out;
             out << "Equipping " << chat->FormatItem(itemProto) << " in ranged slot";
-            botAI->TellMaster(out);
+            botAI->GetServices().GetChatService().TellMaster(out);
             return;
         }
 
@@ -223,12 +224,12 @@ void EquipAction::EquipItem(Item* item)
 
                     std::ostringstream moveMsg;
                     moveMsg << "Main hand upgrade found. Moving " << chat->FormatItem(oldMHProto) << " to offhand";
-                    botAI->TellMaster(moveMsg);
+                    botAI->GetServices().GetChatService().TellMaster(moveMsg);
                 }
 
                 std::ostringstream out;
                 out << "Equipping " << chat->FormatItem(itemProto) << " in main hand";
-                botAI->TellMaster(out);
+                botAI->GetServices().GetChatService().TellMaster(out);
                 return;
             }
 
@@ -245,7 +246,7 @@ void EquipAction::EquipItem(Item* item)
 
                 std::ostringstream out;
                 out << "Equipping " << chat->FormatItem(itemProto) << " in offhand";
-                botAI->TellMaster(out);
+                botAI->GetServices().GetChatService().TellMaster(out);
                 return;
             }
             else
@@ -325,7 +326,7 @@ void EquipAction::EquipItem(Item* item)
 
     std::ostringstream out;
     out << "Equipping " << chat->FormatItem(itemProto);
-    botAI->TellMaster(out);
+    botAI->GetServices().GetChatService().TellMaster(out);
 }
 
 bool EquipUpgradesAction::Execute(Event event)

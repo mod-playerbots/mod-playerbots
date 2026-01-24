@@ -4,6 +4,7 @@
  */
 
 #include "GuildAcceptAction.h"
+#include "BotChatService.h"
 
 #include "Event.h"
 #include "GuildPackets.h"
@@ -28,17 +29,17 @@ bool GuildAcceptAction::Execute(Event event)
     uint32 guildId = inviter->GetGuildId();
     if (!guildId)
     {
-        botAI->TellError("You are not in a guild!");
+        botAI->GetServices().GetChatService().TellError("You are not in a guild!");
         accept = false;
     }
     else if (bot->GetGuildId())
     {
-        botAI->TellError("Sorry, I am in a guild already");
+        botAI->GetServices().GetChatService().TellError("Sorry, I am in a guild already");
         accept = false;
     }
     else if (!botAI->GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_INVITE, false, inviter, true))
     {
-        botAI->TellError("Sorry, I don't want to join your guild :(");
+        botAI->GetServices().GetChatService().TellError("Sorry, I don't want to join your guild :(");
         accept = false;
     }
 

@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "SendMailAction.h"
 
 #include "ChatHelper.h"
@@ -78,7 +79,7 @@ bool SendMailAction::Execute(Event event)
 
         if (bot->GetMoney() < money)
         {
-            botAI->TellError("I don't have enough money");
+            botAI->GetServices().GetChatService().TellError("I don't have enough money");
             return false;
         }
 
@@ -101,7 +102,7 @@ bool SendMailAction::Execute(Event event)
 
         std::ostringstream out;
         out << "Sending mail to " << receiver->GetName();
-        botAI->TellMaster(out.str());
+        botAI->GetServices().GetChatService().TellMaster(out.str());
         return true;
     }
 

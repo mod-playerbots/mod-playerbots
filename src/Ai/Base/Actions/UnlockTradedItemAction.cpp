@@ -1,3 +1,4 @@
+#include "BotChatService.h"
 #include "UnlockTradedItemAction.h"
 #include "Playerbots.h"
 #include "TradeData.h"
@@ -19,13 +20,13 @@ bool UnlockTradedItemAction::Execute(Event event)
     Item* lockbox = tradeData->GetItem(TRADE_SLOT_NONTRADED);
     if (!lockbox)
     {
-        botAI->TellError("No item in the Do Not Trade slot.");
+        botAI->GetServices().GetChatService().TellError("No item in the Do Not Trade slot.");
         return false;
     }
 
     if (!CanUnlockItem(lockbox))
     {
-        botAI->TellError("Cannot unlock this item.");
+        botAI->GetServices().GetChatService().TellError("Cannot unlock this item.");
         return false;
     }
 
@@ -69,7 +70,7 @@ bool UnlockTradedItemAction::CanUnlockItem(Item* item)
                 std::ostringstream out;
                 out << "Lockpicking skill too low (" << botSkill << "/" << requiredSkill << ") to unlock: "
                     << item->GetTemplate()->Name1;
-                botAI->TellMaster(out.str());
+                botAI->GetServices().GetChatService().TellMaster(out.str());
             }
         }
     }
@@ -81,7 +82,7 @@ void UnlockTradedItemAction::UnlockItem(Item* item)
 {
     if (!bot->HasSpell(PICK_LOCK_SPELL_ID))
     {
-        botAI->TellError("Cannot unlock, Pick Lock spell is missing.");
+        botAI->GetServices().GetChatService().TellError("Cannot unlock, Pick Lock spell is missing.");
         return;
     }
 
@@ -90,10 +91,10 @@ void UnlockTradedItemAction::UnlockItem(Item* item)
     {
         std::ostringstream out;
         out << "Picking Lock on traded item: " << item->GetTemplate()->Name1;
-        botAI->TellMaster(out.str());
+        botAI->GetServices().GetChatService().TellMaster(out.str());
     }
     else
     {
-        botAI->TellError("Failed to cast Pick Lock.");
+        botAI->GetServices().GetChatService().TellError("Failed to cast Pick Lock.");
     }
 }

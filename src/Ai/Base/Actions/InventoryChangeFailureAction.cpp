@@ -4,6 +4,7 @@
  */
 
 #include "InventoryChangeFailureAction.h"
+#include "BotChatService.h"
 
 #include "Event.h"
 #include "Playerbots.h"
@@ -94,7 +95,7 @@ bool InventoryChangeFailureAction::Execute(Event event)
     std::string const msg = messages[(InventoryResult)err];
     if (!msg.empty())
     {
-        botAI->TellError(msg);
+        botAI->GetServices().GetChatService().TellError(msg);
         return true;
     }
 

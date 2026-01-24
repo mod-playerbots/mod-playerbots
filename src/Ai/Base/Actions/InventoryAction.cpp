@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "InventoryAction.h"
 
 #include "Event.h"
@@ -130,40 +131,40 @@ void InventoryAction::TellItems(std::map<uint32, uint32> itemMap, std::map<uint3
             switch (proto->Class)
             {
                 case ITEM_CLASS_CONSUMABLE:
-                    botAI->TellMaster("--- consumable ---");
+                    botAI->GetServices().GetChatService().TellMaster("--- consumable ---");
                     break;
                 case ITEM_CLASS_CONTAINER:
-                    botAI->TellMaster("--- container ---");
+                    botAI->GetServices().GetChatService().TellMaster("--- container ---");
                     break;
                 case ITEM_CLASS_WEAPON:
-                    botAI->TellMaster("--- weapon ---");
+                    botAI->GetServices().GetChatService().TellMaster("--- weapon ---");
                     break;
                 case ITEM_CLASS_ARMOR:
-                    botAI->TellMaster("--- armor ---");
+                    botAI->GetServices().GetChatService().TellMaster("--- armor ---");
                     break;
                 case ITEM_CLASS_REAGENT:
-                    botAI->TellMaster("--- reagent ---");
+                    botAI->GetServices().GetChatService().TellMaster("--- reagent ---");
                     break;
                 case ITEM_CLASS_PROJECTILE:
-                    botAI->TellMaster("--- projectile ---");
+                    botAI->GetServices().GetChatService().TellMaster("--- projectile ---");
                     break;
                 case ITEM_CLASS_TRADE_GOODS:
-                    botAI->TellMaster("--- trade goods ---");
+                    botAI->GetServices().GetChatService().TellMaster("--- trade goods ---");
                     break;
                 case ITEM_CLASS_RECIPE:
-                    botAI->TellMaster("--- recipe ---");
+                    botAI->GetServices().GetChatService().TellMaster("--- recipe ---");
                     break;
                 case ITEM_CLASS_QUIVER:
-                    botAI->TellMaster("--- quiver ---");
+                    botAI->GetServices().GetChatService().TellMaster("--- quiver ---");
                     break;
                 case ITEM_CLASS_QUEST:
-                    botAI->TellMaster("--- quest items ---");
+                    botAI->GetServices().GetChatService().TellMaster("--- quest items ---");
                     break;
                 case ITEM_CLASS_KEY:
-                    botAI->TellMaster("--- keys ---");
+                    botAI->GetServices().GetChatService().TellMaster("--- keys ---");
                     break;
                 case ITEM_CLASS_MISC:
-                    botAI->TellMaster("--- other ---");
+                    botAI->GetServices().GetChatService().TellMaster("--- other ---");
                     break;
             }
         }
@@ -179,7 +180,7 @@ void InventoryAction::TellItem(ItemTemplate const* proto, uint32 count, bool sou
     if (soulbound)
         out << " (soulbound)";
 
-    botAI->TellMaster(out.str());
+    botAI->GetServices().GetChatService().TellMaster(out.str());
 }
 
 std::vector<Item*> InventoryAction::parseItems(std::string const text, IterateItemsMask mask)

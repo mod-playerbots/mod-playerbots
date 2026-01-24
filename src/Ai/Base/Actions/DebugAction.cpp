@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "DebugAction.h"
 
 #include "ChooseTravelTargetAction.h"
@@ -82,13 +83,13 @@ bool DebugAction::Execute(Event event)
                 out << node->getName() << ", ";
             }
 
-            botAI->TellMasterNoFacing(out.str());
+            botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
 
             return true;
         }
         else
         {
-            botAI->TellMasterNoFacing("Destination " + destination + " not found.");
+            botAI->GetServices().GetChatService().TellMasterNoFacing("Destination " + destination + " not found.");
             return true;
         }
     }
@@ -100,7 +101,7 @@ bool DebugAction::Execute(Event event)
 
         if (!quest)
         {
-            botAI->TellMasterNoFacing("Quest " + text.substr(6) + " not found.");
+            botAI->GetServices().GetChatService().TellMasterNoFacing("Quest " + text.substr(6) + " not found.");
             return false;
         }
 
@@ -128,7 +129,7 @@ bool DebugAction::Execute(Event event)
             break;
         }
 
-        botAI->TellMasterNoFacing(out);
+        botAI->GetServices().GetChatService().TellMasterNoFacing(out);
 
         return true;
     }
@@ -153,7 +154,7 @@ bool DebugAction::Execute(Event event)
 
         out << noG << "|" << noT << "|" << noO << " bad.";
 
-        botAI->TellMasterNoFacing(out);
+        botAI->GetServices().GetChatService().TellMasterNoFacing(out);
 
         return true;
     }
@@ -186,7 +187,7 @@ bool DebugAction::Execute(Event event)
             if (q.second->questObjectives.empty())
                 out << " no O";
         }
-        botAI->TellMasterNoFacing(out);
+        botAI->GetServices().GetChatService().TellMasterNoFacing(out);
     }
     else if (text.find("add node") != std::string::npos)
     {
@@ -201,7 +202,7 @@ bool DebugAction::Execute(Event event)
             endNode->setLinked(false);
         }
 
-        botAI->TellMasterNoFacing("Node " + name + " created.");
+        botAI->GetServices().GetChatService().TellMasterNoFacing("Node " + name + " created.");
 
         sTravelNodeMap->setHasToGen();
 
@@ -218,12 +219,12 @@ bool DebugAction::Execute(Event event)
 
         if (startNode->isImportant())
         {
-            botAI->TellMasterNoFacing("Node can not be removed.");
+            botAI->GetServices().GetChatService().TellMasterNoFacing("Node can not be removed.");
         }
 
         sTravelNodeMap->m_nMapMtx.lock();
         sTravelNodeMap->removeNode(startNode);
-        botAI->TellMasterNoFacing("Node removed.");
+        botAI->GetServices().GetChatService().TellMasterNoFacing("Node removed.");
         sTravelNodeMap->m_nMapMtx.unlock();
 
         sTravelNodeMap->setHasToGen();
@@ -912,7 +913,7 @@ bool DebugAction::Execute(Event event)
     }
 
     std::string const response = botAI->HandleRemoteCommand(text);
-    botAI->TellMaster(response);
+    botAI->GetServices().GetChatService().TellMaster(response);
     return true;
 }
 

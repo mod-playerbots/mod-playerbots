@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "BankAction.h"
 
 #include "Event.h"
@@ -23,7 +24,7 @@ bool BankAction::Execute(Event event)
         return ExecuteBank(text, npc);
     }
 
-    botAI->TellError("Cannot find banker nearby");
+    botAI->GetServices().GetChatService().TellError("Cannot find banker nearby");
     return false;
 }
 
@@ -83,7 +84,7 @@ bool BankAction::Withdraw(uint32 itemid)
 
     std::ostringstream out;
     out << "got " << chat->FormatItem(pItem->GetTemplate(), pItem->GetCount()) << " from bank";
-    botAI->TellMaster(out.str());
+    botAI->GetServices().GetChatService().TellMaster(out.str());
     return true;
 }
 
@@ -103,13 +104,13 @@ bool BankAction::Deposit(Item* pItem)
     bot->BankItem(dest, pItem, true);
 
     out << "put " << chat->FormatItem(pItem->GetTemplate(), pItem->GetCount()) << " to bank";
-    botAI->TellMaster(out.str());
+    botAI->GetServices().GetChatService().TellMaster(out.str());
     return true;
 }
 
 void BankAction::ListItems()
 {
-    botAI->TellMaster("=== Bank ===");
+    botAI->GetServices().GetChatService().TellMaster("=== Bank ===");
 
     std::map<uint32, uint32> items;
     std::map<uint32, bool> soulbound;

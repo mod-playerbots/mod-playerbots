@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "GrindTargetValue.h"
 
 #include "NewRpgInfo.h"
@@ -94,7 +95,7 @@ Unit* GrindTargetValue::FindTargetForGrinding(uint32 assistCount)
             sServerFacade->GetDistance2d(master, unit) > sPlayerbotAIConfig->lootDistance)
         {
             if (botAI->HasStrategy("debug grind", BotState::BOT_STATE_NON_COMBAT))
-                botAI->TellMaster(chat->FormatWorldobject(unit) + " ignored (far from master).");
+                botAI->GetServices().GetChatService().TellMaster(chat->FormatWorldobject(unit) + " ignored (far from master).");
             continue;
         }
 

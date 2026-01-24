@@ -4,6 +4,7 @@
  */
 
 #include "FishingAction.h"
+#include "BotChatService.h"
 #include "FishValues.h"
 #include "Event.h"
 
@@ -399,7 +400,7 @@ bool EquipFishingPoleAction::isUseful()
     std::string masterName = master->GetName();
     std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
     "no_fishing_pole_error", "I don't have a Fishing Pole",{});
-    botAI->Whisper(text, masterName);
+    botAI->GetServices().GetChatService().Whisper(text, masterName);
 
     return false;
 }

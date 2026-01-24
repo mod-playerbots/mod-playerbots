@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "ResetAiAction.h"
 
 #include "Event.h"
@@ -46,6 +47,6 @@ bool ResetAiAction::Execute(Event event)
     }
     sPlayerbotRepository->Reset(botAI);
     botAI->ResetStrategies(false);
-    botAI->TellMaster("AI was reset to defaults");
+    botAI->GetServices().GetChatService().TellMaster("AI was reset to defaults");
     return true;
 }

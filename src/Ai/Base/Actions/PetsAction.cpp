@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "PetsAction.h"
 
 #include "CharmInfo.h"
@@ -25,7 +26,7 @@ bool PetsAction::Execute(Event event)
         // If no parameter is provided, show usage instructions and return.
         std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
             "pet_usage_error", "Usage: pet <aggressive|defensive|passive|stance|attack|follow|stay>", {});
-        botAI->TellError(text);
+        botAI->GetServices().GetChatService().TellError(text);
         return false;
     }
 
@@ -54,7 +55,7 @@ bool PetsAction::Execute(Event event)
     {
         std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
             "pet_no_pet_error", "You have no pet or guardian pet.", {});
-        botAI->TellError(text);
+        botAI->GetServices().GetChatService().TellError(text);
         return false;
     }
 
@@ -112,7 +113,7 @@ bool PetsAction::Execute(Event event)
             std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
                 "pet_stance_report", "Current stance of %type \"%name\": %stance.",
                 {{"type", type}, {"name", name}, {"stance", stance}});
-            botAI->TellMaster(text);
+            botAI->GetServices().GetChatService().TellMaster(text);
         }
         return true;
     }
@@ -135,21 +136,21 @@ bool PetsAction::Execute(Event event)
         {
             std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
                 "pet_no_target_error", "No valid target selected by master.", {});
-            botAI->TellError(text);
+            botAI->GetServices().GetChatService().TellError(text);
             return false;
         }
         if (!targetUnit->IsAlive())
         {
             std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
                 "pet_target_dead_error", "Target is not alive.", {});
-            botAI->TellError(text);
+            botAI->GetServices().GetChatService().TellError(text);
             return false;
         }
         if (!bot->IsValidAttackTarget(targetUnit))
         {
             std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
                 "pet_invalid_target_error", "Target is not a valid attack target for the bot.", {});
-            botAI->TellError(text);
+            botAI->GetServices().GetChatService().TellError(text);
             return false;
         }
         if (sPlayerbotAIConfig->IsPvpProhibited(bot->GetZoneId(), bot->GetAreaId()) &&
@@ -158,7 +159,7 @@ bool PetsAction::Execute(Event event)
         {
             std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
                 "pet_pvp_prohibited_error", "I cannot command my pet to attack players in PvP prohibited areas.", {});
-            botAI->TellError(text);
+            botAI->GetServices().GetChatService().TellError(text);
             return false;
         }
 
@@ -212,13 +213,13 @@ bool PetsAction::Execute(Event event)
         {
             std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
                 "pet_attack_success", "Pet commanded to attack your target.", {});
-            botAI->TellMaster(text);
+            botAI->GetServices().GetChatService().TellMaster(text);
         }
         else if (!didAttack)
         {
             std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
                 "pet_attack_failed", "Pet did not attack. (Already attacking or unable to attack target)", {});
-            botAI->TellError(text);
+            botAI->GetServices().GetChatService().TellError(text);
         }
         return didAttack;
     }
@@ -230,7 +231,7 @@ bool PetsAction::Execute(Event event)
         {
             std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
                 "pet_follow_success", "Pet commanded to follow.", {});
-            botAI->TellMaster(text);
+            botAI->GetServices().GetChatService().TellMaster(text);
         }
         return true;
     }
@@ -271,7 +272,7 @@ bool PetsAction::Execute(Event event)
         {
             std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
                 "pet_stay_success", "Pet commanded to stay.", {});
-            botAI->TellMaster(text);
+            botAI->GetServices().GetChatService().TellMaster(text);
         }
         return true;
     }
@@ -281,7 +282,7 @@ bool PetsAction::Execute(Event event)
         std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
             "pet_unknown_command_error", "Unknown pet command: %param. Use: pet <aggressive|defensive|passive|stance|attack|follow|stay>",
             {{"param", param}});
-        botAI->TellError(text);
+        botAI->GetServices().GetChatService().TellError(text);
         return false;
     }
 
@@ -300,7 +301,7 @@ bool PetsAction::Execute(Event event)
         std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
             "pet_stance_set_success", "Pet stance set to %stance.",
             {{"stance", stanceText}});
-        botAI->TellMaster(text);
+        botAI->GetServices().GetChatService().TellMaster(text);
     }
 
     return true;

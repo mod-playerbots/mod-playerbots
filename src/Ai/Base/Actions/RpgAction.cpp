@@ -15,6 +15,7 @@
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "RpgSubActions.h"
+#include "BotChatService.h"
 
 bool RpgAction::Execute(Event event)
 {
@@ -116,7 +117,7 @@ bool RpgAction::SetNextRpgAction()
         std::stringstream ss;
         ss << "------" << chat->FormatWorldobject(AI_VALUE(GuidPosition, "rpg target").GetWorldObject()) << "------";
         bot->Say(ss.str(), LANG_UNIVERSAL);
-        botAI->TellMasterNoFacing(ss.str());
+        botAI->GetServices().GetChatService().TellMasterNoFacing(ss.str());
 
         for (auto action : sortedActions)
         {
@@ -124,7 +125,7 @@ bool RpgAction::SetNextRpgAction()
 
             out << " " << action.first->getName() << " " << action.second;
 
-            botAI->TellMasterNoFacing(out);
+            botAI->GetServices().GetChatService().TellMasterNoFacing(out);
         }
     }
 
@@ -142,7 +143,7 @@ bool RpgAction::SetNextRpgAction()
 
         out << " " << action->getName();
 
-        botAI->TellMasterNoFacing(out);
+        botAI->GetServices().GetChatService().TellMasterNoFacing(out);
     }
 
     SET_AI_VALUE(std::string, "next rpg action", action->getName());

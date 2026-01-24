@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "RandomPlayerbotMgr.h"
 #include "BotRoleService.h"
 
@@ -3071,7 +3072,7 @@ void RandomPlayerbotMgr::OnPlayerLogin(Player* player)
                 {
                     botAI->SetMaster(player);
                     botAI->ResetStrategies();
-                    botAI->TellMaster("Hello");
+                    botAI->GetServices().GetChatService().TellMaster("Hello");
                 }
 
                 break;

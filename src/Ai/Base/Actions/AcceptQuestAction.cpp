@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "AcceptQuestAction.h"
 
 #include "Event.h"
@@ -88,7 +89,7 @@ bool AcceptQuestAction::Execute(Event event)
         std::stringstream ss;
         ss << "AcceptQuestAction [" << qInfo->GetTitle() << "] - [" << std::to_string(qInfo->GetQuestId()) << "]";
         LOG_DEBUG("playerbots", "{}", ss.str().c_str());
-        // botAI->TellMaster(ss.str());
+        // botAI->GetServices().GetChatService().TellMaster(ss.str());
     }
 
     return hasAccept;
@@ -113,7 +114,7 @@ bool AcceptQuestShareAction::Execute(Event event)
     if (bot->HasQuest(quest))
     {
         bot->SetDivider(ObjectGuid::Empty);
-        botAI->TellError("I have this quest");
+        botAI->GetServices().GetChatService().TellError("I have this quest");
         return false;
     }
 
@@ -121,7 +122,7 @@ bool AcceptQuestShareAction::Execute(Event event)
     {
         // can't take quest
         bot->SetDivider(ObjectGuid::Empty);
-        botAI->TellError("I can't take this quest");
+        botAI->GetServices().GetChatService().TellError("I can't take this quest");
 
         return false;
     }
@@ -149,7 +150,7 @@ bool AcceptQuestShareAction::Execute(Event event)
             bot->CastSpell(bot, qInfo->GetSrcSpell(), true);
         }
 
-        botAI->TellMaster("Quest accepted");
+        botAI->GetServices().GetChatService().TellMaster("Quest accepted");
         return true;
     }
 
@@ -174,7 +175,7 @@ bool ConfirmQuestAction::Execute(Event event)
     if (!bot->CanTakeQuest(qInfo, false))
     {
         // can't take quest
-        // botAI->TellError("quest_cant_take");
+        // botAI->GetServices().GetChatService().TellError("quest_cant_take");
         return false;
     }
 
@@ -190,7 +191,7 @@ bool ConfirmQuestAction::Execute(Event event)
             bot->CastSpell(bot, qInfo->GetSrcSpell(), true);
         }
 
-        // botAI->TellMaster("quest_accept");
+        // botAI->GetServices().GetChatService().TellMaster("quest_accept");
         return true;
     }
 

@@ -14,6 +14,7 @@
 #include "Playerbots.h"
 #include "PlayerbotWorldThreadProcessor.h"
 #include "ServerFacade.h"
+#include "BotChatService.h"
 
 bool InviteToGroupAction::Invite(Player* inviter, Player* player)
 {
@@ -442,7 +443,7 @@ bool LfgAction::Execute(Event event)
         {
             out << "Joining as " << placeholders["%role"] << ", " << placeholders["%spotsleft"] << " "
                 << placeholders["%role"] << " spots left.";
-            botAI->TellMasterNoFacing(out.str());
+            botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
 
             //botAI->DoSpecificAction("autogear");
             //botAI->DoSpecificAction("maintenance");
@@ -450,7 +451,7 @@ bool LfgAction::Execute(Event event)
         else
         {
             out << "Joining as " << placeholders["%role"] << ".";
-            botAI->TellMasterNoFacing(out.str());
+            botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
 
             //botAI->DoSpecificAction("autogear");
             //botAI->DoSpecificAction("maintenance");

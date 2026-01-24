@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "PlayerbotMgr.h"
 
 #include <cstdio>
@@ -308,7 +309,7 @@ void PlayerbotMgr::CancelLogout()
         {
             WorldPackets::Character::LogoutCancel data = WorldPacket(CMSG_LOGOUT_CANCEL);
             bot->GetSession()->HandleLogoutCancelOpcode(data);
-            botAI->TellMaster("Logout cancelled!");
+            botAI->GetServices().GetChatService().TellMaster("Logout cancelled!");
         }
     }
 
@@ -395,7 +396,7 @@ void PlayerbotHolder::LogoutPlayerBot(ObjectGuid guid)
                 return;
             else if (bot)
             {
-                botAI->TellMaster("I'm logging out!");
+                botAI->GetServices().GetChatService().TellMaster("I'm logging out!");
                 WorldPackets::Character::LogoutRequest data = WorldPacket(CMSG_LOGOUT_REQUEST);
                 botWorldSessionPtr->HandleLogoutRequestOpcode(data);
                 if (!bot)
@@ -418,7 +419,7 @@ void PlayerbotHolder::LogoutPlayerBot(ObjectGuid guid)
         }  // if instant logout possible, do it
         else if (bot && (logout || !botWorldSessionPtr->isLogingOut()))
         {
-            botAI->TellMaster("Goodbye!");
+            botAI->GetServices().GetChatService().TellMaster("Goodbye!");
             RemoveFromPlayerbotsMap(guid);                  // deletes bot player ptr inside this WorldSession PlayerBotMap
             botWorldSessionPtr->LogoutPlayer(true);  // this will delete the bot Player object and PlayerbotAI object
             delete botWorldSessionPtr;               // finally delete the bot's WorldSession
@@ -435,7 +436,7 @@ void PlayerbotHolder::DisablePlayerBot(ObjectGuid guid)
         {
             return;
         }
-        botAI->TellMaster("Goodbye!");
+        botAI->GetServices().GetChatService().TellMaster("Goodbye!");
         bot->StopMoving();
         bot->GetMotionMaster()->Clear();
 
@@ -568,7 +569,7 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
     // set delay on login
     botAI->SetNextCheckDelay(urand(2000, 4000));
 
-    botAI->TellMaster("Hello!", PLAYERBOT_SECURITY_TALK);
+    botAI->GetServices().GetChatService().TellMaster("Hello!", PLAYERBOT_SECURITY_TALK);
 
     // Queue group operations for world thread
     if (master && master->GetGroup() && !group)

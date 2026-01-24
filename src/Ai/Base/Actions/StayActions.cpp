@@ -4,6 +4,7 @@
  */
 
 #include "StayActions.h"
+#include "BotChatService.h"
 
 #include "Event.h"
 #include "LastMovementValue.h"
@@ -15,7 +16,7 @@ bool StayActionBase::Stay()
     AI_VALUE(LastMovement&, "last movement").Set(nullptr);
 
     // if (!urand(0, 10))
-    // botAI->PlaySound(TEXT_EMOTE_YAWN);
+    // botAI->GetServices().GetChatService().PlaySound(TEXT_EMOTE_YAWN);
     if (bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE)
         return false;
 

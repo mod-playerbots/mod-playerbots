@@ -44,6 +44,7 @@
 #include "Unit.h"
 #include "Vehicle.h"
 #include "WaypointMovementGenerator.h"
+#include "BotChatService.h"
 
 MovementAction::MovementAction(PlayerbotAI* botAI, std::string const name) : Action(botAI, name)
 {
@@ -122,7 +123,7 @@ bool MovementAction::MoveNear(WorldObject* target, float distance, MovementPrior
             return true;
     }
 
-    // botAI->TellError("All paths not in LOS");
+    // botAI->GetServices().GetChatService().TellError("All paths not in LOS");
     return false;
 }
 
@@ -173,7 +174,7 @@ bool MovementAction::MoveToLOS(WorldObject* target, bool ranged)
     if (dest.isSet())
         return MoveTo(dest.mapId, dest.x, dest.y, dest.z);
     else
-        botAI->TellError("All paths not in LOS");
+        botAI->GetServices().GetChatService().TellError("All paths not in LOS");
 
     return false;
 }
@@ -403,7 +404,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
 
     //                     bot->StopMoving();
     //                     if (botAI->HasStrategy("debug move", BOT_STATE_NON_COMBAT))
-    //                         botAI->TellMasterNoFacing("I have no path");
+    //                         botAI->GetServices().GetChatService().TellMasterNoFacing("I have no path");
     //                     LOG_DEBUG("playerbots", "sServerFacade->IsDistanceGreaterThan(totalDistance, maxDist * 3)");
     //                     return false;
     //                 }
@@ -433,14 +434,14 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
     // {
     //     if (movePath.makeShortCut(startPosition, maxDist))
     //         if (botAI->HasStrategy("debug move", BOT_STATE_NON_COMBAT))
-    //             botAI->TellMasterNoFacing("Found a shortcut.");
+    //             botAI->GetServices().GetChatService().TellMasterNoFacing("Found a shortcut.");
 
     //     if (movePath.empty())
     //     {
     //         AI_VALUE(LastMovement&, "last movement").setPath(movePath);
 
     //         if (botAI->HasStrategy("debug move", BOT_STATE_NON_COMBAT))
-    //             botAI->TellMasterNoFacing("Too far from path. Rebuilding.");
+    //             botAI->GetServices().GetChatService().TellMasterNoFacing("Too far from path. Rebuilding.");
     //         LOG_DEBUG("playerbots", "movePath.empty()");
     //         return true;
     //     }
@@ -571,7 +572,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
     //     AI_VALUE(LastMovement&, "last movement").setPath(movePath);
 
     //     if (botAI->HasStrategy("debug move", BOT_STATE_NON_COMBAT))
-    //         botAI->TellMasterNoFacing("No point. Rebuilding.");
+    //         botAI->GetServices().GetChatService().TellMasterNoFacing("No point. Rebuilding.");
     //     LOG_DEBUG("playerbots", "!movePosition || movePosition.getMapId() != bot->GetMapId()");
     //     return false;
     // }
@@ -596,7 +597,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
     //     AI_VALUE(LastMovement&, "last movement").setPath(movePath);
 
     //     if (botAI->HasStrategy("debug move", BOT_STATE_NON_COMBAT))
-    //         botAI->TellMasterNoFacing("No point. Rebuilding.");
+    //         botAI->GetServices().GetChatService().TellMasterNoFacing("No point. Rebuilding.");
 
     //     return false;
     // }
@@ -1122,7 +1123,7 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
     if (!bot->InBattleground() && sServerFacade->IsDistanceLessOrEqualThan(sServerFacade->GetDistance2d(bot, target),
                                                                            sPlayerbotAIConfig->followDistance))
     {
-        // botAI->TellError("No need to follow");
+        // botAI->GetServices().GetChatService().TellError("No need to follow");
         return false;
     }
 
@@ -1166,13 +1167,13 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
         if (bot->isDead() && botAI->GetMaster()->IsAlive())
         {
             bot->ResurrectPlayer(1.0f, false);
-            botAI->TellMasterNoFacing("I live, again!");
+            botAI->GetServices().GetChatService().TellMasterNoFacing("I live, again!");
         }
         else
-            botAI->TellError("I am stuck while following");
+            botAI->GetServices().GetChatService().TellError("I am stuck while following");
 
         bot->CombatStop(true);
-        botAI->TellMasterNoFacing("I will there soon.");
+        botAI->GetServices().GetChatService().TellMasterNoFacing("I will there soon.");
         bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
         bot->TeleportTo(target->GetMapId(), target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(),
     target->GetOrientation()); return false;
@@ -1246,7 +1247,7 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
     if (sServerFacade->IsDistanceLessOrEqualThan(sServerFacade->GetDistance2d(bot, target),
                                                  sPlayerbotAIConfig->followDistance))
     {
-        // botAI->TellError("No need to follow");
+        // botAI->GetServices().GetChatService().TellError("No need to follow");
         return false;
     }
 
@@ -1256,7 +1257,7 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
     if (!bot->InBattleground() && sServerFacade->IsDistanceLessOrEqualThan(sServerFacade->GetDistance2d(bot, target),
                                                                            sPlayerbotAIConfig->followDistance))
     {
-        // botAI->TellError("No need to follow");
+        // botAI->GetServices().GetChatService().TellError("No need to follow");
         return false;
     }
 
@@ -1385,7 +1386,7 @@ bool MovementAction::Flee(Unit* target)
 
     if (!IsMovingAllowed())
     {
-        botAI->TellError("I am stuck while fleeing");
+        botAI->GetServices().GetChatService().TellError("I am stuck while fleeing");
         return false;
     }
 
@@ -1541,7 +1542,7 @@ bool MovementAction::Flee(Unit* target)
     float rx, ry, rz;
     if (!manager.CalculateDestination(&rx, &ry, &rz))
     {
-        botAI->TellError("Nowhere to flee");
+        botAI->GetServices().GetChatService().TellError("Nowhere to flee");
         return false;
     }
 
@@ -2567,7 +2568,7 @@ bool DisperseSetAction::Execute(Event event)
     if (text == "disable")
     {
         RESET_AI_VALUE(float, "disperse distance");
-        botAI->TellMasterNoFacing("Disable disperse");
+        botAI->GetServices().GetChatService().TellMasterNoFacing("Disable disperse");
         return true;
     }
     if (text == "enable" || text == "reset")
@@ -2583,7 +2584,7 @@ bool DisperseSetAction::Execute(Event event)
         float dis = AI_VALUE(float, "disperse distance");
         std::ostringstream out;
         out << "Enable disperse distance " << std::setprecision(2) << dis;
-        botAI->TellMasterNoFacing(out.str());
+        botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
         return true;
     }
     if (text == "increase")
@@ -2593,13 +2594,13 @@ bool DisperseSetAction::Execute(Event event)
         if (dis <= 0.0f)
         {
             out << "Enable disperse first";
-            botAI->TellMasterNoFacing(out.str());
+            botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
             return true;
         }
         dis += 1.0f;
         SET_AI_VALUE(float, "disperse distance", dis);
         out << "Increase disperse distance to " << std::setprecision(2) << dis;
-        botAI->TellMasterNoFacing(out.str());
+        botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
         return true;
     }
     if (text == "decrease")
@@ -2613,7 +2614,7 @@ bool DisperseSetAction::Execute(Event event)
         SET_AI_VALUE(float, "disperse distance", dis);
         std::ostringstream out;
         out << "Increase disperse distance to " << std::setprecision(2) << dis;
-        botAI->TellMasterNoFacing(out.str());
+        botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
         return true;
     }
     if (text.starts_with("set"))
@@ -2631,7 +2632,7 @@ bool DisperseSetAction::Execute(Event event)
             SET_AI_VALUE(float, "disperse distance", dis);
             out << "Set disperse distance to " << std::setprecision(2) << dis;
         }
-        botAI->TellMasterNoFacing(out.str());
+        botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
         return true;
     }
     std::ostringstream out;
@@ -2641,7 +2642,7 @@ bool DisperseSetAction::Execute(Event event)
     {
         out << "(Current disperse distance: " << std::setprecision(2) << dis << ")";
     }
-    botAI->TellMasterNoFacing(out.str());
+    botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
     return true;
 }
 

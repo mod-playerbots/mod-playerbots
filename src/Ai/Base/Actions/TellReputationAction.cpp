@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "TellReputationAction.h"
 
 #include "Event.h"
@@ -71,7 +72,7 @@ bool TellReputationAction::Execute(Event event)
         base -= ReputationMgr::PointsInRank[i];
 
     out << " (" << (reputation - base) << "/" << ReputationMgr::PointsInRank[rank] << ")";
-    botAI->TellMaster(out);
+    botAI->GetServices().GetChatService().TellMaster(out);
 
     return true;
 }

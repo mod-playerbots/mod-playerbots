@@ -8,6 +8,7 @@
 #include "Event.h"
 #include "GossipDef.h"
 #include "Playerbots.h"
+#include "BotChatService.h"
 
 bool GossipHelloAction::Execute(Event event)
 {
@@ -45,11 +46,11 @@ void GossipHelloAction::TellGossipText(uint32 textId)
         {
             std::string const text0 = text->Options[i].Text_0;
             if (!text0.empty())
-                botAI->TellMasterNoFacing(text0);
+                botAI->GetServices().GetChatService().TellMasterNoFacing(text0);
 
             std::string const text1 = text->Options[i].Text_1;
             if (!text1.empty())
-                botAI->TellMasterNoFacing(text1);
+                botAI->GetServices().GetChatService().TellMasterNoFacing(text1);
         }
     }
 }
@@ -73,7 +74,7 @@ void GossipHelloAction::TellGossipMenus()
         GossipMenuItem const* item = &(iter->second);
         std::ostringstream out;
         out << "[" << iter->first << "] " << item->Message;
-        botAI->TellMasterNoFacing(out.str());
+        botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
     }
 }
 
@@ -83,7 +84,7 @@ bool GossipHelloAction::ProcessGossip(int32 menuToSelect, bool silent)
     if (menuToSelect != -1 && !menu.GetItem(menuToSelect))
     {
         if (!silent)
-            botAI->TellError("Unknown gossip option");
+            botAI->GetServices().GetChatService().TellError("Unknown gossip option");
         return false;
     }
 
@@ -131,14 +132,14 @@ bool GossipHelloAction::Execute(ObjectGuid guid, int32 menuToSelect, bool silent
         {
             std::ostringstream out;
             out << "--- " << pCreature->GetName() << " ---";
-            botAI->TellMasterNoFacing(out.str());
+            botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
             TellGossipMenus();
         }
     }
     else if (!bot->PlayerTalkClass)
     {
         if (!silent)
-            botAI->TellError("I need to talk first");
+            botAI->GetServices().GetChatService().TellError("I need to talk first");
         return false;
     }
     else

@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "Formations.h"
 #include "BotRoleService.h"
 
@@ -600,7 +601,7 @@ bool SetFormationAction::Execute(Event event)
     {
         std::ostringstream str;
         str << "Formation: |cff00ff00" << value->Get()->getName();
-        botAI->TellMaster(str);
+        botAI->GetServices().GetChatService().TellMaster(str);
         return true;
     }
 
@@ -608,7 +609,7 @@ bool SetFormationAction::Execute(Event event)
     {
         WorldLocation loc = value->Get()->GetLocation();
         if (!Formation::IsNullLocation(loc))
-            botAI->Ping(loc.GetPositionX(), loc.GetPositionY());
+            botAI->GetServices().GetChatService().Ping(loc.GetPositionX(), loc.GetPositionY());
 
         return true;
     }
@@ -617,15 +618,15 @@ bool SetFormationAction::Execute(Event event)
     {
         std::ostringstream str;
         str << "Invalid formation: |cffff0000" << formation;
-        botAI->TellMaster(str);
-        botAI->TellMaster(
+        botAI->GetServices().GetChatService().TellMaster(str);
+        botAI->GetServices().GetChatService().TellMaster(
             "Please set to any of:|cffffffff chaos (default), near, queue, circle, line, shield, arrow, melee, far");
         return false;
     }
 
     std::ostringstream str;
     str << "Formation set to: " << formation;
-    botAI->TellMaster(str);
+    botAI->GetServices().GetChatService().TellMaster(str);
     return true;
 }
 

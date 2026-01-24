@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "TellLosAction.h"
 #include <istream>
 #include <sstream>
@@ -56,30 +57,30 @@ bool TellLosAction::Execute(Event event)
 
 void TellLosAction::ListUnits(std::string const title, GuidVector units)
 {
-    botAI->TellMaster(title);
+    botAI->GetServices().GetChatService().TellMaster(title);
 
     for (ObjectGuid const guid : units)
     {
         if (Unit* unit = botAI->GetUnit(guid))
         {
-            botAI->TellMaster(unit->GetNameForLocaleIdx(sWorld->GetDefaultDbcLocale()));
+            botAI->GetServices().GetChatService().TellMaster(unit->GetNameForLocaleIdx(sWorld->GetDefaultDbcLocale()));
         }
     }
 }
 void TellLosAction::ListGameObjects(std::string const title, GuidVector gos)
 {
-    botAI->TellMaster(title);
+    botAI->GetServices().GetChatService().TellMaster(title);
 
     for (ObjectGuid const guid : gos)
     {
         if (GameObject* go = botAI->GetGameObject(guid))
-            botAI->TellMaster(chat->FormatGameobject(go));
+            botAI->GetServices().GetChatService().TellMaster(chat->FormatGameobject(go));
     }
 }
 
 bool TellAuraAction::Execute(Event event)
 {
-    botAI->TellMaster("--- Auras ---");
+    botAI->GetServices().GetChatService().TellMaster("--- Auras ---");
     sLog->outMessage("playerbot", LOG_LEVEL_DEBUG, "--- Auras ---");
     Unit::AuraApplicationMap& map = bot->GetAppliedAuras();
     for (Unit::AuraApplicationMap::iterator i = map.begin(); i != map.end(); ++i)
@@ -106,7 +107,7 @@ bool TellAuraAction::Execute(Event event)
                              " isArea: " + std::to_string(is_area) + " duration: " + std::to_string(duration) +
                              " spellId: " + std::to_string(spellId) + " isPositive: " + std::to_string(isPositive));
 
-        botAI->TellMaster("Info of Aura - name: " + auraName + " caster: " + caster_name + " type: " +
+        botAI->GetServices().GetChatService().TellMaster("Info of Aura - name: " + auraName + " caster: " + caster_name + " type: " +
                           std::to_string(type) + " owner: " + owner_name + " distance: " + std::to_string(distance) +
                           " isArea: " + std::to_string(is_area) + " duration: " + std::to_string(duration) +
                           " spellId: " + std::to_string(spellId) + " isPositive: " + std::to_string(isPositive));
@@ -122,7 +123,7 @@ bool TellAuraAction::Execute(Event event)
                                  " radius: " + std::to_string(radius) + " spell id: " + std::to_string(spellId) +
                                  " duration: " + std::to_string(duration));
 
-            botAI->TellMaster(std::string("Info of DynamicObject -") + " name: " + dyn_owner->GetName() +
+            botAI->GetServices().GetChatService().TellMaster(std::string("Info of DynamicObject -") + " name: " + dyn_owner->GetName() +
                               " radius: " + std::to_string(radius) + " spell id: " + std::to_string(spellId) +
                               " duration: " + std::to_string(duration));
         }
@@ -133,7 +134,7 @@ bool TellAuraAction::Execute(Event event)
 bool TellEstimatedDpsAction::Execute(Event event)
 {
     float dps = AI_VALUE(float, "estimated group dps");
-    botAI->TellMaster("Estimated Group DPS: " + std::to_string(dps));
+    botAI->GetServices().GetChatService().TellMaster("Estimated Group DPS: " + std::to_string(dps));
     return true;
 }
 
@@ -150,6 +151,6 @@ bool TellCalculateItemAction::Execute(Event event)
 
     std::ostringstream out;
     out << "Calculated score of " << chat->FormatItem(proto) << " : " << score;
-    botAI->TellMasterNoFacing(out.str());
+    botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
     return true;
 }

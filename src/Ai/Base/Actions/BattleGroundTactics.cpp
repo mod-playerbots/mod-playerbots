@@ -34,6 +34,7 @@
 #include "PvpTriggers.h"
 #include "ServerFacade.h"
 #include "Vehicle.h"
+#include "BotChatService.h"
 
 // common bg positions
 Position const WS_WAITING_POS_HORDE_1 = {944.981f, 1423.478f, 345.434f, 6.18f};
@@ -4306,7 +4307,7 @@ bool ArenaTactics::Execute(Event event)
 
                 float x, y, z;
                 target->GetPosition(x, y, z);
-                botAI->TellMasterNoFacing("Repositioning to exit the LoS target!");
+                botAI->GetServices().GetChatService().TellMasterNoFacing("Repositioning to exit the LoS target!");
                 return MoveTo(target->GetMapId(), x + frand(-1, +1), y + frand(-1, +1), z, false, true);
             }
         }

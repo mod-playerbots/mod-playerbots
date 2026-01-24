@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "OutfitAction.h"
 
 #include "Event.h"
@@ -17,9 +18,9 @@ bool OutfitAction::Execute(Event event)
     if (param == "?")
     {
         List();
-        botAI->TellMaster("outfit <name> +[item] to add items");
-        botAI->TellMaster("outfit <name> -[item] to remove items");
-        botAI->TellMaster("outfit <name> equip/replace to equip items");
+        botAI->GetServices().GetChatService().TellMaster("outfit <name> +[item] to add items");
+        botAI->GetServices().GetChatService().TellMaster("outfit <name> -[item] to remove items");
+        botAI->GetServices().GetChatService().TellMaster("outfit <name> equip/replace to equip items");
     }
     else
     {
@@ -31,7 +32,7 @@ bool OutfitAction::Execute(Event event)
 
             std::ostringstream out;
             out << "Setting outfit " << name << " as " << param;
-            botAI->TellMaster(out);
+            botAI->GetServices().GetChatService().TellMaster(out);
             return true;
         }
 
@@ -49,7 +50,7 @@ bool OutfitAction::Execute(Event event)
         {
             std::ostringstream out;
             out << "Equipping outfit " << name;
-            botAI->TellMaster(out);
+            botAI->GetServices().GetChatService().TellMaster(out);
 
             EquipItems(outfit);
             return true;
@@ -58,7 +59,7 @@ bool OutfitAction::Execute(Event event)
         {
             std::ostringstream out;
             out << "Replacing current equip with outfit " << name;
-            botAI->TellMaster(out);
+            botAI->GetServices().GetChatService().TellMaster(out);
 
             for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; slot++)
             {
@@ -83,7 +84,7 @@ bool OutfitAction::Execute(Event event)
         {
             std::ostringstream out;
             out << "Resetting outfit " << name;
-            botAI->TellMaster(out);
+            botAI->GetServices().GetChatService().TellMaster(out);
 
             Save(name, ItemIds());
             return true;
@@ -92,7 +93,7 @@ bool OutfitAction::Execute(Event event)
         {
             std::ostringstream out;
             out << "Updating with current items outfit " << name;
-            botAI->TellMaster(out);
+            botAI->GetServices().GetChatService().TellMaster(out);
 
             Update(name);
             return true;
@@ -120,7 +121,7 @@ bool OutfitAction::Execute(Event event)
             }
 
             out << name;
-            botAI->TellMaster(out.str());
+            botAI->GetServices().GetChatService().TellMaster(out.str());
         }
 
         Save(name, outfit);
@@ -178,7 +179,7 @@ void OutfitAction::List()
             if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId))
                 out << chat->FormatItem(proto) << " ";
 
-        botAI->TellMaster(out);
+        botAI->GetServices().GetChatService().TellMaster(out);
     }
 }
 

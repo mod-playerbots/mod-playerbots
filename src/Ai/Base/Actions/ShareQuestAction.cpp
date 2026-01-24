@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "ShareQuestAction.h"
 
 #include "Event.h"
@@ -32,7 +33,7 @@ bool ShareQuestAction::Execute(Event event)
             WorldPacket p;
             p << entry;
             bot->GetSession()->HandlePushQuestToParty(p);
-            botAI->TellMaster("Quest shared");
+            botAI->GetServices().GetChatService().TellMaster("Quest shared");
             return true;
         }
     }
@@ -99,7 +100,7 @@ bool AutoShareQuestAction::Execute(Event event)
         WorldPacket p;
         p << logQuest;
         bot->GetSession()->HandlePushQuestToParty(p);
-        botAI->TellMaster("Quest shared");
+        botAI->GetServices().GetChatService().TellMaster("Quest shared");
         shared = true;
     }
 

@@ -9,6 +9,7 @@
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
+#include "BotChatService.h"
 
 std::map<std::string, uint32> EmoteActionBase::emotes;
 std::map<std::string, uint32> EmoteActionBase::textEmotes;
@@ -164,7 +165,7 @@ bool EmoteActionBase::ReceiveEmote(Player* source, uint32 emote, bool verbal)
             if (botAI->GetMaster() == source)
             {
                 botAI->ChangeStrategy("-follow,+stay", BOT_STATE_NON_COMBAT);
-                botAI->TellMasterNoFacing("Fine.. I'll stay right here..");
+                botAI->GetServices().GetChatService().TellMasterNoFacing("Fine.. I'll stay right here..");
             }
             break;
         case TEXT_EMOTE_BECKON:
@@ -172,7 +173,7 @@ bool EmoteActionBase::ReceiveEmote(Player* source, uint32 emote, bool verbal)
             if (botAI->GetMaster() == source)
             {
                 botAI->ChangeStrategy("+follow", BOT_STATE_NON_COMBAT);
-                botAI->TellMasterNoFacing("Wherever you go, I'll follow..");
+                botAI->GetServices().GetChatService().TellMasterNoFacing("Wherever you go, I'll follow..");
             }
             break;
         case TEXT_EMOTE_WAVE:
@@ -746,7 +747,7 @@ bool EmoteAction::Execute(Event event)
 
     if (param.find("sound") == 0)
     {
-        return botAI->PlaySound(atoi(param.substr(5).c_str()));
+        return botAI->GetServices().GetChatService().PlaySound(atoi(param.substr(5).c_str()));
     }
 
     if (!param.empty() && textEmotes.find(param) != textEmotes.end())

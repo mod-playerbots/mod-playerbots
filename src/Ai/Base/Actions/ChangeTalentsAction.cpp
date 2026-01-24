@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "ChangeTalentsAction.h"
 
 #include "AiFactory.h"
@@ -90,7 +91,7 @@ bool ChangeTalentsAction::Execute(Event event)
         out << TalentsHelp();
     }
 
-    botAI->TellMaster(out);
+    botAI->GetServices().GetChatService().TellMaster(out);
 
     return true;
 }
@@ -125,7 +126,7 @@ std::string ChangeTalentsAction::SpecList()
         }
         out << specFound << ". " << sPlayerbotAIConfig->premadeSpecName[cls][specNo] << " (";
         out << tabCount[0] << "-" << tabCount[1] << "-" << tabCount[2] << ")";
-        botAI->TellMasterNoFacing(out.str());
+        botAI->GetServices().GetChatService().TellMasterNoFacing(out.str());
     }
     out << "Total " << specFound << " specs found";
     return out.str();
@@ -381,7 +382,7 @@ bool AutoSetTalentsAction::Execute(Event event)
     PlayerbotFactory factory(bot, bot->GetLevel());
     factory.InitTalentsTree(true, true, true);
     factory.InitPetTalents();
-    botAI->TellMaster(out);
+    botAI->GetServices().GetChatService().TellMaster(out);
 
     return true;
 }

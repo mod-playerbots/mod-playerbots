@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "TellItemCountAction.h"
 
 #include "Event.h"
@@ -23,7 +24,7 @@ bool TellItemCountAction::Execute(Event event)
         soulbound[proto->ItemId] = item->IsSoulBound();
     }
 
-    botAI->TellMaster("=== Inventory ===");
+    botAI->GetServices().GetChatService().TellMaster("=== Inventory ===");
     for (std::map<uint32, uint32>::iterator i = itemMap.begin(); i != itemMap.end(); ++i)
     {
         ItemTemplate const* proto = sObjectMgr->GetItemTemplate(i->first);

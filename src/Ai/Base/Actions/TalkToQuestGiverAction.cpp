@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "TalkToQuestGiverAction.h"
 
 #include "ChatHelper.h"
@@ -64,7 +65,7 @@ bool TalkToQuestGiverAction::ProcessQuest(Quest const* quest, Object* questGiver
     }
 
     out << ": " << chat->FormatQuest(quest);
-    botAI->TellMaster(out);
+    botAI->GetServices().GetChatService().TellMaster(out);
 
     return isCompleted;
 }
@@ -239,7 +240,7 @@ void TalkToQuestGiverAction::AskToSelectReward(Quest const* quest, std::ostrings
         }
     }
 
-    botAI->TellMaster(msg);
+    botAI->GetServices().GetChatService().TellMaster(msg);
     out << "Reward pending";
 }
 
@@ -303,6 +304,6 @@ bool TurnInQueryQuestAction::Execute(Event event)
     }
 
     out << ": " << chat->FormatQuest(quest);
-    botAI->TellMaster(out);
+    botAI->GetServices().GetChatService().TellMaster(out);
     return true;
 }

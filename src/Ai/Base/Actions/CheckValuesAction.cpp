@@ -4,6 +4,7 @@
  */
 
 #include "CheckValuesAction.h"
+#include "BotChatService.h"
 
 #include "Event.h"
 #include "Playerbots.h"
@@ -15,7 +16,7 @@ bool CheckValuesAction::Execute(Event event)
 {
     if (botAI->HasStrategy("debug move", BOT_STATE_NON_COMBAT))
     {
-        botAI->Ping(bot->GetPositionX(), bot->GetPositionY());
+        botAI->GetServices().GetChatService().Ping(bot->GetPositionX(), bot->GetPositionY());
     }
 
     if (botAI->HasStrategy("map", BOT_STATE_NON_COMBAT) || botAI->HasStrategy("map full", BOT_STATE_NON_COMBAT))

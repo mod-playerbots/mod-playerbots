@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "TellTargetAction.h"
 
 #include "Event.h"
@@ -16,7 +17,7 @@ bool TellTargetAction::Execute(Event event)
     {
         std::ostringstream out;
         out << "Attacking " << target->GetName();
-        botAI->TellMaster(out);
+        botAI->GetServices().GetChatService().TellMaster(out);
 
         context->GetValue<Unit*>("old target")->Set(target);
     }
@@ -26,7 +27,7 @@ bool TellTargetAction::Execute(Event event)
 
 bool TellAttackersAction::Execute(Event event)
 {
-    botAI->TellMaster("--- Attackers ---");
+    botAI->GetServices().GetChatService().TellMaster("--- Attackers ---");
 
     GuidVector attackers = context->GetValue<GuidVector>("attackers")->Get();
     int32 count = 0;
@@ -36,10 +37,10 @@ bool TellAttackersAction::Execute(Event event)
         if (!unit || !unit->IsAlive())
             continue;
 
-        botAI->TellMaster(std::to_string(++count) + std::string(".") + unit->GetName());
+        botAI->GetServices().GetChatService().TellMaster(std::to_string(++count) + std::string(".") + unit->GetName());
     }
 
-    botAI->TellMaster("--- Threat ---");
+    botAI->GetServices().GetChatService().TellMaster("--- Threat ---");
 
     HostileReference* ref = bot->getHostileRefMgr().getFirst();
     if (!ref)
@@ -53,7 +54,7 @@ bool TellAttackersAction::Execute(Event event)
 
         std::ostringstream out;
         out << unit->GetName() << " (" << threat << ")";
-        botAI->TellMaster(out);
+        botAI->GetServices().GetChatService().TellMaster(out);
 
         ref = ref->next();
     }

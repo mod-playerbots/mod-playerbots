@@ -4,6 +4,7 @@
  */
 
 #include "HelpAction.h"
+#include "BotChatService.h"
 
 #include "ChatActionContext.h"
 #include "Event.h"
@@ -26,7 +27,7 @@ void HelpAction::TellChatCommands()
     out << "Whisper any of: ";
     out << CombineSupported(chatContext->supports());
     out << ", [item], [quest] or [object] link";
-    botAI->TellError(out.str());
+    botAI->GetServices().GetChatService().TellError(out.str());
 }
 
 void HelpAction::TellStrategies()
@@ -34,7 +35,7 @@ void HelpAction::TellStrategies()
     std::ostringstream out;
     out << "Possible strategies (co/nc/dead commands): ";
     out << CombineSupported(botAI->GetAiObjectContext()->GetSupportedStrategies());
-    botAI->TellError(out.str());
+    botAI->GetServices().GetChatService().TellError(out.str());
 }
 
 std::string const HelpAction::CombineSupported(std::set<std::string> commands)

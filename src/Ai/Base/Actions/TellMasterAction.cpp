@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "TellMasterAction.h"
 
 #include "Event.h"
@@ -10,13 +11,13 @@
 
 bool TellMasterAction::Execute(Event event)
 {
-    botAI->TellMaster(text);
+    botAI->GetServices().GetChatService().TellMaster(text);
     return true;
 }
 
 bool OutOfReactRangeAction::Execute(Event event)
 {
-    botAI->TellMaster("Wait for me!");
+    botAI->GetServices().GetChatService().TellMaster("Wait for me!");
     return true;
 }
 

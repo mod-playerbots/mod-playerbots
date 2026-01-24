@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "SellAction.h"
 
 #include "Event.h"
@@ -84,7 +85,7 @@ bool SellAction::Execute(Event event)
         return true;
     }
 
-    botAI->TellError("Usage: s gray/*/vendor/[item link]");
+    botAI->GetServices().GetChatService().TellError("Usage: s gray/*/vendor/[item link]");
     return false;
 }
 
@@ -128,7 +129,7 @@ void SellAction::Sell(Item* item)
         }
 
         out << "Selling " << chat->FormatItem(item->GetTemplate());
-        botAI->TellMaster(out);
+        botAI->GetServices().GetChatService().TellMaster(out);
 
         bot->PlayDistanceSound(120);
         break;

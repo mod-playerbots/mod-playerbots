@@ -3,6 +3,7 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "BotChatService.h"
 #include "PositionAction.h"
 
 #include "Event.h"
@@ -24,7 +25,7 @@ void TellPosition(PlayerbotAI* botAI, std::string const name, PositionInfo pos)
     else
         out << " is not set";
 
-    botAI->TellMaster(out);
+    botAI->GetServices().GetChatService().TellMaster(out);
 }
 
 bool PositionAction::Execute(Event event)
@@ -52,7 +53,7 @@ bool PositionAction::Execute(Event event)
     std::vector<std::string> params = split(param, ' ');
     if (params.size() != 2)
     {
-        botAI->TellMaster("Whisper position <name> ?/set/reset");
+        botAI->GetServices().GetChatService().TellMaster("Whisper position <name> ?/set/reset");
         return false;
     }
 
@@ -73,7 +74,7 @@ bool PositionAction::Execute(Event event)
 
         std::ostringstream out;
         out << "Position " << name << " is set";
-        botAI->TellMaster(out);
+        botAI->GetServices().GetChatService().TellMaster(out);
         return true;
     }
 
@@ -84,7 +85,7 @@ bool PositionAction::Execute(Event event)
 
         std::ostringstream out;
         out << "Position " << name << " is set";
-        botAI->TellMaster(out);
+        botAI->GetServices().GetChatService().TellMaster(out);
         return true;
     }
 
@@ -95,7 +96,7 @@ bool PositionAction::Execute(Event event)
 
         std::ostringstream out;
         out << "Position " << name << " is reset";
-        botAI->TellMaster(out);
+        botAI->GetServices().GetChatService().TellMaster(out);
         return true;
     }
 
@@ -109,7 +110,7 @@ bool MoveToPositionAction::Execute(Event event)
     {
         std::ostringstream out;
         out << "Position " << qualifier << " is not set";
-        botAI->TellMaster(out);
+        botAI->GetServices().GetChatService().TellMaster(out);
         return false;
     }
 
@@ -169,7 +170,7 @@ bool ReturnToStayPositionAction::isPossible()
         const float distance = bot->GetDistance(stayPosition.x, stayPosition.y, stayPosition.z);
         if (distance > sPlayerbotAIConfig->reactDistance)
         {
-            botAI->TellMaster("The stay position is too far to return. I am going to stay where I am now");
+            botAI->GetServices().GetChatService().TellMaster("The stay position is too far to return. I am going to stay where I am now");
 
             // Set the stay position to current position
             stayPosition.Set(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetMapId());
