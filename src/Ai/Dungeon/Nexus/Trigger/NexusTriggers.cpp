@@ -1,4 +1,5 @@
 #include "Playerbots.h"
+#include "BotRoleService.h"
 #include "NexusTriggers.h"
 #include "AiObject.h"
 #include "AiObjectContext.h"
@@ -46,7 +47,7 @@ bool FactionCommanderWhirlwindTrigger::IsActive()
 
 bool TelestraFirebombTrigger::IsActive()
 {
-    if (botAI->IsMelee(bot)) { return false; }
+    if (BotRoleService::IsMeleeStatic(bot)) { return false; }
 
     Unit* boss = AI_VALUE2(Unit*, "find target", "grand magus telestra");
     // Avoid split phase with the fake Telestra units, only match the true boss id
@@ -69,7 +70,7 @@ bool ChaoticRiftTrigger::IsActive()
 bool OrmorokSpikesTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "ormorok the tree-shaper");
-    if (!boss || !botAI->IsTank(bot)) { return false; }
+    if (!boss || !BotRoleService::IsTankStatic(bot)) { return false; }
 
     GuidVector objects = AI_VALUE(GuidVector, "closest game objects");
     for (auto i = objects.begin(); i != objects.end(); ++i)
@@ -86,7 +87,7 @@ bool OrmorokSpikesTrigger::IsActive()
 bool OrmorokStackTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "ormorok the tree-shaper");
-    return (boss && !botAI->IsTank(bot));
+    return (boss && !BotRoleService::IsTankStatic(bot));
 }
 
 bool IntenseColdTrigger::IsActive()
@@ -102,6 +103,6 @@ bool KeristraszaPositioningTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "keristrasza");
     // Include healers here for now, otherwise they stand in things
-    return boss && !botAI->IsTank(bot) && !botAI->IsRangedDps(bot);
-    // return boss && botAI->IsMelee(bot) && !botAI->IsTank(bot);
+    return boss && !BotRoleService::IsTankStatic(bot) && !BotRoleService::IsRangedDpsStatic(bot);
+    // return boss && BotRoleService::IsMeleeStatic(bot) && !BotRoleService::IsTankStatic(bot);
 }

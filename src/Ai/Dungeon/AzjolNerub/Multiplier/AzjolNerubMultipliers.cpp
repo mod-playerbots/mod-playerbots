@@ -1,3 +1,4 @@
+#include "BotRoleService.h"
 #include "AzjolNerubMultipliers.h"
 #include "AzjolNerubActions.h"
 #include "GenericSpellActions.h"
@@ -8,7 +9,7 @@
 
 float KrikthirMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsDps(bot)) { return 1.0f; }
+    if (!BotRoleService::IsDpsStatic(bot)) { return 1.0f; }
 
     // Target is not findable from threat table using AI_VALUE2(),
     // therefore need to search manually for the unit name

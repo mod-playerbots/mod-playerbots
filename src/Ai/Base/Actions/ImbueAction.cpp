@@ -3,7 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include "ImbueAction.h"
+#include
+#include "BotRoleService.h" "ImbueAction.h"
 
 #include "Event.h"
 #include "Playerbots.h"
@@ -204,7 +205,7 @@ TryEmergencyAction::TryEmergencyAction(PlayerbotAI* botAI) : Action(botAI, "try 
 bool TryEmergencyAction::Execute(Event event)
 {
     // Do not use consumable if bot can heal self
-    if ((botAI->IsHeal(bot)) && (bot->GetPowerPct(POWER_MANA) > 20))
+    if ((BotRoleService::IsHealStatic(bot)) && (bot->GetPowerPct(POWER_MANA) > 20))
         return false;
 
     // If bot does not have aggro: use bandage instead of potion/stone/crystal

@@ -1,4 +1,5 @@
 #include "Playerbots.h"
+#include "BotRoleService.h"
 #include "ForgeOfSoulsActions.h"
 #include "ForgeOfSoulsStrategy.h"
 #include "SharedDefines.h"
@@ -63,7 +64,7 @@ bool BronjahmGroupPositionAction::Execute(Event event)
     Unit* corruptedSoul = bot->FindNearestCreature(NPC_CORRUPTED_SOUL_FRAGMENT, 50.0f);
     bool activeSoulExists = corruptedSoul && corruptedSoul->IsAlive();
 
-    if (botAI->IsTank(bot) && botAI->HasAggro(boss))
+    if (BotRoleService::IsTankStatic(bot) && botAI->GetServices().GetRoleService().HasAggro(boss))
     {
         // If any corrupted soul exists, handle positioning carefully
         if (activeSoulExists)
@@ -123,7 +124,7 @@ bool BronjahmGroupPositionAction::Execute(Event event)
 
         if (bot->GetExactDist2d(boss) > maxMovement && !activeSoulExists && (hasAura || boss->FindCurrentSpellBySpellId(SPELL_SOULSTORM_VISUAL) || boss->FindCurrentSpellBySpellId(SPELL_SOULSTORM_VISUAL2)))
         {
-            if (botAI->IsRanged(bot))
+            if (BotRoleService::IsRangedStatic(bot))
             {
                 return Move(bot->GetAngle(boss), fmin(bot->GetExactDist2d(boss) - 6.5f, maxMovement));
             }
@@ -150,7 +151,7 @@ bool DevourerOfSoulsAction::Execute(Event event)
     Aura* aura = botAI->GetAura("mirrored soul", boss);
     bool hasAura = aura;
 
-    if (!botAI->IsTank(bot) && !botAI->IsHeal(bot) && hasAura)
+    if (!BotRoleService::IsTankStatic(bot) && !BotRoleService::IsHealStatic(bot) && hasAura)
     {
         // Calculate the opposite direction
         float angle = bot->GetAngle(boss);

@@ -1,4 +1,5 @@
 #include "Playerbots.h"
+#include "BotRoleService.h"
 #include "VioletHoldActions.h"
 #include "VioletHoldStrategy.h"
 
@@ -23,7 +24,7 @@ bool AttackIchorGlobuleAction::Execute(Event event)
     Unit* currentTarget = AI_VALUE(Unit*, "current target");
 
     // Tank prioritise boss if it's up
-    if (botAI->IsTank(bot) && !boss->HasAura(SPELL_DRAINED))
+    if (BotRoleService::IsTankStatic(bot) && !boss->HasAura(SPELL_DRAINED))
     {
         if (AI_VALUE(Unit*, "current target") != boss)
         {

@@ -1,4 +1,5 @@
 #include "EstimatedLifetimeValue.h"
+#include "BotRoleService.h"
 
 #include "AiFactory.h"
 #include "PlayerbotAI.h"
@@ -55,9 +56,9 @@ float EstimatedGroupDpsValue::Calculate()
     for (Player* player : groupPlayer)
     {
         float roleMultiplier;
-        if (botAI->IsTank(player))
+        if (BotRoleService::IsTankStatic(player))
             roleMultiplier = 0.3f;
-        else if (botAI->IsHeal(player))
+        else if (BotRoleService::IsHealStatic(player))
             roleMultiplier = 0.1f;
         else
             roleMultiplier = 1.0f;

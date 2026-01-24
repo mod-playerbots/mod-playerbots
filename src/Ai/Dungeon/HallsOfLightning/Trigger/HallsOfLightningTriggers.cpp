@@ -1,11 +1,12 @@
 #include "Playerbots.h"
+#include "BotRoleService.h"
 #include "HallsOfLightningTriggers.h"
 #include "AiObject.h"
 #include "AiObjectContext.h"
 
 bool StormforgedLieutenantTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot)) { return false; }
+    if (!BotRoleService::IsDpsStatic(bot)) { return false; }
 
     // Target is not findable from threat table using AI_VALUE2(),
     // therefore need to search manually for the unit name
@@ -34,7 +35,7 @@ bool BjarngrimWhirlwindTrigger::IsActive()
 bool VolkhanTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "volkhan");
-    return boss && !botAI->IsTank(bot) && !botAI->IsHeal(bot);
+    return boss && !BotRoleService::IsTankStatic(bot) && !BotRoleService::IsHealStatic(bot);
 }
 
 bool IonarStaticOverloadTrigger::IsActive()
@@ -53,7 +54,7 @@ bool IonarStaticOverloadTrigger::IsActive()
 
 bool IonarBallLightningTrigger::IsActive()
 {
-    if (botAI->IsMelee(bot)) { return false; }
+    if (BotRoleService::IsMeleeStatic(bot)) { return false; }
 
     Unit* boss = AI_VALUE2(Unit*, "find target", "ionar");
     if (!boss) { return false; }
@@ -63,7 +64,7 @@ bool IonarBallLightningTrigger::IsActive()
 
 bool IonarTankAggroTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot)) { return false; }
+    if (!BotRoleService::IsTankStatic(bot)) { return false; }
 
     Unit* boss = AI_VALUE2(Unit*, "find target", "ionar");
     if (!boss) { return false; }
@@ -81,7 +82,7 @@ bool IonarDisperseTrigger::IsActive()
 
 bool LokenRangedTrigger::IsActive()
 {
-    return !botAI->IsMelee(bot) && AI_VALUE2(Unit*, "find target", "loken");
+    return !BotRoleService::IsMeleeStatic(bot) && AI_VALUE2(Unit*, "find target", "loken");
 }
 
 bool LokenLightningNovaTrigger::IsActive()

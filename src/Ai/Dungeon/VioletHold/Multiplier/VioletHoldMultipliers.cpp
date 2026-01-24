@@ -1,3 +1,4 @@
+#include "BotRoleService.h"
 #include "VioletHoldMultipliers.h"
 #include "VioletHoldActions.h"
 #include "GenericSpellActions.h"
@@ -9,7 +10,7 @@
 float ErekemMultiplier::GetValue(Action* action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "erekem");
-    if (!boss || !botAI->IsDps(bot)) { return 1.0f; }
+    if (!boss || !BotRoleService::IsDpsStatic(bot)) { return 1.0f; }
 
     if (dynamic_cast<DpsAssistAction*>(action))
     {

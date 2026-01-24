@@ -1,4 +1,5 @@
 #include "RaidMagtheridonHelpers.h"
+#include "BotRoleService.h"
 #include "Creature.h"
 #include "GameObject.h"
 #include "GroupReference.h"
@@ -133,7 +134,7 @@ namespace MagtheridonHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref && cubeIndex < cubes.size(); ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !botAI->IsRangedDps(member, true) ||
+            if (!member || !member->IsAlive() || !BotRoleService::IsRangedDpsStatic(member, true) ||
                 member->getClass() == CLASS_WARLOCK || !GET_PLAYERBOT_AI(member))
                 continue;
 
@@ -149,7 +150,7 @@ namespace MagtheridonHelpers
                 ref && candidates.size() < cubes.size(); ref = ref->next())
             {
                 Player* member = ref->GetSource();
-                if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || botAI->IsTank(member))
+                if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) || BotRoleService::IsTankStatic(member))
                     continue;
 
                 if (std::find(candidates.begin(), candidates.end(), member) == candidates.end())
@@ -216,7 +217,7 @@ namespace MagtheridonHelpers
             for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             {
                 Player* member = ref->GetSource();
-                if (member && member->IsAlive() && botAI->IsDps(member) && GET_PLAYERBOT_AI(member))
+                if (member && member->IsAlive() && BotRoleService::IsDpsStatic(member) && GET_PLAYERBOT_AI(member))
                     return member == bot;
             }
         }

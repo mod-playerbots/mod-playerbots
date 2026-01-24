@@ -1,4 +1,5 @@
 #include "Playerbots.h"
+#include "BotRoleService.h"
 #include "OculusActions.h"
 #include "OculusStrategy.h"
 #include "LastSpellCastValue.h"
@@ -41,7 +42,7 @@ bool MountDrakeAction::Execute(Event event)
     // {Amber, Emerald, Ruby}
     std::vector<uint8> composition = {2, 2, 1};
     // std::vector<uint8> composition = {3, 1, 1};
-    int32 myIndex = botAI->GetGroupSlotIndex(bot);
+    int32 myIndex = botAI->GetServices().GetRoleService().GetGroupSlotIndex(bot);
 
     Player* master = botAI->GetMaster();
     if (!master) { return false; }
@@ -72,7 +73,7 @@ bool MountDrakeAction::Execute(Event event)
         {
             if (composition[i] > 0)
             {
-                drakeAssignments[botAI->GetGroupSlotIndex(player)] = DRAKE_ITEMS[i];
+                drakeAssignments[botAI->GetServices().GetRoleService().GetGroupSlotIndex(player)] = DRAKE_ITEMS[i];
                 composition[i]--;
                 break;
             }
@@ -143,7 +144,7 @@ bool OccFlyDrakeAction::Execute(Event event)
     if (vehicleBase->GetExactDist(masterVehicle) > 20.0f)
     {
         // 3/4 of a circle, with frontal cone 90 deg unobstructed
-        float angle = botAI->GetGroupSlotIndex(bot) * (2*M_PI - M_PI_2)/5 + M_PI_2;
+        float angle = botAI->GetServices().GetRoleService().GetGroupSlotIndex(bot) * (2*M_PI - M_PI_2)/5 + M_PI_2;
         vehicleBase->SetCanFly(true);
         mm->MoveFollow(masterVehicle, 15.0f, angle);
         vehicleBase->SendMovementFlagUpdate();

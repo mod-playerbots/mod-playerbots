@@ -4,6 +4,7 @@
  */
 
 #include "WarlockActions.h"
+#include "BotRoleService.h"
 
 #include <string>
 #include <vector>
@@ -318,7 +319,7 @@ bool UseSoulstoneTankAction::Execute(Event event)
         for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
         {
             Player* member = gref->GetSource();
-            if (member && member->IsAlive() && botAI->IsTank(member) && botAI->IsMainTank(member) &&
+            if (member && member->IsAlive() && BotRoleService::IsTankStatic(member) && BotRoleService::IsMainTankStatic(member) &&
                 !HasSoulstoneAura(member))
             {
                 std::lock_guard<std::mutex> lock(soulstoneReservationsMutex);
@@ -341,7 +342,7 @@ bool UseSoulstoneTankAction::Execute(Event event)
             for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
             {
                 Player* member = gref->GetSource();
-                if (member && member->IsAlive() && botAI->IsTank(member) && !HasSoulstoneAura(member))
+                if (member && member->IsAlive() && BotRoleService::IsTankStatic(member) && !HasSoulstoneAura(member))
                 {
                     std::lock_guard<std::mutex> lock(soulstoneReservationsMutex);
                     if (soulstoneReservations.count(member->GetGUID()) &&
@@ -384,7 +385,7 @@ bool UseSoulstoneHealerAction::Execute(Event event)
         for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
         {
             Player* member = gref->GetSource();
-            if (member && member->IsAlive() && botAI->IsHeal(member) && !HasSoulstoneAura(member))
+            if (member && member->IsAlive() && BotRoleService::IsHealStatic(member) && !HasSoulstoneAura(member))
             {
                 {
                     std::lock_guard<std::mutex> lock(soulstoneReservationsMutex);

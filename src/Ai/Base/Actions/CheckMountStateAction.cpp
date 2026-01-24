@@ -7,6 +7,7 @@
 #include "BattleGroundTactics.h"
 #include "BattlegroundEY.h"
 #include "BattlegroundWS.h"
+#include "BotRoleService.h"
 #include "Event.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
@@ -401,7 +402,7 @@ float CheckMountStateAction::CalculateDismountDistance() const
 {
     // Warrior bots should dismount far enough to charge (because it's important for generating some initial rage),
     // a real player would be riding toward enemy mashing the charge key but the bots won't cast charge while mounted.
-    bool isMelee = PlayerbotAI::IsMelee(bot);
+    bool isMelee = BotRoleService::IsMeleeStatic(bot);
     float dismountDistance = isMelee ? sPlayerbotAIConfig->meleeDistance + 2.0f : sPlayerbotAIConfig->spellDistance + 2.0f;
     return bot->getClass() == CLASS_WARRIOR ? std::max(18.0f, dismountDistance) : dismountDistance;
 }
@@ -412,7 +413,7 @@ float CheckMountStateAction::CalculateMountDistance() const
     // to cast mount-spell than the time saved from the speed increase. At a distance of 21 both approaches take 3
     // seconds:
     // 21 / 7  =  21 / 14 + 1.5  =  3   (7 = dismounted speed  14 = epic-mount speed  1.5 = mount-spell cast time)
-    bool isMelee = PlayerbotAI::IsMelee(bot);
+    bool isMelee = BotRoleService::IsMeleeStatic(bot);
     float baseDistance = isMelee ? sPlayerbotAIConfig->meleeDistance + 10.0f : sPlayerbotAIConfig->spellDistance + 10.0f;
     return std::max(21.0f, baseDistance);
 }

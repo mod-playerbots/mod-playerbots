@@ -1,4 +1,5 @@
 #include "Playerbots.h"
+#include "BotRoleService.h"
 #include "CullingOfStratholmeTriggers.h"
 #include "AiObject.h"
 #include "AiObjectContext.h"
@@ -27,5 +28,5 @@ bool ExplodeGhoulTrigger::IsActive()
 
 bool EpochRangedTrigger::IsActive()
 {
-    return !botAI->IsMelee(bot) && AI_VALUE2(Unit*, "find target", "chrono-lord epoch");
+    return !BotRoleService::IsMeleeStatic(bot) && AI_VALUE2(Unit*, "find target", "chrono-lord epoch");
 }

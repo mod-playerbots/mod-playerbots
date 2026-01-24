@@ -1,3 +1,4 @@
+#include "BotRoleService.h"
 #include "GundrakMultipliers.h"
 #include "GundrakActions.h"
 #include "GenericSpellActions.h"
@@ -19,7 +20,7 @@ float SladranMultiplier::GetValue(Action* action)
         }
     }
 
-    if (!botAI->IsDps(bot)) { return 1.0f; }
+    if (!BotRoleService::IsDpsStatic(bot)) { return 1.0f; }
 
     if (action->getThreatType() == Action::ActionThreatType::Aoe)
     {

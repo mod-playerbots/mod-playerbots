@@ -1,3 +1,4 @@
+#include "BotRoleService.h"
 #include "Playerbots.h"
 #include "AzjolNerubTriggers.h"
 #include "AiObject.h"
@@ -5,7 +6,7 @@
 
 bool KrikthirWebWrapTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot)) { return false; }
+    if (!BotRoleService::IsDpsStatic(bot)) { return false; }
 
     // Target is not findable from threat table using AI_VALUE2(),
     // therefore need to search manually for the unit name
@@ -25,7 +26,7 @@ bool KrikthirWebWrapTrigger::IsActive()
 
 bool KrikthirWatchersTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot)) { return false; }
+    if (!BotRoleService::IsDpsStatic(bot)) { return false; }
 
     // Target is not findable from threat table using AI_VALUE2(),
     // therefore need to search manually for the unit name

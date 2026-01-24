@@ -1,4 +1,5 @@
 #include "RaidOsActions.h"
+#include "BotRoleService.h"
 #include "RaidOsTriggers.h"
 
 #include "Playerbots.h"
@@ -42,7 +43,7 @@ bool SartharionTankPositionAction::Execute(Event event)
     // Adjustable, this is the acceptable distance to stack point that will be accepted as "safe"
     float looseDistance = 12.0f;
 
-    if (botAI->IsMainTank(bot))
+    if (BotRoleService::IsMainTankStatic(bot))
     {
         if (bot->GetExactDist2d(SARTHARION_MAINTANK_POSITION.first, SARTHARION_MAINTANK_POSITION.second) > looseDistance)
         {
@@ -145,7 +146,7 @@ bool AvoidFlameTsunamiAction::Execute(Event event)
                     return false;
                 }
 
-                if (botAI->IsMelee(bot))
+                if (BotRoleService::IsMeleeStatic(bot))
                 {
                     if (bot->GetExactDist2d(currentPos.GetPositionX(), TSUNAMI_LEFT_SAFE_MELEE) > looseDistance)
                     {

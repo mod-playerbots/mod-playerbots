@@ -4,6 +4,7 @@
  */
 
 #include "TargetValue.h"
+#include "BotRoleService.h"
 
 #include "LastMovementValue.h"
 #include "ObjectGuid.h"
@@ -88,7 +89,7 @@ void FindTargetStrategy::GetPlayerCount(Unit* creature, uint32* tankCount, uint3
         if (!player)
             continue;
 
-        if (botAI->IsTank(player))
+        if (BotRoleService::IsTankStatic(player))
             ++(*tankCount);
         else
             ++(*dpsCount);

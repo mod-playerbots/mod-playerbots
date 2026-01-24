@@ -4,6 +4,7 @@
  */
 
 #include "RandomPlayerbotMgr.h"
+#include "BotRoleService.h"
 
 #include <WorldSessionMgr.h>
 
@@ -3273,9 +3274,9 @@ void RandomPlayerbotMgr::PrintStats()
         else
             ++engine_dead;
 
-        if (botAI->IsHeal(bot, true))
+        if (BotRoleService::IsHealStatic(bot, true))
             ++heal;
-        else if (botAI->IsTank(bot, true))
+        else if (BotRoleService::IsTankStatic(bot, true))
             ++tank;
         else
             ++dps;

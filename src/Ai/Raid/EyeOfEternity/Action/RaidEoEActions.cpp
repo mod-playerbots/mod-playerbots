@@ -1,3 +1,4 @@
+#include "BotRoleService.h"
 #include "Playerbots.h"
 #include "RaidEoEActions.h"
 #include "RaidEoETriggers.h"
@@ -27,7 +28,7 @@ bool MalygosPositionAction::Execute(Event event)
         }
 
         // Position tank
-        if (botAI->IsMainTank(bot))
+        if (BotRoleService::IsMainTankStatic(bot))
         {
             if (bot->GetDistance2d(MALYGOS_MAINTANK_POSITION.first, MALYGOS_MAINTANK_POSITION.second) > distance)
             {
@@ -74,7 +75,7 @@ bool MalygosTargetAction::Execute(Event event)
 
     if (phase == 1)
     {
-        if (botAI->IsHeal(bot)) { return false; }
+        if (BotRoleService::IsHealStatic(bot)) { return false; }
 
         // Init this as boss by default, if no better target is found just fall back to Malygos
         Unit* newTarget = boss;
@@ -91,7 +92,7 @@ bool MalygosTargetAction::Execute(Event event)
         //     }
         // }
 
-        // if (spark && botAI->IsRangedDps(bot))
+        // if (spark && BotRoleService::IsRangedDpsStatic(bot))
         // {
         //     newTarget = spark;
         // }
@@ -105,7 +106,7 @@ bool MalygosTargetAction::Execute(Event event)
     }
     else if (phase == 2)
     {
-        if (botAI->IsHeal(bot)) { return false; }
+        if (BotRoleService::IsHealStatic(bot)) { return false; }
 
         Unit* newTarget = nullptr;
         Unit* nexusLord = nullptr;
@@ -127,7 +128,7 @@ bool MalygosTargetAction::Execute(Event event)
             }
         }
 
-        if (botAI->IsRangedDps(bot) && scionOfEternity)
+        if (BotRoleService::IsRangedDpsStatic(bot) && scionOfEternity)
         {
             newTarget = scionOfEternity;
         }
@@ -263,7 +264,7 @@ bool EoEFlyDrakeAction::Execute(Event event)
         uint8 numPlayers;
         bot->GetRaidDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL ? numPlayers = 25 : numPlayers = 10;
         // 3/4 of a circle, with frontal cone 90 deg unobstructed
-        float angle = botAI->GetGroupSlotIndex(bot) * (2*M_PI - M_PI_2)/numPlayers + M_PI_2;
+        float angle = botAI->GetServices().GetRoleService().GetGroupSlotIndex(bot) * (2*M_PI - M_PI_2)/numPlayers + M_PI_2;
         // float angle = M_PI;
         vehicleBase->SetCanFly(true);
         mm->MoveFollow(masterVehicle, 3.0f, angle);

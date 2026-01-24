@@ -1,4 +1,5 @@
-#include <unordered_map>
+#include
+#include "BotRoleService.h" <unordered_map>
 #include <ctime>
 
 #include "RaidMagtheridonMultipliers.h"
@@ -46,8 +47,8 @@ float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
     if (it == dpsWaitTimer.end() ||
         (time(nullptr) - it->second) < dpsWaitSeconds)
     {
-        if (!botAI->IsMainTank(bot) && (dynamic_cast<AttackAction*>(action) ||
-            (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
+        if (!BotRoleService::IsMainTankStatic(bot) && (dynamic_cast<AttackAction*>(action) ||
+            (!BotRoleService::IsHealStatic(bot) && dynamic_cast<CastSpellAction*>(action))))
             return 0.0f;
     }
 
@@ -63,7 +64,7 @@ float MagtheridonDisableOffTankAssistMultiplier::GetValue(Action* action)
     if (!magtheridon)
         return 1.0f;
 
-    if ((botAI->IsAssistTankOfIndex(bot, 0) || botAI->IsAssistTankOfIndex(bot, 1)) &&
+    if ((BotRoleService::IsAssistTankStaticOfIndex(bot, 0) || BotRoleService::IsAssistTankStaticOfIndex(bot, 1)) &&
         dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 

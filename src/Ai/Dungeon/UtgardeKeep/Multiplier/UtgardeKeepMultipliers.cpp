@@ -1,4 +1,5 @@
 #include "UtgardeKeepMultipliers.h"
+#include "BotRoleService.h"
 #include "UtgardeKeepActions.h"
 #include "GenericSpellActions.h"
 #include "ChooseTargetActions.h"
@@ -42,7 +43,7 @@ float SkarvaldAndDalronnMultiplier::GetValue(Action* action)
 float IngvarThePlundererMultiplier::GetValue(Action* action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "ingvar the plunderer");
-    bool isTank = botAI->IsTank(bot);
+    bool isTank = BotRoleService::IsTankStatic(bot);
     if (!boss) { return 1.0f; }
 
     // Prevent movement actions overriding current movement, we're probably dodging a slam

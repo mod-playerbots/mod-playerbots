@@ -1,4 +1,5 @@
 #include "RaidKarazhanActions.h"
+#include "BotRoleService.h"
 #include "RaidKarazhanHelpers.h"
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
@@ -60,7 +61,7 @@ bool AttumenTheHuntsmanMarkTargetAction::Execute(Event event)
         if (IsInstanceTimerManager(botAI, bot))
             MarkTargetWithStar(bot, midnight);
 
-        if (!botAI->IsAssistTankOfIndex(bot, 0))
+        if (!BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
         {
             SetRtiTarget(botAI, "star", midnight);
 
@@ -110,7 +111,7 @@ bool AttumenTheHuntsmanStackBehindAction::Execute(Event event)
     if (!attumenMounted)
         return false;
 
-    const float distanceBehind = botAI->IsRanged(bot) ? 6.0f : 2.0f;
+    const float distanceBehind = BotRoleService::IsRangedStatic(bot) ? 6.0f : 2.0f;
     float orientation = attumenMounted->GetOrientation() + M_PI;
     float rearX = attumenMounted->GetPositionX() + std::cos(orientation) * distanceBehind;
     float rearY = attumenMounted->GetPositionY() + std::sin(orientation) * distanceBehind;
@@ -208,7 +209,7 @@ bool MaidenOfVirtueMoveBossToHealerAction::Execute(Event event)
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !botAI->IsHeal(member) ||
+            if (!member || !member->IsAlive() || !BotRoleService::IsHealStatic(member) ||
                 !member->HasAura(SPELL_REPENTANCE))
                 continue;
 
@@ -257,7 +258,7 @@ bool MaidenOfVirtuePositionRangedAction::Execute(Event event)
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !botAI->IsRanged(member))
+            if (!member || !BotRoleService::IsRangedStatic(member))
                 continue;
 
             if (member == bot)
@@ -717,7 +718,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event event)
         }
         _wasBlockingBlueBeam[botGuid] = true;
 
-        float idealDistance = botAI->IsRanged(bot) ? 25.0f : 18.0f;
+        float idealDistance = BotRoleService::IsRangedStatic(bot) ? 25.0f : 18.0f;
         std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
 
         float bx = netherspite->GetPositionX();
@@ -1010,7 +1011,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event event)
         if (IsInstanceTimerManager(botAI, bot))
             netherspiteDpsWaitTimer.insert_or_assign(instanceId, now);
 
-        if (botAI->IsTank(bot) && !bot->HasAura(SPELL_RED_BEAM_DEBUFF))
+        if (BotRoleService::IsTankStatic(bot) && !bot->HasAura(SPELL_RED_BEAM_DEBUFF))
         {
             redBeamMoveTimer.erase(botGuid);
             lastBeamMoveSideways.erase(botGuid);
@@ -1021,7 +1022,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event event)
         if (IsInstanceTimerManager(botAI, bot))
             netherspiteDpsWaitTimer.erase(instanceId);
 
-        if (botAI->IsTank(bot))
+        if (BotRoleService::IsTankStatic(bot))
         {
             redBeamMoveTimer.erase(botGuid);
             lastBeamMoveSideways.erase(botGuid);
@@ -1032,7 +1033,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event event)
         if (IsInstanceTimerManager(botAI, bot))
             netherspiteDpsWaitTimer.try_emplace(instanceId, now);
 
-        if (botAI->IsTank(bot) && bot->HasAura(SPELL_RED_BEAM_DEBUFF))
+        if (BotRoleService::IsTankStatic(bot) && bot->HasAura(SPELL_RED_BEAM_DEBUFF))
         {
             redBeamMoveTimer.try_emplace(botGuid, now);
             lastBeamMoveSideways.try_emplace(botGuid, false);
@@ -1352,7 +1353,7 @@ bool NightbaneCastFearWardOnMainTankAction::Execute(Event event)
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && botAI->IsMainTank(member))
+            if (member && BotRoleService::IsMainTankStatic(member))
             {
                 mainTank = member;
                 break;
@@ -1452,10 +1453,10 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
     // Erase DPS wait timer and tank and ranged position tracking on encounter reset
     if (nightbane->GetHealth() == nightbane->GetMaxHealth())
     {
-        if (botAI->IsMainTank(bot))
+        if (BotRoleService::IsMainTankStatic(bot))
             nightbaneTankStep.erase(botGuid);
 
-        if (botAI->IsRanged(bot))
+        if (BotRoleService::IsRangedStatic(bot))
             nightbaneRangedStep.erase(botGuid);
 
         if (IsInstanceTimerManager(botAI, bot))
@@ -1476,10 +1477,10 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
     // at beginning of flight phase
     else if (nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z)
     {
-        if (botAI->IsMainTank(bot))
+        if (BotRoleService::IsMainTankStatic(bot))
             nightbaneTankStep.erase(botGuid);
 
-        if (botAI->IsRanged(bot))
+        if (BotRoleService::IsRangedStatic(bot))
             nightbaneRangedStep.erase(botGuid);
 
         if (IsInstanceTimerManager(botAI, bot))

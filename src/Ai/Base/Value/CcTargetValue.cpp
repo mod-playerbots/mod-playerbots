@@ -4,6 +4,7 @@
  */
 
 #include "CcTargetValue.h"
+#include "BotRoleService.h"
 
 #include "Action.h"
 #include "Playerbots.h"
@@ -67,7 +68,7 @@ public:
             if (!member || !member->IsAlive() || member == bot)
                 continue;
 
-            if (!botAI->IsTank(member))
+            if (!BotRoleService::IsTankStatic(member))
                 continue;
 
             float distance = sServerFacade->GetDistance2d(member, creature);

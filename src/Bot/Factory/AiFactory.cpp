@@ -6,6 +6,7 @@
 #include "AiFactory.h"
 
 #include "BattlegroundMgr.h"
+#include "BotRoleService.h"
 #include "DKAiObjectContext.h"
 #include "DruidAiObjectContext.h"
 #include "Engine.h"
@@ -15,7 +16,6 @@
 #include "MageAiObjectContext.h"
 #include "PaladinAiObjectContext.h"
 #include "PlayerbotAI.h"
-#include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "PriestAiObjectContext.h"
 #include "RogueAiObjectContext.h"
@@ -391,13 +391,13 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
             break;
     }
 
-    if (PlayerbotAI::IsTank(player, true))
+    if (BotRoleService::IsTankStatic(player, true))
         engine->addStrategy("tank face", false);
 
-    if (PlayerbotAI::IsMelee(player, true) && PlayerbotAI::IsDps(player, true))
+    if (BotRoleService::IsMeleeStatic(player, true) && BotRoleService::IsDpsStatic(player, true))
         engine->addStrategy("behind", false);
 
-    if (PlayerbotAI::IsHeal(player, true))
+    if (BotRoleService::IsHealStatic(player, true))
     {
         if (sPlayerbotAIConfig->autoSaveMana)
             engine->addStrategy("save mana", false);
@@ -586,7 +586,7 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
                                             "gather", "duel", "pvp", "buff", "mount", "emote", nullptr);
     }
 
-    if (sPlayerbotAIConfig->autoSaveMana && PlayerbotAI::IsHeal(player, true))
+    if (sPlayerbotAIConfig->autoSaveMana && BotRoleService::IsHealStatic(player, true))
         nonCombatEngine->addStrategy("save mana", false);
 
     if ((sRandomPlayerbotMgr->IsRandomBot(player)) && !player->InBattleground())

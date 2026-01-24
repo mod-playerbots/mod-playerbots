@@ -1,4 +1,5 @@
 #include "Playerbots.h"
+#include "BotRoleService.h"
 #include "PitOfSaronActions.h"
 #include "PitOfSaronStrategy.h"
 #include "SharedDefines.h"
@@ -24,10 +25,10 @@ bool IckAndKrickAction::Execute(Event event)
         }
     }
 
-    bool pursuit = bot->HasAura(SPELL_PURSUIT) || (!botAI->IsTank(bot) && boss->HasUnitState(UNIT_STATE_CASTING) && boss->FindCurrentSpellBySpellId(SPELL_PURSUIT));
+    bool pursuit = bot->HasAura(SPELL_PURSUIT) || (!BotRoleService::IsTankStatic(bot) && boss->HasUnitState(UNIT_STATE_CASTING) && boss->FindCurrentSpellBySpellId(SPELL_PURSUIT));
     bool poisonNova = boss->HasUnitState(UNIT_STATE_CASTING) && (boss->FindCurrentSpellBySpellId(SPELL_POISON_NOVA_POS) || boss->FindCurrentSpellBySpellId(SPELL_POISON_NOVA_POS_HC));
     bool explosiveBarrage = orb || boss->HasUnitState(UNIT_STATE_CASTING) && (boss->FindCurrentSpellBySpellId(SPELL_EXPLOSIVE_BARRAGE_ICK) || boss->FindCurrentSpellBySpellId(SPELL_EXPLOSIVE_BARRAGE_KRICK));
-    bool isTank = botAI->IsTank(bot);
+    bool isTank = BotRoleService::IsTankStatic(bot);
 
     if (pursuit && Pursuit(pursuit, boss))
         return true;
@@ -49,7 +50,7 @@ bool IckAndKrickAction::Execute(Event event)
 
 bool IckAndKrickAction::TankPosition(Unit* boss)
 {
-    if (botAI->HasAggro(boss))
+    if (botAI->GetServices().GetRoleService().HasAggro(boss))
     {
         float distance = bot->GetExactDist2d(ICKANDKRICK_TANK_POSITION.GetPositionX(), ICKANDKRICK_TANK_POSITION.GetPositionY());
         if (distance > 7.0f)
@@ -75,7 +76,7 @@ bool IckAndKrickAction::TankPosition(Unit* boss)
 bool IckAndKrickAction::Pursuit(bool pursuit, Unit* boss)
 {
     // Only execute this action when pursuit is active and for non-tank players
-    if (!pursuit || botAI->IsTank(bot))
+    if (!pursuit || BotRoleService::IsTankStatic(bot))
         return false;
 
     // Get the tank position as a reference point
@@ -277,7 +278,7 @@ bool TyrannusAction::Execute(Event event)
 
     bool rangedSpread = false;
 
-    if (botAI->IsRanged(bot) && boss->HealthBelowPct(99))
+    if (BotRoleService::IsRangedStatic(bot) && boss->HealthBelowPct(99))
         rangedSpread = true;
 
     if (rangedSpread && RangedSpread(rangedSpread))
@@ -292,7 +293,7 @@ bool TyrannusAction::RangedSpread(bool rangedSpread)
     float moveIncrement = 3.0f;
 
     GuidVector members = AI_VALUE(GuidVector, "group members");
-    if (botAI->IsRanged(bot) && rangedSpread)
+    if (BotRoleService::IsRangedStatic(bot) && rangedSpread)
     {
         // Ranged: spread from other members
         for (auto& member : members)

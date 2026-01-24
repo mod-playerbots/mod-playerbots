@@ -1,4 +1,5 @@
 #include "RaidIccTriggers.h"
+#include "BotRoleService.h"
 #include "RaidIccActions.h"
 #include "NearestNpcsValue.h"
 #include "PlayerbotAIConfig.h"
@@ -84,7 +85,7 @@ bool IccGunshipCannonNearTrigger::IsActive()
     if (!mount1 && !mount2)
         return false;
 
-    if (!botAI->IsDps(bot))
+    if (!BotRoleService::IsDpsStatic(bot))
         return false;
     // Player* master = botAI->GetMaster();
     // if (!master)
@@ -140,7 +141,7 @@ bool IccDbsMainTankRuneOfBloodTrigger::IsActive()
     if (!boss)
         return false;
 
-    if (!botAI->IsAssistTankOfIndex(bot, 0))
+    if (!BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
         return false;
 
     Unit* mt = AI_VALUE(Unit*, "main tank");
@@ -164,7 +165,7 @@ bool IccStinkyPreciousMainTankMortalWoundTrigger::IsActive()
     if (!bossPresent)
         return false;
 
-    if (!botAI->IsAssistTankOfIndex(bot, 0))
+    if (!BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
         return false;
 
     Unit* mt = AI_VALUE(Unit*, "main tank");
@@ -198,7 +199,7 @@ bool IccFestergutMainTankGastricBloatTrigger::IsActive()
     {
         return false;
     }
-    if (!botAI->IsAssistTankOfIndex(bot, 0))
+    if (!BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
     {
         return false;
     }
@@ -218,7 +219,7 @@ bool IccFestergutMainTankGastricBloatTrigger::IsActive()
 bool IccFestergutSporeTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "festergut");
-    if (!boss || botAI->IsTank(bot))
+    if (!boss || BotRoleService::IsTankStatic(bot))
         return false;
 
     // Check for spore aura (ID: 69279) on any bot in the group
@@ -243,7 +244,7 @@ bool IccFestergutSporeTrigger::IsActive()
 bool IccRotfaceTankPositionTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "rotface");
-    if (!boss || !(botAI->IsTank(bot) || botAI->IsMelee(bot)))
+    if (!boss || !(BotRoleService::IsTankStatic(bot) || BotRoleService::IsMeleeStatic(bot)))
         return false;
 
     if (bot->HasAura(SPELL_EXPERIENCED))
@@ -290,10 +291,10 @@ bool IccPutricideGrowingOozePuddleTrigger::IsActive()
         if (!bot->HasAura(SPELL_AGEIS_OF_DALARAN))
             bot->AddAura(SPELL_AGEIS_OF_DALARAN, bot);
 
-        if (!bot->HasAura(SPELL_NO_THREAT) && botAI->HasAggro(boss) && !botAI->IsTank(bot))
+        if (!bot->HasAura(SPELL_NO_THREAT) && botAI->GetServices().GetRoleService().HasAggro(boss) && !BotRoleService::IsTankStatic(bot))
             bot->AddAura(SPELL_NO_THREAT, bot);
 
-        if (botAI->IsMainTank(bot) && !bot->HasAura(SPELL_SPITEFULL_FURY) && boss->GetVictim() != bot)
+        if (BotRoleService::IsMainTankStatic(bot) && !bot->HasAura(SPELL_SPITEFULL_FURY) && boss->GetVictim() != bot)
             bot->AddAura(SPELL_SPITEFULL_FURY, bot);
         //-------CHEAT-------
     }
@@ -352,7 +353,7 @@ bool IccPutricideMainTankMutatedPlagueTrigger::IsActive()
     if (!bossPresent)
         return false;
 
-    if (!botAI->IsAssistTankOfIndex(bot, 0))
+    if (!BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
     {
         return false;
     }
@@ -375,7 +376,7 @@ bool IccPutricideMalleableGooTrigger::IsActive()
     if (!boss)
         return false;
 
-    if (botAI->IsTank(bot))
+    if (BotRoleService::IsTankStatic(bot))
         return true;
 
     Unit* boss1 = AI_VALUE2(Unit*, "find target", "volatile ooze");
@@ -399,7 +400,7 @@ bool IccBpcKelesethTankTrigger::IsActive()
     if (bot->HasAura(SPELL_EXPERIENCED))
         bot->RemoveAura(SPELL_EXPERIENCED);
 
-    if (!botAI->IsAssistTank(bot))
+    if (!BotRoleService::IsAssistTankStatic(bot))
         return false;
 
     Aura* aura = botAI->GetAura("Shadow Prison", bot, false, true);
@@ -412,7 +413,7 @@ bool IccBpcKelesethTankTrigger::IsActive()
 
 bool IccBpcMainTankTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot))
+    if (!BotRoleService::IsTankStatic(bot))
         return false;
 
     Unit* valanar = AI_VALUE2(Unit*, "find target", "prince valanar");
@@ -431,7 +432,7 @@ bool IccBpcMainTankTrigger::IsActive()
 bool IccBpcEmpoweredVortexTrigger::IsActive()
 {
     // Tanks should ignore this mechanic
-    if (botAI->IsMainTank(bot) || botAI->IsAssistTank(bot))
+    if (BotRoleService::IsMainTankStatic(bot) || BotRoleService::IsAssistTankStatic(bot))
         return false;
 
     Unit* valanar = AI_VALUE2(Unit*, "find target", "prince valanar");
@@ -459,7 +460,7 @@ bool IccBpcKineticBombTrigger::IsActive()
     if (!(valanar || taldaram || keleseth))
         return false;
 
-    if (!botAI->IsRanged(bot) || botAI->IsHeal(bot))
+    if (!BotRoleService::IsRangedStatic(bot) || BotRoleService::IsHealStatic(bot))
         return false;
 
     // Early exit condition - if Shadow Prison has too many stacks
@@ -496,7 +497,7 @@ bool IccBpcKineticBombTrigger::IsActive()
             break;
     }
 
-    return botAI->IsRangedDps(bot) && bombFound;
+    return BotRoleService::IsRangedDpsStatic(bot) && bombFound;
 }
 
 bool IccBpcBallOfFlameTrigger::IsActive()
@@ -600,7 +601,7 @@ bool IccValithriaPortalTrigger::IsActive()
         return false;
 
     // Only healers should use portals
-    if (!botAI->IsHeal(bot) || bot->HasAura(SPELL_DREAM_STATE))
+    if (!BotRoleService::IsHealStatic(bot) || bot->HasAura(SPELL_DREAM_STATE))
         return false;
 
     Creature* worm = bot->FindNearestCreature(NPC_ROT_WORM, 100.0f);
@@ -624,7 +625,7 @@ bool IccValithriaPortalTrigger::IsActive()
         if (!member || !member->IsAlive() || botAI->IsRealPlayer())
             continue;
 
-        if (botAI->IsHeal(member) && !botAI->IsRealPlayer())
+        if (BotRoleService::IsHealStatic(member) && !botAI->IsRealPlayer())
         {
             healerCount++;
             healerGuids.push_back(member->GetGUID());
@@ -705,7 +706,7 @@ bool IccValithriaHealTrigger::IsActive()
         return false;
 
     // Only healers should use healing
-    if (!botAI->IsHeal(bot) || bot->HasAura(SPELL_DREAM_STATE) || bot->HealthBelowPct(50))
+    if (!BotRoleService::IsHealStatic(bot) || bot->HasAura(SPELL_DREAM_STATE) || bot->HealthBelowPct(50))
         return false;
 
     Creature* worm = bot->FindNearestCreature(NPC_ROT_WORM, 100.0f);
@@ -729,7 +730,7 @@ bool IccValithriaHealTrigger::IsActive()
         if (!member || !member->IsAlive() || botAI->IsRealPlayer())
             continue;
 
-        if (botAI->IsHeal(member) && !botAI->IsRealPlayer())
+        if (BotRoleService::IsHealStatic(member) && !botAI->IsRealPlayer())
         {
             healerCount++;
             healerGuids.push_back(member->GetGUID());
@@ -837,10 +838,10 @@ bool IccSindragosaGroupPositionTrigger::IsActive()
         if (!bot->HasAura(SPELL_AGEIS_OF_DALARAN))
             bot->AddAura(SPELL_AGEIS_OF_DALARAN, bot);
 
-        if (!bot->HasAura(SPELL_NO_THREAT) && botAI->HasAggro(boss) && !botAI->IsTank(bot))
+        if (!bot->HasAura(SPELL_NO_THREAT) && botAI->GetServices().GetRoleService().HasAggro(boss) && !BotRoleService::IsTankStatic(bot))
             bot->AddAura(SPELL_NO_THREAT, bot);
 
-        if (botAI->IsMainTank(bot) && !bot->HasAura(SPELL_SPITEFULL_FURY) && boss->GetVictim() != bot)
+        if (BotRoleService::IsMainTankStatic(bot) && !bot->HasAura(SPELL_SPITEFULL_FURY) && boss->GetVictim() != bot)
             bot->AddAura(SPELL_SPITEFULL_FURY, bot);
         //-------CHEAT-------
     }
@@ -884,7 +885,7 @@ bool IccSindragosaBlisteringColdTrigger::IsActive()
     if (!boss)
         return false;
 
-    if (botAI->IsMainTank(bot))
+    if (BotRoleService::IsMainTankStatic(bot))
         return false;
 
     // Don't move if any bot in group has ice tomb
@@ -986,14 +987,14 @@ bool IccSindragosaMainTankMysticBuffetTrigger::IsActive()
         return false;
 
     Aura* aura = botAI->GetAura("mystic buffet", bot, false, false);
-    if (botAI->IsTank(bot) && aura) //main tank will delete mystic buffet until I find a better way to swap tanks, atm it is not great since while swapping they will wipe group 7/10 times.
+    if (BotRoleService::IsTankStatic(bot) && aura) //main tank will delete mystic buffet until I find a better way to swap tanks, atm it is not great since while swapping they will wipe group 7/10 times.
         bot->RemoveAura(aura->GetId());
 
-    if (botAI->IsTank(bot) && boss->GetVictim() == bot)
+    if (BotRoleService::IsTankStatic(bot) && boss->GetVictim() == bot)
         return false;
 
     // Only for assist tank
-    if (!botAI->IsAssistTankOfIndex(bot, 0))
+    if (!BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
         return false;
 
     // Don't swap if we have frost beacon
@@ -1032,7 +1033,7 @@ bool IccSindragosaTankSwapPositionTrigger::IsActive()
         return false;
 
     // Only for assist tank
-    if (!botAI->IsAssistTankOfIndex(bot, 0))
+    if (!BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
         return false;
 
     // Don't move to position if we have frost beacon
@@ -1092,7 +1093,7 @@ bool IccLichKingShadowTrapTrigger::IsActive()
     if (hasPlague)
         return false;
 
-    if (!botAI->IsMainTank(bot))
+    if (!BotRoleService::IsMainTankStatic(bot))
         return false;
 
     if (boss->HealthBelowPct(65))

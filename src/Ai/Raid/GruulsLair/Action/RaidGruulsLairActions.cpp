@@ -1,4 +1,5 @@
 #include "RaidGruulsLairActions.h"
+#include "BotRoleService.h"
 #include "RaidGruulsLairHelpers.h"
 #include "CreatureAI.h"
 #include "Playerbots.h"
@@ -264,7 +265,7 @@ bool HighKingMaulgarAssignDPSPriorityAction::Execute(Event event)
 
     // Target priority 3a: Krosh (ranged only)
     Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
-    if (krosh && krosh->IsAlive() && botAI->IsRanged(bot))
+    if (krosh && krosh->IsAlive() && BotRoleService::IsRangedStatic(bot))
     {
         Position safePos;
         if (TryGetNewSafePosition(botAI, bot, safePos))
@@ -482,8 +483,8 @@ bool HighKingMaulgarMisdirectOlmAndBlindeyeAction::Execute(Event event)
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive())
             continue;
-        else if (botAI->IsAssistTankOfIndex(member, 0)) olmTank = member;
-        else if (botAI->IsAssistTankOfIndex(member, 1)) blindeyeTank = member;
+        else if (BotRoleService::IsAssistTankStaticOfIndex(member, 0)) olmTank = member;
+        else if (BotRoleService::IsAssistTankStaticOfIndex(member, 1)) blindeyeTank = member;
     }
 
     switch (hunterIndex)

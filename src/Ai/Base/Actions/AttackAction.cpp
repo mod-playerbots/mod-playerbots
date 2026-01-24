@@ -4,6 +4,7 @@
  */
 
 #include "AttackAction.h"
+#include "BotRoleService.h"
 
 #include "CreatureAI.h"
 #include "Event.h"
@@ -53,7 +54,7 @@ bool AttackMyTargetAction::Execute(Event /*event*/)
 bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
 {
     Unit* oldTarget = context->GetValue<Unit*>("current target")->Get();
-    bool shouldMelee = bot->IsWithinMeleeRange(target) || botAI->IsMelee(bot);
+    bool shouldMelee = bot->IsWithinMeleeRange(target) || BotRoleService::IsMeleeStatic(bot);
 
     bool sameTarget = oldTarget == target && bot->GetVictim() == target;
     bool inCombat = botAI->GetState() == BOT_STATE_COMBAT;

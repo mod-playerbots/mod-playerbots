@@ -4,6 +4,7 @@
  */
 
 #include "DpsTargetValue.h"
+#include "BotRoleService.h"
 
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
@@ -116,7 +117,7 @@ public:
         float time = unit->GetHealth() / dps_;
         float dis = unit->GetDistance(botAI->GetBot());
         float attackRange =
-            botAI->IsRanged(botAI->GetBot()) ? sPlayerbotAIConfig->spellDistance : sPlayerbotAIConfig->meleeDistance;
+            BotRoleService::IsRangedStatic(botAI->GetBot()) ? sPlayerbotAIConfig->spellDistance : sPlayerbotAIConfig->meleeDistance;
         attackRange += 5.0f;
         int level = dis < attackRange ? 10 : 0;
         if (time >= 5 && time <= 30)
@@ -198,7 +199,7 @@ public:
         float time = unit->GetHealth() / dps_;
         float dis = unit->GetDistance(botAI->GetBot());
         float attackRange =
-            botAI->IsRanged(botAI->GetBot()) ? sPlayerbotAIConfig->spellDistance : sPlayerbotAIConfig->meleeDistance;
+            BotRoleService::IsRangedStatic(botAI->GetBot()) ? sPlayerbotAIConfig->spellDistance : sPlayerbotAIConfig->meleeDistance;
         attackRange += 5.0f;
         int level = dis < attackRange ? 10 : 0;
         return level;
@@ -279,7 +280,7 @@ public:
         float time = unit->GetHealth() / dps_;
         float dis = unit->GetDistance(botAI->GetBot());
         float attackRange =
-            botAI->IsRanged(botAI->GetBot()) ? sPlayerbotAIConfig->spellDistance : sPlayerbotAIConfig->meleeDistance;
+            BotRoleService::IsRangedStatic(botAI->GetBot()) ? sPlayerbotAIConfig->spellDistance : sPlayerbotAIConfig->meleeDistance;
         attackRange += 5.0f;
         int level = dis < attackRange ? 10 : 0;
         return level;
@@ -300,14 +301,14 @@ Unit* DpsTargetValue::Calculate()
 
     if (botAI->GetNearGroupMemberCount() > 3)
     {
-        if (botAI->IsCaster(bot))
+        if (BotRoleService::IsCasterStatic(bot))
         {
             // Caster find target strategy avoids casting spells on enemies
             // with too low health to ensure the effectiveness of casting
             CasterFindTargetSmartStrategy strategy(botAI, dps);
             return TargetValue::FindTarget(&strategy);
         }
-        else if (botAI->IsCombo(bot))
+        else if (BotRoleService::IsComboStatic(bot))
         {
             ComboFindTargetSmartStrategy strategy(botAI, dps);
             return TargetValue::FindTarget(&strategy);

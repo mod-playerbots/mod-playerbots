@@ -4,6 +4,7 @@
  */
 
 #include "ChatFilter.h"
+#include "BotRoleService.h"
 
 #include "Group.h"
 #include "Playerbots.h"
@@ -40,31 +41,31 @@ public:
         std::string msgLower = ToLower(message);
 
         bool tank = msgLower.find("@tank") == 0;
-        if (tank && !botAI->IsTank(bot))
+        if (tank && !BotRoleService::IsTankStatic(bot))
             return "";
 
         bool dps = msgLower.find("@dps") == 0;
-        if (dps && (botAI->IsTank(bot) || botAI->IsHeal(bot)))
+        if (dps && (BotRoleService::IsTankStatic(bot) || BotRoleService::IsHealStatic(bot)))
             return "";
 
         bool heal = msgLower.find("@heal") == 0;
-        if (heal && !botAI->IsHeal(bot))
+        if (heal && !BotRoleService::IsHealStatic(bot))
             return "";
 
         bool ranged = msgLower.find("@ranged") == 0;
-        if (ranged && !botAI->IsRanged(bot))
+        if (ranged && !BotRoleService::IsRangedStatic(bot))
             return "";
 
         bool melee = msgLower.find("@melee") == 0;
-        if (melee && botAI->IsRanged(bot))
+        if (melee && BotRoleService::IsRangedStatic(bot))
             return "";
 
         bool rangeddps = msgLower.find("@rangeddps") == 0;
-        if (rangeddps && (!botAI->IsRanged(bot) || botAI->IsTank(bot) || botAI->IsHeal(bot)))
+        if (rangeddps && (!BotRoleService::IsRangedStatic(bot) || BotRoleService::IsTankStatic(bot) || BotRoleService::IsHealStatic(bot)))
             return "";
 
         bool meleedps = msgLower.find("@meleedps") == 0;
-        if (meleedps && (!botAI->IsMelee(bot) || botAI->IsTank(bot) || botAI->IsHeal(bot)))
+        if (meleedps && (!BotRoleService::IsMeleeStatic(bot) || BotRoleService::IsTankStatic(bot) || BotRoleService::IsHealStatic(bot)))
             return "";
 
         if (tank || dps || heal || ranged || melee)
@@ -138,15 +139,15 @@ public:
                     return "";
                 break;
             case CLASS_DRUID:
-                if (ranged && botAI->IsTank(bot))
+                if (ranged && BotRoleService::IsTankStatic(bot))
                     return "";
-                if (melee && !botAI->IsTank(bot))
+                if (melee && !BotRoleService::IsTankStatic(bot))
                     return "";
                 break;
             case CLASS_SHAMAN:
-                if (melee && botAI->IsHeal(bot))
+                if (melee && BotRoleService::IsHealStatic(bot))
                     return "";
-                if (ranged && !botAI->IsHeal(bot))
+                if (ranged && !BotRoleService::IsHealStatic(bot))
                     return "";
                 break;
         }
@@ -395,12 +396,12 @@ private:
         // For druids, specTab==1 is always feral; distinguish bear/cat at runtime by role
         if (cls == CLASS_DRUID && specTab == 1)
         {
-            botSpecClass = botAI->IsTank(bot) ? "bear" : "cat";
+            botSpecClass = BotRoleService::IsTankStatic(bot) ? "bear" : "cat";
         }
         // For death knights, specTab==0 is always blood; distinguish tank/dps at runtime by role
         else if (cls == CLASS_DEATH_KNIGHT && specTab == 0)
         {
-            botSpecClass = botAI->IsTank(bot) ? "bdkt" : "bdkd";
+            botSpecClass = BotRoleService::IsTankStatic(bot) ? "bdkt" : "bdkd";
         }
         else
         {

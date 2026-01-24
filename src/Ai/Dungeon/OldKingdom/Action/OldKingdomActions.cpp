@@ -1,4 +1,5 @@
 #include "Playerbots.h"
+#include "BotRoleService.h"
 #include "OldKingdomActions.h"
 #include "OldKingdomStrategy.h"
 
@@ -67,7 +68,7 @@ bool AvoidShadowCrashAction::Execute(Event event)
     }
 
     // Otherwise ranged members passively spread, to avoid AoE overlap
-    if (botAI->IsMelee(bot)) { return false; }
+    if (BotRoleService::IsMeleeStatic(bot)) { return false; }
 
     GuidVector members = AI_VALUE(GuidVector, "group members");
     for (auto& member : members)

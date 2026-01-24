@@ -1,4 +1,5 @@
 #include "RaidKarazhanHelpers.h"
+#include "BotRoleService.h"
 #include "RaidKarazhanActions.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
@@ -113,7 +114,7 @@ namespace KarazhanHelpers
             for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             {
                 Player* member = ref->GetSource();
-                if (member && member->IsAlive() && botAI->IsDps(member) && GET_PLAYERBOT_AI(member))
+                if (member && member->IsAlive() && BotRoleService::IsDpsStatic(member) && GET_PLAYERBOT_AI(member))
                     return member == bot;
             }
         }
@@ -204,7 +205,7 @@ namespace KarazhanHelpers
             for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             {
                 Player* member = ref->GetSource();
-                if (!member || !member->IsAlive() || !botAI->IsTank(member) || !GET_PLAYERBOT_AI(member) ||
+                if (!member || !member->IsAlive() || !BotRoleService::IsTankStatic(member) || !GET_PLAYERBOT_AI(member) ||
                     member->HasAura(SPELL_NETHER_EXHAUSTION_RED))
                     continue;
 
@@ -231,7 +232,7 @@ namespace KarazhanHelpers
                 Aura* blueBuff = member->GetAura(SPELL_BLUE_BEAM_DEBUFF);
                 bool overStack = blueBuff && blueBuff->GetStackAmount() >= 24;
 
-                bool isDps = botAI->IsDps(member);
+                bool isDps = BotRoleService::IsDpsStatic(member);
                 bool isWarrior = member->getClass() == CLASS_WARRIOR;
                 bool isRogue = member->getClass() == CLASS_ROGUE;
 
@@ -259,7 +260,7 @@ namespace KarazhanHelpers
 
                 bool hasExhaustion = member->HasAura(SPELL_NETHER_EXHAUSTION_GREEN);
                 bool isRogue = member->getClass() == CLASS_ROGUE;
-                bool isDpsWarrior = member->getClass() == CLASS_WARRIOR && botAI->IsDps(member);
+                bool isDpsWarrior = member->getClass() == CLASS_WARRIOR && BotRoleService::IsDpsStatic(member);
                 bool eligibleRogueWarrior = (isRogue || isDpsWarrior) && !hasExhaustion;
 
                 if (eligibleRogueWarrior)
@@ -275,7 +276,7 @@ namespace KarazhanHelpers
                 bool hasExhaustion = member->HasAura(SPELL_NETHER_EXHAUSTION_GREEN);
                 Aura* greenBuff = member->GetAura(SPELL_GREEN_BEAM_DEBUFF);
                 bool overStack = greenBuff && greenBuff->GetStackAmount() >= 24;
-                bool isHealer = botAI->IsHeal(member);
+                bool isHealer = BotRoleService::IsHealStatic(member);
                 bool eligibleHealer = isHealer && !hasExhaustion && !overStack;
 
                 if (eligibleHealer)

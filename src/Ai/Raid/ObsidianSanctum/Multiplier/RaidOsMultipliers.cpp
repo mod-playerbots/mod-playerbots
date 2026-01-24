@@ -1,3 +1,4 @@
+#include "BotRoleService.h"
 #include "RaidOsMultipliers.h"
 
 #include "ChooseTargetActions.h"
@@ -22,24 +23,24 @@ float SartharionMultiplier::GetValue(Action* action)
 
     Unit* target = action->GetTarget();
 
-    if (botAI->IsMainTank(bot) && dynamic_cast<TankFaceAction*>(action))
+    if (BotRoleService::IsMainTankStatic(bot) && dynamic_cast<TankFaceAction*>(action))
     {
         // return 0.0f;
     }
 
-    if (botAI->IsDps(bot) && dynamic_cast<DpsAssistAction*>(action))
+    if (BotRoleService::IsDpsStatic(bot) && dynamic_cast<DpsAssistAction*>(action))
     {
         return 0.0f;
     }
 
-    if (botAI->IsMainTank(bot) && target && target != boss &&
+    if (BotRoleService::IsMainTankStatic(bot) && target && target != boss &&
         (dynamic_cast<TankAssistAction*>(action) || dynamic_cast<CastTauntAction*>(action) || dynamic_cast<CastDarkCommandAction*>(action) ||
          dynamic_cast<CastHandOfReckoningAction*>(action) || dynamic_cast<CastGrowlAction*>(action)))
     {
         return 0.0f;
     }
 
-    if (botAI->IsAssistTank(bot) && target && target == boss &&
+    if (BotRoleService::IsAssistTankStatic(bot) && target && target == boss &&
         (dynamic_cast<CastTauntAction*>(action) || dynamic_cast<CastDarkCommandAction*>(action) ||
          dynamic_cast<CastHandOfReckoningAction*>(action) || dynamic_cast<CastGrowlAction*>(action)))
     {

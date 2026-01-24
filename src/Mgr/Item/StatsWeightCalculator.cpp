@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "AiFactory.h"
+#include "BotRoleService.h"
 #include "DBCStores.h"
 #include "ItemEnchantmentMgr.h"
 #include "ItemTemplate.h"
@@ -22,13 +23,13 @@
 
 StatsWeightCalculator::StatsWeightCalculator(Player* player) : player_(player)
 {
-    if (PlayerbotAI::IsHeal(player))
+    if (BotRoleService::IsHealStatic(player))
         type_ = CollectorType::SPELL_HEAL;
-    else if (PlayerbotAI::IsCaster(player))
+    else if (BotRoleService::IsCasterStatic(player))
         type_ = CollectorType::SPELL_DMG;
-    else if (PlayerbotAI::IsTank(player))
+    else if (BotRoleService::IsTankStatic(player))
         type_ = CollectorType::MELEE_TANK;
-    else if (PlayerbotAI::IsMelee(player))
+    else if (BotRoleService::IsMeleeStatic(player))
         type_ = CollectorType::MELEE_DMG;
     else
         type_ = CollectorType::RANGED;
@@ -225,7 +226,7 @@ void StatsWeightCalculator::GenerateBasicWeights(Player* player)
         stats_weights_[STATS_TYPE_EXPERTISE] += 2.0f;
         stats_weights_[STATS_TYPE_MELEE_DPS] += 7.0f;
     }
-    else if (cls == CLASS_DRUID && tab == DRUID_TAB_FERAL && !PlayerbotAI::IsTank(player))
+    else if (cls == CLASS_DRUID && tab == DRUID_TAB_FERAL && !BotRoleService::IsTankStatic(player))
     {
         stats_weights_[STATS_TYPE_AGILITY] += 2.2f;
         stats_weights_[STATS_TYPE_STRENGTH] += 2.4f;

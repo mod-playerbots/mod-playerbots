@@ -4,6 +4,7 @@
  */
 
 #include "AttackerCountValues.h"
+#include "BotRoleService.h"
 
 #include "Playerbots.h"
 #include "SharedDefines.h"
@@ -22,9 +23,9 @@ bool HasAggroValue::Calculate()
     {
         return true;
     }
-    bool isMT = botAI->IsMainTank(bot);
+    bool isMT = BotRoleService::IsMainTankStatic(bot);
     if (victim &&
-        (victim->GetGUID() == bot->GetGUID() || (!isMT && victim->ToPlayer() && botAI->IsTank(victim->ToPlayer()))))
+        (victim->GetGUID() == bot->GetGUID() || (!isMT && victim->ToPlayer() && BotRoleService::IsTankStatic(victim->ToPlayer()))))
     {
         return true;
     }

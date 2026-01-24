@@ -4,6 +4,7 @@
  */
 
 #include "GenericSpellActions.h"
+#include "BotRoleService.h"
 
 #include <ctime>
 
@@ -128,7 +129,7 @@ bool CastSpellAction::isUseful()
         return false;
 
     // float combatReach = bot->GetCombatReach() + spellTarget->GetCombatReach();
-    // if (!botAI->IsRanged(bot))
+    // if (!BotRoleService::IsRangedStatic(bot))
     //     combatReach += 4.0f / 3.0f;
 
     return spellTarget &&

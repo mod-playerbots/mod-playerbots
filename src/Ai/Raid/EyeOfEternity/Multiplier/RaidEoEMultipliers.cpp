@@ -1,3 +1,4 @@
+#include "BotRoleService.h"
 #include "RaidEoEMultipliers.h"
 
 #include "ChooseTargetActions.h"
@@ -29,17 +30,17 @@ float MalygosMultiplier::GetValue(Action* action)
             return 0.0f;
         }
 
-        if (botAI->IsDps(bot) && dynamic_cast<DpsAssistAction*>(action))
+        if (BotRoleService::IsDpsStatic(bot) && dynamic_cast<DpsAssistAction*>(action))
         {
             return 0.0f;
         }
 
-        if (botAI->IsRangedDps(bot) && dynamic_cast<DropTargetAction*>(action))
+        if (BotRoleService::IsRangedDpsStatic(bot) && dynamic_cast<DropTargetAction*>(action))
         {
             return 0.0f;
         }
 
-        if (!botAI->IsMainTank(bot) && dynamic_cast<TankAssistAction*>(action))
+        if (!BotRoleService::IsMainTankStatic(bot) && dynamic_cast<TankAssistAction*>(action))
         {
             return 0.0f;
         }
@@ -51,7 +52,7 @@ float MalygosMultiplier::GetValue(Action* action)
     }
     else if (phase == 2)
     {
-        if (botAI->IsDps(bot) && dynamic_cast<DpsAssistAction*>(action))
+        if (BotRoleService::IsDpsStatic(bot) && dynamic_cast<DpsAssistAction*>(action))
         {
             return 0.0f;
         }

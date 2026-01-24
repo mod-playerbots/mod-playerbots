@@ -1,4 +1,5 @@
 #include "RaidGruulsLairMultipliers.h"
+#include "BotRoleService.h"
 #include "RaidGruulsLairActions.h"
 #include "RaidGruulsLairHelpers.h"
 #include "ChooseTargetActions.h"
@@ -80,7 +81,7 @@ float GruulTheDragonkillerMainTankMovementMultiplier::GetValue(Action* action)
     if (!gruul)
         return 1.0f;
 
-    if (botAI->IsMainTank(bot))
+    if (BotRoleService::IsMainTankStatic(bot))
     {
         if (gruul->GetVictim() == bot && dynamic_cast<CombatFormationMoveAction*>(action))
             return 0.0f;

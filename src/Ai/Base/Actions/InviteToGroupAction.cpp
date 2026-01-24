@@ -4,6 +4,7 @@
  */
 
 #include "InviteToGroupAction.h"
+#include "BotRoleService.h"
 
 #include "BroadcastHelper.h"
 #include "Event.h"
@@ -311,9 +312,9 @@ bool LfgAction::Execute(Event event)
     allowedRoles[BOT_ROLE_HEALER] = 1;
     allowedRoles[BOT_ROLE_DPS] = 3;
 
-    BotRoles role = botAI->IsTank(requester, false)
+    BotRoles role = BotRoleService::IsTankStatic(requester, false)
                         ? BOT_ROLE_TANK
-                        : (botAI->IsHeal(requester, false) ? BOT_ROLE_HEALER : BOT_ROLE_DPS);
+                        : (BotRoleService::IsHealStatic(requester, false) ? BOT_ROLE_HEALER : BOT_ROLE_DPS);
     Classes cls = (Classes)requester->getClass();
 
     if (group)
@@ -386,8 +387,8 @@ bool LfgAction::Execute(Event event)
             if (!botAI->IsSafe(player))
                 return false;
 
-            role = botAI->IsTank(player, false) ? BOT_ROLE_TANK
-                                                : (botAI->IsHeal(player, false) ? BOT_ROLE_HEALER : BOT_ROLE_DPS);
+            role = BotRoleService::IsTankStatic(player, false) ? BOT_ROLE_TANK
+                                                : (BotRoleService::IsHealStatic(player, false) ? BOT_ROLE_HEALER : BOT_ROLE_DPS);
             cls = (Classes)player->getClass();
 
             if (allowedRoles[role] > 0)
@@ -406,7 +407,7 @@ bool LfgAction::Execute(Event event)
             allowedClassNr[cls][role]--;
     }
 
-    role = botAI->IsTank(bot, false) ? BOT_ROLE_TANK : (botAI->IsHeal(bot, false) ? BOT_ROLE_HEALER : BOT_ROLE_DPS);
+    role = BotRoleService::IsTankStatic(bot, false) ? BOT_ROLE_TANK : (BotRoleService::IsHealStatic(bot, false) ? BOT_ROLE_HEALER : BOT_ROLE_DPS);
     cls = (Classes)bot->getClass();
 
     if (allowedRoles[role] == 0)

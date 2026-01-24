@@ -1,4 +1,5 @@
 #include "Playerbots.h"
+#include "BotRoleService.h"
 #include "OculusTriggers.h"
 #include "AiObject.h"
 #include "AiObjectContext.h"
@@ -8,8 +9,8 @@ bool DrakosUnstableSphereTrigger::IsActive()
 {
     // Doesn't seem to be much point trying to get melee to dodge this,
     // they get hit anyway and it just causes a lot of running around and chaos
-    // if (botAI->IsMelee(bot)) { return false; }
-    if (botAI->IsTank(bot)) { return false; }
+    // if (BotRoleService::IsMeleeStatic(bot)) { return false; }
+    if (BotRoleService::IsTankStatic(bot)) { return false; }
 
     GuidVector targets = AI_VALUE(GuidVector, "nearest hostile npcs");
     for (auto& target : targets)

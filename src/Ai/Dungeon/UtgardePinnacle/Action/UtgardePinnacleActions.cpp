@@ -1,4 +1,5 @@
 #include "Playerbots.h"
+#include "BotRoleService.h"
 #include "UtgardePinnacleActions.h"
 #include "UtgardePinnacleStrategy.h"
 
@@ -47,7 +48,7 @@ bool AvoidSkadiWhirlwindAction::Execute(Event event)
 
     if (distance < radius + distanceExtra)
     {
-        if (botAI->IsTank(bot))
+        if (BotRoleService::IsTankStatic(bot))
         {
             // The boss chases tank during this, leads to jittery stutter-stepping
             // by the tank if we don't pre-move additional range. 2*radius seems ok

@@ -4,6 +4,7 @@
  */
 
 #include "ThreatValues.h"
+#include "BotRoleService.h"
 
 #include "Playerbots.h"
 #include "ThreatMgr.h"
@@ -54,7 +55,7 @@ uint8 ThreatValue::Calculate(Unit* target)
         if (!player || !player->IsAlive() || player == bot)
             continue;
 
-        if (botAI->IsTank(player))
+        if (BotRoleService::IsTankStatic(player))
         {
             hasTank = true;
             float threat = target->GetThreatMgr().GetThreat(player);

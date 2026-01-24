@@ -11,6 +11,7 @@
 #include <string>
 
 #include "Corpse.h"
+#include "BotRoleService.h"
 #include "Event.h"
 #include "FleeManager.h"
 #include "G3D/Vector3.h"
@@ -1414,7 +1415,7 @@ bool MovementAction::Flee(Unit* target)
                 if (!player || player == bot || !player->IsAlive())
                     continue;
 
-                if (botAI->IsTank(player))
+                if (BotRoleService::IsTankStatic(player))
                 {
                     float distanceToTank = sServerFacade->GetDistance2d(bot, player);
                     float distanceToTarget = sServerFacade->GetDistance2d(bot, target);
@@ -1437,11 +1438,11 @@ bool MovementAction::Flee(Unit* target)
     }
     else  // bot is not targeted, try to flee dps/healers
     {
-        bool isHealer = botAI->IsHeal(bot);
-        bool isDps = !isHealer && !botAI->IsTank(bot);
-        bool isTank = botAI->IsTank(bot);
+        bool isHealer = BotRoleService::IsHealStatic(bot);
+        bool isDps = !isHealer && !BotRoleService::IsTankStatic(bot);
+        bool isTank = BotRoleService::IsTankStatic(bot);
         bool needHealer = !isHealer && AI_VALUE2(uint8, "health", "self target") < 50;
-        bool isRanged = botAI->IsRanged(bot);
+        bool isRanged = BotRoleService::IsRangedStatic(bot);
 
         Group* group = bot->GetGroup();
         if (group)
@@ -1458,7 +1459,7 @@ bool MovementAction::Flee(Unit* target)
                 if (!player || player == bot || !player->IsAlive())
                     continue;
 
-                if ((isHealer && botAI->IsHeal(player)) || needHealer)
+                if ((isHealer && BotRoleService::IsHealStatic(player)) || needHealer)
                 {
                     float distanceToHealer = sServerFacade->GetDistance2d(bot, player);
                     float distanceToTarget = sServerFacade->GetDistance2d(player, target);
@@ -1471,7 +1472,7 @@ bool MovementAction::Flee(Unit* target)
                         possibleTargets.push_back(fleeTarget);
                     }
                 }
-                else if (isRanged && botAI->IsRanged(player))
+                else if (isRanged && BotRoleService::IsRangedStatic(player))
                 {
                     float distanceToRanged = sServerFacade->GetDistance2d(bot, player);
                     float distanceToTarget = sServerFacade->GetDistance2d(player, target);
@@ -2240,7 +2241,7 @@ bool MovementAction::FleePosition(Position pos, float radius, uint32 minInterval
         return false;
 
     Position bestPos;
-    if (botAI->IsMelee(bot))
+    if (BotRoleService::IsMeleeStatic(bot))
     {
         bestPos = BestPositionForMeleeToFlee(pos, radius);
     }
@@ -2353,7 +2354,7 @@ Position CombatFormationMoveAction::AverageGroupPos(float dis, bool ranged, bool
         if (!self && member == bot)
             continue;
 
-        if (ranged && !PlayerbotAI::IsRanged(member))
+        if (ranged && !BotRoleService::IsRangedStatic(member))
             continue;
 
         if (!member->IsAlive() || member->GetMapId() != bot->GetMapId() || member->IsCharmed() ||
@@ -2391,7 +2392,7 @@ float CombatFormationMoveAction::AverageGroupAngle(Unit* from, bool ranged, bool
         if (!self && member == bot)
             continue;
 
-        if (ranged && !PlayerbotAI::IsRanged(member))
+        if (ranged && !BotRoleService::IsRangedStatic(member))
             continue;
 
         if (!member->IsAlive() || member->GetMapId() != bot->GetMapId() || member->IsCharmed() ||
@@ -2570,7 +2571,7 @@ bool DisperseSetAction::Execute(Event event)
     }
     if (text == "enable" || text == "reset")
     {
-        if (botAI->IsMelee(bot))
+        if (BotRoleService::IsMeleeStatic(bot))
         {
             SET_AI_VALUE(float, "disperse distance", DEFAULT_DISPERSE_DISTANCE_MELEE);
         }

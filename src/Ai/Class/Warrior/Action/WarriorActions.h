@@ -7,6 +7,7 @@
 #define _PLAYERBOT_WARRIORACTIONS_H
 
 #include "AiObject.h"
+#include "BotRoleService.h"
 #include "GenericSpellActions.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
@@ -106,7 +107,7 @@ ENEMY_HEALER_ACTION(CastShieldBashOnEnemyHealerAction, "shield bash");
 MELEE_ACTION(CastRevengeAction, "revenge");
 BUFF_ACTION(CastShieldBlockAction, "shield block");
 DEBUFF_ACTION_U(CastDisarmAction, "disarm",
-                GetTarget() && GetTarget()->IsPlayer() ? !botAI->IsRanged((Player*)GetTarget())
+                GetTarget() && GetTarget()->IsPlayer() ? !BotRoleService::IsRangedStatic((Player*)GetTarget())
                                                        : CastDebuffSpellAction::isUseful());
 DEBUFF_ENEMY_ACTION(CastDisarmOnAttackerAction, "disarm");
 BUFF_ACTION(CastShieldWallAction, "shield wall");

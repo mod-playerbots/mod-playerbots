@@ -1,3 +1,4 @@
+#include "BotRoleService.h"
 #include "Playerbots.h"
 #include "GundrakTriggers.h"
 #include "AiObject.h"
@@ -13,7 +14,7 @@ bool SladranPoisonNovaTrigger::IsActive()
 
 bool SladranSnakeWrapTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot)) { return false; }
+    if (!BotRoleService::IsDpsStatic(bot)) { return false; }
 
     // Target is not findable from threat table using AI_VALUE2(),
     // therefore need to search manually for the unit name

@@ -1,4 +1,5 @@
 #include "RaidKarazhanTriggers.h"
+#include "BotRoleService.h"
 #include "RaidKarazhanHelpers.h"
 #include "RaidKarazhanActions.h"
 #include "Playerbots.h"
@@ -13,7 +14,7 @@ bool ManaWarpIsAboutToExplodeTrigger::IsActive()
 
 bool AttumenTheHuntsmanNeedTargetPriorityTrigger::IsActive()
 {
-    if (botAI->IsHeal(bot))
+    if (BotRoleService::IsHealStatic(bot))
         return false;
 
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
@@ -22,7 +23,7 @@ bool AttumenTheHuntsmanNeedTargetPriorityTrigger::IsActive()
 
 bool AttumenTheHuntsmanAttumenSpawnedTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 0))
+    if (!BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
         return false;
 
     Unit* attumen = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN);
@@ -31,7 +32,7 @@ bool AttumenTheHuntsmanAttumenSpawnedTrigger::IsActive()
 
 bool AttumenTheHuntsmanAttumenIsMountedTrigger::IsActive()
 {
-    if (botAI->IsMainTank(bot))
+    if (BotRoleService::IsMainTankStatic(bot))
         return false;
 
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
@@ -49,7 +50,7 @@ bool AttumenTheHuntsmanBossWipesAggroWhenMountingTrigger::IsActive()
 
 bool MoroesBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
+    if (!BotRoleService::IsMainTankStatic(bot))
         return false;
 
     Unit* moroes = AI_VALUE2(Unit*, "find target", "moroes");
@@ -58,7 +59,7 @@ bool MoroesBossEngagedByMainTankTrigger::IsActive()
 
 bool MoroesNeedTargetPriorityTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot))
+    if (!BotRoleService::IsDpsStatic(bot))
         return false;
 
     Unit* dorothea = AI_VALUE2(Unit*, "find target", "baroness dorothea millstipe");
@@ -74,7 +75,7 @@ bool MoroesNeedTargetPriorityTrigger::IsActive()
 
 bool MaidenOfVirtueHealersAreStunnedByRepentanceTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot))
+    if (!BotRoleService::IsTankStatic(bot))
         return false;
 
     Unit* maiden = AI_VALUE2(Unit*, "find target", "maiden of virtue");
@@ -83,7 +84,7 @@ bool MaidenOfVirtueHealersAreStunnedByRepentanceTrigger::IsActive()
 
 bool MaidenOfVirtueHolyWrathDealsChainDamageTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
+    if (!BotRoleService::IsRangedStatic(bot))
         return false;
 
     Unit* maiden = AI_VALUE2(Unit*, "find target", "maiden of virtue");
@@ -92,7 +93,7 @@ bool MaidenOfVirtueHolyWrathDealsChainDamageTrigger::IsActive()
 
 bool BigBadWolfBossEngagedByTankTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot) || bot->HasAura(SPELL_LITTLE_RED_RIDING_HOOD))
+    if (!BotRoleService::IsTankStatic(bot) || bot->HasAura(SPELL_LITTLE_RED_RIDING_HOOD))
         return false;
 
     Unit* wolf = AI_VALUE2(Unit*, "find target", "the big bad wolf");
@@ -151,7 +152,7 @@ bool WizardOfOzStrawmanIsVulnerableToFireTrigger::IsActive()
 
 bool TheCuratorAstralFlareSpawnedTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot))
+    if (!BotRoleService::IsDpsStatic(bot))
         return false;
 
     Unit* flare = AI_VALUE2(Unit*, "find target", "astral flare");
@@ -160,7 +161,7 @@ bool TheCuratorAstralFlareSpawnedTrigger::IsActive()
 
 bool TheCuratorBossEngagedByTanksTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot) && !botAI->IsAssistTankOfIndex(bot, 0))
+    if (!BotRoleService::IsMainTankStatic(bot) && !BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
         return false;
 
     Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
@@ -169,7 +170,7 @@ bool TheCuratorBossEngagedByTanksTrigger::IsActive()
 
 bool TheCuratorBossAstralFlaresCastArcingSearTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
+    if (!BotRoleService::IsRangedStatic(bot))
         return false;
 
     Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
@@ -212,7 +213,7 @@ bool ShadeOfAranConjuredElementalsSummonedTrigger::IsActive()
 
 bool ShadeOfAranBossUsesCounterspellAndBlizzardTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
+    if (!BotRoleService::IsRangedStatic(bot))
         return false;
 
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
@@ -279,7 +280,7 @@ bool NetherspiteBossIsBanishedTrigger::IsActive()
 
 bool NetherspiteNeedToManageTimersAndTrackersTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot) && !IsInstanceTimerManager(botAI, bot))
+    if (!BotRoleService::IsTankStatic(bot) && !IsInstanceTimerManager(botAI, bot))
         return false;
 
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
@@ -293,7 +294,7 @@ bool PrinceMalchezaarBotIsEnfeebledTrigger::IsActive()
 
 bool PrinceMalchezaarInfernalsAreSpawnedTrigger::IsActive()
 {
-    if (botAI->IsMainTank(bot) || bot->HasAura(SPELL_ENFEEBLE))
+    if (BotRoleService::IsMainTankStatic(bot) || bot->HasAura(SPELL_ENFEEBLE))
         return false;
 
     Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
@@ -302,7 +303,7 @@ bool PrinceMalchezaarInfernalsAreSpawnedTrigger::IsActive()
 
 bool PrinceMalchezaarBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
+    if (!BotRoleService::IsMainTankStatic(bot))
         return false;
 
     Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
@@ -311,7 +312,7 @@ bool PrinceMalchezaarBossEngagedByMainTankTrigger::IsActive()
 
 bool NightbaneBossEngagedByMainTankTrigger::IsActive()
 {
-    if (!botAI->IsMainTank(bot))
+    if (!BotRoleService::IsMainTankStatic(bot))
         return false;
 
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
@@ -320,7 +321,7 @@ bool NightbaneBossEngagedByMainTankTrigger::IsActive()
 
 bool NightbaneRangedBotsAreInCharredEarthTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
+    if (!BotRoleService::IsRangedStatic(bot))
         return false;
 
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
@@ -342,7 +343,7 @@ bool NightbaneMainTankIsSusceptibleToFearTrigger::IsActive()
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && botAI->IsMainTank(member))
+            if (member && BotRoleService::IsMainTankStatic(member))
             {
                 mainTank = member;
                 break;

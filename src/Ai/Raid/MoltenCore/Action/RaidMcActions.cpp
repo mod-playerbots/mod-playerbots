@@ -4,6 +4,7 @@
 #include "RtiTargetValue.h"
 #include "RaidMcTriggers.h"
 #include "RaidMcHelpers.h"
+#include "BotRoleService.h"
 
 static constexpr float LIVING_BOMB_DISTANCE = 20.0f;
 static constexpr float INFERNO_DISTANCE = 20.0f;
@@ -139,8 +140,8 @@ bool McGolemaggAssistTankAttackCoreRagerAction::Execute(Event event)
         return false;
 
     // Step 0: Filter additional assist tanks. We only need 2.
-    bool isFirstAssistTank = PlayerbotAI::IsAssistTankOfIndex(bot, 0, true);
-    bool isSecondAssistTank = PlayerbotAI::IsAssistTankOfIndex(bot, 1, true);
+    bool isFirstAssistTank = BotRoleService::IsAssistTankOfIndexStatic(bot, 0, true);
+    bool isSecondAssistTank = BotRoleService::IsAssistTankOfIndexStatic(bot, 1, true);
     if (!isFirstAssistTank && !isSecondAssistTank)
         return Attack(boss);
 
@@ -179,8 +180,8 @@ bool McGolemaggAssistTankAttackCoreRagerAction::Execute(Event event)
         // Step 3.2: Check if the other Core Rager isn't attacking its assist tank.
         Player* otherCoreRagerPlayerVictim = otherCoreRagerVictim->ToPlayer();
         if (otherCoreRagerPlayerVictim &&
-            !PlayerbotAI::IsAssistTankOfIndex(otherCoreRagerPlayerVictim, 0, true) &&
-            !PlayerbotAI::IsAssistTankOfIndex(otherCoreRagerPlayerVictim, 1, true))
+            !BotRoleService::IsAssistTankOfIndexStatic(otherCoreRagerPlayerVictim, 0, true) &&
+            !BotRoleService::IsAssistTankOfIndexStatic(otherCoreRagerPlayerVictim, 1, true))
         {
             // Assume we are the only assist tank or the other assist tank is dead => pick up other Core Rager!
             if (bot->GetVictim() != otherCoreRager)

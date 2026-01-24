@@ -1,4 +1,5 @@
-#include "RaidMagtheridonActions.h"
+#include
+#include "BotRoleService.h" "RaidMagtheridonActions.h"
 #include "RaidMagtheridonHelpers.h"
 #include "Creature.h"
 #include "ObjectAccessor.h"
@@ -162,7 +163,7 @@ bool MagtheridonMisdirectHellfireChannelers::Execute(Event event)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->IsAlive() && botAI->IsMainTank(member))
+        if (member && member->IsAlive() && BotRoleService::IsMainTankStatic(member))
         {
             mainTank = member;
             break;
@@ -439,7 +440,7 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
             members.push_back(member);
     }
 
-    bool isHealer = botAI->IsHeal(bot);
+    bool isHealer = BotRoleService::IsHealStatic(bot);
     const Location& center = isHealer
         ? MagtheridonsLairLocations::HealerSpreadPosition
         : MagtheridonsLairLocations::RangedSpreadPosition;

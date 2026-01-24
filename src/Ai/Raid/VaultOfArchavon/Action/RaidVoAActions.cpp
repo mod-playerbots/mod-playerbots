@@ -1,4 +1,5 @@
 #include "RaidVoAActions.h"
+#include "BotRoleService.h"
 #include "RaidVoATriggers.h"
 #include "Define.h"
 #include "Event.h"
@@ -18,7 +19,7 @@ bool EmalonMarkBossAction::Execute(Event event)
         return false;
     }
 
-    bool isMainTank = botAI->IsMainTank(bot);
+    bool isMainTank = BotRoleService::IsMainTankStatic(bot);
     Unit* mainTankUnit = AI_VALUE(Unit*, "main tank");
     Player* mainTank = mainTankUnit ? mainTankUnit->ToPlayer() : nullptr;
 
@@ -27,7 +28,7 @@ bool EmalonMarkBossAction::Execute(Event event)
         // Iterate through the first 3 bot tanks to assign the Skull marker
         for (int i = 0; i < 3; ++i)
         {
-            if (botAI->IsAssistTankOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
+            if (BotRoleService::IsAssistTankStaticOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
             {
                 Group* group = bot->GetGroup();
                 if (group && boss)
@@ -119,7 +120,7 @@ bool EmalonOverchargeAction::Execute(Event event)
         return false;
     }
 
-    bool isMainTank = botAI->IsMainTank(bot);
+    bool isMainTank = BotRoleService::IsMainTankStatic(bot);
     Unit* mainTankUnit = AI_VALUE(Unit*, "main tank");
     Player* mainTank = mainTankUnit ? mainTankUnit->ToPlayer() : nullptr;
 
@@ -128,7 +129,7 @@ bool EmalonOverchargeAction::Execute(Event event)
         // Iterate through the first 3 bot tanks to assign the Skull marker
         for (int i = 0; i < 3; ++i)
         {
-            if (botAI->IsAssistTankOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
+            if (BotRoleService::IsAssistTankStaticOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
             {
                 Group* group = bot->GetGroup();
                 if (group && minion)

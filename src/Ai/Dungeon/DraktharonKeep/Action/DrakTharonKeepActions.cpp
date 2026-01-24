@@ -1,4 +1,5 @@
 #include "Playerbots.h"
+#include "BotRoleService.h"
 #include "DrakTharonKeepActions.h"
 #include "DrakTharonKeepStrategy.h"
 
@@ -76,9 +77,9 @@ bool NovosTargetPriorityAction::Execute(Event event)
         Player* groupMember = botAI->GetPlayer(member);
         if (!groupMember) { continue; }
 
-        if (botAI->IsDps(groupMember))
+        if (BotRoleService::IsDpsStatic(groupMember))
         {
-            if (botAI->IsMelee(groupMember))
+            if (BotRoleService::IsMeleeStatic(groupMember))
             {
                 // Found our first melee dps, grab handle and break
                 stairsDps = groupMember;
@@ -109,7 +110,7 @@ bool NovosTargetPriorityAction::Execute(Event event)
 
         // Tank priority:
         // Hulking Corpse -> Crystal Handler
-        if (botAI->IsTank(bot))
+        if (BotRoleService::IsTankStatic(bot))
         {
             if (creatureId == NPC_HULKING_CORPSE)
             {
@@ -142,7 +143,7 @@ bool NovosTargetPriorityAction::Execute(Event event)
         }
         // All other dps priority:
         // Crystal Handler -> Hulking Corpse
-        else if (botAI->IsDps(bot))
+        else if (BotRoleService::IsDpsStatic(bot))
         {
             if (creatureId == NPC_CRYSTAL_HANDLER)
             {

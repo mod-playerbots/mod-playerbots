@@ -418,28 +418,6 @@ public:
     void ReInitCurrentEngine();
     void Reset(bool full = false);
     void LeaveOrDisbandGroup();
-    static bool IsTank(Player* player, bool bySpec = false);
-    static bool IsHeal(Player* player, bool bySpec = false);
-    static bool IsDps(Player* player, bool bySpec = false);
-    static bool IsRanged(Player* player, bool bySpec = false);
-    static bool IsMelee(Player* player, bool bySpec = false);
-    static bool IsCaster(Player* player, bool bySpec = false);
-    static bool IsRangedDps(Player* player, bool bySpec = false);
-    static bool IsCombo(Player* player);
-    static bool IsBotMainTank(Player* player);
-    static bool IsMainTank(Player* player);
-    static uint32 GetGroupTankNum(Player* player);
-    static bool IsAssistTank(Player* player);
-    static bool IsAssistTankOfIndex(Player* player, int index, bool ignoreDeadPlayers = false);
-    static bool IsHealAssistantOfIndex(Player* player, int index);
-    static bool IsRangedDpsAssistantOfIndex(Player* player, int index);
-    bool HasAggro(Unit* unit);
-    static int32 GetAssistTankIndex(Player* player);
-    int32 GetGroupSlotIndex(Player* player);
-    int32 GetRangedIndex(Player* player);
-    int32 GetClassIndex(Player* player, uint8 cls);
-    int32 GetRangedDpsIndex(Player* player);
-    int32 GetMeleeIndex(Player* player);
 
     Creature* GetCreature(ObjectGuid guid);
     Unit* GetUnit(ObjectGuid guid);

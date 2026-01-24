@@ -4,6 +4,7 @@
  */
 
 #include "WarriorActions.h"
+#include "BotRoleService.h"
 
 #include "Playerbots.h"
 
@@ -42,17 +43,17 @@ Unit* CastVigilanceAction::GetTarget()
         }
 
         // Identify Main Tank
-        if (!mainTank && botAI->IsMainTank(member))
+        if (!mainTank && BotRoleService::IsMainTankStatic(member))
         {
             mainTank = member;
         }
 
         // Identify Assist Tanks
-        if (assistTank1 == nullptr && botAI->IsAssistTankOfIndex(member, 0))
+        if (assistTank1 == nullptr && BotRoleService::IsAssistTankStaticOfIndex(member, 0))
         {
             assistTank1 = member;
         }
-        else if (assistTank2 == nullptr && botAI->IsAssistTankOfIndex(member, 1))
+        else if (assistTank2 == nullptr && BotRoleService::IsAssistTankStaticOfIndex(member, 1))
         {
             assistTank2 = member;
         }
@@ -139,7 +140,7 @@ bool CastRetaliationAction::isUseful()
         else if (attacker->IsPlayer())
         {
             Player* playerAttacker = attacker->ToPlayer();
-            if (playerAttacker && botAI->IsMelee(playerAttacker)) // Reuse existing Player melee check
+            if (playerAttacker && BotRoleService::IsMeleeStatic(playerAttacker)) // Reuse existing Player melee check
             {
                 ++meleeAttackers;
             }

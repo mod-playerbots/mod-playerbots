@@ -1,4 +1,5 @@
 #include "RaidOnyxiaTriggers.h"
+#include "BotRoleService.h"
 
 #include "GenericTriggers.h"
 #include "ObjectAccessor.h"
@@ -43,7 +44,7 @@ OnyxiaNearTailTrigger::OnyxiaNearTailTrigger(PlayerbotAI* botAI) : Trigger(botAI
 bool OnyxiaNearTailTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "onyxia");
-    if (!boss || botAI->IsTank(bot))
+    if (!boss || BotRoleService::IsTankStatic(bot))
         return false;
 
     // Skip if Onyxia is in air or transitioning
@@ -91,7 +92,7 @@ bool RaidOnyxiaWhelpsSpawnTrigger::IsActive()
     if (!boss)
         return false;
 
-    return !botAI->IsHeal(bot) && boss->IsFlying();  // DPS + Tanks only
+    return !BotRoleService::IsHealStatic(bot) && boss->IsFlying();  // DPS + Tanks only
 }
 
 OnyxiaAvoidEggsTrigger::OnyxiaAvoidEggsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "ony avoid eggs") {}

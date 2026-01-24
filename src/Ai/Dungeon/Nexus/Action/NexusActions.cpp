@@ -1,4 +1,5 @@
-#include "Playerbots.h"
+#include
+#include "BotRoleService.h" "Playerbots.h"
 #include "NexusActions.h"
 #include "NexusStrategy.h"
 
@@ -73,7 +74,7 @@ bool FirebombSpreadAction::Execute(Event event)
     return false;
 }
 
-bool TelestraSplitTargetAction::isUseful() { return !botAI->IsHeal(bot); }
+bool TelestraSplitTargetAction::isUseful() { return !BotRoleService::IsHealStatic(bot); }
 bool TelestraSplitTargetAction::Execute(Event event)
 {
     GuidVector attackers = AI_VALUE(GuidVector, "attackers");
@@ -120,7 +121,7 @@ bool TelestraSplitTargetAction::Execute(Event event)
     return false;
 }
 
-bool ChaoticRiftTargetAction::isUseful() { return !botAI->IsHeal(bot); }
+bool ChaoticRiftTargetAction::isUseful() { return !BotRoleService::IsHealStatic(bot); }
 bool ChaoticRiftTargetAction::Execute(Event event)
 {
     Unit* chaoticRift = nullptr;

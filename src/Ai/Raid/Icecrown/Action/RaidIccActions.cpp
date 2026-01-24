@@ -1,4 +1,5 @@
 #include "RaidIccActions.h"
+#include "BotRoleService.h"
 #include "NearestNpcsValue.h"
 #include "ObjectAccessor.h"
 #include "RaidIccStrategy.h"
@@ -19,7 +20,7 @@ bool IccLmTankPositionAction::Execute(Event event)
     if (!boss)
         return false;
 
-    if (!botAI->IsTank(bot))
+    if (!BotRoleService::IsTankStatic(bot))
         return false;
 
     const bool isBossInBoneStorm = botAI->GetAura("Bone Storm", boss) != nullptr;
@@ -27,7 +28,7 @@ bool IccLmTankPositionAction::Execute(Event event)
     if (isBossInBoneStorm)
         return false;
 
-    if (botAI->HasAggro(boss) && botAI->IsMainTank(bot) && boss->GetVictim() == bot)
+    if (botAI->GetServices().GetRoleService().HasAggro(boss) && BotRoleService::IsMainTankStatic(bot) && boss->GetVictim() == bot)
     {
         const float maxDistanceThreshold = 3.0f;
         const float distance = bot->GetExactDist2d(ICC_LM_TANK_POSITION.GetPositionX(), ICC_LM_TANK_POSITION.GetPositionY());
@@ -36,7 +37,7 @@ bool IccLmTankPositionAction::Execute(Event event)
             return MoveTowardPosition(ICC_LM_TANK_POSITION, maxDistanceThreshold);
     }
 
-    if (botAI->IsAssistTank(bot))
+    if (BotRoleService::IsAssistTankStatic(bot))
     {
         const float maxDistanceThreshold = 3.0f;
         const float distance = bot->GetExactDist2d(ICC_LM_TANK_POSITION.GetPositionX(), ICC_LM_TANK_POSITION.GetPositionY());
@@ -85,7 +86,7 @@ bool IccSpikeAction::Execute(Event event)
         return false;
 
     const bool isBossInBoneStorm = botAI->GetAura("Bone Storm", boss) != nullptr;
-    const bool shouldMoveToSafePosition = boss->isInFront(bot) && !botAI->IsTank(bot) && !isBossInBoneStorm;
+    const bool shouldMoveToSafePosition = boss->isInFront(bot) && !BotRoleService::IsTankStatic(bot) && !isBossInBoneStorm;
 
     if (shouldMoveToSafePosition)
     {
@@ -99,7 +100,7 @@ bool IccSpikeAction::Execute(Event event)
         return false;
     }
 
-    if (!botAI->IsTank(bot))
+    if (!BotRoleService::IsTankStatic(bot))
         return false;
 
     return HandleSpikeTargeting(boss);
@@ -214,7 +215,7 @@ bool IccRangedPositionLadyDeathwhisperAction::Execute(Event event)
     if (currentDistance < minDistance || currentDistance > maxDistance)
         return false;
 
-    if (!botAI->IsRanged(bot) && !botAI->IsHeal(bot))
+    if (!BotRoleService::IsRangedStatic(bot) && !BotRoleService::IsHealStatic(bot))
         return false;
 
     return MaintainRangedSpacing();
@@ -225,7 +226,7 @@ bool IccRangedPositionLadyDeathwhisperAction::MaintainRangedSpacing()
     const float safeSpacingRadius = 3.0f;
     const float moveIncrement = 2.0f;
     const float maxMoveDistance = 5.0f;  // Limit maximum movement distance
-    const bool isRanged = botAI->IsRanged(bot) || botAI->IsHeal(bot);
+    const bool isRanged = BotRoleService::IsRangedStatic(bot) || BotRoleService::IsHealStatic(bot);
 
     if (!isRanged)
         return false;
@@ -314,7 +315,7 @@ bool IccAddsLadyDeathwhisperAction::Execute(Event event)
 
     const uint32 shadeEntryId = NPC_SHADE;
 
-    if (botAI->IsTank(bot) && boss && boss->HealthBelowPct(95) && boss->GetVictim() == bot)
+    if (BotRoleService::IsTankStatic(bot) && boss && boss->HealthBelowPct(95) && boss->GetVictim() == bot)
     {
         // Check if the bot is not the victim of a shade
         if (IsTargetedByShade(shadeEntryId))
@@ -331,7 +332,7 @@ bool IccAddsLadyDeathwhisperAction::Execute(Event event)
         }
     }
 
-    if (!botAI->IsTank(bot))
+    if (!BotRoleService::IsTankStatic(bot))
         return false;
 
     return HandleAddTargeting(boss);
@@ -487,14 +488,14 @@ bool IccRottingFrostGiantTankPositionAction::Execute(Event event)
     const bool hasCure = botAI->GetAura("recently infected", bot) != nullptr;
 
     // Tank behavior - unchanged
-    if (botAI->IsTank(bot) && botAI->HasAggro(boss) && !isInfected)
+    if (BotRoleService::IsTankStatic(bot) && botAI->GetServices().GetRoleService().HasAggro(boss) && !isInfected)
         if (bot->GetExactDist2d(ICC_ROTTING_FROST_GIANT_TANK_POSITION) > 5.0f)
             return MoveTo(bot->GetMapId(), ICC_ROTTING_FROST_GIANT_TANK_POSITION.GetPositionX(),
                           ICC_ROTTING_FROST_GIANT_TANK_POSITION.GetPositionY(),
                           ICC_ROTTING_FROST_GIANT_TANK_POSITION.GetPositionZ(), false, false, false, true,
                           MovementPriority::MOVEMENT_NORMAL);
 
-    if (botAI->IsTank(bot))
+    if (BotRoleService::IsTankStatic(bot))
         return false;
 
     // Handle infected bot behavior - move near a non-infected, non-cured bot
@@ -566,7 +567,7 @@ bool IccRottingFrostGiantTankPositionAction::Execute(Event event)
                 float score = bot->GetExactDist2d(member);
 
                 // Prefer ranged targets
-                if (botAI->IsRanged(bot))
+                if (BotRoleService::IsRangedStatic(bot))
                 {
                     score *= 0.7f;  // Bonus for ranged targets
                 }
@@ -617,7 +618,7 @@ bool IccRottingFrostGiantTankPositionAction::Execute(Event event)
     }
 
     // For ranged bots, only spread from non-infected bots
-    if (botAI->IsRanged(bot))
+    if (BotRoleService::IsRangedStatic(bot))
     {
         const float safeSpacingRadius = 11.0f;
         const float moveIncrement = 2.0f;
@@ -881,7 +882,7 @@ bool IccGunshipTeleportAllyAction::Execute(Event event)
         UpdateBossSkullIcon(boss, SKULL_ICON_INDEX);
 
         // Teleport non-tank bots to attack position if not already there
-        if (!botAI->IsAssistTank(bot) && bot->GetExactDist2d(ICC_GUNSHIP_TELEPORT_ALLY) > MAX_ATTACK_DISTANCE)
+        if (!BotRoleService::IsAssistTankStatic(bot) && bot->GetExactDist2d(ICC_GUNSHIP_TELEPORT_ALLY) > MAX_ATTACK_DISTANCE)
             return TeleportTo(ICC_GUNSHIP_TELEPORT_ALLY);
     }
 
@@ -948,7 +949,7 @@ bool IccGunshipTeleportHordeAction::Execute(Event event)
         UpdateBossSkullIcon(boss, SKULL_ICON_INDEX);
 
         // Teleport non-tank bots to attack position if not already there
-        if (!botAI->IsAssistTank(bot) && bot->GetExactDist2d(ICC_GUNSHIP_TELEPORT_HORDE) > MAX_ATTACK_DISTANCE)
+        if (!BotRoleService::IsAssistTankStatic(bot) && bot->GetExactDist2d(ICC_GUNSHIP_TELEPORT_HORDE) > MAX_ATTACK_DISTANCE)
             return TeleportTo(ICC_GUNSHIP_TELEPORT_HORDE);
     }
 
@@ -999,7 +1000,7 @@ bool IccDbsTankPositionAction::Execute(Event event)
     Unit* beast = AI_VALUE2(Unit*, "find target", "blood beast");
 
     // Handle tank positioning
-    if (botAI->IsTank(bot) && !beast)
+    if (BotRoleService::IsTankStatic(bot) && !beast)
     {
         if (bot->GetExactDist2d(ICC_DBS_TANK_POSITION) > 5.0f)
             return MoveTo(bot->GetMapId(), ICC_DBS_TANK_POSITION.GetPositionX(), ICC_DBS_TANK_POSITION.GetPositionY(),
@@ -1011,14 +1012,14 @@ bool IccDbsTankPositionAction::Execute(Event event)
             return true;
     }
 
-    if (!botAI->IsTank(bot))
+    if (!BotRoleService::IsTankStatic(bot))
     {
         if (CrowdControlBloodBeasts())
             return true;
     }
 
     // Handle ranged and healer positioning
-    if (botAI->IsRanged(bot) || botAI->IsHeal(bot))
+    if (BotRoleService::IsRangedStatic(bot) || BotRoleService::IsHealStatic(bot))
     {
         // Handle evasion from blood beasts
         if (EvadeBloodBeasts())
@@ -1181,7 +1182,7 @@ bool IccDbsTankPositionAction::PositionInRangedFormation()
         if (!member || !member->IsAlive())
             continue;
 
-        if ((botAI->IsRanged(member) || botAI->IsHeal(member)) && !botAI->IsTank(member))
+        if ((BotRoleService::IsRangedStatic(member) || BotRoleService::IsHealStatic(member)) && !BotRoleService::IsTankStatic(member))
         {
             if (member == bot)
             {
@@ -1238,7 +1239,7 @@ bool IccAddsDbsAction::Execute(Event event)
         return false;
 
     // This action is only for melee
-    if (!botAI->IsMelee(bot))
+    if (!BotRoleService::IsMeleeStatic(bot))
         return false;
 
     Unit* priorityTarget = FindPriorityTarget(boss);
@@ -1304,7 +1305,7 @@ bool IccFestergutGroupPositionAction::Execute(Event event)
     bot->SetTarget(boss->GetGUID());
 
     // Handle tank positioning
-    if ((botAI->HasAggro(boss) && botAI->IsMainTank(bot)) || botAI->IsAssistTank(bot))
+    if ((botAI->GetServices().GetRoleService().HasAggro(boss) && BotRoleService::IsMainTankStatic(bot)) || BotRoleService::IsAssistTankStatic(bot))
     {
         if (bot->GetExactDist2d(ICC_FESTERGUT_TANK_POSITION) > 5.0f)
             return MoveTo(bot->GetMapId(), ICC_FESTERGUT_TANK_POSITION.GetPositionX(),
@@ -1337,7 +1338,7 @@ bool IccFestergutGroupPositionAction::HasSporesInGroup()
 bool IccFestergutGroupPositionAction::PositionNonTankMembers()
 {
     // Only position ranged and healers without spores
-    if (!(botAI->IsRanged(bot) || botAI->IsHeal(bot)))
+    if (!(BotRoleService::IsRangedStatic(bot) || BotRoleService::IsHealStatic(bot)))
         return false;
 
     Group* group = bot->GetGroup();
@@ -1394,16 +1395,16 @@ int IccFestergutGroupPositionAction::CalculatePositionIndex(Group* group)
     for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
     {
         Player* member = itr->GetSource();
-        if (!member || !member->IsAlive() || botAI->IsTank(member))
+        if (!member || !member->IsAlive() || BotRoleService::IsTankStatic(member))
             continue;
 
         ObjectGuid memberGuid = member->GetGUID();
 
-        if (botAI->IsHeal(member))
+        if (BotRoleService::IsHealStatic(member))
         {
             healerGuids.push_back(memberGuid);
         }
-        else if (botAI->IsRanged(member))
+        else if (BotRoleService::IsRangedStatic(member))
         {
             if (member->getClass() == CLASS_HUNTER)
             {
@@ -1587,20 +1588,20 @@ Position IccFestergutSporeAction::DetermineTargetPosition(bool hasSpore, const S
 {
     // No spores at all
     if (sporeInfo.sporedPlayers.empty())
-        return botAI->IsMelee(bot) ? ICC_FESTERGUT_MELEE_SPORE : spreadRangedPos;
+        return BotRoleService::IsMeleeStatic(bot) ? ICC_FESTERGUT_MELEE_SPORE : spreadRangedPos;
 
     // Bot has no spore, go to standard position
     if (!hasSpore)
-        return botAI->IsMelee(bot) ? ICC_FESTERGUT_MELEE_SPORE : spreadRangedPos;
+        return BotRoleService::IsMeleeStatic(bot) ? ICC_FESTERGUT_MELEE_SPORE : spreadRangedPos;
 
     // Check if main tank has spore
     bool mainTankHasSpore = CheckMainTankSpore();
 
     // Determine position based on spore logic
-    if (botAI->IsMainTank(bot))
+    if (BotRoleService::IsMainTankStatic(bot))
         return ICC_FESTERGUT_MELEE_SPORE;
 
-    if (bot->GetGUID() == sporeInfo.lowestGuid && !botAI->IsTank(bot) && !mainTankHasSpore)
+    if (bot->GetGUID() == sporeInfo.lowestGuid && !BotRoleService::IsTankStatic(bot) && !mainTankHasSpore)
         return ICC_FESTERGUT_MELEE_SPORE;
 
     return spreadRangedPos;
@@ -1616,7 +1617,7 @@ bool IccFestergutSporeAction::CheckMainTankSpore()
         if (!unit)
             continue;
 
-        if (botAI->IsMainTank(unit->ToPlayer()) && unit->HasAura(SPELL_GAS_SPORE))
+        if (BotRoleService::IsMainTankStatic(unit->ToPlayer()) && unit->HasAura(SPELL_GAS_SPORE))
             return true;
     }
 
@@ -1636,11 +1637,11 @@ bool IccRotfaceTankPositionAction::Execute(Event event)
     MarkBossWithSkull(boss);
 
     // Main tank positioning and melee positioning
-    if ((botAI->IsMainTank(bot) || botAI->IsMelee(bot)) && !botAI->IsAssistTank(bot) && !victimOfSmallOoze)
+    if ((BotRoleService::IsMainTankStatic(bot) || BotRoleService::IsMeleeStatic(bot)) && !BotRoleService::IsAssistTankStatic(bot) && !victimOfSmallOoze)
         return PositionMainTankAndMelee(boss);
 
     // Assist tank positioning for big ooze
-    if (botAI->IsAssistTank(bot))
+    if (BotRoleService::IsAssistTankStatic(bot))
         return HandleAssistTankPositioning(boss);
 
     return false;
@@ -1664,12 +1665,12 @@ bool IccRotfaceTankPositionAction::PositionMainTankAndMelee(Unit* boss)
     if (boss && boss->HasUnitState(UNIT_STATE_CASTING) && boss->GetCurrentSpell(SPELL_SLIME_SPRAY))
         bool isBossCasting = true;
 
-    if (bot->GetExactDist2d(ICC_ROTFACE_CENTER_POSITION) > 7.0f && botAI->HasAggro(boss) && botAI->IsMainTank(bot))
+    if (bot->GetExactDist2d(ICC_ROTFACE_CENTER_POSITION) > 7.0f && botAI->GetServices().GetRoleService().HasAggro(boss) && BotRoleService::IsMainTankStatic(bot))
         MoveTo(bot->GetMapId(), ICC_ROTFACE_CENTER_POSITION.GetPositionX(),
                ICC_ROTFACE_CENTER_POSITION.GetPositionY(), ICC_ROTFACE_CENTER_POSITION.GetPositionZ(),
                false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
 
-    if (boss && isBossCasting && !botAI->IsTank(bot))
+    if (boss && isBossCasting && !BotRoleService::IsTankStatic(bot))
     {
         float x = boss->GetPositionX();
         float y = boss->GetPositionY();
@@ -1685,7 +1686,7 @@ bool IccRotfaceTankPositionAction::PositionMainTankAndMelee(Unit* boss)
         return false;
     }
 
-    if (!isBossCasting && (bot->GetExactDist2d(ICC_ROTFACE_CENTER_POSITION) < 2.0f || bot->GetExactDist2d(ICC_ROTFACE_CENTER_POSITION) > 7.0f) && !botAI->IsTank(bot))
+    if (!isBossCasting && (bot->GetExactDist2d(ICC_ROTFACE_CENTER_POSITION) < 2.0f || bot->GetExactDist2d(ICC_ROTFACE_CENTER_POSITION) > 7.0f) && !BotRoleService::IsTankStatic(bot))
     {
        MoveTo(bot->GetMapId(), ICC_ROTFACE_CENTER_POSITION.GetPositionX(), ICC_ROTFACE_CENTER_POSITION.GetPositionY(),
               bot->GetPositionZ(),  false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
@@ -1851,7 +1852,7 @@ bool IccRotfaceGroupPositionAction::Execute(Event event)
     bool hasMutatedInfection = botAI->HasAura("Mutated Infection", bot);
 
     // Handle puddle avoidance
-    if (!botAI->IsTank(bot) && HandlePuddleAvoidance(boss))
+    if (!BotRoleService::IsTankStatic(bot) && HandlePuddleAvoidance(boss))
         return true;
 
     // Handle little ooze or mutated infection
@@ -2011,7 +2012,7 @@ bool IccRotfaceGroupPositionAction::HandleOozeMemberPositioning()
 bool IccRotfaceGroupPositionAction::PositionRangedAndHealers(Unit* boss,Unit *smallOoze)
 {
     // Only for ranged and healers
-    if (!(botAI->IsRanged(bot) || botAI->IsHeal(bot)))
+    if (!(BotRoleService::IsRangedStatic(bot) || BotRoleService::IsHealStatic(bot)))
         return false;
 
     Difficulty diff = bot->GetRaidDifficulty();
@@ -2073,7 +2074,7 @@ bool IccRotfaceGroupPositionAction::FindAndMoveFromClosestMember(Unit* boss, Uni
     const float maxMoveDistance = 12.0f;     // Limit maximum movement distance
     const float puddleSafeDistance = 30.0f;  // Minimum distance to stay away from puddle
     const float minCenterDistance = 20.0f;   // Minimum distance from center position
-    const bool isRanged = botAI->IsRanged(bot) || botAI->IsHeal(bot);
+    const bool isRanged = BotRoleService::IsRangedStatic(bot) || BotRoleService::IsHealStatic(bot);
 
     // Ranged: spread from other members
     const GuidVector members = AI_VALUE(GuidVector, "group members");
@@ -2087,7 +2088,7 @@ bool IccRotfaceGroupPositionAction::FindAndMoveFromClosestMember(Unit* boss, Uni
     {
         Unit* member = botAI->GetUnit(memberGuid);
         if (!member || !member->IsAlive() || member == bot || (smallOoze && smallOoze->GetVictim() == member) ||
-            (member->IsPlayer() && botAI->IsAssistTank(static_cast<Player*>(member))))
+            (member->IsPlayer() && BotRoleService::IsAssistTankStatic(static_cast<Player*>(member))))
             continue;
 
         const float distance = bot->GetExactDist2d(member);
@@ -2178,7 +2179,7 @@ bool IccRotfaceGroupPositionAction::FindAndMoveFromClosestMember(Unit* boss, Uni
 bool IccRotfaceMoveAwayFromExplosionAction::Execute(Event event)
 {
     // Skip if main tank or ooze flood
-    if (botAI->IsMainTank(bot))
+    if (BotRoleService::IsMainTankStatic(bot))
         return false;
 
     botAI->Reset();
@@ -2356,7 +2357,7 @@ Position IccPutricideGrowingOozePuddleAction::CalculateSafeMovePosition(Unit* cl
         if (!IsPositionTooCloseToOtherPuddles(testX, testY, closestPuddle) && bot->IsWithinLOS(testX, testY, botZ))
         {
             // If main tank, add 6f to calculated position in the direction away from the puddle
-            if (botAI->IsTank(bot))
+            if (BotRoleService::IsTankStatic(bot))
             {
                 float awayDx = testX - closestPuddle->GetPositionX();
                 float awayDy = testY - closestPuddle->GetPositionY();
@@ -2376,7 +2377,7 @@ Position IccPutricideGrowingOozePuddleAction::CalculateSafeMovePosition(Unit* cl
     // Fallback position if no safe position found
     float fallbackX = botX + dx * moveDistance;
     float fallbackY = botY + dy * moveDistance;
-    if (botAI->IsTank(bot))
+    if (BotRoleService::IsTankStatic(bot))
     {
         float awayDx = fallbackX - closestPuddle->GetPositionX();
         float awayDy = fallbackY - closestPuddle->GetPositionY();
@@ -2429,7 +2430,7 @@ bool IccPutricideVolatileOozeAction::Execute(Event event)
         return false;
 
     // Main tank handling
-    if (botAI->IsMainTank(bot) && bot->GetExactDist2d(ICC_PUTRICIDE_TANK_POSITION) > 20.0f &&
+    if (BotRoleService::IsMainTankStatic(bot) && bot->GetExactDist2d(ICC_PUTRICIDE_TANK_POSITION) > 20.0f &&
         !boss->HealthBelowPct(36) && boss->GetVictim() == bot)
         return MoveTo(bot->GetMapId(), ICC_PUTRICIDE_TANK_POSITION.GetPositionX(), ICC_PUTRICIDE_TANK_POSITION.GetPositionY(),
                ICC_PUTRICIDE_TANK_POSITION.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
@@ -2461,7 +2462,7 @@ bool IccPutricideVolatileOozeAction::Execute(Event event)
     MarkOozeWithSkull(ooze);
 
     // Melee handling (non-tanks)
-    if (botAI->IsMelee(bot) && !botAI->IsMainTank(bot))
+    if (BotRoleService::IsMeleeStatic(bot) && !BotRoleService::IsMainTankStatic(bot))
     {
         bot->SetTarget(ooze->GetGUID());
         bot->SetFacingToObject(ooze);
@@ -2470,7 +2471,7 @@ bool IccPutricideVolatileOozeAction::Execute(Event event)
     }
 
     // Ranged/healer handling
-    if (botAI->IsRanged(bot) || botAI->IsHeal(bot))
+    if (BotRoleService::IsRangedStatic(bot) || BotRoleService::IsHealStatic(bot))
     {
         Unit* stackTarget = FindAuraTarget();
         if (stackTarget && bot->GetDistance2d(stackTarget) > STACK_DISTANCE)
@@ -2479,7 +2480,7 @@ bool IccPutricideVolatileOozeAction::Execute(Event event)
                           stackTarget->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
         }
 
-        if (ooze && !botAI->IsHeal(bot) && stackTarget && bot->GetDistance2d(stackTarget) <= STACK_DISTANCE)
+        if (ooze && !BotRoleService::IsHealStatic(bot) && stackTarget && bot->GetDistance2d(stackTarget) <= STACK_DISTANCE)
         {
             bot->SetTarget(ooze->GetGUID());
             bot->SetFacingToObject(ooze);
@@ -2540,13 +2541,13 @@ bool IccPutricideGasCloudAction::Execute(Event event)
         return false;
 
     // Tank positioning logic
-    if (botAI->IsTank(bot) && bot->GetExactDist2d(ICC_PUTRICIDE_TANK_POSITION) > 20.0f && !boss->HealthBelowPct(36) &&
+    if (BotRoleService::IsTankStatic(bot) && bot->GetExactDist2d(ICC_PUTRICIDE_TANK_POSITION) > 20.0f && !boss->HealthBelowPct(36) &&
         boss->GetVictim() == bot)
         return MoveTo(bot->GetMapId(), ICC_PUTRICIDE_TANK_POSITION.GetPositionX(),
                       ICC_PUTRICIDE_TANK_POSITION.GetPositionY(), ICC_PUTRICIDE_TANK_POSITION.GetPositionZ(), false,
                       false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
 
-    if (botAI->IsMainTank(bot))
+    if (BotRoleService::IsMainTankStatic(bot))
         return false;
 
     bool hasGaseousBloat = botAI->HasAura("Gaseous Bloat", bot);
@@ -2851,7 +2852,7 @@ Position IccPutricideGasCloudAction::CalculateEmergencyPosition(const Position& 
 bool IccPutricideGasCloudAction::HandleGroupAuraSituation(Unit* gasCloud)
 {
     Group* group = bot->GetGroup();
-    if (!group || botAI->IsHeal(bot))
+    if (!group || BotRoleService::IsHealStatic(bot))
         return false;
 
     // Mark gas cloud with skull if no volatile ooze is present or alive
@@ -2889,7 +2890,7 @@ bool IccPutricideGasCloudAction::HandleGroupAuraSituation(Unit* gasCloud)
         bot->SetFacingToObject(gasCloud);
 
         // Attack logic for group with Gaseous Bloat
-        if (botAI->IsRanged(bot))
+        if (BotRoleService::IsRangedStatic(bot))
         {
             // For ranged attackers, maintain optimal distance (15-25 yards)
             if (currentDist > 25.0f)
@@ -2913,7 +2914,7 @@ bool IccPutricideGasCloudAction::HandleGroupAuraSituation(Unit* gasCloud)
                 return Attack(gasCloud);
             }
         }
-        else if (botAI->IsMelee(bot) && !botAI->IsTank(bot))
+        else if (BotRoleService::IsMeleeStatic(bot) && !BotRoleService::IsTankStatic(bot))
         {
             // For melee attackers, move to attack range (0-5 yards)
             if (currentDist > 5.0f)
@@ -2966,7 +2967,7 @@ bool IccPutricideAvoidMalleableGooAction::Execute(Event event)
 
 bool IccPutricideAvoidMalleableGooAction::HandleTankPositioning(Unit* boss)
 {
-    if (!botAI->IsTank(bot))
+    if (!BotRoleService::IsTankStatic(bot))
         return false;
 
     Unit* bomb = bot->FindNearestCreature(NPC_CHOKING_GAS_BOMB, 100.0f);
@@ -3045,7 +3046,7 @@ bool IccPutricideAvoidMalleableGooAction::HandleUnboundPlague(Unit* boss)
 
 bool IccPutricideAvoidMalleableGooAction::HandleBossPositioning(Unit* boss)
 {
-    if (botAI->IsTank(bot))
+    if (BotRoleService::IsTankStatic(bot))
         return false;
 
     // If boss is close to putricide_bad_position, all non-tank bots should be 1f in front of boss
@@ -3065,14 +3066,14 @@ bool IccPutricideAvoidMalleableGooAction::HandleBossPositioning(Unit* boss)
         if (bot->GetExactDist2d(targetX, targetY) > 0.5f)
         {
             bot->SetFacingToObject(boss);
-            return MoveTo(bot->GetMapId(), targetX, targetY, targetZ, false, false, false, botAI->IsRanged(bot),
+            return MoveTo(bot->GetMapId(), targetX, targetY, targetZ, false, false, false, BotRoleService::IsRangedStatic(bot),
                           MovementPriority::MOVEMENT_COMBAT);
         }
         return false;
     }
 
     float distToBoss = bot->GetExactDist2d(boss);
-    bool isRanged = botAI->IsRanged(bot);
+    bool isRanged = BotRoleService::IsRangedStatic(bot);
 
     // Calculate desired position in front of boss
     float desiredDistance =
@@ -3080,7 +3081,7 @@ bool IccPutricideAvoidMalleableGooAction::HandleBossPositioning(Unit* boss)
 
     // Check if we need to move
     if ((std::abs(distToBoss - desiredDistance) > 0.5f || !boss->isInFront(bot)) &&
-        (!isRanged || (isRanged && !botAI->IsTank(bot))))
+        (!isRanged || (isRanged && !BotRoleService::IsTankStatic(bot))))
     {
         Position targetPos = CalculateBossPosition(boss, desiredDistance);
 
@@ -3231,7 +3232,7 @@ Position IccPutricideAvoidMalleableGooAction::CalculateIncrementalMove(const Pos
 // BPC
 bool IccBpcKelesethTankAction::Execute(Event event)
 {
-    if (!botAI->IsAssistTank(bot))
+    if (!BotRoleService::IsAssistTankStatic(bot))
         return false;
 
     // Handle boss positioning
@@ -3313,7 +3314,7 @@ bool IccBpcKelesethTankAction::Execute(Event event)
 bool IccBpcMainTankAction::Execute(Event event)
 {
     // Main tank specific behavior (higher priority)
-    if (botAI->IsMainTank(bot))
+    if (BotRoleService::IsMainTankStatic(bot))
     {
         // Get target princes
         auto* valanar = AI_VALUE2(Unit*, "find target", "prince valanar");
@@ -3372,7 +3373,7 @@ bool IccBpcMainTankAction::Execute(Event event)
     }
 
     // Target marking for all tanks, called after main tank priority actions
-    if (botAI->IsTank(bot))
+    if (BotRoleService::IsTankStatic(bot))
         MarkEmpoweredPrince();
 
     return false;
@@ -3459,7 +3460,7 @@ bool IccBpcEmpoweredVortexAction::MaintainRangedSpacing()
     const float safeSpacingRadius = 7.0f;
     const float moveIncrement = 2.0f;
     const float maxMoveDistance = 5.0f;
-    const bool isRanged = botAI->IsRanged(bot) || botAI->IsHeal(bot);
+    const bool isRanged = BotRoleService::IsRangedStatic(bot) || BotRoleService::IsHealStatic(bot);
 
     if (!isRanged)
         return false;
@@ -3538,7 +3539,7 @@ bool IccBpcEmpoweredVortexAction::HandleEmpoweredVortexSpread()
     const float safeSpacingRadius = 13.0f;
     const float moveIncrement = 2.0f;
     const float maxMoveDistance = 5.0f;
-    const bool isTank = botAI->IsTank(bot);
+    const bool isTank = BotRoleService::IsTankStatic(bot);
 
     if (isTank)
         return false;
@@ -3615,7 +3616,7 @@ bool IccBpcEmpoweredVortexAction::HandleEmpoweredVortexSpread()
 bool IccBpcKineticBombAction::Execute(Event event)
 {
     // Early exit if not ranged DPS
-    if (!botAI->IsRangedDps(bot))
+    if (!BotRoleService::IsRangedDpsStatic(bot))
         return false;
 
     // Static constants
@@ -3700,7 +3701,7 @@ Unit* IccBpcKineticBombAction::FindOptimalKineticBomb()
         for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
         {
             Player* member = itr->GetSource();
-            if (member && member->IsAlive() && botAI->IsRangedDps(member))
+            if (member && member->IsAlive() && BotRoleService::IsRangedDpsStatic(member))
                 rangedDps.push_back(member);
         }
         // Sort by GUID for deterministic assignment
@@ -3748,7 +3749,7 @@ bool IccBpcKineticBombAction::IsBombAlreadyHandled(Unit* bomb, Group* group)
     for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
     {
         Player* member = itr->GetSource();
-        if (!member || member == bot || !member->IsAlive() || !botAI->IsRangedDps(member))
+        if (!member || member == bot || !member->IsAlive() || !BotRoleService::IsRangedDpsStatic(member))
             continue;
 
         if (member->GetTarget() == bomb->GetGUID() && member->GetDistance(bomb) < bot->GetDistance(bomb))
@@ -3773,7 +3774,7 @@ bool IccBpcBallOfFlameAction::Execute(Event event)
     if (flame2 && (flame2->GetDistance2d(boss) > 2.0f) && !(flame2->GetDistance2d(boss) > 10.0f) && !infernoFlame &&
         bot->getClass() != CLASS_HUNTER)
         {
-            if (!botAI->IsTank(bot) && !(flame2->GetVictim() == bot))
+            if (!BotRoleService::IsTankStatic(bot) && !(flame2->GetVictim() == bot))
             {
                 float targetX = flame2->GetPositionX();
                 float targetY = flame2->GetPositionY();
@@ -3847,7 +3848,7 @@ bool IccBqlGroupPositionAction::Execute(Event event)
 
     Aura* frenzyAura = botAI->GetAura("Frenzied Bloodthirst", bot);
     Aura* shadowAura = botAI->GetAura("Swarming Shadows", bot);
-    bool isTank = botAI->IsTank(bot);
+    bool isTank = BotRoleService::IsTankStatic(bot);
     // Handle tank positioning
     if (isTank && HandleTankPosition(boss, frenzyAura, shadowAura))
         return true;
@@ -3869,7 +3870,7 @@ bool IccBqlGroupPositionAction::HandleTankPosition(Unit* boss, Aura* frenzyAura,
         return false;
 
     // Main tank positioning
-    if (botAI->IsMainTank(bot) && botAI->HasAggro(boss))
+    if (BotRoleService::IsMainTankStatic(bot) && botAI->GetServices().GetRoleService().HasAggro(boss))
     {
         if (bot->GetExactDist2d(ICC_BQL_TANK_POSITION) > 3.0f)
         {
@@ -3880,7 +3881,7 @@ bool IccBqlGroupPositionAction::HandleTankPosition(Unit* boss, Aura* frenzyAura,
     }
 
     // Assist tank positioning
-    if (botAI->IsAssistTank(bot) && !botAI->GetAura("Blood Mirror", bot))
+    if (BotRoleService::IsAssistTankStatic(bot) && !botAI->GetAura("Blood Mirror", bot))
     {
         if (Unit* mainTank = AI_VALUE(Unit*, "main tank"))
         {
@@ -3898,7 +3899,7 @@ bool IccBqlGroupPositionAction::HandleShadowsMovement()
     const float ARC_STEP = 0.05f;
     const float CURVE_SPACING = 15.0f;
     const int MAX_CURVES = 3;
-    const float maxClosestDist = botAI->IsMelee(bot) ? 25.0f : 20.0f;
+    const float maxClosestDist = BotRoleService::IsMeleeStatic(bot) ? 25.0f : 20.0f;
     const Position& center = ICC_BQL_CENTER_POSITION;
     const float OUTER_CURVE_PREFERENCE = 200.0f;   // Strong preference for outer curves
     const float CURVE_SWITCH_PENALTY = 50.0f;      // Penalty for switching curves
@@ -4315,8 +4316,8 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
         return false;
 
     GuidVector members = AI_VALUE(GuidVector, "group members");
-    bool isRanged = botAI->IsRanged(bot);
-    bool isMelee = botAI->IsMelee(bot);
+    bool isRanged = BotRoleService::IsRangedStatic(bot);
+    bool isMelee = BotRoleService::IsMeleeStatic(bot);
 
     if (isRanged && bot->GetExactDist2d(boss->GetPositionX(), boss->GetPositionY()) > 35.0f)
         MoveTo(boss, 5.0f, MovementPriority::MOVEMENT_FORCED);
@@ -4342,9 +4343,9 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
             Player* player = member->ToPlayer();
             if (!player)
                 continue;
-            if (botAI->IsRanged(player))
+            if (BotRoleService::IsRangedStatic(player))
                 rangedBots.push_back(player);
-            if (botAI->IsHeal(player))
+            if (BotRoleService::IsHealStatic(player))
                 healers.push_back(player);
         }
         // Remove duplicates (healer can be ranged)
@@ -4622,7 +4623,7 @@ bool IccBqlPactOfDarkfallenAction::Execute(Event event)
         if (botAI->GetAura("Pact of the Darkfallen", member))
         {
             playersWithAura.push_back(member);
-            if (botAI->IsTank(member))
+            if (BotRoleService::IsTankStatic(member))
                 tankWithAura = member;
         }
     }
@@ -4635,7 +4636,7 @@ bool IccBqlPactOfDarkfallenAction::Execute(Event event)
     if (tankWithAura)
     {
         // If there's a tank with aura, everyone moves to the tank (including the tank itself for center positioning)
-        if (botAI->IsTank(bot))
+        if (BotRoleService::IsTankStatic(bot))
         {
             // If current bot is the tank, stay put or move slightly for better positioning
             targetPos.Relocate(bot);
@@ -4783,9 +4784,9 @@ Player* IccBqlVampiricBiteAction::FindBestBiteTarget(Group* group)
             continue;
 
         float distance = bot->GetDistance(member);
-        if (botAI->IsDps(member))
+        if (BotRoleService::IsDpsStatic(member))
             dpsTargets.push_back({member, distance});
-        else if (botAI->IsHeal(member))
+        else if (BotRoleService::IsHealStatic(member))
             healTargets.push_back({member, distance});
     }
 
@@ -4806,7 +4807,7 @@ bool IccBqlVampiricBiteAction::IsInvalidTarget(Player* player)
 {
     return botAI->GetAura("Frenzied Bloodthirst", player) || botAI->GetAura("Essence of the Blood Queen", player) ||
            botAI->GetAura("Uncontrollable Frenzy", player) || botAI->GetAura("Swarming Shadows", player) ||
-           botAI->IsTank(player);
+           BotRoleService::IsTankStatic(player);
 }
 
 bool IccBqlVampiricBiteAction::MoveTowardsTarget(Player* target)
@@ -4945,7 +4946,7 @@ bool IccValithriaGroupAction::Execute(Event event)
     }
 
     // Tank behavior
-    if (botAI->IsTank(bot))
+    if (BotRoleService::IsTankStatic(bot))
     {
         for (auto const& targetGuid : AI_VALUE(GuidVector, "possible targets"))
         {
@@ -4957,7 +4958,7 @@ bool IccValithriaGroupAction::Execute(Event event)
                     // Skip if unit is already attacking any tank
                     if (Unit* victim = unit->GetVictim())
                     {
-                        if (victim->IsPlayer() && botAI->IsTank(static_cast<Player*>(victim)))
+                        if (victim->IsPlayer() && BotRoleService::IsTankStatic(static_cast<Player*>(victim)))
                         {
                             continue;
                         }
@@ -4976,7 +4977,7 @@ bool IccValithriaGroupAction::Execute(Event event)
     }
 
     // Healer movement logic
-    if (botAI->IsHeal(bot) && bot->GetExactDist2d(ICC_VDW_HEAL_POSITION) > 30.0f && !portal)
+    if (BotRoleService::IsHealStatic(bot) && bot->GetExactDist2d(ICC_VDW_HEAL_POSITION) > 30.0f && !portal)
         return MoveTo(bot->GetMapId(), ICC_VDW_HEAL_POSITION.GetPositionX(), ICC_VDW_HEAL_POSITION.GetPositionY(),
                       ICC_VDW_HEAL_POSITION.GetPositionZ(),
                       false, false, false, false, MovementPriority::MOVEMENT_NORMAL);
@@ -4998,13 +4999,13 @@ bool IccValithriaGroupAction::Execute(Event event)
         }
     }
 
-    if (worm && worm->IsAlive() && worm->GetVictim() == bot && !botAI->IsTank(bot))
+    if (worm && worm->IsAlive() && worm->GetVictim() == bot && !BotRoleService::IsTankStatic(bot))
     {
         botAI->Reset();
         FleePosition(worm->GetPosition(), 10.0f, 250U);
     }
 
-    if (zombie && zombie->IsAlive() && zombie->GetVictim() == bot && !botAI->IsTank(bot) &&
+    if (zombie && zombie->IsAlive() && zombie->GetVictim() == bot && !BotRoleService::IsTankStatic(bot) &&
         bot->GetExactDist2d(zombie) < 20.0f)
     {
         botAI->Reset();
@@ -5012,7 +5013,7 @@ bool IccValithriaGroupAction::Execute(Event event)
     }
 
     // Crowd control logic
-    if (zombie && !botAI->IsMainTank(bot) && !botAI->IsHeal(bot) && zombie->GetVictim() != bot)
+    if (zombie && !BotRoleService::IsMainTankStatic(bot) && !BotRoleService::IsHealStatic(bot) && zombie->GetVictim() != bot)
     {
         switch (bot->getClass())
         {
@@ -5109,9 +5110,9 @@ bool IccValithriaGroupAction::Handle25ManGroupLogic()
     {
         if (Player* member = itr->GetSource())
         {
-            if (member->IsAlive() && !botAI->IsHeal(member))
+            if (member->IsAlive() && !BotRoleService::IsHealStatic(member))
             {
-                if (botAI->IsTank(member))
+                if (BotRoleService::IsTankStatic(member))
                 {
                     tanks.push_back(member);
                 }
@@ -5157,11 +5158,11 @@ bool IccValithriaGroupAction::Handle25ManGroupLogic()
     bool inGroup2 = std::any_of(group2.begin(), group2.end(), [this](Player* p) { return p == bot; });
 
     // Marking logic for tanks and DPS
-    if (botAI->IsTank(bot) || botAI->IsDps(bot))
+    if (BotRoleService::IsTankStatic(bot) || BotRoleService::IsDpsStatic(bot))
         HandleMarkingLogic(inGroup1, inGroup2, group1Pos, group2Pos);
 
     // Movement logic for non-healers
-    if (!botAI->IsHeal(bot))
+    if (!BotRoleService::IsHealStatic(bot))
     {
         if (inGroup1)
         {
@@ -5321,7 +5322,7 @@ bool IccValithriaGroupAction::Handle10ManGroupLogic()
 bool IccValithriaPortalAction::Execute(Event event)
 {
     // Only healers should take portals, and not if already inside
-    if (!botAI->IsHeal(bot) || bot->HasAura(SPELL_DREAM_STATE))
+    if (!BotRoleService::IsHealStatic(bot) || bot->HasAura(SPELL_DREAM_STATE))
         return false;
 
     // Gather all portals (pre-effect and real) using nearest npcs
@@ -5358,7 +5359,7 @@ bool IccValithriaPortalAction::Execute(Event event)
         for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
         {
             Player* member = itr->GetSource();
-            if (member && member->IsAlive() && botAI->IsHeal(member))
+            if (member && member->IsAlive() && BotRoleService::IsHealStatic(member))
                 healers.push_back(member);
         }
         std::sort(healers.begin(), healers.end(), [](Player* a, Player* b) { return a->GetGUID() < b->GetGUID(); });
@@ -5454,7 +5455,7 @@ bool IccValithriaPortalAction::Execute(Event event)
 bool IccValithriaHealAction::Execute(Event event)
 {
     // Early validation checks
-    if (!botAI->IsHeal(bot) || bot->GetHealthPct() < 50.0f)
+    if (!BotRoleService::IsHealStatic(bot) || bot->GetHealthPct() < 50.0f)
         return false;
 
     // Handle movement speed when not in dream state
@@ -5832,10 +5833,10 @@ bool IccSindragosaGroupPositionAction::Execute(Event event)
 
     Aura* aura = botAI->GetAura("mystic buffet", bot, false, true);
 
-    if (aura && aura->GetStackAmount() >= 6 && botAI->IsMainTank(bot))
+    if (aura && aura->GetStackAmount() >= 6 && BotRoleService::IsMainTankStatic(bot))
         return false;
 
-    if (botAI->IsTank(bot) && boss->GetVictim() == bot)
+    if (BotRoleService::IsTankStatic(bot) && boss->GetVictim() == bot)
         return HandleTankPositioning(boss);
 
     if (boss && boss->GetVictim() != bot)
@@ -5977,7 +5978,7 @@ bool IccSindragosaGroupPositionAction::HandleNonTankPositioning()
     double percentageWithoutAura = static_cast<double>(membersWithoutAura) / totalMembers;
     bool raidClear = (percentageWithoutAura >= 0.6);  // 60% or more don't have aura 1111
 
-    if (raidClear && botAI->IsTank(bot))
+    if (raidClear && BotRoleService::IsTankStatic(bot))
     {
         static const std::array<uint32, 4> tombEntries = {NPC_TOMB1, NPC_TOMB2, NPC_TOMB3, NPC_TOMB4};
         const GuidVector tombGuids = AI_VALUE(GuidVector, "possible targets no los");
@@ -6034,7 +6035,7 @@ bool IccSindragosaGroupPositionAction::HandleNonTankPositioning()
     }
 
     context->GetValue<std::string>("rti")->Set("skull");
-    if (botAI->IsRanged(bot))
+    if (BotRoleService::IsRangedStatic(bot))
     {
         const float TOLERANCE = 9.0f;
         const float MAX_STEP = 5.0f;
@@ -6090,7 +6091,7 @@ bool IccSindragosaTankSwapPositionAction::Execute(Event event)
         return false;
 
     // Only for assist tank
-    if (!botAI->IsAssistTank(bot))
+    if (!BotRoleService::IsAssistTankStatic(bot))
         return false;
 
     float distToTankPos = bot->GetExactDist2d(ICC_SINDRAGOSA_TANK_POSITION);
@@ -6133,7 +6134,7 @@ void IccSindragosaFrostBeaconAction::HandleSupportActions()
         for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
         {
             Player* member = itr->GetSource();
-            if (!member || !member->IsAlive() || !botAI->IsTank(member))
+            if (!member || !member->IsAlive() || !BotRoleService::IsTankStatic(member))
             {
                 continue;
             }
@@ -6147,7 +6148,7 @@ void IccSindragosaFrostBeaconAction::HandleSupportActions()
     }
 
     // Healer support - Apply HoTs to beaconed players
-    if (botAI->IsHeal(bot) && !bot->HasAura(FROST_BEACON_AURA_ID))
+    if (BotRoleService::IsHealStatic(bot) && !bot->HasAura(FROST_BEACON_AURA_ID))
     {
         const auto members = AI_VALUE(GuidVector, "group members");
         for (auto const& memberGuid : members)
@@ -6288,11 +6289,11 @@ bool IccSindragosaFrostBeaconAction::HandleNonBeaconedPlayer(const Unit* boss)
                 return MoveToPosition(safePosition);
             }
         }
-        return botAI->IsHeal(bot);  // Continue for healers, wait for others
+        return BotRoleService::IsHealStatic(bot);  // Continue for healers, wait for others
     }
 
     // Ground phase - position based on role and avoid beaconed players
-    const bool isRanged = botAI->IsRanged(bot) || (bot->GetExactDist2d(ICC_SINDRAGOSA_RANGED_POSITION.GetPositionX(),ICC_SINDRAGOSA_RANGED_POSITION.GetPositionY()) <
+    const bool isRanged = BotRoleService::IsRangedStatic(bot) || (bot->GetExactDist2d(ICC_SINDRAGOSA_RANGED_POSITION.GetPositionX(),ICC_SINDRAGOSA_RANGED_POSITION.GetPositionY()) <
                           bot->GetExactDist2d(ICC_SINDRAGOSA_MELEE_POSITION.GetPositionX(),ICC_SINDRAGOSA_MELEE_POSITION.GetPositionY()));
 
     const Position& targetPosition = isRanged ? ICC_SINDRAGOSA_RANGED_POSITION : ICC_SINDRAGOSA_MELEE_POSITION;
@@ -6348,7 +6349,7 @@ bool IccSindragosaBlisteringColdAction::Execute(Event event)
         return false;
 
     // Only non-tanks should move out
-    if (botAI->IsMainTank(bot))
+    if (BotRoleService::IsMainTankStatic(bot))
         return false;
 
    float dist = bot->GetExactDist2d(boss->GetPositionX(), boss->GetPositionY());
@@ -6503,7 +6504,7 @@ bool IccSindragosaMysticBuffetAction::Execute(Event event)
     if (shouldMoveLOS2)
     {
         // If already at LOS2 and have 3+ stacks, stay still
-        if (atLOS2 && aura && !botAI->IsHeal(bot))
+        if (atLOS2 && aura && !BotRoleService::IsHealStatic(bot))
         {
             return true;
         }
@@ -6805,7 +6806,7 @@ bool IccSindragosaFrostBombAction::Execute(Event event)
 bool IccLichKingShadowTrapAction::Execute(Event event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "the lich king");
-    if (!boss || !botAI->IsTank(bot))
+    if (!boss || !BotRoleService::IsTankStatic(bot))
         return false;
 
     Difficulty diff = bot->GetRaidDifficulty();
@@ -6819,7 +6820,7 @@ bool IccLichKingShadowTrapAction::Execute(Event event)
         if (!bot->HasAura(SPELL_AGEIS_OF_DALARAN))
             bot->AddAura(SPELL_AGEIS_OF_DALARAN, bot);
 
-        if (!bot->HasAura(SPELL_NO_THREAT) && !botAI->IsTank(bot))
+        if (!bot->HasAura(SPELL_NO_THREAT) && !BotRoleService::IsTankStatic(bot))
             bot->AddAura(SPELL_NO_THREAT, bot);
 
         if (!bot->HasAura(SPELL_PAIN_SUPPRESION))
@@ -6990,14 +6991,14 @@ bool IccLichKingWinterAction::Execute(Event event)
     Unit* iceSphere = AI_VALUE2(Unit*, "find target", "ice sphere");
 
     bool isVictim = false;
-    if (iceSphere && iceSphere->GetVictim() == bot && !botAI->IsTank(bot))
+    if (iceSphere && iceSphere->GetVictim() == bot && !BotRoleService::IsTankStatic(bot))
         isVictim = true;
 
     // First priority: Get out of Defile if we're in one
     if (!IsPositionSafeFromDefile(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), 3.0f))
     {
         // Find nearest safe position (use tank position as fallback)
-        const Position* safePos = botAI->IsTank(bot) ? GetMainTankPosition() : GetMainTankRangedPosition();
+        const Position* safePos = BotRoleService::IsTankStatic(bot) ? GetMainTankPosition() : GetMainTankRangedPosition();
         TryMoveToPosition(safePos->GetPositionX(), safePos->GetPositionY(), 840.857f, true);
         return true;
     }
@@ -7015,7 +7016,7 @@ bool IccLichKingWinterAction::Execute(Event event)
         if (!bot->HasAura(SPELL_AGEIS_OF_DALARAN))
             bot->AddAura(SPELL_AGEIS_OF_DALARAN, bot);
 
-        if (!bot->HasAura(SPELL_NO_THREAT) && !botAI->IsTank(bot))
+        if (!bot->HasAura(SPELL_NO_THREAT) && !BotRoleService::IsTankStatic(bot))
             bot->AddAura(SPELL_NO_THREAT, bot);
 
         if (!bot->HasAura(SPELL_PAIN_SUPPRESION))
@@ -7068,7 +7069,7 @@ void IccLichKingWinterAction::HandlePositionCorrection()
     if (currentTarget && boss && currentTarget == boss)
         botAI->Reset();
 
-    if (botAI->IsTank(bot) && currentTarget &&
+    if (BotRoleService::IsTankStatic(bot) && currentTarget &&
         ((currentTarget->GetEntry() == NPC_ICE_SPHERE1 || currentTarget->GetEntry() == NPC_ICE_SPHERE2 ||
           currentTarget->GetEntry() == NPC_ICE_SPHERE3 || currentTarget->GetEntry() == NPC_ICE_SPHERE4)))
         botAI->Reset();
@@ -7332,7 +7333,7 @@ bool IccLichKingWinterAction::IsValidCollectibleAdd(Unit* unit)
 // FIXED HandleTankPositioning method
 void IccLichKingWinterAction::HandleTankPositioning()
 {
-    if (!botAI->IsTank(bot))
+    if (!BotRoleService::IsTankStatic(bot))
         return;
 
     Unit* boss = AI_VALUE2(Unit*, "find target", "the lich king");
@@ -7353,7 +7354,7 @@ void IccLichKingWinterAction::HandleTankPositioning()
     float distToTarget = bot->GetDistance2d(targetPos->GetPositionX(), targetPos->GetPositionY());
 
     // MAIN TANK: Always stay at tank position
-    if (botAI->IsMainTank(bot))
+    if (BotRoleService::IsMainTankStatic(bot))
     {
         // Main tank should always maintain position at tank spot
         if (distToTarget > 2.0f)
@@ -7370,7 +7371,7 @@ void IccLichKingWinterAction::HandleTankPositioning()
         HandleMainTankAddManagement(boss, targetPos);
     }
     // ASSIST TANK: More flexible positioning based on add collection
-    else if (botAI->IsAssistTank(bot))
+    else if (BotRoleService::IsAssistTankStatic(bot))
     {
         // First ensure we're reasonably close to tank area
         if (distToTarget > 15.0f)
@@ -7392,11 +7393,11 @@ void IccLichKingWinterAction::HandleTankPositioning()
 void IccLichKingWinterAction::HandleMeleePositioning()
 {
     // Skip if this is a tank - they have their own positioning logic
-    if (botAI->IsTank(bot))
+    if (BotRoleService::IsTankStatic(bot))
         return;
     Unit* currentTarget = AI_VALUE(Unit*, "current target");
     // Handle melee positioning behind target (for DPS only)
-    if (currentTarget && !botAI->IsRanged(bot) && currentTarget->isInFront(bot) && currentTarget->IsAlive() &&
+    if (currentTarget && !BotRoleService::IsRangedStatic(bot) && currentTarget->isInFront(bot) && currentTarget->IsAlive() &&
         currentTarget->GetEntry() != NPC_THE_LICH_KING && currentTarget->GetEntry() != NPC_ICE_SPHERE1 &&
         currentTarget->GetEntry() != NPC_ICE_SPHERE2 && currentTarget->GetEntry() != NPC_ICE_SPHERE3 && currentTarget->GetEntry() != NPC_ICE_SPHERE4)
     {
@@ -7426,7 +7427,7 @@ void IccLichKingWinterAction::HandleMeleePositioning()
         TryMoveToPosition(newX, newY, z, false);
     }
     // Handle non-ranged DPS positioning - USE MAIN TANK'S POSITION
-    if (!botAI->IsRanged(bot))
+    if (!BotRoleService::IsRangedStatic(bot))
     {
         Unit* boss = AI_VALUE2(Unit*, "find target", "the lich king");
         const Position* targetPos = GetMainTankPosition();
@@ -7470,7 +7471,7 @@ void IccLichKingWinterAction::HandleMeleePositioning()
 // Updated HandleRangedPositioning method
 void IccLichKingWinterAction::HandleRangedPositioning()
 {
-    if (!botAI->IsRanged(bot))
+    if (!BotRoleService::IsRangedStatic(bot))
         return;
 
     // Get the ranged position based on main tank's choice
@@ -7496,7 +7497,7 @@ void IccLichKingWinterAction::HandleRangedPositioning()
     }
 
     // Handle sphere targeting for ranged DPS
-    if (botAI->IsRangedDps(bot))
+    if (BotRoleService::IsRangedDpsStatic(bot))
     {
         bool hasHunter = false;
         Group* group = bot->GetGroup();
@@ -7558,7 +7559,7 @@ void IccLichKingWinterAction::HandleRangedPositioning()
 
 void IccLichKingWinterAction::HandleMainTankAddManagement(Unit* boss, const Position* tankPos)
 {
-    if (!botAI->IsMainTank(bot))
+    if (!BotRoleService::IsMainTankStatic(bot))
         return;
 
     // First, ensure we're at the correct tank position
@@ -7607,7 +7608,7 @@ void IccLichKingWinterAction::HandleMainTankAddManagement(Unit* boss, const Posi
         Unit* addVictim = add->GetVictim();
 
         // Highest priority: Adds attacking non-tanks
-        if (addVictim && addVictim->IsPlayer() && !botAI->IsTank(addVictim->ToPlayer()))
+        if (addVictim && addVictim->IsPlayer() && !BotRoleService::IsTankStatic(addVictim->ToPlayer()))
         {
             if (!priorityAdd || bot->GetDistance(add) < bot->GetDistance(priorityAdd))
             {
@@ -7681,7 +7682,7 @@ void IccLichKingWinterAction::HandleMainTankAddManagement(Unit* boss, const Posi
 
 void IccLichKingWinterAction::HandleAssistTankAddManagement(Unit* boss, const Position* tankPos)
 {
-    if (!botAI->IsAssistTank(bot))
+    if (!BotRoleService::IsAssistTankStatic(bot))
         return;
 
     Unit* mainTank = AI_VALUE(Unit*, "main tank");
@@ -7703,7 +7704,7 @@ void IccLichKingWinterAction::HandleAssistTankAddManagement(Unit* boss, const Po
             continue;
 
         Unit* addVictim = unit->GetVictim();
-        if (addVictim && addVictim->IsPlayer() && !botAI->IsTank(addVictim->ToPlayer()))
+        if (addVictim && addVictim->IsPlayer() && !BotRoleService::IsTankStatic(addVictim->ToPlayer()))
         {
             float addDist = bot->GetDistance(unit);
             if (addDist < closestDist)
@@ -7804,7 +7805,7 @@ bool IccLichKingAddsAction::Execute(Event event)
         if (boss && boss->HealthBelowPct(60) && boss->HealthAbovePct(40) && !bot->HasAura(SPELL_EMPOWERED_BLOOD))
             bot->AddAura(SPELL_EMPOWERED_BLOOD, bot);
 
-        if (!bot->HasAura(SPELL_NO_THREAT) && !botAI->IsTank(bot))
+        if (!bot->HasAura(SPELL_NO_THREAT) && !BotRoleService::IsTankStatic(bot))
             bot->AddAura(SPELL_NO_THREAT, bot);
 
         if (!bot->HasAura(SPELL_PAIN_SUPPRESION))
@@ -7940,7 +7941,7 @@ void IccLichKingAddsAction::HandleTeleportationFixes(Difficulty diff, Unit* tere
 
 bool IccLichKingAddsAction::HandleSpiritBombAvoidance(Difficulty diff, Unit* terenasMenethilHC)
 {
-    if (!botAI->IsMainTank(bot) || !terenasMenethilHC || !diff ||
+    if (!BotRoleService::IsMainTankStatic(bot) || !terenasMenethilHC || !diff ||
         !(diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
         return false;
 
@@ -8120,7 +8121,7 @@ bool IccLichKingAddsAction::HandleSpiritBombAvoidance(Difficulty diff, Unit* ter
 
 void IccLichKingAddsAction::HandleHeroicNonTankPositioning(Difficulty diff, Unit* terenasMenethilHC)
 {
-    if (!terenasMenethilHC || botAI->IsMainTank(bot) || !diff ||
+    if (!terenasMenethilHC || BotRoleService::IsMainTankStatic(bot) || !diff ||
         !(diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
         return;
 
@@ -8135,7 +8136,7 @@ void IccLichKingAddsAction::HandleHeroicNonTankPositioning(Difficulty diff, Unit
 
 void IccLichKingAddsAction::HandleSpiritMarkingAndTargeting(Difficulty diff, Unit* terenasMenethilHC)
 {
-    if (!terenasMenethilHC || botAI->IsMainTank(bot) || !diff ||
+    if (!terenasMenethilHC || BotRoleService::IsMainTankStatic(bot) || !diff ||
         !(diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
         return;
 
@@ -8237,7 +8238,7 @@ void IccLichKingAddsAction::HandleSpiritMarkingAndTargeting(Difficulty diff, Uni
     }
 
     // Only ranged DPS use star for RTI
-    if (botAI->IsRangedDps(bot))
+    if (BotRoleService::IsRangedDpsStatic(bot))
     {
         context->GetValue<std::string>("rti")->Set("star");
         Unit* starTarget = botAI->GetUnit(group->GetTargetIcon(STAR_ICON_INDEX));
@@ -8269,7 +8270,7 @@ bool IccLichKingAddsAction::HandleQuakeMechanics(Unit* boss)
     float botY = bot->GetPositionY();
     float targetX, targetY;
 
-    if (!botAI->IsTank(bot))
+    if (!BotRoleService::IsTankStatic(bot))
     {
         // Non-tanks: use offset position as direction guide
         float offsetX = boss->GetPositionX() + 15.0f;
@@ -8351,7 +8352,7 @@ void IccLichKingAddsAction::HandleShamblingHorrors(Unit* boss, bool hasPlague)
     if (!closestHorror || hasPlague)
     {
     }
-    else if (!hasPlague && closestHorror->isInFront(bot) && closestHorror->IsAlive() && !botAI->IsTank(bot) &&
+    else if (!hasPlague && closestHorror->isInFront(bot) && closestHorror->IsAlive() && !BotRoleService::IsTankStatic(bot) &&
              bot->GetDistance2d(closestHorror) < 3.0f)
         return FleePosition(closestHorror->GetPosition(), 2.0f, 250U);
     */
@@ -8363,7 +8364,7 @@ void IccLichKingAddsAction::HandleShamblingHorrors(Unit* boss, bool hasPlague)
 
 bool IccLichKingAddsAction::HandleAssistTankAddManagement(Unit* boss, Difficulty diff)
 {
-    if (!botAI->IsAssistTank(bot) || !boss || boss->HealthBelowPct(71))
+    if (!BotRoleService::IsAssistTankStatic(bot) || !boss || boss->HealthBelowPct(71))
         return false;
 
     // Find all adds and categorize them by targeting status
@@ -8573,7 +8574,7 @@ bool IccLichKingAddsAction::HandleAssistTankAddManagement(Unit* boss, Difficulty
 
 void IccLichKingAddsAction::HandleMeleePositioning(Unit* boss, bool hasPlague, Difficulty diff)
 {
-    if (!boss || !botAI->IsMelee(bot) || botAI->IsAssistTank(bot) || boss->HealthBelowPct(71) || hasPlague)
+    if (!boss || !BotRoleService::IsMeleeStatic(bot) || BotRoleService::IsAssistTankStatic(bot) || boss->HealthBelowPct(71) || hasPlague)
         return;
 
     if (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC)
@@ -8581,14 +8582,14 @@ void IccLichKingAddsAction::HandleMeleePositioning(Unit* boss, bool hasPlague, D
 
     float currentDist = bot->GetDistance(ICC_LICH_KING_MELEE_POSITION);
 
-    if (currentDist > 6.0f && !botAI->IsMainTank(bot))
+    if (currentDist > 6.0f && !BotRoleService::IsMainTankStatic(bot))
     {
         MoveTo(bot->GetMapId(), ICC_LICH_KING_MELEE_POSITION.GetPositionX(),
                ICC_LICH_KING_MELEE_POSITION.GetPositionY(), ICC_LICH_KING_MELEE_POSITION.GetPositionZ(), false, false,
                false, true, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
-    if (currentDist > 6.0f && botAI->IsMainTank(bot) && boss && boss->GetVictim() == bot)
+    if (currentDist > 6.0f && BotRoleService::IsMainTankStatic(bot) && boss && boss->GetVictim() == bot)
     {
         Position currentPos = bot->GetPosition();
         Position targetPos = ICC_LICH_KING_MELEE_POSITION;
@@ -8626,7 +8627,7 @@ void IccLichKingAddsAction::HandleMeleePositioning(Unit* boss, bool hasPlague, D
 
 void IccLichKingAddsAction::HandleMainTankTargeting(Unit* boss, Difficulty diff)
 {
-    if (!botAI->IsMainTank(bot) || !boss)
+    if (!BotRoleService::IsMainTankStatic(bot) || !boss)
         return;
 
     if (!(diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
@@ -8642,7 +8643,7 @@ void IccLichKingAddsAction::HandleMainTankTargeting(Unit* boss, Difficulty diff)
 
 void IccLichKingAddsAction::HandleNonTankHeroicPositioning(Unit* boss, Difficulty diff, bool hasPlague)
 {
-    if (botAI->IsTank(bot) || !boss)
+    if (BotRoleService::IsTankStatic(bot) || !boss)
         return;
 
     if (!(diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
@@ -8689,7 +8690,7 @@ void IccLichKingAddsAction::HandleNonTankHeroicPositioning(Unit* boss, Difficult
 
 void IccLichKingAddsAction::HandleRangedPositioning(Unit* boss, bool hasPlague, Difficulty diff)
 {
-    if (!boss || !botAI->IsRanged(bot) || boss->HealthBelowPct(71) || hasPlague)
+    if (!boss || !BotRoleService::IsRangedStatic(bot) || boss->HealthBelowPct(71) || hasPlague)
         return;
 
     if (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC)
@@ -9049,7 +9050,7 @@ void IccLichKingAddsAction::HandleValkyrMechanics(Difficulty diff)
         return;
     }
 
-    if (botAI->IsMainTank(bot))
+    if (BotRoleService::IsMainTankStatic(bot))
         return;
 
     // Filter out dead Val'kyrs to ensure accurate group calculation
@@ -9153,7 +9154,7 @@ void IccLichKingAddsAction::HandleValkyrAssignment(const std::vector<Unit*>& gra
     for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
     {
         Player* member = itr->GetSource();
-        if (member && !botAI->IsMainTank(member))
+        if (member && !BotRoleService::IsMainTankStatic(member))
             assistMembers.push_back(member);
     }
 

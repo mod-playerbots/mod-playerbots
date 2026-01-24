@@ -1,4 +1,5 @@
 #include "RaidMcMultipliers.h"
+#include "BotRoleService.h"
 
 #include "Playerbots.h"
 #include "ChooseTargetActions.h"
@@ -16,7 +17,7 @@ using namespace MoltenCoreHelpers;
 
 static bool IsDpsBotWithAoeAction(Player* bot, Action* action)
 {
-    if (PlayerbotAI::IsDps(bot))
+    if (BotRoleService::IsDpsStatic(bot))
     {
         if (dynamic_cast<DpsAoeAction*>(action) || dynamic_cast<CastConsecrationAction*>(action) ||
             dynamic_cast<CastStarfallAction*>(action) || dynamic_cast<CastWhirlwindAction*>(action) ||
@@ -86,7 +87,7 @@ static bool IsSingleLivingTankInGroup(Player* bot)
             Player* member = itr->GetSource();
             if (!member || !member->IsAlive() || member == bot)
                 continue;
-            if (PlayerbotAI::IsTank(member))
+            if (BotRoleService::IsTankStatic(member))
                 return false;
         }
     }
@@ -97,14 +98,14 @@ float GolemaggMultiplier::GetValue(Action* action)
 {
     if (AI_VALUE2(Unit*, "find target", "golemagg the incinerator"))
     {
-        if (PlayerbotAI::IsTank(bot) && IsSingleLivingTankInGroup(bot))
+        if (BotRoleService::IsTankStatic(bot) && IsSingleLivingTankInGroup(bot))
         {
             // Only one tank => Pick up Golemagg and the two Core Ragers
             if (dynamic_cast<McGolemaggMainTankAttackGolemaggAction*>(action) ||
                 dynamic_cast<McGolemaggAssistTankAttackCoreRagerAction*>(action))
                 return 0.0f;
         }
-        if (PlayerbotAI::IsAssistTank(bot))
+        if (BotRoleService::IsAssistTankStatic(bot))
         {
             // The first two assist tanks manage the Core Ragers. The remaining assist tanks attack the boss.
             if (dynamic_cast<TankAssistAction*>(action))

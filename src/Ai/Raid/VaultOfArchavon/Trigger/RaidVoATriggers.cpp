@@ -1,4 +1,5 @@
 #include "RaidVoATriggers.h"
+#include "BotRoleService.h"
 
 #include "EventMap.h"
 #include "Object.h"
@@ -8,7 +9,7 @@
 bool EmalonMarkBossTrigger::IsActive()
 {
     // Only tank bot can mark target
-    if (!botAI->IsTank(bot))
+    if (!BotRoleService::IsTankStatic(bot))
     {
         return false;
     }
@@ -63,7 +64,7 @@ bool EmalonLightingNovaTrigger::IsActive()
     }
 
     // Tank dont need to move
-    if (botAI->IsTank(bot))
+    if (BotRoleService::IsTankStatic(bot))
     {
         return false;
     }
@@ -78,7 +79,7 @@ bool EmalonLightingNovaTrigger::IsActive()
 bool EmalonOverchargeTrigger::IsActive()
 {
     // Only tank bot can mark target
-    if (!botAI->IsTank(bot))
+    if (!BotRoleService::IsTankStatic(bot))
     {
         return false;
     }

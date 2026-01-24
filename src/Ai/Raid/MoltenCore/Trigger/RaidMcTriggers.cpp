@@ -1,4 +1,5 @@
 #include "RaidMcTriggers.h"
+#include "BotRoleService.h"
 
 #include "SharedDefines.h"
 #include "RaidMcHelpers.h"
@@ -20,21 +21,21 @@ bool McBaronGeddonInfernoTrigger::IsActive()
 
 bool McShazzrahRangedTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "shazzrah") && PlayerbotAI::IsRanged(bot);
+    return AI_VALUE2(Unit*, "find target", "shazzrah") && BotRoleService::IsRangedStatic(bot);
 }
 
 bool McGolemaggMarkBossTrigger::IsActive()
 {
     // any tank may mark the boss
-    return AI_VALUE2(Unit*, "find target", "golemagg the incinerator") && PlayerbotAI::IsTank(bot);
+    return AI_VALUE2(Unit*, "find target", "golemagg the incinerator") && BotRoleService::IsTankStatic(bot);
 }
 
 bool McGolemaggIsMainTankTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "golemagg the incinerator") && PlayerbotAI::IsMainTank(bot);
+    return AI_VALUE2(Unit*, "find target", "golemagg the incinerator") && BotRoleService::IsMainTankStatic(bot);
 }
 
 bool McGolemaggIsAssistTankTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "golemagg the incinerator") && PlayerbotAI::IsAssistTank(bot);
+    return AI_VALUE2(Unit*, "find target", "golemagg the incinerator") && BotRoleService::IsAssistTankStatic(bot);
 }

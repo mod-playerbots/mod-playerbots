@@ -1,4 +1,5 @@
 #include "OculusMultipliers.h"
+#include "BotRoleService.h"
 #include "OculusActions.h"
 #include "GenericSpellActions.h"
 #include "ChooseTargetActions.h"
@@ -63,7 +64,7 @@ float UromMultiplier::GetValue(Action* action)
     }
 
     // Don't bother avoiding Frostbomb for melee
-    if (botAI->IsMelee(bot))
+    if (BotRoleService::IsMeleeStatic(bot))
     {
         if (dynamic_cast<AvoidAoeAction*>(action))
         {

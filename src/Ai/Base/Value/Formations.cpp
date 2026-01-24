@@ -4,6 +4,7 @@
  */
 
 #include "Formations.h"
+#include "BotRoleService.h"
 
 #include "Arrow.h"
 #include "Event.h"
@@ -210,11 +211,11 @@ public:
                 range = botAI->GetRange("flee");
                 break;
             case CLASS_DRUID:
-                if (!botAI->IsTank(bot))
+                if (!BotRoleService::IsTankStatic(bot))
                     range = botAI->GetRange("flee");
                 break;
             case CLASS_SHAMAN:
-                if (botAI->IsHeal(bot))
+                if (BotRoleService::IsHealStatic(bot))
                     range = botAI->GetRange("flee");
                 break;
         }
@@ -307,31 +308,31 @@ public:
             if (!member || member == master)
                 continue;
 
-            if (botAI->IsTank(member))
+            if (BotRoleService::IsTankStatic(member))
                 tanks.push_back(member);
             else
                 dps.push_back(member);
         }
 
-        if (botAI->IsTank(master))
+        if (BotRoleService::IsTankStatic(master))
             tanks.insert(tanks.begin() + (tanks.size() + 1) / 2, master);
         else
             dps.insert(dps.begin() + (dps.size() + 1) / 2, master);
 
-        if (botAI->IsTank(bot) && botAI->IsTank(master))
+        if (BotRoleService::IsTankStatic(bot) && BotRoleService::IsTankStatic(master))
             return MoveLine(tanks, 0.0f, x, y, z, orientation, range);
 
-        if (!botAI->IsTank(bot) && !botAI->IsTank(master))
+        if (!BotRoleService::IsTankStatic(bot) && !BotRoleService::IsTankStatic(master))
             return MoveLine(dps, 0.0f, x, y, z, orientation, range);
 
-        if (botAI->IsTank(bot) && !botAI->IsTank(master))
+        if (BotRoleService::IsTankStatic(bot) && !BotRoleService::IsTankStatic(master))
         {
             float diff = (tanks.size() % 2 == 0) ? -sPlayerbotAIConfig->tooCloseDistance / 2.0f : 0.0f;
             return MoveLine(tanks, diff, x + cos(orientation) * range, y + sin(orientation) * range, z, orientation,
                             range);
         }
 
-        if (!botAI->IsTank(bot) && botAI->IsTank(master))
+        if (!BotRoleService::IsTankStatic(bot) && BotRoleService::IsTankStatic(master))
         {
             float diff = (dps.size() % 2 == 0) ? -sPlayerbotAIConfig->tooCloseDistance / 2.0f : 0.0f;
             return MoveLine(dps, diff, x - cos(orientation) * range, y - sin(orientation) * range, z, orientation,
@@ -448,19 +449,19 @@ float Formation::GetFollowAngle()
                 continue;
 
             // Put DPS in the middle
-            if (!botAI->IsTank(member) && !botAI->IsHeal(member))
+            if (!BotRoleService::IsTankStatic(member) && !BotRoleService::IsHealStatic(member))
             {
                 roster.insert(roster.begin() + roster.size() / 2, member);
             }
 
             // Put Healers in the middle
-            else if (botAI->IsHeal(member))
+            else if (BotRoleService::IsHealStatic(member))
             {
                 roster.insert(roster.begin() + roster.size() / 2, member);
             }
 
             // Handle tanks (alternate between front and back)
-            else if (botAI->IsTank(member))
+            else if (BotRoleService::IsTankStatic(member))
             {
                 if (left)
                     roster.push_back(member);  // Place tank at the back

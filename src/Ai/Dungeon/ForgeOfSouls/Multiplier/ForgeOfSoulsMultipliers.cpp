@@ -1,3 +1,4 @@
+#include "BotRoleService.h"
 #include "ForgeOfSoulsMultipliers.h"
 #include "ForgeOfSoulsActions.h"
 #include "GenericSpellActions.h"
@@ -41,7 +42,7 @@ float AttackFragmentMultiplier::GetValue(Action* action)
         }
     }
 
-    if (fragment && botAI->IsDps(bot) && dynamic_cast<BronjahmGroupPositionAction*>(action))
+    if (fragment && BotRoleService::IsDpsStatic(bot) && dynamic_cast<BronjahmGroupPositionAction*>(action))
         return 0.0f;
 
     return 1.0f;

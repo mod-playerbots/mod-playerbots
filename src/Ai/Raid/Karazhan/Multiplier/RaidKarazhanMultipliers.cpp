@@ -1,4 +1,5 @@
 #include "RaidKarazhanMultipliers.h"
+#include "BotRoleService.h"
 #include "RaidKarazhanActions.h"
 #include "RaidKarazhanHelpers.h"
 #include "AttackAction.h"
@@ -40,7 +41,7 @@ float AttumenTheHuntsmanStayStackedMultiplier::GetValue(Action* action)
     if (!attumenMounted)
         return 1.0f;
 
-    if (!botAI->IsMainTank(bot) && attumenMounted->GetVictim() != bot)
+    if (!BotRoleService::IsMainTankStatic(bot) && attumenMounted->GetVictim() != bot)
     {
         if (dynamic_cast<CombatFormationMoveAction*>(action) ||
             dynamic_cast<FleeAction*>(action) ||
@@ -68,7 +69,7 @@ float AttumenTheHuntsmanWaitForDpsMultiplier::GetValue(Action* action)
     auto it = attumenDpsWaitTimer.find(instanceId);
     if (it == attumenDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
-        if (!botAI->IsMainTank(bot))
+        if (!BotRoleService::IsMainTankStatic(bot))
         {
             if (dynamic_cast<AttackAction*>(action) || (dynamic_cast<CastSpellAction*>(action) &&
                 !dynamic_cast<CastHealingSpellAction*>(action)))
@@ -209,7 +210,7 @@ float NetherspiteWaitForDpsMultiplier::GetValue(Action* action)
     auto it = netherspiteDpsWaitTimer.find(instanceId);
     if (it == netherspiteDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
-        if (!botAI->IsTank(bot))
+        if (!BotRoleService::IsTankStatic(bot))
         {
             if (dynamic_cast<AttackAction*>(action) || (dynamic_cast<CastSpellAction*>(action) &&
                 !dynamic_cast<CastHealingSpellAction*>(action)))
@@ -308,7 +309,7 @@ float NightbaneWaitForDpsMultiplier::GetValue(Action* action)
     auto it = nightbaneDpsWaitTimer.find(instanceId);
     if (it == nightbaneDpsWaitTimer.end() || (now - it->second) < dpsWaitSeconds)
     {
-        if (!botAI->IsMainTank(bot))
+        if (!BotRoleService::IsMainTankStatic(bot))
         {
             if (dynamic_cast<AttackAction*>(action) || (dynamic_cast<CastSpellAction*>(action) &&
                 !dynamic_cast<CastHealingSpellAction*>(action)))
@@ -328,7 +329,7 @@ float NightbaneDisableAvoidAoeMultiplier::GetValue(Action* action)
     if (!nightbane)
         return 1.0f;
 
-    if (nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z || botAI->IsMainTank(bot))
+    if (nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z || BotRoleService::IsMainTankStatic(bot))
     {
         if (dynamic_cast<AvoidAoeAction*>(action))
             return 0.0f;
@@ -351,8 +352,8 @@ float NightbaneDisableMovementMultiplier::GetValue(Action* action)
 
     // Disable CombatFormationMoveAction for all bots except:
     // (1) main tank and (2) only during the ground phase, other melee
-    if (botAI->IsRanged(bot) ||
-        (botAI->IsMelee(bot) && !botAI->IsMainTank(bot) &&
+    if (BotRoleService::IsRangedStatic(bot) ||
+        (BotRoleService::IsMeleeStatic(bot) && !BotRoleService::IsMainTankStatic(bot) &&
          nightbane->GetPositionZ() > NIGHTBANE_FLIGHT_Z))
     {
         if (dynamic_cast<CombatFormationMoveAction*>(action))

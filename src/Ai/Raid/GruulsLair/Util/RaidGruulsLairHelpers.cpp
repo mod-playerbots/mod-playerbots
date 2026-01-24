@@ -1,4 +1,5 @@
 #include "RaidGruulsLairHelpers.h"
+#include "BotRoleService.h"
 #include "AiFactory.h"
 #include "GroupReference.h"
 #include "Playerbots.h"
@@ -171,7 +172,7 @@ namespace GruulsLairHelpers
         }
 
         Unit* maulgar = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "high king maulgar")->Get();
-        if (botAI->IsRanged(bot) && maulgar && maulgar->IsAlive())
+        if (BotRoleService::IsRangedStatic(bot) && maulgar && maulgar->IsAlive())
         {
             float dist = sqrt(pow(pos.GetPositionX() - maulgar->GetPositionX(), 2) + pow(pos.GetPositionY() - maulgar->GetPositionY(), 2));
             if (dist < MAULGAR_SAFE_DISTANCE)

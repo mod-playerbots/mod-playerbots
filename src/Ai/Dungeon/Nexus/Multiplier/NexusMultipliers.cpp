@@ -1,4 +1,5 @@
 #include "NexusMultipliers.h"
+#include "BotRoleService.h"
 #include "NexusActions.h"
 #include "GenericSpellActions.h"
 #include "ChooseTargetActions.h"
@@ -87,7 +88,7 @@ float OrmorokMultiplier::GetValue(Action* action)
     // This boss is annoying and shuffles around a lot. Don't let tank move once fight has started.
     // Extra checks are to allow the tank to close distance and engage the boss initially
     if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<DodgeSpikesAction*>(action)
-        && botAI->IsTank(bot) && bot->IsWithinMeleeRange(boss)
+        && BotRoleService::IsTankStatic(bot) && bot->IsWithinMeleeRange(boss)
         && AI_VALUE2(bool, "facing", "current target"))
         {
             return 0.0f;

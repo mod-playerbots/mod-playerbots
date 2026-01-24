@@ -4,6 +4,7 @@
  */
 
 #include "ChatShortcutActions.h"
+#include "BotRoleService.h"
 
 #include "Event.h"
 #include "Formations.h"
@@ -210,7 +211,7 @@ bool TankAttackChatShortcutAction::Execute(Event event)
     if (!master)
         return false;
 
-    if (!botAI->IsTank(bot))
+    if (!BotRoleService::IsTankStatic(bot))
         return false;
 
     botAI->Reset();

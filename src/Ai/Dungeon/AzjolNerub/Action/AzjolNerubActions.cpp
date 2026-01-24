@@ -1,8 +1,9 @@
-#include "Playerbots.h"
+#include
+#include "BotRoleService.h" "Playerbots.h"
 #include "AzjolNerubActions.h"
 #include "AzjolNerubStrategy.h"
 
-bool AttackWebWrapAction::isUseful() { return !botAI->IsHeal(bot); }
+bool AttackWebWrapAction::isUseful() { return !BotRoleService::IsHealStatic(bot); }
 bool AttackWebWrapAction::Execute(Event event)
 {
     Unit* webWrap = nullptr;
@@ -28,7 +29,7 @@ bool AttackWebWrapAction::Execute(Event event)
     return Attack(webWrap);
 }
 
-bool WatchersTargetAction::isUseful() { return !botAI->IsHeal(bot); }
+bool WatchersTargetAction::isUseful() { return !BotRoleService::IsHealStatic(bot); }
 bool WatchersTargetAction::Execute(Event event)
 {
     // Always prioritise web wraps

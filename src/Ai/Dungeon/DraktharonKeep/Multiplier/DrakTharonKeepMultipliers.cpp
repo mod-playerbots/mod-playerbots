@@ -1,4 +1,5 @@
 #include "DrakTharonKeepMultipliers.h"
+#include "BotRoleService.h"
 #include "DrakTharonKeepActions.h"
 #include "GenericSpellActions.h"
 #include "ChooseTargetActions.h"
@@ -43,7 +44,7 @@ float TharonjaMultiplier::GetValue(Action* action)
     }
 
     // Tanks should only taunt, no slaying strike
-    if (botAI->IsTank(bot))
+    if (BotRoleService::IsTankStatic(bot))
     {
         if (dynamic_cast<CastSlayingStrikeAction*>(action))
         {

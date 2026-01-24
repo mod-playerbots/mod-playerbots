@@ -1,8 +1,9 @@
-#include "Playerbots.h"
+#include
+#include "BotRoleService.h" "Playerbots.h"
 #include "UtgardeKeepActions.h"
 #include "UtgardeKeepStrategy.h"
 
-bool AttackFrostTombAction::isUseful() { return !botAI->IsHeal(bot); }
+bool AttackFrostTombAction::isUseful() { return !BotRoleService::IsHealStatic(bot); }
 bool AttackFrostTombAction::Execute(Event event)
 {
     Unit* frostTomb = nullptr;

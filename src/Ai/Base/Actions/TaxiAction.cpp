@@ -4,6 +4,7 @@
  */
 
 #include "TaxiAction.h"
+#include "BotRoleService.h"
 
 #include "Event.h"
 #include "LastMovementValue.h"
@@ -59,7 +60,7 @@ bool TaxiAction::Execute(Event event)
         // Only for follower bots
         if (botAI->HasRealPlayerMaster())
         {
-            uint32 index = botAI->GetGroupSlotIndex(bot);
+            uint32 index = botAI->GetServices().GetRoleService().GetGroupSlotIndex(bot);
             uint32 delay = delayMin + index * gapMs + urand(0, gapJitterMs);
 
             delay = std::min(delay, delayMax);

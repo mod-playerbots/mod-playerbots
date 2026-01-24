@@ -4,6 +4,7 @@
  */
 
 #include "PartyMemberValue.h"
+#include "BotRoleService.h"
 
 #include "Playerbots.h"
 #include "ServerFacade.h"
@@ -73,9 +74,9 @@ Unit* PartyMemberValue::FindPartyMember(FindPlayerPredicate& predicate, bool ign
         if (!player)
             continue;
 
-        if (botAI->IsHeal(player))
+        if (BotRoleService::IsHealStatic(player))
             healers.push_back(player);
-        else if (botAI->IsTank(player))
+        else if (BotRoleService::IsTankStatic(player))
             tanks.push_back(player);
         else if (player != master)
             others.push_back(player);
@@ -159,7 +160,7 @@ public:
         {
             return false;
         }
-        return botAI->IsMainTank(player);
+        return BotRoleService::IsMainTankStatic(player);
     }
 
 private:

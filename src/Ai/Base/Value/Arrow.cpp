@@ -4,6 +4,7 @@
  */
 
 #include "Arrow.h"
+#include "BotRoleService.h"
 
 #include "Map.h"
 #include "Playerbots.h"
@@ -73,11 +74,11 @@ void ArrowFormation::Build()
 
 FormationSlot* ArrowFormation::FindSlot(Player* member)
 {
-    if (botAI->IsTank(member))
+    if (BotRoleService::IsTankStatic(member))
         return &tanks;
-    else if (botAI->IsHeal(member))
+    else if (BotRoleService::IsHealStatic(member))
         return &healers;
-    else if (botAI->IsRanged(member))
+    else if (BotRoleService::IsRangedStatic(member))
         return &ranged;
     else
         return &melee;

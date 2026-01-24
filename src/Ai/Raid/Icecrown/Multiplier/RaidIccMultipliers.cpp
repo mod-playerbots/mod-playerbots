@@ -1,4 +1,5 @@
 #include "RaidIccMultipliers.h"
+#include "BotRoleService.h"
 
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
@@ -82,11 +83,11 @@ float IccAddsDbsMultiplier::GetValue(Action* action)
         dynamic_cast<FleeAction*>(action))
         return 0.0f;
 
-    if (botAI->IsRanged(bot))
+    if (BotRoleService::IsRangedStatic(bot))
         if (dynamic_cast<ReachSpellAction*>(action))
             return 0.0f;
 
-    if (botAI->IsMainTank(bot))
+    if (BotRoleService::IsMainTankStatic(bot))
     {
         Aura* aura = botAI->GetAura("rune of blood", bot);
         if (aura)
@@ -111,7 +112,7 @@ float IccDogsMultiplier::GetValue(Action* action)
     if (!bossPresent)
         return 1.0f;
 
-    if (botAI->IsMainTank(bot))
+    if (BotRoleService::IsMainTankStatic(bot))
     {
         Aura* aura = botAI->GetAura("mortal wound", bot, false, true);
         if (aura && aura->GetStackAmount() >= 8)
@@ -138,7 +139,7 @@ float IccFestergutMultiplier::GetValue(Action* action)
     if (dynamic_cast<FleeAction*>(action))
         return 0.0f;
 
-    if (botAI->IsMainTank(bot))
+    if (BotRoleService::IsMainTankStatic(bot))
     {
         Aura* aura = botAI->GetAura("gastric bloat", bot, false, true);
         if (aura && aura->GetStackAmount() >= 6)
@@ -175,7 +176,7 @@ float IccRotfaceMultiplier::GetValue(Action* action)
     if (dynamic_cast<CastBlinkBackAction*>(action))
         return 0.0f;
 
-    if (botAI->IsAssistTank(bot) && (dynamic_cast<AttackRtiTargetAction*>(action) || dynamic_cast<TankAssistAction*>(action)))
+    if (BotRoleService::IsAssistTankStatic(bot) && (dynamic_cast<AttackRtiTargetAction*>(action) || dynamic_cast<TankAssistAction*>(action)))
         return 0.0f;
 
     Unit* boss = AI_VALUE2(Unit*, "find target", "big ooze");
@@ -250,7 +251,7 @@ float IccAddsPutricideMultiplier::GetValue(Action* action)
     if (dynamic_cast<CastBlinkBackAction*>(action))
         return 0.0f;
 
-    if (botAI->IsMainTank(bot))
+    if (BotRoleService::IsMainTankStatic(bot))
     {
         Aura* aura = botAI->GetAura("mutated plague", bot, false, true);
         if (aura && aura->GetStackAmount() >= 4)
@@ -270,7 +271,7 @@ float IccAddsPutricideMultiplier::GetValue(Action* action)
         if (dynamic_cast<IccPutricideGrowingOozePuddleAction*>(action))
             return 1.0f;
 
-        if (botAI->IsHeal(bot))
+        if (BotRoleService::IsHealStatic(bot))
             return 1.0f;
         else
             return 0.0f;  // Cancel all other actions when we need to handle Gaseous Bloat
@@ -288,7 +289,7 @@ float IccAddsPutricideMultiplier::GetValue(Action* action)
     {
         if (dynamic_cast<IccPutricideAvoidMalleableGooAction*>(action))
             return 0.0f;
-        if (dynamic_cast<IccPutricideGrowingOozePuddleAction*>(action) && !botAI->IsMainTank(bot))
+        if (dynamic_cast<IccPutricideGrowingOozePuddleAction*>(action) && !BotRoleService::IsMainTankStatic(bot))
             return 0.0f;
         //if (dynamic_cast<IccPutricideGasCloudAction*>(action) && !hasGaseousBloat)
             //return 0.0f;
@@ -314,13 +315,13 @@ float IccBpcAssistMultiplier::GetValue(Action* action)
     Aura* aura = botAI->GetAura("Shadow Prison", bot, false, true);
     if (aura)
     {
-        if (aura->GetStackAmount() > 18 && botAI->IsTank(bot))
+        if (aura->GetStackAmount() > 18 && BotRoleService::IsTankStatic(bot))
         {
             if (dynamic_cast<MovementAction*>(action))
                 return 0.0f;
         }
 
-        if (aura->GetStackAmount() > 12 && !botAI->IsTank(bot))
+        if (aura->GetStackAmount() > 12 && !BotRoleService::IsTankStatic(bot))
         {
             if (dynamic_cast<MovementAction*>(action))
                 return 0.0f;
@@ -393,7 +394,7 @@ float IccBpcAssistMultiplier::GetValue(Action* action)
             break;
     }
 
-    if (bombFound && !(aura && aura->GetStackAmount() > 12) && !botAI->IsTank(bot))
+    if (bombFound && !(aura && aura->GetStackAmount() > 12) && !BotRoleService::IsTankStatic(bot))
     {
         // If kinetic bomb action is active, disable these actions
         if (dynamic_cast<IccBpcKineticBombAction*>(action))
@@ -405,7 +406,7 @@ float IccBpcAssistMultiplier::GetValue(Action* action)
     }
 
     // For assist tank during BPC fight
-    if (botAI->IsAssistTank(bot) && !(aura && aura->GetStackAmount() > 18))
+    if (BotRoleService::IsAssistTankStatic(bot) && !(aura && aura->GetStackAmount() > 18))
     {
         // Allow BPC-specific actions
         if (dynamic_cast<IccBpcKelesethTankAction*>(action))
@@ -433,7 +434,7 @@ float IccBqlMultiplier::GetValue(Action* action)
     Aura* aura2 = botAI->GetAura("Swarming Shadows", bot);
     Aura* aura = botAI->GetAura("Frenzied Bloodthirst", bot);
 
-    if (botAI->IsRanged(bot))
+    if (BotRoleService::IsRangedStatic(bot))
         if (dynamic_cast<AvoidAoeAction*>(action) || dynamic_cast<FleeAction*>(action) ||
             dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<CastDisengageAction*>(action))
             return 0.0f;
@@ -447,7 +448,7 @@ float IccBqlMultiplier::GetValue(Action* action)
             return 0.0f;  // Cancel all other actions when we need to handle Pact of Darkfallen
     }
 
-    if (botAI->IsMelee(bot) && ((boss->GetPositionZ() - ICC_BQL_CENTER_POSITION.GetPositionZ()) > 5.0f) && !aura)
+    if (BotRoleService::IsMeleeStatic(bot) && ((boss->GetPositionZ() - ICC_BQL_CENTER_POSITION.GetPositionZ()) > 5.0f) && !aura)
     {
         if (dynamic_cast<IccBqlGroupPositionAction*>(action))
             return 1.0f;
@@ -473,7 +474,7 @@ float IccBqlMultiplier::GetValue(Action* action)
     }
 
     if ((boss->GetExactDist2d(ICC_BQL_TANK_POSITION.GetPositionX(), ICC_BQL_TANK_POSITION.GetPositionY()) > 10.0f) &&
-        botAI->IsRanged(bot) && !((boss->GetPositionZ() - bot->GetPositionZ()) > 5.0f))
+        BotRoleService::IsRangedStatic(bot) && !((boss->GetPositionZ() - bot->GetPositionZ()) > 5.0f))
     {
         if (dynamic_cast<FleeAction*>(action) || dynamic_cast<CombatFormationMoveAction*>(action))
             return 0.0f;
@@ -496,13 +497,13 @@ float IccValithriaDreamCloudMultiplier::GetValue(Action* action)
     if (dynamic_cast<FollowAction*>(action) || dynamic_cast<CombatFormationMoveAction*>(action))
         return 0.0f;
 
-    if (botAI->IsTank(bot))
+    if (BotRoleService::IsTankStatic(bot))
     {
         if (dynamic_cast<AttackRtiTargetAction*>(action))
             return 0.0f;
     }
 
-    if (botAI->IsHeal(bot) && (twistedNightmares || emeraldVigor))
+    if (BotRoleService::IsHealStatic(bot) && (twistedNightmares || emeraldVigor))
         if (dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<AttackRtiTargetAction*>(action))
             return 0.0f;
 
@@ -598,13 +599,13 @@ float IccSindragosaMultiplier::GetValue(Action* action)
             return 0.0f;
     }
 
-    if (anyoneHasFrostBeacon && !botAI->IsMainTank(bot))
+    if (anyoneHasFrostBeacon && !BotRoleService::IsMainTankStatic(bot))
     {
         if (dynamic_cast<IccSindragosaGroupPositionAction*>(action))
             return 0.0f;
     }
 
-    if (botAI->IsMainTank(bot))
+    if (BotRoleService::IsMainTankStatic(bot))
     {
         Aura* aura = botAI->GetAura("mystic buffet", bot, false, true);
         if (aura && aura->GetStackAmount() >= 6)
@@ -616,13 +617,13 @@ float IccSindragosaMultiplier::GetValue(Action* action)
         }
     }
 
-    if (!botAI->IsTank(bot) && boss && boss->HealthBelowPct(35))
+    if (!BotRoleService::IsTankStatic(bot) && boss && boss->HealthBelowPct(35))
     {
         if (dynamic_cast<IccSindragosaGroupPositionAction*>(action))
             return 0.0f;
     }
 
-    if (boss && botAI->IsTank(bot))
+    if (boss && BotRoleService::IsTankStatic(bot))
     {
         if (boss->HealthBelowPct(35))
         {
@@ -669,13 +670,13 @@ float IccLichKingAddsMultiplier::GetValue(Action* action)
     {
         Unit* mainTank = AI_VALUE(Unit*, "main tank");
 
-        if (!botAI->IsMainTank(bot) && mainTank && bot->GetExactDist2d(mainTank->GetPositionX(), mainTank->GetPositionY()) < 2.0f)
+        if (!BotRoleService::IsMainTankStatic(bot) && mainTank && bot->GetExactDist2d(mainTank->GetPositionX(), mainTank->GetPositionY()) < 2.0f)
         {
             if (dynamic_cast<MovementAction*>(action))
                 return 0.0f;
         }
 
-        if (botAI->IsMelee(bot) || (bot->getClass() == CLASS_WARLOCK))
+        if (BotRoleService::IsMeleeStatic(bot) || (bot->getClass() == CLASS_WARLOCK))
         {
             if (dynamic_cast<MovementAction*>(action) || dynamic_cast<IccLichKingAddsAction*>(action))
                 return 1.0f;
@@ -768,7 +769,7 @@ float IccLichKingAddsMultiplier::GetValue(Action* action)
 
     if (boss && !boss->HealthBelowPct(71))
     {
-        if (!botAI->IsTank(bot))
+        if (!BotRoleService::IsTankStatic(bot))
             if (dynamic_cast<CastConsecrationAction*>(action))
                 return 0.0f;
 
@@ -813,7 +814,7 @@ float IccLichKingAddsMultiplier::GetValue(Action* action)
         if (dynamic_cast<IccLichKingWinterAction*>(action) || dynamic_cast<SetFacingTargetAction*>(action))
             return 1.0f;
 
-        if (botAI->IsAssistTank(bot) && dynamic_cast<TankAssistAction*>(action))
+        if (BotRoleService::IsAssistTankStatic(bot) && dynamic_cast<TankAssistAction*>(action))
             return 0.0f;
 
         if (dynamic_cast<IccLichKingAddsAction*>(action))
@@ -838,7 +839,7 @@ float IccLichKingAddsMultiplier::GetValue(Action* action)
 
     }
 
-    if (botAI->IsRanged(bot) && !botAI->GetAura("Harvest Soul", bot, false, false))
+    if (BotRoleService::IsRangedStatic(bot) && !botAI->GetAura("Harvest Soul", bot, false, false))
     {
         // Check for defile presence
         GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
@@ -865,7 +866,7 @@ float IccLichKingAddsMultiplier::GetValue(Action* action)
         }
     }
 
-    if (botAI->IsAssistTank(bot) && boss && !boss->HealthBelowPct(71) && currentTarget == boss)
+    if (BotRoleService::IsAssistTankStatic(bot) && boss && !boss->HealthBelowPct(71) && currentTarget == boss)
     {
         if (dynamic_cast<AttackRtiTargetAction*>(action))
             return 0.0f;

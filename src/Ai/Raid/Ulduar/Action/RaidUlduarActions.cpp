@@ -1,5 +1,6 @@
 
 #include "RaidUlduarActions.h"
+#include "BotRoleService.h"
 
 #include <CombatStrategy.h>
 #include <FollowMasterStrategy.h>
@@ -333,7 +334,7 @@ bool FlameLeviathanEnterVehicleAction::ShouldEnter(Unit* target)
     if (!vehicleKit)
         return false;
 
-    bool isMelee = botAI->IsMelee(bot);
+    bool isMelee = BotRoleService::IsMeleeStatic(bot);
     bool allMain = AllMainVehiclesOnUse();
     bool inUse = vehicleKit->IsVehicleInUse();
     int32 entry = target->GetEntry();
@@ -426,7 +427,7 @@ bool RazorscaleAvoidDevouringFlameAction::Execute(Event event)
         return false;
     }
 
-    bool isMainTank = botAI->IsMainTank(bot);
+    bool isMainTank = BotRoleService::IsMainTankStatic(bot);
     const float flameRadius = 3.5f;
 
     // Main tank moves further so they can hold adds away from flames, but only during the air phases
@@ -460,7 +461,7 @@ bool RazorscaleAvoidDevouringFlameAction::Execute(Event event)
     }
 
     // Off tanks are following the main tank during grounded and should prioritise stacking
-    if (razorscaleHelper.IsGroundPhase() && (botAI->IsTank(bot) && !botAI->IsMainTank(bot)))
+    if (razorscaleHelper.IsGroundPhase() && (BotRoleService::IsTankStatic(bot) && !BotRoleService::IsMainTankStatic(bot)))
     {
         return false;
     }
@@ -475,7 +476,7 @@ bool RazorscaleAvoidDevouringFlameAction::Execute(Event event)
 
 bool RazorscaleAvoidDevouringFlameAction::isUseful()
 {
-    bool isMainTank = botAI->IsMainTank(bot);
+    bool isMainTank = BotRoleService::IsMainTankStatic(bot);
 
     const float flameRadius = 3.5f;
     const float safeDistanceMultiplier = isMainTank ? 2.3f : 1.0f;
@@ -500,8 +501,8 @@ bool RazorscaleAvoidDevouringFlameAction::isUseful()
 
 bool RazorscaleAvoidSentinelAction::Execute(Event event)
 {
-    bool isMainTank = botAI->IsMainTank(bot);
-    bool isRanged = botAI->IsRanged(bot);
+    bool isMainTank = BotRoleService::IsMainTankStatic(bot);
+    bool isRanged = BotRoleService::IsRangedStatic(bot);
     const float radius = 8.0f;
 
     GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
@@ -540,7 +541,7 @@ bool RazorscaleAvoidSentinelAction::Execute(Event event)
         // Iterate through the first 3 bot tanks to assign the Skull marker
         for (int i = 0; i < 3; ++i)
         {
-            if (botAI->IsAssistTankOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
+            if (BotRoleService::IsAssistTankStaticOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
             {
                 Group* group = bot->GetGroup();
                 if (group && lowestHealthSentinel)
@@ -579,7 +580,7 @@ bool RazorscaleAvoidSentinelAction::Execute(Event event)
 
 bool RazorscaleAvoidSentinelAction::isUseful()
 {
-    bool isMainTank = botAI->IsMainTank(bot);
+    bool isMainTank = BotRoleService::IsMainTankStatic(bot);
     Unit* mainTankUnit = AI_VALUE(Unit*, "main tank");
     Player* mainTank = mainTankUnit ? mainTankUnit->ToPlayer() : nullptr;
 
@@ -594,14 +595,14 @@ bool RazorscaleAvoidSentinelAction::isUseful()
     {
         for (int i = 0; i < 3; ++i)
         {
-            if (botAI->IsAssistTankOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
+            if (BotRoleService::IsAssistTankStaticOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
             {
                 return true;  // This bot should assist with marking
             }
         }
     }
 
-    bool isRanged = botAI->IsRanged(bot);
+    bool isRanged = BotRoleService::IsRangedStatic(bot);
     const float radius = 8.0f;
 
     GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
@@ -622,7 +623,7 @@ bool RazorscaleAvoidSentinelAction::isUseful()
 
 bool RazorscaleAvoidWhirlwindAction::Execute(Event event)
 {
-    if (botAI->IsTank(bot))
+    if (BotRoleService::IsTankStatic(bot))
     {
         return false;
     }
@@ -647,7 +648,7 @@ bool RazorscaleAvoidWhirlwindAction::Execute(Event event)
 bool RazorscaleAvoidWhirlwindAction::isUseful()
 {
     // Tanks do not avoid Whirlwind
-    if (botAI->IsTank(bot))
+    if (BotRoleService::IsTankStatic(bot))
     {
         return false;
     }
@@ -692,7 +693,7 @@ bool RazorscaleIgnoreBossAction::isUseful()
             return true;  // Movement to the center is the top priority for all bots
         }
 
-        if (!botAI->IsTank(bot))
+        if (!BotRoleService::IsTankStatic(bot))
         {
             return false;
         }
@@ -726,7 +727,7 @@ bool RazorscaleIgnoreBossAction::isUseful()
         {
             for (int i = 0; i < 3; ++i)  // Only iterate through the first 3 indexes
             {
-                if (botAI->IsAssistTankOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Valid bot tank
+                if (BotRoleService::IsAssistTankStaticOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Valid bot tank
                 {
                     return true;  // This bot should assign the marker
                 }
@@ -766,7 +767,7 @@ bool RazorscaleIgnoreBossAction::Execute(Event event)
                           RazorscaleBossHelper::RAZORSCALE_ARENA_RADIUS - 10.0f, MovementPriority::MOVEMENT_NORMAL);
     }
 
-    if (!botAI->IsTank(bot))
+    if (!BotRoleService::IsTankStatic(bot))
     {
         return false;
     }
@@ -788,7 +789,7 @@ bool RazorscaleIgnoreBossAction::Execute(Event event)
     {
         for (int i = 0; i < 3; ++i)  // Only iterate through the first 3 indexes
         {
-            if (botAI->IsAssistTankOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
+            if (BotRoleService::IsAssistTankStaticOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
             {
                 group->SetTargetIcon(moonIndex, bot->GetGUID(), boss->GetGUID());
                 SetNextMovementDelay(1000);
@@ -816,7 +817,7 @@ bool RazorscaleGroundedAction::isUseful()
         return false;
     }
 
-    if (botAI->IsMainTank(bot))
+    if (BotRoleService::IsMainTankStatic(bot))
     {
         Group* group = bot->GetGroup();
         if (!group)
@@ -830,7 +831,7 @@ bool RazorscaleGroundedAction::isUseful()
         return currentMoonTarget == boss->GetGUID();
     }
 
-    if (botAI->IsTank(bot) && !botAI->IsMainTank(bot))
+    if (BotRoleService::IsTankStatic(bot) && !BotRoleService::IsMainTankStatic(bot))
     {
         Group* group = bot->GetGroup();
         if (!group)
@@ -841,7 +842,7 @@ bool RazorscaleGroundedAction::isUseful()
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && botAI->IsMainTank(member))
+            if (member && BotRoleService::IsMainTankStatic(member))
             {
                 mainTank = member;
                 break;
@@ -856,12 +857,12 @@ bool RazorscaleGroundedAction::isUseful()
         }
     }
 
-    if (botAI->IsMelee(bot))
+    if (BotRoleService::IsMeleeStatic(bot))
     {
         return false;
     }
 
-    if (botAI->IsRanged(bot))
+    if (BotRoleService::IsRangedStatic(bot))
     {
         constexpr float landingX = 588.0f;
         constexpr float landingY = -166.0f;
@@ -912,7 +913,7 @@ bool RazorscaleGroundedAction::Execute(Event event)
         // Iterate through the first 3 bot tanks to handle the moon marker
         for (int i = 0; i < 3; ++i)
         {
-            if (botAI->IsAssistTankOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
+            if (BotRoleService::IsAssistTankStaticOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
             {
                 int8 moonIndex = 4;
                 ObjectGuid currentMoonTarget = group->GetTargetIcon(moonIndex);
@@ -927,7 +928,7 @@ bool RazorscaleGroundedAction::Execute(Event event)
             }
         }
     }
-    else if (botAI->IsMainTank(bot))  // Bot is the main tank
+    else if (BotRoleService::IsMainTankStatic(bot))  // Bot is the main tank
     {
         int8 moonIndex = 4;
         ObjectGuid currentMoonTarget = group->GetTargetIcon(moonIndex);
@@ -941,13 +942,13 @@ bool RazorscaleGroundedAction::Execute(Event event)
         }
     }
 
-    if (mainTank && (botAI->IsTank(bot) && !botAI->IsMainTank(bot)))
+    if (mainTank && (BotRoleService::IsTankStatic(bot) && !BotRoleService::IsMainTankStatic(bot)))
     {
         constexpr float followDistance = 2.0f;
         return MoveNear(mainTank, followDistance, MovementPriority::MOVEMENT_COMBAT);
     }
 
-    if (botAI->IsRanged(bot))
+    if (BotRoleService::IsRangedStatic(bot))
     {
         constexpr float landingX = 588.0f;
         constexpr float landingY = -166.0f;
@@ -1031,7 +1032,7 @@ bool RazorscaleHarpoonAction::Execute(Event event)
     for (auto& guid : groupBots)
     {
         Player* member = ObjectAccessor::FindPlayer(guid);
-        if (member && member->IsAlive() && botAI->IsRanged(member) && botAI->IsDps(member) && !botAI->IsHeal(member))
+        if (member && member->IsAlive() && BotRoleService::IsRangedStatic(member) && BotRoleService::IsDpsStatic(member) && !BotRoleService::IsHealStatic(member))
         {
             float distance = member->GetDistance2d(closestHarpoon);
             if (distance < minDistance)
@@ -1097,7 +1098,7 @@ bool RazorscaleHarpoonAction::isUseful()
             if (RazorscaleBossHelper::IsHarpoonReady(harpoonGO))
             {
                 // Check if this bot is a ranged DPS (not a healer)
-                if (botAI->IsRanged(bot) && botAI->IsDps(bot) && !botAI->IsHeal(bot))
+                if (BotRoleService::IsRangedStatic(bot) && BotRoleService::IsDpsStatic(bot) && !BotRoleService::IsHealStatic(bot))
                     return true;
             }
         }
@@ -1109,11 +1110,11 @@ bool RazorscaleHarpoonAction::isUseful()
 bool RazorscaleFuseArmorAction::isUseful()
 {
     // If this bot cannot tank at all, no need to do anything
-    if (!botAI->IsTank(bot))
+    if (!BotRoleService::IsTankStatic(bot))
         return false;
 
     // If this bot is the main tank AND has Fuse Armor at the threshold, return true immediately
-    if (botAI->IsMainTank(bot))
+    if (BotRoleService::IsMainTankStatic(bot))
     {
         Aura* fuseArmor = bot->GetAura(RazorscaleBossHelper::SPELL_FUSEARMOR);
         if (fuseArmor && fuseArmor->GetStackAmount() >= RazorscaleBossHelper::FUSEARMOR_THRESHOLD)
@@ -1131,7 +1132,7 @@ bool RazorscaleFuseArmorAction::isUseful()
         if (!member)
             continue;
 
-        if (botAI->IsMainTank(member) && member != bot)
+        if (BotRoleService::IsMainTankStatic(member) && member != bot)
         {
             Aura* fuseArmor = member->GetAura(RazorscaleBossHelper::SPELL_FUSEARMOR);
             if (fuseArmor && fuseArmor->GetStackAmount() >= RazorscaleBossHelper::FUSEARMOR_THRESHOLD)
@@ -1287,7 +1288,7 @@ bool KologarnMarkDpsTargetAction::Execute(Event event)
         targetToCcMark = leftArm;
     }
 
-    bool isMainTank = botAI->IsMainTank(bot);
+    bool isMainTank = BotRoleService::IsMainTankStatic(bot);
     Unit* mainTankUnit = AI_VALUE(Unit*, "main tank");
     Player* mainTank = mainTankUnit ? mainTankUnit->ToPlayer() : nullptr;
 
@@ -1296,7 +1297,7 @@ bool KologarnMarkDpsTargetAction::Execute(Event event)
         // Iterate through the first 3 bot tanks to assign the Skull marker
         for (int i = 0; i < 3; ++i)
         {
-            if (botAI->IsAssistTankOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
+            if (BotRoleService::IsAssistTankStaticOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
             {
                 Group* group = bot->GetGroup();
                 if (group)
@@ -1338,7 +1339,7 @@ bool KologarnMarkDpsTargetAction::Execute(Event event)
     {
         for (int i = 0; i < 3; ++i)
         {
-            if (botAI->IsAssistTankOfIndex(bot, i) && GET_PLAYERBOT_AI(bot) && bot->IsAlive())  // Bot is a valid tank
+            if (BotRoleService::IsAssistTankStaticOfIndex(bot, i) && GET_PLAYERBOT_AI(bot) && bot->IsAlive())  // Bot is a valid tank
             {
                 Group* group = bot->GetGroup();
                 if (group)
@@ -1452,7 +1453,7 @@ bool KologarnRtiTargetAction::isUseful()
 
 bool KologarnRtiTargetAction::Execute(Event event)
 {
-    if (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0))
+    if (BotRoleService::IsMainTankStatic(bot) || BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
     {
         context->GetValue<std::string>("rti")->Set("cross");
         return true;
@@ -1707,7 +1708,7 @@ bool FreyaMarkDpsTargetAction::Execute(Event event)
         return false;  // No target to mark
     }
 
-    bool isMainTank = botAI->IsMainTank(bot);
+    bool isMainTank = BotRoleService::IsMainTankStatic(bot);
     Unit* mainTankUnit = AI_VALUE(Unit*, "main tank");
     Player* mainTank = mainTankUnit ? mainTankUnit->ToPlayer() : nullptr;
     int8 squareIndex = 5;  // Square
@@ -1718,7 +1719,7 @@ bool FreyaMarkDpsTargetAction::Execute(Event event)
         // Iterate through the first 3 bot tanks to assign the Skull marker
         for (int i = 0; i < 3; ++i)
         {
-            if (botAI->IsAssistTankOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
+            if (BotRoleService::IsAssistTankStaticOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
             {
                 Group* group = bot->GetGroup();
                 if (group)
@@ -1839,7 +1840,7 @@ bool ThorimMarkDpsTargetAction::Execute(Event event)
         return true;
     }
 
-    if (botAI->IsMainTank(bot))
+    if (BotRoleService::IsMainTankStatic(bot))
     {
         ObjectGuid currentSkullTarget = group->GetTargetIcon(RtiTargetValue::skullIndex);
         Unit* currentSkullUnit = botAI->GetUnit(currentSkullTarget);
@@ -1860,7 +1861,7 @@ bool ThorimMarkDpsTargetAction::Execute(Event event)
         else
             return false;
     }
-    else if (botAI->IsAssistTankOfIndex(bot, 0))
+    else if (BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
     {
         ObjectGuid currentCrossTarget = group->GetTargetIcon(RtiTargetValue::crossIndex);
         Unit* currentCrossUnit = botAI->GetUnit(currentCrossTarget);
@@ -1896,13 +1897,13 @@ bool ThorimMarkDpsTargetAction::Execute(Event event)
     if (!targetToMark)
         return false;  // No target to mark
 
-    if (botAI->IsMainTank(bot))
+    if (BotRoleService::IsMainTankStatic(bot))
     {
         group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), targetToMark->GetGUID());
         return true;
     }
 
-    if (botAI->IsAssistTankOfIndex(bot, 0))
+    if (BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
     {
         group->SetTargetIcon(RtiTargetValue::crossIndex, bot->GetGUID(), targetToMark->GetGUID());
         return true;
@@ -2135,7 +2136,7 @@ bool ThorimPhase2PositioningAction::Execute(Event event)
     Position targetPosition;
     bool backward = false;
 
-    if (botAI->IsMainTank(bot))
+    if (BotRoleService::IsMainTankStatic(bot))
     {
         targetPosition = ULDUAR_THORIM_PHASE2_TANK_SPOT;
         backward = true;
@@ -2153,7 +2154,7 @@ bool ThorimPhase2PositioningAction::Execute(Event event)
             if (!member)
                 continue;
 
-            if (botAI->IsRanged(member) || botAI->IsHeal(member))
+            if (BotRoleService::IsRangedStatic(member) || BotRoleService::IsHealStatic(member))
             {
                 if (bot->GetGUID() == member->GetGUID())
                     break;
@@ -2231,7 +2232,7 @@ bool MimironShockBlastAction::Execute(Event event)
 
         MoveAway(leviathanMkII, radius - currentDistance);
 
-        if (botAI->IsMelee(bot))
+        if (BotRoleService::IsMeleeStatic(bot))
         {
             botAI->SetNextCheckDelay(100);
         }
@@ -2335,7 +2336,7 @@ bool MimironRapidBurstAction::Execute(Event event)
 
         if (bot->GetGUID() == member->GetGUID())
         {
-            if (botAI->IsRanged(bot))
+            if (BotRoleService::IsRangedStatic(bot))
             {
                 switch (memberSpotNumber)
                 {
@@ -2352,7 +2353,7 @@ bool MimironRapidBurstAction::Execute(Event event)
                         break;
                 }
             }
-            else if (botAI->IsMainTank(bot) && leviathanMkII)
+            else if (BotRoleService::IsMainTankStatic(bot) && leviathanMkII)
             {
                 targetPosition = ULDUAR_MIMIRON_PHASE4_TANK_SPOT;
             }
@@ -2435,7 +2436,7 @@ bool MimironAerialCommandUnitAction::Execute(Event event)
         }
     }
 
-    if (botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 0))
+    if (BotRoleService::IsMainTankStatic(bot) || BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
     {
         Group* group = bot->GetGroup();
         if (!group)
@@ -2579,7 +2580,7 @@ bool MimironPhase4MarkDpsAction::Execute(Event event)
         return false;
     }
 
-    if (botAI->IsMainTank(bot))
+    if (BotRoleService::IsMainTankStatic(bot))
     {
         Unit* highestHealthUnit = nullptr;
         uint32 highestHealth = 0;
@@ -2917,7 +2918,7 @@ bool YoggSaronMoveToEnterPortalAction::Execute(Event event)
     }
 
     Player* master = botAI->GetMaster();
-    if (master && !botAI->IsTank(master))
+    if (master && !BotRoleService::IsTankStatic(master))
     {
         portalNumber++;
         brainRoomTeamCount--;
@@ -2926,7 +2927,7 @@ bool YoggSaronMoveToEnterPortalAction::Execute(Event event)
     for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
     {
         Player* member = gref->GetSource();
-        if (!member || !member->IsAlive() || botAI->IsTank(member) || botAI->GetMaster()->GetGUID() == member->GetGUID())
+        if (!member || !member->IsAlive() || BotRoleService::IsTankStatic(member) || botAI->GetMaster()->GetGUID() == member->GetGUID())
         {
             continue;
         }
@@ -3218,7 +3219,7 @@ bool YoggSaronLunaticGazeAction::Execute(Event event)
     float newAngle = Position::NormalizeOrientation(angle + M_PI);  // Add 180 degrees (PI radians)
     bot->SetFacingTo(newAngle);
 
-    if (botAI->IsRangedDps(bot))
+    if (BotRoleService::IsRangedDpsStatic(bot))
     {
         if (AI_VALUE(std::string, "rti") != "cross")
         {
@@ -3231,7 +3232,7 @@ bool YoggSaronLunaticGazeAction::Execute(Event event)
 
 bool YoggSaronPhase3PositioningAction::Execute(Event event)
 {
-    if (botAI->IsRanged(bot))
+    if (BotRoleService::IsRangedStatic(bot))
     {
         if (botAI->HasCheat(BotCheatMask::raid))
         {
@@ -3249,7 +3250,7 @@ bool YoggSaronPhase3PositioningAction::Execute(Event event)
         }
     }
 
-    if (botAI->IsMelee(bot) && !botAI->IsTank(bot))
+    if (BotRoleService::IsMeleeStatic(bot) && !BotRoleService::IsTankStatic(bot))
     {
         if (botAI->HasCheat(BotCheatMask::raid))
         {
@@ -3266,7 +3267,7 @@ bool YoggSaronPhase3PositioningAction::Execute(Event event)
         }
     }
 
-    if (botAI->IsTank(bot))
+    if (BotRoleService::IsTankStatic(bot))
     {
         if (bot->GetDistance(ULDUAR_YOGG_SARON_PHASE_3_MELEE_SPOT) > 30.0f)
         {

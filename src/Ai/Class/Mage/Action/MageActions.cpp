@@ -1,3 +1,4 @@
+#include "BotRoleService.h"
 /*
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
  * and/or modify it under version 3 of the License, or (at your option), any later version.
@@ -114,10 +115,10 @@ Unit* CastFocusMagicOnPartyAction::GetTarget()
         if (member->getClass() == CLASS_MAGE)
             return member;
 
-        if (!casterDps && botAI->IsCaster(member) && botAI->IsDps(member))
+        if (!casterDps && BotRoleService::IsCasterStatic(member) && BotRoleService::IsDpsStatic(member))
             casterDps = member;
 
-        if (!healer && botAI->IsHeal(member))
+        if (!healer && BotRoleService::IsHealStatic(member))
             healer = member;
 
         if (!target)

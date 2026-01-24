@@ -1,4 +1,5 @@
 #include "RaidOsTriggers.h"
+#include "BotRoleService.h"
 
 #include "SharedDefines.h"
 
@@ -7,12 +8,12 @@ bool SartharionTankTrigger::IsActive()
     Unit* boss = AI_VALUE2(Unit*, "find target", "sartharion");
     if (!boss) { return false; }
 
-    return botAI->IsTank(bot);
+    return BotRoleService::IsTankStatic(bot);
 }
 
 bool FlameTsunamiTrigger::IsActive()
 {
-    if (botAI->IsTank(bot)) { return false; }
+    if (BotRoleService::IsTankStatic(bot)) { return false; }
 
     Unit* boss = AI_VALUE2(Unit*, "find target", "sartharion");
     if (!boss) { return false; }
@@ -59,12 +60,12 @@ bool SartharionDpsTrigger::IsActive()
     Unit* boss = AI_VALUE2(Unit*, "find target", "sartharion");
     if (!boss) { return false; }
 
-    return botAI->IsDps(bot);
+    return BotRoleService::IsDpsStatic(bot);
 }
 
 bool SartharionMeleePositioningTrigger::IsActive()
 {
-    if (!botAI->IsMelee(bot) || !botAI->IsDps(bot)) { return false; }
+    if (!BotRoleService::IsMeleeStatic(bot) || !BotRoleService::IsDpsStatic(bot)) { return false; }
 
     Unit* boss = AI_VALUE2(Unit*, "find target", "sartharion");
     if (!boss) { return false; }
@@ -78,19 +79,19 @@ bool SartharionMeleePositioningTrigger::IsActive()
 
 bool TwilightPortalEnterTrigger::IsActive()
 {
-    if (botAI->IsMainTank(bot) || botAI->IsHealAssistantOfIndex(bot, 0)) { return false; }
+    if (BotRoleService::IsMainTankStatic(bot) || BotRoleService::IsHealStaticAssistantOfIndex(bot, 0)) { return false; }
 
     // In 25-man, take two healers in. Otherwise just take one
     // if (bot->GetRaidDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
     // {
-    //     if (botAI->IsHealAssistantOfIndex(bot, 0) || botAI->IsHealAssistantOfIndex(bot, 1))
+    //     if (BotRoleService::IsHealStaticAssistantOfIndex(bot, 0) || BotRoleService::IsHealStaticAssistantOfIndex(bot, 1))
     //     {
     //         return false;
     //     }
     // }
     // else
     // {
-    //     if (botAI->IsHealAssistantOfIndex(bot, 0))
+    //     if (BotRoleService::IsHealStaticAssistantOfIndex(bot, 0))
     //     {
     //         return false;
     //     }

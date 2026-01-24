@@ -13,17 +13,55 @@ class PlayerbotAI;
 /**
  * @brief Implementation of IRoleService
  *
- * This service provides role detection and management for bots,
- * extracting this functionality from PlayerbotAI for better testability.
+ * This service provides role detection and management for bots.
+ * Role detection is based on player spec, talents, and group position.
  *
- * The service delegates to PlayerbotAI's static methods during the
- * transition period, allowing gradual migration.
+ * Static methods are provided for direct access without needing a service instance.
+ * Instance methods implement the IRoleService interface for testability/mockability.
  */
 class BotRoleService : public IRoleService
 {
 public:
     BotRoleService() = default;
     ~BotRoleService() override = default;
+
+    // ========================================================================
+    // Static methods for direct access (main implementations)
+    // These can be called without a service instance
+    // ========================================================================
+
+    // Basic role detection (based on strategy or spec)
+    static bool IsTankStatic(Player* player, bool bySpec = false);
+    static bool IsHealStatic(Player* player, bool bySpec = false);
+    static bool IsDpsStatic(Player* player, bool bySpec = false);
+
+    // Combat style detection
+    static bool IsRangedStatic(Player* player, bool bySpec = false);
+    static bool IsMeleeStatic(Player* player, bool bySpec = false);
+    static bool IsCasterStatic(Player* player, bool bySpec = false);
+    static bool IsRangedDpsStatic(Player* player, bool bySpec = false);
+
+    // Hybrid detection
+    static bool IsComboStatic(Player* player);
+
+    // Tank hierarchy
+    static bool IsBotMainTankStatic(Player* player);
+    static bool IsMainTankStatic(Player* player);
+    static bool IsAssistTankStatic(Player* player);
+    static bool IsAssistTankOfIndexStatic(Player* player, int index, bool ignoreDeadPlayers = false);
+
+    // Group role queries (static - use player's group)
+    static uint32 GetGroupTankNumStatic(Player* player);
+    static int32 GetAssistTankIndexStatic(Player* player);
+
+    // Heal/DPS assistant detection
+    static bool IsHealAssistantOfIndexStatic(Player* player, int index);
+    static bool IsRangedDpsAssistantOfIndexStatic(Player* player, int index);
+
+    // ========================================================================
+    // Instance methods (IRoleService interface implementation)
+    // These call the static methods internally, but provide mockable interface
+    // ========================================================================
 
     // Basic role detection
     bool IsTank(Player* player, bool bySpec = false) const override;
@@ -61,9 +99,9 @@ public:
     // Aggro
     bool HasAggro(Unit* unit) const override;
 
-    // Optional: Set the PlayerbotAI context for non-static operations
-    // This is needed during the transition period
+    // Set the bot context for instance methods that need the bot
     void SetBotContext(PlayerbotAI* ai) { botAI_ = ai; }
+    PlayerbotAI* GetBotContext() const { return botAI_; }
 
 private:
     PlayerbotAI* botAI_ = nullptr;

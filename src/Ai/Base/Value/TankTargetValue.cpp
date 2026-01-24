@@ -4,6 +4,7 @@
  */
 
 #include "TankTargetValue.h"
+#include "BotRoleService.h"
 
 #include "AttackersValue.h"
 #include "PlayerbotAIConfig.h"
@@ -32,7 +33,7 @@ public:
         {
             // float max_threat = threatMgr->GetThreat(threatMgr->getCurrentVictim()->getTarget());
             Unit* victim = threatMgr->getCurrentVictim()->getTarget();
-            if (victim && victim->ToPlayer() && botAI->IsMainTank(victim->ToPlayer()))
+            if (victim && victim->ToPlayer() && BotRoleService::IsMainTankStatic(victim->ToPlayer()))
             {
                 return;
             }
@@ -75,7 +76,7 @@ public:
         Player* bot = botAI->GetBot();
         // if group has multiple tanks, main tank just focus on the current target
         Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
-        if (currentTarget && botAI->IsMainTank(bot) && botAI->GetGroupTankNum(bot) > 1)
+        if (currentTarget && BotRoleService::IsMainTankStatic(bot) && BotRoleService::GetGroupTankNumStatic(bot) > 1)
         {
             if (old_unit == currentTarget)
                 return false;
@@ -100,7 +101,7 @@ public:
     }
     int32_t GetIntervalLevel(Unit* unit)
     {
-        if (!botAI->HasAggro(unit))
+        if (!botAI->GetServices().GetRoleService().HasAggro(unit))
         {
             return 2;
         }

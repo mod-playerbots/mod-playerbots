@@ -4,6 +4,7 @@
  */
 
 #include "LfgActions.h"
+#include "BotRoleService.h"
 
 #include "AiFactory.h"
 #include "ItemVisitors.h"
@@ -22,9 +23,9 @@ uint32 LfgJoinAction::GetRoles()
 {
     if (!sRandomPlayerbotMgr->IsRandomBot(bot))
     {
-        if (botAI->IsTank(bot))
+        if (BotRoleService::IsTankStatic(bot))
             return PLAYER_ROLE_TANK;
-        if (botAI->IsHeal(bot))
+        if (BotRoleService::IsHealStatic(bot))
             return PLAYER_ROLE_HEALER;
         else
             return PLAYER_ROLE_DAMAGE;

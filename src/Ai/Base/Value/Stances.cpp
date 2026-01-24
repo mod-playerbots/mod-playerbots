@@ -4,6 +4,7 @@
  */
 
 #include "Stances.h"
+#include "BotRoleService.h"
 
 #include "Arrow.h"
 #include "Event.h"
@@ -93,7 +94,7 @@ public:
                     if (member == bot)
                         index = count;
 
-                    if (member && !botAI->IsRanged(member) && !botAI->IsTank(member))
+                    if (member && !BotRoleService::IsRangedStatic(member) && !BotRoleService::IsTankStatic(member))
                         count++;
                 }
             }
@@ -142,7 +143,7 @@ public:
             for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             {
                 if (Player* member = ref->GetSource())
-                    if (member != bot && botAI->IsRanged(member))
+                    if (member != bot && BotRoleService::IsRangedStatic(member))
                     {
                         angle += target->GetAngle(member);
                         ++count;
@@ -177,7 +178,7 @@ public:
                     if (member == bot)
                         index = count;
 
-                    if (!botAI->IsRanged(member) && !botAI->IsTank(member))
+                    if (!BotRoleService::IsRangedStatic(member) && !BotRoleService::IsTankStatic(member))
                         ++count;
                 }
             }
