@@ -18,7 +18,11 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 # Include directories
+# IMPORTANT: fixtures must come FIRST to provide test stubs for AzerothCore headers
 include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/fixtures
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/mocks
     ${CMAKE_CURRENT_SOURCE_DIR}/../src
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/Bot
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/Bot/Core
@@ -26,8 +30,6 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/Bot/Interface
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/Bot/Service
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/Bot/Handler
-    ${CMAKE_CURRENT_SOURCE_DIR}/mocks
-    ${CMAKE_CURRENT_SOURCE_DIR}/fixtures
 )
 
 # Test sources
@@ -80,6 +82,11 @@ set(TEST_SOURCES
 
 # Create test executable
 add_executable(playerbots_tests ${TEST_SOURCES})
+
+# Force include the test prelude header for all test files
+target_compile_options(playerbots_tests PRIVATE
+    -include "${CMAKE_CURRENT_SOURCE_DIR}/fixtures/TestPrelude.h"
+)
 
 target_link_libraries(playerbots_tests
     GTest::gtest_main

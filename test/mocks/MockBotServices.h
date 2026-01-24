@@ -96,7 +96,9 @@ public:
                  bool checkDuration),
                 (override));
     MOCK_METHOD(bool, HasAura, (uint32 spellId, Unit const* player), (override));
-    MOCK_METHOD(bool, HasAnyAuraOf, (Unit * player, ...), (override));
+    // NOTE: HasAnyAuraOf uses variadic args (...) which GMock cannot mock.
+    // Provide a stub implementation that returns false.
+    bool HasAnyAuraOf(Unit* /*player*/, ...) override { return false; }
     MOCK_METHOD(Aura*, GetAura,
                 (std::string const& spellName, Unit* unit, bool checkIsOwner, bool checkDuration, int checkStack),
                 (override));

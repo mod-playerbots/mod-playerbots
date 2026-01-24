@@ -40,9 +40,9 @@ TEST_F(RoleServiceTest, CanMockHealerRole)
     EXPECT_CALL(mockRoleService, IsHeal(_, _)).WillRepeatedly(Return(true));
     EXPECT_CALL(mockRoleService, IsDps(_, _)).WillRepeatedly(Return(false));
 
-    EXPECT_FALSE(mockRoleService.IsTank(nullptr));
-    EXPECT_TRUE(mockRoleService.IsHeal(nullptr));
-    EXPECT_FALSE(mockRoleService.IsDps(nullptr));
+    EXPECT_FALSE(mockRoleService.IsTank(nullptr, false));
+    EXPECT_TRUE(mockRoleService.IsHeal(nullptr, false));
+    EXPECT_FALSE(mockRoleService.IsDps(nullptr, false));
 }
 
 TEST_F(RoleServiceTest, CanMockDpsRole)
@@ -51,7 +51,7 @@ TEST_F(RoleServiceTest, CanMockDpsRole)
     EXPECT_CALL(mockRoleService, IsHeal(_, _)).WillRepeatedly(Return(false));
     EXPECT_CALL(mockRoleService, IsDps(_, _)).WillRepeatedly(Return(true));
 
-    EXPECT_TRUE(mockRoleService.IsDps(nullptr));
+    EXPECT_TRUE(mockRoleService.IsDps(nullptr, false));
 }
 
 TEST_F(RoleServiceTest, CanMockCombatStyle)
@@ -61,9 +61,9 @@ TEST_F(RoleServiceTest, CanMockCombatStyle)
     EXPECT_CALL(mockRoleService, IsMelee(_, _)).WillOnce(Return(false));
     EXPECT_CALL(mockRoleService, IsCaster(_, _)).WillOnce(Return(true));
 
-    EXPECT_TRUE(mockRoleService.IsRanged(nullptr));
-    EXPECT_FALSE(mockRoleService.IsMelee(nullptr));
-    EXPECT_TRUE(mockRoleService.IsCaster(nullptr));
+    EXPECT_TRUE(mockRoleService.IsRanged(nullptr, false));
+    EXPECT_FALSE(mockRoleService.IsMelee(nullptr, false));
+    EXPECT_TRUE(mockRoleService.IsCaster(nullptr, false));
 }
 
 TEST_F(RoleServiceTest, CanMockTankHierarchy)
@@ -102,7 +102,7 @@ protected:
      */
     bool ShouldUseMeleeAttacks(MockRoleService& roleService, void* player)
     {
-        return roleService.IsMelee(static_cast<Player*>(player));
+        return roleService.IsMelee(static_cast<Player*>(player), false);
     }
 
     /**
@@ -110,7 +110,7 @@ protected:
      */
     bool ShouldStayAtRange(MockRoleService& roleService, void* player)
     {
-        return roleService.IsRanged(static_cast<Player*>(player));
+        return roleService.IsRanged(static_cast<Player*>(player), false);
     }
 
     /**
@@ -118,7 +118,7 @@ protected:
      */
     bool ShouldHealOthers(MockRoleService& roleService, void* player)
     {
-        return roleService.IsHeal(static_cast<Player*>(player));
+        return roleService.IsHeal(static_cast<Player*>(player), false);
     }
 
     /**
@@ -127,7 +127,7 @@ protected:
     bool ShouldTaunt(MockRoleService& roleService, void* player)
     {
         auto* p = static_cast<Player*>(player);
-        return roleService.IsTank(p) && roleService.IsMainTank(p);
+        return roleService.IsTank(p, false) && roleService.IsMainTank(p);
     }
 };
 
