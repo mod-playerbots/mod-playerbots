@@ -1,4 +1,5 @@
 #include "Playerbots.h"
+#include "BotSpellService.h"
 #include "BotRoleService.h"
 #include "ForgeOfSoulsActions.h"
 #include "ForgeOfSoulsStrategy.h"
@@ -58,7 +59,7 @@ bool BronjahmGroupPositionAction::Execute(Event event)
     if (!boss)
         return false;
 
-    Aura* aura = botAI->GetAura("soulstorm", boss);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("soulstorm", boss);
     bool hasAura = aura;
 
     Unit* corruptedSoul = bot->FindNearestCreature(NPC_CORRUPTED_SOUL_FRAGMENT, 50.0f);
@@ -148,7 +149,7 @@ bool DevourerOfSoulsAction::Execute(Event event)
     if (!boss)
         return false;
 
-    Aura* aura = botAI->GetAura("mirrored soul", boss);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("mirrored soul", boss);
     bool hasAura = aura;
 
     if (!BotRoleService::IsTankStatic(bot) && !BotRoleService::IsHealStatic(bot) && hasAura)

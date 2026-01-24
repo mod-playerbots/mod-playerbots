@@ -1,3 +1,4 @@
+#include "BotSpellService.h"
 /*
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
  * and/or modify it under version 3 of the License, or (at your option), any later version.
@@ -22,7 +23,7 @@ public:
     void CheckAttacker(Unit* creature, ThreatMgr* threatMgr) override
     {
         Player* bot = botAI->GetBot();
-        if (!botAI->CanCastSpell(spell, creature))
+        if (!botAI->GetServices().GetSpellService().CanCastSpell(spell, creature))
             return;
 
         if (*botAI->GetAiObjectContext()->GetValue<Unit*>("rti cc target") == creature)

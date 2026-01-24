@@ -29,6 +29,7 @@
 #include "Vehicle.h"
 #include <RtiTargetValue.h>
 #include <TankAssistStrategy.h>
+#include "BotSpellService.h"
 
 const std::string ADD_STRATEGY_CHAR = "+";
 const std::string REMOVE_STRATEGY_CHAR = "-";
@@ -138,16 +139,16 @@ bool FlameLeviathanVehicleAction::DemolisherAction(Unit* target)
     if (!bluePyrite || (vehicleBase_->GetPower(POWER_ENERGY) >= 20) || bluePyrite->GetDuration() <= 5000)
     {
         uint32 spellId = 62490;
-        if (botAI->CanCastVehicleSpell(spellId, target))
-            if (botAI->CastVehicleSpell(spellId, target))
+        if (botAI->GetServices().GetSpellService().CanCastVehicleSpell(spellId, target))
+            if (botAI->GetServices().GetSpellService().CastVehicleSpell(spellId, target))
             {
                 vehicleBase_->AddSpellCooldown(spellId, 0, 1000);
                 return true;
             }
     }
     uint32 spellId = 62306;
-    if (botAI->CanCastVehicleSpell(spellId, target))
-        if (botAI->CastVehicleSpell(spellId, target))
+    if (botAI->GetServices().GetSpellService().CanCastVehicleSpell(spellId, target))
+        if (botAI->GetServices().GetSpellService().CastVehicleSpell(spellId, target))
         {
             vehicleBase_->AddSpellCooldown(spellId, 0, 1000);
             return true;
@@ -173,8 +174,8 @@ bool FlameLeviathanVehicleAction::DemolisherTurretAction(Unit* target)
             if (vehicleBase_->GetPower(POWER_ENERGY) <= 25) // Liquid Pyrite
             {
                 uint32 spellId = 62479;
-                if (botAI->CanCastVehicleSpell(spellId, unit))
-                    if (botAI->CastVehicleSpell(spellId, unit))
+                if (botAI->GetServices().GetSpellService().CanCastVehicleSpell(spellId, unit))
+                    if (botAI->GetServices().GetSpellService().CastVehicleSpell(spellId, unit))
                     {
                         vehicleBase_->AddSpellCooldown(spellId, 0, 1000);
                         return true;
@@ -193,8 +194,8 @@ bool FlameLeviathanVehicleAction::DemolisherTurretAction(Unit* target)
             if (unit->GetEntry() == 33214) // Mechanolift 304-A
             {
                 uint32 spellId = 64979;
-                if (botAI->CanCastVehicleSpell(spellId, unit))
-                    if (botAI->CastVehicleSpell(spellId, unit))
+                if (botAI->GetServices().GetSpellService().CanCastVehicleSpell(spellId, unit))
+                    if (botAI->GetServices().GetSpellService().CastVehicleSpell(spellId, unit))
                     {
                         vehicleBase_->AddSpellCooldown(spellId, 0, 1000);
                         return true;
@@ -205,8 +206,8 @@ bool FlameLeviathanVehicleAction::DemolisherTurretAction(Unit* target)
     if (!target)
         return false;
     uint32 spellId = 62634;
-    if (botAI->CanCastVehicleSpell(spellId, target))
-        if (botAI->CastVehicleSpell(spellId, target))
+    if (botAI->GetServices().GetSpellService().CanCastVehicleSpell(spellId, target))
+        if (botAI->GetServices().GetSpellService().CastVehicleSpell(spellId, target))
         {
             vehicleBase_->AddSpellCooldown(spellId, 0, 1000);
             return true;
@@ -221,16 +222,16 @@ bool FlameLeviathanVehicleAction::SiegeEngineAction(Unit* target)
     if (target->GetCurrentSpell(CURRENT_CHANNELED_SPELL) || target->HasAura(62396))
     {
         uint32 spellId = 62522;
-        if (botAI->CanCastVehicleSpell(spellId, target))
-            if (botAI->CastVehicleSpell(spellId, target))
+        if (botAI->GetServices().GetSpellService().CanCastVehicleSpell(spellId, target))
+            if (botAI->GetServices().GetSpellService().CastVehicleSpell(spellId, target))
             {
                 vehicleBase_->AddSpellCooldown(spellId, 0, 10000);
                 return true;
             }
     }
     uint32 spellId = 62345;
-    if (vehicleBase_->GetPower(POWER_ENERGY) >= 80 && botAI->CanCastVehicleSpell(spellId, target))
-        if (botAI->CastVehicleSpell(spellId, target))
+    if (vehicleBase_->GetPower(POWER_ENERGY) >= 80 && botAI->GetServices().GetSpellService().CanCastVehicleSpell(spellId, target))
+        if (botAI->GetServices().GetSpellService().CastVehicleSpell(spellId, target))
         {
             vehicleBase_->AddSpellCooldown(spellId, 0, 1000);
             return true;
@@ -243,8 +244,8 @@ bool FlameLeviathanVehicleAction::SiegeEngineTurretAction(Unit* target)
     if (!target)
         return false;
     uint32 spellId = 62358;
-    if (botAI->CanCastVehicleSpell(spellId, target))
-        if (botAI->CastVehicleSpell(spellId, target))
+    if (botAI->GetServices().GetSpellService().CanCastVehicleSpell(spellId, target))
+        if (botAI->GetServices().GetSpellService().CastVehicleSpell(spellId, target))
         {
             vehicleBase_->AddSpellCooldown(spellId, 0, 1000);
             return true;
@@ -257,15 +258,15 @@ bool FlameLeviathanVehicleAction::ChopperAction(Unit* target)
     if (!target)
         return false;
     uint32 spellId = 62286;
-    if (botAI->CanCastVehicleSpell(spellId, target))
-        if (botAI->CastVehicleSpell(spellId, target))
+    if (botAI->GetServices().GetSpellService().CanCastVehicleSpell(spellId, target))
+        if (botAI->GetServices().GetSpellService().CastVehicleSpell(spellId, target))
         {
             vehicleBase_->AddSpellCooldown(spellId, 0, 15000);
             return true;
         }
     spellId = 62974;
-    if (botAI->CanCastVehicleSpell(spellId, target))
-        if (botAI->CastVehicleSpell(spellId, target))
+    if (botAI->GetServices().GetSpellService().CanCastVehicleSpell(spellId, target))
+        if (botAI->GetServices().GetSpellService().CastVehicleSpell(spellId, target))
         {
             vehicleBase_->AddSpellCooldown(spellId, 0, 1000);
             return true;
@@ -315,7 +316,7 @@ bool FlameLeviathanEnterVehicleAction::EnterVehicle(Unit* vehicleBase, bool move
     if (dist > INTERACTION_DISTANCE)
         return MoveTo(vehicleBase);
 
-    botAI->RemoveShapeshift();
+    botAI->GetServices().GetSpellService().RemoveShapeshift();
     // Use HandleSpellClick instead of Unit::EnterVehicle to handle special vehicle script (ulduar)
     vehicleBase->HandleSpellClick(bot);
 
@@ -1389,7 +1390,7 @@ bool KologarnRubbleSlowdownAction::Execute(Event event)
     if (!currentSkullUnit || !currentSkullUnit->IsAlive() || currentSkullUnit->GetEntry() != NPC_RUBBLE)
         return false;
 
-    return botAI->CastSpell("frost trap", currentSkullUnit);
+    return botAI->GetServices().GetSpellService().CastSpell("frost trap", currentSkullUnit);
 }
 
 bool KologarnEyebeamAction::Execute(Event event)

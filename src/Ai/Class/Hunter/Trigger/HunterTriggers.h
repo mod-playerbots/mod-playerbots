@@ -118,7 +118,7 @@ public:
 
     bool IsActive() override
     {
-        return botAI->HasAura("lock and load", botAI->GetBot());
+        return botAI->GetServices().GetSpellService().HasAura("lock and load", botAI->GetBot());
     }
 };
 

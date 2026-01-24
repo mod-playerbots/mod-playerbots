@@ -4,6 +4,7 @@
  */
 
 #include "WarlockTriggers.h"
+#include "BotSpellService.h"
 #include "GenericTriggers.h"
 #include "Playerbots.h"
 #include "PlayerbotAI.h"
@@ -69,14 +70,14 @@ bool FearTrigger::IsActive()
 bool DemonArmorTrigger::IsActive()
 {
     Unit* target = GetTarget();
-    return !botAI->HasAura("demon skin", target) && !botAI->HasAura("demon armor", target) &&
-           !botAI->HasAura("fel armor", target);
+    return !botAI->GetServices().GetSpellService().HasAura("demon skin", target) && !botAI->GetServices().GetSpellService().HasAura("demon armor", target) &&
+           !botAI->GetServices().GetSpellService().HasAura("fel armor", target);
 }
 
 bool SoulLinkTrigger::IsActive()
 {
     Unit* target = GetTarget();
-    return !botAI->HasAura("soul link", target);
+    return !botAI->GetServices().GetSpellService().HasAura("soul link", target);
 }
 
 bool DemonicEmpowermentTrigger::IsActive()
@@ -84,12 +85,12 @@ bool DemonicEmpowermentTrigger::IsActive()
     Pet* pet = bot->GetPet();
     if (!pet)
         return false;
-    return !botAI->HasAura("demonic empowerment", pet);
+    return !botAI->GetServices().GetSpellService().HasAura("demonic empowerment", pet);
 }
 
 bool DecimationTrigger::IsActive()
 {
-    Aura* aura = botAI->GetAura(getName(), GetTarget(), false, true);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura(getName(), GetTarget(), false, true);
     return aura && aura->GetDuration() > 3000;
 }
 
@@ -110,7 +111,7 @@ bool LifeTapTrigger::IsActive()
 // Checks if the Life Tap Glyph buff is active
 bool LifeTapGlyphBuffTrigger::IsActive()
 {
-    if (!botAI->HasAura(63320, bot))
+    if (!botAI->GetServices().GetSpellService().HasAura(63320, bot))
         return false;
 
     return BuffTrigger::IsActive();

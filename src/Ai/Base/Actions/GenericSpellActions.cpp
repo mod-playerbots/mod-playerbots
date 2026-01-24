@@ -1,3 +1,4 @@
+#include "BotSpellService.h"
 /*
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
  * and/or modify it under version 3 of the License, or (at your option), any later version.
@@ -73,15 +74,15 @@ bool CastSpellAction::Execute(Event event)
                 castId = spellInfo->Id;
         }
 
-        return botAI->CastSpell(castId, bot);
+        return botAI->GetServices().GetSpellService().CastSpell(castId, bot);
     }
 
-    return botAI->CastSpell(spell, GetTarget());
+    return botAI->GetServices().GetSpellService().CastSpell(spell, GetTarget());
 }
 
 bool CastSpellAction::isPossible()
 {
-    if (botAI->IsInVehicle() && !botAI->IsInVehicle(false, false, true))
+    if (botAI->GetServices().GetSpellService().IsInVehicle() && !botAI->GetServices().GetSpellService().IsInVehicle(false, false, true))
     {
         if (!sPlayerbotAIConfig->logInGroupOnly || (bot->GetGroup() && botAI->HasRealPlayerMaster()))
         {
@@ -104,12 +105,12 @@ bool CastSpellAction::isPossible()
     }
 
     // Spell* currentSpell = bot->GetCurrentSpell(CURRENT_GENERIC_SPELL); //not used, line marked for removal.
-    return botAI->CanCastSpell(spell, GetTarget());
+    return botAI->GetServices().GetSpellService().CanCastSpell(spell, GetTarget());
 }
 
 bool CastSpellAction::isUseful()
 {
-    if (botAI->IsInVehicle() && !botAI->IsInVehicle(false, false, true))
+    if (botAI->GetServices().GetSpellService().IsInVehicle() && !botAI->GetServices().GetSpellService().IsInVehicle(false, false, true))
         return false;
 
     if (spell == "mount" && !bot->IsMounted() && !bot->IsInCombat())
@@ -175,7 +176,7 @@ bool CastAuraSpellAction::isUseful()
 {
     if (!GetTarget() || !CastSpellAction::isUseful())
         return false;
-    Aura* aura = botAI->GetAura(spell, GetTarget(), isOwner, checkDuration);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura(spell, GetTarget(), isOwner, checkDuration);
     if (!aura)
         return true;
     if (beforeDuration && aura->GetDuration() < beforeDuration)
@@ -241,7 +242,7 @@ bool BuffOnPartyAction::Execute(Event event)
     auto SendGroupRP = ai::chat::MakeGroupAnnouncer(bot);
     castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName, /*announceOnMissing=*/true, SendGroupRP);
 
-    return botAI->CastSpell(castName, GetTarget());
+    return botAI->GetServices().GetSpellService().CastSpell(castName, GetTarget());
 }
 // End greater buff fix
 
@@ -291,28 +292,28 @@ Value<Unit*>* CastSnareSpellAction::GetTargetValue() { return context->GetValue<
 
 Value<Unit*>* CastCrowdControlSpellAction::GetTargetValue() { return context->GetValue<Unit*>("cc target", getName()); }
 
-bool CastCrowdControlSpellAction::Execute(Event event) { return botAI->CastSpell(getName(), GetTarget()); }
+bool CastCrowdControlSpellAction::Execute(Event event) { return botAI->GetServices().GetSpellService().CastSpell(getName(), GetTarget()); }
 
-bool CastCrowdControlSpellAction::isPossible() { return botAI->CanCastSpell(getName(), GetTarget()); }
+bool CastCrowdControlSpellAction::isPossible() { return botAI->GetServices().GetSpellService().CanCastSpell(getName(), GetTarget()); }
 
 bool CastCrowdControlSpellAction::isUseful() { return true; }
 
 std::string const CastProtectSpellAction::GetTargetName() { return "party member to protect"; }
 
-bool CastProtectSpellAction::isUseful() { return GetTarget() && !botAI->HasAura(spell, GetTarget()); }
+bool CastProtectSpellAction::isUseful() { return GetTarget() && !botAI->GetServices().GetSpellService().HasAura(spell, GetTarget()); }
 
 bool CastVehicleSpellAction::isPossible()
 {
     uint32 spellId = AI_VALUE2(uint32, "vehicle spell id", spell);
-    return botAI->CanCastVehicleSpell(spellId, GetTarget());
+    return botAI->GetServices().GetSpellService().CanCastVehicleSpell(spellId, GetTarget());
 }
 
-bool CastVehicleSpellAction::isUseful() { return botAI->IsInVehicle(false, true); }
+bool CastVehicleSpellAction::isUseful() { return botAI->GetServices().GetSpellService().IsInVehicle(false, true); }
 
 bool CastVehicleSpellAction::Execute(Event event)
 {
     uint32 spellId = AI_VALUE2(uint32, "vehicle spell id", spell);
-    return botAI->CastVehicleSpell(spellId, GetTarget());
+    return botAI->GetServices().GetSpellService().CastVehicleSpell(spellId, GetTarget());
 }
 
 bool UseTrinketAction::Execute(Event event)
@@ -379,7 +380,7 @@ bool UseTrinketAction::UseTrinket(Item* item)
             // This will lead to multiple hundreds of entries in m_appliedAuras -> Once killing an enemy -> Big diff time spikes
             if (spellProcFlag != 0) return false;
 
-            if (!botAI->CanCastSpell(spellId, bot, false))
+            if (!botAI->GetServices().GetSpellService().CanCastSpell(spellId, bot, false))
             {
                 return false;
             }

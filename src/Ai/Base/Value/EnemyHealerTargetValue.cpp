@@ -4,6 +4,7 @@
  */
 
 #include "EnemyHealerTargetValue.h"
+#include "BotSpellService.h"
 
 #include "Playerbots.h"
 #include "ServerFacade.h"
@@ -23,7 +24,7 @@ Unit* EnemyHealerTargetValue::Calculate()
         if (sServerFacade->GetDistance2d(bot, unit) > botAI->GetRange("spell"))
             continue;
 
-        if (!botAI->IsInterruptableSpellCasting(unit, spell))
+        if (!botAI->GetServices().GetSpellService().IsInterruptableSpellCasting(unit, spell))
             continue;
 
         Spell* spell = unit->GetCurrentSpell(CURRENT_GENERIC_SPELL);

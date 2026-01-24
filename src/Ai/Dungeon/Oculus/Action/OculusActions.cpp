@@ -1,4 +1,5 @@
 #include "Playerbots.h"
+#include "BotSpellService.h"
 #include "BotRoleService.h"
 #include "OculusActions.h"
 #include "OculusStrategy.h"
@@ -191,8 +192,8 @@ bool OccDrakeAttackAction::Execute(Event event)
 
 bool OccDrakeAttackAction::CastDrakeSpellAction(Unit* target, uint32 spellId, uint32 cooldown)
 {
-    if (botAI->CanCastVehicleSpell(spellId, target))
-        if (botAI->CastVehicleSpell(spellId, target))
+    if (botAI->GetServices().GetSpellService().CanCastVehicleSpell(spellId, target))
+        if (botAI->GetServices().GetSpellService().CastVehicleSpell(spellId, target))
         {
             vehicleBase->AddSpellCooldown(spellId, 0, cooldown);
             return true;

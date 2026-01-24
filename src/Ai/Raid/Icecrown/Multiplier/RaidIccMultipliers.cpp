@@ -1,4 +1,5 @@
 #include "RaidIccMultipliers.h"
+#include "BotSpellService.h"
 #include "BotRoleService.h"
 
 #include "ChooseTargetActions.h"
@@ -89,7 +90,7 @@ float IccAddsDbsMultiplier::GetValue(Action* action)
 
     if (BotRoleService::IsMainTankStatic(bot))
     {
-        Aura* aura = botAI->GetAura("rune of blood", bot);
+        Aura* aura = botAI->GetServices().GetSpellService().GetAura("rune of blood", bot);
         if (aura)
         {
             if (dynamic_cast<MovementAction*>(action))
@@ -114,7 +115,7 @@ float IccDogsMultiplier::GetValue(Action* action)
 
     if (BotRoleService::IsMainTankStatic(bot))
     {
-        Aura* aura = botAI->GetAura("mortal wound", bot, false, true);
+        Aura* aura = botAI->GetServices().GetSpellService().GetAura("mortal wound", bot, false, true);
         if (aura && aura->GetStackAmount() >= 8)
         {
             if (dynamic_cast<MovementAction*>(action))
@@ -141,7 +142,7 @@ float IccFestergutMultiplier::GetValue(Action* action)
 
     if (BotRoleService::IsMainTankStatic(bot))
     {
-        Aura* aura = botAI->GetAura("gastric bloat", bot, false, true);
+        Aura* aura = botAI->GetServices().GetSpellService().GetAura("gastric bloat", bot, false, true);
         if (aura && aura->GetStackAmount() >= 6)
         {
             if (dynamic_cast<MovementAction*>(action))
@@ -236,8 +237,8 @@ float IccAddsPutricideMultiplier::GetValue(Action* action)
     if (!boss)
         return 1.0f;
 
-    bool hasGaseousBloat = botAI->HasAura("Gaseous Bloat", bot);
-    bool hasUnboundPlague = botAI->HasAura("Unbound Plague", bot);
+    bool hasGaseousBloat = botAI->GetServices().GetSpellService().HasAura("Gaseous Bloat", bot);
+    bool hasUnboundPlague = botAI->GetServices().GetSpellService().HasAura("Unbound Plague", bot);
 
     if (!(bot->getClass() == CLASS_HUNTER) && dynamic_cast<FleeAction*>(action))
         return 0.0f;
@@ -253,7 +254,7 @@ float IccAddsPutricideMultiplier::GetValue(Action* action)
 
     if (BotRoleService::IsMainTankStatic(bot))
     {
-        Aura* aura = botAI->GetAura("mutated plague", bot, false, true);
+        Aura* aura = botAI->GetServices().GetSpellService().GetAura("mutated plague", bot, false, true);
         if (aura && aura->GetStackAmount() >= 4)
         {
             if (dynamic_cast<MovementAction*>(action))
@@ -312,7 +313,7 @@ float IccBpcAssistMultiplier::GetValue(Action* action)
         dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FollowAction*>(action))
         return 0.0f;
 
-    Aura* aura = botAI->GetAura("Shadow Prison", bot, false, true);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("Shadow Prison", bot, false, true);
     if (aura)
     {
         if (aura->GetStackAmount() > 18 && BotRoleService::IsTankStatic(bot))
@@ -431,8 +432,8 @@ float IccBqlMultiplier::GetValue(Action* action)
     if (!boss)
         return 1.0f;
 
-    Aura* aura2 = botAI->GetAura("Swarming Shadows", bot);
-    Aura* aura = botAI->GetAura("Frenzied Bloodthirst", bot);
+    Aura* aura2 = botAI->GetServices().GetSpellService().GetAura("Swarming Shadows", bot);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("Frenzied Bloodthirst", bot);
 
     if (BotRoleService::IsRangedStatic(bot))
         if (dynamic_cast<AvoidAoeAction*>(action) || dynamic_cast<FleeAction*>(action) ||
@@ -488,8 +489,8 @@ float IccValithriaDreamCloudMultiplier::GetValue(Action* action)
 {
     Unit* boss = bot->FindNearestCreature(NPC_VALITHRIA_DREAMWALKER, 100.0f);
 
-    Aura* twistedNightmares = botAI->GetAura("Twisted Nightmares", bot);
-    Aura* emeraldVigor = botAI->GetAura("Emerald Vigor", bot);
+    Aura* twistedNightmares = botAI->GetServices().GetSpellService().GetAura("Twisted Nightmares", bot);
+    Aura* emeraldVigor = botAI->GetServices().GetSpellService().GetAura("Emerald Vigor", bot);
 
     if (!boss && !bot->HasAura(SPELL_DREAM_STATE))
         return 1.0f;
@@ -526,7 +527,7 @@ float IccSindragosaMultiplier::GetValue(Action* action)
     Unit* boss = bot->FindNearestCreature(NPC_SINDRAGOSA, 200.0f);
     if (!boss)
         return 1.0f;
-    Aura* aura = botAI->GetAura("Unchained Magic", bot, false, true);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("Unchained Magic", bot, false, true);
 
     Difficulty diff = bot->GetRaidDifficulty();
 
@@ -607,7 +608,7 @@ float IccSindragosaMultiplier::GetValue(Action* action)
 
     if (BotRoleService::IsMainTankStatic(bot))
     {
-        Aura* aura = botAI->GetAura("mystic buffet", bot, false, true);
+        Aura* aura = botAI->GetServices().GetSpellService().GetAura("mystic buffet", bot, false, true);
         if (aura && aura->GetStackAmount() >= 6)
         {
             if (dynamic_cast<MovementAction*>(action))
@@ -712,7 +713,7 @@ float IccLichKingAddsMultiplier::GetValue(Action* action)
         {
             if (Player* member = ref->GetSource())
             {
-                if (botAI->HasAura("Necrotic Plague", member))
+                if (botAI->GetServices().GetSpellService().HasAura("Necrotic Plague", member))
                 {
                     anyBotHasPlague = true;
                     plaguedPlayerGuid = member->GetGUID();  // Changed from GetObjectGuid()
@@ -839,7 +840,7 @@ float IccLichKingAddsMultiplier::GetValue(Action* action)
 
     }
 
-    if (BotRoleService::IsRangedStatic(bot) && !botAI->GetAura("Harvest Soul", bot, false, false))
+    if (BotRoleService::IsRangedStatic(bot) && !botAI->GetServices().GetSpellService().GetAura("Harvest Soul", bot, false, false))
     {
         // Check for defile presence
         GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");

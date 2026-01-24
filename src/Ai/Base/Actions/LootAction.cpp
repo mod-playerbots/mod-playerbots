@@ -17,6 +17,7 @@
 #include "ServerFacade.h"
 #include "GuildMgr.h"
 #include "BroadcastHelper.h"
+#include "BotSpellService.h"
 
 bool LootAction::Execute(Event /*event*/)
 {
@@ -122,13 +123,13 @@ bool OpenLootAction::DoLoot(LootObject& lootObject)
         switch (skill)
         {
             case SKILL_ENGINEERING:
-                return botAI->HasSkill(SKILL_ENGINEERING) ? botAI->CastSpell(ENGINEERING, creature) : false;
+                return botAI->HasSkill(SKILL_ENGINEERING) ? botAI->GetServices().GetSpellService().CastSpell(ENGINEERING, creature) : false;
             case SKILL_HERBALISM:
-                return botAI->HasSkill(SKILL_HERBALISM) ? botAI->CastSpell(32605, creature) : false;
+                return botAI->HasSkill(SKILL_HERBALISM) ? botAI->GetServices().GetSpellService().CastSpell(32605, creature) : false;
             case SKILL_MINING:
-                return botAI->HasSkill(SKILL_MINING) ? botAI->CastSpell(32606, creature) : false;
+                return botAI->HasSkill(SKILL_MINING) ? botAI->GetServices().GetSpellService().CastSpell(32606, creature) : false;
             default:
-                return botAI->HasSkill(SKILL_SKINNING) ? botAI->CastSpell(SKINNING, creature) : false;
+                return botAI->HasSkill(SKILL_SKINNING) ? botAI->GetServices().GetSpellService().CastSpell(SKINNING, creature) : false;
         }
     }
 
@@ -148,16 +149,16 @@ bool OpenLootAction::DoLoot(LootObject& lootObject)
         return false;
 
     if (lootObject.skillId == SKILL_MINING)
-        return botAI->HasSkill(SKILL_MINING) ? botAI->CastSpell(MINING, bot) : false;
+        return botAI->HasSkill(SKILL_MINING) ? botAI->GetServices().GetSpellService().CastSpell(MINING, bot) : false;
 
     if (lootObject.skillId == SKILL_HERBALISM)
-        return botAI->HasSkill(SKILL_HERBALISM) ? botAI->CastSpell(HERB_GATHERING, bot) : false;
+        return botAI->HasSkill(SKILL_HERBALISM) ? botAI->GetServices().GetSpellService().CastSpell(HERB_GATHERING, bot) : false;
 
     uint32 spellId = GetOpeningSpell(lootObject);
     if (!spellId)
         return false;
 
-    return botAI->CastSpell(spellId, bot);
+    return botAI->GetServices().GetSpellService().CastSpell(spellId, bot);
 }
 
 uint32 OpenLootAction::GetOpeningSpell(LootObject& lootObject)

@@ -17,7 +17,7 @@
 bool KillCommandTrigger::IsActive()
 {
     Unit* target = GetTarget();
-    return !botAI->HasAura("kill command", target);
+    return !botAI->GetServices().GetSpellService().HasAura("kill command", target);
 }
 
 bool BlackArrowTrigger::IsActive()
@@ -32,16 +32,16 @@ bool BlackArrowTrigger::IsActive()
 bool HunterAspectOfTheHawkTrigger::IsActive()
 {
     Unit* target = GetTarget();
-    return SpellTrigger::IsActive() && !botAI->HasAura("aspect of the hawk", target) &&
-           !botAI->HasAura("aspect of the dragonhawk", target) &&
+    return SpellTrigger::IsActive() && !botAI->GetServices().GetSpellService().HasAura("aspect of the hawk", target) &&
+           !botAI->GetServices().GetSpellService().HasAura("aspect of the dragonhawk", target) &&
            (!AI_VALUE2(bool, "has mana", "self target") || AI_VALUE2(uint8, "mana", "self target") > 70);
 }
 
 bool HunterNoStingsActiveTrigger::IsActive()
 {
     Unit* target = AI_VALUE(Unit*, "current target");
-    return DebuffTrigger::IsActive() && target && !botAI->HasAura("serpent sting", target, false, true) &&
-           !botAI->HasAura("scorpid sting", target, false, true) && !botAI->HasAura("viper sting", target, false, true);
+    return DebuffTrigger::IsActive() && target && !botAI->GetServices().GetSpellService().HasAura("serpent sting", target, false, true) &&
+           !botAI->GetServices().GetSpellService().HasAura("scorpid sting", target, false, true) && !botAI->GetServices().GetSpellService().HasAura("viper sting", target, false, true);
     return BuffTrigger::IsActive();
 }
 
@@ -73,14 +73,14 @@ bool HunterPetNotHappy::IsActive()
 
 bool HunterAspectOfTheViperTrigger::IsActive()
 {
-    return SpellTrigger::IsActive() && !botAI->HasAura(spell, GetTarget()) &&
+    return SpellTrigger::IsActive() && !botAI->GetServices().GetSpellService().HasAura(spell, GetTarget()) &&
            AI_VALUE2(uint8, "mana", "self target") < (sPlayerbotAIConfig->lowMana / 2);
     ;
 }
 
 bool HunterAspectOfThePackTrigger::IsActive()
 {
-    return BuffTrigger::IsActive() && !botAI->HasAura("aspect of the cheetah", GetTarget());
+    return BuffTrigger::IsActive() && !botAI->GetServices().GetSpellService().HasAura("aspect of the cheetah", GetTarget());
 };
 
 bool HunterLowAmmoTrigger::IsActive()
@@ -121,7 +121,7 @@ bool NoTrackTrigger::IsActive()
 
     for (auto &track: track_list)
     {
-        if (botAI->HasAura(track, bot))
+        if (botAI->GetServices().GetSpellService().HasAura(track, bot))
             return false;
     }
     return true;
@@ -136,8 +136,8 @@ bool SerpentStingOnAttackerTrigger::IsActive()
     {
         return false;
     }
-    return !botAI->HasAura("scorpid sting", target, false, true) &&
-           !botAI->HasAura("viper sting", target, false, true);
+    return !botAI->GetServices().GetSpellService().HasAura("scorpid sting", target, false, true) &&
+           !botAI->GetServices().GetSpellService().HasAura("viper sting", target, false, true);
     return BuffTrigger::IsActive();
 }
 

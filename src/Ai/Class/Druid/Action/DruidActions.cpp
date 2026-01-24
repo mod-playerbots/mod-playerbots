@@ -10,6 +10,7 @@
 #include "ServerFacade.h"
 #include "AoeValues.h"
 #include "TargetValue.h"
+#include "BotSpellService.h"
 
 std::vector<NextAction> CastAbolishPoisonAction::getAlternatives()
 {
@@ -28,11 +29,11 @@ Value<Unit*>* CastEntanglingRootsCcAction::GetTargetValue()
     return context->GetValue<Unit*>("cc target", "entangling roots");
 }
 
-bool CastEntanglingRootsCcAction::Execute(Event event) { return botAI->CastSpell("entangling roots", GetTarget()); }
+bool CastEntanglingRootsCcAction::Execute(Event event) { return botAI->GetServices().GetSpellService().CastSpell("entangling roots", GetTarget()); }
 
 Value<Unit*>* CastHibernateCcAction::GetTargetValue() { return context->GetValue<Unit*>("cc target", "hibernate"); }
 
-bool CastHibernateCcAction::Execute(Event event) { return botAI->CastSpell("hibernate", GetTarget()); }
+bool CastHibernateCcAction::Execute(Event event) { return botAI->GetServices().GetSpellService().CastSpell("hibernate", GetTarget()); }
 bool CastStarfallAction::isUseful()
 {
     if (!CastSpellAction::isUseful())
@@ -53,7 +54,7 @@ bool CastStarfallAction::isUseful()
     if (aoeCount < 2)
     {
         Unit* target = context->GetValue<Unit*>("current target")->Get();
-        if (!target || (!botAI->HasAura("moonfire", target) && !botAI->HasAura("insect swarm", target)))
+        if (!target || (!botAI->GetServices().GetSpellService().HasAura("moonfire", target) && !botAI->GetServices().GetSpellService().HasAura("insect swarm", target)))
             return false;
     }
 
@@ -95,7 +96,7 @@ Unit* CastRejuvenationOnNotFullAction::GetTarget()
         {
             continue;
         }
-        if (botAI->HasAura("rejuvenation", player))
+        if (botAI->GetServices().GetSpellService().HasAura("rejuvenation", player))
         {
             continue;
         }

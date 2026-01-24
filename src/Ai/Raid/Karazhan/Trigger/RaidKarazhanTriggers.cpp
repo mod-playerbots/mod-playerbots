@@ -1,3 +1,4 @@
+#include "BotSpellService.h"
 #include "RaidKarazhanTriggers.h"
 #include "BotRoleService.h"
 #include "RaidKarazhanHelpers.h"
@@ -352,7 +353,7 @@ bool NightbaneMainTankIsSusceptibleToFearTrigger::IsActive()
     }
 
     return mainTank && !mainTank->HasAura(SPELL_FEAR_WARD) &&
-           botAI->CanCastSpell("fear ward", mainTank);
+           botAI->GetServices().GetSpellService().CanCastSpell("fear ward", mainTank);
 }
 
 bool NightbanePetsIgnoreCollisionToChaseFlyingBossTrigger::IsActive()

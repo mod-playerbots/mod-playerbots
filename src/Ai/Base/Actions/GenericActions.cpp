@@ -4,6 +4,7 @@
  */
 
 #include "GenericActions.h"
+#include "BotSpellService.h"
 #include "PlayerbotAI.h"
 #include "Player.h"
 #include "Pet.h"
@@ -48,7 +49,7 @@ static std::vector<uint32> disabledPetSpells = {
 bool MeleeAction::isUseful()
 {
     // do not allow if can't attack from vehicle
-    if (botAI->IsInVehicle() && !botAI->IsInVehicle(false, false, true))
+    if (botAI->GetServices().GetSpellService().IsInVehicle() && !botAI->GetServices().GetSpellService().IsInVehicle(false, false, true))
         return false;
 
     return true;

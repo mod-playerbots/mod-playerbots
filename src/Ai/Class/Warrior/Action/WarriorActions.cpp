@@ -7,10 +7,11 @@
 #include "BotRoleService.h"
 
 #include "Playerbots.h"
+#include "BotSpellService.h"
 
 bool CastSunderArmorAction::isUseful()
 {
-    Aura* aura = botAI->GetAura("sunder armor", GetTarget(), false, true);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("sunder armor", GetTarget(), false, true);
     return !aura || aura->GetStackAmount() < 5 || aura->GetDuration() <= 6000;
 }
 
@@ -37,7 +38,7 @@ Unit* CastVigilanceAction::GetTarget()
             continue;
 
         // Check if member has Vigilance applied by the bot
-        if (!currentVigilanceTarget && botAI->HasAura("vigilance", member, false, true))
+        if (!currentVigilanceTarget && botAI->GetServices().GetSpellService().HasAura("vigilance", member, false, true))
         {
             currentVigilanceTarget = member;
         }
@@ -100,7 +101,7 @@ bool CastVigilanceAction::Execute(Event event)
     if (!target || target == bot)
         return false;
 
-    return botAI->CastSpell("vigilance", target);
+    return botAI->GetServices().GetSpellService().CastSpell("vigilance", target);
 }
 
 bool CastRetaliationAction::isUseful()
@@ -152,7 +153,7 @@ bool CastRetaliationAction::isUseful()
     }
 
     // Only cast Retaliation if there are at least 2 melee attackers and the buff is not active
-    return meleeAttackers >= 2 && !botAI->HasAura("retaliation", bot);
+    return meleeAttackers >= 2 && !botAI->GetServices().GetSpellService().HasAura("retaliation", bot);
 }
 
 Unit* CastShatteringThrowAction::GetTarget()
@@ -241,5 +242,5 @@ bool CastShatteringThrowAction::Execute(Event event)
     if (!target)
         return false;
 
-    return botAI->CastSpell("shattering throw", target);
+    return botAI->GetServices().GetSpellService().CastSpell("shattering throw", target);
 }

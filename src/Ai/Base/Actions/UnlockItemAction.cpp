@@ -5,6 +5,7 @@
 #include "Player.h"
 #include "ObjectMgr.h"
 #include "SpellInfo.h"
+#include "BotSpellService.h"
 
 #define PICK_LOCK_SPELL_ID 1804
 
@@ -25,7 +26,7 @@ bool UnlockItemAction::Execute(Event event)
 void UnlockItemAction::UnlockItem(Item* item)
 {
     // Use CastSpell to unlock the item
-    if (botAI->CastSpell(PICK_LOCK_SPELL_ID, bot, item))
+    if (botAI->GetServices().GetSpellService().CastSpell(PICK_LOCK_SPELL_ID, bot, item))
     {
         std::ostringstream out;
         out << "Used Pick Lock on: " << item->GetTemplate()->Name1;

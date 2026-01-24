@@ -17,6 +17,7 @@
 #include "Config.h"
 #include "Group.h"
 #include "ObjectAccessor.h"
+#include "BotSpellService.h"
 
 using ai::buff::MakeAuraQualifierForBuff;
 using ai::buff::UpgradeToGroupIfAppropriate;
@@ -177,7 +178,7 @@ bool CastBlessingOfMightAction::Execute(Event event)
     auto RP = ai::chat::MakeGroupAnnouncer(bot);
 
     castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName, /*announceOnMissing=*/true, RP);
-    return botAI->CastSpell(castName, target);
+    return botAI->GetServices().GetSpellService().CastSpell(castName, target);
 }
 
 Value<Unit*>* CastBlessingOfMightOnPartyAction::GetTargetValue()
@@ -198,7 +199,7 @@ bool CastBlessingOfMightOnPartyAction::Execute(Event event)
     auto RP = ai::chat::MakeGroupAnnouncer(bot);
 
     castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName, /*announceOnMissing=*/true, RP);
-    return botAI->CastSpell(castName, target);
+    return botAI->GetServices().GetSpellService().CastSpell(castName, target);
 }
 
 bool CastBlessingOfWisdomAction::Execute(Event event)
@@ -211,7 +212,7 @@ bool CastBlessingOfWisdomAction::Execute(Event event)
     auto RP = ai::chat::MakeGroupAnnouncer(bot);
 
     castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName, /*announceOnMissing=*/true, RP);
-    return botAI->CastSpell(castName, target);
+    return botAI->GetServices().GetSpellService().CastSpell(castName, target);
 }
 
 Value<Unit*>* CastBlessingOfWisdomOnPartyAction::GetTargetValue()
@@ -247,7 +248,7 @@ bool CastBlessingOfWisdomOnPartyAction::Execute(Event event)
 
     auto RP = ai::chat::MakeGroupAnnouncer(bot);
     castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName, /*announceOnMissing=*/true, RP);
-    return botAI->CastSpell(castName, target);
+    return botAI->GetServices().GetSpellService().CastSpell(castName, target);
 }
 
 Value<Unit*>* CastBlessingOfSanctuaryOnPartyAction::GetTargetValue()
@@ -275,10 +276,10 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event event)
 
     // Small helpers to check relevant auras
     const auto HasKingsAura = [&](Unit* u) -> bool {
-        return botAI->HasAura("blessing of kings", u) || botAI->HasAura("greater blessing of kings", u);
+        return botAI->GetServices().GetSpellService().HasAura("blessing of kings", u) || botAI->GetServices().GetSpellService().HasAura("greater blessing of kings", u);
     };
     const auto HasSanctAura = [&](Unit* u) -> bool {
-        return botAI->HasAura("blessing of sanctuary", u) || botAI->HasAura("greater blessing of sanctuary", u);
+        return botAI->GetServices().GetSpellService().HasAura("blessing of sanctuary", u) || botAI->GetServices().GetSpellService().HasAura("greater blessing of sanctuary", u);
     };
 
     if (Group* g = bot->GetGroup())
@@ -369,7 +370,7 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event event)
         castName = "blessing of sanctuary";
     }
 
-    bool ok = botAI->CastSpell(castName, target);
+    bool ok = botAI->GetServices().GetSpellService().CastSpell(castName, target);
     LOG_DEBUG("playerbots", "[Sanct] Cast {} on {} result={}", castName, target->GetName(), ok);
     return ok;
 }
@@ -426,8 +427,8 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
             target->HasAura(SPELL_BLESSING_OF_SANCTUARY, bot->GetGUID()) ||
             target->HasAura(SPELL_GREATER_BLESSING_OF_SANCTUARY, bot->GetGUID());
         const bool hasSanctAny =
-            botAI->HasAura("blessing of sanctuary", target) ||
-            botAI->HasAura("greater blessing of sanctuary", target);
+            botAI->GetServices().GetSpellService().HasAura("blessing of sanctuary", target) ||
+            botAI->GetServices().GetSpellService().HasAura("greater blessing of sanctuary", target);
 
         if (isTank && hasSanctFromMe)
         {
@@ -470,7 +471,7 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
         castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName, /*announceOnMissing=*/true, RP);
     }
 
-    return botAI->CastSpell(castName, target);
+    return botAI->GetServices().GetSpellService().CastSpell(castName, target);
 }
 
 bool CastSealSpellAction::isUseful() { return AI_VALUE2(bool, "combat", "self target"); }
@@ -490,16 +491,16 @@ Unit* CastRighteousDefenseAction::GetTarget()
 bool CastDivineSacrificeAction::isUseful()
 {
     return GetTarget() && (GetTarget() != nullptr) && CastSpellAction::isUseful() &&
-           !botAI->HasAura("divine guardian", GetTarget(), false, false, -1, true);
+           !botAI->GetServices().GetSpellService().HasAura("divine guardian", GetTarget(), false, false, -1, true);
 }
 
 bool CastCancelDivineSacrificeAction::Execute(Event event)
 {
-    botAI->RemoveAura("divine sacrifice");
+    botAI->GetServices().GetSpellService().RemoveAura("divine sacrifice");
     return true;
 }
 
 bool CastCancelDivineSacrificeAction::isUseful()
 {
-    return botAI->HasAura("divine sacrifice", GetTarget(), false, true, -1, true);
+    return botAI->GetServices().GetSpellService().HasAura("divine sacrifice", GetTarget(), false, true, -1, true);
 }

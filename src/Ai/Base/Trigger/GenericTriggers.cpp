@@ -1,3 +1,4 @@
+#include "BotSpellService.h"
 /*
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
  * and/or modify it under version 3 of the License, or (at your option), any later version.
@@ -162,7 +163,7 @@ bool BuffTrigger::IsActive()
         return false;
     if (!SpellTrigger::IsActive())
         return false;
-    Aura* aura = botAI->GetAura(spell, target, checkIsOwner, checkDuration);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura(spell, target, checkIsOwner, checkDuration);
     if (!aura)
         return true;
     if (beforeDuration && aura->GetDuration() < beforeDuration)
@@ -291,7 +292,7 @@ bool SpellTrigger::IsActive() { return GetTarget(); }
 bool SpellCanBeCastTrigger::IsActive()
 {
     Unit* target = GetTarget();
-    return target && botAI->CanCastSpell(spell, target);
+    return target && botAI->GetServices().GetSpellService().CanCastSpell(spell, target);
 }
 
 bool SpellNoCooldownTrigger::IsActive()
@@ -415,7 +416,7 @@ bool ItemCountTrigger::IsActive() { return AI_VALUE2(uint32, "item count", item)
 
 bool InterruptSpellTrigger::IsActive()
 {
-    return SpellTrigger::IsActive() && botAI->IsInterruptableSpellCasting(GetTarget(), getName());
+    return SpellTrigger::IsActive() && botAI->GetServices().GetSpellService().IsInterruptableSpellCasting(GetTarget(), getName());
 }
 
 bool DeflectSpellTrigger::IsActive()
@@ -463,11 +464,11 @@ bool DeflectSpellTrigger::IsActive()
 
 bool AttackerCountTrigger::IsActive() { return AI_VALUE(uint8, "attacker count") >= amount; }
 
-bool HasAuraTrigger::IsActive() { return botAI->HasAura(getName(), GetTarget(), false, false, -1, true); }
+bool HasAuraTrigger::IsActive() { return botAI->GetServices().GetSpellService().HasAura(getName(), GetTarget(), false, false, -1, true); }
 
 bool HasAuraStackTrigger::IsActive()
 {
-    Aura* aura = botAI->GetAura(getName(), GetTarget(), false, true, stack);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura(getName(), GetTarget(), false, true, stack);
     // sLog->outMessage("playerbot", LOG_LEVEL_DEBUG, "HasAuraStackTrigger::IsActive %s %d", getName(), aura ?
     // aura->GetStackAmount() : -1);
     return aura;
@@ -497,7 +498,7 @@ bool TimerBGTrigger::IsActive()
     return false;
 }
 
-bool HasNoAuraTrigger::IsActive() { return !botAI->HasAura(getName(), GetTarget()); }
+bool HasNoAuraTrigger::IsActive() { return !botAI->GetServices().GetSpellService().HasAura(getName(), GetTarget()); }
 
 bool TankAssistTrigger::IsActive()
 {

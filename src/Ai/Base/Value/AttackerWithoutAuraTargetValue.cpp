@@ -27,7 +27,7 @@ Unit* AttackerWithoutAuraTargetValue::Calculate()
             continue;
         }
 
-        if (!botAI->HasAura(qualifier, unit, false, true))
+        if (!botAI->GetServices().GetSpellService().HasAura(qualifier, unit, false, true))
         {
             max_health = unit->GetHealth();
             result = unit;
@@ -60,7 +60,7 @@ Unit* MeleeAttackerWithoutAuraTargetValue::Calculate()
             continue;
         }
 
-        if (!botAI->HasAura(qualifier, unit, false, true))
+        if (!botAI->GetServices().GetSpellService().HasAura(qualifier, unit, false, true))
         {
             max_health = unit->GetHealth();
             result = unit;

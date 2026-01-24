@@ -1,3 +1,4 @@
+#include "BotSpellService.h"
 #include "BotRoleService.h"
 #include "Playerbots.h"
 #include "RaidEoEActions.h"
@@ -172,7 +173,7 @@ bool MalygosTargetAction::Execute(Event event)
 //     if (spark->GetDistance2d(MALYGOS_STACK_POSITION.first, MALYGOS_STACK_POSITION.second) > 3.0f)
 //     {
 //         bot->Yell("GRIPPING SPARK", LANG_UNIVERSAL);
-//         return botAI->CastSpell("death grip", spark);
+//         return botAI->GetServices().GetSpellService().CastSpell("death grip", spark);
 //     }
 
 //     return false;
@@ -193,7 +194,7 @@ bool MalygosTargetAction::Execute(Event event)
 //         }
 //     }
 
-//     return botAI->CanCastSpell(spell, spark);
+//     return botAI->GetServices().GetSpellService().CanCastSpell(spell, spark);
 // }
 
 // bool PullPowerSparkAction::isUseful()
@@ -354,8 +355,8 @@ bool EoEDrakeAttackAction::Execute(Event event)
 
 bool EoEDrakeAttackAction::CastDrakeSpellAction(Unit* target, uint32 spellId, uint32 cooldown)
 {
-    if (botAI->CanCastVehicleSpell(spellId, target))
-        if (botAI->CastVehicleSpell(spellId, target))
+    if (botAI->GetServices().GetSpellService().CanCastVehicleSpell(spellId, target))
+        if (botAI->GetServices().GetSpellService().CastVehicleSpell(spellId, target))
         {
             vehicleBase->AddSpellCooldown(spellId, 0, cooldown);
             return true;
@@ -397,9 +398,9 @@ bool EoEDrakeAttackAction::DrakeHealAction()
     else
     {
         // "Revivify" may be bugged server-side:
-        // "botAI->CanCastVehicleSpell()" returns SPELL_FAILED_BAD_TARGETS when targeting drakes.
+        // "botAI->GetServices().GetSpellService().CanCastVehicleSpell()" returns SPELL_FAILED_BAD_TARGETS when targeting drakes.
         // Forcing the cast attempt seems to succeed, not sure what's going on here.
         // return CastDrakeSpellAction(target, SPELL_REVIVIFY, 0);
-        return botAI->CastVehicleSpell(SPELL_REVIVIFY, vehicleBase);
+        return botAI->GetServices().GetSpellService().CastVehicleSpell(SPELL_REVIVIFY, vehicleBase);
     }
 }

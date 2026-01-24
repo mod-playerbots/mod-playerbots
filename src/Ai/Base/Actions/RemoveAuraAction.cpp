@@ -4,6 +4,7 @@
  */
 
 #include "RemoveAuraAction.h"
+#include "BotSpellService.h"
 
 #include "Event.h"
 #include "Playerbots.h"
@@ -12,6 +13,6 @@ RemoveAuraAction::RemoveAuraAction(PlayerbotAI* botAI) : Action(botAI, "ra") {}
 
 bool RemoveAuraAction::Execute(Event event)
 {
-    botAI->RemoveAura(event.getParam());
+    botAI->GetServices().GetSpellService().RemoveAura(event.getParam());
     return true;
 }

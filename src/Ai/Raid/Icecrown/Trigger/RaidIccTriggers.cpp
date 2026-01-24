@@ -1,4 +1,5 @@
 #include "RaidIccTriggers.h"
+#include "BotSpellService.h"
 #include "BotRoleService.h"
 #include "RaidIccActions.h"
 #include "NearestNpcsValue.h"
@@ -148,7 +149,7 @@ bool IccDbsMainTankRuneOfBloodTrigger::IsActive()
     if (!mt)
         return false;
 
-    Aura* aura = botAI->GetAura("rune of blood", mt);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("rune of blood", mt);
     if (!aura)
         return false;
 
@@ -172,7 +173,7 @@ bool IccStinkyPreciousMainTankMortalWoundTrigger::IsActive()
     if (!mt)
         return false;
 
-    Aura* aura = botAI->GetAura("mortal wound", mt, false, true);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("mortal wound", mt, false, true);
     if (!aura || aura->GetStackAmount() < 8)
         return false;
 
@@ -208,7 +209,7 @@ bool IccFestergutMainTankGastricBloatTrigger::IsActive()
     {
         return false;
     }
-    Aura* aura = botAI->GetAura("Gastric Bloat", mt, false, true);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("Gastric Bloat", mt, false, true);
     if (!aura || aura->GetStackAmount() < 6)
     {
         return false;
@@ -319,7 +320,7 @@ bool IccPutricideVolatileOozeTrigger::IsActive()
     if (!boss)
         return false;
 
-    if (botAI->HasAura("Gaseous Bloat", bot))
+    if (botAI->GetServices().GetSpellService().HasAura("Gaseous Bloat", bot))
         return false;
 
     return true;
@@ -333,7 +334,7 @@ bool IccPutricideGasCloudTrigger::IsActive()
 
     Unit* boss1 = AI_VALUE2(Unit*, "find target", "volatile ooze");
 
-    bool hasGaseousBloat = botAI->HasAura("Gaseous Bloat", bot);
+    bool hasGaseousBloat = botAI->GetServices().GetSpellService().HasAura("Gaseous Bloat", bot);
 
     if (hasGaseousBloat && boss1)
         return true;
@@ -362,7 +363,7 @@ bool IccPutricideMainTankMutatedPlagueTrigger::IsActive()
     {
         return false;
     }
-    Aura* aura = botAI->GetAura("Mutated Plague", mt, false, true);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("Mutated Plague", mt, false, true);
     if (!aura || aura->GetStackAmount() < 4)
     {
         return false;
@@ -403,7 +404,7 @@ bool IccBpcKelesethTankTrigger::IsActive()
     if (!BotRoleService::IsAssistTankStatic(bot))
         return false;
 
-    Aura* aura = botAI->GetAura("Shadow Prison", bot, false, true);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("Shadow Prison", bot, false, true);
     if (aura)
         if (aura->GetStackAmount() > 18)
             return false;
@@ -439,12 +440,12 @@ bool IccBpcEmpoweredVortexTrigger::IsActive()
     if (!valanar)
         return false;
 
-    Aura* aura = botAI->GetAura("Shadow Prison", bot, false, true);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("Shadow Prison", bot, false, true);
     if (aura)
         if (aura->GetStackAmount() > 12)
             return false;
 
-    Aura* auraValanar = botAI->GetAura("Invocation of Blood", valanar);
+    Aura* auraValanar = botAI->GetServices().GetSpellService().GetAura("Invocation of Blood", valanar);
     if (!auraValanar)
         return false;
 
@@ -464,7 +465,7 @@ bool IccBpcKineticBombTrigger::IsActive()
         return false;
 
     // Early exit condition - if Shadow Prison has too many stacks
-    if (Aura* aura = botAI->GetAura("Shadow Prison", bot, false, true))
+    if (Aura* aura = botAI->GetServices().GetSpellService().GetAura("Shadow Prison", bot, false, true))
     {
         if (aura->GetStackAmount() > 12)
             return false;
@@ -509,7 +510,7 @@ bool IccBpcBallOfFlameTrigger::IsActive()
     if (!(valanar || taldaram || keleseth))
         return false;
 
-    Aura* auraTaldaram = botAI->GetAura("Invocation of Blood", taldaram);
+    Aura* auraTaldaram = botAI->GetServices().GetSpellService().GetAura("Invocation of Blood", taldaram);
     if (!auraTaldaram)
         return false;
 
@@ -535,7 +536,7 @@ bool IccBqlPactOfDarkfallenTrigger::IsActive()
     if (!boss)
         return false;
 
-    Aura* aura = botAI->GetAura("Pact of the Darkfallen", bot);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("Pact of the Darkfallen", bot);
     if (!aura)
         return false;
 
@@ -548,7 +549,7 @@ bool IccBqlVampiricBiteTrigger::IsActive()
     if (!boss)
         return false;
 
-    Aura* aura = botAI->GetAura("Frenzied Bloodthirst", bot);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("Frenzied Bloodthirst", bot);
     if (!aura)
         return false;
 
@@ -596,7 +597,7 @@ bool IccValithriaPortalTrigger::IsActive()
     if (!boss)
         return false;
 
-    Aura* aura = botAI->GetAura("Twisted Nightmares", bot, false, true);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("Twisted Nightmares", bot, false, true);
     if (aura && aura->GetStackAmount() >= 25)
         return false;
 
@@ -918,7 +919,7 @@ bool IccSindragosaUnchainedMagicTrigger::IsActive()
     if (!boss)
         return false;
 
-    Aura* aura = botAI->GetAura("unchained magic", bot, false, false);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("unchained magic", bot, false, false);
     if (!aura)
         return false;
 
@@ -941,7 +942,7 @@ bool IccSindragosaChilledToTheBoneTrigger::IsActive()
     if (!boss)
         return false;
 
-    Aura* aura = botAI->GetAura("Chilled to the Bone", bot, false, false);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("Chilled to the Bone", bot, false, false);
     if (!aura)
         return false;
 
@@ -967,7 +968,7 @@ bool IccSindragosaMysticBuffetTrigger::IsActive()
     if (boss->GetVictim() == bot)
         return false;
 
-    Aura* aura = botAI->GetAura("mystic buffet", bot, false, true);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("mystic buffet", bot, false, true);
     if (!aura)
         return false;
 
@@ -986,7 +987,7 @@ bool IccSindragosaMainTankMysticBuffetTrigger::IsActive()
     if (!boss)
         return false;
 
-    Aura* aura = botAI->GetAura("mystic buffet", bot, false, false);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("mystic buffet", bot, false, false);
     if (BotRoleService::IsTankStatic(bot) && aura) //main tank will delete mystic buffet until I find a better way to swap tanks, atm it is not great since while swapping they will wipe group 7/10 times.
         bot->RemoveAura(aura->GetId());
 
@@ -1006,12 +1007,12 @@ bool IccSindragosaMainTankMysticBuffetTrigger::IsActive()
         return false;
 
     // Check main tank stacks
-    Aura* mtAura = botAI->GetAura("mystic buffet", mt, false, true);
+    Aura* mtAura = botAI->GetServices().GetSpellService().GetAura("mystic buffet", mt, false, true);
     if (!mtAura || mtAura->GetStackAmount() < 6)
         return false;
 
     // Check our own stacks - don't taunt if we have too many
-    Aura* selfAura = botAI->GetAura("mystic buffet", bot, false, true);
+    Aura* selfAura = botAI->GetServices().GetSpellService().GetAura("mystic buffet", bot, false, true);
     if (selfAura && selfAura->GetStackAmount() > 6)
         return false;
 
@@ -1041,7 +1042,7 @@ bool IccSindragosaTankSwapPositionTrigger::IsActive()
         return false;
 
     // Check our own stacks - don't try to tank if we have too many
-    Aura* selfAura = botAI->GetAura("mystic buffet", bot, false, true);
+    Aura* selfAura = botAI->GetServices().GetSpellService().GetAura("mystic buffet", bot, false, true);
     if (selfAura && selfAura->GetStackAmount() > 6)
         return false;
 
@@ -1050,7 +1051,7 @@ bool IccSindragosaTankSwapPositionTrigger::IsActive()
     if (!mt)
         return false;
 
-    Aura* mtAura = botAI->GetAura("mystic buffet", mt, false, true);
+    Aura* mtAura = botAI->GetServices().GetSpellService().GetAura("mystic buffet", mt, false, true);
     if (!mtAura)
         return false;
 
@@ -1089,7 +1090,7 @@ bool IccLichKingShadowTrapTrigger::IsActive()
     if (!boss)
         return false;
 
-    bool hasPlague = botAI->HasAura("Necrotic Plague", bot);
+    bool hasPlague = botAI->GetServices().GetSpellService().HasAura("Necrotic Plague", bot);
     if (hasPlague)
         return false;
 
@@ -1119,7 +1120,7 @@ bool IccLichKingShadowTrapTrigger::IsActive()
 
 bool IccLichKingNecroticPlagueTrigger::IsActive()
 {
-    bool hasPlague = botAI->HasAura("Necrotic Plague", bot);
+    bool hasPlague = botAI->GetServices().GetSpellService().HasAura("Necrotic Plague", bot);
 
     return hasPlague;
 }
@@ -1169,7 +1170,7 @@ bool IccLichKingAddsTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "the lich king");
 
-    bool hasPlague = botAI->HasAura("Necrotic Plague", bot);
+    bool hasPlague = botAI->GetServices().GetSpellService().HasAura("Necrotic Plague", bot);
     if (hasPlague)
         return false;
 

@@ -10,26 +10,26 @@
 
 bool PowerWordFortitudeOnPartyTrigger::IsActive()
 {
-    return BuffOnPartyTrigger::IsActive() && !botAI->HasAura("power word : fortitude", GetTarget()) &&
-           !botAI->HasAura("prayer of fortitude", GetTarget());
+    return BuffOnPartyTrigger::IsActive() && !botAI->GetServices().GetSpellService().HasAura("power word : fortitude", GetTarget()) &&
+           !botAI->GetServices().GetSpellService().HasAura("prayer of fortitude", GetTarget());
 }
 
 bool PowerWordFortitudeTrigger::IsActive()
 {
-    return BuffTrigger::IsActive() && !botAI->HasAura("power word: fortitude", GetTarget()) &&
-           !botAI->HasAura("prayer of fortitude", GetTarget());
+    return BuffTrigger::IsActive() && !botAI->GetServices().GetSpellService().HasAura("power word: fortitude", GetTarget()) &&
+           !botAI->GetServices().GetSpellService().HasAura("prayer of fortitude", GetTarget());
 }
 
 bool DivineSpiritOnPartyTrigger::IsActive()
 {
-    return BuffOnPartyTrigger::IsActive() && !botAI->HasAura("divine spirit", GetTarget()) &&
-           !botAI->HasAura("prayer of spirit", GetTarget());
+    return BuffOnPartyTrigger::IsActive() && !botAI->GetServices().GetSpellService().HasAura("divine spirit", GetTarget()) &&
+           !botAI->GetServices().GetSpellService().HasAura("prayer of spirit", GetTarget());
 }
 
 bool DivineSpiritTrigger::IsActive()
 {
-    return BuffTrigger::IsActive() && !botAI->HasAura("divine spirit", GetTarget()) &&
-           !botAI->HasAura("prayer of spirit", GetTarget());
+    return BuffTrigger::IsActive() && !botAI->GetServices().GetSpellService().HasAura("divine spirit", GetTarget()) &&
+           !botAI->GetServices().GetSpellService().HasAura("prayer of spirit", GetTarget());
 }
 
 bool PrayerOfFortitudeTrigger::IsActive()
@@ -38,7 +38,7 @@ bool PrayerOfFortitudeTrigger::IsActive()
     if (!target || !target->IsPlayer())
         return false;
 
-    return BuffOnPartyTrigger::IsActive() && !botAI->HasAura("prayer of fortitude", GetTarget()) &&
+    return BuffOnPartyTrigger::IsActive() && !botAI->GetServices().GetSpellService().HasAura("prayer of fortitude", GetTarget()) &&
            botAI->GetBot()->IsInSameGroupWith((Player*)GetTarget()) &&
            botAI->GetBuffedCount((Player*)GetTarget(), "prayer of fortitude") < 4 &&
            !botAI->GetBuffedCount((Player*)GetTarget(), "power word: fortitude");
@@ -50,7 +50,7 @@ bool PrayerOfSpiritTrigger::IsActive()
     if (!target || !target->IsPlayer())
         return false;
 
-    return BuffOnPartyTrigger::IsActive() && !botAI->HasAura("prayer of spirit", GetTarget()) &&
+    return BuffOnPartyTrigger::IsActive() && !botAI->GetServices().GetSpellService().HasAura("prayer of spirit", GetTarget()) &&
            botAI->GetBot()->IsInSameGroupWith((Player*)GetTarget()) &&
            // botAI->GetManaPercent() > 50 &&
            botAI->GetBuffedCount((Player*)GetTarget(), "prayer of spirit") < 4 &&
@@ -60,10 +60,10 @@ bool PrayerOfSpiritTrigger::IsActive()
 bool InnerFireTrigger::IsActive()
 {
     Unit* target = GetTarget();
-    return SpellTrigger::IsActive() && !botAI->HasAura(spell, target);
+    return SpellTrigger::IsActive() && !botAI->GetServices().GetSpellService().HasAura(spell, target);
 }
 
-bool ShadowformTrigger::IsActive() { return !botAI->HasAura("shadowform", bot); }
+bool ShadowformTrigger::IsActive() { return !botAI->GetServices().GetSpellService().HasAura("shadowform", bot); }
 
 bool ShadowfiendTrigger::IsActive() { return BoostTrigger::IsActive() && !bot->HasSpellCooldown(34433); }
 

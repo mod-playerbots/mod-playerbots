@@ -4,6 +4,7 @@
  */
 
 #include "CureTriggers.h"
+#include "BotSpellService.h"
 
 #include "Playerbots.h"
 #include "WorldBuffAction.h"
@@ -11,7 +12,7 @@
 bool NeedCureTrigger::IsActive()
 {
     Unit* target = GetTarget();
-    return target && target->IsInWorld() && botAI->HasAuraToDispel(target, dispelType);
+    return target && target->IsInWorld() && botAI->GetServices().GetSpellService().HasAuraToDispel(target, dispelType);
 }
 
 Value<Unit*>* PartyMemberNeedCureTrigger::GetTargetValue()

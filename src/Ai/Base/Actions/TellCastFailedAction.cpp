@@ -5,6 +5,7 @@
 
 #include "TellCastFailedAction.h"
 
+#include "BotSpellService.h"
 #include "ChatHelper.h"
 #include "Event.h"
 #include "Playerbots.h"
@@ -16,7 +17,7 @@ bool TellCastFailedAction::Execute(Event event)
     uint8 castCount, result;
     uint32 spellId;
     p >> castCount >> spellId >> result;
-    botAI->SpellInterrupted(spellId);
+    botAI->GetServices().GetSpellService().SpellInterrupted(spellId);
 
     if (result == SPELL_CAST_OK)
         return false;

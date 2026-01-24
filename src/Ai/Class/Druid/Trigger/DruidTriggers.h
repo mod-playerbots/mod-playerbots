@@ -7,6 +7,7 @@
 #define _PLAYERBOT_DRUIDTRIGGERS_H
 
 #include "CureTriggers.h"
+#include "BotSpellService.h"
 #include "GenericTriggers.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
@@ -232,8 +233,8 @@ public:
     MangleCatTrigger(PlayerbotAI* ai) : DebuffTrigger(ai, "mangle (cat)", 1, false, 0.0f) {}
     bool IsActive() override
     {
-        return DebuffTrigger::IsActive() && !botAI->HasAura("mangle (bear)", GetTarget(), false, false, -1, true)
-            && !botAI->HasAura("trauma", GetTarget(), false, false, -1, true);
+        return DebuffTrigger::IsActive() && !botAI->GetServices().GetSpellService().HasAura("mangle (bear)", GetTarget(), false, false, -1, true)
+            && !botAI->GetServices().GetSpellService().HasAura("trauma", GetTarget(), false, false, -1, true);
     }
 };
 
@@ -251,12 +252,12 @@ public:
         if (cp < 5)
             return false;
 
-        Aura* roar = botAI->GetAura("savage roar", bot);
+        Aura* roar = botAI->GetServices().GetSpellService().GetAura("savage roar", bot);
         bool roarCheck = !roar || roar->GetDuration() > 10000;
         if (!roarCheck)
             return false;
 
-        Aura* rip = botAI->GetAura("rip", target, true);
+        Aura* rip = botAI->GetServices().GetSpellService().GetAura("rip", target, true);
         bool ripCheck = !rip || rip->GetDuration() > 10000;
         if (!ripCheck)
             return false;

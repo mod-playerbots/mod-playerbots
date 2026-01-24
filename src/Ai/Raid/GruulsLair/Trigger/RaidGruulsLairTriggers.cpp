@@ -1,3 +1,4 @@
+#include "BotSpellService.h"
 #include "RaidGruulsLairTriggers.h"
 #include "BotRoleService.h"
 #include "RaidGruulsLairHelpers.h"
@@ -122,11 +123,11 @@ bool HighKingMaulgarPullingOlmAndBlindeyeTrigger::IsActive()
     {
     case 0:
         return olm && olm->IsAlive() && olm->GetHealthPct() > 98.0f &&
-               olmTank && olmTank->IsAlive() && botAI->CanCastSpell("misdirection", olmTank);
+               olmTank && olmTank->IsAlive() && botAI->GetServices().GetSpellService().CanCastSpell("misdirection", olmTank);
 
     case 1:
         return blindeye && blindeye->IsAlive() && blindeye->GetHealthPct() > 90.0f &&
-               blindeyeTank && blindeyeTank->IsAlive() && botAI->CanCastSpell("misdirection", blindeyeTank);
+               blindeyeTank && blindeyeTank->IsAlive() && botAI->GetServices().GetSpellService().CanCastSpell("misdirection", blindeyeTank);
 
     default:
         break;

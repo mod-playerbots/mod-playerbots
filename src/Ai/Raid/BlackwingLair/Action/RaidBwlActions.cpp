@@ -1,6 +1,7 @@
 #include "RaidBwlActions.h"
 
 #include "Playerbots.h"
+#include "BotSpellService.h"
 
 bool BwlOnyxiaScaleCloakAuraCheckAction::Execute(Event event)
 {
@@ -29,4 +30,4 @@ bool BwlTurnOffSuppressionDeviceAction::Execute(Event event)
     return true;
 }
 
-bool BwlUseHourglassSandAction::Execute(Event event) { return botAI->CastSpell(23645, bot); }
+bool BwlUseHourglassSandAction::Execute(Event event) { return botAI->GetServices().GetSpellService().CastSpell(23645, bot); }

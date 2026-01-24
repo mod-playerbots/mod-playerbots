@@ -4,6 +4,7 @@
  */
 
 #include "MovementActions.h"
+#include "BotSpellService.h"
 
 #include <cmath>
 #include <cstdlib>
@@ -233,7 +234,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
             // if (bot->IsNonMeleeSpellCast(true))
             // {
             //     bot->CastStop();
-            //     botAI->InterruptSpell();
+            //     botAI->GetServices().GetSpellService().InterruptSpell();
             // }
             DoMovePoint(bot, x, y, z, generatePath, backwards);
             float delay = 1000.0f * MoveDelay(distance, backwards);
@@ -263,7 +264,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
             // if (bot->IsNonMeleeSpellCast(true))
             // {
             //     bot->CastStop();
-            //     botAI->InterruptSpell();
+            //     botAI->GetServices().GetSpellService().InterruptSpell();
             // }
             G3D::Vector3 endP = path.back();
             DoMovePoint(bot, x, y, z, generatePath, backwards);
@@ -651,7 +652,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
     //     if (bot->IsNonMeleeSpellCast(true))
     //     {
     //         bot->CastStop();
-    //         botAI->InterruptSpell();
+    //         botAI->GetServices().GetSpellService().InterruptSpell();
     //     }
     // }
 
@@ -1267,7 +1268,7 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
     if (bot->IsNonMeleeSpellCast(true))
     {
         bot->CastStop();
-        botAI->InterruptSpell();
+        botAI->GetServices().GetSpellService().InterruptSpell();
     }
 
     // AI_VALUE(LastMovement&, "last movement").Set(target);
@@ -1313,7 +1314,7 @@ bool MovementAction::ChaseTo(WorldObject* obj, float distance, float angle)
     if (bot->IsNonMeleeSpellCast(true))
     {
         bot->CastStop();
-        botAI->InterruptSpell();
+        botAI->GetServices().GetSpellService().InterruptSpell();
     }
 
     // bot->GetMotionMaster()->Clear();
@@ -2763,7 +2764,7 @@ bool MoveOutOfCollisionAction::Execute(Event event)
 bool MoveOutOfCollisionAction::isUseful()
 {
     // do not avoid collision on vehicle
-    if (botAI->IsInVehicle())
+    if (botAI->GetServices().GetSpellService().IsInVehicle())
         return false;
 
     return AI_VALUE2(bool, "collision", "self target") &&

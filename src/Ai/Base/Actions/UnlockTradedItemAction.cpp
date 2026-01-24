@@ -2,6 +2,7 @@
 #include "Playerbots.h"
 #include "TradeData.h"
 #include "SpellInfo.h"
+#include "BotSpellService.h"
 
 #define PICK_LOCK_SPELL_ID 1804
 
@@ -85,7 +86,7 @@ void UnlockTradedItemAction::UnlockItem(Item* item)
     }
 
     // Use CastSpell to unlock the item
-    if (botAI->CastSpell(PICK_LOCK_SPELL_ID, bot->GetTrader(), item)) // Unit target is trader
+    if (botAI->GetServices().GetSpellService().CastSpell(PICK_LOCK_SPELL_ID, bot->GetTrader(), item)) // Unit target is trader
     {
         std::ostringstream out;
         out << "Picking Lock on traded item: " << item->GetTemplate()->Name1;

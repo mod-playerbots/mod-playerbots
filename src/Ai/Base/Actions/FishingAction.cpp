@@ -18,6 +18,7 @@
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "Position.h"
+#include "BotSpellService.h"
 
 uint32 const FISHING_SPELL = 7620;
 uint32 const FISHING_POLE = 6256;
@@ -438,7 +439,7 @@ bool FishingAction::Execute(Event event)
     if (equipAction.isUseful())
         return equipAction.Execute(event);
 
-    botAI->CastSpell(FISHING_SPELL, bot);
+    botAI->GetServices().GetSpellService().CastSpell(FISHING_SPELL, bot);
     botAI->ChangeStrategy("+use bobber", BOT_STATE_NON_COMBAT);
 
     return true;

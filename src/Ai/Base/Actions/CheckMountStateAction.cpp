@@ -1,3 +1,4 @@
+#include "BotSpellService.h"
 /*
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
  * and/or modify it under version 3 of the License, or (at your option), any later version.
@@ -59,7 +60,7 @@ MountData CollectMountData(const Player* bot)
 bool CheckMountStateAction::isUseful()
 {
     // Not useful when:
-    if (botAI->IsInVehicle() || bot->isDead() || bot->HasUnitState(UNIT_STATE_IN_FLIGHT) ||
+    if (botAI->GetServices().GetSpellService().IsInVehicle() || bot->isDead() || bot->HasUnitState(UNIT_STATE_IN_FLIGHT) ||
         !bot->IsOutdoors() || bot->InArena())
         return false;
 
@@ -143,7 +144,7 @@ bool CheckMountStateAction::Execute(Event /*event*/)
         (masterInShapeshiftForm != FORM_TRAVEL && botInShapeshiftForm == FORM_TRAVEL) ||
         (masterInShapeshiftForm != FORM_FLIGHT && botInShapeshiftForm == FORM_FLIGHT && master && !master->IsMounted()) ||
         (masterInShapeshiftForm != FORM_FLIGHT_EPIC && botInShapeshiftForm == FORM_FLIGHT_EPIC && master && !master->IsMounted()))
-        botAI->RemoveShapeshift();
+        botAI->GetServices().GetSpellService().RemoveShapeshift();
 
     if (shouldDismount && bot->IsMounted())
     {
@@ -190,8 +191,8 @@ bool CheckMountStateAction::Mount()
         botInShapeshiftForm != FORM_FLIGHT &&
         botInShapeshiftForm != FORM_FLIGHT_EPIC)
     {
-        botAI->RemoveShapeshift();
-        botAI->RemoveAura("tree of life");
+        botAI->GetServices().GetSpellService().RemoveShapeshift();
+        botAI->GetServices().GetSpellService().RemoveAura("tree of life");
     }
 
     if (TryPreferredMount(master))
@@ -244,19 +245,19 @@ bool CheckMountStateAction::TryForms(Player* master, int32 masterMountType, int3
         return true;
 
     // Check if master is in Travel Form and bot can do the same
-    if (botAI->CanCastSpell(SPELL_TRAVEL_FORM, bot, true) &&
+    if (botAI->GetServices().GetSpellService().CanCastSpell(SPELL_TRAVEL_FORM, bot, true) &&
         masterInShapeshiftForm == FORM_TRAVEL && botInShapeshiftForm != FORM_TRAVEL)
     {
-        botAI->CastSpell(SPELL_TRAVEL_FORM, bot);
+        botAI->GetServices().GetSpellService().CastSpell(SPELL_TRAVEL_FORM, bot);
         return true;
     }
 
     // Check if master is in Flight Form or has a flying mount and bot can flight form
-    if (botAI->CanCastSpell(SPELL_FLIGHT_FORM, bot, true) &&
+    if (botAI->GetServices().GetSpellService().CanCastSpell(SPELL_FLIGHT_FORM, bot, true) &&
         ((masterInShapeshiftForm == FORM_FLIGHT && botInShapeshiftForm != FORM_FLIGHT) ||
         (masterMountType == 1 && masterSpeed == 149)))
     {
-        botAI->CastSpell(SPELL_FLIGHT_FORM, bot);
+        botAI->GetServices().GetSpellService().CastSpell(SPELL_FLIGHT_FORM, bot);
 
         // Compensate speedbuff
         bot->SetSpeed(MOVE_RUN, 2.5, true);
@@ -264,11 +265,11 @@ bool CheckMountStateAction::TryForms(Player* master, int32 masterMountType, int3
     }
 
     // Check if master is in Swift Flight Form or has an epic flying mount and bot can swift flight form
-    if (botAI->CanCastSpell(SPELL_SWIFT_FLIGHT_FORM, bot, true) &&
+    if (botAI->GetServices().GetSpellService().CanCastSpell(SPELL_SWIFT_FLIGHT_FORM, bot, true) &&
         ((masterInShapeshiftForm == FORM_FLIGHT_EPIC && botInShapeshiftForm != FORM_FLIGHT_EPIC) ||
         (masterMountType == 1 && masterSpeed == 279)))
     {
-        botAI->CastSpell(SPELL_SWIFT_FLIGHT_FORM, bot);
+        botAI->GetServices().GetSpellService().CastSpell(SPELL_SWIFT_FLIGHT_FORM, bot);
 
         // Compensate speedbuff
         bot->SetSpeed(MOVE_RUN, 3.8, true);
@@ -359,9 +360,9 @@ bool CheckMountStateAction::TryPreferredMount(Player* master) const
         bot->StopMoving();
 
     // Check if spell can be cast - for now allow all, even if the bot does not have the actual mount
-    //if (botAI->CanCastSpell(mountId, botAI->GetBot()))
+    //if (botAI->GetServices().GetSpellService().CanCastSpell(mountId, botAI->GetBot()))
     //{
-    botAI->CastSpell(chosenMountId, botAI->GetBot());
+    botAI->GetServices().GetSpellService().CastSpell(chosenMountId, botAI->GetBot());
     return true;
     //}
 
@@ -388,9 +389,9 @@ bool CheckMountStateAction::TryRandomMountFiltered(const std::map<int32, std::ve
 
             uint32 index = urand(0, ids.size() - 1);
 
-            if (botAI->CanCastSpell(ids[index], bot))
+            if (botAI->GetServices().GetSpellService().CanCastSpell(ids[index], bot))
             {
-                botAI->CastSpell(ids[index], bot);
+                botAI->GetServices().GetSpellService().CastSpell(ids[index], bot);
                 return true;
             }
         }

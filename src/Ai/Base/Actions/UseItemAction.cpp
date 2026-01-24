@@ -1,3 +1,4 @@
+#include "BotSpellService.h"
 /*
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
  * and/or modify it under version 3 of the License, or (at your option), any later version.
@@ -81,7 +82,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
         if (item->GetTemplate()->Spells[i].SpellId > 0)
         {
             spellId = item->GetTemplate()->Spells[i].SpellId;
-            if (!botAI->CanCastSpell(spellId, bot, false, itemTarget, item))
+            if (!botAI->GetServices().GetSpellService().CanCastSpell(spellId, bot, false, itemTarget, item))
             {
                 return false;
             }
@@ -197,7 +198,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
         if (!spellId)
             continue;
 
-        if (!botAI->CanCastSpell(spellId, bot, false))
+        if (!botAI->GetServices().GetSpellService().CanCastSpell(spellId, bot, false))
             continue;
 
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
@@ -269,7 +270,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
             return false;
 
         // bot->SetStandState(UNIT_STAND_STATE_SIT);
-        botAI->InterruptSpell();
+        botAI->GetServices().GetSpellService().InterruptSpell();
         float hp = bot->GetHealthPct();
         float mp = bot->GetPower(POWER_MANA) * 100.0f / bot->GetMaxPower(POWER_MANA);
         float p = 0.f;

@@ -1,3 +1,4 @@
+#include "BotSpellService.h"
 #include "RaidIccActions.h"
 #include "BotRoleService.h"
 #include "NearestNpcsValue.h"
@@ -23,7 +24,7 @@ bool IccLmTankPositionAction::Execute(Event event)
     if (!BotRoleService::IsTankStatic(bot))
         return false;
 
-    const bool isBossInBoneStorm = botAI->GetAura("Bone Storm", boss) != nullptr;
+    const bool isBossInBoneStorm = botAI->GetServices().GetSpellService().GetAura("Bone Storm", boss) != nullptr;
 
     if (isBossInBoneStorm)
         return false;
@@ -77,7 +78,7 @@ bool IccLmTankPositionAction::MoveTowardPosition(const Position& position, float
 bool IccSpikeAction::Execute(Event event)
 {
     // If we're impaled, we can't do anything
-    if (botAI->GetAura("Impaled", bot))
+    if (botAI->GetServices().GetSpellService().GetAura("Impaled", bot))
         return false;
 
     // Find the boss
@@ -85,7 +86,7 @@ bool IccSpikeAction::Execute(Event event)
     if (!boss)
         return false;
 
-    const bool isBossInBoneStorm = botAI->GetAura("Bone Storm", boss) != nullptr;
+    const bool isBossInBoneStorm = botAI->GetServices().GetSpellService().GetAura("Bone Storm", boss) != nullptr;
     const bool shouldMoveToSafePosition = boss->isInFront(bot) && !BotRoleService::IsTankStatic(bot) && !isBossInBoneStorm;
 
     if (shouldMoveToSafePosition)
@@ -308,9 +309,9 @@ bool IccAddsLadyDeathwhisperAction::Execute(Event event)
     if (!boss)
         return false;
 
-    if (botAI->HasAura("Dominate Mind", bot, false, false) && !bot->HasAura(SPELL_CYCLONE))
+    if (botAI->GetServices().GetSpellService().HasAura("Dominate Mind", bot, false, false) && !bot->HasAura(SPELL_CYCLONE))
         bot->AddAura(SPELL_CYCLONE, bot);
-    else if (bot->HasAura(SPELL_CYCLONE) && !botAI->HasAura("Dominate Mind", bot, false, false))
+    else if (bot->HasAura(SPELL_CYCLONE) && !botAI->GetServices().GetSpellService().HasAura("Dominate Mind", bot, false, false))
         bot->RemoveAura(SPELL_CYCLONE);
 
     const uint32 shadeEntryId = NPC_SHADE;
@@ -480,12 +481,12 @@ bool IccRottingFrostGiantTankPositionAction::Execute(Event event)
     if (!boss)
         return false;
 
-    Aura* aura = botAI->GetAura("death plague", bot, false, false);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("death plague", bot, false, false);
     if (aura)
         bot->RemoveAura(aura->GetId());
 
 /* TODO: code works for handling plague, but atm script is bugged and one bot can have 2 plagues at the same time or when cured, which should not happen, and it is immpossible to handle plague atm the legit way.
-    const bool hasCure = botAI->GetAura("recently infected", bot) != nullptr;
+    const bool hasCure = botAI->GetServices().GetSpellService().GetAura("recently infected", bot) != nullptr;
 
     // Tank behavior - unchanged
     if (BotRoleService::IsTankStatic(bot) && botAI->GetServices().GetRoleService().HasAggro(boss) && !isInfected)
@@ -513,7 +514,7 @@ bool IccRottingFrostGiantTankPositionAction::Execute(Event event)
             if (!member || !member->IsAlive() || member == bot)
                 continue;
 
-            const bool memberIsInfected = botAI->GetAura("death plague", member) != nullptr;
+            const bool memberIsInfected = botAI->GetServices().GetSpellService().GetAura("death plague", member) != nullptr;
 
             if (memberIsInfected)
             {
@@ -527,8 +528,8 @@ bool IccRottingFrostGiantTankPositionAction::Execute(Event event)
                     if (!potentialTarget || !potentialTarget->IsAlive() || potentialTarget == member)
                         continue;
 
-                    const bool targetIsInfected = botAI->GetAura("death plague", potentialTarget) != nullptr;
-                    const bool targetHasCure = botAI->GetAura("recently infected", potentialTarget) != nullptr;
+                    const bool targetIsInfected = botAI->GetServices().GetSpellService().GetAura("death plague", potentialTarget) != nullptr;
+                    const bool targetHasCure = botAI->GetServices().GetSpellService().GetAura("recently infected", potentialTarget) != nullptr;
 
                     if (!targetIsInfected && !targetHasCure)
                     {
@@ -558,8 +559,8 @@ bool IccRottingFrostGiantTankPositionAction::Execute(Event event)
             if (!member || !member->IsAlive() || member == bot)
                 continue;
 
-            const bool memberHasCure = botAI->GetAura("recently infected", member) != nullptr;
-            const bool memberIsInfected = botAI->GetAura("death plague", member) != nullptr;
+            const bool memberHasCure = botAI->GetServices().GetSpellService().GetAura("recently infected", member) != nullptr;
+            const bool memberIsInfected = botAI->GetServices().GetSpellService().GetAura("death plague", member) != nullptr;
 
             if (!memberIsInfected && !memberHasCure)
             {
@@ -638,7 +639,7 @@ bool IccRottingFrostGiantTankPositionAction::Execute(Event event)
                 continue;
 
             // Only spread from non-infected bots (can stay near infected or cured bots)
-            const bool memberIsInfected = botAI->GetAura("death plague", member) != nullptr;
+            const bool memberIsInfected = botAI->GetServices().GetSpellService().GetAura("death plague", member) != nullptr;
             if (memberIsInfected)
                 continue;
 
@@ -747,7 +748,7 @@ bool IccCannonFireAction::TryCastCannonSpell(uint32 spellId, Unit* target, Unit*
 {
     static constexpr uint32 cooldownMs = 1000;
 
-    if (botAI->CanCastVehicleSpell(spellId, target) && botAI->CastVehicleSpell(spellId, target))
+    if (botAI->GetServices().GetSpellService().CanCastVehicleSpell(spellId, target) && botAI->GetServices().GetSpellService().CastVehicleSpell(spellId, target))
     {
         vehicleBase->AddSpellCooldown(spellId, 0, cooldownMs);
         return true;
@@ -839,7 +840,7 @@ bool IccGunshipEnterCannonAction::EnterVehicle(Unit* vehicleBase, bool moveIfFar
         return MoveTo(vehicleBase);
 
     // Prepare for entering vehicle
-    botAI->RemoveShapeshift();
+    botAI->GetServices().GetSpellService().RemoveShapeshift();
     bot->GetMotionMaster()->Clear();
     bot->StopMoving();
 
@@ -1008,7 +1009,7 @@ bool IccDbsTankPositionAction::Execute(Event event)
                           MovementPriority::MOVEMENT_NORMAL);
 
         // Early return if this tank has Rune of Blood
-        if (botAI->GetAura("Rune of Blood", bot))
+        if (botAI->GetServices().GetSpellService().GetAura("Rune of Blood", bot))
             return true;
     }
 
@@ -1057,72 +1058,72 @@ bool IccDbsTankPositionAction::CrowdControlBloodBeasts()
         switch (bot->getClass())
         {
             case CLASS_MAGE:
-                if (!botAI->HasAura("Frost Nova", unit))
+                if (!botAI->GetServices().GetSpellService().HasAura("Frost Nova", unit))
                 {
-                    botAI->CastSpell("Frost Nova", unit);
+                    botAI->GetServices().GetSpellService().CastSpell("Frost Nova", unit);
                     appliedCC = true;
                 }
                 break;
             case CLASS_DRUID:
-                if (!botAI->HasAura("Entangling Roots", unit))
+                if (!botAI->GetServices().GetSpellService().HasAura("Entangling Roots", unit))
                 {
-                    botAI->CastSpell("Entangling Roots", unit);
+                    botAI->GetServices().GetSpellService().CastSpell("Entangling Roots", unit);
                     appliedCC = true;
                 }
                 break;
             case CLASS_PALADIN:
-                if (!botAI->HasAura("Hammer of Justice", unit))
+                if (!botAI->GetServices().GetSpellService().HasAura("Hammer of Justice", unit))
                 {
-                    botAI->CastSpell("Hammer of Justice", unit);
+                    botAI->GetServices().GetSpellService().CastSpell("Hammer of Justice", unit);
                     appliedCC = true;
                 }
                 break;
             case CLASS_WARRIOR:
-                if (!botAI->HasAura("Hamstring", unit))
+                if (!botAI->GetServices().GetSpellService().HasAura("Hamstring", unit))
                 {
-                    botAI->CastSpell("Hamstring", unit);
+                    botAI->GetServices().GetSpellService().CastSpell("Hamstring", unit);
                     appliedCC = true;
                 }
                 break;
             case CLASS_HUNTER:
-                if (!botAI->HasAura("Concussive Shot", unit))
+                if (!botAI->GetServices().GetSpellService().HasAura("Concussive Shot", unit))
                 {
-                    botAI->CastSpell("Concussive Shot", unit);
+                    botAI->GetServices().GetSpellService().CastSpell("Concussive Shot", unit);
                     appliedCC = true;
                 }
                 break;
             case CLASS_ROGUE:
-                if (!botAI->HasAura("Kidney Shot", unit))
+                if (!botAI->GetServices().GetSpellService().HasAura("Kidney Shot", unit))
                 {
-                    botAI->CastSpell("Kidney Shot", unit);
+                    botAI->GetServices().GetSpellService().CastSpell("Kidney Shot", unit);
                     appliedCC = true;
                 }
                 break;
             case CLASS_SHAMAN:
-                if (!botAI->HasAura("Frost Shock", unit))
+                if (!botAI->GetServices().GetSpellService().HasAura("Frost Shock", unit))
                 {
-                    botAI->CastSpell("Frost Shock", unit);
+                    botAI->GetServices().GetSpellService().CastSpell("Frost Shock", unit);
                     appliedCC = true;
                 }
                 break;
             case CLASS_DEATH_KNIGHT:
-                if (!botAI->HasAura("Chains of Ice", unit))
+                if (!botAI->GetServices().GetSpellService().HasAura("Chains of Ice", unit))
                 {
-                    botAI->CastSpell("Chains of Ice", unit);
+                    botAI->GetServices().GetSpellService().CastSpell("Chains of Ice", unit);
                     appliedCC = true;
                 }
                 break;
             case CLASS_PRIEST:
-                if (!botAI->HasAura("Psychic Scream", unit))
+                if (!botAI->GetServices().GetSpellService().HasAura("Psychic Scream", unit))
                 {
-                    botAI->CastSpell("Psychic Scream", unit);
+                    botAI->GetServices().GetSpellService().CastSpell("Psychic Scream", unit);
                     appliedCC = true;
                 }
                 break;
             case CLASS_WARLOCK:
-                if (!botAI->HasAura("Fear", unit))
+                if (!botAI->GetServices().GetSpellService().HasAura("Fear", unit))
                 {
-                    botAI->CastSpell("Fear", unit);
+                    botAI->GetServices().GetSpellService().CastSpell("Fear", unit);
                     appliedCC = true;
                 }
                 break;
@@ -1723,7 +1724,7 @@ bool IccRotfaceTankPositionAction::HandleBigOozePositioning(Unit* boss)
         // Taunt if not targeting us
         if (bigOoze->GetVictim() != bot && bigOoze->IsAlive() && bigOoze->IsVisible())
         {
-            if (botAI->CastSpell("taunt", bigOoze))
+            if (botAI->GetServices().GetSpellService().CastSpell("taunt", bigOoze))
                 return true;
             bot->SetTarget(bigOoze->GetGUID());
             bot->SetFacingToObject(bigOoze);
@@ -1800,7 +1801,7 @@ bool IccRotfaceTankPositionAction::HandleBigOozePositioning(Unit* boss)
                     for (auto const& puddleGuid : puddles)
                     {
                         Unit* puddle = botAI->GetUnit(puddleGuid);
-                        if (puddle && botAI->GetAura("Ooze Flood", puddle))
+                        if (puddle && botAI->GetServices().GetSpellService().GetAura("Ooze Flood", puddle))
                         {
                             float puddleDistance = std::sqrt(std::pow(newX - puddle->GetPositionX(), 2) +
                                                              std::pow(newY - puddle->GetPositionY(), 2));
@@ -1837,7 +1838,7 @@ bool IccRotfaceGroupPositionAction::Execute(Event event)
     for (auto const& npc : npcs)
     {
         Unit* unit = botAI->GetUnit(npc);
-        if (!unit || !botAI->HasAura("Ooze Flood", unit))
+        if (!unit || !botAI->GetServices().GetSpellService().HasAura("Ooze Flood", unit))
             continue;
 
         float puddleDistance = bot->GetExactDist2d(unit);
@@ -1847,9 +1848,9 @@ bool IccRotfaceGroupPositionAction::Execute(Event event)
     }
 
     Unit* bigOoze = AI_VALUE2(Unit*, "find target", "big ooze");
-    bool hasOozeFlood = botAI->HasAura("Ooze Flood", bot);
+    bool hasOozeFlood = botAI->GetServices().GetSpellService().HasAura("Ooze Flood", bot);
     Unit* smallOoze = AI_VALUE2(Unit*, "find target", "little ooze");
-    bool hasMutatedInfection = botAI->HasAura("Mutated Infection", bot);
+    bool hasMutatedInfection = botAI->GetServices().GetSpellService().HasAura("Mutated Infection", bot);
 
     // Handle puddle avoidance
     if (!BotRoleService::IsTankStatic(bot) && HandlePuddleAvoidance(boss))
@@ -1876,7 +1877,7 @@ bool IccRotfaceGroupPositionAction::HandlePuddleAvoidance(Unit* boss)
     for (auto const& npc : npcs)
     {
         Unit* unit = botAI->GetUnit(npc);
-        if (!unit || !botAI->HasAura("Ooze Flood", unit))
+        if (!unit || !botAI->GetServices().GetSpellService().HasAura("Ooze Flood", unit))
             continue;
 
         float puddleDistance = bot->GetExactDist2d(unit);
@@ -1961,7 +1962,7 @@ bool IccRotfaceGroupPositionAction::MoveAwayFromPuddle(Unit* boss, Unit* puddle,
 bool IccRotfaceGroupPositionAction::HandleOozeTargeting()
 {
     Unit* smallOoze = AI_VALUE2(Unit*, "find target", "little ooze");
-    bool hasMutatedInfection = botAI->HasAura("Mutated Infection", bot);
+    bool hasMutatedInfection = botAI->GetServices().GetSpellService().HasAura("Mutated Infection", bot);
 
     if ((smallOoze && smallOoze->GetVictim() == bot) || hasMutatedInfection)
         return HandleOozeMemberPositioning();
@@ -2062,7 +2063,7 @@ bool IccRotfaceGroupPositionAction::FindAndMoveFromClosestMember(Unit* boss, Uni
     for (auto const& npc : npcs)
     {
         Unit* unit = botAI->GetUnit(npc);
-        if (!unit || !botAI->HasAura("Ooze Flood", unit))
+        if (!unit || !botAI->GetServices().GetSpellService().HasAura("Ooze Flood", unit))
             continue;
 
         puddle = unit;
@@ -2202,7 +2203,7 @@ bool IccRotfaceMoveAwayFromExplosionAction::MoveToRandomSafeLocation()
     for (auto const& npc : npcs)
     {
         Unit* puddle = botAI->GetUnit(npc);
-        if (!puddle || !botAI->HasAura("Ooze Flood", puddle))
+        if (!puddle || !botAI->GetServices().GetSpellService().HasAura("Ooze Flood", puddle))
             continue;
 
         float puddleDistance =
@@ -2436,7 +2437,7 @@ bool IccPutricideVolatileOozeAction::Execute(Event event)
                ICC_PUTRICIDE_TANK_POSITION.GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_COMBAT, true, false);
 
     // Skip if we have forbidden auras
-    if (botAI->HasAura("Gaseous Bloat", bot) || botAI->HasAura("Unbound Plague", bot))
+    if (botAI->GetServices().GetSpellService().HasAura("Gaseous Bloat", bot) || botAI->GetServices().GetSpellService().HasAura("Unbound Plague", bot))
         return false;
 
     // Find all alive oozes
@@ -2523,7 +2524,7 @@ Unit* IccPutricideVolatileOozeAction::FindAuraTarget()
         if (!member || !member->IsAlive() || member == bot)
             continue;
 
-        if (botAI->HasAura("Volatile Ooze Adhesive", member))
+        if (botAI->GetServices().GetSpellService().HasAura("Volatile Ooze Adhesive", member))
             return member;
     }
 
@@ -2550,7 +2551,7 @@ bool IccPutricideGasCloudAction::Execute(Event event)
     if (BotRoleService::IsMainTankStatic(bot))
         return false;
 
-    bool hasGaseousBloat = botAI->HasAura("Gaseous Bloat", bot);
+    bool hasGaseousBloat = botAI->GetServices().GetSpellService().HasAura("Gaseous Bloat", bot);
     Unit* volatileOoze = AI_VALUE2(Unit*, "find target", "volatile ooze");
 
     // Find all alive gasCloud
@@ -2584,7 +2585,7 @@ bool IccPutricideGasCloudAction::Execute(Event event)
 
 bool IccPutricideGasCloudAction::HandleGaseousBloatMovement(Unit* gasCloud)
 {
-    bool hasGaseousBloat = botAI->HasAura("Gaseous Bloat", bot);
+    bool hasGaseousBloat = botAI->GetServices().GetSpellService().HasAura("Gaseous Bloat", bot);
 
     if (!hasGaseousBloat)
         return false;
@@ -2937,7 +2938,7 @@ bool IccPutricideGasCloudAction::GroupHasGaseousBloat(Group* group)
     for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
     {
         Player* member = itr->GetSource();
-        if (member && botAI->HasAura("Gaseous Bloat", member))
+        if (member && botAI->GetServices().GetSpellService().HasAura("Gaseous Bloat", member))
             return true;
     }
     return false;
@@ -2988,7 +2989,7 @@ bool IccPutricideAvoidMalleableGooAction::HandleUnboundPlague(Unit* boss)
     if (boss && boss->HealthBelowPct(35))
         return false;
 
-    if (!botAI->HasAura("Unbound Plague", bot))
+    if (!botAI->GetServices().GetSpellService().HasAura("Unbound Plague", bot))
         return false;
 
     Group* group = bot->GetGroup();
@@ -3275,7 +3276,7 @@ bool IccBpcKelesethTankAction::Execute(Event event)
     }
 
     // Positioning logic - only execute if no nucleus needs collecting
-    if (botAI->HasAura("Invocation of Blood", boss) && bot->GetExactDist2d(ICC_BPC_MT_POSITION) > 15.0f && isBossVictim)
+    if (botAI->GetServices().GetSpellService().HasAura("Invocation of Blood", boss) && bot->GetExactDist2d(ICC_BPC_MT_POSITION) > 15.0f && isBossVictim)
     {
         // Calculate direction vector
         float dirX = ICC_BPC_MT_POSITION.GetPositionX() - bot->GetPositionX();
@@ -3393,7 +3394,7 @@ void IccBpcMainTankAction::MarkEmpoweredPrince()
         if (!unit || !unit->IsAlive())
             continue;
 
-        if (botAI->HasAura("Invocation of Blood", unit))
+        if (botAI->GetServices().GetSpellService().HasAura("Invocation of Blood", unit))
         {
             const uint32 entry = unit->GetEntry();
             if (entry == NPC_PRINCE_KELESETH || entry == NPC_PRINCE_VALANAR || entry == NPC_PRINCE_TALDARAM)
@@ -3846,8 +3847,8 @@ bool IccBqlGroupPositionAction::Execute(Event event)
     if (!boss)
         return false;
 
-    Aura* frenzyAura = botAI->GetAura("Frenzied Bloodthirst", bot);
-    Aura* shadowAura = botAI->GetAura("Swarming Shadows", bot);
+    Aura* frenzyAura = botAI->GetServices().GetSpellService().GetAura("Frenzied Bloodthirst", bot);
+    Aura* shadowAura = botAI->GetServices().GetSpellService().GetAura("Swarming Shadows", bot);
     bool isTank = BotRoleService::IsTankStatic(bot);
     // Handle tank positioning
     if (isTank && HandleTankPosition(boss, frenzyAura, shadowAura))
@@ -3881,7 +3882,7 @@ bool IccBqlGroupPositionAction::HandleTankPosition(Unit* boss, Aura* frenzyAura,
     }
 
     // Assist tank positioning
-    if (BotRoleService::IsAssistTankStatic(bot) && !botAI->GetAura("Blood Mirror", bot))
+    if (BotRoleService::IsAssistTankStatic(bot) && !botAI->GetServices().GetSpellService().GetAura("Blood Mirror", bot))
     {
         if (Unit* mainTank = AI_VALUE(Unit*, "main tank"))
         {
@@ -4543,8 +4544,8 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
         for (int i = 0; i < members.size(); i++)
         {
             Unit* member = botAI->GetUnit(members[i]);
-            if (!member || !member->IsAlive() || member == bot || botAI->GetAura("Frenzied Bloodthirst", member) ||
-                botAI->GetAura("Uncontrollable Frenzy", member))
+            if (!member || !member->IsAlive() || member == bot || botAI->GetServices().GetSpellService().GetAura("Frenzied Bloodthirst", member) ||
+                botAI->GetServices().GetSpellService().GetAura("Uncontrollable Frenzy", member))
                 continue;
 
             float distance = bot->GetExactDist2d(member);
@@ -4605,7 +4606,7 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
 bool IccBqlPactOfDarkfallenAction::Execute(Event event)
 {
     // Check if bot has Pact of the Darkfallen
-    if (!botAI->GetAura("Pact of the Darkfallen", bot))
+    if (!botAI->GetServices().GetSpellService().GetAura("Pact of the Darkfallen", bot))
         return false;
     Group* group = bot->GetGroup();
     if (!group)
@@ -4620,7 +4621,7 @@ bool IccBqlPactOfDarkfallenAction::Execute(Event event)
         Player* member = itr->GetSource();
         if (!member || member == bot)
             continue;
-        if (botAI->GetAura("Pact of the Darkfallen", member))
+        if (botAI->GetServices().GetSpellService().GetAura("Pact of the Darkfallen", member))
         {
             playersWithAura.push_back(member);
             if (BotRoleService::IsTankStatic(member))
@@ -4724,7 +4725,7 @@ bool IccBqlPactOfDarkfallenAction::MoveToTargetPosition(const Position& targetPo
 bool IccBqlVampiricBiteAction::Execute(Event event)
 {
     // Only act when bot has Frenzied Bloodthirst
-    if (!botAI->GetAura("Frenzied Bloodthirst", bot))
+    if (!botAI->GetServices().GetSpellService().GetAura("Frenzied Bloodthirst", bot))
         return false;
 
     const float BITE_RANGE = 2.0f;
@@ -4767,7 +4768,7 @@ Player* IccBqlVampiricBiteAction::FindBestBiteTarget(Group* group)
         if (!member || !member->IsAlive() || member == bot)
             continue;
 
-        if (botAI->GetAura("Frenzied Bloodthirst", member) && member->GetTarget())
+        if (botAI->GetServices().GetSpellService().GetAura("Frenzied Bloodthirst", member) && member->GetTarget())
         {
             currentlyTargetedPlayers.insert(member->GetTarget());
         }
@@ -4805,8 +4806,8 @@ Player* IccBqlVampiricBiteAction::FindBestBiteTarget(Group* group)
 
 bool IccBqlVampiricBiteAction::IsInvalidTarget(Player* player)
 {
-    return botAI->GetAura("Frenzied Bloodthirst", player) || botAI->GetAura("Essence of the Blood Queen", player) ||
-           botAI->GetAura("Uncontrollable Frenzy", player) || botAI->GetAura("Swarming Shadows", player) ||
+    return botAI->GetServices().GetSpellService().GetAura("Frenzied Bloodthirst", player) || botAI->GetServices().GetSpellService().GetAura("Essence of the Blood Queen", player) ||
+           botAI->GetServices().GetSpellService().GetAura("Uncontrollable Frenzy", player) || botAI->GetServices().GetSpellService().GetAura("Swarming Shadows", player) ||
            BotRoleService::IsTankStatic(player);
 }
 
@@ -4854,7 +4855,7 @@ bool IccBqlVampiricBiteAction::CastVampiricBite(Player* target)
     if (IsInvalidTarget(target) || !target->IsAlive())
         return false;
 
-    return botAI->CanCastSpell("Vampiric Bite", target) && botAI->CastSpell("Vampiric Bite", target);
+    return botAI->GetServices().GetSpellService().CanCastSpell("Vampiric Bite", target) && botAI->GetServices().GetSpellService().CastSpell("Vampiric Bite", target);
 }
 
 // Sister Svalna
@@ -4870,7 +4871,7 @@ bool IccValkyreSpearAction::Execute(Event event)
         return MoveTo(spear, INTERACTION_DISTANCE);
 
     // Remove shapeshift forms
-    botAI->RemoveShapeshift();
+    botAI->GetServices().GetSpellService().RemoveShapeshift();
 
     // Stop movement and click the spear
     bot->GetMotionMaster()->Clear();
@@ -4984,7 +4985,7 @@ bool IccValithriaGroupAction::Execute(Event event)
 
     // Avoidance behaviors
     if (manaVoid && bot->GetExactDist2d(manaVoid) < 10.0f &&
-        !(botAI->GetAura("Twisted Nightmares", bot) || botAI->GetAura("Emerald Vigor", bot)))
+        !(botAI->GetServices().GetSpellService().GetAura("Twisted Nightmares", bot) || botAI->GetServices().GetSpellService().GetAura("Emerald Vigor", bot)))
     {
         botAI->Reset();
         FleePosition(manaVoid->GetPosition(), 11.0f, 250U);
@@ -5018,36 +5019,36 @@ bool IccValithriaGroupAction::Execute(Event event)
         switch (bot->getClass())
         {
             case CLASS_MAGE:
-                if (!botAI->HasAura("Frost Nova", zombie))
-                    botAI->CastSpell("Frost Nova", zombie);
+                if (!botAI->GetServices().GetSpellService().HasAura("Frost Nova", zombie))
+                    botAI->GetServices().GetSpellService().CastSpell("Frost Nova", zombie);
                 break;
             case CLASS_DRUID:
-                if (!botAI->HasAura("Entangling Roots", zombie))
-                    botAI->CastSpell("Entangling Roots", zombie);
+                if (!botAI->GetServices().GetSpellService().HasAura("Entangling Roots", zombie))
+                    botAI->GetServices().GetSpellService().CastSpell("Entangling Roots", zombie);
                 break;
             case CLASS_PALADIN:
-                if (!botAI->HasAura("Hammer of Justice", zombie))
-                    botAI->CastSpell("Hammer of Justice", zombie);
+                if (!botAI->GetServices().GetSpellService().HasAura("Hammer of Justice", zombie))
+                    botAI->GetServices().GetSpellService().CastSpell("Hammer of Justice", zombie);
                 break;
             case CLASS_WARRIOR:
-                if (!botAI->HasAura("Hamstring", zombie))
-                    botAI->CastSpell("Hamstring", zombie);
+                if (!botAI->GetServices().GetSpellService().HasAura("Hamstring", zombie))
+                    botAI->GetServices().GetSpellService().CastSpell("Hamstring", zombie);
                 break;
             case CLASS_HUNTER:
-                if (!botAI->HasAura("Concussive Shot", zombie))
-                    botAI->CastSpell("Concussive Shot", zombie);
+                if (!botAI->GetServices().GetSpellService().HasAura("Concussive Shot", zombie))
+                    botAI->GetServices().GetSpellService().CastSpell("Concussive Shot", zombie);
                 break;
             case CLASS_ROGUE:
-                if (!botAI->HasAura("Kidney Shot", zombie))
-                    botAI->CastSpell("Kidney Shot", zombie);
+                if (!botAI->GetServices().GetSpellService().HasAura("Kidney Shot", zombie))
+                    botAI->GetServices().GetSpellService().CastSpell("Kidney Shot", zombie);
                 break;
             case CLASS_SHAMAN:
-                if (!botAI->HasAura("Frost Shock", zombie))
-                    botAI->CastSpell("Frost Shock", zombie);
+                if (!botAI->GetServices().GetSpellService().HasAura("Frost Shock", zombie))
+                    botAI->GetServices().GetSpellService().CastSpell("Frost Shock", zombie);
                 break;
             case CLASS_DEATH_KNIGHT:
-                if (!botAI->HasAura("Chains of Ice", zombie))
-                    botAI->CastSpell("Chains of Ice", zombie);
+                if (!botAI->GetServices().GetSpellService().HasAura("Chains of Ice", zombie))
+                    botAI->GetServices().GetSpellService().CastSpell("Chains of Ice", zombie);
                 break;
             default:
                 break;
@@ -5393,7 +5394,7 @@ bool IccValithriaPortalAction::Execute(Event event)
                    MovementPriority::MOVEMENT_NORMAL);
         }
         // Remove shapeshift forms
-        botAI->RemoveShapeshift();
+        botAI->GetServices().GetSpellService().RemoveShapeshift();
 
         // Try to click the real portal if it is close enough
         Creature* nearestRealPortal = nullptr;
@@ -5410,7 +5411,7 @@ bool IccValithriaPortalAction::Execute(Event event)
 
         if (nearestRealPortal)
         {
-            botAI->RemoveShapeshift();
+            botAI->GetServices().GetSpellService().RemoveShapeshift();
             bot->GetMotionMaster()->Clear();
             bot->StopMoving();
             bot->SetFacingToObject(nearestRealPortal);
@@ -5441,7 +5442,7 @@ bool IccValithriaPortalAction::Execute(Event event)
 
     if (nearestRealPortal)
     {
-        botAI->RemoveShapeshift();
+        botAI->GetServices().GetSpellService().RemoveShapeshift();
         bot->GetMotionMaster()->Clear();
         bot->StopMoving();
         bot->SetFacingToObject(nearestRealPortal);
@@ -5493,19 +5494,19 @@ bool IccValithriaHealAction::Execute(Event event)
 
             // Apply Rejuvenation if missing
             if (!valithria->HasAura(SPELL_REJUVENATION, bot->GetGUID()))
-                return botAI->CastSpell(SPELL_REJUVENATION, valithria);
+                return botAI->GetServices().GetSpellService().CastSpell(SPELL_REJUVENATION, valithria);
 
             // Apply Regrowth if missing
             if (!valithria->HasAura(SPELL_REGROWTH, bot->GetGUID()))
-                return botAI->CastSpell(SPELL_REGROWTH, valithria);
+                return botAI->GetServices().GetSpellService().CastSpell(SPELL_REGROWTH, valithria);
 
             // Stack Lifebloom to maximum stacks
             Aura* lifebloom = valithria->GetAura(SPELL_LIFEBLOOM, bot->GetGUID());
             if (!lifebloom || lifebloom->GetStackAmount() < LIFEBLOOM_MAX_STACKS)
-                return botAI->CastSpell(SPELL_LIFEBLOOM, valithria);
+                return botAI->GetServices().GetSpellService().CastSpell(SPELL_LIFEBLOOM, valithria);
 
             // All HoTs active with full stacks - cast Wild Growth
-            return botAI->CastSpell(SPELL_WILD_GROWTH, valithria);
+            return botAI->GetServices().GetSpellService().CastSpell(SPELL_WILD_GROWTH, valithria);
         }
         case CLASS_SHAMAN:
         {
@@ -5513,8 +5514,8 @@ bool IccValithriaHealAction::Execute(Event event)
             constexpr uint32 SPELL_HEALING_WAVE = 49273;
 
             // Cast Healing Wave if Riptide is active, otherwise apply Riptide
-            return valithria->HasAura(SPELL_RIPTIDE, bot->GetGUID()) ? botAI->CastSpell(SPELL_HEALING_WAVE, valithria)
-                                                                     : botAI->CastSpell(SPELL_RIPTIDE, valithria);
+            return valithria->HasAura(SPELL_RIPTIDE, bot->GetGUID()) ? botAI->GetServices().GetSpellService().CastSpell(SPELL_HEALING_WAVE, valithria)
+                                                                     : botAI->GetServices().GetSpellService().CastSpell(SPELL_RIPTIDE, valithria);
         }
         case CLASS_PRIEST:
         {
@@ -5522,8 +5523,8 @@ bool IccValithriaHealAction::Execute(Event event)
             constexpr uint32 SPELL_GREATER_HEAL = 48063;
 
             // Cast Greater Heal if Renew is active, otherwise apply Renew
-            return valithria->HasAura(SPELL_RENEW, bot->GetGUID()) ? botAI->CastSpell(SPELL_GREATER_HEAL, valithria)
-                                                            : botAI->CastSpell(SPELL_RENEW, valithria);
+            return valithria->HasAura(SPELL_RENEW, bot->GetGUID()) ? botAI->GetServices().GetSpellService().CastSpell(SPELL_GREATER_HEAL, valithria)
+                                                            : botAI->GetServices().GetSpellService().CastSpell(SPELL_RENEW, valithria);
         }
         case CLASS_PALADIN:
         {
@@ -5532,8 +5533,8 @@ bool IccValithriaHealAction::Execute(Event event)
 
             // Cast Holy Light if Beacon is active, otherwise apply Beacon of Light
             return valithria->HasAura(SPELL_BEACON_OF_LIGHT, bot->GetGUID())
-                       ? botAI->CastSpell(SPELL_HOLY_LIGHT, valithria)
-                       : botAI->CastSpell(SPELL_BEACON_OF_LIGHT, valithria);
+                       ? botAI->GetServices().GetSpellService().CastSpell(SPELL_HOLY_LIGHT, valithria)
+                       : botAI->GetServices().GetSpellService().CastSpell(SPELL_BEACON_OF_LIGHT, valithria);
         }
         default:
             return false;
@@ -5831,7 +5832,7 @@ bool IccSindragosaGroupPositionAction::Execute(Event event)
     if (!boss || boss->HasUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY))
         return false;
 
-    Aura* aura = botAI->GetAura("mystic buffet", bot, false, true);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("mystic buffet", bot, false, true);
 
     if (aura && aura->GetStackAmount() >= 6 && BotRoleService::IsMainTankStatic(bot))
         return false;
@@ -5966,7 +5967,7 @@ bool IccSindragosaGroupPositionAction::HandleNonTankPositioning()
     size_t membersWithoutAura = 0;
     for (Player* member : raidMembers)
     {
-        if (!botAI->GetAura("mystic buffet", member))
+        if (!botAI->GetServices().GetSpellService().GetAura("mystic buffet", member))
             membersWithoutAura++;
     }
 
@@ -6139,9 +6140,9 @@ void IccSindragosaFrostBeaconAction::HandleSupportActions()
                 continue;
             }
 
-            if (botAI->GetAura("Frost Breath", member) && !member->HasAura(HAND_OF_FREEDOM_SPELL_ID))
+            if (botAI->GetServices().GetSpellService().GetAura("Frost Breath", member) && !member->HasAura(HAND_OF_FREEDOM_SPELL_ID))
             {
-                botAI->CastSpell(HAND_OF_FREEDOM_SPELL_ID, member);
+                botAI->GetServices().GetSpellService().CastSpell(HAND_OF_FREEDOM_SPELL_ID, member);
                 break;
             }
         }
@@ -6178,7 +6179,7 @@ void IccSindragosaFrostBeaconAction::HandleSupportActions()
 
             if (!member->HasAura(spellId))
             {
-                botAI->CastSpell(spellId, member);
+                botAI->GetServices().GetSpellService().CastSpell(spellId, member);
             }
         }
     }
@@ -6396,11 +6397,11 @@ bool IccSindragosaUnchainedMagicAction::Execute(Event event)
     if (!boss)
         return false;
 
-    Aura* aura = botAI->GetAura("Unchained Magic", bot, false, true);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("Unchained Magic", bot, false, true);
     if (!aura)
         return false;
 
-    Aura* aura1 = botAI->GetAura("Instability", bot, false, true);
+    Aura* aura1 = botAI->GetServices().GetSpellService().GetAura("Instability", bot, false, true);
 
     Difficulty diff = bot->GetRaidDifficulty();
     if (aura && (diff == RAID_DIFFICULTY_10MAN_NORMAL || diff == RAID_DIFFICULTY_25MAN_NORMAL))
@@ -6418,7 +6419,7 @@ bool IccSindragosaChilledToTheBoneAction::Execute(Event event)
     if (!boss)
         return false;
 
-    Aura* aura = botAI->GetAura("Chilled to the Bone", bot, false, true);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("Chilled to the Bone", bot, false, true);
     if (!aura)
         return false;
 
@@ -6442,7 +6443,7 @@ bool IccSindragosaMysticBuffetAction::Execute(Event event)
         return false;
 
     // Check if we have Mystic Buffet
-    Aura* aura = botAI->GetAura("mystic buffet", bot, false, true);
+    Aura* aura = botAI->GetServices().GetSpellService().GetAura("mystic buffet", bot, false, true);
     if (!aura)
         return false;
 
@@ -6932,7 +6933,7 @@ bool IccLichKingShadowTrapAction::Execute(Event event)
 
 bool IccLichKingNecroticPlagueAction::Execute(Event event)
 {
-    bool hasPlague = botAI->HasAura("Necrotic Plague", bot);
+    bool hasPlague = botAI->GetServices().GetSpellService().HasAura("Necrotic Plague", bot);
     // Only execute if we have the plague
     if (!hasPlague)
         return false;
@@ -7814,7 +7815,7 @@ bool IccLichKingAddsAction::Execute(Event event)
     }
 
     Unit* spiritWarden = AI_VALUE2(Unit*, "find target", "spirit warden");
-    bool hasPlague = botAI->HasAura("Necrotic Plague", bot);
+    bool hasPlague = botAI->GetServices().GetSpellService().HasAura("Necrotic Plague", bot);
     Unit* terenasMenethilHC = bot->FindNearestCreature(NPC_TERENAS_MENETHIL_HC, 55.0f);
 
     Group* group = bot->GetGroup();
@@ -7929,11 +7930,11 @@ void IccLichKingAddsAction::HandleTeleportationFixes(Difficulty diff, Unit* tere
     }
 
     // temp solution for bots going underground due to buggy ice platfroms and adds that go underground
-    if (abs(bot->GetPositionZ() - 840.857f) > 1.0f && !botAI->GetAura("Harvest Soul", bot, false, false) &&
-        !botAI->GetAura("Harvest Souls", bot, false, false))
+    if (abs(bot->GetPositionZ() - 840.857f) > 1.0f && !botAI->GetServices().GetSpellService().GetAura("Harvest Soul", bot, false, false) &&
+        !botAI->GetServices().GetSpellService().GetAura("Harvest Souls", bot, false, false))
         bot->TeleportTo(bot->GetMapId(), bot->GetPositionX(), bot->GetPositionY(), 840.857f, bot->GetOrientation());
 
-    if (abs(bot->GetPositionZ() - 1049.865f) > 5.0f && botAI->GetAura("Harvest Soul", bot, false, false) &&
+    if (abs(bot->GetPositionZ() - 1049.865f) > 5.0f && botAI->GetServices().GetSpellService().GetAura("Harvest Soul", bot, false, false) &&
         terenasMenethilHC)
         bot->TeleportTo(bot->GetMapId(), terenasMenethilHC->GetPositionX(), terenasMenethilHC->GetPositionY(), 1049.865f,
                         bot->GetOrientation());
@@ -8358,8 +8359,8 @@ void IccLichKingAddsAction::HandleShamblingHorrors(Unit* boss, bool hasPlague)
     */
 
     // If bot is hunter and shambling is enraged, use Tranquilizing Shot
-    if (bot->getClass() == CLASS_HUNTER && closestHorror && botAI->HasAura("Enrage", closestHorror))
-        botAI->CastSpell("Tranquilizing Shot", closestHorror);
+    if (bot->getClass() == CLASS_HUNTER && closestHorror && botAI->GetServices().GetSpellService().HasAura("Enrage", closestHorror))
+        botAI->GetServices().GetSpellService().CastSpell("Tranquilizing Shot", closestHorror);
 }
 
 bool IccLichKingAddsAction::HandleAssistTankAddManagement(Unit* boss, Difficulty diff)
@@ -8443,12 +8444,12 @@ bool IccLichKingAddsAction::HandleAssistTankAddManagement(Unit* boss, Difficulty
                     if (dist <= 30.0f)
                     {
                         // Try taunt first if available
-                        if (botAI->CastSpell("taunt", add))
+                        if (botAI->GetServices().GetSpellService().CastSpell("taunt", add))
                         {
                             continue;
                         }
                         // Fall back to ranged attack
-                        else if (botAI->CastSpell("shoot", add) || botAI->CastSpell("throw", add))
+                        else if (botAI->GetServices().GetSpellService().CastSpell("shoot", add) || botAI->GetServices().GetSpellService().CastSpell("throw", add))
                         {
                             continue;
                         }
@@ -9262,44 +9263,44 @@ void IccLichKingAddsAction::ApplyCCToValkyr(Unit* valkyr)
     switch (bot->getClass())
     {
         case CLASS_MAGE:
-            if (!botAI->HasAura("Frost Nova", valkyr))
-                botAI->CastSpell("Frost Nova", valkyr);
+            if (!botAI->GetServices().GetSpellService().HasAura("Frost Nova", valkyr))
+                botAI->GetServices().GetSpellService().CastSpell("Frost Nova", valkyr);
             break;
         case CLASS_DRUID:
-            if (!botAI->HasAura("Entangling Roots", valkyr))
-                botAI->CastSpell("Entangling Roots", valkyr);
+            if (!botAI->GetServices().GetSpellService().HasAura("Entangling Roots", valkyr))
+                botAI->GetServices().GetSpellService().CastSpell("Entangling Roots", valkyr);
             break;
         case CLASS_PALADIN:
-            if (!botAI->HasAura("Hammer of Justice", valkyr))
-                botAI->CastSpell("Hammer of Justice", valkyr);
+            if (!botAI->GetServices().GetSpellService().HasAura("Hammer of Justice", valkyr))
+                botAI->GetServices().GetSpellService().CastSpell("Hammer of Justice", valkyr);
             break;
         case CLASS_WARRIOR:
-            if (!botAI->HasAura("Hamstring", valkyr))
-                botAI->CastSpell("Hamstring", valkyr);
+            if (!botAI->GetServices().GetSpellService().HasAura("Hamstring", valkyr))
+                botAI->GetServices().GetSpellService().CastSpell("Hamstring", valkyr);
             break;
         case CLASS_HUNTER:
-            if (!botAI->HasAura("Concussive Shot", valkyr))
-                botAI->CastSpell("Concussive Shot", valkyr);
+            if (!botAI->GetServices().GetSpellService().HasAura("Concussive Shot", valkyr))
+                botAI->GetServices().GetSpellService().CastSpell("Concussive Shot", valkyr);
             break;
         case CLASS_ROGUE:
-            if (!botAI->HasAura("Kidney Shot", valkyr))
-                botAI->CastSpell("Kidney Shot", valkyr);
+            if (!botAI->GetServices().GetSpellService().HasAura("Kidney Shot", valkyr))
+                botAI->GetServices().GetSpellService().CastSpell("Kidney Shot", valkyr);
             break;
         case CLASS_SHAMAN:
-            if (!botAI->HasAura("Frost Shock", valkyr))
-                botAI->CastSpell("Frost Shock", valkyr);
+            if (!botAI->GetServices().GetSpellService().HasAura("Frost Shock", valkyr))
+                botAI->GetServices().GetSpellService().CastSpell("Frost Shock", valkyr);
             break;
         case CLASS_DEATH_KNIGHT:
-            if (!botAI->HasAura("Chains of Ice", valkyr))
-                botAI->CastSpell("Chains of Ice", valkyr);
+            if (!botAI->GetServices().GetSpellService().HasAura("Chains of Ice", valkyr))
+                botAI->GetServices().GetSpellService().CastSpell("Chains of Ice", valkyr);
             break;
         case CLASS_PRIEST:
-            if (!botAI->HasAura("Psychic Scream", valkyr))
-                botAI->CastSpell("Psychic Scream", valkyr);
+            if (!botAI->GetServices().GetSpellService().HasAura("Psychic Scream", valkyr))
+                botAI->GetServices().GetSpellService().CastSpell("Psychic Scream", valkyr);
             break;
         case CLASS_WARLOCK:
-            if (!botAI->HasAura("Fear", valkyr))
-                botAI->CastSpell("Fear", valkyr);
+            if (!botAI->GetServices().GetSpellService().HasAura("Fear", valkyr))
+                botAI->GetServices().GetSpellService().CastSpell("Fear", valkyr);
             break;
         default:
             break;

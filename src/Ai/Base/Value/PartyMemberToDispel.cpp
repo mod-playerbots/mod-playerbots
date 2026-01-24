@@ -4,6 +4,7 @@
  */
 
 #include "PartyMemberToDispel.h"
+#include "BotSpellService.h"
 
 #include "Playerbots.h"
 
@@ -15,7 +16,7 @@ public:
     {
     }
 
-    bool Check(Unit* unit) override { return unit->IsAlive() && botAI->HasAuraToDispel(unit, dispelType); }
+    bool Check(Unit* unit) override { return unit->IsAlive() && botAI->GetServices().GetSpellService().HasAuraToDispel(unit, dispelType); }
 
 private:
     uint32 dispelType;

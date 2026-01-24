@@ -243,7 +243,7 @@ public:
     bool isUseful() override
     {
         // Bypass TTL check and prevent casting if Seed of Corruption is present
-        return CastAuraSpellAction::isUseful() && !botAI->HasAura("seed of corruption", GetTarget(), false, true);
+        return CastAuraSpellAction::isUseful() && !botAI->GetServices().GetSpellService().HasAura("seed of corruption", GetTarget(), false, true);
     }
 };
 
@@ -254,7 +254,7 @@ public:
     bool isUseful() override
     {
         // Bypass TTL check and prevent casting if Seed of Corruption is present
-        return CastAuraSpellAction::isUseful() && !botAI->HasAura("seed of corruption", GetTarget(), false, true);
+        return CastAuraSpellAction::isUseful() && !botAI->GetServices().GetSpellService().HasAura("seed of corruption", GetTarget(), false, true);
     }
 };
 

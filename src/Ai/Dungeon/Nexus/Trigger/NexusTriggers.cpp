@@ -1,4 +1,5 @@
 #include "Playerbots.h"
+#include "BotSpellService.h"
 #include "BotRoleService.h"
 #include "NexusTriggers.h"
 #include "AiObject.h"
@@ -96,7 +97,7 @@ bool IntenseColdTrigger::IsActive()
     // but too many stacks is deadly. Assuming 3-5 is a good number to clear
     int stackThreshold = 5;
     Unit* boss = AI_VALUE2(Unit*, "find target", "keristrasza");
-    return boss && botAI->GetAura("intense cold", bot, false, false, stackThreshold);
+    return boss && botAI->GetServices().GetSpellService().GetAura("intense cold", bot, false, false, stackThreshold);
 }
 
 bool KeristraszaPositioningTrigger::IsActive()

@@ -4,6 +4,7 @@
  */
 
 #include "TaxiAction.h"
+#include "BotSpellService.h"
 #include "BotRoleService.h"
 
 #include "Event.h"
@@ -14,7 +15,7 @@
 
 bool TaxiAction::Execute(Event event)
 {
-    botAI->RemoveShapeshift();
+    botAI->GetServices().GetSpellService().RemoveShapeshift();
 
     LastMovement& movement = context->GetValue<LastMovement&>("last taxi")->Get();
 

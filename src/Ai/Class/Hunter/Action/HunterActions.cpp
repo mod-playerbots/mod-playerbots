@@ -9,6 +9,7 @@
 #include "GenericSpellActions.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
+#include "BotSpellService.h"
 
 bool CastViperStingAction::isUseful()
 {
@@ -18,7 +19,7 @@ bool CastViperStingAction::isUseful()
 
 bool CastAspectOfTheCheetahAction::isUseful()
 {
-    return !botAI->HasAnyAuraOf(GetTarget(), "aspect of the cheetah", "aspect of the pack", nullptr);
+    return !botAI->GetServices().GetSpellService().HasAnyAuraOf(GetTarget(), "aspect of the cheetah", "aspect of the pack", nullptr);
 }
 
 bool CastAspectOfTheHawkAction::isUseful()
@@ -70,7 +71,7 @@ bool FeedPetAction::Execute(Event event)
 
 bool CastAutoShotAction::isUseful()
 {
-    if (botAI->IsInVehicle() && !botAI->IsInVehicle(false, false, true))
+    if (botAI->GetServices().GetSpellService().IsInVehicle() && !botAI->GetServices().GetSpellService().IsInVehicle(false, false, true))
         return false;
 
     if (AI_VALUE(Unit*, "current target") && bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL) &&
@@ -99,9 +100,9 @@ bool CastDisengageAction::isUseful()
 
 Value<Unit*>* CastScareBeastCcAction::GetTargetValue() { return context->GetValue<Unit*>("cc target", "scare beast"); }
 
-bool CastScareBeastCcAction::Execute(Event event) { return botAI->CastSpell("scare beast", GetTarget()); }
+bool CastScareBeastCcAction::Execute(Event event) { return botAI->GetServices().GetSpellService().CastSpell("scare beast", GetTarget()); }
 
-bool CastWingClipAction::isUseful() { return CastSpellAction::isUseful() && !botAI->HasAura(spell, GetTarget()); }
+bool CastWingClipAction::isUseful() { return CastSpellAction::isUseful() && !botAI->GetServices().GetSpellService().HasAura(spell, GetTarget()); }
 
 std::vector<NextAction> CastWingClipAction::getPrerequisites()
 {

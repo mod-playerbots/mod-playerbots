@@ -4,6 +4,7 @@
  */
 
 #include "DKTriggers.h"
+#include "BotSpellService.h"
 
 #include <string>
 
@@ -14,8 +15,8 @@
 bool DKPresenceTrigger::IsActive()
 {
     Unit* target = GetTarget();
-    return !botAI->HasAura("blood presence", target) && !botAI->HasAura("unholy presence", target) &&
-           !botAI->HasAura("frost presence", target);
+    return !botAI->GetServices().GetSpellService().HasAura("blood presence", target) && !botAI->GetServices().GetSpellService().HasAura("unholy presence", target) &&
+           !botAI->GetServices().GetSpellService().HasAura("frost presence", target);
 }
 
 bool PestilenceGlyphTrigger::IsActive()
@@ -28,8 +29,8 @@ bool PestilenceGlyphTrigger::IsActive()
     {
         return false;
     }
-    Aura* blood_plague = botAI->GetAura("blood plague", GetTarget(), true, true);
-    Aura* frost_fever = botAI->GetAura("frost fever", GetTarget(), true, true);
+    Aura* blood_plague = botAI->GetServices().GetSpellService().GetAura("blood plague", GetTarget(), true, true);
+    Aura* frost_fever = botAI->GetServices().GetSpellService().GetAura("frost fever", GetTarget(), true, true);
     if ((blood_plague && blood_plague->GetDuration() <= 3000) || (frost_fever && frost_fever->GetDuration() <= 3000))
     {
         return true;

@@ -4,17 +4,18 @@
  */
 
 #include "PriestActions.h"
+#include "BotSpellService.h"
 
 #include "Event.h"
 #include "Playerbots.h"
 
-bool CastRemoveShadowformAction::isUseful() { return botAI->HasAura("shadowform", AI_VALUE(Unit*, "self target")); }
+bool CastRemoveShadowformAction::isUseful() { return botAI->GetServices().GetSpellService().HasAura("shadowform", AI_VALUE(Unit*, "self target")); }
 
 bool CastRemoveShadowformAction::isPossible() { return true; }
 
 bool CastRemoveShadowformAction::Execute(Event event)
 {
-    botAI->RemoveAura("shadowform");
+    botAI->GetServices().GetSpellService().RemoveAura("shadowform");
     return true;
 }
 
@@ -38,7 +39,7 @@ Unit* CastPowerWordShieldOnAlmostFullHealthBelowAction::GetTarget()
         {
             continue;
         }
-        if (botAI->HasAnyAuraOf(player, "weakened soul", "power word: shield", nullptr))
+        if (botAI->GetServices().GetSpellService().HasAnyAuraOf(player, "weakened soul", "power word: shield", nullptr))
         {
             continue;
         }
@@ -67,7 +68,7 @@ bool CastPowerWordShieldOnAlmostFullHealthBelowAction::isUseful()
         {
             continue;
         }
-        if (botAI->HasAnyAuraOf(player, "weakened soul", "power word: shield", nullptr))
+        if (botAI->GetServices().GetSpellService().HasAnyAuraOf(player, "weakened soul", "power word: shield", nullptr))
         {
             continue;
         }
@@ -93,7 +94,7 @@ Unit* CastPowerWordShieldOnNotFullAction::GetTarget()
         {
             continue;
         }
-        if (botAI->HasAnyAuraOf(player, "weakened soul", "power word: shield", nullptr))
+        if (botAI->GetServices().GetSpellService().HasAnyAuraOf(player, "weakened soul", "power word: shield", nullptr))
         {
             continue;
         }

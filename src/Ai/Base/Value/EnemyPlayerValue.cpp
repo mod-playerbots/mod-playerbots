@@ -4,6 +4,7 @@
  */
 
 #include "EnemyPlayerValue.h"
+#include "BotSpellService.h"
 
 #include "Playerbots.h"
 #include "ServerFacade.h"
@@ -11,7 +12,7 @@
 
 bool NearestEnemyPlayersValue::AcceptUnit(Unit* unit)
 {
-    bool inCannon = botAI->IsInVehicle(false, true);
+    bool inCannon = botAI->GetServices().GetSpellService().IsInVehicle(false, true);
     Player* enemy = dynamic_cast<Player*>(unit);
     if (enemy && botAI->IsOpposing(enemy) && enemy->IsPvP() &&
         !sPlayerbotAIConfig->IsPvpProhibited(enemy->GetZoneId(), enemy->GetAreaId()) &&
@@ -160,7 +161,7 @@ float EnemyPlayerValue::GetMaxAttackDistance()
 
     if (bgType == BATTLEGROUND_IC)
     {
-        if (botAI->IsInVehicle(false, true))
+        if (botAI->GetServices().GetSpellService().IsInVehicle(false, true))
             return 120.0f;
     }
 

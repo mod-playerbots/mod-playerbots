@@ -1,3 +1,4 @@
+#include "BotSpellService.h"
 #include
 #include "BotRoleService.h" "RaidMagtheridonActions.h"
 #include "RaidMagtheridonHelpers.h"
@@ -179,14 +180,14 @@ bool MagtheridonMisdirectHellfireChannelers::Execute(Event event)
         if (mainTank && channelerStar && channelerStar->IsAlive() &&
             channelerStar->GetVictim() != mainTank)
         {
-            if (botAI->CanCastSpell("misdirection", mainTank))
-                return botAI->CastSpell("misdirection", mainTank);
+            if (botAI->GetServices().GetSpellService().CanCastSpell("misdirection", mainTank))
+                return botAI->GetServices().GetSpellService().CastSpell("misdirection", mainTank);
 
             if (!bot->HasAura(SPELL_MISDIRECTION))
                 return false;
 
-            if (botAI->CanCastSpell("steady shot", channelerStar))
-                return botAI->CastSpell("steady shot", channelerStar);
+            if (botAI->GetServices().GetSpellService().CanCastSpell("steady shot", channelerStar))
+                return botAI->GetServices().GetSpellService().CastSpell("steady shot", channelerStar);
         }
         break;
 
@@ -194,14 +195,14 @@ bool MagtheridonMisdirectHellfireChannelers::Execute(Event event)
         if (mainTank && channelerCircle && channelerCircle->IsAlive() &&
             channelerCircle->GetVictim() != mainTank)
         {
-            if (botAI->CanCastSpell("misdirection", mainTank))
-                return botAI->CastSpell("misdirection", mainTank);
+            if (botAI->GetServices().GetSpellService().CanCastSpell("misdirection", mainTank))
+                return botAI->GetServices().GetSpellService().CastSpell("misdirection", mainTank);
 
             if (!bot->HasAura(SPELL_MISDIRECTION))
                 return false;
 
-            if (botAI->CanCastSpell("steady shot", channelerCircle))
-                return botAI->CastSpell("steady shot", channelerCircle);
+            if (botAI->GetServices().GetSpellService().CanCastSpell("steady shot", channelerCircle))
+                return botAI->GetServices().GetSpellService().CastSpell("steady shot", channelerCircle);
         }
         break;
 
@@ -344,16 +345,16 @@ bool MagtheridonWarlockCCBurningAbyssalAction::Execute(Event event)
     if (warlockIndex >= 0 && warlockIndex < abyssals.size())
     {
         Unit* assignedAbyssal = abyssals[warlockIndex];
-        if (!assignedAbyssal->HasAura(SPELL_BANISH) && botAI->CanCastSpell(SPELL_BANISH, assignedAbyssal, true))
-            return botAI->CastSpell("banish", assignedAbyssal);
+        if (!assignedAbyssal->HasAura(SPELL_BANISH) && botAI->GetServices().GetSpellService().CanCastSpell(SPELL_BANISH, assignedAbyssal, true))
+            return botAI->GetServices().GetSpellService().CastSpell("banish", assignedAbyssal);
     }
 
     for (size_t i = warlocks.size(); i < abyssals.size(); ++i)
     {
         Unit* excessAbyssal = abyssals[i];
         if (!excessAbyssal->HasAura(SPELL_BANISH) && !excessAbyssal->HasAura(SPELL_FEAR) &&
-            botAI->CanCastSpell(SPELL_FEAR, excessAbyssal, true))
-            return botAI->CastSpell("fear", excessAbyssal);
+            botAI->GetServices().GetSpellService().CanCastSpell(SPELL_FEAR, excessAbyssal, true))
+            return botAI->GetServices().GetSpellService().CastSpell("fear", excessAbyssal);
     }
 
     return false;

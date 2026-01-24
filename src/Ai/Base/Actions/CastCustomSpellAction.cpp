@@ -1,3 +1,4 @@
+#include "BotSpellService.h"
 /*
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
  * and/or modify it under version 3 of the License, or (at your option), any later version.
@@ -33,7 +34,7 @@ static inline void ltrim(std::string& s)
 bool CastCustomSpellAction::Execute(Event event)
 {
     // only allow proper vehicle seats
-    if (botAI->IsInVehicle() && !botAI->IsInVehicle(false, false, true))
+    if (botAI->GetServices().GetSpellService().IsInVehicle() && !botAI->GetServices().GetSpellService().IsInVehicle(false, false, true))
         return false;
 
     Player* master = GetMaster();
@@ -152,14 +153,14 @@ bool CastCustomSpellAction::Execute(Event event)
     else
         spellName << target->GetName();
 
-    if (!bot->GetTrader() && !botAI->CanCastSpell(spell, target, true, itemTarget))
+    if (!bot->GetTrader() && !botAI->GetServices().GetSpellService().CanCastSpell(spell, target, true, itemTarget))
     {
         msg << "Cannot cast " << spellName.str();
         botAI->TellError(msg.str());
         return false;
     }
 
-    bool result = spell ? botAI->CastSpell(spell, target, itemTarget) : botAI->CastSpell(text, target, itemTarget);
+    bool result = spell ? botAI->GetServices().GetSpellService().CastSpell(spell, target, itemTarget) : botAI->GetServices().GetSpellService().CastSpell(text, target, itemTarget);
     if (result)
     {
         msg << "Casting " << spellName.str();
@@ -249,12 +250,12 @@ bool CastRandomSpellAction::Execute(Event event)
         {
             uint32 spellPriority = GetSpellPriority(spellInfo);
 
-            if (target && botAI->CanCastSpell(spellId, target, true))
+            if (target && botAI->GetServices().GetSpellService().CanCastSpell(spellId, target, true))
                 spellList.push_back(std::make_pair(spellId, std::make_pair(spellPriority, target)));
             if (got &&
-                botAI->CanCastSpell(spellId, got->GetPositionX(), got->GetPositionY(), got->GetPositionZ(), true))
+                botAI->GetServices().GetSpellService().CanCastSpell(spellId, got->GetPositionX(), got->GetPositionY(), got->GetPositionZ(), true))
                 spellList.push_back(std::make_pair(spellId, std::make_pair(spellPriority, got)));
-            if (botAI->CanCastSpell(spellId, bot, true))
+            if (botAI->GetServices().GetSpellService().CanCastSpell(spellId, bot, true))
                 spellList.push_back(std::make_pair(spellId, std::make_pair(spellPriority, bot)));
         }
     }
@@ -329,9 +330,9 @@ uint32 CraftRandomItemAction::GetSpellPriority(SpellInfo const* spellInfo)
 bool CastRandomSpellAction::castSpell(uint32 spellId, WorldObject* wo)
 {
     if (wo->GetGUID().IsUnit())
-        return botAI->CastSpell(spellId, (Unit*)(wo));
+        return botAI->GetServices().GetSpellService().CastSpell(spellId, (Unit*)(wo));
     else
-        return botAI->CastSpell(spellId, wo->GetPositionX(), wo->GetPositionY(), wo->GetPositionZ());
+        return botAI->GetServices().GetSpellService().CastSpell(spellId, wo->GetPositionX(), wo->GetPositionY(), wo->GetPositionZ());
 }
 
 bool DisEnchantRandomItemAction::Execute(Event event)

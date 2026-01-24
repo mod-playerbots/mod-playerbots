@@ -4,6 +4,7 @@
  */
 
 #include "RogueActions.h"
+#include "BotSpellService.h"
 
 #include "Event.h"
 #include "ObjectGuid.h"
@@ -22,12 +23,12 @@ bool CastStealthAction::isUseful()
 bool CastStealthAction::isPossible()
 {
     // do not use with WSG flag or EYE flag
-    return !botAI->HasAura(23333, bot) && !botAI->HasAura(23335, bot) && !botAI->HasAura(34976, bot);
+    return !botAI->GetServices().GetSpellService().HasAura(23333, bot) && !botAI->GetServices().GetSpellService().HasAura(23335, bot) && !botAI->GetServices().GetSpellService().HasAura(34976, bot);
 }
 
 bool UnstealthAction::Execute(Event event)
 {
-    botAI->RemoveAura("stealth");
+    botAI->GetServices().GetSpellService().RemoveAura("stealth");
     // botAI->ChangeStrategy("+dps,-stealthed", BOT_STATE_COMBAT);
 
     return true;
@@ -35,7 +36,7 @@ bool UnstealthAction::Execute(Event event)
 
 bool CheckStealthAction::Execute(Event event)
 {
-    if (botAI->HasAura("stealth", bot))
+    if (botAI->GetServices().GetSpellService().HasAura("stealth", bot))
     {
         botAI->ChangeStrategy("-dps,+stealthed", BOT_STATE_COMBAT);
     }
@@ -50,7 +51,7 @@ bool CheckStealthAction::Execute(Event event)
 bool CastVanishAction::isUseful()
 {
     // do not use with WSG flag or EYE flag
-    return !botAI->HasAura(23333, bot) && !botAI->HasAura(23335, bot) && !botAI->HasAura(34976, bot);
+    return !botAI->GetServices().GetSpellService().HasAura(23333, bot) && !botAI->GetServices().GetSpellService().HasAura(23335, bot) && !botAI->GetServices().GetSpellService().HasAura(34976, bot);
 }
 
 bool CastEnvenomAction::isUseful()
@@ -61,7 +62,7 @@ bool CastEnvenomAction::isUseful()
 bool CastEnvenomAction::isPossible()
 {
     // alternate to eviscerate if talents unlearned
-    return botAI->HasAura(58410, bot) /* Master Poisoner */;
+    return botAI->GetServices().GetSpellService().HasAura(58410, bot) /* Master Poisoner */;
 }
 
 bool CastTricksOfTheTradeOnMainTankAction::isUseful()

@@ -16,7 +16,7 @@ public:
 
     void CheckAttacker(Unit* attacker, ThreatMgr* threatMgr) override
     {
-        if (botAI->HasAura(spell, attacker))
+        if (botAI->GetServices().GetSpellService().HasAura(spell, attacker))
             result = attacker;
     }
 

@@ -7,6 +7,7 @@
 
 #include "Event.h"
 #include "Playerbots.h"
+#include "BotSpellService.h"
 
 bool DrinkAction::Execute(Event event)
 {
@@ -25,7 +26,7 @@ bool DrinkAction::Execute(Event event)
             // return false;
         }
         bot->SetStandState(UNIT_STAND_STATE_SIT);
-        botAI->InterruptSpell();
+        botAI->GetServices().GetSpellService().InterruptSpell();
 
         // float hp = bot->GetHealthPercent();
         float mp = bot->GetPowerPct(POWER_MANA);
@@ -41,7 +42,7 @@ bool DrinkAction::Execute(Event event)
 
         bot->AddAura(25990, bot);
         return true;
-        // return botAI->CastSpell(24707, bot);
+        // return botAI->GetServices().GetSpellService().CastSpell(24707, bot);
     }
 
     return UseItemAction::Execute(event);
@@ -58,7 +59,7 @@ bool DrinkAction::isPossible()
 {
     return !bot->IsInCombat() &&
         !bot->IsMounted() &&
-        !botAI->HasAnyAuraOf(GetTarget(), "dire bear form", "bear form", "cat form", "travel form",
+        !botAI->GetServices().GetSpellService().HasAnyAuraOf(GetTarget(), "dire bear form", "bear form", "cat form", "travel form",
             "aquatic form","flight form", "swift flight form", nullptr) &&
         (botAI->HasCheat(BotCheatMask::food) || UseItemAction::isPossible());
 }
@@ -81,7 +82,7 @@ bool EatAction::Execute(Event event)
         }
 
         bot->SetStandState(UNIT_STAND_STATE_SIT);
-        botAI->InterruptSpell();
+        botAI->GetServices().GetSpellService().InterruptSpell();
 
         float hp = bot->GetHealthPct();
         // float mp = bot->HasMana() ? bot->GetPowerPercent() : 0.f;
@@ -112,7 +113,7 @@ bool EatAction::isPossible()
 {
     return !bot->IsInCombat() &&
         !bot->IsMounted() &&
-        !botAI->HasAnyAuraOf(GetTarget(), "dire bear form", "bear form", "cat form", "travel form",
+        !botAI->GetServices().GetSpellService().HasAnyAuraOf(GetTarget(), "dire bear form", "bear form", "cat form", "travel form",
             "aquatic form","flight form", "swift flight form", nullptr) &&
         (botAI->HasCheat(BotCheatMask::food) || UseItemAction::isPossible());
 }

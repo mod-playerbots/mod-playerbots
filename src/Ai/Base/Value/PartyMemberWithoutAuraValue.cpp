@@ -25,7 +25,7 @@ public:
 
         for (std::vector<std::string>::iterator i = auras.begin(); i != auras.end(); ++i)
         {
-            if (botAI->HasAura(*i, unit))
+            if (botAI->GetServices().GetSpellService().HasAura(*i, unit))
                 return false;
         }
 

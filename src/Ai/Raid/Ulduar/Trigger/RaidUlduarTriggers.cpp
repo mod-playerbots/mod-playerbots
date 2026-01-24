@@ -1,4 +1,5 @@
 #include "RaidUlduarTriggers.h"
+#include "BotSpellService.h"
 #include "BotRoleService.h"
 
 #include "EventMap.h"
@@ -536,8 +537,8 @@ bool HodirBitingColdTrigger::IsActive()
     if (!master || !master->IsAlive())
         return false;
 
-    return botAI->GetAura("biting cold", bot, false, false, 2) &&
-           !botAI->GetAura("biting cold", master, false, false, 2);
+    return botAI->GetServices().GetSpellService().GetAura("biting cold", bot, false, false, 2) &&
+           !botAI->GetServices().GetSpellService().GetAura("biting cold", master, false, false, 2);
 }
 
 // Snowpacked Icicle Target
@@ -1618,7 +1619,7 @@ bool VezaxShadowCrashTrigger::IsActive()
         return false;
     }
 
-    return botAI->HasAura(SPELL_SHADOW_CRASH, bot);
+    return botAI->GetServices().GetSpellService().HasAura(SPELL_SHADOW_CRASH, bot);
 }
 
 bool VezaxMarkOfTheFacelessTrigger::IsActive()
@@ -1631,7 +1632,7 @@ bool VezaxMarkOfTheFacelessTrigger::IsActive()
         return false;
     }
 
-    if (!botAI->HasAura(SPELL_MARK_OF_THE_FACELESS, bot))
+    if (!botAI->GetServices().GetSpellService().HasAura(SPELL_MARK_OF_THE_FACELESS, bot))
     {
         return false;
     }

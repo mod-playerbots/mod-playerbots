@@ -1,3 +1,4 @@
+#include "BotSpellService.h"
 /*
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
  * and/or modify it under version 3 of the License, or (at your option), any later version.
@@ -40,8 +41,8 @@ bool OffHandWeaponNoImbueTrigger::IsActive()
 bool ShockTrigger::IsActive()
 {
     return SpellTrigger::IsActive() &&
-        !botAI->HasAura("flame shock", GetTarget(), false, true) &&
-        !botAI->HasAura("frost shock", GetTarget(), false, true);
+        !botAI->GetServices().GetSpellService().HasAura("flame shock", GetTarget(), false, true) &&
+        !botAI->GetServices().GetSpellService().HasAura("frost shock", GetTarget(), false, true);
 }
 
 // Checks if the target's health is above 25%/1500 hp. Returns false if either are true.
@@ -66,7 +67,7 @@ bool TotemTrigger::IsActive()
 {
     return AI_VALUE(uint8, "attacker count") >= attackerCount &&
         !AI_VALUE2(bool, "has totem", name) &&
-        !botAI->HasAura(name, bot);
+        !botAI->GetServices().GetSpellService().HasAura(name, bot);
 }
 
 bool WaterWalkingTrigger::IsActive()
@@ -131,7 +132,7 @@ bool SpiritWalkTrigger::IsActive()
 // Fires the trigger if at least 2 of the totem slots are empty or out of range.
 bool CallOfTheElementsTrigger::IsActive()
 {
-    if (!botAI->CanCastSpell(SPELL_CALL_OF_THE_ELEMENTS, bot, true))
+    if (!botAI->GetServices().GetSpellService().CanCastSpell(SPELL_CALL_OF_THE_ELEMENTS, bot, true))
     {
         return false;
     }

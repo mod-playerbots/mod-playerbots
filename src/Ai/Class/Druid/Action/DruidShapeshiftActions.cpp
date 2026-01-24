@@ -4,17 +4,18 @@
  */
 
 #include "DruidShapeshiftActions.h"
+#include "BotSpellService.h"
 
 #include "Playerbots.h"
 
 bool CastBearFormAction::isPossible()
 {
-    return CastBuffSpellAction::isPossible() && !botAI->HasAura("dire bear form", GetTarget());
+    return CastBuffSpellAction::isPossible() && !botAI->GetServices().GetSpellService().HasAura("dire bear form", GetTarget());
 }
 
 bool CastBearFormAction::isUseful()
 {
-    return CastBuffSpellAction::isUseful() && !botAI->HasAura("dire bear form", GetTarget());
+    return CastBuffSpellAction::isUseful() && !botAI->GetServices().GetSpellService().HasAura("dire bear form", GetTarget());
 }
 
 std::vector<NextAction> CastDireBearFormAction::getAlternatives()
@@ -29,34 +30,34 @@ bool CastTravelFormAction::isUseful()
 
     // useful if no mount or with wsg flag
     return !bot->IsMounted() && (!firstmount || (bot->HasAura(23333) || bot->HasAura(23335) || bot->HasAura(34976))) &&
-           !botAI->HasAura("dash", bot);
+           !botAI->GetServices().GetSpellService().HasAura("dash", bot);
 }
 
 bool CastCasterFormAction::isUseful()
 {
-    return botAI->HasAnyAuraOf(GetTarget(), "dire bear form", "bear form", "cat form", "travel form", "aquatic form",
+    return botAI->GetServices().GetSpellService().HasAnyAuraOf(GetTarget(), "dire bear form", "bear form", "cat form", "travel form", "aquatic form",
                                "flight form", "swift flight form", "moonkin form", nullptr) &&
            AI_VALUE2(uint8, "mana", "self target") > sPlayerbotAIConfig->mediumHealth;
 }
 
 bool CastCasterFormAction::Execute(Event event)
 {
-    botAI->RemoveShapeshift();
+    botAI->GetServices().GetSpellService().RemoveShapeshift();
     return true;
 }
 
 bool CastCancelTreeFormAction::isUseful()
 {
-    return botAI->HasAura(33891, bot);
+    return botAI->GetServices().GetSpellService().HasAura(33891, bot);
 }
 
 bool CastCancelTreeFormAction::Execute(Event event)
 {
-    botAI->RemoveAura("tree of life");
+    botAI->GetServices().GetSpellService().RemoveAura("tree of life");
     return true;
 }
 
 bool CastTreeFormAction::isUseful()
 {
-    return GetTarget() && CastSpellAction::isUseful() && !botAI->HasAura(33891, bot);
+    return GetTarget() && CastSpellAction::isUseful() && !botAI->GetServices().GetSpellService().HasAura(33891, bot);
 }

@@ -1,3 +1,4 @@
+#include "BotSpellService.h"
 #include "RaidGruulsLairActions.h"
 #include "BotRoleService.h"
 #include "RaidGruulsLairHelpers.h"
@@ -143,11 +144,11 @@ bool HighKingMaulgarMageTankAttackKroshAction::Execute(Event event)
     MarkTargetWithTriangle(bot, krosh);
     SetRtiTarget(botAI, "triangle", krosh);
 
-    if (krosh->HasAura(SPELL_SPELL_SHIELD) && botAI->CanCastSpell("spellsteal", krosh))
-        return botAI->CastSpell("spellsteal", krosh);
+    if (krosh->HasAura(SPELL_SPELL_SHIELD) && botAI->GetServices().GetSpellService().CanCastSpell("spellsteal", krosh))
+        return botAI->GetServices().GetSpellService().CastSpell("spellsteal", krosh);
 
-    if (!bot->HasAura(SPELL_SPELL_SHIELD) && botAI->CanCastSpell("fire ward", bot))
-        return botAI->CastSpell("fire ward", bot);
+    if (!bot->HasAura(SPELL_SPELL_SHIELD) && botAI->GetServices().GetSpellService().CanCastSpell("fire ward", bot))
+        return botAI->GetServices().GetSpellService().CastSpell("fire ward", bot);
 
     if (bot->GetTarget() != krosh->GetGUID())
     {
@@ -440,8 +441,8 @@ bool HighKingMaulgarBanishFelstalkerAction::Execute(Event event)
     if (warlockIndex >= 0 && warlockIndex < felStalkers.size())
     {
         Unit* assignedFelStalker = felStalkers[warlockIndex];
-        if (!assignedFelStalker->HasAura(SPELL_BANISH) && botAI->CanCastSpell(SPELL_BANISH, assignedFelStalker, true))
-            return botAI->CastSpell("banish", assignedFelStalker);
+        if (!assignedFelStalker->HasAura(SPELL_BANISH) && botAI->GetServices().GetSpellService().CanCastSpell(SPELL_BANISH, assignedFelStalker, true))
+            return botAI->GetServices().GetSpellService().CastSpell("banish", assignedFelStalker);
     }
 
     return false;
@@ -490,7 +491,7 @@ bool HighKingMaulgarMisdirectOlmAndBlindeyeAction::Execute(Event event)
     switch (hunterIndex)
     {
     case 0:
-        botAI->CastSpell("misdirection", olmTank);
+        botAI->GetServices().GetSpellService().CastSpell("misdirection", olmTank);
         if (bot->HasAura(SPELL_MISDIRECTION))
         {
             Pet* pet = bot->GetPet();
@@ -509,14 +510,14 @@ bool HighKingMaulgarMisdirectOlmAndBlindeyeAction::Execute(Event event)
                 }
                 pet->ToCreature()->AI()->AttackStart(blindeye);
             }
-            return botAI->CastSpell("steady shot", olm);
+            return botAI->GetServices().GetSpellService().CastSpell("steady shot", olm);
         }
         break;
 
     case 1:
-        botAI->CastSpell("misdirection", blindeyeTank);
+        botAI->GetServices().GetSpellService().CastSpell("misdirection", blindeyeTank);
         if (bot->HasAura(SPELL_MISDIRECTION))
-            return botAI->CastSpell("steady shot", blindeye);
+            return botAI->GetServices().GetSpellService().CastSpell("steady shot", blindeye);
         break;
 
     default:

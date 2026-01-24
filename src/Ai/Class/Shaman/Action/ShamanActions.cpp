@@ -14,7 +14,7 @@ bool CastTotemAction::isUseful()
 {
     return CastBuffSpellAction::isUseful()
         && !AI_VALUE2(bool, "has totem", name)
-        && !botAI->HasAura(buff, bot);
+        && !botAI->GetServices().GetSpellService().HasAura(buff, bot);
 }
 
 bool CastMagmaTotemAction::isUseful() {

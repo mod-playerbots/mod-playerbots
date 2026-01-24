@@ -1,4 +1,5 @@
 #include "NewRpgAction.h"
+#include "BotSpellService.h"
 
 #include <cmath>
 #include <cstdint>
@@ -428,7 +429,7 @@ bool NewRpgTravelFlightAction::Execute(Event event)
     }
     std::vector<uint32> nodes = {botAI->rpgInfo.flight.fromNode, botAI->rpgInfo.flight.toNode};
 
-    botAI->RemoveShapeshift();
+    botAI->GetServices().GetSpellService().RemoveShapeshift();
     if (bot->IsMounted())
     {
         bot->Dismount();

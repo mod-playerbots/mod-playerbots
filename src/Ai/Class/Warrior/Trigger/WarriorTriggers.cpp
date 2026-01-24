@@ -42,7 +42,7 @@ bool VigilanceTrigger::IsActive()
             continue;
 
         // Check if member has Vigilance applied by the bot
-        if (!currentVigilanceTarget && botAI->HasAura("vigilance", member, false, true))
+        if (!currentVigilanceTarget && botAI->GetServices().GetSpellService().HasAura("vigilance", member, false, true))
         {
             currentVigilanceTarget = member;
         }

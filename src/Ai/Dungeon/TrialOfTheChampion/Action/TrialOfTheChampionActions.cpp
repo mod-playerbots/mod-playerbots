@@ -1,4 +1,5 @@
 #include "Playerbots.h"
+#include "BotSpellService.h"
 #include "TrialOfTheChampionActions.h"
 #include "TrialOfTheChampionStrategy.h"
 #include "NearestNpcsValue.h"
@@ -84,7 +85,7 @@ bool ToCLanceAction::Execute(Event event)
     if (!lanceRack->IsWithinDistInMap(bot, INTERACTION_DISTANCE))
         return MoveTo(lanceRack, INTERACTION_DISTANCE);
 
-    botAI->RemoveShapeshift();
+    botAI->GetServices().GetSpellService().RemoveShapeshift();
     bot->GetMotionMaster()->Clear();
     bot->StopMoving();
     lanceRack->Use(bot);
@@ -132,11 +133,11 @@ bool ToCMountedAction::Execute(Event event)
             break;
     }
 
-    Aura* defendBot = botAI->GetAura("defend", bot, false, true);
+    Aura* defendBot = botAI->GetServices().GetSpellService().GetAura("defend", bot, false, true);
     if (!defendBot || defendBot->GetStackAmount() < 3)
     {
         uint32 spellId = AI_VALUE2(uint32, "vehicle spell id", "Defend");
-        if (botAI->CanCastVehicleSpell(spellId, target) && botAI->CastVehicleSpell(spellId, target))
+        if (botAI->GetServices().GetSpellService().CanCastVehicleSpell(spellId, target) && botAI->GetServices().GetSpellService().CastVehicleSpell(spellId, target))
         {
             vehicleBase->AddSpellCooldown(spellId, 0, 1000);
             return true;
@@ -149,20 +150,20 @@ bool ToCMountedAction::Execute(Event event)
     if (target->GetDistance2d(bot) > 5.0f)
     {
         uint32 spellId = AI_VALUE2(uint32, "vehicle spell id", "Charge");
-        if (botAI->CanCastVehicleSpell(spellId, target) && botAI->CastVehicleSpell(spellId, target))
+        if (botAI->GetServices().GetSpellService().CanCastVehicleSpell(spellId, target) && botAI->GetServices().GetSpellService().CastVehicleSpell(spellId, target))
         {
             vehicleBase->AddSpellCooldown(spellId, 0, 1000);
             return true;
         }
     }
 
-    Aura* defendTarget = botAI->GetAura("defend", target, false, false);
+    Aura* defendTarget = botAI->GetServices().GetSpellService().GetAura("defend", target, false, false);
     if (!defendTarget)
     {}
     else
     {
         uint32 spellId = AI_VALUE2(uint32, "vehicle spell id", "Shield-Breaker");
-        if (botAI->CanCastVehicleSpell(spellId, target) && botAI->CastVehicleSpell(spellId, target))
+        if (botAI->GetServices().GetSpellService().CanCastVehicleSpell(spellId, target) && botAI->GetServices().GetSpellService().CastVehicleSpell(spellId, target))
         {
             vehicleBase->AddSpellCooldown(spellId, 0, 1000);
             return true;
@@ -170,7 +171,7 @@ bool ToCMountedAction::Execute(Event event)
     }
 
     uint32 spellId = AI_VALUE2(uint32, "vehicle spell id", "Thrust");
-    if (botAI->CanCastVehicleSpell(spellId, target) && botAI->CastVehicleSpell(spellId, target))
+    if (botAI->GetServices().GetSpellService().CanCastVehicleSpell(spellId, target) && botAI->GetServices().GetSpellService().CastVehicleSpell(spellId, target))
     {
         vehicleBase->AddSpellCooldown(spellId, 0, 1000);
         return true;
@@ -229,7 +230,7 @@ bool ToCMountAction::EnterVehicle(Unit* vehicleBase, bool moveIfFar)
     if (dist > INTERACTION_DISTANCE)
         return MoveTo(vehicleBase);
 
-    botAI->RemoveShapeshift();
+    botAI->GetServices().GetSpellService().RemoveShapeshift();
 
     bot->GetMotionMaster()->Clear();
     bot->StopMoving();

@@ -4,6 +4,7 @@
  */
 
 #include "PvpTriggers.h"
+#include "BotSpellService.h"
 
 #include "BattleGroundTactics.h"
 #include "BattlegroundEY.h"
@@ -309,7 +310,7 @@ bool VehicleNearTrigger::IsActive()
     return npcs.size();
 }
 
-bool InVehicleTrigger::IsActive() { return botAI->IsInVehicle(); }
+bool InVehicleTrigger::IsActive() { return botAI->GetServices().GetSpellService().IsInVehicle(); }
 
 bool AllianceNoSnowfallGY::IsActive()
 {

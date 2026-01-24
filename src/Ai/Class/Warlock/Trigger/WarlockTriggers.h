@@ -163,7 +163,7 @@ public:
     CorruptionTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "corruption", 1, true, 0.5f) {}
     bool IsActive() override
     {
-        return BuffTrigger::IsActive() && !botAI->HasAura("seed of corruption", GetTarget(), false, true);
+        return BuffTrigger::IsActive() && !botAI->GetServices().GetSpellService().HasAura("seed of corruption", GetTarget(), false, true);
     }
 };
 
@@ -173,7 +173,7 @@ public:
     CorruptionOnAttackerTrigger(PlayerbotAI* botAI) : DebuffOnAttackerTrigger(botAI, "corruption", true) {}
     bool IsActive() override
     {
-        return BuffTrigger::IsActive() && !botAI->HasAura("seed of corruption", GetTarget(), false, true);
+        return BuffTrigger::IsActive() && !botAI->GetServices().GetSpellService().HasAura("seed of corruption", GetTarget(), false, true);
     }
 };
 

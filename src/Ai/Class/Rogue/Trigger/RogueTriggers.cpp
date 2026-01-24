@@ -11,15 +11,15 @@
 
 // bool AdrenalineRushTrigger::isPossible()
 // {
-//     return !botAI->HasAura("stealth", bot);
+//     return !botAI->GetServices().GetSpellService().HasAura("stealth", bot);
 // }
 
 bool UnstealthTrigger::IsActive()
 {
-    if (!botAI->HasAura("stealth", bot))
+    if (!botAI->GetServices().GetSpellService().HasAura("stealth", bot))
         return false;
 
-    return botAI->HasAura("stealth", bot) && !AI_VALUE(uint8, "attacker count") &&
+    return botAI->GetServices().GetSpellService().HasAura("stealth", bot) && !AI_VALUE(uint8, "attacker count") &&
            (AI_VALUE2(bool, "moving", "self target") &&
             ((botAI->GetMaster() &&
               sServerFacade->IsDistanceGreaterThan(AI_VALUE2(float, "distance", "group leader"), 10.0f) &&
@@ -29,7 +29,7 @@ bool UnstealthTrigger::IsActive()
 
 bool StealthTrigger::IsActive()
 {
-    if (botAI->HasAura("stealth", bot) || bot->IsInCombat() || bot->HasSpellCooldown(1784))
+    if (botAI->GetServices().GetSpellService().HasAura("stealth", bot) || bot->IsInCombat() || bot->HasSpellCooldown(1784))
         return false;
 
     float distance = 30.f;
@@ -73,7 +73,7 @@ bool SprintTrigger::IsActive()
         return false;
 
     float distance = botAI->GetMaster() ? 45.0f : 35.0f;
-    if (botAI->HasAura("stealth", bot))
+    if (botAI->GetServices().GetSpellService().HasAura("stealth", bot))
         distance -= 10;
 
     bool targeted = false;
@@ -106,7 +106,7 @@ bool SprintTrigger::IsActive()
 bool ExposeArmorTrigger::IsActive()
 {
     Unit* target = AI_VALUE(Unit*, "current target"); // Get the bot's current target
-    return DebuffTrigger::IsActive() && !botAI->HasAura("sunder armor", target, false, false, -1, true) &&
+    return DebuffTrigger::IsActive() && !botAI->GetServices().GetSpellService().HasAura("sunder armor", target, false, false, -1, true) &&
            AI_VALUE2(uint8, "combo", "current target") <= 3;
 }
 

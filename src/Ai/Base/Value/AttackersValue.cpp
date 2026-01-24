@@ -4,6 +4,7 @@
  */
 
 #include "AttackersValue.h"
+#include "BotSpellService.h"
 
 #include "CellImpl.h"
 #include "GridNotifiers.h"
@@ -144,7 +145,7 @@ bool AttackersValue::IsPossibleTarget(Unit* attacker, Player* bot, float /*range
     if (!attacker)
         return false;
 
-    // bool inCannon = botAI->IsInVehicle(false, true);
+    // bool inCannon = botAI->GetServices().GetSpellService().IsInVehicle(false, true);
     // bool enemy = botAI->GetAiObjectContext()->GetValue<Unit*>("enemy player target")->Get();
 
     // Validity checks

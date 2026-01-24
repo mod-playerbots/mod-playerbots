@@ -19,6 +19,7 @@
 #include "Timer.h"
 #include <unordered_map>
 #include <mutex>
+#include "BotSpellService.h"
 
 const int ITEM_SOUL_SHARD = 6265;
 
@@ -431,7 +432,7 @@ bool CastCreateFirestoneAction::Execute(Event event)
     for (uint32 spellId : firestoneSpellIds)
     {
         if (bot->HasSpell(spellId))
-            return botAI->CastSpell(spellId, bot);
+            return botAI->GetServices().GetSpellService().CastSpell(spellId, bot);
     }
     return false;
 }

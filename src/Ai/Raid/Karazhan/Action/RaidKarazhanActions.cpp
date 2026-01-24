@@ -1,3 +1,4 @@
+#include "BotSpellService.h"
 #include "RaidKarazhanActions.h"
 #include "BotRoleService.h"
 #include "RaidKarazhanHelpers.h"
@@ -30,8 +31,8 @@ bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event event)
 
     for (const char* spell : spells)
     {
-        if (botAI->CanCastSpell(spell, manaWarp))
-            return botAI->CastSpell(spell, manaWarp);
+        if (botAI->GetServices().GetSpellService().CanCastSpell(spell, manaWarp))
+            return botAI->GetServices().GetSpellService().CastSpell(spell, manaWarp);
     }
 
     return false;
@@ -391,8 +392,8 @@ bool WizardOfOzMarkTargetAction::Execute(Event event)
 bool WizardOfOzScorchStrawmanAction::Execute(Event event)
 {
     Unit* strawman = AI_VALUE2(Unit*, "find target", "strawman");
-    if (strawman && botAI->CanCastSpell("scorch", strawman))
-        return botAI->CastSpell("scorch", strawman);
+    if (strawman && botAI->GetServices().GetSpellService().CanCastSpell("scorch", strawman))
+        return botAI->GetServices().GetSpellService().CastSpell("scorch", strawman);
 
     return false;
 }
@@ -1361,8 +1362,8 @@ bool NightbaneCastFearWardOnMainTankAction::Execute(Event event)
         }
     }
 
-    if (mainTank && botAI->CanCastSpell("fear ward", mainTank))
-        return botAI->CastSpell("fear ward", mainTank);
+    if (mainTank && botAI->GetServices().GetSpellService().CanCastSpell("fear ward", mainTank))
+        return botAI->GetServices().GetSpellService().CastSpell("fear ward", mainTank);
 
     return false;
 }

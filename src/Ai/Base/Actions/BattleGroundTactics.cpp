@@ -4,6 +4,7 @@
  */
 
 #include
+#include "BotSpellService.h"
 #include "BotRoleService.h" "BattleGroundTactics.h"
 
 #include <algorithm>
@@ -2848,8 +2849,8 @@ bool BGTactics::selectObjective(bool reset)
             BattlegroundIC* isleOfConquestBG = (BattlegroundIC*)bg;
 
             uint32 role = context->GetValue<uint32>("bg role")->Get();
-            bool inVehicle = botAI->IsInVehicle();
-            bool controlsVehicle = botAI->IsInVehicle(true);
+            bool inVehicle = botAI->GetServices().GetSpellService().IsInVehicle();
+            bool controlsVehicle = botAI->GetServices().GetSpellService().IsInVehicle(true);
             uint32 vehicleId = inVehicle ? bot->GetVehicleBase()->GetEntry() : 0;
 
             // skip if not the driver
@@ -3864,7 +3865,7 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
                 spell->m_targets.SetGOTarget(go);
                 spell->prepare(&spell->m_targets);
 
-                botAI->WaitForSpellCast(spell);
+                botAI->GetServices().GetSpellService().WaitForSpellCast(spell);
 
                 resetObjective();
                 return true;
@@ -3954,7 +3955,7 @@ bool BGTactics::atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<ui
                         bot->StopMoving();
                         spell->prepare(&spell->m_targets);
 
-                        botAI->WaitForSpellCast(spell);
+                        botAI->GetServices().GetSpellService().WaitForSpellCast(spell);
                         resetObjective();
                         return true;
                     }

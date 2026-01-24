@@ -34,19 +34,19 @@ bool NoManaGemTrigger::IsActive()
 
 bool ArcaneIntellectOnPartyTrigger::IsActive()
 {
-    return BuffOnPartyTrigger::IsActive() && !botAI->HasAura("arcane brilliance", GetTarget());
+    return BuffOnPartyTrigger::IsActive() && !botAI->GetServices().GetSpellService().HasAura("arcane brilliance", GetTarget());
 }
 
 bool ArcaneIntellectTrigger::IsActive()
 {
-    return BuffTrigger::IsActive() && !botAI->HasAura("arcane brilliance", GetTarget());
+    return BuffTrigger::IsActive() && !botAI->GetServices().GetSpellService().HasAura("arcane brilliance", GetTarget());
 }
 
 bool MageArmorTrigger::IsActive()
 {
     Unit* target = GetTarget();
-    return !botAI->HasAura("ice armor", target) && !botAI->HasAura("frost armor", target) &&
-           !botAI->HasAura("molten armor", target) && !botAI->HasAura("mage armor", target);
+    return !botAI->GetServices().GetSpellService().HasAura("ice armor", target) && !botAI->GetServices().GetSpellService().HasAura("frost armor", target) &&
+           !botAI->GetServices().GetSpellService().HasAura("molten armor", target) && !botAI->GetServices().GetSpellService().HasAura("mage armor", target);
 }
 
 bool FrostNovaOnTargetTrigger::IsActive()
@@ -56,7 +56,7 @@ bool FrostNovaOnTargetTrigger::IsActive()
     {
         return false;
     }
-    return botAI->HasAura(spell, target);
+    return botAI->GetServices().GetSpellService().HasAura(spell, target);
 }
 
 bool FrostbiteOnTargetTrigger::IsActive()
@@ -66,7 +66,7 @@ bool FrostbiteOnTargetTrigger::IsActive()
     {
         return false;
     }
-    return botAI->HasAura(spell, target);
+    return botAI->GetServices().GetSpellService().HasAura(spell, target);
 }
 
 bool NoFocusMagicTrigger::IsActive()
