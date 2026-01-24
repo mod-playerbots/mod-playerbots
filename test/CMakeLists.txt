@@ -21,9 +21,11 @@ enable_testing()
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/../src
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/Bot
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/Bot/Core
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/Bot/Engine
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/Bot/Interface
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/Bot/Service
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/Bot/Handler
     ${CMAKE_CURRENT_SOURCE_DIR}/mocks
     ${CMAKE_CURRENT_SOURCE_DIR}/fixtures
 )
@@ -31,8 +33,13 @@ include_directories(
 # Test sources
 set(TEST_SOURCES
     TestMain.cpp
-    # Add unit tests here as they are created
-    # unit/Bot/Service/ConfigProviderTest.cpp
+    # Bot Service tests
+    unit/Bot/Service/ConfigProviderTest.cpp
+    unit/Bot/Service/RoleServiceTest.cpp
+    # Bot Core tests
+    unit/Bot/Core/ManagerRegistryTest.cpp
+    # Utility logic tests
+    unit/HealthThresholdTest.cpp
 )
 
 # Create test executable
