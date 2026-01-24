@@ -60,6 +60,15 @@
 #include "UpdateTime.h"
 #include "Vehicle.h"
 
+// Service architecture includes
+#include "Bot/Core/BotServiceContainer.h"
+#include "Bot/Service/BotChatService.h"
+#include "Bot/Service/BotContext.h"
+#include "Bot/Service/BotItemService.h"
+#include "Bot/Service/BotRoleService.h"
+#include "Bot/Service/BotSpellService.h"
+#include "Bot/Service/ConfigProvider.h"
+
 const int SPELL_TITAN_GRIP = 49152;
 
 std::vector<std::string> PlayerbotAI::dispel_whitelist = {
@@ -145,6 +154,17 @@ PlayerbotAI::PlayerbotAI(Player* bot)
     }
 
     accountId = bot->GetSession()->GetAccountId();
+
+    // Initialize service container with all services
+    services_ = std::make_unique<BotServiceContainer>();
+    services_->SetContext(std::make_unique<BotContext>(this));
+    services_->SetSpellService(std::make_unique<BotSpellService>(this));
+    services_->SetChatService(std::make_unique<BotChatService>(this));
+    auto roleService = std::make_unique<BotRoleService>();
+    roleService->SetBotContext(this);
+    services_->SetRoleService(std::move(roleService));
+    services_->SetItemService(std::make_unique<BotItemService>(this));
+    services_->SetConfig(std::make_unique<ConfigProvider>());
 
     aiObjectContext = AiFactory::createAiObjectContext(bot, this);
 

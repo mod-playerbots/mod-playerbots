@@ -6,6 +6,7 @@
 #ifndef _PLAYERBOT_PLAYERbotAI_H
 #define _PLAYERBOT_PLAYERbotAI_H
 
+#include <memory>
 #include <queue>
 #include <stack>
 
@@ -27,6 +28,7 @@
 #include "WorldPacket.h"
 
 class AiObjectContext;
+class BotServiceContainer;
 class Creature;
 class Engine;
 class ExternalEventHelper;
@@ -529,6 +531,16 @@ public:
 
     Player* GetBot() { return bot; }
     Player* GetMaster() { return master; }
+
+    /**
+     * @brief Get the service container for this bot
+     * @return Reference to the service container
+     *
+     * The service container provides access to all bot services
+     * through clean interfaces, enabling testability and loose coupling.
+     */
+    BotServiceContainer& GetServices() { return *services_; }
+    BotServiceContainer const& GetServices() const { return *services_; }
     Player* FindNewMaster();
 
     // Checks if the bot is really a player. Players always have themselves as master.
@@ -633,6 +645,9 @@ protected:
     Engine* currentEngine;
     Engine* engines[BOT_STATE_MAX];
     BotState currentState;
+
+    // Service container for DI-based architecture
+    std::unique_ptr<BotServiceContainer> services_;
     ChatHelper chatHelper;
     std::list<ChatCommandHolder> chatCommands;
     std::list<ChatQueuedReply> chatReplies;
