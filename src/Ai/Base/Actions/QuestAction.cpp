@@ -17,6 +17,7 @@
 #include "ReputationMgr.h"
 #include "ServerFacade.h"
 #include "BroadcastHelper.h"
+#include "BotItemService.h"
 
 bool QuestAction::Execute(Event event)
 {
@@ -357,10 +358,10 @@ bool QuestUpdateAddItemAction::Execute(Event event)
     {
         std::map<std::string, std::string> placeholders;
         placeholders["%item_link"] = botAI->GetChatHelper()->FormatItem(itemPrototype);
-        uint32 availableItemsCount = botAI->GetInventoryItemsCountWithId(itemId);
+        uint32 availableItemsCount = botAI->GetServices().GetItemService().GetInventoryItemsCountWithId(itemId);
         placeholders["%quest_obj_available"] = std::to_string(availableItemsCount);
 
-        for (auto const& pair : botAI->GetCurrentQuestsRequiringItemId(itemId))
+        for (auto const& pair : botAI->GetServices().GetItemService().GetCurrentQuestsRequiringItemId(itemId))
         {
             placeholders["%quest_link"] = chat->FormatQuest(pair.first);
             uint32 requiredItemsCount = pair.second;

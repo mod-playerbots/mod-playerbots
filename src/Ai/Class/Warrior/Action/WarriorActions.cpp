@@ -8,6 +8,7 @@
 
 #include "Playerbots.h"
 #include "BotSpellService.h"
+#include "BotItemService.h"
 
 bool CastSunderArmorAction::isUseful()
 {
@@ -60,7 +61,7 @@ Unit* CastVigilanceAction::GetTarget()
         }
 
         // Determine Highest Gear Score
-        uint32 gearScore = botAI->GetEquipGearScore(member/*, false, false*/);
+        uint32 gearScore = botAI->GetServices().GetItemService().GetEquipGearScore(member/*, false, false*/);
         if (gearScore > highestGearScore)
         {
             highestGearScore = gearScore;

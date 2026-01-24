@@ -7,6 +7,7 @@
 #include "ObjectMgr.h"
 #include "SpellInfo.h"
 #include "BotSpellService.h"
+#include "BotItemService.h"
 
 #define PICK_LOCK_SPELL_ID 1804
 
@@ -14,7 +15,7 @@ bool UnlockItemAction::Execute(Event event)
 {
     bool foundLockedItem = false;
 
-    Item* item = botAI->FindLockedItem();
+    Item* item = botAI->GetServices().GetItemService().FindLockedItem();
     if (item)
     {
         UnlockItem(item);

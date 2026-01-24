@@ -13,6 +13,7 @@
 #include <fstream>
 #include "RaidIccTriggers.h"
 #include "Multiplier.h"
+#include "BotItemService.h"
 
 // Lord Marrowgwar
 bool IccLmTankPositionAction::Execute(Event event)
@@ -4892,16 +4893,16 @@ bool IccSisterSvalnaAction::Execute(Event event)
         return false;
 
     // Check if bot has the spear item
-    if (!botAI->HasItemInInventory(ITEM_SPEAR))
+    if (!botAI->GetServices().GetItemService().HasItemInInventory(ITEM_SPEAR))
         return false;
 
     // Get all items from inventory
-    std::vector<Item*> items = botAI->GetInventoryItems();
+    std::vector<Item*> items = botAI->GetServices().GetItemService().GetInventoryItems();
     for (Item* item : items)
     {
         if (item->GetEntry() == ITEM_SPEAR) // Spear ID
         {
-            botAI->ImbueItem(item, svalna); // Use spear on Svalna
+            botAI->GetServices().GetItemService().ImbueItem(item, svalna); // Use spear on Svalna
             return false;
         }
     }

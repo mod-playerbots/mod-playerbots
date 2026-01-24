@@ -9,6 +9,7 @@
 #include "Event.h"
 #include "ItemVisitors.h"
 #include "Playerbots.h"
+#include "BotItemService.h"
 
 #ifndef WIN32
 inline int strcmpi(char const* s1, char const* s2)
@@ -117,7 +118,7 @@ std::string const WhoAction::QuerySpec(std::string const text)
     out << "|h|cffffffff" << chat->FormatRace(bot->getRace()) << " [" << (bot->getGender() == GENDER_MALE ? "M" : "F")
         << "] " << chat->FormatClass(bot, spec);
     out << " (|h|cff00ff00" << (uint32)bot->GetLevel() << "|h|cffffffff lvl), ";
-    out << "|h|cff00ff00" << botAI->GetEquipGearScore(bot/*, false, false*/) << "|h|cffffffff GS (";
+    out << "|h|cff00ff00" << botAI->GetServices().GetItemService().GetEquipGearScore(bot/*, false, false*/) << "|h|cffffffff GS (";
 
     ItemCountByQuality visitor;
     IterateItems(&visitor, ITERATE_ITEMS_IN_EQUIP);

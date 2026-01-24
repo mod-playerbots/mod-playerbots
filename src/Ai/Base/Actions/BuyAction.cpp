@@ -13,6 +13,7 @@
 #include "ItemVisitors.h"
 #include "Playerbots.h"
 #include "StatsWeightCalculator.h"
+#include "BotItemService.h"
 
 bool BuyAction::Execute(Event event)
 {
@@ -119,7 +120,7 @@ bool BuyAction::Execute(Event event)
                     }
 
                     // Check the bot's currently equipped item for this slot
-                    uint8 dstSlot = botAI->FindEquipSlot(proto, NULL_SLOT, true);
+                    uint8 dstSlot = botAI->GetServices().GetItemService().FindEquipSlot(proto, NULL_SLOT, true);
                     Item* oldItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, dstSlot);
 
                     float oldScore = 0.0f;

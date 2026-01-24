@@ -14,6 +14,7 @@
 #include "Playerbots.h"
 #include "StatsWeightCalculator.h"
 #include "ItemPackets.h"
+#include "BotItemService.h"
 
 bool EquipAction::Execute(Event event)
 {
@@ -118,7 +119,7 @@ void EquipAction::EquipItem(Item* item)
             return;
         }
 
-        uint8 dstSlot = botAI->FindEquipSlot(itemProto, NULL_SLOT, true);
+        uint8 dstSlot = botAI->GetServices().GetItemService().FindEquipSlot(itemProto, NULL_SLOT, true);
 
         // Check if the item is a weapon and whether the bot can dual wield or use Titan Grip
         bool isWeapon = (itemProto->Class == ITEM_CLASS_WEAPON);

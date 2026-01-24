@@ -8,6 +8,7 @@
 
 #include "Event.h"
 #include "Playerbots.h"
+#include "BotItemService.h"
 
 ImbueWithPoisonAction::ImbueWithPoisonAction(PlayerbotAI* botAI) : Action(botAI, "apply poison") {}
 
@@ -37,14 +38,14 @@ bool ImbueWithPoisonAction::Execute(Event event)
     Item* deadlyPoison = nullptr;
     for (auto id : prioritizedDeadlyPoisons)
     {
-        deadlyPoison = botAI->FindConsumable(id);
+        deadlyPoison = botAI->GetServices().GetItemService().FindConsumable(id);
         if (deadlyPoison) break;
     }
 
     Item* instantPoison = nullptr;
     for (auto id : prioritizedInstantPoisons)
     {
-        instantPoison = botAI->FindConsumable(id);
+        instantPoison = botAI->GetServices().GetItemService().FindConsumable(id);
         if (instantPoison) break;
     }
 
@@ -68,7 +69,7 @@ bool ImbueWithPoisonAction::Execute(Event event)
 
         if (poison)
         {
-            botAI->ImbueItem(poison, EQUIPMENT_SLOT_MAINHAND);
+            botAI->GetServices().GetItemService().ImbueItem(poison, EQUIPMENT_SLOT_MAINHAND);
             botAI->SetNextCheckDelay(5);
         }
     }
@@ -93,7 +94,7 @@ bool ImbueWithPoisonAction::Execute(Event event)
 
         if (poison)
         {
-            botAI->ImbueItem(poison, EQUIPMENT_SLOT_OFFHAND);
+            botAI->GetServices().GetItemService().ImbueItem(poison, EQUIPMENT_SLOT_OFFHAND);
             botAI->SetNextCheckDelay(5);
         }
     }
@@ -123,10 +124,10 @@ bool ImbueWithStoneAction::Execute(Event event)
     Item* weapon = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
     if (weapon && weapon->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT) == 0)
     {
-        stone = botAI->FindStoneFor(weapon);
+        stone = botAI->GetServices().GetItemService().FindStoneFor(weapon);
         if (stone)
         {
-            botAI->ImbueItem(stone, EQUIPMENT_SLOT_MAINHAND);
+            botAI->GetServices().GetItemService().ImbueItem(stone, EQUIPMENT_SLOT_MAINHAND);
             botAI->SetNextCheckDelay(5);
         }
     }
@@ -135,10 +136,10 @@ bool ImbueWithStoneAction::Execute(Event event)
     weapon = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
     if (weapon && weapon->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT) == 0)
     {
-        stone = botAI->FindStoneFor(weapon);
+        stone = botAI->GetServices().GetItemService().FindStoneFor(weapon);
         if (stone)
         {
-            botAI->ImbueItem(stone, EQUIPMENT_SLOT_OFFHAND);
+            botAI->GetServices().GetItemService().ImbueItem(stone, EQUIPMENT_SLOT_OFFHAND);
             botAI->SetNextCheckDelay(5);
         }
     }
@@ -167,10 +168,10 @@ bool ImbueWithOilAction::Execute(Event event)
     Item* weapon = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
     if (weapon && weapon->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT) == 0)
     {
-        oil = botAI->FindOilFor(weapon);
+        oil = botAI->GetServices().GetItemService().FindOilFor(weapon);
         if (oil)
         {
-            botAI->ImbueItem(oil, EQUIPMENT_SLOT_MAINHAND);
+            botAI->GetServices().GetItemService().ImbueItem(oil, EQUIPMENT_SLOT_MAINHAND);
             botAI->SetNextCheckDelay(5);
         }
     }
@@ -211,9 +212,9 @@ bool TryEmergencyAction::Execute(Event event)
     // If bot does not have aggro: use bandage instead of potion/stone/crystal
     if ((!AI_VALUE(uint8, "my attacker count")) && !bot->HasAura(11196))  // Recently bandaged
     {
-        if (Item* bandage = botAI->FindBandage())
+        if (Item* bandage = botAI->GetServices().GetItemService().FindBandage())
         {
-            botAI->ImbueItem(bandage, bot);
+            botAI->GetServices().GetItemService().ImbueItem(bandage, bot);
             botAI->SetNextCheckDelay(8);
         }
     }
@@ -221,9 +222,9 @@ bool TryEmergencyAction::Execute(Event event)
     // Else loop over the list of health consumable to pick one
     for (uint8 i = 0; i < std::size(uPrioritizedHealingItemIds); ++i)
     {
-        if (Item* healthItem = botAI->FindConsumable(uPrioritizedHealingItemIds[i]))
+        if (Item* healthItem = botAI->GetServices().GetItemService().FindConsumable(uPrioritizedHealingItemIds[i]))
         {
-            botAI->ImbueItem(healthItem);
+            botAI->GetServices().GetItemService().ImbueItem(healthItem);
         }
     }
 

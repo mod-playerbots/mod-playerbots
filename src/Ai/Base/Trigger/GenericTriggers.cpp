@@ -23,6 +23,7 @@
 #include "Timer.h"
 #include "PlayerbotAI.h"
 #include "Player.h"
+#include "BotItemService.h"
 
 bool LowManaTrigger::IsActive()
 {
@@ -683,7 +684,7 @@ bool AmmoCountTrigger::IsActive()
     if (bot->GetUInt32Value(PLAYER_AMMO_ID) != 0)
         return ItemCountTrigger::IsActive();  // Ammo already equipped
 
-    if (botAI->FindAmmo())
+    if (botAI->GetServices().GetItemService().FindAmmo())
         return true;  // Found ammo in inventory but not equipped
 
     return ItemCountTrigger::IsActive();

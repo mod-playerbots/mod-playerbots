@@ -16,6 +16,7 @@
 #include "RandomItemMgr.h"
 #include "ServerFacade.h"
 #include "StatsWeightCalculator.h"
+#include "BotItemService.h"
 
 ItemUsage ItemUsageValue::Calculate()
 {
@@ -250,7 +251,7 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
         return ITEM_USAGE_NONE;
 
     uint16 dest;
-    InventoryResult result = botAI->CanEquipItem(NULL_SLOT, dest, pItem, true, true);
+    InventoryResult result = botAI->GetServices().GetItemService().CanEquipItem(NULL_SLOT, dest, pItem, true, true);
     pItem->RemoveFromUpdateQueueOf(bot);
     delete pItem;
 
@@ -321,7 +322,7 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
         shouldEquip = false;
 
     uint8 possibleSlots = 1;
-    uint8 dstSlot = botAI->FindEquipSlot(itemProto, NULL_SLOT, true);
+    uint8 dstSlot = botAI->GetServices().GetItemService().FindEquipSlot(itemProto, NULL_SLOT, true);
     // Check if dest wasn't set correctly by CanEquipItem and use FindEquipSlot instead
     // This occurs with unique items that are already in the bots bags when CanEquipItem is called
     if (dest == 0)

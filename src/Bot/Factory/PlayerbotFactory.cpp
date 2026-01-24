@@ -42,6 +42,7 @@
 #include "World.h"
 #include "AiObjectContext.h"
 #include "ItemPackets.h"
+#include "BotItemService.h"
 
 const uint64 diveMask = (1LL << 7) | (1LL << 44) | (1LL << 37) | (1LL << 38) | (1LL << 26) | (1LL << 30) | (1LL << 27) |
                         (1LL << 33) | (1LL << 24) | (1LL << 34);
@@ -2267,7 +2268,7 @@ bool PlayerbotFactory::CanEquipUnseenItem(uint8 slot, uint16& dest, uint32 item)
 
     if (Item* pItem = Item::CreateItem(item, 1, bot, false, 0, true))
     {
-        InventoryResult result = botAI ? botAI->CanEquipItem(slot, dest, pItem, true, true)
+        InventoryResult result = botAI ? botAI->GetServices().GetItemService().CanEquipItem(slot, dest, pItem, true, true)
                                        : bot->CanEquipItem(slot, dest, pItem, true, true);
         pItem->RemoveFromUpdateQueueOf(bot);
         delete pItem;

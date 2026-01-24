@@ -8,6 +8,7 @@
 #include "LFGMgr.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
+#include "BotItemService.h"
 
 PlayerbotSecurity::PlayerbotSecurity(Player* const bot) : bot(bot)
 {
@@ -95,8 +96,8 @@ PlayerbotSecurityLevel PlayerbotSecurity::LevelFor(Player* from, DenyReason* rea
             }
         }
 
-        int32 botGS = static_cast<int32>(botAI->GetEquipGearScore(bot));
-        int32 fromGS = static_cast<int32>(botAI->GetEquipGearScore(from));
+        int32 botGS = static_cast<int32>(botAI->GetServices().GetItemService().GetEquipGearScore(bot));
+        int32 fromGS = static_cast<int32>(botAI->GetServices().GetItemService().GetEquipGearScore(from));
 
         if (sPlayerbotAIConfig->gearscorecheck && botGS && bot->GetLevel() > 15 && botGS > fromGS)
         {
@@ -211,8 +212,8 @@ bool PlayerbotSecurity::CheckLevelFor(PlayerbotSecurityLevel level, bool silent,
                     break;
                 case PLAYERBOT_DENY_GEARSCORE:
                 {
-                    int botGS = int(botAI->GetEquipGearScore(bot));
-                    int fromGS = int(botAI->GetEquipGearScore(from));
+                    int botGS = int(botAI->GetServices().GetItemService().GetEquipGearScore(bot));
+                    int fromGS = int(botAI->GetServices().GetItemService().GetEquipGearScore(from));
                     int diff = (100 * (botGS - fromGS) / botGS);
                     int req = 12 * sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) / from->GetLevel();
 

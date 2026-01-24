@@ -7,6 +7,7 @@
 #include "BotRoleService.h"
 
 #include "Playerbots.h"
+#include "BotItemService.h"
 
 bool BloodrageBuffTrigger::IsActive()
 {
@@ -64,7 +65,7 @@ bool VigilanceTrigger::IsActive()
         }
 
         // Determine Highest Gear Score
-        uint32 gearScore = botAI->GetEquipGearScore(member/*, false, false*/);
+        uint32 gearScore = botAI->GetServices().GetItemService().GetEquipGearScore(member/*, false, false*/);
         if (gearScore > highestGearScore)
         {
             highestGearScore = gearScore;

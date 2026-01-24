@@ -7,12 +7,13 @@
 #include "ObjectMgr.h"
 #include "LootObjectStack.h"
 #include "AiObjectContext.h"
+#include "BotItemService.h"
 
 bool OpenItemAction::Execute(Event event)
 {
     bool foundOpenable = false;
 
-    Item* item = botAI->FindOpenableItem();
+    Item* item = botAI->GetServices().GetItemService().FindOpenableItem();
     if (item)
     {
         uint8 bag = item->GetBagSlot();  // Retrieves the bag slot (0 for main inventory)
