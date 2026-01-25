@@ -21,6 +21,15 @@ public:
         x = other.x;
         y = other.y;
     }
+    UnitPosition& operator=(UnitPosition const& other)
+    {
+        if (this != &other)
+        {
+            x = other.x;
+            y = other.y;
+        }
+        return *this;
+    }
 
     float x, y;
 };
@@ -102,7 +111,7 @@ class ArrowFormation : public MoveAheadFormation
 {
 public:
     ArrowFormation(PlayerbotAI* botAI)
-        : MoveAheadFormation(botAI, "arrow"), built(false), masterUnit(nullptr), botUnit(nullptr)
+        : MoveAheadFormation(botAI, "arrow"), masterUnit(nullptr), botUnit(nullptr), built(false)
     {
     }
 

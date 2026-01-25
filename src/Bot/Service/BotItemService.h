@@ -8,21 +8,71 @@
 
 #include "Bot/Interface/IItemService.h"
 
+#include <functional>
+
 class PlayerbotAI;
 
 /**
  * @brief Implementation of IItemService
  *
- * This service provides inventory and item management for bots,
- * extracting this functionality from PlayerbotAI for better testability.
+ * This service provides inventory and item management for bots.
  *
- * The service delegates to PlayerbotAI methods during the transition period.
+ * Static methods are provided for direct access without needing a service instance.
+ * Instance methods implement the IItemService interface for testability/mockability.
  */
 class BotItemService : public IItemService
 {
 public:
+    BotItemService() = default;
     explicit BotItemService(PlayerbotAI* ai) : botAI_(ai) {}
     ~BotItemService() override = default;
+
+    // ========================================================================
+    // Static methods for direct access (main implementations)
+    // These can be called without a service instance
+    // ========================================================================
+
+    // Core item finding helper
+    static Item* FindItemInInventoryStatic(Player* bot, std::function<bool(ItemTemplate const*)> checkItem);
+
+    // Specific item type finders
+    static Item* FindPoisonStatic(Player* bot);
+    static Item* FindAmmoStatic(Player* bot);
+    static Item* FindBandageStatic(Player* bot);
+    static Item* FindOpenableItemStatic(Player* bot);
+    static Item* FindLockedItemStatic(Player* bot);
+    static Item* FindConsumableStatic(Player* bot, uint32 itemId);
+
+    // Weapon enhancement finders
+    static Item* FindStoneForStatic(Player* bot, Item* weapon);
+    static Item* FindOilForStatic(Player* bot, Item* weapon);
+
+    // Item use
+    static void ImbueItemStatic(Player* bot, Item* item, uint32 targetFlag, ObjectGuid targetGUID);
+    static void ImbueItemStatic(Player* bot, Item* item, uint8 targetInventorySlot);
+    static void ImbueItemStatic(Player* bot, Item* item, Unit* target);
+    static void ImbueItemStatic(Player* bot, Item* item);
+
+    // Enchanting
+    static void EnchantItemStatic(Player* bot, uint32 spellId, uint8 slot);
+
+    // Inventory queries
+    static std::vector<Item*> GetInventoryAndEquippedItemsStatic(Player* bot);
+    static std::vector<Item*> GetInventoryItemsStatic(Player* bot);
+    static uint32 GetInventoryItemsCountWithIdStatic(Player* bot, uint32 itemId);
+    static bool HasItemInInventoryStatic(Player* bot, uint32 itemId);
+
+    // Equipment
+    static uint32 GetEquipGearScoreStatic(Player* player);
+
+    // Quest items
+    static std::vector<std::pair<Quest const*, uint32>> GetCurrentQuestsRequiringItemIdStatic(Player* bot,
+                                                                                               uint32 itemId);
+
+    // ========================================================================
+    // Instance methods (IItemService interface implementation)
+    // These call the static methods internally, but provide mockable interface
+    // ========================================================================
 
     // Item finding
     Item* FindPoison() const override;
@@ -60,8 +110,12 @@ public:
     // Quest items
     std::vector<std::pair<Quest const*, uint32>> GetCurrentQuestsRequiringItemId(uint32 itemId) const override;
 
+    // Set the bot context for instance methods that need the bot
+    void SetBotContext(PlayerbotAI* ai) { botAI_ = ai; }
+    PlayerbotAI* GetBotContext() const { return botAI_; }
+
 private:
-    PlayerbotAI* botAI_;
+    PlayerbotAI* botAI_ = nullptr;
 };
 
 #endif

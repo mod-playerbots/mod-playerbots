@@ -24,6 +24,18 @@ public:
         : x(other.x), y(other.y), z(other.z), mapId(other.mapId), valueSet(other.valueSet)
     {
     }
+    PositionInfo& operator=(PositionInfo const& other)
+    {
+        if (this != &other)
+        {
+            x = other.x;
+            y = other.y;
+            z = other.z;
+            mapId = other.mapId;
+            valueSet = other.valueSet;
+        }
+        return *this;
+    }
 
     void Set(float newX, float newY, float newZ, uint32 newMapId)
     {

@@ -21,6 +21,16 @@ public:
         required.insert(other.required.begin(), other.required.end());
         obtained.insert(other.obtained.begin(), other.obtained.end());
     }
+    CraftData& operator=(CraftData const& other)
+    {
+        if (this != &other)
+        {
+            itemId = other.itemId;
+            required = other.required;
+            obtained = other.obtained;
+        }
+        return *this;
+    }
 
     uint32 itemId;
     std::map<uint32, uint32> required, obtained;
