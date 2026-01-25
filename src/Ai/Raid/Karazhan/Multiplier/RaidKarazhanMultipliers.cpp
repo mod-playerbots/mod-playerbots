@@ -10,6 +10,7 @@
 #include "MageActions.h"
 #include "Playerbots.h"
 #include "PriestActions.h"
+#include "RaidBossHelpers.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"

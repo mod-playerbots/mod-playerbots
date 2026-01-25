@@ -1634,7 +1634,7 @@ bool VezaxShadowCrashTrigger::IsActive()
         return false;
     }
 
-    return botAI->HasAura(SPELL_SHADOW_CRASH, bot);
+    return botAI->HasAura(SPELL_VEZAX_SHADOW_CRASH, bot);
 }
 
 bool VezaxMarkOfTheFacelessTrigger::IsActive()

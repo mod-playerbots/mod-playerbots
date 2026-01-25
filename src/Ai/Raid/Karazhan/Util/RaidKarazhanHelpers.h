@@ -74,8 +74,8 @@ namespace KarazhanHelpers
         NPC_NETHERSPITE_INFERNAL         = 17646,
     };
 
-    const uint32 KARAZHAN_MAP_ID = 532;
-    const float NIGHTBANE_FLIGHT_Z = 95.0f;
+    constexpr uint32 KARAZHAN_MAP_ID = 532;
+    constexpr float NIGHTBANE_FLIGHT_Z = 95.0f;
 
     // Attumen the Huntsman
     extern std::unordered_map<uint32, time_t> attumenDpsWaitTimer;
@@ -105,17 +105,7 @@ namespace KarazhanHelpers
     extern const Position NIGHTBANE_FLIGHT_STACK_POSITION;
     extern const Position NIGHTBANE_RAIN_OF_BONES_POSITION;
 
-    void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
-    void MarkTargetWithSkull(Player* bot, Unit* target);
-    void MarkTargetWithSquare(Player* bot, Unit* target);
-    void MarkTargetWithStar(Player* bot, Unit* target);
-    void MarkTargetWithCircle(Player* bot, Unit* target);
-    void MarkTargetWithMoon(Player* bot, Unit* target);
-    void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
-    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot);
     Unit* GetFirstAliveUnit(const std::vector<Unit*>& units);
-    Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
-    Unit* GetNearestPlayerInRadius(Player* bot, float radius);
     bool IsFlameWreathActive(PlayerbotAI* botAI, Player* bot);
     std::vector<Player*> GetRedBlockers(PlayerbotAI* botAI, Player* bot);
     std::vector<Player*> GetBlueBlockers(PlayerbotAI* botAI, Player* bot);
