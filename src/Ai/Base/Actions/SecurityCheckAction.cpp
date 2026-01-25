@@ -4,6 +4,7 @@
  */
 
 #include "SecurityCheckAction.h"
+#include "Bot/Core/ManagerRegistry.h"
 #include "BotChatService.h"
 
 #include "Event.h"
@@ -11,7 +12,7 @@
 
 bool SecurityCheckAction::isUseful()
 {
-    return sRandomPlayerbotMgr->IsRandomBot(bot) && botAI->GetMaster() &&
+    return sManagerRegistry.GetRandomBotManager().IsRandomBot(bot) && botAI->GetMaster() &&
            botAI->GetMaster()->GetSession()->GetSecurity() < SEC_GAMEMASTER && !GET_PLAYERBOT_AI(botAI->GetMaster());
 }
 

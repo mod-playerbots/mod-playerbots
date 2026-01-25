@@ -4,6 +4,7 @@
  */
 
 #include "BattleGroundTactics.h"
+#include "Bot/Core/ManagerRegistry.h"
 #include "BotRoleService.h"
 #include "BotSpellService.h"
 
@@ -4256,7 +4257,7 @@ bool ArenaTactics::Execute(Event event)
 {
     if (!bot->InBattleground())
     {
-        bool IsRandomBot = sRandomPlayerbotMgr->IsRandomBot(bot->GetGUID().GetCounter());
+        bool IsRandomBot = sManagerRegistry.GetRandomBotManager().IsRandomBot(bot->GetGUID().GetCounter());
         botAI->ChangeStrategy("-arena", BOT_STATE_COMBAT);
         botAI->ChangeStrategy("-arena", BOT_STATE_NON_COMBAT);
         botAI->ResetStrategies(!IsRandomBot);

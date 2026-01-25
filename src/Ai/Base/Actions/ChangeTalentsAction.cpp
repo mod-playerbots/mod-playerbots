@@ -7,6 +7,7 @@
 #include "ChangeTalentsAction.h"
 
 #include "AiFactory.h"
+#include "Bot/Core/ManagerRegistry.h"
 #include "ChatHelper.h"
 #include "Event.h"
 #include "PlayerbotAIConfig.h"
@@ -321,14 +322,14 @@ std::string ChangeTalentsAction::SpecApply(std::string param)
 //             // specLink = "";
 //         }
 //         else if (paths.size() > 1 && false/*!sPlayerbotAIConfig->autoPickTalents*/ &&
-//         !sRandomPlayerbotMgr->IsRandomBot(bot))
+//         !sManagerRegistry.GetRandomBotManager().IsRandomBot(bot))
 //         {
 //             *out << "Found multiple specs: ";
 //             listPremadePaths(paths, out);
 //         }
 //         else
 //         {
-//             specId = PickPremadePath(paths, sRandomPlayerbotMgr->IsRandomBot(bot))->id;
+//             specId = PickPremadePath(paths, sManagerRegistry.GetRandomBotManager().IsRandomBot(bot))->id;
 //             TalentSpec newSpec = *GetBestPremadeSpec(specId);
 //             specLink = newSpec.GetTalentLink();
 //             newSpec.CropTalents(bot->GetLevel());
@@ -373,7 +374,7 @@ bool AutoSetTalentsAction::Execute(Event event)
 {
     std::ostringstream out;
 
-    if (!sPlayerbotAIConfig->autoPickTalents || !sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (!sPlayerbotAIConfig->autoPickTalents || !sManagerRegistry.GetRandomBotManager().IsRandomBot(bot))
         return false;
 
     if (bot->GetFreeTalentPoints() <= 0)

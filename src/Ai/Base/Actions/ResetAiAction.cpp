@@ -6,6 +6,7 @@
 #include "BotChatService.h"
 #include "ResetAiAction.h"
 
+#include "Bot/Core/ManagerRegistry.h"
 #include "Event.h"
 #include "Group.h"
 #include "ObjectGuid.h"
@@ -45,7 +46,7 @@ bool ResetAiAction::Execute(Event event)
             }
         }
     }
-    sPlayerbotRepository->Reset(botAI);
+    sManagerRegistry.GetBotRepository().Reset(botAI);
     botAI->ResetStrategies(false);
     botAI->GetServices().GetChatService().TellMaster("AI was reset to defaults");
     return true;

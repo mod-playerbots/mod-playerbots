@@ -1,6 +1,7 @@
 #include "BotChatService.h"
 #include "AutoMaintenanceOnLevelupAction.h"
 
+#include "Bot/Core/ManagerRegistry.h"
 #include "GuildMgr.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotFactory.h"
@@ -20,7 +21,7 @@ bool AutoMaintenanceOnLevelupAction::Execute(Event event)
 
 void AutoMaintenanceOnLevelupAction::AutoTeleportForLevel()
 {
-    if (!sPlayerbotAIConfig->autoTeleportForLevel || !sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (!sPlayerbotAIConfig->autoTeleportForLevel || !sManagerRegistry.GetRandomBotManager().IsRandomBot(bot))
     {
         return;
     }
@@ -34,7 +35,7 @@ void AutoMaintenanceOnLevelupAction::AutoTeleportForLevel()
 
 void AutoMaintenanceOnLevelupAction::AutoPickTalents()
 {
-    if (!sPlayerbotAIConfig->autoPickTalents || !sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (!sPlayerbotAIConfig->autoPickTalents || !sManagerRegistry.GetRandomBotManager().IsRandomBot(bot))
         return;
 
     if (bot->GetFreeTalentPoints() <= 0)
@@ -66,10 +67,10 @@ void AutoMaintenanceOnLevelupAction::AutoLearnSpell()
 void AutoMaintenanceOnLevelupAction::LearnSpells(std::ostringstream* out)
 {
     BroadcastHelper::BroadcastLevelup(botAI, bot);
-    if (sPlayerbotAIConfig->autoLearnTrainerSpells && sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (sPlayerbotAIConfig->autoLearnTrainerSpells && sManagerRegistry.GetRandomBotManager().IsRandomBot(bot))
         LearnTrainerSpells(out);
 
-    if (sPlayerbotAIConfig->autoLearnQuestSpells && sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (sPlayerbotAIConfig->autoLearnQuestSpells && sManagerRegistry.GetRandomBotManager().IsRandomBot(bot))
         LearnQuestSpells(out);
 }
 
@@ -167,7 +168,7 @@ std::string const AutoMaintenanceOnLevelupAction::FormatSpell(SpellInfo const* s
 
 void AutoMaintenanceOnLevelupAction::AutoUpgradeEquip()
 {
-    if (!sPlayerbotAIConfig->autoUpgradeEquip || !sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (!sPlayerbotAIConfig->autoUpgradeEquip || !sManagerRegistry.GetRandomBotManager().IsRandomBot(bot))
         return;
 
     PlayerbotFactory factory(bot, bot->GetLevel());

@@ -4,6 +4,7 @@
  */
 
 #include "LootAction.h"
+#include "Bot/Core/ManagerRegistry.h"
 #include "BotChatService.h"
 
 #include "ChatHelper.h"
@@ -296,7 +297,7 @@ bool StoreLootAction::AuctionItem(uint32 itemId)
 
     AuctionHouseObject* auctionHouse = sAuctionMgr->GetAuctionsMap(ahEntry);
 
-    uint32 price = oldItem->GetCount() * proto->BuyPrice * sRandomPlayerbotMgr->GetBuyMultiplier(bot);
+    uint32 price = oldItem->GetCount() * proto->BuyPrice * sManagerRegistry.GetRandomBotManager().GetBuyMultiplier(bot);
 
 uint32 stackCount = urand(1, proto->GetMaxStackSize());
     if (!price || !stackCount)
@@ -428,9 +429,9 @@ bool StoreLootAction::Execute(Event event)
         }
 
         Player* master = botAI->GetMaster();
-        if (sRandomPlayerbotMgr->IsRandomBot(bot) && master)
+        if (sManagerRegistry.GetRandomBotManager().IsRandomBot(bot) && master)
         {
-            uint32 price = itemcount * proto->BuyPrice * sRandomPlayerbotMgr->GetBuyMultiplier(bot) + gold;
+            uint32 price = itemcount * proto->BuyPrice * sManagerRegistry.GetRandomBotManager().GetBuyMultiplier(bot) + gold;
             if (price)
                 sRandomPlayerbotMgr->AddTradeDiscount(bot, master, price);
 

@@ -44,7 +44,7 @@ void PositionsResetAction::SetStayPosition(float x, float y, float z)
     posMap["stay"] = pos;
 }
 
-bool FollowChatShortcutAction::Execute(Event event)
+bool FollowChatShortcutAction::Execute([[maybe_unused]] Event event)
 {
     Player* master = GetMaster();
     if (!master)
@@ -76,7 +76,7 @@ bool FollowChatShortcutAction::Execute(Event event)
         else
         {
             WorldLocation loc = formation->GetLocation();
-            if (Formation::IsNullLocation(loc) || loc.GetMapId() == -1)
+            if (Formation::IsNullLocation(loc) || loc.GetMapId() == uint32(-1))
                 return false;
 
             MovementPriority priority = botAI->GetState() == BOT_STATE_COMBAT ? MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_NORMAL;
@@ -118,7 +118,7 @@ bool FollowChatShortcutAction::Execute(Event event)
     return true;
 }
 
-bool StayChatShortcutAction::Execute(Event event)
+bool StayChatShortcutAction::Execute([[maybe_unused]] Event event)
 {
     Player* master = GetMaster();
     if (!master)
@@ -135,7 +135,7 @@ bool StayChatShortcutAction::Execute(Event event)
     return true;
 }
 
-bool MoveFromGroupChatShortcutAction::Execute(Event event)
+bool MoveFromGroupChatShortcutAction::Execute([[maybe_unused]] Event event)
 {
     Player* master = GetMaster();
     if (!master)
@@ -150,7 +150,7 @@ bool MoveFromGroupChatShortcutAction::Execute(Event event)
     return true;
 }
 
-bool FleeChatShortcutAction::Execute(Event event)
+bool FleeChatShortcutAction::Execute([[maybe_unused]] Event event)
 {
     Player* master = GetMaster();
     if (!master)
@@ -173,7 +173,7 @@ bool FleeChatShortcutAction::Execute(Event event)
     return true;
 }
 
-bool GoawayChatShortcutAction::Execute(Event event)
+bool GoawayChatShortcutAction::Execute([[maybe_unused]] Event event)
 {
     Player* master = GetMaster();
     if (!master)
@@ -190,7 +190,7 @@ bool GoawayChatShortcutAction::Execute(Event event)
     return true;
 }
 
-bool GrindChatShortcutAction::Execute(Event event)
+bool GrindChatShortcutAction::Execute([[maybe_unused]] Event event)
 {
     Player* master = GetMaster();
     if (!master)
@@ -206,7 +206,7 @@ bool GrindChatShortcutAction::Execute(Event event)
     return true;
 }
 
-bool TankAttackChatShortcutAction::Execute(Event event)
+bool TankAttackChatShortcutAction::Execute([[maybe_unused]] Event event)
 {
     Player* master = GetMaster();
     if (!master)
@@ -226,7 +226,7 @@ bool TankAttackChatShortcutAction::Execute(Event event)
     return true;
 }
 
-bool MaxDpsChatShortcutAction::Execute(Event event)
+bool MaxDpsChatShortcutAction::Execute([[maybe_unused]] Event event)
 {
     Player* master = GetMaster();
     if (!master)
@@ -243,7 +243,7 @@ bool MaxDpsChatShortcutAction::Execute(Event event)
     return true;
 }
 
-bool BwlChatShortcutAction::Execute(Event event)
+bool BwlChatShortcutAction::Execute([[maybe_unused]] Event event)
 {
     Player* master = GetMaster();
     if (!master)

@@ -11,6 +11,7 @@
 #include <string>
 
 #include "AiFactory.h"
+#include "Bot/Core/ManagerRegistry.h"
 #include "BudgetValues.h"
 #include "ChannelMgr.h"
 #include "CharacterPackets.h"
@@ -407,7 +408,7 @@ void PlayerbotAI::UpdateAIGroupMaster()
 
     Group* group = bot->GetGroup();
 
-    bool IsRandomBot = sRandomPlayerbotMgr->IsRandomBot(bot);
+    bool IsRandomBot = sManagerRegistry.GetRandomBotManager().IsRandomBot(bot);
 
     // If bot is not in group verify that for is RandomBot before clearing  master and resetting.
     if (!group)
@@ -2215,7 +2216,7 @@ bool PlayerbotAI::IsTellAllowed(PlayerbotSecurityLevel securityLevel)
     if (!GetSecurity()->CheckLevelFor(securityLevel, true, master))
         return false;
 
-    if (sPlayerbotAIConfig->whisperDistance && !bot->GetGroup() && sRandomPlayerbotMgr->IsRandomBot(bot) &&
+    if (sPlayerbotAIConfig->whisperDistance && !bot->GetGroup() && sManagerRegistry.GetRandomBotManager().IsRandomBot(bot) &&
         master->GetSession()->GetSecurity() < SEC_GAMEMASTER &&
         (bot->GetMapId() != master->GetMapId() ||
          sServerFacade->GetDistance2d(bot, master) > sPlayerbotAIConfig->whisperDistance))
@@ -3716,7 +3717,7 @@ bool PlayerbotAI::HasRealPlayerMaster()
 
 bool PlayerbotAI::HasActivePlayerMaster() { return master && !GET_PLAYERBOT_AI(master); }
 
-bool PlayerbotAI::IsAlt() { return HasRealPlayerMaster() && !sRandomPlayerbotMgr->IsRandomBot(bot); }
+bool PlayerbotAI::IsAlt() { return HasRealPlayerMaster() && !sManagerRegistry.GetRandomBotManager().IsRandomBot(bot); }
 
 Player* PlayerbotAI::GetGroupLeader()
 {
@@ -3805,7 +3806,7 @@ bool PlayerbotAI::HasPlayerNearby(WorldPosition* pos, float range)
 {
     float sqRange = range * range;
     bool nearPlayer = false;
-    for (auto& player : sRandomPlayerbotMgr->GetPlayers())
+    for (auto& player : sManagerRegistry.GetRandomBotManager().GetPlayers())
     {
         if (!player->IsGameMaster() || player->isGMVisible())
         {
@@ -3839,7 +3840,7 @@ bool PlayerbotAI::HasManyPlayersNearby(uint32 trigerrValue, float range)
     float sqRange = range * range;
     uint32 found = 0;
 
-    for (auto& player : sRandomPlayerbotMgr->GetPlayers())
+    for (auto& player : sManagerRegistry.GetRandomBotManager().GetPlayers())
     {
         if ((!player->IsGameMaster() || player->isGMVisible()) && sServerFacade->GetDistance2d(player, bot) < sqRange)
         {
@@ -3887,7 +3888,7 @@ inline bool ZoneHasRealPlayers(Player* bot)
         return false;
     }
 
-    for (Player* player : sRandomPlayerbotMgr->GetPlayers())
+    for (Player* player : sManagerRegistry.GetRandomBotManager().GetPlayers())
     {
         if (player->GetMapId() != bot->GetMapId())
             continue;
@@ -4063,7 +4064,7 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
         if (!bot->GetGUID())
             return false;
 
-        for (auto& player : sRandomPlayerbotMgr->GetPlayers())
+        for (auto& player : sManagerRegistry.GetRandomBotManager().GetPlayers())
         {
             if (!player || !player->GetSession() || !player->IsInWorld() || player->IsDuringRemoveFromWorld() ||
                 player->GetSession()->isLogingOut())

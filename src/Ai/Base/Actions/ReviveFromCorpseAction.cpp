@@ -6,6 +6,7 @@
 #include "BotChatService.h"
 #include "ReviveFromCorpseAction.h"
 
+#include "Bot/Core/ManagerRegistry.h"
 #include "Event.h"
 #include "FleeManager.h"
 #include "GameGraveyard.h"
@@ -103,7 +104,7 @@ bool FindCorpseAction::Execute(Event event)
             //     bot->GetName().c_str());
             context->GetValue<uint32>("death count")->Set(0);
             // sRandomPlayerbotMgr->RandomTeleportForLevel(bot);
-            sRandomPlayerbotMgr->Revive(bot);
+            sManagerRegistry.GetRandomBotManager().Revive(bot);
             return true;
         }
     }

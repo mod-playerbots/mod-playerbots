@@ -6,6 +6,7 @@
 #include "BotChatService.h"
 #include "TrainerAction.h"
 
+#include "Bot/Core/ManagerRegistry.h"
 #include "BudgetValues.h"
 #include "Event.h"
 #include "PlayerbotFactory.h"
@@ -127,7 +128,7 @@ bool TrainerAction::Execute(Event event)
     if (spell)
         spells.insert(spell);
 
-    if (text.find("learn") != std::string::npos || sRandomPlayerbotMgr->IsRandomBot(bot) ||
+    if (text.find("learn") != std::string::npos || sManagerRegistry.GetRandomBotManager().IsRandomBot(bot) ||
         (sPlayerbotAIConfig->autoTrainSpells != "no" &&
          (trainer->GetTrainerType() != Trainer::Type::Tradeskill ||
           !botAI->HasActivePlayerMaster())))  // Todo rewrite to only exclude start primary profession skills and make

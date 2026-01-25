@@ -6,6 +6,7 @@
 #ifndef _PLAYERBOT_OPERATIONS_H
 #define _PLAYERBOT_OPERATIONS_H
 
+#include "Bot/Core/ManagerRegistry.h"
 #include "Group.h"
 #include "GroupMgr.h"
 #include "GuildMgr.h"
@@ -418,7 +419,7 @@ public:
 
         Group* group = bot->GetGroup();
         if (group && !bot->InBattleground() && !bot->InBattlegroundQueue() && botAI->HasActivePlayerMaster())
-            sPlayerbotRepository->Save(botAI);
+            sManagerRegistry.GetBotRepository().Save(botAI);
 
         return true;
     }

@@ -6,6 +6,7 @@
 #include "WhoAction.h"
 
 #include "AiFactory.h"
+#include "Bot/Core/ManagerRegistry.h"
 #include "Event.h"
 #include "ItemVisitors.h"
 #include "Playerbots.h"
@@ -34,7 +35,7 @@ bool WhoAction::Execute(Event event)
     {
         out << QuerySkill(text);
 
-        if (sRandomPlayerbotMgr->IsRandomBot(bot))
+        if (sManagerRegistry.GetRandomBotManager().IsRandomBot(bot))
             out << QueryTrade(text);
     }
     else
@@ -75,7 +76,7 @@ std::string const WhoAction::QueryTrade(std::string const text)
     for (Item* sell : items)
     {
         int32 sellPrice =
-            sell->GetTemplate()->SellPrice * sRandomPlayerbotMgr->GetSellMultiplier(bot) * sell->GetCount();
+            sell->GetTemplate()->SellPrice * sManagerRegistry.GetRandomBotManager().GetSellMultiplier(bot) * sell->GetCount();
         if (!sellPrice)
             continue;
 

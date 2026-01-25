@@ -6,6 +6,7 @@
 #include "WtsAction.h"
 
 #include "AiFactory.h"
+#include "Bot/Core/ManagerRegistry.h"
 #include "Event.h"
 #include "ItemUsageValue.h"
 #include "ItemVisitors.h"
@@ -20,7 +21,7 @@ bool WtsAction::Execute(Event event)
     std::ostringstream out;
     std::string const text = event.getParam();
 
-    if (!sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (!sManagerRegistry.GetRandomBotManager().IsRandomBot(bot))
         return false;
 
     std::string const link = event.getParam();
@@ -42,7 +43,7 @@ bool WtsAction::Execute(Event event)
         if (usage == ITEM_USAGE_NONE)
             continue;
 
-        int32 buyPrice = proto->BuyPrice * sRandomPlayerbotMgr->GetBuyMultiplier(bot);
+        int32 buyPrice = proto->BuyPrice * sManagerRegistry.GetRandomBotManager().GetBuyMultiplier(bot);
         if (!buyPrice)
             continue;
 

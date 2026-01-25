@@ -6,6 +6,7 @@
 #include "BotChatService.h"
 #include "TradeStatusAction.h"
 
+#include "Bot/Core/ManagerRegistry.h"
 #include "CraftValue.h"
 #include "Event.h"
 #include "GuildTaskMgr.h"
@@ -354,11 +355,11 @@ int32 TradeStatusAction::CalculateCost(Player* player, bool sell)
 
         if (sell)
         {
-            sum += item->GetCount() * proto->SellPrice * sRandomPlayerbotMgr->GetSellMultiplier(bot);
+            sum += item->GetCount() * proto->SellPrice * sManagerRegistry.GetRandomBotManager().GetSellMultiplier(bot);
         }
         else
         {
-            sum += item->GetCount() * proto->BuyPrice * sRandomPlayerbotMgr->GetBuyMultiplier(bot);
+            sum += item->GetCount() * proto->BuyPrice * sManagerRegistry.GetRandomBotManager().GetBuyMultiplier(bot);
         }
     }
 

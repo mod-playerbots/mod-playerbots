@@ -4,6 +4,7 @@
  */
 
 #include "ChangeStrategyAction.h"
+#include "Bot/Core/ManagerRegistry.h"
 #include "BotChatService.h"
 
 #include "Event.h"
@@ -25,7 +26,7 @@ bool ChangeCombatStrategyAction::Execute(Event event)
                 case '+':
                 case '-':
                 case '~':
-                    sPlayerbotRepository->Save(botAI);
+                    sManagerRegistry.GetBotRepository().Save(botAI);
                     break;
                 case '?':
                     break;
@@ -63,7 +64,7 @@ bool ChangeNonCombatStrategyAction::Execute(Event event)
                 case '+':
                 case '-':
                 case '~':
-                    sPlayerbotRepository->Save(botAI);
+                    sManagerRegistry.GetBotRepository().Save(botAI);
                     break;
                 case '?':
                     break;

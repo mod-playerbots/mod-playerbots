@@ -6,6 +6,7 @@
 #include "BotChatService.h"
 #include "AcceptInvitationAction.h"
 
+#include "Bot/Core/ManagerRegistry.h"
 #include "Event.h"
 #include "ObjectAccessor.h"
 #include "PlayerbotAIConfig.h"
@@ -47,7 +48,7 @@ bool AcceptInvitationAction::Execute(Event event)
     if (!bot->GetGroup() || !bot->GetGroup()->IsMember(inviter->GetGUID()))
         return false;
 
-    if (sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (sManagerRegistry.GetRandomBotManager().IsRandomBot(bot))
         botAI->SetMaster(inviter);
     // else
     // sPlayerbotRepository->Save(botAI);

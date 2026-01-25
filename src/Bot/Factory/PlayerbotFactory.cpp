@@ -10,6 +10,7 @@
 
 #include "AccountMgr.h"
 #include "AiFactory.h"
+#include "Bot/Core/ManagerRegistry.h"
 #include "ArenaTeam.h"
 #include "ArenaTeamMgr.h"
 #include "DBCStores.h"
@@ -310,10 +311,10 @@ void PlayerbotFactory::Randomize(bool incremental)
     {
         InitTalentsTree();
     }
-    sRandomPlayerbotMgr->SetValue(bot->GetGUID().GetCounter(), "specNo", 0);
+    sManagerRegistry.GetRandomBotManager().SetValue(bot->GetGUID().GetCounter(), "specNo", 0);
     if (botAI)
     {
-        sPlayerbotRepository->Reset(botAI);
+        sManagerRegistry.GetBotRepository().Reset(botAI);
         // botAI->DoSpecificAction("auto talents");
         botAI->ResetStrategies(false);  // fix wrong stored strategy
     }
@@ -2280,8 +2281,8 @@ bool PlayerbotFactory::CanEquipUnseenItem(uint8 slot, uint16& dest, uint32 item)
 
 void PlayerbotFactory::InitTradeSkills()
 {
-    uint16 firstSkill = sRandomPlayerbotMgr->GetValue(bot, "firstSkill");
-    uint16 secondSkill = sRandomPlayerbotMgr->GetValue(bot, "secondSkill");
+    uint16 firstSkill = sManagerRegistry.GetRandomBotManager().GetValue(bot, "firstSkill");
+    uint16 secondSkill = sManagerRegistry.GetRandomBotManager().GetValue(bot, "secondSkill");
     if (!firstSkill || !secondSkill)
     {
         std::vector<uint32> firstSkills;
@@ -2333,8 +2334,8 @@ void PlayerbotFactory::InitTradeSkills()
                 break;
         }
 
-        sRandomPlayerbotMgr->SetValue(bot, "firstSkill", firstSkill);
-        sRandomPlayerbotMgr->SetValue(bot, "secondSkill", secondSkill);
+        sManagerRegistry.GetRandomBotManager().SetValue(bot, "firstSkill", firstSkill);
+        sManagerRegistry.GetRandomBotManager().SetValue(bot, "secondSkill", secondSkill);
     }
 
     SetRandomSkill(SKILL_FIRST_AID);
@@ -3986,7 +3987,7 @@ void PlayerbotFactory::InitImmersive()
         std::ostringstream name;
         name << "immersive_stat_" << i;
 
-        uint32 value = sRandomPlayerbotMgr->GetValue(owner, name.str());
+        uint32 value = sManagerRegistry.GetRandomBotManager().GetValue(owner, name.str());
         if (value)
             initialized = true;
 
@@ -4059,7 +4060,7 @@ void PlayerbotFactory::InitImmersive()
 
             std::ostringstream name;
             name << "immersive_stat_" << i;
-            sRandomPlayerbotMgr->SetValue(owner, name.str(), percentMap[type]);
+            sManagerRegistry.GetRandomBotManager().SetValue(owner, name.str(), percentMap[type]);
         }
     }
 }

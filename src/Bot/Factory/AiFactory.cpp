@@ -6,6 +6,7 @@
 #include "AiFactory.h"
 
 #include "BattlegroundMgr.h"
+#include "Bot/Core/ManagerRegistry.h"
 #include "BotRoleService.h"
 #include "DKAiObjectContext.h"
 #include "DruidAiObjectContext.h"
@@ -405,7 +406,7 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
             engine->addStrategy("healer dps", false);
     }
 
-    if (facade->IsRealPlayer() || sRandomPlayerbotMgr->IsRandomBot(player))
+    if (facade->IsRealPlayer() || sManagerRegistry.GetRandomBotManager().IsRandomBot(player))
     {
         if (!player->GetGroup())
         {
@@ -448,7 +449,7 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
             }
         }
     }
-    if (sRandomPlayerbotMgr->IsRandomBot(player))
+    if (sManagerRegistry.GetRandomBotManager().IsRandomBot(player))
         engine->ChangeStrategy(sPlayerbotAIConfig->randomBotCombatStrategies);
     else
         engine->ChangeStrategy(sPlayerbotAIConfig->combatStrategies);
@@ -589,7 +590,7 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
     if (sPlayerbotAIConfig->autoSaveMana && BotRoleService::IsHealStatic(player, true))
         nonCombatEngine->addStrategy("save mana", false);
 
-    if ((sRandomPlayerbotMgr->IsRandomBot(player)) && !player->InBattleground())
+    if ((sManagerRegistry.GetRandomBotManager().IsRandomBot(player)) && !player->InBattleground())
     {
         Player* master = facade->GetMaster();
 
@@ -637,7 +638,7 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
                 if (master)
                 {
                     PlayerbotAI* masterBotAI = GET_PLAYERBOT_AI(master);
-                    if (masterBotAI || sRandomPlayerbotMgr->IsRandomBot(player))
+                    if (masterBotAI || sManagerRegistry.GetRandomBotManager().IsRandomBot(player))
                     {
                         // nonCombatEngine->addStrategy("pvp", false);
                         // nonCombatEngine->addStrategy("collision");
@@ -726,7 +727,7 @@ void AiFactory::AddDefaultDeadStrategies(Player* player, PlayerbotAI* const faca
     (void)facade;  // unused and remove warning
     deadEngine->addStrategiesNoInit("dead", "stay", "chat", "default", "follow", nullptr);
 
-    if (sRandomPlayerbotMgr->IsRandomBot(player) && !player->GetGroup())
+    if (sManagerRegistry.GetRandomBotManager().IsRandomBot(player) && !player->GetGroup())
         deadEngine->removeStrategy("follow", false);
 }
 

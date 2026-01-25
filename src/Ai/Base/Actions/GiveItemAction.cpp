@@ -5,6 +5,7 @@
 
 #include "GiveItemAction.h"
 
+#include "Bot/Core/ManagerRegistry.h"
 #include "Event.h"
 #include "ItemCountValue.h"
 #include "Playerbots.h"
@@ -74,7 +75,7 @@ bool GiveFoodAction::isUseful()
     if (!GetTarget())
         return false;
 
-    bool isRandomBot = GetTarget()->IsPlayer() && sRandomPlayerbotMgr->IsRandomBot((Player*)GetTarget());
+    bool isRandomBot = GetTarget()->IsPlayer() && sManagerRegistry.GetRandomBotManager().IsRandomBot((Player*)GetTarget());
 
     return !isRandomBot || (isRandomBot && !botAI->HasCheat(BotCheatMask::food));
 }
@@ -86,7 +87,7 @@ bool GiveWaterAction::isUseful()
     if (!GetTarget())
         return false;
 
-    bool isRandomBot = GetTarget()->IsPlayer() && sRandomPlayerbotMgr->IsRandomBot((Player*)GetTarget());
+    bool isRandomBot = GetTarget()->IsPlayer() && sManagerRegistry.GetRandomBotManager().IsRandomBot((Player*)GetTarget());
 
     return !isRandomBot || (isRandomBot && !botAI->HasCheat(BotCheatMask::food));
 }

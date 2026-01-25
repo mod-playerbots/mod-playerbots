@@ -6,6 +6,7 @@
 #include <functional>
 
 #include "SuggestWhatToDoAction.h"
+#include "Bot/Core/ManagerRegistry.h"
 #include "ServerFacade.h"
 #include "ChannelMgr.h"
 #include "Event.h"
@@ -54,7 +55,7 @@ SuggestWhatToDoAction::SuggestWhatToDoAction(PlayerbotAI* botAI, std::string con
 
 bool SuggestWhatToDoAction::isUseful()
 {
-    if (!sRandomPlayerbotMgr->IsRandomBot(bot) || bot->GetGroup() || bot->GetInstanceId() || bot->GetBattleground())
+    if (!sManagerRegistry.GetRandomBotManager().IsRandomBot(bot) || bot->GetGroup() || bot->GetInstanceId() || bot->GetBattleground())
         return false;
 
     std::string qualifier = "suggest what to do";
@@ -373,7 +374,7 @@ bool SuggestTradeAction::Execute(Event event)
     if (!proto)
         return false;
 
-    uint32 price = proto->SellPrice * sRandomPlayerbotMgr->GetSellMultiplier(bot) * count;
+    uint32 price = proto->SellPrice * sManagerRegistry.GetRandomBotManager().GetSellMultiplier(bot) * count;
     if (!price)
         return false;
 

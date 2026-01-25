@@ -4,6 +4,7 @@
  */
 
 #include "InviteToGroupAction.h"
+#include "Bot/Core/ManagerRegistry.h"
 #include "BotRoleService.h"
 
 #include "BroadcastHelper.h"
@@ -101,7 +102,7 @@ bool InviteNearbyToGroupAction::Execute(Event event)
             sPlayerbotWorldProcessor->QueueOperation(std::move(convertOp));
         }
 
-        if (sPlayerbotAIConfig->inviteChat && sRandomPlayerbotMgr->IsRandomBot(bot))
+        if (sPlayerbotAIConfig->inviteChat && sManagerRegistry.GetRandomBotManager().IsRandomBot(bot))
         {
             std::map<std::string, std::string> placeholders;
             placeholders["%player"] = player->GetName();
@@ -236,7 +237,7 @@ bool InviteGuildToGroupAction::Execute(Event event)
         }
 
         if (sPlayerbotAIConfig->inviteChat &&
-            (sRandomPlayerbotMgr->IsRandomBot(bot) || !botAI->HasActivePlayerMaster()))
+            (sManagerRegistry.GetRandomBotManager().IsRandomBot(bot) || !botAI->HasActivePlayerMaster()))
         {
             BroadcastHelper::BroadcastGuildGroupOrRaidInvite(botAI, bot, player, group);
         }

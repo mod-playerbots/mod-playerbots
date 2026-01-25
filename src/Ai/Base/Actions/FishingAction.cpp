@@ -4,6 +4,7 @@
  */
 
 #include "FishingAction.h"
+#include "Bot/Core/ManagerRegistry.h"
 #include "BotChatService.h"
 #include "FishValues.h"
 #include "Event.h"
@@ -387,7 +388,7 @@ bool EquipFishingPoleAction::isUseful()
         }
     }
 
-    if (sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (sManagerRegistry.GetRandomBotManager().IsRandomBot(bot))
     {
         bot->StoreNewItemInBestSlots(FISHING_POLE, 1);  // Try to get a fishing pole
         return true;

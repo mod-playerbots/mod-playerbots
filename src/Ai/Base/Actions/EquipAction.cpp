@@ -7,6 +7,7 @@
 #include "EquipAction.h"
 #include <utility>
 
+#include "Bot/Core/ManagerRegistry.h"
 #include "Event.h"
 #include "ItemCountValue.h"
 #include "ItemUsageValue.h"
@@ -332,7 +333,7 @@ void EquipAction::EquipItem(Item* item)
 
 bool EquipUpgradesAction::Execute(Event event)
 {
-    if (!sPlayerbotAIConfig->autoEquipUpgradeLoot && !sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (!sPlayerbotAIConfig->autoEquipUpgradeLoot && !sManagerRegistry.GetRandomBotManager().IsRandomBot(bot))
         return false;
 
     if (event.GetSource() == "trade status")

@@ -34,6 +34,11 @@
 #include "cmath"
 #include "BattleGroundTactics.h"
 
+#include "Bot/Core/ManagerRegistry.h"
+#include "Bot/Service/TravelManagerAdapter.h"
+#include "Bot/Service/RandomBotManagerAdapter.h"
+#include "Bot/Service/BotRepositoryAdapter.h"
+
 class PlayerbotsDatabaseScript : public DatabaseScript
 {
 public:
@@ -99,7 +104,7 @@ public:
         if (!player->GetSession()->IsBot())
         {
             sPlayerbotsMgr->AddPlayerbotData(player, false);
-            sRandomPlayerbotMgr->OnPlayerLogin(player);
+            sManagerRegistry.GetRandomBotManager().OnPlayerLogin(player);
 
             // Before modifying the following messages, please make sure it does not violate the AGPLv3.0 license
             // especially if you are distributing a repack or hosting a public server
@@ -254,7 +259,7 @@ public:
 
     bool OnPlayerBeforeAchievementComplete(Player* player, AchievementEntry const* achievement) override
     {
-        if ((sRandomPlayerbotMgr->IsRandomBot(player) || sRandomPlayerbotMgr->IsAddclassBot(player)) &&
+        if ((sManagerRegistry.GetRandomBotManager().IsRandomBot(player) || sRandomPlayerbotMgr->IsAddclassBot(player)) &&
             (achievement->flags & (ACHIEVEMENT_FLAG_REALM_FIRST_REACH | ACHIEVEMENT_FLAG_REALM_FIRST_KILL)))
         {
             return false;
@@ -270,7 +275,7 @@ public:
             return;
 
         // no XP multiplier, when player is no bot.
-        if (!player->GetSession()->IsBot() || !sRandomPlayerbotMgr->IsRandomBot(player))
+        if (!player->GetSession()->IsBot() || !sManagerRegistry.GetRandomBotManager().IsRandomBot(player))
             return;
 
         // no XP multiplier, when bot is in a group with a real player.
@@ -367,6 +372,12 @@ public:
 
         sPlayerbotSpellRepository->Initialize();
 
+        // Initialize ManagerRegistry with production adapters
+        sManagerRegistry.SetTravelManager(std::make_shared<TravelManagerAdapter>());
+        sManagerRegistry.SetRandomBotManager(std::make_shared<RandomBotManagerAdapter>());
+        sManagerRegistry.SetBotRepository(std::make_shared<BotRepositoryAdapter>());
+
+        LOG_INFO("server.loading", ">> ManagerRegistry initialized with production adapters");
         LOG_INFO("server.loading", "Playerbots World Thread Processor initialized");
     }
 
@@ -456,7 +467,7 @@ public:
             }
         }
 
-        sRandomPlayerbotMgr->OnPlayerLogout(player);
+        sManagerRegistry.GetRandomBotManager().OnPlayerLogout(player);
     }
 
     void OnPlayerbotLogoutBots() override

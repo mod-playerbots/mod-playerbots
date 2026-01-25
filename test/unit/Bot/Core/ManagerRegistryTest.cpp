@@ -190,3 +190,65 @@ TEST_F(ManagerIntegrationTest, SimulateBotActivityScaling)
     uint32 expectedActive = static_cast<uint32>(maxBots * (activity / 100.0f));
     EXPECT_EQ(75u, expectedActive);
 }
+
+/**
+ * @brief Tests demonstrating the mock injection pattern for testing code
+ * that depends on ManagerRegistry
+ */
+TEST_F(ManagerRegistryTest, CanInjectMockRandomBotManager)
+{
+    // This test demonstrates the pattern from the migration plan
+    auto mockMgr = std::make_shared<MockRandomBotManager>();
+    registry_->SetRandomBotManager(mockMgr);
+
+    EXPECT_CALL(*mockMgr, IsRandomBot(testing::A<Player*>())).WillOnce(Return(true));
+
+    EXPECT_TRUE(registry_->GetRandomBotManager().IsRandomBot(nullptr));
+}
+
+TEST_F(ManagerRegistryTest, CanInjectMockTravelManager)
+{
+    auto mockMgr = std::make_shared<MockTravelManager>();
+    registry_->SetTravelManager(mockMgr);
+
+    EXPECT_CALL(*mockMgr, ClearDestination(_)).Times(1);
+
+    registry_->GetTravelManager().ClearDestination(nullptr);
+}
+
+TEST_F(ManagerRegistryTest, CanInjectMockBotRepository)
+{
+    auto mockRepo = std::make_shared<MockBotRepository>();
+    registry_->SetBotRepository(mockRepo);
+
+    EXPECT_CALL(*mockRepo, Save(_)).Times(1);
+
+    registry_->GetBotRepository().Save(nullptr);
+}
+
+TEST_F(ManagerIntegrationTest, SimulateRandomBotValueStorage)
+{
+    // Test Get/SetValue which is commonly used
+    EXPECT_CALL(*mockRandomBot_, GetValue(testing::A<Player*>(), "testKey"))
+        .WillOnce(Return(42u));
+    EXPECT_CALL(*mockRandomBot_, SetValue(testing::A<Player*>(), "testKey", 100u, ""))
+        .Times(1);
+
+    uint32 value = registry_.GetRandomBotManager().GetValue(nullptr, "testKey");
+    EXPECT_EQ(42u, value);
+
+    registry_.GetRandomBotManager().SetValue(nullptr, "testKey", 100u);
+}
+
+TEST_F(ManagerIntegrationTest, SimulateTradeMultipliers)
+{
+    // Test GetBuyMultiplier/GetSellMultiplier commonly used in trade actions
+    EXPECT_CALL(*mockRandomBot_, GetBuyMultiplier(_)).WillOnce(Return(0.95));
+    EXPECT_CALL(*mockRandomBot_, GetSellMultiplier(_)).WillOnce(Return(1.05));
+
+    double buyMult = registry_.GetRandomBotManager().GetBuyMultiplier(nullptr);
+    double sellMult = registry_.GetRandomBotManager().GetSellMultiplier(nullptr);
+
+    EXPECT_DOUBLE_EQ(0.95, buyMult);
+    EXPECT_DOUBLE_EQ(1.05, sellMult);
+}

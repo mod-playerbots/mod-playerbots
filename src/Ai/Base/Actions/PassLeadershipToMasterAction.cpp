@@ -5,6 +5,7 @@
 
 #include "PassLeadershipToMasterAction.h"
 
+#include "Bot/Core/ManagerRegistry.h"
 #include "Event.h"
 #include "PlayerbotOperations.h"
 #include "Playerbots.h"
@@ -22,7 +23,7 @@ bool PassLeadershipToMasterAction::Execute(Event event)
             if (!message.empty())
                 botAI->GetServices().GetChatService().TellMasterNoFacing(message);
 
-            if (sRandomPlayerbotMgr->IsRandomBot(bot))
+            if (sManagerRegistry.GetRandomBotManager().IsRandomBot(bot))
             {
                 botAI->ResetStrategies();
                 botAI->Reset();

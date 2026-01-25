@@ -4,6 +4,7 @@
  */
 
 #include "LfgActions.h"
+#include "Bot/Core/ManagerRegistry.h"
 #include "BotRoleService.h"
 
 #include "AiFactory.h"
@@ -22,7 +23,7 @@ bool LfgJoinAction::Execute(Event event) { return JoinLFG(); }
 
 uint32 LfgJoinAction::GetRoles()
 {
-    if (!sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (!sManagerRegistry.GetRandomBotManager().IsRandomBot(bot))
     {
         if (BotRoleService::IsTankStatic(bot))
             return PLAYER_ROLE_TANK;
@@ -218,9 +219,9 @@ bool LfgAcceptAction::Execute(Event event)
         *packet << id << true;
         bot->GetSession()->QueuePacket(packet);
 
-        if (sRandomPlayerbotMgr->IsRandomBot(bot) && !bot->GetGroup())
+        if (sManagerRegistry.GetRandomBotManager().IsRandomBot(bot) && !bot->GetGroup())
         {
-            sRandomPlayerbotMgr->Refresh(bot);
+            sManagerRegistry.GetRandomBotManager().Refresh(bot);
             botAI->ResetStrategies();
         }
 
@@ -253,9 +254,9 @@ bool LfgAcceptAction::Execute(Event event)
             *packet << id << true;
             bot->GetSession()->QueuePacket(packet);
 
-            if (sRandomPlayerbotMgr->IsRandomBot(bot) && !bot->GetGroup())
+            if (sManagerRegistry.GetRandomBotManager().IsRandomBot(bot) && !bot->GetGroup())
             {
-                sRandomPlayerbotMgr->Refresh(bot);
+                sManagerRegistry.GetRandomBotManager().Refresh(bot);
                 botAI->ResetStrategies();
             }
 
@@ -339,7 +340,7 @@ bool LfgJoinAction::isUseful()
     if (bot->isDead())
         return false;
 
-    if (!sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (!sManagerRegistry.GetRandomBotManager().IsRandomBot(bot))
         return false;
 
     Map* map = bot->GetMap();

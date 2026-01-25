@@ -6,6 +6,7 @@
 #include "BotChatService.h"
 #include "LeaveGroupAction.h"
 
+#include "Bot/Core/ManagerRegistry.h"
 #include "Event.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
@@ -34,7 +35,7 @@ bool PartyCommandAction::Execute(Event event)
     Player* master = GetMaster();
     if (master && member == master->GetName())
     {
-        if (sRandomPlayerbotMgr->IsRandomBot(bot))
+        if (sManagerRegistry.GetRandomBotManager().IsRandomBot(bot))
         {
             Player* newMaster = botAI->FindNewMaster();
             if (newMaster || bot->InBattleground())

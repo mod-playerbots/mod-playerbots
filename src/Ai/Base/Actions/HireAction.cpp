@@ -6,6 +6,7 @@
 #include "BotChatService.h"
 #include "HireAction.h"
 
+#include "Bot/Core/ManagerRegistry.h"
 #include "Event.h"
 #include "Playerbots.h"
 
@@ -15,7 +16,7 @@ bool HireAction::Execute(Event event)
     if (!master)
         return false;
 
-    if (!sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (!sManagerRegistry.GetRandomBotManager().IsRandomBot(bot))
         return false;
 
     uint32 account = master->GetSession()->GetAccountId();
@@ -55,7 +56,7 @@ bool HireAction::Execute(Event event)
     botAI->GetServices().GetChatService().TellMaster("I will join you at your next relogin");
 
     bot->SetMoney(moneyReq);
-    sRandomPlayerbotMgr->Remove(bot);
+    sManagerRegistry.GetRandomBotManager().Remove(bot);
     CharacterDatabase.Execute("UPDATE characters SET account = {} WHERE guid = {}", account,
                               bot->GetGUID().GetCounter());
 

@@ -5,6 +5,7 @@
 
 #include "GuildTaskMgr.h"
 
+#include "Bot/Core/ManagerRegistry.h"
 #include "ChatHelper.h"
 #include "Group.h"
 #include "GuildMgr.h"
@@ -868,7 +869,7 @@ bool GuildTaskMgr::CheckItemTask(uint32 itemId, uint32 obtained, Player* ownerPl
     if (!guild)
         return false;
 
-    if (!sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (!sManagerRegistry.GetRandomBotManager().IsRandomBot(bot))
         return false;
 
     LOG_DEBUG("playerbots", "{} / {}: checking guild task", guild->GetName().c_str(), ownerPlayer->GetName().c_str());
@@ -1200,7 +1201,7 @@ bool GuildTaskMgr::CheckTaskTransfer(std::string const text, Player* ownerPlayer
     if (!guild)
         return false;
 
-    if (!sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (!sManagerRegistry.GetRandomBotManager().IsRandomBot(bot))
         return false;
 
     if (text.empty())

@@ -8,6 +8,8 @@
 
 #include <string>
 
+#include "Bot/Core/ManagerRegistry.h"
+
 #include "BattlegroundWS.h"
 #include "CreatureAI.h"
 #include "GameTime.h"
@@ -250,7 +252,7 @@ bool AoeTrigger::IsActive()
 
 bool NoFoodTrigger::IsActive()
 {
-    bool isRandomBot = sRandomPlayerbotMgr->IsRandomBot(bot);
+    bool isRandomBot = sManagerRegistry.GetRandomBotManager().IsRandomBot(bot);
     if (isRandomBot && botAI->HasCheat(BotCheatMask::food))
         return false;
 
@@ -259,7 +261,7 @@ bool NoFoodTrigger::IsActive()
 
 bool NoDrinkTrigger::IsActive()
 {
-    bool isRandomBot = sRandomPlayerbotMgr->IsRandomBot(bot);
+    bool isRandomBot = sManagerRegistry.GetRandomBotManager().IsRandomBot(bot);
     if (isRandomBot && botAI->HasCheat(BotCheatMask::food))
         return false;
 

@@ -6,6 +6,7 @@
 #include "BotChatService.h"
 #include "QueryItemUsageAction.h"
 
+#include "Bot/Core/ManagerRegistry.h"
 #include "ChatHelper.h"
 #include "Event.h"
 #include "ItemUsageValue.h"
@@ -119,7 +120,7 @@ std::string const QueryItemUsageAction::QueryItemUsage(ItemTemplate const* item)
 
 std::string const QueryItemUsageAction::QueryItemPrice(ItemTemplate const* item)
 {
-    if (!sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (!sManagerRegistry.GetRandomBotManager().IsRandomBot(bot))
         return "";
 
     if (item->Bonding == BIND_WHEN_PICKED_UP)
@@ -134,7 +135,7 @@ std::string const QueryItemUsageAction::QueryItemPrice(ItemTemplate const* item)
         {
             Item* sell = *i;
             int32 price =
-                sell->GetCount() * sell->GetTemplate()->SellPrice * sRandomPlayerbotMgr->GetSellMultiplier(bot);
+                sell->GetCount() * sell->GetTemplate()->SellPrice * sManagerRegistry.GetRandomBotManager().GetSellMultiplier(bot);
             if (!sellPrice || sellPrice > price)
                 sellPrice = price;
         }
@@ -148,7 +149,7 @@ std::string const QueryItemUsageAction::QueryItemPrice(ItemTemplate const* item)
     if (usage == ITEM_USAGE_NONE)
         return msg.str();
 
-    int32 buyPrice = item->BuyPrice * sRandomPlayerbotMgr->GetBuyMultiplier(bot);
+    int32 buyPrice = item->BuyPrice * sManagerRegistry.GetRandomBotManager().GetBuyMultiplier(bot);
     if (buyPrice)
     {
         if (sellPrice)
