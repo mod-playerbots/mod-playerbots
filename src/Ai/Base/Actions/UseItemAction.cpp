@@ -245,8 +245,10 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
         {
             packet << unitTarget->GetGUID();
             targetSelected = true;
-            // If the target is bot or is an enemy, say "on self"
-            if (unitTarget == bot || (unitTarget->IsHostileTo(bot)))
+
+            if (unitTarget == bot || !unitTarget->IsInWorld() || unitTarget->IsDuringRemoveFromWorld())
+                out << " on self";
+            else if (unitTarget->IsHostileTo(bot))
                 out << " on self";
             else
                 out << " on " << unitTarget->GetName();

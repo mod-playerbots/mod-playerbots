@@ -54,6 +54,9 @@ void PossibleRpgTargetsValue::FindUnits(std::list<Unit*>& targets)
 
 bool PossibleRpgTargetsValue::AcceptUnit(Unit* unit)
 {
+    if (!unit || !unit->IsInWorld() || unit->IsDuringRemoveFromWorld())
+        return false;
+
     if (unit->IsHostileTo(bot) || unit->IsPlayer())
         return false;
 
@@ -70,7 +73,8 @@ bool PossibleRpgTargetsValue::AcceptUnit(Unit* unit)
     }
 
     TravelTarget* travelTarget = context->GetValue<TravelTarget*>("travel target")->Get();
-    if (travelTarget->getDestination() && travelTarget->getDestination()->getEntry() == unit->GetEntry())
+    if (travelTarget && travelTarget->getDestination() &&
+        travelTarget->getDestination()->getEntry() == unit->GetEntry())
         return true;
 
     if (urand(1, 100) < 25 && unit->IsFriendlyTo(bot))
@@ -145,6 +149,9 @@ void PossibleNewRpgTargetsValue::FindUnits(std::list<Unit*>& targets)
 
 bool PossibleNewRpgTargetsValue::AcceptUnit(Unit* unit)
 {
+    if (!unit || !unit->IsInWorld() || unit->IsDuringRemoveFromWorld())
+        return false;
+
     if (unit->IsHostileTo(bot) || unit->IsPlayer())
         return false;
 

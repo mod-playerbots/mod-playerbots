@@ -3,6 +3,7 @@
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
 #include "Creature.h"
+#include "FlightMasterCache.h"
 #include "G3D/Vector2.h"
 #include "GameObject.h"
 #include "GossipDef.h"
@@ -968,22 +969,7 @@ WorldPosition NewRpgBaseAction::SelectRandomCampPos(Player* bot)
 
 bool NewRpgBaseAction::SelectRandomFlightTaxiNode(ObjectGuid& flightMaster, uint32& fromNode, uint32& toNode)
 {
-    const std::vector<uint32>& flightMasters = IsAlliance(bot->getRace())
-                                                   ? sRandomPlayerbotMgr->allianceFlightMasterCache
-                                                   : sRandomPlayerbotMgr->hordeFlightMasterCache;
-    Creature* nearestFlightMaster = nullptr;
-    for (const uint32& guid : flightMasters)
-    {
-        Creature* flightMaster = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), guid);
-        if (!flightMaster)
-            continue;
-
-        if (bot->GetMapId() != flightMaster->GetMapId())
-            continue;
-
-        if (!nearestFlightMaster || bot->GetDistance(nearestFlightMaster) > bot->GetDistance(flightMaster))
-            nearestFlightMaster = flightMaster;
-    }
+    Creature* nearestFlightMaster = sFlightMasterCache->GetNearestFlightMaster(bot);
     if (!nearestFlightMaster || bot->GetDistance(nearestFlightMaster) > 500.0f)
         return false;
 
