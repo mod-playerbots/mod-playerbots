@@ -477,8 +477,6 @@ bool BGJoinAction::JoinQueue(uint32 type)
     if (isArena)
     {
         isArena = true;
-        BracketSize = type * 2;
-        TeamSize = type;
         isRated = botAI->GetAiObjectContext()->GetValue<uint32>("arena type")->Get();
 
         if (joinAsGroup)
@@ -518,14 +516,14 @@ bool BGJoinAction::JoinQueue(uint32 type)
     }
     else if (!joinAsGroup)
     {
-        if (teamId == TEAM_ALLIANCE)
+        if (bot->GetTeamId() == TEAM_ALLIANCE)
             sRandomPlayerbotMgr->BattlegroundData[queueTypeId][bracketId].bgAllianceBotCount++;
         else
             sRandomPlayerbotMgr->BattlegroundData[queueTypeId][bracketId].bgHordeBotCount++;
     }
     else
     {
-        if (teamId == TEAM_ALLIANCE)
+        if (bot->GetTeamId() == TEAM_ALLIANCE)
             sRandomPlayerbotMgr->BattlegroundData[queueTypeId][bracketId].bgAllianceBotCount +=
                 bot->GetGroup()->GetMembersCount();
         else
