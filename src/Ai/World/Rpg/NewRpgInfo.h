@@ -39,7 +39,7 @@ struct NewRpgInfo
     // RPG_DO_QUEST
     struct DoQuest
     {
-        const Quest* quest{nullptr};
+        Quest const* quest{nullptr};
         uint32 questId{0};
         int32 objectiveIdx{0};
         WorldPosition pos{};
@@ -89,7 +89,7 @@ struct NewRpgInfo
     void ChangeToGoCamp(WorldPosition pos);
     void ChangeToWanderNpc();
     void ChangeToWanderRandom();
-    void ChangeToDoQuest(uint32 questId, const Quest* quest);
+    void ChangeToDoQuest(uint32 questId, Quest const* quest);
     void ChangeToTravelFlight(ObjectGuid fromFlightMaster, uint32 fromNode, uint32 toNode);
     void ChangeToRest();
     void ChangeToIdle();

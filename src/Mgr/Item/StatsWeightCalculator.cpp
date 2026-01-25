@@ -475,7 +475,7 @@ void StatsWeightCalculator::CalculateItemSetMod(Player* player, ItemTemplate con
             if (itemSet != setId)
                 continue;
 
-            const ItemSetEntry* setEntry = sItemSetStore.LookupEntry(setId);
+            ItemSetEntry const* setEntry = sItemSetStore.LookupEntry(setId);
             if (!setEntry)
                 continue;
 
@@ -501,7 +501,7 @@ void StatsWeightCalculator::CalculateItemSetMod(Player* player, ItemTemplate con
     weight_ *= multiplier;
 }
 
-void StatsWeightCalculator::CalculateSocketBonus(Player* player, ItemTemplate const* proto)
+void StatsWeightCalculator::CalculateSocketBonus(Player* /*player*/, ItemTemplate const* proto)
 {
     uint32 socketNum = 0;
     for (uint32 enchant_slot = SOCK_ENCHANTMENT_SLOT; enchant_slot < SOCK_ENCHANTMENT_SLOT + MAX_GEM_SOCKETS;
@@ -526,7 +526,7 @@ void StatsWeightCalculator::CalculateItemTypePenalty(ItemTemplate const* proto)
     // if (proto->Class == ITEM_CLASS_ARMOR && proto->SubClass >= ITEM_SUBCLASS_ARMOR_CLOTH &&
     //     proto->SubClass <= ITEM_SUBCLASS_ARMOR_PLATE && NotBestArmorType(proto->SubClass))
     // {
-    //     weight_ *= 1.0;
+    //     weight_ *= 1.0f;
     // }
     if (proto->Class == ITEM_CLASS_WEAPON)
     {
@@ -537,7 +537,7 @@ void StatsWeightCalculator::CalculateItemTypePenalty(ItemTemplate const* proto)
 
         if (isDoubleHand)
         {
-            weight_ *= 0.5;
+            weight_ *= 0.5f;
             // spec without double hand
             // enhancement, rogue, ice dk, unholy dk, shield tank, fury warrior without titan's grip but with duel wield
             if (((cls == CLASS_SHAMAN && tab == SHAMAN_TAB_ENHANCEMENT && player_->CanDualWield()) ||
@@ -547,7 +547,7 @@ void StatsWeightCalculator::CalculateItemTypePenalty(ItemTemplate const* proto)
                  (cls == CLASS_WARRIOR && tab == WARRIOR_TAB_PROTECTION) ||
                  (cls == CLASS_PALADIN && tab == PALADIN_TAB_PROTECTION)))
             {
-                weight_ *= 0.1;
+                weight_ *= 0.1f;
             }
         }
         // spec with double hand
@@ -561,13 +561,13 @@ void StatsWeightCalculator::CalculateItemTypePenalty(ItemTemplate const* proto)
                 (cls == CLASS_DEATH_KNIGHT && tab == DEATH_KNIGHT_TAB_BLOOD) ||
                 (cls == CLASS_SHAMAN && tab == SHAMAN_TAB_ENHANCEMENT && !player_->CanDualWield()))
             {
-                weight_ *= 0.1;
+                weight_ *= 0.1f;
             }
             // caster's main hand (cannot duel weapon but can equip two-hands stuff)
             if (cls == CLASS_MAGE || cls == CLASS_PRIEST || cls == CLASS_WARLOCK || cls == CLASS_DRUID ||
                 (cls == CLASS_SHAMAN && !player_->CanDualWield()))
             {
-                weight_ *= 0.65;
+                weight_ *= 0.65f;
             }
         }
         // fury with titan's grip
@@ -575,37 +575,37 @@ void StatsWeightCalculator::CalculateItemTypePenalty(ItemTemplate const* proto)
              proto->SubClass == ITEM_SUBCLASS_WEAPON_STAFF) &&
             (cls == CLASS_WARRIOR && tab == WARRIOR_TAB_FURY && player_->CanTitanGrip()))
         {
-            weight_ *= 0.1;
+            weight_ *= 0.1f;
         }
 
         if (cls == CLASS_HUNTER && proto->SubClass == ITEM_SUBCLASS_WEAPON_THROWN)
         {
-            weight_ *= 0.1;
+            weight_ *= 0.1f;
         }
 
         if (lvl >= 10 && cls == CLASS_ROGUE && (tab == ROGUE_TAB_ASSASSINATION || tab == ROGUE_TAB_SUBTLETY) &&
             proto->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER)
         {
-            weight_ *= 1.5;
+            weight_ *= 1.5f;
         }
 
         if (cls == CLASS_ROGUE && player_->HasAura(13964) &&
             (proto->SubClass == ITEM_SUBCLASS_WEAPON_SWORD || proto->SubClass == ITEM_SUBCLASS_WEAPON_AXE))
         {
-            weight_ *= 1.1;
+            weight_ *= 1.1f;
         }
         if (cls == CLASS_WARRIOR && player_->HasAura(12785) &&
             (proto->SubClass == ITEM_SUBCLASS_WEAPON_POLEARM || proto->SubClass == ITEM_SUBCLASS_WEAPON_AXE2))
         {
-            weight_ *= 1.1;
+            weight_ *= 1.1f;
         }
         if (cls == CLASS_DEATH_KNIGHT && player_->HasAura(50138) && !isDoubleHand)
         {
-            weight_ *= 1.3;
+            weight_ *= 1.3f;
         }
         bool slowDelay = proto->Delay > 2500;
         if (cls == CLASS_SHAMAN && tab == SHAMAN_TAB_ENHANCEMENT && slowDelay)
-            weight_ *= 1.1;
+            weight_ *= 1.1f;
     }
 }
 

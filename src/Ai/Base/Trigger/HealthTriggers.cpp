@@ -27,7 +27,7 @@ bool AoeInGroupTrigger::IsActive()
     int32 member = botAI->GetNearGroupMemberCount();
     if (member < 5)
         return false;
-    int threshold = member * 0.5;
+    int threshold = member * 0.5f;
     if (member <= 5)
         threshold = 3;
     else if (member <= 10)

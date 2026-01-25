@@ -52,109 +52,109 @@ public:
     // Service accessors
     IBotContext& GetContext()
     {
-        return *context_;
+        return *_context;
     }
 
     ISpellService& GetSpellService()
     {
-        return *spellService_;
+        return *_spellService;
     }
 
     IChatService& GetChatService()
     {
-        return *chatService_;
+        return *_chatService;
     }
 
     IRoleService& GetRoleService()
     {
-        return *roleService_;
+        return *_roleService;
     }
 
     IItemService& GetItemService()
     {
-        return *itemService_;
+        return *_itemService;
     }
 
     IConfigProvider& GetConfig()
     {
-        return *config_;
+        return *_config;
     }
 
     // Const accessors
     IBotContext const& GetContext() const
     {
-        return *context_;
+        return *_context;
     }
 
     ISpellService const& GetSpellService() const
     {
-        return *spellService_;
+        return *_spellService;
     }
 
     IChatService const& GetChatService() const
     {
-        return *chatService_;
+        return *_chatService;
     }
 
     IRoleService const& GetRoleService() const
     {
-        return *roleService_;
+        return *_roleService;
     }
 
     IItemService const& GetItemService() const
     {
-        return *itemService_;
+        return *_itemService;
     }
 
     IConfigProvider const& GetConfig() const
     {
-        return *config_;
+        return *_config;
     }
 
     // Service setters for dependency injection
     void SetContext(std::unique_ptr<IBotContext> context)
     {
-        context_ = std::move(context);
+        _context = std::move(context);
     }
 
     void SetSpellService(std::unique_ptr<ISpellService> service)
     {
-        spellService_ = std::move(service);
+        _spellService = std::move(service);
     }
 
     void SetChatService(std::unique_ptr<IChatService> service)
     {
-        chatService_ = std::move(service);
+        _chatService = std::move(service);
     }
 
     void SetRoleService(std::unique_ptr<IRoleService> service)
     {
-        roleService_ = std::move(service);
+        _roleService = std::move(service);
     }
 
     void SetItemService(std::unique_ptr<IItemService> service)
     {
-        itemService_ = std::move(service);
+        _itemService = std::move(service);
     }
 
     void SetConfig(std::unique_ptr<IConfigProvider> config)
     {
-        config_ = std::move(config);
+        _config = std::move(config);
     }
 
     // Check if all services are initialized
     bool IsInitialized() const
     {
-        return context_ && spellService_ && chatService_ && roleService_ && itemService_ && config_;
+        return _context && _spellService && _chatService && _roleService && _itemService && _config;
     }
 
 private:
-    std::unique_ptr<IBotContext> context_;
-    std::unique_ptr<ISpellService> spellService_;
-    std::unique_ptr<IChatService> chatService_;
-    std::unique_ptr<IRoleService> roleService_;
-    std::unique_ptr<IItemService> itemService_;
-    std::unique_ptr<IConfigProvider> config_;
+    std::unique_ptr<IBotContext> _context;
+    std::unique_ptr<ISpellService> _spellService;
+    std::unique_ptr<IChatService> _chatService;
+    std::unique_ptr<IRoleService> _roleService;
+    std::unique_ptr<IItemService> _itemService;
+    std::unique_ptr<IConfigProvider> _config;
 };
 
 #endif

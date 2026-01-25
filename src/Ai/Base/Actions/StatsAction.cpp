@@ -181,5 +181,5 @@ double StatsAction::RepairPercent(uint16 pos)
     if (!curDurability)
         return 0;
 
-    return curDurability * 100.0 / maxDurability;
+    return curDurability * 100.0f / maxDurability;
 }

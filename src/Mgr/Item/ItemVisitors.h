@@ -334,6 +334,8 @@ public:
                 case ITEM_SUBCLASS_WEAPON_CROSSBOW:
                     subClass = ITEM_SUBCLASS_ARROW;
                     break;
+                default:
+                    break;
             }
 
             if (!subClass)
@@ -397,6 +399,8 @@ public:
                     return skill == SKILL_ENCHANTING;
                 case ITEM_SUBCLASS_FISHING_MANUAL:
                     return skill == SKILL_FISHING;
+                default:
+                    break;
             }
         }
 

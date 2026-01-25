@@ -51,6 +51,8 @@ AiObjectContext* AiFactory::createAiObjectContext(Player* player, PlayerbotAI* b
             return new RogueAiObjectContext(botAI);
         case CLASS_DEATH_KNIGHT:
             return new DKAiObjectContext(botAI);
+        default:
+            break;
     }
 
     return new AiObjectContext(botAI);
@@ -95,6 +97,8 @@ uint8 AiFactory::GetPlayerSpecTab(Player* bot)
             case CLASS_SHAMAN:
                 tab = SHAMAN_TAB_ELEMENTAL;
                 break;
+            default:
+                break;
         }
 
         return tab;
@@ -121,7 +125,7 @@ std::map<uint8, uint32> AiFactory::GetPlayerSpecTabs(Player* bot)
 
         uint32 const* talentTabIds = GetTalentTabPages(bot->getClass());
 
-        const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
         int rank = spellInfo ? spellInfo->GetRank() : 1;
         if (talentInfo->TalentTab == talentTabIds[0])
             tabs[0] += rank;
@@ -389,6 +393,8 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
                 engine->addStrategiesNoInit("frost", "frost aoe", "dps assist", nullptr);
             else
                 engine->addStrategiesNoInit("unholy", "unholy aoe", "dps assist", nullptr);
+            break;
+        default:
             break;
     }
 

@@ -17,7 +17,7 @@
 #include "RpgSubActions.h"
 #include "BotChatService.h"
 
-bool RpgAction::Execute(Event event)
+bool RpgAction::Execute(Event /*event*/)
 {
     GuidPosition guidP = AI_VALUE(GuidPosition, "rpg target");
     if (!guidP && botAI->GetMaster())
@@ -109,7 +109,7 @@ bool RpgAction::SetNextRpgAction()
     {
         std::vector<std::pair<Action*, uint32>> sortedActions;
 
-        for (int i = 0; i < actions.size(); i++)
+        for (size_t i = 0; i < actions.size(); i++)
             sortedActions.push_back(std::make_pair(actions[i], relevances[i]));
 
         std::sort(sortedActions.begin(), sortedActions.end(), [](std::pair<Action*, uint32>i, std::pair<Action*, uint32> j) {return i.second > j.second; });

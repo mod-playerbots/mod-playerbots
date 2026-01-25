@@ -3,7 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#pragma once
+#ifndef MOD_PLAYERBOTS_AI_BASE_ACTIONS_GENERIC_BUFF_UTILS_H
+#define MOD_PLAYERBOTS_AI_BASE_ACTIONS_GENERIC_BUFF_UTILS_H
 
 #include <string>
 #include <functional>
@@ -61,3 +62,5 @@ namespace ai::chat {
         };
     }
 }
+
+#endif  // MOD_PLAYERBOTS_AI_BASE_ACTIONS_GENERIC_BUFF_UTILS_H

@@ -19,7 +19,7 @@
 
 using namespace lfg;
 
-bool LfgJoinAction::Execute(Event event) { return JoinLFG(); }
+bool LfgJoinAction::Execute(Event /*event*/) { return JoinLFG(); }
 
 uint32 LfgJoinAction::GetRoles()
 {
@@ -118,7 +118,7 @@ bool LfgJoinAction::JoinLFG()
         auto const& botLevel = bot->GetLevel();
 
         /*LFG_TYPE_RANDOM on classic is 15-58 so bot over level 25 will never queue*/
-        if (dungeon->MinLevel && (botLevel < dungeon->MinLevel || botLevel > dungeon->MaxLevel) ||
+        if ((dungeon->MinLevel && (botLevel < dungeon->MinLevel || botLevel > dungeon->MaxLevel)) ||
             (botLevel > dungeon->MinLevel + 10 && dungeon->TypeID == LFG_TYPE_DUNGEON))
             continue;
 
@@ -173,14 +173,11 @@ bool LfgJoinAction::JoinLFG()
     return true;
 }
 
-bool LfgRoleCheckAction::Execute(Event event)
+bool LfgRoleCheckAction::Execute(Event /*event*/)
 {
-    if (Group* group = bot->GetGroup())
+    if (bot->GetGroup())
     {
-        uint32 currentRoles = sLFGMgr->GetRoles(bot->GetGUID());
         uint32 newRoles = GetRoles();
-        // if (currentRoles == newRoles)
-        //     return false;
 
         WorldPacket* packet = new WorldPacket(CMSG_LFG_SET_ROLES);
         *packet << (uint8)newRoles;
@@ -268,7 +265,7 @@ bool LfgAcceptAction::Execute(Event event)
     return false;
 }
 
-bool LfgLeaveAction::Execute(Event event)
+bool LfgLeaveAction::Execute(Event /*event*/)
 {
     // Don't leave if lfg strategy enabled
     // if (botAI->HasStrategy("lfg", BOT_STATE_NON_COMBAT))

@@ -62,7 +62,7 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
         // Unfortunately we've been stuck here for over 5 mins, fallback to teleporting directly to the destination
         botAI->rpgInfo.stuckTs = getMSTime();
         botAI->rpgInfo.stuckAttempts = 0;
-        const AreaTableEntry* entry = sAreaTableStore.LookupEntry(bot->GetZoneId());
+        AreaTableEntry const* entry = sAreaTableStore.LookupEntry(bot->GetZoneId());
         std::string zone_name = PlayerbotAI::GetLocalizedAreaName(entry);
         LOG_DEBUG(
             "playerbots",
@@ -91,7 +91,7 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
     while (attempt--)
     {
         float angle = bot->GetAngle(&dest);
-        float delta = urand(1, 100) <= 75 ? (rand_norm() - 0.5) * M_PI * 0.5 : (rand_norm() - 0.5) * M_PI * 2;
+        float delta = urand(1, 100) <= 75 ? (rand_norm() - 0.5f) * M_PI * 0.5f : (rand_norm() - 0.5f) * M_PI * 2;
         angle += delta;
         float dis = rand_norm() * pathFinderDis;
         float dx = x + cos(angle) * dis;
@@ -137,10 +137,10 @@ bool NewRpgBaseAction::MoveWorldObjectTo(ObjectGuid guid, float distance)
     float angle = 0.f;
 
     if (!object->ToUnit() || !object->ToUnit()->isMoving())
-        angle = object->GetAngle(bot) + (M_PI * irand(-25, 25) / 100.0);  // Closest 45 degrees towards the target
+        angle = object->GetAngle(bot) + (M_PI * irand(-25, 25) / 100.0f);  // Closest 45 degrees towards the target
     else
         angle = object->GetOrientation() +
-                (M_PI * irand(-25, 25) / 100.0);  // 45 degrees infront of target (leading it's movement)
+                (M_PI * irand(-25, 25) / 100.0f);  // 45 degrees infront of target (leading it's movement)
 
     float rnd = rand_norm();
     x += cos(angle) * distance * rnd;
@@ -230,7 +230,7 @@ bool NewRpgBaseAction::InteractWithNpcOrGameObjectForQuest(ObjectGuid guid)
     for (uint8 idx = 0; idx < menu.GetMenuItemCount(); idx++)
     {
         const QuestMenuItem& item = menu.GetItem(idx);
-        const Quest* quest = sObjectMgr->GetQuestTemplate(item.QuestId);
+        Quest const* quest = sObjectMgr->GetQuestTemplate(item.QuestId);
         if (!quest)
             continue;
 
@@ -373,7 +373,6 @@ bool NewRpgBaseAction::IsWithinInteractionDist(Object* questGiver)
         case TYPEID_GAMEOBJECT:
         {
             ObjectGuid guid = questGiver->GetGUID();
-            GameobjectTypes type = GAMEOBJECT_TYPE_QUESTGIVER;
             if (GameObject* go = bot->GetMap()->GetGameObject(guid))
             {
                 if (go->IsWithinDistInMap(bot))
@@ -532,7 +531,7 @@ bool NewRpgBaseAction::OrganizeQuestLog()
         if (!questId)
             continue;
 
-        const Quest* quest = sObjectMgr->GetQuestTemplate(questId);
+        Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
         if (!IsQuestWorthDoing(quest) || !IsQuestCapableDoing(quest) ||
             bot->GetQuestStatus(questId) == QUEST_STATUS_FAILED)
         {
@@ -558,8 +557,8 @@ bool NewRpgBaseAction::OrganizeQuestLog()
         if (!questId)
             continue;
 
-        const Quest* quest = sObjectMgr->GetQuestTemplate(questId);
-        if (quest->GetZoneOrSort() < 0 || (quest->GetZoneOrSort() > 0 && quest->GetZoneOrSort() != bot->GetZoneId()))
+        Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+        if (quest->GetZoneOrSort() < 0 || (quest->GetZoneOrSort() > 0 && static_cast<uint32>(quest->GetZoneOrSort()) != bot->GetZoneId()))
         {
             LOG_DEBUG("playerbots", "[New RPG] {} drop quest {}", bot->GetName(), questId);
             WorldPacket packet(CMSG_QUESTLOG_REMOVE_QUEST);
@@ -582,7 +581,7 @@ bool NewRpgBaseAction::OrganizeQuestLog()
         if (!questId)
             continue;
 
-        const Quest* quest = sObjectMgr->GetQuestTemplate(questId);
+        Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
         LOG_DEBUG("playerbots", "[New RPG] {} drop quest {}", bot->GetName(), questId);
         WorldPacket packet(CMSG_QUESTLOG_REMOVE_QUEST);
         packet << (uint8)i;
@@ -691,7 +690,7 @@ bool NewRpgBaseAction::HasQuestToAcceptOrReward(WorldObject* object)
     for (uint8 idx = 0; idx < menu.GetMenuItemCount(); idx++)
     {
         const QuestMenuItem& item = menu.GetItem(idx);
-        const Quest* quest = sObjectMgr->GetQuestTemplate(item.QuestId);
+        Quest const* quest = sObjectMgr->GetQuestTemplate(item.QuestId);
         if (!quest)
             continue;
         const QuestStatus& status = bot->GetQuestStatus(item.QuestId);
@@ -703,7 +702,7 @@ bool NewRpgBaseAction::HasQuestToAcceptOrReward(WorldObject* object)
     for (uint8 idx = 0; idx < menu.GetMenuItemCount(); idx++)
     {
         const QuestMenuItem& item = menu.GetItem(idx);
-        const Quest* quest = sObjectMgr->GetQuestTemplate(item.QuestId);
+        Quest const* quest = sObjectMgr->GetQuestTemplate(item.QuestId);
         if (!quest)
             continue;
 
@@ -720,7 +719,7 @@ bool NewRpgBaseAction::HasQuestToAcceptOrReward(WorldObject* object)
 static std::vector<float> GenerateRandomWeights(int n)
 {
     std::vector<float> weights(n);
-    float sum = 0.0;
+    float sum = 0.0f;
 
     for (int i = 0; i < n; ++i)
     {
@@ -740,7 +739,7 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
     if (!quest)
         return false;
 
-    const QuestPOIVector* poiVector = sObjectMgr->GetQuestPOIVector(questId);
+    QuestPOIVector const* poiVector = sObjectMgr->GetQuestPOIVector(questId);
     if (!poiVector)
     {
         return false;
@@ -824,7 +823,7 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
         bool inComplete = false;
         for (uint32 objective : incompleteObjectiveIdx)
         {
-            if (qPoi.ObjectiveIndex == objective)
+            if (static_cast<uint32>(qPoi.ObjectiveIndex) == objective)
             {
                 inComplete = true;
                 break;
@@ -1136,7 +1135,7 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
             if (availableQuests.size())
             {
                 uint32 questId = availableQuests[urand(0, availableQuests.size() - 1)];
-                const Quest* quest = sObjectMgr->GetQuestTemplate(questId);
+                Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
                 if (quest)
                 {
                     botAI->rpgInfo.ChangeToDoQuest(questId, quest);

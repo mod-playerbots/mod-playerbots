@@ -76,7 +76,7 @@ bool ReviveFromCorpseAction::Execute(Event event)
     return true;
 }
 
-bool FindCorpseAction::Execute(Event event)
+bool FindCorpseAction::Execute(Event /*event*/)
 {
     if (bot->InBattleground())
         return false;
@@ -146,13 +146,13 @@ bool FindCorpseAction::Execute(Event event)
             moveToPos = leaderPos;
         else
         {
-            FleeManager manager(bot, reclaimDist, 0.0, urand(0, 1), moveToPos);
+            FleeManager manager(bot, reclaimDist, urand(0, 1), moveToPos);
 
             if (manager.isUseful())
             {
                 float rx, ry, rz;
                 if (manager.CalculateDestination(&rx, &ry, &rz))
-                    moveToPos = WorldPosition(moveToPos.getMapId(), rx, ry, rz, 0.0);
+                    moveToPos = WorldPosition(moveToPos.getMapId(), rx, ry, rz, 0.0f);
                 else if (!moveToPos.GetReachableRandomPointOnGround(bot, reclaimDist, urand(0, 1)))
                     moveToPos = corpsePos;
             }
@@ -295,7 +295,7 @@ GraveyardStruct const* SpiritHealerAction::GetGrave(bool startZone)
     return ClosestGrave;
 }
 
-bool SpiritHealerAction::Execute(Event event)
+bool SpiritHealerAction::Execute(Event /*event*/)
 {
     Corpse* corpse = bot->GetCorpse();
     if (!corpse)
@@ -343,7 +343,7 @@ bool SpiritHealerAction::Execute(Event event)
     bool moved = false;
 
     if (bot->IsWithinLOS(ClosestGrave->x, ClosestGrave->y, ClosestGrave->z))
-        moved = MoveNear(ClosestGrave->Map, ClosestGrave->x, ClosestGrave->y, ClosestGrave->z, 0.0);
+        moved = MoveNear(ClosestGrave->Map, ClosestGrave->x, ClosestGrave->y, ClosestGrave->z, 0.0f);
     else
         moved = MoveTo(ClosestGrave->Map, ClosestGrave->x, ClosestGrave->y, ClosestGrave->z, false, false);
 

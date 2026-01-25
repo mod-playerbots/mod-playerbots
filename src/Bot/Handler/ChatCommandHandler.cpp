@@ -9,34 +9,34 @@
 
 void ChatCommandHandler::HandleCommand(uint32 type, std::string const& text, Player* fromPlayer)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        botAI_->HandleCommand(type, text, fromPlayer);
+        _botAI->HandleCommand(type, text, fromPlayer);
     }
 }
 
 std::string ChatCommandHandler::HandleRemoteCommand(std::string const& command)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return botAI_->HandleRemoteCommand(command);
+        return _botAI->HandleRemoteCommand(command);
     }
     return "";
 }
 
 void ChatCommandHandler::QueueChatResponse(ChatQueuedReply const& reply)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        botAI_->QueueChatResponse(reply);
+        _botAI->QueueChatResponse(reply);
     }
 }
 
 bool ChatCommandHandler::IsAllowedCommand(std::string const& text)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return botAI_->IsAllowedCommand(text);
+        return _botAI->IsAllowedCommand(text);
     }
     return false;
 }

@@ -76,7 +76,6 @@ class PlayerbotLoginQueryHolder : public LoginQueryHolder
 {
 private:
     uint32 masterAccountId;
-    PlayerbotHolder* playerbotHolder;
 public:
     PlayerbotLoginQueryHolder(uint32 masterAccount, uint32 accountId, ObjectGuid guid)
         : LoginQueryHolder(accountId, guid), masterAccountId(masterAccount)
@@ -128,7 +127,7 @@ void PlayerbotHolder::AddPlayerBot(ObjectGuid playerGuid, uint32 masterAccountId
             return;
         }
         uint32 count = mgr->GetPlayerbotsCount() + botLoading.size();
-        if (count >= sPlayerbotAIConfig->maxAddedBots)
+        if (count >= static_cast<uint32>(sPlayerbotAIConfig->maxAddedBots))
         {
             allowed = false;
             out << "Failure: You have added too many bots (more than " << sPlayerbotAIConfig->maxAddedBots << ")";
@@ -679,7 +678,7 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
                     char new_channel_name_buf[100];
                     //3459 is ID for a zone named "City" (only exists for the sake of using its name)
                     //Currently in magons TBC, if you switch zones, then you join "Trade - <zone>" and "GuildRecruitment - <zone>"
-                    //which is a core bug, should be "Trade - City" and "GuildRecruitment - City" in both 1.12 and TBC
+                    //which is a core bug, should be "Trade - City" and "GuildRecruitment - City" in both 1.12f and TBC
                     //but if you (actual player) logout in a city and log back in - you join "City" versions
                     snprintf(new_channel_name_buf, 100, channel->pattern[locale], GET_PLAYERBOT_AI(bot)->GetLocalizedAreaName(GetAreaEntryByAreaID(3459)).c_str());
                     new_channel = cMgr->GetJoinChannel(new_channel_name_buf, channel->ChannelID);
@@ -702,15 +701,11 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
 }
 
 std::string const PlayerbotHolder::ProcessBotCommand(std::string const cmd, ObjectGuid guid, ObjectGuid masterguid,
-                                                     bool admin, uint32 masterAccountId, uint32 masterGuildId)
+                                                     bool admin, uint32 masterAccountId, uint32 /*masterGuildId*/)
 {
     if (!sPlayerbotAIConfig->enabled || guid.IsEmpty())
         return "bot system is disabled";
 
-    uint32 botAccount = sCharacterCache->GetCharacterAccountIdByGuid(guid);
-    //bool isRandomBot = sRandomPlayerbotMgr->IsRandomBot(guid.GetCounter()); //not used, line marked for removal.
-    //bool isRandomAccount = sPlayerbotAIConfig->IsInRandomAccountList(botAccount); //not used, shadowed, line marked for removal.
-    //bool isMasterAccount = (masterAccountId == botAccount); //not used, line marked for removal.
 
     if (cmd == "add" || cmd == "addaccount" || cmd == "login")
     {
@@ -724,11 +719,11 @@ std::string const PlayerbotHolder::ProcessBotCommand(std::string const cmd, Obje
             if (!accountId)
                 return "character not found";
 
-                if (!sPlayerbotAIConfig->allowAccountBots && accountId != masterAccountId &&
-                    !(sPlayerbotAIConfig->allowTrustedAccountBots && IsAccountLinked(accountId, masterAccountId)))
-                {
-                    return "you can only add bots from your own account or linked accounts";
-                }
+            if (!sPlayerbotAIConfig->allowAccountBots && accountId != masterAccountId &&
+                !(sPlayerbotAIConfig->allowTrustedAccountBots && IsAccountLinked(accountId, masterAccountId)))
+            {
+                return "you can only add bots from your own account or linked accounts";
+            }
         }
 
         AddPlayerBot(guid, masterAccountId);
@@ -1454,7 +1449,7 @@ std::string const PlayerbotHolder::ListBots(Player* master)
     return out.str();
 }
 
-std::string const PlayerbotHolder::LookupBots(Player* master)
+std::string const PlayerbotHolder::LookupBots(Player* /*master*/)
 {
     std::list<std::string> messages;
     messages.push_back("Classes Available:");
@@ -1576,6 +1571,8 @@ void PlayerbotMgr::HandleMasterIncomingPacket(WorldPacket const& packet)
             CancelLogout();
             break;
         }
+        default:
+            break;
     }
 }
 
@@ -1692,7 +1689,7 @@ void PlayerbotMgr::TellError(std::string const botName, std::string const text)
     errors[text] = names;
 }
 
-void PlayerbotMgr::CheckTellErrors(uint32 elapsed)
+void PlayerbotMgr::CheckTellErrors(uint32 /*elapsed*/)
 {
     time_t now = time(nullptr);
     if ((now - lastErrorTell) < sPlayerbotAIConfig->errorDelay / 1000)

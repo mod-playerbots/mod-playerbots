@@ -48,10 +48,10 @@ bool PossibleTriggersValue::AcceptUnit(Unit* unit)
         for (auto i = list.begin(); i != list.end(); ++i)
         {
             AuraEffect* aurEff = *i;
-            const SpellInfo* spellInfo = aurEff->GetSpellInfo();
+            SpellInfo const* spellInfo = aurEff->GetSpellInfo();
             if (!spellInfo)
                 continue;
-            const SpellInfo* triggerSpellInfo =
+            SpellInfo const* triggerSpellInfo =
                 sSpellMgr->GetSpellInfo(spellInfo->Effects[aurEff->GetEffIndex()].TriggerSpell);
             if (!triggerSpellInfo)
                 continue;

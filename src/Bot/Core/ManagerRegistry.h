@@ -10,9 +10,9 @@
 #include <typeindex>
 #include <unordered_map>
 
-class ITravelManager;
-class IRandomBotManager;
-class IBotRepository;
+#include "Bot/Interface/ITravelManager.h"
+#include "Bot/Interface/IRandomBotManager.h"
+#include "Bot/Interface/IBotRepository.h"
 
 /**
  * @brief Central registry for all manager interfaces
@@ -57,59 +57,59 @@ public:
     // Manager accessors
     ITravelManager& GetTravelManager()
     {
-        return *travelManager_;
+        return *_travelManager;
     }
 
     IRandomBotManager& GetRandomBotManager()
     {
-        return *randomBotManager_;
+        return *_randomBotManager;
     }
 
     IBotRepository& GetBotRepository()
     {
-        return *botRepository_;
+        return *_botRepository;
     }
 
     // Const accessors
     ITravelManager const& GetTravelManager() const
     {
-        return *travelManager_;
+        return *_travelManager;
     }
 
     IRandomBotManager const& GetRandomBotManager() const
     {
-        return *randomBotManager_;
+        return *_randomBotManager;
     }
 
     IBotRepository const& GetBotRepository() const
     {
-        return *botRepository_;
+        return *_botRepository;
     }
 
     // Manager setters for dependency injection
     void SetTravelManager(std::shared_ptr<ITravelManager> manager)
     {
-        travelManager_ = std::move(manager);
+        _travelManager = std::move(manager);
     }
 
     void SetRandomBotManager(std::shared_ptr<IRandomBotManager> manager)
     {
-        randomBotManager_ = std::move(manager);
+        _randomBotManager = std::move(manager);
     }
 
     void SetBotRepository(std::shared_ptr<IBotRepository> repository)
     {
-        botRepository_ = std::move(repository);
+        _botRepository = std::move(repository);
     }
 
     // Check if managers are initialized
-    bool HasTravelManager() const { return travelManager_ != nullptr; }
-    bool HasRandomBotManager() const { return randomBotManager_ != nullptr; }
-    bool HasBotRepository() const { return botRepository_ != nullptr; }
+    bool HasTravelManager() const { return _travelManager != nullptr; }
+    bool HasRandomBotManager() const { return _randomBotManager != nullptr; }
+    bool HasBotRepository() const { return _botRepository != nullptr; }
 
     bool IsInitialized() const
     {
-        return travelManager_ && randomBotManager_ && botRepository_;
+        return _travelManager && _randomBotManager && _botRepository;
     }
 
     // Generic template-based access (for extensibility)
@@ -120,12 +120,12 @@ public:
     void Register(std::shared_ptr<T> manager);
 
 private:
-    std::shared_ptr<ITravelManager> travelManager_;
-    std::shared_ptr<IRandomBotManager> randomBotManager_;
-    std::shared_ptr<IBotRepository> botRepository_;
+    std::shared_ptr<ITravelManager> _travelManager;
+    std::shared_ptr<IRandomBotManager> _randomBotManager;
+    std::shared_ptr<IBotRepository> _botRepository;
 
     // Generic storage for additional managers
-    std::unordered_map<std::type_index, std::shared_ptr<void>> managers_;
+    std::unordered_map<std::type_index, std::shared_ptr<void>> _managers;
 };
 
 // Template specializations

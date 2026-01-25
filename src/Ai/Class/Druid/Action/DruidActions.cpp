@@ -29,11 +29,11 @@ Value<Unit*>* CastEntanglingRootsCcAction::GetTargetValue()
     return context->GetValue<Unit*>("cc target", "entangling roots");
 }
 
-bool CastEntanglingRootsCcAction::Execute(Event event) { return botAI->GetServices().GetSpellService().CastSpell("entangling roots", GetTarget()); }
+bool CastEntanglingRootsCcAction::Execute(Event /*event*/) { return botAI->GetServices().GetSpellService().CastSpell("entangling roots", GetTarget()); }
 
 Value<Unit*>* CastHibernateCcAction::GetTargetValue() { return context->GetValue<Unit*>("cc target", "hibernate"); }
 
-bool CastHibernateCcAction::Execute(Event event) { return botAI->GetServices().GetSpellService().CastSpell("hibernate", GetTarget()); }
+bool CastHibernateCcAction::Execute(Event /*event*/) { return botAI->GetServices().GetSpellService().CastSpell("hibernate", GetTarget()); }
 bool CastStarfallAction::isUseful()
 {
     if (!CastSpellAction::isUseful())

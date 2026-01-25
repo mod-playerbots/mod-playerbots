@@ -15,7 +15,7 @@
 #include "PositionValue.h"
 #include "UpdateTime.h"
 
-bool BGJoinAction::Execute(Event event)
+bool BGJoinAction::Execute(Event /*event*/)
 {
     uint32 queueType = AI_VALUE(uint32, "bg type");
     if (!queueType)  // force join to fill bg
@@ -25,8 +25,6 @@ bool BGJoinAction::Execute(Event event)
 
         BattlegroundQueueTypeId queueTypeId = (BattlegroundQueueTypeId)bgList[urand(0, bgList.size() - 1)];
         BattlegroundTypeId bgTypeId = BattlegroundMgr::BGTemplateId(queueTypeId);
-        BattlegroundBracketId bracketId;
-        bool isArena = false;
         bool isRated = false;
 
         Battleground* bg = sBattlegroundMgr->GetBattlegroundTemplate(bgTypeId);
@@ -38,12 +36,8 @@ bool BGJoinAction::Execute(Event event)
         if (!pvpDiff)
             return false;
 
-        bracketId = pvpDiff->GetBracketId();
-
         if (ArenaType type = ArenaType(BattlegroundMgr::BGArenaType(queueTypeId)))
         {
-            isArena = true;
-
             std::vector<uint32>::iterator i = find(ratedList.begin(), ratedList.end(), queueTypeId);
             if (i != ratedList.end())
                 isRated = true;
@@ -409,10 +403,6 @@ bool BGJoinAction::JoinQueue(uint32 type)
 
     bracketId = pvpDiff->GetBracketId();
 
-    uint32 BracketSize = bg->GetMaxPlayersPerTeam() * 2;
-    uint32 TeamSize = bg->GetMaxPlayersPerTeam();
-    TeamId teamId = bot->GetTeamId();
-
     // check if already in queue
     if (bot->InBattlegroundQueueForBattlegroundQueueType(queueTypeId))
         return false;
@@ -653,7 +643,7 @@ bool FreeBGJoinAction::shouldJoinBg(BattlegroundQueueTypeId queueTypeId, Battleg
     return false;
 }
 
-bool BGLeaveAction::Execute(Event event)
+bool BGLeaveAction::Execute(Event /*event*/)
 {
     if (!(bot->InBattlegroundQueue() || bot->InBattleground()))
         return false;
@@ -1064,7 +1054,7 @@ bool BGStatusAction::Execute(Event event)
     return true;
 }
 
-bool BGStatusCheckAction::Execute(Event event)
+bool BGStatusCheckAction::Execute(Event /*event*/)
 {
     if (bot->IsBeingTeleported())
         return false;
@@ -1080,7 +1070,7 @@ bool BGStatusCheckAction::Execute(Event event)
 
 bool BGStatusCheckAction::isUseful() { return bot->InBattlegroundQueue(); }
 
-bool BGStrategyCheckAction::Execute(Event event)
+bool BGStrategyCheckAction::Execute(Event /*event*/)
 {
     bool inside_bg = bot->InBattleground() && bot->GetBattleground();
     ;

@@ -2,7 +2,7 @@
 #include "CullingOfStratholmeActions.h"
 #include "CullingOfStratholmeStrategy.h"
 
-bool ExplodeGhoulSpreadAction::Execute(Event event)
+bool ExplodeGhoulSpreadAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "salramm the fleshcrafter");
     if (!boss) { return false; }
@@ -29,7 +29,7 @@ bool EpochStackAction::isUseful()
 {
     // Minimum hunter range is 5, but values too close to this seem to cause issues..
     // Hunter bots will try and melee in between ranged attacks, or just melee entirely at 5 as they are in range.
-    // 7.5 or 8.0 solves this for this boss.
+    // 7.5f or 8.0f solves this for this boss.
     // Unfortunately at this range the boss will charge. So I guess just don't stack as a hunter..
     // if (bot->getClass() == CLASS_HUNTER)
     // {
@@ -38,7 +38,7 @@ bool EpochStackAction::isUseful()
     // else
     return !(bot->getClass() == CLASS_HUNTER) && AI_VALUE2(float, "distance", "current target") > 5.0f;
 }
-bool EpochStackAction::Execute(Event event)
+bool EpochStackAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "chrono-lord epoch");
     if (!boss) { return false; }

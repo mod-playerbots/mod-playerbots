@@ -21,7 +21,7 @@ class PlayerbotAI;
 class ChatCommandHandler : public IChatCommandHandler
 {
 public:
-    explicit ChatCommandHandler(PlayerbotAI* ai) : botAI_(ai) {}
+    explicit ChatCommandHandler(PlayerbotAI* ai) : _botAI(ai) {}
     ~ChatCommandHandler() override = default;
 
     void HandleCommand(uint32 type, std::string const& text, Player* fromPlayer) override;
@@ -30,7 +30,7 @@ public:
     bool IsAllowedCommand(std::string const& text) override;
 
 private:
-    PlayerbotAI* botAI_;
+    PlayerbotAI* _botAI;
 };
 
 #endif

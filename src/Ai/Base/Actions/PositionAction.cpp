@@ -103,7 +103,7 @@ bool PositionAction::Execute(Event event)
     return false;
 }
 
-bool MoveToPositionAction::Execute(Event event)
+bool MoveToPositionAction::Execute(Event /*event*/)
 {
     PositionInfo pos = context->GetValue<PositionMap&>("position")->Get()[qualifier];
     if (!pos.isSet())
@@ -124,7 +124,7 @@ bool MoveToPositionAction::isUseful()
     return pos.isSet() && distance > sPlayerbotAIConfig->followDistance && distance < sPlayerbotAIConfig->reactDistance;
 }
 
-bool SetReturnPositionAction::Execute(Event event)
+bool SetReturnPositionAction::Execute(Event /*event*/)
 {
     PositionMap& posMap = context->GetValue<PositionMap&>("position")->Get();
     PositionInfo returnPos = posMap["return"];

@@ -23,7 +23,7 @@ public:
     }
 
 private:
-    static ActionNode* charge(PlayerbotAI* botAI)
+    static ActionNode* charge(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "charge",
@@ -33,7 +33,7 @@ private:
         );
     }
 
-    static ActionNode* death_wish(PlayerbotAI* botAI)
+    static ActionNode* death_wish(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "death wish",
@@ -43,7 +43,7 @@ private:
         );
     }
 
-    static ActionNode* piercing_howl(PlayerbotAI* botAI)
+    static ActionNode* piercing_howl(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "piercing howl",
@@ -53,7 +53,7 @@ private:
         );
     }
 
-    static ActionNode* mocking_blow(PlayerbotAI* botAI)
+    static ActionNode* mocking_blow(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "mocking blow",
@@ -63,7 +63,7 @@ private:
         );
     }
 
-    static ActionNode* heroic_strike(PlayerbotAI* botAI)
+    static ActionNode* heroic_strike(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "heroic strike",
@@ -73,7 +73,7 @@ private:
         );
     }
 
-    static ActionNode* enraged_regeneration(PlayerbotAI* botAI)
+    static ActionNode* enraged_regeneration(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "enraged regeneration",
@@ -83,7 +83,7 @@ private:
         );
     }
 
-    static ActionNode* retaliation(PlayerbotAI* botAI)
+    static ActionNode* retaliation(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "retaliation",
@@ -93,7 +93,7 @@ private:
         );
     }
 
-    static ActionNode* shattering_throw(PlayerbotAI* botAI)
+    static ActionNode* shattering_throw(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "shattering throw",

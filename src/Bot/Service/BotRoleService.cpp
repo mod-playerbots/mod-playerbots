@@ -50,6 +50,8 @@ bool BotRoleService::IsRangedStatic(Player* player, bool bySpec)
                 return false;
             }
             break;
+        default:
+            break;
     }
 
     return true;
@@ -235,6 +237,8 @@ bool BotRoleService::IsTankStatic(Player* player, bool bySpec)
                 return true;
             }
             break;
+        default:
+            break;
     }
     return false;
 }
@@ -271,6 +275,8 @@ bool BotRoleService::IsHealStatic(Player* player, bool bySpec)
             {
                 return true;
             }
+            break;
+        default:
             break;
     }
     return false;
@@ -329,6 +335,8 @@ bool BotRoleService::IsDpsStatic(Player* player, bool bySpec)
             {
                 return true;
             }
+            break;
+        default:
             break;
     }
     return false;
@@ -596,12 +604,12 @@ int32 BotRoleService::GetAssistTankIndex(Player* player) const
 
 int32 BotRoleService::GetGroupSlotIndex(Player* player) const
 {
-    if (!botAI_)
+    if (!_botAI)
     {
         return -1;
     }
 
-    Player* bot = botAI_->GetBot();
+    Player* bot = _botAI->GetBot();
     if (!bot)
     {
         return -1;
@@ -638,12 +646,12 @@ int32 BotRoleService::GetRangedIndex(Player* player) const
         return -1;
     }
 
-    if (!botAI_)
+    if (!_botAI)
     {
         return -1;
     }
 
-    Player* bot = botAI_->GetBot();
+    Player* bot = _botAI->GetBot();
     if (!bot)
     {
         return -1;
@@ -683,12 +691,12 @@ int32 BotRoleService::GetClassIndex(Player* player, uint8 cls) const
         return -1;
     }
 
-    if (!botAI_)
+    if (!_botAI)
     {
         return -1;
     }
 
-    Player* bot = botAI_->GetBot();
+    Player* bot = _botAI->GetBot();
     if (!bot)
     {
         return -1;
@@ -728,12 +736,12 @@ int32 BotRoleService::GetRangedDpsIndex(Player* player) const
         return -1;
     }
 
-    if (!botAI_)
+    if (!_botAI)
     {
         return -1;
     }
 
-    Player* bot = botAI_->GetBot();
+    Player* bot = _botAI->GetBot();
     if (!bot)
     {
         return -1;
@@ -773,12 +781,12 @@ int32 BotRoleService::GetMeleeIndex(Player* player) const
         return -1;
     }
 
-    if (!botAI_)
+    if (!_botAI)
     {
         return -1;
     }
 
-    Player* bot = botAI_->GetBot();
+    Player* bot = _botAI->GetBot();
     if (!bot)
     {
         return -1;
@@ -823,12 +831,12 @@ bool BotRoleService::IsAssistRangedDpsOfIndex(Player* player, int index, bool ig
 
 bool BotRoleService::HasAggro(Unit* unit) const
 {
-    if (!botAI_)
+    if (!_botAI)
     {
         return false;
     }
 
-    Player* bot = botAI_->GetBot();
+    Player* bot = _botAI->GetBot();
     if (!bot)
     {
         return false;

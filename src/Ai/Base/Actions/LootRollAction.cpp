@@ -13,7 +13,7 @@
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 
-bool LootRollAction::Execute(Event event)
+bool LootRollAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -27,7 +27,6 @@ bool LootRollAction::Execute(Event event)
             continue;
         }
         ObjectGuid guid = roll->itemGUID;
-        uint32 slot = roll->itemSlot;
         uint32 itemId = roll->itemid;
         int32 randomProperty = 0;
         if (roll->itemRandomPropId)
@@ -170,7 +169,7 @@ bool MasterLootRollAction::Execute(Event event)
 
     p.rpos(0);              // reset packet pointer
     p >> creatureGuid;      // creature guid what we're looting
-    p >> mapId;             /// 3.3.3 mapid
+    p >> mapId;             /// 3.3f.3 mapid
     p >> itemSlot;          // the itemEntryId for the item that shall be rolled for
     p >> itemId;            // the itemEntryId for the item that shall be rolled for
     p >> randomSuffix;      // randomSuffix
@@ -186,7 +185,6 @@ bool MasterLootRollAction::Execute(Event event)
     if (!group)
         return false;
 
-    RollVote vote = CalculateRollVote(proto);
     group->CountRollVote(bot->GetGUID(), creatureGuid, CalculateRollVote(proto));
 
     return true;
@@ -257,6 +255,8 @@ bool RollAction::Execute(Event event)
         {
             bot->DoRandomRoll(0,100);
         }
+        default:
+            break;
     }
     return true;
 }

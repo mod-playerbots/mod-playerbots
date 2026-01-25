@@ -66,7 +66,7 @@ void ReleaseSpiritAction::IncrementDeathCount() const
     }
 }
 
-void ReleaseSpiritAction::LogRelease(const std::string& releaseMsg, bool isAutoRelease) const
+void ReleaseSpiritAction::LogRelease(const std::string& releaseMsg, bool /*isAutoRelease*/) const
 {
     const std::string teamPrefix = bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H";
 
@@ -79,7 +79,7 @@ void ReleaseSpiritAction::LogRelease(const std::string& releaseMsg, bool isAutoR
 }
 
 // AutoReleaseSpiritAction implementation
-bool AutoReleaseSpiritAction::Execute(Event event)
+bool AutoReleaseSpiritAction::Execute(Event /*event*/)
 {
     IncrementDeathCount();
     bot->DurabilityRepairAll(false, 1.0f, false);
@@ -215,9 +215,9 @@ bool AutoReleaseSpiritAction::ShouldDelayBattlegroundRelease() const
     return true;
 }
 
-bool RepopAction::Execute(Event event)
+bool RepopAction::Execute(Event /*event*/)
 {
-    const GraveyardStruct* graveyard = GetGrave(
+    GraveyardStruct const* graveyard = GetGrave(
         AI_VALUE(uint32, "death count") > 10 ||
         CalculateDeadTime() > 30 * MINUTE
     );
@@ -242,7 +242,7 @@ int64 RepopAction::CalculateDeadTime() const
     return bot->isDead() ? 0 : 60 * MINUTE;
 }
 
-void RepopAction::PerformGraveyardTeleport(const GraveyardStruct* graveyard) const
+void RepopAction::PerformGraveyardTeleport(GraveyardStruct const* graveyard) const
 {
     bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
     bot->TeleportTo(graveyard->Map, graveyard->x, graveyard->y, graveyard->z, 0.f);
@@ -251,7 +251,7 @@ void RepopAction::PerformGraveyardTeleport(const GraveyardStruct* graveyard) con
 }
 
 // SelfResurrectAction implementation for Warlock's Soulstone Resurrection/Shaman's Reincarnation
-bool SelfResurrectAction::Execute(Event event)
+bool SelfResurrectAction::Execute(Event /*event*/)
 {
     if (!bot->IsAlive() && bot->GetUInt32Value(PLAYER_SELF_RES_SPELL))
     {

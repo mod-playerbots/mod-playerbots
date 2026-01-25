@@ -356,12 +356,12 @@ void RandomPlayerbotMgr::LogPlayerLocation()
     }
 }
 
-void RandomPlayerbotMgr::UpdateAIInternal(uint32 elapsed, bool /*minimal*/)
+void RandomPlayerbotMgr::UpdateAIInternal(uint32 /*elapsed*/, bool /*minimal*/)
 {
     if (totalPmo)
         totalPmo->finish();
 
-    totalPmo = sPerfMonitor->start(PERF_MON_TOTAL, "RandomPlayerbotMgr::FullTick");
+    totalPmo = sPerfMonitor->start(PerformanceMetric::Total, "RandomPlayerbotMgr::FullTick");
 
     if (!sPlayerbotAIConfig->randomBotAutologin || !sPlayerbotAIConfig->enabled)
         return;
@@ -398,14 +398,14 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 elapsed, bool /*minimal*/)
     // which prevents unneeded expensive GameTime calls.
     if (_isBotInitializing)
     {
-        _isBotInitializing = GameTime::GetUptime().count() < sPlayerbotAIConfig->maxRandomBots * (0.11 + 0.4);
+        _isBotInitializing = GameTime::GetUptime().count() < sPlayerbotAIConfig->maxRandomBots * (0.11f + 0.4f);
     }
 
     uint32 updateIntervalTurboBoost = _isBotInitializing ? 1 : sPlayerbotAIConfig->randomBotUpdateInterval;
     SetNextCheckDelay(updateIntervalTurboBoost * (onlineBotFocus + 25) * 10);
 
     PerfMonitorOperation* pmo = sPerfMonitor->start(
-        PERF_MON_TOTAL,
+        PerformanceMetric::Total,
         onlineBotCount < maxAllowedBotCount ? "RandomPlayerbotMgr::Login" : "RandomPlayerbotMgr::UpdateAIInternal");
 
     bool realPlayerIsLogged = false;
@@ -1443,20 +1443,20 @@ bool RandomPlayerbotMgr::ProcessBot(uint32 bot)
         randomTime = urand(1, 2);
 
         uint32 randomBotUpdateInterval = _isBotInitializing ? 1 : sPlayerbotAIConfig->randomBotUpdateInterval;
-        randomTime = urand(std::max(5, static_cast<int>(randomBotUpdateInterval * 0.5)),
+        randomTime = urand(std::max(5, static_cast<int>(randomBotUpdateInterval * 0.5f)),
                            std::max(12, static_cast<int>(randomBotUpdateInterval * 2)));
         SetEventValue(bot, "update", 1, randomTime);
 
         // do not randomize or teleport immediately after server start (prevent lagging)
         if (!GetEventValue(bot, "randomize"))
         {
-            randomTime = urand(3, std::max(4, static_cast<int>(randomBotUpdateInterval * 0.4)));
+            randomTime = urand(3, std::max(4, static_cast<int>(randomBotUpdateInterval * 0.4f)));
             ScheduleRandomize(bot, randomTime);
         }
         if (!GetEventValue(bot, "teleport"))
         {
-            randomTime = urand(std::max(7, static_cast<int>(randomBotUpdateInterval * 0.7)),
-                               std::max(14, static_cast<int>(randomBotUpdateInterval * 1.4)));
+            randomTime = urand(std::max(7, static_cast<int>(randomBotUpdateInterval * 0.7f)),
+                               std::max(14, static_cast<int>(randomBotUpdateInterval * 1.4f)));
             ScheduleTeleport(bot, randomTime);
         }
 
@@ -1696,7 +1696,7 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot, std::vector<WorldLocation>&
         tlocs.push_back(WorldPosition(loc));
     // Do not teleport to maps disabled in config
     tlocs.erase(std::remove_if(tlocs.begin(), tlocs.end(),
-                               [bot](WorldPosition l)
+                               [](WorldPosition l)
                                {
                                    std::vector<uint32>::iterator i =
                                        find(sPlayerbotAIConfig->randomBotMaps.begin(),
@@ -1710,7 +1710,7 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot, std::vector<WorldLocation>&
         return;
     }
 
-    PerfMonitorOperation* pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "RandomTeleportByLocations");
+    PerfMonitorOperation* pmo = sPerfMonitor->start(PerformanceMetric::RndBot, "RandomTeleportByLocations");
 
     std::shuffle(std::begin(tlocs), std::end(tlocs), RandomEngine::Instance());
     for (uint32 i = 0; i < tlocs.size(); i++)
@@ -1941,7 +1941,7 @@ void RandomPlayerbotMgr::PrepareTeleportCache()
             for (int32 l = (int32)level - (int32)sPlayerbotAIConfig->randomBotTeleLowerLevel;
                  l <= (int32)level + (int32)sPlayerbotAIConfig->randomBotTeleHigherLevel; l++)
             {
-                if (l < 1 || l > maxLevel)
+                if (l < 1 || l > static_cast<int32>(maxLevel))
                 {
                     continue;
                 }
@@ -1994,7 +1994,7 @@ void RandomPlayerbotMgr::PrepareTeleportCache()
                 if (tEntry == 3838 || tEntry == 29480)
                     continue;
 
-                const FactionTemplateEntry* entry = sFactionTemplateStore.LookupEntry(faction);
+                FactionTemplateEntry const* entry = sFactionTemplateStore.LookupEntry(faction);
 
                 WorldLocation loc(mapId, x + cos(orient) * 5.0f, y + sin(orient) * 5.0f, z + 0.5f, orient + M_PI);
                 collected_locs++;
@@ -2007,12 +2007,12 @@ void RandomPlayerbotMgr::PrepareTeleportCache()
                 {
                     sFlightMasterCache->AddFlightMaster(guid, forHorde, forAlliance);
                 }
-                const AreaTableEntry* area = sAreaTableStore.LookupEntry(map->GetAreaId(PHASEMASK_NORMAL, x, y, z));
+                AreaTableEntry const* area = sAreaTableStore.LookupEntry(map->GetAreaId(PHASEMASK_NORMAL, x, y, z));
                 uint32 zoneId = area->zone ? area->zone : area->ID;
                 if (zone2LevelBracket.find(zoneId) == zone2LevelBracket.end())
                     continue;
                 LevelBracket bracket = zone2LevelBracket[zoneId];
-                for (int i = bracket.low; i <= bracket.high; i++)
+                for (uint32 i = bracket.low; i <= bracket.high; i++)
                 {
                     if (forHorde)
                     {
@@ -2092,7 +2092,7 @@ void RandomPlayerbotMgr::PrepareTeleportCache()
             bLoc.loc = WorldLocation(mapId, x + cos(orient) * 6.0f, y + sin(orient) * 6.0f, z + 2.0f, orient + M_PI);
             bLoc.entry = entry;
             collected_locs++;
-            for (int32 l = 1; l <= maxLevel; l++)
+            for (uint32 l = 1; l <= maxLevel; l++)
             {
                 // Bots 1-60 go to base game bankers (all have minlevel 30 or 45)
                 if (l <=60 && level > 45)
@@ -2296,7 +2296,7 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot)
     if (bot->InBattleground())
         return;
 
-    PerfMonitorOperation* pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "RandomTeleport");
+    PerfMonitorOperation* pmo = sPerfMonitor->start(PerformanceMetric::RndBot, "RandomTeleport");
     std::vector<WorldLocation> locs;
 
     std::list<Unit*> targets;
@@ -2310,7 +2310,7 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot)
         for (Unit* unit : targets)
         {
             bot->UpdatePosition(*unit);
-            FleeManager manager(bot, sPlayerbotAIConfig->sightDistance, 0, true);
+            FleeManager manager(bot, sPlayerbotAIConfig->sightDistance, true);
             float rx, ry, rz;
             if (manager.CalculateDestination(&rx, &ry, &rz))
             {
@@ -2358,7 +2358,7 @@ void RandomPlayerbotMgr::IncreaseLevel(Player* bot)
     if (maxLevel > sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
         maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
 
-    PerfMonitorOperation* pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "IncreaseLevel");
+    PerfMonitorOperation* pmo = sPerfMonitor->start(PerformanceMetric::RndBot, "IncreaseLevel");
     uint32 lastLevel = GetValue(bot, "level");
     uint8 level = bot->GetLevel() + 1;
     if (level > maxLevel)
@@ -2397,7 +2397,7 @@ void RandomPlayerbotMgr::RandomizeFirst(Player* bot)
         minLevel = std::max(minLevel, sWorld->getIntConfig(CONFIG_START_HEROIC_PLAYER_LEVEL));
     }
 
-    PerfMonitorOperation* pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "RandomizeFirst");
+    PerfMonitorOperation* pmo = sPerfMonitor->start(PerformanceMetric::RndBot, "RandomizeFirst");
 
     uint32 level;
 
@@ -2476,7 +2476,7 @@ void RandomPlayerbotMgr::RandomizeMin(Player* bot)
     if (!botAI)
         return;
 
-    PerfMonitorOperation* pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "RandomizeMin");
+    PerfMonitorOperation* pmo = sPerfMonitor->start(PerformanceMetric::RndBot, "RandomizeMin");
     uint32 level = sPlayerbotAIConfig->randomBotMinLevel;
     SetValue(bot, "level", level);
     PlayerbotFactory factory(bot, level);
@@ -2515,7 +2515,7 @@ void RandomPlayerbotMgr::Clear(Player* bot)
     factory.ClearEverything();
 }
 
-uint32 RandomPlayerbotMgr::GetZoneLevel(uint16 mapId, float teleX, float teleY, float teleZ)
+uint32 RandomPlayerbotMgr::GetZoneLevel(uint16 mapId, float teleX, float teleY, float /*teleZ*/)
 {
     uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
 
@@ -2565,7 +2565,7 @@ void RandomPlayerbotMgr::Refresh(Player* bot)
 
     LOG_DEBUG("playerbots", "Refreshing bot {} <{}>", bot->GetGUID().ToString().c_str(), bot->GetName().c_str());
 
-    PerfMonitorOperation* pmo = sPerfMonitor->start(PERF_MON_RNDBOT, "Refresh");
+    PerfMonitorOperation* pmo = sPerfMonitor->start(PerformanceMetric::RndBot, "Refresh");
 
     botAI->Reset();
 
@@ -2708,7 +2708,7 @@ std::vector<uint32> RandomPlayerbotMgr::GetBgBots(uint32 bracket)
         } while (result->NextRow());
     }
 
-    return std::move(BgBots);
+    return BgBots;
 }
 
 CachedEvent* RandomPlayerbotMgr::FindEvent(uint32 bot, std::string const& event)
@@ -2846,7 +2846,7 @@ void RandomPlayerbotMgr::SetValue(Player* bot, std::string const& type, uint32 v
     SetValue(bot->GetGUID().GetCounter(), type, value, data);
 }
 
-bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* handler, char const* args)
+bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* /*handler*/, char const* args)
 {
     if (!sPlayerbotAIConfig->enabled)
     {
@@ -3383,7 +3383,7 @@ double RandomPlayerbotMgr::GetBuyMultiplier(Player* bot)
         SetEventValue(id, "buymultiplier", value, validIn);
     }
 
-    return (double)value / 100.0;
+    return (double)value / 100.0f;
 }
 
 double RandomPlayerbotMgr::GetSellMultiplier(Player* bot)
@@ -3398,7 +3398,7 @@ double RandomPlayerbotMgr::GetSellMultiplier(Player* bot)
         SetEventValue(id, "sellmultiplier", value, validIn);
     }
 
-    return (double)value / 100.0;
+    return (double)value / 100.0f;
 }
 
 void RandomPlayerbotMgr::AddTradeDiscount(Player* bot, Player* master, int32 value)

@@ -51,7 +51,7 @@ bool StartRpgDoQuestAction::Execute(Event event)
     std::string const text = event.getParam();
     PlayerbotChatHandler ch(owner);
     uint32 questId = ch.extractQuestId(text);
-    const Quest* quest = sObjectMgr->GetQuestTemplate(questId);
+    Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
     if (quest)
     {
         botAI->rpgInfo.ChangeToDoQuest(questId, quest);
@@ -62,7 +62,7 @@ bool StartRpgDoQuestAction::Execute(Event event)
     return false;
 }
 
-bool NewRpgStatusUpdateAction::Execute(Event event)
+bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
 {
     NewRpgInfo& info = botAI->rpgInfo;
     switch (info.status)
@@ -151,7 +151,7 @@ bool NewRpgStatusUpdateAction::Execute(Event event)
     return false;
 }
 
-bool NewRpgGoGrindAction::Execute(Event event)
+bool NewRpgGoGrindAction::Execute(Event /*event*/)
 {
     if (SearchQuestGiverAndAcceptOrReward())
         return true;
@@ -159,7 +159,7 @@ bool NewRpgGoGrindAction::Execute(Event event)
     return MoveFarTo(botAI->rpgInfo.go_grind.pos);
 }
 
-bool NewRpgGoCampAction::Execute(Event event)
+bool NewRpgGoCampAction::Execute(Event /*event*/)
 {
     if (SearchQuestGiverAndAcceptOrReward())
         return true;
@@ -167,7 +167,7 @@ bool NewRpgGoCampAction::Execute(Event event)
     return MoveFarTo(botAI->rpgInfo.go_camp.pos);
 }
 
-bool NewRpgWanderRandomAction::Execute(Event event)
+bool NewRpgWanderRandomAction::Execute(Event /*event*/)
 {
     if (SearchQuestGiverAndAcceptOrReward())
         return true;
@@ -175,7 +175,7 @@ bool NewRpgWanderRandomAction::Execute(Event event)
     return MoveRandomNear();
 }
 
-bool NewRpgWanderNpcAction::Execute(Event event)
+bool NewRpgWanderNpcAction::Execute(Event /*event*/)
 {
     NewRpgInfo& info = botAI->rpgInfo;
     if (!info.wander_npc.npcOrGo)
@@ -217,14 +217,12 @@ bool NewRpgWanderNpcAction::Execute(Event event)
     return true;
 }
 
-bool NewRpgDoQuestAction::Execute(Event event)
+bool NewRpgDoQuestAction::Execute(Event /*event*/)
 {
     if (SearchQuestGiverAndAcceptOrReward())
         return true;
 
-    NewRpgInfo& info = botAI->rpgInfo;
     uint32 questId = RPG_INFO(quest, questId);
-    const Quest* quest = RPG_INFO(quest, quest);
     uint8 questStatus = bot->GetQuestStatus(questId);
     switch (questStatus)
     {
@@ -352,7 +350,7 @@ bool NewRpgDoQuestAction::DoIncompleteQuest()
 bool NewRpgDoQuestAction::DoCompletedQuest()
 {
     uint32 questId = RPG_INFO(quest, questId);
-    const Quest* quest = RPG_INFO(quest, quest);
+    Quest const* quest = RPG_INFO(quest, quest);
 
     if (RPG_INFO(quest, objectiveIdx) != -1)
     {
@@ -409,7 +407,7 @@ bool NewRpgDoQuestAction::DoCompletedQuest()
     return false;
 }
 
-bool NewRpgTravelFlightAction::Execute(Event event)
+bool NewRpgTravelFlightAction::Execute(Event /*event*/)
 {
     if (bot->IsInFlight())
     {
@@ -422,7 +420,6 @@ bool NewRpgTravelFlightAction::Execute(Event event)
         botAI->rpgInfo.ChangeToIdle();
         return true;
     }
-    const TaxiNodesEntry* entry = sTaxiNodesStore.LookupEntry(botAI->rpgInfo.flight.toNode);
     if (bot->GetDistance(flightMaster) > INTERACTION_DISTANCE)
     {
         return MoveFarTo(flightMaster);

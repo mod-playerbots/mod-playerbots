@@ -427,9 +427,9 @@ public:
     // static GameObject* GetGameObject(GameObjectData const* gameObjectData);
     WorldObject* GetWorldObject(ObjectGuid guid);
     std::vector<Player*> GetPlayersInGroup();
-    const AreaTableEntry* GetCurrentArea();
-    const AreaTableEntry* GetCurrentZone();
-    static std::string GetLocalizedAreaName(const AreaTableEntry* entry);
+    AreaTableEntry const* GetCurrentArea();
+    AreaTableEntry const* GetCurrentZone();
+    static std::string GetLocalizedAreaName(AreaTableEntry const* entry);
     static std::string GetLocalizedCreatureName(uint32 entry);
     static std::string GetLocalizedGameObjectName(uint32 entry);
     bool TellMaster(std::ostringstream& stream, PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL);
@@ -578,11 +578,11 @@ public:
     std::vector<Item*> GetInventoryItems();
     uint32 GetInventoryItemsCountWithId(uint32 itemId);
     bool HasItemInInventory(uint32 itemId);
-    std::vector<std::pair<const Quest*, uint32>> GetCurrentQuestsRequiringItemId(uint32 itemId);
+    std::vector<std::pair<Quest const* , uint32>> GetCurrentQuestsRequiringItemId(uint32 itemId);
     uint32 GetReactDelay();
 
-    std::vector<const Quest*> GetAllCurrentQuests();
-    std::vector<const Quest*> GetCurrentIncompleteQuests();
+    std::vector<Quest const* > GetAllCurrentQuests();
+    std::vector<Quest const* > GetCurrentIncompleteQuests();
     std::set<uint32> GetAllCurrentQuestIds();
     std::set<uint32> GetCurrentIncompleteQuestIds();
     void PetFollow();
@@ -606,11 +606,11 @@ private:
     void HandleCommands();
     void HandleCommand(uint32 type, const std::string& text, Player& fromPlayer, const uint32 lang = LANG_UNIVERSAL);
     bool _isBotInitializing = false;
-    inline bool IsValidUnit(const Unit* unit) const
+    inline bool IsValidUnit(Unit const* unit) const
     {
         return unit && unit->IsInWorld() && !unit->IsDuringRemoveFromWorld();
     }
-    inline bool IsValidPlayer(const Player* player) const
+    inline bool IsValidPlayer(Player const* player) const
     {
         return player && player->GetSession() && player->IsInWorld() && !player->IsDuringRemoveFromWorld() &&
                !player->IsBeingTeleported();

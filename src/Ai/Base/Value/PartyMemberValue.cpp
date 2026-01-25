@@ -24,7 +24,7 @@ Unit* PartyMemberValue::FindPartyMember(std::vector<Player*>* party, FindPlayerP
     return nullptr;
 }
 
-Unit* PartyMemberValue::FindPartyMember(FindPlayerPredicate& predicate, bool ignoreOutOfGroup)
+Unit* PartyMemberValue::FindPartyMember(FindPlayerPredicate& predicate, bool /*ignoreOutOfGroup*/)
 {
     Player* master = GetMaster();
     // GuidVector nearestPlayers;
@@ -151,7 +151,7 @@ bool PartyMemberValue::IsTargetOfSpellCast(Player* target, SpellEntryPredicate& 
 class FindMainTankPlayer : public FindPlayerPredicate
 {
 public:
-    FindMainTankPlayer(PlayerbotAI* botAI) : botAI(botAI) {}
+    FindMainTankPlayer(PlayerbotAI* /*botAI*/) {}
 
     virtual bool Check(Unit* unit)
     {
@@ -162,9 +162,6 @@ public:
         }
         return BotRoleService::IsMainTankStatic(player);
     }
-
-private:
-    PlayerbotAI* botAI;
 };
 
 Unit* PartyMemberMainTankValue::Calculate()

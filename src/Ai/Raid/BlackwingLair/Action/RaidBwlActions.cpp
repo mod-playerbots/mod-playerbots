@@ -3,7 +3,7 @@
 #include "Playerbots.h"
 #include "BotSpellService.h"
 
-bool BwlOnyxiaScaleCloakAuraCheckAction::Execute(Event event)
+bool BwlOnyxiaScaleCloakAuraCheckAction::Execute(Event /*event*/)
 {
     bot->AddAura(22683, bot);
     return true;
@@ -11,7 +11,7 @@ bool BwlOnyxiaScaleCloakAuraCheckAction::Execute(Event event)
 
 bool BwlOnyxiaScaleCloakAuraCheckAction::isUseful() { return !bot->HasAura(22683); }
 
-bool BwlTurnOffSuppressionDeviceAction::Execute(Event event)
+bool BwlTurnOffSuppressionDeviceAction::Execute(Event /*event*/)
 {
     GuidVector gos = AI_VALUE(GuidVector, "nearest game objects");
     for (GuidVector::iterator i = gos.begin(); i != gos.end(); i++)
@@ -30,4 +30,4 @@ bool BwlTurnOffSuppressionDeviceAction::Execute(Event event)
     return true;
 }
 
-bool BwlUseHourglassSandAction::Execute(Event event) { return botAI->GetServices().GetSpellService().CastSpell(23645, bot); }
+bool BwlUseHourglassSandAction::Execute(Event /*event*/) { return botAI->GetServices().GetSpellService().CastSpell(23645, bot); }

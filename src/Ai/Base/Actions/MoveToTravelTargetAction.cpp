@@ -11,7 +11,7 @@
 #include "Playerbots.h"
 #include "BotChatService.h"
 
-bool MoveToTravelTargetAction::Execute(Event event)
+bool MoveToTravelTargetAction::Execute(Event /*event*/)
 {
     TravelTarget* target = AI_VALUE(TravelTarget*, "travel target");
 
@@ -77,7 +77,7 @@ bool MoveToTravelTargetAction::Execute(Event event)
     float maxDistance = target->getDestination()->getRadiusMin();
 
     // Evenly distribute around the target.
-    float angle = 2 * M_PI * urand(0, 100) / 100.0;
+    float angle = 2 * M_PI * urand(0, 100) / 100.0f;
 
     if (target->getMaxTravelTime() > target->getTimeLeft())  // The bot is late. Speed it up.
     {
@@ -91,7 +91,7 @@ bool MoveToTravelTargetAction::Execute(Event event)
     float z = location.GetPositionZ();
     float mapId = location.GetMapId();
 
-    // Move between 0.5 and 1.0 times the maxDistance.
+    // Move between 0.5f and 1.0f times the maxDistance.
     float mod = frand(50.f, 100.f) / 100.0f;
 
     x += cos(angle) * maxDistance * mod;

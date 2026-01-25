@@ -56,7 +56,7 @@ bool TradeAction::Execute(Event event)
     }
 
     size_t pos = text.rfind(" ");
-    int count = pos != std::string::npos ? atoi(text.substr(pos + 1).c_str()) : 1;
+    uint32 count = pos != std::string::npos ? atoi(text.substr(pos + 1).c_str()) : 1;
 
     std::vector<Item*> found = parseItems(text);
     if (found.empty())

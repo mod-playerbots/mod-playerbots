@@ -361,10 +361,9 @@ class SetTotemTrigger : public Trigger
 public:
     // Template constructor: infers N (size of the id array) at compile time
     template <size_t N>
-    SetTotemTrigger(PlayerbotAI* ai, std::string const& spellName, uint32 requiredSpellId,
+    SetTotemTrigger(PlayerbotAI* ai, std::string const& spellName, uint32 /*requiredSpellId*/,
                     const uint32 (&ids)[N], int actionButtonId)
         : Trigger(ai, "set " + spellName)
-        , requiredSpellId(requiredSpellId)
         , totemSpellIds(ids)
         , totemSpellIdsCount(N)
         , actionButtonId(actionButtonId)
@@ -372,7 +371,6 @@ public:
     bool IsActive() override;
 
 private:
-    uint32 requiredSpellId;
     uint32 const* totemSpellIds;
     size_t totemSpellIdsCount;
     int actionButtonId;

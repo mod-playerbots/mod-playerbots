@@ -219,6 +219,8 @@ public:
                 if (BotRoleService::IsHealStatic(bot))
                     range = botAI->GetRange("flee");
                 break;
+            default:
+                break;
         }
 
         float angle = GetFollowAngle();
@@ -422,7 +424,6 @@ float Formation::GetFollowAngle()
 {
     Player* master = GetMaster();
     Group* group = bot->GetGroup();
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
 
     // If there's no master and no group
     if (!master && !group)
@@ -638,7 +639,7 @@ WorldLocation MoveFormation::MoveLine(std::vector<Player*> line, float diff, flo
         return MoveSingleLine(line, diff, cx, cy, cz, orientation, range);
     }
 
-    uint32 lines = ceil((double)line.size() / 5.0);
+    uint32 lines = ceil((double)line.size() / 5.0f);
     for (uint32 i = 0; i < lines; i++)
     {
         float radius = range * i;

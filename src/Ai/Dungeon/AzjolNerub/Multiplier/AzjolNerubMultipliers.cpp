@@ -35,6 +35,8 @@ float KrikthirMultiplier::GetValue(Action* action)
             case NPC_WATCHER_WARRIOR:
                 watcher = unit;
                 continue;
+            default:
+                break;
         }
     }
 

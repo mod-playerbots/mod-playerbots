@@ -29,14 +29,14 @@ BUFF_ACTION(CastLevitateAction, "levitate");
 BUFF_ACTION(CastDivineSpiritAction, "divine spirit");
 BUFF_PARTY_ACTION(CastDivineSpiritOnPartyAction, "divine spirit");
 BUFF_PARTY_ACTION(CastPrayerOfSpiritOnPartyAction, "prayer of spirit");
-// disc 2.4.3
+// disc 2.4f.3
 SPELL_ACTION(CastMassDispelAction, "mass dispel");
 
 // disc talents
 BUFF_ACTION(CastPowerInfusionAction, "power infusion");
 BUFF_PARTY_ACTION(CastPowerInfusionOnPartyAction, "power infusion");
 BUFF_ACTION(CastInnerFocusAction, "inner focus");
-// disc 2.4.3 talents
+// disc 2.4f.3 talents
 BUFF_ACTION(CastPainSuppressionAction, "pain suppression");
 PROTECT_ACTION(CastPainSuppressionProtectAction, "pain suppression");
 
@@ -88,7 +88,7 @@ public:
     CastHolyFireAction(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "holy fire", true, 0.0f) {}
 };
 
-// shadow 2.4.3
+// shadow 2.4f.3
 // BUFF_ACTION(CastShadowfiendAction, "shadowfiend");
 SPELL_ACTION(CastShadowWordDeathAction, "shadow word: death");
 
@@ -109,7 +109,7 @@ DEBUFF_ACTION(CastVampiricEmbraceAction, "vampiric embrace");
 BUFF_ACTION(CastShadowformAction, "shadowform");
 SPELL_ACTION(CastSilenceAction, "silence");
 ENEMY_HEALER_ACTION(CastSilenceOnEnemyHealerAction, "silence");
-// shadow talents 2.4.3
+// shadow talents 2.4f.3
 DEBUFF_CHECKISOWNER_ACTION(CastVampiricTouchAction, "vampiric touch");
 DEBUFF_ENEMY_ACTION(CastVampiricTouchOnAttackerAction, "vampiric touch");
 // racials

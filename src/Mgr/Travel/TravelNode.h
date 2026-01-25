@@ -467,7 +467,7 @@ public:
     TravelNodeStub(TravelNode* dataNode1) { dataNode = dataNode1; }
 
     TravelNode* dataNode;
-    float m_f = 0.0, m_g = 0.0, m_h = 0.0;
+    float m_f = 0.0f, m_g = 0.0f, m_h = 0.0f;
     bool open = false, close = false;
     TravelNodeStub* parent = nullptr;
     uint32 currentGold = 0;

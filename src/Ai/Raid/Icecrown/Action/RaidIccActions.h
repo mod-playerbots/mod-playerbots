@@ -34,7 +34,7 @@ const Position ICC_FESTERGUT_MELEE_SPORE = Position(4269.1772f, 3144.7673f, 360.
 const Position ICC_ROTFACE_TANK_POSITION = Position(4447.061f, 3150.9758f, 360.38568f);
 const Position ICC_ROTFACE_BIG_OOZE_POSITION = Position(4432.687f, 3142.3035f, 360.38623f);
 const Position ICC_ROTFACE_SAFE_POSITION = Position(4446.557f, 3065.6594f, 360.51843f);
-const Position ICC_ROTFACE_CENTER_POSITION = Position(4446.0547f, 3144.8677f, 360.38593f); //actual center 4.74089 4445.6616f, 3137.1526f, 360.38608
+const Position ICC_ROTFACE_CENTER_POSITION = Position(4446.0547f, 3144.8677f, 360.38593f); //actual center 4.74089f 4445.6616f, 3137.1526f, 360.38608
 const Position ICC_PUTRICIDE_TANK_POSITION = Position(4373.227f, 3222.058f, 389.4029f);
 const Position ICC_PUTRICIDE_GREEN_POSITION = Position(4423.4126f, 3194.2715f, 389.37683f);
 const Position ICC_PUTRICIDE_BAD_POSITION = Position(4356.1724f, 3261.5232f, 389.3985f);
@@ -534,11 +534,11 @@ public:
     bool Execute(Event event) override;
 
     void HandleSupportActions();
-    bool HandleBeaconedPlayer(const Unit* boss);
-    bool HandleNonBeaconedPlayer(const Unit* boss);
+    bool HandleBeaconedPlayer(Unit const* boss);
+    bool HandleNonBeaconedPlayer(Unit const* boss);
     bool MoveToPositionIfNeeded(const Position& position, float tolerance);
     bool MoveToPosition(const Position& position);
-    bool IsBossFlying(const Unit* boss);
+    bool IsBossFlying(Unit const* boss);
 
     private:
     static constexpr uint32 FROST_BEACON_AURA_ID = SPELL_FROST_BEACON;
@@ -627,12 +627,12 @@ class IccLichKingWinterAction : public AttackAction
         void HandleTankPositioning();
         void HandleMeleePositioning();
         void HandleRangedPositioning();
-        void HandleMainTankAddManagement(Unit* boss, const Position* tankPos);
-        void HandleAssistTankAddManagement(Unit* boss, const Position* tankPos);
+        void HandleMainTankAddManagement(Unit* boss, Position const* tankPos);
+        void HandleAssistTankAddManagement(Unit* boss, Position const* tankPos);
 
     private:
-        const Position* GetMainTankPosition();
-        const Position* GetMainTankRangedPosition();
+        Position const* GetMainTankPosition();
+        Position const* GetMainTankRangedPosition();
         bool TryMoveToPosition(float targetX, float targetY, float targetZ, bool isForced = true);
 };
 

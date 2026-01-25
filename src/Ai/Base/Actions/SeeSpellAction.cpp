@@ -23,7 +23,7 @@ Creature* SeeSpellAction::CreateWps(Player* wpOwner, float x, float y, float z, 
     float delay = 1000.0f * dist / wpOwner->GetSpeed(MOVE_RUN) + sPlayerbotAIConfig->reactDelay;
 
     if (!important)
-        delay *= 0.25;
+        delay *= 0.25f;
 
     Creature* wpCreature = wpOwner->SummonCreature(entry, x, y, z - 1, o, TEMPSUMMON_TIMED_DESPAWN, delay);
     if (!important)

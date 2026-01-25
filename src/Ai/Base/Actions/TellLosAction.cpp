@@ -98,7 +98,6 @@ bool TellAuraAction::Execute(Event event)
         std::string caster_name = caster ? caster->GetName() : "unknown";
         bool is_area = aura->IsArea();
         int32 duration = aura->GetDuration();
-        const SpellInfo* spellInfo = aura->GetSpellInfo();
         int32 spellId = aura->GetSpellInfo()->Id;
         bool isPositive = aura->GetSpellInfo()->IsPositive();
         sLog->outMessage("playerbot", LOG_LEVEL_DEBUG,
@@ -144,7 +143,7 @@ bool TellCalculateItemAction::Execute(Event event)
     ItemWithRandomProperty item = chat->parseItemWithRandomProperty(text);
     StatsWeightCalculator calculator(bot);
 
-    const ItemTemplate* proto = sObjectMgr->GetItemTemplate(item.itemId);
+    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(item.itemId);
     if (!proto)
         return false;
     float score = calculator.CalculateItem(item.itemId, item.randomPropertyId);

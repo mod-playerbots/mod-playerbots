@@ -24,7 +24,7 @@ class BotItemService : public IItemService
 {
 public:
     BotItemService() = default;
-    explicit BotItemService(PlayerbotAI* ai) : botAI_(ai) {}
+    explicit BotItemService(PlayerbotAI* ai) : _botAI(ai) {}
     ~BotItemService() override = default;
 
     // ========================================================================
@@ -111,11 +111,11 @@ public:
     std::vector<std::pair<Quest const*, uint32>> GetCurrentQuestsRequiringItemId(uint32 itemId) const override;
 
     // Set the bot context for instance methods that need the bot
-    void SetBotContext(PlayerbotAI* ai) { botAI_ = ai; }
-    PlayerbotAI* GetBotContext() const { return botAI_; }
+    void SetBotContext(PlayerbotAI* ai) { _botAI = ai; }
+    PlayerbotAI* GetBotContext() const { return _botAI; }
 
 private:
-    PlayerbotAI* botAI_ = nullptr;
+    PlayerbotAI* _botAI = nullptr;
 };
 
 #endif

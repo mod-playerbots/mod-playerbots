@@ -192,7 +192,7 @@ bool WrongPetTrigger::IsActive()
     // Step 1: Count how many pet strategies are currently enabled for this bot.
     //         While doing so, also remember which pet strategy is the only enabled one (if that's the case).
     int enabledCount = 0;
-    const WarlockPetDef* enabledPet =
+    WarlockPetDef const* enabledPet =
         nullptr;  // Pointer to the pet definition of the enabled strategy, if only one is enabled
     for (const WarlockPetDef& pd : pets)
     {

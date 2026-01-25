@@ -90,7 +90,7 @@ bool TalkToQuestGiverAction::TurnInQuest(Quest const* quest, Object* questGiver,
 
     if (botAI->HasStrategy("debug quest", BotState::BOT_STATE_NON_COMBAT) || botAI->HasStrategy("debug rpg", BotState::BOT_STATE_COMBAT))
     {
-        const Quest* pQuest = sObjectMgr->GetQuestTemplate(questID);
+        Quest const* pQuest = sObjectMgr->GetQuestTemplate(questID);
         const std::string text_quest = ChatHelper::FormatQuest(pQuest);
         LOG_INFO("playerbots", "{} => Quest [ {} ] completed", bot->GetName(), pQuest->GetTitle());
         bot->Say("Quest [ " + text_quest + " ] completed", LANG_UNIVERSAL);
@@ -232,7 +232,6 @@ void TalkToQuestGiverAction::AskToSelectReward(Quest const* quest, std::ostrings
     for (uint8 i = 0; i < quest->GetRewChoiceItemsCount(); ++i)
     {
         ItemTemplate const* item = sObjectMgr->GetItemTemplate(quest->RewardChoiceItemId[i]);
-        ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", quest->RewardChoiceItemId[i]);
 
         if (!forEquip || BestRewards(quest).count(i) > 0)
         {
@@ -249,7 +248,6 @@ bool TurnInQueryQuestAction::Execute(Event event)
     WorldPacket pakcet = event.getPacket();
     ObjectGuid guid;
     uint32 questId;
-    ObjectGuid unk1;
     pakcet >> guid >> questId;
     Object* object =
         ObjectAccessor::GetObjectByTypeMask(*bot, guid, TYPEMASK_UNIT | TYPEMASK_GAMEOBJECT | TYPEMASK_ITEM);

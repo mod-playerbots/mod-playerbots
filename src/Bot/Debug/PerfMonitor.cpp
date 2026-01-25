@@ -56,7 +56,7 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
     if (!perTick)
     {
         float updateAITotalTime = 0;
-        for (auto& map : data[PERF_MON_TOTAL])
+        for (auto& map : data[PerformanceMetric::Total])
             if (map.first.find("PlayerbotAI::UpdateAIInternal") != std::string::npos)
                 updateAITotalTime += map.second->totalTime;
 
@@ -77,19 +77,19 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
             std::string key;
             switch (i->first)
             {
-                case PERF_MON_TRIGGER:
+                case PerformanceMetric::Trigger:
                     key = "Trigger";
                     break;
-                case PERF_MON_VALUE:
+                case PerformanceMetric::Value:
                     key = "Value";
                     break;
-                case PERF_MON_ACTION:
+                case PerformanceMetric::Action:
                     key = "Action";
                     break;
-                case PERF_MON_RNDBOT:
+                case PerformanceMetric::RndBot:
                     key = "RndBot";
                     break;
-                case PERF_MON_TOTAL:
+                case PerformanceMetric::Total:
                     key = "Total";
                     break;
                 default:
@@ -152,8 +152,8 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
     }
     else
     {
-        float fullTickCount = data[PERF_MON_TOTAL]["PlayerbotAIBase::FullTick"]->count;
-        float fullTickTotalTime = data[PERF_MON_TOTAL]["PlayerbotAIBase::FullTick"]->totalTime;
+        float fullTickCount = data[PerformanceMetric::Total]["PlayerbotAIBase::FullTick"]->count;
+        float fullTickTotalTime = data[PerformanceMetric::Total]["PlayerbotAIBase::FullTick"]->totalTime;
 
         LOG_INFO(
             "playerbots",
@@ -172,19 +172,19 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
             std::string key;
             switch (i->first)
             {
-                case PERF_MON_TRIGGER:
+                case PerformanceMetric::Trigger:
                     key = "Trigger";
                     break;
-                case PERF_MON_VALUE:
+                case PerformanceMetric::Value:
                     key = "Value";
                     break;
-                case PERF_MON_ACTION:
+                case PerformanceMetric::Action:
                     key = "Action";
                     break;
-                case PERF_MON_RNDBOT:
+                case PerformanceMetric::RndBot:
                     key = "RndBot";
                     break;
-                case PERF_MON_TOTAL:
+                case PerformanceMetric::Total:
                     key = "Total";
                     break;
                 default:
@@ -231,7 +231,7 @@ void PerfMonitor::PrintStats(bool perTick, bool fullStack)
                              time, minTime, maxTime, avg, amount, key.c_str(), disName.c_str());
                 }
             }
-            if (i->first != PERF_MON_TOTAL)
+            if (i->first != PerformanceMetric::Total)
             {
                 float tPerc = (float)typeTotalTime / (float)fullTickTotalTime * 100.0f;
                 float tTime = (float)typeTotalTime / fullTickCount / 1000.0f;

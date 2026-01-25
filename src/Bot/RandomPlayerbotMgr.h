@@ -193,7 +193,7 @@ protected:
 private:
     // pid values are set in constructor
     botPID pid = botPID(1, 50, -50, 0, 0, 0);
-    float activityMod = 0.25;
+    float activityMod = 0.25f;
     bool _isBotInitializing = true;
     bool _isBotLogging = true;
     NewRpgStatistic rpgStasticTotal;

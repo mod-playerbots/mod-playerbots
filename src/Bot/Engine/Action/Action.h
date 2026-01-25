@@ -3,7 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#pragma once
+#ifndef MOD_PLAYERBOTS_BOT_ENGINE_ACTION_ACTION_H
+#define MOD_PLAYERBOTS_BOT_ENGINE_ACTION_ACTION_H
 
 #include "AiObject.h"
 #include "Common.h"
@@ -154,3 +155,5 @@ private:
     Event event;
     uint32_t created;
 };
+
+#endif  // MOD_PLAYERBOTS_BOT_ENGINE_ACTION_ACTION_H

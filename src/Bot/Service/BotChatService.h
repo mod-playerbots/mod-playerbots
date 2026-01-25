@@ -45,7 +45,7 @@ class BotChatService : public IChatService
 {
 public:
     BotChatService() = default;
-    explicit BotChatService(PlayerbotAI* ai) : botAI_(ai) {}
+    explicit BotChatService(PlayerbotAI* ai) : _botAI(ai) {}
     ~BotChatService() override = default;
 
     // ========================================================================
@@ -111,11 +111,11 @@ public:
     void Ping(float x, float y) override;
 
     // Set the bot context for instance methods that need the bot
-    void SetBotContext(PlayerbotAI* ai) { botAI_ = ai; }
-    PlayerbotAI* GetBotContext() const { return botAI_; }
+    void SetBotContext(PlayerbotAI* ai) { _botAI = ai; }
+    PlayerbotAI* GetBotContext() const { return _botAI; }
 
 private:
-    PlayerbotAI* botAI_ = nullptr;
+    PlayerbotAI* _botAI = nullptr;
 
     // Helper to build ChatContext from PlayerbotAI
     ChatContext BuildChatContext() const;

@@ -392,7 +392,7 @@ bool PlayerbotAIConfig::Initialize()
         }
     }
 
-    randomChangeMultiplier = sConfigMgr->GetOption<float>("AiPlayerbot.RandomChangeMultiplier", 1.0);
+    randomChangeMultiplier = sConfigMgr->GetOption<float>("AiPlayerbot.RandomChangeMultiplier", 1.0f);
 
     randomBotCombatStrategies = sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotCombatStrategies", "");
     randomBotNonCombatStrategies = sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotNonCombatStrategies", "");
@@ -549,7 +549,7 @@ bool PlayerbotAIConfig::Initialize()
     reviveBotWhenSummoned = sConfigMgr->GetOption<int32>("AiPlayerbot.ReviveBotWhenSummoned", 1);
     botRepairWhenSummon = sConfigMgr->GetOption<bool>("AiPlayerbot.BotRepairWhenSummon", true);
     autoInitOnly = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoInitOnly", false);
-    autoInitEquipLevelLimitRatio = sConfigMgr->GetOption<float>("AiPlayerbot.AutoInitEquipLevelLimitRatio", 1.0);
+    autoInitEquipLevelLimitRatio = sConfigMgr->GetOption<float>("AiPlayerbot.AutoInitEquipLevelLimitRatio", 1.0f);
 
     maxAddedBots = sConfigMgr->GetOption<int32>("AiPlayerbot.MaxAddedBots", 40);
     addClassCommand = sConfigMgr->GetOption<int32>("AiPlayerbot.AddClassCommand", 1);
@@ -581,7 +581,7 @@ bool PlayerbotAIConfig::Initialize()
     autoGearQualityLimit = sConfigMgr->GetOption<int32>("AiPlayerbot.AutoGearQualityLimit", 3);
     autoGearScoreLimit = sConfigMgr->GetOption<int32>("AiPlayerbot.AutoGearScoreLimit", 0);
 
-    randomBotXPRate = sConfigMgr->GetOption<float>("AiPlayerbot.RandomBotXPRate", 1.0);
+    randomBotXPRate = sConfigMgr->GetOption<float>("AiPlayerbot.RandomBotXPRate", 1.0f);
     randomBotAllianceRatio = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotAllianceRatio", 50);
     randomBotHordeRatio = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotHordeRatio", 50);
     disableDeathKnightLogin = sConfigMgr->GetOption<bool>("AiPlayerbot.DisableDeathKnightLogin", 0);
@@ -606,7 +606,7 @@ bool PlayerbotAIConfig::Initialize()
     randombotStartingLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.RandombotStartingLevel", 1);
     enablePeriodicOnlineOffline = sConfigMgr->GetOption<bool>("AiPlayerbot.EnablePeriodicOnlineOffline", false);
     enableRandomBotTrading = sConfigMgr->GetOption<int32>("AiPlayerbot.EnableRandomBotTrading", 1);
-    periodicOnlineOfflineRatio = sConfigMgr->GetOption<float>("AiPlayerbot.PeriodicOnlineOfflineRatio", 2.0);
+    periodicOnlineOfflineRatio = sConfigMgr->GetOption<float>("AiPlayerbot.PeriodicOnlineOfflineRatio", 2.0f);
     gearscorecheck = sConfigMgr->GetOption<bool>("AiPlayerbot.GearScoreCheck", false);
     randomBotPreQuests = sConfigMgr->GetOption<bool>("AiPlayerbot.PreQuests", false);
 
@@ -898,7 +898,7 @@ std::vector<std::vector<uint32>> PlayerbotAIConfig::ParseTempTalentsOrder(uint32
 
         spells[talentTabInfo->tabpage].push_back(talentInfo);
     }
-    for (int tab = 0; tab < 3; tab++)
+    for (size_t tab = 0; tab < 3; tab++)
     {
         if (tab_links.size() <= tab)
         {
@@ -907,7 +907,7 @@ std::vector<std::vector<uint32>> PlayerbotAIConfig::ParseTempTalentsOrder(uint32
         std::sort(spells[tab].begin(), spells[tab].end(),
                   [&](TalentEntry const* lhs, TalentEntry const* rhs)
                   { return lhs->Row != rhs->Row ? lhs->Row < rhs->Row : lhs->Col < rhs->Col; });
-        for (int i = 0; i < tab_links[tab].size(); i++)
+        for (size_t i = 0; i < tab_links[tab].size(); i++)
         {
             if (i >= spells[tab].size())
             {
@@ -956,7 +956,7 @@ std::vector<std::vector<uint32>> PlayerbotAIConfig::ParseTempPetTalentsOrder(uin
     std::sort(spells.begin(), spells.end(),
               [&](TalentEntry const* lhs, TalentEntry const* rhs)
               { return lhs->Row != rhs->Row ? lhs->Row < rhs->Row : lhs->Col < rhs->Col; });
-    for (int i = 0; i < tab_link.size(); i++)
+    for (size_t i = 0; i < tab_link.size(); i++)
     {
         if (i >= spells.size())
         {

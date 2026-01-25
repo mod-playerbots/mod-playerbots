@@ -273,7 +273,7 @@ bool BotSpellService::CanDispelStatic(SpellInfo const* spellInfo, uint32 dispelT
                                         strcmpi((const char*)spellInfo->SpellName[0], "demon armor"));
 }
 
-bool BotSpellService::IsInterruptableSpellCastingStatic(Player* bot, Unit* target, uint32 interruptSpellId)
+bool BotSpellService::IsInterruptableSpellCastingStatic(Player* /*bot*/, Unit* target, uint32 interruptSpellId)
 {
     if (!target || !target->IsInWorld() || target->IsDuringRemoveFromWorld())
         return false;
@@ -303,13 +303,13 @@ bool BotSpellService::IsInterruptableSpellCastingStatic(Player* bot, Unit* targe
     return false;
 }
 
-void BotSpellService::SpellInterruptedStatic(Player* bot, uint32 spellId)
+void BotSpellService::SpellInterruptedStatic(Player* /*bot*/, uint32 /*spellId*/)
 {
     // This tracks interrupted spells - implementation would need access to PlayerbotAI's lastInterruptedSpellTime
     // For static version, this is a no-op since we can't store state
 }
 
-int32 BotSpellService::CalculateGlobalCooldownStatic(uint32 spellId)
+int32 BotSpellService::CalculateGlobalCooldownStatic(uint32 /*spellId*/)
 {
     return sPlayerbotAIConfig->globalCoolDown;
 }
@@ -360,63 +360,63 @@ bool BotSpellService::IsInVehicleStatic(Player* bot, bool canControl, bool canCa
 
 bool BotSpellService::CanCastSpell(std::string const& name, Unit* target, Item* itemTarget)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return botAI_->CanCastSpell(name, target, itemTarget);
+        return _botAI->CanCastSpell(name, target, itemTarget);
     }
     return false;
 }
 
 bool BotSpellService::CastSpell(std::string const& name, Unit* target, Item* itemTarget)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return botAI_->CastSpell(name, target, itemTarget);
+        return _botAI->CastSpell(name, target, itemTarget);
     }
     return false;
 }
 
 bool BotSpellService::CanCastSpell(uint32 spellId, Unit* target, bool checkHasSpell, Item* itemTarget, Item* castItem)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return botAI_->CanCastSpell(spellId, target, checkHasSpell, itemTarget, castItem);
+        return _botAI->CanCastSpell(spellId, target, checkHasSpell, itemTarget, castItem);
     }
     return false;
 }
 
 bool BotSpellService::CanCastSpell(uint32 spellId, GameObject* goTarget, bool checkHasSpell)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return botAI_->CanCastSpell(spellId, goTarget, checkHasSpell);
+        return _botAI->CanCastSpell(spellId, goTarget, checkHasSpell);
     }
     return false;
 }
 
 bool BotSpellService::CanCastSpell(uint32 spellId, float x, float y, float z, bool checkHasSpell, Item* itemTarget)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return botAI_->CanCastSpell(spellId, x, y, z, checkHasSpell, itemTarget);
+        return _botAI->CanCastSpell(spellId, x, y, z, checkHasSpell, itemTarget);
     }
     return false;
 }
 
 bool BotSpellService::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return botAI_->CastSpell(spellId, target, itemTarget);
+        return _botAI->CastSpell(spellId, target, itemTarget);
     }
     return false;
 }
 
 bool BotSpellService::CastSpell(uint32 spellId, float x, float y, float z, Item* itemTarget)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return botAI_->CastSpell(spellId, x, y, z, itemTarget);
+        return _botAI->CastSpell(spellId, x, y, z, itemTarget);
     }
     return false;
 }
@@ -424,9 +424,9 @@ bool BotSpellService::CastSpell(uint32 spellId, float x, float y, float z, Item*
 bool BotSpellService::HasAura(std::string const& spellName, Unit* player, bool maxStack, bool checkIsOwner,
                               int maxAmount, bool checkDuration)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return HasAuraByNameStatic(botAI_->GetBot(), spellName, player, maxStack, checkIsOwner, maxAmount, checkDuration);
+        return HasAuraByNameStatic(_botAI->GetBot(), spellName, player, maxStack, checkIsOwner, maxAmount, checkDuration);
     }
     return false;
 }
@@ -438,7 +438,7 @@ bool BotSpellService::HasAura(uint32 spellId, Unit const* player)
 
 bool BotSpellService::HasAnyAuraOf(Unit* player, ...)
 {
-    if (!botAI_ || !player)
+    if (!_botAI || !player)
         return false;
 
     va_list vl;
@@ -460,9 +460,9 @@ bool BotSpellService::HasAnyAuraOf(Unit* player, ...)
 
 bool BotSpellService::HasAnyAuraOfVec(Unit* player, std::vector<std::string> const& auraNames)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return HasAnyAuraOfStatic(botAI_->GetBot(), player, auraNames);
+        return HasAnyAuraOfStatic(_botAI->GetBot(), player, auraNames);
     }
     return false;
 }
@@ -470,69 +470,69 @@ bool BotSpellService::HasAnyAuraOfVec(Unit* player, std::vector<std::string> con
 Aura* BotSpellService::GetAura(std::string const& spellName, Unit* unit, bool checkIsOwner, bool checkDuration,
                                int checkStack)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return GetAuraStatic(botAI_->GetBot(), spellName, unit, checkIsOwner, checkDuration, checkStack);
+        return GetAuraStatic(_botAI->GetBot(), spellName, unit, checkIsOwner, checkDuration, checkStack);
     }
     return nullptr;
 }
 
 void BotSpellService::RemoveAura(std::string const& name)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        botAI_->RemoveAura(name);
+        _botAI->RemoveAura(name);
     }
 }
 
 void BotSpellService::RemoveShapeshift()
 {
-    if (botAI_)
+    if (_botAI)
     {
-        botAI_->RemoveShapeshift();
+        _botAI->RemoveShapeshift();
     }
 }
 
 bool BotSpellService::HasAuraToDispel(Unit* player, uint32 dispelType)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return HasAuraToDispelStatic(botAI_->GetBot(), player, dispelType);
+        return HasAuraToDispelStatic(_botAI->GetBot(), player, dispelType);
     }
     return false;
 }
 
 bool BotSpellService::CanDispel(SpellInfo const* spellInfo, uint32 dispelType)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return botAI_->canDispel(spellInfo, dispelType);
+        return _botAI->canDispel(spellInfo, dispelType);
     }
     return false;
 }
 
 bool BotSpellService::IsInterruptableSpellCasting(Unit* player, std::string const& spell)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return botAI_->IsInterruptableSpellCasting(player, spell);
+        return _botAI->IsInterruptableSpellCasting(player, spell);
     }
     return false;
 }
 
 void BotSpellService::InterruptSpell()
 {
-    if (botAI_)
+    if (_botAI)
     {
-        botAI_->InterruptSpell();
+        _botAI->InterruptSpell();
     }
 }
 
 void BotSpellService::SpellInterrupted(uint32 spellId)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        botAI_->SpellInterrupted(spellId);
+        _botAI->SpellInterrupted(spellId);
     }
 }
 
@@ -543,44 +543,44 @@ int32 BotSpellService::CalculateGlobalCooldown(uint32 spellId)
 
 void BotSpellService::WaitForSpellCast(Spell* spell)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        botAI_->WaitForSpellCast(spell);
+        _botAI->WaitForSpellCast(spell);
     }
 }
 
 bool BotSpellService::CanCastVehicleSpell(uint32 spellId, Unit* target)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return botAI_->CanCastVehicleSpell(spellId, target);
+        return _botAI->CanCastVehicleSpell(spellId, target);
     }
     return false;
 }
 
 bool BotSpellService::CastVehicleSpell(uint32 spellId, Unit* target)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return botAI_->CastVehicleSpell(spellId, target);
+        return _botAI->CastVehicleSpell(spellId, target);
     }
     return false;
 }
 
 bool BotSpellService::CastVehicleSpell(uint32 spellId, float x, float y, float z)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return botAI_->CastVehicleSpell(spellId, x, y, z);
+        return _botAI->CastVehicleSpell(spellId, x, y, z);
     }
     return false;
 }
 
 bool BotSpellService::IsInVehicle(bool canControl, bool canCast, bool canAttack, bool canTurn, bool fixed)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return IsInVehicleStatic(botAI_->GetBot(), canControl, canCast, canAttack, canTurn, fixed);
+        return IsInVehicleStatic(_botAI->GetBot(), canControl, canCast, canAttack, canTurn, fixed);
     }
     return false;
 }

@@ -1,4 +1,10 @@
-#pragma once
+/*
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
+ */
+
+#ifndef MOD_PLAYERBOTS_UTIL_BROADCAST_HELPER_H
+#define MOD_PLAYERBOTS_UTIL_BROADCAST_HELPER_H
 
 class PlayerbotAI;
 class Player;
@@ -38,12 +44,12 @@ public:
     static bool BroadcastLootingItem(
         PlayerbotAI* ai,
         Player* bot,
-        const ItemTemplate* proto
+        ItemTemplate const* proto
     );
     static bool BroadcastQuestAccepted(
         PlayerbotAI* ai,
         Player* bot,
-        const Quest* quest
+        Quest const* quest
     );
     static bool BroadcastQuestUpdateAddKill(
         PlayerbotAI* ai,
@@ -59,7 +65,7 @@ public:
         Quest const* quest,
         uint32_t availableCount,
         uint32_t requiredCount,
-        const ItemTemplate* proto
+        ItemTemplate const* proto
     );
     static bool BroadcastQuestUpdateFailedTimer(
         PlayerbotAI* ai,
@@ -124,7 +130,7 @@ public:
     );
     static bool BroadcastSuggestSell(
         PlayerbotAI* ai,
-        const ItemTemplate* proto,
+        ItemTemplate const* proto,
         uint32_t count,
         uint32_t price,
         Player* bot
@@ -146,3 +152,5 @@ public:
         Player* bot
     );
 };
+
+#endif  // MOD_PLAYERBOTS_UTIL_BROADCAST_HELPER_H

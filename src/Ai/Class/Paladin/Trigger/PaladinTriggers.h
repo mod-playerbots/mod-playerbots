@@ -21,6 +21,8 @@ inline std::string const GetActualBlessingOfMight(Unit* target)
         case CLASS_PRIEST:
         case CLASS_WARLOCK:
             return "blessing of wisdom";
+        default:
+            break;
     }
 
     return "blessing of might";
@@ -34,6 +36,8 @@ inline std::string const GetActualBlessingOfWisdom(Unit* target)
         case CLASS_ROGUE:
         case CLASS_DEATH_KNIGHT:
             return "blessing of might";
+        default:
+            break;
     }
 
     return "blessing of wisdom";

@@ -20,7 +20,7 @@
 std::unordered_map<uint32, PreferredMountCache> CheckMountStateAction::mountCache;
 bool CheckMountStateAction::preferredMountTableChecked = false;
 
-MountData CollectMountData(const Player* bot)
+MountData CollectMountData(Player const* bot)
 {
     MountData data;
     for (auto& entry : bot->GetSpellMap())
@@ -260,7 +260,7 @@ bool CheckMountStateAction::TryForms(Player* master, int32 masterMountType, int3
         botAI->GetServices().GetSpellService().CastSpell(SPELL_FLIGHT_FORM, bot);
 
         // Compensate speedbuff
-        bot->SetSpeed(MOVE_RUN, 2.5, true);
+        bot->SetSpeed(MOVE_RUN, 2.5f, true);
         return true;
     }
 
@@ -272,7 +272,7 @@ bool CheckMountStateAction::TryForms(Player* master, int32 masterMountType, int3
         botAI->GetServices().GetSpellService().CastSpell(SPELL_SWIFT_FLIGHT_FORM, bot);
 
         // Compensate speedbuff
-        bot->SetSpeed(MOVE_RUN, 3.8, true);
+        bot->SetSpeed(MOVE_RUN, 3.8f, true);
         return true;
     }
 
@@ -413,7 +413,7 @@ float CheckMountStateAction::CalculateMountDistance() const
     // Mount distance should be >= 21 regardless of class, because when travelling a distance < 21 it takes longer
     // to cast mount-spell than the time saved from the speed increase. At a distance of 21 both approaches take 3
     // seconds:
-    // 21 / 7  =  21 / 14 + 1.5  =  3   (7 = dismounted speed  14 = epic-mount speed  1.5 = mount-spell cast time)
+    // 21 / 7  =  21 / 14 + 1.5f  =  3   (7 = dismounted speed  14 = epic-mount speed  1.5f = mount-spell cast time)
     bool isMelee = BotRoleService::IsMeleeStatic(bot);
     float baseDistance = isMelee ? sPlayerbotAIConfig->meleeDistance + 10.0f : sPlayerbotAIConfig->spellDistance + 10.0f;
     return std::max(21.0f, baseDistance);

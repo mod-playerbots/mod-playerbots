@@ -150,6 +150,8 @@ public:
                 if (ranged && !BotRoleService::IsHealStatic(bot))
                     return "";
                 break;
+            default:
+                break;
         }
 
         return ChatFilter::Filter(message);

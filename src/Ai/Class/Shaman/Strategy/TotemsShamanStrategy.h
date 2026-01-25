@@ -14,10 +14,10 @@
 // This is the header with all of the totem-related constants and arrays used in the Shaman strategies.
 
 // Totem Bar Slot Constants
-#define TOTEM_BAR_SLOT_FIRE 132
-#define TOTEM_BAR_SLOT_EARTH 133
-#define TOTEM_BAR_SLOT_WATER 134
-#define TOTEM_BAR_SLOT_AIR 135
+constexpr uint32 TOTEM_BAR_SLOT_FIRE = 132;
+constexpr uint32 TOTEM_BAR_SLOT_EARTH = 133;
+constexpr uint32 TOTEM_BAR_SLOT_WATER = 134;
+constexpr uint32 TOTEM_BAR_SLOT_AIR = 135;
 
 // Strength of Earth Totem
 static const uint32 STRENGTH_OF_EARTH_TOTEM[] = {

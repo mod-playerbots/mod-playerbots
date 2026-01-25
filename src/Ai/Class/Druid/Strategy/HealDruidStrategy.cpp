@@ -72,7 +72,7 @@ void HealDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
                         { NextAction("tree form", ACTION_MEDIUM_HEAL + 1.5f),
                                           NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 1.4f),
                                           NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 1.3f),
-                                          NextAction("swiftmend on party", ACTION_MEDIUM_HEAL + 1.2),
+                                          NextAction("swiftmend on party", ACTION_MEDIUM_HEAL + 1.2f),
                                           NextAction("nourish on party", ACTION_MEDIUM_HEAL + 1.1f),
                                           }));
 

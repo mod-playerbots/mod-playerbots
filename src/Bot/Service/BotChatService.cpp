@@ -318,7 +318,7 @@ void BotChatService::PingStatic(Player* bot, float x, float y)
 ChatContext BotChatService::BuildChatContext() const
 {
     ChatContext ctx;
-    if (!botAI_)
+    if (!_botAI)
     {
         ctx.bot = nullptr;
         ctx.getMaster = []() { return nullptr; };
@@ -330,9 +330,9 @@ ChatContext BotChatService::BuildChatContext() const
         return ctx;
     }
 
-    ctx.bot = botAI_->GetBot();
-    ctx.getMaster = [this]() { return botAI_->GetMaster(); };
-    ctx.security = botAI_->GetSecurity();
+    ctx.bot = _botAI->GetBot();
+    ctx.getMaster = [this]() { return _botAI->GetMaster(); };
+    ctx.security = _botAI->GetSecurity();
 
     // We need access to private members, so we'll use PlayerbotAI methods directly for these
     // For now, we delegate to PlayerbotAI
@@ -346,9 +346,9 @@ ChatContext BotChatService::BuildChatContext() const
 
 bool BotChatService::TellMaster(std::string const& text, PlayerbotSecurityLevel securityLevel)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return botAI_->TellMaster(text, securityLevel);
+        return _botAI->TellMaster(text, securityLevel);
     }
     return false;
 }
@@ -360,9 +360,9 @@ bool BotChatService::TellMaster(std::ostringstream& stream, PlayerbotSecurityLev
 
 bool BotChatService::TellMasterNoFacing(std::string const& text, PlayerbotSecurityLevel securityLevel)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return botAI_->TellMasterNoFacing(text, securityLevel);
+        return _botAI->TellMasterNoFacing(text, securityLevel);
     }
     return false;
 }
@@ -374,107 +374,107 @@ bool BotChatService::TellMasterNoFacing(std::ostringstream& stream, PlayerbotSec
 
 bool BotChatService::TellError(std::string const& text, PlayerbotSecurityLevel securityLevel)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return botAI_->TellError(text, securityLevel);
+        return _botAI->TellError(text, securityLevel);
     }
     return false;
 }
 
 bool BotChatService::SayToGuild(std::string const& msg)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return SayToGuildStatic(botAI_->GetBot(), msg);
+        return SayToGuildStatic(_botAI->GetBot(), msg);
     }
     return false;
 }
 
 bool BotChatService::SayToWorld(std::string const& msg)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return SayToWorldStatic(botAI_->GetBot(), msg);
+        return SayToWorldStatic(_botAI->GetBot(), msg);
     }
     return false;
 }
 
 bool BotChatService::SayToChannel(std::string const& msg, uint32 channelId)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return SayToChannelStatic(botAI_->GetBot(), msg, channelId);
+        return SayToChannelStatic(_botAI->GetBot(), msg, channelId);
     }
     return false;
 }
 
 bool BotChatService::SayToParty(std::string const& msg)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return SayToPartyStatic(botAI_->GetBot(), botAI_->GetPlayersInGroup(), msg);
+        return SayToPartyStatic(_botAI->GetBot(), _botAI->GetPlayersInGroup(), msg);
     }
     return false;
 }
 
 bool BotChatService::SayToRaid(std::string const& msg)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return SayToRaidStatic(botAI_->GetBot(), botAI_->GetPlayersInGroup(), msg);
+        return SayToRaidStatic(_botAI->GetBot(), _botAI->GetPlayersInGroup(), msg);
     }
     return false;
 }
 
 bool BotChatService::Say(std::string const& msg)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return SayStatic(botAI_->GetBot(), msg);
+        return SayStatic(_botAI->GetBot(), msg);
     }
     return false;
 }
 
 bool BotChatService::Yell(std::string const& msg)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return YellStatic(botAI_->GetBot(), msg);
+        return YellStatic(_botAI->GetBot(), msg);
     }
     return false;
 }
 
 bool BotChatService::Whisper(std::string const& msg, std::string const& receiverName)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return WhisperStatic(botAI_->GetBot(), msg, receiverName);
+        return WhisperStatic(_botAI->GetBot(), msg, receiverName);
     }
     return false;
 }
 
 bool BotChatService::PlaySound(uint32 emote)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return PlaySoundStatic(botAI_->GetBot(), emote);
+        return PlaySoundStatic(_botAI->GetBot(), emote);
     }
     return false;
 }
 
 bool BotChatService::PlayEmote(uint32 emote)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return PlayEmoteStatic(botAI_->GetBot(), emote);
+        return PlayEmoteStatic(_botAI->GetBot(), emote);
     }
     return false;
 }
 
 void BotChatService::Ping(float x, float y)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        PingStatic(botAI_->GetBot(), x, y);
+        PingStatic(_botAI->GetBot(), x, y);
     }
 }

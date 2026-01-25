@@ -309,11 +309,11 @@ bool QuestUpdateAddKillAction::Execute(Event event)
     uint32 entry, questId, available, required;
     p >> questId >> entry >> available >> required;
     // LOG_INFO("playerbots", "[New rpg] Quest {} -> Creature {} ({}/{})", questId, entry, available, required);
-    const Quest* qInfo = sObjectMgr->GetQuestTemplate(questId);
+    Quest const* qInfo = sObjectMgr->GetQuestTemplate(questId);
     if (qInfo && (entry & 0x80000000))
     {
         entry &= 0x7FFFFFFF;
-        const GameObjectTemplate* info = sObjectMgr->GetGameObjectTemplate(entry);
+        GameObjectTemplate const* info = sObjectMgr->GetGameObjectTemplate(entry);
         if (info)
         {
             std::string infoName = botAI->GetLocalizedGameObjectName(entry);
@@ -352,7 +352,6 @@ bool QuestUpdateAddItemAction::Execute(Event event)
     uint32 itemId, count;
     p >> itemId >> count;
 
-    Player* requester = event.getOwner() ? event.getOwner() : GetMaster();
     auto const* itemPrototype = sObjectMgr->GetItemTemplate(itemId);
     if (itemPrototype)
     {
@@ -393,7 +392,7 @@ bool QuestItemPushResultAction::Execute(Event event)
     if (guid != bot->GetGUID())
         return false;
 
-    const ItemTemplate* proto = sObjectMgr->GetItemTemplate(itemEntry);
+    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemEntry);
     if (!proto)
         return false;
 
@@ -403,11 +402,9 @@ bool QuestItemPushResultAction::Execute(Event event)
         if (!questId)
             continue;
 
-        const Quest* quest = sObjectMgr->GetQuestTemplate(questId);
+        Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
         if (!quest)
             return false;
-
-        const QuestStatusData& q_status = bot->getQuestStatusMap().at(questId);
 
         for (int i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; i++)
         {
@@ -416,7 +413,7 @@ bool QuestItemPushResultAction::Execute(Event event)
                 continue;
 
             int32 previousCount = itemCount - count;
-            if (itemId == itemEntry && previousCount < quest->RequiredItemCount[i])
+            if (itemId == itemEntry && previousCount < static_cast<int32>(quest->RequiredItemCount[i]))
             {
                 if (botAI->GetMaster())
                 {
@@ -434,7 +431,7 @@ bool QuestItemPushResultAction::Execute(Event event)
     return false;
 }
 
-bool QuestUpdateFailedAction::Execute(Event event)
+bool QuestUpdateFailedAction::Execute(Event /*event*/)
 {
     //opcode SMSG_QUESTUPDATE_FAILED is never sent...(yet?)
     return false;
@@ -447,8 +444,6 @@ bool QuestUpdateFailedTimerAction::Execute(Event event)
 
     uint32 questId;
     p >> questId;
-
-    Player* requester = event.getOwner() ? event.getOwner() : GetMaster();
 
     Quest const* qInfo = sObjectMgr->GetQuestTemplate(questId);
 

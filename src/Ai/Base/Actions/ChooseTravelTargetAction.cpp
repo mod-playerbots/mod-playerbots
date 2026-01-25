@@ -10,7 +10,7 @@
 #include "LootObjectStack.h"
 #include "Playerbots.h"
 
-bool ChooseTravelTargetAction::Execute(Event event)
+bool ChooseTravelTargetAction::Execute(Event /*event*/)
 {
     // Player* requester = event.getOwner() ? event.getOwner() : GetMaster(); //not used, line marked for removal.
 
@@ -233,16 +233,6 @@ void ChooseTravelTargetAction::ReportTravelTarget(TravelTarget* newTarget, Trave
         QuestTravelDestination* QuestDestination = (QuestTravelDestination*)destination;
         Quest const* quest = QuestDestination->GetQuestTemplate();
         WorldPosition botLocation(bot);
-
-        CreatureTemplate const* cInfo = nullptr;
-        GameObjectTemplate const* gInfo = nullptr;
-
-        if (destination->getEntry() > 0)
-            cInfo = sObjectMgr->GetCreatureTemplate(destination->getEntry());
-        else
-            gInfo = sObjectMgr->GetGameObjectTemplate(destination->getEntry() * -1);
-
-        std::string Sub;
 
         if (newTarget->isGroupCopy())
             out << "Following group ";
@@ -479,7 +469,7 @@ bool ChooseTravelTargetAction::SetCurrentTarget(TravelTarget* target, TravelTarg
     return target->isActive();
 }
 
-bool ChooseTravelTargetAction::SetQuestTarget(TravelTarget* target, bool onlyCompleted, bool newQuests, bool activeQuests, bool completedQuests)
+bool ChooseTravelTargetAction::SetQuestTarget(TravelTarget* target, bool /*onlyCompleted*/, bool newQuests, bool activeQuests, bool completedQuests)
 {
     std::vector<TravelDestination*> activeDestinations;
     std::vector<WorldPosition*> activePoints;
@@ -824,10 +814,6 @@ char* strstri(char const* haystack, char const* needle);
 
 TravelDestination* ChooseTravelTargetAction::FindDestination(Player* bot, std::string const name, bool zones, bool npcs, bool quests, bool mobs, bool bosses)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-
-    // AiObjectContext* context = botAI->GetAiObjectContext(); //not used, line marked for removal.
-
     std::vector<TravelDestination*> dests;
 
     //Quests
@@ -942,7 +928,7 @@ bool ChooseTravelTargetAction::needForQuest(Unit* target)
                     int required = questTemplate->RequiredNpcOrGoCount[j];
                     int available = questStatus.CreatureOrGOCount[j];
 
-                    if (required && available < required && (target->GetEntry() == entry || justCheck))
+                    if (required && available < required && (target->GetEntry() == static_cast<uint32>(entry) || justCheck))
                         return true;
                 }
 
@@ -977,8 +963,8 @@ bool ChooseTravelTargetAction::needForQuest(Unit* target)
     return false;
 }
 
-bool ChooseTravelTargetAction::needItemForQuest(uint32 itemId, const Quest* questTemplate,
-                                                const QuestStatusData* questStatus)
+bool ChooseTravelTargetAction::needItemForQuest(uint32 itemId, Quest const* questTemplate,
+                                                QuestStatusData const* questStatus)
 {
     for (uint32 i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
     {

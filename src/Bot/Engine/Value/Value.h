@@ -72,7 +72,7 @@ public:
     {
         if (checkInterval < 2)
         {
-            // PerfMonitorOperation* pmo = sPerfMonitor->start(PERF_MON_VALUE, this->getName(),
+            // PerfMonitorOperation* pmo = sPerfMonitor->start(PerformanceMetric::Value, this->getName(),
             // this->context ? &this->context->performanceStack : nullptr);
             value = Calculate();
             // if (pmo)
@@ -84,7 +84,7 @@ public:
             if (!lastCheckTime || now - lastCheckTime >= checkInterval)
             {
                 lastCheckTime = now;
-                // PerfMonitorOperation* pmo = sPerfMonitor->start(PERF_MON_VALUE, this->getName(),
+                // PerfMonitorOperation* pmo = sPerfMonitor->start(PerformanceMetric::Value, this->getName(),
                 // this->context ? &this->context->performanceStack : nullptr);
                 value = Calculate();
                 // if (pmo)
@@ -105,7 +105,7 @@ public:
     {
         if (checkInterval < 2)
         {
-            // PerfMonitorOperation* pmo = sPerfMonitor->start(PERF_MON_VALUE, this->getName(),
+            // PerfMonitorOperation* pmo = sPerfMonitor->start(PerformanceMetric::Value, this->getName(),
             // this->context ? &this->context->performanceStack : nullptr);
             value = Calculate();
             // if (pmo)
@@ -117,7 +117,7 @@ public:
             if (!lastCheckTime || now - lastCheckTime >= checkInterval)
             {
                 lastCheckTime = now;
-                // PerfMonitorOperation* pmo = sPerfMonitor->start(PERF_MON_VALUE, this->getName(),
+                // PerfMonitorOperation* pmo = sPerfMonitor->start(PerformanceMetric::Value, this->getName(),
                 // this->context ? &this->context->performanceStack : nullptr);
                 value = Calculate();
                 // if (pmo)
@@ -155,7 +155,7 @@ public:
             this->lastCheckTime = now;
 
             PerfMonitorOperation* pmo = sPerfMonitor->start(
-                PERF_MON_VALUE, this->getName(), this->context ? &this->context->performanceStack : nullptr);
+                PerformanceMetric::Value, this->getName(), this->context ? &this->context->performanceStack : nullptr);
             this->value = this->Calculate();
             if (pmo)
                 pmo->finish();

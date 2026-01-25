@@ -96,7 +96,7 @@ namespace GruulsLairHelpers
         }
     }
 
-    bool IsKroshMageTank(PlayerbotAI* botAI, Player* bot)
+    bool IsKroshMageTank(PlayerbotAI* /*botAI*/, Player* bot)
     {
         Group* group = bot->GetGroup();
         if (!group)
@@ -124,7 +124,7 @@ namespace GruulsLairHelpers
         return highestHpMage == bot;
     }
 
-    bool IsKigglerMoonkinTank(PlayerbotAI* botAI, Player* bot)
+    bool IsKigglerMoonkinTank(PlayerbotAI* /*botAI*/, Player* bot)
     {
         Group* group = bot->GetGroup();
         if (!group)

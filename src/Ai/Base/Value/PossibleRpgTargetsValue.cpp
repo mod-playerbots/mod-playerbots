@@ -74,7 +74,7 @@ bool PossibleRpgTargetsValue::AcceptUnit(Unit* unit)
 
     TravelTarget* travelTarget = context->GetValue<TravelTarget*>("travel target")->Get();
     if (travelTarget && travelTarget->getDestination() &&
-        travelTarget->getDestination()->getEntry() == unit->GetEntry())
+        travelTarget->getDestination()->getEntry() == static_cast<int32>(unit->GetEntry()))
         return true;
 
     if (urand(1, 100) < 25 && unit->IsFriendlyTo(bot))

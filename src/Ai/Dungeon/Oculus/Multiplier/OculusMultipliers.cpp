@@ -11,9 +11,9 @@
 float MountingDrakeMultiplier::GetValue(Action* action)
 {
     // P.I.T.A bug where the bots will somehow interrupt their item spell use,
-    // even though the 0.5 sec cast goes off, it puts the drake essence on 15 sec cd
+    // even though the 0.5f sec cast goes off, it puts the drake essence on 15 sec cd
     // and no drake comes down.
-    // It seems like this is due to moving/other actions being processed during the 0.5 secs.
+    // It seems like this is due to moving/other actions being processed during the 0.5f secs.
     // If we suppress everything, they seem to mount properly. A bit of a ham-fisted solution but it works
     Player* master = botAI->GetMaster();
     if (!master) { return 1.0f; }
@@ -104,7 +104,7 @@ float EregosMultiplier::GetValue(Action* action)
     Unit* boss = AI_VALUE2(Unit*, "find target", "ley-guardian eregos");
     if (!boss) { return 1.0f; }
 
-    if (boss->HasAura(SPELL_PLANAR_SHIFT && dynamic_cast<OccDrakeAttackAction*>(action)))
+    if (boss->HasAura(SPELL_PLANAR_SHIFT) && dynamic_cast<OccDrakeAttackAction*>(action))
     {
         return 0.0f;
     }

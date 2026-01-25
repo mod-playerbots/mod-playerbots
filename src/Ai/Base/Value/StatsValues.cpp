@@ -204,17 +204,15 @@ uint8 BagSpaceValue::Calculate()
             ++totalused;
     }
 
-    uint32 totalfree = 16 - totalused;
     for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
     {
-        const Bag* const pBag = (Bag*)bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bag);
+        Bag const* const pBag = (Bag*)bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bag);
         if (pBag)
         {
             ItemTemplate const* pBagProto = pBag->GetTemplate();
             if (pBagProto->Class == ITEM_CLASS_CONTAINER && pBagProto->SubClass == ITEM_SUBCLASS_CONTAINER)
             {
                 total += pBag->GetBagSize();
-                totalfree += pBag->GetFreeSlots();
                 totalused += pBag->GetBagSize() - pBag->GetFreeSlots();
             }
         }

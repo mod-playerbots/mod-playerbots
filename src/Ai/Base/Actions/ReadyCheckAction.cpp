@@ -46,7 +46,7 @@ std::once_flag ReadyChecker::initFlag;
 class HealthChecker : public ReadyChecker
 {
 public:
-    bool Check(PlayerbotAI* botAI, AiObjectContext* context) override
+    bool Check(PlayerbotAI* /*botAI*/, AiObjectContext* context) override
     {
         return AI_VALUE2(uint8, "health", "self target") > sPlayerbotAIConfig->almostFullHealth;
     }
@@ -57,7 +57,7 @@ public:
 class ManaChecker : public ReadyChecker
 {
 public:
-    bool Check(PlayerbotAI* botAI, AiObjectContext* context) override
+    bool Check(PlayerbotAI* /*botAI*/, AiObjectContext* context) override
     {
         return !AI_VALUE2(bool, "has mana", "self target") ||
                AI_VALUE2(uint8, "mana", "self target") > sPlayerbotAIConfig->mediumHealth;
@@ -69,7 +69,7 @@ public:
 class DistanceChecker : public ReadyChecker
 {
 public:
-    bool Check(PlayerbotAI* botAI, AiObjectContext* context) override
+    bool Check(PlayerbotAI* botAI, AiObjectContext* /*context*/) override
     {
         Player* bot = botAI->GetBot();
         if (Player* master = botAI->GetMaster())
@@ -91,7 +91,7 @@ public:
 class HunterChecker : public ReadyChecker
 {
 public:
-    bool Check(PlayerbotAI* botAI, AiObjectContext* context) override
+    bool Check(PlayerbotAI* botAI, AiObjectContext* /*context*/) override
     {
         Player* bot = botAI->GetBot();
         if (bot->getClass() == CLASS_HUNTER)
@@ -127,7 +127,7 @@ class ItemCountChecker : public ReadyChecker
 public:
     ItemCountChecker(std::string const item, std::string const name) : item(item), name(name) {}
 
-    bool Check(PlayerbotAI* botAI, AiObjectContext* context) override
+    bool Check(PlayerbotAI* /*botAI*/, AiObjectContext* context) override
     {
         return AI_VALUE2(uint32, "item count", item) > 0;
     }
@@ -197,21 +197,21 @@ bool ReadyCheckAction::ReadyCheck()
     std::ostringstream out;
 
     uint32 hp = AI_VALUE2(uint32, "item count", "healing potion");
-    out << formatPercent("Hp", hp, 100.0 * hp / 5);
+    out << formatPercent("Hp", hp, 100.0f * hp / 5);
 
     out << ", ";
     uint32 food = AI_VALUE2(uint32, "item count", "food");
-    out << formatPercent("Food", food, 100.0 * food / 20);
+    out << formatPercent("Food", food, 100.0f * food / 20);
 
     if (AI_VALUE2(bool, "has mana", "self target"))
     {
         out << ", ";
         uint32 mp = AI_VALUE2(uint32, "item count", "mana potion");
-        out << formatPercent("Mp", mp, 100.0 * mp / 5);
+        out << formatPercent("Mp", mp, 100.0f * mp / 5);
 
         out << ", ";
         uint32 water = AI_VALUE2(uint32, "item count", "water");
-        out << formatPercent("Water", water, 100.0 * water / 20);
+        out << formatPercent("Water", water, 100.0f * water / 20);
     }
 
     botAI->GetServices().GetChatService().TellMaster(out);
@@ -226,4 +226,4 @@ bool ReadyCheckAction::ReadyCheck()
     return true;
 }
 
-bool FinishReadyCheckAction::Execute(Event event) { return ReadyCheck(); }
+bool FinishReadyCheckAction::Execute(Event /*event*/) { return ReadyCheck(); }

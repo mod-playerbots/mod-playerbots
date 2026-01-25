@@ -30,6 +30,8 @@ bool ChangeCombatStrategyAction::Execute(Event event)
                     break;
                 case '?':
                     break;
+                default:
+                    break;
             }
         }
     }
@@ -67,6 +69,8 @@ bool ChangeNonCombatStrategyAction::Execute(Event event)
                     sManagerRegistry.GetBotRepository().Save(botAI);
                     break;
                 case '?':
+                    break;
+                default:
                     break;
             }
         }

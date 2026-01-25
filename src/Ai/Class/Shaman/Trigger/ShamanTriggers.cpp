@@ -91,8 +91,8 @@ bool WaterBreathingOnPartyTrigger::IsActive()
 }
 
 // Checks if Chain Lightning is on Cooldown, and prevents activation if it is.
-// This is to ensure that Elemental Mastery is used on Lava Burst (2.0 second cast),
-// and not on Chain Lightning (1.5 second cast with talents).
+// This is to ensure that Elemental Mastery is used on Lava Burst (2.0f second cast),
+// and not on Chain Lightning (1.5f second cast with talents).
 bool ElementalMasteryTrigger::IsActive()
 {
     return bot->HasSpellCooldown(421);
@@ -285,18 +285,18 @@ static uint32 GetRequiredTotemSpellId(PlayerbotAI* ai, const char* strategies[],
 }
 
 // Get the spellId of the currently summoned totem in the slot
-static uint32 GetSummonedTotemSpellId(Player* bot, uint8 slot)
-{
-    ObjectGuid guid = bot->m_SummonSlot[slot];
-    if (guid.IsEmpty())
-        return 0;
-
-    Creature* totem = bot->GetMap()->GetCreature(guid);
-    if (!totem)
-        return 0;
-
-    return totem->GetUInt32Value(UNIT_CREATED_BY_SPELL);
-}
+// static uint32 GetSummonedTotemSpellId(Player* bot, uint8 slot)
+// {
+//     ObjectGuid guid = bot->m_SummonSlot[slot];
+//     if (guid.IsEmpty())
+//         return 0;
+//
+//     Creature* totem = bot->GetMap()->GetCreature(guid);
+//     if (!totem)
+//         return 0;
+//
+//     return totem->GetUInt32Value(UNIT_CREATED_BY_SPELL);
+// }
 
 bool NoEarthTotemTrigger::IsActive()
 {

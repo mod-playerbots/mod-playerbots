@@ -4,7 +4,7 @@
 #include "AzjolNerubStrategy.h"
 
 bool AttackWebWrapAction::isUseful() { return !BotRoleService::IsHealStatic(bot); }
-bool AttackWebWrapAction::Execute(Event event)
+bool AttackWebWrapAction::Execute(Event /*event*/)
 {
     Unit* webWrap = nullptr;
 
@@ -30,7 +30,7 @@ bool AttackWebWrapAction::Execute(Event event)
 }
 
 bool WatchersTargetAction::isUseful() { return !BotRoleService::IsHealStatic(bot); }
-bool WatchersTargetAction::Execute(Event event)
+bool WatchersTargetAction::Execute(Event /*event*/)
 {
     // Always prioritise web wraps
     Unit* currTarget = AI_VALUE(Unit*, "current target");
@@ -72,6 +72,8 @@ bool WatchersTargetAction::Execute(Event event)
             case NPC_WATCHER_WARRIOR:
                 priorityTargets[3] = npc;
                 break;
+            default:
+                break;
         }
     }
 
@@ -96,7 +98,7 @@ bool WatchersTargetAction::Execute(Event event)
 }
 
 bool AnubarakDodgePoundAction::isUseful() { return !AI_VALUE2(bool, "behind", "current target"); }
-bool AnubarakDodgePoundAction::Execute(Event event)
+bool AnubarakDodgePoundAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "anub'arak");
     if (!boss) { return false; }

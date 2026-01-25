@@ -18,7 +18,7 @@ float EstimatedLifetimeValue::Calculate()
     float dps = AI_VALUE(float, "estimated group dps");
     bool aoePenalty = AI_VALUE(uint8, "attacker count") >= 3;
     if (aoePenalty)
-        dps *= 0.75;
+        dps *= 0.75f;
     float res = target->GetHealth() / dps;
     // bot->Say(target->GetName() + " lifetime: " + std::to_string(res), LANG_UNIVERSAL);
     return res;
@@ -69,21 +69,21 @@ float EstimatedGroupDpsValue::Calculate()
         // bonus for wotlk epic gear
         if (mixedGearScore >= 300)
         {
-            gs_modifier *= 1 + (mixedGearScore - 300) * 0.01;
+            gs_modifier *= 1 + (mixedGearScore - 300) * 0.01f;
         }
-        if (gs_modifier < 0.75)
-            gs_modifier = 0.75;
+        if (gs_modifier < 0.75f)
+            gs_modifier = 0.75f;
         if (gs_modifier > 4)
             gs_modifier = 4;
         totalDps += basicDps * roleMultiplier * gs_modifier;
     }
     // Group buff bonus
     if (groupPlayer.size() >= 25)
-        totalDps *= 1.2;
+        totalDps *= 1.2f;
     else if (groupPlayer.size() >= 10)
-        totalDps *= 1.1;
+        totalDps *= 1.1f;
     else if (groupPlayer.size() >= 5)
-        totalDps *= 1.05;
+        totalDps *= 1.05f;
     return totalDps;
 }
 

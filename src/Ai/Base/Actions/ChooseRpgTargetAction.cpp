@@ -108,22 +108,17 @@ float ChooseRpgTargetAction::getMaxRelevance(GuidPosition guidP)
     SET_AI_VALUE(GuidPosition, "rpg target", currentRpgTarget);
 
     if (!maxRelevance)
-        return 0.0;
+        return 0.0f;
 
-    return floor((maxRelevance - 1.0) * 1000.0f);
+    return floor((maxRelevance - 1.0f) * 1000.0f);
 }
 
-bool ChooseRpgTargetAction::Execute(Event event)
+bool ChooseRpgTargetAction::Execute(Event /*event*/)
 {
     //TravelTarget* travelTarget = AI_VALUE(TravelTarget*, "travel target"); //not used, line marked for removal.
     Player* master = botAI->GetMaster();
     GuidPosition masterRpgTarget;
-    if (master && master != bot && GET_PLAYERBOT_AI(master) && master->GetMapId() == bot->GetMapId() && !master->IsBeingTeleported())
-    {
-        Player* player = botAI->GetMaster();
-        //GuidPosition masterRpgTarget = PAI_VALUE(GuidPosition, "rpg target"); //not used, line marked for removal.
-    }
-    else
+    if (!(master && master != bot && GET_PLAYERBOT_AI(master) && master->GetMapId() == bot->GetMapId() && !master->IsBeingTeleported()))
         master = nullptr;
 
     std::unordered_map<ObjectGuid, uint32> targets;
@@ -214,7 +209,7 @@ bool ChooseRpgTargetAction::Execute(Event event)
         if (it->second == 0)
             it = targets.erase(it);
         //Remove useless targets if there's any good ones
-        else if (hasGoodRelevance && it->second <= 1.0)
+        else if (hasGoodRelevance && it->second <= 1.0f)
             it = targets.erase(it);
         //Remove useless targets if it's not masters target.
         else if (!hasGoodRelevance && master && (!masterRpgTarget || it->first != masterRpgTarget))
@@ -340,7 +335,7 @@ bool ChooseRpgTargetAction::isFollowValid(Player* bot, WorldPosition pos)
     if (!botAI->HasActivePlayerMaster() && distance < 50.0f)
     {
         Player* player = groupLeader;
-        if (groupLeader && !groupLeader->isMoving() ||
+        if ((groupLeader && !groupLeader->isMoving()) ||
             PAI_VALUE(WorldPosition, "last long move").distance(pos) < sPlayerbotAIConfig->reactDistance)
             return true;
     }

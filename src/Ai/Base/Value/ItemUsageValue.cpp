@@ -81,7 +81,7 @@ ItemUsage ItemUsageValue::Calculate()
         return ITEM_USAGE_USE;
 
     if (proto->Class == ITEM_CLASS_CONSUMABLE &&
-        (proto->MaxCount == 0 || bot->GetItemCount(itemId, false) < proto->MaxCount))
+        (proto->MaxCount == 0 || static_cast<int32>(bot->GetItemCount(itemId, false)) < proto->MaxCount))
     {
         std::string const foodType = GetConsumableType(proto, bot->GetPower(POWER_MANA));
 
@@ -176,6 +176,8 @@ ItemUsage ItemUsageValue::Calculate()
                     case ITEM_SUBCLASS_WEAPON_BOW:
                     case ITEM_SUBCLASS_WEAPON_CROSSBOW:
                         requiredSubClass = ITEM_SUBCLASS_ARROW;
+                        break;
+                    default:
                         break;
                 }
             }
@@ -616,6 +618,8 @@ bool ItemUsageValue::IsItemNeededForSkill(ItemTemplate const* proto)
             return botAI->HasSkill(SKILL_COOKING);
         case 6256:  // Fishing Rod
             return botAI->HasSkill(SKILL_FISHING);
+        default:
+            break;
     }
 
     return false;
@@ -689,8 +693,12 @@ bool ItemUsageValue::IsItemUsefulForSkill(ItemTemplate const* proto)
                     return botAI->HasSkill(SKILL_ENCHANTING);
                 case ITEM_SUBCLASS_FISHING_MANUAL:
                     return botAI->HasSkill(SKILL_FISHING);
+                default:
+                    break;
             }
         }
+        default:
+            break;
     }
 
     return false;
@@ -735,7 +743,7 @@ bool ItemUsageValue::HasItemsNeededForSpell(uint32 spellId, ItemTemplate const* 
     for (uint8 i = 0; i < MAX_SPELL_REAGENTS; i++)
         if (spellInfo->ReagentCount[i] > 0 && spellInfo->Reagent[i])
         {
-            if (proto && proto->ItemId == spellInfo->Reagent[i] &&
+            if (proto && proto->ItemId == static_cast<uint32>(spellInfo->Reagent[i]) &&
                 spellInfo->ReagentCount[i] == 1)  // If we only need 1 item then current item does not need to be
                                                   // checked since we are looting/buying or already have it.
                 continue;
@@ -744,7 +752,7 @@ bool ItemUsageValue::HasItemsNeededForSpell(uint32 spellId, ItemTemplate const* 
 
             uint32 count = AI_VALUE2(uint32, "item count", reqProto->Name1);
 
-            if (count < spellInfo->ReagentCount[i])
+            if (count < static_cast<uint32>(spellInfo->ReagentCount[i]))
                 return false;
         }
 
@@ -834,7 +842,7 @@ std::vector<uint32> ItemUsageValue::SpellsUsingItem(uint32 itemId, Player* bot)
             continue;
 
         for (uint8 i = 0; i < MAX_SPELL_REAGENTS; i++)
-            if (spellInfo->ReagentCount[i] > 0 && spellInfo->Reagent[i] == itemId)
+            if (spellInfo->ReagentCount[i] > 0 && static_cast<uint32>(spellInfo->Reagent[i]) == itemId)
                 retSpells.push_back(spellId);
     }
 
@@ -865,8 +873,6 @@ bool ItemUsageValue::SpellGivesSkillUp(uint32 spellId, Player* bot)
         if (skill->SkillLine)
         {
             uint32 SkillValue = bot->GetPureSkillValue(skill->SkillLine);
-
-            uint32 craft_skill_gain = sWorld->getIntConfig(CONFIG_SKILL_GAIN_CRAFTING);
 
             if (SkillGainChance(SkillValue, skill->TrivialSkillLineRankHigh,
                                 (skill->TrivialSkillLineRankHigh + skill->TrivialSkillLineRankLow) / 2,

@@ -244,6 +244,8 @@ bool OpenLootAction::CanOpenLock(LootObject& /*lootObject*/, SpellInfo const* sp
                     if (CanOpenLock(skillId, lockInfo->Skill[j]))
                         return true;
                 }
+                default:
+                    break;
             }
         }
     }
@@ -267,15 +269,15 @@ uint32 StoreLootAction::RoundPrice(double price)
 
     if (price < 10000)
     {
-        return (uint32)(price / 100.0) * 100;
+        return (uint32)(price / 100.0f) * 100;
     }
 
     if (price < 100000)
     {
-        return (uint32)(price / 1000.0) * 1000;
+        return (uint32)(price / 1000.0f) * 1000;
     }
 
-    return (uint32)(price / 10000.0) * 10000;
+    return (uint32)(price / 10000.0f) * 10000;
 }
 
 bool StoreLootAction::AuctionItem(uint32 itemId)

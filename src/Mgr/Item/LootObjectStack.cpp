@@ -11,7 +11,7 @@
 #include "Playerbots.h"
 #include "Unit.h"
 
-#define MAX_LOOT_OBJECT_COUNT 200
+static constexpr uint32 MAX_LOOT_OBJECT_COUNT = 200;
 
 LootTarget::LootTarget(ObjectGuid guid) : guid(guid), asOfTime(time(nullptr)) {}
 
@@ -104,7 +104,7 @@ void LootObject::Refresh(Player* bot, ObjectGuid lootGUID)
                 return;
             }
 
-            const ItemTemplate* proto = sObjectMgr->GetItemTemplate(itemId);
+            ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
             if (!proto)
                 continue;
 
@@ -120,7 +120,7 @@ void LootObject::Refresh(Player* bot, ObjectGuid lootGUID)
             return;
 
         // Check the main loot template
-        if (const LootTemplate* lootTemplate = LootTemplates_Gameobject.GetLootFor(lootEntry))
+        if (LootTemplate const* lootTemplate = LootTemplates_Gameobject.GetLootFor(lootEntry))
         {
             Loot loot;
             lootTemplate->Process(loot, LootTemplates_Gameobject, 1, bot);
@@ -131,7 +131,7 @@ void LootObject::Refresh(Player* bot, ObjectGuid lootGUID)
                 if (!itemId)
                     continue;
 
-                const ItemTemplate* proto = sObjectMgr->GetItemTemplate(itemId);
+                ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
                 if (!proto)
                     continue;
 
@@ -142,7 +142,7 @@ void LootObject::Refresh(Player* bot, ObjectGuid lootGUID)
                 }
 
                 // If this item references another loot table, process it
-                if (const LootTemplate* refLootTemplate = LootTemplates_Reference.GetLootFor(itemId))
+                if (LootTemplate const* refLootTemplate = LootTemplates_Reference.GetLootFor(itemId))
                 {
                     Loot refLoot;
                     refLootTemplate->Process(refLoot, LootTemplates_Reference, 1, bot);
@@ -153,7 +153,7 @@ void LootObject::Refresh(Player* bot, ObjectGuid lootGUID)
                         if (!refItemId)
                             continue;
 
-                        const ItemTemplate* refProto = sObjectMgr->GetItemTemplate(refItemId);
+                        ItemTemplate const* refProto = sObjectMgr->GetItemTemplate(refItemId);
                         if (!refProto)
                             continue;
 
@@ -207,6 +207,8 @@ void LootObject::Refresh(Player* bot, ObjectGuid lootGUID)
 
                 case LOCK_KEY_NONE:
                     guid = lootGUID;
+                    break;
+                default:
                     break;
             }
         }

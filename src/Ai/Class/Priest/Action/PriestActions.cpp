@@ -13,7 +13,7 @@ bool CastRemoveShadowformAction::isUseful() { return botAI->GetServices().GetSpe
 
 bool CastRemoveShadowformAction::isPossible() { return true; }
 
-bool CastRemoveShadowformAction::Execute(Event event)
+bool CastRemoveShadowformAction::Execute(Event /*event*/)
 {
     botAI->GetServices().GetSpellService().RemoveAura("shadowform");
     return true;

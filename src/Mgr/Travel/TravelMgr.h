@@ -100,7 +100,7 @@ public:
 
     //Setters
     void set(const WorldLocation& pos);
-    void set(const WorldObject* wo);
+    void set(WorldObject const* wo);
     void set(const WorldPosition& pos);
     void setMapId(uint32 id);
     void setX(float x);
@@ -277,7 +277,7 @@ public:
 
     // Display functions
     WorldPosition getDisplayLocation();
-    float getDisplayX() { return getDisplayLocation().getY() * -1.0; }
+    float getDisplayX() { return getDisplayLocation().getY() * -1.0f; }
 
     float getDisplayY() { return getDisplayLocation().getX(); }
 

@@ -10,7 +10,7 @@
 #include "GenericActions.h"
 #include <fstream>
 
-bool ToCLanceAction::Execute(Event event)
+bool ToCLanceAction::Execute(Event /*event*/)
 {
     // If already has lance equipped, do nothing
     if (bot->HasItemOrGemWithIdEquipped(ITEM_LANCE, 1))
@@ -59,10 +59,6 @@ bool ToCLanceAction::Execute(Event event)
     // If we found the lance, equip it
     if (lanceItem)
     {
-        // Store the lance's current position
-        uint8 srcBag = lanceItem->GetBagSlot();
-        uint8 srcSlot = lanceItem->GetSlot();
-
         // First unequip current weapon if it exists
         if (oldWeapon)
         {
@@ -106,7 +102,7 @@ bool ToCUELanceAction::Execute(Event event)
     return false;
 }
 
-bool ToCMountedAction::Execute(Event event)
+bool ToCMountedAction::Execute(Event /*event*/)
 {
     Unit* vehicleBase = bot->GetVehicleBase();
     Vehicle* vehicle = bot->GetVehicle();
@@ -180,7 +176,7 @@ bool ToCMountedAction::Execute(Event event)
     return false;
 }
 
-bool ToCMountAction::Execute(Event event)
+bool ToCMountAction::Execute(Event /*event*/)
 {
     // do not switch vehicles yet
     if (bot->GetVehicle())
@@ -245,7 +241,7 @@ bool ToCMountAction::EnterVehicle(Unit* vehicleBase, bool moveIfFar)
     return true;
 }
 
-bool ToCEadricAction::Execute(Event event)
+bool ToCEadricAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "eadric the pure");
     if (!boss)

@@ -8,11 +8,10 @@
 #include "Playerbots.h"
 #include "ServerFacade.h"
 
-FleeManager::FleeManager(Player* bot, float maxAllowedDistance, float followAngle, bool forceMaxDistance,
+FleeManager::FleeManager(Player* bot, float maxAllowedDistance, bool forceMaxDistance,
                          WorldPosition startPosition)
     : bot(bot),
       maxAllowedDistance(maxAllowedDistance),
-      followAngle(followAngle),
       forceMaxDistance(forceMaxDistance),
       startPosition(startPosition ? startPosition : WorldPosition(bot))
 {
@@ -66,7 +65,7 @@ void FleeManager::calculatePossibleDestinations(std::vector<FleePoint*>& points)
     float botPosY = startPosition.getY();
     float botPosZ = startPosition.getZ();
 
-    FleePoint start(botAI, botPosX, botPosY, botPosZ);
+    FleePoint start(botPosX, botPosY, botPosZ);
     calculateDistanceToCreatures(&start);
 
     std::vector<float> enemyOri;
@@ -85,7 +84,7 @@ void FleeManager::calculatePossibleDestinations(std::vector<FleePoint*>& points)
                                    (maxAllowedDistance - sPlayerbotAIConfig->tooCloseDistance) / 10.0f);
     for (float dist = maxAllowedDistance; dist >= sPlayerbotAIConfig->tooCloseDistance; dist -= distIncrement)
     {
-        float angleIncrement = std::max(M_PI / 20, M_PI / 4 / (1.0 + dist - sPlayerbotAIConfig->tooCloseDistance));
+        float angleIncrement = std::max(M_PI / 20, M_PI / 4 / (1.0f + dist - sPlayerbotAIConfig->tooCloseDistance));
         for (float add = 0.0f; add < M_PI / 4 + angleIncrement; add += angleIncrement)
         {
             for (float angle = add; angle < add + 2 * static_cast<float>(M_PI) + angleIncrement;
@@ -110,7 +109,7 @@ void FleeManager::calculatePossibleDestinations(std::vector<FleePoint*>& points)
                 if (!bot->IsWithinLOS(x, y, z) || (target && !target->IsWithinLOS(x, y, z)))
                     continue;
 
-                FleePoint* point = new FleePoint(botAI, x, y, z);
+                FleePoint* point = new FleePoint(x, y, z);
                 calculateDistanceToCreatures(point);
 
                 if (sServerFacade->IsDistanceGreaterOrEqualThan(point->minDistance - start.minDistance,

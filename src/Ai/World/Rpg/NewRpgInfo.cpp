@@ -34,7 +34,7 @@ void NewRpgInfo::ChangeToWanderRandom()
     WANDER_RANDOM = WanderRandom();
 }
 
-void NewRpgInfo::ChangeToDoQuest(uint32 questId, const Quest* quest)
+void NewRpgInfo::ChangeToDoQuest(uint32 questId, Quest const* quest)
 {
     Reset();
     status = RPG_DO_QUEST;
@@ -66,7 +66,7 @@ void NewRpgInfo::ChangeToIdle()
     status = RPG_IDLE;
 }
 
-bool NewRpgInfo::CanChangeTo(NewRpgStatus status) { return true; }
+bool NewRpgInfo::CanChangeTo(NewRpgStatus /*status*/) { return true; }
 
 void NewRpgInfo::Reset()
 {

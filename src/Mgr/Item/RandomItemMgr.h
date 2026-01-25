@@ -30,7 +30,7 @@ enum RandomItemType
     RANDOM_ITEM_GUILD_TASK_REWARD_TRADE_RARE
 };
 
-#define MAX_STAT_SCALES 32
+constexpr uint32 MAX_STAT_SCALES = 32;
 
 enum ItemSource
 {

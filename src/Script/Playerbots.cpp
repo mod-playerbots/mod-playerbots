@@ -120,7 +120,7 @@ public:
             if (sPlayerbotAIConfig->enabled || sPlayerbotAIConfig->randomBotAutologin)
             {
                 std::string roundedTime =
-                    std::to_string(std::ceil((sPlayerbotAIConfig->maxRandomBots * 0.11 / 60) * 10) / 10.0);
+                    std::to_string(std::ceil((sPlayerbotAIConfig->maxRandomBots * 0.11f / 60) * 10) / 10.0f);
                 roundedTime = roundedTime.substr(0, roundedTime.find('.') + 2);
 
                 ChatHandler(player->GetSession()).SendSysMessage(
@@ -221,7 +221,7 @@ public:
         return true;
     }
 
-    bool OnPlayerCanUseChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Guild* guild) override
+    bool OnPlayerCanUseChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Guild* /*guild*/) override
     {
         if (type == CHAT_MSG_GUILD)
         {
@@ -271,7 +271,7 @@ public:
     void OnPlayerGiveXP(Player* player, uint32& amount, Unit* /*victim*/, uint8 /*xpSource*/) override
     {
         // early return
-        if (sPlayerbotAIConfig->randomBotXPRate == 1.0 || !player)
+        if (sPlayerbotAIConfig->randomBotXPRate == 1.0f || !player)
             return;
 
         // no XP multiplier, when player is no bot.
@@ -444,7 +444,7 @@ public:
         }
     }
 
-    void OnPlayerbotUpdate(uint32 diff) override
+    void OnPlayerbotUpdate(uint32 /*diff*/) override
     {
         sRandomPlayerbotMgr->UpdateSessions();  // Per-bot updates only
     }

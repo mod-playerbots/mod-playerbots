@@ -41,7 +41,7 @@ public:
 
 MELEE_ACTION(CastChallengingShoutAction, "challenging shout");
 DEBUFF_ACTION_R(CastIntimidatingShoutAction, "intimidating shout", 8.0f);
-// shouts 2.4.3
+// shouts 2.4f.3
 BUFF_ACTION(CastCommandingShoutAction, "commanding shout");
 
 // arms
@@ -62,7 +62,7 @@ SNARE_ACTION(CastHamstringAction, "hamstring");
 MELEE_ACTION(CastOverpowerAction, "overpower");
 MELEE_ACTION(CastMockingBlowAction, "mocking blow");
 // BUFF_ACTION(CastRetaliationAction, "retaliation");
-// arms 3.3.5
+// arms 3.3f.5
 SPELL_ACTION(CastHeroicThrowAction, "heroic throw");
 SNARE_ACTION(CastHeroicThrowSnareAction, "heroic throw");
 // DEBUFF_ACTION(CastShatteringThrowAction, "shattering throw");
@@ -70,7 +70,7 @@ SNARE_ACTION(CastHeroicThrowSnareAction, "heroic throw");
 // arms talents
 MELEE_ACTION(CastMortalStrikeAction, "mortal strike");
 BUFF_ACTION(CastSweepingStrikesAction, "sweeping strikes");
-// arms talents 3.3.5
+// arms talents 3.3f.5
 MELEE_ACTION(CastBladestormAction, "bladestorm");
 
 // fury
@@ -84,9 +84,9 @@ BUFF_ACTION(CastBerserkerRageAction, "berserker rage");
 MELEE_ACTION(CastWhirlwindAction, "whirlwind");
 MELEE_ACTION(CastPummelAction, "pummel");
 ENEMY_HEALER_ACTION(CastPummelOnEnemyHealerAction, "pummel");
-// fury 2.4.3
+// fury 2.4f.3
 MELEE_ACTION(CastVictoryRushAction, "victory rush");
-// fury 3.3.5
+// fury 3.3f.5
 BUFF_ACTION(CastEnragedRegenerationAction, "enraged regeneration");
 BUFF_ACTION(CastHeroicFuryAction, "heroic fury");
 
@@ -95,7 +95,7 @@ BUFF_ACTION(CastDeathWishAction, "death wish");
 BUFF_ACTION(CastRecklessnessAction, "recklessness");
 MELEE_ACTION(CastBloodthirstAction, "bloodthirst");
 DEBUFF_ACTION_R(CastPiercingHowlAction, "piercing howl", 8.0f);
-// fury talents 2.4.3
+// fury talents 2.4f.3
 BUFF_ACTION(CastRampageAction, "rampage");
 
 // protection
@@ -111,7 +111,7 @@ DEBUFF_ACTION_U(CastDisarmAction, "disarm",
                                                        : CastDebuffSpellAction::isUseful());
 DEBUFF_ENEMY_ACTION(CastDisarmOnAttackerAction, "disarm");
 BUFF_ACTION(CastShieldWallAction, "shield wall");
-// protection 2.4.3
+// protection 2.4f.3
 PROTECT_ACTION(CastInterveneAction, "intervene");
 BUFF_ACTION(CastSpellReflectionAction, "spell reflection");
 
@@ -119,9 +119,9 @@ BUFF_ACTION(CastSpellReflectionAction, "spell reflection");
 BUFF_ACTION(CastLastStandAction, "last stand");
 MELEE_ACTION(CastShieldSlamAction, "shield slam");
 MELEE_ACTION(CastConcussionBlowAction, "concussion blow");
-// protection talents 2.4.3
+// protection talents 2.4f.3
 MELEE_ACTION(CastDevastateAction, "devastate");
-// protection talents 3.3.5
+// protection talents 3.3f.5
 DEBUFF_ACTION_R(CastShockwaveAction, "shockwave", 8.0f);
 SNARE_ACTION(CastShockwaveSnareAction, "shockwave");
 

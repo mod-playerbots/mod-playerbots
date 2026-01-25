@@ -135,7 +135,7 @@ float TravelNodePath::getCost(Player* bot, uint32 cGold)
         swimSpeed = bot->GetSpeed(MOVE_SWIM);
 
         if (bot->HasSpell(1066))
-            swimSpeed *= 1.5;
+            swimSpeed *= 1.5f;
 
         uint32 level = bot->GetLevel();
         bool isAlliance = Unit::GetFactionReactionTo(bot->GetFactionTemplateEntry(),
@@ -152,9 +152,9 @@ float TravelNodePath::getCost(Player* bot, uint32 cGold)
                 factionAnnoyance = (maxLevelCreature[1] - level) - 10;
 
             if (mobAnnoyance > 0)
-                modifier += 0.1 * mobAnnoyance;  // For each level the whole path takes 10% longer.
+                modifier += 0.1f * mobAnnoyance;  // For each level the whole path takes 10% longer.
             if (factionAnnoyance > 0)
-                modifier += 0.3 * factionAnnoyance;  // For each level the whole path takes 10% longer.
+                modifier += 0.3f * factionAnnoyance;  // For each level the whole path takes 10% longer.
         }
     }
     else if (getPathType() == TravelNodePathType::flightPath)
@@ -392,7 +392,7 @@ bool TravelNode::isUselessLink(TravelNode* farNode)
         if (nearNode->hasLinkTo(farNode))
         {
             // Is it quicker to go past second node to reach first node instead of going directly?
-            if (nearLength + nearNode->linkDistanceTo(farNode) < farLength * 1.1)
+            if (nearLength + nearNode->linkDistanceTo(farNode) < farLength * 1.1f)
                 return true;
         }
         else
@@ -406,7 +406,7 @@ bool TravelNode::isUselessLink(TravelNode* farNode)
                 continue;
 
             // Is it quicker to go past second (and multiple) nodes to reach the first node instead of going directly?
-            if (nearLength + route.getTotalDistance() < farLength * 1.1)
+            if (nearLength + route.getTotalDistance() < farLength * 1.1f)
                 return true;
         }
     }
@@ -486,7 +486,7 @@ bool TravelNode::cropUselessLinks()
             if (firstNode->hasLinkTo(secondNode))
             {
                 //Is it quicker to go past first node to reach second node instead of going directly?
-                if (firstLength + firstNode->linkLengthTo(secondNode) < secondLength * 1.1)
+                if (firstLength + firstNode->linkLengthTo(secondNode) < secondLength * 1.1f)
                 {
                     if (secondNode->hasLinkTo(this) && !firstNode->hasLinkTo(this))
                         continue;
@@ -505,7 +505,7 @@ bool TravelNode::cropUselessLinks()
                     continue;
 
                 //Is it quicker to go past first (and multiple) nodes to reach the second node instead of going
-    directly? if (firstLength + route.getLength() < secondLength * 1.1)
+    directly? if (firstLength + route.getLength() < secondLength * 1.1f)
                 {
                     if (secondNode->hasLinkTo(this) && !firstNode->hasLinkTo(this))
                         continue;
@@ -534,7 +534,7 @@ bool TravelNode::cropUselessLinks()
                 if (firstNode->hasLinkTo(secondNode))
                 {
                     //Is it quicker to go past first node to reach second node instead of going directly?
-                    if (firstLength + firstNode->linkLengthTo(secondNode) < secondLength * 1.1)
+                    if (firstLength + firstNode->linkLengthTo(secondNode) < secondLength * 1.1f)
                     {
                         if (secondNode->hasLinkTo(this) && !firstNode->hasLinkTo(this))
                             continue;
@@ -553,7 +553,7 @@ bool TravelNode::cropUselessLinks()
                         continue;
 
                     //Is it quicker to go past first (and multiple) nodes to reach the second node instead of going
-    directly? if (firstLength + route.getLength() < secondLength * 1.1)
+    directly? if (firstLength + route.getLength() < secondLength * 1.1f)
                     {
                         if (secondNode->hasLinkTo(this) && !firstNode->hasLinkTo(this))
                             continue;
@@ -1919,7 +1919,7 @@ void TravelNodeMap::generateTransportNodes()
                         }
                         else
                         {
-                            TravelNodePath travelPath(0.1f, 0.0, (uint8)TravelNodePathType::transport, itr.first, true);
+                            TravelNodePath travelPath(0.1f, 0.0f, (uint8)TravelNodePathType::transport, itr.first, true);
                             travelPath.setPathAndCost(ppath, moveSpeed);
                             node->setPathTo(prevNode, travelPath);
                             ppath.clear();
@@ -1950,7 +1950,7 @@ void TravelNodeMap::generateTransportNodes()
 
                             if (node != prevNode)
                             {
-                                TravelNodePath travelPath(0.1f, 0.0, (uint8)TravelNodePathType::transport, itr.first,
+                                TravelNodePath travelPath(0.1f, 0.0f, (uint8)TravelNodePathType::transport, itr.first,
                                                           true);
                                 travelPath.setPathAndCost(ppath, moveSpeed);
 
@@ -2075,7 +2075,7 @@ void TravelNodeMap::generateTaxiPaths()
         std::vector<WorldPosition> ppath;
 
         for (auto& n : nodes)
-            ppath.push_back(WorldPosition(n->mapid, n->x, n->y, n->z, 0.0));
+            ppath.push_back(WorldPosition(n->mapid, n->x, n->y, n->z, 0.0f));
 
         float totalTime = startPos.getPathLength(ppath) / (450 * 8.0f);
 
@@ -2511,9 +2511,9 @@ void TravelNodeMap::loadNodeStore()
 void TravelNodeMap::calcMapOffset()
 {
     mapOffsets.push_back(std::make_pair(0, WorldPosition(0, 0, 0, 0, 0)));
-    mapOffsets.push_back(std::make_pair(1, WorldPosition(1, -3680.0, 13670.0, 0, 0)));
-    mapOffsets.push_back(std::make_pair(530, WorldPosition(530, 15000.0, -20000.0, 0, 0)));
-    mapOffsets.push_back(std::make_pair(571, WorldPosition(571, 10000.0, 5000.0, 0, 0)));
+    mapOffsets.push_back(std::make_pair(1, WorldPosition(1, -3680.0f, 13670.0f, 0, 0)));
+    mapOffsets.push_back(std::make_pair(530, WorldPosition(530, 15000.0f, -20000.0f, 0, 0)));
+    mapOffsets.push_back(std::make_pair(571, WorldPosition(571, 10000.0f, 5000.0f, 0, 0)));
 
     std::vector<uint32> mapIds;
 

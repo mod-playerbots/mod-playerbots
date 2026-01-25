@@ -52,7 +52,7 @@ public:
 
 private:
     int64 CalculateDeadTime() const;
-    void PerformGraveyardTeleport(const GraveyardStruct* graveyard) const;
+    void PerformGraveyardTeleport(GraveyardStruct const* graveyard) const;
 };
 
 // SelfResurrectAction action registration

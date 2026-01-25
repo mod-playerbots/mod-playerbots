@@ -42,6 +42,6 @@ std::vector<NextAction> TankWarlockStrategy::getDefaultActions()
     };
 }
 
-void TankWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void TankWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& /*triggers*/)
 {
 }

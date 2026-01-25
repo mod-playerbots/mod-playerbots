@@ -21,7 +21,7 @@ class PlayerbotAI;
 class PacketHandler : public IPacketHandler
 {
 public:
-    explicit PacketHandler(PlayerbotAI* ai) : botAI_(ai) {}
+    explicit PacketHandler(PlayerbotAI* ai) : _botAI(ai) {}
     ~PacketHandler() override = default;
 
     void HandleBotOutgoingPacket(WorldPacket const& packet) override;
@@ -30,7 +30,7 @@ public:
     void HandleTeleportAck() override;
 
 private:
-    PlayerbotAI* botAI_;
+    PlayerbotAI* _botAI;
 };
 
 #endif

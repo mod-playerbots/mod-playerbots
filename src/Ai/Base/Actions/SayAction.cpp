@@ -56,7 +56,7 @@ static const std::unordered_set<std::string> noReplyMsgStarts = {"e ", "accept "
 
 SayAction::SayAction(PlayerbotAI* botAI) : Action(botAI, "say"), Qualified() {}
 
-bool SayAction::Execute(Event event)
+bool SayAction::Execute(Event /*event*/)
 {
     std::string text = "";
     std::map<std::string, std::string> placeholders;
@@ -81,6 +81,8 @@ bool SayAction::Execute(Event event)
                 case ITEM_SUBCLASS_WEAPON_CROSSBOW:
                     placeholders["<ammo>"] = "arrows";
                     break;
+                default:
+                    break;
             }
         }
     }
@@ -92,7 +94,6 @@ bool SayAction::Execute(Event event)
     }
 
     // set delay before next say
-    time_t lastSaid = AI_VALUE2(time_t, "last said", qualifier);
     uint32 nextTime = time(nullptr) + urand(1, 30);
     botAI->GetAiObjectContext()->GetValue<time_t>("last said", qualifier)->Set(nextTime);
 
@@ -157,9 +158,8 @@ bool SayAction::isUseful()
     return (time(nullptr) - lastSaid) > 30;
 }
 
-void ChatReplyAction::ChatReplyDo(Player* bot, uint32& type, uint32& guid1, uint32& guid2, std::string& msg, std::string& chanName, std::string& name)
+void ChatReplyAction::ChatReplyDo(Player* bot, uint32& type, uint32& guid1, uint32& /*guid2*/, std::string& msg, std::string& chanName, std::string& name)
 {
-    ChatReplyType replyType = REPLY_NOT_UNDERSTAND;  // default not understand
     std::string respondsText = "";
 
     // if we're just commanding bots around, don't respond...
@@ -224,7 +224,7 @@ void ChatReplyAction::ChatReplyDo(Player* bot, uint32& type, uint32& guid1, uint
     SendGeneralResponse(bot, chatChannelSource, messageRepy, name);
 }
 
-bool ChatReplyAction::HandleThunderfuryReply(Player* bot, ChatChannelSource chatChannelSource, std::string& msg, std::string& name)
+bool ChatReplyAction::HandleThunderfuryReply(Player* bot, ChatChannelSource chatChannelSource, std::string& /*msg*/, std::string& /*name*/)
 {
     std::map<std::string, std::string> placeholders;
     const auto thunderfury = sObjectMgr->GetItemTemplate(19019);
@@ -252,7 +252,7 @@ bool ChatReplyAction::HandleThunderfuryReply(Player* bot, ChatChannelSource chat
     return true;
 }
 
-bool ChatReplyAction::HandleToxicLinksReply(Player* bot, ChatChannelSource chatChannelSource, std::string& msg, std::string& name)
+bool ChatReplyAction::HandleToxicLinksReply(Player* bot, ChatChannelSource chatChannelSource, std::string& /*msg*/, std::string& /*name*/)
 {
     //quests
     std::vector<uint32> incompleteQuests;
@@ -704,6 +704,8 @@ std::string ChatReplyAction::GenerateReplyMessage(Player* bot, std::string& inco
             case 3:
                 msg = "afraid that was before i was around or paying attention";
                 break;
+            default:
+                break;
             }
 
             msg = std::regex_replace(msg, std::regex("%s"), name);
@@ -732,6 +734,8 @@ std::string ChatReplyAction::GenerateReplyMessage(Player* bot, std::string& inco
                 break;
             case 4:
                 msg = "is it me?";
+                break;
+            default:
                 break;
             }
 
@@ -768,6 +772,8 @@ std::string ChatReplyAction::GenerateReplyMessage(Player* bot, std::string& inco
             case 6:
                 msg = "dunno %s";
                 break;
+            default:
+                break;
             }
 
             msg = std::regex_replace(msg, std::regex("%s"), name);
@@ -802,6 +808,8 @@ std::string ChatReplyAction::GenerateReplyMessage(Player* bot, std::string& inco
                 break;
             case 6:
                 msg = "dunno %s";
+                break;
+            default:
                 break;
             }
 
@@ -838,6 +846,8 @@ std::string ChatReplyAction::GenerateReplyMessage(Player* bot, std::string& inco
             case 6:
                 msg = "dunno %s";
                 break;
+            default:
+                break;
             }
             msg = std::regex_replace(msg, std::regex("%s"), name);
             respondsText = msg;
@@ -866,6 +876,8 @@ std::string ChatReplyAction::GenerateReplyMessage(Player* bot, std::string& inco
                     break;
                 case 3:
                     msg = "afraid that was before i was around or paying attention";
+                    break;
+                default:
                     break;
                 }
                 msg = std::regex_replace(msg, std::regex("%s"), name);
@@ -900,6 +912,8 @@ std::string ChatReplyAction::GenerateReplyMessage(Player* bot, std::string& inco
                     break;
                 case 6:
                     msg = "no";
+                    break;
+                default:
                     break;
                 }
                 msg = std::regex_replace(msg, std::regex("%s"), name);
@@ -941,12 +955,16 @@ std::string ChatReplyAction::GenerateReplyMessage(Player* bot, std::string& inco
                 case 8:
                     msg = "maybe";
                     break;
+                default:
+                    break;
                 }
                 msg = std::regex_replace(msg, std::regex("%s"), name);
                 respondsText = msg;
                 found = true;
                 break;
             }
+            default:
+                break;
             }
         }
         }
@@ -971,6 +989,8 @@ std::string ChatReplyAction::GenerateReplyMessage(Player* bot, std::string& inco
             case 2:
                 msg = word[verb_pos ? verb_pos - 1 : verb_pos + 1] + " will " + word[verb_pos + 1] + " again though %s";
                 break;
+            default:
+                break;
             }
             msg = std::regex_replace(msg, std::regex("%s"), name);
             respondsText = msg;
@@ -992,6 +1012,8 @@ std::string ChatReplyAction::GenerateReplyMessage(Player* bot, std::string& inco
                 break;
             case 2:
                 msg = "yeah i know " + word[verb_pos ? verb_pos - 1 : verb_pos + 1] + " is a " + word[verb_pos + 1];
+                break;
+            default:
                 break;
             }
             msg = std::regex_replace(msg, std::regex("%s"), name);
@@ -1015,12 +1037,16 @@ std::string ChatReplyAction::GenerateReplyMessage(Player* bot, std::string& inco
             case 2:
                 msg = "are you saying " + word[verb_pos ? verb_pos - 1 : verb_pos + 1] + " will " + word[verb_pos + 1] + " " + word[verb_pos + 2] + " %s?";
                 break;
+            default:
+                break;
             }
             msg = std::regex_replace(msg, std::regex("%s"), name);
             respondsText = msg;
             found = true;
             break;
         }
+        default:
+            break;
         }
     }
 

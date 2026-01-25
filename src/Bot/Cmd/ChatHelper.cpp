@@ -431,7 +431,7 @@ std::string const ChatHelper::FormatItem(ItemTemplate const* proto, uint32 count
     snprintf(color, sizeof(color), "%x", ItemQualityColors[proto->Quality]);
 
     std::string itemName;
-    const ItemLocale* locale = sObjectMgr->GetItemLocale(proto->ItemId);
+    ItemLocale const* locale = sObjectMgr->GetItemLocale(proto->ItemId);
 
     if (locale && locale->Name.size() > sWorld->GetDefaultDbcLocale())
         itemName = locale->Name[sWorld->GetDefaultDbcLocale()];

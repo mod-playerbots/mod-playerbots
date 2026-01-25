@@ -57,7 +57,7 @@ enum NewRpgStatus : int
     RPG_STATUS_END = 8
 };
 
-#define MAX_SPECNO 20
+constexpr uint32 MAX_SPECNO = 20;
 
 class PlayerbotAIConfig
 {

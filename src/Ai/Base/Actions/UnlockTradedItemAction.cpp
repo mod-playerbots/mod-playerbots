@@ -5,7 +5,7 @@
 #include "SpellInfo.h"
 #include "BotSpellService.h"
 
-#define PICK_LOCK_SPELL_ID 1804
+static constexpr uint32 PICK_LOCK_SPELL_ID = 1804;
 
 bool UnlockTradedItemAction::Execute(Event event)
 {

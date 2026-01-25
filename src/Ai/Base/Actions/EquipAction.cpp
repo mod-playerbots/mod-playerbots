@@ -41,7 +41,7 @@ uint8 EquipAction::GetSmallestBagSlot()
     uint32 curSlots = 0;
     for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
     {
-        const Bag* const pBag = (Bag*)bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bag);
+        Bag const* const pBag = (Bag*)bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bag);
         if (pBag)
         {
             if (curBag > 0 && curSlots < pBag->GetBagSize())
@@ -69,7 +69,7 @@ void EquipAction::EquipItem(Item* item)
 {
     uint8 bagIndex = item->GetBagSlot();
     uint8 slot = item->GetSlot();
-    const ItemTemplate* itemProto = item->GetTemplate();
+    ItemTemplate const* itemProto = item->GetTemplate();
     uint32 itemId = itemProto->ItemId;
     uint8 invType = itemProto->InventoryType;
 
@@ -87,8 +87,8 @@ void EquipAction::EquipItem(Item* item)
     bool equippedBag = false;
     if (itemProto->Class == ITEM_CLASS_CONTAINER)
     {
-        // Attempt to equip as a bag
-        Bag* pBag = reinterpret_cast<Bag*>(item);
+        // Attempt to equip as a bag (cast is for type safety, not used directly)
+        (void)reinterpret_cast<Bag*>(item);
         uint8 newBagSlot = GetSmallestBagSlot();
         if (newBagSlot > 0)
         {
@@ -178,7 +178,7 @@ void EquipAction::EquipItem(Item* item)
             bool mainHandCanGoOff = false;
             if (mainHandItem)
             {
-                const ItemTemplate* mhProto = mainHandItem->GetTemplate();
+                ItemTemplate const* mhProto = mainHandItem->GetTemplate();
                 bool mhIsValidTG = false;
                 if (canTitanGrip && mhProto->InventoryType == INVTYPE_2HWEAPON)
                 {
@@ -215,7 +215,7 @@ void EquipAction::EquipItem(Item* item)
                 // Try moving old main hand weapon to offhand if beneficial
                 if (mainHandItem && mainHandCanGoOff && (!offHandItem || mainHandScore > offHandScore))
                 {
-                    const ItemTemplate* oldMHProto = mainHandItem->GetTemplate();
+                    ItemTemplate const* oldMHProto = mainHandItem->GetTemplate();
 
                     WorldPacket offhandPacket(CMSG_AUTOEQUIP_ITEM_SLOT, 2);
                     ObjectGuid oldMHGuid = mainHandItem->GetGUID();
@@ -400,7 +400,7 @@ bool EquipUpgradesAction::Execute(Event event)
     return true;
 }
 
-bool EquipUpgradeAction::Execute(Event event)
+bool EquipUpgradeAction::Execute(Event /*event*/)
 {
     CollectItemsVisitor visitor;
     IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);

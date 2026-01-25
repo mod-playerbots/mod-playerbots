@@ -57,7 +57,7 @@
 //         return 1.0f;
 
 //     double saveLevel = AI_VALUE(double, "mana save level");
-//     if (saveLevel <= 1.0)
+//     if (saveLevel <= 1.0f)
 //         return 1.0f;
 
 //     CastSpellAction* spellAction = dynamic_cast<CastSpellAction*>(action);
@@ -110,7 +110,7 @@ float HealerAutoSaveManaMultiplier::GetValue(Action* action)
     uint8 lossAmount = 100 - health;
     if (isTank)
     {
-        estAmount /= 1.5;  // tanks have more health
+        estAmount /= 1.5f;  // tanks have more health
         if (health >= sPlayerbotAIConfig->mediumHealth &&
             (lossAmount < estAmount || manaEfficiency <= HealingManaEfficiency::MEDIUM))
             return 0.0f;

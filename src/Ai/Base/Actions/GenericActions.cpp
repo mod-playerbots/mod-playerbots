@@ -56,7 +56,7 @@ bool MeleeAction::isUseful()
     return true;
 }
 
-bool TogglePetSpellAutoCastAction::Execute(Event event)
+bool TogglePetSpellAutoCastAction::Execute(Event /*event*/)
 {
     Pet* pet = bot->GetPet();
     if (!pet)
@@ -85,7 +85,7 @@ bool TogglePetSpellAutoCastAction::Execute(Event event)
             continue;
 
         uint32 spellId = itr->first;
-        const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
         if (!spellInfo->IsAutocastable())
             continue;
 
@@ -121,7 +121,7 @@ bool TogglePetSpellAutoCastAction::Execute(Event event)
     return toggled;
 }
 
-bool PetAttackAction::Execute(Event event)
+bool PetAttackAction::Execute(Event /*event*/)
 {
     Guardian* pet = bot->GetGuardianPet();
     if (!pet)

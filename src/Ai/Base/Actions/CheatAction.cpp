@@ -29,6 +29,8 @@ bool CheatAction::Execute(Event event)
             case '?':
                 ListCheats();
                 return true;
+            default:
+                break;
         }
     }
 

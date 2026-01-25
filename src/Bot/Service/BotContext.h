@@ -21,7 +21,7 @@ class PlayerbotAI;
 class BotContext : public IBotContext
 {
 public:
-    explicit BotContext(PlayerbotAI* ai) : botAI_(ai) {}
+    explicit BotContext(PlayerbotAI* ai) : _botAI(ai) {}
     ~BotContext() override = default;
 
     // Bot and Master access
@@ -66,7 +66,7 @@ public:
     bool HasManyPlayersNearby(uint32 triggerValue, float range) const override;
 
 private:
-    PlayerbotAI* botAI_;
+    PlayerbotAI* _botAI;
 };
 
 #endif

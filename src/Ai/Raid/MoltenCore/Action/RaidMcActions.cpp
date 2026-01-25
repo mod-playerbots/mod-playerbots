@@ -13,20 +13,20 @@ static constexpr float INFERNO_DISTANCE = 20.0f;
 static constexpr float ARCANE_EXPLOSION_DISTANCE = 26.0f;
 
 // dedicated tank positions; prevents assist tanks from positioning Core Ragers on steep walls on pull
-static const Position GOLEMAGG_TANK_POSITION{795.7308, -994.8848, -207.18661};
-static const Position CORE_RAGER_TANK_POSITION{846.6453, -1019.0639, -198.9819};
+static const Position GOLEMAGG_TANK_POSITION{795.7308f, -994.8848f, -207.18661f};
+static const Position CORE_RAGER_TANK_POSITION{846.6453f, -1019.0639f, -198.9819f};
 
 static constexpr float GOLEMAGGS_TRUST_DISTANCE = 30.0f;
 static constexpr float CORE_RAGER_STEP_DISTANCE = 5.0f;
 
 using namespace MoltenCoreHelpers;
 
-bool McMoveFromGroupAction::Execute(Event event)
+bool McMoveFromGroupAction::Execute(Event /*event*/)
 {
     return MoveFromGroup(LIVING_BOMB_DISTANCE);
 }
 
-bool McMoveFromBaronGeddonAction::Execute(Event event)
+bool McMoveFromBaronGeddonAction::Execute(Event /*event*/)
 {
     if (Unit* boss = AI_VALUE2(Unit*, "find target", "baron geddon"))
     {
@@ -43,7 +43,7 @@ bool McMoveFromBaronGeddonAction::Execute(Event event)
     return false;
 }
 
-bool McShazzrahMoveAwayAction::Execute(Event event)
+bool McShazzrahMoveAwayAction::Execute(Event /*event*/)
 {
     if (Unit* boss = AI_VALUE2(Unit*, "find target", "shazzrah"))
     {
@@ -54,7 +54,7 @@ bool McShazzrahMoveAwayAction::Execute(Event event)
     return false;
 }
 
-bool McGolemaggMarkBossAction::Execute(Event event)
+bool McGolemaggMarkBossAction::Execute(Event /*event*/)
 {
     if (Unit* boss = AI_VALUE2(Unit*, "find target", "golemagg the incinerator"))
     {
@@ -116,7 +116,7 @@ bool McGolemaggTankAction::FindCoreRagers(Unit*& coreRager1, Unit*& coreRager2) 
     return coreRager1 != nullptr && coreRager2 != nullptr;
 }
 
-bool McGolemaggMainTankAttackGolemaggAction::Execute(Event event)
+bool McGolemaggMainTankAttackGolemaggAction::Execute(Event /*event*/)
 {
     // At this point, we know we are not the last living tank in the group.
     if (Unit* boss = AI_VALUE2(Unit*, "find target", "golemagg the incinerator"))
@@ -168,7 +168,7 @@ bool McGolemaggAssistTankAttackCoreRagerAction::Execute(Event event)
     // Step 3: Select the right target
     if (myCoreRager->GetVictim() != bot)
     {
-        // Step 3.1: My Core Rager isn't attacking me. Attack until it does.
+        // Step 3.1f: My Core Rager isn't attacking me. Attack until it does.
         if (bot->GetVictim() != myCoreRager)
             return Attack(myCoreRager);
         return botAI->DoSpecificAction("taunt spell", event, true);
@@ -177,7 +177,7 @@ bool McGolemaggAssistTankAttackCoreRagerAction::Execute(Event event)
     Unit* otherCoreRagerVictim = otherCoreRager->GetVictim();
     if (otherCoreRagerVictim) // Core Rager victim can be NULL
     {
-        // Step 3.2: Check if the other Core Rager isn't attacking its assist tank.
+        // Step 3.2f: Check if the other Core Rager isn't attacking its assist tank.
         Player* otherCoreRagerPlayerVictim = otherCoreRagerVictim->ToPlayer();
         if (otherCoreRagerPlayerVictim &&
             !BotRoleService::IsAssistTankOfIndexStatic(otherCoreRagerPlayerVictim, 0, true) &&
@@ -191,13 +191,13 @@ bool McGolemaggAssistTankAttackCoreRagerAction::Execute(Event event)
     }
 
     if (bot->GetVictim() != myCoreRager)
-        return Attack(myCoreRager); // Step 3.3: Attack our Core Rager in case we previously switched in 3.2.
+        return Attack(myCoreRager); // Step 3.3f: Attack our Core Rager in case we previously switched in 3.2f.
 
     // Step 4: Prevent Golemagg's Trust on Core Ragers
     if (myCoreRager->HasAura(SPELL_GOLEMAGGS_TRUST) ||
         (otherCoreRagerVictim == bot && otherCoreRager->HasAura(SPELL_GOLEMAGGS_TRUST)))
     {
-        // Step 4.1: Move Core Ragers to dedicated tank position (only if Golemagg is far enough away from said position)
+        // Step 4.1f: Move Core Ragers to dedicated tank position (only if Golemagg is far enough away from said position)
         float bossDistanceToCoreRagerTankPosition = boss->GetExactDist2d(
             CORE_RAGER_TANK_POSITION.GetPositionX(), CORE_RAGER_TANK_POSITION.GetPositionY());
         if (bossDistanceToCoreRagerTankPosition > GOLEMAGGS_TRUST_DISTANCE)
@@ -208,7 +208,7 @@ bool McGolemaggAssistTankAttackCoreRagerAction::Execute(Event event)
                 return MoveUnitToPosition(myCoreRager, CORE_RAGER_TANK_POSITION, CORE_RAGER_STEP_DISTANCE);
         }
 
-        // Step 4.2: if boss is too close to tank position, or we are already there, move away from Golemagg to try to out-range Golemagg's Trust
+        // Step 4.2f: if boss is too close to tank position, or we are already there, move away from Golemagg to try to out-range Golemagg's Trust
         return MoveAway(boss, CORE_RAGER_STEP_DISTANCE, true);
     }
 

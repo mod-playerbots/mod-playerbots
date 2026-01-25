@@ -21,7 +21,7 @@
 #include "SpellMgr.h"
 #include "WorldSession.h"
 
-bool IsExoticPet(const CreatureTemplate* creature)
+bool IsExoticPet(CreatureTemplate const* creature)
 {
     // Use the IsExotic() method from CreatureTemplate
     return creature && creature->IsExotic();
@@ -54,7 +54,6 @@ bool TameAction::Execute(Event event)
     {
         std::set<std::string> normalFamilies;
         std::set<std::string> exoticFamilies;
-        Player* bot = botAI->GetBot();
 
         // Loop over all creature templates and collect tameable families
         CreatureTemplateContainer const* creatures = sObjectMgr->GetCreatureTemplates();
@@ -276,7 +275,7 @@ bool TameAction::SetPetByFamily(const std::string& family)
     Player* bot = botAI->GetBot();
 
     // Prepare a list of candidate creatures and track if any exotic pet is found
-    std::vector<const CreatureTemplate*> candidates;
+    std::vector<CreatureTemplate const* > candidates;
     bool foundExotic = false;
 
     // Iterate through all creature templates
@@ -330,7 +329,7 @@ bool TameAction::SetPetByFamily(const std::string& family)
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, candidates.size() - 1);
 
-    const CreatureTemplate* selected = candidates[dis(gen)];
+    CreatureTemplate const* selected = candidates[dis(gen)];
 
     // Save the selected pet's name and id for feedback
     lastPetName = selected->Name;

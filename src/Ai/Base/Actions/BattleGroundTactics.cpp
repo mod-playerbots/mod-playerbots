@@ -53,7 +53,7 @@ Position const WS_FLAG_HIDE_ALLIANCE_1 = {1529.249f, 1456.470f, 353.04f, 1.25f};
 Position const WS_FLAG_HIDE_ALLIANCE_2 = {1540.286f, 1476.026f, 352.692f, 2.91f};
 Position const WS_FLAG_HIDE_ALLIANCE_3 = {1495.807f, 1466.774f, 352.350f, 1.50f};
 Position const WS_ROAM_POS = {1227.446f, 1476.235f, 307.484f, 1.50f};
-Position const WS_GY_CAMPING_HORDE = {1039.819, 1388.759f, 340.703f, 0.0f};
+Position const WS_GY_CAMPING_HORDE = {1039.819f, 1388.759f, 340.703f, 0.0f};
 Position const WS_GY_CAMPING_ALLIANCE = {1422.320f, 1551.978f, 342.834f, 0.0f};
 std::vector<Position> const WS_FLAG_HIDE_HORDE = {WS_FLAG_HIDE_HORDE_1, WS_FLAG_HIDE_HORDE_2, WS_FLAG_HIDE_HORDE_3};
 std::vector<Position> const WS_FLAG_HIDE_ALLIANCE = {WS_FLAG_HIDE_ALLIANCE_1, WS_FLAG_HIDE_ALLIANCE_2,
@@ -1372,7 +1372,7 @@ std::string const BGTactics::HandleConsoleCommandPrivate(WorldSession* session, 
         uint32 max = vPaths->size() - 1;
         if (num >= 0)  // num specified or found
         {
-            if (num > max)
+            if (static_cast<uint32>(num) > max)
                 return fmt::format("Path {} of range of 0 - {}", num, max);
             min = num;
             max = num;
@@ -1561,7 +1561,7 @@ bool BGTactics::eyJumpDown()
 //
 // actual bg tactics below
 //
-bool BGTactics::Execute(Event event)
+bool BGTactics::Execute(Event /*event*/)
 {
     Battleground* bg = bot->GetBattleground();
     if (!bg)
@@ -1933,11 +1933,11 @@ bool BGTactics::selectObjective(bool reset)
                 {
                     uint32 bossEntry = (team == TEAM_HORDE) ? AV_CPLACE_MINE_S_3 : AV_CPLACE_MINE_N_3;
                     Creature* mBossNeutral = bg->GetBGCreature(bossEntry);
-                    const Position* minePositions[] = {(team == TEAM_HORDE) ? &AV_MINE_SOUTH_1 : &AV_MINE_NORTH_1,
+                    Position const* minePositions[] = {(team == TEAM_HORDE) ? &AV_MINE_SOUTH_1 : &AV_MINE_NORTH_1,
                                                        (team == TEAM_HORDE) ? &AV_MINE_SOUTH_2 : &AV_MINE_NORTH_2,
                                                        (team == TEAM_HORDE) ? &AV_MINE_SOUTH_3 : &AV_MINE_NORTH_3};
 
-                    const Position* chosen = minePositions[urand(0, 2)];
+                    Position const* chosen = minePositions[urand(0, 2)];
                     pos.Set(chosen->GetPositionX(), chosen->GetPositionY(), chosen->GetPositionZ(), bot->GetMapId());
                     posMap["bg objective"] = pos;
                     BgObjective = mBossNeutral;
@@ -2180,26 +2180,10 @@ bool BGTactics::selectObjective(bool reset)
             WSBotStrategy enemyStrategy = (team == TEAM_ALLIANCE) ? strategyHorde : strategyAlliance;
 
             uint8 defendersProhab = 3;  // Default balanced
-
-            switch (strategy)
-            {
-                case 0:
-                case 1:
-                case 2:
-                case 3:  // Balanced
-                    defendersProhab = 3;
-                    break;
-                case 4:
-                case 5:
-                case 6:
-                case 7:  // Heavy Offense
-                    defendersProhab = 1;
-                    break;
-                case 8:
-                case 9:  // Heavy Defense
-                    defendersProhab = 6;
-                    break;
-            }
+            if (strategy == WS_STRATEGY_OFFENSIVE)
+                defendersProhab = 1;
+            else if (strategy == WS_STRATEGY_DEFENSIVE)
+                defendersProhab = 6;
 
             if (enemyStrategy == WS_STRATEGY_DEFENSIVE)
                 defendersProhab = 2;
@@ -2230,8 +2214,8 @@ bool BGTactics::selectObjective(bool reset)
                     target.Relocate(enemyFC->GetPositionX(), enemyFC->GetPositionY(), enemyFC->GetPositionZ());
             }
             // Graveyard Camping if in lead
-            else if (!hasFlag && role < 8 &&
-                (team == TEAM_ALLIANCE && allianceScore == 2 && hordeScore == 0) ||
+            else if ((!hasFlag && role < 8 &&
+                (team == TEAM_ALLIANCE && allianceScore == 2 && hordeScore == 0)) ||
                 (team == TEAM_HORDE && hordeScore == 2 && allianceScore == 0))
             {
                 if (team == TEAM_ALLIANCE)
@@ -2501,7 +2485,6 @@ bool BGTactics::selectObjective(bool reset)
             EYBotStrategy strategyHorde = static_cast<EYBotStrategy>(GetBotStrategyForTeam(bg, TEAM_HORDE));
             EYBotStrategy strategyAlliance = static_cast<EYBotStrategy>(GetBotStrategyForTeam(bg, TEAM_ALLIANCE));
             EYBotStrategy strategy = (team == TEAM_ALLIANCE) ? strategyAlliance : strategyHorde;
-            EYBotStrategy enemyStrategy = (team == TEAM_ALLIANCE) ? strategyHorde : strategyAlliance;
 
             auto IsOwned = [&](uint32 nodeId) -> bool
             { return eyeOfTheStormBG->GetCapturePointInfo(nodeId)._ownerTeamId == team; };
@@ -3219,7 +3202,7 @@ bool BGTactics::moveToObjective(bool ignoreDist)
         // std::ostringstream out; out << "Moving to objective " << pos.x << ", " << pos.y << ", Distance: " <<
         // sServerFacade->GetDistance2d(bot, pos.x, pos.y); bot->Say(out.str(), LANG_UNIVERSAL);
 
-        // dont increase from 1.5 will cause bugs with horde capping AV towers
+        // dont increase from 1.5f will cause bugs with horde capping AV towers
         return MoveNear(bot->GetMapId(), pos.x, pos.y, pos.z, 1.5f);
     }
     return false;
@@ -3235,7 +3218,6 @@ bool BGTactics::selectObjectiveWp(std::vector<BattleBotPath*> const& vPaths)
     if (bgType == BATTLEGROUND_RB)
         bgType = bg->GetBgTypeID(true);
 
-    PositionMap& posMap = context->GetValue<PositionMap&>("position")->Get();
     PositionInfo pos = context->GetValue<PositionMap&>("position")->Get()["bg objective"];
     if (!pos.isSet())
         return false;
@@ -3330,7 +3312,7 @@ bool BGTactics::selectObjectiveWp(std::vector<BattleBotPath*> const& vPaths)
 
         // don't pick path where bot is already closest to the paths closest point to target (it means path cant lead it
         // anywhere) don't pick path where closest point is too far away
-        if (closestPointIndex == (reverse ? 0 : path->size() - 1) || closestPointDistToBot > botDistanceLimit)
+        if (closestPointIndex == static_cast<int>(reverse ? 0 : path->size() - 1) || closestPointDistToBot > botDistanceLimit)
             continue;
 
         // creates a score based on dist-to-bot and dist-to-destination, where lower is better, and dist-to-bot is more
@@ -4253,7 +4235,7 @@ bool BGTactics::IsLockedInsideKeep()
     return false;
 }
 
-bool ArenaTactics::Execute(Event event)
+bool ArenaTactics::Execute(Event /*event*/)
 {
     if (!bot->InBattleground())
     {
@@ -4346,6 +4328,8 @@ bool ArenaTactics::moveToCenter(Battleground* bg)
         case CLASS_MAGE:
         case CLASS_WARLOCK:
             Preference = 9;
+            break;
+        default:
             break;
     }
 

@@ -21,7 +21,7 @@ public:
     struct GlyphInfo
     {
         GlyphPropertiesEntry const* prop;   ///< entrée GlyphProperties.dbc
-        ItemTemplate const*         proto;  ///< template de l’objet glyphe
+        ItemTemplate const*        proto;  ///< template de l’objet glyphe
     };
 
 private:

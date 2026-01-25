@@ -97,6 +97,8 @@ uint8 BalancePercentValue::Calculate()
             case CREATURE_ELITE_WORLDBOSS:
                 level *= 20;
                 break;
+            default:
+                break;
         }
 
         attackerLevel += level;

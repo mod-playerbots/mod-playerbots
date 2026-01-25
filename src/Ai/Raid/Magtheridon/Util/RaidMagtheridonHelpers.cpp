@@ -121,7 +121,7 @@ namespace MagtheridonHelpers
 
     std::unordered_map<ObjectGuid, CubeInfo> botToCubeAssignment;
 
-    void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>& cubes, PlayerbotAI* botAI)
+    void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>& cubes, PlayerbotAI* /*botAI*/)
     {
         botToCubeAssignment.clear();
         if (!group)
@@ -175,7 +175,7 @@ namespace MagtheridonHelpers
     std::unordered_map<uint32, time_t> spreadWaitTimer;
     std::unordered_map<uint32, time_t> dpsWaitTimer;
 
-    bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float z)
+    bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* /*bot*/, float x, float y, float /*z*/)
     {
         // Debris
         std::vector<Unit*> debrisHazards;
@@ -210,7 +210,7 @@ namespace MagtheridonHelpers
         return true;
     }
 
-    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot)
+    bool IsInstanceTimerManager(PlayerbotAI* /*botAI*/, Player* bot)
     {
         if (Group* group = bot->GetGroup())
         {

@@ -14,7 +14,7 @@ class Battleground;
 class PlayerbotAI;
 struct Position;
 
-#define SPELL_CAPTURE_BANNER 21651
+constexpr uint32 SPELL_CAPTURE_BANNER = 21651;
 
 enum WSBotStrategy : uint8
 {

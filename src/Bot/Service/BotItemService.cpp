@@ -165,7 +165,7 @@ Item* BotItemService::FindStoneForStatic(Player* bot, Item* weapon)
     if (!weapon)
         return nullptr;
 
-    const ItemTemplate* item_template = weapon->GetTemplate();
+    ItemTemplate const* item_template = weapon->GetTemplate();
     if (!item_template)
         return nullptr;
 
@@ -210,7 +210,7 @@ Item* BotItemService::FindOilForStatic(Player* bot, Item* weapon)
     if (!weapon)
         return nullptr;
 
-    const ItemTemplate* item_template = weapon->GetTemplate();
+    ItemTemplate const* item_template = weapon->GetTemplate();
     if (!item_template)
         return nullptr;
 
@@ -576,7 +576,7 @@ std::vector<std::pair<Quest const*, uint32>> BotItemService::GetCurrentQuestsReq
         if (!questId)
             continue;
 
-        const Quest* quest = sObjectMgr->GetQuestTemplate(questId);
+        Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
         if (!quest)
             continue;
 
@@ -600,184 +600,184 @@ std::vector<std::pair<Quest const*, uint32>> BotItemService::GetCurrentQuestsReq
 
 Item* BotItemService::FindPoison() const
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return FindPoisonStatic(botAI_->GetBot());
+        return FindPoisonStatic(_botAI->GetBot());
     }
     return nullptr;
 }
 
 Item* BotItemService::FindAmmo() const
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return FindAmmoStatic(botAI_->GetBot());
+        return FindAmmoStatic(_botAI->GetBot());
     }
     return nullptr;
 }
 
 Item* BotItemService::FindBandage() const
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return FindBandageStatic(botAI_->GetBot());
+        return FindBandageStatic(_botAI->GetBot());
     }
     return nullptr;
 }
 
 Item* BotItemService::FindOpenableItem() const
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return FindOpenableItemStatic(botAI_->GetBot());
+        return FindOpenableItemStatic(_botAI->GetBot());
     }
     return nullptr;
 }
 
 Item* BotItemService::FindLockedItem() const
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return FindLockedItemStatic(botAI_->GetBot());
+        return FindLockedItemStatic(_botAI->GetBot());
     }
     return nullptr;
 }
 
 Item* BotItemService::FindConsumable(uint32 itemId) const
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return FindConsumableStatic(botAI_->GetBot(), itemId);
+        return FindConsumableStatic(_botAI->GetBot(), itemId);
     }
     return nullptr;
 }
 
 Item* BotItemService::FindStoneFor(Item* weapon) const
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return FindStoneForStatic(botAI_->GetBot(), weapon);
+        return FindStoneForStatic(_botAI->GetBot(), weapon);
     }
     return nullptr;
 }
 
 Item* BotItemService::FindOilFor(Item* weapon) const
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return FindOilForStatic(botAI_->GetBot(), weapon);
+        return FindOilForStatic(_botAI->GetBot(), weapon);
     }
     return nullptr;
 }
 
 void BotItemService::ImbueItem(Item* item, uint32 targetFlag, ObjectGuid targetGUID)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        ImbueItemStatic(botAI_->GetBot(), item, targetFlag, targetGUID);
+        ImbueItemStatic(_botAI->GetBot(), item, targetFlag, targetGUID);
     }
 }
 
 void BotItemService::ImbueItem(Item* item, uint8 targetInventorySlot)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        ImbueItemStatic(botAI_->GetBot(), item, targetInventorySlot);
+        ImbueItemStatic(_botAI->GetBot(), item, targetInventorySlot);
     }
 }
 
 void BotItemService::ImbueItem(Item* item, Unit* target)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        ImbueItemStatic(botAI_->GetBot(), item, target);
+        ImbueItemStatic(_botAI->GetBot(), item, target);
     }
 }
 
 void BotItemService::ImbueItem(Item* item)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        ImbueItemStatic(botAI_->GetBot(), item);
+        ImbueItemStatic(_botAI->GetBot(), item);
     }
 }
 
 void BotItemService::EnchantItem(uint32 spellId, uint8 slot)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        EnchantItemStatic(botAI_->GetBot(), spellId, slot);
+        EnchantItemStatic(_botAI->GetBot(), spellId, slot);
     }
 }
 
 std::vector<Item*> BotItemService::GetInventoryAndEquippedItems() const
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return GetInventoryAndEquippedItemsStatic(botAI_->GetBot());
+        return GetInventoryAndEquippedItemsStatic(_botAI->GetBot());
     }
     return {};
 }
 
 std::vector<Item*> BotItemService::GetInventoryItems() const
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return GetInventoryItemsStatic(botAI_->GetBot());
+        return GetInventoryItemsStatic(_botAI->GetBot());
     }
     return {};
 }
 
 uint32 BotItemService::GetInventoryItemsCountWithId(uint32 itemId) const
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return GetInventoryItemsCountWithIdStatic(botAI_->GetBot(), itemId);
+        return GetInventoryItemsCountWithIdStatic(_botAI->GetBot(), itemId);
     }
     return 0;
 }
 
 bool BotItemService::HasItemInInventory(uint32 itemId) const
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return HasItemInInventoryStatic(botAI_->GetBot(), itemId);
+        return HasItemInInventoryStatic(_botAI->GetBot(), itemId);
     }
     return false;
 }
 
 InventoryResult BotItemService::CanEquipItem(uint8 slot, uint16& dest, Item* pItem, bool swap, bool notLoading) const
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return botAI_->CanEquipItem(slot, dest, pItem, swap, notLoading);
+        return _botAI->CanEquipItem(slot, dest, pItem, swap, notLoading);
     }
     return EQUIP_ERR_ITEM_NOT_FOUND;
 }
 
 uint8 BotItemService::FindEquipSlot(ItemTemplate const* proto, uint32 slot, bool swap) const
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return botAI_->FindEquipSlot(proto, slot, swap);
+        return _botAI->FindEquipSlot(proto, slot, swap);
     }
     return 0;
 }
 
 uint32 BotItemService::GetEquipGearScore(Player* player) const
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return GetEquipGearScoreStatic(player ? player : botAI_->GetBot());
+        return GetEquipGearScoreStatic(player ? player : _botAI->GetBot());
     }
     return 0;
 }
 
 std::vector<std::pair<Quest const*, uint32>> BotItemService::GetCurrentQuestsRequiringItemId(uint32 itemId) const
 {
-    if (botAI_)
+    if (_botAI)
     {
-        return GetCurrentQuestsRequiringItemIdStatic(botAI_->GetBot(), itemId);
+        return GetCurrentQuestsRequiringItemIdStatic(_botAI->GetBot(), itemId);
     }
     return {};
 }

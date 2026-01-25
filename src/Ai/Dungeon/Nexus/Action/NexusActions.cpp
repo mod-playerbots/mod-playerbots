@@ -3,7 +3,7 @@
 #include "NexusActions.h"
 #include "NexusStrategy.h"
 
-bool MoveFromWhirlwindAction::Execute(Event event)
+bool MoveFromWhirlwindAction::Execute(Event /*event*/)
 {
     Unit* boss = nullptr;
     uint8 faction = bot->GetTeamId();
@@ -53,7 +53,7 @@ bool MoveFromWhirlwindAction::Execute(Event event)
     return MoveAway(boss, targetDist - bossDistance);
 }
 
-bool FirebombSpreadAction::Execute(Event event)
+bool FirebombSpreadAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "grand magus telestra");
     float radius = 5.0f;
@@ -75,7 +75,7 @@ bool FirebombSpreadAction::Execute(Event event)
 }
 
 bool TelestraSplitTargetAction::isUseful() { return !BotRoleService::IsHealStatic(bot); }
-bool TelestraSplitTargetAction::Execute(Event event)
+bool TelestraSplitTargetAction::Execute(Event /*event*/)
 {
     GuidVector attackers = AI_VALUE(GuidVector, "attackers");
     Unit* splitTargets[3] = {nullptr, nullptr, nullptr};
@@ -98,6 +98,8 @@ bool TelestraSplitTargetAction::Execute(Event event)
             // Fire clone last
             case NPC_FIRE_MAGUS:
                 splitTargets[2] = unit;
+                break;
+            default:
                 break;
         }
     }
@@ -122,7 +124,7 @@ bool TelestraSplitTargetAction::Execute(Event event)
 }
 
 bool ChaoticRiftTargetAction::isUseful() { return !BotRoleService::IsHealStatic(bot); }
-bool ChaoticRiftTargetAction::Execute(Event event)
+bool ChaoticRiftTargetAction::Execute(Event /*event*/)
 {
     Unit* chaoticRift = nullptr;
 
@@ -153,7 +155,7 @@ bool DodgeSpikesAction::isUseful()
 
     return bot->GetExactDist2d(boss) > 0.5f;
 }
-bool DodgeSpikesAction::Execute(Event event)
+bool DodgeSpikesAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "ormorok the tree-shaper");
     if (!boss) { return false; }
@@ -161,7 +163,7 @@ bool DodgeSpikesAction::Execute(Event event)
     return Move(bot->GetAngle(boss), bot->GetExactDist2d(boss) - 0.3f);
 }
 
-bool IntenseColdJumpAction::Execute(Event event)
+bool IntenseColdJumpAction::Execute(Event /*event*/)
 {
     // This needs improving but maybe it should be done in the playerbot core.
     // Jump doesn't seem to support zero offset (eg. jump on the spot) so need to add a tiny delta.

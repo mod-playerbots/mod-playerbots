@@ -9,32 +9,32 @@
 
 void PacketHandler::HandleBotOutgoingPacket(WorldPacket const& packet)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        botAI_->HandleBotOutgoingPacket(packet);
+        _botAI->HandleBotOutgoingPacket(packet);
     }
 }
 
 void PacketHandler::HandleMasterIncomingPacket(WorldPacket const& packet)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        botAI_->HandleMasterIncomingPacket(packet);
+        _botAI->HandleMasterIncomingPacket(packet);
     }
 }
 
 void PacketHandler::HandleMasterOutgoingPacket(WorldPacket const& packet)
 {
-    if (botAI_)
+    if (_botAI)
     {
-        botAI_->HandleMasterOutgoingPacket(packet);
+        _botAI->HandleMasterOutgoingPacket(packet);
     }
 }
 
 void PacketHandler::HandleTeleportAck()
 {
-    if (botAI_)
+    if (_botAI)
     {
-        botAI_->HandleTeleportAck();
+        _botAI->HandleTeleportAck();
     }
 }

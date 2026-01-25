@@ -40,18 +40,18 @@ The mod-playerbots codebase had grown organically into a **monolithic architectu
 
 | Metric | Value |
 |--------|-------|
-| Files Changed | 316 |
-| Insertions | +15,227 |
-| Deletions | -2,411 |
-| Net Change | +12,816 lines |
-| Commits | 18 |
+| Files Changed | 333 |
+| Insertions | +18,112 |
+| Deletions | -2,516 |
+| Net Change | +15,596 lines |
+| Commits | 28 |
 
 ### 2.2 Components Changed
 
 **New Infrastructure (Created):**
 - 6 service interface files (`src/Bot/Interface/`) - *actively used*
 - 6 service implementation files (`src/Bot/Service/`) - *actively used*
-- 34 test files (`test/`)
+- 35 test files (`test/`)
 
 **Manager Infrastructure (Now Active):**
 - 3 manager interface files (ITravelManager, IRandomBotManager, IBotRepository)
@@ -193,8 +193,8 @@ class BotRoleService : public IRoleService {
 | Service | Lines | Static Methods | Context Struct |
 |---------|-------|----------------|----------------|
 | BotRoleService | ~850 | 22 methods | N/A |
-| BotChatService | ~480 | 15 methods | ChatContext |
-| BotItemService | ~400 | 17 methods | N/A |
+| BotChatService | ~480 | 12 methods | ChatContext |
+| BotItemService | ~780 | 17 methods | N/A |
 | BotSpellService | ~590 | 12 methods | SpellContext |
 
 **Context Structs for Complex Dependencies:**
@@ -416,6 +416,8 @@ TEST_F(RoleServiceTest, CanMockTankRole) {
 | 66e1e7ab | 5 | Add PlayerbotSecurity.h fixture |
 | b6593be8 | 5 | Delete migration progress doc (cleanup) |
 | 2f473996 | 5 | Merge upstream with service adaptation |
+| ba7a1d58 | 6 | Wire up ManagerRegistry with production adapters |
+| a1e0ae74 | 6 | Expand service layer with item, spell, and chat functionality |
 
 ---
 
@@ -505,6 +507,8 @@ Removed unnecessary `std::move()` on return statements:
 
 **Unused Parameter Warnings (-Wunused-parameter):**
 Added `[[maybe_unused]]` attribute to intentionally unused parameters in action Execute() methods.
+
+**Current Status:** The mod-playerbots module now compiles **warning-free** with standard compiler warning flags.
 
 ---
 

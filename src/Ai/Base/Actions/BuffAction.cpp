@@ -79,6 +79,8 @@ void BuffAction::TellHeader(uint32 subClass)
         case ITEM_SUBCLASS_ITEM_ENHANCEMENT:
             botAI->GetServices().GetChatService().TellMaster("--- Enchant ---");
             return;
+        default:
+            break;
     }
 }
 

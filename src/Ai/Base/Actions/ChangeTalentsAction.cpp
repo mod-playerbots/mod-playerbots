@@ -110,7 +110,7 @@ std::string ChangeTalentsAction::SpecList()
     int cls = bot->getClass();
     int specFound = 0;
     std::ostringstream out;
-    for (int specNo = 0; specNo < MAX_SPECNO; ++specNo)
+    for (uint32 specNo = 0; specNo < MAX_SPECNO; ++specNo)
     {
         if (sPlayerbotAIConfig->premadeSpecName[cls][specNo].size() == 0)
         {
@@ -137,7 +137,7 @@ std::string ChangeTalentsAction::SpecPick(std::string param)
 {
     int cls = bot->getClass();
     // int specFound = 0; //not used, line marked for removal.
-    for (int specNo = 0; specNo < MAX_SPECNO; ++specNo)
+    for (uint32 specNo = 0; specNo < MAX_SPECNO; ++specNo)
     {
         if (sPlayerbotAIConfig->premadeSpecName[cls][specNo].size() == 0)
         {
@@ -370,7 +370,7 @@ std::string ChangeTalentsAction::SpecApply(std::string param)
 //     return nullptr;
 // }
 
-bool AutoSetTalentsAction::Execute(Event event)
+bool AutoSetTalentsAction::Execute(Event /*event*/)
 {
     std::ostringstream out;
 

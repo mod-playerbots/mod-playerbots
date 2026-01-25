@@ -3,7 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#pragma once
+#ifndef MOD_PLAYERBOTS_BOT_ENGINE_TRIGGER_TRIGGER_H
+#define MOD_PLAYERBOTS_BOT_ENGINE_TRIGGER_TRIGGER_H
 
 #include "Action.h"
 #include "Common.h"
@@ -82,3 +83,5 @@ private:
     std::vector<NextAction> handlers;
     const std::string name;
 };
+
+#endif  // MOD_PLAYERBOTS_BOT_ENGINE_TRIGGER_TRIGGER_H

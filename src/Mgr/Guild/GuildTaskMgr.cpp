@@ -728,6 +728,8 @@ bool GuildTaskMgr::HandleConsoleCommand(ChatHandler* /* handler */, char const* 
                             case ITEM_QUALITY_LEGENDARY:
                                 name << "yellow";
                                 break;
+                            default:
+                                break;
                         }
 
                         name << ")";
@@ -749,6 +751,8 @@ bool GuildTaskMgr::HandleConsoleCommand(ChatHandler* /* handler */, char const* 
                                 break;
                             case CREATURE_ELITE_RAREELITE:
                                 name << "rare elite";
+                                break;
+                            default:
                                 break;
                         }
 

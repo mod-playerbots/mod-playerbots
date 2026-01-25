@@ -9,7 +9,7 @@
 
 using namespace MagtheridonHelpers;
 
-bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event event)
+bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event /*event*/)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (!magtheridon)
@@ -69,7 +69,7 @@ bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event event)
     return false;
 }
 
-bool MagtheridonFirstAssistTankAttackNWChannelerAction::Execute(Event event)
+bool MagtheridonFirstAssistTankAttackNWChannelerAction::Execute(Event /*event*/)
 {
     Creature* channelerDiamond = GetChanneler(bot, NORTHWEST_CHANNELER);
     if (!channelerDiamond || !channelerDiamond->IsAlive())
@@ -102,7 +102,7 @@ bool MagtheridonFirstAssistTankAttackNWChannelerAction::Execute(Event event)
     return false;
 }
 
-bool MagtheridonSecondAssistTankAttackNEChannelerAction::Execute(Event event)
+bool MagtheridonSecondAssistTankAttackNEChannelerAction::Execute(Event /*event*/)
 {
     Creature* channelerTriangle = GetChanneler(bot, NORTHEAST_CHANNELER);
     if (!channelerTriangle || !channelerTriangle->IsAlive())
@@ -136,7 +136,7 @@ bool MagtheridonSecondAssistTankAttackNEChannelerAction::Execute(Event event)
 }
 
 // Misdirect West & East Channelers to Main Tank
-bool MagtheridonMisdirectHellfireChannelers::Execute(Event event)
+bool MagtheridonMisdirectHellfireChannelers::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -213,7 +213,7 @@ bool MagtheridonMisdirectHellfireChannelers::Execute(Event event)
     return false;
 }
 
-bool MagtheridonAssignDPSPriorityAction::Execute(Event event)
+bool MagtheridonAssignDPSPriorityAction::Execute(Event /*event*/)
 {
     // Listed in order of priority
     Creature* channelerSquare   = GetChanneler(bot, SOUTH_CHANNELER);
@@ -308,7 +308,7 @@ bool MagtheridonAssignDPSPriorityAction::Execute(Event event)
 
 // Assign Burning Abyssals to Warlocks to Banish
 // Burning Abyssals in excess of Warlocks in party will be Feared
-bool MagtheridonWarlockCCBurningAbyssalAction::Execute(Event event)
+bool MagtheridonWarlockCCBurningAbyssalAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -342,7 +342,7 @@ bool MagtheridonWarlockCCBurningAbyssalAction::Execute(Event event)
         }
     }
 
-    if (warlockIndex >= 0 && warlockIndex < abyssals.size())
+    if (warlockIndex >= 0 && static_cast<size_t>(warlockIndex) < abyssals.size())
     {
         Unit* assignedAbyssal = abyssals[warlockIndex];
         if (!assignedAbyssal->HasAura(SPELL_BANISH) && botAI->GetServices().GetSpellService().CanCastSpell(SPELL_BANISH, assignedAbyssal, true))
@@ -361,7 +361,7 @@ bool MagtheridonWarlockCCBurningAbyssalAction::Execute(Event event)
 }
 
 // Main tank will back up to the Northern point of the room
-bool MagtheridonMainTankPositionBossAction::Execute(Event event)
+bool MagtheridonMainTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (!magtheridon)
@@ -401,7 +401,7 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event event)
 std::unordered_map<ObjectGuid, Position> MagtheridonSpreadRangedAction::initialPositions;
 std::unordered_map<ObjectGuid, bool> MagtheridonSpreadRangedAction::hasReachedInitialPosition;
 
-bool MagtheridonSpreadRangedAction::Execute(Event event)
+bool MagtheridonSpreadRangedAction::Execute(Event /*event*/)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (!magtheridon)
@@ -458,7 +458,7 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
         uint8 count = members.size();
 
         float angle = 2 * M_PI * botIndex / count;
-        float radius = static_cast<float>(rand()) / RAND_MAX * maxSpreadRadius;
+        float radius = static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * maxSpreadRadius;
         float targetX = centerX + radius * cos(angle);
         float targetY = centerY + radius * sin(angle);
 
@@ -491,8 +491,8 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
 
     if (distToCenter > maxSpreadRadius + radiusBuffer)
     {
-        float angle = static_cast<float>(rand()) / RAND_MAX * 2.0f * M_PI;
-        float radius = static_cast<float>(rand()) / RAND_MAX * maxSpreadRadius;
+        float angle = static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 2.0f * M_PI;
+        float radius = static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * maxSpreadRadius;
         float targetX = centerX + radius * cos(angle);
         float targetY = centerY + radius * sin(angle);
 
@@ -510,8 +510,8 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
 }
 
 // For bots that are assigned to click cubes
-// Magtheridon casts Blast Nova every 54.35 to 55.40s, with a 2s cast time
-bool MagtheridonUseManticronCubeAction::Execute(Event event)
+// Magtheridon casts Blast Nova every 54.35f to 55.40s, with a 2s cast time
+bool MagtheridonUseManticronCubeAction::Execute(Event /*event*/)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (!magtheridon)
@@ -545,7 +545,7 @@ bool MagtheridonUseManticronCubeAction::Execute(Event event)
     return false;
 }
 
-bool MagtheridonUseManticronCubeAction::HandleCubeRelease(Unit* magtheridon, GameObject* cube)
+bool MagtheridonUseManticronCubeAction::HandleCubeRelease(Unit* magtheridon, GameObject* /*cube*/)
 {
     if (bot->HasAura(SPELL_SHADOW_GRASP) &&
         !(magtheridon->HasUnitState(UNIT_STATE_CASTING) &&
@@ -600,7 +600,7 @@ bool MagtheridonUseManticronCubeAction::HandleWaitingPhase(const CubeInfo& cubeI
             }
         }
 
-        float angle = static_cast<float>(rand()) / RAND_MAX * 2.0f * M_PI;
+        float angle = static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 2.0f * M_PI;
         float fallbackX = cubeInfo.x + cos(angle) * safeWaitDistance;
         float fallbackY = cubeInfo.y + sin(angle) * safeWaitDistance;
         float fallbackZ = bot->GetPositionZ();
@@ -652,7 +652,7 @@ bool MagtheridonUseManticronCubeAction::HandleCubeInteraction(const CubeInfo& cu
 // is not interrupted or takes too long to interrupt, the timer will be thrown off for the rest of the encounter.
 // Correcting this issue is complicated and probably would need some rewriting--I have not done so and
 // and view the current solution as sufficient since in TBC a missed Blast Nova would be a guaranteed wipe anyway.
-bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event event)
+bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event /*event*/)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (!magtheridon)

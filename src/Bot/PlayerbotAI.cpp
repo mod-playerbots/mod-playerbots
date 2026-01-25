@@ -296,7 +296,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 
     if (currentSpell)
     {
-        const SpellInfo* spellInfo = currentSpell->GetSpellInfo();
+        SpellInfo const* spellInfo = currentSpell->GetSpellInfo();
         if (spellInfo && currentSpell->getState() == SPELL_STATE_PREPARING)
         {
             Unit* spellTarget = currentSpell->m_targets.GetUnitTarget();
@@ -472,7 +472,7 @@ void PlayerbotAI::UpdateAIInternal([[maybe_unused]] uint32 elapsed, bool minimal
 
     std::string const mapString = WorldPosition(bot).isOverworld() ? std::to_string(bot->GetMapId()) : "I";
     PerfMonitorOperation* pmo =
-        sPerfMonitor->start(PERF_MON_TOTAL, "PlayerbotAI::UpdateAIInternal " + mapString);
+        sPerfMonitor->start(PerformanceMetric::Total, "PlayerbotAI::UpdateAIInternal " + mapString);
     ExternalEventHelper helper(aiObjectContext);
 
     // chat replies
@@ -1697,6 +1697,8 @@ bool PlayerbotAI::DoSpecificAction(std::string const name, Event event, bool sil
                     TellError(out.str());
                 }
                 return false;
+            default:
+                break;
         }
     }
 
@@ -1746,7 +1748,7 @@ bool PlayerbotAI::ContainsStrategy(StrategyType type)
 
 bool PlayerbotAI::HasStrategy(std::string const name, BotState type) { return engines[type]->HasStrategy(name); }
 
-void PlayerbotAI::ResetStrategies(bool load)
+void PlayerbotAI::ResetStrategies(bool /*load*/)
 {
     for (uint8 i = 0; i < BOT_STATE_MAX; i++)
         engines[i]->removeAllStrategies();
@@ -1891,19 +1893,19 @@ WorldObject* PlayerbotAI::GetWorldObject(ObjectGuid guid)
     return ObjectAccessor::GetWorldObject(*bot, guid);
 }
 
-const AreaTableEntry* PlayerbotAI::GetCurrentArea()
+AreaTableEntry const* PlayerbotAI::GetCurrentArea()
 {
     return sAreaTableStore.LookupEntry(
         bot->GetMap()->GetAreaId(bot->GetPhaseMask(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ()));
 }
 
-const AreaTableEntry* PlayerbotAI::GetCurrentZone()
+AreaTableEntry const* PlayerbotAI::GetCurrentZone()
 {
     return sAreaTableStore.LookupEntry(
         bot->GetMap()->GetZoneId(bot->GetPhaseMask(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ()));
 }
 
-std::string PlayerbotAI::GetLocalizedAreaName(const AreaTableEntry* entry)
+std::string PlayerbotAI::GetLocalizedAreaName(AreaTableEntry const* entry)
 {
     std::string name;
     if (entry)
@@ -1919,7 +1921,7 @@ std::string PlayerbotAI::GetLocalizedAreaName(const AreaTableEntry* entry)
 std::string PlayerbotAI::GetLocalizedCreatureName(uint32 entry)
 {
     std::string name;
-    const CreatureLocale* cl = sObjectMgr->GetCreatureLocale(entry);
+    CreatureLocale const* cl = sObjectMgr->GetCreatureLocale(entry);
     if (cl)
         ObjectMgr::GetLocaleString(cl->Name, sWorld->GetDefaultDbcLocale(), name);
     if (name.empty())
@@ -1934,7 +1936,7 @@ std::string PlayerbotAI::GetLocalizedCreatureName(uint32 entry)
 std::string PlayerbotAI::GetLocalizedGameObjectName(uint32 entry)
 {
     std::string name;
-    const GameObjectLocale* gl = sObjectMgr->GetGameObjectLocale(entry);
+    GameObjectLocale const* gl = sObjectMgr->GetGameObjectLocale(entry);
     if (gl)
         ObjectMgr::GetLocaleString(gl->Name, sWorld->GetDefaultDbcLocale(), name);
     if (name.empty())
@@ -3937,7 +3939,7 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
     // which prevents unneeded expensive GameTime calls.
     if (_isBotInitializing)
     {
-        _isBotInitializing = GameTime::GetUptime().count() < sPlayerbotAIConfig->maxRandomBots * 0.11;
+        _isBotInitializing = GameTime::GetUptime().count() < sPlayerbotAIConfig->maxRandomBots * 0.11f;
 
         // no activity allowed during bot initialization
         if (_isBotInitializing)
@@ -4443,7 +4445,7 @@ uint32 PlayerbotAI::GetMixedGearScore(Player* player, bool withBags, bool withBa
     {
         topGearScore.push_back(gearScore[i]);
     }
-    std::sort(topGearScore.begin(), topGearScore.end(), [&](const uint32 lhs, const uint32 rhs) { return lhs > rhs; });
+    std::sort(topGearScore.begin(), topGearScore.end(), [](const uint32 lhs, const uint32 rhs) { return lhs > rhs; });
     uint32 sum = 0;
     for (uint32 i = 0; i < std::min((uint32)topGearScore.size(), topN); i++)
     {
@@ -4924,7 +4926,7 @@ Item* PlayerbotAI::FindStoneFor(Item* weapon) const
     if (!weapon)
         return nullptr;
 
-    const ItemTemplate* item_template = weapon->GetTemplate();
+    ItemTemplate const* item_template = weapon->GetTemplate();
     if (!item_template)
         return nullptr;
 
@@ -4973,7 +4975,7 @@ Item* PlayerbotAI::FindOilFor(Item* weapon) const
     if (!weapon)
         return nullptr;
 
-    const ItemTemplate* item_template = weapon->GetTemplate();
+    ItemTemplate const* item_template = weapon->GetTemplate();
     if (!item_template)
         return nullptr;
 
@@ -5209,9 +5211,9 @@ bool PlayerbotAI::HasItemInInventory(uint32 itemId)
     return false;
 }
 
-std::vector<std::pair<const Quest*, uint32>> PlayerbotAI::GetCurrentQuestsRequiringItemId(uint32 itemId)
+std::vector<std::pair<Quest const* , uint32>> PlayerbotAI::GetCurrentQuestsRequiringItemId(uint32 itemId)
 {
-    std::vector<std::pair<const Quest*, uint32>> result;
+    std::vector<std::pair<Quest const* , uint32>> result;
 
     if (!itemId)
     {
@@ -5225,7 +5227,7 @@ std::vector<std::pair<const Quest*, uint32>> PlayerbotAI::GetCurrentQuestsRequir
             continue;
 
         // QuestStatus status = bot->GetQuestStatus(questId);
-        const Quest* quest = sObjectMgr->GetQuestTemplate(questId);
+        Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
         for (uint8 i = 0; i < std::size(quest->RequiredItemId); ++i)
         {
             if (quest->RequiredItemId[i] == itemId)
@@ -5521,6 +5523,8 @@ InventoryResult PlayerbotAI::CanEquipItem(uint8 slot, uint16& dest, Item* pItem,
                 case EQUIPMENT_SLOT_TRINKET2:
                     ignore = EQUIPMENT_SLOT_TRINKET1;
                     break;
+                default:
+                    break;
             }
 
             if (ignore == uint8(NULL_SLOT) || pItem != bot->GetItemByPos(INVENTORY_SLOT_BAG_0, ignore))
@@ -5730,6 +5734,8 @@ uint8 PlayerbotAI::FindEquipSlot(ItemTemplate const* proto, uint32 slot, bool sw
                     if (bot->IsClass(CLASS_DEATH_KNIGHT, CLASS_CONTEXT_EQUIP_RELIC))
                         slots[0] = EQUIPMENT_SLOT_RANGED;
                     break;
+                default:
+                    break;
             }
             break;
         }
@@ -5787,7 +5793,7 @@ ChatChannelSource PlayerbotAI::GetChatChannelSource(Player* bot, uint32 type, st
                 return ChatChannelSource::SRC_UNDEFINED;
             }
 
-            const Channel* channel = cMgr->GetChannel(channelName, bot);
+            Channel const* channel = cMgr->GetChannel(channelName, bot);
             if (channel)
             {
                 switch (channel->GetChannelId())
@@ -5898,9 +5904,9 @@ bool PlayerbotAI::CheckLocationDistanceByLevel(Player* player, const WorldLocati
     return dis <= bound;
 }
 
-std::vector<const Quest*> PlayerbotAI::GetAllCurrentQuests()
+std::vector<Quest const* > PlayerbotAI::GetAllCurrentQuests()
 {
-    std::vector<const Quest*> result;
+    std::vector<Quest const* > result;
 
     for (uint16 slot = 0; slot < MAX_QUEST_LOG_SIZE; ++slot)
     {
@@ -5916,9 +5922,9 @@ std::vector<const Quest*> PlayerbotAI::GetAllCurrentQuests()
     return result;
 }
 
-std::vector<const Quest*> PlayerbotAI::GetCurrentIncompleteQuests()
+std::vector<Quest const* > PlayerbotAI::GetCurrentIncompleteQuests()
 {
-    std::vector<const Quest*> result;
+    std::vector<Quest const* > result;
 
     for (uint16 slot = 0; slot < MAX_QUEST_LOG_SIZE; ++slot)
     {

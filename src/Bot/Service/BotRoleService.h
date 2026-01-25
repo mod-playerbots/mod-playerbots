@@ -100,11 +100,11 @@ public:
     bool HasAggro(Unit* unit) const override;
 
     // Set the bot context for instance methods that need the bot
-    void SetBotContext(PlayerbotAI* ai) { botAI_ = ai; }
-    PlayerbotAI* GetBotContext() const { return botAI_; }
+    void SetBotContext(PlayerbotAI* ai) { _botAI = ai; }
+    PlayerbotAI* GetBotContext() const { return _botAI; }
 
 private:
-    PlayerbotAI* botAI_ = nullptr;
+    PlayerbotAI* _botAI = nullptr;
 };
 
 #endif

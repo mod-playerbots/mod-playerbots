@@ -100,7 +100,7 @@ Event RpgSubAction::ActionEvent(Event event) { return event; }
 
 bool RpgStayAction::isUseful() { return rpg->InRange() && !botAI->HasRealPlayerMaster(); }
 
-bool RpgStayAction::Execute(Event event)
+bool RpgStayAction::Execute(Event /*event*/)
 {
     bot->PlayerTalkClass->SendCloseGossip();
 
@@ -110,7 +110,7 @@ bool RpgStayAction::Execute(Event event)
 
 bool RpgWorkAction::isUseful() { return rpg->InRange() && !botAI->HasRealPlayerMaster(); }
 
-bool RpgWorkAction::Execute(Event event)
+bool RpgWorkAction::Execute(Event /*event*/)
 {
     bot->HandleEmoteCommand(EMOTE_STATE_USE_STANDING);
     rpg->AfterExecute();
@@ -119,7 +119,7 @@ bool RpgWorkAction::Execute(Event event)
 
 bool RpgEmoteAction::isUseful() { return rpg->InRange() && !botAI->HasRealPlayerMaster(); }
 
-bool RpgEmoteAction::Execute(Event event)
+bool RpgEmoteAction::Execute(Event /*event*/)
 {
     uint32 type = TalkAction::GetRandomEmote(rpg->guidP().GetUnit());
 
@@ -134,7 +134,7 @@ bool RpgEmoteAction::Execute(Event event)
     return true;
 }
 
-bool RpgCancelAction::Execute(Event event)
+bool RpgCancelAction::Execute(Event /*event*/)
 {
     RESET_AI_VALUE(GuidPosition, "rpg target");
     rpg->OnExecute("");
@@ -143,7 +143,7 @@ bool RpgCancelAction::Execute(Event event)
 
 bool RpgTaxiAction::isUseful() { return rpg->InRange() && !botAI->HasRealPlayerMaster(); }
 
-bool RpgTaxiAction::Execute(Event event)
+bool RpgTaxiAction::Execute(Event /*event*/)
 {
     GuidPosition guidP = rpg->guidP();
 
@@ -204,7 +204,7 @@ bool RpgTaxiAction::Execute(Event event)
     return true;
 }
 
-bool RpgDiscoverAction::Execute(Event event)
+bool RpgDiscoverAction::Execute(Event /*event*/)
 {
     GuidPosition guidP = rpg->guidP();
 
@@ -223,7 +223,7 @@ bool RpgDiscoverAction::Execute(Event event)
 
 std::string const RpgStartQuestAction::ActionName() { return "accept all quests"; }
 
-Event RpgStartQuestAction::ActionEvent(Event event)
+Event RpgStartQuestAction::ActionEvent(Event /*event*/)
 {
     WorldPacket p(CMSG_QUESTGIVER_ACCEPT_QUEST);
     p << rpg->guid();
@@ -233,7 +233,7 @@ Event RpgStartQuestAction::ActionEvent(Event event)
 
 std::string const RpgEndQuestAction::ActionName() { return "talk to quest giver"; }
 
-Event RpgEndQuestAction::ActionEvent(Event event)
+Event RpgEndQuestAction::ActionEvent(Event /*event*/)
 {
     WorldPacket p(CMSG_QUESTGIVER_COMPLETE_QUEST);
     p << rpg->guid();
@@ -243,17 +243,17 @@ Event RpgEndQuestAction::ActionEvent(Event event)
 
 std::string const RpgBuyAction::ActionName() { return "buy"; }
 
-Event RpgBuyAction::ActionEvent(Event event) { return Event("rpg action", "vendor"); }
+Event RpgBuyAction::ActionEvent(Event /*event*/) { return Event("rpg action", "vendor"); }
 
 std::string const RpgSellAction::ActionName() { return "sell"; }
 
-Event RpgSellAction::ActionEvent(Event event) { return Event("rpg action", "vendor"); }
+Event RpgSellAction::ActionEvent(Event /*event*/) { return Event("rpg action", "vendor"); }
 
 std::string const RpgRepairAction::ActionName() { return "repair"; }
 
 std::string const RpgTrainAction::ActionName() { return "trainer"; }
 
-bool RpgHealAction::Execute(Event event)
+bool RpgHealAction::Execute(Event /*event*/)
 {
     bool retVal = false;
 
@@ -270,6 +270,8 @@ bool RpgHealAction::Execute(Event event)
             break;
         case CLASS_SHAMAN:
             retVal = botAI->DoSpecificAction("healing wave on party", Event(), true);
+            break;
+        default:
             break;
     }
 
@@ -288,21 +290,21 @@ std::string const RpgBuyPetitionAction::ActionName() { return "buy petition"; }
 
 std::string const RpgUseAction::ActionName() { return "use"; }
 
-Event RpgUseAction::ActionEvent(Event event)
+Event RpgUseAction::ActionEvent(Event /*event*/)
 {
     return Event("rpg action", chat->FormatWorldobject(rpg->guidP().GetWorldObject()));
 }
 
 std::string const RpgSpellAction::ActionName() { return "cast random spell"; }
 
-Event RpgSpellAction::ActionEvent(Event event)
+Event RpgSpellAction::ActionEvent(Event /*event*/)
 {
     return Event("rpg action", chat->FormatWorldobject(rpg->guidP().GetWorldObject()));
 }
 
 std::string const RpgCraftAction::ActionName() { return "craft random item"; }
 
-Event RpgCraftAction::ActionEvent(Event event)
+Event RpgCraftAction::ActionEvent(Event /*event*/)
 {
     return Event("rpg action", chat->FormatWorldobject(rpg->guidP().GetWorldObject()));
 }
@@ -342,7 +344,7 @@ std::vector<Item*> RpgTradeUsefulAction::CanGiveItems(GuidPosition guidPosition)
     return giveItems;
 }
 
-bool RpgTradeUsefulAction::Execute(Event event)
+bool RpgTradeUsefulAction::Execute(Event /*event*/)
 {
     GuidPosition guidP = AI_VALUE(GuidPosition, "rpg target");
 
@@ -417,7 +419,7 @@ bool RpgDuelAction::isUseful()
     return true;
 }
 
-bool RpgDuelAction::Execute(Event event)
+bool RpgDuelAction::Execute(Event /*event*/)
 {
     GuidPosition guidP = AI_VALUE(GuidPosition, "rpg target");
 
@@ -435,7 +437,7 @@ bool RpgMountAnimAction::isUseful()
     return AI_VALUE2(bool, "mounted", "self target") && !AI_VALUE2(bool, "moving", "self target");
 }
 
-bool RpgMountAnimAction::Execute(Event event)
+bool RpgMountAnimAction::Execute(Event /*event*/)
 {
     WorldPacket p;
     bot->GetSession()->HandleMountSpecialAnimOpcode(p);

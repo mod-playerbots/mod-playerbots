@@ -166,6 +166,8 @@ void InventoryAction::TellItems(std::map<uint32, uint32> itemMap, std::map<uint3
                 case ITEM_CLASS_MISC:
                     botAI->GetServices().GetChatService().TellMaster("--- other ---");
                     break;
+                default:
+                    break;
             }
         }
 
@@ -374,8 +376,8 @@ ItemIds InventoryAction::FindOutfitItems(std::string const name)
 
 std::string const InventoryAction::parseOutfitName(std::string const outfit)
 {
-    uint32 pos = outfit.find("=");
-    if (pos == -1)
+    size_t pos = outfit.find("=");
+    if (pos == std::string::npos)
         return "";
 
     return outfit.substr(0, pos);
@@ -385,11 +387,11 @@ ItemIds InventoryAction::parseOutfitItems(std::string const text)
 {
     ItemIds itemIds;
 
-    uint8 pos = text.find("=") + 1;
+    size_t pos = text.find("=") + 1;
     while (pos < text.size())
     {
-        uint32 endPos = text.find(',', pos);
-        if (endPos == -1)
+        size_t endPos = text.find(',', pos);
+        if (endPos == std::string::npos)
             endPos = text.size();
 
         std::string const idC = text.substr(pos, endPos - pos);

@@ -11,13 +11,13 @@
 struct TalentEntry;
 struct TalentTabEntry;
 
-#define SORT_BY_DEFAULT 0
-#define SORT_BY_POINTS_TREE 1
-#define ABSOLUTE_DIST 0
-#define SUBSTRACT_OLD_NEW 1
-#define SUBSTRACT_NEW_OLD -1
-#define ADDED_POINTS 2
-#define REMOVED_POINTS -2
+constexpr int SORT_BY_DEFAULT = 0;
+constexpr int SORT_BY_POINTS_TREE = 1;
+constexpr int ABSOLUTE_DIST = 0;
+constexpr int SUBSTRACT_OLD_NEW = 1;
+constexpr int SUBSTRACT_NEW_OLD = -1;
+constexpr int ADDED_POINTS = 2;
+constexpr int REMOVED_POINTS = -2;
 
 // unused currently
 class TalentSpec

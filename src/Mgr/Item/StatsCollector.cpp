@@ -39,7 +39,7 @@ void StatsCollector::CollectItemStats(ItemTemplate const* proto)
     }
     stats[STATS_TYPE_ARMOR] += proto->Armor;
     stats[STATS_TYPE_BLOCK_VALUE] += proto->Block;
-    for (int i = 0; i < proto->StatsCount; i++)
+    for (uint32 i = 0; i < proto->StatsCount; i++)
     {
         const _ItemStat& stat = proto->ItemStat[i];
         const int32& val = stat.ItemStatValue;
@@ -71,7 +71,7 @@ void StatsCollector::CollectItemStats(ItemTemplate const* proto)
 
     if (proto->socketBonus)
     {
-        if (const SpellItemEnchantmentEntry* enchant = sSpellItemEnchantmentStore.LookupEntry(proto->socketBonus))
+        if (SpellItemEnchantmentEntry const* enchant = sSpellItemEnchantmentStore.LookupEntry(proto->socketBonus))
             CollectEnchantStats(enchant);
     }
 }
@@ -86,7 +86,7 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, int32 s
     if (SpecialSpellFilter(spellId))
         return;
 
-    const SpellProcEventEntry* eventEntry = sSpellMgr->GetSpellProcEvent(spellInfo->Id);
+    SpellProcEventEntry const* eventEntry = sSpellMgr->GetSpellProcEvent(spellInfo->Id);
 
     uint32 triggerCooldown = eventEntry ? eventEntry->cooldown : 0;
 
@@ -114,11 +114,11 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, int32 s
         if (spellInfo->StackAmount <= 1)
             multiplier *= spellInfo->StackAmount * 1;
         else if (spellInfo->StackAmount <= 5)
-            multiplier *= 1 + (spellInfo->StackAmount - 1) * 0.75;
+            multiplier *= 1 + (spellInfo->StackAmount - 1) * 0.75f;
         else if (spellInfo->StackAmount <= 10)
-            multiplier *= 4 + (spellInfo->StackAmount - 5) * 0.6;
+            multiplier *= 4 + (spellInfo->StackAmount - 5) * 0.6f;
         else if (spellInfo->StackAmount <= 20)
-            multiplier *= 7 + (spellInfo->StackAmount - 10) * 0.4;
+            multiplier *= 7 + (spellInfo->StackAmount - 10) * 0.4f;
         else
             multiplier *= 11;
     }
@@ -177,7 +177,7 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, int32 s
                     break;
                 float normalizedCd = std::max((float)spellCooldown / 1000, 5.0f);
                 int32 val = AverageValue(effectInfo);
-                float transfer_multiplier = 0.2;
+                float transfer_multiplier = 0.2f;
                 stats[STATS_TYPE_MANA_REGENERATION] += (float)val / normalizedCd * multiplier * transfer_multiplier;
                 break;
             }
@@ -195,7 +195,7 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, int32 s
                 }
                 else if (type_ & CollectorType::SPELL_DMG)
                 {
-                    float transfer_multiplier = 0.5;
+                    float transfer_multiplier = 0.5f;
                     stats[STATS_TYPE_SPELL_POWER] += (float)val / normalizedCd * multiplier * transfer_multiplier;
                 }
                 break;
@@ -357,7 +357,7 @@ bool StatsCollector::SpecialEnchantFilter(uint32 enchantSpellId)
 
 bool StatsCollector::CanBeTriggeredByType(SpellInfo const* spellInfo, uint32 procFlags, bool strict)
 {
-    const SpellProcEventEntry* eventEntry = sSpellMgr->GetSpellProcEvent(spellInfo->Id);
+    SpellProcEventEntry const* eventEntry = sSpellMgr->GetSpellProcEvent(spellInfo->Id);
     uint32 spellFamilyName = 0;
     if (eventEntry)
     {

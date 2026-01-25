@@ -107,7 +107,7 @@ namespace KarazhanHelpers
     }
 
     // Only one bot is needed to set/reset instance-wide timers
-    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot)
+    bool IsInstanceTimerManager(PlayerbotAI* /*botAI*/, Player* bot)
     {
         if (Group* group = bot->GetGroup())
         {
@@ -197,7 +197,7 @@ namespace KarazhanHelpers
     }
 
     // Red beam blockers: tank bots, no Nether Exhaustion Red
-    std::vector<Player*> GetRedBlockers(PlayerbotAI* botAI, Player* bot)
+    std::vector<Player*> GetRedBlockers(PlayerbotAI* /*botAI*/, Player* bot)
     {
         std::vector<Player*> redBlockers;
         if (Group* group = bot->GetGroup())
@@ -217,7 +217,7 @@ namespace KarazhanHelpers
     }
 
     // Blue beam blockers: non-Rogue/Warrior DPS bots, no Nether Exhaustion Blue and <24 stacks of Blue Beam debuff
-    std::vector<Player*> GetBlueBlockers(PlayerbotAI* botAI, Player* bot)
+    std::vector<Player*> GetBlueBlockers(PlayerbotAI* /*botAI*/, Player* bot)
     {
         std::vector<Player*> blueBlockers;
         if (Group* group = bot->GetGroup())
@@ -247,7 +247,7 @@ namespace KarazhanHelpers
     // Green beam blockers:
     // (1) Prioritize Rogues and non-tank Warrior bots, no Nether Exhaustion Green
     // (2) Then assign Healer bots, no Nether Exhaustion Green and <24 stacks of Green Beam debuff
-    std::vector<Player*> GetGreenBlockers(PlayerbotAI* botAI, Player* bot)
+    std::vector<Player*> GetGreenBlockers(PlayerbotAI* /*botAI*/, Player* bot)
     {
         std::vector<Player*> greenBlockers;
         if (Group* group = bot->GetGroup())
@@ -382,7 +382,7 @@ namespace KarazhanHelpers
         return voidZones;
     }
 
-    bool IsSafePosition(float x, float y, float z, const std::vector<Unit*>& hazards, float hazardRadius)
+    bool IsSafePosition(float x, float y, float /*z*/, const std::vector<Unit*>& hazards, float hazardRadius)
     {
         for (Unit* hazard : hazards)
         {
@@ -427,7 +427,6 @@ namespace KarazhanHelpers
             float t = checkDist / totalDist;
             float checkX = sx + (tx - sx) * t;
             float checkY = sy + (ty - sy) * t;
-            float checkZ = sz + (tz - sz) * t;
             for (Unit* hazard : hazards)
             {
                 const float hx = checkX - hazard->GetPositionX();

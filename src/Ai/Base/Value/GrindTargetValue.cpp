@@ -31,8 +31,6 @@ Unit* GrindTargetValue::Calculate()
 
 Unit* GrindTargetValue::FindTargetForGrinding(uint32 assistCount)
 {
-    uint32 memberCount = 1;
-    Group* group = bot->GetGroup();
     Player* master = GetMaster();
 
     if (master && (master == bot || master->GetMapId() != bot->GetMapId() || master->IsBeingTeleported() ||
@@ -55,6 +53,7 @@ Unit* GrindTargetValue::FindTargetForGrinding(uint32 assistCount)
 
     float distance = 0;
     Unit* result = nullptr;
+    Group* group = bot->GetGroup();
     std::unordered_map<uint32, bool> needForQuestMap;
 
     for (ObjectGuid const guid : targets)
@@ -66,7 +65,6 @@ Unit* GrindTargetValue::FindTargetForGrinding(uint32 assistCount)
         if (!unit->IsInWorld() || unit->IsDuringRemoveFromWorld())
             continue;
 
-        auto& rep = bot->ToPlayer()->GetReputationMgr();
         if (unit->ToCreature() && !unit->ToCreature()->GetCreatureTemplate()->lootid &&
             bot->GetReactionTo(unit) >= REP_NEUTRAL)
             continue;
@@ -171,7 +169,7 @@ bool GrindTargetValue::needForQuest(Unit* target)
 
         if (status == QUEST_STATUS_INCOMPLETE)
         {
-            const QuestStatusData* questStatus = &bot->getQuestStatusMap()[questId];
+            QuestStatusData const* questStatus = &bot->getQuestStatusMap()[questId];
 
             if (questTemplate->GetQuestLevel() > bot->GetLevel() + 5)
                 continue;
@@ -185,7 +183,7 @@ bool GrindTargetValue::needForQuest(Unit* target)
                     int required = questTemplate->RequiredNpcOrGoCount[j];
                     int available = questStatus->CreatureOrGOCount[j];
 
-                    if (required && available < required && target->GetEntry() == entry)
+                    if (required && available < required && target->GetEntry() == static_cast<uint32>(entry))
                         return true;
                 }
             }

@@ -20,7 +20,7 @@ public:
     }
 
 private:
-    static ActionNode* charge(PlayerbotAI* botAI)
+    static ActionNode* charge(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "charge",
@@ -30,7 +30,7 @@ private:
         );
     }
 
-    static ActionNode* intercept(PlayerbotAI* botAI)
+    static ActionNode* intercept(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "intercept",
@@ -40,7 +40,7 @@ private:
         );
     }
 
-    static ActionNode* piercing_howl(PlayerbotAI* botAI)
+    static ActionNode* piercing_howl(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "piercing howl",
@@ -50,7 +50,7 @@ private:
         );
     }
 
-    static ActionNode* pummel(PlayerbotAI* botAI)
+    static ActionNode* pummel(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "pummel",
@@ -60,7 +60,7 @@ private:
         );
     }
 
-    static ActionNode* enraged_regeneration(PlayerbotAI* botAI)
+    static ActionNode* enraged_regeneration(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "enraged regeneration",

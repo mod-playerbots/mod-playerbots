@@ -31,7 +31,7 @@ uint32 SpellIdValue::Calculate()
 
     wstrToLower(wnamepart);
     char firstSymbol = tolower(namepart[0]);
-    int spellLength = wnamepart.length();
+    size_t spellLength = wnamepart.length();
 
     LocaleConstant loc = LOCALE_enUS;
 
@@ -108,7 +108,7 @@ uint32 SpellIdValue::Calculate()
         for (auto it = spellIds.rbegin(); it != spellIds.rend(); ++it)
         {
             auto spellId = *it;
-            const SpellInfo* pSpellInfo = sSpellMgr->GetSpellInfo(spellId);
+            SpellInfo const* pSpellInfo = sSpellMgr->GetSpellInfo(spellId);
             if (!pSpellInfo)
                 continue;
 
@@ -126,7 +126,7 @@ uint32 SpellIdValue::Calculate()
             spellName = spellName.substr(i, spellName.length() - i);
 
             // convert the remaining text to an integer
-            int id = atoi(spellName.c_str());
+            uint32 id = atoi(spellName.c_str());
 
             if (!id)
             {
@@ -154,7 +154,7 @@ uint32 SpellIdValue::Calculate()
             auto spellId = *it;
             if (!highestSpellId)
                 highestSpellId = spellId;
-            if (saveMana == rank)
+            if (static_cast<uint32>(saveMana) == rank)
                 return spellId;
             lowestSpellId = spellId;
             rank++;
@@ -193,7 +193,7 @@ uint32 VehicleSpellIdValue::Calculate()
 
     wstrToLower(wnamepart);
     char firstSymbol = tolower(namepart[0]);
-    int spellLength = wnamepart.length();
+    size_t spellLength = wnamepart.length();
 
     const int loc = LocaleConstant::LOCALE_enUS;
 

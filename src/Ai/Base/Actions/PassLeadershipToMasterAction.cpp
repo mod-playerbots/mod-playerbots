@@ -12,7 +12,7 @@
 #include "PlayerbotWorldThreadProcessor.h"
 #include "BotChatService.h"
 
-bool PassLeadershipToMasterAction::Execute(Event event)
+bool PassLeadershipToMasterAction::Execute(Event /*event*/)
 {
     if (Player* master = GetMaster())
         if (master && master != bot && bot->GetGroup() && bot->GetGroup()->IsMember(master->GetGUID()))

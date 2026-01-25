@@ -3,7 +3,7 @@
 #include "GundrakActions.h"
 #include "GundrakStrategy.h"
 
-bool AvoidPoisonNovaAction::Execute(Event event)
+bool AvoidPoisonNovaAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "slad'ran");
     if (!boss) { return false; }
@@ -20,12 +20,11 @@ bool AvoidPoisonNovaAction::Execute(Event event)
     return false;
 }
 
-bool AttackSnakeWrapAction::Execute(Event event)
+bool AttackSnakeWrapAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "slad'ran");
     if (!boss) { return false; }
 
-    Unit* snakeWrap = nullptr;
     // Target is not findable from threat table using AI_VALUE2(),
     // therefore need to search manually for the unit name
     GuidVector targets = AI_VALUE(GuidVector, "possible targets no los");
@@ -46,7 +45,7 @@ bool AttackSnakeWrapAction::Execute(Event event)
     return false;
 }
 
-bool AvoidWhirlingSlashAction::Execute(Event event)
+bool AvoidWhirlingSlashAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "gal'darah");
     if (!boss) { return false; }

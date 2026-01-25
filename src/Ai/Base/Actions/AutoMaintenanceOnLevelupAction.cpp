@@ -10,7 +10,7 @@
 #include "SharedDefines.h"
 #include "BroadcastHelper.h"
 
-bool AutoMaintenanceOnLevelupAction::Execute(Event event)
+bool AutoMaintenanceOnLevelupAction::Execute(Event /*event*/)
 {
     AutoPickTalents();
     AutoLearnSpell();
@@ -74,7 +74,7 @@ void AutoMaintenanceOnLevelupAction::LearnSpells(std::ostringstream* out)
         LearnQuestSpells(out);
 }
 
-void AutoMaintenanceOnLevelupAction::LearnTrainerSpells(std::ostringstream* out)
+void AutoMaintenanceOnLevelupAction::LearnTrainerSpells(std::ostringstream* /*out*/)
 {
     PlayerbotFactory factory(bot, bot->GetLevel());
     factory.InitSkills();

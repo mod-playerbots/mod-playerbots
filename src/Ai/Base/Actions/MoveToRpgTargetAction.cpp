@@ -12,7 +12,7 @@
 #include "Playerbots.h"
 #include "BotChatService.h"
 
-bool MoveToRpgTargetAction::Execute(Event event)
+bool MoveToRpgTargetAction::Execute(Event /*event*/)
 {
     GuidPosition guidP = AI_VALUE(GuidPosition, "rpg target");
     Unit* unit = botAI->GetUnit(guidP);
@@ -25,7 +25,6 @@ bool MoveToRpgTargetAction::Execute(Event event)
     {
         return false;
     }
-    Player* player = guidP.GetPlayer();
 
     WorldObject* wo = nullptr;
     if (unit)
@@ -83,15 +82,15 @@ bool MoveToRpgTargetAction::Execute(Event event)
     if (bot->IsWithinLOS(x, y, z))
     {
         if (!unit || !unit->isMoving())
-            angle = wo->GetAngle(bot) + (M_PI * irand(-25, 25) / 100.0);  // Closest 45 degrees towards the target
+            angle = wo->GetAngle(bot) + (M_PI * irand(-25, 25) / 100.0f);  // Closest 45 degrees towards the target
         else
             angle = wo->GetOrientation() +
-                    (M_PI * irand(-25, 25) / 100.0);  // 45 degrees infront of target (leading it's movement)
+                    (M_PI * irand(-25, 25) / 100.0f);  // 45 degrees infront of target (leading it's movement)
 
         distance = frand(0.5f, 1.f);
     }
     else
-        angle = 2 * M_PI * urand(0, 100) / 100.0;  // A circle around the target.
+        angle = 2 * M_PI * urand(0, 100) / 100.0f;  // A circle around the target.
 
     x += cos(angle) * INTERACTION_DISTANCE * distance;
     y += sin(angle) * INTERACTION_DISTANCE * distance;
