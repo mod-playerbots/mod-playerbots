@@ -7,7 +7,7 @@
 #include <iostream>
 #include "Config.h"
 #include "NewRpgInfo.h"
-#include "PlayerbotDungeonSuggestionMgr.h"
+#include "PlayerbotDungeonRepository.h"
 #include "PlayerbotFactory.h"
 #include "Playerbots.h"
 #include "PlayerbotGuildMgr.h"
@@ -679,7 +679,7 @@ bool PlayerbotAIConfig::Initialize()
 
     if (sPlayerbotAIConfig->randomBotSuggestDungeons)
     {
-        sPlayerbotDungeonSuggestionMgr->LoadDungeonSuggestions();
+        sPlayerbotDungeonRepository->LoadDungeonSuggestions();
     }
 
     excludedHunterPetFamilies.clear();
