@@ -1,0 +1,46 @@
+/*
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
+ */
+
+/**
+ * @brief Test fixture stub for PlayerbotSecurity.h
+ *
+ * This provides the minimum definitions needed for unit testing
+ * without requiring the full AzerothCore context.
+ */
+
+#ifndef _PLAYERBOT_PLAYERBOTSECURITY_H
+#define _PLAYERBOT_PLAYERBOTSECURITY_H
+
+#include "Common.h"
+
+class Player;
+
+enum PlayerbotSecurityLevel : uint32
+{
+    PLAYERBOT_SECURITY_DENY_ALL = 0,
+    PLAYERBOT_SECURITY_TALK = 1,
+    PLAYERBOT_SECURITY_INVITE = 2,
+    PLAYERBOT_SECURITY_ALLOW_ALL = 3
+};
+
+enum DenyReason
+{
+    PLAYERBOT_DENY_NONE,
+    PLAYERBOT_DENY_LOW_LEVEL,
+    PLAYERBOT_DENY_GEARSCORE,
+    PLAYERBOT_DENY_NOT_YOURS,
+    PLAYERBOT_DENY_IS_BOT,
+    PLAYERBOT_DENY_OPPOSING,
+    PLAYERBOT_DENY_DEAD,
+    PLAYERBOT_DENY_FAR,
+    PLAYERBOT_DENY_INVITE,
+    PLAYERBOT_DENY_FULL_GROUP,
+    PLAYERBOT_DENY_NOT_LEADER,
+    PLAYERBOT_DENY_IS_LEADER,
+    PLAYERBOT_DENY_BG,
+    PLAYERBOT_DENY_LFG
+};
+
+#endif
