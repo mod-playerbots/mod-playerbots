@@ -28,7 +28,7 @@ bool TravelAction::Execute(Event event)
     for (Unit* unit : targets)
     {
         newTarget = unit;
-        if (!newTarget)
+        if (!newTarget || !newTarget->IsInWorld() || newTarget->IsDuringRemoveFromWorld())
             continue;
 
         if (newTarget->GetMapId() != bot->GetMapId())
