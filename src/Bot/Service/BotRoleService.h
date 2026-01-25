@@ -55,8 +55,8 @@ public:
     static int32 GetAssistTankIndexStatic(Player* player);
 
     // Heal/DPS assistant detection
-    static bool IsHealAssistantOfIndexStatic(Player* player, int index);
-    static bool IsRangedDpsAssistantOfIndexStatic(Player* player, int index);
+    static bool IsAssistHealOfIndexStatic(Player* player, int index, bool ignoreDeadPlayers = false);
+    static bool IsAssistRangedDpsOfIndexStatic(Player* player, int index, bool ignoreDeadPlayers = false);
 
     // ========================================================================
     // Instance methods (IRoleService interface implementation)
@@ -92,9 +92,9 @@ public:
     int32 GetMeleeIndex(Player* player) const override;
     int32 GetClassIndex(Player* player, uint8 cls) const override;
 
-    // Heal assistant
-    bool IsHealAssistantOfIndex(Player* player, int index) const override;
-    bool IsRangedDpsAssistantOfIndex(Player* player, int index) const override;
+    // Role assistant index queries
+    bool IsAssistHealOfIndex(Player* player, int index, bool ignoreDeadPlayers = false) const override;
+    bool IsAssistRangedDpsOfIndex(Player* player, int index, bool ignoreDeadPlayers = false) const override;
 
     // Aggro
     bool HasAggro(Unit* unit) const override;

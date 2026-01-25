@@ -61,7 +61,7 @@ private:
         return new ActionNode(
             "cat form",
             /*P*/ { NextAction("caster form") },
-            /*A*/ {},
+            /*A*/ { NextAction("bear form") },
             /*C*/ {}
         );
     }

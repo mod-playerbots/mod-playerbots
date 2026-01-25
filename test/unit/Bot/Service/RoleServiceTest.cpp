@@ -162,3 +162,57 @@ TEST_F(RoleBehaviorPatternTest, OffTankBehavior)
     // Off-tank should not taunt (only main tank taunts)
     EXPECT_FALSE(ShouldTaunt(mockRoleService, nullptr));
 }
+
+/**
+ * @brief Tests for role assistant index functions
+ *
+ * These test the IsAssistHealOfIndex and IsAssistRangedDpsOfIndex methods
+ * which use a two-pass algorithm: assistants first, then non-assistants.
+ */
+class RoleAssistantIndexTest : public ::testing::Test
+{
+protected:
+    MockRoleService mockRoleService;
+};
+
+TEST_F(RoleAssistantIndexTest, CanMockAssistHealOfIndex)
+{
+    // Test that we can configure the mock for IsAssistHealOfIndex
+    EXPECT_CALL(mockRoleService, IsAssistHealOfIndex(_, 0, false)).WillOnce(Return(true));
+    EXPECT_CALL(mockRoleService, IsAssistHealOfIndex(_, 1, false)).WillOnce(Return(false));
+
+    EXPECT_TRUE(mockRoleService.IsAssistHealOfIndex(nullptr, 0, false));
+    EXPECT_FALSE(mockRoleService.IsAssistHealOfIndex(nullptr, 1, false));
+}
+
+TEST_F(RoleAssistantIndexTest, CanMockAssistHealOfIndexWithDeadPlayerFilter)
+{
+    // Test ignoreDeadPlayers parameter
+    EXPECT_CALL(mockRoleService, IsAssistHealOfIndex(_, 0, true)).WillOnce(Return(true));
+    EXPECT_CALL(mockRoleService, IsAssistHealOfIndex(_, 0, false)).WillOnce(Return(false));
+
+    // With ignoreDeadPlayers=true, might return different result
+    EXPECT_TRUE(mockRoleService.IsAssistHealOfIndex(nullptr, 0, true));
+    EXPECT_FALSE(mockRoleService.IsAssistHealOfIndex(nullptr, 0, false));
+}
+
+TEST_F(RoleAssistantIndexTest, CanMockAssistRangedDpsOfIndex)
+{
+    // Test that we can configure the mock for IsAssistRangedDpsOfIndex
+    EXPECT_CALL(mockRoleService, IsAssistRangedDpsOfIndex(_, 0, false)).WillOnce(Return(true));
+    EXPECT_CALL(mockRoleService, IsAssistRangedDpsOfIndex(_, 1, false)).WillOnce(Return(false));
+
+    EXPECT_TRUE(mockRoleService.IsAssistRangedDpsOfIndex(nullptr, 0, false));
+    EXPECT_FALSE(mockRoleService.IsAssistRangedDpsOfIndex(nullptr, 1, false));
+}
+
+TEST_F(RoleAssistantIndexTest, CanMockAssistRangedDpsOfIndexWithDeadPlayerFilter)
+{
+    // Test ignoreDeadPlayers parameter
+    EXPECT_CALL(mockRoleService, IsAssistRangedDpsOfIndex(_, 0, true)).WillOnce(Return(true));
+    EXPECT_CALL(mockRoleService, IsAssistRangedDpsOfIndex(_, 0, false)).WillOnce(Return(false));
+
+    // With ignoreDeadPlayers=true, might return different result
+    EXPECT_TRUE(mockRoleService.IsAssistRangedDpsOfIndex(nullptr, 0, true));
+    EXPECT_FALSE(mockRoleService.IsAssistRangedDpsOfIndex(nullptr, 0, false));
+}

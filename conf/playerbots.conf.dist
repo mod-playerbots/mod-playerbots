@@ -184,7 +184,7 @@ AiPlayerbot.SummonWhenGroup = 1
 AiPlayerbot.SelfBotLevel = 1
 
 # Non-GM player can only use init=auto to initialize bots based on their own level and gearscore
-# Default: 0 (non-GM player can use any intialization commands)
+# Default: 0 (non-GM player can use any initialization commands)
 AiPlayerbot.AutoInitOnly = 0
 
 # The upper limit ratio of bot equipment level for init=auto

@@ -76,35 +76,46 @@ bool BotRoleService::IsRangedDpsStatic(Player* player, bool bySpec)
     return IsRangedStatic(player, bySpec) && IsDpsStatic(player, bySpec);
 }
 
-bool BotRoleService::IsHealAssistantOfIndexStatic(Player* player, int index)
+bool BotRoleService::IsAssistHealOfIndexStatic(Player* player, int index, bool ignoreDeadPlayers)
 {
     Group* group = player->GetGroup();
     if (!group)
-    {
         return false;
-    }
 
     int counter = 0;
 
+    // First, assistants
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-
         if (!member)
-        {
             continue;
-        }
 
-        if (IsHealStatic(member))  // Check if the member is a healer
+        if (ignoreDeadPlayers && !member->IsAlive())
+            continue;
+
+        if (group->IsAssistant(member->GetGUID()) && IsHealStatic(member))
         {
-            bool isAssistant = group->IsAssistant(member->GetGUID());
-
-            // Check if the index matches for both assistant and non-assistant healers
-            if ((isAssistant && index == counter) || (!isAssistant && index == counter))
-            {
+            if (index == counter)
                 return player == member;
-            }
+            counter++;
+        }
+    }
 
+    // If not enough assistants, get non-assistants
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member)
+            continue;
+
+        if (ignoreDeadPlayers && !member->IsAlive())
+            continue;
+
+        if (!group->IsAssistant(member->GetGUID()) && IsHealStatic(member))
+        {
+            if (index == counter)
+                return player == member;
             counter++;
         }
     }
@@ -112,35 +123,46 @@ bool BotRoleService::IsHealAssistantOfIndexStatic(Player* player, int index)
     return false;
 }
 
-bool BotRoleService::IsRangedDpsAssistantOfIndexStatic(Player* player, int index)
+bool BotRoleService::IsAssistRangedDpsOfIndexStatic(Player* player, int index, bool ignoreDeadPlayers)
 {
     Group* group = player->GetGroup();
     if (!group)
-    {
         return false;
-    }
 
     int counter = 0;
 
+    // First, assistants
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-
         if (!member)
-        {
             continue;
-        }
 
-        if (IsRangedDpsStatic(member))  // Check if the member is a ranged DPS
+        if (ignoreDeadPlayers && !member->IsAlive())
+            continue;
+
+        if (group->IsAssistant(member->GetGUID()) && IsRangedDpsStatic(member))
         {
-            bool isAssistant = group->IsAssistant(member->GetGUID());
-
-            // Check the index for both assistant and non-assistant ranges
-            if ((isAssistant && index == counter) || (!isAssistant && index == counter))
-            {
+            if (index == counter)
                 return player == member;
-            }
+            counter++;
+        }
+    }
 
+    // If not enough assistants, get non-assistants
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member)
+            continue;
+
+        if (ignoreDeadPlayers && !member->IsAlive())
+            continue;
+
+        if (!group->IsAssistant(member->GetGUID()) && IsRangedDpsStatic(member))
+        {
+            if (index == counter)
+                return player == member;
             counter++;
         }
     }
@@ -356,10 +378,15 @@ bool BotRoleService::IsMainTankStatic(Player* player)
 
 bool BotRoleService::IsBotMainTankStatic(Player* player)
 {
-    if (!player->GetSession()->IsBot() || !IsTankStatic(player))
-    {
+    if (!player || !player->IsInWorld() || player->IsDuringRemoveFromWorld())
         return false;
-    }
+
+    WorldSession* session = player->GetSession();
+    if (!session || !session->IsBot())
+        return false;
+
+    if (!IsTankStatic(player))
+        return false;
 
     if (IsMainTankStatic(player))
     {
@@ -784,14 +811,14 @@ int32 BotRoleService::GetMeleeIndex(Player* player) const
     return 0;
 }
 
-bool BotRoleService::IsHealAssistantOfIndex(Player* player, int index) const
+bool BotRoleService::IsAssistHealOfIndex(Player* player, int index, bool ignoreDeadPlayers) const
 {
-    return IsHealAssistantOfIndexStatic(player, index);
+    return IsAssistHealOfIndexStatic(player, index, ignoreDeadPlayers);
 }
 
-bool BotRoleService::IsRangedDpsAssistantOfIndex(Player* player, int index) const
+bool BotRoleService::IsAssistRangedDpsOfIndex(Player* player, int index, bool ignoreDeadPlayers) const
 {
-    return IsRangedDpsAssistantOfIndexStatic(player, index);
+    return IsAssistRangedDpsOfIndexStatic(player, index, ignoreDeadPlayers);
 }
 
 bool BotRoleService::HasAggro(Unit* unit) const

@@ -64,9 +64,9 @@ public:
     virtual int32 GetMeleeIndex(Player* player) const = 0;
     virtual int32 GetClassIndex(Player* player, uint8 cls) const = 0;
 
-    // Heal assistant
-    virtual bool IsHealAssistantOfIndex(Player* player, int index) const = 0;
-    virtual bool IsRangedDpsAssistantOfIndex(Player* player, int index) const = 0;
+    // Role assistant index queries
+    virtual bool IsAssistHealOfIndex(Player* player, int index, bool ignoreDeadPlayers = false) const = 0;
+    virtual bool IsAssistRangedDpsOfIndex(Player* player, int index, bool ignoreDeadPlayers = false) const = 0;
 
     // Aggro
     virtual bool HasAggro(Unit* unit) const = 0;

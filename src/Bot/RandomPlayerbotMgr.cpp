@@ -28,6 +28,7 @@
 #include "DatabaseEnv.h"
 #include "Define.h"
 #include "FleeManager.h"
+#include "FlightMasterCache.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "GuildMgr.h"
@@ -2004,14 +2005,7 @@ void RandomPlayerbotMgr::PrepareTeleportCache()
                 bool forAlliance = !(entry->hostileMask & 2);
                 if (tNpcflag & UNIT_NPC_FLAG_FLIGHTMASTER)
                 {
-                    if (forHorde)
-                    {
-                        hordeFlightMasterCache.push_back(guid);
-                    }
-                    if (forAlliance)
-                    {
-                        allianceFlightMasterCache.push_back(guid);
-                    }
+                    sFlightMasterCache->AddFlightMaster(guid, forHorde, forAlliance);
                 }
                 const AreaTableEntry* area = sAreaTableStore.LookupEntry(map->GetAreaId(PHASEMASK_NORMAL, x, y, z));
                 uint32 zoneId = area->zone ? area->zone : area->ID;

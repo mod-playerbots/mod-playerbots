@@ -71,8 +71,8 @@ public:
     MOCK_METHOD(int32, GetRangedDpsIndex, (Player* player), (const, override));
     MOCK_METHOD(int32, GetMeleeIndex, (Player* player), (const, override));
     MOCK_METHOD(int32, GetClassIndex, (Player* player, uint8 cls), (const, override));
-    MOCK_METHOD(bool, IsHealAssistantOfIndex, (Player* player, int index), (const, override));
-    MOCK_METHOD(bool, IsRangedDpsAssistantOfIndex, (Player* player, int index), (const, override));
+    MOCK_METHOD(bool, IsAssistHealOfIndex, (Player* player, int index, bool ignoreDeadPlayers), (const, override));
+    MOCK_METHOD(bool, IsAssistRangedDpsOfIndex, (Player* player, int index, bool ignoreDeadPlayers), (const, override));
     MOCK_METHOD(bool, HasAggro, (Unit* unit), (const, override));
 };
 
