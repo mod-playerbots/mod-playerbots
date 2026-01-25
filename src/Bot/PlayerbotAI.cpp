@@ -3376,6 +3376,68 @@ bool PlayerbotAI::CastVehicleSpell(uint32 spellId, Unit* target)
     return true;
 }
 
+bool PlayerbotAI::CastVehicleSpell(uint32 spellId, float x, float y, float z)
+{
+    if (!spellId)
+        return false;
+
+    Vehicle* vehicle = bot->GetVehicle();
+    if (!vehicle)
+        return false;
+
+    VehicleSeatEntry const* seat = vehicle->GetSeatForPassenger(bot);
+    if (!seat || !(seat->m_flags & VEHICLE_SEAT_FLAG_CAN_CAST))
+        return false;
+
+    Unit* vehicleBase = vehicle->GetBase();
+    if (!vehicleBase || !vehicleBase->IsAlive())
+        return false;
+
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    if (!spellInfo)
+        return false;
+
+    // turn vehicle to face target location
+    if (seat->CanControl() || (seat->m_flags & VEHICLE_SEAT_FLAG_ALLOW_TURNING))
+    {
+        vehicleBase->SetFacingTo(vehicleBase->GetAngle(x, y));
+    }
+
+    Spell* spell = new Spell(vehicleBase, spellInfo, TRIGGERED_NONE);
+
+    SpellCastTargets targets;
+    WorldLocation dest(bot->GetMapId(), x, y, z, 0.0f);
+    targets.SetDst(dest);
+    targets.SetSpeed(30.0f);
+    float dist = vehicleBase->GetPosition().GetExactDist(dest);
+    float elev = dist >= 110.0f ? 1.0f : pow(((dist + 10.0f) / 120.0f), 2.0f);
+    targets.SetElevation(elev);
+
+    if (spellInfo->Targets & TARGET_FLAG_SOURCE_LOCATION)
+    {
+        targets.SetSrc(vehicleBase->GetPositionX(), vehicleBase->GetPositionY(), vehicleBase->GetPositionZ());
+    }
+
+    spell->prepare(&targets);
+
+    if (seat->CanControl() && vehicleBase->isMoving() && spell->GetCastTime())
+    {
+        vehicleBase->StopMoving();
+        SetNextCheckDelay(sPlayerbotAIConfig->globalCoolDown);
+        spell->cancel();
+        return false;
+    }
+
+    if (HasStrategy("debug spell", BOT_STATE_NON_COMBAT))
+    {
+        std::ostringstream out;
+        out << "Casting Vehicle Spell (location) " << ChatHelper::FormatSpell(spellInfo);
+        TellMasterNoFacing(out);
+    }
+
+    return true;
+}
+
 bool PlayerbotAI::IsInVehicle(bool canControl, bool canCast, bool canAttack, bool canTurn, bool fixed)
 {
     Vehicle* vehicle = bot->GetVehicle();

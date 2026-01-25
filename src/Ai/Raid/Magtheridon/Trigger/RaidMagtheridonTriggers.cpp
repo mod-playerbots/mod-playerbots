@@ -1,5 +1,5 @@
-#include
-#include "BotRoleService.h" "RaidMagtheridonTriggers.h"
+#include "RaidMagtheridonTriggers.h"
+#include "BotRoleService.h"
 #include "RaidMagtheridonHelpers.h"
 #include "Playerbots.h"
 
@@ -18,7 +18,7 @@ bool MagtheridonNWChannelerEngagedByFirstAssistTankTrigger::IsActive()
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     Creature* channelerDiamond = GetChanneler(bot, NORTHWEST_CHANNELER);
 
-    return magtheridon && BotRoleService::IsAssistTankStaticOfIndex(bot, 0) &&
+    return magtheridon && BotRoleService::IsAssistTankOfIndexStatic(bot, 0) &&
            channelerDiamond && channelerDiamond->IsAlive();
 }
 
@@ -27,7 +27,7 @@ bool MagtheridonNEChannelerEngagedBySecondAssistTankTrigger::IsActive()
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     Creature* channelerTriangle = GetChanneler(bot, NORTHEAST_CHANNELER);
 
-    return magtheridon && BotRoleService::IsAssistTankStaticOfIndex(bot, 1) &&
+    return magtheridon && BotRoleService::IsAssistTankOfIndexStatic(bot, 1) &&
            channelerTriangle && channelerTriangle->IsAlive();
 }
 
@@ -52,8 +52,8 @@ bool MagtheridonDeterminingKillOrderTrigger::IsActive()
     Creature* channelerTriangle = GetChanneler(bot, NORTHEAST_CHANNELER);
 
     if (!magtheridon || BotRoleService::IsHealStatic(bot) || BotRoleService::IsMainTankStatic(bot) ||
-        (BotRoleService::IsAssistTankStaticOfIndex(bot, 0) && channelerDiamond && channelerDiamond->IsAlive()) ||
-        (BotRoleService::IsAssistTankStaticOfIndex(bot, 1) && channelerTriangle && channelerTriangle->IsAlive()))
+        (BotRoleService::IsAssistTankOfIndexStatic(bot, 0) && channelerDiamond && channelerDiamond->IsAlive()) ||
+        (BotRoleService::IsAssistTankOfIndexStatic(bot, 1) && channelerTriangle && channelerTriangle->IsAlive()))
         return false;
 
     return (channeler && channeler->IsAlive()) || (magtheridon &&

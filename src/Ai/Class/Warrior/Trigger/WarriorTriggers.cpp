@@ -55,11 +55,11 @@ bool VigilanceTrigger::IsActive()
         }
 
         // Identify Assist Tanks
-        if (assistTank1 == nullptr && BotRoleService::IsAssistTankStaticOfIndex(member, 0))
+        if (assistTank1 == nullptr && BotRoleService::IsAssistTankOfIndexStatic(member, 0))
         {
             assistTank1 = member;
         }
-        else if (assistTank2 == nullptr && BotRoleService::IsAssistTankStaticOfIndex(member, 1))
+        else if (assistTank2 == nullptr && BotRoleService::IsAssistTankOfIndexStatic(member, 1))
         {
             assistTank2 = member;
         }

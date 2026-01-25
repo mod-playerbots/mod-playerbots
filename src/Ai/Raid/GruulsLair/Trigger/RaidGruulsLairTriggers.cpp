@@ -19,14 +19,14 @@ bool HighKingMaulgarIsFirstAssistTankTrigger::IsActive()
 {
     Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
 
-    return BotRoleService::IsAssistTankStaticOfIndex(bot, 0) && olm && olm->IsAlive();
+    return BotRoleService::IsAssistTankOfIndexStatic(bot, 0) && olm && olm->IsAlive();
 }
 
 bool HighKingMaulgarIsSecondAssistTankTrigger::IsActive()
 {
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
 
-    return BotRoleService::IsAssistTankStaticOfIndex(bot, 1) && blindeye && blindeye->IsAlive();
+    return BotRoleService::IsAssistTankOfIndexStatic(bot, 1) && blindeye && blindeye->IsAlive();
 }
 
 bool HighKingMaulgarIsMageTankTrigger::IsActive()
@@ -53,8 +53,8 @@ bool HighKingMaulgarDeterminingKillOrderTrigger::IsActive()
 
     return (BotRoleService::IsDpsStatic(bot) || BotRoleService::IsTankStatic(bot)) &&
            !(BotRoleService::IsMainTankStatic(bot) && maulgar && maulgar->IsAlive()) &&
-           !(BotRoleService::IsAssistTankStaticOfIndex(bot, 0) && olm && olm->IsAlive()) &&
-           !(BotRoleService::IsAssistTankStaticOfIndex(bot, 1) && blindeye && blindeye->IsAlive()) &&
+           !(BotRoleService::IsAssistTankOfIndexStatic(bot, 0) && olm && olm->IsAlive()) &&
+           !(BotRoleService::IsAssistTankOfIndexStatic(bot, 1) && blindeye && blindeye->IsAlive()) &&
            !(IsKroshMageTank(botAI, bot) && krosh && krosh->IsAlive()) &&
            !(IsKigglerMoonkinTank(botAI, bot) && kiggler && kiggler->IsAlive());
 }
@@ -115,8 +115,8 @@ bool HighKingMaulgarPullingOlmAndBlindeyeTrigger::IsActive()
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive())
             continue;
-        else if (BotRoleService::IsAssistTankStaticOfIndex(member, 0)) olmTank = member;
-        else if (BotRoleService::IsAssistTankStaticOfIndex(member, 1)) blindeyeTank = member;
+        else if (BotRoleService::IsAssistTankOfIndexStatic(member, 0)) olmTank = member;
+        else if (BotRoleService::IsAssistTankOfIndexStatic(member, 1)) blindeyeTank = member;
     }
 
     switch (hunterIndex)

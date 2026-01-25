@@ -542,7 +542,7 @@ bool RazorscaleAvoidSentinelAction::Execute(Event event)
         // Iterate through the first 3 bot tanks to assign the Skull marker
         for (int i = 0; i < 3; ++i)
         {
-            if (BotRoleService::IsAssistTankStaticOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
+            if (BotRoleService::IsAssistTankOfIndexStatic(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
             {
                 Group* group = bot->GetGroup();
                 if (group && lowestHealthSentinel)
@@ -596,7 +596,7 @@ bool RazorscaleAvoidSentinelAction::isUseful()
     {
         for (int i = 0; i < 3; ++i)
         {
-            if (BotRoleService::IsAssistTankStaticOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
+            if (BotRoleService::IsAssistTankOfIndexStatic(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
             {
                 return true;  // This bot should assist with marking
             }
@@ -728,7 +728,7 @@ bool RazorscaleIgnoreBossAction::isUseful()
         {
             for (int i = 0; i < 3; ++i)  // Only iterate through the first 3 indexes
             {
-                if (BotRoleService::IsAssistTankStaticOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Valid bot tank
+                if (BotRoleService::IsAssistTankOfIndexStatic(bot, i) && GET_PLAYERBOT_AI(bot))  // Valid bot tank
                 {
                     return true;  // This bot should assign the marker
                 }
@@ -790,7 +790,7 @@ bool RazorscaleIgnoreBossAction::Execute(Event event)
     {
         for (int i = 0; i < 3; ++i)  // Only iterate through the first 3 indexes
         {
-            if (BotRoleService::IsAssistTankStaticOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
+            if (BotRoleService::IsAssistTankOfIndexStatic(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
             {
                 group->SetTargetIcon(moonIndex, bot->GetGUID(), boss->GetGUID());
                 SetNextMovementDelay(1000);
@@ -914,7 +914,7 @@ bool RazorscaleGroundedAction::Execute(Event event)
         // Iterate through the first 3 bot tanks to handle the moon marker
         for (int i = 0; i < 3; ++i)
         {
-            if (BotRoleService::IsAssistTankStaticOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
+            if (BotRoleService::IsAssistTankOfIndexStatic(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
             {
                 int8 moonIndex = 4;
                 ObjectGuid currentMoonTarget = group->GetTargetIcon(moonIndex);
@@ -1298,7 +1298,7 @@ bool KologarnMarkDpsTargetAction::Execute(Event event)
         // Iterate through the first 3 bot tanks to assign the Skull marker
         for (int i = 0; i < 3; ++i)
         {
-            if (BotRoleService::IsAssistTankStaticOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
+            if (BotRoleService::IsAssistTankOfIndexStatic(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
             {
                 Group* group = bot->GetGroup();
                 if (group)
@@ -1340,7 +1340,7 @@ bool KologarnMarkDpsTargetAction::Execute(Event event)
     {
         for (int i = 0; i < 3; ++i)
         {
-            if (BotRoleService::IsAssistTankStaticOfIndex(bot, i) && GET_PLAYERBOT_AI(bot) && bot->IsAlive())  // Bot is a valid tank
+            if (BotRoleService::IsAssistTankOfIndexStatic(bot, i) && GET_PLAYERBOT_AI(bot) && bot->IsAlive())  // Bot is a valid tank
             {
                 Group* group = bot->GetGroup();
                 if (group)
@@ -1454,7 +1454,7 @@ bool KologarnRtiTargetAction::isUseful()
 
 bool KologarnRtiTargetAction::Execute(Event event)
 {
-    if (BotRoleService::IsMainTankStatic(bot) || BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
+    if (BotRoleService::IsMainTankStatic(bot) || BotRoleService::IsAssistTankOfIndexStatic(bot, 0))
     {
         context->GetValue<std::string>("rti")->Set("cross");
         return true;
@@ -1720,7 +1720,7 @@ bool FreyaMarkDpsTargetAction::Execute(Event event)
         // Iterate through the first 3 bot tanks to assign the Skull marker
         for (int i = 0; i < 3; ++i)
         {
-            if (BotRoleService::IsAssistTankStaticOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
+            if (BotRoleService::IsAssistTankOfIndexStatic(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
             {
                 Group* group = bot->GetGroup();
                 if (group)
@@ -1862,7 +1862,7 @@ bool ThorimMarkDpsTargetAction::Execute(Event event)
         else
             return false;
     }
-    else if (BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
+    else if (BotRoleService::IsAssistTankOfIndexStatic(bot, 0))
     {
         ObjectGuid currentCrossTarget = group->GetTargetIcon(RtiTargetValue::crossIndex);
         Unit* currentCrossUnit = botAI->GetUnit(currentCrossTarget);
@@ -1904,7 +1904,7 @@ bool ThorimMarkDpsTargetAction::Execute(Event event)
         return true;
     }
 
-    if (BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
+    if (BotRoleService::IsAssistTankOfIndexStatic(bot, 0))
     {
         group->SetTargetIcon(RtiTargetValue::crossIndex, bot->GetGUID(), targetToMark->GetGUID());
         return true;
@@ -2437,7 +2437,7 @@ bool MimironAerialCommandUnitAction::Execute(Event event)
         }
     }
 
-    if (BotRoleService::IsMainTankStatic(bot) || BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
+    if (BotRoleService::IsMainTankStatic(bot) || BotRoleService::IsAssistTankOfIndexStatic(bot, 0))
     {
         Group* group = bot->GetGroup();
         if (!group)

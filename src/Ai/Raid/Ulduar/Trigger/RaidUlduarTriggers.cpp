@@ -475,7 +475,7 @@ bool KologarnAttackDpsTargetTrigger::IsActive()
     ObjectGuid skullTarget = group->GetTargetIcon(RtiTargetValue::skullIndex);
     ObjectGuid crossTarget = group->GetTargetIcon(RtiTargetValue::crossIndex);
 
-    if (crossTarget && (BotRoleService::IsMainTankStatic(bot) || BotRoleService::IsAssistTankStaticOfIndex(bot, 0)))
+    if (crossTarget && (BotRoleService::IsMainTankStatic(bot) || BotRoleService::IsAssistTankOfIndexStatic(bot, 0)))
     {
         return currentTarget->GetGUID() != crossTarget;
     }
@@ -495,7 +495,7 @@ bool KologarnRtiTargetTrigger::IsActive()
 
     std::string rtiMark = AI_VALUE(std::string, "rti");
 
-    if (BotRoleService::IsMainTankStatic(bot) || BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
+    if (BotRoleService::IsMainTankStatic(bot) || BotRoleService::IsAssistTankOfIndexStatic(bot, 0))
         return rtiMark != "cross";
 
     return rtiMark != "skull";
@@ -818,7 +818,7 @@ bool ThorimMarkDpsTargetTrigger::IsActive()
 
         return false;
     }
-    else if (BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
+    else if (BotRoleService::IsAssistTankOfIndexStatic(bot, 0))
     {
         Player* mainTank = nullptr;
         for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
@@ -909,7 +909,7 @@ bool ThorimGauntletPositioningTrigger::IsActive()
                 break;
         }
 
-        if (requiredAssistTankQuantity > 0 && BotRoleService::IsAssistTankStaticOfIndex(member, 0))
+        if (requiredAssistTankQuantity > 0 && BotRoleService::IsAssistTankOfIndexStatic(member, 0))
         {
             requiredAssistTankQuantity--;
             if (bot->GetGUID() == member->GetGUID())
@@ -1025,7 +1025,7 @@ bool ThorimArenaPositioningTrigger::IsActive()
                 return false;
         }
 
-        if (requiredAssistTankQuantity > 0 && BotRoleService::IsAssistTankStaticOfIndex(member, 0))
+        if (requiredAssistTankQuantity > 0 && BotRoleService::IsAssistTankOfIndexStatic(member, 0))
         {
             requiredAssistTankQuantity--;
             if (bot->GetGUID() == member->GetGUID())
@@ -1418,12 +1418,12 @@ bool MimironAerialCommandUnitTrigger::IsActive()
         return false;
     }
 
-    if (!BotRoleService::IsRangedStatic(bot) && !BotRoleService::IsMainTankStatic(bot) && !BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
+    if (!BotRoleService::IsRangedStatic(bot) && !BotRoleService::IsMainTankStatic(bot) && !BotRoleService::IsAssistTankOfIndexStatic(bot, 0))
     {
         return false;
     }
 
-    if (BotRoleService::IsMainTankStatic(bot) || BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
+    if (BotRoleService::IsMainTankStatic(bot) || BotRoleService::IsAssistTankOfIndexStatic(bot, 0))
     {
         Group* group = bot->GetGroup();
         if (!group)

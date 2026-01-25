@@ -28,7 +28,7 @@ bool EmalonMarkBossAction::Execute(Event event)
         // Iterate through the first 3 bot tanks to assign the Skull marker
         for (int i = 0; i < 3; ++i)
         {
-            if (BotRoleService::IsAssistTankStaticOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
+            if (BotRoleService::IsAssistTankOfIndexStatic(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
             {
                 Group* group = bot->GetGroup();
                 if (group && boss)
@@ -129,7 +129,7 @@ bool EmalonOverchargeAction::Execute(Event event)
         // Iterate through the first 3 bot tanks to assign the Skull marker
         for (int i = 0; i < 3; ++i)
         {
-            if (BotRoleService::IsAssistTankStaticOfIndex(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
+            if (BotRoleService::IsAssistTankOfIndexStatic(bot, i) && GET_PLAYERBOT_AI(bot))  // Bot is a valid tank
             {
                 Group* group = bot->GetGroup();
                 if (group && minion)

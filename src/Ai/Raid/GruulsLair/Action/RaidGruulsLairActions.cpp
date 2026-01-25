@@ -484,8 +484,8 @@ bool HighKingMaulgarMisdirectOlmAndBlindeyeAction::Execute(Event event)
         Player* member = ref->GetSource();
         if (!member || !member->IsAlive())
             continue;
-        else if (BotRoleService::IsAssistTankStaticOfIndex(member, 0)) olmTank = member;
-        else if (BotRoleService::IsAssistTankStaticOfIndex(member, 1)) blindeyeTank = member;
+        else if (BotRoleService::IsAssistTankOfIndexStatic(member, 0)) olmTank = member;
+        else if (BotRoleService::IsAssistTankOfIndexStatic(member, 1)) blindeyeTank = member;
     }
 
     switch (hunterIndex)

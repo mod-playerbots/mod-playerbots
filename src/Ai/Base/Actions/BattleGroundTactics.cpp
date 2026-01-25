@@ -3,9 +3,9 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include
+#include "BattleGroundTactics.h"
+#include "BotRoleService.h"
 #include "BotSpellService.h"
-#include "BotRoleService.h" "BattleGroundTactics.h"
 
 #include <algorithm>
 

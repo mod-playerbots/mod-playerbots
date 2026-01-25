@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include
-#include "BotRoleService.h" "ImbueAction.h"
+#include "ImbueAction.h"
+#include "BotRoleService.h"
 
 #include "Event.h"
 #include "Playerbots.h"

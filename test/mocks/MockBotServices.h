@@ -169,7 +169,7 @@ public:
     MOCK_METHOD(InventoryResult, CanEquipItem, (uint8 slot, uint16& dest, Item* pItem, bool swap, bool notLoading),
                 (const, override));
     MOCK_METHOD(uint8, FindEquipSlot, (ItemTemplate const* proto, uint32 slot, bool swap), (const, override));
-    MOCK_METHOD(uint32, GetEquipGearScore, (), (const, override));
+    MOCK_METHOD(uint32, GetEquipGearScore, (Player* player), (const, override));
     MOCK_METHOD((std::vector<std::pair<Quest const*, uint32>>), GetCurrentQuestsRequiringItemId, (uint32 itemId),
                 (const, override));
 };

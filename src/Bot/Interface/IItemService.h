@@ -11,6 +11,7 @@
 #include <utility>
 
 class Item;
+class Player;
 class Unit;
 class ObjectGuid;
 class Quest;
@@ -60,7 +61,7 @@ public:
     virtual InventoryResult CanEquipItem(uint8 slot, uint16& dest, Item* pItem, bool swap,
                                          bool notLoading = true) const = 0;
     virtual uint8 FindEquipSlot(ItemTemplate const* proto, uint32 slot, bool swap) const = 0;
-    virtual uint32 GetEquipGearScore() const = 0;
+    virtual uint32 GetEquipGearScore(Player* player = nullptr) const = 0;
 
     // Quest items
     virtual std::vector<std::pair<Quest const*, uint32>> GetCurrentQuestsRequiringItemId(uint32 itemId) const = 0;

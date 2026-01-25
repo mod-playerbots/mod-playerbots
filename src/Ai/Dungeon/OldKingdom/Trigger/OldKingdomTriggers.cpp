@@ -1,5 +1,5 @@
-#include
-#include "BotRoleService.h" "Playerbots.h"
+#include "Playerbots.h"
+#include "BotRoleService.h"
 #include "OldKingdomTriggers.h"
 #include "AiObject.h"
 #include "AiObjectContext.h"

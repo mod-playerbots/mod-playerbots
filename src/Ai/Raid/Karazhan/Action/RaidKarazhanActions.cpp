@@ -62,7 +62,7 @@ bool AttumenTheHuntsmanMarkTargetAction::Execute(Event event)
         if (IsInstanceTimerManager(botAI, bot))
             MarkTargetWithStar(bot, midnight);
 
-        if (!BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
+        if (!BotRoleService::IsAssistTankOfIndexStatic(bot, 0))
         {
             SetRtiTarget(botAI, "star", midnight);
 

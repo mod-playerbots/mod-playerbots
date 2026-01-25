@@ -55,7 +55,7 @@ public:
     InventoryResult CanEquipItem(uint8 slot, uint16& dest, Item* pItem, bool swap,
                                  bool notLoading = true) const override;
     uint8 FindEquipSlot(ItemTemplate const* proto, uint32 slot, bool swap) const override;
-    uint32 GetEquipGearScore() const override;
+    uint32 GetEquipGearScore(Player* player = nullptr) const override;
 
     // Quest items
     std::vector<std::pair<Quest const*, uint32>> GetCurrentQuestsRequiringItemId(uint32 itemId) const override;

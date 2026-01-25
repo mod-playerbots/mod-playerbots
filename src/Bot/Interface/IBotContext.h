@@ -7,6 +7,7 @@
 #define _PLAYERBOT_IBOT_CONTEXT_H
 
 #include "Common.h"
+#include <vector>
 
 class Player;
 class Unit;

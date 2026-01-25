@@ -1,5 +1,5 @@
-#include
-#include "BotRoleService.h" <unordered_map>
+#include <unordered_map>
+#include "BotRoleService.h"
 #include <ctime>
 
 #include "RaidMagtheridonMultipliers.h"
@@ -64,7 +64,7 @@ float MagtheridonDisableOffTankAssistMultiplier::GetValue(Action* action)
     if (!magtheridon)
         return 1.0f;
 
-    if ((BotRoleService::IsAssistTankStaticOfIndex(bot, 0) || BotRoleService::IsAssistTankStaticOfIndex(bot, 1)) &&
+    if ((BotRoleService::IsAssistTankOfIndexStatic(bot, 0) || BotRoleService::IsAssistTankOfIndexStatic(bot, 1)) &&
         dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 

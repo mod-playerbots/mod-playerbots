@@ -8,12 +8,12 @@
 
 #include <memory>
 
-class IBotContext;
-class ISpellService;
-class IChatService;
-class IRoleService;
-class IItemService;
-class IConfigProvider;
+#include "IBotContext.h"
+#include "IChatService.h"
+#include "IConfigProvider.h"
+#include "IItemService.h"
+#include "IRoleService.h"
+#include "ISpellService.h"
 
 /**
  * @brief Container for all bot services

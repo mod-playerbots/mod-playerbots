@@ -173,11 +173,11 @@ uint8 BotItemService::FindEquipSlot(ItemTemplate const* proto, uint32 slot, bool
     return 0;
 }
 
-uint32 BotItemService::GetEquipGearScore() const
+uint32 BotItemService::GetEquipGearScore(Player* player) const
 {
     if (botAI_)
     {
-        return botAI_->GetEquipGearScore(botAI_->GetBot());
+        return botAI_->GetEquipGearScore(player ? player : botAI_->GetBot());
     }
     return 0;
 }

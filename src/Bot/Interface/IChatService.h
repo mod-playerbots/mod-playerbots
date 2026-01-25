@@ -7,9 +7,8 @@
 #define _PLAYERBOT_ICHAT_SERVICE_H
 
 #include "Common.h"
+#include "PlayerbotSecurity.h"
 #include <sstream>
-
-enum class PlayerbotSecurityLevel : uint8;
 
 /**
  * @brief Chat channel identifiers for bot communication
@@ -44,11 +43,11 @@ public:
     virtual ~IChatService() = default;
 
     // Master communication
-    virtual bool TellMaster(std::string const& text, PlayerbotSecurityLevel securityLevel) = 0;
-    virtual bool TellMaster(std::ostringstream& stream, PlayerbotSecurityLevel securityLevel) = 0;
-    virtual bool TellMasterNoFacing(std::string const& text, PlayerbotSecurityLevel securityLevel) = 0;
-    virtual bool TellMasterNoFacing(std::ostringstream& stream, PlayerbotSecurityLevel securityLevel) = 0;
-    virtual bool TellError(std::string const& text, PlayerbotSecurityLevel securityLevel) = 0;
+    virtual bool TellMaster(std::string const& text, PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL) = 0;
+    virtual bool TellMaster(std::ostringstream& stream, PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL) = 0;
+    virtual bool TellMasterNoFacing(std::string const& text, PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL) = 0;
+    virtual bool TellMasterNoFacing(std::ostringstream& stream, PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL) = 0;
+    virtual bool TellError(std::string const& text, PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL) = 0;
 
     // Channel communication
     virtual bool SayToGuild(std::string const& msg) = 0;

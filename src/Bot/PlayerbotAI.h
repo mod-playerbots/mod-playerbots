@@ -10,6 +10,7 @@
 #include <queue>
 #include <stack>
 
+#include "BotServiceContainer.h"
 #include "Chat.h"
 #include "ChatFilter.h"
 #include "ChatHelper.h"
@@ -28,7 +29,6 @@
 #include "WorldPacket.h"
 
 class AiObjectContext;
-class BotServiceContainer;
 class Creature;
 class Engine;
 class ExternalEventHelper;
@@ -71,7 +71,7 @@ enum HealingItemId
     MAJOR_DREAMLESS_SLEEP_POTION = 20002
 };
 
-enum BotState
+enum BotState : int
 {
     BOT_STATE_COMBAT = 0,
     BOT_STATE_NON_COMBAT = 1,

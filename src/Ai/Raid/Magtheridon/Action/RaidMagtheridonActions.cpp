@@ -1,6 +1,6 @@
+#include "RaidMagtheridonActions.h"
+#include "BotRoleService.h"
 #include "BotSpellService.h"
-#include
-#include "BotRoleService.h" "RaidMagtheridonActions.h"
 #include "RaidMagtheridonHelpers.h"
 #include "Creature.h"
 #include "ObjectAccessor.h"

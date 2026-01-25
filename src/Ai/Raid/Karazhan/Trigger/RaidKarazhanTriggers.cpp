@@ -24,7 +24,7 @@ bool AttumenTheHuntsmanNeedTargetPriorityTrigger::IsActive()
 
 bool AttumenTheHuntsmanAttumenSpawnedTrigger::IsActive()
 {
-    if (!BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
+    if (!BotRoleService::IsAssistTankOfIndexStatic(bot, 0))
         return false;
 
     Unit* attumen = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN);
@@ -162,7 +162,7 @@ bool TheCuratorAstralFlareSpawnedTrigger::IsActive()
 
 bool TheCuratorBossEngagedByTanksTrigger::IsActive()
 {
-    if (!BotRoleService::IsMainTankStatic(bot) && !BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
+    if (!BotRoleService::IsMainTankStatic(bot) && !BotRoleService::IsAssistTankOfIndexStatic(bot, 0))
         return false;
 
     Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");

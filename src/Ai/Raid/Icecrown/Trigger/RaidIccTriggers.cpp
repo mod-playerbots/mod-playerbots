@@ -142,7 +142,7 @@ bool IccDbsMainTankRuneOfBloodTrigger::IsActive()
     if (!boss)
         return false;
 
-    if (!BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
+    if (!BotRoleService::IsAssistTankOfIndexStatic(bot, 0))
         return false;
 
     Unit* mt = AI_VALUE(Unit*, "main tank");
@@ -166,7 +166,7 @@ bool IccStinkyPreciousMainTankMortalWoundTrigger::IsActive()
     if (!bossPresent)
         return false;
 
-    if (!BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
+    if (!BotRoleService::IsAssistTankOfIndexStatic(bot, 0))
         return false;
 
     Unit* mt = AI_VALUE(Unit*, "main tank");
@@ -200,7 +200,7 @@ bool IccFestergutMainTankGastricBloatTrigger::IsActive()
     {
         return false;
     }
-    if (!BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
+    if (!BotRoleService::IsAssistTankOfIndexStatic(bot, 0))
     {
         return false;
     }
@@ -354,7 +354,7 @@ bool IccPutricideMainTankMutatedPlagueTrigger::IsActive()
     if (!bossPresent)
         return false;
 
-    if (!BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
+    if (!BotRoleService::IsAssistTankOfIndexStatic(bot, 0))
     {
         return false;
     }
@@ -995,7 +995,7 @@ bool IccSindragosaMainTankMysticBuffetTrigger::IsActive()
         return false;
 
     // Only for assist tank
-    if (!BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
+    if (!BotRoleService::IsAssistTankOfIndexStatic(bot, 0))
         return false;
 
     // Don't swap if we have frost beacon
@@ -1034,7 +1034,7 @@ bool IccSindragosaTankSwapPositionTrigger::IsActive()
         return false;
 
     // Only for assist tank
-    if (!BotRoleService::IsAssistTankStaticOfIndex(bot, 0))
+    if (!BotRoleService::IsAssistTankOfIndexStatic(bot, 0))
         return false;
 
     // Don't move to position if we have frost beacon
