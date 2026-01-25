@@ -28,6 +28,7 @@
 #include "StatsWeightCalculator.h"
 #include "Timer.h"
 #include "TravelMgr.h"
+#include "TaxiPathFinder.h"
 
 bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
 {
@@ -986,15 +987,15 @@ bool NewRpgBaseAction::SelectRandomFlightTaxiNode(ObjectGuid& flightMaster, uint
     }
     if (!nearestFlightMaster || bot->GetDistance(nearestFlightMaster) > 500.0f)
         return false;
-
+    // Improved version that uses TaxiPathFinder for multi-hop paths
     fromNode = sObjectMgr->GetNearestTaxiNode(nearestFlightMaster->GetPositionX(), nearestFlightMaster->GetPositionY(),
-                                              nearestFlightMaster->GetPositionZ(), nearestFlightMaster->GetMapId(),
-                                              bot->GetTeamId());
-
+                                            nearestFlightMaster->GetPositionZ(), nearestFlightMaster->GetMapId(),
+                                            bot->GetTeamId());
     if (!fromNode)
         return false;
 
     std::vector<uint32> availableToNodes;
+
     for (uint32 i = 1; i < sTaxiNodesStore.GetNumRows(); ++i)
     {
         if (fromNode == i)
@@ -1015,13 +1016,29 @@ bool NewRpgBaseAction::SelectRandomFlightTaxiNode(ObjectGuid& flightMaster, uint
         if (!botAI->CheckLocationDistanceByLevel(bot, WorldLocation(node->map_id, node->x, node->y, node->z), false))
             continue;
 
-        // check path
-        uint32 path, cost;
-        sObjectMgr->GetTaxiPath(fromNode, i, path, cost);
-        if (!path)
+        // *** IMPROVED PATHFINDING - Use bidirectional BFS to find multi-hop paths ***
+        std::vector<uint32> path = sTaxiPathFinder->FindTaxiPath(fromNode, i);
+        if (path.empty())
             continue;
 
-        // check area level
+        // Validate all intermediate nodes in the path are known
+        bool pathValid = true;
+        if (!bot->isTaxiCheater())
+        {
+            for (uint32 nodeInPath : path)
+            {
+                if (!bot->m_taxi.IsTaximaskNodeKnown(nodeInPath))
+                {
+                    pathValid = false;
+                    break;
+                }
+            }
+        }
+
+        if (!pathValid)
+            continue;
+
+        // Check area level
         uint32 nodeZoneId = bot->GetMap()->GetZoneId(bot->GetPhaseMask(), node->x, node->y, node->z);
         bool capital = false;
         if (AreaTableEntry const* zone = sAreaTableStore.LookupEntry(nodeZoneId))
@@ -1038,6 +1055,7 @@ bool NewRpgBaseAction::SelectRandomFlightTaxiNode(ObjectGuid& flightMaster, uint
 
         availableToNodes.push_back(i);
     }
+
     if (availableToNodes.empty())
         return false;
 
