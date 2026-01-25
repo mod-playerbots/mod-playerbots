@@ -706,7 +706,6 @@ std::string const PlayerbotHolder::ProcessBotCommand(std::string const cmd, Obje
     if (!sPlayerbotAIConfig->enabled || guid.IsEmpty())
         return "bot system is disabled";
 
-
     if (cmd == "add" || cmd == "addaccount" || cmd == "login")
     {
         if (ObjectAccessor::FindPlayer(guid))
