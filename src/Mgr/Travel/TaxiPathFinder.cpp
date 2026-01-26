@@ -5,13 +5,18 @@
 #include <queue>
 #include <unordered_set>
 #include "Log.h"
-#include <chrono>
+
+void TaxiPathFinder::Init()
+{
+    BuildTaxiGraph();
+    ComputeAllPaths();
+    LOG_INFO("playerbots", "Playerbots Taxi graph built successfully.");
+}
 
 void TaxiPathFinder::BuildTaxiGraph()
 {
-    taxiForward.clear();
-    taxiReverse.clear();
-
+    taxiGraph.clear();
+    std::unordered_map<uint32, std::unordered_set<uint32>> tempGraph;
     for (uint32 i = 0; i < sTaxiPathStore.GetNumRows(); ++i)
     {
         TaxiPathEntry const* path = sTaxiPathStore.LookupEntry(i);
@@ -20,24 +25,108 @@ void TaxiPathFinder::BuildTaxiGraph()
 
         if (path->to == 0 || path->to == uint32(-1))
             continue;
-        taxiForward[path->from].push_back(path->to);
-        taxiReverse[path->to].push_back(path->from);
+        tempGraph[path->from].insert(path->to);
+        tempGraph[path->to].insert(path->from);
     }
-    LOG_INFO("playerbots", "Playerbots Taxi graph built successfully.");
+    for (auto const& [node, neighbors] : tempGraph)
+        taxiGraph[node] = std::vector<uint32>(neighbors.begin(), neighbors.end());
+
 }
+
+std::unordered_map<uint32, uint32> TaxiPathFinder::BFS(uint32 fromNode)
+{
+    std::queue<uint32> workQueue;
+    std::unordered_set<uint32> visited;
+    std::unordered_map<uint32, uint32> parentMap;
+
+    workQueue.push(fromNode);
+    visited.insert(fromNode);
+    parentMap[fromNode] = 0;
+
+    while (!workQueue.empty())
+    {
+        uint32 current = workQueue.front();
+        workQueue.pop();
+
+        for (uint32 next : taxiGraph.at(current))
+        {
+            if (visited.count(next))
+                continue;
+
+            visited.insert(next);
+            parentMap[next] = current;
+            workQueue.push(next);
+        }
+    }
+
+    return parentMap;
+}
+
+std::vector<uint32> TaxiPathFinder::BuildPath(uint32 fromNode, uint32 toNode,
+                              const std::unordered_map<uint32, uint32>& parentMap)
+{
+    std::vector<uint32> path;
+
+    if (!parentMap.count(toNode))
+        return path; // unreachable
+
+    uint32 current = toNode;
+    while (current !=  fromNode)
+    {
+        path.push_back(current);
+        auto it  = parentMap.find(current);
+        if (it == parentMap.end() || it->second == 0)
+            break;
+        current = it->second;
+    }
+
+    path.push_back(fromNode);
+    std::reverse(path.begin(), path.end());
+    return path;
+}
+
+void TaxiPathFinder::ComputeAllPaths()
+{
+    using Clock = std::chrono::high_resolution_clock;
+    auto start = Clock::now();
+    std::set<uint32> allNodes;
+    for (auto const& [source, neighbors] : taxiGraph)
+        allNodes.insert(source);
+
+    for (uint32 source : allNodes)
+    {
+        auto parentMap = BFS(source);
+
+        for (uint32 target : allNodes)
+        {
+            if (source == target)
+                continue;
+
+            auto path = BuildPath(source, target, parentMap);
+            if (!path.empty())
+                taxiPathCache[source][target] = path;
+        }
+    }
+    auto end = Clock::now();
+    auto elapsedMs =
+     std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+
+    LOG_ERROR("playerbots", "Taxi graph calculation took {} ms", elapsedMs);
+}
+
 
 std::vector<uint32> TaxiPathFinder::FindTaxiPath(uint32 fromNode, uint32 toNode)
 {
-    std::vector<uint32> pathFromStart;
+    std::vector<uint32> path;
 
     if (fromNode == toNode)
-        return pathFromStart;
+        return path;
 
     TaxiNodesEntry const* startNode = sTaxiNodesStore.LookupEntry(fromNode);
     TaxiNodesEntry const* endNode = sTaxiNodesStore.LookupEntry(toNode);
 
     if (!startNode || !endNode || startNode->map_id != endNode->map_id)
-        return pathFromStart;
+        return path;
 
     //Lets check the cache first.
     auto cacheItr = taxiPathCache.find(fromNode);
@@ -47,55 +136,5 @@ std::vector<uint32> TaxiPathFinder::FindTaxiPath(uint32 fromNode, uint32 toNode)
         if (toNodeItr != cacheItr->second.end())
             return toNodeItr->second;
     }
-
-    std::queue<uint32> workQueue;
-    std::map <uint32, uint32> parentMap;
-
-    workQueue.push(fromNode);
-    parentMap[fromNode] = 0;
-
-    bool found = false;
-
-    using Clock = std::chrono::high_resolution_clock;
-    auto start = Clock::now();
-    size_t iterations = 0;
-
-    while (!workQueue.empty())
-    {
-        ++iterations;
-        uint32 current = workQueue.front();
-        workQueue.pop();
-        if (current == toNode)
-        {
-            found = true;
-            break;
-        }
-        for (uint32 neighbor : taxiForward[current])
-        {
-            if (parentMap.find(neighbor) == parentMap.end())
-            {
-                workQueue.push(neighbor);
-                parentMap[neighbor] = current;
-            }
-        }
-    }
-    auto end = Clock::now();
-
-    auto elapsedNs =
-     std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-
-    LOG_ERROR("playerbots", "Taxi BFS took {} ns ({} iterations from {} to {})", elapsedNs, iterations, fromNode, toNode);
-
-    if (found)
-    {
-        uint32 curr = toNode;
-        while (curr != 0)
-        {
-            pathFromStart.push_back(curr);
-            curr = parentMap[curr];
-        }
-        std::reverse(pathFromStart.begin(), pathFromStart.end());
-    }
-
-    return pathFromStart;
+    return path;
 }
