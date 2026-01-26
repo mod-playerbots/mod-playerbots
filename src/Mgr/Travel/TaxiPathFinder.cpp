@@ -79,6 +79,12 @@ std::vector<uint32> TaxiPathFinder::FindTaxiPath(uint32 fromNode, uint32 toNode)
             }
         }
     }
+    auto end = Clock::now();
+
+    auto elapsedNs =
+     std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+
+    LOG_ERROR("playerbots", "Taxi BFS took {} ns ({} iterationsm from {} to {})", elapsedNs, iterations, fromNode, toNode);
 
     if (found)
     {
