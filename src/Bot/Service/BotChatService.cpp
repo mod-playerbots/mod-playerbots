@@ -333,9 +333,11 @@ ChatContext BotChatService::BuildChatContext() const
     ctx.bot = _botAI->GetBot();
     ctx.getMaster = [this]() { return _botAI->GetMaster(); };
     ctx.security = _botAI->GetSecurity();
+    ctx.whispers = nullptr;
+    ctx.currentChat = nullptr;
+    ctx.hasStrategy = [](std::string const&, int) { return false; };
+    ctx.hasRealPlayerMaster = [this]() { return _botAI->HasRealPlayerMaster(); };
 
-    // We need access to private members, so we'll use PlayerbotAI methods directly for these
-    // For now, we delegate to PlayerbotAI
     return ctx;
 }
 
