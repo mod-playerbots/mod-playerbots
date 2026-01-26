@@ -10,7 +10,7 @@ void TaxiPathFinder::Init()
 {
     BuildTaxiGraph();
     ComputeAllPaths();
-    LOG_INFO("playerbots", "Playerbots Taxi graph built successfully.");
+    LOG_INFO("playerbots", "Playerbots Taxi graph and cache built.");
 }
 
 void TaxiPathFinder::BuildTaxiGraph()
@@ -30,7 +30,6 @@ void TaxiPathFinder::BuildTaxiGraph()
     }
     for (auto const& [node, neighbors] : tempGraph)
         taxiGraph[node] = std::vector<uint32>(neighbors.begin(), neighbors.end());
-
 }
 
 std::unordered_map<uint32, uint32> TaxiPathFinder::BFS(uint32 fromNode)
@@ -87,8 +86,6 @@ std::vector<uint32> TaxiPathFinder::BuildPath(uint32 fromNode, uint32 toNode,
 
 void TaxiPathFinder::ComputeAllPaths()
 {
-    using Clock = std::chrono::high_resolution_clock;
-    auto start = Clock::now();
     std::set<uint32> allNodes;
     for (auto const& [source, neighbors] : taxiGraph)
         allNodes.insert(source);
@@ -107,13 +104,7 @@ void TaxiPathFinder::ComputeAllPaths()
                 taxiPathCache[source][target] = path;
         }
     }
-    auto end = Clock::now();
-    auto elapsedMs =
-     std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-
-    LOG_ERROR("playerbots", "Taxi graph calculation took {} ms", elapsedMs);
 }
-
 
 std::vector<uint32> TaxiPathFinder::FindTaxiPath(uint32 fromNode, uint32 toNode)
 {
@@ -128,7 +119,6 @@ std::vector<uint32> TaxiPathFinder::FindTaxiPath(uint32 fromNode, uint32 toNode)
     if (!startNode || !endNode || startNode->map_id != endNode->map_id)
         return path;
 
-    //Lets check the cache first.
     auto cacheItr = taxiPathCache.find(fromNode);
     if (cacheItr != taxiPathCache.end())
     {
