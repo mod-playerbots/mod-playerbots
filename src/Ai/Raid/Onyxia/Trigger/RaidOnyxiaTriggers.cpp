@@ -32,7 +32,7 @@ bool OnyxiaDeepBreathTrigger::IsActive()
     // Check if Onyxia is casting
     Spell* currentSpell = boss->GetCurrentSpell(CURRENT_GENERIC_SPELL);
 
-    if (!currentSpell)
+    if (!currentSpell || !currentSpell->m_spellInfo)
         return false;
 
     uint32 spellId = currentSpell->m_spellInfo->Id;
