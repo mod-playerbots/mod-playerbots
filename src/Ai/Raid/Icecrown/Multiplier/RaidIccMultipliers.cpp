@@ -366,7 +366,7 @@ float IccBpcAssistMultiplier::GetValue(Action* action)
             return 0.0f;  // Cancel all other actions when we need to handle Ball of Flame
     }
 
-    static const std::array<uint32, 4> bombEntries = {NPC_KINETIC_BOMB1, NPC_KINETIC_BOMB2, NPC_KINETIC_BOMB3,
+    static std::array<uint32, 4> const bombEntries = {NPC_KINETIC_BOMB1, NPC_KINETIC_BOMB2, NPC_KINETIC_BOMB3,
                                                       NPC_KINETIC_BOMB4};
     const GuidVector bombs = AI_VALUE(GuidVector, "possible targets no los");
 

@@ -48,6 +48,38 @@
 const uint64 diveMask = (1LL << 7) | (1LL << 44) | (1LL << 37) | (1LL << 38) | (1LL << 26) | (1LL << 30) | (1LL << 27) |
                         (1LL << 33) | (1LL << 24) | (1LL << 34);
 
+// Common item IDs used by bot factory
+enum BotFactoryItems
+{
+    ITEM_HEARTHSTONE            = 6948,   // Hearthstone
+    ITEM_SHAMAN_EARTH_TOTEM     = 46978   // Shaman Earth Ring Totem
+};
+
+// Blacklisted enchant spell IDs (test/grandfathered/unobtainable)
+enum BlacklistedEnchantSpells
+{
+    // Test Enchants
+    SPELL_TEST_ENCHANT_1                    = 7218,
+    SPELL_TEST_ENCHANT_2                    = 19927,
+    SPELL_TEST_ENCHANT_3                    = 44119,
+    SPELL_TEST_ENCHANT_4                    = 47147,
+    SPELL_TEST_ENCHANT_5                    = 47181,
+    SPELL_TEST_ENCHANT_6                    = 47242,
+    SPELL_TEST_ENCHANT_7                    = 50358,
+    SPELL_TEST_ENCHANT_8                    = 52639,
+    // Grandfathered TBC Enchants
+    SPELL_GRANDFATHERED_TBC_1               = 35791,
+    SPELL_GRANDFATHERED_TBC_2               = 39405,
+    // Legendary Arcane Amalgamation
+    SPELL_LEGENDARY_ARCANE_1                = 15463,
+    SPELL_LEGENDARY_ARCANE_2                = 15490,
+    // Naxx40 Sapphiron Shoulder Enchants
+    SPELL_NAXX40_SHOULDER_1                 = 29467,
+    SPELL_NAXX40_SHOULDER_2                 = 29475,
+    SPELL_NAXX40_SHOULDER_3                 = 29480,
+    SPELL_NAXX40_SHOULDER_4                 = 29483
+};
+
 static std::vector<uint32> initSlotsOrder = {EQUIPMENT_SLOT_TRINKET1, EQUIPMENT_SLOT_TRINKET2, EQUIPMENT_SLOT_MAINHAND,
     EQUIPMENT_SLOT_OFFHAND, EQUIPMENT_SLOT_RANGED, EQUIPMENT_SLOT_HEAD, EQUIPMENT_SLOT_SHOULDERS, EQUIPMENT_SLOT_CHEST,
     EQUIPMENT_SLOT_LEGS, EQUIPMENT_SLOT_HANDS, EQUIPMENT_SLOT_NECK, EQUIPMENT_SLOT_BODY, EQUIPMENT_SLOT_WAIST,
@@ -124,17 +156,19 @@ void PlayerbotFactory::Init()
     uint32 maxStoreSize = sSpellMgr->GetSpellInfoStoreSize();
     for (uint32 id = 1; id < maxStoreSize; ++id)
     {
-        if (id == 7218 || id == 19927 || id == 44119 || id == 47147 || id == 47181 ||
-            id == 47242 || id == 50358 || id == 52639) // Test Enchants
+        if (id == SPELL_TEST_ENCHANT_1 || id == SPELL_TEST_ENCHANT_2 || id == SPELL_TEST_ENCHANT_3 ||
+            id == SPELL_TEST_ENCHANT_4 || id == SPELL_TEST_ENCHANT_5 || id == SPELL_TEST_ENCHANT_6 ||
+            id == SPELL_TEST_ENCHANT_7 || id == SPELL_TEST_ENCHANT_8) // Test Enchants
             continue;
 
-        if (id == 35791 || id == 39405) // Grandfathered TBC Enchants
+        if (id == SPELL_GRANDFATHERED_TBC_1 || id == SPELL_GRANDFATHERED_TBC_2) // Grandfathered TBC Enchants
             continue;
 
-        if (id == 15463 || id == 15490) // Legendary Arcane Amalgamation
+        if (id == SPELL_LEGENDARY_ARCANE_1 || id == SPELL_LEGENDARY_ARCANE_2) // Legendary Arcane Amalgamation
             continue;
 
-        if (id == 29467 || id == 29475 || id == 29480 || id == 29483) // Naxx40 Sapphiron Shoulder Enchants
+        if (id == SPELL_NAXX40_SHOULDER_1 || id == SPELL_NAXX40_SHOULDER_2 ||
+            id == SPELL_NAXX40_SHOULDER_3 || id == SPELL_NAXX40_SHOULDER_4) // Naxx40 Sapphiron Shoulder Enchants
             continue;
 
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(id);
@@ -1729,7 +1763,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                 uint32 itemId = oEntry->ItemId[j];
 
                 // skip hearthstone
-                if (itemId == 6948)
+                if (itemId == ITEM_HEARTHSTONE)
                     continue;
 
                 // just skip, reported in ObjectMgr::LoadItemTemplates
@@ -1806,7 +1840,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                 {
                     for (uint32 itemId : sRandomItemMgr->GetCachedEquipments(requiredLevel, inventoryType))
                     {
-                        if (itemId == 46978)  // shaman earth ring totem
+                        if (itemId == ITEM_SHAMAN_EARTH_TOTEM)
                         {
                             continue;
                         }

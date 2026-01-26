@@ -119,7 +119,7 @@ bool NoTrackTrigger::IsActive()
         "track humanoids"
     };
 
-    for (auto &track: track_list)
+    for (auto& track: track_list)
     {
         if (botAI->GetServices().GetSpellService().HasAura(track, bot))
             return false;
@@ -141,7 +141,7 @@ bool SerpentStingOnAttackerTrigger::IsActive()
     return BuffTrigger::IsActive();
 }
 
-const std::set<uint32> VolleyChannelCheckTrigger::VOLLEY_SPELL_IDS = {
+std::set<uint32> const VolleyChannelCheckTrigger::VOLLEY_SPELL_IDS = {
     1510,   // Volley Rank 1
     14294,  // Volley Rank 2
     14295,  // Volley Rank 3

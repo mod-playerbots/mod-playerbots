@@ -495,7 +495,7 @@ bool DebugAction::Execute(Event event)
                     out << "effect ";
                     out << effect;
 
-                    const std::string& Cname = out.str();
+                    std::string const& Cname = out.str();
 
                     wpCreature->Say(Cname.c_str(), LANG_UNIVERSAL, master);
                 }

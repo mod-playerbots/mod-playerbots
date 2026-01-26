@@ -162,7 +162,7 @@ bool CastCreateSoulstoneAction::isUseful()
         return false;
 
     // List of all Soulstone item IDs
-    static const std::vector<uint32> soulstoneIds = {
+    static std::vector<uint32> const soulstoneIds = {
         5232,   // Minor Soulstone
         16892,  // Lesser Soulstone
         16893,  // Soulstone
@@ -228,7 +228,7 @@ bool DestroySoulShardAction::Execute(Event /*event*/)
 // Checks if the target has a soulstone aura
 static bool HasSoulstoneAura(Unit* unit)
 {
-    static const std::vector<uint32> soulstoneAuraIds = {20707, 20762, 20763, 20764, 20765, 27239, 47883};
+    static std::vector<uint32> const soulstoneAuraIds = {20707, 20762, 20763, 20764, 20765, 27239, 47883};
     for (uint32 spellId : soulstoneAuraIds)
         if (unit->HasAura(spellId))
             return true;
@@ -413,7 +413,7 @@ bool UseSoulstoneHealerAction::Execute(Event /*event*/)
     return UseItem(items[0], ObjectGuid::Empty, nullptr, healer);
 }
 
-const std::vector<uint32> CastCreateFirestoneAction::firestoneSpellIds = {
+std::vector<uint32> const CastCreateFirestoneAction::firestoneSpellIds = {
     60220,  // Create Firestone (Rank 7)
     27250,  // Rank 5
     17953,  // Rank 4

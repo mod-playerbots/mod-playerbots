@@ -71,7 +71,7 @@ enum class CityId : uint8 {
 enum class FactionId : uint8 { ALLIANCE, HORDE, NEUTRAL };
 
 // Map of banker entry → city + faction
-static const std::unordered_map<uint16, std::pair<CityId, FactionId>> bankerToCity = {
+static std::unordered_map<uint16, std::pair<CityId, FactionId> const> bankerToCity = {
     {2455,  {CityId::STORMWIND,       FactionId::ALLIANCE}}, {2456,  {CityId::STORMWIND,       FactionId::ALLIANCE}}, {2457,  {CityId::STORMWIND,       FactionId::ALLIANCE}},
     {2460,  {CityId::IRONFORGE,       FactionId::ALLIANCE}}, {2461,  {CityId::IRONFORGE,       FactionId::ALLIANCE}}, {5099,  {CityId::IRONFORGE,       FactionId::ALLIANCE}},
     {4155,  {CityId::DARNASSUS,       FactionId::ALLIANCE}}, {4208,  {CityId::DARNASSUS,       FactionId::ALLIANCE}}, {4209,  {CityId::DARNASSUS,       FactionId::ALLIANCE}},
@@ -88,7 +88,7 @@ static const std::unordered_map<uint16, std::pair<CityId, FactionId>> bankerToCi
 };
 
 // Map of city → available banker entries
-static const std::unordered_map<CityId, std::vector<uint16>> cityToBankers = {
+static std::unordered_map<CityId, std::vector<uint16> const> cityToBankers = {
     {CityId::STORMWIND,       {2455, 2456, 2457}},
     {CityId::IRONFORGE,       {2460, 2461, 5099}},
     {CityId::DARNASSUS,       {4155, 4208, 4209}},
@@ -810,7 +810,7 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
         }
 
         // Lambda to handle bot login logic
-        auto tryLoginBot = [&](const CharacterInfo& charInfo) -> bool
+        auto tryLoginBot = [&](CharacterInfo const& charInfo) -> bool
         {
             if (GetEventValue(charInfo.guid, "add") ||
                 GetEventValue(charInfo.guid, "logout") ||
@@ -952,7 +952,7 @@ void RandomPlayerbotMgr::LoadBattleMastersCache()
     LOG_INFO("playerbots", ">> Loaded {} battlemaster entries", count);
 }
 
-std::vector<uint32> parseBrackets(const std::string& str)
+std::vector<uint32> parseBrackets(std::string const& str)
 {
     std::vector<uint32> brackets;
     std::stringstream ss(str);
@@ -1754,7 +1754,7 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot, std::vector<WorldLocation>&
         if (!botAI->CheckLocationDistanceByLevel(bot, loc, true))
             continue;
 
-        const LocaleConstant& locale = sWorld->GetDefaultDbcLocale();
+        LocaleConstant const& locale = sWorld->GetDefaultDbcLocale();
         LOG_DEBUG("playerbots",
                   "Random teleporting bot {} (level {}) to Map: {} ({}) Zone: {} ({}) Area: {} ({}) ZoneLevel: {} "
                   "AreaLevel: {} {},{},{} ({}/{} "

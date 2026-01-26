@@ -563,7 +563,7 @@ void PlayerbotAI::HandleCommands()
             continue;
         }
 
-        const std::string& command = it->GetCommand();
+        std::string const& command = it->GetCommand();
         if (command.empty())
         {
             it = chatCommands.erase(it);
@@ -582,7 +582,7 @@ void PlayerbotAI::HandleCommands()
 }
 
 std::map<std::string, ChatMsg> chatMap;
-void PlayerbotAI::HandleCommand(uint32 type, const std::string& text, Player& fromPlayer, const uint32 lang)
+void PlayerbotAI::HandleCommand(uint32 type, std::string const& text, Player& fromPlayer, const uint32 lang)
 {
     if (!bot)
         return;
@@ -1975,7 +1975,7 @@ std::vector<Player*> PlayerbotAI::GetPlayersInGroup()
     return members;
 }
 
-bool PlayerbotAI::SayToGuild(const std::string& msg)
+bool PlayerbotAI::SayToGuild(std::string const& msg)
 {
     if (msg.empty())
     {
@@ -1998,7 +1998,7 @@ bool PlayerbotAI::SayToGuild(const std::string& msg)
     return false;
 }
 
-bool PlayerbotAI::SayToWorld(const std::string& msg)
+bool PlayerbotAI::SayToWorld(std::string const& msg)
 {
     if (msg.empty())
     {
@@ -2019,7 +2019,7 @@ bool PlayerbotAI::SayToWorld(const std::string& msg)
     return false;
 }
 
-bool PlayerbotAI::SayToChannel(const std::string& msg, const ChatChannelId& chanId)
+bool PlayerbotAI::SayToChannel(std::string const& msg, ChatChannelId const& chanId)
 {
     // Checks whether the message or ChannelMgr is valid
     if (msg.empty())
@@ -2074,7 +2074,7 @@ bool PlayerbotAI::SayToChannel(const std::string& msg, const ChatChannelId& chan
     return false;
 }
 
-bool PlayerbotAI::SayToParty(const std::string& msg)
+bool PlayerbotAI::SayToParty(std::string const& msg)
 {
     if (!bot->GetGroup())
         return false;
@@ -2091,7 +2091,7 @@ bool PlayerbotAI::SayToParty(const std::string& msg)
     return true;
 }
 
-bool PlayerbotAI::SayToRaid(const std::string& msg)
+bool PlayerbotAI::SayToRaid(std::string const& msg)
 {
     if (!bot->GetGroup() || bot->GetGroup()->isRaidGroup())
         return false;
@@ -2108,7 +2108,7 @@ bool PlayerbotAI::SayToRaid(const std::string& msg)
     return true;
 }
 
-bool PlayerbotAI::Yell(const std::string& msg)
+bool PlayerbotAI::Yell(std::string const& msg)
 {
     if (bot->GetTeamId() == TeamId::TEAM_ALLIANCE)
     {
@@ -2122,7 +2122,7 @@ bool PlayerbotAI::Yell(const std::string& msg)
     return true;
 }
 
-bool PlayerbotAI::Say(const std::string& msg)
+bool PlayerbotAI::Say(std::string const& msg)
 {
     if (bot->GetTeamId() == TeamId::TEAM_ALLIANCE)
     {
@@ -2136,7 +2136,7 @@ bool PlayerbotAI::Say(const std::string& msg)
     return true;
 }
 
-bool PlayerbotAI::Whisper(const std::string& msg, const std::string& receiverName)
+bool PlayerbotAI::Whisper(std::string const& msg, std::string const& receiverName)
 {
     const auto receiver = ObjectAccessor::FindPlayerByName(receiverName);
     if (!receiver)
@@ -4930,11 +4930,11 @@ Item* PlayerbotAI::FindStoneFor(Item* weapon) const
     if (!item_template)
         return nullptr;
 
-    static const std::vector<uint32_t> uPrioritizedSharpStoneIds = {
+    static std::vector<uint32_t> const uPrioritizedSharpStoneIds = {
         ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE,   ELEMENTAL_SHARPENING_STONE, DENSE_SHARPENING_STONE,
         SOLID_SHARPENING_STONE,      HEAVY_SHARPENING_STONE, COARSE_SHARPENING_STONE,    ROUGH_SHARPENING_STONE};
 
-    static const std::vector<uint32_t> uPrioritizedWeightStoneIds = {
+    static std::vector<uint32_t> const uPrioritizedWeightStoneIds = {
         ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE,    DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE,
         HEAVY_WEIGHTSTONE,      COARSE_WEIGHTSTONE, ROUGH_WEIGHTSTONE};
 
@@ -4979,11 +4979,11 @@ Item* PlayerbotAI::FindOilFor(Item* weapon) const
     if (!item_template)
         return nullptr;
 
-    static const std::vector<uint32_t> uPrioritizedWizardOilIds = {
+    static std::vector<uint32_t> const uPrioritizedWizardOilIds = {
         BRILLIANT_WIZARD_OIL, SUPERIOR_WIZARD_OIL, WIZARD_OIL,      LESSER_WIZARD_OIL, MINOR_WIZARD_OIL,
         BRILLIANT_MANA_OIL,   SUPERIOR_MANA_OIL,   LESSER_MANA_OIL, MINOR_MANA_OIL};
 
-    static const std::vector<uint32_t> uPrioritizedManaOilIds = {
+    static std::vector<uint32_t> const uPrioritizedManaOilIds = {
         BRILLIANT_MANA_OIL,  SUPERIOR_MANA_OIL, LESSER_MANA_OIL,   MINOR_MANA_OIL,  BRILLIANT_WIZARD_OIL,
         SUPERIOR_WIZARD_OIL, WIZARD_OIL,        LESSER_WIZARD_OIL, MINOR_WIZARD_OIL};
 
@@ -4991,7 +4991,7 @@ Item* PlayerbotAI::FindOilFor(Item* weapon) const
     int botClass = bot->getClass();
     int specTab = AiFactory::GetPlayerSpecTab(bot);
 
-    const std::vector<uint32_t>* prioritizedOils = nullptr;
+    std::vector<uint32_t> const* prioritizedOils = nullptr;
     switch (botClass)
     {
         case CLASS_PRIEST:
@@ -5875,7 +5875,7 @@ ChatChannelSource PlayerbotAI::GetChatChannelSource(Player* bot, uint32 type, st
     return ChatChannelSource::SRC_UNDEFINED;
 }
 
-bool PlayerbotAI::CheckLocationDistanceByLevel(Player* player, const WorldLocation& loc, bool fromStartUp)
+bool PlayerbotAI::CheckLocationDistanceByLevel(Player* player, WorldLocation const& loc, bool fromStartUp)
 {
     if (player->GetLevel() > 16)
         return true;

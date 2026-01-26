@@ -278,7 +278,7 @@ public:
 
 protected:
     uint32 minEnemies;
-    static const std::set<uint32> HURRICANE_SPELL_IDS;
+    static std::set<uint32> const HURRICANE_SPELL_IDS;
 };
 
 #endif

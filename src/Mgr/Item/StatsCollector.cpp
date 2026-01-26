@@ -125,7 +125,7 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, int32 s
 
     for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
     {
-        const SpellEffectInfo& effectInfo = spellInfo->Effects[i];
+        SpellEffectInfo const& effectInfo = spellInfo->Effects[i];
         if (!effectInfo.Effect)
             continue;
         switch (effectInfo.Effect)
@@ -552,7 +552,7 @@ void StatsCollector::CollectByItemStatType(uint32 itemStatType, int32 val)
     }
 }
 
-void StatsCollector::HandleApplyAura(const SpellEffectInfo& effectInfo, float multiplier, bool canNextTrigger,
+void StatsCollector::HandleApplyAura(SpellEffectInfo const& effectInfo, float multiplier, bool canNextTrigger,
                                      uint32 triggerCooldown)
 {
     if (effectInfo.Effect != SPELL_EFFECT_APPLY_AURA)
@@ -747,7 +747,7 @@ void StatsCollector::HandleApplyAura(const SpellEffectInfo& effectInfo, float mu
     }
 }
 
-float StatsCollector::AverageValue(const SpellEffectInfo& effectInfo)
+float StatsCollector::AverageValue(SpellEffectInfo const& effectInfo)
 {
     // float basePointsPerLevel = effectInfo.RealPointsPerLevel; //not used, line marked for removal.
     float basePoints = effectInfo.BasePoints;

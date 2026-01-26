@@ -1,7 +1,7 @@
 #include "GundrakStrategy.h"
 #include "GundrakMultipliers.h"
 
-void WotlkDungeonGDStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
+void WotlkDungeonGDStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // Moorabi
 
@@ -22,7 +22,7 @@ void WotlkDungeonGDStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
     // Eck the Ferocious (Heroic only)
 }
 
-void WotlkDungeonGDStrategy::InitMultipliers(std::vector<Multiplier*> &multipliers)
+void WotlkDungeonGDStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new SladranMultiplier(botAI));
     multipliers.push_back(new GaldarahMultiplier(botAI));

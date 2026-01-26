@@ -7,8 +7,8 @@
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 
-const std::pair<float, float> MALYGOS_MAINTANK_POSITION = {757.0f, 1337.0f};
-const std::pair<float, float> MALYGOS_STACK_POSITION = {755.0f, 1301.0f};
+std::pair<float, float> const MALYGOS_MAINTANK_POSITION = {757.0f, 1337.0f};
+std::pair<float, float> const MALYGOS_STACK_POSITION = {755.0f, 1301.0f};
 
 class MalygosPositionAction : public MovementAction
 {

@@ -15,7 +15,7 @@ void RaidEoEStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("eoe drake attack", ACTION_NORMAL + 5) }));
 }
 
-void RaidEoEStrategy::InitMultipliers(std::vector<Multiplier*> &multipliers)
+void RaidEoEStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new MalygosMultiplier(botAI));
 }

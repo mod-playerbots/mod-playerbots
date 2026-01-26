@@ -213,16 +213,16 @@ std::string const RandomPlayerbotFactory::CreateRandomBotName(NameRaceAndGender 
 
     // CONLANG NAME GENERATION
     LOG_ERROR("playerbots", "No more names left for random bots. Attempting conlang name generation.");
-    const std::string groupCategory = "SCVKRU";
-    const std::string groupFormStart[2][4] = {{"SV", "SV", "VK", "RV"}, {"V", "SU", "VS", "RV"}};
-    const std::string groupFormMid[2][6] = {{"CV", "CVC", "CVC", "CVK", "VC", "VK"},
+    std::string const groupCategory = "SCVKRU";
+    std::string const groupFormStart[2][4] = {{"SV", "SV", "VK", "RV"}, {"V", "SU", "VS", "RV"}};
+    std::string const groupFormMid[2][6] = {{"CV", "CVC", "CVC", "CVK", "VC", "VK"},
                                             {"CV", "CVC", "CVK", "KVC", "VC", "KV"}};
-    const std::string groupFormEnd[2][4] = {{"CV", "VC", "VK", "CV"}, {"RU", "UR", "VR", "V"}};
-    const std::string groupLetter[2][6] = {
+    std::string const groupFormEnd[2][4] = {{"CV", "VC", "VK", "CV"}, {"RU", "UR", "VR", "V"}};
+    std::string const groupLetter[2][6] = {
         // S           C                            V               K           R         U
         {"dtspkThfS", "bcCdfghjkmnNqqrrlsStTvwxyz", "aaeeiouA", "ppttkkbdg", "lmmnrr", "AEO"},
         {"dtskThfS", "bcCdfghjkmmnNqrrlssStTvwyz", "aaaeeiiuAAEIO", "ppttkbbdg", "lmmnrrr", "AEOy"}};
-    const std::string replaceRule[2][17] = {
+    std::string const replaceRule[2][17] = {
         {"ST", "ka", "ko", "ku", "kr", "S", "T", "C", "N", "jj", "AA", "AI", "A", "E", "O", "I", "aa"},
         {"sth", "ca", "co", "cu", "cr", "sh", "th", "ch", "ng", "dg", "A", "ayu", "ai", "ei", "ou", "iu", "ae"}};
 

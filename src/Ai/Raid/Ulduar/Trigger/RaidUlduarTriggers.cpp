@@ -17,11 +17,11 @@
 #include <FollowMasterStrategy.h>
 #include <RtiTargetValue.h>
 
-const std::vector<uint32> availableVehicles = {NPC_VEHICLE_CHOPPER, NPC_SALVAGED_DEMOLISHER,
+std::vector<uint32> const availableVehicles = {NPC_VEHICLE_CHOPPER, NPC_SALVAGED_DEMOLISHER,
                                                NPC_SALVAGED_DEMOLISHER_TURRET, NPC_SALVAGED_SIEGE_ENGINE,
                                                NPC_SALVAGED_SIEGE_ENGINE_TURRET};
 
-const std::vector<uint32> illusionMobs =
+std::vector<uint32> const illusionMobs =
 {
     NPC_INFLUENCE_TENTACLE,
     NPC_RUBY_CONSORT,
@@ -195,7 +195,7 @@ bool RazorscaleGroundedTrigger::IsActive()
 bool RazorscaleHarpoonAvailableTrigger::IsActive()
 {
     // Get harpoon data from the helper
-    const std::vector<RazorscaleBossHelper::HarpoonData>& harpoonData = RazorscaleBossHelper::GetHarpoonData();
+    std::vector<RazorscaleBossHelper::HarpoonData> const& harpoonData = RazorscaleBossHelper::GetHarpoonData();
 
     // Get the boss entity
     Unit* boss = AI_VALUE2(Unit*, "find target", "razorscale");
@@ -737,7 +737,7 @@ bool FreyaMoveToHealingSporeTrigger::IsActive()
     bool foundSpore = false;
 
     // Iterate through all targets to find healthy spores
-    for (const ObjectGuid& guid : targets)
+    for (ObjectGuid const& guid : targets)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (!unit || !unit->IsAlive())
@@ -1366,7 +1366,7 @@ bool MimironRapidBurstTrigger::IsActive()
     float nearestRocketStrikeDistance = std::numeric_limits<float>::max();
     bool rocketStrikeDetected = false;
 
-    for (const ObjectGuid& guid : npcs)
+    for (ObjectGuid const& guid : npcs)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (!unit)
@@ -1579,7 +1579,7 @@ bool MimironCheatTrigger::IsActive()
     }
 
     GuidVector targets = AI_VALUE(GuidVector, "nearest npcs");
-    for (const ObjectGuid& guid : targets)
+    for (ObjectGuid const& guid : targets)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (!unit || !unit->IsAlive())
@@ -1833,7 +1833,7 @@ Unit* YoggSaronTrigger::GetNextIllusionRoomRtiTarget()
 
     if (botAI->HasCheat(BotCheatMask::raid))
     {
-        for (const ObjectGuid& guid : targets)
+        for (ObjectGuid const& guid : targets)
         {
             Unit* unit = botAI->GetUnit(guid);
             if (unit && unit->IsAlive() && unit->GetEntry() == NPC_LAUGHING_SKULL)
@@ -1848,7 +1848,7 @@ Unit* YoggSaronTrigger::GetNextIllusionRoomRtiTarget()
 
     for (const uint32& creatureId : illusionMobs)
     {
-        for (const ObjectGuid& guid : targets)
+        for (ObjectGuid const& guid : targets)
         {
             Unit* unit = botAI->GetUnit(guid);
             if (unit && unit->IsAlive() && unit->GetEntry() == creatureId)
@@ -1923,7 +1923,7 @@ bool YoggSaronGuardianPositioningTrigger::IsActive()
     GuidVector targets = AI_VALUE(GuidVector, "nearest npcs");
     bool thereIsAnyGuardian = false;
 
-    for (const ObjectGuid& guid : targets)
+    for (ObjectGuid const& guid : targets)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (!unit || !unit->IsAlive())
@@ -2057,7 +2057,7 @@ bool YoggSaronMarkTargetTrigger::IsActive()
         }
 
         GuidVector targets = AI_VALUE(GuidVector, "nearest npcs");
-        for (const ObjectGuid& guid : targets)
+        for (ObjectGuid const& guid : targets)
         {
             Unit* unit = botAI->GetUnit(guid);
             if (!unit || !unit->IsAlive())
@@ -2372,7 +2372,7 @@ bool YoggSaronPhase3PositioningTrigger::IsActive()
         GuidVector targets = AI_VALUE(GuidVector, "nearest npcs");
         bool thereIsAnyGuardian = false;
 
-        for (const ObjectGuid& guid : targets)
+        for (ObjectGuid const& guid : targets)
         {
             Unit* unit = botAI->GetUnit(guid);
             if (!unit || !unit->IsAlive())

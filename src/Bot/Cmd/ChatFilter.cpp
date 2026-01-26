@@ -15,7 +15,7 @@
 #include <cctype>
 #include <string>
 
-static std::string ToLower(const std::string& str)
+static std::string ToLower(std::string const& str)
 {
     std::string out = str;
     std::transform(out.begin(), out.end(), out.begin(), [](unsigned char c){ return std::tolower(c); });
@@ -373,7 +373,7 @@ public:
 private:
     std::map<std::pair<uint8, int>, std::string> specTabNames;
 
-    bool ParseSpecPrefix(const std::string& message, std::string& specPrefix, std::string& rest)
+    bool ParseSpecPrefix(std::string const& message, std::string& specPrefix, std::string& rest)
     {
         std::string msgLower = ToLower(message);
         for (auto const& entry : specTabNames)
@@ -390,7 +390,7 @@ private:
         return false;
     }
 
-    bool MatchesSpec(Player* bot, const std::string& specPrefix)
+    bool MatchesSpec(Player* bot, std::string const& specPrefix)
     {
         uint8 cls = bot->getClass();
         int specTab = AiFactory::GetPlayerSpecTab(bot);
@@ -424,8 +424,8 @@ public:
     {
         Player* bot = botAI->GetBot();
         std::string msgLower = ToLower(message);
-        const std::string auraPrefix = "@aura";
-        const std::string noAuraPrefix = "@noaura";
+        std::string const auraPrefix = "@aura";
+        std::string const noAuraPrefix = "@noaura";
         size_t prefixLen = 0;
         bool isNoAura = false;
         if (msgLower.find(auraPrefix) == 0)
@@ -483,7 +483,7 @@ public:
     {
         Player* bot = botAI->GetBot();
         std::string msgLower = ToLower(message);
-        const std::string prefix = "@aggroby";
+        std::string const prefix = "@aggroby";
         size_t prefixLen = prefix.length();
         if (msgLower.find(prefix) != 0)
         {

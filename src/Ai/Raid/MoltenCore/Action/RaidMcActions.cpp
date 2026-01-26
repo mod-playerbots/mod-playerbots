@@ -71,7 +71,7 @@ bool McGolemaggMarkBossAction::Execute(Event /*event*/)
     return false;
 }
 
-bool McGolemaggTankAction::MoveUnitToPosition(Unit* target, const Position& tankPosition, float maxDistance,
+bool McGolemaggTankAction::MoveUnitToPosition(Unit* target, Position const& tankPosition, float maxDistance,
                                               float stepDistance)
 {
     if (bot->GetVictim() != target)

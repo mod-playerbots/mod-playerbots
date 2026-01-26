@@ -8,7 +8,8 @@
 bool AvoidUnstableSphereAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "drakos the interrogator");
-    if (!boss) { return false; }
+    if (!boss)
+        return false;
 
     float radius = 12.0f;
     float extraDistance = 1.0f;
@@ -46,9 +47,11 @@ bool MountDrakeAction::Execute(Event /*event*/)
     int32 myIndex = botAI->GetServices().GetRoleService().GetGroupSlotIndex(bot);
 
     Player* master = botAI->GetMaster();
-    if (!master) { return false; }
+    if (!master)
+        return false;
     Unit* vehicle = master->GetVehicleBase();
-    if (!vehicle) { return false; }
+    if (!vehicle)
+        return false;
 
     // Subtract the player's chosen mount type from the composition so player can play whichever they prefer
     switch (vehicle->GetEntry())
@@ -95,7 +98,8 @@ bool MountDrakeAction::Execute(Event /*event*/)
     for (uint32 itemId : DRAKE_ITEMS)
     {
         Item* item = bot->GetItemByEntry(itemId);
-        if (!item) { continue; }
+        if (!item)
+            continue;
 
         if (itemId == static_cast<uint32>(drakeAssignments[myIndex]))
         {
@@ -126,10 +130,12 @@ bool DismountDrakeAction::Execute(Event /*event*/)
 bool OccFlyDrakeAction::Execute(Event /*event*/)
 {
     Player* master = botAI->GetMaster();
-    if (!master) { return false; }
+    if (!master)
+        return false;
     Unit* masterVehicle = master->GetVehicleBase();
     Unit* vehicleBase = bot->GetVehicleBase();
-    if (!vehicleBase || !masterVehicle) { return false; }
+    if (!vehicleBase || !masterVehicle)
+        return false;
 
     MotionMaster* mm = vehicleBase->GetMotionMaster();
     Unit* boss = AI_VALUE2(Unit*, "find target", "ley-guardian eregos");
@@ -167,7 +173,8 @@ bool OccFlyDrakeAction::Execute(Event /*event*/)
 bool OccDrakeAttackAction::Execute(Event /*event*/)
 {
     vehicleBase = bot->GetVehicleBase();
-    if (!vehicleBase) { return false; }
+    if (!vehicleBase)
+        return false;
 
     Unit* target = AI_VALUE(Unit*, "current target");
 
@@ -177,14 +184,16 @@ bool OccDrakeAttackAction::Execute(Event /*event*/)
         for (auto& npc : npcs)
         {
             Unit* unit = botAI->GetUnit(npc);
-            if (!unit || !unit->IsInCombat()) { continue; }
+            if (!unit || !unit->IsInCombat())
+                continue;
 
             target = unit;
             break;
         }
     }
     // Check this again to see if a target was assigned
-    if (!target) { return false; }
+    if (!target)
+        return false;
 
     switch (vehicleBase->GetEntry())
     {
@@ -263,7 +272,8 @@ bool OccDrakeAttackAction::EmeraldDrakeAction(Unit* target)
         }
 
         Unit* drake = unit->GetVehicleBase();
-        if (!drake || drake->IsFullHealth()) { continue; }
+        if (!drake || drake->IsFullHealth())
+            continue;
 
         if (!healingTarget || drake->GetHealthPct() < healingTarget->GetHealthPct() - 15.0f)
         {
@@ -326,7 +336,8 @@ bool OccDrakeAttackAction::RubyDrakeAction(Unit* target)
 bool AvoidArcaneExplosionAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "mage-lord urom");
-    if (!boss) { return false; }
+    if (!boss)
+        return false;
 
     Position const* closestPos = nullptr;
 
@@ -338,7 +349,8 @@ bool AvoidArcaneExplosionAction::Execute(Event /*event*/)
             }
     }
 
-    if (!closestPos) { return false; }
+    if (!closestPos)
+        return false;
 
     return MoveNear(bot->GetMapId(), closestPos->GetPositionX(), closestPos->GetPositionY(), closestPos->GetPositionZ(), 2.0f, MovementPriority::MOVEMENT_COMBAT);
 }

@@ -37,7 +37,7 @@ namespace GruulsLairHelpers
     void MarkTargetWithCircle(Player* bot, Unit* target);
     void MarkTargetWithDiamond(Player* bot, Unit* target);
     void MarkTargetWithTriangle(Player* bot, Unit* target);
-    void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
+    void SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName, Unit* target);
     bool IsKroshMageTank(PlayerbotAI* botAI, Player* bot);
     bool IsKigglerMoonkinTank(PlayerbotAI* botAI, Player* bot);
     bool IsPositionSafe(PlayerbotAI* botAI, Player* bot, Position pos);

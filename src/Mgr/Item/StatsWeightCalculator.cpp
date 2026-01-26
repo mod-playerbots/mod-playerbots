@@ -8,6 +8,33 @@
 #include <memory>
 
 #include "AiFactory.h"
+
+// Talent spell IDs for stat weight calculations
+enum StatWeightTalentSpells
+{
+    // Hunter talents
+    SPELL_CAREFUL_AIM               = 34484,  // Hunter: Careful Aim
+    SPELL_HUNTER_VS_WILD            = 56341,  // Hunter: Hunter vs. Wild
+
+    // Warrior talents
+    SPELL_ARMORED_TO_TEETH          = 61222,  // Warrior: Armored to the Teeth
+    SPELL_WARRIOR_SWORD_SPEC        = 12785,  // Warrior: Sword Specialization
+
+    // Shaman talents
+    SPELL_MENTAL_QUICKNESS          = 51885,  // Shaman: Mental Quickness
+
+    // Rogue talents
+    SPELL_COMBAT_POTENCY            = 13964,  // Rogue: Combat Potency
+
+    // Death Knight talents
+    SPELL_THREAT_OF_THASSARIAN      = 50138,  // Death Knight: Threat of Thassarian
+
+    // Priest talents
+    SPELL_SHADOW_FOCUS              = 15835,  // Priest: Shadow Focus
+
+    // Mage talents
+    SPELL_ARCANE_FOCUS              = 12840   // Mage: Arcane Focus
+};
 #include "BotRoleService.h"
 #include "DBCStores.h"
 #include "ItemEnchantmentMgr.h"
@@ -440,19 +467,19 @@ void StatsWeightCalculator::GenerateAdditionalWeights(Player* player)
     // int tab = AiFactory::GetPlayerSpecTab(player);
     if (cls == CLASS_HUNTER)
     {
-        if (player->HasAura(34484))
+        if (player->HasAura(SPELL_CAREFUL_AIM))
             stats_weights_[STATS_TYPE_INTELLECT] += 1.1f;
-        if (player->HasAura(56341))
+        if (player->HasAura(SPELL_HUNTER_VS_WILD))
             stats_weights_[STATS_TYPE_STAMINA] += 0.3f;
     }
     else if (cls == CLASS_WARRIOR)
     {
-        if (player->HasAura(61222))
+        if (player->HasAura(SPELL_ARMORED_TO_TEETH))
             stats_weights_[STATS_TYPE_ARMOR] += 0.03f;
     }
     else if (cls == CLASS_SHAMAN)
     {
-        if (player->HasAura(51885))
+        if (player->HasAura(SPELL_MENTAL_QUICKNESS))
             stats_weights_[STATS_TYPE_INTELLECT] += 1.1f;
     }
 }
@@ -589,17 +616,17 @@ void StatsWeightCalculator::CalculateItemTypePenalty(ItemTemplate const* proto)
             weight_ *= 1.5f;
         }
 
-        if (cls == CLASS_ROGUE && player_->HasAura(13964) &&
+        if (cls == CLASS_ROGUE && player_->HasAura(SPELL_COMBAT_POTENCY) &&
             (proto->SubClass == ITEM_SUBCLASS_WEAPON_SWORD || proto->SubClass == ITEM_SUBCLASS_WEAPON_AXE))
         {
             weight_ *= 1.1f;
         }
-        if (cls == CLASS_WARRIOR && player_->HasAura(12785) &&
+        if (cls == CLASS_WARRIOR && player_->HasAura(SPELL_WARRIOR_SWORD_SPEC) &&
             (proto->SubClass == ITEM_SUBCLASS_WEAPON_POLEARM || proto->SubClass == ITEM_SUBCLASS_WEAPON_AXE2))
         {
             weight_ *= 1.1f;
         }
-        if (cls == CLASS_DEATH_KNIGHT && player_->HasAura(50138) && !isDoubleHand)
+        if (cls == CLASS_DEATH_KNIGHT && player_->HasAura(SPELL_THREAT_OF_THASSARIAN) && !isDoubleHand)
         {
             weight_ *= 1.3f;
         }
@@ -638,9 +665,9 @@ void StatsWeightCalculator::ApplyOverflowPenalty(Player* player)
                 player->GetTotalAuraModifier(SPELL_AURA_MOD_INCREASES_SPELL_PCT_TO_HIT);  // suppression (18176)
             hit_current += player->GetRatingBonusValue(CR_HIT_SPELL);
 
-            if (cls == CLASS_PRIEST && tab == PRIEST_TAB_SHADOW && player->HasAura(15835))  // Shadow Focus
+            if (cls == CLASS_PRIEST && tab == PRIEST_TAB_SHADOW && player->HasAura(SPELL_SHADOW_FOCUS))
                 hit_current += 3;
-            if (cls == CLASS_MAGE && tab == MAGE_TAB_ARCANE && player->HasAura(12840))  // Arcane Focus
+            if (cls == CLASS_MAGE && tab == MAGE_TAB_ARCANE && player->HasAura(SPELL_ARCANE_FOCUS))
                 hit_current += 3;
 
             hit_overflow = SPELL_HIT_OVERFLOW;

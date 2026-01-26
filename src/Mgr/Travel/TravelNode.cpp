@@ -1247,14 +1247,14 @@ TravelNodeRoute TravelNodeMap::getRoute(TravelNode* start, TravelNode* goal, Pla
 
                 childNode = &m_stubs.insert(std::make_pair(portNode, TravelNodeStub(portNode))).first->second;
 
-                childNode->m_g = 10 * MINUTE;
-                childNode->m_h = childNode->dataNode->fDist(goal) / botSpeed;
-                childNode->m_f = childNode->m_g + childNode->m_h;
+                childNode->g = 10 * MINUTE;
+                childNode->h = childNode->dataNode->fDist(goal) / botSpeed;
+                childNode->f = childNode->g + childNode->h;
                 // childNode->parent = startStub;
 
                 open.push_back(childNode);
                 std::push_heap(open.begin(), open.end(),
-                               [](TravelNodeStub* i, TravelNodeStub* j) { return i->m_f < j->m_f; });
+                               [](TravelNodeStub* i, TravelNodeStub* j) { return i->f < j->f; });
                 childNode->open = true;
             }
         }
@@ -1263,19 +1263,19 @@ TravelNodeRoute TravelNodeMap::getRoute(TravelNode* start, TravelNode* goal, Pla
     if (open.size() == 0 && !start->hasRouteTo(goal))
         return TravelNodeRoute();
 
-    std::make_heap(open.begin(), open.end(), [](TravelNodeStub* i, TravelNodeStub* j) { return i->m_f < j->m_f; });
+    std::make_heap(open.begin(), open.end(), [](TravelNodeStub* i, TravelNodeStub* j) { return i->f < j->f; });
 
     open.push_back(startStub);
-    std::push_heap(open.begin(), open.end(), [](TravelNodeStub* i, TravelNodeStub* j) { return i->m_f < j->m_f; });
+    std::push_heap(open.begin(), open.end(), [](TravelNodeStub* i, TravelNodeStub* j) { return i->f < j->f; });
     startStub->open = true;
 
     while (!open.empty())
     {
-        std::sort(open.begin(), open.end(), [](TravelNodeStub* i, TravelNodeStub* j) { return i->m_f < j->m_f; });
+        std::sort(open.begin(), open.end(), [](TravelNodeStub* i, TravelNodeStub* j) { return i->f < j->f; });
 
         currentNode = open.front();  // pop n node from open for which f is minimal
 
-        std::pop_heap(open.begin(), open.end(), [](TravelNodeStub* i, TravelNodeStub* j) { return i->m_f < j->m_f; });
+        std::pop_heap(open.begin(), open.end(), [](TravelNodeStub* i, TravelNodeStub* j) { return i->f < j->f; });
         open.pop_back();
         currentNode->open = false;
 
@@ -1310,16 +1310,16 @@ TravelNodeRoute TravelNodeMap::getRoute(TravelNode* start, TravelNode* goal, Pla
                 continue;
 
             childNode = &m_stubs.insert(std::make_pair(linkNode, TravelNodeStub(linkNode))).first->second;
-            g = currentNode->m_g + linkCost;  // stance from start + distance between the two nodes
+            g = currentNode->g + linkCost;  // stance from start + distance between the two nodes
             if ((childNode->open || childNode->close) &&
-                childNode->m_g <= g)  // n' is already in opend or closed with a lower cost g(n')
+                childNode->g <= g)  // n' is already in opend or closed with a lower cost g(n')
                 continue;             // consider next successor
 
             h = childNode->dataNode->fDist(goal) / botSpeed;
             f = g + h;  // compute f(n')
-            childNode->m_f = f;
-            childNode->m_g = g;
-            childNode->m_h = h;
+            childNode->f = f;
+            childNode->g = g;
+            childNode->h = h;
             childNode->parent = currentNode;
 
             if (bot && !bot->isTaxiCheater())
@@ -1332,7 +1332,7 @@ TravelNodeRoute TravelNodeMap::getRoute(TravelNode* start, TravelNode* goal, Pla
             {
                 open.push_back(childNode);
                 std::push_heap(open.begin(), open.end(),
-                               [](TravelNodeStub* i, TravelNodeStub* j) { return i->m_f < j->m_f; });
+                               [](TravelNodeStub* i, TravelNodeStub* j) { return i->f < j->f; });
                 childNode->open = true;
             }
         }

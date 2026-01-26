@@ -59,7 +59,7 @@ bool TameAction::Execute(Event event)
         CreatureTemplateContainer const* creatures = sObjectMgr->GetCreatureTemplates();
         for (auto itr = creatures->begin(); itr != creatures->end(); ++itr)
         {
-            const CreatureTemplate& creature = itr->second;
+            CreatureTemplate const& creature = itr->second;
             if (!creature.IsTameable(true))
                 continue;
 
@@ -172,7 +172,7 @@ bool TameAction::Execute(Event event)
     return true;
 }
 
-bool TameAction::SetPetByName(const std::string& name)
+bool TameAction::SetPetByName(std::string const& name)
 {
     // Make a lowercase copy of the input name for case-insensitive comparison
     std::string lowerName = name;
@@ -185,7 +185,7 @@ bool TameAction::SetPetByName(const std::string& name)
     // Iterate through all creature templates
     for (auto itr = creatures->begin(); itr != creatures->end(); ++itr)
     {
-        const CreatureTemplate& creature = itr->second;
+        CreatureTemplate const& creature = itr->second;
         std::string creatureName = creature.Name;
         // Convert creature's name to lowercase for comparison
         std::transform(creatureName.begin(), creatureName.end(), creatureName.begin(), ::tolower);
@@ -264,7 +264,7 @@ bool TameAction::SetPetById(uint32 id)
     return false;
 }
 
-bool TameAction::SetPetByFamily(const std::string& family)
+bool TameAction::SetPetByFamily(std::string const& family)
 {
     // Convert the input family name to lowercase for case-insensitive comparison
     std::string lowerFamily = family;
@@ -281,7 +281,7 @@ bool TameAction::SetPetByFamily(const std::string& family)
     // Iterate through all creature templates
     for (auto itr = creatures->begin(); itr != creatures->end(); ++itr)
     {
-        const CreatureTemplate& creature = itr->second;
+        CreatureTemplate const& creature = itr->second;
 
         // Skip if this creature is never tameable
         if (!creature.IsTameable(true))
@@ -338,7 +338,7 @@ bool TameAction::SetPetByFamily(const std::string& family)
     return CreateAndSetPet(selected->Entry);
 }
 
-bool TameAction::RenamePet(const std::string& newName)
+bool TameAction::RenamePet(std::string const& newName)
 {
     Player* bot = botAI->GetBot();
     Pet* pet = bot->GetPet();

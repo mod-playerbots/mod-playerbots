@@ -17,7 +17,7 @@ bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event /*event*/)
     if (!manaWarp)
         return false;
 
-    static const std::array<const char*, 8> spells =
+    static std::array<const char*, 8> const spells =
     {
         "bash",
         "concussion blow",
@@ -230,7 +230,7 @@ bool MaidenOfVirtueMoveBossToHealerAction::Execute(Event /*event*/)
         }
     }
 
-    const Position& position = MAIDEN_OF_VIRTUE_BOSS_POSITION;
+    Position const& position = MAIDEN_OF_VIRTUE_BOSS_POSITION;
     const float maxDistance = 2.0f;
     float distanceToPosition = maiden->GetExactDist2d(position);
     if (distanceToPosition > maxDistance)
@@ -274,7 +274,7 @@ bool MaidenOfVirtuePositionRangedAction::Execute(Event /*event*/)
         }
     }
 
-    const Position& position = MAIDEN_OF_VIRTUE_RANGED_POSITION[index];
+    Position const& position = MAIDEN_OF_VIRTUE_RANGED_POSITION[index];
     if (bot->GetExactDist2d(position) > 2.0f)
     {
         bot->AttackStop();
@@ -300,7 +300,7 @@ bool BigBadWolfPositionBossAction::Execute(Event /*event*/)
 
     if (wolf->GetVictim() == bot)
     {
-        const Position& position = BIG_BAD_WOLF_BOSS_POSITION;
+        Position const& position = BIG_BAD_WOLF_BOSS_POSITION;
         float distanceToPosition = wolf->GetExactDist2d(position);
 
         if (distanceToPosition > 2.0f)
@@ -335,7 +335,7 @@ bool BigBadWolfRunAwayFromBossAction::Execute(Event /*event*/)
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
 
-    const Position& position = BIG_BAD_WOLF_RUN_POSITION[index];
+    Position const& position = BIG_BAD_WOLF_RUN_POSITION[index];
     return MoveTo(KARAZHAN_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
                   false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
@@ -431,7 +431,7 @@ bool TheCuratorPositionBossAction::Execute(Event /*event*/)
 
     if (curator->GetVictim() == bot)
     {
-        const Position& position = THE_CURATOR_BOSS_POSITION;
+        Position const& position = THE_CURATOR_BOSS_POSITION;
         float distanceToPosition = curator->GetExactDist2d(position);
 
         if (distanceToPosition > 2.0f)
@@ -955,7 +955,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
 }
 
 bool NetherspiteAvoidBeamAndVoidZoneAction::IsAwayFromBeams(
-     float x, float y, const std::vector<BeamAvoid>& beams, Unit* netherspite)
+     float x, float y, std::vector<BeamAvoid> const& beams, Unit* netherspite)
 {
     for (auto const& beam : beams)
     {
@@ -1276,7 +1276,7 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event /*event*/)
             NIGHTBANE_TRANSITION_BOSS_POSITION,
             NIGHTBANE_FINAL_BOSS_POSITION
         };
-        const Position& position = tankPositions[step];
+        Position const& position = tankPositions[step];
         const float maxDistance = 0.5f;
         float distanceToTarget = bot->GetExactDist2d(position);
 
@@ -1312,7 +1312,7 @@ bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event /*event*/)
         NIGHTBANE_RANGED_POSITION2,
         NIGHTBANE_RANGED_POSITION3
     };
-    const Position& position = rangedPositions[index];
+    Position const& position = rangedPositions[index];
     const float maxDistance = 2.0f;
     float distanceToTarget = bot->GetExactDist2d(position);
 
@@ -1321,7 +1321,7 @@ bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event /*event*/)
     {
         index = (index + 1) % 3;
         nightbaneRangedStep[botGuid] = index;
-        const Position& newPosition = rangedPositions[index];
+        Position const& newPosition = rangedPositions[index];
         float newDistanceToTarget = bot->GetExactDist2d(newPosition);
         if (newDistanceToTarget > maxDistance)
         {

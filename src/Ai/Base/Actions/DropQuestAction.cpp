@@ -50,7 +50,7 @@ bool DropQuestAction::Execute(Event event)
     if (botAI->HasStrategy("debug quest", BotState::BOT_STATE_NON_COMBAT) || botAI->HasStrategy("debug rpg", BotState::BOT_STATE_COMBAT))
     {
         Quest const* pQuest = sObjectMgr->GetQuestTemplate(entry);
-        const std::string text_quest = ChatHelper::FormatQuest(pQuest);
+        std::string const text_quest = ChatHelper::FormatQuest(pQuest);
         LOG_INFO("playerbots", "{} => Quest [ {} ] removed", bot->GetName(), pQuest->GetTitle());
         bot->Say("Quest [ " + text_quest + " ] removed", LANG_UNIVERSAL);
     }
@@ -142,7 +142,7 @@ bool CleanQuestLogAction::Execute(Event event)
 
             if (botAI->HasStrategy("debug rpg", BotState::BOT_STATE_COMBAT))
             {
-                const std::string text_quest = ChatHelper::FormatQuest(quest);
+                std::string const text_quest = ChatHelper::FormatQuest(quest);
                 LOG_INFO("playerbots", "{} => Quest [ {} ] removed", bot->GetName(), quest->GetTitle());
                 bot->Say("Quest [ " + text_quest + " ] removed", LANG_UNIVERSAL);
             }
@@ -233,7 +233,7 @@ void CleanQuestLogAction::DropQuestType(uint8& numQuest, uint8 wantNum, bool isG
 
         if (botAI->HasStrategy("debug quest", BotState::BOT_STATE_NON_COMBAT) || botAI->HasStrategy("debug rpg", BotState::BOT_STATE_COMBAT))
         {
-            const std::string text_quest = ChatHelper::FormatQuest(quest);
+            std::string const text_quest = ChatHelper::FormatQuest(quest);
             LOG_INFO("playerbots", "{} => Quest [ {} ] removed", bot->GetName(), quest->GetTitle());
             bot->Say("Quest [ " + text_quest + " ] removed", LANG_UNIVERSAL);
         }

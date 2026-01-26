@@ -17,7 +17,7 @@ class Trigger : public AiNamedObject
 public:
     Trigger(
         PlayerbotAI* botAI,
-        const std::string name = "trigger",
+        std::string const name = "trigger",
         int32_t checkInterval = 1
     );
 
@@ -45,7 +45,7 @@ class TriggerNode
 {
 public:
     TriggerNode(
-        const std::string& name,
+        std::string const& name,
         std::vector<NextAction> handlers = {}
     ) :
     trigger(nullptr),
@@ -55,7 +55,7 @@ public:
 
     Trigger* getTrigger() { return trigger; }
     void setTrigger(Trigger* trigger) { this->trigger = trigger; }
-    const std::string getName() { return name; }
+    std::string const getName() { return name; }
 
     std::vector<NextAction> getHandlers()
     {
@@ -81,7 +81,7 @@ public:
 private:
     Trigger* trigger;
     std::vector<NextAction> handlers;
-    const std::string name;
+    std::string const name;
 };
 
 #endif  // MOD_PLAYERBOTS_BOT_ENGINE_TRIGGER_TRIGGER_H

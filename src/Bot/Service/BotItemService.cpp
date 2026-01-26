@@ -169,11 +169,11 @@ Item* BotItemService::FindStoneForStatic(Player* bot, Item* weapon)
     if (!item_template)
         return nullptr;
 
-    static const std::vector<uint32_t> uPrioritizedSharpStoneIds = {
+    static std::vector<uint32_t> const uPrioritizedSharpStoneIds = {
         ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE,   ELEMENTAL_SHARPENING_STONE, DENSE_SHARPENING_STONE,
         SOLID_SHARPENING_STONE,      HEAVY_SHARPENING_STONE, COARSE_SHARPENING_STONE,    ROUGH_SHARPENING_STONE};
 
-    static const std::vector<uint32_t> uPrioritizedWeightStoneIds = {
+    static std::vector<uint32_t> const uPrioritizedWeightStoneIds = {
         ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE,    DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE,
         HEAVY_WEIGHTSTONE,      COARSE_WEIGHTSTONE, ROUGH_WEIGHTSTONE};
 
@@ -214,11 +214,11 @@ Item* BotItemService::FindOilForStatic(Player* bot, Item* weapon)
     if (!item_template)
         return nullptr;
 
-    static const std::vector<uint32_t> uPrioritizedWizardOilIds = {
+    static std::vector<uint32_t> const uPrioritizedWizardOilIds = {
         BRILLIANT_WIZARD_OIL, SUPERIOR_WIZARD_OIL, WIZARD_OIL,      LESSER_WIZARD_OIL, MINOR_WIZARD_OIL,
         BRILLIANT_MANA_OIL,   SUPERIOR_MANA_OIL,   LESSER_MANA_OIL, MINOR_MANA_OIL};
 
-    static const std::vector<uint32_t> uPrioritizedManaOilIds = {
+    static std::vector<uint32_t> const uPrioritizedManaOilIds = {
         BRILLIANT_MANA_OIL,  SUPERIOR_MANA_OIL, LESSER_MANA_OIL,   MINOR_MANA_OIL,  BRILLIANT_WIZARD_OIL,
         SUPERIOR_WIZARD_OIL, WIZARD_OIL,        LESSER_WIZARD_OIL, MINOR_WIZARD_OIL};
 
@@ -226,7 +226,7 @@ Item* BotItemService::FindOilForStatic(Player* bot, Item* weapon)
     int botClass = bot->getClass();
     int specTab = AiFactory::GetPlayerSpecTab(bot);
 
-    const std::vector<uint32_t>* prioritizedOils = nullptr;
+    std::vector<uint32_t> const* prioritizedOils = nullptr;
     switch (botClass)
     {
         case CLASS_PRIEST:

@@ -36,7 +36,7 @@ bool TreeFormTrigger::IsActive() { return !botAI->GetServices().GetSpellService(
 
 bool CatFormTrigger::IsActive() { return !botAI->GetServices().GetSpellService().HasAura("cat form", bot); }
 
-const std::set<uint32> HurricaneChannelCheckTrigger::HURRICANE_SPELL_IDS = {
+std::set<uint32> const HurricaneChannelCheckTrigger::HURRICANE_SPELL_IDS = {
     16914,  // Hurricane Rank 1
     17401,  // Hurricane Rank 2
     17402,  // Hurricane Rank 3

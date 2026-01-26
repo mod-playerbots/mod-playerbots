@@ -306,7 +306,7 @@ bool IccPutricideGrowingOozePuddleTrigger::IsActive()
         //-------CHEAT-------
     }
 
-    const GuidVector& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
+    GuidVector const& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
     for (auto const& npc : npcs)
     {
         if (Unit* unit = botAI->GetUnit(npc))
@@ -477,7 +477,7 @@ bool IccBpcKineticBombTrigger::IsActive()
             return false;
     }
 
-    static const std::array<uint32, 4> bombEntries = {NPC_KINETIC_BOMB1, NPC_KINETIC_BOMB2, NPC_KINETIC_BOMB3,
+    static std::array<uint32, 4> const bombEntries = {NPC_KINETIC_BOMB1, NPC_KINETIC_BOMB2, NPC_KINETIC_BOMB3,
                                                       NPC_KINETIC_BOMB4};
     const GuidVector bombs = AI_VALUE(GuidVector, "possible targets no los");
 

@@ -1845,7 +1845,6 @@ std::vector<uint32> RandomItemMgr::GetUpgradeList(Player* player, std::string sp
 
     // get old item statWeight
     uint32 oldStatWeight = 0;
-    uint32 closestUpgrade = 0;
     uint32 closestUpgradeWeight = 0;
     uint32 specId = 0;
     std::vector<uint32> classspecs;
@@ -1942,14 +1941,10 @@ std::vector<uint32> RandomItemMgr::GetUpgradeList(Player* player, std::string sp
         //}
 
         listItems.push_back(info.itemId);
-        // continue;
 
-        // pick closest upgrade
+        // track best upgrade weight for logging
         if (info.weights[specId] > closestUpgradeWeight)
-        {
-            closestUpgrade = info.itemId;
             closestUpgradeWeight = info.weights[specId];
-        }
     }
 
     if (listItems.size())
@@ -2490,7 +2485,7 @@ void RandomItemMgr::BuildFoodCache()
 
 uint32 RandomItemMgr::GetRandomPotion(uint32 level, uint32 effect)
 {
-    const std::vector<uint32> &potions = potionCache[level][effect];
+    std::vector<uint32> const& potions = potionCache[level][effect];
     if (potions.empty())
         return 0;
 

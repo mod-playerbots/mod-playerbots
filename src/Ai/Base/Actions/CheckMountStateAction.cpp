@@ -370,7 +370,7 @@ bool CheckMountStateAction::TryPreferredMount(Player* master) const
     return false;
 }
 
-bool CheckMountStateAction::TryRandomMountFiltered(const std::map<int32, std::vector<uint32>>& spells, int32 masterSpeed) const
+bool CheckMountStateAction::TryRandomMountFiltered(std::map<int32, std::vector<uint32>>& spells, int32 masterSpeed) const
 {
     for (auto const& pair : spells)
     {
@@ -436,7 +436,7 @@ bool CheckMountStateAction::ShouldDismountForMaster(Player* master) const
     return !isMasterMounted && bot->IsMounted();
 }
 
-int32 CheckMountStateAction::CalculateMasterMountSpeed(Player* master, const MountData& mountData) const
+int32 CheckMountStateAction::CalculateMasterMountSpeed(Player* master, MountData const& mountData) const
 {
     // Check riding skill and level requirements
     int32 ridingSkill = bot->GetPureSkillValue(SKILL_RIDING);

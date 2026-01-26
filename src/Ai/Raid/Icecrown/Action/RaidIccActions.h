@@ -92,7 +92,7 @@ public:
         : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 
-    bool MoveTowardPosition(const Position& position, float incrementSize);
+    bool MoveTowardPosition(Position const& position, float incrementSize);
 };
 
 class IccSpikeAction : public AttackAction
@@ -102,7 +102,7 @@ public:
     bool Execute(Event event) override;
 
     bool HandleSpikeTargeting(Unit* boss);
-    bool MoveTowardPosition(const Position& position, float incrementSize);
+    bool MoveTowardPosition(Position const& position, float incrementSize);
     void UpdateRaidTargetIcon(Unit* target);
 };
 
@@ -133,7 +133,7 @@ public:
     bool Execute(Event event) override;
 
     bool IsTargetedByShade(uint32 shadeEntry);
-    bool MoveTowardPosition(const Position& position, float incrementSize);
+    bool MoveTowardPosition(Position const& position, float incrementSize);
     bool HandleAddTargeting(Unit* boss);
     void UpdateRaidTargetIcon(Unit* target);
 
@@ -186,7 +186,7 @@ public:
         : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 
-    bool TeleportTo(const Position& position);
+    bool TeleportTo(Position const& position);
     void CleanupSkullIcon(uint8_t SKULL_ICON_INDEX);
     void UpdateBossSkullIcon(Unit* boss, uint8_t SKULL_ICON_INDEX);
 };
@@ -198,7 +198,7 @@ public:
         : AttackAction(botAI, name) {}
     bool Execute(Event event) override;
 
-    bool TeleportTo(const Position& position);
+    bool TeleportTo(Position const& position);
     void CleanupSkullIcon(uint8_t SKULL_ICON_INDEX);
     void UpdateBossSkullIcon(Unit* boss, uint8_t SKULL_ICON_INDEX);
 };
@@ -255,7 +255,7 @@ public:
         bool hasLowestGuid = false;
     };
     SporeInfo FindSporedPlayers();
-    Position DetermineTargetPosition(bool hasSpore, const SporeInfo& sporeInfo, const Position& spreadRangedPos);
+    Position DetermineTargetPosition(bool hasSpore, SporeInfo const& sporeInfo, Position const& spreadRangedPos);
     bool CheckMainTankSpore();
 };
 
@@ -332,8 +332,8 @@ public:
     bool Execute(Event event) override;
 
     bool HandleGaseousBloatMovement(Unit* gasCloud);
-    Position CalculateEmergencyPosition(const Position& botPos, float dx, float dy);
-    bool FindSafeMovementPosition(const Position& botPos, const Position& cloudPos, float dx, float dy, int numAngles,
+    Position CalculateEmergencyPosition(Position const& botPos, float dx, float dy);
+    bool FindSafeMovementPosition(Position const& botPos, Position const& cloudPos, float dx, float dy, int numAngles,
                                   Position& resultPos);
     bool HandleGroupAuraSituation(Unit* gasCloud);
     bool GroupHasGaseousBloat(Group* group);
@@ -350,10 +350,10 @@ public:
     bool HandleUnboundPlague(Unit* boss);
     bool HandleBossPositioning(Unit* boss);
     Position CalculateBossPosition(Unit* boss, float distance);
-    bool HasObstacleBetween(const Position& from, const Position& to);
-    bool IsOnPath(const Position& from, const Position& to, const Position& point, float threshold);
-    Position CalculateArcPoint(const Position& current, const Position& target, const Position& center);
-    Position CalculateIncrementalMove(const Position& current, const Position& target, float maxDistance);
+    bool HasObstacleBetween(Position const& from, Position const& to);
+    bool IsOnPath(Position const& from, Position const& to, Position const& point, float threshold);
+    Position CalculateArcPoint(Position const& current, Position const& target, Position const& center);
+    Position CalculateIncrementalMove(Position const& current, Position const& target, float maxDistance);
 };
 
 //BPC
@@ -415,7 +415,7 @@ public:
 
     bool HandleTankPosition(Unit* boss, Aura* frenzyAura, Aura* shadowAura);
     bool HandleShadowsMovement();
-    Position AdjustControlPoint(const Position& wall, const Position& center, float factor);
+    Position AdjustControlPoint(Position const& wall, Position const& center, float factor);
     Position CalculateBezierPoint(float t, const Position path[4]);
     bool HandleGroupPosition(Unit* boss, Aura* frenzyAura, Aura* shadowAura);
 
@@ -440,8 +440,8 @@ public:
         : MovementAction(botAI, "icc bql pact of darkfallen") {}
     bool Execute(Event event) override;
 
-    void CalculateCenterPosition(Position& targetPos, const std::vector<Player*>& playersWithAura);
-    bool MoveToTargetPosition(const Position& targetPos, int auraCount);
+    void CalculateCenterPosition(Position& targetPos, std::vector<Player*> const& playersWithAura);
+    bool MoveToTargetPosition(Position const& targetPos, int auraCount);
 };
 
 class IccBqlVampiricBiteAction : public AttackAction
@@ -483,9 +483,9 @@ public:
         : AttackAction(botAI, "icc valithria group") {}
     bool Execute(Event event) override;
 
-    bool MoveTowardsPosition(const Position& pos, float increment);
+    bool MoveTowardsPosition(Position const& pos, float increment);
     bool Handle25ManGroupLogic();
-    bool HandleMarkingLogic(bool inGroup1, bool inGroup2, const Position& group1Pos, const Position& group2Pos);
+    bool HandleMarkingLogic(bool inGroup1, bool inGroup2, Position const& group1Pos, Position const& group2Pos);
     bool Handle10ManGroupLogic();
 };
 
@@ -523,7 +523,7 @@ public:
 
     bool HandleTankPositioning(Unit* boss);
     bool HandleNonTankPositioning();
-    bool MoveIncrementallyToPosition(const Position& targetPos, float maxStep);
+    bool MoveIncrementallyToPosition(Position const& targetPos, float maxStep);
 };
 
 class IccSindragosaFrostBeaconAction : public MovementAction
@@ -536,8 +536,8 @@ public:
     void HandleSupportActions();
     bool HandleBeaconedPlayer(Unit const* boss);
     bool HandleNonBeaconedPlayer(Unit const* boss);
-    bool MoveToPositionIfNeeded(const Position& position, float tolerance);
-    bool MoveToPosition(const Position& position);
+    bool MoveToPositionIfNeeded(Position const& position, float tolerance);
+    bool MoveToPosition(Position const& position);
     bool IsBossFlying(Unit const* boss);
 
     private:
@@ -657,10 +657,10 @@ class IccLichKingAddsAction : public AttackAction
         void HandleDefileMechanics(Unit* boss, Difficulty diff);
         void HandleValkyrMechanics(Difficulty diff);
         std::vector<size_t> CalculateBalancedGroupSizes(size_t totalAssist, size_t numValkyrs);
-        size_t GetAssignedValkyrIndex(size_t assistIndex, const std::vector<size_t>& groupSizes);
+        size_t GetAssignedValkyrIndex(size_t assistIndex, std::vector<size_t> const& groupSizes);
         std::string GetRTIValueForValkyr(size_t valkyrIndex);
-        void HandleValkyrMarking(const std::vector<Unit*>& grabbingValkyrs, Difficulty diff);
-        void HandleValkyrAssignment(const std::vector<Unit*>& grabbingValkyrs);
+        void HandleValkyrMarking(std::vector<Unit*> const& grabbingValkyrs, Difficulty diff);
+        void HandleValkyrAssignment(std::vector<Unit*> const& grabbingValkyrs);
         void ApplyCCToValkyr(Unit* valkyr);
         bool IsValkyr(Unit* unit);
         void HandleVileSpiritMechanics();

@@ -2401,10 +2401,10 @@ float CombatFormationMoveAction::AverageGroupAngle(Unit* from, bool ranged, bool
     return atan2(sumY, sumX);
 }
 
-Position CombatFormationMoveAction::GetNearestPosition(const std::vector<Position>& positions)
+Position CombatFormationMoveAction::GetNearestPosition(std::vector<Position> const& positions)
 {
     Position result;
-    for (const Position& pos : positions)
+    for (Position const& pos : positions)
     {
         if (bot->GetExactDist(pos) < bot->GetExactDist(result))
             result = pos;

@@ -1,7 +1,7 @@
 #include "OculusStrategy.h"
 #include "OculusMultipliers.h"
 
-void WotlkDungeonOccStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
+void WotlkDungeonOccStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // Drakos the Interrogator
     // TODO: May need work, TBA.
@@ -32,7 +32,7 @@ void WotlkDungeonOccStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
     // Ley-Guardian Eregos
 }
 
-void WotlkDungeonOccStrategy::InitMultipliers(std::vector<Multiplier*> &multipliers)
+void WotlkDungeonOccStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new MountingDrakeMultiplier(botAI));
     multipliers.push_back(new OccFlyingMultiplier(botAI));

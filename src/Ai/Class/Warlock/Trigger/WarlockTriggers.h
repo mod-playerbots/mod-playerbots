@@ -74,7 +74,7 @@ public:
 
     bool IsActive() override
     {
-        static const std::vector<uint32> soulstoneSpellIds = {20707, 20762, 20763, 20764, 20765, 27239, 47883};
+        static std::vector<uint32> const soulstoneSpellIds = {20707, 20762, 20763, 20764, 20765, 27239, 47883};
 
         if (AI_VALUE2(uint32, "item count", "soulstone") == 0)
             return false;
@@ -345,7 +345,7 @@ public:
 
 protected:
     uint32 minEnemies;
-    static const std::set<uint32> RAIN_OF_FIRE_SPELL_IDS;
+    static std::set<uint32> const RAIN_OF_FIRE_SPELL_IDS;
 };
 
 #endif

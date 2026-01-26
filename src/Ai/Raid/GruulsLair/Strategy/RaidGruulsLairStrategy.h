@@ -12,7 +12,7 @@ public:
     std::string const getName() override { return "gruulslair"; }
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
-    void InitMultipliers(std::vector<Multiplier*> &multipliers) override;
+    void InitMultipliers(std::vector<Multiplier*>& multipliers) override;
 };
 
 #endif

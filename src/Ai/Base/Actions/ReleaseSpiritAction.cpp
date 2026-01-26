@@ -38,8 +38,8 @@ bool ReleaseSpiritAction::Execute(Event event)
         return false;
     }
 
-    const WorldPacket& packet = event.getPacket();
-    const std::string message = !packet.empty() && packet.GetOpcode() == CMSG_REPOP_REQUEST
+    WorldPacket const& packet = event.getPacket();
+    std::string const message = !packet.empty() && packet.GetOpcode() == CMSG_REPOP_REQUEST
                                 ? "Releasing..."
                                 : "Meet me at the graveyard";
     botAI->GetServices().GetChatService().TellMasterNoFacing(message);
@@ -66,9 +66,9 @@ void ReleaseSpiritAction::IncrementDeathCount() const
     }
 }
 
-void ReleaseSpiritAction::LogRelease(const std::string& releaseMsg, bool /*isAutoRelease*/) const
+void ReleaseSpiritAction::LogRelease(std::string const& releaseMsg, bool /*isAutoRelease*/) const
 {
-    const std::string teamPrefix = bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H";
+    std::string const teamPrefix = bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H";
 
     LOG_DEBUG("playerbots", "Bot {} {}:{} <{}> {}",
         bot->GetGUID().ToString().c_str(),

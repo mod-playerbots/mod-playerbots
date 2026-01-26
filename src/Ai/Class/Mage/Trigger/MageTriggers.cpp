@@ -15,7 +15,7 @@
 
 bool NoManaGemTrigger::IsActive()
 {
-    static const std::vector<uint32> gemIds = {
+    static std::vector<uint32> const gemIds = {
         33312,  // Mana Sapphire
         22044,  // Mana Emerald
         8008,   // Mana Ruby
@@ -103,7 +103,7 @@ bool DeepFreezeCooldownTrigger::IsActive()
     return SpellCooldownTrigger::IsActive();
 }
 
-const std::set<uint32> FlamestrikeNearbyTrigger::FLAMESTRIKE_SPELL_IDS = {2120,  2121,  8422,  8423, 10215,
+std::set<uint32> const FlamestrikeNearbyTrigger::FLAMESTRIKE_SPELL_IDS = {2120,  2121,  8422,  8423, 10215,
                                                                           10216, 27086, 42925, 42926};
 
 bool FlamestrikeNearbyTrigger::IsActive()
@@ -151,7 +151,7 @@ bool ImprovedScorchTrigger::IsActive()
     return DebuffTrigger::IsActive();
 }
 
-const std::set<uint32> BlizzardChannelCheckTrigger::BLIZZARD_SPELL_IDS = {
+std::set<uint32> const BlizzardChannelCheckTrigger::BLIZZARD_SPELL_IDS = {
     10,     // Blizzard Rank 1
     6141,   // Blizzard Rank 2
     8427,   // Blizzard Rank 3

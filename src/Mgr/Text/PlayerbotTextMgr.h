@@ -87,7 +87,7 @@ public:
                                     std::map<std::string, std::string> placeholders);
     void LoadBotTexts();
     void LoadBotTextChance();
-    static void replaceAll(std::string& str, const std::string& from, const std::string& to);
+    static void replaceAll(std::string& str, std::string const& from, std::string const& to);
     bool rollTextChance(std::string text);
 
     uint32 GetLocalePriority();

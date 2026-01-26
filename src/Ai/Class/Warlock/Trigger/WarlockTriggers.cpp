@@ -18,7 +18,7 @@ uint32 GetSoulShardCount(Player* bot)
 }
 
 // List of all Soulstone item IDs
-static const std::vector<uint32> soulstoneItemIds = {
+static std::vector<uint32> const soulstoneItemIds = {
     5232,   // Minor Soulstone
     16892,  // Lesser Soulstone
     16893,  // Soulstone
@@ -194,7 +194,7 @@ bool WrongPetTrigger::IsActive()
     int enabledCount = 0;
     WarlockPetDef const* enabledPet =
         nullptr;  // Pointer to the pet definition of the enabled strategy, if only one is enabled
-    for (const WarlockPetDef& pd : pets)
+    for (WarlockPetDef const& pd : pets)
     {
         if (botAI->HasStrategy(pd.strategy, BOT_STATE_NON_COMBAT))
         {
@@ -236,7 +236,7 @@ bool WrongPetTrigger::IsActive()
     return false;
 }
 
-const std::set<uint32> RainOfFireChannelCheckTrigger::RAIN_OF_FIRE_SPELL_IDS = {
+std::set<uint32> const RainOfFireChannelCheckTrigger::RAIN_OF_FIRE_SPELL_IDS = {
     5740,   // Rain of Fire Rank 1
     6219,   // Rain of Fire Rank 2
     11677,  // Rain of Fire Rank 3

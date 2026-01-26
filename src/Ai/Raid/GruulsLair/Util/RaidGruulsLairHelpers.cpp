@@ -81,7 +81,7 @@ namespace GruulsLairHelpers
         MarkTargetWithIcon(bot, target, RtiTargetValue::triangleIndex);
     }
 
-    void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
+    void SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName, Unit* target)
     {
         if (!target)
             return;

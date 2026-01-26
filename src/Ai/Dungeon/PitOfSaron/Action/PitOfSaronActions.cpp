@@ -224,7 +224,7 @@ bool IckAndKrickAction::ExplosiveBarrage(bool /*explosiveBarrage*/, Unit* boss)
             score += minOrbDist * 2.0f;  // Weight orb distance more heavily
 
             // Check distance from other players
-            for (const Position& playerPos : playerPositions)
+            for (Position const& playerPos : playerPositions)
             {
                 float playerDist = sqrt(pow(potentialPos.m_positionX - playerPos.m_positionX, 2) +
                                         pow(potentialPos.m_positionY - playerPos.m_positionY, 2));

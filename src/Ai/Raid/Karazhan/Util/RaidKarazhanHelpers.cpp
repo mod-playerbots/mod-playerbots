@@ -91,7 +91,7 @@ namespace KarazhanHelpers
         MarkTargetWithIcon(bot, target, RtiTargetValue::moonIndex);
     }
 
-    void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
+    void SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName, Unit* target)
     {
         if (!target)
             return;
@@ -122,7 +122,7 @@ namespace KarazhanHelpers
         return false;
     }
 
-    Unit* GetFirstAliveUnit(const std::vector<Unit*>& units)
+    Unit* GetFirstAliveUnit(std::vector<Unit*> const& units)
     {
         for (Unit* unit : units)
         {
@@ -382,7 +382,7 @@ namespace KarazhanHelpers
         return voidZones;
     }
 
-    bool IsSafePosition(float x, float y, float /*z*/, const std::vector<Unit*>& hazards, float hazardRadius)
+    bool IsSafePosition(float x, float y, float /*z*/, std::vector<Unit*> const& hazards, float hazardRadius)
     {
         for (Unit* hazard : hazards)
         {
@@ -408,7 +408,7 @@ namespace KarazhanHelpers
         return infernals;
     }
 
-    bool IsStraightPathSafe(const Position& start, const Position& target, const std::vector<Unit*>& hazards,
+    bool IsStraightPathSafe(Position const& start, Position const& target, std::vector<Unit*> const& hazards,
                             float hazardRadius, float stepSize)
     {
         float sx = start.GetPositionX();
@@ -441,7 +441,7 @@ namespace KarazhanHelpers
 
     bool TryFindSafePositionWithSafePath(
         Player* bot, float originX, float originY, float originZ, float centerX, float centerY, float centerZ,
-        const std::vector<Unit*>& hazards, float safeDistance, float stepSize, uint8 numAngles,
+        std::vector<Unit*> const& hazards, float safeDistance, float stepSize, uint8 numAngles,
         float maxSampleDist, bool requireSafePath, float& bestDestX, float& bestDestY, float& bestDestZ)
     {
         float bestMoveDist = std::numeric_limits<float>::max();

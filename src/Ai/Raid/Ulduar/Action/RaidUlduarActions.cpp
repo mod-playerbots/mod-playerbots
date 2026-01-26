@@ -8,6 +8,14 @@
 #include <cmath>
 
 #include "AiObjectContext.h"
+
+// Flame Leviathan NPC IDs
+enum FlameLeviathanNpcs
+{
+    NPC_FLAME_LEVIATHAN_TURRET  = 33139,  // Flame Leviathan Turret
+    NPC_LEVIATHAN_DEFENSE_TURRET = 33142, // Leviathan Defense Turret
+    NPC_FLAME_LEVIATHAN         = 33113   // Flame Leviathan boss
+};
 #include "DBCEnums.h"
 #include "GameObject.h"
 #include "Group.h"
@@ -31,14 +39,14 @@
 #include <TankAssistStrategy.h>
 #include "BotSpellService.h"
 
-const std::string ADD_STRATEGY_CHAR = "+";
-const std::string REMOVE_STRATEGY_CHAR = "-";
+std::string const ADD_STRATEGY_CHAR = "+";
+std::string const REMOVE_STRATEGY_CHAR = "-";
 
-const std::vector<uint32> availableVehicles = {NPC_VEHICLE_CHOPPER, NPC_SALVAGED_DEMOLISHER,
+std::vector<uint32> const availableVehicles = {NPC_VEHICLE_CHOPPER, NPC_SALVAGED_DEMOLISHER,
                                                NPC_SALVAGED_DEMOLISHER_TURRET, NPC_SALVAGED_SIEGE_ENGINE,
                                                NPC_SALVAGED_SIEGE_ENGINE_TURRET};
 
-const std::vector<Position> corners = {
+std::vector<Position> const corners = {
     {183.53f, 66.53f, 409.80f}, {383.03f, 75.10f, 411.71f}, {379.74f, -133.05f, 410.88f}, {158.67f, -137.54f, 409.80f}};
 
 const Position ULDUAR_KOLOGARN_RESTORE_POSITION = Position(1764.3749f, -24.02903f, 448.0f, 0.00087690353f);
@@ -67,11 +75,11 @@ bool FlameLeviathanVehicleAction::Execute(Event /*event*/)
         Unit* unit = botAI->GetUnit(*i);
         if (!unit)
             continue;
-        if (unit->GetEntry() == 33139)  // Flame Leviathan Turret
+        if (unit->GetEntry() == NPC_FLAME_LEVIATHAN_TURRET)
             continue;
-        if (unit->GetEntry() == 33142)  // Leviathan Defense Turret
+        if (unit->GetEntry() == NPC_LEVIATHAN_DEFENSE_TURRET)
             continue;
-        if (unit->GetEntry() == 33113)  // Flame Leviathan
+        if (unit->GetEntry() == NPC_FLAME_LEVIATHAN)
         {
             flame = unit;
             continue;
@@ -126,7 +134,7 @@ bool FlameLeviathanVehicleAction::MoveAvoidChasing(Unit* target)
         if (bot->GetExactDist(corners[avoidChaseIdx]) < 5.0f && target->GetExactDist(bot) < 50.0f)
             avoidChaseIdx = (avoidChaseIdx + 1) % corners.size();
     }
-    const Position& to = corners[avoidChaseIdx];
+    Position const& to = corners[avoidChaseIdx];
     return MoveTo(bot->GetMap()->GetId(), to.GetPositionX(), to.GetPositionY(), to.GetPositionZ(), false, false, false,
                   false, MovementPriority::MOVEMENT_COMBAT);
 }
@@ -997,7 +1005,7 @@ bool RazorscaleHarpoonAction::Execute(Event /*event*/)
         return false;
 
     // Retrieve harpoon data from the helper
-    const std::vector<RazorscaleBossHelper::HarpoonData>& harpoonData = razorscaleHelper.GetHarpoonData();
+    std::vector<RazorscaleBossHelper::HarpoonData> const& harpoonData = razorscaleHelper.GetHarpoonData();
 
     GameObject* closestHarpoon = nullptr;
     float minDistance = std::numeric_limits<float>::max();
@@ -1087,7 +1095,7 @@ bool RazorscaleHarpoonAction::isUseful()
     if (!boss || !boss->IsAlive())
         return false;
 
-    const std::vector<RazorscaleBossHelper::HarpoonData>& harpoonData = razorscaleHelper.GetHarpoonData();
+    std::vector<RazorscaleBossHelper::HarpoonData> const& harpoonData = razorscaleHelper.GetHarpoonData();
 
     for (auto const& harpoon : harpoonData)
     {
@@ -2628,7 +2636,7 @@ bool MimironPhase4MarkDpsAction::Execute(Event /*event*/)
 bool MimironCheatAction::Execute(Event /*event*/)
 {
     GuidVector targets = AI_VALUE(GuidVector, "nearest npcs");
-    for (const ObjectGuid& guid : targets)
+    for (ObjectGuid const& guid : targets)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (!unit || !unit->IsAlive())
@@ -2818,7 +2826,7 @@ bool YoggSaronMarkTargetAction::Execute(Event /*event*/)
 
         uint32 lowestHealth = std::numeric_limits<uint32>::max();
         Unit* lowestHealthUnit = nullptr;
-        for (const ObjectGuid& guid : targets)
+        for (ObjectGuid const& guid : targets)
         {
             Unit* unit = botAI->GetUnit(guid);
             if (!unit || !unit->IsAlive())

@@ -9,9 +9,9 @@
 const float TSUNAMI_LEFT_SAFE_MELEE = 552.0f;
 const float TSUNAMI_LEFT_SAFE_RANGED = 504.0f;
 const float TSUNAMI_RIGHT_SAFE_ALL = 529.0f;
-const std::pair<float, float> SARTHARION_MAINTANK_POSITION = {3258.5f, 532.5f};
-const std::pair<float, float> SARTHARION_OFFTANK_POSITION = {3230.0f, 526.0f};
-const std::pair<float, float> SARTHARION_RANGED_POSITION = {3248.0f, 507.0f};
+std::pair<float, float> const SARTHARION_MAINTANK_POSITION = {3258.5f, 532.5f};
+std::pair<float, float> const SARTHARION_OFFTANK_POSITION = {3230.0f, 526.0f};
+std::pair<float, float> const SARTHARION_RANGED_POSITION = {3248.0f, 507.0f};
 
 class SartharionTankPositionAction : public AttackAction
 {

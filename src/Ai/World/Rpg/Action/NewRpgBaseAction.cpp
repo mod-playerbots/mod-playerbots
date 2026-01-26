@@ -223,18 +223,18 @@ bool NewRpgBaseAction::InteractWithNpcOrGameObjectForQuest(ObjectGuid guid)
     // }
 
     bot->PrepareQuestMenu(guid);
-    const QuestMenu& menu = bot->PlayerTalkClass->GetQuestMenu();
+    QuestMenu const& menu = bot->PlayerTalkClass->GetQuestMenu();
     if (menu.Empty())
         return true;
 
     for (uint8 idx = 0; idx < menu.GetMenuItemCount(); idx++)
     {
-        const QuestMenuItem& item = menu.GetItem(idx);
+        QuestMenuItem const& item = menu.GetItem(idx);
         Quest const* quest = sObjectMgr->GetQuestTemplate(item.QuestId);
         if (!quest)
             continue;
 
-        const QuestStatus& status = bot->GetQuestStatus(item.QuestId);
+        QuestStatus const& status = bot->GetQuestStatus(item.QuestId);
         if (status == QUEST_STATUS_NONE && bot->CanTakeQuest(quest, false) && bot->CanAddQuest(quest, false) &&
             IsQuestWorthDoing(quest) && IsQuestCapableDoing(quest))
         {
@@ -683,17 +683,17 @@ bool NewRpgBaseAction::HasQuestToAcceptOrReward(WorldObject* object)
 {
     ObjectGuid guid = object->GetGUID();
     bot->PrepareQuestMenu(guid);
-    const QuestMenu& menu = bot->PlayerTalkClass->GetQuestMenu();
+    QuestMenu const& menu = bot->PlayerTalkClass->GetQuestMenu();
     if (menu.Empty())
         return false;
 
     for (uint8 idx = 0; idx < menu.GetMenuItemCount(); idx++)
     {
-        const QuestMenuItem& item = menu.GetItem(idx);
+        QuestMenuItem const& item = menu.GetItem(idx);
         Quest const* quest = sObjectMgr->GetQuestTemplate(item.QuestId);
         if (!quest)
             continue;
-        const QuestStatus& status = bot->GetQuestStatus(item.QuestId);
+        QuestStatus const& status = bot->GetQuestStatus(item.QuestId);
         if (status == QUEST_STATUS_COMPLETE && bot->CanRewardQuest(quest, 0, false))
         {
             return true;
@@ -701,12 +701,12 @@ bool NewRpgBaseAction::HasQuestToAcceptOrReward(WorldObject* object)
     }
     for (uint8 idx = 0; idx < menu.GetMenuItemCount(); idx++)
     {
-        const QuestMenuItem& item = menu.GetItem(idx);
+        QuestMenuItem const& item = menu.GetItem(idx);
         Quest const* quest = sObjectMgr->GetQuestTemplate(item.QuestId);
         if (!quest)
             continue;
 
-        const QuestStatus& status = bot->GetQuestStatus(item.QuestId);
+        QuestStatus const& status = bot->GetQuestStatus(item.QuestId);
         if (status == QUEST_STATUS_NONE && bot->CanTakeQuest(quest, false) && bot->CanAddQuest(quest, false) &&
             IsQuestWorthDoing(quest) && IsQuestCapableDoing(quest))
         {
@@ -745,11 +745,11 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
         return false;
     }
 
-    const QuestStatusData& q_status = bot->getQuestStatusMap().at(questId);
+    QuestStatusData const& q_status = bot->getQuestStatusMap().at(questId);
 
     if (toComplete && q_status.Status == QUEST_STATUS_COMPLETE)
     {
-        for (const QuestPOI& qPoi : *poiVector)
+        for (QuestPOI const& qPoi : *poiVector)
         {
             if (qPoi.MapId != bot->GetMapId())
                 continue;
@@ -765,7 +765,7 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
             std::vector<float> weights = GenerateRandomWeights(qPoi.points.size());
             for (size_t i = 0; i < qPoi.points.size(); i++)
             {
-                const QuestPOIPoint& point = qPoi.points[i];
+                QuestPOIPoint const& point = qPoi.points[i];
                 dx += point.x * weights[i];
                 dy += point.y * weights[i];
             }
@@ -815,7 +815,7 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
     }
 
     // Get POIs to go
-    for (const QuestPOI& qPoi : *poiVector)
+    for (QuestPOI const& qPoi : *poiVector)
     {
         if (qPoi.MapId != bot->GetMapId())
             continue;
@@ -837,7 +837,7 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
         std::vector<float> weights = GenerateRandomWeights(qPoi.points.size());
         for (size_t i = 0; i < qPoi.points.size(); i++)
         {
-            const QuestPOIPoint& point = qPoi.points[i];
+            QuestPOIPoint const& point = qPoi.points[i];
             dx += point.x * weights[i];
             dy += point.y * weights[i];
         }
@@ -867,7 +867,7 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
 
 WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)
 {
-    const std::vector<WorldLocation>& locs = sRandomPlayerbotMgr->locsPerLevelCache[bot->GetLevel()];
+    std::vector<WorldLocation> const& locs = sRandomPlayerbotMgr->locsPerLevelCache[bot->GetLevel()];
     float hiRange = 500.0f;
     float loRange = 2500.0f;
     if (bot->GetLevel() < 5)
@@ -925,7 +925,7 @@ WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)
 
 WorldPosition NewRpgBaseAction::SelectRandomCampPos(Player* bot)
 {
-    const std::vector<WorldLocation>& locs = IsAlliance(bot->getRace())
+    std::vector<WorldLocation> const& locs = IsAlliance(bot->getRace())
                                                  ? sRandomPlayerbotMgr->allianceStarterPerLevelCache[bot->GetLevel()]
                                                  : sRandomPlayerbotMgr->hordeStarterPerLevelCache[bot->GetLevel()];
 
@@ -970,7 +970,7 @@ WorldPosition NewRpgBaseAction::SelectRandomCampPos(Player* bot)
 
 bool NewRpgBaseAction::SelectRandomFlightTaxiNode(ObjectGuid& flightMaster, uint32& fromNode, uint32& toNode)
 {
-    const std::vector<uint32>& flightMasters = IsAlliance(bot->getRace())
+    std::vector<uint32> const& flightMasters = IsAlliance(bot->getRace())
                                                    ? sFlightMasterCache->GetAllianceFlightMasters()
                                                    : sFlightMasterCache->GetHordeFlightMasters();
     Creature* nearestFlightMaster = nullptr;

@@ -15,7 +15,7 @@
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 
-static const std::unordered_set<std::string> noReplyMsgs = {
+static std::unordered_set<std::string> const noReplyMsgs = {
     "join",
     "leave",
     "follow",
@@ -50,9 +50,9 @@ static const std::unordered_set<std::string> noReplyMsgs = {
     "reset strats",
     "home",
 };
-static const std::unordered_set<std::string> noReplyMsgParts = {
+static std::unordered_set<std::string> const noReplyMsgParts = {
     "+", "-", "@", "follow target", "focus heal", "cast ", "accept [", "e [", "destroy [", "go zone"};
-static const std::unordered_set<std::string> noReplyMsgStarts = {"e ", "accept ", "cast ", "destroy "};
+static std::unordered_set<std::string> const noReplyMsgStarts = {"e ", "accept ", "cast ", "destroy "};
 
 SayAction::SayAction(PlayerbotAI* botAI) : Action(botAI, "say"), Qualified() {}
 
@@ -174,7 +174,7 @@ void ChatReplyAction::ChatReplyDo(Player* bot, uint32& type, uint32& guid1, uint
 
     // second one is for partial matches like + or - where we change strats
     if (std::any_of(noReplyMsgParts.begin(), noReplyMsgParts.end(),
-                    [&msg](const std::string& part) { return msg.find(part) != std::string::npos; }))
+                    [&msg](std::string const& part) { return msg.find(part) != std::string::npos; }))
     {
         /*std::ostringstream out;
         out << "DEBUG ChatReplyDo decided to ignore partial blocklist match" << msg;
@@ -183,7 +183,7 @@ void ChatReplyAction::ChatReplyDo(Player* bot, uint32& type, uint32& guid1, uint
     }
 
     if (std::any_of(noReplyMsgStarts.begin(), noReplyMsgStarts.end(),
-                    [&msg](const std::string& start)
+                    [&msg](std::string const& start)
                     {
                         return msg.find(start) == 0;  // Check if the start matches the beginning of msg
                     }))

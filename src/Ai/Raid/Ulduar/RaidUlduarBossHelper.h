@@ -85,7 +85,7 @@ public:
     static void SetHarpoonOnCooldown(GameObject* harpoonGO);
     GameObject* FindNearestHarpoon(float x, float y, float z) const;
 
-    static const std::vector<HarpoonData>& GetHarpoonData();
+    static std::vector<HarpoonData> const& GetHarpoonData();
 
     void AssignRolesBasedOnHealth();
     bool AreRolesAssigned() const;
@@ -98,7 +98,7 @@ private:
     static std::unordered_map<ObjectGuid, std::time_t> _lastRoleSwapTime;
 
     // The cooldown that applies to every bot
-    static const std::time_t _roleSwapCooldown = 10;
+    static std::time_t const _roleSwapCooldown = 10;
 
     static std::unordered_map<ObjectGuid, time_t> _harpoonCooldowns;
 };

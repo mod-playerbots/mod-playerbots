@@ -90,7 +90,7 @@ public:
         : WorldLocation(mapid, x, y, z, orientation)
     {
     }
-    WorldPosition(uint32 mapId, const Position& pos);
+    WorldPosition(uint32 mapId, Position const& pos);
     WorldPosition(WorldObject const* wo);
     WorldPosition(std::vector<WorldPosition*> list, WorldPositionConst conType);
     WorldPosition(std::vector<WorldPosition> list, WorldPositionConst conType);
@@ -99,9 +99,9 @@ public:
     WorldPosition(uint32 mapid, mGridCoord grid);
 
     //Setters
-    void set(const WorldLocation& pos);
+    void set(WorldLocation const& pos);
     void set(WorldObject const* wo);
-    void set(const WorldPosition& pos);
+    void set(WorldPosition const& pos);
     void setMapId(uint32 id);
     void setX(float x);
     void setY(float y);
@@ -114,8 +114,8 @@ public:
 
     // Getters
     operator bool() const;
-    friend bool operator==(WorldPosition const& p1, const WorldPosition& p2);
-    friend bool operator!=(WorldPosition const& p1, const WorldPosition& p2);
+    friend bool operator==(WorldPosition const& p1, WorldPosition const& p2);
+    friend bool operator!=(WorldPosition const& p1, WorldPosition const& p2);
 
     WorldPosition& operator=(WorldPosition const&) = default;
     WorldPosition& operator+=(WorldPosition const& p1);
@@ -131,7 +131,7 @@ public:
     std::string const print();
 
     std::string const to_string();
-    std::vector<std::string> split(const std::string& s, char delimiter);
+    std::vector<std::string> split(std::string const& s, char delimiter);
 
     void printWKT(std::vector<WorldPosition> points, std::ostringstream& out, uint32 dim = 0, bool loop = false);
     void printWKT(std::ostringstream& out) { printWKT({*this}, out); }
@@ -753,9 +753,9 @@ protected:
 class TravelTarget : AiObject
 {
 public:
-    TravelTarget(PlayerbotAI* botAI) : AiObject(botAI), m_status(TRAVEL_STATUS_NONE), startTime(getMSTime()){};
+    TravelTarget(PlayerbotAI* botAI) : AiObject(botAI), travelStatus(TRAVEL_STATUS_NONE), startTime(getMSTime()){};
     TravelTarget(PlayerbotAI* botAI, TravelDestination* tDestination1, WorldPosition* wPosition1)
-        : AiObject(botAI), m_status(TRAVEL_STATUS_NONE), startTime(getMSTime())
+        : AiObject(botAI), travelStatus(TRAVEL_STATUS_NONE), startTime(getMSTime())
     {
         setTarget(tDestination1, wPosition1);
     }
@@ -818,7 +818,7 @@ public:
     bool isPreparing();
     bool isMaxRetry(bool isMove) { return isMove ? (moveRetryCount > 5) : (extendRetryCount > 5); }
 
-    TravelStatus getStatus() { return m_status; }
+    TravelStatus getStatus() { return travelStatus; }
 
     TravelState getTravelState();
 
@@ -827,7 +827,7 @@ public:
     bool isForced() { return forced; }
 
 protected:
-    TravelStatus m_status;
+    TravelStatus travelStatus;
 
     uint32 startTime;
     uint32 statusTime = 0;

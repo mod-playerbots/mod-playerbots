@@ -257,7 +257,7 @@ public:
 
 protected:
     uint32 minEnemies;
-    static const std::set<uint32> VOLLEY_SPELL_IDS;
+    static std::set<uint32> const VOLLEY_SPELL_IDS;
 };
 
 #endif

@@ -111,9 +111,9 @@ namespace KarazhanHelpers
     void MarkTargetWithStar(Player* bot, Unit* target);
     void MarkTargetWithCircle(Player* bot, Unit* target);
     void MarkTargetWithMoon(Player* bot, Unit* target);
-    void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
+    void SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName, Unit* target);
     bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot);
-    Unit* GetFirstAliveUnit(const std::vector<Unit*>& units);
+    Unit* GetFirstAliveUnit(std::vector<Unit*> const& units);
     Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
     Unit* GetNearestPlayerInRadius(Player* bot, float radius);
     bool IsFlameWreathActive(PlayerbotAI* botAI, Player* bot);
@@ -122,14 +122,14 @@ namespace KarazhanHelpers
     std::vector<Player*> GetGreenBlockers(PlayerbotAI* botAI, Player* bot);
     std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(PlayerbotAI* botAI, Player* bot);
     std::vector<Unit*> GetAllVoidZones(PlayerbotAI *botAI, Player* bot);
-    bool IsSafePosition (float x, float y, float z, const std::vector<Unit*>& hazards, float hazardRadius);
+    bool IsSafePosition (float x, float y, float z, std::vector<Unit*> const& hazards, float hazardRadius);
     std::vector<Unit*> GetSpawnedInfernals(PlayerbotAI* botAI);
     bool IsStraightPathSafe(
-        const Position& start, const Position& target,
-        const std::vector<Unit*>& hazards, float hazardRadius, float stepSize);
+        Position const& start, Position const& target,
+        std::vector<Unit*> const& hazards, float hazardRadius, float stepSize);
     bool TryFindSafePositionWithSafePath(
         Player* bot, float originX, float originY, float originZ, float centerX, float centerY, float centerZ,
-        const std::vector<Unit*>& hazards, float safeDistance, float stepSize, uint8 numAngles,
+        std::vector<Unit*> const& hazards, float safeDistance, float stepSize, uint8 numAngles,
         float maxSampleDist, bool requireSafePath, float& bestDestX, float& bestDestY, float& bestDestZ);
 }
 

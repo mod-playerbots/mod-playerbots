@@ -71,7 +71,7 @@ public:
     bool isUseful() override;
 
 private:
-    static const std::vector<uint32> firestoneSpellIds;
+    static std::vector<uint32> const firestoneSpellIds;
 };
 
 class CastCreateSpellstoneAction : public CastBuffSpellAction

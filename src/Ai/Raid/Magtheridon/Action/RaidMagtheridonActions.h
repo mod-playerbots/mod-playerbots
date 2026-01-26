@@ -85,8 +85,8 @@ public:
 private:
     bool HandleCubeRelease(Unit* magtheridon, GameObject* cube);
     bool ShouldActivateCubeLogic(Unit* magtheridon);
-    bool HandleWaitingPhase(const CubeInfo& cubeInfo);
-    bool HandleCubeInteraction(const CubeInfo& cubeInfo, GameObject* cube);
+    bool HandleWaitingPhase(CubeInfo const& cubeInfo);
+    bool HandleCubeInteraction(CubeInfo const& cubeInfo, GameObject* cube);
 };
 
 class MagtheridonManageTimersAndAssignmentsAction : public Action

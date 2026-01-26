@@ -228,7 +228,7 @@ private:
         Unit* portal;
         float minDist, maxDist;
     };
-    bool IsAwayFromBeams(float x, float y, const std::vector<BeamAvoid>& beams, Unit* netherspite);
+    bool IsAwayFromBeams(float x, float y, std::vector<BeamAvoid> const& beams, Unit* netherspite);
 };
 
 class NetherspiteBanishPhaseAvoidVoidZoneAction : public MovementAction

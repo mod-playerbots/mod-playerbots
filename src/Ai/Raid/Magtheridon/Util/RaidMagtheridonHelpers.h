@@ -52,7 +52,7 @@ namespace MagtheridonHelpers
     void MarkTargetWithDiamond(Player* bot, Unit* target);
     void MarkTargetWithTriangle(Player* bot, Unit* target);
     void MarkTargetWithCross(Player* bot, Unit* target);
-    void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
+    void SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName, Unit* target);
     bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float z);
     bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot);
 
@@ -77,10 +77,10 @@ namespace MagtheridonHelpers
         float x, y, z;
     };
 
-    extern const std::vector<uint32> MANTICRON_CUBE_DB_GUIDS;
+    extern std::vector<uint32> const MANTICRON_CUBE_DB_GUIDS;
     extern std::unordered_map<ObjectGuid, CubeInfo> botToCubeAssignment;
-    std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, const std::vector<uint32>& cubeDbGuids);
-    void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>& cubes, PlayerbotAI* botAI);
+    std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, std::vector<uint32> const& cubeDbGuids);
+    void AssignBotsToCubesByGuidAndCoords(Group* group, std::vector<CubeInfo> const& cubes, PlayerbotAI* botAI);
     extern std::unordered_map<uint32, bool> lastBlastNovaState;
     extern std::unordered_map<uint32, time_t> blastNovaTimer;
     extern std::unordered_map<uint32, time_t> spreadWaitTimer;

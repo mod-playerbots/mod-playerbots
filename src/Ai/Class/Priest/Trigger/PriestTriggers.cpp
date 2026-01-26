@@ -78,7 +78,7 @@ bool BindingHealTrigger::IsActive()
            AI_VALUE2(uint8, "health", "self target") < sPlayerbotAIConfig->mediumHealth;
 }
 
-const std::set<uint32> MindSearChannelCheckTrigger::MIND_SEAR_SPELL_IDS = {
+std::set<uint32> const MindSearChannelCheckTrigger::MIND_SEAR_SPELL_IDS = {
     48045,  // Mind Sear Rank 1
     53023   // Mind Sear Rank 2
 };

@@ -125,7 +125,7 @@ void Engine::Init()
         strategyTypeMask |= strategy->GetType();
         strategy->InitMultipliers(multipliers);
         strategy->InitTriggers(triggers);
-        for (auto &iter : strategy->actionNodeFactories.creators)
+        for (auto& iter : strategy->actionNodeFactories.creators)
         {
             actionNodeFactories.creators[iter.first] = iter.second;
         }

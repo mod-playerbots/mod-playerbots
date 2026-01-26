@@ -57,7 +57,7 @@ bool IccLmTankPositionAction::Execute(Event /*event*/)
     return false;
 }
 
-bool IccLmTankPositionAction::MoveTowardPosition(const Position& position, float incrementSize)
+bool IccLmTankPositionAction::MoveTowardPosition(Position const& position, float incrementSize)
 {
     // Calculate direction vector
     const float dirX = position.GetPositionX() - bot->GetPositionX();
@@ -110,7 +110,7 @@ bool IccSpikeAction::Execute(Event /*event*/)
 
 bool IccSpikeAction::HandleSpikeTargeting(Unit* boss)
 {
-    static const std::array<uint32, 3> spikeEntries = {NPC_SPIKE1, NPC_SPIKE2, NPC_SPIKE3};
+    static std::array<uint32, 3> const spikeEntries = {NPC_SPIKE1, NPC_SPIKE2, NPC_SPIKE3};
     const GuidVector spikes = AI_VALUE(GuidVector, "possible targets no los");
 
     Unit* priorityTarget = nullptr;
@@ -150,7 +150,7 @@ bool IccSpikeAction::HandleSpikeTargeting(Unit* boss)
     return false;
 }
 
-bool IccSpikeAction::MoveTowardPosition(const Position& position, float incrementSize)
+bool IccSpikeAction::MoveTowardPosition(Position const& position, float incrementSize)
 {
     // Calculate direction vector
     const float dirX = position.GetPositionX() - bot->GetPositionX();
@@ -352,7 +352,7 @@ bool IccAddsLadyDeathwhisperAction::IsTargetedByShade(uint32 shadeEntry)
     return false;
 }
 
-bool IccAddsLadyDeathwhisperAction::MoveTowardPosition(const Position& position, float incrementSize)
+bool IccAddsLadyDeathwhisperAction::MoveTowardPosition(Position const& position, float incrementSize)
 {
     // Calculate direction vector
     const float dirX = position.GetPositionX() - bot->GetPositionX();
@@ -584,7 +584,7 @@ bool IccRottingFrostGiantTankPositionAction::Execute(Event /*event*/)
 
         // Sort targets by score (lowest/best first)
         std::sort(viableTargets.begin(), viableTargets.end(),
-                  [](const std::pair<Unit*, float>& a, const std::pair<Unit*, float>& b)
+                  [](std::pair<Unit*, float> const& a, std::pair<Unit*, float> const& b)
                   { return a.second < b.second; });
 
         // Choose the best target
@@ -891,7 +891,7 @@ bool IccGunshipTeleportAllyAction::Execute(Event /*event*/)
     return false;
 }
 
-bool IccGunshipTeleportAllyAction::TeleportTo(const Position& position)
+bool IccGunshipTeleportAllyAction::TeleportTo(Position const& position)
 {
     return bot->TeleportTo(bot->GetMapId(), position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
                            bot->GetOrientation());
@@ -958,7 +958,7 @@ bool IccGunshipTeleportHordeAction::Execute(Event /*event*/)
     return false;
 }
 
-bool IccGunshipTeleportHordeAction::TeleportTo(const Position& position)
+bool IccGunshipTeleportHordeAction::TeleportTo(Position const& position)
 {
     return bot->TeleportTo(bot->GetMapId(), position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
                            bot->GetOrientation());
@@ -1036,7 +1036,7 @@ bool IccDbsTankPositionAction::Execute(Event /*event*/)
 
 bool IccDbsTankPositionAction::CrowdControlBloodBeasts()
 {
-    const std::array<uint32_t, 4> bloodBeastEntries = {NPC_BLOOD_BEAST1, NPC_BLOOD_BEAST2, NPC_BLOOD_BEAST3,
+    std::array<uint32_t, 4> const bloodBeastEntries = {NPC_BLOOD_BEAST1, NPC_BLOOD_BEAST2, NPC_BLOOD_BEAST3,
                                                        NPC_BLOOD_BEAST4};
     const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
 
@@ -1107,7 +1107,7 @@ bool IccDbsTankPositionAction::CrowdControlBloodBeasts()
 bool IccDbsTankPositionAction::EvadeBloodBeasts()
 {
     const float evasionDistance = 12.0f;
-    const std::array<uint32_t, 4> bloodBeastEntries = {NPC_BLOOD_BEAST1, NPC_BLOOD_BEAST2, NPC_BLOOD_BEAST3, NPC_BLOOD_BEAST4};
+    std::array<uint32_t, 4> const bloodBeastEntries = {NPC_BLOOD_BEAST1, NPC_BLOOD_BEAST2, NPC_BLOOD_BEAST3, NPC_BLOOD_BEAST4};
 
     // Get the nearest hostile NPCs
     const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
@@ -1230,7 +1230,7 @@ Unit* IccAddsDbsAction::FindPriorityTarget(Unit* boss)
     // First check for alive adds
     for (uint32_t entry : addEntries)
     {
-        for (const ObjectGuid& guid : targets)
+        for (ObjectGuid const& guid : targets)
         {
             Unit* unit = botAI->GetUnit(guid);
             if (unit && unit->IsAlive() && unit->GetEntry() == entry)
@@ -1552,7 +1552,7 @@ IccFestergutSporeAction::SporeInfo IccFestergutSporeAction::FindSporedPlayers()
     return info;
 }
 
-Position IccFestergutSporeAction::DetermineTargetPosition(bool hasSpore, const SporeInfo& sporeInfo, const Position& spreadRangedPos)
+Position IccFestergutSporeAction::DetermineTargetPosition(bool hasSpore, SporeInfo const& sporeInfo, Position const& spreadRangedPos)
 {
     // No spores at all
     if (sporeInfo.sporedPlayers.empty())
@@ -2019,9 +2019,8 @@ bool IccRotfaceGroupPositionAction::FindAndMoveFromClosestMember(Unit* /*boss*/,
     const float maxMoveDistance = 12.0f;     // Limit maximum movement distance
     const float puddleSafeDistance = 30.0f;  // Minimum distance to stay away from puddle
     const float minCenterDistance = 20.0f;   // Minimum distance from center position
-    const bool isRanged = BotRoleService::IsRangedStatic(bot) || BotRoleService::IsHealStatic(bot);
 
-    // Ranged: spread from other members
+    // Spread from other members
     const GuidVector members = AI_VALUE(GuidVector, "group members");
 
     // Calculate a combined vector representing all nearby members' positions
@@ -2679,7 +2678,7 @@ bool IccPutricideGasCloudAction::HandleGaseousBloatMovement(Unit* gasCloud)
     return false;
 }
 
-bool IccPutricideGasCloudAction::FindSafeMovementPosition(const Position& botPos, const Position& cloudPos, float dx,
+bool IccPutricideGasCloudAction::FindSafeMovementPosition(Position const& botPos, Position const& cloudPos, float dx,
                                                           float dy, int numAngles, Position& resultPos)
 {
     float bestScore = 0.0f;
@@ -2743,7 +2742,7 @@ bool IccPutricideGasCloudAction::FindSafeMovementPosition(const Position& botPos
     return foundPath;
 }
 
-Position IccPutricideGasCloudAction::CalculateEmergencyPosition(const Position& botPos, float dx, float dy)
+Position IccPutricideGasCloudAction::CalculateEmergencyPosition(Position const& botPos, float dx, float dy)
 {
     // For emergency, still try to avoid corners but prioritize getting away from immediate danger
     Position bestPos =
@@ -3061,7 +3060,7 @@ Position IccPutricideAvoidMalleableGooAction::CalculateBossPosition(Unit* boss, 
                     boss->GetPositionY() + sin(bossOrientation) * distance, boss->GetPositionZ());
 }
 
-bool IccPutricideAvoidMalleableGooAction::HasObstacleBetween(const Position& from, const Position& to)
+bool IccPutricideAvoidMalleableGooAction::HasObstacleBetween(Position const& from, Position const& to)
 {
     GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
     for (auto const& npc : npcs)
@@ -3079,7 +3078,7 @@ bool IccPutricideAvoidMalleableGooAction::HasObstacleBetween(const Position& fro
     return false;
 }
 
-bool IccPutricideAvoidMalleableGooAction::IsOnPath(const Position& from, const Position& to, const Position& point,
+bool IccPutricideAvoidMalleableGooAction::IsOnPath(Position const& from, Position const& to, Position const& point,
                                                    float threshold)
 {
     float pathX = to.GetPositionX() - from.GetPositionX();
@@ -3107,7 +3106,7 @@ bool IccPutricideAvoidMalleableGooAction::IsOnPath(const Position& from, const P
     return distToPath < threshold;
 }
 
-Position IccPutricideAvoidMalleableGooAction::CalculateArcPoint(const Position& current, const Position& target, const Position& center)
+Position IccPutricideAvoidMalleableGooAction::CalculateArcPoint(Position const& current, Position const& target, Position const& center)
 {
     // Calculate vectors from center to current position and target
     float currentX = current.GetPositionX() - center.GetPositionX();
@@ -3153,7 +3152,7 @@ Position IccPutricideAvoidMalleableGooAction::CalculateArcPoint(const Position& 
                     current.GetPositionZ());
 }
 
-Position IccPutricideAvoidMalleableGooAction::CalculateIncrementalMove(const Position& current, const Position& target,
+Position IccPutricideAvoidMalleableGooAction::CalculateIncrementalMove(Position const& current, Position const& target,
                                                                        float maxDistance)
 {
     float dx = target.GetPositionX() - current.GetPositionX();
@@ -3326,7 +3325,7 @@ void IccBpcMainTankAction::MarkEmpoweredPrince()
 
     // Find empowered prince (Invocation of Blood)
     Unit* empoweredPrince = nullptr;
-    const GuidVector& targets = AI_VALUE(GuidVector, "possible targets");
+    GuidVector const& targets = AI_VALUE(GuidVector, "possible targets");
 
     for (auto const& targetGuid : targets)
     {
@@ -3599,11 +3598,10 @@ bool IccBpcKineticBombAction::Execute(Event /*event*/)
 
 Unit* IccBpcKineticBombAction::FindOptimalKineticBomb()
 {
-    static constexpr float MAX_HEIGHT_DIFF = 20.0f;
     static constexpr std::array<uint32_t, 4> KINETIC_BOMB_ENTRIES = {NPC_KINETIC_BOMB1, NPC_KINETIC_BOMB2,
                                                                      NPC_KINETIC_BOMB3, NPC_KINETIC_BOMB4};
 
-    const GuidVector targets = AI_VALUE(GuidVector, "possible targets");
+    GuidVector const targets = AI_VALUE(GuidVector, "possible targets");
     if (targets.empty())
         return nullptr;
 
@@ -3841,7 +3839,7 @@ bool IccBqlGroupPositionAction::HandleShadowsMovement()
     const float CURVE_SPACING = 15.0f;
     const int MAX_CURVES = 3;
     const float maxClosestDist = BotRoleService::IsMeleeStatic(bot) ? 25.0f : 20.0f;
-    const Position& center = ICC_BQL_CENTER_POSITION;
+    Position const& center = ICC_BQL_CENTER_POSITION;
     const float OUTER_CURVE_PREFERENCE = 200.0f;   // Strong preference for outer curves
     const float CURVE_SWITCH_PENALTY = 50.0f;      // Penalty for switching curves
     const float DISTANCE_PENALTY_FACTOR = 100.0f;  // Penalty per yard moved from current position
@@ -3870,7 +3868,7 @@ bool IccBqlGroupPositionAction::HandleShadowsMovement()
     }
 
     // Helper lambda to check if a position is inside a shadow
-    auto IsPositionInShadow = [&](const Position& pos) -> bool
+    auto IsPositionInShadow = [&](Position const& pos) -> bool
     {
         for (int i = 0; i < shadowCount; ++i)
         {
@@ -4220,7 +4218,7 @@ bool IccBqlGroupPositionAction::HandleShadowsMovement()
     return false;
 }
 
-Position IccBqlGroupPositionAction::AdjustControlPoint(const Position& wall, const Position& center, float factor)
+Position IccBqlGroupPositionAction::AdjustControlPoint(Position const& wall, Position const& center, float factor)
 {
     float dx = wall.GetPositionX() - center.GetPositionX();
     float dy = wall.GetPositionY() - center.GetPositionY();
@@ -4371,7 +4369,7 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
             // Spread from other assigned members on the same side and from swarming shadows
             float totalX = 0.0f, totalY = 0.0f;
             int nearbyCount = 0;
-            const std::vector<Player*>& mySide = isLeft ? leftSide : rightSide;
+            std::vector<Player*> const& mySide = isLeft ? leftSide : rightSide;
             for (Player* member : mySide)
             {
                 if (!member || !member->IsAlive() || member == bot)
@@ -4606,7 +4604,7 @@ bool IccBqlPactOfDarkfallenAction::Execute(Event /*event*/)
 }
 
 void IccBqlPactOfDarkfallenAction::CalculateCenterPosition(Position& targetPos,
-                                                           const std::vector<Player*>& playersWithAura)
+                                                           std::vector<Player*> const& playersWithAura)
 {
     float sumX = bot->GetPositionX();
     float sumY = bot->GetPositionY();
@@ -4625,7 +4623,7 @@ void IccBqlPactOfDarkfallenAction::CalculateCenterPosition(Position& targetPos,
     targetPos.Relocate(sumX / totalPlayers, sumY / totalPlayers, sumZ / totalPlayers);
 }
 
-bool IccBqlPactOfDarkfallenAction::MoveToTargetPosition(const Position& targetPos, int auraCount)
+bool IccBqlPactOfDarkfallenAction::MoveToTargetPosition(Position const& targetPos, int auraCount)
 {
     const float POSITION_TOLERANCE = 0.1f;
     float distance = bot->GetDistance(targetPos);
@@ -5002,7 +5000,7 @@ bool IccValithriaGroupAction::Execute(Event /*event*/)
         return Handle10ManGroupLogic();
 }
 
-bool IccValithriaGroupAction::MoveTowardsPosition(const Position& pos, float increment)
+bool IccValithriaGroupAction::MoveTowardsPosition(Position const& pos, float increment)
 {
     float dx = pos.GetPositionX() - bot->GetPositionX();
     float dy = pos.GetPositionY() - bot->GetPositionY();
@@ -5124,12 +5122,12 @@ bool IccValithriaGroupAction::Handle25ManGroupLogic()
     return false;
 }
 
-bool IccValithriaGroupAction::HandleMarkingLogic(bool inGroup1, bool inGroup2, const Position& group1Pos,
-                                                 const Position& group2Pos)
+bool IccValithriaGroupAction::HandleMarkingLogic(bool inGroup1, bool inGroup2, Position const& group1Pos,
+                                                 Position const& group2Pos)
 {
     static constexpr uint8_t SKULL_ICON_INDEX = 7;
     static constexpr uint8_t CROSS_ICON_INDEX = 6;
-    static const std::array<uint32, 6> addPriority = {NPC_BLAZING_SKELETON,       NPC_SUPPRESSER,
+    static std::array<uint32, 6> const addPriority = {NPC_BLAZING_SKELETON,       NPC_SUPPRESSER,
                                                       NPC_RISEN_ARCHMAGE,         NPC_BLISTERING_ZOMBIE,
                                                       NPC_GLUTTONOUS_ABOMINATION, NPC_ROT_WORM};
 
@@ -5208,7 +5206,7 @@ bool IccValithriaGroupAction::HandleMarkingLogic(bool inGroup1, bool inGroup2, c
 bool IccValithriaGroupAction::Handle10ManGroupLogic()
 {
     static constexpr uint8_t DEFAULT_ICON_INDEX = 7;
-    static const std::array<uint32, 6> addPriority = {NPC_BLAZING_SKELETON,       NPC_SUPPRESSER,
+    static std::array<uint32, 6> const addPriority = {NPC_BLAZING_SKELETON,       NPC_SUPPRESSER,
                                                       NPC_RISEN_ARCHMAGE,         NPC_BLISTERING_ZOMBIE,
                                                       NPC_GLUTTONOUS_ABOMINATION, NPC_ROT_WORM};
 
@@ -5917,7 +5915,7 @@ bool IccSindragosaGroupPositionAction::HandleNonTankPositioning()
 
     if (raidClear && BotRoleService::IsTankStatic(bot))
     {
-        static const std::array<uint32, 4> tombEntries = {NPC_TOMB1, NPC_TOMB2, NPC_TOMB3, NPC_TOMB4};
+        static std::array<uint32, 4> const tombEntries = {NPC_TOMB1, NPC_TOMB2, NPC_TOMB3, NPC_TOMB4};
         const GuidVector tombGuids = AI_VALUE(GuidVector, "possible targets no los");
 
         Unit* nearestTomb = nullptr;
@@ -6000,7 +5998,7 @@ bool IccSindragosaGroupPositionAction::HandleNonTankPositioning()
     }
 }
 
-bool IccSindragosaGroupPositionAction::MoveIncrementallyToPosition(const Position& targetPos, float maxStep)
+bool IccSindragosaGroupPositionAction::MoveIncrementallyToPosition(Position const& targetPos, float maxStep)
 {
     // Calculate direction vector to target
     float dirX = targetPos.GetPositionX() - bot->GetPositionX();
@@ -6185,7 +6183,7 @@ bool IccSindragosaFrostBeaconAction::HandleBeaconedPlayer(Unit const* boss)
     static constexpr std::array<Position const* , 3> tombPositions = {
         &ICC_SINDRAGOSA_THOMB1_POSITION, &ICC_SINDRAGOSA_THOMB2_POSITION, &ICC_SINDRAGOSA_THOMB3_POSITION};
 
-    const Position& tombPosition = *tombPositions[std::min(spot, tombPositions.size() - 1)];
+    Position const& tombPosition = *tombPositions[std::min(spot, tombPositions.size() - 1)];
     return MoveToPositionIfNeeded(tombPosition, TOMB_POSITION_TOLERANCE);
 }
 
@@ -6218,7 +6216,7 @@ bool IccSindragosaFrostBeaconAction::HandleNonBeaconedPlayer(Unit const* boss)
             if (diff && (diff == RAID_DIFFICULTY_25MAN_NORMAL || diff == RAID_DIFFICULTY_25MAN_HEROIC))
                 is25Man = true;
 
-            const Position& safePosition = is25Man ? ICC_SINDRAGOSA_FBOMB_POSITION : ICC_SINDRAGOSA_FBOMB10_POSITION;
+            Position const& safePosition = is25Man ? ICC_SINDRAGOSA_FBOMB_POSITION : ICC_SINDRAGOSA_FBOMB10_POSITION;
 
             const float dist = bot->GetExactDist2d(safePosition.GetPositionX(), safePosition.GetPositionY());
             if (dist > MOVE_TOLERANCE)
@@ -6233,7 +6231,7 @@ bool IccSindragosaFrostBeaconAction::HandleNonBeaconedPlayer(Unit const* boss)
     const bool isRanged = BotRoleService::IsRangedStatic(bot) || (bot->GetExactDist2d(ICC_SINDRAGOSA_RANGED_POSITION.GetPositionX(),ICC_SINDRAGOSA_RANGED_POSITION.GetPositionY()) <
                           bot->GetExactDist2d(ICC_SINDRAGOSA_MELEE_POSITION.GetPositionX(),ICC_SINDRAGOSA_MELEE_POSITION.GetPositionY()));
 
-    const Position& targetPosition = isRanged ? ICC_SINDRAGOSA_RANGED_POSITION : ICC_SINDRAGOSA_MELEE_POSITION;
+    Position const& targetPosition = isRanged ? ICC_SINDRAGOSA_RANGED_POSITION : ICC_SINDRAGOSA_MELEE_POSITION;
 
     const float deltaX = std::abs(targetPosition.GetPositionX() - bot->GetPositionX());
     const float deltaY = std::abs(targetPosition.GetPositionY() - bot->GetPositionY());
@@ -6251,7 +6249,7 @@ bool IccSindragosaFrostBeaconAction::HandleNonBeaconedPlayer(Unit const* boss)
     return false;
 }
 
-bool IccSindragosaFrostBeaconAction::MoveToPositionIfNeeded(const Position& position, float tolerance)
+bool IccSindragosaFrostBeaconAction::MoveToPositionIfNeeded(Position const& position, float tolerance)
 {
     const float distance = bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
     if (distance > tolerance)
@@ -6261,7 +6259,7 @@ bool IccSindragosaFrostBeaconAction::MoveToPositionIfNeeded(const Position& posi
     return distance <= tolerance;
 }
 
-bool IccSindragosaFrostBeaconAction::MoveToPosition(const Position& position)
+bool IccSindragosaFrostBeaconAction::MoveToPosition(Position const& position)
 {
     float posX = position.GetPositionX();
     float posY = position.GetPositionY();
@@ -6394,7 +6392,7 @@ bool IccSindragosaMysticBuffetAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    static const std::array<uint32, 4> tombEntries = {NPC_TOMB1, NPC_TOMB2, NPC_TOMB3, NPC_TOMB4};
+    static std::array<uint32, 4> const tombEntries = {NPC_TOMB1, NPC_TOMB2, NPC_TOMB3, NPC_TOMB4};
     const GuidVector tombGuids = AI_VALUE(GuidVector, "possible targets no los");
 
     Unit* nearestTomb = nullptr;
@@ -6518,7 +6516,7 @@ bool IccSindragosaFrostBombAction::Execute(Event /*event*/)
     }
 
     // Add any new GUIDs to our persistent list
-    for (const ObjectGuid& guid : currentGuids)
+    for (ObjectGuid const& guid : currentGuids)
     {
         if (std::find(allGroupGuids.begin(), allGroupGuids.end(), guid) == allGroupGuids.end())
         {
@@ -6536,7 +6534,7 @@ bool IccSindragosaFrostBombAction::Execute(Event /*event*/)
     // Assign group indices to GUIDs that don't have assignments yet
     for (size_t i = 0; i < allGroupGuids.size(); ++i)
     {
-        const ObjectGuid& guid = allGroupGuids[i];
+        ObjectGuid const& guid = allGroupGuids[i];
         if (persistentGroupAssignments.find(guid) == persistentGroupAssignments.end())
         {
             // Assign to group based on their position in the sorted list
@@ -8338,7 +8336,7 @@ bool IccLichKingAddsAction::HandleAssistTankAddManagement(Unit* boss, Difficulty
         Unit* closestAdd = nullptr;
         float closestDist = 999.0f;
 
-        for (const ObjectGuid& addGuid : addsNotTargetingUs)
+        for (ObjectGuid const& addGuid : addsNotTargetingUs)
         {
             Unit* add = botAI->GetUnit(addGuid);
             if (add && add->IsAlive())
@@ -8367,7 +8365,7 @@ bool IccLichKingAddsAction::HandleAssistTankAddManagement(Unit* boss, Difficulty
         if (targetToAttack)
         {
             // Generate threat on ALL adds not targeting us using ranged abilities
-            for (const ObjectGuid& addGuid : addsNotTargetingUs)
+            for (ObjectGuid const& addGuid : addsNotTargetingUs)
             {
                 Unit* add = botAI->GetUnit(addGuid);
                 if (add && add->IsAlive())
@@ -8449,7 +8447,7 @@ bool IccLichKingAddsAction::HandleAssistTankAddManagement(Unit* boss, Difficulty
             // Check if current target is still valid (alive and attacking us)
             if (currentTarget && currentTarget->IsAlive())
             {
-                for (const ObjectGuid& addGuid : addsTargetingUs)
+                for (ObjectGuid const& addGuid : addsTargetingUs)
                 {
                     if (addGuid == currentTarget->GetGUID())
                     {
@@ -8465,7 +8463,7 @@ bool IccLichKingAddsAction::HandleAssistTankAddManagement(Unit* boss, Difficulty
                 currentTarget = nullptr;
 
                 // Priority 1: Shambling Horror
-                for (const ObjectGuid& addGuid : addsTargetingUs)
+                for (ObjectGuid const& addGuid : addsTargetingUs)
                 {
                     Unit* add = botAI->GetUnit(addGuid);
                     if (add && add->IsAlive())
@@ -8482,7 +8480,7 @@ bool IccLichKingAddsAction::HandleAssistTankAddManagement(Unit* boss, Difficulty
                 // Priority 2: Any other add if no Shambling Horror
                 if (!currentTarget)
                 {
-                    for (const ObjectGuid& addGuid : addsTargetingUs)
+                    for (ObjectGuid const& addGuid : addsTargetingUs)
                     {
                         Unit* add = botAI->GetUnit(addGuid);
                         if (add && add->IsAlive())
@@ -8993,7 +8991,7 @@ void IccLichKingAddsAction::HandleValkyrMechanics(Difficulty diff)
     HandleValkyrAssignment(aliveGrabbingValkyrs);
 }
 
-void IccLichKingAddsAction::HandleValkyrMarking(const std::vector<Unit*>& grabbingValkyrs, Difficulty diff)
+void IccLichKingAddsAction::HandleValkyrMarking(std::vector<Unit*> const& grabbingValkyrs, Difficulty diff)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -9004,7 +9002,6 @@ void IccLichKingAddsAction::HandleValkyrMarking(const std::vector<Unit*>& grabbi
     std::sort(sortedValkyrs.begin(), sortedValkyrs.end(), [](Unit* a, Unit* b) { return a->GetGUID() < b->GetGUID(); });
 
     static constexpr uint8_t ICON_INDICES[] = {7, 6, 0};  // Skull, Cross, Star
-    static constexpr const char* ICON_NAMES[] = {"skull", "cross", "star"};
 
     // In heroic mode, clean up invalid markers for all possible icons
     if (diff && (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
@@ -9048,7 +9045,7 @@ void IccLichKingAddsAction::HandleValkyrMarking(const std::vector<Unit*>& grabbi
     }
 }
 
-void IccLichKingAddsAction::HandleValkyrAssignment(const std::vector<Unit*>& grabbingValkyrs)
+void IccLichKingAddsAction::HandleValkyrAssignment(std::vector<Unit*> const& grabbingValkyrs)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -9151,7 +9148,7 @@ std::vector<size_t> IccLichKingAddsAction::CalculateBalancedGroupSizes(size_t to
     return groupSizes;
 }
 
-size_t IccLichKingAddsAction::GetAssignedValkyrIndex(size_t assistIndex, const std::vector<size_t>& groupSizes)
+size_t IccLichKingAddsAction::GetAssignedValkyrIndex(size_t assistIndex, std::vector<size_t> const& groupSizes)
 {
     size_t currentIndex = 0;
 

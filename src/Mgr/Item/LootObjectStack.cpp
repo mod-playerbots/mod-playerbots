@@ -125,7 +125,7 @@ void LootObject::Refresh(Player* bot, ObjectGuid lootGUID)
             Loot loot;
             lootTemplate->Process(loot, LootTemplates_Gameobject, 1, bot);
 
-            for (const LootItem& item : loot.items)
+            for (LootItem const& item : loot.items)
             {
                 uint32 itemId = item.itemid;
                 if (!itemId)
@@ -147,7 +147,7 @@ void LootObject::Refresh(Player* bot, ObjectGuid lootGUID)
                     Loot refLoot;
                     refLootTemplate->Process(refLoot, LootTemplates_Reference, 1, bot);
 
-                    for (const LootItem& refItem : refLoot.items)
+                    for (LootItem const& refItem : refLoot.items)
                     {
                         uint32 refItemId = refItem.itemid;
                         if (!refItemId)

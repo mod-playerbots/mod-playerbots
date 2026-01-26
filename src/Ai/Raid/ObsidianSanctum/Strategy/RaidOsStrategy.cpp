@@ -26,7 +26,7 @@ void RaidOsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("exit twilight portal", ACTION_RAID + 1) }));
 }
 
-void RaidOsStrategy::InitMultipliers(std::vector<Multiplier*> &multipliers)
+void RaidOsStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new SartharionMultiplier(botAI));
 }

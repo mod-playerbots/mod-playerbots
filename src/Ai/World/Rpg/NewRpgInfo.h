@@ -106,7 +106,7 @@ struct NewRpgStatistic
     uint32 questAbandoned{0};
     uint32 questRewarded{0};
     uint32 questDropped{0};
-    NewRpgStatistic operator+(const NewRpgStatistic& other) const
+    NewRpgStatistic operator+(NewRpgStatistic const& other) const
     {
         NewRpgStatistic result;
         result.questAccepted = this->questAccepted + other.questAccepted;
@@ -116,7 +116,7 @@ struct NewRpgStatistic
         result.questDropped = this->questDropped + other.questDropped;
         return result;
     }
-    NewRpgStatistic& operator+=(const NewRpgStatistic& other)
+    NewRpgStatistic& operator+=(NewRpgStatistic const& other)
     {
         this->questAccepted += other.questAccepted;
         this->questCompleted += other.questCompleted;

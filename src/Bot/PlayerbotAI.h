@@ -371,7 +371,7 @@ public:
     {
     }
 
-    const std::string& GetCommand() { return command; }
+    std::string const& GetCommand() { return command; }
     Player* GetOwner() { return owner; }
     uint32& GetType() { return type; }
     time_t& GetTime() { return time; }
@@ -439,14 +439,14 @@ public:
     bool TellMasterNoFacing(std::string const text,
                             PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL);
     bool TellError(std::string const text, PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL);
-    bool SayToGuild(const std::string& msg);
-    bool SayToWorld(const std::string& msg);
-    bool SayToChannel(const std::string& msg, const ChatChannelId& chanId);
-    bool SayToParty(const std::string& msg);
-    bool SayToRaid(const std::string& msg);
-    bool Yell(const std::string& msg);
-    bool Say(const std::string& msg);
-    bool Whisper(const std::string& msg, const std::string& receiverName);
+    bool SayToGuild(std::string const& msg);
+    bool SayToWorld(std::string const& msg);
+    bool SayToChannel(std::string const& msg, ChatChannelId const& chanId);
+    bool SayToParty(std::string const& msg);
+    bool SayToRaid(std::string const& msg);
+    bool Yell(std::string const& msg);
+    bool Say(std::string const& msg);
+    bool Whisper(std::string const& msg, std::string const& receiverName);
 
     void SpellInterrupted(uint32 spellid);
     int32 CalculateGlobalCooldown(uint32 spellid);
@@ -547,7 +547,7 @@ public:
     bool IsSafe(WorldObject* obj);
     ChatChannelSource GetChatChannelSource(Player* bot, uint32 type, std::string channelName);
 
-    bool CheckLocationDistanceByLevel(Player* player, const WorldLocation &loc, bool fromStartUp = false);
+    bool CheckLocationDistanceByLevel(Player* player, WorldLocation const& loc, bool fromStartUp = false);
 
     bool HasCheat(BotCheatMask mask)
     {
@@ -604,7 +604,7 @@ private:
     void UpdateAIGroupMaster();
     Item* FindItemInInventory(std::function<bool(ItemTemplate const*)> checkItem) const;
     void HandleCommands();
-    void HandleCommand(uint32 type, const std::string& text, Player& fromPlayer, const uint32 lang = LANG_UNIVERSAL);
+    void HandleCommand(uint32 type, std::string const& text, Player& fromPlayer, const uint32 lang = LANG_UNIVERSAL);
     bool _isBotInitializing = false;
     inline bool IsValidUnit(Unit const* unit) const
     {

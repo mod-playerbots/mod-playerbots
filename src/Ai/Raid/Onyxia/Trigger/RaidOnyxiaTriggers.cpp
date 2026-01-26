@@ -7,6 +7,20 @@
 #include "Playerbots.h"
 #include "NearestNpcsValue.h"
 
+// Onyxia Deep Breath spell IDs
+enum OnyxiaDeepBreathSpells
+{
+    SPELL_DEEP_BREATH_N_TO_S  = 17086,  // North to South
+    SPELL_DEEP_BREATH_S_TO_N  = 18351,  // South to North
+    SPELL_DEEP_BREATH_E_TO_W  = 18576,  // East to West
+    SPELL_DEEP_BREATH_W_TO_E  = 18609,  // West to East
+    SPELL_DEEP_BREATH_SE_TO_NW = 18564, // Southeast to Northwest
+    SPELL_DEEP_BREATH_NW_TO_SE = 18584, // Northwest to Southeast
+    SPELL_DEEP_BREATH_SW_TO_NE = 18596, // Southwest to Northeast
+    SPELL_DEEP_BREATH_NE_TO_SW = 18617, // Northeast to Southwest
+    SPELL_ONYXIA_FIREBALL     = 18392   // Onyxia Fireball
+};
+
 OnyxiaDeepBreathTrigger::OnyxiaDeepBreathTrigger(PlayerbotAI* botAI) : Trigger(botAI, "ony deep breath warning") {}
 
 bool OnyxiaDeepBreathTrigger::IsActive()
@@ -23,14 +37,14 @@ bool OnyxiaDeepBreathTrigger::IsActive()
 
     uint32 spellId = currentSpell->m_spellInfo->Id;
 
-    if (spellId == 17086 ||  // North to South
-        spellId == 18351 ||  // South to North
-        spellId == 18576 ||  // East to West
-        spellId == 18609 ||  // West to East
-        spellId == 18564 ||  // Southeast to Northwest
-        spellId == 18584 ||  // Northwest to Southeast
-        spellId == 18596 ||  // Southwest to Northeast
-        spellId == 18617     // Northeast to Southwest
+    if (spellId == SPELL_DEEP_BREATH_N_TO_S ||
+        spellId == SPELL_DEEP_BREATH_S_TO_N ||
+        spellId == SPELL_DEEP_BREATH_E_TO_W ||
+        spellId == SPELL_DEEP_BREATH_W_TO_E ||
+        spellId == SPELL_DEEP_BREATH_SE_TO_NW ||
+        spellId == SPELL_DEEP_BREATH_NW_TO_SE ||
+        spellId == SPELL_DEEP_BREATH_SW_TO_NE ||
+        spellId == SPELL_DEEP_BREATH_NE_TO_SW
     )
     {
         return true;
@@ -66,7 +80,7 @@ bool RaidOnyxiaFireballSplashTrigger::IsActive()
 
     // Check if Onyxia is casting Fireball
     Spell* currentSpell = boss->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (!currentSpell || currentSpell->m_spellInfo->Id != 18392)  // 18392 is the classic Fireball ID
+    if (!currentSpell || currentSpell->m_spellInfo->Id != SPELL_ONYXIA_FIREBALL)
         return false;
 
     GuidVector nearbyUnits = AI_VALUE(GuidVector, "nearest friendly players");

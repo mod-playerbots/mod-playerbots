@@ -1,7 +1,7 @@
 #include "VioletHoldStrategy.h"
 #include "VioletHoldMultipliers.h"
 
-void WotlkDungeonVHStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
+void WotlkDungeonVHStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // Erekem
     // This boss has many purgable buffs, purging/dispels could be merged into generic strats though
@@ -32,7 +32,7 @@ void WotlkDungeonVHStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
         { NextAction("rear flank", ACTION_MOVE + 5) }));
 }
 
-void WotlkDungeonVHStrategy::InitMultipliers(std::vector<Multiplier*> &multipliers)
+void WotlkDungeonVHStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new ErekemMultiplier(botAI));
     multipliers.push_back(new IchoronMultiplier(botAI));

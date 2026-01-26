@@ -1,7 +1,7 @@
 #include "UtgardePinnacleStrategy.h"
 #include "UtgardePinnacleMultipliers.h"
 
-void WotlkDungeonUPStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
+void WotlkDungeonUPStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // Svala Sorrowgrave
 
@@ -20,7 +20,7 @@ void WotlkDungeonUPStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
         { NextAction("stop attack", ACTION_RAID + 5) }));
 }
 
-void WotlkDungeonUPStrategy::InitMultipliers(std::vector<Multiplier*> &multipliers)
+void WotlkDungeonUPStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new SkadiMultiplier(botAI));
     multipliers.push_back(new YmironMultiplier(botAI));

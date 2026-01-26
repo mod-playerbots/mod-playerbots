@@ -1,7 +1,7 @@
 #include "DrakTharonKeepStrategy.h"
 #include "DrakTharonKeepMultipliers.h"
 
-void WotlkDungeonDTKStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
+void WotlkDungeonDTKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // Trollgore
     triggers.push_back(new TriggerNode("corpse explode",
@@ -33,7 +33,7 @@ void WotlkDungeonDTKStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
         { NextAction("slaying strike", ACTION_NORMAL + 2) }));
 }
 
-void WotlkDungeonDTKStrategy::InitMultipliers(std::vector<Multiplier*> &multipliers)
+void WotlkDungeonDTKStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new NovosMultiplier(botAI));
     multipliers.push_back(new TharonjaMultiplier(botAI));

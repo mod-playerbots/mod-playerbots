@@ -14,7 +14,7 @@
 std::unordered_map<ObjectGuid, time_t> RazorscaleBossHelper::_harpoonCooldowns;
 // Prevent role assignment spam
 std::unordered_map<ObjectGuid, std::time_t> RazorscaleBossHelper::_lastRoleSwapTime;
-const std::time_t RazorscaleBossHelper::_roleSwapCooldown;
+std::time_t const RazorscaleBossHelper::_roleSwapCooldown;
 
 bool RazorscaleBossHelper::UpdateBossAI()
 {
@@ -105,9 +105,9 @@ GameObject* RazorscaleBossHelper::FindNearestHarpoon(float x, float y, float z) 
     return nearestHarpoon;
 }
 
-const std::vector<RazorscaleBossHelper::HarpoonData>& RazorscaleBossHelper::GetHarpoonData()
+std::vector<RazorscaleBossHelper::HarpoonData> const& RazorscaleBossHelper::GetHarpoonData()
 {
-    static const std::vector<HarpoonData> harpoonData =
+    static std::vector<HarpoonData> const harpoonData =
     {
         { GO_RAZORSCALE_HARPOON_1, SPELL_CHAIN_1 },
         { GO_RAZORSCALE_HARPOON_2, SPELL_CHAIN_2 },
@@ -213,8 +213,8 @@ void RazorscaleBossHelper::AssignRolesBasedOnHealth()
     group->SetGroupMemberFlag(newMainTank->GetGUID(), true, MEMBER_FLAG_MAINTANK);
 
     // Yell a message regardless of whether the new main tank is a bot or a real player
-    const std::string playerName = newMainTank->GetName();
-    const std::string text = playerName + " set as main tank!";
+    std::string const playerName = newMainTank->GetName();
+    std::string const text = playerName + " set as main tank!";
     bot->Yell(text, LANG_UNIVERSAL);
 
     ObjectGuid botGuid = bot->GetGUID();

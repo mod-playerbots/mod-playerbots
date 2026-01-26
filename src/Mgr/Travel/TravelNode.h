@@ -467,7 +467,7 @@ public:
     TravelNodeStub(TravelNode* dataNode1) { dataNode = dataNode1; }
 
     TravelNode* dataNode;
-    float m_f = 0.0f, m_g = 0.0f, m_h = 0.0f;
+    float f = 0.0f, g = 0.0f, h = 0.0f;  // A* algorithm cost variables
     bool open = false, close = false;
     TravelNodeStub* parent = nullptr;
     uint32 currentGold = 0;

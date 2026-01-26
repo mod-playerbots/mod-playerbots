@@ -23,7 +23,7 @@ bool HighKingMaulgarMainTankAttackMaulgarAction::Execute(Event /*event*/)
 
     if (maulgar->GetVictim() == bot)
     {
-        const Location& tankPosition = GruulsLairLocations::MaulgarTankPosition;
+        Location const& tankPosition = GruulsLairLocations::MaulgarTankPosition;
         const float maxDistance = 3.0f;
 
         float distanceToTankPosition = bot->GetExactDist2d(tankPosition.x, tankPosition.y);
@@ -66,7 +66,7 @@ bool HighKingMaulgarFirstAssistTankAttackOlmAction::Execute(Event /*event*/)
 
     if (olm->GetVictim() == bot)
     {
-        const Location& tankPosition = GruulsLairLocations::OlmTankPosition;
+        Location const& tankPosition = GruulsLairLocations::OlmTankPosition;
         const float maxDistance = 3.0f;
         const float olmTankLeeway = 30.0f;
 
@@ -106,7 +106,7 @@ bool HighKingMaulgarSecondAssistTankAttackBlindeyeAction::Execute(Event /*event*
 
     if (blindeye->GetVictim() == bot)
     {
-        const Location& tankPosition = GruulsLairLocations::BlindeyeTankPosition;
+        Location const& tankPosition = GruulsLairLocations::BlindeyeTankPosition;
         const float maxDistance = 3.0f;
 
         float distanceToTankPosition = bot->GetExactDist2d(tankPosition.x, tankPosition.y);
@@ -158,7 +158,7 @@ bool HighKingMaulgarMageTankAttackKroshAction::Execute(Event /*event*/)
 
     if (krosh->GetVictim() == bot)
     {
-        const Location& tankPosition = GruulsLairLocations::KroshTankPosition;
+        Location const& tankPosition = GruulsLairLocations::KroshTankPosition;
         float distanceToKrosh = krosh->GetExactDist2d(tankPosition.x, tankPosition.y);
         const float minDistance = 16.0f;
         const float maxDistance = 29.0f;
@@ -340,7 +340,7 @@ bool HighKingMaulgarAssignDPSPriorityAction::Execute(Event /*event*/)
 // Avoid Whirlwind and Blast Wave and generally try to stay near the center of the room
 bool HighKingMaulgarHealerFindSafePositionAction::Execute(Event /*event*/)
 {
-    const Location& fightCenter = GruulsLairLocations::MaulgarRoomCenter;
+    Location const& fightCenter = GruulsLairLocations::MaulgarRoomCenter;
     const float maxDistanceFromFight = 50.0f;
     float distToFight = bot->GetExactDist2d(fightCenter.x, fightCenter.y);
 
@@ -411,7 +411,7 @@ bool HighKingMaulgarBanishFelstalkerAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
-    const GuidVector& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
+    GuidVector const& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
     std::vector<Unit*> felStalkers;
     for (auto const& npc : npcs)
     {
@@ -539,7 +539,7 @@ bool GruulTheDragonkillerMainTankPositionBossAction::Execute(Event /*event*/)
 
     if (gruul->GetVictim() == bot)
     {
-        const Location& tankPosition = GruulsLairLocations::GruulTankPosition;
+        Location const& tankPosition = GruulsLairLocations::GruulTankPosition;
         const float maxDistance = 3.0f;
 
         float dX = tankPosition.x - bot->GetPositionX();
@@ -586,7 +586,7 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event /*event*/)
         hasReachedInitialPosition.clear();
     }
 
-    const Location& tankPosition = GruulsLairLocations::GruulTankPosition;
+    Location const& tankPosition = GruulsLairLocations::GruulTankPosition;
     const float centerX = tankPosition.x;
     const float centerY = tankPosition.y;
     float centerZ = bot->GetPositionZ();

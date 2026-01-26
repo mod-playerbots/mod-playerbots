@@ -24,12 +24,12 @@ bool ImbueWithPoisonAction::Execute(Event /*event*/)
     if (bot->getStandState() != UNIT_STAND_STATE_STAND)
         bot->SetStandState(UNIT_STAND_STATE_STAND);
 
-    static const std::vector<uint32_t> prioritizedInstantPoisons = {
+    static std::vector<uint32_t> const prioritizedInstantPoisons = {
         INSTANT_POISON_IX, INSTANT_POISON_VIII, INSTANT_POISON_VII, INSTANT_POISON_VI, INSTANT_POISON_V, INSTANT_POISON_IV,
         INSTANT_POISON_III, INSTANT_POISON_II, INSTANT_POISON
     };
 
-    static const std::vector<uint32_t> prioritizedDeadlyPoisons = {
+    static std::vector<uint32_t> const prioritizedDeadlyPoisons = {
         DEADLY_POISON_IX, DEADLY_POISON_VIII, DEADLY_POISON_VII, DEADLY_POISON_VI, DEADLY_POISON_V, DEADLY_POISON_IV,
         DEADLY_POISON_III, DEADLY_POISON_II, DEADLY_POISON
     };

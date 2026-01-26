@@ -363,7 +363,7 @@ bool UseTrinketAction::UseTrinket(Item* item)
             bool applyAura = false;
             for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
             {
-                const SpellEffectInfo& effectInfo = spellInfo->Effects[i];
+                SpellEffectInfo const& effectInfo = spellInfo->Effects[i];
                 if (effectInfo.Effect == SPELL_EFFECT_APPLY_AURA)
                 {
                     applyAura = true;

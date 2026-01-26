@@ -8,7 +8,7 @@
 #include "Playerbots.h"
 #include "WorldSessionMgr.h"
 
-void PlayerbotTextMgr::replaceAll(std::string& str, const std::string& from, const std::string& to)
+void PlayerbotTextMgr::replaceAll(std::string& str, std::string const& from, std::string const& to)
 {
     if (from.empty())
         return;

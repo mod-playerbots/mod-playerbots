@@ -110,7 +110,7 @@ public:
 
     Action* getAction() { return action; }
     void setAction(Action* action) { this->action = action; }
-    const std::string getName() { return name; }
+    std::string const getName() { return name; }
 
     std::vector<NextAction> getContinuers()
     {
@@ -126,7 +126,7 @@ public:
     }
 
 private:
-    const std::string name;
+    std::string const name;
     Action* action;
     std::vector<NextAction> continuers;
     std::vector<NextAction> alternatives;

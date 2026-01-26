@@ -10,7 +10,7 @@
 #include "BossAuraActions.h"
 #include "BossAuraTriggers.h"
 
-const std::string ADD_STRATEGY_CHAR = "+";
+std::string const ADD_STRATEGY_CHAR = "+";
 
 bool BossFireResistanceAction::isUseful()
 {

@@ -2084,7 +2084,7 @@ bool BGTactics::selectObjective(bool reset)
                 else
                 {
                     // Fallback: move to boss wait position
-                    const Position& waitPos = (team == TEAM_HORDE) ? AV_BOSS_WAIT_H : AV_BOSS_WAIT_A;
+                    Position const& waitPos = (team == TEAM_HORDE) ? AV_BOSS_WAIT_H : AV_BOSS_WAIT_A;
 
                     float rx, ry, rz;
                     bot->GetRandomPoint(waitPos, 5.0f, rx, ry, rz);
@@ -2126,7 +2126,7 @@ bool BGTactics::selectObjective(bool reset)
                 float rx, ry, rz;
                 if (linkedNodeId && AVNodeMovementTargets.count(*linkedNodeId))
                 {
-                    const AVNodePositionData& data = AVNodeMovementTargets[*linkedNodeId];
+                    AVNodePositionData const& data = AVNodeMovementTargets[*linkedNodeId];
                     bot->GetRandomPoint(data.pos, frand(-data.maxRadius, data.maxRadius), rx, ry, rz);
                 }
                 else
@@ -2553,7 +2553,7 @@ bool BGTactics::selectObjective(bool reset)
 
                 if (bestNodeId != 0 && EY_NodePositions.contains(bestNodeId))
                 {
-                    const Position& targetPos = EY_NodePositions[bestNodeId];
+                    Position const& targetPos = EY_NodePositions[bestNodeId];
                     float rx, ry, rz;
                     bot->GetRandomPoint(targetPos, 5.0f, rx, ry, rz);
 
@@ -2579,7 +2579,7 @@ bool BGTactics::selectObjective(bool reset)
                 }
                 else
                 {
-                    const Position& fallback = (team == TEAM_ALLIANCE) ? EY_FLAG_RETURN_POS_RETREAT_ALLIANCE
+                    Position const& fallback = (team == TEAM_ALLIANCE) ? EY_FLAG_RETURN_POS_RETREAT_ALLIANCE
                                                                        : EY_FLAG_RETURN_POS_RETREAT_HORDE;
 
                     float rx, ry, rz;
@@ -2609,7 +2609,7 @@ bool BGTactics::selectObjective(bool reset)
                     if (it == EY_NodePositions.end())
                         continue;
 
-                    const Position& p = it->second;
+                    Position const& p = it->second;
                     if (bot->IsWithinDist2d(p.GetPositionX(), p.GetPositionY(), 125.0f))
                     {
                         float rx, ry, rz;
@@ -2686,7 +2686,7 @@ bool BGTactics::selectObjective(bool reset)
                         uint32 chosenId = owned[urand(0, owned.size() - 1)];
                         if (EY_NodePositions.contains(chosenId))
                         {
-                            const Position& p = EY_NodePositions[chosenId];
+                            Position const& p = EY_NodePositions[chosenId];
                             float rx, ry, rz;
                             bot->GetRandomPoint(p, 5.0f, rx, ry, rz);
                             rz = bot->GetMap()->GetHeight(rx, ry, rz);
@@ -2748,7 +2748,7 @@ bool BGTactics::selectObjective(bool reset)
 
                     if (bestNode && EY_NodePositions.contains(*bestNode))
                     {
-                        const Position& p = EY_NodePositions[*bestNode];
+                        Position const& p = EY_NodePositions[*bestNode];
                         float rx, ry, rz;
                         bot->GetRandomPoint(p, 5.0f, rx, ry, rz);
                         rz = bot->GetMap()->GetHeight(rx, ry, rz);
@@ -2803,7 +2803,7 @@ bool BGTactics::selectObjective(bool reset)
                     uint32 chosen = candidates[urand(0, candidates.size() - 1)];
                     if (EY_NodePositions.contains(chosen))
                     {
-                        const Position& p = EY_NodePositions[chosen];
+                        Position const& p = EY_NodePositions[chosen];
                         pos.Set(p.GetPositionX(), p.GetPositionY(), p.GetPositionZ(), bot->GetMapId());
                         foundObjective = true;
                     }

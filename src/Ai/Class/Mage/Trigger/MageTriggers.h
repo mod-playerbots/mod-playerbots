@@ -282,7 +282,7 @@ public:
 
 protected:
     float radius;
-    static const std::set<uint32> FLAMESTRIKE_SPELL_IDS;
+    static std::set<uint32> const FLAMESTRIKE_SPELL_IDS;
 };
 
 class FlamestrikeBlizzardTrigger : public TwoTriggers
@@ -301,7 +301,7 @@ public:
 
 protected:
     uint32 minEnemies;
-    static const std::set<uint32> BLIZZARD_SPELL_IDS;
+    static std::set<uint32> const BLIZZARD_SPELL_IDS;
 };
 
 class BlastWaveOffCdTrigger : public SpellNoCooldownTrigger

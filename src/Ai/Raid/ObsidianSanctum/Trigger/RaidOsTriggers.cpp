@@ -6,17 +6,20 @@
 bool SartharionTankTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "sartharion");
-    if (!boss) { return false; }
+    if (!boss)
+        return false;
 
     return BotRoleService::IsTankStatic(bot);
 }
 
 bool FlameTsunamiTrigger::IsActive()
 {
-    if (BotRoleService::IsTankStatic(bot)) { return false; }
+    if (BotRoleService::IsTankStatic(bot))
+        return false;
 
     Unit* boss = AI_VALUE2(Unit*, "find target", "sartharion");
-    if (!boss) { return false; }
+    if (!boss)
+        return false;
 
     GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
     for (auto& npc : npcs)
@@ -37,7 +40,8 @@ bool FlameTsunamiTrigger::IsActive()
 bool TwilightFissureTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "sartharion");
-    if (!boss) { return false; }
+    if (!boss)
+        return false;
 
     GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
     for (auto& npc : npcs)
@@ -58,17 +62,20 @@ bool TwilightFissureTrigger::IsActive()
 bool SartharionDpsTrigger::IsActive()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "sartharion");
-    if (!boss) { return false; }
+    if (!boss)
+        return false;
 
     return BotRoleService::IsDpsStatic(bot);
 }
 
 bool SartharionMeleePositioningTrigger::IsActive()
 {
-    if (!BotRoleService::IsMeleeStatic(bot) || !BotRoleService::IsDpsStatic(bot)) { return false; }
+    if (!BotRoleService::IsMeleeStatic(bot) || !BotRoleService::IsDpsStatic(bot))
+        return false;
 
     Unit* boss = AI_VALUE2(Unit*, "find target", "sartharion");
-    if (!boss) { return false; }
+    if (!boss)
+        return false;
 
     Unit* shadron = AI_VALUE2(Unit*, "find target", "shadron");
     Unit* tenebron = AI_VALUE2(Unit*, "find target", "tenebron");
@@ -79,7 +86,8 @@ bool SartharionMeleePositioningTrigger::IsActive()
 
 bool TwilightPortalEnterTrigger::IsActive()
 {
-    if (BotRoleService::IsMainTankStatic(bot) || BotRoleService::IsAssistHealOfIndexStatic(bot, 0)) { return false; }
+    if (BotRoleService::IsMainTankStatic(bot) || BotRoleService::IsAssistHealOfIndexStatic(bot, 0))
+        return false;
 
     // In 25-man, take two healers in. Otherwise just take one
     // if (bot->GetRaidDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
@@ -106,7 +114,8 @@ bool TwilightPortalEnterTrigger::IsActive()
     }
 
     Unit* boss = AI_VALUE2(Unit*, "find target", "sartharion");
-    if (!boss) { return false; }
+    if (!boss)
+        return false;
 
     // GuidVector objects = AI_VALUE(GuidVector, "nearest game objects no los");
     // for (auto& object : objects)

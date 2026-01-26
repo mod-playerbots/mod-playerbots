@@ -44,7 +44,7 @@ namespace MagtheridonHelpers
             group->SetTargetIcon(iconId, bot->GetGUID(), target->GetGUID());
     }
 
-    void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
+    void SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName, Unit* target)
     {
         if (!target)
             return;
@@ -89,10 +89,10 @@ namespace MagtheridonHelpers
         MarkTargetWithIcon(bot, target, RtiTargetValue::crossIndex);
     }
 
-    const std::vector<uint32> MANTICRON_CUBE_DB_GUIDS = { 43157, 43158, 43159, 43160, 43161 };
+    std::vector<uint32> const MANTICRON_CUBE_DB_GUIDS = { 43157, 43158, 43159, 43160, 43161 };
 
     // Get the positions of all Manticron Cubes by their database GUIDs
-    std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, const std::vector<uint32>& cubeDbGuids)
+    std::vector<CubeInfo> GetAllCubeInfosByDbGuids(Map* map, std::vector<uint32> const& cubeDbGuids)
     {
         std::vector<CubeInfo> cubes;
         if (!map)
@@ -121,7 +121,7 @@ namespace MagtheridonHelpers
 
     std::unordered_map<ObjectGuid, CubeInfo> botToCubeAssignment;
 
-    void AssignBotsToCubesByGuidAndCoords(Group* group, const std::vector<CubeInfo>& cubes, PlayerbotAI* /*botAI*/)
+    void AssignBotsToCubesByGuidAndCoords(Group* group, std::vector<CubeInfo> const& cubes, PlayerbotAI* /*botAI*/)
     {
         botToCubeAssignment.clear();
         if (!group)

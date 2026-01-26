@@ -202,16 +202,16 @@ const uint32 DEFILE_NPC_ID = 38757;
 const size_t DEFILE_AURA_COUNT = 4;
 
 // All fanatics and adherents entry ids Lady Deathwhisper
-static const std::array<uint32, 23> addEntriesLady    = {
+static std::array<uint32, 23> const addEntriesLady    = {
                                                         37949, 38394, 38625, 38626, 38010, 38397, 39000, 39001,
                                                         38136, 38396, 38632, 38633, 37890, 38393, 38628, 38629,
                                                         38135, 38395, 38634, 38009, 38398, 38630, 38631};
 
-const std::vector<uint32> spellEntriesFlood           = {
+std::vector<uint32> const spellEntriesFlood           = {
                                                         69782, 69783, 69796, 69797, 69798,
                                                         69799, 69801, 69802, 69795};
 
-const std::vector<uint32> availableTargetsGS          = {
+std::vector<uint32> const availableTargetsGS          = {
     NPC_KOR_KRON_AXETHROWER, NPC_KOR_KRON_ROCKETEER,        NPC_KOR_KRON_BATTLE_MAGE, NPC_IGB_HIGH_OVERLORD_SAURFANG,
     NPC_SKYBREAKER_RIFLEMAN, NPC_SKYBREAKER_MORTAR_SOLDIER, NPC_SKYBREAKER_SORCERER,  NPC_IGB_MURADIN_BRONZEBEARD};
 
