@@ -67,7 +67,7 @@ void ChatHelper::InitStaticMaps()
         itemQualities["violet"] = ITEM_QUALITY_EPIC;
         itemQualities["legendary"] = ITEM_QUALITY_LEGENDARY;
         itemQualities["yellow"] = ITEM_QUALITY_LEGENDARY;
-	    
+
         consumableSubClasses["potion"] = ITEM_SUBCLASS_POTION;
         consumableSubClasses["elixir"] = ITEM_SUBCLASS_ELIXIR;
         consumableSubClasses["flask"] = ITEM_SUBCLASS_FLASK;
@@ -75,10 +75,10 @@ void ChatHelper::InitStaticMaps()
         consumableSubClasses["food"] = ITEM_SUBCLASS_FOOD;
         consumableSubClasses["bandage"] = ITEM_SUBCLASS_BANDAGE;
         consumableSubClasses["enchant"] = ITEM_SUBCLASS_CONSUMABLE_OTHER;
-	    
+
         projectileSubClasses["arrows"] = ITEM_SUBCLASS_ARROW;
         projectileSubClasses["bullets"] = ITEM_SUBCLASS_BULLET;
-	    
+
         // tradeSubClasses["cloth"] = ITEM_SUBCLASS_CLOTH;
         // tradeSubClasses["leather"] = ITEM_SUBCLASS_LEATHER;
         // tradeSubClasses["metal"] = ITEM_SUBCLASS_METAL_STONE;
@@ -92,7 +92,7 @@ void ChatHelper::InitStaticMaps()
         // tradeSubClasses["gems"] = ITEM_SUBCLASS_JEWELCRAFTING;
         // tradeSubClasses["jewels"] = ITEM_SUBCLASS_JEWELCRAFTING;
         // tradeSubClasses["jewelcrafting"] = ITEM_SUBCLASS_JEWELCRAFTING;
-	    
+
         slots["head"] = EQUIPMENT_SLOT_HEAD;
         slots["neck"] = EQUIPMENT_SLOT_NECK;
         slots["shoulder"] = EQUIPMENT_SLOT_SHOULDERS;
@@ -112,7 +112,7 @@ void ChatHelper::InitStaticMaps()
         slots["off hand"] = EQUIPMENT_SLOT_OFFHAND;
         slots["ranged"] = EQUIPMENT_SLOT_RANGED;
         slots["tabard"] = EQUIPMENT_SLOT_TABARD;
-	    
+
         skills["first aid"] = SKILL_FIRST_AID;
         skills["fishing"] = SKILL_FISHING;
         skills["cooking"] = SKILL_COOKING;
@@ -126,7 +126,7 @@ void ChatHelper::InitStaticMaps()
         skills["mining"] = SKILL_MINING;
         skills["skinning"] = SKILL_SKINNING;
         skills["jewelcrafting"] = SKILL_JEWELCRAFTING;
-	    
+
         chats["party"] = CHAT_MSG_PARTY;
         chats["p"] = CHAT_MSG_PARTY;
         chats["guild"] = CHAT_MSG_GUILD;
@@ -135,57 +135,57 @@ void ChatHelper::InitStaticMaps()
         chats["r"] = CHAT_MSG_RAID;
         chats["whisper"] = CHAT_MSG_WHISPER;
         chats["w"] = CHAT_MSG_WHISPER;
-	    
+
         classes[CLASS_DRUID] = "druid";
         specs[CLASS_DRUID][0] = "balance";
         specs[CLASS_DRUID][1] = "feral combat";
         specs[CLASS_DRUID][2] = "restoration";
-	    
+
         classes[CLASS_HUNTER] = "hunter";
         specs[CLASS_HUNTER][0] = "beast mastery";
         specs[CLASS_HUNTER][1] = "marksmanship";
         specs[CLASS_HUNTER][2] = "survival";
-	    
+
         classes[CLASS_MAGE] = "mage";
         specs[CLASS_MAGE][0] = "arcane";
         specs[CLASS_MAGE][1] = "fire";
         specs[CLASS_MAGE][2] = "frost";
-	    
+
         classes[CLASS_PALADIN] = "paladin";
         specs[CLASS_PALADIN][0] = "holy";
         specs[CLASS_PALADIN][1] = "protection";
         specs[CLASS_PALADIN][2] = "retribution";
-	    
+
         classes[CLASS_PRIEST] = "priest";
         specs[CLASS_PRIEST][0] = "discipline";
         specs[CLASS_PRIEST][1] = "holy";
         specs[CLASS_PRIEST][2] = "shadow";
-	    
+
         classes[CLASS_ROGUE] = "rogue";
         specs[CLASS_ROGUE][0] = "assasination";
         specs[CLASS_ROGUE][1] = "combat";
         specs[CLASS_ROGUE][2] = "subtlety";
-	    
+
         classes[CLASS_SHAMAN] = "shaman";
         specs[CLASS_SHAMAN][0] = "elemental";
         specs[CLASS_SHAMAN][1] = "enhancement";
         specs[CLASS_SHAMAN][2] = "restoration";
-	    
+
         classes[CLASS_WARLOCK] = "warlock";
         specs[CLASS_WARLOCK][0] = "affliction";
         specs[CLASS_WARLOCK][1] = "demonology";
         specs[CLASS_WARLOCK][2] = "destruction";
-	    
+
         classes[CLASS_WARRIOR] = "warrior";
         specs[CLASS_WARRIOR][0] = "arms";
         specs[CLASS_WARRIOR][1] = "fury";
         specs[CLASS_WARRIOR][2] = "protection";
-	    
+
         classes[CLASS_DEATH_KNIGHT] = "dk";
         specs[CLASS_DEATH_KNIGHT][0] = "blood";
         specs[CLASS_DEATH_KNIGHT][1] = "frost";
         specs[CLASS_DEATH_KNIGHT][2] = "unholy";
-	    
+
         races[RACE_DWARF] = "Dwarf";
         races[RACE_GNOME] = "Gnome";
         races[RACE_HUMAN] = "Human";
@@ -196,7 +196,7 @@ void ChatHelper::InitStaticMaps()
         races[RACE_UNDEAD_PLAYER] = "Undead";
         races[RACE_BLOODELF] = "Blood Elf";
         races[RACE_DRAENEI] = "Draenei";
-	    
+
         ValidateStaticMaps();
     });
 }
