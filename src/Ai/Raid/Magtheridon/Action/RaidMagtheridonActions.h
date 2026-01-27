@@ -6,8 +6,6 @@
 #include "AttackAction.h"
 #include "MovementActions.h"
 
-using namespace MagtheridonHelpers;
-
 class MagtheridonMainTankAttackFirstThreeChannelersAction : public AttackAction
 {
 public:
@@ -85,8 +83,8 @@ public:
 private:
     bool HandleCubeRelease(Unit* magtheridon, GameObject* cube);
     bool ShouldActivateCubeLogic(Unit* magtheridon);
-    bool HandleWaitingPhase(const CubeInfo& cubeInfo);
-    bool HandleCubeInteraction(const CubeInfo& cubeInfo, GameObject* cube);
+    bool HandleWaitingPhase(const MagtheridonHelpers::CubeInfo& cubeInfo);
+    bool HandleCubeInteraction(const MagtheridonHelpers::CubeInfo& cubeInfo, GameObject* cube);
 };
 
 class MagtheridonManageTimersAndAssignmentsAction : public Action
