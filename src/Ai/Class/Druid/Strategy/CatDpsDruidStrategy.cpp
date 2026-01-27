@@ -6,6 +6,13 @@
 #include "CatDpsDruidStrategy.h"
 
 #include "AiObjectContext.h"
+#include "ActionNode.h"
+#include "CreateNextAction.h"
+#include "DruidActions.h"
+#include "DruidShapeshiftActions.h"
+#include "DruidCatActions.h"
+#include "GenericActions.h"
+#include "MovementActions.h"
 
 class CatDpsDruidStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -29,7 +36,6 @@ private:
     static ActionNode* faerie_fire_feral([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "faerie fire (feral)",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -39,8 +45,7 @@ private:
     static ActionNode* melee([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "melee",
-            /*P*/ { NextAction("feral charge - cat") },
+            /*P*/ { CreateNextAction<CastFeralChargeCatAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -49,9 +54,8 @@ private:
     static ActionNode* feral_charge_cat([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "feral charge - cat",
             /*P*/ {},
-            /*A*/ { NextAction("reach melee") },
+            /*A*/ { CreateNextAction<ReachMeleeAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -59,8 +63,7 @@ private:
     static ActionNode* cat_form([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "cat form",
-            /*P*/ { NextAction("caster form") },
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
             /*A*/ { NextAction("bear form") },
             /*C*/ {}
         );
@@ -69,9 +72,8 @@ private:
     static ActionNode* claw([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "claw",
             /*P*/ {},
-            /*A*/ { NextAction("melee") },
+            /*A*/ { CreateNextAction<MeleeAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -79,7 +81,6 @@ private:
     static ActionNode* mangle_cat([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "mangle (cat)",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -89,7 +90,6 @@ private:
     static ActionNode* rake([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "rake",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -99,9 +99,8 @@ private:
     static ActionNode* ferocious_bite([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "ferocious bite",
             /*P*/ {},
-            /*A*/ { NextAction("rip") },
+            /*A*/ { CreateNextAction<CastRipAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -109,7 +108,6 @@ private:
     static ActionNode* rip([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "rip",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -119,9 +117,8 @@ private:
     static ActionNode* pounce([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "pounce",
             /*P*/ {},
-            /*A*/ { NextAction("ravage") },
+            /*A*/ { CreateNextAction<CastRavageAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -129,9 +126,8 @@ private:
     static ActionNode* ravage([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "ravage",
             /*P*/ {},
-            /*A*/ { NextAction("shred") },
+            /*A*/ { CreateNextAction<CastShredAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -145,7 +141,7 @@ CatDpsDruidStrategy::CatDpsDruidStrategy(PlayerbotAI* botAI) : FeralDruidStrateg
 std::vector<NextAction> CatDpsDruidStrategy::getDefaultActions()
 {
     return {
-        NextAction("tiger's fury", ACTION_DEFAULT + 0.1f)
+        CreateNextAction<CastTigersFuryAction>(ACTION_DEFAULT + 0.1f)
     };
 }
 
@@ -158,7 +154,7 @@ void CatDpsDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "almost full energy available",
             {
-                NextAction("shred", ACTION_DEFAULT + 0.4f)
+                CreateNextAction<CastShredAction>(ACTION_DEFAULT + 0.4f)
             }
         )
     );
@@ -166,7 +162,7 @@ void CatDpsDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "combo points not full",
             {
-                NextAction("shred", ACTION_DEFAULT + 0.4f)
+                CreateNextAction<CastShredAction>(ACTION_DEFAULT + 0.4f)
             }
         )
     );
@@ -174,7 +170,7 @@ void CatDpsDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "almost full energy available",
             {
-                NextAction("mangle (cat)", ACTION_DEFAULT + 0.3f)
+                CreateNextAction<CastMangleCatAction>(ACTION_DEFAULT + 0.3f)
             }
         )
     );
@@ -182,7 +178,7 @@ void CatDpsDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "combo points not full and high energy",
             {
-                NextAction("mangle (cat)", ACTION_DEFAULT + 0.3f)
+                CreateNextAction<CastMangleCatAction>(ACTION_DEFAULT + 0.3f)
             }
         )
     );
@@ -190,7 +186,7 @@ void CatDpsDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "almost full energy available",
             {
-                NextAction("claw", ACTION_DEFAULT + 0.2f)
+                CreateNextAction<CastClawAction>(ACTION_DEFAULT + 0.2f)
             }
         )
     );
@@ -198,7 +194,7 @@ void CatDpsDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "combo points not full and high energy",
             {
-                NextAction("claw", ACTION_DEFAULT + 0.2f)
+                CreateNextAction<CastClawAction>(ACTION_DEFAULT + 0.2f)
             }
         )
     );
@@ -206,7 +202,7 @@ void CatDpsDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "faerie fire (feral)",
             {
-                NextAction("faerie fire (feral)", ACTION_DEFAULT + 0.0f)
+                CreateNextAction<CastFaerieFireFeralAction>(ACTION_DEFAULT)
             }
         )
     );
@@ -215,14 +211,14 @@ void CatDpsDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(
         new TriggerNode(
             "cat form", {
-                NextAction("cat form", ACTION_HIGH + 8)
+                CreateNextAction<CastCatFormAction>(ACTION_HIGH + 8.0f)
             }
         )
     );
     triggers.push_back(
         new TriggerNode(
             "savage roar", {
-                NextAction("savage roar", ACTION_HIGH + 7)
+                CreateNextAction<CastSavageRoarAction>(ACTION_HIGH + 7.0f)
             }
         )
     );
@@ -230,7 +226,7 @@ void CatDpsDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "combo points available",
             {
-                NextAction("rip", ACTION_HIGH + 6)
+                CreateNextAction<CastRipAction>(ACTION_HIGH + 6.0f)
             }
         )
     );
@@ -238,7 +234,7 @@ void CatDpsDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "ferocious bite time",
             {
-                NextAction("ferocious bite", ACTION_HIGH + 5)
+                CreateNextAction<CastFerociousBiteAction>(ACTION_HIGH + 5.0f)
             }
         )
     );
@@ -246,7 +242,7 @@ void CatDpsDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "target with combo points almost dead",
             {
-                NextAction("ferocious bite", ACTION_HIGH + 4)
+                CreateNextAction<CastFerociousBiteAction>(ACTION_HIGH + 4.0f)
             }
         )
     );
@@ -254,7 +250,7 @@ void CatDpsDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "mangle (cat)",
             {
-                NextAction("mangle (cat)", ACTION_HIGH + 3)
+                CreateNextAction<CastMangleCatAction>(ACTION_HIGH + 3.0f)
             }
         )
     );
@@ -262,7 +258,7 @@ void CatDpsDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "rake",
             {
-                NextAction("rake", ACTION_HIGH + 2)
+                CreateNextAction<CastRakeAction>(ACTION_HIGH + 2.0f)
             }
         )
     );
@@ -270,7 +266,7 @@ void CatDpsDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium threat",
             {
-                NextAction("cower", ACTION_HIGH + 1)
+                CreateNextAction<CastCowerAction>(ACTION_HIGH + 1.0f)
             }
         )
     );
@@ -280,7 +276,7 @@ void CatDpsDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium aoe",
             {
-                NextAction("swipe (cat)", ACTION_HIGH + 3)
+                CreateNextAction<CastSwipeCatAction>(ACTION_HIGH + 3.0f)
             }
         )
     );
@@ -288,7 +284,7 @@ void CatDpsDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "light aoe",
             {
-                NextAction("rake on attacker", ACTION_HIGH + 2)
+                CreateNextAction<CastRakeOnMeleeAttackersAction>(ACTION_HIGH + 2.0f)
             }
         )
     );
@@ -297,7 +293,7 @@ void CatDpsDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "enemy out of melee",
             {
-                NextAction("feral charge - cat", ACTION_HIGH + 9)
+                CreateNextAction<CastFeralChargeCatAction>(ACTION_HIGH + 9.0f)
             }
         )
     );
@@ -305,7 +301,7 @@ void CatDpsDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "enemy out of melee",
             {
-                NextAction("dash", ACTION_HIGH + 8)
+                CreateNextAction<CastDashAction>(ACTION_HIGH + 8.0f)
             }
         )
     );

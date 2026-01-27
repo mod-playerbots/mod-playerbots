@@ -5,7 +5,13 @@
 
 #include "CasterDruidStrategy.h"
 
+#include "ActionNode.h"
+#include "CreateNextAction.h"
 #include "AiObjectContext.h"
+#include "MovementActions.h"
+#include "CancelChannelAction.h"
+#include "DruidActions.h"
+#include "DruidShapeshiftActions.h"
 #include "FeralDruidStrategy.h"
 
 class CasterDruidStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
@@ -29,8 +35,7 @@ private:
     static ActionNode* faerie_fire([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "faerie fire",
-            /*P*/ { NextAction("moonkin form") },
+            /*P*/ { CreateNextAction<CastMoonkinFormAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -39,9 +44,8 @@ private:
     static ActionNode* hibernate([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "hibernate",
-            /*P*/ { NextAction("moonkin form") },
-            /*A*/ { NextAction("entangling roots") },
+            /*P*/ { CreateNextAction<CastMoonkinFormAction>(1.0f) },
+            /*A*/ { CreateNextAction<CastEntanglingRootsAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -49,8 +53,7 @@ private:
     static ActionNode* entangling_roots([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "entangling roots",
-            /*P*/ { NextAction("moonkin form") },
+            /*P*/ { CreateNextAction<CastMoonkinFormAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -59,8 +62,7 @@ private:
     static ActionNode* entangling_roots_on_cc([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "entangling roots on cc",
-            /*P*/ { NextAction("moonkin form") },
+            /*P*/ { CreateNextAction<CastMoonkinFormAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -69,8 +71,7 @@ private:
     static ActionNode* wrath([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "wrath",
-            /*P*/ { NextAction("moonkin form") },
+            /*P*/ { CreateNextAction<CastMoonkinFormAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -79,8 +80,7 @@ private:
     static ActionNode* starfall([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "starfall",
-            /*P*/ { NextAction("moonkin form") },
+            /*P*/ { CreateNextAction<CastMoonkinFormAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -89,8 +89,7 @@ private:
     static ActionNode* insect_swarm([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "insect swarm",
-            /*P*/ { NextAction("moonkin form") },
+            /*P*/ { CreateNextAction<CastMoonkinFormAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -99,8 +98,7 @@ private:
     static ActionNode* moonfire([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "moonfire",
-            /*P*/ { NextAction("moonkin form") },
+            /*P*/ { CreateNextAction<CastMoonkinFormAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -109,8 +107,7 @@ private:
     static ActionNode* starfire([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "starfire",
-            /*P*/ { NextAction("moonkin form") },
+            /*P*/ { CreateNextAction<CastMoonkinFormAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -119,8 +116,7 @@ private:
     static ActionNode* moonkin_form([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "moonkin form",
-            /*P*/ { NextAction("caster form") },
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -136,9 +132,9 @@ CasterDruidStrategy::CasterDruidStrategy(PlayerbotAI* botAI) : GenericDruidStrat
 std::vector<NextAction> CasterDruidStrategy::getDefaultActions()
 {
     return {
-        NextAction("starfall", ACTION_HIGH + 1.0f),
-        NextAction("force of nature", ACTION_DEFAULT + 1.0f),
-        NextAction("wrath", ACTION_DEFAULT + 0.1f),
+        CreateNextAction<CastStarfallAction>(ACTION_HIGH + 1.0f),
+        CreateNextAction<CastForceOfNatureAction>(ACTION_DEFAULT + 1.0f),
+        CreateNextAction<CastWrathAction>(ACTION_DEFAULT + 0.1f),
     };
 }
 
@@ -150,7 +146,7 @@ void CasterDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "eclipse (lunar) cooldown",
             {
-                NextAction("starfire", ACTION_DEFAULT + 0.2f)
+                CreateNextAction<CastStarfireAction>(ACTION_DEFAULT + 0.2f)
             }
         )
     );
@@ -158,7 +154,7 @@ void CasterDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "eclipse (solar) cooldown",
             {
-                NextAction("wrath", ACTION_DEFAULT + 0.2f)
+                CreateNextAction<CastWrathAction>(ACTION_DEFAULT + 0.2f)
             }
         )
     );
@@ -166,7 +162,7 @@ void CasterDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "insect swarm",
             {
-                NextAction("insect swarm", ACTION_NORMAL + 5)
+                CreateNextAction<CastInsectSwarmAction>(ACTION_NORMAL + 5.0f)
             }
         )
     );
@@ -174,7 +170,7 @@ void CasterDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "moonfire",
             {
-                NextAction("moonfire", ACTION_NORMAL + 4)
+                CreateNextAction<CastMoonfireAction>(ACTION_NORMAL + 4.0f)
             }
         )
     );
@@ -182,7 +178,7 @@ void CasterDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "eclipse (solar)",
             {
-                NextAction("wrath", ACTION_NORMAL + 6)
+                CreateNextAction<CastWrathAction>(ACTION_NORMAL + 6.0f)
             }
         )
     );
@@ -190,7 +186,7 @@ void CasterDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "eclipse (lunar)",
             {
-                NextAction("starfire", ACTION_NORMAL + 6)
+                CreateNextAction<CastStarfireAction>(ACTION_NORMAL + 6.0f)
             }
         )
     );
@@ -198,7 +194,7 @@ void CasterDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium mana",
             {
-                NextAction("innervate", ACTION_HIGH + 9)
+                CreateNextAction<CastInnervateAction>(ACTION_HIGH + 9.0f)
             }
         )
     );
@@ -206,7 +202,7 @@ void CasterDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "enemy too close for spell",
             {
-                NextAction("flee", ACTION_MOVE + 9)
+                CreateNextAction<FleeAction>(ACTION_MOVE + 9.0f)
             }
         )
     );
@@ -218,7 +214,7 @@ void CasterDruidAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "hurricane channel check",
             {
-                NextAction("cancel channel", ACTION_HIGH + 2)
+                CreateNextAction<CancelChannelAction>(ACTION_HIGH + 2.0f)
             }
         )
     );
@@ -226,7 +222,7 @@ void CasterDruidAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium aoe",
             {
-                NextAction("hurricane", ACTION_HIGH + 1)
+                CreateNextAction<CastHurricaneAction>(ACTION_HIGH + 1.0f)
             }
         )
     );
@@ -234,8 +230,8 @@ void CasterDruidAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "light aoe",
             {
-                NextAction("insect swarm on attacker", ACTION_NORMAL + 3),
-                NextAction("moonfire on attacker", ACTION_NORMAL + 3)
+                CreateNextAction<CastInsectSwarmOnAttackerAction>(ACTION_NORMAL + 3.0f),
+                CreateNextAction<CastMoonfireOnAttackerAction>(ACTION_NORMAL + 3.0f)
             }
         )
     );
@@ -247,7 +243,7 @@ void CasterDruidDebuffStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "faerie fire",
             {
-                NextAction("faerie fire", ACTION_HIGH)
+                CreateNextAction<CastFaerieFireAction>(ACTION_HIGH)
             }
         )
     );
