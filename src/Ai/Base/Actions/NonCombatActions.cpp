@@ -8,61 +8,6 @@
 #include "Event.h"
 #include "Playerbots.h"
 
-bool DrinkAction::Execute(Event event)
-{
-    if (botAI->HasCheat(BotCheatMask::food))
-    {
-        // if (bot->IsNonMeleeSpellCast(true))
-        //     return false;
-
-        bot->ClearUnitState(UNIT_STATE_CHASE);
-        bot->ClearUnitState(UNIT_STATE_FOLLOW);
-
-        if (bot->isMoving())
-        {
-            bot->StopMoving();
-            // botAI->SetNextCheckDelay(sPlayerbotAIConfig->globalCoolDown);
-            // return false;
-        }
-        bot->SetStandState(UNIT_STAND_STATE_SIT);
-        botAI->InterruptSpell();
-
-        // float hp = bot->GetHealthPercent();
-        float mp = bot->GetPowerPct(POWER_MANA);
-        float p = mp;
-        float delay;
-
-        if (!bot->InBattleground())
-            delay = 18000.0f * (100 - p) / 100.0f;
-        else
-            delay = 12000.0f * (100 - p) / 100.0f;
-
-        botAI->SetNextCheckDelay(delay);
-
-        bot->AddAura(25990, bot);
-        return true;
-        // return botAI->CastSpell(24707, bot);
-    }
-
-    return UseItemAction::Execute(event);
-}
-
-bool DrinkAction::isUseful()
-{
-    return UseItemAction::isUseful() &&
-        AI_VALUE2(bool, "has mana", "self target") &&
-        AI_VALUE2(uint8, "mana", "self target") < 100;
-}
-
-bool DrinkAction::isPossible()
-{
-    return !bot->IsInCombat() &&
-        !bot->IsMounted() &&
-        !botAI->HasAnyAuraOf(GetTarget(), "dire bear form", "bear form", "cat form", "travel form",
-            "aquatic form","flight form", "swift flight form", nullptr) &&
-        (botAI->HasCheat(BotCheatMask::food) || UseItemAction::isPossible());
-}
-
 bool EatAction::Execute(Event event)
 {
     if (botAI->HasCheat(BotCheatMask::food))

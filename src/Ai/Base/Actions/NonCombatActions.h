@@ -10,16 +10,6 @@
 
 class PlayerbotAI;
 
-class DrinkAction : public UseItemAction
-{
-public:
-    DrinkAction(PlayerbotAI* botAI) : UseItemAction(botAI, "drink") {}
-
-    bool Execute(Event event) override;
-    bool isUseful() override;
-    bool isPossible() override;
-};
-
 class EatAction : public UseItemAction
 {
 public:
