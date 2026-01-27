@@ -5,7 +5,6 @@
 
 #include "GuardStrategy.h"
 
-#include "Playerbots.h"
 #include "CreateNextAction.h"
 #include "PositionAction.h"
 

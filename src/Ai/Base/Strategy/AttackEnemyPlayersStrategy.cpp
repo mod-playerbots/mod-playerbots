@@ -5,8 +5,6 @@
 
 #include "AttackEnemyPlayersStrategy.h"
 
-#include "Playerbots.h"
-#include "CreateAction.h"
 #include "ChooseTargetActions.h"
 #include "CreateNextAction.h"
 

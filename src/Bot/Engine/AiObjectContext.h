@@ -13,11 +13,11 @@
 #include "DynamicObject.h"
 #include "NamedObjectContext.h"
 #include "PlayerbotAIAware.h"
-#include "Strategy.h"
 #include "Trigger.h"
 #include "Value.h"
 
 class PlayerbotAI;
+class Strategy;
 
 class Strategy;
 

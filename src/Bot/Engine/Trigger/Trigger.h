@@ -6,7 +6,9 @@
 #pragma once
 
 #include "Action.h"
+#include "Event.h"
 #include "NextAction.h"
+#include "Value.h"
 
 class PlayerbotAI;
 class Unit;

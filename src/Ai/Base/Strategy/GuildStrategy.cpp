@@ -5,7 +5,6 @@
 
 #include "GuildStrategy.h"
 
-#include "Playerbots.h"
 #include "CreateNextAction.h"
 #include "GuildCreateActions.h"
 #include "GuildManagementActions.h"

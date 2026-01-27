@@ -5,7 +5,6 @@
 
 #include "FollowMasterStrategy.h"
 
-#include "Playerbots.h"
 #include "CreateNextAction.h"
 #include "FollowActions.h"
 

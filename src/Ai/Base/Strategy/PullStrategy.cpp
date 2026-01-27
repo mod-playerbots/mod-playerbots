@@ -6,7 +6,6 @@
 #include "PullStrategy.h"
 
 #include "PassiveMultiplier.h"
-#include "Playerbots.h"
 #include "CreateNextAction.h"
 #include "FollowActions.h"
 #include "ChangeStrategyAction.h"

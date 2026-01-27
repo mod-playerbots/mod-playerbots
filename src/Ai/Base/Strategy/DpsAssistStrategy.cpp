@@ -5,7 +5,6 @@
 
 #include "DpsAssistStrategy.h"
 
-#include "Playerbots.h"
 #include "CreateNextAction.h"
 #include "ChooseTargetActions.h"
 

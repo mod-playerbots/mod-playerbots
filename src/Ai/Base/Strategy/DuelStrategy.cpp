@@ -5,6 +5,10 @@
 
 #include "DuelStrategy.h"
 
+#include "CreateNextAction.h"
+#include "AcceptDuelAction.h"
+#include "AttackAction.h"
+
 void DuelStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     PassTroughStrategy::InitTriggers(triggers);

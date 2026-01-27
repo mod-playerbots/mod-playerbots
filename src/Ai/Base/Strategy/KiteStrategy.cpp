@@ -5,7 +5,6 @@
 
 #include "KiteStrategy.h"
 
-#include "Playerbots.h"
 #include "CreateNextAction.h"
 #include "MovementActions.h"
 

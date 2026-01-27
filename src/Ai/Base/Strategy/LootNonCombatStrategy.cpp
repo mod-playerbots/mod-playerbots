@@ -5,7 +5,6 @@
 
 #include "LootNonCombatStrategy.h"
 
-#include "Playerbots.h"
 #include "CreateNextAction.h"
 #include "LootAction.h"
 #include "MovementActions.h"

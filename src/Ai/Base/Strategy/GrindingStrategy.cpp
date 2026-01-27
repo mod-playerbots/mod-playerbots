@@ -5,7 +5,6 @@
 
 #include "GrindingStrategy.h"
 
-#include "Playerbots.h"
 #include "CreateNextAction.h"
 #include "NonCombatActions.h"
 #include "ChooseTargetActions.h"

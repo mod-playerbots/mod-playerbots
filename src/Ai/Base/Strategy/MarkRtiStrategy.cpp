@@ -5,7 +5,6 @@
 
 #include "MarkRtiStrategy.h"
 
-#include "Playerbots.h"
 #include "CreateNextAction.h"
 #include "RtiAction.h"
 

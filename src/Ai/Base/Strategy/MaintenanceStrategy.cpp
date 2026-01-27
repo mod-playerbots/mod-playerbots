@@ -5,7 +5,6 @@
 
 #include "MaintenanceStrategy.h"
 
-#include "Playerbots.h"
 #include "CreateNextAction.h"
 #include "DropQuestAction.h"
 #include "UseItemAction.h"

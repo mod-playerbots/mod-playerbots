@@ -5,7 +5,13 @@
 
 #include "BearTankDruidStrategy.h"
 
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "ActionNode.h"
+#include "GenericActions.h"
+#include "ReachTargetActions.h"
+#include "DruidActions.h"
+#include "DruidShapeshiftActions.h"
+#include "DruidBearActions.h"
 
 class BearTankDruidStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -31,8 +37,7 @@ private:
     static ActionNode* melee([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "melee",
-            /*P*/ { NextAction("feral charge - bear") },
+            /*P*/ { CreateNextAction<CastFeralChargeBearAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -43,7 +48,7 @@ private:
         return new ActionNode(
             "feral charge - bear",
             /*P*/ {},
-            /*A*/ { NextAction("reach melee") },
+            /*A*/ { CreateNextAction<ReachMeleeAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -61,8 +66,7 @@ private:
     static ActionNode* faerie_fire_feral([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "faerie fire (feral)",
-            /*P*/ { NextAction("feral charge - bear") },
+            /*P*/ { CreateNextAction<CastFeralChargeBearAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -81,9 +85,8 @@ private:
     static ActionNode* dire_bear_form([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "dire bear form",
-            /*P*/ { NextAction("caster form") },
-            /*A*/ { NextAction("bear form") },
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
+            /*A*/ { CreateNextAction<CastBearFormAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -103,7 +106,7 @@ private:
         return new ActionNode(
             "maul",
             /*P*/ {},
-            /*A*/ { NextAction("melee") },
+            /*A*/ { CreateNextAction<MeleeAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -113,7 +116,7 @@ private:
         return new ActionNode(
             "bash",
             /*P*/ {},
-            /*A*/ { NextAction("melee") },
+            /*A*/ { CreateNextAction<MeleeAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -123,7 +126,7 @@ private:
         return new ActionNode(
             "swipe",
             /*P*/ {},
-            /*A*/ { NextAction("melee") },
+            /*A*/ { CreateNextAction<MeleeAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -133,7 +136,7 @@ private:
         return new ActionNode(
             "lacerate",
             /*P*/ {},
-            /*A*/ { NextAction("maul") },
+            /*A*/ { CreateNextAction<CastMaulAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -167,12 +170,12 @@ BearTankDruidStrategy::BearTankDruidStrategy(PlayerbotAI* botAI) : FeralDruidStr
 std::vector<NextAction> BearTankDruidStrategy::getDefaultActions()
 {
     return {
-        NextAction("mangle (bear)", ACTION_DEFAULT + 0.5f),
-        NextAction("faerie fire (feral)", ACTION_DEFAULT + 0.4f),
-        NextAction("lacerate", ACTION_DEFAULT + 0.3f),
-        NextAction("maul", ACTION_DEFAULT + 0.2f),
-        NextAction("enrage", ACTION_DEFAULT + 0.1f),
-        NextAction("melee", ACTION_DEFAULT)
+        CreateNextAction<CastMangleBearAction>(ACTION_DEFAULT + 0.5f),
+        CreateNextAction<CastFaerieFireFeralAction>(ACTION_DEFAULT + 0.4f),
+        CreateNextAction<CastLacerateAction>(ACTION_DEFAULT + 0.3f),
+        CreateNextAction<CastMaulAction>(ACTION_DEFAULT + 0.2f),
+        CreateNextAction<CastEnrageAction>(ACTION_DEFAULT + 0.1f),
+        CreateNextAction<MeleeAction>(ACTION_DEFAULT)
     };
 }
 
@@ -184,7 +187,7 @@ void BearTankDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "enemy out of melee",
             {
-                NextAction("feral charge - bear", ACTION_NORMAL + 8)
+                CreateNextAction<CastFeralChargeBearAction>(ACTION_NORMAL + 8.0f)
             }
         )
     );
@@ -192,7 +195,7 @@ void BearTankDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "bear form",
             {
-                NextAction("dire bear form", ACTION_HIGH + 8)
+                CreateNextAction<CastDireBearFormAction>(ACTION_HIGH + 8.0f)
             }
         )
     );
@@ -200,7 +203,7 @@ void BearTankDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "low health",
             {
-                NextAction("frenzied regeneration", ACTION_HIGH + 7)
+                CreateNextAction<CastFrenziedRegenerationAction>(ACTION_HIGH + 7.0f)
             }
         )
     );
@@ -208,7 +211,7 @@ void BearTankDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "faerie fire (feral)",
             {
-                NextAction("faerie fire (feral)", ACTION_HIGH + 7)
+                CreateNextAction<CastFaerieFireFeralAction>(ACTION_HIGH + 7.0f)
             }
         )
     );
@@ -216,7 +219,7 @@ void BearTankDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "lose aggro",
             {
-                NextAction("growl", ACTION_HIGH + 8)
+                CreateNextAction<CastGrowlAction>(ACTION_HIGH + 8.0f)
             }
         )
     );
@@ -224,8 +227,8 @@ void BearTankDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium aoe",
             {
-                NextAction("demoralizing roar", ACTION_HIGH + 6),
-                NextAction("swipe (bear)", ACTION_HIGH + 6)
+                CreateNextAction<CastDemoralizingRoarAction>(ACTION_HIGH + 6.0f),
+                CreateNextAction<CastSwipeBearAction>(ACTION_HIGH + 6.0f)
             }
         )
     );
@@ -233,7 +236,7 @@ void BearTankDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "light aoe",
             {
-                NextAction("swipe (bear)", ACTION_HIGH + 5)
+                CreateNextAction<CastSwipeBearAction>(ACTION_HIGH + 5.0f)
             }
         )
     );
@@ -241,7 +244,7 @@ void BearTankDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "bash",
             {
-                NextAction("bash", ACTION_INTERRUPT + 2)
+                CreateNextAction<CastBashAction>(ACTION_INTERRUPT + 2.0f)
             }
         )
     );
@@ -249,7 +252,7 @@ void BearTankDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "bash on enemy healer",
             {
-                NextAction("bash on enemy healer", ACTION_INTERRUPT + 1)
+                CreateNextAction<CastBashOnEnemyHealerAction>(ACTION_INTERRUPT + 1.0f)
             }
         )
     );

@@ -5,7 +5,6 @@
 
 #include "ChatCommandHandlerStrategy.h"
 
-#include "Playerbots.h"
 #include "ActionNode.h"
 #include "CreateNextAction.h"
 #include "CastCustomSpellAction.h"

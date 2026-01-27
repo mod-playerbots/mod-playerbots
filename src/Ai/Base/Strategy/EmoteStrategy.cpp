@@ -5,7 +5,6 @@
 
 #include "EmoteStrategy.h"
 
-#include "Playerbots.h"
 #include "PlayerbotAIConfig.h"
 #include "CreateNextAction.h"
 #include "EmoteAction.h"

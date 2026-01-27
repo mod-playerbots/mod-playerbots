@@ -5,7 +5,6 @@
 
 #include "QuestStrategies.h"
 
-#include "Playerbots.h"
 #include "CreateNextAction.h"
 #include "AcceptQuestAction.h"
 #include "TalkToQuestGiverAction.h"

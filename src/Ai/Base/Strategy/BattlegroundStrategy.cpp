@@ -5,7 +5,6 @@
 
 #include "BattlegroundStrategy.h"
 
-#include "Playerbots.h"
 #include "BattleGroundJoinAction.h"
 #include "CreateNextAction.h"
 #include "BattlegroundTacticsMoveToStart.h"

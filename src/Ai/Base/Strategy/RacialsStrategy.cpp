@@ -5,7 +5,6 @@
 
 #include "RacialsStrategy.h"
 
-#include "Playerbots.h"
 #include "ActionNode.h"
 #include "CreateNextAction.h"
 #include "GenericSpellActions.h"

@@ -5,7 +5,6 @@
 
 #include "LfgStrategy.h"
 
-#include "Playerbots.h"
 #include "CreateNextAction.h"
 #include "LfgActions.h"
 #include "PassLeadershipToMasterAction.h"

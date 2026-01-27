@@ -5,8 +5,6 @@
 
 #include "PassTroughStrategy.h"
 
-#include "Playerbots.h"
-
 void PassTroughStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     for (std::vector<std::string>::iterator i = supported.begin(); i != supported.end(); i++)

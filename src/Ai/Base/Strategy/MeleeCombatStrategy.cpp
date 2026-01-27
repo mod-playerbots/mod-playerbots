@@ -5,7 +5,6 @@
 
 #include "MeleeCombatStrategy.h"
 
-#include "Playerbots.h"
 #include "CreateNextAction.h"
 #include "ReachTargetActions.h"
 #include "MovementActions.h"

@@ -5,7 +5,6 @@
 
 #include "MoveFromGroupStrategy.h"
 #include "PassiveMultiplier.h"
-#include "Playerbots.h"
 #include "CreateNextAction.h"
 #include "MovementActions.h"
 

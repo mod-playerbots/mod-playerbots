@@ -5,7 +5,6 @@
 
 #include "GroupStrategy.h"
 
-#include "Playerbots.h"
 #include "CreateNextAction.h"
 #include "InviteToGroupAction.h"
 #include "LeaveGroupAction.h"

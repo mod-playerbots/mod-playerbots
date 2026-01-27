@@ -5,7 +5,6 @@
 
 #include "DeadStrategy.h"
 
-#include "Playerbots.h"
 #include "CreateNextAction.h"
 #include "ReleaseSpiritAction.h"
 #include "ReviveFromCorpseAction.h"
