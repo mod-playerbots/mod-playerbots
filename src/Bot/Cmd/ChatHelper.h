@@ -7,6 +7,7 @@
 #define _PLAYERBOT_CHATHELPER_H
 
 #include <map>
+#include <mutex>
 #include <vector>
 
 #include "Common.h"
@@ -80,7 +81,8 @@ public:
 
 private:
     static void InitStaticMaps();
-    static bool initialized;
+    static void ValidateStaticMaps();
+    static std::once_flag initializedFlag;
     static std::map<std::string, uint32> consumableSubClasses;
     static std::map<std::string, uint32> tradeSubClasses;
     static std::map<std::string, uint32> itemQualities;

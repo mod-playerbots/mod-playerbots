@@ -24,7 +24,7 @@ std::map<std::string, ChatMsg> ChatHelper::chats;
 std::map<uint8, std::string> ChatHelper::classes;
 std::map<uint8, std::string> ChatHelper::races;
 std::map<uint8, std::map<uint8, std::string> > ChatHelper::specs;
-bool ChatHelper::initialized = false;
+std::once_flag ChatHelper::initializedFlag;
 
 void ChatHelper::EnsureInitialized()
 {
@@ -51,152 +51,169 @@ ChatHelper::ChatHelper(PlayerbotAI* botAI) : PlayerbotAIAware(botAI)
 
 void ChatHelper::InitStaticMaps()
 {
-    if (initialized)
-        return;
+    std::call_once(initializedFlag, []()
+    {
+        LOG_DEBUG("playerbots", "ChatHelper: initializing static maps.");
 
-    initialized = true;
+        itemQualities["poor"] = ITEM_QUALITY_POOR;
+        itemQualities["gray"] = ITEM_QUALITY_POOR;
+        itemQualities["normal"] = ITEM_QUALITY_NORMAL;
+        itemQualities["white"] = ITEM_QUALITY_NORMAL;
+        itemQualities["uncommon"] = ITEM_QUALITY_UNCOMMON;
+        itemQualities["green"] = ITEM_QUALITY_UNCOMMON;
+        itemQualities["rare"] = ITEM_QUALITY_RARE;
+        itemQualities["blue"] = ITEM_QUALITY_RARE;
+        itemQualities["epic"] = ITEM_QUALITY_EPIC;
+        itemQualities["violet"] = ITEM_QUALITY_EPIC;
+        itemQualities["legendary"] = ITEM_QUALITY_LEGENDARY;
+        itemQualities["yellow"] = ITEM_QUALITY_LEGENDARY;
+	    
+        consumableSubClasses["potion"] = ITEM_SUBCLASS_POTION;
+        consumableSubClasses["elixir"] = ITEM_SUBCLASS_ELIXIR;
+        consumableSubClasses["flask"] = ITEM_SUBCLASS_FLASK;
+        consumableSubClasses["scroll"] = ITEM_SUBCLASS_SCROLL;
+        consumableSubClasses["food"] = ITEM_SUBCLASS_FOOD;
+        consumableSubClasses["bandage"] = ITEM_SUBCLASS_BANDAGE;
+        consumableSubClasses["enchant"] = ITEM_SUBCLASS_CONSUMABLE_OTHER;
+	    
+        projectileSubClasses["arrows"] = ITEM_SUBCLASS_ARROW;
+        projectileSubClasses["bullets"] = ITEM_SUBCLASS_BULLET;
+	    
+        // tradeSubClasses["cloth"] = ITEM_SUBCLASS_CLOTH;
+        // tradeSubClasses["leather"] = ITEM_SUBCLASS_LEATHER;
+        // tradeSubClasses["metal"] = ITEM_SUBCLASS_METAL_STONE;
+        // tradeSubClasses["stone"] = ITEM_SUBCLASS_METAL_STONE;
+        // tradeSubClasses["ore"] = ITEM_SUBCLASS_METAL_STONE;
+        // tradeSubClasses["meat"] = ITEM_SUBCLASS_MEAT;
+        // tradeSubClasses["herb"] = ITEM_SUBCLASS_HERB;
+        // tradeSubClasses["elemental"] = ITEM_SUBCLASS_ELEMENTAL;
+        // tradeSubClasses["disenchants"] = ITEM_SUBCLASS_ENCHANTING;
+        // tradeSubClasses["enchanting"] = ITEM_SUBCLASS_ENCHANTING;
+        // tradeSubClasses["gems"] = ITEM_SUBCLASS_JEWELCRAFTING;
+        // tradeSubClasses["jewels"] = ITEM_SUBCLASS_JEWELCRAFTING;
+        // tradeSubClasses["jewelcrafting"] = ITEM_SUBCLASS_JEWELCRAFTING;
+	    
+        slots["head"] = EQUIPMENT_SLOT_HEAD;
+        slots["neck"] = EQUIPMENT_SLOT_NECK;
+        slots["shoulder"] = EQUIPMENT_SLOT_SHOULDERS;
+        slots["shirt"] = EQUIPMENT_SLOT_BODY;
+        slots["chest"] = EQUIPMENT_SLOT_CHEST;
+        slots["waist"] = EQUIPMENT_SLOT_WAIST;
+        slots["legs"] = EQUIPMENT_SLOT_LEGS;
+        slots["feet"] = EQUIPMENT_SLOT_FEET;
+        slots["wrist"] = EQUIPMENT_SLOT_WRISTS;
+        slots["hands"] = EQUIPMENT_SLOT_HANDS;
+        slots["finger 1"] = EQUIPMENT_SLOT_FINGER1;
+        slots["finger 2"] = EQUIPMENT_SLOT_FINGER2;
+        slots["trinket 1"] = EQUIPMENT_SLOT_TRINKET1;
+        slots["trinket 2"] = EQUIPMENT_SLOT_TRINKET2;
+        slots["back"] = EQUIPMENT_SLOT_BACK;
+        slots["main hand"] = EQUIPMENT_SLOT_MAINHAND;
+        slots["off hand"] = EQUIPMENT_SLOT_OFFHAND;
+        slots["ranged"] = EQUIPMENT_SLOT_RANGED;
+        slots["tabard"] = EQUIPMENT_SLOT_TABARD;
+	    
+        skills["first aid"] = SKILL_FIRST_AID;
+        skills["fishing"] = SKILL_FISHING;
+        skills["cooking"] = SKILL_COOKING;
+        skills["alchemy"] = SKILL_ALCHEMY;
+        skills["enchanting"] = SKILL_ENCHANTING;
+        skills["engineering"] = SKILL_ENGINEERING;
+        skills["leatherworking"] = SKILL_LEATHERWORKING;
+        skills["blacksmithing"] = SKILL_BLACKSMITHING;
+        skills["tailoring"] = SKILL_TAILORING;
+        skills["herbalism"] = SKILL_HERBALISM;
+        skills["mining"] = SKILL_MINING;
+        skills["skinning"] = SKILL_SKINNING;
+        skills["jewelcrafting"] = SKILL_JEWELCRAFTING;
+	    
+        chats["party"] = CHAT_MSG_PARTY;
+        chats["p"] = CHAT_MSG_PARTY;
+        chats["guild"] = CHAT_MSG_GUILD;
+        chats["g"] = CHAT_MSG_GUILD;
+        chats["raid"] = CHAT_MSG_RAID;
+        chats["r"] = CHAT_MSG_RAID;
+        chats["whisper"] = CHAT_MSG_WHISPER;
+        chats["w"] = CHAT_MSG_WHISPER;
+	    
+        classes[CLASS_DRUID] = "druid";
+        specs[CLASS_DRUID][0] = "balance";
+        specs[CLASS_DRUID][1] = "feral combat";
+        specs[CLASS_DRUID][2] = "restoration";
+	    
+        classes[CLASS_HUNTER] = "hunter";
+        specs[CLASS_HUNTER][0] = "beast mastery";
+        specs[CLASS_HUNTER][1] = "marksmanship";
+        specs[CLASS_HUNTER][2] = "survival";
+	    
+        classes[CLASS_MAGE] = "mage";
+        specs[CLASS_MAGE][0] = "arcane";
+        specs[CLASS_MAGE][1] = "fire";
+        specs[CLASS_MAGE][2] = "frost";
+	    
+        classes[CLASS_PALADIN] = "paladin";
+        specs[CLASS_PALADIN][0] = "holy";
+        specs[CLASS_PALADIN][1] = "protection";
+        specs[CLASS_PALADIN][2] = "retribution";
+	    
+        classes[CLASS_PRIEST] = "priest";
+        specs[CLASS_PRIEST][0] = "discipline";
+        specs[CLASS_PRIEST][1] = "holy";
+        specs[CLASS_PRIEST][2] = "shadow";
+	    
+        classes[CLASS_ROGUE] = "rogue";
+        specs[CLASS_ROGUE][0] = "assasination";
+        specs[CLASS_ROGUE][1] = "combat";
+        specs[CLASS_ROGUE][2] = "subtlety";
+	    
+        classes[CLASS_SHAMAN] = "shaman";
+        specs[CLASS_SHAMAN][0] = "elemental";
+        specs[CLASS_SHAMAN][1] = "enhancement";
+        specs[CLASS_SHAMAN][2] = "restoration";
+	    
+        classes[CLASS_WARLOCK] = "warlock";
+        specs[CLASS_WARLOCK][0] = "affliction";
+        specs[CLASS_WARLOCK][1] = "demonology";
+        specs[CLASS_WARLOCK][2] = "destruction";
+	    
+        classes[CLASS_WARRIOR] = "warrior";
+        specs[CLASS_WARRIOR][0] = "arms";
+        specs[CLASS_WARRIOR][1] = "fury";
+        specs[CLASS_WARRIOR][2] = "protection";
+	    
+        classes[CLASS_DEATH_KNIGHT] = "dk";
+        specs[CLASS_DEATH_KNIGHT][0] = "blood";
+        specs[CLASS_DEATH_KNIGHT][1] = "frost";
+        specs[CLASS_DEATH_KNIGHT][2] = "unholy";
+	    
+        races[RACE_DWARF] = "Dwarf";
+        races[RACE_GNOME] = "Gnome";
+        races[RACE_HUMAN] = "Human";
+        races[RACE_NIGHTELF] = "Night Elf";
+        races[RACE_ORC] = "Orc";
+        races[RACE_TAUREN] = "Tauren";
+        races[RACE_TROLL] = "Troll";
+        races[RACE_UNDEAD_PLAYER] = "Undead";
+        races[RACE_BLOODELF] = "Blood Elf";
+        races[RACE_DRAENEI] = "Draenei";
+	    
+        ValidateStaticMaps();
+    });
+}
 
-    itemQualities["poor"] = ITEM_QUALITY_POOR;
-    itemQualities["gray"] = ITEM_QUALITY_POOR;
-    itemQualities["normal"] = ITEM_QUALITY_NORMAL;
-    itemQualities["white"] = ITEM_QUALITY_NORMAL;
-    itemQualities["uncommon"] = ITEM_QUALITY_UNCOMMON;
-    itemQualities["green"] = ITEM_QUALITY_UNCOMMON;
-    itemQualities["rare"] = ITEM_QUALITY_RARE;
-    itemQualities["blue"] = ITEM_QUALITY_RARE;
-    itemQualities["epic"] = ITEM_QUALITY_EPIC;
-    itemQualities["violet"] = ITEM_QUALITY_EPIC;
-    itemQualities["legendary"] = ITEM_QUALITY_LEGENDARY;
-    itemQualities["yellow"] = ITEM_QUALITY_LEGENDARY;
+void ChatHelper::ValidateStaticMaps()
+{
+    if (itemQualities.empty() || slots.empty() || skills.empty() || chats.empty() || classes.empty() || races.empty() || specs.empty())
+        LOG_ERROR("playerbots", "ChatHelper: static maps were not fully initialized.");
 
-    consumableSubClasses["potion"] = ITEM_SUBCLASS_POTION;
-    consumableSubClasses["elixir"] = ITEM_SUBCLASS_ELIXIR;
-    consumableSubClasses["flask"] = ITEM_SUBCLASS_FLASK;
-    consumableSubClasses["scroll"] = ITEM_SUBCLASS_SCROLL;
-    consumableSubClasses["food"] = ITEM_SUBCLASS_FOOD;
-    consumableSubClasses["bandage"] = ITEM_SUBCLASS_BANDAGE;
-    consumableSubClasses["enchant"] = ITEM_SUBCLASS_CONSUMABLE_OTHER;
+    if (slots.find("head") == slots.end() || slots.find("main hand") == slots.end())
+        LOG_ERROR("playerbots", "ChatHelper: expected slot keys missing after initialization.");
 
-    projectileSubClasses["arrows"] = ITEM_SUBCLASS_ARROW;
-    projectileSubClasses["bullets"] = ITEM_SUBCLASS_BULLET;
+    if (classes.find(CLASS_WARRIOR) == classes.end() || classes.find(CLASS_MAGE) == classes.end())
+        LOG_ERROR("playerbots", "ChatHelper: expected class keys missing after initialization.");
 
-    // tradeSubClasses["cloth"] = ITEM_SUBCLASS_CLOTH;
-    // tradeSubClasses["leather"] = ITEM_SUBCLASS_LEATHER;
-    // tradeSubClasses["metal"] = ITEM_SUBCLASS_METAL_STONE;
-    // tradeSubClasses["stone"] = ITEM_SUBCLASS_METAL_STONE;
-    // tradeSubClasses["ore"] = ITEM_SUBCLASS_METAL_STONE;
-    // tradeSubClasses["meat"] = ITEM_SUBCLASS_MEAT;
-    // tradeSubClasses["herb"] = ITEM_SUBCLASS_HERB;
-    // tradeSubClasses["elemental"] = ITEM_SUBCLASS_ELEMENTAL;
-    // tradeSubClasses["disenchants"] = ITEM_SUBCLASS_ENCHANTING;
-    // tradeSubClasses["enchanting"] = ITEM_SUBCLASS_ENCHANTING;
-    // tradeSubClasses["gems"] = ITEM_SUBCLASS_JEWELCRAFTING;
-    // tradeSubClasses["jewels"] = ITEM_SUBCLASS_JEWELCRAFTING;
-    // tradeSubClasses["jewelcrafting"] = ITEM_SUBCLASS_JEWELCRAFTING;
-
-    slots["head"] = EQUIPMENT_SLOT_HEAD;
-    slots["neck"] = EQUIPMENT_SLOT_NECK;
-    slots["shoulder"] = EQUIPMENT_SLOT_SHOULDERS;
-    slots["shirt"] = EQUIPMENT_SLOT_BODY;
-    slots["chest"] = EQUIPMENT_SLOT_CHEST;
-    slots["waist"] = EQUIPMENT_SLOT_WAIST;
-    slots["legs"] = EQUIPMENT_SLOT_LEGS;
-    slots["feet"] = EQUIPMENT_SLOT_FEET;
-    slots["wrist"] = EQUIPMENT_SLOT_WRISTS;
-    slots["hands"] = EQUIPMENT_SLOT_HANDS;
-    slots["finger 1"] = EQUIPMENT_SLOT_FINGER1;
-    slots["finger 2"] = EQUIPMENT_SLOT_FINGER2;
-    slots["trinket 1"] = EQUIPMENT_SLOT_TRINKET1;
-    slots["trinket 2"] = EQUIPMENT_SLOT_TRINKET2;
-    slots["back"] = EQUIPMENT_SLOT_BACK;
-    slots["main hand"] = EQUIPMENT_SLOT_MAINHAND;
-    slots["off hand"] = EQUIPMENT_SLOT_OFFHAND;
-    slots["ranged"] = EQUIPMENT_SLOT_RANGED;
-    slots["tabard"] = EQUIPMENT_SLOT_TABARD;
-
-    skills["first aid"] = SKILL_FIRST_AID;
-    skills["fishing"] = SKILL_FISHING;
-    skills["cooking"] = SKILL_COOKING;
-    skills["alchemy"] = SKILL_ALCHEMY;
-    skills["enchanting"] = SKILL_ENCHANTING;
-    skills["engineering"] = SKILL_ENGINEERING;
-    skills["leatherworking"] = SKILL_LEATHERWORKING;
-    skills["blacksmithing"] = SKILL_BLACKSMITHING;
-    skills["tailoring"] = SKILL_TAILORING;
-    skills["herbalism"] = SKILL_HERBALISM;
-    skills["mining"] = SKILL_MINING;
-    skills["skinning"] = SKILL_SKINNING;
-    skills["jewelcrafting"] = SKILL_JEWELCRAFTING;
-
-    chats["party"] = CHAT_MSG_PARTY;
-    chats["p"] = CHAT_MSG_PARTY;
-    chats["guild"] = CHAT_MSG_GUILD;
-    chats["g"] = CHAT_MSG_GUILD;
-    chats["raid"] = CHAT_MSG_RAID;
-    chats["r"] = CHAT_MSG_RAID;
-    chats["whisper"] = CHAT_MSG_WHISPER;
-    chats["w"] = CHAT_MSG_WHISPER;
-
-    classes[CLASS_DRUID] = "druid";
-    specs[CLASS_DRUID][0] = "balance";
-    specs[CLASS_DRUID][1] = "feral combat";
-    specs[CLASS_DRUID][2] = "restoration";
-
-    classes[CLASS_HUNTER] = "hunter";
-    specs[CLASS_HUNTER][0] = "beast mastery";
-    specs[CLASS_HUNTER][1] = "marksmanship";
-    specs[CLASS_HUNTER][2] = "survival";
-
-    classes[CLASS_MAGE] = "mage";
-    specs[CLASS_MAGE][0] = "arcane";
-    specs[CLASS_MAGE][1] = "fire";
-    specs[CLASS_MAGE][2] = "frost";
-
-    classes[CLASS_PALADIN] = "paladin";
-    specs[CLASS_PALADIN][0] = "holy";
-    specs[CLASS_PALADIN][1] = "protection";
-    specs[CLASS_PALADIN][2] = "retribution";
-
-    classes[CLASS_PRIEST] = "priest";
-    specs[CLASS_PRIEST][0] = "discipline";
-    specs[CLASS_PRIEST][1] = "holy";
-    specs[CLASS_PRIEST][2] = "shadow";
-
-    classes[CLASS_ROGUE] = "rogue";
-    specs[CLASS_ROGUE][0] = "assasination";
-    specs[CLASS_ROGUE][1] = "combat";
-    specs[CLASS_ROGUE][2] = "subtlety";
-
-    classes[CLASS_SHAMAN] = "shaman";
-    specs[CLASS_SHAMAN][0] = "elemental";
-    specs[CLASS_SHAMAN][1] = "enhancement";
-    specs[CLASS_SHAMAN][2] = "restoration";
-
-    classes[CLASS_WARLOCK] = "warlock";
-    specs[CLASS_WARLOCK][0] = "affliction";
-    specs[CLASS_WARLOCK][1] = "demonology";
-    specs[CLASS_WARLOCK][2] = "destruction";
-
-    classes[CLASS_WARRIOR] = "warrior";
-    specs[CLASS_WARRIOR][0] = "arms";
-    specs[CLASS_WARRIOR][1] = "fury";
-    specs[CLASS_WARRIOR][2] = "protection";
-
-    classes[CLASS_DEATH_KNIGHT] = "dk";
-    specs[CLASS_DEATH_KNIGHT][0] = "blood";
-    specs[CLASS_DEATH_KNIGHT][1] = "frost";
-    specs[CLASS_DEATH_KNIGHT][2] = "unholy";
-
-    races[RACE_DWARF] = "Dwarf";
-    races[RACE_GNOME] = "Gnome";
-    races[RACE_HUMAN] = "Human";
-    races[RACE_NIGHTELF] = "Night Elf";
-    races[RACE_ORC] = "Orc";
-    races[RACE_TAUREN] = "Tauren";
-    races[RACE_TROLL] = "Troll";
-    races[RACE_UNDEAD_PLAYER] = "Undead";
-    races[RACE_BLOODELF] = "Blood Elf";
-    races[RACE_DRAENEI] = "Draenei";
+    if (specs.find(CLASS_WARRIOR) == specs.end() || specs.find(CLASS_MAGE) == specs.end())
+        LOG_INFO("playerbots", "ChatHelper: expected spec entries missing after initialization.");
 }
 
 std::string const ChatHelper::formatMoney(uint32 copper)
