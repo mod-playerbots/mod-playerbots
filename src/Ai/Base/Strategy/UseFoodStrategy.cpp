@@ -7,18 +7,48 @@
 
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "NonCombatActions.h"
 
 void UseFoodStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     Strategy::InitTriggers(triggers);
     if (botAI->HasCheat(BotCheatMask::food))
     {
-        triggers.push_back(new TriggerNode("medium health", { NextAction("food", 3.0f) }));
-        triggers.push_back(new TriggerNode("high mana", { NextAction("drink", 3.0f) }));
+        triggers.push_back(
+            new TriggerNode(
+                "medium health",
+                {
+                    CreateNextAction<EatAction>(3.0f)
+                }
+            )
+        );
+        triggers.push_back(
+            new TriggerNode(
+                "high mana",
+                {
+                    CreateNextAction<DrinkAction>(3.0f)
+                }
+            )
+        );
     }
     else
     {
-        triggers.push_back(new TriggerNode("low health", { NextAction("food", 3.0f) }));
-        triggers.push_back(new TriggerNode("low mana", { NextAction("drink", 3.0f) }));
+        triggers.push_back(
+            new TriggerNode(
+                "low health",
+                {
+                    CreateNextAction<EatAction>(3.0f)
+                }
+            )
+        );
+        triggers.push_back(
+            new TriggerNode(
+                "low mana",
+                {
+                    CreateNextAction<DrinkAction>(3.0f)
+                }
+            )
+        );
     }
 }

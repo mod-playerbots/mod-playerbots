@@ -13,14 +13,22 @@
 
 std::vector<NextAction> CastAbolishPoisonAction::getAlternatives()
 {
-    return NextAction::merge({ NextAction("cure poison") },
-                             CastSpellAction::getPrerequisites());
+    return NextAction::merge(
+        {
+            NextAction("cure poison")
+        },
+        CastSpellAction::getPrerequisites()
+    );
 }
 
 std::vector<NextAction> CastAbolishPoisonOnPartyAction::getAlternatives()
 {
-    return NextAction::merge({ NextAction("cure poison on party") },
-                             CastSpellAction::getPrerequisites());
+    return NextAction::merge(
+        {
+            NextAction("cure poison on party")
+        },
+        CastSpellAction::getPrerequisites()
+    );
 }
 
 Value<Unit*>* CastEntanglingRootsCcAction::GetTargetValue()

@@ -6,9 +6,18 @@
 #include "ReturnStrategy.h"
 
 #include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "PositionAction.h"
 
 void ReturnStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("return", { NextAction("set return position", 1.5f),
-                                                                   NextAction("return", 1.0f), }));
+    triggers.push_back(
+        new TriggerNode(
+            "return",
+            {
+                CreateNextAction<SetReturnPositionAction>(1.5f),
+                CreateNextAction<ReturnAction>(1.0f),
+            }
+        )
+    );
 }

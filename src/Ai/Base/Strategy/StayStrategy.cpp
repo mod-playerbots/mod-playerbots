@@ -6,6 +6,9 @@
 #include "StayStrategy.h"
 
 #include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "PositionAction.h"
+#include "StayActions.h"
 
 void StayStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
@@ -13,7 +16,7 @@ void StayStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "return to stay position",
             {
-                NextAction("return to stay position", ACTION_MOVE)
+                CreateNextAction<ReturnToStayPositionAction>(ACTION_MOVE)
             }
         )
     );
@@ -22,7 +25,7 @@ void StayStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 std::vector<NextAction> StayStrategy::getDefaultActions()
 {
     return {
-        NextAction("stay", 1.0f)
+        CreateNextAction<StayAction>(1.0f)
     };
 }
 
@@ -32,7 +35,7 @@ void SitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "sit",
             {
-                NextAction("sit", 1.5f)
+                CreateNextAction<SitAction>(1.5f)
             }
         )
     );

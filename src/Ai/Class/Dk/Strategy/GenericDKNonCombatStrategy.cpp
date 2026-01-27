@@ -42,15 +42,45 @@ void GenericDKNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     NonCombatStrategy::InitTriggers(triggers);
 
     triggers.push_back(
-        new TriggerNode("no pet", { NextAction("raise dead", ACTION_NORMAL + 1) }));
+        new TriggerNode(
+            "no pet",
+            {
+                NextAction("raise dead", ACTION_NORMAL + 1)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("horn of winter", { NextAction("horn of winter", 21.0f) }));
+        new TriggerNode(
+            "horn of winter",
+            {
+                NextAction("horn of winter", 21.0f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("bone shield", { NextAction("bone shield", 21.0f) }));
+        new TriggerNode(
+            "bone shield",
+            {
+                NextAction("bone shield", 21.0f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("has pet", { NextAction("toggle pet spell", 60.0f) }));
+        new TriggerNode(
+            "has pet",
+            {
+                NextAction("toggle pet spell", 60.0f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("new pet", { NextAction("set pet stance", 60.0f) }));
+        new TriggerNode(
+            "new pet",
+            {
+                NextAction("set pet stance", 60.0f)
+            }
+        )
+    );
 }
 
 void DKBuffDpsStrategy::InitTriggers(std::vector<TriggerNode*>&)

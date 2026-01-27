@@ -200,7 +200,9 @@ public:
     std::vector<NextAction> getPrerequisites() override
     {
         return NextAction::merge(
-            { NextAction("reach party member to resurrect") },
+            {
+                NextAction("reach party member to resurrect")
+            },
             Action::getPrerequisites()
         );
     }

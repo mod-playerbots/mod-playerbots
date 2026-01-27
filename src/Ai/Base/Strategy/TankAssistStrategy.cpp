@@ -6,9 +6,17 @@
 #include "TankAssistStrategy.h"
 
 #include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "ChooseTargetAction.h"
 
 void TankAssistStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("tank assist", { NextAction("tank assist", 50.0f) }));
+        new TriggerNode(
+            "tank assist",
+            {
+                CreateNextAction<TankAssistAction>(50.0f)
+            }
+        )
+    );
 }

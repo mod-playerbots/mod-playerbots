@@ -6,13 +6,17 @@
 #include "TravelStrategy.h"
 
 #include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "TravelAction.h"
+#include "ChooseTravelTargetAction.h"
+#include "MoveToTravelTargetAction.h"
 
 TravelStrategy::TravelStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 
 std::vector<NextAction> TravelStrategy::getDefaultActions()
 {
     return {
-        NextAction("travel", 1.0f)
+        CreateNextAction<TravelAction>(1.0f)
     };
 }
 
@@ -22,7 +26,7 @@ void TravelStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "no travel target",
             {
-                NextAction("choose travel target", 6.f)
+                CreateNextAction<ChooseTravelTargetAction>(6.0f)
             }
         )
     );
@@ -30,7 +34,7 @@ void TravelStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "far from travel target",
             {
-                NextAction("move to travel target", 1)
+                CreateNextAction<MoveToTravelTargetAction>(1.0f)
             }
         )
     );

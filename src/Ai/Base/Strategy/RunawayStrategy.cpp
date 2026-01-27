@@ -6,9 +6,18 @@
 #include "RunawayStrategy.h"
 
 #include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "ActionContext.h"
+#include "MovementActions.h"
 
 void RunawayStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("enemy too close for spell", { NextAction("runaway", 50.0f) }));
+        new TriggerNode(
+            "enemy too close for spell",
+            {
+                CreateNextAction<RunAwayAction>(50.0f)
+            }
+        )
+    );
 }

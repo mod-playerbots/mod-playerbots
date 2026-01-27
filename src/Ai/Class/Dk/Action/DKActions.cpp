@@ -13,26 +13,42 @@
 
 std::vector<NextAction> CastDeathchillAction::getPrerequisites()
 {
-    return NextAction::merge({ NextAction("frost presence") },
-                             CastSpellAction::getPrerequisites());
+    return NextAction::merge(
+        {
+            NextAction("frost presence")
+        },
+        CastSpellAction::getPrerequisites()
+    );
 }
 
 std::vector<NextAction> CastUnholyMeleeSpellAction::getPrerequisites()
 {
-    return NextAction::merge({ NextAction("unholy presence") },
-                             CastMeleeSpellAction::getPrerequisites());
+    return NextAction::merge(
+        {
+            NextAction("unholy presence")
+        },
+        CastMeleeSpellAction::getPrerequisites()
+    );
 }
 
 std::vector<NextAction> CastFrostMeleeSpellAction::getPrerequisites()
 {
-    return NextAction::merge({ NextAction("frost presence") },
-                             CastMeleeSpellAction::getPrerequisites());
+    return NextAction::merge(
+        {
+            NextAction("frost presence")
+        },
+        CastMeleeSpellAction::getPrerequisites()
+    );
 }
 
 std::vector<NextAction> CastBloodMeleeSpellAction::getPrerequisites()
 {
-    return NextAction::merge({ NextAction("blood presence") },
-                             CastMeleeSpellAction::getPrerequisites());
+    return NextAction::merge(
+        {
+            NextAction("blood presence")
+        },
+        CastMeleeSpellAction::getPrerequisites()
+    );
 }
 
 bool CastRaiseDeadAction::Execute(Event event)

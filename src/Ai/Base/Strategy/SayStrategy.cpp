@@ -6,15 +6,48 @@
 #include "SayStrategy.h"
 
 #include "Playerbots.h"
+#include "CreateNextAction.h"
 
 void SayStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("critical health",
-                                       { NextAction("say::critical health", 99.0f) }));
     triggers.push_back(
-        new TriggerNode("low health", { NextAction("say::low health", 99.0f) }));
+        new TriggerNode(
+            "critical health",
+            {
+                CreateNextAction("say::critical health", 99.0f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("low mana", { NextAction("say::low mana", 99.0f) }));
-    triggers.push_back(new TriggerNode("tank aoe", { NextAction("say::taunt", 99.0f) }));
-    triggers.push_back(new TriggerNode("medium aoe", { NextAction("say::aoe", 99.0f) }));
+        new TriggerNode(
+            "low health",
+            {
+                CreateNextAction("say::low health", 99.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "low mana",
+            {
+                CreateNextAction("say::low mana", 99.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "tank aoe",
+            {
+                CreateNextAction("say::taunt", 99.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "medium aoe",
+            {
+                CreateNextAction("say::aoe", 99.0f)
+            }
+        )
+    );
 }

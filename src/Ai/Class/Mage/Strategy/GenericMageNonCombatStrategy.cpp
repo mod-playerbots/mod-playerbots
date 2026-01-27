@@ -52,23 +52,72 @@ void GenericMageNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trigg
 {
     NonCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("arcane intellect", { NextAction("arcane intellect", 21.0f) }));
-    triggers.push_back(new TriggerNode("no focus magic", { NextAction("focus magic on party", 19.0f) }));
-    triggers.push_back(new TriggerNode("often", { NextAction("apply oil", 1.0f) }));
-    triggers.push_back(new TriggerNode("no mana gem", { NextAction("conjure mana gem", 20.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "arcane intellect",
+            {
+                NextAction("arcane intellect", 21.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "no focus magic",
+            {
+                NextAction("focus magic on party", 19.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "often",
+            {
+                NextAction("apply oil", 1.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "no mana gem",
+            {
+                NextAction("conjure mana gem", 20.0f)
+            }
+        )
+    );
 }
 
 void MageBuffManaStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("mage armor", { NextAction("mage armor", 19.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "mage armor",
+            {
+                NextAction("mage armor", 19.0f)
+            }
+        )
+    );
 }
 
 void MageBuffDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("mage armor", { NextAction("molten armor", 19.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "mage armor",
+            {
+                NextAction("molten armor", 19.0f)
+            }
+        )
+    );
 }
 
 void MageBuffStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("arcane intellect on party", { NextAction("arcane intellect on party", 20.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "arcane intellect on party",
+            {
+                NextAction("arcane intellect on party", 20.0f)
+            }
+        )
+    );
 }
