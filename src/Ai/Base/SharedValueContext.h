@@ -8,7 +8,7 @@
 
 #include "LootValues.h"
 #include "NamedObjectContext.h"
-#include "Playerbots.h"
+#include "PlayerbotAI.h"
 #include "PvpValues.h"
 #include "QuestValues.h"
 
