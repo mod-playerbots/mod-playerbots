@@ -354,7 +354,6 @@ ItemIds EquipAction::SelectInventoryItemsToEquip()
         std::string itemUsageParam;
         if (randomProperty != 0)
             itemUsageParam = std::to_string(itemId) + "," + std::to_string(randomProperty);
-
         else
             itemUsageParam = std::to_string(itemId);
 
