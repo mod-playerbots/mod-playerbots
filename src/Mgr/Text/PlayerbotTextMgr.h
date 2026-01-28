@@ -100,6 +100,7 @@ private:
     PlayerbotTextMgr(PlayerbotTextMgr&&) = delete;
     PlayerbotTextMgr& operator=(PlayerbotTextMgr&&) = delete;
 
+
     std::map<std::string, std::vector<BotTextEntry>> botTexts;
     std::map<std::string, uint32> botTextChance;
     uint32 botTextLocalePriority[MAX_LOCALES];
