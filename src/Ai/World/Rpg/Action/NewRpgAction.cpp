@@ -64,37 +64,40 @@ bool StartRpgDoQuestAction::Execute(Event event)
 bool NewRpgStatusUpdateAction::Execute(Event event)
 {
     NewRpgInfo& info = botAI->rpgInfo;
-    std::visit([&](auto&& arg)
+    switch (info.GetStatus())
     {
-        using T = std::decay_t<decltype(arg)>;
-        if constexpr (std::is_same_v<T, NewRpgInfo::Idle>)
+        case RPG_IDLE:
         {
             return RandomChangeStatus({RPG_GO_CAMP, RPG_GO_GRIND, RPG_WANDER_RANDOM, RPG_WANDER_NPC, RPG_DO_QUEST,
                                        RPG_TRAVEL_FLIGHT, RPG_REST});
         }
-        else if constexpr (std::is_same_v<T, NewRpgInfo::GoGrind>)
+        case RPG_GO_GRIND:
         {
-            WorldPosition& originalPos = arg.pos;
-            assert(arg.pos != WorldPosition());
+            auto& data = std::get<NewRpgInfo::GoGrind>(info.data);
+            WorldPosition& originalPos = data.pos;
+            assert(data.pos != WorldPosition());
             // GO_GRIND -> WANDER_RANDOM
             if (bot->GetExactDist(originalPos) < 10.0f)
             {
                 info.ChangeToWanderRandom();
                 return true;
             }
+            break;
         }
-        else if constexpr (std::is_same_v<T, NewRpgInfo::GoCamp>)
+        case RPG_GO_CAMP:
         {
-            WorldPosition& originalPos = arg.pos;
-            assert(arg.pos != WorldPosition());
+            auto& data = std::get<NewRpgInfo::GoCamp>(info.data);
+            WorldPosition& originalPos = data.pos;
+            assert(data.pos != WorldPosition());
             // GO_CAMP -> WANDER_NPC
             if (bot->GetExactDist(originalPos) < 10.0f)
             {
                 info.ChangeToWanderNpc();
                 return true;
             }
+            break;
         }
-        else if constexpr (std::is_same_v<T, NewRpgInfo::WanderRandom>)
+        case RPG_WANDER_RANDOM:
         {
             // WANDER_RANDOM -> IDLE
             if (info.HasStatusPersisted(statusWanderRandomDuration))
@@ -102,16 +105,18 @@ bool NewRpgStatusUpdateAction::Execute(Event event)
                 info.ChangeToIdle();
                 return true;
             }
+            break;
         }
-        else if constexpr (std::is_same_v<T, NewRpgInfo::WanderNpc>)
+        case RPG_WANDER_NPC:
         {
             if (info.HasStatusPersisted(statusWanderNpcDuration))
             {
                 info.ChangeToIdle();
                 return true;
             }
+            break;
         }
-        else if constexpr (std::is_same_v<T, NewRpgInfo::DoQuest>)
+        case RPG_DO_QUEST:
         {
             // DO_QUEST -> IDLE
             if (info.HasStatusPersisted(statusDoQuestDuration))
@@ -119,17 +124,20 @@ bool NewRpgStatusUpdateAction::Execute(Event event)
                 info.ChangeToIdle();
                 return true;
             }
+            break;
         }
-        else if constexpr (std::is_same_v<T, NewRpgInfo::TravelFlight>)
+        case RPG_TRAVEL_FLIGHT:
         {
-            if (arg.inFlight && !bot->IsInFlight())
+            auto& data = std::get<NewRpgInfo::TravelFlight>(info.data);
+            if (data.inFlight && !bot->IsInFlight())
             {
                 // flight arrival
                 info.ChangeToIdle();
                 return true;
             }
+            break;
         }
-        else if constexpr (std::is_same_v<T, NewRpgInfo::Rest>)
+        case RPG_REST:
         {
             // REST -> IDLE
             if (info.HasStatusPersisted(statusRestDuration))
@@ -137,8 +145,11 @@ bool NewRpgStatusUpdateAction::Execute(Event event)
                 info.ChangeToIdle();
                 return true;
             }
+            break;
         }
-    }, info.data);
+        default:
+            break;
+    }
     return false;
 }
 

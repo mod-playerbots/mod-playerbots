@@ -76,6 +76,22 @@ void NewRpgInfo::SetMoveFarTo(WorldPosition pos)
     moveFarPos = pos;
 }
 
+NewRpgStatus NewRpgInfo::GetStatus()
+{
+    return std::visit([](auto&& arg) -> NewRpgStatus {
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr (std::is_same_v<T, Idle>) return RPG_IDLE;
+        if constexpr (std::is_same_v<T, GoGrind>) return RPG_GO_GRIND;
+        if constexpr (std::is_same_v<T, GoCamp>) return RPG_GO_CAMP;
+        if constexpr (std::is_same_v<T, WanderNpc>) return RPG_WANDER_NPC;
+        if constexpr (std::is_same_v<T, WanderRandom>) return RPG_WANDER_RANDOM;
+        if constexpr (std::is_same_v<T, Rest>) return RPG_REST;
+        if constexpr (std::is_same_v<T, DoQuest>) return RPG_DO_QUEST;
+        if constexpr (std::is_same_v<T, TravelFlight>) return RPG_TRAVEL_FLIGHT;
+        return RPG_IDLE;
+    }, data);
+}
+
 std::string NewRpgInfo::ToString()
 {
     std::stringstream out;
