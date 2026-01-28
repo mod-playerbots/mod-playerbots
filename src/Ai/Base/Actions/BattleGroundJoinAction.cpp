@@ -14,6 +14,7 @@
 #include "Playerbots.h"
 #include "PositionValue.h"
 #include "UpdateTime.h"
+#include "PlayerbotFactory.h"
 
 bool BGJoinAction::Execute(Event event)
 {
@@ -711,6 +712,12 @@ bool BGStatusAction::LeaveBG(PlayerbotAI* botAI)
     bool isArena = bg->isArena();
     bool isRandomBot = sRandomPlayerbotMgr->IsRandomBot(bot);
 
+
+    // Snapshot before we clear master (we need it to pick the correct gear limits).
+    bool hadRealMaster = false;
+    if (isRandomBot)
+        hadRealMaster = botAI->HasRealPlayerMaster();
+
     if (isRandomBot)
         botAI->SetMaster(nullptr);
 
@@ -747,6 +754,13 @@ bool BGStatusAction::LeaveBG(PlayerbotAI* botAI)
     PositionInfo pos = botAI->GetAiObjectContext()->GetValue<PositionMap&>("position")->Get()["bg objective"];
     pos.Reset();
     posMap["bg objective"] = pos;
+
+
+    // Random bots only: schedule PvE re-equip after leaving BG/arena.
+    // Leaving a battleground/arena usually involves a map transfer, so we defer the actual re-equip
+    // until the bot is back in world (handled in PlayerbotAI::UpdateAI).
+    if (isRandomBot)
+        botAI->SetPendingPveGearReequip(hadRealMaster);
     return true;
 }
 
@@ -1092,6 +1106,34 @@ bool BGStrategyCheckAction::Execute(Event event)
     if (inside_bg && !botAI->HasStrategy("battleground", BOT_STATE_NON_COMBAT))
     {
         botAI->ResetStrategies();
+
+        // Random bots: generate PvP gear + enchants after fully entering BG/arena.
+        // - Wild random bots use RandomGear* limits (AiPlayerbot.RandomGearQualityLimit/RandomGearScoreLimit).
+        // - Random bots with a real player master use AutoGear* limits (AiPlayerbot.AutoGearQualityLimit/AutoGearScoreLimit).
+        // Alt bots are not affected by this logic.
+        if (sRandomPlayerbotMgr->IsRandomBot(bot))
+        {
+            bool hasRealMaster = botAI->HasRealPlayerMaster();
+
+            uint32 qualityLimit = hasRealMaster ? sPlayerbotAIConfig->autoGearQualityLimit
+                                                : sPlayerbotAIConfig->randomGearQualityLimit;
+
+            uint32 scoreLimit = hasRealMaster ? sPlayerbotAIConfig->autoGearScoreLimit
+                                              : sPlayerbotAIConfig->randomGearScoreLimit;
+
+            uint32 gs = scoreLimit == 0 ? 0 : PlayerbotFactory::CalcMixedGearScore(scoreLimit, qualityLimit);
+
+            uint8 savedLevel = bot->GetLevel();
+            PlayerbotFactory factory(bot, savedLevel, qualityLimit, gs, true);
+
+            // Force gear generation; do not touch talents/level/spells/etc.
+            factory.InitEquipment(false);
+
+            // Apply enchants/gems only.
+            if (savedLevel >= sPlayerbotAIConfig->minEnchantingBotLevel)
+                factory.ApplyEnchantAndGemsNew();
+        }
+
         return false;
     }
     return false;

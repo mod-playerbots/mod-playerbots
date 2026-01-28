@@ -12,6 +12,7 @@
 #include "PlayerbotFactory.h"
 #include "Playerbots.h"
 #include "PlayerbotGuildMgr.h"
+#include "World.h"
 #include "ScriptMgr.h"
 #include "SharedDefines.h"
 #include "SocialMgr.h"
@@ -788,6 +789,9 @@ std::string const RandomPlayerbotFactory::CreateRandomGuildName()
 
 void RandomPlayerbotFactory::CreateRandomArenaTeams(ArenaType type, uint32 count)
 {
+    uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+    bool allowArenaTeams = (maxLevel == 70 || maxLevel == 80);
+
     std::vector<uint32> randomBots;
 
     PlayerbotsDatabasePreparedStatement* stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_SEL_RANDOM_BOTS_BOT);
@@ -817,7 +821,7 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams(ArenaType type, uint32 count
         {
             Player* player = ObjectAccessor::FindConnectedPlayer(captain);
 
-            if (!arenateam && player && player->GetLevel() >= 70)
+            if (allowArenaTeams && !arenateam && player && player->GetLevel() == maxLevel)
                 availableCaptains.push_back(captain);
         }
     }
@@ -843,9 +847,9 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams(ArenaType type, uint32 count
             continue;
         }
 
-        if (player->GetLevel() < 70)
+        if (player->GetLevel() != maxLevel)
         {
-            LOG_ERROR("playerbots", "Bot {} must be level 70 to create an arena team", captain.ToString().c_str());
+            LOG_ERROR("playerbots", "Bot {} must be level {} to create an arena team", captain.ToString().c_str(), maxLevel);
             continue;
         }
 

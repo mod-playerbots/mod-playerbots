@@ -391,6 +391,10 @@ public:
     void UpdateAI(uint32 elapsed, bool minimal = false) override;
     void UpdateAIInternal(uint32 elapsed, bool minimal = false) override;
 
+    // Schedule a delayed PvE re-equip after leaving BG/arena (teleport/loading safe).
+    // Used by PvP gear swap logic to avoid re-gearing during map transfer.
+    void SetPendingPveGearReequip(bool hadRealMaster);
+
     std::string const HandleRemoteCommand(std::string const command);
     void HandleCommand(uint32 type, std::string const text, Player* fromPlayer);
     void QueueChatResponse(const ChatQueuedReply reply);
@@ -616,6 +620,10 @@ private:
     void HandleCommands();
     void HandleCommand(uint32 type, const std::string& text, Player& fromPlayer, const uint32 lang = LANG_UNIVERSAL);
     bool _isBotInitializing = false;
+
+    // Pending PvE re-equip after leaving BG/arena (deferred until bot is back in world).
+    bool pendingPveGearReequip_ = false;
+    bool pendingPveGearReequipHadRealMaster_ = false;
     inline bool IsValidUnit(const Unit* unit) const
     {
         return unit && unit->IsInWorld() && !unit->IsDuringRemoveFromWorld();

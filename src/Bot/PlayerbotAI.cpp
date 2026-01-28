@@ -43,6 +43,7 @@
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotRepository.h"
 #include "PlayerbotMgr.h"
+#include "PlayerbotFactory.h"
 #include "PlayerbotGuildMgr.h"
 #include "Playerbots.h"
 #include "PointMovementGenerator.h"
@@ -236,6 +237,13 @@ PlayerbotAI::~PlayerbotAI()
         sPlayerbotsMgr->RemovePlayerBotData(bot->GetGUID(), true);
 }
 
+
+void PlayerbotAI::SetPendingPveGearReequip(bool hadRealMaster)
+{
+    pendingPveGearReequip_ = true;
+    pendingPveGearReequipHadRealMaster_ = hadRealMaster;
+}
+
 void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 {
     // Handle the AI check delay
@@ -248,6 +256,40 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     if (!bot || !bot->GetSession() || !bot->IsInWorld() || bot->IsBeingTeleported() ||
         bot->GetSession()->isLogingOut() || bot->IsDuringRemoveFromWorld())
         return;
+
+    // Delayed PvE re-equip after leaving BG/arena.
+    // Leaving a battleground/arena usually involves a map transfer; avoid rebuilding gear during loading.
+    if (pendingPveGearReequip_)
+    {
+        // Safety: only random bots use this path.
+        if (!sRandomPlayerbotMgr || !sRandomPlayerbotMgr->IsRandomBot(bot))
+        {
+            pendingPveGearReequip_ = false;
+            pendingPveGearReequipHadRealMaster_ = false;
+        }
+        else if (!bot->IsInCombat() && !bot->InBattleground() && !bot->InArena() && !bot->GetBattleground())
+        {
+            uint32 qualityLimit = pendingPveGearReequipHadRealMaster_ ? sPlayerbotAIConfig->autoGearQualityLimit
+                                                                     : sPlayerbotAIConfig->randomGearQualityLimit;
+            uint32 scoreLimit = pendingPveGearReequipHadRealMaster_ ? sPlayerbotAIConfig->autoGearScoreLimit
+                                                                    : sPlayerbotAIConfig->randomGearScoreLimit;
+            uint32 gs = scoreLimit == 0 ? 0 : PlayerbotFactory::CalcMixedGearScore(scoreLimit, qualityLimit);
+
+            uint8 savedLevel = bot->GetLevel();
+            PlayerbotFactory factory(bot, savedLevel, qualityLimit, gs, true);
+
+            // Force gear generation; do not touch talents/level/spells/etc.
+            factory.InitEquipment(false);
+
+            // Apply enchants/gems only.
+            if (savedLevel >= sPlayerbotAIConfig->minEnchantingBotLevel)
+                factory.ApplyEnchantAndGemsNew();
+
+            pendingPveGearReequip_ = false;
+            pendingPveGearReequipHadRealMaster_ = false;
+        }
+    }
+
 
     // Handle cheat options (set bot health and power if cheats are enabled)
     if (bot->IsAlive() &&
