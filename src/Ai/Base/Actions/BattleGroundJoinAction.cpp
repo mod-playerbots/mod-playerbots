@@ -113,7 +113,6 @@ namespace
         return teamSize;
     }
 
-
     // For rated arenas we want bot teams to be near the rating/MMR of real players currently queued
     // for the same bracket and arena type.
     static uint32 GetQueuedRealPlayersMatchmakerTarget(BattlegroundQueueTypeId queueTypeId, BattlegroundBracketId bracketId,
@@ -250,7 +249,6 @@ namespace
 
         team->NotifyStatsChanged();
     }
-
 
 } // namespace
 
@@ -984,7 +982,6 @@ bool BGStatusAction::LeaveBG(PlayerbotAI* botAI)
     bool isArena = bg->isArena();
     bool isRandomBot = sRandomPlayerbotMgr->IsRandomBot(bot);
 
-
     // Snapshot before we clear master (we need it to pick the correct gear limits).
     bool hadRealMaster = false;
     if (isRandomBot)
@@ -1031,7 +1028,6 @@ bool BGStatusAction::LeaveBG(PlayerbotAI* botAI)
     PositionInfo pos = botAI->GetAiObjectContext()->GetValue<PositionMap&>("position")->Get()["bg objective"];
     pos.Reset();
     posMap["bg objective"] = pos;
-
 
     // Random bots only: schedule PvE re-equip after leaving BG/arena.
     // Leaving a battleground/arena usually involves a map transfer, so we defer the actual re-equip
@@ -1492,7 +1488,6 @@ bool BGStrategyCheckAction::Execute(Event event)
         if (gs == 0 || bgGsCap < gs)
             gs = bgGsCap;
     }
-
 
     // Additional arena rating-based gear cap (level 80 only).
     // 1000 rating => ilvl 200, 2400 rating => ilvl 300 (hard cap).

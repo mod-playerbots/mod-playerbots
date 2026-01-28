@@ -216,7 +216,6 @@ double botPIDImpl::calculate(double setpoint, double pv)
 
 botPIDImpl::~botPIDImpl() {}
 
-
 static inline void ResetBattlegroundInfo(BattlegroundInfo& info)
 {
     // Preserve vector capacity to avoid periodic allocation spikes.
@@ -258,7 +257,6 @@ RandomPlayerbotMgr::RandomPlayerbotMgr() : PlayerbotHolder(), processTicks(0)
     // Reserve to avoid rehash spikes when a large number of bots is used.
     if (sPlayerbotAIConfig->maxRandomBots > 0)
         eventCache.reserve(sPlayerbotAIConfig->maxRandomBots + 32);
-
 
     // Cleanup on server start: orphaned pet data that's often left behind by bot pets that no longer exist in the DB
     CharacterDatabase.Execute("DELETE FROM pet_aura WHERE guid NOT IN (SELECT id FROM character_pet)");
@@ -629,7 +627,6 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 elapsed, bool /*minimal*/)
         LogPlayerLocation();
     }
 }
-
 
 void RandomPlayerbotMgr::BeginSlicedCycle()
 {
@@ -3123,7 +3120,6 @@ void RandomPlayerbotMgr::OnRandomBotLoggedOut(ObjectGuid const& botGuid)
         _controlledRandomBotsByMaster.erase(itSet);
 }
 
-
 void RandomPlayerbotMgr::GetBots()
 {
     if (!currentBots.empty())
@@ -4050,7 +4046,6 @@ void RandomPlayerbotMgr::Remove(Player* bot)
 
         _pendingEventWrites.erase(pit);
     }
-
 
     LogoutPlayerBot(owner);
 }

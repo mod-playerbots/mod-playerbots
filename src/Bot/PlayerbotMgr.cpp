@@ -43,7 +43,6 @@
 #include "WorldSessionMgr.h"
 #include "DatabaseEnv.h"
 
-
 namespace
 {
 template <class F>

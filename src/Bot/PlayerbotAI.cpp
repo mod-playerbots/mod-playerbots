@@ -84,7 +84,6 @@ namespace
     }
 }
 
-
 namespace
 {
 struct SpellInterruptMeta
@@ -136,7 +135,6 @@ SpellInterruptMeta GetSpellInterruptMeta(SpellInfo const* spellInfo)
     return meta;
 }
 } // namespace
-
 
 const int SPELL_TITAN_GRIP = 49152;
 
@@ -348,7 +346,6 @@ PlayerbotAI::~PlayerbotAI()
         sPlayerbotsMgr->RemovePlayerBotData(bot->GetGUID(), true);
 }
 
-
 void PlayerbotAI::SetPendingPveGearReequip(bool hadRealMaster)
 {
     // Schedule a single PvE restore only if this bot actually equipped PvP gear before.
@@ -364,7 +361,6 @@ void PlayerbotAI::SetPendingPveGearReequip(bool hadRealMaster)
     pendingPveGearReequipHadRealMaster_ = hadRealMaster;
     pendingPveGearReequipNextTryMs_ = getMSTime() + urand(0, 500);
 }
-
 
 bool PlayerbotAI::ShouldLeaveEmptyBgQueue(uint32 queueTypeId, uint8 bracketId, bool hasRealPlayers,
                                          uint32 minEmptyMs, uint32 attemptCooldownMs)
@@ -404,7 +400,6 @@ bool PlayerbotAI::ShouldLeaveEmptyBgQueue(uint32 queueTypeId, uint8 bracketId, b
     return true;
 }
 
-
 void PlayerbotAI::OnPvpGearEquipped(uint32 instanceId)
 {
     // Mark that the bot is now in PvP gear and advance the epoch.
@@ -412,7 +407,6 @@ void PlayerbotAI::OnPvpGearEquipped(uint32 instanceId)
     pvpGearActive_ = true;
     lastSwapBgInstanceId_ = instanceId;
 }
-
 
 bool PlayerbotAI::IsWildRandomBotForAutoGearSwap() const
 {
@@ -433,7 +427,6 @@ bool PlayerbotAI::IsWildRandomBotForAutoGearSwap() const
     return true;
 }
 
-
 bool PlayerbotAI::ItemTemplateHasResilience(ItemTemplate const* proto)
 {
     if (!proto)
@@ -447,7 +440,6 @@ bool PlayerbotAI::ItemTemplateHasResilience(ItemTemplate const* proto)
 
     return false;
 }
-
 
 bool PlayerbotAI::LooksLikePvpGearEquipped() const
 {
@@ -470,7 +462,6 @@ bool PlayerbotAI::LooksLikePvpGearEquipped() const
 
     return false;
 }
-
 
 bool PlayerbotAI::FindFirstFreeBankSlot(uint8& outBag, uint8& outSlot) const
 {
@@ -507,7 +498,6 @@ bool PlayerbotAI::FindFirstFreeBankSlot(uint8& outBag, uint8& outSlot) const
     return false;
 }
 
-
 uint32 PlayerbotAI::CountFreeBankSlots() const
 {
     uint32 free = 0;
@@ -530,7 +520,6 @@ uint32 PlayerbotAI::CountFreeBankSlots() const
 
     return free;
 }
-
 
 void PlayerbotAI::HardPurgeBankContents()
 {
@@ -556,7 +545,6 @@ void PlayerbotAI::HardPurgeBankContents()
         }
     }
 }
-
 
 Item* PlayerbotAI::FindItemInBankByGuidRaw(uint64 guidRaw, uint8& outBag, uint8& outSlot) const
 {
@@ -595,13 +583,11 @@ Item* PlayerbotAI::FindItemInBankByGuidRaw(uint64 guidRaw, uint8& outBag, uint8&
     return nullptr;
 }
 
-
 void PlayerbotAI::ClearPveBankStash()
 {
     pveBankStashEpoch_ = 0;
     pveBankStashedGuidRawBySlot_.fill(0);
 }
-
 
 void PlayerbotAI::PurgeResilienceItemsFromBankAndBags(uint32 maxToDestroy)
 {
@@ -673,7 +659,6 @@ void PlayerbotAI::PurgeResilienceItemsFromBankAndBags(uint32 maxToDestroy)
     }
 }
 
-
 bool PlayerbotAI::StashPveGearToBankForNextPvpSwap()
 {
     if (!IsWildRandomBotForAutoGearSwap())
@@ -734,7 +719,6 @@ bool PlayerbotAI::StashPveGearToBankForNextPvpSwap()
     return true;
 }
 
-
 bool PlayerbotAI::TryRestorePveGearFromBankStash(uint32 epoch)
 {
     if (!IsWildRandomBotForAutoGearSwap())
@@ -780,7 +764,6 @@ bool PlayerbotAI::TryRestorePveGearFromBankStash(uint32 epoch)
 
     return restoredAny;
 }
-
 
 bool PlayerbotAI::TryRecoverPveGearFromBankHeuristic()
 {
@@ -873,7 +856,6 @@ bool PlayerbotAI::TryRecoverPveGearFromBankHeuristic()
     return swappedAny;
 }
 
-
 void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 {
     // Handle the AI check delay
@@ -886,7 +868,6 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     if (!bot || !bot->GetSession() || !bot->IsInWorld() || bot->IsBeingTeleported() ||
         bot->GetSession()->isLogingOut() || bot->IsDuringRemoveFromWorld())
         return;
-
 
     // Playerbots must never send MOVEMENTFLAG_ROOT in movement packets (e.g. MSG_MOVE_HEARTBEAT).
     // If this flag becomes stale, core will spam: "Attempted sending heartbeat with root flag for guid ..."
@@ -1036,7 +1017,6 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
         }
     }
 
-
     // Handle cheat options (set bot health and power if cheats are enabled)
     if (bot->IsAlive() &&
         (static_cast<uint32>(GetCheat()) > 0 || static_cast<uint32>(sPlayerbotAIConfig->botCheatMask) > 0))
@@ -1071,7 +1051,6 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 
         YieldThread(delay);
     };
-
 
     // Handle the current spell
     Spell* currentSpell = bot->GetCurrentSpell(CURRENT_GENERIC_SPELL);

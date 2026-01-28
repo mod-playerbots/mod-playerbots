@@ -697,7 +697,6 @@ private:
     uint32 lastSeenBgInstanceId_ = 0;
     uint32 lastSwapBgInstanceId_ = 0;
 
-
     inline bool IsValidUnit(const Unit* unit) const
     {
         return unit && unit->IsInWorld() && !unit->IsDuringRemoveFromWorld();

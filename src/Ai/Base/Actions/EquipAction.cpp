@@ -25,7 +25,6 @@ namespace
     }
 }
 
-
 bool EquipAction::Execute(Event event)
 {
     std::string const text = event.getParam();
@@ -488,7 +487,6 @@ if (guid != bot->GetGUID())
     EquipItems(items);
     return true;
 }
-
 
 bool EquipUpgradeAction::Execute(Event event)
 {

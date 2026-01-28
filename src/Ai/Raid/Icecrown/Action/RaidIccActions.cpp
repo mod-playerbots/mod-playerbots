@@ -13,7 +13,6 @@
 #include "RaidIccTriggers.h"
 #include "Multiplier.h"
 
-
 namespace
 {
 static inline int32 QuantizeToBucket(float value, float bucketSize)
@@ -102,7 +101,6 @@ static std::vector<ObjectGuid> const& GetUnitsInRangeCached(Player* bot, float r
     return entry.unitGuids;
 }
 } // namespace
-
 
 // Lord Marrowgwar
 bool IccLmTankPositionAction::Execute(Event event)
