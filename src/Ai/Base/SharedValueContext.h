@@ -47,17 +47,25 @@ public:
         return &instance;
     }
 
+private:
+    static PlayerbotAI* GetGlobalBotAI()
+    {
+        // Global (shared) values need a stable AI instance and a stable storage.
+        // Using NamedObjectContextList here would allocate values and then delete them
+        // at end of scope, returning a dangling pointer. We instead use the built-in
+        // caching of NamedObjectContext(true) on this singleton.
+        static PlayerbotAI* s_ai = nullptr;
+        if (!s_ai)
+            s_ai = new PlayerbotAI();
+        return s_ai;
+    }
+
+public:
     template <class T>
     Value<T>* getGlobalValue(std::string const name)
     {
-        // should never reach here
-        SharedNamedObjectContextList<UntypedValue> sValueContexts;
-        sValueContexts.Add(this);
-        NamedObjectContextList<UntypedValue> valueContexts(sValueContexts);
-        PlayerbotAI* botAI = new PlayerbotAI();
-
-        UntypedValue* value = valueContexts.GetContextObject(name, botAI);
-        delete botAI;
+        PlayerbotAI* botAI = GetGlobalBotAI();
+        UntypedValue* value = this->create(name, botAI);
         return dynamic_cast<Value<T>*>(value);
     }
 

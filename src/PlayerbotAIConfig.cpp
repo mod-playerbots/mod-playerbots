@@ -184,7 +184,15 @@ bool PlayerbotAIConfig::Initialize()
     minRandomBots = sConfigMgr->GetOption<int32>("AiPlayerbot.MinRandomBots", 500);
     maxRandomBots = sConfigMgr->GetOption<int32>("AiPlayerbot.MaxRandomBots", 500);
     randomBotUpdateInterval = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotUpdateInterval", 20);
-    randomBotCountChangeMinInterval =
+    randomBotSlicing = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotSlicing", false);
+
+int32 sliceMs = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotSliceMs", 250);
+if (sliceMs < 50)
+    sliceMs = 50;
+if (sliceMs > 5000)
+    sliceMs = 5000;
+randomBotSliceMs = static_cast<uint32>(sliceMs);
+randomBotCountChangeMinInterval =
         sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotCountChangeMinInterval", 30 * MINUTE);
     randomBotCountChangeMaxInterval =
         sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotCountChangeMaxInterval", 2 * HOUR);

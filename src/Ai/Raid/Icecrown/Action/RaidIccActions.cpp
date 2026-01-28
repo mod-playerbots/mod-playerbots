@@ -9,8 +9,100 @@
 #include "GenericSpellActions.h"
 #include "GenericActions.h"
 #include <fstream>
+#include <unordered_map>
 #include "RaidIccTriggers.h"
 #include "Multiplier.h"
+
+
+namespace
+{
+static inline int32 QuantizeToBucket(float value, float bucketSize)
+{
+    // Equivalent to floor(value / bucketSize) without requiring <cmath>.
+    float q = value / bucketSize;
+    int32 i = static_cast<int32>(q);
+    if (q < 0.0f && static_cast<float>(i) != q)
+        --i;
+    return i;
+}
+
+struct SindragosaUnitScanKey
+{
+    uint32 mapId = 0;
+    uint32 instanceId = 0;
+    int32 bucketX = 0;
+    int32 bucketY = 0;
+
+    bool operator==(SindragosaUnitScanKey const& other) const
+    {
+        return mapId == other.mapId && instanceId == other.instanceId &&
+               bucketX == other.bucketX && bucketY == other.bucketY;
+    }
+};
+
+struct SindragosaUnitScanKeyHash
+{
+    std::size_t operator()(SindragosaUnitScanKey const& k) const noexcept
+    {
+        // Basic hash combine.
+        std::size_t h = std::size_t(k.mapId);
+        h ^= (std::size_t(k.instanceId) + 0x9e3779b9 + (h << 6) + (h >> 2));
+        h ^= (std::size_t(k.bucketX) + 0x9e3779b9 + (h << 6) + (h >> 2));
+        h ^= (std::size_t(k.bucketY) + 0x9e3779b9 + (h << 6) + (h >> 2));
+        return h;
+    }
+};
+
+struct SindragosaUnitScanCacheEntry
+{
+    uint32 lastUpdateMs = 0;
+    std::vector<ObjectGuid> unitGuids;
+};
+
+static thread_local std::unordered_map<SindragosaUnitScanKey, SindragosaUnitScanCacheEntry, SindragosaUnitScanKeyHash> s_sindragosaUnitScanCache;
+
+static std::vector<ObjectGuid> const& GetUnitsInRangeCached(Player* bot, float range, uint32 ttlMs)
+{
+    static constexpr float kBucketSize = 50.0f; // yards
+    SindragosaUnitScanKey key;
+
+    if (bot)
+    {
+        key.mapId = bot->GetMapId();
+        key.instanceId = bot->GetInstanceId();
+        key.bucketX = QuantizeToBucket(bot->GetPositionX(), kBucketSize);
+        key.bucketY = QuantizeToBucket(bot->GetPositionY(), kBucketSize);
+    }
+
+    auto& entry = s_sindragosaUnitScanCache[key];
+    uint32 now = getMSTime();
+
+    if (!entry.lastUpdateMs || GetMSTimeDiffToNow(entry.lastUpdateMs) >= ttlMs)
+    {
+        entry.unitGuids.clear();
+
+        if (bot)
+        {
+            std::list<Unit*> units;
+            Acore::AnyUnitInObjectRangeCheck u_check(bot, range);
+            Acore::UnitListSearcher<Acore::AnyUnitInObjectRangeCheck> searcher(bot, units, u_check);
+            Cell::VisitObjects(bot, searcher, range);
+
+            entry.unitGuids.reserve(units.size());
+            for (Unit* unit : units)
+            {
+                if (unit)
+                    entry.unitGuids.push_back(unit->GetGUID());
+            }
+        }
+
+        entry.lastUpdateMs = now;
+    }
+
+    return entry.unitGuids;
+}
+} // namespace
+
 
 // Lord Marrowgwar
 bool IccLmTankPositionAction::Execute(Event event)
@@ -6534,14 +6626,14 @@ bool IccSindragosaFrostBombAction::Execute(Event event)
     std::vector<ObjectGuid> tombGuids;
 
     // Manually search for units with frost bomb aura (SPELL_FROST_BOMB_VISUAL) using NearestHostileNpcsValue logic
-    std::list<Unit*> units;
-    float range = 200.0f;
-    Acore::AnyUnitInObjectRangeCheck u_check(bot, range);
-    Acore::UnitListSearcher<Acore::AnyUnitInObjectRangeCheck> searcher(bot, units, u_check);
-    Cell::VisitObjects(bot, searcher, range);
+        float range = 200.0f;
+    static constexpr uint32 kScanCacheTtlMs = 0; // Disabled for ultra-safety (always refresh)
+// Shared per map/instance bucket
+    auto const& unitGuids = GetUnitsInRangeCached(bot, range, kScanCacheTtlMs);
 
-    for (Unit* unit : units)
+    for (ObjectGuid const& unitGuid : unitGuids)
     {
+        Unit* unit = ObjectAccessor::GetUnit(*bot, unitGuid);
         if (!unit || !unit->IsAlive())
             continue;
 

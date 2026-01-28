@@ -215,6 +215,34 @@ double botPIDImpl::calculate(double setpoint, double pv)
 
 botPIDImpl::~botPIDImpl() {}
 
+
+static inline void ResetBattlegroundInfo(BattlegroundInfo& info)
+{
+    // Preserve vector capacity to avoid periodic allocation spikes.
+    info.bgInstances.clear();
+    info.ratedArenaInstances.clear();
+    info.skirmishArenaInstances.clear();
+
+    info.bgInstanceCount = 0;
+    info.ratedArenaInstanceCount = 0;
+    info.skirmishArenaInstanceCount = 0;
+    info.minLevel = 0;
+    info.maxLevel = 0;
+    info.activeRatedArenaQueue = 0;
+    info.activeSkirmishArenaQueue = 0;
+    info.activeBgQueue = 0;
+
+    info.ratedArenaBotCount = 0;
+    info.skirmishArenaBotCount = 0;
+    info.bgHordeBotCount = 0;
+    info.bgAllianceBotCount = 0;
+
+    info.ratedArenaPlayerCount = 0;
+    info.skirmishArenaPlayerCount = 0;
+    info.bgHordePlayerCount = 0;
+    info.bgAlliancePlayerCount = 0;
+}
+
 RandomPlayerbotMgr::RandomPlayerbotMgr() : PlayerbotHolder(), processTicks(0)
 {
     playersLevel = sPlayerbotAIConfig->randombotStartingLevel;
@@ -226,6 +254,11 @@ RandomPlayerbotMgr::RandomPlayerbotMgr() : PlayerbotHolder(), processTicks(0)
 
     BattlegroundData.clear();  // Clear here and here only.
 
+    // Reserve to avoid rehash spikes when a large number of bots is used.
+    if (sPlayerbotAIConfig->maxRandomBots > 0)
+        eventCache.reserve(sPlayerbotAIConfig->maxRandomBots + 32);
+
+
     // Cleanup on server start: orphaned pet data that's often left behind by bot pets that no longer exist in the DB
     CharacterDatabase.Execute("DELETE FROM pet_aura WHERE guid NOT IN (SELECT id FROM character_pet)");
     CharacterDatabase.Execute("DELETE FROM pet_spell WHERE guid NOT IN (SELECT id FROM character_pet)");
@@ -235,12 +268,13 @@ RandomPlayerbotMgr::RandomPlayerbotMgr() : PlayerbotHolder(), processTicks(0)
     {
         for (int queueType = BATTLEGROUND_QUEUE_AV; queueType < MAX_BATTLEGROUND_QUEUE_TYPES; ++queueType)
         {
-            BattlegroundData[queueType][bracket] = BattlegroundInfo();
-        }
+            ResetBattlegroundInfo(BattlegroundData[queueType][bracket]);
+}
     }
     BgCheckTimer = 0;
     LfgCheckTimer = 0;
     PlayersCheckTimer = 0;
+    _pendingEventLastFlushMs = getMSTime();
 }
 
 RandomPlayerbotMgr::~RandomPlayerbotMgr() {}
@@ -360,6 +394,60 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 elapsed, bool /*minimal*/)
         totalPmo->finish();
 
     totalPmo = sPerfMonitor->start(PERF_MON_TOTAL, "RandomPlayerbotMgr::FullTick");
+
+    // Flush batched event DB writes (keeps I/O spikes low under large bot counts).
+    FlushPendingEventDbWrites(false);
+
+    // Optional smoothing: split heavy random-bot ticks into smaller slices to avoid periodic stalls.
+    if (sPlayerbotAIConfig->randomBotSlicing)
+    {
+        uint32 sliceMs = sPlayerbotAIConfig->randomBotSliceMs;
+        if (sliceMs < 50)
+            sliceMs = 50;
+
+        // Always schedule the next slice quickly.
+        SetNextCheckDelay(sliceMs);
+
+        if (!_slicedCycleActive)
+            BeginSlicedCycle();
+
+        if (_slicedLogicalIntervalMs == 0)
+        {
+            // Fallback: behave like the original path if something went wrong.
+            EndSlicedCycle();
+        }
+        else
+        {
+            // Clamp to avoid catch-up spikes after a long stall and avoid overshooting the end of the logical tick.
+            uint32 dtMs = std::min(elapsed, sliceMs);
+            uint32 remaining = (_slicedLogicalIntervalMs > _slicedElapsedMs) ? (_slicedLogicalIntervalMs - _slicedElapsedMs) : 0;
+            if (remaining)
+                dtMs = std::min(dtMs, remaining);
+            else
+                dtMs = 0;
+
+            _slicedDtMs = dtMs;
+
+            if (dtMs)
+            {
+                _slicedElapsedMs += dtMs;
+                ProcessSlicedSlice();
+            }
+
+            if (_slicedElapsedMs >= _slicedLogicalIntervalMs)
+                EndSlicedCycle();
+        }
+
+        if (sPlayerbotAIConfig->hasLog("player_location.csv"))
+        {
+            // Keep the original behaviour: log at most once per full tick.
+            // In slicing mode we only log when a full cycle ends.
+            if (!_slicedCycleActive)
+                LogPlayerLocation();
+        }
+
+        return;
+    }
 
     if (!sPlayerbotAIConfig->randomBotAutologin || !sPlayerbotAIConfig->enabled)
         return;
@@ -535,6 +623,303 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 elapsed, bool /*minimal*/)
     {
         LogPlayerLocation();
     }
+}
+
+
+void RandomPlayerbotMgr::BeginSlicedCycle()
+{
+    // Initialize per-cycle state.
+    _slicedCycleActive = true;
+    _slicedPhase = SlicedPhase::Updating;
+    _slicedElapsedMs = 0;
+    _slicedLogicalIntervalMs = 0;
+
+    _slicedUpdateTarget = 0;
+    _slicedLoginTarget = 0;
+    _slicedLoginTargetInitial = 0;
+    _slicedUpdateTargetInitial = 0;
+    _slicedLoginTargetTotal = 0;
+
+    _slicedUpdateDone = 0;
+    _slicedLoginDone = 0;
+    _slicedMaxNewBots = 0;
+
+    _slicedRealPlayerIsLogged = false;
+    _slicedCanAttemptLogin = false;
+    _slicedDidAttemptLoginPhase = false;
+
+    _slicedUpdateBudgetAcc = 0;
+    _slicedLoginBudgetAcc = 0;
+
+    _slicedUpdateIndex = 0;
+    _slicedLoginIndex = 0;
+    _slicedBotSnapshot.clear();
+
+    // --- Begin: original full-tick setup (without doing the heavy loops) ---
+    uint32 maxAllowedBotCount = GetEventValue(0, "bot_count");
+    if (!maxAllowedBotCount ||
+        (maxAllowedBotCount < sPlayerbotAIConfig->minRandomBots || maxAllowedBotCount > sPlayerbotAIConfig->maxRandomBots))
+    {
+        maxAllowedBotCount = urand(sPlayerbotAIConfig->minRandomBots, sPlayerbotAIConfig->maxRandomBots);
+        SetEventValue(0, "bot_count", maxAllowedBotCount,
+            urand(sPlayerbotAIConfig->randomBotCountChangeMinInterval, sPlayerbotAIConfig->randomBotCountChangeMaxInterval));
+    }
+
+    GetBots();
+
+    // Snapshot current bots in a stable order for the whole logical cycle.
+    _slicedBotSnapshot.reserve(currentBots.size());
+    for (uint32 bot : currentBots)
+        _slicedBotSnapshot.push_back(bot);
+
+    uint32 availableBotCount = static_cast<uint32>(_slicedBotSnapshot.size());
+    uint32 onlineBotCount = static_cast<uint32>(playerBots.size());
+
+    uint32 onlineBotFocus = 75;
+    if (onlineBotCount < (uint32)(sPlayerbotAIConfig->minRandomBots * 90 / 100))
+        onlineBotFocus = 25;
+
+    // Only keep updating till initializing time has completed,
+    // which prevents unneeded expensive GameTime calls.
+    if (_isBotInitializing)
+    {
+        _isBotInitializing = GameTime::GetUptime().count() < sPlayerbotAIConfig->maxRandomBots * (0.11 + 0.4);
+    }
+
+    uint32 updateIntervalTurboBoost = _isBotInitializing ? 1 : sPlayerbotAIConfig->randomBotUpdateInterval;
+    _slicedLogicalIntervalMs = updateIntervalTurboBoost * (onlineBotFocus + 25) * 10;
+    if (_slicedLogicalIntervalMs == 0)
+        _slicedLogicalIntervalMs = 1;
+
+    time_t now = time(nullptr);
+
+    bool realPlayerIsLogged = false;
+    if (sPlayerbotAIConfig->disabledWithoutRealPlayer)
+    {
+        if (sWorldSessionMgr->GetActiveAndQueuedSessionCount() > 0)
+        {
+            RealPlayerLastTimeSeen = now;
+            realPlayerIsLogged = true;
+
+            if (DelayLoginBotsTimer == 0)
+                DelayLoginBotsTimer = now + sPlayerbotAIConfig->disabledWithoutRealPlayerLoginDelay;
+        }
+        else
+        {
+            if (DelayLoginBotsTimer)
+                DelayLoginBotsTimer = 0;
+
+            if (RealPlayerLastTimeSeen != 0 && onlineBotCount > 0 &&
+                now > RealPlayerLastTimeSeen + sPlayerbotAIConfig->disabledWithoutRealPlayerLogoutDelay)
+            {
+                LogoutAllBots();
+                LOG_INFO("playerbots", "Logout all bots due no real player session.");
+            }
+        }
+
+        if (availableBotCount < maxAllowedBotCount &&
+            (sPlayerbotAIConfig->disabledWithoutRealPlayer == false ||
+             (realPlayerIsLogged && DelayLoginBotsTimer != 0 && now >= DelayLoginBotsTimer)))
+        {
+            AddRandomBots();
+        }
+    }
+    else if (availableBotCount < maxAllowedBotCount)
+    {
+        AddRandomBots();
+    }
+
+    // Mirror periodic checks from the original code path (run at most once per logical tick).
+    if (sPlayerbotAIConfig->syncLevelWithPlayers && !players.empty())
+    {
+        if (now > (PlayersCheckTimer + 60))
+            sRandomPlayerbotMgr->CheckPlayers();
+    }
+
+    if (sPlayerbotAIConfig->randomBotJoinBG)
+    {
+        if (now > (BgCheckTimer + 35))
+            sRandomPlayerbotMgr->CheckBgQueue();
+    }
+
+    if (sPlayerbotAIConfig->randomBotJoinLfg)
+    {
+        if (now > (LfgCheckTimer + 30))
+            sRandomPlayerbotMgr->CheckLfgQueue();
+    }
+
+    if (sPlayerbotAIConfig->randomBotAutologin && now > (printStatsTimer + 300))
+    {
+        if (!printStatsTimer)
+            printStatsTimer = now;
+        else
+            sRandomPlayerbotMgr->PrintStats();
+    }
+
+    uint32 updateBots = sPlayerbotAIConfig->randomBotsPerInterval * onlineBotFocus / 100;
+
+    uint32 maxNewBots =
+        onlineBotCount < maxAllowedBotCount &&
+                (sPlayerbotAIConfig->disabledWithoutRealPlayer == false ||
+                 (realPlayerIsLogged && DelayLoginBotsTimer != 0 && now >= DelayLoginBotsTimer))
+            ? maxAllowedBotCount - onlineBotCount
+            : 0;
+
+    uint32 loginBots = std::min(sPlayerbotAIConfig->randomBotsPerInterval - updateBots, maxNewBots);
+
+    _slicedUpdateTarget = updateBots;
+    _slicedUpdateTargetInitial = updateBots;
+
+    _slicedLoginTargetInitial = loginBots;
+    _slicedLoginTarget = loginBots;
+    _slicedLoginTargetTotal = loginBots;
+
+    _slicedMaxNewBots = maxNewBots;
+    _slicedRealPlayerIsLogged = realPlayerIsLogged;
+    // --- End: original full-tick setup ---
+}
+
+void RandomPlayerbotMgr::ProcessSlicedSlice()
+{
+    if (!_slicedCycleActive || _slicedLogicalIntervalMs == 0)
+        return;
+
+    uint32 dtMs = _slicedDtMs ? _slicedDtMs : sPlayerbotAIConfig->randomBotSliceMs;
+
+    switch (_slicedPhase)
+    {
+        case SlicedPhase::Updating:
+        {
+            if (_slicedUpdateTargetInitial && _slicedUpdateTarget)
+            {
+                // Distribute the same total work across the full logical interval.
+                _slicedUpdateBudgetAcc += uint64(_slicedUpdateTargetInitial) * dtMs;
+                uint32 allowed = uint32(_slicedUpdateBudgetAcc / _slicedLogicalIntervalMs);
+                _slicedUpdateBudgetAcc %= _slicedLogicalIntervalMs;
+
+                while (allowed && _slicedUpdateTarget && _slicedUpdateIndex < _slicedBotSnapshot.size())
+                {
+                    uint32 bot = _slicedBotSnapshot[_slicedUpdateIndex++];
+                    if (!GetPlayerBot(bot))
+                        continue;
+
+                    if (ProcessBot(bot))
+                    {
+                        --_slicedUpdateTarget;
+                        ++_slicedUpdateDone;
+                        --allowed;
+                    }
+                }
+            }
+
+            // Transition to login preparation when budget is met or we ran out of candidates.
+            if (_slicedUpdateTarget == 0 || _slicedUpdateIndex >= _slicedBotSnapshot.size())
+                _slicedPhase = SlicedPhase::LoginPrep;
+
+            break;
+        }
+
+        case SlicedPhase::LoginPrep:
+        {
+            // Match original gating: only run the login pass if loginBots was non-zero and there is no ongoing bot loading.
+            _slicedCanAttemptLogin = (_slicedLoginTargetInitial != 0 && botLoading.empty());
+
+            if (_slicedCanAttemptLogin)
+            {
+                _slicedDidAttemptLoginPhase = true;
+
+                // Carry unused update budget into login budget, as in the original code.
+                uint32 carried = _slicedUpdateTarget;
+                uint32 newLoginTarget = _slicedLoginTarget + carried;
+                newLoginTarget = std::min(newLoginTarget, _slicedMaxNewBots);
+
+                _slicedLoginTarget = newLoginTarget;
+                _slicedLoginTargetTotal = newLoginTarget;
+
+                if (_slicedLoginTarget)
+                    LOG_DEBUG("playerbots", "{} new bots prepared to login", _slicedLoginTarget);
+
+                _slicedLoginIndex = 0;
+                _slicedPhase = SlicedPhase::LoggingIn;
+            }
+            else
+            {
+                // No login this cycle.
+                _slicedLoginTarget = 0;
+                _slicedLoginTargetTotal = 0;
+                _slicedPhase = SlicedPhase::None;
+            }
+
+            break;
+        }
+
+        case SlicedPhase::LoggingIn:
+        {
+            if (_slicedLoginTargetTotal && _slicedLoginTarget)
+            {
+                _slicedLoginBudgetAcc += uint64(_slicedLoginTargetTotal) * dtMs;
+                uint32 allowed = uint32(_slicedLoginBudgetAcc / _slicedLogicalIntervalMs);
+                _slicedLoginBudgetAcc %= _slicedLogicalIntervalMs;
+
+                while (allowed && _slicedLoginTarget && _slicedLoginIndex < _slicedBotSnapshot.size())
+                {
+                    uint32 bot = _slicedBotSnapshot[_slicedLoginIndex++];
+                    if (GetPlayerBot(bot))
+                        continue;
+
+                    if (ProcessBot(bot))
+                    {
+                        --_slicedLoginTarget;
+                        ++_slicedLoginDone;
+                        --allowed;
+                    }
+                }
+            }
+
+            if (_slicedLoginTarget == 0 || _slicedLoginIndex >= _slicedBotSnapshot.size())
+                _slicedPhase = SlicedPhase::None;
+
+            break;
+        }
+
+        case SlicedPhase::None:
+        default:
+            break;
+    }
+}
+
+void RandomPlayerbotMgr::EndSlicedCycle()
+{
+    // Match original behaviour: when the login pass is attempted, reset the delayed-login timer.
+    if (_slicedDidAttemptLoginPhase)
+        DelayLoginBotsTimer = 0;
+
+    _slicedCycleActive = false;
+    _slicedPhase = SlicedPhase::None;
+
+    _slicedLogicalIntervalMs = 0;
+    _slicedElapsedMs = 0;
+
+    _slicedUpdateTarget = 0;
+    _slicedLoginTarget = 0;
+    _slicedLoginTargetInitial = 0;
+    _slicedUpdateTargetInitial = 0;
+    _slicedLoginTargetTotal = 0;
+
+    _slicedUpdateDone = 0;
+    _slicedLoginDone = 0;
+    _slicedMaxNewBots = 0;
+
+    _slicedRealPlayerIsLogged = false;
+    _slicedCanAttemptLogin = false;
+    _slicedDidAttemptLoginPhase = false;
+
+    _slicedUpdateBudgetAcc = 0;
+    _slicedLoginBudgetAcc = 0;
+
+    _slicedUpdateIndex = 0;
+    _slicedLoginIndex = 0;
+    _slicedBotSnapshot.clear();
 }
 
 // void RandomPlayerbotMgr::ScaleBotActivity()
@@ -988,8 +1373,8 @@ void RandomPlayerbotMgr::CheckBgQueue()
     {
         for (int queueType = BATTLEGROUND_QUEUE_AV; queueType < MAX_BATTLEGROUND_QUEUE_TYPES; ++queueType)
         {
-            BattlegroundData[queueType][bracket] = BattlegroundInfo();
-        }
+            ResetBattlegroundInfo(BattlegroundData[queueType][bracket]);
+}
     }
 
     // Process real players and populate Battleground Data with player/queue count
@@ -2168,7 +2553,13 @@ void RandomPlayerbotMgr::Init()
     if (sPlayerbotAIConfig->randomBotJoinBG)
         sRandomPlayerbotMgr->LoadBattleMastersCache();
 
+    // Build fast lookup index for creature entry -> CreatureData
+    sRandomPlayerbotMgr->BuildCreatureDataEntryIndex();
+
     PlayerbotsDatabase.Execute("DELETE FROM playerbots_random_bots WHERE event = 'add'");
+    _pendingEventWrites.clear();
+    _pendingEventWritesCount = 0;
+    _pendingEventLastFlushMs = getMSTime();
 }
 
 void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
@@ -2782,52 +3173,106 @@ std::string RandomPlayerbotMgr::GetEventData(uint32 bot, std::string const& even
 uint32 RandomPlayerbotMgr::SetEventValue(uint32 bot, std::string const& event, uint32 value, uint32 validIn,
                                          std::string const& data)
 {
-    PlayerbotsDatabaseTransaction trans = PlayerbotsDatabase.BeginTransaction();
-
-    PlayerbotsDatabasePreparedStatement* stmt =
-        PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_DEL_RANDOM_BOTS_BY_OWNER_AND_EVENT);
-    stmt->SetData(0, 0);
-    stmt->SetData(1, bot);
-    stmt->SetData(2, event.c_str());
-    trans->Append(stmt);
-
-    if (value)
-    {
-        stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_INS_RANDOM_BOTS);
-        stmt->SetData(0, 0);
-        stmt->SetData(1, bot);
-        stmt->SetData(2, NowSeconds());
-        stmt->SetData(3, validIn);
-        stmt->SetData(4, event.c_str());
-        stmt->SetData(5, value);
-
-        if (!data.empty())
-            stmt->SetData(6, data.c_str());
-        else
-            stmt->SetData(6);  // NULL
-
-        trans->Append(stmt);
-    }
-
-    PlayerbotsDatabase.CommitTransaction(trans);
-
-    // Update in-memory cache
+    // Update in-memory cache first (fast path).
     BotEventCache& cache = eventCache[bot];
     cache.loaded = true;
 
     if (!value)
     {
         cache.events.erase(event);
-        return 0;
+    }
+    else
+    {
+        CachedEvent& e = cache.events[event];  // create-on-write is OK here
+        e.value = value;
+        e.lastChangeTime = NowSeconds();
+        e.validIn = validIn;
+        e.data = data;
     }
 
-    CachedEvent& e = cache.events[event];  // create-on-write is OK here
-    e.value = value;
-    e.lastChangeTime = NowSeconds();
-    e.validIn = validIn;
-    e.data = data;
+    // Queue persistence to DB (batched) to avoid commit-per-event I/O spikes under large bot counts.
+    auto& perBot = _pendingEventWrites[bot];
+    auto it = perBot.find(event);
+    if (it == perBot.end())
+    {
+        it = perBot.emplace(event, PendingBotEventWrite{}).first;
+        ++_pendingEventWritesCount;
+    }
+
+    PendingBotEventWrite& rec = it->second;
+    rec.value = value;
+    rec.validIn = validIn;
+    rec.changeTime = NowSeconds();
+    rec.data = data;
+
+    // Prevent unbounded queue growth in edge cases (e.g. mass initialization).
+    if (_pendingEventWritesCount >= 500)
+        FlushPendingEventDbWrites(true);
 
     return value;
+}
+
+void RandomPlayerbotMgr::FlushPendingEventDbWrites(bool force)
+{
+    if (_pendingEventWritesCount == 0)
+        return;
+
+    uint32 nowMs = getMSTime();
+    constexpr uint32 kFlushIntervalMs = 1000;
+    constexpr size_t kFlushThreshold = 400;
+
+    if (!force && (nowMs - _pendingEventLastFlushMs) < kFlushIntervalMs && _pendingEventWritesCount < kFlushThreshold)
+        return;
+
+    _pendingEventLastFlushMs = nowMs;
+
+    PlayerbotsDatabaseTransaction trans = PlayerbotsDatabase.BeginTransaction();
+    size_t statements = 0;
+
+    for (auto& botPair : _pendingEventWrites)
+    {
+        uint32 bot = botPair.first;
+        auto& events = botPair.second;
+
+        for (auto& evPair : events)
+        {
+            std::string const& evName = evPair.first;
+            PendingBotEventWrite const& rec = evPair.second;
+
+            // Always delete existing record for (owner,event), then optionally insert the new one.
+            PlayerbotsDatabasePreparedStatement* stmt =
+                PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_DEL_RANDOM_BOTS_BY_OWNER_AND_EVENT);
+            stmt->SetData(0, 0);
+            stmt->SetData(1, bot);
+            stmt->SetData(2, evName.c_str());
+            trans->Append(stmt);
+            ++statements;
+
+            if (rec.value)
+            {
+                stmt = PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_INS_RANDOM_BOTS);
+                stmt->SetData(0, 0);
+                stmt->SetData(1, bot);
+                stmt->SetData(2, rec.changeTime ? rec.changeTime : NowSeconds());
+                stmt->SetData(3, rec.validIn);
+                stmt->SetData(4, evName.c_str());
+                stmt->SetData(5, rec.value);
+                if (!rec.data.empty())
+                    stmt->SetData(6, rec.data.c_str());
+                else
+                    stmt->SetData(6);  // NULL
+
+                trans->Append(stmt);
+                ++statements;
+            }
+        }
+    }
+
+    if (statements)
+        PlayerbotsDatabase.CommitTransaction(trans);
+
+    _pendingEventWrites.clear();
+    _pendingEventWritesCount = 0;
 }
 
 uint32 RandomPlayerbotMgr::GetValue(uint32 bot, std::string const& type) { return GetEventValue(bot, type); }
@@ -2869,6 +3314,9 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* handler, cha
     {
         PlayerbotsDatabase.Execute(PlayerbotsDatabase.GetPreparedStatement(PLAYERBOTS_DEL_RANDOM_BOTS));
         sRandomPlayerbotMgr->eventCache.clear();
+        sRandomPlayerbotMgr->_pendingEventWrites.clear();
+        sRandomPlayerbotMgr->_pendingEventWritesCount = 0;
+        sRandomPlayerbotMgr->_pendingEventLastFlushMs = getMSTime();
         LOG_INFO("playerbots", "Random bots were reset for all players. Please restart the Server.");
         return true;
     }
@@ -3524,17 +3972,66 @@ void RandomPlayerbotMgr::Remove(Player* bot)
     uint32 botId = owner.GetCounter();
     eventCache.erase(botId);
 
+    // Drop any queued (batched) DB event writes for this bot to avoid re-inserting rows after removal.
+    auto pit = _pendingEventWrites.find(botId);
+    if (pit != _pendingEventWrites.end())
+    {
+        if (_pendingEventWritesCount >= pit->second.size())
+            _pendingEventWritesCount -= pit->second.size();
+        else
+            _pendingEventWritesCount = 0;
+
+        _pendingEventWrites.erase(pit);
+    }
+
+
     LogoutPlayerBot(owner);
+}
+
+void RandomPlayerbotMgr::BuildCreatureDataEntryIndex()
+{
+    _creatureDataByEntry.clear();
+
+    for (auto const& itr : sObjectMgr->GetAllCreatureData())
+    {
+        uint32 entry = itr.second.id1;
+        if (!entry)
+            continue;
+
+        // Keep the first instance; callers only need a representative spawn guid.
+        if (_creatureDataByEntry.find(entry) == _creatureDataByEntry.end())
+            _creatureDataByEntry.emplace(entry, ObjectGuid::LowType(itr.first));
+    }
+
+    _creatureEntryIndexBuilt = true;
 }
 
 CreatureData const* RandomPlayerbotMgr::GetCreatureDataByEntry(uint32 entry)
 {
-    if (entry != 0)
-    {
-        for (auto const& itr : sObjectMgr->GetAllCreatureData())
-            if (itr.second.id1 == entry)
-                return &itr.second;
-    }
+    if (!entry)
+        return nullptr;
+
+    if (!_creatureEntryIndexBuilt || _creatureDataByEntry.empty())
+        BuildCreatureDataEntryIndex();
+
+    auto it = _creatureDataByEntry.find(entry);
+    if (it == _creatureDataByEntry.end())
+        return nullptr;
+
+    auto const& store = sObjectMgr->GetAllCreatureData();
+    auto it2 = store.find(it->second);
+    if (it2 != store.end())
+        return &it2->second;
+
+    // If creature data was reloaded and the stored guid is no longer present, rebuild the index once.
+    BuildCreatureDataEntryIndex();
+    it = _creatureDataByEntry.find(entry);
+    if (it == _creatureDataByEntry.end())
+        return nullptr;
+
+    it2 = store.find(it->second);
+    if (it2 != store.end())
+        return &it2->second;
 
     return nullptr;
 }

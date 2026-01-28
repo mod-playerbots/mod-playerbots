@@ -56,6 +56,10 @@ public:
     uint32 GetPlayerbotsCount() { return playerBots.size(); }
     uint32 GetPlayerbotsCountByClass(uint32 cls);
 
+    // Throttled init requests to prevent server stalls from init command spam.
+    // Call this from a world update hook (e.g. PlayerbotsScript::OnPlayerbotUpdate).
+    static void UpdateInitQueue(uint32 diff);
+
 protected:
     virtual void OnBotLoginInternal(Player* const bot) = 0;
 

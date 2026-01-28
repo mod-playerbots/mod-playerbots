@@ -10,6 +10,8 @@
 #include <istream>
 #include <string>
 #include <unordered_set>
+#include <deque>
+#include <unordered_map>
 #include <openssl/sha.h>
 #include <iomanip>
 #include <algorithm>
@@ -45,7 +47,7 @@ class BotInitGuard
 public:
     BotInitGuard(ObjectGuid guid) : guid(guid), active(false)
     {
-        if (!botsBeingInitialized.contains(guid))
+        if (botsBeingInitialized.find(guid) == botsBeingInitialized.end())
         {
             botsBeingInitialized.insert(guid);
             active = true;
@@ -69,7 +71,303 @@ private:
 std::unordered_set<ObjectGuid> BotInitGuard::botsBeingInitialized;
 std::unordered_set<ObjectGuid> PlayerbotHolder::botLoading;
 
+namespace
+{
+    static constexpr uint32 BOT_INIT_COOLDOWN_MS = 3000;          // Per-bot cooldown (request + successful init).
+    static constexpr uint32 BOT_INIT_QUEUE_STEP_MS = 250;         // Minimum delay between init executions.
+    static constexpr size_t BOT_INIT_QUEUE_MAX_SIZE = 200;        // Global queue size limit.
+    static constexpr size_t BOT_INIT_QUEUE_MAX_PER_MASTER = 40;   // Per-master queue size limit.
+    static constexpr uint8 BOT_INIT_QUEUE_MAX_POSTPONE = 20;      // Safety cap to avoid infinite requeue loops.
+
+    struct BotInitRequest
+    {
+        ObjectGuid botGuid;
+        ObjectGuid masterGuid;
+        std::string cmd;
+        bool admin = false;
+        uint8 postponeCount = 0;
+    };
+
+    class BotInitQueue
+    {
+    public:
+        static BotInitQueue& Instance()
+        {
+            static BotInitQueue instance;
+            return instance;
+        }
+
+        std::string Enqueue(ObjectGuid botGuid, ObjectGuid masterGuid, std::string const& cmd, bool admin)
+        {
+            if (botGuid.IsEmpty() || masterGuid.IsEmpty())
+                return "ERROR: Invalid init request.";
+
+            // Do not enqueue duplicates.
+            if (_queuedBots.find(botGuid) != _queuedBots.end())
+                return "ok (already queued)";
+            // Enforce per-bot cooldown (request + completion).
+            uint32 remainMs = 0;
+
+            auto itReq = _lastInitRequestMs.find(botGuid);
+            if (itReq != _lastInitRequestMs.end())
+            {
+                uint32 elapsed = GetMSTimeDiffToNow(itReq->second);
+                if (elapsed < BOT_INIT_COOLDOWN_MS)
+                    remainMs = std::max(remainMs, BOT_INIT_COOLDOWN_MS - elapsed);
+            }
+
+            auto itDone = _lastInitDoneMs.find(botGuid);
+            if (itDone != _lastInitDoneMs.end())
+            {
+                uint32 elapsed = GetMSTimeDiffToNow(itDone->second);
+                if (elapsed < BOT_INIT_COOLDOWN_MS)
+                    remainMs = std::max(remainMs, BOT_INIT_COOLDOWN_MS - elapsed);
+            }
+
+            if (remainMs > 0)
+            {
+                uint32 remain = (remainMs + 999) / 1000;
+                return "ERROR: Init cooldown, wait " + std::to_string(remain) + "s.";
+            }
+            // Prevent queue flooding.
+            if (!admin)
+            {
+                if (_queue.size() >= BOT_INIT_QUEUE_MAX_SIZE)
+                    return "ERROR: Init queue is full, please try again later.";
+
+                uint32 masterCount = 0;
+                auto it = _queuedPerMaster.find(masterGuid);
+                if (it != _queuedPerMaster.end())
+                    masterCount = it->second;
+
+                if (masterCount >= BOT_INIT_QUEUE_MAX_PER_MASTER)
+                    return "ERROR: Too many init requests queued for you, please wait.";
+
+                _queuedPerMaster[masterGuid] = masterCount + 1;
+            }
+
+            _lastInitRequestMs[botGuid] = getMSTime();
+
+            _queuedBots.insert(botGuid);
+            _queue.push_back(BotInitRequest{botGuid, masterGuid, cmd, admin, 0});
+            return "ok (queued)";
+        }
+
+        void Update([[maybe_unused]] uint32 diff)
+        {
+            if (_queue.empty())
+                return;
+
+            if (_lastExecMs && GetMSTimeDiffToNow(_lastExecMs) < BOT_INIT_QUEUE_STEP_MS)
+                return;
+
+            BotInitRequest request = _queue.front();
+
+            // Validate bot and master are still present.
+            Player* bot = nullptr;
+
+            bot = ObjectAccessor::FindPlayer(request.botGuid);
+            if (!bot)
+                bot = sRandomPlayerbotMgr->GetPlayerBot(request.botGuid);
+
+            Player* master = ObjectAccessor::FindConnectedPlayer(request.masterGuid);
+
+            // Drop invalid requests (bot offline / master offline).
+            if (!bot || !master)
+            {
+                PopFrontAndCleanup(request);
+                _lastExecMs = getMSTime();
+                return;
+            }
+
+            // Must still be an addclass bot.
+            if (!sRandomPlayerbotMgr->IsAddclassBot(request.botGuid.GetCounter()))
+            {
+                PopFrontAndCleanup(request);
+                _lastExecMs = getMSTime();
+                return;
+            }
+
+            PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+            if (!botAI)
+            {
+                PopFrontAndCleanup(request);
+                _lastExecMs = getMSTime();
+                return;
+            }
+
+            // Ensure the bot is still controlled by the same master.
+            if (Player* currentMaster = botAI->GetMaster())
+            {
+                if (currentMaster->GetGUID() != request.masterGuid)
+                {
+                    PopFrontAndCleanup(request);
+                    _lastExecMs = getMSTime();
+                    return;
+                }
+            }
+            else
+            {
+                PopFrontAndCleanup(request);
+                _lastExecMs = getMSTime();
+                return;
+            }
+
+            // Respect restrictions (combat / auto-init only).
+            std::string effectiveCmd = request.cmd;
+            if (effectiveCmd == "init")
+                effectiveCmd = "init=auto";
+
+            if (!request.admin)
+            {
+                if (master->IsInCombat() || bot->IsInCombat())
+                {
+                    PostponeOrDrop(request);
+                    return;
+                }
+
+                if (master->GetSession() && master->GetSession()->GetSecurity() <= SEC_PLAYER &&
+                    sPlayerbotAIConfig->autoInitOnly && effectiveCmd != "init=auto")
+                {
+                    // Not allowed - drop.
+                    PopFrontAndCleanup(request);
+                    _lastExecMs = getMSTime();
+                    return;
+                }
+            }
+
+            // Prevent parallel init for the same bot.
+            BotInitGuard guard(bot->GetGUID());
+            if (guard.IsLocked())
+            {
+                PostponeOrDrop(request);
+                return;
+            }
+
+            // Execute init.
+            ExecuteInit(bot, master, effectiveCmd);
+
+            // Start cooldown at the end of a successful init.
+            _lastInitDoneMs[request.botGuid] = getMSTime();
+
+            PopFrontAndCleanup(request);
+            _lastExecMs = getMSTime();
+        }
+
+    private:
+        BotInitQueue() = default;
+
+        void ExecuteInit(Player* bot, Player* master, std::string const& cmd)
+        {
+            if (!bot || !master)
+                return;
+
+            int gs = 0;
+            if (cmd == "init=white" || cmd == "init=common")
+            {
+                PlayerbotFactory factory(bot, master->GetLevel(), ITEM_QUALITY_NORMAL);
+                factory.Randomize(false);
+            }
+            else if (cmd == "init=green" || cmd == "init=uncommon")
+            {
+                PlayerbotFactory factory(bot, master->GetLevel(), ITEM_QUALITY_UNCOMMON);
+                factory.Randomize(false);
+            }
+            else if (cmd == "init=blue" || cmd == "init=rare")
+            {
+                PlayerbotFactory factory(bot, master->GetLevel(), ITEM_QUALITY_RARE);
+                factory.Randomize(false);
+            }
+            else if (cmd == "init=epic" || cmd == "init=purple")
+            {
+                PlayerbotFactory factory(bot, master->GetLevel(), ITEM_QUALITY_EPIC);
+                factory.Randomize(false);
+            }
+            else if (cmd == "init=legendary" || cmd == "init=yellow")
+            {
+                PlayerbotFactory factory(bot, master->GetLevel(), ITEM_QUALITY_LEGENDARY);
+                factory.Randomize(false);
+            }
+            else if (cmd == "init=auto")
+            {
+                uint32 mixedGearScore = PlayerbotAI::GetMixedGearScore(master, true, false, 12) *
+                                        sPlayerbotAIConfig->autoInitEquipLevelLimitRatio;
+
+                // Work around: distinguish from 0 if no gear.
+                if (mixedGearScore == 0)
+                    mixedGearScore = 1;
+
+                PlayerbotFactory factory(bot, master->GetLevel(), ITEM_QUALITY_LEGENDARY, mixedGearScore);
+                factory.Randomize(false);
+            }
+            else if (cmd.rfind("init=", 0) == 0 && sscanf(cmd.c_str(), "init=%d", &gs) == 1)
+            {
+                PlayerbotFactory factory(bot, master->GetLevel(), ITEM_QUALITY_LEGENDARY, gs);
+                factory.Randomize(false);
+            }
+        }
+
+        void PostponeOrDrop(BotInitRequest const& request)
+        {
+            // Pop front.
+            _queue.pop_front();
+
+            BotInitRequest postponed = request;
+            postponed.postponeCount++;
+
+            if (postponed.postponeCount >= BOT_INIT_QUEUE_MAX_POSTPONE)
+            {
+                // Drop permanently.
+                CleanupBookkeeping(postponed);
+                _lastExecMs = getMSTime();
+                return;
+            }
+
+            // Requeue at the end.
+            _queue.push_back(postponed);
+            _lastExecMs = getMSTime();
+        }
+
+        void PopFrontAndCleanup(BotInitRequest const& request)
+        {
+            _queue.pop_front();
+            CleanupBookkeeping(request);
+        }
+
+        void CleanupBookkeeping(BotInitRequest const& request)
+        {
+            _queuedBots.erase(request.botGuid);
+
+            if (!request.admin)
+            {
+                auto it = _queuedPerMaster.find(request.masterGuid);
+                if (it != _queuedPerMaster.end())
+                {
+                    if (it->second > 0)
+                        it->second--;
+
+                    if (it->second == 0)
+                        _queuedPerMaster.erase(it);
+                }
+            }
+        }
+
+    private:
+        std::deque<BotInitRequest> _queue;
+        std::unordered_set<ObjectGuid> _queuedBots;
+        std::unordered_map<ObjectGuid, uint32> _lastInitRequestMs;
+        std::unordered_map<ObjectGuid, uint32> _lastInitDoneMs;
+        std::unordered_map<ObjectGuid, uint32> _queuedPerMaster;
+        uint32 _lastExecMs = 0;
+    };
+} // namespace
+
 PlayerbotHolder::PlayerbotHolder() : PlayerbotAIBase(false) {}
+
+void PlayerbotHolder::UpdateInitQueue(uint32 diff)
+{
+    BotInitQueue::Instance().Update(diff);
+}
 class PlayerbotLoginQueryHolder : public LoginQueryHolder
 {
 private:
@@ -771,67 +1069,21 @@ std::string const PlayerbotHolder::ProcessBotCommand(std::string const cmd, Obje
     {
         if (Player* master = GET_PLAYERBOT_AI(bot)->GetMaster())
         {
-            if (master->GetSession()->GetSecurity() <= SEC_PLAYER && sPlayerbotAIConfig->autoInitOnly &&
-                cmd != "init=auto")
+            std::string effectiveCmd = cmd;
+            if (effectiveCmd == "init")
+                effectiveCmd = "init=auto";
+
+            // Keep the legacy restriction: when auto-init-only is enabled, non-GM players may only use init=auto.
+            if (master->GetSession() && master->GetSession()->GetSecurity() <= SEC_PLAYER &&
+                sPlayerbotAIConfig->autoInitOnly && effectiveCmd != "init=auto")
             {
                 return "The command is not allowed, use init=auto instead.";
             }
 
-            //  Use boot guard
-            BotInitGuard guard(bot->GetGUID());
-            if (guard.IsLocked())
+            // Throttle init requests: queue + per-bot cooldown to avoid server stalls from init spam.
+            if (effectiveCmd.rfind("init=", 0) == 0)
             {
-                return "Initialization already in progress, please wait.";
-            }
-
-            int gs;
-            if (cmd == "init=white" || cmd == "init=common")
-            {
-                PlayerbotFactory factory(bot, master->GetLevel(), ITEM_QUALITY_NORMAL);
-                factory.Randomize(false);
-                return "ok";
-            }
-            else if (cmd == "init=green" || cmd == "init=uncommon")
-            {
-                PlayerbotFactory factory(bot, master->GetLevel(), ITEM_QUALITY_UNCOMMON);
-                factory.Randomize(false);
-                return "ok";
-            }
-            else if (cmd == "init=blue" || cmd == "init=rare")
-            {
-                PlayerbotFactory factory(bot, master->GetLevel(), ITEM_QUALITY_RARE);
-                factory.Randomize(false);
-                return "ok";
-            }
-            else if (cmd == "init=epic" || cmd == "init=purple")
-            {
-                PlayerbotFactory factory(bot, master->GetLevel(), ITEM_QUALITY_EPIC);
-                factory.Randomize(false);
-                return "ok";
-            }
-            else if (cmd == "init=legendary" || cmd == "init=yellow")
-            {
-                PlayerbotFactory factory(bot, master->GetLevel(), ITEM_QUALITY_LEGENDARY);
-                factory.Randomize(false);
-                return "ok";
-            }
-            else if (cmd == "init=auto")
-            {
-                uint32 mixedGearScore = PlayerbotAI::GetMixedGearScore(master, true, false, 12) *
-                                        sPlayerbotAIConfig->autoInitEquipLevelLimitRatio;
-                // work around: distinguish from 0 if no gear
-                if (mixedGearScore == 0)
-                    mixedGearScore = 1;
-                PlayerbotFactory factory(bot, master->GetLevel(), ITEM_QUALITY_LEGENDARY, mixedGearScore);
-                factory.Randomize(false);
-                return "ok, gear score limit: " + std::to_string(mixedGearScore / PlayerbotAI::GetItemScoreMultiplier(ItemQualities(ITEM_QUALITY_EPIC))) +
-                       "(for epic)";
-            }
-            else if (cmd.starts_with("init=") && sscanf(cmd.c_str(), "init=%d", &gs) != -1)
-            {
-                PlayerbotFactory factory(bot, master->GetLevel(), ITEM_QUALITY_LEGENDARY, gs);
-                factory.Randomize(false);
-                return "ok, gear score limit: " + std::to_string(gs / PlayerbotAI::GetItemScoreMultiplier(ItemQualities(ITEM_QUALITY_EPIC))) + "(for epic)";
+                return BotInitQueue::Instance().Enqueue(bot->GetGUID(), master->GetGUID(), effectiveCmd, admin);
             }
         }
 
@@ -1024,7 +1276,7 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
             }
         }
         int32 gs;
-        if (sscanf(cmd, "initself=%d", &gs) != -1)
+        if (sscanf(cmd, "initself=%d", &gs) == 1)
         {
             if (master->GetSession()->GetSecurity() >= SEC_GAMEMASTER)
             {

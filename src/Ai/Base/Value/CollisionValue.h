@@ -15,8 +15,9 @@ class CollisionValue : public BoolCalculatedValue, public Qualified
 {
 public:
     CollisionValue(PlayerbotAI* botAI, std::string const name = "collision")
-        : BoolCalculatedValue(botAI, name), Qualified()
+        : BoolCalculatedValue(botAI, name, 200), Qualified()
     {
+        // Throttle collision checks to avoid expensive grid scans every evaluation.
     }
 
     bool Calculate() override;

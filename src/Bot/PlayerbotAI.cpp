@@ -5,10 +5,13 @@
 
 #include "PlayerbotAI.h"
 
+#include <algorithm>
+
 #include <cmath>
 #include <mutex>
 #include <sstream>
 #include <string>
+#include <unordered_map>
 
 #include "AiFactory.h"
 #include "BudgetValues.h"
@@ -60,6 +63,59 @@
 #include "Unit.h"
 #include "UpdateTime.h"
 #include "Vehicle.h"
+
+namespace
+{
+struct SpellInterruptMeta
+{
+    bool isHeal = false;
+    bool isSingleTarget = true;
+};
+
+SpellInterruptMeta GetSpellInterruptMeta(SpellInfo const* spellInfo)
+{
+    static thread_local std::unordered_map<uint32, SpellInterruptMeta> cache;
+
+    if (!spellInfo)
+        return SpellInterruptMeta();
+
+    auto it = cache.find(spellInfo->Id);
+    if (it != cache.end())
+        return it->second;
+
+    SpellInterruptMeta meta;
+    meta.isHeal = false;
+    meta.isSingleTarget = true;
+
+    // Preserve the exact logic previously used in UpdateAI():
+    // - Heal if any effect is HEAL / HEAL_MAX_HEALTH / HEAL_MECHANICAL
+    // - Single-target if all non-empty effects target TARGET_UNIT_TARGET_ALLY
+    for (uint8 i = 0; i < 3; ++i)
+    {
+        if (!spellInfo->Effects[i].Effect)
+            continue;
+
+        if (spellInfo->Effects[i].Effect == SPELL_EFFECT_HEAL ||
+            spellInfo->Effects[i].Effect == SPELL_EFFECT_HEAL_MAX_HEALTH ||
+            spellInfo->Effects[i].Effect == SPELL_EFFECT_HEAL_MECHANICAL)
+        {
+            meta.isHeal = true;
+        }
+
+        if ((spellInfo->Effects[i].TargetA.GetTarget() &&
+             spellInfo->Effects[i].TargetA.GetTarget() != TARGET_UNIT_TARGET_ALLY) ||
+            (spellInfo->Effects[i].TargetB.GetTarget() &&
+             spellInfo->Effects[i].TargetB.GetTarget() != TARGET_UNIT_TARGET_ALLY))
+        {
+            meta.isSingleTarget = false;
+        }
+    }
+
+    cache.emplace(spellInfo->Id, meta);
+    return meta;
+}
+} // namespace
+
 
 const int SPELL_TITAN_GRIP = 49152;
 
@@ -257,6 +313,13 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
         bot->GetSession()->isLogingOut() || bot->IsDuringRemoveFromWorld())
         return;
 
+
+    // Playerbots must never send MOVEMENTFLAG_ROOT in movement packets (e.g. MSG_MOVE_HEARTBEAT).
+    // If this flag becomes stale, core will spam: "Attempted sending heartbeat with root flag for guid ..."
+    // Rooting is enforced server-side via auras/unit states, so it is safe to always strip the flag here.
+    if (bot->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_ROOT))
+        bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_ROOT);
+
     // Delayed PvE re-equip after leaving BG/arena.
     // Leaving a battleground/arena usually involves a map transfer; avoid rebuilding gear during loading.
     if (pendingPveGearReequip_)
@@ -310,6 +373,23 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     if (!CanUpdateAI())
         return;
 
+    auto yieldReact = [&]()
+    {
+        uint32 delay = GetReactDelay();
+
+        // Avoid "lockstep" CPU spikes when many bots tick/cast at the same time (e.g. boss fights).
+        // Use a small deterministic per-bot jitter so behavior stays stable while updates are spread over time.
+        if (bot && (bot->IsInCombat() || bot->InBattleground() || bot->InArena() || currentState == BOT_STATE_COMBAT))
+        {
+            uint32 jitterMax = std::min<uint32>(50u, std::max<uint32>(10u, sPlayerbotAIConfig->reactDelay / 2));
+            if (jitterMax)
+                delay += bot->GetGUID().GetCounter() % jitterMax;
+        }
+
+        YieldThread(delay);
+    };
+
+
     // Handle the current spell
     Spell* currentSpell = bot->GetCurrentSpell(CURRENT_GENERIC_SPELL);
     if (!currentSpell)
@@ -325,7 +405,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
             if (spellTarget && !spellTarget->IsAlive() && !spellInfo->IsAllowingDeadTarget())
             {
                 InterruptSpell();
-                YieldThread(GetReactDelay());
+                yieldReact();
                 return;
             }
 
@@ -334,39 +414,20 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
             if (goSpellTarget && !goSpellTarget->isSpawned())
             {
                 InterruptSpell();
-                YieldThread(GetReactDelay());
+                yieldReact();
                 return;
             }
 
-            bool isHeal = false;
-            bool isSingleTarget = true;
+            SpellInterruptMeta const meta = GetSpellInterruptMeta(spellInfo);
 
-            for (uint8 i = 0; i < 3; ++i)
-            {
-                if (!spellInfo->Effects[i].Effect)
-                    continue;
-
-                // Check if spell is a heal
-                if (spellInfo->Effects[i].Effect == SPELL_EFFECT_HEAL ||
-                    spellInfo->Effects[i].Effect == SPELL_EFFECT_HEAL_MAX_HEALTH ||
-                    spellInfo->Effects[i].Effect == SPELL_EFFECT_HEAL_MECHANICAL)
-                    isHeal = true;
-
-                // Check if spell is single-target
-                if ((spellInfo->Effects[i].TargetA.GetTarget() &&
-                     spellInfo->Effects[i].TargetA.GetTarget() != TARGET_UNIT_TARGET_ALLY) ||
-                    (spellInfo->Effects[i].TargetB.GetTarget() &&
-                     spellInfo->Effects[i].TargetB.GetTarget() != TARGET_UNIT_TARGET_ALLY))
-                {
-                    isSingleTarget = false;
-                }
-            }
+            bool isHeal = meta.isHeal;
+            bool isSingleTarget = meta.isSingleTarget;
 
             // Interrupt if target ally has full health (heal by other member)
             if (isHeal && isSingleTarget && spellTarget && spellTarget->IsFullHealth())
             {
                 InterruptSpell();
-                YieldThread(GetReactDelay());
+                yieldReact();
                 return;
             }
 
@@ -378,7 +439,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
             }
 
             // Wait for spell cast
-            YieldThread(GetReactDelay());
+            yieldReact();
             return;
         }
     }
@@ -414,7 +475,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 
     // Update internal AI
     UpdateAIInternal(elapsed, minimal);
-    YieldThread(GetReactDelay());
+    yieldReact();
 }
 
 // Helper function for UpdateAI to check group membership and handle removal if necessary
@@ -491,9 +552,12 @@ void PlayerbotAI::UpdateAIInternal([[maybe_unused]] uint32 elapsed, bool minimal
     if (!bot->GetMap())
         return; // instances are created and destroyed on demand
 
-    std::string const mapString = WorldPosition(bot).isOverworld() ? std::to_string(bot->GetMapId()) : "I";
-    PerfMonitorOperation* pmo =
-        sPerfMonitor->start(PERF_MON_TOTAL, "PlayerbotAI::UpdateAIInternal " + mapString);
+    PerfMonitorOperation* pmo = nullptr;
+    if (sPlayerbotAIConfig->perfMonEnabled)
+    {
+        std::string const mapString = WorldPosition(bot).isOverworld() ? std::to_string(bot->GetMapId()) : "I";
+        pmo = sPerfMonitor->start(PERF_MON_TOTAL, "PlayerbotAI::UpdateAIInternal " + mapString);
+    }
     ExternalEventHelper helper(aiObjectContext);
 
     // chat replies
@@ -1267,15 +1331,15 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
         case SMSG_FORCE_MOVE_ROOT:      // CMSG_FORCE_MOVE_ROOT_ACK
         case SMSG_FORCE_MOVE_UNROOT:    // CMSG_FORCE_MOVE_UNROOT_ACK
         {
-            // Quick fix for CMSG_FORCE_MOVE_ROOT_ACK and CMSG_FORCE_MOVE_UNROOT_ACK:
-            // this should resolve issues with MOVEMENTFLAG_ROOT being permanently set
-            // when rooted during lost client control (charm + root effects)
+            // Keep MovementInfo free of MOVEMENTFLAG_ROOT for playerbots.
+            // A stale root flag can trigger core warnings like: "Attempted sending heartbeat with root flag for guid ..."
+            // Rooting is enforced server-side (auras/unit states), so we only stop movement and strip the flag locally.
             // @see https://github.com/azerothcore/azerothcore-wotlk/pull/23147
             bool forceRoot = (packet.GetOpcode() == SMSG_FORCE_MOVE_ROOT);
             if (forceRoot)
             {
                 bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_MASK_MOVING_FLY);
-                bot->m_movementInfo.AddMovementFlag(MOVEMENTFLAG_ROOT);
+                bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_ROOT);
                 bot->StopMoving();
             }
             else

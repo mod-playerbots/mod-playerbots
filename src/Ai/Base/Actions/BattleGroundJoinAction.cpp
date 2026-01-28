@@ -119,6 +119,45 @@ namespace
     static uint32 GetQueuedRealPlayersMatchmakerTarget(BattlegroundQueueTypeId queueTypeId, BattlegroundBracketId bracketId,
                                                        ArenaType arenaType)
     {
+        // This scan over bgQueue.m_QueuedPlayers can be quite expensive when called frequently
+        // (e.g. 2000 bots evaluating arena queues). Cache for a short TTL to avoid N-times-per-tick work.
+        struct Key
+        {
+            uint32 q = 0;
+            uint8 bracket = 0;
+            uint8 arena = 0;
+
+            bool operator==(Key const& o) const { return q == o.q && bracket == o.bracket && arena == o.arena; }
+        };
+
+        struct KeyHash
+        {
+            size_t operator()(Key const& k) const
+            {
+                // Simple mix: q uses low bits, then bracket/arena.
+                return (size_t(k.q) * 1315423911u) ^ (size_t(k.bracket) << 8) ^ size_t(k.arena);
+            }
+        };
+
+        struct CacheEntry
+        {
+            uint32 target = 0;
+            uint32 tsMs = 0;
+        };
+
+        static std::unordered_map<Key, CacheEntry, KeyHash> s_cache;
+        static uint32 s_lastPruneMs = 0;
+        constexpr uint32 kTtlMs = 1000;
+        constexpr uint32 kPruneEveryMs = 5000;
+        constexpr size_t kMaxEntries = 64;
+
+        uint32 nowMs = getMSTime();
+        Key key{uint32(queueTypeId), uint8(bracketId), uint8(arenaType)};
+
+        auto itCached = s_cache.find(key);
+        if (itCached != s_cache.end() && (nowMs - itCached->second.tsMs) <= kTtlMs)
+            return itCached->second.target;
+
         BattlegroundQueue& bgQueue = sBattlegroundMgr->GetBattlegroundQueue(queueTypeId);
 
         uint64 sum = 0;
@@ -164,10 +203,24 @@ namespace
             ++count;
         }
 
-        if (!count)
-            return 0;
+        uint32 target = count ? uint32(sum / count) : 0;
 
-        return uint32(sum / count);
+        s_cache[key] = CacheEntry{target, nowMs};
+
+        // Opportunistic prune to keep the cache tiny.
+        if (s_cache.size() > kMaxEntries && (nowMs - s_lastPruneMs) > kPruneEveryMs)
+        {
+            s_lastPruneMs = nowMs;
+            for (auto it = s_cache.begin(); it != s_cache.end();)
+            {
+                if ((nowMs - it->second.tsMs) > kPruneEveryMs)
+                    it = s_cache.erase(it);
+                else
+                    ++it;
+            }
+        }
+
+        return target;
     }
 
     static uint16 ClampArenaRating(int32 rating)
@@ -1368,21 +1421,43 @@ bool BGStrategyCheckAction::Execute(Event event)
         return false;
 
     // Random bots: generate PvP gear + enchants after fully entering BG/arena.
-    // - Wild random bots use RandomGear* limits (AiPlayerbot.RandomGearQualityLimit/RandomGearScoreLimit).
-    // - Random bots with a real player master use AutoGear* limits (AiPlayerbot.AutoGearQualityLimit/AutoGearScoreLimit).
-    // Alt bots are not affected by this logic.
     bool hasRealMaster = botAI->HasRealPlayerMaster();
 
-    uint32 qualityLimit = hasRealMaster ? sPlayerbotAIConfig->autoGearQualityLimit
-                                        : sPlayerbotAIConfig->randomGearQualityLimit;
+    // Do not touch player-controlled (real master) bots here. This logic is for wild random bots only.
+    if (hasRealMaster)
+        return false;
 
-    uint32 scoreLimit = hasRealMaster ? sPlayerbotAIConfig->autoGearScoreLimit
-                                      : sPlayerbotAIConfig->randomGearScoreLimit;
+    uint32 qualityLimit = sPlayerbotAIConfig->randomGearQualityLimit;
+    uint32 scoreLimit = sPlayerbotAIConfig->randomGearScoreLimit;
 
     uint32 gs = scoreLimit == 0 ? 0 : PlayerbotFactory::CalcMixedGearScore(scoreLimit, qualityLimit);
 
     bool isArena = bg->isArena();
     bool isRatedArena = isArena && bg->isRated();
+
+    // Battleground gear cap for wild random bots (level 80 only).
+    // Deterministic per-bot item-level cap in [200..300] based on bot GUID low.
+    // This is an extra restriction on top of the configured gear limit.
+    if (bot->GetLevel() == 80 && !isArena)
+    {
+        uint32 x = botLow;
+        x ^= x >> 16;
+        x *= 0x7feb352d;
+        x ^= x >> 15;
+        x *= 0x846ca68b;
+        x ^= x >> 16;
+
+        uint32 ilvlCap = 200u + (x % 101u); // 200..300
+
+        // Convert item-level cap to the same "mixed gear score" scale used by PlayerbotFactory.
+        uint32 bgGsCap = PlayerbotFactory::CalcMixedGearScore(ilvlCap, ITEM_QUALITY_EPIC);
+        if (bgGsCap == 0)
+            bgGsCap = 1;
+
+        if (gs == 0 || bgGsCap < gs)
+            gs = bgGsCap;
+    }
+
 
     // Additional arena rating-based gear cap (level 80 only).
     // 1000 rating => ilvl 200, 2400 rating => ilvl 300 (hard cap).

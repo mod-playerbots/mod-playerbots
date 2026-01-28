@@ -153,6 +153,15 @@ bool SummonAction::Teleport(Player* summoner, Player* player, bool preserveAuras
     if (!summoner)
         return false;
 
+    // Do not allow teleport/summon inside battlegrounds or arenas.
+    // This prevents using the "summon" command (and any other SummonAction-based teleports)
+    // to move bots around in PvP instances.
+    if (summoner->InBattleground() || summoner->InArena())
+    {
+        botAI->TellError("You cannot summon me in battlegrounds or arenas");
+        return false;
+    }
+
     if (player->GetVehicle())
     {
         botAI->TellError("You cannot summon me while I'm on a vehicle");
