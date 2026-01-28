@@ -1471,7 +1471,7 @@ bool BGStrategyCheckAction::Execute(Event event)
     // This is an extra restriction on top of the configured gear limit.
     if (bot->GetLevel() == 80 && !isArena)
     {
-        uint32 x = botLow;
+        uint32 x = static_cast<uint32>(bot->GetGUID().GetCounter());
         x ^= x >> 16;
         x *= 0x7feb352d;
         x ^= x >> 15;
