@@ -6,6 +6,7 @@
 #include "BattleGroundJoinAction.h"
 
 #include <unordered_map>
+#include <unordered_set>
 #include <algorithm>
 
 #include "ArenaTeam.h"
@@ -13,6 +14,7 @@
 #include "BattlegroundMgr.h"
 #include "Event.h"
 #include "GroupMgr.h"
+#include "ObjectAccessor.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "PositionValue.h"
@@ -110,6 +112,93 @@ namespace
 
         return teamSize;
     }
+
+
+    // For rated arenas we want bot teams to be near the rating/MMR of real players currently queued
+    // for the same bracket and arena type.
+    static uint32 GetQueuedRealPlayersMatchmakerTarget(BattlegroundQueueTypeId queueTypeId, BattlegroundBracketId bracketId,
+                                                       ArenaType arenaType)
+    {
+        BattlegroundQueue& bgQueue = sBattlegroundMgr->GetBattlegroundQueue(queueTypeId);
+
+        uint64 sum = 0;
+        uint32 count = 0;
+        std::unordered_set<uint32> seenArenaTeams;
+
+        for (auto const& qp : bgQueue.m_QueuedPlayers)
+        {
+            ObjectGuid guid = qp.first;
+            Player* player = ObjectAccessor::FindConnectedPlayer(guid);
+            if (!player || !player->GetSession())
+                continue;
+
+            // Only use real players as target source
+            if (player->GetSession()->IsBot())
+                continue;
+
+            GroupQueueInfo ginfo;
+            if (!bgQueue.GetPlayerGroupInfoData(guid, &ginfo))
+                continue;
+
+            if (!ginfo.IsRated)
+                continue;
+
+            if (ginfo.BracketId != uint8(bracketId))
+                continue;
+
+            if (ginfo.ArenaType != uint8(arenaType))
+                continue;
+
+            // De-duplicate by arena team id so a premade group doesn't overweight the average
+            if (ginfo.ArenaTeamId)
+            {
+                if (!seenArenaTeams.insert(ginfo.ArenaTeamId).second)
+                    continue;
+            }
+
+            uint32 mmr = ginfo.ArenaMatchmakerRating ? ginfo.ArenaMatchmakerRating : ginfo.ArenaTeamRating;
+            if (!mmr)
+                continue;
+
+            sum += mmr;
+            ++count;
+        }
+
+        if (!count)
+            return 0;
+
+        return uint32(sum / count);
+    }
+
+    static uint16 ClampArenaRating(int32 rating)
+    {
+        if (rating < 0)
+            return 0;
+        if (rating > 2600)
+            return 2600;
+        return uint16(rating);
+    }
+
+    static void ApplyArenaTeamRatingInMemory(ArenaTeam* team, uint16 rating)
+    {
+        if (!team)
+            return;
+
+        ArenaTeamStats stats = team->GetStats();
+        stats.Rating = rating;
+        team->SetArenaTeamStats(stats);
+
+        for (auto& m : team->GetMembers())
+        {
+            m.PersonalRating = rating;
+            m.MatchMakerRating = rating;
+            m.MaxMMR = rating;
+        }
+
+        team->NotifyStatsChanged();
+    }
+
+
 } // namespace
 
 bool BGJoinAction::Execute(Event event)
@@ -651,6 +740,24 @@ bool BGJoinAction::JoinQueue(uint32 type)
     }
     else
     {
+        // Rated arenas: dynamically align random-bot arena-team rating/MMR close to real players currently queued.
+        // This helps bots face opponents near the player's current bracket/skill without recreating teams.
+        if (isRated && sRandomPlayerbotMgr && sRandomPlayerbotMgr->IsRandomBot(bot) && !sRandomPlayerbotMgr->IsAddclassBot(bot))
+        {
+            uint32 target = GetQueuedRealPlayersMatchmakerTarget(queueTypeId, bracketId, arenaType);
+            if (target)
+            {
+                uint16 desired = ClampArenaRating(int32(target) + irand(-100, 100));
+                if (ArenaTeam* team = sArenaTeamMgr->GetArenaTeamByCaptain(bot->GetGUID(), arenaType))
+                {
+                    ApplyArenaTeamRatingInMemory(team, desired);
+                    LOG_DEBUG("playerbots", "Bot {} <{}>: set arena team #{} ({}) rating/MMR to {} (target {})",
+                              bot->GetGUID().ToString().c_str(), bot->GetName(), team->GetId(), team->GetName().c_str(),
+                              desired, target);
+                }
+            }
+        }
+
         WorldPacket arena_packet(CMSG_BATTLEMASTER_JOIN_ARENA, 20);
         arena_packet << unit->GetGUID() << arenaslot << asGroup << uint8(isRated);
         bot->GetSession()->HandleBattlemasterJoinArena(arena_packet);
