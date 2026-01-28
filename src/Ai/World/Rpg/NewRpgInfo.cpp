@@ -6,71 +6,64 @@
 
 void NewRpgInfo::ChangeToGoGrind(WorldPosition pos)
 {
-    Reset();
-    status = RPG_GO_GRIND;
-    go_grind = GoGrind();
-    go_grind.pos = pos;
+    startT = getMSTime();
+    data = GoGrind{pos};
 }
 
 void NewRpgInfo::ChangeToGoCamp(WorldPosition pos)
 {
-    Reset();
-    status = RPG_GO_CAMP;
-    go_camp = GoCamp();
-    go_camp.pos = pos;
+    startT = getMSTime();
+    data = GoCamp{pos};
 }
 
 void NewRpgInfo::ChangeToWanderNpc()
 {
-    Reset();
-    status = RPG_WANDER_NPC;
-    wander_npc = WanderNpc();
+    startT = getMSTime();
+    data = WanderNpc{};
 }
 
 void NewRpgInfo::ChangeToWanderRandom()
 {
-    Reset();
-    status = RPG_WANDER_RANDOM;
-    WANDER_RANDOM = WanderRandom();
+    startT = getMSTime();
+    data = WanderRandom{};
 }
 
 void NewRpgInfo::ChangeToDoQuest(uint32 questId, const Quest* quest)
 {
-    Reset();
-    status = RPG_DO_QUEST;
-    do_quest = DoQuest();
+    startT = getMSTime();
+    DoQuest do_quest;
     do_quest.questId = questId;
     do_quest.quest = quest;
+    data = do_quest;
 }
 
-void NewRpgInfo::ChangeToTravelFlight(ObjectGuid fromFlightMaster, uint32 fromNode, uint32 toNode)
+void NewRpgInfo::ChangeToTravelFlight(ObjectGuid fromFlightMaster, std::vector<uint32> path)
 {
-    Reset();
-    status = RPG_TRAVEL_FLIGHT;
-    flight = TravelFlight();
+    startT = getMSTime();
+    TravelFlight flight;
     flight.fromFlightMaster = fromFlightMaster;
-    flight.fromNode = fromNode;
-    flight.toNode = toNode;
+    flight.path = std::move(path);
+    flight.inFlight = false;
+    data = flight;
 }
 
 void NewRpgInfo::ChangeToRest()
 {
-    Reset();
-    status = RPG_REST;
-    rest = Rest();
+    startT = getMSTime();
+    data = Rest{};
 }
 
 void NewRpgInfo::ChangeToIdle()
 {
-    Reset();
-    status = RPG_IDLE;
+    startT = getMSTime();
+    data = Idle{};
 }
 
 bool NewRpgInfo::CanChangeTo(NewRpgStatus status) { return true; }
 
 void NewRpgInfo::Reset()
 {
-    *this = NewRpgInfo();
+    data = Idle{};
     startT = getMSTime();
 }
 
@@ -86,54 +79,63 @@ std::string NewRpgInfo::ToString()
 {
     std::stringstream out;
     out << "Status: ";
-    switch (status)
+    std::visit([&out, this](auto&& arg)
     {
-        case RPG_GO_GRIND:
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr (std::is_same_v<T, GoGrind>)
+        {
             out << "GO_GRIND";
-            out << "\nGrindPos: " << go_grind.pos.GetMapId() << " " << go_grind.pos.GetPositionX() << " "
-                << go_grind.pos.GetPositionY() << " " << go_grind.pos.GetPositionZ();
+            out << "\nGrindPos: " << arg.pos.GetMapId() << " " << arg.pos.GetPositionX() << " "
+                << arg.pos.GetPositionY() << " " << arg.pos.GetPositionZ();
             out << "\nlastGoGrind: " << startT;
-            break;
-        case RPG_GO_CAMP:
+        }
+        else if constexpr (std::is_same_v<T, GoCamp>)
+        {
             out << "GO_CAMP";
-            out << "\nCampPos: " << go_camp.pos.GetMapId() << " " << go_camp.pos.GetPositionX() << " "
-                << go_camp.pos.GetPositionY() << " " << go_camp.pos.GetPositionZ();
+            out << "\nCampPos: " << arg.pos.GetMapId() << " " << arg.pos.GetPositionX() << " "
+                << arg.pos.GetPositionY() << " " << arg.pos.GetPositionZ();
             out << "\nlastGoCamp: " << startT;
-            break;
-        case RPG_WANDER_NPC:
+        }
+        else if constexpr (std::is_same_v<T, WanderNpc>)
+        {
             out << "WANDER_NPC";
-            out << "\nnpcOrGoEntry: " << wander_npc.npcOrGo.GetCounter();
+            out << "\nnpcOrGoEntry: " << arg.npcOrGo.GetCounter();
             out << "\nlastWanderNpc: " << startT;
-            out << "\nlastReachNpcOrGo: " << wander_npc.lastReach;
-            break;
-        case RPG_WANDER_RANDOM:
+            out << "\nlastReachNpcOrGo: " << arg.lastReach;
+        }
+        else if constexpr (std::is_same_v<T, WanderRandom>)
+        {
             out << "WANDER_RANDOM";
             out << "\nlastWanderRandom: " << startT;
-            break;
-        case RPG_IDLE:
+        }
+        else if constexpr (std::is_same_v<T, Idle>)
+        {
             out << "IDLE";
-            break;
-        case RPG_REST:
+        }
+        else if constexpr (std::is_same_v<T, Rest>)
+        {
             out << "REST";
             out << "\nlastRest: " << startT;
-            break;
-        case RPG_DO_QUEST:
+        }
+        else if constexpr (std::is_same_v<T, DoQuest>)
+        {
             out << "DO_QUEST";
-            out << "\nquestId: " << do_quest.questId;
-            out << "\nobjectiveIdx: " << do_quest.objectiveIdx;
-            out << "\npoiPos: " << do_quest.pos.GetMapId() << " " << do_quest.pos.GetPositionX() << " "
-                << do_quest.pos.GetPositionY() << " " << do_quest.pos.GetPositionZ();
-            out << "\nlastReachPOI: " << do_quest.lastReachPOI ? GetMSTimeDiffToNow(do_quest.lastReachPOI) : 0;
-            break;
-        case RPG_TRAVEL_FLIGHT:
+            out << "\nquestId: " << arg.questId;
+            out << "\nobjectiveIdx: " << arg.objectiveIdx;
+            out << "\npoiPos: " << arg.pos.GetMapId() << " " << arg.pos.GetPositionX() << " "
+                << arg.pos.GetPositionY() << " " << arg.pos.GetPositionZ();
+            out << "\nlastReachPOI: " << arg.lastReachPOI ? GetMSTimeDiffToNow(arg.lastReachPOI) : 0;
+        }
+        else if constexpr (std::is_same_v<T, TravelFlight>)
+        {
             out << "TRAVEL_FLIGHT";
-            out << "\nfromFlightMaster: " << flight.fromFlightMaster.GetEntry();
-            out << "\nfromNode: " << flight.fromNode;
-            out << "\ntoNode: " << flight.toNode;
-            out << "\ninFlight: " << flight.inFlight;
-            break;
-        default:
+            out << "\nfromFlightMaster: " << arg.fromFlightMaster.GetEntry();
+            out << "\nfromNode: " << arg.path[0];
+            out << "\ntoNode: " << arg.path[arg.path.size() - 1];
+            out << "\ninFlight: " << arg.inFlight;
+        }
+        else
             out << "UNKNOWN";
-    }
+    }, data);
     return out.str();
 }

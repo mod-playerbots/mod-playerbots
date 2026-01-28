@@ -13,7 +13,8 @@ using NewRpgStatusTransitionProb = std::vector<std::vector<int>>;
 
 struct NewRpgInfo
 {
-    NewRpgInfo() {}
+    NewRpgInfo() : data(Idle{}) {}
+    ~NewRpgInfo() = default;
 
     // RPG_GO_GRIND
     struct GoGrind
@@ -49,8 +50,7 @@ struct NewRpgInfo
     struct TravelFlight
     {
         ObjectGuid fromFlightMaster{};
-        uint32 fromNode{0};
-        uint32 toNode{0};
+        std::vector<uint32> path;
         bool inFlight{false};
     };
     // RPG_REST
@@ -72,17 +72,17 @@ struct NewRpgInfo
     WorldPosition moveFarPos;
     // END MOVE_FAR
 
-    union
-    {
-        GoGrind go_grind;
-        GoCamp go_camp;
-        WanderNpc wander_npc;
-        WanderRandom WANDER_RANDOM;
-        DoQuest do_quest;
-        Rest rest;
-        DoQuest quest;
-        TravelFlight flight;
-    };
+    using RpgData = std::variant<
+        Idle,
+        GoGrind,
+        GoCamp,
+        WanderNpc,
+        WanderRandom,
+        DoQuest,
+        Rest,
+        TravelFlight
+    >;
+    RpgData data;
 
     bool HasStatusPersisted(uint32 maxDuration) { return GetMSTimeDiffToNow(startT) > maxDuration; }
     void ChangeToGoGrind(WorldPosition pos);
@@ -90,7 +90,7 @@ struct NewRpgInfo
     void ChangeToWanderNpc();
     void ChangeToWanderRandom();
     void ChangeToDoQuest(uint32 questId, const Quest* quest);
-    void ChangeToTravelFlight(ObjectGuid fromFlightMaster, uint32 fromNode, uint32 toNode);
+    void ChangeToTravelFlight(ObjectGuid fromFlightMaster, std::vector<uint32> path);
     void ChangeToRest();
     void ChangeToIdle();
     bool CanChangeTo(NewRpgStatus status);
@@ -126,8 +126,5 @@ struct NewRpgStatistic
         return *this;
     }
 };
-
-// not sure is it necessary but keep it for now
-#define RPG_INFO(x, y) botAI->rpgInfo.x.y
 
 #endif
