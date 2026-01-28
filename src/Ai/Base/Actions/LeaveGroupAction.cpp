@@ -33,7 +33,7 @@ bool PartyCommandAction::Execute(Event event)
     Player* master = GetMaster();
     if (master && member == master->GetName())
     {
-        if (sRandomPlayerbotMgr->IsRandomBot(bot))
+        if (sRandomPlayerbotMgr.IsRandomBot(bot))
         {
             Player* newMaster = botAI->FindNewMaster();
             if (newMaster || bot->InBattleground())
@@ -150,7 +150,7 @@ bool LeaveFarAwayAction::isUseful()
     if (abs(int32(groupLeader->GetLevel() - bot->GetLevel())) > 4)
         return true;
 
-    if (bot->GetMapId() != groupLeader->GetMapId() || bot->GetDistance2d(groupLeader) >= 2 * sPlayerbotAIConfig->rpgDistance)
+    if (bot->GetMapId() != groupLeader->GetMapId() || bot->GetDistance2d(groupLeader) >= 2 * sPlayerbotAIConfig.rpgDistance)
     {
         return true;
     }

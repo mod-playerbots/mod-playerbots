@@ -30,11 +30,11 @@ Unit* CastPowerWordShieldOnAlmostFullHealthBelowAction::GetTarget()
         {
             continue;
         }
-        if (player->GetHealthPct() > sPlayerbotAIConfig->almostFullHealth)
+        if (player->GetHealthPct() > sPlayerbotAIConfig.almostFullHealth)
         {
             continue;
         }
-        if (player->GetDistance2d(bot) > sPlayerbotAIConfig->spellDistance)
+        if (player->GetDistance2d(bot) > sPlayerbotAIConfig.spellDistance)
         {
             continue;
         }
@@ -59,11 +59,11 @@ bool CastPowerWordShieldOnAlmostFullHealthBelowAction::isUseful()
         {
             continue;
         }
-        if (player->GetHealthPct() > sPlayerbotAIConfig->almostFullHealth)
+        if (player->GetHealthPct() > sPlayerbotAIConfig.almostFullHealth)
         {
             continue;
         }
-        if (player->GetDistance2d(bot) > sPlayerbotAIConfig->spellDistance)
+        if (player->GetDistance2d(bot) > sPlayerbotAIConfig.spellDistance)
         {
             continue;
         }
@@ -89,7 +89,7 @@ Unit* CastPowerWordShieldOnNotFullAction::GetTarget()
         {
             continue;
         }
-        if (player->GetDistance2d(bot) > sPlayerbotAIConfig->spellDistance)
+        if (player->GetDistance2d(bot) > sPlayerbotAIConfig.spellDistance)
         {
             continue;
         }

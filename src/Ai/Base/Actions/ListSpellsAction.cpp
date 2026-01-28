@@ -136,7 +136,7 @@ std::vector<std::pair<uint32, std::string>> ListSpellsAction::GetSpellList(std::
         if (spellInfo->IsPassive())
             continue;
 
-        SkillLineAbilityEntry const* skillLine = sPlayerbotSpellRepository->GetSkillLine(itr->first);
+        SkillLineAbilityEntry const* skillLine = PlayerbotSpellRepository::Instance().GetSkillLine(itr->first);
         if (skill != SKILL_NONE && (!skillLine || skillLine->SkillLine != skill))
             continue;
 
@@ -175,7 +175,7 @@ std::vector<std::pair<uint32, std::string>> ListSpellsAction::GetSpellList(std::
 
                     FindItemByIdVisitor visitor(itemid);
                     uint32 reagentsInInventory = InventoryAction::GetItemCount(&visitor);
-                    bool buyable = sPlayerbotSpellRepository->IsItemBuyable(itemid);
+                    bool buyable = PlayerbotSpellRepository::Instance().IsItemBuyable(itemid);
                     if (!buyable)
                     {
                         uint32 craftable = reagentsInInventory / reagentsRequired;

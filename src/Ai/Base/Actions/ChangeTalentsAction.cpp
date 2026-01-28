@@ -110,20 +110,20 @@ std::string ChangeTalentsAction::SpecList()
     std::ostringstream out;
     for (int specNo = 0; specNo < MAX_SPECNO; ++specNo)
     {
-        if (sPlayerbotAIConfig->premadeSpecName[cls][specNo].size() == 0)
+        if (sPlayerbotAIConfig.premadeSpecName[cls][specNo].size() == 0)
         {
             break;
         }
         specFound++;
         std::ostringstream out;
-        std::vector<std::vector<uint32>> parsed = sPlayerbotAIConfig->parsedSpecLinkOrder[cls][specNo][80];
+        std::vector<std::vector<uint32>> parsed = sPlayerbotAIConfig.parsedSpecLinkOrder[cls][specNo][80];
         std::unordered_map<int, int> tabCount;
         tabCount[0] = tabCount[1] = tabCount[2] = 0;
         for (auto& item : parsed)
         {
             tabCount[item[0]] += item[3];
         }
-        out << specFound << ". " << sPlayerbotAIConfig->premadeSpecName[cls][specNo] << " (";
+        out << specFound << ". " << sPlayerbotAIConfig.premadeSpecName[cls][specNo] << " (";
         out << tabCount[0] << "-" << tabCount[1] << "-" << tabCount[2] << ")";
         botAI->TellMasterNoFacing(out.str());
     }
@@ -137,11 +137,11 @@ std::string ChangeTalentsAction::SpecPick(std::string param)
     // int specFound = 0; //not used, line marked for removal.
     for (int specNo = 0; specNo < MAX_SPECNO; ++specNo)
     {
-        if (sPlayerbotAIConfig->premadeSpecName[cls][specNo].size() == 0)
+        if (sPlayerbotAIConfig.premadeSpecName[cls][specNo].size() == 0)
         {
             break;
         }
-        if (sPlayerbotAIConfig->premadeSpecName[cls][specNo] == param)
+        if (sPlayerbotAIConfig.premadeSpecName[cls][specNo] == param)
         {
             PlayerbotFactory::InitTalentsBySpecNo(bot, specNo, true);
 
@@ -149,7 +149,7 @@ std::string ChangeTalentsAction::SpecPick(std::string param)
             factory.InitGlyphs(false);
 
             std::ostringstream out;
-            out << "Picking " << sPlayerbotAIConfig->premadeSpecName[cls][specNo];
+            out << "Picking " << sPlayerbotAIConfig.premadeSpecName[cls][specNo];
             return out.str();
         }
     }
@@ -176,7 +176,7 @@ std::string ChangeTalentsAction::SpecApply(std::string param)
 // std::vector<TalentPath*> ChangeTalentsAction::getPremadePaths(std::string const findName)
 // {
 //     std::vector<TalentPath*> ret;
-//     // for (auto& path : sPlayerbotAIConfig->classSpecs[bot->getClass()].talentPath)
+//     // for (auto& path : sPlayerbotAIConfig.classSpecs[bot->getClass()].talentPath)
 //     // {
 //     //     if (findName.empty() || path.name.find(findName) != std::string::npos)
 //     //     {
@@ -191,7 +191,7 @@ std::string ChangeTalentsAction::SpecApply(std::string param)
 // {
 //     std::vector<TalentPath*> ret;
 
-//     // for (auto& path : sPlayerbotAIConfig->classSpecs[bot->getClass()].talentPath)
+//     // for (auto& path : sPlayerbotAIConfig.classSpecs[bot->getClass()].talentPath)
 //     // {
 //     //     TalentSpec newSpec = *GetBestPremadeSpec(path.id);
 //     //     newSpec.CropTalents(bot->GetLevel());
@@ -206,7 +206,7 @@ std::string ChangeTalentsAction::SpecApply(std::string param)
 
 // TalentPath* ChangeTalentsAction::getPremadePath(uint32 id)
 // {
-//     // for (auto& path : sPlayerbotAIConfig->classSpecs[bot->getClass()].talentPath)
+//     // for (auto& path : sPlayerbotAIConfig.classSpecs[bot->getClass()].talentPath)
 //     // {
 //     //     if (id == path.id)
 //     //     {
@@ -214,7 +214,7 @@ std::string ChangeTalentsAction::SpecApply(std::string param)
 //     //     }
 //     // }
 
-//     // return &sPlayerbotAIConfig->classSpecs[bot->getClass()].talentPath[0];
+//     // return &sPlayerbotAIConfig.classSpecs[bot->getClass()].talentPath[0];
 //     return nullptr;
 // }
 
@@ -270,9 +270,9 @@ std::string ChangeTalentsAction::SpecApply(std::string param)
 //         return false;
 //     }
 
-//     uint32 specNo = sRandomPlayerbotMgr->GetValue(bot->GetGUID().GetCounter(), "specNo");
+//     uint32 specNo = sRandomPlayerbotMgr.GetValue(bot->GetGUID().GetCounter(), "specNo");
 //     uint32 specId = specNo - 1;
-//     std::string specLink = sRandomPlayerbotMgr->GetData(bot->GetGUID().GetCounter(), "specLink");
+//     std::string specLink = sRandomPlayerbotMgr.GetData(bot->GetGUID().GetCounter(), "specLink");
 
 //     //Continue the current spec
 //     if (specNo > 0)
@@ -319,15 +319,15 @@ std::string ChangeTalentsAction::SpecApply(std::string param)
 //             specId = -1;
 //             // specLink = "";
 //         }
-//         else if (paths.size() > 1 && false/*!sPlayerbotAIConfig->autoPickTalents*/ &&
-//         !sRandomPlayerbotMgr->IsRandomBot(bot))
+//         else if (paths.size() > 1 && false/*!sPlayerbotAIConfig.autoPickTalents*/ &&
+//         !sRandomPlayerbotMgr.IsRandomBot(bot))
 //         {
 //             *out << "Found multiple specs: ";
 //             listPremadePaths(paths, out);
 //         }
 //         else
 //         {
-//             specId = PickPremadePath(paths, sRandomPlayerbotMgr->IsRandomBot(bot))->id;
+//             specId = PickPremadePath(paths, sRandomPlayerbotMgr.IsRandomBot(bot))->id;
 //             TalentSpec newSpec = *GetBestPremadeSpec(specId);
 //             specLink = newSpec.GetTalentLink();
 //             newSpec.CropTalents(bot->GetLevel());
@@ -341,12 +341,12 @@ std::string ChangeTalentsAction::SpecApply(std::string param)
 //         }
 //     }
 
-//     sRandomPlayerbotMgr->SetValue(bot->GetGUID().GetCounter(), "specNo", specId + 1);
+//     sRandomPlayerbotMgr.SetValue(bot->GetGUID().GetCounter(), "specNo", specId + 1);
 
 //     if (!specLink.empty() && specId == -1)
-//         sRandomPlayerbotMgr->SetValue(bot->GetGUID().GetCounter(), "specLink", 1, specLink);
+//         sRandomPlayerbotMgr.SetValue(bot->GetGUID().GetCounter(), "specLink", 1, specLink);
 //     else
-//         sRandomPlayerbotMgr->SetValue(bot->GetGUID().GetCounter(), "specLink", 0);
+//         sRandomPlayerbotMgr.SetValue(bot->GetGUID().GetCounter(), "specLink", 0);
 
 //     return (specNo == 0) ? false : true;
 // }
@@ -364,7 +364,7 @@ std::string ChangeTalentsAction::SpecApply(std::string param)
 //     if (path->talentSpec.size())
 //         return &path->talentSpec.back();
 
-//     // return &sPlayerbotAIConfig->classSpecs[bot->getClassMask()].baseSpec;
+//     // return &sPlayerbotAIConfig.classSpecs[bot->getClassMask()].baseSpec;
 //     return nullptr;
 // }
 
@@ -372,7 +372,7 @@ bool AutoSetTalentsAction::Execute(Event event)
 {
     std::ostringstream out;
 
-    if (!sPlayerbotAIConfig->autoPickTalents || !sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (!sPlayerbotAIConfig.autoPickTalents || !sRandomPlayerbotMgr.IsRandomBot(bot))
         return false;
 
     if (bot->GetFreeTalentPoints() <= 0)

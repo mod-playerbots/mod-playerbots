@@ -3,27 +3,13 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include "PlayerbotWorldThreadProcessor.h"
-
-#include "Log.h"
-#include "PlayerbotAIConfig.h"
-
 #include <algorithm>
 
-PlayerbotWorldThreadProcessor::PlayerbotWorldThreadProcessor()
-    : m_enabled(true), m_maxQueueSize(10000), m_batchSize(100), m_queueWarningThreshold(80),
-      m_timeSinceLastUpdate(0), m_updateInterval(50)  // Process at least every 50ms
-{
-    LOG_INFO("playerbots", "PlayerbotWorldThreadProcessor initialized");
-}
+#include "PlayerbotWorldThreadProcessor.h"
 
-PlayerbotWorldThreadProcessor::~PlayerbotWorldThreadProcessor() { ClearQueue(); }
+#include "Timer.h"
+#include "Log.h"
 
-PlayerbotWorldThreadProcessor* PlayerbotWorldThreadProcessor::instance()
-{
-    static PlayerbotWorldThreadProcessor instance;
-    return &instance;
-}
 
 void PlayerbotWorldThreadProcessor::Update(uint32 diff)
 {

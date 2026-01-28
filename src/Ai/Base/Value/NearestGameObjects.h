@@ -33,7 +33,7 @@ private:
 class NearestGameObjects : public ObjectGuidListCalculatedValue
 {
 public:
-    NearestGameObjects(PlayerbotAI* botAI, float range = sPlayerbotAIConfig->sightDistance, bool ignoreLos = false,
+    NearestGameObjects(PlayerbotAI* botAI, float range = sPlayerbotAIConfig.sightDistance, bool ignoreLos = false,
                        std::string const name = "nearest game objects")
         : ObjectGuidListCalculatedValue(botAI, name, 1 * 1000), range(range), ignoreLos(ignoreLos)
     {

@@ -281,7 +281,7 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
     if (!player->InBattleground())
         engine->addStrategiesNoInit("racials", "chat", "default", "cast time", "potions", "duel", "boost", nullptr);
 
-    if (sPlayerbotAIConfig->autoAvoidAoe && facade->HasRealPlayerMaster())
+    if (sPlayerbotAIConfig.autoAvoidAoe && facade->HasRealPlayerMaster())
         engine->addStrategy("avoid aoe", false);
 
     engine->addStrategy("formation", false);
@@ -399,13 +399,13 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
 
     if (PlayerbotAI::IsHeal(player, true))
     {
-        if (sPlayerbotAIConfig->autoSaveMana)
+        if (sPlayerbotAIConfig.autoSaveMana)
             engine->addStrategy("save mana", false);
-        if (!sPlayerbotAIConfig->IsRestrictedHealerDPSMap(player->GetMapId()))
+        if (!sPlayerbotAIConfig.IsRestrictedHealerDPSMap(player->GetMapId()))
             engine->addStrategy("healer dps", false);
     }
 
-    if (facade->IsRealPlayer() || sRandomPlayerbotMgr->IsRandomBot(player))
+    if (facade->IsRealPlayer() || sRandomPlayerbotMgr.IsRandomBot(player))
     {
         if (!player->GetGroup())
         {
@@ -448,10 +448,10 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
             }
         }
     }
-    if (sRandomPlayerbotMgr->IsRandomBot(player))
-        engine->ChangeStrategy(sPlayerbotAIConfig->randomBotCombatStrategies);
+    if (sRandomPlayerbotMgr.IsRandomBot(player))
+        engine->ChangeStrategy(sPlayerbotAIConfig.randomBotCombatStrategies);
     else
-        engine->ChangeStrategy(sPlayerbotAIConfig->combatStrategies);
+        engine->ChangeStrategy(sPlayerbotAIConfig.combatStrategies);
 
     // Battleground switch
     if (player->InBattleground() && player->GetBattleground())
@@ -586,10 +586,10 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
                                             "gather", "duel", "pvp", "buff", "mount", "emote", nullptr);
     }
 
-    if (sPlayerbotAIConfig->autoSaveMana && PlayerbotAI::IsHeal(player, true))
+    if (sPlayerbotAIConfig.autoSaveMana && PlayerbotAI::IsHeal(player, true))
         nonCombatEngine->addStrategy("save mana", false);
 
-    if ((sRandomPlayerbotMgr->IsRandomBot(player)) && !player->InBattleground())
+    if ((sRandomPlayerbotMgr.IsRandomBot(player)) && !player->InBattleground())
     {
         Player* master = facade->GetMaster();
 
@@ -597,7 +597,7 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
         if (!urand(0, 3))
             nonCombatEngine->addStrategy("start duel", false);
 
-        if (sPlayerbotAIConfig->randomBotJoinLfg)
+        if (sPlayerbotAIConfig.randomBotJoinLfg)
             nonCombatEngine->addStrategy("lfg", false);
 
         if (!player->GetGroup() || player->GetGroup()->GetLeaderGUID() == player->GetGUID())
@@ -612,9 +612,9 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
             // nonCombatEngine->addStrategy("guild");
             nonCombatEngine->addStrategy("grind", false);
 
-            if (sPlayerbotAIConfig->enableNewRpgStrategy)
+            if (sPlayerbotAIConfig.enableNewRpgStrategy)
                 nonCombatEngine->addStrategy("new rpg", false);
-            else if (sPlayerbotAIConfig->autoDoQuests)
+            else if (sPlayerbotAIConfig.autoDoQuests)
             {
                 // nonCombatEngine->addStrategy("travel");
                 nonCombatEngine->addStrategy("rpg", false);
@@ -622,13 +622,13 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
             else
                 nonCombatEngine->addStrategy("move random", false);
 
-            if (sPlayerbotAIConfig->randomBotJoinBG)
+            if (sPlayerbotAIConfig.randomBotJoinBG)
                 nonCombatEngine->addStrategy("bg", false);
 
             // if (!master || GET_PLAYERBOT_AI(master))
             //     nonCombatEngine->addStrategy("maintenance");
 
-            nonCombatEngine->ChangeStrategy(sPlayerbotAIConfig->randomBotNonCombatStrategies);
+            nonCombatEngine->ChangeStrategy(sPlayerbotAIConfig.randomBotNonCombatStrategies);
         }
         else
         {
@@ -637,14 +637,14 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
                 if (master)
                 {
                     PlayerbotAI* masterBotAI = GET_PLAYERBOT_AI(master);
-                    if (masterBotAI || sRandomPlayerbotMgr->IsRandomBot(player))
+                    if (masterBotAI || sRandomPlayerbotMgr.IsRandomBot(player))
                     {
                         // nonCombatEngine->addStrategy("pvp", false);
                         // nonCombatEngine->addStrategy("collision");
                         // nonCombatEngine->addStrategy("group");
                         // nonCombatEngine->addStrategy("guild");
 
-                        // if (sPlayerbotAIConfig->autoDoQuests)
+                        // if (sPlayerbotAIConfig.autoDoQuests)
                         // {
                         //     // nonCombatEngine->addStrategy("travel");
                         //     nonCombatEngine->addStrategy("rpg");
@@ -657,19 +657,19 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
                         // if (masterBotAI)
                         //     nonCombatEngine->addStrategy("maintenance");
 
-                        nonCombatEngine->ChangeStrategy(sPlayerbotAIConfig->randomBotNonCombatStrategies);
+                        nonCombatEngine->ChangeStrategy(sPlayerbotAIConfig.randomBotNonCombatStrategies);
                     }
                     else
                     {
                         // nonCombatEngine->addStrategy("pvp", false);
-                        nonCombatEngine->ChangeStrategy(sPlayerbotAIConfig->nonCombatStrategies);
+                        nonCombatEngine->ChangeStrategy(sPlayerbotAIConfig.nonCombatStrategies);
                     }
                 }
             }
         }
     }
     else
-        nonCombatEngine->ChangeStrategy(sPlayerbotAIConfig->nonCombatStrategies);
+        nonCombatEngine->ChangeStrategy(sPlayerbotAIConfig.nonCombatStrategies);
 
     // Battleground switch
     if (player->InBattleground() && player->GetBattleground())
@@ -726,7 +726,7 @@ void AiFactory::AddDefaultDeadStrategies(Player* player, PlayerbotAI* const faca
     (void)facade;  // unused and remove warning
     deadEngine->addStrategiesNoInit("dead", "stay", "chat", "default", "follow", nullptr);
 
-    if (sRandomPlayerbotMgr->IsRandomBot(player) && !player->GetGroup())
+    if (sRandomPlayerbotMgr.IsRandomBot(player) && !player->GetGroup())
         deadEngine->removeStrategy("follow", false);
 }
 

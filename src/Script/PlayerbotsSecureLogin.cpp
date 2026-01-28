@@ -29,6 +29,7 @@ namespace
             return;
 
         PlayerbotAI* ai = GET_PLAYERBOT_AI(target);
+
         if (!ai)
             return;
 
@@ -41,11 +42,7 @@ namespace
             }
         }
 
-        if (sRandomPlayerbotMgr)
-        {
-            sRandomPlayerbotMgr->LogoutPlayerBot(target->GetGUID());
-            return;
-        }
+        sRandomPlayerbotMgr.LogoutPlayerBot(target->GetGUID());
     }
 }
 

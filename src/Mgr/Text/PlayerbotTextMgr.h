@@ -11,9 +11,6 @@
 
 #include "Common.h"
 
-#define BOT_TEXT1(name) sPlayerbotTextMgr->GetBotText(name)
-#define BOT_TEXT2(name, replace) sPlayerbotTextMgr->GetBotText(name, replace)
-
 struct BotTextEntry
 {
     BotTextEntry(std::string name, std::map<uint32, std::string> text, uint32 say_type, uint32 reply_type)
@@ -63,18 +60,11 @@ enum ChatReplyType
 class PlayerbotTextMgr
 {
 public:
-    PlayerbotTextMgr()
-    {
-        for (uint8 i = 0; i < MAX_LOCALES; ++i)
-        {
-            botTextLocalePriority[i] = 0;
-        }
-    };
-    virtual ~PlayerbotTextMgr(){};
-    static PlayerbotTextMgr* instance()
+    static PlayerbotTextMgr& instance()
     {
         static PlayerbotTextMgr instance;
-        return &instance;
+
+        return instance;
     }
 
     std::string GetBotText(std::string name, std::map<std::string, std::string> placeholders);
@@ -95,11 +85,25 @@ public:
     void ResetLocalePriority();
 
 private:
+    PlayerbotTextMgr()
+    {
+        for (uint8 i = 0; i < MAX_LOCALES; ++i)
+        {
+            botTextLocalePriority[i] = 0;
+        }
+    };
+    ~PlayerbotTextMgr() = default;
+
+    PlayerbotTextMgr(const PlayerbotTextMgr&) = delete;
+    PlayerbotTextMgr& operator=(const PlayerbotTextMgr&) = delete;
+
+    PlayerbotTextMgr(PlayerbotTextMgr&&) = delete;
+    PlayerbotTextMgr& operator=(PlayerbotTextMgr&&) = delete;
+
+
     std::map<std::string, std::vector<BotTextEntry>> botTexts;
     std::map<std::string, uint32> botTextChance;
     uint32 botTextLocalePriority[MAX_LOCALES];
 };
-
-#define sPlayerbotTextMgr PlayerbotTextMgr::instance()
 
 #endif

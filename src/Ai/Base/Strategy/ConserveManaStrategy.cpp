@@ -19,9 +19,9 @@
 //     uint8 targetHealth = AI_VALUE2(uint8, "health", "current target");
 //     uint8 mana = AI_VALUE2(uint8, "mana", "self target");
 //     bool hasMana = AI_VALUE2(bool, "has mana", "self target");
-//     bool mediumMana = hasMana && mana < sPlayerbotAIConfig->mediumMana;
+//     bool mediumMana = hasMana && mana < sPlayerbotAIConfig.mediumMana;
 
-//     if (health < sPlayerbotAIConfig->lowHealth)
+//     if (health < sPlayerbotAIConfig.lowHealth)
 //         return 1.0f;
 
 //     Unit* target = AI_VALUE(Unit*, "current target");
@@ -92,7 +92,7 @@
 float HealerAutoSaveManaMultiplier::GetValue(Action* action)
 {
     uint8 mana = bot->GetPowerPct(Powers::POWER_MANA);
-    if (mana > sPlayerbotAIConfig->saveManaThreshold)
+    if (mana > sPlayerbotAIConfig.saveManaThreshold)
         return 1.0f;
     CastHealingSpellAction* healingAction = dynamic_cast<CastHealingSpellAction*>(action);
 
@@ -110,16 +110,16 @@ float HealerAutoSaveManaMultiplier::GetValue(Action* action)
     if (isTank)
     {
         estAmount /= 1.5;  // tanks have more health
-        if (health >= sPlayerbotAIConfig->mediumHealth &&
+        if (health >= sPlayerbotAIConfig.mediumHealth &&
             (lossAmount < estAmount || manaEfficiency <= HealingManaEfficiency::MEDIUM))
             return 0.0f;
-        if (health >= sPlayerbotAIConfig->lowHealth &&
+        if (health >= sPlayerbotAIConfig.lowHealth &&
             (lossAmount < estAmount || manaEfficiency <= HealingManaEfficiency::LOW))
             return 0.0f;
     }
     else
     {
-        if (health >= sPlayerbotAIConfig->mediumHealth &&
+        if (health >= sPlayerbotAIConfig.mediumHealth &&
             (lossAmount < estAmount || manaEfficiency <= HealingManaEfficiency::MEDIUM))
             return 0.0f;
         if (lossAmount < estAmount || manaEfficiency <= HealingManaEfficiency::LOW)

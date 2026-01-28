@@ -10,6 +10,7 @@
 #include "ObjectGuid.h"
 #include "PlayerbotMgr.h"
 #include "GameTime.h"
+#include "PlayerbotCommandServer.h"
 
 struct BattlegroundInfo
 {
@@ -88,12 +89,11 @@ private:
 class RandomPlayerbotMgr : public PlayerbotHolder
 {
 public:
-    RandomPlayerbotMgr();
-    virtual ~RandomPlayerbotMgr();
-    static RandomPlayerbotMgr* instance()
+    static RandomPlayerbotMgr& instance()
     {
         static RandomPlayerbotMgr instance;
-        return &instance;
+
+        return instance;
     }
 
     void LogPlayerLocation();
@@ -192,6 +192,43 @@ protected:
     void OnBotLoginInternal(Player* const bot) override;
 
 private:
+    RandomPlayerbotMgr() : PlayerbotHolder(), processTicks(0)
+    {
+        this->playersLevel = sPlayerbotAIConfig.randombotStartingLevel;
+
+        if (sPlayerbotAIConfig.enabled || sPlayerbotAIConfig.randomBotAutologin)
+        {
+            PlayerbotCommandServer::instance().Start();
+        }
+
+        BattlegroundData.clear();  // Clear here and here only.
+
+        // Cleanup on server start: orphaned pet data that's often left behind by bot pets that no longer exist in the DB
+        CharacterDatabase.Execute("DELETE FROM pet_aura WHERE guid NOT IN (SELECT id FROM character_pet)");
+        CharacterDatabase.Execute("DELETE FROM pet_spell WHERE guid NOT IN (SELECT id FROM character_pet)");
+        CharacterDatabase.Execute("DELETE FROM pet_spell_cooldown WHERE guid NOT IN (SELECT id FROM character_pet)");
+
+        for (int bracket = BG_BRACKET_ID_FIRST; bracket < MAX_BATTLEGROUND_BRACKETS; ++bracket)
+        {
+            for (int queueType = BATTLEGROUND_QUEUE_AV; queueType < MAX_BATTLEGROUND_QUEUE_TYPES; ++queueType)
+            {
+                this->BattlegroundData[queueType][bracket] = BattlegroundInfo();
+            }
+        }
+
+        this->BgCheckTimer = 0;
+        this->LfgCheckTimer = 0;
+        this->PlayersCheckTimer = 0;
+    }
+
+    ~RandomPlayerbotMgr() = default;
+
+    RandomPlayerbotMgr(const RandomPlayerbotMgr&) = delete;
+    RandomPlayerbotMgr& operator=(const RandomPlayerbotMgr&) = delete;
+
+    RandomPlayerbotMgr(RandomPlayerbotMgr&&) = delete;
+    RandomPlayerbotMgr& operator=(RandomPlayerbotMgr&&) = delete;
+
     // pid values are set in constructor
     botPID pid = botPID(1, 50, -50, 0, 0, 0);
     float activityMod = 0.25;

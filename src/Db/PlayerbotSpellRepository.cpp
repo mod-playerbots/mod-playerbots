@@ -1,4 +1,12 @@
+#include "Log.h"
+#include "DBCStores.h"
+#include "DatabaseEnv.h"
+#include "Field.h"
+// Required due to poor implementation on AC side
+#include "QueryResult.h"
+
 #include "PlayerbotSpellRepository.h"
+
 
 //  caches the result set
 void PlayerbotSpellRepository::Initialize()

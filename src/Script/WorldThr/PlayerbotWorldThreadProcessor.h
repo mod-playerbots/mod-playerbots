@@ -6,12 +6,14 @@
 #ifndef _PLAYERBOT_WORLD_THREAD_PROCESSOR_H
 #define _PLAYERBOT_WORLD_THREAD_PROCESSOR_H
 
-#include "Common.h"
-#include "PlayerbotOperation.h"
-
 #include <memory>
 #include <mutex>
 #include <queue>
+
+#include "Log.h"
+
+#include "PlayerbotOperation.h"
+
 
 /**
  * @brief Processes thread-unsafe bot operations in the world thread
@@ -28,15 +30,17 @@
  *
  * Usage:
  *   auto op = std::make_unique<MyOperation>(botGuid, params);
- *   sPlayerbotWorldProcessor->QueueOperation(std::move(op));
+ *   PlayerbotWorldThreadProcessor::instance().QueueOperation(std::move(op));
  */
 class PlayerbotWorldThreadProcessor
 {
 public:
-    PlayerbotWorldThreadProcessor();
-    ~PlayerbotWorldThreadProcessor();
+    static PlayerbotWorldThreadProcessor& instance()
+    {
+        static PlayerbotWorldThreadProcessor instance;
 
-    static PlayerbotWorldThreadProcessor* instance();
+        return instance;
+    }
 
     /**
      * @brief Update and process queued operations (called from world thread)
@@ -103,6 +107,21 @@ public:
     bool IsEnabled() const { return m_enabled; }
 
 private:
+    PlayerbotWorldThreadProcessor()
+    : m_enabled(true),
+    m_maxQueueSize(10000),
+    m_batchSize(100),
+    m_queueWarningThreshold(80),
+    m_timeSinceLastUpdate(0),
+    m_updateInterval(50)  // Process at least every 50ms
+    {
+        LOG_INFO("playerbots", "PlayerbotWorldThreadProcessor initialized");
+    }
+    ~PlayerbotWorldThreadProcessor()
+    {
+        this->ClearQueue();
+    }
+
     /**
      * @brief Process a single batch of operations
      *
@@ -136,7 +155,5 @@ private:
     uint32 m_timeSinceLastUpdate;
     uint32 m_updateInterval;  // Minimum ms between updates
 };
-
-#define sPlayerbotWorldProcessor PlayerbotWorldThreadProcessor::instance()
 
 #endif
