@@ -54,7 +54,6 @@ const std::vector<WorldLocation> WorldNavigationMgr::GetTravelHubs(Player* bot)
     return locs;
 }
 
-
 void WorldNavigationMgr::Init()
 {
     if (sPlayerbotAIConfig->enabled)
@@ -66,7 +65,6 @@ void WorldNavigationMgr::Init()
     ComputeAllPaths();
     LOG_INFO("playerbots", "Playerbots Taxi graph and cache built.");
 }
-
 
 void WorldNavigationMgr::PrepareZone2LevelBracket()
 {

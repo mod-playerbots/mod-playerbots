@@ -5,7 +5,6 @@
 #include "Player.h"
 #include "TravelMgr.h"
 
-
 enum class CityId : uint8 {
     STORMWIND, IRONFORGE, DARNASSUS, EXODAR,
     ORGRIMMAR, UNDERCITY, THUNDER_BLUFF, SILVERMOON_CITY,
@@ -92,7 +91,6 @@ private:
         bool InsideBracket(uint32 val) { return val >= low && val <= high; }
     };
     std::map<uint32, LevelBracket> zone2LevelBracket;
-
 
     struct BankerLocation
     {
