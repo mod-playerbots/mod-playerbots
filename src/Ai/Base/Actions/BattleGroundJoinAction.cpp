@@ -1123,11 +1123,54 @@ bool BGStrategyCheckAction::Execute(Event event)
 
             uint32 gs = scoreLimit == 0 ? 0 : PlayerbotFactory::CalcMixedGearScore(scoreLimit, qualityLimit);
 
+            // Additional arena rating-based gear cap (level 80 only).
+            // 1000 rating => ilvl 200, 2400 rating => ilvl 300 (hard cap).
+            // This is an extra restriction on top of the configured gear limit.
+            if (bot->GetLevel() == 80 && bot->InArena())
+            {
+                uint32 rating = 0;
+
+                if (Battleground* bg = bot->GetBattleground())
+                {
+                    if (bg->isArena())
+                    {
+                        uint8 arenaType = bg->GetArenaType(); // 2,3,5
+                        uint8 slot = ArenaTeam::GetSlotByType(arenaType);
+                        uint32 teamId = bot->GetArenaTeamId(slot);
+                        if (teamId)
+                        {
+                            if (ArenaTeam* team = sArenaTeamMgr->GetArenaTeamById(teamId))
+                                rating = team->GetRating();
+                        }
+                    }
+                }
+
+                // Treat unrated/skirmish/unknown as low rating.
+                if (rating == 0)
+                    rating = 1000;
+
+                float ilvlCapF = 200.0f;
+                if (rating >= 2400)
+                    ilvlCapF = 300.0f;
+                else if (rating > 1000)
+                    ilvlCapF = 200.0f + float(rating - 1000) * (100.0f / 1400.0f);
+
+                uint32 ilvlCap = uint32(ilvlCapF + 0.5f);
+
+                // Convert item-level cap to the same "mixed gear score" scale used by PlayerbotFactory.
+                uint32 ratingGsCap = PlayerbotFactory::CalcMixedGearScore(ilvlCap, ITEM_QUALITY_EPIC);
+                if (ratingGsCap == 0)
+                    ratingGsCap = 1;
+
+                if (gs == 0 || ratingGsCap < gs)
+                    gs = ratingGsCap;
+            }
+
             uint8 savedLevel = bot->GetLevel();
             PlayerbotFactory factory(bot, savedLevel, qualityLimit, gs, true);
 
             // Force gear generation; do not touch talents/level/spells/etc.
-            factory.InitEquipment(false);
+            factory.InitEquipment(false, bot->InArena());
 
             // Apply enchants/gems only.
             if (savedLevel >= sPlayerbotAIConfig->minEnchantingBotLevel)
