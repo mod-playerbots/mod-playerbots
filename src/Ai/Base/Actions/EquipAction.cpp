@@ -5,6 +5,7 @@
 
 #include "EquipAction.h"
 #include <utility>
+#include <string>
 
 #include "Event.h"
 #include "ItemCountValue.h"
@@ -13,6 +14,17 @@
 #include "Playerbots.h"
 #include "StatsWeightCalculator.h"
 #include "ItemPackets.h"
+
+namespace
+{
+    bool IsPotentiallyEquipable(ItemTemplate const* itemProto)
+    {
+        // Most reliable/cheap check across all item classes: any non-zero inventory type means the item can be equipped.
+        // (Includes unusual equipables like relics, offhands, etc., without depending on item class values.)
+        return itemProto && itemProto->InventoryType != INVTYPE_NON_EQUIP;
+    }
+}
+
 
 bool EquipAction::Execute(Event event)
 {
@@ -344,25 +356,105 @@ bool EquipUpgradesAction::Execute(Event event)
             return false;
     }
 
+    // The "item push result" event fires whenever an item is added to the bot inventory (loot, quest reward, mail, etc).
+    // Doing a full bag scan + item usage evaluation for every push is extremely expensive and produces lag spikes.
+    // Instead, evaluate only the pushed item and equip it if needed.
     if (event.GetSource() == "item push result")
     {
         WorldPacket p(event.getPacket());
         p.rpos(0);
-        ObjectGuid playerGuid;
-        uint32 received, created, sendChatMessage, itemSlot, itemId;
+
+        ObjectGuid guid;
+        uint32 received, created, sendChatMessage;
         uint8 bagSlot;
+        uint32 itemSlot, itemEntry;
 
-        p >> playerGuid;
-        p >> received;
-        p >> created;
-        p >> sendChatMessage;
-        p >> bagSlot;
-        p >> itemSlot;
-        p >> itemId;
+        // Optional fields (SMSG_ITEM_PUSH_RESULT can differ by core build).
+        uint32 itemSuffixFactor = 0;
+        int32 itemRandomPropertyId = 0;
+        uint32 count = 0;
+        uint32 itemCount = 0;
 
-        ItemTemplate const* item = sObjectMgr->GetItemTemplate(itemId);
-        if (item->Class == ITEM_CLASS_TRADE_GOODS && item->SubClass == ITEM_SUBCLASS_MEAT)
+        p >> guid >> received >> created >> sendChatMessage;
+        p >> bagSlot >> itemSlot >> itemEntry;
+
+        // Try to read extra fields only if they exist to avoid buffer overrun.
+        if (p.rpos() + sizeof(uint32) + sizeof(int32) <= p.size())
+            p >> itemSuffixFactor >> itemRandomPropertyId;
+
+        if (p.rpos() + sizeof(uint32) <= p.size())
+            p >> count;
+
+        if (p.rpos() + sizeof(uint32) <= p.size())
+            p >> itemCount;
+
+        (void)received;
+        (void)created;
+        (void)sendChatMessage;
+        (void)itemSuffixFactor;
+        (void)count;
+        (void)itemCount;
+if (guid != bot->GetGUID())
+            return true;
+
+        ItemTemplate const* itemProto = sObjectMgr->GetItemTemplate(itemEntry);
+        if (!itemProto)
+            return true;
+
+        // Keep legacy behavior: do not auto-equip cooking meat.
+        if (itemProto->Class == ITEM_CLASS_TRADE_GOODS && itemProto->SubClass == ITEM_SUBCLASS_MEAT)
             return false;
+
+        // Fast path: ignore non-equipable items.
+        if (!IsPotentiallyEquipable(itemProto))
+            return true;
+
+        Item* pushedItem = bot->GetItemByPos(bagSlot, static_cast<uint8>(itemSlot));
+        if (!pushedItem || pushedItem->GetTemplate()->ItemId != itemEntry ||
+            (itemRandomPropertyId != 0 && pushedItem->GetItemRandomPropertyId() != itemRandomPropertyId))
+        {
+            // Fallback: locate by entry + random property (still much cheaper than evaluating every item).
+            pushedItem = nullptr;
+
+            CollectItemsVisitor pushedVisitor;
+            IterateItems(&pushedVisitor, ITERATE_ITEMS_IN_BAGS);
+
+            for (auto it = pushedVisitor.items.begin(); it != pushedVisitor.items.end(); ++it)
+            {
+                Item* item = *it;
+                if (!item)
+                    break;
+
+                ItemTemplate const* proto = item->GetTemplate();
+                if (!proto || proto->ItemId != itemEntry)
+                    continue;
+
+                if (itemRandomPropertyId != 0 && item->GetItemRandomPropertyId() != itemRandomPropertyId)
+                    continue;
+
+                pushedItem = item;
+                break;
+            }
+        }
+
+        if (!pushedItem)
+            return true;
+
+        int32 randomProperty = pushedItem->GetItemRandomPropertyId();
+        std::string itemUsageParam;
+        if (randomProperty != 0)
+            itemUsageParam = std::to_string(itemEntry) + "," + std::to_string(randomProperty);
+        else
+            itemUsageParam = std::to_string(itemEntry);
+
+        ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", itemUsageParam);
+        if (usage == ITEM_USAGE_EQUIP || usage == ITEM_USAGE_REPLACE || usage == ITEM_USAGE_BAD_EQUIP)
+        {
+            // Equip the exact pushed item instance to avoid ambiguity when multiple copies exist.
+            EquipItem(pushedItem);
+        }
+
+        return true;
     }
 
     CollectItemsVisitor visitor;
@@ -374,28 +466,29 @@ bool EquipUpgradesAction::Execute(Event event)
         Item* item = *i;
         if (!item)
             break;
+
+        ItemTemplate const* itemProto = item->GetTemplate();
+        if (!IsPotentiallyEquipable(itemProto))
+            continue;
+
         int32 randomProperty = item->GetItemRandomPropertyId();
-        uint32 itemId = item->GetTemplate()->ItemId;
+        uint32 itemId = itemProto->ItemId;
+
         std::string itemUsageParam;
         if (randomProperty != 0)
-        {
             itemUsageParam = std::to_string(itemId) + "," + std::to_string(randomProperty);
-        }
         else
-        {
             itemUsageParam = std::to_string(itemId);
-        }
-        ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", itemUsageParam);
 
+        ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", itemUsageParam);
         if (usage == ITEM_USAGE_EQUIP || usage == ITEM_USAGE_REPLACE || usage == ITEM_USAGE_BAD_EQUIP)
-        {
             items.insert(itemId);
-        }
     }
 
     EquipItems(items);
     return true;
 }
+
 
 bool EquipUpgradeAction::Execute(Event event)
 {

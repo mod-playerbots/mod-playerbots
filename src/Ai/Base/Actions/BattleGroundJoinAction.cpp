@@ -540,6 +540,15 @@ bool BGJoinAction::shouldJoinBg(BattlegroundQueueTypeId queueTypeId, Battlegroun
     uint32 activeBgQueue = sRandomPlayerbotMgr->BattlegroundData[queueTypeId][bracketId].activeBgQueue;
     uint32 bgInstanceCount = sRandomPlayerbotMgr->BattlegroundData[queueTypeId][bracketId].bgInstanceCount;
 
+    // Wild random-bots: do not join battleground queues unless there is at least one real player queued/inside.
+    // (Real players in BG still count because they remain in battleground queue.)
+    if (sRandomPlayerbotMgr && sRandomPlayerbotMgr->IsRandomBot(bot))
+    {
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+        if (botAI && !botAI->HasRealPlayerMaster() && (bgAlliancePlayerCount + bgHordePlayerCount) == 0)
+            return false;
+    }
+
     if (teamId == TEAM_ALLIANCE)
     {
         if ((bgAllianceBotCount + bgAlliancePlayerCount) < TeamSize * (activeBgQueue + bgInstanceCount))
@@ -894,6 +903,15 @@ bool FreeBGJoinAction::shouldJoinBg(BattlegroundQueueTypeId queueTypeId, Battleg
     uint32 activeBgQueue = sRandomPlayerbotMgr->BattlegroundData[queueTypeId][bracketId].activeBgQueue;
     uint32 bgInstanceCount = sRandomPlayerbotMgr->BattlegroundData[queueTypeId][bracketId].bgInstanceCount;
 
+    // Wild random-bots: do not join battleground queues unless there is at least one real player queued/inside.
+    // (Real players in BG still count because they remain in battleground queue.)
+    if (sRandomPlayerbotMgr && sRandomPlayerbotMgr->IsRandomBot(bot))
+    {
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+        if (botAI && !botAI->HasRealPlayerMaster() && (bgAlliancePlayerCount + bgHordePlayerCount) == 0)
+            return false;
+    }
+
     if (teamId == TEAM_ALLIANCE)
     {
         if ((bgAllianceBotCount + bgAlliancePlayerCount) < TeamSize * (activeBgQueue + bgInstanceCount))
@@ -1000,6 +1018,11 @@ bool BGStatusAction::LeaveBG(PlayerbotAI* botAI)
 
     bot->GetSession()->HandleBattlefieldLeaveOpcode(packet);
 
+    // Wild random-bots: never keep Deserter. It can appear due to forced leaves, bugs or edge cases.
+    // Removing it here keeps bots from getting stuck unable to queue again.
+    if (isRandomBot && !hadRealMaster && bot->HasAura(26013))
+        bot->RemoveAurasDueToSpell(26013);
+
     botAI->ResetStrategies(!isRandomBot);
     botAI->GetAiObjectContext()->GetValue<uint32>("bg type")->Set(0);
     botAI->GetAiObjectContext()->GetValue<uint32>("bg role")->Set(0);
@@ -1079,12 +1102,19 @@ bool BGStatusAction::Execute(Event event)
     if (!queueTypeId)
         return false;
 
-    BattlegroundBracketId bracketId;
+    BattlegroundBracketId bracketId = BG_BRACKET_ID_FIRST;
+
     Battleground* bg = sBattlegroundMgr->GetBattlegroundTemplate(_bgTypeId);
+    if (!bg)
+        return false;
+
     mapId = bg->GetMapId();
+
     PvPDifficultyEntry const* pvpDiff = GetBattlegroundBracketByLevel(mapId, bot->GetLevel());
-    if (pvpDiff)
-        bracketId = pvpDiff->GetBracketId();
+    if (!pvpDiff)
+        return false;
+
+    bracketId = pvpDiff->GetBracketId();
 
     bool isArena = false;
     uint8 type = false;  // arenatype if arena
@@ -1165,6 +1195,8 @@ bool BGStatusAction::Execute(Event event)
         GroupQueueInfo ginfo;
         if (bgQueue.GetPlayerGroupInfoData(bot->GetGUID(), &ginfo))
         {
+            // Wild random-bots: do not stay queued for battlegrounds when there are no real players queued.
+            // This prevents bot-only battleground instances from starting when real players leave the queue.
             if (ginfo.IsInvitedToBGInstanceGUID && !bot->InBattleground())
             {
                 // BattlegroundMgr::GetBattleground() does not return battleground if bgTypeId==BATTLEGROUND_AA
@@ -1309,7 +1341,9 @@ bool BGStatusAction::Execute(Event event)
             }
         }
 
-        LOG_INFO("playerbots", "Bot {} {}:{} <{}> joined {} - {}", bot->GetGUID().ToString().c_str(),
+        // Wild random-bots: avoid re-joining recently evacuated empty battleground instances.
+        // This prevents "leave -> immediate re-invite -> join" loops on bot-only BGs.
+                LOG_INFO("playerbots", "Bot {} {}:{} <{}> joined {} - {}", bot->GetGUID().ToString().c_str(),
                  bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName(),
                  isArena ? "Arena" : "BG", _bgType);
 
@@ -1362,10 +1396,6 @@ bool BGStatusCheckAction::isUseful() { return bot->InBattlegroundQueue(); }
 
 bool BGStrategyCheckAction::Execute(Event event)
 {
-    static std::unordered_map<uint32, uint32> s_lastSeenInstanceIdByBot;
-    static std::unordered_map<uint32, uint32> s_lastSwapInstanceIdByBot;
-
-    uint32 botLow = bot->GetGUID().GetCounter();
 
     // Note: InBattleground() can be true for a short moment while GetBattleground() is still null during transfer.
     // Never treat a temporary null Battleground* as "left the battleground", or bots may lose their BG tactics and idle.
@@ -1377,12 +1407,9 @@ bool BGStrategyCheckAction::Execute(Event event)
     // If we left BG/arena, restore normal strategies exactly once.
     if (!inBg)
     {
-        auto itSeen = s_lastSeenInstanceIdByBot.find(botLow);
-        auto itSwap = s_lastSwapInstanceIdByBot.find(botLow);
-        if (itSeen != s_lastSeenInstanceIdByBot.end() || itSwap != s_lastSwapInstanceIdByBot.end())
+        if (botAI->GetLastSeenBgInstanceId() || botAI->GetLastSwapBgInstanceId())
         {
-            s_lastSeenInstanceIdByBot.erase(botLow);
-            s_lastSwapInstanceIdByBot.erase(botLow);
+            botAI->ResetBgStrategyState();
             botAI->ResetStrategies();
             return true;
         }
@@ -1399,11 +1426,17 @@ bool BGStrategyCheckAction::Execute(Event event)
         return false;
 
     // Apply BG/arena tactics once per BG/arena instance.
-    auto itSeen = s_lastSeenInstanceIdByBot.find(botLow);
-    if (itSeen == s_lastSeenInstanceIdByBot.end() || itSeen->second != instanceId)
+    if (botAI->GetLastSeenBgInstanceId() != instanceId)
     {
-        s_lastSeenInstanceIdByBot[botLow] = instanceId;
-        s_lastSwapInstanceIdByBot.erase(botLow);  // allow swap in this new instance
+        botAI->SetLastSeenBgInstanceId(instanceId);
+
+        // If we are already in PvP gear (e.g. quick re-invite), do not rebuild it again.
+        // Just mark the swap as done for this instance.
+        if (botAI->IsPvpGearActive())
+            botAI->SetLastSwapBgInstanceId(instanceId);
+        else
+            botAI->SetLastSwapBgInstanceId(0); // allow swap in this new instance
+
         botAI->ResetStrategies();
         // Do not return: we may swap gear in the same tick once the bot is fully on the BG map.
     }
@@ -1412,14 +1445,16 @@ bool BGStrategyCheckAction::Execute(Event event)
     if (!sRandomPlayerbotMgr || !sRandomPlayerbotMgr->IsRandomBot(bot))
         return false;
 
+    // Addclass (summoned) bots must never auto-generate/swap PvP gear.
+    if (sRandomPlayerbotMgr->IsAddclassBot(bot))
+        return false;
+
     // Wait until the bot is actually on the BG/arena map (avoid swapping during transfer).
     if (!bot->IsInWorld() || bot->IsBeingTeleported() || bot->IsDuringRemoveFromWorld() || bot->GetMapId() != bg->GetMapId())
         return false;
 
-    auto itSwap = s_lastSwapInstanceIdByBot.find(botLow);
-    if (itSwap != s_lastSwapInstanceIdByBot.end() && itSwap->second == instanceId)
+    if (botAI->IsPvpGearActive() && botAI->GetLastSwapBgInstanceId() == instanceId)
         return false;
-
     // Random bots: generate PvP gear + enchants after fully entering BG/arena.
     bool hasRealMaster = botAI->HasRealPlayerMaster();
 
@@ -1500,6 +1535,9 @@ bool BGStrategyCheckAction::Execute(Event event)
             gs = ratingGsCap;
     }
 
+    // Bank-first PvE stash: save the currently equipped PvE set to bank so leaving BG/arena can restore it cheaply.
+    botAI->StashPveGearToBankForNextPvpSwap();
+
     uint8 savedLevel = bot->GetLevel();
     PlayerbotFactory factory(bot, savedLevel, qualityLimit, gs, true);
 
@@ -1511,7 +1549,7 @@ bool BGStrategyCheckAction::Execute(Event event)
         factory.ApplyEnchantAndGemsNew();
 
     // Remember that this bot already swapped gear for this BG/arena instance.
-    s_lastSwapInstanceIdByBot[botLow] = instanceId;
+    botAI->OnPvpGearEquipped(instanceId);
 
     return false;
 }

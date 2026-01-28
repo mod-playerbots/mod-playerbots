@@ -13,6 +13,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "Bag.h"
+
 #include "AiFactory.h"
 #include "BudgetValues.h"
 #include "ChannelMgr.h"
@@ -63,6 +65,25 @@
 #include "Unit.h"
 #include "UpdateTime.h"
 #include "Vehicle.h"
+
+namespace
+{
+    // Local throttle for expensive PvE re-equip rebuilds.
+    // Some cores/branches do not expose RandomPlayerbotMgr::TryAcquirePveReequipPermit().
+    // We keep it simple: allow at most one rebuild every 100ms globally.
+    static bool TryAcquirePveReequipPermitLocal()
+    {
+        static uint32 sNextPermitMs = 0;
+        uint32 nowMs = getMSTime();
+
+        if (sNextPermitMs && nowMs < sNextPermitMs)
+            return false;
+
+        sNextPermitMs = nowMs + 100;
+        return true;
+    }
+}
+
 
 namespace
 {
@@ -278,6 +299,40 @@ PlayerbotAI::PlayerbotAI(Player* bot)
     botOutgoingPacketHandlers.AddHandler(SMSG_QUEST_CONFIRM_ACCEPT, "confirm quest");
 }
 
+void PlayerbotAI::SetMaster(Player* newMaster)
+{
+    if (master == newMaster)
+        return;
+
+    Player* oldMaster = master;
+    master = newMaster;
+
+    // Maintain fast master->controlled random/addclass bots index so real players without bots
+    // do not pay O(N_random_bots) cost on each outgoing packet.
+    if (bot && (sRandomPlayerbotMgr->IsRandomBot(bot) || sRandomPlayerbotMgr->IsAddclassBot(bot)))
+    {
+        ObjectGuid botGuid = bot->GetGUID();
+
+        ObjectGuid oldMasterGuid;
+        if (oldMaster)
+        {
+            PlayerbotAI* oldMasterAI = GET_PLAYERBOT_AI(oldMaster);
+            if (!oldMasterAI || oldMasterAI->IsRealPlayer())
+                oldMasterGuid = oldMaster->GetGUID();
+        }
+
+        ObjectGuid newMasterGuid;
+        if (newMaster)
+        {
+            PlayerbotAI* newMasterAI = GET_PLAYERBOT_AI(newMaster);
+            if (!newMasterAI || newMasterAI->IsRealPlayer())
+                newMasterGuid = newMaster->GetGUID();
+        }
+
+        sRandomPlayerbotMgr->OnRandomBotMasterChanged(botGuid, oldMasterGuid, newMasterGuid);
+    }
+}
+
 PlayerbotAI::~PlayerbotAI()
 {
     for (uint8 i = 0; i < BOT_STATE_MAX; i++)
@@ -296,9 +351,528 @@ PlayerbotAI::~PlayerbotAI()
 
 void PlayerbotAI::SetPendingPveGearReequip(bool hadRealMaster)
 {
-    pendingPveGearReequip_ = true;
+    // Schedule a single PvE restore only if this bot actually equipped PvP gear before.
+    // (Bots that never swapped to PvP should not trigger a heavy PvE re-equip.)
+    if (!pvpGearActive_ || pvpSwapEpoch_ == 0)
+        return;
+
+    // Idempotent: do not schedule the same epoch twice.
+    if (pendingPveGearReequipEpoch_ >= pvpSwapEpoch_)
+        return;
+
+    pendingPveGearReequipEpoch_ = pvpSwapEpoch_;
     pendingPveGearReequipHadRealMaster_ = hadRealMaster;
+    pendingPveGearReequipNextTryMs_ = getMSTime() + urand(0, 500);
 }
+
+
+bool PlayerbotAI::ShouldLeaveEmptyBgQueue(uint32 queueTypeId, uint8 bracketId, bool hasRealPlayers,
+                                         uint32 minEmptyMs, uint32 attemptCooldownMs)
+{
+    // This is a per-bot, low-cost limiter to prevent churn and packet spam:
+    // - Leave as soon as the queue has no real players (minEmptyMs defaults to 0 for strict mode).
+    // - Do not spam leave packets if the bot remains in queue and keeps receiving WAIT_QUEUE updates.
+    uint64 key = (uint64(queueTypeId) << 32) | uint64(bracketId);
+    uint32 nowMs = getMSTime();
+
+    if (hasRealPlayers)
+    {
+        if (emptyBgQueueKey_ == key)
+            emptyBgQueueSinceMs_ = 0;
+
+        return false;
+    }
+
+    if (emptyBgQueueKey_ != key || emptyBgQueueSinceMs_ == 0)
+    {
+        emptyBgQueueKey_ = key;
+        emptyBgQueueSinceMs_ = nowMs;
+        return false;
+    }
+
+    // Require the queue to be empty for a short time before leaving.
+    if (nowMs - emptyBgQueueSinceMs_ < minEmptyMs)
+        return false;
+
+    // Cooldown between leave attempts for the same queue.
+    if (lastEmptyBgQueueLeaveKey_ == key && lastEmptyBgQueueLeaveAttemptMs_ &&
+        (nowMs - lastEmptyBgQueueLeaveAttemptMs_) < attemptCooldownMs)
+        return false;
+
+    lastEmptyBgQueueLeaveKey_ = key;
+    lastEmptyBgQueueLeaveAttemptMs_ = nowMs;
+    return true;
+}
+
+
+void PlayerbotAI::OnPvpGearEquipped(uint32 instanceId)
+{
+    // Mark that the bot is now in PvP gear and advance the epoch.
+    ++pvpSwapEpoch_;
+    pvpGearActive_ = true;
+    lastSwapBgInstanceId_ = instanceId;
+}
+
+
+bool PlayerbotAI::IsWildRandomBotForAutoGearSwap() const
+{
+    if (!bot || !sRandomPlayerbotMgr)
+        return false;
+
+    if (!sRandomPlayerbotMgr->IsRandomBot(bot))
+        return false;
+
+    // Addclass (summoned) bots must never auto-stash/auto-swap.
+    if (sRandomPlayerbotMgr->IsAddclassBot(bot))
+        return false;
+
+    // Player-controlled or group-master bots are handled by the player.
+    if (HasRealPlayerMaster())
+        return false;
+
+    return true;
+}
+
+
+bool PlayerbotAI::ItemTemplateHasResilience(ItemTemplate const* proto)
+{
+    if (!proto)
+        return false;
+
+    for (uint8 i = 0; i < MAX_ITEM_PROTO_STATS; ++i)
+    {
+        if (proto->ItemStat[i].ItemStatType == ITEM_MOD_RESILIENCE_RATING && proto->ItemStat[i].ItemStatValue > 0)
+            return true;
+    }
+
+    return false;
+}
+
+
+bool PlayerbotAI::LooksLikePvpGearEquipped() const
+{
+    if (!bot)
+        return false;
+
+    for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+    {
+        if (slot == EQUIPMENT_SLOT_BODY || slot == EQUIPMENT_SLOT_TABARD)
+            continue;
+
+        Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
+        if (!item)
+            continue;
+
+        ItemTemplate const* proto = item->GetTemplate();
+        if (ItemTemplateHasResilience(proto))
+            return true;
+    }
+
+    return false;
+}
+
+
+bool PlayerbotAI::FindFirstFreeBankSlot(uint8& outBag, uint8& outSlot) const
+{
+    // Main bank slots
+    for (uint8 slot = BANK_SLOT_ITEM_START; slot < BANK_SLOT_ITEM_END; ++slot)
+    {
+        if (!bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+        {
+            outBag = INVENTORY_SLOT_BAG_0;
+            outSlot = slot;
+            return true;
+        }
+    }
+
+    // Bank bags
+    for (uint8 bagSlot = BANK_SLOT_BAG_START; bagSlot < BANK_SLOT_BAG_END; ++bagSlot)
+    {
+        Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bagSlot);
+        if (!item || !item->IsBag())
+            continue;
+
+        Bag* bag = (Bag*)item;
+        for (uint8 i = 0; i < bag->GetBagSize(); ++i)
+        {
+            if (!bag->GetItemByPos(i))
+            {
+                outBag = bagSlot;
+                outSlot = i;
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+
+uint32 PlayerbotAI::CountFreeBankSlots() const
+{
+    uint32 free = 0;
+
+    for (uint8 slot = BANK_SLOT_ITEM_START; slot < BANK_SLOT_ITEM_END; ++slot)
+        if (!bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+            ++free;
+
+    for (uint8 bagSlot = BANK_SLOT_BAG_START; bagSlot < BANK_SLOT_BAG_END; ++bagSlot)
+    {
+        Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bagSlot);
+        if (!item || !item->IsBag())
+            continue;
+
+        Bag* bag = (Bag*)item;
+        for (uint8 i = 0; i < bag->GetBagSize(); ++i)
+            if (!bag->GetItemByPos(i))
+                ++free;
+    }
+
+    return free;
+}
+
+
+void PlayerbotAI::HardPurgeBankContents()
+{
+    // Main bank items
+    for (uint8 slot = BANK_SLOT_ITEM_START; slot < BANK_SLOT_ITEM_END; ++slot)
+    {
+        if (bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+            bot->DestroyItem(INVENTORY_SLOT_BAG_0, slot, true);
+    }
+
+    // Bank bag contents (do NOT destroy the bank bags themselves)
+    for (uint8 bagSlot = BANK_SLOT_BAG_START; bagSlot < BANK_SLOT_BAG_END; ++bagSlot)
+    {
+        Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bagSlot);
+        if (!item || !item->IsBag())
+            continue;
+
+        Bag* bag = (Bag*)item;
+        for (uint8 i = 0; i < bag->GetBagSize(); ++i)
+        {
+            if (bot->GetItemByPos(bagSlot, i))
+                bot->DestroyItem(bagSlot, i, true);
+        }
+    }
+}
+
+
+Item* PlayerbotAI::FindItemInBankByGuidRaw(uint64 guidRaw, uint8& outBag, uint8& outSlot) const
+{
+    // Main bank slots
+    for (uint8 slot = BANK_SLOT_ITEM_START; slot < BANK_SLOT_ITEM_END; ++slot)
+    {
+        Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
+        if (item && item->GetGUID().GetRawValue() == guidRaw)
+        {
+            outBag = INVENTORY_SLOT_BAG_0;
+            outSlot = slot;
+            return item;
+        }
+    }
+
+    // Bank bags
+    for (uint8 bagSlot = BANK_SLOT_BAG_START; bagSlot < BANK_SLOT_BAG_END; ++bagSlot)
+    {
+        Item* bagItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bagSlot);
+        if (!bagItem || !bagItem->IsBag())
+            continue;
+
+        Bag* bag = (Bag*)bagItem;
+        for (uint8 i = 0; i < bag->GetBagSize(); ++i)
+        {
+            Item* item = bot->GetItemByPos(bagSlot, i);
+            if (item && item->GetGUID().GetRawValue() == guidRaw)
+            {
+                outBag = bagSlot;
+                outSlot = i;
+                return item;
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+
+void PlayerbotAI::ClearPveBankStash()
+{
+    pveBankStashEpoch_ = 0;
+    pveBankStashedGuidRawBySlot_.fill(0);
+}
+
+
+void PlayerbotAI::PurgeResilienceItemsFromBankAndBags(uint32 maxToDestroy)
+{
+    uint32 destroyed = 0;
+
+    auto maybeDestroy = [&](uint8 bag, uint8 slot)
+    {
+        if (maxToDestroy && destroyed >= maxToDestroy)
+            return;
+
+        Item* item = bot->GetItemByPos(bag, slot);
+        if (!item)
+            return;
+
+        ItemTemplate const* proto = item->GetTemplate();
+        if (!ItemTemplateHasResilience(proto))
+            return;
+
+        bot->DestroyItem(bag, slot, true);
+        ++destroyed;
+    };
+
+    // Inventory (main)
+    for (uint8 slot = INVENTORY_SLOT_ITEM_START; slot < INVENTORY_SLOT_ITEM_END; ++slot)
+    {
+        maybeDestroy(INVENTORY_SLOT_BAG_0, slot);
+        if (maxToDestroy && destroyed >= maxToDestroy)
+            return;
+    }
+
+    // Bags
+    for (uint8 bagSlot = INVENTORY_SLOT_BAG_START; bagSlot < INVENTORY_SLOT_BAG_END; ++bagSlot)
+    {
+        Item* bagItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bagSlot);
+        if (!bagItem || !bagItem->IsBag())
+            continue;
+
+        Bag* bag = (Bag*)bagItem;
+        for (uint8 i = 0; i < bag->GetBagSize(); ++i)
+        {
+            maybeDestroy(bagSlot, i);
+            if (maxToDestroy && destroyed >= maxToDestroy)
+                return;
+        }
+    }
+
+    // Bank (main)
+    for (uint8 slot = BANK_SLOT_ITEM_START; slot < BANK_SLOT_ITEM_END; ++slot)
+    {
+        maybeDestroy(INVENTORY_SLOT_BAG_0, slot);
+        if (maxToDestroy && destroyed >= maxToDestroy)
+            return;
+    }
+
+    // Bank bags
+    for (uint8 bagSlot = BANK_SLOT_BAG_START; bagSlot < BANK_SLOT_BAG_END; ++bagSlot)
+    {
+        Item* bagItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bagSlot);
+        if (!bagItem || !bagItem->IsBag())
+            continue;
+
+        Bag* bag = (Bag*)bagItem;
+        for (uint8 i = 0; i < bag->GetBagSize(); ++i)
+        {
+            maybeDestroy(bagSlot, i);
+            if (maxToDestroy && destroyed >= maxToDestroy)
+                return;
+        }
+    }
+}
+
+
+bool PlayerbotAI::StashPveGearToBankForNextPvpSwap()
+{
+    if (!IsWildRandomBotForAutoGearSwap())
+        return false;
+
+    // If we already consider ourselves in PvP gear, do not stash.
+    if (pvpGearActive_)
+        return false;
+
+    uint32 targetEpoch = pvpSwapEpoch_ + 1;
+    if (pveBankStashEpoch_ == targetEpoch)
+        return true; // already stashed for this upcoming swap
+
+    // Reset stash map
+    pveBankStashedGuidRawBySlot_.fill(0);
+    pveBankStashEpoch_ = targetEpoch;
+
+    uint32 needSlots = 0;
+    for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+    {
+        if (slot == EQUIPMENT_SLOT_BODY || slot == EQUIPMENT_SLOT_TABARD)
+            continue;
+        if (bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+            ++needSlots;
+    }
+
+    if (!needSlots)
+        return true;
+
+    // Ensure we have enough free bank space; otherwise, purge the bank.
+    if (CountFreeBankSlots() < needSlots)
+        HardPurgeBankContents();
+
+    // Move each equipped item into a free bank slot.
+    for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+    {
+        if (slot == EQUIPMENT_SLOT_BODY || slot == EQUIPMENT_SLOT_TABARD)
+            continue;
+
+        Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
+        if (!item)
+            continue;
+
+        uint8 dstBag = 0;
+        uint8 dstSlot = 0;
+        if (!FindFirstFreeBankSlot(dstBag, dstSlot))
+            break; // no more space (should not happen after purge)
+
+        uint64 guidRaw = item->GetGUID().GetRawValue();
+        uint16 src = (uint16(INVENTORY_SLOT_BAG_0) << 8) | uint16(slot);
+        uint16 dst = (uint16(dstBag) << 8) | uint16(dstSlot);
+
+        bot->SwapItem(src, dst);
+
+        pveBankStashedGuidRawBySlot_[slot] = guidRaw;
+    }
+
+    return true;
+}
+
+
+bool PlayerbotAI::TryRestorePveGearFromBankStash(uint32 epoch)
+{
+    if (!IsWildRandomBotForAutoGearSwap())
+        return false;
+
+    if (!epoch || pveBankStashEpoch_ != epoch)
+        return false;
+
+    bool restoredAny = false;
+
+    for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+    {
+        if (slot == EQUIPMENT_SLOT_BODY || slot == EQUIPMENT_SLOT_TABARD)
+            continue;
+
+        uint64 guidRaw = pveBankStashedGuidRawBySlot_[slot];
+        if (!guidRaw)
+            continue;
+
+        uint8 srcBag = 0;
+        uint8 srcSlot = 0;
+        Item* bankItem = FindItemInBankByGuidRaw(guidRaw, srcBag, srcSlot);
+        if (!bankItem)
+            continue;
+
+        uint16 src = (uint16(srcBag) << 8) | uint16(srcSlot);
+        uint16 dst = (uint16(INVENTORY_SLOT_BAG_0) << 8) | uint16(slot);
+
+        bot->SwapItem(src, dst);
+        restoredAny = true;
+
+        // Destroy the swapped-out item if it looks like PvP gear (we don't want to keep PvP leftovers).
+        Item* swappedOut = bot->GetItemByPos(srcBag, srcSlot);
+        if (swappedOut && ItemTemplateHasResilience(swappedOut->GetTemplate()))
+            bot->DestroyItem(srcBag, srcSlot, true);
+    }
+
+    // One attempt per epoch is enough; if some items weren't found, we will fall back to heuristic/rebuild.
+    ClearPveBankStash();
+
+    if (restoredAny)
+        PurgeResilienceItemsFromBankAndBags(200);
+
+    return restoredAny;
+}
+
+
+bool PlayerbotAI::TryRecoverPveGearFromBankHeuristic()
+{
+    if (!IsWildRandomBotForAutoGearSwap())
+        return false;
+
+    // Only run if the bot currently looks like it is in PvP gear.
+    if (!LooksLikePvpGearEquipped())
+        return false;
+
+    std::array<uint16, EQUIPMENT_SLOT_END> bestPos{};
+    std::array<uint32, EQUIPMENT_SLOT_END> bestIlvl{};
+
+    auto consider = [&](Item* item)
+    {
+        if (!item)
+            return;
+
+        ItemTemplate const* proto = item->GetTemplate();
+        if (!proto)
+            return;
+
+        if (proto->InventoryType == INVTYPE_NON_EQUIP)
+            return;
+
+        if (ItemTemplateHasResilience(proto))
+            return;
+
+        uint8 equipSlot = FindEquipSlot(proto, NULL_SLOT, true);
+        if (equipSlot >= EQUIPMENT_SLOT_END)
+            return;
+
+        if (equipSlot == EQUIPMENT_SLOT_BODY || equipSlot == EQUIPMENT_SLOT_TABARD)
+            return;
+
+        uint32 ilvl = proto->ItemLevel;
+        if (!bestPos[equipSlot] || ilvl > bestIlvl[equipSlot])
+        {
+            bestPos[equipSlot] = item->GetPos();
+            bestIlvl[equipSlot] = ilvl;
+        }
+    };
+
+    // Scan bank main slots
+    for (uint8 slot = BANK_SLOT_ITEM_START; slot < BANK_SLOT_ITEM_END; ++slot)
+        consider(bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot));
+
+    // Scan bank bag contents
+    for (uint8 bagSlot = BANK_SLOT_BAG_START; bagSlot < BANK_SLOT_BAG_END; ++bagSlot)
+    {
+        Item* bagItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bagSlot);
+        if (!bagItem || !bagItem->IsBag())
+            continue;
+
+        Bag* bag = (Bag*)bagItem;
+        for (uint8 i = 0; i < bag->GetBagSize(); ++i)
+            consider(bot->GetItemByPos(bagSlot, i));
+    }
+
+    bool swappedAny = false;
+
+    for (uint8 equipSlot = EQUIPMENT_SLOT_START; equipSlot < EQUIPMENT_SLOT_END; ++equipSlot)
+    {
+        if (equipSlot == EQUIPMENT_SLOT_BODY || equipSlot == EQUIPMENT_SLOT_TABARD)
+            continue;
+
+        Item* cur = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, equipSlot);
+        if (!cur || !ItemTemplateHasResilience(cur->GetTemplate()))
+            continue;
+
+        uint16 src = bestPos[equipSlot];
+        if (!src)
+            continue;
+
+        uint8 srcBag = uint8(src >> 8);
+        uint8 srcSlot = uint8(src & 0xFF);
+
+        uint16 dst = (uint16(INVENTORY_SLOT_BAG_0) << 8) | uint16(equipSlot);
+        bot->SwapItem(src, dst);
+        swappedAny = true;
+
+        Item* swappedOut = bot->GetItemByPos(srcBag, srcSlot);
+        if (swappedOut && ItemTemplateHasResilience(swappedOut->GetTemplate()))
+            bot->DestroyItem(srcBag, srcSlot, true);
+    }
+
+    if (swappedAny)
+        PurgeResilienceItemsFromBankAndBags(200);
+
+    return swappedAny;
+}
+
 
 void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 {
@@ -320,36 +894,145 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     if (bot->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_ROOT))
         bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_ROOT);
 
-    // Delayed PvE re-equip after leaving BG/arena.
-    // Leaving a battleground/arena usually involves a map transfer; avoid rebuilding gear during loading.
-    if (pendingPveGearReequip_)
+    // Delayed PvE restore after leaving BG/arena.
+    // Leaving a battleground/arena usually involves a map transfer; avoid any heavy work during loading.
+    // For wild random bots we first try a cheap bank-first restore (swap back the stashed PvE set).
+    // Only if that fails (or we have no stash) we fall back to a throttled full PvE gear rebuild.
+    if (pendingPveGearReequipEpoch_ > donePveGearReequipEpoch_)
     {
-        // Safety: only random bots use this path.
+        // Safety: if this isn't a random bot, just finalize the pending epoch.
         if (!sRandomPlayerbotMgr || !sRandomPlayerbotMgr->IsRandomBot(bot))
         {
-            pendingPveGearReequip_ = false;
+            donePveGearReequipEpoch_ = pendingPveGearReequipEpoch_;
             pendingPveGearReequipHadRealMaster_ = false;
+            pvpGearActive_ = false;
+            pendingPveGearReequipNextTryMs_ = 0;
+            ClearPveBankStash();
         }
-        else if (!bot->IsInCombat() && !bot->InBattleground() && !bot->InArena() && !bot->GetBattleground())
+        else if (bot->IsInWorld() && !bot->IsDuringRemoveFromWorld() && bot->GetMap() &&
+                 !bot->IsBeingTeleported() && !bot->IsBeingTeleportedFar() && !bot->IsInCombat() &&
+                 !bot->InBattleground() && !bot->InArena() && !bot->GetBattleground())
         {
-            uint32 qualityLimit = pendingPveGearReequipHadRealMaster_ ? sPlayerbotAIConfig->autoGearQualityLimit
-                                                                     : sPlayerbotAIConfig->randomGearQualityLimit;
-            uint32 scoreLimit = pendingPveGearReequipHadRealMaster_ ? sPlayerbotAIConfig->autoGearScoreLimit
-                                                                    : sPlayerbotAIConfig->randomGearScoreLimit;
-            uint32 gs = scoreLimit == 0 ? 0 : PlayerbotFactory::CalcMixedGearScore(scoreLimit, qualityLimit);
+            uint32 nowMs = getMSTime();
 
-            uint8 savedLevel = bot->GetLevel();
-            PlayerbotFactory factory(bot, savedLevel, qualityLimit, gs, true);
+            // Backoff: do not spin every tick while waiting for permits / next attempt.
+            if (pendingPveGearReequipNextTryMs_ && nowMs < pendingPveGearReequipNextTryMs_)
+            {
+                // Waiting.
+            }
+            else
+            {
+                pendingPveGearReequipNextTryMs_ = 0;
 
-            // Force gear generation; do not touch talents/level/spells/etc.
-            factory.InitEquipment(false, true);
+                // Only wild random bots are auto-restored; addclass and player-controlled bots are excluded.
+                if (!IsWildRandomBotForAutoGearSwap())
+                {
+                    donePveGearReequipEpoch_ = pendingPveGearReequipEpoch_;
+                    pendingPveGearReequipHadRealMaster_ = false;
+                    pvpGearActive_ = false;
+                    ClearPveBankStash();
+                }
+                else
+                {
+                    // Cheap path #1: restore exact PvE set stashed before PvP equip.
+                    TryRestorePveGearFromBankStash(pendingPveGearReequipEpoch_);
 
-            // Apply enchants/gems only.
-            if (savedLevel >= sPlayerbotAIConfig->minEnchantingBotLevel)
-                factory.ApplyEnchantAndGemsNew();
+                    // Cheap path #2: if still looks like PvP gear (e.g. stash missing), try a best-effort bank heuristic.
+                    if (LooksLikePvpGearEquipped())
+                        TryRecoverPveGearFromBankHeuristic();
 
-            pendingPveGearReequip_ = false;
-            pendingPveGearReequipHadRealMaster_ = false;
+                    // If we no longer look like we're in PvP gear, we are done.
+                    if (!LooksLikePvpGearEquipped())
+                    {
+                        donePveGearReequipEpoch_ = pendingPveGearReequipEpoch_;
+                        pendingPveGearReequipHadRealMaster_ = false;
+                        pvpGearActive_ = false;
+                    }
+                    else
+                    {
+                        // Still in PvP gear => fallback to throttled full rebuild.
+                        if (!TryAcquirePveReequipPermitLocal())
+                        {
+                            pendingPveGearReequipNextTryMs_ = nowMs + urand(150, 300);
+                        }
+                        else
+                        {
+                            uint32 qualityLimit = pendingPveGearReequipHadRealMaster_ ? sPlayerbotAIConfig->autoGearQualityLimit
+                                                                                     : sPlayerbotAIConfig->randomGearQualityLimit;
+                            uint32 scoreLimit = pendingPveGearReequipHadRealMaster_ ? sPlayerbotAIConfig->autoGearScoreLimit
+                                                                                    : sPlayerbotAIConfig->randomGearScoreLimit;
+                            uint32 gs = scoreLimit == 0 ? 0 : PlayerbotFactory::CalcMixedGearScore(scoreLimit, qualityLimit);
+
+                            uint8 savedLevel = bot->GetLevel();
+                            PlayerbotFactory factory(bot, savedLevel, qualityLimit, gs, true);
+
+                            // Force gear generation; do not touch talents/level/spells/etc.
+                            factory.InitEquipment(false, true);
+
+                            // Apply enchants/gems only.
+                            if (savedLevel >= sPlayerbotAIConfig->minEnchantingBotLevel)
+                                factory.ApplyEnchantAndGemsNew();
+
+                            PurgeResilienceItemsFromBankAndBags(500);
+
+                            donePveGearReequipEpoch_ = pendingPveGearReequipEpoch_;
+                            pendingPveGearReequipHadRealMaster_ = false;
+                            pvpGearActive_ = false;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Post-restart safety: if server crashed/restarted while a bot was in PvP gear, pvpGearActive_ resets.
+    // If the bot is now outside BG/arena but still looks like PvP-geared, try a single recovery pass.
+    if (!postRestartPveRecoveryDone_ && !pvpGearActive_ && IsWildRandomBotForAutoGearSwap() &&
+        bot->IsInWorld() && !bot->IsDuringRemoveFromWorld() && bot->GetMap() &&
+        !bot->IsBeingTeleported() && !bot->IsBeingTeleportedFar() && !bot->IsInCombat() &&
+        !bot->InBattleground() && !bot->InArena() && !bot->GetBattleground())
+    {
+        uint32 nowMs = getMSTime();
+        if (!postRestartPveRecoveryNextTryMs_ || nowMs >= postRestartPveRecoveryNextTryMs_)
+        {
+            if (LooksLikePvpGearEquipped())
+            {
+                // Prefer cheap heuristic restore from bank.
+                TryRecoverPveGearFromBankHeuristic();
+
+                if (!LooksLikePvpGearEquipped())
+                {
+                    postRestartPveRecoveryDone_ = true;
+                    postRestartPveRecoveryNextTryMs_ = 0;
+                }
+                else if (sRandomPlayerbotMgr && TryAcquirePveReequipPermitLocal())
+                {
+                    uint32 qualityLimit = sPlayerbotAIConfig->randomGearQualityLimit;
+                    uint32 scoreLimit = sPlayerbotAIConfig->randomGearScoreLimit;
+                    uint32 gs = scoreLimit == 0 ? 0 : PlayerbotFactory::CalcMixedGearScore(scoreLimit, qualityLimit);
+
+                    uint8 savedLevel = bot->GetLevel();
+                    PlayerbotFactory factory(bot, savedLevel, qualityLimit, gs, true);
+                    factory.InitEquipment(false, true);
+                    if (savedLevel >= sPlayerbotAIConfig->minEnchantingBotLevel)
+                        factory.ApplyEnchantAndGemsNew();
+
+                    PurgeResilienceItemsFromBankAndBags(500);
+
+                    postRestartPveRecoveryDone_ = true;
+                    postRestartPveRecoveryNextTryMs_ = 0;
+                }
+                else
+                {
+                    // Retry later.
+                    postRestartPveRecoveryNextTryMs_ = nowMs + urand(500, 1000);
+                }
+            }
+            else
+            {
+                postRestartPveRecoveryDone_ = true;
+                postRestartPveRecoveryNextTryMs_ = 0;
+            }
         }
     }
 
@@ -518,7 +1201,6 @@ void PlayerbotAI::UpdateAIGroupMaster()
         Player* newMaster = FindNewMaster();
         if (newMaster)
         {
-            master = newMaster;
             botAI->SetMaster(newMaster);
             botAI->ResetStrategies();
 
@@ -4383,7 +5065,7 @@ Player* PlayerbotAI::FindNewMaster()
     return nullptr;
 }
 
-bool PlayerbotAI::HasRealPlayerMaster()
+bool PlayerbotAI::HasRealPlayerMaster() const
 {
     if (master)
     {

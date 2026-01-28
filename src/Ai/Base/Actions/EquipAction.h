@@ -21,10 +21,12 @@ public:
     bool Execute(Event event) override;
     void EquipItems(ItemIds ids);
 
+protected:
+    void EquipItem(Item* item);
+
 private:
     void EquipItem(FindItemVisitor* visitor);
     uint8 GetSmallestBagSlot();
-    void EquipItem(Item* item);
 };
 
 class EquipUpgradesAction : public EquipAction

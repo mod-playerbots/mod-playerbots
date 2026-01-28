@@ -15,6 +15,7 @@
 #include <openssl/sha.h>
 #include <iomanip>
 #include <algorithm>
+#include <vector>
 
 #include "ChannelMgr.h"
 #include "CharacterCache.h"
@@ -41,6 +42,42 @@
 #include "BroadcastHelper.h"
 #include "WorldSessionMgr.h"
 #include "DatabaseEnv.h"
+
+
+namespace
+{
+template <class F>
+void ForEachControlledRandomBot(Player* master, F&& fn)
+{
+    if (!master)
+        return;
+
+    static thread_local std::vector<ObjectGuid> tlsControlledGuids;
+
+    std::vector<ObjectGuid> controlledGuids;
+    controlledGuids.swap(tlsControlledGuids);
+    controlledGuids.clear();
+
+    sRandomPlayerbotMgr->GetMasterControlledRandomBotGuidsSnapshot(master->GetGUID(), controlledGuids);
+
+    for (ObjectGuid const& guid : controlledGuids)
+    {
+        Player* bot = sRandomPlayerbotMgr->GetPlayerBot(guid);
+        if (!bot)
+            continue;
+
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+        if (!botAI || botAI->IsRealPlayer())
+            continue;
+
+        if (botAI->GetMaster() != master)
+            continue;
+        fn(bot, botAI);
+    }
+
+    tlsControlledGuids.swap(controlledGuids);
+}
+} // namespace
 
 class BotInitGuard
 {
@@ -610,23 +647,18 @@ void PlayerbotMgr::CancelLogout()
         }
     }
 
-    for (PlayerBotMap::const_iterator it = sRandomPlayerbotMgr->GetPlayerBotsBegin();
-         it != sRandomPlayerbotMgr->GetPlayerBotsEnd(); ++it)
+    ForEachControlledRandomBot(master, [&](Player* bot, PlayerbotAI* /*botAI*/)
     {
-        Player* const bot = it->second;
-        PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-        if (!botAI || botAI->IsRealPlayer())
-            continue;
+        WorldSession* botSession = bot->GetSession();
+        if (!botSession)
+            return;
 
-        if (botAI->GetMaster() != master)
-            continue;
-
-        if (bot->GetSession()->isLogingOut())
+        if (botSession->isLogingOut())
         {
             WorldPackets::Character::LogoutCancel data = WorldPacket(CMSG_LOGOUT_CANCEL);
-            bot->GetSession()->HandleLogoutCancelOpcode(data);
+            botSession->HandleLogoutCancelOpcode(data);
         }
-    }
+    });
 }
 
 void PlayerbotHolder::LogoutPlayerBot(ObjectGuid guid)
@@ -636,6 +668,9 @@ void PlayerbotHolder::LogoutPlayerBot(ObjectGuid guid)
         PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
         if (!botAI)
             return;
+
+        // Keep master->controlled random-bots index clean (safe no-op if not tracked).
+        sRandomPlayerbotMgr->OnRandomBotLoggedOut(guid);
 
         // Queue group cleanup operation for world thread
         auto cleanupOp = std::make_unique<BotLogoutGroupCleanupOperation>(guid);
@@ -733,6 +768,8 @@ void PlayerbotHolder::DisablePlayerBot(ObjectGuid guid)
         {
             return;
         }
+        // Keep master->controlled random-bots index clean (safe no-op if not tracked).
+        sRandomPlayerbotMgr->OnRandomBotLoggedOut(guid);
         botAI->TellMaster("Goodbye!");
         bot->StopMoving();
         bot->GetMotionMaster()->Clear();
@@ -1781,14 +1818,10 @@ void PlayerbotMgr::HandleCommand(uint32 type, std::string const text)
             botAI->HandleCommand(type, text, master);
     }
 
-    for (PlayerBotMap::const_iterator it = sRandomPlayerbotMgr->GetPlayerBotsBegin();
-         it != sRandomPlayerbotMgr->GetPlayerBotsEnd(); ++it)
+    ForEachControlledRandomBot(master, [&](Player* /*bot*/, PlayerbotAI* botAI)
     {
-        Player* const bot = it->second;
-        PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-        if (botAI && botAI->GetMaster() == master)
-            botAI->HandleCommand(type, text, master);
-    }
+        botAI->HandleCommand(type, text, master);
+    });
 }
 
 void PlayerbotMgr::HandleMasterIncomingPacket(WorldPacket const& packet)
@@ -1803,14 +1836,10 @@ void PlayerbotMgr::HandleMasterIncomingPacket(WorldPacket const& packet)
             botAI->HandleMasterIncomingPacket(packet);
     }
 
-    for (PlayerBotMap::const_iterator it = sRandomPlayerbotMgr->GetPlayerBotsBegin();
-         it != sRandomPlayerbotMgr->GetPlayerBotsEnd(); ++it)
+    ForEachControlledRandomBot(GetMaster(), [&](Player* /*bot*/, PlayerbotAI* botAI)
     {
-        Player* const bot = it->second;
-        PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-        if (botAI && botAI->GetMaster() == GetMaster())
-            botAI->HandleMasterIncomingPacket(packet);
-    }
+        botAI->HandleMasterIncomingPacket(packet);
+    });
 
     switch (packet.GetOpcode())
     {
@@ -1831,6 +1860,14 @@ void PlayerbotMgr::HandleMasterIncomingPacket(WorldPacket const& packet)
 
 void PlayerbotMgr::HandleMasterOutgoingPacket(WorldPacket const& packet)
 {
+    // If this master controls no bots at all, skip forwarding entirely (major perf win during raids without bots).
+    Player* masterPlayer = GetMaster();
+    if (!masterPlayer)
+        return;
+
+    if (GetPlayerbotsCount() == 0 && !sRandomPlayerbotMgr->HasMasterControlledRandomBots(masterPlayer->GetGUID()))
+        return;
+
     for (PlayerBotMap::const_iterator it = GetPlayerBotsBegin(); it != GetPlayerBotsEnd(); ++it)
     {
         Player* const bot = it->second;
@@ -1839,14 +1876,10 @@ void PlayerbotMgr::HandleMasterOutgoingPacket(WorldPacket const& packet)
             botAI->HandleMasterOutgoingPacket(packet);
     }
 
-    for (PlayerBotMap::const_iterator it = sRandomPlayerbotMgr->GetPlayerBotsBegin();
-         it != sRandomPlayerbotMgr->GetPlayerBotsEnd(); ++it)
+    ForEachControlledRandomBot(masterPlayer, [&](Player* /*bot*/, PlayerbotAI* botAI)
     {
-        Player* const bot = it->second;
-        PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-        if (botAI && botAI->GetMaster() == GetMaster())
-            botAI->HandleMasterOutgoingPacket(packet);
-    }
+        botAI->HandleMasterOutgoingPacket(packet);
+    });
 }
 
 void PlayerbotMgr::SaveToDB()
@@ -1857,13 +1890,10 @@ void PlayerbotMgr::SaveToDB()
         bot->SaveToDB(false, false);
     }
 
-    for (PlayerBotMap::const_iterator it = sRandomPlayerbotMgr->GetPlayerBotsBegin();
-         it != sRandomPlayerbotMgr->GetPlayerBotsEnd(); ++it)
+    ForEachControlledRandomBot(GetMaster(), [&](Player* bot, PlayerbotAI* /*botAI*/)
     {
-        Player* const bot = it->second;
-        if (GET_PLAYERBOT_AI(bot) && GET_PLAYERBOT_AI(bot)->GetMaster() == GetMaster())
-            bot->SaveToDB(false, false);
-    }
+        bot->SaveToDB(false, false);
+    });
 }
 
 void PlayerbotMgr::OnBotLoginInternal(Player* const bot)

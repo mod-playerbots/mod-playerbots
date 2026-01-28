@@ -48,6 +48,7 @@
 #include "RandomPlayerbotFactory.h"
 #include "ServerFacade.h"
 #include "SharedDefines.h"
+#include "strategy/actions/BattleGroundJoinAction.h"
 #include "TravelMgr.h"
 #include "Unit.h"
 #include "UpdateTime.h"
@@ -397,6 +398,10 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 elapsed, bool /*minimal*/)
 
     // Flush batched event DB writes (keeps I/O spikes low under large bot counts).
     FlushPendingEventDbWrites(false);
+
+    // Keep empty battleground instances from being kept alive by "wild" random-bots.
+    // Must run even if randomBotAutologin is disabled, because bots can still be online.
+    UpdateWildBotBattlegroundMaintenance();
 
     // Optional smoothing: split heavy random-bot ticks into smaller slices to avoid periodic stalls.
     if (sPlayerbotAIConfig->randomBotSlicing)
@@ -1527,46 +1532,32 @@ void RandomPlayerbotMgr::CheckBgQueue()
 
             if (bot->InBattleground())
             {
+                // IMPORTANT: do NOT count battleground instances that contain only bots as "active instances".
+                // Otherwise bots can keep queueing into their own empty BGs forever.
+                if (!bot->InArena())
+                    continue;
+
                 std::vector<uint32>* instanceIds = nullptr;
                 uint32 instanceId = bot->GetBattleground()->GetInstanceID();
-                bool isArena = false;
                 bool isRated = false;
 
-                // Arena logic
-                if (bot->InArena())
+                if (bot->GetBattleground()->isRated())
                 {
-                    isArena = true;
-                    if (bot->GetBattleground()->isRated())
-                    {
-                        isRated = true;
-                        instanceIds = &BattlegroundData[queueTypeId][bracketId].ratedArenaInstances;
-                    }
-                    else
-                    {
-                        instanceIds = &BattlegroundData[queueTypeId][bracketId].skirmishArenaInstances;
-                    }
+                    isRated = true;
+                    instanceIds = &BattlegroundData[queueTypeId][bracketId].ratedArenaInstances;
                 }
-                // BG Logic
                 else
                 {
-                    instanceIds = &BattlegroundData[queueTypeId][bracketId].bgInstances;
+                    instanceIds = &BattlegroundData[queueTypeId][bracketId].skirmishArenaInstances;
                 }
 
-                if (instanceIds &&
-                    std::find(instanceIds->begin(), instanceIds->end(), instanceId) == instanceIds->end())
+                if (instanceIds && std::find(instanceIds->begin(), instanceIds->end(), instanceId) == instanceIds->end())
                     instanceIds->push_back(instanceId);
 
-                if (isArena)
-                {
-                    if (isRated)
-                        BattlegroundData[queueTypeId][bracketId].ratedArenaInstanceCount = instanceIds->size();
-                    else
-                        BattlegroundData[queueTypeId][bracketId].skirmishArenaInstanceCount = instanceIds->size();
-                }
+                if (isRated)
+                    BattlegroundData[queueTypeId][bracketId].ratedArenaInstanceCount = instanceIds->size();
                 else
-                {
-                    BattlegroundData[queueTypeId][bracketId].bgInstanceCount = instanceIds->size();
-                }
+                    BattlegroundData[queueTypeId][bracketId].skirmishArenaInstanceCount = instanceIds->size();
             }
         }
     }
@@ -1605,6 +1596,11 @@ void RandomPlayerbotMgr::CheckBgQueue()
         {
             for (uint32 bracket : brackets)
             {
+                // Do not auto-create bot-only battlegrounds. Only keep instances when real players are actually queueing.
+                if ((BattlegroundData[queueType][bracket].bgAlliancePlayerCount +
+                     BattlegroundData[queueType][bracket].bgHordePlayerCount) == 0)
+                    continue;
+
                 if (BattlegroundData[queueType][bracket].activeBgQueue == 0 &&
                     BattlegroundData[queueType][bracket].bgInstanceCount < minCount &&
                     BattlegroundData[queueType][bracket].bgInstances.size() < minCount)
@@ -3057,6 +3053,77 @@ bool RandomPlayerbotMgr::IsAddclassBot(ObjectGuid::LowType bot)
     return false;
 }
 
+bool RandomPlayerbotMgr::HasMasterControlledRandomBots(ObjectGuid const& masterGuid) const
+{
+    auto it = _controlledRandomBotsByMaster.find(masterGuid);
+    return it != _controlledRandomBotsByMaster.end() && !it->second.empty();
+}
+
+void RandomPlayerbotMgr::GetMasterControlledRandomBotGuidsSnapshot(ObjectGuid const& masterGuid, std::vector<ObjectGuid>& out) const
+{
+    out.clear();
+
+    auto it = _controlledRandomBotsByMaster.find(masterGuid);
+    if (it == _controlledRandomBotsByMaster.end() || it->second.empty())
+        return;
+
+    out.reserve(it->second.size());
+    out.insert(out.end(), it->second.begin(), it->second.end());
+}
+
+void RandomPlayerbotMgr::OnRandomBotMasterChanged(ObjectGuid const& botGuid, ObjectGuid const& oldMasterGuid, ObjectGuid const& newMasterGuid)
+{
+    // Remove bot from any previously tracked master (preferred source: per-bot mapping; fallback: oldMasterGuid).
+    ObjectGuid prevMasterGuid;
+
+    auto itPrev = _controlledRandomBotMaster.find(botGuid);
+    if (itPrev != _controlledRandomBotMaster.end())
+        prevMasterGuid = itPrev->second;
+
+    if (prevMasterGuid.IsEmpty())
+        prevMasterGuid = oldMasterGuid;
+
+    if (!prevMasterGuid.IsEmpty())
+    {
+        auto itOld = _controlledRandomBotsByMaster.find(prevMasterGuid);
+        if (itOld != _controlledRandomBotsByMaster.end())
+        {
+            itOld->second.erase(botGuid);
+            if (itOld->second.empty())
+                _controlledRandomBotsByMaster.erase(itOld);
+        }
+    }
+
+    if (!newMasterGuid.IsEmpty())
+    {
+        _controlledRandomBotMaster[botGuid] = newMasterGuid;
+        _controlledRandomBotsByMaster[newMasterGuid].insert(botGuid);
+    }
+    else
+    {
+        _controlledRandomBotMaster.erase(botGuid);
+    }
+}
+
+void RandomPlayerbotMgr::OnRandomBotLoggedOut(ObjectGuid const& botGuid)
+{
+    auto it = _controlledRandomBotMaster.find(botGuid);
+    if (it == _controlledRandomBotMaster.end())
+        return;
+
+    ObjectGuid masterGuid = it->second;
+    _controlledRandomBotMaster.erase(it);
+
+    auto itSet = _controlledRandomBotsByMaster.find(masterGuid);
+    if (itSet == _controlledRandomBotsByMaster.end())
+        return;
+
+    itSet->second.erase(botGuid);
+    if (itSet->second.empty())
+        _controlledRandomBotsByMaster.erase(itSet);
+}
+
+
 void RandomPlayerbotMgr::GetBots()
 {
     if (!currentBots.empty())
@@ -4102,4 +4169,208 @@ ObjectGuid RandomPlayerbotMgr::GetBattleMasterGUID(Player* bot, BattlegroundType
     }
 
     return battleMasterGUID;
+}
+
+bool RandomPlayerbotMgr::IsWildBgJoinBlocked(uint32 instanceId)
+{
+    if (!instanceId)
+        return false;
+
+    uint32 now = NowSeconds();
+    auto it = _wildBgJoinBlockedUntilSec.find(instanceId);
+    if (it == _wildBgJoinBlockedUntilSec.end())
+        return false;
+
+    if (now >= it->second)
+    {
+        _wildBgJoinBlockedUntilSec.erase(it);
+        return false;
+    }
+
+    return true;
+}
+
+void RandomPlayerbotMgr::ClearWildBgJoinBlock(uint32 instanceId)
+{
+    if (!instanceId)
+        return;
+
+    _wildBgJoinBlockedUntilSec.erase(instanceId);
+    _wildBgEmptySinceSec.erase(instanceId);
+}
+
+void RandomPlayerbotMgr::UpdateWildBotBattlegroundMaintenance()
+{
+    // Throttle: cheap periodic scan (1 pass over online random-bots) to avoid per-tick overhead.
+    uint32 now = NowSeconds();
+    if (_wildBgMaintenanceNextSec && now < _wildBgMaintenanceNextSec)
+        return;
+
+    _wildBgMaintenanceNextSec = now + 5; // run at most once per 5 seconds
+
+    // Prune expired join-block entries to keep memory bounded.
+    for (auto it = _wildBgJoinBlockedUntilSec.begin(); it != _wildBgJoinBlockedUntilSec.end(); )
+    {
+        if (now >= it->second)
+            it = _wildBgJoinBlockedUntilSec.erase(it);
+        else
+            ++it;
+    }
+
+    static constexpr uint32 kDeserterSpellId = 26013;
+    static constexpr uint32 kEmptyLeaveDelaySec = 60;
+    static constexpr uint32 kJoinBlockSec = 90; // avoid immediate re-join to recently evacuated instances
+
+    // Collect battleground instances that currently contain at least one "wild" random-bot.
+    // Store a sample bot pointer per instance for cheap map/player scanning.
+    std::unordered_map<uint32, Player*> instanceSampleBot;
+    instanceSampleBot.reserve(16);
+
+    for (auto const& [guid, bot] : playerBots)
+    {
+        if (!bot || !bot->IsInWorld() || !IsRandomBot(bot))
+            continue;
+
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+        if (!botAI || botAI->HasRealPlayerMaster())
+            continue; // not a "wild" bot
+
+        // Always clear deserter if it ever ends up on a wild random-bot.
+        if (bot->HasAura(kDeserterSpellId))
+            bot->RemoveAurasDueToSpell(kDeserterSpellId);
+
+        if (!bot->InBattleground())
+            continue;
+
+        Battleground* bg = bot->GetBattleground();
+        if (!bg || bg->isArena())
+            continue;
+
+        // Skip transitional states: do not interfere with normal BG shutdown or map transfers.
+        if (bg->GetStatus() == STATUS_WAIT_LEAVE)
+            continue;
+
+        if (bot->IsBeingTeleported() || bot->IsDuringRemoveFromWorld())
+            continue;
+
+        uint32 instanceId = bg->GetInstanceID();
+        if (!instanceId)
+            continue;
+
+        // Keep one sample bot per instance so we can check player presence cheaply.
+        if (instanceSampleBot.find(instanceId) == instanceSampleBot.end())
+            instanceSampleBot.emplace(instanceId, bot);
+    }
+
+    // If an instance no longer contains wild bots, we don't need to keep its empty-timer entry.
+    for (auto it = _wildBgEmptySinceSec.begin(); it != _wildBgEmptySinceSec.end(); )
+    {
+        if (instanceSampleBot.find(it->first) == instanceSampleBot.end())
+            it = _wildBgEmptySinceSec.erase(it);
+        else
+            ++it;
+    }
+
+    if (instanceSampleBot.empty())
+        return;
+
+    // Determine which instances are empty of real players and should be evacuated.
+    std::vector<uint32> evacInstances;
+    evacInstances.reserve(instanceSampleBot.size());
+
+    for (auto const& [instanceId, sampleBot] : instanceSampleBot)
+    {
+        Battleground* bg = sampleBot ? sampleBot->GetBattleground() : nullptr;
+        Map* map = bg ? bg->GetBgMap() : nullptr;
+
+        if (!map)
+        {
+            // Map not available (transfer/shutdown). Do not treat as "empty".
+            // Keep any existing empty-timers / join-blocks (they auto-expire / get pruned) to avoid re-join loops.
+            continue;
+        }
+
+        bool hasRealPlayer = false;
+        {
+            for (auto const& itr : map->GetPlayers())
+            {
+                Player* plr = itr.GetSource();
+                if (!plr || !plr->IsInWorld())
+                    continue;
+
+                if (!GET_PLAYERBOT_AI(plr))
+                {
+                    hasRealPlayer = true;
+                    break;
+                }
+            }
+        }
+
+        if (hasRealPlayer)
+        {
+            // Instance is active (real player present): clear any empty-tracking and join blocks.
+            _wildBgEmptySinceSec.erase(instanceId);
+            _wildBgJoinBlockedUntilSec.erase(instanceId);
+            continue;
+        }
+
+        // No real players: start / continue the empty timer.
+        uint32& since = _wildBgEmptySinceSec[instanceId];
+        if (!since)
+            since = now;
+
+        if (now >= since + kEmptyLeaveDelaySec)
+        {
+            // Mark this instance as blocked for re-join for a short period.
+            uint32 blockUntil = now + kJoinBlockSec;
+            auto it = _wildBgJoinBlockedUntilSec.find(instanceId);
+            if (it == _wildBgJoinBlockedUntilSec.end() || it->second < blockUntil)
+                _wildBgJoinBlockedUntilSec[instanceId] = blockUntil;
+
+            evacInstances.push_back(instanceId);
+        }
+    }
+
+    if (evacInstances.empty())
+        return;
+
+    // Second pass: evacuate wild bots from the identified empty instances.
+    // (Kept separate to avoid storing large per-instance bot lists.)
+    for (auto const& [guid, bot] : playerBots)
+    {
+        if (!bot || !bot->IsInWorld() || !IsRandomBot(bot))
+            continue;
+
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+        if (!botAI || botAI->HasRealPlayerMaster())
+            continue;
+
+        if (!bot->InBattleground())
+            continue;
+
+        Battleground* bg = bot->GetBattleground();
+        if (!bg || bg->isArena())
+            continue;
+
+        // Skip transitional states: do not interfere with normal BG shutdown or map transfers.
+        if (bg->GetStatus() == STATUS_WAIT_LEAVE)
+            continue;
+
+        if (bot->IsBeingTeleported() || bot->IsDuringRemoveFromWorld())
+            continue;
+
+        uint32 instanceId = bg->GetInstanceID();
+        if (!instanceId)
+            continue;
+
+        if (std::find(evacInstances.begin(), evacInstances.end(), instanceId) == evacInstances.end())
+            continue;
+
+        // Leave BG (will also schedule PvE re-equip for random bots).
+        BGStatusAction::LeaveBG(botAI);
+
+        // Extra safety: remove deserter immediately if it is already applied.
+        if (bot->HasAura(kDeserterSpellId))
+            bot->RemoveAurasDueToSpell(kDeserterSpellId);
+    }
 }
