@@ -8,19 +8,22 @@
 #include "AiFactory.h"
 #include "ItemVisitors.h"
 #include "LFGMgr.h"
-#include "LFGPackets.h"
 #include "Opcodes.h"
 #include "Playerbots.h"
 #include "World.h"
 #include "WorldPacket.h"
+#include "RandomPlayerbotMgr.h"
 
 using namespace lfg;
 
-bool LfgJoinAction::Execute(Event event) { return JoinLFG(); }
-
-uint32 LfgJoinAction::GetRoles()
+bool LfgJoinAction::Execute(Event)
 {
-    if (!sRandomPlayerbotMgr.IsRandomBot(bot))
+    return JoinLFG();
+}
+
+uint8_t LfgJoinAction::GetRoles() const
+{
+    if (!RandomPlayerbotMgr::instance().IsRandomBot(bot))
     {
         if (botAI->IsTank(bot))
             return PLAYER_ROLE_TANK;
@@ -30,7 +33,7 @@ uint32 LfgJoinAction::GetRoles()
             return PLAYER_ROLE_DAMAGE;
     }
 
-    uint8 spec = AiFactory::GetPlayerSpecTab(bot);
+    const uint8_t spec = AiFactory::GetPlayerSpecTab(bot);
     switch (bot->getClass())
     {
         case CLASS_DRUID:
@@ -101,7 +104,7 @@ bool LfgJoinAction::JoinLFG()
     LfgDungeonSet list;
     std::vector<uint32> selected;
 
-    std::vector<uint32> dungeons = sRandomPlayerbotMgr.LfgDungeons[bot->GetTeamId()];
+    std::vector<uint32> dungeons = RandomPlayerbotMgr::instance().LfgDungeons[bot->GetTeamId()];
     if (!dungeons.size())
         return false;
 
@@ -115,9 +118,16 @@ bool LfgJoinAction::JoinLFG()
         auto const& botLevel = bot->GetLevel();
 
         /*LFG_TYPE_RANDOM on classic is 15-58 so bot over level 25 will never queue*/
-        if (dungeon->MinLevel && (botLevel < dungeon->MinLevel || botLevel > dungeon->MaxLevel) ||
-            (botLevel > dungeon->MinLevel + 10 && dungeon->TypeID == LFG_TYPE_DUNGEON))
+        if (
+            (
+                dungeon->MinLevel != 0
+                && (botLevel < dungeon->MinLevel || botLevel > dungeon->MaxLevel)
+            )
+            || (botLevel > dungeon->MinLevel + 10 && dungeon->TypeID == LFG_TYPE_DUNGEON)
+        )
+        {
             continue;
+        }
 
         selected.push_back(dungeon->ID);
         list.insert(dungeon->ID);
@@ -170,28 +180,31 @@ bool LfgJoinAction::JoinLFG()
     return true;
 }
 
-bool LfgRoleCheckAction::Execute(Event event)
+bool LfgRoleCheckAction::Execute(Event)
 {
-    if (Group* group = bot->GetGroup())
+    const Group* const group = bot->GetGroup();
+
+    if (group == nullptr)
     {
-        uint32 currentRoles = sLFGMgr->GetRoles(bot->GetGUID());
-        uint32 newRoles = GetRoles();
-        // if (currentRoles == newRoles)
-        //     return false;
-
-        WorldPacket* packet = new WorldPacket(CMSG_LFG_SET_ROLES);
-        *packet << (uint8)newRoles;
-        bot->GetSession()->QueuePacket(packet);
-        // sLFGMgr->SetRoles(bot->GetGUID(), newRoles);
-        // sLFGMgr->UpdateRoleCheck(group->GetGUID(), bot->GetGUID(), newRoles);
-
-        LOG_INFO("playerbots", "Bot {} {}:{} <{}>: LFG roles checked", bot->GetGUID().ToString().c_str(),
-                 bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->GetLevel(), bot->GetName().c_str());
-
-        return true;
+        return false;
     }
 
-    return false;
+    const uint8_t newRoles = this->GetRoles();
+
+    WorldPacket* const packet = new WorldPacket(CMSG_LFG_SET_ROLES);
+    *packet << newRoles;
+    bot->GetSession()->QueuePacket(packet);
+
+    LOG_INFO(
+        "playerbots",
+        "Bot {} {}:{} <{}>: LFG roles checked",
+        bot->GetGUID().ToString().c_str(),
+        bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H",
+        bot->GetLevel(),
+        bot->GetName().c_str()
+    );
+
+    return true;
 }
 
 bool LfgAcceptAction::Execute(Event event)
@@ -216,9 +229,9 @@ bool LfgAcceptAction::Execute(Event event)
         *packet << id << true;
         bot->GetSession()->QueuePacket(packet);
 
-        if (sRandomPlayerbotMgr.IsRandomBot(bot) && !bot->GetGroup())
+        if (RandomPlayerbotMgr::instance().IsRandomBot(bot) && !bot->GetGroup())
         {
-            sRandomPlayerbotMgr.Refresh(bot);
+            RandomPlayerbotMgr::instance().Refresh(bot);
             botAI->ResetStrategies();
         }
 
@@ -251,9 +264,9 @@ bool LfgAcceptAction::Execute(Event event)
             *packet << id << true;
             bot->GetSession()->QueuePacket(packet);
 
-            if (sRandomPlayerbotMgr.IsRandomBot(bot) && !bot->GetGroup())
+            if (RandomPlayerbotMgr::instance().IsRandomBot(bot) && !bot->GetGroup())
             {
-                sRandomPlayerbotMgr.Refresh(bot);
+                RandomPlayerbotMgr::instance().Refresh(bot);
                 botAI->ResetStrategies();
             }
 
@@ -265,7 +278,7 @@ bool LfgAcceptAction::Execute(Event event)
     return false;
 }
 
-bool LfgLeaveAction::Execute(Event event)
+bool LfgLeaveAction::Execute(Event)
 {
     // Don't leave if lfg strategy enabled
     // if (botAI->HasStrategy("lfg", BOT_STATE_NON_COMBAT))
@@ -337,7 +350,7 @@ bool LfgJoinAction::isUseful()
     if (bot->isDead())
         return false;
 
-    if (!sRandomPlayerbotMgr.IsRandomBot(bot))
+    if (!RandomPlayerbotMgr::instance().IsRandomBot(bot))
         return false;
 
     Map* map = bot->GetMap();
