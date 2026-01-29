@@ -8,7 +8,6 @@
 
 #include "NamedObjectContext.h"
 #include "PartyMemberValue.h"
-#include "PlayerbotAIConfig.h"
 
 class PlayerbotAI;
 class Unit;
@@ -16,8 +15,7 @@ class Unit;
 class PartyMemberWithoutAuraValue : public PartyMemberValue, public Qualified
 {
 public:
-    PartyMemberWithoutAuraValue(PlayerbotAI* botAI, std::string const name = "party member without aura",
-                                float range = sPlayerbotAIConfig.sightDistance)
+    PartyMemberWithoutAuraValue(PlayerbotAI* botAI, std::string const name = "party member without aura")
         : PartyMemberValue(botAI, name)
     {
     }
