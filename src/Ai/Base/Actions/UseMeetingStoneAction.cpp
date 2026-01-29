@@ -150,7 +150,7 @@ bool SummonAction::SummonUsingNpcs(Player* summoner, Player* player, bool preser
 bool SummonAction::Teleport(Player* summoner, Player* player, bool preserveAuras)
 {
     // Player* master = GetMaster();
-    if (!summoner)
+    if (!summoner || summoner == player)
         return false;
 
     if (player->GetVehicle())
@@ -212,9 +212,11 @@ bool SummonAction::Teleport(Player* summoner, Player* player, bool preserveAuras
                 if (!preserveAuras)
                     player->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED |
                                                           AURA_INTERRUPT_FLAG_CHANGE_MAP);
-
                 player->TeleportTo(mapId, x, y, z, 0);
-
+                if (player->GetPet())
+                    player->GetPet()->NearTeleportTo(x, y, z, player->GetOrientation());
+                if (player->GetGuardianPet())
+                    player->GetGuardianPet()->NearTeleportTo(x, y, z, player->GetOrientation());
                 if (botAI->HasStrategy("stay", botAI->GetState()))
                 {
                     PositionMap& posMap = AI_VALUE(PositionMap&, "position");
