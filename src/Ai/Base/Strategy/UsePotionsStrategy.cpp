@@ -5,15 +5,13 @@
 
 #include "UsePotionsStrategy.h"
 
-#include "Playerbots.h"
-
 class UsePotionsStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
 public:
     UsePotionsStrategyActionNodeFactory() { creators["healthstone"] = &healthstone; }
 
 private:
-    static ActionNode* healthstone(PlayerbotAI* botAI)
+    static ActionNode* healthstone(PlayerbotAI*)
     {
         return new ActionNode("healthstone",
                               /*P*/ {},
