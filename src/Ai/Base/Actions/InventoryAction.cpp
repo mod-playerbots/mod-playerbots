@@ -373,9 +373,7 @@ ItemIds InventoryAction::FindOutfitItems(std::string const name)
 
 std::string const InventoryAction::parseOutfitName(std::string const outfit)
 {
-    uint32 pos = outfit.find("=");
-    if (pos == -1)
-        return "";
+    const uint64_t pos = outfit.find("=");
 
     return outfit.substr(0, pos);
 }
@@ -387,9 +385,7 @@ ItemIds InventoryAction::parseOutfitItems(std::string const text)
     uint8 pos = text.find("=") + 1;
     while (pos < text.size())
     {
-        uint32 endPos = text.find(',', pos);
-        if (endPos == -1)
-            endPos = text.size();
+        uint64_t endPos = text.find(',', pos);
 
         std::string const idC = text.substr(pos, endPos - pos);
         uint32 id = atol(idC.c_str());
