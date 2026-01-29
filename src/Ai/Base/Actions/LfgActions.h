@@ -20,7 +20,7 @@ public:
 
 protected:
     bool JoinLFG();
-    uint32 GetRoles();
+    uint8_t GetRoles() const;
 };
 
 class LfgAcceptAction : public LfgJoinAction
