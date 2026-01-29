@@ -5,8 +5,6 @@
 
 #include "FollowMasterStrategy.h"
 
-#include "Playerbots.h"
-
 std::vector<NextAction> FollowMasterStrategy::getDefaultActions()
 {
     return {
@@ -14,6 +12,6 @@ std::vector<NextAction> FollowMasterStrategy::getDefaultActions()
     };
 }
 
-void FollowMasterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void FollowMasterStrategy::InitTriggers(std::vector<TriggerNode*>&)
 {
 }
