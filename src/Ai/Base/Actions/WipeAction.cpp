@@ -16,7 +16,7 @@ bool WipeAction::Execute(Event event)
         return false;
     }
 
-    bot->Kill(bot, bot);
+    this->bot->Kill(this->bot, this->bot);
 
     return true;
 }
