@@ -7,7 +7,11 @@
 
 #include "ChooseTravelTargetAction.h"
 #include "MapMgr.h"
-#include "Playerbots.h"
+#include "TravelMgr.h"
+#include "Player.h"
+#include "PlayerbotAI.h"
+#include "SpellMgr.h"
+#include "Spell.h"
 
 bool DebugAction::Execute(Event event)
 {
@@ -516,7 +520,7 @@ bool DebugAction::Execute(Event event)
                 botPos.setY(botPos.getY() + (dy - 5) * 5);
                 botPos.setZ(botPos.getHeight());
 
-                Creature* wpCreature = bot->SummonCreature(effect, botPos.getX(), botPos.getY(), botPos.getZ(), 0,
+                bot->SummonCreature(effect, botPos.getX(), botPos.getY(), botPos.getZ(), 0,
                                                            TEMPSUMMON_TIMED_DESPAWN, 10000.0f);
             }
         }
