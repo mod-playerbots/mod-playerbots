@@ -14,7 +14,7 @@
 #include "Playerbots.h"
 #include "ScriptedCreature.h"
 
-const uint32 ULDUAR_MAP_ID = 603;
+constexpr uint32 ULDUAR_MAP_ID = 603;
 
 enum UlduarIDs
 {
