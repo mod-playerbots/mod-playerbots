@@ -6,7 +6,6 @@
 #include <random>
 
 #include "ChooseRpgTargetAction.h"
-#include "BattlegroundMgr.h"
 #include "BudgetValues.h"
 #include "ChatHelper.h"
 #include "Event.h"
@@ -14,7 +13,6 @@
 #include "GuildCreateActions.h"
 #include "Playerbots.h"
 #include "RpgSubActions.h"
-#include "Util.h"
 #include "ServerFacade.h"
 #include "PossibleRpgTargetsValue.h"
 
@@ -112,21 +110,17 @@ float ChooseRpgTargetAction::getMaxRelevance(GuidPosition guidP)
     return floor((maxRelevance - 1.0) * 1000.0f);
 }
 
-bool ChooseRpgTargetAction::Execute(Event event)
+bool ChooseRpgTargetAction::Execute(Event)
 {
-    //TravelTarget* travelTarget = AI_VALUE(TravelTarget*, "travel target"); //not used, line marked for removal.
     Player* master = botAI->GetMaster();
     GuidPosition masterRpgTarget;
-    if (master && master != bot && GET_PLAYERBOT_AI(master) && master->GetMapId() == bot->GetMapId() && !master->IsBeingTeleported())
+
+    if (master == nullptr || master == bot || GET_PLAYERBOT_AI(master) == nullptr || master->GetMapId() != bot->GetMapId() || master->IsBeingTeleported())
     {
-        Player* player = botAI->GetMaster();
-        //GuidPosition masterRpgTarget = PAI_VALUE(GuidPosition, "rpg target"); //not used, line marked for removal.
-    }
-    else
         master = nullptr;
+    }
 
     std::unordered_map<ObjectGuid, uint32> targets;
-    // uint32 num = 0; //not used, line marked for removal.
     GuidVector possibleTargets = AI_VALUE(GuidVector, "possible rpg targets");
     GuidVector possibleObjects = AI_VALUE(GuidVector, "nearest game objects no los");
     GuidVector possiblePlayers = AI_VALUE(GuidVector, "nearest friendly players");
@@ -339,8 +333,14 @@ bool ChooseRpgTargetAction::isFollowValid(Player* bot, WorldPosition pos)
     if (!botAI->HasActivePlayerMaster() && distance < 50.0f)
     {
         Player* player = groupLeader;
-        if (groupLeader && !groupLeader->isMoving() ||
-            PAI_VALUE(WorldPosition, "last long move").distance(pos) < sPlayerbotAIConfig.reactDistance)
+
+        if (
+            (
+                groupLeader != nullptr
+                && !groupLeader->isMoving()
+            )
+            || PAI_VALUE(WorldPosition, "last long move").distance(pos) < sPlayerbotAIConfig.reactDistance
+        )
             return true;
     }
 
