@@ -5,7 +5,6 @@
 
 #include "CombatStrategy.h"
 
-#include "Playerbots.h"
 #include "Strategy.h"
 
 void CombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -65,11 +64,11 @@ std::vector<NextAction> AvoidAoeStrategy::getDefaultActions()
     };
 }
 
-void AvoidAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void AvoidAoeStrategy::InitTriggers(std::vector<TriggerNode*>&)
 {
 }
 
-void AvoidAoeStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
+void AvoidAoeStrategy::InitMultipliers(std::vector<Multiplier*>&)
 {
 }
 
@@ -82,7 +81,7 @@ std::vector<NextAction> TankFaceStrategy::getDefaultActions()
     };
 }
 
-void TankFaceStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void TankFaceStrategy::InitTriggers(std::vector<TriggerNode*>&)
 {
 }
 
