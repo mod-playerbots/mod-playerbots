@@ -311,4 +311,4 @@ void CatDpsDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     );
 }
 
-void CatAoeDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers) {}
+void CatAoeDruidStrategy::InitTriggers(std::vector<TriggerNode*>&) {}
