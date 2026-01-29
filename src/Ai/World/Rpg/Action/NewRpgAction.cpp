@@ -64,13 +64,13 @@ bool StartRpgDoQuestAction::Execute(Event event)
 bool NewRpgStatusUpdateAction::Execute(Event event)
 {
     NewRpgInfo& info = botAI->rpgInfo;
-    switch (info.GetStatus())
+    NewRpgStatus status = info.GetStatus();
+    switch (status)
     {
         case RPG_IDLE:
-        {
             return RandomChangeStatus({RPG_GO_CAMP, RPG_GO_GRIND, RPG_WANDER_RANDOM, RPG_WANDER_NPC, RPG_DO_QUEST,
                                        RPG_TRAVEL_FLIGHT, RPG_REST});
-        }
+
         case RPG_GO_GRIND:
         {
             auto& data = std::get<NewRpgInfo::GoGrind>(info.data);
@@ -157,8 +157,10 @@ bool NewRpgGoGrindAction::Execute(Event event)
 {
     if (SearchQuestGiverAndAcceptOrReward())
         return true;
+    if (auto* data = std::get_if<NewRpgInfo::GoGrind>(&botAI->rpgInfo.data))
+        return MoveFarTo(data->pos);
 
-    return MoveFarTo(std::get<NewRpgInfo::GoGrind>(botAI->rpgInfo.data).pos);
+    return false;
 }
 
 bool NewRpgGoCampAction::Execute(Event event)
@@ -166,7 +168,10 @@ bool NewRpgGoCampAction::Execute(Event event)
     if (SearchQuestGiverAndAcceptOrReward())
         return true;
 
-    return MoveFarTo(std::get<NewRpgInfo::GoCamp>(botAI->rpgInfo.data).pos);
+    if (auto* data = std::get_if<NewRpgInfo::GoCamp>(&botAI->rpgInfo.data))
+        return MoveFarTo(data->pos);
+
+    return false;
 }
 
 bool NewRpgWanderRandomAction::Execute(Event event)
@@ -180,8 +185,10 @@ bool NewRpgWanderRandomAction::Execute(Event event)
 bool NewRpgWanderNpcAction::Execute(Event event)
 {
     NewRpgInfo& info = botAI->rpgInfo;
-    auto& data = std::get<NewRpgInfo::WanderNpc>(info.data);
-
+    auto* dataPtr = std::get_if<NewRpgInfo::WanderNpc>(&info.data);
+    if (!dataPtr)
+        return false;
+    auto& data = *dataPtr;
     if (!data.npcOrGo)
     {
         // No npc can be found, switch to IDLE
@@ -226,7 +233,10 @@ bool NewRpgDoQuestAction::Execute(Event event)
         return true;
 
     NewRpgInfo& info = botAI->rpgInfo;
-    auto& data = std::get<NewRpgInfo::DoQuest>(info.data);
+    auto* dataPtr = std::get_if<NewRpgInfo::DoQuest>(&info.data);
+    if (!dataPtr)
+        return false;
+    auto& data = *dataPtr;
     uint32 questId = data.questId;
     const Quest* quest = data.quest;
     uint8 questStatus = bot->GetQuestStatus(questId);
@@ -416,7 +426,11 @@ bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
 bool NewRpgTravelFlightAction::Execute(Event event)
 {
     NewRpgInfo& info = botAI->rpgInfo;
-    auto& data = std::get<NewRpgInfo::TravelFlight>(info.data);
+    auto* dataPtr = std::get_if<NewRpgInfo::TravelFlight>(&info.data);
+    if (!dataPtr)
+        return false;
+
+        auto& data = *dataPtr;
     if (bot->IsInFlight())
     {
         data.inFlight = true;
