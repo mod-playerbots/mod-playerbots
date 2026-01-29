@@ -5,28 +5,30 @@
 
 #include "NearestCorpsesValue.h"
 
-#include "CellImpl.h"
 #include "GridNotifiers.h"
+// Required due to
+#include "CellImpl.h"
 #include "GridNotifiersImpl.h"
-#include "Playerbots.h"
 
 class AnyDeadUnitInObjectRangeCheck
 {
 public:
-    AnyDeadUnitInObjectRangeCheck(WorldObject const* obj, float range) : i_obj(obj), i_range(range) {}
+    AnyDeadUnitInObjectRangeCheck(WorldObject const* obj) : i_obj(obj) {}
     WorldObject const& GetFocusObject() const { return *i_obj; }
     bool operator()(Unit* u) { return !u->IsAlive(); }
 
 private:
     WorldObject const* i_obj;
-    float i_range;
 };
 
 void NearestCorpsesValue::FindUnits(std::list<Unit*>& targets)
 {
-    AnyDeadUnitInObjectRangeCheck u_check(bot, range);
+    AnyDeadUnitInObjectRangeCheck u_check(bot);
     Acore::UnitListSearcher<AnyDeadUnitInObjectRangeCheck> searcher(bot, targets, u_check);
     Cell::VisitObjects(bot, searcher, range);
 }
 
-bool NearestCorpsesValue::AcceptUnit(Unit* unit) { return true; }
+bool NearestCorpsesValue::AcceptUnit(Unit*)
+{
+    return true;
+}
