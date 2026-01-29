@@ -7,7 +7,7 @@
 
 #include "ChatHelper.h"
 #include "Event.h"
-#include "Playerbots.h"
+#include "PlayerbotAI.h"
 
 void QueryQuestAction::TellObjective(std::string const name, uint32 available, uint32 required)
 {
@@ -16,7 +16,6 @@ void QueryQuestAction::TellObjective(std::string const name, uint32 available, u
 
 bool QueryQuestAction::Execute(Event event)
 {
-    Player* requester = event.getOwner() ? event.getOwner() : GetMaster();
     Player* bot = botAI->GetBot();
     WorldPosition botPos(bot);
     WorldPosition* ptr_botpos = &botPos;
