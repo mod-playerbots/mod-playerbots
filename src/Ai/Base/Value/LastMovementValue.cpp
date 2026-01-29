@@ -5,7 +5,6 @@
 
 #include "LastMovementValue.h"
 
-#include "Playerbots.h"
 #include "Timer.h"
 
 LastMovement::LastMovement() { clear(); }
@@ -15,11 +14,11 @@ LastMovement::LastMovement(LastMovement& other)
       taxiMaster(other.taxiMaster),
       lastFollow(other.lastFollow),
       lastAreaTrigger(other.lastAreaTrigger),
+      lastFlee(other.lastFlee),
       lastMoveToX(other.lastMoveToX),
       lastMoveToY(other.lastMoveToY),
       lastMoveToZ(other.lastMoveToZ),
-      lastMoveToOri(other.lastMoveToOri),
-      lastFlee(other.lastFlee)
+      lastMoveToOri(other.lastMoveToOri)
 {
     lastMoveShort = other.lastMoveShort;
     nextTeleport = other.nextTeleport;
