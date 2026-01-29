@@ -6,6 +6,7 @@
 #ifndef _PLAYERBOT_LOGLEVELVALUE_H
 #define _PLAYERBOT_LOGLEVELVALUE_H
 
+#include "LogCommon.h"
 #include "Value.h"
 
 class PlayerbotAI;

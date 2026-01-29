@@ -5,26 +5,12 @@
 
 #include "ItemCountValue.h"
 
-#include "Playerbots.h"
-
-std::vector<Item*> InventoryItemValueBase::Find(std::string const qualifier)
+uint32_t ItemCountValue::Calculate()
 {
-    std::vector<Item*> result;
-
-    Player* bot = InventoryAction::botAI->GetBot();
-
+    uint32_t count = 0;
     std::vector<Item*> items = InventoryAction::parseItems(qualifier);
-    for (Item* item : items)
-        result.push_back(item);
 
-    return result;
-}
-
-uint32 ItemCountValue::Calculate()
-{
-    uint32 count = 0;
-    std::vector<Item*> items = Find(qualifier);
-    for (Item* item : items)
+    for (const Item* const item : items)
     {
         count += item->GetCount();
     }
@@ -32,4 +18,7 @@ uint32 ItemCountValue::Calculate()
     return count;
 }
 
-std::vector<Item*> InventoryItemValue::Calculate() { return Find(qualifier); }
+std::vector<Item*> InventoryItemValue::Calculate()
+{
+    return InventoryAction::parseItems(qualifier);
+}
