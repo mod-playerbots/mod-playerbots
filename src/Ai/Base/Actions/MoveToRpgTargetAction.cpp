@@ -11,7 +11,7 @@
 #include "LastMovementValue.h"
 #include "Playerbots.h"
 
-bool MoveToRpgTargetAction::Execute(Event event)
+bool MoveToRpgTargetAction::Execute(Event)
 {
     GuidPosition guidP = AI_VALUE(GuidPosition, "rpg target");
     Unit* unit = botAI->GetUnit(guidP);
@@ -24,7 +24,6 @@ bool MoveToRpgTargetAction::Execute(Event event)
     {
         return false;
     }
-    Player* player = guidP.GetPlayer();
 
     WorldObject* wo = nullptr;
     if (unit)
