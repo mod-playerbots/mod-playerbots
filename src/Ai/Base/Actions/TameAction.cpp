@@ -6,12 +6,10 @@
 #include "TameAction.h"
 #include <algorithm>
 #include <cctype>
-#include <iomanip>
 #include <random>
 #include <set>
 #include <sstream>
 #include "DBCStructure.h"
-#include "Log.h"
 #include "ObjectMgr.h"
 #include "Pet.h"
 #include "Player.h"
@@ -53,7 +51,6 @@ bool TameAction::Execute(Event event)
     {
         std::set<std::string> normalFamilies;
         std::set<std::string> exoticFamilies;
-        Player* bot = botAI->GetBot();
 
         // Loop over all creature templates and collect tameable families
         CreatureTemplateContainer const* creatures = sObjectMgr->GetCreatureTemplates();
