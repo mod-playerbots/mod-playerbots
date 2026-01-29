@@ -6,7 +6,6 @@
 #pragma once
 
 #include "AiObject.h"
-#include "Common.h"
 #include "Event.h"
 #include "Value.h"
 
@@ -17,8 +16,10 @@ class NextAction
 {
 public:
     NextAction(std::string const name, float relevance = 0.0f)
-        : relevance(relevance), name(name) {}                                  // name after relevance - whipowill
-    NextAction(NextAction const& o) : relevance(o.relevance), name(o.name) {}  // name after relevance - whipowill
+        : relevance(relevance), name(name) {}
+
+    NextAction(NextAction const&) = default;
+    NextAction& operator=(NextAction const&) = default;
 
     std::string const getName() { return name; }
     float getRelevance() { return relevance; }
