@@ -10,28 +10,37 @@
 
 bool SecurityCheckAction::isUseful()
 {
-    return sRandomPlayerbotMgr.IsRandomBot(bot) && botAI->GetMaster() &&
-           botAI->GetMaster()->GetSession()->GetSecurity() < SEC_GAMEMASTER && !GET_PLAYERBOT_AI(botAI->GetMaster());
+    return RandomPlayerbotMgr::instance().IsRandomBot(this->bot)
+        && this->botAI->GetMaster()
+        && this->botAI->GetMaster()->GetSession()->GetSecurity() < SEC_GAMEMASTER
+        && !GET_PLAYERBOT_AI(this->botAI->GetMaster());
 }
 
-bool SecurityCheckAction::Execute(Event event)
+bool SecurityCheckAction::Execute(Event)
 {
-    if (Group* group = bot->GetGroup())
+    const Group* const group = bot->GetGroup();
+
+    if (group == nullptr)
     {
-        LootMethod method = group->GetLootMethod();
-        ItemQualities threshold = group->GetLootThreshold();
-        if (method == MASTER_LOOT || method == FREE_FOR_ALL || threshold > ITEM_QUALITY_UNCOMMON)
-        {
-            if ((botAI->GetGroupLeader()->GetSession()->GetSecurity() == SEC_PLAYER) &&
-                (!bot->GetGuildId() || bot->GetGuildId() != botAI->GetGroupLeader()->GetGuildId()))
-            {
-                botAI->TellError("I will play with this loot type only if I'm in your guild :/");
-                botAI->ChangeStrategy("+passive,+stay", BOT_STATE_NON_COMBAT);
-                botAI->ChangeStrategy("+passive,+stay", BOT_STATE_COMBAT);
-            }
-            return true;
-        }
+        return false;
     }
 
-    return false;
+    const LootMethod method = group->GetLootMethod();
+    const ItemQualities threshold = group->GetLootThreshold();
+
+    if (method != MASTER_LOOT && method != FREE_FOR_ALL && threshold <= ITEM_QUALITY_UNCOMMON)
+    {
+        return false;
+    }
+
+    if (
+        (this->botAI->GetGroupLeader()->GetSession()->GetSecurity() == SEC_PLAYER)
+        && (!this->bot->GetGuildId() || this->bot->GetGuildId() != this->botAI->GetGroupLeader()->GetGuildId())
+    )
+    {
+        this->botAI->TellError("I will play with this loot type only if I'm in your guild :/");
+        this->botAI->ChangeStrategy("+passive,+stay", BOT_STATE_NON_COMBAT);
+        this->botAI->ChangeStrategy("+passive,+stay", BOT_STATE_COMBAT);
+    }
+    return true;
 }
