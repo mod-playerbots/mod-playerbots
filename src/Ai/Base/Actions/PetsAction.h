@@ -9,8 +9,6 @@
 #include <string>
 
 #include "Action.h"
-#include "PlayerbotFactory.h"
-#include "Unit.h"
 
 class PlayerbotAI;
 
@@ -22,7 +20,6 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool warningEnabled = true;
     std::string defaultCmd;
 };
 
