@@ -111,19 +111,30 @@ bool DropTargetAction::Execute(Event)
 bool AttackAnythingAction::Execute(Event event)
 {
     bool result = AttackAction::Execute(event);
-    if (result)
+
+    if (!result)
     {
-        if (Unit* grindTarget = GetTarget())
-        {
-            if (grindTarget->GetName().c_str())
-            {
-                context->GetValue<ObjectGuid>("pull target")->Set(grindTarget->GetGUID());
-                bot->GetMotionMaster()->Clear();
-            }
-        }
+        return false;
     }
 
-    return result;
+    const Unit* const grindTarget = this->GetTarget();
+
+    if (grindTarget == nullptr)
+    {
+        return true;
+    }
+
+    const std::string& grindTargetName = grindTarget->GetName();
+
+    if (grindTargetName.empty())
+    {
+        return true;
+    }
+
+    this->context->GetValue<ObjectGuid>("pull target")->Set(grindTarget->GetGUID());
+    this->bot->GetMotionMaster()->Clear();
+
+    return true;
 }
 
 bool AttackAnythingAction::isPossible() { return AttackAction::isPossible() && GetTarget(); }
