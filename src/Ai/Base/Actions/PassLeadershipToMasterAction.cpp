@@ -7,30 +7,39 @@
 
 #include "Event.h"
 #include "PlayerbotOperations.h"
-#include "Playerbots.h"
 #include "PlayerbotWorldThreadProcessor.h"
 
-bool PassLeadershipToMasterAction::Execute(Event event)
+bool PassLeadershipToMasterAction::Execute(Event)
 {
-    if (Player* master = GetMaster())
-        if (master && master != bot && bot->GetGroup() && bot->GetGroup()->IsMember(master->GetGUID()))
-        {
-            auto setLeaderOp = std::make_unique<GroupSetLeaderOperation>(bot->GetGUID(), master->GetGUID());
-            PlayerbotWorldThreadProcessor::instance().QueueOperation(std::move(setLeaderOp));
+    const Player* const master = this->GetMaster();
 
-            if (!message.empty())
-                botAI->TellMasterNoFacing(message);
+    if (master == nullptr || master == this->bot)
+    {
+        return false;
+    }
 
-            if (sRandomPlayerbotMgr.IsRandomBot(bot))
-            {
-                botAI->ResetStrategies();
-                botAI->Reset();
-            }
+    const Group* const group = this->bot->GetGroup();
 
-            return true;
-        }
+    if (group == nullptr || !bot->GetGroup()->IsMember(master->GetGUID()))
+    {
+        return false;
+    }
 
-    return false;
+    std::unique_ptr<GroupSetLeaderOperation> setLeaderOp = std::make_unique<GroupSetLeaderOperation>(this->bot->GetGUID(), master->GetGUID());
+    PlayerbotWorldThreadProcessor::instance().QueueOperation(std::move(setLeaderOp));
+
+    if (!message.empty())
+    {
+        this->botAI->TellMasterNoFacing(message);
+    }
+
+    if (RandomPlayerbotMgr::instance().IsRandomBot(this->bot))
+    {
+        this->botAI->ResetStrategies();
+        this->botAI->Reset();
+    }
+
+    return true;
 }
 
 bool PassLeadershipToMasterAction::isUseful()
