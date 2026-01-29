@@ -64,8 +64,6 @@ bool TradeStatusAction::Execute(Event event)
         uint32 discount = sRandomPlayerbotMgr.GetTradeDiscount(bot, trader);
         if (CheckTrade())
         {
-            int32 botMoney = CalculateCost(bot, true);
-
             std::map<uint32, uint32> givenItemIds, takenItemIds;
             for (uint32 slot = 0; slot < TRADE_SLOT_TRADED_COUNT; ++slot)
             {
@@ -161,13 +159,11 @@ bool TradeStatusAction::CheckTrade()
 
     if (!botAI->HasActivePlayerMaster() && GET_PLAYERBOT_AI(bot->GetTrader()))
     {
-        bool isGivingItem = false;
         for (uint32 slot = 0; slot < TRADE_SLOT_TRADED_COUNT; ++slot)
         {
             Item* item = bot->GetTradeData()->GetItem((TradeSlots)slot);
             if (item)
             {
-                isGivingItem = true;
                 break;
             }
         }
