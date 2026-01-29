@@ -59,7 +59,6 @@ float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
 float MagtheridonDisableOffTankAssistMultiplier::GetValue(Action* action)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    Unit* channeler = AI_VALUE2(Unit*, "find target", "hellfire channeler");
     if (!magtheridon)
         return 1.0f;
 
