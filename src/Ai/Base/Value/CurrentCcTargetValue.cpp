@@ -4,8 +4,7 @@
  */
 
 #include "CurrentCcTargetValue.h"
-
-#include "Playerbots.h"
+#include "PlayerbotAI.h"
 
 class FindCurrentCcTargetStrategy : public FindTargetStrategy
 {
@@ -14,7 +13,7 @@ public:
     {
     }
 
-    void CheckAttacker(Unit* attacker, ThreatMgr* threatMgr) override
+    void CheckAttacker(Unit* attacker, ThreatMgr*) override
     {
         if (botAI->HasAura(spell, attacker))
             result = attacker;
