@@ -6,6 +6,7 @@
 #include "OculusTriggers.h"
 #include "FollowActions.h"
 #include "ReachTargetActions.h"
+#include "Playerbots.h"
 
 float MountingDrakeMultiplier::GetValue(Action* action)
 {
@@ -100,12 +101,22 @@ uint8 UromMultiplier::GetPhaseByCurrentPosition(Unit* unit)
 
 float EregosMultiplier::GetValue(Action* action)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "ley-guardian eregos");
-    if (!boss) { return 1.0f; }
+    if (action == nullptr)
+    {
+        return 1.0f;
+    }
 
-    if (boss->HasAura(SPELL_PLANAR_SHIFT && dynamic_cast<OccDrakeAttackAction*>(action)))
+    const Unit* const boss = this->context->GetValue<Unit*>("find target", "ley-guardian eregos")->Get();
+
+    if (boss == nullptr)
+    {
+        return 1.0f;
+    }
+
+    if (boss->HasAura(SPELL_PLANAR_SHIFT) && action->getName() == "occ drake attack")
     {
         return 0.0f;
     }
+
     return 1.0f;
 }
