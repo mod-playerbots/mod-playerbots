@@ -5,77 +5,60 @@
 
 #include "PvpValues.h"
 
-#include "BattlegroundEY.h"
 #include "BattlegroundMgr.h"
-#include "BattlegroundWS.h"
+#include "AreaDefines.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 
-Unit* FlagCarrierValue::Calculate()
+Player* FlagCarrierValue::GetBattlegroundFlagCarrier(Battleground& battleground) const
 {
-    Unit* carrier = nullptr;
+    const uint32_t mapId = battleground.GetMapId();
 
-    if (botAI->GetBot()->InBattleground())
+    if (mapId != MAP_WARSONG_GULCH && mapId != MAP_EYE_OF_THE_STORM)
     {
-        if (botAI->GetBot()->GetBattlegroundTypeId() == BattlegroundTypeId::BATTLEGROUND_WS)
-        {
-            BattlegroundWS* bg = (BattlegroundWS*)botAI->GetBot()->GetBattleground();
-
-            if (!bg)
-                return nullptr;
-
-            if ((!sameTeam && bot->GetTeamId() == TEAM_HORDE || (sameTeam && bot->GetTeamId() == TEAM_ALLIANCE)) &&
-                !bg->GetFlagPickerGUID(TEAM_HORDE).IsEmpty())
-                carrier = ObjectAccessor::GetPlayer(bg->GetBgMap(), bg->GetFlagPickerGUID(TEAM_HORDE));
-
-            if ((!sameTeam && bot->GetTeamId() == TEAM_ALLIANCE || (sameTeam && bot->GetTeamId() == TEAM_HORDE)) &&
-                !bg->GetFlagPickerGUID(TEAM_ALLIANCE).IsEmpty())
-                carrier = ObjectAccessor::GetPlayer(bg->GetBgMap(), bg->GetFlagPickerGUID(TEAM_ALLIANCE));
-
-            if (carrier)
-            {
-                if (ignoreRange || bot->IsWithinDistInMap(carrier, sPlayerbotAIConfig.sightDistance))
-                {
-                    return carrier;
-                }
-                else
-                    return nullptr;
-            }
-        }
-
-        if (botAI->GetBot()->GetBattlegroundTypeId() == BATTLEGROUND_EY)
-        {
-            BattlegroundEY* bg = (BattlegroundEY*)botAI->GetBot()->GetBattleground();
-
-            if (!bg)
-                return nullptr;
-
-            if (bg->GetFlagPickerGUID().IsEmpty())
-                return nullptr;
-
-            Player* fc = ObjectAccessor::GetPlayer(bg->GetBgMap(), bg->GetFlagPickerGUID());
-            if (!fc)
-                return nullptr;
-
-            if (!sameTeam && (fc->GetTeamId() != bot->GetTeamId()))
-                carrier = fc;
-
-            if (sameTeam && (fc->GetTeamId() == bot->GetTeamId()))
-                carrier = fc;
-
-            if (carrier)
-            {
-                if (ignoreRange || bot->IsWithinDistInMap(carrier, sPlayerbotAIConfig.sightDistance))
-                {
-                    return carrier;
-                }
-                else
-                    return nullptr;
-            }
-        }
+        return nullptr;
     }
 
-    return carrier;
+    const ObjectGuid& flagCarrierGUID = battleground.GetFlagPickerGUID();
+
+    if (flagCarrierGUID.IsEmpty())
+    {
+        return nullptr;
+    }
+
+    Player* const flagCarrier = ObjectAccessor::GetPlayer(battleground.GetBgMap(), flagCarrierGUID);
+
+    if (flagCarrier == nullptr)
+    {
+        return nullptr;
+    }
+
+    const TeamId& flagCarrierTeamId = flagCarrier->GetTeamId();
+    const TeamId& botTeamId = this->bot->GetTeamId();
+
+    if (!this->sameTeam && flagCarrierTeamId != botTeamId)
+    {
+        return flagCarrier;
+    }
+
+    if (this->sameTeam && flagCarrierTeamId == botTeamId)
+    {
+        return flagCarrier;
+    }
+
+    return nullptr;
+}
+
+Unit* FlagCarrierValue::Calculate()
+{
+    Battleground* const battleground = this->bot->GetBattleground();
+
+    if (battleground == nullptr)
+    {
+        return nullptr;
+    }
+
+    return this->GetBattlegroundFlagCarrier(*battleground);
 }
 
 std::vector<CreatureData const*> BgMastersValue::Calculate()
