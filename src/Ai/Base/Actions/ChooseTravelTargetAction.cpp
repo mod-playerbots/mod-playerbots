@@ -9,7 +9,7 @@
 #include "LootObjectStack.h"
 #include "Playerbots.h"
 
-bool ChooseTravelTargetAction::Execute(Event event)
+bool ChooseTravelTargetAction::Execute(Event)
 {
     // Player* requester = event.getOwner() ? event.getOwner() : GetMaster(); //not used, line marked for removal.
 
@@ -103,13 +103,13 @@ void ChooseTravelTargetAction::getNewTarget(TravelTarget* newTarget, TravelTarge
                 if (urand(1, 100) > 50)
                 {
                     // Turn in quests for money.
-                    foundTarget = SetQuestTarget(newTarget, true, false, true, true);
+                    foundTarget = SetQuestTarget(newTarget, false, true, true);
                 }
 
                 if (!foundTarget)
                 {
                     // Find new (low) level quests
-                    foundTarget = SetQuestTarget(newTarget, false, true, false, false);
+                    foundTarget = SetQuestTarget(newTarget, true, false, false);
                 }
             }
             else
@@ -150,7 +150,7 @@ void ChooseTravelTargetAction::getNewTarget(TravelTarget* newTarget, TravelTarge
     if (!foundTarget && urand(1, 100) > 5)
     {
         // Do any nearby
-        foundTarget = SetQuestTarget(newTarget, false, true, true, true);
+        foundTarget = SetQuestTarget(newTarget, true, true, true);
     }
 
     //Explore a nearby unexplored area.
@@ -232,15 +232,6 @@ void ChooseTravelTargetAction::ReportTravelTarget(TravelTarget* newTarget, Trave
         QuestTravelDestination* QuestDestination = (QuestTravelDestination*)destination;
         Quest const* quest = QuestDestination->GetQuestTemplate();
         WorldPosition botLocation(bot);
-
-        CreatureTemplate const* cInfo = nullptr;
-        GameObjectTemplate const* gInfo = nullptr;
-
-        if (destination->getEntry() > 0)
-            cInfo = sObjectMgr->GetCreatureTemplate(destination->getEntry());
-        else
-            gInfo = sObjectMgr->GetGameObjectTemplate(destination->getEntry() * -1);
-
         std::string Sub;
 
         if (newTarget->isGroupCopy())
@@ -478,7 +469,7 @@ bool ChooseTravelTargetAction::SetCurrentTarget(TravelTarget* target, TravelTarg
     return target->isActive();
 }
 
-bool ChooseTravelTargetAction::SetQuestTarget(TravelTarget* target, bool onlyCompleted, bool newQuests, bool activeQuests, bool completedQuests)
+bool ChooseTravelTargetAction::SetQuestTarget(TravelTarget* target, bool newQuests, bool activeQuests, bool completedQuests)
 {
     std::vector<TravelDestination*> activeDestinations;
     std::vector<WorldPosition*> activePoints;
@@ -823,10 +814,6 @@ char* strstri(char const* haystack, char const* needle);
 
 TravelDestination* ChooseTravelTargetAction::FindDestination(Player* bot, std::string const name, bool zones, bool npcs, bool quests, bool mobs, bool bosses)
 {
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-
-    // AiObjectContext* context = botAI->GetAiObjectContext(); //not used, line marked for removal.
-
     std::vector<TravelDestination*> dests;
 
     //Quests
@@ -934,14 +921,16 @@ bool ChooseTravelTargetAction::needForQuest(Unit* target)
 
             for (int j = 0; j < QUEST_OBJECTIVES_COUNT; j++)
             {
-                int32 entry = questTemplate->RequiredNpcOrGo[j];
+                int32_t entry = questTemplate->RequiredNpcOrGo[j];
 
-                if (entry && entry > 0)
+                if (entry > 0)
                 {
                     int required = questTemplate->RequiredNpcOrGoCount[j];
                     int available = questStatus.CreatureOrGOCount[j];
 
-                    if (required && available < required && (target->GetEntry() == entry || justCheck))
+                    const int64_t targetEntry = target->GetEntry();
+
+                    if (required && available < required && (targetEntry == entry || justCheck))
                         return true;
                 }
 
