@@ -59,12 +59,19 @@ public:
 class FlagCarrierValue : public UnitCalculatedValue
 {
 public:
-    FlagCarrierValue(PlayerbotAI* botAI, bool sameTeam = false, bool ignoreRange = false)
+    FlagCarrierValue(
+        PlayerbotAI* botAI,
+        bool sameTeam = false,
+        bool ignoreRange = false
+    )
         : UnitCalculatedValue(botAI), sameTeam(sameTeam), ignoreRange(ignoreRange)
     {
     }
 
     Unit* Calculate() override;
+
+protected:
+    Player* GetBattlegroundFlagCarrier(Battleground& battleground) const;
 
 private:
     bool sameTeam;
