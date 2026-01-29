@@ -17,19 +17,17 @@
 #include "WorldPacket.h"
 #include "Group.h"
 #include "Chat.h"
-#include "Language.h"
 #include "GenericBuffUtils.h"
 #include "PlayerbotAI.h"
 
 using ai::buff::MakeAuraQualifierForBuff;
-using ai::buff::UpgradeToGroupIfAppropriate;
 
 CastSpellAction::CastSpellAction(PlayerbotAI* botAI, std::string const spell)
-    : Action(botAI, spell), range(botAI->GetRange("spell")), spell(spell)
+    : Action(botAI, spell), spell(spell), range(botAI->GetRange("spell"))
 {
 }
 
-bool CastSpellAction::Execute(Event event)
+bool CastSpellAction::Execute(Event)
 {
     if (spell == "conjure food" || spell == "conjure water")
     {
@@ -172,13 +170,27 @@ bool CastMeleeDebuffSpellAction::isUseful()
 
 bool CastAuraSpellAction::isUseful()
 {
-    if (!GetTarget() || !CastSpellAction::isUseful())
+    Unit* const target = this->GetTarget();
+
+    if (target == nullptr || !CastSpellAction::isUseful())
+    {
         return false;
-    Aura* aura = botAI->GetAura(spell, GetTarget(), isOwner, checkDuration);
-    if (!aura)
+    }
+
+    const Aura* const aura = botAI->GetAura(this->spell, target, this->isOwner, this->checkDuration);
+
+    if (aura == nullptr)
+    {
         return true;
-    if (beforeDuration && aura->GetDuration() < beforeDuration)
+    }
+
+    const int64_t& signedBeforeDuration = this->beforeDuration;
+
+    if (signedBeforeDuration > 0 && aura->GetDuration() < signedBeforeDuration)
+    {
         return true;
+    }
+
     return false;
 }
 
@@ -233,7 +245,7 @@ Value<Unit*>* BuffOnPartyAction::GetTargetValue()
     return context->GetValue<Unit*>("party member without aura", MakeAuraQualifierForBuff(spell));
 }
 
-bool BuffOnPartyAction::Execute(Event event)
+bool BuffOnPartyAction::Execute(Event)
 {
     std::string castName = spell; // default = mono
 
@@ -290,7 +302,7 @@ Value<Unit*>* CastSnareSpellAction::GetTargetValue() { return context->GetValue<
 
 Value<Unit*>* CastCrowdControlSpellAction::GetTargetValue() { return context->GetValue<Unit*>("cc target", getName()); }
 
-bool CastCrowdControlSpellAction::Execute(Event event) { return botAI->CastSpell(getName(), GetTarget()); }
+bool CastCrowdControlSpellAction::Execute(Event) { return botAI->CastSpell(getName(), GetTarget()); }
 
 bool CastCrowdControlSpellAction::isPossible() { return botAI->CanCastSpell(getName(), GetTarget()); }
 
@@ -308,13 +320,13 @@ bool CastVehicleSpellAction::isPossible()
 
 bool CastVehicleSpellAction::isUseful() { return botAI->IsInVehicle(false, true); }
 
-bool CastVehicleSpellAction::Execute(Event event)
+bool CastVehicleSpellAction::Execute(Event)
 {
     uint32 spellId = AI_VALUE2(uint32, "vehicle spell id", spell);
     return botAI->CastVehicleSpell(spellId, GetTarget());
 }
 
-bool UseTrinketAction::Execute(Event event)
+bool UseTrinketAction::Execute(Event)
 {
     Item* trinket1 = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_TRINKET1);
 
