@@ -108,7 +108,7 @@ std::string const WhoAction::QuerySkill(std::string const text)
     return out.str();
 }
 
-std::string const WhoAction::QuerySpec(std::string const text)
+std::string const WhoAction::QuerySpec(std::string)
 {
     std::ostringstream out;
 
