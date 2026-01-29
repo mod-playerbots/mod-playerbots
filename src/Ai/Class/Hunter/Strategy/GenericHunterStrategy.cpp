@@ -5,9 +5,6 @@
 
 #include "GenericHunterStrategy.h"
 
-#include "Playerbots.h"
-#include "Strategy.h"
-
 class GenericHunterStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
 public:
@@ -141,7 +138,7 @@ void AoEHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("light aoe", { NextAction("multi-shot", 21.0f) }));
 }
 
-void HunterBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void HunterBoostStrategy::InitTriggers(std::vector<TriggerNode*>&)
 {
 }
 
