@@ -5,14 +5,15 @@
 
 #include "UseMeetingStoneAction.h"
 
-#include "CellImpl.h"
 #include "Event.h"
 #include "GridNotifiers.h"
-#include "GridNotifiersImpl.h"
 #include "NearestGameObjects.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "PositionValue.h"
+// Required because of a poor implementation by AC
+#include "GridNotifiersImpl.h"
+#include "CellImpl.h"
 
 bool UseMeetingStoneAction::Execute(Event event)
 {
@@ -55,13 +56,13 @@ bool UseMeetingStoneAction::Execute(Event event)
     return Teleport(master, bot, false);
 }
 
-bool SummonAction::Execute(Event event)
+bool SummonAction::Execute(Event)
 {
     Player* master = GetMaster();
     if (!master)
         return false;
 
-    if (Pet* pet = bot->GetPet())
+    if (bot->GetPet() != nullptr)
     {
         botAI->PetFollow();
     }
