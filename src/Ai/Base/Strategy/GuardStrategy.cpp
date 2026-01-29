@@ -5,8 +5,6 @@
 
 #include "GuardStrategy.h"
 
-#include "Playerbots.h"
-
 std::vector<NextAction> GuardStrategy::getDefaultActions()
 {
     return {
@@ -14,4 +12,4 @@ std::vector<NextAction> GuardStrategy::getDefaultActions()
     };
 }
 
-void GuardStrategy::InitTriggers(std::vector<TriggerNode*>& triggers) {}
+void GuardStrategy::InitTriggers(std::vector<TriggerNode*>&) {}
