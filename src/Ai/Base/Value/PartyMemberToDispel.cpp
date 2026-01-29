@@ -4,14 +4,14 @@
  */
 
 #include "PartyMemberToDispel.h"
+#include "PlayerbotAI.h"
 
-#include "Playerbots.h"
 
 class PartyMemberToDispelPredicate : public FindPlayerPredicate, public PlayerbotAIAware
 {
 public:
     PartyMemberToDispelPredicate(PlayerbotAI* botAI, uint32 dispelType)
-        : PlayerbotAIAware(botAI), FindPlayerPredicate(), dispelType(dispelType)
+        : FindPlayerPredicate(), PlayerbotAIAware(botAI), dispelType(dispelType)
     {
     }
 
