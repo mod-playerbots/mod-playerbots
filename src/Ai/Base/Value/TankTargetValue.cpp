@@ -5,9 +5,10 @@
 
 #include "TankTargetValue.h"
 
+#include "AiObjectContext.h"
 #include "AttackersValue.h"
-#include "PlayerbotAIConfig.h"
-#include "Playerbots.h"
+#include "Group.h"
+#include "PlayerbotAI.h"
 
 class FindTargetForTankStrategy : public FindNonCcTargetStrategy
 {
@@ -53,7 +54,7 @@ class FindTankTargetSmartStrategy : public FindTargetStrategy
 public:
     FindTankTargetSmartStrategy(PlayerbotAI* botAI) : FindTargetStrategy(botAI) {}
 
-    void CheckAttacker(Unit* attacker, ThreatMgr* threatMgr) override
+    void CheckAttacker(Unit* attacker, ThreatMgr*) override
     {
         if (Group* group = botAI->GetBot()->GetGroup())
         {
