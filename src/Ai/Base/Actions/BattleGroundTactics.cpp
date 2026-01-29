@@ -3319,7 +3319,9 @@ bool BGTactics::selectObjectiveWp(std::vector<BattleBotPath*> const& vPaths)
 
         // don't pick path where bot is already closest to the paths closest point to target (it means path cant lead it
         // anywhere) don't pick path where closest point is too far away
-        if (closestPointIndex == (reverse ? 0 : path->size() - 1) || closestPointDistToBot > botDistanceLimit)
+        const int64_t pathSize = path->size() - 1;
+
+        if (closestPointIndex == (reverse ? 0 : pathSize) || closestPointDistToBot > botDistanceLimit)
             continue;
 
         // creates a score based on dist-to-bot and dist-to-destination, where lower is better, and dist-to-bot is more
