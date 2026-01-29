@@ -4,8 +4,6 @@
  */
 
 #include "GenericWarlockStrategy.h"
-#include "Strategy.h"
-#include "Playerbots.h"
 
 class GenericWarlockStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -126,12 +124,12 @@ void AoEWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     );
 }
 
-void WarlockBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void WarlockBoostStrategy::InitTriggers(std::vector<TriggerNode*>&)
 {
     // Placeholder for future boost triggers
 }
 
-void WarlockPetStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void WarlockPetStrategy::InitTriggers(std::vector<TriggerNode*>&)
 {
     // Placeholder for future pet triggers
 }
