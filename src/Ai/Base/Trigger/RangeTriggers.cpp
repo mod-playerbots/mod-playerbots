@@ -11,10 +11,10 @@
 #include "ServerFacade.h"
 #include "SharedDefines.h"
 
-static float GetSpeedInMotion(Unit* target)
-{
-    return target->GetSpeed(Movement::SelectSpeedType(target->GetUnitMovementFlags()));
-}
+// static float GetSpeedInMotion(Unit* target)
+// {
+//     return target->GetSpeed(Movement::SelectSpeedType(target->GetUnitMovementFlags()));
+// }
 
 bool EnemyTooCloseForSpellTrigger::IsActive()
 {
@@ -201,7 +201,6 @@ bool PartyMemberToHealOutOfSpellRangeTrigger::IsActive()
     if (!target)
         return false;
 
-    float combatReach = bot->GetCombatReach() + target->GetCombatReach();
     return target && (ServerFacade::instance().GetDistance2d(bot, target) > (distance + sPlayerbotAIConfig.contactDistance) ||
                       !bot->IsWithinLOSInMap(target));
 }
