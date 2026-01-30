@@ -59,26 +59,22 @@ Unit* GrindTargetValue::FindTargetForGrinding(uint32 assistCount)
     for (ObjectGuid const guid : targets)
     {
         Unit* unit = botAI->GetUnit(guid);
-
         if (!unit)
+            continue;
+
+        if (!unit->IsInWorld() || unit->IsDuringRemoveFromWorld())
             continue;
 
         auto& rep = bot->ToPlayer()->GetReputationMgr();
         if (unit->ToCreature() && !unit->ToCreature()->GetCreatureTemplate()->lootid &&
             bot->GetReactionTo(unit) >= REP_NEUTRAL)
-        {
             continue;
-        }
 
         if (!bot->IsHostileTo(unit) && unit->GetNpcFlags() != UNIT_NPC_FLAG_NONE)
-        {
             continue;
-        }
 
         if (!bot->isHonorOrXPTarget(unit))
-        {
             continue;
-        }
 
         if (abs(bot->GetPositionZ() - unit->GetPositionZ()) > INTERACTION_DISTANCE)
             continue;
@@ -86,12 +82,12 @@ Unit* GrindTargetValue::FindTargetForGrinding(uint32 assistCount)
         if (!bot->InBattleground() && GetTargetingPlayerCount(unit) > assistCount)
             continue;
 
-        // if (!bot->InBattleground() && master && master->GetDistance(unit) >= sPlayerbotAIConfig->grindDistance &&
-        // !sRandomPlayerbotMgr->IsRandomBot(bot)) continue;
+        // if (!bot->InBattleground() && master && master->GetDistance(unit) >= sPlayerbotAIConfig.grindDistance &&
+        // !sRandomPlayerbotMgr.IsRandomBot(bot)) continue;
 
         // Bots in bot-groups no have a more limited range to look for grind target
         if (!bot->InBattleground() && master && botAI->HasStrategy("follow", BotState::BOT_STATE_NON_COMBAT) &&
-            sServerFacade->GetDistance2d(master, unit) > sPlayerbotAIConfig->lootDistance)
+            ServerFacade::instance().GetDistance2d(master, unit) > sPlayerbotAIConfig.lootDistance)
         {
             if (botAI->HasStrategy("debug grind", BotState::BOT_STATE_NON_COMBAT))
                 botAI->TellMaster(chat->FormatWorldobject(unit) + " ignored (far from master).");

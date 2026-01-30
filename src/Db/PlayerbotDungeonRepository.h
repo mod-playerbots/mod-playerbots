@@ -6,10 +6,9 @@
 #ifndef _PLAYERBOT_PLAYERBOTDUNGEONREPOSITORY_H
 #define _PLAYERBOT_PLAYERBOTDUNGEONREPOSITORY_H
 
-#include <map>
 #include <vector>
+#include <string>
 
-#include "Common.h"
 #include "DBCEnums.h"
 
 struct DungeonSuggestion
@@ -22,24 +21,31 @@ struct DungeonSuggestion
     std::string strategy;
 };
 
+// @TODO: Completely unused at this moment.
 class PlayerbotDungeonRepository
 {
 public:
-    PlayerbotDungeonRepository(){};
-    ~PlayerbotDungeonRepository(){};
-    static PlayerbotDungeonRepository* instance()
+    static PlayerbotDungeonRepository& instance()
     {
         static PlayerbotDungeonRepository instance;
-        return &instance;
+
+        return instance;
     }
 
     void LoadDungeonSuggestions();
     std::vector<DungeonSuggestion> const GetDungeonSuggestions();
 
 private:
+    PlayerbotDungeonRepository() = default;
+    ~PlayerbotDungeonRepository() = default;
+
+    PlayerbotDungeonRepository(const PlayerbotDungeonRepository&) = delete;
+    PlayerbotDungeonRepository& operator=(const PlayerbotDungeonRepository&) = delete;
+
+    PlayerbotDungeonRepository(PlayerbotDungeonRepository&&) = delete;
+    PlayerbotDungeonRepository& operator=(PlayerbotDungeonRepository&&) = delete;
+
     std::vector<DungeonSuggestion> m_dungeonSuggestions;
 };
-
-#define sPlayerbotDungeonRepository PlayerbotDungeonRepository::instance()
 
 #endif

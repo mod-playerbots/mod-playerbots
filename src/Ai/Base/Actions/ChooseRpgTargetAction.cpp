@@ -248,7 +248,7 @@ bool ChooseRpgTargetAction::Execute(Event event)
     }
 
     std::mt19937 gen(time(0));
-    sTravelMgr->weighted_shuffle(guidps.begin(), guidps.end(), relevances.begin(), relevances.end(), gen);
+    TravelMgr::instance().weighted_shuffle(guidps.begin(), guidps.end(), relevances.begin(), relevances.end(), gen);
 
     GuidPosition guidP(guidps.front());
     if (!guidP)
@@ -279,7 +279,7 @@ bool ChooseRpgTargetAction::isUseful()
 
     GuidPosition guidP = AI_VALUE(GuidPosition, "rpg target");
 
-    if (guidP && guidP.distance(bot) < sPlayerbotAIConfig->reactDistance * 2)
+    if (guidP && guidP.distance(bot) < sPlayerbotAIConfig.reactDistance * 2)
         return false;
 
     // TravelTarget* travelTarget = AI_VALUE(TravelTarget*, "travel target"); //not used, line marked for removal.
@@ -330,7 +330,7 @@ bool ChooseRpgTargetAction::isFollowValid(Player* bot, WorldPosition pos)
     if (!botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT))
         return true;
 
-    if (bot->GetDistance(groupLeader) > sPlayerbotAIConfig->rpgDistance * 2)
+    if (bot->GetDistance(groupLeader) > sPlayerbotAIConfig.rpgDistance * 2)
         return false;
 
     Formation* formation = AI_VALUE(Formation*, "formation");
@@ -340,7 +340,7 @@ bool ChooseRpgTargetAction::isFollowValid(Player* bot, WorldPosition pos)
     {
         Player* player = groupLeader;
         if (groupLeader && !groupLeader->isMoving() ||
-            PAI_VALUE(WorldPosition, "last long move").distance(pos) < sPlayerbotAIConfig->reactDistance)
+            PAI_VALUE(WorldPosition, "last long move").distance(pos) < sPlayerbotAIConfig.reactDistance)
             return true;
     }
 

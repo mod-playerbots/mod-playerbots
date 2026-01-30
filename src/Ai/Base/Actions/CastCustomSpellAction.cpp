@@ -130,10 +130,10 @@ bool CastCustomSpellAction::Execute(Event event)
         return false;
     }
 
-    if (target != bot && !bot->HasInArc(CAST_ANGLE_IN_FRONT, target, sPlayerbotAIConfig->sightDistance))
+    if (target != bot && !bot->HasInArc(CAST_ANGLE_IN_FRONT, target, sPlayerbotAIConfig.sightDistance))
     {
-        sServerFacade->SetFacingTo(bot, target);
-        botAI->SetNextCheckDelay(sPlayerbotAIConfig->reactDelay);
+        ServerFacade::instance().SetFacingTo(bot, target);
+        botAI->SetNextCheckDelay(sPlayerbotAIConfig.reactDelay);
 
         msg << "cast " << text;
         botAI->HandleCommand(CHAT_MSG_WHISPER, msg.str(), master);
@@ -286,7 +286,7 @@ bool CastRandomSpellAction::Execute(Event event)
 
         if (isCast)
         {
-            if (MultiCast && ((wo && bot->HasInArc(CAST_ANGLE_IN_FRONT, wo, sPlayerbotAIConfig->sightDistance))))
+            if (MultiCast && ((wo && bot->HasInArc(CAST_ANGLE_IN_FRONT, wo, sPlayerbotAIConfig.sightDistance))))
             {
                 std::ostringstream cmd;
                 cmd << "castnc " << chat->FormatWorldobject(wo) + " " << spellId << " " << 19;
