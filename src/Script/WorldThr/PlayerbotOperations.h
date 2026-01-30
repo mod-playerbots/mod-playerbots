@@ -81,14 +81,7 @@ public:
                 PlayerbotAI* targetAI = sPlayerbotsMgr->GetPlayerbotAI(target);
                 if (targetAI)
                 {
-                    class GroupSummonAction : public SummonAction
-                    {
-                    public:
-                        GroupSummonAction(PlayerbotAI* botAI) : SummonAction(botAI, "group summon") {}
-                        using SummonAction::Teleport;
-                    };
-
-                    GroupSummonAction summonAction(targetAI);
+                    SummonAction summonAction(targetAI, "group summon");
                     summonAction.Teleport(bot, target, true);
                 }
             }
