@@ -25,7 +25,6 @@
 #include "FleeManager.h"
 #include "FlightMasterCache.h"
 #include "GridNotifiers.h"
-#include "GuildTaskMgr.h"
 #include "LFGMgr.h"
 #include "MapMgr.h"
 #include "NewRpgInfo.h"
@@ -323,7 +322,7 @@ void RandomPlayerbotMgr::LogPlayerLocation()
     }
 }
 
-void RandomPlayerbotMgr::UpdateAIInternal(uint32 elapsed, bool /*minimal*/)
+void RandomPlayerbotMgr::UpdateAIInternal(uint32, bool /*minimal*/)
 {
     if (totalPmo)
         totalPmo->finish();
@@ -995,7 +994,7 @@ void RandomPlayerbotMgr::CheckBgQueue()
 
             // Arena logic
             bool isRated = false;
-            if (uint8 arenaType = BattlegroundMgr::BGArenaType(queueTypeId))
+            if (BattlegroundMgr::BGArenaType(queueTypeId))
             {
                 BattlegroundQueue& bgQueue = sBattlegroundMgr->GetBattlegroundQueue(queueTypeId);
                 GroupQueueInfo ginfo;
@@ -1082,7 +1081,7 @@ void RandomPlayerbotMgr::CheckBgQueue()
             BattlegroundData[queueTypeId][bracketId].minLevel = pvpDiff->minLevel;
             BattlegroundData[queueTypeId][bracketId].maxLevel = pvpDiff->maxLevel;
 
-            if (uint8 arenaType = BattlegroundMgr::BGArenaType(queueTypeId))
+            if (BattlegroundMgr::BGArenaType(queueTypeId))
             {
                 bool isRated = false;
                 BattlegroundQueue& bgQueue = sBattlegroundMgr->GetBattlegroundQueue(queueTypeId);
@@ -1663,7 +1662,7 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot, std::vector<WorldLocation>&
         tlocs.push_back(WorldPosition(loc));
     // Do not teleport to maps disabled in config
     tlocs.erase(std::remove_if(tlocs.begin(), tlocs.end(),
-                               [bot](WorldPosition l)
+                               [](WorldPosition l)
                                {
                                    std::vector<uint32>::iterator i =
                                        find(sPlayerbotAIConfig.randomBotMaps.begin(),
@@ -1846,7 +1845,7 @@ void RandomPlayerbotMgr::PrepareZone2LevelBracket()
 
 void RandomPlayerbotMgr::PrepareTeleportCache()
 {
-    uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+    int64_t maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
 
     LOG_INFO("playerbots", "Preparing random teleport caches for {} levels...", maxLevel);
 
@@ -1900,9 +1899,9 @@ void RandomPlayerbotMgr::PrepareTeleportCache()
             float x = fields[1].Get<float>();
             float y = fields[2].Get<float>();
             float z = fields[3].Get<float>();
-            uint32 min_level = fields[4].Get<uint32>();
-            uint32 max_level = fields[5].Get<uint32>();
-            uint32 level = (min_level + max_level + 1) / 2;
+            int64_t min_level = fields[4].Get<uint32>();
+            int64_t max_level = fields[5].Get<uint32>();
+            int64_t level = (min_level + max_level + 1) / 2;
             WorldLocation loc(mapId, x, y, z, 0);
             collected_locs++;
             for (int32 l = (int32)level - (int32)sPlayerbotAIConfig.randomBotTeleLowerLevel;
@@ -1984,7 +1983,7 @@ void RandomPlayerbotMgr::PrepareTeleportCache()
                 if (zone2LevelBracket.find(zoneId) == zone2LevelBracket.end())
                     continue;
                 LevelBracket bracket = zone2LevelBracket[zoneId];
-                for (int i = bracket.low; i <= bracket.high; i++)
+                for (uint32_t i = bracket.low; i <= bracket.high; i++)
                 {
                     if (forHorde)
                     {
@@ -2487,7 +2486,7 @@ void RandomPlayerbotMgr::Clear(Player* bot)
     factory.ClearEverything();
 }
 
-uint32 RandomPlayerbotMgr::GetZoneLevel(uint16 mapId, float teleX, float teleY, float teleZ)
+uint32 RandomPlayerbotMgr::GetZoneLevel(uint16 mapId, float teleX, float teleY, float)
 {
     uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
 
@@ -2680,7 +2679,7 @@ std::vector<uint32> RandomPlayerbotMgr::GetBgBots(uint32 bracket)
         } while (result->NextRow());
     }
 
-    return std::move(BgBots);
+    return BgBots;
 }
 
 CachedEvent* RandomPlayerbotMgr::FindEvent(uint32 bot, std::string const& event)
@@ -2818,7 +2817,7 @@ void RandomPlayerbotMgr::SetValue(Player* bot, std::string const& type, uint32 v
     SetValue(bot->GetGUID().GetCounter(), type, value, data);
 }
 
-bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* handler, char const* args)
+bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler*, char const* args)
 {
     if (!sPlayerbotAIConfig.enabled)
     {
@@ -3147,10 +3146,6 @@ void RandomPlayerbotMgr::PrintStats()
     uint32 heal = 0;
     uint32 tank = 0;
     uint32 active = 0;
-    uint32 update = 0;
-    uint32 randomize = 0;
-    uint32 teleport = 0;
-    uint32 changeStrategy = 0;
     uint32 dead = 0;
     uint32 combat = 0;
     // uint32 revive = 0; //not used, line marked for removal.
@@ -3190,19 +3185,6 @@ void RandomPlayerbotMgr::PrintStats()
 
         if (botAI->AllowActivity())
             ++active;
-
-        if (botAI->GetAiObjectContext()->GetValue<bool>("random bot update")->Get())
-            ++update;
-
-        uint32 botId = bot->GetGUID().GetCounter();
-        if (!GetEventValue(botId, "randomize"))
-            ++randomize;
-
-        if (!GetEventValue(botId, "teleport"))
-            ++teleport;
-
-        if (!GetEventValue(botId, "change_strategy"))
-            ++changeStrategy;
 
         if (bot->isDead())
         {
