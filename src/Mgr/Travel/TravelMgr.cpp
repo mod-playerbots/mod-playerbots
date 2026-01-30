@@ -15,7 +15,6 @@
 #include "PathGenerator.h"
 #include "Playerbots.h"
 #include "TransportMgr.h"
-#include "VMapFactory.h"
 #include "VMapMgr2.h"
 #include "Map.h"
 #include "Corpse.h"
@@ -117,16 +116,18 @@ WorldPosition::WorldPosition(std::vector<WorldPosition> list, WorldPositionConst
     }
 }
 
+// We have to disable this Clang rule because the bug resides in AC which we cannot act on.
+
 WorldPosition::WorldPosition(uint32 mapid, GridCoord grid)
-    : WorldLocation(mapid, (int32(grid.x_coord) - CENTER_GRID_ID - 0.5) * SIZE_OF_GRIDS + CENTER_GRID_OFFSET,
-                    (int32(grid.y_coord) - CENTER_GRID_ID - 0.5) * SIZE_OF_GRIDS + CENTER_GRID_OFFSET, 0, 0)
+    : WorldLocation(mapid, (int32(grid.x_coord) - CENTER_GRID_ID - 0.5) * SIZE_OF_GRIDS + CENTER_GRID_OFFSET, // NOLINT(bugprone-integer-division)
+                    (int32(grid.y_coord) - CENTER_GRID_ID - 0.5) * SIZE_OF_GRIDS + CENTER_GRID_OFFSET, 0, 0) // NOLINT(bugprone-integer-division)
 {
 }
 
 WorldPosition::WorldPosition(uint32 mapid, CellCoord cell)
     : WorldLocation(
-          mapid, (int32(cell.x_coord) - CENTER_GRID_CELL_ID - 0.5) * SIZE_OF_GRID_CELL + CENTER_GRID_CELL_OFFSET,
-          (int32(cell.y_coord) - CENTER_GRID_CELL_ID - 0.5) * SIZE_OF_GRID_CELL + CENTER_GRID_CELL_OFFSET, 0, 0)
+          mapid, (int32(cell.x_coord) - CENTER_GRID_CELL_ID - 0.5) * SIZE_OF_GRID_CELL + CENTER_GRID_CELL_OFFSET, // NOLINT(bugprone-integer-division)
+          (int32(cell.y_coord) - CENTER_GRID_CELL_ID - 0.5) * SIZE_OF_GRID_CELL + CENTER_GRID_CELL_OFFSET, 0, 0) // NOLINT(bugprone-integer-division)
 {
 }
 
@@ -480,10 +481,10 @@ std::string const WorldPosition::getAreaName(bool fullName, bool zoneName)
         }
     }
 
-    return std::move(areaName);
+    return areaName;
 }
 
-std::set<Transport*> WorldPosition::getTransports(uint32 entry)
+std::set<Transport*> WorldPosition::getTransports(uint32)
 {
     /*
     if (!entry)
@@ -628,60 +629,60 @@ void WorldPosition::loadMapAndVMap(uint32 mapId, uint8 x, uint8 y)
 {
     std::string const fileName = "load_map_grid.csv";
 
-    if (isOverworld() && false || false)
-    {
-        if (!MMAP::MMapFactory::createOrGetMMapMgr()->loadMap(mapId, x, y))
-            if (sPlayerbotAIConfig.hasLog(fileName))
-            {
-                std::ostringstream out;
-                out << sPlayerbotAIConfig.GetTimestampStr();
-                out << "+00,\"mmap\", " << x << "," << y << "," << (TravelMgr::instance().isBadMmap(mapId, x, y) ? "0" : "1")
-                    << ",";
-                printWKT(fromGridCoord(GridCoord(x, y)), out, 1, true);
-                sPlayerbotAIConfig.log(fileName, out.str().c_str());
-            }
-    }
-    else
-    {
+    // if (isOverworld() && false || false)
+    // {
+    //     if (!MMAP::MMapFactory::createOrGetMMapMgr()->loadMap(mapId, x, y))
+    //         if (sPlayerbotAIConfig.hasLog(fileName))
+    //         {
+    //             std::ostringstream out;
+    //             out << sPlayerbotAIConfig.GetTimestampStr();
+    //             out << "+00,\"mmap\", " << x << "," << y << "," << (TravelMgr::instance().isBadMmap(mapId, x, y) ? "0" : "1")
+    //                 << ",";
+    //             printWKT(fromGridCoord(GridCoord(x, y)), out, 1, true);
+    //             sPlayerbotAIConfig.log(fileName, out.str().c_str());
+    //         }
+    // }
+    // else
+    // {
         // This needs to be disabled or maps will not load.
         // Needs more testing to check for impact on movement.
-        if (false)
-            if (!TravelMgr::instance().isBadVmap(mapId, x, y))
-            {
-                // load VMAPs for current map/grid...
-                const MapEntry* i_mapEntry = sMapStore.LookupEntry(mapId);
-                //const char* mapName = i_mapEntry ? i_mapEntry->name[sWorld->GetDefaultDbcLocale()] : "UNNAMEDMAP\x0"; //not used, (usage are commented out below), line marked for removal.
+        // if (false)
+        //     if (!TravelMgr::instance().isBadVmap(mapId, x, y))
+        //     {
+        //         // load VMAPs for current map/grid...
+        //         const MapEntry* i_mapEntry = sMapStore.LookupEntry(mapId);
+        //         //const char* mapName = i_mapEntry ? i_mapEntry->name[sWorld->GetDefaultDbcLocale()] : "UNNAMEDMAP\x0"; //not used, (usage are commented out below), line marked for removal.
 
-                int vmapLoadResult = VMAP::VMapFactory::createOrGetVMapMgr()->loadMap(
-                    (sWorld->GetDataPath() + "vmaps").c_str(), mapId, x, y);
-                switch (vmapLoadResult)
-                {
-                    case VMAP::VMAP_LOAD_RESULT_OK:
-                        // LOG_ERROR("playerbots", "VMAP loaded name:{}, id:{}, x:{}, y:{} (vmap rep.: x:{}, y:{})",
-                        // mapName, mapId, x, y, x, y);
-                        break;
-                    case VMAP::VMAP_LOAD_RESULT_ERROR:
-                        // LOG_ERROR("playerbots", "Could not load VMAP name:{}, id:{}, x:{}, y:{} (vmap rep.: x:{},
-                        // y:{})", mapName, mapId, x, y, x, y);
-                        TravelMgr::instance().addBadVmap(mapId, x, y);
-                        break;
-                    case VMAP::VMAP_LOAD_RESULT_IGNORED:
-                        TravelMgr::instance().addBadVmap(mapId, x, y);
-                        // LOG_INFO("playerbots", "Ignored VMAP name:{}, id:{}, x:{}, y:{} (vmap rep.: x:{}, y:{})",
-                        // mapName, mapId, x, y, x, y);
-                        break;
-                }
+        //         int vmapLoadResult = VMAP::VMapFactory::createOrGetVMapMgr()->loadMap(
+        //             (sWorld->GetDataPath() + "vmaps").c_str(), mapId, x, y);
+        //         switch (vmapLoadResult)
+        //         {
+        //             case VMAP::VMAP_LOAD_RESULT_OK:
+        //                 // LOG_ERROR("playerbots", "VMAP loaded name:{}, id:{}, x:{}, y:{} (vmap rep.: x:{}, y:{})",
+        //                 // mapName, mapId, x, y, x, y);
+        //                 break;
+        //             case VMAP::VMAP_LOAD_RESULT_ERROR:
+        //                 // LOG_ERROR("playerbots", "Could not load VMAP name:{}, id:{}, x:{}, y:{} (vmap rep.: x:{},
+        //                 // y:{})", mapName, mapId, x, y, x, y);
+        //                 TravelMgr::instance().addBadVmap(mapId, x, y);
+        //                 break;
+        //             case VMAP::VMAP_LOAD_RESULT_IGNORED:
+        //                 TravelMgr::instance().addBadVmap(mapId, x, y);
+        //                 // LOG_INFO("playerbots", "Ignored VMAP name:{}, id:{}, x:{}, y:{} (vmap rep.: x:{}, y:{})",
+        //                 // mapName, mapId, x, y, x, y);
+        //                 break;
+        //         }
 
-                if (sPlayerbotAIConfig.hasLog(fileName))
-                {
-                    std::ostringstream out;
-                    out << sPlayerbotAIConfig.GetTimestampStr();
-                    out << "+00,\"vmap\", " << x << "," << y << ", " << (TravelMgr::instance().isBadVmap(mapId, x, y) ? "0" : "1")
-                        << ",";
-                    printWKT(frommGridCoord(mGridCoord(x, y)), out, 1, true);
-                    sPlayerbotAIConfig.log(fileName, out.str().c_str());
-                }
-            }
+        //         if (sPlayerbotAIConfig.hasLog(fileName))
+        //         {
+        //             std::ostringstream out;
+        //             out << sPlayerbotAIConfig.GetTimestampStr();
+        //             out << "+00,\"vmap\", " << x << "," << y << ", " << (TravelMgr::instance().isBadVmap(mapId, x, y) ? "0" : "1")
+        //                 << ",";
+        //             printWKT(frommGridCoord(mGridCoord(x, y)), out, 1, true);
+        //             sPlayerbotAIConfig.log(fileName, out.str().c_str());
+        //         }
+        //     }
 
         if (!TravelMgr::instance().isBadMmap(mapId, x, y))
         {
@@ -699,7 +700,7 @@ void WorldPosition::loadMapAndVMap(uint32 mapId, uint8 x, uint8 y)
                 sPlayerbotAIConfig.log(fileName, out.str().c_str());
             }
         }
-    }
+    // }
 }
 
 void WorldPosition::loadMapAndVMaps(WorldPosition secondPos)
@@ -1208,9 +1209,13 @@ bool QuestObjectiveTravelDestination::isActive(Player* bot)
         GuidVector targets = AI_VALUE(GuidVector, "possible targets");
 
         for (auto& target : targets)
-            if (target.GetEntry() == getEntry() && target.IsCreature() && botAI->GetCreature(target) &&
+        {
+            const int64_t targetEntry = target.GetEntry();
+
+            if (targetEntry == getEntry() && target.IsCreature() && botAI->GetCreature(target) &&
                 botAI->GetCreature(target)->IsAlive())
                 return true;
+        }
 
         return false;
     }
@@ -1260,7 +1265,9 @@ bool RpgTravelDestination::isActive(Player* bot)
 
     for (ObjectGuid const guid : ignoreList)
     {
-        if (guid.GetEntry() == getEntry())
+        const int64_t guidGetEntry = guid.GetEntry();
+
+        if (guidGetEntry == getEntry())
         {
             return false;
         }
@@ -1406,9 +1413,13 @@ bool BossTravelDestination::isActive(Player* bot)
         GuidVector targets = AI_VALUE(GuidVector, "possible targets");
 
         for (auto& target : targets)
-            if (target.GetEntry() == getEntry() && target.IsCreature() && botAI->GetCreature(target) &&
+        {
+            const int64_t targetEntry = target.GetEntry();
+
+            if (targetEntry == getEntry() && target.IsCreature() && botAI->GetCreature(target) &&
                 botAI->GetCreature(target)->IsAlive())
                 return true;
+        }
 
         return false;
     }
@@ -3784,7 +3795,7 @@ uint32 TravelMgr::getDialogStatus(Player* pPlayer, int32 questgiver, Quest const
 
 // Selects a random WorldPosition from a list. Use a distance weighted distribution.
 std::vector<WorldPosition*> TravelMgr::getNextPoint(WorldPosition* center, std::vector<WorldPosition*> points,
-                                                    uint32 amount)
+                                                    uint32)
 {
     std::vector<WorldPosition*> retVec;
 
@@ -4038,7 +4049,7 @@ std::vector<TravelDestination*> TravelMgr::getRpgTravelDestinations(Player* bot,
         retTravelLocations.push_back(dest);
     }
 
-    return std::move(retTravelLocations);
+    return retTravelLocations;
 }
 
 std::vector<TravelDestination*> TravelMgr::getExploreTravelDestinations(Player* bot, bool ignoreFull,
