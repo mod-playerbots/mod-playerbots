@@ -5,9 +5,8 @@
 
 #include "Trigger.h"
 
+#include "AiObjectContext.h"
 #include "Event.h"
-#include "Playerbots.h"
-#include "Timer.h"
 
 Trigger::Trigger(PlayerbotAI* botAI, std::string const name, int32 checkInterval)
     : AiNamedObject(botAI, name),
@@ -28,18 +27,20 @@ Event Trigger::Check()
     return event;
 }
 
-Value<Unit*>* Trigger::GetTargetValue() { return context->GetValue<Unit*>(GetTargetName()); }
+Value<Unit*>* Trigger::GetTargetValue() { return this->context->GetValue<Unit*>(GetTargetName()); }
 
 Unit* Trigger::GetTarget() { return GetTargetValue()->Get(); }
 
 bool Trigger::needCheck(uint32 now)
 {
-    if (checkInterval < 2)
+    if (this->checkInterval < 2)
         return true;
 
-    if (!lastCheckTime || now - lastCheckTime >= checkInterval)
+    const int64_t signedLastCheckTime = this->lastCheckTime;
+
+    if (!this->lastCheckTime || now - signedLastCheckTime >= this->checkInterval)
     {
-        lastCheckTime = now;
+        this->lastCheckTime = now;
         return true;
     }
 
