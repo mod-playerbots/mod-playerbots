@@ -500,7 +500,7 @@ void StatsWeightCalculator::CalculateItemSetMod(Player* player, ItemTemplate con
     weight_ *= multiplier;
 }
 
-void StatsWeightCalculator::CalculateSocketBonus(Player* player, ItemTemplate const* proto)
+void StatsWeightCalculator::CalculateSocketBonus(Player*, ItemTemplate const* proto)
 {
     uint32 socketNum = 0;
     for (uint32 enchant_slot = SOCK_ENCHANTMENT_SLOT; enchant_slot < SOCK_ENCHANTMENT_SLOT + MAX_GEM_SOCKETS;
