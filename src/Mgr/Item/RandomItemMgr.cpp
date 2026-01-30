@@ -7,7 +7,9 @@
 
 #include "ItemTemplate.h"
 #include "LootValues.h"
-#include "Playerbots.h"
+#include "Player.h"
+#include "PlayerbotAIConfig.h"
+#include "SpellMgr.h"
 
 char* strstri(char const* str1, char const* str2);
 std::set<uint32> RandomItemMgr::itemCache;
@@ -176,7 +178,7 @@ RandomItemMgr::~RandomItemMgr()
     predicates.clear();
 }
 
-bool RandomItemMgr::HandleConsoleCommand(ChatHandler* handler, char const* args)
+bool RandomItemMgr::HandleConsoleCommand(ChatHandler*, char const* args)
 {
     if (!args || !*args)
     {
@@ -1269,7 +1271,7 @@ void RandomItemMgr::BuildItemInfoCache()
 
 uint32 RandomItemMgr::CalculateStatWeight(uint8 playerclass, uint8 spec, ItemTemplate const* proto)
 {
-    uint32 statWeight = 0;
+    int64_t statWeight = 0;
     bool isCasterItem = false;
     bool isAttackItem = false;
     bool noCaster = (Classes)playerclass == CLASS_WARRIOR || (Classes)playerclass == CLASS_ROGUE ||
@@ -1700,7 +1702,7 @@ std::vector<uint32> RandomItemMgr::GetQuestIdsForItem(uint32 itemId)
         }
     }
 
-    return std::move(questIds);
+    return questIds;
 }
 
 uint32 RandomItemMgr::GetUpgrade(Player* player, std::string spec, uint8 slot, uint32 quality, uint32 itemId)
@@ -1782,10 +1784,19 @@ uint32 RandomItemMgr::GetUpgrade(Player* player, std::string spec, uint8 slot, u
         }
 
         // skip no stats trinkets
-        if (info.weights[specId] == 1 && info.slot == EQUIPMENT_SLOT_NECK || info.slot == EQUIPMENT_SLOT_TRINKET1 ||
-            info.slot == EQUIPMENT_SLOT_TRINKET2 || info.slot == EQUIPMENT_SLOT_FINGER1 ||
-            info.slot == EQUIPMENT_SLOT_FINGER2)
+        if (
+            info.weights[specId] == 1
+            && (
+                info.slot == EQUIPMENT_SLOT_NECK
+                || info.slot == EQUIPMENT_SLOT_TRINKET1
+                || info.slot == EQUIPMENT_SLOT_TRINKET2
+                || info.slot == EQUIPMENT_SLOT_FINGER1
+                || info.slot == EQUIPMENT_SLOT_FINGER2
+            )
+        )
+        {
             continue;
+        }
 
         // check if item stat score is the best among class specs
         uint32 bestSpecId = 0;
@@ -1823,16 +1834,15 @@ uint32 RandomItemMgr::GetUpgrade(Player* player, std::string spec, uint8 slot, u
 }
 
 std::vector<uint32> RandomItemMgr::GetUpgradeList(Player* player, std::string spec, uint8 slot, uint32 quality,
-                                                  uint32 itemId, uint32 amount)
+                                                  uint32 itemId, uint32)
 {
     std::vector<uint32> listItems;
     if (!player)
-        return std::move(listItems);
+        return listItems;
 
     // get old item statWeight
     uint32 oldStatWeight = 0;
     uint32 specId = 0;
-    uint32 closestUpgrade = 0;
     uint32 closestUpgradeWeight = 0;
     std::vector<uint32> classspecs;
 
@@ -1848,7 +1858,7 @@ std::vector<uint32> RandomItemMgr::GetUpgradeList(Player* player, std::string sp
     }
 
     if (!specId)
-        return std::move(listItems);
+        return listItems;
 
     if (itemId && itemInfoCache.find(itemId) != itemInfoCache.end())
     {
@@ -1933,7 +1943,6 @@ std::vector<uint32> RandomItemMgr::GetUpgradeList(Player* player, std::string sp
         // pick closest upgrade
         if (info.weights[specId] > closestUpgradeWeight)
         {
-            closestUpgrade = info.itemId;
             closestUpgradeWeight = info.weights[specId];
         }
     }
@@ -1942,7 +1951,7 @@ std::vector<uint32> RandomItemMgr::GetUpgradeList(Player* player, std::string sp
         LOG_INFO("playerbots", "New Items: {}, Old item:%d, New items max: {}", listItems.size(), oldStatWeight,
                  closestUpgradeWeight);
 
-    return std::move(listItems);
+    return listItems;
 }
 
 bool RandomItemMgr::HasStatWeight(uint32 itemId)
@@ -2218,7 +2227,7 @@ void RandomItemMgr::BuildEquipCacheNew()
         if (quest->GetRequiredClasses())
             continue;
 
-        for (int j = 0; j < quest->GetRewChoiceItemsCount(); j++)
+        for (uint32_t j = 0; j < quest->GetRewChoiceItemsCount(); j++)
             if (uint32 itemId = quest->RewardChoiceItemId[j])
             {
                 ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
@@ -2229,7 +2238,7 @@ void RandomItemMgr::BuildEquipCacheNew()
                 questItemIds.insert(itemId);
             }
 
-        for (int j = 0; j < quest->GetRewItemsCount(); j++)
+        for (uint32_t j = 0; j < quest->GetRewItemsCount(); j++)
             if (uint32 itemId = quest->RewardItemId[j])
             {
                 ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
@@ -2372,9 +2381,6 @@ void RandomItemMgr::BuildPotionCache()
                     continue;
 
                 if (proto->Duration & 0x80000000)
-                    continue;
-
-                if (proto->AllowableClass != -1)
                     continue;
 
                 bool hybrid = false;
@@ -2767,7 +2773,9 @@ inline bool IsCraftedBySpellInfo(ItemTemplate const* proto, SpellInfo const* spe
             continue;
         }
 
-        if (proto->ItemId == spellInfo->Reagent[x])
+        const int64_t itemTemplateId = proto->ItemId;
+
+        if (itemTemplateId == spellInfo->Reagent[x])
         {
             return true;
         }
