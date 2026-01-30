@@ -2227,8 +2227,8 @@ bool BGTactics::selectObjective(bool reset)
             }
             // Graveyard Camping if in lead
             else if (!hasFlag && role < 8 &&
-                (team == TEAM_ALLIANCE && allianceScore == 2 && hordeScore == 0) ||
-                (team == TEAM_HORDE && hordeScore == 2 && allianceScore == 0))
+                ((team == TEAM_ALLIANCE && allianceScore == 2 && hordeScore == 0) ||
+                (team == TEAM_HORDE && hordeScore == 2 && allianceScore == 0)))
             {
                 if (team == TEAM_ALLIANCE)
                     SetSafePos(WS_GY_CAMPING_HORDE, 10.0f);
