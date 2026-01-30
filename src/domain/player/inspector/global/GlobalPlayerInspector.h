@@ -98,7 +98,7 @@ public:
 
 		std::list<Unit*> targets;
 
-		Acore::AnyUnfriendlyAttackableVisibleUnitInObjectRangeCheck u_check(player, 15.0f);
+		Acore::AnyUnfriendlyAttackableVisibleUnitInObjectRangeCheck u_check(player, range);
 		Acore::UnitListSearcher<Acore::AnyUnfriendlyAttackableVisibleUnitInObjectRangeCheck> searcher(player, targets, u_check);
 		Cell::VisitObjects(player, searcher, PlayerbotAIConfig::instance().sightDistance);
 
