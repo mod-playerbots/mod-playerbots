@@ -243,6 +243,9 @@ float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
 
     if (bot->HasAura(SPELL_ENFEEBLE))
     {
+        if (dynamic_cast<CastReachTargetSpellAction*>(action))
+            return 0.0f;
+
         if (dynamic_cast<MovementAction*>(action) &&
             !dynamic_cast<PrinceMalchezaarEnfeebledAvoidHazardAction*>(action))
             return 0.0f;
