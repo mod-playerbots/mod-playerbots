@@ -1,3 +1,4 @@
+#include "OculusTriggers.h"
 #include "Playerbots.h"
 #include "OculusActions.h"
 #include "LastSpellCastValue.h"
