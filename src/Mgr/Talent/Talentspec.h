@@ -6,7 +6,9 @@
 #ifndef _PLAYERBOT_TALENTSPEC_H
 #define _PLAYERBOT_TALENTSPEC_H
 
-#include "Action.h"
+#include <cstdint>
+#include <string>
+#include "Player.h"
 
 struct TalentEntry;
 struct TalentTabEntry;
@@ -25,17 +27,17 @@ class TalentSpec
 public:
     struct TalentListEntry
     {
-        uint32 entry;
-        uint32 rank;
-        uint32 maxRank;
+        uint32_t entry;
+        uint32_t rank;
+        uint32_t maxRank;
         TalentEntry const* talentInfo;
         TalentTabEntry const* talentTabInfo;
-        uint32 tabPage() const;
+        uint32_t tabPage() const;
     };
 
     TalentSpec(){};
     virtual ~TalentSpec() {}
-    TalentSpec(uint32 classMask);
+    TalentSpec(uint32_t classMask);
     TalentSpec(TalentSpec* base, std::string const link);
     TalentSpec(Player* bot);
     TalentSpec(Player* bot, std::string const link);
