@@ -19,7 +19,17 @@ Player* FlagCarrierValue::GetBattlegroundFlagCarrier(Battleground& battleground)
         return nullptr;
     }
 
-    const ObjectGuid& flagCarrierGUID = battleground.GetFlagPickerGUID();
+    const TeamId botTeamId = this->bot->GetTeamId();
+    const TeamId opposedTeamId = botTeamId == TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE;
+
+    TeamId flagCarrierTeamIdLookup = TEAM_NEUTRAL;
+
+    if (mapId == MAP_EYE_OF_THE_STORM)
+    {
+        flagCarrierTeamIdLookup = this->sameTeam ? botTeamId : opposedTeamId;
+    }
+
+    const ObjectGuid& flagCarrierGUID = battleground.GetFlagPickerGUID(flagCarrierTeamIdLookup);
 
     if (flagCarrierGUID.IsEmpty())
     {
@@ -33,20 +43,7 @@ Player* FlagCarrierValue::GetBattlegroundFlagCarrier(Battleground& battleground)
         return nullptr;
     }
 
-    const TeamId& flagCarrierTeamId = flagCarrier->GetTeamId();
-    const TeamId& botTeamId = this->bot->GetTeamId();
-
-    if (!this->sameTeam && flagCarrierTeamId != botTeamId)
-    {
-        return flagCarrier;
-    }
-
-    if (this->sameTeam && flagCarrierTeamId == botTeamId)
-    {
-        return flagCarrier;
-    }
-
-    return nullptr;
+    return flagCarrier;
 }
 
 Unit* FlagCarrierValue::Calculate()
