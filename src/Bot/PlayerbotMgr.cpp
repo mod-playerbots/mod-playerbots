@@ -7,7 +7,6 @@
 
 #include <cstdio>
 #include <cstring>
-#include <istream>
 #include <string>
 #include <unordered_set>
 #include <openssl/sha.h>
@@ -20,11 +19,9 @@
 #include "Common.h"
 #include "Define.h"
 #include "Group.h"
-#include "GroupMgr.h"
 #include "GuildMgr.h"
 #include "ObjectAccessor.h"
 #include "ObjectGuid.h"
-#include "ObjectMgr.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotRepository.h"
 #include "PlayerbotFactory.h"
@@ -74,7 +71,6 @@ class PlayerbotLoginQueryHolder : public LoginQueryHolder
 {
 private:
     uint32 masterAccountId;
-    PlayerbotHolder* playerbotHolder;
 public:
     PlayerbotLoginQueryHolder(uint32 masterAccount, uint32 accountId, ObjectGuid guid)
         : LoginQueryHolder(accountId, guid), masterAccountId(masterAccount)
@@ -125,8 +121,8 @@ void PlayerbotHolder::AddPlayerBot(ObjectGuid playerGuid, uint32 masterAccountId
             LOG_DEBUG("playerbots", "PlayerbotMgr not found for master player with GUID: {}", masterPlayer->GetGUID().GetRawValue());
             return;
         }
-        uint32 count = mgr->GetPlayerbotsCount() + botLoading.size();
-        if (count >= sPlayerbotAIConfig.maxAddedBots)
+        int64_t count = mgr->GetPlayerbotsCount() + botLoading.size();
+        if (count >= PlayerbotAIConfig::instance().maxAddedBots)
         {
             allowed = false;
             out << "Failure: You have added too many bots (more than " << sPlayerbotAIConfig.maxAddedBots << ")";
@@ -710,12 +706,11 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
 }
 
 std::string const PlayerbotHolder::ProcessBotCommand(std::string const cmd, ObjectGuid guid, ObjectGuid masterguid,
-                                                     bool admin, uint32 masterAccountId, uint32 masterGuildId)
+                                                     bool admin, uint32 masterAccountId, uint32)
 {
     if (!sPlayerbotAIConfig.enabled || guid.IsEmpty())
         return "bot system is disabled";
 
-    uint32 botAccount = sCharacterCache->GetCharacterAccountIdByGuid(guid);
     //bool isRandomBot = sRandomPlayerbotMgr.IsRandomBot(guid.GetCounter()); //not used, line marked for removal.
     //bool isRandomAccount = sPlayerbotAIConfig.IsInRandomAccountList(botAccount); //not used, shadowed, line marked for removal.
     //bool isMasterAccount = (masterAccountId == botAccount); //not used, line marked for removal.
@@ -730,13 +725,15 @@ std::string const PlayerbotHolder::ProcessBotCommand(std::string const cmd, Obje
         {
             uint32 accountId = sCharacterCache->GetCharacterAccountIdByGuid(guid);
             if (!accountId)
+            {
                 return "character not found";
+            }
 
-                if (!sPlayerbotAIConfig.allowAccountBots && accountId != masterAccountId &&
-                    !(sPlayerbotAIConfig.allowTrustedAccountBots && IsAccountLinked(accountId, masterAccountId)))
-                {
-                    return "you can only add bots from your own account or linked accounts";
-                }
+            if (!sPlayerbotAIConfig.allowAccountBots && accountId != masterAccountId &&
+                !(sPlayerbotAIConfig.allowTrustedAccountBots && IsAccountLinked(accountId, masterAccountId)))
+            {
+                return "you can only add bots from your own account or linked accounts";
+            }
         }
 
         AddPlayerBot(guid, masterAccountId);
@@ -1462,7 +1459,7 @@ std::string const PlayerbotHolder::ListBots(Player* master)
     return out.str();
 }
 
-std::string const PlayerbotHolder::LookupBots(Player* master)
+std::string const PlayerbotHolder::LookupBots(Player*)
 {
     std::list<std::string> messages;
     messages.push_back("Classes Available:");
@@ -1700,7 +1697,7 @@ void PlayerbotMgr::TellError(std::string const botName, std::string const text)
     errors[text] = names;
 }
 
-void PlayerbotMgr::CheckTellErrors(uint32 elapsed)
+void PlayerbotMgr::CheckTellErrors(uint32)
 {
     time_t now = time(nullptr);
     if ((now - lastErrorTell) < sPlayerbotAIConfig.errorDelay / 1000)
