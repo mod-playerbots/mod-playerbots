@@ -10,7 +10,6 @@
 #include "Timer.h"
 #include "Log.h"
 
-
 void PlayerbotWorldThreadProcessor::Update(uint32 diff)
 {
     if (!m_enabled)

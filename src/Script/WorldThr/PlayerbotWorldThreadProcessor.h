@@ -14,7 +14,6 @@
 
 #include "PlayerbotOperation.h"
 
-
 /**
  * @brief Processes thread-unsafe bot operations in the world thread
  *
