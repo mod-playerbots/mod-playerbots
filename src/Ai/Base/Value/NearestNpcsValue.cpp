@@ -27,7 +27,16 @@ void NearestHostileNpcsValue::FindUnits(std::list<Unit*>& targets)
     Cell::VisitObjects(bot, searcher, range);
 }
 
-bool NearestHostileNpcsValue::AcceptUnit(Unit* unit) { return unit->IsHostileTo(bot) && !unit->IsPlayer(); }
+bool NearestHostileNpcsValue::AcceptUnit(Unit* unit)
+{
+    if (!unit || !unit->IsInWorld() || unit->IsDuringRemoveFromWorld())
+        return false;
+
+    if (unit->IsPlayer())
+        return false;
+
+    return unit->IsHostileTo(bot);
+}
 
 void NearestVehiclesValue::FindUnits(std::list<Unit*>& targets)
 {

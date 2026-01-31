@@ -67,7 +67,7 @@ bool CleanQuestLogAction::Execute(Event event)
         return false;
     }
 
-    if (!sPlayerbotAIConfig->dropObsoleteQuests)
+    if (!sPlayerbotAIConfig.dropObsoleteQuests)
     {
         return false;
     }

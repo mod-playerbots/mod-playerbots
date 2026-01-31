@@ -12,39 +12,14 @@
 #include "PvpValues.h"
 #include "QuestValues.h"
 
-class PlayerbotAI;
-
 class SharedValueContext : public NamedObjectContext<UntypedValue>
 {
 public:
-    SharedValueContext() : NamedObjectContext(true)
-    {
-        creators["bg masters"] = &SharedValueContext::bg_masters;
-        creators["drop map"] = &SharedValueContext::drop_map;
-        creators["item drop list"] = &SharedValueContext::item_drop_list;
-        creators["entry loot list"] = &SharedValueContext::entry_loot_list;
-
-        creators["entry quest relation"] = &SharedValueContext::entry_quest_relation;
-        creators["quest guidp map"] = &SharedValueContext::quest_guidp_map;
-        creators["quest givers"] = &SharedValueContext::quest_givers;
-    }
-
-private:
-    static UntypedValue* bg_masters(PlayerbotAI* botAI) { return new BgMastersValue(botAI); }
-    static UntypedValue* drop_map(PlayerbotAI* botAI) { return new DropMapValue(botAI); }
-    static UntypedValue* item_drop_list(PlayerbotAI* botAI) { return new ItemDropListValue(botAI); }
-    static UntypedValue* entry_loot_list(PlayerbotAI* botAI) { return new EntryLootListValue(botAI); }
-
-    static UntypedValue* entry_quest_relation(PlayerbotAI* botAI) { return new EntryQuestRelationMapValue(botAI); }
-    static UntypedValue* quest_guidp_map(PlayerbotAI* botAI) { return new QuestGuidpMapValue(botAI); }
-    static UntypedValue* quest_givers(PlayerbotAI* botAI) { return new QuestGiversValue(botAI); }
-
-    // Global acess functions
-public:
-    static SharedValueContext* instance()
+    static SharedValueContext& instance()
     {
         static SharedValueContext instance;
-        return &instance;
+
+        return instance;
     }
 
     template <class T>
@@ -74,6 +49,36 @@ public:
         out << param;
         return getGlobalValue<T>(name, out.str());
     }
+
+private:
+    SharedValueContext() : NamedObjectContext(true)
+    {
+        creators["bg masters"] = &SharedValueContext::bg_masters;
+        creators["drop map"] = &SharedValueContext::drop_map;
+        creators["item drop list"] = &SharedValueContext::item_drop_list;
+        creators["entry loot list"] = &SharedValueContext::entry_loot_list;
+
+        creators["entry quest relation"] = &SharedValueContext::entry_quest_relation;
+        creators["quest guidp map"] = &SharedValueContext::quest_guidp_map;
+        creators["quest givers"] = &SharedValueContext::quest_givers;
+    }
+    ~SharedValueContext() = default;
+
+    SharedValueContext(const SharedValueContext&) = delete;
+    SharedValueContext& operator=(const SharedValueContext&) = delete;
+
+    SharedValueContext(SharedValueContext&&) = delete;
+    SharedValueContext& operator=(SharedValueContext&&) = delete;
+
+    static UntypedValue* bg_masters(PlayerbotAI* botAI) { return new BgMastersValue(botAI); }
+    static UntypedValue* drop_map(PlayerbotAI* botAI) { return new DropMapValue(botAI); }
+    static UntypedValue* item_drop_list(PlayerbotAI* botAI) { return new ItemDropListValue(botAI); }
+    static UntypedValue* entry_loot_list(PlayerbotAI* botAI) { return new EntryLootListValue(botAI); }
+
+    static UntypedValue* entry_quest_relation(PlayerbotAI* botAI) { return new EntryQuestRelationMapValue(botAI); }
+    static UntypedValue* quest_guidp_map(PlayerbotAI* botAI) { return new QuestGuidpMapValue(botAI); }
+    static UntypedValue* quest_givers(PlayerbotAI* botAI) { return new QuestGiversValue(botAI); }
+
 };
 
 #define sSharedValueContext SharedValueContext::instance()
