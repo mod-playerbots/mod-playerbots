@@ -355,7 +355,7 @@ public:
             if (!member || !newGroup->IsMember(memberGuid))
                 continue;
 
-            PlayerbotAI* memberBotAI = sPlayerbotsMgr->GetPlayerbotAI(member);
+            PlayerbotAI* memberBotAI = PlayerbotsMgr::instance().GetPlayerbotAI(member);
             if (memberBotAI)
                 memberBotAI->Reset();
 
@@ -412,13 +412,13 @@ public:
         if (!bot)
             return false;
 
-        PlayerbotAI* botAI = sPlayerbotsMgr->GetPlayerbotAI(bot);
+        PlayerbotAI* botAI = PlayerbotsMgr::instance().GetPlayerbotAI(bot);
         if (!botAI)
             return false;
 
         Group* group = bot->GetGroup();
         if (group && !bot->InBattleground() && !bot->InBattlegroundQueue() && botAI->HasActivePlayerMaster())
-            sPlayerbotRepository->Save(botAI);
+            PlayerbotRepository::instance().Save(botAI);
 
         return true;
     }
@@ -448,7 +448,7 @@ public:
 
     bool Execute() override
     {
-        sRandomPlayerbotMgr->AddPlayerBot(m_botGuid, m_masterAccountId);
+        sRandomPlayerbotMgr.AddPlayerBot(m_botGuid, m_masterAccountId);
         return true;
     }
 
@@ -479,23 +479,33 @@ public:
     bool Execute() override
     {
         // find and verify bot still exists
-        Player* bot = ObjectAccessor::FindConnectedPlayer(m_botGuid);
-        if (!bot)
-            return false;
+        Player* bot = ObjectAccessor::FindConnectedPlayer(this->m_botGuid);
 
-        PlayerbotHolder* holder = sRandomPlayerbotMgr;
-        if (m_masterAccountId)
+        if (!bot)
         {
-            WorldSession* masterSession = sWorldSessionMgr->FindSession(m_masterAccountId);
-            Player* masterPlayer = masterSession ? masterSession->GetPlayer() : nullptr;
-            if (masterPlayer)
-                holder = GET_PLAYERBOT_MGR(masterPlayer);
+            return false;
         }
 
-        if (!holder)
-            return false;
+        if (this->m_masterAccountId)
+        {
+            WorldSession* masterSession = sWorldSessionMgr->FindSession(this->m_masterAccountId);
+            Player* masterPlayer = masterSession ? masterSession->GetPlayer() : nullptr;
 
-        holder->OnBotLogin(bot);
+            if (masterPlayer != nullptr)
+            {
+                PlayerbotMgr* manager = PlayerbotsMgr::instance().GetPlayerbotMgr(masterPlayer);
+
+                if (manager == nullptr)
+                {
+                    return false;
+                }
+
+                manager->OnBotLogin(bot);
+            }
+        }
+
+        sRandomPlayerbotMgr.OnBotLogin(bot);
+
         return true;
     }
 

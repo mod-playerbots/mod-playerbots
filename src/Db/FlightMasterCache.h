@@ -8,10 +8,11 @@
 class FlightMasterCache
 {
 public:
-    static FlightMasterCache* Instance()
+    static FlightMasterCache& Instance()
     {
         static FlightMasterCache instance;
-        return &instance;
+
+        return instance;
     }
 
     Creature* GetNearestFlightMaster(Player* bot);
@@ -19,9 +20,17 @@ public:
     void AddAllianceFlightMaster(uint32 entry, WorldPosition pos);
 
 private:
+    FlightMasterCache() = default;
+    ~FlightMasterCache() = default;
+
+    FlightMasterCache(const FlightMasterCache&) = delete;
+    FlightMasterCache& operator=(const FlightMasterCache&) = delete;
+
+    FlightMasterCache(FlightMasterCache&&) = delete;
+    FlightMasterCache& operator=(FlightMasterCache&&) = delete;
+
     std::map<uint32, WorldPosition> allianceFlightMasterCache;
     std::map<uint32, WorldPosition> hordeFlightMasterCache;
 };
 
-#define sFlightMasterCache FlightMasterCache::Instance()
 #endif

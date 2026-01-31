@@ -99,7 +99,10 @@ bool IccGunshipCannonNearTrigger::IsActive()
 bool IccGunshipTeleportAllyTrigger::IsActive()
 {
     Unit* boss = bot->FindNearestCreature(NPC_HIGH_OVERLORD_SAURFANG, 100.0f);
-    if (!boss)
+    if (!boss || !boss->IsInWorld() || boss->IsDuringRemoveFromWorld())
+        return false;
+
+    if (!boss->IsAlive())
         return false;
 
     if (!boss->IsHostileTo(bot))
@@ -111,7 +114,10 @@ bool IccGunshipTeleportAllyTrigger::IsActive()
 bool IccGunshipTeleportHordeTrigger::IsActive()
 {
     Unit* boss = bot->FindNearestCreature(NPC_MURADIN_BRONZEBEARD, 100.0f);
-    if (!boss)
+    if (!boss || !boss->IsInWorld() || boss->IsDuringRemoveFromWorld())
+        return false;
+
+    if (!boss->IsAlive())
         return false;
 
     if (!boss->IsHostileTo(bot))
@@ -281,7 +287,7 @@ bool IccPutricideGrowingOozePuddleTrigger::IsActive()
 
     Difficulty diff = bot->GetRaidDifficulty();
 
-    if (sPlayerbotAIConfig->EnableICCBuffs && diff && (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
+    if (sPlayerbotAIConfig.EnableICCBuffs && diff && (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
     {
         //-------CHEAT-------
         if (!bot->HasAura(SPELL_EXPERIENCED))
@@ -828,7 +834,7 @@ bool IccSindragosaGroupPositionTrigger::IsActive()
 
     Difficulty diff = bot->GetRaidDifficulty();
 
-    if (sPlayerbotAIConfig->EnableICCBuffs && diff && (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
+    if (sPlayerbotAIConfig.EnableICCBuffs && diff && (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
     {
         //-------CHEAT-------
         if (!bot->HasAura(SPELL_EXPERIENCED))

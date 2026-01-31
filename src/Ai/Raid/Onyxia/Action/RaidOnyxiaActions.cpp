@@ -45,8 +45,19 @@ bool RaidOnyxiaSpreadOutAction::Execute(Event event)
     if (!boss)
         return false;
 
-    Player* target = boss->GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_targets.GetUnitTarget()->ToPlayer();
-    if (target != bot)
+    // Trigger may fire on one tick, but the action can execute on a later tick.
+    // By that time the cast may have finished, so current spell can be null.
+    Spell* currentSpell = boss->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    if (!currentSpell || !currentSpell->m_spellInfo)
+        return false;
+
+    // Fireball
+    if (currentSpell->m_spellInfo->Id != 18392)
+        return false;
+
+    Unit* unitTarget = currentSpell->m_targets.GetUnitTarget();
+    Player* target = unitTarget ? unitTarget->ToPlayer() : nullptr;
+    if (!target || target != bot)
         return false;
 
     // bot->Yell("Spreading out — I'm the Fireball target!", LANG_UNIVERSAL);
@@ -60,7 +71,7 @@ bool RaidOnyxiaMoveToSafeZoneAction::Execute(Event event)
         return false;
 
     Spell* currentSpell = boss->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (!currentSpell)
+    if (!currentSpell || !currentSpell->m_spellInfo)
         return false;
 
     uint32 spellId = currentSpell->m_spellInfo->Id;

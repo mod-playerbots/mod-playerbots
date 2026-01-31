@@ -78,19 +78,19 @@ bool SartharionMeleePositioningTrigger::IsActive()
 
 bool TwilightPortalEnterTrigger::IsActive()
 {
-    if (botAI->IsMainTank(bot) || botAI->IsHealAssistantOfIndex(bot, 0)) { return false; }
+    if (botAI->IsMainTank(bot) || botAI->IsAssistHealOfIndex(bot, 0)) { return false; }
 
     // In 25-man, take two healers in. Otherwise just take one
     // if (bot->GetRaidDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
     // {
-    //     if (botAI->IsHealAssistantOfIndex(bot, 0) || botAI->IsHealAssistantOfIndex(bot, 1))
+    //     if (botAI->IsAssistHealOfIndex(bot, 0) || botAI->IsAssistHealOfIndex(bot, 1))
     //     {
     //         return false;
     //     }
     // }
     // else
     // {
-    //     if (botAI->IsHealAssistantOfIndex(bot, 0))
+    //     if (botAI->IsAssistHealOfIndex(bot, 0))
     //     {
     //         return false;
     //     }

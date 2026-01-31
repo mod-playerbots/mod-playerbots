@@ -24,8 +24,8 @@ bool ReviveFromCorpseAction::Execute(Event event)
     WorldPacket& p = event.getPacket();
     if (!p.empty() && p.GetOpcode() == CMSG_RECLAIM_CORPSE && groupLeader && !corpse && bot->IsAlive())
     {
-        if (sServerFacade->IsDistanceLessThan(AI_VALUE2(float, "distance", "group leader"),
-                                              sPlayerbotAIConfig->farDistance))
+        if (ServerFacade::instance().IsDistanceLessThan(AI_VALUE2(float, "distance", "group leader"),
+                                              sPlayerbotAIConfig.farDistance))
         {
             if (!botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT))
             {
@@ -46,8 +46,8 @@ bool ReviveFromCorpseAction::Execute(Event event)
     if (groupLeader)
     {
         if (!GET_PLAYERBOT_AI(groupLeader) && groupLeader->isDead() && groupLeader->GetCorpse() &&
-            sServerFacade->IsDistanceLessThan(AI_VALUE2(float, "distance", "group leader"),
-                                              sPlayerbotAIConfig->farDistance))
+            ServerFacade::instance().IsDistanceLessThan(AI_VALUE2(float, "distance", "group leader"),
+                                              sPlayerbotAIConfig.farDistance))
             return false;
     }
 
@@ -87,8 +87,8 @@ bool FindCorpseAction::Execute(Event event)
     // if (groupLeader)
     // {
     //     if (!GET_PLAYERBOT_AI(groupLeader) &&
-    //         sServerFacade->IsDistanceLessThan(AI_VALUE2(float, "distance", "group leader"),
-    //         sPlayerbotAIConfig->farDistance)) return false;
+    //         ServerFacade::instance().IsDistanceLessThan(AI_VALUE2(float, "distance", "group leader"),
+    //         sPlayerbotAIConfig.farDistance)) return false;
     // }
 
     uint32 dCount = AI_VALUE(uint32, "death count");
@@ -101,8 +101,8 @@ bool FindCorpseAction::Execute(Event event)
             //     bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->GetLevel(),
             //     bot->GetName().c_str());
             context->GetValue<uint32>("death count")->Set(0);
-            // sRandomPlayerbotMgr->RandomTeleportForLevel(bot);
-            sRandomPlayerbotMgr->Revive(bot);
+            // sRandomPlayerbotMgr.RandomTeleportForLevel(bot);
+            sRandomPlayerbotMgr.Revive(bot);
             return true;
         }
     }
@@ -123,7 +123,7 @@ bool FindCorpseAction::Execute(Event event)
     {
         if (moveToLeader)  // We are near group leader.
         {
-            if (botPos.fDist(leaderPos) < sPlayerbotAIConfig->spellDistance)
+            if (botPos.fDist(leaderPos) < sPlayerbotAIConfig.spellDistance)
                 return false;
         }
         else if (deadTime > 8 * MINUTE)  // We have walked too long already.
@@ -138,7 +138,7 @@ bool FindCorpseAction::Execute(Event event)
     }
 
     // If we are getting close move to a save ressurrection spot instead of just the corpse.
-    if (corpseDist < sPlayerbotAIConfig->reactDistance)
+    if (corpseDist < sPlayerbotAIConfig.reactDistance)
     {
         if (moveToLeader)
             moveToPos = leaderPos;
@@ -162,7 +162,7 @@ bool FindCorpseAction::Execute(Event event)
 
     if (!botAI->AllowActivity(ALL_ACTIVITY))
     {
-        uint32 delay = sServerFacade->GetDistance2d(bot, corpse) /
+        uint32 delay = ServerFacade::instance().GetDistance2d(bot, corpse) /
                        bot->GetSpeed(MOVE_RUN);        // Time a bot would take to travel to it's corpse.
         delay = std::min(delay, uint32(10 * MINUTE));  // Cap time to get to corpse at 10 minutes.
 
@@ -308,7 +308,7 @@ bool SpiritHealerAction::Execute(Event event)
     GraveyardStruct const* ClosestGrave =
         GetGrave(dCount > 10 || deadTime > 15 * MINUTE || AI_VALUE(uint8, "durability") < 10);
 
-    if (bot->GetDistance2d(ClosestGrave->x, ClosestGrave->y) < sPlayerbotAIConfig->sightDistance)
+    if (bot->GetDistance2d(ClosestGrave->x, ClosestGrave->y) < sPlayerbotAIConfig.sightDistance)
     {
         GuidVector npcs = AI_VALUE(GuidVector, "nearest npcs");
         for (GuidVector::iterator i = npcs.begin(); i != npcs.end(); i++)

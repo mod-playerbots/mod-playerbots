@@ -34,7 +34,7 @@ Unit* FlagCarrierValue::Calculate()
 
             if (carrier)
             {
-                if (ignoreRange || bot->IsWithinDistInMap(carrier, sPlayerbotAIConfig->sightDistance))
+                if (ignoreRange || bot->IsWithinDistInMap(carrier, sPlayerbotAIConfig.sightDistance))
                 {
                     return carrier;
                 }
@@ -65,7 +65,7 @@ Unit* FlagCarrierValue::Calculate()
 
             if (carrier)
             {
-                if (ignoreRange || bot->IsWithinDistInMap(carrier, sPlayerbotAIConfig->sightDistance))
+                if (ignoreRange || bot->IsWithinDistInMap(carrier, sPlayerbotAIConfig.sightDistance))
                 {
                     return carrier;
                 }
@@ -84,7 +84,7 @@ std::vector<CreatureData const*> BgMastersValue::Calculate()
 
     std::vector<uint32> entries;
     std::map<TeamId, std::map<BattlegroundTypeId, std::vector<uint32>>> battleMastersCache =
-        sRandomPlayerbotMgr->getBattleMastersCache();
+        sRandomPlayerbotMgr.getBattleMastersCache();
     entries.insert(entries.end(), battleMastersCache[TEAM_NEUTRAL][bgTypeId].begin(),
                    battleMastersCache[TEAM_NEUTRAL][bgTypeId].end());
     entries.insert(entries.end(), battleMastersCache[TEAM_ALLIANCE][bgTypeId].begin(),
@@ -199,7 +199,7 @@ BattlegroundTypeId RpgBgTypeValue::Calculate()
                 continue;
 
             std::map<TeamId, std::map<BattlegroundTypeId, std::vector<uint32>>> battleMastersCache =
-                sRandomPlayerbotMgr->getBattleMastersCache();
+                sRandomPlayerbotMgr.getBattleMastersCache();
 
             for (auto& entry : battleMastersCache[TEAM_NEUTRAL][bgTypeId])
                 if (entry == guidPosition.GetEntry())
