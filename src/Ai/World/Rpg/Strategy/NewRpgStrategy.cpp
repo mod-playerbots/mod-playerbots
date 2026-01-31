@@ -5,13 +5,16 @@
 
 #include "NewRpgStrategy.h"
 
+#include "NewRpgAction.h"
+#include "CreateNextAction.h"
+
 NewRpgStrategy::NewRpgStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 
 std::vector<NextAction> NewRpgStrategy::getDefaultActions()
 {
     // the releavance should be greater than grind
     return {
-        NextAction("new rpg status update", 11.0f)
+        CreateNextAction<NewRpgStatusUpdateAction>(11.0f)
     };
 }
 
@@ -21,7 +24,7 @@ void NewRpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "go grind status",
             {
-                NextAction("new rpg go grind", 3.0f)
+                CreateNextAction<NewRpgGoGrindAction>(3.0f)
             }
         )
     );
@@ -29,7 +32,7 @@ void NewRpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "go camp status",
             {
-                NextAction("new rpg go camp", 3.0f)
+                CreateNextAction<NewRpgGoCampAction>(3.0f)
             }
         )
     );
@@ -37,7 +40,7 @@ void NewRpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "wander random status",
             {
-                NextAction("new rpg wander random", 3.0f)
+                CreateNextAction<NewRpgWanderRandomAction>(3.0f)
             }
         )
     );
@@ -45,7 +48,7 @@ void NewRpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "wander npc status",
             {
-                NextAction("new rpg wander npc", 3.0f)
+                CreateNextAction<NewRpgWanderNpcAction>(3.0f)
             }
         )
     );
@@ -53,7 +56,7 @@ void NewRpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "do quest status",
             {
-                NextAction("new rpg do quest", 3.0f)
+                CreateNextAction<NewRpgDoQuestAction>(3.0f)
             }
         )
     );
@@ -61,7 +64,7 @@ void NewRpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "travel flight status",
             {
-                NextAction("new rpg travel flight", 3.0f)
+                CreateNextAction<NewRpgTravelFlightAction>(3.0f)
             }
         )
     );

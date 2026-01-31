@@ -1,37 +1,100 @@
 #include "RaidMagtheridonStrategy.h"
+#include "CreateNextAction.h"
 #include "RaidMagtheridonMultipliers.h"
+
+#include "RaidMagtheridonActions.h"
 
 void RaidMagtheridonStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("magtheridon incoming blast nova", {
-        NextAction("magtheridon use manticron cube", ACTION_EMERGENCY + 10) }));
+    triggers.push_back(
+        new TriggerNode(
+            "magtheridon incoming blast nova",
+            {
+                CreateNextAction<MagtheridonUseManticronCubeAction>(ACTION_EMERGENCY + 10.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode("magtheridon need to manage timers and assignments", {
-        NextAction("magtheridon manage timers and assignments", ACTION_EMERGENCY + 1) }));
+    triggers.push_back(
+        new TriggerNode(
+            "magtheridon need to manage timers and assignments",
+            {
+                CreateNextAction<MagtheridonManageTimersAndAssignmentsAction>(ACTION_EMERGENCY + 1.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode("magtheridon burning abyssal spawned", {
-        NextAction("magtheridon warlock cc burning abyssal", ACTION_RAID + 3) }));
+    triggers.push_back(
+        new TriggerNode(
+            "magtheridon burning abyssal spawned",
+            {
+                CreateNextAction<MagtheridonWarlockCCBurningAbyssalAction>(ACTION_RAID + 3.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode("magtheridon boss engaged by ranged", {
-        NextAction("magtheridon spread ranged", ACTION_RAID + 2) }));
+    triggers.push_back(
+        new TriggerNode(
+            "magtheridon boss engaged by ranged",
+            {
+                CreateNextAction<MagtheridonSpreadRangedAction>(ACTION_RAID + 2.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode("magtheridon pulling west and east channelers", {
-        NextAction("magtheridon misdirect hellfire channelers", ACTION_RAID + 2) }));
+    triggers.push_back(
+        new TriggerNode(
+            "magtheridon pulling west and east channelers",
+            {
+                CreateNextAction<MagtheridonMisdirectHellfireChannelers>(ACTION_RAID + 2.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode("magtheridon boss engaged by main tank", {
-        NextAction("magtheridon main tank position boss", ACTION_RAID + 2) }));
+    triggers.push_back(
+        new TriggerNode(
+            "magtheridon boss engaged by main tank",
+            {
+                CreateNextAction<MagtheridonMainTankPositionBossAction>(ACTION_RAID + 2.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode("magtheridon first three channelers engaged by main tank", {
-        NextAction("magtheridon main tank attack first three channelers", ACTION_RAID + 1) }));
+    triggers.push_back(
+        new TriggerNode(
+            "magtheridon first three channelers engaged by main tank",
+            {
+                CreateNextAction<MagtheridonMainTankAttackFirstThreeChannelersAction>(ACTION_RAID + 1.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode("magtheridon nw channeler engaged by first assist tank", {
-        NextAction("magtheridon first assist tank attack nw channeler", ACTION_RAID + 1) }));
+    triggers.push_back(
+        new TriggerNode(
+            "magtheridon nw channeler engaged by first assist tank",
+            {
+                CreateNextAction<MagtheridonFirstAssistTankAttackNWChannelerAction>(ACTION_RAID + 1.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode("magtheridon ne channeler engaged by second assist tank", {
-        NextAction("magtheridon second assist tank attack ne channeler", ACTION_RAID + 1) }));
+    triggers.push_back(
+        new TriggerNode(
+            "magtheridon ne channeler engaged by second assist tank",
+            {
+                CreateNextAction<MagtheridonSecondAssistTankAttackNEChannelerAction>(ACTION_RAID + 1.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode("magtheridon determining kill order", {
-        NextAction("magtheridon assign dps priority", ACTION_RAID + 1) }));
+    triggers.push_back(
+        new TriggerNode(
+            "magtheridon determining kill order",
+            {
+                CreateNextAction<MagtheridonAssignDPSPriorityAction>(ACTION_RAID + 1.0f)
+            }
+        )
+    );
 }
 
 void RaidMagtheridonStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

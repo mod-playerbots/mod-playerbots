@@ -1,323 +1,672 @@
 #include "RaidUlduarStrategy.h"
 
+#include "BossAuraActions.h"
 #include "RaidUlduarMultipliers.h"
+#include "RaidUlduarActions.h"
+#include "CreateNextAction.h"
 
 void RaidUlduarStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     //
     // Flame Leviathan
     //
-    triggers.push_back(new TriggerNode(
-        "flame leviathan vehicle near",
-        { NextAction("flame leviathan enter vehicle", ACTION_RAID + 2) }));
+    triggers.push_back(
+        new TriggerNode(
+            "flame leviathan vehicle near",
+            {
+                CreateNextAction<FlameLeviathanEnterVehicleAction>(ACTION_RAID + 2.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "flame leviathan on vehicle",
-        { NextAction("flame leviathan vehicle", ACTION_RAID + 1) }));
+    triggers.push_back(
+        new TriggerNode(
+            "flame leviathan on vehicle",
+            {
+                CreateNextAction<FlameLeviathanVehicleAction>(ACTION_RAID + 1.0f)
+            }
+        )
+    );
 
     //
     // Razorscale
     //
-    triggers.push_back(new TriggerNode(
-        "razorscale avoid devouring flames",
-        { NextAction("razorscale avoid devouring flames", ACTION_RAID + 1) }));
+    triggers.push_back(
+        new TriggerNode(
+            "razorscale avoid devouring flames",
+            {
+                CreateNextAction<RazorscaleAvoidDevouringFlameAction>(ACTION_RAID + 1.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "razorscale avoid sentinel",
-        { NextAction("razorscale avoid sentinel", ACTION_RAID + 2) }));
+    triggers.push_back(
+        new TriggerNode(
+            "razorscale avoid sentinel",
+            {
+                CreateNextAction<RazorscaleAvoidSentinelAction>(ACTION_RAID + 2.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "razorscale flying alone",
-    { NextAction("razorscale ignore flying alone", ACTION_MOVE + 5) }));
+    triggers.push_back(
+        new TriggerNode(
+            "razorscale flying alone",
+            {
+                CreateNextAction<RazorscaleIgnoreBossAction>(ACTION_MOVE + 5.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "razorscale avoid whirlwind",
-        { NextAction("razorscale avoid whirlwind", ACTION_RAID + 3) }));
+    triggers.push_back(
+        new TriggerNode(
+            "razorscale avoid whirlwind",
+            {
+                CreateNextAction<RazorscaleAvoidWhirlwindAction>(ACTION_RAID + 3.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "razorscale grounded",
-        { NextAction("razorscale grounded", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "razorscale grounded",
+            {
+                CreateNextAction<RazorscaleGroundedAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "razorscale harpoon trigger",
-        { NextAction("razorscale harpoon action", ACTION_MOVE) }));
+    triggers.push_back(
+        new TriggerNode(
+            "razorscale harpoon trigger",
+            {
+                CreateNextAction<RazorscaleHarpoonAction>(ACTION_MOVE)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "razorscale fuse armor trigger",
-        { NextAction("razorscale fuse armor action", ACTION_RAID + 2) }));
+    triggers.push_back(
+        new TriggerNode(
+            "razorscale fuse armor trigger",
+            {
+                CreateNextAction<RazorscaleFuseArmorAction>(ACTION_RAID + 2.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "razorscale fire resistance trigger",
-        { NextAction("razorscale fire resistance action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "razorscale fire resistance trigger",
+            {
+                CreateNextAction<BossFireResistanceAction>(ACTION_RAID)
+            }
+        )
+    );
 
     //
     // Ignis
     //
-    triggers.push_back(new TriggerNode(
-        "ignis fire resistance trigger",
-        { NextAction("ignis fire resistance action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "ignis fire resistance trigger",
+            {
+                CreateNextAction<BossFireResistanceAction>(ACTION_RAID)
+            }
+        )
+    );
 
     //
     // Iron Assembly
     //
-    triggers.push_back(new TriggerNode(
-        "iron assembly lightning tendrils trigger",
-        { NextAction("iron assembly lightning tendrils action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "iron assembly lightning tendrils trigger",
+            {
+                CreateNextAction<IronAssemblyLightningTendrilsAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "iron assembly overload trigger",
-        { NextAction("iron assembly overload action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "iron assembly overload trigger",
+            {
+                CreateNextAction<IronAssemblyOverloadAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "iron assembly rune of power trigger",
-        { NextAction("iron assembly rune of power action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "iron assembly rune of power trigger",
+            {
+                CreateNextAction<IronAssemblyRuneOfPowerAction>(ACTION_RAID)
+            }
+        )
+    );
 
     //
     // Kologarn
     //
-    triggers.push_back(new TriggerNode(
-        "kologarn fall from floor trigger",
-        { NextAction("kologarn fall from floor action", ACTION_RAID + 1) }));
+    triggers.push_back(
+        new TriggerNode(
+            "kologarn fall from floor trigger",
+            {
+                CreateNextAction<KologarnFallFromFloorAction>(ACTION_RAID + 1.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "kologarn rti target trigger",
-        { NextAction("kologarn rti target action", ACTION_RAID + 1) }));
+    triggers.push_back(
+        new TriggerNode(
+            "kologarn rti target trigger",
+            {
+                CreateNextAction<KologarnRtiTargetAction>(ACTION_RAID + 1.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "kologarn eyebeam trigger",
-        { NextAction("kologarn eyebeam action", ACTION_RAID + 1) }));
+    triggers.push_back(
+        new TriggerNode(
+            "kologarn eyebeam trigger",
+            {
+                CreateNextAction<KologarnEyebeamAction>(ACTION_RAID + 1.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "kologarn attack dps target trigger",
-        { NextAction("attack rti target", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "kologarn attack dps target trigger",
+            {
+                CreateNextAction<AttackMyTargetAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "kologarn mark dps target trigger",
-        { NextAction("kologarn mark dps target action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "kologarn mark dps target trigger",
+            {
+                CreateNextAction<KologarnMarkDpsTargetAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "kologarn nature resistance trigger",
-        { NextAction("kologarn nature resistance action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "kologarn nature resistance trigger",
+            {
+                CreateNextAction<BossNatureResistanceAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "kologarn rubble slowdown trigger",
-        { NextAction("kologarn rubble slowdown action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "kologarn rubble slowdown trigger",
+            {
+                CreateNextAction<KologarnRubbleSlowdownAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "kologarn crunch armor trigger",
-        { NextAction("kologarn crunch armor action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "kologarn crunch armor trigger",
+            {
+                CreateNextAction<KologarnCrunchArmorAction>(ACTION_RAID)
+            }
+        )
+    );
 
     //
     // Auriaya
     //
-    triggers.push_back(new TriggerNode(
-        "auriaya fall from floor trigger",
-        { NextAction("auriaya fall from floor action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "auriaya fall from floor trigger",
+            {
+                CreateNextAction<AuriayaFallFromFloorAction>(ACTION_RAID)
+            }
+        )
+    );
 
     //
     // Hodir
     //
-    triggers.push_back(new TriggerNode(
-        "hodir near snowpacked icicle",
-        { NextAction("hodir move snowpacked icicle", ACTION_RAID + 1) }));
+    triggers.push_back(
+        new TriggerNode(
+            "hodir near snowpacked icicle",
+            {
+                CreateNextAction<HodirMoveSnowpackedIcicleAction>(ACTION_RAID + 1.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(
+        new TriggerNode(
         "hodir biting cold",
-        { NextAction("hodir biting cold jump", ACTION_RAID) }));
+        {
+            CreateNextAction<HodirBitingColdJumpAction>(ACTION_RAID)
+        }
+    )
+);
 
-    triggers.push_back(new TriggerNode(
-        "hodir frost resistance trigger",
-        { NextAction("hodir frost resistance action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "hodir frost resistance trigger",
+            {
+                CreateNextAction<BossFrostResistanceAction>(ACTION_RAID)
+            }
+        )
+    );
 
     //
     // Freya
     //
-    triggers.push_back(new TriggerNode(
-        "freya near nature bomb",
-        { NextAction("freya move away nature bomb", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "freya near nature bomb",
+            {
+                CreateNextAction<FreyaMoveAwayNatureBombAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "freya nature resistance trigger",
-        { NextAction("freya nature resistance action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "freya nature resistance trigger",
+            {
+                CreateNextAction<BossNatureResistanceAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "freya fire resistance trigger",
-        { NextAction("freya fire resistance action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "freya fire resistance trigger",
+            {
+                CreateNextAction<BossFireResistanceAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "freya mark dps target trigger",
-        { NextAction("freya mark dps target action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "freya mark dps target trigger",
+            {
+                CreateNextAction<FreyaMarkDpsTargetAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
+    triggers.push_back(
+        new TriggerNode(
         "freya move to healing spore trigger",
-        { NextAction("freya move to healing spore action", ACTION_RAID) }));
+        {
+            CreateNextAction<FreyaMoveToHealingSporeAction>(ACTION_RAID)
+        }
+    )
+);
 
     //
     // Thorim
     //
-    triggers.push_back(new TriggerNode(
-        "thorim nature resistance trigger",
-        { NextAction("thorim nature resistance action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "thorim nature resistance trigger",
+            {
+                CreateNextAction<BossNatureResistanceAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "thorim frost resistance trigger",
-        { NextAction("thorim frost resistance action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "thorim frost resistance trigger",
+            {
+                CreateNextAction<BossFrostResistanceAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "thorim unbalancing strike trigger",
-        { NextAction("thorim unbalancing strike action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "thorim unbalancing strike trigger",
+            {
+                CreateNextAction<ThorimUnbalancingStrikeAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "thorim mark dps target trigger",
-        { NextAction("thorim mark dps target action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "thorim mark dps target trigger",
+            {
+                CreateNextAction<ThorimMarkDpsTargetAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "thorim gauntlet positioning trigger",
-        { NextAction("thorim gauntlet positioning action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "thorim gauntlet positioning trigger",
+            {
+                CreateNextAction<ThorimGauntletPositioningAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "thorim arena positioning trigger",
-        { NextAction("thorim arena positioning action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "thorim arena positioning trigger",
+            {
+                CreateNextAction<ThorimArenaPositioningAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "thorim fall from floor trigger",
-        { NextAction("thorim fall from floor action", ACTION_RAID + 1) }));
+    triggers.push_back(
+        new TriggerNode(
+            "thorim fall from floor trigger",
+            {
+                CreateNextAction<ThorimFallFromFloorAction>(ACTION_RAID + 1.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "thorim phase 2 positioning trigger",
-        { NextAction("thorim phase 2 positioning action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "thorim phase 2 positioning trigger",
+            {
+                CreateNextAction<ThorimPhase2PositioningAction>(ACTION_RAID)
+            }
+        )
+    );
 
     //
     // Mimiron
     //
-    triggers.push_back(new TriggerNode(
-        "mimiron p3wx2 laser barrage trigger",
-        { NextAction("mimiron p3wx2 laser barrage action", ACTION_RAID + 2) }));
+    triggers.push_back(
+        new TriggerNode(
+            "mimiron p3wx2 laser barrage trigger",
+            {
+                CreateNextAction<MimironP3Wx2LaserBarrageAction>(ACTION_RAID + 2.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "mimiron shock blast trigger",
-        { NextAction("mimiron shock blast action", ACTION_RAID + 1) }));
+    triggers.push_back(
+        new TriggerNode(
+            "mimiron shock blast trigger",
+            {
+                CreateNextAction<MimironShockBlastAction>(ACTION_RAID + 1.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "mimiron fire resistance trigger",
-        { NextAction("mimiron fire resistance action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "mimiron fire resistance trigger",
+            {
+                CreateNextAction<BossFireResistanceAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "mimiron phase 1 positioning trigger",
-        { NextAction("mimiron phase 1 positioning action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "mimiron phase 1 positioning trigger",
+            {
+                CreateNextAction<MimironPhase1PositioningAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "mimiron rapid burst trigger",
-        { NextAction("mimiron rapid burst action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "mimiron rapid burst trigger",
+            {
+                CreateNextAction<MimironRapidBurstAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "mimiron aerial command unit trigger",
-        { NextAction("mimiron aerial command unit action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "mimiron aerial command unit trigger",
+            {
+                CreateNextAction<MimironAerialCommandUnitAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "mimiron rocket strike trigger",
-        { NextAction("mimiron rocket strike action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "mimiron rocket strike trigger",
+            {
+                CreateNextAction<MimironRocketStrikeAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "mimiron phase 4 mark dps trigger",
-        { NextAction("mimiron phase 4 mark dps action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "mimiron phase 4 mark dps trigger",
+            {
+                CreateNextAction<MimironPhase4MarkDpsAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "mimiron cheat trigger",
-        { NextAction("mimiron cheat action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "mimiron cheat trigger",
+            {
+                CreateNextAction<MimironCheatAction>(ACTION_RAID)
+            }
+        )
+    );
 
     //
     // General Vezax
     //
-    triggers.push_back(new TriggerNode(
-        "vezax cheat trigger",
-        { NextAction("vezax cheat action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "vezax cheat trigger",
+            {
+                CreateNextAction<VezaxCheatAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "vezax shadow crash trigger",
-        { NextAction("vezax shadow crash action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "vezax shadow crash trigger",
+            {
+                CreateNextAction<VezaxShadowCrashAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "vezax mark of the faceless trigger",
-        { NextAction("vezax mark of the faceless action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "vezax mark of the faceless trigger",
+            {
+                CreateNextAction<VezaxMarkOfTheFacelessAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "vezax shadow resistance trigger",
-        { NextAction("vezax shadow resistance action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "vezax shadow resistance trigger",
+            {
+                CreateNextAction<BossShadowResistanceAction>(ACTION_RAID)
+            }
+        )
+    );
 
     //
     // Yogg-Saron
     //
-    triggers.push_back(new TriggerNode(
-        "sara shadow resistance trigger",
-        { NextAction("sara shadow resistance action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "sara shadow resistance trigger",
+            {
+                CreateNextAction<BossShadowResistanceAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "yogg-saron shadow resistance trigger",
-        { NextAction("yogg-saron shadow resistance action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "yogg-saron shadow resistance trigger",
+            {
+                CreateNextAction<BossShadowResistanceAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "yogg-saron ominous cloud cheat trigger",
-        { NextAction("yogg-saron ominous cloud cheat action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "yogg-saron ominous cloud cheat trigger",
+            {
+                CreateNextAction<YoggSaronOminousCloudCheatAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "yogg-saron guardian positioning trigger",
-        { NextAction("yogg-saron guardian positioning action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "yogg-saron guardian positioning trigger",
+            {
+                CreateNextAction<YoggSaronGuardianPositioningAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "yogg-saron sanity trigger",
-        { NextAction("yogg-saron sanity action", ACTION_RAID + 1) }));
+    triggers.push_back(
+        new TriggerNode(
+            "yogg-saron sanity trigger",
+            {
+                CreateNextAction<YoggSaronSanityAction>(ACTION_RAID + 1)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "yogg-saron death orb trigger",
-        { NextAction("yogg-saron death orb action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "yogg-saron death orb trigger",
+            {
+                CreateNextAction<YoggSaronDeathOrbAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "yogg-saron malady of the mind trigger",
-        { NextAction("yogg-saron malady of the mind action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "yogg-saron malady of the mind trigger",
+            {
+                CreateNextAction<YoggSaronMaladyOfTheMindAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "yogg-saron mark target trigger",
-        { NextAction("yogg-saron mark target action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "yogg-saron mark target trigger",
+            {
+                CreateNextAction<YoggSaronMarkTargetAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "yogg-saron brain link trigger",
-        { NextAction("yogg-saron brain link action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "yogg-saron brain link trigger",
+            {
+                CreateNextAction<YoggSaronBrainLinkAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "yogg-saron move to enter portal trigger",
-        { NextAction("yogg-saron move to enter portal action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "yogg-saron move to enter portal trigger",
+            {
+                CreateNextAction<YoggSaronMoveToEnterPortalAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "yogg-saron use portal trigger",
-        { NextAction("yogg-saron use portal action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "yogg-saron use portal trigger",
+            {
+                CreateNextAction<YoggSaronUsePortalAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "yogg-saron fall from floor trigger",
-        { NextAction("yogg-saron fall from floor action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "yogg-saron fall from floor trigger",
+            {
+                CreateNextAction<YoggSaronFallFromFloorAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "yogg-saron boss room movement cheat trigger",
-        { NextAction("yogg-saron boss room movement cheat action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "yogg-saron boss room movement cheat trigger",
+            {
+                CreateNextAction<YoggSaronBossRoomMovementCheatAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "yogg-saron illusion room trigger",
-        { NextAction("yogg-saron illusion room action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "yogg-saron illusion room trigger",
+            {
+                CreateNextAction<YoggSaronIllusionRoomAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "yogg-saron move to exit portal trigger",
-        { NextAction("yogg-saron move to exit portal action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "yogg-saron move to exit portal trigger",
+            {
+                CreateNextAction<YoggSaronMoveToExitPortalAction>(ACTION_RAID)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "yogg-saron lunatic gaze trigger",
-        { NextAction("yogg-saron lunatic gaze action", ACTION_EMERGENCY) }));
+    triggers.push_back(
+        new TriggerNode(
+            "yogg-saron lunatic gaze trigger",
+            {
+                CreateNextAction<YoggSaronLunaticGazeAction>(ACTION_EMERGENCY)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "yogg-saron phase 3 positioning trigger",
-        { NextAction("yogg-saron phase 3 positioning action", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode(
+            "yogg-saron phase 3 positioning trigger",
+            {
+                CreateNextAction<YoggSaronPhase3PositioningAction>(ACTION_RAID)
+            }
+        )
+    );
 }
 
 void RaidUlduarStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
-    multipliers.push_back(new FlameLeviathanMultiplier(botAI));
+    multipliers.push_back(
+        new FlameLeviathanMultiplier(botAI));
 }

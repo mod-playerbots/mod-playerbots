@@ -1,27 +1,57 @@
 #include "RaidOnyxiaStrategy.h"
+#include "RaidOnyxiaActions.h"
+#include "CreateNextAction.h"
 
 void RaidOnyxiaStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // ----------- Phase 1 (100% - 65%) -----------
 
-    triggers.push_back(new TriggerNode(
-        "ony near tail", { NextAction("ony move to side", ACTION_RAID + 2) }));
+    triggers.push_back(
+        new TriggerNode(
+            "ony near tail",
+            {
+                CreateNextAction<RaidOnyxiaMoveToSideAction>(ACTION_RAID + 2.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "ony avoid eggs", { NextAction("ony avoid eggs move", ACTION_EMERGENCY + 5) }));
+    triggers.push_back(
+        new TriggerNode(
+            "ony avoid eggs",
+            {
+                CreateNextAction<OnyxiaAvoidEggsAction>(ACTION_EMERGENCY + 5.0f)
+            }
+        )
+    );
 
     // ----------- Phase 2 (65% - 40%) -----------
 
     triggers.push_back(
-        new TriggerNode("ony deep breath warning",
-                        { NextAction("ony move to safe zone", ACTION_EMERGENCY + 5) }));
+        new TriggerNode(
+            "ony deep breath warning",
+            {
+                CreateNextAction<RaidOnyxiaMoveToSafeZoneAction>(ACTION_EMERGENCY + 5.0f)
+            }
+        )
+    );
 
     triggers.push_back(
-        new TriggerNode("ony fireball splash incoming",
-                        { NextAction("ony spread out", ACTION_EMERGENCY + 2) }));
+        new TriggerNode(
+            "ony fireball splash incoming",
+            {
+                CreateNextAction<RaidOnyxiaSpreadOutAction>(ACTION_EMERGENCY + 2.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode(
-        "ony whelps spawn", { NextAction("ony kill whelps", ACTION_RAID + 1) }));
+    triggers.push_back(
+        new TriggerNode(
+            "ony whelps spawn",
+            {
+                CreateNextAction<RaidOnyxiaKillWhelpsAction>(ACTION_RAID + 1.0f)
+            }
+        )
+    );
 }
 
 void RaidOnyxiaStrategy::InitMultipliers(std::vector<Multiplier*>&)

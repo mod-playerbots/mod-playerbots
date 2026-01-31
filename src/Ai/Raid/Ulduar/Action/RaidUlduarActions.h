@@ -7,8 +7,6 @@
 #include "GenericSpellActions.h"
 #include "MovementActions.h"
 #include "PlayerbotAI.h"
-#include "Playerbots.h"
-#include "RaidUlduarBossHelper.h"
 #include "RaidUlduarTriggers.h"
 #include "Vehicle.h"
 

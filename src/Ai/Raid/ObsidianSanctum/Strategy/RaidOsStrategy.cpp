@@ -1,29 +1,69 @@
 #include "RaidOsStrategy.h"
+#include "CreateNextAction.h"
+#include "RaidOsActions.h"
 #include "RaidOsMultipliers.h"
-#include "Strategy.h"
+#include "MovementActions.h"
 
 void RaidOsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("sartharion tank",
-                        { NextAction("sartharion tank position", ACTION_MOVE) }));
+        new TriggerNode(
+            "sartharion tank",
+            {
+                CreateNextAction<SartharionTankPositionAction>(ACTION_MOVE)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("twilight fissure",
-                        { NextAction("avoid twilight fissure", ACTION_RAID + 2) }));
+        new TriggerNode(
+            "twilight fissure",
+            {
+                CreateNextAction<AvoidTwilightFissureAction>(ACTION_RAID + 2.0f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("flame tsunami",
-                        { NextAction("avoid flame tsunami", ACTION_RAID + 1) }));
+        new TriggerNode(
+            "flame tsunami",
+            {
+                CreateNextAction<AvoidFlameTsunamiAction>(ACTION_RAID + 1.0f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("sartharion dps",
-                        { NextAction("sartharion attack priority", ACTION_RAID) }));
+        new TriggerNode(
+            "sartharion dps",
+            {
+                CreateNextAction<SartharionAttackPriorityAction>(ACTION_RAID)
+            }
+        )
+    );
     // Flank dragon positioning
-    triggers.push_back(new TriggerNode("sartharion melee positioning",
-        { NextAction("rear flank", ACTION_MOVE + 4) }));
+    triggers.push_back(
+        new TriggerNode(
+            "sartharion melee positioning",
+            {
+                CreateNextAction<RearFlankAction>(ACTION_MOVE + 4.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode("twilight portal enter",
-        { NextAction("enter twilight portal", ACTION_RAID + 1) }));
-    triggers.push_back(new TriggerNode("twilight portal exit",
-        { NextAction("exit twilight portal", ACTION_RAID + 1) }));
+    triggers.push_back(
+        new TriggerNode(
+            "twilight portal enter",
+            {
+                CreateNextAction<EnterTwilightPortalAction>(ACTION_RAID + 1.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+        "twilight portal exit",
+            {
+                CreateNextAction<ExitTwilightPortalAction>(ACTION_RAID + 1.0f)
+            }
+        )
+    );
 }
 
 void RaidOsStrategy::InitMultipliers(std::vector<Multiplier*> &multipliers)

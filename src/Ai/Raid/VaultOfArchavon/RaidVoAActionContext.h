@@ -10,6 +10,7 @@
 #include "NamedObjectContext.h"
 #include "RaidVoAActions.h"
 #include "PlayerbotAI.h"
+#include "BossAuraActions.h"
 
 class RaidVoAActionContext : public NamedObjectContext<Action>
 {

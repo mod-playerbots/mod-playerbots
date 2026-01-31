@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "Action.h"
+class Action;
 
 struct NextAction
 {
