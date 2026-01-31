@@ -1799,10 +1799,10 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                 {
                     for (uint32 itemId : sRandomItemMgr.GetCachedEquipments(requiredLevel, inventoryType))
                     {
-                        if (itemId == 46978)  // shaman earth ring totem
-                        {
+                        if (itemId == 46978 ||  // shaman earth ring totem
+                            itemId == 12468)    // chilton wand
                             continue;
-                        }
+
                         uint32 skipProb = 25;
                         if (urand(1, 100) <= skipProb)
                             continue;
