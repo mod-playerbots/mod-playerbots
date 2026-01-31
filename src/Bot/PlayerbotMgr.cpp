@@ -1260,7 +1260,7 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
 
         uint8 teamId = master->GetTeamId(true);
         const std::unordered_set<ObjectGuid>& guidCache =
-            sRandomPlayerbotMgr->addclassCache[RandomPlayerbotMgr::GetTeamClassIdx(teamId == TEAM_ALLIANCE, claz)];
+            sRandomPlayerbotMgr.addclassCache[RandomPlayerbotMgr::GetTeamClassIdx(teamId == TEAM_ALLIANCE, claz)];
 
         bool hasGenderMatch = gender == -1;
         bool hasSpecMatch = specTab == -1;
@@ -1269,11 +1269,11 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
         const std::unordered_set<ObjectGuid> &guidCache = sRandomPlayerbotMgr.addclassCache[RandomPlayerbotMgr::GetTeamClassIdx(teamId == TEAM_ALLIANCE, claz)];
         for (const ObjectGuid &guid: guidCache)
         {
-            bool genderMatch = gender == -1 || sRandomPlayerbotMgr->GetAddclassGender(guid) == gender;
+            bool genderMatch = gender == -1 || sRandomPlayerbotMgr.GetAddclassGender(guid) == gender;
             bool specMatch = true;
             if (specTab != -1)
             {
-                int8 botSpecTab = sRandomPlayerbotMgr->GetAddclassSpecTab(guid);
+                int8 botSpecTab = sRandomPlayerbotMgr.GetAddclassSpecTab(guid);
                 specMatch = botSpecTab == -1 || botSpecTab == specTab;
             }
 
