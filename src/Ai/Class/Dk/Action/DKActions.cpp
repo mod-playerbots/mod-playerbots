@@ -5,50 +5,39 @@
 
 #include "DKActions.h"
 
-#include "Duration.h"
+#include "CreateNextAction.h"
 #include "GenericSpellActions.h"
 #include "Playerbots.h"
 #include "SpellInfo.h"
 #include "SpellMgr.h"
+#include "DKActions.h"
 
 std::vector<NextAction> CastDeathchillAction::getPrerequisites()
 {
-    return NextAction::merge(
-        {
-            NextAction("frost presence")
-        },
-        CastSpellAction::getPrerequisites()
-    );
+    return {
+        CreateNextAction<CastFrostPresenceAction>(1.0f)
+    };
 }
 
 std::vector<NextAction> CastUnholyMeleeSpellAction::getPrerequisites()
 {
-    return NextAction::merge(
-        {
-            NextAction("unholy presence")
-        },
-        CastMeleeSpellAction::getPrerequisites()
-    );
+    return {
+        CreateNextAction<CastUnholyPresenceAction>(1.0f)
+    };
 }
 
 std::vector<NextAction> CastFrostMeleeSpellAction::getPrerequisites()
 {
-    return NextAction::merge(
-        {
-            NextAction("frost presence")
-        },
-        CastMeleeSpellAction::getPrerequisites()
-    );
+    return {
+        CreateNextAction<CastFrostPresenceAction>(1.0f)
+    };
 }
 
 std::vector<NextAction> CastBloodMeleeSpellAction::getPrerequisites()
 {
-    return NextAction::merge(
-        {
-            NextAction("blood presence")
-        },
-        CastMeleeSpellAction::getPrerequisites()
-    );
+    return {
+        CreateNextAction<CastBloodPresenceAction>(1.0f)
+    };
 }
 
 bool CastRaiseDeadAction::Execute(Event event)

@@ -4,6 +4,9 @@
  */
 
 #include "GenericDKNonCombatStrategy.h"
+#include "CreateNextAction.h"
+#include "DKActions.h"
+#include "GenericActions.h"
 
 class GenericDKNonCombatStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -17,18 +20,20 @@ public:
 private:
     static ActionNode* bone_shield([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("bone shield",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* horn_of_winter([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("horn of winter",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 };
 
@@ -45,7 +50,7 @@ void GenericDKNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "no pet",
             {
-                NextAction("raise dead", ACTION_NORMAL + 1)
+                CreateNextAction<CastRaiseDeadAction>(ACTION_NORMAL + 1.0f)
             }
         )
     );
@@ -53,7 +58,7 @@ void GenericDKNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "horn of winter",
             {
-                NextAction("horn of winter", 21.0f)
+                CreateNextAction<CastHornOfWinterAction>(21.0f)
             }
         )
     );
@@ -61,7 +66,7 @@ void GenericDKNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "bone shield",
             {
-                NextAction("bone shield", 21.0f)
+                CreateNextAction<CastBoneShieldAction>(21.0f)
             }
         )
     );
@@ -69,7 +74,7 @@ void GenericDKNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "has pet",
             {
-                NextAction("toggle pet spell", 60.0f)
+                CreateNextAction<TogglePetSpellAutoCastAction>(60.0f)
             }
         )
     );
@@ -77,7 +82,7 @@ void GenericDKNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "new pet",
             {
-                NextAction("set pet stance", 60.0f)
+                CreateNextAction<SetPetStanceAction>(60.0f)
             }
         )
     );

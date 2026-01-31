@@ -5,7 +5,10 @@
 
 #include "BloodDKStrategy.h"
 
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "DKActions.h"
+#include "ActionNode.h"
+#include "GenericActions.h"
 
 class BloodDKStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -24,9 +27,8 @@ private:
     static ActionNode* rune_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "rune strike",
             {
-                NextAction("frost presence")
+                CreateNextAction<CastFrostPresenceAction>(1.0f)
             },
             /*A*/ {},
             /*C*/ {}
@@ -35,9 +37,8 @@ private:
     static ActionNode* icy_touch([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "icy touch",
             {
-                NextAction("frost presence")
+                CreateNextAction<CastFrostPresenceAction>(1.0f)
             },
             /*A*/ {},
             /*C*/ {}
@@ -46,9 +47,8 @@ private:
     static ActionNode* heart_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "heart strike",
             {
-                NextAction("frost presence")
+                CreateNextAction<CastFrostPresenceAction>(1.0f)
             },
             /*A*/ {},
             /*C*/ {}
@@ -58,9 +58,8 @@ private:
     static ActionNode* death_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "death strike",
             {
-                NextAction("frost presence")
+                CreateNextAction<CastFrostPresenceAction>(1.0f)
             },
             /*A*/ {},
             /*C*/ {}
@@ -69,12 +68,11 @@ private:
     static ActionNode* dark_command([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "dark command",
             {
-                NextAction("frost presence")
+                CreateNextAction<CastFrostPresenceAction>(1.0f)
             },
             /*A*/ {
-                NextAction("death grip")
+                CreateNextAction<CastDeathGripAction>(1.0f)
             },
             /*C*/ {}
         );
@@ -89,15 +87,15 @@ BloodDKStrategy::BloodDKStrategy(PlayerbotAI* botAI) : GenericDKStrategy(botAI)
 std::vector<NextAction> BloodDKStrategy::getDefaultActions()
 {
     return {
-        NextAction("rune strike", ACTION_DEFAULT + 0.8f),
-        NextAction("icy touch", ACTION_DEFAULT + 0.7f),
-        NextAction("heart strike", ACTION_DEFAULT + 0.6f),
-        NextAction("blood strike", ACTION_DEFAULT + 0.5f),
-        NextAction("dancing rune weapon", ACTION_DEFAULT + 0.4f),
-        NextAction("death coil", ACTION_DEFAULT + 0.3f),
-        NextAction("plague strike", ACTION_DEFAULT + 0.2f),
-        NextAction("horn of winter", ACTION_DEFAULT + 0.1f),
-        NextAction("melee", ACTION_DEFAULT)
+        CreateNextAction<CastRuneStrikeAction>(ACTION_DEFAULT + 0.8f),
+        CreateNextAction<CastIcyTouchAction>(ACTION_DEFAULT + 0.7f),
+        CreateNextAction<CastHeartStrikeAction>(ACTION_DEFAULT + 0.6f),
+        CreateNextAction<CastBloodStrikeAction>(ACTION_DEFAULT + 0.5f),
+        CreateNextAction<CastDancingRuneWeaponAction>(ACTION_DEFAULT + 0.4f),
+        CreateNextAction<CastDeathCoilAction>(ACTION_DEFAULT + 0.3f),
+        CreateNextAction<CastPlagueStrikeAction>(ACTION_DEFAULT + 0.2f),
+        CreateNextAction<CastHornOfWinterAction>(ACTION_DEFAULT + 0.1f),
+        CreateNextAction<MeleeAction>(ACTION_DEFAULT)
     };
 }
 
@@ -109,7 +107,7 @@ void BloodDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "rune strike",
             {
-                NextAction("rune strike", ACTION_NORMAL + 3)
+                CreateNextAction<CastRuneStrikeAction>(ACTION_NORMAL + 3.0f)
             }
         )
     );
@@ -117,7 +115,7 @@ void BloodDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "blood tap",
             {
-                NextAction("blood tap", ACTION_HIGH + 5)
+                CreateNextAction<CastBloodTapAction>(ACTION_HIGH + 5.0f)
             }
         )
     );
@@ -125,7 +123,7 @@ void BloodDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "lose aggro",
             {
-                NextAction("dark command", ACTION_HIGH + 3)
+                CreateNextAction<CastDarkCommandAction>(ACTION_HIGH + 3.0f)
             }
         )
     );
@@ -133,8 +131,8 @@ void BloodDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "low health",
             {
-                NextAction("army of the dead", ACTION_HIGH + 4),
-                NextAction("death strike", ACTION_HIGH + 3)
+                CreateNextAction<CastArmyOfTheDeadAction>(ACTION_HIGH + 4.0f),
+                CreateNextAction<CastDeathStrikeAction>(ACTION_HIGH + 3.0f)
             }
         )
     );
@@ -142,7 +140,7 @@ void BloodDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "critical health",
             {
-                NextAction("vampiric blood", ACTION_HIGH + 5)
+                CreateNextAction<CastVampiricBloodAction>(ACTION_HIGH + 5.0f)
             }
         )
     );
@@ -150,7 +148,7 @@ void BloodDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "icy touch",
             {
-                NextAction("icy touch", ACTION_HIGH + 2)
+                CreateNextAction<CastIcyTouchAction>(ACTION_HIGH + 2.0f)
             }
         )
     );
@@ -158,7 +156,7 @@ void BloodDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "plague strike",
             {
-                NextAction("plague strike", ACTION_HIGH + 2)
+                CreateNextAction<CastPlagueStrikeAction>(ACTION_HIGH + 2.0f)
             }
         )
     );
