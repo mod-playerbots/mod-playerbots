@@ -503,8 +503,10 @@ public:
                 manager->OnBotLogin(bot);
             }
         }
-
-        sRandomPlayerbotMgr.OnBotLogin(bot);
+        else
+        {
+            sRandomPlayerbotMgr.OnBotLogin(bot);
+        }
 
         return true;
     }
