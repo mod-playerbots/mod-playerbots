@@ -134,7 +134,7 @@ bool SayAction::Execute(Event event)
     }
 
     // load text based on chance
-    if (!sPlayerbotTextMgr->GetBotText(qualifier, text, placeholders))
+    if (!PlayerbotTextMgr::instance().GetBotText(qualifier, text, placeholders))
         return false;
 
     if (text.find("/y ") == 0)
@@ -206,7 +206,7 @@ void ChatReplyAction::ChatReplyDo(Player* bot, uint32& type, uint32& guid1, uint
     }
 
     //toxic links
-    if (msg.starts_with(sPlayerbotAIConfig->toxicLinksPrefix)
+    if (msg.starts_with(sPlayerbotAIConfig.toxicLinksPrefix)
         && (GET_PLAYERBOT_AI(bot)->GetChatHelper()->ExtractAllItemIds(msg).size() > 0 || GET_PLAYERBOT_AI(bot)->GetChatHelper()->ExtractAllQuestIds(msg).size() > 0))
     {
         HandleToxicLinksReply(bot, chatChannelSource, msg, name);
@@ -230,7 +230,7 @@ bool ChatReplyAction::HandleThunderfuryReply(Player* bot, ChatChannelSource chat
     const auto thunderfury = sObjectMgr->GetItemTemplate(19019);
     placeholders["%thunderfury_link"] = GET_PLAYERBOT_AI(bot)->GetChatHelper()->FormatItem(thunderfury);
 
-    std::string responseMessage = BOT_TEXT2("thunderfury_spam", placeholders);
+    std::string responseMessage = PlayerbotTextMgr::instance().GetBotText("thunderfury_spam", placeholders);
 
     switch (chatChannelSource)
     {
@@ -271,8 +271,8 @@ bool ChatReplyAction::HandleToxicLinksReply(Player* bot, ChatChannelSource chatC
     std::vector<Item*> botItems = GET_PLAYERBOT_AI(bot)->GetInventoryAndEquippedItems();
 
     std::map<std::string, std::string> placeholders;
-    placeholders["%random_inventory_item_link"] = botItems.size() > 0 ? GET_PLAYERBOT_AI(bot)->GetChatHelper()->FormatItem(botItems[rand() % botItems.size()]->GetTemplate()) : BOT_TEXT1("string_empty_link");
-    placeholders["%prefix"] = sPlayerbotAIConfig->toxicLinksPrefix;
+    placeholders["%random_inventory_item_link"] = botItems.size() > 0 ? GET_PLAYERBOT_AI(bot)->GetChatHelper()->FormatItem(botItems[rand() % botItems.size()]->GetTemplate()) : PlayerbotTextMgr::instance().GetBotText("string_empty_link");
+    placeholders["%prefix"] = sPlayerbotAIConfig.toxicLinksPrefix;
 
     if (incompleteQuests.size() > 0)
     {
@@ -287,8 +287,8 @@ bool ChatReplyAction::HandleToxicLinksReply(Player* bot, ChatChannelSource chatC
     placeholders["%my_role"] = ChatHelper::FormatClass(bot, AiFactory::GetPlayerSpecTab(bot));
     AreaTableEntry const* current_area = GET_PLAYERBOT_AI(bot)->GetCurrentArea();
     AreaTableEntry const* current_zone = GET_PLAYERBOT_AI(bot)->GetCurrentZone();
-    placeholders["%area_name"] = current_area ? GET_PLAYERBOT_AI(bot)->GetLocalizedAreaName(current_area) : BOT_TEXT1("string_unknown_area");
-    placeholders["%zone_name"] = current_zone ? GET_PLAYERBOT_AI(bot)->GetLocalizedAreaName(current_zone) : BOT_TEXT1("string_unknown_area");
+    placeholders["%area_name"] = current_area ? GET_PLAYERBOT_AI(bot)->GetLocalizedAreaName(current_area) : PlayerbotTextMgr::instance().GetBotText("string_unknown_area");
+    placeholders["%zone_name"] = current_zone ? GET_PLAYERBOT_AI(bot)->GetLocalizedAreaName(current_zone) : PlayerbotTextMgr::instance().GetBotText("string_unknown_area");
     placeholders["%my_class"] = GET_PLAYERBOT_AI(bot)->GetChatHelper()->FormatClass(bot->getClass());
     placeholders["%my_race"] = GET_PLAYERBOT_AI(bot)->GetChatHelper()->FormatRace(bot->getRace());
     placeholders["%my_level"] = std::to_string(bot->GetLevel());
@@ -297,17 +297,17 @@ bool ChatReplyAction::HandleToxicLinksReply(Player* bot, ChatChannelSource chatC
     {
         case ChatChannelSource::SRC_WORLD:
         {
-            GET_PLAYERBOT_AI(bot)->SayToWorld(BOT_TEXT2("suggest_toxic_links", placeholders));
+            GET_PLAYERBOT_AI(bot)->SayToWorld(PlayerbotTextMgr::instance().GetBotText("suggest_toxic_links", placeholders));
             break;
         }
         case ChatChannelSource::SRC_GENERAL:
         {
-            GET_PLAYERBOT_AI(bot)->SayToChannel(BOT_TEXT2("suggest_toxic_links", placeholders), ChatChannelId::GENERAL);
+            GET_PLAYERBOT_AI(bot)->SayToChannel(PlayerbotTextMgr::instance().GetBotText("suggest_toxic_links", placeholders), ChatChannelId::GENERAL);
             break;
         }
         case ChatChannelSource::SRC_GUILD:
         {
-            GET_PLAYERBOT_AI(bot)->SayToGuild(BOT_TEXT2("suggest_toxic_links", placeholders));
+            GET_PLAYERBOT_AI(bot)->SayToGuild(PlayerbotTextMgr::instance().GetBotText("suggest_toxic_links", placeholders));
             break;
         }
         default:
@@ -343,8 +343,8 @@ bool ChatReplyAction::HandleWTBItemsReply(Player* bot, ChatChannelSource chatCha
         placeholders["%other_name"] = name;
         AreaTableEntry const* current_area = GET_PLAYERBOT_AI(bot)->GetCurrentArea();
         AreaTableEntry const* current_zone = GET_PLAYERBOT_AI(bot)->GetCurrentZone();
-        placeholders["%area_name"] = current_area ? GET_PLAYERBOT_AI(bot)->GetLocalizedAreaName(current_area) : BOT_TEXT1("string_unknown_area");
-        placeholders["%zone_name"] = current_zone ? GET_PLAYERBOT_AI(bot)->GetLocalizedAreaName(current_zone) : BOT_TEXT1("string_unknown_area");
+        placeholders["%area_name"] = current_area ? GET_PLAYERBOT_AI(bot)->GetLocalizedAreaName(current_area) : PlayerbotTextMgr::instance().GetBotText("string_unknown_area");
+        placeholders["%zone_name"] = current_zone ? GET_PLAYERBOT_AI(bot)->GetLocalizedAreaName(current_zone) : PlayerbotTextMgr::instance().GetBotText("string_unknown_area");
         placeholders["%my_class"] = GET_PLAYERBOT_AI(bot)->GetChatHelper()->FormatClass(bot->getClass());
         placeholders["%my_race"] = GET_PLAYERBOT_AI(bot)->GetChatHelper()->FormatRace(bot->getRace());
         placeholders["%my_level"] = std::to_string(bot->GetLevel());
@@ -365,12 +365,12 @@ bool ChatReplyAction::HandleWTBItemsReply(Player* bot, ChatChannelSource chatCha
                 //may reply to the same channel or whisper
                 if (urand(0, 1))
                 {
-                    std::string responseMessage = BOT_TEXT2("response_wtb_items_channel", placeholders);
+                    std::string responseMessage = PlayerbotTextMgr::instance().GetBotText("response_wtb_items_channel", placeholders);
                     GET_PLAYERBOT_AI(bot)->SayToWorld(responseMessage);
                 }
                 else
                 {
-                    std::string responseMessage = BOT_TEXT2("response_wtb_items_whisper", placeholders);
+                    std::string responseMessage = PlayerbotTextMgr::instance().GetBotText("response_wtb_items_whisper", placeholders);
                     GET_PLAYERBOT_AI(bot)->Whisper(responseMessage, name);
                 }
                 break;
@@ -380,12 +380,12 @@ bool ChatReplyAction::HandleWTBItemsReply(Player* bot, ChatChannelSource chatCha
                 //may reply to the same channel or whisper
                 if (urand(0, 1))
                 {
-                    std::string responseMessage = BOT_TEXT2("response_wtb_items_channel", placeholders);
+                    std::string responseMessage = PlayerbotTextMgr::instance().GetBotText("response_wtb_items_channel", placeholders);
                     GET_PLAYERBOT_AI(bot)->SayToChannel(responseMessage, ChatChannelId::GENERAL);
                 }
                 else
                 {
-                    std::string responseMessage = BOT_TEXT2("response_wtb_items_whisper", placeholders);
+                    std::string responseMessage = PlayerbotTextMgr::instance().GetBotText("response_wtb_items_whisper", placeholders);
                     GET_PLAYERBOT_AI(bot)->Whisper(responseMessage, name);
                 }
                 break;
@@ -395,12 +395,12 @@ bool ChatReplyAction::HandleWTBItemsReply(Player* bot, ChatChannelSource chatCha
                 //may reply to the same channel or whisper
                 if (urand(0, 1))
                 {
-                    std::string responseMessage = BOT_TEXT2("response_wtb_items_channel", placeholders);
+                    std::string responseMessage = PlayerbotTextMgr::instance().GetBotText("response_wtb_items_channel", placeholders);
                     GET_PLAYERBOT_AI(bot)->SayToChannel(responseMessage, ChatChannelId::TRADE);
                 }
                 else
                 {
-                    std::string responseMessage = BOT_TEXT2("response_wtb_items_whisper", placeholders);
+                    std::string responseMessage = PlayerbotTextMgr::instance().GetBotText("response_wtb_items_whisper", placeholders);
                     GET_PLAYERBOT_AI(bot)->Whisper(responseMessage, name);
                 }
                 break;
@@ -438,8 +438,8 @@ bool ChatReplyAction::HandleLFGQuestsReply(Player* bot, ChatChannelSource chatCh
         placeholders["%other_name"] = name;
         AreaTableEntry const* current_area = GET_PLAYERBOT_AI(bot)->GetCurrentArea();
         AreaTableEntry const* current_zone = GET_PLAYERBOT_AI(bot)->GetCurrentZone();
-        placeholders["%area_name"] = current_area ? GET_PLAYERBOT_AI(bot)->GetLocalizedAreaName(current_area) : BOT_TEXT1("string_unknown_area");
-        placeholders["%zone_name"] = current_zone ? GET_PLAYERBOT_AI(bot)->GetLocalizedAreaName(current_zone) : BOT_TEXT1("string_unknown_area");
+        placeholders["%area_name"] = current_area ? GET_PLAYERBOT_AI(bot)->GetLocalizedAreaName(current_area) : PlayerbotTextMgr::instance().GetBotText("string_unknown_area");
+        placeholders["%zone_name"] = current_zone ? GET_PLAYERBOT_AI(bot)->GetLocalizedAreaName(current_zone) : PlayerbotTextMgr::instance().GetBotText("string_unknown_area");
         placeholders["%my_class"] = GET_PLAYERBOT_AI(bot)->GetChatHelper()->FormatClass(bot->getClass());
         placeholders["%my_race"] = GET_PLAYERBOT_AI(bot)->GetChatHelper()->FormatRace(bot->getRace());
         placeholders["%my_level"] = std::to_string(bot->GetLevel());
@@ -458,12 +458,12 @@ bool ChatReplyAction::HandleLFGQuestsReply(Player* bot, ChatChannelSource chatCh
                 //may reply to the same channel or whisper
                 if (urand(0, 1))
                 {
-                    std::string responseMessage = BOT_TEXT2("response_lfg_quests_channel", placeholders);
+                    std::string responseMessage = PlayerbotTextMgr::instance().GetBotText("response_lfg_quests_channel", placeholders);
                     GET_PLAYERBOT_AI(bot)->SayToWorld(responseMessage);
                 }
                 else
                 {
-                    std::string responseMessage = BOT_TEXT2("response_lfg_quests_whisper", placeholders);
+                    std::string responseMessage = PlayerbotTextMgr::instance().GetBotText("response_lfg_quests_whisper", placeholders);
                     GET_PLAYERBOT_AI(bot)->Whisper(responseMessage, name);
                 }
                 break;
@@ -473,12 +473,12 @@ bool ChatReplyAction::HandleLFGQuestsReply(Player* bot, ChatChannelSource chatCh
                 //may reply to the same channel or whisper
                 if (urand(0, 1))
                 {
-                    std::string responseMessage = BOT_TEXT2("response_lfg_quests_channel", placeholders);
+                    std::string responseMessage = PlayerbotTextMgr::instance().GetBotText("response_lfg_quests_channel", placeholders);
                     GET_PLAYERBOT_AI(bot)->SayToChannel(responseMessage, ChatChannelId::GENERAL);
                 }
                 else
                 {
-                    std::string responseMessage = BOT_TEXT2("response_lfg_quests_whisper", placeholders);
+                    std::string responseMessage = PlayerbotTextMgr::instance().GetBotText("response_lfg_quests_whisper", placeholders);
                     GET_PLAYERBOT_AI(bot)->Whisper(responseMessage, name);
                 }
                 break;
@@ -487,7 +487,7 @@ bool ChatReplyAction::HandleLFGQuestsReply(Player* bot, ChatChannelSource chatCh
             {
                 //do not reply to the chat
                 //may whisper
-                std::string responseMessage = BOT_TEXT2("response_lfg_quests_whisper", placeholders);
+                std::string responseMessage = PlayerbotTextMgr::instance().GetBotText("response_lfg_quests_whisper", placeholders);
                 GET_PLAYERBOT_AI(bot)->Whisper(responseMessage, name);
                 break;
             }
@@ -1042,7 +1042,7 @@ std::string ChatReplyAction::GenerateReplyMessage(Player* bot, std::string& inco
     // load text if needed
     if (respondsText.empty())
     {
-        respondsText = BOT_TEXT2(replyType, name);
+        respondsText = PlayerbotTextMgr::instance().GetBotText(replyType, name);
     }
 
     if (respondsText.size() > 255)

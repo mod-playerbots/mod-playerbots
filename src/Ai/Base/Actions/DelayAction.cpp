@@ -10,7 +10,7 @@
 
 bool DelayAction::Execute(Event event)
 {
-    uint32 delay = sPlayerbotAIConfig->passiveDelay + sPlayerbotAIConfig->globalCoolDown;
+    uint32 delay = sPlayerbotAIConfig.passiveDelay + sPlayerbotAIConfig.globalCoolDown;
 
     botAI->SetNextCheckDelay(delay);
 

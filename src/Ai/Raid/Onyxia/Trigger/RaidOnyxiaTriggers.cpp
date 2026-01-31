@@ -17,7 +17,7 @@ bool OnyxiaDeepBreathTrigger::IsActive()
     // Check if Onyxia is casting
     Spell* currentSpell = boss->GetCurrentSpell(CURRENT_GENERIC_SPELL);
 
-    if (!currentSpell)
+    if (!currentSpell || !currentSpell->m_spellInfo)
         return false;
 
     uint32 spellId = currentSpell->m_spellInfo->Id;
@@ -65,7 +65,7 @@ bool RaidOnyxiaFireballSplashTrigger::IsActive()
 
     // Check if Onyxia is casting Fireball
     Spell* currentSpell = boss->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (!currentSpell || currentSpell->m_spellInfo->Id != 18392)  // 18392 is the classic Fireball ID
+    if (!currentSpell || !currentSpell->m_spellInfo || currentSpell->m_spellInfo->Id != 18392)  // 18392 is the classic Fireball ID  // 18392 is the classic Fireball ID
         return false;
 
     GuidVector nearbyUnits = AI_VALUE(GuidVector, "nearest friendly players");

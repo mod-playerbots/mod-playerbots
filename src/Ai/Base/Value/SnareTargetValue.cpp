@@ -30,7 +30,7 @@ Unit* SnareTargetValue::Calculate()
                 return unit;
             case CHASE_MOTION_TYPE:
             {
-                chaseTarget = sServerFacade->GetChaseTarget(unit);
+                chaseTarget = ServerFacade::instance().GetChaseTarget(unit);
                 if (!chaseTarget)
                     continue;
                 Player* chaseTargetPlayer = ObjectAccessor::FindPlayer(chaseTarget->GetGUID());

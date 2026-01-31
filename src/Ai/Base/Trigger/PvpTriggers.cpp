@@ -247,7 +247,7 @@ bool EnemyFlagCarrierNear::IsActive()
 {
     Unit* carrier = AI_VALUE(Unit*, "enemy flag carrier");
 
-    if (!carrier || !sServerFacade->IsDistanceLessOrEqualThan(sServerFacade->GetDistance2d(bot, carrier), 100.f))
+    if (!carrier || !ServerFacade::instance().IsDistanceLessOrEqualThan(ServerFacade::instance().GetDistance2d(bot, carrier), 100.f))
         return false;
 
     // Check if there is another enemy player target closer than the FC
@@ -255,8 +255,8 @@ bool EnemyFlagCarrierNear::IsActive()
 
     if (nearbyEnemy)
     {
-        float distToFC = sServerFacade->GetDistance2d(bot, carrier);
-        float distToEnemy = sServerFacade->GetDistance2d(bot, nearbyEnemy);
+        float distToFC = ServerFacade::instance().GetDistance2d(bot, carrier);
+        float distToEnemy = ServerFacade::instance().GetDistance2d(bot, nearbyEnemy);
 
         // If the other enemy is significantly closer, don't pursue FC
         if (distToEnemy + 15.0f < distToFC) // Add small buffer
@@ -283,7 +283,7 @@ bool TeamFlagCarrierNear::IsActive()
     }
 
     Unit* carrier = AI_VALUE(Unit*, "team flag carrier");
-    return carrier && sServerFacade->IsDistanceLessOrEqualThan(sServerFacade->GetDistance2d(bot, carrier), 200.f);
+    return carrier && ServerFacade::instance().IsDistanceLessOrEqualThan(ServerFacade::instance().GetDistance2d(bot, carrier), 200.f);
 }
 
 bool PlayerWantsInBattlegroundTrigger::IsActive()

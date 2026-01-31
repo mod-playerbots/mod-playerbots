@@ -6,29 +6,37 @@
 #ifndef _PLAYERBOT_PLAYERBOTSPELLREPOSITORY_H
 #define _PLAYERBOT_PLAYERBOTSPELLREPOSITORY_H
 
-#include "Playerbots.h"
+#include <cstdint>
+
+#include "DBCStructure.h"
 
 class PlayerbotSpellRepository
 {
 public:
-    static PlayerbotSpellRepository* Instance()
+    static PlayerbotSpellRepository& Instance()
     {
         static PlayerbotSpellRepository instance;
-        return &instance;
+
+        return instance;
     }
 
-    void Initialize(); // call once on startup
+    void Initialize();
 
-    SkillLineAbilityEntry const* GetSkillLine(uint32 spellId) const;
-    bool IsItemBuyable(uint32 itemId) const;
+    SkillLineAbilityEntry const* GetSkillLine(uint32_t spellId) const;
+    bool IsItemBuyable(uint32_t itemId) const;
 
 private:
     PlayerbotSpellRepository() = default;
+    ~PlayerbotSpellRepository() = default;
 
-    std::map<uint32, SkillLineAbilityEntry const*> skillSpells;
-    std::set<uint32> vendorItems;
+    PlayerbotSpellRepository(const PlayerbotSpellRepository&) = delete;
+    PlayerbotSpellRepository& operator=(const PlayerbotSpellRepository&) = delete;
+
+    PlayerbotSpellRepository(PlayerbotSpellRepository&&) = delete;
+    PlayerbotSpellRepository& operator=(PlayerbotSpellRepository&&) = delete;
+
+    std::map<uint32_t, SkillLineAbilityEntry const*> skillSpells;
+    std::set<uint32_t> vendorItems;
 };
-
-#define sPlayerbotSpellRepository PlayerbotSpellRepository::Instance()
 
 #endif
