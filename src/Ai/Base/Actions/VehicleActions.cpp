@@ -74,7 +74,7 @@ bool EnterVehicleAction::Execute(Event event)
 
 bool EnterVehicleAction::EnterVehicle(Unit* vehicleBase, bool moveIfFar)
 {
-    float dist = sServerFacade->GetDistance2d(bot, vehicleBase);
+    float dist = ServerFacade::instance().GetDistance2d(bot, vehicleBase);
     if (dist > 40.0f)
         return false;
 

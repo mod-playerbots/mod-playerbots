@@ -82,7 +82,7 @@ bool CastSpellAction::isPossible()
 {
     if (botAI->IsInVehicle() && !botAI->IsInVehicle(false, false, true))
     {
-        if (!sPlayerbotAIConfig->logInGroupOnly || (bot->GetGroup() && botAI->HasRealPlayerMaster()))
+        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && botAI->HasRealPlayerMaster()))
         {
             LOG_DEBUG("playerbots", "Can cast spell failed. Vehicle. - bot name: {}", bot->GetName());
         }
@@ -94,7 +94,7 @@ bool CastSpellAction::isPossible()
 
     if (spell == "mount" && bot->IsInCombat())
     {
-        if (!sPlayerbotAIConfig->logInGroupOnly || (bot->GetGroup() && botAI->HasRealPlayerMaster()))
+        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && botAI->HasRealPlayerMaster()))
         {
             LOG_DEBUG("playerbots", "Can cast spell failed. Mount. - bot name: {}", bot->GetName());
         }
@@ -133,7 +133,7 @@ bool CastSpellAction::isUseful()
 
     return spellTarget &&
            AI_VALUE2(bool, "spell cast useful",
-                     spell);  // && sServerFacade->GetDistance2d(bot, spellTarget) <= (range + combatReach);
+                     spell);  // && ServerFacade::instance().GetDistance2d(bot, spellTarget) <= (range + combatReach);
 }
 
 CastMeleeSpellAction::CastMeleeSpellAction(PlayerbotAI* botAI, std::string const spell) : CastSpellAction(botAI, spell)

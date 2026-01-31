@@ -10,7 +10,7 @@
 PerfMonitorOperation* PerfMonitor::start(PerformanceMetric metric, std::string const name,
                                                        PerformanceStack* stack)
 {
-    if (!sPlayerbotAIConfig->perfMonEnabled)
+    if (!sPlayerbotAIConfig.perfMonEnabled)
         return nullptr;
 
     std::string stackName = name;

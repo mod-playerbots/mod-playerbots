@@ -6,12 +6,9 @@
 #ifndef _PLAYERBOT_PLAYERBOTMGR_H
 #define _PLAYERBOT_PLAYERBOTMGR_H
 
-#include "Common.h"
 #include "ObjectGuid.h"
 #include "Player.h"
 #include "PlayerbotAIBase.h"
-#include "QueryHolder.h"
-#include "QueryResult.h"
 
 class ChatHandler;
 class PlayerbotAI;
@@ -101,13 +98,10 @@ private:
 class PlayerbotsMgr
 {
 public:
-    PlayerbotsMgr() {}
-    ~PlayerbotsMgr() {}
-
-    static PlayerbotsMgr* instance()
+    static PlayerbotsMgr& instance()
     {
         static PlayerbotsMgr instance;
-        return &instance;
+        return instance;
     }
 
     void AddPlayerbotData(Player* player, bool isBotAI);
@@ -117,6 +111,15 @@ public:
     PlayerbotMgr* GetPlayerbotMgr(Player* player);
 
 private:
+    PlayerbotsMgr() = default;
+    ~PlayerbotsMgr() = default;
+
+    PlayerbotsMgr(const PlayerbotsMgr&) = delete;
+    PlayerbotsMgr& operator=(const PlayerbotsMgr&) = delete;
+
+    PlayerbotsMgr(PlayerbotsMgr&&) = delete;
+    PlayerbotsMgr& operator=(PlayerbotsMgr&&) = delete;
+
     std::unordered_map<ObjectGuid, PlayerbotAIBase*> _playerbotsAIMap;
     std::unordered_map<ObjectGuid, PlayerbotAIBase*> _playerbotsMgrMap;
 };

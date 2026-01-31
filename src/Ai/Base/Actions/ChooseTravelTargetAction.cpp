@@ -366,7 +366,7 @@ bool ChooseTravelTargetAction::getBestDestination(std::vector<TravelDestination*
 
     WorldPosition botLocation(bot);
     std::vector<WorldPosition*> availablePoints =
-        sTravelMgr->getNextPoint(&botLocation, *activePoints);  // Pick a good point.
+        TravelMgr::instance().getNextPoint(&botLocation, *activePoints);  // Pick a good point.
 
     if (availablePoints.empty())  // No points available.
         return false;
@@ -488,7 +488,7 @@ bool ChooseTravelTargetAction::SetQuestTarget(TravelTarget* target, bool onlyCom
     if (newQuests)
     {
         // Prefer new quests near the player at lower levels.
-        activeDestinations = sTravelMgr->getQuestTravelDestinations(bot, -1, true, false, 400 + bot->GetLevel() * 10);
+        activeDestinations = TravelMgr::instance().getQuestTravelDestinations(bot, -1, true, false, 400 + bot->GetLevel() * 10);
     }
     if (activeQuests || completedQuests)
     {
@@ -510,7 +510,7 @@ bool ChooseTravelTargetAction::SetQuestTarget(TravelTarget* target, bool onlyCom
                 continue;
 
             //Find quest takers or objectives
-            std::vector<TravelDestination*> questDestinations = sTravelMgr->getQuestTravelDestinations(bot, questId, true, false, 0);
+            std::vector<TravelDestination*> questDestinations = TravelMgr::instance().getQuestTravelDestinations(bot, questId, true, false, 0);
 
             if (onlyClassQuest && activeDestinations.size() && questDestinations.size()) //Only do class quests if we have any.
             {
@@ -525,7 +525,7 @@ bool ChooseTravelTargetAction::SetQuestTarget(TravelTarget* target, bool onlyCom
         }
     }
     if (newQuests && activeDestinations.empty())
-        activeDestinations = sTravelMgr->getQuestTravelDestinations(bot, -1, true, false); //If we really don't find any new quests look futher away.
+        activeDestinations = TravelMgr::instance().getQuestTravelDestinations(bot, -1, true, false); //If we really don't find any new quests look futher away.
 
     if (botAI->HasStrategy("debug travel", BotState::BOT_STATE_NON_COMBAT))
         botAI->TellMasterNoFacing(std::to_string(activeDestinations.size()) + " quest destinations found.");
@@ -547,7 +547,7 @@ bool ChooseTravelTargetAction::SetNewQuestTarget(TravelTarget* target)
 
     // Find quest givers.
     std::vector<TravelDestination*> TravelDestinations =
-        sTravelMgr->getQuestTravelDestinations(bot, -1, botAI->HasRealPlayerMaster());
+        TravelMgr::instance().getQuestTravelDestinations(bot, -1, botAI->HasRealPlayerMaster());
 
     activeDestinations.insert(activeDestinations.end(), TravelDestinations.begin(), TravelDestinations.end());
 
@@ -576,7 +576,7 @@ bool ChooseTravelTargetAction::SetRpgTarget(TravelTarget* target)
 
     // Find rpg npcs
     std::vector<TravelDestination*> TravelDestinations =
-        sTravelMgr->getRpgTravelDestinations(bot, botAI->HasRealPlayerMaster());
+        TravelMgr::instance().getRpgTravelDestinations(bot, botAI->HasRealPlayerMaster());
 
     activeDestinations.insert(activeDestinations.end(), TravelDestinations.begin(), TravelDestinations.end());
 
@@ -605,7 +605,7 @@ bool ChooseTravelTargetAction::SetGrindTarget(TravelTarget* target)
 
     // Find grind mobs.
     std::vector<TravelDestination*> TravelDestinations =
-        sTravelMgr->getGrindTravelDestinations(bot, botAI->HasRealPlayerMaster());
+        TravelMgr::instance().getGrindTravelDestinations(bot, botAI->HasRealPlayerMaster());
 
     activeDestinations.insert(activeDestinations.end(), TravelDestinations.begin(), TravelDestinations.end());
 
@@ -634,7 +634,7 @@ bool ChooseTravelTargetAction::SetBossTarget(TravelTarget* target)
 
     // Find boss mobs.
     std::vector<TravelDestination*> TravelDestinations =
-        sTravelMgr->getBossTravelDestinations(bot, botAI->HasRealPlayerMaster());
+        TravelMgr::instance().getBossTravelDestinations(bot, botAI->HasRealPlayerMaster());
 
     activeDestinations.insert(activeDestinations.end(), TravelDestinations.begin(), TravelDestinations.end());
 
@@ -662,7 +662,7 @@ bool ChooseTravelTargetAction::SetExploreTarget(TravelTarget* target)
     WorldPosition botLocation(bot);
 
     // Find quest givers.
-    std::vector<TravelDestination*> TravelDestinations = sTravelMgr->getExploreTravelDestinations(bot, true, true);
+    std::vector<TravelDestination*> TravelDestinations = TravelMgr::instance().getExploreTravelDestinations(bot, true, true);
 
     activeDestinations.insert(activeDestinations.end(), TravelDestinations.begin(), TravelDestinations.end());
     /*
@@ -681,7 +681,7 @@ bool ChooseTravelTargetAction::SetExploreTarget(TravelTarget* target)
 
     if (activePoints.empty())
     {
-        TravelDestinations = sTravelMgr->getExploreTravelDestinations(bot, botAI->HasRealPlayerMaster());
+        TravelDestinations = TravelMgr::instance().getExploreTravelDestinations(bot, botAI->HasRealPlayerMaster());
 
         for (auto& activeTarget : activeDestinations)
         {
@@ -710,7 +710,7 @@ bool ChooseTravelTargetAction::SetNpcFlagTarget(TravelTarget* target, std::vecto
 
     std::vector<TravelDestination*> dests;
 
-    for (auto& d : sTravelMgr->getRpgTravelDestinations(bot, true, true))
+    for (auto& d : TravelMgr::instance().getRpgTravelDestinations(bot, true, true))
     {
         if (!d->getEntry())
             continue;
@@ -813,7 +813,7 @@ std::vector<TravelDestination*> TravelMgr::getBossTravelDestinations(Player* bot
 
 bool ChooseTravelTargetAction::SetNullTarget(TravelTarget* target)
 {
-    target->setTarget(sTravelMgr->nullTravelDestination, sTravelMgr->nullWorldPosition, true);
+    target->setTarget(TravelMgr::instance().nullTravelDestination, TravelMgr::instance().nullWorldPosition, true);
 
     return true;
 }
@@ -832,7 +832,7 @@ TravelDestination* ChooseTravelTargetAction::FindDestination(Player* bot, std::s
     //Quests
     if (quests)
     {
-        for (auto& d : sTravelMgr->getQuestTravelDestinations(bot, 0, true, true))
+        for (auto& d : TravelMgr::instance().getQuestTravelDestinations(bot, 0, true, true))
         {
             if (strstri(d->getTitle().c_str(), name.c_str()))
                 dests.push_back(d);
@@ -842,7 +842,7 @@ TravelDestination* ChooseTravelTargetAction::FindDestination(Player* bot, std::s
     //Zones
     if (zones)
     {
-        for (auto& d : sTravelMgr->getExploreTravelDestinations(bot, true, true))
+        for (auto& d : TravelMgr::instance().getExploreTravelDestinations(bot, true, true))
         {
             if (strstri(d->getTitle().c_str(), name.c_str()))
                 dests.push_back(d);
@@ -852,7 +852,7 @@ TravelDestination* ChooseTravelTargetAction::FindDestination(Player* bot, std::s
     //Npcs
     if (npcs)
     {
-        for (auto& d : sTravelMgr->getRpgTravelDestinations(bot, true, true))
+        for (auto& d : TravelMgr::instance().getRpgTravelDestinations(bot, true, true))
         {
             if (strstri(d->getTitle().c_str(), name.c_str()))
                 dests.push_back(d);
@@ -862,7 +862,7 @@ TravelDestination* ChooseTravelTargetAction::FindDestination(Player* bot, std::s
     //Mobs
     if (mobs)
     {
-        for (auto& d : sTravelMgr->getGrindTravelDestinations(bot, true, true, 5000.0f))
+        for (auto& d : TravelMgr::instance().getGrindTravelDestinations(bot, true, true, 5000.0f))
         {
             if (strstri(d->getTitle().c_str(), name.c_str()))
                 dests.push_back(d);
@@ -872,7 +872,7 @@ TravelDestination* ChooseTravelTargetAction::FindDestination(Player* bot, std::s
     //Bosses
     if (bosses)
     {
-        for (auto& d : sTravelMgr->getBossTravelDestinations(bot, true, true))
+        for (auto& d : TravelMgr::instance().getBossTravelDestinations(bot, true, true))
         {
             if (strstri(d->getTitle().c_str(), name.c_str()))
                 dests.push_back(d);
