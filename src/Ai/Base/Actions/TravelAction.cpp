@@ -5,11 +5,10 @@
 
 #include "TravelAction.h"
 
-#include "GridNotifiers.h"
-#include "Playerbots.h"
-// Required due to a poor implementation by AC
 #include "CellImpl.h"
+#include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
+#include "Playerbots.h"
 
 bool TravelAction::Execute(Event)
 {
@@ -66,9 +65,11 @@ bool TravelAction::isUseful()
 bool MoveToDarkPortalAction::Execute(Event)
 {
     if (bot->GetGroup())
+    {
         if (bot->GetGroup()->GetLeaderGUID() != bot->GetGUID() &&
             !GET_PLAYERBOT_AI(GET_PLAYERBOT_AI(bot)->GetGroupLeader()))
             return false;
+    }
 
     if (bot->GetLevel() > 57)
     {
@@ -134,9 +135,7 @@ bool MoveFromDarkPortalAction::Execute(Event)
     RESET_AI_VALUE(GuidPosition, "rpg target");
 
     if (bot->GetTeamId() == TEAM_ALLIANCE)
-    {
         return MoveTo(530, -319.261f, 1027.213, 54.172638f, false, true);
-    }
 
     return MoveTo(530, -180.444f, 1027.947, 54.181538f, false, true);
 }

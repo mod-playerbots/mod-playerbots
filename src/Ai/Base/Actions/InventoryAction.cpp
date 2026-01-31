@@ -351,9 +351,7 @@ uint32 InventoryAction::GetItemCount(FindItemVisitor* visitor, IterateItemsMask 
 
     std::vector<Item*>& items = visitor->GetResult();
     for (Item* item : items)
-    {
         count += item->GetCount();
-    }
 
     return count;
 }

@@ -6,8 +6,8 @@
 #include "TellReputationAction.h"
 
 #include "Event.h"
-#include "ReputationMgr.h"
 #include "PlayerbotAI.h"
+#include "ReputationMgr.h"
 
 bool TellReputationAction::Execute(Event)
 {

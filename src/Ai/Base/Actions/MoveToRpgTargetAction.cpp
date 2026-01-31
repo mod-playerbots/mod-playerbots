@@ -16,14 +16,12 @@ bool MoveToRpgTargetAction::Execute(Event)
     GuidPosition guidP = AI_VALUE(GuidPosition, "rpg target");
     Unit* unit = botAI->GetUnit(guidP);
     if (unit && !unit->IsInWorld())
-    {
         return false;
-    }
+
     GameObject* go = botAI->GetGameObject(guidP);
     if (go && !go->IsInWorld())
-    {
         return false;
-    }
+
 
     WorldObject* wo = nullptr;
     if (unit)

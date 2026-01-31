@@ -1785,9 +1785,8 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
 
         uint32_t desiredQuality = itemQuality;
         if (urand(0, 100) < 100 * sPlayerbotAIConfig.randomGearLoweringChance && desiredQuality > ITEM_QUALITY_NORMAL)
-        {
             desiredQuality--;
-        }
+
         do
         {
             for (uint32 requiredLevel = bot->GetLevel(); requiredLevel > std::max<uint32_t>((int32)bot->GetLevel() - delta, 0);
@@ -1913,7 +1912,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
         // fail to store in bag
         if (oldItem)
             continue;
-
+        //todo why delete?
         bot->AutoUnequipOffhandIfNeed();
         // if (newItem)
         // {
@@ -2143,21 +2142,18 @@ void PlayerbotFactory::InitBags(bool destroyOld)
         uint32 newItemId = 51809;
         Item* old_bag = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
         if (old_bag && old_bag->GetTemplate()->ItemId == newItemId)
-        {
             continue;
-        }
+
         uint16 dest;
         if (!CanEquipUnseenItem(slot, dest, newItemId))
             continue;
 
         if (old_bag && destroyOld)
-        {
             bot->DestroyItem(INVENTORY_SLOT_BAG_0, slot, true);
-        }
+
         if (old_bag)
-        {
             continue;
-        }
+
         // if (newItem)
         // {
         //     newItem->AddToWorld();

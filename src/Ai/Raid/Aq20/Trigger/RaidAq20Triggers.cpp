@@ -7,20 +7,14 @@ bool Aq20MoveToCrystalTrigger::IsActive()
     Unit* const boss = context->GetValue<Unit*>("find target", "ossirian the unscarred")->Get();
 
     if (boss == nullptr)
-    {
         return false;
-    }
 
     if (!boss->IsInCombat())
-    {
         return false;
-    }
 
     // if buff is active move to crystal
     if (RaidAq20Utils::IsOssirianBuffActive(*boss))
-    {
         return true;
-    }
 
     // if buff is not active a debuff will be, buff becomes active once debuff expires
     // so move to crystal when debuff almost done, or based debuff time left and
@@ -28,18 +22,14 @@ bool Aq20MoveToCrystalTrigger::IsActive()
     int32_t debuffTimeRemaining = RaidAq20Utils::GetOssirianDebuffTimeRemaining(*boss);
 
     if (debuffTimeRemaining < 5000)
-    {
         return true;
-    }
 
     if (debuffTimeRemaining < 30000)
     {
         const GameObject* const crystal = RaidAq20Utils::GetNearestCrystal(*boss);
 
         if (crystal == nullptr)
-        {
             return false;
-        }
 
         float botDist = this->bot->GetDistance(crystal);
         float timeToReach = botDist / this->bot->GetSpeed(MOVE_RUN);

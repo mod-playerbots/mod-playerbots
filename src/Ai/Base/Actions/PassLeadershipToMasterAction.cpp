@@ -14,24 +14,18 @@ bool PassLeadershipToMasterAction::Execute(Event)
     const Player* const master = this->GetMaster();
 
     if (master == nullptr || master == this->bot)
-    {
         return false;
-    }
 
     const Group* const group = this->bot->GetGroup();
 
     if (group == nullptr || !bot->GetGroup()->IsMember(master->GetGUID()))
-    {
         return false;
-    }
 
     std::unique_ptr<GroupSetLeaderOperation> setLeaderOp = std::make_unique<GroupSetLeaderOperation>(this->bot->GetGUID(), master->GetGUID());
     PlayerbotWorldThreadProcessor::instance().QueueOperation(std::move(setLeaderOp));
 
     if (!message.empty())
-    {
         this->botAI->TellMasterNoFacing(message);
-    }
 
     if (RandomPlayerbotMgr::instance().IsRandomBot(this->bot))
     {

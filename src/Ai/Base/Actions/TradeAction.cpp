@@ -64,9 +64,7 @@ bool TradeAction::Execute(Event event)
         const int32_t possibleValue = atoi(text.substr(pos + 1).c_str());
 
         if (possibleValue > 0)
-        {
             count = possibleValue;
-        }
     }
 
     std::vector<Item*> found = parseItems(text);
@@ -117,9 +115,7 @@ bool TradeAction::TradeItem(Item const* item, int8 slot)
         for (uint8 i = 0; i < TRADE_SLOT_TRADED_COUNT && tradeSlot == -1; i++)
         {
             if (pTrade->GetItem(TradeSlots(i)) == nullptr)
-            {
                 tradeSlot = i;
-            }
         }
     }
 

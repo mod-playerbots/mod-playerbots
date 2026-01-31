@@ -20,7 +20,6 @@ public:
         : x(x), y(y), z(z), mapId(mapId), valueSet(valueSet)
     {
     }
-
     PositionInfo(PositionInfo const& other) = default;
     PositionInfo& operator=(PositionInfo const& other) = default;
 

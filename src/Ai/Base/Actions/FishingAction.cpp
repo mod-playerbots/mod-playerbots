@@ -8,7 +8,6 @@
 #include "Event.h"
 
 #include "GridNotifiers.h"
-// Required due to poor AC implementation
 #include "GridNotifiersImpl.h"
 #include "ItemPackets.h"
 #include "LastMovementValue.h"

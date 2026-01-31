@@ -49,6 +49,7 @@ public:
 
     bool isUseful() override { return false; }
     virtual bool AcceptSpell(SpellInfo const* spellInfo);
+    //TODO Why is this like this?
     virtual uint32 GetSpellPriority(SpellInfo const*) { return 1; }
     virtual bool castSpell(uint32 spellId, WorldObject* wo);
     bool Execute(Event event) override;

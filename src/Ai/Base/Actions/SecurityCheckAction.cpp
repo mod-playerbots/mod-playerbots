@@ -21,17 +21,13 @@ bool SecurityCheckAction::Execute(Event)
     const Group* const group = bot->GetGroup();
 
     if (group == nullptr)
-    {
         return false;
-    }
 
     const LootMethod method = group->GetLootMethod();
     const ItemQualities threshold = group->GetLootThreshold();
 
     if (method != MASTER_LOOT && method != FREE_FOR_ALL && threshold <= ITEM_QUALITY_UNCOMMON)
-    {
         return false;
-    }
 
     if (
         (this->botAI->GetGroupLeader()->GetSession()->GetSecurity() == SEC_PLAYER)

@@ -15,6 +15,7 @@ class PlayerbotAI;
 class CraftData
 {
 public:
+
     CraftData() : itemId(0) {}
     ~CraftData() = default;
 

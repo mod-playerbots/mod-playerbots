@@ -336,9 +336,7 @@ uint32 TalentSpec::GetTalentPoints(std::vector<TalentListEntry>& talents, int32 
         const int64_t entryTabPage = entry.tabPage();
 
         if (entryTabPage == tabpage)
-        {
             tPoints = tPoints + entry.rank;
-        }
     }
 
     return tPoints;

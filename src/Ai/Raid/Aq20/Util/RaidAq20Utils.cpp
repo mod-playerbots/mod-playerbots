@@ -20,23 +20,17 @@ int32_t RaidAq20Utils::GetOssirianDebuffTimeRemaining(Unit& ossirian)
         const AuraApplication* const auraApplication = ossirian.GetAuraApplication(debuff);
 
         if (auraApplication == nullptr)
-        {
             continue;
-        }
 
         const Aura* const aura = auraApplication->GetBase();
 
         if (aura == nullptr)
-        {
             continue;
-        }
 
         int32_t duration = aura->GetDuration();
 
         if (retVal > duration)
-        {
             retVal = duration;
-        }
     }
 
     return retVal;

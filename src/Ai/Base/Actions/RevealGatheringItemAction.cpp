@@ -5,16 +5,14 @@
 
 #include "RevealGatheringItemAction.h"
 
+#include "CellImpl.h"
 #include "ChatHelper.h"
 #include "Event.h"
 #include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
+#include "PlayerbotAI.h"
 #include "ServerFacade.h"
 #include "NearestGameObjects.h"
-#include "PlayerbotAI.h"
-
-// Required due to a poor implementation by AC
-#include "CellImpl.h"
-#include "GridNotifiersImpl.h"
 
 bool RevealGatheringItemAction::Execute(Event)
 {

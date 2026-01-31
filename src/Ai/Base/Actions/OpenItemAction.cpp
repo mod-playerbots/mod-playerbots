@@ -12,9 +12,7 @@ bool OpenItemAction::Execute(Event)
     Item* const item = botAI->FindOpenableItem();
 
     if (item == nullptr)
-    {
         return false;
-    }
 
     uint8_t bag = item->GetBagSlot();  // Retrieves the bag slot (255 for main inventory)
     uint8_t slot = item->GetSlot();    // Retrieves the actual slot inside the bag

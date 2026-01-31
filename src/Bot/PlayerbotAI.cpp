@@ -54,7 +54,6 @@
 #include "Unit.h"
 #include "UpdateTime.h"
 #include "Vehicle.h"
-#include "GlobalPlayerInspector.h"
 
 const int SPELL_TITAN_GRIP = 49152;
 
@@ -1451,15 +1450,6 @@ void PlayerbotAI::DoNextAction(bool min)
     }
 
     bool minimal = !this->AllowActivity();
-
-    const GlobalPlayerInspector playerInspector(this->bot->GetGUID().GetRawValue());
-
-	if (!minimal && playerInspector.isDrinking() && playerInspector.shouldBeDrinking(95.0f))
-	{
-		this->SetNextCheckDelay(500);
-
-		return;
-	}
 
     currentEngine->DoNextAction(nullptr, 0, (minimal || min));
 

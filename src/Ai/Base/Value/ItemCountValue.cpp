@@ -4,16 +4,14 @@
  */
 
 #include "ItemCountValue.h"
-
+//todo review
 uint32_t ItemCountValue::Calculate()
 {
     uint32_t count = 0;
     std::vector<Item*> items = InventoryAction::parseItems(qualifier);
 
     for (const Item* const item : items)
-    {
         count += item->GetCount();
-    }
 
     return count;
 }

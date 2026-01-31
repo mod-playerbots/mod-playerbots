@@ -26,11 +26,11 @@ bool IckAndKrickAction::Execute(Event)
     bool poisonNova = boss->HasUnitState(UNIT_STATE_CASTING) && (boss->FindCurrentSpellBySpellId(SPELL_POISON_NOVA_POS) || boss->FindCurrentSpellBySpellId(SPELL_POISON_NOVA_POS_HC));
     bool explosiveBarrage = orb
                         || (
-                            boss->HasUnitState(UNIT_STATE_CASTING)
-                            && (
-                                boss->FindCurrentSpellBySpellId(SPELL_EXPLOSIVE_BARRAGE_ICK)
-                                || boss->FindCurrentSpellBySpellId(SPELL_EXPLOSIVE_BARRAGE_KRICK)
-                        )
+                            boss->HasUnitState(UNIT_STATE_CASTING) &&
+                            (
+                                boss->FindCurrentSpellBySpellId(SPELL_EXPLOSIVE_BARRAGE_ICK) ||
+                                boss->FindCurrentSpellBySpellId(SPELL_EXPLOSIVE_BARRAGE_KRICK)
+                            )
                     );
     bool isTank = botAI->IsTank(bot);
 

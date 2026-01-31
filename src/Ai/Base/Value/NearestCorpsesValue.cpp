@@ -5,9 +5,8 @@
 
 #include "NearestCorpsesValue.h"
 
-#include "GridNotifiers.h"
-// Required due to
 #include "CellImpl.h"
+#include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 
 class AnyDeadUnitInObjectRangeCheck

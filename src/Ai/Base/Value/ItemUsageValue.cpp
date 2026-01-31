@@ -704,26 +704,18 @@ bool ItemUsageValue::IsItemNeededForUsefullSpell(const ItemTemplate& itemTemplat
         const SpellInfo* const spellInfo = SpellMgr::instance()->GetSpellInfo(spellId);
 
         if (spellInfo == nullptr)
-        {
             continue;
-        }
 
         if (checkAllReagents && !this->HasItemsNeededForSpell(spellId, itemTemplate))
-        {
             continue;
-        }
 
         if (this->SpellGivesSkillUp(spellId, bot))
-        {
             return true;
-        }
 
         const uint32_t newItemId = spellInfo->Effects[EFFECT_0].ItemType;
 
         if (newItemId == 0 || newItemId == itemTemplate.ItemId)
-        {
             continue;
-        }
 
         const ItemUsage usage = this->context->GetValue<ItemUsage>("item usage", newItemId)->Get();
 
@@ -749,33 +741,25 @@ bool ItemUsageValue::HasItemsNeededForSpell(uint32_t spellId, const ItemTemplate
     const SpellInfo* const spellInfo = SpellMgr::instance()->GetSpellInfo(spellId);
 
     if (spellInfo == nullptr)
-    {
         return false;
-    }
 
     for (uint8_t i = 0; i < MAX_SPELL_REAGENTS; i++)
     {
         if (spellInfo->ReagentCount[i] < 1 || spellInfo->Reagent[i] == 0)
-        {
             continue;
-        }
 
         const int64_t itemTemplateId = itemTemplate.ItemId;
 
         // If we only need 1 item then current item does not need to be
         // checked since we are looting/buying or already have it.
         if (itemTemplateId == spellInfo->Reagent[i] && spellInfo->ReagentCount[i] == 1)
-        {
             continue;
-        }
 
         const ItemTemplate* const requiredItemTemplate = ObjectMgr::instance()->GetItemTemplate(spellInfo->Reagent[i]);
         const uint32_t count = this->context->GetValue<uint32_t>("item count", requiredItemTemplate->Name1)->Get();
 
         if (count < spellInfo->ReagentCount[i])
-        {
             return false;
-        }
     }
 
     return true;
@@ -894,9 +878,7 @@ bool ItemUsageValue::SpellGivesSkillUp(const uint32_t spellId, const Player* con
         const SkillLineAbilityEntry* const skill = spellIterator->second;
 
         if (skill->SkillLine == 0)
-        {
             continue;
-        }
 
         const uint32_t SkillValue = bot->GetPureSkillValue(skill->SkillLine);
 

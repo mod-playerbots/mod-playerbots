@@ -173,23 +173,16 @@ bool CastAuraSpellAction::isUseful()
     Unit* const target = this->GetTarget();
 
     if (target == nullptr || !CastSpellAction::isUseful())
-    {
         return false;
-    }
 
     const Aura* const aura = botAI->GetAura(this->spell, target, this->isOwner, this->checkDuration);
 
     if (aura == nullptr)
-    {
         return true;
-    }
-
     const int64_t& signedBeforeDuration = this->beforeDuration;
 
     if (signedBeforeDuration > 0 && aura->GetDuration() < signedBeforeDuration)
-    {
         return true;
-    }
 
     return false;
 }

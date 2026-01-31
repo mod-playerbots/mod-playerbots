@@ -57,13 +57,11 @@ bool ToCLanceAction::Execute(Event)
     {
         // First unequip current weapon if it exists
         if (oldWeapon)
-        {
             bot->SwapItem(oldWeapon->GetPos(), lanceItem->GetPos());
-        }
+
         else
-        {
             bot->EquipItem(EQUIPMENT_SLOT_MAINHAND, lanceItem, true);
-        }
+
         return true;
     }
 

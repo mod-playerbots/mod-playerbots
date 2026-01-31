@@ -628,7 +628,7 @@ std::vector<WorldPosition> WorldPosition::frommGridCoord(mGridCoord GridCoord)
 void WorldPosition::loadMapAndVMap(uint32 mapId, uint8 x, uint8 y)
 {
     std::string const fileName = "load_map_grid.csv";
-
+    //TODO: Code is totally unsused.
     // if (isOverworld() && false || false)
     // {
     //     if (!MMAP::MMapFactory::createOrGetMMapMgr()->loadMap(mapId, x, y))

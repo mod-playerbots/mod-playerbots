@@ -108,9 +108,8 @@ public:
                 const ItemTemplate* const itemTemplate = ObjectMgr::instance()->GetItemTemplate(i->item_template);
 
                 if (itemTemplate != nullptr)
-                {
                     guids.push_back(i->item_guid);
-                }
+
             }
 
             for (std::vector<uint32>::iterator i = guids.begin(); i != guids.end(); ++i)

@@ -64,17 +64,14 @@ bool MovementAction::JumpTo(uint32 mapId, float x, float y, float z, MovementPri
 {
     UpdateMovementState();
     if (!IsMovingAllowed(mapId, x, y, z))
-    {
         return false;
-    }
+
     if (IsDuplicateMove(mapId, x, y, z))
-    {
         return false;
-    }
+
     if (IsWaitingForLastMove(priority))
-    {
         return false;
-    }
+
     float speed = bot->GetSpeed(MOVE_RUN);
     MotionMaster& mm = *bot->GetMotionMaster();
     mm.Clear();
@@ -1844,9 +1841,7 @@ bool FleeAction::isUseful()
 bool FleeWithPetAction::Execute(Event)
 {
     if (bot->GetPet() != nullptr)
-    {
         botAI->PetFollow();
-    }
 
     return Flee(AI_VALUE(Unit*, "current target"));
 }
@@ -1856,9 +1851,8 @@ bool AvoidAoeAction::isUseful()
     const int64_t currentMoveTimer = getMSTime() - this->lastMoveTimer;
 
     if (currentMoveTimer < this->lastMoveTimer)
-    {
         return false;
-    }
+
     GuidVector traps = AI_VALUE(GuidVector, "nearest trap with damage");
     GuidVector triggers = AI_VALUE(GuidVector, "possible triggers");
     return AI_VALUE(Aura*, "area debuff") || !traps.empty() || !triggers.empty();
@@ -2290,13 +2284,11 @@ bool CombatFormationMoveAction::isUseful()
     const int64_t currentMoveTimer = getMSTime() - this->lastMoveTimer;
 
     if (currentMoveTimer < this->lastMoveTimer)
-    {
         return false;
-    }
+
     if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL) != nullptr)
-    {
         return false;
-    }
+
     return true;
 }
 
@@ -2889,9 +2881,7 @@ bool MoveAwayFromPlayerWithDebuffAction::Execute(Event)
     Group* const group = bot->GetGroup();
 
     if (group == nullptr)
-    {
         return false;
-    }
 
     std::vector<Player*> debuffedPlayers;
 

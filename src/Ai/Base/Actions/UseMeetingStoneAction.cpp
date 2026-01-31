@@ -5,15 +5,14 @@
 
 #include "UseMeetingStoneAction.h"
 
+#include "CellImpl.h"
 #include "Event.h"
 #include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
 #include "NearestGameObjects.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "PositionValue.h"
-// Required because of a poor implementation by AC
-#include "GridNotifiersImpl.h"
-#include "CellImpl.h"
 
 bool UseMeetingStoneAction::Execute(Event event)
 {
@@ -63,9 +62,7 @@ bool SummonAction::Execute(Event)
         return false;
 
     if (bot->GetPet() != nullptr)
-    {
         botAI->PetFollow();
-    }
 
     if (master->GetSession()->GetSecurity() >= SEC_PLAYER)
     {

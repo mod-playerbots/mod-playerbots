@@ -69,5 +69,4 @@ void NewRpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void NewRpgStrategy::InitMultipliers(std::vector<Multiplier*>&)
 {
-
 }

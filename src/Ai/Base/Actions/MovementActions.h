@@ -333,7 +333,6 @@ public:
 private:
     uint32 spellId;
     float range;
-    bool alive;
 };
 
 #endif

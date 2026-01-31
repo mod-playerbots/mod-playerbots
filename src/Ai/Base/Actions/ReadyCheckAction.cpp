@@ -14,14 +14,10 @@
 std::string_view getColorForThreshold(const float threshold)
 {
     if (threshold > 75.0f)
-    {
         return "|cff00ff00";
-    }
 
     if (threshold > 50.0f)
-    {
         return "|cffffff00";
-    }
 
     return "|cffff0000";
 }
@@ -238,4 +234,7 @@ bool ReadyCheckAction::ReadyCheck()
     return true;
 }
 
-bool FinishReadyCheckAction::Execute(Event) { return ReadyCheck(); }
+bool FinishReadyCheckAction::Execute(Event)
+{
+    return ReadyCheck();
+}

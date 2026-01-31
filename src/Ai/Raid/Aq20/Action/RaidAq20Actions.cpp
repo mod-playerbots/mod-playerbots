@@ -7,16 +7,12 @@ bool Aq20UseCrystalAction::Execute(Event)
     Unit* const boss = context->GetValue<Unit*>("find target", "ossirian the unscarred")->Get();
 
     if (boss == nullptr)
-    {
         return false;
-    }
 
     const GameObject* const crystal = RaidAq20Utils::GetNearestCrystal(*boss);
 
     if (crystal == nullptr)
-    {
         return false;
-    }
 
     float botDist = this->bot->GetDistance(crystal);
 

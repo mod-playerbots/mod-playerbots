@@ -23,8 +23,8 @@
 #include "SharedDefines.h"
 #include "Unit.h"
 #include "Vehicle.h"
-#include <RtiTargetValue.h>
-#include <TankAssistStrategy.h>
+#include "RtiTargetValue.h"
+#include "TankAssistStrategy.h"
 #include "../../../../../../src/server/scripts/Northrend/Ulduar/Ulduar/ulduar.h"
 
 const std::string ADD_STRATEGY_CHAR = "+";
@@ -738,21 +738,15 @@ bool RazorscaleIgnoreBossAction::isUseful()
 bool RazorscaleIgnoreBossAction::Execute(Event)
 {
     if (!bot)
-    {
         return false;
-    }
 
     Unit* boss = AI_VALUE2(Unit*, "find target", "razorscale");
     if (!boss)
-    {
         return false;
-    }
 
     Group* group = bot->GetGroup();
     if (!group)
-    {
         return false;
-    }
 
     // Check if the bot is outside the designated area and move inside first
     if (bot->GetDistance2d(RazorscaleBossHelper::RAZORSCALE_ARENA_CENTER_X,
@@ -765,17 +759,13 @@ bool RazorscaleIgnoreBossAction::Execute(Event)
     }
 
     if (!botAI->IsTank(bot))
-    {
         return false;
-    }
 
     // Check if the boss is already set as the moon marker
     int8 moonIndex = 4;
     ObjectGuid currentMoonTarget = group->GetTargetIcon(moonIndex);
     if (currentMoonTarget == boss->GetGUID())
-    {
         return false;  // Moon marker is already correctly set
-    }
 
     // Get the main tank and determine role
     Unit* mainTankUnit = AI_VALUE(Unit*, "main tank");
@@ -810,9 +800,7 @@ bool RazorscaleGroundedAction::isUseful()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "razorscale");
     if (!boss || !boss->IsAlive() || boss->GetPositionZ() > RazorscaleBossHelper::RAZORSCALE_FLYING_Z_THRESHOLD)
-    {
         return false;
-    }
 
     if (botAI->IsMainTank(bot))
     {
@@ -855,9 +843,7 @@ bool RazorscaleGroundedAction::isUseful()
     }
 
     if (botAI->IsMelee(bot))
-    {
         return false;
-    }
 
     if (botAI->IsRanged(bot))
     {
@@ -978,9 +964,7 @@ bool RazorscaleGroundedAction::Execute(Event)
 bool RazorscaleHarpoonAction::Execute(Event)
 {
     if (!bot)
-    {
         return false;
-    }
 
     RazorscaleBossHelper razorscaleHelper(botAI);
 

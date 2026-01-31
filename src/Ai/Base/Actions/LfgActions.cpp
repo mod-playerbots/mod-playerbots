@@ -185,9 +185,7 @@ bool LfgRoleCheckAction::Execute(Event)
     const Group* const group = bot->GetGroup();
 
     if (group == nullptr)
-    {
         return false;
-    }
 
     const uint8_t newRoles = this->GetRoles();
 
