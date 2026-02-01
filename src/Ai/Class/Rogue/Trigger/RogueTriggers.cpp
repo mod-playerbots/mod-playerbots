@@ -22,7 +22,7 @@ bool UnstealthTrigger::IsActive()
     return botAI->HasAura("stealth", bot) && !AI_VALUE(uint8, "attacker count") &&
            (AI_VALUE2(bool, "moving", "self target") &&
             ((botAI->GetMaster() &&
-              sServerFacade->IsDistanceGreaterThan(AI_VALUE2(float, "distance", "group leader"), 10.0f) &&
+              ServerFacade::instance().IsDistanceGreaterThan(AI_VALUE2(float, "distance", "group leader"), 10.0f) &&
               AI_VALUE2(bool, "moving", "group leader")) ||
              !AI_VALUE(uint8, "attacker count")));
 }
@@ -60,7 +60,7 @@ bool StealthTrigger::IsActive()
     if (bot->InArena())
         distance += 15;
 
-    return target && sServerFacade->GetDistance2d(bot, target) < distance;
+    return target && ServerFacade::instance().GetDistance2d(bot, target) < distance;
 }
 
 bool SapTrigger::IsPossible() { return bot->GetLevel() > 10 && bot->HasSpell(6770) && !bot->IsInCombat(); }
@@ -99,8 +99,8 @@ bool SprintTrigger::IsActive()
 
     return AI_VALUE2(bool, "moving", "self target") &&
            (AI_VALUE2(bool, "moving", "dps target") || AI_VALUE2(bool, "moving", "enemy player target")) && targeted &&
-           (sServerFacade->IsDistanceGreaterThan(AI_VALUE2(float, "distance", "dps target"), distance) ||
-            sServerFacade->IsDistanceGreaterThan(AI_VALUE2(float, "distance", "enemy player target"), distance));
+           (ServerFacade::instance().IsDistanceGreaterThan(AI_VALUE2(float, "distance", "dps target"), distance) ||
+            ServerFacade::instance().IsDistanceGreaterThan(AI_VALUE2(float, "distance", "enemy player target"), distance));
 }
 
 bool ExposeArmorTrigger::IsActive()

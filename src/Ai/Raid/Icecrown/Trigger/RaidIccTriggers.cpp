@@ -287,7 +287,7 @@ bool IccPutricideGrowingOozePuddleTrigger::IsActive()
 
     Difficulty diff = bot->GetRaidDifficulty();
 
-    if (sPlayerbotAIConfig->EnableICCBuffs && diff && (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
+    if (sPlayerbotAIConfig.EnableICCBuffs && diff && (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
     {
         //-------CHEAT-------
         if (!bot->HasAura(SPELL_EXPERIENCED))
@@ -834,7 +834,7 @@ bool IccSindragosaGroupPositionTrigger::IsActive()
 
     Difficulty diff = bot->GetRaidDifficulty();
 
-    if (sPlayerbotAIConfig->EnableICCBuffs && diff && (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
+    if (sPlayerbotAIConfig.EnableICCBuffs && diff && (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
     {
         //-------CHEAT-------
         if (!bot->HasAura(SPELL_EXPERIENCED))

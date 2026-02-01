@@ -54,7 +54,7 @@ SuggestWhatToDoAction::SuggestWhatToDoAction(PlayerbotAI* botAI, std::string con
 
 bool SuggestWhatToDoAction::isUseful()
 {
-    if (!sRandomPlayerbotMgr->IsRandomBot(bot) || bot->GetGroup() || bot->GetInstanceId() || bot->GetBattleground())
+    if (!sRandomPlayerbotMgr.IsRandomBot(bot) || bot->GetGroup() || bot->GetInstanceId() || bot->GetBattleground())
         return false;
 
     std::string qualifier = "suggest what to do";
@@ -140,7 +140,7 @@ void SuggestWhatToDoAction::grindMaterials()
                     placeholders["%role"] = chat->formatClass(bot, AiFactory::GetPlayerSpecTab(bot));
                     placeholders["%category"] = item;
 
-                    spam(BOT_TEXT2("suggest_trade", placeholders), urand(0, 1) ? 0x3C : 0x18, !urand(0, 2), !urand(0,
+                    spam(PlayerbotTextMgr::instance().GetBotText("suggest_trade", placeholders), urand(0, 1) ? 0x3C : 0x18, !urand(0, 2), !urand(0,
     3)); return;
                 }
             }
@@ -260,9 +260,9 @@ SuggestDungeonAction::SuggestDungeonAction(PlayerbotAI* botAI) : SuggestWhatToDo
 
 bool SuggestDungeonAction::Execute(Event event)
 {
-    // TODO: use sPlayerbotDungeonRepository
+    // TODO: use PlayerbotDungeonRepository::instance()
 
-    if (!sPlayerbotAIConfig->randomBotSuggestDungeons || bot->GetGroup())
+    if (!sPlayerbotAIConfig.randomBotSuggestDungeons || bot->GetGroup())
         return false;
 
     if (instances.empty())
@@ -373,7 +373,7 @@ bool SuggestTradeAction::Execute(Event event)
     if (!proto)
         return false;
 
-    uint32 price = proto->SellPrice * sRandomPlayerbotMgr->GetSellMultiplier(bot) * count;
+    uint32 price = proto->SellPrice * sRandomPlayerbotMgr.GetSellMultiplier(bot) * count;
     if (!price)
         return false;
 

@@ -33,7 +33,7 @@ bool WhoAction::Execute(Event event)
     {
         out << QuerySkill(text);
 
-        if (sRandomPlayerbotMgr->IsRandomBot(bot))
+        if (sRandomPlayerbotMgr.IsRandomBot(bot))
             out << QueryTrade(text);
     }
     else
@@ -74,7 +74,7 @@ std::string const WhoAction::QueryTrade(std::string const text)
     for (Item* sell : items)
     {
         int32 sellPrice =
-            sell->GetTemplate()->SellPrice * sRandomPlayerbotMgr->GetSellMultiplier(bot) * sell->GetCount();
+            sell->GetTemplate()->SellPrice * sRandomPlayerbotMgr.GetSellMultiplier(bot) * sell->GetCount();
         if (!sellPrice)
             continue;
 

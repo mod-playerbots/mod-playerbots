@@ -866,7 +866,7 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
 
 WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)
 {
-    const std::vector<WorldLocation>& locs = sRandomPlayerbotMgr->locsPerLevelCache[bot->GetLevel()];
+    const std::vector<WorldLocation>& locs = sRandomPlayerbotMgr.locsPerLevelCache[bot->GetLevel()];
     float hiRange = 500.0f;
     float loRange = 2500.0f;
     if (bot->GetLevel() < 5)
@@ -925,8 +925,8 @@ WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)
 WorldPosition NewRpgBaseAction::SelectRandomCampPos(Player* bot)
 {
     const std::vector<WorldLocation>& locs = IsAlliance(bot->getRace())
-                                                 ? sRandomPlayerbotMgr->allianceStarterPerLevelCache[bot->GetLevel()]
-                                                 : sRandomPlayerbotMgr->hordeStarterPerLevelCache[bot->GetLevel()];
+                                                 ? sRandomPlayerbotMgr.allianceStarterPerLevelCache[bot->GetLevel()]
+                                                 : sRandomPlayerbotMgr.hordeStarterPerLevelCache[bot->GetLevel()];
 
     bool inCity = false;
 
@@ -969,7 +969,7 @@ WorldPosition NewRpgBaseAction::SelectRandomCampPos(Player* bot)
 
 bool NewRpgBaseAction::SelectRandomFlightTaxiNode(ObjectGuid& flightMaster, uint32& fromNode, uint32& toNode)
 {
-    Creature* nearestFlightMaster = sFlightMasterCache->GetNearestFlightMaster(bot);
+    Creature* nearestFlightMaster = FlightMasterCache::Instance().GetNearestFlightMaster(bot);
     if (!nearestFlightMaster || bot->GetDistance(nearestFlightMaster) > 500.0f)
         return false;
 
@@ -1015,8 +1015,8 @@ bool NewRpgBaseAction::SelectRandomFlightTaxiNode(ObjectGuid& flightMaster, uint
             capital = zone->flags & AREA_FLAG_CAPITAL;
         }
 
-        auto itr = sRandomPlayerbotMgr->zone2LevelBracket.find(nodeZoneId);
-        if (!capital && itr == sRandomPlayerbotMgr->zone2LevelBracket.end())
+        auto itr = sRandomPlayerbotMgr.zone2LevelBracket.find(nodeZoneId);
+        if (!capital && itr == sRandomPlayerbotMgr.zone2LevelBracket.end())
             continue;
 
         if (!capital && (bot->GetLevel() < itr->second.low || bot->GetLevel() > itr->second.high))
@@ -1040,13 +1040,13 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
     uint32 probSum = 0;
     for (NewRpgStatus status : candidateStatus)
     {
-        if (sPlayerbotAIConfig->RpgStatusProbWeight[status] == 0)
+        if (sPlayerbotAIConfig.RpgStatusProbWeight[status] == 0)
             continue;
 
         if (CheckRpgStatusAvailable(status))
         {
             availableStatus.push_back(status);
-            probSum += sPlayerbotAIConfig->RpgStatusProbWeight[status];
+            probSum += sPlayerbotAIConfig.RpgStatusProbWeight[status];
         }
     }
     // Safety check. Default to "rest" if all RPG weights = 0
@@ -1061,7 +1061,7 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
     NewRpgStatus chosenStatus = RPG_STATUS_END;
     for (NewRpgStatus status : availableStatus)
     {
-        accumulate += sPlayerbotAIConfig->RpgStatusProbWeight[status];
+        accumulate += sPlayerbotAIConfig.RpgStatusProbWeight[status];
         if (accumulate >= rand)
         {
             chosenStatus = status;

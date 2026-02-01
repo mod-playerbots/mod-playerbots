@@ -64,7 +64,7 @@ Unit* GiveItemAction::GetTarget() { return AI_VALUE2(Unit*, "party member withou
 
 bool GiveItemAction::isUseful()
 {
-    return GetTarget() && AI_VALUE2(uint8, "mana", "self target") > sPlayerbotAIConfig->lowMana;
+    return GetTarget() && AI_VALUE2(uint8, "mana", "self target") > sPlayerbotAIConfig.lowMana;
 }
 
 Unit* GiveFoodAction::GetTarget() { return AI_VALUE(Unit*, "party member without food"); }
@@ -74,7 +74,7 @@ bool GiveFoodAction::isUseful()
     if (!GetTarget())
         return false;
 
-    bool isRandomBot = GetTarget()->IsPlayer() && sRandomPlayerbotMgr->IsRandomBot((Player*)GetTarget());
+    bool isRandomBot = GetTarget()->IsPlayer() && sRandomPlayerbotMgr.IsRandomBot((Player*)GetTarget());
 
     return !isRandomBot || (isRandomBot && !botAI->HasCheat(BotCheatMask::food));
 }
@@ -86,7 +86,7 @@ bool GiveWaterAction::isUseful()
     if (!GetTarget())
         return false;
 
-    bool isRandomBot = GetTarget()->IsPlayer() && sRandomPlayerbotMgr->IsRandomBot((Player*)GetTarget());
+    bool isRandomBot = GetTarget()->IsPlayer() && sRandomPlayerbotMgr.IsRandomBot((Player*)GetTarget());
 
     return !isRandomBot || (isRandomBot && !botAI->HasCheat(BotCheatMask::food));
 }

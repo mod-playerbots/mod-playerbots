@@ -272,7 +272,7 @@ void RandomItemMgr::BuildRandomItemCache()
             }
         }
 
-        uint32 maxLevel = sPlayerbotAIConfig->randomBotMaxLevel;
+        uint32 maxLevel = sPlayerbotAIConfig.randomBotMaxLevel;
         if (maxLevel > sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
             maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
 
@@ -2092,7 +2092,7 @@ uint32 RandomItemMgr::GetLiveStatWeight(Player* player, uint32 itemId)
 
 void RandomItemMgr::BuildEquipCache()
 {
-    uint32 maxLevel = sPlayerbotAIConfig->randomBotMaxLevel;
+    uint32 maxLevel = sPlayerbotAIConfig.randomBotMaxLevel;
     if (maxLevel > sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
         maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
 
@@ -2415,7 +2415,7 @@ void RandomItemMgr::BuildPotionCache()
 
 void RandomItemMgr::BuildFoodCache()
 {
-    uint32 maxLevel = sPlayerbotAIConfig->randomBotMaxLevel;
+    uint32 maxLevel = sPlayerbotAIConfig.randomBotMaxLevel;
     if (maxLevel > sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
         maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
 
@@ -2548,7 +2548,7 @@ uint32 RandomItemMgr::GetRandomFood(uint32 level, uint32 category)
 
 void RandomItemMgr::BuildTradeCache()
 {
-    uint32 maxLevel = sPlayerbotAIConfig->randomBotMaxLevel;
+    uint32 maxLevel = sPlayerbotAIConfig.randomBotMaxLevel;
     if (maxLevel > sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
         maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
 

@@ -21,9 +21,9 @@ bool TravelAction::Execute(Event event)
 
     Unit* newTarget = nullptr;
     std::list<Unit*> targets;
-    Acore::AnyUnitInObjectRangeCheck u_check(bot, sPlayerbotAIConfig->sightDistance * 2);
+    Acore::AnyUnitInObjectRangeCheck u_check(bot, sPlayerbotAIConfig.sightDistance * 2);
     Acore::UnitListSearcher<Acore::AnyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-    Cell::VisitObjects(bot, searcher, sPlayerbotAIConfig->sightDistance);
+    Cell::VisitObjects(bot, searcher, sPlayerbotAIConfig.sightDistance);
 
     for (Unit* unit : targets)
     {
@@ -77,7 +77,7 @@ bool MoveToDarkPortalAction::Execute(Event event)
                 if (bot->GetTeamId() == TEAM_ALLIANCE)
                 {
                     Quest const* quest = sObjectMgr->GetQuestTemplate(10119);
-                    CreatureData const* creatureData = sRandomPlayerbotMgr->GetCreatureDataByEntry(16841);
+                    CreatureData const* creatureData = sRandomPlayerbotMgr.GetCreatureDataByEntry(16841);
                     if (quest && creatureData)
                     {
                         auto creatureBounds =
@@ -89,7 +89,7 @@ bool MoveToDarkPortalAction::Execute(Event event)
                 else
                 {
                     Quest const* quest = sObjectMgr->GetQuestTemplate(9407);
-                    CreatureData const* creatureData = sRandomPlayerbotMgr->GetCreatureDataByEntry(19254);
+                    CreatureData const* creatureData = sRandomPlayerbotMgr.GetCreatureDataByEntry(19254);
                     if (quest && creatureData)
                     {
                         auto creatureBounds =

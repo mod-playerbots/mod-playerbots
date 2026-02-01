@@ -13,7 +13,7 @@ void FlightMasterCache::AddAllianceFlightMaster(uint32 entry, WorldPosition pos)
 Creature* FlightMasterCache::GetNearestFlightMaster(Player* bot)
 {
     std::map<uint32, WorldPosition>& flightMasterCache =
-        (bot->GetTeamId() == ALLIANCE) ? allianceFlightMasterCache : hordeFlightMasterCache;
+        (bot->GetTeamId() == TEAM_ALLIANCE) ? allianceFlightMasterCache : hordeFlightMasterCache;
 
     Creature* nearestFlightMaster = nullptr;
     float nearestDistance = std::numeric_limits<float>::max();

@@ -618,7 +618,7 @@ bool NetherspiteBlockRedBeamAction::Execute(Event event)
         if (!wasBlocking)
         {
             std::map<std::string, std::string> placeholders{{"%player", bot->GetName()}};
-            std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
+            std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
                 "netherspite_beam_blocking_red", "%player is moving to block the red beam!", placeholders);
             bot->Yell(text, LANG_UNIVERSAL);
         }
@@ -701,7 +701,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event event)
     if (wasBlocking && !isBlockingNow)
     {
         std::map<std::string, std::string> placeholders{{"%player", bot->GetName()}};
-        std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
+        std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
             "netherspite_beam_leaving_blue", "%player is leaving the blue beam--next blocker up!", placeholders);
         bot->Yell(text, LANG_UNIVERSAL);
         _wasBlockingBlueBeam[botGuid] = false;
@@ -712,7 +712,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event event)
         if (!wasBlocking)
         {
             std::map<std::string, std::string> placeholders{{"%player", bot->GetName()}};
-            std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
+            std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
                 "netherspite_beam_blocking_blue", "%player is moving to block the blue beam!", placeholders);
             bot->Yell(text, LANG_UNIVERSAL);
         }
@@ -794,7 +794,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event event)
     if (wasBlocking && !isBlockingNow)
     {
         std::map<std::string, std::string> placeholders{{"%player", bot->GetName()}};
-        std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
+        std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
             "netherspite_beam_leaving_green", "%player is leaving the green beam--next blocker up!", placeholders);
         bot->Yell(text, LANG_UNIVERSAL);
         _wasBlockingGreenBeam[botGuid] = false;
@@ -805,7 +805,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event event)
         if (!wasBlocking)
         {
             std::map<std::string, std::string> placeholders{{"%player", bot->GetName()}};
-            std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
+            std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
                 "netherspite_beam_blocking_green", "%player is moving to block the green beam!", placeholders);
             bot->Yell(text, LANG_UNIVERSAL);
         }

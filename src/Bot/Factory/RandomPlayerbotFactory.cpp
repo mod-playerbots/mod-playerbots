@@ -317,14 +317,14 @@ uint32 RandomPlayerbotFactory::CalculateTotalAccountCount()
 {
     // Reset account types if features are disabled
     // Reset is done here to precede needed accounts calculations
-    if (sPlayerbotAIConfig->maxRandomBots == 0 || sPlayerbotAIConfig->addClassAccountPoolSize == 0)
+    if (sPlayerbotAIConfig.maxRandomBots == 0 || sPlayerbotAIConfig.addClassAccountPoolSize == 0)
     {
-        if (sPlayerbotAIConfig->maxRandomBots == 0)
+        if (sPlayerbotAIConfig.maxRandomBots == 0)
         {
             PlayerbotsDatabase.Execute("UPDATE playerbots_account_type SET account_type = 0 WHERE account_type = 1");
             LOG_INFO("playerbots", "MaxRandomBots set to 0, any RNDbot accounts (type 1) will be unassigned (type 0)");
         }
-        if (sPlayerbotAIConfig->addClassAccountPoolSize == 0)
+        if (sPlayerbotAIConfig.addClassAccountPoolSize == 0)
         {
             PlayerbotsDatabase.Execute("UPDATE playerbots_account_type SET account_type = 0 WHERE account_type = 2");
             LOG_INFO("playerbots", "AddClassAccountPoolSize set to 0, any AddClass accounts (type 2) will be unassigned (type 0)");
@@ -334,8 +334,8 @@ uint32 RandomPlayerbotFactory::CalculateTotalAccountCount()
         for (int waited = 0; waited < 1000; waited += 50)
         {
             QueryResult res = PlayerbotsDatabase.Query("SELECT COUNT(*) FROM playerbots_account_type WHERE account_type IN ({}, {})",
-                sPlayerbotAIConfig->maxRandomBots == 0 ? 1 : -1,
-                sPlayerbotAIConfig->addClassAccountPoolSize == 0 ? 2 : -1);
+                sPlayerbotAIConfig.maxRandomBots == 0 ? 1 : -1,
+                sPlayerbotAIConfig.addClassAccountPoolSize == 0 ? 2 : -1);
 
             if (!res || res->Fetch()[0].Get<uint64>() == 0)
             {
@@ -347,8 +347,8 @@ uint32 RandomPlayerbotFactory::CalculateTotalAccountCount()
     }
 
     // Checks if randomBotAccountCount is set, otherwise calculate it dynamically.
-    if (sPlayerbotAIConfig->randomBotAccountCount > 0)
-        return sPlayerbotAIConfig->randomBotAccountCount;
+    if (sPlayerbotAIConfig.randomBotAccountCount > 0)
+        return sPlayerbotAIConfig.randomBotAccountCount;
 
     // Check existing account types
     uint32 existingRndBotAccounts = 0;
@@ -374,17 +374,17 @@ uint32 RandomPlayerbotFactory::CalculateTotalAccountCount()
     int divisor = CalculateAvailableCharsPerAccount();
 
     // Calculate max bots
-    int maxBots = sPlayerbotAIConfig->maxRandomBots;
+    int maxBots = sPlayerbotAIConfig.maxRandomBots;
     // Take periodic online - offline into account
-    if (sPlayerbotAIConfig->enablePeriodicOnlineOffline)
+    if (sPlayerbotAIConfig.enablePeriodicOnlineOffline)
     {
-        maxBots *= sPlayerbotAIConfig->periodicOnlineOfflineRatio;
+        maxBots *= sPlayerbotAIConfig.periodicOnlineOfflineRatio;
     }
 
     // Calculate number of accounts needed for RNDbots
     // Result is rounded up for maxBots not cleanly divisible by the divisor
     uint32 neededRndBotAccounts = (maxBots + divisor - 1) / divisor;
-    uint32 neededAddClassAccounts = sPlayerbotAIConfig->addClassAccountPoolSize;
+    uint32 neededAddClassAccounts = sPlayerbotAIConfig.addClassAccountPoolSize;
 
     // Start with existing total
     uint32 existingTotal = existingRndBotAccounts + existingAddClassAccounts + existingUnassignedAccounts;
@@ -425,12 +425,12 @@ uint32 RandomPlayerbotFactory::CalculateTotalAccountCount()
 
 uint32 RandomPlayerbotFactory::CalculateAvailableCharsPerAccount()
 {
-    bool noDK = sPlayerbotAIConfig->disableDeathKnightLogin || sWorld->getIntConfig(CONFIG_EXPANSION) != EXPANSION_WRATH_OF_THE_LICH_KING;
+    bool noDK = sPlayerbotAIConfig.disableDeathKnightLogin || sWorld->getIntConfig(CONFIG_EXPANSION) != EXPANSION_WRATH_OF_THE_LICH_KING;
 
     uint32 availableChars = noDK ? 9 : 10;
 
-    uint32 hordeRatio = sPlayerbotAIConfig->randomBotHordeRatio;
-    uint32 allianceRatio = sPlayerbotAIConfig->randomBotAllianceRatio;
+    uint32 hordeRatio = sPlayerbotAIConfig.randomBotHordeRatio;
+    uint32 allianceRatio = sPlayerbotAIConfig.randomBotAllianceRatio;
 
     // horde : alliance = 50 : 50 -> 0%
     // horde : alliance = 0 : 50 -> 50%
@@ -451,7 +451,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
 {
     /* multi-thread here is meaningless? since the async db operations */
 
-    if (sPlayerbotAIConfig->deleteRandomBotAccounts)
+    if (sPlayerbotAIConfig.deleteRandomBotAccounts)
     {
         std::vector<uint32> botAccounts;
         std::vector<uint32> botFriends;
@@ -462,7 +462,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
         for (uint32 accountNumber = 0; accountNumber < totalAccountCount; ++accountNumber)
         {
             std::ostringstream out;
-            out << sPlayerbotAIConfig->randomBotAccountPrefix << accountNumber;
+            out << sPlayerbotAIConfig.randomBotAccountPrefix << accountNumber;
             std::string const accountName = out.str();
 
             if (uint32 accountId = AccountMgr::GetId(accountName))
@@ -482,7 +482,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
 
         // Delete all characters from bot accounts
         CharacterDatabase.Execute("DELETE FROM characters WHERE account IN (SELECT id FROM " + loginDBName + ".account WHERE username LIKE '{}%%')",
-            sPlayerbotAIConfig->randomBotAccountPrefix.c_str());
+            sPlayerbotAIConfig.randomBotAccountPrefix.c_str());
 
         // Wait for the characters to be deleted before proceeding to dependent deletes
         while (CharacterDatabase.QueueSize())
@@ -496,7 +496,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
 
         // Clean up orphaned entries in playerbots_db_store
         PlayerbotsDatabase.Execute("DELETE FROM playerbots_db_store WHERE guid NOT IN (SELECT guid FROM " + characterDBName + ".characters WHERE account IN (SELECT id FROM " + loginDBName + ".account WHERE username NOT LIKE '{}%%'))",
-            sPlayerbotAIConfig->randomBotAccountPrefix.c_str());
+            sPlayerbotAIConfig.randomBotAccountPrefix.c_str());
 
         // Clean up orphaned records in character-related tables
         CharacterDatabase.Execute("DELETE FROM arena_team_member WHERE guid NOT IN (SELECT guid FROM characters)");
@@ -551,7 +551,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
         // Finally, delete the bot accounts themselves
         LOG_INFO("playerbots", "Deleting random bot accounts...");
         QueryResult results = LoginDatabase.Query("SELECT id FROM account WHERE username LIKE '{}%%'",
-                                             sPlayerbotAIConfig->randomBotAccountPrefix.c_str());
+                                             sPlayerbotAIConfig.randomBotAccountPrefix.c_str());
         int32 deletion_count = 0;
         if (results)
         {
@@ -601,7 +601,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
     for (uint32 accountNumber = 0; accountNumber < totalAccountCount; ++accountNumber)
     {
         std::ostringstream out;
-        out << sPlayerbotAIConfig->randomBotAccountPrefix << accountNumber;
+        out << sPlayerbotAIConfig.randomBotAccountPrefix << accountNumber;
         std::string const accountName = out.str();
 
         LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_ACCOUNT_ID_BY_USERNAME);
@@ -613,7 +613,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
         }
         account_creation++;
         std::string password = "";
-        if (sPlayerbotAIConfig->randomBotRandomPassword)
+        if (sPlayerbotAIConfig.randomBotRandomPassword)
         {
             for (int i = 0; i < 10; i++)
             {
@@ -649,7 +649,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
     for (uint32 accountNumber = 0; accountNumber < totalAccountCount; ++accountNumber)
     {
         std::ostringstream out;
-        out << sPlayerbotAIConfig->randomBotAccountPrefix << accountNumber;
+        out << sPlayerbotAIConfig.randomBotAccountPrefix << accountNumber;
         std::string const accountName = out.str();
 
         LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_ACCOUNT_ID_BY_USERNAME);
@@ -661,7 +661,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
         Field* fields = result->Fetch();
         uint32 accountId = fields[0].Get<uint32>();
 
-        sPlayerbotAIConfig->randomBotAccounts.push_back(accountId);
+        sPlayerbotAIConfig.randomBotAccounts.push_back(accountId);
 
         uint32 count = AccountMgr::GetCharactersCount(accountId);
         if (count >= 10)
@@ -746,13 +746,13 @@ void RandomPlayerbotFactory::CreateRandomBots()
     for (WorldSession* session : sessionBots)
         delete session;
 
-    for (uint32 accountId : sPlayerbotAIConfig->randomBotAccounts)
+    for (uint32 accountId : sPlayerbotAIConfig.randomBotAccounts)
     {
         totalRandomBotChars += AccountMgr::GetCharactersCount(accountId);
     }
 
     LOG_INFO("server.loading", ">> {} random bot accounts with {} characters available",
-            sPlayerbotAIConfig->randomBotAccounts.size(), totalRandomBotChars);
+            sPlayerbotAIConfig.randomBotAccounts.size(), totalRandomBotChars);
 }
 
 std::string const RandomPlayerbotFactory::CreateRandomGuildName()
@@ -811,7 +811,7 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams(ArenaType type, uint32 count
         if (arenateam)
         {
             ++arenaTeamNumber;
-            sPlayerbotAIConfig->randomBotArenaTeams.push_back(arenateam->GetId());
+            sPlayerbotAIConfig.randomBotArenaTeams.push_back(arenateam->GetId());
         }
         else
         {
@@ -872,7 +872,7 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams(ArenaType type, uint32 count
 
         // set random rating
         arenateam->SetRatingForAll(
-            urand(sPlayerbotAIConfig->randomBotArenaTeamMinRating, sPlayerbotAIConfig->randomBotArenaTeamMaxRating));
+            urand(sPlayerbotAIConfig.randomBotArenaTeamMinRating, sPlayerbotAIConfig.randomBotArenaTeamMaxRating));
 
         // set random emblem
         uint32 backgroundColor = urand(0xFF000000, 0xFFFFFFFF);
@@ -891,7 +891,7 @@ void RandomPlayerbotFactory::CreateRandomArenaTeams(ArenaType type, uint32 count
         arenateam->SaveToDB();
 
         sArenaTeamMgr->AddArenaTeam(arenateam);
-        sPlayerbotAIConfig->randomBotArenaTeams.push_back(arenateam->GetId());
+        sPlayerbotAIConfig.randomBotArenaTeams.push_back(arenateam->GetId());
     }
 
     LOG_DEBUG("playerbots", "{} random bot {}vs{} arena teams available", arenaTeamNumber, type, type);

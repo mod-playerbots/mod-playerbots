@@ -25,7 +25,7 @@ const int ITEM_SOUL_SHARD = 6265;
 bool CastDrainSoulAction::isUseful() { return AI_VALUE2(uint32, "item count", "soul shard") < 26; }
 
 // Checks if the bot's health is above a certain threshold, and if so, allows casting Life Tap
-bool CastLifeTapAction::isUseful() { return AI_VALUE2(uint8, "health", "self target") > sPlayerbotAIConfig->lowHealth; }
+bool CastLifeTapAction::isUseful() { return AI_VALUE2(uint8, "health", "self target") > sPlayerbotAIConfig.lowHealth; }
 
 // Checks if the target marked with the moon icon can be banished
 bool CastBanishOnCcAction::isPossible()
@@ -288,7 +288,7 @@ bool UseSoulstoneMasterAction::Execute(Event event)
         soulstoneReservations[master->GetGUID()] = now + 2500;  // Reserve for 2.5 seconds
     }
 
-    float distance = sServerFacade->GetDistance2d(bot, master);
+    float distance = ServerFacade::instance().GetDistance2d(bot, master);
     if (distance >= 30.0f)
         return false;
 
@@ -325,7 +325,7 @@ bool UseSoulstoneTankAction::Execute(Event event)
                 if (soulstoneReservations.count(member->GetGUID()) && soulstoneReservations[member->GetGUID()] > now)
                     continue;  // Already being soulstoned
 
-                float distance = sServerFacade->GetDistance2d(bot, member);
+                float distance = ServerFacade::instance().GetDistance2d(bot, member);
                 if (distance < 30.0f && bot->IsWithinLOSInMap(member))
                 {
                     chosenTank = member;
@@ -348,7 +348,7 @@ bool UseSoulstoneTankAction::Execute(Event event)
                         soulstoneReservations[member->GetGUID()] > now)
                         continue;  // Already being soulstoned
 
-                    float distance = sServerFacade->GetDistance2d(bot, member);
+                    float distance = ServerFacade::instance().GetDistance2d(bot, member);
                     if (distance < 30.0f && bot->IsWithinLOSInMap(member))
                     {
                         chosenTank = member;
@@ -392,7 +392,7 @@ bool UseSoulstoneHealerAction::Execute(Event event)
                         soulstoneReservations[member->GetGUID()] > now)
                         continue;  // Already being soulstoned
 
-                    float distance = sServerFacade->GetDistance2d(bot, member);
+                    float distance = ServerFacade::instance().GetDistance2d(bot, member);
                     if (distance < 30.0f && bot->IsWithinLOSInMap(member))
                     {
                         healer = member;

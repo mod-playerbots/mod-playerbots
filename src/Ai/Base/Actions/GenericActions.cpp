@@ -113,7 +113,7 @@ bool TogglePetSpellAutoCastAction::Execute(Event event)
     }
 
     // Debug message if pet spells have been toggled and debug is enabled
-    if (toggled && sPlayerbotAIConfig->petChatCommandDebug == 1)
+    if (toggled && sPlayerbotAIConfig.petChatCommandDebug == 1)
         botAI->TellMaster("Pet autocast spells have been toggled.");
 
     return toggled;
@@ -185,7 +185,7 @@ bool SetPetStanceAction::Execute(Event /*event*/)
     }
 
     // Get the default pet stance from the configuration
-    int32 stance = sPlayerbotAIConfig->defaultPetStance;
+    int32 stance = sPlayerbotAIConfig.defaultPetStance;
     ReactStates react = REACT_DEFENSIVE;
     std::string stanceText = "defensive (from config, fallback)";
 
@@ -221,7 +221,7 @@ bool SetPetStanceAction::Execute(Event /*event*/)
     }
 
     // If debug is enabled in config, inform the master of the new stance
-    if (sPlayerbotAIConfig->petChatCommandDebug == 1)
+    if (sPlayerbotAIConfig.petChatCommandDebug == 1)
         botAI->TellMaster("Pet stance set to " + stanceText + " (applied to all pets/guardians).");
 
     return true;

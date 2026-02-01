@@ -20,7 +20,7 @@ Unit* EnemyHealerTargetValue::Calculate()
         if (!unit || unit == target)
             continue;
 
-        if (sServerFacade->GetDistance2d(bot, unit) > botAI->GetRange("spell"))
+        if (ServerFacade::instance().GetDistance2d(bot, unit) > botAI->GetRange("spell"))
             continue;
 
         if (!botAI->IsInterruptableSpellCasting(unit, spell))

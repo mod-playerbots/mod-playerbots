@@ -61,13 +61,13 @@ bool CastFrostNovaAction::isUseful()
     if (target->isFrozen())
         return false;
 
-    return sServerFacade->IsDistanceLessOrEqualThan(AI_VALUE2(float, "distance", GetTargetName()), 10.f);
+    return ServerFacade::instance().IsDistanceLessOrEqualThan(AI_VALUE2(float, "distance", GetTargetName()), 10.f);
 }
 
 bool CastConeOfColdAction::isUseful()
 {
     bool facingTarget = AI_VALUE2(bool, "facing", "current target");
-    bool targetClose = sServerFacade->IsDistanceLessOrEqualThan(AI_VALUE2(float, "distance", GetTargetName()), 10.f);
+    bool targetClose = ServerFacade::instance().IsDistanceLessOrEqualThan(AI_VALUE2(float, "distance", GetTargetName()), 10.f);
     return facingTarget && targetClose;
 }
 
@@ -105,7 +105,7 @@ Unit* CastFocusMagicOnPartyAction::GetTarget()
         if (!member || member == bot || !member->IsAlive())
             continue;
 
-        if (member->GetMap() != bot->GetMap() || bot->GetDistance(member) > sPlayerbotAIConfig->spellDistance)
+        if (member->GetMap() != bot->GetMap() || bot->GetDistance(member) > sPlayerbotAIConfig.spellDistance)
             continue;
 
         if (member->HasAura(54646))

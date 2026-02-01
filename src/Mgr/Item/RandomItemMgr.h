@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "AiFactory.h"
-#include "Common.h"
 #include "ItemTemplate.h"
 
 class ChatHandler;
@@ -135,12 +134,11 @@ typedef std::map<BotEquipKey, RandomItemList> BotEquipCache;
 class RandomItemMgr
 {
 public:
-    RandomItemMgr();
-    virtual ~RandomItemMgr();
-    static RandomItemMgr* instance()
+    static RandomItemMgr& instance()
     {
         static RandomItemMgr instance;
-        return &instance;
+
+        return instance;
     }
 
 public:
@@ -191,6 +189,17 @@ private:
     bool CheckItemStats(uint8 clazz, uint8 sp, uint8 ap, uint8 tank);
 
 private:
+    // Implemented in RandomItemMgr.cpp
+    RandomItemMgr();
+    // Implemented in RandomItemMgr.cpp
+    ~RandomItemMgr();
+
+    RandomItemMgr(const RandomItemMgr&) = delete;
+    RandomItemMgr& operator=(const RandomItemMgr&) = delete;
+
+    RandomItemMgr(RandomItemMgr&&) = delete;
+    RandomItemMgr& operator=(RandomItemMgr&&) = delete;
+
     std::map<uint32, RandomItemCache> randomItemCache;
     std::map<RandomItemType, RandomItemPredicate*> predicates;
     BotEquipCache equipCache;

@@ -272,9 +272,9 @@ bool MoveNearWaterAction::isPossible()
     float fishingSearchWindow;
 
     if (master)
-        fishingSearchWindow = sPlayerbotAIConfig->fishingDistanceFromMaster;
+        fishingSearchWindow = sPlayerbotAIConfig.fishingDistanceFromMaster;
     else
-        fishingSearchWindow = sPlayerbotAIConfig->fishingDistance;
+        fishingSearchWindow = sPlayerbotAIConfig.fishingDistance;
 
     WorldPosition fishingHole = FindFishingHole(botAI);
 
@@ -385,7 +385,7 @@ bool EquipFishingPoleAction::isUseful()
         }
     }
 
-    if (sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (sRandomPlayerbotMgr.IsRandomBot(bot))
     {
         bot->StoreNewItemInBestSlots(FISHING_POLE, 1);  // Try to get a fishing pole
         return true;
@@ -396,7 +396,7 @@ bool EquipFishingPoleAction::isUseful()
         return false;
 
     std::string masterName = master->GetName();
-    std::string text = sPlayerbotTextMgr->GetBotTextOrDefault(
+    std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
     "no_fishing_pole_error", "I don't have a Fishing Pole",{});
     botAI->Whisper(text, masterName);
 
@@ -499,7 +499,7 @@ bool EndMasterFishingAction::isUseful()
         return false;
 
     WorldPosition nearWater = FindWaterRadial(bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
-        bot->GetMap(), bot->GetPhaseMask(), MIN_DISTANCE_TO_WATER, sPlayerbotAIConfig->endFishingWithMaster, 10.0f);
+        bot->GetMap(), bot->GetPhaseMask(), MIN_DISTANCE_TO_WATER, sPlayerbotAIConfig.endFishingWithMaster, 10.0f);
     return !nearWater.IsValid();
 }
 
