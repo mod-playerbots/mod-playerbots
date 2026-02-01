@@ -124,6 +124,52 @@ public:
         }
     }
 
+    bool OnPlayerBeforeTeleport(Player* /*player*/, uint32 /*mapid*/, float /*x*/, float /*y*/, float /*z*/,
+                                float /*orientation*/, uint32 /*options*/, Unit* /*target*/) override
+    {
+        /* for now commmented out until proven its actually required
+        * havent seen any proof CleanVisibilityReferences() is needed
+
+        // If the player is not safe to touch, do nothing
+        if (!player)
+            return true;
+
+        // If same map or not in world do nothing
+        if (!player->IsInWorld() || player->GetMapId() == mapid)
+            return true;
+
+        // If real player do nothing
+        PlayerbotAI* ai = GET_PLAYERBOT_AI(player);
+        if (!ai || ai->IsRealPlayer())
+            return true;
+
+        // Cross-map bot teleport: defer visibility reference cleanup.
+        // CleanVisibilityReferences() erases this bot's GUID from other objects' visibility containers.
+        // This is intentionally done via the event queue (instead of directly here) because erasing
+        // from other players' visibility maps inside the teleport call stack can hit unsafe re-entrancy
+        // or iterator invalidation while visibility updates are in progress
+        ObjectGuid guid = player->GetGUID();
+        player->m_Events.AddEventAtOffset(
+            [guid, mapid]()
+            {
+                // do nothing, if the player is not safe to touch
+                Player* p = ObjectAccessor::FindPlayer(guid);
+                if (!p || !p->IsInWorld() || p->IsDuringRemoveFromWorld())
+                    return;
+
+                // do nothing if we are already on the target map
+                if (p->GetMapId() == mapid)
+                    return;
+
+                p->GetObjectVisibilityContainer().CleanVisibilityReferences();
+            },
+            Milliseconds(0));
+
+        */
+
+        return true;
+    }
+
     void OnPlayerAfterUpdate(Player* player, uint32 diff) override
     {
         PlayerbotAI* const botAI = PlayerbotsMgr::instance().GetPlayerbotAI(player);
