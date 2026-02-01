@@ -1913,6 +1913,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
         if (oldItem)
             continue;
         //todo why delete?
+        bot->EquipNewItem(dest, bestItemForSlot, true);
         bot->AutoUnequipOffhandIfNeed();
         // if (newItem)
         // {
@@ -1973,14 +1974,13 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
             }
 
             if (bestItemForSlot == 0)
-            {
                 continue;
-            }
+
             uint16 dest;
             if (!CanEquipUnseenItem(slot, dest, bestItemForSlot))
-            {
                 continue;
-            }
+
+            bot->EquipNewItem(dest, bestItemForSlot, true);
             bot->AutoUnequipOffhandIfNeed();
             // if (newItem)
             // {
@@ -2154,6 +2154,7 @@ void PlayerbotFactory::InitBags(bool destroyOld)
         if (old_bag)
             continue;
 
+        bot->EquipNewItem(dest, newItemId, true);
         // if (newItem)
         // {
         //     newItem->AddToWorld();

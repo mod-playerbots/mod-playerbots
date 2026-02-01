@@ -120,6 +120,10 @@ bool AttackAnythingAction::Execute(Event event)
     if (grindTarget == nullptr)
         return true;
 
+    const std::string& grindTargetName = grindTarget->GetName();
+    if (grindTargetName.empty())
+        return true;
+
     this->context->GetValue<ObjectGuid>("pull target")->Set(grindTarget->GetGUID());
     this->bot->GetMotionMaster()->Clear();
 
