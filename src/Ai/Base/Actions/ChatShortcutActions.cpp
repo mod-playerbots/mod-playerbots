@@ -96,7 +96,7 @@ bool FollowChatShortcutAction::Execute(Event event)
 
     /* Default mechanics takes care of this now.
     if (bot->GetMapId() != master->GetMapId() || (master && bot->GetDistance(master) >
-    sPlayerbotAIConfig->sightDistance))
+    sPlayerbotAIConfig.sightDistance))
     {
         if (bot->isDead())
         {
@@ -161,7 +161,7 @@ bool FleeChatShortcutAction::Execute(Event event)
     ResetReturnPosition();
     ResetStayPosition();
 
-    if (bot->GetMapId() != master->GetMapId() || bot->GetDistance(master) > sPlayerbotAIConfig->sightDistance)
+    if (bot->GetMapId() != master->GetMapId() || bot->GetDistance(master) > sPlayerbotAIConfig.sightDistance)
     {
         botAI->TellError("I will not flee with you - too far away");
         return true;

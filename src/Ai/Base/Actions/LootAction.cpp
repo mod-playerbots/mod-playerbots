@@ -25,7 +25,7 @@ bool LootAction::Execute(Event /*event*/)
 
     LootObject prevLoot = AI_VALUE(LootObject, "loot target");
     LootObject const& lootObject =
-        AI_VALUE(LootObjectStack*, "available loot")->GetLoot(sPlayerbotAIConfig->lootDistance);
+        AI_VALUE(LootObjectStack*, "available loot")->GetLoot(sPlayerbotAIConfig.lootDistance);
 
     if (!prevLoot.IsEmpty() && prevLoot.guid != lootObject.guid)
     {
@@ -37,7 +37,7 @@ bool LootAction::Execute(Event /*event*/)
 
     // Provide a system to check if the game object id is disallowed in the user configurable list or not.
     // Check if the game object id is disallowed in the user configurable list or not.
-    if (sPlayerbotAIConfig->disallowedGameObjects.find(lootObject.guid.GetEntry()) != sPlayerbotAIConfig->disallowedGameObjects.end())
+    if (sPlayerbotAIConfig.disallowedGameObjects.find(lootObject.guid.GetEntry()) != sPlayerbotAIConfig.disallowedGameObjects.end())
     {
         return false;  // Game object ID is disallowed, so do not proceed
     }
@@ -50,7 +50,7 @@ bool LootAction::Execute(Event /*event*/)
 
 bool LootAction::isUseful()
 {
-    return sPlayerbotAIConfig->freeMethodLoot || !bot->GetGroup() || bot->GetGroup()->GetLootMethod() != FREE_FOR_ALL;
+    return sPlayerbotAIConfig.freeMethodLoot || !bot->GetGroup() || bot->GetGroup()->GetLootMethod() != FREE_FOR_ALL;
 }
 
 enum ProfessionSpells
@@ -95,7 +95,7 @@ bool OpenLootAction::DoLoot(LootObject& lootObject)
     if (bot->IsMounted())
     {
         bot->Dismount();
-        botAI->SetNextCheckDelay(sPlayerbotAIConfig->lootDelay); // Small delay to avoid animation issues
+        botAI->SetNextCheckDelay(sPlayerbotAIConfig.lootDelay); // Small delay to avoid animation issues
     }
 
     if (creature && creature->HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE))
@@ -104,7 +104,7 @@ bool OpenLootAction::DoLoot(LootObject& lootObject)
         *packet << lootObject.guid;
         bot->GetSession()->QueuePacket(packet);
         // bot->GetSession()->HandleLootOpcode(packet);
-        botAI->SetNextCheckDelay(sPlayerbotAIConfig->lootDelay);
+        botAI->SetNextCheckDelay(sPlayerbotAIConfig.lootDelay);
         return true;
     }
 
@@ -202,7 +202,7 @@ uint32 OpenLootAction::GetOpeningSpell(LootObject& lootObject, GameObject* go)
             return spellId;
     }
 
-    return sPlayerbotAIConfig->openGoSpell;
+    return sPlayerbotAIConfig.openGoSpell;
 }
 
 bool OpenLootAction::CanOpenLock(LootObject& /*lootObject*/, SpellInfo const* spellInfo, GameObject* go)
@@ -294,7 +294,7 @@ bool StoreLootAction::AuctionItem(uint32 itemId)
 
     AuctionHouseObject* auctionHouse = sAuctionMgr->GetAuctionsMap(ahEntry);
 
-    uint32 price = oldItem->GetCount() * proto->BuyPrice * sRandomPlayerbotMgr->GetBuyMultiplier(bot);
+    uint32 price = oldItem->GetCount() * proto->BuyPrice * sRandomPlayerbotMgr.GetBuyMultiplier(bot);
 
 uint32 stackCount = urand(1, proto->GetMaxStackSize());
     if (!price || !stackCount)
@@ -426,28 +426,28 @@ bool StoreLootAction::Execute(Event event)
         }
 
         Player* master = botAI->GetMaster();
-        if (sRandomPlayerbotMgr->IsRandomBot(bot) && master)
+        if (sRandomPlayerbotMgr.IsRandomBot(bot) && master)
         {
-            uint32 price = itemcount * proto->BuyPrice * sRandomPlayerbotMgr->GetBuyMultiplier(bot) + gold;
+            uint32 price = itemcount * proto->BuyPrice * sRandomPlayerbotMgr.GetBuyMultiplier(bot) + gold;
             if (price)
-                sRandomPlayerbotMgr->AddTradeDiscount(bot, master, price);
+                sRandomPlayerbotMgr.AddTradeDiscount(bot, master, price);
 
             if (Group* group = bot->GetGroup())
                 for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
                     if (ref->GetSource() != bot)
-                        sGuildTaskMgr->CheckItemTask(itemid, itemcount, ref->GetSource(), bot);
+                        GuildTaskMgr::instance().CheckItemTask(itemid, itemcount, ref->GetSource(), bot);
         }
 
         WorldPacket* packet = new WorldPacket(CMSG_AUTOSTORE_LOOT_ITEM, 1);
         *packet << itemindex;
         bot->GetSession()->QueuePacket(packet);
         // bot->GetSession()->HandleAutostoreLootItemOpcode(packet);
-        botAI->SetNextCheckDelay(sPlayerbotAIConfig->lootDelay);
+        botAI->SetNextCheckDelay(sPlayerbotAIConfig.lootDelay);
 
-        if (proto->Quality > ITEM_QUALITY_NORMAL && !urand(0, 50) && botAI->HasStrategy("emote", BOT_STATE_NON_COMBAT) && sPlayerbotAIConfig->randomBotEmote)
+        if (proto->Quality > ITEM_QUALITY_NORMAL && !urand(0, 50) && botAI->HasStrategy("emote", BOT_STATE_NON_COMBAT) && sPlayerbotAIConfig.randomBotEmote)
             botAI->PlayEmote(TEXT_EMOTE_CHEER);
 
-        if (proto->Quality >= ITEM_QUALITY_RARE && !urand(0, 1) && botAI->HasStrategy("emote", BOT_STATE_NON_COMBAT) && sPlayerbotAIConfig->randomBotEmote)
+        if (proto->Quality >= ITEM_QUALITY_RARE && !urand(0, 1) && botAI->HasStrategy("emote", BOT_STATE_NON_COMBAT) && sPlayerbotAIConfig.randomBotEmote)
             botAI->PlayEmote(TEXT_EMOTE_CHEER);
 
         BroadcastHelper::BroadcastLootingItem(botAI, bot, proto);
@@ -498,7 +498,7 @@ bool StoreLootAction::IsLootAllowed(uint32 itemid, PlayerbotAI* botAI)
             {
                 // if (AI_VALUE2(uint32, "item count", proto->Name1) < quest->RequiredItemCount[i])
                 // {
-                //     if (botAI->GetMaster() && sPlayerbotAIConfig->syncQuestWithPlayer)
+                //     if (botAI->GetMaster() && sPlayerbotAIConfig.syncQuestWithPlayer)
                 //         return false; //Quest is autocomplete for the bot so no item needed.
                 // }
 
@@ -514,7 +514,7 @@ bool StoreLootAction::IsLootAllowed(uint32 itemid, PlayerbotAI* botAI)
 
     bool canLoot = lootStrategy->CanLoot(proto, context);
     // if (canLoot && proto->Bonding == BIND_WHEN_PICKED_UP && botAI->HasActivePlayerMaster())
-    // canLoot = sPlayerbotAIConfig->IsInRandomAccountList(botAI->GetBot()->GetSession()->GetAccountId());
+    // canLoot = sPlayerbotAIConfig.IsInRandomAccountList(botAI->GetBot()->GetSession()->GetAccountId());
 
     return canLoot;
 }

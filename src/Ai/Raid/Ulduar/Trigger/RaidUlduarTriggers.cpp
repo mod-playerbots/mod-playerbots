@@ -1621,7 +1621,7 @@ bool VezaxCheatTrigger::IsActive()
         return false;
     }
 
-    return AI_VALUE2(uint8, "mana", "self target") < sPlayerbotAIConfig->lowMana;
+    return AI_VALUE2(uint8, "mana", "self target") < sPlayerbotAIConfig.lowMana;
 }
 
 bool VezaxShadowCrashTrigger::IsActive()
