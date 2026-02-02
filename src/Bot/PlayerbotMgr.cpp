@@ -1205,6 +1205,7 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
         // Parse optional gender/spec tokens
         int8 gender = -1; // -1 = gender will be random
         int8 specTab = -1;
+        std::string requestedSpecToken;
 
         std::string token1 = genderArg ? genderArg : "";
         std::string token2 = specArg ? specArg : "";
@@ -1239,6 +1240,7 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
                 }
 
                 specTab = parsedSpec;
+                requestedSpecToken = token;
                 return true;
             }
 
@@ -1296,9 +1298,11 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
         if (!hasGenderMatch)
             messages.push_back("No addclass candidate matches the requested gender.");
         else if (!hasSpecMatch)
-            messages.push_back("No addclass candidate matches the requested spec.");
+            messages.push_back("No addclass candidate matches the requested spec" +
+                               (requestedSpecToken.empty() ? std::string(".") : " (" + requestedSpecToken + ")."));
         else if (!hasCombinedMatch)
-            messages.push_back("No addclass candidate matches the requested gender and spec combination.");
+            messages.push_back("No addclass candidate matches the requested gender and spec combination" +
+                               (requestedSpecToken.empty() ? std::string(".") : " (" + requestedSpecToken + ")."));
 
         messages.push_back("Add class failed, no available characters!");
         return messages;
