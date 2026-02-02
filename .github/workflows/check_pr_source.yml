@@ -1,0 +1,19 @@
+name: Enforce test-staging → main
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  require-test-staging:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Ensure PR source is test-staging
+        run: |
+          echo "Base: ${{ github.event.pull_request.base.ref }}"
+          echo "Head: ${{ github.event.pull_request.head.ref }}"
+          if [ "${{ github.event.pull_request.head.ref }}" != "test-staging" ]; then
+            echo "✖ Pull request must come from test-staging"
+            exit 1
+          fi
