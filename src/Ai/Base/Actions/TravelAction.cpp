@@ -10,7 +10,7 @@
 #include "GridNotifiersImpl.h"
 #include "Playerbots.h"
 
-bool TravelAction::Execute(Event event)
+bool TravelAction::Execute(Event)
 {
     TravelTarget* target = AI_VALUE(TravelTarget*, "travel target");
 
@@ -60,12 +60,14 @@ bool TravelAction::isUseful()
            (!AI_VALUE(GuidPosition, "rpg target") || !AI_VALUE(ObjectGuid, "pull target"));
 }
 
-bool MoveToDarkPortalAction::Execute(Event event)
+bool MoveToDarkPortalAction::Execute(Event)
 {
     if (bot->GetGroup())
+    {
         if (bot->GetGroup()->GetLeaderGUID() != bot->GetGUID() &&
             !GET_PLAYERBOT_AI(GET_PLAYERBOT_AI(bot)->GetGroupLeader()))
             return false;
+    }
 
     if (bot->GetLevel() > 57)
     {
@@ -111,7 +113,7 @@ bool MoveToDarkPortalAction::Execute(Event event)
 
 bool MoveToDarkPortalAction::isUseful() { return bot->GetLevel() > 54; }
 
-bool DarkPortalAzerothAction::Execute(Event event)
+bool DarkPortalAzerothAction::Execute(Event)
 {
     if (bot->GetLevel() > 57)
     {
@@ -126,7 +128,7 @@ bool DarkPortalAzerothAction::Execute(Event event)
 
 bool DarkPortalAzerothAction::isUseful() { return bot->GetLevel() > 57; }
 
-bool MoveFromDarkPortalAction::Execute(Event event)
+bool MoveFromDarkPortalAction::Execute(Event)
 {
     RESET_AI_VALUE(GuidPosition, "rpg target");
 

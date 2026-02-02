@@ -4,14 +4,9 @@
 #include "PlayerbotAIConfig.h"
 #include "ObjectAccessor.h"
 #include "GenericTriggers.h"
-#include "DungeonStrategyUtils.h"
-#include "EventMap.h"
 #include "Playerbots.h"
-#include "ScriptedCreature.h"
 #include "Trigger.h"
-#include "CellImpl.h"
 #include "GridNotifiers.h"
-#include "GridNotifiersImpl.h"
 #include "Vehicle.h"
 
 //Lord Marrogwar

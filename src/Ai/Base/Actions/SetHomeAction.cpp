@@ -8,7 +8,7 @@
 #include "Event.h"
 #include "Playerbots.h"
 
-bool SetHomeAction::Execute(Event event)
+bool SetHomeAction::Execute(Event)
 {
     Player* master = GetMaster();
 

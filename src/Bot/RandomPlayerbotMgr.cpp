@@ -25,7 +25,6 @@
 #include "FleeManager.h"
 #include "FlightMasterCache.h"
 #include "GridNotifiers.h"
-#include "GuildTaskMgr.h"
 #include "LFGMgr.h"
 #include "MapMgr.h"
 #include "NewRpgInfo.h"
@@ -3211,40 +3210,38 @@ void RandomPlayerbotMgr::PrintStats()
             //++revive;
         }
         if (bot->IsInCombat())
-        {
             ++combat;
-        }
+
         if (bot->isMoving())
-        {
             ++moving;
-        }
+
         if (bot->IsInFlight())
-        {
             ++inFlight;
-        }
+
         if (bot->IsMounted())
-        {
             ++mounted;
-        }
+
         if (bot->InBattleground() || bot->InArena())
-        {
             ++inBg;
-        }
+
         if (bot->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING))
-        {
             ++rest;
-        }
+
         if (botAI->GetState() == BOT_STATE_NON_COMBAT)
             ++engine_noncombat;
+
         else if (botAI->GetState() == BOT_STATE_COMBAT)
             ++engine_combat;
+
         else
             ++engine_dead;
 
         if (botAI->IsHeal(bot, true))
             ++heal;
+
         else if (botAI->IsTank(bot, true))
             ++tank;
+
         else
             ++dps;
 

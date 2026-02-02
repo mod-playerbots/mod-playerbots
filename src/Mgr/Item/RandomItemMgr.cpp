@@ -2768,9 +2768,8 @@ inline bool IsCraftedBySpellInfo(ItemTemplate const* proto, SpellInfo const* spe
         }
 
         if (proto->ItemId == spellInfo->Reagent[x])
-        {
             return true;
-        }
+
     }
 
     for (uint8 i = 0; i < 3; ++i)
@@ -2778,9 +2777,7 @@ inline bool IsCraftedBySpellInfo(ItemTemplate const* proto, SpellInfo const* spe
         if (spellInfo->Effects[i].Effect == SPELL_EFFECT_CREATE_ITEM)
         {
             if (spellInfo->Effects[i].ItemType == proto->ItemId)
-            {
                 return true;
-            }
         }
     }
 

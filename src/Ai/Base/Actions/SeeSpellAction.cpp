@@ -7,7 +7,6 @@
 
 #include "Event.h"
 #include "Formations.h"
-#include "PathGenerator.h"
 #include "Playerbots.h"
 #include "RTSCValues.h"
 #include "RtscAction.h"

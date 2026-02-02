@@ -5,8 +5,6 @@
 
 #include "ChatCommandHandlerStrategy.h"
 
-#include "Playerbots.h"
-
 class ChatCommandActionNodeFactoryInternal : public NamedObjectFactory<ActionNode>
 {
 public:

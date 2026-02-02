@@ -7,6 +7,7 @@
 
 #include "PlayerbotSpellRepository.h"
 
+
 //  caches the result set
 void PlayerbotSpellRepository::Initialize()
 {

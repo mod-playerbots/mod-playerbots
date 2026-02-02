@@ -6,7 +6,6 @@
 #pragma once
 
 #include "AiObject.h"
-#include "Common.h"
 #include "Event.h"
 #include "Value.h"
 

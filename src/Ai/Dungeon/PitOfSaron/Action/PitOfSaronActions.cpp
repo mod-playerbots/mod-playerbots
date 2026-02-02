@@ -1,9 +1,7 @@
 #include "Playerbots.h"
 #include "PitOfSaronActions.h"
-#include "PitOfSaronStrategy.h"
-#include "SharedDefines.h"
 
-bool IckAndKrickAction::Execute(Event event)
+bool IckAndKrickAction::Execute(Event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "Ick");
     if (!boss)
@@ -269,7 +267,7 @@ bool IckAndKrickAction::ExplosiveBarrage(bool explosiveBarrage, Unit* boss)
     return false;
 }
 
-bool TyrannusAction::Execute(Event event)
+bool TyrannusAction::Execute(Event)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "scourgelord tyrannus");
     if (!boss)

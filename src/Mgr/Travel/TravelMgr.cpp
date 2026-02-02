@@ -1261,9 +1261,8 @@ bool RpgTravelDestination::isActive(Player* bot)
     for (ObjectGuid const guid : ignoreList)
     {
         if (guid.GetEntry() == getEntry())
-        {
             return false;
-        }
+
     }
 
     FactionTemplateEntry const* factionEntry = sFactionTemplateStore.LookupEntry(cInfo->faction);

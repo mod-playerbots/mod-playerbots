@@ -7,9 +7,7 @@
 
 #include <string>
 
-#include "BattlegroundWS.h"
 #include "CreatureAI.h"
-#include "GameTime.h"
 #include "ItemVisitors.h"
 #include "LastSpellCastValue.h"
 #include "ObjectGuid.h"
