@@ -34,7 +34,7 @@ bool HasAggroValue::Calculate()
 uint8 AttackerCountValue::Calculate()
 {
     uint32 count = 0;
-    float range = sPlayerbotAIConfig->sightDistance;
+    float range = sPlayerbotAIConfig.sightDistance;
 
     GuidVector attackers = context->GetValue<GuidVector>("attackers")->Get();
     for (ObjectGuid const guid : attackers)

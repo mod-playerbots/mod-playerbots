@@ -6,21 +6,20 @@
 #ifndef _PLAYERBOT_PLAYERBOTREPOSITORY_H
 #define _PLAYERBOT_PLAYERBOTREPOSITORY_H
 
+#include <cstdint>
+#include <string>
 #include <vector>
 
-#include "Common.h"
-
-class PlayerbotAI;
+#include "PlayerbotAI.h"
 
 class PlayerbotRepository
 {
 public:
-    PlayerbotRepository() {}
-    virtual ~PlayerbotRepository() {}
-    static PlayerbotRepository* instance()
+    static PlayerbotRepository& instance()
     {
         static PlayerbotRepository instance;
-        return &instance;
+
+        return instance;
     }
 
     void Save(PlayerbotAI* botAI);
@@ -28,10 +27,17 @@ public:
     void Reset(PlayerbotAI* botAI);
 
 private:
-    void SaveValue(uint32 guid, std::string const key, std::string const value);
+    PlayerbotRepository() = default;
+    ~PlayerbotRepository() = default;
+
+    PlayerbotRepository(const PlayerbotRepository&) = delete;
+    PlayerbotRepository& operator=(const PlayerbotRepository&) = delete;
+
+    PlayerbotRepository(PlayerbotRepository&&) = delete;
+    PlayerbotRepository& operator=(PlayerbotRepository&&) = delete;
+
+    void SaveValue(uint32_t guid, std::string const key, std::string const value);
     std::string const FormatStrategies(std::string const type, std::vector<std::string> strategies);
 };
-
-#define sPlayerbotRepository PlayerbotRepository::instance()
 
 #endif

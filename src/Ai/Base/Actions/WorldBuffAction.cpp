@@ -25,7 +25,7 @@ std::vector<uint32> WorldBuffAction::NeedWorldBuffs(Unit* unit)
 {
     std::vector<uint32> retVec;
 
-    if (sPlayerbotAIConfig->worldBuffs.empty())
+    if (sPlayerbotAIConfig.worldBuffs.empty())
         return retVec;
 
     FactionTemplateEntry const* humanFaction = sFactionTemplateStore.LookupEntry(1);
@@ -70,7 +70,7 @@ std::vector<uint32> WorldBuffAction::NeedWorldBuffs(Unit* unit)
         // If tank, effectiveSpec remains unchanged
     }
 
-    for (auto const& wb : sPlayerbotAIConfig->worldBuffs)
+    for (auto const& wb : sPlayerbotAIConfig.worldBuffs)
     {
         // Faction check
         if (wb.factionId != 0 && wb.factionId != factionId)

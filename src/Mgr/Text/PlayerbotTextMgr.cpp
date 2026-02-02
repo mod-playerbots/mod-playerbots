@@ -2,11 +2,13 @@
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
+#include "DatabaseEnv.h"
+#include "WorldSessionMgr.h"
+#include "Random.h"
+// Required due to a poor implementation by AC
+#include "QueryResult.h"
 
 #include "PlayerbotTextMgr.h"
-
-#include "Playerbots.h"
-#include "WorldSessionMgr.h"
 
 void PlayerbotTextMgr::replaceAll(std::string& str, const std::string& from, const std::string& to)
 {

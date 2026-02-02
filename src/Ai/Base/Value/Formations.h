@@ -21,7 +21,7 @@ public:
     virtual ~Formation() = default;
     virtual std::string const GetTargetName() { return ""; }
     virtual WorldLocation GetLocation() { return NullLocation; }
-    virtual float GetMaxDistance() { return sPlayerbotAIConfig->followDistance; }
+    virtual float GetMaxDistance() { return sPlayerbotAIConfig.followDistance; }
     static WorldLocation NullLocation;
     static bool IsNullLocation(WorldLocation const& loc);
 

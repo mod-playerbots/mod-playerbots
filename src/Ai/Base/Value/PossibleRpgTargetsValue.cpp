@@ -60,7 +60,7 @@ bool PossibleRpgTargetsValue::AcceptUnit(Unit* unit)
     if (unit->IsHostileTo(bot) || unit->IsPlayer())
         return false;
 
-    if (sServerFacade->GetDistance2d(bot, unit) <= sPlayerbotAIConfig->tooCloseDistance)
+    if (ServerFacade::instance().GetDistance2d(bot, unit) <= sPlayerbotAIConfig.tooCloseDistance)
         return false;
 
     if (unit->HasNpcFlag(UNIT_NPC_FLAG_SPIRITHEALER))

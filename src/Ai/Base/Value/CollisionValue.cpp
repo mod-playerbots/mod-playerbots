@@ -18,7 +18,7 @@ bool CollisionValue::Calculate()
         return false;
 
     std::list<Unit*> targets;
-    float range = sPlayerbotAIConfig->contactDistance;
+    float range = sPlayerbotAIConfig.contactDistance;
     Acore::AnyUnitInObjectRangeCheck u_check(bot, range);
     Acore::UnitListSearcher<Acore::AnyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
     Cell::VisitObjects(bot, searcher, range);
@@ -28,8 +28,8 @@ bool CollisionValue::Calculate()
         if (bot == target)
             continue;
 
-        float dist = sServerFacade->GetDistance2d(bot, target->GetPositionX(), target->GetPositionY());
-        if (sServerFacade->IsDistanceLessThan(dist, target->GetCombatReach()))
+        float dist = ServerFacade::instance().GetDistance2d(bot, target->GetPositionX(), target->GetPositionY());
+        if (ServerFacade::instance().IsDistanceLessThan(dist, target->GetCombatReach()))
             return true;
     }
 

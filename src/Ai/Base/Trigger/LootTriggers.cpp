@@ -15,11 +15,11 @@ bool LootAvailableTrigger::IsActive()
     if (botAI->HasStrategy("stay", BOT_STATE_NON_COMBAT))
     {
         distanceCheck =
-            sServerFacade->IsDistanceLessOrEqualThan(AI_VALUE2(float, "distance", "loot target"), CONTACT_DISTANCE);
+            ServerFacade::instance().IsDistanceLessOrEqualThan(AI_VALUE2(float, "distance", "loot target"), CONTACT_DISTANCE);
     }
     else
     {
-        distanceCheck = sServerFacade->IsDistanceLessOrEqualThan(AI_VALUE2(float, "distance", "loot target"),
+        distanceCheck = ServerFacade::instance().IsDistanceLessOrEqualThan(AI_VALUE2(float, "distance", "loot target"),
                                                                  INTERACTION_DISTANCE - 2.0f);
     }
 

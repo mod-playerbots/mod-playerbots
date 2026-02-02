@@ -11,17 +11,16 @@
 #include <map>
 #include <mutex>
 #include <vector>
-
-#include "Common.h"
+#include <cstdint>
 
 typedef std::vector<std::string> PerformanceStack;
 
 struct PerformanceData
 {
-    uint64 minTime;
-    uint64 maxTime;
-    uint64 totalTime;
-    uint32 count;
+    uint64_t minTime;
+    uint64_t maxTime;
+    uint64_t totalTime;
+    uint32_t count;
     std::mutex lock;
 };
 
@@ -50,21 +49,28 @@ private:
 class PerfMonitor
 {
 public:
-    PerfMonitor(){};
-    virtual ~PerfMonitor(){};
-    static PerfMonitor* instance()
+    static PerfMonitor& instance()
     {
         static PerfMonitor instance;
-        return &instance;
+
+        return instance;
     }
 
-public:
     PerfMonitorOperation* start(PerformanceMetric metric, std::string const name,
                                        PerformanceStack* stack = nullptr);
     void PrintStats(bool perTick = false, bool fullStack = false);
     void Reset();
 
 private:
+    PerfMonitor() = default;
+    virtual ~PerfMonitor() = default;
+
+    PerfMonitor(const PerfMonitor&) = delete;
+    PerfMonitor& operator=(const PerfMonitor&) = delete;
+
+    PerfMonitor(PerfMonitor&&) = delete;
+    PerfMonitor& operator=(PerfMonitor&&) = delete;
+
     std::map<PerformanceMetric, std::map<std::string, PerformanceData*> > data;
     std::mutex lock;
 };

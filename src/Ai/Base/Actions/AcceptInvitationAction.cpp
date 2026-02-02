@@ -46,10 +46,10 @@ bool AcceptInvitationAction::Execute(Event event)
     if (!bot->GetGroup() || !bot->GetGroup()->IsMember(inviter->GetGUID()))
         return false;
 
-    if (sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (sRandomPlayerbotMgr.IsRandomBot(bot))
         botAI->SetMaster(inviter);
     // else
-    // sPlayerbotRepository->Save(botAI);
+    // PlayerbotRepository::instance().Save(botAI);
 
     botAI->ResetStrategies();
     botAI->ChangeStrategy("+follow,-lfg,-bg", BOT_STATE_NON_COMBAT);
@@ -57,7 +57,7 @@ bool AcceptInvitationAction::Execute(Event event)
 
     botAI->TellMaster("Hello");
 
-    if (sPlayerbotAIConfig->summonWhenGroup && bot->GetDistance(inviter) > sPlayerbotAIConfig->sightDistance)
+    if (sPlayerbotAIConfig.summonWhenGroup && bot->GetDistance(inviter) > sPlayerbotAIConfig.sightDistance)
     {
         Teleport(inviter, bot, true);
     }

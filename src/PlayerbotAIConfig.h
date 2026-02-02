@@ -8,11 +8,14 @@
 
 #include <mutex>
 #include <unordered_map>
+#include <set>
+#include <vector>
+#include <map>
+#include <algorithm>
+#include <string>
 
-#include "Common.h"
 #include "DBCEnums.h"
 #include "SharedDefines.h"
-#include "Talentspec.h"
 
 enum class BotCheatMask : uint32
 {
@@ -61,11 +64,11 @@ enum NewRpgStatus : int
 class PlayerbotAIConfig
 {
 public:
-    PlayerbotAIConfig(){};
-    static PlayerbotAIConfig* instance()
+    static PlayerbotAIConfig& instance()
     {
         static PlayerbotAIConfig instance;
-        return &instance;
+
+        return instance;
     }
 
     bool Initialize();
@@ -448,6 +451,16 @@ public:
     bool IsRestrictedHealerDPSMap(uint32 mapId) const;
 
     std::vector<uint32> excludedHunterPetFamilies;
+
+private:
+    PlayerbotAIConfig() = default;
+    ~PlayerbotAIConfig() = default;
+
+    PlayerbotAIConfig(const PlayerbotAIConfig&) = delete;
+    PlayerbotAIConfig& operator=(const PlayerbotAIConfig&) = delete;
+
+    PlayerbotAIConfig(PlayerbotAIConfig&&) = delete;
+    PlayerbotAIConfig& operator=(PlayerbotAIConfig&&) = delete;
 };
 
 #define sPlayerbotAIConfig PlayerbotAIConfig::instance()
