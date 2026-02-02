@@ -9,7 +9,7 @@
 #include "PlayerbotAI.h"
 #include "ReputationMgr.h"
 
-bool TellReputationAction::Execute(Event)
+bool TellReputationAction::Execute(Event /*event*/)
 {
     Player* master = GetMaster();
     if (!master)

@@ -6,7 +6,7 @@
 #include "GenericSpellActions.h"
 #include "GenericActions.h"
 
-bool ToCLanceAction::Execute(Event)
+bool ToCLanceAction::Execute(Event /*event*/)
 {
     // If already has lance equipped, do nothing
     if (bot->HasItemOrGemWithIdEquipped(ITEM_LANCE, 1))
@@ -100,7 +100,7 @@ bool ToCUELanceAction::Execute(Event event)
     return false;
 }
 
-bool ToCMountedAction::Execute(Event)
+bool ToCMountedAction::Execute(Event /*event*/)
 {
     Unit* vehicleBase = bot->GetVehicleBase();
     Vehicle* vehicle = bot->GetVehicle();
@@ -174,7 +174,7 @@ bool ToCMountedAction::Execute(Event)
     return false;
 }
 
-bool ToCMountAction::Execute(Event)
+bool ToCMountAction::Execute(Event /*event*/)
 {
     // do not switch vehicles yet
     if (bot->GetVehicle())
@@ -239,7 +239,7 @@ bool ToCMountAction::EnterVehicle(Unit* vehicleBase, bool moveIfFar)
     return true;
 }
 
-bool ToCEadricAction::Execute(Event)
+bool ToCEadricAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "eadric the pure");
     if (!boss)

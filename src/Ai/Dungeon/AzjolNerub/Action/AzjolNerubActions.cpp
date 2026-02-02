@@ -2,7 +2,7 @@
 #include "AzjolNerubActions.h"
 
 bool AttackWebWrapAction::isUseful() { return !botAI->IsHeal(bot); }
-bool AttackWebWrapAction::Execute(Event)
+bool AttackWebWrapAction::Execute(Event /*event*/)
 {
     Unit* webWrap = nullptr;
 
@@ -28,7 +28,7 @@ bool AttackWebWrapAction::Execute(Event)
 }
 
 bool WatchersTargetAction::isUseful() { return !botAI->IsHeal(bot); }
-bool WatchersTargetAction::Execute(Event)
+bool WatchersTargetAction::Execute(Event /*event*/)
 {
     // Always prioritise web wraps
     Unit* currTarget = AI_VALUE(Unit*, "current target");
@@ -94,7 +94,7 @@ bool WatchersTargetAction::Execute(Event)
 }
 
 bool AnubarakDodgePoundAction::isUseful() { return !AI_VALUE2(bool, "behind", "current target"); }
-bool AnubarakDodgePoundAction::Execute(Event)
+bool AnubarakDodgePoundAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "anub'arak");
     if (!boss) { return false; }

@@ -8,7 +8,7 @@
 #include "Event.h"
 #include "Playerbots.h"
 
-bool RandomBotUpdateAction::Execute(Event)
+bool RandomBotUpdateAction::Execute(Event /*event*/)
 {
     if (!sRandomPlayerbotMgr.IsRandomBot(bot))
         return false;

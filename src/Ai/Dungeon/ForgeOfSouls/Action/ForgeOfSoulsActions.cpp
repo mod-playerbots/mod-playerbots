@@ -1,7 +1,7 @@
 #include "Playerbots.h"
 #include "ForgeOfSoulsActions.h"
 
-bool MoveFromBronjahmAction::Execute(Event)
+bool MoveFromBronjahmAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "bronjahm");
     if (!boss)
@@ -15,7 +15,7 @@ bool MoveFromBronjahmAction::Execute(Event)
     return false;
 }
 
-bool AttackCorruptedSoulFragmentAction::Execute(Event)
+bool AttackCorruptedSoulFragmentAction::Execute(Event /*event*/)
 {
     Unit* currentTarget = AI_VALUE(Unit*, "current target");
     GuidVector targets = AI_VALUE(GuidVector, "possible targets");
@@ -49,7 +49,7 @@ bool AttackCorruptedSoulFragmentAction::Execute(Event)
     return false;
 }
 
-bool BronjahmGroupPositionAction::Execute(Event)
+bool BronjahmGroupPositionAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "bronjahm");
     if (!boss)
@@ -139,7 +139,7 @@ bool BronjahmGroupPositionAction::Execute(Event)
 
 bool BronjahmGroupPositionAction::isUseful() { return true; }
 
-bool DevourerOfSoulsAction::Execute(Event)
+bool DevourerOfSoulsAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "devourer of souls");
     if (!boss)

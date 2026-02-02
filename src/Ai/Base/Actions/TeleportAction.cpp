@@ -12,7 +12,7 @@
 #include "SpellMgr.h"
 #include "Spell.h"
 
-bool TeleportAction::Execute(Event)
+bool TeleportAction::Execute(Event /*event*/)
 {
     /*
     // List of allowed portal entries (you can populate this dynamically)

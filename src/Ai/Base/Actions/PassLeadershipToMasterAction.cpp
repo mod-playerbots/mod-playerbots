@@ -9,7 +9,7 @@
 #include "PlayerbotOperations.h"
 #include "PlayerbotWorldThreadProcessor.h"
 
-bool PassLeadershipToMasterAction::Execute(Event)
+bool PassLeadershipToMasterAction::Execute(Event /*event*/)
 {
     if (Player* master = GetMaster())
         if (master && master != bot && bot->GetGroup() && bot->GetGroup()->IsMember(master->GetGUID()))

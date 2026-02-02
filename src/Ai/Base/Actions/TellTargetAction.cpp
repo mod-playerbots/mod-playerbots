@@ -10,7 +10,7 @@
 #include "AiObjectContext.h"
 #include "PlayerbotAI.h"
 
-bool TellTargetAction::Execute(Event)
+bool TellTargetAction::Execute(Event /*event*/)
 {
     Unit* target = context->GetValue<Unit*>("current target")->Get();
     if (target)
@@ -25,7 +25,7 @@ bool TellTargetAction::Execute(Event)
     return true;
 }
 
-bool TellAttackersAction::Execute(Event)
+bool TellAttackersAction::Execute(Event /*event*/)
 {
     botAI->TellMaster("--- Attackers ---");
 

@@ -1,7 +1,7 @@
 #include "Playerbots.h"
 #include "HallsOfLightningActions.h"
 
-bool BjarngrimTargetAction::Execute(Event)
+bool BjarngrimTargetAction::Execute(Event /*event*/)
 {
     Unit* target = nullptr;
 
@@ -34,7 +34,7 @@ bool BjarngrimTargetAction::Execute(Event)
     return Attack(target);
 }
 
-bool AvoidWhirlwindAction::Execute(Event)
+bool AvoidWhirlwindAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "general bjarngrim");
     if (!boss) { return false; }
@@ -51,7 +51,7 @@ bool AvoidWhirlwindAction::Execute(Event)
     return false;
 }
 
-bool VolkhanTargetAction::Execute(Event)
+bool VolkhanTargetAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "volkhan");
     if (!boss || AI_VALUE(Unit*, "current target") == boss)
@@ -62,7 +62,7 @@ bool VolkhanTargetAction::Execute(Event)
     return Attack(boss);
 }
 
-bool StaticOverloadSpreadAction::Execute(Event)
+bool StaticOverloadSpreadAction::Execute(Event /*event*/)
 {
     float radius = 8.0f;
     float distanceExtra = 2.0f;
@@ -85,7 +85,7 @@ bool StaticOverloadSpreadAction::Execute(Event)
     return false;
 }
 
-bool BallLightningSpreadAction::Execute(Event)
+bool BallLightningSpreadAction::Execute(Event /*event*/)
 {
     float radius = 6.0f;
     float distanceExtra = 1.0f;
@@ -107,14 +107,14 @@ bool BallLightningSpreadAction::Execute(Event)
 }
 
 bool IonarTankPositionAction::isUseful() { return bot->GetExactDist2d(IONAR_TANK_POSITION) > 10.0f; }
-bool IonarTankPositionAction::Execute(Event)
+bool IonarTankPositionAction::Execute(Event /*event*/)
 {
     return MoveTo(bot->GetMapId(), IONAR_TANK_POSITION.GetPositionX(), IONAR_TANK_POSITION.GetPositionY(), IONAR_TANK_POSITION.GetPositionZ(),
                   false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
 }
 
 bool DispersePositionAction::isUseful() { return bot->GetExactDist2d(DISPERSE_POSITION) > 8.0f; }
-bool DispersePositionAction::Execute(Event)
+bool DispersePositionAction::Execute(Event /*event*/)
 {
     return MoveTo(bot->GetMapId(), DISPERSE_POSITION.GetPositionX(), DISPERSE_POSITION.GetPositionY(), DISPERSE_POSITION.GetPositionZ(),
                   false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
@@ -132,7 +132,7 @@ bool LokenStackAction::isUseful()
     // else
     return AI_VALUE2(float, "distance", "current target") > 2.0f;
 }
-bool LokenStackAction::Execute(Event)
+bool LokenStackAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "loken");
     if (!boss) { return false; }
@@ -151,7 +151,7 @@ bool LokenStackAction::Execute(Event)
     return false;
 }
 
-bool AvoidLightningNovaAction::Execute(Event)
+bool AvoidLightningNovaAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "loken");
     if (!boss) { return false; }

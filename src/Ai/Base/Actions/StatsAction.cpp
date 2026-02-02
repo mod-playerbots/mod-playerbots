@@ -9,7 +9,7 @@
 #include "Event.h"
 #include "PlayerbotAI.h"
 
-bool StatsAction::Execute(Event)
+bool StatsAction::Execute(Event /*event*/)
 {
     std::ostringstream out;
 

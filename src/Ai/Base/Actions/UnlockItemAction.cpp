@@ -7,7 +7,7 @@
 
 inline constexpr uint32_t PICK_LOCK_SPELL_ID = 1804;
 
-bool UnlockItemAction::Execute(Event)
+bool UnlockItemAction::Execute(Event /*event*/)
 {
     bool foundLockedItem = false;
 

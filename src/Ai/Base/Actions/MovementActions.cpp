@@ -1837,7 +1837,7 @@ void MovementAction::DoMovePoint(Unit* unit, float x, float y, float z, bool gen
     }
 }
 
-bool FleeAction::Execute(Event)
+bool FleeAction::Execute(Event /*event*/)
 {
     return MoveAway(AI_VALUE(Unit*, "current target"), sPlayerbotAIConfig.fleeDistance, true);
 }
@@ -1845,9 +1845,8 @@ bool FleeAction::Execute(Event)
 bool FleeAction::isUseful()
 {
     if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL) != nullptr)
-    {
         return false;
-    }
+
     Unit* target = AI_VALUE(Unit*, "current target");
     if (target && target->IsInWorld() && !bot->IsWithinMeleeRange(target))
         return false;
@@ -1855,7 +1854,7 @@ bool FleeAction::isUseful()
     return true;
 }
 
-bool FleeWithPetAction::Execute(Event)
+bool FleeWithPetAction::Execute(Event /*event*/)
 {
     if (Pet* pet = bot->GetPet())
         botAI->PetFollow();
@@ -1873,7 +1872,7 @@ bool AvoidAoeAction::isUseful()
     return AI_VALUE(Aura*, "area debuff") || !traps.empty() || !triggers.empty();
 }
 
-bool AvoidAoeAction::Execute(Event)
+bool AvoidAoeAction::Execute(Event /*event*/)
 {
     // Case #1: Aura with dynamic object (e.g. rain of fire)
     if (AvoidAuraWithDynamicObj())
@@ -2305,7 +2304,7 @@ bool CombatFormationMoveAction::isUseful()
     return true;
 }
 
-bool CombatFormationMoveAction::Execute(Event)
+bool CombatFormationMoveAction::Execute(Event /*event*/)
 {
     float dis = AI_VALUE(float, "disperse distance");
     if (dis <= 0.0f || (!bot->IsInCombat() && botAI->HasStrategy("stay", BotState::BOT_STATE_NON_COMBAT)) ||
@@ -2436,7 +2435,7 @@ Player* CombatFormationMoveAction::NearestGroupMember(float dis)
     return result;
 }
 
-bool TankFaceAction::Execute(Event)
+bool TankFaceAction::Execute(Event /*event*/)
 {
     Unit* target = AI_VALUE(Unit*, "current target");
     if (!target)
@@ -2520,7 +2519,7 @@ bool RearFlankAction::isUseful()
     return inFront || inRear;
 }
 
-bool RearFlankAction::Execute(Event)
+bool RearFlankAction::Execute(Event /*event*/)
 {
     Unit* target = AI_VALUE(Unit*, "current target");
     if (!target)
@@ -2631,9 +2630,9 @@ bool DisperseSetAction::Execute(Event event)
     return true;
 }
 
-bool RunAwayAction::Execute(Event) { return Flee(AI_VALUE(Unit*, "group leader")); }
+bool RunAwayAction::Execute(Event /*event*/) { return Flee(AI_VALUE(Unit*, "group leader")); }
 
-bool MoveToLootAction::Execute(Event)
+bool MoveToLootAction::Execute(Event /*event*/)
 {
     LootObject loot = AI_VALUE(LootObject, "loot target");
     if (!loot.IsLootPossible(bot))
@@ -2642,7 +2641,7 @@ bool MoveToLootAction::Execute(Event)
     return MoveNear(loot.GetWorldObject(bot), sPlayerbotAIConfig.contactDistance);
 }
 
-bool MoveOutOfEnemyContactAction::Execute(Event)
+bool MoveOutOfEnemyContactAction::Execute(Event /*event*/)
 {
     Unit* target = AI_VALUE(Unit*, "current target");
     if (!target)
@@ -2653,7 +2652,7 @@ bool MoveOutOfEnemyContactAction::Execute(Event)
 
 bool MoveOutOfEnemyContactAction::isUseful() { return AI_VALUE2(bool, "inside target", "current target"); }
 
-bool SetFacingTargetAction::Execute(Event)
+bool SetFacingTargetAction::Execute(Event /*event*/)
 {
     Unit* target = AI_VALUE(Unit*, "current target");
     if (!target)
@@ -2679,7 +2678,7 @@ bool SetFacingTargetAction::isPossible()
     return true;
 }
 
-bool SetBehindTargetAction::Execute(Event)
+bool SetBehindTargetAction::Execute(Event /*event*/)
 {
     Unit* target = AI_VALUE(Unit*, "current target");
     if (!target)
@@ -2739,7 +2738,7 @@ bool SetBehindTargetAction::Execute(Event)
                   false, true, MovementPriority::MOVEMENT_COMBAT);
 }
 
-bool MoveOutOfCollisionAction::Execute(Event)
+bool MoveOutOfCollisionAction::Execute(Event /*event*/)
 {
     float angle = M_PI * 2000 / frand(1.f, 1000.f);
     float distance = sPlayerbotAIConfig.followDistance;
@@ -2757,7 +2756,7 @@ bool MoveOutOfCollisionAction::isUseful()
            botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest friendly players")->Get().size() < 15;
 }
 
-bool MoveRandomAction::Execute(Event)
+bool MoveRandomAction::Execute(Event /*event*/)
 {
     float distance = sPlayerbotAIConfig.tooCloseDistance + urand(10, 30);
 
@@ -2789,9 +2788,9 @@ bool MoveRandomAction::Execute(Event)
 
 bool MoveRandomAction::isUseful() { return !AI_VALUE(GuidPosition, "rpg target"); }
 
-bool MoveInsideAction::Execute(Event) { return MoveInside(bot->GetMapId(), x, y, bot->GetPositionZ(), distance); }
+bool MoveInsideAction::Execute(Event /*event*/) { return MoveInside(bot->GetMapId(), x, y, bot->GetPositionZ(), distance); }
 
-bool RotateAroundTheCenterPointAction::Execute(Event)
+bool RotateAroundTheCenterPointAction::Execute(Event /*event*/)
 {
     uint32 next_point = GetCurrWaypoint();
     if (MoveTo(bot->GetMapId(), waypoints[next_point].first, waypoints[next_point].second, bot->GetPositionZ(), false,
@@ -2811,7 +2810,7 @@ bool MoveFromGroupAction::Execute(Event event)
     return MoveFromGroup(distance);
 }
 
-bool MoveAwayFromCreatureAction::Execute(Event)
+bool MoveAwayFromCreatureAction::Execute(Event /*event*/)
 {
     GuidVector targets = AI_VALUE(GuidVector, "nearest npcs");
 
@@ -2891,7 +2890,7 @@ bool MoveAwayFromCreatureAction::Execute(Event)
 
 bool MoveAwayFromCreatureAction::isPossible() { return bot->CanFreeMove(); }
 
-bool MoveAwayFromPlayerWithDebuffAction::Execute(Event)
+bool MoveAwayFromPlayerWithDebuffAction::Execute(Event /*event*/)
 {
     Player* closestPlayer = nullptr;
     float minDistance = 0.0f;

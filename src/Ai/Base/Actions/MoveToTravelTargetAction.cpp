@@ -9,7 +9,7 @@
 #include "LootObjectStack.h"
 #include "Playerbots.h"
 
-bool MoveToTravelTargetAction::Execute(Event)
+bool MoveToTravelTargetAction::Execute(Event /*event*/)
 {
     TravelTarget* target = AI_VALUE(TravelTarget*, "travel target");
 

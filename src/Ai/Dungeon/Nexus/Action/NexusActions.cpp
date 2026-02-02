@@ -1,7 +1,7 @@
 #include "Playerbots.h"
 #include "NexusActions.h"
 
-bool MoveFromWhirlwindAction::Execute(Event)
+bool MoveFromWhirlwindAction::Execute(Event /*event*/)
 {
     Unit* boss = nullptr;
     uint8 faction = bot->GetTeamId();
@@ -43,7 +43,7 @@ bool MoveFromWhirlwindAction::Execute(Event)
     return MoveAway(boss, targetDist - bossDistance);
 }
 
-bool FirebombSpreadAction::Execute(Event)
+bool FirebombSpreadAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "grand magus telestra");
     float radius = 5.0f;
@@ -64,7 +64,7 @@ bool FirebombSpreadAction::Execute(Event)
 }
 
 bool TelestraSplitTargetAction::isUseful() { return !botAI->IsHeal(bot); }
-bool TelestraSplitTargetAction::Execute(Event)
+bool TelestraSplitTargetAction::Execute(Event /*event*/)
 {
     GuidVector attackers = AI_VALUE(GuidVector, "attackers");
     Unit* splitTargets[3] = {nullptr, nullptr, nullptr};
@@ -110,7 +110,7 @@ bool TelestraSplitTargetAction::Execute(Event)
 }
 
 bool ChaoticRiftTargetAction::isUseful() { return !botAI->IsHeal(bot); }
-bool ChaoticRiftTargetAction::Execute(Event)
+bool ChaoticRiftTargetAction::Execute(Event /*event*/)
 {
     Unit* chaoticRift = nullptr;
 
@@ -140,7 +140,7 @@ bool DodgeSpikesAction::isUseful()
 
     return bot->GetExactDist2d(boss) > 0.5f;
 }
-bool DodgeSpikesAction::Execute(Event)
+bool DodgeSpikesAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "ormorok the tree-shaper");
     if (!boss) { return false; }
@@ -148,7 +148,7 @@ bool DodgeSpikesAction::Execute(Event)
     return Move(bot->GetAngle(boss), bot->GetExactDist2d(boss) - 0.3f);
 }
 
-bool IntenseColdJumpAction::Execute(Event)
+bool IntenseColdJumpAction::Execute(Event /*event*/)
 {
     // This needs improving but maybe it should be done in the playerbot core.
     // Jump doesn't seem to support zero offset (eg. jump on the spot) so need to add a tiny delta.

@@ -1,7 +1,7 @@
 #include "Playerbots.h"
 #include "VioletHoldActions.h"
 
-bool AttackErekemAction::Execute(Event)
+bool AttackErekemAction::Execute(Event /*event*/)
 {
     // Focus boss first, adds after
     Unit* boss = AI_VALUE2(Unit*, "find target", "erekem");
@@ -14,7 +14,7 @@ bool AttackErekemAction::Execute(Event)
     return false;
 }
 
-bool AttackIchorGlobuleAction::Execute(Event)
+bool AttackIchorGlobuleAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "ichoron");
     if (!boss) { return false; }
@@ -59,7 +59,7 @@ bool AttackIchorGlobuleAction::Execute(Event)
     return false;
 }
 
-bool AttackVoidSentryAction::Execute(Event)
+bool AttackVoidSentryAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "zuramat the obliterator");
     if (!boss) { return false; }
@@ -95,7 +95,7 @@ bool AttackVoidSentryAction::Execute(Event)
     return false;
 }
 
-bool StopAttackAction::Execute(Event)
+bool StopAttackAction::Execute(Event /*event*/)
 {
     return bot->AttackStop();
 }

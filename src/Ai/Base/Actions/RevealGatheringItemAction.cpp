@@ -14,7 +14,7 @@
 #include "ServerFacade.h"
 #include "NearestGameObjects.h"
 
-bool RevealGatheringItemAction::Execute(Event)
+bool RevealGatheringItemAction::Execute(Event /*event*/)
 {
     if (!bot->GetGroup())
         return false;

@@ -6,7 +6,7 @@
 #include "Playerbots.h"
 #include "PositionAction.h"
 
-bool RaidOnyxiaMoveToSideAction::Execute(Event)
+bool RaidOnyxiaMoveToSideAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "onyxia");
     if (!boss)
@@ -37,7 +37,7 @@ bool RaidOnyxiaMoveToSideAction::Execute(Event)
     return false;
 }
 
-bool RaidOnyxiaSpreadOutAction::Execute(Event)
+bool RaidOnyxiaSpreadOutAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "onyxia");
 
@@ -63,7 +63,7 @@ bool RaidOnyxiaSpreadOutAction::Execute(Event)
     return MoveFromGroup(9.0f);  // move 9 yards
 }
 
-bool RaidOnyxiaMoveToSafeZoneAction::Execute(Event)
+bool RaidOnyxiaMoveToSafeZoneAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "onyxia");
     if (!boss)
@@ -104,7 +104,7 @@ bool RaidOnyxiaMoveToSafeZoneAction::Execute(Event)
                   false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
 }
 
-bool RaidOnyxiaKillWhelpsAction::Execute(Event)
+bool RaidOnyxiaKillWhelpsAction::Execute(Event /*event*/)
 {
     Unit* currentTarget = AI_VALUE(Unit*, "current target");
     // If already attacking a whelp, don't swap targets
@@ -128,7 +128,7 @@ bool RaidOnyxiaKillWhelpsAction::Execute(Event)
     return false;
 }
 
-bool OnyxiaAvoidEggsAction::Execute(Event)
+bool OnyxiaAvoidEggsAction::Execute(Event /*event*/)
 {
     Position botPos = Position(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
 

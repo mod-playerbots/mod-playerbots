@@ -1,7 +1,7 @@
 #include "Playerbots.h"
 #include "DrakTharonKeepActions.h"
 
-bool CorpseExplodeSpreadAction::Execute(Event)
+bool CorpseExplodeSpreadAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "trollgore");
     if (!boss) { return false; }
@@ -22,7 +22,7 @@ bool CorpseExplodeSpreadAction::Execute(Event)
     return false;
 }
 
-bool AvoidArcaneFieldAction::Execute(Event)
+bool AvoidArcaneFieldAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "novos the summoner");
     if (!boss) { return false; }
@@ -41,7 +41,7 @@ bool NovosDefaultPositionAction::isUseful()
     float threshold = 15.0f;
     return bot->GetDistance(NOVOS_PARTY_POSITION) > threshold;
 }
-bool NovosDefaultPositionAction::Execute(Event)
+bool NovosDefaultPositionAction::Execute(Event /*event*/)
 {
     float clusterDistance = 4.0f;
     // Only reposition if we're not killing anything
@@ -56,7 +56,7 @@ bool NovosDefaultPositionAction::Execute(Event)
     return false;
 }
 
-bool NovosTargetPriorityAction::Execute(Event)
+bool NovosTargetPriorityAction::Execute(Event /*event*/)
 {
     // TODO: This can be improved, some parts are still buggy.
     // But it works for now and this fight is very easy

@@ -7,7 +7,7 @@
 
 #include "PlayerbotAI.h"
 
-bool ResetInstancesAction::Execute(Event)
+bool ResetInstancesAction::Execute(Event /*event*/)
 {
     WorldPacket packet(CMSG_RESET_INSTANCES, 0);
     bot->GetSession()->HandleResetInstancesOpcode(packet);

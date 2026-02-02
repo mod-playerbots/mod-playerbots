@@ -128,7 +128,7 @@ bool GuildRemoveAction::PlayerIsValid(Player* member)
     return member->GetGuildId() == bot->GetGuildId() && GetRankId(bot) < GetRankId(member);
 };
 
-bool GuildManageNearbyAction::Execute(Event)
+bool GuildManageNearbyAction::Execute(Event /*event*/)
 {
     uint32 found = 0;
 

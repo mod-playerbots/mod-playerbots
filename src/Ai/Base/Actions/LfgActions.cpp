@@ -170,7 +170,7 @@ bool LfgJoinAction::JoinLFG()
     return true;
 }
 
-bool LfgRoleCheckAction::Execute(Event)
+bool LfgRoleCheckAction::Execute(Event /*event*/)
 {
     if (Group* group = bot->GetGroup())
     {
@@ -265,7 +265,7 @@ bool LfgAcceptAction::Execute(Event event)
     return false;
 }
 
-bool LfgLeaveAction::Execute(Event)
+bool LfgLeaveAction::Execute(Event /*event*/)
 {
     // Don't leave if lfg strategy enabled
     // if (botAI->HasStrategy("lfg", BOT_STATE_NON_COMBAT))

@@ -39,7 +39,7 @@ bool CastCasterFormAction::isUseful()
            AI_VALUE2(uint8, "mana", "self target") > sPlayerbotAIConfig.mediumHealth;
 }
 
-bool CastCasterFormAction::Execute(Event)
+bool CastCasterFormAction::Execute(Event /*event*/)
 {
     botAI->RemoveShapeshift();
     return true;
@@ -50,7 +50,7 @@ bool CastCancelTreeFormAction::isUseful()
     return botAI->HasAura(33891, bot);
 }
 
-bool CastCancelTreeFormAction::Execute(Event)
+bool CastCancelTreeFormAction::Execute(Event /*event*/)
 {
     botAI->RemoveAura("tree of life");
     return true;

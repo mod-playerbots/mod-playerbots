@@ -1,7 +1,7 @@
 #include "Playerbots.h"
 #include "UtgardePinnacleActions.h"
 
-bool AvoidFreezingCloudAction::Execute(Event)
+bool AvoidFreezingCloudAction::Execute(Event /*event*/)
 {
     Unit* closestTrigger = nullptr;
     GuidVector objects = AI_VALUE(GuidVector, "nearest hostile npcs");
@@ -35,7 +35,7 @@ bool AvoidFreezingCloudAction::Execute(Event)
     return false;
 }
 
-bool AvoidSkadiWhirlwindAction::Execute(Event)
+bool AvoidSkadiWhirlwindAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "skadi the ruthless");
     if (!boss) { return false; }

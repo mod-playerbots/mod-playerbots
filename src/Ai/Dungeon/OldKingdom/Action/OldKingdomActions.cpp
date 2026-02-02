@@ -1,7 +1,7 @@
 #include "Playerbots.h"
 #include "OldKingdomActions.h"
 
-bool AttackNadoxGuardianAction::Execute(Event)
+bool AttackNadoxGuardianAction::Execute(Event /*event*/)
 {
     Unit* target = AI_VALUE2(Unit*, "find target", "ahn'kahar guardian");
     if (!target || AI_VALUE(Unit*, "current target") == target)
@@ -11,7 +11,7 @@ bool AttackNadoxGuardianAction::Execute(Event)
     return Attack(target);
 }
 
-bool AttackJedogaVolunteerAction::Execute(Event)
+bool AttackJedogaVolunteerAction::Execute(Event /*event*/)
 {
     Unit* target = nullptr;
     // Target is not findable from threat table using AI_VALUE2(),
@@ -39,7 +39,7 @@ bool AttackJedogaVolunteerAction::Execute(Event)
     return Attack(target);
 }
 
-bool AvoidShadowCrashAction::Execute(Event)
+bool AvoidShadowCrashAction::Execute(Event /*event*/)
 {
     // Could check all enemy units in range as it's possible to pull multiple of these mobs.
     // They should really be killed 1 by 1, multipulls are messy so we just handle singles for now

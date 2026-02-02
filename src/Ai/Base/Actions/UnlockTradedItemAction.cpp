@@ -5,7 +5,7 @@
 
 inline constexpr uint32_t PICK_LOCK_SPELL_ID = 1804;
 
-bool UnlockTradedItemAction::Execute(Event)
+bool UnlockTradedItemAction::Execute(Event /*event*/)
 {
     Player* trader = bot->GetTrader();
     if (!trader)

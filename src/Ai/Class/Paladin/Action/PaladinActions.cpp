@@ -164,7 +164,7 @@ Value<Unit*>* CastBlessingOnPartyAction::GetTargetValue()
     return context->GetValue<Unit*>("party member without aura", MakeAuraQualifierForBuff(spell));
 }
 
-bool CastBlessingOfMightAction::Execute(Event)
+bool CastBlessingOfMightAction::Execute(Event /*event*/)
 {
     Unit* target = GetTarget();
     if (!target)
@@ -185,7 +185,7 @@ Value<Unit*>* CastBlessingOfMightOnPartyAction::GetTargetValue()
     );
 }
 
-bool CastBlessingOfMightOnPartyAction::Execute(Event)
+bool CastBlessingOfMightOnPartyAction::Execute(Event /*event*/)
 {
     Unit* target = GetTarget();
     if (!target)
@@ -198,7 +198,7 @@ bool CastBlessingOfMightOnPartyAction::Execute(Event)
     return botAI->CastSpell(castName, target);
 }
 
-bool CastBlessingOfWisdomAction::Execute(Event)
+bool CastBlessingOfWisdomAction::Execute(Event /*event*/)
 {
     Unit* target = GetTarget();
     if (!target)
@@ -219,7 +219,7 @@ Value<Unit*>* CastBlessingOfWisdomOnPartyAction::GetTargetValue()
     );
 }
 
-bool CastBlessingOfWisdomOnPartyAction::Execute(Event)
+bool CastBlessingOfWisdomOnPartyAction::Execute(Event /*event*/)
 {
     Unit* target = GetTarget();
     if (!target)
@@ -255,7 +255,7 @@ Value<Unit*>* CastBlessingOfSanctuaryOnPartyAction::GetTargetValue()
     );
 }
 
-bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event)
+bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event /*event*/)
 {
     if (!bot->HasSpell(SPELL_BLESSING_OF_SANCTUARY))
         return false;
@@ -379,7 +379,7 @@ Value<Unit*>* CastBlessingOfKingsOnPartyAction::GetTargetValue()
     );
 }
 
-bool CastBlessingOfKingsOnPartyAction::Execute(Event)
+bool CastBlessingOfKingsOnPartyAction::Execute(Event /*event*/)
 {
     Unit* target = GetTarget();
     if (!target)
@@ -490,7 +490,7 @@ bool CastDivineSacrificeAction::isUseful()
            !botAI->HasAura("divine guardian", GetTarget(), false, false, -1, true);
 }
 
-bool CastCancelDivineSacrificeAction::Execute(Event)
+bool CastCancelDivineSacrificeAction::Execute(Event /*event*/)
 {
     botAI->RemoveAura("divine sacrifice");
     return true;

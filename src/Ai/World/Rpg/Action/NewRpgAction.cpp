@@ -54,7 +54,7 @@ bool StartRpgDoQuestAction::Execute(Event event)
     return false;
 }
 
-bool NewRpgStatusUpdateAction::Execute(Event)
+bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
 {
     NewRpgInfo& info = botAI->rpgInfo;
     switch (info.status)
@@ -143,7 +143,7 @@ bool NewRpgStatusUpdateAction::Execute(Event)
     return false;
 }
 
-bool NewRpgGoGrindAction::Execute(Event)
+bool NewRpgGoGrindAction::Execute(Event /*event*/)
 {
     if (SearchQuestGiverAndAcceptOrReward())
         return true;
@@ -151,7 +151,7 @@ bool NewRpgGoGrindAction::Execute(Event)
     return MoveFarTo(botAI->rpgInfo.go_grind.pos);
 }
 
-bool NewRpgGoCampAction::Execute(Event)
+bool NewRpgGoCampAction::Execute(Event /*event*/)
 {
     if (SearchQuestGiverAndAcceptOrReward())
         return true;
@@ -159,7 +159,7 @@ bool NewRpgGoCampAction::Execute(Event)
     return MoveFarTo(botAI->rpgInfo.go_camp.pos);
 }
 
-bool NewRpgWanderRandomAction::Execute(Event)
+bool NewRpgWanderRandomAction::Execute(Event /*event*/)
 {
     if (SearchQuestGiverAndAcceptOrReward())
         return true;
@@ -167,7 +167,7 @@ bool NewRpgWanderRandomAction::Execute(Event)
     return MoveRandomNear();
 }
 
-bool NewRpgWanderNpcAction::Execute(Event)
+bool NewRpgWanderNpcAction::Execute(Event /*event*/)
 {
     NewRpgInfo& info = botAI->rpgInfo;
     if (!info.wander_npc.npcOrGo)
@@ -209,7 +209,7 @@ bool NewRpgWanderNpcAction::Execute(Event)
     return true;
 }
 
-bool NewRpgDoQuestAction::Execute(Event)
+bool NewRpgDoQuestAction::Execute(Event /*event*/)
 {
     if (SearchQuestGiverAndAcceptOrReward())
         return true;
@@ -401,7 +401,7 @@ bool NewRpgDoQuestAction::DoCompletedQuest()
     return false;
 }
 
-bool NewRpgTravelFlightAction::Execute(Event)
+bool NewRpgTravelFlightAction::Execute(Event /*event*/)
 {
     if (bot->IsInFlight())
     {

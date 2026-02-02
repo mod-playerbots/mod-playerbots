@@ -1,7 +1,7 @@
 #include "Playerbots.h"
 #include "GundrakActions.h"
 
-bool AvoidPoisonNovaAction::Execute(Event)
+bool AvoidPoisonNovaAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "slad'ran");
     if (!boss) { return false; }
@@ -18,7 +18,7 @@ bool AvoidPoisonNovaAction::Execute(Event)
     return false;
 }
 
-bool AttackSnakeWrapAction::Execute(Event)
+bool AttackSnakeWrapAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "slad'ran");
     if (!boss) { return false; }
@@ -44,7 +44,7 @@ bool AttackSnakeWrapAction::Execute(Event)
     return false;
 }
 
-bool AvoidWhirlingSlashAction::Execute(Event)
+bool AvoidWhirlingSlashAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "gal'darah");
     if (!boss) { return false; }

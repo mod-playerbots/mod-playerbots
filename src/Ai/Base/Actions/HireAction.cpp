@@ -9,7 +9,7 @@
 #include "RandomPlayerbotMgr.h"
 #include "PlayerbotAI.h"
 
-bool HireAction::Execute(Event)
+bool HireAction::Execute(Event /*event*/)
 {
     Player* master = GetMaster();
     if (!master)
