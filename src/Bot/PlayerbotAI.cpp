@@ -944,7 +944,6 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
         filtered = filtered.substr(sPlayerbotAIConfig.commandPrefix.size());
     }
 
-
     if (chatMap.empty())
     {
         chatMap["#w "] = CHAT_MSG_WHISPER;
