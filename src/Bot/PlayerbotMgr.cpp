@@ -1266,8 +1266,6 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
         bool hasSpecMatch = specTab == -1;
         bool hasCombinedMatch = gender == -1 && specTab == -1;
         for (ObjectGuid const& guid : guidCache)
-        const std::unordered_set<ObjectGuid> &guidCache = sRandomPlayerbotMgr.addclassCache[RandomPlayerbotMgr::GetTeamClassIdx(teamId == TEAM_ALLIANCE, claz)];
-        for (const ObjectGuid &guid: guidCache)
         {
             bool genderMatch = gender == -1 || sRandomPlayerbotMgr.GetAddclassGender(guid) == gender;
             bool specMatch = true;
