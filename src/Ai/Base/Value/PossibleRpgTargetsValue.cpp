@@ -11,7 +11,6 @@
 #include "SharedDefines.h"
 #include "NearestGameObjects.h"
 #include "GridNotifiers.h"
-// Required due to a poor implementation by AC
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 #include "TravelMgr.h"
@@ -75,7 +74,6 @@ bool PossibleRpgTargetsValue::AcceptUnit(Unit* unit)
     }
 
     TravelTarget* travelTarget = context->GetValue<TravelTarget*>("travel target")->Get();
-
 
     if (
         travelTarget != nullptr

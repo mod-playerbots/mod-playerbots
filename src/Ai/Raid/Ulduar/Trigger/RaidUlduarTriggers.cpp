@@ -1862,7 +1862,6 @@ Unit* YoggSaronTrigger::GetNextIllusionRoomRtiTarget()
         Creature* target = bot->FindNearestCreature(NPC_SUIT_OF_ARMOR, detectionRadius, true);
         if (target)
             return target;
-
     }
 
     return nullptr;
@@ -1876,7 +1875,6 @@ bool YoggSaronOminousCloudCheatTrigger::IsActive()
     Unit* boss = GetSaraIfAlive();
     if (!boss)
         return false;
-
 
     if (!botAI->IsBotMainTank(bot))
         return false;

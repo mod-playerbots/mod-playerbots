@@ -22,7 +22,6 @@ bool MoveToRpgTargetAction::Execute(Event)
     if (go && !go->IsInWorld())
         return false;
 
-
     WorldObject* wo = nullptr;
     if (unit)
         wo = unit;
