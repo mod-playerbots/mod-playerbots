@@ -2680,7 +2680,7 @@ std::vector<uint32> RandomPlayerbotMgr::GetBgBots(uint32 bracket)
         } while (result->NextRow());
     }
 
-    return std::move(BgBots);
+    return BgBots;
 }
 
 CachedEvent* RandomPlayerbotMgr::FindEvent(uint32 bot, std::string const& event)
