@@ -31,12 +31,9 @@ PassiveMultiplier::PassiveMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "pa
     }
 }
 
-float PassiveMultiplier::GetValue(Action* action)
+float PassiveMultiplier::GetValue(Action& action)
 {
-    if (!action)
-        return 1.0f;
-
-    std::string const name = action->getName();
+    std::string const name = action.getName();
 
     for (std::vector<std::string>::iterator i = allowedActions.begin(); i != allowedActions.end(); i++)
     {

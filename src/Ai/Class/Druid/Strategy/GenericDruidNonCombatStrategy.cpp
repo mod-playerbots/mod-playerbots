@@ -5,8 +5,12 @@
 
 #include "GenericDruidNonCombatStrategy.h"
 
-#include "Playerbots.h"
 #include "AiFactory.h"
+#include "CreateNextAction.h"
+#include "DruidActions.h"
+#include "DruidShapeshiftActions.h"
+#include "GenericActions.h"
+#include "ImbueAction.h"
 
 class GenericDruidNonCombatStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -28,69 +32,78 @@ public:
 private:
     static ActionNode* thorns([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("thorns",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* thorns_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("thorns on party",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* mark_of_the_wild([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("mark of the wild",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* mark_of_the_wild_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("mark of the wild on party",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* regrowth_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("regrowth on party",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* rejuvenation_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("rejuvenation on party",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* remove_curse_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("remove curse on party",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* abolish_poison_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("abolish poison on party",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* revive([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("revive",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 };
 
@@ -107,7 +120,7 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
         new TriggerNode(
             "mark of the wild",
             {
-                NextAction("mark of the wild", 14.0f)
+                CreateNextAction<CastMarkOfTheWildAction>(14.0f)
             }
         )
     );
@@ -115,7 +128,7 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
         new TriggerNode(
             "party member cure poison",
             {
-                NextAction("abolish poison on party", 20.0f)
+                CreateNextAction<CastAbolishPoisonOnPartyAction>(20.0f)
             }
         )
     );
@@ -123,7 +136,7 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
         new TriggerNode(
             "party member dead",
             {
-                NextAction("revive", ACTION_CRITICAL_HEAL + 10)
+                CreateNextAction<CastReviveAction>(ACTION_CRITICAL_HEAL + 10.0f)
             }
         )
     );
@@ -131,7 +144,7 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
         new TriggerNode(
             "often",
             {
-                NextAction("apply oil", 1.0f)
+                CreateNextAction<ImbueWithOilAction>(1.0f)
             }
         )
     );
@@ -139,9 +152,9 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
         new TriggerNode(
             "party member critical health",
             {
-                NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 7),
-                NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 6),
-                NextAction("rejuvenation on party", ACTION_MEDIUM_HEAL + 5),
+                CreateNextAction<CastWildGrowthOnPartyAction>(ACTION_MEDIUM_HEAL + 7.0f),
+                CreateNextAction<CastRegrowthOnPartyAction>(ACTION_MEDIUM_HEAL + 6.0f),
+                CreateNextAction<CastRejuvenationOnPartyAction>(ACTION_MEDIUM_HEAL + 5.0f),
             }
         )
     );
@@ -149,9 +162,9 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
         new TriggerNode(
             "party member low health",
             {
-                NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 5),
-                NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 4),
-                NextAction("rejuvenation on party", ACTION_MEDIUM_HEAL + 3),
+                CreateNextAction<CastWildGrowthOnPartyAction>(ACTION_MEDIUM_HEAL + 5.0f),
+                CreateNextAction<CastRegrowthOnPartyAction>(ACTION_MEDIUM_HEAL + 4.0f),
+                CreateNextAction<CastRejuvenationOnPartyAction>(ACTION_MEDIUM_HEAL + 3.0f),
             }
         )
     );
@@ -159,9 +172,9 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
         new TriggerNode(
             "party member medium health",
             {
-                NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 3),
-                NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 2),
-                NextAction("rejuvenation on party", ACTION_MEDIUM_HEAL + 1),
+                CreateNextAction<CastWildGrowthOnPartyAction>(ACTION_MEDIUM_HEAL + 3.0f),
+                CreateNextAction<CastRegrowthOnPartyAction>(ACTION_MEDIUM_HEAL + 2.0f),
+                CreateNextAction<CastRejuvenationOnPartyAction>(ACTION_MEDIUM_HEAL + 1.0f),
             }
         )
     );
@@ -169,8 +182,8 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
         new TriggerNode(
             "party member almost full health",
             {
-                NextAction("wild growth on party", ACTION_LIGHT_HEAL + 3),
-                NextAction("rejuvenation on party", ACTION_LIGHT_HEAL + 2)
+                CreateNextAction<CastWildGrowthOnPartyAction>(ACTION_LIGHT_HEAL + 3.0f),
+                CreateNextAction<CastRejuvenationOnPartyAction>(ACTION_LIGHT_HEAL + 2.0f)
             }
         )
     );
@@ -178,7 +191,7 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
         new TriggerNode(
             "party member remove curse",
             {
-                NextAction("remove curse on party", ACTION_DISPEL + 7)
+                CreateNextAction<CastDruidRemoveCurseOnPartyAction>(ACTION_DISPEL + 7.0f)
             }
         )
     );
@@ -186,7 +199,7 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
         new TriggerNode(
             "new pet",
             {
-                NextAction("set pet stance", 60.0f)
+                CreateNextAction<SetPetStanceAction>(60.0f)
             }
         )
     );
@@ -194,9 +207,9 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
         new TriggerNode(
             "party member critical health",
             {
-                NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 7),
-                NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 6),
-                NextAction("rejuvenation on party", ACTION_MEDIUM_HEAL + 5),
+                CreateNextAction<CastWildGrowthOnPartyAction>(ACTION_MEDIUM_HEAL + 7.0f),
+                CreateNextAction<CastRegrowthOnPartyAction>(ACTION_MEDIUM_HEAL + 6.0f),
+                CreateNextAction<CastRejuvenationOnPartyAction>(ACTION_MEDIUM_HEAL + 5.0f),
             }
         )
     );
@@ -204,9 +217,9 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
         new TriggerNode(
             "party member low health",
             {
-                NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 5),
-                NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 4),
-                NextAction("rejuvenation on party", ACTION_MEDIUM_HEAL + 3),
+                CreateNextAction<CastWildGrowthOnPartyAction>(ACTION_MEDIUM_HEAL + 5.0f),
+                CreateNextAction<CastRegrowthOnPartyAction>(ACTION_MEDIUM_HEAL + 4.0f),
+                CreateNextAction<CastRejuvenationOnPartyAction>(ACTION_MEDIUM_HEAL + 3.0f),
             }
         )
     );
@@ -214,9 +227,9 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
         new TriggerNode(
             "party member medium health",
             {
-                NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 3),
-                NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 2),
-                NextAction("rejuvenation on party", ACTION_MEDIUM_HEAL + 1),
+                CreateNextAction<CastWildGrowthOnPartyAction>(ACTION_MEDIUM_HEAL + 3.0f),
+                CreateNextAction<CastRegrowthOnPartyAction>(ACTION_MEDIUM_HEAL + 2.0f),
+                CreateNextAction<CastRejuvenationOnPartyAction>(ACTION_MEDIUM_HEAL + 1.0f),
             }
         )
     );
@@ -224,8 +237,8 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
         new TriggerNode(
             "party member almost full health",
             {
-                NextAction("wild growth on party", ACTION_LIGHT_HEAL + 3),
-                NextAction("rejuvenation on party", ACTION_LIGHT_HEAL + 2),
+                CreateNextAction<CastWildGrowthOnPartyAction>(ACTION_LIGHT_HEAL + 3.0f),
+                CreateNextAction<CastRejuvenationOnPartyAction>(ACTION_LIGHT_HEAL + 2.0f),
             }
         )
     );
@@ -233,16 +246,16 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
         new TriggerNode(
             "party member remove curse",
             {
-                NextAction("remove curse on party", ACTION_DISPEL + 7),
+                CreateNextAction<CastDruidRemoveCurseOnPartyAction>(ACTION_DISPEL + 7.0f),
             }
         )
     );
 
     int specTab = AiFactory::GetPlayerSpecTab(botAI->GetBot());
     if (specTab == 0 || specTab == 2) // Balance or Restoration
-        triggers.push_back(new TriggerNode("often", { NextAction("apply oil", 1.0f) }));
+        triggers.push_back(new TriggerNode("often", { CreateNextAction<ImbueWithOilAction>(1.0f) }));
     if (specTab == 1) // Feral
-        triggers.push_back(new TriggerNode("often", { NextAction("apply stone", 1.0f) }));
+        triggers.push_back(new TriggerNode("often", { CreateNextAction<ImbueWithStoneAction>(1.0f) }));
 
 }
 
@@ -259,7 +272,7 @@ void GenericDruidBuffStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "mark of the wild on party",
             {
-                NextAction("mark of the wild on party", 13.0f),
+                CreateNextAction<CastMarkOfTheWildOnPartyAction>(13.0f),
             }
         )
     );
@@ -267,7 +280,7 @@ void GenericDruidBuffStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "thorns on main tank",
             {
-                NextAction("thorns on main tank", 11.0f),
+                CreateNextAction<CastThornsOnMainTankAction>(11.0f),
             }
         )
     );
@@ -275,7 +288,7 @@ void GenericDruidBuffStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "thorns",
             {
-                NextAction("thorns", 10.0f),
+                CreateNextAction<CastThornsAction>(10.0f),
             }
         )
     );

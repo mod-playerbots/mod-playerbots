@@ -8,14 +8,14 @@
 
 #include "WarriorActions.h"
 
-float BjarngrimMultiplier::GetValue(Action* action)
+float BjarngrimMultiplier::GetValue(Action& action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "general bjarngrim");
     if (!boss || botAI->IsHeal(bot)) { return 1.0f; }
 
     if (boss->HasUnitState(UNIT_STATE_CASTING) && boss->FindCurrentSpellBySpellId(SPELL_WHIRLWIND_BJARNGRIM))
     {
-        if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<AvoidWhirlwindAction*>(action))
+        if (dynamic_cast<MovementAction*>(&action) && !dynamic_cast<AvoidWhirlwindAction*>(&action))
         {
             return 0.0f;
         }
@@ -39,12 +39,12 @@ float BjarngrimMultiplier::GetValue(Action* action)
 
     if (!boss_add || botAI->IsTank(bot)) { return 1.0f; }
 
-    if (dynamic_cast<DpsAssistAction*>(action))
+    if (dynamic_cast<DpsAssistAction*>(&action))
     {
         return 0.0f;
     }
 
-    if (action->getThreatType() == Action::ActionThreatType::Aoe)
+    if (action.getThreatType() == Action::ActionThreatType::Aoe)
     {
         return 0.0f;
     }
@@ -52,17 +52,17 @@ float BjarngrimMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float VolkhanMultiplier::GetValue(Action* action)
+float VolkhanMultiplier::GetValue(Action& action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "volkhan");
     if (!boss || botAI->IsTank(bot) || botAI->IsHeal(bot)) { return 1.0f; }
 
-    if (dynamic_cast<DpsAssistAction*>(action))
+    if (dynamic_cast<DpsAssistAction*>(&action))
     {
         return 0.0f;
     }
 
-    if (action->getThreatType() == Action::ActionThreatType::Aoe)
+    if (action.getThreatType() == Action::ActionThreatType::Aoe)
     {
         return 0.0f;
     }
@@ -70,7 +70,7 @@ float VolkhanMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float IonarMultiplier::GetValue(Action* action)
+float IonarMultiplier::GetValue(Action& action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "ionar");
     if (!boss) { return 1.0f; }
@@ -79,9 +79,9 @@ float IonarMultiplier::GetValue(Action* action)
     if (!bot->CanSeeOrDetect(boss))
     {
         // Block MovementActions except for specific exceptions.
-        if (dynamic_cast<MovementAction*>(action)
-            && !dynamic_cast<DispersePositionAction*>(action)
-            && !dynamic_cast<StaticOverloadSpreadAction*>(action))
+        if (dynamic_cast<MovementAction*>(&action)
+            && !dynamic_cast<DispersePositionAction*>(&action)
+            && !dynamic_cast<StaticOverloadSpreadAction*>(&action))
         {
             return 0.0f;
         }
@@ -90,32 +90,32 @@ float IonarMultiplier::GetValue(Action* action)
     if (boss->FindCurrentSpellBySpellId(SPELL_DISPERSE))
     {
         // Explicitly block the CastChargeAction during dispersal.
-        if (dynamic_cast<CastChargeAction*>(action))
+        if (dynamic_cast<CastChargeAction*>(&action))
         {
             return 0.0f;
         }
     }
     return 1.0f;
 }
-float LokenMultiplier::GetValue(Action* action)
+float LokenMultiplier::GetValue(Action& action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "loken");
     if (!boss) { return 1.0f; }
 
     // Prevent FleeAction from being executed.
-    if (dynamic_cast<FleeAction*>(action)) { return 0.0f; }
+    if (dynamic_cast<FleeAction*>(&action)) { return 0.0f; }
 
     // Prevent MovementActions during Lightning Nova unless it's AvoidLightningNovaAction.
     if (boss->FindCurrentSpellBySpellId(SPELL_LIGHTNING_NOVA))
     {
-        if (dynamic_cast<MovementAction*>(action)
-            && !dynamic_cast<AvoidLightningNovaAction*>(action))
+        if (dynamic_cast<MovementAction*>(&action)
+            && !dynamic_cast<AvoidLightningNovaAction*>(&action))
         {
             return 0.0f;
         }
 
         // Specifically prevent Charge during Lightning Nova.
-        if (dynamic_cast<CastChargeAction*>(action))
+        if (dynamic_cast<CastChargeAction*>(&action))
         {
             return 0.0f;
         }

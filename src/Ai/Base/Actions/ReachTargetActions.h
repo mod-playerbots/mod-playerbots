@@ -6,7 +6,6 @@
 #ifndef _PLAYERBOT_REACHTARGETACTIONS_H
 #define _PLAYERBOT_REACHTARGETACTIONS_H
 
-#include "GenericSpellActions.h"
 #include "MovementActions.h"
 
 class PlayerbotAI;
@@ -22,20 +21,6 @@ public:
     bool Execute(Event event) override;
     bool isUseful() override;
     std::string const GetTargetName() override;
-
-protected:
-    float distance;
-};
-
-class CastReachTargetSpellAction : public CastSpellAction
-{
-public:
-    CastReachTargetSpellAction(PlayerbotAI* botAI, std::string const spell, float distance)
-        : CastSpellAction(botAI, spell), distance(distance)
-    {
-    }
-
-    bool isUseful() override;
 
 protected:
     float distance;

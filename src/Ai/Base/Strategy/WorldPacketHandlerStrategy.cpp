@@ -4,9 +4,37 @@
  */
 
 #include "WorldPacketHandlerStrategy.h"
+#include "AddLootAction.h"
+#include "AreaTriggerAction.h"
+#include "ArenaTeamActions.h"
+#include "AutoMaintenanceOnLevelupAction.h"
+#include "BattleGroundJoinAction.h"
 #include "CreateNextAction.h"
 #include "AcceptInvitationAction.h"
+#include "EquipAction.h"
+#include "GuildAcceptAction.h"
+#include "InventoryChangeFailureAction.h"
 #include "LeaveGroupAction.h"
+#include "LfgActions.h"
+#include "LootAction.h"
+#include "LootRollAction.h"
+#include "OpenItemAction.h"
+#include "PassLeadershipToMasterAction.h"
+#include "PetitionSignAction.h"
+#include "QuestAction.h"
+#include "ReadyCheckAction.h"
+#include "ReleaseSpiritAction.h"
+#include "RememberTaxiAction.h"
+#include "ResetAiAction.h"
+#include "SeeSpellAction.h"
+#include "TalkToQuestGiverAction.h"
+#include "TaxiAction.h"
+#include "TellMasterAction.h"
+#include "TradeStatusAction.h"
+#include "TradeStatusExtendedAction.h"
+#include "TrainerAction.h"
+#include "UnlockItemAction.h"
+#include "XpGainAction.h"
 
 void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
@@ -40,7 +68,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "group set leader",
             {
-                /*NextAction("leader", relevance),*/
+                CreateNextAction<PassLeadershipToMasterAction>(relevance),
             }
         )
     );
@@ -48,7 +76,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "not enough money",
             {
-                CreateNextAction("tell not enough money", relevance)
+                CreateNextAction<TellMasterNotEnoughMoneyAction>(relevance)
             }
         )
     );
@@ -56,7 +84,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "not enough reputation",
             {
-                CreateNextAction("tell not enough reputation", relevance)
+                CreateNextAction<TellMasterNotEnoughReputationAction>(relevance)
             }
         )
     );
@@ -64,7 +92,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "cannot equip",
             {
-                CreateNextAction("tell cannot equip", relevance)
+                CreateNextAction<InventoryChangeFailureAction>(relevance)
             }
         )
     );
@@ -72,8 +100,8 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "use game object",
             {
-                CreateNextAction("add loot", relevance),
-                CreateNextAction("use meeting stone", relevance)
+                CreateNextAction<AddLootAction>(relevance),
+                CreateNextAction<UseMeetingStoneAction>(relevance)
             }
         )
     );
@@ -81,7 +109,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "gossip hello",
             {
-                CreateNextAction("trainer", relevance)
+                CreateNextAction<TrainerAction>(relevance)
             }
         )
     );
@@ -89,8 +117,8 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "activate taxi",
             {
-                CreateNextAction("remember taxi", relevance),
-                CreateNextAction("taxi", relevance)
+                CreateNextAction<RememberTaxiAction>(relevance),
+                CreateNextAction<TaxiAction>(relevance)
             }
         )
     );
@@ -98,7 +126,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "taxi done",
             {
-                CreateNextAction("taxi", relevance)
+                CreateNextAction<TaxiAction>(relevance)
             }
         )
     );
@@ -106,8 +134,8 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "trade status",
             {
-                CreateNextAction("accept trade", relevance),
-                CreateNextAction("equip upgrades", relevance)
+                CreateNextAction<TradeStatusAction>(relevance),
+                CreateNextAction<EquipUpgradesAction>(relevance)
             }
         )
     );
@@ -115,7 +143,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "trade status extended",
             {
-                CreateNextAction("trade status extended", relevance)
+                CreateNextAction<TradeStatusExtendedAction>(relevance)
             }
         )
     );
@@ -123,7 +151,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "area trigger",
             {
-                CreateNextAction("reach area trigger", relevance)
+                CreateNextAction<ReachAreaTriggerAction>(relevance)
             }
         )
     );
@@ -131,7 +159,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "within area trigger",
             {
-                CreateNextAction("area trigger", relevance)
+                CreateNextAction<AreaTriggerAction>(relevance)
             }
         )
     );
@@ -139,7 +167,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "loot response",
             {
-                CreateNextAction("store loot", relevance)
+                CreateNextAction<StoreLootAction>(relevance)
             }
         )
     );
@@ -147,10 +175,10 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "item push result",
             {
-                CreateNextAction("unlock items", relevance),
-                CreateNextAction("open items", relevance),
-                CreateNextAction("query item usage", relevance),
-                CreateNextAction("equip upgrades", relevance)
+                CreateNextAction<UnlockItemAction>(relevance),
+                CreateNextAction<OpenItemAction>(relevance),
+                CreateNextAction<QueryItemUsageAction>(relevance),
+                CreateNextAction<EquipUpgradesAction>(relevance)
             }
         )
     );
@@ -158,7 +186,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "item push result",
             {
-                CreateNextAction("quest item push result", relevance)
+                CreateNextAction<QuestItemPushResultAction>(relevance)
             }
         )
     );
@@ -166,7 +194,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "ready check finished",
             {
-                CreateNextAction("finish ready check", relevance)
+                CreateNextAction<FinishReadyCheckAction>(relevance)
             }
         )
     );
@@ -175,7 +203,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "guild invite",
             {
-                CreateNextAction("guild accept", relevance)
+                CreateNextAction<GuildAcceptAction>(relevance)
             }
         )
     );
@@ -183,7 +211,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "petition offer",
             {
-                CreateNextAction("petition sign", relevance)
+                CreateNextAction<PetitionSignAction>(relevance)
             }
         )
     );
@@ -191,7 +219,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "lfg proposal",
             {
-                CreateNextAction("lfg accept", relevance)
+                CreateNextAction<LfgAcceptAction>(relevance)
             }
         )
     );
@@ -199,7 +227,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "lfg proposal active",
             {
-                CreateNextAction("lfg accept", relevance)
+                CreateNextAction<LfgAcceptAction>(relevance)
             }
         )
     );
@@ -207,7 +235,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "arena team invite",
             {
-                CreateNextAction("arena team accept", relevance)
+                CreateNextAction<ArenaTeamAcceptAction>(relevance)
             }
         )
     );
@@ -216,7 +244,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "bg status",
             {
-                CreateNextAction("bg status", relevance)
+                CreateNextAction<BGStatusAction>(relevance)
             }
         )
     );
@@ -224,7 +252,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "xpgain",
             {
-                CreateNextAction("xp gain", relevance)
+                CreateNextAction<XpGainAction>(relevance)
             }
         )
     );
@@ -232,7 +260,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "levelup",
             {
-                CreateNextAction("auto maintenance on levelup", relevance + 3)
+                CreateNextAction<AutoMaintenanceOnLevelupAction>(relevance + 3.0f)
             }
         )
     );
@@ -242,7 +270,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "group list",
             {
-                CreateNextAction("reset botAI", relevance)
+                CreateNextAction<ResetAiAction>(relevance)
             }
         )
     );
@@ -250,7 +278,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "see spell",
             {
-                CreateNextAction("see spell", relevance)
+                CreateNextAction<SeeSpellAction>(relevance)
             }
         )
     );
@@ -258,7 +286,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "release spirit",
             {
-                CreateNextAction("release", relevance)
+                CreateNextAction<ReleaseSpiritAction>(relevance)
             }
         )
     );
@@ -266,7 +294,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "revive from corpse",
             {
-                CreateNextAction("revive from corpse", relevance)
+                CreateNextAction<ReviveFromCorpseAction>(relevance)
             }
         )
     );
@@ -274,7 +302,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "master loot roll",
             {
-                CreateNextAction("master loot roll", relevance)
+                CreateNextAction<MasterLootRollAction>(relevance)
             }
         )
     );
@@ -285,7 +313,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "questgiver quest details",
             {
-                CreateNextAction("turn in query quest", relevance)
+                CreateNextAction<TurnInQueryQuestAction>(relevance)
             }
         )
     );
@@ -295,7 +323,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "very often",
             {
-                CreateNextAction("loot roll", relevance)
+                CreateNextAction<LootRollAction>(relevance)
             }
         )
     );

@@ -4,8 +4,6 @@
 #include "Action.h"
 #include "AttackAction.h"
 #include "PlayerbotAI.h"
-#include "Playerbots.h"
-#include "NexusTriggers.h"
 
 class MoveFromWhirlwindAction : public MovementAction
 {

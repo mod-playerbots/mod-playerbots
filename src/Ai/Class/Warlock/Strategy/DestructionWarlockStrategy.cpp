@@ -4,7 +4,9 @@
  */
 
 #include "DestructionWarlockStrategy.h"
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "MovementActions.h"
+#include "WarlockActions.h"
 
 // ===== Action Node Factory =====
 class DestructionWarlockStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
@@ -29,20 +31,132 @@ public:
     }
 
 private:
-    static ActionNode* immolate(PlayerbotAI*) { return new ActionNode("immolate", {}, {}, {}); }
-    static ActionNode* conflagrate(PlayerbotAI*) { return new ActionNode("conflagrate", {}, {}, {}); }
-    static ActionNode* chaos_bolt(PlayerbotAI*) { return new ActionNode("chaos bolt", {}, {}, {}); }
-    static ActionNode* incinerate(PlayerbotAI*) { return new ActionNode("incinerate", {}, {}, {}); }
-    static ActionNode* corruption(PlayerbotAI*) { return new ActionNode("corruption", {}, {}, {}); }
-    static ActionNode* corruption_on_attacker(PlayerbotAI*) { return new ActionNode("corruption on attacker", {}, {}, {}); }
-    static ActionNode* shadow_bolt(PlayerbotAI*) { return new ActionNode("shadow bolt", {}, {}, {}); }
-    static ActionNode* shadowburn(PlayerbotAI*) { return new ActionNode("shadowburn", {}, {}, {}); }
-    static ActionNode* life_tap(PlayerbotAI*) { return new ActionNode("life tap", {}, {}, {}); }
-    static ActionNode* shadowfury(PlayerbotAI*) { return new ActionNode("shadowfury", {}, {}, {}); }
-    static ActionNode* shadowflame(PlayerbotAI*) { return new ActionNode("shadowflame", {}, {}, {}); }
-    static ActionNode* seed_of_corruption(PlayerbotAI*) { return new ActionNode("seed of corruption", {}, {}, {}); }
-    static ActionNode* seed_of_corruption_on_attacker(PlayerbotAI*) { return new ActionNode("seed of corruption on attacker", {}, {}, {}); }
-    static ActionNode* rain_of_fire(PlayerbotAI*) { return new ActionNode("rain of fire", {}, {}, {}); }
+    static ActionNode* immolate(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* conflagrate(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* chaos_bolt(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* incinerate(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* corruption(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* corruption_on_attacker(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* shadow_bolt(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* shadowburn(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* life_tap(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* shadowfury(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* shadowflame(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* seed_of_corruption(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* seed_of_corruption_on_attacker(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* rain_of_fire(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
 };
 
 // ===== Single Target Strategy =====
@@ -55,13 +169,13 @@ DestructionWarlockStrategy::DestructionWarlockStrategy(PlayerbotAI* botAI) : Gen
 std::vector<NextAction> DestructionWarlockStrategy::getDefaultActions()
 {
     return {
-       NextAction("immolate", 5.9f),
-       NextAction("conflagrate", 5.8f),
-       NextAction("chaos bolt", 5.7f),
-       NextAction("incinerate", 5.6f),
-       NextAction("corruption", 5.3f),      // Note: Corruption and Shadow Bolt won't be used after the character learns Incinerate at level 64
-       NextAction("shadow bolt", 5.2f),
-       NextAction("shoot", 5.0f)
+       CreateNextAction<CastImmolateAction>(5.9f),
+       CreateNextAction<CastConflagrateAction>(5.8f),
+       CreateNextAction<CastChaosBoltAction>(5.7f),
+       CreateNextAction<CastIncinerateAction>(5.6f),
+       CreateNextAction<CastCorruptionAction>(5.3f),      // Note: Corruption and Shadow Bolt won't be used after the character learns Incinerate at level 64
+       CreateNextAction<CastShadowBoltAction>(5.2f),
+       CreateNextAction<CastShootAction>(5.0f)
     };
 }
 
@@ -75,7 +189,7 @@ void DestructionWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "immolate",
             {
-                NextAction("immolate", 20.0f)
+                CreateNextAction<CastImmolateAction>(20.0f)
             }
         )
     );
@@ -83,7 +197,7 @@ void DestructionWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "conflagrate",
             {
-                NextAction("conflagrate", 19.5f)
+                CreateNextAction<CastConflagrateAction>(19.5f)
             }
         )
     );
@@ -91,7 +205,7 @@ void DestructionWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "chaos bolt",
             {
-                NextAction("chaos bolt", 19.0f)
+                CreateNextAction<CastChaosBoltAction>(19.0f)
             }
         )
     );
@@ -101,7 +215,7 @@ void DestructionWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "corruption on attacker",
             {
-                NextAction("corruption on attacker", 5.5f)
+                CreateNextAction<CastCorruptionOnAttackerAction>(5.5f)
             }
         )
     );
@@ -109,7 +223,7 @@ void DestructionWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "corruption",
             {
-                NextAction("corruption", 5.4f)
+                CreateNextAction<CastCorruptionAction>(5.4f)
             }
         )
     );
@@ -119,7 +233,7 @@ void DestructionWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "target critical health",
             {
-                NextAction("shadowburn", 18.0f)
+                CreateNextAction<CastShadowburnAction>(18.0f)
             }
         )
     );
@@ -129,7 +243,7 @@ void DestructionWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "life tap glyph buff",
             {
-                NextAction("life tap", 29.5f)
+                CreateNextAction<CastLifeTapAction>(29.5f)
             }
         )
     );
@@ -137,7 +251,7 @@ void DestructionWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "life tap",
             {
-                NextAction("life tap", 5.1f)
+                CreateNextAction<CastLifeTapAction>(5.1f)
             }
         )
     );
@@ -146,7 +260,7 @@ void DestructionWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "enemy too close for spell",
             {
-                NextAction("flee", 39.0f)
+                CreateNextAction<FleeAction>(39.0f)
             }
         )
     );

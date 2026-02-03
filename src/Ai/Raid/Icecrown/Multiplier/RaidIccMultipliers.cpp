@@ -30,13 +30,13 @@ std::mutex g_plagueMutex;  // Lock before accessing shared variables
 }
 
 // Lady Deathwhisper
-float IccLadyDeathwhisperMultiplier::GetValue(Action* action)
+float IccLadyDeathwhisperMultiplier::GetValue(Action& action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "lady deathwhisper");
     if (!boss)
         return 1.0f;
 
-    if (dynamic_cast<FleeAction*>(action) || dynamic_cast<FollowAction*>(action) || dynamic_cast<CombatFormationMoveAction*>(action))
+    if (dynamic_cast<FleeAction*>(&action) || dynamic_cast<FollowAction*>(&action) || dynamic_cast<CombatFormationMoveAction*>(&action))
         return 0.0f;
 
     static constexpr uint32 VENGEFUL_SHADE_ID = NPC_SHADE;
@@ -45,7 +45,7 @@ float IccLadyDeathwhisperMultiplier::GetValue(Action* action)
     const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
 
     // Allow the IccShadeLadyDeathwhisperAction to run
-    if (dynamic_cast<IccShadeLadyDeathwhisperAction*>(action))
+    if (dynamic_cast<IccShadeLadyDeathwhisperAction*>(&action))
         return 1.0f;
 
     for (auto const& npcGuid : npcs)
@@ -65,22 +65,22 @@ float IccLadyDeathwhisperMultiplier::GetValue(Action* action)
 }
 
 // dbs
-float IccAddsDbsMultiplier::GetValue(Action* action)
+float IccAddsDbsMultiplier::GetValue(Action& action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "deathbringer saurfang");
     if (!boss)
         return 1.0f;
 
-    if (dynamic_cast<DpsAoeAction*>(action) || dynamic_cast<CastHurricaneAction*>(action) ||
-        dynamic_cast<CastVolleyAction*>(action) || dynamic_cast<CastBlizzardAction*>(action) ||
-        dynamic_cast<CastStarfallAction*>(action) || dynamic_cast<FanOfKnivesAction*>(action) ||
-        dynamic_cast<CastWhirlwindAction*>(action) || dynamic_cast<CastMindSearAction*>(action) ||
-        dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FollowAction*>(action) ||
-        dynamic_cast<FleeAction*>(action))
+    if (dynamic_cast<DpsAoeAction*>(&action) || dynamic_cast<CastHurricaneAction*>(&action) ||
+        dynamic_cast<CastVolleyAction*>(&action) || dynamic_cast<CastBlizzardAction*>(&action) ||
+        dynamic_cast<CastStarfallAction*>(&action) || dynamic_cast<FanOfKnivesAction*>(&action) ||
+        dynamic_cast<CastWhirlwindAction*>(&action) || dynamic_cast<CastMindSearAction*>(&action) ||
+        dynamic_cast<CombatFormationMoveAction*>(&action) || dynamic_cast<FollowAction*>(&action) ||
+        dynamic_cast<FleeAction*>(&action))
         return 0.0f;
 
     if (botAI->IsRanged(bot))
-        if (dynamic_cast<ReachSpellAction*>(action))
+        if (dynamic_cast<ReachSpellAction*>(&action))
             return 0.0f;
 
     if (botAI->IsMainTank(bot))
@@ -88,7 +88,7 @@ float IccAddsDbsMultiplier::GetValue(Action* action)
         Aura* aura = botAI->GetAura("rune of blood", bot);
         if (aura)
         {
-            if (dynamic_cast<MovementAction*>(action))
+            if (dynamic_cast<MovementAction*>(&action))
                 return 1.0f;
             else
                 return 0.0f;
@@ -99,7 +99,7 @@ float IccAddsDbsMultiplier::GetValue(Action* action)
 }
 
 // dogs
-float IccDogsMultiplier::GetValue(Action* action)
+float IccDogsMultiplier::GetValue(Action& action)
 {
     bool bossPresent = false;
     if (AI_VALUE2(Unit*, "find target", "stinky") || AI_VALUE2(Unit*, "find target", "precious"))
@@ -113,7 +113,7 @@ float IccDogsMultiplier::GetValue(Action* action)
         Aura* aura = botAI->GetAura("mortal wound", bot, false, true);
         if (aura && aura->GetStackAmount() >= 8)
         {
-            if (dynamic_cast<MovementAction*>(action))
+            if (dynamic_cast<MovementAction*>(&action))
                 return 1.0f;
             else
                 return 0.0f;
@@ -123,16 +123,16 @@ float IccDogsMultiplier::GetValue(Action* action)
 }
 
 // Festergut
-float IccFestergutMultiplier::GetValue(Action* action)
+float IccFestergutMultiplier::GetValue(Action& action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "festergut");
     if (!boss)
         return 1.0f;
 
-    if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FollowAction*>(action))
+    if (dynamic_cast<CombatFormationMoveAction*>(&action) || dynamic_cast<FollowAction*>(&action))
         return 0.0f;
 
-    if (dynamic_cast<FleeAction*>(action))
+    if (dynamic_cast<FleeAction*>(&action))
         return 0.0f;
 
     if (botAI->IsMainTank(bot))
@@ -140,14 +140,14 @@ float IccFestergutMultiplier::GetValue(Action* action)
         Aura* aura = botAI->GetAura("gastric bloat", bot, false, true);
         if (aura && aura->GetStackAmount() >= 6)
         {
-            if (dynamic_cast<MovementAction*>(action))
+            if (dynamic_cast<MovementAction*>(&action))
                 return 1.0f;
             else
                 return 0.0f;
         }
     }
 
-    if (dynamic_cast<IccFestergutSporeAction*>(action))
+    if (dynamic_cast<IccFestergutSporeAction*>(&action))
         return 1.0f;
 
     if (bot->HasAura(SPELL_GAS_SPORE))
@@ -157,22 +157,22 @@ float IccFestergutMultiplier::GetValue(Action* action)
 }
 
 // Rotface
-float IccRotfaceMultiplier::GetValue(Action* action)
+float IccRotfaceMultiplier::GetValue(Action& action)
 {
     Unit* boss1 = AI_VALUE2(Unit*, "find target", "rotface");
     if (!boss1)
         return 1.0f;
 
-    if (dynamic_cast<CombatFormationMoveAction*>(action))
+    if (dynamic_cast<CombatFormationMoveAction*>(&action))
         return 0.0f;
 
-    if (dynamic_cast<FleeAction*>(action) && !(bot->getClass() == CLASS_HUNTER))
+    if (dynamic_cast<FleeAction*>(&action) && !(bot->getClass() == CLASS_HUNTER))
         return 0.0f;
 
-    if (dynamic_cast<CastBlinkBackAction*>(action))
+    if (dynamic_cast<CastBlinkBackAction*>(&action))
         return 0.0f;
 
-    if (botAI->IsAssistTank(bot) && (dynamic_cast<AttackRtiTargetAction*>(action) || dynamic_cast<TankAssistAction*>(action)))
+    if (botAI->IsAssistTank(bot) && (dynamic_cast<AttackRtiTargetAction*>(&action) || dynamic_cast<TankAssistAction*>(&action)))
         return 0.0f;
 
     Unit* boss = AI_VALUE2(Unit*, "find target", "big ooze");
@@ -208,8 +208,8 @@ float IccRotfaceMultiplier::GetValue(Action* action)
     // If 9 seconds have passed since cast start and we haven't moved yet
     if (lastExplosionTimes[botGuid] > 0 && !hasMoved[botGuid] && time(nullptr) - lastExplosionTimes[botGuid] >= 9)
     {
-        if (dynamic_cast<MovementAction*>(action)
-            && !dynamic_cast<IccRotfaceMoveAwayFromExplosionAction*>(action))
+        if (dynamic_cast<MovementAction*>(&action)
+            && !dynamic_cast<IccRotfaceMoveAwayFromExplosionAction*>(&action))
         {
             return 0.0f;  // Block other movement actions
         }
@@ -218,15 +218,15 @@ float IccRotfaceMultiplier::GetValue(Action* action)
 
     // Continue blocking other movements for 7 seconds after moving
     if (hasMoved[botGuid] && time(nullptr) - lastExplosionTimes[botGuid] < 16  // 9 seconds wait + 7 seconds stay
-        && dynamic_cast<MovementAction*>(action)
-        && !dynamic_cast<IccRotfaceMoveAwayFromExplosionAction*>(action))
+        && dynamic_cast<MovementAction*>(&action)
+        && !dynamic_cast<IccRotfaceMoveAwayFromExplosionAction*>(&action))
         return 0.0f;
 
     return 1.0f;
 }
 
 // pp
-float IccAddsPutricideMultiplier::GetValue(Action* action)
+float IccAddsPutricideMultiplier::GetValue(Action& action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "professor putricide");
     if (!boss)
@@ -235,16 +235,16 @@ float IccAddsPutricideMultiplier::GetValue(Action* action)
     bool hasGaseousBloat = botAI->HasAura("Gaseous Bloat", bot);
     bool hasUnboundPlague = botAI->HasAura("Unbound Plague", bot);
 
-    if (!(bot->getClass() == CLASS_HUNTER) && dynamic_cast<FleeAction*>(action))
+    if (!(bot->getClass() == CLASS_HUNTER) && dynamic_cast<FleeAction*>(&action))
         return 0.0f;
 
-    if (dynamic_cast<CombatFormationMoveAction*>(action))
+    if (dynamic_cast<CombatFormationMoveAction*>(&action))
         return 0.0f;
 
-    if (dynamic_cast<CastDisengageAction*>(action))
+    if (dynamic_cast<CastDisengageAction*>(&action))
         return 0.0f;
 
-    if (dynamic_cast<CastBlinkBackAction*>(action))
+    if (dynamic_cast<CastBlinkBackAction*>(&action))
         return 0.0f;
 
     if (botAI->IsMainTank(bot))
@@ -252,7 +252,7 @@ float IccAddsPutricideMultiplier::GetValue(Action* action)
         Aura* aura = botAI->GetAura("mutated plague", bot, false, true);
         if (aura && aura->GetStackAmount() >= 4)
         {
-            if (dynamic_cast<MovementAction*>(action))
+            if (dynamic_cast<MovementAction*>(&action))
                 return 1.0f;
             else
                 return 0.0f;
@@ -261,10 +261,10 @@ float IccAddsPutricideMultiplier::GetValue(Action* action)
 
     if (hasGaseousBloat)
     {
-        if (dynamic_cast<IccPutricideGasCloudAction*>(action))
+        if (dynamic_cast<IccPutricideGasCloudAction*>(&action))
             return 1.0f;
 
-        if (dynamic_cast<IccPutricideGrowingOozePuddleAction*>(action))
+        if (dynamic_cast<IccPutricideGrowingOozePuddleAction*>(&action))
             return 1.0f;
 
         if (botAI->IsHeal(bot))
@@ -275,17 +275,17 @@ float IccAddsPutricideMultiplier::GetValue(Action* action)
 
     if (hasUnboundPlague && boss && !boss->HealthBelowPct(35))
     {
-        if (dynamic_cast<IccPutricideAvoidMalleableGooAction*>(action))
+        if (dynamic_cast<IccPutricideAvoidMalleableGooAction*>(&action))
             return 1.0f;
         else
             return 0.0f;  // Cancel all other actions when we need to handle Unbound Plague
     }
 
-    if (dynamic_cast<IccPutricideVolatileOozeAction*>(action))
+    if (dynamic_cast<IccPutricideVolatileOozeAction*>(&action))
     {
-        if (dynamic_cast<IccPutricideAvoidMalleableGooAction*>(action))
+        if (dynamic_cast<IccPutricideAvoidMalleableGooAction*>(&action))
             return 0.0f;
-        if (dynamic_cast<IccPutricideGrowingOozePuddleAction*>(action) && !botAI->IsMainTank(bot))
+        if (dynamic_cast<IccPutricideGrowingOozePuddleAction*>(&action) && !botAI->IsMainTank(bot))
             return 0.0f;
         //if (dynamic_cast<IccPutricideGasCloudAction*>(action) && !hasGaseousBloat)
             //return 0.0f;
@@ -295,17 +295,17 @@ float IccAddsPutricideMultiplier::GetValue(Action* action)
 }
 
 // bpc
-float IccBpcAssistMultiplier::GetValue(Action* action)
+float IccBpcAssistMultiplier::GetValue(Action& action)
 {
     Unit* keleseth = AI_VALUE2(Unit*, "find target", "prince keleseth");
     if (!keleseth)
         return 1.0f;
 
-    if (dynamic_cast<DpsAoeAction*>(action) || dynamic_cast<CastHurricaneAction*>(action) ||
-        dynamic_cast<CastVolleyAction*>(action) || dynamic_cast<CastBlizzardAction*>(action) ||
-        dynamic_cast<CastStarfallAction*>(action) || dynamic_cast<FanOfKnivesAction*>(action) ||
-        dynamic_cast<CastWhirlwindAction*>(action) || dynamic_cast<CastMindSearAction*>(action) ||
-        dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FollowAction*>(action))
+    if (dynamic_cast<DpsAoeAction*>(&action) || dynamic_cast<CastHurricaneAction*>(&action) ||
+        dynamic_cast<CastVolleyAction*>(&action) || dynamic_cast<CastBlizzardAction*>(&action) ||
+        dynamic_cast<CastStarfallAction*>(&action) || dynamic_cast<FanOfKnivesAction*>(&action) ||
+        dynamic_cast<CastWhirlwindAction*>(&action) || dynamic_cast<CastMindSearAction*>(&action) ||
+        dynamic_cast<CombatFormationMoveAction*>(&action) || dynamic_cast<FollowAction*>(&action))
         return 0.0f;
 
     Aura* aura = botAI->GetAura("Shadow Prison", bot, false, true);
@@ -313,13 +313,13 @@ float IccBpcAssistMultiplier::GetValue(Action* action)
     {
         if (aura->GetStackAmount() > 18 && botAI->IsTank(bot))
         {
-            if (dynamic_cast<MovementAction*>(action))
+            if (dynamic_cast<MovementAction*>(&action))
                 return 0.0f;
         }
 
         if (aura->GetStackAmount() > 12 && !botAI->IsTank(bot))
         {
-            if (dynamic_cast<MovementAction*>(action))
+            if (dynamic_cast<MovementAction*>(&action))
                 return 0.0f;
         }
     }
@@ -334,7 +334,7 @@ float IccBpcAssistMultiplier::GetValue(Action* action)
          valanar->FindCurrentSpellBySpellId(SPELL_EMPOWERED_SHOCK_VORTEX3) ||
          valanar->FindCurrentSpellBySpellId(SPELL_EMPOWERED_SHOCK_VORTEX4)))
     {
-        if (dynamic_cast<AvoidAoeAction*>(action) || dynamic_cast<IccBpcEmpoweredVortexAction*>(action))
+        if (dynamic_cast<AvoidAoeAction*>(&action) || dynamic_cast<IccBpcEmpoweredVortexAction*>(&action))
             return 1.0f;
         else
             return 0.0f;  // Cancel all other actions when we need to handle Empowered Vortex
@@ -347,17 +347,17 @@ float IccBpcAssistMultiplier::GetValue(Action* action)
 
     if (flame2)
     {
-        if (dynamic_cast<AvoidAoeAction*>(action) || dynamic_cast<IccBpcKineticBombAction*>(action))
+        if (dynamic_cast<AvoidAoeAction*>(&action) || dynamic_cast<IccBpcKineticBombAction*>(&action))
             return 0.0f;
 
-        if (dynamic_cast<IccBpcBallOfFlameAction*>(action))
+        if (dynamic_cast<IccBpcBallOfFlameAction*>(&action))
             return 1.0f;
     }
 
     if (ballOfFlame || infernoFlame)
     {
         // If bot is tank, do nothing special
-        if (dynamic_cast<IccBpcBallOfFlameAction*>(action))
+        if (dynamic_cast<IccBpcBallOfFlameAction*>(&action))
             return 1.0f;
         else
             return 0.0f;  // Cancel all other actions when we need to handle Ball of Flame
@@ -393,11 +393,11 @@ float IccBpcAssistMultiplier::GetValue(Action* action)
     if (bombFound && !(aura && aura->GetStackAmount() > 12) && !botAI->IsTank(bot))
     {
         // If kinetic bomb action is active, disable these actions
-        if (dynamic_cast<IccBpcKineticBombAction*>(action))
+        if (dynamic_cast<IccBpcKineticBombAction*>(&action))
             return 1.0f;
 
-        if (dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
-            dynamic_cast<AttackRtiTargetAction*>(action))
+        if (dynamic_cast<DpsAssistAction*>(&action) || dynamic_cast<TankAssistAction*>(&action) ||
+            dynamic_cast<AttackRtiTargetAction*>(&action))
             return 0.0f;
     }
 
@@ -405,14 +405,14 @@ float IccBpcAssistMultiplier::GetValue(Action* action)
     if (botAI->IsAssistTank(bot) && !(aura && aura->GetStackAmount() > 18))
     {
         // Allow BPC-specific actions
-        if (dynamic_cast<IccBpcKelesethTankAction*>(action))
+        if (dynamic_cast<IccBpcKelesethTankAction*>(&action))
             return 1.0f;
 
         // Disable normal assist behavior
-        if (dynamic_cast<TankAssistAction*>(action) ||
-            dynamic_cast<FleeAction*>(action) ||
-            dynamic_cast<AttackRtiTargetAction*>(action) ||
-            dynamic_cast<CastConsecrationAction*>(action))
+        if (dynamic_cast<TankAssistAction*>(&action) ||
+            dynamic_cast<FleeAction*>(&action) ||
+            dynamic_cast<AttackRtiTargetAction*>(&action) ||
+            dynamic_cast<CastConsecrationAction*>(&action))
             return 0.0f;
 
     }
@@ -421,7 +421,7 @@ float IccBpcAssistMultiplier::GetValue(Action* action)
 }
 
 //BQL
-float IccBqlMultiplier::GetValue(Action* action)
+float IccBqlMultiplier::GetValue(Action& action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "blood-queen lana'thel");
     if (!boss)
@@ -431,14 +431,14 @@ float IccBqlMultiplier::GetValue(Action* action)
     Aura* aura = botAI->GetAura("Frenzied Bloodthirst", bot);
 
     if (botAI->IsRanged(bot))
-        if (dynamic_cast<AvoidAoeAction*>(action) || dynamic_cast<FleeAction*>(action) ||
-            dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<CastDisengageAction*>(action))
+        if (dynamic_cast<AvoidAoeAction*>(&action) || dynamic_cast<FleeAction*>(&action) ||
+            dynamic_cast<CombatFormationMoveAction*>(&action) || dynamic_cast<CastDisengageAction*>(&action))
             return 0.0f;
 
     // If bot has Pact of Darkfallen aura, return 0 for all other actions
     if (bot->HasAura(SPELL_PACT_OF_THE_DARKFALLEN))
     {
-        if (dynamic_cast<IccBqlPactOfDarkfallenAction*>(action))
+        if (dynamic_cast<IccBqlPactOfDarkfallenAction*>(&action))
             return 1.0f;  // Allow Pact of Darkfallen action
         else
             return 0.0f;  // Cancel all other actions when we need to handle Pact of Darkfallen
@@ -446,7 +446,7 @@ float IccBqlMultiplier::GetValue(Action* action)
 
     if (botAI->IsMelee(bot) && ((boss->GetPositionZ() - ICC_BQL_CENTER_POSITION.GetPositionZ()) > 5.0f) && !aura)
     {
-        if (dynamic_cast<IccBqlGroupPositionAction*>(action))
+        if (dynamic_cast<IccBqlGroupPositionAction*>(&action))
             return 1.0f;
         else
             return 0.0f;
@@ -455,7 +455,7 @@ float IccBqlMultiplier::GetValue(Action* action)
     // If bot has frenzied bloodthirst, allow highest priority for bite action
     if (aura)  // If bot has frenzied bloodthirst
     {
-        if (dynamic_cast<IccBqlVampiricBiteAction*>(action))
+        if (dynamic_cast<IccBqlVampiricBiteAction*>(&action))
             return 1.0f;
         else
             return 0.0f;
@@ -463,7 +463,7 @@ float IccBqlMultiplier::GetValue(Action* action)
 
     if (aura2 && !aura)
     {
-        if (dynamic_cast<IccBqlGroupPositionAction*>(action))
+        if (dynamic_cast<IccBqlGroupPositionAction*>(&action))
             return 1.0f;
         else
             return 0.0f;  // Cancel all other actions when we need to handle Swarming Shadows
@@ -472,7 +472,7 @@ float IccBqlMultiplier::GetValue(Action* action)
     if ((boss->GetExactDist2d(ICC_BQL_TANK_POSITION.GetPositionX(), ICC_BQL_TANK_POSITION.GetPositionY()) > 10.0f) &&
         botAI->IsRanged(bot) && !((boss->GetPositionZ() - bot->GetPositionZ()) > 5.0f))
     {
-        if (dynamic_cast<FleeAction*>(action) || dynamic_cast<CombatFormationMoveAction*>(action))
+        if (dynamic_cast<FleeAction*>(&action) || dynamic_cast<CombatFormationMoveAction*>(&action))
             return 0.0f;
     }
 
@@ -480,7 +480,7 @@ float IccBqlMultiplier::GetValue(Action* action)
 }
 
 //VDW
-float IccValithriaDreamCloudMultiplier::GetValue(Action* action)
+float IccValithriaDreamCloudMultiplier::GetValue(Action& action)
 {
     Unit* boss = bot->FindNearestCreature(NPC_VALITHRIA_DREAMWALKER, 100.0f);
 
@@ -490,22 +490,22 @@ float IccValithriaDreamCloudMultiplier::GetValue(Action* action)
     if (!boss && !bot->HasAura(SPELL_DREAM_STATE))
         return 1.0f;
 
-    if (dynamic_cast<FollowAction*>(action) || dynamic_cast<CombatFormationMoveAction*>(action))
+    if (dynamic_cast<FollowAction*>(&action) || dynamic_cast<CombatFormationMoveAction*>(&action))
         return 0.0f;
 
     if (botAI->IsTank(bot))
     {
-        if (dynamic_cast<AttackRtiTargetAction*>(action))
+        if (dynamic_cast<AttackRtiTargetAction*>(&action))
             return 0.0f;
     }
 
     if (botAI->IsHeal(bot) && (twistedNightmares || emeraldVigor))
-        if (dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<AttackRtiTargetAction*>(action))
+        if (dynamic_cast<DpsAssistAction*>(&action) || dynamic_cast<AttackRtiTargetAction*>(&action))
             return 0.0f;
 
     if (bot->HasAura(SPELL_DREAM_STATE) && !bot->HealthBelowPct(50))
     {
-        if (dynamic_cast<IccValithriaDreamCloudAction*>(action))
+        if (dynamic_cast<IccValithriaDreamCloudAction*>(&action))
             return 1.0f;  // Allow Dream Cloud action
         else
             return 0.0f;  // Cancel all other actions when we need to handle Dream Cloud
@@ -517,7 +517,7 @@ float IccValithriaDreamCloudMultiplier::GetValue(Action* action)
 
 //SINDRAGOSA
 
-float IccSindragosaMultiplier::GetValue(Action* action)
+float IccSindragosaMultiplier::GetValue(Action& action)
 {
     Unit* boss = bot->FindNearestCreature(NPC_SINDRAGOSA, 200.0f);
     if (!boss)
@@ -528,15 +528,15 @@ float IccSindragosaMultiplier::GetValue(Action* action)
 
     if (boss->HealthBelowPct(95))
     {
-        if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FleeAction*>(action) ||
-            dynamic_cast<FollowAction*>(action) || dynamic_cast<CastStarfallAction*>(action))
+        if (dynamic_cast<CombatFormationMoveAction*>(&action) || dynamic_cast<FleeAction*>(&action) ||
+            dynamic_cast<FollowAction*>(&action) || dynamic_cast<CastStarfallAction*>(&action))
             return 0.0f;
     }
 
     if (aura && (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC) &&
-        !dynamic_cast<IccSindragosaFrostBombAction*>(action))
+        !dynamic_cast<IccSindragosaFrostBombAction*>(&action))
     {
-        if (dynamic_cast<MovementAction*>(action) || dynamic_cast<IccSindragosaUnchainedMagicAction*>(action))
+        if (dynamic_cast<MovementAction*>(&action) || dynamic_cast<IccSindragosaUnchainedMagicAction*>(&action))
             return 1.0f;
         else
             return 0.0f;
@@ -548,10 +548,10 @@ float IccSindragosaMultiplier::GetValue(Action* action)
          boss->FindCurrentSpellBySpellId(71048) || boss->FindCurrentSpellBySpellId(71049)))
     {
         // If this is the blistering cold action, give it highest priority
-        if (dynamic_cast<IccSindragosaBlisteringColdAction*>(action) ||
-            dynamic_cast<HealPartyMemberAction*>(action) ||
-            dynamic_cast<ReachPartyMemberToHealAction*>(action) ||
-            dynamic_cast<IccSindragosaTankSwapPositionAction*>(action))
+        if (dynamic_cast<IccSindragosaBlisteringColdAction*>(&action) ||
+            dynamic_cast<HealPartyMemberAction*>(&action) ||
+            dynamic_cast<ReachPartyMemberToHealAction*>(&action) ||
+            dynamic_cast<IccSindragosaTankSwapPositionAction*>(&action))
             return 1.0f;
 
         // Disable all other actions while blistering cold is casting
@@ -561,7 +561,7 @@ float IccSindragosaMultiplier::GetValue(Action* action)
     // Highest priority if we have beacon
     if (bot->HasAura(SPELL_FROST_BEACON))
     {
-        if (dynamic_cast<IccSindragosaFrostBeaconAction*>(action))
+        if (dynamic_cast<IccSindragosaFrostBeaconAction*>(&action))
             return 1.0f;
         else
             return 0.0f;
@@ -589,7 +589,7 @@ float IccSindragosaMultiplier::GetValue(Action* action)
                              ICC_SINDRAGOSA_FLYING_POSITION.GetPositionY()) < 30.0f &&
         !boss->HealthBelowPct(25) && !boss->HealthAbovePct(99))
     {
-        if (dynamic_cast<IccSindragosaFrostBeaconAction*>(action))
+        if (dynamic_cast<IccSindragosaFrostBeaconAction*>(&action))
             return 1.0f;
         else
             return 0.0f;
@@ -597,7 +597,7 @@ float IccSindragosaMultiplier::GetValue(Action* action)
 
     if (anyoneHasFrostBeacon && !botAI->IsMainTank(bot))
     {
-        if (dynamic_cast<IccSindragosaGroupPositionAction*>(action))
+        if (dynamic_cast<IccSindragosaGroupPositionAction*>(&action))
             return 0.0f;
     }
 
@@ -606,7 +606,7 @@ float IccSindragosaMultiplier::GetValue(Action* action)
         Aura* aura = botAI->GetAura("mystic buffet", bot, false, true);
         if (aura && aura->GetStackAmount() >= 6)
         {
-            if (dynamic_cast<MovementAction*>(action))
+            if (dynamic_cast<MovementAction*>(&action))
                 return 1.0f;
             else
                 return 0.0f;
@@ -615,7 +615,7 @@ float IccSindragosaMultiplier::GetValue(Action* action)
 
     if (!botAI->IsTank(bot) && boss && boss->HealthBelowPct(35))
     {
-        if (dynamic_cast<IccSindragosaGroupPositionAction*>(action))
+        if (dynamic_cast<IccSindragosaGroupPositionAction*>(&action))
             return 0.0f;
     }
 
@@ -623,8 +623,8 @@ float IccSindragosaMultiplier::GetValue(Action* action)
     {
         if (boss->HealthBelowPct(35))
         {
-            if (dynamic_cast<IccSindragosaTankSwapPositionAction*>(action) || dynamic_cast<TankFaceAction*>(action) ||
-                dynamic_cast<AttackAction*>(action) || dynamic_cast<MovementAction*>(action))
+            if (dynamic_cast<IccSindragosaTankSwapPositionAction*>(&action) || dynamic_cast<TankFaceAction*>(&action) ||
+                dynamic_cast<AttackAction*>(&action) || dynamic_cast<MovementAction*>(&action))
                 return 1.0f;
             else
                 return 0.0f;
@@ -633,33 +633,33 @@ float IccSindragosaMultiplier::GetValue(Action* action)
 
     if (boss && boss->GetExactDist2d(ICC_SINDRAGOSA_FLYING_POSITION.GetPositionX(), ICC_SINDRAGOSA_FLYING_POSITION.GetPositionY()) < 30.0f && !boss->HealthBelowPct(25) && !boss->HealthAbovePct(99))
     {
-        if (dynamic_cast<IccSindragosaFrostBombAction*>(action))
+        if (dynamic_cast<IccSindragosaFrostBombAction*>(&action))
             return 1.0f;
 
-        if (dynamic_cast<FollowAction*>(action) || dynamic_cast<IccSindragosaBlisteringColdAction*>(action) ||
-            dynamic_cast<IccSindragosaChilledToTheBoneAction*>(action) || dynamic_cast<IccSindragosaMysticBuffetAction*>(action) ||
-            dynamic_cast<IccSindragosaFrostBeaconAction*>(action) || dynamic_cast<IccSindragosaUnchainedMagicAction*>(action) ||
-            dynamic_cast<FleeAction*>(action) || dynamic_cast<CastDisengageAction*>(action) || dynamic_cast<PetAttackAction*>(action) ||
-            dynamic_cast<IccSindragosaGroupPositionAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
-            dynamic_cast<DpsAoeAction*>(action) || dynamic_cast<CastHurricaneAction*>(action) ||
-            dynamic_cast<CastVolleyAction*>(action) || dynamic_cast<CastBlizzardAction*>(action) ||
-            dynamic_cast<CastStarfallAction*>(action) || dynamic_cast<FanOfKnivesAction*>(action) ||
-            dynamic_cast<CastWhirlwindAction*>(action) || dynamic_cast<CastMindSearAction*>(action) ||
-            dynamic_cast<CastMagmaTotemAction*>(action) || dynamic_cast<CastConsecrationAction*>(action) ||
-            dynamic_cast<CastFlamestrikeAction*>(action) || dynamic_cast<CastExplosiveTrapAction*>(action) ||
-            dynamic_cast<CastExplosiveShotAction*>(action))
+        if (dynamic_cast<FollowAction*>(&action) || dynamic_cast<IccSindragosaBlisteringColdAction*>(&action) ||
+            dynamic_cast<IccSindragosaChilledToTheBoneAction*>(&action) || dynamic_cast<IccSindragosaMysticBuffetAction*>(&action) ||
+            dynamic_cast<IccSindragosaFrostBeaconAction*>(&action) || dynamic_cast<IccSindragosaUnchainedMagicAction*>(&action) ||
+            dynamic_cast<FleeAction*>(&action) || dynamic_cast<CastDisengageAction*>(&action) || dynamic_cast<PetAttackAction*>(&action) ||
+            dynamic_cast<IccSindragosaGroupPositionAction*>(&action) || dynamic_cast<TankAssistAction*>(&action) ||
+            dynamic_cast<DpsAoeAction*>(&action) || dynamic_cast<CastHurricaneAction*>(&action) ||
+            dynamic_cast<CastVolleyAction*>(&action) || dynamic_cast<CastBlizzardAction*>(&action) ||
+            dynamic_cast<CastStarfallAction*>(&action) || dynamic_cast<FanOfKnivesAction*>(&action) ||
+            dynamic_cast<CastWhirlwindAction*>(&action) || dynamic_cast<CastMindSearAction*>(&action) ||
+            dynamic_cast<CastMagmaTotemAction*>(&action) || dynamic_cast<CastConsecrationAction*>(&action) ||
+            dynamic_cast<CastFlamestrikeAction*>(&action) || dynamic_cast<CastExplosiveTrapAction*>(&action) ||
+            dynamic_cast<CastExplosiveShotAction*>(&action))
             return 0.0f;
     }
 
     return 1.0f;
 }
 
-float IccLichKingAddsMultiplier::GetValue(Action* action)
+float IccLichKingAddsMultiplier::GetValue(Action& action)
 {
     Unit* terenasMenethilHC = bot->FindNearestCreature(NPC_TERENAS_MENETHIL_HC, 55.0f);
 
     if (!terenasMenethilHC)
-        if (dynamic_cast<CastStarfallAction*>(action))
+        if (dynamic_cast<CastStarfallAction*>(&action))
             return 0.0f;
 
     if (terenasMenethilHC)
@@ -668,23 +668,23 @@ float IccLichKingAddsMultiplier::GetValue(Action* action)
 
         if (!botAI->IsMainTank(bot) && mainTank && bot->GetExactDist2d(mainTank->GetPositionX(), mainTank->GetPositionY()) < 2.0f)
         {
-            if (dynamic_cast<MovementAction*>(action))
+            if (dynamic_cast<MovementAction*>(&action))
                 return 0.0f;
         }
 
         if (botAI->IsMelee(bot) || (bot->getClass() == CLASS_WARLOCK))
         {
-            if (dynamic_cast<MovementAction*>(action) || dynamic_cast<IccLichKingAddsAction*>(action))
+            if (dynamic_cast<MovementAction*>(&action) || dynamic_cast<IccLichKingAddsAction*>(&action))
                 return 1.0f;
             else
                 return 0.0f;
         }
 
-        if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FollowAction*>(action) ||
-            dynamic_cast<FleeAction*>(action) || dynamic_cast<CastBlinkBackAction*>(action) ||
-            dynamic_cast<CastDisengageAction*>(action) || dynamic_cast<CastChargeAction*>(action) ||
-            dynamic_cast<CastFeralChargeBearAction*>(action) || dynamic_cast<CastIceBlockAction*>(action) ||
-            dynamic_cast<CastRevivePetAction*>(action) || dynamic_cast<TankAssistAction*>(action))
+        if (dynamic_cast<CombatFormationMoveAction*>(&action) || dynamic_cast<FollowAction*>(&action) ||
+            dynamic_cast<FleeAction*>(&action) || dynamic_cast<CastBlinkBackAction*>(&action) ||
+            dynamic_cast<CastDisengageAction*>(&action) || dynamic_cast<CastChargeAction*>(&action) ||
+            dynamic_cast<CastFeralChargeBearAction*>(&action) || dynamic_cast<CastIceBlockAction*>(&action) ||
+            dynamic_cast<CastRevivePetAction*>(&action) || dynamic_cast<TankAssistAction*>(&action))
             return 0.0f;
     }
 
@@ -693,9 +693,9 @@ float IccLichKingAddsMultiplier::GetValue(Action* action)
         return 1.0f;
 
     // Handle cure actions
-    if (dynamic_cast<CurePartyMemberAction*>(action) || dynamic_cast<CastCleanseDiseaseAction*>(action) ||
-        dynamic_cast<CastCleanseDiseaseOnPartyAction*>(action) ||
-        dynamic_cast<CastCleanseSpiritCurseOnPartyAction*>(action) || dynamic_cast<CastCleanseSpiritAction*>(action))
+    if (dynamic_cast<CurePartyMemberAction*>(&action) || dynamic_cast<CastCleanseDiseaseAction*>(&action) ||
+        dynamic_cast<CastCleanseDiseaseOnPartyAction*>(&action) ||
+        dynamic_cast<CastCleanseSpiritCurseOnPartyAction*>(&action) || dynamic_cast<CastCleanseSpiritAction*>(&action))
     {
         Group* group = bot->GetGroup();
         if (!group)
@@ -756,25 +756,25 @@ float IccLichKingAddsMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (dynamic_cast<FleeAction*>(action) && (bot->getClass() != CLASS_HUNTER))
+    if (dynamic_cast<FleeAction*>(&action) && (bot->getClass() != CLASS_HUNTER))
         return 0.0f;
 
-    if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FollowAction*>(action) ||
-        dynamic_cast<CastBlinkBackAction*>(action) || dynamic_cast<CastDisengageAction*>(action))
+    if (dynamic_cast<CombatFormationMoveAction*>(&action) || dynamic_cast<FollowAction*>(&action) ||
+        dynamic_cast<CastBlinkBackAction*>(&action) || dynamic_cast<CastDisengageAction*>(&action))
         return 0.0f;
 
     if (boss && !boss->HealthBelowPct(71))
     {
         if (!botAI->IsTank(bot))
-            if (dynamic_cast<CastConsecrationAction*>(action))
+            if (dynamic_cast<CastConsecrationAction*>(&action))
                 return 0.0f;
 
-        if (dynamic_cast<DpsAoeAction*>(action) || dynamic_cast<CastHurricaneAction*>(action) ||
-            dynamic_cast<CastVolleyAction*>(action) || dynamic_cast<CastBlizzardAction*>(action) ||
-            dynamic_cast<CastStarfallAction*>(action) || dynamic_cast<FanOfKnivesAction*>(action) ||
-            dynamic_cast<CastWhirlwindAction*>(action) || dynamic_cast<CastMindSearAction*>(action) ||
-            dynamic_cast<CastMagmaTotemAction*>(action) || dynamic_cast<CastFlamestrikeAction*>(action) ||
-            dynamic_cast<CastExplosiveTrapAction*>(action) || dynamic_cast<CastExplosiveShotAction*>(action))
+        if (dynamic_cast<DpsAoeAction*>(&action) || dynamic_cast<CastHurricaneAction*>(&action) ||
+            dynamic_cast<CastVolleyAction*>(&action) || dynamic_cast<CastBlizzardAction*>(&action) ||
+            dynamic_cast<CastStarfallAction*>(&action) || dynamic_cast<FanOfKnivesAction*>(&action) ||
+            dynamic_cast<CastWhirlwindAction*>(&action) || dynamic_cast<CastMindSearAction*>(&action) ||
+            dynamic_cast<CastMagmaTotemAction*>(&action) || dynamic_cast<CastFlamestrikeAction*>(&action) ||
+            dynamic_cast<CastExplosiveTrapAction*>(&action) || dynamic_cast<CastExplosiveShotAction*>(&action))
             return 0.0f;
     }
 
@@ -807,29 +807,29 @@ float IccLichKingAddsMultiplier::GetValue(Action* action)
 
     if (hasWinterAura || hasWinter2Aura || (isCasting && isWinter))
     {
-        if (dynamic_cast<IccLichKingWinterAction*>(action) || dynamic_cast<SetFacingTargetAction*>(action))
+        if (dynamic_cast<IccLichKingWinterAction*>(&action) || dynamic_cast<SetFacingTargetAction*>(&action))
             return 1.0f;
 
-        if (botAI->IsAssistTank(bot) && dynamic_cast<TankAssistAction*>(action))
+        if (botAI->IsAssistTank(bot) && dynamic_cast<TankAssistAction*>(&action))
             return 0.0f;
 
-        if (dynamic_cast<IccLichKingAddsAction*>(action))
+        if (dynamic_cast<IccLichKingAddsAction*>(&action))
             return 0.0f;
 
         if (currentTarget && boss && bot->GetDistance2d(boss->GetPositionX(), boss->GetPositionY()) > 50.0f && currentTarget == boss)
         {
-            if (dynamic_cast<AttackRtiTargetAction*>(action) || dynamic_cast<ReachSpellAction*>(action) ||
-                dynamic_cast<ReachMeleeAction*>(action) || dynamic_cast<ReachTargetAction*>(action) ||
-                dynamic_cast<TankAssistAction*>(action) || dynamic_cast<DpsAssistAction*>(action) ||
-                dynamic_cast<MovementAction*>(action))
+            if (dynamic_cast<AttackRtiTargetAction*>(&action) || dynamic_cast<ReachSpellAction*>(&action) ||
+                dynamic_cast<ReachMeleeAction*>(&action) || dynamic_cast<ReachTargetAction*>(&action) ||
+                dynamic_cast<TankAssistAction*>(&action) || dynamic_cast<DpsAssistAction*>(&action) ||
+                dynamic_cast<MovementAction*>(&action))
                 return 0.0f;
         }
 
         if (currentTarget && (currentTarget->GetEntry() == NPC_ICE_SPHERE1 || currentTarget->GetEntry() == NPC_ICE_SPHERE2 ||
             currentTarget->GetEntry() == NPC_ICE_SPHERE3 || currentTarget->GetEntry() == NPC_ICE_SPHERE4))
         {
-            if (dynamic_cast<MovementAction*>(action) || dynamic_cast<ReachMeleeAction*>(action) ||
-                dynamic_cast<TankAssistAction*>(action))
+            if (dynamic_cast<MovementAction*>(&action) || dynamic_cast<ReachMeleeAction*>(&action) ||
+                dynamic_cast<TankAssistAction*>(&action))
                 return 0.0f;
         }
 
@@ -852,11 +852,11 @@ float IccLichKingAddsMultiplier::GetValue(Action* action)
 
         // Only disable movement if defile is present
         if (defilePresent && (
-            dynamic_cast<CombatFormationMoveAction*>(action) ||
-            dynamic_cast<FollowAction*>(action) ||
-            dynamic_cast<FleeAction*>(action) ||
-            dynamic_cast<MoveRandomAction*>(action) ||
-            dynamic_cast<MoveFromGroupAction*>(action)))
+            dynamic_cast<CombatFormationMoveAction*>(&action) ||
+            dynamic_cast<FollowAction*>(&action) ||
+            dynamic_cast<FleeAction*>(&action) ||
+            dynamic_cast<MoveRandomAction*>(&action) ||
+            dynamic_cast<MoveFromGroupAction*>(&action)))
         {
             return 0.0f;
         }
@@ -864,7 +864,7 @@ float IccLichKingAddsMultiplier::GetValue(Action* action)
 
     if (botAI->IsAssistTank(bot) && boss && !boss->HealthBelowPct(71) && currentTarget == boss)
     {
-        if (dynamic_cast<AttackRtiTargetAction*>(action))
+        if (dynamic_cast<AttackRtiTargetAction*>(&action))
             return 0.0f;
     }
 

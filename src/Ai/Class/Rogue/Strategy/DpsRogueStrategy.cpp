@@ -4,8 +4,13 @@
  */
 
 #include "DpsRogueStrategy.h"
-
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "GenericActions.h"
+#include "ReachTargetActions.h"
+#include "RogueActions.h"
+#include "RogueComboActions.h"
+#include "RogueFinishingActions.h"
+#include "RogueOpeningActions.h"
 
 class DpsRogueStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -25,47 +30,38 @@ private:
     static ActionNode* melee([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "melee",
             /*P*/ {},
-            /*A*/ {
-                NextAction("mutilate") },
+            /*A*/ { CreateNextAction<CastMutilateAction>(1.0f) },
             /*C*/ {}
         );
     }
     static ActionNode* mutilate([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "mutilate",
             /*P*/ {},
-            /*A*/ {
-                NextAction("sinister strike") },
+            /*A*/ { CreateNextAction<CastSinisterStrikeAction>(1.0f) },
             /*C*/ {}
         );
     }
     static ActionNode* sinister_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "sinister strike",
             /*P*/ {},
-            /*A*/ {
-                NextAction("melee") },
+            /*A*/ { CreateNextAction<MeleeAction>(1.0f) },
             /*C*/ {}
         );
     }
     static ActionNode* kick([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "kick",
             /*P*/ {},
-            /*A*/ {
-                NextAction("kidney shot") },
+            /*A*/ { CreateNextAction<CastKidneyShotAction>(1.0f) },
             /*C*/ {}
         );
     }
     static ActionNode* kidney_shot([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "kidney shot",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -74,20 +70,16 @@ private:
     static ActionNode* backstab([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "backstab",
             /*P*/ {},
-            /*A*/ {
-                NextAction("mutilate") },
+            /*A*/ { CreateNextAction<CastMutilateAction>(1.0f) },
             /*C*/ {}
         );
     }
     static ActionNode* rupture([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "rupture",
             /*P*/ {},
-            /*A*/ {
-                NextAction("eviscerate") },
+            /*A*/ { CreateNextAction<CastEviscerateAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -101,8 +93,8 @@ DpsRogueStrategy::DpsRogueStrategy(PlayerbotAI* botAI) : MeleeCombatStrategy(bot
 std::vector<NextAction> DpsRogueStrategy::getDefaultActions()
 {
     return {
-        NextAction("killing spree", ACTION_DEFAULT + 0.1f),
-        NextAction("melee", ACTION_DEFAULT)
+        CreateNextAction<CastKillingSpreeAction>(ACTION_DEFAULT + 0.1f),
+        CreateNextAction<MeleeAction>(ACTION_DEFAULT)
     };
 }
 
@@ -114,8 +106,8 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "high energy available",
             {
-                NextAction("garrote", ACTION_HIGH + 7),
-                NextAction("ambush", ACTION_HIGH + 6)
+                CreateNextAction<CastGarroteAction>(ACTION_HIGH + 7.0f),
+                CreateNextAction<CastAmbushAction>(ACTION_HIGH + 6.0f)
             }
         )
     );
@@ -124,7 +116,7 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "high energy available",
             {
-                NextAction("sinister strike", ACTION_NORMAL + 3)
+                CreateNextAction<CastSinisterStrikeAction>(ACTION_NORMAL + 3.0f)
             }
         )
     );
@@ -133,7 +125,7 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "slice and dice",
             {
-                NextAction("slice and dice", ACTION_HIGH + 2)
+                CreateNextAction<CastSliceAndDiceAction>(ACTION_HIGH + 2.0f)
             }
         )
     );
@@ -142,8 +134,8 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "combo points available",
             {
-                NextAction("rupture", ACTION_HIGH + 1),
-                NextAction("eviscerate", ACTION_HIGH)
+                CreateNextAction<CastRuptureAction>(ACTION_HIGH + 1.0f),
+                CreateNextAction<CastEviscerateAction>(ACTION_HIGH)
             }
         )
     );
@@ -152,7 +144,7 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "target with combo points almost dead",
             {
-                NextAction("eviscerate", ACTION_HIGH + 2)
+                CreateNextAction<CastEviscerateAction>(ACTION_HIGH + 0.2f)
             }
         )
     );
@@ -161,7 +153,7 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium threat",
             {
-                NextAction("vanish", ACTION_HIGH)
+                CreateNextAction<CastVanishAction>(ACTION_HIGH)
             }
         )
     );
@@ -170,8 +162,8 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "low health",
             {
-                NextAction("evasion", ACTION_HIGH + 9),
-                NextAction("feint", ACTION_HIGH + 8)
+                CreateNextAction<CastEvasionAction>(ACTION_HIGH + 9.0f),
+                CreateNextAction<CastFeintAction>(ACTION_HIGH + 8.0f)
             }
         )
     );
@@ -180,7 +172,7 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "critical health",
             {
-                NextAction("cloak of shadows", ACTION_HIGH + 7)
+                CreateNextAction<CastCloakOfShadowsAction>(ACTION_HIGH + 7.0f)
             }
         )
     );
@@ -189,7 +181,7 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "kick",
             {
-                NextAction("kick", ACTION_INTERRUPT + 2)
+                CreateNextAction<CastKickAction>(ACTION_INTERRUPT + 2.0f)
             }
         )
     );
@@ -198,7 +190,7 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "kick on enemy healer",
             {
-                NextAction("kick on enemy healer", ACTION_INTERRUPT + 1)
+                CreateNextAction<CastKickOnEnemyHealerAction>(ACTION_INTERRUPT + 1.0f)
             }
         )
     );
@@ -207,7 +199,7 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "light aoe",
             {
-                NextAction("blade flurry", ACTION_HIGH + 3)
+                CreateNextAction<CastBladeFlurryAction>(ACTION_HIGH + 3.0f)
             }
         )
     );
@@ -216,7 +208,7 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "blade flurry",
                 {
-                NextAction("blade flurry", ACTION_HIGH + 2)
+                CreateNextAction<CastBladeFlurryAction>(ACTION_HIGH + 2.0f)
             }
         )
     );
@@ -225,9 +217,9 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "enemy out of melee",
             {
-                NextAction("stealth", ACTION_HIGH + 3),
-                NextAction("sprint", ACTION_HIGH + 2),
-                NextAction("reach melee", ACTION_HIGH + 1)
+                CreateNextAction<CastStealthAction>(ACTION_HIGH + 3.0f),
+                CreateNextAction<CastSprintAction>(ACTION_HIGH + 2.0f),
+                CreateNextAction<ReachMeleeAction>(ACTION_HIGH + 1.0f)
             }
         )
     );
@@ -236,7 +228,7 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "expose armor",
             {
-                NextAction("expose armor", ACTION_HIGH + 3)
+                CreateNextAction<CastExposeArmorAction>(ACTION_HIGH + 3.0f)
             }
         )
     );
@@ -245,7 +237,7 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "low tank threat",
             {
-                NextAction("tricks of the trade on main tank", ACTION_HIGH + 7)
+                CreateNextAction<CastTricksOfTheTradeOnMainTankAction>(ACTION_HIGH + 7.0f)
             }
         )
     );
@@ -267,9 +259,8 @@ private:
     static ActionNode* ambush([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "ambush",
             /*P*/ {},
-            /*A*/ { NextAction("garrote") },
+            /*A*/ { CreateNextAction<CastGarroteAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -277,7 +268,6 @@ private:
     static ActionNode* cheap_shot([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "cheap shot",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -287,7 +277,6 @@ private:
     static ActionNode* garrote([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "garrote",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -297,7 +286,6 @@ private:
     static ActionNode* sap([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "sap",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -307,9 +295,8 @@ private:
     static ActionNode* sinister_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "sinister strike",
             /*P*/ {},
-            /*A*/ { NextAction("cheap shot") },
+            /*A*/ { CreateNextAction<CastCheapShotAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -323,11 +310,11 @@ StealthedRogueStrategy::StealthedRogueStrategy(PlayerbotAI* botAI) : Strategy(bo
 std::vector<NextAction> StealthedRogueStrategy::getDefaultActions()
 {
     return {
-        NextAction("ambush", ACTION_NORMAL + 4),
-        NextAction("backstab", ACTION_NORMAL + 3),
-        NextAction("cheap shot", ACTION_NORMAL + 2),
-        NextAction("sinister strike", ACTION_NORMAL + 1),
-        NextAction("melee", ACTION_NORMAL)
+        CreateNextAction<CastAmbushAction>(ACTION_NORMAL + 4),
+        CreateNextAction<CastBackstabAction>(ACTION_NORMAL + 3),
+        CreateNextAction<CastCheapShotAction>(ACTION_NORMAL + 2),
+        CreateNextAction<CastSinisterStrikeAction>(ACTION_NORMAL + 1),
+        CreateNextAction<MeleeAction>(ACTION_NORMAL)
     };
 }
 
@@ -337,7 +324,7 @@ void StealthedRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "combo points available",
             {
-                NextAction("eviscerate", ACTION_HIGH)
+                CreateNextAction<CastEviscerateAction>(ACTION_HIGH)
             }
         )
     );
@@ -345,7 +332,7 @@ void StealthedRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "kick",
             {
-                NextAction("cheap shot", ACTION_INTERRUPT)
+                CreateNextAction<CastCheapShotAction>(ACTION_INTERRUPT)
             }
         )
     );
@@ -353,7 +340,7 @@ void StealthedRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "kick on enemy healer",
             {
-                NextAction("cheap shot", ACTION_INTERRUPT)
+                CreateNextAction<CastCheapShotAction>(ACTION_INTERRUPT)
             }
         )
     );
@@ -361,7 +348,7 @@ void StealthedRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "behind target",
             {
-                NextAction("ambush", ACTION_HIGH)
+                CreateNextAction<CastAmbushAction>(ACTION_HIGH)
             }
         )
     );
@@ -369,7 +356,7 @@ void StealthedRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "not behind target",
             {
-                NextAction("cheap shot", ACTION_HIGH)
+                CreateNextAction<CastCheapShotAction>(ACTION_HIGH)
             }
         )
     );
@@ -377,7 +364,7 @@ void StealthedRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "enemy flagcarrier near",
             {
-                NextAction("sprint", ACTION_EMERGENCY + 1)
+                CreateNextAction<CastSprintAction>(ACTION_EMERGENCY + 1.0f)
             }
         )
     );
@@ -385,7 +372,7 @@ void StealthedRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "unstealth",
             {
-                NextAction("unstealth", ACTION_NORMAL)
+                CreateNextAction<UnstealthAction>(ACTION_NORMAL)
             }
         )
     );
@@ -394,7 +381,7 @@ void StealthedRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "no stealth",
             {
-                NextAction("check stealth", ACTION_EMERGENCY)
+                CreateNextAction<CheckStealthAction>(ACTION_EMERGENCY)
             }
         )
     );
@@ -402,7 +389,7 @@ void StealthedRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "sprint",
             {
-                NextAction("sprint", ACTION_INTERRUPT)
+                CreateNextAction<CastSprintAction>(ACTION_INTERRUPT)
             }
         )
     );
@@ -414,7 +401,7 @@ void StealthStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "stealth",
             {
-                NextAction("stealth", ACTION_INTERRUPT)
+                CreateNextAction<CastStealthAction>(ACTION_INTERRUPT)
             }
         )
     );
@@ -426,7 +413,7 @@ void RogueAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "light aoe",
             {
-                NextAction("blade flurry", ACTION_HIGH)
+                CreateNextAction<CastBladeFlurryAction>(ACTION_HIGH)
             }
         )
     );
@@ -434,7 +421,7 @@ void RogueAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium aoe",
             {
-                NextAction("fan of knives", ACTION_NORMAL + 5)
+                CreateNextAction<FanOfKnivesAction>(ACTION_NORMAL + 5.0f)
             }
         )
     );
@@ -446,7 +433,7 @@ void RogueBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "adrenaline rush",
             {
-                NextAction("adrenaline rush", ACTION_HIGH + 2)
+                CreateNextAction<CastAdrenalineRushAction>(ACTION_HIGH + 2.0f)
             }
         )
     );
@@ -458,8 +445,8 @@ void RogueCcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "sap",
             {
-                NextAction("stealth", ACTION_INTERRUPT),
-                NextAction("sap", ACTION_INTERRUPT)
+                CreateNextAction<CastStealthAction>(ACTION_INTERRUPT),
+                CreateNextAction<CastSapAction>(ACTION_INTERRUPT)
             }
         )
     );

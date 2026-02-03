@@ -2,9 +2,7 @@
 #define _PLAYERBOT_WOTLKDUNGEONANTRIGGERS_H
 
 #include "Trigger.h"
-#include "PlayerbotAIConfig.h"
 #include "GenericTriggers.h"
-#include "DungeonStrategyUtils.h"
 
 enum AzjolNerubIDs
 {
@@ -43,13 +41,6 @@ public:
     KrikthirWatchersTrigger(PlayerbotAI* ai) : Trigger(ai, "krik'thir watchers") {}
     bool IsActive() override;
 };
-
-// class AnubarakImpaleTrigger : public Trigger
-// {
-// public:
-//     AnubarakImpaleTrigger(PlayerbotAI* ai) : Trigger(ai, "anub'arak impale") {}
-//     bool IsActive() override;
-// };
 
 class AnubarakPoundTrigger : public Trigger
 {

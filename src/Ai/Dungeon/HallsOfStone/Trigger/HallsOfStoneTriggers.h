@@ -2,8 +2,8 @@
 #define _PLAYERBOT_WOTLKDUNGEONHOSTRIGGERS_H
 
 #include "Trigger.h"
-#include "PlayerbotAIConfig.h"
 #include "GenericTriggers.h"
+// Required due to excessive use of macros
 #include "DungeonStrategyUtils.h"
 
 enum HallsOfStoneIDs

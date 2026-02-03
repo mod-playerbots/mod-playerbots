@@ -8,7 +8,7 @@
 #include "ReachTargetActions.h"
 #include "Playerbots.h"
 
-float MountingDrakeMultiplier::GetValue(Action* action)
+float MountingDrakeMultiplier::GetValue(Action& action)
 {
     // P.I.T.A bug where the bots will somehow interrupt their item spell use,
     // even though the 0.5 sec cast goes off, it puts the drake essence on 15 sec cd
@@ -20,30 +20,30 @@ float MountingDrakeMultiplier::GetValue(Action* action)
 
     if (bot->GetMapId() != OCULUS_MAP_ID || !master->GetVehicleBase() || bot->GetVehicleBase()) { return 1.0f; }
 
-    if (!dynamic_cast<MountDrakeAction*>(action))
+    if (!dynamic_cast<MountDrakeAction*>(&action))
     {
         return 0.0f;
     }
     return 1.0f;
 }
 
-float OccFlyingMultiplier::GetValue(Action* action)
+float OccFlyingMultiplier::GetValue(Action& action)
 {
     if (bot->GetMapId() != OCULUS_MAP_ID || !bot->GetVehicleBase()) { return 1.0f; }
 
     // Suppresses FollowAction as well as some attack-based movements
-    if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<OccFlyDrakeAction*>(action))
+    if (dynamic_cast<MovementAction*>(&action) && !dynamic_cast<OccFlyDrakeAction*>(&action))
     {
         return 0.0f;
     }
     return 1.0f;
 }
 
-float UromMultiplier::GetValue(Action* action)
+float UromMultiplier::GetValue(Action& action)
 {
     if (GetPhaseByCurrentPosition(bot) < 3)
     {
-        Unit* target = action->GetTarget();
+        Unit* target = action.GetTarget();
         if (target && target->GetEntry() == NPC_MAGE_LORD_UROM)
         {
             return 0.0f;
@@ -57,7 +57,7 @@ float UromMultiplier::GetValue(Action* action)
     if (boss->HasUnitState(UNIT_STATE_CASTING) &&
         boss->FindCurrentSpellBySpellId(SPELL_EMPOWERED_ARCANE_EXPLOSION))
     {
-        if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<AvoidArcaneExplosionAction*>(action))
+        if (dynamic_cast<MovementAction*>(&action) && !dynamic_cast<AvoidArcaneExplosionAction*>(&action))
         {
             return 0.0f;
         }
@@ -66,7 +66,7 @@ float UromMultiplier::GetValue(Action* action)
     // Don't bother avoiding Frostbomb for melee
     if (botAI->IsMelee(bot))
     {
-        if (dynamic_cast<AvoidAoeAction*>(action))
+        if (dynamic_cast<AvoidAoeAction*>(&action))
         {
             return 0.0f;
         }
@@ -74,7 +74,7 @@ float UromMultiplier::GetValue(Action* action)
 
     if (bot->HasAura(SPELL_TIME_BOMB))
     {
-        if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<TimeBombSpreadAction*>(action))
+        if (dynamic_cast<MovementAction*>(&action) && !dynamic_cast<TimeBombSpreadAction*>(&action))
         {
             return 0.0f;
         }
@@ -99,13 +99,8 @@ uint8 UromMultiplier::GetPhaseByCurrentPosition(Unit* unit)
     return 3;
 }
 
-float EregosMultiplier::GetValue(Action* action)
+float EregosMultiplier::GetValue(Action& action)
 {
-    if (action == nullptr)
-    {
-        return 1.0f;
-    }
-
     const Unit* const boss = this->context->GetValue<Unit*>("find target", "ley-guardian eregos")->Get();
 
     if (boss == nullptr)
@@ -113,7 +108,7 @@ float EregosMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (boss->HasAura(SPELL_PLANAR_SHIFT) && action->getName() == "occ drake attack")
+    if (boss->HasAura(SPELL_PLANAR_SHIFT) && action.getName() == "occ drake attack")
     {
         return 0.0f;
     }

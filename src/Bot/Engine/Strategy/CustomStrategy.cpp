@@ -19,11 +19,11 @@ NextAction toNextAction(std::string const action)
     if (tokens[0].empty())
         throw std::invalid_argument("Invalid action");
 
-    if (tokens.size() == 2)
-        return NextAction(tokens[0], atof(tokens[1].c_str()));
+    // if (tokens.size() == 2)
+    //     return NextAction(tokens[0], atof(tokens[1].c_str()));
 
-    if (tokens.size() == 1)
-        return NextAction(tokens[0], ACTION_NORMAL);
+    // if (tokens.size() == 1)
+    //     return NextAction(tokens[0], ACTION_NORMAL);
 
     LOG_ERROR("playerbots", "Invalid action {}", action.c_str());
 

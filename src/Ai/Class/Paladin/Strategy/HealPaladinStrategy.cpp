@@ -4,9 +4,9 @@
  */
 
 #include "HealPaladinStrategy.h"
-
-#include "Playerbots.h"
-#include "Strategy.h"
+#include "CreateNextAction.h"
+#include "PaladinActions.h"
+#include "ReachTargetActions.h"
 
 class HealPaladinStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -19,7 +19,9 @@ HealPaladinStrategy::HealPaladinStrategy(PlayerbotAI* botAI) : GenericPaladinStr
 
 std::vector<NextAction> HealPaladinStrategy::getDefaultActions()
 {
-    return { NextAction("judgement of light", ACTION_DEFAULT) };
+    return {
+        CreateNextAction<CastJudgementOfLightAction>(ACTION_DEFAULT)
+    };
 }
 
 void HealPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -30,7 +32,7 @@ void HealPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "seal",
             {
-                NextAction("seal of wisdom", ACTION_HIGH)
+                CreateNextAction<CastSealOfWisdomAction>(ACTION_HIGH)
             }
         )
     );
@@ -38,7 +40,7 @@ void HealPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium mana",
             {
-                NextAction("divine illumination", ACTION_HIGH + 2)
+                CreateNextAction<CastDivineIlluminationAction>(ACTION_HIGH + 2.0f)
             }
         )
     );
@@ -46,7 +48,7 @@ void HealPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "low mana",
             {
-                NextAction("divine favor", ACTION_HIGH + 1)
+                CreateNextAction<CastDivineFavorAction>(ACTION_HIGH + 1.0f)
             }
         )
     );
@@ -54,7 +56,7 @@ void HealPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "party member to heal out of spell range",
             {
-                NextAction("reach party member to heal", ACTION_EMERGENCY + 3)
+                CreateNextAction<ReachPartyMemberToHealAction>(ACTION_EMERGENCY + 3.0f)
             }
         )
     );
@@ -62,8 +64,8 @@ void HealPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium group heal setting",
             {
-                NextAction("divine sacrifice", ACTION_CRITICAL_HEAL + 5),
-                NextAction("avenging wrath", ACTION_HIGH + 4),
+                CreateNextAction<CastDivineSacrificeAction>(ACTION_CRITICAL_HEAL + 5.0f),
+                CreateNextAction<CastAvengingWrathAction>(ACTION_HIGH + 4),
             }
         )
     );
@@ -71,9 +73,9 @@ void HealPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "party member critical health",
             {
-                NextAction("holy shock on party", ACTION_CRITICAL_HEAL + 6),
-                NextAction("divine sacrifice", ACTION_CRITICAL_HEAL + 5),
-                NextAction("holy light on party", ACTION_CRITICAL_HEAL + 4)
+                CreateNextAction<CastHolyShockOnPartyAction>(ACTION_CRITICAL_HEAL + 6.0f),
+                CreateNextAction<CastDivineSacrificeAction>(ACTION_CRITICAL_HEAL + 5.0f),
+                CreateNextAction<CastHolyLightOnPartyAction>(ACTION_CRITICAL_HEAL + 4.0f)
             }
         )
     );
@@ -81,7 +83,7 @@ void HealPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "party member low health",
             {
-                NextAction("holy light on party", ACTION_MEDIUM_HEAL + 5)
+                CreateNextAction<CastHolyLightOnPartyAction>(ACTION_MEDIUM_HEAL + 5.0f)
             }
         )
     );
@@ -89,36 +91,34 @@ void HealPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "party member medium health",
             {
-                NextAction("holy light on party", ACTION_LIGHT_HEAL + 9),
-                NextAction("flash of light on party", ACTION_LIGHT_HEAL + 8)
+                CreateNextAction<CastHolyLightOnPartyAction>(ACTION_LIGHT_HEAL + 9.0f),
+                CreateNextAction<CastFlashOfLightOnPartyAction>(ACTION_LIGHT_HEAL + 8.0f)
             }
         )
     );
 
     triggers.push_back(
         new TriggerNode(
-        "party member almost full health",
-        {
-            NextAction("flash of light on party", ACTION_LIGHT_HEAL + 3)
-        }
-    )
-);
-
+            "party member almost full health",
+            {
+                CreateNextAction<CastFlashOfLightOnPartyAction>(ACTION_LIGHT_HEAL + 3.0f)
+            }
+        )
+    );
     triggers.push_back(
         new TriggerNode(
-        "beacon of light on main tank",
-        {
-            NextAction("beacon of light on main tank", ACTION_CRITICAL_HEAL + 7)
-        }
-    )
-);
-
+            "beacon of light on main tank",
+            {
+                CreateNextAction<CastBeaconOfLightOnMainTankAction>(ACTION_CRITICAL_HEAL + 7.0f)
+            }
+        )
+    );
     triggers.push_back(
         new TriggerNode(
-        "sacred shield on main tank",
-        {
-            NextAction("sacred shield on main tank", ACTION_CRITICAL_HEAL + 6)
-        }
-    )
+            "sacred shield on main tank",
+            {
+                CreateNextAction<CastSacredShieldOnMainTankAction>(ACTION_CRITICAL_HEAL + 6.0f)
+            }
+        )
 );
 }

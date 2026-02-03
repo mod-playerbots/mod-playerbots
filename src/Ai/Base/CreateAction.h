@@ -6,9 +6,9 @@
 #include "Action.h"
 
 template <typename TAction>
-std::unique_ptr<TAction> CreateAction()
+std::unique_ptr<Action> CreateAction(PlayerbotAI* botAI)
 {
     static_assert(std::is_base_of<Action, TAction>::value == true, "TAction must derive from Action.");
 
-    return std::unique_ptr<TAction>(new TAction());
+    return std::unique_ptr<Action>(new TAction(botAI));
 }

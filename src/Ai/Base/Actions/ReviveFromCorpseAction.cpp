@@ -5,6 +5,7 @@
 
 #include "ReviveFromCorpseAction.h"
 
+#include "CreateNextAction.h"
 #include "Event.h"
 #include "FleeManager.h"
 #include "GameGraveyard.h"
@@ -56,7 +57,7 @@ bool ReviveFromCorpseAction::Execute(Event event)
 
         if (dCount >= 5)
         {
-            return botAI->DoSpecificAction("spirit healer");
+            return botAI->DoSpecificAction(CreateNextAction<SpiritHealerAction>(1.0f).factory);
         }
     }
 
@@ -188,7 +189,7 @@ bool FindCorpseAction::Execute(Event)
 
             if (!moved)
             {
-                moved = botAI->DoSpecificAction("spirit healer", Event(), true);
+                moved = botAI->DoSpecificAction(CreateNextAction<SpiritHealerAction>(1.0f).factory, Event(), true);
             }
         }
     }

@@ -5,8 +5,11 @@
 
 #include "HealPriestStrategy.h"
 
+#include "CreateNextAction.h"
 #include "GenericPriestStrategyActionNodeFactory.h"
-#include "Playerbots.h"
+#include "GenericSpellActions.h"
+#include "PriestActions.h"
+#include "ReachTargetActions.h"
 
 HealPriestStrategy::HealPriestStrategy(PlayerbotAI* botAI) : GenericPriestStrategy(botAI)
 {
@@ -16,7 +19,7 @@ HealPriestStrategy::HealPriestStrategy(PlayerbotAI* botAI) : GenericPriestStrate
 std::vector<NextAction> HealPriestStrategy::getDefaultActions()
 {
     return {
-        NextAction("shoot", ACTION_DEFAULT)
+        CreateNextAction<CastShootAction>(ACTION_DEFAULT)
     };
 }
 
@@ -28,83 +31,77 @@ void HealPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "group heal setting",
             {
-                NextAction("prayer of mending on party", ACTION_MEDIUM_HEAL + 8),
-                NextAction("power word: shield on not full", ACTION_MEDIUM_HEAL + 7)
+                CreateNextAction<CastPrayerOfMendingAction>(ACTION_MEDIUM_HEAL + 8.0f),
+                CreateNextAction<CastPowerWordShieldOnNotFullAction>(ACTION_MEDIUM_HEAL + 7.0f)
             }
         )
     );
-
     triggers.push_back(
         new TriggerNode(
             "medium group heal setting",
             {
-                NextAction("divine hymn", ACTION_CRITICAL_HEAL + 7),
-                NextAction("prayer of mending on party", ACTION_CRITICAL_HEAL + 6),
-                NextAction("power word: shield on not full", ACTION_CRITICAL_HEAL + 5),
-                NextAction("prayer of healing on party", ACTION_CRITICAL_HEAL + 4)
+                CreateNextAction<CastDivineHymnAction>(ACTION_CRITICAL_HEAL + 7.0f),
+                CreateNextAction<CastPrayerOfMendingAction>(ACTION_CRITICAL_HEAL + 6.0f),
+                CreateNextAction<CastPowerWordShieldOnNotFullAction>(ACTION_CRITICAL_HEAL + 5.0f),
+                CreateNextAction<CastPrayerOfHealingAction>(ACTION_CRITICAL_HEAL + 4.0f)
             }
         )
     );
-
     triggers.push_back(
         new TriggerNode(
             "party member critical health",
             {
-                NextAction("power word: shield on party", ACTION_CRITICAL_HEAL + 5),
-                NextAction("penance on party", ACTION_CRITICAL_HEAL + 4),
-                NextAction("prayer of mending on party", ACTION_CRITICAL_HEAL + 3),
-                NextAction("flash heal on party", ACTION_CRITICAL_HEAL + 2)
+                CreateNextAction<CastPowerWordShieldOnPartyAction>(ACTION_CRITICAL_HEAL + 5.0f),
+                CreateNextAction<CastPenanceOnPartyAction>(ACTION_CRITICAL_HEAL + 4.0f),
+                CreateNextAction<CastPrayerOfMendingAction>(ACTION_CRITICAL_HEAL + 3.0f),
+                CreateNextAction<CastFlashHealOnPartyAction>(ACTION_CRITICAL_HEAL + 2.0f)
             }
         )
     );
-
     triggers.push_back(
         new TriggerNode(
             "party member low health",
             {
-                NextAction("power word: shield on party", ACTION_MEDIUM_HEAL + 4),
-                NextAction("prayer of mending on party", ACTION_MEDIUM_HEAL + 3),
-                NextAction("penance on party", ACTION_MEDIUM_HEAL + 2),
-                NextAction("flash heal on party", ACTION_MEDIUM_HEAL + 0)
+                CreateNextAction<CastPowerWordShieldOnPartyAction>(ACTION_MEDIUM_HEAL + 4.0f),
+                CreateNextAction<CastPrayerOfMendingAction>(ACTION_MEDIUM_HEAL + 3.0f),
+                CreateNextAction<CastPenanceOnPartyAction>(ACTION_MEDIUM_HEAL + 2.0f),
+                CreateNextAction<CastFlashHealOnPartyAction>(ACTION_MEDIUM_HEAL + 0.0f)
             }
         )
     );
-
     triggers.push_back(
         new TriggerNode(
             "party member medium health",
             {
-                NextAction("power word: shield on party", ACTION_LIGHT_HEAL + 9),
-                NextAction("prayer of mending on party", ACTION_LIGHT_HEAL + 7),
-                NextAction("penance on party", ACTION_LIGHT_HEAL + 6),
-                NextAction("flash heal on party", ACTION_LIGHT_HEAL + 5)
+                CreateNextAction<CastPowerWordShieldOnPartyAction>(ACTION_LIGHT_HEAL + 9.0f),
+                CreateNextAction<CastPrayerOfMendingAction>(ACTION_LIGHT_HEAL + 7.0f),
+                CreateNextAction<CastPenanceOnPartyAction>(ACTION_LIGHT_HEAL + 6.0f),
+                CreateNextAction<CastFlashHealOnPartyAction>(ACTION_LIGHT_HEAL + 5.0f)
             }
         )
     );
-
     triggers.push_back(
         new TriggerNode(
             "party member almost full health",
             {
-                NextAction("prayer of mending on party", ACTION_LIGHT_HEAL + 2),
-                NextAction("renew on party", ACTION_LIGHT_HEAL + 1)
+                CreateNextAction<CastPrayerOfMendingAction>(ACTION_LIGHT_HEAL + 2.0f),
+                CreateNextAction<CastRenewOnPartyAction>(ACTION_LIGHT_HEAL + 1.0f)
             }
         )
     );
-
     triggers.push_back(
         new TriggerNode(
             "party member to heal out of spell range",
             {
-                NextAction("reach party member to heal", ACTION_CRITICAL_HEAL + 10)
+                CreateNextAction<ReachPartyMemberToHealAction>(ACTION_CRITICAL_HEAL + 10.0f)
             }
         )
     );
-
     triggers.push_back(
         new TriggerNode(
-            "critical health", {
-                NextAction("pain suppression", ACTION_EMERGENCY + 1)
+            "critical health",
+            {
+                CreateNextAction<CastPainSuppressionAction>(ACTION_EMERGENCY + 1.0f)
             }
         )
     );
@@ -112,7 +109,7 @@ void HealPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "protect party member",
             {
-                NextAction("pain suppression on party", ACTION_EMERGENCY)
+                CreateNextAction<CastPainSuppressionProtectAction>(ACTION_EMERGENCY)
             }
         )
     );

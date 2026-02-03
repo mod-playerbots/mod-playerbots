@@ -5,16 +5,22 @@
 
 #include "RpgSubActions.h"
 
+#include "CastCustomSpellAction.h"
 #include "ChooseRpgTargetAction.h"
+#include "DruidActions.h"
 #include "EmoteAction.h"
 #include "Formations.h"
 #include "GossipDef.h"
 #include "GuildCreateActions.h"
 #include "LastMovementValue.h"
 #include "MovementActions.h"
+#include "PaladinActions.h"
 #include "Playerbots.h"
 #include "PossibleRpgTargetsValue.h"
+#include "PriestActions.h"
+#include "ShamanActions.h"
 #include "SocialMgr.h"
+#include "TradeAction.h"
 
 void RpgHelper::OnExecute(std::string nextAction)
 {
@@ -82,162 +88,194 @@ void RpgHelper::setDelay(bool waitForGroup)
         botAI->SetNextCheckDelay(sPlayerbotAIConfig.rpgDelay / 5);
 }
 
-bool RpgSubAction::isPossible() { return rpg->guidP() && rpg->guidP().GetWorldObject(); }
+bool RpgSubAction::isPossible()
+{
+    // return rpg->guidP() && rpg->guidP().GetWorldObject();
+    return false;
+}
 
-bool RpgSubAction::isUseful() { return rpg->InRange(); }
+bool RpgSubAction::isUseful()
+{
+    // return rpg->InRange();
+    return false;
+}
 
+// @TODO: Fix this to actually do something
 bool RpgSubAction::Execute(Event event)
 {
-    bool doAction = botAI->DoSpecificAction(ActionName(), ActionEvent(event), true);
-    rpg->AfterExecute(doAction, true);
-    return doAction;
+    // bool doAction = botAI->DoSpecificAction(ActionName(), ActionEvent(event), true);
+    // rpg->AfterExecute(doAction, true);
+    // return doAction;
+    return true;
 }
 
 std::string const RpgSubAction::ActionName() { return "none"; }
 
 Event RpgSubAction::ActionEvent(Event event) { return event; }
 
-bool RpgStayAction::isUseful() { return rpg->InRange() && !botAI->HasRealPlayerMaster(); }
-
-bool RpgStayAction::Execute(Event)
+bool RpgStayAction::isUseful()
 {
-    bot->PlayerTalkClass->SendCloseGossip();
-
-    rpg->AfterExecute();
+    // return rpg->InRange() && !botAI->HasRealPlayerMaster();
     return true;
 }
 
-bool RpgWorkAction::isUseful() { return rpg->InRange() && !botAI->HasRealPlayerMaster(); }
+bool RpgStayAction::Execute(Event)
+{
+    // bot->PlayerTalkClass->SendCloseGossip();
+
+    // rpg->AfterExecute();
+    return true;
+}
+
+bool RpgWorkAction::isUseful()
+{
+    // return rpg->InRange() && !botAI->HasRealPlayerMaster();
+    return true;
+}
 
 bool RpgWorkAction::Execute(Event)
 {
     bot->HandleEmoteCommand(EMOTE_STATE_USE_STANDING);
-    rpg->AfterExecute();
+    // rpg->AfterExecute();
     return true;
 }
 
-bool RpgEmoteAction::isUseful() { return rpg->InRange() && !botAI->HasRealPlayerMaster(); }
+bool RpgEmoteAction::isUseful()
+{
+    // return rpg->InRange() && !botAI->HasRealPlayerMaster();
+    return true;
+}
 
 bool RpgEmoteAction::Execute(Event)
 {
-    uint32 type = TalkAction::GetRandomEmote(rpg->guidP().GetUnit());
+    // uint32 type = TalkAction::GetRandomEmote(rpg->guidP().GetUnit());
 
-    WorldPacket p1;
-    p1 << rpg->guid();
-    bot->GetSession()->HandleGossipHelloOpcode(p1);
+    // WorldPacket p1;
+    // p1 << rpg->guid();
+    // bot->GetSession()->HandleGossipHelloOpcode(p1);
 
-    bot->HandleEmoteCommand(type);
+    // bot->HandleEmoteCommand(type);
 
-    rpg->AfterExecute();
+    // rpg->AfterExecute();
 
     return true;
 }
 
 bool RpgCancelAction::Execute(Event)
 {
-    RESET_AI_VALUE(GuidPosition, "rpg target");
-    rpg->OnExecute("");
+    // RESET_AI_VALUE(GuidPosition, "rpg target");
+    // rpg->OnExecute("");
     return true;
 }
 
-bool RpgTaxiAction::isUseful() { return rpg->InRange() && !botAI->HasRealPlayerMaster(); }
+bool RpgTaxiAction::isUseful()
+{
+    // return rpg->InRange() && !botAI->HasRealPlayerMaster();
+    return true;
+}
 
 bool RpgTaxiAction::Execute(Event)
 {
-    GuidPosition guidP = rpg->guidP();
+    // GuidPosition guidP = rpg->guidP();
 
-    WorldPacket emptyPacket;
-    bot->GetSession()->HandleCancelMountAuraOpcode(emptyPacket);
+    // WorldPacket emptyPacket;
+    // bot->GetSession()->HandleCancelMountAuraOpcode(emptyPacket);
 
-    uint32 node =
-        sObjectMgr->GetNearestTaxiNode(guidP.getX(), guidP.getY(), guidP.getZ(), guidP.getMapId(), bot->GetTeamId());
+    // uint32 node =
+    //     sObjectMgr->GetNearestTaxiNode(guidP.getX(), guidP.getY(), guidP.getZ(), guidP.getMapId(), bot->GetTeamId());
 
-    std::vector<uint32> nodes;
-    for (uint32 i = 0; i < sTaxiPathStore.GetNumRows(); ++i)
-    {
-        TaxiPathEntry const* entry = sTaxiPathStore.LookupEntry(i);
-        if (entry && entry->from == node && (bot->m_taxi.IsTaximaskNodeKnown(entry->to) || bot->isTaxiCheater()))
-        {
-            nodes.push_back(i);
-        }
-    }
+    // std::vector<uint32> nodes;
+    // for (uint32 i = 0; i < sTaxiPathStore.GetNumRows(); ++i)
+    // {
+    //     TaxiPathEntry const* entry = sTaxiPathStore.LookupEntry(i);
+    //     if (entry && entry->from == node && (bot->m_taxi.IsTaximaskNodeKnown(entry->to) || bot->isTaxiCheater()))
+    //     {
+    //         nodes.push_back(i);
+    //     }
+    // }
 
-    if (nodes.empty())
-    {
-        LOG_ERROR("playerbots", "Bot {} - No flight paths available", bot->GetName());
-        return false;
-    }
+    // if (nodes.empty())
+    // {
+    //     LOG_ERROR("playerbots", "Bot {} - No flight paths available", bot->GetName());
+    //     return false;
+    // }
 
-    uint32 path = nodes[urand(0, nodes.size() - 1)];
-    uint32 money = bot->GetMoney();
-    bot->SetMoney(money + 100000);
+    // uint32 path = nodes[urand(0, nodes.size() - 1)];
+    // uint32 money = bot->GetMoney();
+    // bot->SetMoney(money + 100000);
 
-    TaxiPathEntry const* entry = sTaxiPathStore.LookupEntry(path);
-    if (!entry)
-        return false;
+    // TaxiPathEntry const* entry = sTaxiPathStore.LookupEntry(path);
+    // if (!entry)
+    //     return false;
 
-    TaxiNodesEntry const* nodeFrom = sTaxiNodesStore.LookupEntry(entry->from);
-    TaxiNodesEntry const* nodeTo = sTaxiNodesStore.LookupEntry(entry->to);
+    // TaxiNodesEntry const* nodeFrom = sTaxiNodesStore.LookupEntry(entry->from);
+    // TaxiNodesEntry const* nodeTo = sTaxiNodesStore.LookupEntry(entry->to);
 
-    Creature* flightMaster = bot->GetNPCIfCanInteractWith(guidP, UNIT_NPC_FLAG_FLIGHTMASTER);
-    if (!flightMaster)
-    {
-        LOG_ERROR("playerbots", "Bot {} cannot talk to flightmaster ({} location available)", bot->GetName(),
-                  nodes.size());
-        return false;
-    }
+    // Creature* flightMaster = bot->GetNPCIfCanInteractWith(guidP, UNIT_NPC_FLAG_FLIGHTMASTER);
+    // if (!flightMaster)
+    // {
+    //     LOG_ERROR("playerbots", "Bot {} cannot talk to flightmaster ({} location available)", bot->GetName(),
+    //               nodes.size());
+    //     return false;
+    // }
 
-    if (!bot->ActivateTaxiPathTo({entry->from, entry->to}, flightMaster, 0))
-    {
-        LOG_ERROR("playerbots", "Bot {} cannot fly {} ({} location available)", bot->GetName(), path, nodes.size());
-        return false;
-    }
+    // if (!bot->ActivateTaxiPathTo({entry->from, entry->to}, flightMaster, 0))
+    // {
+    //     LOG_ERROR("playerbots", "Bot {} cannot fly {} ({} location available)", bot->GetName(), path, nodes.size());
+    //     return false;
+    // }
 
-    LOG_INFO("playerbots", "Bot {} <{}> is flying from {} to {} ({} location available)",
-             bot->GetGUID().ToString().c_str(), bot->GetName(), nodeFrom->name[0], nodeTo->name[0], nodes.size());
+    // LOG_INFO("playerbots", "Bot {} <{}> is flying from {} to {} ({} location available)",
+    //          bot->GetGUID().ToString().c_str(), bot->GetName(), nodeFrom->name[0], nodeTo->name[0], nodes.size());
 
-    bot->SetMoney(money);
+    // bot->SetMoney(money);
 
-    rpg->AfterExecute();
+    // rpg->AfterExecute();
 
     return true;
 }
 
 bool RpgDiscoverAction::Execute(Event)
 {
-    GuidPosition guidP = rpg->guidP();
+    // GuidPosition guidP = rpg->guidP();
 
-    uint32 node =
-        sObjectMgr->GetNearestTaxiNode(guidP.getX(), guidP.getY(), guidP.getZ(), guidP.getMapId(), bot->GetTeamId());
+    // uint32 node =
+    //     sObjectMgr->GetNearestTaxiNode(guidP.getX(), guidP.getY(), guidP.getZ(), guidP.getMapId(), bot->GetTeamId());
 
-    if (!node)
-        return false;
+    // if (!node)
+    //     return false;
 
-    Creature* flightMaster = bot->GetNPCIfCanInteractWith(guidP, UNIT_NPC_FLAG_FLIGHTMASTER);
-    if (!flightMaster)
-        return false;
+    // Creature* flightMaster = bot->GetNPCIfCanInteractWith(guidP, UNIT_NPC_FLAG_FLIGHTMASTER);
+    // if (!flightMaster)
+    //     return false;
 
-    return bot->GetSession()->SendLearnNewTaxiNode(flightMaster);
+    // return bot->GetSession()->SendLearnNewTaxiNode(flightMaster);
+
+    return true;
 }
 
 std::string const RpgStartQuestAction::ActionName() { return "accept all quests"; }
 
 Event RpgStartQuestAction::ActionEvent(Event)
 {
-    WorldPacket p(CMSG_QUESTGIVER_ACCEPT_QUEST);
-    p << rpg->guid();
-    p.rpos(0);
-    return Event("rpg action", p);
+    // WorldPacket p(CMSG_QUESTGIVER_ACCEPT_QUEST);
+    // p << rpg->guid();
+    // p.rpos(0);
+    // return Event("rpg action", p);
+
+    return Event();
 }
 
 std::string const RpgEndQuestAction::ActionName() { return "talk to quest giver"; }
 
 Event RpgEndQuestAction::ActionEvent(Event)
 {
-    WorldPacket p(CMSG_QUESTGIVER_COMPLETE_QUEST);
-    p << rpg->guid();
-    p.rpos(0);
-    return Event("rpg action", p);
+    // WorldPacket p(CMSG_QUESTGIVER_COMPLETE_QUEST);
+    // p << rpg->guid();
+    // p.rpos(0);
+    // return Event("rpg action", p);
+
+    return Event();
 }
 
 std::string const RpgBuyAction::ActionName() { return "buy"; }
@@ -259,16 +297,16 @@ bool RpgHealAction::Execute(Event)
     switch (bot->getClass())
     {
         case CLASS_PRIEST:
-            retVal = botAI->DoSpecificAction("lesser heal on party", Event(), true);
+            retVal = botAI->DoSpecificAction(CreateNextAction<CastLesserHealOnPartyAction>(1.0f).factory, Event(), true);
             break;
         case CLASS_DRUID:
-            retVal = botAI->DoSpecificAction("healing touch on party", Event(), true);
+            retVal = botAI->DoSpecificAction(CreateNextAction<CastHealingTouchOnPartyAction>(1.0f).factory, Event(), true);
             break;
         case CLASS_PALADIN:
-            retVal = botAI->DoSpecificAction("holy light on party", Event(), true);
+            retVal = botAI->DoSpecificAction(CreateNextAction<CastHolyLightOnPartyAction>(1.0f).factory, Event(), true);
             break;
         case CLASS_SHAMAN:
-            retVal = botAI->DoSpecificAction("healing wave on party", Event(), true);
+            retVal = botAI->DoSpecificAction(CreateNextAction<CastHealingWaveOnPartyAction>(1.0f).factory, Event(), true);
             break;
     }
 
@@ -289,21 +327,24 @@ std::string const RpgUseAction::ActionName() { return "use"; }
 
 Event RpgUseAction::ActionEvent(Event)
 {
-    return Event("rpg action", chat->FormatWorldobject(rpg->guidP().GetWorldObject()));
+    // return Event("rpg action", chat->FormatWorldobject(rpg->guidP().GetWorldObject()));
+    return Event();
 }
 
 std::string const RpgSpellAction::ActionName() { return "cast random spell"; }
 
 Event RpgSpellAction::ActionEvent(Event)
 {
-    return Event("rpg action", chat->FormatWorldobject(rpg->guidP().GetWorldObject()));
+    // return Event("rpg action", chat->FormatWorldobject(rpg->guidP().GetWorldObject()));
+    return Event();
 }
 
 std::string const RpgCraftAction::ActionName() { return "craft random item"; }
 
 Event RpgCraftAction::ActionEvent(Event)
 {
-    return Event("rpg action", chat->FormatWorldobject(rpg->guidP().GetWorldObject()));
+    // return Event("rpg action", chat->FormatWorldobject(rpg->guidP().GetWorldObject()));
+    return Event();
 }
 
 std::vector<Item*> RpgTradeUsefulAction::CanGiveItems(GuidPosition guidPosition)
@@ -363,7 +404,7 @@ bool RpgTradeUsefulAction::Execute(Event)
     param << " ";
     param << chat->FormatItem(item->GetTemplate());
 
-    bool hasTraded = botAI->DoSpecificAction("trade", Event("rpg action", param.str().c_str()), true);
+    bool hasTraded = botAI->DoSpecificAction(CreateNextAction<TradeAction>(1.0f).factory, Event("rpg action", param.str().c_str()), true);
 
     if (hasTraded || bot->GetTradeData())
     {
@@ -425,7 +466,7 @@ bool RpgDuelAction::Execute(Event)
     if (!player)
         return false;
 
-    return botAI->DoSpecificAction("cast custom spell", Event("rpg action", chat->FormatWorldobject(player) + " 7266"),
+    return botAI->DoSpecificAction(CreateNextAction<CastCustomSpellAction>(1.0f).factory, Event("rpg action", chat->FormatWorldobject(player) + " 7266"),
                                    true);
 }
 

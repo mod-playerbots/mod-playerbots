@@ -4,6 +4,8 @@
  */
 
 #include "GenericWarlockStrategy.h"
+#include "CancelChannelAction.h"
+#include "WarlockActions.h"
 
 class GenericWarlockStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -18,11 +20,51 @@ public:
     }
 
 private:
-    static ActionNode* banish_on_cc(PlayerbotAI*) { return new ActionNode("banish on cc", {}, {}, {}); }
-    static ActionNode* fear_on_cc(PlayerbotAI*) { return new ActionNode("fear on cc", {}, {}, {}); }
-    static ActionNode* spell_lock(PlayerbotAI*) { return new ActionNode("spell lock", {}, {}, {}); }
-    static ActionNode* devour_magic_purge(PlayerbotAI*) { return new ActionNode("devour magic purge", {}, {}, {}); }
-    static ActionNode* devour_magic_cleanse(PlayerbotAI*) { return new ActionNode("devour magic cleanse", {}, {}, {}); }
+    static ActionNode* banish_on_cc(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* fear_on_cc(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* spell_lock(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* devour_magic_purge(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* devour_magic_cleanse(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
 };
 
 GenericWarlockStrategy::GenericWarlockStrategy(PlayerbotAI* botAI) : CombatStrategy(botAI)
@@ -43,7 +85,7 @@ void GenericWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "low mana",
             {
-                NextAction("life tap", 95.0f)
+                CreateNextAction<CastLifeTapAction>(95.0f)
             }
         )
     );
@@ -51,7 +93,7 @@ void GenericWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium threat",
             {
-                NextAction("soulshatter", 55.0f)
+                CreateNextAction<CastSoulshatterAction>(55.0f)
             }
         )
     );
@@ -59,7 +101,7 @@ void GenericWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "spell lock",
             {
-                NextAction("spell lock", 40.0f)
+                CreateNextAction<CastSpellLockAction>(40.0f)
             }
         )
     );
@@ -67,7 +109,7 @@ void GenericWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "no soul shard",
             {
-                NextAction("create soul shard", 60.0f)
+                CreateNextAction<CreateSoulShardAction>(60.0f)
             }
         )
     );
@@ -75,7 +117,7 @@ void GenericWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "too many soul shards",
             {
-                NextAction("destroy soul shard", 60.0f)
+                CreateNextAction<DestroySoulShardAction>(60.0f)
             }
         )
     );
@@ -83,7 +125,7 @@ void GenericWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "devour magic purge",
             {
-                NextAction("devour magic purge", 50.0f)
+                CreateNextAction<CastDevourMagicPurgeAction>(50.0f)
             }
         )
     );
@@ -91,7 +133,7 @@ void GenericWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "devour magic cleanse",
             {
-                NextAction("devour magic cleanse", 50.0f)
+                CreateNextAction<CastDevourMagicCleanseAction>(50.0f)
             }
         )
     );
@@ -105,12 +147,12 @@ void AoEWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium aoe",
             {
-                NextAction("immolation aura", 26.0f),
-                NextAction("shadowfury", 23.0f),
-                NextAction("shadowflame", 22.5f),
-                NextAction("seed of corruption on attacker", 22.0f),
-                NextAction("seed of corruption", 21.5f),
-                NextAction("rain of fire", 21.0f)
+                CreateNextAction<CastImmolationAuraAction>(26.0f),
+                CreateNextAction<CastShadowfuryAction>(23.0f),
+                CreateNextAction<CastShadowflameAction>(22.5f),
+                CreateNextAction<CastSeedOfCorruptionOnAttackerAction>(22.0f),
+                CreateNextAction<CastSeedOfCorruptionAction>(21.5f),
+                CreateNextAction<CastRainOfFireAction>(21.0f)
             }
         )
     );
@@ -118,7 +160,7 @@ void AoEWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(
         new TriggerNode("rain of fire channel check",
             {
-                NextAction("cancel channel", 21.5f)
+                CreateNextAction<CancelChannelAction>(21.5f)
             }
         )
     );
@@ -140,7 +182,7 @@ void WarlockCcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "banish",
             {
-                NextAction("banish on cc", 33.0f)
+                CreateNextAction<CastBanishOnCcAction>(33.0f)
             }
         )
     );
@@ -148,7 +190,7 @@ void WarlockCcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "fear",
             {
-                NextAction("fear on cc", 32.0f)
+                CreateNextAction<CastFearOnCcAction>(32.0f)
             }
         )
     );
@@ -164,7 +206,7 @@ void WarlockCurseOfAgonyStrategy::InitTriggers(std::vector<TriggerNode*>& trigge
         new TriggerNode(
             "curse of agony on attacker",
             {
-                NextAction("curse of agony on attacker", 18.5f)
+                CreateNextAction<CastCurseOfAgonyOnAttackerAction>(18.5f)
             }
         )
     );
@@ -172,7 +214,7 @@ void WarlockCurseOfAgonyStrategy::InitTriggers(std::vector<TriggerNode*>& trigge
         new TriggerNode(
             "curse of agony",
             {
-                NextAction("curse of agony", 17.0f)
+                CreateNextAction<CastCurseOfAgonyAction>(17.0f)
             }
         )
     );
@@ -188,7 +230,7 @@ void WarlockCurseOfTheElementsStrategy::InitTriggers(std::vector<TriggerNode*>& 
         new TriggerNode(
             "curse of the elements",
             {
-                NextAction("curse of the elements", 29.0f)
+                CreateNextAction<CastCurseOfTheElementsAction>(29.0f)
             }
         )
     );
@@ -204,7 +246,7 @@ void WarlockCurseOfDoomStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "curse of doom",
             {
-                NextAction("curse of doom", 29.0f)
+                CreateNextAction<CastCurseOfDoomAction>(29.0f)
             }
         )
     );
@@ -220,7 +262,7 @@ void WarlockCurseOfExhaustionStrategy::InitTriggers(std::vector<TriggerNode*>& t
         new TriggerNode(
             "curse of exhaustion",
             {
-                NextAction("curse of exhaustion", 29.0f)
+                CreateNextAction<CastCurseOfExhaustionAction>(29.0f)
             }
         )
     );
@@ -236,7 +278,7 @@ void WarlockCurseOfTonguesStrategy::InitTriggers(std::vector<TriggerNode*>& trig
         new TriggerNode(
             "curse of tongues",
             {
-                NextAction("curse of tongues", 29.0f)
+                CreateNextAction<CastCurseOfTonguesAction>(29.0f)
             }
         )
     );
@@ -252,7 +294,7 @@ void WarlockCurseOfWeaknessStrategy::InitTriggers(std::vector<TriggerNode*>& tri
         new TriggerNode(
             "curse of weakness",
             {
-                NextAction("curse of weakness", 29.0f)
+                CreateNextAction<CastCurseOfWeaknessAction>(29.0f)
             }
         )
     );

@@ -2,9 +2,9 @@
 #include <ctime>
 
 #include "RaidMagtheridonMultipliers.h"
+#include "ChooseTargetActions.h"
 #include "RaidMagtheridonActions.h"
 #include "RaidMagtheridonHelpers.h"
-#include "ChooseTargetActions.h"
 #include "GenericSpellActions.h"
 #include "Playerbots.h"
 #include "WarlockActions.h"
@@ -12,7 +12,7 @@
 using namespace MagtheridonHelpers;
 
 // Don't do anything other than clicking cubes when Magtheridon is casting Blast Nova
-float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
+float MagtheridonUseManticronCubeMultiplier::GetValue(Action& action)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (!magtheridon)
@@ -24,7 +24,7 @@ float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
         auto it = botToCubeAssignment.find(bot->GetGUID());
         if (it != botToCubeAssignment.end())
         {
-            if (dynamic_cast<MagtheridonUseManticronCubeAction*>(action))
+            if (dynamic_cast<MagtheridonUseManticronCubeAction*>(&action))
                 return 1.0f;
 
             return 0.0f;
@@ -35,7 +35,7 @@ float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
 }
 
 // Bots will wait for 6 seconds after Magtheridon becomes attackable before engaging
-float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
+float MagtheridonWaitToAttackMultiplier::GetValue(Action& action)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (!magtheridon || magtheridon->HasAura(SPELL_SHADOW_CAGE))
@@ -46,8 +46,8 @@ float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
     if (it == dpsWaitTimer.end() ||
         (time(nullptr) - it->second) < dpsWaitSeconds)
     {
-        if (!botAI->IsMainTank(bot) && (dynamic_cast<AttackAction*>(action) ||
-            (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
+        if (!botAI->IsMainTank(bot) && (dynamic_cast<AttackAction*>(&action) ||
+            (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(&action))))
             return 0.0f;
     }
 
@@ -56,14 +56,14 @@ float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
 
 // No tank assist for offtanks during the channeler phase
 // So they don't try to pull channelers from each other or the main tank
-float MagtheridonDisableOffTankAssistMultiplier::GetValue(Action* action)
+float MagtheridonDisableOffTankAssistMultiplier::GetValue(Action& action)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (!magtheridon)
         return 1.0f;
 
     if ((botAI->IsAssistTankOfIndex(bot, 0) || botAI->IsAssistTankOfIndex(bot, 1)) &&
-        dynamic_cast<TankAssistAction*>(action))
+        dynamic_cast<TankAssistAction*>(&action))
         return 0.0f;
 
     return 1.0f;

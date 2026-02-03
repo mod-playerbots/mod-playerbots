@@ -4,7 +4,7 @@
 #include "CreateAction.h"
 
 template<typename TAction>
-NextAction CreateNextAction(float weight)
+NextAction CreateNextAction(float weight, PlayerbotAI* botAI)
 {
-    return NextAction{ weight, &CreateAction<TAction> };
+    return NextAction{ weight, &CreateAction<TAction>(botAI) };
 }

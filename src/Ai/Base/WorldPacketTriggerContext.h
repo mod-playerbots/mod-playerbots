@@ -7,6 +7,7 @@
 #define _PLAYERBOT_WORLDPACKETTRIGGERCONTEXT_H
 
 #include "NamedObjectContext.h"
+#include "RangeTriggers.h"
 #include "WithinAreaTrigger.h"
 #include "WorldPacketTrigger.h"
 

@@ -7,7 +7,10 @@
 #define _PLAYERBOT_PRIESTNONCOMBATSTRATEGYACTIONNODEFACTORY_H
 
 #include "Action.h"
+#include "ActionNode.h"
+#include "CreateNextAction.h"
 #include "NamedObjectContext.h"
+#include "PriestActions.h"
 
 class PlayerbotAI;
 
@@ -37,116 +40,131 @@ public:
 private:
     static ActionNode* holy_nova([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("holy nova",
-                              /*P*/ { NextAction("remove shadowform") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastRemoveShadowformAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* power_word_shield([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("power word: shield",
-                              /*P*/ {},
-                              /*A*/ { NextAction("renew", 50.0f) },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastRenewAction>(50.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* power_word_shield_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("power word: shield on party",
-                              /*P*/ {},
-                              /*A*/ { NextAction("renew on party", 50.0f) },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastRenewOnPartyAction>(50.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* renew([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("renew",
-                              /*P*/ { NextAction("remove shadowform") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastRemoveShadowformAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* renew_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("renew on party",
-                              /*P*/ { NextAction("remove shadowform") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastRemoveShadowformAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* greater_heal([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("greater heal",
-                              /*P*/ { NextAction("remove shadowform") },
-                              /*A*/ { NextAction("heal") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastRemoveShadowformAction>(1.0f) },
+            /*A*/ { CreateNextAction<CastHealAction>(1.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* greater_heal_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("greater heal on party",
-                              /*P*/ {},
-                              /*A*/ { NextAction("heal on party") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastHealOnPartyAction>(1.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* heal([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("heal",
-                              /*P*/ { NextAction("remove shadowform") },
-                              /*A*/ { NextAction("lesser heal") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastRemoveShadowformAction>(1.0f) },
+            /*A*/ { CreateNextAction<CastLesserHealAction>(1.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* heal_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("heal on party",
-                              /*P*/ { NextAction("remove shadowform") },
-                              /*A*/ { NextAction("lesser heal on party") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastRemoveShadowformAction>(1.0f) },
+            /*A*/ { CreateNextAction<CastLesserHealOnPartyAction>(1.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* lesser_heal([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("lesser heal",
-                              /*P*/ { NextAction("remove shadowform") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastRemoveShadowformAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* lesser_heal_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("lesser heal on party",
-                              /*P*/ { NextAction("remove shadowform") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastRemoveShadowformAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* flash_heal([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("flash heal",
-                              /*P*/ { NextAction("remove shadowform") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastRemoveShadowformAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* flash_heal_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("flash heal on party",
-                              /*P*/ { NextAction("remove shadowform") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastRemoveShadowformAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* circle_of_healing([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("circle of healing on party",
-                              /*P*/ { NextAction("remove shadowform") },
-                              // /*A*/ { NextAction("flash heal on party") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastRemoveShadowformAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* prayer_of_fortitude_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("prayer of fortitude on party",
-                              /*P*/ { NextAction("remove shadowform") },
-                              /*A*/ { NextAction("power word: fortitude on party") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastRemoveShadowformAction>(1.0f) },
+            /*A*/ { CreateNextAction<CastPowerWordFortitudeOnPartyAction>(1.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* prayer_of_spirit_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("prayer of spirit on party",
-                              /*P*/ { NextAction("remove shadowform") },
-                              /*A*/ { NextAction("divine spirit on party") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastRemoveShadowformAction>(1.0f) },
+            /*A*/ { CreateNextAction<CastDivineSpiritOnPartyAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 };
 

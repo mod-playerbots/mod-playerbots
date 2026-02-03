@@ -13,7 +13,6 @@
 #include "HunterTriggers.h"
 #include "MarksmanshipHunterStrategy.h"
 #include "NamedObjectContext.h"
-#include "Playerbots.h"
 #include "SurvivalHunterStrategy.h"
 
 class HunterStrategyFactoryInternal : public NamedObjectContext<Strategy>

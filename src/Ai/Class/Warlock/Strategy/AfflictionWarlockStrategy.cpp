@@ -4,7 +4,9 @@
  */
 
 #include "AfflictionWarlockStrategy.h"
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "MovementActions.h"
+#include "WarlockActions.h"
 
 // ===== Action Node Factory =====
 class AfflictionWarlockStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
@@ -27,18 +29,114 @@ public:
     }
 
 private:
-    static ActionNode* corruption(PlayerbotAI*) { return new ActionNode("corruption", {}, {}, {}); }
-    static ActionNode* corruption_on_attacker(PlayerbotAI*) { return new ActionNode("corruption on attacker", {}, {}, {}); }
-    static ActionNode* unstable_affliction(PlayerbotAI*) { return new ActionNode("unstable affliction", {}, {}, {}); }
-    static ActionNode* unstable_affliction_on_attacker(PlayerbotAI*) { return new ActionNode("unstable affliction on attacker", {}, {}, {}); }
-    static ActionNode* haunt(PlayerbotAI*) { return new ActionNode("haunt", {}, {}, {}); }
-    static ActionNode* shadow_bolt(PlayerbotAI*) { return new ActionNode("shadow bolt", {}, {}, {}); }
-    static ActionNode* drain_soul(PlayerbotAI*) { return new ActionNode("drain soul", {}, {}, {}); }
-    static ActionNode* life_tap(PlayerbotAI*) { return new ActionNode("life tap", {}, {}, {}); }
-    static ActionNode* shadowflame(PlayerbotAI*) { return new ActionNode("shadowflame", {}, {}, {}); }
-    static ActionNode* seed_of_corruption_on_attacker(PlayerbotAI*) { return new ActionNode("seed of corruption on attacker", {}, {}, {}); }
-    static ActionNode* seed_of_corruption(PlayerbotAI*) { return new ActionNode("seed of corruption", {}, {}, {}); }
-    static ActionNode* rain_of_fire(PlayerbotAI*) { return new ActionNode("rain of fire", {}, {}, {}); }
+    static ActionNode* corruption(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* corruption_on_attacker(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* unstable_affliction(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* unstable_affliction_on_attacker(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* haunt(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* shadow_bolt(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* drain_soul(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* life_tap(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* shadowflame(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* seed_of_corruption_on_attacker(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* seed_of_corruption(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* rain_of_fire(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
 };
 
 // ===== Single Target Strategy =====
@@ -51,11 +149,11 @@ AfflictionWarlockStrategy::AfflictionWarlockStrategy(PlayerbotAI* botAI) : Gener
 std::vector<NextAction> AfflictionWarlockStrategy::getDefaultActions()
 {
     return {
-       NextAction("corruption", 5.5f),
-       NextAction("unstable affliction", 5.4f),
-       NextAction("haunt", 5.3f),
-       NextAction("shadow bolt", 5.2f),
-       NextAction("shoot", 5.0f)
+       CreateNextAction<CastCorruptionAction>(5.5f),
+       CreateNextAction<CastUnstableAfflictionAction>(5.4f),
+       CreateNextAction<CastHauntAction>(5.3f),
+       CreateNextAction<CastShadowBoltAction>(5.2f),
+       CreateNextAction<CastShootAction>(5.0f)
     };
 }
 
@@ -69,7 +167,7 @@ void AfflictionWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "corruption on attacker",
             {
-                NextAction("corruption on attacker", 19.5f)
+                CreateNextAction<CastCorruptionOnAttackerAction>(19.5f)
             }
         )
     );
@@ -77,7 +175,7 @@ void AfflictionWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "unstable affliction on attacker",
             {
-                NextAction("unstable affliction on attacker", 19.0f)
+                CreateNextAction<CastUnstableAfflictionOnAttackerAction>(19.0f)
             }
         )
     );
@@ -85,7 +183,7 @@ void AfflictionWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "corruption",
             {
-                NextAction("corruption", 18.0f)
+                CreateNextAction<CastCorruptionAction>(18.0f)
             }
         )
     );
@@ -93,7 +191,7 @@ void AfflictionWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "unstable affliction",
             {
-                NextAction("unstable affliction", 17.5f)
+                CreateNextAction<CastUnstableAfflictionAction>(17.5f)
             }
         )
     );
@@ -101,7 +199,7 @@ void AfflictionWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "haunt",
             {
-                NextAction("haunt", 16.5f)
+                CreateNextAction<CastHauntAction>(16.5f)
             }
         )
     );
@@ -111,7 +209,7 @@ void AfflictionWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "shadow trance",
             {
-                NextAction("shadow bolt", 16.0f)
+                CreateNextAction<CastShadowBoltAction>(16.0f)
             }
         )
     );
@@ -119,7 +217,7 @@ void AfflictionWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "target critical health",
             {
-                NextAction("drain soul", 15.5f)
+                CreateNextAction<CastDrainSoulAction>(15.5f)
             }
         )
     );
@@ -129,7 +227,7 @@ void AfflictionWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "life tap glyph buff",
             {
-                NextAction("life tap", 29.5f)
+                CreateNextAction<CastLifeTapAction>(29.5f)
             }
         )
     );
@@ -137,7 +235,7 @@ void AfflictionWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "life tap",
             {
-                NextAction("life tap", 5.1f)
+                CreateNextAction<CastLifeTapAction>(5.1f)
             }
         )
     );
@@ -146,7 +244,7 @@ void AfflictionWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "enemy too close for spell",
             {
-                NextAction("flee", 39.0f)
+                CreateNextAction<FleeAction>(39.0f)
             }
         )
     );

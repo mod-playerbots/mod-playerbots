@@ -7,6 +7,7 @@
 
 #include "ArenaTeam.h"
 #include "BudgetValues.h"
+#include "CreateNextAction.h"
 #include "Event.h"
 #include "GuildMgr.h"
 #include "Playerbots.h"
@@ -294,9 +295,10 @@ bool PetitionTurnInAction::isUseful()
            !context->GetValue<TravelTarget*>("travel target")->Get()->isTraveling();
 }
 
+// @TODO: Fix the buy tabard action
 bool BuyTabardAction::Execute(Event)
 {
-    bool canBuy = botAI->DoSpecificAction("buy", Event("buy tabard", "Hitem:5976:"));
+    bool canBuy = botAI->DoSpecificAction(CreateNextAction<BuyTabardAction>(1.0f).factory, Event("buy tabard", "Hitem:5976:"));
     if (canBuy && AI_VALUE2(uint32, "item count", chat->FormatQItem(5976)))
         return true;
 

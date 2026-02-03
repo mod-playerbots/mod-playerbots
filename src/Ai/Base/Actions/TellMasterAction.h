@@ -30,4 +30,26 @@ public:
     bool isUseful() override;
 };
 
+class TellMasterNotEnoughMoneyAction : public TellMasterAction
+{
+public:
+    TellMasterNotEnoughMoneyAction(PlayerbotAI* botAI, std::string const text) : TellMasterAction(botAI, "Not enough money"), text(text) {}
+
+    bool Execute(Event event) override;
+
+private:
+    std::string const text;
+};
+
+class TellMasterNotEnoughReputationAction : public TellMasterAction
+{
+public:
+    TellMasterNotEnoughReputationAction(PlayerbotAI* botAI, std::string const text) : TellMasterAction(botAI, "Not enough reputation"), text(text) {}
+
+    bool Execute(Event event) override;
+
+private:
+    std::string const text;
+};
+
 #endif

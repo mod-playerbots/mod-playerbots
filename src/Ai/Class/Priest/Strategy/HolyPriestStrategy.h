@@ -6,7 +6,6 @@
 #ifndef _PLAYERBOT_HOLYPRIESTSTRATEGY_H
 #define _PLAYERBOT_HOLYPRIESTSTRATEGY_H
 
-#include "GenericPriestStrategyActionNodeFactory.h"
 #include "HealPriestStrategy.h"
 
 class PlayerbotAI;

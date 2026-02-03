@@ -134,6 +134,18 @@ bool CastSpellAction::isUseful()
                      spell);  // && ServerFacade::instance().GetDistance2d(bot, spellTarget) <= (range + combatReach);
 }
 
+bool CastReachTargetSpellAction::isUseful()
+{
+    // do not move while staying
+    if (botAI->HasStrategy("stay", botAI->GetState()))
+    {
+        return false;
+    }
+
+    return ServerFacade::instance().IsDistanceGreaterThan(AI_VALUE2(float, "distance", "current target"),
+                                                (distance + sPlayerbotAIConfig.contactDistance));
+}
+
 CastMeleeSpellAction::CastMeleeSpellAction(PlayerbotAI* botAI, std::string const spell) : CastSpellAction(botAI, spell)
 {
     range = ATTACK_DISTANCE;

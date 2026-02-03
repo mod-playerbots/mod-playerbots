@@ -15,7 +15,7 @@ class ThreatMultiplier : public Multiplier
 public:
     ThreatMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "threat") {}
 
-    float GetValue(Action* action) override;
+    float GetValue(Action& action) override;
 };
 
 class ThreatStrategy : public Strategy
@@ -32,7 +32,7 @@ class FocusMultiplier : public Multiplier
 public:
     FocusMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "focus") {}
 
-    float GetValue(Action* action) override;
+    float GetValue(Action& action) override;
 };
 
 class FocusStrategy : public Strategy

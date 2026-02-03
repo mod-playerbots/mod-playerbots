@@ -7,6 +7,8 @@
 #define _PLAYERBOT_GENERICWARRIORSTRATEGY_H
 
 #include "CombatStrategy.h"
+#include "CreateNextAction.h"
+#include "WarriorActions.h"
 
 class PlayerbotAI;
 
@@ -47,8 +49,7 @@ private:
     static ActionNode* charge([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "charge",
-            /*P*/ { NextAction("battle stance") },
+            /*P*/ { CreateNextAction<CastBattleStanceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -57,8 +58,7 @@ private:
     static ActionNode* mocking_blow([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "mocking blow",
-            /*P*/ { NextAction("battle stance") },
+            /*P*/ { CreateNextAction<CastBattleStanceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -67,8 +67,7 @@ private:
     static ActionNode* overpower([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "overpower",
-            /*P*/ { NextAction("battle stance") },
+            /*P*/ { CreateNextAction<CastBattleStanceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -77,8 +76,7 @@ private:
     static ActionNode* berserker_rage([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "berserker rage",
-            /*P*/ { NextAction("berserker stance") },
+            /*P*/ { CreateNextAction<CastBerserkerStanceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -87,8 +85,7 @@ private:
     static ActionNode* recklessness([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "recklessness",
-            /*P*/ { NextAction("berserker stance") },
+            /*P*/ { CreateNextAction<CastBerserkerStanceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -97,8 +94,7 @@ private:
     static ActionNode* whirlwind([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "whirlwind",
-            /*P*/ { NextAction("berserker stance") },
+            /*P*/ { CreateNextAction<CastBerserkerStanceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -107,8 +103,7 @@ private:
     static ActionNode* pummel([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "pummel",
-            /*P*/ { NextAction("berserker stance") },
+            /*P*/ { CreateNextAction<CastBerserkerStanceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -117,8 +112,7 @@ private:
     static ActionNode* intercept([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "intercept",
-            /*P*/ { NextAction("berserker stance") },
+            /*P*/ { CreateNextAction<CastBerserkerStanceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -127,8 +121,7 @@ private:
     static ActionNode* taunt([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "taunt",
-            /*P*/ { NextAction("defensive stance") },
+            /*P*/ { CreateNextAction<CastDefensiveStanceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -137,8 +130,7 @@ private:
     static ActionNode* revenge([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "revenge",
-            /*P*/ { NextAction("defensive stance") },
+            /*P*/ { CreateNextAction<CastDefensiveStanceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -147,8 +139,7 @@ private:
     static ActionNode* shield_block([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "shield block",
-            /*P*/ { NextAction("defensive stance") },
+            /*P*/ { CreateNextAction<CastDefensiveStanceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -157,8 +148,7 @@ private:
     static ActionNode* disarm([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "disarm",
-            /*P*/ { NextAction("defensive stance") },
+            /*P*/ { CreateNextAction<CastDefensiveStanceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -167,8 +157,7 @@ private:
     static ActionNode* shield_wall([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "shield wall",
-            /*P*/ { NextAction("defensive stance") },
+            /*P*/ { CreateNextAction<CastDefensiveStanceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -177,8 +166,7 @@ private:
     static ActionNode* intervene([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "intervene",
-            /*P*/ { NextAction("defensive stance") },
+            /*P*/ { CreateNextAction<CastDefensiveStanceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -187,8 +175,7 @@ private:
     static ActionNode* mortal_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "mortal strike",
-            /*P*/ { NextAction("battle stance") },
+            /*P*/ { CreateNextAction<CastBattleStanceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -197,8 +184,7 @@ private:
     static ActionNode* retaliation([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "retaliation",
-            /*P*/ { NextAction("battle stance") },
+            /*P*/ { CreateNextAction<CastBattleStanceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -207,8 +193,7 @@ private:
     static ActionNode* shattering_throw([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "shattering throw",
-            /*P*/ { NextAction("battle stance") },
+            /*P*/ { CreateNextAction<CastBattleStanceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );

@@ -4,7 +4,8 @@
  */
 
 #include "MarksmanshipHunterStrategy.h"
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "HunterActions.h"
 
 // ===== Action Node Factory =====
 class MarksmanshipHunterStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
@@ -27,18 +28,113 @@ public:
     }
 
 private:
-    static ActionNode* auto_shot(PlayerbotAI*) { return new ActionNode("auto shot", {}, {}, {}); }
-    static ActionNode* silencing_shot(PlayerbotAI*) { return new ActionNode("silencing shot", {}, {}, {}); }
-    static ActionNode* kill_command(PlayerbotAI*) { return new ActionNode("kill command", {}, {}, {}); }
-    static ActionNode* kill_shot(PlayerbotAI*) { return new ActionNode("kill shot", {}, {}, {}); }
-    static ActionNode* viper_sting(PlayerbotAI*) { return new ActionNode("viper sting", {}, {}, {}); }
-    static ActionNode* serpent_sting(PlayerbotAI*) { return new ActionNode("serpent sting", {}, {}, {}); }
-    static ActionNode* chimera_shot(PlayerbotAI*) { return new ActionNode("chimera shot", {}, {}, {}); }
-    static ActionNode* aimed_shot(PlayerbotAI*) { return new ActionNode("aimed shot", {}, {}, {}); }
-    static ActionNode* arcane_shot(PlayerbotAI*) { return new ActionNode("arcane shot", {}, {}, {}); }
-    static ActionNode* steady_shot(PlayerbotAI*) { return new ActionNode("steady shot", {}, {}, {}); }
-    static ActionNode* multi_shot(PlayerbotAI*) { return new ActionNode("multi shot", {}, {}, {}); }
-    static ActionNode* volley(PlayerbotAI*) { return new ActionNode("volley", {}, {}, {}); }
+    static ActionNode* auto_shot(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* silencing_shot(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* kill_command(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* kill_shot(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* viper_sting(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* serpent_sting(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* chimera_shot(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* aimed_shot(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* arcane_shot(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* steady_shot(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* multi_shot(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* volley(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
 };
 
 // ===== Single Target Strategy =====
@@ -51,14 +147,14 @@ MarksmanshipHunterStrategy::MarksmanshipHunterStrategy(PlayerbotAI* botAI) : Gen
 std::vector<NextAction> MarksmanshipHunterStrategy::getDefaultActions()
 {
     return {
-        NextAction("kill command", 5.8f),
-        NextAction("kill shot", 5.7f),
-        NextAction("serpent sting", 5.6f),
-        NextAction("chimera shot", 5.5f),
-        NextAction("aimed shot", 5.4f),
-        NextAction("arcane shot", 5.3f),
-        NextAction("steady shot", 5.2f),
-        NextAction("auto shot", 5.1f)
+        CreateNextAction<CastKillCommandAction>(5.8f),
+        CreateNextAction<CastKillShotAction>(5.7f),
+        CreateNextAction<CastSerpentStingAction>(5.6f),
+        CreateNextAction<CastChimeraShotAction>(5.5f),
+        CreateNextAction<CastAimedShotAction>(5.4f),
+        CreateNextAction<CastArcaneShotAction>(5.3f),
+        CreateNextAction<CastSteadyShotAction>(5.2f),
+        CreateNextAction<CastAutoShotAction>(5.1f)
     };
 }
 
@@ -71,7 +167,7 @@ void MarksmanshipHunterStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "silencing shot",
             {
-                NextAction("silencing shot", 40.0f)
+                CreateNextAction<CastSilencingShotAction>(40.0f)
             }
         )
     );
@@ -79,7 +175,7 @@ void MarksmanshipHunterStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "kill command",
             {
-                NextAction("kill command", 18.5f)
+                CreateNextAction<CastKillCommandAction>(18.5f)
             }
         )
     );
@@ -87,7 +183,7 @@ void MarksmanshipHunterStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "target critical health",
             {
-                NextAction("kill shot", 18.0f)
+                CreateNextAction<CastKillShotAction>(18.0f)
             }
         )
     );
@@ -95,7 +191,7 @@ void MarksmanshipHunterStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "low mana",
             {
-                NextAction("viper sting", 17.5f)
+                CreateNextAction<CastViperStingAction>(17.5f)
             }
         )
     );
@@ -103,7 +199,7 @@ void MarksmanshipHunterStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "no stings",
             {
-                NextAction("serpent sting", 17.0f)
+                CreateNextAction<CastSerpentStingAction>(17.0f)
             }
         )
     );
@@ -111,7 +207,7 @@ void MarksmanshipHunterStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "serpent sting on attacker",
             {
-                NextAction("serpent sting on attacker", 16.5f)
+                CreateNextAction<CastSerpentStingOnAttackerAction>(16.5f)
             }
         )
     );

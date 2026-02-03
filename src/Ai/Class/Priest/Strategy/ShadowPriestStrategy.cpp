@@ -5,7 +5,9 @@
 
 #include "ShadowPriestStrategy.h"
 
-#include "Playerbots.h"
+#include "CancelChannelAction.h"
+#include "CreateNextAction.h"
+#include "PriestActions.h"
 #include "ShadowPriestStrategyActionNodeFactory.h"
 
 ShadowPriestStrategy::ShadowPriestStrategy(PlayerbotAI* botAI) : GenericPriestStrategy(botAI)
@@ -16,10 +18,10 @@ ShadowPriestStrategy::ShadowPriestStrategy(PlayerbotAI* botAI) : GenericPriestSt
 std::vector<NextAction> ShadowPriestStrategy::getDefaultActions()
 {
     return {
-        NextAction("mind blast", ACTION_DEFAULT + 0.3f),
-        NextAction("mind flay", ACTION_DEFAULT + 0.2f),
-        NextAction("shadow word: death", ACTION_DEFAULT + 0.1f), // cast during movement
-        NextAction("shoot", ACTION_DEFAULT)
+        CreateNextAction<CastMindBlastAction>(ACTION_DEFAULT + 0.3f),
+        CreateNextAction<CastMindFlayAction>(ACTION_DEFAULT + 0.2f),
+        CreateNextAction<CastShadowWordDeathAction>(ACTION_DEFAULT + 0.1f), // cast during movement
+        CreateNextAction<CastShootAction>(ACTION_DEFAULT)
     };
 }
 
@@ -31,7 +33,7 @@ void ShadowPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "shadowform",
             {
-                NextAction("shadowform", ACTION_HIGH)
+                CreateNextAction<CastShadowformAction>(ACTION_HIGH)
             }
         )
     );
@@ -39,7 +41,7 @@ void ShadowPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "low mana",
             {
-                NextAction("dispersion", ACTION_HIGH + 5)
+                CreateNextAction<CastDispersionAction>(ACTION_HIGH + 5.0f)
             }
         )
     );
@@ -47,7 +49,7 @@ void ShadowPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "critical health",
             {
-                NextAction("dispersion", ACTION_HIGH + 5)
+                CreateNextAction<CastDispersionAction>(ACTION_HIGH + 5.0f)
             }
         )
     );
@@ -55,7 +57,7 @@ void ShadowPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "vampiric embrace",
             {
-                NextAction("vampiric embrace", 16.0f)
+                CreateNextAction<CastVampiricEmbraceAction>(16.0f)
             }
         )
     );
@@ -63,7 +65,7 @@ void ShadowPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "silence",
             {
-                NextAction("silence", ACTION_INTERRUPT + 1)
+                CreateNextAction<CastSilenceAction>(ACTION_INTERRUPT + 1.0f)
             }
         )
     );
@@ -71,7 +73,7 @@ void ShadowPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "silence on enemy healer",
             {
-                NextAction("silence on enemy healer", ACTION_INTERRUPT)
+                CreateNextAction<CastSilenceOnEnemyHealerAction>(ACTION_INTERRUPT)
             }
         )
     );
@@ -83,7 +85,7 @@ void ShadowPriestAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "shadow word: pain on attacker",
             {
-                NextAction("shadow word: pain on attacker", ACTION_NORMAL + 5)
+                CreateNextAction<CastPowerWordPainOnAttackerAction>(ACTION_NORMAL + 5.0f)
             }
         )
     );
@@ -91,7 +93,7 @@ void ShadowPriestAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "vampiric touch on attacker",
             {
-                NextAction("vampiric touch on attacker", ACTION_NORMAL + 4)
+                CreateNextAction<CastVampiricTouchOnAttackerAction>(ACTION_NORMAL + 4.0f)
             }
         )
     );
@@ -99,7 +101,7 @@ void ShadowPriestAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "mind sear channel check",
             {
-                NextAction("cancel channel", ACTION_HIGH + 5)
+                CreateNextAction<CancelChannelAction>(ACTION_HIGH + 5.0f)
             }
         )
     );
@@ -107,7 +109,7 @@ void ShadowPriestAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium aoe",
             {
-                NextAction("mind sear", ACTION_HIGH + 4)
+                CreateNextAction<CastMindSearAction>(ACTION_HIGH + 4.0f)
             }
         )
     );
@@ -119,7 +121,7 @@ void ShadowPriestDebuffStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "vampiric touch",
             {
-                NextAction("vampiric touch", ACTION_HIGH + 3)
+                CreateNextAction<CastVampiricTouchAction>(ACTION_HIGH + 3.0f)
             }
         )
     );
@@ -127,7 +129,7 @@ void ShadowPriestDebuffStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "devouring plague",
             {
-                NextAction("devouring plague", ACTION_HIGH + 2)
+                CreateNextAction<CastDevouringPlagueAction>(ACTION_HIGH + 2.0f)
             }
         )
     );
@@ -135,7 +137,7 @@ void ShadowPriestDebuffStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "shadow word: pain",
             {
-                NextAction("shadow word: pain", ACTION_HIGH + 1)
+                CreateNextAction<CastPowerWordPainAction>(ACTION_HIGH + 1.0f)
             }
         )
     );

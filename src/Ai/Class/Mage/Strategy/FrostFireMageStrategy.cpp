@@ -4,7 +4,8 @@
  */
 
 #include "FrostFireMageStrategy.h"
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "MageActions.h"
 
 // ===== Action Node Factory =====
 class FrostFireMageStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
@@ -22,13 +23,69 @@ public:
     }
 
 private:
-    static ActionNode* frostfire_bolt(PlayerbotAI*) { return new ActionNode("frostfire bolt", {}, {}, {}); }
-    static ActionNode* fire_blast(PlayerbotAI*) { return new ActionNode("fire blast", {}, {}, {}); }
-    static ActionNode* pyroblast(PlayerbotAI*) { return new ActionNode("pyroblast", {}, {}, {}); }
-    static ActionNode* combustion(PlayerbotAI*) { return new ActionNode("combustion", {}, {}, {}); }
-    static ActionNode* icy_veins(PlayerbotAI*) { return new ActionNode("icy veins", {}, {}, {}); }
-    static ActionNode* scorch(PlayerbotAI*) { return new ActionNode("scorch", {}, {}, {}); }
-    static ActionNode* living_bomb(PlayerbotAI*) { return new ActionNode("living bomb", {}, {}, {}); }
+    static ActionNode* frostfire_bolt(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* fire_blast(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* pyroblast(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* combustion(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* icy_veins(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* scorch(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* living_bomb(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
 };
 
 // ===== Single Target Strategy =====
@@ -41,9 +98,9 @@ FrostFireMageStrategy::FrostFireMageStrategy(PlayerbotAI* botAI) : GenericMageSt
 std::vector<NextAction> FrostFireMageStrategy::getDefaultActions()
 {
     return {
-        NextAction("frostfire bolt", 5.2f),
-        NextAction("fire blast", 5.1f),  // cast during movement
-        NextAction("shoot", 5.0f)
+        CreateNextAction<CastFrostfireBoltAction>(5.2f),
+        CreateNextAction<CastFireBlastAction>(5.1f),  // cast during movement
+        CreateNextAction<CastShootAction>(5.0f)
     };
 }
 
@@ -57,7 +114,7 @@ void FrostFireMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "improved scorch",
             {
-                NextAction("scorch", 19.0f)
+                CreateNextAction<CastScorchAction>(19.0f)
             }
         )
     );
@@ -65,7 +122,7 @@ void FrostFireMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "living bomb",
             {
-                NextAction("living bomb", 18.5f)
+                CreateNextAction<CastLivingBombAction>(18.5f)
             }
         )
     );
@@ -75,7 +132,7 @@ void FrostFireMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "hot streak",
             {
-                NextAction("pyroblast", 25.0f)
+                CreateNextAction<CastPyroblastAction>(25.0f)
             }
         )
     );

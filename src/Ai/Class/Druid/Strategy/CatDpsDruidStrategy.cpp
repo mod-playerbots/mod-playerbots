@@ -64,7 +64,7 @@ private:
     {
         return new ActionNode(
             /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
-            /*A*/ { NextAction("bear form") },
+            /*A*/ { CreateNextAction<CastBearFormAction>(1.0f) },
             /*C*/ {}
         );
     }

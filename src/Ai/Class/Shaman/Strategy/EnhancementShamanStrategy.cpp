@@ -4,8 +4,10 @@
  */
 
 #include "EnhancementShamanStrategy.h"
-
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "GenericActions.h"
+#include "ReachTargetActions.h"
+#include "ShamanActions.h"
 
 // ===== Action Node Factory =====
 class EnhancementShamanStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
@@ -25,23 +27,78 @@ public:
     }
 
 private:
-    static ActionNode* stormstrike(PlayerbotAI*) { return new ActionNode("stormstrike", {}, {}, {}); }
+    static ActionNode* stormstrike(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
     static ActionNode* lava_lash([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "lava lash",
             /*P*/ {},
-            /*A*/ { NextAction("melee") },
+            /*A*/ { CreateNextAction<MeleeAction>(1.0f) },
             /*C*/ {}
         );
     }
-    static ActionNode* feral_spirit(PlayerbotAI*) { return new ActionNode("feral spirit", {}, {}, {}); }
-    static ActionNode* lightning_bolt(PlayerbotAI*) { return new ActionNode("lightning bolt", {}, {}, {}); }
-    static ActionNode* earth_shock(PlayerbotAI*) { return new ActionNode("earth shock", {}, {}, {}); }
-    static ActionNode* flame_shock(PlayerbotAI*) { return new ActionNode("flame shock", {}, {}, {}); }
-    static ActionNode* shamanistic_rage(PlayerbotAI*) { return new ActionNode("shamanistic rage", {}, {}, {}); }
-    static ActionNode* call_of_the_elements(PlayerbotAI*) { return new ActionNode("call of the elements", {}, {}, {}); }
-    static ActionNode* lightning_shield(PlayerbotAI*) { return new ActionNode("lightning shield", {}, {}, {}); }
+    static ActionNode* feral_spirit(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+    static ActionNode* lightning_bolt(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+    static ActionNode* earth_shock(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+    static ActionNode* flame_shock(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+    static ActionNode* shamanistic_rage(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+    static ActionNode* call_of_the_elements(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+    static ActionNode* lightning_shield(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
 };
 
 // ===== Single Target Strategy =====
@@ -54,11 +111,11 @@ EnhancementShamanStrategy::EnhancementShamanStrategy(PlayerbotAI* botAI) : Gener
 std::vector<NextAction> EnhancementShamanStrategy::getDefaultActions()
 {
     return {
-       NextAction("stormstrike", 5.5f),
-       NextAction("feral spirit", 5.4f),
-       NextAction("earth shock", 5.3f),
-       NextAction("lava lash", 5.2f),
-       NextAction("melee", 5.0f)
+       CreateNextAction<CastStormstrikeAction>(5.5f),
+       CreateNextAction<CastFeralSpiritAction>(5.4f),
+       CreateNextAction<CastEarthShockAction>(5.3f),
+       CreateNextAction<CastLavaLashAction>(5.2f),
+       CreateNextAction<MeleeAction>(5.0f)
     };
 }
 
@@ -72,7 +129,7 @@ void EnhancementShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "call of the elements and enemy within melee",
             {
-                NextAction("call of the elements", 60.0f)
+                CreateNextAction<CastCallOfTheElementsAction>(60.0f)
             }
         )
     );
@@ -82,7 +139,7 @@ void EnhancementShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "spirit walk ready",
             {
-                NextAction("spirit walk", 50.0f)
+                CreateNextAction<CastSpiritWalkAction>(50.0f)
             }
         )
     );
@@ -92,7 +149,7 @@ void EnhancementShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "enemy out of melee",
             {
-                NextAction("reach melee", 40.0f)
+                CreateNextAction<ReachMeleeAction>(40.0f)
             }
         )
     );
@@ -100,7 +157,7 @@ void EnhancementShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "maelstrom weapon 5",
             {
-                NextAction("lightning bolt", 20.0f)
+                CreateNextAction<CastLightningBoltAction>(20.0f)
             }
         )
     );
@@ -108,7 +165,7 @@ void EnhancementShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "maelstrom weapon 4",
             {
-                NextAction("lightning bolt", 19.5f)
+                CreateNextAction<CastLightningBoltAction>(19.5f)
             }
         )
     );
@@ -116,7 +173,7 @@ void EnhancementShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "flame shock",
             {
-                NextAction("flame shock", 19.0f)
+                CreateNextAction<CastFlameShockAction>(19.0f)
             }
         )
     );
@@ -124,7 +181,7 @@ void EnhancementShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "lightning shield",
             {
-                NextAction("lightning shield", 18.5f)
+                CreateNextAction<CastLightningShieldAction>(18.5f)
             }
         )
     );
@@ -134,7 +191,7 @@ void EnhancementShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "medium mana",
             {
-                NextAction("shamanistic rage", 23.0f)
+                CreateNextAction<CastShamanisticRageAction>(23.0f)
             }
         )
     );
@@ -142,7 +199,7 @@ void EnhancementShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "low health",
             {
-                NextAction("shamanistic rage", 23.0f)
+                CreateNextAction<CastShamanisticRageAction>(23.0f)
             }
         )
     );

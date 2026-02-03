@@ -5,7 +5,10 @@
 
 #include "PriestNonCombatStrategy.h"
 
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "GenericActions.h"
+#include "ImbueAction.h"
+#include "PriestActions.h"
 #include "PriestNonCombatStrategyActionNodeFactory.h"
 
 PriestNonCombatStrategy::PriestNonCombatStrategy(PlayerbotAI* botAI) : NonCombatStrategy(botAI)
@@ -18,36 +21,87 @@ void PriestNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     NonCombatStrategy::InitTriggers(triggers);
 
     triggers.push_back(
-        new TriggerNode("inner fire",{ NextAction("inner fire", 10.0f) }));
-    triggers.push_back(new TriggerNode(
-        "party member dead",{ NextAction("remove shadowform", ACTION_CRITICAL_HEAL + 11),
-                                               NextAction("resurrection", ACTION_CRITICAL_HEAL + 10) }));
-    triggers.push_back(new TriggerNode("often",{ NextAction("apply oil", 1.0f) }));
+        new TriggerNode(
+            "inner fire",
+            {
+                CreateNextAction<CastInnerFireAction>(10.0f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("party member critical health",
-                       { NextAction("renew on party", ACTION_CRITICAL_HEAL + 3),
-                                          NextAction("penance on party", ACTION_CRITICAL_HEAL + 2),
-                                          NextAction("greater heal on party", ACTION_CRITICAL_HEAL + 1) }));
+        new TriggerNode(
+            "party member dead",
+            {
+                CreateNextAction<CastRemoveShadowformAction>(ACTION_CRITICAL_HEAL + 11.0f),
+                CreateNextAction<CastResurrectionAction>(ACTION_CRITICAL_HEAL + 10.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "often",
+            {
+                CreateNextAction<ImbueWithOilAction>(1.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "party member critical health",
+            {
+                CreateNextAction<CastRenewOnPartyAction>(ACTION_CRITICAL_HEAL + 3.0f),
+                CreateNextAction<CastPenanceOnPartyAction>(ACTION_CRITICAL_HEAL + 2.0f),
+                CreateNextAction<CastGreaterHealOnPartyAction>(ACTION_CRITICAL_HEAL + 1.0f)
+            }
+        )
+    );
 
     triggers.push_back(
-        new TriggerNode("party member low health",
-                       { NextAction("renew on party", ACTION_MEDIUM_HEAL + 3),
-                                          NextAction("penance on party", ACTION_MEDIUM_HEAL + 2),
-                                          NextAction("greater heal on party", ACTION_MEDIUM_HEAL + 1) }));
+        new TriggerNode(
+            "party member low health",
+            {
+                CreateNextAction<CastRenewOnPartyAction>(ACTION_MEDIUM_HEAL + 3.0f),
+                CreateNextAction<CastPenanceOnPartyAction>(ACTION_MEDIUM_HEAL + 2.0f),
+                CreateNextAction<CastGreaterHealOnPartyAction>(ACTION_MEDIUM_HEAL + 1.0f)
+            }
+        )
+    );
 
     triggers.push_back(
-        new TriggerNode("party member medium health",
-                       { NextAction("renew on party", ACTION_LIGHT_HEAL + 9),
-                                          NextAction("penance on party", ACTION_LIGHT_HEAL + 8) }));
+        new TriggerNode(
+            "party member medium health",
+            {
+                CreateNextAction<CastRenewOnPartyAction>(ACTION_LIGHT_HEAL + 9.0f),
+                CreateNextAction<CastPenanceOnPartyAction>(ACTION_LIGHT_HEAL + 8.0f)
+            }
+        )
+    );
 
     triggers.push_back(
-        new TriggerNode("party member almost full health",
-                       { NextAction("renew on party", ACTION_LIGHT_HEAL + 3) }));
+        new TriggerNode(
+            "party member almost full health",
+            {
+                CreateNextAction<CastRenewOnPartyAction>(ACTION_LIGHT_HEAL + 3.0f)
+            }
+        )
+    );
 
     triggers.push_back(
-        new TriggerNode("group heal setting",{ NextAction("circle of healing on party", 27.0f) }));
-    triggers.push_back(new TriggerNode("new pet",
-                                      { NextAction("set pet stance", 10.0f) }));
+        new TriggerNode(
+            "group heal setting",
+            {
+                CreateNextAction<CastCircleOfHealingAction>(27.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "new pet",
+            {
+                CreateNextAction<SetPetStanceAction>(10.0f)
+            }
+        )
+    );
 }
 
 void PriestBuffStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -55,25 +109,57 @@ void PriestBuffStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     NonCombatStrategy::InitTriggers(triggers);
 
     triggers.push_back(
-        new TriggerNode("prayer of fortitude on party",
-                       { NextAction("prayer of fortitude on party", 12.0f) }));
+        new TriggerNode(
+            "prayer of fortitude on party",
+            {
+                CreateNextAction<CastPrayerOfFortitudeOnPartyAction>(12.0f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("prayer of spirit on party",
-                       { NextAction("prayer of spirit on party", 14.0f) }));
+        new TriggerNode(
+            "prayer of spirit on party",
+            {
+                CreateNextAction<CastPrayerOfSpiritOnPartyAction>(14.0f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("power word: fortitude on party",
-                       { NextAction("power word: fortitude on party", 11.0f) }));
-    triggers.push_back(new TriggerNode("divine spirit on party",
-                                      { NextAction("divine spirit on party", 13.0f) }));
+        new TriggerNode(
+            "power word: fortitude on party",
+            {
+                CreateNextAction<CastPowerWordFortitudeOnPartyAction>(11.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "divine spirit on party",
+            {
+                CreateNextAction<CastDivineSpiritOnPartyAction>(13.0f)
+            }
+        )
+    );
 }
 
 void PriestShadowResistanceStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     NonCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("shadow protection",
-                                      { NextAction("shadow protection", 12.0f) }));
     triggers.push_back(
-        new TriggerNode("shadow protection on party",
-                       { NextAction("shadow protection on party", 11.0f) }));
+        new TriggerNode(
+            "shadow protection",
+            {
+                CreateNextAction<CastShadowProtectionAction>(12.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "shadow protection on party",
+            {
+                CreateNextAction<CastShadowProtectionOnPartyAction>(11.0f)
+            }
+        )
+    );
 }

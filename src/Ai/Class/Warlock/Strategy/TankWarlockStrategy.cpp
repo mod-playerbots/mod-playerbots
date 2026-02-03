@@ -4,6 +4,8 @@
  */
 
 #include "TankWarlockStrategy.h"
+#include "CreateNextAction.h"
+#include "WarlockActions.h"
 
 // Combat strategy for a Warlock Tank, for certain bosses like Twin Emperors
 // Priority is set to spam Searing Pain and use Shadow Ward on CD
@@ -22,8 +24,23 @@ public:
     }
 
 private:
-    static ActionNode* shadow_ward(PlayerbotAI*) { return new ActionNode("shadow ward", {}, {}, {}); }
-    static ActionNode* searing_pain(PlayerbotAI*) { return new ActionNode("searing pain", {}, {}, {}); }
+    static ActionNode* shadow_ward(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* searing_pain(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
 };
 
 // ===== Warlock Tank Combat Strategy =====
@@ -36,8 +53,8 @@ std::vector<NextAction> TankWarlockStrategy::getDefaultActions()
 {
     // Shadow Ward is the highest priority, Searing Pain next.
     return {
-        NextAction("shadow ward", 27.5f),
-        NextAction("searing pain", 27.0f)
+        CreateNextAction<CastShadowWardAction>(27.5f),
+        CreateNextAction<CastSearingPainAction>(27.0f)
     };
 }
 

@@ -4,8 +4,6 @@
 #include "Action.h"
 #include "AttackAction.h"
 #include "PlayerbotAI.h"
-#include "Playerbots.h"
-#include "AzjolNerubTriggers.h"
 
 class AttackWebWrapAction : public AttackAction
 {

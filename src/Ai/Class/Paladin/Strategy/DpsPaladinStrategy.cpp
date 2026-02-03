@@ -4,9 +4,10 @@
  */
 
 #include "DpsPaladinStrategy.h"
-
-#include "Playerbots.h"
-#include "Strategy.h"
+#include "CreateNextAction.h"
+#include "GenericActions.h"
+#include "PaladinActions.h"
+#include "ReachTargetActions.h"
 
 class DpsPaladinStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -30,9 +31,8 @@ private:
     static ActionNode* seal_of_corruption([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "seal of corruption",
             /*P*/ {},
-            /*A*/ { NextAction("seal of vengeance") },
+            /*A*/ { CreateNextAction<CastSealOfVengeanceAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -40,9 +40,8 @@ private:
     static ActionNode* seal_of_vengeance([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "seal of vengeance",
             /*P*/ {},
-            /*A*/ { NextAction("seal of command") },
+            /*A*/ { CreateNextAction<CastSealOfCommandAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -50,9 +49,8 @@ private:
     static ActionNode* seal_of_command([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "seal of command",
             /*P*/ {},
-            /*A*/ { NextAction("seal of righteousness") },
+            /*A*/ { CreateNextAction<CastSealOfRighteousnessAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -60,9 +58,8 @@ private:
     static ActionNode* blessing_of_might([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "blessing of might",
             /*P*/ {},
-            /*A*/ { NextAction("blessing of kings") },
+            /*A*/ { CreateNextAction<CastBlessingOfKingsAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -70,7 +67,6 @@ private:
     static ActionNode* crusader_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "crusader strike",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -80,9 +76,8 @@ private:
     static ActionNode* repentance([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "repentance",
             /*P*/ {},
-            /*A*/ { NextAction("hammer of justice") },
+            /*A*/ { CreateNextAction<CastHammerOfJusticeAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -90,9 +85,8 @@ private:
     static ActionNode* repentance_on_enemy_healer([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "repentance on enemy healer",
             /*P*/ {},
-            /*A*/ { NextAction("hammer of justice on enemy healer") },
+            /*A*/ { CreateNextAction<CastHammerOfJusticeOnEnemyHealerAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -100,9 +94,8 @@ private:
     static ActionNode* repentance_on_snare_target([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "repentance on snare target",
             /*P*/ {},
-            /*A*/ { NextAction("hammer of justice on snare target") },
+            /*A*/ { CreateNextAction<CastHammerOfJusticeSnareAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -110,9 +103,8 @@ private:
     static ActionNode* sanctity_aura([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "sanctity aura",
             /*P*/ {},
-            /*A*/ { NextAction("retribution aura") },
+            /*A*/ { CreateNextAction<CastRetributionAuraAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -120,9 +112,8 @@ private:
     static ActionNode* retribution_aura([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "retribution aura",
             /*P*/ {},
-            /*A*/ { NextAction("devotion aura") },
+            /*A*/ { CreateNextAction<CastDevotionAuraAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -130,9 +121,8 @@ private:
     static ActionNode* repentance_or_shield([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "repentance",
             /*P*/ {},
-            /*A*/ { NextAction("divine shield") },
+            /*A*/ { CreateNextAction<CastDivineShieldAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -146,12 +136,12 @@ DpsPaladinStrategy::DpsPaladinStrategy(PlayerbotAI* botAI) : GenericPaladinStrat
 std::vector<NextAction> DpsPaladinStrategy::getDefaultActions()
 {
     return {
-        NextAction("hammer of wrath", ACTION_DEFAULT + 0.6f),
-        NextAction("judgement of wisdom", ACTION_DEFAULT + 0.5f),
-        NextAction("crusader strike", ACTION_DEFAULT + 0.4f),
-        NextAction("divine storm", ACTION_DEFAULT + 0.3f),
-        NextAction("consecration", ACTION_DEFAULT + 0.1f),
-        NextAction("melee", ACTION_DEFAULT)
+        CreateNextAction<CastHammerOfWrathAction>( ACTION_DEFAULT + 0.6f),
+        CreateNextAction<CastJudgementOfWisdomAction>( ACTION_DEFAULT + 0.5f),
+        CreateNextAction<CastCrusaderStrikeAction>( ACTION_DEFAULT + 0.4f),
+        CreateNextAction<CastDivineStormAction>( ACTION_DEFAULT + 0.3f),
+        CreateNextAction<CastConsecrationAction>( ACTION_DEFAULT + 0.1f),
+        CreateNextAction<MeleeAction>(ACTION_DEFAULT)
     };
 }
 
@@ -163,7 +153,7 @@ void DpsPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "art of war",
             {
-                NextAction("exorcism", ACTION_DEFAULT + 0.2f)
+                CreateNextAction<CastExorcismAction>(ACTION_DEFAULT + 0.2f)
             }
         )
     );
@@ -171,7 +161,7 @@ void DpsPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "seal",
             {
-                NextAction("seal of corruption", ACTION_HIGH)
+                CreateNextAction<CastSealOfCorruptionAction>(ACTION_HIGH)
             }
         )
     );
@@ -179,7 +169,7 @@ void DpsPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "low mana",
             {
-                NextAction("seal of wisdom", ACTION_HIGH + 5)
+                CreateNextAction<CastSealOfWisdomAction>(ACTION_HIGH + 5)
             }
         )
     );
@@ -188,7 +178,7 @@ void DpsPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "avenging wrath",
             {
-                NextAction("avenging wrath", ACTION_HIGH + 2)
+                CreateNextAction<CastAvengingWrathAction>(ACTION_HIGH + 2)
             }
         )
     );
@@ -196,8 +186,8 @@ void DpsPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium aoe",
             {
-                NextAction("divine storm", ACTION_HIGH + 4),
-                NextAction("consecration", ACTION_HIGH + 3)
+                CreateNextAction<CastDivineStormAction>(ACTION_HIGH + 4),
+                CreateNextAction<CastConsecrationAction>(ACTION_HIGH + 3)
             }
         )
     );
@@ -205,7 +195,7 @@ void DpsPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "enemy out of melee",
             {
-                NextAction("reach melee", ACTION_HIGH + 1)
+                CreateNextAction<ReachMeleeAction>(ACTION_HIGH + 1)
             }
         )
     );

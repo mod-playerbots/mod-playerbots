@@ -5,6 +5,7 @@
 
 #include "GuildManagementActions.h"
 
+#include "CreateNextAction.h"
 #include "GuildMgr.h"
 #include "GuildPackets.h"
 #include "Playerbots.h"
@@ -155,7 +156,7 @@ bool GuildManageNearbyAction::Execute(Event)
             {
                 BroadcastHelper::BroadcastGuildMemberPromotion(botAI, bot, player);
 
-                botAI->DoSpecificAction("guild promote", Event("guild management", guid), true);
+                botAI->DoSpecificAction(CreateNextAction<GuildPromoteAction>(1.0f).factory, Event("guild management", guid), true);
                 continue;
             }
 
@@ -163,7 +164,7 @@ bool GuildManageNearbyAction::Execute(Event)
             {
                 BroadcastHelper::BroadcastGuildMemberDemotion(botAI, bot, player);
 
-                botAI->DoSpecificAction("guild demote", Event("guild management", guid), true);
+                botAI->DoSpecificAction(CreateNextAction<GuildDemoteAction>(1.0f).factory, Event("guild management", guid), true);
                 continue;
             }
 
@@ -271,7 +272,7 @@ bool GuildManageNearbyAction::Execute(Event)
                     bot->Say(line, (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));*/
         }
 
-        if (botAI->DoSpecificAction("guild invite", Event("guild management", guid), true))
+        if (botAI->DoSpecificAction(CreateNextAction<GuildInviteAction>(1.0f).factory, Event("guild management", guid), true))
         {
             if (sPlayerbotAIConfig.inviteChat)
                 return true;

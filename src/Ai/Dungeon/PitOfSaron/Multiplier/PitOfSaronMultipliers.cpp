@@ -5,14 +5,14 @@
 #include "MovementActions.h"
 #include "PitOfSaronTriggers.h"
 
-float IckAndKrickMultiplier::GetValue(Action* action)
+float IckAndKrickMultiplier::GetValue(Action& action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "ick");
     if (!boss)
         return 1.0f;
 
     // Allow the IckAndKrickAction to run
-    if (dynamic_cast<IckAndKrickAction*>(action))
+    if (dynamic_cast<IckAndKrickAction*>(&action))
         return 1.0f;
 
     if (boss->HasUnitState(UNIT_STATE_CASTING) && (boss->FindCurrentSpellBySpellId(SPELL_POISON_NOVA_POS) || boss->FindCurrentSpellBySpellId(SPELL_POISON_NOVA_POS_HC)) && bot->GetExactDist2d(boss) < 20.0f)
@@ -27,7 +27,7 @@ float IckAndKrickMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float GarfrostMultiplier::GetValue(Action*)
+float GarfrostMultiplier::GetValue(Action&)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "garfrost");
     if (!boss)

@@ -5,9 +5,12 @@
 
 #include "InviteToGroupAction.h"
 
+#include "AcceptInvitationAction.h"
 #include "BroadcastHelper.h"
+#include "CreateNextAction.h"
 #include "Event.h"
 #include "GuildMgr.h"
+#include "LeaveGroupAction.h"
 #include "PlayerbotOperations.h"
 #include "Playerbots.h"
 #include "PlayerbotWorldThreadProcessor.h"
@@ -268,7 +271,7 @@ bool JoinGroupAction::Execute(Event event)
         if (botAI->HasRealPlayerMaster())
             return false;
 
-        if (!botAI->DoSpecificAction("leave", event, true))
+        if (!botAI->DoSpecificAction(CreateNextAction<LeaveGroupAction>(1.0f).factory, event, true))
             return false;
     }
 
@@ -417,7 +420,7 @@ bool LfgAction::Execute(Event event)
         if (botAI->HasRealPlayerMaster())
             return false;
 
-        if (!botAI->DoSpecificAction("leave", event, true))
+        if (!botAI->DoSpecificAction(CreateNextAction<LeaveGroupAction>(1.0f).factory, event, true))
             return false;
     }
 
@@ -426,7 +429,7 @@ bool LfgAction::Execute(Event event)
     if (invite)
     {
         Event acceptEvent("accept invitation", requester ? requester->GetGUID() : ObjectGuid::Empty);
-        if (!botAI->DoSpecificAction("accept invitation", acceptEvent, true))
+        if (!botAI->DoSpecificAction(CreateNextAction<AcceptInvitationAction>(1.0f).factory, acceptEvent, true))
             return false;
 
         std::map<std::string, std::string> placeholders;
@@ -439,17 +442,11 @@ bool LfgAction::Execute(Event event)
             out << "Joining as " << placeholders["%role"] << ", " << placeholders["%spotsleft"] << " "
                 << placeholders["%role"] << " spots left.";
             botAI->TellMasterNoFacing(out.str());
-
-            //botAI->DoSpecificAction("autogear");
-            //botAI->DoSpecificAction("maintenance");
         }
         else
         {
             out << "Joining as " << placeholders["%role"] << ".";
             botAI->TellMasterNoFacing(out.str());
-
-            //botAI->DoSpecificAction("autogear");
-            //botAI->DoSpecificAction("maintenance");
         }
 
         return true;

@@ -5,9 +5,11 @@
 
 #include "GenericPaladinNonCombatStrategy.h"
 
+#include "CreateNextAction.h"
 #include "GenericPaladinStrategyActionNodeFactory.h"
-#include "Playerbots.h"
 #include "AiFactory.h"
+#include "ImbueAction.h"
+#include "PaladinActions.h"
 
 GenericPaladinNonCombatStrategy::GenericPaladinNonCombatStrategy(PlayerbotAI* botAI) : NonCombatStrategy(botAI)
 {
@@ -18,15 +20,72 @@ void GenericPaladinNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& tr
 {
     NonCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("party member dead", { NextAction("redemption", ACTION_CRITICAL_HEAL + 10) }));
-    triggers.push_back(new TriggerNode("party member almost full health", { NextAction("flash of light on party", 25.0f) }));
-    triggers.push_back(new TriggerNode("party member medium health", { NextAction("flash of light on party", 26.0f) }));
-    triggers.push_back(new TriggerNode("party member low health", { NextAction("holy light on party", 27.0f) }));
-    triggers.push_back(new TriggerNode("party member critical health", { NextAction("holy light on party", 28.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "party member dead",
+            {
+                CreateNextAction<CastRedemptionAction>(ACTION_CRITICAL_HEAL + 10.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "party member almost full health",
+            {
+                CreateNextAction<CastFlashOfLightOnPartyAction>(25.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "party member medium health",
+            {
+                CreateNextAction<CastFlashOfLightOnPartyAction>(26.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "party member low health",
+            {
+                CreateNextAction<CastHolyLightOnPartyAction>(27.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "party member critical health",
+            {
+                CreateNextAction<CastHolyLightOnPartyAction>(28.0f)
+            }
+        )
+    );
 
-    int specTab = AiFactory::GetPlayerSpecTab(botAI->GetBot());
-    if (specTab == 0 || specTab == 1) // Holy or Protection
-        triggers.push_back(new TriggerNode("often", { NextAction("apply oil", 1.0f) }));
-    if (specTab == 2) // Retribution
-        triggers.push_back(new TriggerNode("often", { NextAction("apply stone", 1.0f) }));
+    const uint8_t specTab = AiFactory::GetPlayerSpecTab(botAI->GetBot());
+
+    // Holy or Protection
+    if (specTab == PALADIN_TAB_HOLY || specTab == PALADIN_TAB_PROTECTION)
+    {
+        triggers.push_back(
+            new TriggerNode(
+                "often",
+                {
+                    CreateNextAction<ImbueWithOilAction>(1.0f)
+                }
+            )
+        );
+    }
+
+    // Retribution
+    if (specTab == PALADIN_TAB_RETRIBUTION)
+    {
+        triggers.push_back(
+            new TriggerNode(
+                "often",
+                {
+                    CreateNextAction<ImbueWithStoneAction>(1.0f)
+                }
+            )
+        );
+    }
 }

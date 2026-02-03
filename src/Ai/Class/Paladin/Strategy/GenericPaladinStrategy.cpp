@@ -5,7 +5,9 @@
 
 #include "GenericPaladinStrategy.h"
 
+#include "CreateNextAction.h"
 #include "GenericPaladinStrategyActionNodeFactory.h"
+#include "PaladinActions.h"
 
 GenericPaladinStrategy::GenericPaladinStrategy(PlayerbotAI* botAI) : CombatStrategy(botAI)
 {
@@ -16,71 +18,154 @@ void GenericPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     CombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("critical health", { NextAction("divine shield",
-        ACTION_HIGH + 5) }));
     triggers.push_back(
-        new TriggerNode("hammer of justice interrupt",
-                        { NextAction("hammer of justice", ACTION_INTERRUPT) }));
-    triggers.push_back(new TriggerNode(
-        "hammer of justice on enemy healer",
-        { NextAction("hammer of justice on enemy healer", ACTION_INTERRUPT) }));
-    triggers.push_back(new TriggerNode(
-        "hammer of justice on snare target",
-        { NextAction("hammer of justice on snare target", ACTION_INTERRUPT) }));
-    triggers.push_back(new TriggerNode(
-        "critical health", { NextAction("lay on hands", ACTION_EMERGENCY) }));
+        new TriggerNode(
+            "critical health",
+            {
+                CreateNextAction<CastDivineShieldAction>(ACTION_HIGH + 5.0f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("party member critical health",
-                        { NextAction("lay on hands on party", ACTION_EMERGENCY + 1) }));
-    triggers.push_back(new TriggerNode(
-        "protect party member",
-        { NextAction("blessing of protection on party", ACTION_EMERGENCY + 2) }));
+        new TriggerNode(
+            "hammer of justice interrupt",
+            {
+                CreateNextAction<CastHammerOfJusticeAction>(ACTION_INTERRUPT)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("high mana", { NextAction("divine plea", ACTION_HIGH) }));
+        new TriggerNode(
+            "hammer of justice on enemy healer",
+            {
+                CreateNextAction<CastHammerOfJusticeOnEnemyHealerAction>(ACTION_INTERRUPT)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "hammer of justice on snare target",
+            {
+                CreateNextAction<CastHammerOfJusticeSnareAction>(ACTION_INTERRUPT)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "critical health",
+            {
+                CreateNextAction<CastLayOnHandsAction>(ACTION_EMERGENCY)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "party member critical health",
+            {
+                CreateNextAction<CastLayOnHandsOnPartyAction>(ACTION_EMERGENCY + 1.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "protect party member",
+            {
+                CreateNextAction<CastBlessingOfProtectionProtectAction>(ACTION_EMERGENCY + 2.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "high mana",
+            {
+                CreateNextAction<CastDivinePleaAction>(ACTION_HIGH)
+            }
+        )
+    );
 }
 
 void PaladinCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode(
-        "cleanse cure disease", { NextAction("cleanse disease", ACTION_DISPEL + 2) }));
     triggers.push_back(
-        new TriggerNode("cleanse party member cure disease",
-                        { NextAction("cleanse disease on party", ACTION_DISPEL + 1) }));
-    triggers.push_back(new TriggerNode(
-        "cleanse cure poison", { NextAction("cleanse poison", ACTION_DISPEL + 2) }));
+        new TriggerNode(
+            "cleanse cure disease",
+            {
+                CreateNextAction<CastCleanseDiseaseAction>(ACTION_DISPEL + 2.0f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("cleanse party member cure poison",
-                        { NextAction("cleanse poison on party", ACTION_DISPEL + 1) }));
-    triggers.push_back(new TriggerNode(
-        "cleanse cure magic", { NextAction("cleanse magic", ACTION_DISPEL + 2) }));
+        new TriggerNode(
+            "cleanse party member cure disease",
+            {
+                CreateNextAction<CastCleanseDiseaseOnPartyAction>(ACTION_DISPEL + 1.0f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("cleanse party member cure magic",
-                        { NextAction("cleanse magic on party", ACTION_DISPEL + 1) }));
+        new TriggerNode(
+            "cleanse cure poison",
+            {
+                CreateNextAction<CastCleansePoisonAction>(ACTION_DISPEL + 2.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "cleanse party member cure poison",
+            {
+                CreateNextAction<CastCleansePoisonOnPartyAction>(ACTION_DISPEL + 1.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "cleanse cure magic",
+            {
+                CreateNextAction<CastCleanseMagicAction>(ACTION_DISPEL + 2.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "cleanse party member cure magic",
+            {
+                CreateNextAction<CastCleanseMagicOnPartyAction>(ACTION_DISPEL + 1.0f)
+            }
+        )
+    );
 }
 
 void PaladinBoostStrategy::InitTriggers(std::vector<TriggerNode*>&)
 {
 
-    // triggers.push_back(new TriggerNode("divine favor", { NextAction("divine favor",
-    // ACTION_HIGH + 1) }));
 }
 
 void PaladinCcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("turn undead", { NextAction("turn undead", ACTION_HIGH + 1) }));
+        new TriggerNode(
+            "turn undead",
+            {
+                CreateNextAction<CastTurnUndeadAction>(ACTION_HIGH + 1.0f)
+            }
+        )
+    );
 }
 
 void PaladinHealerDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("healer should attack",
-                        {
-                            NextAction("hammer of wrath", ACTION_DEFAULT + 0.6f),
-                            NextAction("holy shock", ACTION_DEFAULT + 0.5f),
-                            NextAction("shield of righteousness", ACTION_DEFAULT + 0.4f),
-                            NextAction("judgement of light", ACTION_DEFAULT + 0.3f),
-                            NextAction("consecration", ACTION_DEFAULT + 0.2f),
-                            NextAction("exorcism", ACTION_DEFAULT+ 0.1f),
-                            }));
+        new TriggerNode(
+            "healer should attack",
+            {
+                CreateNextAction<CastHammerOfWrathAction>(ACTION_DEFAULT + 0.6f),
+                CreateNextAction<CastHolyShockAction>(ACTION_DEFAULT + 0.5f),
+                CreateNextAction<ShieldOfRighteousnessAction>(ACTION_DEFAULT + 0.4f),
+                CreateNextAction<CastJudgementOfLightAction>(ACTION_DEFAULT + 0.3f),
+                CreateNextAction<CastConsecrationAction>(ACTION_DEFAULT + 0.2f),
+                CreateNextAction<CastExorcismAction>(ACTION_DEFAULT + 0.1f),
+            }
+        )
+    );
 }

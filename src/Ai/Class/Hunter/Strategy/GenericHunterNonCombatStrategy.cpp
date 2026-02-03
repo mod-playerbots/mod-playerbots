@@ -4,8 +4,9 @@
  */
 
 #include "GenericHunterNonCombatStrategy.h"
-
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "HunterActions.h"
+#include "ImbueAction.h"
 
 class GenericHunterNonCombatStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -20,18 +21,20 @@ public:
 private:
     static ActionNode* rapid_fire([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("rapid fire",
-                              /*P*/ {},
-                              /*A*/ { NextAction("readiness")},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastReadinessAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* aspect_of_the_pack([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("aspect of the pack",
-                              /*P*/ {},
-                              /*A*/ { NextAction("aspect of the cheetah")},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastAspectOfTheCheetahAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 };
 
@@ -48,7 +51,7 @@ void GenericHunterNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& tri
         new TriggerNode(
             "trueshot aura",
             {
-                NextAction("trueshot aura", 2.0f)
+                CreateNextAction<CastTrueshotAuraAction>(2.0f)
             }
         )
     );
@@ -56,8 +59,8 @@ void GenericHunterNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& tri
         new TriggerNode(
             "often",
             {
-                NextAction("apply stone", 1.0f),
-                NextAction("apply oil", 1.0f),
+                CreateNextAction<ImbueWithStoneAction>(1.0f),
+                CreateNextAction<ImbueWithOilAction>(1.0f),
             }
         )
     );
@@ -65,7 +68,7 @@ void GenericHunterNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& tri
         new TriggerNode(
             "low ammo",
             {
-                NextAction("say::low ammo", ACTION_NORMAL)
+                CreateNextAction("say::low ammo", ACTION_NORMAL)
             }
         )
     );
@@ -73,7 +76,7 @@ void GenericHunterNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& tri
         new TriggerNode(
             "no track",
             {
-                NextAction("track humanoids", ACTION_NORMAL)
+                CreateNextAction<CastBuffSpellAction>(ACTION_NORMAL)
             }
         )
     );
@@ -81,7 +84,7 @@ void GenericHunterNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& tri
         new TriggerNode(
             "no ammo",
             {
-                NextAction("equip upgrades", ACTION_HIGH + 1)
+                CreateNextAction<EquipUpgradesAction>(ACTION_HIGH + 1.0f)
             }
         )
     );
@@ -93,7 +96,7 @@ void HunterPetStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "no pet",
             {
-                NextAction("call pet", 60.0f)
+                CreateNextAction<CastCallPetAction>(60.0f)
             }
         )
     );
@@ -101,7 +104,7 @@ void HunterPetStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "has pet",
             {
-                NextAction("toggle pet spell", 60.0f)
+                CreateNextAction<TogglePetSpellAutoCastAction>(60.0f)
             }
         )
     );
@@ -109,7 +112,7 @@ void HunterPetStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "new pet",
             {
-                NextAction("set pet stance", 60.0f)
+                CreateNextAction<SetPetStanceAction>(60.0f)
             }
         )
     );
@@ -117,7 +120,7 @@ void HunterPetStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "pet not happy",
             {
-                NextAction("feed pet", 60.0f)
+                CreateNextAction<FeedPetAction>(60.0f)
             }
         )
     );
@@ -125,7 +128,7 @@ void HunterPetStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "hunters pet medium health",
             {
-                NextAction("mend pet", 60.0f)
+                CreateNextAction<CastMendPetAction>(60.0f)
             }
         )
     );
@@ -133,7 +136,7 @@ void HunterPetStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "hunters pet dead",
             {
-                NextAction("revive pet", 60.0f)
+                CreateNextAction<CastRevivePetAction>(60.0f)
             }
         )
     );

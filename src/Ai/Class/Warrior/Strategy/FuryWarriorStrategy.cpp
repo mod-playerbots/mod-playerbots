@@ -4,6 +4,9 @@
  */
 
 #include "FuryWarriorStrategy.h"
+#include "CreateNextAction.h"
+#include "GenericActions.h"
+#include "WarriorActions.h"
 
 class FuryWarriorStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -21,9 +24,8 @@ private:
     static ActionNode* charge(PlayerbotAI*)
     {
         return new ActionNode(
-            "charge",
             /*P*/ {},
-            /*A*/ { NextAction("intercept" )},
+            /*A*/ { CreateNextAction<CastInterceptAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -31,9 +33,8 @@ private:
     static ActionNode* intercept(PlayerbotAI*)
     {
         return new ActionNode(
-            "intercept",
             /*P*/ {},
-            /*A*/ { NextAction("reach melee" )},
+            /*A*/ { CreateNextAction<ReachMeleeAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -41,9 +42,8 @@ private:
     static ActionNode* piercing_howl(PlayerbotAI*)
     {
         return new ActionNode(
-            "piercing howl",
             /*P*/ {},
-            /*A*/ { NextAction("hamstring" )},
+            /*A*/ { CreateNextAction<CastHamstringAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -51,9 +51,8 @@ private:
     static ActionNode* pummel(PlayerbotAI*)
     {
         return new ActionNode(
-            "pummel",
             /*P*/ {},
-            /*A*/ { NextAction("intercept" )},
+            /*A*/ { CreateNextAction<CastInterceptAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -61,7 +60,6 @@ private:
     static ActionNode* enraged_regeneration(PlayerbotAI*)
     {
         return new ActionNode(
-            "enraged regeneration",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -77,11 +75,11 @@ FuryWarriorStrategy::FuryWarriorStrategy(PlayerbotAI* botAI) : GenericWarriorStr
 std::vector<NextAction> FuryWarriorStrategy::getDefaultActions()
 {
     return {
-        NextAction("bloodthirst", ACTION_DEFAULT + 0.5f),
-        NextAction("whirlwind", ACTION_DEFAULT + 0.4f),
-        NextAction("sunder armor", ACTION_DEFAULT + 0.3f),
-        NextAction("execute", ACTION_DEFAULT + 0.2f),
-        NextAction("melee", ACTION_DEFAULT)
+        CreateNextAction<CastBloodthirstAction>(ACTION_DEFAULT + 0.5f),
+        CreateNextAction<CastWhirlwindAction>(ACTION_DEFAULT + 0.4f),
+        CreateNextAction<CastSunderArmorAction>(ACTION_DEFAULT + 0.3f),
+        CreateNextAction<CastExecuteAction>(ACTION_DEFAULT + 0.2f),
+        CreateNextAction<MeleeAction>(ACTION_DEFAULT)
     };
 }
 
@@ -93,14 +91,14 @@ void FuryWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "enemy out of melee",
             {
-                NextAction("charge", ACTION_MOVE + 9)
+                CreateNextAction<CastChargeAction>(ACTION_MOVE + 9.0f)
             }
         )
     );
     triggers.push_back(
         new TriggerNode(
             "berserker stance", {
-                NextAction("berserker stance", ACTION_HIGH + 9)
+                CreateNextAction<CastBerserkerStanceAction>(ACTION_HIGH + 9)
             }
         )
     );
@@ -108,7 +106,7 @@ void FuryWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "battle shout",
             {
-                NextAction("battle shout", ACTION_HIGH + 8)
+                CreateNextAction<CastBattleShoutAction>(ACTION_HIGH + 8.0f)
             }
         )
     );
@@ -116,7 +114,7 @@ void FuryWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "pummel on enemy healer",
             {
-                NextAction("pummel on enemy healer", ACTION_INTERRUPT)
+                CreateNextAction<CastPummelOnEnemyHealerAction>(ACTION_INTERRUPT)
             }
         )
     );
@@ -124,7 +122,7 @@ void FuryWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "pummel",
             {
-                NextAction("pummel", ACTION_INTERRUPT)
+                CreateNextAction<CastPummelAction>(ACTION_INTERRUPT)
             }
         )
     );
@@ -132,7 +130,7 @@ void FuryWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "victory rush",
             {
-                NextAction("victory rush", ACTION_INTERRUPT)
+                CreateNextAction<CastVictoryRushAction>(ACTION_INTERRUPT)
             }
         )
     );
@@ -140,7 +138,7 @@ void FuryWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "bloodthirst",
             {
-                NextAction("bloodthirst", ACTION_HIGH + 7)
+                CreateNextAction<CastBloodthirstAction>(ACTION_HIGH + 7.0f)
             }
         )
     );
@@ -148,7 +146,7 @@ void FuryWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "whirlwind",
             {
-                NextAction("whirlwind", ACTION_HIGH + 6)
+                CreateNextAction<CastWhirlwindAction>(ACTION_HIGH + 6.0f)
             }
         )
     );
@@ -156,7 +154,7 @@ void FuryWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "instant slam",
             {
-                NextAction("slam", ACTION_HIGH + 5)
+                CreateNextAction<CastSlamAction>(ACTION_HIGH + 5.0f)
             }
         )
     );
@@ -164,7 +162,7 @@ void FuryWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "bloodrage",
             {
-                NextAction("bloodrage", ACTION_HIGH + 2)
+                CreateNextAction<CastBloodrageAction>(ACTION_HIGH + 2.0f)
             }
         )
     );
@@ -172,7 +170,7 @@ void FuryWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium rage available",
             {
-                NextAction("heroic strike", ACTION_DEFAULT + 0.1f)
+                CreateNextAction<CastHeroicStrikeAction>(ACTION_DEFAULT + 0.1f)
             }
         )
     );
@@ -181,7 +179,7 @@ void FuryWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "death wish",
             {
-                NextAction("death wish", ACTION_HIGH)
+                CreateNextAction<CastDeathWishAction>(ACTION_HIGH)
             }
         )
     );
@@ -189,7 +187,7 @@ void FuryWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "recklessness",
             {
-                NextAction("recklessness", ACTION_HIGH)
+                CreateNextAction<CastRecklessnessAction>(ACTION_HIGH)
             }
         )
     );
@@ -197,7 +195,7 @@ void FuryWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "critical health",
             {
-                NextAction("enraged regeneration", ACTION_EMERGENCY)
+                CreateNextAction<CastEnragedRegenerationAction>(ACTION_EMERGENCY)
             }
         )
     );

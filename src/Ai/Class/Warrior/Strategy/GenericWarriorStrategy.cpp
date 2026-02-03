@@ -4,8 +4,9 @@
  */
 
 #include "GenericWarriorStrategy.h"
-
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "ReachTargetActions.h"
+#include "WarriorActions.h"
 
 GenericWarriorStrategy::GenericWarriorStrategy(PlayerbotAI* botAI) : CombatStrategy(botAI)
 {
@@ -15,8 +16,14 @@ GenericWarriorStrategy::GenericWarriorStrategy(PlayerbotAI* botAI) : CombatStrat
 void GenericWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     CombatStrategy::InitTriggers(triggers);
-    triggers.push_back(new TriggerNode(
-        "enemy out of melee", { NextAction("reach melee", ACTION_HIGH + 1) }));
+    triggers.push_back(
+        new TriggerNode(
+            "enemy out of melee",
+            {
+                CreateNextAction<ReachMeleeAction>(ACTION_HIGH + 1.0f)
+            }
+        )
+    );
 }
 
 class WarrirorAoeStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
@@ -38,15 +45,25 @@ WarrirorAoeStrategy::WarrirorAoeStrategy(PlayerbotAI* botAI) : CombatStrategy(bo
 
 void WarrirorAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode(
-        "light aoe", { NextAction("sweeping strikes", ACTION_HIGH + 7),
-                                       NextAction("bladestorm", ACTION_HIGH + 6),
-                                       NextAction("thunder clap", ACTION_HIGH + 5),
-                                       NextAction("shockwave", ACTION_HIGH + 4),
-                                       NextAction("demoralizing shout without life time check", ACTION_HIGH + 1),
-                                       NextAction("cleave", ACTION_HIGH) }));
     triggers.push_back(
-        new TriggerNode("shockwave on snare target",
-                        { NextAction("shockwave on snare target", ACTION_HIGH + 5) }));
-
+        new TriggerNode(
+            "light aoe",
+            {
+                CreateNextAction<CastSweepingStrikesAction>(ACTION_HIGH + 7.0f),
+                CreateNextAction<CastBladestormAction>(ACTION_HIGH + 6.0f),
+                CreateNextAction<CastThunderClapAction>(ACTION_HIGH + 5.0f),
+                CreateNextAction<CastShockwaveAction>(ACTION_HIGH + 4.0f),
+                CreateNextAction<CastDemoralizingShoutWithoutLifeTimeCheckAction>(ACTION_HIGH + 1.0f),
+                CreateNextAction<CastCleaveAction>(ACTION_HIGH)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "shockwave on snare target",
+            {
+                CreateNextAction<CastShockwaveSnareAction>(ACTION_HIGH + 5.0f)
+            }
+        )
+    );
 }

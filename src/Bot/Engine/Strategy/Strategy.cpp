@@ -4,8 +4,10 @@
  */
 
 #include "Strategy.h"
-
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "FollowActions.h"
+#include "NonCombatActions.h"
+#include "UseItemAction.h"
 
 class ActionNodeFactoryInternal : public NamedObjectFactory<ActionNode>
 {
@@ -16,7 +18,7 @@ public:
         creators["healthstone"] = &healthstone;
         creators["be near"] = &follow_master_random;
         creators["attack anything"] = &attack_anything;
-        creators["move random"] = &move_random;
+        // creators["move random"] = &move_random;
         creators["move to loot"] = &move_to_loot;
         creators["food"] = &food;
         creators["drink"] = &drink;
@@ -29,7 +31,6 @@ private:
     static ActionNode* melee([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "melee",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -39,9 +40,8 @@ private:
     static ActionNode* healthstone([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "healthstone",
             /*P*/ {},
-            /*A*/ { NextAction("healing potion") },
+            /*A*/ { CreateNextAction<UseHealingPotion>(1.0f) },
             /*C*/ {}
         );
     }
@@ -49,9 +49,8 @@ private:
     static ActionNode* follow_master_random([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "be near",
             /*P*/ {},
-            /*A*/ { NextAction("follow") },
+            /*A*/ { CreateNextAction<FollowAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -59,27 +58,25 @@ private:
     static ActionNode* attack_anything([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "attack anything",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
         );
     }
 
-    static ActionNode* move_random([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "move random",
-            /*P*/ {},
-            /*A*/ { NextAction("stay line") },
-            /*C*/ {}
-        );
-    }
+    // "stay line" does not exist
+    // static ActionNode* move_random([[maybe_unused]] PlayerbotAI* botAI)
+    // {
+    //     return new ActionNode(
+    //         /*P*/ {},
+    //         /*A*/ { CreateNextAction("stay line") },
+    //         /*C*/ {}
+    //     );
+    // }
 
     static ActionNode* move_to_loot([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "move to loot",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -89,7 +86,6 @@ private:
     static ActionNode* food([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "food",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -99,7 +95,6 @@ private:
     static ActionNode* drink([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "drink",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -109,7 +104,6 @@ private:
     static ActionNode* mana_potion([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "mana potion",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -119,9 +113,8 @@ private:
     static ActionNode* healing_potion([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "healing potion",
             /*P*/ {},
-            /*A*/ { NextAction("food") },
+            /*A*/ { CreateNextAction<EatAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -129,7 +122,6 @@ private:
     static ActionNode* flee([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "flee",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -142,4 +134,7 @@ Strategy::Strategy(PlayerbotAI* botAI) : PlayerbotAIAware(botAI)
     actionNodeFactories.Add(new ActionNodeFactoryInternal());
 }
 
-ActionNode* Strategy::GetAction(std::string const name) { return actionNodeFactories.GetContextObject(name, botAI); }
+ActionNode* Strategy::GetAction(std::string const name)
+{
+    return actionNodeFactories.GetContextObject(name, botAI);
+}

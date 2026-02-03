@@ -5,7 +5,9 @@
 
 #include "GenericWarlockNonCombatStrategy.h"
 #include "AiFactory.h"
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "GenericActions.h"
+#include "WarlockActions.h"
 
 class GenericWarlockNonCombatStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -27,46 +29,52 @@ public:
 private:
     static ActionNode* fel_armor([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("fel armor",
-                              /*P*/ {},
-                              /*A*/ { NextAction("demon armor") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastDemonArmorAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* demon_armor([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("demon armor",
-                              /*P*/ {},
-                              /*A*/ { NextAction("demon skin") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastDemonSkinAction>(1.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* summon_voidwalker([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("summon voidwalker",
-                              /*P*/ {},
-                              /*A*/ { NextAction("summon imp") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastSummonImpAction>(1.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* summon_succubus([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("summon succubus",
-                              /*P*/ {},
-                              /*A*/ { NextAction("summon voidwalker") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastSummonVoidwalkerAction>(1.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* summon_felhunter([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("summon felhunter",
-                              /*P*/ {},
-                              /*A*/ { NextAction("summon succubus") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastSummonSuccubusAction>(1.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* summon_felguard([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("summon felguard",
-                              /*P*/ {},
-                              /*A*/ { NextAction("summon felhunter") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastSummonFelhunterAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 };
 
@@ -78,16 +86,86 @@ GenericWarlockNonCombatStrategy::GenericWarlockNonCombatStrategy(PlayerbotAI* bo
 void GenericWarlockNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     NonCombatStrategy::InitTriggers(triggers);
-    triggers.push_back(new TriggerNode("has pet", { NextAction("toggle pet spell", 60.0f) }));
-    triggers.push_back(new TriggerNode("new pet", { NextAction("set pet stance", 60.0f) }));
-    triggers.push_back(new TriggerNode("no pet", { NextAction("fel domination", 30.0f) }));
-    triggers.push_back(new TriggerNode("no soul shard", { NextAction("create soul shard", 60.0f) }));
-    triggers.push_back(new TriggerNode("too many soul shards", { NextAction("destroy soul shard", 60.0f) }));
-    triggers.push_back(new TriggerNode("soul link", { NextAction("soul link", 28.0f) }));
-    triggers.push_back(new TriggerNode("demon armor", { NextAction("fel armor", 27.0f) }));
-    triggers.push_back(new TriggerNode("no healthstone", { NextAction("create healthstone", 26.0f) }));
-    triggers.push_back(new TriggerNode("no soulstone", { NextAction("create soulstone", 25.0f) }));
-    triggers.push_back(new TriggerNode("life tap", { NextAction("life tap", 23.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "has pet",
+            {
+                CreateNextAction<TogglePetSpellAutoCastAction>(60.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "new pet",
+            {
+                CreateNextAction<SetPetStanceAction>(60.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "no pet",
+            {
+                CreateNextAction<CastFelDominationAction>(30.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "no soul shard",
+            {
+                CreateNextAction<CreateSoulShardAction>(60.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "too many soul shards",
+            {
+                CreateNextAction<DestroySoulShardAction>(60.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "soul link",
+            {
+                CreateNextAction<CastSoulLinkAction>(28.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "demon armor",
+            {
+                CreateNextAction<CastFelArmorAction>(27.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "no healthstone",
+            {
+                CreateNextAction<CastCreateHealthstoneAction>(26.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "no soulstone",
+            {
+                CreateNextAction<CastCreateSoulstoneAction>(25.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "life tap",
+            {
+                CreateNextAction<CastLifeTapAction>(23.0f)
+            }
+        )
+    );
 }
 
 // Non-combat strategy for summoning a Imp
@@ -98,8 +176,22 @@ SummonImpStrategy::SummonImpStrategy(PlayerbotAI* ai) : NonCombatStrategy(ai) {}
 
 void SummonImpStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("no pet", { NextAction("summon imp", 29.0f) }));
-    triggers.push_back(new TriggerNode("wrong pet", { NextAction("summon imp", 29.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "no pet",
+            {
+                CreateNextAction<CastSummonImpAction>(29.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "wrong pet",
+            {
+                CreateNextAction<CastSummonImpAction>(29.0f)
+            }
+        )
+    );
 }
 
 // Non-combat strategy for summoning a Voidwalker
@@ -110,8 +202,22 @@ SummonVoidwalkerStrategy::SummonVoidwalkerStrategy(PlayerbotAI* ai) : NonCombatS
 
 void SummonVoidwalkerStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("no pet", { NextAction("summon voidwalker", 29.0f) }));
-    triggers.push_back(new TriggerNode("wrong pet", { NextAction("summon voidwalker", 29.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "no pet",
+            {
+                CreateNextAction<CastSummonVoidwalkerAction>(29.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "wrong pet",
+            {
+                CreateNextAction<CastSummonVoidwalkerAction>(29.0f)
+            }
+        )
+    );
 }
 
 // Non-combat strategy for summoning a Succubus
@@ -122,8 +228,22 @@ SummonSuccubusStrategy::SummonSuccubusStrategy(PlayerbotAI* ai) : NonCombatStrat
 
 void SummonSuccubusStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("no pet", { NextAction("summon succubus", 29.0f) }));
-    triggers.push_back(new TriggerNode("wrong pet", { NextAction("summon succubus", 29.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "no pet",
+            {
+                CreateNextAction<CastSummonSuccubusAction>(29.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "wrong pet",
+            {
+                CreateNextAction<CastSummonSuccubusAction>(29.0f)
+            }
+        )
+    );
 }
 
 // Non-combat strategy for summoning a Felhunter
@@ -134,8 +254,22 @@ SummonFelhunterStrategy::SummonFelhunterStrategy(PlayerbotAI* ai) : NonCombatStr
 
 void SummonFelhunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("no pet", { NextAction("summon felhunter", 29.0f) }));
-    triggers.push_back(new TriggerNode("wrong pet", { NextAction("summon felhunter", 29.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "no pet",
+            {
+                CreateNextAction<CastSummonFelhunterAction>(29.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "wrong pet",
+            {
+                CreateNextAction<CastSummonFelhunterAction>(29.0f)
+            }
+        )
+    );
 }
 
 // Non-combat strategy for summoning a Felguard
@@ -146,8 +280,22 @@ SummonFelguardStrategy::SummonFelguardStrategy(PlayerbotAI* ai) : NonCombatStrat
 
 void SummonFelguardStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("no pet", { NextAction("summon felguard", 29.0f) }));
-    triggers.push_back(new TriggerNode("wrong pet", { NextAction("summon felguard", 29.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "no pet",
+            {
+                CreateNextAction<CastSummonFelguardAction>(29.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "wrong pet",
+            {
+                CreateNextAction<CastSummonFelguardAction>(29.0f)
+            }
+        )
+    );
 }
 
 // Non-combat strategy for selecting themselves to receive soulstone
@@ -158,7 +306,14 @@ SoulstoneSelfStrategy::SoulstoneSelfStrategy(PlayerbotAI* ai) : NonCombatStrateg
 
 void SoulstoneSelfStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("soulstone", { NextAction("soulstone self", 24.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "soulstone",
+            {
+                CreateNextAction<UseSoulstoneSelfAction>(24.0f)
+            }
+        )
+    );
 }
 
 // Non-combat strategy for selecting the master to receive soulstone
@@ -169,7 +324,14 @@ SoulstoneMasterStrategy::SoulstoneMasterStrategy(PlayerbotAI* ai) : NonCombatStr
 
 void SoulstoneMasterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("soulstone", { NextAction("soulstone master", 24.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "soulstone",
+            {
+                CreateNextAction<UseSoulstoneMasterAction>(24.0f)
+            }
+        )
+    );
 }
 
 // Non-combat strategy for selecting tanks to receive soulstone
@@ -180,7 +342,14 @@ SoulstoneTankStrategy::SoulstoneTankStrategy(PlayerbotAI* ai) : NonCombatStrateg
 
 void SoulstoneTankStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("soulstone", { NextAction("soulstone tank", 24.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "soulstone",
+            {
+                CreateNextAction<UseSoulstoneTankAction>(24.0f)
+            }
+        )
+    );
 }
 
 // Non-combat strategy for selecting healers to receive soulstone
@@ -191,7 +360,14 @@ SoulstoneHealerStrategy::SoulstoneHealerStrategy(PlayerbotAI* ai) : NonCombatStr
 
 void SoulstoneHealerStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("soulstone", { NextAction("soulstone healer", 24.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "soulstone",
+            {
+                CreateNextAction<UseSoulstoneHealerAction>(24.0f)
+            }
+        )
+    );
 }
 
 // Non-combat strategy for using Spellstone
@@ -202,8 +378,22 @@ UseSpellstoneStrategy::UseSpellstoneStrategy(PlayerbotAI* ai) : NonCombatStrateg
 
 void UseSpellstoneStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("no spellstone", { NextAction("create spellstone", 24.0f) }));
-    triggers.push_back(new TriggerNode("spellstone", { NextAction("spellstone", 24.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "no spellstone",
+            {
+                CreateNextAction<CastCreateSpellstoneAction>(24.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "spellstone",
+            {
+                CreateNextAction<UseSpellItemAction>(24.0f)
+            }
+        )
+    );
 }
 
 // Non-combat strategy for using Firestone
@@ -214,6 +404,20 @@ UseFirestoneStrategy::UseFirestoneStrategy(PlayerbotAI* ai) : NonCombatStrategy(
 
 void UseFirestoneStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("no firestone", { NextAction("create firestone", 24.0f) }));
-    triggers.push_back(new TriggerNode("firestone", { NextAction("firestone", 24.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "no firestone",
+            {
+                CreateNextAction<CastCreateFirestoneAction>(24.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "firestone",
+            {
+                CreateNextAction<UseSpellItemAction>(24.0f)
+            }
+        )
+    );
 }

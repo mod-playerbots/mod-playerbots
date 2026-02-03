@@ -13,6 +13,7 @@
 #include "AcceptResurrectAction.h"
 #include "AreaTriggerAction.h"
 #include "ArenaTeamActions.h"
+#include "BattleGroundJoinAction.h"
 #include "BattleGroundTactics.h"
 #include "CheckMountStateAction.h"
 #include "GuildAcceptAction.h"

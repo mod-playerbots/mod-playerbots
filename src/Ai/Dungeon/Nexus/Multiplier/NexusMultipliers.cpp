@@ -1,11 +1,12 @@
 #include "NexusMultipliers.h"
-#include "NexusActions.h"
-#include "GenericSpellActions.h"
 #include "ChooseTargetActions.h"
+#include "GenericSpellActions.h"
+#include "NexusActions.h"
+#include "Playerbots.h"
 #include "MovementActions.h"
 #include "NexusTriggers.h"
 
-float FactionCommanderMultiplier::GetValue(Action* action)
+float FactionCommanderMultiplier::GetValue(Action& action)
 {
     Unit* boss = nullptr;
     uint8 faction = bot->GetTeamId();
@@ -39,7 +40,7 @@ float FactionCommanderMultiplier::GetValue(Action* action)
         boss->FindCurrentSpellBySpellId(SPELL_WHIRLWIND))
     {
         // Prevent movement actions other than flee during a whirlwind, to prevent running back in early.
-        if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<MoveFromWhirlwindAction*>(action))
+        if (dynamic_cast<MovementAction*>(&action) && !dynamic_cast<MoveFromWhirlwindAction*>(&action))
         {
             return 0.0f;
         }
@@ -47,13 +48,13 @@ float FactionCommanderMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float TelestraMultiplier::GetValue(Action* action)
+float TelestraMultiplier::GetValue(Action& action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "grand magus telestra");
     if (boss && boss->GetEntry() != NPC_TELESTRA)
     {
         // boss is split into clones, do not auto acquire target
-        if (dynamic_cast<DpsAssistAction*>(action))
+        if (dynamic_cast<DpsAssistAction*>(&action))
         {
             return 0.0f;
         }
@@ -61,12 +62,12 @@ float TelestraMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float AnomalusMultiplier::GetValue(Action* action)
+float AnomalusMultiplier::GetValue(Action& action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "anomalus");
     if (boss && boss->HasAura(BUFF_RIFT_SHIELD))
     {
-        if (dynamic_cast<DpsAssistAction*>(action))
+        if (dynamic_cast<DpsAssistAction*>(&action))
         {
             return 0.0f;
         }
@@ -74,19 +75,19 @@ float AnomalusMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float OrmorokMultiplier::GetValue(Action* action)
+float OrmorokMultiplier::GetValue(Action& action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "ormorok the tree-shaper");
     if (!boss) { return 1.0f; }
 
     // These are used for auto ranged repositioning, need to suppress so ranged dps don't ping-pong
-    if (dynamic_cast<FleeAction*>(action))
+    if (dynamic_cast<FleeAction*>(&action))
     {
         return 0.0f;
     }
     // This boss is annoying and shuffles around a lot. Don't let tank move once fight has started.
     // Extra checks are to allow the tank to close distance and engage the boss initially
-    if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<DodgeSpikesAction*>(action)
+    if (dynamic_cast<MovementAction*>(&action) && !dynamic_cast<DodgeSpikesAction*>(&action)
         && botAI->IsTank(bot) && bot->IsWithinMeleeRange(boss)
         && AI_VALUE2(bool, "facing", "current target"))
         {

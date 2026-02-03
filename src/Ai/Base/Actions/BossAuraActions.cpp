@@ -9,6 +9,9 @@
 
 #include "BossAuraActions.h"
 #include "BossAuraTriggers.h"
+#include "HunterActions.h"
+#include "PaladinActions.h"
+#include "CreateNextAction.h"
 
 const std::string ADD_STRATEGY_CHAR = "+";
 
@@ -22,7 +25,7 @@ bool BossFireResistanceAction::Execute(Event)
 {
     PaladinFireResistanceStrategy paladinFireResistanceStrategy(botAI);
     botAI->ChangeStrategy(ADD_STRATEGY_CHAR + paladinFireResistanceStrategy.getName(), BotState::BOT_STATE_COMBAT);
-    botAI->DoSpecificAction("fire resistance aura", Event(), true);
+    botAI->DoSpecificAction(CreateNextAction<CastFireResistanceAuraAction>(1.0f).factory, Event(), true);
     return true;
 }
 
@@ -36,7 +39,7 @@ bool BossFrostResistanceAction::Execute(Event)
 {
     PaladinFrostResistanceStrategy paladinFrostResistanceStrategy(botAI);
     botAI->ChangeStrategy(ADD_STRATEGY_CHAR + paladinFrostResistanceStrategy.getName(), BotState::BOT_STATE_COMBAT);
-    botAI->DoSpecificAction("frost resistance aura", Event(), true);
+    botAI->DoSpecificAction(CreateNextAction<CastFrostResistanceAuraAction>(1.0f).factory, Event(), true);
     return true;
 }
 
@@ -50,7 +53,7 @@ bool BossNatureResistanceAction::Execute(Event)
 {
     HunterNatureResistanceStrategy hunterNatureResistanceStrategy(botAI);
     botAI->ChangeStrategy(ADD_STRATEGY_CHAR + hunterNatureResistanceStrategy.getName(), BotState::BOT_STATE_COMBAT);
-    botAI->DoSpecificAction("aspect of the wild", Event(), true);
+    botAI->DoSpecificAction(CreateNextAction<CastAspectOfTheWildAction>(1.0f).factory, Event(), true);
     return true;
 }
 
@@ -64,6 +67,6 @@ bool BossShadowResistanceAction::Execute(Event)
 {
     PaladinShadowResistanceStrategy paladinShadowResistanceStrategy(botAI);
     botAI->ChangeStrategy(ADD_STRATEGY_CHAR + paladinShadowResistanceStrategy.getName(), BotState::BOT_STATE_COMBAT);
-    botAI->DoSpecificAction("shadow resistance aura", Event(), true);
+    botAI->DoSpecificAction(CreateNextAction<CastShadowResistanceAuraAction>(1.0f).factory, Event(), true);
     return true;
 }

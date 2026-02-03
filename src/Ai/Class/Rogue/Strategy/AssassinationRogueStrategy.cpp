@@ -1,7 +1,12 @@
 
 #include "AssassinationRogueStrategy.h"
-
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "GenericActions.h"
+#include "ReachTargetActions.h"
+#include "RogueActions.h"
+#include "RogueComboActions.h"
+#include "RogueFinishingActions.h"
+#include "RogueOpeningActions.h"
 
 class AssassinationRogueStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -18,36 +23,32 @@ private:
     static ActionNode* mutilate([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "mutilate",
             /*P*/ {},
-            /*A*/ { NextAction("backstab") },
+            /*A*/ { CreateNextAction<CastBackstabAction>(1.0f) },
             /*C*/ {}
         );
     }
     static ActionNode* envenom([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "envenom",
             /*P*/ {},
-            /*A*/ { NextAction("rupture") },
+            /*A*/ { CreateNextAction<CastRuptureAction>(1.0f) },
             /*C*/ {}
         );
     }
     static ActionNode* backstab([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "backstab",
             /*P*/ {},
-            /*A*/ { NextAction("sinister strike") },
+            /*A*/ { CreateNextAction<CastSinisterStrikeAction>(1.0f) },
             /*C*/ {}
         );
     }
     static ActionNode* rupture([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "rupture",
             /*P*/ {},
-            /*A*/ { NextAction("eviscerate") },
+            /*A*/ { CreateNextAction<CastEviscerateAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -61,7 +62,7 @@ AssassinationRogueStrategy::AssassinationRogueStrategy(PlayerbotAI* ai) : MeleeC
 std::vector<NextAction> AssassinationRogueStrategy::getDefaultActions()
 {
     return {
-        NextAction("melee", ACTION_DEFAULT)
+        CreateNextAction<MeleeAction>(ACTION_DEFAULT)
     };
 }
 
@@ -73,8 +74,8 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "high energy available",
             {
-                NextAction("garrote", ACTION_HIGH + 7),
-                NextAction("ambush", ACTION_HIGH + 6)
+                CreateNextAction<CastGarroteAction>(ACTION_HIGH + 7.0f),
+                CreateNextAction<CastAmbushAction>(ACTION_HIGH + 6.0f)
             }
         )
     );
@@ -83,7 +84,7 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "high energy available",
             {
-                NextAction("mutilate", ACTION_NORMAL + 3)
+                CreateNextAction<CastMutilateAction>(ACTION_NORMAL + 3.0f)
             }
         )
     );
@@ -92,7 +93,7 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "hunger for blood",
             {
-                NextAction("hunger for blood", ACTION_HIGH + 6),
+                CreateNextAction<CastHungerForBloodAction>(ACTION_HIGH + 6.0f),
             }
         )
     );
@@ -101,7 +102,7 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "slice and dice",
             {
-                NextAction("slice and dice", ACTION_HIGH + 5),
+                CreateNextAction<CastSliceAndDiceAction>(ACTION_HIGH + 5.0f),
             }
         )
     );
@@ -110,8 +111,8 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "combo points 3 available",
             {
-                NextAction("envenom", ACTION_HIGH + 5),
-                NextAction("eviscerate", ACTION_HIGH + 3)
+                CreateNextAction<CastEnvenomAction>(ACTION_HIGH + 5.0f),
+                CreateNextAction<CastEviscerateAction>(ACTION_HIGH + 3.0f)
             }
         )
     );
@@ -120,8 +121,8 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "target with combo points almost dead",
             {
-                NextAction("envenom", ACTION_HIGH + 4),
-                NextAction("eviscerate", ACTION_HIGH + 2)
+                CreateNextAction<CastEnvenomAction>(ACTION_HIGH + 4.0f),
+                CreateNextAction<CastEviscerateAction>(ACTION_HIGH + 2)
             }
         )
     );
@@ -130,7 +131,7 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "expose armor",
             {
-                NextAction("expose armor", ACTION_HIGH + 3),
+                CreateNextAction<CastExposeArmorAction>(ACTION_HIGH + 3.0f),
             }
         )
     );
@@ -139,7 +140,7 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "medium threat",
             {
-                NextAction("vanish", ACTION_HIGH),
+                CreateNextAction<CastVanishAction>(ACTION_HIGH),
             }
         )
     );
@@ -148,8 +149,8 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "low health",
             {
-                NextAction("evasion", ACTION_HIGH + 9),
-                NextAction("feint", ACTION_HIGH + 8)
+                CreateNextAction<CastEvasionAction>(ACTION_HIGH + 9.0f),
+                CreateNextAction<CastFeintAction>(ACTION_HIGH + 8.0f)
             }
         )
     );
@@ -158,7 +159,7 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "critical health",
             {
-                NextAction("cloak of shadows", ACTION_HIGH + 7)
+                CreateNextAction<CastCloakOfShadowsAction>(ACTION_HIGH + 7.0f)
             }
         )
     );
@@ -167,7 +168,7 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "kick",
             {
-                NextAction("kick", ACTION_INTERRUPT + 2),
+                CreateNextAction<CastKickAction>(ACTION_INTERRUPT + 2.0f),
             }
         )
     );
@@ -176,7 +177,7 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "kick on enemy healer",
             {
-                NextAction("kick on enemy healer", ACTION_INTERRUPT + 1),
+                CreateNextAction<CastKickOnEnemyHealerAction>(ACTION_INTERRUPT + 1.0f),
             }
         )
     );
@@ -185,7 +186,7 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "medium aoe",
             {
-                NextAction("fan of knives", ACTION_NORMAL + 5),
+                CreateNextAction<FanOfKnivesAction>(ACTION_NORMAL + 5.0f),
             }
         )
     );
@@ -194,7 +195,7 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "low tank threat",
             {
-                NextAction("tricks of the trade on main tank", ACTION_HIGH + 7),
+                CreateNextAction<CastTricksOfTheTradeOnMainTankAction>(ACTION_HIGH + 7.0f),
             }
         )
     );
@@ -203,9 +204,9 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "enemy out of melee",
             {
-                NextAction("stealth", ACTION_HIGH + 3),
-                NextAction("sprint", ACTION_HIGH + 2),
-                NextAction("reach melee", ACTION_HIGH + 1),
+                CreateNextAction<CastStealthAction>(ACTION_HIGH + 3.0f),
+                CreateNextAction<CastSprintAction>(ACTION_HIGH + 2.0f),
+                CreateNextAction<ReachMeleeAction>(ACTION_HIGH + 1.0f),
             }
         )
     );

@@ -4,7 +4,8 @@
  */
 
 #include "ArcaneMageStrategy.h"
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "MageActions.h"
 
 // ===== Action Node Factory =====
 class ArcaneMageStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
@@ -22,13 +23,69 @@ public:
     }
 
 private:
-    static ActionNode* arcane_blast(PlayerbotAI*) { return new ActionNode("arcane blast", {}, {}, {}); }
-    static ActionNode* arcane_barrage(PlayerbotAI*) { return new ActionNode("arcane barrage", {}, {}, {}); }
-    static ActionNode* arcane_missiles(PlayerbotAI*) { return new ActionNode("arcane missiles", {}, {}, {}); }
-    static ActionNode* fire_blast(PlayerbotAI*) { return new ActionNode("fire blast", {}, {}, {}); }
-    static ActionNode* frostbolt(PlayerbotAI*) { return new ActionNode("frostbolt", {}, {}, {}); }
-    static ActionNode* arcane_power(PlayerbotAI*) { return new ActionNode("arcane power", {}, {}, {}); }
-    static ActionNode* icy_veins(PlayerbotAI*) { return new ActionNode("icy veins", {}, {}, {}); }
+    static ActionNode* arcane_blast(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* arcane_barrage(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* arcane_missiles(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* fire_blast(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* frostbolt(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* arcane_power(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* icy_veins(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
 };
 
 // ===== Single Target Strategy =====
@@ -41,12 +98,12 @@ ArcaneMageStrategy::ArcaneMageStrategy(PlayerbotAI* botAI) : GenericMageStrategy
 std::vector<NextAction> ArcaneMageStrategy::getDefaultActions()
 {
     return {
-        NextAction("arcane blast", 5.6f),
-        NextAction("arcane missiles", 5.5f),
-        NextAction("arcane barrage", 5.4f),   // cast while moving
-        NextAction("fire blast", 5.3f),       // cast while moving if arcane barrage isn't available/learned
-        NextAction("frostbolt", 5.2f),        // for arcane immune targets
-        NextAction("shoot", 5.1f)
+        CreateNextAction<CastArcaneBlastAction>(5.6f),
+        CreateNextAction<CastArcaneMissilesAction>(5.5f),
+        CreateNextAction<CastArcaneBarrageAction>(5.4f),   // cast while moving
+        CreateNextAction<CastFireBlastAction>(5.3f),       // cast while moving if arcane barrage isn't available/learned
+        CreateNextAction<CastFrostboltAction>(5.2f),        // for arcane immune targets
+        CreateNextAction<CastShootAction>(5.1f)
     };
 }
 
@@ -60,7 +117,7 @@ void ArcaneMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "arcane blast 4 stacks and missile barrage",
             {
-                NextAction("arcane missiles", 15.0f)
+                CreateNextAction<CastArcaneMissilesAction>(15.0f)
             }
         )
     );

@@ -25,7 +25,7 @@ public:
 
     Action(PlayerbotAI* botAI, std::string const name = "action")
         : AiNamedObject(botAI, name), verbose(false) {}  // verbose after ainamedobject - whipowill
-    virtual ~Action(void) {}
+    virtual ~Action() {}
 
     virtual bool Execute([[maybe_unused]] Event event) { return true; }
     virtual bool isPossible() { return true; }

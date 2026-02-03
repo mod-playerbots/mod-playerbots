@@ -4,8 +4,11 @@
  */
 
 #include "FeralDruidStrategy.h"
-
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "DruidActions.h"
+#include "DruidCatActions.h"
+#include "DruidShapeshiftActions.h"
+#include "ReachTargetActions.h"
 
 class FeralDruidStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -25,66 +28,74 @@ public:
 private:
     static ActionNode* survival_instincts([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("survival instincts",
-                              /*P*/ {},
-                              /*A*/ { NextAction("barkskin") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastBarkskinAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* thorns([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("thorns",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* omen_of_clarity([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("omen of clarity",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* cure_poison([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("cure poison",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* cure_poison_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("cure poison on party",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* abolish_poison([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("abolish poison",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* abolish_poison_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("abolish poison on party",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* prowl([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("prowl",
-                              /*P*/ { NextAction("cat form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastCatFormAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 };
 
@@ -102,7 +113,7 @@ void FeralDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "enemy out of melee",
             {
-                NextAction("reach melee", ACTION_HIGH + 1)
+                CreateNextAction<ReachMeleeAction>(ACTION_HIGH + 1.0f)
             }
         )
     );
@@ -110,7 +121,7 @@ void FeralDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "critical health",
             {
-                NextAction("survival instincts", ACTION_EMERGENCY + 1)
+                CreateNextAction<CastSurvivalInstinctsAction>(ACTION_EMERGENCY + 1.0f)
             }
         )
     );
@@ -118,7 +129,7 @@ void FeralDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "omen of clarity",
             {
-                NextAction("omen of clarity", ACTION_HIGH + 9)
+                CreateNextAction<CastOmenOfClarityAction>(ACTION_HIGH + 9.0f)
             }
         )
     );
@@ -126,7 +137,7 @@ void FeralDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "player has flag",
             {
-                NextAction("dash", ACTION_EMERGENCY + 2)
+                CreateNextAction<CastDashAction>(ACTION_EMERGENCY + 2.0f)
             }
         )
     );
@@ -134,7 +145,7 @@ void FeralDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "enemy flagcarrier near",
             {
-                NextAction("dash", ACTION_EMERGENCY + 2)
+                CreateNextAction<CastDashAction>(ACTION_EMERGENCY + 2.0f)
             }
         )
     );
@@ -142,7 +153,7 @@ void FeralDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "berserk",
             {
-                NextAction("berserk", ACTION_HIGH + 6)
+                CreateNextAction<CastBerserkAction>(ACTION_HIGH + 6.0f)
             }
         )
     );

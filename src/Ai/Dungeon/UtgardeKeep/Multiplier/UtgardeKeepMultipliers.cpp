@@ -4,13 +4,13 @@
 #include "ChooseTargetActions.h"
 #include "UtgardeKeepTriggers.h"
 
-float PrinceKelesethMultiplier::GetValue(Action* action)
+float PrinceKelesethMultiplier::GetValue(Action& action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "prince keleseth");
     if (!boss) { return 1.0f; }
 
     // Suppress auto-targeting behaviour only when a tomb is up
-    if (dynamic_cast<DpsAssistAction*>(action))
+    if (dynamic_cast<DpsAssistAction*>(&action))
     {
         GuidVector members = AI_VALUE(GuidVector, "group members");
         for (auto& member : members)
@@ -25,28 +25,28 @@ float PrinceKelesethMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float SkarvaldAndDalronnMultiplier::GetValue(Action* action)
+float SkarvaldAndDalronnMultiplier::GetValue(Action& action)
 {
     // Only need to deal with Dalronn here. If he's dead, just fall back to normal dps strat
     Unit* dalronn = AI_VALUE2(Unit*, "find target", "dalronn the controller");
     if (!dalronn) { return 1.0f; }
 
     // Only suppress DpsAssistAction if Dalronn is alive
-    if (dalronn->isTargetableForAttack() && dynamic_cast<DpsAssistAction*>(action))
+    if (dalronn->isTargetableForAttack() && dynamic_cast<DpsAssistAction*>(&action))
     {
         return 0.0f;
     }
     return 1.0f;
 }
 
-float IngvarThePlundererMultiplier::GetValue(Action* action)
+float IngvarThePlundererMultiplier::GetValue(Action& action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "ingvar the plunderer");
     bool isTank = botAI->IsTank(bot);
     if (!boss) { return 1.0f; }
 
     // Prevent movement actions overriding current movement, we're probably dodging a slam
-    if (isTank && bot->isMoving() && dynamic_cast<MovementAction*>(action))
+    if (isTank && bot->isMoving() && dynamic_cast<MovementAction*>(&action))
     {
         return 0.0f;
     }
@@ -57,9 +57,9 @@ float IngvarThePlundererMultiplier::GetValue(Action* action)
         if (boss->FindCurrentSpellBySpellId(SPELL_STAGGERING_ROAR) ||
             boss->FindCurrentSpellBySpellId(SPELL_DREADFUL_ROAR))
         {
-            if (dynamic_cast<CastSpellAction*>(action))
+            if (dynamic_cast<CastSpellAction*>(&action))
             {
-                uint32 spellId = AI_VALUE2(uint32, "spell id", action->getName());
+                uint32 spellId = AI_VALUE2(uint32, "spell id", action.getName());
                 SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
                 if (!spellInfo) { return 1.0f; }
 
@@ -79,7 +79,7 @@ float IngvarThePlundererMultiplier::GetValue(Action* action)
         {
             // Prevent movement actions during smash which can mess up boss position.
             // Allow through IngvarDodgeSmashAction only, as well as any non-movement actions.
-            if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<IngvarDodgeSmashAction*>(action))
+            if (dynamic_cast<MovementAction*>(&action) && !dynamic_cast<IngvarDodgeSmashAction*>(&action))
             {
                 return 0.0f;
             }

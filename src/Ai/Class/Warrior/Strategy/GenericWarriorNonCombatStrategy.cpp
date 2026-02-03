@@ -4,12 +4,19 @@
  */
 
 #include "GenericWarriorNonCombatStrategy.h"
-
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "ImbueAction.h"
 
 void GenericWarriorNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     NonCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("often", { NextAction("apply stone", 1.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "often",
+            {
+                CreateNextAction<ImbueWithStoneAction>(1.0f)
+            }
+        )
+    );
 }

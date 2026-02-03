@@ -4,6 +4,11 @@
  */
 
 #include "GenericHunterStrategy.h"
+#include "CancelChannelAction.h"
+#include "CreateNextAction.h"
+#include "EquipAction.h"
+#include "GenericActions.h"
+#include "HunterActions.h"
 
 class GenericHunterStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -24,67 +29,75 @@ public:
 private:
     static ActionNode* rapid_fire([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("rapid fire",
-                              /*P*/ {},
-                              /*A*/ { NextAction("readiness") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastReadinessAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* aspect_of_the_pack([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("aspect of the pack",
-                              /*P*/ {},
-                              /*A*/ { NextAction("aspect of the cheetah") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastAspectOfTheCheetahAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* aspect_of_the_dragonhawk([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("aspect of the dragonhawk",
-                              /*P*/ {},
-                              /*A*/ { NextAction("aspect of the hawk") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastAspectOfTheDragonhawkAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* feign_death([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("feign death",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* wing_clip([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("wing clip",
-                              /*P*/ {},
-                              // /*A*/ { NextAction("mongoose bite") },
-                              {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            // /*A*/ { CreateNextAction<CastMongooseBiteAction>(1.0f) },
+            {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* mongoose_bite([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("mongoose bite",
-                              /*P*/ {},
-                              /*A*/ { NextAction("raptor strike") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastRaptorStrikeAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* raptor_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("raptor strike",
-                              /*P*/ { NextAction("melee") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<MeleeAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* explosive_trap([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("explosive trap",
-                              /*P*/ {},
-                              /*A*/ { NextAction("immolation trap") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastImmolationTrapAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 };
 
@@ -102,7 +115,7 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "no ammo",
             {
-                NextAction("equip upgrades", 30.0f)
+                CreateNextAction<EquipUpgradesAction>(30.0f)
             }
         )
     );
@@ -110,7 +123,7 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "hunter's mark",
             {
-                NextAction("hunter's mark", 29.5f)
+                CreateNextAction<CastHuntersMarkAction>(29.5f)
             }
         )
     );
@@ -118,7 +131,7 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "rapid fire",
             {
-                NextAction("rapid fire", 29.0f)
+                CreateNextAction<CastRapidFireAction>(29.0f)
             }
         )
     );
@@ -126,7 +139,7 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "aspect of the viper",
             {
-                NextAction("aspect of the viper", 28.0f)
+                CreateNextAction<CastAspectOfTheViperAction>(28.0f)
             }
         )
     );
@@ -134,7 +147,7 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "aspect of the hawk",
             {
-                NextAction("aspect of the dragonhawk", 27.5f)
+                CreateNextAction<CastAspectOfTheDragonhawkAction>(27.5f)
             }
         )
     );
@@ -144,7 +157,7 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "has aggro",
             {
-                NextAction("concussive shot", 20.0f)
+                CreateNextAction<CastConcussiveShotAction>(20.0f)
             }
         )
     );
@@ -152,7 +165,7 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "low tank threat",
             {
-                NextAction("misdirection on main tank", 27.0f)
+                CreateNextAction<CastMisdirectionOnMainTankAction>(27.0f)
             }
         )
     );
@@ -160,7 +173,7 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "low health",
             {
-                NextAction("deterrence", 35.0f)
+                CreateNextAction<CastDeterrenceAction>(35.0f)
             }
         )
     );
@@ -168,7 +181,7 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "concussive shot on snare target",
             {
-                NextAction("concussive shot", 20.0f)
+                CreateNextAction<CastConcussiveShotAction>(20.0f)
             }
         )
     );
@@ -176,7 +189,7 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium threat",
             {
-                NextAction("feign death", 35.0f)
+                CreateNextAction<CastFeignDeathAction>(35.0f)
             }
         )
     );
@@ -184,7 +197,7 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "hunters pet medium health",
             {
-                NextAction("mend pet", 22.0f)
+                CreateNextAction<CastMendPetAction>(22.0f)
             }
         )
     );
@@ -192,7 +205,7 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "hunters pet low health",
             {
-                NextAction("mend pet", 21.0f)
+                CreateNextAction<CastMendPetAction>(21.0f)
             }
         )
     );
@@ -202,7 +215,7 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "tranquilizing shot enrage",
             {
-                NextAction("tranquilizing shot", 61.0f)
+                CreateNextAction<CastTranquilizingShotAction>(61.0f)
             }
         )
     );
@@ -210,7 +223,7 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "tranquilizing shot magic",
             {
-                NextAction("tranquilizing shot", 61.0f)
+                CreateNextAction<CastTranquilizingShotAction>(61.0f)
             }
         )
     );
@@ -220,9 +233,9 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "enemy within melee",
             {
-                NextAction("explosive trap", 37.0f),
-                NextAction("mongoose bite", 22.0f),
-                NextAction("wing clip", 21.0f)
+                CreateNextAction<CastExplosiveTrapAction>(37.0f),
+                CreateNextAction<CastMongooseBiteAction>(22.0f),
+                CreateNextAction<CastWingClipAction>(21.0f)
             }
         )
     );
@@ -231,8 +244,8 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "enemy too close for auto shot",
             {
-                NextAction("disengage", 35.0f),
-                NextAction("flee", 34.0f)
+                CreateNextAction<CastDisengageAction>(35.0f),
+                CreateNextAction<FleeAction>(34.0f)
             }
         )
     );
@@ -247,7 +260,7 @@ void AoEHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "volley channel check",
             {
-                NextAction("cancel channel", 23.0f)
+                CreateNextAction<CancelChannelAction>(23.0f)
             }
         )
     );
@@ -255,7 +268,7 @@ void AoEHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium aoe",
             {
-                NextAction("volley", 22.0f)
+                CreateNextAction<CastVolleyAction>(22.0f)
             }
         )
     );
@@ -263,7 +276,7 @@ void AoEHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "light aoe",
             {
-                NextAction("multi-shot", 21.0f)
+                CreateNextAction<CastMultiShotAction>(21.0f)
             }
         )
     );
@@ -279,18 +292,18 @@ void HunterCcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "scare beast",
             {
-                NextAction("scare beast on cc", 23.0f)
+                CreateNextAction<CastScareBeastCcAction>(23.0f)
             }
         )
     );
-    triggers.push_back(
-        new TriggerNode(
-            "freezing trap",
-            {
-                NextAction("freezing trap on cc", 23.0f)
-            }
-        )
-    );
+    // triggers.push_back(
+    //     new TriggerNode(
+    //         "freezing trap",
+    //         {
+    //             CreateNextAction("freezing trap on cc", 23.0f)
+    //         }
+    //     )
+    // );
 }
 
 void HunterTrapWeaveStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -299,7 +312,7 @@ void HunterTrapWeaveStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "immolation trap no cd",
             {
-                NextAction("reach melee", 23.0f)
+                CreateNextAction<MeleeAction>(23.0f)
             }
         )
     );

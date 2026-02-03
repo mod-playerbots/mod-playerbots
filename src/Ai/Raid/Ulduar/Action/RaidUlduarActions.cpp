@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "AiObjectContext.h"
+#include "ChooseTargetActions.h"
 #include "DBCEnums.h"
 #include "GameObject.h"
 #include "Group.h"
@@ -2607,7 +2608,7 @@ bool MimironPhase4MarkDpsAction::Execute(Event)
             }
         }
 
-        botAI->DoSpecificAction("attack rti target");
+        botAI->DoSpecificAction(CreateNextAction<AttackRtiTargetAction>(1.0f).factory);
         return true;
     }
     else
@@ -3164,7 +3165,7 @@ bool YoggSaronIllusionRoomAction::SetBrainRtiTarget(YoggSaronTrigger yoggSaronTr
             false);
     }
 
-    botAI->DoSpecificAction("attack rti target");
+    botAI->DoSpecificAction(CreateNextAction<AttackRtiTargetAction>(1.0f).factory);
     return true;
 }
 

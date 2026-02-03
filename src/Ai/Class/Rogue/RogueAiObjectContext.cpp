@@ -10,7 +10,6 @@
 #include "DpsRogueStrategy.h"
 #include "GenericRogueNonCombatStrategy.h"
 #include "NamedObjectContext.h"
-#include "Playerbots.h"
 #include "PullStrategy.h"
 #include "RogueActions.h"
 #include "RogueComboActions.h"

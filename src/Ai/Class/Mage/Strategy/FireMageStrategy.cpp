@@ -4,8 +4,9 @@
  */
 
 #include "FireMageStrategy.h"
-#include "Playerbots.h"
-#include "Strategy.h"
+#include "CreateNextAction.h"
+#include "MageActions.h"
+#include "ReachTargetActions.h"
 
 // ===== Action Node Factory =====
 class FireMageStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
@@ -23,13 +24,69 @@ public:
     }
 
 private:
-    static ActionNode* fireball(PlayerbotAI*) { return new ActionNode("fireball", {}, {}, {}); }
-    static ActionNode* frostbolt(PlayerbotAI*) { return new ActionNode("frostbolt", {}, {}, {}); }
-    static ActionNode* fire_blast(PlayerbotAI*) { return new ActionNode("fire blast", {}, {}, {}); }
-    static ActionNode* pyroblast(PlayerbotAI*) { return new ActionNode("pyroblast", {}, {}, {}); }
-    static ActionNode* scorch(PlayerbotAI*) { return new ActionNode("scorch", {}, {}, {}); }
-    static ActionNode* living_bomb(PlayerbotAI*) { return new ActionNode("living bomb", {}, {}, {}); }
-    static ActionNode* combustion(PlayerbotAI*) { return new ActionNode("combustion", {}, {}, {}); }
+    static ActionNode* fireball(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* frostbolt(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* fire_blast(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* pyroblast(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* scorch(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* living_bomb(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* combustion(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
 };
 
 // ===== Single Target Strategy =====
@@ -42,10 +99,10 @@ FireMageStrategy::FireMageStrategy(PlayerbotAI* botAI) : GenericMageStrategy(bot
 std::vector<NextAction> FireMageStrategy::getDefaultActions()
 {
     return {
-        NextAction("fireball", 5.3f),
-        NextAction("frostbolt", 5.2f),   // fire immune target
-        NextAction("fire blast", 5.1f),  // cast during movement
-        NextAction("shoot", 5.0f)
+        CreateNextAction<CastFireballAction>(5.3f),
+        CreateNextAction<CastFrostboltAction>(5.2f),   // fire immune target
+        CreateNextAction<CastFireBlastAction>(5.1f),  // cast during movement
+        CreateNextAction<CastShootAction>(5.0f)
     };
 }
 
@@ -59,7 +116,7 @@ void FireMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "improved scorch",
             {
-                NextAction("scorch", 19.0f)
+                CreateNextAction<CastScorchAction>(19.0f)
             }
         )
     );
@@ -67,7 +124,7 @@ void FireMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "living bomb",
             {
-                NextAction("living bomb", 18.5f)
+                CreateNextAction<CastLivingBombAction>(18.5f)
             }
         )
     );
@@ -77,7 +134,7 @@ void FireMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "hot streak",
             {
-                NextAction("pyroblast", 25.0f)
+                CreateNextAction<CastPyroblastAction>(25.0f)
             }
         )
     );
@@ -95,7 +152,7 @@ void FirestarterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "blast wave off cd and medium aoe",
             {
-                NextAction("reach melee", 25.5f)
+                CreateNextAction<ReachMeleeAction>(25.5f)
             }
         )
     );

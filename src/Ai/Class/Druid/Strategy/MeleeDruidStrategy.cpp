@@ -4,16 +4,17 @@
  */
 
 #include "MeleeDruidStrategy.h"
-
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "DruidActions.h"
+#include "GenericActions.h"
 
 MeleeDruidStrategy::MeleeDruidStrategy(PlayerbotAI* botAI) : CombatStrategy(botAI) {}
 
 std::vector<NextAction> MeleeDruidStrategy::getDefaultActions()
 {
     return {
-        NextAction("faerie fire", ACTION_DEFAULT + 0.1f),
-        NextAction("melee", ACTION_DEFAULT)
+        CreateNextAction<CastFaerieFireAction>(ACTION_DEFAULT + 0.1f),
+        CreateNextAction<MeleeAction>(ACTION_DEFAULT)
     };
 }
 
@@ -23,7 +24,7 @@ void MeleeDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "omen of clarity",
             {
-                NextAction("omen of clarity", ACTION_HIGH + 9)
+                CreateNextAction<CastOmenOfClarityAction>(ACTION_HIGH + 9)
             }
         )
     );

@@ -7,8 +7,10 @@
 #define _PLAYERBOT_GENERICSPELLACTIONS_H
 
 #include "Action.h"
+#include "CreateNextAction.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
+#include "ReachTargetActions.h"
 #include "UseItemAction.h"
 #include "Value.h"
 
@@ -37,6 +39,20 @@ public:
 protected:
     std::string spell;
     float range;
+};
+
+class CastReachTargetSpellAction : public CastSpellAction
+{
+public:
+    CastReachTargetSpellAction(PlayerbotAI* botAI, std::string const spell, float distance)
+        : CastSpellAction(botAI, spell), distance(distance)
+    {
+    }
+
+    bool isUseful() override;
+
+protected:
+    float distance;
 };
 
 class CastAuraSpellAction : public CastSpellAction
@@ -199,12 +215,11 @@ public:
     std::string const GetTargetName() override { return "party member to resurrect"; }
     std::vector<NextAction> getPrerequisites() override
     {
-        return NextAction::merge(
-            {
-                NextAction("reach party member to resurrect")
-            },
-            Action::getPrerequisites()
-        );
+        std::vector<NextAction> prerequisites = Action::getPrerequisites();
+
+        prerequisites.push_back(CreateNextAction<ReachPartyMemberToResurrectAction>(1.0f));
+
+        return prerequisites;
     }
 };
 

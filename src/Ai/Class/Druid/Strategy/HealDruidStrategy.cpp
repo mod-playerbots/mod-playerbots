@@ -4,8 +4,10 @@
  */
 
 #include "HealDruidStrategy.h"
-
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "DruidActions.h"
+#include "DruidShapeshiftActions.h"
+#include "MovementActions.h"
 
 class HealDruidStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -17,10 +19,11 @@ public:
 private:
     static ActionNode* nourtish_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("nourish on party",
-                              /*P*/ {},
-                              /*A*/ { NextAction("healing touch on party") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastHealingTouchOnPartyAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 };
 
@@ -37,7 +40,7 @@ void HealDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "party member to heal out of spell range",
             {
-                NextAction("reach party member to heal", ACTION_CRITICAL_HEAL + 9)
+                CreateNextAction<HealPartyMemberAction>(ACTION_CRITICAL_HEAL + 9.0f)
             }
         )
     );
@@ -47,11 +50,11 @@ void HealDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "party member critical health",
             {
-                NextAction("tree form", ACTION_CRITICAL_HEAL + 4.1f),
-                NextAction("swiftmend on party", ACTION_CRITICAL_HEAL + 4),
-                NextAction("regrowth on party", ACTION_CRITICAL_HEAL + 3),
-                NextAction("wild growth on party", ACTION_CRITICAL_HEAL + 2),
-                NextAction("nourish on party", ACTION_CRITICAL_HEAL + 1),
+                CreateNextAction<CastTreeFormAction>(ACTION_CRITICAL_HEAL + 4.1f),
+                CreateNextAction<CastPartySwiftmendAction>(ACTION_CRITICAL_HEAL + 4.0f),
+                CreateNextAction<CastRegrowthOnPartyAction>(ACTION_CRITICAL_HEAL + 3.0f),
+                CreateNextAction<CastWildGrowthOnPartyAction>(ACTION_CRITICAL_HEAL + 2.0f),
+                CreateNextAction<CastPartyNourishAction>(ACTION_CRITICAL_HEAL + 1.0f),
             }
         )
     );
@@ -59,7 +62,7 @@ void HealDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "party member critical health",
             {
-                NextAction("nature's swiftness", ACTION_CRITICAL_HEAL + 4)
+                CreateNextAction<CastNaturesSwiftnessAction>(ACTION_CRITICAL_HEAL + 4.0f)
             }
         )
     );
@@ -67,9 +70,9 @@ void HealDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "group heal setting",
             {
-                NextAction("tree form", ACTION_MEDIUM_HEAL + 2.3f),
-                NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 2.2f),
-                NextAction("rejuvenation on not full", ACTION_MEDIUM_HEAL + 2.1f),
+                CreateNextAction<CastTreeFormAction>(ACTION_MEDIUM_HEAL + 2.3f),
+                CreateNextAction<CastWildGrowthOnPartyAction>(ACTION_MEDIUM_HEAL + 2.2f),
+                CreateNextAction<CastRejuvenationOnNotFullAction>(ACTION_MEDIUM_HEAL + 2.1f),
             }
         )
     );
@@ -77,8 +80,8 @@ void HealDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium group heal setting",
             {
-                NextAction("tree form", ACTION_CRITICAL_HEAL + 0.6f),
-                NextAction("tranquility", ACTION_CRITICAL_HEAL + 0.5f)
+                CreateNextAction<CastTreeFormAction>(ACTION_CRITICAL_HEAL + 0.6f),
+                CreateNextAction<CastTranquilityAction>(ACTION_CRITICAL_HEAL + 0.5f)
             }
         )
     );
@@ -88,11 +91,11 @@ void HealDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "party member low health",
             {
-                NextAction("tree form", ACTION_MEDIUM_HEAL + 1.5f),
-                NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 1.4f),
-                NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 1.3f),
-                NextAction("swiftmend on party", ACTION_MEDIUM_HEAL + 1.2),
-                NextAction("nourish on party", ACTION_MEDIUM_HEAL + 1.1f),
+                CreateNextAction<CastTreeFormAction>(ACTION_MEDIUM_HEAL + 1.5f),
+                CreateNextAction<CastWildGrowthOnPartyAction>(ACTION_MEDIUM_HEAL + 1.4f),
+                CreateNextAction<CastRegrowthOnPartyAction>(ACTION_MEDIUM_HEAL + 1.3f),
+                CreateNextAction<CastPartySwiftmendAction>(ACTION_MEDIUM_HEAL + 1.2f),
+                CreateNextAction<CastPartyNourishAction>(ACTION_MEDIUM_HEAL + 1.1f),
             }
         )
     );
@@ -102,11 +105,11 @@ void HealDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "party member medium health",
             {
-                NextAction("tree form", ACTION_MEDIUM_HEAL + 0.5f),
-                NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 0.4f),
-                NextAction("rejuvenation on party", ACTION_MEDIUM_HEAL + 0.3f),
-                NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 0.2f),
-                NextAction("nourish on party", ACTION_MEDIUM_HEAL + 0.1f)
+                CreateNextAction<CastTreeFormAction>(ACTION_MEDIUM_HEAL + 0.5f),
+                CreateNextAction<CastWildGrowthOnPartyAction>(ACTION_MEDIUM_HEAL + 0.4f),
+                CreateNextAction<CastRejuvenationOnPartyAction>(ACTION_MEDIUM_HEAL + 0.3f),
+                CreateNextAction<CastRegrowthOnPartyAction>(ACTION_MEDIUM_HEAL + 0.2f),
+                CreateNextAction<CastPartyNourishAction>(ACTION_MEDIUM_HEAL + 0.1f)
             }
         )
     );
@@ -116,9 +119,9 @@ void HealDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "party member almost full health",
             {
-                NextAction("wild growth on party", ACTION_LIGHT_HEAL + 0.3f),
-                NextAction("rejuvenation on party", ACTION_LIGHT_HEAL + 0.2f),
-                NextAction("regrowth on party", ACTION_LIGHT_HEAL + 0.1f)
+                CreateNextAction<CastWildGrowthOnPartyAction>(ACTION_LIGHT_HEAL + 0.3f),
+                CreateNextAction<CastRejuvenationOnPartyAction>(ACTION_LIGHT_HEAL + 0.2f),
+                CreateNextAction<CastRegrowthOnPartyAction>(ACTION_LIGHT_HEAL + 0.1f)
             }
         )
     );
@@ -127,7 +130,7 @@ void HealDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium mana",
             {
-                NextAction("innervate", ACTION_HIGH + 5)
+                CreateNextAction<CastInnervateAction>(ACTION_HIGH + 5.0f)
             }
         )
     );
@@ -136,7 +139,7 @@ void HealDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "enemy too close for spell",
             {
-                NextAction("flee", ACTION_MOVE + 9)
+                CreateNextAction<FleeAction>(ACTION_MOVE + 9.0f)
             }
         )
     );
