@@ -3,7 +3,7 @@ name: Enforce test-staging → main
 on:
   pull_request:
     branches:
-      - main
+      - master
 
 jobs:
   require-test-staging:
