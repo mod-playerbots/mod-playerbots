@@ -31,15 +31,15 @@ WorldLocation ArrowFormation::GetLocationInternal()
     tanks.PlaceUnits(&placer);
     tanks.Move(-cos(orientation) * offset, -sin(orientation) * offset);
 
-    offset += tankLines * sPlayerbotAIConfig->followDistance + sPlayerbotAIConfig->tooCloseDistance / 2;
+    offset += tankLines * sPlayerbotAIConfig.followDistance + sPlayerbotAIConfig.tooCloseDistance / 2;
     melee.PlaceUnits(&placer);
     melee.Move(-cos(orientation) * offset, -sin(orientation) * offset);
 
-    offset += meleeLines * sPlayerbotAIConfig->followDistance + sPlayerbotAIConfig->tooCloseDistance / 2;
+    offset += meleeLines * sPlayerbotAIConfig.followDistance + sPlayerbotAIConfig.tooCloseDistance / 2;
     ranged.PlaceUnits(&placer);
     ranged.Move(-cos(orientation) * offset, -sin(orientation) * offset);
 
-    offset += rangedLines * sPlayerbotAIConfig->followDistance;
+    offset += rangedLines * sPlayerbotAIConfig.followDistance;
     healers.PlaceUnits(&placer);
     healers.Move(-cos(orientation) * offset, -sin(orientation) * offset);
 
@@ -143,16 +143,16 @@ UnitPosition MultiLineUnitPlacer::Place(FormationUnit* unit, uint32 index, uint3
     uint32 lineNo = index / 6;
     uint32 indexInLine = index % 6;
     uint32 lineSize = std::max(count - lineNo * 6, uint32(6));
-    float x = cos(orientation) * sPlayerbotAIConfig->followDistance * lineNo;
-    float y = sin(orientation) * sPlayerbotAIConfig->followDistance * lineNo;
+    float x = cos(orientation) * sPlayerbotAIConfig.followDistance * lineNo;
+    float y = sin(orientation) * sPlayerbotAIConfig.followDistance * lineNo;
     return placer.Place(unit, indexInLine, lineSize);
 }
 
 UnitPosition SingleLineUnitPlacer::Place(FormationUnit* unit, uint32 index, uint32 count)
 {
     float angle = orientation - M_PI / 2.0f;
-    float x = cos(angle) * sPlayerbotAIConfig->followDistance * ((float)index - (float)count / 2);
-    float y = sin(angle) * sPlayerbotAIConfig->followDistance * ((float)index - (float)count / 2);
+    float x = cos(angle) * sPlayerbotAIConfig.followDistance * ((float)index - (float)count / 2);
+    float y = sin(angle) * sPlayerbotAIConfig.followDistance * ((float)index - (float)count / 2);
     return UnitPosition(x, y);
 }
 

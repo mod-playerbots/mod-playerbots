@@ -9,17 +9,24 @@
 class PlayerbotCommandServer
 {
 public:
-    PlayerbotCommandServer() {}
-    virtual ~PlayerbotCommandServer() {}
-    static PlayerbotCommandServer* instance()
+    static PlayerbotCommandServer& instance()
     {
         static PlayerbotCommandServer instance;
-        return &instance;
+
+        return instance;
     }
 
     void Start();
-};
 
-#define sPlayerbotCommandServer PlayerbotCommandServer::instance()
+private:
+    PlayerbotCommandServer() = default;
+    ~PlayerbotCommandServer() = default;
+
+    PlayerbotCommandServer(const PlayerbotCommandServer&) = delete;
+    PlayerbotCommandServer& operator=(const PlayerbotCommandServer&) = delete;
+
+    PlayerbotCommandServer(PlayerbotCommandServer&&) = delete;
+    PlayerbotCommandServer& operator=(PlayerbotCommandServer&&) = delete;
+};
 
 #endif

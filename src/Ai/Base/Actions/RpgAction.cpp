@@ -130,7 +130,7 @@ bool RpgAction::SetNextRpgAction()
 
     std::mt19937 gen(time(0));
 
-    sTravelMgr->weighted_shuffle(actions.begin(), actions.end(), relevances.begin(), relevances.end(), gen);
+    TravelMgr::instance().weighted_shuffle(actions.begin(), actions.end(), relevances.begin(), relevances.end(), gen);
 
     Action* action = actions.front();
 

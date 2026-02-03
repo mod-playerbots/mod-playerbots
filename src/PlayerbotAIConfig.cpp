@@ -660,25 +660,25 @@ bool PlayerbotAIConfig::Initialize()
     }
 
     // Assign account types after accounts are created
-    sRandomPlayerbotMgr->AssignAccountTypes();
+    sRandomPlayerbotMgr.AssignAccountTypes();
 
-    if (sPlayerbotAIConfig->enabled)
+    if (sPlayerbotAIConfig.enabled)
     {
-        sRandomPlayerbotMgr->Init();
+        sRandomPlayerbotMgr.Init();
     }
 
-    sPlayerbotGuildMgr->Init();
-    sRandomItemMgr->Init();
-    sRandomItemMgr->InitAfterAhBot();
-    sPlayerbotTextMgr->LoadBotTexts();
-    sPlayerbotTextMgr->LoadBotTextChance();
+    PlayerbotGuildMgr::instance().Init();
+    sRandomItemMgr.Init();
+    sRandomItemMgr.InitAfterAhBot();
+    PlayerbotTextMgr::instance().LoadBotTexts();
+    PlayerbotTextMgr::instance().LoadBotTextChance();
     PlayerbotFactory::Init();
 
     AiObjectContext::BuildAllSharedContexts();
 
-    if (sPlayerbotAIConfig->randomBotSuggestDungeons)
+    if (sPlayerbotAIConfig.randomBotSuggestDungeons)
     {
-        sPlayerbotDungeonRepository->LoadDungeonSuggestions();
+        PlayerbotDungeonRepository::instance().LoadDungeonSuggestions();
     }
 
     excludedHunterPetFamilies.clear();

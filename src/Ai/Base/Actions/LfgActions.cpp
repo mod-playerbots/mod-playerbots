@@ -20,7 +20,7 @@ bool LfgJoinAction::Execute(Event event) { return JoinLFG(); }
 
 uint32 LfgJoinAction::GetRoles()
 {
-    if (!sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (!sRandomPlayerbotMgr.IsRandomBot(bot))
     {
         if (botAI->IsTank(bot))
             return PLAYER_ROLE_TANK;
@@ -101,7 +101,7 @@ bool LfgJoinAction::JoinLFG()
     LfgDungeonSet list;
     std::vector<uint32> selected;
 
-    std::vector<uint32> dungeons = sRandomPlayerbotMgr->LfgDungeons[bot->GetTeamId()];
+    std::vector<uint32> dungeons = sRandomPlayerbotMgr.LfgDungeons[bot->GetTeamId()];
     if (!dungeons.size())
         return false;
 
@@ -216,9 +216,9 @@ bool LfgAcceptAction::Execute(Event event)
         *packet << id << true;
         bot->GetSession()->QueuePacket(packet);
 
-        if (sRandomPlayerbotMgr->IsRandomBot(bot) && !bot->GetGroup())
+        if (sRandomPlayerbotMgr.IsRandomBot(bot) && !bot->GetGroup())
         {
-            sRandomPlayerbotMgr->Refresh(bot);
+            sRandomPlayerbotMgr.Refresh(bot);
             botAI->ResetStrategies();
         }
 
@@ -251,9 +251,9 @@ bool LfgAcceptAction::Execute(Event event)
             *packet << id << true;
             bot->GetSession()->QueuePacket(packet);
 
-            if (sRandomPlayerbotMgr->IsRandomBot(bot) && !bot->GetGroup())
+            if (sRandomPlayerbotMgr.IsRandomBot(bot) && !bot->GetGroup())
             {
-                sRandomPlayerbotMgr->Refresh(bot);
+                sRandomPlayerbotMgr.Refresh(bot);
                 botAI->ResetStrategies();
             }
 
@@ -306,7 +306,7 @@ bool LfgTeleportAction::Execute(Event event)
 
 bool LfgJoinAction::isUseful()
 {
-    if (!sPlayerbotAIConfig->randomBotJoinLfg)
+    if (!sPlayerbotAIConfig.randomBotJoinLfg)
     {
         // botAI->ChangeStrategy("-lfg", BOT_STATE_NON_COMBAT);
         return false;
@@ -337,7 +337,7 @@ bool LfgJoinAction::isUseful()
     if (bot->isDead())
         return false;
 
-    if (!sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (!sRandomPlayerbotMgr.IsRandomBot(bot))
         return false;
 
     Map* map = bot->GetMap();
