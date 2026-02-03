@@ -302,7 +302,7 @@ std::string const RandomPlayerbotFactory::CreateRandomBotName(NameRaceAndGender 
             botName.clear();
             continue;
         }
-        return botName
+        return botName;
     }
     LOG_ERROR("playerbots", "Random name generation failed.");
     botName.clear();
