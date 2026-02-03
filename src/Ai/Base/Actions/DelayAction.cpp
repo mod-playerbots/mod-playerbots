@@ -9,7 +9,7 @@
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
 
-bool DelayAction::Execute(Event)
+bool DelayAction::Execute(Event /*event*/)
 {
     const uint32 delay = PlayerbotAIConfig::instance().passiveDelay + PlayerbotAIConfig::instance().globalCoolDown;
 

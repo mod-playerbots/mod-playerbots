@@ -42,7 +42,7 @@ void PositionsResetAction::SetStayPosition(float x, float y, float z)
     posMap["stay"] = pos;
 }
 
-bool FollowChatShortcutAction::Execute(Event)
+bool FollowChatShortcutAction::Execute(Event /*event*/)
 {
     Player* master = GetMaster();
     if (!master)
@@ -116,7 +116,7 @@ bool FollowChatShortcutAction::Execute(Event)
     return true;
 }
 
-bool StayChatShortcutAction::Execute(Event)
+bool StayChatShortcutAction::Execute(Event /*event*/)
 {
     Player* master = GetMaster();
     if (!master)
@@ -133,7 +133,7 @@ bool StayChatShortcutAction::Execute(Event)
     return true;
 }
 
-bool MoveFromGroupChatShortcutAction::Execute(Event)
+bool MoveFromGroupChatShortcutAction::Execute(Event /*event*/)
 {
     Player* master = GetMaster();
     if (!master)
@@ -148,7 +148,7 @@ bool MoveFromGroupChatShortcutAction::Execute(Event)
     return true;
 }
 
-bool FleeChatShortcutAction::Execute(Event)
+bool FleeChatShortcutAction::Execute(Event /*event*/)
 {
     Player* master = GetMaster();
     if (!master)
@@ -171,7 +171,7 @@ bool FleeChatShortcutAction::Execute(Event)
     return true;
 }
 
-bool GoawayChatShortcutAction::Execute(Event)
+bool GoawayChatShortcutAction::Execute(Event /*event*/)
 {
     Player* master = GetMaster();
     if (!master)
@@ -188,7 +188,7 @@ bool GoawayChatShortcutAction::Execute(Event)
     return true;
 }
 
-bool GrindChatShortcutAction::Execute(Event)
+bool GrindChatShortcutAction::Execute(Event /*event*/)
 {
     Player* master = GetMaster();
     if (!master)
@@ -204,7 +204,7 @@ bool GrindChatShortcutAction::Execute(Event)
     return true;
 }
 
-bool TankAttackChatShortcutAction::Execute(Event)
+bool TankAttackChatShortcutAction::Execute(Event /*event*/)
 {
     Player* master = GetMaster();
     if (!master)
@@ -224,7 +224,7 @@ bool TankAttackChatShortcutAction::Execute(Event)
     return true;
 }
 
-bool MaxDpsChatShortcutAction::Execute(Event)
+bool MaxDpsChatShortcutAction::Execute(Event /*event*/)
 {
     Player* master = GetMaster();
     if (!master)
@@ -241,7 +241,7 @@ bool MaxDpsChatShortcutAction::Execute(Event)
     return true;
 }
 
-bool BwlChatShortcutAction::Execute(Event)
+bool BwlChatShortcutAction::Execute(Event /*event*/)
 {
     Player* master = GetMaster();
     if (!master)

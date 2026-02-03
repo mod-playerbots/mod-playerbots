@@ -368,7 +368,7 @@ std::string ChangeTalentsAction::SpecApply(std::string param)
 //     return nullptr;
 // }
 
-bool AutoSetTalentsAction::Execute(Event)
+bool AutoSetTalentsAction::Execute(Event /*event*/)
 {
     std::ostringstream out;
 

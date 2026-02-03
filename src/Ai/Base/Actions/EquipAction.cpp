@@ -397,7 +397,7 @@ bool EquipUpgradesAction::Execute(Event event)
     return true;
 }
 
-bool EquipUpgradeAction::Execute(Event)
+bool EquipUpgradeAction::Execute(Event /*event*/)
 {
     CollectItemsVisitor visitor;
     IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);
