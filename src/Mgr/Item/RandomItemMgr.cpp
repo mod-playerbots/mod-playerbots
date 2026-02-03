@@ -2256,10 +2256,13 @@ void RandomItemMgr::BuildEquipCacheNew()
         {
             continue;
         }
-        if (itemId == 22784)
-        {  // Sunwell Orb
+
+        // Unobtainable or unusable items
+        if (itemId == 12468 || // Chilton Wand
+            itemId == 22784 || // Sunwell Orb
+            itemId == 46978) // Totem of the Earthen Ring
             continue;
-        }
+
         equipCacheNew[proto->RequiredLevel][proto->InventoryType].push_back(itemId);
     }
 }
