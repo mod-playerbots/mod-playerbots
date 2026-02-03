@@ -436,7 +436,9 @@ bool HighKingMaulgarBanishFelstalkerAction::Execute(Event event)
         }
     }
 
-    if (warlockIndex >= 0 && warlockIndex < felStalkers.size())
+    const int64_t felStalkersSize = felStalkers.size();
+
+    if (warlockIndex >= 0 && warlockIndex < felStalkersSize)
     {
         Unit* assignedFelStalker = felStalkers[warlockIndex];
         if (!assignedFelStalker->HasAura(SPELL_BANISH) && botAI->CanCastSpell(SPELL_BANISH, assignedFelStalker, true))
@@ -546,7 +548,6 @@ bool GruulTheDragonkillerMainTankPositionBossAction::Execute(Event event)
 
         if (distanceToTankPosition > maxDistance)
         {
-            float step = std::min(maxDistance, distanceToTankPosition);
             float moveX = bot->GetPositionX() + (dX / distanceToTankPosition) * maxDistance;
             float moveY = bot->GetPositionY() + (dY / distanceToTankPosition) * maxDistance;
             const float moveZ = tankPosition.z;

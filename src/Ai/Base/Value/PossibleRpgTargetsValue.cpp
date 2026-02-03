@@ -13,6 +13,7 @@
 #include "ServerFacade.h"
 #include "SharedDefines.h"
 #include "NearestGameObjects.h"
+#include "TravelMgr.h"
 
 std::vector<uint32> PossibleRpgTargetsValue::allowedNpcFlags;
 
@@ -73,8 +74,10 @@ bool PossibleRpgTargetsValue::AcceptUnit(Unit* unit)
     }
 
     TravelTarget* travelTarget = context->GetValue<TravelTarget*>("travel target")->Get();
-    if (travelTarget && travelTarget->getDestination() &&
-        travelTarget->getDestination()->getEntry() == unit->GetEntry())
+
+
+    if (travelTarget != nullptr && travelTarget->getDestination() &&
+        (uint32_t)travelTarget->getDestination()->getEntry() == unit->GetEntry())
         return true;
 
     if (urand(1, 100) < 25 && unit->IsFriendlyTo(bot))

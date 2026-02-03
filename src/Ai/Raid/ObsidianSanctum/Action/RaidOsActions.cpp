@@ -8,9 +8,6 @@ bool SartharionTankPositionAction::Execute(Event event)
     Unit* boss = AI_VALUE2(Unit*, "find target", "sartharion");
     if (!boss) { return false; }
 
-    // Unit* shadron = AI_VALUE2(Unit*, "find target", "shadron");
-    // Unit* tenebron = AI_VALUE2(Unit*, "find target", "tenebron");
-    // Unit* vesperon = AI_VALUE2(Unit*, "find target", "vesperon");
     Unit* shadron = nullptr;
     Unit* tenebron = nullptr;
     Unit* vesperon = nullptr;

@@ -292,7 +292,6 @@ bool MoveNearWaterAction::isPossible()
         // Water spot is out of range, lets look for a spot to move to for the fishing hole.
         if (distance > MAX_DISTANCE_TO_WATER || distance < MIN_DISTANCE_TO_WATER)
         {
-            float angle = bot->GetAngle(fishingHole.GetPositionX(), fishingHole.GetPositionY());
             WorldPosition landSpot = FindLandRadialFromPosition(botAI, fishingHole, MIN_DISTANCE_TO_WATER, MAX_DISTANCE_TO_WATER, SEARCH_INCREMENT, fishingSearchWindow, 32);
             if (landSpot.IsValid())
             {
@@ -323,7 +322,6 @@ bool MoveNearWaterAction::isPossible()
     if (!water.IsValid())
         return false;
 
-    bool hasLOS = bot->IsWithinLOS(water.GetPositionX(), water.GetPositionY(), water.GetPositionZ());
     float angle = bot->GetAngle(water.GetPositionX(), water.GetPositionY());
     WorldPosition landSpot =
         FindLandFromPosition(botAI, 0.0f, MAX_DISTANCE_TO_WATER, 1.0f, angle, water, fishingSearchWindow, false);

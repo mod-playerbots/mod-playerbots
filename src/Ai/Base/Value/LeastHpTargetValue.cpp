@@ -6,7 +6,6 @@
 #include "LeastHpTargetValue.h"
 
 #include "AttackersValue.h"
-#include "Playerbots.h"
 
 class FindLeastHpTargetStrategy : public FindNonCcTargetStrategy
 {
@@ -15,7 +14,6 @@ public:
 
     void CheckAttacker(Unit* attacker, ThreatMgr* threatMgr) override
     {
-        Player* bot = botAI->GetBot();
         if (IsCcTarget(attacker))
             return;
 
@@ -30,5 +28,6 @@ protected:
 Unit* LeastHpTargetValue::Calculate()
 {
     FindLeastHpTargetStrategy strategy(botAI);
+
     return FindTarget(&strategy);
 }

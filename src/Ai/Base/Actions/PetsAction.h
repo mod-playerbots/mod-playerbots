@@ -22,7 +22,6 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool warningEnabled = true;
     std::string defaultCmd;
 };
 
