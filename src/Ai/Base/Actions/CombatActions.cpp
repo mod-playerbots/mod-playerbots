@@ -25,7 +25,7 @@ bool SwitchToMeleeAction::isUseful()
         return botAI->HasStrategy("ranged", BOT_STATE_COMBAT) &&
                ((bot->IsInCombat() && target &&
                  (target->GetVictim() == bot && (!bot->GetGroup() || lastFlee) &&
-                  sServerFacade->IsDistanceLessOrEqualThan(AI_VALUE2(float, "distance", "current target"), 8.0f))) ||
+                  ServerFacade::instance().IsDistanceLessOrEqualThan(AI_VALUE2(float, "distance", "current target"), 8.0f))) ||
                 (!bot->IsInCombat()));
     }
 
@@ -47,7 +47,7 @@ bool SwitchToRangedAction::isUseful()
         return botAI->HasStrategy("close", BOT_STATE_COMBAT) && hasAmmo &&
                ((bot->IsInCombat() && target &&
                  ((target->GetVictim() != bot || target->GetTarget() != bot->GetGUID()) ||
-                  sServerFacade->IsDistanceGreaterThan(AI_VALUE2(float, "distance", "current target"), 8.0f))) ||
+                  ServerFacade::instance().IsDistanceGreaterThan(AI_VALUE2(float, "distance", "current target"), 8.0f))) ||
                 (!bot->IsInCombat()));
     }
 

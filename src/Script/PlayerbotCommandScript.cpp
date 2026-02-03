@@ -76,33 +76,33 @@ public:
     {
         if (!strcmp(args, "reset"))
         {
-            sPerfMonitor->Reset();
+            sPerfMonitor.Reset();
             return true;
         }
 
         if (!strcmp(args, "tick"))
         {
-            sPerfMonitor->PrintStats(true, false);
+            sPerfMonitor.PrintStats(true, false);
             return true;
         }
 
         if (!strcmp(args, "stack"))
         {
-            sPerfMonitor->PrintStats(false, true);
+            sPerfMonitor.PrintStats(false, true);
             return true;
         }
 
         if (!strcmp(args, "toggle"))
         {
-            sPlayerbotAIConfig->perfMonEnabled = !sPlayerbotAIConfig->perfMonEnabled;
-            if (sPlayerbotAIConfig->perfMonEnabled)
+            sPlayerbotAIConfig.perfMonEnabled = !sPlayerbotAIConfig.perfMonEnabled;
+            if (sPlayerbotAIConfig.perfMonEnabled)
                 LOG_INFO("playerbots", "Performance monitor enabled");
             else
                 LOG_INFO("playerbots", "Performance monitor disabled");
             return true;
         }
 
-        sPerfMonitor->PrintStats();
+        sPerfMonitor.PrintStats();
         return true;
     }
 
@@ -122,7 +122,7 @@ public:
         Player* player = handler->GetSession()->GetPlayer();
         std::string key = args;
 
-        PlayerbotMgr* mgr = sPlayerbotsMgr->GetPlayerbotMgr(player);
+        PlayerbotMgr* mgr = PlayerbotsMgr::instance().GetPlayerbotMgr(player);
         if (mgr)
         {
             mgr->HandleSetSecurityKeyCommand(player, key);
@@ -151,7 +151,7 @@ public:
 
         Player* player = handler->GetSession()->GetPlayer();
 
-        PlayerbotMgr* mgr = sPlayerbotsMgr->GetPlayerbotMgr(player);
+        PlayerbotMgr* mgr = PlayerbotsMgr::instance().GetPlayerbotMgr(player);
         if (mgr)
         {
             mgr->HandleLinkAccountCommand(player, accountName, key);
@@ -168,7 +168,7 @@ public:
     {
         Player* player = handler->GetSession()->GetPlayer();
 
-        PlayerbotMgr* mgr = sPlayerbotsMgr->GetPlayerbotMgr(player);
+        PlayerbotMgr* mgr = PlayerbotsMgr::instance().GetPlayerbotMgr(player);
         if (mgr)
         {
             mgr->HandleViewLinkedAccountsCommand(player);
@@ -195,7 +195,7 @@ public:
 
         Player* player = handler->GetSession()->GetPlayer();
 
-        PlayerbotMgr* mgr = sPlayerbotsMgr->GetPlayerbotMgr(player);
+        PlayerbotMgr* mgr = PlayerbotsMgr::instance().GetPlayerbotMgr(player);
         if (mgr)
         {
             mgr->HandleUnlinkAccountCommand(player, accountName);

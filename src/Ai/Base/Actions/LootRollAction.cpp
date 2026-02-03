@@ -84,11 +84,11 @@ bool LootRollAction::Execute(Event event)
                     break;
             }
         }
-        if (sPlayerbotAIConfig->lootRollLevel == 0)
+        if (sPlayerbotAIConfig.lootRollLevel == 0)
         {
             vote = PASS;
         }
-        else if (sPlayerbotAIConfig->lootRollLevel == 1)
+        else if (sPlayerbotAIConfig.lootRollLevel == 1)
         {
             // Level 1 = "greed" mode: bots greed on useful items but never need
             // Only downgrade NEED to GREED, preserve GREED votes as-is

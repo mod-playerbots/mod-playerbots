@@ -71,7 +71,7 @@ void AttackersValue::AddAttackersOf(Group* group, std::unordered_set<Unit*>& tar
     {
         Player* member = ObjectAccessor::FindPlayer(itr->guid);
         if (!member || !member->IsAlive() || member == bot || member->GetMapId() != bot->GetMapId() ||
-            sServerFacade->GetDistance2d(bot, member) > sPlayerbotAIConfig->sightDistance)
+            ServerFacade::instance().GetDistance2d(bot, member) > sPlayerbotAIConfig.sightDistance)
             continue;
 
         AddAttackersOf(member, targets);
@@ -103,7 +103,7 @@ void AttackersValue::AddAttackersOf(Player* player, std::unordered_set<Unit*>& t
         Unit* attacker = threatMgr->GetOwner();
 
         if (player->IsValidAttackTarget(attacker) &&
-            player->GetDistance2d(attacker) < sPlayerbotAIConfig->sightDistance)
+            player->GetDistance2d(attacker) < sPlayerbotAIConfig.sightDistance)
             targets.insert(attacker);
 
         ref = ref->next();
@@ -176,8 +176,8 @@ bool AttackersValue::IsPossibleTarget(Unit* attacker, Player* bot, float /*range
     // PvP prohibition checks (skip for duels)
     if ((attacker->GetGUID().IsPlayer() || attacker->GetGUID().IsPet()) &&
         (!bot->duel || bot->duel->Opponent != attacker) &&
-        (sPlayerbotAIConfig->IsPvpProhibited(attacker->GetZoneId(), attacker->GetAreaId()) ||
-        sPlayerbotAIConfig->IsPvpProhibited(bot->GetZoneId(), bot->GetAreaId())))
+        (sPlayerbotAIConfig.IsPvpProhibited(attacker->GetZoneId(), attacker->GetAreaId()) ||
+        sPlayerbotAIConfig.IsPvpProhibited(bot->GetZoneId(), bot->GetAreaId())))
     {
         // This will stop aggresive pets from starting an attack.
         // This will stop currently attacking pets from continuing their attack.
@@ -269,11 +269,11 @@ bool PossibleAddsValue::Calculate()
                     if (!attacker)
                         continue;
 
-                    float dist = sServerFacade->GetDistance2d(attacker, add);
-                    if (sServerFacade->IsDistanceLessOrEqualThan(dist, sPlayerbotAIConfig->aoeRadius * 1.5f))
+                    float dist = ServerFacade::instance().GetDistance2d(attacker, add);
+                    if (ServerFacade::instance().IsDistanceLessOrEqualThan(dist, sPlayerbotAIConfig.aoeRadius * 1.5f))
                         continue;
 
-                    if (sServerFacade->IsDistanceLessOrEqualThan(dist, sPlayerbotAIConfig->aggroDistance))
+                    if (ServerFacade::instance().IsDistanceLessOrEqualThan(dist, sPlayerbotAIConfig.aggroDistance))
                         return true;
                 }
             }

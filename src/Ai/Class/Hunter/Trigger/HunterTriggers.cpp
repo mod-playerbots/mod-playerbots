@@ -62,7 +62,7 @@ bool HuntersPetLowHealthTrigger::IsActive()
 bool HuntersPetMediumHealthTrigger::IsActive()
 {
     Unit* pet = AI_VALUE(Unit*, "pet target");
-    return pet && AI_VALUE2(uint8, "health", "pet target") < sPlayerbotAIConfig->mediumHealth &&
+    return pet && AI_VALUE2(uint8, "health", "pet target") < sPlayerbotAIConfig.mediumHealth &&
            !AI_VALUE2(bool, "dead", "pet target") && !AI_VALUE2(bool, "mounted", "self target");
 }
 
@@ -74,7 +74,7 @@ bool HunterPetNotHappy::IsActive()
 bool HunterAspectOfTheViperTrigger::IsActive()
 {
     return SpellTrigger::IsActive() && !botAI->HasAura(spell, GetTarget()) &&
-           AI_VALUE2(uint8, "mana", "self target") < (sPlayerbotAIConfig->lowMana / 2);
+           AI_VALUE2(uint8, "mana", "self target") < (sPlayerbotAIConfig.lowMana / 2);
     ;
 }
 
@@ -96,7 +96,7 @@ bool SwitchToRangedTrigger::IsActive()
     Unit* target = AI_VALUE(Unit*, "current target");
     return botAI->HasStrategy("close", BOT_STATE_COMBAT) && target &&
            (target->GetVictim() != bot &&
-            sServerFacade->IsDistanceGreaterThan(AI_VALUE2(float, "distance", "current target"), 8.0f));
+            ServerFacade::instance().IsDistanceGreaterThan(AI_VALUE2(float, "distance", "current target"), 8.0f));
 }
 
 bool SwitchToMeleeTrigger::IsActive()
@@ -104,7 +104,7 @@ bool SwitchToMeleeTrigger::IsActive()
     Unit* target = AI_VALUE(Unit*, "current target");
     return botAI->HasStrategy("ranged", BOT_STATE_COMBAT) && target &&
            (target->GetVictim() == bot &&
-            sServerFacade->IsDistanceLessOrEqualThan(AI_VALUE2(float, "distance", "current target"), 8.0f));
+            ServerFacade::instance().IsDistanceLessOrEqualThan(AI_VALUE2(float, "distance", "current target"), 8.0f));
 }
 
 bool NoTrackTrigger::IsActive()

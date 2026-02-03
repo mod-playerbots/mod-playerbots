@@ -142,7 +142,7 @@ bool Engine::DoNextAction(Unit* unit, uint32 depth, bool minimal)
 {
     LogAction("--- AI Tick ---");
 
-    if (sPlayerbotAIConfig->logValuesPerTick)
+    if (sPlayerbotAIConfig.logValuesPerTick)
         LogValues();
 
     bool actionExecuted = false;
@@ -154,7 +154,7 @@ bool Engine::DoNextAction(Unit* unit, uint32 depth, bool minimal)
     PushDefaultActions();
 
     uint32 iterations = 0;
-    uint32 iterationsPerTick = queue.Size() * (minimal ? 2 : sPlayerbotAIConfig->iterationsPerTick);
+    uint32 iterationsPerTick = queue.Size() * (minimal ? 2 : sPlayerbotAIConfig.iterationsPerTick);
 
     while (++iterations <= iterationsPerTick)
     {
@@ -204,7 +204,7 @@ bool Engine::DoNextAction(Unit* unit, uint32 depth, bool minimal)
                     }
                 }
 
-                PerfMonitorOperation* pmo = sPerfMonitor->start(PERF_MON_ACTION, action->getName(), &aiObjectContext->performanceStack);
+                PerfMonitorOperation* pmo = sPerfMonitor.start(PERF_MON_ACTION, action->getName(), &aiObjectContext->performanceStack);
                 actionExecuted = ListenAndExecute(action, event);
                 if (pmo)
                     pmo->finish();
@@ -457,7 +457,7 @@ void Engine::ProcessTriggers(bool minimal)
                 continue;
 
             PerfMonitorOperation* pmo =
-                sPerfMonitor->start(PERF_MON_TRIGGER, trigger->getName(), &aiObjectContext->performanceStack);
+                sPerfMonitor.start(PERF_MON_TRIGGER, trigger->getName(), &aiObjectContext->performanceStack);
             Event event = trigger->Check();
             if (pmo)
                 pmo->finish();
@@ -599,7 +599,7 @@ bool Engine::ListenAndExecute(Action* action, Event event)
 void Engine::LogAction(char const* format, ...)
 {
     Player* bot = botAI->GetBot();
-    if (sPlayerbotAIConfig->logInGroupOnly && (!bot->GetGroup() || !botAI->HasRealPlayerMaster()) && !testMode)
+    if (sPlayerbotAIConfig.logInGroupOnly && (!bot->GetGroup() || !botAI->HasRealPlayerMaster()) && !testMode)
         return;
 
     char buf[1024];
@@ -661,7 +661,7 @@ void Engine::LogValues()
         return;
 
     Player* bot = botAI->GetBot();
-    if (sPlayerbotAIConfig->logInGroupOnly && (!bot->GetGroup() || !botAI->HasRealPlayerMaster()))
+    if (sPlayerbotAIConfig.logInGroupOnly && (!bot->GetGroup() || !botAI->HasRealPlayerMaster()))
         return;
 
     std::string const text = botAI->GetAiObjectContext()->FormatValues();

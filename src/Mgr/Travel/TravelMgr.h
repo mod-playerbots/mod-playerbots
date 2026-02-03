@@ -10,7 +10,6 @@
 #include <random>
 
 #include "AiObject.h"
-#include "Corpse.h"
 #include "CreatureData.h"
 #include "GameObject.h"
 #include "GridDefines.h"
@@ -298,11 +297,11 @@ public:
 
     std::vector<WorldPosition> getPathTo(WorldPosition endPos, Unit* bot) { return endPos.getPathFrom(*this, bot); }
 
-    bool isPathTo(std::vector<WorldPosition> path, float maxDistance = sPlayerbotAIConfig->targetPosRecalcDistance)
+    bool isPathTo(std::vector<WorldPosition> path, float maxDistance = sPlayerbotAIConfig.targetPosRecalcDistance)
     {
         return !path.empty() && distance(path.back()) < maxDistance;
     };
-    bool cropPathTo(std::vector<WorldPosition>& path, float maxDistance = sPlayerbotAIConfig->targetPosRecalcDistance);
+    bool cropPathTo(std::vector<WorldPosition>& path, float maxDistance = sPlayerbotAIConfig.targetPosRecalcDistance);
     bool canPathTo(WorldPosition endPos, Unit* bot) { return endPos.isPathTo(getPathTo(endPos, bot)); }
 
     float getPathLength(std::vector<WorldPosition> points)
@@ -848,12 +847,11 @@ protected:
 class TravelMgr
 {
 public:
-    TravelMgr(){};
-
-    static TravelMgr* instance()
+    static TravelMgr& instance()
     {
         static TravelMgr instance;
-        return &instance;
+
+        return instance;
     }
 
     void Clear();
@@ -922,7 +920,6 @@ public:
     void printGrid(uint32 mapId, int x, int y, std::string const type);
     void printObj(WorldObject* obj, std::string const type);
 
-    // protected:
     void logQuestError(uint32 errorNr, Quest* quest, uint32 objective = 0, uint32 unitId = 0, uint32 itemId = 0);
 
     std::vector<uint32> avoidLoaded;
@@ -939,8 +936,16 @@ public:
 
     std::unordered_map<std::pair<uint32, uint32>, std::vector<mapTransfer>, boost::hash<std::pair<uint32, uint32>>>
         mapTransfersMap;
-};
 
-#define sTravelMgr TravelMgr::instance()
+private:
+    TravelMgr() = default;
+    ~TravelMgr() = default;
+
+    TravelMgr(const TravelMgr&) = delete;
+    TravelMgr& operator=(const TravelMgr&) = delete;
+
+    TravelMgr(TravelMgr&&) = delete;
+    TravelMgr& operator=(TravelMgr&&) = delete;
+};
 
 #endif
