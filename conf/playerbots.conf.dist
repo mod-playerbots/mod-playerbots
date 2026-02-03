@@ -990,7 +990,7 @@ AiPlayerbot.ZoneBracket.3433 = 10,22
 AiPlayerbot.ZoneBracket.3525 = 10,21
 
 # Classic WoW - High-level zones:
-# Deadwind Pass          (Zone ID:   10    Default Min,Max: 19,33)
+# Duskwood               (Zone ID:   10    Default Min,Max: 19,33)
 # Wetlands               (Zone ID:   11    Default Min,Max: 21,30)
 # Redridge Mountains     (Zone ID:   44    Default Min,Max: 16,28)
 # Hillsbrad Foothills    (Zone ID:  267    Default Min,Max: 20,34)
