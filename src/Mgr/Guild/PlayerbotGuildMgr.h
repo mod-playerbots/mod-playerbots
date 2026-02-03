@@ -5,15 +5,14 @@
 #include "Player.h"
 #include "PlayerbotAI.h"
 
-class PlayerbotAI;
-
 class PlayerbotGuildMgr
 {
 public:
-    static PlayerbotGuildMgr* instance()
+    static PlayerbotGuildMgr& instance()
     {
         static PlayerbotGuildMgr instance;
-        return &instance;
+
+        return instance;
     }
 
     void Init();
@@ -29,7 +28,15 @@ public:
     bool IsRealGuild(Player* bot);
 
 private:
-    PlayerbotGuildMgr();
+    PlayerbotGuildMgr() = default;
+    ~PlayerbotGuildMgr() = default;
+
+    PlayerbotGuildMgr(const PlayerbotGuildMgr&) = delete;
+    PlayerbotGuildMgr& operator=(const PlayerbotGuildMgr&) = delete;
+
+    PlayerbotGuildMgr(PlayerbotGuildMgr&&) = delete;
+    PlayerbotGuildMgr& operator=(PlayerbotGuildMgr&&) = delete;
+
     std::unordered_map<std::string, bool> _guildNames;
 
     struct GuildCache
@@ -46,7 +53,5 @@ private:
 };
 
 void PlayerBotsGuildValidationScript();
-
-#define sPlayerbotGuildMgr PlayerbotGuildMgr::instance()
 
 #endif

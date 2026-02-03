@@ -366,7 +366,7 @@ ItemIds EquipAction::SelectInventoryItemsToEquip()
 
 bool EquipUpgradesTriggeredAction::Execute(Event event)
 {
-    if (!sPlayerbotAIConfig->autoEquipUpgradeLoot && !sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (!sPlayerbotAIConfig.autoEquipUpgradeLoot && !sRandomPlayerbotMgr.IsRandomBot(bot))
         return false;
 
     if (event.GetSource() == "trade status")

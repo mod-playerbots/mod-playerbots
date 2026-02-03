@@ -14,7 +14,7 @@ class PlayerbotAI;
 class NearestNonBotPlayersValue : public NearestUnitsValue
 {
 public:
-    NearestNonBotPlayersValue(PlayerbotAI* botAI, float range = sPlayerbotAIConfig->grindDistance)
+    NearestNonBotPlayersValue(PlayerbotAI* botAI, float range = sPlayerbotAIConfig.grindDistance)
         : NearestUnitsValue(botAI, "nearest non bot players", range, true)
     {
     }

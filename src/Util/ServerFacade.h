@@ -6,8 +6,6 @@
 #ifndef _PLAYERBOT_SERVERFACADE_H
 #define _PLAYERBOT_SERVERFACADE_H
 
-#include "Common.h"
-
 class Player;
 class Unit;
 class WorldObject;
@@ -29,12 +27,13 @@ public:
     /**
      * @brief Get singleton instance.
      *
-     * @return ServerFacade* Pointer to the singleton instance.
+     * @return ServerFacade& Reference to the singleton instance.
      */
-    static ServerFacade* instance()
+    static ServerFacade& instance()
     {
         static ServerFacade instance;
-        return &instance;
+
+        return instance;
     }
 
 public:
@@ -122,8 +121,5 @@ public:
      */
     void SendPacket(Player* player, WorldPacket* packet);
 };
-
-/** Global singleton accessor. */
-#define sServerFacade ServerFacade::instance()
 
 #endif

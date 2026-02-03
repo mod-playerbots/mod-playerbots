@@ -20,16 +20,16 @@ bool RevealGatheringItemAction::Execute(Event event)
         return false;
 
     std::list<GameObject*> targets;
-    AnyGameObjectInObjectRangeCheck u_check(bot, sPlayerbotAIConfig->grindDistance);
+    AnyGameObjectInObjectRangeCheck u_check(bot, sPlayerbotAIConfig.grindDistance);
     Acore::GameObjectListSearcher<AnyGameObjectInObjectRangeCheck> searcher(bot, targets, u_check);
-    Cell::VisitObjects(bot, searcher, sPlayerbotAIConfig->reactDistance);
+    Cell::VisitObjects(bot, searcher, sPlayerbotAIConfig.reactDistance);
 
     std::vector<GameObject*> result;
     for (GameObject* go : targets)
     {
         if (!go || !go->isSpawned() ||
-            sServerFacade->IsDistanceLessOrEqualThan(sServerFacade->GetDistance2d(bot, go),
-                                                     sPlayerbotAIConfig->lootDistance))
+            ServerFacade::instance().IsDistanceLessOrEqualThan(ServerFacade::instance().GetDistance2d(bot, go),
+                                                     sPlayerbotAIConfig.lootDistance))
             continue;
 
         if (LockEntry const* lockInfo = sLockStore.LookupEntry(go->GetGOInfo()->GetLockId()))

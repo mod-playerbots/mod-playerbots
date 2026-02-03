@@ -14,7 +14,7 @@
 bool CastStealthAction::isUseful()
 {
     Unit* target = AI_VALUE(Unit*, "current target");
-    if (target && bot->GetDistance(target) >= sPlayerbotAIConfig->spellDistance)
+    if (target && bot->GetDistance(target) >= sPlayerbotAIConfig.spellDistance)
         return false;
     return true;
 }

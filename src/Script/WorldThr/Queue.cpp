@@ -50,7 +50,7 @@ uint32 Queue::Size()
 
 void Queue::RemoveExpired()
 {
-    if (!sPlayerbotAIConfig->expireActionTime)
+    if (!sPlayerbotAIConfig.expireActionTime)
     {
         return;
     }
@@ -113,7 +113,7 @@ ActionNode* Queue::extractAndDeleteBasket(ActionBasket* basket)
 
 void Queue::collectExpiredBaskets(std::list<ActionBasket*>& expiredBaskets)
 {
-    uint32 expiryTime = sPlayerbotAIConfig->expireActionTime;
+    uint32 expiryTime = sPlayerbotAIConfig.expireActionTime;
     for (ActionBasket* basket : actions)
     {
         if (basket->isExpired(expiryTime))

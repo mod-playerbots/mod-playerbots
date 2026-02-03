@@ -97,7 +97,7 @@ ItemUsage ItemUsageValue::Calculate()
         }
     }
 
-    if (bot->GetGuildId() && sGuildTaskMgr->IsGuildTaskItem(itemId, bot->GetGuildId()))
+    if (bot->GetGuildId() && GuildTaskMgr::instance().IsGuildTaskItem(itemId, bot->GetGuildId()))
         return ITEM_USAGE_GUILD_TASK;
 
     ItemUsage equip = QueryItemUsageForEquip(proto, randomPropertyId);
@@ -127,7 +127,7 @@ ItemUsage ItemUsageValue::Calculate()
     Player* master = botAI->GetMaster();
     bool isSelfBot = (master == bot);
     bool botNeedsItemForQuest = IsItemUsefulForQuest(bot, proto);
-    bool masterNeedsItemForQuest = master && sPlayerbotAIConfig->syncQuestWithPlayer && IsItemUsefulForQuest(master, proto);
+    bool masterNeedsItemForQuest = master && sPlayerbotAIConfig.syncQuestWithPlayer && IsItemUsefulForQuest(master, proto);
 
     // Identify the source of loot
     LootObject lootObject = AI_VALUE(LootObject, "loot target");
@@ -233,7 +233,7 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
     }
 
     bool shouldEquip = false;
-    // uint32 statWeight = sRandomItemMgr->GetLiveStatWeight(bot, itemProto->ItemId);
+    // uint32 statWeight = sRandomItemMgr.GetLiveStatWeight(bot, itemProto->ItemId);
     StatsWeightCalculator calculator(bot);
     calculator.SetItemSetBonus(false);
     calculator.SetOverflowPenalty(false);
@@ -243,10 +243,10 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
     if (itemScore)
         shouldEquip = true;
 
-    if (itemProto->Class == ITEM_CLASS_WEAPON && !sRandomItemMgr->CanEquipWeapon(bot->getClass(), itemProto))
+    if (itemProto->Class == ITEM_CLASS_WEAPON && !sRandomItemMgr.CanEquipWeapon(bot->getClass(), itemProto))
         shouldEquip = false;
     if (itemProto->Class == ITEM_CLASS_ARMOR &&
-        !sRandomItemMgr->CanEquipArmor(bot->getClass(), bot->GetLevel(), itemProto))
+        !sRandomItemMgr.CanEquipArmor(bot->getClass(), bot->GetLevel(), itemProto))
         shouldEquip = false;
 
     uint8 possibleSlots = 1;
@@ -325,10 +325,10 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
         float oldScore = calculator.CalculateItem(oldItemProto->ItemId, oldItem->GetInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID));
         if (oldItem)
         {
-            // uint32 oldStatWeight = sRandomItemMgr->GetLiveStatWeight(bot, oldItemProto->ItemId);
+            // uint32 oldStatWeight = sRandomItemMgr.GetLiveStatWeight(bot, oldItemProto->ItemId);
             if (itemScore || oldScore)
             {
-                shouldEquipInSlot = itemScore > oldScore * sPlayerbotAIConfig->equipUpgradeThreshold;
+                shouldEquipInSlot = itemScore > oldScore * sPlayerbotAIConfig.equipUpgradeThreshold;
             }
         }
 
@@ -346,15 +346,15 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
         }
 
         bool existingShouldEquip = true;
-        if (oldItemProto->Class == ITEM_CLASS_WEAPON && !sRandomItemMgr->CanEquipWeapon(bot->getClass(), oldItemProto))
+        if (oldItemProto->Class == ITEM_CLASS_WEAPON && !sRandomItemMgr.CanEquipWeapon(bot->getClass(), oldItemProto))
             existingShouldEquip = false;
 
         if (oldItemProto->Class == ITEM_CLASS_ARMOR &&
-            !sRandomItemMgr->CanEquipArmor(bot->getClass(), bot->GetLevel(), oldItemProto))
+            !sRandomItemMgr.CanEquipArmor(bot->getClass(), bot->GetLevel(), oldItemProto))
             existingShouldEquip = false;
 
-        // uint32 oldItemPower = sRandomItemMgr->GetLiveStatWeight(bot, oldItemProto->ItemId);
-        // uint32 newItemPower = sRandomItemMgr->GetLiveStatWeight(bot, itemProto->ItemId);
+        // uint32 oldItemPower = sRandomItemMgr.GetLiveStatWeight(bot, oldItemProto->ItemId);
+        // uint32 newItemPower = sRandomItemMgr.GetLiveStatWeight(bot, itemProto->ItemId);
 
         // Compare items based on item level, quality or itemId.
         bool isBetter = false;
