@@ -27,6 +27,7 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     PassTroughStrategy::InitTriggers(triggers);
 
     triggers.push_back(new TriggerNode("rep", { NextAction("reputation", relevance) }));
+    triggers.push_back(new TriggerNode("pvp stats", { NextAction("tell pvp stats", relevance) }));
     triggers.push_back(new TriggerNode("q", { NextAction("query quest", relevance),
                                                               NextAction("query item usage", relevance) }));
     triggers.push_back(new TriggerNode("add all loot", { NextAction("add all loot", relevance),
@@ -116,6 +117,7 @@ ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : Pas
     supported.push_back("stats");
     supported.push_back("leave");
     supported.push_back("reputation");
+    supported.push_back("tell pvp stats");
     supported.push_back("log");
     supported.push_back("los");
     supported.push_back("rpg status");
