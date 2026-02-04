@@ -42,10 +42,10 @@ protected:
     std::unique_ptr<RpgHelper> rpg;
 };
 
-class RpgSubAction : public Action
+class RpgSubAction : public Action, public RpgEnabled
 {
 public:
-    RpgSubAction(PlayerbotAI* botAI, std::string const name = "rpg sub") : Action(botAI, name) {}
+    RpgSubAction(PlayerbotAI* botAI, std::string const name = "rpg sub") : Action(botAI, name), RpgEnabled(botAI) {}
 
     // Long range is possible?
     bool isPossible() override;
@@ -57,7 +57,7 @@ public:
     bool Execute(Event event) override;
 
 protected:
-    virtual std::string const ActionName();
+    virtual NextAction::Factory getActionFactory() const;
     virtual Event ActionEvent(Event event);
 };
 
@@ -119,7 +119,7 @@ public:
     RpgStartQuestAction(PlayerbotAI* botAI, std::string const name = "rpg start quest") : RpgSubAction(botAI, name) {}
 
 private:
-    std::string const ActionName() override;
+    NextAction::Factory getActionFactory() const override;
     Event ActionEvent(Event event) override;
 };
 
@@ -129,7 +129,7 @@ public:
     RpgEndQuestAction(PlayerbotAI* botAI, std::string const name = "rpg end quest") : RpgSubAction(botAI, name) {}
 
 private:
-    std::string const ActionName() override;
+    NextAction::Factory getActionFactory() const override;
     Event ActionEvent(Event event) override;
 };
 
@@ -139,7 +139,7 @@ public:
     RpgBuyAction(PlayerbotAI* botAI, std::string const name = "rpg buy") : RpgSubAction(botAI, name) {}
 
 private:
-    std::string const ActionName() override;
+    NextAction::Factory getActionFactory() const override;
     Event ActionEvent(Event event) override;
 };
 
@@ -149,7 +149,7 @@ public:
     RpgSellAction(PlayerbotAI* botAI, std::string const name = "rpg sell") : RpgSubAction(botAI, name) {}
 
 private:
-    std::string const ActionName() override;
+    NextAction::Factory getActionFactory() const override;
     Event ActionEvent(Event event) override;
 };
 
@@ -159,7 +159,7 @@ public:
     RpgRepairAction(PlayerbotAI* botAI, std::string const name = "rpg repair") : RpgSubAction(botAI, name) {}
 
 private:
-    std::string const ActionName() override;
+    NextAction::Factory getActionFactory() const override;
 };
 
 class RpgTrainAction : public RpgSubAction
@@ -168,7 +168,7 @@ public:
     RpgTrainAction(PlayerbotAI* botAI, std::string const name = "rpg train") : RpgSubAction(botAI, name) {}
 
 private:
-    std::string const ActionName() override;
+    NextAction::Factory getActionFactory() const override;
 };
 
 class RpgHealAction : public RpgSubAction
@@ -185,7 +185,7 @@ public:
     RpgHomeBindAction(PlayerbotAI* botAI, std::string const name = "rpg home bind") : RpgSubAction(botAI, name) {}
 
 private:
-    std::string const ActionName() override;
+    NextAction::Factory getActionFactory() const override;
 };
 
 class RpgQueueBgAction : public RpgSubAction
@@ -194,7 +194,7 @@ public:
     RpgQueueBgAction(PlayerbotAI* botAI, std::string const name = "rpg queue bg") : RpgSubAction(botAI, name) {}
 
 private:
-    std::string const ActionName() override;
+    NextAction::Factory getActionFactory() const override;
 };
 
 class RpgBuyPetitionAction : public RpgSubAction
@@ -203,7 +203,7 @@ public:
     RpgBuyPetitionAction(PlayerbotAI* botAI, std::string const name = "rpg buy petition") : RpgSubAction(botAI, name) {}
 
 private:
-    std::string const ActionName() override;
+    NextAction::Factory getActionFactory() const override;
 };
 
 class RpgUseAction : public RpgSubAction
@@ -212,7 +212,7 @@ public:
     RpgUseAction(PlayerbotAI* botAI, std::string const name = "rpg use") : RpgSubAction(botAI, name) {}
 
 private:
-    std::string const ActionName() override;
+    NextAction::Factory getActionFactory() const override;
     Event ActionEvent(Event event) override;
 };
 
@@ -222,7 +222,7 @@ public:
     RpgSpellAction(PlayerbotAI* botAI, std::string const name = "rpg spell") : RpgSubAction(botAI, name) {}
 
 private:
-    std::string const ActionName() override;
+    NextAction::Factory getActionFactory() const override;
     Event ActionEvent(Event event) override;
 };
 
@@ -232,7 +232,7 @@ public:
     RpgCraftAction(PlayerbotAI* botAI, std::string const name = "rpg craft") : RpgSubAction(botAI, name) {}
 
 private:
-    std::string const ActionName() override;
+    NextAction::Factory getActionFactory() const override;
     Event ActionEvent(Event event) override;
 };
 
