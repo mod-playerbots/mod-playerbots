@@ -8,7 +8,10 @@
 
 #include "Action.h"
 #include "AiObject.h"
+#include "EmoteAction.h"
 #include "Item.h"
+#include "StayActions.h"
+#include "TaxiAction.h"
 
 class GuidPosition;
 class ObjectGuid;

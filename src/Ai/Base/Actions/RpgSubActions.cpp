@@ -106,7 +106,6 @@ bool RpgSubAction::isUseful()
     return this->rpg->InRange();
 }
 
-// @TODO: Fix this to actually do something
 bool RpgSubAction::Execute(Event event)
 {
     bool doAction = botAI->DoSpecificAction(this->getActionFactory(), this->ActionEvent(event), true);
@@ -114,10 +113,13 @@ bool RpgSubAction::Execute(Event event)
     return doAction;
 }
 
-// NextAction::Factory RpgSubAction::getActionFactory() const
-// {
-//     return "none";
-// }
+// @TODO: This is a simple fallback. It should never be triggered.
+NextAction::Factory RpgSubAction::getActionFactory() const
+{
+    LOG_ERROR("playerbots.rpg.rpgsubaction", "Bot {} - No action factory defined for RpgSubAction", this->bot->GetName());
+
+    return CreateNextAction<EmoteAction>(1.0f).factory;
+}
 
 Event RpgSubAction::ActionEvent(Event event)
 {
