@@ -151,7 +151,9 @@ ItemUsage ItemUsageValue::Calculate()
         return ITEM_USAGE_QUEST;
 
     if (proto->Class == ITEM_CLASS_PROJECTILE && bot->CanUseItem(proto) == EQUIP_ERR_OK)
-        return QueryItemUsageForAmmo(proto);
+        ItemUsage ammoUsage = QueryItemUsageForAmmo(proto);
+    if (ammoUsage != ITEM_USAGE_NONE)
+        return ammoUsage;
 
     // Need to add something like free bagspace or item value.
     if (proto->SellPrice > 0)
@@ -411,58 +413,58 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
 
 ItemUsage ItemUsageValue::QueryItemUsageForAmmo(ItemTemplate const* proto)
 {
-    if (bot->getClass() == CLASS_HUNTER || bot->getClass() == CLASS_ROGUE || bot->getClass() == CLASS_WARRIOR)
+    if (bot->getClass() != CLASS_HUNTER || bot->getClass() != CLASS_ROGUE || bot->getClass() != CLASS_WARRIOR)
+        return ITEM_USAGE_NONE;
+
+    Item* rangedWeapon = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED);
+    uint32 requiredSubClass = 0;
+
+    if (rangedWeapon)
     {
-        Item* rangedWeapon = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED);
-        uint32 requiredSubClass = 0;
-
-        if (rangedWeapon)
+        switch (rangedWeapon->GetTemplate()->SubClass)
         {
-            switch (rangedWeapon->GetTemplate()->SubClass)
-            {
-                case ITEM_SUBCLASS_WEAPON_GUN:
-                    requiredSubClass = ITEM_SUBCLASS_BULLET;
-                    break;
-                case ITEM_SUBCLASS_WEAPON_BOW:
-                case ITEM_SUBCLASS_WEAPON_CROSSBOW:
-                    requiredSubClass = ITEM_SUBCLASS_ARROW;
-                    break;
-            }
+            case ITEM_SUBCLASS_WEAPON_GUN:
+                requiredSubClass = ITEM_SUBCLASS_BULLET;
+                break;
+            case ITEM_SUBCLASS_WEAPON_BOW:
+            case ITEM_SUBCLASS_WEAPON_CROSSBOW:
+                requiredSubClass = ITEM_SUBCLASS_ARROW;
+                break;
         }
+    }
 
-        // Ensure the item is the correct ammo type for the equipped ranged weapon
-        if (proto->SubClass == requiredSubClass)
+    // Ensure the item is the correct ammo type for the equipped ranged weapon
+    if (proto->SubClass == requiredSubClass)
+    {
+        float ammoCount = BetterStacks(proto, "ammo");
+        float requiredAmmo = (bot->getClass() == CLASS_HUNTER) ? 8 : 2; // Hunters get 8 stacks, others 2
+        uint32 currentAmmoId = bot->GetUInt32Value(PLAYER_AMMO_ID);
+
+        // Check if the bot has an ammo type assigned
+        if (currentAmmoId == 0)
+            return ITEM_USAGE_EQUIP;  // Equip the ammo if no ammo
+        // Compare new ammo vs current equipped ammo
+        ItemTemplate const* currentAmmoProto = sObjectMgr->GetItemTemplate(currentAmmoId);
+        if (currentAmmoProto)
         {
-            float ammoCount = BetterStacks(proto, "ammo");
-            float requiredAmmo = (bot->getClass() == CLASS_HUNTER) ? 8 : 2; // Hunters get 8 stacks, others 2
-            uint32 currentAmmoId = bot->GetUInt32Value(PLAYER_AMMO_ID);
+            uint32 currentAmmoDPS = (currentAmmoProto->Damage[0].DamageMin + currentAmmoProto->Damage[0].DamageMax) * 1000 / 2;
+            uint32 newAmmoDPS = (proto->Damage[0].DamageMin + proto->Damage[0].DamageMax) * 1000 / 2;
 
-            // Check if the bot has an ammo type assigned
-            if (currentAmmoId == 0)
-                return ITEM_USAGE_EQUIP;  // Equip the ammo if no ammo
-            // Compare new ammo vs current equipped ammo
-            ItemTemplate const* currentAmmoProto = sObjectMgr->GetItemTemplate(currentAmmoId);
-            if (currentAmmoProto)
-            {
-                uint32 currentAmmoDPS = (currentAmmoProto->Damage[0].DamageMin + currentAmmoProto->Damage[0].DamageMax) * 1000 / 2;
-                uint32 newAmmoDPS = (proto->Damage[0].DamageMin + proto->Damage[0].DamageMax) * 1000 / 2;
+            if (newAmmoDPS > currentAmmoDPS) // New ammo meets upgrade condition
+                return ITEM_USAGE_EQUIP;
 
-                if (newAmmoDPS > currentAmmoDPS) // New ammo meets upgrade condition
-                    return ITEM_USAGE_EQUIP;
+            if (newAmmoDPS < currentAmmoDPS) // New ammo is worse
+                return ITEM_USAGE_NONE;
+        }
+        // Ensure we have enough ammo in the inventory
+        if (ammoCount < requiredAmmo)
+        {
+            ammoCount += CurrentStacks(proto);
 
-                if (newAmmoDPS < currentAmmoDPS) // New ammo is worse
-                    return ITEM_USAGE_NONE;
-            }
-            // Ensure we have enough ammo in the inventory
-            if (ammoCount < requiredAmmo)
-            {
-                ammoCount += CurrentStacks(proto);
-
-                if (ammoCount < requiredAmmo)  // Buy ammo to reach the proper supply
-                    return ITEM_USAGE_AMMO;
-                else if (ammoCount < requiredAmmo + 1)
-                    return ITEM_USAGE_KEEP;  // Keep the ammo if we don't have too much.
-            }
+            if (ammoCount < requiredAmmo)  // Buy ammo to reach the proper supply
+                return ITEM_USAGE_AMMO;
+            else if (ammoCount < requiredAmmo + 1)
+                return ITEM_USAGE_KEEP;  // Keep the ammo if we don't have too much.
         }
     }
     return ITEM_USAGE_NONE;
