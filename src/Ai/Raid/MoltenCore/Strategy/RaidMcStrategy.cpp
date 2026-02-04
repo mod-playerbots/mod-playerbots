@@ -1,6 +1,5 @@
 #include "RaidMcStrategy.h"
 
-#include "BossAuraActions.h"
 #include "CreateNextAction.h"
 #include "RaidMcMultipliers.h"
 #include "Strategy.h"
@@ -13,7 +12,7 @@ void RaidMcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "mc lucifron shadow resistance",
             {
-                CreateNextAction<BossShadowResistanceAction>(ACTION_RAID)
+                CreateNextAction<LucifronShadowResistanceAction>(ACTION_RAID)
             }
         )
     );
@@ -24,7 +23,7 @@ void RaidMcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "mc magmadar fire resistance",
             {
-                CreateNextAction<BossFireResistanceAction>(ACTION_RAID)
+                CreateNextAction<MagmadarFireResistanceAction>(ACTION_RAID)
             }
         )
     );
@@ -34,7 +33,7 @@ void RaidMcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "mc gehennas shadow resistance",
             {
-                CreateNextAction<BossShadowResistanceAction>(ACTION_RAID)
+                CreateNextAction<GehennasShadowResistanceAction>(ACTION_RAID)
             }
         )
     );
@@ -44,7 +43,7 @@ void RaidMcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "mc garr fire resistance",
             {
-                CreateNextAction<BossFireResistanceAction>(ACTION_RAID)
+                CreateNextAction<GarrFireResistanceAction>(ACTION_RAID)
             }
         )
     );
@@ -54,7 +53,7 @@ void RaidMcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "mc baron geddon fire resistance",
             {
-                CreateNextAction<BossFireResistanceAction>(ACTION_RAID)
+                CreateNextAction<BaronGeddonFireResistanceAction>(ACTION_RAID)
             }
         )
     );
@@ -62,7 +61,7 @@ void RaidMcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "mc living bomb debuff",
             {
-                CreateNextAction<MoveFromGroupAction>(ACTION_RAID)
+                CreateNextAction<McMoveFromGroupAction>(ACTION_RAID)
             }
         )
     );
@@ -91,7 +90,7 @@ void RaidMcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "mc sulfuron harbinger fire resistance",
             {
-                CreateNextAction<BossFireResistanceAction>(ACTION_RAID)
+                CreateNextAction<SulfuronHarbingerFireResistanceAction>(ACTION_RAID)
             }
         )
     );
@@ -101,7 +100,7 @@ void RaidMcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "mc golemagg fire resistance",
             {
-                CreateNextAction<BossFireResistanceAction>(ACTION_RAID)
+                CreateNextAction<GolemaggTheIncineratorFireResistanceAction>(ACTION_RAID)
             }
         )
     );
@@ -135,7 +134,7 @@ void RaidMcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "mc majordomo shadow resistance",
             {
-                CreateNextAction<BossShadowResistanceAction>(ACTION_RAID)
+                CreateNextAction<MajordomoExecutusShadowResistanceAction>(ACTION_RAID)
             }
         )
     );
@@ -145,7 +144,7 @@ void RaidMcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "mc ragnaros fire resistance",
             {
-                CreateNextAction<BossFireResistanceAction>(ACTION_RAID)
+                CreateNextAction<RagnarosFireResistanceAction>(ACTION_RAID)
             }
         )
     );

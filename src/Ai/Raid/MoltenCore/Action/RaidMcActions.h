@@ -2,9 +2,135 @@
 #define _PLAYERBOT_RAIDMCACTIONS_H
 
 #include "AttackAction.h"
+#include "BossAuraActions.h"
 #include "MovementActions.h"
 #include "PlayerbotAI.h"
-#include "Playerbots.h"
+
+class LucifronShadowResistanceAction : public BossShadowResistanceAction
+{
+public:
+    LucifronShadowResistanceAction(PlayerbotAI* botAI)
+        : BossShadowResistanceAction(botAI, "lucifron shadow resistance action")
+    {
+    }
+    bool Execute(Event event) override;
+    bool isUseful() override;
+
+private:
+    std::string bossName;
+};
+
+class MagmadarFireResistanceAction : public BossFireResistanceAction
+{
+public:
+    MagmadarFireResistanceAction(PlayerbotAI* botAI)
+        : BossFireResistanceAction(botAI, "magmadar fire resistance action")
+    {
+    }
+    bool Execute(Event event) override;
+    bool isUseful() override;
+
+private:
+    std::string bossName;
+};
+
+class GehennasShadowResistanceAction : public BossShadowResistanceAction
+{
+public:
+    GehennasShadowResistanceAction(PlayerbotAI* botAI)
+        : BossShadowResistanceAction(botAI, "gehennas shadow resistance action")
+    {
+    }
+    bool Execute(Event event) override;
+    bool isUseful() override;
+
+private:
+    std::string bossName;
+};
+
+class GarrFireResistanceAction : public BossFireResistanceAction
+{
+public:
+    GarrFireResistanceAction(PlayerbotAI* botAI)
+        : BossFireResistanceAction(botAI, "garr fire resistance action")
+    {
+    }
+    bool Execute(Event event) override;
+    bool isUseful() override;
+
+private:
+    std::string bossName;
+};
+
+class BaronGeddonFireResistanceAction : public BossFireResistanceAction
+{
+public:
+    BaronGeddonFireResistanceAction(PlayerbotAI* botAI)
+        : BossFireResistanceAction(botAI, "baron geddon fire resistance action")
+    {
+    }
+    bool Execute(Event event) override;
+    bool isUseful() override;
+
+private:
+    std::string bossName;
+};
+
+class SulfuronHarbingerFireResistanceAction : public BossFireResistanceAction
+{
+public:
+    SulfuronHarbingerFireResistanceAction(PlayerbotAI* botAI)
+        : BossFireResistanceAction(botAI, "sulfuron harbinger fire resistance action")
+    {
+    }
+    bool Execute(Event event) override;
+    bool isUseful() override;
+
+private:
+    std::string bossName;
+};
+
+class GolemaggTheIncineratorFireResistanceAction : public BossFireResistanceAction
+{
+public:
+    GolemaggTheIncineratorFireResistanceAction(PlayerbotAI* botAI)
+        : BossFireResistanceAction(botAI, "golemagg the incinerator fire resistance action")
+    {
+    }
+    bool Execute(Event event) override;
+    bool isUseful() override;
+
+private:
+    std::string bossName;
+};
+
+class MajordomoExecutusShadowResistanceAction : public BossShadowResistanceAction
+{
+public:
+    MajordomoExecutusShadowResistanceAction(PlayerbotAI* botAI)
+        : BossShadowResistanceAction(botAI, "majordomo executus shadow resistance action")
+    {
+    }
+    bool Execute(Event event) override;
+    bool isUseful() override;
+
+private:
+    std::string bossName;
+};
+
+class RagnarosFireResistanceAction : public BossFireResistanceAction
+{
+public:
+    RagnarosFireResistanceAction(PlayerbotAI* botAI)
+        : BossFireResistanceAction(botAI, "ragnaros fire resistance action")
+    {
+    }
+    bool Execute(Event event) override;
+    bool isUseful() override;
+
+private:
+    std::string bossName;
+};
 
 class McMoveFromGroupAction : public MovementAction
 {
