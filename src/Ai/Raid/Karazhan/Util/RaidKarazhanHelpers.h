@@ -61,6 +61,11 @@ namespace KarazhanHelpers
         NPC_ATTUMEN_THE_HUNTSMAN         = 15550,
         NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED = 16152,
 
+        // Terestian Illhoof
+        NPC_TERESTIAN_ILLHOOF            = 15688,
+        NPC_DEMON_CHAINS                 = 17248,
+        NPC_KILREK                       = 17229,
+
         // Shade of Aran
         NPC_CONJURED_ELEMENTAL           = 17167,
 
