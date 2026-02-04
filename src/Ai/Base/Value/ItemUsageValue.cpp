@@ -19,17 +19,7 @@
 
 ItemUsage ItemUsageValue::Calculate()
 {
-    uint32 itemId = 0;
-    uint32 randomPropertyId = 0;
-    size_t pos = qualifier.find(",");
-    if (pos != std::string::npos)
-    {
-        itemId = atoi(qualifier.substr(0, pos).c_str());
-        randomPropertyId = atoi(qualifier.substr(pos + 1).c_str());
-    }
-    else
-        itemId = atoi(qualifier.c_str());
-
+    GetItemIdFromQualifier();
     if (!itemId)
         return ITEM_USAGE_NONE;
 
@@ -151,10 +141,11 @@ ItemUsage ItemUsageValue::Calculate()
         return ITEM_USAGE_QUEST;
 
     if (proto->Class == ITEM_CLASS_PROJECTILE && bot->CanUseItem(proto) == EQUIP_ERR_OK)
+    {
         ItemUsage ammoUsage = QueryItemUsageForAmmo(proto);
-    if (ammoUsage != ITEM_USAGE_NONE)
-        return ammoUsage;
-
+        if (ammoUsage != ITEM_USAGE_NONE)
+            return ammoUsage;
+    }
     // Need to add something like free bagspace or item value.
     if (proto->SellPrice > 0)
     {
@@ -470,6 +461,17 @@ ItemUsage ItemUsageValue::QueryItemUsageForAmmo(ItemTemplate const* proto)
     return ITEM_USAGE_NONE;
 }
 
+void ItemUsageValue::GetItemIdFromQualifier()
+{
+    size_t pos = qualifier.find(",");
+    if (pos != std::string::npos)
+    {
+        this->itemId = atoi(qualifier.substr(0, pos).c_str());
+        this->randomPropertyId = atoi(qualifier.substr(pos + 1).c_str());
+    }
+    else
+        this->itemId = atoi(qualifier.c_str());
+}
 // Return smaltest bag size equipped
 uint32 ItemUsageValue::GetSmallestBagSize()
 {
@@ -906,17 +908,7 @@ std::string const ItemUsageValue::GetConsumableType(ItemTemplate const* proto, b
 
 ItemUsage ItemUpgradeValue::Calculate()
 {
-    uint32 itemId = 0;
-    uint32 randomPropertyId = 0;
-    size_t pos = qualifier.find(",");
-    if (pos != std::string::npos)
-    {
-        itemId = atoi(qualifier.substr(0, pos).c_str());
-        randomPropertyId = atoi(qualifier.substr(pos + 1).c_str());
-    }
-    else
-        itemId = atoi(qualifier.c_str());
-
+    GetItemIdFromQualifier();
     if (!itemId)
         return ITEM_USAGE_NONE;
 

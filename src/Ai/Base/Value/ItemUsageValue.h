@@ -45,6 +45,10 @@ public:
 protected:
     ItemUsage QueryItemUsageForEquip(ItemTemplate const* proto, int32 randomPropertyId = 0);
     ItemUsage QueryItemUsageForAmmo(ItemTemplate const* proto);
+    void GetItemIdFromQualifier();
+    uint32 itemId = 0;
+    uint32 randomPropertyId = 0;
+
 
 private:
     uint32 GetSmallestBagSize();
