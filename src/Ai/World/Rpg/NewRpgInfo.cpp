@@ -141,7 +141,7 @@ std::string NewRpgInfo::ToString()
             out << "\nobjectiveIdx: " << arg.objectiveIdx;
             out << "\npoiPos: " << arg.pos.GetMapId() << " " << arg.pos.GetPositionX() << " "
                 << arg.pos.GetPositionY() << " " << arg.pos.GetPositionZ();
-            out << "\nlastReachPOI: " << arg.lastReachPOI ? GetMSTimeDiffToNow(arg.lastReachPOI) : 0;
+            out << "\nlastReachPOI: " << (arg.lastReachPOI ? GetMSTimeDiffToNow(arg.lastReachPOI) : 0);
         }
         else if constexpr (std::is_same_v<T, TravelFlight>)
         {
