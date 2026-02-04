@@ -46,7 +46,6 @@ private:
     static ActionNode* feral_charge_bear([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "feral charge - bear",
             /*P*/ {},
             /*A*/ { CreateNextAction<ReachMeleeAction>(1.0f) },
             /*C*/ {}
@@ -56,7 +55,6 @@ private:
     static ActionNode* swipe_bear([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "swipe (bear)",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -75,7 +73,6 @@ private:
     static ActionNode* bear_form([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "bear form",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -94,7 +91,6 @@ private:
     static ActionNode* mangle_bear([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "mangle (bear)",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -104,7 +100,6 @@ private:
     static ActionNode* maul([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "maul",
             /*P*/ {},
             /*A*/ { CreateNextAction<MeleeAction>(1.0f) },
             /*C*/ {}
@@ -114,7 +109,6 @@ private:
     static ActionNode* bash([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "bash",
             /*P*/ {},
             /*A*/ { CreateNextAction<MeleeAction>(1.0f) },
             /*C*/ {}
@@ -124,7 +118,6 @@ private:
     static ActionNode* swipe([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "swipe",
             /*P*/ {},
             /*A*/ { CreateNextAction<MeleeAction>(1.0f) },
             /*C*/ {}
@@ -134,7 +127,6 @@ private:
     static ActionNode* lacerate([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "lacerate",
             /*P*/ {},
             /*A*/ { CreateNextAction<CastMaulAction>(1.0f) },
             /*C*/ {}
@@ -144,7 +136,6 @@ private:
     static ActionNode* growl([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "growl",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -154,7 +145,6 @@ private:
     static ActionNode* demoralizing_roar([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "demoralizing roar",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}

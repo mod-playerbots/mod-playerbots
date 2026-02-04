@@ -38,8 +38,7 @@ class EndPullAction : public ChangeCombatStrategyAction
 {
 public:
     EndPullAction(PlayerbotAI* botAI, std::string const name = "-pull") : ChangeCombatStrategyAction(botAI, name) {}
-
-    bool Execute(Event event) override;
+    ~EndPullAction() override = default;
 };
 
 #endif

@@ -5,6 +5,8 @@
 
 #include "GenericHunterNonCombatStrategy.h"
 #include "CreateNextAction.h"
+#include "EquipAction.h"
+#include "GenericActions.h"
 #include "HunterActions.h"
 #include "ImbueAction.h"
 
@@ -64,22 +66,22 @@ void GenericHunterNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& tri
             }
         )
     );
-    triggers.push_back(
-        new TriggerNode(
-            "low ammo",
-            {
-                CreateNextAction("say::low ammo", ACTION_NORMAL)
-            }
-        )
-    );
-    triggers.push_back(
-        new TriggerNode(
-            "no track",
-            {
-                CreateNextAction<CastBuffSpellAction>(ACTION_NORMAL)
-            }
-        )
-    );
+    // triggers.push_back(
+    //     new TriggerNode(
+    //         "low ammo",
+    //         {
+    //             CreateNextAction("say::low ammo", ACTION_NORMAL)
+    //         }
+    //     )
+    // );
+    // triggers.push_back(
+    //     new TriggerNode(
+    //         "no track",
+    //         {
+    //             CreateNextAction<CastBuffSpellAction>(ACTION_NORMAL)
+    //         }
+    //     )
+    // );
     triggers.push_back(
         new TriggerNode(
             "no ammo",

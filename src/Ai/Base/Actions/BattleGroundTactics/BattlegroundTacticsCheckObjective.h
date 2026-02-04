@@ -4,7 +4,7 @@
 
 class BattlegroundTacticsCheckObjective : public BGTactics
 {
+public:
     BattlegroundTacticsCheckObjective(PlayerbotAI* botAI) : BGTactics(botAI, "check objective") {}
-
-    bool Execute(Event event) override;
+    ~BattlegroundTacticsCheckObjective() override = default;
 };

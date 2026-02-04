@@ -4,7 +4,7 @@
 
 class BattlegroundTacticsProtectFC : public BGTactics
 {
+public:
     BattlegroundTacticsProtectFC(PlayerbotAI* botAI) : BGTactics(botAI, "protect fc") {}
-
-    bool Execute(Event event) override;
+    ~BattlegroundTacticsProtectFC() override = default;
 };

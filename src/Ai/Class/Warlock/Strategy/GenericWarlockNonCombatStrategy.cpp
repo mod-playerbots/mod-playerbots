@@ -386,14 +386,14 @@ void UseSpellstoneStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
-    triggers.push_back(
-        new TriggerNode(
-            "spellstone",
-            {
-                CreateNextAction<UseSpellItemAction>(24.0f)
-            }
-        )
-    );
+    // triggers.push_back(
+    //     new TriggerNode(
+    //         "spellstone",
+    //         {
+    //             CreateNextAction<UseSpellItemAction>(24.0f)
+    //         }
+    //     )
+    // );
 }
 
 // Non-combat strategy for using Firestone
@@ -412,12 +412,12 @@ void UseFirestoneStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
-    triggers.push_back(
-        new TriggerNode(
-            "firestone",
-            {
-                CreateNextAction<UseSpellItemAction>(24.0f)
-            }
-        )
-    );
+    // triggers.push_back(
+    //     new TriggerNode(
+    //         "firestone",
+    //         {
+    //             CreateNextAction<UseSpellItemAction>(24.0f)
+    //         }
+    //     )
+    // );
 }

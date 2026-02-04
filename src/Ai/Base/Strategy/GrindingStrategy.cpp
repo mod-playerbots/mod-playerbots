@@ -6,6 +6,7 @@
 #include "GrindingStrategy.h"
 
 #include "CreateNextAction.h"
+#include "DrinkAction.h"
 #include "NonCombatActions.h"
 #include "ChooseTargetActions.h"
 #include "MovementActions.h"

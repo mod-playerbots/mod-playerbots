@@ -33,7 +33,6 @@ public:
         : PassLeadershipToMasterAction(botAI, "give leader", message)
     {
     }
-
     bool isUseful() override;
 };
 
@@ -44,8 +43,7 @@ public:
         : GiveLeaderAction(botAI, message)
     {
     }
-
-    bool isUseful() override;
+    ~GiveLeaderInDungeonAction() override = default;
 };
 
 #endif

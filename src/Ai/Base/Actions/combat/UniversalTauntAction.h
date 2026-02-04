@@ -8,10 +8,10 @@
 #include "WarriorActions.h"
 #include "DruidBearActions.h"
 
-class UniversalTauntAction : public CastSpellAction
+class UniversalTauntAction : public Action
 {
 public:
-    UniversalTauntAction(PlayerbotAI* botAI, std::string spell) : CastSpellAction(botAI, spell) {}
+    UniversalTauntAction(PlayerbotAI* botAI) : Action(botAI) {}
 
     bool isPossible() override
     {

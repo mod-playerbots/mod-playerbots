@@ -5,9 +5,8 @@
 
 #include "TankAssistStrategy.h"
 
-#include "Playerbots.h"
+#include "ChooseTargetActions.h"
 #include "CreateNextAction.h"
-#include "ChooseTargetAction.h"
 
 void TankAssistStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {

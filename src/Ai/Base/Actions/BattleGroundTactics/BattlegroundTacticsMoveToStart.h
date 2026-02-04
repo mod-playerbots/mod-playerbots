@@ -4,7 +4,7 @@
 
 class BattlegroundTacticsMoveToStart : public BGTactics
 {
+public:
     BattlegroundTacticsMoveToStart(PlayerbotAI* botAI) : BGTactics(botAI, "move to start") {}
-
-    bool Execute(Event event) override;
+    ~BattlegroundTacticsMoveToStart() override = default;
 };

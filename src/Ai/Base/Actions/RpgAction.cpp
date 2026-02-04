@@ -85,7 +85,7 @@ bool RpgAction::SetNextRpgAction()
 
                     // Action* action = botAI->GetAiObjectContext()->GetAction(nextAction.getName());
 
-                    std::unique_ptr<Action> action = nextAction.factory();
+                    std::unique_ptr<Action> action = nextAction.factory(this->botAI);
 
                     if (!action->isRPG() || !action->isPossible() || !action->isUseful())
                         continue;
@@ -106,29 +106,29 @@ bool RpgAction::SetNextRpgAction()
     if (actions.empty())
         return false;
 
-    if (botAI->HasStrategy("debug rpg", BotState::BOT_STATE_NON_COMBAT))
-    {
-        std::vector<std::pair<std::unique_ptr<Action>, uint32>> sortedActions;
+    // if (botAI->HasStrategy("debug rpg", BotState::BOT_STATE_NON_COMBAT))
+    // {
+    //     std::vector<std::pair<std::unique_ptr<Action>, uint32>> sortedActions;
 
-        for (uint64_t i = 0; i < actions.size(); i++)
-            sortedActions.push_back(std::make_pair(actions[i], relevances[i]));
+    //     for (uint64_t i = 0; i < actions.size(); i++)
+    //         sortedActions.push_back(std::make_pair(actions[i], relevances[i]));
 
-        std::sort(sortedActions.begin(), sortedActions.end(), [](std::pair<Action*, uint32>i, std::pair<Action*, uint32> j) {return i.second > j.second; });
+    //     std::sort(sortedActions.begin(), sortedActions.end(), [](std::pair<Action*, uint32>i, std::pair<Action*, uint32> j) {return i.second > j.second; });
 
-        std::stringstream ss;
-        ss << "------" << chat->FormatWorldobject(AI_VALUE(GuidPosition, "rpg target").GetWorldObject()) << "------";
-        bot->Say(ss.str(), LANG_UNIVERSAL);
-        botAI->TellMasterNoFacing(ss.str());
+    //     std::stringstream ss;
+    //     ss << "------" << chat->FormatWorldobject(AI_VALUE(GuidPosition, "rpg target").GetWorldObject()) << "------";
+    //     bot->Say(ss.str(), LANG_UNIVERSAL);
+    //     botAI->TellMasterNoFacing(ss.str());
 
-        for (const std::pair<std::unique_ptr<Action>, uint32>& action : sortedActions)
-        {
-            std::ostringstream out;
+    //     for (const std::pair<std::unique_ptr<Action>, uint32>& action : sortedActions)
+    //     {
+    //         std::ostringstream out;
 
-            out << " " << action.first->getName() << " " << action.second;
+    //         out << " " << action.first->getName() << " " << action.second;
 
-            botAI->TellMasterNoFacing(out);
-        }
-    }
+    //         botAI->TellMasterNoFacing(out);
+    //     }
+    // }
 
     std::mt19937 gen(time(0));
 

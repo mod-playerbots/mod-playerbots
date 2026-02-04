@@ -33,23 +33,15 @@ public:
 class TellMasterNotEnoughMoneyAction : public TellMasterAction
 {
 public:
-    TellMasterNotEnoughMoneyAction(PlayerbotAI* botAI, std::string const text) : TellMasterAction(botAI, "Not enough money"), text(text) {}
-
-    bool Execute(Event event) override;
-
-private:
-    std::string const text;
+    TellMasterNotEnoughMoneyAction(PlayerbotAI* botAI) : TellMasterAction(botAI, "Not enough money") {}
+    ~TellMasterNotEnoughMoneyAction() override = default;
 };
 
 class TellMasterNotEnoughReputationAction : public TellMasterAction
 {
 public:
-    TellMasterNotEnoughReputationAction(PlayerbotAI* botAI, std::string const text) : TellMasterAction(botAI, "Not enough reputation"), text(text) {}
-
-    bool Execute(Event event) override;
-
-private:
-    std::string const text;
+    TellMasterNotEnoughReputationAction(PlayerbotAI* botAI) : TellMasterAction(botAI, "Not enough reputation") {}
+    ~TellMasterNotEnoughReputationAction() override = default;
 };
 
 #endif

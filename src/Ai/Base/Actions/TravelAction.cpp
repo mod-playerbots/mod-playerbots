@@ -5,6 +5,8 @@
 
 #include "TravelAction.h"
 
+#include "AreaTriggerAction.h"
+#include "CreateNextAction.h"
 #include "GridNotifiers.h"
 #include "Playerbots.h"
 // Required due to a poor implementation by AC
@@ -121,7 +123,7 @@ bool DarkPortalAzerothAction::Execute(Event)
         WorldPacket packet(CMSG_AREATRIGGER);
         packet << 4354;
 
-        return GET_PLAYERBOT_AI(bot)->DoSpecificAction("reach area trigger", Event("travel action", packet));
+        return this->botAI->DoSpecificAction(CreateNextAction<ReachAreaTriggerAction>(1.0f).factory, Event("travel action", packet));
     }
 
     return false;

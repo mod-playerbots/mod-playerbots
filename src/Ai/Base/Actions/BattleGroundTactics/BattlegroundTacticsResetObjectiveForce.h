@@ -4,7 +4,7 @@
 
 class BattlegroundTacticsResetObjectiveForce : public BGTactics
 {
+public:
     BattlegroundTacticsResetObjectiveForce(PlayerbotAI* botAI) : BGTactics(botAI, "reset objective force") {}
-
-    bool Execute(Event event) override;
+    ~BattlegroundTacticsResetObjectiveForce() override = default;
 };

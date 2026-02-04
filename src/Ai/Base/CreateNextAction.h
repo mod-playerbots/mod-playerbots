@@ -6,5 +6,5 @@
 template<typename TAction>
 NextAction CreateNextAction(float weight)
 {
-    return NextAction{ weight, &CreateAction<TAction>() };
+    return NextAction{ weight, &CreateAction<TAction> };
 }

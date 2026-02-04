@@ -3428,7 +3428,7 @@ void TravelMgr::LoadQuestTravelTable()
                                             for (NextAction nextAction : defaultActions)
                                             {
                                                 std::ostringstream aout;
-                                                aout << nextAction.getRelevance() << "," << nextAction.getName()
+                                                aout << nextAction.weight << "," << nextAction.factory(botAI)->getName()
                                                      << ",,S:" << stratName;
 
                                                 if (actions.find(aout.str().c_str()) != actions.end())
@@ -3457,7 +3457,7 @@ void TravelMgr::LoadQuestTravelTable()
                                                 for (NextAction nextAction : nextActions)
                                                 {
                                                     std::ostringstream aout;
-                                                    aout << nextAction.getRelevance() << "," << nextAction.getName()
+                                                    aout << nextAction.weight << "," << nextAction.factory(botAI)->getName()
                                                          << "," << triggerNode->getName() << "," << stratName;
 
                                                     if (actions.find(aout.str().c_str()) != actions.end())

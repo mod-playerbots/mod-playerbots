@@ -4,7 +4,7 @@
 
 class BattlegroundTacticsUseBuff : public BGTactics
 {
+public:
     BattlegroundTacticsUseBuff(PlayerbotAI* botAI) : BGTactics(botAI, "use buff") {}
-
-    bool Execute(Event event) override;
+    ~BattlegroundTacticsUseBuff() override = default;
 };

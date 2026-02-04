@@ -4,7 +4,7 @@
 
 class BattlegroundTacticsMoveToObjective : public BGTactics
 {
+public:
     BattlegroundTacticsMoveToObjective(PlayerbotAI* botAI) : BGTactics(botAI, "move to objective") {}
-
-    bool Execute(Event event) override;
+    ~BattlegroundTacticsMoveToObjective() override = default;
 };

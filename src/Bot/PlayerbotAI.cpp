@@ -648,7 +648,7 @@ void PlayerbotAI::HandleCommand(uint32 type, const std::string& text, Player& fr
     {
         Event event("do", "", &fromPlayer);
         std::string action = filtered.substr(filtered.find(" ") + 1);
-        DoSpecificAction(action, event);
+        // DoSpecificAction(action, event);
     }
 
     if (ChatHelper::parseValue("command", filtered).substr(0, 3) == "do ")
@@ -656,7 +656,7 @@ void PlayerbotAI::HandleCommand(uint32 type, const std::string& text, Player& fr
         Event event("do", "", &fromPlayer);
         std::string action = ChatHelper::parseValue("command", filtered);
         action = action.substr(3);
-        DoSpecificAction(action, event);
+        // DoSpecificAction(action, event);
     }
     else if (type != CHAT_MSG_WHISPER && filtered.size() > 6 && filtered.substr(0, 6) == "queue ")
     {
@@ -986,7 +986,7 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
         (filtered.size() > 3 && filtered.substr(0, 3) == "do "))
     {
         std::string const action = filtered.substr(filtered.find(" ") + 1);
-        DoSpecificAction(action);
+        // DoSpecificAction(action);
     }
     else if (type != CHAT_MSG_WHISPER && filtered.size() > 6 && filtered.substr(0, 6) == "queue ")
     {

@@ -357,7 +357,7 @@ void ReadyCheckStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "timer",
             {
-                CreateNextAction<ReadyCheckStrategy>(relevance)
+                CreateNextAction<ReadyCheckAction>(relevance)
             }
         )
     );

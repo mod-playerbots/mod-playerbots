@@ -4,7 +4,7 @@
 
 class BattlegroundTacticsCheckFlag : public BGTactics
 {
+public:
     BattlegroundTacticsCheckFlag(PlayerbotAI* botAI) : BGTactics(botAI, "check flag") {}
-
-    bool Execute(Event event) override;
+    ~BattlegroundTacticsCheckFlag() override = default;
 };

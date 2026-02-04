@@ -83,7 +83,7 @@ float ChooseRpgTargetAction::getMaxRelevance(GuidPosition guidP)
 
             for (NextAction nextAction : nextActions)
             {
-                std::unique_ptr<Action> action = nextAction.factory();
+                std::unique_ptr<Action> action = nextAction.factory(this->botAI);
 
                 if (action->isRPG())
                     isRpg = true;

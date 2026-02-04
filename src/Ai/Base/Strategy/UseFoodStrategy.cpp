@@ -5,8 +5,8 @@
 
 #include "UseFoodStrategy.h"
 
+#include "DrinkAction.h"
 #include "PlayerbotAIConfig.h"
-#include "Playerbots.h"
 #include "CreateNextAction.h"
 #include "NonCombatActions.h"
 
