@@ -14,6 +14,7 @@
 #include "Timer.h"
 
 #include "ActionNode.h"
+#include "ActionBasket.h"
 #include "NextAction.h"
 
 Engine::Engine(PlayerbotAI* botAI, AiObjectContext* factory) : PlayerbotAIAware(botAI), aiObjectContext(factory)
@@ -286,7 +287,7 @@ bool Engine::multiplyAndPush(
     {
         ActionNode* actionNode = new ActionNode({}, {}, {});
 
-        actionNode->setAction(nextAction.factory());
+        actionNode->setAction(nextAction.factory(this->botAI));
 
         float k = nextAction.weight;
 
@@ -316,7 +317,7 @@ ActionResult Engine::ExecuteAction(NextAction::Factory actionFactory, Event even
 
     ActionNode* actionNode = new ActionNode({}, {}, {});
 
-    actionNode->setAction(actionFactory());
+    actionNode->setAction(actionFactory(this->botAI));
 
     Action& action = actionNode->getAction();
 
@@ -526,9 +527,9 @@ std::vector<std::string> Engine::GetStrategies()
 
 void Engine::PushAgain(ActionNode* actionNode, float relevance, Event event)
 {
-    std::vector<NextAction> nextAction = { NextAction(actionNode->getName(), relevance) };
+    // std::vector<NextAction> nextAction = { NextAction(actionNode->get(), relevance) };
 
-    this->multiplyAndPush(nextAction, relevance, true, event, "again");
+    // this->multiplyAndPush(nextAction, relevance, true, event, "again");
 
     delete actionNode;
 }
