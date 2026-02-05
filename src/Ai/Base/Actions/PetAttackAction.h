@@ -8,16 +8,12 @@
 #include <string>
 
 #include "Action.h"
-#include "PlayerbotFactory.h"
-#include "Unit.h"
 #include "PetsAction.h"
 
 class PlayerbotAI;
 
-class PetAttackAction : public PetsAction
+class ChatPetAttackAction : public PetsAction
 {
 public:
-    PetAttackAction(PlayerbotAI* botAI, const std::string& defaultCmd = "") : PetsAction(botAI, "attack") {}
-
-    bool Execute(Event event) override;
+    ChatPetAttackAction(PlayerbotAI* botAI) : PetsAction(botAI, "attack") {}
 };

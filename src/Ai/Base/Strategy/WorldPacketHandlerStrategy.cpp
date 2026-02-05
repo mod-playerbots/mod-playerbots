@@ -329,28 +329,6 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     );
 }
 
-WorldPacketHandlerStrategy::WorldPacketHandlerStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI)
-{
-    supported.push_back("loot roll");
-    supported.push_back("check mount state");
-    supported.push_back("party command");
-    supported.push_back("ready check");
-    supported.push_back("uninvite");
-    supported.push_back("lfg role check");
-    supported.push_back("lfg teleport");
-    supported.push_back("random bot update");
-    supported.push_back("inventory change failure");
-    supported.push_back("bg status");
-
-    // quests
-    supported.push_back("quest update add kill");
-    // supported.push_back("quest update add item");
-    supported.push_back("quest update failed");
-    supported.push_back("quest update failed timer");
-    supported.push_back("quest update complete");
-    supported.push_back("confirm quest");
-}
-
 void ReadyCheckStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(

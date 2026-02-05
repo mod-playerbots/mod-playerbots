@@ -9,10 +9,15 @@
 #include "AcceptQuestAction.h"
 #include "TalkToQuestGiverAction.h"
 
-QuestStrategy::QuestStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI)
-{
-    supported.push_back("accept quest");
-}
+// QuestStrategy::QuestStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI)
+// {
+//     this->supported.push_back(
+//         {
+//             .name = "accept quest",
+//             .factory = &CreateAction<AcceptQuestAction>
+//         }
+//     );
+// }
 
 void QuestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {

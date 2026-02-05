@@ -6,7 +6,7 @@
 #include "RemoveAuraAction.h"
 
 #include "Event.h"
-#include "Playerbots.h"
+#include "PlayerbotAI.h"
 
 RemoveAuraAction::RemoveAuraAction(PlayerbotAI* botAI) : Action(botAI, "ra") {}
 

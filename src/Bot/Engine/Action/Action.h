@@ -30,7 +30,6 @@ public:
     virtual bool Execute([[maybe_unused]] Event event) { return true; }
     virtual bool isPossible() { return true; }
     virtual bool isUseful() { return true; }
-    virtual bool isRPG() { return false; }
     virtual std::vector<NextAction> getPrerequisites() { return {}; }
     virtual std::vector<NextAction> getAlternatives() { return {}; }
     virtual std::vector<NextAction> getContinuers() { return {}; }

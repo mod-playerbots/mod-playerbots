@@ -85,7 +85,7 @@ bool RpgAction::SetNextRpgAction()
 
                     std::unique_ptr<Action> action = nextAction.factory(this->botAI);
 
-                    if (!action->isRPG() || !action->isPossible() || !action->isUseful())
+                    if (!dynamic_cast<RpgEnabled*>(action.get()) || !action->isPossible() || !action->isUseful())
                         continue;
 
                     actions.push_back(std::move(action));

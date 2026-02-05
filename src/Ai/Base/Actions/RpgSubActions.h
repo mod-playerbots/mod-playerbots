@@ -55,8 +55,6 @@ public:
     // Short range can we do the action now?
     bool isUseful() override;
 
-    bool isRPG() override { return true; }
-
     bool Execute(Event event) override;
 
 protected:

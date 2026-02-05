@@ -447,7 +447,7 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "pet attack",
             {
-                CreateNextAction<PetAttackAction>(relevance)
+                CreateNextAction<ChatPetAttackAction>(relevance)
             }
         )
     );
@@ -464,84 +464,4 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
 ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI)
 {
     actionNodeFactories.Add(new ChatCommandActionNodeFactoryInternal());
-
-    supported.push_back("quests");
-    supported.push_back("stats");
-    supported.push_back("leave");
-    supported.push_back("reputation");
-    supported.push_back("tell pvp stats");
-    supported.push_back("log");
-    supported.push_back("los");
-    supported.push_back("rpg status");
-    supported.push_back("rpg do quest");
-    supported.push_back("aura");
-    supported.push_back("drop");
-    supported.push_back("share");
-    supported.push_back("ll");
-    supported.push_back("ss");
-    supported.push_back("release");
-    supported.push_back("teleport");
-    supported.push_back("taxi");
-    supported.push_back("repair");
-    supported.push_back("talents");
-    supported.push_back("spells");
-    supported.push_back("co");
-    supported.push_back("nc");
-    supported.push_back("de");
-    supported.push_back("trainer");
-    supported.push_back("maintenance");
-    supported.push_back("remove glyph");
-    supported.push_back("autogear");
-    supported.push_back("equip upgrade");
-    supported.push_back("chat");
-    supported.push_back("home");
-    supported.push_back("destroy");
-    supported.push_back("reset botAI");
-    supported.push_back("emote");
-    supported.push_back("buff");
-    supported.push_back("help");
-    supported.push_back("gb");
-    supported.push_back("bank");
-    supported.push_back("invite");
-    supported.push_back("lfg");
-    supported.push_back("spell");
-    supported.push_back("rti");
-    supported.push_back("position");
-    supported.push_back("summon");
-    supported.push_back("who");
-    supported.push_back("save mana");
-    supported.push_back("formation");
-    supported.push_back("stance");
-    supported.push_back("sendmail");
-    supported.push_back("mail");
-    supported.push_back("outfit");
-    supported.push_back("go");
-    supported.push_back("debug");
-    supported.push_back("cdebug");
-    // supported.push_back("cs");
-    supported.push_back("wts");
-    supported.push_back("hire");
-    supported.push_back("craft");
-    supported.push_back("flag");
-    supported.push_back("range");
-    supported.push_back("ra");
-    supported.push_back("give leader");
-    supported.push_back("cheat");
-    supported.push_back("ginvite");
-    supported.push_back("guild promote");
-    supported.push_back("guild demote");
-    supported.push_back("guild remove");
-    supported.push_back("guild leave");
-    supported.push_back("rtsc");
-    supported.push_back("drink");
-    supported.push_back("calc");
-    supported.push_back("open items");
-    supported.push_back("qi");
-    supported.push_back("unlock items");
-    supported.push_back("unlock traded item");
-    supported.push_back("tame");
-    supported.push_back("glyphs"); // Added for custom Glyphs
-    supported.push_back("glyph equip"); // Added for custom Glyphs
-    supported.push_back("pet");
-    supported.push_back("pet attack");
 }

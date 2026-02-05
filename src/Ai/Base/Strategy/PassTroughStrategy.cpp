@@ -4,20 +4,22 @@
  */
 
 #include "PassTroughStrategy.h"
+#include "NextAction.h"
 
 void PassTroughStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    for (std::vector<std::string>::iterator i = supported.begin(); i != supported.end(); i++)
+    for (std::vector<PassthroughStrategySupportedActionsStruct>::iterator i = this->supported.begin(); i != this->supported.end(); i++)
     {
-
-        // @TODO: Chat actions
-        // triggers.push_back(
-        //     new TriggerNode(
-        //         i->c_str(),
-        //         {
-        //             CreateNextAction(i->c_str(), relevance)
-        //         }
-        //     )
-        // );
+        triggers.push_back(
+            new TriggerNode(
+                i->name,
+                {
+                    NextAction{
+                        .weight = relevance,
+                        .factory = i->factory
+                    },
+                }
+            )
+        );
     }
 }
