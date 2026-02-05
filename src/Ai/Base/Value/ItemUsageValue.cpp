@@ -56,7 +56,7 @@ ItemUsage ItemUsageValue::Calculate()
 
             if (proto->Class == ITEM_CLASS_TRADE_GOODS || proto->Class == ITEM_CLASS_MISC ||
                 proto->Class == ITEM_CLASS_REAGENT)
-                needItem = IsItemNeededForUsefullSpell(proto, lowBagSpace);
+                needItem = IsItemNeededForUsefullSpell(*proto, lowBagSpace);
             else if (proto->Class == ITEM_CLASS_RECIPE)
             {
                 if (bot->HasSpell(proto->Spells[2].SpellId))
@@ -79,8 +79,10 @@ ItemUsage ItemUsageValue::Calculate()
     if (proto->Class == ITEM_CLASS_KEY)
         return ITEM_USAGE_USE;
 
+    const uint32_t maxCount = proto->MaxCount;
+
     if (proto->Class == ITEM_CLASS_CONSUMABLE &&
-        (proto->MaxCount == 0 || bot->GetItemCount(itemId, false) < proto->MaxCount))
+        (maxCount == 0 || bot->GetItemCount(itemId, false) < maxCount))
     {
         std::string const foodType = GetConsumableType(proto, bot->GetPower(POWER_MANA));
 
@@ -695,57 +697,86 @@ bool ItemUsageValue::IsItemUsefulForSkill(ItemTemplate const* proto)
     return false;
 }
 
-bool ItemUsageValue::IsItemNeededForUsefullSpell(ItemTemplate const* proto, bool checkAllReagents)
+bool ItemUsageValue::IsItemNeededForUsefullSpell(const ItemTemplate& itemTemplate, bool checkAllReagents) const
 {
-    for (auto spellId : SpellsUsingItem(proto->ItemId, bot))
+    for (uint32_t spellId : SpellsUsingItem(itemTemplate.ItemId, bot))
     {
-        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-        if (!spellInfo)
-            continue;
+        const SpellInfo* const spellInfo = SpellMgr::instance()->GetSpellInfo(spellId);
 
-        if (checkAllReagents && !HasItemsNeededForSpell(spellId, proto))
-            continue;
-
-        if (SpellGivesSkillUp(spellId, bot))
-            return true;
-
-        uint32 newItemId = spellInfo->Effects[EFFECT_0].ItemType;
-        if (newItemId && newItemId != proto->ItemId)
+        if (spellInfo == nullptr)
         {
-            ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", newItemId);
+            continue;
+        }
 
-            if (usage != ITEM_USAGE_REPLACE && usage != ITEM_USAGE_EQUIP && usage != ITEM_USAGE_AMMO &&
-                usage != ITEM_USAGE_QUEST && usage != ITEM_USAGE_SKILL && usage != ITEM_USAGE_USE)
-                continue;
+        if (checkAllReagents && !this->HasItemsNeededForSpell(spellId, itemTemplate))
+        {
+            continue;
+        }
 
+        if (this->SpellGivesSkillUp(spellId, bot))
+        {
             return true;
         }
+
+        const uint32_t newItemId = spellInfo->Effects[EFFECT_0].ItemType;
+
+        if (newItemId == 0 || newItemId == itemTemplate.ItemId)
+        {
+            continue;
+        }
+
+        const ItemUsage usage = this->context->GetValue<ItemUsage>("item usage", newItemId)->Get();
+
+        if (usage != ITEM_USAGE_REPLACE
+            && usage != ITEM_USAGE_EQUIP
+            && usage != ITEM_USAGE_AMMO
+            && usage != ITEM_USAGE_QUEST
+            && usage != ITEM_USAGE_SKILL
+            && usage != ITEM_USAGE_USE
+        )
+        {
+            continue;
+        }
+
+        return true;
     }
 
     return false;
 }
 
-bool ItemUsageValue::HasItemsNeededForSpell(uint32 spellId, ItemTemplate const* proto)
+bool ItemUsageValue::HasItemsNeededForSpell(uint32_t spellId, const ItemTemplate& itemTemplate) const
 {
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-    if (!spellInfo)
+    const SpellInfo* const spellInfo = SpellMgr::instance()->GetSpellInfo(spellId);
+
+    if (spellInfo == nullptr)
+    {
         return false;
+    }
 
-    for (uint8 i = 0; i < MAX_SPELL_REAGENTS; i++)
-        if (spellInfo->ReagentCount[i] > 0 && spellInfo->Reagent[i])
+    for (uint8_t i = 0; i < MAX_SPELL_REAGENTS; i++)
+    {
+        if (spellInfo->ReagentCount[i] < 1 || spellInfo->Reagent[i] == 0)
         {
-            if (proto && proto->ItemId == spellInfo->Reagent[i] &&
-                spellInfo->ReagentCount[i] == 1)  // If we only need 1 item then current item does not need to be
-                                                  // checked since we are looting/buying or already have it.
-                continue;
-
-            ItemTemplate const* reqProto = sObjectMgr->GetItemTemplate(spellInfo->Reagent[i]);
-
-            uint32 count = AI_VALUE2(uint32, "item count", reqProto->Name1);
-
-            if (count < spellInfo->ReagentCount[i])
-                return false;
+            continue;
         }
+
+        const int64_t itemTemplateId = itemTemplate.ItemId;
+
+        // If we only need 1 item then current item does not need to be
+        // checked since we are looting/buying or already have it.
+        if (itemTemplateId == spellInfo->Reagent[i] && spellInfo->ReagentCount[i] == 1)
+        {
+            continue;
+        }
+
+        const ItemTemplate* const requiredItemTemplate = ObjectMgr::instance()->GetItemTemplate(spellInfo->Reagent[i]);
+        const uint32_t count = this->context->GetValue<uint32_t>("item count", requiredItemTemplate->Name1)->Get();
+
+        if (count < spellInfo->ReagentCount[i])
+        {
+            return false;
+        }
+    }
 
     return true;
 }
@@ -809,7 +840,7 @@ float ItemUsageValue::BetterStacks(ItemTemplate const* proto, std::string const 
     return stacks;
 }
 
-std::vector<uint32> ItemUsageValue::SpellsUsingItem(uint32 itemId, Player* bot)
+std::vector<uint32> ItemUsageValue::SpellsUsingItem(int64_t itemId, Player* bot)
 {
     std::vector<uint32> retSpells;
 
@@ -854,23 +885,27 @@ inline int32 SkillGainChance(uint32 SkillValue, uint32 GrayLevel, uint32 GreenLe
     return sWorld->getIntConfig(CONFIG_SKILL_CHANCE_ORANGE) * 10;
 }
 
-bool ItemUsageValue::SpellGivesSkillUp(uint32 spellId, Player* bot)
+bool ItemUsageValue::SpellGivesSkillUp(const uint32_t spellId, const Player* const bot)
 {
-    SkillLineAbilityMapBounds bounds = sSpellMgr->GetSkillLineAbilityMapBounds(spellId);
+    const SkillLineAbilityMapBounds bounds = SpellMgr::instance()->GetSkillLineAbilityMapBounds(spellId);
 
-    for (SkillLineAbilityMap::const_iterator _spell_idx = bounds.first; _spell_idx != bounds.second; ++_spell_idx)
+    for (SkillLineAbilityMap::const_iterator spellIterator = bounds.first; spellIterator != bounds.second; ++spellIterator)
     {
-        SkillLineAbilityEntry const* skill = _spell_idx->second;
-        if (skill->SkillLine)
+        const SkillLineAbilityEntry* const skill = spellIterator->second;
+
+        if (skill->SkillLine == 0)
         {
-            uint32 SkillValue = bot->GetPureSkillValue(skill->SkillLine);
+            continue;
+        }
 
-            uint32 craft_skill_gain = sWorld->getIntConfig(CONFIG_SKILL_GAIN_CRAFTING);
+        const uint32_t SkillValue = bot->GetPureSkillValue(skill->SkillLine);
 
-            if (SkillGainChance(SkillValue, skill->TrivialSkillLineRankHigh,
-                                (skill->TrivialSkillLineRankHigh + skill->TrivialSkillLineRankLow) / 2,
-                                skill->TrivialSkillLineRankLow) > 0)
-                return true;
+        if (SkillGainChance(SkillValue, skill->TrivialSkillLineRankHigh,
+                            (skill->TrivialSkillLineRankHigh + skill->TrivialSkillLineRankLow) / 2,
+                            skill->TrivialSkillLineRankLow) > 0
+            )
+        {
+            return true;
         }
     }
 

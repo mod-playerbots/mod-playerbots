@@ -8,7 +8,7 @@
 #include "Event.h"
 #include "ItemCountValue.h"
 #include "ItemVisitors.h"
-#include "Playerbots.h"
+#include "PlayerbotAI.h"
 
 bool TradeAction::Execute(Event event)
 {
@@ -56,7 +56,18 @@ bool TradeAction::Execute(Event event)
     }
 
     size_t pos = text.rfind(" ");
-    int count = pos != std::string::npos ? atoi(text.substr(pos + 1).c_str()) : 1;
+
+    uint32_t count = 1;
+
+    if (pos != std::string::npos)
+    {
+        const int32_t possibleValue = atoi(text.substr(pos + 1).c_str());
+
+        if (possibleValue > 0)
+        {
+            count = possibleValue;
+        }
+    }
 
     std::vector<Item*> found = parseItems(text);
     if (found.empty())

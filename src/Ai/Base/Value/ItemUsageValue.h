@@ -48,15 +48,15 @@ private:
     bool IsItemUsefulForQuest(Player* player, ItemTemplate const* proto);
     bool IsItemNeededForSkill(ItemTemplate const* proto);
     bool IsItemUsefulForSkill(ItemTemplate const* proto);
-    bool IsItemNeededForUsefullSpell(ItemTemplate const* proto, bool checkAllReagents = false);
-    bool HasItemsNeededForSpell(uint32 spellId, ItemTemplate const* proto);
+    bool IsItemNeededForUsefullSpell(const ItemTemplate& proto, bool checkAllReagents = false) const;
+    bool HasItemsNeededForSpell(uint32_t spellId, const ItemTemplate& proto) const;
     Item* CurrentItem(ItemTemplate const* proto);
     float CurrentStacks(ItemTemplate const* proto);
     float BetterStacks(ItemTemplate const* proto, std::string const usageType = "");
 
 public:
-    static std::vector<uint32> SpellsUsingItem(uint32 itemId, Player* bot);
-    static bool SpellGivesSkillUp(uint32 spellId, Player* bot);
+    static std::vector<uint32> SpellsUsingItem(int64_t itemId, Player* bot);
+    static bool SpellGivesSkillUp(const uint32_t spellId, const Player* const bot);
 
     static std::string const GetConsumableType(ItemTemplate const* proto, bool hasMana);
 };

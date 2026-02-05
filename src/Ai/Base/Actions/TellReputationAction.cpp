@@ -6,10 +6,10 @@
 #include "TellReputationAction.h"
 
 #include "Event.h"
-#include "Playerbots.h"
 #include "ReputationMgr.h"
+#include "PlayerbotAI.h"
 
-bool TellReputationAction::Execute(Event event)
+bool TellReputationAction::Execute(Event)
 {
     Player* master = GetMaster();
     if (!master)

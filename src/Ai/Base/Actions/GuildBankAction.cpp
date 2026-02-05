@@ -6,7 +6,8 @@
 #include "GuildBankAction.h"
 
 #include "GuildMgr.h"
-#include "Playerbots.h"
+#include "PlayerbotAI.h"
+#include "AiObjectContext.h"
 
 bool GuildBankAction::Execute(Event event)
 {
@@ -52,7 +53,7 @@ bool GuildBankAction::Execute(std::string const text, GameObject* bank)
     return result;
 }
 
-bool GuildBankAction::MoveFromCharToBank(Item* item, GameObject* bank)
+bool GuildBankAction::MoveFromCharToBank(Item* item, GameObject*)
 {
     uint32 playerSlot = item->GetSlot();
     uint32 playerBag = item->GetBagSlot();

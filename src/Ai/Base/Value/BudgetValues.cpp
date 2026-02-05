@@ -10,7 +10,7 @@
 uint32 MaxGearRepairCostValue::Calculate()
 {
     uint32 TotalCost = 0;
-    for (int i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_ITEM_END; ++i)
+    for (uint32_t i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_ITEM_END; ++i)
     {
         uint16 pos = ((INVENTORY_SLOT_BAG_0 << 8) | i);
         Item* item = bot->GetItemByPos(pos);

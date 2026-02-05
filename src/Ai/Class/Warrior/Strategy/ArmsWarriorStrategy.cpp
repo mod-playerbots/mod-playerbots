@@ -5,8 +5,6 @@
 
 #include "ArmsWarriorStrategy.h"
 
-#include "Playerbots.h"
-
 class ArmsWarriorStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
 public:
@@ -23,7 +21,7 @@ public:
     }
 
 private:
-    static ActionNode* charge(PlayerbotAI* botAI)
+    static ActionNode* charge(PlayerbotAI*)
     {
         return new ActionNode(
             "charge",
@@ -33,7 +31,7 @@ private:
         );
     }
 
-    static ActionNode* death_wish(PlayerbotAI* botAI)
+    static ActionNode* death_wish(PlayerbotAI*)
     {
         return new ActionNode(
             "death wish",
@@ -43,7 +41,7 @@ private:
         );
     }
 
-    static ActionNode* piercing_howl(PlayerbotAI* botAI)
+    static ActionNode* piercing_howl(PlayerbotAI*)
     {
         return new ActionNode(
             "piercing howl",
@@ -53,7 +51,7 @@ private:
         );
     }
 
-    static ActionNode* mocking_blow(PlayerbotAI* botAI)
+    static ActionNode* mocking_blow(PlayerbotAI*)
     {
         return new ActionNode(
             "mocking blow",
@@ -63,7 +61,7 @@ private:
         );
     }
 
-    static ActionNode* heroic_strike(PlayerbotAI* botAI)
+    static ActionNode* heroic_strike(PlayerbotAI*)
     {
         return new ActionNode(
             "heroic strike",
@@ -73,7 +71,7 @@ private:
         );
     }
 
-    static ActionNode* enraged_regeneration(PlayerbotAI* botAI)
+    static ActionNode* enraged_regeneration(PlayerbotAI*)
     {
         return new ActionNode(
             "enraged regeneration",
@@ -83,7 +81,7 @@ private:
         );
     }
 
-    static ActionNode* retaliation(PlayerbotAI* botAI)
+    static ActionNode* retaliation(PlayerbotAI*)
     {
         return new ActionNode(
             "retaliation",
@@ -93,7 +91,7 @@ private:
         );
     }
 
-    static ActionNode* shattering_throw(PlayerbotAI* botAI)
+    static ActionNode* shattering_throw(PlayerbotAI*)
     {
         return new ActionNode(
             "shattering throw",

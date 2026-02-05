@@ -6,8 +6,11 @@
 #include "PartyMemberValue.h"
 #include "Corpse.h"
 
-#include "Playerbots.h"
+#include "Group.h"
+#include "PlayerbotAI.h"
 #include "ServerFacade.h"
+#include "Pet.h"
+#include "Spell.h"
 
 Unit* PartyMemberValue::FindPartyMember(std::vector<Player*>* party, FindPlayerPredicate& predicate)
 {
@@ -24,7 +27,7 @@ Unit* PartyMemberValue::FindPartyMember(std::vector<Player*>* party, FindPlayerP
     return nullptr;
 }
 
-Unit* PartyMemberValue::FindPartyMember(FindPlayerPredicate& predicate, bool ignoreOutOfGroup)
+Unit* PartyMemberValue::FindPartyMember(FindPlayerPredicate& predicate, bool)
 {
     Player* master = GetMaster();
     // GuidVector nearestPlayers;

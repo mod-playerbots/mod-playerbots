@@ -5,12 +5,13 @@
 
 #include "TravelAction.h"
 
-#include "CellImpl.h"
 #include "GridNotifiers.h"
-#include "GridNotifiersImpl.h"
 #include "Playerbots.h"
+// Required due to a poor implementation by AC
+#include "CellImpl.h"
+#include "GridNotifiersImpl.h"
 
-bool TravelAction::Execute(Event event)
+bool TravelAction::Execute(Event)
 {
     TravelTarget* target = AI_VALUE(TravelTarget*, "travel target");
 
@@ -37,7 +38,9 @@ bool TravelAction::Execute(Event event)
         if (!newTarget->IsAlive())
             continue;
 
-        if (newTarget->GetEntry() == target->getDestination()->getEntry())
+        const int64_t newTargetEntry = newTarget->GetEntry();
+
+        if (newTargetEntry == target->getDestination()->getEntry())
             continue;
 
         if (newTarget->IsInCombat())
@@ -60,7 +63,7 @@ bool TravelAction::isUseful()
            (!AI_VALUE(GuidPosition, "rpg target") || !AI_VALUE(ObjectGuid, "pull target"));
 }
 
-bool MoveToDarkPortalAction::Execute(Event event)
+bool MoveToDarkPortalAction::Execute(Event)
 {
     if (bot->GetGroup())
         if (bot->GetGroup()->GetLeaderGUID() != bot->GetGUID() &&
@@ -111,7 +114,7 @@ bool MoveToDarkPortalAction::Execute(Event event)
 
 bool MoveToDarkPortalAction::isUseful() { return bot->GetLevel() > 54; }
 
-bool DarkPortalAzerothAction::Execute(Event event)
+bool DarkPortalAzerothAction::Execute(Event)
 {
     if (bot->GetLevel() > 57)
     {
@@ -126,14 +129,14 @@ bool DarkPortalAzerothAction::Execute(Event event)
 
 bool DarkPortalAzerothAction::isUseful() { return bot->GetLevel() > 57; }
 
-bool MoveFromDarkPortalAction::Execute(Event event)
+bool MoveFromDarkPortalAction::Execute(Event)
 {
     RESET_AI_VALUE(GuidPosition, "rpg target");
 
     if (bot->GetTeamId() == TEAM_ALLIANCE)
+    {
         return MoveTo(530, -319.261f, 1027.213, 54.172638f, false, true);
-    else
-        return MoveTo(530, -180.444f, 1027.947, 54.181538f, false, true);
+    }
 
-    return false;
+    return MoveTo(530, -180.444f, 1027.947, 54.181538f, false, true);
 }

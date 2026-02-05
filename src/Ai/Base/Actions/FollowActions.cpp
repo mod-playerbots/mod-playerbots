@@ -5,17 +5,14 @@
 
 #include "FollowActions.h"
 
-#include <cstddef>
-
 #include "Event.h"
 #include "Formations.h"
 #include "LastMovementValue.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
-#include "SharedDefines.h"
 
-bool FollowAction::Execute(Event event)
+bool FollowAction::Execute(Event)
 {
     Formation* formation = AI_VALUE(Formation*, "formation");
     std::string const target = formation->GetTargetName();
@@ -28,7 +25,7 @@ bool FollowAction::Execute(Event event)
     else
     {
         WorldLocation loc = formation->GetLocation();
-        if (Formation::IsNullLocation(loc) || loc.GetMapId() == -1)
+        if (Formation::IsNullLocation(loc))
             return false;
 
         MovementPriority priority = botAI->GetState() == BOT_STATE_COMBAT ? MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_NORMAL;
@@ -116,7 +113,7 @@ bool FollowAction::CanDeadFollow(Unit* target)
     return true;
 }
 
-bool FleeToGroupLeaderAction::Execute(Event event)
+bool FleeToGroupLeaderAction::Execute(Event)
 {
     Unit* fTarget = AI_VALUE(Unit*, "group leader");
     bool canFollow = Follow(fTarget);

@@ -1,19 +1,20 @@
 #include "AutoMaintenanceOnLevelupAction.h"
 
-#include "GuildMgr.h"
+#include "SpellMgr.h"
+
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotFactory.h"
-#include "Playerbots.h"
 #include "RandomPlayerbotMgr.h"
 #include "SharedDefines.h"
 #include "BroadcastHelper.h"
 
-bool AutoMaintenanceOnLevelupAction::Execute(Event event)
+bool AutoMaintenanceOnLevelupAction::Execute(Event)
 {
     AutoPickTalents();
     AutoLearnSpell();
     AutoUpgradeEquip();
     AutoTeleportForLevel();
+
     return true;
 }
 
@@ -72,7 +73,7 @@ void AutoMaintenanceOnLevelupAction::LearnSpells(std::ostringstream* out)
         LearnQuestSpells(out);
 }
 
-void AutoMaintenanceOnLevelupAction::LearnTrainerSpells(std::ostringstream* out)
+void AutoMaintenanceOnLevelupAction::LearnTrainerSpells(std::ostringstream*)
 {
     PlayerbotFactory factory(bot, bot->GetLevel());
     factory.InitSkills();

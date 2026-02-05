@@ -19,6 +19,8 @@
 
 class PlayerbotAI;
 
+class Strategy;
+
 typedef Strategy* (*StrategyCreator)(PlayerbotAI* botAI);
 typedef Action* (*ActionCreator)(PlayerbotAI* botAI);
 typedef Trigger* (*TriggerCreator)(PlayerbotAI* botAI);

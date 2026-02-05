@@ -5,8 +5,6 @@
 
 #include "GenericDKNonCombatStrategy.h"
 
-#include "Playerbots.h"
-
 class GenericDKNonCombatStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
 public:
@@ -55,7 +53,7 @@ void GenericDKNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode("new pet", { NextAction("set pet stance", 60.0f) }));
 }
 
-void DKBuffDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void DKBuffDpsStrategy::InitTriggers(std::vector<TriggerNode*>&)
 {
 
 }

@@ -6,7 +6,9 @@
 #include "CcTargetValue.h"
 
 #include "Action.h"
-#include "Playerbots.h"
+#include "AiObjectContext.h"
+#include "Group.h"
+#include "PlayerbotAI.h"
 #include "ServerFacade.h"
 
 class FindTargetForCcStrategy : public FindTargetStrategy
@@ -18,7 +20,7 @@ public:
     }
 
 public:
-    void CheckAttacker(Unit* creature, ThreatMgr* threatMgr) override
+    void CheckAttacker(Unit* creature, ThreatMgr*) override
     {
         Player* bot = botAI->GetBot();
         if (!botAI->CanCastSpell(spell, creature))

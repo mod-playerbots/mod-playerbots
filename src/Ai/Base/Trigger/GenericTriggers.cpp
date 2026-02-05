@@ -7,9 +7,7 @@
 
 #include <string>
 
-#include "BattlegroundWS.h"
 #include "CreatureAI.h"
-#include "GameTime.h"
 #include "ItemVisitors.h"
 #include "LastSpellCastValue.h"
 #include "ObjectGuid.h"
@@ -166,7 +164,10 @@ bool BuffTrigger::IsActive()
     Aura* aura = botAI->GetAura(spell, target, checkIsOwner, checkDuration);
     if (!aura)
         return true;
-    if (beforeDuration && aura->GetDuration() < beforeDuration)
+
+    const int64_t signedBeforeDuration = this->beforeDuration;
+
+    if (beforeDuration && aura->GetDuration() < signedBeforeDuration)
         return true;
     return false;
 }
@@ -412,7 +413,12 @@ bool HealerShouldAttackTrigger::IsActive()
     return true;
 }
 
-bool ItemCountTrigger::IsActive() { return AI_VALUE2(uint32, "item count", item) < count; }
+bool ItemCountTrigger::IsActive()
+{
+    const int64_t aiValue = this->context->GetValue<uint32>("item count", item)->Get();
+
+    return aiValue < this->count;
+}
 
 bool InterruptSpellTrigger::IsActive()
 {

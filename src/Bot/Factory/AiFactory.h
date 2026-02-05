@@ -6,16 +6,16 @@
 #ifndef _PLAYERBOT_AIFACTORY_H
 #define _PLAYERBOT_AIFACTORY_H
 
+#include <cstdint>
 #include <map>
-
-#include "Common.h"
+#include <string>
 
 class AiObjectContext;
 class Engine;
 class Player;
 class PlayerbotAI;
 
-enum BotRoles : uint8;
+enum BotRoles : uint8_t;
 
 class AiFactory
 {
@@ -28,8 +28,8 @@ public:
     static void AddDefaultDeadStrategies(Player* player, PlayerbotAI* const facade, Engine* deadEngine);
     static void AddDefaultCombatStrategies(Player* player, PlayerbotAI* const facade, Engine* engine);
 
-    static uint8 GetPlayerSpecTab(Player* player);
-    static std::map<uint8, uint32> GetPlayerSpecTabs(Player* player);
+    static uint8_t GetPlayerSpecTab(Player* player);
+    static std::map<uint8_t, uint32_t> GetPlayerSpecTabs(Player* player);
     static BotRoles GetPlayerRoles(Player* player);
     static std::string GetPlayerSpecName(Player* player);
 };

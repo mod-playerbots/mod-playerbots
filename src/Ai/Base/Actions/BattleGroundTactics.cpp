@@ -1364,8 +1364,8 @@ std::string const BGTactics::HandleConsoleCommandPrivate(WorldSession* session, 
                 }
             }
         }
-        uint32 min = 0u;
-        uint32 max = vPaths->size() - 1;
+        int64_t min = 0u;
+        int64_t max = vPaths->size() - 1;
         if (num >= 0)  // num specified or found
         {
             if (num > max)
@@ -1557,7 +1557,7 @@ bool BGTactics::eyJumpDown()
 //
 // actual bg tactics below
 //
-bool BGTactics::Execute(Event event)
+bool BGTactics::Execute(Event)
 {
     Battleground* bg = bot->GetBattleground();
     if (!bg)
@@ -2185,16 +2185,6 @@ bool BGTactics::selectObjective(bool reset)
                 case 3:  // Balanced
                     defendersProhab = 3;
                     break;
-                case 4:
-                case 5:
-                case 6:
-                case 7:  // Heavy Offense
-                    defendersProhab = 1;
-                    break;
-                case 8:
-                case 9:  // Heavy Defense
-                    defendersProhab = 6;
-                    break;
             }
 
             if (enemyStrategy == WS_STRATEGY_DEFENSIVE)
@@ -2226,9 +2216,14 @@ bool BGTactics::selectObjective(bool reset)
                     target.Relocate(enemyFC->GetPositionX(), enemyFC->GetPositionY(), enemyFC->GetPositionZ());
             }
             // Graveyard Camping if in lead
-            else if (!hasFlag && role < 8 &&
-                (team == TEAM_ALLIANCE && allianceScore == 2 && hordeScore == 0) ||
-                (team == TEAM_HORDE && hordeScore == 2 && allianceScore == 0))
+            else if (
+                !hasFlag
+                && role < 8
+                && (
+                    (team == TEAM_ALLIANCE && allianceScore == 2 && hordeScore == 0)
+                    || (team == TEAM_HORDE && hordeScore == 2 && allianceScore == 0)
+                )
+            )
             {
                 if (team == TEAM_ALLIANCE)
                     SetSafePos(WS_GY_CAMPING_HORDE, 10.0f);
@@ -2497,7 +2492,6 @@ bool BGTactics::selectObjective(bool reset)
             EYBotStrategy strategyHorde = static_cast<EYBotStrategy>(GetBotStrategyForTeam(bg, TEAM_HORDE));
             EYBotStrategy strategyAlliance = static_cast<EYBotStrategy>(GetBotStrategyForTeam(bg, TEAM_ALLIANCE));
             EYBotStrategy strategy = (team == TEAM_ALLIANCE) ? strategyAlliance : strategyHorde;
-            EYBotStrategy enemyStrategy = (team == TEAM_ALLIANCE) ? strategyHorde : strategyAlliance;
 
             auto IsOwned = [&](uint32 nodeId) -> bool
             { return eyeOfTheStormBG->GetCapturePointInfo(nodeId)._ownerTeamId == team; };
@@ -3231,7 +3225,6 @@ bool BGTactics::selectObjectiveWp(std::vector<BattleBotPath*> const& vPaths)
     if (bgType == BATTLEGROUND_RB)
         bgType = bg->GetBgTypeID(true);
 
-    PositionMap& posMap = context->GetValue<PositionMap&>("position")->Get();
     PositionInfo pos = context->GetValue<PositionMap&>("position")->Get()["bg objective"];
     if (!pos.isSet())
         return false;
@@ -3326,7 +3319,9 @@ bool BGTactics::selectObjectiveWp(std::vector<BattleBotPath*> const& vPaths)
 
         // don't pick path where bot is already closest to the paths closest point to target (it means path cant lead it
         // anywhere) don't pick path where closest point is too far away
-        if (closestPointIndex == (reverse ? 0 : path->size() - 1) || closestPointDistToBot > botDistanceLimit)
+        const int64_t pathSize = path->size() - 1;
+
+        if (closestPointIndex == (reverse ? 0 : pathSize) || closestPointDistToBot > botDistanceLimit)
             continue;
 
         // creates a score based on dist-to-bot and dist-to-destination, where lower is better, and dist-to-bot is more
@@ -4249,7 +4244,7 @@ bool BGTactics::IsLockedInsideKeep()
     return false;
 }
 
-bool ArenaTactics::Execute(Event event)
+bool ArenaTactics::Execute(Event)
 {
     if (!bot->InBattleground())
     {

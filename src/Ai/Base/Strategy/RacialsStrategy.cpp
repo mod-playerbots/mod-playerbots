@@ -5,15 +5,13 @@
 
 #include "RacialsStrategy.h"
 
-#include "Playerbots.h"
-
 class RacialsStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
 public:
     RacialsStrategyActionNodeFactory() { creators["lifeblood"] = &lifeblood; }
 
 private:
-    static ActionNode* lifeblood(PlayerbotAI* botAI)
+    static ActionNode* lifeblood(PlayerbotAI*)
     {
         return new ActionNode("lifeblood",
                               /*P*/ {},

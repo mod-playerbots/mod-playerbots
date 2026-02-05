@@ -898,7 +898,7 @@ std::vector<std::vector<uint32>> PlayerbotAIConfig::ParseTempTalentsOrder(uint32
 
         spells[talentTabInfo->tabpage].push_back(talentInfo);
     }
-    for (int tab = 0; tab < 3; tab++)
+    for (uint64_t tab = 0; tab < 3; tab++)
     {
         if (tab_links.size() <= tab)
         {
@@ -907,7 +907,8 @@ std::vector<std::vector<uint32>> PlayerbotAIConfig::ParseTempTalentsOrder(uint32
         std::sort(spells[tab].begin(), spells[tab].end(),
                   [&](TalentEntry const* lhs, TalentEntry const* rhs)
                   { return lhs->Row != rhs->Row ? lhs->Row < rhs->Row : lhs->Col < rhs->Col; });
-        for (int i = 0; i < tab_links[tab].size(); i++)
+
+        for (uint64_t i = 0; i < tab_links[tab].size(); ++i)
         {
             if (i >= spells[tab].size())
             {
@@ -956,7 +957,8 @@ std::vector<std::vector<uint32>> PlayerbotAIConfig::ParseTempPetTalentsOrder(uin
     std::sort(spells.begin(), spells.end(),
               [&](TalentEntry const* lhs, TalentEntry const* rhs)
               { return lhs->Row != rhs->Row ? lhs->Row < rhs->Row : lhs->Col < rhs->Col; });
-    for (int i = 0; i < tab_link.size(); i++)
+
+    for (uint64_t i = 0; i < tab_link.size(); ++i)
     {
         if (i >= spells.size())
         {

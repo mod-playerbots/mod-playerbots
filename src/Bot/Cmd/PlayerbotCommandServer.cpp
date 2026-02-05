@@ -10,10 +10,9 @@
 #include <boost/smart_ptr.hpp>
 #include <boost/thread/thread.hpp>
 #include <cstdlib>
-#include <iostream>
+#include "RandomPlayerbotMgr.h"
 
 #include "IoContext.h"
-#include "Playerbots.h"
 
 using boost::asio::ip::tcp;
 typedef boost::shared_ptr<tcp::socket> socket_ptr;
@@ -27,7 +26,7 @@ bool ReadLine(socket_ptr sock, std::string* buffer, std::string* line)
         char buf[1025];
         boost::system::error_code error;
         size_t n = sock->read_some(boost::asio::buffer(buf), error);
-        if (n == -1 || error == boost::asio::error::eof)
+        if (error == boost::asio::error::eof)
             return false;
         else if (error)
             throw boost::system::system_error(error);  // Some other error.
@@ -48,7 +47,7 @@ void session(socket_ptr sock)
         std::string buffer, request;
         while (ReadLine(sock, &buffer, &request))
         {
-            std::string const response = sRandomPlayerbotMgr.HandleRemoteCommand(request) + "\n";
+            std::string const response = RandomPlayerbotMgr::instance().HandleRemoteCommand(request) + "\n";
             boost::asio::write(*sock, boost::asio::buffer(response.c_str(), response.size()));
             request = "";
         }

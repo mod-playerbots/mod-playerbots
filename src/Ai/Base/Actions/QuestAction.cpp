@@ -5,6 +5,7 @@
 
 #include "QuestAction.h"
 #include <sstream>
+#include <algorithm>
 
 #include "Chat.h"
 #include "ChatHelper.h"
@@ -116,7 +117,8 @@ bool QuestAction::CompleteQuest(Player* player, uint32 entry)
                 player->CastedCreatureOrGO(creature, ObjectGuid(), spell_id);
             }
         }*/
-        /*else*/ if (creature > 0)
+        /*else*/
+        if (creature > 0)
         {
             if (CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(creature))
                 for (uint16 z = 0; z < creaturecount; ++z)
@@ -350,7 +352,6 @@ bool QuestUpdateAddItemAction::Execute(Event event)
     uint32 itemId, count;
     p >> itemId >> count;
 
-    Player* requester = event.getOwner() ? event.getOwner() : GetMaster();
     auto const* itemPrototype = sObjectMgr->GetItemTemplate(itemId);
     if (itemPrototype)
     {
@@ -405,15 +406,14 @@ bool QuestItemPushResultAction::Execute(Event event)
         if (!quest)
             return false;
 
-        const QuestStatusData& q_status = bot->getQuestStatusMap().at(questId);
-
         for (int i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; i++)
         {
             uint32 itemId = quest->RequiredItemId[i];
             if (!itemId)
                 continue;
 
-            int32 previousCount = itemCount - count;
+            uint32_t previousCount = std::max<uint32_t>(itemCount - count, 0);
+
             if (itemId == itemEntry && previousCount < quest->RequiredItemCount[i])
             {
                 if (botAI->GetMaster())
@@ -432,7 +432,7 @@ bool QuestItemPushResultAction::Execute(Event event)
     return false;
 }
 
-bool QuestUpdateFailedAction::Execute(Event event)
+bool QuestUpdateFailedAction::Execute(Event)
 {
     //opcode SMSG_QUESTUPDATE_FAILED is never sent...(yet?)
     return false;
@@ -445,8 +445,6 @@ bool QuestUpdateFailedTimerAction::Execute(Event event)
 
     uint32 questId;
     p >> questId;
-
-    Player* requester = event.getOwner() ? event.getOwner() : GetMaster();
 
     Quest const* qInfo = sObjectMgr->GetQuestTemplate(questId);
 

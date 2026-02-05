@@ -4,8 +4,12 @@
  */
 
 #include "StatsValues.h"
-#include "Playerbots.h"
+#include "AiObjectContext.h"
+#include "Group.h"
+#include "Pet.h"
+#include "PlayerbotAIConfig.h"
 #include "ServerFacade.h"
+#include "Player.h"
 
 Unit* HealthValue::GetTarget()
 {
@@ -184,7 +188,7 @@ bool IsInCombatValue::Calculate()
 
                 if (member->IsInCombat() &&
                     ServerFacade::instance().IsDistanceLessOrEqualThan(ServerFacade::instance().GetDistance2d(member, bot),
-                                                             sPlayerbotAIConfig.reactDistance))
+                                                             PlayerbotAIConfig::instance().reactDistance))
                     return true;
             }
         }
@@ -204,7 +208,6 @@ uint8 BagSpaceValue::Calculate()
             ++totalused;
     }
 
-    uint32 totalfree = 16 - totalused;
     for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
     {
         const Bag* const pBag = (Bag*)bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bag);
@@ -214,7 +217,6 @@ uint8 BagSpaceValue::Calculate()
             if (pBagProto->Class == ITEM_CLASS_CONTAINER && pBagProto->SubClass == ITEM_SUBCLASS_CONTAINER)
             {
                 total += pBag->GetBagSize();
-                totalfree += pBag->GetFreeSlots();
                 totalused += pBag->GetBagSize() - pBag->GetFreeSlots();
             }
         }

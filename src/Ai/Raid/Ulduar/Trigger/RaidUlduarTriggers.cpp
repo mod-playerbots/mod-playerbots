@@ -1,19 +1,17 @@
 #include "RaidUlduarTriggers.h"
 
-#include "EventMap.h"
 #include "GameObject.h"
 #include "Object.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "RaidUlduarBossHelper.h"
-#include "RaidUlduarScripts.h"
-#include "ScriptedCreature.h"
 #include "SharedDefines.h"
 #include "Trigger.h"
 #include "Vehicle.h"
 #include <MovementActions.h>
 #include <FollowMasterStrategy.h>
 #include <RtiTargetValue.h>
+#include "../../../../../../../src/server/scripts/Northrend/Ulduar/Ulduar/ulduar.h"
 
 const std::vector<uint32> availableVehicles = {NPC_VEHICLE_CHOPPER, NPC_SALVAGED_DEMOLISHER,
                                                NPC_SALVAGED_DEMOLISHER_TURRET, NPC_SALVAGED_SIEGE_ENGINE,
@@ -350,7 +348,6 @@ bool KologarnMarkDpsTargetTrigger::IsActive()
         if (!target)
             continue;
 
-        uint32 creatureId = target->GetEntry();
         if (target->GetEntry() == NPC_RUBBLE && target->IsAlive())
         {
             return true;  // Found a rubble to mark
@@ -854,8 +851,6 @@ bool ThorimMarkDpsTargetTrigger::IsActive()
 
         Unit* runicColossus = AI_VALUE2(Unit*, "find target", "runic colossus");
         Unit* ancientRuneGiant = AI_VALUE2(Unit*, "find target", "ancient rune giant");
-        Unit* ironHonorGuard = AI_VALUE2(Unit*, "find target", "iron ring guard");
-        Unit* ironRingGuard = AI_VALUE2(Unit*, "find target", "iron honor guard");
 
         if (acolyte && acolyte->IsAlive() && (!currentCrossUnit || currentCrossUnit->GetEntry() != acolyte->GetEntry()))
             return true;
@@ -1094,7 +1089,7 @@ bool ThorimPhase2PositioningTrigger::IsActive()
 
     Unit* boss = AI_VALUE2(Unit*, "find target", "thorim");
     if (!boss || !boss->IsInWorld() || boss->IsDuringRemoveFromWorld())
-    return false;
+        return false;
 
     if (!boss->IsAlive())
         return false;
@@ -1181,8 +1176,6 @@ bool MimironPhase1PositioningTrigger::IsActive()
     }
 
     Unit* leviathanMkII = nullptr;
-    Unit* vx001 = nullptr;
-    Unit* aerialCommandUnit = nullptr;
 
     GuidVector targets = AI_VALUE(GuidVector, "possible targets");
     Unit* target = nullptr;
@@ -1796,7 +1789,7 @@ Unit* YoggSaronTrigger::GetIllusionRoomRtiTarget()
         return nullptr;
     }
 
-    uint8 rtiIndex = RtiTargetValue::GetRtiIndex(AI_VALUE(std::string, "rti"));
+    int32_t rtiIndex = RtiTargetValue::GetRtiIndex(AI_VALUE(std::string, "rti"));
     if (rtiIndex == -1)
     {
         return nullptr;  // Invalid RTI mark

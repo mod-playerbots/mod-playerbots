@@ -20,10 +20,12 @@ public:
         : x(x), y(y), z(z), mapId(mapId), valueSet(valueSet)
     {
     }
-    PositionInfo(PositionInfo const& other)
-        : x(other.x), y(other.y), z(other.z), mapId(other.mapId), valueSet(other.valueSet)
-    {
-    }
+
+    PositionInfo(PositionInfo const& other) = default;
+    PositionInfo& operator=(PositionInfo const& other) = default;
+
+    PositionInfo(PositionInfo&& other) = default;
+    PositionInfo& operator=(PositionInfo&& other) = default;
 
     void Set(float newX, float newY, float newZ, uint32 newMapId)
     {

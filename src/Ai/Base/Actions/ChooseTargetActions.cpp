@@ -61,7 +61,7 @@ bool AttackAnythingAction::isUseful()
     return true;
 }
 
-bool DropTargetAction::Execute(Event event)
+bool DropTargetAction::Execute(Event)
 {
     Unit* target = context->GetValue<Unit*>("current target")->Get();
     if (target && target->isDead())
@@ -111,20 +111,30 @@ bool DropTargetAction::Execute(Event event)
 bool AttackAnythingAction::Execute(Event event)
 {
     bool result = AttackAction::Execute(event);
-    if (result)
+
+    if (!result)
     {
-        if (Unit* grindTarget = GetTarget())
-        {
-            if (char const* grindName = grindTarget->GetName().c_str())
-            {
-                context->GetValue<ObjectGuid>("pull target")->Set(grindTarget->GetGUID());
-                bot->GetMotionMaster()->Clear();
-                // bot->StopMoving();
-            }
-        }
+        return false;
     }
 
-    return result;
+    const Unit* const grindTarget = this->GetTarget();
+
+    if (grindTarget == nullptr)
+    {
+        return true;
+    }
+
+    const std::string& grindTargetName = grindTarget->GetName();
+
+    if (grindTargetName.empty())
+    {
+        return true;
+    }
+
+    this->context->GetValue<ObjectGuid>("pull target")->Set(grindTarget->GetGUID());
+    this->bot->GetMotionMaster()->Clear();
+
+    return true;
 }
 
 bool AttackAnythingAction::isPossible() { return AttackAction::isPossible() && GetTarget(); }
@@ -137,7 +147,7 @@ bool DpsAssistAction::isUseful()
     return true;
 }
 
-bool AttackRtiTargetAction::Execute(Event event)
+bool AttackRtiTargetAction::Execute(Event)
 {
     Unit* rtiTarget = AI_VALUE(Unit*, "rti target");
 

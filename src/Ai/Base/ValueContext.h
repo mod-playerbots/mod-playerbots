@@ -51,6 +51,7 @@
 #include "LineTargetValue.h"
 #include "LogLevelValue.h"
 #include "LootStrategyValue.h"
+#include "LootValues.h"
 #include "MaintenanceValues.h"
 #include "ManaSaveLevelValue.h"
 #include "NearestAdsValue.h"

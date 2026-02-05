@@ -7,7 +7,6 @@
 
 #include <random>
 
-#include "BattlegroundMgr.h"
 #include "ChatHelper.h"
 #include "EmoteAction.h"
 #include "Event.h"
@@ -16,7 +15,7 @@
 #include "ServerFacade.h"
 #include "RpgSubActions.h"
 
-bool RpgAction::Execute(Event event)
+bool RpgAction::Execute(Event)
 {
     GuidPosition guidP = AI_VALUE(GuidPosition, "rpg target");
     if (!guidP && botAI->GetMaster())
@@ -108,7 +107,7 @@ bool RpgAction::SetNextRpgAction()
     {
         std::vector<std::pair<Action*, uint32>> sortedActions;
 
-        for (int i = 0; i < actions.size(); i++)
+        for (uint64_t i = 0; i < actions.size(); i++)
             sortedActions.push_back(std::make_pair(actions[i], relevances[i]));
 
         std::sort(sortedActions.begin(), sortedActions.end(), [](std::pair<Action*, uint32>i, std::pair<Action*, uint32> j) {return i.second > j.second; });

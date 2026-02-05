@@ -188,7 +188,7 @@ public:
         return true;
     }
 
-    bool OnPlayerCanUseChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Guild* guild) override
+    bool OnPlayerCanUseChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Guild*) override
     {
         if (type != CHAT_MSG_GUILD)
         {
@@ -437,7 +437,7 @@ public:
         }
     }
 
-    void OnPlayerbotUpdate(uint32 diff) override
+    void OnPlayerbotUpdate(uint32) override
     {
         sRandomPlayerbotMgr.UpdateSessions();  // Per-bot updates only
     }

@@ -7,7 +7,6 @@
 
 #include "Event.h"
 #include "Formations.h"
-#include "PathGenerator.h"
 #include "Playerbots.h"
 #include "RTSCValues.h"
 #include "RtscAction.h"
@@ -16,7 +15,7 @@
 
 std::set<uint32> const FISHING_SPELLS = {7620, 7731, 7732, 18248, 33095, 51294};
 
-Creature* SeeSpellAction::CreateWps(Player* wpOwner, float x, float y, float z, float o, uint32 entry, Creature* lastWp,
+Creature* SeeSpellAction::CreateWps(Player* wpOwner, float x, float y, float z, float o, uint32 entry, Creature*,
                                     bool important)
 {
     float dist = wpOwner->GetDistance(x, y, z);

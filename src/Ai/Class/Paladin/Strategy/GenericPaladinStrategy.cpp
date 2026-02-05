@@ -6,7 +6,6 @@
 #include "GenericPaladinStrategy.h"
 
 #include "GenericPaladinStrategyActionNodeFactory.h"
-#include "Playerbots.h"
 
 GenericPaladinStrategy::GenericPaladinStrategy(PlayerbotAI* botAI) : CombatStrategy(botAI)
 {
@@ -59,7 +58,7 @@ void PaladinCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
                         { NextAction("cleanse magic on party", ACTION_DISPEL + 1) }));
 }
 
-void PaladinBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void PaladinBoostStrategy::InitTriggers(std::vector<TriggerNode*>&)
 {
 
     // triggers.push_back(new TriggerNode("divine favor", { NextAction("divine favor",

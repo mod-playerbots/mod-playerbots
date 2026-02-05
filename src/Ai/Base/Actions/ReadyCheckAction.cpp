@@ -11,19 +11,32 @@
 #include "Event.h"
 #include "Playerbots.h"
 
-std::string const formatPercent(std::string const name, uint8 value, float percent)
+std::string_view getColorForThreshold(const float threshold)
+{
+    if (threshold > 75.0f)
+    {
+        return "|cff00ff00";
+    }
+
+    if (threshold > 50.0f)
+    {
+        return "|cffffff00";
+    }
+
+    return "|cffff0000";
+}
+
+std::string formatPercent(const std::string& name, const uint32_t value, const float threshold)
 {
     std::ostringstream out;
 
-    std::string color;
-    if (percent > 75)
-        color = "|cff00ff00";
-    else if (percent > 50)
-        color = "|cffffff00";
-    else
-        color = "|cffff0000";
+    out << "|cffffffff["
+        << name
+        << "]"
+        << getColorForThreshold(threshold)
+        << "x"
+        << value;
 
-    out << "|cffffffff[" << name << "]" << color << "x" << (int)value;
     return out.str();
 }
 
@@ -45,7 +58,7 @@ std::once_flag ReadyChecker::initFlag;
 class HealthChecker : public ReadyChecker
 {
 public:
-    bool Check(PlayerbotAI* botAI, AiObjectContext* context) override
+    bool Check(PlayerbotAI*, AiObjectContext* context) override
     {
         return AI_VALUE2(uint8, "health", "self target") > sPlayerbotAIConfig.almostFullHealth;
     }
@@ -56,7 +69,7 @@ public:
 class ManaChecker : public ReadyChecker
 {
 public:
-    bool Check(PlayerbotAI* botAI, AiObjectContext* context) override
+    bool Check(PlayerbotAI*, AiObjectContext* context) override
     {
         return !AI_VALUE2(bool, "has mana", "self target") ||
                AI_VALUE2(uint8, "mana", "self target") > sPlayerbotAIConfig.mediumHealth;
@@ -68,7 +81,7 @@ public:
 class DistanceChecker : public ReadyChecker
 {
 public:
-    bool Check(PlayerbotAI* botAI, AiObjectContext* context) override
+    bool Check(PlayerbotAI* botAI, AiObjectContext*) override
     {
         Player* bot = botAI->GetBot();
         if (Player* master = botAI->GetMaster())
@@ -90,7 +103,7 @@ public:
 class HunterChecker : public ReadyChecker
 {
 public:
-    bool Check(PlayerbotAI* botAI, AiObjectContext* context) override
+    bool Check(PlayerbotAI* botAI, AiObjectContext*) override
     {
         Player* bot = botAI->GetBot();
         if (bot->getClass() == CLASS_HUNTER)
@@ -126,7 +139,7 @@ class ItemCountChecker : public ReadyChecker
 public:
     ItemCountChecker(std::string const item, std::string const name) : item(item), name(name) {}
 
-    bool Check(PlayerbotAI* botAI, AiObjectContext* context) override
+    bool Check(PlayerbotAI*, AiObjectContext* context) override
     {
         return AI_VALUE2(uint32, "item count", item) > 0;
     }
@@ -225,4 +238,4 @@ bool ReadyCheckAction::ReadyCheck()
     return true;
 }
 
-bool FinishReadyCheckAction::Execute(Event event) { return ReadyCheck(); }
+bool FinishReadyCheckAction::Execute(Event) { return ReadyCheck(); }

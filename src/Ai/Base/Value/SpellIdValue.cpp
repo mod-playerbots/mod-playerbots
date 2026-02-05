@@ -8,7 +8,6 @@
 #include "ChatHelper.h"
 #include "Playerbots.h"
 #include "Vehicle.h"
-#include "World.h"
 
 SpellIdValue::SpellIdValue(PlayerbotAI* botAI) : CalculatedValue<uint32>(botAI, "spell id", 20 * 1000) {}
 
@@ -31,7 +30,7 @@ uint32 SpellIdValue::Calculate()
 
     wstrToLower(wnamepart);
     char firstSymbol = tolower(namepart[0]);
-    int spellLength = wnamepart.length();
+    size_t spellLength = wnamepart.length();
 
     LocaleConstant loc = LOCALE_enUS;
 
@@ -98,7 +97,7 @@ uint32 SpellIdValue::Calculate()
         return 0;
 
     int32 saveMana = (int32)round(AI_VALUE(double, "mana save level"));
-    uint32 rank = 1;
+    int32 rank = 1;
     uint32 highestRank = 0;
     uint32 highestSpellId = 0;
     uint32 lowestRank = 0;
@@ -128,21 +127,23 @@ uint32 SpellIdValue::Calculate()
             // convert the remaining text to an integer
             int id = atoi(spellName.c_str());
 
-            if (!id)
+            if (id < 1)
             {
                 highestSpellId = spellId;
                 continue;
             }
 
-            if (!highestRank || id > highestRank)
+            const uint32_t unsignedId = id;
+
+            if (!highestRank || unsignedId > highestRank)
             {
-                highestRank = id;
+                highestRank = unsignedId;
                 highestSpellId = spellId;
             }
 
-            if (!lowestRank || (lowestRank && id < lowestRank))
+            if (!lowestRank || (lowestRank && unsignedId < lowestRank))
             {
-                lowestRank = id;
+                lowestRank = unsignedId;
                 lowestSpellId = spellId;
             }
         }
@@ -193,7 +194,7 @@ uint32 VehicleSpellIdValue::Calculate()
 
     wstrToLower(wnamepart);
     char firstSymbol = tolower(namepart[0]);
-    int spellLength = wnamepart.length();
+    size_t spellLength = wnamepart.length();
 
     const int loc = LocaleConstant::LOCALE_enUS;
 

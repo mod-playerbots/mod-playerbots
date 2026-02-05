@@ -7,9 +7,9 @@
 class RaidAq20Utils
 {
 public:
-    static bool IsOssirianBuffActive(Unit* ossirian);
-    static int32 GetOssirianDebuffTimeRemaining(Unit* ossirian);
-    static GameObject* GetNearestCrystal(Unit* ossirian);
+    static bool IsOssirianBuffActive(Unit& ossirian);
+    static int32 GetOssirianDebuffTimeRemaining(Unit& ossirian);
+    static GameObject* GetNearestCrystal(Unit& ossirian);
 };
 
 #endif

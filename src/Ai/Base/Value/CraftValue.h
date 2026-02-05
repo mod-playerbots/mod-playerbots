@@ -16,11 +16,13 @@ class CraftData
 {
 public:
     CraftData() : itemId(0) {}
-    CraftData(CraftData const& other) : itemId(other.itemId)
-    {
-        required.insert(other.required.begin(), other.required.end());
-        obtained.insert(other.obtained.begin(), other.obtained.end());
-    }
+    ~CraftData() = default;
+
+    CraftData(CraftData const& other) = default;
+    CraftData& operator=(CraftData const& other) = default;
+
+    CraftData(CraftData&&) = default;
+    CraftData& operator=(CraftData&&) = default;
 
     uint32 itemId;
     std::map<uint32, uint32> required, obtained;

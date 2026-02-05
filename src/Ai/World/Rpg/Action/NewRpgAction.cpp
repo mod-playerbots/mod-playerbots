@@ -1,12 +1,10 @@
 #include "NewRpgAction.h"
 
 #include <cmath>
-#include <cstdint>
 #include <cstdlib>
 
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
-#include "DBCStores.h"
 #include "G3D/Vector2.h"
 #include "GossipDef.h"
 #include "IVMapMgr.h"
@@ -20,16 +18,11 @@
 #include "PathGenerator.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
-#include "Playerbots.h"
-#include "Position.h"
 #include "QuestDef.h"
 #include "Random.h"
-#include "RandomPlayerbotMgr.h"
 #include "SharedDefines.h"
-#include "StatsWeightCalculator.h"
 #include "Timer.h"
 #include "TravelMgr.h"
-#include "World.h"
 
 bool TellRpgStatusAction::Execute(Event event)
 {
@@ -61,7 +54,7 @@ bool StartRpgDoQuestAction::Execute(Event event)
     return false;
 }
 
-bool NewRpgStatusUpdateAction::Execute(Event event)
+bool NewRpgStatusUpdateAction::Execute(Event)
 {
     NewRpgInfo& info = botAI->rpgInfo;
     switch (info.status)
@@ -150,7 +143,7 @@ bool NewRpgStatusUpdateAction::Execute(Event event)
     return false;
 }
 
-bool NewRpgGoGrindAction::Execute(Event event)
+bool NewRpgGoGrindAction::Execute(Event)
 {
     if (SearchQuestGiverAndAcceptOrReward())
         return true;
@@ -158,7 +151,7 @@ bool NewRpgGoGrindAction::Execute(Event event)
     return MoveFarTo(botAI->rpgInfo.go_grind.pos);
 }
 
-bool NewRpgGoCampAction::Execute(Event event)
+bool NewRpgGoCampAction::Execute(Event)
 {
     if (SearchQuestGiverAndAcceptOrReward())
         return true;
@@ -166,7 +159,7 @@ bool NewRpgGoCampAction::Execute(Event event)
     return MoveFarTo(botAI->rpgInfo.go_camp.pos);
 }
 
-bool NewRpgWanderRandomAction::Execute(Event event)
+bool NewRpgWanderRandomAction::Execute(Event)
 {
     if (SearchQuestGiverAndAcceptOrReward())
         return true;
@@ -174,7 +167,7 @@ bool NewRpgWanderRandomAction::Execute(Event event)
     return MoveRandomNear();
 }
 
-bool NewRpgWanderNpcAction::Execute(Event event)
+bool NewRpgWanderNpcAction::Execute(Event)
 {
     NewRpgInfo& info = botAI->rpgInfo;
     if (!info.wander_npc.npcOrGo)
@@ -216,14 +209,12 @@ bool NewRpgWanderNpcAction::Execute(Event event)
     return true;
 }
 
-bool NewRpgDoQuestAction::Execute(Event event)
+bool NewRpgDoQuestAction::Execute(Event)
 {
     if (SearchQuestGiverAndAcceptOrReward())
         return true;
 
-    NewRpgInfo& info = botAI->rpgInfo;
     uint32 questId = RPG_INFO(quest, questId);
-    const Quest* quest = RPG_INFO(quest, quest);
     uint8 questStatus = bot->GetQuestStatus(questId);
     switch (questStatus)
     {
@@ -408,7 +399,7 @@ bool NewRpgDoQuestAction::DoCompletedQuest()
     return false;
 }
 
-bool NewRpgTravelFlightAction::Execute(Event event)
+bool NewRpgTravelFlightAction::Execute(Event)
 {
     if (bot->IsInFlight())
     {
@@ -421,7 +412,6 @@ bool NewRpgTravelFlightAction::Execute(Event event)
         botAI->rpgInfo.ChangeToIdle();
         return true;
     }
-    const TaxiNodesEntry* entry = sTaxiNodesStore.LookupEntry(botAI->rpgInfo.flight.toNode);
     if (bot->GetDistance(flightMaster) > INTERACTION_DISTANCE)
     {
         return MoveFarTo(flightMaster);
