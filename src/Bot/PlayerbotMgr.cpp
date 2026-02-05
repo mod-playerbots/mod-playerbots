@@ -833,8 +833,8 @@ std::string const PlayerbotHolder::ProcessBotCommand(std::string const cmd, Obje
             if (!accountId)
                 return "character not found";
 
-            if (!sPlayerbotAIConfig->allowAccountBots && accountId != masterAccountId &&
-                !(sPlayerbotAIConfig->allowTrustedAccountBots && IsAccountLinked(accountId, masterAccountId)))
+            if (!sPlayerbotAIConfig.allowAccountBots && accountId != masterAccountId &&
+                !(sPlayerbotAIConfig.allowTrustedAccountBots && IsAccountLinked(accountId, masterAccountId)))
             {
                 return "you can only add bots from your own account or linked accounts";
             }
@@ -2288,7 +2288,7 @@ bool PlayerbotMgr::HandleConsoleCommand(ChatHandler* handler, char const* args)
         return false;
     }
 
-    PlayerbotMgr* mgr = sPlayerbotsMgr->GetPlayerbotMgr(player);
+    PlayerbotMgr* mgr = sPlayerbotsMgr.GetPlayerbotMgr(player);
     if (!mgr)
     {
         handler->PSendSysMessage("PlayerbotMgr instance not found.");
