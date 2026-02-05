@@ -19,7 +19,9 @@
 
 ItemUsage ItemUsageValue::Calculate()
 {
-    GetItemIdFromQualifier();
+    ParsedItemUsage const parsed = GetItemIdFromQualifier();
+    uint32 itemId = parsed.itemId;
+    uint32 randomPropertyId = parsed.randomPropertyId;
     if (!itemId)
         return ITEM_USAGE_NONE;
 
@@ -461,16 +463,20 @@ ItemUsage ItemUsageValue::QueryItemUsageForAmmo(ItemTemplate const* proto)
     return ITEM_USAGE_NONE;
 }
 
-void ItemUsageValue::GetItemIdFromQualifier()
+ParsedItemUsage ItemUsageValue::GetItemIdFromQualifier()
 {
-    size_t pos = qualifier.find(",");
+    ParsedItemUsage parsed;
+
+    size_t const pos = qualifier.find(",");
     if (pos != std::string::npos)
     {
-        this->itemId = atoi(qualifier.substr(0, pos).c_str());
-        this->randomPropertyId = atoi(qualifier.substr(pos + 1).c_str());
+        parsed.itemId = atoi(qualifier.substr(0, pos).c_str());
+        parsed.randomPropertyId = atoi(qualifier.substr(pos + 1).c_str());
+        return parsed;
     }
     else
-        this->itemId = atoi(qualifier.c_str());
+        parsed.itemId = atoi(qualifier.c_str());
+    return parsed;
 }
 // Return smaltest bag size equipped
 uint32 ItemUsageValue::GetSmallestBagSize()
@@ -908,7 +914,9 @@ std::string const ItemUsageValue::GetConsumableType(ItemTemplate const* proto, b
 
 ItemUsage ItemUpgradeValue::Calculate()
 {
-    GetItemIdFromQualifier();
+    ParsedItemUsage parsed = GetItemIdFromQualifier();
+    uint32 itemId = parsed.itemId;
+    uint32 randomPropertyId = parsed.randomPropertyId;
     if (!itemId)
         return ITEM_USAGE_NONE;
 

@@ -14,7 +14,11 @@ class Player;
 class PlayerbotAI;
 
 struct ItemTemplate;
-
+struct ParsedItemUsage
+{
+    uint32 itemId = 0;
+    int32 randomPropertyId = 0;
+};
 enum ItemUsage : uint32
 {
     ITEM_USAGE_NONE = 0,
@@ -45,10 +49,7 @@ public:
 protected:
     ItemUsage QueryItemUsageForEquip(ItemTemplate const* proto, int32 randomPropertyId = 0);
     ItemUsage QueryItemUsageForAmmo(ItemTemplate const* proto);
-    void GetItemIdFromQualifier();
-    uint32 itemId = 0;
-    uint32 randomPropertyId = 0;
-
+    ParsedItemUsage GetItemIdFromQualifier();
 
 private:
     uint32 GetSmallestBagSize();
