@@ -472,7 +472,7 @@ bool TerestianIllhoofMarkTargetAction::Execute(Event event)
 {
     Unit* demonChains = GetFirstAliveUnitByEntry(botAI, NPC_DEMON_CHAINS);
     Unit* kilrek = GetFirstAliveUnitByEntry(botAI, NPC_KILREK);
-    Unit* illhoof = GetFirstAliveUnitByEntry(botAI, NPC_TERESTIAN_ILLHOOF);
+    Unit* illhoof = AI_VALUE2(Unit*, "find target", "terestian illhoof");
 
     Unit* target = GetFirstAliveUnit({demonChains, kilrek, illhoof});
     if (target)
