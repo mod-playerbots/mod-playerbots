@@ -94,18 +94,22 @@ bool IsMechanicTrackerBot(PlayerbotAI* botAI, Player* bot, uint32 mapId, Player*
     return false;
 }
 
-// Return the first matching alive, in-combat hostile unit from a cell search of nearby units
+// Return the first matching alive unit from a cell search of nearby npcs
 // More responsive than "find target," but performance cost is much higher
-// Depending on usage, other filtering criteria may be more appropriate (e.g., "possible targets")
-Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
+// Re: using the third parameter (false by default), some units are never considered
+// to be in combat (e.g., totems)
+Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry, bool requireInCombat)
 {
     auto const& npcs =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
     for (auto const& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
-        if (unit && unit->IsAlive() && unit->IsInCombat() && unit->GetEntry() == entry)
-            return unit;
+        if (unit && unit->IsAlive() && unit->GetEntry() == entry)
+        {
+            if (!requireInCombat || unit->IsInCombat())
+                return unit;
+        }
     }
 
     return nullptr;
