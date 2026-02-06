@@ -295,7 +295,6 @@ bool PetitionTurnInAction::isUseful()
            !context->GetValue<TravelTarget*>("travel target")->Get()->isTraveling();
 }
 
-// @TODO: Fix the buy tabard action
 bool BuyTabardAction::Execute(Event)
 {
     bool canBuy = botAI->DoSpecificAction(CreateNextAction<BuyTabardAction>(1.0f).factory, Event("buy tabard", "Hitem:5976:"));
