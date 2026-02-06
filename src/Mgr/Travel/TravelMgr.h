@@ -185,8 +185,7 @@ public:
     // Quick square distance in 2d plane.
     float sqDistance2d(WorldPosition center)
     {
-        return (getX() - center.getX()) * (getX() - center.getX()) +
-               (getY() - center.getY()) * (getY() - center.getY());
+        return GetExactDist2dSq(center.GetPositionX(), center.GetPositionY());
     }
 
     // Quick square distance calculation without map check. Used for getting the minimum distant points.
@@ -199,8 +198,7 @@ public:
 
     float sqDistance2d(WorldPosition* center)
     {
-        return (getX() - center->getX()) * (getX() - center->getX()) +
-               (getY() - center->getY()) * (getY() - center->getY());
+        return GetExactDist2dSq(center->GetPositionX(), center->GetPositionY());
     }
 
     float sqDistance(WorldPosition* center)
