@@ -92,6 +92,7 @@ public:
     bool testMode;
 
 private:
+    ActionNode* CreateActionNode(std::string const name);
     bool multiplyAndPush(std::vector<NextAction> actions, float forceRelevance, bool skipPrerequisites, Event event,
                          const char* pushType);
     void Reset();

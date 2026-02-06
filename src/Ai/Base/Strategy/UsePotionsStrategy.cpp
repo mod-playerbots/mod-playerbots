@@ -5,7 +5,6 @@
 
 #include "UsePotionsStrategy.h"
 
-#include "Playerbots.h"
 #include "CreateNextAction.h"
 #include "UseItemAction.h"
 #include "ActionNode.h"
@@ -35,6 +34,7 @@ void UsePotionsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     Strategy::InitTriggers(triggers);
 
+    // @TODO: This was a healthstone action, not a random item one, so we need to reflect that
     triggers.push_back(
         new TriggerNode(
             "critical health",

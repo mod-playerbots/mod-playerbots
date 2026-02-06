@@ -260,6 +260,22 @@ bool Engine::doNextAction(Unit*, uint32, bool minimal)
     return actionExecuted;
 }
 
+ActionNode* Engine::CreateActionNode(std::string const name)
+{
+    ActionNode* node = actionNodeFactories.GetContextObject(name, botAI);
+
+    if (node != nullptr)
+    {
+        return node;
+    }
+
+    return new ActionNode(
+        /*P*/ {},
+        /*A*/ {},
+        /*C*/ {}
+    );
+}
+
 bool Engine::multiplyAndPush(
     std::vector<NextAction> actions,
     float forceRelevance,
@@ -272,9 +288,11 @@ bool Engine::multiplyAndPush(
 
     for (NextAction nextAction : actions)
     {
-        ActionNode* actionNode = new ActionNode({}, {}, {});
+        std::unique_ptr<Action> action = nextAction.factory(this->botAI);
+        // ActionNode* actionNode = new ActionNode({}, {}, {});
+        ActionNode* actionNode = this->CreateActionNode(action->getName());
 
-        actionNode->setAction(nextAction.factory(this->botAI));
+        actionNode->setAction(std::move(action));
 
         float k = nextAction.weight;
 
@@ -302,9 +320,11 @@ ActionResult Engine::ExecuteAction(NextAction::Factory actionFactory, Event even
 {
     bool result = false;
 
-    ActionNode* actionNode = new ActionNode({}, {}, {});
+    std::unique_ptr<Action> actionToExecute = actionFactory(this->botAI);
+    // ActionNode* actionNode = new ActionNode({}, {}, {});
+    ActionNode* actionNode = this->CreateActionNode(actionToExecute->getName());
 
-    actionNode->setAction(actionFactory(this->botAI));
+    actionNode->setAction(std::move(actionToExecute));
 
     Action& action = actionNode->getAction();
 
@@ -514,9 +534,14 @@ std::vector<std::string> Engine::GetStrategies()
 
 void Engine::PushAgain(ActionNode* actionNode, float relevance, Event event)
 {
-    // std::vector<NextAction> nextAction = { NextAction(actionNode->get(), relevance) };
+    NextAction::Factory factory = actionNode->getAction().getFactoryFromInstance();
 
-    // this->multiplyAndPush(nextAction, relevance, true, event, "again");
+    NextAction nextAction = NextAction{
+        .weight = relevance,
+        .factory = factory
+    };
+
+    this->multiplyAndPush({ nextAction }, relevance, true, event, "again");
 
     delete actionNode;
 }

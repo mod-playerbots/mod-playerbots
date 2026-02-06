@@ -5,10 +5,13 @@
 
 #pragma once
 
+#include <typeindex>
+
 #include "AiObject.h"
 #include "Event.h"
 #include "Value.h"
 #include "NextAction.h"
+#include "ActionFactoryRegistry.h"
 
 class PlayerbotAI;
 class Unit;
@@ -16,6 +19,8 @@ class Unit;
 class Action : public AiNamedObject
 {
 public:
+    // using Factory = std::unique_ptr<Action>(*)(PlayerbotAI*);
+
     enum class ActionThreatType
     {
         None = 0,
@@ -23,9 +28,35 @@ public:
         Aoe = 2
     };
 
-    Action(PlayerbotAI* botAI, std::string const name = "action")
-        : AiNamedObject(botAI, name), verbose(false) {}  // verbose after ainamedobject - whipowill
+    // Action(PlayerbotAI* botAI, Factory factory, std::string const name = "action") : AiNamedObject(botAI, name), verbose(false), factory(factory) {}
+    Action(PlayerbotAI* botAI, std::string const name = "action") : AiNamedObject(botAI, name), verbose(false) {}
     virtual ~Action() {}
+
+    // std::unique_ptr<Action> recreate() const
+    // {
+    //     if (this->factory == nullptr)
+    //     {
+    //         // If this happens, it means the action was constructed without the bridge.
+    //         // Fail loudly in debug builds.
+    //         assert(false);
+    //         return std::unique_ptr<Action>();
+    //     }
+
+    //     return this->factory(this->botAI);
+    // }
+
+    std::unique_ptr<Action> recreate(PlayerbotAI* const botAI)
+    {
+        const std::type_index key(typeid(*this));
+
+        return ActionFactoryRegistry::Create(key, botAI);
+    }
+
+    NextAction::Factory getFactoryFromInstance()
+    {
+        const std::type_index key(typeid(*this));
+        return ActionFactoryRegistry::GetFactory(key);
+    }
 
     virtual bool Execute([[maybe_unused]] Event event) { return true; }
     virtual bool isPossible() { return true; }
@@ -46,4 +77,5 @@ public:
 protected:
     bool verbose;
     float relevance = 0;
+    // Factory factory;
 };
