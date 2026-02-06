@@ -53,7 +53,14 @@ ObjectGuid RpgHelper::guid() { return (ObjectGuid)guidP(); }
 
 bool RpgHelper::InRange()
 {
-    return guidP() ? (guidP().sqDistance2d(bot) < INTERACTION_DISTANCE * INTERACTION_DISTANCE) : false;
+    if (!guidP())
+        return false;
+
+    WorldObject* target = guidP().GetWorldObject();
+    if (!target)
+        return false;
+
+    return bot->GetDistance2d(target) < INTERACTION_DISTANCE;
 }
 
 void RpgHelper::setFacingTo(GuidPosition guidPosition)
