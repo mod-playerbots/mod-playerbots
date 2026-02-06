@@ -22,8 +22,8 @@ public:
         creators["high king maulgar pulling olm and blindeye"] = &RaidGruulsLairTriggerContext::high_king_maulgar_pulling_olm_and_blindeye;
 
         // Gruul the Dragonkiller
-        creators["gruul the dragonkiller boss engaged by main tank"] = &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_boss_engaged_by_main_tank;
-        creators["gruul the dragonkiller boss engaged by range"] = &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_boss_engaged_by_range;
+        creators["gruul the dragonkiller boss engaged by tanks"] = &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_boss_engaged_by_tanks;
+        creators["gruul the dragonkiller boss engaged by ranged"] = &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_boss_engaged_by_ranged;
         creators["gruul the dragonkiller incoming shatter"] = &RaidGruulsLairTriggerContext::gruul_the_dragonkiller_incoming_shatter;
     }
 
@@ -41,8 +41,8 @@ private:
     static Trigger* high_king_maulgar_pulling_olm_and_blindeye(PlayerbotAI* botAI) { return new HighKingMaulgarPullingOlmAndBlindeyeTrigger(botAI); }
 
     // Gruul the Dragonkiller
-    static Trigger* gruul_the_dragonkiller_boss_engaged_by_main_tank(PlayerbotAI* botAI) { return new GruulTheDragonkillerBossEngagedByMainTankTrigger(botAI); }
-    static Trigger* gruul_the_dragonkiller_boss_engaged_by_range(PlayerbotAI* botAI) { return new GruulTheDragonkillerBossEngagedByRangeTrigger(botAI); }
+    static Trigger* gruul_the_dragonkiller_boss_engaged_by_tanks(PlayerbotAI* botAI) { return new GruulTheDragonkillerBossEngagedByTanksTrigger(botAI); }
+    static Trigger* gruul_the_dragonkiller_boss_engaged_by_ranged(PlayerbotAI* botAI) { return new GruulTheDragonkillerBossEngagedByRangedTrigger(botAI); }
     static Trigger* gruul_the_dragonkiller_incoming_shatter(PlayerbotAI* botAI) { return new GruulTheDragonkillerIncomingShatterTrigger(botAI); }
 };
 
