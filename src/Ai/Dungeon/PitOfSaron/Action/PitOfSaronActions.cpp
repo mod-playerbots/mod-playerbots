@@ -193,17 +193,18 @@ bool IckAndKrickAction::ExplosiveBarrage(bool explosiveBarrage, Unit* boss)
         {
             float angle = i * ANGLE_INCREMENT;
             Position potentialPos;
-            potentialPos.m_positionX = bot->GetPositionX() + SAFE_DISTANCE * cos(angle);
-            potentialPos.m_positionY = bot->GetPositionY() + SAFE_DISTANCE * sin(angle);
-            potentialPos.m_positionZ = bot->GetPositionZ();
+            potentialPos.Relocate(bot->GetPositionX() + SAFE_DISTANCE * cos(angle),
+                                  bot->GetPositionY() + SAFE_DISTANCE * sin(angle),
+                                  bot->GetPositionZ());
 
             // Check if position is valid (not in a wall)
-            if (!bot->IsWithinLOS(potentialPos.m_positionX, potentialPos.m_positionY, potentialPos.m_positionZ))
+            if (!bot->IsWithinLOS(potentialPos.GetPositionX(), potentialPos.GetPositionY(),
+                                  potentialPos.GetPositionZ()))
                 continue;
 
             // Check if position is within maximum allowed distance from boss
-            if (boss && sqrt(pow(potentialPos.m_positionX - boss->GetPositionX(), 2) +
-                             pow(potentialPos.m_positionY - boss->GetPositionY(), 2)) > MAX_BOSS_DISTANCE)
+            if (boss && sqrt(pow(potentialPos.GetPositionX() - boss->GetPositionX(), 2) +
+                             pow(potentialPos.GetPositionY() - boss->GetPositionY(), 2)) > MAX_BOSS_DISTANCE)
                 continue;
 
             // Score this position based on:
@@ -216,8 +217,8 @@ bool IckAndKrickAction::ExplosiveBarrage(bool explosiveBarrage, Unit* boss)
             float minOrbDist = std::numeric_limits<float>::max();
             for (Unit* orb : orbs)
             {
-                float orbDist = sqrt(pow(potentialPos.m_positionX - orb->GetPositionX(), 2) +
-                                     pow(potentialPos.m_positionY - orb->GetPositionY(), 2));
+                float orbDist = sqrt(pow(potentialPos.GetPositionX() - orb->GetPositionX(), 2) +
+                                     pow(potentialPos.GetPositionY() - orb->GetPositionY(), 2));
                 minOrbDist = std::min(minOrbDist, orbDist);
             }
             score += minOrbDist * 2.0f;  // Weight orb distance more heavily
@@ -225,16 +226,16 @@ bool IckAndKrickAction::ExplosiveBarrage(bool explosiveBarrage, Unit* boss)
             // Check distance from other players
             for (const Position& playerPos : playerPositions)
             {
-                float playerDist = sqrt(pow(potentialPos.m_positionX - playerPos.m_positionX, 2) +
-                                        pow(potentialPos.m_positionY - playerPos.m_positionY, 2));
+                float playerDist = sqrt(pow(potentialPos.GetPositionX() - playerPos.GetPositionX(), 2) +
+                                        pow(potentialPos.GetPositionY() - playerPos.GetPositionY(), 2));
                 score += std::min(playerDist, 10.0f);  // Cap player distance contribution
             }
 
             // Factor in proximity to boss (closer is better, as long as we're safe from orbs)
             if (boss)
             {
-                float bossDist = sqrt(pow(potentialPos.m_positionX - boss->GetPositionX(), 2) +
-                                      pow(potentialPos.m_positionY - boss->GetPositionY(), 2));
+                float bossDist = sqrt(pow(potentialPos.GetPositionX() - boss->GetPositionX(), 2) +
+                                      pow(potentialPos.GetPositionY() - boss->GetPositionY(), 2));
                 // Add points for being closer to boss (inverse relationship)
                 // but only if we're safely away from orbs
                 if (minOrbDist > SAFE_DISTANCE)
@@ -257,7 +258,8 @@ bool IckAndKrickAction::ExplosiveBarrage(bool explosiveBarrage, Unit* boss)
         {
             botAI->Reset();
             // Use MoveTo instead of FleePosition since we already calculated the exact position
-            return MoveTo(bot->GetMapId(), bestPos.m_positionX, bestPos.m_positionY, bot->GetPositionZ(), false, false,
+            return MoveTo(bot->GetMapId(), bestPos.GetPositionX(), bestPos.GetPositionY(), bot->GetPositionZ(), false,
+                          false,
                           false, true, MovementPriority::MOVEMENT_COMBAT);
         }
         else

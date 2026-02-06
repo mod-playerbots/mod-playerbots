@@ -179,7 +179,8 @@ bool HighKingMaulgarMageTankAttackKroshAction::Execute(Event event)
             Position safePos;
             if (TryGetNewSafePosition(botAI, bot, safePos))
             {
-                return MoveTo(krosh->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
+                return MoveTo(krosh->GetMapId(), safePos.GetPositionX(), safePos.GetPositionY(),
+                              safePos.GetPositionZ(),
                               false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
             }
         }
@@ -205,7 +206,7 @@ bool HighKingMaulgarMoonkinTankAttackKigglerAction::Execute(Event event)
     Position safePos;
     if (TryGetNewSafePosition(botAI, bot, safePos))
     {
-        return MoveTo(kiggler->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
+        return MoveTo(kiggler->GetMapId(), safePos.GetPositionX(), safePos.GetPositionY(), safePos.GetPositionZ(),
                       false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
@@ -223,7 +224,7 @@ bool HighKingMaulgarAssignDPSPriorityAction::Execute(Event event)
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(false);
-            return MoveTo(blindeye->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
+            return MoveTo(blindeye->GetMapId(), safePos.GetPositionX(), safePos.GetPositionY(), safePos.GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
@@ -247,7 +248,7 @@ bool HighKingMaulgarAssignDPSPriorityAction::Execute(Event event)
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(false);
-            return MoveTo(olm->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
+            return MoveTo(olm->GetMapId(), safePos.GetPositionX(), safePos.GetPositionY(), safePos.GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
@@ -271,7 +272,7 @@ bool HighKingMaulgarAssignDPSPriorityAction::Execute(Event event)
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(false);
-            return MoveTo(krosh->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
+            return MoveTo(krosh->GetMapId(), safePos.GetPositionX(), safePos.GetPositionY(), safePos.GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
@@ -295,7 +296,8 @@ bool HighKingMaulgarAssignDPSPriorityAction::Execute(Event event)
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(false);
-            return MoveTo(kiggler->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
+            return MoveTo(kiggler->GetMapId(), safePos.GetPositionX(), safePos.GetPositionY(),
+                          safePos.GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
@@ -319,7 +321,8 @@ bool HighKingMaulgarAssignDPSPriorityAction::Execute(Event event)
         {
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(false);
-            return MoveTo(maulgar->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
+            return MoveTo(maulgar->GetMapId(), safePos.GetPositionX(), safePos.GetPositionY(),
+                          safePos.GetPositionZ(),
                           false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
@@ -362,7 +365,7 @@ bool HighKingMaulgarHealerFindSafePositionAction::Execute(Event event)
     {
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(false);
-        return MoveTo(bot->GetMapId(), safePos.m_positionX, safePos.m_positionY, safePos.m_positionZ,
+        return MoveTo(bot->GetMapId(), safePos.GetPositionX(), safePos.GetPositionY(), safePos.GetPositionZ(),
                       false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 

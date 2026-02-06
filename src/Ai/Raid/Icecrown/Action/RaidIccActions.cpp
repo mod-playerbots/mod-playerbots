@@ -1551,8 +1551,10 @@ Position IccFestergutSporeAction::CalculateSpreadPosition()
     float angle = (bot->GetGUID().GetCounter() % 16) * (M_PI / 8);
 
     Position spreadRangedPos = ICC_FESTERGUT_RANGED_SPORE;
-    spreadRangedPos.m_positionX += cos(angle) * SPREAD_RADIUS;
-    spreadRangedPos.m_positionY += sin(angle) * SPREAD_RADIUS;
+    spreadRangedPos.Relocate(spreadRangedPos.GetPositionX() + cos(angle) * SPREAD_RADIUS,
+                             spreadRangedPos.GetPositionY() + sin(angle) * SPREAD_RADIUS,
+                             spreadRangedPos.GetPositionZ(),
+                             spreadRangedPos.GetOrientation());
 
     return spreadRangedPos;
 }
