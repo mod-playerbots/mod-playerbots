@@ -177,7 +177,6 @@ bool Engine::doNextAction(Unit*, uint32, bool minimal)
 
         Event event = basket->getEvent();
         ActionNode* actionNode = this->queue.Pop();  // NOTE: Pop() deletes basket
-        // Action* action = InitializeAction(actionNode);
         Action& action = actionNode->getAction();
 
         if (!action.isUseful())
@@ -543,18 +542,6 @@ bool Engine::ContainsStrategy(StrategyType type)
     }
     return false;
 }
-
-// Action* Engine::InitializeAction(ActionNode* actionNode)
-// {
-//     Action* action = actionNode->getAction();
-//     if (!action)
-//     {
-//         action = this->aiObjectContext->GetAction(actionNode->getName());
-//         actionNode->setAction(action);
-//     }
-
-//     return action;
-// }
 
 bool Engine::listenAndExecute(Action& action, Event event)
 {
