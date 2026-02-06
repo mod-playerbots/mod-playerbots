@@ -52,7 +52,7 @@ public:
         result = nullptr;
     }
 
-    void CheckAttacker(Unit* attacker, ThreatMgr*) override
+    void CheckAttacker(Unit* attacker, ThreatMgr* threatMgr) override
     {
         if (Group* group = botAI->GetBot()->GetGroup())
         {

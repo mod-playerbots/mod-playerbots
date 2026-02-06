@@ -447,7 +447,7 @@ public:
             playerbotMgr->HandleMasterOutgoingPacket(*packet);
     }
 
-    void OnPlayerbotUpdate(uint32) override
+    void OnPlayerbotUpdate(uint32 diff) override
     {
         sRandomPlayerbotMgr.UpdateSessions();  // Per-bot updates only
     }

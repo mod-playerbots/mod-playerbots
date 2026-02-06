@@ -18,14 +18,16 @@
 #include "Playerbots.h"
 #include "Position.h"
 #include "RaidUlduarBossHelper.h"
+#include "RaidUlduarScripts.h"
+#include "RaidUlduarStrategy.h"
 #include "RtiValue.h"
+#include "ScriptedCreature.h"
 #include "ServerFacade.h"
 #include "SharedDefines.h"
 #include "Unit.h"
 #include "Vehicle.h"
-#include "RtiTargetValue.h"
-#include "TankAssistStrategy.h"
-#include "../../../../../../src/server/scripts/Northrend/Ulduar/Ulduar/ulduar.h"
+#include <RtiTargetValue.h>
+#include <TankAssistStrategy.h>
 
 const std::string ADD_STRATEGY_CHAR = "+";
 const std::string REMOVE_STRATEGY_CHAR = "-";

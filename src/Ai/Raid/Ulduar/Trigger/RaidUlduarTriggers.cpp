@@ -5,13 +5,14 @@
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "RaidUlduarBossHelper.h"
+#include "RaidUlduarScripts.h"
+#include "ScriptedCreature.h"
 #include "SharedDefines.h"
 #include "Trigger.h"
 #include "Vehicle.h"
-#include "MovementActions.h"
-#include "FollowMasterStrategy.h"
-#include "RtiTargetValue.h"
-#include "../../../../../../src/server/scripts/Northrend/Ulduar/Ulduar/ulduar.h"
+#include <MovementActions.h>
+#include <FollowMasterStrategy.h>
+#include <RtiTargetValue.h>
 
 const std::vector<uint32> availableVehicles = {NPC_VEHICLE_CHOPPER, NPC_SALVAGED_DEMOLISHER,
                                                NPC_SALVAGED_DEMOLISHER_TURRET, NPC_SALVAGED_SIEGE_ENGINE,
@@ -1828,6 +1829,7 @@ Unit* YoggSaronTrigger::GetNextIllusionRoomRtiTarget()
         for (const ObjectGuid& guid : targets)
         {
             Unit* unit = botAI->GetUnit(guid);
+            if (unit && unit->IsAlive() && unit->GetEntry() == NPC_LAUGHING_SKULL)
                 return unit;
         }
     }
