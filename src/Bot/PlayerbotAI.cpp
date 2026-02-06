@@ -891,6 +891,7 @@ bool PlayerbotAI::IsAllowedCommand(std::string const text)
         unsecuredCommands.insert("invite");
         unsecuredCommands.insert("leave");
         unsecuredCommands.insert("lfg");
+        unsecuredCommands.insert("pvp stats");
         unsecuredCommands.insert("rpg status");
     }
 

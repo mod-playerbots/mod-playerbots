@@ -103,6 +103,7 @@ std::string PlayerbotTextMgr::GetBotText(std::string name, std::map<std::string,
     return botText;
 }
 
+// @TODO: Refactor this to use structs instead of maps and improve the overall code.
 std::string PlayerbotTextMgr::GetBotTextOrDefault(std::string name, std::string defaultText,
     std::map<std::string, std::string> placeholders)
 {
