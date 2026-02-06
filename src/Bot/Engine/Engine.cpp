@@ -260,18 +260,6 @@ bool Engine::doNextAction(Unit*, uint32, bool minimal)
     return actionExecuted;
 }
 
-// ActionNode* Engine::CreateActionNode(NextAction nextAction)
-// {
-//     ActionNode* node = actionNodeFactories.GetContextObject(name, botAI);
-//     if (node)
-//         return node;
-
-//     return new ActionNode(name,
-//                           /*P*/ {},
-//                           /*A*/ {},
-//                           /*C*/ {});
-// }
-
 bool Engine::multiplyAndPush(
     std::vector<NextAction> actions,
     float forceRelevance,
