@@ -1784,7 +1784,7 @@ void RandomPlayerbotMgr::PrepareZone2LevelBracket()
     zone2LevelBracket[3525] = {10, 21};  // Bloodmyst Isle
 
     // Classic WoW - High - level zones
-    zone2LevelBracket[10] = {19, 33};   // Deadwind Pass
+    zone2LevelBracket[10] = {19, 33};   // Duskwood
     zone2LevelBracket[11] = {21, 30};   // Wetlands
     zone2LevelBracket[44] = {16, 28};   // Redridge Mountains
     zone2LevelBracket[267] = {20, 34};  // Hillsbrad Foothills

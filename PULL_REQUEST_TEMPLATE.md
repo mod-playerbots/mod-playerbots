@@ -66,38 +66,35 @@ Please answer the following:
 
 ## Complexity & Impact
 
-- Does this change add new decision branches?
-    - [ ] No
-    - [ ] Yes (**explain below**)
+Does this change add new decision branches?
+- - [ ] No
+- - [ ] Yes (**explain below**)
 
-- Does this change increase per-bot or per-tick processing?
-    - [ ] No
-    - [ ] Yes (**describe and justify impact**)
+Does this change increase per-bot or per-tick processing?
+- - [ ] No
+- - [ ] Yes (**describe and justify impact**)
 
-- Could this logic scale poorly under load?
-    - [ ] No
-    - [ ] Yes (**explain why**)
-
+Could this logic scale poorly under load?
+- - [ ] No
+- - [ ] Yes (**explain why**)
 ---
 
 ## Defaults & Configuration
 
-- Does this change modify default bot behavior?
-    - [ ] No
-    - [ ] Yes (**explain why**)
+Does this change modify default bot behavior?
+- - [ ] No
+- - [ ] Yes (**explain why**)
 
 If this introduces more advanced or AI-heavy logic:
-
-- [ ] Lightweight mode remains the default
-- [ ] More complex behavior is optional and thereby configurable
-
+- - [ ] Lightweight mode remains the default
+- - [ ] More complex behavior is optional and thereby configurable
 ---
 
 ## AI Assistance
 
-- Was AI assistance (e.g. ChatGPT or similar tools) used while working on this change?
-    - [ ] No
-    - [ ] Yes (**explain below**)
+Was AI assistance (e.g. ChatGPT or similar tools) used while working on this change?
+- - [ ] No
+- - [ ] Yes (**explain below**)
 
 If yes, please specify:
 
@@ -114,10 +111,10 @@ about what they do and do not understand.
 
 ## Final Checklist
 
-- [ ] Stability is not compromised
-- [ ] Performance impact is understood, tested, and acceptable
-- [ ] Added logic complexity is justified and explained
-- [ ] Documentation updated if needed
+- - [ ] Stability is not compromised
+- - [ ] Performance impact is understood, tested, and acceptable
+- - [ ] Added logic complexity is justified and explained
+- - [ ] Documentation updated if needed
 
 ---
 
