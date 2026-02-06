@@ -371,11 +371,11 @@ std::string const WorldPosition::print()
 std::string const WorldPosition::to_string()
 {
     std::stringstream out;
-    out << m_mapId << '|';
-    out << m_positionX << '|';
-    out << m_positionY << '|';
-    out << m_positionZ << '|';
-    out << m_orientation;
+    out << GetMapId() << '|';
+    out << GetPositionX() << '|';
+    out << GetPositionY() << '|';
+    out << GetPositionZ() << '|';
+    out << GetOrientation();
     return out.str();
 }
 
@@ -811,10 +811,10 @@ bool WorldPosition::GetReachableRandomPointOnGround(Player* bot, float radius, b
 {
     radius *= randomRange ? rand_norm() : 1.f;
     float angle = rand_norm() * static_cast<float>(2 * M_PI);
-    m_positionX += radius * cosf(angle);
-    m_positionY += radius * sinf(angle);
+    setX(GetPositionX() + radius * cosf(angle));
+    setY(GetPositionY() + radius * sinf(angle));
 
-    return getMap()->CanReachPositionAndGetValidCoords(bot, m_positionX, m_positionY, m_positionZ);
+    return getMap()->CanReachPositionAndGetValidCoords(bot, GetPositionX(), GetPositionY(), GetPositionZ());
 }
 
 uint32 WorldPosition::getUnitsAggro(GuidVector& units, Player* bot)
