@@ -11,17 +11,6 @@
 #include "RpgSubActions.h"
 #include "RpgAction.h"
 
-// float RpgActionMultiplier::GetValue(Action& action)
-// {
-//     std::string const nextAction = AI_VALUE(std::string, "next rpg action");
-//     std::string const name = action.getName();
-
-//     if (!nextAction.empty() && dynamic_cast<RpgEnabled*>(action) && name != nextAction)
-//         return 0.0f;
-
-//     return 1.0f;
-// }
-
 RpgStrategy::RpgStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 
 std::vector<NextAction> RpgStrategy::getDefaultActions()
