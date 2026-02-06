@@ -247,6 +247,12 @@ public:
     std::set<Transport*> getTransports(uint32 entry = 0);
 
     CellCoord getCellCoord() { return Acore::ComputeCellCoord(GetPositionX(), GetPositionY()); }
+    GridCoord getGridCoord()
+    {
+        CellCoord cellCoord = getCellCoord();
+        Cell cell(cellCoord);
+        return GridCoord(cell.GridX(), cell.GridY());
+    }
     std::vector<GridCoord> getGridCoord(WorldPosition secondPos);
     std::vector<WorldPosition> fromGridCoord(GridCoord GridCoord);
 

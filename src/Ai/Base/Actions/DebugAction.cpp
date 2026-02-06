@@ -330,7 +330,7 @@ bool DebugAction::Execute(Event event)
             botPos.setZ(botPos.getHeight() + 2);
 
             Creature* wpCreature = bot->SummonCreature(2334, botPos.GetPositionX(), botPos.GetPositionY(), botPos.GetPositionZ(), 0,
-                                                       TEMPSUMMON_TIMED_DESPAWN, 10000.0f)
+                                                       TEMPSUMMON_TIMED_DESPAWN, 10000.0f);
 
             FakeSpell(spellEffect, wpCreature, wpCreature, prev->GetGUID(), {}, {}, botPos, botPos);
 

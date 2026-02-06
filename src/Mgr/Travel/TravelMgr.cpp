@@ -814,7 +814,15 @@ bool WorldPosition::GetReachableRandomPointOnGround(Player* bot, float radius, b
     setX(GetPositionX() + radius * cosf(angle));
     setY(GetPositionY() + radius * sinf(angle));
 
-    return getMap()->CanReachPositionAndGetValidCoords(bot, GetPositionX(), GetPositionY(), GetPositionZ());
+    float x = GetPositionX();
+    float y = GetPositionY();
+    float z = GetPositionZ();
+    bool canReach = getMap()->CanReachPositionAndGetValidCoords(bot, x, y, z);
+    setX(x);
+    setY(y);
+    setZ(z);
+
+    return canReach;
 }
 
 uint32 WorldPosition::getUnitsAggro(GuidVector& units, Player* bot)
