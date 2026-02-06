@@ -370,7 +370,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
     // {
     //     movePosition = endPosition;
 
-    //     if (startPosition.getMapId() != endPosition.getMapId() || totalDistance > maxDist)
+    //     if (startPosition.GetMapId() != endPosition.GetMapId() || totalDistance > maxDist)
     //     {
     //         if (!TravelNodeMap::instance().getNodes().empty() && !bot->InBattleground())
     //         {
@@ -421,7 +421,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
     // {
     //     //Use standard PathGenerator to find a route.
     //     PathGenerator path(mover);
-    //     path.CalculatePath(movePosition.getX(), movePosition.getY(), movePosition.getZ(), false);
+    //     path.CalculatePath(movePosition.GetPositionX(), movePosition.GetPositionY(), movePosition.GetPositionZ(), false);
     //     PathType type = path.GetPathType();
     //     Movement::PointsArray const& points = path.GetPath();
     //     movePath.addPath(startPosition.fromPointsArray(points));
@@ -485,8 +485,8 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
     //         else
     //         {
     //             LOG_DEBUG("playerbots", "!entry");
-    //             return bot->TeleportTo(movePosition.getMapId(), movePosition.getX(), movePosition.getY(),
-    //             movePosition.getZ(), movePosition.getO(), 0);
+    //             return bot->TeleportTo(movePosition.GetMapId(), movePosition.GetPositionX(), movePosition.GetPositionY(),
+    //             movePosition.GetPositionZ(), movePosition.GetOrientation(), 0);
     //         }
     //     }
 
@@ -563,14 +563,14 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
 
     // AI_VALUE(LastMovement&, "last movement").setPath(movePath);
 
-    // if (!movePosition || movePosition.getMapId() != bot->GetMapId())
+    // if (!movePosition || movePosition.GetMapId() != bot->GetMapId())
     // {
     //     movePath.clear();
     //     AI_VALUE(LastMovement&, "last movement").setPath(movePath);
 
     //     if (botAI->HasStrategy("debug move", BOT_STATE_NON_COMBAT))
     //         botAI->TellMasterNoFacing("No point. Rebuilding.");
-    //     LOG_DEBUG("playerbots", "!movePosition || movePosition.getMapId() != bot->GetMapId()");
+    //     LOG_DEBUG("playerbots", "!movePosition || movePosition.GetMapId() != bot->GetMapId()");
     //     return false;
     // }
 
@@ -609,15 +609,15 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
     //         float cz = z;
     //         for (auto i : movePath.getPath())
     //         {
-    //             CreateWp(bot, i.point.getX(), i.point.getY(), i.point.getZ(), 0.f, 2334);
+    //             CreateWp(bot, i.point.GetPositionX(), i.point.GetPositionY(), i.point.GetPositionZ(), 0.f, 2334);
 
-    //             cx = i.point.getX();
-    //             cy = i.point.getY();
-    //             cz = i.point.getZ();
+    //             cx = i.point.GetPositionX();
+    //             cy = i.point.GetPositionY();
+    //             cz = i.point.GetPositionZ();
     //         }
     //     }
     //     else
-    //         CreateWp(bot, movePosition.getX(), movePosition.getY(), movePosition.getZ(), 0, 2334, true);
+    //         CreateWp(bot, movePosition.GetPositionX(), movePosition.GetPositionY(), movePosition.GetPositionZ(), 0, 2334, true);
     // }
 
     // //Log bot movement
@@ -634,8 +634,8 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
 
     //     sPlayerbotAIConfig.log("bot_movement.csv", out.str().c_str());
     // }
-    // // LOG_DEBUG("playerbots", "({}, {}) -> ({}, {})", startPosition.getX(), startPosition.getY(),
-    // movePosition.getX(), movePosition.getY()); if (!react)
+    // // LOG_DEBUG("playerbots", "({}, {}) -> ({}, {})", startPosition.GetPositionX(), startPosition.GetPositionY(),
+    // movePosition.GetPositionX(), movePosition.GetPositionY()); if (!react)
     //     if (totalDistance > maxDist)
     //         WaitForReach(startPosition.distance(movePosition) - 10.0f);
     //     else
@@ -671,7 +671,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
     // // else
     // // {
     // //     mover->GetMotionMaster()->GetDestination(x, y, z);
-    // //     if (movePosition.distance(WorldPosition(movePosition.getMapId(), x, y, z, 0)) > minDist)
+    // //     if (movePosition.distance(WorldPosition(movePosition.GetMapId(), x, y, z, 0)) > minDist)
     // //     {
     // //         mover->StopMoving();
     // //         mover->GetMotionMaster()->Clear();
@@ -685,8 +685,8 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
 
     //     AI_VALUE(LastMovement&, "last movement").nextTeleport = now +
     //     (time_t)MoveDelay(startPosition.distance(movePosition)); LOG_DEBUG("playerbots", "totalDistance > maxDist &&
-    //     !detailedMove && !botAI->HasPlayerNearby(&movePosition)"); return bot->TeleportTo(movePosition.getMapId(),
-    //     movePosition.getX(), movePosition.getY(), movePosition.getZ(), startPosition.getAngleTo(movePosition));
+    //     !detailedMove && !botAI->HasPlayerNearby(&movePosition)"); return bot->TeleportTo(movePosition.GetMapId(),
+    //     movePosition.GetPositionX(), movePosition.GetPositionY(), movePosition.GetPositionZ(), startPosition.getAngleTo(movePosition));
     // }
 
     // // walk if master walks and is close
@@ -708,9 +708,9 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
     // if (!bot->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !bot->HasAuraType(SPELL_AURA_FLY))
     // {
     //     bot->SetWalk(masterWalking);
-    //     bot->GetMotionMaster()->MovePoint(movePosition.getMapId(), movePosition.getX(), movePosition.getY(),
-    //     movePosition.getZ(), generatePath); WaitForReach(startPosition.distance(movePosition));
-    //     // LOG_DEBUG("playerbots", "Movepoint to ({}, {})", movePosition.getX(), movePosition.getY());
+    //     bot->GetMotionMaster()->MovePoint(movePosition.GetMapId(), movePosition.GetPositionX(), movePosition.GetPositionY(),
+    //     movePosition.GetPositionZ(), generatePath); WaitForReach(startPosition.distance(movePosition));
+    //     // LOG_DEBUG("playerbots", "Movepoint to ({}, {})", movePosition.GetPositionX(), movePosition.GetPositionY());
     // }
     // else
     // {
@@ -756,9 +756,9 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
     //         }
     //     }
 
-    //     bot->GetMotionMaster()->MovePoint(movePosition.getMapId(), Position(movePosition.getX(), movePosition.getY(),
-    //     movePosition.getZ(), 0.f)); WaitForReach(startPosition.distance(movePosition)); LOG_DEBUG("playerbots",
-    //     "Movepoint to ({}, {})", movePosition.getX(), movePosition.getY());
+    //     bot->GetMotionMaster()->MovePoint(movePosition.GetMapId(), Position(movePosition.GetPositionX(), movePosition.GetPositionY(),
+    //     movePosition.GetPositionZ(), 0.f)); WaitForReach(startPosition.distance(movePosition)); LOG_DEBUG("playerbots",
+    //     "Movepoint to ({}, {})", movePosition.GetPositionX(), movePosition.GetPositionY());
     // }
 
     // AI_VALUE(LastMovement&, "last movement").setShort(movePosition);
@@ -1190,7 +1190,7 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
             WorldPosition cPos(corpse);
 
             if (botPos.fDist(cPos) > sPlayerbotAIConfig.spellDistance)
-                return MoveTo(cPos.getMapId(), cPos.getX(), cPos.getY(), cPos.getZ());
+                return MoveTo(cPos.GetMapId(), cPos.GetPositionX(), cPos.GetPositionY(), cPos.GetPositionZ());
         }
     }
 
@@ -1217,7 +1217,7 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
                     if ((lDist * 1.5 < tDist && ang < static_cast<float>(M_PI) / 2) ||
                         target->HasUnitState(UNIT_STATE_IN_FLIGHT))
                     {
-                        return MoveTo(longMove.getMapId(), longMove.getX(), longMove.getY(), longMove.getZ());
+                        return MoveTo(longMove.GetMapId(), longMove.GetPositionX(), longMove.GetPositionY(), longMove.GetPositionZ());
                     }
                 }
             }

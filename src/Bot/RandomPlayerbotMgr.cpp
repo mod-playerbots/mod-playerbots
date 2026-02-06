@@ -1667,7 +1667,7 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot, std::vector<WorldLocation>&
                                {
                                    std::vector<uint32>::iterator i =
                                        find(sPlayerbotAIConfig.randomBotMaps.begin(),
-                                            sPlayerbotAIConfig.randomBotMaps.end(), l.getMapId());
+                                            sPlayerbotAIConfig.randomBotMaps.end(), l.GetMapId());
                                    return i == sPlayerbotAIConfig.randomBotMaps.end();
                                }),
                 tlocs.end());
