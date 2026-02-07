@@ -10,7 +10,7 @@ void WotlkDungeonOccStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
         new TriggerNode(
             "unstable sphere",
             {
-                CreateNextAction<AvoidUnstableSphereAction>(ACTION_MOVE + 5)
+                CreateNextAction<AvoidUnstableSphereAction>(ACTION_MOVE + 5.0f)
             }
         )
     );
@@ -20,7 +20,7 @@ void WotlkDungeonOccStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
         new TriggerNode(
             "drake mount",
             {
-                CreateNextAction<MountDrakeAction>(ACTION_RAID + 5)
+                CreateNextAction<MountDrakeAction>(ACTION_RAID + 5.0f)
             }
         )
     );
@@ -28,7 +28,7 @@ void WotlkDungeonOccStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
         new TriggerNode(
             "drake dismount",
             {
-                CreateNextAction<DismountDrakeAction>(ACTION_RAID + 5)
+                CreateNextAction<DismountDrakeAction>(ACTION_RAID + 5.0f)
             }
         )
     );
@@ -36,7 +36,7 @@ void WotlkDungeonOccStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
         new TriggerNode(
             "group flying",
             {
-                CreateNextAction<OccFlyDrakeAction>(ACTION_NORMAL + 1)
+                CreateNextAction<OccFlyDrakeAction>(ACTION_NORMAL + 1.0f)
             }
         )
     );
@@ -44,7 +44,7 @@ void WotlkDungeonOccStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
         new TriggerNode(
             "drake combat",
             {
-                CreateNextAction<OccDrakeAttackAction>(ACTION_NORMAL + 5)
+                CreateNextAction<OccDrakeAttackAction>(ACTION_NORMAL + 5.0f)
             }
         )
     );
@@ -65,7 +65,7 @@ void WotlkDungeonOccStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
         new TriggerNode(
             "arcane explosion",
             {
-                CreateNextAction<AvoidArcaneExplosionAction>(ACTION_MOVE + 5)
+                CreateNextAction<AvoidArcaneExplosionAction>(ACTION_MOVE + 5.0f)
             }
         )
     );
@@ -73,7 +73,7 @@ void WotlkDungeonOccStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
         new TriggerNode(
             "time bomb",
             {
-                CreateNextAction<TimeBombSpreadAction>(ACTION_MOVE + 4)
+                CreateNextAction<TimeBombSpreadAction>(ACTION_MOVE + 4.0f)
             }
         )
     );
