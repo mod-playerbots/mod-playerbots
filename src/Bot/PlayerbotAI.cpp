@@ -960,8 +960,6 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
 
     filtered = chatFilter.Filter(trim(filtered));
 
-    LOG_ERROR("playerbot", "Received command from {}: {}", fromPlayer->GetName(), filtered);
-
     if (filtered.empty())
         return;
 
@@ -989,8 +987,6 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
         (filtered.size() > 3 && filtered.substr(0, 3) == "do "))
     {
         std::string const action = filtered.substr(filtered.find(" ") + 1);
-
-        LOG_ERROR("playerbot", "Received do command from {}: {}", fromPlayer->GetName(), action);
 
         // DoSpecificAction(action);
     }
@@ -1046,8 +1042,6 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
     }
     else
     {
-        LOG_ERROR("playerbot", "Pushing command from {}: {}", fromPlayer->GetName(), filtered);
-
         chatCommands.push_back(ChatCommandHolder(filtered, fromPlayer, type));
     }
 }
@@ -1655,6 +1649,10 @@ bool PlayerbotAI::DoSpecificAction(NextAction::Factory actionFactory, Event even
 {
     std::ostringstream out;
 
+    std::unique_ptr<Action> localAction = actionFactory(this);
+
+    const std::string name = localAction->getName();
+
     for (uint8 i = 0; i < BOT_STATE_MAX; i++)
     {
         ActionResult res = engines[i]->ExecuteAction(actionFactory, event);
@@ -1669,7 +1667,7 @@ bool PlayerbotAI::DoSpecificAction(NextAction::Factory actionFactory, Event even
                 }
                 return true;
             case ACTION_RESULT_IMPOSSIBLE:
-                // out << name << ": impossible";
+                out << name << ": impossible";
                 if (!silent)
                 {
                     TellError(out.str());
@@ -1677,7 +1675,7 @@ bool PlayerbotAI::DoSpecificAction(NextAction::Factory actionFactory, Event even
                 }
                 return false;
             case ACTION_RESULT_USELESS:
-                // out << name << ": useless";
+                out << name << ": useless";
                 if (!silent)
                 {
                     TellError(out.str());
@@ -1687,7 +1685,7 @@ bool PlayerbotAI::DoSpecificAction(NextAction::Factory actionFactory, Event even
             case ACTION_RESULT_FAILED:
                 if (!silent)
                 {
-                    // out << name << ": failed";
+                    out << name << ": failed";
                     TellError(out.str());
                 }
                 return false;
@@ -1696,7 +1694,7 @@ bool PlayerbotAI::DoSpecificAction(NextAction::Factory actionFactory, Event even
 
     if (!silent)
     {
-        // out << name << ": unknown action";
+        out << name << ": unknown action";
         TellError(out.str());
     }
 
