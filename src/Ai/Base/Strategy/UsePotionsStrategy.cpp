@@ -12,7 +12,10 @@
 class UsePotionsStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
 public:
-    UsePotionsStrategyActionNodeFactory() { creators["healthstone"] = &healthstone; }
+    UsePotionsStrategyActionNodeFactory()
+    {
+        creators["healthstone"] = &healthstone;
+    }
 
 private:
     static ActionNode* healthstone(PlayerbotAI*)
@@ -34,7 +37,6 @@ void UsePotionsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     Strategy::InitTriggers(triggers);
 
-    // @TODO: This was a healthstone action, not a random item one, so we need to reflect that
     triggers.push_back(
         new TriggerNode(
             "critical health",
