@@ -36,14 +36,14 @@ void HealDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericDruidStrategy::InitTriggers(triggers);
 
-    // triggers.push_back(
-    //     new TriggerNode(
-    //         "party member to heal out of spell range",
-    //         {
-    //             CreateNextAction<HealPartyMemberAction>(ACTION_CRITICAL_HEAL + 9.0f)
-    //         }
-    //     )
-    // );
+    triggers.push_back(
+        new TriggerNode(
+            "party member to heal out of spell range",
+            {
+                CreateNextAction<ReachPartyMemberToHealAction>(ACTION_CRITICAL_HEAL + 9.0f)
+            }
+        )
+    );
 
     // CRITICAL
     triggers.push_back(
