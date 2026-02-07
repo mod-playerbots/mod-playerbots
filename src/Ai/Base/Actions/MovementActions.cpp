@@ -11,6 +11,7 @@
 #include <string>
 
 #include "Corpse.h"
+#include "DynamicObject.h"
 #include "Event.h"
 #include "FleeManager.h"
 #include "G3D/Vector3.h"

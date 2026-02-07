@@ -4,17 +4,12 @@
  */
 
 #include "PassTroughStrategy.h"
-#include "Log.h"
 #include "NextAction.h"
 
 void PassTroughStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    LOG_ERROR("playerbots", "Initialising {} supported", this->supported.size());
-
     for (std::vector<PassthroughStrategySupportedActionsStruct>::iterator i = this->supported.begin(); i != this->supported.end(); i++)
     {
-        LOG_ERROR("playerbots", "Adding passthrough trigger for command: {}", i->name);
-
         triggers.push_back(
             new TriggerNode(
                 i->name,

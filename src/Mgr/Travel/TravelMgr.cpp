@@ -17,6 +17,7 @@
 #include "TransportMgr.h"
 #include "VMapMgr2.h"
 #include "Map.h"
+#include "DynamicObject.h"
 #include "Corpse.h"
 #include "CellImpl.h"
 
