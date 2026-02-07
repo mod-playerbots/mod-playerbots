@@ -57,7 +57,7 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("leotheras the blind target spellbinders", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind boss transformed into demon form", {
-        NextAction("leotheras the blind demon form tank attack boss", ACTION_EMERGENCY + 6) }));
+        NextAction("leotheras the blind demon form tank attack boss", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("leotheras the blind only warlock should tank demon form", {
         NextAction("leotheras the blind melee tanks don't attack demon form", ACTION_RAID + 1) }));
@@ -132,7 +132,7 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("lady vashj static charge move away from group", ACTION_EMERGENCY + 7) }));
 
     triggers.push_back(new TriggerNode("lady vashj pulling boss in phase 1 and phase 3", {
-        NextAction("lady vashj misdirect boss to main tank", ACTION_EMERGENCY + 1) }));
+        NextAction("lady vashj misdirect boss to main tank", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("lady vashj tainted elemental cheat", {
         NextAction("lady vashj teleport to tainted elemental", ACTION_EMERGENCY + 10),

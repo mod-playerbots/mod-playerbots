@@ -141,14 +141,6 @@ public:
     bool IsActive() override;
 };
 
-class LeotherasTheBlindHumanFormEngagedByMainTankTrigger : public Trigger
-{
-public:
-    LeotherasTheBlindHumanFormEngagedByMainTankTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "leotheras the blind human form engaged by main tank") {}
-    bool IsActive() override;
-};
-
 class LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger : public Trigger
 {
 public:

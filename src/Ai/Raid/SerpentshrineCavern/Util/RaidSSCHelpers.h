@@ -110,20 +110,7 @@ namespace SerpentShrineCavernHelpers
         ITEM_HEAVY_NETHERWEAVE_NET   = 24269,
     };
 
-    // General
-    const uint32 SSC_MAP_ID = 548;
-    void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
-    void MarkTargetWithSkull(Player* bot, Unit* target);
-    void MarkTargetWithSquare(Player* bot, Unit* target);
-    void MarkTargetWithStar(Player* bot, Unit* target);
-    void MarkTargetWithCircle(Player* bot, Unit* target);
-    void MarkTargetWithDiamond(Player* bot, Unit* target);
-    void MarkTargetWithTriangle(Player* bot, Unit* target);
-    void MarkTargetWithCross(Player* bot, Unit* target);
-    void MarkTargetWithMoon(Player* bot, Unit* target);
-    void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
-    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot);
-    Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
+    constexpr uint32 SSC_MAP_ID = 548;
 
     // Hydross the Unstable <Duke of Currents>
     extern const Position HYDROSS_FROST_TANK_POSITION;
@@ -171,6 +158,7 @@ namespace SerpentShrineCavernHelpers
     extern std::unordered_map<ObjectGuid, uint8> tidewalkerRangedStep;
 
     // Lady Vashj <Coilfang Matron>
+    constexpr float VASHJ_PLATFORM_Z = 42.985f;
     extern const Position VASHJ_PLATFORM_CENTER_POSITION;
     extern std::unordered_map<ObjectGuid, Position> vashjRangedPositions;
     extern std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;

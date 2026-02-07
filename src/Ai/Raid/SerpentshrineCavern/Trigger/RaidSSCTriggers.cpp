@@ -6,6 +6,7 @@
 #include "LootObjectStack.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 
 using namespace SerpentShrineCavernHelpers;
 
@@ -82,7 +83,7 @@ bool HydrossTheUnstableAggroResetsUponPhaseChangeTrigger::IsActive()
 bool HydrossTheUnstableNeedToManageTimersTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "hydross the unstable") &&
-           IsInstanceTimerManager(botAI, bot);
+           IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID, nullptr);
 }
 
 // The Lurker Below
@@ -173,7 +174,7 @@ bool TheLurkerBelowBossIsSubmergedTrigger::IsActive()
 bool TheLurkerBelowNeedToPrepareTimerForSpoutTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "the lurker below") &&
-           IsInstanceTimerManager(botAI, bot);
+           IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID, nullptr);
 }
 
 // Leotheras the Blind
@@ -185,27 +186,30 @@ bool LeotherasTheBlindBossIsInactiveTrigger::IsActive()
 
 bool LeotherasTheBlindBossTransformedIntoDemonFormTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "leotheras the blind") &&
-           GetLeotherasDemonFormTank(botAI, bot) == bot;
+    if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
+        return false;
+
+    if (GetLeotherasDemonFormTank(botAI, bot) != bot)
+        return false;
+
+    return GetActiveLeotherasDemon(botAI);
 }
 
 bool LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger::IsActive()
 {
+    if (botAI->IsRanged(bot) || !botAI->IsTank(bot))
+        return false;
+
+    if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
+        return false;
+
     if (bot->HasAura(SPELL_INSIDIOUS_WHISPER))
         return false;
 
-    if (!botAI->IsTank(bot))
+    if (!GetLeotherasDemonFormTank(botAI, bot))
         return false;
 
-    Aura* chaosBlast = bot->GetAura(SPELL_CHAOS_BLAST);
-    if (chaosBlast && chaosBlast->GetStackAmount() >= 5)
-        return false;
-
-    if (!GetPhase2LeotherasDemon(botAI))
-        return false;
-
-    return GetLeotherasDemonFormTank(botAI, bot) &&
-           GetLeotherasDemonFormTank(botAI, bot) != bot;
+    return GetPhase2LeotherasDemon(botAI);
 }
 
 bool LeotherasTheBlindBossEngagedByRangedTrigger::IsActive()
@@ -253,14 +257,10 @@ bool LeotherasTheBlindBotHasTooManyChaosBlastStacksTrigger::IsActive()
     if (!chaosBlast || chaosBlast->GetStackAmount() < 5)
         return false;
 
-    if (!GetPhase2LeotherasDemon(botAI))
+    if (!GetLeotherasDemonFormTank(botAI, bot) && botAI->IsMainTank(bot))
         return false;
 
-    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
-    if (!demonFormTank && botAI->IsMainTank(bot))
-        return false;
-
-    return true;
+    return GetPhase2LeotherasDemon(botAI);
 }
 
 bool LeotherasTheBlindInnerDemonHasAwakenedTrigger::IsActive()
@@ -298,7 +298,7 @@ bool LeotherasTheBlindDemonFormTankNeedsAggro::IsActive()
 bool LeotherasTheBlindBossWipesAggroUponPhaseChangeTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "leotheras the blind") &&
-           IsInstanceTimerManager(botAI, bot);
+           IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID, nullptr);
 }
 
 // Fathom-Lord Karathress
@@ -376,19 +376,19 @@ bool FathomLordKarathressDeterminingKillOrderTrigger::IsActive()
     if (botAI->IsDps(bot))
         return true;
     else if (botAI->IsAssistTankOfIndex(bot, 0, false))
-        return AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
+        return !AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
     else if (botAI->IsAssistTankOfIndex(bot, 1, false))
-        return AI_VALUE2(Unit*, "find target", "fathom-guard sharkkis");
+        return !AI_VALUE2(Unit*, "find target", "fathom-guard sharkkis");
     else if (botAI->IsAssistTankOfIndex(bot, 2, false))
-        return AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
+        return !AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
     else
         return false;
 }
 
 bool FathomLordKarathressTanksNeedToEstablishAggroTrigger::IsActive()
 {
-    return IsInstanceTimerManager(botAI, bot) &&
-           AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
+    return AI_VALUE2(Unit*, "find target", "fathom-lord karathress") &&
+           IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID, nullptr);
 }
 
 // Morogrim Tidewalker
@@ -596,6 +596,9 @@ bool LadyVashjTaintedCoreIsUnusableTrigger::IsActive()
     if (!vashj)
         return false;
 
+    if (!IsLadyVashjInPhase2(botAI))
+        return bot->HasItemCount(ITEM_TAINTED_CORE, 1, false);
+
     Group* group = bot->GetGroup();
     if (!group)
         return false;
@@ -619,9 +622,6 @@ bool LadyVashjTaintedCoreIsUnusableTrigger::IsActive()
         return true;
     }
 
-    if (!IsLadyVashjInPhase2(botAI))
-        return bot->HasItemCount(ITEM_TAINTED_CORE, 1, false);
-
     return false;
 }
 
@@ -635,7 +635,7 @@ bool LadyVashjNeedToResetCorePassingTrackersTrigger::IsActive()
     if (!group)
         return false;
 
-    return IsInstanceTimerManager(botAI, bot) ||
+    return IsMechanicTrackerBot(botAI, bot, SSC_MAP_ID, nullptr) ||
            GetDesignatedCoreLooter(group, botAI) == bot ||
            GetFirstTaintedCorePasser(group, botAI) == bot ||
            GetSecondTaintedCorePasser(group, botAI) == bot ||
