@@ -12,15 +12,25 @@ class ActionFactoryRegistry
 public:
     using Factory = std::unique_ptr<Action>(*)(PlayerbotAI* const botAI);
 
-    static void Register(const std::type_index key, const Factory factory)
+    static void RegisterByType(const std::type_index key, const Factory factory)
     {
-        std::unordered_map<std::type_index, Factory>& map = ActionFactoryRegistry::GetMap();
+        std::unordered_map<std::type_index, Factory>& map = ActionFactoryRegistry::GetTypeMap();
+
         map.insert(std::make_pair(key, factory));
     }
 
-    static Factory GetFactory(const std::type_index key)
+    static void RegisterByName(const std::string& name, const Factory factory)
     {
-        std::unordered_map<std::type_index, Factory>& map = ActionFactoryRegistry::GetMap();
+        std::lock_guard<std::mutex> lock(ActionFactoryRegistry::GetMutex());
+
+        ActionFactoryRegistry::GetNameMap().insert(std::make_pair(name, factory));
+    }
+
+    static Factory GetFactoryByType(const std::type_index key)
+    {
+        std::lock_guard<std::mutex> lock(ActionFactoryRegistry::GetMutex());
+
+        std::unordered_map<std::type_index, Factory>& map = ActionFactoryRegistry::GetTypeMap();
         const std::unordered_map<std::type_index, Factory>::const_iterator it = map.find(key);
 
         if (it == map.end())
@@ -31,22 +41,40 @@ public:
         return it->second;
     }
 
-    static std::unique_ptr<Action> Create(const std::type_index key, PlayerbotAI* const botAI)
+    static Factory GetFactoryByName(const std::string_view name)
     {
-        const Factory factory = ActionFactoryRegistry::GetFactory(key);
+        std::lock_guard<std::mutex> lock(ActionFactoryRegistry::GetMutex());
 
-        if (factory == static_cast<Factory>(nullptr))
+        std::unordered_map<std::string, Factory>& map = ActionFactoryRegistry::GetNameMap();
+        const std::unordered_map<std::string, Factory>::const_iterator it = map.find(std::string(name));
+
+        if (it == map.end())
         {
-            return std::unique_ptr<Action>();
+            return static_cast<Factory>(nullptr);
         }
 
-        return factory(botAI);
+        return it->second;
     }
 
 private:
-    static std::unordered_map<std::type_index, Factory>& GetMap()
+    static std::unordered_map<std::type_index, Factory>& GetTypeMap()
     {
         static std::unordered_map<std::type_index, Factory> map;
+
         return map;
+    }
+
+    static std::unordered_map<std::string, Factory>& GetNameMap()
+    {
+        static std::unordered_map<std::string, Factory> map;
+
+        return map;
+    }
+
+    static std::mutex& GetMutex()
+    {
+        static std::mutex mtx;
+
+        return mtx;
     }
 };

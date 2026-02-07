@@ -15,17 +15,17 @@ class PlayerbotAI;
 class QuestStrategy : public PassTroughStrategy
 {
 public:
-    QuestStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI) {};
+    QuestStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI)
+    {
+        this->supported.push_back(
+            {
+                .name = "accept quest",
+                .factory = &CreateAction<AcceptQuestAction>
+            }
+        );
+    };
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
-
-protected:
-    std::vector<PassthroughStrategySupportedActionsStruct> supported = {
-        {
-            .name = "accept quest",
-            .factory = &CreateAction<AcceptQuestAction>
-        }
-    };
 };
 
 class DefaultQuestStrategy : public QuestStrategy

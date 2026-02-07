@@ -29,17 +29,11 @@ public:
     Action(PlayerbotAI* botAI, std::string const name = "action") : AiNamedObject(botAI, name), verbose(false) {}
     virtual ~Action() {}
 
-    std::unique_ptr<Action> recreate(PlayerbotAI* const botAI)
-    {
-        const std::type_index key(typeid(*this));
-
-        return ActionFactoryRegistry::Create(key, botAI);
-    }
-
     NextAction::Factory getFactoryFromInstance()
     {
         const std::type_index key(typeid(*this));
-        return ActionFactoryRegistry::GetFactory(key);
+
+        return ActionFactoryRegistry::GetFactoryByType(key);
     }
 
     virtual bool Execute([[maybe_unused]] Event event) { return true; }

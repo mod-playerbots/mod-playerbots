@@ -26,34 +26,32 @@ class PlayerbotAI;
 class WorldPacketHandlerStrategy : public PassTroughStrategy
 {
 public:
-    WorldPacketHandlerStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI) { }
+    WorldPacketHandlerStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI)
+    {
+        this->supported.push_back({ "loot roll", CreateNextAction<LootRollAction>(relevance).factory });
+        this->supported.push_back({ "check mount state", CreateNextAction<CheckMountStateAction>(relevance).factory });
+        this->supported.push_back({ "party command", CreateNextAction<PartyCommandAction>(relevance).factory });
+        this->supported.push_back({ "ready check", CreateNextAction<ReadyCheckAction>(relevance).factory });
+        this->supported.push_back({ "uninvite", CreateNextAction<UninviteAction>(relevance).factory });
+        this->supported.push_back({ "lfg role check", CreateNextAction<LfgRoleCheckAction>(relevance).factory });
+        this->supported.push_back({ "lfg teleport", CreateNextAction<LfgTeleportAction>(relevance).factory });
+        this->supported.push_back({ "random bot update", CreateNextAction<RandomBotUpdateAction>(relevance).factory });
+        this->supported.push_back({ "inventory change failure", CreateNextAction<InventoryChangeFailureAction>(relevance).factory });
+        this->supported.push_back({ "guild accept", CreateNextAction<GuildAcceptAction>(relevance).factory });
+        this->supported.push_back({ "security check", CreateNextAction<SecurityCheckAction>(relevance).factory });
+        this->supported.push_back({ "bg status", CreateNextAction<BGStatusAction>(relevance).factory});
+
+        // quests
+        this->supported.push_back({ "quest update add kill", CreateNextAction<QuestUpdateAddKillAction>(relevance).factory});
+        this->supported.push_back({ "quest update add item", CreateNextAction<QuestUpdateAddItemAction>(relevance).factory});
+        this->supported.push_back({ "quest update failed", CreateNextAction<QuestUpdateFailedAction>(relevance).factory});
+        this->supported.push_back({ "quest update failed timer", CreateNextAction<QuestUpdateFailedTimerAction>(relevance).factory});
+        this->supported.push_back({ "quest update complete", CreateNextAction<QuestUpdateCompleteAction>(relevance).factory});
+        this->supported.push_back({ "confirm quest", CreateNextAction<ConfirmQuestAction>(relevance).factory});
+    }
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
     std::string const getName() override { return "default"; }
-
-protected:
-    std::vector<PassthroughStrategySupportedActionsStruct> supported = {
-        { "loot roll", CreateNextAction<LootRollAction>(relevance).factory },
-        { "check mount state", CreateNextAction<CheckMountStateAction>(relevance).factory },
-        { "party command", CreateNextAction<PartyCommandAction>(relevance).factory },
-        { "ready check", CreateNextAction<ReadyCheckAction>(relevance).factory },
-        { "uninvite", CreateNextAction<UninviteAction>(relevance).factory },
-        { "lfg role check", CreateNextAction<LfgRoleCheckAction>(relevance).factory },
-        { "lfg teleport", CreateNextAction<LfgTeleportAction>(relevance).factory },
-        { "random bot update", CreateNextAction<RandomBotUpdateAction>(relevance).factory },
-        { "inventory change failure", CreateNextAction<InventoryChangeFailureAction>(relevance).factory },
-        { "guild accept", CreateNextAction<GuildAcceptAction>(relevance).factory },
-        { "security check", CreateNextAction<SecurityCheckAction>(relevance).factory },
-        { "bg status", CreateNextAction<BGStatusAction>(relevance).factory},
-
-        // quests
-        { "quest update add kill", CreateNextAction<QuestUpdateAddKillAction>(relevance).factory},
-        { "quest update add item", CreateNextAction<QuestUpdateAddItemAction>(relevance).factory},
-        { "quest update failed", CreateNextAction<QuestUpdateFailedAction>(relevance).factory},
-        { "quest update failed timer", CreateNextAction<QuestUpdateFailedTimerAction>(relevance).factory},
-        { "quest update complete", CreateNextAction<QuestUpdateCompleteAction>(relevance).factory},
-        { "confirm quest", CreateNextAction<ConfirmQuestAction>(relevance).factory},
-    };
 };
 
 class ReadyCheckStrategy : public PassTroughStrategy

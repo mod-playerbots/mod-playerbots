@@ -647,16 +647,35 @@ void PlayerbotAI::HandleCommand(uint32 type, const std::string& text, Player& fr
         (filtered.size() > 3 && filtered.substr(0, 3) == "do "))
     {
         Event event("do", "", &fromPlayer);
+
         std::string action = filtered.substr(filtered.find(" ") + 1);
-        // DoSpecificAction(action, event);
+
+        NextAction::Factory factory = ActionFactoryRegistry::GetFactoryByName(action);
+
+        if (factory != nullptr)
+        {
+            LOG_ERROR("playerbots", "Executing command '{}' from player '{}'", action, fromPlayer.GetName());
+
+            this->DoSpecificAction(factory, event);
+        }
     }
 
     if (ChatHelper::parseValue("command", filtered).substr(0, 3) == "do ")
     {
         Event event("do", "", &fromPlayer);
+
         std::string action = ChatHelper::parseValue("command", filtered);
+
         action = action.substr(3);
-        // DoSpecificAction(action, event);
+
+        NextAction::Factory factory = ActionFactoryRegistry::GetFactoryByName(action);
+
+        if (factory != nullptr)
+        {
+            LOG_ERROR("playerbots", "Executing command (2) '{}' from player '{}'", action, fromPlayer.GetName());
+
+            this->DoSpecificAction(factory, event);
+        }
     }
     else if (type != CHAT_MSG_WHISPER && filtered.size() > 6 && filtered.substr(0, 6) == "queue ")
     {
@@ -988,7 +1007,14 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
     {
         std::string const action = filtered.substr(filtered.find(" ") + 1);
 
-        // DoSpecificAction(action);
+        NextAction::Factory factory = ActionFactoryRegistry::GetFactoryByName(action);
+
+        if (factory != nullptr)
+        {
+            LOG_ERROR("playerbots", "Executing command (3) '{}' from player '{}'", action, fromPlayer->GetName());
+
+            this->DoSpecificAction(factory);
+        }
     }
     else if (type != CHAT_MSG_WHISPER && filtered.size() > 6 && filtered.substr(0, 6) == "queue ")
     {
