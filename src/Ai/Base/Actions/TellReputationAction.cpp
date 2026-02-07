@@ -80,56 +80,27 @@ bool TellReputationAction::Execute(Event event)
 
         std::vector<std::pair<std::string, std::string>> lines;
 
-        lines.reserve(64);
+        FactionStateList const& stateList = repMgr.GetStateList();
+        lines.reserve(stateList.size());
 
-        static std::array<uint32, 41> const neutralFactions = {
-            // Wrath of the Lich King
-            1104, 1105, 1119, 1073, 1090, 1098, 1106, 1091, 1156,
-            // Burning Crusade
-            942, 1038, 1015, 933, 970, 1011, 935, 1077, 1031, 934, 932, 989, 967, 1012, 990,
-            // Classic
-            529, 609, 21, 470, 369, 577, 87, 909, 59, 910, 749, 349, 70, 576, 589, 92, 93
-        };
-
-        static std::array<uint32, 20> const hordeFactions = {
-            // Wrath of the Lich King
-            1052, 1085, 1064, 1124, 1067,
-            // Burning Crusade
-            947, 941, 922,
-            // Classic
-            76, 81, 530, 68, 911, 1133, 1352, 2523, 889, 510, 729, 2372
-        };
-
-        static std::array<uint32, 19> const allianceFactions = {
-            // Wrath of the Lich King
-            1037, 1068, 1126, 1094, 1050,
-            // Burning Crusade
-            946, 978,
-            // Classic
-            72, 47, 69, 54, 930, 1134, 1353, 2524, 890, 509, 730, 2371
-        };
-
-        for (uint32 factionId : neutralFactions)
+        for (auto const& itr : stateList)
         {
-            if (FactionEntry const* entry = sFactionStore.LookupEntry(factionId))
-                lines.emplace_back(entry->name[0], BuildReputationLine(repMgr, entry));
-        }
+            FactionState const& faction = itr.second;
+            if (!(faction.Flags & FACTION_FLAG_VISIBLE))
+                continue;
 
-        if (bot->GetTeamId() == TEAM_HORDE)
-        {
-            for (uint32 factionId : hordeFactions)
-            {
-                if (FactionEntry const* entry = sFactionStore.LookupEntry(factionId))
-                    lines.emplace_back(entry->name[0], BuildReputationLine(repMgr, entry));
-            }
-        }
-        else
-        {
-            for (uint32 factionId : allianceFactions)
-            {
-                if (FactionEntry const* entry = sFactionStore.LookupEntry(factionId))
-                    lines.emplace_back(entry->name[0], BuildReputationLine(repMgr, entry));
-            }
+            if (faction.Flags & (FACTION_FLAG_HIDDEN | FACTION_FLAG_INVISIBLE_FORCED) &&
+                !(faction.Flags & FACTION_FLAG_SPECIAL))
+                continue;
+
+            FactionEntry const* entry = sFactionStore.LookupEntry(faction.ID);
+            if (!entry)
+                continue;
+
+            LOG_INFO("playerbots", "TellReputationAction: bot {} reputation {} - {}",
+                bot->GetGUID().ToString(), entry->ID, entry->name[0]);
+
+            lines.emplace_back(entry->name[0], BuildReputationLine(repMgr, entry));
         }
 
         std::sort(lines.begin(), lines.end(),
