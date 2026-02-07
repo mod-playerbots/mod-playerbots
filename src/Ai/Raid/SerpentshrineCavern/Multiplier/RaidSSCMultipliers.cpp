@@ -645,8 +645,7 @@ float LadyVashjStaticChargeStayAwayFromGroupMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
         return 1.0f;
 
-    if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
-        dynamic_cast<CombatFormationMoveAction*>(action) ||
+    if (dynamic_cast<CombatFormationMoveAction*>(action) ||
         dynamic_cast<ReachTargetAction*>(action) ||
         dynamic_cast<FollowAction*>(action) ||
         dynamic_cast<CastKillingSpreeAction*>(action) ||
