@@ -413,19 +413,19 @@ private:
 };
 
 SharedNamedObjectContextList<Strategy> PaladinAiObjectContext::sharedStrategyContexts;
-SharedNamedObjectContextList<Action> PaladinAiObjectContext::sharedActionContexts;
+// SharedNamedObjectContextList<Action> PaladinAiObjectContext::sharedActionContexts;
 SharedNamedObjectContextList<Trigger> PaladinAiObjectContext::sharedTriggerContexts;
 SharedNamedObjectContextList<UntypedValue> PaladinAiObjectContext::sharedValueContexts;
 
 PaladinAiObjectContext::PaladinAiObjectContext(PlayerbotAI* botAI)
-    : AiObjectContext(botAI, sharedStrategyContexts, sharedActionContexts, sharedTriggerContexts, sharedValueContexts)
+    : AiObjectContext(botAI, sharedStrategyContexts, sharedTriggerContexts, sharedValueContexts)
 {
 }
 
 void PaladinAiObjectContext::BuildSharedContexts()
 {
     BuildSharedStrategyContexts(sharedStrategyContexts);
-    BuildSharedActionContexts(sharedActionContexts);
+    // BuildSharedActionContexts(sharedActionContexts);
     BuildSharedTriggerContexts(sharedTriggerContexts);
     BuildSharedValueContexts(sharedValueContexts);
 }
@@ -439,11 +439,11 @@ void PaladinAiObjectContext::BuildSharedStrategyContexts(SharedNamedObjectContex
     strategyContexts.Add(new PaladinResistanceStrategyFactoryInternal());
 }
 
-void PaladinAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
-{
-    AiObjectContext::BuildSharedActionContexts(actionContexts);
-    actionContexts.Add(new PaladinAiObjectContextInternal());
-}
+// void PaladinAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
+// {
+//     AiObjectContext::BuildSharedActionContexts(actionContexts);
+//     actionContexts.Add(new PaladinAiObjectContextInternal());
+// }
 
 void PaladinAiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Trigger>& triggerContexts)
 {

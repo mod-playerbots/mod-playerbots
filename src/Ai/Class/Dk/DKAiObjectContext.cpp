@@ -275,19 +275,19 @@ private:
 };
 
 SharedNamedObjectContextList<Strategy> DKAiObjectContext::sharedStrategyContexts;
-SharedNamedObjectContextList<Action> DKAiObjectContext::sharedActionContexts;
+// SharedNamedObjectContextList<Action> DKAiObjectContext::sharedActionContexts;
 SharedNamedObjectContextList<Trigger> DKAiObjectContext::sharedTriggerContexts;
 SharedNamedObjectContextList<UntypedValue> DKAiObjectContext::sharedValueContexts;
 
 DKAiObjectContext::DKAiObjectContext(PlayerbotAI* botAI)
-    : AiObjectContext(botAI, sharedStrategyContexts, sharedActionContexts, sharedTriggerContexts, sharedValueContexts)
+    : AiObjectContext(botAI, sharedStrategyContexts, sharedTriggerContexts, sharedValueContexts)
 {
 }
 
 void DKAiObjectContext::BuildSharedContexts()
 {
     BuildSharedStrategyContexts(sharedStrategyContexts);
-    BuildSharedActionContexts(sharedActionContexts);
+    // BuildSharedActionContexts(sharedActionContexts);
     BuildSharedTriggerContexts(sharedTriggerContexts);
     BuildSharedValueContexts(sharedValueContexts);
 }
@@ -300,11 +300,11 @@ void DKAiObjectContext::BuildSharedStrategyContexts(SharedNamedObjectContextList
     strategyContexts.Add(new DeathKnightDKBuffStrategyFactoryInternal());
 }
 
-void DKAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
-{
-    AiObjectContext::BuildSharedActionContexts(actionContexts);
-    actionContexts.Add(new DeathKnightAiObjectContextInternal());
-}
+// void DKAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
+// {
+//     AiObjectContext::BuildSharedActionContexts(actionContexts);
+//     actionContexts.Add(new DeathKnightAiObjectContextInternal());
+// }
 
 void DKAiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Trigger>& triggerContexts)
 {

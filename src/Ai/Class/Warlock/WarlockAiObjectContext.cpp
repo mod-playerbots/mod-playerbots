@@ -373,19 +373,19 @@ private:
 };
 
 SharedNamedObjectContextList<Strategy> WarlockAiObjectContext::sharedStrategyContexts;
-SharedNamedObjectContextList<Action> WarlockAiObjectContext::sharedActionContexts;
+// SharedNamedObjectContextList<Action> WarlockAiObjectContext::sharedActionContexts;
 SharedNamedObjectContextList<Trigger> WarlockAiObjectContext::sharedTriggerContexts;
 SharedNamedObjectContextList<UntypedValue> WarlockAiObjectContext::sharedValueContexts;
 
 WarlockAiObjectContext::WarlockAiObjectContext(PlayerbotAI* botAI)
-    : AiObjectContext(botAI, sharedStrategyContexts, sharedActionContexts, sharedTriggerContexts, sharedValueContexts)
+    : AiObjectContext(botAI, sharedStrategyContexts, sharedTriggerContexts, sharedValueContexts)
 {
 }
 
 void WarlockAiObjectContext::BuildSharedContexts()
 {
     BuildSharedStrategyContexts(sharedStrategyContexts);
-    BuildSharedActionContexts(sharedActionContexts);
+    // BuildSharedActionContexts(sharedActionContexts);
     BuildSharedTriggerContexts(sharedTriggerContexts);
     BuildSharedValueContexts(sharedValueContexts);
 }
@@ -401,11 +401,11 @@ void WarlockAiObjectContext::BuildSharedStrategyContexts(SharedNamedObjectContex
     strategyContexts.Add(new WarlockWeaponStoneStrategyFactoryInternal());
 }
 
-void WarlockAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
-{
-    AiObjectContext::BuildSharedActionContexts(actionContexts);
-    actionContexts.Add(new WarlockAiObjectContextInternal());
-}
+// void WarlockAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
+// {
+//     AiObjectContext::BuildSharedActionContexts(actionContexts);
+//     actionContexts.Add(new WarlockAiObjectContextInternal());
+// }
 
 void WarlockAiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Trigger>& triggerContexts)
 {

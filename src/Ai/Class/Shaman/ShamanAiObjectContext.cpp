@@ -450,19 +450,19 @@ private:
 };
 
 SharedNamedObjectContextList<Strategy> ShamanAiObjectContext::sharedStrategyContexts;
-SharedNamedObjectContextList<Action> ShamanAiObjectContext::sharedActionContexts;
+// SharedNamedObjectContextList<Action> ShamanAiObjectContext::sharedActionContexts;
 SharedNamedObjectContextList<Trigger> ShamanAiObjectContext::sharedTriggerContexts;
 SharedNamedObjectContextList<UntypedValue> ShamanAiObjectContext::sharedValueContexts;
 
 ShamanAiObjectContext::ShamanAiObjectContext(PlayerbotAI* botAI)
-    : AiObjectContext(botAI, sharedStrategyContexts, sharedActionContexts, sharedTriggerContexts, sharedValueContexts)
+    : AiObjectContext(botAI, sharedStrategyContexts, sharedTriggerContexts, sharedValueContexts)
 {
 }
 
 void ShamanAiObjectContext::BuildSharedContexts()
 {
     BuildSharedStrategyContexts(sharedStrategyContexts);
-    BuildSharedActionContexts(sharedActionContexts);
+    // BuildSharedActionContexts(sharedActionContexts);
     BuildSharedTriggerContexts(sharedTriggerContexts);
     BuildSharedValueContexts(sharedValueContexts);
 }
@@ -478,11 +478,11 @@ void ShamanAiObjectContext::BuildSharedStrategyContexts(SharedNamedObjectContext
     strategyContexts.Add(new ShamanAirTotemStrategyFactoryInternal());
 }
 
-void ShamanAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
-{
-    AiObjectContext::BuildSharedActionContexts(actionContexts);
-    actionContexts.Add(new ShamanAiObjectContextInternal());
-}
+// void ShamanAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
+// {
+//     AiObjectContext::BuildSharedActionContexts(actionContexts);
+//     actionContexts.Add(new ShamanAiObjectContextInternal());
+// }
 
 void ShamanAiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Trigger>& triggerContexts)
 {

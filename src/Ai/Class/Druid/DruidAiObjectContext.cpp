@@ -327,19 +327,19 @@ private:
 };
 
 SharedNamedObjectContextList<Strategy> DruidAiObjectContext::sharedStrategyContexts;
-SharedNamedObjectContextList<Action> DruidAiObjectContext::sharedActionContexts;
+// SharedNamedObjectContextList<Action> DruidAiObjectContext::sharedActionContexts;
 SharedNamedObjectContextList<Trigger> DruidAiObjectContext::sharedTriggerContexts;
 SharedNamedObjectContextList<UntypedValue> DruidAiObjectContext::sharedValueContexts;
 
 DruidAiObjectContext::DruidAiObjectContext(PlayerbotAI* botAI)
-    : AiObjectContext(botAI, sharedStrategyContexts, sharedActionContexts, sharedTriggerContexts, sharedValueContexts)
+    : AiObjectContext(botAI, sharedStrategyContexts, sharedTriggerContexts, sharedValueContexts)
 {
 }
 
 void DruidAiObjectContext::BuildSharedContexts()
 {
     BuildSharedStrategyContexts(sharedStrategyContexts);
-    BuildSharedActionContexts(sharedActionContexts);
+    // BuildSharedActionContexts(sharedActionContexts);
     BuildSharedTriggerContexts(sharedTriggerContexts);
     BuildSharedValueContexts(sharedValueContexts);
 }
@@ -351,11 +351,11 @@ void DruidAiObjectContext::BuildSharedStrategyContexts(SharedNamedObjectContextL
     strategyContexts.Add(new DruidDruidStrategyFactoryInternal());
 }
 
-void DruidAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
-{
-    AiObjectContext::BuildSharedActionContexts(actionContexts);
-    actionContexts.Add(new DruidAiObjectContextInternal());
-}
+// void DruidAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
+// {
+//     AiObjectContext::BuildSharedActionContexts(actionContexts);
+//     actionContexts.Add(new DruidAiObjectContextInternal());
+// }
 
 void DruidAiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Trigger>& triggerContexts)
 {

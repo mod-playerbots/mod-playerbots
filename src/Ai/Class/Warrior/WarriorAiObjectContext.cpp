@@ -319,19 +319,19 @@ private:
 };
 
 SharedNamedObjectContextList<Strategy> WarriorAiObjectContext::sharedStrategyContexts;
-SharedNamedObjectContextList<Action> WarriorAiObjectContext::sharedActionContexts;
+// SharedNamedObjectContextList<Action> WarriorAiObjectContext::sharedActionContexts;
 SharedNamedObjectContextList<Trigger> WarriorAiObjectContext::sharedTriggerContexts;
 SharedNamedObjectContextList<UntypedValue> WarriorAiObjectContext::sharedValueContexts;
 
 WarriorAiObjectContext::WarriorAiObjectContext(PlayerbotAI* botAI)
-    : AiObjectContext(botAI, sharedStrategyContexts, sharedActionContexts, sharedTriggerContexts, sharedValueContexts)
+    : AiObjectContext(botAI, sharedStrategyContexts, sharedTriggerContexts, sharedValueContexts)
 {
 }
 
 void WarriorAiObjectContext::BuildSharedContexts()
 {
     BuildSharedStrategyContexts(sharedStrategyContexts);
-    BuildSharedActionContexts(sharedActionContexts);
+    // BuildSharedActionContexts(sharedActionContexts);
     BuildSharedTriggerContexts(sharedTriggerContexts);
     BuildSharedValueContexts(sharedValueContexts);
 }
@@ -343,11 +343,11 @@ void WarriorAiObjectContext::BuildSharedStrategyContexts(SharedNamedObjectContex
     strategyContexts.Add(new WarriorCombatStrategyFactoryInternal());
 }
 
-void WarriorAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
-{
-    AiObjectContext::BuildSharedActionContexts(actionContexts);
-    actionContexts.Add(new WarriorAiObjectContextInternal());
-}
+// void WarriorAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
+// {
+//     AiObjectContext::BuildSharedActionContexts(actionContexts);
+//     actionContexts.Add(new WarriorAiObjectContextInternal());
+// }
 
 void WarriorAiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Trigger>& triggerContexts)
 {

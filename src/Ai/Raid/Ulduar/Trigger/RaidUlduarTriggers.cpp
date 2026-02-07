@@ -5,6 +5,7 @@
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "RaidUlduarBossHelper.h"
+#include "RangeTriggers.h"
 #include "SharedDefines.h"
 #include "Trigger.h"
 #include "Vehicle.h"

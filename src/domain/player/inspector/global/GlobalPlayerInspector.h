@@ -6,6 +6,9 @@
 #include "SharedDefines.h"
 #include "Player.h"
 #include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
+#include "Cell.h"
+#include "CellImpl.h"
 
 #include "AiObjectContext.h"
 #include "AiFactory.h"

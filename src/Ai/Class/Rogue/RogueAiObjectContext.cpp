@@ -186,12 +186,12 @@ private:
 };
 
 SharedNamedObjectContextList<Strategy> RogueAiObjectContext::sharedStrategyContexts;
-SharedNamedObjectContextList<Action> RogueAiObjectContext::sharedActionContexts;
+// SharedNamedObjectContextList<Action> RogueAiObjectContext::sharedActionContexts;
 SharedNamedObjectContextList<Trigger> RogueAiObjectContext::sharedTriggerContexts;
 SharedNamedObjectContextList<UntypedValue> RogueAiObjectContext::sharedValueContexts;
 
 RogueAiObjectContext::RogueAiObjectContext(PlayerbotAI* botAI)
-    : AiObjectContext(botAI, sharedStrategyContexts, sharedActionContexts,
+    : AiObjectContext(botAI, sharedStrategyContexts,
                       sharedTriggerContexts, sharedValueContexts)
 {
 }
@@ -199,7 +199,7 @@ RogueAiObjectContext::RogueAiObjectContext(PlayerbotAI* botAI)
 void RogueAiObjectContext::BuildSharedContexts()
 {
     BuildSharedStrategyContexts(sharedStrategyContexts);
-    BuildSharedActionContexts(sharedActionContexts);
+    // BuildSharedActionContexts(sharedActionContexts);
     BuildSharedTriggerContexts(sharedTriggerContexts);
     BuildSharedValueContexts(sharedValueContexts);
 }
@@ -211,11 +211,11 @@ void RogueAiObjectContext::BuildSharedStrategyContexts(SharedNamedObjectContextL
     strategyContexts.Add(new RogueCombatStrategyFactoryInternal());
 }
 
-void RogueAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
-{
-    AiObjectContext::BuildSharedActionContexts(actionContexts);
-    actionContexts.Add(new RogueAiObjectContextInternal());
-}
+// void RogueAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
+// {
+//     AiObjectContext::BuildSharedActionContexts(actionContexts);
+//     actionContexts.Add(new RogueAiObjectContextInternal());
+// }
 
 void RogueAiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Trigger>& triggerContexts)
 {

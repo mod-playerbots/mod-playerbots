@@ -6,14 +6,12 @@
 #ifndef _PLAYERBOT_NAMEDOBJECTCONEXT_H
 #define _PLAYERBOT_NAMEDOBJECTCONEXT_H
 
-#include <list>
 #include <set>
+#include <string>
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 #include <functional>
-
-#include "Common.h"
+#include <cstdint>
 
 class PlayerbotAI;
 
@@ -22,9 +20,9 @@ class Qualified
 public:
     Qualified(){};
     Qualified(std::string const qualifier) : qualifier(qualifier) {}
-    Qualified(int32 qualifier1) { Qualify(qualifier1); }
+    Qualified(int32_t qualifier1) { Qualify(qualifier1); }
 
-    virtual void Qualify(int qual);
+    virtual void Qualify(int32_t qual);
 
     virtual void Qualify(std::string const qual) { qualifier = qual; }
 
@@ -33,7 +31,7 @@ public:
     static std::string const MultiQualify(const std::vector<std::string>& qualifiers, const std::string& separator,
                                           const std::string_view brackets = "{}");
     static std::vector<std::string> getMultiQualifiers(const std::string& qualifier1);
-    static int32 getMultiQualifier(const std::string& qualifier1, uint32 pos);
+    static int32_t getMultiQualifier(const std::string& qualifier1, uint32_t pos);
 
 protected:
     std::string qualifier;

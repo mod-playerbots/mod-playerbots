@@ -351,19 +351,19 @@ private:
 };
 
 SharedNamedObjectContextList<Strategy> PriestAiObjectContext::sharedStrategyContexts;
-SharedNamedObjectContextList<Action> PriestAiObjectContext::sharedActionContexts;
+// SharedNamedObjectContextList<Action> PriestAiObjectContext::sharedActionContexts;
 SharedNamedObjectContextList<Trigger> PriestAiObjectContext::sharedTriggerContexts;
 SharedNamedObjectContextList<UntypedValue> PriestAiObjectContext::sharedValueContexts;
 
 PriestAiObjectContext::PriestAiObjectContext(PlayerbotAI* botAI)
-    : AiObjectContext(botAI, sharedStrategyContexts, sharedActionContexts, sharedTriggerContexts, sharedValueContexts)
+    : AiObjectContext(botAI, sharedStrategyContexts, sharedTriggerContexts, sharedValueContexts)
 {
 }
 
 void PriestAiObjectContext::BuildSharedContexts()
 {
     BuildSharedStrategyContexts(sharedStrategyContexts);
-    BuildSharedActionContexts(sharedActionContexts);
+    // BuildSharedActionContexts(sharedActionContexts);
     BuildSharedTriggerContexts(sharedTriggerContexts);
     BuildSharedValueContexts(sharedValueContexts);
 }
@@ -375,11 +375,11 @@ void PriestAiObjectContext::BuildSharedStrategyContexts(SharedNamedObjectContext
     strategyContexts.Add(new PriestCombatStrategyFactoryInternal());
 }
 
-void PriestAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
-{
-    AiObjectContext::BuildSharedActionContexts(actionContexts);
-    actionContexts.Add(new PriestAiObjectContextInternal());
-}
+// void PriestAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
+// {
+//     AiObjectContext::BuildSharedActionContexts(actionContexts);
+//     actionContexts.Add(new PriestAiObjectContextInternal());
+// }
 
 void PriestAiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Trigger>& triggerContexts)
 {

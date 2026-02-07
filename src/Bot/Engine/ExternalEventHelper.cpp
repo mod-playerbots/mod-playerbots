@@ -59,7 +59,13 @@ bool ExternalEventHelper::HandleCommand(std::string const name, std::string cons
 {
     Trigger* trigger = aiObjectContext->GetTrigger(name);
     if (!trigger)
+    {
+        LOG_ERROR("playerbots", "No trigger found for command: {}", name);
+
         return false;
+    }
+
+    LOG_ERROR("playerbots", "Found trigger for command: {}", name);
 
     trigger->ExternalEvent(param, owner);
 

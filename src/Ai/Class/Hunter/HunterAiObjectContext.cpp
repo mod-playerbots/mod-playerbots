@@ -264,19 +264,19 @@ private:
 };
 
 SharedNamedObjectContextList<Strategy> HunterAiObjectContext::sharedStrategyContexts;
-SharedNamedObjectContextList<Action> HunterAiObjectContext::sharedActionContexts;
+// SharedNamedObjectContextList<Action> HunterAiObjectContext::sharedActionContexts;
 SharedNamedObjectContextList<Trigger> HunterAiObjectContext::sharedTriggerContexts;
 SharedNamedObjectContextList<UntypedValue> HunterAiObjectContext::sharedValueContexts;
 
 HunterAiObjectContext::HunterAiObjectContext(PlayerbotAI* botAI)
-    : AiObjectContext(botAI, sharedStrategyContexts, sharedActionContexts, sharedTriggerContexts, sharedValueContexts)
+    : AiObjectContext(botAI, sharedStrategyContexts, sharedTriggerContexts, sharedValueContexts)
 {
 }
 
 void HunterAiObjectContext::BuildSharedContexts()
 {
     BuildSharedStrategyContexts(sharedStrategyContexts);
-    BuildSharedActionContexts(sharedActionContexts);
+    // BuildSharedActionContexts(sharedActionContexts);
     BuildSharedTriggerContexts(sharedTriggerContexts);
     BuildSharedValueContexts(sharedValueContexts);
 }
@@ -288,11 +288,11 @@ void HunterAiObjectContext::BuildSharedStrategyContexts(SharedNamedObjectContext
     strategyContexts.Add(new HunterBuffStrategyFactoryInternal());
 }
 
-void HunterAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
-{
-    AiObjectContext::BuildSharedActionContexts(actionContexts);
-    actionContexts.Add(new HunterAiObjectContextInternal());
-}
+// void HunterAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
+// {
+//     AiObjectContext::BuildSharedActionContexts(actionContexts);
+//     actionContexts.Add(new HunterAiObjectContextInternal());
+// }
 
 void HunterAiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Trigger>& triggerContexts)
 {

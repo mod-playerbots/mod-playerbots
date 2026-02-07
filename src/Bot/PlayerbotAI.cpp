@@ -959,6 +959,9 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
     }
 
     filtered = chatFilter.Filter(trim(filtered));
+
+    LOG_ERROR("playerbot", "Received command from {}: {}", fromPlayer->GetName(), filtered);
+
     if (filtered.empty())
         return;
 
@@ -986,6 +989,9 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
         (filtered.size() > 3 && filtered.substr(0, 3) == "do "))
     {
         std::string const action = filtered.substr(filtered.find(" ") + 1);
+
+        LOG_ERROR("playerbot", "Received do command from {}: {}", fromPlayer->GetName(), action);
+
         // DoSpecificAction(action);
     }
     else if (type != CHAT_MSG_WHISPER && filtered.size() > 6 && filtered.substr(0, 6) == "queue ")
@@ -1040,6 +1046,8 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
     }
     else
     {
+        LOG_ERROR("playerbot", "Pushing command from {}: {}", fromPlayer->GetName(), filtered);
+
         chatCommands.push_back(ChatCommandHolder(filtered, fromPlayer, type));
     }
 }

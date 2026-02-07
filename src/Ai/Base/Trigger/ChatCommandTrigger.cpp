@@ -4,8 +4,7 @@
  */
 
 #include "ChatCommandTrigger.h"
-
-#include "Playerbots.h"
+#include "Player.h"
 
 ChatCommandTrigger::ChatCommandTrigger(PlayerbotAI* botAI, std::string const command)
     : Trigger(botAI, command), triggered(false), owner(nullptr)
@@ -17,12 +16,20 @@ void ChatCommandTrigger::ExternalEvent(std::string const paramName, Player* even
     param = paramName;
     owner = eventPlayer;
     triggered = true;
+
+    if (eventPlayer)
+        LOG_ERROR("playerbots", "{} chat command event {} {}", this->getName(),paramName, eventPlayer->GetName());
+    else
+        LOG_ERROR("playerbots", "{} chat command event {}",this->getName(), paramName);
+
 }
 
 Event ChatCommandTrigger::Check()
 {
     if (!triggered)
         return Event();
+
+    LOG_ERROR("playerbots", "returning event {} {} {}",getName(),  param, owner->GetName());
 
     return Event(getName(), param, owner);
 }

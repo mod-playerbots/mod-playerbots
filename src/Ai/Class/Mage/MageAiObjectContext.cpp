@@ -302,19 +302,19 @@ private:
 };
 
 SharedNamedObjectContextList<Strategy> MageAiObjectContext::sharedStrategyContexts;
-SharedNamedObjectContextList<Action> MageAiObjectContext::sharedActionContexts;
+// SharedNamedObjectContextList<Action> MageAiObjectContext::sharedActionContexts;
 SharedNamedObjectContextList<Trigger> MageAiObjectContext::sharedTriggerContexts;
 SharedNamedObjectContextList<UntypedValue> MageAiObjectContext::sharedValueContexts;
 
 MageAiObjectContext::MageAiObjectContext(PlayerbotAI* botAI)
-    : AiObjectContext(botAI, sharedStrategyContexts, sharedActionContexts, sharedTriggerContexts, sharedValueContexts)
+    : AiObjectContext(botAI, sharedStrategyContexts, sharedTriggerContexts, sharedValueContexts)
 {
 }
 
 void MageAiObjectContext::BuildSharedContexts()
 {
     BuildSharedStrategyContexts(sharedStrategyContexts);
-    BuildSharedActionContexts(sharedActionContexts);
+    // BuildSharedActionContexts(sharedActionContexts);
     BuildSharedTriggerContexts(sharedTriggerContexts);
     BuildSharedValueContexts(sharedValueContexts);
 }
@@ -327,11 +327,11 @@ void MageAiObjectContext::BuildSharedStrategyContexts(SharedNamedObjectContextLi
     strategyContexts.Add(new MageBuffStrategyFactoryInternal());
 }
 
-void MageAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
-{
-    AiObjectContext::BuildSharedActionContexts(actionContexts);
-    actionContexts.Add(new MageAiObjectContextInternal());
-}
+// void MageAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
+// {
+//     AiObjectContext::BuildSharedActionContexts(actionContexts);
+//     actionContexts.Add(new MageAiObjectContextInternal());
+// }
 
 void MageAiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Trigger>& triggerContexts)
 {
