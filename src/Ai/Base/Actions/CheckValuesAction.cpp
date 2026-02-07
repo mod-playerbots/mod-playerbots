@@ -20,7 +20,7 @@ bool CheckValuesAction::Execute(Event event)
 
     if (botAI->HasStrategy("map", BOT_STATE_NON_COMBAT) || botAI->HasStrategy("map full", BOT_STATE_NON_COMBAT))
     {
-        sTravelNodeMap->manageNodes(bot, botAI->HasStrategy("map full", BOT_STATE_NON_COMBAT));
+        TravelNodeMap::instance().manageNodes(bot, botAI->HasStrategy("map full", BOT_STATE_NON_COMBAT));
     }
 
     GuidVector possible_targets = *context->GetValue<GuidVector>("possible targets");

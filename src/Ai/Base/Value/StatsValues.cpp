@@ -183,8 +183,8 @@ bool IsInCombatValue::Calculate()
                     continue;
 
                 if (member->IsInCombat() &&
-                    sServerFacade->IsDistanceLessOrEqualThan(sServerFacade->GetDistance2d(member, bot),
-                                                             sPlayerbotAIConfig->reactDistance))
+                    ServerFacade::instance().IsDistanceLessOrEqualThan(ServerFacade::instance().GetDistance2d(member, bot),
+                                                             sPlayerbotAIConfig.reactDistance))
                     return true;
             }
         }

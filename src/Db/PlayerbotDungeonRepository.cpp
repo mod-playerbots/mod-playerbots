@@ -3,9 +3,15 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include "PlayerbotDungeonRepository.h"
+#include "Log.h"
+#include "Timer.h"
+#include "DatabaseEnv.h"
+#include "Field.h"
+#include "World.h"
+// Required import due to poor implementation by AC
+#include "QueryResult.h"
 
-#include "Playerbots.h"
+#include "PlayerbotDungeonRepository.h"
 
 std::vector<DungeonSuggestion> const PlayerbotDungeonRepository::GetDungeonSuggestions()
 {

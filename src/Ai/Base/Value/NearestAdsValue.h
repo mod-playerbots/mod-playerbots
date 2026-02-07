@@ -14,7 +14,7 @@ class PlayerbotAI;
 class NearestAddsValue : public PossibleTargetsValue
 {
 public:
-    NearestAddsValue(PlayerbotAI* botAI, float range = sPlayerbotAIConfig->tooCloseDistance)
+    NearestAddsValue(PlayerbotAI* botAI, float range = sPlayerbotAIConfig.tooCloseDistance)
         : PossibleTargetsValue(botAI, "nearest adds", range, true)
     {
     }

@@ -19,7 +19,7 @@ bool AutoMaintenanceOnLevelupAction::Execute(Event event)
 
 void AutoMaintenanceOnLevelupAction::AutoTeleportForLevel()
 {
-    if (!sPlayerbotAIConfig->autoTeleportForLevel || !sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (!sPlayerbotAIConfig.autoTeleportForLevel || !sRandomPlayerbotMgr.IsRandomBot(bot))
     {
         return;
     }
@@ -27,13 +27,13 @@ void AutoMaintenanceOnLevelupAction::AutoTeleportForLevel()
     {
         return;
     }
-    sRandomPlayerbotMgr->RandomTeleportForLevel(bot);
+    sRandomPlayerbotMgr.RandomTeleportForLevel(bot);
     return;
 }
 
 void AutoMaintenanceOnLevelupAction::AutoPickTalents()
 {
-    if (!sPlayerbotAIConfig->autoPickTalents || !sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (!sPlayerbotAIConfig.autoPickTalents || !sRandomPlayerbotMgr.IsRandomBot(bot))
         return;
 
     if (bot->GetFreeTalentPoints() <= 0)
@@ -65,10 +65,10 @@ void AutoMaintenanceOnLevelupAction::AutoLearnSpell()
 void AutoMaintenanceOnLevelupAction::LearnSpells(std::ostringstream* out)
 {
     BroadcastHelper::BroadcastLevelup(botAI, bot);
-    if (sPlayerbotAIConfig->autoLearnTrainerSpells && sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (sPlayerbotAIConfig.autoLearnTrainerSpells && sRandomPlayerbotMgr.IsRandomBot(bot))
         LearnTrainerSpells(out);
 
-    if (sPlayerbotAIConfig->autoLearnQuestSpells && sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (sPlayerbotAIConfig.autoLearnQuestSpells && sRandomPlayerbotMgr.IsRandomBot(bot))
         LearnQuestSpells(out);
 }
 
@@ -166,7 +166,7 @@ std::string const AutoMaintenanceOnLevelupAction::FormatSpell(SpellInfo const* s
 
 void AutoMaintenanceOnLevelupAction::AutoUpgradeEquip()
 {
-    if (!sPlayerbotAIConfig->autoUpgradeEquip || !sRandomPlayerbotMgr->IsRandomBot(bot))
+    if (!sPlayerbotAIConfig.autoUpgradeEquip || !sRandomPlayerbotMgr.IsRandomBot(bot))
         return;
 
     PlayerbotFactory factory(bot, bot->GetLevel());
@@ -180,9 +180,9 @@ void AutoMaintenanceOnLevelupAction::AutoUpgradeEquip()
     factory.InitConsumables();
     factory.InitPotions();
 
-    if (!sPlayerbotAIConfig->equipmentPersistence || bot->GetLevel() < sPlayerbotAIConfig->equipmentPersistenceLevel)
+    if (!sPlayerbotAIConfig.equipmentPersistence || bot->GetLevel() < sPlayerbotAIConfig.equipmentPersistenceLevel)
     {
-        if (sPlayerbotAIConfig->incrementalGearInit)
+        if (sPlayerbotAIConfig.incrementalGearInit)
             factory.InitEquipment(true);
     }
 }

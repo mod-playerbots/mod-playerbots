@@ -14,7 +14,7 @@ class PlayerbotAI;
 class NearestNpcsValue : public NearestUnitsValue
 {
 public:
-    NearestNpcsValue(PlayerbotAI* botAI, float range = sPlayerbotAIConfig->sightDistance)
+    NearestNpcsValue(PlayerbotAI* botAI, float range = sPlayerbotAIConfig.sightDistance)
         : NearestUnitsValue(botAI, "nearest npcs", range)
     {
     }
@@ -27,7 +27,7 @@ protected:
 class NearestHostileNpcsValue : public NearestUnitsValue
 {
 public:
-    NearestHostileNpcsValue(PlayerbotAI* botAI, float range = sPlayerbotAIConfig->sightDistance)
+    NearestHostileNpcsValue(PlayerbotAI* botAI, float range = sPlayerbotAIConfig.sightDistance)
         : NearestUnitsValue(botAI, "nearest hostile npcs", range)
     {
     }
@@ -40,7 +40,7 @@ protected:
 class NearestVehiclesValue : public NearestUnitsValue
 {
 public:
-    NearestVehiclesValue(PlayerbotAI* botAI, float range = sPlayerbotAIConfig->sightDistance)
+    NearestVehiclesValue(PlayerbotAI* botAI, float range = sPlayerbotAIConfig.sightDistance)
         : NearestUnitsValue(botAI, "nearest vehicles", range)
     {
     }
@@ -53,7 +53,7 @@ protected:
 class NearestTriggersValue : public NearestUnitsValue
 {
 public:
-    NearestTriggersValue(PlayerbotAI* botAI, float range = sPlayerbotAIConfig->sightDistance)
+    NearestTriggersValue(PlayerbotAI* botAI, float range = sPlayerbotAIConfig.sightDistance)
         : NearestUnitsValue(botAI, "nearest triggers", range)
     {
     }
