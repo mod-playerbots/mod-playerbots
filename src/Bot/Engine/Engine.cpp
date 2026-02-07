@@ -486,12 +486,6 @@ void Engine::ProcessTriggers(bool minimal)
 
         Event event = fires[trigger];
 
-        if (node->getName() == "co")
-        {
-            LOG_ERROR("playerbots", "Trigger {} fired with event source: {}", node->getName(), event.GetSource());
-            LOG_ERROR("playerbots", "Handlers size: {}", node->getHandlers().size());
-        }
-
         this->multiplyAndPush(node->getHandlers(), 0.0f, false, event, "trigger");
     }
 
