@@ -146,19 +146,12 @@ public:
             return true;
         }
 
-        LOG_ERROR("playerbots", "Received whisper.");
-
         PlayerbotAI* const botAI = PlayerbotsMgr::instance().GetPlayerbotAI(receiver);
 
         if (botAI == nullptr)
         {
-            LOG_ERROR("playerbots", "botAI was nullptr on whisper.");
-
             return true;
         }
-
-
-        LOG_ERROR("playerbots", "Handling whisper for bot {}, message: {}", receiver->GetName(), msg);
 
         botAI->HandleCommand(type, msg, player);
 
