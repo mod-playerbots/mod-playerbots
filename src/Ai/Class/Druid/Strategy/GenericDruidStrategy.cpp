@@ -122,7 +122,7 @@ void GenericDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "low health",
             {
-                CreateNextAction<CastBerserkingAction>(ACTION_HIGH + 7.0f)
+                CreateNextAction<CastBarkskinAction>(ACTION_HIGH + 7.0f)
             }
         )
     );
