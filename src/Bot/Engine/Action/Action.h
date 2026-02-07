@@ -19,8 +19,6 @@ class Unit;
 class Action : public AiNamedObject
 {
 public:
-    // using Factory = std::unique_ptr<Action>(*)(PlayerbotAI*);
-
     enum class ActionThreatType
     {
         None = 0,
@@ -28,22 +26,8 @@ public:
         Aoe = 2
     };
 
-    // Action(PlayerbotAI* botAI, Factory factory, std::string const name = "action") : AiNamedObject(botAI, name), verbose(false), factory(factory) {}
     Action(PlayerbotAI* botAI, std::string const name = "action") : AiNamedObject(botAI, name), verbose(false) {}
     virtual ~Action() {}
-
-    // std::unique_ptr<Action> recreate() const
-    // {
-    //     if (this->factory == nullptr)
-    //     {
-    //         // If this happens, it means the action was constructed without the bridge.
-    //         // Fail loudly in debug builds.
-    //         assert(false);
-    //         return std::unique_ptr<Action>();
-    //     }
-
-    //     return this->factory(this->botAI);
-    // }
 
     std::unique_ptr<Action> recreate(PlayerbotAI* const botAI)
     {
@@ -77,5 +61,4 @@ public:
 protected:
     bool verbose;
     float relevance = 0;
-    // Factory factory;
 };

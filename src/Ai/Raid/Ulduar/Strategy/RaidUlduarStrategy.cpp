@@ -94,6 +94,7 @@ void RaidUlduarStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         )
     );
 
+    // @TODO: This must be made into a dedicated action for each boss because it will not do anything here.
     triggers.push_back(
         new TriggerNode(
             "razorscale fire resistance trigger",
