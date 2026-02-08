@@ -8,6 +8,7 @@
 
 #include "ChatHelper.h"
 #include "InventoryAction.h"
+#include "Item.h"
 
 class FindItemVisitor;
 class Item;
@@ -20,6 +21,7 @@ public:
 
     bool Execute(Event event) override;
     void EquipItems(ItemIds ids);
+    ItemIds SelectInventoryItemsToEquip();
 
 private:
     void EquipItem(FindItemVisitor* visitor);
@@ -27,10 +29,10 @@ private:
     void EquipItem(Item* item);
 };
 
-class EquipUpgradesAction : public EquipAction
+class EquipUpgradesTriggeredAction : public EquipAction
 {
 public:
-    EquipUpgradesAction(PlayerbotAI* botAI, std::string const name = "equip upgrades") : EquipAction(botAI, name) {}
+    explicit EquipUpgradesTriggeredAction(PlayerbotAI* botAI, std::string const name = "equip upgrades") : EquipAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };
@@ -38,7 +40,7 @@ public:
 class EquipUpgradeAction : public EquipAction
 {
 public:
-    EquipUpgradeAction(PlayerbotAI* botAI, std::string const name = "equip upgrade") : EquipAction(botAI, name) {}
+    explicit EquipUpgradeAction(PlayerbotAI* botAI, std::string const name = "equip upgrade") : EquipAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };

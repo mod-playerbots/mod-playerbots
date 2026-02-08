@@ -328,7 +328,43 @@ void EquipAction::EquipItem(Item* item)
     botAI->TellMaster(out);
 }
 
-bool EquipUpgradesAction::Execute(Event event)
+ItemIds EquipAction::SelectInventoryItemsToEquip()
+{
+    CollectItemsVisitor visitor;
+    IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);
+
+    ItemIds items;
+    for (auto i = visitor.items.begin(); i != visitor.items.end(); ++i)
+    {
+        Item* item = *i;
+        if (!item)
+            continue;
+
+        ItemTemplate const* itemTemplate = item->GetTemplate();
+        if (!itemTemplate)
+            continue;
+
+        //TODO Expand to Glyphs and Gems, that can be placed in equipment
+        //Pre-filter non-equipable items
+        if (itemTemplate->InventoryType == INVTYPE_NON_EQUIP)
+            continue;
+
+        int32 randomProperty = item->GetItemRandomPropertyId();
+        uint32 itemId = item->GetTemplate()->ItemId;
+        std::string itemUsageParam;
+        if (randomProperty != 0)
+            itemUsageParam = std::to_string(itemId) + "," + std::to_string(randomProperty);
+        else
+            itemUsageParam = std::to_string(itemId);
+
+        ItemUsage usage = AI_VALUE2(ItemUsage, "item upgrade", itemUsageParam);
+        if (usage == ITEM_USAGE_EQUIP || usage == ITEM_USAGE_REPLACE || usage == ITEM_USAGE_BAD_EQUIP)
+            items.insert(itemId);
+    }
+    return items;
+}
+
+bool EquipUpgradesTriggeredAction::Execute(Event event)
 {
     if (!sPlayerbotAIConfig.autoEquipUpgradeLoot && !sRandomPlayerbotMgr.IsRandomBot(bot))
         return false;
@@ -361,72 +397,18 @@ bool EquipUpgradesAction::Execute(Event event)
         p >> itemId;
 
         ItemTemplate const* item = sObjectMgr->GetItemTemplate(itemId);
-        if (item->Class == ITEM_CLASS_TRADE_GOODS && item->SubClass == ITEM_SUBCLASS_MEAT)
+        if (item->InventoryType == INVTYPE_NON_EQUIP)
             return false;
     }
 
-    CollectItemsVisitor visitor;
-    IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);
-
-    ItemIds items;
-    for (auto i = visitor.items.begin(); i != visitor.items.end(); ++i)
-    {
-        Item* item = *i;
-        if (!item)
-            break;
-        int32 randomProperty = item->GetItemRandomPropertyId();
-        uint32 itemId = item->GetTemplate()->ItemId;
-        std::string itemUsageParam;
-        if (randomProperty != 0)
-        {
-            itemUsageParam = std::to_string(itemId) + "," + std::to_string(randomProperty);
-        }
-        else
-        {
-            itemUsageParam = std::to_string(itemId);
-        }
-        ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", itemUsageParam);
-
-        if (usage == ITEM_USAGE_EQUIP || usage == ITEM_USAGE_REPLACE || usage == ITEM_USAGE_BAD_EQUIP)
-        {
-            items.insert(itemId);
-        }
-    }
-
+    ItemIds items = SelectInventoryItemsToEquip();
     EquipItems(items);
     return true;
 }
 
 bool EquipUpgradeAction::Execute(Event event)
 {
-    CollectItemsVisitor visitor;
-    IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);
-
-    ItemIds items;
-    for (auto i = visitor.items.begin(); i != visitor.items.end(); ++i)
-    {
-        Item* item = *i;
-        if (!item)
-            break;
-        int32 randomProperty = item->GetItemRandomPropertyId();
-        uint32 itemId = item->GetTemplate()->ItemId;
-        std::string itemUsageParam;
-        if (randomProperty != 0)
-        {
-            itemUsageParam = std::to_string(itemId) + "," + std::to_string(randomProperty);
-        }
-        else
-        {
-            itemUsageParam = std::to_string(itemId);
-        }
-        ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", itemUsageParam);
-
-        if (usage == ITEM_USAGE_EQUIP || usage == ITEM_USAGE_REPLACE || usage == ITEM_USAGE_BAD_EQUIP)
-        {
-            items.insert(itemId);
-        }
-    }
-
+    ItemIds items = SelectInventoryItemsToEquip();
     EquipItems(items);
     return true;
 }

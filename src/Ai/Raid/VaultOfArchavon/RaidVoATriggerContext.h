@@ -7,6 +7,7 @@
 #define _PLAYERBOT_RAIDVOATRIGGERCONTEXT_H
 
 #include "AiObjectContext.h"
+#include "BossAuraTriggers.h"
 #include "NamedObjectContext.h"
 #include "RaidVoATriggers.h"
 

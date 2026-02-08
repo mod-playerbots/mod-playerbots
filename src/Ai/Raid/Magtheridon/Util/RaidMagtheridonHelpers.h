@@ -8,7 +8,6 @@
 #include "Group.h"
 #include "ObjectGuid.h"
 #include "PlayerbotAI.h"
-#include "RtiTargetValue.h"
 
 namespace MagtheridonHelpers
 {
@@ -18,10 +17,6 @@ namespace MagtheridonHelpers
         SPELL_SHADOW_CAGE   = 30205,
         SPELL_BLAST_NOVA    = 30616,
         SPELL_SHADOW_GRASP  = 30410,
-
-        // Warlock
-        SPELL_BANISH        = 18647,
-        SPELL_FEAR          =  6215,
 
         // Hunter
         SPELL_MISDIRECTION  = 35079,
@@ -38,6 +33,7 @@ namespace MagtheridonHelpers
         GO_BLAZE            = 181832,
     };
 
+    constexpr uint32 MAGTHERIDON_MAP_ID  =   544;
     constexpr uint32 SOUTH_CHANNELER     = 90978;
     constexpr uint32 WEST_CHANNELER      = 90979;
     constexpr uint32 NORTHWEST_CHANNELER = 90980;
@@ -45,31 +41,14 @@ namespace MagtheridonHelpers
     constexpr uint32 NORTHEAST_CHANNELER = 90981;
 
     Creature* GetChanneler(Player* bot, uint32 dbGuid);
-    void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId);
-    void MarkTargetWithSquare(Player* bot, Unit* target);
-    void MarkTargetWithStar(Player* bot, Unit* target);
-    void MarkTargetWithCircle(Player* bot, Unit* target);
-    void MarkTargetWithDiamond(Player* bot, Unit* target);
-    void MarkTargetWithTriangle(Player* bot, Unit* target);
-    void MarkTargetWithCross(Player* bot, Unit* target);
-    void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
     bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float z);
-    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot);
 
-    struct Location
-    {
-        float x, y, z, orientation;
-    };
-
-    namespace MagtheridonsLairLocations
-    {
-        extern const Location WaitingForMagtheridonPosition;
-        extern const Location MagtheridonTankPosition;
-        extern const Location NWChannelerTankPosition;
-        extern const Location NEChannelerTankPosition;
-        extern const Location RangedSpreadPosition;
-        extern const Location HealerSpreadPosition;
-    }
+    extern const Position WAITING_FOR_MAGTHERIDON_POSITION;
+    extern const Position MAGTHERIDON_TANK_POSITION;
+    extern const Position NW_CHANNELER_TANK_POSITION;
+    extern const Position NE_CHANNELER_TANK_POSITION;
+    extern const Position RANGED_SPREAD_POSITION;
+    extern const Position HEALER_SPREAD_POSITION;
 
     struct CubeInfo
     {
