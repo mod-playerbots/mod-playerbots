@@ -66,22 +66,22 @@ void GenericHunterNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& tri
             }
         )
     );
-    // triggers.push_back(
-    //     new TriggerNode(
-    //         "low ammo",
-    //         {
-    //             CreateNextAction("say::low ammo", ACTION_NORMAL)
-    //         }
-    //     )
-    // );
-    // triggers.push_back(
-    //     new TriggerNode(
-    //         "no track",
-    //         {
-    //             CreateNextAction<CastBuffSpellAction>(ACTION_NORMAL)
-    //         }
-    //     )
-    // );
+    triggers.push_back(
+        new TriggerNode(
+            "low ammo",
+            {
+                CreateNextAction<SayLowAmmoAction>(ACTION_NORMAL)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "no track",
+            {
+                CreateNextAction<CastTrackHumanoidsAction>(ACTION_NORMAL)
+            }
+        )
+    );
     triggers.push_back(
         new TriggerNode(
             "no ammo",

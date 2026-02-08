@@ -18,8 +18,8 @@ public:
         creators["last stand"] = &last_stand;
         creators["heroic throw on snare target"] = &heroic_throw_on_snare_target;
         creators["heroic throw taunt"] = &heroic_throw_taunt;
-        // creators["taunt"] = &taunt;
-        // creators["taunt spell"] = &taunt;
+        creators["taunt"] = &taunt;
+        creators["taunt spell"] = &taunt;
         creators["vigilance"] = &vigilance;
         creators["enraged regeneration"] = &enraged_regeneration;
     }
@@ -88,15 +88,17 @@ private:
         );
     }
 
-    // "heroic throw taunt" does not exist.
-    // static ActionNode* taunt(PlayerbotAI*)
-    // {
-    //     return new ActionNode(
-    //         /*P*/ {},
-    //         /*A*/ { CreateNextAction("heroic throw taunt") },
-    //         /*C*/ {}
-    //     );
-    // }
+    static ActionNode* taunt(PlayerbotAI*)
+    {
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {
+                CreateNextAction<CastHeroicThrowAction>(1.0f),
+                CreateNextAction<CastShieldSlamAction>(1.0f),
+            },
+            /*C*/ {}
+        );
+    }
 
     static ActionNode* vigilance(PlayerbotAI*)
     {

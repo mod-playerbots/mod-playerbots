@@ -80,6 +80,12 @@ public:
     CastCreateSpellstoneAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "create spellstone") {}
 };
 
+class UseSpellstoneAction : public UseSpellItemAction
+{
+public:
+    UseSpellstoneAction(PlayerbotAI* botAI) : UseSpellItemAction(botAI, "spellstone", true) {}
+};
+
 class CastCreateSoulstoneAction : public CastBuffSpellAction
 {
 public:

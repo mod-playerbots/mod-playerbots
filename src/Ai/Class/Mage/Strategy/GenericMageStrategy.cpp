@@ -513,15 +513,14 @@ void MageAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
                 }
             )
         );
-        // "arcane explosion" seems not linked to anything.
-        // triggers.push_back(
-        //     new TriggerNode(
-        //         "light aoe",
-        //         {
-        //             CreateNextAction("arcane explosion", 21.0f)
-        //         }
-        //     )
-        // );
+        triggers.push_back(
+            new TriggerNode(
+                "light aoe",
+                {
+                    CreateNextAction<CastArcaneExplosionAction>(21.0f)
+                }
+            )
+        );
     }
 
     // Fire and Frostfire

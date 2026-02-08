@@ -99,7 +99,7 @@ void RaidUlduarStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "razorscale fire resistance trigger",
             {
-                CreateNextAction<BossFireResistanceAction>(ACTION_RAID)
+                CreateNextAction<RazorscaleFireResistanceAction>(ACTION_RAID)
             }
         )
     );
@@ -111,7 +111,7 @@ void RaidUlduarStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "ignis fire resistance trigger",
             {
-                CreateNextAction<BossFireResistanceAction>(ACTION_RAID)
+                CreateNextAction<IgnisFireResistanceAction>(ACTION_RAID)
             }
         )
     );
@@ -198,7 +198,7 @@ void RaidUlduarStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "kologarn nature resistance trigger",
             {
-                CreateNextAction<BossNatureResistanceAction>(ACTION_RAID)
+                CreateNextAction<KologarnNatureResistanceAction>(ACTION_RAID)
             }
         )
     );
@@ -258,7 +258,7 @@ void RaidUlduarStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "hodir frost resistance trigger",
             {
-                CreateNextAction<BossFrostResistanceAction>(ACTION_RAID)
+                CreateNextAction<HodirFrostResistanceAction>(ACTION_RAID)
             }
         )
     );
@@ -279,7 +279,7 @@ void RaidUlduarStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "freya nature resistance trigger",
             {
-                CreateNextAction<BossNatureResistanceAction>(ACTION_RAID)
+                CreateNextAction<FreyaNatureResistanceAction>(ACTION_RAID)
             }
         )
     );
@@ -288,7 +288,7 @@ void RaidUlduarStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "freya fire resistance trigger",
             {
-                CreateNextAction<BossFireResistanceAction>(ACTION_RAID)
+                CreateNextAction<FreyaFireResistanceAction>(ACTION_RAID)
             }
         )
     );
@@ -318,7 +318,7 @@ void RaidUlduarStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "thorim nature resistance trigger",
             {
-                CreateNextAction<BossNatureResistanceAction>(ACTION_RAID)
+                CreateNextAction<ThorimNatureResistanceAction>(ACTION_RAID)
             }
         )
     );
@@ -327,7 +327,7 @@ void RaidUlduarStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "thorim frost resistance trigger",
             {
-                CreateNextAction<BossFrostResistanceAction>(ACTION_RAID)
+                CreateNextAction<ThorimFrostResistanceAction>(ACTION_RAID)
             }
         )
     );
@@ -411,7 +411,7 @@ void RaidUlduarStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "mimiron fire resistance trigger",
             {
-                CreateNextAction<BossFireResistanceAction>(ACTION_RAID)
+                CreateNextAction<MimironFireResistanceAction>(ACTION_RAID)
             }
         )
     );
@@ -504,7 +504,7 @@ void RaidUlduarStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "vezax shadow resistance trigger",
             {
-                CreateNextAction<BossShadowResistanceAction>(ACTION_RAID)
+                CreateNextAction<VezaxShadowResistanceAction>(ACTION_RAID)
             }
         )
     );
@@ -516,7 +516,7 @@ void RaidUlduarStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "sara shadow resistance trigger",
             {
-                CreateNextAction<BossShadowResistanceAction>(ACTION_RAID)
+                CreateNextAction<SaraShadowResistanceAction>(ACTION_RAID)
             }
         )
     );
@@ -525,7 +525,7 @@ void RaidUlduarStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "yogg-saron shadow resistance trigger",
             {
-                CreateNextAction<BossShadowResistanceAction>(ACTION_RAID)
+                CreateNextAction<YoggSaronShadowResistanceAction>(ACTION_RAID)
             }
         )
     );

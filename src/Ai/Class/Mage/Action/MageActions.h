@@ -404,4 +404,10 @@ public:
     bool isUseful() override;
 };
 
+class CastArcaneExplosionAction : public CastSpellAction
+{
+public:
+    CastArcaneExplosionAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "arcane explosion") {}
+};
+
 #endif
