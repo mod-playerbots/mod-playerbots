@@ -654,8 +654,6 @@ void PlayerbotAI::HandleCommand(uint32 type, const std::string& text, Player& fr
 
         if (factory != nullptr)
         {
-            LOG_ERROR("playerbots", "Executing command '{}' from player '{}'", action, fromPlayer.GetName());
-
             this->DoSpecificAction(factory, event);
         }
     }
@@ -672,8 +670,6 @@ void PlayerbotAI::HandleCommand(uint32 type, const std::string& text, Player& fr
 
         if (factory != nullptr)
         {
-            LOG_ERROR("playerbots", "Executing command (2) '{}' from player '{}'", action, fromPlayer.GetName());
-
             this->DoSpecificAction(factory, event);
         }
     }
@@ -1011,8 +1007,6 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
 
         if (factory != nullptr)
         {
-            LOG_ERROR("playerbots", "Executing command (3) '{}' from player '{}'", action, fromPlayer->GetName());
-
             this->DoSpecificAction(factory);
         }
     }
