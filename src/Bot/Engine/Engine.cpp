@@ -203,7 +203,7 @@ bool Engine::doNextAction(Unit*, uint32, bool minimal)
 
         if (!action.isPossible())
         {
-            this->multiplyAndPush(actionNode->getAlternatives(), relevance + 0.003f, false, event, "alt");
+            this->multiplyAndPush(actionNode->getAlternatives(), relevance + 0.003f, false, event);
 
             delete actionNode;  // Always delete after processing the action node
 
@@ -214,7 +214,7 @@ bool Engine::doNextAction(Unit*, uint32, bool minimal)
         {
             LogAction("A:%s - PREREQ", action.getName().c_str());
 
-            if (multiplyAndPush(actionNode->getPrerequisites(), relevance + 0.002f, false, event, "prereq"))
+            if (multiplyAndPush(actionNode->getPrerequisites(), relevance + 0.002f, false, event))
             {
                 PushAgain(actionNode, relevance + 0.001f, event);
                 continue;
@@ -232,7 +232,7 @@ bool Engine::doNextAction(Unit*, uint32, bool minimal)
         {
             LogAction("A:%s - OK", action.getName().c_str());
 
-            this->multiplyAndPush(actionNode->getContinuers(), relevance, false, event, "cont");
+            this->multiplyAndPush(actionNode->getContinuers(), relevance, false, event);
 
             lastRelevance = relevance;
 
@@ -242,7 +242,7 @@ bool Engine::doNextAction(Unit*, uint32, bool minimal)
         }
 
         // LogAction("A:%s - FAILED", action->getName().c_str());
-        this->multiplyAndPush(actionNode->getAlternatives(), relevance + 0.003f, false, event, "alt");
+        this->multiplyAndPush(actionNode->getAlternatives(), relevance + 0.003f, false, event);
 
         delete actionNode;  // Always delete after processing the action node
     }
@@ -280,8 +280,7 @@ bool Engine::multiplyAndPush(
     std::vector<NextAction> actions,
     float forceRelevance,
     bool skipPrerequisites,
-    Event event,
-    char const* pushType
+    Event event
 )
 {
     bool pushed = false;
@@ -345,7 +344,7 @@ ActionResult Engine::ExecuteAction(NextAction::Factory actionFactory, Event even
     action.MakeVerbose();
 
     result = this->listenAndExecute(action, event);
-    this->multiplyAndPush(action.getContinuers(), 0.0f, false, event, "default");
+    this->multiplyAndPush(action.getContinuers(), 0.0f, false, event);
 
     delete actionNode;
 
@@ -486,7 +485,7 @@ void Engine::ProcessTriggers(bool minimal)
 
         Event event = fires[trigger];
 
-        this->multiplyAndPush(node->getHandlers(), 0.0f, false, event, "trigger");
+        this->multiplyAndPush(node->getHandlers(), 0.0f, false, event);
     }
 
     for (std::vector<TriggerNode*>::iterator i = triggers.begin(); i != triggers.end(); i++)
@@ -502,7 +501,7 @@ void Engine::PushDefaultActions()
     {
         Strategy* strategy = i->second;
         Event emptyEvent;
-        this->multiplyAndPush(strategy->getDefaultActions(), 0.0f, false, emptyEvent, "default");
+        this->multiplyAndPush(strategy->getDefaultActions(), 0.0f, false, emptyEvent);
     }
 }
 
@@ -542,7 +541,7 @@ void Engine::PushAgain(ActionNode* actionNode, float relevance, Event event)
         .factory = factory
     };
 
-    this->multiplyAndPush({ nextAction }, relevance, true, event, "again");
+    this->multiplyAndPush({ nextAction }, relevance, true, event);
 
     delete actionNode;
 }

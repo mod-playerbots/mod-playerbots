@@ -93,8 +93,7 @@ public:
 
 private:
     ActionNode* CreateActionNode(std::string const name);
-    bool multiplyAndPush(std::vector<NextAction> actions, float forceRelevance, bool skipPrerequisites, Event event,
-                         const char* pushType);
+    bool multiplyAndPush(std::vector<NextAction> actions, float forceRelevance, bool skipPrerequisites, Event event);
     void Reset();
     void ProcessTriggers(bool minimal);
     void PushDefaultActions();

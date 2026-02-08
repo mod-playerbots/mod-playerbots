@@ -170,7 +170,15 @@ public:
         for (typename std::unordered_map<std::string, T*>::const_iterator i = created.begin(); i != created.end(); i++)
         {
             if (i->second)
+            {
+                // @TODO: This needs to be addressed by refactoring those raw pointers to std::unique_ptr or values.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdelete-incomplete"
+
                 delete i->second;
+
+#pragma clang diagnostic pop
+            }
         }
 
         created.clear();
