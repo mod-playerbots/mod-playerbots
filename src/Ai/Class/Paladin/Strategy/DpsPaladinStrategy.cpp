@@ -136,11 +136,11 @@ DpsPaladinStrategy::DpsPaladinStrategy(PlayerbotAI* botAI) : GenericPaladinStrat
 std::vector<NextAction> DpsPaladinStrategy::getDefaultActions()
 {
     return {
-        CreateNextAction<CastHammerOfWrathAction>( ACTION_DEFAULT + 0.6f),
-        CreateNextAction<CastJudgementOfWisdomAction>( ACTION_DEFAULT + 0.5f),
-        CreateNextAction<CastCrusaderStrikeAction>( ACTION_DEFAULT + 0.4f),
-        CreateNextAction<CastDivineStormAction>( ACTION_DEFAULT + 0.3f),
-        CreateNextAction<CastConsecrationAction>( ACTION_DEFAULT + 0.1f),
+        CreateNextAction<CastHammerOfWrathAction>(ACTION_DEFAULT + 0.6f),
+        CreateNextAction<CastJudgementOfWisdomAction>(ACTION_DEFAULT + 0.5f),
+        CreateNextAction<CastCrusaderStrikeAction>(ACTION_DEFAULT + 0.4f),
+        CreateNextAction<CastDivineStormAction>(ACTION_DEFAULT + 0.3f),
+        CreateNextAction<CastConsecrationAction>(ACTION_DEFAULT + 0.1f),
         CreateNextAction<MeleeAction>(ACTION_DEFAULT)
     };
 }
@@ -169,7 +169,7 @@ void DpsPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "low mana",
             {
-                CreateNextAction<CastSealOfWisdomAction>(ACTION_HIGH + 5)
+                CreateNextAction<CastSealOfWisdomAction>(ACTION_HIGH + 5.0f)
             }
         )
     );
@@ -178,7 +178,7 @@ void DpsPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "avenging wrath",
             {
-                CreateNextAction<CastAvengingWrathAction>(ACTION_HIGH + 2)
+                CreateNextAction<CastAvengingWrathAction>(ACTION_HIGH + 2.0f)
             }
         )
     );
@@ -186,8 +186,8 @@ void DpsPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium aoe",
             {
-                CreateNextAction<CastDivineStormAction>(ACTION_HIGH + 4),
-                CreateNextAction<CastConsecrationAction>(ACTION_HIGH + 3)
+                CreateNextAction<CastDivineStormAction>(ACTION_HIGH + 4.0f),
+                CreateNextAction<CastConsecrationAction>(ACTION_HIGH + 3.0f)
             }
         )
     );
@@ -195,7 +195,7 @@ void DpsPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "enemy out of melee",
             {
-                CreateNextAction<ReachMeleeAction>(ACTION_HIGH + 1)
+                CreateNextAction<ReachMeleeAction>(ACTION_HIGH + 1.0f)
             }
         )
     );

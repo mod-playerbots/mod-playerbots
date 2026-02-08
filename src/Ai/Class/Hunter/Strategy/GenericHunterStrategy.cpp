@@ -49,7 +49,7 @@ private:
     {
         return new ActionNode(
             /*P*/ {},
-            /*A*/ { CreateNextAction<CastAspectOfTheDragonhawkAction>(1.0f) },
+            /*A*/ { CreateNextAction<CastAspectOfTheHawkAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -67,7 +67,6 @@ private:
     {
         return new ActionNode(
             /*P*/ {},
-            // /*A*/ { CreateNextAction<CastMongooseBiteAction>(1.0f) },
             {},
             /*C*/ {}
         );
@@ -296,6 +295,7 @@ void HunterCcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
+    // @TODO: This has always been broken because there is no such action.
     // triggers.push_back(
     //     new TriggerNode(
     //         "freezing trap",
