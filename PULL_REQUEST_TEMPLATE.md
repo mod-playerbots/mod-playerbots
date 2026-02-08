@@ -60,7 +60,8 @@ Before submitting, confirm that this change aligns with those principles.
 If your PR is very minimal (comment typo, wrong ID reference, etc), and it is very obvious it will not have any impact on
 performance, you may skip these question. If necessary, a maintainer may ask you for them later.
 -->
-Please answer the following:
+
+<!-- Please answer the following: -->
 
 - Describe the **minimum logic** required to achieve the intended behavior?
 - Describe the **cheapest implementation** that produces an acceptable result?
