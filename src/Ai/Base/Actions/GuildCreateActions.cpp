@@ -7,6 +7,7 @@
 
 #include "ArenaTeam.h"
 #include "BudgetValues.h"
+#include "BuyAction.h"
 #include "CreateNextAction.h"
 #include "Event.h"
 #include "GuildMgr.h"
@@ -297,7 +298,7 @@ bool PetitionTurnInAction::isUseful()
 
 bool BuyTabardAction::Execute(Event)
 {
-    bool canBuy = botAI->DoSpecificAction(CreateNextAction<BuyTabardAction>(1.0f).factory, Event("buy tabard", "Hitem:5976:"));
+    bool canBuy = botAI->DoSpecificAction(CreateNextAction<BuyAction>(1.0f).factory, Event("buy tabard", "Hitem:5976:"));
     if (canBuy && AI_VALUE2(uint32, "item count", chat->FormatQItem(5976)))
         return true;
 

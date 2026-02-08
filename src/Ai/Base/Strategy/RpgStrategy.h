@@ -19,7 +19,7 @@ public:
 
     float GetValue(Action& action) override
     {
-        const std::string nextAction = this->context->GetValue<std ::string>("next rpg action")->Get();
+        const std::string nextAction = this->context->GetValue<std::string>("next rpg action")->Get();
         const std::string name = action.getName();
 
         if (!nextAction.empty() && dynamic_cast<RpgEnabled*>(&action) && name != nextAction)

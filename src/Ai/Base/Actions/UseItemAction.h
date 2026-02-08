@@ -56,6 +56,14 @@ public:
     bool isUseful() override;
 };
 
+class UseHealthstone : public UseItemAction
+{
+public:
+    UseHealthstone(PlayerbotAI* botAI) : UseItemAction(botAI, "healthstone") {}
+
+    bool isUseful() override;
+};
+
 class UseManaPotion : public UseItemAction
 {
 public:

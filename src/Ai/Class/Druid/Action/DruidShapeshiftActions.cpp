@@ -21,7 +21,7 @@ std::vector<NextAction> CastDireBearFormAction::getAlternatives()
 {
     std::vector<NextAction> alternatives;
 
-    alternatives.push_back({ CreateNextAction<CastBearFormAction>(1.0f)});
+    alternatives.push_back(CreateNextAction<CastBearFormAction>(1.0f));
 
     return alternatives;
 }

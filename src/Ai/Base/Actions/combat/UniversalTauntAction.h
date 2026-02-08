@@ -43,7 +43,7 @@ public:
 
         const ObjectGuid targetTargetGUID = target->GetTarget();
 
-        if (targetTargetGUID.GetEntry() == this->bot->GetGUID().GetEntry())
+        if (targetTargetGUID == this->bot->GetGUID())
         {
             return false;
         }

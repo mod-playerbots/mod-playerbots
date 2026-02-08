@@ -41,7 +41,7 @@ void UsePotionsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "critical health",
             {
-                CreateNextAction<UseHealingPotion>(ACTION_MEDIUM_HEAL + 1.0f)
+                CreateNextAction<UseHealthstone>(ACTION_MEDIUM_HEAL + 1.0f)
             }
         )
     );

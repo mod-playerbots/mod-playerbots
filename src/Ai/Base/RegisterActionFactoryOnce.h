@@ -1,8 +1,11 @@
+#pragma once
+
 #include <cassert>
 #include <mutex>
 #include <type_traits>
 #include <memory>
 #include <string>
+#include <typeindex>
 
 #include "Action.h"
 #include "ActionFactoryRegistry.h"

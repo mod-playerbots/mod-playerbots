@@ -34,8 +34,18 @@ float MagePullMultiplier::GetValue(Action& action)
 
 std::vector<NextAction> PullStrategy::getDefaultActions()
 {
+    NextAction::Factory actionFactory = ActionFactoryRegistry::GetFactoryByName(action);
+
+    if (actionFactory == nullptr)
+    {
+        return Strategy::getDefaultActions();
+    }
+
     return {
-        // CreateNextAction(action, 105.0f),
+        {
+            .weight = 105.0f,
+            .factory = actionFactory,
+        },
         CreateNextAction<FollowAction>(104.0f),
         CreateNextAction<EndPullAction>(103.0f),
     };
