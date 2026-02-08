@@ -189,7 +189,7 @@ bool LeotherasTheBlindBossTransformedIntoDemonFormTrigger::IsActive()
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return false;
 
-    if (GetLeotherasDemonFormTank(botAI, bot) != bot)
+    if (GetLeotherasDemonFormTank(bot) != bot)
         return false;
 
     return GetActiveLeotherasDemon(botAI);
@@ -206,7 +206,7 @@ bool LeotherasTheBlindOnlyWarlockShouldTankDemonFormTrigger::IsActive()
     if (bot->HasAura(SPELL_INSIDIOUS_WHISPER))
         return false;
 
-    if (!GetLeotherasDemonFormTank(botAI, bot))
+    if (!GetLeotherasDemonFormTank(bot))
         return false;
 
     return GetPhase2LeotherasDemon(botAI);
@@ -257,7 +257,7 @@ bool LeotherasTheBlindBotHasTooManyChaosBlastStacksTrigger::IsActive()
     if (!chaosBlast || chaosBlast->GetStackAmount() < 5)
         return false;
 
-    if (!GetLeotherasDemonFormTank(botAI, bot) && botAI->IsMainTank(bot))
+    if (!GetLeotherasDemonFormTank(bot) && botAI->IsMainTank(bot))
         return false;
 
     return GetPhase2LeotherasDemon(botAI);
@@ -266,7 +266,7 @@ bool LeotherasTheBlindBotHasTooManyChaosBlastStacksTrigger::IsActive()
 bool LeotherasTheBlindInnerDemonHasAwakenedTrigger::IsActive()
 {
     return bot->HasAura(SPELL_INSIDIOUS_WHISPER) &&
-           GetLeotherasDemonFormTank(botAI, bot) != bot;
+           GetLeotherasDemonFormTank(bot) != bot;
 }
 
 bool LeotherasTheBlindEnteredFinalPhaseTrigger::IsActive()
@@ -277,7 +277,7 @@ bool LeotherasTheBlindEnteredFinalPhaseTrigger::IsActive()
     if (botAI->IsHeal(bot))
         return false;
 
-    if (GetLeotherasDemonFormTank(botAI, bot) == bot)
+    if (GetLeotherasDemonFormTank(bot) == bot)
         return false;
 
     return GetPhase3LeotherasDemon(botAI) &&

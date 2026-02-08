@@ -127,7 +127,7 @@ namespace SerpentShrineCavernHelpers
         return phase2 ? phase2 : phase3;
     }
 
-    Player* GetLeotherasDemonFormTank(PlayerbotAI* botAI, Player* bot)
+    Player* GetLeotherasDemonFormTank(Player* bot)
     {
         Group* group = bot->GetGroup();
         if (!group)
@@ -144,10 +144,7 @@ namespace SerpentShrineCavernHelpers
                 return member;
         }
 
-        // (2) Fall back to bot Warlock with highest HP
-        Player* highestHpWarlock = nullptr;
-        uint32 highestHp = 0;
-
+        // (2) Fall back to first found bot Warlock
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
@@ -155,16 +152,11 @@ namespace SerpentShrineCavernHelpers
                 member->getClass() != CLASS_WARLOCK)
                 continue;
 
-            uint32 hp = member->GetMaxHealth();
-            if (!highestHpWarlock || hp > highestHp)
-            {
-                highestHpWarlock = member;
-                highestHp = hp;
-            }
+            return member;
         }
 
-        // (3) Return the found Warlock tank, or nullptr if none found
-        return highestHpWarlock;
+        // (3) Return nullptr if none found
+        return nullptr;
     }
 
     // Fathom-Lord Karathress

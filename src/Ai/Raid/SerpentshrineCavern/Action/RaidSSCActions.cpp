@@ -13,7 +13,7 @@ using namespace SerpentShrineCavernHelpers;
 
 // General
 
-bool SerpentShrineCavernEraseTimersAndTrackersAction::Execute(Event event)
+bool SerpentShrineCavernEraseTimersAndTrackersAction::Execute(Event /*event*/)
 {
     const uint32 instanceId = bot->GetMap()->GetInstanceId();
     const ObjectGuid guid = bot->GetGUID();
@@ -63,7 +63,7 @@ bool SerpentShrineCavernEraseTimersAndTrackersAction::Execute(Event event)
 // Trash Mobs
 
 // Move out of toxic pool left behind by some colossi upon death
-bool UnderbogColossusEscapeToxicPoolAction::Execute(Event event)
+bool UnderbogColossusEscapeToxicPoolAction::Execute(Event /*event*/)
 {
     Aura* aura = bot->GetAura(SPELL_TOXIC_POOL);
     if (!aura)
@@ -129,7 +129,7 @@ bool UnderbogColossusEscapeToxicPoolAction::Execute(Event event)
                   true, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event event)
+bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event /*event*/)
 {
     if (Unit* totem = GetFirstAliveUnitByEntry(botAI, NPC_WATER_ELEMENTAL_TOTEM))
         MarkTargetWithSkull(bot, totem);
@@ -142,7 +142,7 @@ bool GreyheartTidecallerMarkWaterElementalTotemAction::Execute(Event event)
 // (1) When tanking, move to designated tanking spot on frost side
 // (2) 1 second after 100% Mark of Hydross, move to nature tank's spot to hand off boss
 // (3) When Hydross is in nature form, move back to frost tank spot and wait for transition
-bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
+bool HydrossTheUnstablePositionFrostTankAction::Execute(Event /*event*/)
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
     if (!hydross)
@@ -224,7 +224,7 @@ bool HydrossTheUnstablePositionFrostTankAction::Execute(Event event)
 // (1) When tanking, move to designated tanking spot on nature side
 // (2) 1 second after 100% Mark of Corruption, move to frost tank's spot to hand off boss
 // (3) When Hydross is in frost form, move back to nature tank spot and wait for transition
-bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
+bool HydrossTheUnstablePositionNatureTankAction::Execute(Event /*event*/)
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
     if (!hydross)
@@ -303,7 +303,7 @@ bool HydrossTheUnstablePositionNatureTankAction::Execute(Event event)
     return false;
 }
 
-bool HydrossTheUnstablePrioritizeElementalAddsAction::Execute(Event event)
+bool HydrossTheUnstablePrioritizeElementalAddsAction::Execute(Event /*event*/)
 {
     Unit* waterElemental = GetFirstAliveUnitByEntry(botAI, NPC_PURE_SPAWN_OF_HYDROSS);
     if (waterElemental)
@@ -331,7 +331,7 @@ bool HydrossTheUnstablePrioritizeElementalAddsAction::Execute(Event event)
 }
 
 // To mitigate the effect of Water Tomb
-bool HydrossTheUnstableFrostPhaseSpreadOutAction::Execute(Event event)
+bool HydrossTheUnstableFrostPhaseSpreadOutAction::Execute(Event /*event*/)
 {
     if (!AI_VALUE2(Unit*, "find target", "hydross the unstable"))
         return false;
@@ -354,7 +354,7 @@ bool HydrossTheUnstableFrostPhaseSpreadOutAction::Execute(Event event)
     return false;
 }
 
-bool HydrossTheUnstableMisdirectBossToTankAction::Execute(Event event)
+bool HydrossTheUnstableMisdirectBossToTankAction::Execute(Event /*event*/)
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
     if (!hydross)
@@ -424,7 +424,7 @@ bool HydrossTheUnstableMisdirectBossToTankAction::TryMisdirectToNatureTank(
     return false;
 }
 
-bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event event)
+bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event /*event*/)
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
     if (!hydross)
@@ -470,7 +470,7 @@ bool HydrossTheUnstableStopDpsUponPhaseChangeAction::Execute(Event event)
     return false;
 }
 
-bool HydrossTheUnstableManageTimersAction::Execute(Event event)
+bool HydrossTheUnstableManageTimersAction::Execute(Event /*event*/)
 {
     Unit* hydross = AI_VALUE2(Unit*, "find target", "hydross the unstable");
     if (!hydross)
@@ -515,7 +515,7 @@ bool HydrossTheUnstableManageTimersAction::Execute(Event event)
 // The Lurker Below
 
 // Run around behind Lurker during Spout
-bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event event)
+bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event /*event*/)
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
     if (!lurker)
@@ -552,7 +552,7 @@ bool TheLurkerBelowRunAroundBehindBossAction::Execute(Event event)
     return false;
 }
 
-bool TheLurkerBelowPositionMainTankAction::Execute(Event event)
+bool TheLurkerBelowPositionMainTankAction::Execute(Event /*event*/)
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
     if (!lurker)
@@ -573,7 +573,7 @@ bool TheLurkerBelowPositionMainTankAction::Execute(Event event)
 }
 
 // Assign ranged positions within a 120-degree arc behind Lurker
-bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event event)
+bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
     if (!lurker)
@@ -636,7 +636,7 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event event)
 
 // During the submerge phase, if there are >= 3 tanks in the raid,
 // the first 3 will each pick up 1 Guardian
-bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event event)
+bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event /*event*/)
 {
     Player* mainTank = nullptr;
     Player* firstAssistTank = nullptr;
@@ -700,7 +700,7 @@ bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event event)
     return false;
 }
 
-bool TheLurkerBelowManageSpoutTimerAction::Execute(Event event)
+bool TheLurkerBelowManageSpoutTimerAction::Execute(Event /*event*/)
 {
     Unit* lurker = AI_VALUE2(Unit*, "find target", "the lurker below");
     if (!lurker)
@@ -725,7 +725,7 @@ bool TheLurkerBelowManageSpoutTimerAction::Execute(Event event)
 
 // Leotheras the Blind
 
-bool LeotherasTheBlindTargetSpellbindersAction::Execute(Event event)
+bool LeotherasTheBlindTargetSpellbindersAction::Execute(Event /*event*/)
 {
     if (Unit* spellbinder = GetFirstAliveUnitByEntry(botAI, NPC_GREYHEART_SPELLBINDER))
         MarkTargetWithSkull(bot, spellbinder);
@@ -735,7 +735,7 @@ bool LeotherasTheBlindTargetSpellbindersAction::Execute(Event event)
 
 // Warlock tank action--see GetLeotherasDemonFormTank in RaidSSCHelpers.cpp
 // Use tank strategy for Demon Form and DPS strategy for Human Form
-bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event event)
+bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event /*event*/)
 {
     Unit* innerDemon = nullptr;
     auto const& npcs =
@@ -769,7 +769,7 @@ bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event event)
 
 // Stop melee tanks from attacking upon transformation so they don't take aggro
 // Applies only if there is a Warlock tank present
-bool LeotherasTheBlindMeleeTanksDontAttackDemonFormAction::Execute(Event event)
+bool LeotherasTheBlindMeleeTanksDontAttackDemonFormAction::Execute(Event /*event*/)
 {
     bot->AttackStop();
     botAI->Reset();
@@ -778,7 +778,7 @@ bool LeotherasTheBlindMeleeTanksDontAttackDemonFormAction::Execute(Event event)
 
 // Intent is to keep enough distance from Leotheras and spread to prepare for Whirlwind
 // And stay away from the Warlock tank to avoid Chaos Blasts
-bool LeotherasTheBlindPositionRangedAction::Execute(Event event)
+bool LeotherasTheBlindPositionRangedAction::Execute(Event /*event*/)
 {
     constexpr float safeDistFromBoss = 15.0f;
     Unit* leotherasHuman = GetLeotherasHuman(botAI);
@@ -802,7 +802,7 @@ bool LeotherasTheBlindPositionRangedAction::Execute(Event event)
                 continue;
 
             constexpr uint32 minInterval = 0;
-            if (GetLeotherasDemonFormTank(botAI, bot) == member)
+            if (GetLeotherasDemonFormTank(bot) == member)
             {
                 constexpr float safeDistFromTank = 10.0f;
                 if (bot->GetExactDist2d(member) < safeDistFromTank)
@@ -820,7 +820,7 @@ bool LeotherasTheBlindPositionRangedAction::Execute(Event event)
     return false;
 }
 
-bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event event)
+bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event /*event*/)
 {
     if (Unit* leotherasHuman = GetLeotherasHuman(botAI))
     {
@@ -838,7 +838,7 @@ bool LeotherasTheBlindRunAwayFromWhirlwindAction::Execute(Event event)
 
 // This method is likely unnecessary unless the player does not use a Warlock tank
 // If a melee tank is used, other melee needs to run away after too many Chaos Blast stacks
-bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event event)
+bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event /*event*/)
 {
     if (botAI->CanCastSpell("cloak of shadows", bot))
         return botAI->CastSpell("cloak of shadows", bot);
@@ -864,7 +864,7 @@ bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event event)
 }
 
 // Hardcoded actions for healers and bear tanks to kill Inner Demons
-bool LeotherasTheBlindDestroyInnerDemonAction::Execute(Event event)
+bool LeotherasTheBlindDestroyInnerDemonAction::Execute(Event /*event*/)
 {
     Unit* innerDemon = nullptr;
     auto const& npcs =
@@ -1033,7 +1033,7 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleHealerStrategy(Unit* innerD
 }
 
 // Everybody except the Warlock tank should focus on Leotheras in Phase 3
-bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event event)
+bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event /*event*/)
 {
     Unit* leotherasHuman = GetLeotherasHuman(botAI);
     if (!leotherasHuman)
@@ -1068,13 +1068,13 @@ bool LeotherasTheBlindFinalPhaseAssignDpsPriorityAction::Execute(Event event)
 }
 
 // Misdirect to Warlock tank or to main tank if there is no Warlock tank
-bool LeotherasTheBlindMisdirectBossToDemonFormTankAction::Execute(Event event)
+bool LeotherasTheBlindMisdirectBossToDemonFormTankAction::Execute(Event /*event*/)
 {
     Unit* leotherasDemon = GetActiveLeotherasDemon(botAI);
     if (!leotherasDemon)
         return false;
 
-    Player* demonFormTank = GetLeotherasDemonFormTank(botAI, bot);
+    Player* demonFormTank = GetLeotherasDemonFormTank(bot);
     Player* targetTank = demonFormTank;
 
     if (!targetTank)
@@ -1106,7 +1106,7 @@ bool LeotherasTheBlindMisdirectBossToDemonFormTankAction::Execute(Event event)
 }
 
 // This does not pause DPS after a Whirlwind, which is also an aggro wipe
-bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event event)
+bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event /*event*/)
 {
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
     if (!leotheras)
@@ -1164,7 +1164,7 @@ bool LeotherasTheBlindManageDpsWaitTimersAction::Execute(Event event)
 // is crucial to separate Caribdis from the others
 
 // Karathress is tanked near his starting position
-bool FathomLordKarathressMainTankPositionBossAction::Execute(Event event)
+bool FathomLordKarathressMainTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
     if (!karathress)
@@ -1200,7 +1200,7 @@ bool FathomLordKarathressMainTankPositionBossAction::Execute(Event event)
 
 // Caribdis is pulled far to the West in the corner
 // Best to use a Warrior or Druid tank for interrupts
-bool FathomLordKarathressFirstAssistTankPositionCaribdisAction::Execute(Event event)
+bool FathomLordKarathressFirstAssistTankPositionCaribdisAction::Execute(Event /*event*/)
 {
     Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
     if (!caribdis)
@@ -1235,7 +1235,7 @@ bool FathomLordKarathressFirstAssistTankPositionCaribdisAction::Execute(Event ev
 }
 
 // Sharkkis is pulled North to the other side of the ramp
-bool FathomLordKarathressSecondAssistTankPositionSharkkisAction::Execute(Event event)
+bool FathomLordKarathressSecondAssistTankPositionSharkkisAction::Execute(Event /*event*/)
 {
     Unit* sharkkis = AI_VALUE2(Unit*, "find target", "fathom-guard sharkkis");
     if (!sharkkis)
@@ -1270,7 +1270,7 @@ bool FathomLordKarathressSecondAssistTankPositionSharkkisAction::Execute(Event e
 }
 
 // Tidalvess is pulled Northwest near the pillar
-bool FathomLordKarathressThirdAssistTankPositionTidalvessAction::Execute(Event event)
+bool FathomLordKarathressThirdAssistTankPositionTidalvessAction::Execute(Event /*event*/)
 {
     Unit* tidalvess = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
     if (!tidalvess)
@@ -1306,7 +1306,7 @@ bool FathomLordKarathressThirdAssistTankPositionTidalvessAction::Execute(Event e
 
 // Caribdis's tank spot is far away so a dedicated healer is needed
 // Use the assistant flag to select the healer
-bool FathomLordKarathressPositionCaribdisTankHealerAction::Execute(Event event)
+bool FathomLordKarathressPositionCaribdisTankHealerAction::Execute(Event /*event*/)
 {
     Unit* caribdis = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
     if (!caribdis)
@@ -1332,7 +1332,7 @@ bool FathomLordKarathressPositionCaribdisTankHealerAction::Execute(Event event)
 }
 
 // Misdirect priority: (1) Caribdis tank, (2) Tidalvess tank, (3) Sharkkis tank
-bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event event)
+bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -1418,7 +1418,7 @@ bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event event)
 
 // Kill order is non-standard because bots handle Cyclones poorly and need more time
 // to get her down than real players (standard is ranged DPS help with Sharkkis first)
-bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
+bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event /*event*/)
 {
     // Target priority 1: Spitfire Totems for melee dps
     Unit* totem = GetFirstAliveUnitByEntry(botAI, NPC_SPITFIRE_TOTEM);
@@ -1526,7 +1526,7 @@ bool FathomLordKarathressAssignDpsPriorityAction::Execute(Event event)
     return false;
 }
 
-bool FathomLordKarathressManageDpsTimerAction::Execute(Event event)
+bool FathomLordKarathressManageDpsTimerAction::Execute(Event /*event*/)
 {
     Unit* karathress = AI_VALUE2(Unit*, "find target", "fathom-lord karathress");
     if (!karathress)
@@ -1540,7 +1540,7 @@ bool FathomLordKarathressManageDpsTimerAction::Execute(Event event)
 
 // Morogrim Tidewalker
 
-bool MorogrimTidewalkerMisdirectBossToMainTankAction::Execute(Event event)
+bool MorogrimTidewalkerMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
     if (!tidewalker)
@@ -1574,7 +1574,7 @@ bool MorogrimTidewalkerMisdirectBossToMainTankAction::Execute(Event event)
 
 // Separate tanking positions are used for phase 1 and phase 2 to address the
 // Water Globule mechanic in phase 2
-bool MorogrimTidewalkerMoveBossToTankPositionAction::Execute(Event event)
+bool MorogrimTidewalkerMoveBossToTankPositionAction::Execute(Event /*event*/)
 {
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
     if (!tidewalker)
@@ -1666,7 +1666,7 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase2TankPosition(Un
 
 // Ranged stack behind the boss in the Northeast corner in phase 2
 // No corresponding method for melee since they will do so anyway
-bool MorogrimTidewalkerPhase2RepositionRangedAction::Execute(Event event)
+bool MorogrimTidewalkerPhase2RepositionRangedAction::Execute(Event /*event*/)
 {
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
     if (!tidewalker)
@@ -1724,7 +1724,7 @@ bool MorogrimTidewalkerPhase2RepositionRangedAction::Execute(Event event)
 
 // Lady Vashj <Coilfang Matron>
 
-bool LadyVashjMainTankPositionBossAction::Execute(Event event)
+bool LadyVashjMainTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
@@ -1772,7 +1772,7 @@ bool LadyVashjMainTankPositionBossAction::Execute(Event event)
 }
 
 // Semicircle around center of the room (to allow escape paths by Static Charged bots)
-bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event event)
+bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event /*event*/)
 {
     std::vector<Player*> spreadMembers;
     if (Group* group = bot->GetGroup())
@@ -1845,7 +1845,7 @@ bool LadyVashjPhase1SpreadRangedInArcAction::Execute(Event event)
 }
 
 // For absorbing Shock Burst
-bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event event)
+bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event /*event*/)
 {
     Player* mainTank = nullptr;
     if (Group* group = bot->GetGroup())
@@ -1880,7 +1880,7 @@ bool LadyVashjSetGroundingTotemInMainTankGroupAction::Execute(Event event)
     return false;
 }
 
-bool LadyVashjMisdirectBossToMainTankAction::Execute(Event event)
+bool LadyVashjMisdirectBossToMainTankAction::Execute(Event /*event*/)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
@@ -1912,7 +1912,7 @@ bool LadyVashjMisdirectBossToMainTankAction::Execute(Event event)
     return false;
 }
 
-bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event event)
+bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -1958,7 +1958,7 @@ bool LadyVashjStaticChargeMoveAwayFromGroupAction::Execute(Event event)
     return false;
 }
 
-bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
+bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event /*event*/)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
@@ -2134,7 +2134,7 @@ bool LadyVashjAssignPhase2AndPhase3DpsPriorityAction::Execute(Event event)
     return false;
 }
 
-bool LadyVashjMisdirectStriderToFirstAssistTankAction::Execute(Event event)
+bool LadyVashjMisdirectStriderToFirstAssistTankAction::Execute(Event /*event*/)
 {
     // Striders are not tankable without a cheat to block Fear so there is
     // no point in misdirecting if raid cheats are not enabled
@@ -2174,7 +2174,7 @@ bool LadyVashjMisdirectStriderToFirstAssistTankAction::Execute(Event event)
     return false;
 }
 
-bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event event)
+bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event /*event*/)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
@@ -2246,7 +2246,7 @@ bool LadyVashjTankAttackAndMoveAwayStriderAction::Execute(Event event)
 
 // If cheats are enabled, the first returned melee DPS bot will teleport to Tainted Elementals
 // Such bot will recover HP and remove the Poison Bolt debuff while attacking the elemental
-bool LadyVashjTeleportToTaintedElementalAction::Execute(Event event)
+bool LadyVashjTeleportToTaintedElementalAction::Execute(Event /*event*/)
 {
     Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
     if (!tainted)
@@ -2356,7 +2356,7 @@ bool LadyVashjLootTaintedCoreAction::Execute(Event)
     return false;
 }
 
-bool LadyVashjPassTheTaintedCoreAction::Execute(Event event)
+bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
@@ -2853,7 +2853,7 @@ bool LadyVashjPassTheTaintedCoreAction::UseCoreOnNearestGenerator(const uint32 i
 
 // Fallback for residual cores to be destroyed in Phase 3 in case
 // ScheduleTransferCoreAfterImbue() fails to remove the core from the giver
-bool LadyVashjDestroyTaintedCoreAction::Execute(Event event)
+bool LadyVashjDestroyTaintedCoreAction::Execute(Event /*event*/)
 {
     if (Item* core = bot->GetItemByEntry(ITEM_TAINTED_CORE))
     {
@@ -2866,7 +2866,7 @@ bool LadyVashjDestroyTaintedCoreAction::Execute(Event event)
 
 // This needs to be separate from the general map erasing logic because
 // Bots may end up out of combat during the Vashj encounter
-bool LadyVashjEraseCorePassingTrackersAction::Execute(Event event)
+bool LadyVashjEraseCorePassingTrackersAction::Execute(Event /*event*/)
 {
     Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
     if (!vashj)
@@ -2890,7 +2890,7 @@ bool LadyVashjEraseCorePassingTrackersAction::Execute(Event event)
 // The standard "avoid aoe" strategy does work for Toxic Spores, but this method
 // provides more buffer distance and limits the area in which bots can move
 // so that they do not go down the stairs
-bool LadyVashjAvoidToxicSporesAction::Execute(Event event)
+bool LadyVashjAvoidToxicSporesAction::Execute(Event /*event*/)
 {
     auto const& spores = GetAllSporeDropTriggers(botAI, bot);
     if (spores.empty())
@@ -3033,7 +3033,7 @@ std::vector<Unit*> LadyVashjAvoidToxicSporesAction::GetAllSporeDropTriggers(
     return sporeDropTriggers;
 }
 
-bool LadyVashjUseFreeActionAbilitiesAction::Execute(Event event)
+bool LadyVashjUseFreeActionAbilitiesAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)

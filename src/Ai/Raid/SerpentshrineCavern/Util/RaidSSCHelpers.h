@@ -138,7 +138,7 @@ namespace SerpentShrineCavernHelpers
     Unit* GetPhase2LeotherasDemon(PlayerbotAI* botAI);
     Unit* GetPhase3LeotherasDemon(PlayerbotAI* botAI);
     Unit* GetActiveLeotherasDemon(PlayerbotAI* botAI);
-    Player* GetLeotherasDemonFormTank(PlayerbotAI* botAI, Player* bot);
+    Player* GetLeotherasDemonFormTank(Player* bot);
 
     // Fathom-Lord Karathress
     extern const Position KARATHRESS_TANK_POSITION;
