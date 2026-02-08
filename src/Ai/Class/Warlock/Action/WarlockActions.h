@@ -86,6 +86,12 @@ public:
     UseSpellstoneAction(PlayerbotAI* botAI) : UseSpellItemAction(botAI, "spellstone", true) {}
 };
 
+class UseFirestoneAction : public UseSpellItemAction
+{
+public:
+    UseFirestoneAction(PlayerbotAI* botAI) : UseSpellItemAction(botAI, "firestone", true) {}
+};
+
 class CastCreateSoulstoneAction : public CastBuffSpellAction
 {
 public:

@@ -412,12 +412,12 @@ void UseFirestoneStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
-    // triggers.push_back(
-    //     new TriggerNode(
-    //         "firestone",
-    //         {
-    //             CreateNextAction<UseSpellItemAction>(24.0f)
-    //         }
-    //     )
-    // );
+    triggers.push_back(
+        new TriggerNode(
+            "firestone",
+            {
+                CreateNextAction<UseFirestoneAction>(24.0f)
+            }
+        )
+    );
 }
