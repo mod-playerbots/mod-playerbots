@@ -11,7 +11,6 @@
 #include "ServerFacade.h"
 #include "SharedDefines.h"
 
-
 bool EnemyTooCloseForSpellTrigger::IsActive()
 {
     Unit* target = AI_VALUE(Unit*, "current target");

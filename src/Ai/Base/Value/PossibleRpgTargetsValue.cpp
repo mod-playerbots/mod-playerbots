@@ -75,7 +75,6 @@ bool PossibleRpgTargetsValue::AcceptUnit(Unit* unit)
 
     TravelTarget* travelTarget = context->GetValue<TravelTarget*>("travel target")->Get();
 
-
     if (travelTarget != nullptr && travelTarget->getDestination() &&
         (uint32_t)travelTarget->getDestination()->getEntry() == unit->GetEntry())
         return true;

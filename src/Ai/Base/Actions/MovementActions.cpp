@@ -2892,7 +2892,6 @@ bool MoveAwayFromPlayerWithDebuffAction::Execute(Event event)
     if (!group)
         return false;
 
-
     std::vector<Player*> debuffedPlayers;
 
     for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
