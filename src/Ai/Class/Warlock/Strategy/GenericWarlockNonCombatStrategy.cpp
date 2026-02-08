@@ -144,6 +144,22 @@ void GenericWarlockNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& tr
     );
     triggers.push_back(
         new TriggerNode(
+            "unending breath",
+            {
+                CreateNextAction<CastUnendingBreathAction>(12.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "unending breath on party",
+            {
+                CreateNextAction<CastUnendingBreathOnPartyAction>(11.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
             "no healthstone",
             {
                 CreateNextAction<CastCreateHealthstoneAction>(26.0f)

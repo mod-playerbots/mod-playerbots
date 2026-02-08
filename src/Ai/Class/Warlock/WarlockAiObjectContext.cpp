@@ -142,6 +142,8 @@ public:
         creators["shadow trance"] = &WarlockTriggerFactoryInternal::shadow_trance;
         creators["demon armor"] = &WarlockTriggerFactoryInternal::demon_armor;
         creators["soul link"] = &WarlockTriggerFactoryInternal::soul_link;
+        creators["unending breath"] = &WarlockTriggerFactoryInternal::unending_breath;
+        creators["unending breath on party"] = &WarlockTriggerFactoryInternal::unending_breath_on_party;
         creators["no soul shard"] = &WarlockTriggerFactoryInternal::no_soul_shard;
         creators["too many soul shards"] = &WarlockTriggerFactoryInternal::too_many_soul_shards;
         creators["no healthstone"] = &WarlockTriggerFactoryInternal::HasHealthstone;
@@ -188,6 +190,8 @@ private:
     static Trigger* shadow_trance(PlayerbotAI* botAI) { return new ShadowTranceTrigger(botAI); }
     static Trigger* demon_armor(PlayerbotAI* botAI) { return new DemonArmorTrigger(botAI); }
     static Trigger* soul_link(PlayerbotAI* botAI) { return new SoulLinkTrigger(botAI); }
+    static Trigger* unending_breath(PlayerbotAI* botAI) { return new UnendingBreathTrigger(botAI); }
+    static Trigger* unending_breath_on_party(PlayerbotAI* botAI) { return new UnendingBreathOnPartyTrigger(botAI); }
     static Trigger* no_soul_shard(PlayerbotAI* botAI) { return new OutOfSoulShardsTrigger(botAI); }
     static Trigger* too_many_soul_shards(PlayerbotAI* botAI) { return new TooManySoulShardsTrigger(botAI); }
     static Trigger* HasHealthstone(PlayerbotAI* botAI) { return new HasHealthstoneTrigger(botAI); }
