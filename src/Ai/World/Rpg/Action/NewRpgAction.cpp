@@ -430,7 +430,7 @@ bool NewRpgTravelFlightAction::Execute(Event event)
     if (!dataPtr)
         return false;
 
-        auto& data = *dataPtr;
+    auto& data = *dataPtr;
     if (bot->IsInFlight())
     {
         data.inFlight = true;
