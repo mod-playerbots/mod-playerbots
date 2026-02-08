@@ -62,7 +62,7 @@ bool MountDrakeAction::Execute(Event event)
             break;
     }
 
-    std::vector<Player*> players = botAI->GetPlayersInGroup();
+    std::vector<Player*> players = botAI->GetAllPlayersInGroup();
     for (Player* player : players)
     {
         if (!player || !player->IsInWorld() || player->IsDuringRemoveFromWorld())

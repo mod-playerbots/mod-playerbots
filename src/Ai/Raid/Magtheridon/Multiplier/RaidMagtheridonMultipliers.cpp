@@ -8,6 +8,7 @@
 #include "GenericSpellActions.h"
 #include "Playerbots.h"
 #include "WarlockActions.h"
+#include "WipeAction.h"
 
 using namespace MagtheridonHelpers;
 
@@ -24,10 +25,10 @@ float MagtheridonUseManticronCubeMultiplier::GetValue(Action* action)
         auto it = botToCubeAssignment.find(bot->GetGUID());
         if (it != botToCubeAssignment.end())
         {
-            if (dynamic_cast<MagtheridonUseManticronCubeAction*>(action))
+            if (dynamic_cast<WipeAction*>(action))
                 return 1.0f;
-
-            return 0.0f;
+            else if (!dynamic_cast<MagtheridonUseManticronCubeAction*>(action))
+                return 0.0f;
         }
     }
 
@@ -41,26 +42,29 @@ float MagtheridonWaitToAttackMultiplier::GetValue(Action* action)
     if (!magtheridon || magtheridon->HasAura(SPELL_SHADOW_CAGE))
         return 1.0f;
 
+    if (botAI->IsMainTank(bot))
+        return 1.0f;
+
     const uint8 dpsWaitSeconds = 6;
     auto it = dpsWaitTimer.find(magtheridon->GetMap()->GetInstanceId());
     if (it == dpsWaitTimer.end() ||
         (time(nullptr) - it->second) < dpsWaitSeconds)
     {
-        if (!botAI->IsMainTank(bot) && (dynamic_cast<AttackAction*>(action) ||
-            (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action))))
+        if (dynamic_cast<AttackAction*>(action) ||
+            (!botAI->IsHeal(bot) && dynamic_cast<CastSpellAction*>(action)))
             return 0.0f;
     }
 
     return 1.0f;
 }
 
-// No tank assist for offtanks during the channeler phase
-// So they don't try to pull channelers from each other or the main tank
 float MagtheridonDisableOffTankAssistMultiplier::GetValue(Action* action)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
-    Unit* channeler = AI_VALUE2(Unit*, "find target", "hellfire channeler");
     if (!magtheridon)
+        return 1.0f;
+
+    if (bot->GetVictim() == nullptr)
         return 1.0f;
 
     if ((botAI->IsAssistTankOfIndex(bot, 0) || botAI->IsAssistTankOfIndex(bot, 1)) &&

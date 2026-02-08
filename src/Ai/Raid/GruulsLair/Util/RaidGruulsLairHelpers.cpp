@@ -6,19 +6,16 @@
 
 namespace GruulsLairHelpers
 {
-    namespace GruulsLairLocations
-    {
-        // Olm does not chase properly due to the Core's caster movement issues
-        // Thus, the below "OlmTankPosition" is beyond the actual desired tanking location
-        // It is the spot to which the OlmTank runs to to pull Olm to a decent tanking location
-        // "MaulgarRoomCenter" is to keep healers in a centralized location
-        const Location MaulgarTankPosition  = {  90.686f, 167.047f, -13.234f };
-        const Location OlmTankPosition      = {  87.485f, 234.942f,  -3.635f };
-        const Location BlindeyeTankPosition = {  99.681f, 213.989f, -10.345f };
-        const Location KroshTankPosition    = { 116.880f, 166.208f, -14.231f };
-        const Location MaulgarRoomCenter    = {  88.754f, 150.759f, -11.569f };
-        const Location GruulTankPosition    = { 241.238f, 365.025f,  -4.220f };
-    }
+    // Olm does not chase properly due to the Core's caster movement issues
+    // Thus, the below "OlmTankPosition" is beyond the actual desired tanking location
+    // It is the spot to which the OlmTank runs to to pull Olm to a decent tanking location
+    // "MaulgarRoomCenter" is to keep healers in a centralized location
+    const Position MAULGAR_TANK_POSITION  = {  90.686f, 167.047f, -13.234f };
+    const Position OLM_TANK_POSITION      = {  87.485f, 234.942f,  -3.635f };
+    const Position BLINDEYE_TANK_POSITION = {  99.681f, 213.989f, -10.345f };
+    const Position KROSH_TANK_POSITION    = { 116.880f, 166.208f, -14.231f };
+    const Position MAULGAR_ROOM_CENTER    = {  88.754f, 150.759f, -11.569f };
+    const Position GRUUL_TANK_POSITION    = { 241.238f, 365.025f,  -4.220f };
 
     bool IsAnyOgreBossAlive(PlayerbotAI* botAI)
     {
@@ -42,84 +39,43 @@ namespace GruulsLairHelpers
         return false;
     }
 
-    void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
-    {
-        Group* group = bot->GetGroup();
-        if (!target || !group)
-            return;
-
-        ObjectGuid currentGuid = group->GetTargetIcon(iconId);
-        if (currentGuid != target->GetGUID())
-        {
-            group->SetTargetIcon(iconId, bot->GetGUID(), target->GetGUID());
-        }
-    }
-
-    void MarkTargetWithSquare(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::squareIndex);
-    }
-
-    void MarkTargetWithStar(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::starIndex);
-    }
-
-    void MarkTargetWithCircle(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::circleIndex);
-    }
-
-    void MarkTargetWithDiamond(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::diamondIndex);
-    }
-
-    void MarkTargetWithTriangle(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::triangleIndex);
-    }
-
-    void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
-    {
-        if (!target)
-            return;
-
-        std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-        Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
-
-        if (currentRti != rtiName || currentTarget != target)
-        {
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(rtiName);
-            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
-        }
-    }
-
     bool IsKroshMageTank(PlayerbotAI* botAI, Player* bot)
     {
         Group* group = bot->GetGroup();
         if (!group)
             return false;
 
-        Player* highestHpMage = nullptr;
-        uint32 highestHp = 0;
+        // (1) First loop: Return the first assistant Mage (real player or bot)
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
+            if (!member || !member->IsAlive() || member->getClass() != CLASS_MAGE)
                 continue;
 
-            if (member->getClass() == CLASS_MAGE)
+            if (group->IsAssistant(member->GetGUID()))
+                return member == bot;
+        }
+
+        // (2) Fall back to bot Mage with highest HP
+        Player* highestHpMage = nullptr;
+        uint32 highestHp = 0;
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
+                member->getClass() != CLASS_MAGE)
+                continue;
+
+            uint32 hp = member->GetMaxHealth();
+            if (!highestHpMage || hp > highestHp)
             {
-                uint32 hp = member->GetMaxHealth();
-                if (!highestHpMage || hp > highestHp)
-                {
-                    highestHpMage = member;
-                    highestHp = hp;
-                }
+                highestHpMage = member;
+                highestHp = hp;
             }
         }
 
+        // (3) Return the found Mage tank, or nullptr if none found
         return highestHpMage == bot;
     }
 
@@ -129,30 +85,37 @@ namespace GruulsLairHelpers
         if (!group)
             return false;
 
-        Player* highestHpMoonkin = nullptr;
-        uint32 highestHp = 0;
-
+        // (1) First loop: Return the first assistant Moonkin (real player or bot)
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
+            if (!member || !member->IsAlive() || member->getClass() != CLASS_DRUID)
                 continue;
 
-            if (member->getClass() == CLASS_DRUID)
+            if (group->IsAssistant(member->GetGUID()) &&
+                AiFactory::GetPlayerSpecTab(member) == DRUID_TAB_BALANCE)
+                return member == bot;
+        }
+
+        // (2) Fall back to bot Moonkin with highest HP
+        Player* highestHpMoonkin = nullptr;
+        uint32 highestHp = 0;
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || member->getClass() != CLASS_DRUID ||
+                !GET_PLAYERBOT_AI(member) || AiFactory::GetPlayerSpecTab(member) != DRUID_TAB_BALANCE)
+                continue;
+
+            uint32 hp = member->GetMaxHealth();
+            if (!highestHpMoonkin || hp > highestHp)
             {
-                int tab = AiFactory::GetPlayerSpecTab(member);
-                if (tab == DRUID_TAB_BALANCE)
-                {
-                    uint32 hp = member->GetMaxHealth();
-                    if (!highestHpMoonkin || hp > highestHp)
-                    {
-                        highestHpMoonkin = member;
-                        highestHp = hp;
-                    }
-                }
+                highestHpMoonkin = member;
+                highestHp = hp;
             }
         }
 
+        // (3) Return the found Moonkin tank, or nullptr if none found
         return highestHpMoonkin == bot;
     }
 

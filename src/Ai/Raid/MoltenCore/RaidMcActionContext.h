@@ -2,6 +2,7 @@
 #define _PLAYERBOT_RAIDMCACTIONCONTEXT_H
 
 #include "Action.h"
+#include "BossAuraActions.h"
 #include "NamedObjectContext.h"
 #include "RaidMcActions.h"
 

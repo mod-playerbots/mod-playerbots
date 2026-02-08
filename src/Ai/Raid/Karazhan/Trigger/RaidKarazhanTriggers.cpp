@@ -2,6 +2,7 @@
 #include "RaidKarazhanHelpers.h"
 #include "RaidKarazhanActions.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 
 using namespace KarazhanHelpers;
 
@@ -40,7 +41,7 @@ bool AttumenTheHuntsmanAttumenIsMountedTrigger::IsActive()
 
 bool AttumenTheHuntsmanBossWipesAggroWhenMountingTrigger::IsActive()
 {
-    if (!IsInstanceTimerManager(botAI, bot))
+    if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
         return false;
 
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
@@ -110,7 +111,7 @@ bool BigBadWolfBossIsChasingLittleRedRidingHoodTrigger::IsActive()
 
 bool RomuloAndJulianneBothBossesRevivedTrigger::IsActive()
 {
-    if (!IsInstanceTimerManager(botAI, bot))
+    if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
         return false;
 
     Unit* romulo = AI_VALUE2(Unit*, "find target", "romulo");
@@ -126,7 +127,7 @@ bool RomuloAndJulianneBothBossesRevivedTrigger::IsActive()
 
 bool WizardOfOzNeedTargetPriorityTrigger::IsActive()
 {
-    if (!IsInstanceTimerManager(botAI, bot))
+    if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
         return false;
 
     Unit* dorothee = AI_VALUE2(Unit*, "find target", "dorothee");
@@ -178,7 +179,7 @@ bool TheCuratorBossAstralFlaresCastArcingSearTrigger::IsActive()
 
 bool TerestianIllhoofNeedTargetPriorityTrigger::IsActive()
 {
-    if (!IsInstanceTimerManager(botAI, bot))
+    if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
         return false;
 
     Unit* illhoof = AI_VALUE2(Unit*, "find target", "terestian illhoof");
@@ -202,7 +203,7 @@ bool ShadeOfAranFlameWreathIsActiveTrigger::IsActive()
 // Exclusion of Banish is so the player may Banish elementals if they wish
 bool ShadeOfAranConjuredElementalsSummonedTrigger::IsActive()
 {
-    if (!IsInstanceTimerManager(botAI, bot))
+    if (!IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
         return false;
 
     Unit* elemental = AI_VALUE2(Unit*, "find target", "conjured elemental");
@@ -279,7 +280,7 @@ bool NetherspiteBossIsBanishedTrigger::IsActive()
 
 bool NetherspiteNeedToManageTimersAndTrackersTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot) && !IsInstanceTimerManager(botAI, bot))
+    if (!botAI->IsTank(bot) && !IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
         return false;
 
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");

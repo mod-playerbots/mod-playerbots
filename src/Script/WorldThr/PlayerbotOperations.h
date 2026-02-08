@@ -14,9 +14,11 @@
 #include "PlayerbotOperation.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
+#include "PlayerbotAIConfig.h"
 #include "PlayerbotMgr.h"
 #include "PlayerbotRepository.h"
 #include "RandomPlayerbotMgr.h"
+#include "UseMeetingStoneAction.h"
 #include "WorldSession.h"
 #include "WorldSessionMgr.h"
 
@@ -74,6 +76,15 @@ public:
         if (group->AddMember(target))
         {
             LOG_DEBUG("playerbots", "GroupInviteOperation: Successfully added {} to group", target->GetName());
+            if (sPlayerbotAIConfig.summonWhenGroup && target->GetDistance(bot) > sPlayerbotAIConfig.sightDistance)
+            {
+                PlayerbotAI* targetAI = sPlayerbotsMgr.GetPlayerbotAI(target);
+                if (targetAI)
+                {
+                    SummonAction summonAction(targetAI, "group summon");
+                    summonAction.Teleport(bot, target, true);
+                }
+            }
             return true;
         }
         else

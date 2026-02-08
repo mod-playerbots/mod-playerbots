@@ -35,10 +35,10 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("high king maulgar misdirect olm and blindeye", ACTION_RAID + 2) }));
 
     // Gruul the Dragonkiller
-    triggers.push_back(new TriggerNode("gruul the dragonkiller boss engaged by main tank", {
-        NextAction("gruul the dragonkiller main tank position boss", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("gruul the dragonkiller boss engaged by tanks", {
+        NextAction("gruul the dragonkiller tanks position boss", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("gruul the dragonkiller boss engaged by range", {
+    triggers.push_back(new TriggerNode("gruul the dragonkiller boss engaged by ranged", {
         NextAction("gruul the dragonkiller spread ranged", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("gruul the dragonkiller incoming shatter", {

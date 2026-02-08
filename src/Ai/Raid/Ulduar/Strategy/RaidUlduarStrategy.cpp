@@ -1,7 +1,5 @@
 #include "RaidUlduarStrategy.h"
 
-#include "RaidUlduarMultipliers.h"
-
 void RaidUlduarStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     //
@@ -315,9 +313,4 @@ void RaidUlduarStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "yogg-saron phase 3 positioning trigger",
         { NextAction("yogg-saron phase 3 positioning action", ACTION_RAID) }));
-}
-
-void RaidUlduarStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
-{
-    multipliers.push_back(new FlameLeviathanMultiplier(botAI));
 }

@@ -446,7 +446,8 @@ public:
     GameObject* GetGameObject(ObjectGuid guid);
     // static GameObject* GetGameObject(GameObjectData const* gameObjectData);
     WorldObject* GetWorldObject(ObjectGuid guid);
-    std::vector<Player*> GetPlayersInGroup();
+    std::vector<Player*> GetAllPlayersInGroup();
+    std::vector<Player*> GetRealPlayersInGroup();
     const AreaTableEntry* GetCurrentArea();
     const AreaTableEntry* GetCurrentZone();
     static std::string GetLocalizedAreaName(const AreaTableEntry* entry);

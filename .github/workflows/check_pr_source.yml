@@ -1,13 +1,15 @@
-name: Enforce test-staging → main
+name: Enforce test-staging → master
 
 on:
   pull_request:
     branches:
       - master
+      - test-staging
 
 jobs:
   require-test-staging:
     runs-on: ubuntu-22.04
+    if: github.event.pull_request.base.ref == 'master'
     steps:
       - name: Ensure PR source is test-staging
         run: |

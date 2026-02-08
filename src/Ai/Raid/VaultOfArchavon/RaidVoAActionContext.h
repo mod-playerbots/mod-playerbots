@@ -7,6 +7,7 @@
 #define _PLAYERBOT_RAIDVOAACTIONCONTEXT_H
 
 #include "Action.h"
+#include "BossAuraActions.h"
 #include "NamedObjectContext.h"
 #include "RaidVoAActions.h"
 #include "PlayerbotAI.h"
