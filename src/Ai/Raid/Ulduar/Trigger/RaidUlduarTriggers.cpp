@@ -1371,11 +1371,9 @@ bool MimironAerialCommandUnitTrigger::IsActive()
 
         if (target->GetEntry() == NPC_LEVIATHAN_MKII)
             leviathanMkII = target;
-
         else if (target->GetEntry() == NPC_VX001)
             vx001 = target;
-
-            else if (target->GetEntry() == NPC_AERIAL_COMMAND_UNIT)
+        else if (target->GetEntry() == NPC_AERIAL_COMMAND_UNIT)
             aerialCommandUnit = target;
         else if (target->GetEntry() == NPC_ASSAULT_BOT)
             assaultBot = target;
