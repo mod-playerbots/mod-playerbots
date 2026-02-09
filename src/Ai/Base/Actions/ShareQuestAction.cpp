@@ -40,7 +40,7 @@ bool ShareQuestAction::Execute(Event event)
     return false;
 }
 
-bool AutoShareQuestAction::Execute(Event)
+bool AutoShareQuestAction::Execute(Event /*event*/)
 {
     bool shared = false;
 

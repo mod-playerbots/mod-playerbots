@@ -1818,12 +1818,7 @@ bool IccRotfaceGroupPositionAction::Execute(Event event)
 
     const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
 
-    for (auto const& npc : npcs)
-    {
-        Unit* unit = botAI->GetUnit(npc);
-        if (!unit || !botAI->HasAura("Ooze Flood", unit))
-            continue;
-    }
+
 
     bool hasOozeFlood = botAI->HasAura("Ooze Flood", bot);
     Unit* smallOoze = AI_VALUE2(Unit*, "find target", "little ooze");

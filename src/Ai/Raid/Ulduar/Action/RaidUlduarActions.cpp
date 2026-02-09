@@ -2796,7 +2796,6 @@ bool YoggSaronMarkTargetAction::Execute(Event event)
             // If someone fix it then this cheat can be removed
             if (botAI->HasCheat(BotCheatMask::raid))
                 lowestHealthUnit->Kill(bot, lowestHealthUnit);
-
             else
                 group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), lowestHealthUnit->GetGUID());
 
@@ -2944,7 +2943,7 @@ bool YoggSaronBossRoomMovementCheatAction::Execute(Event event)
     if (!group)
         return false;
 
-        ObjectGuid currentSkullTarget = group->GetTargetIcon(RtiTargetValue::skullIndex);
+    ObjectGuid currentSkullTarget = group->GetTargetIcon(RtiTargetValue::skullIndex);
 
     if (!currentSkullTarget)
         return false;

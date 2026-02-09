@@ -1190,10 +1190,8 @@ bool MimironPhase1PositioningTrigger::IsActive()
 
         if (target->GetEntry() == NPC_LEVIATHAN_MKII)
             leviathanMkII = target;
-
         else if (target->GetEntry() == NPC_VX001)
             return false;
-
         else if (target->GetEntry() == NPC_AERIAL_COMMAND_UNIT)
             return false;
     }
@@ -1244,10 +1242,8 @@ bool MimironRapidBurstTrigger::IsActive()
 
         if (target->GetEntry() == NPC_LEVIATHAN_MKII)
             leviathanMkII = target;
-
-            else if (target->GetEntry() == NPC_VX001)
+        else if (target->GetEntry() == NPC_VX001)
             vx001 = target;
-
         else if (target->GetEntry() == NPC_AERIAL_COMMAND_UNIT)
             aerialCommandUnit = target;
     }
@@ -1402,7 +1398,6 @@ bool MimironAerialCommandUnitTrigger::IsActive()
 
         if (!crossTarget || aerialCommandUnit->GetGUID() != crossTarget)
             return true;
-
         else if (assaultBot && (!skullTarget || assaultBot->GetGUID() != skullTarget))
             return true;
 
