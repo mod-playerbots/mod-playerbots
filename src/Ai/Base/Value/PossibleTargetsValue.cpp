@@ -17,8 +17,6 @@
 #include "SpellMgr.h"
 #include "Unit.h"
 #include "AreaDefines.h"
-#include <unordered_map>
-#include <mutex>
 
 // Level difference thresholds for attack probability
 constexpr int32 EXTREME_LEVEL_DIFF = 5;  // Don't attack if enemy is this much higher
@@ -26,43 +24,18 @@ constexpr int32 HIGH_LEVEL_DIFF = 4;     // 25% chance at +/- this difference
 constexpr int32 MID_LEVEL_DIFF = 3;      // 50% chance at +/- this difference
 constexpr int32 LOW_LEVEL_DIFF = 2;      // 75% chance at +/- this difference
 
-// Cache duration before reconsidering attack decision, and old cache cleanup interval
-constexpr uint32 ATTACK_DECISION_CACHE_DURATION = 2 * MINUTE;
-constexpr uint32 ATTACK_DECISION_CACHE_CLEANUP_INTERVAL = 10 * MINUTE;
+// Time window for deterministic attack decisions
+constexpr uint32 ATTACK_DECISION_TIME_WINDOW = 2 * MINUTE;
 
-// Custom hash function for (botGUID, targetGUID) pairs
-struct PairGuidHash
-{
-    std::size_t operator()(const std::pair<ObjectGuid, ObjectGuid>& pair) const
-    {
-        return std::hash<uint64>()(pair.first.GetRawValue()) ^
-               (std::hash<uint64>()(pair.second.GetRawValue()) << 1);
-    }
-};
-
-// Cache for probability-based attack decisions (Per-bot: non-global)
-// Map: (botGUID, targetGUID) -> (should attack decision, timestamp)
-static std::unordered_map<std::pair<ObjectGuid, ObjectGuid>, std::pair<bool, time_t>, PairGuidHash> attackDecisionCache;
-static std::mutex attackDecisionCacheMutex;
+// 64 bit FNV-1a hash constants
+constexpr uint64_t FNV_OFFSET_BASIS = 14695981039346656037ULL;
+constexpr uint64_t FNV_PRIME = 1099511628211ULL;
 
 void PossibleTargetsValue::FindUnits(std::list<Unit*>& targets)
 {
     Acore::AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, range);
     Acore::UnitListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
     Cell::VisitObjects(bot, searcher, range);
-}
-
-static void CleanupAttackDecisionCache()
-{
-    // Mutex already held by caller in AcceptUnit
-    time_t currentTime = time(nullptr);
-    for (auto it = attackDecisionCache.begin(); it != attackDecisionCache.end();)
-    {
-        if (currentTime - it->second.second >= ATTACK_DECISION_CACHE_DURATION)
-            it = attackDecisionCache.erase(it);
-        else
-            ++it;
-    }
 }
 
 bool PossibleTargetsValue::AcceptUnit(Unit* unit)
@@ -135,33 +108,28 @@ bool PossibleTargetsValue::AcceptUnit(Unit* unit)
         else if (absLevelDifference < MID_LEVEL_DIFF && absLevelDifference >= LOW_LEVEL_DIFF)
             attackChance = 75;
 
-        // If probability check needed, use cache (with thread-safe access)
+        // If probability check needed, use deterministic hash-based decision
         if (attackChance < 100)
         {
-            std::pair<ObjectGuid, ObjectGuid> cacheKey = std::make_pair(bot->GetGUID(), unit->GetGUID());
-            time_t currentTime = time(nullptr);
+            // Decisions remain stable for ATTACK_DECISION_TIME_WINDOW.
+            time_t timeWindow = time(nullptr) / ATTACK_DECISION_TIME_WINDOW;
 
-            // Lock for cache access
-            std::lock_guard<std::mutex> lock(attackDecisionCacheMutex);
+            // FNV-1a hash used to deterministically convert botGUID, targetGUID, and timeWindow
+            // into a consistent percentage chance without needing to cache previous decisions.
+            // See: http://www.isthe.com/chongo/tech/comp/fnv/
+            uint64_t hash = FNV_OFFSET_BASIS;
 
-            // Cleanup cache while holding lock
-            static time_t lastCleanup = 0;
-            if (currentTime - lastCleanup > ATTACK_DECISION_CACHE_CLEANUP_INTERVAL)
-            {
-                CleanupAttackDecisionCache();
-                lastCleanup = currentTime;
-            }
+            // Diffuse bot GUID, target GUID, and time window into the hash
+            hash ^= bot->GetGUID().GetRawValue();
+            hash *= FNV_PRIME;
+            hash ^= unit->GetGUID().GetRawValue();
+            hash *= FNV_PRIME;
+            hash ^= static_cast<uint64_t>(timeWindow);
+            hash *= FNV_PRIME;
 
-            auto it = attackDecisionCache.find(cacheKey);
-            if (it != attackDecisionCache.end())
-            {
-                if (currentTime - it->second.second < ATTACK_DECISION_CACHE_DURATION)
-                    return it->second.first;
-            }
-
-            bool shouldAttack = (urand(1, 100) <= attackChance);
-            attackDecisionCache[cacheKey] = std::make_pair(shouldAttack, currentTime);
-            return shouldAttack;
+            // Convert hash to 0-99 range and compare against attack chance percentage.
+            // Ex: attackChance=75: hash 0-74 = attack (75%), hash 75-99 = don't attack (25%)
+            return (hash % 100) < attackChance;
         }
     }
 
