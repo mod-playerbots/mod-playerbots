@@ -569,7 +569,7 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
     }
 
     // check activity
-    botAI->AllowActivity(ALL_ACTIVITY, true);
+    botAI->allowActivity(ALL_ACTIVITY, true);
 
     // set delay on login
     botAI->SetNextCheckDelay(urand(2000, 4000));

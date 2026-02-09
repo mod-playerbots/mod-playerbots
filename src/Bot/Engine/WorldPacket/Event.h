@@ -33,7 +33,10 @@ public:
     WorldPacket& getPacket() { return packet; }
     ObjectGuid getObject();
     Player* getOwner() { return owner; }
-    bool operator!() const { return source.empty(); }
+    bool operator!() const
+    {
+        return source.empty();
+    }
 
 protected:
     std::string source;

@@ -117,7 +117,7 @@ bool MoveToTravelTargetAction::Execute(Event)
 
 bool MoveToTravelTargetAction::isUseful()
 {
-    if (!botAI->AllowActivity(TRAVEL_ACTIVITY))
+    if (!botAI->allowActivity(TRAVEL_ACTIVITY))
         return false;
 
     if (!context->GetValue<TravelTarget*>("travel target")->Get()->isTraveling())

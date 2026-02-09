@@ -540,15 +540,15 @@ public:
     bool IsAlt();
     Player* GetGroupLeader();
     // Returns a semi-random (cycling) number that is fixed for each bot.
-    uint32 GetFixedBotNumer(uint32 maxNum = 100, float cyclePerMin = 1);
+    [[nodiscard]] uint32_t getBotPercentileNumber(uint32_t maxNum = 100, float cyclePerMin = 1) const noexcept;
     GrouperType GetGrouperType();
     GuilderType GetGuilderType();
     bool HasPlayerNearby(WorldPosition* pos, float range = sPlayerbotAIConfig.reactDistance);
     bool HasPlayerNearby(float range = sPlayerbotAIConfig.reactDistance);
     bool HasManyPlayersNearby(uint32 trigerrValue = 20, float range = sPlayerbotAIConfig.sightDistance);
     bool AllowActive(ActivityType activityType);
-    bool AllowActivity(ActivityType activityType = ALL_ACTIVITY, bool checkNow = false);
-    uint32 AutoScaleActivity(uint32 mod);
+    bool allowActivity(ActivityType activityType = ALL_ACTIVITY, bool checkNow = false);
+    [[nodiscard]] uint32_t autoScaleActivity(uint32_t mod) const noexcept;
 
     // Check if player is safe to use.
     bool IsSafe(Player* player);

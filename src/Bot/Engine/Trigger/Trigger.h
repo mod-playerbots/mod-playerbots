@@ -54,9 +54,20 @@ public:
     name(name)
     {}
 
-    Trigger* getTrigger() { return trigger; }
-    void setTrigger(Trigger* trigger) { this->trigger = trigger; }
-    const std::string getName() { return name; }
+    Trigger* getTrigger() const
+    {
+        return this->trigger;
+    }
+
+    void setTrigger(Trigger* trigger)
+    {
+        this->trigger = trigger;
+    }
+
+    const std::string getName() const noexcept
+    {
+        return this->name;
+    }
 
     std::vector<NextAction> getHandlers()
     {
@@ -74,7 +85,9 @@ public:
     float getFirstRelevance()
     {
         if (this->handlers.size() > 0)
+        {
             return this->handlers[0].weight;
+        }
 
         return -1;
     }

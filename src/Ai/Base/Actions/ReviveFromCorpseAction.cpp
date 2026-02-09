@@ -160,7 +160,7 @@ bool FindCorpseAction::Execute(Event)
     // Actual mobing part.
     bool moved = false;
 
-    if (!botAI->AllowActivity(ALL_ACTIVITY))
+    if (!botAI->allowActivity(ALL_ACTIVITY))
     {
         uint32 delay = ServerFacade::instance().GetDistance2d(bot, corpse) /
                        bot->GetSpeed(MOVE_RUN);        // Time a bot would take to travel to it's corpse.

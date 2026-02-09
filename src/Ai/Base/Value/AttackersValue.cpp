@@ -17,7 +17,7 @@ GuidVector AttackersValue::Calculate()
     std::unordered_set<Unit*> targets;
 
     GuidVector result;
-    if (!botAI->AllowActivity(ALL_ACTIVITY))
+    if (!botAI->allowActivity(ALL_ACTIVITY))
         return result;
 
     AddAttackersOf(bot, targets);

@@ -192,7 +192,10 @@ std::set<std::string> AiObjectContext::GetSiblingStrategy(std::string const name
     return strategyContexts.GetSiblings(name);
 }
 
-Trigger* AiObjectContext::GetTrigger(std::string const name) { return triggerContexts.GetContextObject(name, botAI); }
+Trigger* AiObjectContext::GetTrigger(std::string const name)
+{
+    return triggerContexts.GetContextObject(name, botAI);
+}
 
 UntypedValue* AiObjectContext::GetUntypedValue(std::string const name)
 {

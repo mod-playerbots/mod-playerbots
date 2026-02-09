@@ -133,8 +133,3 @@ Strategy::Strategy(PlayerbotAI* botAI) : PlayerbotAIAware(botAI)
 {
     actionNodeFactories.Add(new ActionNodeFactoryInternal());
 }
-
-ActionNode* Strategy::GetAction(std::string const name)
-{
-    return actionNodeFactories.GetContextObject(name, botAI);
-}

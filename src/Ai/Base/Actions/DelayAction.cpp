@@ -20,5 +20,5 @@ bool DelayAction::Execute(Event)
 
 bool DelayAction::isUseful()
 {
-    return !botAI->AllowActivity(ALL_ACTIVITY);
+    return !botAI->allowActivity(ALL_ACTIVITY);
 }

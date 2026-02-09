@@ -6,6 +6,7 @@
 #ifndef _PLAYERBOT_NAMEDOBJECTCONEXT_H
 #define _PLAYERBOT_NAMEDOBJECTCONEXT_H
 
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -209,11 +210,19 @@ public:
 
     T* GetContextObject(const std::string& name, PlayerbotAI* botAI)
     {
-        if (created.find(name) == created.end())
+        if (created.contains(name))
         {
-            if (T* object = create(name, botAI))
-                return created[name] = object;
+            return created[name];
         }
+
+        T* object = this->create(name, botAI);
+
+        if (object == nullptr)
+        {
+            return nullptr;
+        }
+
+        created[name] = object;
 
         return created[name];
     }
@@ -260,6 +269,7 @@ public:
     }
 };
 
+// Used ONLY for ActionNode. DO NOT use for anything else as we are moving out of this nightmare.
 template <class T>
 class NamedObjectFactoryList
 {
@@ -274,25 +284,14 @@ public:
             delete *i;
     }
 
-    T* create(std::string name, PlayerbotAI* botAI)
+    std::unique_ptr<T> create(std::string name, PlayerbotAI* botAI)
     {
-        size_t found = name.find("::");
-        std::string qualifier;
-        if (found != std::string::npos)
-        {
-            qualifier = name.substr(found + 2);
-            name = name.substr(0, found);
-        }
-
         if (creators.find(name) == creators.end())
             return nullptr;
 
         const ObjectCreator& creator = creators[name];
 
         T* object = creator(botAI);
-        Qualified* q = dynamic_cast<Qualified*>(object);
-        if (q && found != std::string::npos)
-            q->Qualify(qualifier);
 
         return object;
     }
@@ -306,6 +305,7 @@ public:
 
     T* GetContextObject(const std::string& name, PlayerbotAI* botAI)
     {
+
         if (T* object = create(name, botAI))
             return object;
 

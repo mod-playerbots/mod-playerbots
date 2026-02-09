@@ -880,7 +880,7 @@ TravelDestination* ChooseTravelTargetAction::FindDestination(Player* bot, std::s
 
 bool ChooseTravelTargetAction::isUseful()
 {
-    if (!botAI->AllowActivity(TRAVEL_ACTIVITY))
+    if (!botAI->allowActivity(TRAVEL_ACTIVITY))
         return false;
 
     return !context->GetValue<TravelTarget*>("travel target")->Get()->isActive() &&

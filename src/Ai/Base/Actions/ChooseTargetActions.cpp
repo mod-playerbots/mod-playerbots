@@ -35,7 +35,7 @@ bool AttackAnythingAction::isUseful()
     if (!bot || !botAI)  // Prevents invalid accesses
         return false;
 
-    if (!botAI->AllowActivity(GRIND_ACTIVITY))  // Bot cannot be active
+    if (!botAI->allowActivity(GRIND_ACTIVITY))  // Bot cannot be active
         return false;
 
     if (botAI->HasStrategy("stay", BOT_STATE_NON_COMBAT))

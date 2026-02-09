@@ -144,7 +144,7 @@ bool SayAction::Execute(Event)
 
 bool SayAction::isUseful()
 {
-    if (!botAI->AllowActivity())
+    if (!botAI->allowActivity())
         return false;
 
     if (botAI->HasStrategy("silent", BotState::BOT_STATE_NON_COMBAT))

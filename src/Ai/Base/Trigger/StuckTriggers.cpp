@@ -15,7 +15,7 @@ bool MoveStuckTrigger::IsActive()
     if (botAI->HasActivePlayerMaster())
         return false;
 
-    if (!botAI->AllowActivity(ALL_ACTIVITY))
+    if (!botAI->allowActivity(ALL_ACTIVITY))
         return false;
 
     WorldPosition botPos(bot);
@@ -62,7 +62,7 @@ bool MoveLongStuckTrigger::IsActive()
     if (botAI->HasActivePlayerMaster())
         return false;
 
-    if (!botAI->AllowActivity(ALL_ACTIVITY))
+    if (!botAI->allowActivity(ALL_ACTIVITY))
         return false;
 
     WorldPosition botPos(bot);
@@ -150,7 +150,7 @@ bool CombatStuckTrigger::IsActive()
     if (botAI->HasActivePlayerMaster())
         return false;
 
-    if (!botAI->AllowActivity(ALL_ACTIVITY))
+    if (!botAI->allowActivity(ALL_ACTIVITY))
         return false;
 
     WorldPosition botPos(bot);
@@ -178,7 +178,7 @@ bool CombatLongStuckTrigger::IsActive()
     if (botAI->HasActivePlayerMaster())
         return false;
 
-    if (!botAI->AllowActivity(ALL_ACTIVITY))
+    if (!botAI->allowActivity(ALL_ACTIVITY))
         return false;
 
     WorldPosition botPos(bot);

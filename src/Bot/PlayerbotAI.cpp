@@ -235,31 +235,54 @@ PlayerbotAI::~PlayerbotAI()
 void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 {
     // Handle the AI check delay
-    if (nextAICheckDelay > elapsed)
-        nextAICheckDelay -= elapsed;
-    else
-        nextAICheckDelay = 0;
-
-    // Early return if bot is in invalid state
-    if (!bot || !bot->GetSession() || !bot->IsInWorld() || bot->IsBeingTeleported() ||
-        bot->GetSession()->isLogingOut() || bot->IsDuringRemoveFromWorld())
-        return;
-
-    // Handle cheat options (set bot health and power if cheats are enabled)
-    if (bot->IsAlive() &&
-        (static_cast<uint32>(GetCheat()) > 0 || static_cast<uint32>(sPlayerbotAIConfig.botCheatMask) > 0))
+    if (this->nextAICheckDelay > elapsed)
     {
-        if (HasCheat(BotCheatMask::health))
-            bot->SetFullHealth();
-
-        if (HasCheat(BotCheatMask::mana) && bot->getPowerType() == POWER_MANA)
-            bot->SetPower(POWER_MANA, bot->GetMaxPower(POWER_MANA));
-
-        if (HasCheat(BotCheatMask::power) && bot->getPowerType() != POWER_MANA)
-            bot->SetPower(bot->getPowerType(), bot->GetMaxPower(bot->getPowerType()));
+        this->nextAICheckDelay -= elapsed;
+    }
+    else
+    {
+        this->nextAICheckDelay = 0;
     }
 
-    AllowActivity();
+    // Early return if bot is in invalid state
+    if (
+        this->bot == nullptr
+        || this->bot->GetSession() == nullptr
+        || !this->bot->IsInWorld()
+        || this->bot->IsBeingTeleported()
+        || this->bot->GetSession()->isLogingOut()
+        || this->bot->IsDuringRemoveFromWorld()
+    )
+    {
+        return;
+    }
+
+    // Handle cheat options (set bot health and power if cheats are enabled)
+    if (
+        this->bot->IsAlive()
+        && (
+            this->GetCheat() != BotCheatMask::none
+            || PlayerbotAIConfig::instance().botCheatMask != 0
+        )
+    )
+    {
+        if (this->HasCheat(BotCheatMask::health))
+        {
+            this->bot->SetFullHealth();
+        }
+
+        if (this->HasCheat(BotCheatMask::mana) && this->bot->getPowerType() == POWER_MANA)
+        {
+            this->bot->SetPower(POWER_MANA, this->bot->GetMaxPower(POWER_MANA));
+        }
+
+        if (this->HasCheat(BotCheatMask::power) && this->bot->getPowerType() != POWER_MANA)
+        {
+            this->bot->SetPower(this->bot->getPowerType(), this->bot->GetMaxPower(this->bot->getPowerType()));
+        }
+    }
+
+    this->allowActivity();
 
     if (!CanUpdateAI())
         return;
@@ -1122,7 +1145,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
             if (!sPlayerbotAIConfig.randomBotTalk)
                 return;
 
-            if (!AllowActivity())
+            if (!allowActivity())
                 return;
 
             WorldPacket p(packet);
@@ -1473,7 +1496,7 @@ void PlayerbotAI::DoNextAction(bool min)
         }
     }
 
-    bool minimal = !this->AllowActivity();
+    bool minimal = !this->allowActivity();
 
     const GlobalPlayerInspector playerInspector(this->bot->GetGUID().GetRawValue());
 
@@ -4335,21 +4358,72 @@ Player* PlayerbotAI::GetGroupLeader()
     return master;
 }
 
-uint32 PlayerbotAI::GetFixedBotNumer(uint32 maxNum, float cyclePerMin)
+/**
+ * @brief Compute a deterministic percentile-like number for the bot.
+ *
+ * @details
+ * Produces a stable value in the range [0, maxNum] by hashing the bot's GUID counter
+ * and optionally advancing it over time. The optional rotation uses server uptime to add an
+ * offset of `stepsPerMinute`, allowing gradual cycling without per-bot randomness.
+ *
+ * @param maxNum Inclusive upper bound for the returned number. Must be in [1, 100].
+ * @param stepsPerMinute Rotation speed in steps per minute. Use 0 for a fixed value.
+ * @return A deterministic value in the range [0, maxNum].
+ */
+uint32_t PlayerbotAI::getBotPercentileNumber(const uint32_t maxNum, const float stepsPerMinute) const noexcept
 {
-    uint32 randseed = rand32();                               // Seed random number
-    uint32 randnum = bot->GetGUID().GetCounter() + randseed;  // Semi-random but fixed number for each bot.
-
-    if (cyclePerMin > 0)
+    if (maxNum == 0)
     {
-        uint32 cycle = floor(getMSTime() / (1000));  // Semi-random number adds 1 each second.
-        cycle = cycle * cyclePerMin / 60;            // Cycles cyclePerMin per minute.
-        randnum += cycle;                            // Make the random number cylce.
+        std::terminate();
     }
 
-    randnum =
-        (randnum % (maxNum + 1));  // Loops the randomnumber at maxNum. Bassically removes all the numbers above 99.
-    return randnum;  // Now we have a number unique for each bot between 0 and maxNum that increases by cyclePerMin.
+    if (maxNum >= 101)
+    {
+        std::terminate();
+    }
+
+    const uint32_t modulus = maxNum + 1;
+
+    // @TODO: Here we accept to use a lambda temporarily.
+    // This is because there is a more global refactoring need of PlayerbotAI.
+    // This lambda will eventually become a method of a new class that will be responsible for bot identity.
+    uint32_t (*const mix32)(const uint32_t) noexcept =
+        +[](const uint32_t value) noexcept -> uint32_t
+        {
+            uint32_t v = value;
+
+            v ^= v >> 16;
+            v *= 0x7feb352dU;
+            v ^= v >> 15;
+            v *= 0x846ca68bU;
+            v ^= v >> 16;
+
+            return v;
+        };
+
+    const uint32_t guidCounter = this->bot->GetGUID().GetCounter();
+    const uint32_t base = mix32(guidCounter) % modulus;
+
+    uint32_t offset = 0;
+
+    if (stepsPerMinute != 0)
+    {
+        const uint32_t uptimeSeconds = getMSTime() / 1000;
+
+        const uint64_t numerator = uint64_t(uptimeSeconds) * uint64_t(stepsPerMinute);
+        const uint32_t steps = uint32_t(numerator / 60);
+
+        offset = steps % modulus;
+    }
+
+    const uint32_t result = (base + offset) % modulus;
+
+    if (result >= 101)
+    {
+        std::terminate();
+    }
+
+    return result;
 }
 
 /*
@@ -4366,7 +4440,7 @@ enum GrouperType
 
 GrouperType PlayerbotAI::GetGrouperType()
 {
-    uint32 grouperNumber = GetFixedBotNumer(100, 0);
+    uint32 grouperNumber = getBotPercentileNumber(100, 0);
 
     if (grouperNumber < 20 && !HasRealPlayerMaster())
         return GrouperType::SOLO;
@@ -4388,7 +4462,7 @@ GrouperType PlayerbotAI::GetGrouperType()
 
 GuilderType PlayerbotAI::GetGuilderType()
 {
-    uint32 grouperNumber = GetFixedBotNumer(100, 0);
+    uint32 grouperNumber = getBotPercentileNumber(100, 0);
 
     if (grouperNumber < 20 && !HasRealPlayerMaster())
         return GuilderType::SOLO;
@@ -4517,36 +4591,51 @@ inline bool ZoneHasRealPlayers(Player* bot)
     return false;
 }
 
-bool PlayerbotAI::AllowActive(ActivityType activityType)
+bool PlayerbotAI::AllowActive(const ActivityType activityType)
 {
-    // Early return if bot is in invalid state
-    if (!bot || !bot->GetSession() || !bot->IsInWorld() || bot->IsBeingTeleported() ||
-        bot->GetSession()->isLogingOut() || bot->IsDuringRemoveFromWorld())
+    // Bots don't need react to PathGenerator activities
+    if (activityType == DETAILED_MOVE_ACTIVITY)
+    {
         return false;
+    }
+
+    // Early return if bot is in invalid state
+    if (
+        !this->bot
+        || !this->bot->GetSession()
+        || !this->bot->IsInWorld()
+        || this->bot->IsBeingTeleported()
+        || this->bot->GetSession()->isLogingOut()
+        || this->bot->IsDuringRemoveFromWorld()
+    )
+    {
+        return false;
+    }
 
     // when botActiveAlone is 100% and smartScale disabled
-    if (sPlayerbotAIConfig.botActiveAlone >= 100 && !sPlayerbotAIConfig.botActiveAloneSmartScale)
+    if (PlayerbotAIConfig::instance().botActiveAlone >= 100 && !PlayerbotAIConfig::instance().botActiveAloneSmartScale)
     {
         return true;
     }
 
     // Is in combat. Always defend yourself.
-    if (activityType != OUT_OF_PARTY_ACTIVITY && activityType != PACKET_ACTIVITY)
+    if (
+        activityType != OUT_OF_PARTY_ACTIVITY
+        && activityType != PACKET_ACTIVITY
+        && bot->IsInCombat()
+    )
     {
-        if (bot->IsInCombat())
-        {
-            return true;
-        }
+        return true;
     }
 
-    // only keep updating till initializing time has completed,
-    // which prevents unneeded expensive GameTime calls.
-    if (_isBotInitializing)
+    // This code is completely wrong.
+    // It implies that it gives a grace period of 11% of the number of random bots at each bot initialisation.
+    // In reality it gives a grace period only at server start up and never again.
+    if (this->_isBotInitializing)
     {
-        _isBotInitializing = GameTime::GetUptime().count() < sPlayerbotAIConfig.maxRandomBots * 0.11;
+        this->_isBotInitializing = GameTime::GetUptime().count() < PlayerbotAIConfig::instance().maxRandomBots * 0.11;
 
-        // no activity allowed during bot initialization
-        if (_isBotInitializing)
+        if (this->_isBotInitializing)
         {
             return false;
         }
@@ -4559,84 +4648,105 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
     }
 
     // bg, raid, dungeon
-    if (!WorldPosition(bot).isOverworld())
+    if (!WorldPosition{this->bot}.isOverworld())
     {
         return true;
     }
 
     // bot map has active players.
-    if (sPlayerbotAIConfig.BotActiveAloneForceWhenInMap)
-    {
-        if (HasRealPlayers(bot->GetMap()))
-        {
-            return true;
-        }
-    }
-
-    // bot zone has active players.
-    if (sPlayerbotAIConfig.BotActiveAloneForceWhenInZone)
-    {
-        if (ZoneHasRealPlayers(bot))
-        {
-            return true;
-        }
-    }
-
-    // when in real guild
-    if (sPlayerbotAIConfig.BotActiveAloneForceWhenInGuild)
-    {
-        if (IsInRealGuild())
-        {
-            return true;
-        }
-    }
-
-    // Player is near. Always active.
-    if (HasPlayerNearby(sPlayerbotAIConfig.BotActiveAloneForceWhenInRadius))
+    if (
+        PlayerbotAIConfig::instance().BotActiveAloneForceWhenInMap
+        && HasRealPlayers(this->bot->GetMap())
+    )
     {
         return true;
     }
 
-    // Has player master. Always active.
-    if (GetMaster())
+    // bot zone has active players.
+    if (
+        PlayerbotAIConfig::instance().BotActiveAloneForceWhenInZone
+        && ZoneHasRealPlayers(bot)
+    )
     {
-        PlayerbotAI* masterBotAI = GET_PLAYERBOT_AI(GetMaster());
-        if (!masterBotAI || masterBotAI->IsRealPlayer())
+        return true;
+    }
+
+    // when in real guild
+    if (
+        PlayerbotAIConfig::instance().BotActiveAloneForceWhenInGuild
+        && IsInRealGuild()
+    )
+    {
+        return true;
+    }
+
+    // Player is near. Always active.
+    if (HasPlayerNearby(PlayerbotAIConfig::instance().BotActiveAloneForceWhenInRadius))
+    {
+        return true;
+    }
+
+    Player* const master = this->GetMaster();
+
+    // Has player master. Always active.
+    if (master != nullptr)
+    {
+        PlayerbotAI* masterBotAI = PlayerbotsMgr::instance().GetPlayerbotAI(master);
+
+        if (
+            masterBotAI == nullptr
+            || masterBotAI->IsRealPlayer()
+        )
         {
             return true;
         }
     }
 
     // if grouped up
-    Group* group = bot->GetGroup();
-    if (group)
+    Group* const group = bot->GetGroup();
+
+    if (group != nullptr)
     {
-        for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
+        GroupReference* groupReference = group->GetFirstMember();
+
+        while (groupReference != nullptr)
         {
-            Player* member = gref->GetSource();
-            if (!member || !member->IsInWorld() || member->GetMapId() != bot->GetMapId())
+            Player* member = groupReference->GetSource();
+
+            if (
+                member == nullptr
+                || !member->IsInWorld()
+                || member->GetMapId() != bot->GetMapId()
+            )
+            {
+                groupReference = groupReference->next();
+
                 continue;
+            }
 
             if (member == bot)
             {
+                groupReference = groupReference->next();
+
                 continue;
             }
 
-            PlayerbotAI* memberBotAI = GET_PLAYERBOT_AI(member);
+            PlayerbotAI* memberBotAI = PlayerbotsMgr::instance().GetPlayerbotAI(member);
+
+            if (memberBotAI == nullptr || memberBotAI->HasRealPlayerMaster())
             {
-                if (!memberBotAI || memberBotAI->HasRealPlayerMaster())
-                {
-                    return true;
-                }
+                return true;
             }
 
-            if (group->IsLeader(member->GetGUID()))
+            if (
+                group->IsLeader(member->GetGUID())
+                && !memberBotAI->allowActivity(PARTY_ACTIVITY)
+            )
             {
-                if (!memberBotAI->AllowActivity(PARTY_ACTIVITY))
-                {
-                    return false;
-                }
+                return false;
             }
+
+            groupReference = groupReference->next();
         }
     }
 
@@ -4647,137 +4757,171 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
     }
 
     bool isLFG = false;
-    if (group)
+
+    if (group != nullptr)
     {
-        if (sLFGMgr->GetState(group->GetGUID()) != lfg::LFG_STATE_NONE)
+        if (lfg::LFGMgr::instance()->GetState(group->GetGUID()) != lfg::LFG_STATE_NONE)
         {
             isLFG = true;
         }
     }
-    if (sLFGMgr->GetState(bot->GetGUID()) != lfg::LFG_STATE_NONE)
+
+    if (lfg::LFGMgr::instance()->GetState(bot->GetGUID()) != lfg::LFG_STATE_NONE)
     {
         isLFG = true;
     }
+
     if (isLFG)
     {
         return true;
     }
 
     // HasFriend
-    if (sPlayerbotAIConfig.BotActiveAloneForceWhenIsFriend)
+    if (PlayerbotAIConfig::instance().BotActiveAloneForceWhenIsFriend)
     {
-        // shouldnt be needed analyse in future
-        if (!bot->GetGUID())
-            return false;
-
-        for (auto& player : sRandomPlayerbotMgr.GetPlayers())
+        for (Player*& player : RandomPlayerbotMgr::instance().GetPlayers())
         {
-            if (!player || !player->GetSession() || !player->IsInWorld() || player->IsDuringRemoveFromWorld() ||
-                player->GetSession()->isLogingOut())
+            if (
+                player == nullptr
+                || player->GetSession() == nullptr
+                || !player->IsInWorld()
+                || player->IsDuringRemoveFromWorld()
+                || player->GetSession()->isLogingOut()
+            )
+            {
                 continue;
+            }
 
-            PlayerbotAI* playerAI = GET_PLAYERBOT_AI(player);
-            if (!playerAI || !playerAI->IsRealPlayer())
+            PlayerbotAI* playerAI = PlayerbotsMgr::instance().GetPlayerbotAI(player);
+
+            if (playerAI == nullptr || !playerAI->IsRealPlayer())
+            {
                 continue;
+            }
 
             // if a real player has the bot as a friend
             PlayerSocial* social = player->GetSocial();
-            if (social && social->HasFriend(bot->GetGUID()))
+
+            if (social != nullptr && social->HasFriend(bot->GetGUID()))
+            {
                 return true;
+            }
         }
     }
 
     // Force the bots to spread
-    if (activityType == OUT_OF_PARTY_ACTIVITY || activityType == GRIND_ACTIVITY)
+    if (
+        (
+            activityType == OUT_OF_PARTY_ACTIVITY
+            || activityType == GRIND_ACTIVITY
+        )
+        && this->HasManyPlayersNearby(10, 40)
+    )
     {
-        if (HasManyPlayersNearby(10, 40))
-        {
-            return true;
-        }
+        return true;
     }
 
-    // Bots don't need react to PathGenerator activities
-    if (activityType == DETAILED_MOVE_ACTIVITY)
-    {
-        return false;
-    }
-
-    if (sPlayerbotAIConfig.botActiveAlone <= 0)
+    if (PlayerbotAIConfig::instance().botActiveAlone <= 0)
     {
         return false;
     }
 
     // #######################################################################################
-    // All mandatory conditations are checked to be active or not, from here the remaining
+    // All mandatory conditions are checked to be active or not, from here the remaining
     // situations are usable for scaling when enabled.
     // #######################################################################################
 
     // Below is code to have a specified % of bots active at all times.
     // The default is 100%. With 1% of all bots going active or inactive each minute.
-    uint32 mod = sPlayerbotAIConfig.botActiveAlone > 100 ? 100 : sPlayerbotAIConfig.botActiveAlone;
-    if (sPlayerbotAIConfig.botActiveAloneSmartScale &&
-        bot->GetLevel() >= sPlayerbotAIConfig.botActiveAloneSmartScaleWhenMinLevel &&
-        bot->GetLevel() <= sPlayerbotAIConfig.botActiveAloneSmartScaleWhenMaxLevel)
+    uint32_t mod = std::min(PlayerbotAIConfig::instance().botActiveAlone, 100u);
+
+    if (
+        PlayerbotAIConfig::instance().botActiveAloneSmartScale
+        && bot->GetLevel() >= PlayerbotAIConfig::instance().botActiveAloneSmartScaleWhenMinLevel
+        && bot->GetLevel() <= PlayerbotAIConfig::instance().botActiveAloneSmartScaleWhenMaxLevel
+    )
     {
-        mod = AutoScaleActivity(mod);
+        mod = this->autoScaleActivity(mod);
     }
 
-    uint32 ActivityNumber =
-        GetFixedBotNumer(100, sPlayerbotAIConfig.botActiveAlone * static_cast<float>(mod) / 100 * 0.01f);
+    const uint32_t activityNumber = this->getBotPercentileNumber(
+        100,
+        PlayerbotAIConfig::instance().botActiveAlone * static_cast<float>(mod) / 100 * 0.01f
+    );
 
-    return ActivityNumber <=
-           (sPlayerbotAIConfig.botActiveAlone * mod) /
-               100;  // The given percentage of bots should be active and rotate 1% of those active bots each minute.
+    // The given percentage of bots should be active and rotate 1% of those active bots each minute.
+    return activityNumber <= (PlayerbotAIConfig::instance().botActiveAlone * mod) / 100;
 }
 
-bool PlayerbotAI::AllowActivity(ActivityType activityType, bool checkNow)
+bool PlayerbotAI::allowActivity(const ActivityType activityType, const bool checkNow)
 {
-    const int activityIndex = static_cast<int>(activityType);
-
-    // Unknown/out-of-range avoid blocking, added logging for further analysing should not happen in the first place.
-    if (activityIndex <= 0 || activityIndex >= MAX_ACTIVITY_TYPE)
+    if (this->allowActiveCheckTimer[activityType] == 0)
     {
-        LOG_ERROR("playerbots", "AllowActivity received invalid activity type value: {}", activityIndex);
-        return true;
+        this->allowActiveCheckTimer[activityType] = time(nullptr);
     }
 
-    if (!allowActiveCheckTimer[activityIndex])
-        allowActiveCheckTimer[activityIndex] = time(nullptr);
+    // If we do not require an immediate check, and there is at least 5 seconds until the next check, return the previous result.
+    if (!checkNow && time(nullptr) < (this->allowActiveCheckTimer[activityType] + 5))
+    {
+        return this->allowActive[activityType];
+    }
 
-    if (!checkNow && time(nullptr) < (allowActiveCheckTimer[activityIndex] + 5))
-        return allowActive[activityIndex];
+    const bool allowed = this->AllowActive(activityType);
 
-    const bool allowed = AllowActive(activityType);
-    allowActive[activityIndex] = allowed;
-    allowActiveCheckTimer[activityIndex] = time(nullptr);
+    this->allowActive[activityType] = allowed;
+    this->allowActiveCheckTimer[activityType] = time(nullptr);
 
     return allowed;
 }
 
-uint32 PlayerbotAI::AutoScaleActivity(uint32 mod)
+/**
+ * @brief Scale activity percentage based on server update time.
+ *
+ * @details
+ * Uses the current max world update time and configured floor/ceiling thresholds to
+ * adjust the requested activity modifier. If the update time is at or below the floor,
+ * no scaling is applied. If it exceeds the ceiling, all activity is disabled. For
+ * values in-between, the modifier is linearly scaled down. If the configuration is
+ * invalid (ceiling <= floor), the method falls back to a binary decision.
+ *
+ * @param mod Activity modifier in the range $[0, 100]$.
+ * @return Scaled activity modifier in the range $[0, 100]$.
+ */
+uint32_t PlayerbotAI::autoScaleActivity(const uint32_t mod) const noexcept
 {
     // Current max server update time (ms), and the configured floor/ceiling values for bot scaling
-    uint32 maxDiff = sWorldUpdateTime.GetMaxUpdateTimeOfCurrentTable();
-    uint32 diffLimitFloor = sPlayerbotAIConfig.botActiveAloneSmartScaleDiffLimitfloor;
-    uint32 diffLimitCeiling = sPlayerbotAIConfig.botActiveAloneSmartScaleDiffLimitCeiling;
+    const uint32_t lastTickDuration = sWorldUpdateTime.GetMaxUpdateTimeOfCurrentTable();
+    const uint32_t scalingTickFloor = PlayerbotAIConfig::instance().botActiveAloneSmartScaleDiffLimitfloor;
+    const uint32_t scalingTickCeiling = PlayerbotAIConfig::instance().botActiveAloneSmartScaleDiffLimitCeiling;
 
-    if (diffLimitCeiling <= diffLimitFloor)
+    // @TODO: This check has nothing to do here.
+    // This is an invalid configuration situation. The server should not even start when the configuration is so messed up.
+    if (scalingTickCeiling <= scalingTickFloor)
     {
         // Perfrom binary decision if ceiling <= floor: Either all bots are active or none are
-        return (maxDiff > diffLimitCeiling) ? 0 : mod;
+        return (lastTickDuration > scalingTickCeiling) ? 0u : mod;
     }
 
-    if (maxDiff > diffLimitCeiling)
-        return 0;
+    // If the last duration is above the ceiling, then we turn off all activity.
+    if (lastTickDuration > scalingTickCeiling)
+    {
+        return 0u;
+    }
 
-    if (maxDiff <= diffLimitFloor)
+    // If the last tick duration is below the floor, then we return the full mod value, meaning no scaling is applied.
+    if (lastTickDuration <= scalingTickFloor)
+    {
         return mod;
+    }
 
-    // Calculate lag progress from floor to ceiling (0 to 1)
-    double lagProgress = (maxDiff - diffLimitFloor) / (double)(diffLimitCeiling - diffLimitFloor);
+    const double differenceBetweenTickAndFloor = static_cast<double>(lastTickDuration - scalingTickFloor);
+    const double differenceBetweenCeilingAndFloor = static_cast<double>(scalingTickCeiling - scalingTickFloor);
+    const double progress = differenceBetweenTickAndFloor / differenceBetweenCeilingAndFloor;
+    const double scalingFactor = 1.0 - progress;
+    const double scaled = static_cast<double>(mod) * scalingFactor;
 
-    // Apply the percentage of active bots (the complement of lag progress) to the mod value
-    return static_cast<uint32>(mod * (1 - lagProgress));
+    // Apply the percentage of active bots (the complement of progress) to the mod value
+    return static_cast<uint32_t>(scaled);
 }
 
 bool PlayerbotAI::IsOpposing(Player* player) { return IsOpposing(player->getRace(), bot->getRace()); }

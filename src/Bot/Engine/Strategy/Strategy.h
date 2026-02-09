@@ -66,7 +66,6 @@ public:
     virtual void InitMultipliers([[maybe_unused]] std::vector<Multiplier*>& multipliers) {}
     virtual std::string const getName() = 0;
     virtual uint32 GetType() const { return STRATEGY_TYPE_GENERIC; }
-    virtual ActionNode* GetAction(std::string const name);
     void Update() {}
     void Reset() {}
 
