@@ -48,9 +48,7 @@ bool StayAction::isUseful()
     if (stayPosition.isSet())
     {
         if (sPlayerbotAIConfig.followDistance)
-        {
             return false;
-        }
     }
 
     // move from group takes priority over stay as it's added and removed automatically

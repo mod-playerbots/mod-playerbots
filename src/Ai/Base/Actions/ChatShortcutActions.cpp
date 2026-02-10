@@ -69,7 +69,6 @@ bool FollowChatShortcutAction::Execute(Event event)
         bool moved = false;
         if (!target.empty())
             moved = Follow(AI_VALUE(Unit*, target));
-
         else
         {
             WorldLocation loc = formation->GetLocation();

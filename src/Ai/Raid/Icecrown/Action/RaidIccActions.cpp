@@ -1055,63 +1055,43 @@ bool IccDbsTankPositionAction::CrowdControlBloodBeasts()
         {
             case CLASS_MAGE:
                 if (!botAI->HasAura("Frost Nova", unit))
-                {
                     botAI->CastSpell("Frost Nova", unit);
-                }
                 break;
             case CLASS_DRUID:
                 if (!botAI->HasAura("Entangling Roots", unit))
-                {
                     botAI->CastSpell("Entangling Roots", unit);
-                }
                 break;
             case CLASS_PALADIN:
                 if (!botAI->HasAura("Hammer of Justice", unit))
-                {
                     botAI->CastSpell("Hammer of Justice", unit);
-                }
                 break;
             case CLASS_WARRIOR:
                 if (!botAI->HasAura("Hamstring", unit))
-                {
                     botAI->CastSpell("Hamstring", unit);
-                }
                 break;
             case CLASS_HUNTER:
                 if (!botAI->HasAura("Concussive Shot", unit))
-                {
                     botAI->CastSpell("Concussive Shot", unit);
-                }
                 break;
             case CLASS_ROGUE:
                 if (!botAI->HasAura("Kidney Shot", unit))
-                {
                     botAI->CastSpell("Kidney Shot", unit);
-                }
                 break;
             case CLASS_SHAMAN:
                 if (!botAI->HasAura("Frost Shock", unit))
-                {
                     botAI->CastSpell("Frost Shock", unit);
-                }
                 break;
             case CLASS_DEATH_KNIGHT:
                 if (!botAI->HasAura("Chains of Ice", unit))
-                {
                     botAI->CastSpell("Chains of Ice", unit);
-                }
                 break;
             case CLASS_PRIEST:
                 if (!botAI->HasAura("Psychic Scream", unit))
-                {
                     botAI->CastSpell("Psychic Scream", unit);
-                }
                 break;
             case CLASS_WARLOCK:
                 if (!botAI->HasAura("Fear", unit))
-                {
                     botAI->CastSpell("Fear", unit);
-                }
                 break;
             default:
                 break;

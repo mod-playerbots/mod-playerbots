@@ -1445,10 +1445,8 @@ bool MimironPhase4MarkDpsTrigger::IsActive()
 
         if (target->GetEntry() == NPC_LEVIATHAN_MKII)
             leviathanMkII = target;
-
         else if (target->GetEntry() == NPC_VX001)
             vx001 = target;
-
         else if (target->GetEntry() == NPC_AERIAL_COMMAND_UNIT)
             aerialCommandUnit = target;
     }
@@ -1503,10 +1501,8 @@ bool MimironCheatTrigger::IsActive()
 
         if (unit->GetEntry() == NPC_PROXIMITY_MINE)
             return true;
-
         else if (unit->GetEntry() == NPC_BOMB_BOT)
             return true;
-
     }
 
     return false;
@@ -1658,13 +1654,10 @@ Position YoggSaronTrigger::GetIllusionRoomEntrancePosition()
 {
     if (IsInChamberOfTheAspectsIllusion())
         return ULDUAR_YOGG_SARON_CHAMBER_OF_ASPECTS_ENTRANCE;
-
     else if (IsInIcecrownKeeperIllusion())
         return ULDUAR_YOGG_SARON_ICECROWN_CITADEL_ENTRANCE;
-
     else if (IsInStormwindKeeperIllusion())
         return ULDUAR_YOGG_SARON_STORMWIND_KEEPER_ENTRANCE;
-
     else
         return Position();
 }
@@ -1692,13 +1685,10 @@ Unit* YoggSaronTrigger::GetNextIllusionRoomRtiTarget()
     float detectionRadius = 0.0f;
     if (IsInStormwindKeeperIllusion())
         detectionRadius = ULDUAR_YOGG_SARON_STORMWIND_KEEPER_RADIUS;
-
     else if (IsInIcecrownKeeperIllusion())
         detectionRadius = ULDUAR_YOGG_SARON_ICECROWN_CITADEL_RADIUS;
-
     else if (IsInChamberOfTheAspectsIllusion())
         detectionRadius = ULDUAR_YOGG_SARON_CHAMBER_OF_ASPECTS_RADIUS;
-
     else
         return nullptr;
 
@@ -1877,7 +1867,6 @@ bool YoggSaronMarkTargetTrigger::IsActive()
         ObjectGuid currentSkullTarget = group->GetTargetIcon(RtiTargetValue::skullIndex);
         Unit* currentSkullUnit = nullptr;
         if (currentSkullTarget)
-
             currentSkullUnit = botAI->GetUnit(currentSkullTarget);
 
         if (currentSkullUnit &&
