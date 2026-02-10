@@ -1506,8 +1506,8 @@ PlayerbotMgr::~PlayerbotMgr()
 
 void PlayerbotMgr::UpdateAIInternal(uint32 elapsed, bool /*minimal*/)
 {
-    SetNextCheckDelay(sPlayerbotAIConfig.reactDelay);
-    CheckTellErrors(elapsed);
+    this->SetNextCheckDelay(sPlayerbotAIConfig.reactDelay);
+    this->checkTellErrors();
 }
 
 void PlayerbotMgr::HandleCommand(uint32 type, std::string const text)
@@ -1697,37 +1697,66 @@ void PlayerbotMgr::TellError(std::string const botName, std::string const text)
     errors[text] = names;
 }
 
-void PlayerbotMgr::CheckTellErrors(uint32)
+/**
+ * @brief Deliver aggregated error messages to the master with rate limiting.
+ *
+ * @details
+ * Sends queued bot error messages to the master if the configured delay has
+ * elapsed. Each message is aggregated by error text and lists the bot names
+ * that reported it. Clears the queue when the master or session is unavailable
+ * or after sending.
+ */
+void PlayerbotMgr::checkTellErrors()
 {
-    time_t now = time(nullptr);
-    if ((now - lastErrorTell) < sPlayerbotAIConfig.errorDelay / 1000)
-        return;
+    const time_t now = time(nullptr);
 
-    lastErrorTell = now;
-
-    for (PlayerBotErrorMap::iterator i = errors.begin(); i != errors.end(); ++i)
+    if ((now - this->lastErrorTell) < (PlayerbotAIConfig::instance().errorDelay / 1000))
     {
-        std::string const text = i->first;
-        std::set<std::string> names = i->second;
+        return;
+    }
 
+    this->lastErrorTell = now;
+
+    if (this->master == nullptr)
+    {
+        this->errors.clear();
+
+        return;
+    }
+
+    WorldSession* const session = this->master->GetSession();
+
+    if (session == nullptr)
+    {
+        this->errors.clear();
+
+        return;
+    }
+
+    ChatHandler chatHandler{session};
+
+    for (const std::pair<const std::string, std::set<std::string>>& error : this->errors)
+    {
+        const std::string& text = error.first;
+        const std::set<std::string>& names = error.second;
         std::ostringstream out;
-        bool first = true;
-        for (std::set<std::string>::iterator j = names.begin(); j != names.end(); ++j)
+
+        for (std::set<std::string>::const_iterator j = names.begin(); j != names.end(); ++j)
         {
-            if (!first)
+            if (j != names.begin())
+            {
                 out << ", ";
-            else
-                first = false;
+            }
 
             out << *j;
         }
 
         out << "|cfff00000: " << text;
 
-        ChatHandler(master->GetSession()).PSendSysMessage(out.str().c_str());
+        chatHandler.PSendSysMessage(out.str().c_str());
     }
 
-    errors.clear();
+    this->errors.clear();
 }
 
 void PlayerbotsMgr::AddPlayerbotData(Player* player, bool isBotAI)

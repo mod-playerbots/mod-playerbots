@@ -87,7 +87,7 @@ public:
 
 protected:
     void OnBotLoginInternal(Player* const bot) override;
-    void CheckTellErrors(uint32 elapsed);
+    void checkTellErrors();
 
 private:
     Player* const master;
