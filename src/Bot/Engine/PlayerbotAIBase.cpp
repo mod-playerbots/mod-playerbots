@@ -4,8 +4,7 @@
  */
 
 #include "PlayerbotAIBase.h"
-
-#include "Playerbots.h"
+#include "PerfMonitor.h"
 
 PlayerbotAIBase::PlayerbotAIBase(bool isBotAI) : nextAICheckDelay(0), _isBotAI(isBotAI) {}
 
@@ -24,35 +23,33 @@ void PlayerbotAIBase::UpdateAI(uint32 elapsed, bool minimal)
     if (!CanUpdateAI())
         return;
 
-    UpdateAIInternal(elapsed, minimal);
+    this->UpdateAIInternal(elapsed, minimal);
     YieldThread();
 }
 
 void PlayerbotAIBase::SetNextCheckDelay(uint32 const delay)
 {
-    // if (nextAICheckDelay < delay)
-    // LOG_DEBUG("playerbots", "Setting lesser delay {} -> {}", nextAICheckDelay, delay);
-
     nextAICheckDelay = delay;
-
-    // if (nextAICheckDelay > sPlayerbotAIConfig.globalCoolDown)
-    // LOG_DEBUG("playerbots",  "std::set next check delay: {}", nextAICheckDelay);
 }
 
 void PlayerbotAIBase::IncreaseNextCheckDelay(uint32 delay)
 {
     nextAICheckDelay += delay;
-
-    // if (nextAICheckDelay > sPlayerbotAIConfig.globalCoolDown)
-    //     LOG_DEBUG("playerbots",  "increase next check delay: {}", nextAICheckDelay);
 }
 
-bool PlayerbotAIBase::CanUpdateAI() { return nextAICheckDelay == 0; }
-
-void PlayerbotAIBase::YieldThread(uint32 delay)
+bool PlayerbotAIBase::CanUpdateAI()
 {
-    if (nextAICheckDelay < delay)
-        nextAICheckDelay = delay;
+    return this->nextAICheckDelay == 0;
+}
+
+// @TODO: This is extremely poorly named. This is NOT yielding the thread,
+// but rather setting the next check delay to the specified value if it is greater than the current value.
+void PlayerbotAIBase::YieldThread(const uint32_t delay)
+{
+    if (this->nextAICheckDelay < delay)
+    {
+        this->nextAICheckDelay = delay;
+    }
 }
 
 bool PlayerbotAIBase::IsActive() { return nextAICheckDelay < sPlayerbotAIConfig.maxWaitForMove; }

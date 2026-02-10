@@ -36,7 +36,7 @@ public:
     PlayerBotMap::const_iterator GetPlayerBotsBegin() const { return playerBots.begin(); }
     PlayerBotMap::const_iterator GetPlayerBotsEnd() const { return playerBots.end(); }
 
-    void UpdateAIInternal([[maybe_unused]] uint32 elapsed, [[maybe_unused]] bool minimal = false) override{};
+    void UpdateAIInternal(uint32 elapsed, [[maybe_unused]] bool minimal = false) override{};
     void UpdateSessions();
     void HandleBotPackets(WorldSession* session);
 

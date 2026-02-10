@@ -623,6 +623,18 @@ private:
         return player && player->GetSession() && player->IsInWorld() && !player->IsDuringRemoveFromWorld() &&
                !player->IsBeingTeleported();
     }
+
+    /**
+     * Refactoring area
+     * All following methods have been created to rationalise the code.
+     */
+
+private:
+    bool handleCurrentSpell() noexcept;
+    const Spell* getCurrentlyCastingSpell() const noexcept;
+    void updateNextTransportCheck(const uint32_t elapsed) noexcept;
+    void handleNextTransportCheck() noexcept;
+
 protected:
     Player* bot;
     Player* master;

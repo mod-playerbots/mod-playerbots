@@ -133,7 +133,9 @@ public:
             botAI->UpdateAI(diff);
         }
 
-        if (PlayerbotMgr* playerbotMgr = GET_PLAYERBOT_MGR(player))
+        PlayerbotMgr* const playerbotMgr = PlayerbotsMgr::instance().GetPlayerbotMgr(player);
+
+        if (playerbotMgr != nullptr)
         {
             playerbotMgr->UpdateAI(diff);
         }

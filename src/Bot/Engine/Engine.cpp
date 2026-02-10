@@ -324,7 +324,6 @@ ActionResult Engine::ExecuteAction(NextAction::Factory actionFactory, Event even
     bool result = false;
 
     std::unique_ptr<Action> actionToExecute = actionFactory(this->botAI);
-    // ActionNode* actionNode = new ActionNode({}, {}, {});
     ActionNode* actionNode = this->CreateActionNode(actionToExecute->getName());
 
     actionNode->setAction(std::move(actionToExecute));

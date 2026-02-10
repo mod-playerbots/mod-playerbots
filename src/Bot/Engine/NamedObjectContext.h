@@ -6,7 +6,6 @@
 #ifndef _PLAYERBOT_NAMEDOBJECTCONEXT_H
 #define _PLAYERBOT_NAMEDOBJECTCONEXT_H
 
-#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -284,7 +283,7 @@ public:
             delete *i;
     }
 
-    std::unique_ptr<T> create(std::string name, PlayerbotAI* botAI)
+    T* create(std::string name, PlayerbotAI* botAI)
     {
         if (creators.find(name) == creators.end())
             return nullptr;

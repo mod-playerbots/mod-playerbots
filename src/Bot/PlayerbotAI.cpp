@@ -232,6 +232,171 @@ PlayerbotAI::~PlayerbotAI()
         PlayerbotsMgr::instance().RemovePlayerBotData(bot->GetGUID(), true);
 }
 
+/**
+ * Refactoring area
+ */
+
+/**
+ * @brief Retrieve the spell the bot is currently casting, if any.
+ *
+ * @details
+ * Prefers the generic spell slot and falls back to the channeled spell slot.
+ * Returns nullptr when the bot is not casting a spell.
+ *
+ * @return Pointer to the current spell, or nullptr if none is active.
+ */
+const Spell* PlayerbotAI::getCurrentlyCastingSpell() const noexcept
+{
+    const Spell* const currentSpell = this->bot->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+
+    if (currentSpell != nullptr)
+    {
+        return currentSpell;
+    }
+
+    return this->bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
+}
+
+/**
+ * @brief Validate and react to the bot's currently casting spell.
+ *
+ * @details
+ * Checks the active spell and its target(s) for invalid conditions, interrupting
+ * the cast when necessary (dead targets, despawned game objects, or redundant
+ * single-target heals on full-health allies). Ensures facing requirements are met
+ * and yields for the bot's react delay to align timing with the current cast.
+ *
+ * @return True if a spell was handled (including interruptions or facing updates);
+ *         false if there was no active spell or it is still preparing.
+ */
+bool PlayerbotAI::handleCurrentSpell() noexcept
+{
+    // Handle the current spell
+    const Spell* const currentSpell = this->getCurrentlyCastingSpell();
+
+    if (currentSpell == nullptr || currentSpell->getState() == SPELL_STATE_PREPARING)
+    {
+        return false;
+    }
+
+    const SpellInfo* spellInfo = currentSpell->GetSpellInfo();
+
+    if (spellInfo == nullptr)
+    {
+        return false;
+    }
+
+    Unit* const spellTarget = currentSpell->m_targets.GetUnitTarget();
+
+    // Interrupt if target is dead or spell can't target dead units
+    if (spellTarget != nullptr && !spellTarget->IsAlive() && !spellInfo->IsAllowingDeadTarget())
+    {
+        this->InterruptSpell();
+        this->YieldThread(this->GetReactDelay());
+
+        return true;
+    }
+
+    const GameObject* const goSpellTarget = currentSpell->m_targets.GetGOTarget();
+
+    if (goSpellTarget != nullptr && !goSpellTarget->isSpawned())
+    {
+        this->InterruptSpell();
+        this->YieldThread(this->GetReactDelay());
+
+        return true;
+    }
+
+    const bool isHeal = spellInfo->HasEffect(SPELL_EFFECT_HEAL)
+                        || spellInfo->HasEffect(SPELL_EFFECT_HEAL_MAX_HEALTH)
+                        || spellInfo->HasEffect(SPELL_EFFECT_HEAL_MECHANICAL);
+    const bool isSingleTarget = spellInfo->IsSingleTarget();
+
+    // Interrupt if target ally has full health (heal by other member)
+    if (
+        spellTarget != nullptr
+        && isHeal
+        && isSingleTarget
+        && spellTarget->IsFullHealth()
+    )
+    {
+        this->InterruptSpell();
+        this->YieldThread(this->GetReactDelay());
+
+        return true;
+    }
+
+    // Ensure bot is facing target if necessary
+    if (
+        spellTarget != nullptr
+        && !this->bot->HasInArc(CAST_ANGLE_IN_FRONT, spellTarget)
+        && (spellInfo->FacingCasterFlags & SPELL_FACING_FLAG_INFRONT)
+    )
+    {
+        ServerFacade::instance().SetFacingTo(bot, spellTarget);
+    }
+
+    // Wait for spell cast
+    this->YieldThread(this->GetReactDelay());
+
+    return true;
+}
+
+void PlayerbotAI::updateNextTransportCheck(const uint32_t elapsed) noexcept
+{
+    if (this->nextTransportCheck > elapsed)
+    {
+        this->nextTransportCheck -= elapsed;
+
+        return;
+    }
+
+    this->nextTransportCheck = 0;
+}
+
+void PlayerbotAI::handleNextTransportCheck() noexcept
+{
+    if (this->nextTransportCheck > 0)
+    {
+        return;
+    }
+
+    this->nextTransportCheck = 1000;
+
+    Transport* newTransport = this->bot->GetMap()->GetTransportForPos(
+        this->bot->GetPhaseMask(),
+        this->bot->GetPositionX(),
+        this->bot->GetPositionY(),
+        this->bot->GetPositionZ(),
+        this->bot
+    );
+
+    Transport* const currentTransport = this->bot->GetTransport();
+
+    if (newTransport == currentTransport)
+    {
+        return;
+    }
+
+    LOG_DEBUG("playerbots", "Bot {} is on a transport", this->bot->GetName());
+
+    if (currentTransport != nullptr)
+    {
+        currentTransport->RemovePassenger(this->bot, true);
+    }
+
+    if (newTransport)
+    {
+        newTransport->AddPassenger(this->bot, true);
+    }
+
+    this->bot->StopMovingOnCurrentPos();
+}
+
+/**
+ * End of refactoring area
+ */
+
 void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 {
     // Handle the AI check delay
@@ -290,141 +455,19 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
         return;
     }
 
-    // Handle the current spell
-    Spell* currentSpell = this->bot->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    // @TODO: This can be improved even further.
+    // Currently we return a boolean to be able to exit.
+    // In practice we should split this into another function or use a chain
+    // of responsibility pattern to handle the current spell and its potential interruptions.
+    const bool currentSpellInterrupted = this->handleCurrentSpell();
 
-    if (currentSpell == nullptr)
+    if (currentSpellInterrupted)
     {
-        currentSpell = this->bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
+        return;
     }
 
-    if (currentSpell != nullptr)
-    {
-        const SpellInfo* spellInfo = currentSpell->GetSpellInfo();
-
-        if (spellInfo != nullptr && currentSpell->getState() == SPELL_STATE_PREPARING)
-        {
-            Unit* const spellTarget = currentSpell->m_targets.GetUnitTarget();
-
-            // Interrupt if target is dead or spell can't target dead units
-            if (spellTarget != nullptr && !spellTarget->IsAlive() && !spellInfo->IsAllowingDeadTarget())
-            {
-                this->InterruptSpell();
-                this->YieldThread(this->GetReactDelay());
-
-                return;
-            }
-
-            GameObject* const goSpellTarget = currentSpell->m_targets.GetGOTarget();
-
-            if (goSpellTarget != nullptr && !goSpellTarget->isSpawned())
-            {
-                this->InterruptSpell();
-                this->YieldThread(this->GetReactDelay());
-
-                return;
-            }
-
-            bool isHeal = false;
-            bool isSingleTarget = true;
-
-            for (uint8 i = 0; i < 3; ++i)
-            {
-                if (!spellInfo->Effects[i].Effect)
-                {
-                    continue;
-                }
-
-                // Check if spell is a heal
-                if (
-                    spellInfo->Effects[i].Effect == SPELL_EFFECT_HEAL
-                    || spellInfo->Effects[i].Effect == SPELL_EFFECT_HEAL_MAX_HEALTH
-                    || spellInfo->Effects[i].Effect == SPELL_EFFECT_HEAL_MECHANICAL
-                )
-                {
-                    isHeal = true;
-                }
-
-                // Check if spell is single-target
-                if (
-                    (
-                        spellInfo->Effects[i].TargetA.GetTarget()
-                        && spellInfo->Effects[i].TargetA.GetTarget() != TARGET_UNIT_TARGET_ALLY
-                    )
-                    || (
-                        spellInfo->Effects[i].TargetB.GetTarget()
-                        && spellInfo->Effects[i].TargetB.GetTarget() != TARGET_UNIT_TARGET_ALLY
-                    )
-                )
-                {
-                    isSingleTarget = false;
-                }
-            }
-
-            // Interrupt if target ally has full health (heal by other member)
-            if (isHeal && isSingleTarget && spellTarget != nullptr && spellTarget->IsFullHealth())
-            {
-                this->InterruptSpell();
-                this->YieldThread(this->GetReactDelay());
-
-                return;
-            }
-
-            // Ensure bot is facing target if necessary
-            if (
-                spellTarget != nullptr
-                && !this->bot->HasInArc(CAST_ANGLE_IN_FRONT, spellTarget)
-                && (spellInfo->FacingCasterFlags & SPELL_FACING_FLAG_INFRONT)
-            )
-            {
-                ServerFacade::instance().SetFacingTo(bot, spellTarget);
-            }
-
-            // Wait for spell cast
-            this->YieldThread(this->GetReactDelay());
-
-            return;
-        }
-    }
-
-    // Handle transport check delay
-    if (nextTransportCheck > elapsed)
-    {
-        nextTransportCheck -= elapsed;
-    }
-    else
-    {
-        nextTransportCheck = 0;
-    }
-
-    if (!nextTransportCheck)
-    {
-        nextTransportCheck = 1000;
-        Transport* newTransport = this->bot->GetMap()->GetTransportForPos(
-            this->bot->GetPhaseMask(),
-            this->bot->GetPositionX(),
-            this->bot->GetPositionY(),
-            this->bot->GetPositionZ(),
-            this->bot
-        );
-
-        if (newTransport != this->bot->GetTransport())
-        {
-            LOG_DEBUG("playerbots", "Bot {} is on a transport", this->bot->GetName());
-
-            if (this->bot->GetTransport())
-            {
-                this->bot->GetTransport()->RemovePassenger(bot, true);
-            }
-
-            if (newTransport)
-            {
-                newTransport->AddPassenger(bot, true);
-            }
-
-            this->bot->StopMovingOnCurrentPos();
-        }
-    }
+    this->updateNextTransportCheck(elapsed);
+    this->handleNextTransportCheck();
 
     // Update the bot's group status (moved to helper function)
     this->UpdateAIGroupMaster();
@@ -434,69 +477,97 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     this->YieldThread(this->GetReactDelay());
 }
 
-// Helper function for UpdateAI to check group membership and handle removal if necessary
+// @TODO: This should probably not be done here at all.
+// This can be easily handled through a group leave event instead of doing
+// this check every tick.
 void PlayerbotAI::UpdateAIGroupMaster()
 {
-    if (!bot)
+    if (this->bot == nullptr)
+    {
         return;
+    }
 
-    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-    if (!botAI)
-        return;
-
-    Group* group = bot->GetGroup();
-
-    bool IsRandomBot = sRandomPlayerbotMgr.IsRandomBot(bot);
+    const Group* const group = this->bot->GetGroup();
+    const bool isRandomBot = RandomPlayerbotMgr::instance().IsRandomBot(this->bot);
 
     // If bot is not in group verify that for is RandomBot before clearing  master and resetting.
-    if (!group)
+    if (group == nullptr)
     {
-        if (master && IsRandomBot)
+        if (this->master != nullptr && isRandomBot)
         {
-            SetMaster(nullptr);
-            Reset(true);
-            ResetStrategies();
+            this->SetMaster(nullptr);
+            this->Reset(true);
+            this->ResetStrategies();
         }
+
         return;
     }
 
     // Bot in BG, but master no longer part of a group: release master
     // Exclude alt and addclass bots as they rely on current (real player) master, security-wise.
-    if (bot->InBattleground() && IsRandomBot && master && !master->GetGroup())
-        SetMaster(nullptr);
+    if (
+        this->bot->InBattleground()
+        && isRandomBot
+        && this->master != nullptr
+        && this->master->GetGroup() == nullptr
+    )
+    {
+        this->SetMaster(nullptr);
+    }
 
     PlayerbotAI* masterBotAI = nullptr;
-    if (master)
-        masterBotAI = GET_PLAYERBOT_AI(master);
 
-    if (!master || (masterBotAI && !masterBotAI->IsRealPlayer()))
+    if (this->master != nullptr)
     {
-        Player* newMaster = FindNewMaster();
-        if (newMaster)
+        masterBotAI = PlayerbotsMgr::instance().GetPlayerbotAI(this->master);
+    }
+
+    // @TODO: This is literally a vulnerability.
+    // This allows altbots to be given to someone who is not their owner.
+    if (
+        this->master == nullptr
+        ||
+        (
+            masterBotAI != nullptr
+            && !masterBotAI->IsRealPlayer()
+        )
+    )
+    {
+        Player* const newMaster = this->FindNewMaster();
+
+        if (newMaster == nullptr)
         {
-            master = newMaster;
-            botAI->SetMaster(newMaster);
-            botAI->ResetStrategies();
-
-            if (!bot->InBattleground())
-            {
-                botAI->ChangeStrategy("+follow", BOT_STATE_NON_COMBAT);
-
-                if (botAI->GetMaster() == botAI->GetGroupLeader())
-                    botAI->TellMaster("Hello, I follow you!");
-                else
-                    botAI->TellMaster(!urand(0, 2) ? "Hello!" : "Hi!");
-            }
-            else
-            {
-                // we're in a battleground, stay with the pack and focus on objective
-                botAI->ChangeStrategy("-follow", BOT_STATE_NON_COMBAT);
-            }
+            return;
         }
+
+        this->SetMaster(newMaster);
+        this->ResetStrategies();
+
+        // @TODO: This is a terrible way to handle this.
+        // The bot should not be out of control of their master when in a battleground.
+        if (this->bot->InBattleground())
+        {
+            this->ChangeStrategy("-follow", BOT_STATE_NON_COMBAT);
+
+            return;
+        }
+
+        this->ChangeStrategy("+follow", BOT_STATE_NON_COMBAT);
+
+        if (this->GetMaster() == this->GetGroupLeader())
+        {
+            this->TellMaster("Hello, I follow you!");
+
+            return;
+        }
+
+        const std::string message = urand(0, 2) == 0 ? "Hello!" : "Hi!";
+
+        this->TellMaster(message);
     }
 }
 
-void PlayerbotAI::UpdateAIInternal([[maybe_unused]] uint32 elapsed, bool minimal)
+void PlayerbotAI::UpdateAIInternal(uint32 elapsed, bool minimal)
 {
 
     if (!bot || !bot->GetSession())
@@ -1890,7 +1961,10 @@ bool PlayerbotAI::IsCombo(Player* player)
            (player->getClass() == CLASS_DRUID && player->HasAura(768));  // cat druid
 }
 
-bool PlayerbotAI::IsRangedDps(Player* player, bool bySpec) { return IsRanged(player, bySpec) && IsDps(player, bySpec); }
+bool PlayerbotAI::IsRangedDps(Player* player, bool bySpec)
+{
+    return IsRanged(player, bySpec) && IsDps(player, bySpec);
+}
 
 bool PlayerbotAI::IsAssistHealOfIndex(Player* player, int index, bool ignoreDeadPlayers)
 {
