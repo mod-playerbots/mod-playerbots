@@ -1,6 +1,6 @@
 <!--
 Thank you for contributing to mod-playerbots, please make sure that you...
-1. Submit your PR to the test-staging branch.
+1. Submit your PR to the test-staging branch, not master.  
 2. Read the guidelines below before submitting.
 3. Don't delete parts of this template.
 -->
