@@ -2257,10 +2257,7 @@ void RandomItemMgr::BuildEquipCacheNew()
             continue;
         }
 
-        // Unobtainable or unusable items
-        if (itemId == 12468 || // Chilton Wand
-            itemId == 22784 || // Sunwell Orb
-            itemId == 46978) // Totem of the Earthen Ring
+        if (sPlayerbotAIConfig.unobtainableItems.find(itemId) != sPlayerbotAIConfig.unobtainableItems.end())
             continue;
 
         equipCacheNew[proto->RequiredLevel][proto->InventoryType].push_back(itemId);
