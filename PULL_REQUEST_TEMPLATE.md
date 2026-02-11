@@ -41,9 +41,9 @@ performance, you may skip these question. If necessary, a maintainer may ask you
 
 
 ## Impact Assessment
-
+<!-- Before and after measure of pmon and active bots numbers (playerbot rndbot stats) can help you here -->
 - Does this change increase per-bot/per-tick processing or risk scaling poorly with thousands of bots?
-    - [ ] No, not at all
+    - [ ] Not at all (Zero extra processing)
     - [ ] Minimal impact (**explain below**)
     - [ ] Moderate impact (**explain below**)
 
