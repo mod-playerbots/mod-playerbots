@@ -38,7 +38,7 @@ bool LootStrategyAction::Execute(Event event)
                 if (!proto)
                     continue;
 
-                out << chat->FormatItem(proto);
+                out << chat.FormatItem(proto);
             }
 
             botAI->TellMaster(out);
@@ -46,7 +46,7 @@ bool LootStrategyAction::Execute(Event event)
     }
     else
     {
-        ItemIds items = chat->parseItems(strategy);
+        ItemIds items = chat.parseItems(strategy);
 
         if (items.size() == 0)
         {

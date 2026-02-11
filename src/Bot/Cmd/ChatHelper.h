@@ -8,7 +8,6 @@
 
 #include <map>
 
-#include "Common.h"
 #include "ObjectGuid.h"
 #include "PlayerbotAIAware.h"
 #include "SharedDefines.h"
@@ -39,7 +38,6 @@ public:
     static uint32 parseMoney(std::string const text);
     static ItemIds parseItems(std::string const text);
     static ItemWithRandomProperty parseItemWithRandomProperty(std::string const text);
-    uint32 parseSpell(std::string const text);
     static std::string parseValue(const std::string& type, const std::string& text);
 
     static std::string const FormatQuest(Quest const* quest);

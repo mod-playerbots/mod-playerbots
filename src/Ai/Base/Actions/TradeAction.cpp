@@ -23,7 +23,7 @@ bool TradeAction::Execute(Event event)
 
     if (!bot->GetTrader())
     {
-        GuidVector guids = chat->parseGameobjects(text);
+        GuidVector guids = chat.parseGameobjects(text);
         Player* player = nullptr;
 
         for (auto& guid : guids)
@@ -47,7 +47,7 @@ bool TradeAction::Execute(Event event)
             return false;
     }
 
-    uint32 copper = chat->parseMoney(text);
+    uint32 copper = chat.parseMoney(text);
     if (copper > 0)
     {
         WorldPacket packet(CMSG_SET_TRADE_GOLD, 4);

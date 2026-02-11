@@ -17,13 +17,13 @@ bool UnequipAction::Execute(Event event)
 {
     std::string const text = event.getParam();
 
-    ItemIds ids = chat->parseItems(text);
+    ItemIds ids = chat.parseItems(text);
     if (ids.empty())
     {
         std::vector<std::string> names = split(text, ',');
         for (std::vector<std::string>::iterator i = names.begin(); i != names.end(); ++i)
         {
-            uint32 slot = chat->parseSlot(*i);
+            uint32 slot = chat.parseSlot(*i);
             if (slot != EQUIPMENT_SLOT_END)
             {
                 if (Item* const pItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
@@ -77,6 +77,6 @@ void UnequipAction::UnequipItem(Item* item)
     bot->GetSession()->HandleAutoStoreBagItemOpcode(nicePacket);
 
     std::ostringstream out;
-    out << chat->FormatItem(item->GetTemplate()) << " unequipped";
+    out << chat.FormatItem(item->GetTemplate()) << " unequipped";
     botAI->TellMaster(out);
 }

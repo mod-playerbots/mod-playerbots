@@ -256,7 +256,7 @@ bool ChooseRpgTargetAction::Execute(Event)
     {
         std::ostringstream out;
         out << "found: ";
-        out << chat->FormatWorldobject(guidP.GetWorldObject());
+        out << chat.FormatWorldobject(guidP.GetWorldObject());
         out << " " << relevances.front();
 
         botAI->TellMasterNoFacing(out);

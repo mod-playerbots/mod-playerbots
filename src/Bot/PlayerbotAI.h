@@ -569,7 +569,17 @@ public:
 
     void SetMaster(Player* newMaster) { master = newMaster; }
     AiObjectContext* GetAiObjectContext() { return aiObjectContext; }
-    ChatHelper* GetChatHelper() { return &chatHelper; }
+
+    [[nodiscard]] const ChatHelper& GetChatHelper() const noexcept
+    {
+        return this->chatHelper;
+    }
+
+    [[nodiscard]] ChatHelper& GetChatHelper() noexcept
+    {
+        return this->chatHelper;
+    }
+
     bool IsOpposing(Player* player);
     static bool IsOpposing(uint8 race1, uint8 race2);
     PlayerbotSecurity* GetSecurity() { return &security; }

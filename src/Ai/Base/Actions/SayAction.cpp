@@ -212,15 +212,10 @@ void ChatReplyAction::ChatReplyDo(Player* bot, const uint32 type, uint32 guid1, 
         return;
     }
 
-    ChatHelper* const chatHelper = botAI->GetChatHelper();
+    const ChatHelper& chatHelper = botAI->GetChatHelper();
 
-    if (chatHelper == nullptr)
-    {
-        return;
-    }
-
-    const std::set<uint32_t> itemIds = chatHelper->ExtractAllItemIds(msg);
-    const std::set<uint32_t> questIds = chatHelper->ExtractAllQuestIds(msg);
+    const std::set<uint32_t> itemIds = chatHelper.ExtractAllItemIds(msg);
+    const std::set<uint32_t> questIds = chatHelper.ExtractAllQuestIds(msg);
 
     //toxic links
     if (
@@ -231,7 +226,7 @@ void ChatReplyAction::ChatReplyDo(Player* bot, const uint32 type, uint32 guid1, 
         )
     )
     {
-        ChatReplyAction::HandleToxicLinksReply(bot, chatChannelSource, msg, name);
+        ChatReplyAction::HandleToxicLinksReply(*bot, chatChannelSource, msg, name);
 
         return;
     }
@@ -253,7 +248,7 @@ bool ChatReplyAction::HandleThunderfuryReply(Player* bot, ChatChannelSource chat
 {
     std::map<std::string, std::string> placeholders;
     const auto thunderfury = sObjectMgr->GetItemTemplate(19019);
-    placeholders["%thunderfury_link"] = GET_PLAYERBOT_AI(bot)->GetChatHelper()->FormatItem(thunderfury);
+    placeholders["%thunderfury_link"] = GET_PLAYERBOT_AI(bot)->GetChatHelper().FormatItem(thunderfury);
 
     std::string responseMessage = PlayerbotTextMgr::instance().GetBotText("thunderfury_spam", placeholders);
 
@@ -277,69 +272,105 @@ bool ChatReplyAction::HandleThunderfuryReply(Player* bot, ChatChannelSource chat
     return true;
 }
 
-bool ChatReplyAction::HandleToxicLinksReply(Player* bot, ChatChannelSource chatChannelSource, std::string&, std::string&)
+bool ChatReplyAction::HandleToxicLinksReply(Player& bot, ChatChannelSource chatChannelSource, const std::string&, const std::string&)
 {
-    //quests
-    std::vector<uint32> incompleteQuests;
-    for (uint16 slot = 0; slot < MAX_QUEST_LOG_SIZE; ++slot)
-    {
-        uint32 questId = bot->GetQuestSlotQuestId(slot);
-        if (!questId)
-            continue;
+    PlayerbotAI* const botAI = PlayerbotsMgr::instance().GetPlayerbotAI(&bot);
 
-        QuestStatus status = bot->GetQuestStatus(questId);
+    if (botAI == nullptr)
+    {
+        return false;
+    }
+
+    const ChatHelper& chatHelper = botAI->GetChatHelper();
+
+    std::vector<uint32> incompleteQuests{};
+
+    for (uint16_t slot = 0; slot < MAX_QUEST_LOG_SIZE; ++slot)
+    {
+        const uint32_t questId = bot.GetQuestSlotQuestId(slot);
+
+        if (questId == 0)
+        {
+            continue;
+        }
+
+        const QuestStatus status = bot.GetQuestStatus(questId);
+
         if (status == QUEST_STATUS_INCOMPLETE || status == QUEST_STATUS_NONE)
+        {
             incompleteQuests.push_back(questId);
+        }
     }
 
     //items
-    std::vector<Item*> botItems = GET_PLAYERBOT_AI(bot)->GetInventoryAndEquippedItems();
+    std::vector<Item*> botItems = botAI->GetInventoryAndEquippedItems();
 
-    std::map<std::string, std::string> placeholders;
-    placeholders["%random_inventory_item_link"] = botItems.size() > 0 ? GET_PLAYERBOT_AI(bot)->GetChatHelper()->FormatItem(botItems[rand() % botItems.size()]->GetTemplate()) : PlayerbotTextMgr::instance().GetBotText("string_empty_link");
-    placeholders["%prefix"] = sPlayerbotAIConfig.toxicLinksPrefix;
+    std::map<std::string, std::string> placeholders{
+        { "%random_inventory_item_link", PlayerbotTextMgr::instance().GetBotText("string_empty_link") },
+        { "%prefix", PlayerbotAIConfig::instance().toxicLinksPrefix },
+        { "%my_role", ChatHelper::FormatClass(&bot, AiFactory::GetPlayerSpecTab(&bot)) },
+        { "%area_name", PlayerbotTextMgr::instance().GetBotText("string_unknown_area") },
+        { "%zone_name", PlayerbotTextMgr::instance().GetBotText("string_unknown_area") },
+        { "%my_class", chatHelper.FormatClass(bot.getClass()) },
+        { "%my_race", chatHelper.FormatRace(bot.getRace()) },
+        { "%my_level", std::to_string(bot.GetLevel()) }
+    };
 
-    if (incompleteQuests.size() > 0)
+    if (!botItems.empty())
     {
-        Quest const* quest = sObjectMgr->GetQuestTemplate(incompleteQuests[rand() % incompleteQuests.size()]);
-        placeholders["%random_taken_quest_or_item_link"] = GET_PLAYERBOT_AI(bot)->GetChatHelper()->FormatQuest(quest);
-    }
-    else
-    {
-        placeholders["%random_taken_quest_or_item_link"] = placeholders["%random_inventory_item_link"];
-    }
-
-    placeholders["%my_role"] = ChatHelper::FormatClass(bot, AiFactory::GetPlayerSpecTab(bot));
-    AreaTableEntry const* current_area = GET_PLAYERBOT_AI(bot)->GetCurrentArea();
-    AreaTableEntry const* current_zone = GET_PLAYERBOT_AI(bot)->GetCurrentZone();
-    placeholders["%area_name"] = current_area ? GET_PLAYERBOT_AI(bot)->GetLocalizedAreaName(current_area) : PlayerbotTextMgr::instance().GetBotText("string_unknown_area");
-    placeholders["%zone_name"] = current_zone ? GET_PLAYERBOT_AI(bot)->GetLocalizedAreaName(current_zone) : PlayerbotTextMgr::instance().GetBotText("string_unknown_area");
-    placeholders["%my_class"] = GET_PLAYERBOT_AI(bot)->GetChatHelper()->FormatClass(bot->getClass());
-    placeholders["%my_race"] = GET_PLAYERBOT_AI(bot)->GetChatHelper()->FormatRace(bot->getRace());
-    placeholders["%my_level"] = std::to_string(bot->GetLevel());
-
-    switch (chatChannelSource)
-    {
-        case ChatChannelSource::SRC_WORLD:
-        {
-            GET_PLAYERBOT_AI(bot)->SayToWorld(PlayerbotTextMgr::instance().GetBotText("suggest_toxic_links", placeholders));
-            break;
-        }
-        case ChatChannelSource::SRC_GENERAL:
-        {
-            GET_PLAYERBOT_AI(bot)->SayToChannel(PlayerbotTextMgr::instance().GetBotText("suggest_toxic_links", placeholders), ChatChannelId::GENERAL);
-            break;
-        }
-        case ChatChannelSource::SRC_GUILD:
-        {
-            GET_PLAYERBOT_AI(bot)->SayToGuild(PlayerbotTextMgr::instance().GetBotText("suggest_toxic_links", placeholders));
-            break;
-        }
-        default:
-            break;
+        placeholders.at("%random_inventory_item_link") = chatHelper.FormatItem(botItems[rand() % botItems.size()]->GetTemplate());
     }
 
-    GET_PLAYERBOT_AI(bot)->GetAiObjectContext()->GetValue<time_t>("last said", "chat")->Set(time(0) + urand(5, 60));
+    placeholders.at("%random_taken_quest_or_item_link") = placeholders.at("%random_inventory_item_link");
+
+    if (!incompleteQuests.empty())
+    {
+        const Quest* const quest = sObjectMgr->GetQuestTemplate(incompleteQuests[rand() % incompleteQuests.size()]);
+
+        placeholders.at("%random_taken_quest_or_item_link") = chatHelper.FormatQuest(quest);
+    }
+
+    const AreaTableEntry* const current_area = botAI->GetCurrentArea();
+
+    if (current_area != nullptr)
+    {
+        placeholders.at("%area_name") = botAI->GetLocalizedAreaName(current_area);
+    }
+
+    const AreaTableEntry* const current_zone = botAI->GetCurrentZone();
+
+    if (current_zone != nullptr)
+    {
+        placeholders.at("%zone_name") = botAI->GetLocalizedAreaName(current_zone);
+    }
+
+    const std::string responseMessage = PlayerbotTextMgr::instance().GetBotText("suggest_toxic_links", placeholders);
+
+    if (chatChannelSource == ChatChannelSource::SRC_WORLD)
+    {
+        botAI->SayToWorld(responseMessage);
+    }
+
+    if (chatChannelSource == ChatChannelSource::SRC_GENERAL)
+    {
+        botAI->SayToChannel(responseMessage, ChatChannelId::GENERAL);
+    }
+
+    if (chatChannelSource == ChatChannelSource::SRC_GUILD)
+    {
+        botAI->SayToGuild(responseMessage);
+    }
+
+    const time_t now = std::time(nullptr);
+    const uint8_t randomDelay = urand(5, 60);
+    Value<time_t>* const lastSaidValue = botAI->GetAiObjectContext()->GetValue<time_t>("last said", "chat");
+
+    if (lastSaidValue == nullptr)
+    {
+        return true;
+    }
+
+    lastSaidValue->Set(now + randomDelay);
 
     return true;
 }
@@ -353,14 +384,9 @@ bool ChatReplyAction::HandleWTBItemsReply(Player& bot, ChatChannelSource chatCha
         return false;
     }
 
-    ChatHelper* const chatHelper = botAI->GetChatHelper();
+    const ChatHelper& chatHelper = botAI->GetChatHelper();
 
-    if (chatHelper == nullptr)
-    {
-        return false;
-    }
-
-    const std::set<uint32_t> messageItemIds = chatHelper->ExtractAllItemIds(msg);
+    const std::set<uint32_t> messageItemIds = chatHelper.ExtractAllItemIds(msg);
 
     if (messageItemIds.empty())
     {
@@ -386,8 +412,8 @@ bool ChatReplyAction::HandleWTBItemsReply(Player& bot, ChatChannelSource chatCha
         { "%other_name", name },
         { "%area_name", PlayerbotTextMgr::instance().GetBotText("string_unknown_area") },
         { "%zone_name", PlayerbotTextMgr::instance().GetBotText("string_unknown_area") },
-        { "%my_class", chatHelper->FormatClass(bot.getClass()) },
-        { "%my_race", chatHelper->FormatRace(bot.getRace()) },
+        { "%my_class", chatHelper.FormatClass(bot.getClass()) },
+        { "%my_race", chatHelper.FormatRace(bot.getRace()) },
         { "%my_level", std::to_string(bot.GetLevel()) },
         { "%my_role", ChatHelper::FormatClass(&bot, AiFactory::GetPlayerSpecTab(&bot)) },
         { "%formatted_item_links", "" }
@@ -418,7 +444,7 @@ bool ChatReplyAction::HandleWTBItemsReply(Player& bot, ChatChannelSource chatCha
             continue;
         }
 
-        formattedLinks += chatHelper->FormatItem(proto, botAI->GetInventoryItemsCountWithId(matchingItemId));
+        formattedLinks += chatHelper.FormatItem(proto, botAI->GetInventoryItemsCountWithId(matchingItemId));
         formattedLinks += " ";
     }
 
@@ -503,14 +529,8 @@ bool ChatReplyAction::HandleLFGQuestsReply(Player& bot, ChatChannelSource chatCh
         return false;
     }
 
-    ChatHelper* const chatHelper = botAI->GetChatHelper();
-
-    if (chatHelper == nullptr)
-    {
-        return false;
-    }
-
-    const std::set<uint32_t> messageQuestIds = chatHelper->ExtractAllQuestIds(msg);
+    const ChatHelper& chatHelper = botAI->GetChatHelper();
+    const std::set<uint32_t> messageQuestIds = chatHelper.ExtractAllQuestIds(msg);
 
     if (messageQuestIds.empty())
     {
@@ -541,8 +561,8 @@ bool ChatReplyAction::HandleLFGQuestsReply(Player& bot, ChatChannelSource chatCh
         { "%quest_links", "" },
         { "%area_name", PlayerbotTextMgr::instance().GetBotText("string_unknown_area") },
         { "%zone_name", PlayerbotTextMgr::instance().GetBotText("string_unknown_area") },
-        { "%my_class", chatHelper->FormatClass(bot.getClass()) },
-        { "%my_race", chatHelper->FormatRace(bot.getRace()) },
+        { "%my_class", chatHelper.FormatClass(bot.getClass()) },
+        { "%my_race", chatHelper.FormatRace(bot.getRace()) },
         { "%my_level", std::to_string(bot.GetLevel()) },
         { "%my_role", ChatHelper::FormatClass(&bot, AiFactory::GetPlayerSpecTab(&bot)) },
     };
@@ -568,7 +588,7 @@ bool ChatReplyAction::HandleLFGQuestsReply(Player& bot, ChatChannelSource chatCh
             continue;
         }
 
-        formattedQuestLinks += chatHelper->FormatQuest(quest);
+        formattedQuestLinks += chatHelper.FormatQuest(quest);
     }
 
     const time_t now = std::time(nullptr);

@@ -174,10 +174,10 @@ uint32 MoneyNeededForValue::Calculate()
             if (botAI->HasStrategy("guild", BOT_STATE_NON_COMBAT))
             {
                 if (bot->GetGuildId())
-                    moneyWanted = AI_VALUE2(uint32, "item count", chat->FormatQItem(5976)) ? 0 : 10000;  // 1g (tabard)
+                    moneyWanted = AI_VALUE2(uint32, "item count", chat.FormatQItem(5976)) ? 0 : 10000;  // 1g (tabard)
                 else
                     moneyWanted =
-                        AI_VALUE2(uint32, "item count", chat->FormatQItem(5863)) ? 0 : 10000;  // 10s (guild charter)
+                        AI_VALUE2(uint32, "item count", chat.FormatQItem(5863)) ? 0 : 10000;  // 10s (guild charter)
             }
             break;
         case NeedMoneyFor::tradeskill:

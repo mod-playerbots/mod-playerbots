@@ -57,7 +57,7 @@ bool SkipSpellsListAction::Execute(Event event)
             else
                 out << ", ";
 
-            out << chat->FormatSpell(spellInfo);
+            out << chat.FormatSpell(spellInfo);
         }
 
         botAI->TellMaster(out);
@@ -68,7 +68,9 @@ bool SkipSpellsListAction::Execute(Event event)
         if (remove)
             cmd = cmd.substr(1);
 
-        uint32 spellId = chat->parseSpell(cmd);
+        PlayerbotChatHandler handler(botAI->GetBot());
+        uint32 spellId = handler.extractSpellId(cmd);
+
         if (!spellId)
         {
             botAI->TellError("Unknown spell");
@@ -87,7 +89,7 @@ bool SkipSpellsListAction::Execute(Event event)
                 skipSpells.erase(j);
 
                 std::ostringstream out;
-                out << chat->FormatSpell(spellInfo) << " removed from ignored spells";
+                out << chat.FormatSpell(spellInfo) << " removed from ignored spells";
                 botAI->TellMaster(out);
                 return true;
             }
@@ -100,7 +102,7 @@ bool SkipSpellsListAction::Execute(Event event)
                 skipSpells.insert(spellId);
 
                 std::ostringstream out;
-                out << chat->FormatSpell(spellInfo) << " added to ignored spells";
+                out << chat.FormatSpell(spellInfo) << " added to ignored spells";
                 botAI->TellMaster(out);
                 return true;
             }

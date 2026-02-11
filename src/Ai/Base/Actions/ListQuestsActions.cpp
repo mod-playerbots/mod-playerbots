@@ -85,7 +85,7 @@ uint32 ListQuestsAction::ListQuests(bool completed, bool silent, QuestTravelDeta
         if (silent)
             continue;
 
-        botAI->TellMaster(chat->FormatQuest(pQuest));
+        botAI->TellMaster(chat.FormatQuest(pQuest));
 
         if (travelDetail != QUEST_TRAVEL_DETAIL_NONE && target->getDestination())
         {

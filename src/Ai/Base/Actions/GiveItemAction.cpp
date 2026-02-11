@@ -43,13 +43,13 @@ bool GiveItemAction::Execute(Event)
             receiver->MoveItemToInventory(dest, item, true);
 
             std::ostringstream out;
-            out << "Got " << chat->FormatItem(item->GetTemplate(), item->GetCount()) << " from " << bot->GetName();
+            out << "Got " << chat.FormatItem(item->GetTemplate(), item->GetCount()) << " from " << bot->GetName();
             receiverAi->TellMasterNoFacing(out.str());
         }
         else
         {
             std::ostringstream out;
-            out << "Cannot get " << chat->FormatItem(item->GetTemplate(), item->GetCount()) << " from "
+            out << "Cannot get " << chat.FormatItem(item->GetTemplate(), item->GetCount()) << " from "
                 << bot->GetName() << "- my bags are full";
             receiverAi->TellError(out.str());
         }

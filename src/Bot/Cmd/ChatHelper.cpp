@@ -3,16 +3,16 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include <charconv>
+
 #include "ChatHelper.h"
 
 #include "AiFactory.h"
 #include "Common.h"
 #include "ItemTemplate.h"
 #include "ObjectMgr.h"
-#include "Playerbots.h"
+#include "Player.h"
 #include "SpellInfo.h"
-
-#include <regex>
 
 std::map<std::string, uint32> ChatHelper::consumableSubClasses;
 std::map<std::string, uint32> ChatHelper::tradeSubClasses;
@@ -63,20 +63,6 @@ ChatHelper::ChatHelper(PlayerbotAI* botAI) : PlayerbotAIAware(botAI)
 
     projectileSubClasses["arrows"] = ITEM_SUBCLASS_ARROW;
     projectileSubClasses["bullets"] = ITEM_SUBCLASS_BULLET;
-
-    // tradeSubClasses["cloth"] = ITEM_SUBCLASS_CLOTH;
-    // tradeSubClasses["leather"] = ITEM_SUBCLASS_LEATHER;
-    // tradeSubClasses["metal"] = ITEM_SUBCLASS_METAL_STONE;
-    // tradeSubClasses["stone"] = ITEM_SUBCLASS_METAL_STONE;
-    // tradeSubClasses["ore"] = ITEM_SUBCLASS_METAL_STONE;
-    // tradeSubClasses["meat"] = ITEM_SUBCLASS_MEAT;
-    // tradeSubClasses["herb"] = ITEM_SUBCLASS_HERB;
-    // tradeSubClasses["elemental"] = ITEM_SUBCLASS_ELEMENTAL;
-    // tradeSubClasses["disenchants"] = ITEM_SUBCLASS_ENCHANTING;
-    // tradeSubClasses["enchanting"] = ITEM_SUBCLASS_ENCHANTING;
-    // tradeSubClasses["gems"] = ITEM_SUBCLASS_JEWELCRAFTING;
-    // tradeSubClasses["jewels"] = ITEM_SUBCLASS_JEWELCRAFTING;
-    // tradeSubClasses["jewelcrafting"] = ITEM_SUBCLASS_JEWELCRAFTING;
 
     slots["head"] = EQUIPMENT_SLOT_HEAD;
     slots["neck"] = EQUIPMENT_SLOT_NECK;
@@ -490,12 +476,6 @@ std::string const ChatHelper::FormatChat(ChatMsg chat)
     }
 
     return "unknown";
-}
-
-uint32 ChatHelper::parseSpell(std::string const text)
-{
-    PlayerbotChatHandler handler(botAI->GetBot());
-    return handler.extractSpellId(text);
 }
 
 GuidVector ChatHelper::parseGameobjects(std::string const text)

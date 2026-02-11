@@ -78,8 +78,8 @@ std::string const WhoAction::QueryTrade(std::string const text)
         if (!sellPrice)
             continue;
 
-        out << "Selling " << chat->FormatItem(sell->GetTemplate(), sell->GetCount()) << " for "
-            << chat->formatMoney(sellPrice);
+        out << "Selling " << chat.FormatItem(sell->GetTemplate(), sell->GetCount()) << " for "
+            << chat.formatMoney(sellPrice);
         return out.str();
     }
 
@@ -89,11 +89,11 @@ std::string const WhoAction::QueryTrade(std::string const text)
 std::string const WhoAction::QuerySkill(std::string const text)
 {
     std::ostringstream out;
-    uint32 skill = chat->parseSkill(text);
+    uint32 skill = chat.parseSkill(text);
     if (!skill || !botAI->HasSkill((SkillType)skill))
         return "";
 
-    std::string const skillName = chat->FormatSkill(skill);
+    std::string const skillName = chat.FormatSkill(skill);
     uint32 spellId = AI_VALUE2(uint32, "spell id", skillName);
     uint16 value = bot->GetSkillValue(skill);
     uint16 maxSkill = bot->GetMaxSkillValue(skill);
@@ -114,8 +114,8 @@ std::string const WhoAction::QuerySpec(std::string)
 
     uint8 spec = AiFactory::GetPlayerSpecTab(bot);
 
-    out << "|h|cffffffff" << chat->FormatRace(bot->getRace()) << " [" << (bot->getGender() == GENDER_MALE ? "M" : "F")
-        << "] " << chat->FormatClass(bot, spec);
+    out << "|h|cffffffff" << chat.FormatRace(bot->getRace()) << " [" << (bot->getGender() == GENDER_MALE ? "M" : "F")
+        << "] " << chat.FormatClass(bot, spec);
     out << " (|h|cff00ff00" << (uint32)bot->GetLevel() << "|h|cffffffff lvl), ";
     out << "|h|cff00ff00" << botAI->GetEquipGearScore(bot/*, false, false*/) << "|h|cffffffff GS (";
 

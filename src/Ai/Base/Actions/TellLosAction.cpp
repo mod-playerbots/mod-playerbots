@@ -72,7 +72,7 @@ void TellLosAction::ListGameObjects(std::string const title, GuidVector gos)
     for (ObjectGuid const guid : gos)
     {
         if (GameObject* go = botAI->GetGameObject(guid))
-            botAI->TellMaster(chat->FormatGameobject(go));
+            botAI->TellMaster(chat.FormatGameobject(go));
     }
 }
 
@@ -138,7 +138,7 @@ bool TellEstimatedDpsAction::Execute(Event)
 bool TellCalculateItemAction::Execute(Event event)
 {
     std::string const text = event.getParam();
-    ItemWithRandomProperty item = chat->parseItemWithRandomProperty(text);
+    ItemWithRandomProperty item = chat.parseItemWithRandomProperty(text);
     StatsWeightCalculator calculator(bot);
 
     const ItemTemplate* proto = sObjectMgr->GetItemTemplate(item.itemId);
@@ -147,7 +147,7 @@ bool TellCalculateItemAction::Execute(Event event)
     float score = calculator.CalculateItem(item.itemId, item.randomPropertyId);
 
     std::ostringstream out;
-    out << "Calculated score of " << chat->FormatItem(proto) << " : " << score;
+    out << "Calculated score of " << chat.FormatItem(proto) << " : " << score;
     botAI->TellMasterNoFacing(out.str());
     return true;
 }

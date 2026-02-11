@@ -408,7 +408,7 @@ bool StoreLootAction::Execute(Event event)
             if (maxStack == 1)
                 continue;
 
-            std::vector<Item*> found = parseItems(chat->FormatItem(proto));
+            std::vector<Item*> found = parseItems(chat.FormatItem(proto));
 
             bool hasFreeStack = false;
 

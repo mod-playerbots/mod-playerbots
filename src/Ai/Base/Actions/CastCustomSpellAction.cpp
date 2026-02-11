@@ -40,7 +40,7 @@ bool CastCustomSpellAction::Execute(Event event)
     Unit* target = nullptr;
     std::string text = event.getParam();
 
-    GuidVector gos = chat->parseGameobjects(text);
+    GuidVector gos = chat.parseGameobjects(text);
     if (!gos.empty())
     {
         for (auto go : gos)
@@ -51,7 +51,7 @@ bool CastCustomSpellAction::Execute(Event event)
             if (!botAI->GetUnit(go) || !botAI->GetUnit(go)->IsInWorld())
                 continue;
 
-            chat->eraseAllSubStr(text, chat->FormatWorldobject(botAI->GetUnit(go)));
+            chat.eraseAllSubStr(text, chat.FormatWorldobject(botAI->GetUnit(go)));
         }
 
         ltrim(text);
@@ -146,7 +146,7 @@ bool CastCustomSpellAction::Execute(Event event)
     if (bot->GetTrader())
         spellName << "trade item";
     else if (itemTarget)
-        spellName << chat->FormatItem(itemTarget->GetTemplate());
+        spellName << chat.FormatItem(itemTarget->GetTemplate());
     else if (target == bot)
         spellName << "self";
     else
@@ -187,7 +187,7 @@ bool CastCustomNcSpellAction::isUseful() { return !bot->IsInCombat(); }
 
 std::string const CastCustomNcSpellAction::castString(WorldObject* target)
 {
-    return "castnc " + chat->FormatWorldobject(target);
+    return "castnc " + chat.FormatWorldobject(target);
 }
 
 bool CastRandomSpellAction::AcceptSpell(SpellInfo const* spellInfo)
@@ -209,7 +209,7 @@ bool CastRandomSpellAction::Execute(Event event)
     if (name.empty())
         name = getName();
 
-    GuidVector wos = chat->parseGameobjects(name);
+    GuidVector wos = chat.parseGameobjects(name);
     for (auto wo : wos)
     {
         target = botAI->GetUnit(wo);
@@ -289,7 +289,7 @@ bool CastRandomSpellAction::Execute(Event event)
             if (MultiCast && ((wo && bot->HasInArc(CAST_ANGLE_IN_FRONT, wo, sPlayerbotAIConfig.sightDistance))))
             {
                 std::ostringstream cmd;
-                cmd << "castnc " << chat->FormatWorldobject(wo) + " " << spellId << " " << 19;
+                cmd << "castnc " << chat.FormatWorldobject(wo) + " " << spellId << " " << 19;
                 botAI->HandleCommand(CHAT_MSG_WHISPER, cmd.str(), bot);
             }
             return true;
@@ -348,7 +348,7 @@ bool DisEnchantRandomItemAction::Execute(Event)
             return false;
 
         if (CastCustomSpellAction::Execute(
-                Event("disenchant random item", "13262 " + chat->FormatQItem(item->GetEntry()))))
+                Event("disenchant random item", "13262 " + chat.FormatQItem(item->GetEntry()))))
             return true;
     }
 

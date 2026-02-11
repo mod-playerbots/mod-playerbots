@@ -24,7 +24,7 @@ bool TellCastFailedAction::Execute(Event event)
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
 
     std::ostringstream out;
-    out << chat->FormatSpell(spellInfo) << ": ";
+    out << chat.FormatSpell(spellInfo) << ": ";
     switch (result)
     {
         case SPELL_FAILED_NOT_READY:
@@ -68,7 +68,7 @@ bool TellSpellAction::Execute(Event event)
         return false;
 
     std::ostringstream out;
-    out << chat->FormatSpell(spellInfo);
+    out << chat.FormatSpell(spellInfo);
     botAI->TellError(out.str());
     return true;
 }

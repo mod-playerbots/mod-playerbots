@@ -49,7 +49,7 @@ std::vector<std::pair<uint32, std::string>> ListSpellsAction::GetSpellList(std::
     std::vector<std::string> ss = split(filter, ' ');
     if (!ss.empty())
     {
-        skill = chat->parseSkill(ss[0]);
+        skill = chat.parseSkill(ss[0]);
         if (skill != SKILL_NONE)
         {
             filter = ss.size() > 1 ? ss[1] : "";
@@ -101,7 +101,7 @@ std::vector<std::pair<uint32, std::string>> ListSpellsAction::GetSpellList(std::
             std::vector<std::string> skillTokens = split(skillFilter, ' ');
             if (!skillTokens.empty())
             {
-                uint32 parsedSkill = chat->parseSkill(skillTokens[0]);
+                uint32 parsedSkill = chat.parseSkill(skillTokens[0]);
                 if (parsedSkill != SKILL_NONE)
                 {
                     skill = parsedSkill;
@@ -116,7 +116,7 @@ std::vector<std::pair<uint32, std::string>> ListSpellsAction::GetSpellList(std::
         filter.erase(remove(filter.begin(), filter.end(), '+'), filter.end());
     }
 
-    uint32 slot = chat->parseSlot(filter);
+    uint32 slot = chat.parseSlot(filter);
     if (slot != EQUIPMENT_SLOT_END)
         filter.clear();
 
@@ -171,7 +171,7 @@ std::vector<std::pair<uint32, std::string>> ListSpellsAction::GetSpellList(std::
                     else
                         materials << ", ";
 
-                    materials << chat->FormatItem(proto, reagentsRequired);
+                    materials << chat.FormatItem(proto, reagentsRequired);
 
                     FindItemByIdVisitor visitor(itemid);
                     uint32 reagentsInInventory = InventoryAction::GetItemCount(&visitor);
@@ -207,7 +207,7 @@ std::vector<std::pair<uint32, std::string>> ListSpellsAction::GetSpellList(std::
                         if (craftsPossible)
                             out << "|cffffff00(x" << craftsPossible << ")|r ";
 
-                        out << chat->FormatItem(proto);
+                        out << chat.FormatItem(proto);
 
                         if ((minLevel || maxLevel) && (!proto->RequiredLevel || proto->RequiredLevel < minLevel ||
                                                        proto->RequiredLevel > maxLevel))
@@ -227,7 +227,7 @@ std::vector<std::pair<uint32, std::string>> ListSpellsAction::GetSpellList(std::
         }
 
         if (out.str().empty())
-            out << chat->FormatSpell(spellInfo);
+            out << chat.FormatSpell(spellInfo);
 
         if (filtered)
             continue;

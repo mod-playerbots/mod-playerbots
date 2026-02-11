@@ -57,7 +57,7 @@ bool SendMailAction::Execute(Event event)
         return false;
     }
 
-    ItemIds ids = chat->parseItems(text);
+    ItemIds ids = chat.parseItems(text);
     if (ids.size() > 1)
     {
         bot->Whisper("You can not request more than one item", LANG_UNIVERSAL, tellTo);
@@ -66,7 +66,7 @@ bool SendMailAction::Execute(Event event)
 
     if (ids.empty())
     {
-        uint32 money = chat->parseMoney(text);
+        uint32 money = chat.parseMoney(text);
         if (!money)
             return false;
 

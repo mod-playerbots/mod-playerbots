@@ -18,7 +18,7 @@ bool UseItemAction::Execute(Event event)
         name = getName();
 
     std::vector<Item*> items = AI_VALUE2(std::vector<Item*>, "inventory items", name);
-    GuidVector gos = chat->parseGameobjects(name);
+    GuidVector gos = chat.parseGameobjects(name);
 
     if (gos.empty())
     {
@@ -48,7 +48,7 @@ bool UseItemAction::UseGameObject(ObjectGuid guid)
     go->Use(bot);
 
     std::ostringstream out;
-    out << "Using " << chat->FormatGameobject(go);
+    out << "Using " << chat.FormatGameobject(go);
     botAI->TellMasterNoFacing(out.str());
     return true;
 }
@@ -93,7 +93,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
     bool targetSelected = false;
 
     std::ostringstream out;
-    out << "Using " << chat->FormatItem(item->GetTemplate());
+    out << "Using " << chat.FormatItem(item->GetTemplate());
 
     if (item->GetTemplate()->Stackable > 1)
     {
@@ -114,7 +114,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
 
         packet << targetFlag;
         packet << goGuid.WriteAsPacked();
-        out << " on " << chat->FormatGameobject(go);
+        out << " on " << chat.FormatGameobject(go);
         targetSelected = true;
     }
 
@@ -133,7 +133,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
             targetFlag = TARGET_FLAG_ITEM;
             packet << targetFlag;
             packet << itemTarget->GetGUID().WriteAsPacked();
-            out << " on " << chat->FormatItem(itemTarget->GetTemplate());
+            out << " on " << chat.FormatItem(itemTarget->GetTemplate());
             targetSelected = true;
         }
     }
@@ -174,7 +174,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
             bot->GetSession()->HandleQuestgiverAcceptQuestOpcode(packet);
 
             std::ostringstream out;
-            out << "Got quest " << chat->FormatQuest(qInfo);
+            out << "Got quest " << chat.FormatQuest(qInfo);
             botAI->TellMasterNoFacing(out.str());
             return true;
         }
@@ -225,7 +225,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
                 packet << targetFlag;
                 packet << itemForSpell->GetGUID().WriteAsPacked();
                 targetSelected = true;
-                out << " on " << chat->FormatItem(itemForSpell->GetTemplate());
+                out << " on " << chat.FormatItem(itemForSpell->GetTemplate());
             }
             uint32 castTime = spellInfo->CalcCastTime();
             botAI->SetNextCheckDelay(castTime + sPlayerbotAIConfig.reactDelay);
@@ -315,7 +315,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
 void UseItemAction::TellConsumableUse(Item* item, std::string const action, float percent)
 {
     std::ostringstream out;
-    out << action << " " << chat->FormatItem(item->GetTemplate());
+    out << action << " " << chat.FormatItem(item->GetTemplate());
 
     if (item->GetTemplate()->Stackable > 1)
         out << "/x" << item->GetCount();
@@ -373,8 +373,8 @@ bool UseItemAction::SocketItem(Item* item, Item* gem, bool replace)
     if (fits)
     {
         std::ostringstream out;
-        out << "Socketing " << chat->FormatItem(item->GetTemplate());
-        out << " with " << chat->FormatItem(gem->GetTemplate());
+        out << "Socketing " << chat.FormatItem(item->GetTemplate());
+        out << " with " << chat.FormatItem(gem->GetTemplate());
         botAI->TellMaster(out);
 
         WorldPackets::Item::SocketGems nicePacket(std::move(packet));

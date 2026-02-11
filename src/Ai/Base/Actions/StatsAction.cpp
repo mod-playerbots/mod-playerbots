@@ -31,7 +31,7 @@ bool StatsAction::Execute(Event)
     return true;
 }
 
-void StatsAction::ListGold(std::ostringstream& out) { out << chat->formatMoney(bot->GetMoney()); }
+void StatsAction::ListGold(std::ostringstream& out) { out << chat.formatMoney(bot->GetMoney()); }
 
 void StatsAction::ListBagSlots(std::ostringstream& out)
 {
@@ -116,7 +116,7 @@ void StatsAction::ListRepairCost(std::ostringstream& out)
     if (repairPercent < 25)
         color = "ffff0000";
 
-    out << "|c" << color << (uint32)ceil(repairPercent) << "% (" << chat->formatMoney(totalCost) << ")|cffffffff Dur";
+    out << "|c" << color << (uint32)ceil(repairPercent) << "% (" << chat.formatMoney(totalCost) << ")|cffffffff Dur";
 }
 
 uint32 StatsAction::EstRepair(uint16 pos)

@@ -25,7 +25,7 @@ bool BuyAction::Execute(Event event)
         buyUseful = true;
     else
     {
-        itemIds = chat->parseItems(link);
+        itemIds = chat.parseItems(link);
     }
 
     GuidVector vendors = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();

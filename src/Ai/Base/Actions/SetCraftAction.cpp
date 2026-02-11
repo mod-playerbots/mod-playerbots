@@ -34,7 +34,7 @@ bool SetCraftAction::Execute(Event event)
         return true;
     }
 
-    ItemIds itemIds = chat->parseItems(link);
+    ItemIds itemIds = chat.parseItems(link);
     if (itemIds.empty())
     {
         botAI->TellMaster("Usage: 'craft [itemId]' or 'craft reset'");
@@ -121,7 +121,7 @@ void SetCraftAction::TellCraft()
         return;
 
     std::ostringstream out;
-    out << "I will craft " << chat->FormatItem(proto) << " using reagents: ";
+    out << "I will craft " << chat.FormatItem(proto) << " using reagents: ";
 
     bool first = true;
     for (std::map<uint32, uint32>::iterator i = data.required.begin(); i != data.required.end(); ++i)
@@ -138,7 +138,7 @@ void SetCraftAction::TellCraft()
             else
                 out << ", ";
 
-            out << chat->FormatItem(reagent, required);
+            out << chat.FormatItem(reagent, required);
 
             uint32 given = data.obtained[item];
             if (given)
@@ -148,7 +148,7 @@ void SetCraftAction::TellCraft()
         }
     }
 
-    out << " (craft fee: " << chat->formatMoney(GetCraftFee(data)) << ")";
+    out << " (craft fee: " << chat.formatMoney(GetCraftFee(data)) << ")";
     botAI->TellMaster(out.str());
 }
 

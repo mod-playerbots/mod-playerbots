@@ -34,7 +34,7 @@ bool FlagAction::Execute(Event event)
             bot->SetPvP(!bot->IsPvP());
 
         std::ostringstream out;
-        out << ss[0] << " flag is " << chat->FormatBoolean(bot->IsPvP());
+        out << ss[0] << " flag is " << chat.FormatBoolean(bot->IsPvP());
         botAI->TellMaster(out.str());
         return true;
     }
@@ -56,7 +56,7 @@ bool FlagAction::Execute(Event event)
         bot->SetFlag(PLAYER_FLAGS, playerFlags);
 
     std::ostringstream out;
-    out << ss[0] << " flag is " << chat->FormatBoolean(!bot->HasFlag(PLAYER_FLAGS, playerFlags));
+    out << ss[0] << " flag is " << chat.FormatBoolean(!bot->HasFlag(PLAYER_FLAGS, playerFlags));
     botAI->TellMaster(out.str());
     return true;
 }

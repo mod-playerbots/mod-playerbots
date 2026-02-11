@@ -106,7 +106,7 @@ bool BuffAction::Execute(Event event)
         {
             Item* item = *j;
             std::ostringstream out;
-            out << chat->FormatItem(item->GetTemplate(), item->GetCount());
+            out << chat.FormatItem(item->GetTemplate(), item->GetCount());
             botAI->TellMaster(out);
         }
     }

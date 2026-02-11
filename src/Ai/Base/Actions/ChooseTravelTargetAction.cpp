@@ -243,7 +243,7 @@ void ChooseTravelTargetAction::ReportTravelTarget(TravelTarget* newTarget, Trave
 
         out << round(newTarget->getDestination()->distanceTo(&botLocation)) << "y";
 
-        out << " for " << chat->FormatQuest(quest);
+        out << " for " << chat.FormatQuest(quest);
 
         out << " to " << QuestDestination->getTitle();
 

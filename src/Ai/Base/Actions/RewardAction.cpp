@@ -13,7 +13,7 @@ bool RewardAction::Execute(Event event)
 {
     std::string const link = event.getParam();
 
-    ItemIds itemIds = chat->parseItems(link);
+    ItemIds itemIds = chat.parseItems(link);
     if (itemIds.empty())
         return false;
 
@@ -69,7 +69,7 @@ bool RewardAction::Reward(uint32 itemId, Object* questGiver)
                     std::string const itemName = pRewardItem->Name1;
 
                     std::ostringstream out;
-                    out << chat->FormatItem(pRewardItem) << " rewarded";
+                    out << chat.FormatItem(pRewardItem) << " rewarded";
                     botAI->TellMaster(out);
 
                     return true;

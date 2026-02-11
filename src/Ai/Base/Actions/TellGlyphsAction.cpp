@@ -96,8 +96,8 @@ bool TellGlyphsAction::Execute(Event event)
         if (!first)
             list << ", ";
 
-        // chat->FormatItem
-        list << chat->FormatItem(it->second);
+        // chat.FormatItem
+        list << chat.FormatItem(it->second);
         first = false;
     }
 

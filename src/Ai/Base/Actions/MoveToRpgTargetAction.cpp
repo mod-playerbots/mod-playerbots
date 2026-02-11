@@ -37,7 +37,7 @@ bool MoveToRpgTargetAction::Execute(Event)
     {
         std::ostringstream out;
         out << "Heading to: ";
-        out << chat->FormatWorldobject(guidP.GetWorldObject());
+        out << chat.FormatWorldobject(guidP.GetWorldObject());
         botAI->TellMasterNoFacing(out);
     }
 

@@ -98,7 +98,7 @@ bool BuyPetitionAction::canBuyPetition(Player* bot)
 
 bool PetitionOfferAction::Execute(Event event)
 {
-    std::vector<Item*> petitions = AI_VALUE2(std::vector<Item*>, "inventory items", chat->FormatQItem(5863));
+    std::vector<Item*> petitions = AI_VALUE2(std::vector<Item*>, "inventory items", chat.FormatQItem(5863));
 
     if (petitions.empty())
         return false;
@@ -205,14 +205,14 @@ bool PetitionOfferNearbyAction::Execute(Event)
 
 bool PetitionOfferNearbyAction::isUseful()
 {
-    return !bot->GetGuildId() && AI_VALUE2(uint32, "item count", chat->FormatQItem(5863)) &&
+    return !bot->GetGuildId() && AI_VALUE2(uint32, "item count", chat.FormatQItem(5863)) &&
            AI_VALUE(uint8, "petition signs") < sWorld->getIntConfig(CONFIG_MIN_PETITION_SIGNS);
 }
 
 bool PetitionTurnInAction::Execute(Event)
 {
     GuidVector vendors = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-    std::vector<Item*> petitions = AI_VALUE2(std::vector<Item*>, "inventory items", chat->FormatQItem(5863));
+    std::vector<Item*> petitions = AI_VALUE2(std::vector<Item*>, "inventory items", chat.FormatQItem(5863));
 
     if (petitions.empty())
         return false;
@@ -291,7 +291,7 @@ bool PetitionTurnInAction::isUseful()
             inCity = true;
     }
 
-    return inCity && !bot->GetGuildId() && AI_VALUE2(uint32, "item count", chat->FormatQItem(5863)) &&
+    return inCity && !bot->GetGuildId() && AI_VALUE2(uint32, "item count", chat.FormatQItem(5863)) &&
            AI_VALUE(uint8, "petition signs") >= sWorld->getIntConfig(CONFIG_MIN_PETITION_SIGNS) &&
            !context->GetValue<TravelTarget*>("travel target")->Get()->isTraveling();
 }
@@ -299,7 +299,7 @@ bool PetitionTurnInAction::isUseful()
 bool BuyTabardAction::Execute(Event)
 {
     bool canBuy = botAI->DoSpecificAction(CreateNextAction<BuyAction>(1.0f).factory, Event("buy tabard", "Hitem:5976:"));
-    if (canBuy && AI_VALUE2(uint32, "item count", chat->FormatQItem(5976)))
+    if (canBuy && AI_VALUE2(uint32, "item count", chat.FormatQItem(5976)))
         return true;
 
     TravelTarget* oldTarget = context->GetValue<TravelTarget*>("travel target")->Get();
@@ -328,7 +328,7 @@ bool BuyTabardAction::isUseful()
             inCity = true;
     }
 
-    return inCity && bot->GetGuildId() && !AI_VALUE2(uint32, "item count", chat->FormatQItem(5976)) &&
+    return inCity && bot->GetGuildId() && !AI_VALUE2(uint32, "item count", chat.FormatQItem(5976)) &&
            AI_VALUE2(uint32, "free money for", uint32(NeedMoneyFor::guild)) >= 10000 &&
            !context->GetValue<TravelTarget*>("travel target")->Get()->isTraveling();
 }

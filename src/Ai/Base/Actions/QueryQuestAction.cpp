@@ -11,7 +11,7 @@
 
 void QueryQuestAction::TellObjective(std::string const name, uint32 available, uint32 required)
 {
-    botAI->TellMaster(chat->FormatQuestObjective(name, available, required));
+    botAI->TellMaster(chat.FormatQuestObjective(name, available, required));
 }
 
 bool QueryQuestAction::Execute(Event event)
@@ -25,7 +25,7 @@ bool QueryQuestAction::Execute(Event event)
     if (text.find("travel") != std::string::npos)
     {
         travel = true;
-        chat->eraseAllSubStr(text, " travel");
+        chat.eraseAllSubStr(text, " travel");
     }
 
     PlayerbotChatHandler ch(bot);
@@ -54,7 +54,7 @@ bool QueryQuestAction::Execute(Event event)
             continue;
 
         std::ostringstream out;
-        out << "--- " << chat->FormatQuest(sObjectMgr->GetQuestTemplate(questId)) << " ";
+        out << "--- " << chat.FormatQuest(sObjectMgr->GetQuestTemplate(questId)) << " ";
 
         if (bot->GetQuestStatus(questId) == QUEST_STATUS_COMPLETE)
         {
@@ -135,7 +135,7 @@ void QueryQuestAction::TellObjectives(uint32 questId)
             uint32 available = questStatus.ItemCount[i];
             ItemTemplate const* proto = sObjectMgr->GetItemTemplate(questTemplate->RequiredItemId[i]);
             if (proto)
-                TellObjective(chat->FormatItem(proto), available, required);
+                TellObjective(chat.FormatItem(proto), available, required);
         }
 
         // Checks for required NPCs or GOs

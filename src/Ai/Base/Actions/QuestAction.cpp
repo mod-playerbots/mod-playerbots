@@ -250,14 +250,14 @@ bool QuestAction::AcceptQuest(Quest const* quest, ObjectGuid questGiver)
         if (bot->GetQuestStatus(questId) != QUEST_STATUS_NONE && bot->GetQuestStatus(questId) != QUEST_STATUS_REWARDED)
         {
             BroadcastHelper::BroadcastQuestAccepted(botAI, bot, quest);
-            out << "Accepted " << chat->FormatQuest(quest);
+            out << "Accepted " << chat.FormatQuest(quest);
             botAI->TellMaster(out);
             return true;
         }
         out << "Cannot accept";
     }
 
-    out << " " << chat->FormatQuest(quest);
+    out << " " << chat.FormatQuest(quest);
     botAI->TellMaster(out);
 
     return false;
@@ -356,13 +356,13 @@ bool QuestUpdateAddItemAction::Execute(Event event)
     if (itemPrototype)
     {
         std::map<std::string, std::string> placeholders;
-        placeholders["%item_link"] = botAI->GetChatHelper()->FormatItem(itemPrototype);
+        placeholders["%item_link"] = botAI->GetChatHelper().FormatItem(itemPrototype);
         uint32 availableItemsCount = botAI->GetInventoryItemsCountWithId(itemId);
         placeholders["%quest_obj_available"] = std::to_string(availableItemsCount);
 
         for (auto const& pair : botAI->GetCurrentQuestsRequiringItemId(itemId))
         {
-            placeholders["%quest_link"] = chat->FormatQuest(pair.first);
+            placeholders["%quest_link"] = chat.FormatQuest(pair.first);
             uint32 requiredItemsCount = pair.second;
             placeholders["%quest_obj_required"] = std::to_string(requiredItemsCount);
             if (botAI->HasStrategy("debug quest", BotState::BOT_STATE_COMBAT) || botAI->HasStrategy("debug quest", BotState::BOT_STATE_NON_COMBAT))
@@ -451,7 +451,7 @@ bool QuestUpdateFailedTimerAction::Execute(Event event)
     if (qInfo)
     {
         std::map<std::string, std::string> placeholders;
-        placeholders["%quest_link"] = botAI->GetChatHelper()->FormatQuest(qInfo);
+        placeholders["%quest_link"] = botAI->GetChatHelper().FormatQuest(qInfo);
         botAI->TellMaster(PlayerbotTextMgr::instance().GetBotText("Failed timer for %quest_link, abandoning", placeholders));
         BroadcastHelper::BroadcastQuestUpdateFailedTimer(botAI, bot, qInfo);
     }

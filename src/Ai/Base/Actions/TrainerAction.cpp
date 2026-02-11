@@ -76,7 +76,7 @@ void TrainerAction::Iterate(Creature* creature, TrainerSpellAction action, Spell
         totalCost += cost;
 
         std::ostringstream out;
-        out << chat->FormatSpell(spellInfo) << chat->formatMoney(cost);
+        out << chat.FormatSpell(spellInfo) << chat.formatMoney(cost);
 
         if (action)
             (this->*action)(cost, spell, out);
@@ -121,7 +121,9 @@ bool TrainerAction::Execute(Event event)
         return false;
     }
 
-    uint32 spell = chat->parseSpell(text);
+    PlayerbotChatHandler handler(botAI->GetBot());
+    uint32 spell = handler.extractSpellId(text);
+
     SpellIds spells;
     if (spell)
         spells.insert(spell);
@@ -150,7 +152,7 @@ void TrainerAction::TellFooter(uint32 totalCost)
     if (totalCost)
     {
         std::ostringstream out;
-        out << "Total cost: " << chat->formatMoney(totalCost);
+        out << "Total cost: " << chat.formatMoney(totalCost);
         botAI->TellMaster(out);
     }
 }

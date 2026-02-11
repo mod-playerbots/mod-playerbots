@@ -130,7 +130,7 @@ void SuggestWhatToDoAction::grindMaterials()
                     item = itemout.str();
 
                     std::map<std::string, std::string> placeholders;
-                    placeholders["%role"] = chat->formatClass(bot, AiFactory::GetPlayerSpecTab(bot));
+                    placeholders["%role"] = chat.formatClass(bot, AiFactory::GetPlayerSpecTab(bot));
                     placeholders["%category"] = item;
 
                     spam(PlayerbotTextMgr::instance().GetBotText("suggest_trade", placeholders), urand(0, 1) ? 0x3C : 0x18, !urand(0, 2), !urand(0,

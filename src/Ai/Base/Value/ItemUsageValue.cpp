@@ -784,7 +784,7 @@ bool ItemUsageValue::HasItemsNeededForSpell(uint32_t spellId, const ItemTemplate
 Item* ItemUsageValue::CurrentItem(ItemTemplate const* proto)
 {
     Item* bestItem = nullptr;
-    std::vector<Item*> found = AI_VALUE2(std::vector<Item*>, "inventory items", chat->FormatItem(proto));
+    std::vector<Item*> found = AI_VALUE2(std::vector<Item*>, "inventory items", chat.FormatItem(proto));
     for (auto item : found)
     {
         if (bestItem && item->GetUInt32Value(ITEM_FIELD_DURABILITY) < bestItem->GetUInt32Value(ITEM_FIELD_DURABILITY))
@@ -803,7 +803,7 @@ float ItemUsageValue::CurrentStacks(ItemTemplate const* proto)
 {
     uint32 maxStack = proto->GetMaxStackSize();
 
-    std::vector<Item*> found = AI_VALUE2(std::vector<Item*>, "inventory items", chat->FormatItem(proto));
+    std::vector<Item*> found = AI_VALUE2(std::vector<Item*>, "inventory items", chat.FormatItem(proto));
 
     float itemCount = 0;
 

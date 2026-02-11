@@ -63,7 +63,7 @@ bool TalkToQuestGiverAction::ProcessQuest(Quest const* quest, Object* questGiver
         break;
     }
 
-    out << ": " << chat->FormatQuest(quest);
+    out << ": " << chat.FormatQuest(quest);
     botAI->TellMaster(out);
 
     return isCompleted;
@@ -101,7 +101,7 @@ bool TalkToQuestGiverAction::TurnInQuest(Quest const* quest, Object* questGiver,
 void TalkToQuestGiverAction::RewardNoItem(Quest const* quest, Object* questGiver, std::ostringstream& out)
 {
     std::map<std::string, std::string> args;
-    args["%quest"] = chat->FormatQuest(quest);
+    args["%quest"] = chat.FormatQuest(quest);
 
     if (bot->CanRewardQuest(quest, false))
     {
@@ -121,8 +121,8 @@ void TalkToQuestGiverAction::RewardSingleItem(Quest const* quest, Object* questG
     int index = 0;
     ItemTemplate const* item = sObjectMgr->GetItemTemplate(quest->RewardChoiceItemId[index]);
     std::map<std::string, std::string> args;
-    args["%quest"] = chat->FormatQuest(quest);
-    args["%item"] = chat->FormatItem(item);
+    args["%quest"] = chat.FormatQuest(quest);
+    args["%item"] = chat.FormatItem(item);
 
     if (bot->CanRewardQuest(quest, index, false))
     {
@@ -234,7 +234,7 @@ void TalkToQuestGiverAction::AskToSelectReward(Quest const* quest, std::ostrings
 
         if (!forEquip || BestRewards(quest).count(i) > 0)
         {
-            msg << chat->FormatItem(item);
+            msg << chat.FormatItem(item);
         }
     }
 
@@ -300,7 +300,7 @@ bool TurnInQueryQuestAction::Execute(Event event)
         break;
     }
 
-    out << ": " << chat->FormatQuest(quest);
+    out << ": " << chat.FormatQuest(quest);
     botAI->TellMaster(out);
     return true;
 }

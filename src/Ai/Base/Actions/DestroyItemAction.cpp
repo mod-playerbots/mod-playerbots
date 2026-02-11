@@ -12,7 +12,7 @@
 bool DestroyItemAction::Execute(Event event)
 {
     std::string const text = event.getParam();
-    ItemIds ids = chat->parseItems(text);
+    ItemIds ids = chat.parseItems(text);
 
     for (ItemIds::iterator i = ids.begin(); i != ids.end(); i++)
     {
@@ -30,7 +30,7 @@ void DestroyItemAction::DestroyItem(FindItemVisitor* visitor)
     for (Item* item : items)
     {
         std::ostringstream out;
-        out << chat->FormatItem(item->GetTemplate()) << " destroyed";
+        out << chat.FormatItem(item->GetTemplate()) << " destroyed";
         botAI->TellMaster(out);
 
         bot->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);

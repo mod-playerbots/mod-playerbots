@@ -175,7 +175,7 @@ void InventoryAction::TellItems(std::map<uint32, uint32> itemMap, std::map<uint3
 void InventoryAction::TellItem(ItemTemplate const* proto, uint32 count, bool soulbound)
 {
     std::ostringstream out;
-    out << chat->FormatItem(proto, count);
+    out << chat.FormatItem(proto, count);
     if (soulbound)
         out << " (soulbound)";
 
@@ -193,7 +193,7 @@ std::vector<Item*> InventoryAction::parseItems(std::string const text, IterateIt
     else if (count > TRADE_SLOT_TRADED_COUNT)
         count = TRADE_SLOT_TRADED_COUNT;
 
-    ItemIds ids = chat->parseItems(text);
+    ItemIds ids = chat.parseItems(text);
     if (!ids.empty())
     {
         for (ItemIds::iterator i = ids.begin(); i != ids.end(); i++)
@@ -296,7 +296,7 @@ std::vector<Item*> InventoryAction::parseItems(std::string const text, IterateIt
     IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);
     found.insert(visitor.GetResult().begin(), visitor.GetResult().end());
 
-    uint32 quality = chat->parseItemQuality(text);
+    uint32 quality = chat.parseItemQuality(text);
     if (quality != MAX_ITEM_QUALITY)
     {
         FindItemsToTradeByQualityVisitor visitor(quality, count);
@@ -305,14 +305,14 @@ std::vector<Item*> InventoryAction::parseItems(std::string const text, IterateIt
     }
 
     uint32 itemClass = MAX_ITEM_CLASS, itemSubClass = 0;
-    if (chat->parseItemClass(text, &itemClass, &itemSubClass))
+    if (chat.parseItemClass(text, &itemClass, &itemSubClass))
     {
         FindItemsToTradeByClassVisitor visitor(itemClass, itemSubClass, count);
         IterateItems(&visitor, mask);
         found.insert(visitor.GetResult().begin(), visitor.GetResult().end());
     }
 
-    uint32 fromSlot = chat->parseSlot(text);
+    uint32 fromSlot = chat.parseSlot(text);
     if (fromSlot != EQUIPMENT_SLOT_END)
     {
         if (Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, fromSlot))
@@ -327,7 +327,7 @@ std::vector<Item*> InventoryAction::parseItems(std::string const text, IterateIt
         found.insert(visitor.GetResult().begin(), visitor.GetResult().end());
     }
 
-    ids = chat->parseItems(text);
+    ids = chat.parseItems(text);
     for (ItemIds::iterator i = ids.begin(); i != ids.end(); i++)
     {
         FindItemByIdVisitor visitor(*i);

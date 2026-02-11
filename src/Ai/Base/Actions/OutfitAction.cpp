@@ -35,7 +35,7 @@ bool OutfitAction::Execute(Event event)
             return true;
         }
 
-        items = chat->parseItems(param);
+        items = chat.parseItems(param);
 
         int32 space = param.find(" ");
         if (space == -1)
@@ -104,7 +104,7 @@ bool OutfitAction::Execute(Event event)
             ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemid);
 
             std::ostringstream out;
-            out << chat->FormatItem(proto);
+            out << chat.FormatItem(proto);
             if (remove)
             {
                 std::set<uint32>::iterator j = outfit.find(itemid);
@@ -176,7 +176,7 @@ void OutfitAction::List()
 
         for (uint32 itemId : items)
             if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId))
-                out << chat->FormatItem(proto) << " ";
+                out << chat.FormatItem(proto) << " ";
 
         botAI->TellMaster(out);
     }

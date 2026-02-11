@@ -145,7 +145,7 @@ void TradeStatusAction::BeginTrade()
         if (discount)
         {
             std::ostringstream out;
-            out << "Discount up to: " << chat->formatMoney(discount);
+            out << "Discount up to: " << chat.formatMoney(discount);
             botAI->TellMaster(out);
         }
     }
@@ -182,9 +182,9 @@ bool TradeStatusAction::CheckTrade()
         {
             if (bot->GetGroup() && bot->GetGroup()->IsMember(bot->GetTrader()->GetGUID()) &&
                 botAI->HasRealPlayerMaster())
-                botAI->TellMasterNoFacing("Thank you " + chat->FormatWorldobject(bot->GetTrader()));
+                botAI->TellMasterNoFacing("Thank you " + chat.FormatWorldobject(bot->GetTrader()));
             else
-                bot->Say("Thank you " + chat->FormatWorldobject(bot->GetTrader()),
+                bot->Say("Thank you " + chat.FormatWorldobject(bot->GetTrader()),
                          (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));
         }
         return isGettingItem;
@@ -226,7 +226,7 @@ bool TradeStatusAction::CheckTrade()
         if (item && !item->GetTemplate()->SellPrice && !item->GetTemplate()->IsConjuredConsumable())
         {
             std::ostringstream out;
-            out << chat->FormatItem(item->GetTemplate()) << " - This is not for sale";
+            out << chat.FormatItem(item->GetTemplate()) << " - This is not for sale";
             botAI->TellMaster(out);
             botAI->PlaySound(TEXT_EMOTE_NO);
             return false;
@@ -241,7 +241,7 @@ bool TradeStatusAction::CheckTrade()
             if ((botMoney && !item->GetTemplate()->BuyPrice) || usage == ITEM_USAGE_NONE)
             {
                 std::ostringstream out;
-                out << chat->FormatItem(item->GetTemplate()) << " - I don't need this";
+                out << chat.FormatItem(item->GetTemplate()) << " - I don't need this";
                 botAI->TellMaster(out);
                 botAI->PlaySound(TEXT_EMOTE_NO);
                 return false;
@@ -305,7 +305,7 @@ bool TradeStatusAction::CheckTrade()
     }
 
     std::ostringstream out;
-    out << "I want " << chat->formatMoney(-(delta + discount)) << " for this";
+    out << "I want " << chat.formatMoney(-(delta + discount)) << " for this";
     botAI->TellMaster(out);
     botAI->PlaySound(TEXT_EMOTE_NO);
     return false;

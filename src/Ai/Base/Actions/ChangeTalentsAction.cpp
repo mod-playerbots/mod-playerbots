@@ -86,7 +86,7 @@ bool ChangeTalentsAction::Execute(Event event)
         uint32 tab = AiFactory::GetPlayerSpecTab(bot);
         out << "My current talent spec is: "
             << "|h|cffffffff";
-        out << chat->FormatClass(bot, tab) << "\n";
+        out << chat.FormatClass(bot, tab) << "\n";
         out << TalentsHelp();
     }
 
@@ -294,7 +294,7 @@ std::string ChangeTalentsAction::SpecApply(std::string param)
 //         if (newSpec.GetTalentPoints() > 0)
 //         {
 //             *out << "Upgrading saved spec "
-//                  << "|h|cffffffff" << chat->FormatClass(bot, newSpec.highestTree()) << " (" <<
+//                  << "|h|cffffffff" << chat.FormatClass(bot, newSpec.highestTree()) << " (" <<
 //                  newSpec.FormatSpec(bot) << ")";
 //         }
 //     }

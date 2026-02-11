@@ -11,11 +11,11 @@
 bool ChangeChatAction::Execute(Event event)
 {
     std::string const text = event.getParam();
-    ChatMsg parsed = chat->parseChat(text);
+    ChatMsg parsed = chat.parseChat(text);
     if (parsed == CHAT_MSG_SYSTEM)
     {
         std::ostringstream out;
-        out << "Current chat is " << chat->FormatChat(*context->GetValue<ChatMsg>("chat"));
+        out << "Current chat is " << chat.FormatChat(*context->GetValue<ChatMsg>("chat"));
         botAI->TellMaster(out);
     }
     else
@@ -23,7 +23,7 @@ bool ChangeChatAction::Execute(Event event)
         context->GetValue<ChatMsg>("chat")->Set(parsed);
 
         std::ostringstream out;
-        out << "Chat set to " << chat->FormatChat(parsed);
+        out << "Chat set to " << chat.FormatChat(parsed);
         botAI->TellMaster(out);
     }
 

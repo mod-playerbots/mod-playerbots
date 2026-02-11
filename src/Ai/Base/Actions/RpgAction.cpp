@@ -116,7 +116,7 @@ bool RpgAction::SetNextRpgAction()
         std::sort(sortedActions.begin(), sortedActions.end(), [](std::pair<Action*, uint32>i, std::pair<Action*, uint32> j) {return i.second > j.second; });
 
         std::stringstream ss;
-        ss << "------" << chat->FormatWorldobject(AI_VALUE(GuidPosition, "rpg target").GetWorldObject()) << "------";
+        ss << "------" << chat.FormatWorldobject(AI_VALUE(GuidPosition, "rpg target").GetWorldObject()) << "------";
         bot->Say(ss.str(), LANG_UNIVERSAL);
         botAI->TellMasterNoFacing(ss.str());
 
@@ -140,7 +140,7 @@ bool RpgAction::SetNextRpgAction()
     {
         std::ostringstream out;
         out << "do: ";
-        out << chat->FormatWorldobject(AI_VALUE(GuidPosition, "rpg target").GetWorldObject());
+        out << chat.FormatWorldobject(AI_VALUE(GuidPosition, "rpg target").GetWorldObject());
 
         out << " " << action->getName();
 

@@ -19,7 +19,7 @@ bool QueryItemUsageAction::Execute(Event event)
     }
 
     // Use parseItems() to extract item IDs from the input
-    ItemIds itemIds = chat->parseItems(param);
+    ItemIds itemIds = chat.parseItems(param);
     if (itemIds.empty())
     {
         return false;
@@ -68,7 +68,7 @@ std::string const QueryItemUsageAction::QueryItem(ItemTemplate const* item, uint
     if (usage.empty())
         usage = (quest.empty() ? "Useless" : "Quest");
 
-    out << chat->FormatItem(item, count, total) << ": " << usage;
+    out << chat.FormatItem(item, count, total) << ": " << usage;
     if (!quest.empty())
         out << ", " << quest;
 
@@ -139,7 +139,7 @@ std::string const QueryItemUsageAction::QueryItemPrice(ItemTemplate const* item)
         }
     }
     if (sellPrice)
-        msg << "Sell: " << chat->formatMoney(sellPrice);
+        msg << "Sell: " << chat.formatMoney(sellPrice);
 
     std::ostringstream out;
     out << item->ItemId;
@@ -153,7 +153,7 @@ std::string const QueryItemUsageAction::QueryItemPrice(ItemTemplate const* item)
         if (sellPrice)
             msg << " ";
 
-        msg << "Buy: " << chat->formatMoney(buyPrice);
+        msg << "Buy: " << chat.formatMoney(buyPrice);
     }
 
     return msg.str();
@@ -197,7 +197,7 @@ std::string const QueryItemUsageAction::QueryQuestItem(uint32 itemId, Quest cons
         if (!required)
             continue;
 
-        return chat->FormatQuestObjective(chat->FormatQuest(questTemplate), available, required);
+        return chat.FormatQuestObjective(chat.FormatQuest(questTemplate), available, required);
     }
 
     return "";

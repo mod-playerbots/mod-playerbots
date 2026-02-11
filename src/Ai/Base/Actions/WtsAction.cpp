@@ -25,7 +25,7 @@ bool WtsAction::Execute(Event event)
 
     std::string const link = event.getParam();
 
-    ItemIds itemIds = chat->parseItems(link);
+    ItemIds itemIds = chat.parseItems(link);
     if (itemIds.empty())
         return false;
 
@@ -50,7 +50,7 @@ bool WtsAction::Execute(Event event)
             continue;
 
         std::ostringstream tell;
-        tell << "I'll buy " << chat->FormatItem(proto) << " for " << chat->formatMoney(buyPrice);
+        tell << "I'll buy " << chat.FormatItem(proto) << " for " << chat.formatMoney(buyPrice);
 
         // ignore random bot chat filter
         bot->Whisper(tell.str(), LANG_UNIVERSAL, owner);

@@ -236,7 +236,7 @@ void CleanQuestLogAction::DropQuestType(uint8& numQuest, uint8 wantNum, bool isG
             LOG_INFO("playerbots", "{} => Quest [ {} ] removed", bot->GetName(), quest->GetTitle());
             bot->Say("Quest [ " + text_quest + " ] removed", LANG_UNIVERSAL);
         }
-        botAI->TellMaster("Quest removed" + chat->FormatQuest(quest));
+        botAI->TellMaster("Quest removed" + chat.FormatQuest(quest));
     }
 }
 

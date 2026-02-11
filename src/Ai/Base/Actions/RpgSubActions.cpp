@@ -366,7 +366,7 @@ NextAction::Factory RpgUseAction::getActionFactory() const
 
 Event RpgUseAction::ActionEvent(Event)
 {
-    return Event("rpg action", chat->FormatWorldobject(this->rpg->guidP().GetWorldObject()));
+    return Event("rpg action", chat.FormatWorldobject(this->rpg->guidP().GetWorldObject()));
 }
 
 NextAction::Factory RpgSpellAction::getActionFactory() const
@@ -376,7 +376,7 @@ NextAction::Factory RpgSpellAction::getActionFactory() const
 
 Event RpgSpellAction::ActionEvent(Event)
 {
-    return Event("rpg action", chat->FormatWorldobject(this->rpg->guidP().GetWorldObject()));
+    return Event("rpg action", chat.FormatWorldobject(this->rpg->guidP().GetWorldObject()));
 }
 
 NextAction::Factory RpgCraftAction::getActionFactory() const
@@ -386,7 +386,7 @@ NextAction::Factory RpgCraftAction::getActionFactory() const
 
 Event RpgCraftAction::ActionEvent(Event)
 {
-    return Event("rpg action", chat->FormatWorldobject(this->rpg->guidP().GetWorldObject()));
+    return Event("rpg action", chat.FormatWorldobject(this->rpg->guidP().GetWorldObject()));
 }
 
 std::vector<Item*> RpgTradeUsefulAction::CanGiveItems(GuidPosition guidPosition)
@@ -442,9 +442,9 @@ bool RpgTradeUsefulAction::Execute(Event)
 
     std::ostringstream param;
 
-    param << chat->FormatWorldobject(player);
+    param << chat.FormatWorldobject(player);
     param << " ";
-    param << chat->FormatItem(item->GetTemplate());
+    param << chat.FormatItem(item->GetTemplate());
 
     bool hasTraded = botAI->DoSpecificAction(CreateNextAction<TradeAction>(1.0f).factory, Event("rpg action", param.str().c_str()), true);
 
@@ -454,16 +454,16 @@ bool RpgTradeUsefulAction::Execute(Event)
         {
             if (bot->GetGroup() && bot->GetGroup()->IsMember(guidP) && botAI->HasRealPlayerMaster())
                 botAI->TellMasterNoFacing(
-                    "You can use this " + chat->FormatItem(item->GetTemplate()) + " better than me, " +
-                    guidP.GetPlayer()->GetName() /*chat->FormatWorldobject(guidP.GetPlayer())*/ + ".");
+                    "You can use this " + chat.FormatItem(item->GetTemplate()) + " better than me, " +
+                    guidP.GetPlayer()->GetName() /*chat.FormatWorldobject(guidP.GetPlayer())*/ + ".");
             else
-                bot->Say("You can use this " + chat->FormatItem(item->GetTemplate()) + " better than me, " +
-                             player->GetName() /*chat->FormatWorldobject(player)*/ + ".",
+                bot->Say("You can use this " + chat.FormatItem(item->GetTemplate()) + " better than me, " +
+                             player->GetName() /*chat.FormatWorldobject(player)*/ + ".",
                          (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));
 
             if (!urand(0, 4) || items.size() < 2)
             {
-                // bot->Say("End trade with" + chat->FormatWorldobject(player), (bot->GetTeamId() == TEAM_ALLIANCE ?
+                // bot->Say("End trade with" + chat.FormatWorldobject(player), (bot->GetTeamId() == TEAM_ALLIANCE ?
                 // LANG_COMMON : LANG_ORCISH));
                 WorldPacket p;
                 uint32 status = TRADE_STATUS_TRADE_ACCEPT;
@@ -472,7 +472,7 @@ bool RpgTradeUsefulAction::Execute(Event)
             }
         }
         else
-            bot->Say("Start trade with" + chat->FormatWorldobject(player),
+            bot->Say("Start trade with" + chat.FormatWorldobject(player),
                      (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));
 
         botAI->SetNextCheckDelay(sPlayerbotAIConfig.rpgDelay);
@@ -508,7 +508,7 @@ bool RpgDuelAction::Execute(Event)
     if (!player)
         return false;
 
-    return botAI->DoSpecificAction(CreateNextAction<CastCustomSpellAction>(1.0f).factory, Event("rpg action", chat->FormatWorldobject(player) + " 7266"),
+    return botAI->DoSpecificAction(CreateNextAction<CastCustomSpellAction>(1.0f).factory, Event("rpg action", chat.FormatWorldobject(player) + " 7266"),
                                    true);
 }
 
