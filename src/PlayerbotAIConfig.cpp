@@ -179,10 +179,11 @@ bool PlayerbotAIConfig::Initialize()
                                            "179490,141596,160836,160845,179516,176224,181085,176112,128308,128403,"
                                            "165739,165738,175245,175970,176325,176327,123329,2560"),
         disallowedGameObjects);
+
     LoadSet<std::set<uint32>>(
         sConfigMgr->GetOption<std::string>("AiPlayerbot.UnobtainableItems", "12468,22784,46978"),
         unobtainableItems);
-        
+
     botAutologin = sConfigMgr->GetOption<bool>("AiPlayerbot.BotAutologin", false);
     randomBotAutologin = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotAutologin", true);
     minRandomBots = sConfigMgr->GetOption<int32>("AiPlayerbot.MinRandomBots", 500);
