@@ -1504,7 +1504,7 @@ PlayerbotMgr::~PlayerbotMgr()
         PlayerbotsMgr::instance().RemovePlayerBotData(master->GetGUID(), false);
 }
 
-void PlayerbotMgr::UpdateAIInternal(uint32 elapsed, bool /*minimal*/)
+void PlayerbotMgr::UpdateAIInternal(bool /*minimal*/)
 {
     this->SetNextCheckDelay(sPlayerbotAIConfig.reactDelay);
     this->checkTellErrors();

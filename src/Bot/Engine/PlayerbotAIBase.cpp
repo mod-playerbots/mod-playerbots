@@ -23,7 +23,7 @@ void PlayerbotAIBase::UpdateAI(uint32 elapsed, bool minimal)
     if (!CanUpdateAI())
         return;
 
-    this->UpdateAIInternal(elapsed, minimal);
+    this->UpdateAIInternal(minimal);
     YieldThread();
 }
 

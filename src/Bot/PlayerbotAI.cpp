@@ -9,6 +9,7 @@
 #include <mutex>
 #include <sstream>
 #include <string>
+#include <ctime>
 
 #include "AiFactory.h"
 #include "BudgetValues.h"
@@ -235,6 +236,36 @@ PlayerbotAI::~PlayerbotAI()
 /**
  * Refactoring area
  */
+
+void PlayerbotAI::handleChatReplies()
+{
+    const std::time_t now = std::time(nullptr);
+
+    std::list<ChatQueuedReply>::iterator it = this->chatReplies.begin();
+
+    while (it != this->chatReplies.end())
+    {
+        const bool hasBeenScheduled = it->m_time != 0;
+        const bool isDue = !hasBeenScheduled || now >= it->m_time;
+
+        if (isDue == false)
+        {
+            ++it;
+
+            continue;
+        }
+
+        ChatReplyAction::ChatReplyDo(
+            this->bot,
+            it->m_type,
+            it->m_guid1,
+            it->m_msg,
+            it->m_chanName,
+            it->m_name
+        );
+        it = this->chatReplies.erase(it);
+    }
+}
 
 /**
  * @brief Retrieve the spell the bot is currently casting, if any.
@@ -473,7 +504,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     this->UpdateAIGroupMaster();
 
     // Update internal AI
-    this->UpdateAIInternal(elapsed, minimal);
+    this->UpdateAIInternal(minimal);
     this->YieldThread(this->GetReactDelay());
 }
 
@@ -567,57 +598,72 @@ void PlayerbotAI::UpdateAIGroupMaster()
     }
 }
 
-void PlayerbotAI::UpdateAIInternal(uint32 elapsed, bool minimal)
+void PlayerbotAI::UpdateAIInternal(bool minimal)
 {
-
-    if (!bot || !bot->GetSession())
-        return;
-
-    if (!bot->IsInWorld() || bot->IsBeingTeleported() || bot->IsDuringRemoveFromWorld())
-        return;
-
-    if (!bot->GetMap())
-        return; // instances are created and destroyed on demand
-
-    std::string const mapString = WorldPosition(bot).isOverworld() ? std::to_string(bot->GetMapId()) : "I";
-    PerfMonitorOperation* pmo =
-        sPerfMonitor.start(PERF_MON_TOTAL, "PlayerbotAI::UpdateAIInternal " + mapString);
-    ExternalEventHelper helper(aiObjectContext);
-
-    // chat replies
-    for (auto it = chatReplies.begin(); it != chatReplies.end();)
+    if (this->bot == nullptr)
     {
-        time_t checkTime = it->m_time;
-        if (checkTime && time(0) < checkTime)
-        {
-            ++it;
-            continue;
-        }
-
-        ChatReplyAction::ChatReplyDo(bot, it->m_type, it->m_guid1, it->m_guid2, it->m_msg, it->m_chanName, it->m_name);
-        it = chatReplies.erase(it);
+        return;
     }
 
-    HandleCommands();
+    const WorldSession* const session = this->bot->GetSession();
+
+    if (session == nullptr)
+    {
+        return;
+    }
+
+    if (!this->bot->IsInWorld() || this->bot->IsBeingTeleported() || this->bot->IsDuringRemoveFromWorld())
+    {
+        return;
+    }
+
+    // instances are created and destroyed on demand
+    if (this->bot->GetMap() == nullptr)
+    {
+        return;
+    }
+
+    const std::string mapString = WorldPosition(this->bot).isOverworld() ? std::to_string(this->bot->GetMapId()) : "I";
+
+    PerfMonitorOperation* const pmo = PerfMonitor::instance().start(PERF_MON_TOTAL, "PlayerbotAI::UpdateAIInternal " + mapString);
+
+    this->handleChatReplies();
+
+    this->HandleCommands();
 
     // logout if logout timer is ready or if instant logout is possible
-    if (bot->GetSession()->isLogingOut())
+    if (session->isLogingOut())
     {
-        WorldSession* botWorldSessionPtr = bot->GetSession();
-        bool logout = botWorldSessionPtr->ShouldLogOut(time(nullptr));
-        if (!master || !master->GetSession()->GetPlayer())
-            logout = true;
+        bool logout = session->ShouldLogOut(time(nullptr));
 
-        if (bot->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) || bot->HasUnitState(UNIT_STATE_IN_FLIGHT) ||
-            botWorldSessionPtr->GetSecurity() >= (AccountTypes)sWorld->getIntConfig(CONFIG_INSTANT_LOGOUT))
+        if (
+            this->master == nullptr
+            || !this->master->GetSession()->GetPlayer()
+        )
         {
             logout = true;
         }
 
-        if (master &&
-            (master->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) || master->HasUnitState(UNIT_STATE_IN_FLIGHT) ||
-             (master->GetSession() &&
-              master->GetSession()->GetSecurity() >= (AccountTypes)sWorld->getIntConfig(CONFIG_INSTANT_LOGOUT))))
+        if (
+            this->bot->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING)
+            || this->bot->HasUnitState(UNIT_STATE_IN_FLIGHT)
+            || session->GetSecurity() >= (AccountTypes)sWorld->getIntConfig(CONFIG_INSTANT_LOGOUT)
+        )
+        {
+            logout = true;
+        }
+
+        if (
+            master != nullptr
+            && (
+                master->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING)
+                || master->HasUnitState(UNIT_STATE_IN_FLIGHT)
+                || (
+                    master->GetSession() != nullptr
+                    && master->GetSession()->GetSecurity() >= (AccountTypes)sWorld->getIntConfig(CONFIG_INSTANT_LOGOUT)
+                )
+            )
+        )
         {
             logout = true;
         }
@@ -625,31 +671,41 @@ void PlayerbotAI::UpdateAIInternal(uint32 elapsed, bool minimal)
         if (logout)
         {
             PlayerbotMgr* masterBotMgr = nullptr;
-            if (master)
-                masterBotMgr = GET_PLAYERBOT_MGR(master);
-            if (masterBotMgr)
+
+            if (master != nullptr)
+            {
+                masterBotMgr = PlayerbotsMgr::instance().GetPlayerbotMgr(master);
+            }
+
+            if (masterBotMgr != nullptr)
             {
                 masterBotMgr->LogoutPlayerBot(bot->GetGUID());
             }
             else
             {
-                sRandomPlayerbotMgr.LogoutPlayerBot(bot->GetGUID());
+                RandomPlayerbotMgr::instance().LogoutPlayerBot(bot->GetGUID());
             }
+
             return;
         }
 
-        SetNextCheckDelay(sPlayerbotAIConfig.reactDelay);
+        this->SetNextCheckDelay(PlayerbotAIConfig::instance().reactDelay);
+
         return;
     }
 
-    botOutgoingPacketHandlers.Handle(helper);
-    masterIncomingPacketHandlers.Handle(helper);
-    masterOutgoingPacketHandlers.Handle(helper);
+    ExternalEventHelper helper(this->aiObjectContext);
 
-    DoNextAction(minimal);
+    this->botOutgoingPacketHandlers.Handle(helper);
+    this->masterIncomingPacketHandlers.Handle(helper);
+    this->masterOutgoingPacketHandlers.Handle(helper);
+
+    this->DoNextAction(minimal);
 
     if (pmo)
+    {
         pmo->finish();
+    }
 }
 
 void PlayerbotAI::HandleCommands()

@@ -388,7 +388,9 @@ public:
     virtual ~PlayerbotAI();
 
     void UpdateAI(uint32 elapsed, bool minimal = false) override;
-    void UpdateAIInternal(uint32 elapsed, bool minimal = false) override;
+    void UpdateAIInternal(bool minimal = false) override;
+
+    void handleChatReplies();
 
     std::string const HandleRemoteCommand(std::string const command);
     void HandleCommand(uint32 type, std::string const text, Player* fromPlayer);

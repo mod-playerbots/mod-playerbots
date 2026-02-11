@@ -19,7 +19,7 @@ public:
     void IncreaseNextCheckDelay(uint32 delay);
     void YieldThread(const uint32_t delay = sPlayerbotAIConfig.reactDelay);
     virtual void UpdateAI(uint32 elapsed, bool minimal = false);
-    virtual void UpdateAIInternal(uint32 elapsed, bool minimal = false) = 0;
+    virtual void UpdateAIInternal(bool minimal = false) = 0;
     bool IsActive();
     bool IsBotAI() const;
 
