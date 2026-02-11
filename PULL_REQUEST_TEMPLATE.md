@@ -3,55 +3,21 @@ Thank you for contributing to mod-playerbots, please make sure that you...
 1. Submit your PR to the test-staging branch, not master.  
 2. Read the guidelines below before submitting.
 3. Don't delete parts of this template.
+
+DESIGN PHILOSOPHY: We prioritize STABILITY, PERFORMANCE, AND PREDICTABILITY over behavioral realism.
+
+Every action and decision executes PER BOT AND PER TRIGGER. Small increases in logic complexity
+scale poorly across thousands of bots and negatively affect all participants. We prioritize 
+stability over intelligence: a stable system is always preferred over a smarter one. Complexity 
+must justify its cost. Bots don't need to behave perfectly; believable behavior is the goal, 
+not human simulation. Default behavior must be cheap; expensive behavior must be opt-in.
+
+Before submitting, make sure your changes aligns with those principles.
 -->
+
 
 ## Pull Request Description
 <!-- Describe what this change does and why it is needed -->
-
-
-<!--
-DESIGN PHILOSOPHY:
-
-We prioritize STABILITY, PERFORMANCE, AND PREDICTABILITY over behavioral realism.  
-Complex player-mimicking logic is intentionally limited due to its negative impact on scalability, maintainability, and
-long-term robustness.
-
-Excessive processing overhead can lead to server hiccups, increased CPU usage, and degraded performance for all
-participants. Because every action and
-decision tree is executed PER BOT AND PER TRIGGER, even small increases in logic complexity can scale poorly and
-negatively affect both players and
-world (random) bots. Bots are not expected to behave perfectly, and perfect simulation of human decision-making is not a
-project goal. Increased behavioral
-realism often introduces disproportionate cost, reduced predictability, and significantly higher maintenance overhead.
-
-Every additional branch of logic increases long-term responsibility. All decision paths must be tested, validated, and
-maintained continuously as the system evolves.
-If advanced or AI-intensive behavior is introduced, the DEFAULT CONFIGURATION MUST REMAIN THE LIGHTWEIGHT DECISION MODEL. 
-More complex behavior should only be available as an EXPLICIT OPT-IN OPTION, clearly documented as having a measurable
-performance cost.
-
-Principles:
-
-- STABILITY BEFORE INTELLIGENCE  
-  A stable system is always preferred over a smarter one.
-
-- PERFORMANCE IS A SHARED RESOURCE  
-  Any increase in bot cost affects all players and all bots.
-
-- SIMPLE LOGIC SCALES BETTER THAN SMART LOGIC  
-  Predictable behavior under load is more valuable than perfect decisions.
-
-- COMPLEXITY MUST JUSTIFY ITSELF  
-  If a feature cannot clearly explain its cost, it should not exist.
-
-- DEFAULTS MUST BE CHEAP  
-  Expensive behavior must always be optional and clearly communicated.
-
-- BOTS SHOULD LOOK REASONABLE, NOT PERFECT  
-  The goal is believable behavior, not human simulation.
-
-Before submitting, confirm that this change aligns with those principles.
--->
 
 
 ## Feature Evaluation
