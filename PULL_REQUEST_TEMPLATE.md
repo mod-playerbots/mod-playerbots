@@ -28,8 +28,8 @@ performance, you may skip these question. If necessary, a maintainer may ask you
 
 <!-- Please answer the following: -->
 
-- Describe the **minimum logic** required to achieve the intended behavior?
-- Describe the **runtime cost** when this logic executes across many bots?
+- Describe the **minimum logic** required to achieve the intended behavior.
+- Describe the **runtime cost** when this logic executes across many bots.
 
 
 ## How to Test the Changes
