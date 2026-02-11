@@ -64,7 +64,6 @@ performance, you may skip these question. If necessary, a maintainer may ask you
 <!-- Please answer the following: -->
 
 - Describe the **minimum logic** required to achieve the intended behavior?
-- Describe the **cheapest implementation** that produces an acceptable result?
 - Describe the **runtime cost** when this logic executes across many bots?
 
 
@@ -76,33 +75,22 @@ performance, you may skip these question. If necessary, a maintainer may ask you
 -->
 
 
-## Complexity & Impact
+## Impact Assessment
 
-- Does this change add new decision branches?
-    - [ ] No
-    - [ ] Yes (**explain below**)
+- Does this change increase per-bot/per-tick processing or risk scaling poorly with thousands of bots?
+    - [ ] No, not at all
+    - [ ] Minimal impact (**explain below**)
+    - [ ] Moderate impact (**explain below**)
 
-
-- Does this change increase per-bot or per-tick processing?
-    - [ ] No
-    - [ ] Yes (**describe and justify impact**)
-
-
-- Could this logic scale poorly under load?
-    - [ ] No
-    - [ ] Yes (**explain why**)
-    
-
-## Defaults & Configuration
 
 - Does this change modify default bot behavior?
     - [ ] No
     - [ ] Yes (**explain why**)
 
 
-- If this introduces more advanced or AI-heavy logic:
-    - [ ] Lightweight mode remains the default
-    - [ ] More complex behavior is optional and thereby configurable
+- Does this change add new decision branches or increase maintenance complexity?
+    - [ ] No
+    - [ ] Yes (**explain below**)
 
 
 ## AI Assistance
