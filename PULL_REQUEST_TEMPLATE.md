@@ -64,7 +64,7 @@ AI assistance is allowed, but all submitted code must be fully understood, revie
 Any AI-influenced changes must be verified against existing CORE and PB logic. We expect contributors to be honest
 about what they do and do not understand.
 -->
-Was AI assistance (e.g. ChatGPT or similar tools) used while working on this change?
+Was AI assistance used while working on this change?
 - [ ] No
 - [ ] Yes (**explain below**)
 <!--
