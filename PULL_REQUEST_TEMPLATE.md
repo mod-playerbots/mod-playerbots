@@ -82,7 +82,7 @@ If yes, please specify:
 - [ ] Stability is not compromised
 - [ ] Performance impact is understood, tested, and acceptable
 - [ ] Added logic complexity is justified and explained
-- [ ] Documentation updated if needed (Comments in the conf file, commands in the WiKi)
+- [ ] Documentation updated if needed (Conf comments, WiKi commands)
 
 ## Notes for Reviewers
 <!-- Anything else that's helpful to review or test your pull request -->
