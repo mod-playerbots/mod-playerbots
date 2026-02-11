@@ -53,7 +53,6 @@ Principles:
 Before submitting, confirm that this change aligns with those principles.
 -->
 
-- [ ] The changes in this PR align with the project design philosophy
 
 ## Feature Evaluation
 <!--
@@ -120,6 +119,5 @@ If yes, please specify:
 - [ ] Documentation updated if needed
 
 ## Notes for Reviewers
-<!-- Anything that significantly improves realism at the cost of stability or performance should be carefully discussed
-before merging. -->
+<!-- Anything else that's helpful to review or test your pull request -->
 
