@@ -345,7 +345,7 @@ bool FollowAction::Execute(Event event)
             if (!transport->IsStaticTransport() || !masterOnTransport)
                 return false;
 
-            float const dist2d = sServerFacade->GetDistance2d(bot, master);
+            float const dist2d = ServerFacade::instance().GetDistance2d(bot, master);
 
             // Tiny elevators: pack bots near the master and bypass formation offsets while riding.
             if (IsTightStaticTransport(transport))
@@ -361,7 +361,7 @@ bool FollowAction::Execute(Event event)
                     reseatOnStaticTransportDeck(master->GetPositionZ());
                 }
 
-                if (sServerFacade->IsDistanceLessOrEqualThan(dist2d, clusterDist))
+                if (ServerFacade::instance().IsDistanceLessOrEqualThan(dist2d, clusterDist))
                 {
                     bot->StopMovingOnCurrentPos();
                     return true;
@@ -399,7 +399,7 @@ bool FollowAction::Execute(Event event)
                     /*forceDestination*/ false);
 
                 float delay = 1000.0f * MoveDelay(bot->GetExactDist(destX, destY, destZ));
-                delay = std::clamp(delay, 0.0f, static_cast<float>(sPlayerbotAIConfig->maxWaitForMove));
+                delay = std::clamp(delay, 0.0f, static_cast<float>(sPlayerbotAIConfig.maxWaitForMove));
                 delay = std::min(delay, 750.0f);
 
                 AI_VALUE(LastMovement&, "last movement")
@@ -410,7 +410,7 @@ bool FollowAction::Execute(Event event)
             }
 
             float const safeDist = std::max(formation ? formation->GetMaxDistance() : 0.0f, 6.0f);
-            if (!sServerFacade->IsDistanceLessOrEqualThan(dist2d, safeDist))
+            if (!ServerFacade::instance().IsDistanceLessOrEqualThan(dist2d, safeDist))
                 return false;
 
             bot->StopMovingOnCurrentPos();
@@ -441,8 +441,8 @@ bool FollowAction::Execute(Event event)
             // Boarding assistance: within a reasonable distance, use a direct MovePoint (no MMaps)
             // so bots don't try to navigate around the moving platform.
             float const boardingAssistDistance = 60.0f;
-            float const dist2d = sServerFacade->GetDistance2d(bot, master);
-            bool inAssist = sServerFacade->IsDistanceLessOrEqualThan(dist2d, boardingAssistDistance);
+            float const dist2d = ServerFacade::instance().GetDistance2d(bot, master);
+            bool inAssist = ServerFacade::instance().IsDistanceLessOrEqualThan(dist2d, boardingAssistDistance);
 
             // If the leader already stepped off a static transport (elevator), dist2d(master) can quickly exceed the
             // assist radius, causing bots to path around the shaft instead of boarding. When we recovered a static
@@ -452,7 +452,7 @@ bool FollowAction::Execute(Event event)
                 float const distToTransport = Distance2D(
                     bot->GetPositionX(), bot->GetPositionY(),
                     transport->GetPositionX(), transport->GetPositionY());
-                inAssist = sServerFacade->IsDistanceLessOrEqualThan(distToTransport, boardingAssistDistance + 30.0f);
+                inAssist = ServerFacade::instance().IsDistanceLessOrEqualThan(distToTransport, boardingAssistDistance + 30.0f);
             }
 
             if (inAssist)
@@ -471,7 +471,8 @@ bool FollowAction::Execute(Event event)
                     if (masterOnTransport)
                     {
                         float const safety = 2.0f + bot->GetObjectSize() + transport->GetObjectSize();
-                        if (sServerFacade->IsDistanceLessOrEqualThan(dist2d, safety) && dzToPlatform > STATIC_TRANSPORT_SNAP_Z_THRESHOLD)
+                        if (ServerFacade::instance().IsDistanceLessOrEqualThan(dist2d, safety) &&
+                            dzToPlatform > STATIC_TRANSPORT_SNAP_Z_THRESHOLD)
                         {
 
                             reseatOnStaticTransportDeck(master->GetPositionZ());
@@ -626,7 +627,7 @@ bool FollowAction::Execute(Event event)
                     }
 
                     float delay = 1000.0f * MoveDelay(bot->GetExactDist(destX, destY, destZ));
-                    delay = std::clamp(delay, 0.0f, static_cast<float>(sPlayerbotAIConfig->maxWaitForMove));
+                    delay = std::clamp(delay, 0.0f, static_cast<float>(sPlayerbotAIConfig.maxWaitForMove));
                     if (isStaticTransport)
                     {
                         delay = std::min(delay, 750.0f);
