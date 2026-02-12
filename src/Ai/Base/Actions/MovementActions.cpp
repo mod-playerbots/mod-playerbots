@@ -972,7 +972,6 @@ void MovementAction::UpdateMovementState()
         const bool onGroundZ = bot->GetPositionZ() < gZ + 1.f;
         const bool isMasterFlying = master ? master->HasUnitMovementFlag(MOVEMENTFLAG_FLYING) : true;
         const bool isMasterSwimming = master ? master->HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING) : true;
-        const bool isMasterWaterWalking = master ? master->HasUnitMovementFlag(MOVEMENTFLAG_WATERWALKING) : true;
         const bool wantsToFly = bot->HasIncreaseMountedFlightSpeedAura() || bot->HasFlyAura();
         const bool shouldWaterWalk = bot->HasWaterWalkAura();
         const bool isFlying = bot->HasUnitMovementFlag(MOVEMENTFLAG_FLYING);
@@ -988,8 +987,8 @@ void MovementAction::UpdateMovementState()
         {
             if ((shouldWaterWalk && !isMasterSwimming) && !isWaterWalking)
             {
-                bot->SetSwim(false); // do not use flag alone, due swimming speed
-                bot->AddUnitMovementFlag(MOVEMENTFLAG_WATERWALKING); // use flag alone, normally client-side handled
+                bot->SetSwim(false);
+                bot->AddUnitMovementFlag(MOVEMENTFLAG_WATERWALKING);
                 movementFlagsUpdated = true;
             }
             else if ((!shouldWaterWalk || isMasterSwimming) && isWaterWalking)
@@ -1039,16 +1038,6 @@ void MovementAction::UpdateMovementState()
         if (movementFlagsUpdated)
         {
             bot->SendMovementFlagUpdate();
-            uint32 f = bot->GetUnitMovementFlags();
-            std::ostringstream msg;
-
-            msg << "Swim:" << ((f & MOVEMENTFLAG_SWIMMING) ? "ON" : "OFF")
-                << " Waterwalk:" << ((f & MOVEMENTFLAG_WATERWALKING) ? "ON" : "OFF")
-                << " CanFly:" << ((f & MOVEMENTFLAG_CAN_FLY) ? "ON" : "OFF")
-                << " NoGrav:" << ((f & MOVEMENTFLAG_DISABLE_GRAVITY) ? "ON" : "OFF")
-                << " Flying:" << ((f & MOVEMENTFLAG_FLYING) ? "ON" : "OFF");
-
-            botAI->TellMaster(msg.str());
         }
     }
 
