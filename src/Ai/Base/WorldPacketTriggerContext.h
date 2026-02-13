@@ -46,6 +46,7 @@ public:
         creators["questgiver quest details"] = &WorldPacketTriggerContext::questgiver_quest_details;
 
         creators["item push result"] = &WorldPacketTriggerContext::item_push_result;
+        creators["loot roll won"] = &WorldPacketTriggerContext::loot_roll_won;
         creators["party command"] = &WorldPacketTriggerContext::party_command;
         creators["taxi done"] = &WorldPacketTriggerContext::taxi_done;
         creators["cast failed"] = &WorldPacketTriggerContext::cast_failed;
@@ -92,6 +93,7 @@ private:
     static Trigger* taxi_done(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "taxi done"); }
     static Trigger* party_command(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "party command"); }
     static Trigger* item_push_result(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "item push result"); }
+    static Trigger* loot_roll_won(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "loot roll won"); }
 
     // quest
     static Trigger* quest_update_add_kill(PlayerbotAI* ai) { return new WorldPacketTrigger(ai, "quest update add kill"); }

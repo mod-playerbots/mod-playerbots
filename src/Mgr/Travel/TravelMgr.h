@@ -416,14 +416,13 @@ public:
     GameObjectTemplate const* GetGameObjectTemplate();
 
     WorldObject* GetWorldObject();
-    Creature* GetCreature();
-    Unit* GetUnit();
     GameObject* GetGameObject();
+    Unit* GetUnit();
+    Creature* GetCreature();
     Player* GetPlayer();
 
     bool HasNpcFlag(NPCFlags flag);
-
-    bool isDead();  // For loaded grids check if the unit/object is unloaded/dead.
+    bool IsCreatureOrGOAccessible(); // For loaded grids check if the creature/gameobject is in world + alive
 
     operator bool() const { return !IsEmpty(); }
     bool operator==(ObjectGuid const& guid) const { return GetRawValue() == guid.GetRawValue(); }

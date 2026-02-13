@@ -41,6 +41,18 @@ public:
     std::string const GetTargetName() override { return "pet target"; }
 };
 
+class CastUnendingBreathAction : public CastBuffSpellAction
+{
+public:
+    CastUnendingBreathAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "unending breath") {}
+};
+
+class CastUnendingBreathOnPartyAction : public BuffOnPartyAction
+{
+public:
+    CastUnendingBreathOnPartyAction(PlayerbotAI* botAI) : BuffOnPartyAction(botAI, "unending breath") {}
+};
+
 class CreateSoulShardAction : public Action
 {
 public:
