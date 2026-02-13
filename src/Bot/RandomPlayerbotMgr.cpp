@@ -2676,7 +2676,7 @@ std::vector<uint32> RandomPlayerbotMgr::GetBgBots(uint32 bracket)
         } while (result->NextRow());
     }
 
-    return std::move(BgBots);
+    return BgBots;
 }
 
 CachedEvent* RandomPlayerbotMgr::FindEvent(uint32 bot, std::string const& event)
@@ -3248,7 +3248,7 @@ void RandomPlayerbotMgr::PrintStats()
 
         if (sPlayerbotAIConfig.enableNewRpgStrategy)
         {
-            rpgStatusCount[botAI->rpgInfo.status]++;
+            rpgStatusCount[botAI->rpgInfo.GetStatus()]++;
             rpgStasticTotal += botAI->rpgStatistic;
             botAI->rpgStatistic = NewRpgStatistic();
         }

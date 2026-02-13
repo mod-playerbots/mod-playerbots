@@ -416,14 +416,13 @@ public:
     GameObjectTemplate const* GetGameObjectTemplate();
 
     WorldObject* GetWorldObject();
-    Creature* GetCreature();
-    Unit* GetUnit();
     GameObject* GetGameObject();
+    Unit* GetUnit();
+    Creature* GetCreature();
     Player* GetPlayer();
 
     bool HasNpcFlag(NPCFlags flag);
-
-    bool isDead();  // For loaded grids check if the unit/object is unloaded/dead.
+    bool IsCreatureOrGOAccessible(); // For loaded grids check if the creature/gameobject is in world + alive
 
     operator bool() const { return !IsEmpty(); }
     bool operator==(ObjectGuid const& guid) const { return GetRawValue() == guid.GetRawValue(); }
@@ -441,7 +440,7 @@ std::vector<std::pair<T, WorldPosition>> GetPosList(std::vector<T> oList)
     for (auto& obj : oList)
         retList.push_back(std::make_pair(obj, WorldPosition(obj)));
 
-    return std::move(retList);
+    return retList;
 };
 
 template <class T>
@@ -451,7 +450,7 @@ std::vector<std::pair<T, WorldPosition>> GetPosVector(std::vector<T> oList)
     for (auto& obj : oList)
         retList.push_back(make_pair(obj, WorldPosition(obj)));
 
-    return std::move(retList);
+    return retList;
 };
 
 class mapTransfer

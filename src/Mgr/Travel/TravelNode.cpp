@@ -364,7 +364,7 @@ std::vector<TravelNode*> TravelNode::getNodeMap(bool importantOnly, std::vector<
         }
     }
 
-    return std::move(closeList);
+    return closeList;
 }
 
 bool TravelNode::isUselessLink(TravelNode* farNode)
@@ -1135,7 +1135,7 @@ std::vector<TravelNode*> TravelNodeMap::getNodes(WorldPosition pos, float range)
               [pos](TravelNode* i, TravelNode* j)
               { return i->getPosition()->distance(pos) < j->getPosition()->distance(pos); });
 
-    return std::move(retVec);
+    return retVec;
 }
 
 TravelNode* TravelNodeMap::getNode(WorldPosition pos, [[maybe_unused]] std::vector<WorldPosition>& ppath, Unit* bot,

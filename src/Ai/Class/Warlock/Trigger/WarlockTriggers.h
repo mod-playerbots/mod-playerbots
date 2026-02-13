@@ -32,6 +32,20 @@ public:
     bool IsActive() override;
 };
 
+class UnendingBreathTrigger : public BuffTrigger
+{
+public:
+    UnendingBreathTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "unending breath", 5 * 2000) {}
+    bool IsActive() override;
+};
+
+class UnendingBreathOnPartyTrigger : public BuffOnPartyTrigger
+{
+public:
+    UnendingBreathOnPartyTrigger(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, "unending breath on party", 2 * 2000) {}
+    bool IsActive() override;
+};
+
 class OutOfSoulShardsTrigger : public Trigger
 {
 public:
