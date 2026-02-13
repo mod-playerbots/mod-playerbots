@@ -69,8 +69,8 @@ class UseHearthStone : public UseItemAction
 public:
     UseHearthStone(PlayerbotAI* botAI) : UseItemAction(botAI, "hearthstone", true) {}
 
-    bool isUseful() override;
     bool Execute(Event event) override;
+    bool isUseful() override;
 };
 
 class UseRandomRecipe : public UseItemAction
@@ -78,9 +78,9 @@ class UseRandomRecipe : public UseItemAction
 public:
     UseRandomRecipe(PlayerbotAI* botAI) : UseItemAction(botAI, "random recipe", true) {}
 
+    bool Execute(Event event) override;
     bool isUseful() override;
     bool isPossible() override;
-    bool Execute(Event event) override;
 };
 
 class UseRandomQuestItem : public UseItemAction
@@ -88,9 +88,9 @@ class UseRandomQuestItem : public UseItemAction
 public:
     UseRandomQuestItem(PlayerbotAI* botAI) : UseItemAction(botAI, "random quest item", true) {}
 
+    bool Execute(Event event) override;
     bool isUseful() override;
     bool isPossible() override;
-    bool Execute(Event event) override;
 };
 
 #endif

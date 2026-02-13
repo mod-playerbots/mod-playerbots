@@ -85,7 +85,7 @@ bool RpgAction::SetNextRpgAction()
                     isChecked = true;
 
                     Action* action = botAI->GetAiObjectContext()->GetAction(nextAction.getName());
-                    if (!dynamic_cast<RpgEnabled*>(action) || !action->isPossible() || !action->isUseful())
+                    if (!dynamic_cast<RpgEnabled*>(action) || !action->isUseful() || !action->isPossible())
                         continue;
 
                     actions.push_back(action);

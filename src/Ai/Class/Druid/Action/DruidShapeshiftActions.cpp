@@ -7,20 +7,19 @@
 
 #include "Playerbots.h"
 
-bool CastBearFormAction::isPossible()
-{
-    return CastBuffSpellAction::isPossible() && !botAI->HasAura("dire bear form", GetTarget());
-}
-
 bool CastBearFormAction::isUseful()
 {
     return CastBuffSpellAction::isUseful() && !botAI->HasAura("dire bear form", GetTarget());
 }
 
+bool CastBearFormAction::isPossible()
+{
+    return CastBuffSpellAction::isPossible() && !botAI->HasAura("dire bear form", GetTarget());
+}
+
 std::vector<NextAction> CastDireBearFormAction::getAlternatives()
 {
-    return NextAction::merge({ NextAction("bear form") },
-                             CastSpellAction::getAlternatives());
+    return NextAction::merge({NextAction("bear form")}, CastSpellAction::getAlternatives());
 }
 
 bool CastTravelFormAction::isUseful()
@@ -32,6 +31,12 @@ bool CastTravelFormAction::isUseful()
            !botAI->HasAura("dash", bot);
 }
 
+bool CastCasterFormAction::Execute(Event event)
+{
+    botAI->RemoveShapeshift();
+    return true;
+}
+
 bool CastCasterFormAction::isUseful()
 {
     return botAI->HasAnyAuraOf(GetTarget(), "dire bear form", "bear form", "cat form", "travel form", "aquatic form",
@@ -39,22 +44,13 @@ bool CastCasterFormAction::isUseful()
            AI_VALUE2(uint8, "mana", "self target") > sPlayerbotAIConfig.mediumHealth;
 }
 
-bool CastCasterFormAction::Execute(Event event)
-{
-    botAI->RemoveShapeshift();
-    return true;
-}
-
-bool CastCancelTreeFormAction::isUseful()
-{
-    return botAI->HasAura(33891, bot);
-}
-
 bool CastCancelTreeFormAction::Execute(Event event)
 {
     botAI->RemoveAura("tree of life");
     return true;
 }
+
+bool CastCancelTreeFormAction::isUseful() { return botAI->HasAura(33891, bot); }
 
 bool CastTreeFormAction::isUseful()
 {

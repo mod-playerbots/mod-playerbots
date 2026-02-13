@@ -640,7 +640,7 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event event)
                            magtheridon->FindCurrentSpellBySpellId(SPELL_BLAST_NOVA);
     bool lastBlastNova = lastBlastNovaState[instanceId];
 
-    if (lastBlastNova && !blastNovaActive && IsMechanicTrackerBot(botAI, bot, MAGTHERIDON_MAP_ID, nullptr))
+    if (lastBlastNova && !blastNovaActive)
         blastNovaTimer[instanceId] = now;
 
     lastBlastNovaState[instanceId] = blastNovaActive;

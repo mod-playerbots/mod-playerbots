@@ -150,7 +150,7 @@ bool RpgTaxiAction::Execute(Event event)
     bot->GetSession()->HandleCancelMountAuraOpcode(emptyPacket);
 
     uint32 node =
-        sObjectMgr->GetNearestTaxiNode(guidP.getX(), guidP.getY(), guidP.getZ(), guidP.getMapId(), bot->GetTeamId());
+        sObjectMgr->GetNearestTaxiNode(guidP.GetPositionX(), guidP.GetPositionY(), guidP.GetPositionZ(), guidP.GetMapId(), bot->GetTeamId());
 
     std::vector<uint32> nodes;
     for (uint32 i = 0; i < sTaxiPathStore.GetNumRows(); ++i)
@@ -208,7 +208,7 @@ bool RpgDiscoverAction::Execute(Event event)
     GuidPosition guidP = rpg->guidP();
 
     uint32 node =
-        sObjectMgr->GetNearestTaxiNode(guidP.getX(), guidP.getY(), guidP.getZ(), guidP.getMapId(), bot->GetTeamId());
+        sObjectMgr->GetNearestTaxiNode(guidP.GetPositionX(), guidP.GetPositionY(), guidP.GetPositionZ(), guidP.GetMapId(), bot->GetTeamId());
 
     if (!node)
         return false;

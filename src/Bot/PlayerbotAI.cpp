@@ -5192,8 +5192,9 @@ std::string const PlayerbotAI::HandleRemoteCommand(std::string const command)
     {
         LastMovement& data = *GetAiObjectContext()->GetValue<LastMovement&>("last movement");
         std::ostringstream out;
-        out << data.lastMoveShort.getX() << " " << data.lastMoveShort.getY() << " " << data.lastMoveShort.getZ() << " "
-            << data.lastMoveShort.getMapId() << " " << data.lastMoveShort.getO();
+        out << data.lastMoveShort.GetPositionX() << " " << data.lastMoveShort.GetPositionY() << " "
+            << data.lastMoveShort.GetPositionZ() << " " << data.lastMoveShort.GetMapId() << " "
+            << data.lastMoveShort.GetOrientation();
         return out.str();
     }
     else if (command == "target")
