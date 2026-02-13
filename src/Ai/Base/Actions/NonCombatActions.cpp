@@ -76,7 +76,7 @@ bool EatAction::Execute(Event event)
         if (bot->isMoving())
         {
             bot->StopMoving();
-            // botAI->SetNextCheckDelay(sPlayerbotAIConfig->globalCoolDown);
+            // botAI->SetNextCheckDelay(sPlayerbotAIConfig.globalCoolDown);
             // return false;
         }
 

@@ -866,7 +866,7 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
 
 WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)
 {
-    const std::vector<WorldLocation>& locs = sWorldNavigationMgr->locsPerLevelCache[bot->GetLevel()];
+    const std::vector<WorldLocation>& locs = sRandomPlayerbotMgr.locsPerLevelCache[bot->GetLevel()];
     float hiRange = 500.0f;
     float loRange = 2500.0f;
     if (bot->GetLevel() < 5)
@@ -988,13 +988,13 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
     uint32 probSum = 0;
     for (NewRpgStatus status : candidateStatus)
     {
-        if (sPlayerbotAIConfig->RpgStatusProbWeight[status] == 0)
+        if (sPlayerbotAIConfig.RpgStatusProbWeight[status] == 0)
             continue;
 
         if (CheckRpgStatusAvailable(status))
         {
             availableStatus.push_back(status);
-            probSum += sPlayerbotAIConfig->RpgStatusProbWeight[status];
+            probSum += sPlayerbotAIConfig.RpgStatusProbWeight[status];
         }
     }
     // Safety check. Default to "rest" if all RPG weights = 0
@@ -1009,7 +1009,7 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
     NewRpgStatus chosenStatus = RPG_STATUS_END;
     for (NewRpgStatus status : availableStatus)
     {
-        accumulate += sPlayerbotAIConfig->RpgStatusProbWeight[status];
+        accumulate += sPlayerbotAIConfig.RpgStatusProbWeight[status];
         if (accumulate >= rand)
         {
             chosenStatus = status;

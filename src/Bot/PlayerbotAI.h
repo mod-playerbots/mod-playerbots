@@ -491,7 +491,7 @@ public:
     void ImbueItem(Item* item);
     void EnchantItemT(uint32 spellid, uint8 slot);
     uint32 GetBuffedCount(Player* player, std::string const spellname);
-    int32 GetNearGroupMemberCount(float dis = sPlayerbotAIConfig->sightDistance);
+    int32 GetNearGroupMemberCount(float dis = sPlayerbotAIConfig.sightDistance);
 
     virtual bool CanCastSpell(std::string const name, Unit* target, Item* itemTarget = nullptr);
     virtual bool CastSpell(std::string const name, Unit* target, Item* itemTarget = nullptr);
@@ -545,9 +545,9 @@ public:
     uint32 GetFixedBotNumer(uint32 maxNum = 100, float cyclePerMin = 1);
     GrouperType GetGrouperType();
     GuilderType GetGuilderType();
-    bool HasPlayerNearby(WorldPosition* pos, float range = sPlayerbotAIConfig->reactDistance);
-    bool HasPlayerNearby(float range = sPlayerbotAIConfig->reactDistance);
-    bool HasManyPlayersNearby(uint32 trigerrValue = 20, float range = sPlayerbotAIConfig->sightDistance);
+    bool HasPlayerNearby(WorldPosition* pos, float range = sPlayerbotAIConfig.reactDistance);
+    bool HasPlayerNearby(float range = sPlayerbotAIConfig.reactDistance);
+    bool HasManyPlayersNearby(uint32 trigerrValue = 20, float range = sPlayerbotAIConfig.sightDistance);
     bool AllowActive(ActivityType activityType);
     bool AllowActivity(ActivityType activityType = ALL_ACTIVITY, bool checkNow = false);
     uint32 AutoScaleActivity(uint32 mod);
@@ -562,7 +562,7 @@ public:
     bool HasCheat(BotCheatMask mask)
     {
         return ((uint32)mask & (uint32)cheatMask) != 0 ||
-               ((uint32)mask & (uint32)sPlayerbotAIConfig->botCheatMask) != 0;
+               ((uint32)mask & (uint32)sPlayerbotAIConfig.botCheatMask) != 0;
     }
     BotCheatMask GetCheat() { return cheatMask; }
     void SetCheat(BotCheatMask mask) { cheatMask = mask; }

@@ -24,7 +24,7 @@ float DistanceValue::Calculate()
         if (!obj || !obj->IsInWorld())
             return 0.0f;
 
-        return sServerFacade->GetDistance2d(botAI->GetBot(), obj);
+        return ServerFacade::instance().GetDistance2d(botAI->GetBot(), obj);
     }
 
     if (qualifier.find("position_") == 0)
@@ -37,7 +37,7 @@ float DistanceValue::Calculate()
         if (botAI->GetBot()->GetMapId() != pos.mapId)
             return 0.0f;
 
-        return sServerFacade->GetDistance2d(botAI->GetBot(), pos.x, pos.y);
+        return ServerFacade::instance().GetDistance2d(botAI->GetBot(), pos.x, pos.y);
     }
 
     Unit* target = nullptr;
@@ -76,7 +76,7 @@ float DistanceValue::Calculate()
         {
             Formation* formation = AI_VALUE(Formation*, "formation");
             WorldLocation loc = formation->GetLocation();
-            return sServerFacade->GetDistance2d(botAI->GetBot(), loc.GetPositionX(), loc.GetPositionY());
+            return ServerFacade::instance().GetDistance2d(botAI->GetBot(), loc.GetPositionX(), loc.GetPositionY());
         }
     }
 
@@ -86,7 +86,7 @@ float DistanceValue::Calculate()
     if (target == botAI->GetBot())
         return 0.0f;
 
-    return sServerFacade->GetDistance2d(botAI->GetBot(), target);
+    return ServerFacade::instance().GetDistance2d(botAI->GetBot(), target);
 }
 
 bool InsideTargetValue::Calculate()
@@ -95,6 +95,6 @@ bool InsideTargetValue::Calculate()
     if (!target || !target->IsInWorld() || target == botAI->GetBot())
         return false;
 
-    float dist = sServerFacade->GetDistance2d(botAI->GetBot(), target->GetPositionX(), target->GetPositionY());
-    return sServerFacade->IsDistanceLessThan(dist, target->GetCombatReach());
+    float dist = ServerFacade::instance().GetDistance2d(botAI->GetBot(), target->GetPositionX(), target->GetPositionY());
+    return ServerFacade::instance().IsDistanceLessThan(dist, target->GetCombatReach());
 }

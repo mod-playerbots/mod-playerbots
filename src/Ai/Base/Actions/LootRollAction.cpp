@@ -84,11 +84,11 @@ bool LootRollAction::Execute(Event event)
                     break;
             }
         }
-        if (sPlayerbotAIConfig->lootRollLevel == 0)
+        if (sPlayerbotAIConfig.lootRollLevel == 0)
         {
             vote = PASS;
         }
-        else if (sPlayerbotAIConfig->lootRollLevel == 1)
+        else if (sPlayerbotAIConfig.lootRollLevel == 1)
         {
             if (vote == NEED)
             {

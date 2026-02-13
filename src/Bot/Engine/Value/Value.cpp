@@ -123,7 +123,7 @@ Unit* UnitCalculatedValue::Get()
 {
     if (checkInterval < 2)
     {
-        PerfMonitorOperation* pmo = sPerfMonitor->start(
+        PerfMonitorOperation* pmo = sPerfMonitor.start(
             PERF_MON_VALUE, this->getName(), this->context ? &this->context->performanceStack : nullptr);
         value = Calculate();
         if (pmo)
@@ -135,7 +135,7 @@ Unit* UnitCalculatedValue::Get()
         if (!lastCheckTime || now - lastCheckTime >= checkInterval)
         {
             lastCheckTime = now;
-            PerfMonitorOperation* pmo = sPerfMonitor->start(
+            PerfMonitorOperation* pmo = sPerfMonitor.start(
                 PERF_MON_VALUE, this->getName(), this->context ? &this->context->performanceStack : nullptr);
             value = Calculate();
             if (pmo)
