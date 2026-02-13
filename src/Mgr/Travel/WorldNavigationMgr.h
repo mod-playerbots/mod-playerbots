@@ -47,10 +47,10 @@ static const std::unordered_map<CityId, std::vector<uint16>> cityToBankers = {
 class WorldNavigationMgr
 {
 public:
-    static WorldNavigationMgr* Instance()
+    static WorldNavigationMgr& Instance()
     {
         static WorldNavigationMgr instance;
-        return &instance;
+        return instance;
     }
 
     void Init();
@@ -67,6 +67,14 @@ public:
 
     std::map<uint8, std::vector<WorldLocation>> locsPerLevelCache;
 private:
+
+    ~WorldNavigationMgr() = default;
+
+    WorldNavigationMgr(const WorldNavigationMgr&) = delete;
+    WorldNavigationMgr& operator=(const WorldNavigationMgr&) = delete;
+
+    WorldNavigationMgr(WorldNavigationMgr&&) = delete;
+    WorldNavigationMgr& operator=(WorldNavigationMgr&&) = delete;
 
     //Taxi Paths
     std::vector<uint32> FindTaxiPath(uint32 fromNode, uint32 toNode);

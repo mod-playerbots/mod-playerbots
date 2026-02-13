@@ -924,7 +924,7 @@ WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)
 
 WorldPosition NewRpgBaseAction::SelectRandomCampPos(Player* bot)
 {
-    const std::vector<WorldLocation> locs = sWorldNavigationMgr->GetTravelHubs(bot);
+    const std::vector<WorldLocation> locs = sWorldNavigationMgr.GetTravelHubs(bot);
 
     bool inCity = false;
 
@@ -967,11 +967,11 @@ WorldPosition NewRpgBaseAction::SelectRandomCampPos(Player* bot)
 
 bool NewRpgBaseAction::SelectRandomFlightTaxiNode(ObjectGuid& flightMaster, std::vector<uint32>& path)
 {
-    flightMaster = sWorldNavigationMgr->GetNearestFlightMaster(bot, true);
+    flightMaster = sWorldNavigationMgr.GetNearestFlightMaster(bot, true);
     if (!flightMaster)
         return false;
 
-    std::vector<std::vector<uint32>> availablePaths = sWorldNavigationMgr->GetOptimalDestinations(bot);
+    std::vector<std::vector<uint32>> availablePaths = sWorldNavigationMgr.GetOptimalDestinations(bot);
     if (availablePaths.empty())
         return false;
 

@@ -1769,13 +1769,13 @@ void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
     if (bot->InBattleground())
         return;
 
-    std::vector<WorldLocation> locs = sWorldNavigationMgr->GetCityLocations(bot);
+    std::vector<WorldLocation> locs = sWorldNavigationMgr.GetCityLocations(bot);
     if (!locs.empty())
     {
         RandomTeleport(bot, locs, true);
         return;
     }
-    locs = sWorldNavigationMgr->GetTeleportLocations(bot);
+    locs = sWorldNavigationMgr.GetTeleportLocations(bot);
     if (!locs.empty())
     {
         RandomTeleport(bot, locs, false);
@@ -1788,7 +1788,7 @@ void RandomPlayerbotMgr::RandomTeleportGrindForLevel(Player* bot)
     if (bot->InBattleground())
         return;
 
-    std::vector<WorldLocation> locs =  sWorldNavigationMgr->GetTeleportLocations(bot);
+    std::vector<WorldLocation> locs =  sWorldNavigationMgr.GetTeleportLocations(bot);
     LOG_DEBUG("playerbots", "Random teleporting bot {} for level {} ({} locations available)", bot->GetName().c_str(),
               bot->GetLevel(), locs.size());
 
