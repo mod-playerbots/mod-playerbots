@@ -155,7 +155,6 @@ namespace SerpentShrineCavernHelpers
     constexpr float VASHJ_PLATFORM_CENTER_Z = 42.902f;
     constexpr float VASHJ_PLATFORM_EDGE_Z = 41.097f;
     extern const Position VASHJ_PLATFORM_CENTER_POSITION;
-    extern std::unordered_map<ObjectGuid, Position> vashjRangedPositions;
     extern std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;
     extern std::unordered_map<uint32, ObjectGuid> nearestTriggerGuid;
     extern std::unordered_map<ObjectGuid, Position> intendedLineup;

@@ -500,7 +500,6 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
 
     auto coreHandlers = GetCoreHandlers(botAI, bot);
 
-    // Only core handlers should be active
     bool isCoreHandler = false;
     for (Player* handler : coreHandlers)
         if (handler == bot)
@@ -515,7 +514,7 @@ bool LadyVashjTaintedCoreWasLootedTrigger::IsActive()
         (bot == coreHandlers[1] || bot == coreHandlers[2]))
         return true;
 
-    // Main logic: core is in play for this bot or a predecessor
+    // Main logic: run if core is in play for this bot or a prior handler
     return AnyRecentCoreInInventory(botAI, bot);
 }
 
