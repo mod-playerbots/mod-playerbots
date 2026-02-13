@@ -34,7 +34,6 @@ void NewRpgInfo::ChangeToDoQuest(uint32 questId, const Quest* quest)
     DoQuest do_quest;
     do_quest.questId = questId;
     do_quest.quest = quest;
-    data = do_quest;
 }
 
 void NewRpgInfo::ChangeToTravelFlight(ObjectGuid fromFlightMaster, std::vector<uint32> path)
@@ -73,6 +72,22 @@ void NewRpgInfo::SetMoveFarTo(WorldPosition pos)
     stuckTs = 0;
     stuckAttempts = 0;
     moveFarPos = pos;
+}
+
+NewRpgStatus NewRpgInfo::GetStatus()
+{
+    return std::visit([](auto&& arg) -> NewRpgStatus {
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr (std::is_same_v<T, Idle>) return RPG_IDLE;
+        if constexpr (std::is_same_v<T, GoGrind>) return RPG_GO_GRIND;
+        if constexpr (std::is_same_v<T, GoCamp>) return RPG_GO_CAMP;
+        if constexpr (std::is_same_v<T, WanderNpc>) return RPG_WANDER_NPC;
+        if constexpr (std::is_same_v<T, WanderRandom>) return RPG_WANDER_RANDOM;
+        if constexpr (std::is_same_v<T, Rest>) return RPG_REST;
+        if constexpr (std::is_same_v<T, DoQuest>) return RPG_DO_QUEST;
+        if constexpr (std::is_same_v<T, TravelFlight>) return RPG_TRAVEL_FLIGHT;
+        return RPG_IDLE;
+    }, data);
 }
 
 std::string NewRpgInfo::ToString()
@@ -124,7 +139,7 @@ std::string NewRpgInfo::ToString()
             out << "\nobjectiveIdx: " << arg.objectiveIdx;
             out << "\npoiPos: " << arg.pos.GetMapId() << " " << arg.pos.GetPositionX() << " "
                 << arg.pos.GetPositionY() << " " << arg.pos.GetPositionZ();
-            out << "\nlastReachPOI: " << arg.lastReachPOI ? GetMSTimeDiffToNow(arg.lastReachPOI) : 0;
+            out << "\nlastReachPOI: " << (arg.lastReachPOI ? GetMSTimeDiffToNow(arg.lastReachPOI) : 0);
         }
         else if constexpr (std::is_same_v<T, TravelFlight>)
         {
