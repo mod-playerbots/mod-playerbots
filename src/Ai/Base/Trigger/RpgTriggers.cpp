@@ -46,7 +46,8 @@ bool RpgTaxiTrigger::IsActive()
         return false;
 
     uint32 node =
-        sObjectMgr->GetNearestTaxiNode(guidP.getX(), guidP.getY(), guidP.getZ(), guidP.getMapId(), bot->GetTeamId());
+        sObjectMgr->GetNearestTaxiNode(guidP.GetPositionX(), guidP.GetPositionY(), guidP.GetPositionZ(),
+                                       guidP.GetMapId(), bot->GetTeamId());
 
     if (!node)
         return false;
@@ -68,7 +69,8 @@ bool RpgDiscoverTrigger::IsActive()
         return false;
 
     uint32 node =
-        sObjectMgr->GetNearestTaxiNode(guidP.getX(), guidP.getY(), guidP.getZ(), guidP.getMapId(), bot->GetTeamId());
+        sObjectMgr->GetNearestTaxiNode(guidP.GetPositionX(), guidP.GetPositionY(), guidP.GetPositionZ(),
+                                       guidP.GetMapId(), bot->GetTeamId());
 
     if (bot->m_taxi.IsTaximaskNodeKnown(node))
         return false;

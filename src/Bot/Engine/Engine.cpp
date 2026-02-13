@@ -323,16 +323,16 @@ ActionResult Engine::ExecuteAction(std::string const name, Event event, std::str
             q->Qualify(qualifier);
     }
 
-    if (!action->isPossible())
-    {
-        delete actionNode;
-        return ACTION_RESULT_IMPOSSIBLE;
-    }
-
     if (!action->isUseful())
     {
         delete actionNode;
         return ACTION_RESULT_USELESS;
+    }
+
+    if (!action->isPossible())
+    {
+        delete actionNode;
+        return ACTION_RESULT_IMPOSSIBLE;
     }
 
     action->MakeVerbose();

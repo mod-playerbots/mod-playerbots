@@ -120,12 +120,6 @@ public:
     WorldPosition& operator+=(WorldPosition const& p1);
     WorldPosition& operator-=(WorldPosition const& p1);
 
-    uint32 getMapId();
-    float getX();
-    float getY();
-    float getZ();
-    float getO();
-
     G3D::Vector3 getVector3();
     std::string const print();
 
@@ -185,29 +179,29 @@ public:
     // Quick square distance in 2d plane.
     float sqDistance2d(WorldPosition center)
     {
-        return (getX() - center.getX()) * (getX() - center.getX()) +
-               (getY() - center.getY()) * (getY() - center.getY());
+        return (GetPositionX() - center.GetPositionX()) * (GetPositionX() - center.GetPositionX()) +
+               (GetPositionY() - center.GetPositionY()) * (GetPositionY() - center.GetPositionY());
     }
 
     // Quick square distance calculation without map check. Used for getting the minimum distant points.
     float sqDistance(WorldPosition center)
     {
-        return (getX() - center.getX()) * (getX() - center.getX()) +
-               (getY() - center.getY()) * (getY() - center.getY()) +
-               (getZ() - center.getZ()) * (getZ() - center.getZ());
+        return (GetPositionX() - center.GetPositionX()) * (GetPositionX() - center.GetPositionX()) +
+               (GetPositionY() - center.GetPositionY()) * (GetPositionY() - center.GetPositionY()) +
+               (GetPositionZ() - center.GetPositionZ()) * (GetPositionZ() - center.GetPositionZ());
     }
 
     float sqDistance2d(WorldPosition* center)
     {
-        return (getX() - center->getX()) * (getX() - center->getX()) +
-               (getY() - center->getY()) * (getY() - center->getY());
+        return (GetPositionX() - center->GetPositionX()) * (GetPositionX() - center->GetPositionX()) +
+               (GetPositionY() - center->GetPositionY()) * (GetPositionY() - center->GetPositionY());
     }
 
     float sqDistance(WorldPosition* center)
     {
-        return (getX() - center->getX()) * (getX() - center->getX()) +
-               (getY() - center->getY()) * (getY() - center->getY()) +
-               (getZ() - center->getZ()) * (getZ() - center->getZ());
+        return (GetPositionX() - center->GetPositionX()) * (GetPositionX() - center->GetPositionX()) +
+               (GetPositionY() - center->GetPositionY()) * (GetPositionY() - center->GetPositionY()) +
+               (GetPositionZ() - center->GetPositionZ()) * (GetPositionZ() - center->GetPositionZ());
     }
 
     // Returns the closest point of the list. Fast but only works for the same map.
@@ -227,7 +221,7 @@ public:
 
     float getAngleTo(WorldPosition endPos)
     {
-        float ang = atan2(endPos.getY() - getY(), endPos.getX() - getX());
+        float ang = atan2(endPos.GetPositionY() - GetPositionY(), endPos.GetPositionX() - GetPositionX());
         return (ang >= 0) ? ang : 2 * static_cast<float>(M_PI) + ang;
     }
 
@@ -238,7 +232,8 @@ public:
 
     float mSign(WorldPosition* p1, WorldPosition* p2)
     {
-        return (getX() - p2->getX()) * (p1->getY() - p2->getY()) - (p1->getX() - p2->getX()) * (getY() - p2->getY());
+        return (GetPositionX() - p2->GetPositionX()) * (p1->GetPositionY() - p2->GetPositionY()) -
+               (p1->GetPositionX() - p2->GetPositionX()) * (GetPositionY() - p2->GetPositionY());
     }
 
     bool isInside(WorldPosition* p1, WorldPosition* p2, WorldPosition* p3);
@@ -251,18 +246,23 @@ public:
 
     std::set<Transport*> getTransports(uint32 entry = 0);
 
-    GridCoord getGridCoord() { return Acore::ComputeGridCoord(getX(), getY()); };
+    CellCoord getCellCoord() { return Acore::ComputeCellCoord(GetPositionX(), GetPositionY()); }
+    GridCoord getGridCoord()
+    {
+        CellCoord cellCoord = getCellCoord();
+        Cell cell(cellCoord);
+        return GridCoord(cell.GridX(), cell.GridY());
+    }
     std::vector<GridCoord> getGridCoord(WorldPosition secondPos);
     std::vector<WorldPosition> fromGridCoord(GridCoord GridCoord);
 
-    CellCoord getCellCoord() { return Acore::ComputeCellCoord(getX(), getY()); }
     std::vector<WorldPosition> fromCellCoord(CellCoord cellCoord);
     std::vector<WorldPosition> gridFromCellCoord(CellCoord cellCoord);
 
     mGridCoord getmGridCoord()
     {
-        return std::make_pair((int32)(CENTER_GRID_ID - getX() / SIZE_OF_GRIDS),
-                              (int32)(CENTER_GRID_ID - getY() / SIZE_OF_GRIDS));
+        return std::make_pair((int32)(CENTER_GRID_ID - GetPositionX() / SIZE_OF_GRIDS),
+                              (int32)(CENTER_GRID_ID - GetPositionY() / SIZE_OF_GRIDS));
     }
 
     std::vector<mGridCoord> getmGridCoords(WorldPosition secondPos);
@@ -270,15 +270,15 @@ public:
 
     void loadMapAndVMap(uint32 mapId, uint8 x, uint8 y);
 
-    void loadMapAndVMap() { loadMapAndVMap(getMapId(), getmGridCoord().first, getmGridCoord().second); }
+    void loadMapAndVMap() { loadMapAndVMap(GetMapId(), getmGridCoord().first, getmGridCoord().second); }
 
     void loadMapAndVMaps(WorldPosition secondPos);
 
     // Display functions
     WorldPosition getDisplayLocation();
-    float getDisplayX() { return getDisplayLocation().getY() * -1.0; }
+    float getDisplayX() { return getDisplayLocation().GetPositionY() * -1.0; }
 
-    float getDisplayY() { return getDisplayLocation().getX(); }
+    float getDisplayY() { return getDisplayLocation().GetPositionX(); }
 
     uint16 getAreaId();
     AreaTableEntry const* getArea();
@@ -334,11 +334,11 @@ private:
 
 inline ByteBuffer& operator<<(ByteBuffer& b, WorldPosition& guidP)
 {
-    b << guidP.getMapId();
-    b << guidP.getX();
-    b << guidP.getY();
-    b << guidP.getZ();
-    b << guidP.getO();
+    b << guidP.GetMapId();
+    b << guidP.GetPositionX();
+    b << guidP.GetPositionY();
+    b << guidP.GetPositionZ();
+    b << guidP.GetOrientation();
     b << guidP.getVisitors();
     return b;
 }
@@ -440,7 +440,7 @@ std::vector<std::pair<T, WorldPosition>> GetPosList(std::vector<T> oList)
     for (auto& obj : oList)
         retList.push_back(std::make_pair(obj, WorldPosition(obj)));
 
-    return std::move(retList);
+    return retList;
 };
 
 template <class T>
@@ -450,7 +450,7 @@ std::vector<std::pair<T, WorldPosition>> GetPosVector(std::vector<T> oList)
     for (auto& obj : oList)
         retList.push_back(make_pair(obj, WorldPosition(obj)));
 
-    return std::move(retList);
+    return retList;
 };
 
 class mapTransfer
@@ -461,9 +461,9 @@ public:
     {
     }
 
-    bool isFrom(WorldPosition point) { return point.getMapId() == pointFrom.getMapId(); }
+    bool isFrom(WorldPosition point) { return point.GetMapId() == pointFrom.GetMapId(); }
 
-    bool isTo(WorldPosition point) { return point.getMapId() == pointTo.getMapId(); }
+    bool isTo(WorldPosition point) { return point.GetMapId() == pointTo.GetMapId(); }
 
     WorldPosition* getPointFrom() { return &pointFrom; }
 
@@ -543,7 +543,7 @@ public:
     WorldPosition* nearestPoint(WorldPosition* pos);
 
     float distanceTo(WorldPosition* pos) { return nearestPoint(pos)->distance(pos); }
-    bool onMap(WorldPosition* pos) { return nearestPoint(pos)->getMapId() == pos->getMapId(); }
+    bool onMap(WorldPosition* pos) { return nearestPoint(pos)->GetMapId() == pos->GetMapId(); }
     virtual bool isIn(WorldPosition* pos, float radius = 0.f)
     {
         return onMap(pos) && distanceTo(pos) <= (radius ? radius : radiusMin);

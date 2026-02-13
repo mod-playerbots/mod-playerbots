@@ -184,7 +184,7 @@ std::string ChangeTalentsAction::SpecApply(std::string param)
 //     //     }
 //     // }
 
-//     return std::move(ret);
+//     return ret;
 // }
 
 // std::vector<TalentPath*> ChangeTalentsAction::getPremadePaths(TalentSpec* oldSpec)
@@ -201,7 +201,7 @@ std::string ChangeTalentsAction::SpecApply(std::string param)
 //     //     }
 //     // }
 
-//     return std::move(ret);
+//     return ret;
 // }
 
 // TalentPath* ChangeTalentsAction::getPremadePath(uint32 id)

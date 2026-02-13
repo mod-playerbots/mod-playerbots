@@ -23,8 +23,8 @@ public:
 
     std::string const GetTargetName() override { return "current target"; };
     bool Execute(Event event) override;
-    bool isPossible() override;
     bool isUseful() override;
+    bool isPossible() override;
     ActionThreatType getThreatType() override { return ActionThreatType::Single; }
 
     std::vector<NextAction> getPrerequisites() override

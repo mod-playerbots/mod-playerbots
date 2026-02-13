@@ -90,7 +90,7 @@ bool MoveLongStuckTrigger::IsActive()
     }
 
     if (cell.GridX() > 0 && cell.GridY() > 0 &&
-        !MMAP::MMapFactory::createOrGetMMapMgr()->loadMap(botPos.getMapId(), cell.GridX(), cell.GridY()))
+        !MMAP::MMapFactory::createOrGetMMapMgr()->loadMap(botPos.GetMapId(), cell.GridX(), cell.GridY()))
     {
         // LOG_INFO("playerbots", "Bot {} {}:{} <{}> was in unloaded grid {},{} on map {}",
         // bot->GetGUID().ToString().c_str(), bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H", bot->GetLevel(),

@@ -56,7 +56,10 @@ HEAL_PARTY_ACTION(CastRenewOnPartyAction, "renew", 15.0f, HealingManaEfficiency:
 class CastPrayerOfMendingAction : public HealPartyMemberAction
 {
 public:
-    CastPrayerOfMendingAction(PlayerbotAI* botAI) : HealPartyMemberAction(botAI, "prayer of mending", 10.0f, HealingManaEfficiency::HIGH, false) {}
+    CastPrayerOfMendingAction(PlayerbotAI* botAI)
+        : HealPartyMemberAction(botAI, "prayer of mending", 10.0f, HealingManaEfficiency::HIGH, false)
+    {
+    }
 };
 
 HEAL_PARTY_ACTION(CastBindingHealAction, "binding heal", 15.0f, HealingManaEfficiency::MEDIUM);
@@ -65,7 +68,8 @@ HEAL_PARTY_ACTION(CastPrayerOfHealingAction, "prayer of healing", 15.0f, Healing
 class CastCircleOfHealingAction : public HealPartyMemberAction
 {
 public:
-    CastCircleOfHealingAction(PlayerbotAI* ai) : HealPartyMemberAction(ai, "circle of healing", 15.0f, HealingManaEfficiency::HIGH)
+    CastCircleOfHealingAction(PlayerbotAI* ai)
+        : HealPartyMemberAction(ai, "circle of healing", 15.0f, HealingManaEfficiency::HIGH)
     {
     }
 };
@@ -134,15 +138,15 @@ class CastRemoveShadowformAction : public Action
 public:
     CastRemoveShadowformAction(PlayerbotAI* botAI) : Action(botAI, "remove shadowform") {}
 
-    bool isUseful() override;
-    bool isPossible() override;
     bool Execute(Event event) override;
+    bool isUseful() override;
 };
 
 class CastDispersionAction : public CastSpellAction
 {
 public:
     CastDispersionAction(PlayerbotAI* ai) : CastSpellAction(ai, "dispersion") {}
+
     virtual std::string const GetTargetName() { return "self target"; }
 };
 
@@ -158,6 +162,7 @@ class CastHymnOfHopeAction : public CastSpellAction
 {
 public:
     CastHymnOfHopeAction(PlayerbotAI* ai) : CastSpellAction(ai, "hymn of hope") {}
+
     virtual std::string const GetTargetName() { return "self target"; }
 };
 
@@ -165,6 +170,7 @@ class CastDivineHymnAction : public CastSpellAction
 {
 public:
     CastDivineHymnAction(PlayerbotAI* ai) : CastSpellAction(ai, "divine hymn") {}
+
     virtual std::string const GetTargetName() { return "self target"; }
 };
 
@@ -172,6 +178,7 @@ class CastShadowfiendAction : public CastSpellAction
 {
 public:
     CastShadowfiendAction(PlayerbotAI* ai) : CastSpellAction(ai, "shadowfiend") {}
+
     virtual std::string const GetTargetName() { return "current target"; }
 };
 
@@ -182,6 +189,7 @@ public:
         : HealPartyMemberAction(ai, "power word: shield", 15.0f, HealingManaEfficiency::HIGH)
     {
     }
+
     bool isUseful() override;
     Unit* GetTarget() override;
 };
@@ -193,6 +201,7 @@ public:
         : HealPartyMemberAction(ai, "power word: shield", 5.0f, HealingManaEfficiency::HIGH)
     {
     }
+
     bool isUseful() override;
     Unit* GetTarget() override;
 };
@@ -201,13 +210,17 @@ class CastMindSearAction : public CastSpellAction
 {
 public:
     CastMindSearAction(PlayerbotAI* ai) : CastSpellAction(ai, "mind sear") {}
+
     ActionThreatType getThreatType() override { return ActionThreatType::Aoe; }
 };
 
 class CastGuardianSpiritOnPartyAction : public HealPartyMemberAction
 {
 public:
-    CastGuardianSpiritOnPartyAction(PlayerbotAI* ai) : HealPartyMemberAction(ai, "guardian spirit", 40.0f, HealingManaEfficiency::MEDIUM) {}
+    CastGuardianSpiritOnPartyAction(PlayerbotAI* ai)
+        : HealPartyMemberAction(ai, "guardian spirit", 40.0f, HealingManaEfficiency::MEDIUM)
+    {
+    }
 };
 
 #endif

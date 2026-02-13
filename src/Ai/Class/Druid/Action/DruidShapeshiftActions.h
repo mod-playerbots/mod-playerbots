@@ -15,8 +15,8 @@ class CastBearFormAction : public CastBuffSpellAction
 public:
     CastBearFormAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "bear form") {}
 
-    bool isPossible() override;
     bool isUseful() override;
+    bool isPossible() override;
 };
 
 class CastDireBearFormAction : public CastBuffSpellAction
@@ -37,6 +37,7 @@ class CastTreeFormAction : public CastBuffSpellAction
 {
 public:
     CastTreeFormAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "tree of life") {}
+
     bool isUseful() override;
 };
 
@@ -65,9 +66,9 @@ class CastCasterFormAction : public CastBuffSpellAction
 public:
     CastCasterFormAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "caster form") {}
 
+    bool Execute(Event event) override;
     bool isUseful() override;
     bool isPossible() override { return true; }
-    bool Execute(Event event) override;
 };
 
 class CastCancelTreeFormAction : public CastBuffSpellAction
@@ -75,9 +76,9 @@ class CastCancelTreeFormAction : public CastBuffSpellAction
 public:
     CastCancelTreeFormAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "cancel tree form") {}
 
+    bool Execute(Event event) override;
     bool isUseful() override;
     bool isPossible() override { return true; }
-    bool Execute(Event event) override;
 };
 
 #endif
