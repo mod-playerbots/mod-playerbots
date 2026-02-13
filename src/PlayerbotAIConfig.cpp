@@ -181,7 +181,7 @@ bool PlayerbotAIConfig::Initialize()
         disallowedGameObjects);
 
     LoadSet<std::set<uint32>>(
-        sConfigMgr->GetOption<std::string>("AiPlayerbot.UnobtainableItems", "12468,22784,46978"),
+        sConfigMgr->GetOption<std::string>("AiPlayerbot.UnobtainableItems", "12468,46978"),
         unobtainableItems);
 
     botAutologin = sConfigMgr->GetOption<bool>("AiPlayerbot.BotAutologin", false);
