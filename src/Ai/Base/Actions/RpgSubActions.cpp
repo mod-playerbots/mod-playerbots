@@ -51,18 +51,15 @@ GuidPosition RpgHelper::guidP() { return AI_VALUE(GuidPosition, "rpg target"); }
 
 ObjectGuid RpgHelper::guid() { return (ObjectGuid)guidP(); }
 
-bool RpgHelper::InRange()
-{
-    GuidPosition targetGuid = guidP();
-    if (!targetGuid)
-        return false;
+ bool RpgHelper::InRange()
+ {
+     GuidPosition targetGuid = guidP();
+     if (!targetGuid)
+         return false;
 
-    WorldObject* target = targetGuid.GetWorldObject();
-    if (!target)
-        return false;
-
-    return bot->GetExactDist2dSq(target) < INTERACTION_DISTANCE * INTERACTION_DISTANCE;
-}
+    return bot->GetExactDist2dSq(targetGuid.GetPositionX(), targetGuid.GetPositionY()) <
+        INTERACTION_DISTANCE * INTERACTION_DISTANCE;
+ }
 
 void RpgHelper::setFacingTo(GuidPosition guidPosition)
 {
