@@ -155,9 +155,6 @@ public:
         creators["lady vashj tainted core is unusable"] =
             &RaidSSCTriggerContext::lady_vashj_tainted_core_is_unusable;
 
-        creators["lady vashj need to reset core passing trackers"] =
-            &RaidSSCTriggerContext::lady_vashj_need_to_reset_core_passing_trackers;
-
         creators["lady vashj toxic sporebats are spewing poison clouds"] =
             &RaidSSCTriggerContext::lady_vashj_toxic_sporebats_are_spewing_poison_clouds;
 
@@ -311,9 +308,6 @@ private:
 
     static Trigger* lady_vashj_tainted_core_is_unusable(
         PlayerbotAI* botAI) { return new LadyVashjTaintedCoreIsUnusableTrigger(botAI); }
-
-    static Trigger* lady_vashj_need_to_reset_core_passing_trackers(
-        PlayerbotAI* botAI) { return new LadyVashjNeedToResetCorePassingTrackersTrigger(botAI); }
 
     static Trigger* lady_vashj_toxic_sporebats_are_spewing_poison_clouds(
         PlayerbotAI* botAI) { return new LadyVashjToxicSporebatsAreSpewingPoisonCloudsTrigger(botAI); }

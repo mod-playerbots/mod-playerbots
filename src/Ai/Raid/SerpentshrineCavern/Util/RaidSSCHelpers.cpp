@@ -182,14 +182,13 @@ namespace SerpentShrineCavernHelpers
 
     // Lady Vashj <Coilfang Matron>
 
-    const Position VASHJ_PLATFORM_CENTER_POSITION = { 29.634f, -923.541f, 42.985f };
+    const Position VASHJ_PLATFORM_CENTER_POSITION = { 29.634f, -923.541f, 42.902f };
 
-    std::unordered_map<ObjectGuid, Position> vashjRangedPositions;
     std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;
     std::unordered_map<uint32, ObjectGuid> nearestTriggerGuid;
     std::unordered_map<ObjectGuid, Position> intendedLineup;
     std::unordered_map<uint32, time_t> lastImbueAttempt;
-    std::unordered_map<uint32, time_t> lastCoreInInventoryTime;
+    std::unordered_map<ObjectGuid, time_t> lastCoreInInventoryTime;
 
     bool IsMainTankInSameSubgroup(Player* bot)
     {
@@ -210,11 +209,9 @@ namespace SerpentShrineCavernHelpers
             if (group->GetMemberGroup(member->GetGUID()) != botSubGroup)
                 continue;
 
-            if (PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member))
-            {
-                if (memberAI->IsMainTank(member))
-                    return true;
-            }
+            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+            if (memberAI && memberAI->IsMainTank(member))
+                return true;
         }
 
         return false;
@@ -277,38 +274,9 @@ namespace SerpentShrineCavernHelpers
         return false;
     }
 
-    bool AnyRecentCoreInInventory(Group* group, PlayerbotAI* botAI, uint32 graceSeconds)
+    Player* GetDesignatedCoreLooter(PlayerbotAI* botAI, Player* bot)
     {
-        Unit* vashj =
-            botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
-        if (!vashj)
-            return false;
-
-        if (group)
-        {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (member && member->HasItemCount(ITEM_TAINTED_CORE, 1, false))
-                    return true;
-            }
-        }
-
-        const uint32 instanceId = vashj->GetMap()->GetInstanceId();
-        const time_t now = std::time(nullptr);
-
-        auto it = lastCoreInInventoryTime.find(instanceId);
-        if (it != lastCoreInInventoryTime.end())
-        {
-            if ((now - it->second) <= static_cast<time_t>(graceSeconds))
-                return true;
-        }
-
-        return false;
-    }
-
-    Player* GetDesignatedCoreLooter(Group* group, PlayerbotAI* botAI)
-    {
+        Group* group = bot->GetGroup();
         if (!group)
             return nullptr;
 
@@ -341,12 +309,13 @@ namespace SerpentShrineCavernHelpers
         return fallback ? fallback : leader;
     }
 
-    Player* GetFirstTaintedCorePasser(Group* group, PlayerbotAI* botAI)
+    Player* GetFirstTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
     {
+        Group* group = bot->GetGroup();
         if (!group)
             return nullptr;
 
-        Player* designatedLooter = GetDesignatedCoreLooter(group, botAI);
+        Player* designatedLooter = GetDesignatedCoreLooter(botAI, bot);
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
@@ -355,32 +324,29 @@ namespace SerpentShrineCavernHelpers
                 continue;
 
             PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-            if (!memberAI)
-                continue;
-
-            if (memberAI->IsAssistHealOfIndex(member, 0, true))
+            if (memberAI && memberAI->IsAssistHealOfIndex(member, 0, true))
                 return member;
         }
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
-                botAI->IsTank(member) || member == designatedLooter)
-                continue;
-            return member;
+            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
+                !botAI->IsTank(member) && member != designatedLooter)
+                return member;
         }
 
         return nullptr;
     }
 
-    Player* GetSecondTaintedCorePasser(Group* group, PlayerbotAI* botAI)
+    Player* GetSecondTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
     {
+        Group* group = bot->GetGroup();
         if (!group)
             return nullptr;
 
-        Player* designatedLooter = GetDesignatedCoreLooter(group, botAI);
-        Player* firstCorePasser = GetFirstTaintedCorePasser(group, botAI);
+        Player* designatedLooter = GetDesignatedCoreLooter(botAI, bot);
+        Player* firstCorePasser = GetFirstTaintedCorePasser(botAI, bot);
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
@@ -390,34 +356,31 @@ namespace SerpentShrineCavernHelpers
                 continue;
 
             PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-            if (!memberAI)
-                continue;
-
-            if (memberAI->IsAssistHealOfIndex(member, 1, true))
+            if (memberAI && memberAI->IsAssistHealOfIndex(member, 1, true))
                 return member;
         }
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
-                botAI->IsTank(member) || member == designatedLooter ||
-                member == firstCorePasser)
-                continue;
-            return member;
+            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
+                !botAI->IsTank(member) && member != designatedLooter &&
+                member != firstCorePasser)
+                return member;
         }
 
         return nullptr;
     }
 
-    Player* GetThirdTaintedCorePasser(Group* group, PlayerbotAI* botAI)
+    Player* GetThirdTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
     {
+        Group* group = bot->GetGroup();
         if (!group)
             return nullptr;
 
-        Player* designatedLooter = GetDesignatedCoreLooter(group, botAI);
-        Player* firstCorePasser = GetFirstTaintedCorePasser(group, botAI);
-        Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
+        Player* designatedLooter = GetDesignatedCoreLooter(botAI, bot);
+        Player* firstCorePasser = GetFirstTaintedCorePasser(botAI, bot);
+        Player* secondCorePasser = GetSecondTaintedCorePasser(botAI, bot);
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
@@ -427,35 +390,32 @@ namespace SerpentShrineCavernHelpers
                 continue;
 
             PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-            if (!memberAI)
-                continue;
-
-            if (memberAI->IsAssistHealOfIndex(member, 2, true))
+            if (memberAI && memberAI->IsAssistHealOfIndex(member, 2, true))
                 return member;
         }
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
-                botAI->IsTank(member) || member == designatedLooter ||
-                member == firstCorePasser || member == secondCorePasser)
-                continue;
-            return member;
+            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
+                !botAI->IsTank(member) && member != designatedLooter &&
+                member != firstCorePasser && member != secondCorePasser)
+                return member;
         }
 
         return nullptr;
     }
 
-    Player* GetFourthTaintedCorePasser(Group* group, PlayerbotAI* botAI)
+    Player* GetFourthTaintedCorePasser(PlayerbotAI* botAI, Player* bot)
     {
+        Group* group = bot->GetGroup();
         if (!group)
             return nullptr;
 
-        Player* designatedLooter = GetDesignatedCoreLooter(group, botAI);
-        Player* firstCorePasser = GetFirstTaintedCorePasser(group, botAI);
-        Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
-        Player* thirdCorePasser = GetThirdTaintedCorePasser(group, botAI);
+        Player* designatedLooter = GetDesignatedCoreLooter(botAI, bot);
+        Player* firstCorePasser = GetFirstTaintedCorePasser(botAI, bot);
+        Player* secondCorePasser = GetSecondTaintedCorePasser(botAI, bot);
+        Player* thirdCorePasser = GetThirdTaintedCorePasser(botAI, bot);
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
@@ -466,25 +426,73 @@ namespace SerpentShrineCavernHelpers
                 continue;
 
             PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-            if (!memberAI)
-                continue;
-
-            if (memberAI->IsAssistRangedDpsOfIndex(member, 0, true))
+            if (memberAI && memberAI->IsAssistRangedDpsOfIndex(member, 0, true))
                 return member;
         }
 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
-                botAI->IsTank(member) || member == designatedLooter ||
-                member == firstCorePasser || member == secondCorePasser ||
-                member == thirdCorePasser)
-                continue;
-            return member;
+            if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) &&
+                !botAI->IsTank(member) && member != designatedLooter &&
+                member != firstCorePasser && member != secondCorePasser &&
+                member != thirdCorePasser)
+                return member;
         }
 
         return nullptr;
+    }
+
+    std::array<Player*, 5> GetCoreHandlers(PlayerbotAI* botAI, Player* bot)
+    {
+        return
+        {
+            GetDesignatedCoreLooter(botAI, bot),
+            GetFirstTaintedCorePasser(botAI, bot),
+            GetSecondTaintedCorePasser(botAI, bot),
+            GetThirdTaintedCorePasser(botAI, bot),
+            GetFourthTaintedCorePasser(botAI, bot)
+        };
+    }
+
+    // Checks if any bot from earlier in the passing sequence has the Tainted Core or
+    // had it within the prior 3 seconds so the chain is not broken when the Core is in transit
+    bool AnyRecentCoreInInventory(PlayerbotAI* botAI, Player* bot)
+    {
+        Unit* vashj =
+            botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
+        if (!vashj)
+            return false;
+
+        auto coreHandlers = GetCoreHandlers(botAI, bot);
+
+        int8 myIndex = -1;
+        for (int8 i = 0; i < 5; ++i)
+            if (coreHandlers[i] && coreHandlers[i] == bot)
+                myIndex = i;
+
+        if (myIndex == -1)
+            return false;
+
+        const time_t now = std::time(nullptr);
+        constexpr uint8 lookbackSeconds = 3;
+
+        for (int8 i = 0; i <= myIndex; ++i)
+        {
+            Player* handler = coreHandlers[i];
+            if (!handler)
+                continue;
+
+            if (handler->HasItemCount(ITEM_TAINTED_CORE, 1, false))
+                return true;
+
+            auto it = lastCoreInInventoryTime.find(handler->GetGUID());
+            if (it != lastCoreInInventoryTime.end() &&
+                (now - it->second) <= static_cast<time_t>(lookbackSeconds))
+                return true;
+        }
+
+        return false;
     }
 
     const std::vector<uint32> SHIELD_GENERATOR_DB_GUIDS =
@@ -510,10 +518,7 @@ namespace SerpentShrineCavernHelpers
                 continue;
 
             GameObject* go = bounds.first->second;
-            if (!go)
-                continue;
-
-            if (go->GetGoState() != GO_STATE_READY)
+            if (!go || go->GetGoState() != GO_STATE_READY)
                 continue;
 
             GeneratorInfo info;
@@ -529,7 +534,7 @@ namespace SerpentShrineCavernHelpers
 
     // Returns the nearest active Shield Generator to the bot
     // Active generators are powered by NPC_WORLD_INVISIBLE_TRIGGER creatures,
-    // which depawn after use
+    // which despawn after use
     Unit* GetNearestActiveShieldGeneratorTriggerByEntry(Unit* reference)
     {
         if (!reference)

@@ -193,6 +193,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class LadyVashjMainTankGroupShamanUseGroundingTotemMultiplier : public Multiplier
+{
+public:
+    LadyVashjMainTankGroupShamanUseGroundingTotemMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj main tank group shaman use grounding totem") {}
+    virtual float GetValue(Action* action);
+};
+
 class LadyVashjMaintainPhase1RangedSpreadMultiplier : public Multiplier
 {
 public:

@@ -144,9 +144,6 @@ void RaidSSCStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("lady vashj tainted core is unusable", {
         NextAction("lady vashj destroy tainted core", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("lady vashj need to reset core passing trackers", {
-        NextAction("lady vashj erase core passing trackers", ACTION_EMERGENCY + 10) }));
-
     triggers.push_back(new TriggerNode("lady vashj adds spawn in phase 2 and phase 3", {
         NextAction("lady vashj assign phase 2 and phase 3 dps priority", ACTION_RAID + 1) }));
 
@@ -198,6 +195,7 @@ void RaidSSCStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 
     // Lady Vashj <Coilfang Matron>
     multipliers.push_back(new LadyVashjDelayCooldownsMultiplier(botAI));
+    multipliers.push_back(new LadyVashjMainTankGroupShamanUseGroundingTotemMultiplier(botAI));
     multipliers.push_back(new LadyVashjMaintainPhase1RangedSpreadMultiplier(botAI));
     multipliers.push_back(new LadyVashjStaticChargeStayAwayFromGroupMultiplier(botAI));
     multipliers.push_back(new LadyVashjDoNotLootTheTaintedCoreMultiplier(botAI));

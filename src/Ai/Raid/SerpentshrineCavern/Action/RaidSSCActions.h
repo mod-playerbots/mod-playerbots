@@ -75,8 +75,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool TryMisdirectToFrostTank(Unit* hydross, Group* group);
-    bool TryMisdirectToNatureTank(Unit* hydross, Group* group);
+    bool TryMisdirectToFrostTank(Unit* hydross);
+    bool TryMisdirectToNatureTank(Unit* hydross);
 };
 
 class HydrossTheUnstableStopDpsUponPhaseChangeAction : public Action
@@ -413,10 +413,10 @@ private:
     bool LineUpSecondCorePasser(Player* firstCorePasser, Unit* closestTrigger);
     bool LineUpThirdCorePasser(Player* designatedLooter, Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger);
     bool LineUpFourthCorePasser(Player* firstCorePasser, Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger);
-    bool IsFirstCorePasserInIntendedPosition(Player* designatedLooter, Player* firstCorePasser, Unit* closestTrigger);
-    bool IsSecondCorePasserInIntendedPosition(Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger);
-    bool IsThirdCorePasserInIntendedPosition(Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger);
-    bool IsFourthCorePasserInIntendedPosition(Player* thirdCorePasser, Player* fourthCorePasser, Unit* closestTrigger);
+    bool IsFirstCorePasserInPosition(Player* designatedLooter, Player* firstCorePasser, Unit* closestTrigger);
+    bool IsSecondCorePasserInPosition(Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger);
+    bool IsThirdCorePasserInPosition(Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger);
+    bool IsFourthCorePasserInPosition(Player* thirdCorePasser, Player* fourthCorePasser, Unit* closestTrigger);
     void ScheduleTransferCoreAfterImbue(PlayerbotAI* botAI, Player* giver, Player* receiver);
     bool UseCoreOnNearestGenerator(const uint32 instanceId);
 };
@@ -425,13 +425,6 @@ class LadyVashjDestroyTaintedCoreAction : public Action
 {
 public:
     LadyVashjDestroyTaintedCoreAction(PlayerbotAI* botAI, std::string const name = "lady vashj destroy tainted core") : Action(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
-class LadyVashjEraseCorePassingTrackersAction : public Action
-{
-public:
-    LadyVashjEraseCorePassingTrackersAction(PlayerbotAI* botAI, std::string const name = "lady vashj erase core passing trackers") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 
