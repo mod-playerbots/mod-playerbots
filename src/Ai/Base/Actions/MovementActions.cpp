@@ -953,11 +953,8 @@ bool MovementAction::Follow(Unit* target, float distance) { return Follow(target
 
 void MovementAction::UpdateMovementState()
 {
-    const bool isCurrentlyRestricted = // see if the bot is currently slowed, rooted, or otherwise unable to move
-        bot->HasUnitState(UNIT_STATE_LOST_CONTROL) ||
-        bot->IsRooted() ||
-        bot->isFrozen() ||
-        bot->IsPolymorphed();
+    const bool isCurrentlyRestricted =  // see if the bot is currently slowed, rooted, or otherwise unable to move
+        bot->HasUnitState(UNIT_STATE_LOST_CONTROL) || bot->IsRooted() || bot->isFrozen() || bot->IsPolymorphed();
 
     // no update movement flags while movement is current restricted.
     if (!isCurrentlyRestricted && bot->IsAlive())
@@ -965,65 +962,61 @@ void MovementAction::UpdateMovementState()
         // state flags
         const auto master = botAI ? botAI->GetMaster() : nullptr;
         const auto liquidState = bot->GetLiquidData().Status;
-        const bool isWaterArea = liquidState != LIQUID_MAP_NO_WATER;
-        const bool isInWater = liquidState == LIQUID_MAP_IN_WATER;
-        const bool isUnderWater = liquidState == LIQUID_MAP_UNDER_WATER;
         const float gZ = bot->GetMapWaterOrGroundLevel(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
         const bool onGroundZ = bot->GetPositionZ() < gZ + 1.f;
+        const bool canSwim = liquidState == LIQUID_MAP_IN_WATER || liquidState == LIQUID_MAP_UNDER_WATER;
+        const bool canFly = bot->HasIncreaseMountedFlightSpeedAura() || bot->HasFlyAura();
+        const bool canWaterWalk = bot->HasWaterWalkAura();
         const bool isMasterFlying = master ? master->HasUnitMovementFlag(MOVEMENTFLAG_FLYING) : true;
         const bool isMasterSwimming = master ? master->HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING) : true;
-        const bool wantsToFly = bot->HasIncreaseMountedFlightSpeedAura() || bot->HasFlyAura();
-        const bool shouldWaterWalk = bot->HasWaterWalkAura();
         const bool isFlying = bot->HasUnitMovementFlag(MOVEMENTFLAG_FLYING);
         const bool isSwimming = bot->HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
         const bool isWaterWalking = bot->HasUnitMovementFlag(MOVEMENTFLAG_WATERWALKING);
-        const bool shouldSwim = isInWater || isUnderWater;
-
-        // movement flags should only be updated between state changes, if not it will break certain effects.
         bool movementFlagsUpdated = false;
 
-        // handle water (fragile checks do not alter without testing every detail and transistion)
-        if (isWaterArea && !isFlying)
+        // handle water (fragile logic do not alter without testing every detail, animation and transition)
+        if (liquidState != LIQUID_MAP_NO_WATER && !isFlying)
         {
-            if ((shouldWaterWalk && !isMasterSwimming) && !isWaterWalking)
+            if (canWaterWalk && !isMasterSwimming && !isWaterWalking)
             {
                 bot->SetSwim(false);
                 bot->AddUnitMovementFlag(MOVEMENTFLAG_WATERWALKING);
                 movementFlagsUpdated = true;
             }
-            else if ((!shouldWaterWalk || isMasterSwimming) && isWaterWalking)
+            else if ((!canWaterWalk || isMasterSwimming) && isWaterWalking)
             {
                 bot->RemoveUnitMovementFlag(MOVEMENTFLAG_WATERWALKING);
-                if (shouldSwim)
+                if (canSwim)
                     bot->SetSwim(true);
                 movementFlagsUpdated = true;
             }
-            else if (!shouldSwim && isSwimming)
+            else if (!canSwim && isSwimming)
             {
-                bot->RemoveUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
+                bot->SetSwim(false);
                 movementFlagsUpdated = true;
             }
         }
-        else if (isSwimming || isWaterWalking)
+
+        // reset when not around water while swimming or water walking
+        if (liquidState == LIQUID_MAP_NO_WATER && (isSwimming || isWaterWalking))
         {
-            bot->RemoveUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
-            if (liquidState == LIQUID_MAP_NO_WATER)
-                bot->RemoveUnitMovementFlag(MOVEMENTFLAG_WATERWALKING);
+            bot->SetSwim(false);
+            bot->RemoveUnitMovementFlag(MOVEMENTFLAG_WATERWALKING);
             movementFlagsUpdated = true;
         }
 
         // handle flying
-        if (wantsToFly && !isFlying && isMasterFlying)
+        if ((canFly && !isFlying) && isMasterFlying)
         {
             bot->AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
             bot->AddUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
             bot->AddUnitMovementFlag(MOVEMENTFLAG_FLYING);
 
-        // required for transision and state monitoring.
-        if (MotionMaster* mm = bot->GetMotionMaster())
+            // required for transition and state monitoring.
+            if (MotionMaster* mm = bot->GetMotionMaster())
                 mm->MoveTakeoff(0, {bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ() + 1.F}, 0.F, true);
         }
-        if (!wantsToFly && !isWaterWalking && isFlying || !isMasterFlying && isFlying && onGroundZ)
+        else if ((!canFly && !isWaterWalking && isFlying) || (!isMasterFlying && isFlying && onGroundZ))
         {
             bot->RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
             bot->RemoveUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
@@ -1031,17 +1024,16 @@ void MovementAction::UpdateMovementState()
             movementFlagsUpdated = true;
         }
 
-        // detect if movement restrictions have been lifted, CC just ended.
+        // detect if movement/CC restrictions have been ended, refresh movement state for animations.
         if (wasMovementRestricted)
-            movementFlagsUpdated = true;  // refresh movement state to ensure animations play correctly
+            movementFlagsUpdated = true;
 
+        // movement flags should only be updated between state changes, if not it will break certain effects.
         if (movementFlagsUpdated)
-        {
             bot->SendMovementFlagUpdate();
-        }
     }
 
-     // Save current state for the next check
+    // Save current state for the next check
     wasMovementRestricted = isCurrentlyRestricted;
 
     // Temporary speed increase in group
@@ -1824,7 +1816,7 @@ void MovementAction::DoMovePoint(Unit* unit, float x, float y, float z, bool gen
     if (!mm)
         return;
 
-    // bot water collission correction
+    // bot water collision correction
     if (unit->HasUnitMovementFlag(MOVEMENTFLAG_WATERWALKING) && unit->HasWaterWalkAura())
     {
         float gZ = unit->GetMapWaterOrGroundLevel(unit->GetPositionX(), unit->GetPositionY(), unit->GetPositionZ());
