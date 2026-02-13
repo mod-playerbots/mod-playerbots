@@ -320,7 +320,7 @@ bool ChooseRpgTargetAction::isFollowValid(Player* bot, WorldPosition pos)
             inDungeon = true;
 
         if (realMaster && realMaster->IsInWorld() && realMaster->GetMap()->IsDungeon() &&
-            (realMaster->GetMapId() != pos.getMapId()))
+            (realMaster->GetMapId() != pos.GetMapId()))
             return false;
     }
 
@@ -334,7 +334,7 @@ bool ChooseRpgTargetAction::isFollowValid(Player* bot, WorldPosition pos)
         return false;
 
     Formation* formation = AI_VALUE(Formation*, "formation");
-    float distance = groupLeader->GetDistance2d(pos.getX(), pos.getY());
+    float distance = groupLeader->GetDistance2d(pos.GetPositionX(), pos.GetPositionY());
 
     if (!botAI->HasActivePlayerMaster() && distance < 50.0f)
     {

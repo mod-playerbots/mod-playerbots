@@ -22,7 +22,7 @@ public:
         creators["high king maulgar misdirect olm and blindeye"] = &RaidGruulsLairActionContext::high_king_maulgar_misdirect_olm_and_blindeye;
 
         // Gruul the Dragonkiller
-        creators["gruul the dragonkiller main tank position boss"] = &RaidGruulsLairActionContext::gruul_the_dragonkiller_main_tank_position_boss;
+        creators["gruul the dragonkiller tanks position boss"] = &RaidGruulsLairActionContext::gruul_the_dragonkiller_tanks_position_boss;
         creators["gruul the dragonkiller spread ranged"] = &RaidGruulsLairActionContext::gruul_the_dragonkiller_spread_ranged;
         creators["gruul the dragonkiller shatter spread"] = &RaidGruulsLairActionContext::gruul_the_dragonkiller_shatter_spread;
     }
@@ -41,7 +41,7 @@ private:
     static Action* high_king_maulgar_misdirect_olm_and_blindeye(PlayerbotAI* botAI) { return new HighKingMaulgarMisdirectOlmAndBlindeyeAction(botAI); }
 
     // Gruul the Dragonkiller
-    static Action* gruul_the_dragonkiller_main_tank_position_boss(PlayerbotAI* botAI) { return new GruulTheDragonkillerMainTankPositionBossAction(botAI); }
+    static Action* gruul_the_dragonkiller_tanks_position_boss(PlayerbotAI* botAI) { return new GruulTheDragonkillerTanksPositionBossAction(botAI); }
     static Action* gruul_the_dragonkiller_spread_ranged(PlayerbotAI* botAI) { return new GruulTheDragonkillerSpreadRangedAction(botAI); }
     static Action* gruul_the_dragonkiller_shatter_spread(PlayerbotAI* botAI) { return new GruulTheDragonkillerShatterSpreadAction(botAI); }
 };

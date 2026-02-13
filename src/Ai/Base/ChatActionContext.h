@@ -120,7 +120,7 @@ public:
         creators["use"] = &ChatActionContext::use;
         creators["item count"] = &ChatActionContext::item_count;
         creators["equip"] = &ChatActionContext::equip;
-        creators["equip upgrades"] = &ChatActionContext::equip_upgrades;
+        creators["equip upgrades"] = &ChatActionContext::equip_upgrade;
         creators["unequip"] = &ChatActionContext::unequip;
         creators["sell"] = &ChatActionContext::sell;
         creators["buy"] = &ChatActionContext::buy;
@@ -258,7 +258,6 @@ private:
     static Action* talents(PlayerbotAI* botAI) { return new ChangeTalentsAction(botAI); }
 
     static Action* equip(PlayerbotAI* botAI) { return new EquipAction(botAI); }
-    static Action* equip_upgrades(PlayerbotAI* botAI) { return new EquipUpgradesAction(botAI); }
     static Action* unequip(PlayerbotAI* botAI) { return new UnequipAction(botAI); }
     static Action* sell(PlayerbotAI* botAI) { return new SellAction(botAI); }
     static Action* buy(PlayerbotAI* botAI) { return new BuyAction(botAI); }

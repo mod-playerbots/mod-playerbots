@@ -28,8 +28,8 @@ bool DebugAction::Execute(Event event)
 
             uint32 areaId = 0;
             uint32 zoneId = 0;
-            sMapMgr->GetZoneAndAreaId(PHASEMASK_NORMAL, zoneId, areaId, pos.getMapId(), pos.getX(), pos.getY(),
-                                      pos.getZ());
+            sMapMgr->GetZoneAndAreaId(PHASEMASK_NORMAL, zoneId, areaId, pos.GetMapId(), pos.GetPositionX(), pos.GetPositionY(),
+                                      pos.GetPositionZ());
 
             std::ostringstream out;
             out << zoneId << "," << areaId << "," << (pos.getAreaName().empty() ? "none" : pos.getAreaName()) << ",";
@@ -298,7 +298,7 @@ bool DebugAction::Execute(Event event)
                 for (auto p : ppath)
                 {
                     Creature* wpCreature =
-                        bot->SummonCreature(1, p.getX(), p.getY(), p.getZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 20000.0f);
+                        bot->SummonCreature(1, p.GetPositionX(), p.GetPositionY(), p.GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 20000.0f);
                     // addAura(246, wpCreature);
                     units.push_back(wpCreature->GetGUID());
 
@@ -325,11 +325,11 @@ bool DebugAction::Execute(Event event)
             WorldPosition botPos(bot);
             WorldPosition botPos1 = botPos;
 
-            botPos.setX(botPos.getX() + cos(ang) * dist);
-            botPos.setY(botPos.getY() + sin(ang) * dist);
+            botPos.setX(botPos.GetPositionX() + cos(ang) * dist);
+            botPos.setY(botPos.GetPositionY() + sin(ang) * dist);
             botPos.setZ(botPos.getHeight() + 2);
 
-            Creature* wpCreature = bot->SummonCreature(2334, botPos.getX(), botPos.getY(), botPos.getZ(), 0,
+            Creature* wpCreature = bot->SummonCreature(2334, botPos.GetPositionX(), botPos.GetPositionY(), botPos.GetPositionZ(), 0,
                                                        TEMPSUMMON_TIMED_DESPAWN, 10000.0f);
 
             FakeSpell(spellEffect, wpCreature, wpCreature, prev->GetGUID(), {}, {}, botPos, botPos);
@@ -352,11 +352,11 @@ bool DebugAction::Execute(Event event)
             WorldPosition botPos(bot);
             WorldPosition botPos1 = botPos;
 
-            botPos.setX(botPos.getX() + cos(ang) * dist);
-            botPos.setY(botPos.getY() + sin(ang) * dist);
+            botPos.setX(botPos.GetPositionX() + cos(ang) * dist);
+            botPos.setY(botPos.GetPositionY() + sin(ang) * dist);
             botPos.setZ(botPos.getHeight() + 2);
 
-            Creature* wpCreature = bot->SummonCreature(2334, botPos.getX(), botPos.getY(), botPos.getZ(), 0,
+            Creature* wpCreature = bot->SummonCreature(2334, botPos.GetPositionX(), botPos.GetPositionY(), botPos.GetPositionZ(), 0,
                                                        TEMPSUMMON_TIMED_DESPAWN, 10000.0f);
 
             if (wpCreature)
@@ -383,11 +383,11 @@ bool DebugAction::Execute(Event event)
             WorldPosition botPos(bot);
             WorldPosition botPos1 = botPos;
 
-            botPos.setX(botPos.getX() + cos(ang) * dist);
-            botPos.setY(botPos.getY() + sin(ang) * dist);
+            botPos.setX(botPos.GetPositionX() + cos(ang) * dist);
+            botPos.setY(botPos.GetPositionY() + sin(ang) * dist);
             botPos.setZ(botPos.getHeight() + 2);
 
-            Creature* wpCreature = bot->SummonCreature(2334, botPos.getX(), botPos.getY(), botPos.getZ(), 0,
+            Creature* wpCreature = bot->SummonCreature(2334, botPos.GetPositionX(), botPos.GetPositionY(), botPos.GetPositionZ(), 0,
                                                        TEMPSUMMON_TIMED_DESPAWN, 5000.0f + i * 100.0f);
             wpCreature->SetObjectScale(0.5f);
 
@@ -411,11 +411,11 @@ bool DebugAction::Execute(Event event)
 
             WorldPosition botPos(bot);
 
-            botPos.setX(botPos.getX() + cos(ang) * dist);
-            botPos.setY(botPos.getY() + sin(ang) * dist);
+            botPos.setX(botPos.GetPositionX() + cos(ang) * dist);
+            botPos.setY(botPos.GetPositionY() + sin(ang) * dist);
             botPos.setZ(botPos.getHeight() + 2);
 
-            Creature* wpCreature = bot->SummonCreature(2334, botPos.getX(), botPos.getY(), botPos.getZ(), 0,
+            Creature* wpCreature = bot->SummonCreature(2334, botPos.GetPositionX(), botPos.GetPositionY(), botPos.GetPositionZ(), 0,
                                                        TEMPSUMMON_TIMED_DESPAWN, 10000.0f);
 
             units.push_back(wpCreature->GetGUID());
@@ -480,13 +480,13 @@ bool DebugAction::Execute(Event event)
                 uint32 effect = dx + dy * 10 + spellEffect * 100;
                 WorldPosition botPos(bot);
 
-                botPos.setX(botPos.getX() + (dx - 5) * 5);
-                botPos.setY(botPos.getY() + (dy - 5) * 5);
+                botPos.setX(botPos.GetPositionX() + (dx - 5) * 5);
+                botPos.setY(botPos.GetPositionY() + (dy - 5) * 5);
                 botPos.setZ(botPos.getHeight());
 
                 Creature* wpCreature =
-                    bot->SummonCreature((dy == 0 && (dx == 0 || dx == 2)) ? 6 : 2, botPos.getX(), botPos.getY(),
-                                        botPos.getZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 10000.0f);
+                    bot->SummonCreature((dy == 0 && (dx == 0 || dx == 2)) ? 6 : 2, botPos.GetPositionX(), botPos.GetPositionY(),
+                                        botPos.GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 10000.0f);
 
                 if (wpCreature)
                 {
@@ -512,11 +512,11 @@ bool DebugAction::Execute(Event event)
                 uint32 effect = dx + dy * 10 + spellEffect * 100;
                 WorldPosition botPos(bot);
 
-                botPos.setX(botPos.getX() + (dx - 5) * 5);
-                botPos.setY(botPos.getY() + (dy - 5) * 5);
+                botPos.setX(botPos.GetPositionX() + (dx - 5) * 5);
+                botPos.setY(botPos.GetPositionY() + (dy - 5) * 5);
                 botPos.setZ(botPos.getHeight());
 
-                Creature* wpCreature = bot->SummonCreature(effect, botPos.getX(), botPos.getY(), botPos.getZ(), 0,
+                Creature* wpCreature = bot->SummonCreature(effect, botPos.GetPositionX(), botPos.GetPositionY(), botPos.GetPositionZ(), 0,
                                                            TEMPSUMMON_TIMED_DESPAWN, 10000.0f);
             }
         }
@@ -532,8 +532,8 @@ bool DebugAction::Execute(Event event)
                 uint32 effect = dx + dy * 10 + spellEffect * 100;
                 WorldPosition botPos(bot);
 
-                botPos.setX(botPos.getX() + (dx - 5) * 5);
-                botPos.setY(botPos.getY() + (dy - 5) * 5);
+                botPos.setX(botPos.GetPositionX() + (dx - 5) * 5);
+                botPos.setY(botPos.GetPositionY() + (dy - 5) * 5);
                 botPos.setZ(botPos.getHeight());
 
                 FakeSpell(effect, bot, nullptr, ObjectGuid::Empty, {}, {}, botPos, botPos, true);
@@ -552,11 +552,11 @@ bool DebugAction::Execute(Event event)
                 uint32 effect = dx + dy * 10 + spellEffect * 100;
                 WorldPosition botPos(bot);
 
-                botPos.setX(botPos.getX() + (dx - 5) * 5);
-                botPos.setY(botPos.getY() + (dy - 5) * 5);
+                botPos.setX(botPos.GetPositionX() + (dx - 5) * 5);
+                botPos.setY(botPos.GetPositionY() + (dy - 5) * 5);
                 botPos.setZ(botPos.getHeight());
 
-                Creature* wpCreature = bot->SummonCreature(2334, botPos.getX(), botPos.getY(), botPos.getZ(), 0,
+                Creature* wpCreature = bot->SummonCreature(2334, botPos.GetPositionX(), botPos.GetPositionY(), botPos.GetPositionZ(), 0,
                                                            TEMPSUMMON_TIMED_DESPAWN, 10000.0f);
 
                 if (wpCreature)
@@ -568,7 +568,7 @@ bool DebugAction::Execute(Event event)
                     // wpCreature->SendMessageToSet(&data, true);
                     datMap.push_back(data);
 
-                    // wpCreature->MonsterMoveWithSpeed(botPos.getX(), botPos.getY() + 80, botPos.getZ(), 8.0f, true,
+                    // wpCreature->MonsterMoveWithSpeed(botPos.GetPositionX(), botPos.GetPositionY() + 80, botPos.GetPositionZ(), 8.0f, true,
                     // true);
                 }
             }
@@ -600,13 +600,13 @@ bool DebugAction::Execute(Event event)
                 uint32 effect = dx + dy * 10 + spellEffect * 100;
                 WorldPosition botPos(bot);
 
-                botPos.setX(botPos.getX() + (dx - 5) * 5);
-                botPos.setY(botPos.getY() + (dy - 5) * 5);
+                botPos.setX(botPos.GetPositionX() + (dx - 5) * 5);
+                botPos.setY(botPos.GetPositionY() + (dy - 5) * 5);
                 botPos.setZ(botPos.getHeight());
 
                 Creature* wpCreature =
-                    bot->SummonCreature((dy == 0 && (dx == 0 || dx == 2)) ? 6 : 2, botPos.getX(), botPos.getY(),
-                                        botPos.getZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 10000.0f);
+                    bot->SummonCreature((dy == 0 && (dx == 0 || dx == 2)) ? 6 : 2, botPos.GetPositionX(), botPos.GetPositionY(),
+                                        botPos.GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 10000.0f);
 
                 if (wpCreature)
                 {
@@ -646,12 +646,12 @@ bool DebugAction::Execute(Event event)
                 uint32 effect = dx + dy * 10 + spellEffect * 100;
                 WorldPosition botPos(bot);
 
-                botPos.setX(botPos.getX() + (dx - 5) * 5);
-                botPos.setY(botPos.getY() + (dy - 5) * 5);
+                botPos.setX(botPos.GetPositionX() + (dx - 5) * 5);
+                botPos.setY(botPos.GetPositionY() + (dy - 5) * 5);
                 botPos.setZ(botPos.getHeight());
 
-                wpCreature = bot->SummonCreature((dy == 0 && (dx == 0 || dx == 2)) ? 6 : 2, botPos.getX(),
-                                                 botPos.getY(), botPos.getZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 10000.0f);
+                wpCreature = bot->SummonCreature((dy == 0 && (dx == 0 || dx == 2)) ? 6 : 2, botPos.GetPositionX(),
+                                                 botPos.GetPositionY(), botPos.GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 10000.0f);
 
                 if (wpCreature && lCreature)
                 {
@@ -675,11 +675,11 @@ bool DebugAction::Execute(Event event)
                 uint32 effect = dx + dy * 10 + spellEffect * 100;
                 WorldPosition botPos(bot);
 
-                botPos.setX(botPos.getX() + (dx - 5) * 5);
-                botPos.setY(botPos.getY() + (dy - 5) * 5);
+                botPos.setX(botPos.GetPositionX() + (dx - 5) * 5);
+                botPos.setY(botPos.GetPositionY() + (dy - 5) * 5);
                 botPos.setZ(botPos.getHeight());
 
-                wpCreature = bot->SummonCreature(2334, botPos.getX(), botPos.getY(), botPos.getZ(), 0,
+                wpCreature = bot->SummonCreature(2334, botPos.GetPositionX(), botPos.GetPositionY(), botPos.GetPositionZ(), 0,
                                                  TEMPSUMMON_TIMED_DESPAWN, 10000.0f);
 
                 if (wpCreature)
@@ -708,11 +708,11 @@ bool DebugAction::Execute(Event event)
             {
                 WorldPosition botPos(bot);
 
-                botPos.setX(botPos.getX() + (dx - 5) * 5);
-                botPos.setY(botPos.getY() + (dy - 5) * 5);
+                botPos.setX(botPos.GetPositionX() + (dx - 5) * 5);
+                botPos.setY(botPos.GetPositionY() + (dy - 5) * 5);
                 botPos.setZ(botPos.getHeight());
 
-                Creature* wpCreature = bot->SummonCreature(2334, botPos.getX(), botPos.getY(), botPos.getZ(), 0,
+                Creature* wpCreature = bot->SummonCreature(2334, botPos.GetPositionX(), botPos.GetPositionY(), botPos.GetPositionZ(), 0,
                                                            TEMPSUMMON_TIMED_DESPAWN, 10000.0f);
 
                 all_targets.push_back(wpCreature->GetGUID());
@@ -788,11 +788,11 @@ bool DebugAction::Execute(Event event)
             {
                 WorldPosition botPos(bot);
 
-                botPos.setX(botPos.getX() + (dx - 5) * 5);
-                botPos.setY(botPos.getY() + (dy - 5) * 5);
+                botPos.setX(botPos.GetPositionX() + (dx - 5) * 5);
+                botPos.setY(botPos.GetPositionY() + (dy - 5) * 5);
                 botPos.setZ(botPos.getHeight());
 
-                Creature* wpCreature = bot->SummonCreature(2334, botPos.getX(), botPos.getY(), botPos.getZ(), 0,
+                Creature* wpCreature = bot->SummonCreature(2334, botPos.GetPositionX(), botPos.GetPositionY(), botPos.GetPositionZ(), 0,
                                                            TEMPSUMMON_TIMED_DESPAWN, 10000.0f);
 
                 all_targets.push_back(wpCreature->GetGUID());
@@ -868,13 +868,13 @@ bool DebugAction::Execute(Event event)
                 uint32 effect = dx + dy * 10 + soundEffects * 100;
                 WorldPosition botPos(bot);
 
-                botPos.setX(botPos.getX() + (dx - 5) * 5);
-                botPos.setY(botPos.getY() + (dy - 5) * 5);
+                botPos.setX(botPos.GetPositionX() + (dx - 5) * 5);
+                botPos.setY(botPos.GetPositionY() + (dy - 5) * 5);
                 botPos.setZ(botPos.getHeight());
 
                 Creature* wpCreature =
-                    bot->SummonCreature((dy == 0 && (dx == 0 || dx == 2)) ? 6 : 2, botPos.getX(), botPos.getY(),
-                                        botPos.getZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 10000.0f);
+                    bot->SummonCreature((dy == 0 && (dx == 0 || dx == 2)) ? 6 : 2, botPos.GetPositionX(), botPos.GetPositionY(),
+                                        botPos.GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 10000.0f);
 
                 wpCreature->PlayDistanceSound(effect);
             }
@@ -964,7 +964,7 @@ void DebugAction::FakeSpell(uint32 spellId, Unit* truecaster, Unit* caster, Obje
             m_targets.SetDst(dest);
 
         if ((spellInfo && spellInfo->Targets & TARGET_FLAG_SOURCE_LOCATION) || forceDest)
-            m_targets.SetSrc(source.getX(), source.getY(), source.getZ());
+            m_targets.SetSrc(source.GetPositionX(), source.GetPositionY(), source.GetPositionZ());
 
         if (!forceDest && target)
             if (!spellInfo ||

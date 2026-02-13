@@ -173,7 +173,7 @@ std::vector<GuidPosition> ActiveQuestGiversValue::Calculate()
                     continue;
             }
 
-            if (guidp.isDead())
+            if (!guidp.IsCreatureOrGOAccessible())
                 continue;
 
             retQuestGivers.push_back(guidp);
@@ -231,7 +231,7 @@ std::vector<GuidPosition> ActiveQuestTakersValue::Calculate()
 
             for (auto& guidp : entry.second)
             {
-                if (guidp.isDead())
+                if (!guidp.IsCreatureOrGOAccessible())
                     continue;
 
                 retQuestTakers.push_back(guidp);
@@ -298,7 +298,7 @@ std::vector<GuidPosition> ActiveQuestObjectivesValue::Calculate()
             {
                 for (auto& guidp : entry.second)
                 {
-                    if (guidp.isDead())
+                    if (!guidp.IsCreatureOrGOAccessible())
                         continue;
 
                     retQuestObjectives.push_back(guidp);

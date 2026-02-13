@@ -78,6 +78,35 @@ bool CastSpellAction::Execute(Event event)
     return botAI->CastSpell(spell, GetTarget());
 }
 
+bool CastSpellAction::isUseful()
+{
+    if (botAI->IsInVehicle() && !botAI->IsInVehicle(false, false, true))
+        return false;
+
+    if (spell == "mount" && !bot->IsMounted() && !bot->IsInCombat())
+        return true;
+
+    if (spell == "mount" && bot->IsInCombat())
+    {
+        bot->Dismount();
+        return false;
+    }
+
+    Unit* spellTarget = GetTarget();
+    if (!spellTarget)
+        return false;
+
+    if (!spellTarget->IsInWorld() || spellTarget->GetMapId() != bot->GetMapId())
+        return false;
+
+    // float combatReach = bot->GetCombatReach() + target->GetCombatReach();
+    // if (!botAI->IsRanged(bot))
+    //     combatReach += 4.0f / 3.0f;
+
+    return AI_VALUE2(bool, "spell cast useful", spell);
+           // && ServerFacade::instance().GetDistance2d(bot, target) <= (range + combatReach);
+}
+
 bool CastSpellAction::isPossible()
 {
     if (botAI->IsInVehicle() && !botAI->IsInVehicle(false, false, true))
@@ -104,36 +133,6 @@ bool CastSpellAction::isPossible()
 
     // Spell* currentSpell = bot->GetCurrentSpell(CURRENT_GENERIC_SPELL); //not used, line marked for removal.
     return botAI->CanCastSpell(spell, GetTarget());
-}
-
-bool CastSpellAction::isUseful()
-{
-    if (botAI->IsInVehicle() && !botAI->IsInVehicle(false, false, true))
-        return false;
-
-    if (spell == "mount" && !bot->IsMounted() && !bot->IsInCombat())
-        return true;
-
-    if (spell == "mount" && bot->IsInCombat())
-    {
-        bot->Dismount();
-        return false;
-    }
-
-    Unit* spellTarget = GetTarget();
-    if (!spellTarget)
-        return false;
-
-    if (!spellTarget->IsInWorld() || spellTarget->GetMapId() != bot->GetMapId())
-        return false;
-
-    // float combatReach = bot->GetCombatReach() + spellTarget->GetCombatReach();
-    // if (!botAI->IsRanged(bot))
-    //     combatReach += 4.0f / 3.0f;
-
-    return spellTarget &&
-           AI_VALUE2(bool, "spell cast useful",
-                     spell);  // && ServerFacade::instance().GetDistance2d(bot, spellTarget) <= (range + combatReach);
 }
 
 CastMeleeSpellAction::CastMeleeSpellAction(PlayerbotAI* botAI, std::string const spell) : CastSpellAction(botAI, spell)

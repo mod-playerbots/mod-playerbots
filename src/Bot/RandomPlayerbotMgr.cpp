@@ -1667,7 +1667,7 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot, std::vector<WorldLocation>&
                                {
                                    std::vector<uint32>::iterator i =
                                        find(sPlayerbotAIConfig.randomBotMaps.begin(),
-                                            sPlayerbotAIConfig.randomBotMaps.end(), l.getMapId());
+                                            sPlayerbotAIConfig.randomBotMaps.end(), l.GetMapId());
                                    return i == sPlayerbotAIConfig.randomBotMaps.end();
                                }),
                 tlocs.end());
@@ -2680,7 +2680,7 @@ std::vector<uint32> RandomPlayerbotMgr::GetBgBots(uint32 bracket)
         } while (result->NextRow());
     }
 
-    return std::move(BgBots);
+    return BgBots;
 }
 
 CachedEvent* RandomPlayerbotMgr::FindEvent(uint32 bot, std::string const& event)
@@ -3073,7 +3073,7 @@ void RandomPlayerbotMgr::OnPlayerLogin(Player* player)
                 FactionTemplateEntry const* factionEntry = sFactionTemplateStore.LookupEntry(cInfo->faction);
                 ReputationRank reaction = Unit::GetFactionReactionTo(player->GetFactionTemplateEntry(), factionEntry);
 
-                if (reaction > REP_NEUTRAL && dest->nearestPoint(&botPos)->m_mapId == player->GetMapId())
+                if (reaction > REP_NEUTRAL && dest->nearestPoint(&botPos)->GetMapId() == player->GetMapId())
                 {
                     botPos = *dest->nearestPoint(&botPos);
                     break;
@@ -3252,7 +3252,7 @@ void RandomPlayerbotMgr::PrintStats()
 
         if (sPlayerbotAIConfig.enableNewRpgStrategy)
         {
-            rpgStatusCount[botAI->rpgInfo.status]++;
+            rpgStatusCount[botAI->rpgInfo.GetStatus()]++;
             rpgStasticTotal += botAI->rpgStatistic;
             botAI->rpgStatistic = NewRpgStatistic();
         }

@@ -277,7 +277,7 @@ std::string const RandomPlayerbotFactory::CreateRandomBotName(NameRaceAndGender 
             botName.clear();
             continue;
         }
-        return std::move(botName);
+        return botName;
     }
 
     // TRUE RANDOM NAME GENERATION
@@ -302,11 +302,11 @@ std::string const RandomPlayerbotFactory::CreateRandomBotName(NameRaceAndGender 
             botName.clear();
             continue;
         }
-        return std::move(botName);
+        return botName;
     }
     LOG_ERROR("playerbots", "Random name generation failed.");
     botName.clear();
-    return std::move(botName);
+    return botName;
 }
 
 // Calculates the total number of required accounts, either using the specified randomBotAccountCount
@@ -763,7 +763,7 @@ std::string const RandomPlayerbotFactory::CreateRandomGuildName()
     if (!result)
     {
         LOG_ERROR("playerbots", "No more names left for random guilds");
-        return std::move(guildName);
+        return guildName;
     }
 
     Field* fields = result->Fetch();
@@ -777,13 +777,13 @@ std::string const RandomPlayerbotFactory::CreateRandomGuildName()
     if (!result)
     {
         LOG_ERROR("playerbots", "No more names left for random guilds");
-        return std::move(guildName);
+        return guildName;
     }
 
     fields = result->Fetch();
     guildName = fields[0].Get<std::string>();
 
-    return std::move(guildName);
+    return guildName;
 }
 
 void RandomPlayerbotFactory::CreateRandomArenaTeams(ArenaType type, uint32 count)
@@ -905,7 +905,7 @@ std::string const RandomPlayerbotFactory::CreateRandomArenaTeamName()
     if (!result)
     {
         LOG_ERROR("playerbots", "No more names left for random arena teams");
-        return std::move(arenaTeamName);
+        return arenaTeamName;
     }
 
     Field* fields = result->Fetch();
@@ -920,11 +920,11 @@ std::string const RandomPlayerbotFactory::CreateRandomArenaTeamName()
     if (!result)
     {
         LOG_ERROR("playerbots", "No more names left for random arena teams");
-        return std::move(arenaTeamName);
+        return arenaTeamName;
     }
 
     fields = result->Fetch();
     arenaTeamName = fields[0].Get<std::string>();
 
-    return std::move(arenaTeamName);
+    return arenaTeamName;
 }
