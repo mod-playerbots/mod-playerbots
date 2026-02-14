@@ -157,7 +157,6 @@ bool NewRpgGoGrindAction::Execute(Event event)
 {
     if (SearchQuestGiverAndAcceptOrReward())
         return true;
-
     if (auto* data = std::get_if<NewRpgInfo::GoGrind>(&botAI->rpgInfo.data))
         return MoveFarTo(data->pos);
 

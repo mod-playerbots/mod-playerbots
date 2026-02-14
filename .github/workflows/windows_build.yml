@@ -1,9 +1,9 @@
 name: windows-build
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "test-staging" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "test-staging" ]
 
 concurrency:
   group: "windows-build-${{ github.event.pull_request.number }}"

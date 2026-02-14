@@ -176,20 +176,19 @@ Unit* CastShatteringThrowAction::GetTarget()
     return nullptr; // No valid target
 }
 
+bool CastShatteringThrowAction::Execute(Event event)
+{
+    Unit* target = GetTarget();
+    if (!target)
+        return false;
+
+    return botAI->CastSpell("shattering throw", target);
+}
+
 bool CastShatteringThrowAction::isUseful()
 {
-
-    // Spell cooldown check
-    if (!bot->HasSpell(64382))
-    {
+    if (!bot->HasSpell(64382) || bot->HasSpellCooldown(64382))
         return false;
-    }
-
-    // Spell cooldown check
-    if (bot->HasSpellCooldown(64382))
-    {
-        return false;
-    }
 
     GuidVector enemies = AI_VALUE(GuidVector, "possible targets");
 
@@ -220,25 +219,12 @@ bool CastShatteringThrowAction::isPossible()
 
     // Range check: Shattering Throw is 30 yards
     if (!bot->IsWithinDistInMap(target, 30.0f))
-    {
         return false;
-    }
 
     // Check line of sight
     if (!bot->IsWithinLOSInMap(target))
-    {
         return false;
-    }
 
     // If the minimal checks above pass, simply return true.
     return true;
-}
-
-bool CastShatteringThrowAction::Execute(Event event)
-{
-    Unit* target = GetTarget();
-    if (!target)
-        return false;
-
-    return botAI->CastSpell("shattering throw", target);
 }

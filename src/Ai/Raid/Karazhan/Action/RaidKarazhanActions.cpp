@@ -2,6 +2,7 @@
 #include "RaidKarazhanHelpers.h"
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
+#include "RaidBossHelpers.h"
 
 using namespace KarazhanHelpers;
 
@@ -44,7 +45,7 @@ bool AttumenTheHuntsmanMarkTargetAction::Execute(Event event)
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
     if (attumenMounted)
     {
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
             MarkTargetWithStar(bot, attumenMounted);
 
         SetRtiTarget(botAI, "star", attumenMounted);
@@ -57,7 +58,7 @@ bool AttumenTheHuntsmanMarkTargetAction::Execute(Event event)
     }
     else if (Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight"))
     {
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
             MarkTargetWithStar(bot, midnight);
 
         if (!botAI->IsAssistTankOfIndex(bot, 0))
@@ -180,7 +181,7 @@ bool MoroesMarkTargetAction::Execute(Event event)
 
     if (target)
     {
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
             MarkTargetWithSkull(bot, target);
 
         SetRtiTarget(botAI, "skull", target);
@@ -405,7 +406,7 @@ bool TheCuratorMarkAstralFlareAction::Execute(Event event)
     if (!flare)
         return false;
 
-    if (IsInstanceTimerManager(botAI, bot))
+    if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
         MarkTargetWithSkull(bot, flare);
 
     SetRtiTarget(botAI, "skull", flare);
@@ -469,11 +470,11 @@ bool TheCuratorSpreadRangedAction::Execute(Event event)
 // Prioritize (1) Demon Chains, (2) Kil'rek, (3) Illhoof
 bool TerestianIllhoofMarkTargetAction::Execute(Event event)
 {
-    Unit* demonChains = AI_VALUE2(Unit*, "find target", "demon chains");
-    Unit* kilrek = AI_VALUE2(Unit*, "find target", "kil'rek");
+    Unit* demonChains = GetFirstAliveUnitByEntry(botAI, NPC_DEMON_CHAINS);
+    Unit* kilrek = GetFirstAliveUnitByEntry(botAI, NPC_KILREK);
     Unit* illhoof = AI_VALUE2(Unit*, "find target", "terestian illhoof");
-    Unit* target = GetFirstAliveUnit({demonChains, kilrek, illhoof});
 
+    Unit* target = GetFirstAliveUnit({demonChains, kilrek, illhoof});
     if (target)
         MarkTargetWithSkull(bot, target);
 
@@ -1007,7 +1008,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event event)
     if (netherspite->GetHealth() == netherspite->GetMaxHealth() &&
         !netherspite->HasAura(SPELL_GREEN_BEAM_HEAL))
     {
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
             netherspiteDpsWaitTimer.insert_or_assign(instanceId, now);
 
         if (botAI->IsTank(bot) && !bot->HasAura(SPELL_RED_BEAM_DEBUFF))
@@ -1018,7 +1019,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event event)
     }
     else if (netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
     {
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
             netherspiteDpsWaitTimer.erase(instanceId);
 
         if (botAI->IsTank(bot))
@@ -1029,7 +1030,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event event)
     }
     else if (!netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
     {
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
             netherspiteDpsWaitTimer.try_emplace(instanceId, now);
 
         if (botAI->IsTank(bot) && bot->HasAura(SPELL_RED_BEAM_DEBUFF))
@@ -1458,7 +1459,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
         if (botAI->IsRanged(bot))
             nightbaneRangedStep.erase(botGuid);
 
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
             nightbaneDpsWaitTimer.erase(instanceId);
     }
     // Erase flight phase timer and Rain of Bones tracker on ground phase and start DPS wait timer
@@ -1466,7 +1467,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
     {
         nightbaneRainOfBonesHit.erase(botGuid);
 
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
         {
             nightbaneFlightPhaseStartTimer.erase(instanceId);
             nightbaneDpsWaitTimer.try_emplace(instanceId, now);
@@ -1482,7 +1483,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
         if (botAI->IsRanged(bot))
             nightbaneRangedStep.erase(botGuid);
 
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
         {
             nightbaneDpsWaitTimer.erase(instanceId);
             nightbaneFlightPhaseStartTimer.try_emplace(instanceId, now);

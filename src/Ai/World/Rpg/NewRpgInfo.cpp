@@ -34,6 +34,7 @@ void NewRpgInfo::ChangeToDoQuest(uint32 questId, const Quest* quest)
     DoQuest do_quest;
     do_quest.questId = questId;
     do_quest.quest = quest;
+    data = do_quest;
 }
 
 void NewRpgInfo::ChangeToTravelFlight(ObjectGuid fromFlightMaster, std::vector<uint32> path)

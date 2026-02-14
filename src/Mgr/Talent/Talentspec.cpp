@@ -317,7 +317,7 @@ std::vector<TalentSpec::TalentListEntry> TalentSpec::GetTalentTree(uint32 tabpag
         if (entry.tabPage() == tabpage)
             retList.push_back(entry);
 
-    return std::move(retList);
+    return retList;
 }
 
 uint32 TalentSpec::GetTalentPoints(int32 tabpage) { return GetTalentPoints(talents, tabpage); };
@@ -368,7 +368,7 @@ std::string const TalentSpec::GetTalentLink()
     if (treeLink[2] != "0")
         link = link + "-" + treeLink[2];
 
-    return std::move(link);
+    return link;
 }
 
 uint32 TalentSpec::highestTree()
