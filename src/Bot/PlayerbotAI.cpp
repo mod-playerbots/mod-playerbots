@@ -1015,28 +1015,42 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
     }
     else if (filtered == "logout")
     {
-        if (!bot->GetSession()->isLogingOut())
+        if (bot->GetSession()->isLogingOut())
+            return;
+
+        // Verify the command came from this bot's master. Also handles nullptr
+        if (fromPlayer != master)
+        {
+            if (type == CHAT_MSG_WHISPER)
+                bot->Whisper("You are not my master!", LANG_UNIVERSAL, fromPlayer);
+            return;
+        }
+
+        PlayerbotMgr* masterBotMgr = GET_PLAYERBOT_MGR(master);
+        if (!masterBotMgr)
+            return;
+
+        // Only respond if this bot is in master's collection (alt/addclass)
+        if (masterBotMgr->GetPlayerBot(bot->GetGUID()))
         {
             if (type == CHAT_MSG_WHISPER)
                 TellMaster("I'm logging out!");
 
-            PlayerbotMgr* masterBotMgr = nullptr;
-            if (master)
-                masterBotMgr = GET_PLAYERBOT_MGR(master);
-            if (masterBotMgr)
-                masterBotMgr->LogoutPlayerBot(bot->GetGUID());
+            masterBotMgr->LogoutPlayerBot(bot->GetGUID());
         }
+        else if (type == CHAT_MSG_WHISPER)
+            TellMaster("You can't command me to logout!");
     }
     else if (filtered == "logout cancel")
     {
-        if (bot->GetSession()->isLogingOut())
-        {
-            if (type == CHAT_MSG_WHISPER)
-                TellMaster("Logout cancelled!");
+        if (!bot->GetSession()->isLogingOut())
+            return;
 
-            WorldPackets::Character::LogoutCancel data = WorldPacket(CMSG_LOGOUT_CANCEL);
-            bot->GetSession()->HandleLogoutCancelOpcode(data);
-        }
+        if (type == CHAT_MSG_WHISPER)
+            TellMaster("Logout cancelled!");
+
+        WorldPackets::Character::LogoutCancel data = WorldPacket(CMSG_LOGOUT_CANCEL);
+        bot->GetSession()->HandleLogoutCancelOpcode(data);
     }
     else
     {
