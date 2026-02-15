@@ -58,7 +58,7 @@ void MasterFishingStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "random",
             {
                 NextAction("end master fishing", 12.0f),
-                NextAction("equip upgrades", 6.0f)
+                NextAction("equip upgrades packet action", 6.0f)
             }
         )
     );
