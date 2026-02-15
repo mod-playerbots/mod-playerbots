@@ -32,7 +32,7 @@ private:
 class EquipUpgradesTriggeredAction : public EquipAction
 {
 public:
-    explicit EquipUpgradesTriggeredAction(PlayerbotAI* botAI, std::string const name = "equip upgrades") : EquipAction(botAI, name) {}
+    explicit EquipUpgradesTriggeredAction(PlayerbotAI* botAI, std::string const name = "equip upgrades triggered") : EquipAction(botAI, name) {}
 
     bool Execute(Event event) override;
 };
