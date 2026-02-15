@@ -5,8 +5,9 @@
 
 #include "FollowActions.h"
 
-#include <cstddef>
 #include <algorithm>
+#include <cmath>
+#include <array>
 
 #include "Event.h"
 #include "Formations.h"
@@ -15,11 +16,8 @@
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
-#include "SharedDefines.h"
 #include "Transport.h"
 #include "Map.h"
-#include <cmath>
-#include <array>
 
 namespace
 {
