@@ -881,17 +881,6 @@ void PlayerbotAI::LeaveOrDisbandGroup()
     bot->GetSession()->QueuePacket(packet);
 }
 
-bool PlayerbotAI::IsMasterOnTransport()
-{
-    if (!master || !master->IsInWorld())
-        return false;
-
-    if (master->GetTransport())
-        return true;
-
-    return master->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
-}
-
 bool PlayerbotAI::IsAllowedCommand(std::string const text)
 {
     if (unsecuredCommands.empty())
