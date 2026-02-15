@@ -18,9 +18,9 @@
 #include "Playerbots.h"
 
 #include "Channel.h"
-#include "Config.h"
+//#include "Config.h"
 #include "DatabaseEnv.h"
-#include "DatabaseLoader.h"
+//#include "DatabaseLoader.h"
 #include "GuildTaskMgr.h"
 #include "PlayerScript.h"
 #include "PlayerbotAIConfig.h"
@@ -33,7 +33,7 @@
 #include "cmath"
 #include "BattleGroundTactics.h"
 
-class PlayerbotsDatabaseScript : public DatabaseScript
+/*class PlayerbotsDatabaseScript : public DatabaseScript
 {
 public:
     PlayerbotsDatabaseScript() : DatabaseScript("PlayerbotsDatabaseScript") {}
@@ -75,7 +75,7 @@ public:
             revision = "Unknown Playerbots Database Revision";
         }
     }
-};
+};*/
 
 class PlayerbotsPlayerScript : public PlayerScript
 {
@@ -558,7 +558,7 @@ void AddPlayerbotsSecureLoginScripts();
 
 void AddPlayerbotsScripts()
 {
-    new PlayerbotsDatabaseScript();
+    //new PlayerbotsDatabaseScript();
     new PlayerbotsPlayerScript();
     new PlayerbotsMiscScript();
     new PlayerbotsServerScript();

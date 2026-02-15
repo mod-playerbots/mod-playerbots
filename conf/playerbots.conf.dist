@@ -1914,41 +1914,9 @@ AiPlayerbot.RandomClassSpecIndex.11.3 = 3
 #
 #
 
-#    PlayerbotsDatabaseInfo
-#        Description: Database connection settings for the playerbots server.
-#        Example:     "hostname;port;username;password;database"
-#                     ".;somenumber;username;password;database" - (Use named pipes on Windows
-#                                                                 "enable-named-pipe" to [mysqld]
-#                                                                 section my.ini)
-#                     ".;/path/to/unix_socket;username;password;database" - (use Unix sockets on
-#                                                                           Unix/Linux)
-#        Default:     "127.0.0.1;3306;acore;acore;acore_playerbots"       - (PlayerbotDatabaseInfo)
-
-PlayerbotsDatabaseInfo = "127.0.0.1;3306;acore;acore;acore_playerbots"
-
+# NOTE: Playerbots DB is now configured in worldserver.conf
+# to be managed by the core DBLoader/DBUpdater.
 #
-#    PlayerbotsDatabase.WorkerThreads
-#        Description: The amount of worker threads spawned to handle asynchronous (delayed) MySQL
-#                     statements. Each worker thread is mirrored with its own connection to the
-#                     MySQL server and their own thread on the MySQL server.
-#        Default:     1 - (PlayerbotsDatabase.WorkerThreads)
-
-PlayerbotsDatabase.WorkerThreads     = 1
-
-#
-#    PlayerbotsDatabase.SynchThreads
-#        Description: The amount of MySQL connections spawned to handle.
-#        Default:     1 - (PlayerbotDatabase.WorkerThreads)
-
-PlayerbotsDatabase.SynchThreads     = 1
-
-#    Playerbot.Updates.EnableDatabases
-#        Description: Determined if updates system work with playerbots database.
-#
-#        Default:     1  - (Enabled)
-#                     0  - (Disabled)
-
-Playerbots.Updates.EnableDatabases = 1
 
 # Command server port, 0 - disabled
 AiPlayerbot.CommandServerPort = 8888
