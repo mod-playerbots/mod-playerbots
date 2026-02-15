@@ -364,7 +364,7 @@ ItemIds EquipAction::SelectInventoryItemsToEquip()
     return items;
 }
 
-bool EquipUpgradesTriggeredAction::Execute(Event event)
+bool EquipUpgradesPacketAction::Execute(Event event)
 {
     if (!sPlayerbotAIConfig.autoEquipUpgradeLoot && !sRandomPlayerbotMgr.IsRandomBot(bot))
         return false;
