@@ -4,6 +4,10 @@
  */
 
 #include "ArmsWarriorStrategy.h"
+#include "CreateNextAction.h"
+#include "GenericActions.h"
+#include "ReachTargetActions.h"
+#include "WarriorActions.h"
 
 class ArmsWarriorStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -24,9 +28,8 @@ private:
     static ActionNode* charge(PlayerbotAI*)
     {
         return new ActionNode(
-            "charge",
             /*P*/ {},
-            /*A*/ { NextAction("reach melee") },
+            /*A*/ { CreateNextAction<ReachMeleeAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -34,9 +37,8 @@ private:
     static ActionNode* death_wish(PlayerbotAI*)
     {
         return new ActionNode(
-            "death wish",
             /*P*/ {},
-            /*A*/ { NextAction("bloodrage") },
+            /*A*/ { CreateNextAction<CastBloodrageAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -44,9 +46,8 @@ private:
     static ActionNode* piercing_howl(PlayerbotAI*)
     {
         return new ActionNode(
-            "piercing howl",
             /*P*/ {},
-            /*A*/ { NextAction("mocking blow") },
+            /*A*/ { CreateNextAction<CastMockingBlowAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -54,9 +55,8 @@ private:
     static ActionNode* mocking_blow(PlayerbotAI*)
     {
         return new ActionNode(
-            "mocking blow",
             /*P*/ {},
-            /*A*/ { NextAction("hamstring") },
+            /*A*/ { CreateNextAction<CastHamstringAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -64,9 +64,8 @@ private:
     static ActionNode* heroic_strike(PlayerbotAI*)
     {
         return new ActionNode(
-            "heroic strike",
             /*P*/ {},
-            /*A*/ { NextAction("melee") },
+            /*A*/ { CreateNextAction<MeleeAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -74,7 +73,6 @@ private:
     static ActionNode* enraged_regeneration(PlayerbotAI*)
     {
         return new ActionNode(
-            "enraged regeneration",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -84,7 +82,6 @@ private:
     static ActionNode* retaliation(PlayerbotAI*)
     {
         return new ActionNode(
-            "retaliation",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -94,7 +91,6 @@ private:
     static ActionNode* shattering_throw(PlayerbotAI*)
     {
         return new ActionNode(
-            "shattering throw",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -110,9 +106,9 @@ ArmsWarriorStrategy::ArmsWarriorStrategy(PlayerbotAI* botAI) : GenericWarriorStr
 std::vector<NextAction> ArmsWarriorStrategy::getDefaultActions()
 {
     return {
-        NextAction("bladestorm", ACTION_DEFAULT + 0.2f),
-        NextAction("mortal strike", ACTION_DEFAULT + 0.1f),
-        NextAction("melee", ACTION_DEFAULT)
+        CreateNextAction<CastBladestormAction>(ACTION_DEFAULT + 0.2f),
+        CreateNextAction<CastMortalStrikeAction>(ACTION_DEFAULT + 0.1f),
+        CreateNextAction<MeleeAction>(ACTION_DEFAULT)
     };
 }
 void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -123,7 +119,7 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "enemy out of melee",
             {
-                NextAction("charge", ACTION_MOVE + 10)
+                CreateNextAction<CastChargeAction>(ACTION_MOVE + 10.0f)
             }
         )
     );
@@ -132,7 +128,7 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "battle stance",
             {
-                NextAction("battle stance", ACTION_HIGH + 10)
+                CreateNextAction<CastBattleStanceAction>(ACTION_HIGH + 10)
             }
         )
     );
@@ -141,7 +137,7 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "battle shout",
             {
-                NextAction("battle shout", ACTION_HIGH + 9)
+                CreateNextAction<CastBattleShoutAction>(ACTION_HIGH + 9.0f)
             }
         )
     );
@@ -150,7 +146,7 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "rend",
             {
-                NextAction("rend", ACTION_HIGH + 8)
+                CreateNextAction<CastRendAction>(ACTION_HIGH + 8.0f)
             }
         )
     );
@@ -159,7 +155,7 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "rend on attacker",
             {
-                NextAction("rend on attacker", ACTION_HIGH + 8)
+                CreateNextAction<CastRendOnAttackerAction>(ACTION_HIGH + 8.0f)
             }
         )
     );
@@ -168,7 +164,7 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "mortal strike",
             {
-                NextAction("mortal strike", ACTION_HIGH + 3)
+                CreateNextAction<CastMortalStrikeAction>(ACTION_HIGH + 3.0f)
             }
         )
     );
@@ -177,7 +173,7 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "target critical health",
             {
-                NextAction("execute", ACTION_HIGH + 5)
+                CreateNextAction<CastExecuteAction>(ACTION_HIGH + 5.0f)
             }
         )
     );
@@ -186,7 +182,7 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "sudden death",
             {
-                NextAction("execute", ACTION_HIGH + 5)
+                CreateNextAction<CastExecuteAction>(ACTION_HIGH + 5.0f)
             }
         )
     );
@@ -195,7 +191,7 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "hamstring",
             {
-                NextAction("piercing howl", ACTION_HIGH)
+                CreateNextAction<CastPiercingHowlAction>(ACTION_HIGH)
             }
         )
     );
@@ -204,7 +200,7 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "overpower",
             {
-                NextAction("overpower", ACTION_HIGH + 4)
+                CreateNextAction<CastOverpowerAction>(ACTION_HIGH + 4.0f)
             }
         )
     );
@@ -213,7 +209,7 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "taste for blood",
             {
-                NextAction("overpower", ACTION_HIGH + 4)
+                CreateNextAction<CastOverpowerAction>(ACTION_HIGH + 4.0f)
             }
         )
     );
@@ -222,7 +218,7 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "victory rush",
             {
-                NextAction("victory rush", ACTION_INTERRUPT)
+                CreateNextAction<CastVictoryRushAction>(ACTION_INTERRUPT)
             }
         )
     );
@@ -231,8 +227,8 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "high rage available",
             {
-                NextAction("heroic strike", ACTION_HIGH),
-                NextAction("slam", ACTION_HIGH + 1)
+                CreateNextAction<CastHeroicStrikeAction>(ACTION_HIGH),
+                CreateNextAction<CastSlamAction>(ACTION_HIGH + 1.0f)
             }
         )
     );
@@ -240,7 +236,7 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "bloodrage",
             {
-                NextAction("bloodrage", ACTION_HIGH + 2)
+                CreateNextAction<CastBloodrageAction>(ACTION_HIGH + 2.0f)
             }
         )
     );
@@ -249,7 +245,7 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "death wish",
             {
-                NextAction("death wish", ACTION_HIGH + 2)
+                CreateNextAction<CastDeathWishAction>(ACTION_HIGH + 2.0f)
             }
         )
     );
@@ -258,7 +254,7 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "critical health",
             {
-                NextAction("intimidating shout", ACTION_EMERGENCY)
+                CreateNextAction<CastIntimidatingShoutAction>(ACTION_EMERGENCY)
             }
         )
     );
@@ -267,7 +263,7 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium health",
             {
-                NextAction("enraged regeneration", ACTION_EMERGENCY)
+                CreateNextAction<CastEnragedRegenerationAction>(ACTION_EMERGENCY)
             }
         )
     );
@@ -276,7 +272,7 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "almost full health",
             {
-                NextAction("retaliation", ACTION_EMERGENCY + 1)
+                CreateNextAction<CastRetaliationAction>(ACTION_EMERGENCY + 1.0f)
             }
         )
     );
@@ -285,7 +281,7 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "shattering throw trigger",
             {
-                NextAction("shattering throw", ACTION_INTERRUPT + 1)
+                CreateNextAction<CastShatteringThrowAction>(ACTION_INTERRUPT + 1.0f)
             }
         )
     );

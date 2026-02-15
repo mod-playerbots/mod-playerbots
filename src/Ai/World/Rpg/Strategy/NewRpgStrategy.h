@@ -8,7 +8,6 @@
 
 #include "Strategy.h"
 #include "TravelMgr.h"
-#include "NewRpgInfo.h"
 
 class PlayerbotAI;
 

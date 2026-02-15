@@ -6,7 +6,6 @@
 #include "ReachTargetActions.h"
 
 #include "Event.h"
-#include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 
@@ -33,18 +32,6 @@ bool ReachTargetAction::isUseful()
 }
 
 std::string const ReachTargetAction::GetTargetName() { return "current target"; }
-
-bool CastReachTargetSpellAction::isUseful()
-{
-    // do not move while staying
-    if (botAI->HasStrategy("stay", botAI->GetState()))
-    {
-        return false;
-    }
-
-    return ServerFacade::instance().IsDistanceGreaterThan(AI_VALUE2(float, "distance", "current target"),
-                                                (distance + sPlayerbotAIConfig.contactDistance));
-}
 
 ReachSpellAction::ReachSpellAction(PlayerbotAI* botAI)
     : ReachTargetAction(botAI, "reach spell", botAI->GetRange("spell"))

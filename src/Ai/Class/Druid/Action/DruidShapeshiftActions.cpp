@@ -19,8 +19,11 @@ bool CastBearFormAction::isUseful()
 
 std::vector<NextAction> CastDireBearFormAction::getAlternatives()
 {
-    return NextAction::merge({ NextAction("bear form") },
-                             CastSpellAction::getAlternatives());
+    std::vector<NextAction> alternatives = CastBuffSpellAction::getAlternatives();
+
+    alternatives.emplace_back(CreateNextAction<CastBearFormAction>(1.0f));
+
+    return alternatives;
 }
 
 bool CastTravelFormAction::isUseful()

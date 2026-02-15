@@ -4,8 +4,7 @@
  */
 
 #include "ChatCommandTrigger.h"
-
-#include "Playerbots.h"
+#include "Player.h"
 
 ChatCommandTrigger::ChatCommandTrigger(PlayerbotAI* botAI, std::string const command)
     : Trigger(botAI, command), triggered(false), owner(nullptr)

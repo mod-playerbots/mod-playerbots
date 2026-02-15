@@ -3,8 +3,9 @@
  */
 
 #include "UnholyDKStrategy.h"
-
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "DKActions.h"
+#include "GenericActions.h"
 
 class UnholyDKStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -22,8 +23,7 @@ private:
     static ActionNode* death_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "death strike",
-            /*P*/ { NextAction("blood presence") },
+            /*P*/ { CreateNextAction<CastBloodPresenceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -31,8 +31,7 @@ private:
     static ActionNode* ghoul_frenzy([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "ghoul frenzy",
-            /*P*/ { NextAction("blood presence") },
+            /*P*/ { CreateNextAction<CastBloodPresenceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -40,8 +39,7 @@ private:
     static ActionNode* corpse_explosion([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "corpse explosion",
-            /*P*/ { NextAction("blood presence") },
+            /*P*/ { CreateNextAction<CastBloodPresenceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -50,8 +48,7 @@ private:
     static ActionNode* scourge_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "scourge strike",
-            /*P*/ { NextAction("blood presence") },
+            /*P*/ { CreateNextAction<CastBloodPresenceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -59,8 +56,7 @@ private:
     static ActionNode* icy_touch([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "icy touch",
-            /*P*/ { NextAction("blood presence") },
+            /*P*/ { CreateNextAction<CastBloodPresenceAction>(1.0f) },
             /*A*/ {},
             /*C*/ {}
         );
@@ -75,11 +71,11 @@ UnholyDKStrategy::UnholyDKStrategy(PlayerbotAI* botAI) : GenericDKStrategy(botAI
 std::vector<NextAction> UnholyDKStrategy::getDefaultActions()
 {
     return {
-        NextAction("death and decay", ACTION_HIGH + 5),
-        NextAction("summon gargoyle", ACTION_DEFAULT + 0.4f),
-        NextAction("horn of winter", ACTION_DEFAULT + 0.2f),
-        NextAction("death coil", ACTION_DEFAULT + 0.1f),
-        NextAction("melee", ACTION_DEFAULT)
+        CreateNextAction<CastDeathAndDecayAction>(ACTION_HIGH + 5.0f),
+        CreateNextAction<CastSummonGargoyleAction>(ACTION_DEFAULT + 0.4f),
+        CreateNextAction<CastHornOfWinterAction>(ACTION_DEFAULT + 0.2f),
+        CreateNextAction<CastDeathCoilAction>(ACTION_DEFAULT + 0.1f),
+        CreateNextAction<MeleeAction>(ACTION_DEFAULT)
     };
 }
 
@@ -91,11 +87,11 @@ void UnholyDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "death and decay cooldown",
             {
-                NextAction("ghoul frenzy", ACTION_DEFAULT + 0.9f),
-                NextAction("scourge strike", ACTION_DEFAULT + 0.8f),
-                NextAction("icy touch", ACTION_DEFAULT + 0.7f),
-                NextAction("blood strike", ACTION_DEFAULT + 0.6f),
-                NextAction("plague strike", ACTION_DEFAULT + 0.5f),
+                CreateNextAction<CastGhoulFrenzyAction>(ACTION_DEFAULT + 0.9f),
+                CreateNextAction<CastScourgeStrikeAction>(ACTION_DEFAULT + 0.8f),
+                CreateNextAction<CastIcyTouchAction>(ACTION_DEFAULT + 0.7f),
+                CreateNextAction<CastBloodStrikeAction>(ACTION_DEFAULT + 0.6f),
+                CreateNextAction<CastPlagueStrikeAction>(ACTION_DEFAULT + 0.5f),
             }
         )
     );
@@ -104,7 +100,7 @@ void UnholyDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "dd cd and no desolation",
             {
-                NextAction("blood strike", ACTION_DEFAULT + 0.75f)
+                CreateNextAction<CastBloodStrikeAction>(ACTION_DEFAULT + 0.75f)
             }
         )
     );
@@ -112,7 +108,7 @@ void UnholyDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "high frost rune",
             {
-                NextAction("icy touch", ACTION_NORMAL + 3)
+                CreateNextAction<CastIcyTouchAction>(ACTION_NORMAL + 3.0f)
             }
         )
     );
@@ -120,7 +116,7 @@ void UnholyDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "high blood rune",
             {
-                NextAction("blood strike", ACTION_NORMAL + 2)
+                CreateNextAction<CastBloodStrikeAction>(ACTION_NORMAL + 2.0f)
             }
         )
     );
@@ -128,28 +124,31 @@ void UnholyDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "high unholy rune",
             {
-                NextAction("plague strike", ACTION_NORMAL + 1)
+                CreateNextAction<CastPlagueStrikeAction>(ACTION_NORMAL + 1.0f)
             }
         )
     );
     triggers.push_back(
-        new TriggerNode("dd cd and plague strike 3s",
+        new TriggerNode(
+            "dd cd and plague strike 3s",
             {
-                NextAction("plague strike", ACTION_HIGH + 1)
+                CreateNextAction<CastPlagueStrikeAction>(ACTION_HIGH + 1.0f)
             }
         )
     );
     triggers.push_back(
-        new TriggerNode("dd cd and icy touch 3s",
+        new TriggerNode(
+            "dd cd and icy touch 3s",
             {
-                NextAction("icy touch", ACTION_HIGH + 2)
+                CreateNextAction<CastIcyTouchAction>(ACTION_HIGH + 2.0f)
             }
         )
     );
     triggers.push_back(
-        new TriggerNode("no rune",
+        new TriggerNode(
+            "no rune",
             {
-                NextAction("empower rune weapon", ACTION_HIGH + 1)
+                CreateNextAction<CastEmpowerRuneWeaponAction>(ACTION_HIGH + 1.0f)
             }
         )
     );
@@ -157,14 +156,15 @@ void UnholyDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "army of the dead",
             {
-                NextAction("army of the dead", ACTION_HIGH + 6)
+                CreateNextAction<CastArmyOfTheDeadAction>(ACTION_HIGH + 6.0f)
             }
         )
     );
     triggers.push_back(
-        new TriggerNode("bone shield",
+        new TriggerNode(
+            "bone shield",
             {
-                NextAction("bone shield", ACTION_HIGH + 3)
+                CreateNextAction<CastBoneShieldAction>(ACTION_HIGH + 3.0f)
             }
         )
     );
@@ -176,7 +176,7 @@ void UnholyDKAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "loot available",
             {
-                NextAction("corpse explosion", ACTION_NORMAL + 1)
+                CreateNextAction<CastCorpseExplosionAction>(ACTION_NORMAL + 1.0f)
             }
         )
     );
@@ -184,8 +184,8 @@ void UnholyDKAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium aoe",
             {
-                NextAction("death and decay", ACTION_NORMAL + 3),
-                NextAction("corpse explosion", ACTION_NORMAL + 3)
+                CreateNextAction<CastDeathAndDecayAction>(ACTION_NORMAL + 3.0f),
+                CreateNextAction<CastCorpseExplosionAction>(ACTION_NORMAL + 3.0f)
             }
         )
     );

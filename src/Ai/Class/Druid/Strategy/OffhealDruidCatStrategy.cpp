@@ -5,7 +5,11 @@
 
  #include "OffhealDruidCatStrategy.h"
 
- #include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "DruidActions.h"
+#include "DruidCatActions.h"
+#include "DruidShapeshiftActions.h"
+#include "GenericActions.h"
  #include "Strategy.h"
 
  class OffhealDruidCatStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
@@ -30,7 +34,6 @@ private:
     static ActionNode* cat_form([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "cat form",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -40,7 +43,6 @@ private:
     static ActionNode* mangle_cat([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "mangle (cat)",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -50,9 +52,8 @@ private:
     static ActionNode* shred([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "shred",
             /*P*/ {},
-            /*A*/ { NextAction("claw") },
+            /*A*/ { CreateNextAction<CastClawAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -60,7 +61,6 @@ private:
     static ActionNode* rake([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "rake",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -70,7 +70,6 @@ private:
     static ActionNode* rip([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "rip",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -80,9 +79,8 @@ private:
     static ActionNode* ferocious_bite([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "ferocious bite",
             /*P*/ {},
-            /*A*/ { NextAction("rip") },
+            /*A*/ { CreateNextAction<CastRipAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -90,7 +88,6 @@ private:
     static ActionNode* savage_roar([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "savage roar",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -100,7 +97,6 @@ private:
     static ActionNode* faerie_fire_feral([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "faerie fire (feral)",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -110,30 +106,27 @@ private:
     static ActionNode* healing_touch_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "healing touch on party",
-            /*P*/ { NextAction("caster form") },
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
             /*A*/ {},
-            /*C*/ { NextAction("cat form") }
+            /*C*/ { CreateNextAction<CastCatFormAction>(1.0f) }
         );
     }
 
     static ActionNode* regrowth_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "regrowth on party",
-            /*P*/ { NextAction("caster form") },
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
             /*A*/ {},
-            /*C*/ { NextAction("cat form") }
+            /*C*/ { CreateNextAction<CastCatFormAction>(1.0f) }
         );
     }
 
     static ActionNode* rejuvenation_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "rejuvenation on party",
-            /*P*/ { NextAction("caster form") },
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
             /*A*/ {},
-            /*C*/ { NextAction("cat form") }
+            /*C*/ { CreateNextAction<CastCatFormAction>(1.0f) }
         );
     }
 };
@@ -146,11 +139,11 @@ OffhealDruidCatStrategy::OffhealDruidCatStrategy(PlayerbotAI* botAI) : FeralDrui
 std::vector<NextAction> OffhealDruidCatStrategy::getDefaultActions()
 {
     return {
-        NextAction("mangle (cat)", ACTION_DEFAULT + 0.5f),
-        NextAction("shred", ACTION_DEFAULT + 0.4f),
-        NextAction("rake", ACTION_DEFAULT + 0.3f),
-        NextAction("melee", ACTION_DEFAULT),
-        NextAction("cat form", ACTION_DEFAULT - 0.1f)
+        CreateNextAction<CastMangleCatAction>(ACTION_DEFAULT + 0.5f),
+        CreateNextAction<CastShredAction>(ACTION_DEFAULT + 0.4f),
+        CreateNextAction<CastRakeAction>(ACTION_DEFAULT + 0.3f),
+        CreateNextAction<MeleeAction>(ACTION_DEFAULT),
+        CreateNextAction<CastCatFormAction>(ACTION_DEFAULT - 0.1f)
     };
 }
 
@@ -162,7 +155,7 @@ void OffhealDruidCatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "cat form",
             {
-                NextAction("cat form", ACTION_HIGH + 8)
+                CreateNextAction<CastCatFormAction>(ACTION_HIGH + 8.0f)
             }
         )
     );
@@ -170,7 +163,7 @@ void OffhealDruidCatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "savage roar",
             {
-                NextAction("savage roar", ACTION_HIGH + 7)
+                CreateNextAction<CastSavageRoarAction>(ACTION_HIGH + 7.0f)
             }
         )
     );
@@ -178,7 +171,7 @@ void OffhealDruidCatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "combo points available",
             {
-                NextAction("rip", ACTION_HIGH + 6)
+                CreateNextAction<CastRipAction>(ACTION_HIGH + 6.0f)
             }
         )
     );
@@ -186,7 +179,7 @@ void OffhealDruidCatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "ferocious bite time",
             {
-                NextAction("ferocious bite", ACTION_HIGH + 5)
+                CreateNextAction<CastFerociousBiteAction>(ACTION_HIGH + 5.0f)
             }
         )
     );
@@ -194,7 +187,7 @@ void OffhealDruidCatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "target with combo points almost dead",
             {
-                NextAction("ferocious bite", ACTION_HIGH + 4)
+                CreateNextAction<CastFerociousBiteAction>(ACTION_HIGH + 4.0f)
             }
         )
     );
@@ -202,7 +195,7 @@ void OffhealDruidCatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "mangle (cat)",
             {
-                NextAction("mangle (cat)", ACTION_HIGH + 3)
+                CreateNextAction<CastMangleCatAction>(ACTION_HIGH + 3.0f)
             }
         )
     );
@@ -210,7 +203,7 @@ void OffhealDruidCatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "rake",
             {
-                NextAction("rake", ACTION_HIGH + 2)
+                CreateNextAction<CastRakeAction>(ACTION_HIGH + 2.0f)
             }
         )
     );
@@ -218,7 +211,7 @@ void OffhealDruidCatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "almost full energy available",
             {
-                NextAction("shred", ACTION_DEFAULT + 0.4f)
+                CreateNextAction<CastShredAction>(ACTION_DEFAULT + 0.4f)
             }
         )
     );
@@ -226,7 +219,7 @@ void OffhealDruidCatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "combo points not full",
             {
-                NextAction("shred", ACTION_DEFAULT + 0.4f)
+                CreateNextAction<CastShredAction>(ACTION_DEFAULT + 0.4f)
             }
         )
     );
@@ -234,7 +227,7 @@ void OffhealDruidCatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "faerie fire (feral)",
             {
-                NextAction("faerie fire (feral)", ACTION_NORMAL)
+                CreateNextAction<CastFaerieFireFeralAction>(ACTION_NORMAL)
             }
         )
     );
@@ -242,8 +235,8 @@ void OffhealDruidCatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "enemy out of melee",
             {
-                NextAction("feral charge - cat", ACTION_HIGH + 9),
-                NextAction("dash", ACTION_HIGH + 8)
+                CreateNextAction<CastFeralChargeCatAction>(ACTION_HIGH + 9.0f),
+                CreateNextAction<CastDashAction>(ACTION_HIGH + 8)
             }
         )
     );
@@ -251,7 +244,7 @@ void OffhealDruidCatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium aoe",
             {
-                NextAction("swipe (cat)", ACTION_HIGH + 3)
+                CreateNextAction<CastSwipeCatAction>(ACTION_HIGH + 3.0f)
             }
         )
     );
@@ -259,7 +252,7 @@ void OffhealDruidCatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "low energy",
             {
-                NextAction("tiger's fury", ACTION_NORMAL + 1)
+                CreateNextAction<CastTigersFuryAction>(ACTION_NORMAL + 1.0f)
             }
         )
     );
@@ -267,8 +260,8 @@ void OffhealDruidCatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "party member critical health",
             {
-                NextAction("regrowth on party", ACTION_CRITICAL_HEAL + 6),
-                NextAction("healing touch on party", ACTION_CRITICAL_HEAL + 5)
+                CreateNextAction<CastRegrowthOnPartyAction>(ACTION_CRITICAL_HEAL + 6.0f),
+                CreateNextAction<CastHealingTouchOnPartyAction>(ACTION_CRITICAL_HEAL + 5.0f)
             }
         )
     );
@@ -276,7 +269,7 @@ void OffhealDruidCatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "party member low health",
             {
-                NextAction("healing touch on party", ACTION_MEDIUM_HEAL + 5)
+                CreateNextAction<CastHealingTouchOnPartyAction>(ACTION_MEDIUM_HEAL + 5.0f)
             }
         )
     );
@@ -284,7 +277,7 @@ void OffhealDruidCatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "party member medium health",
             {
-                NextAction("rejuvenation on party", ACTION_LIGHT_HEAL + 8)
+                CreateNextAction<CastRejuvenationOnPartyAction>(ACTION_LIGHT_HEAL + 8.0f)
             }
         )
     );
@@ -292,7 +285,7 @@ void OffhealDruidCatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "party member to heal out of spell range",
             {
-                NextAction("reach party member to heal", ACTION_EMERGENCY + 3)
+                CreateNextAction<ReachPartyMemberToHealAction>(ACTION_EMERGENCY + 3.0f)
             }
         )
     );
@@ -300,7 +293,7 @@ void OffhealDruidCatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "low mana",
             {
-                NextAction("innervate", ACTION_HIGH + 4)
+                CreateNextAction<CastInnervateAction>(ACTION_HIGH + 4.0f)
             }
         )
     );

@@ -1,3 +1,4 @@
+#include "NexusTriggers.h"
 #include "Playerbots.h"
 #include "NexusActions.h"
 

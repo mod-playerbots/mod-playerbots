@@ -1,11 +1,10 @@
 #ifndef _PLAYERBOT_RAIDULDUARTRIGGERS_H
 #define _PLAYERBOT_RAIDULDUARTRIGGERS_H
 
-#include "EventMap.h"
-#include "GenericTriggers.h"
-#include "PlayerbotAIConfig.h"
-#include "RaidUlduarBossHelper.h"
+// #include "GenericTriggers.h"
 #include "Trigger.h"
+
+#include "Position.h"
 
 enum UlduarIDs
 {
@@ -78,7 +77,7 @@ enum UlduarIDs
     SPELL_P3WX2_LASER_BARRAGE_AURA_1 = 63274,
     SPELL_P3WX2_LASER_BARRAGE_AURA_2 = 63300,
 
-    // General Vezax
+    // // General Vezax
     SPELL_MARK_OF_THE_FACELESS = 63276,
     SPELL_SHADOW_CRASH = 63277,
 

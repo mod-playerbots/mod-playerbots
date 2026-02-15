@@ -1,4 +1,6 @@
 #include "GundrakStrategy.h"
+#include "CreateNextAction.h"
+#include "GundrakActions.h"
 #include "GundrakMultipliers.h"
 
 void WotlkDungeonGDStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
@@ -10,14 +12,32 @@ void WotlkDungeonGDStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
     // Slad'ran
     // TODO: Might need to add target priority for heroic on the snakes or to burn down boss.
     // Will re-test in heroic, decent dps groups should be able to blast him down with no funky strats.
-    triggers.push_back(new TriggerNode("poison nova",
-        { NextAction("avoid poison nova", ACTION_RAID + 5) }));
-    triggers.push_back(new TriggerNode("snake wrap",
-        { NextAction("attack snake wrap", ACTION_RAID + 4) }));
+    triggers.push_back(
+        new TriggerNode(
+            "poison nova",
+            {
+                CreateNextAction<AvoidPoisonNovaAction>(ACTION_RAID + 5.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "snake wrap",
+            {
+                CreateNextAction<AttackSnakeWrapAction>(ACTION_RAID + 4.0f)
+            }
+        )
+    );
 
     // Gal'darah
-    triggers.push_back(new TriggerNode("whirling slash",
-        { NextAction("avoid whirling slash", ACTION_RAID + 5) }));
+    triggers.push_back(
+        new TriggerNode(
+            "whirling slash",
+            {
+                CreateNextAction<AvoidWhirlingSlashAction>(ACTION_RAID + 5.0f)
+            }
+        )
+    );
 
     // Eck the Ferocious (Heroic only)
 }

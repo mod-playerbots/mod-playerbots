@@ -7,7 +7,6 @@
 #define _PLAYERBOT_TANKWARRIORSTRATEGY_H
 
 #include "GenericWarriorStrategy.h"
-#include "WarriorTriggers.h"
 
 class PlayerbotAI;
 

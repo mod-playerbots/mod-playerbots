@@ -1,12 +1,12 @@
 #include "OldKingdomMultipliers.h"
-#include "OldKingdomActions.h"
-#include "GenericSpellActions.h"
 #include "ChooseTargetActions.h"
+#include "Playerbots.h"
+#include "GenericSpellActions.h"
 #include "MovementActions.h"
 #include "OldKingdomTriggers.h"
 #include "Action.h"
 
-float ElderNadoxMultiplier::GetValue(Action* action)
+float ElderNadoxMultiplier::GetValue(Action& action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "elder nadox");
     if (!boss) { return 1.0f; }
@@ -14,7 +14,7 @@ float ElderNadoxMultiplier::GetValue(Action* action)
     Unit* guardian = AI_VALUE2(Unit*, "find target", "ahn'kahar guardian");
     if (guardian)
     {
-        if (dynamic_cast<DpsAssistAction*>(action))
+        if (dynamic_cast<DpsAssistAction*>(&action))
         {
             return 0.0f;
         }
@@ -22,7 +22,7 @@ float ElderNadoxMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float JedogaShadowseekerMultiplier::GetValue(Action* action)
+float JedogaShadowseekerMultiplier::GetValue(Action& action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "jedoga shadowseeker");
     if (!boss) { return 1.0f; }
@@ -44,7 +44,7 @@ float JedogaShadowseekerMultiplier::GetValue(Action* action)
 
     if (volunteer)
     {
-        if (dynamic_cast<DpsAssistAction*>(action))
+        if (dynamic_cast<DpsAssistAction*>(&action))
         {
             return 0.0f;
         }
@@ -52,14 +52,14 @@ float JedogaShadowseekerMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float ForgottenOneMultiplier::GetValue(Action* action)
+float ForgottenOneMultiplier::GetValue(Action& action)
 {
     Unit* unit = AI_VALUE2(Unit*, "find target", "forgotten one");
     if (!unit) { return 1.0f; }
 
     if (bot->isMoving())
     {
-        if (dynamic_cast<MovementAction*>(action))
+        if (dynamic_cast<MovementAction*>(&action))
         {
             return 0.0f;
         }

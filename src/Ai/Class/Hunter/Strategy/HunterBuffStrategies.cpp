@@ -4,21 +4,25 @@
  */
 
 #include "HunterBuffStrategies.h"
-
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "HunterActions.h"
 
 class BuffHunterStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
 public:
-    BuffHunterStrategyActionNodeFactory() { creators["aspect of the hawk"] = &aspect_of_the_hawk; }
+    BuffHunterStrategyActionNodeFactory()
+    {
+        creators["aspect of the hawk"] = &aspect_of_the_hawk;
+    }
 
 private:
     static ActionNode* aspect_of_the_hawk([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("aspect of the hawk",
-                              /*P*/ {},
-                              /*A*/ { NextAction("aspect of the monkey") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastAspectOfTheMonkeyAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 };
 
@@ -30,24 +34,48 @@ HunterBuffDpsStrategy::HunterBuffDpsStrategy(PlayerbotAI* botAI) : NonCombatStra
 void HunterBuffDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("aspect of the hawk", { NextAction("aspect of the dragonhawk", 20.1f),
-                                                                NextAction("aspect of the hawk", 20.0f) }));
+        new TriggerNode(
+            "aspect of the hawk",
+            {
+                CreateNextAction<CastAspectOfTheDragonhawkAction>(20.1f),
+                CreateNextAction<CastAspectOfTheHawkAction>(20.0f)
+            }
+        )
+    );
 }
 
 void HunterNatureResistanceStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("aspect of the wild",
-                                       { NextAction("aspect of the wild", 20.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "aspect of the wild",
+            {
+                CreateNextAction<CastAspectOfTheWildAction>(20.0f)
+            }
+        )
+    );
 }
 
 void HunterBuffSpeedStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("aspect of the pack",
-                                       { NextAction("aspect of the pack", 20.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "aspect of the pack",
+            {
+                CreateNextAction<CastAspectOfThePackAction>(20.0f)
+            }
+        )
+    );
 }
 
 void HunterBuffManaStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("aspect of the viper",
-                                       { NextAction("aspect of the viper", 20.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "aspect of the viper",
+            {
+                CreateNextAction<CastAspectOfTheViperAction>(20.0f)
+            }
+        )
+    );
 }

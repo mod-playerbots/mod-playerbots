@@ -9,7 +9,7 @@ class ElderNadoxMultiplier : public Multiplier
         ElderNadoxMultiplier(PlayerbotAI* ai) : Multiplier(ai, "elder nadox") {}
 
     public:
-        virtual float GetValue(Action* action);
+        virtual float GetValue(Action& action);
 };
 
 class JedogaShadowseekerMultiplier : public Multiplier
@@ -18,7 +18,7 @@ class JedogaShadowseekerMultiplier : public Multiplier
         JedogaShadowseekerMultiplier(PlayerbotAI* ai) : Multiplier(ai, "jedoga shadowseeker") {}
 
     public:
-        virtual float GetValue(Action* action);
+        virtual float GetValue(Action& action);
 };
 
 class ForgottenOneMultiplier : public Multiplier
@@ -27,7 +27,7 @@ class ForgottenOneMultiplier : public Multiplier
         ForgottenOneMultiplier(PlayerbotAI* ai) : Multiplier(ai, "forgotten one") {}
 
     public:
-        virtual float GetValue(Action* action);
+        virtual float GetValue(Action& action);
 };
 
 #endif

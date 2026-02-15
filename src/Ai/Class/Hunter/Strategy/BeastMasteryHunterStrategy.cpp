@@ -4,7 +4,8 @@
  */
 
 #include "BeastMasteryHunterStrategy.h"
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "HunterActions.h"
 
 // ===== Action Node Factory =====
 class BeastMasteryHunterStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
@@ -25,16 +26,96 @@ public:
     }
 
 private:
-    static ActionNode* auto_shot(PlayerbotAI*) { return new ActionNode("auto shot", {}, {}, {}); }
-    static ActionNode* kill_command(PlayerbotAI*) { return new ActionNode("kill command", {}, {}, {}); }
-    static ActionNode* kill_shot(PlayerbotAI*) { return new ActionNode("kill shot", {}, {}, {}); }
-    static ActionNode* viper_sting(PlayerbotAI*) { return new ActionNode("viper sting", {}, {}, {}); }
-    static ActionNode* serpent_sting(PlayerbotAI*) { return new ActionNode("serpent sting", {}, {}, {}); }
-    static ActionNode* aimed_shot(PlayerbotAI*) { return new ActionNode("aimed shot", {}, {}, {}); }
-    static ActionNode* arcane_shot(PlayerbotAI*) { return new ActionNode("arcane shot", {}, {}, {}); }
-    static ActionNode* steady_shot(PlayerbotAI*) { return new ActionNode("steady shot", {}, {}, {}); }
-    static ActionNode* multi_shot(PlayerbotAI*) { return new ActionNode("multi shot", {}, {}, {}); }
-    static ActionNode* volley(PlayerbotAI*) { return new ActionNode("volley", {}, {}, {}); }
+    static ActionNode* auto_shot(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* kill_command(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* kill_shot(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* viper_sting(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* serpent_sting(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* aimed_shot(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* arcane_shot(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* steady_shot(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* multi_shot(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* volley(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
 };
 
 // ===== Single Target Strategy =====
@@ -47,14 +128,14 @@ BeastMasteryHunterStrategy::BeastMasteryHunterStrategy(PlayerbotAI* botAI) : Gen
 std::vector<NextAction> BeastMasteryHunterStrategy::getDefaultActions()
 {
     return {
-        NextAction("bestial wrath", 19.0f),
-        NextAction("kill command", 5.7f),
-        NextAction("kill shot", 5.6f),
-        NextAction("serpent sting", 5.5f),
-        NextAction("aimed shot", 5.4f),
-        NextAction("arcane shot", 5.3f),
-        NextAction("steady shot", 5.2f),
-        NextAction("auto shot", 5.1f)
+        CreateNextAction<CastBestialWrathAction>(19.0f),
+        CreateNextAction<CastKillCommandAction>(5.7f),
+        CreateNextAction<CastKillShotAction>(5.6f),
+        CreateNextAction<CastSerpentStingAction>(5.5f),
+        CreateNextAction<CastAimedShotAction>(5.4f),
+        CreateNextAction<CastArcaneShotAction>(5.3f),
+        CreateNextAction<CastSteadyShotAction>(5.2f),
+        CreateNextAction<CastAutoShotAction>(5.1f)
     };
 }
 
@@ -66,7 +147,7 @@ void BeastMasteryHunterStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "intimidation",
             {
-                NextAction("intimidation", 40.0f)
+                CreateNextAction<CastIntimidationAction>(40.0f)
             }
         )
     );
@@ -74,7 +155,7 @@ void BeastMasteryHunterStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "kill command",
             {
-                NextAction("kill command", 18.5f)
+                CreateNextAction<CastKillCommandAction>(18.5f)
             }
         )
     );
@@ -82,7 +163,7 @@ void BeastMasteryHunterStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "target critical health",
             {
-                NextAction("kill shot", 18.0f)
+                CreateNextAction<CastKillShotAction>(18.0f)
             }
         )
     );
@@ -90,7 +171,7 @@ void BeastMasteryHunterStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "low mana",
             {
-                NextAction("viper sting", 17.5f)
+                CreateNextAction<CastViperStingAction>(17.5f)
             }
         )
     );
@@ -98,7 +179,7 @@ void BeastMasteryHunterStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "no stings",
             {
-                NextAction("serpent sting", 17.0f)
+                CreateNextAction<CastSerpentStingAction>(17.0f)
             }
         )
     );
@@ -106,7 +187,7 @@ void BeastMasteryHunterStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode(
             "serpent sting on attacker",
             {
-                NextAction("serpent sting on attacker", 16.5f)
+                CreateNextAction<CastSerpentStingOnAttackerAction>(16.5f)
             }
         )
     );

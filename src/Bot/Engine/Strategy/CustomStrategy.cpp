@@ -17,17 +17,26 @@ NextAction toNextAction(std::string const action)
     std::vector<std::string> tokens = split(action, '!');
 
     if (tokens[0].empty())
+    {
         throw std::invalid_argument("Invalid action");
+    }
 
-    if (tokens.size() == 2)
-        return NextAction(tokens[0], atof(tokens[1].c_str()));
+    const float weight = (tokens.size() == 2) ? atof(tokens[1].c_str()) : ACTION_NORMAL;
+    const std::string name = tokens[0];
 
-    if (tokens.size() == 1)
-        return NextAction(tokens[0], ACTION_NORMAL);
+    const NextAction::Factory factory = ActionFactoryRegistry::GetFactoryByName(name);
 
-    LOG_ERROR("playerbots", "Invalid action {}", action.c_str());
+    if (factory == nullptr)
+    {
+        LOG_ERROR("playerbots", "Invalid action {}", action.c_str());
 
-    throw std::invalid_argument("Invalid action");
+        throw std::invalid_argument("Invalid action");
+    }
+
+    return NextAction{
+        .weight = weight,
+        .factory = factory,
+    };
 }
 
 std::vector<NextAction> toNextActionArray(const std::string actions)

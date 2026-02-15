@@ -2,9 +2,7 @@
 #define _PLAYERBOT_WOTLKDUNGEONOKTRIGGERS_H
 
 #include "Trigger.h"
-#include "PlayerbotAIConfig.h"
 #include "GenericTriggers.h"
-#include "DungeonStrategyUtils.h"
 
 enum OldKingdomIDs
 {
@@ -18,8 +16,6 @@ enum OldKingdomIDs
     SPELL_SHADOW_CRASH_N               = 60833,
     SPELL_SHADOW_CRASH_H               = 60848,
 };
-
-#define SPELL_SHADOW_CRASH             DUNGEON_MODE(bot, SPELL_SHADOW_CRASH_N, SPELL_SHADOW_CRASH_H)
 
 class NadoxGuardianTrigger : public Trigger
 {

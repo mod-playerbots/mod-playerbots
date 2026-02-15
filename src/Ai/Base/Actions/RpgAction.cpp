@@ -45,7 +45,7 @@ bool RpgAction::isUseful() { return AI_VALUE(GuidPosition, "rpg target"); }
 bool RpgAction::SetNextRpgAction()
 {
     Strategy* rpgStrategy;
-    std::vector<Action*> actions;
+    std::vector<std::unique_ptr<Action>> actions;
     std::vector<uint32> relevances;
     std::vector<TriggerNode*> triggerNodes;
 
@@ -75,7 +75,7 @@ bool RpgAction::SetNextRpgAction()
 
                 for (NextAction nextAction : nextActions)
                 {
-                    if (nextAction.getRelevance() > 5.0f)
+                    if (nextAction.weight > 5.0f)
                         continue;
 
                     if (!isChecked && !trigger->IsActive())
@@ -83,12 +83,13 @@ bool RpgAction::SetNextRpgAction()
 
                     isChecked = true;
 
-                    Action* action = botAI->GetAiObjectContext()->GetAction(nextAction.getName());
-                    if (!dynamic_cast<RpgEnabled*>(action) || !action->isPossible() || !action->isUseful())
+                    std::unique_ptr<Action> action = nextAction.factory(this->botAI);
+
+                    if (!dynamic_cast<RpgEnabled*>(action.get()) || !action->isPossible() || !action->isUseful())
                         continue;
 
-                    actions.push_back(action);
-                    relevances.push_back((nextAction.getRelevance() - 1) * 500);
+                    actions.push_back(std::move(action));
+                    relevances.push_back((nextAction.weight - 1) * 500);
                 }
             }
         }
@@ -108,7 +109,9 @@ bool RpgAction::SetNextRpgAction()
         std::vector<std::pair<Action*, uint32>> sortedActions;
 
         for (uint64_t i = 0; i < actions.size(); i++)
-            sortedActions.push_back(std::make_pair(actions[i], relevances[i]));
+        {
+            sortedActions.push_back(std::make_pair(actions[i].get(), relevances[i]));
+        }
 
         std::sort(sortedActions.begin(), sortedActions.end(), [](std::pair<Action*, uint32>i, std::pair<Action*, uint32> j) {return i.second > j.second; });
 
@@ -117,7 +120,7 @@ bool RpgAction::SetNextRpgAction()
         bot->Say(ss.str(), LANG_UNIVERSAL);
         botAI->TellMasterNoFacing(ss.str());
 
-        for (auto action : sortedActions)
+        for (const std::pair<Action*, uint32>& action : sortedActions)
         {
             std::ostringstream out;
 
@@ -131,7 +134,7 @@ bool RpgAction::SetNextRpgAction()
 
     TravelMgr::instance().weighted_shuffle(actions.begin(), actions.end(), relevances.begin(), relevances.end(), gen);
 
-    Action* action = actions.front();
+    std::unique_ptr<Action>& action = actions.front();
 
     if ((botAI->HasStrategy("debug", BotState::BOT_STATE_NON_COMBAT) || botAI->HasStrategy("debug rpg", BotState::BOT_STATE_NON_COMBAT)))
     {

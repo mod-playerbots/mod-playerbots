@@ -9,7 +9,7 @@ class BjarngrimMultiplier : public Multiplier
         BjarngrimMultiplier(PlayerbotAI* ai) : Multiplier(ai, "general bjarngrim") {}
 
     public:
-        virtual float GetValue(Action* action);
+        virtual float GetValue(Action& action);
 };
 
 class VolkhanMultiplier : public Multiplier
@@ -18,7 +18,7 @@ class VolkhanMultiplier : public Multiplier
         VolkhanMultiplier(PlayerbotAI* ai) : Multiplier(ai, "volkhan") {}
 
     public:
-        virtual float GetValue(Action* action);
+        virtual float GetValue(Action& action);
 };
 
 class IonarMultiplier : public Multiplier
@@ -27,7 +27,7 @@ class IonarMultiplier : public Multiplier
         IonarMultiplier(PlayerbotAI* ai) : Multiplier(ai, "ionar") {}
 
     public:
-        virtual float GetValue(Action* action);
+        virtual float GetValue(Action& action);
 };
 
 class LokenMultiplier : public Multiplier
@@ -36,7 +36,7 @@ class LokenMultiplier : public Multiplier
         LokenMultiplier(PlayerbotAI* ai) : Multiplier(ai, "loken") {}
 
     public:
-        virtual float GetValue(Action* action);
+        virtual float GetValue(Action& action);
 };
 
 #endif

@@ -6,11 +6,19 @@
 #include "RangedCombatStrategy.h"
 
 #include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "MovementActions.h"
 
 void RangedCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     CombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("enemy too close for spell",
-                                        { NextAction("flee", ACTION_MOVE + 4) }));
+    triggers.push_back(
+        new TriggerNode(
+            "enemy too close for spell",
+            {
+                CreateNextAction<FleeAction>(ACTION_MOVE + 4.0f)
+            }
+        )
+    );
 }

@@ -6,6 +6,8 @@
 #ifndef _PLAYERBOT_QUESTSTRATEGIES_H
 #define _PLAYERBOT_QUESTSTRATEGIES_H
 
+#include "AcceptQuestAction.h"
+#include "CreateAction.h"
 #include "PassTroughStrategy.h"
 
 class PlayerbotAI;
@@ -13,7 +15,15 @@ class PlayerbotAI;
 class QuestStrategy : public PassTroughStrategy
 {
 public:
-    QuestStrategy(PlayerbotAI* botAI);
+    QuestStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI)
+    {
+        this->supported.push_back(
+            {
+                .name = "accept quest",
+                .factory = &CreateAction<AcceptQuestAction>
+            }
+        );
+    };
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
 };

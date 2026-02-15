@@ -4,8 +4,6 @@
  */
 
 #include "Queue.h"
-#include "AiObjectContext.h"
-#include "Log.h"
 #include "PlayerbotAIConfig.h"
 
 void Queue::Push(ActionBasket* action)
@@ -17,7 +15,7 @@ void Queue::Push(ActionBasket* action)
 
     for (ActionBasket* basket : actions)
     {
-        if (action->getAction()->getName() == basket->getAction()->getName())
+        if (action->getAction()->getAction().getName() == basket->getAction()->getAction().getName())
         {
             updateExistingBasket(basket, action);
             return;

@@ -5,15 +5,17 @@
 #include "MovementActions.h"
 #include "GundrakTriggers.h"
 #include "Action.h"
+// Required due to excessive use of macros
+#include "DungeonStrategyUtils.h"
 
-float SladranMultiplier::GetValue(Action* action)
+float SladranMultiplier::GetValue(Action& action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "slad'ran");
     if (!boss) { return 1.0f; }
 
     if (boss->FindCurrentSpellBySpellId(SPELL_POISON_NOVA))
     {
-        if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<AvoidPoisonNovaAction*>(action))
+        if (dynamic_cast<MovementAction*>(&action) && !dynamic_cast<AvoidPoisonNovaAction*>(&action))
         {
             return 0.0f;
         }
@@ -21,7 +23,7 @@ float SladranMultiplier::GetValue(Action* action)
 
     if (!botAI->IsDps(bot)) { return 1.0f; }
 
-    if (action->getThreatType() == Action::ActionThreatType::Aoe)
+    if (action.getThreatType() == Action::ActionThreatType::Aoe)
     {
         return 0.0f;
     }
@@ -38,7 +40,7 @@ float SladranMultiplier::GetValue(Action* action)
         }
     }
     // Prevent auto-target acquisition during snake wraps
-    if (snakeWrap && dynamic_cast<DpsAssistAction*>(action))
+    if (snakeWrap && dynamic_cast<DpsAssistAction*>(&action))
     {
         return 0.0f;
     }
@@ -46,14 +48,14 @@ float SladranMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float GaldarahMultiplier::GetValue(Action* action)
+float GaldarahMultiplier::GetValue(Action& action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "gal'darah");
     if (!boss) { return 1.0f; }
 
     if (boss->HasAura(SPELL_WHIRLING_SLASH))
         {
-            if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<AvoidWhirlingSlashAction*>(action))
+            if (dynamic_cast<MovementAction*>(&action) && !dynamic_cast<AvoidWhirlingSlashAction*>(&action))
             {
                 return 0.0f;
             }

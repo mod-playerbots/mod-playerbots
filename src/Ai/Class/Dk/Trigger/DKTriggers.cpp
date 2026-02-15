@@ -9,7 +9,6 @@
 
 #include "GenericTriggers.h"
 #include "Playerbots.h"
-#include "SharedDefines.h"
 
 bool DKPresenceTrigger::IsActive()
 {

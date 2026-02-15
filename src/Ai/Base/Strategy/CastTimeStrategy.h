@@ -15,7 +15,7 @@ class CastTimeMultiplier : public Multiplier
 public:
     CastTimeMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "cast time") {}
 
-    float GetValue(Action* action) override;
+    float GetValue(Action& action) override;
 };
 
 class CastTimeStrategy : public Strategy

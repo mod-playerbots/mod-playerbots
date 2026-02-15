@@ -5,10 +5,13 @@
 
 #include "GuardStrategy.h"
 
+#include "CreateNextAction.h"
+#include "PositionAction.h"
+
 std::vector<NextAction> GuardStrategy::getDefaultActions()
 {
     return {
-        NextAction("guard", 4.0f)
+        CreateNextAction<GuardAction>(4.0f)
     };
 }
 

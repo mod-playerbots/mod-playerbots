@@ -15,10 +15,12 @@ class PlayerbotAI;
 class BossFireResistanceAction : public Action
 {
 public:
-    BossFireResistanceAction(PlayerbotAI* botAI, std::string const bossName)
+    BossFireResistanceAction(PlayerbotAI* botAI, std::string const bossName = "none")
         : Action(botAI, bossName + " fire resistance action"), bossName(bossName)
     {
     }
+    ~BossFireResistanceAction() override = default;
+
     bool Execute(Event event) override;
     bool isUseful() override;
 
@@ -29,10 +31,12 @@ private:
 class BossFrostResistanceAction : public Action
 {
 public:
-    BossFrostResistanceAction(PlayerbotAI* botAI, std::string const bossName)
+    BossFrostResistanceAction(PlayerbotAI* botAI, std::string const bossName = "none")
         : Action(botAI, bossName + " frost resistance action"), bossName(bossName)
     {
     }
+    ~BossFrostResistanceAction() override = default;
+
     bool Execute(Event event) override;
     bool isUseful() override;
 
@@ -43,10 +47,12 @@ private:
 class BossNatureResistanceAction : public Action
 {
 public:
-    BossNatureResistanceAction(PlayerbotAI* botAI, std::string const bossName)
+    BossNatureResistanceAction(PlayerbotAI* botAI, std::string const bossName = "none")
         : Action(botAI, bossName + " nature resistance action"), bossName(bossName)
     {
     }
+    ~BossNatureResistanceAction() override = default;
+
     bool Execute(Event event) override;
     bool isUseful() override;
 
@@ -57,10 +63,12 @@ private:
 class BossShadowResistanceAction : public Action
 {
 public:
-    BossShadowResistanceAction(PlayerbotAI* botAI, std::string const bossName)
+    BossShadowResistanceAction(PlayerbotAI* botAI, std::string const bossName = "none")
         : Action(botAI, bossName + " shadow resistance action"), bossName(bossName)
     {
     }
+    ~BossShadowResistanceAction() override = default;
+
     bool Execute(Event event) override;
     bool isUseful() override;
 

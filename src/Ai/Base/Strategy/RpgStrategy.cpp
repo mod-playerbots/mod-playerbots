@@ -5,29 +5,18 @@
 
 #include "RpgStrategy.h"
 
-#include "Playerbots.h"
+#include "ChooseRpgTargetAction.h"
+#include "CreateNextAction.h"
+#include "MoveToRpgTargetAction.h"
 #include "RpgSubActions.h"
-
-float RpgActionMultiplier::GetValue(Action* action)
-{
-    if (action == nullptr)
-        return 1.0f;
-
-    std::string const nextAction = AI_VALUE(std::string, "next rpg action");
-    std::string const name = action->getName();
-
-    if (!nextAction.empty() && dynamic_cast<RpgEnabled*>(action) && name != nextAction)
-        return 0.0f;
-
-    return 1.0f;
-}
+#include "RpgAction.h"
 
 RpgStrategy::RpgStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 
 std::vector<NextAction> RpgStrategy::getDefaultActions()
 {
     return {
-        NextAction("rpg", 1.0f)
+        CreateNextAction<RpgAction>(1.0f)
     };
 }
 
@@ -37,7 +26,7 @@ void RpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "no rpg target",
             {
-                NextAction("choose rpg target", 5.0f)
+                CreateNextAction<ChooseRpgTargetAction>(5.0f)
             }
         )
     );
@@ -45,7 +34,7 @@ void RpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "often",
             {
-                NextAction("move random", 1.10f)
+                CreateNextAction<MoveRandomAction>(1.10f)
             }
         )
     );
@@ -53,7 +42,7 @@ void RpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "far from rpg target",
             {
-                NextAction("move to rpg target", 5.0f)
+                CreateNextAction<MoveToRpgTargetAction>(5.0f)
             }
         )
     );
@@ -63,7 +52,7 @@ void RpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "rpg",
             {
-                NextAction("rpg stay", 1.101f)
+                CreateNextAction<RpgStayAction>(1.101f)
             }
         )
     );
@@ -71,7 +60,7 @@ void RpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "rpg",
             {
-                NextAction("rpg work", 1.101f)
+                CreateNextAction<RpgWorkAction>(1.101f)
             }
         )
     );
@@ -79,7 +68,7 @@ void RpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "rpg",
             {
-                NextAction("rpg emote", 1.101f)
+                CreateNextAction<RpgEmoteAction>(1.101f)
             }
         )
     );
@@ -87,7 +76,7 @@ void RpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "has rpg target",
             {
-                NextAction("rpg cancel", 1.101f)
+                CreateNextAction<RpgCancelAction>(1.101f)
             }
         )
     );
@@ -95,7 +84,7 @@ void RpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "rpg discover",
             {
-                NextAction("rpg discover", 1.210f)
+                CreateNextAction<RpgDiscoverAction>(1.210f)
             }
         )
     );
@@ -103,7 +92,7 @@ void RpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "rpg start quest",
             {
-                NextAction("rpg start quest", 1.180f)
+                CreateNextAction<RpgStartQuestAction>(1.180f)
             }
         )
     );
@@ -111,7 +100,7 @@ void RpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "rpg end quest",
             {
-                NextAction("rpg end quest", 1.190f)
+                CreateNextAction<RpgEndQuestAction>(1.190f)
             }
         )
     );
@@ -119,7 +108,7 @@ void RpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "rpg buy",
             {
-                NextAction("rpg buy", 1.130f)
+                CreateNextAction<RpgBuyAction>(1.130f)
             }
         )
     );
@@ -127,7 +116,7 @@ void RpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "rpg repair",
             {
-                NextAction("rpg repair", 1.195f)
+                CreateNextAction<RpgRepairAction>(1.195f)
             }
         )
     );
@@ -135,7 +124,7 @@ void RpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "rpg heal",
             {
-                NextAction("rpg heal", 1.125f)
+                CreateNextAction<RpgHealAction>(1.125f)
             }
         )
     );
@@ -143,7 +132,7 @@ void RpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "rpg home bind",
             {
-                NextAction("rpg home bind", 1.160f)
+                CreateNextAction<RpgHomeBindAction>(1.160f)
             }
         )
     );
@@ -151,7 +140,7 @@ void RpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "rpg buy petition",
             {
-                NextAction("rpg buy petition", 1.140f)
+                CreateNextAction<RpgBuyPetitionAction>(1.140f)
             }
         )
     );
@@ -159,7 +148,7 @@ void RpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "rpg use",
             {
-                NextAction("rpg use", 1.102f)
+                CreateNextAction<RpgUseAction>(1.102f)
             }
         )
     );

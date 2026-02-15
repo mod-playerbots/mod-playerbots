@@ -2,9 +2,90 @@
 #define _PLAYERBOT_RAIDMCACTIONS_H
 
 #include "AttackAction.h"
+#include "BossAuraActions.h"
 #include "MovementActions.h"
 #include "PlayerbotAI.h"
-#include "Playerbots.h"
+
+class LucifronShadowResistanceAction : public BossShadowResistanceAction
+{
+public:
+    LucifronShadowResistanceAction(PlayerbotAI* botAI)
+        : BossShadowResistanceAction(botAI, "lucifron")
+    {
+    }
+};
+
+class MagmadarFireResistanceAction : public BossFireResistanceAction
+{
+public:
+    MagmadarFireResistanceAction(PlayerbotAI* botAI)
+        : BossFireResistanceAction(botAI, "magmadar")
+    {
+    }
+};
+
+class GehennasShadowResistanceAction : public BossShadowResistanceAction
+{
+public:
+    GehennasShadowResistanceAction(PlayerbotAI* botAI)
+        : BossShadowResistanceAction(botAI, "gehennas")
+    {
+    }
+};
+
+class GarrFireResistanceAction : public BossFireResistanceAction
+{
+public:
+    GarrFireResistanceAction(PlayerbotAI* botAI)
+        : BossFireResistanceAction(botAI, "garr")
+    {
+    }
+};
+
+class BaronGeddonFireResistanceAction : public BossFireResistanceAction
+{
+public:
+    BaronGeddonFireResistanceAction(PlayerbotAI* botAI)
+        : BossFireResistanceAction(botAI, "baron geddon")
+    {
+    }
+};
+
+class SulfuronHarbingerFireResistanceAction : public BossFireResistanceAction
+{
+public:
+    SulfuronHarbingerFireResistanceAction(PlayerbotAI* botAI)
+        : BossFireResistanceAction(botAI, "sulfuron harbinger")
+    {
+    }
+};
+
+class GolemaggTheIncineratorFireResistanceAction : public BossFireResistanceAction
+{
+public:
+    GolemaggTheIncineratorFireResistanceAction(PlayerbotAI* botAI)
+        : BossFireResistanceAction(botAI, "golemagg the incinerator")
+    {
+    }
+};
+
+class MajordomoExecutusShadowResistanceAction : public BossShadowResistanceAction
+{
+public:
+    MajordomoExecutusShadowResistanceAction(PlayerbotAI* botAI)
+        : BossShadowResistanceAction(botAI, "majordomo executus")
+    {
+    }
+};
+
+class RagnarosFireResistanceAction : public BossFireResistanceAction
+{
+public:
+    RagnarosFireResistanceAction(PlayerbotAI* botAI)
+        : BossFireResistanceAction(botAI, "ragnaros")
+    {
+    }
+};
 
 class McMoveFromGroupAction : public MovementAction
 {

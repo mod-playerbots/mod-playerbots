@@ -6,6 +6,9 @@
 #pragma once
 
 #include "Action.h"
+#include "Event.h"
+#include "NextAction.h"
+#include "Value.h"
 
 class PlayerbotAI;
 class Unit;
@@ -71,7 +74,7 @@ public:
     float getFirstRelevance()
     {
         if (this->handlers.size() > 0)
-            return this->handlers[0].getRelevance();
+            return this->handlers[0].weight;
 
         return -1;
     }

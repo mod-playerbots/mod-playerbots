@@ -4,9 +4,10 @@
  */
 
 #include "OffhealRetPaladinStrategy.h"
-
-#include "Playerbots.h"
-#include "Strategy.h"
+#include "CreateNextAction.h"
+#include "GenericActions.h"
+#include "PaladinActions.h"
+#include "ReachTargetActions.h"
 
 class OffhealRetPaladinStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -26,9 +27,8 @@ private:
     static ActionNode* retribution_aura([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "retribution aura",
             /*P*/ {},
-            /*A*/ { NextAction("devotion aura") },
+            /*A*/ { CreateNextAction<CastDevotionAuraAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -36,9 +36,8 @@ private:
     static ActionNode* seal_of_corruption([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "seal of corruption",
             /*P*/ {},
-            /*A*/ { NextAction("seal of vengeance") },
+            /*A*/ { CreateNextAction<CastSealOfVengeanceAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -46,9 +45,8 @@ private:
     static ActionNode* seal_of_vengeance([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "seal of vengeance",
             /*P*/ {},
-            /*A*/ { NextAction("seal of command") },
+            /*A*/ { CreateNextAction<CastSealOfCommandAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -56,9 +54,8 @@ private:
     static ActionNode* seal_of_command([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "seal of command",
             /*P*/ {},
-            /*A*/ { NextAction("seal of righteousness") },
+            /*A*/ { CreateNextAction<CastSealOfRighteousnessAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -66,9 +63,8 @@ private:
     static ActionNode* blessing_of_might([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "blessing of might",
             /*P*/ {},
-            /*A*/ { NextAction("blessing of kings") },
+            /*A*/ { CreateNextAction<CastBlessingOfKingsAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -76,7 +72,6 @@ private:
     static ActionNode* crusader_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "crusader strike",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -86,7 +81,6 @@ private:
     static ActionNode* divine_plea([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "divine plea",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -102,11 +96,11 @@ OffhealRetPaladinStrategy::OffhealRetPaladinStrategy(PlayerbotAI* botAI) : Gener
 std::vector<NextAction> OffhealRetPaladinStrategy::getDefaultActions()
 {
     return {
-        NextAction("hammer of wrath", ACTION_DEFAULT + 0.6f),
-        NextAction("judgement of wisdom", ACTION_DEFAULT + 0.5f),
-        NextAction("crusader strike", ACTION_DEFAULT + 0.4f),
-        NextAction("divine storm", ACTION_DEFAULT + 0.3f),
-        NextAction("melee", ACTION_DEFAULT)
+        CreateNextAction<CastHammerOfWrathAction>(ACTION_DEFAULT + 0.6f),
+        CreateNextAction<CastJudgementOfWisdomAction>(ACTION_DEFAULT + 0.5f),
+        CreateNextAction<CastCrusaderStrikeAction>(ACTION_DEFAULT + 0.4f),
+        CreateNextAction<CastDivineStormAction>(ACTION_DEFAULT + 0.3f),
+        CreateNextAction<MeleeAction>(ACTION_DEFAULT)
     };
 }
 
@@ -119,7 +113,7 @@ void OffhealRetPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "seal",
             {
-                NextAction("seal of corruption", ACTION_HIGH)
+                CreateNextAction<CastSealOfCorruptionAction>(ACTION_HIGH)
             }
         )
     );
@@ -127,8 +121,8 @@ void OffhealRetPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "low mana",
             {
-                NextAction("seal of wisdom", ACTION_HIGH + 5),
-                NextAction("divine plea", ACTION_HIGH + 4)
+                CreateNextAction<CastSealOfWisdomAction>(ACTION_HIGH + 5.0f),
+                CreateNextAction<CastDivinePleaAction>(ACTION_HIGH + 4.0f)
             }
         )
     );
@@ -136,7 +130,7 @@ void OffhealRetPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "art of war",
             {
-                NextAction("exorcism", ACTION_HIGH + 1)
+                CreateNextAction<CastExorcismAction>(ACTION_HIGH + 1.0f)
             }
         )
     );
@@ -144,7 +138,7 @@ void OffhealRetPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "avenging wrath",
             {
-                NextAction("avenging wrath", ACTION_HIGH + 2)
+                CreateNextAction<CastAvengingWrathAction>(ACTION_HIGH + 2.0f)
             }
         )
     );
@@ -152,8 +146,8 @@ void OffhealRetPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "medium aoe",
             {
-                NextAction("divine storm", ACTION_HIGH + 4),
-                NextAction("consecration", ACTION_HIGH + 3)
+                CreateNextAction<CastDivineStormAction>(ACTION_HIGH + 4.0f),
+                CreateNextAction<CastConsecrationAction>(ACTION_HIGH + 3.0f)
             }
         )
     );
@@ -161,7 +155,7 @@ void OffhealRetPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "enemy out of melee",
             {
-                NextAction("reach melee", ACTION_HIGH + 1)
+                CreateNextAction<ReachMeleeAction>(ACTION_HIGH + 1.0f)
             }
         )
     );
@@ -169,7 +163,7 @@ void OffhealRetPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "retribution aura",
             {
-                NextAction("retribution aura", ACTION_NORMAL)
+                CreateNextAction<CastRetributionAuraAction>(ACTION_NORMAL)
             }
         )
     );
@@ -177,7 +171,7 @@ void OffhealRetPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "blessing of might",
             {
-                NextAction("blessing of might", ACTION_NORMAL + 1)
+                CreateNextAction<CastBlessingOfMightAction>(ACTION_NORMAL + 1.0f)
             }
         )
     );
@@ -185,7 +179,7 @@ void OffhealRetPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
         "low health",
             {
-                NextAction("holy light", ACTION_CRITICAL_HEAL + 2)
+                CreateNextAction<CastHolyLightAction>(ACTION_CRITICAL_HEAL + 2.0f)
             }
         )
     );
@@ -195,8 +189,8 @@ void OffhealRetPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "party member critical health",
             {
-                NextAction("holy shock on party", ACTION_CRITICAL_HEAL + 6),
-                NextAction("holy light on party", ACTION_CRITICAL_HEAL + 4)
+                CreateNextAction<CastHolyShockOnPartyAction>(ACTION_CRITICAL_HEAL + 6.0f),
+                CreateNextAction<CastHolyLightOnPartyAction>(ACTION_CRITICAL_HEAL + 4.0f)
             }
         )
     );
@@ -204,7 +198,7 @@ void OffhealRetPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "party member low health",
             {
-                NextAction("holy light on party", ACTION_MEDIUM_HEAL + 5)
+                CreateNextAction<CastHolyLightOnPartyAction>(ACTION_MEDIUM_HEAL + 5.0f)
             }
         )
     );
@@ -212,7 +206,7 @@ void OffhealRetPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "party member medium health",
             {
-                NextAction("flash of light on party", ACTION_LIGHT_HEAL + 8)
+                CreateNextAction<CastFlashOfLightOnPartyAction>(ACTION_LIGHT_HEAL + 8.0f)
             }
         )
     );
@@ -220,7 +214,7 @@ void OffhealRetPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "party member almost full health",
             {
-                NextAction("flash of light on party", ACTION_LIGHT_HEAL + 3)
+                CreateNextAction<CastFlashOfLightOnPartyAction>(ACTION_LIGHT_HEAL + 3.0f)
             }
         )
     );
@@ -228,7 +222,7 @@ void OffhealRetPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "party member to heal out of spell range",
             {
-                NextAction("reach party member to heal", ACTION_EMERGENCY + 3)
+                CreateNextAction<ReachPartyMemberToHealAction>(ACTION_EMERGENCY + 3.0f)
             }
         )
     );
@@ -236,7 +230,7 @@ void OffhealRetPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "beacon of light on main tank",
             {
-                NextAction("beacon of light on main tank", ACTION_CRITICAL_HEAL + 7)
+                CreateNextAction<CastBeaconOfLightOnMainTankAction>(ACTION_CRITICAL_HEAL + 7.0f)
             }
         )
     );

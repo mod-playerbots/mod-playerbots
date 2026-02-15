@@ -4,6 +4,7 @@
  */
 
 #include "TankWarriorStrategy.h"
+#include "GenericActions.h"
 
 class TankWarriorStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -27,9 +28,8 @@ private:
     static ActionNode* heroic_throw_taunt(PlayerbotAI*)
     {
         return new ActionNode(
-            "heroic throw",
             /*P*/ {},
-            /*A*/ { NextAction("shield slam") },
+            /*A*/ { CreateNextAction<CastShieldSlamAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -37,9 +37,8 @@ private:
     static ActionNode* heroic_throw_on_snare_target(PlayerbotAI*)
     {
         return new ActionNode(
-            "heroic throw on snare target",
             /*P*/ {},
-            /*A*/ { NextAction("taunt on snare target") },
+            /*A*/ { CreateNextAction<CastTauntOnSnareTargetAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -47,9 +46,8 @@ private:
     static ActionNode* last_stand(PlayerbotAI*)
     {
         return new ActionNode(
-            "last stand",
             /*P*/ {},
-            /*A*/ { NextAction("intimidating shout") },
+            /*A*/ { CreateNextAction<CastIntimidatingShoutAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -57,9 +55,8 @@ private:
     static ActionNode* devastate(PlayerbotAI*)
     {
         return new ActionNode(
-            "devastate",
             /*P*/ {},
-            /*A*/ { NextAction("sunder armor") },
+            /*A*/ { CreateNextAction<CastSunderArmorAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -67,9 +64,8 @@ private:
     static ActionNode* commanding_shout(PlayerbotAI*)
     {
         return new ActionNode(
-            "commanding shout",
             /*P*/ {},
-            /*A*/ { NextAction("battle shout") },
+            /*A*/ { CreateNextAction<CastBattleShoutAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -77,9 +73,8 @@ private:
     static ActionNode* sunder_armor(PlayerbotAI*)
     {
         return new ActionNode(
-            "sunder armor",
             /*P*/ {},
-            /*A*/ { NextAction("melee") },
+            /*A*/ { CreateNextAction<MeleeAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -87,9 +82,8 @@ private:
     static ActionNode* charge(PlayerbotAI*)
     {
         return new ActionNode(
-            "charge",
             /*P*/ {},
-            /*A*/ { NextAction("reach melee") },
+            /*A*/ { CreateNextAction<ReachMeleeAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -97,9 +91,11 @@ private:
     static ActionNode* taunt(PlayerbotAI*)
     {
         return new ActionNode(
-            "taunt",
             /*P*/ {},
-            /*A*/ { NextAction("heroic throw taunt") },
+            /*A*/ {
+                CreateNextAction<CastHeroicThrowAction>(1.0f),
+                CreateNextAction<CastShieldSlamAction>(1.0f),
+            },
             /*C*/ {}
         );
     }
@@ -107,7 +103,6 @@ private:
     static ActionNode* vigilance(PlayerbotAI*)
     {
         return new ActionNode(
-            "vigilance",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -117,7 +112,6 @@ private:
     static ActionNode* enraged_regeneration(PlayerbotAI*)
     {
         return new ActionNode(
-            "enraged regeneration",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}
@@ -133,10 +127,10 @@ TankWarriorStrategy::TankWarriorStrategy(PlayerbotAI* botAI) : GenericWarriorStr
 std::vector<NextAction> TankWarriorStrategy::getDefaultActions()
 {
     return {
-        NextAction("devastate", ACTION_DEFAULT + 0.3f),
-        NextAction("revenge", ACTION_DEFAULT + 0.2f),
-        NextAction("demoralizing shout", ACTION_DEFAULT + 0.1f),
-        NextAction("melee", ACTION_DEFAULT)
+        CreateNextAction<CastDevastateAction>(ACTION_DEFAULT + 0.3f),
+        CreateNextAction<CastRevengeAction>(ACTION_DEFAULT + 0.2f),
+        CreateNextAction<CastDemoralizingShoutAction>(ACTION_DEFAULT + 0.1f),
+        CreateNextAction<MeleeAction>(ACTION_DEFAULT)
     };
 }
 
@@ -148,7 +142,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "vigilance",
             {
-                NextAction("vigilance", ACTION_HIGH + 7)
+                CreateNextAction<CastVigilanceAction>(ACTION_HIGH + 7.0f)
             }
         )
     );
@@ -156,8 +150,8 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "enemy out of melee",
             {
-                NextAction("heroic throw", ACTION_MOVE + 11),
-                NextAction("charge", ACTION_MOVE + 10)
+                CreateNextAction<CastHeroicThrowAction>(ACTION_MOVE + 11.0f),
+                CreateNextAction<CastChargeAction>(ACTION_MOVE + 10.0f)
             }
         )
     );
@@ -166,7 +160,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "thunder clap and rage",
             {
-                NextAction("thunder clap", ACTION_MOVE + 11)
+                CreateNextAction<CastThunderClapAction>(ACTION_MOVE + 11.0f)
             }
         )
     );
@@ -174,7 +168,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "defensive stance",
             {
-                NextAction("defensive stance", ACTION_HIGH + 9)
+                CreateNextAction<CastDefensiveStanceAction>(ACTION_HIGH + 9.0f)
             }
         )
     );
@@ -182,7 +176,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "commanding shout",
             {
-                NextAction("commanding shout", ACTION_HIGH + 8)
+                CreateNextAction<CastCommandingShoutAction>(ACTION_HIGH + 8.0f)
             }
         )
     );
@@ -190,7 +184,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "bloodrage",
             {
-                NextAction("bloodrage", ACTION_HIGH + 2)
+                CreateNextAction<CastBloodrageAction>(ACTION_HIGH + 2.0f)
             }
         )
     );
@@ -198,7 +192,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "sunder armor",
             {
-                NextAction("devastate", ACTION_HIGH + 2)
+                CreateNextAction<CastDevastateAction>(ACTION_HIGH + 2.0f)
             }
         )
     );
@@ -206,8 +200,8 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium rage available",
             {
-                NextAction("shield slam", ACTION_HIGH + 2),
-                NextAction("devastate", ACTION_HIGH + 1)
+                CreateNextAction<CastShieldSlamAction>(ACTION_HIGH + 2.0f),
+                CreateNextAction<CastDevastateAction>(ACTION_HIGH + 1.0f)
             }
         )
     );
@@ -215,7 +209,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "shield block",
             {
-                NextAction("shield block", ACTION_INTERRUPT + 1)
+                CreateNextAction<CastShieldBlockAction>(ACTION_INTERRUPT + 1.0f)
             }
         )
     );
@@ -223,7 +217,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "revenge",
             {
-                NextAction("revenge", ACTION_HIGH + 2)
+                CreateNextAction<CastRevengeAction>(ACTION_HIGH + 2.0f)
             }
         )
     );
@@ -231,7 +225,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "disarm",
             {
-                NextAction("disarm", ACTION_HIGH + 1)
+                CreateNextAction<CastDisarmAction>(ACTION_HIGH + 1.0f)
             }
         )
     );
@@ -239,7 +233,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "lose aggro",
             {
-                NextAction("taunt", ACTION_INTERRUPT + 1)
+                CreateNextAction<CastTauntAction>(ACTION_INTERRUPT + 1.0f)
             }
         )
     );
@@ -247,7 +241,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "taunt on snare target",
             {
-                NextAction("heroic throw on snare target", ACTION_INTERRUPT)
+                CreateNextAction<CastHeroicThrowSnareAction>(ACTION_INTERRUPT)
             }
         )
     );
@@ -255,7 +249,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "low health",
             {
-                NextAction("shield wall", ACTION_MEDIUM_HEAL)
+                CreateNextAction<CastShieldWallAction>(ACTION_MEDIUM_HEAL)
             }
         )
     );
@@ -263,8 +257,8 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "critical health",
             {
-                NextAction("last stand", ACTION_EMERGENCY + 3),
-                NextAction("enraged regeneration", ACTION_EMERGENCY + 2)
+                CreateNextAction<CastLastStandAction>(ACTION_EMERGENCY + 3.0f),
+                CreateNextAction<CastEnragedRegenerationAction>(ACTION_EMERGENCY + 2.0f)
             }
         )
     );
@@ -272,7 +266,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "high aoe",
             {
-                NextAction("challenging shout", ACTION_HIGH + 3)
+                CreateNextAction<CastChallengingShoutAction>(ACTION_HIGH + 3.0f)
             }
         )
     );
@@ -280,7 +274,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "concussion blow",
             {
-                NextAction("concussion blow", ACTION_INTERRUPT)
+                CreateNextAction<CastConcussionBlowAction>(ACTION_INTERRUPT)
             }
         )
     );
@@ -288,7 +282,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "shield bash",
             {
-                NextAction("shield bash", ACTION_INTERRUPT)
+                CreateNextAction<CastShieldBashAction>(ACTION_INTERRUPT)
             }
         )
     );
@@ -296,7 +290,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "shield bash on enemy healer",
             {
-                NextAction("shield bash on enemy healer", ACTION_INTERRUPT)
+                CreateNextAction<CastShieldBashOnEnemyHealerAction>(ACTION_INTERRUPT)
             }
         )
     );
@@ -304,7 +298,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "spell reflection",
             {
-                NextAction("spell reflection", ACTION_INTERRUPT + 1)
+                CreateNextAction<CastSpellReflectionAction>(ACTION_INTERRUPT + 1.0f)
             }
         )
     );
@@ -312,7 +306,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "victory rush",
             {
-                NextAction("victory rush", ACTION_INTERRUPT)
+                CreateNextAction<CastVictoryRushAction>(ACTION_INTERRUPT)
             }
         )
     );
@@ -320,7 +314,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "sword and board",
             {
-                NextAction("shield slam", ACTION_INTERRUPT)
+                CreateNextAction<CastShieldSlamAction>(ACTION_INTERRUPT)
             }
         )
     );
@@ -328,7 +322,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "rend",
             {
-                NextAction("rend", ACTION_NORMAL + 1)
+                CreateNextAction<CastRendAction>(ACTION_NORMAL + 1.0f)
             }
         )
     );
@@ -336,7 +330,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
         "rend on attacker",
             {
-                NextAction("rend on attacker", ACTION_NORMAL + 1)
+                CreateNextAction<CastRendOnAttackerAction>(ACTION_NORMAL + 1.0f)
             }
         )
     );
@@ -344,7 +338,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "protect party member",
             {
-                NextAction("intervene", ACTION_EMERGENCY)
+                CreateNextAction<CastInterveneAction>(ACTION_EMERGENCY)
             }
         )
     );
@@ -352,7 +346,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "high rage available",
             {
-                NextAction("heroic strike", ACTION_HIGH)
+                CreateNextAction<CastHeroicStrikeAction>(ACTION_HIGH)
             }
         )
     );
@@ -360,7 +354,7 @@ void TankWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium rage available",
             {
-                NextAction("thunder clap", ACTION_HIGH + 1)
+                CreateNextAction<CastThunderClapAction>(ACTION_HIGH + 1.0f)
             }
         )
     );

@@ -7,6 +7,7 @@
 #include <sstream>
 
 #include "ChatHelper.h"
+#include "DynamicObject.h"
 #include "Event.h"
 #include "ItemTemplate.h"
 #include "ObjectMgr.h"

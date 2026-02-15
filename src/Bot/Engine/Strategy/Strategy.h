@@ -11,6 +11,7 @@
 #include "NamedObjectContext.h"
 #include "PlayerbotAIAware.h"
 #include "Trigger.h"
+#include "ActionNode.h"
 
 enum StrategyType : uint32
 {

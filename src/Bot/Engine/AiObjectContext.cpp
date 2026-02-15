@@ -5,67 +5,61 @@
 
 #include "AiObjectContext.h"
 
-#include "ActionContext.h"
-#include "ChatActionContext.h"
+#include "AzjolNerubTriggerContext.h"
 #include "ChatTriggerContext.h"
+#include "CullingOfStratholmeTriggerContext.h"
 #include "DKAiObjectContext.h"
+#include "DrakTharonKeepTriggerContext.h"
 #include "DruidAiObjectContext.h"
+#include "ForgeOfSoulsTriggerContext.h"
+#include "GundrakTriggerContext.h"
+#include "HallsOfLightningTriggerContext.h"
+#include "HallsOfStoneTriggerContext.h"
 #include "HunterAiObjectContext.h"
 #include "MageAiObjectContext.h"
+#include "NexusTriggerContext.h"
+#include "OculusTriggerContext.h"
+#include "OldKingdomTriggerContext.h"
 #include "PaladinAiObjectContext.h"
+#include "PitOfSaronTriggerContext.h"
 #include "Playerbots.h"
 #include "PriestAiObjectContext.h"
-#include "RaidUlduarActionContext.h"
 #include "RaidUlduarTriggerContext.h"
 #include "RogueAiObjectContext.h"
 #include "ShamanAiObjectContext.h"
-#include "SharedValueContext.h"
 #include "StrategyContext.h"
+#include "TrialOfTheChampionTriggerContext.h"
 #include "TriggerContext.h"
+#include "UtgardeKeepTriggerContext.h"
+#include "UtgardePinnacleTriggerContext.h"
 #include "ValueContext.h"
+#include "VioletHoldTriggerContext.h"
 #include "WarlockAiObjectContext.h"
 #include "WarriorAiObjectContext.h"
-#include "WorldPacketActionContext.h"
 #include "WorldPacketTriggerContext.h"
 #include "Ai/Dungeon/DungeonStrategyContext.h"
-#include "Ai/Dungeon/WotlkDungeonActionContext.h"
-#include "Ai/Dungeon/WotlkDungeonTriggerContext.h"
 #include "Ai/Raid/RaidStrategyContext.h"
-#include "Ai/Raid/Aq20/RaidAq20ActionContext.h"
 #include "Ai/Raid/Aq20/RaidAq20TriggerContext.h"
-#include "Ai/Raid/MoltenCore/RaidMcActionContext.h"
 #include "Ai/Raid/MoltenCore/RaidMcTriggerContext.h"
-#include "Ai/Raid/BlackwingLair/RaidBwlActionContext.h"
 #include "Ai/Raid/BlackwingLair/RaidBwlTriggerContext.h"
-#include "Ai/Raid/Karazhan/RaidKarazhanActionContext.h"
 #include "Ai/Raid/Karazhan/RaidKarazhanTriggerContext.h"
-#include "Ai/Raid/Magtheridon/RaidMagtheridonActionContext.h"
 #include "Ai/Raid/Magtheridon/RaidMagtheridonTriggerContext.h"
-#include "Ai/Raid/GruulsLair/RaidGruulsLairActionContext.h"
 #include "Ai/Raid/GruulsLair/RaidGruulsLairTriggerContext.h"
-#include "Ai/Raid/EyeOfEternity/RaidEoEActionContext.h"
 #include "Ai/Raid/EyeOfEternity/RaidEoETriggerContext.h"
-#include "Ai/Raid/VaultOfArchavon/RaidVoAActionContext.h"
 #include "Ai/Raid/VaultOfArchavon/RaidVoATriggerContext.h"
-#include "Ai/Raid/ObsidianSanctum/RaidOsActionContext.h"
 #include "Ai/Raid/ObsidianSanctum/RaidOsTriggerContext.h"
-#include "Ai/Raid/Onyxia/RaidOnyxiaActionContext.h"
 #include "Ai/Raid/Onyxia/RaidOnyxiaTriggerContext.h"
-#include "Ai/Raid/Icecrown/RaidIccActionContext.h"
 #include "Ai/Raid/Icecrown/RaidIccTriggerContext.h"
 
 SharedNamedObjectContextList<Strategy> AiObjectContext::sharedStrategyContexts;
-SharedNamedObjectContextList<Action> AiObjectContext::sharedActionContexts;
 SharedNamedObjectContextList<Trigger> AiObjectContext::sharedTriggerContexts;
 SharedNamedObjectContextList<UntypedValue> AiObjectContext::sharedValueContexts;
 
 AiObjectContext::AiObjectContext(PlayerbotAI* botAI, SharedNamedObjectContextList<Strategy>& sharedStrategyContext,
-                                 SharedNamedObjectContextList<Action>& sharedActionContext,
                                  SharedNamedObjectContextList<Trigger>& sharedTriggerContext,
                                  SharedNamedObjectContextList<UntypedValue>& sharedValueContext)
     : PlayerbotAIAware(botAI),
       strategyContexts(sharedStrategyContext),
-      actionContexts(sharedActionContext),
       triggerContexts(sharedTriggerContext),
       valueContexts(sharedValueContext)
 {
@@ -89,7 +83,6 @@ void AiObjectContext::BuildAllSharedContexts()
 void AiObjectContext::BuildSharedContexts()
 {
     BuildSharedStrategyContexts(sharedStrategyContexts);
-    BuildSharedActionContexts(sharedActionContexts);
     BuildSharedTriggerContexts(sharedTriggerContexts);
     BuildSharedValueContexts(sharedValueContexts);
 }
@@ -102,40 +95,6 @@ void AiObjectContext::BuildSharedStrategyContexts(SharedNamedObjectContextList<S
     strategyContexts.Add(new QuestStrategyContext());
     strategyContexts.Add(new DungeonStrategyContext());
     strategyContexts.Add(new RaidStrategyContext());
-}
-
-void AiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
-{
-    actionContexts.Add(new ActionContext());
-    actionContexts.Add(new ChatActionContext());
-    actionContexts.Add(new WorldPacketActionContext());
-    actionContexts.Add(new RaidAq20ActionContext());
-    actionContexts.Add(new RaidMcActionContext());
-    actionContexts.Add(new RaidBwlActionContext());
-    actionContexts.Add(new RaidKarazhanActionContext());
-    actionContexts.Add(new RaidMagtheridonActionContext());
-    actionContexts.Add(new RaidGruulsLairActionContext());
-    actionContexts.Add(new RaidOsActionContext());
-    actionContexts.Add(new RaidEoEActionContext());
-    actionContexts.Add(new RaidVoAActionContext());
-    actionContexts.Add(new RaidUlduarActionContext());
-    actionContexts.Add(new RaidOnyxiaActionContext());
-    actionContexts.Add(new RaidIccActionContext());
-    actionContexts.Add(new WotlkDungeonUKActionContext());
-    actionContexts.Add(new WotlkDungeonNexActionContext());
-    actionContexts.Add(new WotlkDungeonANActionContext());
-    actionContexts.Add(new WotlkDungeonOKActionContext());
-    actionContexts.Add(new WotlkDungeonDTKActionContext());
-    actionContexts.Add(new WotlkDungeonVHActionContext());
-    actionContexts.Add(new WotlkDungeonGDActionContext());
-    actionContexts.Add(new WotlkDungeonHoSActionContext());
-    actionContexts.Add(new WotlkDungeonHoLActionContext());
-    actionContexts.Add(new WotlkDungeonOccActionContext());
-    actionContexts.Add(new WotlkDungeonUPActionContext());
-    actionContexts.Add(new WotlkDungeonCoSActionContext());
-    actionContexts.Add(new WotlkDungeonFoSActionContext());
-    actionContexts.Add(new WotlkDungeonPoSActionContext());
-    actionContexts.Add(new WotlkDungeonToCActionContext());
 }
 
 void AiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Trigger>& triggerContexts)
@@ -235,8 +194,6 @@ std::set<std::string> AiObjectContext::GetSiblingStrategy(std::string const name
 
 Trigger* AiObjectContext::GetTrigger(std::string const name) { return triggerContexts.GetContextObject(name, botAI); }
 
-Action* AiObjectContext::GetAction(std::string const name) { return actionContexts.GetContextObject(name, botAI); }
-
 UntypedValue* AiObjectContext::GetUntypedValue(std::string const name)
 {
     return valueContexts.GetContextObject(name, botAI);
@@ -245,8 +202,6 @@ UntypedValue* AiObjectContext::GetUntypedValue(std::string const name)
 std::set<std::string> AiObjectContext::GetValues() { return valueContexts.GetCreated(); }
 
 std::set<std::string> AiObjectContext::GetSupportedStrategies() { return strategyContexts.supports(); }
-
-std::set<std::string> AiObjectContext::GetSupportedActions() { return actionContexts.supports(); }
 
 std::string const AiObjectContext::FormatValues()
 {

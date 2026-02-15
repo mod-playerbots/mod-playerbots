@@ -15,7 +15,7 @@ class HealerAutoSaveManaMultiplier : public Multiplier
 public:
     HealerAutoSaveManaMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "save mana") {}
 
-    float GetValue(Action* action) override;
+    float GetValue(Action& action) override;
 };
 
 class HealerAutoSaveManaStrategy : public Strategy

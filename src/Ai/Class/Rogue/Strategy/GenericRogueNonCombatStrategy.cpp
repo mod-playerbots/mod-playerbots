@@ -4,8 +4,8 @@
  */
 
 #include "GenericRogueNonCombatStrategy.h"
-
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "RogueActions.h"
 
 class GenericRogueNonCombatStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -18,10 +18,11 @@ public:
 private:
     static ActionNode* use_deadly_poison_on_off_hand([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("use deadly poison on off hand",
-                              /*P*/ {},
-                              /*A*/ { NextAction("use instant poison on off hand") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<UseInstantPoisonOffHandAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 };
 
@@ -34,17 +35,46 @@ void GenericRogueNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
 {
     NonCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("player has flag",
-                                       { NextAction("sprint", ACTION_EMERGENCY + 1) }));
-    triggers.push_back(new TriggerNode("enemy flagcarrier near",
-                                       { NextAction("sprint", ACTION_EMERGENCY + 2) }));
     triggers.push_back(
-        new TriggerNode("main hand weapon no enchant",
-                        { NextAction("use instant poison on main hand", 20.0f) }));
+        new TriggerNode(
+            "player has flag",
+            {
+                CreateNextAction<CastSprintAction>(ACTION_EMERGENCY + 1.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "enemy flagcarrier near",
+            {
+                CreateNextAction<CastSprintAction>(ACTION_EMERGENCY + 2.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "main hand weapon no enchant",
+            {
+                CreateNextAction<UseInstantPoisonAction>(20.0f)
+            }
+        )
+    );
 
     triggers.push_back(
-        new TriggerNode("off hand weapon no enchant",
-                        { NextAction("use deadly poison on off hand", 19.0f) }));
+        new TriggerNode(
+            "off hand weapon no enchant",
+            {
+                CreateNextAction<UseDeadlyPoisonAction>(19.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode("often", { NextAction("unstealth", 30.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "often",
+            {
+                CreateNextAction<UnstealthAction>(30.0f)
+            }
+        )
+    );
 }

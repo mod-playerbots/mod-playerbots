@@ -4,7 +4,10 @@
  */
 
 #include "DemonologyWarlockStrategy.h"
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "MovementActions.h"
+#include "ReachTargetActions.h"
+#include "WarlockActions.h"
 
 // ===== Action Node Factory =====
 class DemonologyWarlockStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
@@ -31,22 +34,150 @@ public:
     }
 
 private:
-    static ActionNode* metamorphosis(PlayerbotAI*) { return new ActionNode("metamorphosis", {}, {}, {}); }
-    static ActionNode* demonic_empowerment(PlayerbotAI*) { return new ActionNode("demonic empowerment", {}, {}, {}); }
-    static ActionNode* corruption(PlayerbotAI*) { return new ActionNode("corruption", {}, {}, {}); }
-    static ActionNode* corruption_on_attacker(PlayerbotAI*) { return new ActionNode("corruption on attacker", {}, {}, {}); }
-    static ActionNode* immolate(PlayerbotAI*) { return new ActionNode("immolate", {}, {}, {}); }
-    static ActionNode* immolate_on_attacker(PlayerbotAI*) { return new ActionNode("immolate on attacker", {}, {}, {}); }
-    static ActionNode* incinerate(PlayerbotAI*) { return new ActionNode("incinerate", {}, {}, {}); }
-    static ActionNode* soul_fire(PlayerbotAI*) { return new ActionNode("soul fire", {}, {}, {}); }
-    static ActionNode* shadow_bolt(PlayerbotAI*) { return new ActionNode("shadow bolt", {}, {}, {}); }
-    static ActionNode* life_tap(PlayerbotAI*) { return new ActionNode("life tap", {}, {}, {}); }
-    static ActionNode* immolation_aura(PlayerbotAI*) { return new ActionNode("immolation aura", {}, {}, {}); }
-    static ActionNode* shadowflame(PlayerbotAI*) { return new ActionNode("shadowflame", {}, {}, {}); }
-    static ActionNode* seed_of_corruption_on_attacker(PlayerbotAI*) { return new ActionNode("seed of corruption on attacker", {}, {}, {}); }
-    static ActionNode* seed_of_corruption(PlayerbotAI*) { return new ActionNode("seed of corruption", {}, {}, {}); }
-    static ActionNode* rain_of_fire(PlayerbotAI*) { return new ActionNode("rain of fire", {}, {}, {}); }
-    static ActionNode* demon_charge(PlayerbotAI*) { return new ActionNode("demon charge", {}, {}, {}); }
+    static ActionNode* metamorphosis(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* demonic_empowerment(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* corruption(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* corruption_on_attacker(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* immolate(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* immolate_on_attacker(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* incinerate(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* soul_fire(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* shadow_bolt(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* life_tap(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* immolation_aura(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* shadowflame(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* seed_of_corruption_on_attacker(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* seed_of_corruption(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* rain_of_fire(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
+    static ActionNode* demon_charge(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+
 };
 
 // ===== Single Target Strategy =====
@@ -59,11 +190,11 @@ DemonologyWarlockStrategy::DemonologyWarlockStrategy(PlayerbotAI* botAI) : Gener
 std::vector<NextAction> DemonologyWarlockStrategy::getDefaultActions()
 {
     return {
-       NextAction("corruption", 5.5f),
-       NextAction("immolate", 5.4f),
-       NextAction("shadow bolt", 5.3f),
-       NextAction("incinerate", 5.2f),
-       NextAction("shoot", 5.0f) };
+       CreateNextAction<CastCorruptionAction>(5.5f),
+       CreateNextAction<CastImmolateAction>(5.4f),
+       CreateNextAction<CastShadowBoltAction>(5.3f),
+       CreateNextAction<CastIncinerateAction>(5.2f),
+       CreateNextAction<CastShootAction>(5.0f) };
 }
 
 // ===== Trigger Initialization ===
@@ -76,7 +207,7 @@ void DemonologyWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "metamorphosis",
             {
-                NextAction("metamorphosis", 28.5f)
+                CreateNextAction<CastMetamorphosisAction>(28.5f)
             }
         )
     );
@@ -84,7 +215,7 @@ void DemonologyWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "demonic empowerment",
             {
-                NextAction("demonic empowerment", 28.0f)
+                CreateNextAction<CastDemonicEmpowermentAction>(28.0f)
             }
         )
     );
@@ -94,7 +225,7 @@ void DemonologyWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "corruption on attacker",
             {
-                NextAction("corruption on attacker", 19.5f)
+                CreateNextAction<CastCorruptionOnAttackerAction>(19.5f)
             }
         )
     );
@@ -102,7 +233,7 @@ void DemonologyWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "immolate on attacker",
             {
-                NextAction("immolate on attacker", 19.0f)
+                CreateNextAction<CastImmolateOnAttackerAction>(19.0f)
             }
         )
     );
@@ -110,7 +241,7 @@ void DemonologyWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "corruption",
             {
-                NextAction("corruption", 18.0f)
+                CreateNextAction<CastCorruptionAction>(18.0f)
             }
         )
     );
@@ -118,7 +249,7 @@ void DemonologyWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "immolate",
             {
-                NextAction("immolate", 17.5f)
+                CreateNextAction<CastImmolateAction>(17.5f)
             }
         )
     );
@@ -128,7 +259,7 @@ void DemonologyWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "decimation",
             {
-                NextAction("soul fire", 17.0f)
+                CreateNextAction<CastSoulFireAction>(17.0f)
             }
         )
     );
@@ -136,7 +267,7 @@ void DemonologyWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "molten core",
             {
-                NextAction("incinerate", 16.5f)
+                CreateNextAction<CastIncinerateAction>(16.5f)
             }
         )
     );
@@ -146,7 +277,7 @@ void DemonologyWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "life tap glyph buff",
             {
-                NextAction("life tap", 29.5f)
+                CreateNextAction<CastLifeTapAction>(29.5f)
             }
         )
     );
@@ -154,7 +285,7 @@ void DemonologyWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "life tap",
             {
-                NextAction("life tap", 5.1f)
+                CreateNextAction<CastLifeTapAction>(5.1f)
             }
         )
     );
@@ -163,7 +294,7 @@ void DemonologyWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
         new TriggerNode(
             "meta melee flee check",
             {
-                NextAction("flee", 39.0f)
+                CreateNextAction<FleeAction>(39.0f)
             }
         )
     );
@@ -181,8 +312,8 @@ void MetaMeleeAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "immolation aura active",
             {
-                NextAction("reach melee", 25.5f),
-                NextAction("demon charge", 25.0f)
+                CreateNextAction<ReachMeleeAction>(25.5f),
+                CreateNextAction<DemonChargeAction>(25.0f)
             }
         )
     );

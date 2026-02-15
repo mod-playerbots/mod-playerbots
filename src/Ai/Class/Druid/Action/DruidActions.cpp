@@ -5,22 +5,28 @@
 
 #include "DruidActions.h"
 
+#include "DruidShapeshiftActions.h"
 #include "Event.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
-#include "AoeValues.h"
 #include "TargetValue.h"
 
 std::vector<NextAction> CastAbolishPoisonAction::getAlternatives()
 {
-    return NextAction::merge({ NextAction("cure poison") },
-                             CastSpellAction::getPrerequisites());
+    std::vector<NextAction> alternatives = CastSpellAction::getAlternatives();
+
+    alternatives.push_back(CreateNextAction<CastCurePoisonAction>(1.0f));
+
+    return alternatives;
 }
 
 std::vector<NextAction> CastAbolishPoisonOnPartyAction::getAlternatives()
 {
-    return NextAction::merge({ NextAction("cure poison on party") },
-                             CastSpellAction::getPrerequisites());
+    std::vector<NextAction> alternatives = CastSpellAction::getAlternatives();
+
+    alternatives.push_back(CreateNextAction<CastCurePoisonOnPartyAction>(1.0f));
+
+    return alternatives;
 }
 
 Value<Unit*>* CastEntanglingRootsCcAction::GetTargetValue()
@@ -62,14 +68,20 @@ bool CastStarfallAction::isUseful()
 
 std::vector<NextAction> CastReviveAction::getPrerequisites()
 {
-    return NextAction::merge({ NextAction("caster form") },
-                             ResurrectPartyMemberAction::getPrerequisites());
+    std::vector<NextAction> prerequisites = ResurrectPartyMemberAction::getPrerequisites();
+
+    prerequisites.push_back(CreateNextAction<CastCasterFormAction>(1.0f));
+
+    return prerequisites;
 }
 
 std::vector<NextAction> CastRebirthAction::getPrerequisites()
 {
-    return NextAction::merge({ NextAction("caster form") },
-                             ResurrectPartyMemberAction::getPrerequisites());
+    std::vector<NextAction> prerequisites = ResurrectPartyMemberAction::getPrerequisites();
+
+    prerequisites.push_back(CreateNextAction<CastCasterFormAction>(1.0f));
+
+    return prerequisites;
 }
 
 bool CastRebirthAction::isUseful()

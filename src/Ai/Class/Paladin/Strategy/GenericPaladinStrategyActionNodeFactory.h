@@ -7,7 +7,10 @@
 #define _PLAYERBOT_GENERICPALADINSTRATEGYACTIONNODEFACTORY_H
 
 #include "Action.h"
+#include "ActionNode.h"
+#include "CreateNextAction.h"
 #include "NamedObjectContext.h"
+#include "PaladinActions.h"
 
 class PlayerbotAI;
 
@@ -51,207 +54,227 @@ public:
 private:
     static ActionNode* blessing_of_sanctuary(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("blessing of sanctuary",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* blessing_of_kings(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("blessing of kings",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* blessing_of_wisdom(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("blessing of wisdom",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* blessing_of_kings_on_party(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("blessing of kings on party",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* blessing_of_wisdom_on_party(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("blessing of wisdom on party",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* blessing_of_sanctuary_on_party(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("blessing of sanctuary on party",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* retribution_aura(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("retribution aura",
-                              /*P*/ {},
-                              /*A*/ { NextAction("devotion aura") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastDevotionAuraAction>(1.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* lay_on_hands(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("lay on hands",
-                              /*P*/ {},
-                              /*A*/ {},  // { NextAction("divine shield"), new
-                                              // NextAction("flash of light"), NULL),
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* lay_on_hands_on_party(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("lay on hands on party",
-                              /*P*/ {},
-                              /*A*/ {},  // { NextAction("flash of light"), NULL),
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
-    // static ActionNode* seal_of_light(PlayerbotAI* /* ai */)
-    // {
-    //     return new ActionNode ("seal of light",
-    //         /*P*/ NULL,
-    //         /*A*/ { NextAction("seal of justice"), NULL),
-    //         /*C*/ NULL);
-    // }
     static ActionNode* cleanse_poison(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("cleanse poison",
-                              /*P*/ {},
-                              /*A*/ { NextAction("purify poison") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastPurifyPoisonAction>(1.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* cleanse_magic(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("cleanse magic",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* cleanse_disease(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("cleanse disease",
-                              /*P*/ {},
-                              /*A*/ { NextAction("purify disease") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastPurifyDiseaseAction>(1.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* cleanse_poison_on_party(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("cleanse poison on party",
-                              /*P*/ {},
-                              /*A*/ { NextAction("purify poison on party") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastPurifyPoisonOnPartyAction>(1.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* cleanse_disease_on_party(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("cleanse disease on party",
-                              /*P*/ {},
-                              /*A*/ { NextAction("purify disease on party") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastPurifyDiseaseOnPartyAction>(1.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* seal_of_wisdom(PlayerbotAI* /* ai */)
     {
-        return new ActionNode ("seal of wisdom",
+        return new ActionNode(
             /*P*/ {},
-            /*A*/ { NextAction("seal of righteousness") },
-            /*C*/ {});
+            /*A*/ { CreateNextAction<CastSealOfRighteousnessAction>(1.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* seal_of_justice(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("seal of justice",
-                              /*P*/ {},
-                              /*A*/ { NextAction("seal of righteousness") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastSealOfRighteousnessAction>(1.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* hand_of_reckoning(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("hand of reckoning",
-                              /*P*/ {},
-                              /*A*/ { NextAction("righteous defense") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastRighteousDefenseAction>(1.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* righteous_defense(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("righteous defense",
-                              /*P*/ {},
-                              /*A*/ { NextAction("avenger's shield") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastAvengersShieldAction>(1.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* avengers_shield(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("avenger's shield",
-                              /*P*/ {},
-                              /*A*/ { NextAction("judgement of wisdom") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastJudgementOfWisdomAction>(1.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* divine_sacrifice(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("divine sacrifice",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ { NextAction("cancel divine sacrifice") });
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ { CreateNextAction<CastCancelDivineSacrificeAction>(1.0f) }
+        );
     }
     static ActionNode* judgement_of_wisdom(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("judgement of wisdom",
-                              /*P*/ {},
-                              /*A*/ { NextAction("judgement of light") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastJudgementOfLightAction>(1.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* judgement(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("judgement",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* divine_shield(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("divine shield",
-                              /*P*/ {},
-                              /*A*/ { NextAction("divine protection") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastDivineProtectionAction>(1.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* flash_of_light(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("flash of light",
-                              /*P*/ {},
-                              /*A*/ { NextAction("holy light") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastHolyLightAction>(1.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* flash_of_light_on_party(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("flash of light on party",
-                              /*P*/ {},
-                              /*A*/ { NextAction("holy light on party") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastHolyLightOnPartyAction>(1.0f) },
+            /*C*/ {}
+        );
     }
     static ActionNode* holy_wrath(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("holy wrath",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* hammer_of_wrath(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("hammer of wrath",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
     static ActionNode* seal_of_command(PlayerbotAI* /* ai */)
     {
-        return new ActionNode("seal of command",
-                              /*P*/ {},
-                              /*A*/ { NextAction("seal of righteousness") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastSealOfRighteousnessAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 };
 

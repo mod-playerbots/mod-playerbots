@@ -6,25 +6,26 @@
 #include "PullStrategy.h"
 
 #include "PassiveMultiplier.h"
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "FollowActions.h"
+#include "ChangeStrategyAction.h"
+#include "MovementActions.h"
 
 class MagePullMultiplier : public PassiveMultiplier
 {
 public:
     MagePullMultiplier(PlayerbotAI* botAI, std::string const action) : PassiveMultiplier(botAI), actionName(action) {}
 
-    float GetValue(Action* action) override;
+    float GetValue(Action& action) override;
 
 private:
     std::string const actionName;
 };
 
-float MagePullMultiplier::GetValue(Action* action)
+float MagePullMultiplier::GetValue(Action& action)
 {
-    if (!action)
-        return 1.0f;
+    std::string const name = action.getName();
 
-    std::string const name = action->getName();
     if (actionName == name || name == "reach spell" || name == "change strategy")
         return 1.0f;
 
@@ -33,10 +34,20 @@ float MagePullMultiplier::GetValue(Action* action)
 
 std::vector<NextAction> PullStrategy::getDefaultActions()
 {
+    NextAction::Factory actionFactory = ActionFactoryRegistry::GetFactoryByName(action);
+
+    if (actionFactory == nullptr)
+    {
+        return Strategy::getDefaultActions();
+    }
+
     return {
-        NextAction(action, 105.0f),
-        NextAction("follow", 104.0f),
-        NextAction("end pull", 103.0f),
+        {
+            .weight = 105.0f,
+            .factory = actionFactory,
+        },
+        CreateNextAction<FollowAction>(104.0f),
+        CreateNextAction<EndPullAction>(103.0f),
     };
 }
 
@@ -56,7 +67,7 @@ void PossibleAddsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "possible adds",
             {
-                NextAction("flee with pet", 60)
+                CreateNextAction<FleeWithPetAction>(60.0f)
             }
         )
     );

@@ -6,6 +6,9 @@
 #ifndef _PLAYERBOT_FERALRUIDSTRATEGY_H
 #define _PLAYERBOT_FERALRUIDSTRATEGY_H
 
+#include "DruidActions.h"
+#include "DruidShapeshiftActions.h"
+#include "GenericActions.h"
 #include "GenericDruidStrategy.h"
 
 class PlayerbotAI;
@@ -26,50 +29,56 @@ public:
 private:
     static ActionNode* regrowth([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("regrowth",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ { NextAction("healing touch") },
-                              /*C*/ { NextAction("melee", 10.0f) });
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
+            /*A*/ { CreateNextAction<CastHealingTouchAction>(1.0f) },
+            /*C*/ { CreateNextAction<MeleeAction>(10.0f) }
+        );
     }
 
     static ActionNode* rejuvenation([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("rejuvenation",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* healing_touch([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("healing touch",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* regrowth_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("regrowth on party",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ { NextAction("healing touch on party") },
-                              /*C*/ { NextAction("melee", 10.0f) });
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
+            /*A*/ { CreateNextAction<CastHealingTouchOnPartyAction>(1.0f) },
+            /*C*/ { CreateNextAction<MeleeAction>(10.0f) }
+        );
     }
 
     static ActionNode* rejuvenation_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("rejuvenation on party",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* healing_touch_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("healing touch on party",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 };
 

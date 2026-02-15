@@ -5,7 +5,9 @@
 
 #include "GenericMageNonCombatStrategy.h"
 #include "AiFactory.h"
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "ImbueAction.h"
+#include "MageActions.h"
 
 class GenericMageNonCombatStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -20,26 +22,29 @@ public:
 private:
     static ActionNode* molten_armor([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("molten armor",
-                              /*P*/ {},
-                              /*A*/ { NextAction("mage armor") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastMageArmorAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* mage_armor([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("mage armor",
-                              /*P*/ {},
-                              /*A*/ { NextAction("ice armor") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastIceArmorAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* ice_armor([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("ice armor",
-                              /*P*/ {},
-                              /*A*/ { NextAction("frost armor") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastFrostArmorAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 };
 
@@ -52,23 +57,72 @@ void GenericMageNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trigg
 {
     NonCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("arcane intellect", { NextAction("arcane intellect", 21.0f) }));
-    triggers.push_back(new TriggerNode("no focus magic", { NextAction("focus magic on party", 19.0f) }));
-    triggers.push_back(new TriggerNode("often", { NextAction("apply oil", 1.0f) }));
-    triggers.push_back(new TriggerNode("no mana gem", { NextAction("conjure mana gem", 20.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "arcane intellect",
+            {
+                CreateNextAction<CastArcaneIntellectAction>(21.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "no focus magic",
+            {
+                CreateNextAction<CastFocusMagicOnPartyAction>(19.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "often",
+            {
+                CreateNextAction<ImbueWithOilAction>(1.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "no mana gem",
+            {
+                CreateNextAction<CastConjureManaGemAction>(20.0f)
+            }
+        )
+    );
 }
 
 void MageBuffManaStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("mage armor", { NextAction("mage armor", 19.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "mage armor",
+            {
+                CreateNextAction<CastMageArmorAction>(19.0f)
+            }
+        )
+    );
 }
 
 void MageBuffDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("mage armor", { NextAction("molten armor", 19.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "mage armor",
+            {
+                CreateNextAction<CastMoltenArmorAction>(19.0f)
+            }
+        )
+    );
 }
 
 void MageBuffStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("arcane intellect on party", { NextAction("arcane intellect on party", 20.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "arcane intellect on party",
+            {
+                CreateNextAction<CastArcaneIntellectOnPartyAction>(20.0f)
+            }
+        )
+    );
 }

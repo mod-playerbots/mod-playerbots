@@ -7,7 +7,10 @@
 #define _PLAYERBOT_SHADOWPRIESTSTRATEGYACTIONNODEFACTORY_H
 
 #include "Action.h"
+#include "ActionNode.h"
+#include "CreateNextAction.h"
 #include "NamedObjectContext.h"
+#include "PriestActions.h"
 
 class PlayerbotAI;
 
@@ -25,34 +28,38 @@ public:
 private:
     static ActionNode* mind_blast([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("mind blast",
-                              /*P*/ {},
-                              /*A*/ { NextAction("mind flay") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastMindFlayAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* mind_flay([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("mind flay",
-                              /*P*/ {},
-                              /*A*/ { NextAction("smite") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastSmiteAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* smite([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("smite",
-                              /*P*/ {},
-                              /*A*/ { NextAction("shoot") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastShootAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* dispersion([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("dispersion",
-                              /*P*/ {},
-                              /*A*/ { NextAction("mana potion") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<UseManaPotion>(1.0f) },
+            /*C*/ {}
+        );
     }
 };
 

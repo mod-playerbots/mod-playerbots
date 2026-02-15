@@ -5,9 +5,10 @@
 
 #include "CustomStrategyEditAction.h"
 
+#include "AiObjectContext.h"
 #include "CustomStrategy.h"
 #include "Event.h"
-#include "Playerbots.h"
+#include "PlayerbotAI.h"
 
 bool CustomStrategyEditAction::Execute(Event event)
 {

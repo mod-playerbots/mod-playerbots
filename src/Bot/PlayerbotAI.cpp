@@ -647,16 +647,31 @@ void PlayerbotAI::HandleCommand(uint32 type, const std::string& text, Player& fr
         (filtered.size() > 3 && filtered.substr(0, 3) == "do "))
     {
         Event event("do", "", &fromPlayer);
+
         std::string action = filtered.substr(filtered.find(" ") + 1);
-        DoSpecificAction(action, event);
+
+        NextAction::Factory factory = ActionFactoryRegistry::GetFactoryByName(action);
+
+        if (factory != nullptr)
+        {
+            this->DoSpecificAction(factory, event);
+        }
     }
 
     if (ChatHelper::parseValue("command", filtered).substr(0, 3) == "do ")
     {
         Event event("do", "", &fromPlayer);
+
         std::string action = ChatHelper::parseValue("command", filtered);
+
         action = action.substr(3);
-        DoSpecificAction(action, event);
+
+        NextAction::Factory factory = ActionFactoryRegistry::GetFactoryByName(action);
+
+        if (factory != nullptr)
+        {
+            this->DoSpecificAction(factory, event);
+        }
     }
     else if (type != CHAT_MSG_WHISPER && filtered.size() > 6 && filtered.substr(0, 6) == "queue ")
     {
@@ -959,6 +974,7 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
     }
 
     filtered = chatFilter.Filter(trim(filtered));
+
     if (filtered.empty())
         return;
 
@@ -986,7 +1002,13 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
         (filtered.size() > 3 && filtered.substr(0, 3) == "do "))
     {
         std::string const action = filtered.substr(filtered.find(" ") + 1);
-        DoSpecificAction(action);
+
+        NextAction::Factory factory = ActionFactoryRegistry::GetFactoryByName(action);
+
+        if (factory != nullptr)
+        {
+            this->DoSpecificAction(factory);
+        }
     }
     else if (type != CHAT_MSG_WHISPER && filtered.size() > 6 && filtered.substr(0, 6) == "queue ")
     {
@@ -1462,7 +1484,7 @@ void PlayerbotAI::DoNextAction(bool min)
 		return;
 	}
 
-    currentEngine->DoNextAction(nullptr, 0, (minimal || min));
+    currentEngine->doNextAction(nullptr, 0, (minimal || min));
 
     if (minimal)
     {
@@ -1643,13 +1665,17 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
     }
 }
 
-bool PlayerbotAI::DoSpecificAction(std::string const name, Event event, bool silent, std::string const qualifier)
+bool PlayerbotAI::DoSpecificAction(NextAction::Factory actionFactory, Event event, bool silent)
 {
     std::ostringstream out;
 
+    std::unique_ptr<Action> localAction = actionFactory(this);
+
+    const std::string name = localAction->getName();
+
     for (uint8 i = 0; i < BOT_STATE_MAX; i++)
     {
-        ActionResult res = engines[i]->ExecuteAction(name, event, qualifier);
+        ActionResult res = engines[i]->ExecuteAction(actionFactory, event);
         switch (res)
         {
             case ACTION_RESULT_UNKNOWN:

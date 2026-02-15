@@ -4,8 +4,11 @@
  */
 
 #include "GenericHunterNonCombatStrategy.h"
-
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "EquipAction.h"
+#include "GenericActions.h"
+#include "HunterActions.h"
+#include "ImbueAction.h"
 
 class GenericHunterNonCombatStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -20,18 +23,20 @@ public:
 private:
     static ActionNode* rapid_fire([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("rapid fire",
-                              /*P*/ {},
-                              /*A*/ { NextAction("readiness")},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastReadinessAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 
     static ActionNode* aspect_of_the_pack([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("aspect of the pack",
-                              /*P*/ {},
-                              /*A*/ { NextAction("aspect of the cheetah")},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<CastAspectOfTheCheetahAction>(1.0f) },
+            /*C*/ {}
+        );
     }
 };
 
@@ -44,22 +49,97 @@ void GenericHunterNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& tri
 {
     NonCombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("trueshot aura", { NextAction("trueshot aura", 2.0f)}));
-    triggers.push_back(new TriggerNode("often", {
-                       NextAction("apply stone", 1.0f),
-                       NextAction("apply oil", 1.0f),
-                       }));
-    triggers.push_back(new TriggerNode("low ammo", { NextAction("say::low ammo", ACTION_NORMAL)}));
-    triggers.push_back(new TriggerNode("no track", { NextAction("track humanoids", ACTION_NORMAL)}));
-    triggers.push_back(new TriggerNode("no ammo", { NextAction("equip upgrades", ACTION_HIGH + 1)}));
+    triggers.push_back(
+        new TriggerNode(
+            "trueshot aura",
+            {
+                CreateNextAction<CastTrueshotAuraAction>(2.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "often",
+            {
+                CreateNextAction<ImbueWithStoneAction>(1.0f),
+                CreateNextAction<ImbueWithOilAction>(1.0f),
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "low ammo",
+            {
+                CreateNextAction<SayLowAmmoAction>(ACTION_NORMAL)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "no track",
+            {
+                CreateNextAction<CastTrackHumanoidsAction>(ACTION_NORMAL)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "no ammo",
+            {
+                CreateNextAction<EquipUpgradesAction>(ACTION_HIGH + 1.0f)
+            }
+        )
+    );
 }
 
 void HunterPetStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("no pet", { NextAction("call pet", 60.0f)}));
-    triggers.push_back(new TriggerNode("has pet", { NextAction("toggle pet spell", 60.0f)}));
-    triggers.push_back(new TriggerNode("new pet", { NextAction("set pet stance", 60.0f)}));
-    triggers.push_back(new TriggerNode("pet not happy", { NextAction("feed pet", 60.0f)}));
-    triggers.push_back(new TriggerNode("hunters pet medium health", { NextAction("mend pet", 60.0f)}));
-    triggers.push_back(new TriggerNode("hunters pet dead", { NextAction("revive pet", 60.0f)}));
+    triggers.push_back(
+        new TriggerNode(
+            "no pet",
+            {
+                CreateNextAction<CastCallPetAction>(60.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "has pet",
+            {
+                CreateNextAction<TogglePetSpellAutoCastAction>(60.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "new pet",
+            {
+                CreateNextAction<SetPetStanceAction>(60.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "pet not happy",
+            {
+                CreateNextAction<FeedPetAction>(60.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "hunters pet medium health",
+            {
+                CreateNextAction<CastMendPetAction>(60.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "hunters pet dead",
+            {
+                CreateNextAction<CastRevivePetAction>(60.0f)
+            }
+        )
+    );
 }

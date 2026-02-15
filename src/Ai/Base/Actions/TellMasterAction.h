@@ -30,4 +30,18 @@ public:
     bool isUseful() override;
 };
 
+class TellMasterNotEnoughMoneyAction : public TellMasterAction
+{
+public:
+    TellMasterNotEnoughMoneyAction(PlayerbotAI* botAI) : TellMasterAction(botAI, "Not enough money") {}
+    ~TellMasterNotEnoughMoneyAction() override = default;
+};
+
+class TellMasterNotEnoughReputationAction : public TellMasterAction
+{
+public:
+    TellMasterNotEnoughReputationAction(PlayerbotAI* botAI) : TellMasterAction(botAI, "Not enough reputation") {}
+    ~TellMasterNotEnoughReputationAction() override = default;
+};
+
 #endif

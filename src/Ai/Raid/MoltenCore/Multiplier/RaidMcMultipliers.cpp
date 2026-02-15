@@ -14,17 +14,17 @@
 
 using namespace MoltenCoreHelpers;
 
-static bool IsDpsBotWithAoeAction(Player* bot, Action* action)
+static bool IsDpsBotWithAoeAction(Player* bot, Action& action)
 {
     if (PlayerbotAI::IsDps(bot))
     {
-        if (dynamic_cast<DpsAoeAction*>(action) || dynamic_cast<CastConsecrationAction*>(action) ||
-            dynamic_cast<CastStarfallAction*>(action) || dynamic_cast<CastWhirlwindAction*>(action) ||
-            dynamic_cast<CastMagmaTotemAction*>(action) || dynamic_cast<CastExplosiveTrapAction*>(action) ||
-            dynamic_cast<CastDeathAndDecayAction*>(action))
+        if (dynamic_cast<DpsAoeAction*>(&action) || dynamic_cast<CastConsecrationAction*>(&action) ||
+            dynamic_cast<CastStarfallAction*>(&action) || dynamic_cast<CastWhirlwindAction*>(&action) ||
+            dynamic_cast<CastMagmaTotemAction*>(&action) || dynamic_cast<CastExplosiveTrapAction*>(&action) ||
+            dynamic_cast<CastDeathAndDecayAction*>(&action))
             return true;
 
-        if (auto castSpellAction = dynamic_cast<CastSpellAction*>(action))
+        if (auto castSpellAction = dynamic_cast<CastSpellAction*>(&action))
         {
             if (castSpellAction->getThreatType() == Action::ActionThreatType::Aoe)
                 return true;
@@ -33,7 +33,7 @@ static bool IsDpsBotWithAoeAction(Player* bot, Action* action)
     return false;
 }
 
-float GarrDisableDpsAoeMultiplier::GetValue(Action* action)
+float GarrDisableDpsAoeMultiplier::GetValue(Action& action)
 {
     if (AI_VALUE2(Unit*, "find target", "garr"))
     {
@@ -43,20 +43,20 @@ float GarrDisableDpsAoeMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-static bool IsAllowedGeddonMovementAction(Action* action)
+static bool IsAllowedGeddonMovementAction(Action& action)
 {
-    if (dynamic_cast<MovementAction*>(action) &&
-                !dynamic_cast<McMoveFromGroupAction*>(action) &&
-                !dynamic_cast<McMoveFromBaronGeddonAction*>(action))
+    if (dynamic_cast<MovementAction*>(&action) &&
+                !dynamic_cast<McMoveFromGroupAction*>(&action) &&
+                !dynamic_cast<McMoveFromBaronGeddonAction*>(&action))
         return false;
 
-    if (dynamic_cast<CastReachTargetSpellAction*>(action))
+    if (dynamic_cast<CastReachTargetSpellAction*>(&action))
         return false;
 
     return true;
 }
 
-float BaronGeddonAbilityMultiplier::GetValue(Action* action)
+float BaronGeddonAbilityMultiplier::GetValue(Action& action)
 {
     if (Unit* boss = AI_VALUE2(Unit*, "find target", "baron geddon"))
     {
@@ -93,21 +93,21 @@ static bool IsSingleLivingTankInGroup(Player* bot)
     return true;
 }
 
-float GolemaggMultiplier::GetValue(Action* action)
+float GolemaggMultiplier::GetValue(Action& action)
 {
     if (AI_VALUE2(Unit*, "find target", "golemagg the incinerator"))
     {
         if (PlayerbotAI::IsTank(bot) && IsSingleLivingTankInGroup(bot))
         {
             // Only one tank => Pick up Golemagg and the two Core Ragers
-            if (dynamic_cast<McGolemaggMainTankAttackGolemaggAction*>(action) ||
-                dynamic_cast<McGolemaggAssistTankAttackCoreRagerAction*>(action))
+            if (dynamic_cast<McGolemaggMainTankAttackGolemaggAction*>(&action) ||
+                dynamic_cast<McGolemaggAssistTankAttackCoreRagerAction*>(&action))
                 return 0.0f;
         }
         if (PlayerbotAI::IsAssistTank(bot))
         {
             // The first two assist tanks manage the Core Ragers. The remaining assist tanks attack the boss.
-            if (dynamic_cast<TankAssistAction*>(action))
+            if (dynamic_cast<TankAssistAction*>(&action))
                 return 0.0f;
         }
         if (IsDpsBotWithAoeAction(bot, action))

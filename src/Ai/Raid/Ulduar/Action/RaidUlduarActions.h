@@ -3,12 +3,11 @@
 
 #include "Action.h"
 #include "AttackAction.h"
+#include "BossAuraActions.h"
 #include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "MovementActions.h"
 #include "PlayerbotAI.h"
-#include "Playerbots.h"
-#include "RaidUlduarBossHelper.h"
 #include "RaidUlduarTriggers.h"
 #include "Vehicle.h"
 
@@ -107,12 +106,39 @@ public:
     bool isUseful() override;
 };
 
+class RazorscaleFireResistanceAction : public BossFireResistanceAction
+{
+public:
+    RazorscaleFireResistanceAction(PlayerbotAI* botAI)
+        : BossFireResistanceAction(botAI, "razorscale")
+    {
+    }
+};
+
+class HodirFrostResistanceAction : public BossFrostResistanceAction
+{
+public:
+    HodirFrostResistanceAction(PlayerbotAI* botAI)
+        : BossFrostResistanceAction(botAI, "hodir")
+    {
+    }
+};
+
 class HodirMoveSnowpackedIcicleAction : public MovementAction
 {
 public:
     HodirMoveSnowpackedIcicleAction(PlayerbotAI* botAI) : MovementAction(botAI, "hodir move snowpacked icicle") {}
     bool Execute(Event event) override;
     bool isUseful() override;
+};
+
+class IgnisFireResistanceAction : public BossFireResistanceAction
+{
+public:
+    IgnisFireResistanceAction(PlayerbotAI* botAI)
+        : BossFireResistanceAction(botAI, "ignis")
+    {
+    }
 };
 
 class IronAssemblyLightningTendrilsAction : public MovementAction
@@ -137,6 +163,15 @@ public:
     IronAssemblyRuneOfPowerAction(PlayerbotAI* botAI) : MovementAction(botAI, "iron assembly rune of power action") {}
     bool Execute(Event event) override;
     bool isUseful() override;
+};
+
+class KologarnNatureResistanceAction : public BossNatureResistanceAction
+{
+public:
+    KologarnNatureResistanceAction(PlayerbotAI* botAI)
+        : BossNatureResistanceAction(botAI, "kologarn")
+    {
+    }
 };
 
 class KologarnMarkDpsTargetAction : public Action
@@ -202,6 +237,24 @@ public:
     bool isUseful() override;
 };
 
+class FreyaFireResistanceAction : public BossFireResistanceAction
+{
+public:
+    FreyaFireResistanceAction(PlayerbotAI* botAI)
+        : BossFireResistanceAction(botAI, "freya")
+    {
+    }
+};
+
+class FreyaNatureResistanceAction : public BossNatureResistanceAction
+{
+public:
+    FreyaNatureResistanceAction(PlayerbotAI* botAI)
+        : BossNatureResistanceAction(botAI, "freya")
+    {
+    }
+};
+
 class FreyaMoveAwayNatureBombAction : public MovementAction
 {
 public:
@@ -225,6 +278,24 @@ public:
 
     bool Execute(Event event) override;
     bool isUseful() override;
+};
+
+class ThorimNatureResistanceAction : public BossNatureResistanceAction
+{
+public:
+    ThorimNatureResistanceAction(PlayerbotAI* botAI)
+        : BossNatureResistanceAction(botAI, "thorim")
+    {
+    }
+};
+
+class ThorimFrostResistanceAction : public BossFrostResistanceAction
+{
+public:
+    ThorimFrostResistanceAction(PlayerbotAI* botAI)
+        : BossFrostResistanceAction(botAI, "thorim")
+    {
+    }
 };
 
 class ThorimUnbalancingStrikeAction : public Action
@@ -278,6 +349,15 @@ public:
 
     bool Execute(Event event) override;
     bool isUseful() override;
+};
+
+class MimironFireResistanceAction : public BossFireResistanceAction
+{
+public:
+    MimironFireResistanceAction(PlayerbotAI* botAI)
+        : BossFireResistanceAction(botAI, "mimiron")
+    {
+    }
 };
 
 class MimironShockBlastAction : public MovementAction
@@ -355,6 +435,15 @@ public:
     bool Execute(Event event) override;
 };
 
+class VezaxShadowResistanceAction : public BossShadowResistanceAction
+{
+public:
+    VezaxShadowResistanceAction(PlayerbotAI* botAI)
+        : BossShadowResistanceAction(botAI, "vezax")
+    {
+    }
+};
+
 class VezaxCheatAction : public Action
 {
 public:
@@ -377,6 +466,24 @@ public:
     VezaxMarkOfTheFacelessAction(PlayerbotAI* ai) : MovementAction(ai, "vezax mark of the faceless action") {}
 
     bool Execute(Event event) override;
+};
+
+class SaraShadowResistanceAction : public BossShadowResistanceAction
+{
+public:
+    SaraShadowResistanceAction(PlayerbotAI* botAI)
+        : BossShadowResistanceAction(botAI, "sara")
+    {
+    }
+};
+
+class YoggSaronShadowResistanceAction : public BossShadowResistanceAction
+{
+public:
+    YoggSaronShadowResistanceAction(PlayerbotAI* botAI)
+        : BossShadowResistanceAction(botAI, "yogg-saron")
+    {
+    }
 };
 
 class YoggSaronOminousCloudCheatAction : public Action

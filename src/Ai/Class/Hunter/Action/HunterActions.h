@@ -9,6 +9,7 @@
 #include "AiObject.h"
 #include "Event.h"
 #include "GenericSpellActions.h"
+#include "SayAction.h"
 #include "Unit.h"
 
 class PlayerbotAI;
@@ -446,6 +447,21 @@ class CastVolleyAction : public CastSpellAction
 public:
     CastVolleyAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "volley") {}
     ActionThreatType getThreatType() override { return ActionThreatType::Aoe; }
+};
+
+class SayLowAmmoAction : public SayAction
+{
+public:
+    SayLowAmmoAction(PlayerbotAI* botAI) : SayAction(botAI)
+    {
+        this->qualifier = "low ammo";
+    }
+};
+
+class CastTrackHumanoidsAction : public CastBuffSpellAction
+{
+public:
+    CastTrackHumanoidsAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "track humanoids") {};
 };
 
 #endif

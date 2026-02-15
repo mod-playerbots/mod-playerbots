@@ -2,6 +2,8 @@
 #include "GundrakTriggers.h"
 #include "AiObject.h"
 #include "AiObjectContext.h"
+// Required due to excessive use of macros
+#include "DungeonStrategyUtils.h"
 
 bool SladranPoisonNovaTrigger::IsActive()
 {

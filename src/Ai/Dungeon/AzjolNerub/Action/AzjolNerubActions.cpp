@@ -1,3 +1,4 @@
+#include "AzjolNerubTriggers.h"
 #include "Playerbots.h"
 #include "AzjolNerubActions.h"
 

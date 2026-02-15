@@ -5,7 +5,9 @@
 
 #include "FrostMageStrategy.h"
 
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "GenericActions.h"
+#include "MageActions.h"
 
 // ===== Action Node Factory =====
 class FrostMageStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
@@ -26,16 +28,86 @@ public:
     }
 
 private:
-    static ActionNode* cold_snap(PlayerbotAI*) { return new ActionNode("cold snap", {}, {}, {}); }
-    static ActionNode* ice_barrier(PlayerbotAI*) { return new ActionNode("ice barrier", {}, {}, {}); }
-    static ActionNode* summon_water_elemental(PlayerbotAI*) { return new ActionNode("summon water elemental", {}, {}, {}); }
-    static ActionNode* deep_freeze(PlayerbotAI*) { return new ActionNode("deep freeze", {}, {}, {}); }
-    static ActionNode* icy_veins(PlayerbotAI*) { return new ActionNode("icy veins", {}, {}, {}); }
-    static ActionNode* frostbolt(PlayerbotAI*) { return new ActionNode("frostbolt", {}, {}, {}); }
-    static ActionNode* ice_lance(PlayerbotAI*) { return new ActionNode("ice lance", {}, {}, {}); }
-    static ActionNode* fire_blast(PlayerbotAI*) { return new ActionNode("fire blast", {}, {}, {}); }
-    static ActionNode* fireball(PlayerbotAI*) { return new ActionNode("fireball", {}, {}, {}); }
-    static ActionNode* frostfire_bolt(PlayerbotAI*) { return new ActionNode("frostfire bolt", {}, {}, {}); }
+    static ActionNode* cold_snap(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+        }
+    static ActionNode* ice_barrier(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+        }
+    static ActionNode* summon_water_elemental(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+        }
+    static ActionNode* deep_freeze(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+        }
+    static ActionNode* icy_veins(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+        }
+    static ActionNode* frostbolt(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+        }
+    static ActionNode* ice_lance(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+        }
+    static ActionNode* fire_blast(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+        }
+    static ActionNode* fireball(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+        }
+    static ActionNode* frostfire_bolt(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+        }
 };
 
 // ===== Single Target Strategy =====
@@ -48,11 +120,11 @@ FrostMageStrategy::FrostMageStrategy(PlayerbotAI* botAI) : GenericMageStrategy(b
 std::vector<NextAction> FrostMageStrategy::getDefaultActions()
 {
     return {
-        NextAction("frostbolt", 5.4f),
-        NextAction("ice lance", 5.3f),   // cast during movement
-        NextAction("fire blast", 5.2f),  // cast during movement if ice lance is not learned
-        NextAction("shoot", 5.1f),
-        NextAction("fireball", 5.0f)
+        CreateNextAction<CastFrostboltAction>(5.4f),
+        CreateNextAction<CastIceLanceAction>(5.3f),   // cast during movement
+        CreateNextAction<CastFireBlastAction>(5.2f),  // cast during movement if ice lance is not learned
+        CreateNextAction<CastShootAction>(5.1f),
+        CreateNextAction<CastFireballAction>(5.0f)
     };
 }
 
@@ -66,7 +138,7 @@ void FrostMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "no pet",
             {
-                NextAction("summon water elemental", 30.0f)
+                CreateNextAction<CastSummonWaterElementalAction>(30.0f)
             }
         )
     );
@@ -74,7 +146,7 @@ void FrostMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "has pet",
             {
-                NextAction("toggle pet spell", 60.0f)
+                CreateNextAction<TogglePetSpellAutoCastAction>(60.0f)
             }
         )
     );
@@ -82,7 +154,7 @@ void FrostMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "new pet",
             {
-                NextAction("set pet stance", 60.0f)
+                CreateNextAction<SetPetStanceAction>(60.0f)
             }
         )
     );
@@ -90,7 +162,7 @@ void FrostMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium health",
             {
-                NextAction("ice barrier", 29.0f)
+                CreateNextAction<CastIceBarrierAction>(29.0f)
             }
         )
     );
@@ -98,7 +170,7 @@ void FrostMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "being attacked",
             {
-                NextAction("ice barrier", 29.0f)
+                CreateNextAction<CastIceBarrierAction>(29.0f)
             }
         )
     );
@@ -108,7 +180,7 @@ void FrostMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "brain freeze",
             {
-                NextAction("frostfire bolt", 19.5f)
+                CreateNextAction<CastFrostfireBoltAction>(19.5f)
             }
         )
     );
@@ -116,8 +188,8 @@ void FrostMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "fingers of frost",
             {
-                NextAction("deep freeze", 19.0f),
-                NextAction("frostbolt", 18.0f)
+                CreateNextAction<CastDeepFreezeAction>(19.0f),
+                CreateNextAction<CastFrostboltAction>(18.0f)
             }
         )
     );
@@ -125,8 +197,8 @@ void FrostMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "frostbite on target",
             {
-                NextAction("deep freeze", 19.0f),
-                NextAction("frostbolt", 18.0f)
+                CreateNextAction<CastDeepFreezeAction>(19.0f),
+                CreateNextAction<CastFrostboltAction>(18.0f)
             }
         )
     );
@@ -134,8 +206,8 @@ void FrostMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "frost nova on target",
             {
-                NextAction("deep freeze", 19.0f),
-                NextAction("frostbolt", 18.0f)
+                CreateNextAction<CastDeepFreezeAction>(19.0f),
+                CreateNextAction<CastFrostboltAction>(18.0f)
             }
         )
     );

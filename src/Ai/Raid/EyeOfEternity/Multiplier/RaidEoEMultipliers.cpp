@@ -1,21 +1,15 @@
 #include "RaidEoEMultipliers.h"
 
 #include "ChooseTargetActions.h"
-#include "DKActions.h"
 #include "DruidActions.h"
-#include "DruidBearActions.h"
 #include "FollowActions.h"
-#include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "MovementActions.h"
 #include "PaladinActions.h"
 #include "RaidEoEActions.h"
 #include "RaidEoETriggers.h"
-#include "ReachTargetActions.h"
-#include "ScriptedCreature.h"
-#include "WarriorActions.h"
 
-float MalygosMultiplier::GetValue(Action* action)
+float MalygosMultiplier::GetValue(Action& action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "malygos");
 
@@ -24,46 +18,47 @@ float MalygosMultiplier::GetValue(Action* action)
 
     if (phase == 1)
     {
-        if (dynamic_cast<FollowAction*>(action))
+        if (dynamic_cast<FollowAction*>(&action))
         {
             return 0.0f;
         }
 
-        if (botAI->IsDps(bot) && dynamic_cast<DpsAssistAction*>(action))
+        if (botAI->IsDps(bot) && dynamic_cast<DpsAssistAction*>(&action))
         {
             return 0.0f;
         }
 
-        if (botAI->IsRangedDps(bot) && dynamic_cast<DropTargetAction*>(action))
+        if (botAI->IsRangedDps(bot) && dynamic_cast<DropTargetAction*>(&action))
         {
             return 0.0f;
         }
 
-        if (!botAI->IsMainTank(bot) && dynamic_cast<TankAssistAction*>(action))
+        if (!botAI->IsMainTank(bot) && dynamic_cast<TankAssistAction*>(&action))
         {
             return 0.0f;
         }
 
-        // if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<MalygosPositionAction*>(action))
+        // if (dynamic_cast<MovementAction*>(&action) && !dynamic_cast<MalygosPositionAction*>(&action))
         // {
         //     return 0.0f;
         // }
     }
     else if (phase == 2)
     {
-        if (botAI->IsDps(bot) && dynamic_cast<DpsAssistAction*>(action))
+
+        if (botAI->IsDps(bot) && dynamic_cast<DpsAssistAction*>(&action))
         {
             return 0.0f;
         }
 
-        if (dynamic_cast<FleeAction*>(action))
+        if (dynamic_cast<FleeAction*>(&action))
         {
             return 0.0f;
         }
 
-        if (dynamic_cast<TankAssistAction*>(action))
+        if (dynamic_cast<TankAssistAction*>(&action))
         {
-            Unit* target = action->GetTarget();
+            Unit* target = action.GetTarget();
             if (target && target->GetEntry() == NPC_SCION_OF_ETERNITY)
             return 0.0f;
         }
@@ -71,7 +66,7 @@ float MalygosMultiplier::GetValue(Action* action)
     else if (phase == 3)
     {
         // Suppresses FollowAction as well as some attack-based movements
-        if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<EoEFlyDrakeAction*>(action))
+        if (dynamic_cast<MovementAction*>(&action) && !dynamic_cast<EoEFlyDrakeAction*>(&action))
         {
             return 0.0f;
         }

@@ -5,18 +5,26 @@
 
 #include "UsePotionsStrategy.h"
 
+#include "CreateNextAction.h"
+#include "UseItemAction.h"
+#include "ActionNode.h"
+
 class UsePotionsStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
 public:
-    UsePotionsStrategyActionNodeFactory() { creators["healthstone"] = &healthstone; }
+    UsePotionsStrategyActionNodeFactory()
+    {
+        creators["healthstone"] = &healthstone;
+    }
 
 private:
     static ActionNode* healthstone(PlayerbotAI*)
     {
-        return new ActionNode("healthstone",
-                              /*P*/ {},
-                              /*A*/ { NextAction("healing potion") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<UseHealingPotion>(1.0f) },
+            /*C*/ {}
+        );
     }
 };
 
@@ -29,8 +37,20 @@ void UsePotionsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     Strategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode(
-        "critical health", { NextAction("healthstone", ACTION_MEDIUM_HEAL + 1) }));
     triggers.push_back(
-        new TriggerNode("low mana", { NextAction("mana potion", ACTION_EMERGENCY) }));
+        new TriggerNode(
+            "critical health",
+            {
+                CreateNextAction<UseHealthstone>(ACTION_MEDIUM_HEAL + 1.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "low mana",
+            {
+                CreateNextAction<UseManaPotion>(ACTION_EMERGENCY)
+            }
+        )
+    );
 }

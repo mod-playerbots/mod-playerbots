@@ -6,6 +6,7 @@
 #ifndef _PLAYERBOT_PASSTHROUGHSTRATEGY_H
 #define _PLAYERBOT_PASSTHROUGHSTRATEGY_H
 
+#include "PassTroughStrategy/definition/struct/passthrough-strategy-supported-actions.struct.h"
 #include "Strategy.h"
 
 class PlayerbotAI;
@@ -18,7 +19,7 @@ public:
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
 
 protected:
-    std::vector<std::string> supported;
+    std::vector<PassthroughStrategySupportedActionsStruct> supported;
     float relevance;
 };
 

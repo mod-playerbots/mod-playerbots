@@ -391,6 +391,8 @@ bool UseSpellItemAction::isUseful() { return AI_VALUE2(bool, "spell cast useful"
 
 bool UseHealingPotion::isUseful() { return AI_VALUE2(bool, "combat", "self target"); }
 
+bool UseHealthstone::isUseful() { return AI_VALUE2(bool, "combat", "self target"); }
+
 bool UseManaPotion::isUseful() { return AI_VALUE2(bool, "combat", "self target"); }
 
 bool UseHearthStone::Execute(Event event)

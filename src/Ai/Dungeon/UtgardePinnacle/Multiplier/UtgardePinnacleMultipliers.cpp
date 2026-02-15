@@ -1,12 +1,11 @@
 #include "UtgardePinnacleMultipliers.h"
 #include "UtgardePinnacleActions.h"
 #include "GenericSpellActions.h"
-#include "ChooseTargetActions.h"
 #include "MovementActions.h"
 #include "UtgardePinnacleTriggers.h"
 #include "Action.h"
 
-float SkadiMultiplier::GetValue(Action* action)
+float SkadiMultiplier::GetValue(Action& action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "skadi the ruthless");
     if (!boss) { return 1.0f; }
@@ -18,7 +17,7 @@ float SkadiMultiplier::GetValue(Action* action)
     {
         if (boss->HasAura(SPELL_SKADI_WHIRLWIND))
         {
-            if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<AvoidSkadiWhirlwindAction*>(action))
+            if (dynamic_cast<MovementAction*>(&action) && !dynamic_cast<AvoidSkadiWhirlwindAction*>(&action))
             {
                 return 0.0f;
             }
@@ -27,8 +26,8 @@ float SkadiMultiplier::GetValue(Action* action)
     else
     {
         // Bots tend to get stuck trying to attack the boss in the sky, not the adds on the ground
-        if (dynamic_cast<AttackAction*>(action)
-            && (action->GetTarget() == boss || action->GetTarget() == bossMount))
+        if (dynamic_cast<AttackAction*>(&action)
+            && (action.GetTarget() == boss || action.GetTarget() == bossMount))
         {
             return 0.0f;
         }
@@ -73,7 +72,7 @@ float SkadiMultiplier::GetValue(Action* action)
 
         // if (cloudActive)
         // {
-        //     if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<AvoidFreezingCloudAction*>(action))
+        //     if (dynamic_cast<MovementAction*>(&action) && !dynamic_cast<AvoidFreezingCloudAction*>(&action))
         //     {
         //         return 0.0f;
         //     }
@@ -83,14 +82,14 @@ float SkadiMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float YmironMultiplier::GetValue(Action* action)
+float YmironMultiplier::GetValue(Action& action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "king ymiron");
     if (!boss) { return 1.0f; }
 
     if (boss->FindCurrentSpellBySpellId(SPELL_BANE) || boss->HasAura(SPELL_BANE))
     {
-        if (dynamic_cast<AttackAction*>(action))
+        if (dynamic_cast<AttackAction*>(&action))
         {
             return 0.0f;
         }

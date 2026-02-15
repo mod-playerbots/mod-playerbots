@@ -6,6 +6,8 @@
 #ifndef _PLAYERBOT_RPGSTRATEGY_H
 #define _PLAYERBOT_RPGSTRATEGY_H
 
+#include "AiObjectContext.h"
+#include "RpgSubActions.h"
 #include "Strategy.h"
 
 class PlayerbotAI;
@@ -15,7 +17,18 @@ class RpgActionMultiplier : public Multiplier
 public:
     RpgActionMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "rpg action") {}
 
-    float GetValue(Action* action) override;
+    float GetValue(Action& action) override
+    {
+        const std::string nextAction = this->context->GetValue<std::string>("next rpg action")->Get();
+        const std::string name = action.getName();
+
+        if (!nextAction.empty() && dynamic_cast<RpgEnabled*>(&action) && name != nextAction)
+        {
+            return 0.0f;
+        }
+
+        return 1.0f;
+    };
 };
 
 class RpgStrategy : public Strategy

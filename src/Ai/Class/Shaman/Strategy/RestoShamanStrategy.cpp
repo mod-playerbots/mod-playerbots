@@ -4,8 +4,11 @@
  */
 
 #include "RestoShamanStrategy.h"
-
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "MovementActions.h"
+#include "ReachTargetActions.h"
+#include "ShamanActions.h"
+#include "UseItemAction.h"
 
 // ===== Action Node Factory =====
 class RestoShamanStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
@@ -35,27 +38,140 @@ public:
 private:
     static ActionNode* mana_tide_totem([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("mana tide totem",
-                              /*P*/ {},
-                              /*A*/ { NextAction("mana potion") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<UseManaPotion>(1.0f) },
+            /*C*/ {}
+        );
     }
-    static ActionNode* call_of_the_elements(PlayerbotAI*) { return new ActionNode("call of the elements", {}, {}, {}); }
-    static ActionNode* stoneclaw_totem(PlayerbotAI*) { return new ActionNode("stoneclaw totem", {}, {}, {}); }
-    static ActionNode* riptide_on_party(PlayerbotAI*) { return new ActionNode("riptide on party", {}, {}, {}); }
-    static ActionNode* chain_heal_on_party(PlayerbotAI*) { return new ActionNode("chain heal on party", {}, {}, {}); }
-    static ActionNode* healing_wave_on_party(PlayerbotAI*) { return new ActionNode("healing wave on party", {}, {}, {}); }
-    static ActionNode* lesser_healing_wave_on_party(PlayerbotAI*) { return new ActionNode("lesser healing wave on party", {}, {}, {}); }
-    static ActionNode* earth_shield_on_main_tank(PlayerbotAI*) { return new ActionNode("earth shield on main tank", {}, {}, {}); }
-    static ActionNode* cleanse_spirit_poison_on_party(PlayerbotAI*) { return new ActionNode("cleanse spirit poison on party", {}, {}, {}); }
-    static ActionNode* cleanse_spirit_disease_on_party(PlayerbotAI*) { return new ActionNode("cleanse spirit disease on party", {}, {}, {}); }
-    static ActionNode* cleanse_spirit_curse_on_party(PlayerbotAI*) { return new ActionNode("cleanse spirit curse on party", {}, {}, {}); }
-    static ActionNode* cleansing_totem(PlayerbotAI*) { return new ActionNode("cleansing totem", {}, {}, {}); }
-    static ActionNode* water_shield(PlayerbotAI*) { return new ActionNode("water shield", {}, {}, {}); }
-    static ActionNode* flame_shock(PlayerbotAI*) { return new ActionNode("flame shock", {}, {}, {}); }
-    static ActionNode* lava_burst(PlayerbotAI*) { return new ActionNode("lava burst", {}, {}, {}); }
-    static ActionNode* lightning_bolt(PlayerbotAI*) { return new ActionNode("lightning bolt", {}, {}, {}); }
-    static ActionNode* chain_lightning(PlayerbotAI*) { return new ActionNode("chain lightning", {}, {}, {}); }
+    static ActionNode* call_of_the_elements(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+    static ActionNode* stoneclaw_totem(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+    static ActionNode* riptide_on_party(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+    static ActionNode* chain_heal_on_party(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+    static ActionNode* healing_wave_on_party(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+    static ActionNode* lesser_healing_wave_on_party(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+    static ActionNode* earth_shield_on_main_tank(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+    static ActionNode* cleanse_spirit_poison_on_party(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+    static ActionNode* cleanse_spirit_disease_on_party(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+    static ActionNode* cleanse_spirit_curse_on_party(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+    static ActionNode* cleansing_totem(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+    static ActionNode* water_shield(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+    static ActionNode* flame_shock(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+    static ActionNode* lava_burst(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+    static ActionNode* lightning_bolt(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
+    static ActionNode* chain_lightning(PlayerbotAI*)
+    {
+        return new ActionNode(
+            {},
+            {},
+            {}
+        );
+    }
 };
 
 // ===== Single Target Strategy =====
@@ -70,55 +186,166 @@ void RestoShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     GenericShamanStrategy::InitTriggers(triggers);
 
     // Totem Triggers
-    triggers.push_back(new TriggerNode("call of the elements", { NextAction("call of the elements", 60.0f) }));
-    triggers.push_back(new TriggerNode("low health", { NextAction("stoneclaw totem", 40.0f) }));
-    triggers.push_back(new TriggerNode("medium mana", { NextAction("mana tide totem", ACTION_HIGH + 5) }));
+    triggers.push_back(
+        new TriggerNode(
+            "call of the elements",
+            {
+                CreateNextAction<CastCallOfTheElementsAction>(60.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "low health",
+            {
+                CreateNextAction<CastStoneclawTotemAction>(40.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "medium mana",
+            {
+                CreateNextAction<CastManaTideTotemAction>(ACTION_HIGH + 5.0f)
+            }
+        )
+    );
 
     // Healing Triggers
-    triggers.push_back(new TriggerNode("group heal setting", {
-                                                         NextAction("riptide on party", 27.0f),
-                                                         NextAction("chain heal on party", 26.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "group heal setting",
+            {
+                CreateNextAction<CastRiptideOnPartyAction>(27.0f),
+                CreateNextAction<CastChainHealAction>(26.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode("party member critical health", {
-                                                                   NextAction("riptide on party", 25.0f),
-                                                                   NextAction("healing wave on party", 24.0f),
-                                                                   NextAction("lesser healing wave on party", 23.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "party member critical health",
+            {
+                CreateNextAction<CastRiptideOnPartyAction>(25.0f),
+                CreateNextAction<CastHealingWaveOnPartyAction>(24.0f),
+                CreateNextAction<CastLesserHealingWaveOnPartyAction>(23.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode("party member low health", {
-                                                              NextAction("riptide on party", 19.0f),
-                                                              NextAction("healing wave on party", 18.0f),
-                                                              NextAction("lesser healing wave on party", 17.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "party member low health",
+            {
+                CreateNextAction<CastRiptideOnPartyAction>(19.0f),
+                CreateNextAction<CastHealingWaveOnPartyAction>(18.0f),
+                CreateNextAction<CastLesserHealingWaveOnPartyAction>(17.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode("party member medium health", {
-                                                                 NextAction("riptide on party", 16.0f),
-                                                                 NextAction("healing wave on party", 15.0f),
-                                                                 NextAction("lesser healing wave on party", 14.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "party member medium health",
+            {
+                CreateNextAction<CastRiptideOnPartyAction>(16.0f),
+                CreateNextAction<CastHealingWaveOnPartyAction>(15.0f),
+                CreateNextAction<CastLesserHealingWaveOnPartyAction>(14.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode("party member almost full health", {
-                                                                      NextAction("riptide on party", 12.0f),
-                                                                      NextAction("lesser healing wave on party", 11.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "party member almost full health",
+            {
+                CreateNextAction<CastRiptideOnPartyAction>(12.0f),
+                CreateNextAction<CastLesserHealingWaveOnPartyAction>(11.0f)
+            }
+        )
+    );
 
-    triggers.push_back(new TriggerNode("earth shield on main tank", { NextAction("earth shield on main tank", ACTION_HIGH + 7) }));
+    triggers.push_back(
+        new TriggerNode(
+            "earth shield on main tank",
+            {
+                CreateNextAction<CastEarthShieldOnMainTankAction>(ACTION_HIGH + 7.0f)
+            }
+        )
+    );
 
     // Dispel Triggers
-    triggers.push_back(new TriggerNode("party member cleanse spirit poison", { NextAction("cleanse spirit poison on party", ACTION_DISPEL + 2) }));
-    triggers.push_back(new TriggerNode("party member cleanse spirit disease", { NextAction("cleanse spirit disease on party", ACTION_DISPEL + 2) }));
-    triggers.push_back(new TriggerNode("party member cleanse spirit curse",{ NextAction("cleanse spirit curse on party", ACTION_DISPEL + 2) }));
+    triggers.push_back(
+        new TriggerNode(
+            "party member cleanse spirit poison",
+            {
+                CreateNextAction<CastCleanseSpiritPoisonOnPartyAction>(ACTION_DISPEL + 2.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "party member cleanse spirit disease",
+            {
+                CreateNextAction<CastCleanseSpiritDiseaseOnPartyAction>(ACTION_DISPEL + 2.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "party member cleanse spirit curse",
+            {
+                CreateNextAction<CastCleanseSpiritCurseOnPartyAction>(ACTION_DISPEL + 2.0f)
+            }
+        )
+    );
 
     // Range/Mana Triggers
-    triggers.push_back(new TriggerNode("enemy too close for spell", { NextAction("flee", ACTION_MOVE + 9) }));
-    triggers.push_back(new TriggerNode("party member to heal out of spell range", { NextAction("reach party member to heal", ACTION_CRITICAL_HEAL + 1) }));
-    triggers.push_back(new TriggerNode("water shield", { NextAction("water shield", 19.5f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "enemy too close for spell",
+            {
+                CreateNextAction<FleeAction>(ACTION_MOVE + 9.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "party member to heal out of spell range",
+            {
+                CreateNextAction<ReachPartyMemberToHealAction>(ACTION_CRITICAL_HEAL + 1.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "water shield",
+            {
+                CreateNextAction<CastWaterShieldAction>(19.5f)
+            }
+        )
+    );
 }
 
 void ShamanHealerDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("healer should attack",
-                                       { NextAction("flame shock", ACTION_DEFAULT + 0.2f),
-                                                         NextAction("lava burst", ACTION_DEFAULT + 0.1f),
-                                                         NextAction("lightning bolt", ACTION_DEFAULT) }));
+    triggers.push_back(
+        new TriggerNode(
+            "healer should attack",
+            {
+                CreateNextAction<CastFlameShockAction>(ACTION_DEFAULT + 0.2f),
+                CreateNextAction<CastLavaBurstAction>(ACTION_DEFAULT + 0.1f),
+                CreateNextAction<CastLightningBoltAction>(ACTION_DEFAULT)
+            }
+        )
+    );
 
     triggers.push_back(
-        new TriggerNode("medium aoe and healer should attack",
-                        { NextAction("chain lightning", ACTION_DEFAULT + 0.3f) }));
+        new TriggerNode(
+            "medium aoe and healer should attack",
+            {
+                CreateNextAction<CastChainLightningAction>(ACTION_DEFAULT + 0.3f)
+            }
+        )
+    );
 }

@@ -1,7 +1,9 @@
 #include "TradeStatusExtendedAction.h"
+#include "CreateNextAction.h"
 #include "Event.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
+#include "UnlockTradedItemAction.h"
 #include "WorldPacket.h"
 #include "TradeData.h"
 
@@ -70,7 +72,7 @@ bool TradeStatusExtendedAction::Execute(Event event)
             if (bot->getClass() == CLASS_ROGUE && bot->HasSpell(1804) && lockbox->IsLocked()) // Pick Lock spell
             {
                 // botAI->CastSpell(1804, bot, lockbox); // Attempt to cast Pick Lock on the lockbox
-                botAI->DoSpecificAction("unlock traded item");
+                botAI->DoSpecificAction(CreateNextAction<UnlockTradedItemAction>(1.0f).factory);
                 botAI->SetNextCheckDelay(4000); // Delay before accepting trade
             }
             else

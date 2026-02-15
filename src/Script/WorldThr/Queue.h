@@ -6,8 +6,7 @@
 #ifndef PLAYERBOT_QUEUE_H
 #define PLAYERBOT_QUEUE_H
 
-#include "Action.h"
-#include "Common.h"
+#include "ActionBasket.h"
 
 /**
  * @class Queue

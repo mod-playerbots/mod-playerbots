@@ -3,6 +3,7 @@
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 #include "RaidMcHelpers.h"
+#include "UniversalTauntAction.h"
 
 static constexpr float LIVING_BOMB_DISTANCE = 20.0f;
 static constexpr float INFERNO_DISTANCE = 20.0f;
@@ -89,7 +90,7 @@ bool McGolemaggTankAction::MoveUnitToPosition(Unit* target, const Position& tank
                           true);
         }
     }
-    else if (botAI->DoSpecificAction("taunt spell", Event(), true))
+    else if (botAI->DoSpecificAction(CreateNextAction<UniversalTauntAction>(1.0f).factory, Event(), true))
         return true;
     return false;
 }
@@ -169,7 +170,7 @@ bool McGolemaggAssistTankAttackCoreRagerAction::Execute(Event event)
         // Step 3.1: My Core Rager isn't attacking me. Attack until it does.
         if (bot->GetVictim() != myCoreRager)
             return Attack(myCoreRager);
-        return botAI->DoSpecificAction("taunt spell", event, true);
+        return botAI->DoSpecificAction(CreateNextAction<UniversalTauntAction>(1.0f).factory, event, true);
     }
 
     Unit* otherCoreRagerVictim = otherCoreRager->GetVictim();
@@ -184,7 +185,7 @@ bool McGolemaggAssistTankAttackCoreRagerAction::Execute(Event event)
             // Assume we are the only assist tank or the other assist tank is dead => pick up other Core Rager!
             if (bot->GetVictim() != otherCoreRager)
                 return Attack(otherCoreRager);
-            return botAI->DoSpecificAction("taunt spell", event, true);
+            return botAI->DoSpecificAction(CreateNextAction<UniversalTauntAction>(1.0f).factory, event, true);
         }
     }
 

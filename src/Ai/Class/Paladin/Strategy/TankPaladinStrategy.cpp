@@ -4,8 +4,10 @@
  */
 
 #include "TankPaladinStrategy.h"
-
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "GenericActions.h"
+#include "PaladinActions.h"
+#include "ReachTargetActions.h"
 
 class TankPaladinStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -23,18 +25,16 @@ private:
     static ActionNode* seal_of_command([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "seal of command",
             /*P*/ {},
-            /*A*/ { NextAction("seal of corruption") },
+            /*A*/ { CreateNextAction<CastSealOfCorruptionAction>(1.0f) },
             /*C*/ {}
         );
     }
     static ActionNode* seal_of_corruption([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "seal of corruption",
             /*P*/ {},
-            /*A*/ { NextAction("seal of vengeance") },
+            /*A*/ { CreateNextAction<CastSealOfVengeanceAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -42,9 +42,8 @@ private:
     static ActionNode* seal_of_vengeance([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "seal of vengeance",
             /*P*/ {},
-            /*A*/ { NextAction("seal of righteousness") },
+            /*A*/ { CreateNextAction<CastSealOfRighteousnessAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -52,9 +51,8 @@ private:
     static ActionNode* hand_of_reckoning([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "hand of reckoning",
             /*P*/ {},
-            /*A*/ { NextAction("righteous defense") },
+            /*A*/ { CreateNextAction<CastRighteousDefenseAction>(1.0f) },
             /*C*/ {}
         );
     }
@@ -68,10 +66,10 @@ TankPaladinStrategy::TankPaladinStrategy(PlayerbotAI* botAI) : GenericPaladinStr
 std::vector<NextAction> TankPaladinStrategy::getDefaultActions()
 {
     return {
-        NextAction("shield of righteousness", ACTION_DEFAULT + 0.6f),
-        NextAction("hammer of the righteous", ACTION_DEFAULT + 0.5f),
-        NextAction("judgement of wisdom", ACTION_DEFAULT + 0.4f),
-        NextAction("melee", ACTION_DEFAULT)
+        CreateNextAction<ShieldOfRighteousnessAction>(ACTION_DEFAULT + 0.6f),
+        CreateNextAction<CastHammerOfTheRighteousAction>(ACTION_DEFAULT + 0.5f),
+        CreateNextAction<CastJudgementOfWisdomAction>(ACTION_DEFAULT + 0.4f),
+        CreateNextAction<MeleeAction>(ACTION_DEFAULT)
     };
 }
 
@@ -83,7 +81,7 @@ void TankPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "seal",
             {
-                NextAction("seal of corruption", ACTION_HIGH)
+                CreateNextAction<CastSealOfCorruptionAction>(ACTION_HIGH)
             }
         )
     );
@@ -91,14 +89,14 @@ void TankPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "low mana",
             {
-                NextAction("seal of wisdom", ACTION_HIGH + 9)
+                CreateNextAction<CastSealOfWisdomAction>(ACTION_HIGH + 9.0f)
             }
         )
     );
     triggers.push_back(new TriggerNode(
         "light aoe",
         {
-            NextAction("avenger's shield", ACTION_HIGH + 5)
+            CreateNextAction<CastAvengersShieldAction>(ACTION_HIGH + 5.0f)
         }
     )
 );
@@ -106,8 +104,8 @@ void TankPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium aoe",
             {
-                NextAction("consecration", ACTION_HIGH + 7),
-                NextAction("avenger's shield", ACTION_HIGH + 6)
+                CreateNextAction<CastConsecrationAction>(ACTION_HIGH + 7.0f),
+                CreateNextAction<CastAvengersShieldAction>(ACTION_HIGH + 6.0f)
             }
         )
     );
@@ -115,14 +113,14 @@ void TankPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "lose aggro",
             {
-                NextAction("hand of reckoning", ACTION_HIGH + 7)
+                CreateNextAction<CastHandOfReckoningAction>(ACTION_HIGH + 7.0f)
             }
         )
     );
     triggers.push_back(
         new TriggerNode(
             "medium health",
-                { NextAction("holy shield", ACTION_HIGH + 4)
+                { CreateNextAction<CastHolyShieldAction>(ACTION_HIGH + 4.0f)
             }
         )
     );
@@ -130,7 +128,7 @@ void TankPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "low health",
             {
-                NextAction("holy shield", ACTION_HIGH + 4)
+                CreateNextAction<CastHolyShieldAction>(ACTION_HIGH + 4.0f)
             }
         )
     );
@@ -138,7 +136,7 @@ void TankPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "critical health",
             {
-                NextAction("holy shield", ACTION_HIGH + 4)
+                CreateNextAction<CastHolyShieldAction>(ACTION_HIGH + 4.0f)
             }
         )
     );
@@ -146,7 +144,7 @@ void TankPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
         "avenging wrath",
         {
-            NextAction("avenging wrath", ACTION_HIGH + 2)
+            CreateNextAction<CastAvengingWrathAction>(ACTION_HIGH + 2.0f)
         }
     )
 );
@@ -154,7 +152,7 @@ void TankPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "target critical health",
             {
-                NextAction("hammer of wrath", ACTION_CRITICAL_HEAL)
+                CreateNextAction<CastHammerOfWrathAction>(ACTION_CRITICAL_HEAL)
             }
         )
     );
@@ -162,7 +160,7 @@ void TankPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "righteous fury",
             {
-                NextAction("righteous fury", ACTION_HIGH + 8)
+                CreateNextAction<CastRighteousFuryAction>(ACTION_HIGH + 8.0f)
             }
         )
     );
@@ -170,7 +168,7 @@ void TankPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "medium group heal setting",
             {
-                NextAction("divine sacrifice", ACTION_HIGH + 5)
+                CreateNextAction<CastDivineSacrificeAction>(ACTION_HIGH + 5.0f)
             }
         )
     );
@@ -178,7 +176,7 @@ void TankPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "enough mana",
             {
-                NextAction("consecration", ACTION_HIGH + 4)
+                CreateNextAction<CastConsecrationAction>(ACTION_HIGH + 4.0f)
             }
         )
     );
@@ -186,7 +184,7 @@ void TankPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "not facing target",
             {
-                NextAction("set facing", ACTION_NORMAL + 7)
+                CreateNextAction<SetFacingTargetAction>(ACTION_NORMAL + 7.0f)
             }
         )
     );
@@ -194,7 +192,7 @@ void TankPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "enemy out of melee",
             {
-                NextAction("reach melee", ACTION_HIGH + 1)
+                CreateNextAction<ReachMeleeAction>(ACTION_HIGH + 1.0f)
             }
         )
     );

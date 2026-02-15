@@ -6,6 +6,8 @@
 #include "BuyAction.h"
 
 #include "BudgetValues.h"
+#include "CreateNextAction.h"
+#include "EquipAction.h"
 #include "Event.h"
 #include "ItemCountValue.h"
 #include "ItemUsageValue.h"
@@ -175,7 +177,7 @@ bool BuyAction::Execute(Event event)
 
                     if (needMoneyFor == NeedMoneyFor::gear)
                     {
-                        botAI->DoSpecificAction("equip upgrades");
+                        botAI->DoSpecificAction(CreateNextAction<EquipUpgradesAction>(1.0f).factory);
                     }
                 }
             }
@@ -206,7 +208,7 @@ bool BuyAction::Execute(Event event)
                 if (usage == ITEM_USAGE_REPLACE || usage == ITEM_USAGE_EQUIP ||
                     usage == ITEM_USAGE_BAD_EQUIP || usage == ITEM_USAGE_BROKEN_EQUIP)
                 {
-                    botAI->DoSpecificAction("equip upgrades");
+                    botAI->DoSpecificAction(CreateNextAction<EquipUpgradesAction>(1.0f).factory);
                     break;
                 }
             }

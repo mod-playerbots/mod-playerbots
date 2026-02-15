@@ -1,14 +1,20 @@
+#include "ObjectGuid.h"
+
 #include "AzjolNerubMultipliers.h"
-#include "AzjolNerubActions.h"
+#include "ObjectGuid.h"
 #include "GenericSpellActions.h"
 #include "ChooseTargetActions.h"
 #include "MovementActions.h"
-#include "AzjolNerubTriggers.h"
 #include "Action.h"
+#include "Playerbots.h"
+#include "AzjolNerubTriggers.h"
 
-float KrikthirMultiplier::GetValue(Action* action)
+float KrikthirMultiplier::GetValue(Action& action)
 {
-    if (!botAI->IsDps(bot)) { return 1.0f; }
+    if (!botAI->IsDps(bot))
+    {
+        return 1.0f;
+    }
 
     // Target is not findable from threat table using AI_VALUE2(),
     // therefore need to search manually for the unit name
@@ -40,12 +46,12 @@ float KrikthirMultiplier::GetValue(Action* action)
     if (boss && watcher)
     {
         // Do not target swap
-        if (dynamic_cast<DpsAssistAction*>(action))
+        if (dynamic_cast<DpsAssistAction*>(&action))
         {
             return 0.0f;
         }
 
-        if (action->getThreatType() == Action::ActionThreatType::Aoe)
+        if (action.getThreatType() == Action::ActionThreatType::Aoe)
         {
             return 0.0f;
         }

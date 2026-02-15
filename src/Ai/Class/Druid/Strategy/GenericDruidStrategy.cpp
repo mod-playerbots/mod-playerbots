@@ -5,7 +5,10 @@
 
 #include "GenericDruidStrategy.h"
 
-#include "Playerbots.h"
+#include "CreateNextAction.h"
+#include "DruidActions.h"
+#include "DruidShapeshiftActions.h"
+#include "GenericActions.h"
 
 class GenericDruidStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -26,74 +29,83 @@ public:
 private:
     static ActionNode* melee([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("melee",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* caster_form([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("caster form",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* cure_poison([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("cure poison",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* cure_poison_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("cure poison on party",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* abolish_poison([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("abolish poison",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* abolish_poison_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("abolish poison on party",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* rebirth([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("rebirth",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* entangling_roots_on_cc([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("entangling roots on cc",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ { CreateNextAction<CastCasterFormAction>(1.0f) },
+            /*A*/ {},
+            /*C*/ {}
+        );
     }
 
     static ActionNode* innervate([[maybe_unused]] PlayerbotAI* botAI)
     {
-        return new ActionNode("innervate",
-                              /*P*/ {},
-                              /*A*/ { NextAction("mana potion") },
-                              /*C*/ {});
+        return new ActionNode(
+            /*P*/ {},
+            /*A*/ { CreateNextAction<UseManaPotion>(1.0f) },
+            /*C*/ {}
+        );
     }
 };
 
@@ -107,52 +119,110 @@ void GenericDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     CombatStrategy::InitTriggers(triggers);
 
     triggers.push_back(
-        new TriggerNode("low health", { NextAction("barkskin", ACTION_HIGH + 7) }));
-
-    triggers.push_back(new TriggerNode("combat party member dead",
-                                       { NextAction("rebirth", ACTION_HIGH + 9) }));
-    triggers.push_back(new TriggerNode("being attacked",
-                                       { NextAction("nature's grasp", ACTION_HIGH + 1) }));
-    triggers.push_back(new TriggerNode("new pet", { NextAction("set pet stance", 60.0f) }));
+        new TriggerNode(
+            "low health",
+            {
+                CreateNextAction<CastBarkskinAction>(ACTION_HIGH + 7.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "combat party member dead",
+            {
+                CreateNextAction<CastRebirthAction>(ACTION_HIGH + 9.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "being attacked",
+            {
+                CreateNextAction<CastNaturesGraspAction>(ACTION_HIGH + 1.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "new pet",
+            {
+                CreateNextAction<SetPetStanceAction>(60.0f)
+            }
+        )
+    );
 }
 
 void DruidCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("party member cure poison",
-                        { NextAction("abolish poison on party", ACTION_DISPEL + 1) }));
-
+        new TriggerNode(
+            "party member cure poison",
+            {
+                CreateNextAction<CastAbolishPoisonOnPartyAction>(ACTION_DISPEL + 1.0f)
+            }
+        )
+    );
     triggers.push_back(
-        new TriggerNode("party member remove curse",
-                        { NextAction("remove curse on party", ACTION_DISPEL + 7) }));
-
+        new TriggerNode(
+            "party member remove curse",
+            {
+                CreateNextAction<CastDruidRemoveCurseOnPartyAction>(ACTION_DISPEL + 7.0f)
+            }
+        )
+    );
 }
 
 void DruidBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode(
-        "nature's swiftness", { NextAction("nature's swiftness", ACTION_HIGH + 9) }));
+    triggers.push_back(
+        new TriggerNode(
+            "nature's swiftness",
+            {
+                CreateNextAction<CastNaturesSwiftnessAction>(ACTION_HIGH + 9.0f)
+            }
+        )
+    );
 }
 
 void DruidCcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode(
-        "entangling roots", { NextAction("entangling roots on cc", ACTION_HIGH + 2) }));
-    triggers.push_back(new TriggerNode(
-        "entangling roots kite", { NextAction("entangling roots", ACTION_HIGH + 2) }));
-    triggers.push_back(new TriggerNode(
-        "hibernate", { NextAction("hibernate on cc", ACTION_HIGH + 3) }));
+    triggers.push_back(
+        new TriggerNode(
+            "entangling roots",
+            {
+                CreateNextAction<CastEntanglingRootsCcAction>(ACTION_HIGH + 2.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "entangling roots kite",
+            {
+                CreateNextAction<CastEntanglingRootsAction>(ACTION_HIGH + 2.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "hibernate",
+            {
+                CreateNextAction<CastHibernateCcAction>(ACTION_HIGH + 3.0f)
+            }
+        )
+    );
 }
 
 void DruidHealerDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("healer should attack",
-                        {
-                            NextAction("cancel tree form", ACTION_DEFAULT + 0.3f),
-                            NextAction("moonfire", ACTION_DEFAULT + 0.2f),
-                            NextAction("wrath", ACTION_DEFAULT + 0.1f),
-                            NextAction("starfire", ACTION_DEFAULT),
-}));
-
+        new TriggerNode(
+            "healer should attack",
+            {
+                CreateNextAction<CastCancelTreeFormAction>(ACTION_DEFAULT + 0.3f),
+                CreateNextAction<CastMoonfireAction>(ACTION_DEFAULT + 0.2f),
+                CreateNextAction<CastWrathAction>(ACTION_DEFAULT + 0.1f),
+                CreateNextAction<CastStarfireAction>(ACTION_DEFAULT),
+            }
+        )
+    );
 }

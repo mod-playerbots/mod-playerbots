@@ -2,6 +2,8 @@
 #include "AzjolNerubTriggers.h"
 #include "AiObject.h"
 #include "AiObjectContext.h"
+// Required due to excessive macro usage @TODO: Remove all macros.
+#include "DungeonStrategyUtils.h"
 
 bool KrikthirWebWrapTrigger::IsActive()
 {

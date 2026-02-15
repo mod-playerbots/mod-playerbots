@@ -9,7 +9,7 @@ class ErekemMultiplier : public Multiplier
         ErekemMultiplier(PlayerbotAI* ai) : Multiplier(ai, "erekem") {}
 
     public:
-        virtual float GetValue(Action* action);
+        virtual float GetValue(Action& action);
 };
 
 class IchoronMultiplier : public Multiplier
@@ -18,7 +18,7 @@ class IchoronMultiplier : public Multiplier
         IchoronMultiplier(PlayerbotAI* ai) : Multiplier(ai, "ichoron") {}
 
     public:
-        virtual float GetValue(Action* action);
+        virtual float GetValue(Action& action);
 };
 
 class ZuramatMultiplier : public Multiplier
@@ -27,7 +27,7 @@ class ZuramatMultiplier : public Multiplier
         ZuramatMultiplier(PlayerbotAI* ai) : Multiplier(ai, "zuramat the obliterator") {}
 
     public:
-        virtual float GetValue(Action* action);
+        virtual float GetValue(Action& action);
 };
 
 #endif

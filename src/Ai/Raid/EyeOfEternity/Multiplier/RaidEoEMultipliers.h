@@ -10,7 +10,7 @@ public:
     MalygosMultiplier(PlayerbotAI* ai) : Multiplier(ai, "malygos") {}
 
 public:
-    virtual float GetValue(Action* action);
+    virtual float GetValue(Action& action);
 };
 
 #endif
