@@ -42,21 +42,20 @@ enum class HealingManaEfficiency : uint8
 
 enum NewRpgStatus : int
 {
-    RPG_STATUS_START = 0,
-    // Going to far away place
-    RPG_GO_GRIND = 0,
-    RPG_GO_CAMP = 1,
+    //Initial Status
+    RPG_IDLE = 0,
+    RPG_GO_GRIND = 1,
+    RPG_GO_CAMP = 2,
     // Exploring nearby
-    RPG_WANDER_RANDOM = 2,
-    RPG_WANDER_NPC = 3,
+    RPG_WANDER_RANDOM = 3,
+    RPG_WANDER_NPC = 4,
     // Do Quest (based on quest status)
-    RPG_DO_QUEST = 4,
+    RPG_DO_QUEST = 5,
     // Travel
-    RPG_TRAVEL_FLIGHT = 5,
+
+    RPG_TRAVEL_FLIGHT = 6,
     // Taking a break
-    RPG_REST = 6,
-    // Initial status
-    RPG_IDLE = 7,
+    RPG_REST = 7,
     RPG_STATUS_END = 8
 };
 

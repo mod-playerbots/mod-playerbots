@@ -5,8 +5,6 @@
 
 #include "RacialsStrategy.h"
 
-#include "Playerbots.h"
-
 class RacialsStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
 public:

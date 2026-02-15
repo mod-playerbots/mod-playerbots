@@ -99,7 +99,7 @@ namespace
     }
 }
 
-bool FollowAction::Execute(Event event)
+bool FollowAction::Execute(Event /*event*/)
 {
     Formation* formation = AI_VALUE(Formation*, "formation");
     std::string const target = formation->GetTargetName();
@@ -311,7 +311,7 @@ bool FollowAction::CanDeadFollow(Unit* target)
     return true;
 }
 
-bool FleeToGroupLeaderAction::Execute(Event event)
+bool FleeToGroupLeaderAction::Execute(Event /*event*/)
 {
     Unit* fTarget = AI_VALUE(Unit*, "group leader");
     bool canFollow = Follow(fTarget);

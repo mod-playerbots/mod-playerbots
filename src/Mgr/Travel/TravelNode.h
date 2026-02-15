@@ -251,11 +251,11 @@ public:
     }
 
     // WorldLocation shortcuts
-    uint32 getMapId() { return point.getMapId(); }
-    float getX() { return point.getX(); }
-    float getY() { return point.getY(); }
-    float getZ() { return point.getZ(); }
-    float getO() { return point.getO(); }
+    uint32 getMapId() { return point.GetMapId(); }
+    float getX() { return point.GetPositionX(); }
+    float getY() { return point.GetPositionY(); }
+    float getZ() { return point.GetPositionZ(); }
+    float getO() { return point.GetOrientation(); }
     float getDistance(WorldPosition pos) { return point.distance(pos); }
     float getDistance(TravelNode* node) { return point.distance(node->getPosition()); }
     float fDist(TravelNode* node) { return point.fDist(node->getPosition()); }

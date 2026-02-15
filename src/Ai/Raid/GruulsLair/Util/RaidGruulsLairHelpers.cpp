@@ -164,21 +164,21 @@ namespace GruulsLairHelpers
         {
             float angle = 2 * M_PI * i / NUM_POSITIONS;
             Position candidatePos;
-            candidatePos.m_positionX = bot->GetPositionX() + SEARCH_RADIUS * cos(angle);
-            candidatePos.m_positionY = bot->GetPositionY() + SEARCH_RADIUS * sin(angle);
-            candidatePos.m_positionZ = bot->GetPositionZ();
+            candidatePos.Relocate(bot->GetPositionX() + SEARCH_RADIUS * cos(angle),
+                                  bot->GetPositionY() + SEARCH_RADIUS * sin(angle),
+                                  bot->GetPositionZ());
 
-            float destX = candidatePos.m_positionX, destY = candidatePos.m_positionY, destZ = candidatePos.m_positionZ;
+            float destX = candidatePos.GetPositionX();
+            float destY = candidatePos.GetPositionY();
+            float destZ = candidatePos.GetPositionZ();
             if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(),
                 bot->GetPositionZ(), destX, destY, destZ, true))
                 continue;
 
-            if (destX != candidatePos.m_positionX || destY != candidatePos.m_positionY)
+            if (destX != candidatePos.GetPositionX() || destY != candidatePos.GetPositionY())
                 continue;
 
-            candidatePos.m_positionX = destX;
-            candidatePos.m_positionY = destY;
-            candidatePos.m_positionZ = destZ;
+            candidatePos.Relocate(destX, destY, destZ);
 
             if (IsPositionSafe(botAI, bot, candidatePos))
             {

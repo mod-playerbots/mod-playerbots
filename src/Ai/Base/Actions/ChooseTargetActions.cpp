@@ -30,38 +30,7 @@ bool AttackEnemyFlagCarrierAction::isUseful()
            PlayerHasFlag::IsCapturingFlag(bot);
 }
 
-bool AttackAnythingAction::isUseful()
-{
-    if (!bot || !botAI)  // Prevents invalid accesses
-        return false;
-
-    if (!botAI->AllowActivity(GRIND_ACTIVITY))  // Bot cannot be active
-        return false;
-
-    if (botAI->HasStrategy("stay", BOT_STATE_NON_COMBAT))
-        return false;
-
-    if (bot->IsInCombat())
-        return false;
-
-    Unit* target = GetTarget();
-    if (!target || !target->IsInWorld())  // Checks if the target is valid and in the world
-        return false;
-
-    std::string const name = std::string(target->GetName());
-    if (!name.empty() &&
-        (name.find("Dummy") != std::string::npos ||
-         name.find("Charge Target") != std::string::npos ||
-         name.find("Melee Target") != std::string::npos ||
-         name.find("Ranged Target") != std::string::npos))
-    {
-        return false;
-    }
-
-    return true;
-}
-
-bool DropTargetAction::Execute(Event event)
+bool DropTargetAction::Execute(Event /*event*/)
 {
     Unit* target = context->GetValue<Unit*>("current target")->Get();
     if (target && target->isDead())
@@ -127,7 +96,38 @@ bool AttackAnythingAction::Execute(Event event)
     return result;
 }
 
-bool AttackAnythingAction::isPossible() { return AttackAction::isPossible() && GetTarget(); }
+bool AttackAnythingAction::isUseful()
+{
+    if (!bot || !botAI)  // Prevents invalid accesses
+        return false;
+
+    if (!botAI->AllowActivity(GRIND_ACTIVITY))  // Bot cannot be active
+        return false;
+
+    if (botAI->HasStrategy("stay", BOT_STATE_NON_COMBAT))
+        return false;
+
+    if (bot->IsInCombat())
+        return false;
+
+    Unit* target = GetTarget();
+    if (!target || !target->IsInWorld())  // Checks if the target is valid and in the world
+        return false;
+
+    std::string const name = std::string(target->GetName());
+    if (!name.empty() &&
+        (name.find("Dummy") != std::string::npos ||
+         name.find("Charge Target") != std::string::npos ||
+         name.find("Melee Target") != std::string::npos ||
+         name.find("Ranged Target") != std::string::npos))
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool AttackAnythingAction::isPossible() { return GetTarget() && AttackAction::isPossible(); }
 
 bool DpsAssistAction::isUseful()
 {
@@ -137,7 +137,7 @@ bool DpsAssistAction::isUseful()
     return true;
 }
 
-bool AttackRtiTargetAction::Execute(Event event)
+bool AttackRtiTargetAction::Execute(Event /*event*/)
 {
     Unit* rtiTarget = AI_VALUE(Unit*, "rti target");
 

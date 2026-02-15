@@ -27,6 +27,7 @@ class CastHungerForBloodAction : public CastBuffSpellAction
 {
 public:
     CastHungerForBloodAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "hunger for blood") {}
+
     std::string const GetTargetName() override { return "current target"; }
 };
 
@@ -43,9 +44,9 @@ class CastStealthAction : public CastBuffSpellAction
 public:
     CastStealthAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "stealth") {}
 
-    std::string const GetTargetName() override { return "self target"; }
     bool isUseful() override;
     bool isPossible() override;
+    std::string const GetTargetName() override { return "self target"; }
 };
 
 class UnstealthAction : public Action
@@ -61,8 +62,8 @@ class CheckStealthAction : public Action
 public:
     CheckStealthAction(PlayerbotAI* botAI) : Action(botAI, "check stealth") {}
 
-    bool isPossible() override { return true; }
     bool Execute(Event event) override;
+    bool isPossible() override { return true; }
 };
 
 class CastKickAction : public CastSpellAction
@@ -131,6 +132,7 @@ class CastEnvenomAction : public CastMeleeSpellAction
 {
 public:
     CastEnvenomAction(PlayerbotAI* ai) : CastMeleeSpellAction(ai, "envenom") {}
+
     bool isUseful() override;
     bool isPossible() override;
 };
@@ -139,37 +141,42 @@ class CastTricksOfTheTradeOnMainTankAction : public BuffOnMainTankAction
 {
 public:
     CastTricksOfTheTradeOnMainTankAction(PlayerbotAI* ai) : BuffOnMainTankAction(ai, "tricks of the trade", true) {}
-    virtual bool isUseful() override;
+
+    bool isUseful() override;
 };
 
 class UseDeadlyPoisonAction : public UseItemAction
 {
 public:
     UseDeadlyPoisonAction(PlayerbotAI* ai) : UseItemAction(ai, "Deadly Poison") {}
-    virtual bool Execute(Event event) override;
-    virtual bool isPossible() override;
+
+    bool Execute(Event event) override;
+    bool isPossible() override;
 };
 
 class UseInstantPoisonAction : public UseItemAction
 {
 public:
     UseInstantPoisonAction(PlayerbotAI* ai) : UseItemAction(ai, "Instant Poison") {}
-    virtual bool Execute(Event event) override;
-    virtual bool isPossible() override;
+
+    bool Execute(Event event) override;
+    bool isPossible() override;
 };
 
 class UseInstantPoisonOffHandAction : public UseItemAction
 {
 public:
     UseInstantPoisonOffHandAction(PlayerbotAI* ai) : UseItemAction(ai, "Instant Poison Off Hand") {}
-    virtual bool Execute(Event event) override;
-    virtual bool isPossible() override;
+
+    bool Execute(Event event) override;
+    bool isPossible() override;
 };
 
 class FanOfKnivesAction : public CastMeleeSpellAction
 {
 public:
     FanOfKnivesAction(PlayerbotAI* ai) : CastMeleeSpellAction(ai, "fan of knives") {}
+
     ActionThreatType getThreatType() override { return ActionThreatType::Aoe; }
 };
 
