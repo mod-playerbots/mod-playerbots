@@ -176,7 +176,6 @@ bool FollowAction::Execute(Event /*event*/)
 
                 if (movingAllowed && !dupMove && !waiting)
                 {
-
                     if (bot->IsSitState())
                         bot->SetStandState(UNIT_STAND_STATE_STAND);
 
@@ -198,9 +197,7 @@ bool FollowAction::Execute(Event /*event*/)
                             /*forceDestination*/ false);
                     }
                     else
-                    {
                         return false;
-                    }
 
                     float delay = 1000.0f * MoveDelay(bot->GetExactDist(destX, destY, destZ));
                     delay = std::clamp(delay, 0.0f, static_cast<float>(sPlayerbotAIConfig.maxWaitForMove));
