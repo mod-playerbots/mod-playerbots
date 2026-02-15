@@ -10,11 +10,11 @@
 #include "Event.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
-#include "Playerbots.h"
+#include "PlayerbotAI.h"
 #include "ServerFacade.h"
 #include "NearestGameObjects.h"
 
-bool RevealGatheringItemAction::Execute(Event event)
+bool RevealGatheringItemAction::Execute(Event /*event*/)
 {
     if (!bot->GetGroup())
         return false;

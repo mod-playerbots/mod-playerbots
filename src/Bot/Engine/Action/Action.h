@@ -6,7 +6,6 @@
 #pragma once
 
 #include "AiObject.h"
-#include "Common.h"
 #include "Event.h"
 #include "Value.h"
 
@@ -60,8 +59,27 @@ public:
     virtual ~Action(void) {}
 
     virtual bool Execute([[maybe_unused]] Event event) { return true; }
-    virtual bool isPossible() { return true; }
+
+    /**
+     * @brief First validation check - determines if this action is contextually useful
+     *
+     * Performs lightweight checks to evaluate whether the action makes sense
+     * in the current situation. Called before isPossible() during action selection.
+     *
+     * @return true if the action is useful, false otherwise
+     */
     virtual bool isUseful() { return true; }
+
+    /**
+     * @brief Second validation check - determines if this action can be executed
+     *
+     * Performs hard pre-execution validation against the event and game state.
+     * Called after isUseful() passes, before Execute().
+     *
+     * @return true if the action is possible, false otherwise
+     */
+    virtual bool isPossible() { return true; }
+
     virtual std::vector<NextAction> getPrerequisites() { return {}; }
     virtual std::vector<NextAction> getAlternatives() { return {}; }
     virtual std::vector<NextAction> getContinuers() { return {}; }

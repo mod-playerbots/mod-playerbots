@@ -25,8 +25,7 @@ MELEE_ACTION_U(CastBattleShoutTauntAction, "battle shout", CastSpellAction::isUs
 class CastDemoralizingShoutAction : public CastMeleeDebuffSpellAction
 {
 public:
-    CastDemoralizingShoutAction(PlayerbotAI* botAI)
-        : CastMeleeDebuffSpellAction(botAI, "demoralizing shout") {}
+    CastDemoralizingShoutAction(PlayerbotAI* botAI) : CastMeleeDebuffSpellAction(botAI, "demoralizing shout") {}
 };
 
 class CastDemoralizingShoutWithoutLifeTimeCheckAction : public CastMeleeDebuffSpellAction
@@ -140,8 +139,8 @@ class CastVigilanceAction : public BuffOnPartyAction
 public:
     CastVigilanceAction(PlayerbotAI* botAI) : BuffOnPartyAction(botAI, "vigilance") {}
 
-    Unit* GetTarget() override;
     bool Execute(Event event) override;
+    Unit* GetTarget() override;
 };
 
 class CastRetaliationAction : public CastBuffSpellAction
@@ -157,10 +156,10 @@ class CastShatteringThrowAction : public CastSpellAction
 public:
     CastShatteringThrowAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "shattering throw") {}
 
-    Unit* GetTarget() override;
+    bool Execute(Event event) override;
     bool isUseful() override;
     bool isPossible() override;
-    bool Execute(Event event) override;
+    Unit* GetTarget() override;
 };
 
 #endif

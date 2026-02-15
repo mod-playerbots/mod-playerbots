@@ -9,7 +9,6 @@
 #include "FleeManager.h"
 #include "GameGraveyard.h"
 #include "MapMgr.h"
-#include "PlayerbotFactory.h"
 #include "Playerbots.h"
 #include "RandomPlayerbotMgr.h"
 #include "ServerFacade.h"
@@ -74,7 +73,7 @@ bool ReviveFromCorpseAction::Execute(Event event)
     return true;
 }
 
-bool FindCorpseAction::Execute(Event event)
+bool FindCorpseAction::Execute(Event /*event*/)
 {
     if (bot->InBattleground())
         return false;
@@ -150,7 +149,7 @@ bool FindCorpseAction::Execute(Event event)
             {
                 float rx, ry, rz;
                 if (manager.CalculateDestination(&rx, &ry, &rz))
-                    moveToPos = WorldPosition(moveToPos.getMapId(), rx, ry, rz, 0.0);
+                    moveToPos = WorldPosition(moveToPos.GetMapId(), rx, ry, rz, 0.0);
                 else if (!moveToPos.GetReachableRandomPointOnGround(bot, reclaimDist, urand(0, 1)))
                     moveToPos = corpsePos;
             }
@@ -170,7 +169,7 @@ bool FindCorpseAction::Execute(Event event)
         {
             bot->GetMotionMaster()->Clear();
             bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
-            bot->TeleportTo(moveToPos.getMapId(), moveToPos.getX(), moveToPos.getY(), moveToPos.getZ(), 0);
+            bot->TeleportTo(moveToPos.GetMapId(), moveToPos.GetPositionX(), moveToPos.GetPositionY(), moveToPos.GetPositionZ(), 0);
         }
 
         moved = true;
@@ -184,7 +183,7 @@ bool FindCorpseAction::Execute(Event event)
             if (deadTime < 10 * MINUTE && dCount < 5)  // Look for corpse up to 30 minutes.
             {
                 moved =
-                    MoveTo(moveToPos.getMapId(), moveToPos.getX(), moveToPos.getY(), moveToPos.getZ(), false, false);
+                    MoveTo(moveToPos.GetMapId(), moveToPos.GetPositionX(), moveToPos.GetPositionY(), moveToPos.GetPositionZ(), false, false);
             }
 
             if (!moved)
@@ -237,10 +236,10 @@ GraveyardStruct const* SpiritHealerAction::GetGrave(bool startZone)
             {
                 uint32 areaId = 0;
                 uint32 zoneId = 0;
-                sMapMgr->GetZoneAndAreaId(bot->GetPhaseMask(), zoneId, areaId, travelPos.getMapId(), travelPos.getX(),
-                                          travelPos.getY(), travelPos.getZ());
-                ClosestGrave = sGraveyard->GetClosestGraveyard(travelPos.getMapId(), travelPos.getX(), travelPos.getY(),
-                                                               travelPos.getZ(), bot->GetTeamId(), areaId, zoneId,
+                sMapMgr->GetZoneAndAreaId(bot->GetPhaseMask(), zoneId, areaId, travelPos.GetMapId(), travelPos.GetPositionX(),
+                                          travelPos.GetPositionY(), travelPos.GetPositionZ());
+                ClosestGrave = sGraveyard->GetClosestGraveyard(travelPos.GetMapId(), travelPos.GetPositionX(), travelPos.GetPositionY(),
+                                                               travelPos.GetPositionZ(), bot->GetTeamId(), areaId, zoneId,
                                                                bot->getClass() == CLASS_DEATH_KNIGHT);
 
                 if (ClosestGrave)
@@ -293,7 +292,7 @@ GraveyardStruct const* SpiritHealerAction::GetGrave(bool startZone)
     return ClosestGrave;
 }
 
-bool SpiritHealerAction::Execute(Event event)
+bool SpiritHealerAction::Execute(Event /*event*/)
 {
     Corpse* corpse = bot->GetCorpse();
     if (!corpse)

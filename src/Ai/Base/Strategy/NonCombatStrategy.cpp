@@ -5,8 +5,6 @@
 
 #include "NonCombatStrategy.h"
 
-#include "Playerbots.h"
-
 void NonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode("random", { NextAction("clean quest log", 1.0f) }));

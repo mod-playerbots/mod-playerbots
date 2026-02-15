@@ -9,17 +9,12 @@
 #include "ArenaTeamMgr.h"
 #include "Config.h"
 #include "DatabaseEnv.h"
-#include "GuildMgr.h"
-#include "PlayerbotFactory.h"
-#include "Playerbots.h"
-#include "PlayerbotGuildMgr.h"
+#include "PlayerbotAI.h"
 #include "ScriptMgr.h"
 #include "SharedDefines.h"
 #include "SocialMgr.h"
 #include "Timer.h"
-#include "Guild.h"            // EmblemInfo::SaveToDB
 #include "Log.h"
-#include "GuildMgr.h"
 
 constexpr RandomPlayerbotFactory::NameRaceAndGender RandomPlayerbotFactory::CombineRaceAndGender(uint8 race,
                                                                                                 uint8 gender)
@@ -278,7 +273,7 @@ std::string const RandomPlayerbotFactory::CreateRandomBotName(NameRaceAndGender 
             botName.clear();
             continue;
         }
-        return std::move(botName);
+        return botName;
     }
 
     // TRUE RANDOM NAME GENERATION
@@ -303,11 +298,11 @@ std::string const RandomPlayerbotFactory::CreateRandomBotName(NameRaceAndGender 
             botName.clear();
             continue;
         }
-        return std::move(botName);
+        return botName;
     }
     LOG_ERROR("playerbots", "Random name generation failed.");
     botName.clear();
-    return std::move(botName);
+    return botName;
 }
 
 // Calculates the total number of required accounts, either using the specified randomBotAccountCount

@@ -2,6 +2,7 @@
 #include "RaidKarazhanHelpers.h"
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
+#include "RaidBossHelpers.h"
 
 using namespace KarazhanHelpers;
 
@@ -9,7 +10,7 @@ using namespace KarazhanHelpers;
 
 // Mana Warps blow up when they die for massive raid damage
 // But they cannot cast the ability if they are stunned
-bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event event)
+bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event /*event*/)
 {
     Unit* manaWarp = GetFirstAliveUnitByEntry(botAI, NPC_MANA_WARP);
     if (!manaWarp)
@@ -39,12 +40,12 @@ bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event event)
 // Attumen the Huntsman
 
 // Prioritize Midnight until Attumen is mounted
-bool AttumenTheHuntsmanMarkTargetAction::Execute(Event event)
+bool AttumenTheHuntsmanMarkTargetAction::Execute(Event /*event*/)
 {
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
     if (attumenMounted)
     {
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
             MarkTargetWithStar(bot, attumenMounted);
 
         SetRtiTarget(botAI, "star", attumenMounted);
@@ -57,7 +58,7 @@ bool AttumenTheHuntsmanMarkTargetAction::Execute(Event event)
     }
     else if (Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight"))
     {
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
             MarkTargetWithStar(bot, midnight);
 
         if (!botAI->IsAssistTankOfIndex(bot, 0))
@@ -76,7 +77,7 @@ bool AttumenTheHuntsmanMarkTargetAction::Execute(Event event)
 }
 
 // Off tank should move Attumen out of the way so he doesn't cleave bots
-bool AttumenTheHuntsmanSplitBossesAction::Execute(Event event)
+bool AttumenTheHuntsmanSplitBossesAction::Execute(Event /*event*/)
 {
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
     if (!midnight)
@@ -104,7 +105,7 @@ bool AttumenTheHuntsmanSplitBossesAction::Execute(Event event)
 }
 
 // Stack behind mounted Attumen (inside minimum range of Berserker Charge)
-bool AttumenTheHuntsmanStackBehindAction::Execute(Event event)
+bool AttumenTheHuntsmanStackBehindAction::Execute(Event /*event*/)
 {
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
     if (!attumenMounted)
@@ -125,7 +126,7 @@ bool AttumenTheHuntsmanStackBehindAction::Execute(Event event)
 }
 
 // Reset timer for bots to pause DPS when Attumen mounts Midnight
-bool AttumenTheHuntsmanManageDpsTimerAction::Execute(Event event)
+bool AttumenTheHuntsmanManageDpsTimerAction::Execute(Event /*event*/)
 {
     Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight");
     if (!midnight)
@@ -152,7 +153,7 @@ bool AttumenTheHuntsmanManageDpsTimerAction::Execute(Event event)
 
 // Moroes
 
-bool MoroesMainTankAttackBossAction::Execute(Event event)
+bool MoroesMainTankAttackBossAction::Execute(Event /*event*/)
 {
     Unit* moroes = AI_VALUE2(Unit*, "find target", "moroes");
     if (!moroes)
@@ -168,7 +169,7 @@ bool MoroesMainTankAttackBossAction::Execute(Event event)
 }
 
 // Mark targets with skull in the recommended kill order
-bool MoroesMarkTargetAction::Execute(Event event)
+bool MoroesMarkTargetAction::Execute(Event /*event*/)
 {
     Unit* dorothea = AI_VALUE2(Unit*, "find target", "baroness dorothea millstipe");
     Unit* catriona = AI_VALUE2(Unit*, "find target", "lady catriona von'indi");
@@ -180,7 +181,7 @@ bool MoroesMarkTargetAction::Execute(Event event)
 
     if (target)
     {
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
             MarkTargetWithSkull(bot, target);
 
         SetRtiTarget(botAI, "skull", target);
@@ -193,7 +194,7 @@ bool MoroesMarkTargetAction::Execute(Event event)
 
 // Tank the boss in the center of the room
 // Move to healers after Repentenace to break the stun
-bool MaidenOfVirtueMoveBossToHealerAction::Execute(Event event)
+bool MaidenOfVirtueMoveBossToHealerAction::Execute(Event /*event*/)
 {
     Unit* maiden = AI_VALUE2(Unit*, "find target", "maiden of virtue");
     if (!maiden)
@@ -247,7 +248,7 @@ bool MaidenOfVirtueMoveBossToHealerAction::Execute(Event event)
 }
 
 // Spread out ranged DPS between the pillars
-bool MaidenOfVirtuePositionRangedAction::Execute(Event event)
+bool MaidenOfVirtuePositionRangedAction::Execute(Event /*event*/)
 {
     const uint8 maxIndex = 7;
     uint8 index = 0;
@@ -287,7 +288,7 @@ bool MaidenOfVirtuePositionRangedAction::Execute(Event event)
 // The Big Bad Wolf
 
 // Tank the boss at the front left corner of the stage
-bool BigBadWolfPositionBossAction::Execute(Event event)
+bool BigBadWolfPositionBossAction::Execute(Event /*event*/)
 {
     Unit* wolf = AI_VALUE2(Unit*, "find target", "the big bad wolf");
     if (!wolf)
@@ -318,7 +319,7 @@ bool BigBadWolfPositionBossAction::Execute(Event event)
 }
 
 // Run away, little girl, run away
-bool BigBadWolfRunAwayFromBossAction::Execute(Event event)
+bool BigBadWolfRunAwayFromBossAction::Execute(Event /*event*/)
 {
     const ObjectGuid botGuid = bot->GetGUID();
     uint8 index = bigBadWolfRunIndex.count(botGuid) ? bigBadWolfRunIndex[botGuid] : 0;
@@ -341,7 +342,7 @@ bool BigBadWolfRunAwayFromBossAction::Execute(Event event)
 // Romulo and Julianne
 
 // Keep the couple within 10% HP of each other
-bool RomuloAndJulianneMarkTargetAction::Execute(Event event)
+bool RomuloAndJulianneMarkTargetAction::Execute(Event /*event*/)
 {
     Unit* romulo = AI_VALUE2(Unit*, "find target", "romulo");
     if (!romulo)
@@ -370,7 +371,7 @@ bool RomuloAndJulianneMarkTargetAction::Execute(Event event)
 // The Wizard of Oz
 
 // Mark targets with skull in the recommended kill order
-bool WizardOfOzMarkTargetAction::Execute(Event event)
+bool WizardOfOzMarkTargetAction::Execute(Event /*event*/)
 {
     Unit* dorothee = AI_VALUE2(Unit*, "find target", "dorothee");
     Unit* tito = AI_VALUE2(Unit*, "find target", "tito");
@@ -387,7 +388,7 @@ bool WizardOfOzMarkTargetAction::Execute(Event event)
 }
 
 // Mages spam Scorch on Strawman to disorient him
-bool WizardOfOzScorchStrawmanAction::Execute(Event event)
+bool WizardOfOzScorchStrawmanAction::Execute(Event /*event*/)
 {
     Unit* strawman = AI_VALUE2(Unit*, "find target", "strawman");
     if (strawman && botAI->CanCastSpell("scorch", strawman))
@@ -399,13 +400,13 @@ bool WizardOfOzScorchStrawmanAction::Execute(Event event)
 // The Curator
 
 // Prioritize destroying Astral Flares
-bool TheCuratorMarkAstralFlareAction::Execute(Event event)
+bool TheCuratorMarkAstralFlareAction::Execute(Event /*event*/)
 {
     Unit* flare = AI_VALUE2(Unit*, "find target", "astral flare");
     if (!flare)
         return false;
 
-    if (IsInstanceTimerManager(botAI, bot))
+    if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
         MarkTargetWithSkull(bot, flare);
 
     SetRtiTarget(botAI, "skull", flare);
@@ -415,7 +416,7 @@ bool TheCuratorMarkAstralFlareAction::Execute(Event event)
 
 // Tank the boss in the center of the hallway near the Guardian's Library
 // Main tank and off tank will attack the boss; others will focus on Astral Flares
-bool TheCuratorPositionBossAction::Execute(Event event)
+bool TheCuratorPositionBossAction::Execute(Event /*event*/)
 {
     Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
     if (!curator)
@@ -449,7 +450,7 @@ bool TheCuratorPositionBossAction::Execute(Event event)
 }
 
 // Spread out ranged DPS to avoid Arcing Sear damage
-bool TheCuratorSpreadRangedAction::Execute(Event event)
+bool TheCuratorSpreadRangedAction::Execute(Event /*event*/)
 {
     const float minDistance = 5.0f;
     Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance);
@@ -467,13 +468,13 @@ bool TheCuratorSpreadRangedAction::Execute(Event event)
 // Terestian Illhoof
 
 // Prioritize (1) Demon Chains, (2) Kil'rek, (3) Illhoof
-bool TerestianIllhoofMarkTargetAction::Execute(Event event)
+bool TerestianIllhoofMarkTargetAction::Execute(Event /*event*/)
 {
-    Unit* demonChains = AI_VALUE2(Unit*, "find target", "demon chains");
-    Unit* kilrek = AI_VALUE2(Unit*, "find target", "kil'rek");
+    Unit* demonChains = GetFirstAliveUnitByEntry(botAI, NPC_DEMON_CHAINS);
+    Unit* kilrek = GetFirstAliveUnitByEntry(botAI, NPC_KILREK);
     Unit* illhoof = AI_VALUE2(Unit*, "find target", "terestian illhoof");
-    Unit* target = GetFirstAliveUnit({demonChains, kilrek, illhoof});
 
+    Unit* target = GetFirstAliveUnit({demonChains, kilrek, illhoof});
     if (target)
         MarkTargetWithSkull(bot, target);
 
@@ -483,7 +484,7 @@ bool TerestianIllhoofMarkTargetAction::Execute(Event event)
 // Shade of Aran
 
 // Run to the edge of the room to avoid Arcane Explosion
-bool ShadeOfAranRunAwayFromArcaneExplosionAction::Execute(Event event)
+bool ShadeOfAranRunAwayFromArcaneExplosionAction::Execute(Event /*event*/)
 {
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
     if (!aran)
@@ -502,7 +503,7 @@ bool ShadeOfAranRunAwayFromArcaneExplosionAction::Execute(Event event)
 }
 
 // I will not move when Flame Wreath is cast or the raid blows up
-bool ShadeOfAranStopMovingDuringFlameWreathAction::Execute(Event event)
+bool ShadeOfAranStopMovingDuringFlameWreathAction::Execute(Event /*event*/)
 {
     AI_VALUE(LastMovement&, "last movement").Set(nullptr);
 
@@ -517,7 +518,7 @@ bool ShadeOfAranStopMovingDuringFlameWreathAction::Execute(Event event)
 }
 
 // Mark Conjured Elementals with skull so DPS can burn them down
-bool ShadeOfAranMarkConjuredElementalAction::Execute(Event event)
+bool ShadeOfAranMarkConjuredElementalAction::Execute(Event /*event*/)
 {
     Unit* elemental = GetFirstAliveUnitByEntry(botAI, NPC_CONJURED_ELEMENTAL);
 
@@ -529,7 +530,7 @@ bool ShadeOfAranMarkConjuredElementalAction::Execute(Event event)
 
 // Don't get closer than 11 yards to Aran to avoid counterspell
 // Don't get farther than 15 yards from Aran to avoid getting stuck in alcoves
-bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event event)
+bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event /*event*/)
 {
     Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
     if (!aran)
@@ -593,7 +594,7 @@ bool ShadeOfAranRangedMaintainDistanceAction::Execute(Event event)
 
 // One tank bot per phase will dance in and out of the red beam (5 seconds in, 5 seconds out)
 // Tank bots will ignore void zones--their positioning is too important to risk losing beam control
-bool NetherspiteBlockRedBeamAction::Execute(Event event)
+bool NetherspiteBlockRedBeamAction::Execute(Event /*event*/)
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
     if (!netherspite)
@@ -680,7 +681,7 @@ Position NetherspiteBlockRedBeamAction::GetPositionOnBeam(Unit* netherspite, Uni
 
 // Two non-Rogue/Warrior DPS bots will block the blue beam for each phase (swap at 25 debuff stacks)
 // When avoiding void zones, blocking bots will move along the beam to continue blocking
-bool NetherspiteBlockBlueBeamAction::Execute(Event event)
+bool NetherspiteBlockBlueBeamAction::Execute(Event /*event*/)
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
     if (!netherspite)
@@ -773,7 +774,7 @@ bool NetherspiteBlockBlueBeamAction::Execute(Event event)
 // Two healer bots will block the green beam for each phase (swap at 25 debuff stacks)
 // OR one rogue or DPS warrior bot will block the green beam for an entire phase (if they begin the phase as the blocker)
 // When avoiding void zones, blocking bots will move along the beam to continue blocking
-bool NetherspiteBlockGreenBeamAction::Execute(Event event)
+bool NetherspiteBlockGreenBeamAction::Execute(Event /*event*/)
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
     if (!netherspite)
@@ -863,7 +864,7 @@ bool NetherspiteBlockGreenBeamAction::Execute(Event event)
 }
 
 // All bots not currently blocking a beam will avoid beams and void zones
-bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event event)
+bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
     if (!netherspite)
@@ -979,7 +980,7 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::IsAwayFromBeams(
     return true;
 }
 
-bool NetherspiteBanishPhaseAvoidVoidZoneAction::Execute(Event event)
+bool NetherspiteBanishPhaseAvoidVoidZoneAction::Execute(Event /*event*/)
 {
     std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
 
@@ -992,7 +993,7 @@ bool NetherspiteBanishPhaseAvoidVoidZoneAction::Execute(Event event)
     return false;
 }
 
-bool NetherspiteManageTimersAndTrackersAction::Execute(Event event)
+bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
 {
     Unit* netherspite = AI_VALUE2(Unit*, "find target", "netherspite");
     if (!netherspite)
@@ -1007,7 +1008,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event event)
     if (netherspite->GetHealth() == netherspite->GetMaxHealth() &&
         !netherspite->HasAura(SPELL_GREEN_BEAM_HEAL))
     {
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
             netherspiteDpsWaitTimer.insert_or_assign(instanceId, now);
 
         if (botAI->IsTank(bot) && !bot->HasAura(SPELL_RED_BEAM_DEBUFF))
@@ -1018,7 +1019,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event event)
     }
     else if (netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
     {
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
             netherspiteDpsWaitTimer.erase(instanceId);
 
         if (botAI->IsTank(bot))
@@ -1029,7 +1030,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event event)
     }
     else if (!netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
     {
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
             netherspiteDpsWaitTimer.try_emplace(instanceId, now);
 
         if (botAI->IsTank(bot) && bot->HasAura(SPELL_RED_BEAM_DEBUFF))
@@ -1044,7 +1045,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event event)
 
 // Move away from the boss to avoid Shadow Nova when Enfeebled
 // Do not cross within Infernal Hellfire radius while doing so
-bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event event)
+bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event /*event*/)
 {
     Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
     if (!malchezaar)
@@ -1056,7 +1057,6 @@ bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event event)
     const float minSafeBossDistanceSq = minSafeBossDistance * minSafeBossDistance;
     const float maxSafeBossDistance = 60.0f;
     const float safeInfernalDistance = 23.0f;
-    const float safeInfernalDistanceSq = safeInfernalDistance * safeInfernalDistance;
     const float distIncrement = 0.5f;
     const uint8 numAngles = 64;
 
@@ -1121,7 +1121,7 @@ bool PrinceMalchezaarEnfeebledAvoidHazardAction::Execute(Event event)
 
 // Move away from infernals while staying within range of the boss
 // Prioritize finding a safe path to the new location, but will fallback to just finding a safe location if needed
-bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event event)
+bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event /*event*/)
 {
     Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
     if (!malchezaar)
@@ -1188,7 +1188,7 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event event)
 
 // This is similar to the non-tank avoid infernal action, but the movement is based on the bot's location
 // And the safe distance from infernals is larger to give melee more room to maneuver
-bool PrinceMalchezaarMainTankMovementAction::Execute(Event event)
+bool PrinceMalchezaarMainTankMovementAction::Execute(Event /*event*/)
 {
     Unit* malchezaar = AI_VALUE2(Unit*, "find target", "prince malchezaar");
     if (!malchezaar)
@@ -1254,7 +1254,7 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event event)
 
 // The tank position is near the Southeastern area of the Master's Terrace
 // The tank moves Nightbane into position in two steps to try to get Nightbane to face sideways to the raid
-bool NightbaneGroundPhasePositionBossAction::Execute(Event event)
+bool NightbaneGroundPhasePositionBossAction::Execute(Event /*event*/)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
     if (!nightbane)
@@ -1300,7 +1300,7 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event event)
 // Ranged bots rotate between 3 positions to avoid standing in Charred Earth, which lasts for
 // 30s and has a minimum cooldown of 18s (so there can be 2 active at once)
 // Ranged positions are near the Northeastern door to the tower
-bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event event)
+bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event /*event*/)
 {
     const ObjectGuid botGuid = bot->GetGUID();
     uint8 index = nightbaneRangedStep.count(botGuid) ? nightbaneRangedStep[botGuid] : 0;
@@ -1344,7 +1344,7 @@ bool NightbaneGroundPhaseRotateRangedPositionsAction::Execute(Event event)
 }
 
 // For countering Bellowing Roars during the ground phase
-bool NightbaneCastFearWardOnMainTankAction::Execute(Event event)
+bool NightbaneCastFearWardOnMainTankAction::Execute(Event /*event*/)
 {
     Player* mainTank = nullptr;
     if (Group* group = bot->GetGroup())
@@ -1367,7 +1367,7 @@ bool NightbaneCastFearWardOnMainTankAction::Execute(Event event)
 }
 
 // Put pets on passive during the flight phase so they don't try to chase Nightbane off the map
-bool NightbaneControlPetAggressionAction::Execute(Event event)
+bool NightbaneControlPetAggressionAction::Execute(Event /*event*/)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
     if (!nightbane)
@@ -1393,7 +1393,7 @@ bool NightbaneControlPetAggressionAction::Execute(Event event)
 // 2. Once Rain of Bones hits, the whole party moves to a new stack position
 // This action lasts for the first 35 seconds of the flight phase, after which Nightbane gets
 // ready to land, and the player will need to lead the bots over near the ground phase position
-bool NightbaneFlightPhaseMovementAction::Execute(Event event)
+bool NightbaneFlightPhaseMovementAction::Execute(Event /*event*/)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
     if (!nightbane || nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
@@ -1439,7 +1439,7 @@ bool NightbaneFlightPhaseMovementAction::Execute(Event event)
     return false;
 }
 
-bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
+bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
 {
     Unit* nightbane = AI_VALUE2(Unit*, "find target", "nightbane");
     if (!nightbane)
@@ -1458,7 +1458,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
         if (botAI->IsRanged(bot))
             nightbaneRangedStep.erase(botGuid);
 
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
             nightbaneDpsWaitTimer.erase(instanceId);
     }
     // Erase flight phase timer and Rain of Bones tracker on ground phase and start DPS wait timer
@@ -1466,7 +1466,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
     {
         nightbaneRainOfBonesHit.erase(botGuid);
 
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
         {
             nightbaneFlightPhaseStartTimer.erase(instanceId);
             nightbaneDpsWaitTimer.try_emplace(instanceId, now);
@@ -1482,7 +1482,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event event)
         if (botAI->IsRanged(bot))
             nightbaneRangedStep.erase(botGuid);
 
-        if (IsInstanceTimerManager(botAI, bot))
+        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
         {
             nightbaneDpsWaitTimer.erase(instanceId);
             nightbaneFlightPhaseStartTimer.try_emplace(instanceId, now);

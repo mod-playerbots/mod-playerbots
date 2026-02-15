@@ -92,7 +92,7 @@ bool LeaveGroupAction::Leave()
     return true;
 }
 
-bool LeaveFarAwayAction::Execute(Event event)
+bool LeaveFarAwayAction::Execute(Event /*event*/)
 {
     // allow bot to leave party when they want
     return Leave();

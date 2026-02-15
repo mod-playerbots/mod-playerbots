@@ -85,6 +85,8 @@ void GenericWarlockNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& tr
     triggers.push_back(new TriggerNode("too many soul shards", { NextAction("destroy soul shard", 60.0f) }));
     triggers.push_back(new TriggerNode("soul link", { NextAction("soul link", 28.0f) }));
     triggers.push_back(new TriggerNode("demon armor", { NextAction("fel armor", 27.0f) }));
+    triggers.push_back(new TriggerNode("unending breath", { NextAction("unending breath", 12.0f) }));
+    triggers.push_back(new TriggerNode("unending breath on party", { NextAction("unending breath on party", 11.0f) }));
     triggers.push_back(new TriggerNode("no healthstone", { NextAction("create healthstone", 26.0f) }));
     triggers.push_back(new TriggerNode("no soulstone", { NextAction("create soulstone", 25.0f) }));
     triggers.push_back(new TriggerNode("life tap", { NextAction("life tap", 23.0f) }));
