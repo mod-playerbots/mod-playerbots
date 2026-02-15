@@ -8,17 +8,12 @@
 #include "AccountMgr.h"
 #include "ArenaTeamMgr.h"
 #include "DatabaseEnv.h"
-#include "GuildMgr.h"
-#include "PlayerbotFactory.h"
-#include "Playerbots.h"
-#include "PlayerbotGuildMgr.h"
+#include "PlayerbotAI.h"
 #include "ScriptMgr.h"
 #include "SharedDefines.h"
 #include "SocialMgr.h"
 #include "Timer.h"
-#include "Guild.h"            // EmblemInfo::SaveToDB
 #include "Log.h"
-#include "GuildMgr.h"
 
 constexpr RandomPlayerbotFactory::NameRaceAndGender RandomPlayerbotFactory::CombineRaceAndGender(uint8 race,
                                                                                                 uint8 gender)

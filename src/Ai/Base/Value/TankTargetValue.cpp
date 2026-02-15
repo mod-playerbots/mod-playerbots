@@ -5,9 +5,10 @@
 
 #include "TankTargetValue.h"
 
+#include "AiObjectContext.h"
 #include "AttackersValue.h"
-#include "PlayerbotAIConfig.h"
-#include "Playerbots.h"
+#include "Group.h"
+#include "PlayerbotAI.h"
 
 class FindTargetForTankStrategy : public FindNonCcTargetStrategy
 {

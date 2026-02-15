@@ -6,7 +6,6 @@
 #include <random>
 
 #include "ChooseRpgTargetAction.h"
-#include "BattlegroundMgr.h"
 #include "BudgetValues.h"
 #include "ChatHelper.h"
 #include "Event.h"
@@ -14,7 +13,6 @@
 #include "GuildCreateActions.h"
 #include "Playerbots.h"
 #include "RpgSubActions.h"
-#include "Util.h"
 #include "ServerFacade.h"
 #include "PossibleRpgTargetsValue.h"
 
@@ -112,7 +110,7 @@ float ChooseRpgTargetAction::getMaxRelevance(GuidPosition guidP)
     return floor((maxRelevance - 1.0) * 1000.0f);
 }
 
-bool ChooseRpgTargetAction::Execute(Event event)
+bool ChooseRpgTargetAction::Execute(Event /*event*/)
 {
     //TravelTarget* travelTarget = AI_VALUE(TravelTarget*, "travel target"); //not used, line marked for removal.
     Player* master = botAI->GetMaster();

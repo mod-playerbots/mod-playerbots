@@ -1,12 +1,10 @@
 #include "NewRpgAction.h"
 
 #include <cmath>
-#include <cstdint>
 #include <cstdlib>
 
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
-#include "DBCStores.h"
 #include "G3D/Vector2.h"
 #include "GossipDef.h"
 #include "IVMapMgr.h"
@@ -20,16 +18,11 @@
 #include "PathGenerator.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
-#include "Playerbots.h"
-#include "Position.h"
 #include "QuestDef.h"
 #include "Random.h"
-#include "RandomPlayerbotMgr.h"
 #include "SharedDefines.h"
-#include "StatsWeightCalculator.h"
 #include "Timer.h"
 #include "TravelMgr.h"
-#include "World.h"
 
 bool TellRpgStatusAction::Execute(Event event)
 {
@@ -61,7 +54,7 @@ bool StartRpgDoQuestAction::Execute(Event event)
     return false;
 }
 
-bool NewRpgStatusUpdateAction::Execute(Event event)
+bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
 {
     NewRpgInfo& info = botAI->rpgInfo;
     NewRpgStatus status = info.GetStatus();
@@ -153,7 +146,7 @@ bool NewRpgStatusUpdateAction::Execute(Event event)
     return false;
 }
 
-bool NewRpgGoGrindAction::Execute(Event event)
+bool NewRpgGoGrindAction::Execute(Event /*event*/)
 {
     if (SearchQuestGiverAndAcceptOrReward())
         return true;
@@ -163,7 +156,7 @@ bool NewRpgGoGrindAction::Execute(Event event)
     return false;
 }
 
-bool NewRpgGoCampAction::Execute(Event event)
+bool NewRpgGoCampAction::Execute(Event /*event*/)
 {
     if (SearchQuestGiverAndAcceptOrReward())
         return true;
@@ -174,7 +167,7 @@ bool NewRpgGoCampAction::Execute(Event event)
     return false;
 }
 
-bool NewRpgWanderRandomAction::Execute(Event event)
+bool NewRpgWanderRandomAction::Execute(Event /*event*/)
 {
     if (SearchQuestGiverAndAcceptOrReward())
         return true;
@@ -182,7 +175,7 @@ bool NewRpgWanderRandomAction::Execute(Event event)
     return MoveRandomNear();
 }
 
-bool NewRpgWanderNpcAction::Execute(Event event)
+bool NewRpgWanderNpcAction::Execute(Event /*event*/)
 {
     NewRpgInfo& info = botAI->rpgInfo;
     auto* dataPtr = std::get_if<NewRpgInfo::WanderNpc>(&info.data);
@@ -227,7 +220,7 @@ bool NewRpgWanderNpcAction::Execute(Event event)
     return true;
 }
 
-bool NewRpgDoQuestAction::Execute(Event event)
+bool NewRpgDoQuestAction::Execute(Event /*event*/)
 {
     if (SearchQuestGiverAndAcceptOrReward())
         return true;
@@ -423,7 +416,7 @@ bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
     return false;
 }
 
-bool NewRpgTravelFlightAction::Execute(Event event)
+bool NewRpgTravelFlightAction::Execute(Event /*event*/)
 {
     NewRpgInfo& info = botAI->rpgInfo;
     auto* dataPtr = std::get_if<NewRpgInfo::TravelFlight>(&info.data);
