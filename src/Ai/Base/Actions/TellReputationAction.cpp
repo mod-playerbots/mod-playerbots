@@ -71,7 +71,7 @@ namespace
     }
 }
 
-bool TellReputationAction::Execute(Event /*event*/)
+bool TellReputationAction::Execute(Event event)
 {
     std::string const param = event.getParam();
     if (param == "all")
