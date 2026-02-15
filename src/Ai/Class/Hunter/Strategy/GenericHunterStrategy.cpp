@@ -5,9 +5,6 @@
 
 #include "GenericHunterStrategy.h"
 
-#include "Playerbots.h"
-#include "Strategy.h"
-
 class GenericHunterStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
 public:

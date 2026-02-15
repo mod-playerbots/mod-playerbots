@@ -6,15 +6,16 @@
 #include "HireAction.h"
 
 #include "Event.h"
-#include "Playerbots.h"
+#include "RandomPlayerbotMgr.h"
+#include "PlayerbotAI.h"
 
-bool HireAction::Execute(Event event)
+bool HireAction::Execute(Event /*event*/)
 {
     Player* master = GetMaster();
     if (!master)
         return false;
 
-    if (!sRandomPlayerbotMgr.IsRandomBot(bot))
+    if (!RandomPlayerbotMgr::instance().IsRandomBot(bot))
         return false;
 
     uint32 account = master->GetSession()->GetAccountId();
@@ -39,7 +40,7 @@ bool HireAction::Execute(Event event)
         return false;
     }
 
-    uint32 discount = sRandomPlayerbotMgr.GetTradeDiscount(bot, master);
+    uint32 discount = RandomPlayerbotMgr::instance().GetTradeDiscount(bot, master);
     uint32 m = 1 + (bot->GetLevel() / 10);
     uint32 moneyReq = m * 5000 * bot->GetLevel();
     if (discount < moneyReq)
@@ -54,7 +55,7 @@ bool HireAction::Execute(Event event)
     botAI->TellMaster("I will join you at your next relogin");
 
     bot->SetMoney(moneyReq);
-    sRandomPlayerbotMgr.Remove(bot);
+    RandomPlayerbotMgr::instance().Remove(bot);
     CharacterDatabase.Execute("UPDATE characters SET account = {} WHERE guid = {}", account,
                               bot->GetGUID().GetCounter());
 

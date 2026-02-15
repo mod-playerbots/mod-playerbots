@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "Event.h"
-#include "Playerbots.h"
+#include "PlayerbotAI.h"
 #include "ReputationMgr.h"
 
 #include "SharedDefines.h"
@@ -71,7 +71,7 @@ namespace
     }
 }
 
-bool TellReputationAction::Execute(Event event)
+bool TellReputationAction::Execute(Event /*event*/)
 {
     std::string const param = event.getParam();
     if (param == "all")

@@ -85,10 +85,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class GruulTheDragonkillerMainTankPositionBossAction : public AttackAction
+class GruulTheDragonkillerTanksPositionBossAction : public AttackAction
 {
 public:
-    GruulTheDragonkillerMainTankPositionBossAction(PlayerbotAI* botAI, std::string const name = "gruul the dragonkiller main tank position boss") : AttackAction(botAI, name) {};
+    GruulTheDragonkillerTanksPositionBossAction(PlayerbotAI* botAI, std::string const name = "gruul the dragonkiller tanks position boss") : AttackAction(botAI, name) {};
 
     bool Execute(Event event) override;
 };

@@ -4,8 +4,7 @@
  */
 
 #include "PartyMemberToDispel.h"
-
-#include "Playerbots.h"
+#include "PlayerbotAI.h"
 
 class PartyMemberToDispelPredicate : public FindPlayerPredicate, public PlayerbotAIAware
 {

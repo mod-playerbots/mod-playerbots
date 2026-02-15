@@ -5,8 +5,6 @@
 
 #include "DuelStrategy.h"
 
-#include "Playerbots.h"
-
 void DuelStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     PassTroughStrategy::InitTriggers(triggers);

@@ -5,7 +5,8 @@
 
 #include "SnareTargetValue.h"
 
-#include "Playerbots.h"
+#include "AiObjectContext.h"
+#include "PlayerbotAI.h"
 #include "ServerFacade.h"
 
 Unit* SnareTargetValue::Calculate()

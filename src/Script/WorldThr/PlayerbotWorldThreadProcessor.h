@@ -11,7 +11,6 @@
 #include <queue>
 
 #include "Log.h"
-
 #include "PlayerbotOperation.h"
 
 /**

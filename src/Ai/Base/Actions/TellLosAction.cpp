@@ -4,11 +4,9 @@
  */
 
 #include "TellLosAction.h"
-#include <istream>
 #include <sstream>
 
 #include "ChatHelper.h"
-#include "DBCStores.h"
 #include "Event.h"
 #include "ItemTemplate.h"
 #include "ObjectMgr.h"
@@ -77,7 +75,7 @@ void TellLosAction::ListGameObjects(std::string const title, GuidVector gos)
     }
 }
 
-bool TellAuraAction::Execute(Event event)
+bool TellAuraAction::Execute(Event /*event*/)
 {
     botAI->TellMaster("--- Auras ---");
     sLog->outMessage("playerbot", LOG_LEVEL_DEBUG, "--- Auras ---");
@@ -130,7 +128,7 @@ bool TellAuraAction::Execute(Event event)
     return true;
 }
 
-bool TellEstimatedDpsAction::Execute(Event event)
+bool TellEstimatedDpsAction::Execute(Event /*event*/)
 {
     float dps = AI_VALUE(float, "estimated group dps");
     botAI->TellMaster("Estimated Group DPS: " + std::to_string(dps));

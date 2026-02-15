@@ -5,8 +5,6 @@
 
 #include "FollowMasterStrategy.h"
 
-#include "Playerbots.h"
-
 std::vector<NextAction> FollowMasterStrategy::getDefaultActions()
 {
     return {

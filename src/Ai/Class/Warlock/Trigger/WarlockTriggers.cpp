@@ -79,6 +79,16 @@ bool SoulLinkTrigger::IsActive()
     return !botAI->HasAura("soul link", target);
 }
 
+bool UnendingBreathTrigger::IsActive()
+{
+    return BuffTrigger::IsActive() && AI_VALUE2(bool, "swimming", "self target");
+}
+
+bool UnendingBreathOnPartyTrigger::IsActive()
+{
+    return BuffOnPartyTrigger::IsActive() && AI_VALUE2(bool, "swimming", "self target");
+}
+
 bool DemonicEmpowermentTrigger::IsActive()
 {
     Pet* pet = bot->GetPet();
