@@ -86,6 +86,7 @@ public:
     void InitReputation();
     void InitAttunementQuests();
     void EnsureGuild();
+    void EnsureArenaTeams();
 
 private:
     void Prepare();

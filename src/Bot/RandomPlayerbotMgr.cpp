@@ -3001,6 +3001,9 @@ void RandomPlayerbotMgr::OnBotLoginInternal(Player* const bot)
     PlayerbotFactory factory(bot, bot->GetLevel());
     factory.EnsureGuild();
 
+    // Run arena team recovery/creation at login so teams can be rebuilt after manual table wipes.
+    factory.EnsureArenaTeams();
+
     if (sPlayerbotAIConfig.randomBotFixedLevel)
     {
         bot->SetPlayerFlag(PLAYER_FLAGS_NO_XP_GAIN);

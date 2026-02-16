@@ -5,6 +5,7 @@
 
 #include "PlayerbotFactory.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "AccountMgr.h"
@@ -4066,11 +4067,34 @@ void PlayerbotFactory::InitImmersive()
     }
 }
 
+void PlayerbotFactory::EnsureArenaTeams()
+{
+    // Keep the config gate centralized to avoid duplicated checks at call sites.
+    if (sPlayerbotAIConfig.randomBotArenaTeam2v2Count ||
+        sPlayerbotAIConfig.randomBotArenaTeam3v3Count ||
+        sPlayerbotAIConfig.randomBotArenaTeam5v5Count)
+    {
+        InitArenaTeam();
+    }
+}
+
 void PlayerbotFactory::InitArenaTeam()
 {
 
     if (!sPlayerbotAIConfig.IsInRandomAccountList(bot->GetSession()->GetAccountId()))
         return;
+
+    // Defensive cleanup for manual DB edits that removed teams but left member rows behind.
+    CharacterDatabase.Execute("DELETE FROM arena_team_member WHERE arenaTeamId NOT IN (SELECT arenaTeamId FROM arena_team)");
+
+    // Keep only team ids that still exist in the in-memory arena team manager cache.
+    sPlayerbotAIConfig.randomBotArenaTeams.erase(
+        std::remove_if(sPlayerbotAIConfig.randomBotArenaTeams.begin(), sPlayerbotAIConfig.randomBotArenaTeams.end(),
+            [](uint32 id)
+            {
+                return sArenaTeamMgr->GetArenaTeamById(id) == nullptr;
+            }),
+        sPlayerbotAIConfig.randomBotArenaTeams.end());
 
     // Currently the teams are only remade after a server restart and if deleteRandomBotArenaTeams = 1
     // This is because randomBotArenaTeams is only empty on server restart.
