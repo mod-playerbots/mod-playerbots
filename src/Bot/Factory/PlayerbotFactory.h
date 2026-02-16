@@ -85,6 +85,7 @@ public:
     void InitKeyring();
     void InitReputation();
     void InitAttunementQuests();
+    void EnsureGuild();
 
 private:
     void Prepare();

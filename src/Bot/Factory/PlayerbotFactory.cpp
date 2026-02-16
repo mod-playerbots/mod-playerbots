@@ -3924,13 +3924,32 @@ void PlayerbotFactory::InitInventoryEquip()
     }
 }
 
+void PlayerbotFactory::EnsureGuild()
+{
+    // Keep the config gate in a single place so external callers do not duplicate checks.
+    if (sPlayerbotAIConfig.randomBotGuildCount > 0)
+        InitGuild();
+}
+
 void PlayerbotFactory::InitGuild()
 {
-    if (bot->GetGuildId())
+    if (uint32 guildId = bot->GetGuildId())
     {
-        if (!bot->HasItemCount(5976, 1) && bot->GetLevel() > 9)
-            StoreItem(5976, 1);
-        return;
+        if (!sGuildMgr->GetGuildById(guildId))
+        {
+            LOG_INFO("playerbots", "Resetting stale guild data for bot {} (guild id {}).", bot->GetName(), guildId);
+
+            // Guild id can stay on the player object when guild rows were removed manually.
+            // Clear runtime guild state so this bot can be reassigned/created into a valid guild.
+            bot->SetInGuild(0);
+            bot->SetGuildIdInvited(0);
+        }
+        else
+        {
+            if (!bot->HasItemCount(5976, 1) && bot->GetLevel() > 9)
+                StoreItem(5976, 1);
+            return;
+        }
     }
 
     std::string guildName = PlayerbotGuildMgr::instance().AssignToGuild(bot);

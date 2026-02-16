@@ -150,13 +150,12 @@ void PlayerbotGuildMgr::OnGuildUpdate(Guild* guild)
 
 void PlayerbotGuildMgr::ResetGuildCache()
 {
-    for (auto it = _guildCache.begin(); it != _guildCache.end();)
-    {
-        GuildCache& cached = it->second;
-        cached.memberCount = 0;
-        cached.faction = 2;
-        cached.status = 0;
-    }
+    // Full runtime reset: forget cached guild snapshots.
+    _guildCache.clear();
+
+    // Mark all names as available until ValidateGuildCache marks existing guild names as used.
+    for (auto& nameEntry : _guildNames)
+        nameEntry.second = true;
 }
 
 void PlayerbotGuildMgr::LoadGuildNames()
@@ -189,6 +188,10 @@ void PlayerbotGuildMgr::LoadGuildNames()
 
 void PlayerbotGuildMgr::ValidateGuildCache()
 {
+    // Defensive cleanup for DB states where guild rows were removed manually.
+    // Orphaned guild_member entries can otherwise keep bots in a stale guild state.
+    CharacterDatabase.Execute("DELETE FROM guild_member WHERE guildid NOT IN (SELECT guildid FROM guild)");
+
     QueryResult result = CharacterDatabase.Query("SELECT guildid, name FROM guild");
     if (!result)
     {
