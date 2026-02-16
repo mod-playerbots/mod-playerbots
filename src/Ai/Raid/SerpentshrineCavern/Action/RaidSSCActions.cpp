@@ -328,8 +328,7 @@ bool HydrossTheUnstableFrostPhaseSpreadOutAction::Execute(Event /*event*/)
 
     constexpr float safeDistance = 6.0f;
     constexpr uint32 minInterval = 1000;
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
-        nearestPlayer && bot->GetExactDist2d(nearestPlayer) < safeDistance)
+    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
         return FleePosition(nearestPlayer->GetPosition(), safeDistance, minInterval);
 
     return false;
