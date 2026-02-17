@@ -44,6 +44,7 @@
 #include "Ai/Raid/Karazhan/RaidKarazhanTriggerContext.h"
 #include "Ai/Raid/Magtheridon/RaidMagtheridonTriggerContext.h"
 #include "Ai/Raid/GruulsLair/RaidGruulsLairTriggerContext.h"
+#include "Ai/Raid/SerpentshrineCavern/RaidSSCTriggerContext.h"
 #include "Ai/Raid/EyeOfEternity/RaidEoETriggerContext.h"
 #include "Ai/Raid/VaultOfArchavon/RaidVoATriggerContext.h"
 #include "Ai/Raid/ObsidianSanctum/RaidOsTriggerContext.h"
@@ -108,6 +109,7 @@ void AiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Tr
     triggerContexts.Add(new RaidKarazhanTriggerContext());
     triggerContexts.Add(new RaidMagtheridonTriggerContext());
     triggerContexts.Add(new RaidGruulsLairTriggerContext());
+    triggerContexts.Add(new RaidSSCTriggerContext());
     triggerContexts.Add(new RaidOsTriggerContext());
     triggerContexts.Add(new RaidEoETriggerContext());
     triggerContexts.Add(new RaidVoATriggerContext());

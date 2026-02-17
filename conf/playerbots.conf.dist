@@ -558,7 +558,7 @@ AiPlayerbot.AutoGearScoreLimit = 0
 # "mana" (bots have infinite mana)
 # "power" (bots have infinite energy, rage, and runic power)
 # "taxi" (bots may use all flight paths, though they will not actually learn them)
-# "raid" (bots use cheats implemented into raid strategies (currently only for Ulduar))
+# "raid" (bots use cheats implemented into raid strategies (currently only for SSC and Ulduar))
 # To use multiple cheats, separate them by commas below (e.g., to enable all, use "gold,health,mana,power,raid,taxi")
 # Default: food, taxi, and raid are enabled
 AiPlayerbot.BotCheats = "food,taxi,raid"

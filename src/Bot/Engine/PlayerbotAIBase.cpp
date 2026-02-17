@@ -4,8 +4,7 @@
  */
 
 #include "PlayerbotAIBase.h"
-
-#include "Playerbots.h"
+#include "PerfMonitor.h"
 
 PlayerbotAIBase::PlayerbotAIBase(bool isBotAI) : nextAICheckDelay(0), _isBotAI(isBotAI) {}
 
