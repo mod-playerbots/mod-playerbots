@@ -73,17 +73,17 @@ public:
     bool IsActive() override;
 };
 
-class GruulTheDragonkillerBossEngagedByMainTankTrigger : public Trigger
+class GruulTheDragonkillerBossEngagedByTanksTrigger : public Trigger
 {
 public:
-    GruulTheDragonkillerBossEngagedByMainTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "gruul the dragonkiller boss engaged by main tank") {}
+    GruulTheDragonkillerBossEngagedByTanksTrigger(PlayerbotAI* botAI) : Trigger(botAI, "gruul the dragonkiller boss engaged by tanks") {}
     bool IsActive() override;
 };
 
-class GruulTheDragonkillerBossEngagedByRangeTrigger : public Trigger
+class GruulTheDragonkillerBossEngagedByRangedTrigger : public Trigger
 {
 public:
-    GruulTheDragonkillerBossEngagedByRangeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "gruul the dragonkiller boss engaged by range") {}
+    GruulTheDragonkillerBossEngagedByRangedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "gruul the dragonkiller boss engaged by ranged") {}
     bool IsActive() override;
 };
 

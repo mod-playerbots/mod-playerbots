@@ -1615,7 +1615,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             strategyName = "wotlk-hol";  // Halls of Lightning
             break;
         case 603:
-            strategyName = "uld";  // Ulduar
+            strategyName = "ulduar";  // Ulduar
             break;
         case 604:
             strategyName = "wotlk-gd";  // Gundrak

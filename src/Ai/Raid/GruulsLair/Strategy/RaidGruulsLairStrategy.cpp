@@ -101,7 +101,7 @@ void RaidGruulsLairStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "gruul the dragonkiller boss engaged by main tank",
             {
-                CreateNextAction<GruulTheDragonkillerMainTankPositionBossAction>(ACTION_RAID + 1.0f)
+                CreateNextAction<GruulTheDragonkillerTanksPositionBossAction>(ACTION_RAID + 1.0f)
             }
         )
     );

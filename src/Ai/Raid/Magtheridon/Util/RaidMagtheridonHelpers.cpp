@@ -1,22 +1,18 @@
 #include "RaidMagtheridonHelpers.h"
 #include "Creature.h"
 #include "GameObject.h"
-#include "GroupReference.h"
 #include "Map.h"
 #include "ObjectGuid.h"
 #include "Playerbots.h"
 
 namespace MagtheridonHelpers
 {
-    namespace MagtheridonsLairLocations
-    {
-        const Location WaitingForMagtheridonPosition = {   1.359f,   2.048f, -0.406f, 3.135f };
-        const Location MagtheridonTankPosition =       {  22.827f,   2.105f, -0.406f, 3.135f };
-        const Location NWChannelerTankPosition =       { -11.764f,  30.818f, -0.411f,   0.0f };
-        const Location NEChannelerTankPosition =       { -12.490f, -26.211f, -0.411f,   0.0f };
-        const Location RangedSpreadPosition =          { -14.890f,   1.995f, -0.406f,   0.0f };
-        const Location HealerSpreadPosition =          {  -2.265f,   1.874f, -0.404f,   0.0f };
-    }
+    const Position WAITING_FOR_MAGTHERIDON_POSITION = {   1.359f,   2.048f, -0.406f, 3.135f };
+    const Position MAGTHERIDON_TANK_POSITION =        {  22.827f,   2.105f, -0.406f, 3.135f };
+    const Position NW_CHANNELER_TANK_POSITION =       { -11.764f,  30.818f, -0.411f,   0.0f };
+    const Position NE_CHANNELER_TANK_POSITION =       { -12.490f, -26.211f, -0.411f,   0.0f };
+    const Position RANGED_SPREAD_POSITION =           { -14.890f,   1.995f, -0.406f,   0.0f };
+    const Position HEALER_SPREAD_POSITION =           {  -2.265f,   1.874f, -0.404f,   0.0f };
 
     // Identify channelers by their database GUIDs
     Creature* GetChanneler(Player* bot, uint32 dbGuid)
@@ -29,63 +25,11 @@ namespace MagtheridonHelpers
         if (it == map->GetCreatureBySpawnIdStore().end())
             return nullptr;
 
-        return it->second;
-    }
+        Creature* channeler = it->second;
+        if (!channeler->IsAlive())
+            return nullptr;
 
-    void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
-    {
-        Group* group = bot->GetGroup();
-        if (!target || !group)
-            return;
-
-        ObjectGuid currentGuid = group->GetTargetIcon(iconId);
-        if (currentGuid != target->GetGUID())
-            group->SetTargetIcon(iconId, bot->GetGUID(), target->GetGUID());
-    }
-
-    void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
-    {
-        if (!target)
-            return;
-
-        std::string currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
-        Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
-
-        if (currentRti != rtiName || currentTarget != target)
-        {
-            botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(rtiName);
-            botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
-        }
-    }
-
-    void MarkTargetWithSquare(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::squareIndex);
-    }
-
-    void MarkTargetWithStar(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::starIndex);
-    }
-
-    void MarkTargetWithCircle(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::circleIndex);
-    }
-
-    void MarkTargetWithDiamond(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::diamondIndex);
-    }
-
-    void MarkTargetWithTriangle(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::triangleIndex);
-    }
-
-    void MarkTargetWithCross(Player* bot, Unit* target)
-    {
-        MarkTargetWithIcon(bot, target, RtiTargetValue::crossIndex);
+        return channeler;
     }
 
     const std::vector<uint32> MANTICRON_CUBE_DB_GUIDS = { 43157, 43158, 43159, 43160, 43161 };
@@ -204,21 +148,6 @@ namespace MagtheridonHelpers
             float dist = std::sqrt(std::pow(x - go->GetPositionX(), 2) + std::pow(y - go->GetPositionY(), 2));
             if (dist < 5.0f)
                 return false;
-        }
-
-        return true;
-    }
-
-    bool IsInstanceTimerManager(PlayerbotAI* botAI, Player* bot)
-    {
-        if (Group* group = bot->GetGroup())
-        {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (member && member->IsAlive() && botAI->IsDps(member) && GET_PLAYERBOT_AI(member))
-                    return member == bot;
-            }
         }
 
         return true;

@@ -24,7 +24,6 @@
 #include "PitOfSaronTriggerContext.h"
 #include "Playerbots.h"
 #include "PriestAiObjectContext.h"
-#include "RaidUlduarTriggerContext.h"
 #include "RogueAiObjectContext.h"
 #include "ShamanAiObjectContext.h"
 #include "StrategyContext.h"
@@ -48,6 +47,7 @@
 #include "Ai/Raid/EyeOfEternity/RaidEoETriggerContext.h"
 #include "Ai/Raid/VaultOfArchavon/RaidVoATriggerContext.h"
 #include "Ai/Raid/ObsidianSanctum/RaidOsTriggerContext.h"
+#include "Ai/Raid/Ulduar/RaidUlduarTriggerContext.h"
 #include "Ai/Raid/Onyxia/RaidOnyxiaTriggerContext.h"
 #include "Ai/Raid/Icecrown/RaidIccTriggerContext.h"
 
