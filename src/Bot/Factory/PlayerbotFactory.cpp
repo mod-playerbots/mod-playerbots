@@ -4084,9 +4084,6 @@ void PlayerbotFactory::InitArenaTeam()
     if (!sPlayerbotAIConfig.IsInRandomAccountList(bot->GetSession()->GetAccountId()))
         return;
 
-    // Defensive cleanup for manual DB edits that removed teams but left member rows behind.
-    CharacterDatabase.Execute("DELETE FROM arena_team_member WHERE arenaTeamId NOT IN (SELECT arenaTeamId FROM arena_team)");
-
     // Keep only team ids that still exist in the in-memory arena team manager cache.
     sPlayerbotAIConfig.randomBotArenaTeams.erase(
         std::remove_if(sPlayerbotAIConfig.randomBotArenaTeams.begin(), sPlayerbotAIConfig.randomBotArenaTeams.end(),
