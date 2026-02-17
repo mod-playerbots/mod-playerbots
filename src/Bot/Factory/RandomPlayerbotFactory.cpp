@@ -17,6 +17,25 @@
 #include "Timer.h"
 #include "Log.h"
 
+#include <array>
+
+namespace
+{
+std::string SelectLocalizedNameFromFields(Field* fields)
+{
+    std::array<std::string, MAX_LOCALES> localizedNames;
+    for (uint8 locale = 0; locale < MAX_LOCALES; ++locale)
+        localizedNames[locale] = fields[locale].Get<std::string>();
+
+    uint8 locale = BroadcastHelper::GetConfiguredDbcLocale();
+    std::string selectedName = localizedNames[locale];
+    if (selectedName.empty())
+        selectedName = localizedNames[LOCALE_enUS];
+
+    return selectedName;
+}
+}
+
 constexpr RandomPlayerbotFactory::NameRaceAndGender RandomPlayerbotFactory::CombineRaceAndGender(uint8 race,
                                                                                                 uint8 gender)
 {
@@ -790,33 +809,7 @@ std::string const RandomPlayerbotFactory::CreateRandomGuildName()
 
     fields = result->Fetch();
 
-    std::string baseName  = fields[0].Get<std::string>(); // enUS
-    std::string koName    = fields[1].Get<std::string>();
-    std::string frName    = fields[2].Get<std::string>();
-    std::string deName    = fields[3].Get<std::string>();
-    std::string zhCNName  = fields[4].Get<std::string>();
-    std::string zhTWName  = fields[5].Get<std::string>();
-    std::string esName    = fields[6].Get<std::string>();
-    std::string esMxName  = fields[7].Get<std::string>();
-    std::string ruName    = fields[8].Get<std::string>();
-
-    LocaleConstant locale = static_cast<LocaleConstant>(BroadcastHelper::GetConfiguredDbcLocale());
-
-    switch (locale)
-    {
-        case LOCALE_koKR: guildName = koName;    break;
-        case LOCALE_frFR: guildName = frName;    break;
-        case LOCALE_deDE: guildName = deName;    break;
-        case LOCALE_zhCN: guildName = zhCNName;  break;
-        case LOCALE_zhTW: guildName = zhTWName;  break;
-        case LOCALE_esES: guildName = esName;    break;
-        case LOCALE_esMX: guildName = esMxName;  break;
-        case LOCALE_ruRU: guildName = ruName;    break;
-        default:           guildName = baseName; break;
-    }
-
-    if (guildName.empty())
-        guildName = baseName;
+    guildName = SelectLocalizedNameFromFields(fields);
 
     return guildName;
 }
@@ -972,37 +965,7 @@ std::string const RandomPlayerbotFactory::CreateRandomArenaTeamName()
 
     fields = result->Fetch();
 
-    std::string baseName  = fields[0].Get<std::string>(); // enUS (base)
-    std::string koName    = fields[1].Get<std::string>();
-    std::string frName    = fields[2].Get<std::string>();
-    std::string deName    = fields[3].Get<std::string>();
-    std::string zhCNName  = fields[4].Get<std::string>();
-    std::string zhTWName  = fields[5].Get<std::string>();
-    std::string esName    = fields[6].Get<std::string>();
-    std::string esMxName  = fields[7].Get<std::string>();
-    std::string ruName    = fields[8].Get<std::string>();
-
-    LocaleConstant locale = static_cast<LocaleConstant>(BroadcastHelper::GetConfiguredDbcLocale());
-
-    std::string chosenName;
-
-    switch (locale)
-    {
-        case LOCALE_koKR: chosenName = koName;    break;
-        case LOCALE_frFR: chosenName = frName;    break;
-        case LOCALE_deDE: chosenName = deName;    break;
-        case LOCALE_zhCN: chosenName = zhCNName;  break;
-        case LOCALE_zhTW: chosenName = zhTWName;  break;
-        case LOCALE_esES: chosenName = esName;    break;
-        case LOCALE_esMX: chosenName = esMxName;  break;
-        case LOCALE_ruRU: chosenName = ruName;    break;
-        default:          chosenName = baseName;  break;
-    }
-
-    if (chosenName.empty())
-        chosenName = baseName;
-
-    arenaTeamName = std::move(chosenName);
+    arenaTeamName = SelectLocalizedNameFromFields(fields);
 
     return arenaTeamName;
 }
