@@ -10,6 +10,7 @@
 #include "Config.h"
 #include "DatabaseEnv.h"
 #include "PlayerbotAI.h"
+#include "BroadcastHelper.h"
 #include "ScriptMgr.h"
 #include "SharedDefines.h"
 #include "SocialMgr.h"
@@ -799,12 +800,7 @@ std::string const RandomPlayerbotFactory::CreateRandomGuildName()
     std::string esMxName  = fields[7].Get<std::string>();
     std::string ruName    = fields[8].Get<std::string>();
 
-    int32 dbcLocale = sConfigMgr->GetOption<int32>("DBC.Locale", 0);
-    LocaleConstant locale = LOCALE_enUS;
-    if (dbcLocale >= 0 && dbcLocale < MAX_LOCALES)
-        locale = static_cast<LocaleConstant>(dbcLocale);
-    else if (dbcLocale == 255)
-        locale = LOCALE_enUS;
+    LocaleConstant locale = static_cast<LocaleConstant>(BroadcastHelper::GetConfiguredDbcLocale());
 
     switch (locale)
     {
@@ -986,13 +982,7 @@ std::string const RandomPlayerbotFactory::CreateRandomArenaTeamName()
     std::string esMxName  = fields[7].Get<std::string>();
     std::string ruName    = fields[8].Get<std::string>();
 
-    // DB locale
-    int32 dbcLocale = sConfigMgr->GetOption<int32>("DBC.Locale", 0);
-    LocaleConstant locale = LOCALE_enUS;
-    if (dbcLocale >= 0 && dbcLocale < MAX_LOCALES)
-        locale = static_cast<LocaleConstant>(dbcLocale);
-    else if (dbcLocale == 255)
-    locale = LOCALE_enUS;
+    LocaleConstant locale = static_cast<LocaleConstant>(BroadcastHelper::GetConfiguredDbcLocale());
 
     std::string chosenName;
 
