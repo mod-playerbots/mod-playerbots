@@ -188,10 +188,6 @@ void PlayerbotGuildMgr::LoadGuildNames()
 
 void PlayerbotGuildMgr::ValidateGuildCache()
 {
-    // Defensive cleanup for DB states where guild rows were removed manually.
-    // Orphaned guild_member entries can otherwise keep bots in a stale guild state.
-    CharacterDatabase.Execute("DELETE FROM guild_member WHERE guildid NOT IN (SELECT guildid FROM guild)");
-
     QueryResult result = CharacterDatabase.Query("SELECT guildid, name FROM guild");
     if (!result)
     {
