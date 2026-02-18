@@ -24,6 +24,7 @@
 #include "PitOfSaronTriggerContext.h"
 #include "Playerbots.h"
 #include "PriestAiObjectContext.h"
+#include "RaidZGTriggerContext.h"
 #include "RogueAiObjectContext.h"
 #include "ShamanAiObjectContext.h"
 #include "StrategyContext.h"
@@ -110,6 +111,7 @@ void AiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Tr
     triggerContexts.Add(new RaidMagtheridonTriggerContext());
     triggerContexts.Add(new RaidGruulsLairTriggerContext());
     triggerContexts.Add(new RaidSSCTriggerContext());
+    triggerContexts.Add(new RaidZGTriggerContext());
     triggerContexts.Add(new RaidOsTriggerContext());
     triggerContexts.Add(new RaidEoETriggerContext());
     triggerContexts.Add(new RaidVoATriggerContext());
