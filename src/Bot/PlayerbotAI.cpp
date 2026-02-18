@@ -1040,7 +1040,7 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
             if (type == CHAT_MSG_WHISPER)
             {
                 std::string message = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-                    "bot_logging_out", "I'm logging out!", {});
+                    "logout_start", "I'm logging out!", {});
                 TellMaster(message);
             }
 
@@ -1061,7 +1061,7 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
         if (type == CHAT_MSG_WHISPER)
         {
             std::string message = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-                "bot_logout_cancelled", "Logout cancelled!", {});
+                "logout_cancel", "Logout cancelled!", {});
             TellMaster(message);
         }
 
