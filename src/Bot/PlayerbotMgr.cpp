@@ -392,7 +392,9 @@ void PlayerbotHolder::LogoutPlayerBot(ObjectGuid guid)
         }
         if (bot)
         {
-            botAI->TellMaster("Goodbye!");
+            std::string message = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "bot_goodbye", "Goodbye!", {});
+            botAI->TellMaster(message);
             RemoveFromPlayerbotsMap(guid);              // deletes bot player ptr inside this WorldSession PlayerBotMap
             botWorldSessionPtr->LogoutPlayer(true);     // this will delete the bot Player object and PlayerbotAI object
             delete botWorldSessionPtr;                  // finally delete the bot's WorldSession

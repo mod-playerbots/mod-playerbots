@@ -1022,7 +1022,11 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
         if (fromPlayer != master)
         {
             if (type == CHAT_MSG_WHISPER)
-                bot->Whisper("You are not my master!", LANG_UNIVERSAL, fromPlayer);
+            {
+                std::string message = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "bot_not_your_master", "You are not my master!", {});
+                bot->Whisper(message, LANG_UNIVERSAL, fromPlayer);
+            }
             return;
         }
 
@@ -1034,12 +1038,20 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
         if (masterBotMgr->GetPlayerBot(bot->GetGUID()))
         {
             if (type == CHAT_MSG_WHISPER)
-                TellMaster("I'm logging out!");
+            {
+                std::string message = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "bot_logging_out", "I'm logging out!", {});
+                TellMaster(message);
+            }
 
             masterBotMgr->LogoutPlayerBot(bot->GetGUID());
         }
         else if (type == CHAT_MSG_WHISPER)
-            TellMaster("You can't command me to logout!");
+        {
+            std::string message = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "bot_rndbot_no_logout", "You can't command me to logout!", {});
+            TellMaster(message);
+        }
     }
     else if (filtered == "logout cancel")
     {
@@ -1047,7 +1059,11 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
             return;
 
         if (type == CHAT_MSG_WHISPER)
-            TellMaster("Logout cancelled!");
+        {
+            std::string message = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "bot_logout_cancelled", "Logout cancelled!", {});
+            TellMaster(message);
+        }
 
         WorldPackets::Character::LogoutCancel data = WorldPacket(CMSG_LOGOUT_CANCEL);
         bot->GetSession()->HandleLogoutCancelOpcode(data);
