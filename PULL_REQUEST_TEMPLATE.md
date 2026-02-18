@@ -12,7 +12,7 @@ stability over intelligence: a stable system is always preferred over a smarter 
 must justify its cost. Bots don't need to behave perfectly; believable behavior is the goal, 
 not human simulation. Default behavior must be cheap; expensive behavior must be opt-in.
 
-Before submitting, make sure your changes aligns with those principles.
+Before submitting, make sure your changes aligns with these principles.
 -->
 
 
@@ -22,8 +22,8 @@ Before submitting, make sure your changes aligns with those principles.
 
 ## Feature Evaluation
 <!--
-If your PR is very minimal (comment typo, wrong ID reference, etc), and it is very obvious it will not have any impact on
-performance, you may skip these question. If necessary, a maintainer may ask you for them later.
+If your PR is very minimal (comment typo, wrong ID reference, etc), and it is very obvious it will not have
+any impact on performance, you may skip these question. If necessary, a maintainer may ask you for them later.
 -->
 
 <!-- Please answer the following: -->
@@ -41,7 +41,7 @@ performance, you may skip these question. If necessary, a maintainer may ask you
 
 
 ## Impact Assessment
-<!-- Before and after measure of pmon and active bots numbers (playerbot rndbot stats) can help you here -->
+<!-- Before and after measure of pmon (playerbot pmon tick) can help you here -->
 - Does this change increase per-bot/per-tick processing or risk scaling poorly with thousands of bots?
     - [ ] No, not at all
     - [ ] Minimal impact (**explain below**)
@@ -56,6 +56,21 @@ performance, you may skip these question. If necessary, a maintainer may ask you
 - Does this change add new decision branches or increase maintenance complexity?
     - [ ] No
     - [ ] Yes (**explain below**)
+
+
+## Messages to Translate
+Does this change add bot messages to translate?
+- [ ] No
+- [ ] Yes (**list messages in the table**)
+<!--
+Bot messages have to be translatable, but you don't need to do the translations here. You only need to make sure
+the message is in a translatable format, and list in the table the message_key and the default English message.
+Serach for GetBotTextOrDefault in the codebase for examples.
+-->
+| Message key | Default message |
+| ----------- | --------------- |
+|             |                 |
+|             |                 |
 
 
 ## AI Assistance
