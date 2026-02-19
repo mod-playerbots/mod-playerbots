@@ -68,8 +68,8 @@ public:
     const std::vector<WorldLocation> GetTeleportLocations(Player* bot);
     const std::vector<WorldLocation> GetTravelHubs(Player* bot);
     std::vector<WorldLocation> GetCityLocations(Player* bot);
+    const std::vector<WorldLocation>& GetLocsPerLevelCache(uint8 level) const { return locsPerLevelCache.at(level); }
 
-    std::map<uint8, std::vector<WorldLocation>> locsPerLevelCache;
 private:
 
     WorldNavigationMgr() = default;
