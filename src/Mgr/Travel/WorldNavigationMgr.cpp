@@ -1,20 +1,88 @@
 #include "WorldNavigationMgr.h"
 #include <vector>
-#include <map>
-#include <unordered_map>
-#include <queue>
-#include <unordered_set>
 #include "Log.h"
 #include "MapMgr.h"
 #include "PlayerbotAIConfig.h"
+=
+void WorldNavigationMgr::Init()
+{
+    if (sPlayerbotAIConfig->enabled)
+    {
+        PrepareZone2LevelBracket();
+        PrepareTeleportCache();
+    }
+    BuildTaxiGraph();
+    ComputeAllPaths();
+    LOG_INFO("playerbots", "Playerbots Taxi graph and destination cache built.");
+}
 
-std::vector<std::vector<uint32>> WorldNavigationMgr::GetOptimalDestinations(Player* bot)
+Creature* WorldNavigationMgr::GetNearestFlightMaster(Player* bot)
+{
+    std::map<uint32, WorldPosition>& flightMasterCache =
+        (bot->GetTeamId() == TEAM_ALLIANCE) ? allianceFlightMasterCache : hordeFlightMasterCache;
+
+    Creature* nearestFlightMaster = nullptr;
+    float nearestDistance = std::numeric_limits<float>::max();
+
+    for (auto const& [entry, pos] : flightMasterCache)
+    {
+        if (!pos.GetMapId() == bot->GetMapId())
+            continue;
+
+        float distance = bot->GetExactDist2dSq(pos);
+        if (distance < nearestDistance)
+            continue;
+
+        Creature* flightMaster = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), entry);
+        if (flightMaster)
+        {
+            nearestDistance = distance;
+            nearestFlightMaster = flightMaster;
+        }
+    }
+
+    return nearestFlightMaster;
+}
+
+ObjectGuid WorldNavigationMgr::GetNearestFlightMasterGuid(Player* bot)
+{
+    Creature* nearestFlightMaster = GetNearestFlightMaster(bot);
+    if (!nearestFlightMaster)
+        return ObjectGuid::Empty;
+
+    return nearestFlightMaster->GetGUID();
+}
+
+std::vector<uint32> WorldNavigationMgr::FindTaxiPath(uint32 fromNode, uint32 toNode)
+{
+    if (fromNode == toNode)
+        return {};
+
+    TaxiNodesEntry const* startNode = sTaxiNodesStore.LookupEntry(fromNode);
+    TaxiNodesEntry const* endNode = sTaxiNodesStore.LookupEntry(toNode);
+
+    if (!startNode || !endNode || startNode->map_id != endNode->map_id)
+        return {};
+
+    auto cacheItr = taxiPathCache.find(fromNode);
+    if (cacheItr == taxiPathCache.end())
+        return {};
+
+    auto toNodeItr = cacheItr->second.find(toNode);
+    if (toNodeItr == cacheItr->second.end())
+        return {};
+
+    return toNodeItr->second;
+}
+
+std::vector<std::vector<uint32>> WorldNavigationMgr::GetOptimalFlightDestination(Player* bot)
 {
     std::vector<std::vector<uint32>> validDestinations;
-    uint8 level = bot->GetLevel();
+
     Creature* nearestFlightMaster = GetNearestFlightMaster(bot);
     if (!nearestFlightMaster || bot->GetDistance(nearestFlightMaster) > 500.0f)
         return validDestinations;
+
     uint32 fromNode = sObjectMgr->GetNearestTaxiNode(nearestFlightMaster->GetPositionX(), nearestFlightMaster->GetPositionY(),
                                             nearestFlightMaster->GetPositionZ(), nearestFlightMaster->GetMapId(),
                                             bot->GetTeamId());
@@ -25,45 +93,96 @@ std::vector<std::vector<uint32>> WorldNavigationMgr::GetOptimalDestinations(Play
     std::vector<WorldLocation> hubLocations = GetTravelHubs(bot);
     candidateLocations.insert(candidateLocations.end(), hubLocations.begin(), hubLocations.end());
 
-    std::vector<uint32> candidateToNodes;
     for (auto const& loc : candidateLocations)
     {
         uint32 candidateNode = sObjectMgr->GetNearestTaxiNode(loc.GetPositionX(), loc.GetPositionY(),
                                             loc.GetPositionZ(), loc.GetMapId(),
                                             bot->GetTeamId());
-        if (candidateNode)
-            candidateToNodes.push_back(candidateNode);
-    }
-
-    for (uint32 const node :candidateToNodes)
-    {
-        std::vector<uint32> path = FindTaxiPath(fromNode, node);
-        if (path.empty())
+        if (!candidateNode)
             continue;
 
+        std::vector<uint32> path = FindTaxiPath(fromNode, candidateNode);
+        if (!path.empty())
             validDestinations.push_back(path);
     }
     return validDestinations;
 }
 
+const std::vector<WorldLocation> WorldNavigationMgr::GetTeleportLocations(Player* bot)
+{
+    uint32 level = bot->GetLevel();
+    uint8 isAlliance = bot->GetTeamId() == TEAM_ALLIANCE;
+    if (sPlayerbotAIConfig->enableNewRpgStrategy)
+        return isAlliance ? allianceHubsPerLevelCache[level] : hordeHubsPerLevelCache[level];
+
+    return locsPerLevelCache[level];
+}
+
 const std::vector<WorldLocation> WorldNavigationMgr::GetTravelHubs(Player* bot)
 {
-    std::vector<WorldLocation> locs = bot->GetTeamId() == ALLIANCE
+    std::vector<WorldLocation> locs = bot->GetTeamId() == TEAM_ALLIANCE
                                                  ? allianceHubsPerLevelCache[bot->GetLevel()]
                                                  : hordeHubsPerLevelCache[bot->GetLevel()];
     return locs;
 }
 
-void WorldNavigationMgr::Init()
+std::vector<WorldLocation> WorldNavigationMgr::GetCityLocations(Player* bot)
 {
-    if (sPlayerbotAIConfig->enabled)
+    uint32 level = bot->GetLevel();
+
+    std::vector<WorldLocation> fallbackLocations;
+    for (auto& bLoc : bankerLocsPerLevelCache[level])
+        fallbackLocations.push_back(bLoc.loc);
+
+    if (!sPlayerbotAIConfig->enableWeightTeleToCityBankers)
+        return fallbackLocations;
+
+    FactionId botFaction = (bot->GetTeamId() == TEAM_ALLIANCE) ? FactionId::ALLIANCE : FactionId::HORDE;
+    std::unordered_set<CityId> validBankerCities;
+    for (auto& loc : bankerLocsPerLevelCache[level])
     {
-        PrepareZone2LevelBracket();
-        PrepareTeleportCache();
+        auto cityIt = bankerToCity.find(loc.entry);
+        if (cityIt == bankerToCity.end())
+            continue;
+
+        FactionId cityFactionId = cityIt->second.second;
+
+        if (cityFactionId == botFaction ||
+            (cityFactionId == FactionId::NEUTRAL)
+           )
+            validBankerCities.insert(cityIt->second.first);
     }
-    BuildTaxiGraph();
-    ComputeAllPaths();
-    LOG_INFO("playerbots", "Playerbots Taxi graph and cache built.");
+    // Fallback if no valid cities
+    if (validBankerCities.empty())
+        return fallbackLocs;
+
+    // Apply weights to valid cities
+    std::vector<CityId> weightedCities;
+    for (CityId city : validBankerCities)
+    {
+        int weight = GetCityWeight(city);
+        if (weight <= 0)
+            continue;
+
+        for (int i = 0; i < weight; ++i)
+            weightedCities.push_back(city);
+    }
+
+    // Fallback if no valid cities
+    if (weightedCities.empty())
+        return fallbackLocs;
+
+    // Pick a weighted city randomly, then a random banker in that city
+    //   then teleport to that banker
+    CityId selectedCity = weightedCities[urand(0, weightedCities.size() - 1)];
+
+    auto const& bankers = cityToBankers.at(selectedCity);
+    uint32 selectedBankerEntry = bankers[urand(0, bankers.size() - 1)];
+    auto locIt = bankerEntryToLocation.find(selectedBankerEntry);
+    if (locIt != bankerEntryToLocation.end())
+        return { locIt->second };
+    // Fallback if something went wrong
+    return locations;
 }
 
 void WorldNavigationMgr::PrepareZone2LevelBracket()
@@ -146,220 +265,112 @@ void WorldNavigationMgr::PrepareZone2LevelBracket()
         zone2LevelBracket[zoneId] = {bracketPair.first, bracketPair.second};
 }
 
-void WorldNavigationMgr::PrepareTeleportCache()
+void WorldNavigationMgr::PrepareDestinationCache()
 {
     uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+    uint32 flightMastersCount = 0;
+    uint32 innkeepersCount = 0;
+    uint32 bankerCount = 0;
 
-    LOG_INFO("playerbots", "Preparing random teleport caches for {} levels...", maxLevel);
+    LOG_INFO("playerbots", "Preparing destination caches for {} levels...", maxLevel);
+    // Temporary map to group creatures by entry and area
+    std::unordered_map<uint32, std::unordered_map<uint32, std::vector<CreatureSpawnInfo>>> tempCreatureMap;
 
-    QueryResult results = WorldDatabase.Query(
-        "SELECT "
-        "g.map, "
-        "position_x, "
-        "position_y, "
-        "position_z, "
-        "t.minlevel, "
-        "t.maxlevel "
-        "FROM "
-        "(SELECT "
-        "map, "
-        "MIN( c.guid ) guid "
-        "FROM "
-        "creature c "
-        "INNER JOIN creature_template t ON c.id1 = t.entry "
-        "WHERE "
-        "t.npcflag = 0 "
-        "AND t.lootid != 0 "
-        "AND t.maxlevel - t.minlevel < 3 "
-        "AND map IN ({}) "
-        "AND t.entry not in (32820, 24196, 30627, 30617) "
-        "AND c.spawntimesecs < 1000 "
-        "AND t.faction not in (11, 71, 79, 85, 188, 1575) "
-        "AND (t.unit_flags & 256) = 0 "
-        "AND (t.unit_flags & 4096) = 0 "
-        "AND t.rank = 0 "
-        // "AND (t.flags_extra & 32768) = 0 "
-        "GROUP BY "
-        "map, "
-        "ROUND(position_x / 50), "
-        "ROUND(position_y / 50), "
-        "ROUND(position_z / 50) "
-        "HAVING "
-        "count(*) >= 2) "
-        "AS g "
-        "INNER JOIN creature c ON g.guid = c.guid "
-        "INNER JOIN creature_template t on c.id1 = t.entry "
-        "ORDER BY "
-        "t.minlevel;",
-        sPlayerbotAIConfig->randomBotMapsAsString.c_str());
-    uint32 collected_locs = 0;
-    if (results)
+    for (auto const& [spawnId, creatureData] : sObjectMgr->GetAllCreatureData())
     {
-        do
+        CreatureTemplate const* creatureTemplate = sObjectMgr->GetCreatureTemplate(creatureData->id1);
+        if (!creatureTemplate)
+            continue;
+
+        uint16 mapId = creatureData->mapid;
+        if (sPlayerbotAIConfig.randomBotMaps.find(mapId) == sPlayerbotAIConfig->randomBotMaps.end())
+            continue;
+
+        float x = creatureData->posX;
+        float y = creatureData->posY;
+        float z = creatureData->posZ;
+        float orient = creatureData->orientation;
+        uint32 entry = creatureData->id1;  // The creature spawn ID
+        uint32 level = creatureData->GetObjectLevel();
+
+        Map* map = sMapMgr->FindMap(mapId, 0);
+        if (!map)
+            continue;
+
+        AreaTableEntry const* area = sAreaTableStore.LookupEntry(map->GetAreaId(PHASEMASK_NORMAL, x, y, z));
+        if (!area)
+            continue;
+
+        uint32 areaId = area->zone ? area->zone : area->ID;
+
+        // === GRINDABLE CREATURES ===
+        if (creatureTemplate->npcflag == 0 &&
+            creatureTemplate->lootid != 0 &&
+            creatureTemplate->maxlevel - creatureTemplate->minlevel < 3 &&
+            creatureTemplate->Entry != 32820 && creatureTemplate->Entry != 24196 &&
+            creatureTemplate->Entry != 30627 && creatureTemplate->Entry != 30617 &&
+            creatureTemplate->spawntimesecs < 1000 &&
+            creatureTemplate->faction != 11 && creatureTemplate->faction != 71 &&
+            creatureTemplate->faction != 79 && creatureTemplate->faction != 85 &&
+            creatureTemplate->faction != 188 && creatureTemplate->faction != 1575 &&
+            (creatureTemplate->unit_flags & 256) == 0 &&
+            (creatureTemplate->unit_flags & 4096) == 0 &&
+            creatureTemplate->rank == 0)
         {
-            Field* fields = results->Fetch();
-            uint16 mapId = fields[0].Get<uint16>();
-            float x = fields[1].Get<float>();
-            float y = fields[2].Get<float>();
-            float z = fields[3].Get<float>();
-            uint32 min_level = fields[4].Get<uint32>();
-            uint32 max_level = fields[5].Get<uint32>();
-            uint32 level = (min_level + max_level + 1) / 2;
-            WorldLocation loc(mapId, x, y, z, 0);
-            collected_locs++;
-            for (int32 l = (int32)level - (int32)sPlayerbotAIConfig->randomBotTeleLowerLevel;
-                 l <= (int32)level + (int32)sPlayerbotAIConfig->randomBotTeleHigherLevel; l++)
-            {
-                if (l < 1 || l > maxLevel)
-                {
-                    continue;
-                }
-                locsPerLevelCache[(uint8)l].push_back(loc);
-            }
-        } while (results->NextRow());
-    }
-    LOG_INFO("playerbots", ">> {} locations for level collected.", collected_locs);
-
-    PrepareZone2LevelBracket();
-    LOG_INFO("playerbots", "Preparing innkeepers / flightmasters locations for level...");
-    results = WorldDatabase.Query(
-        "SELECT "
-        "map, "
-        "position_x, "
-        "position_y, "
-        "position_z, "
-        "orientation, "
-        "t.faction, "
-        "t.entry, "
-        "t.npcflag, "
-        "c.guid "
-        "FROM "
-        "creature c "
-        "INNER JOIN creature_template t on c.id1 = t.entry "
-        "WHERE "
-        "t.npcflag & 73728 "
-        "AND map IN ({}) "
-        "ORDER BY "
-        "t.minlevel;",
-        sPlayerbotAIConfig->randomBotMapsAsString.c_str());
-    collected_locs = 0;
-    if (results)
-    {
-        do
+            CreatureSpawnInfo spawnInfo{spawnId, mapId, x, y, z, areaId};
+            tempCreatureMap[entry][areaId].push_back(spawnInfo);
+        }
+        // === FLIGHT MASTERS ===
+        else if ((creatureTemplate->npcflag & UNIT_NPC_FLAG_FLIGHTMASTER ||
+                  creatureTemplate->npcflag & UNIT_NPC_FLAG_INNKEEPER) &&
+                creatureTemplate->Entry != 3838 && creatureTemplate->Entry != 29480)
         {
-            Field* fields = results->Fetch();
-            uint16 mapId = fields[0].Get<uint16>();
-            float x = fields[1].Get<float>();
-            float y = fields[2].Get<float>();
-            float z = fields[3].Get<float>();
-            float orient = fields[4].Get<float>();
-            uint32 faction = fields[5].Get<uint32>();
-            uint32 tEntry = fields[6].Get<uint32>();
-            uint32 tNpcflag = fields[7].Get<uint32>();
-            uint32 guid = fields[8].Get<uint32>();
+            FactionTemplateEntry const* factionEntry = sFactionTemplateStore.LookupEntry(creatureTemplate->faction);
+            bool forHorde = !(factionEntry->hostileMask & 4);
+            bool forAlliance = !(factionEntry->hostileMask & 2);
 
-            if (tEntry == 3838 || tEntry == 29480)
-                continue;
-
-            const FactionTemplateEntry* entry = sFactionTemplateStore.LookupEntry(faction);
-
-            WorldLocation loc(mapId, x + cos(orient) * 5.0f, y + sin(orient) * 5.0f, z + 0.5f, orient + M_PI);
-            collected_locs++;
-            Map* map = sMapMgr->FindMap(loc.GetMapId(), 0);
-            if (!map)
-                continue;
-            bool forHorde = !(entry->hostileMask & 4);
-            bool forAlliance = !(entry->hostileMask & 2);
-            if (tNpcflag & UNIT_NPC_FLAG_FLIGHTMASTER)
+            if (creatureTemplate->npcflag & UNIT_NPC_FLAG_FLIGHTMASTER)
             {
                 WorldPosition pos(mapId, x, y, z, orient);
                 if (forHorde)
                     hordeFlightMasterCache[guid] = pos;
 
-                    if (forAlliance)
-                        allianceFlightMasterCache[guid] = pos;
-            }
-            const AreaTableEntry* area = sAreaTableStore.LookupEntry(map->GetAreaId(PHASEMASK_NORMAL, x, y, z));
-            uint32 zoneId = area->zone ? area->zone : area->ID;
-            if (zone2LevelBracket.find(zoneId) == zone2LevelBracket.end())
-                continue;
-            LevelBracket bracket = zone2LevelBracket[zoneId];
-            for (int i = bracket.low; i <= bracket.high; i++)
-            {
-                if (forHorde)
-                    hordeHubsPerLevelCache[i].push_back(loc);
-
                 if (forAlliance)
-                    allianceHubsPerLevelCache[i].push_back(loc);
+                    allianceFlightMasterCache[guid] = pos;
+                flightMastersCount++;
             }
-
-        } while (results->NextRow());
-    }
-
-    // add all initial position
-    for (uint32 i = 1; i < MAX_RACES; i++)
-    {
-        for (uint32 j = 1; j < MAX_CLASSES; j++)
-        {
-            PlayerInfo const* info = sObjectMgr->GetPlayerInfo(i, j);
-
-            if (!info)
-                continue;
-
-            WorldPosition pos(info->mapId, info->positionX, info->positionY, info->positionZ, info->orientation);
-
-            for (int32 l = 1; l <= 5; l++)
+            else if (creatureTemplate->npcflag & UNIT_NPC_FLAG_INNKEEPER)
             {
-                if ((1 << (i - 1)) & RACEMASK_ALLIANCE)
-                    allianceHubsPerLevelCache[(uint8)l].push_back(pos);
-                else
-                    hordeHubsPerLevelCache[(uint8)l].push_back(pos);
-            }
-                break;
-        }
-    }
-    LOG_INFO("playerbots", ">> {} innkeepers locations for level collected.", collected_locs);
+                if (zone2LevelBracket.find(areaId) == zone2LevelBracket.end())
+                    continue;
 
-    results = WorldDatabase.Query(
-        "SELECT "
-        "map, "
-        "position_x, "
-        "position_y, "
-        "position_z, "
-        "orientation, "
-        "t.minlevel, "
-        "t.entry "
-        "FROM "
-        "creature c "
-        "INNER JOIN creature_template t on c.id1 = t.entry "
-        "WHERE "
-        "t.npcflag & 131072 "
-        "AND t.npcflag != 135298 "
-        "AND t.minlevel != 55 "
-        "AND t.minlevel != 65 "
-        "AND t.faction not in (35, 474, 69, 57) "
-        "AND t.entry not in (30606, 30608, 29282) "
-        "AND map IN ({}) "
-        "ORDER BY "
-        "t.minlevel;",
-        sPlayerbotAIConfig->randomBotMapsAsString.c_str());
-    collected_locs = 0;
-    if (results)
-    {
-        do
+                LevelBracket bracket = zone2LevelBracket[areaId];
+                WorldPosition loc(mapId, x + cos(orient) * 5.0f, y + sin(orient) * 5.0f, z + 0.5f, orient + M_PI);
+                for (int i = bracket.low; i <= bracket.high; i++)
+                {
+                    if (forHorde)
+                        hordeHubsPerLevelCache[i].push_back(loc);
+
+                    if (forAlliance)
+                        allianceHubsPerLevelCache[i].push_back(loc);
+                    innkeepersCount++;
+                }
+            }
+        }
+        // === BANKERS ===
+        else if (creatureTemplate->npcflag & UNIT_NPC_FLAG_BANKER &&
+                 creatureTemplate->npcflag != 135298 &&
+                 creatureTemplate->minlevel != 55 &&
+                 creatureTemplate->minlevel != 65 &&
+                 creatureTemplate->faction != 35 && creatureTemplate->faction != 474 &&
+                 creatureTemplate->faction != 69 && creatureTemplate->faction != 57 &&
+                 creatureTemplate->Entry != 30606 && creatureTemplate->Entry != 30608 &&
+                 creatureTemplate->Entry != 29282)
         {
-            Field* fields = results->Fetch();
-            uint16 mapId = fields[0].Get<uint16>();
-            float x = fields[1].Get<float>();
-            float y = fields[2].Get<float>();
-            float z = fields[3].Get<float>();
-            float orient = fields[4].Get<float>();
-            uint32 level = fields[5].Get<uint32>();
-            uint32 entry = fields[6].Get<uint32>();
+            WorldLocation loc(mapId, x + cos(orient) * 6.0f, y + sin(orient) * 6.0f, z + 2.0f, orient + M_PI);
             BankerLocation bLoc;
             bLoc.loc = WorldLocation(mapId, x + cos(orient) * 6.0f, y + sin(orient) * 6.0f, z + 2.0f, orient + M_PI);
             bLoc.entry = entry;
-            collected_locs++;
             for (int32 l = 1; l <= maxLevel; l++)
             {
                 // Bots 1-60 go to base game bankers (all have minlevel 30 or 45)
@@ -377,9 +388,78 @@ void WorldNavigationMgr::PrepareTeleportCache()
                 bankerLocsPerLevelCache[(uint8)l].push_back(bLoc);
                 bankerEntryToLocation[bLoc.entry] = bLoc.loc;
             }
-        } while (results->NextRow());
+            bankerCount++;
+        }
     }
-    LOG_INFO("playerbots", ">> {} banker locations for level collected.", collected_locs);
+    // Build the creature spawn clusters from temp map
+    for (auto const& [entry, areaClusters] : tempCreatureMap)
+    {
+        std::vector<CreatureLocationCluster> clusters;
+
+        for (auto const& [areaId, spawns] : areaClusters)
+        {
+            CreatureLocationCluster cluster;
+            cluster.areaId = areaId;
+            cluster.spawns = spawns;
+
+            // Calculate average position
+            float totalX = 0, totalY = 0, totalZ = 0;
+            for (auto const& spawn : spawns)
+            {
+                totalX += spawn.posX;
+                totalY += spawn.posY;
+                totalZ += spawn.posZ;
+            }
+            cluster.avgX = totalX / spawns.size();
+            cluster.avgY = totalY / spawns.size();
+            cluster.avgZ = totalZ / spawns.size();
+
+            clusters.push_back(cluster);
+
+            CreatureTemplate const* creatureTemplate = sObjectMgr->GetCreatureTemplate(entry);
+            if (creatureTemplate)
+            {
+                uint8 level = (creatureTemplate->minlevel + creatureTemplate->maxlevel + 1) / 2;
+
+                for (auto const& spawn : spawns)
+                {
+                    GrindingSpot spot{
+                        WorldLocation(spawn.mapId, spawn.posX, spawn.posY, spawn.posZ, 0),
+                        creatureTemplate->minlevel,
+                        creatureTemplate->maxlevel
+                    };
+
+                    grindingSpotsByArea[areaId].push_back(spot);
+                    grindingSpotsByLevel[level].push_back(spot);
+                }
+            }
+        }
+
+        creatureSpawnsByTemplate[entry] = clusters;
+    }
+    //Add travel hubs based on player start locations
+    for (uint32 i = 1; i < MAX_RACES; i++)
+    {
+        for (uint32 j = 1; j < MAX_CLASSES; j++)
+        {
+            PlayerInfo const* info = sObjectMgr->GetPlayerInfo(i, j);
+
+            if (!info)
+                continue;
+
+            WorldPosition pos(info->mapId, info->positionX, info->positionY, info->positionZ, info->orientation);
+
+            for (int32 l = 1; l <= 5; l++)
+            {
+                if ((1 << (i - 1)) & RACEMASK_ALLIANCE)
+                    allianceInnsPerLevelCache[(uint8)l].push_back(pos);
+                else
+                    hordeHubsPerLevelCache[(uint8)l].push_back(pos);
+            }
+                break;
+        }
+    }
+    LOG_INFO("playerbots", ">> {} flight masters and {} innkeepers and {} banker locations for level collected.", flightMastersCount, innkeepersCount, bankerCount);
 }
 
 void WorldNavigationMgr::BuildTaxiGraph()
@@ -394,6 +474,7 @@ void WorldNavigationMgr::BuildTaxiGraph()
 
         if (path->to == 0 || path->to == uint32(-1))
             continue;
+
         tempGraph[path->from].insert(path->to);
         tempGraph[path->to].insert(path->from);
     }
@@ -401,86 +482,26 @@ void WorldNavigationMgr::BuildTaxiGraph()
         taxiGraph[node] = std::vector<uint32>(neighbors.begin(), neighbors.end());
 }
 
-std::vector<WorldLocation> WorldNavigationMgr::GetCityLocations(Player* bot)
+void WorldNavigationMgr::ComputeAllPaths()
 {
-    std::vector<WorldLocation> locations;
-    uint32 level = bot->GetLevel();
-    uint8 race = bot->getRace();
-    //TODO Remove this check. delegate to decision not this function. Keep scope clean.
-    if (level >= 10 && urand(0, 100) < sPlayerbotAIConfig->probTeleToBankers * 100)
+    std::set<uint32> allNodes;
+    for (auto const& [source, neighbors] : taxiGraph)
+        allNodes.insert(source);
+
+    for (uint32 source : allNodes)
     {
-        std::vector<WorldLocation> fallbackLocs;
-        for (auto& bLoc : bankerLocsPerLevelCache[level])
-            fallbackLocs.push_back(bLoc.loc);
+        auto parentMap = BFS(source);
 
-        if (!sPlayerbotAIConfig->enableWeightTeleToCityBankers)
-            return fallbackLocs;
-
-        // Collect valid cities based on bot faction.
-        std::unordered_set<CityId> validBankerCities;
-        for (auto& loc : bankerLocsPerLevelCache[level])
+        for (uint32 target : allNodes)
         {
-            auto cityIt = bankerToCity.find(loc.entry);
-            if (cityIt == bankerToCity.end())
+            if (source == target)
                 continue;
 
-            CityId cityId = cityIt->second.first;
-            FactionId cityFactionId = cityIt->second.second;
-
-            if ((bot->GetTeamId() == ALLIANCE && cityFactionId == FactionId::ALLIANCE) ||
-                (!bot->GetTeamId() == ALLIANCE && cityFactionId == FactionId::HORDE) ||
-                (cityFactionId == FactionId::NEUTRAL))
-            {
-                validBankerCities.insert(cityId);
-            }
-        }
-
-        // Fallback if no valid cities
-        if (validBankerCities.empty())
-            return fallbackLocs;
-
-        // Apply weights to valid cities
-        std::vector<CityId> weightedCities;
-        for (CityId city : validBankerCities)
-        {
-            int weight = GetCityWeight(city);
-            if (weight <= 0)
-                continue;
-
-            for (int i = 0; i < weight; ++i)
-                weightedCities.push_back(city);
-        }
-
-        // Fallback if no valid cities
-        if (weightedCities.empty())
-            return fallbackLocs;
-
-        // Pick a weighted city randomly, then a random banker in that city
-        //   then teleport to that banker
-        CityId selectedCity = weightedCities[urand(0, weightedCities.size() - 1)];
-        auto const& bankers = cityToBankers.at(selectedCity);
-        uint32 selectedBankerEntry = bankers[urand(0, bankers.size() - 1)];
-        auto locIt = bankerEntryToLocation.find(selectedBankerEntry);
-        if (locIt != bankerEntryToLocation.end())
-        {
-            std::vector<WorldLocation> teleportTarget = { locIt->second };
-            return teleportTarget;
+            auto path = BuildPath(source, target, parentMap);
+            if (!path.empty())
+                taxiPathCache[source][target] = path;
         }
     }
-    // Fallback if something went wrong
-    return locations;
-}
-
-const std::vector<WorldLocation> WorldNavigationMgr::GetTeleportLocations(Player* bot)
-{
-    std::vector<WorldLocation> locations;
-    uint32 level = bot->GetLevel();
-    uint8 isAlliance = bot->GetTeamId() == ALLIANCE;
-    if (sPlayerbotAIConfig->enableNewRpgStrategy)
-        locations = isAlliance ? allianceHubsPerLevelCache[level] : hordeHubsPerLevelCache[level];
-    else
-        locations = locsPerLevelCache[level];
-    return locations;
 }
 
 std::unordered_map<uint32, uint32> WorldNavigationMgr::BFS(uint32 fromNode)
@@ -514,11 +535,10 @@ std::unordered_map<uint32, uint32> WorldNavigationMgr::BFS(uint32 fromNode)
 std::vector<uint32> WorldNavigationMgr::BuildPath(uint32 fromNode, uint32 toNode,
                               const std::unordered_map<uint32, uint32>& parentMap)
 {
-    std::vector<uint32> path;
-
     if (!parentMap.count(toNode))
-        return path; // unreachable
+        return {}; // unreachable
 
+    std::vector<uint32> path;
     uint32 current = toNode;
     while (current !=  fromNode)
     {
@@ -532,88 +552,6 @@ std::vector<uint32> WorldNavigationMgr::BuildPath(uint32 fromNode, uint32 toNode
     path.push_back(fromNode);
     std::reverse(path.begin(), path.end());
     return path;
-}
-
-void WorldNavigationMgr::ComputeAllPaths()
-{
-    std::set<uint32> allNodes;
-    for (auto const& [source, neighbors] : taxiGraph)
-        allNodes.insert(source);
-
-    for (uint32 source : allNodes)
-    {
-        auto parentMap = BFS(source);
-
-        for (uint32 target : allNodes)
-        {
-            if (source == target)
-                continue;
-
-            auto path = BuildPath(source, target, parentMap);
-            if (!path.empty())
-                taxiPathCache[source][target] = path;
-        }
-    }
-}
-
-std::vector<uint32> WorldNavigationMgr::FindTaxiPath(uint32 fromNode, uint32 toNode)
-{
-    std::vector<uint32> path;
-
-    if (fromNode == toNode)
-        return path;
-
-    TaxiNodesEntry const* startNode = sTaxiNodesStore.LookupEntry(fromNode);
-    TaxiNodesEntry const* endNode = sTaxiNodesStore.LookupEntry(toNode);
-
-    if (!startNode || !endNode || startNode->map_id != endNode->map_id)
-        return path;
-
-    auto cacheItr = taxiPathCache.find(fromNode);
-    if (cacheItr != taxiPathCache.end())
-    {
-        auto toNodeItr = cacheItr->second.find(toNode);
-        if (toNodeItr != cacheItr->second.end())
-            return toNodeItr->second;
-    }
-    return path;
-}
-
-Creature* WorldNavigationMgr::GetNearestFlightMaster(Player* bot)
-{
-    std::map<uint32, WorldPosition>& flightMasterCache =
-        (bot->GetTeamId() == ALLIANCE) ? allianceFlightMasterCache : hordeFlightMasterCache;
-
-    Creature* nearestFlightMaster = nullptr;
-    float nearestDistance = std::numeric_limits<float>::max();
-
-    for (auto const& [entry, pos] : flightMasterCache)
-    {
-        if (pos.GetMapId() == bot->GetMapId())
-        {
-            float distance = bot->GetExactDist2dSq(pos);
-            if (distance < nearestDistance)
-            {
-                Creature* flightMaster = ObjectAccessor::GetSpawnedCreatureByDBGUID(bot->GetMapId(), entry);
-                if (flightMaster)
-                {
-                    nearestDistance = distance;
-                    nearestFlightMaster = flightMaster;
-                }
-            }
-        }
-    }
-
-    return nearestFlightMaster;
-}
-
-ObjectGuid WorldNavigationMgr::GetNearestFlightMaster(Player* bot, bool returnGuid)
-{
-    Creature* nearestFlightMaster = GetNearestFlightMaster(bot);
-    if (!nearestFlightMaster)
-        return ObjectGuid::Empty;
-
-    return nearestFlightMaster->GetGUID();
 }
 
 int WorldNavigationMgr::GetCityWeight(CityId city)

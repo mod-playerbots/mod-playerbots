@@ -5,10 +5,18 @@
 #include "Player.h"
 #include "TravelMgr.h"
 
-enum class CityId : uint8 {
-    STORMWIND, IRONFORGE, DARNASSUS, EXODAR,
-    ORGRIMMAR, UNDERCITY, THUNDER_BLUFF, SILVERMOON_CITY,
-    SHATTRATH_CITY, DALARAN
+enum class CityId : uint8
+{
+    STORMWIND,
+    IRONFORGE,
+    DARNASSUS,
+    EXODAR,
+    ORGRIMMAR,
+    UNDERCITY,
+    THUNDER_BLUFF,
+    SILVERMOON_CITY,
+    SHATTRATH_CITY,
+    DALARAN
 };
 
 enum class FactionId : uint8 { ALLIANCE, HORDE, NEUTRAL };
@@ -55,12 +63,10 @@ public:
 
     void Init();
 
-    ObjectGuid GetNearestFlightMaster(Player* bot, bool returnGuid);
     Creature* GetNearestFlightMaster(Player* bot);
+    ObjectGuid GetNearestFlightMasterGuid(Player* bot);
 
-    std::vector<std::vector<uint32>> GetOptimalDestinations(Player* bot);
-    void PrepareZone2LevelBracket();
-    void PrepareTeleportCache();
+    std::vector<std::vector<uint32>> GetOptimalFlightDestinations(Player* bot);
     const std::vector<WorldLocation> GetTeleportLocations(Player* bot);
     const std::vector<WorldLocation> GetTravelHubs(Player* bot);
     std::vector<WorldLocation> GetCityLocations(Player* bot);
@@ -68,46 +74,84 @@ public:
     std::map<uint8, std::vector<WorldLocation>> locsPerLevelCache;
 private:
 
+    WorldNavigationMgr() = default;
     ~WorldNavigationMgr() = default;
 
     WorldNavigationMgr(const WorldNavigationMgr&) = delete;
     WorldNavigationMgr& operator=(const WorldNavigationMgr&) = delete;
-
     WorldNavigationMgr(WorldNavigationMgr&&) = delete;
     WorldNavigationMgr& operator=(WorldNavigationMgr&&) = delete;
 
-    //Taxi Paths
-    std::vector<uint32> FindTaxiPath(uint32 fromNode, uint32 toNode);
+    // Initialization
+    void PrepareZone2LevelBracket();
+    void PrepareDestinationCache();
+
+    //Taxi Path grapg
     void BuildTaxiGraph();
     void ComputeAllPaths();
-    std::unordered_map<uint32, uint32> BFS(uint32 start);
-    std::vector<uint32> BuildPath(uint32 from, uint32 to,
-                              const std::unordered_map<uint32, uint32>& parent);
-    //flight master
-    std::map<uint32, WorldPosition> allianceFlightMasterCache;
-    std::map<uint32, WorldPosition> hordeFlightMasterCache;
-
-    std::map<uint8, std::vector<WorldLocation>> allianceHubsPerLevelCache;
-    std::map<uint8, std::vector<WorldLocation>> hordeHubsPerLevelCache;
-
+    std::unordered_map<uint32, uint32> BFS(uint32 startNode);
+    std::vector<uint32> BuildPath(uint32 fromNode, uint32 toNode,
+                              const std::unordered_map<uint32, uint32>& parentMap);
+    // City Weights
     int GetCityWeight(CityId city);
 
+    //class types needed
     struct LevelBracket
     {
         uint32 low;
         uint32 high;
-        bool InsideBracket(uint32 val) { return val >= low && val <= high; }
+        bool InsideBracket(uint32 val) const { return val >= low && val <= high; }
     };
-    std::map<uint32, LevelBracket> zone2LevelBracket;
 
     struct BankerLocation
     {
         WorldLocation loc;
         uint32 entry;
     };
+
+    struct CreatureSpawnInfo
+    {
+        uint32 spawnId;
+        uint16 mapId;
+        float posX;
+        float posY;
+        float posZ;
+        uint32 areaId;
+    };
+
+    struct CreatureLocationCluster
+    {
+        uint32 areaId;
+        float avgX;
+        float avgY;
+        float avgZ;
+        std::vector<CreatureSpawnInfo> spawns;
+    };
+
+    struct GrindingSpot
+    {
+        WorldLocation loc;
+        uint32 minLevel;
+        uint32 maxLevel;
+    };
+
+    //caches
+    //Flight master caches
+    std::map<uint32, WorldPosition> allianceFlightMasterCache;
+    std::map<uint32, WorldPosition> hordeFlightMasterCache;
+    //Travel hubs (Starting zones and innkeepers)
+    std::map<uint8, std::vector<WorldLocation>> allianceHubsPerLevelCache;
+    std::map<uint8, std::vector<WorldLocation>> hordeHubsPerLevelCache;
+    //Bankers
     std::map<uint8, std::vector<BankerLocation>> bankerLocsPerLevelCache;
     static inline std::unordered_map<uint32, WorldLocation> bankerEntryToLocation;
-
+    // Areas to Grind
+    std::map<uint32, std::vector<GrindingSpot>> grindingSpotsByArea;
+    std::map<uint8,  std::vector<GrindingSpot>> grindingSpotsByLevel;
+    // TODO Clusters of creatures, to enable searching for specific creatures
+    std::unordered_map<uint32, std::vector<CreatureLocationCluster>> creatureSpawnsByTemplate;
+    // Zone level bracket lookup
+    std::map<uint32, LevelBracket> zone2LevelBracket;
     //taxi paths
     std::map<uint32, std::map<uint32, std::vector<uint32>>> taxiPathCache;
     std::unordered_map<uint32, std::vector<uint32>> taxiGraph;

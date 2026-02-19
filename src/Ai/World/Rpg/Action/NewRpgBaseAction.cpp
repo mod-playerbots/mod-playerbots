@@ -971,7 +971,7 @@ bool NewRpgBaseAction::SelectRandomFlightTaxiNode(ObjectGuid& flightMaster, std:
     if (!flightMaster)
         return false;
 
-    std::vector<std::vector<uint32>> availablePaths = sWorldNavigationMgr.GetOptimalDestinations(bot);
+    std::vector<std::vector<uint32>> availablePaths = sWorldNavigationMgr.GetOptimalFlightDestinations(bot);
     if (availablePaths.empty())
         return false;
 
