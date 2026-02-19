@@ -276,8 +276,8 @@ void WorldNavigationMgr::PrepareDestinationCache()
 
     LOG_INFO("playerbots", "Preparing destination caches for {} levels...", maxLevel);
     // Temporary map to group creatures by entry and area
-    std::unordered_map<uint32, std::unordered_map<uint32, std::vector<CreatureSpawnInfo>>> tempCreatureMap;
-
+    std::map<std::tuple<uint16, int32, int32, int32>, std::vector<CreatureData>> tempLocsCache;  //group by map and x/y/z coords
+    std::map<uint32, std::map<uint32, std::vector<WorldLocation>>> tempCreatureCache; //group by creature template ID, area, world location
     for (auto const& [guid, creatureData] : sObjectMgr->GetAllCreatureData())
     {
         CreatureTemplate const* creatureTemplate = sObjectMgr->GetCreatureTemplate(creatureData.id1);
@@ -293,7 +293,7 @@ void WorldNavigationMgr::PrepareDestinationCache()
         float y = creatureData.posY;
         float z = creatureData.posZ;
         float orient = creatureData.orientation;
-        uint32 entry = creatureData.id1;  // The creature spawn ID
+        uint32 templateEntry = creatureData.id1;  // The creature spawn ID
 
         Map* map = sMapMgr->FindMap(mapId, 0);
         if (!map)
@@ -319,10 +319,13 @@ void WorldNavigationMgr::PrepareDestinationCache()
             (creatureTemplate->unit_flags & 4096) == 0 &&
             creatureTemplate->rank == 0)
         {
-            CreatureSpawnInfo spawnInfo{guid, mapId, x, y, z, areaId};
-            tempCreatureMap[entry][areaId].push_back(spawnInfo);
+            uint32 roundX = (x / 50.0f) * 10.0f;
+            uint32 roundY = (y / 50.0f) * 10.0f;
+            uint32 roundZ = (z / 50.0f) * 10.0f;
+            tempLocsCache[std::make_tuple(mapId, roundX, roundY, roundZ)].push_back(creatureData);
+            tempCreatureCache[templateEntry][areaId].push_back(WorldLocation(mapId, x, y, z));
         }
-        // === FLIGHT MASTERS ===
+        // FLIGHT MASTERS
         else if ((creatureTemplate->npcflag & UNIT_NPC_FLAG_FLIGHTMASTER ||
                   creatureTemplate->npcflag & UNIT_NPC_FLAG_INNKEEPER) &&
                 creatureTemplate->Entry != 3838 && creatureTemplate->Entry != 29480)
@@ -394,51 +397,41 @@ void WorldNavigationMgr::PrepareDestinationCache()
             bankerCount++;
         }
     }
-    // Build the creature spawn clusters from temp map
-    for (auto const& [entry, areaClusters] : tempCreatureMap)
+
+    // Process temporary caches
+    for (auto const& [gridTuple, creatureDataList] : tempLocsCache)
     {
-        std::vector<CreatureLocationCluster> clusters;
-
-        for (auto const& [areaId, spawns] : areaClusters)
+        if (creatureDataList.size() > 2)
         {
-            CreatureLocationCluster cluster;
-            cluster.areaId = areaId;
-            cluster.spawns = spawns;
-
-            // Calculate average position
-            float totalX = 0, totalY = 0, totalZ = 0;
-            for (auto const& spawn : spawns)
+            uint32 level = (creatureTemplate->minlevel + creatureTemplate->maxlevel + 1) / 2;
+            for (int32 l = (int32)level - (int32)sPlayerbotAIConfig->randomBotTeleLowerLevel;
+                 l <= (int32)level + (int32)sPlayerbotAIConfig->randomBotTeleHigherLevel; l++)
             {
-                totalX += spawn.posX;
-                totalY += spawn.posY;
-                totalZ += spawn.posZ;
-            }
-            cluster.avgX = totalX / spawns.size();
-            cluster.avgY = totalY / spawns.size();
-            cluster.avgZ = totalZ / spawns.size();
+                if (l < 1 || l > maxLevel)
+                    continue;
 
-            clusters.push_back(cluster);
-
-            CreatureTemplate const* creatureTemplate = sObjectMgr->GetCreatureTemplate(entry);
-            if (creatureTemplate)
-            {
-                uint8 level = (creatureTemplate->minlevel + creatureTemplate->maxlevel + 1) / 2;
-
-                for (auto const& spawn : spawns)
-                {
-                    GrindingSpot spot{
-                        WorldLocation(spawn.mapId, spawn.posX, spawn.posY, spawn.posZ, 0),
-                        creatureTemplate->minlevel,
-                        creatureTemplate->maxlevel
-                    };
-
-                    grindingSpotsByArea[areaId].push_back(spot);
-                    grindingSpotsByLevel[level].push_back(spot);
-                }
+                locsPerLevelCache[(uint8)l].push_back(WorldLocation(std::get<0>(gridTuple));
             }
         }
+    }
+    for (auto const& [entry, areaMap] : tempCreatureCache)
+    {
+        for (auto const& [area, locList] : areaMap)
+        {
+            if (locList.size() > 3)
+                continue;
 
-        creatureSpawnsByTemplate[entry] = clusters;
+            float totalX = 0, totalY = 0, totalZ = 0;
+            for (auto const& loc : locList)
+            {
+                totalX += loc.GetPositionX();
+                totalY += loc.GetPositionY();
+                totalZ += loc.GetPositionZ();
+            }
+            cluster.avgX = totalX / locList.size();
+            cluster.avgY = totalY / locList.size();
+            cluster.avgZ = totalZ / locList.size();
+            creatureSpawnsByTemplate[entry].push_back(WorldLocation(locList[0].GetMapId(), cluster.avgX, cluster.avgY, cluster.avgZ, 0);
     }
     //Add travel hubs based on player start locations
     for (uint32 i = 1; i < MAX_RACES; i++)

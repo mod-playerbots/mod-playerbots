@@ -108,32 +108,6 @@ private:
         uint32 entry;
     };
 
-    struct CreatureSpawnInfo
-    {
-        uint32 spawnId;
-        uint16 mapId;
-        float posX;
-        float posY;
-        float posZ;
-        uint32 areaId;
-    };
-
-    struct CreatureLocationCluster
-    {
-        uint32 areaId;
-        float avgX;
-        float avgY;
-        float avgZ;
-        std::vector<CreatureSpawnInfo> spawns;
-    };
-
-    struct GrindingSpot
-    {
-        WorldLocation loc;
-        uint32 minLevel;
-        uint32 maxLevel;
-    };
-
     //caches
     //Flight master caches
     std::map<uint32, WorldPosition> allianceFlightMasterCache;
@@ -144,11 +118,9 @@ private:
     //Bankers
     std::map<uint8, std::vector<BankerLocation>> bankerLocsPerLevelCache;
     static inline std::unordered_map<uint32, WorldLocation> bankerEntryToLocation;
-    // Areas to Grind
-    std::map<uint32, std::vector<GrindingSpot>> grindingSpotsByArea;
-    std::map<uint8,  std::vector<GrindingSpot>> grindingSpotsByLevel;
-    // TODO Clusters of creatures, to enable searching for specific creatures
-    std::unordered_map<uint32, std::vector<CreatureLocationCluster>> creatureSpawnsByTemplate;
+    // Areas to Grind, and area lookups by specific creature templates
+    std::map<uint8, std::vector<WorldLocation>> locsPerLevelCache;
+    std::unordered_map<uint32, std::vector<WorldLocation>> creatureSpawnsByTemplate;
     // Zone level bracket lookup
     std::map<uint32, LevelBracket> zone2LevelBracket;
     //taxi paths
