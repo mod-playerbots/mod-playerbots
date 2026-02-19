@@ -375,7 +375,7 @@ void WorldNavigationMgr::PrepareDestinationCache()
             WorldLocation loc(mapId, x + cos(orient) * 6.0f, y + sin(orient) * 6.0f, z + 2.0f, orient + M_PI);
             BankerLocation bLoc;
             bLoc.loc = WorldLocation(mapId, x + cos(orient) * 6.0f, y + sin(orient) * 6.0f, z + 2.0f, orient + M_PI);
-            bLoc.entry = entry;
+            bLoc.entry = templateEntry;
             uint32 level = (creatureTemplate->minlevel + creatureTemplate->maxlevel + 1) / 2;
             for (int32 l = 1; l <= maxLevel; l++)
             {
@@ -403,14 +403,15 @@ void WorldNavigationMgr::PrepareDestinationCache()
     {
         if (creatureDataList.size() > 2)
         {
+            CreatureTemplate const* creatureTemplate = sObjectMgr->GetCreatureTemplate(creatureDataList[0].id1);
             uint32 level = (creatureTemplate->minlevel + creatureTemplate->maxlevel + 1) / 2;
-            for (int32 l = (int32)level - (int32)sPlayerbotAIConfig->randomBotTeleLowerLevel;
-                 l <= (int32)level + (int32)sPlayerbotAIConfig->randomBotTeleHigherLevel; l++)
+            for (int32 l = (int32)level - (int32)sPlayerbotAIConfig.randomBotTeleLowerLevel;
+                 l <= (int32)level + (int32)sPlayerbotAIConfig.randomBotTeleHigherLevel; l++)
             {
                 if (l < 1 || l > maxLevel)
                     continue;
 
-                locsPerLevelCache[(uint8)l].push_back(WorldLocation(std::get<0>(gridTuple));
+                locsPerLevelCache[(uint8)l].push_back(WorldLocation(std::get<0>(gridTuple)));
             }
         }
     }
@@ -428,10 +429,11 @@ void WorldNavigationMgr::PrepareDestinationCache()
                 totalY += loc.GetPositionY();
                 totalZ += loc.GetPositionZ();
             }
-            cluster.avgX = totalX / locList.size();
-            cluster.avgY = totalY / locList.size();
-            cluster.avgZ = totalZ / locList.size();
-            creatureSpawnsByTemplate[entry].push_back(WorldLocation(locList[0].GetMapId(), cluster.avgX, cluster.avgY, cluster.avgZ, 0);
+            float avgX = totalX / locList.size();
+            float avgY = totalY / locList.size();
+            float avgZ = totalZ / locList.size();
+            creatureSpawnsByTemplate[entry].push_back(WorldLocation(locList[0].GetMapId(), avgX, avgY, avgZ, 0));
+        }
     }
     //Add travel hubs based on player start locations
     for (uint32 i = 1; i < MAX_RACES; i++)
@@ -452,7 +454,7 @@ void WorldNavigationMgr::PrepareDestinationCache()
                 else
                     hordeHubsPerLevelCache[(uint8)l].push_back(pos);
             }
-                break;
+            break;
         }
     }
     LOG_INFO("playerbots", ">> {} flight masters and {} innkeepers and {} banker locations for level collected.", flightMastersCount, innkeepersCount, bankerCount);
