@@ -19,23 +19,21 @@ enum class CityId : uint8
     DALARAN
 };
 
-enum class FactionId : uint8 { ALLIANCE, HORDE, NEUTRAL };
-
 // Map of banker entry → city + faction
-static const std::unordered_map<uint16, std::pair<CityId, FactionId>> bankerToCity = {
-    {2455,  {CityId::STORMWIND,       FactionId::ALLIANCE}}, {2456,  {CityId::STORMWIND,       FactionId::ALLIANCE}}, {2457,  {CityId::STORMWIND,       FactionId::ALLIANCE}},
-    {2460,  {CityId::IRONFORGE,       FactionId::ALLIANCE}}, {2461,  {CityId::IRONFORGE,       FactionId::ALLIANCE}}, {5099,  {CityId::IRONFORGE,       FactionId::ALLIANCE}},
-    {4155,  {CityId::DARNASSUS,       FactionId::ALLIANCE}}, {4208,  {CityId::DARNASSUS,       FactionId::ALLIANCE}}, {4209,  {CityId::DARNASSUS,       FactionId::ALLIANCE}},
-    {17773, {CityId::EXODAR,          FactionId::ALLIANCE}}, {18350, {CityId::EXODAR,          FactionId::ALLIANCE}}, {16710, {CityId::EXODAR,          FactionId::ALLIANCE}},
-    {3320,  {CityId::ORGRIMMAR,       FactionId::HORDE}},    {3309,  {CityId::ORGRIMMAR,       FactionId::HORDE}},    {3318,  {CityId::ORGRIMMAR,       FactionId::HORDE}},
-    {4549,  {CityId::UNDERCITY,       FactionId::HORDE}},    {2459,  {CityId::UNDERCITY,       FactionId::HORDE}},    {2458,  {CityId::UNDERCITY,       FactionId::HORDE}},    {4550, {CityId::UNDERCITY, FactionId::HORDE}},
-    {2996,  {CityId::THUNDER_BLUFF,   FactionId::HORDE}},    {8356,  {CityId::THUNDER_BLUFF,   FactionId::HORDE}},    {8357,  {CityId::THUNDER_BLUFF,   FactionId::HORDE}},
-    {17631, {CityId::SILVERMOON_CITY, FactionId::HORDE}},    {17632, {CityId::SILVERMOON_CITY, FactionId::HORDE}},    {17633, {CityId::SILVERMOON_CITY, FactionId::HORDE}},
-    {16615, {CityId::SILVERMOON_CITY, FactionId::HORDE}},    {16616, {CityId::SILVERMOON_CITY, FactionId::HORDE}},    {16617, {CityId::SILVERMOON_CITY, FactionId::HORDE}},
-    {19246, {CityId::SHATTRATH_CITY,  FactionId::NEUTRAL}},  {19338, {CityId::SHATTRATH_CITY,  FactionId::NEUTRAL}},
-    {19034, {CityId::SHATTRATH_CITY,  FactionId::NEUTRAL}},  {19318, {CityId::SHATTRATH_CITY,  FactionId::NEUTRAL}},
-    {30604, {CityId::DALARAN,         FactionId::NEUTRAL}},  {30605, {CityId::DALARAN,         FactionId::NEUTRAL}},  {30607, {CityId::DALARAN,         FactionId::NEUTRAL}},
-    {28675, {CityId::DALARAN,         FactionId::NEUTRAL}},  {28676, {CityId::DALARAN,         FactionId::NEUTRAL}},  {28677, {CityId::DALARAN,         FactionId::NEUTRAL}}
+static const std::unordered_map<uint16, std::pair<CityId, TeamId>> bankerToCity = {
+    {2455,  {CityId::STORMWIND,       TEAM_ALLIANCE}}, {2456,  {CityId::STORMWIND,       TEAM_ALLIANCE}}, {2457,  {CityId::STORMWIND,       TEAM_ALLIANCE}},
+    {2460,  {CityId::IRONFORGE,       TEAM_ALLIANCE}}, {2461,  {CityId::IRONFORGE,       TEAM_ALLIANCE}}, {5099,  {CityId::IRONFORGE,       TEAM_ALLIANCE}},
+    {4155,  {CityId::DARNASSUS,       TEAM_ALLIANCE}}, {4208,  {CityId::DARNASSUS,       TEAM_ALLIANCE}}, {4209,  {CityId::DARNASSUS,       TEAM_ALLIANCE}},
+    {17773, {CityId::EXODAR,          TEAM_ALLIANCE}}, {18350, {CityId::EXODAR,          TEAM_ALLIANCE}}, {16710, {CityId::EXODAR,          TEAM_ALLIANCE}},
+    {3320,  {CityId::ORGRIMMAR,       TEAM_HORDE}},    {3309,  {CityId::ORGRIMMAR,       TEAM_HORDE}},    {3318,  {CityId::ORGRIMMAR,       TEAM_HORDE}},
+    {4549,  {CityId::UNDERCITY,       TEAM_HORDE}},    {2459,  {CityId::UNDERCITY,       TEAM_HORDE}},    {2458,  {CityId::UNDERCITY,       TEAM_HORDE}},    {4550, {CityId::UNDERCITY, TEAM_HORDE}},
+    {2996,  {CityId::THUNDER_BLUFF,   TEAM_HORDE}},    {8356,  {CityId::THUNDER_BLUFF,   TEAM_HORDE}},    {8357,  {CityId::THUNDER_BLUFF,   TEAM_HORDE}},
+    {17631, {CityId::SILVERMOON_CITY, TEAM_HORDE}},    {17632, {CityId::SILVERMOON_CITY, TEAM_HORDE}},    {17633, {CityId::SILVERMOON_CITY, TEAM_HORDE}},
+    {16615, {CityId::SILVERMOON_CITY, TEAM_HORDE}},    {16616, {CityId::SILVERMOON_CITY, TEAM_HORDE}},    {16617, {CityId::SILVERMOON_CITY, TEAM_HORDE}},
+    {19246, {CityId::SHATTRATH_CITY,  TEAM_NEUTRAL}},  {19338, {CityId::SHATTRATH_CITY,  TEAM_NEUTRAL}},
+    {19034, {CityId::SHATTRATH_CITY,  TEAM_NEUTRAL}},  {19318, {CityId::SHATTRATH_CITY,  TEAM_NEUTRAL}},
+    {30604, {CityId::DALARAN,         TEAM_NEUTRAL}},  {30605, {CityId::DALARAN,         TEAM_NEUTRAL}},  {30607, {CityId::DALARAN,         TEAM_NEUTRAL}},
+    {28675, {CityId::DALARAN,         TEAM_NEUTRAL}},  {28676, {CityId::DALARAN,         TEAM_NEUTRAL}},  {28677, {CityId::DALARAN,         TEAM_NEUTRAL}}
 };
 
 // Map of city → available banker entries

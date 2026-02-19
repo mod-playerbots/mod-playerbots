@@ -139,7 +139,7 @@ std::vector<WorldLocation> WorldNavigationMgr::GetCityLocations(Player* bot)
     if (!sPlayerbotAIConfig->enableWeightTeleToCityBankers)
         return fallbackLocations;
 
-    FactionId botFaction = (bot->GetTeamId() == TEAM_ALLIANCE) ? FactionId::ALLIANCE : FactionId::HORDE;
+    TeamId botTeamId = bot->GetTeamId();
     std::unordered_set<CityId> validBankerCities;
     for (auto& loc : bankerLocsPerLevelCache[level])
     {
@@ -147,10 +147,10 @@ std::vector<WorldLocation> WorldNavigationMgr::GetCityLocations(Player* bot)
         if (cityIt == bankerToCity.end())
             continue;
 
-        FactionId cityFactionId = cityIt->second.second;
+        TeamId cityTeamId = cityIt->second.second;
 
-        if (cityFactionId == botFaction ||
-            (cityFactionId == FactionId::NEUTRAL)
+        if (cityTeamId == botTeamId ||
+            (cityTeamId == TEAM_NEUTRAL)
            )
             validBankerCities.insert(cityIt->second.first);
     }
