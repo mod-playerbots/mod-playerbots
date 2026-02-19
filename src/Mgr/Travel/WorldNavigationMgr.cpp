@@ -88,8 +88,10 @@ std::vector<std::vector<uint32>> WorldNavigationMgr::GetOptimalFlightDestination
                                             bot->GetTeamId());
     if (!fromNode)
         return validDestinations;
+    std::vector<WorldLocation> candidateLocations;
+    if (level >= 10 && urand(0, 100) < sPlayerbotAIConfig->probTeleToBankers * 100)
+        candidateLocations = GetCityLocations(bot);
 
-    std::vector<WorldLocation> candidateLocations =  GetCityLocations(bot);
     std::vector<WorldLocation> hubLocations = GetTravelHubs(bot);
     candidateLocations.insert(candidateLocations.end(), hubLocations.begin(), hubLocations.end());
 
