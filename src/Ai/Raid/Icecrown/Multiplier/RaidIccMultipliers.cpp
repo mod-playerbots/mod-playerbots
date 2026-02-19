@@ -15,7 +15,6 @@
 #include "RaidIccActions.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
-#include "ScriptedCreature.h"
 #include "ShamanActions.h"
 #include "UseMeetingStoneAction.h"
 #include "WarriorActions.h"

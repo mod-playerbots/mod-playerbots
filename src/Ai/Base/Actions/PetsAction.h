@@ -9,8 +9,6 @@
 #include <string>
 
 #include "Action.h"
-#include "PlayerbotFactory.h"
-#include "Unit.h"
 
 class PlayerbotAI;
 

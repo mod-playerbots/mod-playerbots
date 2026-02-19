@@ -6,7 +6,9 @@
 #include "CcTargetValue.h"
 
 #include "Action.h"
-#include "Playerbots.h"
+#include "AiObjectContext.h"
+#include "Group.h"
+#include "PlayerbotAI.h"
 #include "ServerFacade.h"
 
 class FindTargetForCcStrategy : public FindTargetStrategy

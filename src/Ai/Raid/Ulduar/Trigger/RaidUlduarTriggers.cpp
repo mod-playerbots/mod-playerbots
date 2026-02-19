@@ -1,6 +1,5 @@
 #include "RaidUlduarTriggers.h"
 
-#include "EventMap.h"
 #include "GameObject.h"
 #include "Object.h"
 #include "PlayerbotAI.h"
@@ -350,7 +349,6 @@ bool KologarnMarkDpsTargetTrigger::IsActive()
         if (!target)
             continue;
 
-        uint32 creatureId = target->GetEntry();
         if (target->GetEntry() == NPC_RUBBLE && target->IsAlive())
         {
             return true;  // Found a rubble to mark
@@ -1092,7 +1090,7 @@ bool ThorimPhase2PositioningTrigger::IsActive()
 
     Unit* boss = AI_VALUE2(Unit*, "find target", "thorim");
     if (!boss || !boss->IsInWorld() || boss->IsDuringRemoveFromWorld())
-    return false;
+        return false;
 
     if (!boss->IsAlive())
         return false;
@@ -1190,10 +1188,13 @@ bool MimironPhase1PositioningTrigger::IsActive()
 
         if (target->GetEntry() == NPC_LEVIATHAN_MKII)
             leviathanMkII = target;
+        }
         else if (target->GetEntry() == NPC_VX001)
             return false;
+        }
         else if (target->GetEntry() == NPC_AERIAL_COMMAND_UNIT)
             return false;
+        }
     }
 
     if (!leviathanMkII || !leviathanMkII->IsAlive())
@@ -1668,7 +1669,7 @@ Unit* YoggSaronTrigger::GetIllusionRoomRtiTarget()
     if (!group)
         return nullptr;
 
-    uint8 rtiIndex = RtiTargetValue::GetRtiIndex(AI_VALUE(std::string, "rti"));
+    int32_t rtiIndex = RtiTargetValue::GetRtiIndex(AI_VALUE(std::string, "rti"));
     if (rtiIndex == -1)
         return nullptr;  // Invalid RTI mark
 
@@ -1685,10 +1686,13 @@ Unit* YoggSaronTrigger::GetNextIllusionRoomRtiTarget()
     float detectionRadius = 0.0f;
     if (IsInStormwindKeeperIllusion())
         detectionRadius = ULDUAR_YOGG_SARON_STORMWIND_KEEPER_RADIUS;
+    }
     else if (IsInIcecrownKeeperIllusion())
         detectionRadius = ULDUAR_YOGG_SARON_ICECROWN_CITADEL_RADIUS;
+    }
     else if (IsInChamberOfTheAspectsIllusion())
         detectionRadius = ULDUAR_YOGG_SARON_CHAMBER_OF_ASPECTS_RADIUS;
+    }
     else
         return nullptr;
 

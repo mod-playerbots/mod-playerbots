@@ -6,9 +6,9 @@
 #include "AcceptBattlegroundInvitationAction.h"
 
 #include "Event.h"
-#include "Playerbots.h"
+#include "PlayerbotAI.h"
 
-bool AcceptBgInvitationAction::Execute(Event event)
+bool AcceptBgInvitationAction::Execute(Event /*event*/)
 {
     uint8 type = 0;                      // arenatype if arena
     uint8 unk2 = 0;                      // unk, can be 0x0 (may be if was invited?) and 0x1
@@ -18,9 +18,9 @@ bool AcceptBgInvitationAction::Execute(Event event)
 
     WorldPacket packet(CMSG_BATTLEFIELD_PORT, 20);
     packet << type << unk2 << (uint32)bgTypeId_ << unk << action;
-    // packet << bgTypeId_ << action;
     bot->GetSession()->HandleBattleFieldPortOpcode(packet);
 
     botAI->ResetStrategies();
+
     return true;
 }

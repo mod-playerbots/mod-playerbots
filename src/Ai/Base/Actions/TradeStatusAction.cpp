@@ -270,14 +270,11 @@ bool TradeStatusAction::CheckTrade()
                 botAI->PlaySound(TEXT_EMOTE_NO);
                 return false;
             }
-
             success = true;
         }
     }
     else
-    {
         success = true;
-    }
 
     if (success)
     {
@@ -334,9 +331,7 @@ int32 TradeStatusAction::CalculateCost(Player* player, bool sell)
         if (!craftData.IsEmpty())
         {
             if (player == trader && !sell && craftData.IsRequired(proto->ItemId))
-            {
                 continue;
-            }
 
             if (player == bot && sell && craftData.itemId == proto->ItemId && craftData.IsFulfilled())
             {
@@ -346,13 +341,11 @@ int32 TradeStatusAction::CalculateCost(Player* player, bool sell)
         }
 
         if (sell)
-        {
             sum += item->GetCount() * proto->SellPrice * sRandomPlayerbotMgr.GetSellMultiplier(bot);
-        }
+
         else
-        {
             sum += item->GetCount() * proto->BuyPrice * sRandomPlayerbotMgr.GetBuyMultiplier(bot);
-        }
+
     }
 
     return sum;

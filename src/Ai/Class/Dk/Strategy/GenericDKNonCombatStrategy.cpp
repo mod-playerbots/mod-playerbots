@@ -5,8 +5,6 @@
 
 #include "GenericDKNonCombatStrategy.h"
 
-#include "Playerbots.h"
-
 class GenericDKNonCombatStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
 public:

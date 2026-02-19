@@ -5,9 +5,6 @@
 
 #include "GenericHunterStrategy.h"
 
-#include "Playerbots.h"
-#include "Strategy.h"
-
 class GenericHunterStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
 public:
@@ -101,7 +98,7 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     CombatStrategy::InitTriggers(triggers);
 
     // Mark/Ammo/Mana Triggers
-    triggers.push_back(new TriggerNode("no ammo", { NextAction("equip upgrades", 30.0f) }));
+    triggers.push_back(new TriggerNode("no ammo", { NextAction("equip upgrades packet action", 30.0f) }));
     triggers.push_back(new TriggerNode("hunter's mark", { NextAction("hunter's mark", 29.5f) }));
     triggers.push_back(new TriggerNode("rapid fire", { NextAction("rapid fire", 29.0f) }));
     triggers.push_back(new TriggerNode("aspect of the viper", { NextAction("aspect of the viper", 28.0f) }));

@@ -16,7 +16,7 @@ bool SecurityCheckAction::isUseful()
         && !GET_PLAYERBOT_AI(botAI->GetMaster());
 }
 
-bool SecurityCheckAction::Execute(Event event)
+bool SecurityCheckAction::Execute(Event /*event*/)
 {
     if (Group* group = bot->GetGroup())
     {
