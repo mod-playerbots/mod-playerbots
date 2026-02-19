@@ -84,7 +84,8 @@ private:
     void PrepareZone2LevelBracket();
     void PrepareDestinationCache();
 
-    //Taxi Path grapg
+    //Taxi Path graph
+    std::vector<uint32> FindTaxiPath(uint32 fromNode, uint32 toNode);
     void BuildTaxiGraph();
     void ComputeAllPaths();
     std::unordered_map<uint32, uint32> BFS(uint32 startNode);

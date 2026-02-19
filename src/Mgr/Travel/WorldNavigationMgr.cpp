@@ -3,13 +3,13 @@
 #include "Log.h"
 #include "MapMgr.h"
 #include "PlayerbotAIConfig.h"
-=
+
 void WorldNavigationMgr::Init()
 {
-    if (sPlayerbotAIConfig->enabled)
+    if (sPlayerbotAIConfig.enabled)
     {
         PrepareZone2LevelBracket();
-        PrepareTeleportCache();
+        PrepareDestinationCache();
     }
     BuildTaxiGraph();
     ComputeAllPaths();
@@ -75,7 +75,7 @@ std::vector<uint32> WorldNavigationMgr::FindTaxiPath(uint32 fromNode, uint32 toN
     return toNodeItr->second;
 }
 
-std::vector<std::vector<uint32>> WorldNavigationMgr::GetOptimalFlightDestination(Player* bot)
+std::vector<std::vector<uint32>> WorldNavigationMgr::GetOptimalFlightDestinations(Player* bot)
 {
     std::vector<std::vector<uint32>> validDestinations;
 
@@ -89,7 +89,7 @@ std::vector<std::vector<uint32>> WorldNavigationMgr::GetOptimalFlightDestination
     if (!fromNode)
         return validDestinations;
     std::vector<WorldLocation> candidateLocations;
-    if (level >= 10 && urand(0, 100) < sPlayerbotAIConfig->probTeleToBankers * 100)
+    if (bot->GetLevel() >= 10 && urand(0, 100) < sPlayerbotAIConfig.probTeleToBankers * 100)
         candidateLocations = GetCityLocations(bot);
 
     std::vector<WorldLocation> hubLocations = GetTravelHubs(bot);
@@ -114,7 +114,7 @@ const std::vector<WorldLocation> WorldNavigationMgr::GetTeleportLocations(Player
 {
     uint32 level = bot->GetLevel();
     uint8 isAlliance = bot->GetTeamId() == TEAM_ALLIANCE;
-    if (sPlayerbotAIConfig->enableNewRpgStrategy)
+    if (sPlayerbotAIConfig.enableNewRpgStrategy)
         return isAlliance ? allianceHubsPerLevelCache[level] : hordeHubsPerLevelCache[level];
 
     return locsPerLevelCache[level];
@@ -136,7 +136,7 @@ std::vector<WorldLocation> WorldNavigationMgr::GetCityLocations(Player* bot)
     for (auto& bLoc : bankerLocsPerLevelCache[level])
         fallbackLocations.push_back(bLoc.loc);
 
-    if (!sPlayerbotAIConfig->enableWeightTeleToCityBankers)
+    if (!sPlayerbotAIConfig.enableWeightTeleToCityBankers)
         return fallbackLocations;
 
     TeamId botTeamId = bot->GetTeamId();
@@ -156,7 +156,7 @@ std::vector<WorldLocation> WorldNavigationMgr::GetCityLocations(Player* bot)
     }
     // Fallback if no valid cities
     if (validBankerCities.empty())
-        return fallbackLocs;
+        return fallbackLocations;
 
     // Apply weights to valid cities
     std::vector<CityId> weightedCities;
@@ -172,7 +172,7 @@ std::vector<WorldLocation> WorldNavigationMgr::GetCityLocations(Player* bot)
 
     // Fallback if no valid cities
     if (weightedCities.empty())
-        return fallbackLocs;
+        return fallbackLocations;
 
     // Pick a weighted city randomly, then a random banker in that city
     //   then teleport to that banker
@@ -184,7 +184,7 @@ std::vector<WorldLocation> WorldNavigationMgr::GetCityLocations(Player* bot)
     if (locIt != bankerEntryToLocation.end())
         return { locIt->second };
     // Fallback if something went wrong
-    return locations;
+    return fallbackLocations;
 }
 
 void WorldNavigationMgr::PrepareZone2LevelBracket()
@@ -263,7 +263,7 @@ void WorldNavigationMgr::PrepareZone2LevelBracket()
     zone2LevelBracket[4197] = {79, 80};  // Wintergrasp
 
     // Override with values from config
-    for (auto const& [zoneId, bracketPair] : sPlayerbotAIConfig->zoneBrackets)
+    for (auto const& [zoneId, bracketPair] : sPlayerbotAIConfig.zoneBrackets)
         zone2LevelBracket[zoneId] = {bracketPair.first, bracketPair.second};
 }
 
@@ -278,22 +278,22 @@ void WorldNavigationMgr::PrepareDestinationCache()
     // Temporary map to group creatures by entry and area
     std::unordered_map<uint32, std::unordered_map<uint32, std::vector<CreatureSpawnInfo>>> tempCreatureMap;
 
-    for (auto const& [spawnId, creatureData] : sObjectMgr->GetAllCreatureData())
+    for (auto const& [guid, creatureData] : sObjectMgr->GetAllCreatureData())
     {
-        CreatureTemplate const* creatureTemplate = sObjectMgr->GetCreatureTemplate(creatureData->id1);
+        CreatureTemplate const* creatureTemplate = sObjectMgr->GetCreatureTemplate(creatureData.id1);
         if (!creatureTemplate)
             continue;
 
-        uint16 mapId = creatureData->mapid;
-        if (sPlayerbotAIConfig.randomBotMaps.find(mapId) == sPlayerbotAIConfig->randomBotMaps.end())
+        uint16 mapId = creatureData.mapid;
+        if (std::find(sPlayerbotAIConfig.randomBotMaps.begin(), sPlayerbotAIConfig.randomBotMaps.end(), mapId)
+                      == sPlayerbotAIConfig.randomBotMaps.end())
             continue;
 
-        float x = creatureData->posX;
-        float y = creatureData->posY;
-        float z = creatureData->posZ;
-        float orient = creatureData->orientation;
-        uint32 entry = creatureData->id1;  // The creature spawn ID
-        uint32 level = creatureData->GetObjectLevel();
+        float x = creatureData.posX;
+        float y = creatureData.posY;
+        float z = creatureData.posZ;
+        float orient = creatureData.orientation;
+        uint32 entry = creatureData.id1;  // The creature spawn ID
 
         Map* map = sMapMgr->FindMap(mapId, 0);
         if (!map)
@@ -311,7 +311,7 @@ void WorldNavigationMgr::PrepareDestinationCache()
             creatureTemplate->maxlevel - creatureTemplate->minlevel < 3 &&
             creatureTemplate->Entry != 32820 && creatureTemplate->Entry != 24196 &&
             creatureTemplate->Entry != 30627 && creatureTemplate->Entry != 30617 &&
-            creatureTemplate->spawntimesecs < 1000 &&
+            creatureData.spawntimesecs < 1000 &&
             creatureTemplate->faction != 11 && creatureTemplate->faction != 71 &&
             creatureTemplate->faction != 79 && creatureTemplate->faction != 85 &&
             creatureTemplate->faction != 188 && creatureTemplate->faction != 1575 &&
@@ -319,7 +319,7 @@ void WorldNavigationMgr::PrepareDestinationCache()
             (creatureTemplate->unit_flags & 4096) == 0 &&
             creatureTemplate->rank == 0)
         {
-            CreatureSpawnInfo spawnInfo{spawnId, mapId, x, y, z, areaId};
+            CreatureSpawnInfo spawnInfo{guid, mapId, x, y, z, areaId};
             tempCreatureMap[entry][areaId].push_back(spawnInfo);
         }
         // === FLIGHT MASTERS ===
@@ -373,6 +373,7 @@ void WorldNavigationMgr::PrepareDestinationCache()
             BankerLocation bLoc;
             bLoc.loc = WorldLocation(mapId, x + cos(orient) * 6.0f, y + sin(orient) * 6.0f, z + 2.0f, orient + M_PI);
             bLoc.entry = entry;
+            uint32 level = (creatureTemplate->minlevel + creatureTemplate->maxlevel + 1) / 2;
             for (int32 l = 1; l <= maxLevel; l++)
             {
                 // Bots 1-60 go to base game bankers (all have minlevel 30 or 45)
@@ -454,7 +455,7 @@ void WorldNavigationMgr::PrepareDestinationCache()
             for (int32 l = 1; l <= 5; l++)
             {
                 if ((1 << (i - 1)) & RACEMASK_ALLIANCE)
-                    allianceInnsPerLevelCache[(uint8)l].push_back(pos);
+                    allianceHubsPerLevelCache[(uint8)l].push_back(pos);
                 else
                     hordeHubsPerLevelCache[(uint8)l].push_back(pos);
             }
@@ -561,16 +562,16 @@ int WorldNavigationMgr::GetCityWeight(CityId city)
     int weight = 0;
     switch (city)
     {
-        case CityId::STORMWIND:       weight = sPlayerbotAIConfig->weightTeleToStormwind; break;
-        case CityId::IRONFORGE:       weight = sPlayerbotAIConfig->weightTeleToIronforge; break;
-        case CityId::DARNASSUS:       weight = sPlayerbotAIConfig->weightTeleToDarnassus; break;
-        case CityId::EXODAR:          weight = sPlayerbotAIConfig->weightTeleToExodar; break;
-        case CityId::ORGRIMMAR:       weight = sPlayerbotAIConfig->weightTeleToOrgrimmar; break;
-        case CityId::UNDERCITY:       weight = sPlayerbotAIConfig->weightTeleToUndercity; break;
-        case CityId::THUNDER_BLUFF:   weight = sPlayerbotAIConfig->weightTeleToThunderBluff; break;
-        case CityId::SILVERMOON_CITY: weight = sPlayerbotAIConfig->weightTeleToSilvermoonCity; break;
-        case CityId::SHATTRATH_CITY:  weight = sPlayerbotAIConfig->weightTeleToShattrathCity; break;
-        case CityId::DALARAN:         weight = sPlayerbotAIConfig->weightTeleToDalaran; break;
+        case CityId::STORMWIND:       weight = sPlayerbotAIConfig.weightTeleToStormwind; break;
+        case CityId::IRONFORGE:       weight = sPlayerbotAIConfig.weightTeleToIronforge; break;
+        case CityId::DARNASSUS:       weight = sPlayerbotAIConfig.weightTeleToDarnassus; break;
+        case CityId::EXODAR:          weight = sPlayerbotAIConfig.weightTeleToExodar; break;
+        case CityId::ORGRIMMAR:       weight = sPlayerbotAIConfig.weightTeleToOrgrimmar; break;
+        case CityId::UNDERCITY:       weight = sPlayerbotAIConfig.weightTeleToUndercity; break;
+        case CityId::THUNDER_BLUFF:   weight = sPlayerbotAIConfig.weightTeleToThunderBluff; break;
+        case CityId::SILVERMOON_CITY: weight = sPlayerbotAIConfig.weightTeleToSilvermoonCity; break;
+        case CityId::SHATTRATH_CITY:  weight = sPlayerbotAIConfig.weightTeleToShattrathCity; break;
+        case CityId::DALARAN:         weight = sPlayerbotAIConfig.weightTeleToDalaran; break;
         default:              weight = 0; break;
     }
     return weight;
