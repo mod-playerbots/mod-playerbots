@@ -305,7 +305,7 @@ void WorldNavigationMgr::PrepareDestinationCache()
 
         uint32 areaId = area->zone ? area->zone : area->ID;
 
-        // === GRINDABLE CREATURES ===
+        // CREATURES
         if (creatureTemplate->npcflag == 0 &&
             creatureTemplate->lootid != 0 &&
             creatureTemplate->maxlevel - creatureTemplate->minlevel < 3 &&
