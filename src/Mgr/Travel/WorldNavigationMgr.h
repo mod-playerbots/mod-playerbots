@@ -68,7 +68,7 @@ public:
     const std::vector<WorldLocation> GetTeleportLocations(Player* bot);
     const std::vector<WorldLocation> GetTravelHubs(Player* bot);
     std::vector<WorldLocation> GetCityLocations(Player* bot);
-    const std::vector<WorldLocation>& GetLocsPerLevelCache(uint8 level) const { return locsPerLevelCache.at(level); }
+    const std::vector<WorldLocation>& GetLocsPerLevelCache(uint8 level) { return locsPerLevelCache[level]; }
 
 private:
 
