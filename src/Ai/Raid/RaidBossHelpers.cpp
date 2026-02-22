@@ -177,21 +177,16 @@ Player* GetGroupThirdAssistTank(PlayerbotAI* botAI, Player* bot)
     return nullptr;
 }
 
-// Return the first matching alive unit from the nearest npcs list
-// Depending on usage, other lists may be more appropriate (e.g., possible targets no los)
-// Note that some units are never considered in combat (e.g., totems)
-Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry, bool requireInCombat)
+// Return the first matching alive unit from PossibleTargetsValue within sightDistance from config
+Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
 {
     auto const& npcs =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
     for (auto const& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
         if (unit && unit->IsAlive() && unit->GetEntry() == entry)
-        {
-            if (!requireInCombat || unit->IsInCombat())
-                return unit;
-        }
+            return unit;
     }
 
     return nullptr;

@@ -79,51 +79,41 @@ namespace SerpentShrineCavernHelpers
     std::unordered_map<uint32, time_t> leotherasDemonFormDpsWaitTimer;
     std::unordered_map<uint32, time_t> leotherasFinalPhaseDpsWaitTimer;
 
-    Unit* GetLeotherasHuman(PlayerbotAI* botAI)
+    Unit* GetLeotherasHuman(Player* bot)
     {
-        auto const& npcs =
-            botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
-        for (auto const& guid : npcs)
-        {
-            Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->GetEntry() == NPC_LEOTHERAS_THE_BLIND &&
-                unit->IsInCombat() && !unit->HasAura(SPELL_METAMORPHOSIS))
-                return unit;
-        }
+        constexpr float searchRadius = 100.0f;
+        Creature* leotheras =
+            bot->FindNearestCreature(NPC_LEOTHERAS_THE_BLIND, searchRadius, true);
+
+        if (leotheras && leotheras->IsInCombat() &&
+            !leotheras->HasAura(SPELL_METAMORPHOSIS))
+            return leotheras;
+
         return nullptr;
     }
 
-    Unit* GetPhase2LeotherasDemon(PlayerbotAI* botAI)
+    Unit* GetPhase2LeotherasDemon(Player* bot)
     {
-        auto const& npcs =
-            botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
-        for (auto const& guid : npcs)
-        {
-            Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->GetEntry() == NPC_LEOTHERAS_THE_BLIND &&
-                unit->HasAura(SPELL_METAMORPHOSIS))
-                return unit;
-        }
+        constexpr float searchRadius = 100.0f;
+        Creature* leotheras =
+            bot->FindNearestCreature(NPC_LEOTHERAS_THE_BLIND, searchRadius, true);
+
+        if (leotheras && leotheras->HasAura(SPELL_METAMORPHOSIS))
+            return leotheras;
+
         return nullptr;
     }
 
-    Unit* GetPhase3LeotherasDemon(PlayerbotAI* botAI)
+    Unit* GetPhase3LeotherasDemon(Player* bot)
     {
-        auto const& npcs =
-            botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest hostile npcs")->Get();
-        for (auto const& guid : npcs)
-        {
-            Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->GetEntry() == NPC_SHADOW_OF_LEOTHERAS)
-                return unit;
-        }
-        return nullptr;
+        constexpr float searchRadius = 100.0f;
+        return bot->FindNearestCreature(NPC_SHADOW_OF_LEOTHERAS, searchRadius, true);
     }
 
-    Unit* GetActiveLeotherasDemon(PlayerbotAI* botAI)
+    Unit* GetActiveLeotherasDemon(Player* bot)
     {
-        Unit* phase2 = GetPhase2LeotherasDemon(botAI);
-        Unit* phase3 = GetPhase3LeotherasDemon(botAI);
+        Unit* phase2 = GetPhase2LeotherasDemon(bot);
+        Unit* phase3 = GetPhase3LeotherasDemon(bot);
         return phase2 ? phase2 : phase3;
     }
 

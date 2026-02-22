@@ -433,7 +433,7 @@ class LadyVashjAvoidToxicSporesAction : public MovementAction
 public:
     LadyVashjAvoidToxicSporesAction(PlayerbotAI* botAI, std::string const name = "lady vashj avoid toxic spores") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
-    static std::vector<Unit*> GetAllSporeDropTriggers(PlayerbotAI* botAI, Player* bot);
+    static std::vector<Unit*> GetAllSporeDropTriggers(Player* bot);
 
 private:
     Position FindSafestNearbyPosition(const std::vector<Unit*>& spores, const Position& position, float maxRadius, float hazardRadius);

@@ -128,10 +128,10 @@ namespace SerpentShrineCavernHelpers
     extern std::unordered_map<uint32, time_t> leotherasHumanFormDpsWaitTimer;
     extern std::unordered_map<uint32, time_t> leotherasDemonFormDpsWaitTimer;
     extern std::unordered_map<uint32, time_t> leotherasFinalPhaseDpsWaitTimer;
-    Unit* GetLeotherasHuman(PlayerbotAI* botAI);
-    Unit* GetPhase2LeotherasDemon(PlayerbotAI* botAI);
-    Unit* GetPhase3LeotherasDemon(PlayerbotAI* botAI);
-    Unit* GetActiveLeotherasDemon(PlayerbotAI* botAI);
+    Unit* GetLeotherasHuman(Player* bot);
+    Unit* GetPhase2LeotherasDemon(Player* bot);
+    Unit* GetPhase3LeotherasDemon(Player* bot);
+    Unit* GetActiveLeotherasDemon(Player* bot);
     Player* GetLeotherasDemonFormTank(Player* bot);
 
     // Fathom-Lord Karathress
