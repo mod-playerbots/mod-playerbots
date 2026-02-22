@@ -1532,6 +1532,20 @@ std::vector<std::string> PlayerbotAI::GetStrategies(BotState type)
 
 void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
 {
+    static const std::vector<std::string> allInstanceStrategies =
+    {
+        "onyxia", "moltencore", "bwl", "aq20", "karazhan", "hyjal", "magtheridon", "ssc",
+        "gruulslair", "wotlk-uk", "wotlk-up", "wotlk-nex", "wotlk-occ", "wotlk-cos", "wotlk-hos", 
+        "wotlk-dtk", "wotlk-an", "wotlk-hol", "ulduar", "wotlk-gd", "wotlk-vh", "wotlk-os", 
+        "wotlk-eoe", "wotlk-ok", "voa", "icc", "wotlk-fos", "wotlk-toc", "wotlk-pos", "wotlk-hor"
+    };
+
+    for (const std::string& strat : allInstanceStrategies)
+    {
+        engines[BOT_STATE_COMBAT]->removeStrategy(strat);
+        engines[BOT_STATE_NON_COMBAT]->removeStrategy(strat);
+    }
+
     std::string strategyName;
     switch (mapId)
     {
@@ -1625,10 +1639,13 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         default:
             break;
     }
+
     if (strategyName.empty())
         return;
+
     engines[BOT_STATE_COMBAT]->addStrategy(strategyName);
     engines[BOT_STATE_NON_COMBAT]->addStrategy(strategyName);
+
     if (tellMaster && !strategyName.empty())
     {
         std::ostringstream out;
