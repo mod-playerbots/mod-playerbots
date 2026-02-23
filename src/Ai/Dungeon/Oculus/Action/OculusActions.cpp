@@ -1,9 +1,9 @@
+#include "OculusTriggers.h"
 #include "Playerbots.h"
 #include "OculusActions.h"
-#include "OculusStrategy.h"
 #include "LastSpellCastValue.h"
 
-bool AvoidUnstableSphereAction::Execute(Event event)
+bool AvoidUnstableSphereAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "drakos the interrogator");
     if (!boss) { return false; }
@@ -34,7 +34,7 @@ bool AvoidUnstableSphereAction::Execute(Event event)
 }
 
 bool MountDrakeAction::isPossible() { return bot->GetMapId() == OCULUS_MAP_ID; }
-bool MountDrakeAction::Execute(Event event)
+bool MountDrakeAction::Execute(Event /*event*/)
 {
     std::map<int32, int32> drakeAssignments;
     // Composition can be adjusted - both 3/1/1 and 2/2/1 are good default comps
@@ -88,7 +88,7 @@ bool MountDrakeAction::Execute(Event event)
     }
 
     // Correct/update the drake items in inventories incase assignments have changed
-    for (uint32 itemId : DRAKE_ITEMS)
+    for (int64_t itemId : DRAKE_ITEMS)
     {
         Item* item = bot->GetItemByEntry(itemId);
         if (!item) { continue; }
@@ -109,7 +109,7 @@ bool MountDrakeAction::Execute(Event event)
     return false;
 }
 
-bool DismountDrakeAction::Execute(Event event)
+bool DismountDrakeAction::Execute(Event /*event*/)
 {
     if (bot->GetVehicle())
     {
@@ -119,7 +119,7 @@ bool DismountDrakeAction::Execute(Event event)
     return false;
 }
 
-bool OccFlyDrakeAction::Execute(Event event)
+bool OccFlyDrakeAction::Execute(Event /*event*/)
 {
     Player* master = botAI->GetMaster();
     if (!master) { return false; }
@@ -160,7 +160,7 @@ bool OccFlyDrakeAction::Execute(Event event)
     return false;
 }
 
-bool OccDrakeAttackAction::Execute(Event event)
+bool OccDrakeAttackAction::Execute(Event /*event*/)
 {
     vehicleBase = bot->GetVehicleBase();
     if (!vehicleBase) { return false; }
@@ -319,7 +319,7 @@ bool OccDrakeAttackAction::RubyDrakeAction(Unit* target)
     return CastDrakeSpellAction(target, SPELL_SEARING_WRATH, 0);
 }
 
-bool AvoidArcaneExplosionAction::Execute(Event event)
+bool AvoidArcaneExplosionAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "mage-lord urom");
     if (!boss) { return false; }
@@ -339,7 +339,7 @@ bool AvoidArcaneExplosionAction::Execute(Event event)
     return MoveNear(bot->GetMapId(), closestPos->GetPositionX(), closestPos->GetPositionY(), closestPos->GetPositionZ(), 2.0f, MovementPriority::MOVEMENT_COMBAT);
 }
 
-bool TimeBombSpreadAction::Execute(Event event)
+bool TimeBombSpreadAction::Execute(Event /*event*/)
 {
     float radius = 10.0f;
     float distanceExtra = 2.0f;

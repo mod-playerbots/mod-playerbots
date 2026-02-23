@@ -8,7 +8,7 @@
 #include "Event.h"
 #include "Playerbots.h"
 
-bool CastRemoveShadowformAction::Execute(Event event)
+bool CastRemoveShadowformAction::Execute(Event /*event*/)
 {
     botAI->RemoveAura("shadowform");
     return true;

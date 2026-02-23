@@ -6,15 +6,19 @@
 #include "DelayAction.h"
 
 #include "Event.h"
-#include "Playerbots.h"
+#include "PlayerbotAI.h"
+#include "PlayerbotAIConfig.h"
 
-bool DelayAction::Execute(Event event)
+bool DelayAction::Execute(Event /*event*/)
 {
-    uint32 delay = sPlayerbotAIConfig.passiveDelay + sPlayerbotAIConfig.globalCoolDown;
+    const uint32 delay = PlayerbotAIConfig::instance().passiveDelay + PlayerbotAIConfig::instance().globalCoolDown;
 
     botAI->SetNextCheckDelay(delay);
 
     return true;
 }
 
-bool DelayAction::isUseful() { return !botAI->AllowActivity(ALL_ACTIVITY); }
+bool DelayAction::isUseful()
+{
+    return !botAI->AllowActivity(ALL_ACTIVITY);
+}

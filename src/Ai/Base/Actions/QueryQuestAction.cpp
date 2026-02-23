@@ -7,7 +7,7 @@
 
 #include "ChatHelper.h"
 #include "Event.h"
-#include "Playerbots.h"
+#include "PlayerbotAI.h"
 
 void QueryQuestAction::TellObjective(std::string const name, uint32 available, uint32 required)
 {

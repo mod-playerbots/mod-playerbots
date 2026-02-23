@@ -1,18 +1,13 @@
 #include "StatsCollector.h"
 
-#include <cstdint>
-
 #include "DBCStores.h"
-#include "ItemEnchantmentMgr.h"
 #include "ItemTemplate.h"
-#include "ObjectMgr.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIAware.h"
 #include "SharedDefines.h"
 #include "SpellAuraDefines.h"
 #include "SpellInfo.h"
 #include "SpellMgr.h"
-#include "UpdateFields.h"
 #include "Util.h"
 
 StatsCollector::StatsCollector(CollectorType type, int32 cls) : type_(type), cls_(cls) { Reset(); }

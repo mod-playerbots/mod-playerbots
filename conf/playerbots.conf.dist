@@ -192,9 +192,12 @@ AiPlayerbot.AutoInitOnly = 0
 # Default: 1.0 (same with the player)
 AiPlayerbot.AutoInitEquipLevelLimitRatio = 1.0
 
-# Bot automatically trains spells when talking to trainer
-# yes = train all available spells as long as the bot has the money, free = auto trains with no money cost, no = only list spells
-AiPlayerbot.AutoTrainSpells = yes
+#
+#    AllowLearnTrainerSpells
+#        Description: Allow the bot to learn trainers' spells as long as it has the money.
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
+AiPlayerbot.AllowLearnTrainerSpells = 1
 
 #
 #

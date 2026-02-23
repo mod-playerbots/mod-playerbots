@@ -31,7 +31,7 @@ bool CastTravelFormAction::isUseful()
            !botAI->HasAura("dash", bot);
 }
 
-bool CastCasterFormAction::Execute(Event event)
+bool CastCasterFormAction::Execute(Event /*event*/)
 {
     botAI->RemoveShapeshift();
     return true;
@@ -44,7 +44,7 @@ bool CastCasterFormAction::isUseful()
            AI_VALUE2(uint8, "mana", "self target") > sPlayerbotAIConfig.mediumHealth;
 }
 
-bool CastCancelTreeFormAction::Execute(Event event)
+bool CastCancelTreeFormAction::Execute(Event /*event*/)
 {
     botAI->RemoveAura("tree of life");
     return true;

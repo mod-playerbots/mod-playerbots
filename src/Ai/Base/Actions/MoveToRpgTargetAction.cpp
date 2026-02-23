@@ -11,20 +11,16 @@
 #include "LastMovementValue.h"
 #include "Playerbots.h"
 
-bool MoveToRpgTargetAction::Execute(Event event)
+bool MoveToRpgTargetAction::Execute(Event /*event*/)
 {
     GuidPosition guidP = AI_VALUE(GuidPosition, "rpg target");
     Unit* unit = botAI->GetUnit(guidP);
     if (unit && !unit->IsInWorld())
-    {
         return false;
-    }
+
     GameObject* go = botAI->GetGameObject(guidP);
     if (go && !go->IsInWorld())
-    {
         return false;
-    }
-    Player* player = guidP.GetPlayer();
 
     WorldObject* wo = nullptr;
     if (unit)

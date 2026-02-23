@@ -2,7 +2,7 @@
 #include "RaidEoEActions.h"
 #include "RaidEoETriggers.h"
 
-bool MalygosPositionAction::Execute(Event event)
+bool MalygosPositionAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "malygos");
     if (!boss) { return false; }
@@ -65,7 +65,7 @@ bool MalygosPositionAction::Execute(Event event)
     return false;
 }
 
-bool MalygosTargetAction::Execute(Event event)
+bool MalygosTargetAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "malygos");
     if (!boss) { return false; }
@@ -229,7 +229,7 @@ bool EoEFlyDrakeAction::isPossible()
     Unit* vehicleBase = bot->GetVehicleBase();
     return (vehicleBase && vehicleBase->GetEntry() == NPC_WYRMREST_SKYTALON);
 }
-bool EoEFlyDrakeAction::Execute(Event event)
+bool EoEFlyDrakeAction::Execute(Event /*event*/)
 {
     Player* master = botAI->GetMaster();
     if (!master) { return false; }
@@ -279,7 +279,7 @@ bool EoEDrakeAttackAction::isPossible()
     return (vehicleBase && vehicleBase->GetEntry() == NPC_WYRMREST_SKYTALON);
 }
 
-bool EoEDrakeAttackAction::Execute(Event event)
+bool EoEDrakeAttackAction::Execute(Event /*event*/)
 {
     vehicleBase = bot->GetVehicleBase();
     if (!vehicleBase)
@@ -366,8 +366,6 @@ bool EoEDrakeAttackAction::DrakeDpsAction(Unit* target)
 {
     Unit* vehicleBase = bot->GetVehicleBase();
     if (!vehicleBase) { return false; }
-
-    Vehicle* veh = bot->GetVehicle();
 
     uint8 comboPoints = vehicleBase->GetComboPoints(target);
     if (comboPoints >= 2)
