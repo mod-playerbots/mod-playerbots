@@ -10,6 +10,7 @@
 #include "MageActions.h"
 #include "Playerbots.h"
 #include "PriestActions.h"
+#include "RaidBossHelpers.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
@@ -242,6 +243,9 @@ float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
 
     if (bot->HasAura(SPELL_ENFEEBLE))
     {
+        if (dynamic_cast<CastReachTargetSpellAction*>(action))
+            return 0.0f;
+
         if (dynamic_cast<MovementAction*>(action) &&
             !dynamic_cast<PrinceMalchezaarEnfeebledAvoidHazardAction*>(action))
             return 0.0f;

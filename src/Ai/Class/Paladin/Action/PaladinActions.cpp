@@ -15,8 +15,6 @@
 #include "PaladinBlessingUtils.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
-#include "PlayerbotAIConfig.h"
-#include "PlayerbotFactory.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
 
@@ -100,7 +98,7 @@ Value<Unit*>* CastBlessingOnPartyAction::GetTargetValue()
     return context->GetValue<Unit*>("party member without aura", MakeAuraQualifierForBuff(spell));
 }
 
-bool CastBlessingOfMightAction::Execute(Event event)
+bool CastBlessingOfMightAction::Execute(Event /*event*/)
 {
     Unit* target = GetTarget();
     if (!target)
@@ -120,7 +118,7 @@ Value<Unit*>* CastBlessingOfMightOnPartyAction::GetTargetValue()
         "blessing of might,greater blessing of might,blessing of sanctuary,greater blessing of sanctuary");
 }
 
-bool CastBlessingOfMightOnPartyAction::Execute(Event event)
+bool CastBlessingOfMightOnPartyAction::Execute(Event /*event*/)
 {
     PaladinBlessingState const blessingState = GetBlessingState(botAI);
     // Single-role coordinator: only one paladin with bdps does party-wide buffs
@@ -182,7 +180,7 @@ bool CastBlessingOfMightOnPartyAction::Execute(Event event)
     return botAI->CastSpell(castName, target);
 }
 
-bool CastBlessingOfWisdomAction::Execute(Event event)
+bool CastBlessingOfWisdomAction::Execute(Event /*event*/)
 {
     Unit* target = GetTarget();
     if (!target)
@@ -202,7 +200,7 @@ Value<Unit*>* CastBlessingOfWisdomOnPartyAction::GetTargetValue()
         "blessing of wisdom,greater blessing of wisdom,blessing of sanctuary,greater blessing of sanctuary");
 }
 
-bool CastBlessingOfWisdomOnPartyAction::Execute(Event event)
+bool CastBlessingOfWisdomOnPartyAction::Execute(Event /*event*/)
 {
     PaladinBlessingState const blessingState = GetBlessingState(botAI);
     // Single-role coordinator: only one paladin with "bmana" does party-wide buffs
@@ -242,7 +240,7 @@ Value<Unit*>* CastBlessingOfSanctuaryOnPartyAction::GetTargetValue()
     return context->GetValue<Unit*>("party member without aura", "blessing of sanctuary,greater blessing of sanctuary");
 }
 
-bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event event)
+bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event /*event*/)
 {
     uint32 sanctSpellId = GetSpellId(botAI, "blessing of sanctuary");
     if (!sanctSpellId || !bot->HasSpell(sanctSpellId))
@@ -345,7 +343,7 @@ Value<Unit*>* CastBlessingOfKingsOnPartyAction::GetTargetValue()
     return context->GetValue<Unit*>("party member without aura", "blessing of kings,greater blessing of kings");
 }
 
-bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
+bool CastBlessingOfKingsOnPartyAction::Execute(Event /*event*/)
 {
     PaladinBlessingState const blessingState = GetBlessingState(botAI);
     // Allow Kings on party if the bot is elected for bstats OR for bmana (bmana places MONO Kings on tanks)
@@ -587,7 +585,7 @@ bool CastDivineSacrificeAction::isUseful()
            !botAI->HasAura("divine guardian", GetTarget(), false, false, -1, true);
 }
 
-bool CastCancelDivineSacrificeAction::Execute(Event event)
+bool CastCancelDivineSacrificeAction::Execute(Event /*event*/)
 {
     botAI->RemoveAura("divine sacrifice");
     return true;

@@ -10,9 +10,9 @@
 #include "Event.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotFactory.h"
-#include "Playerbots.h"
 #include "AiObjectContext.h"
 #include "Log.h"
+#include "RandomPlayerbotMgr.h"
 
 bool ChangeTalentsAction::Execute(Event event)
 {
@@ -184,7 +184,7 @@ std::string ChangeTalentsAction::SpecApply(std::string param)
 //     //     }
 //     // }
 
-//     return std::move(ret);
+//     return ret;
 // }
 
 // std::vector<TalentPath*> ChangeTalentsAction::getPremadePaths(TalentSpec* oldSpec)
@@ -201,7 +201,7 @@ std::string ChangeTalentsAction::SpecApply(std::string param)
 //     //     }
 //     // }
 
-//     return std::move(ret);
+//     return ret;
 // }
 
 // TalentPath* ChangeTalentsAction::getPremadePath(uint32 id)
@@ -368,11 +368,11 @@ std::string ChangeTalentsAction::SpecApply(std::string param)
 //     return nullptr;
 // }
 
-bool AutoSetTalentsAction::Execute(Event event)
+bool AutoSetTalentsAction::Execute(Event /*event*/)
 {
     std::ostringstream out;
 
-    if (!sPlayerbotAIConfig.autoPickTalents || !sRandomPlayerbotMgr.IsRandomBot(bot))
+    if (!PlayerbotAIConfig::instance().autoPickTalents || !RandomPlayerbotMgr::instance().IsRandomBot(bot))
         return false;
 
     if (bot->GetFreeTalentPoints() <= 0)

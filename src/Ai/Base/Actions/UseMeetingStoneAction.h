@@ -17,9 +17,9 @@ public:
     SummonAction(PlayerbotAI* botAI, std::string const name = "summon") : MovementAction(botAI, name) {}
 
     bool Execute(Event event) override;
+    bool Teleport(Player* summoner, Player* player, bool preserveAuras);
 
 protected:
-    bool Teleport(Player* summoner, Player* player, bool preserveAuras);
     bool SummonUsingGos(Player* summoner, Player* player, bool preserveAuras);
     bool SummonUsingNpcs(Player* summoner, Player* player, bool preserveAuras);
 };

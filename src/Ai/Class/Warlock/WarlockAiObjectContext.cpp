@@ -143,6 +143,8 @@ public:
         creators["shadow trance"] = &WarlockTriggerFactoryInternal::shadow_trance;
         creators["demon armor"] = &WarlockTriggerFactoryInternal::demon_armor;
         creators["soul link"] = &WarlockTriggerFactoryInternal::soul_link;
+        creators["unending breath"] = &WarlockTriggerFactoryInternal::unending_breath;
+        creators["unending breath on party"] = &WarlockTriggerFactoryInternal::unending_breath_on_party;
         creators["no soul shard"] = &WarlockTriggerFactoryInternal::no_soul_shard;
         creators["too many soul shards"] = &WarlockTriggerFactoryInternal::too_many_soul_shards;
         creators["no healthstone"] = &WarlockTriggerFactoryInternal::HasHealthstone;
@@ -189,6 +191,8 @@ private:
     static Trigger* shadow_trance(PlayerbotAI* botAI) { return new ShadowTranceTrigger(botAI); }
     static Trigger* demon_armor(PlayerbotAI* botAI) { return new DemonArmorTrigger(botAI); }
     static Trigger* soul_link(PlayerbotAI* botAI) { return new SoulLinkTrigger(botAI); }
+    static Trigger* unending_breath(PlayerbotAI* botAI) { return new UnendingBreathTrigger(botAI); }
+    static Trigger* unending_breath_on_party(PlayerbotAI* botAI) { return new UnendingBreathOnPartyTrigger(botAI); }
     static Trigger* no_soul_shard(PlayerbotAI* botAI) { return new OutOfSoulShardsTrigger(botAI); }
     static Trigger* too_many_soul_shards(PlayerbotAI* botAI) { return new TooManySoulShardsTrigger(botAI); }
     static Trigger* HasHealthstone(PlayerbotAI* botAI) { return new HasHealthstoneTrigger(botAI); }
@@ -240,6 +244,8 @@ public:
         creators["demon armor"] = &WarlockAiObjectContextInternal::demon_armor;
         creators["demon skin"] = &WarlockAiObjectContextInternal::demon_skin;
         creators["soul link"] = &WarlockAiObjectContextInternal::soul_link;
+        creators["unending breath"] = &WarlockAiObjectContextInternal::unending_breath;
+        creators["unending breath on party"] = &WarlockAiObjectContextInternal::unending_breath_on_party;
         creators["create soul shard"] = &WarlockAiObjectContextInternal::create_soul_shard;
         creators["destroy soul shard"] = &WarlockAiObjectContextInternal::destroy_soul_shard;
         creators["create healthstone"] = &WarlockAiObjectContextInternal::create_healthstone;
@@ -313,6 +319,8 @@ private:
     static Action* demon_armor(PlayerbotAI* botAI) { return new CastDemonArmorAction(botAI); }
     static Action* demon_skin(PlayerbotAI* botAI) { return new CastDemonSkinAction(botAI); }
     static Action* soul_link(PlayerbotAI* botAI) { return new CastSoulLinkAction(botAI); }
+    static Action* unending_breath(PlayerbotAI* botAI) { return new CastUnendingBreathAction(botAI); }
+    static Action* unending_breath_on_party(PlayerbotAI* botAI) { return new CastUnendingBreathOnPartyAction(botAI); }
     static Action* create_soul_shard(PlayerbotAI* botAI) { return new CreateSoulShardAction(botAI); }
     static Action* destroy_soul_shard(PlayerbotAI* botAI) { return new DestroySoulShardAction(botAI); }
     static Action* create_healthstone(PlayerbotAI* botAI) { return new CastCreateHealthstoneAction(botAI); }

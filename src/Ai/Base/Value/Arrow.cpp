@@ -6,7 +6,8 @@
 #include "Arrow.h"
 
 #include "Map.h"
-#include "Playerbots.h"
+#include "PlayerbotAI.h"
+#include "Group.h"
 
 WorldLocation ArrowFormation::GetLocationInternal()
 {

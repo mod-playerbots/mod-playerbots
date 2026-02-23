@@ -2,7 +2,6 @@
 
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
-#include "RaidMcTriggers.h"
 #include "RaidMcHelpers.h"
 
 static constexpr float LIVING_BOMB_DISTANCE = 20.0f;
@@ -20,12 +19,12 @@ static constexpr float CORE_RAGER_STEP_DISTANCE = 5.0f;
 
 using namespace MoltenCoreHelpers;
 
-bool McMoveFromGroupAction::Execute(Event event)
+bool McMoveFromGroupAction::Execute(Event /*event*/)
 {
     return MoveFromGroup(LIVING_BOMB_DISTANCE);
 }
 
-bool McMoveFromBaronGeddonAction::Execute(Event event)
+bool McMoveFromBaronGeddonAction::Execute(Event /*event*/)
 {
     if (Unit* boss = AI_VALUE2(Unit*, "find target", "baron geddon"))
     {
@@ -42,7 +41,7 @@ bool McMoveFromBaronGeddonAction::Execute(Event event)
     return false;
 }
 
-bool McShazzrahMoveAwayAction::Execute(Event event)
+bool McShazzrahMoveAwayAction::Execute(Event /*event*/)
 {
     if (Unit* boss = AI_VALUE2(Unit*, "find target", "shazzrah"))
     {
@@ -53,7 +52,7 @@ bool McShazzrahMoveAwayAction::Execute(Event event)
     return false;
 }
 
-bool McGolemaggMarkBossAction::Execute(Event event)
+bool McGolemaggMarkBossAction::Execute(Event /*event*/)
 {
     if (Unit* boss = AI_VALUE2(Unit*, "find target", "golemagg the incinerator"))
     {
@@ -115,7 +114,7 @@ bool McGolemaggTankAction::FindCoreRagers(Unit*& coreRager1, Unit*& coreRager2) 
     return coreRager1 != nullptr && coreRager2 != nullptr;
 }
 
-bool McGolemaggMainTankAttackGolemaggAction::Execute(Event event)
+bool McGolemaggMainTankAttackGolemaggAction::Execute(Event /*event*/)
 {
     // At this point, we know we are not the last living tank in the group.
     if (Unit* boss = AI_VALUE2(Unit*, "find target", "golemagg the incinerator"))
