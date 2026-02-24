@@ -228,13 +228,13 @@ WorldPosition WorldPosition::offset(WorldPosition* center)
 
 float WorldPosition::size()
 {
-    return sqrt(pow(GetPositionX(), 2.0) + pow(GetPositionY(), 2.0) + pow(GetPositionZ(), 2.0));
+    return GetExactDist(0.0f, 0.0f, 0.0f);
 }
 
 float WorldPosition::distance(WorldPosition* center)
 {
     if (GetMapId() == center->GetMapId())
-        return relPoint(center).size();
+        return GetExactDist(center->GetPositionX(), center->GetPositionY(), center->GetPositionZ());
 
     // this -> mapTransfer | mapTransfer -> center
     return TravelMgr::instance().mapTransDistance(*this, *center);
@@ -243,7 +243,7 @@ float WorldPosition::distance(WorldPosition* center)
 float WorldPosition::fDist(WorldPosition* center)
 {
     if (GetMapId() == center->GetMapId())
-        return sqrt(sqDistance2d(center));
+        return GetExactDist2d(center->GetPositionX(), center->GetPositionY());
 
     // this -> mapTransfer | mapTransfer -> center
     return TravelMgr::instance().fastMapTransDistance(*this, *center);
