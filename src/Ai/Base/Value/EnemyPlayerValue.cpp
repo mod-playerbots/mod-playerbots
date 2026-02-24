@@ -11,17 +11,65 @@
 
 bool NearestEnemyPlayersValue::AcceptUnit(Unit* unit)
 {
-    bool inCannon = botAI->IsInVehicle(false, true);
-    Player* enemy = dynamic_cast<Player*>(unit);
-    if (enemy && botAI->IsOpposing(enemy) && enemy->IsPvP() &&
-        !sPlayerbotAIConfig.IsPvpProhibited(enemy->GetZoneId(), enemy->GetAreaId()) &&
-        !enemy->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NON_ATTACKABLE_2) &&
-        ((inCannon || !enemy->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))) &&
-        /*!enemy->HasStealthAura() && !enemy->HasInvisibilityAura()*/ enemy->CanSeeOrDetect(bot) &&
-        !(enemy->HasSpiritOfRedemptionAura()))
-        return true;
+    // Apply parent's filtering first (includes level difference checks)
+    if (!PossibleTargetsValue::AcceptUnit(unit))
+    {
+        return false;
+    }
 
-    return false;
+    bool inCannon = botAI->IsInVehicle(false, true);
+
+    Player* const enemy = dynamic_cast<Player*>(unit);
+
+    if (enemy == nullptr)
+    {
+        return false;
+    }
+
+    if (!this->botAI->IsOpposing(enemy))
+    {
+        return false;
+    }
+
+    if (!enemy->IsPvP())
+    {
+        return false;
+    }
+
+    if (PlayerbotAIConfig::instance().IsPvpProhibited(enemy->GetZoneId(), enemy->GetAreaId()))
+    {
+        return false;
+    }
+
+    if (enemy->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NON_ATTACKABLE_2))
+    {
+        return false;
+    }
+
+    if (enemy->HasSpiritOfRedemptionAura())
+    {
+        return false;
+    }
+
+    if (!this->bot->CanSeeOrDetect(enemy))
+    {
+        return false;
+    }
+
+    if (!inCannon && enemy->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
+    {
+        return false;
+    }
+
+    // If with master, only attack if master is PvP flagged
+    Player* const master = botAI->GetMaster();
+
+    if (master != nullptr && !master->IsPvP() && !master->IsFFAPvP())
+    {
+        return false;
+    }
+
+    return true;
 }
 
 Unit* EnemyPlayerValue::Calculate()
