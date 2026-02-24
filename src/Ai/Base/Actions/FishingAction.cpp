@@ -262,7 +262,7 @@ bool MoveNearWaterAction::isUseful()
     FishingSpotValue* fishingSpotValueObject = (FishingSpotValue*)context->GetValue<WorldPosition>("fishing spot");
     WorldPosition pos = fishingSpotValueObject->Get();
     return !pos.IsValid() || fishingSpotValueObject->IsStale(FISHING_LOCATION_TIMEOUT) ||
-           bot->GetExactDist(&pos) < 0.1f;
+           bot->GetExactDist(&pos) > 0.1f;
 
 }
 
