@@ -17,130 +17,224 @@
 #include "ServerFacade.h"
 #include "StatsWeightCalculator.h"
 
+ItemUsage ItemUsageValue::QueryItemUsageForSkill(const ItemTemplate* const itemTemplate)
+{
+    if (this->botAI->HasActivePlayerMaster())
+    {
+        if (this->IsItemUsefulForSkill(itemTemplate) || this->IsItemNeededForSkill(itemTemplate))
+        {
+            return ITEM_USAGE_SKILL;
+        }
+
+        return ITEM_USAGE_NONE;
+    }
+
+    const float stacks = this->CurrentStacks(itemTemplate);
+
+    ItemUsage usageIfNeeded = ITEM_USAGE_NONE;
+
+    if (stacks < 2)
+    {
+        usageIfNeeded = ITEM_USAGE_KEEP;
+    }
+
+    if (stacks < 1)
+    {
+        usageIfNeeded = ITEM_USAGE_SKILL;
+    }
+
+    if (this->IsItemNeededForSkill(itemTemplate))
+    {
+        return usageIfNeeded;
+    }
+
+    Value<uint8_t>* lowBagSpaceValue = this->context->GetValue<uint8_t>("bag space");
+
+    if (lowBagSpaceValue == nullptr)
+    {
+        return ITEM_USAGE_NONE;
+    }
+
+    const bool lowBagSpace = lowBagSpaceValue->Get() > 50;
+
+    if (
+        itemTemplate->Class == ITEM_CLASS_TRADE_GOODS
+        || itemTemplate->Class == ITEM_CLASS_MISC
+        || itemTemplate->Class == ITEM_CLASS_REAGENT
+    )
+    {
+        if (this->IsItemNeededForUsefullSpell(*itemTemplate, lowBagSpace))
+        {
+            return usageIfNeeded;
+        }
+    }
+
+    if (itemTemplate->Class == ITEM_CLASS_RECIPE)
+    {
+        if (bot->HasSpell(itemTemplate->Spells[2].SpellId))
+        {
+            return ITEM_USAGE_NONE;
+        }
+
+        if (this->bot->BotCanUseItem(itemTemplate) == EQUIP_ERR_OK)
+        {
+            return usageIfNeeded;
+        }
+    }
+
+    return ITEM_USAGE_NONE;
+}
+
+ItemUsage ItemUsageValue::QueryItemUsageForConsumable(const ItemTemplate* const itemTemplate)
+{
+    if (itemTemplate->Class != ITEM_CLASS_CONSUMABLE)
+    {
+        return ITEM_USAGE_NONE;
+    }
+
+    if (itemTemplate->MaxCount != 0 && this->bot->GetItemCount(itemTemplate->ItemId, false) >= uint32_t(itemTemplate->MaxCount))
+    {
+        return ITEM_USAGE_NONE;
+    }
+
+    const std::string foodType = this->GetConsumableType(itemTemplate, this->bot->GetPower(POWER_MANA));
+
+    if (foodType.empty())
+    {
+        return ITEM_USAGE_NONE;
+    }
+
+    if (this->bot->CanUseItem(itemTemplate) != EQUIP_ERR_OK)
+    {
+        return ITEM_USAGE_NONE;
+    }
+
+    float stacks = this->BetterStacks(itemTemplate, foodType);
+
+    if (stacks < 2)
+    {
+        stacks += this->CurrentStacks(itemTemplate);
+
+        // Buy some to get to 2 stacks
+        if (stacks < 2)
+        {
+            return ITEM_USAGE_USE;
+        }
+
+        // Keep the item if less than 3 stacks
+        if (stacks < 3)
+        {
+            return ITEM_USAGE_KEEP;
+        }
+    }
+
+    return ITEM_USAGE_NONE;
+}
+
 ItemUsage ItemUsageValue::Calculate()
 {
-    uint32 itemId = 0;
-    uint32 randomPropertyId = 0;
-    size_t pos = qualifier.find(",");
-    if (pos != std::string::npos)
-    {
-        itemId = atoi(qualifier.substr(0, pos).c_str());
-        randomPropertyId = atoi(qualifier.substr(pos + 1).c_str());
-    }
-    else
-    {
-        itemId = atoi(qualifier.c_str());
-    }
+    const ParsedItemUsage parsed = this->GetItemIdFromQualifier();
 
-    if (!itemId)
+    const uint32_t itemId = parsed.itemId;
+    const int32_t randomPropertyId = parsed.randomPropertyId;
+
+    if (itemId == 0)
+    {
         return ITEM_USAGE_NONE;
+    }
 
-    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
-    if (!proto)
+    ObjectMgr* const objectMgr = ObjectMgr::instance();
+
+    const ItemTemplate* const itemTemplate = objectMgr->GetItemTemplate(itemId);
+
+    if (itemTemplate == nullptr)
+    {
         return ITEM_USAGE_NONE;
-
-    if (botAI->HasActivePlayerMaster())
-    {
-        if (IsItemUsefulForSkill(proto) || IsItemNeededForSkill(proto))
-            return ITEM_USAGE_SKILL;
-    }
-    else
-    {
-        bool needItem = false;
-
-        if (IsItemNeededForSkill(proto))
-            needItem = true;
-        else
-        {
-            bool lowBagSpace = AI_VALUE(uint8, "bag space") > 50;
-
-            if (proto->Class == ITEM_CLASS_TRADE_GOODS || proto->Class == ITEM_CLASS_MISC ||
-                proto->Class == ITEM_CLASS_REAGENT)
-                needItem = IsItemNeededForUsefullSpell(*proto, lowBagSpace);
-            else if (proto->Class == ITEM_CLASS_RECIPE)
-            {
-                if (bot->HasSpell(proto->Spells[2].SpellId))
-                    needItem = false;
-                else
-                    needItem = bot->BotCanUseItem(proto) == EQUIP_ERR_OK;
-            }
-        }
-
-        if (needItem)
-        {
-            float stacks = CurrentStacks(proto);
-            if (stacks < 1)
-                return ITEM_USAGE_SKILL;  // Buy more.
-            if (stacks < 2)
-                return ITEM_USAGE_KEEP;  // Keep current amount.
-        }
     }
 
-    if (proto->Class == ITEM_CLASS_KEY)
+    const ItemUsage skillUsage = this->QueryItemUsageForSkill(itemTemplate);
+
+    if (skillUsage != ITEM_USAGE_NONE)
+    {
+        return skillUsage;
+    }
+
+    if (itemTemplate->Class == ITEM_CLASS_KEY)
+    {
         return ITEM_USAGE_USE;
-
-    const uint32_t maxCount = proto->MaxCount;
-
-    if (proto->Class == ITEM_CLASS_CONSUMABLE &&
-        (maxCount == 0 || bot->GetItemCount(itemId, false) < maxCount))
-    {
-        std::string const foodType = GetConsumableType(proto, bot->GetPower(POWER_MANA));
-
-        if (!foodType.empty() && bot->CanUseItem(proto) == EQUIP_ERR_OK)
-        {
-            float stacks = BetterStacks(proto, foodType);
-            if (stacks < 2)
-            {
-                stacks += CurrentStacks(proto);
-
-                if (stacks < 2)
-                    return ITEM_USAGE_USE;  // Buy some to get to 2 stacks
-                else if (stacks < 3)        // Keep the item if less than 3 stacks
-                    return ITEM_USAGE_KEEP;
-            }
-        }
     }
 
-    if (bot->GetGuildId() && GuildTaskMgr::instance().IsGuildTaskItem(itemId, bot->GetGuildId()))
-        return ITEM_USAGE_GUILD_TASK;
+    const ItemUsage consumableUsage = this->QueryItemUsageForConsumable(itemTemplate);
 
-    ItemUsage equip = QueryItemUsageForEquip(proto, randomPropertyId);
+    if (consumableUsage != ITEM_USAGE_NONE)
+    {
+        return consumableUsage;
+    }
+
+    if (this->bot->GetGuildId() && GuildTaskMgr::instance().IsGuildTaskItem(itemId, bot->GetGuildId()))
+    {
+        return ITEM_USAGE_GUILD_TASK;
+    }
+
+    const ItemUsage equip = this->QueryItemUsageForEquip(itemTemplate, randomPropertyId);
+
     if (equip != ITEM_USAGE_NONE)
+    {
         return equip;
+    }
 
     // Get item instance to check if it's soulbound
-    Item* item = bot->GetItemByEntry(proto->ItemId);
-    bool isSoulbound = item && item->IsSoulBound();
+    const Item* const item = this->bot->GetItemByEntry(itemTemplate->ItemId);
+    const bool isSoulbound = item != nullptr && item->IsSoulBound();
 
-    if ((proto->Class == ITEM_CLASS_ARMOR || proto->Class == ITEM_CLASS_WEAPON) &&
-        botAI->HasSkill(SKILL_ENCHANTING) &&
-        proto->Quality >= ITEM_QUALITY_UNCOMMON)
+
+    // @TODO: Refactor this in a separate method.
+    if (
+        (
+            itemTemplate->Class == ITEM_CLASS_ARMOR
+            || itemTemplate->Class == ITEM_CLASS_WEAPON
+        )
+        && this->botAI->HasSkill(SKILL_ENCHANTING)
+        && itemTemplate->Quality >= ITEM_QUALITY_UNCOMMON
+    )
     {
         // Retrieve the bot's Enchanting skill level
-        uint32 enchantingSkill = bot->GetSkillValue(SKILL_ENCHANTING);
+        const uint32_t enchantingSkill = this->bot->GetSkillValue(SKILL_ENCHANTING);
 
         // Check if the bot has a high enough skill to disenchant this item
-        if (proto->RequiredDisenchantSkill > 0 && enchantingSkill < proto->RequiredDisenchantSkill)
+        if (itemTemplate->RequiredDisenchantSkill > 0 && enchantingSkill < itemTemplate->RequiredDisenchantSkill)
+        {
             return ITEM_USAGE_NONE; // Not skilled enough to disenchant
+        }
 
         // BoE (Bind on Equip) items should NOT be disenchanted unless they are already bound
-        if (proto->Bonding == BIND_WHEN_PICKED_UP || (proto->Bonding == BIND_WHEN_EQUIPPED && isSoulbound))
+        if (itemTemplate->Bonding == BIND_WHEN_PICKED_UP || (itemTemplate->Bonding == BIND_WHEN_EQUIPPED && isSoulbound))
+        {
             return ITEM_USAGE_DISENCHANT;
+        }
     }
 
-    Player* master = botAI->GetMaster();
-    bool isSelfBot = (master == bot);
-    bool botNeedsItemForQuest = IsItemUsefulForQuest(bot, proto);
-    bool masterNeedsItemForQuest = master && sPlayerbotAIConfig.syncQuestWithPlayer && IsItemUsefulForQuest(master, proto);
+    Player* const master = botAI->GetMaster();
+
+    const bool isSelfBot = (master == bot);
+    const bool botNeedsItemForQuest = this->IsItemUsefulForQuest(bot, itemTemplate);
+    const bool masterNeedsItemForQuest = master != nullptr && PlayerbotAIConfig::instance().syncQuestWithPlayer && this->IsItemUsefulForQuest(master, itemTemplate);
 
     // Identify the source of loot
-    LootObject lootObject = AI_VALUE(LootObject, "loot target");
+    Value<LootObject>* lootObjectValue = this->context->GetValue<LootObject>("loot target");
+
+    if (lootObjectValue == nullptr)
+    {
+        return ITEM_USAGE_NONE;
+    }
+
+    const LootObject lootObject = lootObjectValue->Get();
 
     // Get GUID of loot source
-    ObjectGuid lootGuid = lootObject.guid;
+    const ObjectGuid lootGuid = lootObject.guid;
 
     // Check if loot source is an item
-    bool isLootFromItem = lootGuid.IsItem();
+    const bool isLootFromItem = lootGuid.IsItem();
 
     // If the loot is from an item in the bot’s bags, ignore syncQuestWithPlayer
     if (isLootFromItem && botNeedsItemForQuest)
@@ -160,80 +254,24 @@ ItemUsage ItemUsageValue::Calculate()
         return ITEM_USAGE_QUEST;
     }
 
-    if (proto->Class == ITEM_CLASS_PROJECTILE && bot->CanUseItem(proto) == EQUIP_ERR_OK)
+    if (itemTemplate->Class == ITEM_CLASS_PROJECTILE && this->bot->CanUseItem(itemTemplate) == EQUIP_ERR_OK)
     {
-        if (bot->getClass() == CLASS_HUNTER || bot->getClass() == CLASS_ROGUE || bot->getClass() == CLASS_WARRIOR)
+        const ItemUsage ammoUsage = this->QueryItemUsageForAmmo(itemTemplate);
+
+        if (ammoUsage != ITEM_USAGE_NONE)
         {
-            Item* rangedWeapon = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED);
-            uint32 requiredSubClass = 0;
-
-            if (rangedWeapon)
-            {
-                switch (rangedWeapon->GetTemplate()->SubClass)
-                {
-                    case ITEM_SUBCLASS_WEAPON_GUN:
-                        requiredSubClass = ITEM_SUBCLASS_BULLET;
-                        break;
-                    case ITEM_SUBCLASS_WEAPON_BOW:
-                    case ITEM_SUBCLASS_WEAPON_CROSSBOW:
-                        requiredSubClass = ITEM_SUBCLASS_ARROW;
-                        break;
-                }
-            }
-
-            // Ensure the item is the correct ammo type for the equipped ranged weapon
-            if (proto->SubClass == requiredSubClass)
-            {
-                float ammoCount = BetterStacks(proto, "ammo");
-                float requiredAmmo = (bot->getClass() == CLASS_HUNTER) ? 8 : 2; // Hunters get 8 stacks, others 2
-                uint32 currentAmmoId = bot->GetUInt32Value(PLAYER_AMMO_ID);
-
-                // Check if the bot has an ammo type assigned
-                if (currentAmmoId == 0)
-                {
-                    return ITEM_USAGE_EQUIP;  // Equip the ammo if no ammo
-                }
-                // Compare new ammo vs current equipped ammo
-                ItemTemplate const* currentAmmoProto = sObjectMgr->GetItemTemplate(currentAmmoId);
-                if (currentAmmoProto)
-                {
-                    uint32 currentAmmoDPS = (currentAmmoProto->Damage[0].DamageMin + currentAmmoProto->Damage[0].DamageMax) * 1000 / 2;
-                    uint32 newAmmoDPS = (proto->Damage[0].DamageMin + proto->Damage[0].DamageMax) * 1000 / 2;
-
-                    if (newAmmoDPS > currentAmmoDPS) // New ammo meets upgrade condition
-                    {
-                        return ITEM_USAGE_EQUIP;
-                    }
-                    if (newAmmoDPS < currentAmmoDPS) // New ammo is worse
-                    {
-                        return ITEM_USAGE_NONE;
-                    }
-                }
-                // Ensure we have enough ammo in the inventory
-                if (ammoCount < requiredAmmo)
-                {
-                    ammoCount += CurrentStacks(proto);
-
-                    if (ammoCount < requiredAmmo)  // Buy ammo to reach the proper supply
-                        return ITEM_USAGE_AMMO;
-                    else if (ammoCount < requiredAmmo + 1)
-                        return ITEM_USAGE_KEEP;  // Keep the ammo if we don't have too much.
-                }
-            }
+            return ammoUsage;
         }
     }
-
     // Need to add something like free bagspace or item value.
-    if (proto->SellPrice > 0)
+    if (itemTemplate->SellPrice > 0)
     {
-        if (proto->Quality >= ITEM_QUALITY_NORMAL && !isSoulbound)
+        if (itemTemplate->Quality >= ITEM_QUALITY_NORMAL && !isSoulbound)
         {
             return ITEM_USAGE_AH;
         }
-        else
-        {
-            return ITEM_USAGE_VENDOR;
-        }
+
+        return ITEM_USAGE_VENDOR;
     }
 
     return ITEM_USAGE_NONE;
@@ -482,6 +520,104 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
     return ITEM_USAGE_NONE;
 }
 
+ItemUsage ItemUsageValue::QueryItemUsageForAmmo(ItemTemplate const* proto)
+{
+    const uint8_t botClass = this->bot->getClass();
+
+    if (botClass != CLASS_HUNTER && botClass != CLASS_ROGUE && botClass != CLASS_WARRIOR)
+    {
+        return ITEM_USAGE_NONE;
+    }
+
+    const Item* const rangedWeapon = this->bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED);
+    uint32_t requiredSubClass = 0;
+
+    if (rangedWeapon != nullptr)
+    {
+        switch (rangedWeapon->GetTemplate()->SubClass)
+        {
+            case ITEM_SUBCLASS_WEAPON_GUN:
+                requiredSubClass = ITEM_SUBCLASS_BULLET;
+                break;
+            case ITEM_SUBCLASS_WEAPON_BOW:
+            case ITEM_SUBCLASS_WEAPON_CROSSBOW:
+                requiredSubClass = ITEM_SUBCLASS_ARROW;
+                break;
+        }
+    }
+
+    // Ensure the item is the correct ammo type for the equipped ranged weapon
+    if (proto->SubClass == requiredSubClass)
+    {
+        float ammoCount = this->BetterStacks(proto, "ammo");
+        const float requiredAmmo = (botClass == CLASS_HUNTER) ? 8 : 2; // Hunters get 8 stacks, others 2
+        const uint32_t currentAmmoId = this->bot->GetUInt32Value(PLAYER_AMMO_ID);
+
+        // Check if the bot has an ammo type assigned
+        if (currentAmmoId == 0)
+        {
+            return ITEM_USAGE_EQUIP;  // Equip the ammo if no ammo
+        }
+
+        ObjectMgr* const objectMgr = ObjectMgr::instance();
+
+        // Compare new ammo vs current equipped ammo
+        const ItemTemplate* const currentAmmoItemTemplate = objectMgr->GetItemTemplate(currentAmmoId);
+
+        if (currentAmmoItemTemplate != nullptr)
+        {
+            const float currentAmmoDPS = (currentAmmoItemTemplate->Damage[0].DamageMin + currentAmmoItemTemplate->Damage[0].DamageMax) * 1000.0f / 2.0f;
+            const float newAmmoDPS = (proto->Damage[0].DamageMin + proto->Damage[0].DamageMax) * 1000.0f / 2.0f;
+
+            // New ammo meets upgrade condition
+            if (newAmmoDPS > currentAmmoDPS)
+            {
+                return ITEM_USAGE_EQUIP;
+            }
+
+            // New ammo is worse
+            if (newAmmoDPS < currentAmmoDPS)
+            {
+                return ITEM_USAGE_NONE;
+            }
+        }
+
+        // Ensure we have enough ammo in the inventory
+        if (ammoCount < requiredAmmo)
+        {
+            ammoCount += CurrentStacks(proto);
+
+            // Buy ammo to reach the proper supply
+            if (ammoCount < requiredAmmo)
+            {
+                return ITEM_USAGE_AMMO;
+            }
+
+            // Keep the ammo if we don't have too much.
+            if (ammoCount < requiredAmmo + 1)
+            {
+                return ITEM_USAGE_KEEP;
+            }
+        }
+    }
+    return ITEM_USAGE_NONE;
+}
+
+ParsedItemUsage ItemUsageValue::GetItemIdFromQualifier()
+{
+    ParsedItemUsage parsed;
+
+    size_t const pos = qualifier.find(",");
+    if (pos != std::string::npos)
+    {
+        parsed.itemId = atoi(qualifier.substr(0, pos).c_str());
+        parsed.randomPropertyId = atoi(qualifier.substr(pos + 1).c_str());
+        return parsed;
+    }
+    else
+        parsed.itemId = atoi(qualifier.c_str());
+    return parsed;
+}
 // Return smaltest bag size equipped
 uint32 ItemUsageValue::GetSmallestBagSize()
 {
@@ -947,4 +1083,44 @@ std::string const ItemUsageValue::GetConsumableType(ItemTemplate const* proto, b
     }
 
     return "";
+}
+
+ItemUsage ItemUpgradeValue::Calculate()
+{
+    const ParsedItemUsage parsed = this->GetItemIdFromQualifier();
+    const uint32_t itemId = parsed.itemId;
+    const int32_t randomPropertyId = parsed.randomPropertyId;
+
+    if (itemId == 0)
+    {
+        return ITEM_USAGE_NONE;
+    }
+
+    ObjectMgr* const objectMgr = ObjectMgr::instance();
+
+    if (objectMgr == nullptr)
+    {
+        return ITEM_USAGE_NONE;
+    }
+
+    const ItemTemplate* const itemTemplate = objectMgr->GetItemTemplate(itemId);
+
+    if (!itemTemplate)
+    {
+        return ITEM_USAGE_NONE;
+    }
+
+    const ItemUsage equip = this->QueryItemUsageForEquip(itemTemplate, randomPropertyId);
+
+    if (equip != ITEM_USAGE_NONE)
+    {
+        return equip;
+    }
+
+    if (itemTemplate->Class == ITEM_CLASS_PROJECTILE && this->bot->CanUseItem(itemTemplate) == EQUIP_ERR_OK)
+    {
+        return this->QueryItemUsageForAmmo(itemTemplate);
+    }
+
+    return ITEM_USAGE_NONE;
 }

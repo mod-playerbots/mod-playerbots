@@ -6,13 +6,15 @@
 #include "EquipAction.h"
 #include <utility>
 
+#include "AiObjectContext.h"
 #include "Event.h"
 #include "ItemCountValue.h"
 #include "ItemUsageValue.h"
 #include "ItemVisitors.h"
-#include "Playerbots.h"
+#include "PlayerbotAI.h"
 #include "StatsWeightCalculator.h"
 #include "ItemPackets.h"
+#include "RandomPlayerbotMgr.h"
 
 bool EquipAction::Execute(Event event)
 {
@@ -328,64 +330,53 @@ void EquipAction::EquipItem(Item* item)
     botAI->TellMaster(out);
 }
 
-bool EquipUpgradesAction::Execute(Event event)
+ItemIds EquipAction::SelectInventoryItemsToEquip()
 {
-    if (!sPlayerbotAIConfig.autoEquipUpgradeLoot && !sRandomPlayerbotMgr.IsRandomBot(bot))
-        return false;
+    CollectItemsVisitor visitor{};
 
-    if (event.GetSource() == "trade status")
+    this->IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);
+
+    ItemIds items{};
+
+    for (const Item* const item : visitor.items)
     {
-        WorldPacket p(event.getPacket());
-        p.rpos(0);
-        uint32 status;
-        p >> status;
+        if (item == nullptr)
+        {
+            continue;
+        }
 
-        if (status != TRADE_STATUS_TRADE_ACCEPT)
-            return false;
-    }
+        const ItemTemplate* const itemTemplate = item->GetTemplate();
 
-    if (event.GetSource() == "item push result")
-    {
-        WorldPacket p(event.getPacket());
-        p.rpos(0);
-        ObjectGuid playerGuid;
-        uint32 received, created, sendChatMessage, itemSlot, itemId;
-        uint8 bagSlot;
+        if (itemTemplate == nullptr)
+        {
+            continue;
+        }
 
-        p >> playerGuid;
-        p >> received;
-        p >> created;
-        p >> sendChatMessage;
-        p >> bagSlot;
-        p >> itemSlot;
-        p >> itemId;
+        //TODO Expand to Glyphs and Gems, that can be placed in equipment
+        //Pre-filter non-equipable items
+        if (itemTemplate->InventoryType == INVTYPE_NON_EQUIP)
+        {
+            continue;
+        }
 
-        ItemTemplate const* item = sObjectMgr->GetItemTemplate(itemId);
-        if (item->Class == ITEM_CLASS_TRADE_GOODS && item->SubClass == ITEM_SUBCLASS_MEAT)
-            return false;
-    }
+        const int32_t randomProperty = item->GetItemRandomPropertyId();
+        const uint32_t itemId = item->GetTemplate()->ItemId;
 
-    CollectItemsVisitor visitor;
-    IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);
+        std::string itemUsageParam = std::to_string(itemId);
 
-    ItemIds items;
-    for (auto i = visitor.items.begin(); i != visitor.items.end(); ++i)
-    {
-        Item* item = *i;
-        if (!item)
-            break;
-        int32 randomProperty = item->GetItemRandomPropertyId();
-        uint32 itemId = item->GetTemplate()->ItemId;
-        std::string itemUsageParam;
         if (randomProperty != 0)
         {
-            itemUsageParam = std::to_string(itemId) + "," + std::to_string(randomProperty);
+            itemUsageParam += "," + std::to_string(randomProperty);
         }
-        else
+
+        Value<ItemUsage>* const itemUsageValue = this->context->GetValue<ItemUsage>("item usage", itemUsageParam);
+
+        if (itemUsageValue == nullptr)
         {
-            itemUsageParam = std::to_string(itemId);
+            continue;
         }
-        ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", itemUsageParam);
+
+        const ItemUsage usage = itemUsageValue->Get();
 
         if (usage == ITEM_USAGE_EQUIP || usage == ITEM_USAGE_REPLACE || usage == ITEM_USAGE_BAD_EQUIP)
         {
@@ -393,40 +384,85 @@ bool EquipUpgradesAction::Execute(Event event)
         }
     }
 
-    EquipItems(items);
+    return items;
+}
+
+bool EquipUpgradesPacketAction::Execute(Event event)
+{
+    if (!PlayerbotAIConfig::instance().autoEquipUpgradeLoot && !RandomPlayerbotMgr::instance().IsRandomBot(bot))
+    {
+        return false;
+    }
+
+    const std::string& source = event.GetSource();
+
+    if (source == "trade status")
+    {
+        WorldPacket packet{event.getPacket()};
+        uint32 status{};
+
+        packet.rpos(0);
+        packet >> status;
+
+        if (status != TRADE_STATUS_TRADE_ACCEPT)
+        {
+            return false;
+        }
+    }
+
+    if (source == "item push result")
+    {
+        WorldPacket packet{event.getPacket()};
+        ObjectGuid playerGuid{};
+        uint32_t received{};
+        uint32_t created{};
+        uint32_t sendChatMessage{};
+        uint32_t itemSlot{};
+        uint32_t itemId{};
+        uint8_t bagSlot{};
+
+        packet.rpos(0);
+
+        packet >> playerGuid;
+        packet >> received;
+        packet >> created;
+        packet >> sendChatMessage;
+        packet >> bagSlot;
+        packet >> itemSlot;
+        packet >> itemId;
+
+        ObjectMgr* const objectMgr = ObjectMgr::instance();
+
+        if (objectMgr == nullptr)
+        {
+            return false;
+        }
+
+        const ItemTemplate* const itemTemplate = objectMgr->GetItemTemplate(itemId);
+
+        if (itemTemplate == nullptr)
+        {
+            return false;
+        }
+
+        if (itemTemplate->InventoryType == INVTYPE_NON_EQUIP)
+        {
+            return false;
+        }
+    }
+
+    ItemIds items = this->SelectInventoryItemsToEquip();
+
+    this->EquipItems(items);
+
     return true;
 }
 
 bool EquipUpgradeAction::Execute(Event)
 {
-    CollectItemsVisitor visitor;
-    IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);
+    ItemIds items = this->SelectInventoryItemsToEquip();
 
-    ItemIds items;
-    for (auto i = visitor.items.begin(); i != visitor.items.end(); ++i)
-    {
-        Item* item = *i;
-        if (!item)
-            break;
-        int32 randomProperty = item->GetItemRandomPropertyId();
-        uint32 itemId = item->GetTemplate()->ItemId;
-        std::string itemUsageParam;
-        if (randomProperty != 0)
-        {
-            itemUsageParam = std::to_string(itemId) + "," + std::to_string(randomProperty);
-        }
-        else
-        {
-            itemUsageParam = std::to_string(itemId);
-        }
-        ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", itemUsageParam);
+    this->EquipItems(items);
 
-        if (usage == ITEM_USAGE_EQUIP || usage == ITEM_USAGE_REPLACE || usage == ITEM_USAGE_BAD_EQUIP)
-        {
-            items.insert(itemId);
-        }
-    }
-
-    EquipItems(items);
     return true;
 }

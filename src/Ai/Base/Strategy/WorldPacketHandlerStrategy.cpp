@@ -135,7 +135,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
             "trade status",
             {
                 CreateNextAction<TradeStatusAction>(relevance),
-                CreateNextAction<EquipUpgradesAction>(relevance)
+                CreateNextAction<EquipUpgradesPacketAction>(relevance)
             }
         )
     );
@@ -178,7 +178,15 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
                 CreateNextAction<UnlockItemAction>(relevance),
                 CreateNextAction<OpenItemAction>(relevance),
                 CreateNextAction<QueryItemUsageAction>(relevance),
-                CreateNextAction<EquipUpgradesAction>(relevance)
+                CreateNextAction<EquipUpgradesPacketAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "loot roll won",
+            {
+                CreateNextAction<EquipUpgradesPacketAction>(relevance)
             }
         )
     );

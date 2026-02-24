@@ -114,7 +114,7 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "no ammo",
             {
-                CreateNextAction<EquipUpgradesAction>(30.0f)
+                CreateNextAction<EquipUpgradesPacketAction>(30.0f)
             }
         )
     );

@@ -177,7 +177,7 @@ bool BuyAction::Execute(Event event)
 
                     if (needMoneyFor == NeedMoneyFor::gear)
                     {
-                        botAI->DoSpecificAction(CreateNextAction<EquipUpgradesAction>(1.0f).factory);
+                        botAI->DoSpecificAction(CreateNextAction<EquipUpgradesPacketAction>(1.0f).factory);
                     }
                 }
             }
@@ -208,7 +208,7 @@ bool BuyAction::Execute(Event event)
                 if (usage == ITEM_USAGE_REPLACE || usage == ITEM_USAGE_EQUIP ||
                     usage == ITEM_USAGE_BAD_EQUIP || usage == ITEM_USAGE_BROKEN_EQUIP)
                 {
-                    botAI->DoSpecificAction(CreateNextAction<EquipUpgradesAction>(1.0f).factory);
+                    botAI->DoSpecificAction(CreateNextAction<EquipUpgradesPacketAction>(1.0f).factory);
                     break;
                 }
             }

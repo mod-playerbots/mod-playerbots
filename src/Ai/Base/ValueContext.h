@@ -217,6 +217,7 @@ public:
         creators["formation"] = &ValueContext::formation;
         creators["stance"] = &ValueContext::stance;
         creators["item usage"] = &ValueContext::item_usage;
+        creators["item upgrade"] = &ValueContext::item_upgrade;
         creators["speed"] = &ValueContext::speed;
         creators["last said"] = &ValueContext::last_said;
         creators["last emote"] = &ValueContext::last_emote;
@@ -342,6 +343,7 @@ private:
     static UntypedValue* already_seen_players(PlayerbotAI* botAI) { return new AlreadySeenPlayersValue(botAI); }
     static UntypedValue* new_player_nearby(PlayerbotAI* botAI) { return new NewPlayerNearbyValue(botAI); }
     static UntypedValue* item_usage(PlayerbotAI* botAI) { return new ItemUsageValue(botAI); }
+    static UntypedValue* item_upgrade(PlayerbotAI* botAI) { return new ItemUpgradeValue(botAI); }
     static UntypedValue* formation(PlayerbotAI* botAI) { return new FormationValue(botAI); }
     static UntypedValue* stance(PlayerbotAI* botAI) { return new StanceValue(botAI); }
     static UntypedValue* mana_save_level(PlayerbotAI* botAI) { return new ManaSaveLevelValue(botAI); }
