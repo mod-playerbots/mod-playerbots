@@ -7,7 +7,6 @@
 #define _PLAYERBOT_TOTEMSSHAMANSTRATEGY_H
 
 #include "GenericShamanStrategy.h"
-#include <set>
 #include <vector>
 #include <string>
 

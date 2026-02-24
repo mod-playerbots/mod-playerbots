@@ -1,8 +1,7 @@
 #include "Playerbots.h"
 #include "DrakTharonKeepActions.h"
-#include "DrakTharonKeepStrategy.h"
 
-bool CorpseExplodeSpreadAction::Execute(Event event)
+bool CorpseExplodeSpreadAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "trollgore");
     if (!boss) { return false; }
@@ -17,15 +16,13 @@ bool CorpseExplodeSpreadAction::Execute(Event event)
         {
             float currentDistance = bot->GetExactDist2d(unit);
             if (currentDistance < distance + distanceExtra)
-            {
                 return MoveAway(unit, distance + distanceExtra - currentDistance);
-            }
         }
     }
     return false;
 }
 
-bool AvoidArcaneFieldAction::Execute(Event event)
+bool AvoidArcaneFieldAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "novos the summoner");
     if (!boss) { return false; }
@@ -44,7 +41,7 @@ bool NovosDefaultPositionAction::isUseful()
     float threshold = 15.0f;
     return bot->GetDistance(NOVOS_PARTY_POSITION) > threshold;
 }
-bool NovosDefaultPositionAction::Execute(Event event)
+bool NovosDefaultPositionAction::Execute(Event /*event*/)
 {
     float clusterDistance = 4.0f;
     // Only reposition if we're not killing anything
@@ -59,7 +56,7 @@ bool NovosDefaultPositionAction::Execute(Event event)
     return false;
 }
 
-bool NovosTargetPriorityAction::Execute(Event event)
+bool NovosTargetPriorityAction::Execute(Event /*event*/)
 {
     // TODO: This can be improved, some parts are still buggy.
     // But it works for now and this fight is very easy
@@ -89,9 +86,7 @@ bool NovosTargetPriorityAction::Execute(Event event)
                 // Ranged dps, only set if none already assigned.
                 // Don't break, we want to keep searching for a melee instead.
                 if (!stairsDps)
-                {
                     stairsDps = groupMember;
-                }
             }
         }
     }
@@ -112,13 +107,11 @@ bool NovosTargetPriorityAction::Execute(Event event)
         if (botAI->IsTank(bot))
         {
             if (creatureId == NPC_HULKING_CORPSE)
-            {
                 selectedTargets[0] = unit;
-            }
+
             else if (creatureId == NPC_CRYSTAL_HANDLER)
-            {
                 selectedTargets[1] = unit;
-            }
+
         }
         // Dedicated stairs dps is assigned.
         // Priority: Risen Shadowcaster -> Fetid Troll Corpse
@@ -127,17 +120,13 @@ bool NovosTargetPriorityAction::Execute(Event event)
             if (creatureId == NPC_RISEN_SHADOWCASTER)
             {
                 if (!selectedTargets[0] || bot->GetDistance(unit) < bot->GetDistance(selectedTargets[0]) - 5.0f)
-                {
                     selectedTargets[0] = unit;
-                }
 
             }
             else if (creatureId == NPC_FETID_TROLL_CORPSE)
             {
                 if (!selectedTargets[1] || bot->GetDistance(unit) < bot->GetDistance(selectedTargets[1]) - 5.0f)
-                {
                     selectedTargets[1] = unit;
-                }
             }
         }
         // All other dps priority:
@@ -145,13 +134,10 @@ bool NovosTargetPriorityAction::Execute(Event event)
         else if (botAI->IsDps(bot))
         {
             if (creatureId == NPC_CRYSTAL_HANDLER)
-            {
                 selectedTargets[0] = unit;
-            }
+
             else if (creatureId == NPC_HULKING_CORPSE)
-            {
                 selectedTargets[1] = unit;
-            }
         }
     }
 

@@ -29,7 +29,7 @@ static inline int32 EncodeRandomEnchantParam(uint32 randomPropertyId, uint32 ran
     return 0;
 }
 
-bool LootRollAction::Execute(Event event)
+bool LootRollAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)

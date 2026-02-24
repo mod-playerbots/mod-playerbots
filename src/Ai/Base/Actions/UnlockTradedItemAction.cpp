@@ -1,11 +1,11 @@
 #include "UnlockTradedItemAction.h"
-#include "Playerbots.h"
+#include "PlayerbotAI.h"
 #include "TradeData.h"
 #include "SpellInfo.h"
 
-#define PICK_LOCK_SPELL_ID 1804
+inline constexpr uint32_t PICK_LOCK_SPELL_ID = 1804;
 
-bool UnlockTradedItemAction::Execute(Event event)
+bool UnlockTradedItemAction::Execute(Event /*event*/)
 {
     Player* trader = bot->GetTrader();
     if (!trader)

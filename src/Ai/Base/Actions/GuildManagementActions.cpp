@@ -128,7 +128,7 @@ bool GuildRemoveAction::PlayerIsValid(Player* member)
     return member->GetGuildId() == bot->GetGuildId() && GetRankId(bot) < GetRankId(member);
 };
 
-bool GuildManageNearbyAction::Execute(Event event)
+bool GuildManageNearbyAction::Execute(Event /*event*/)
 {
     uint32 found = 0;
 
@@ -149,7 +149,6 @@ bool GuildManageNearbyAction::Execute(Event event)
         // Promote or demote nearby members based on chance.
         if (player->GetGuildId() && player->GetGuildId() == bot->GetGuildId())
         {
-            Guild::Member* member = guild->GetMember(player->GetGUID());
             uint32 dCount = AI_VALUE(uint32, "death count");
 
             if (!urand(0, 30) && dCount < 2 && guild->GetRankRights(botMember->GetRankId()) & GR_RIGHT_PROMOTE)

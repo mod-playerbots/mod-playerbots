@@ -1,6 +1,5 @@
 #include "RaidAq20Triggers.h"
 
-#include "SharedDefines.h"
 #include "RaidAq20Utils.h"
 
 bool Aq20MoveToCrystalTrigger::IsActive()
