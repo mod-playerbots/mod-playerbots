@@ -1188,13 +1188,10 @@ bool MimironPhase1PositioningTrigger::IsActive()
 
         if (target->GetEntry() == NPC_LEVIATHAN_MKII)
             leviathanMkII = target;
-        }
         else if (target->GetEntry() == NPC_VX001)
             return false;
-        }
         else if (target->GetEntry() == NPC_AERIAL_COMMAND_UNIT)
             return false;
-        }
     }
 
     if (!leviathanMkII || !leviathanMkII->IsAlive())
@@ -1686,13 +1683,10 @@ Unit* YoggSaronTrigger::GetNextIllusionRoomRtiTarget()
     float detectionRadius = 0.0f;
     if (IsInStormwindKeeperIllusion())
         detectionRadius = ULDUAR_YOGG_SARON_STORMWIND_KEEPER_RADIUS;
-    }
     else if (IsInIcecrownKeeperIllusion())
         detectionRadius = ULDUAR_YOGG_SARON_ICECROWN_CITADEL_RADIUS;
-    }
     else if (IsInChamberOfTheAspectsIllusion())
         detectionRadius = ULDUAR_YOGG_SARON_CHAMBER_OF_ASPECTS_RADIUS;
-    }
     else
         return nullptr;
 

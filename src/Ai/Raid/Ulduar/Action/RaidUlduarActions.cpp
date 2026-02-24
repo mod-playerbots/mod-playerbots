@@ -2332,6 +2332,7 @@ bool MimironRocketStrikeAction::isUseful()
 
 bool MimironRocketStrikeAction::Execute(Event /*event*/)
 {
+    Unit* leviathanMkII = nullptr;
     Unit* vx001 = nullptr;
     Unit* aerialCommandUnit = nullptr;
 
@@ -2970,9 +2971,7 @@ bool YoggSaronLunaticGazeAction::Execute(Event /*event*/)
     {
         if (AI_VALUE(std::string, "rti") != "cross")
             botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set("cross");
-        }
     }
-
     return true;
 }
 
