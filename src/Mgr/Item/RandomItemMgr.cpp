@@ -8,6 +8,7 @@
 #include "ItemTemplate.h"
 #include "LootValues.h"
 #include "Playerbots.h"
+#include "StatsWeightCalculator.h"
 
 char* strstri(char const* str1, char const* str2);
 std::set<uint32> RandomItemMgr::itemCache;
@@ -723,6 +724,11 @@ bool RandomItemMgr::CanEquipArmor(uint8 clazz, uint32 level, ItemTemplate const*
     if (proto->InventoryType == INVTYPE_TABARD)
         return true;
 
+    if (proto->InventoryType == INVTYPE_CLOAK || proto->InventoryType == INVTYPE_NECK ||
+        proto->InventoryType == INVTYPE_FINGER || proto->InventoryType == INVTYPE_TRINKET ||
+        proto->InventoryType == INVTYPE_HOLDABLE)
+        return true;
+
     if ((clazz == CLASS_WARRIOR || clazz == CLASS_PALADIN || clazz == CLASS_SHAMAN) &&
         proto->SubClass == ITEM_SUBCLASS_ARMOR_SHIELD)
         return true;
@@ -1267,341 +1273,35 @@ void RandomItemMgr::BuildItemInfoCache()
     PlayerbotsDatabase.CommitTransaction(trans);
 }
 
-uint32 RandomItemMgr::CalculateStatWeight(uint8 playerclass, uint8 spec, ItemTemplate const* proto)
+float RandomItemMgr::CalculateItemWeight(Player* player, uint32 itemId, int32 randomPropertyId)
 {
-    uint32 statWeight = 0;
-    bool isCasterItem = false;
-    bool isAttackItem = false;
-    bool noCaster = (Classes)playerclass == CLASS_WARRIOR || (Classes)playerclass == CLASS_ROGUE ||
-                    (Classes)playerclass == CLASS_DEATH_KNIGHT || (Classes)playerclass == CLASS_HUNTER;
-    uint32 spellPower = 0;
-    uint32 spellHeal = 0;
-    uint32 attackPower = 0;
-    bool hasInt = false;
-    bool hasMana = !((Classes)playerclass == CLASS_WARRIOR || (Classes)playerclass == CLASS_ROGUE ||
-                     (Classes)playerclass == CLASS_DEATH_KNIGHT);
+    if (!player || !itemId)
+        return 0.0f;
 
-    if (proto->SubClass == ITEM_SUBCLASS_ARMOR_LIBRAM || proto->SubClass == ITEM_SUBCLASS_ARMOR_IDOL ||
-        proto->SubClass == ITEM_SUBCLASS_ARMOR_TOTEM || proto->SubClass == ITEM_SUBCLASS_ARMOR_SIGIL)
-        return (uint32)(proto->Quality + proto->ItemLevel);
+    StatsWeightCalculator calculator(player);
+    calculator.SetItemSetBonus(false);
+    calculator.SetOverflowPenalty(false);
+    return calculator.CalculateItem(itemId, randomPropertyId);
+}
 
-    // check basic item stats
-    int32 basicStatsWeight = 0;
-    for (uint8 j = 0; j < MAX_ITEM_PROTO_STATS; ++j)
-    {
-        uint32 statType;
-        int32 val;
-        std::string weightName;
+bool RandomItemMgr::CanEquipForBot(Player* player, ItemTemplate const* proto)
+{
+    if (!player || !proto)
+        return false;
 
-        // if (j >= proto->StatsCount)
-        //     continue;
+    if (player->BotCanUseItem(proto) != EQUIP_ERR_OK)
+        return false;
 
-        statType = proto->ItemStat[j].ItemStatType;
-        val = proto->ItemStat[j].ItemStatValue;
+    if (proto->InventoryType == INVTYPE_NON_EQUIP)
+        return false;
 
-        if (val == 0)
-            continue;
+    if (proto->Class == ITEM_CLASS_WEAPON)
+        return CanEquipWeapon(player->getClass(), proto);
 
-        for (std::map<std::string, uint32>::iterator i = weightStatLink.begin(); i != weightStatLink.end(); ++i)
-        {
-            uint32 modd = i->second;
-            if (modd == statType)
-            {
-                weightName = i->first;
-                break;
-            }
-        }
+    if (proto->Class == ITEM_CLASS_ARMOR)
+        return CanEquipArmor(player->getClass(), player->GetLevel(), proto);
 
-        if (weightName.empty())
-            continue;
-
-        uint32 singleStat = CalculateSingleStatWeight(playerclass, spec, weightName, val);
-        basicStatsWeight += singleStat;
-
-        if (val)
-        {
-            if (weightName == "int" && !noCaster)
-                isCasterItem = true;
-
-            if (weightName == "int")
-                hasInt = true;
-
-            if (weightName == "splpwr")
-                isCasterItem = true;
-
-            if (weightName == "str")
-                isAttackItem = true;
-
-            if (weightName == "agi")
-                isAttackItem = true;
-
-            if (weightName == "atkpwr")
-                isAttackItem = true;
-        }
-    }
-
-    // check armor & block
-    statWeight += CalculateSingleStatWeight(playerclass, spec, "armor", proto->Armor);
-    statWeight += CalculateSingleStatWeight(playerclass, spec, "block", proto->Block);
-
-    // check weapon dps
-    if (proto->IsWeaponVellum())
-    {
-        //WeaponAttackType attType = BASE_ATTACK; //not used, line marked for removal.
-
-        uint32 dps = 0;
-        for (uint8 i = 0; i < MAX_ITEM_PROTO_DAMAGES; i++)
-        {
-            if (proto->Damage[i].DamageMax == 0)
-                break;
-
-            dps = (proto->Damage[i].DamageMin + proto->Damage[i].DamageMax) / (float)(proto->Delay / 1000.0f) / 2;
-            if (dps)
-            {
-                if (proto->IsRangedWeapon())
-                    statWeight += CalculateSingleStatWeight(playerclass, spec, "rgddps", dps);
-                else
-                    statWeight += CalculateSingleStatWeight(playerclass, spec, "mledps", dps);
-            }
-        }
-    }
-
-    // check item spells
-    for (auto const& spellData : proto->Spells)
-    {
-        // no spell
-        if (!spellData.SpellId)
-            continue;
-
-        // apply only at-equip spells
-        if (spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_EQUIP)
-            continue;
-
-        // check if it is valid spell
-        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellData.SpellId);
-        if (!spellInfo)
-            continue;
-
-        uint32 spellDamage = 0;
-        uint32 spellHealing = 0;
-        for (uint32 j = 0; j < MAX_SPELL_EFFECTS; j++)
-        {
-            if (spellInfo->Effects[j].Effect == SPELL_EFFECT_APPLY_AURA && spellInfo->Effects[j].BasePoints)
-            {
-                // spell damage
-                // SPELL_AURA_MOD_DAMAGE_DONE
-                if (spellInfo->Effects[j].ApplyAuraName == SPELL_AURA_MOD_DAMAGE_DONE)
-                {
-                    spellDamage = spellInfo->Effects[j].BasePoints + 1;
-                }
-
-                // spell healing
-                // SPELL_AURA_MOD_HEALING_DONE
-                if (spellInfo->Effects[j].ApplyAuraName == SPELL_AURA_MOD_HEALING_DONE)
-                {
-                    spellHealing = spellInfo->Effects[j].BasePoints + 1;
-                }
-
-                // check spell power
-                if (spellDamage && spellDamage == spellHealing)
-                {
-                    isCasterItem = true;
-                    spellPower += CalculateSingleStatWeight(playerclass, spec, "splpwr", spellDamage);
-                }
-
-                // spell hit rating (pre tbc)
-                // SPELL_AURA_MOD_SPELL_HIT_CHANCE
-                if (spellInfo->Effects[j].ApplyAuraName == SPELL_AURA_MOD_SPELL_HIT_CHANCE)
-                {
-                    statWeight += CalculateSingleStatWeight(playerclass, spec, "spellhitrtng",
-                                                            spellInfo->Effects[j].BasePoints + 1);
-                }
-
-                // spell crit rating (pre tbc)
-                // SPELL_AURA_MOD_SPELL_CRIT_CHANCE
-                if (spellInfo->Effects[j].ApplyAuraName == SPELL_AURA_MOD_SPELL_CRIT_CHANCE)
-                {
-                    statWeight += CalculateSingleStatWeight(playerclass, spec, "spellcritstrkrtng",
-                                                            spellInfo->Effects[j].BasePoints + 1);
-                }
-
-                // spell penetration
-                // SPELL_AURA_MOD_TARGET_RESISTANCE
-                if (spellInfo->Effects[j].ApplyAuraName == SPELL_AURA_MOD_TARGET_RESISTANCE)
-                {
-                    // check if magic type
-                    if (spellInfo->Effects[j].MiscValue == SPELL_SCHOOL_MASK_SPELL)
-                        statWeight += CalculateSingleStatWeight(playerclass, spec, "spellpenrtng",
-                                                                abs(spellInfo->Effects[j].BasePoints + 1));
-                }
-
-                // check attack power
-                if (spellInfo->Effects[j].ApplyAuraName == SPELL_AURA_MOD_ATTACK_POWER)
-                {
-                    isAttackItem = true;
-                    attackPower +=
-                        CalculateSingleStatWeight(playerclass, spec, "atkpwr", spellInfo->Effects[j].BasePoints + 1);
-                }
-
-                // check ranged ap
-                // SPELL_AURA_MOD_RANGED_ATTACK_POWER
-                if (spellInfo->Effects[j].ApplyAuraName == SPELL_AURA_MOD_RANGED_ATTACK_POWER)
-                {
-                    isAttackItem = true;
-                    attackPower +=
-                        CalculateSingleStatWeight(playerclass, spec, "atkpwr", spellInfo->Effects[j].BasePoints + 1);
-                }
-
-                // check block
-                if (spellInfo->Effects[j].ApplyAuraName == SPELL_AURA_MOD_SHIELD_BLOCKVALUE)
-                {
-                    statWeight +=
-                        CalculateSingleStatWeight(playerclass, spec, "block", spellInfo->Effects[j].BasePoints + 1);
-                }
-
-                // block chance
-                // SPELL_AURA_MOD_BLOCK_PERCENT
-                if (spellInfo->Effects[j].ApplyAuraName == SPELL_AURA_MOD_BLOCK_PERCENT)
-                {
-                    statWeight +=
-                        CalculateSingleStatWeight(playerclass, spec, "blockrtng", spellInfo->Effects[j].BasePoints + 1);
-                }
-
-                // armor penetration
-                // SPELL_AURA_MOD_TARGET_RESISTANCE
-                if (spellInfo->Effects[j].ApplyAuraName == SPELL_AURA_MOD_TARGET_RESISTANCE)
-                {
-                    // check if physical type
-                    if (spellInfo->Effects[j].MiscValue == SPELL_SCHOOL_MASK_NORMAL)
-                        statWeight += CalculateSingleStatWeight(playerclass, spec, "armorpenrtng",
-                                                                abs(spellInfo->Effects[j].BasePoints + 1));
-                }
-
-                // hit rating (pre tbc)
-                // SPELL_AURA_MOD_HIT_CHANCE
-                if (spellInfo->Effects[j].ApplyAuraName == SPELL_AURA_MOD_HIT_CHANCE)
-                {
-                    statWeight +=
-                        CalculateSingleStatWeight(playerclass, spec, "hitrtng", spellInfo->Effects[j].BasePoints + 1);
-                }
-
-                // crit rating (pre tbc)
-                // SPELL_AURA_MOD_HIT_CHANCE
-                if (spellInfo->Effects[j].ApplyAuraName == SPELL_AURA_MOD_CRIT_PCT)
-                {
-                    statWeight += CalculateSingleStatWeight(playerclass, spec, "critstrkrtng",
-                                                            spellInfo->Effects[j].BasePoints + 1);
-                }
-
-                // check defense SPELL_AURA_MOD_SKILL
-                // check block
-                // if (spellInfo->Effects[j].ApplyAuraName == SPELL_AURA_MOD_SKILL)
-                //{
-                //    statWeight += CalculateSingleStatWeight(playerclass, spec, "block",
-                //    spellInfo->Effects[j].BasePoints + 1);
-                //}
-
-                // ratings
-                // enum CombatRating
-                if (spellInfo->Effects[j].ApplyAuraName == SPELL_AURA_MOD_RATING)
-                {
-                    for (uint32 rating = 0; rating < MAX_COMBAT_RATING; ++rating)
-                    {
-                        if (spellInfo->Effects[j].MiscValue & (1 << rating))
-                        {
-                            int32 val = spellInfo->Effects[j].BasePoints + 1;
-                            std::string weightName;
-
-                            for (std::map<std::string, uint32>::iterator i = weightRatingLink.begin();
-                                 i != weightRatingLink.end(); ++i)
-                            {
-                                uint32 modd = i->second;
-                                if (modd == rating)
-                                {
-                                    weightName = i->first;
-                                    break;
-                                }
-                            }
-
-                            if (weightName.empty())
-                                continue;
-
-                            statWeight += CalculateSingleStatWeight(playerclass, spec, weightName, val);
-                        }
-                    }
-                }
-
-                // mana regen
-                // SPELL_AURA_MOD_POWER_REGEN
-                if (spellInfo->Effects[j].ApplyAuraName == SPELL_AURA_MOD_POWER_REGEN)
-                {
-                    statWeight +=
-                        CalculateSingleStatWeight(playerclass, spec, "manargn", spellInfo->Effects[j].BasePoints + 1);
-                }
-            }
-        }
-    }
-
-    // check for caster item
-    if (isCasterItem || hasInt)
-    {
-        if ((!hasMana || noCaster) && spellPower)
-            return 0;
-
-        if (!hasMana && hasInt)
-            return 0;
-
-        if ((!hasMana && noCaster && playerclass != CLASS_PALADIN) && spellPower > attackPower)
-            return 0;
-
-        bool playerCaster = false;
-        for (std::vector<WeightScaleStat>::iterator i = m_weightScales[playerclass][spec].stats.begin();
-             i != m_weightScales[playerclass][spec].stats.end(); ++i)
-        {
-            if (i->stat == "splpwr" || i->stat == "int" || i->stat == "manargn")
-            {
-                playerCaster = true;
-            }
-        }
-
-        if (!playerCaster)
-            return 0;
-    }
-
-    // check for caster item
-    if (isAttackItem)
-    {
-        if (hasMana && !noCaster && !(hasInt || spellPower))
-            return 0;
-        // if (!noCaster && attackPower)
-        //     return 0;
-
-        bool playerAttacker = false;
-        for (std::vector<WeightScaleStat>::iterator i = m_weightScales[playerclass][spec].stats.begin();
-             i != m_weightScales[playerclass][spec].stats.end(); ++i)
-        {
-            if (i->stat == "str" || i->stat == "agi" || i->stat == "atkpwr" || i->stat == "mledps" ||
-                i->stat == "rgddps")
-            {
-                playerAttacker = true;
-            }
-        }
-
-        if (!playerAttacker)
-            return 0;
-    }
-
-    statWeight += spellPower;
-    statWeight += spellHeal;
-    statWeight += attackPower;
-
-    // handle negative stats
-    if (basicStatsWeight < 0 && (abs(basicStatsWeight) >= statWeight))
-        statWeight = 0;
-    else
-        statWeight += basicStatsWeight;
-
-    return statWeight;
+    return true;
 }
 
 uint32 RandomItemMgr::CalculateSingleStatWeight(uint8 playerclass, uint8 spec, std::string stat, uint32 value)

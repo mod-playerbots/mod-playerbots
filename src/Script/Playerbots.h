@@ -49,4 +49,33 @@ int strcmpi(char const* s1, char const* s2);
 #define GAI_VALUE(type, name) sSharedValueContext.getGlobalValue<type>(name)->Get()
 #define GAI_VALUE2(type, name, param) sSharedValueContext.getGlobalValue<type>(name, param)->Get()
 
+// Iterate over all bot members in the same group and invoke a functor.
+// Returns true as soon as the functor signals success by returning true.
+template <typename Func>
+bool ForEachBotGroupMember(Player* self, Func&& func)
+{
+    if (!self)
+        return false;
+
+    Group* group = self->GetGroup();
+    if (!group)
+        return false;
+
+    for (GroupReference* it = group->GetFirstMember(); it; it = it->next())
+    {
+        Player* member = it->GetSource();
+        if (!member || member == self || !member->IsInWorld() || member->IsDuringRemoveFromWorld())
+            continue;
+
+        PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+        if (!memberAI) // ignore real players
+            continue;
+
+        if (func(member, memberAI))
+            return true;
+    }
+
+    return false;
+}
+
 #endif

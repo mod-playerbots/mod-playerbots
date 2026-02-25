@@ -3,8 +3,6 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include "LootValues.h"
-
 #include "Playerbots.h"
 #include "SharedValueContext.h"
 

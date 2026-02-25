@@ -351,11 +351,8 @@ ItemIds EquipAction::SelectInventoryItemsToEquip()
 
         int32 randomProperty = item->GetItemRandomPropertyId();
         uint32 itemId = item->GetTemplate()->ItemId;
-        std::string itemUsageParam;
-        if (randomProperty != 0)
-            itemUsageParam = std::to_string(itemId) + "," + std::to_string(randomProperty);
-        else
-            itemUsageParam = std::to_string(itemId);
+
+        std::string const itemUsageParam = ItemUsageValue::BuildItemUsageParam(itemId, randomProperty);
 
         ItemUsage usage = AI_VALUE2(ItemUsage, "item upgrade", itemUsageParam);
         if (usage == ITEM_USAGE_EQUIP || usage == ITEM_USAGE_REPLACE || usage == ITEM_USAGE_BAD_EQUIP)
@@ -397,7 +394,7 @@ bool EquipUpgradesPacketAction::Execute(Event event)
         p >> itemId;
 
         ItemTemplate const* item = sObjectMgr->GetItemTemplate(itemId);
-        if (item->InventoryType == INVTYPE_NON_EQUIP)
+        if (!item || item->InventoryType == INVTYPE_NON_EQUIP)
             return false;
     }
 

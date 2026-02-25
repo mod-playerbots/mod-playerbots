@@ -160,7 +160,8 @@ public:
     uint32 GetRandomFood(uint32 level, uint32 category);
     uint32 GetFood(uint32 level, uint32 category);
     uint32 GetRandomTrade(uint32 level);
-    uint32 CalculateStatWeight(uint8 playerclass, uint8 spec, ItemTemplate const* proto);
+    float CalculateItemWeight(Player* player, uint32 itemId, int32 randomPropertyId = 0);
+    bool CanEquipForBot(Player* player, ItemTemplate const* proto);
     uint32 CalculateSingleStatWeight(uint8 playerclass, uint8 spec, std::string stat, uint32 value);
     bool CanEquipArmor(uint8 clazz, uint32 level, ItemTemplate const* proto);
     bool ShouldEquipArmorForSpec(uint8 playerclass, uint8 spec, ItemTemplate const* proto);

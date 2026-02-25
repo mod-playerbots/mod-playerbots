@@ -184,276 +184,340 @@ void StatsWeightCalculator::GenerateWeights(Player* player)
     ApplyWeightFinetune(player);
 }
 
-void StatsWeightCalculator::GenerateBasicWeights(Player* player)
+namespace
+{
+constexpr float kSmartStatWeightThreshold = 0.2f;
+
+void ApplyBasicWeights(Player* player, uint8 cls, int tab, float* weights)
 {
     // Basic weights
-    stats_weights_[STATS_TYPE_STAMINA] += 0.1f;
-    stats_weights_[STATS_TYPE_ARMOR] += 0.001f;
-    stats_weights_[STATS_TYPE_BONUS] += 1.0f;
-    stats_weights_[STATS_TYPE_MELEE_DPS] += 0.01f;
-    stats_weights_[STATS_TYPE_RANGED_DPS] += 0.01f;
+    weights[STATS_TYPE_STAMINA] += 0.1f;
+    weights[STATS_TYPE_ARMOR] += 0.001f;
+    weights[STATS_TYPE_BONUS] += 1.0f;
+    weights[STATS_TYPE_MELEE_DPS] += 0.01f;
+    weights[STATS_TYPE_RANGED_DPS] += 0.01f;
 
     if (cls == CLASS_HUNTER && (tab == HUNTER_TAB_BEAST_MASTERY || tab == HUNTER_TAB_SURVIVAL))
     {
-        stats_weights_[STATS_TYPE_AGILITY] += 2.5f;
-        stats_weights_[STATS_TYPE_ATTACK_POWER] += 1.0f;
-        stats_weights_[STATS_TYPE_ARMOR_PENETRATION] += 1.5f;
-        stats_weights_[STATS_TYPE_HIT] += 1.7f;
-        stats_weights_[STATS_TYPE_CRIT] += 1.4f;
-        stats_weights_[STATS_TYPE_HASTE] += 1.6f;
-        stats_weights_[STATS_TYPE_RANGED_DPS] += 7.5f;
+        weights[STATS_TYPE_AGILITY] += 2.5f;
+        weights[STATS_TYPE_ATTACK_POWER] += 1.0f;
+        weights[STATS_TYPE_ARMOR_PENETRATION] += 1.5f;
+        weights[STATS_TYPE_HIT] += 1.7f;
+        weights[STATS_TYPE_CRIT] += 1.4f;
+        weights[STATS_TYPE_HASTE] += 1.6f;
+        weights[STATS_TYPE_RANGED_DPS] += 7.5f;
     }
     else if (cls == CLASS_HUNTER && tab == HUNTER_TAB_MARKSMANSHIP)
     {
-        stats_weights_[STATS_TYPE_AGILITY] += 2.3f;
-        stats_weights_[STATS_TYPE_ATTACK_POWER] += 1.0f;
-        stats_weights_[STATS_TYPE_ARMOR_PENETRATION] += 2.25f;
-        stats_weights_[STATS_TYPE_HIT] += 2.1f;
-        stats_weights_[STATS_TYPE_CRIT] += 2.0f;
-        stats_weights_[STATS_TYPE_HASTE] += 1.8f;
-        stats_weights_[STATS_TYPE_RANGED_DPS] += 10.0f;
+        weights[STATS_TYPE_AGILITY] += 2.3f;
+        weights[STATS_TYPE_ATTACK_POWER] += 1.0f;
+        weights[STATS_TYPE_ARMOR_PENETRATION] += 2.25f;
+        weights[STATS_TYPE_HIT] += 2.1f;
+        weights[STATS_TYPE_CRIT] += 2.0f;
+        weights[STATS_TYPE_HASTE] += 1.8f;
+        weights[STATS_TYPE_RANGED_DPS] += 10.0f;
     }
     else if (cls == CLASS_ROGUE && tab == ROGUE_TAB_COMBAT)
     {
-        stats_weights_[STATS_TYPE_AGILITY] += 1.9f;
-        stats_weights_[STATS_TYPE_STRENGTH] += 1.1f;
-        stats_weights_[STATS_TYPE_ATTACK_POWER] += 1.0f;
-        stats_weights_[STATS_TYPE_ARMOR_PENETRATION] += 1.8f;
-        stats_weights_[STATS_TYPE_HIT] += 2.1f;
-        stats_weights_[STATS_TYPE_CRIT] += 1.4f;
-        stats_weights_[STATS_TYPE_HASTE] += 1.7f;
-        stats_weights_[STATS_TYPE_EXPERTISE] += 2.0f;
-        stats_weights_[STATS_TYPE_MELEE_DPS] += 7.0f;
+        weights[STATS_TYPE_AGILITY] += 1.9f;
+        weights[STATS_TYPE_STRENGTH] += 1.1f;
+        weights[STATS_TYPE_ATTACK_POWER] += 1.0f;
+        weights[STATS_TYPE_ARMOR_PENETRATION] += 1.8f;
+        weights[STATS_TYPE_HIT] += 2.1f;
+        weights[STATS_TYPE_CRIT] += 1.4f;
+        weights[STATS_TYPE_HASTE] += 1.7f;
+        weights[STATS_TYPE_EXPERTISE] += 2.0f;
+        weights[STATS_TYPE_MELEE_DPS] += 7.0f;
     }
     else if (cls == CLASS_DRUID && tab == DRUID_TAB_FERAL && !PlayerbotAI::IsTank(player))
     {
-        stats_weights_[STATS_TYPE_AGILITY] += 2.2f;
-        stats_weights_[STATS_TYPE_STRENGTH] += 2.4f;
-        stats_weights_[STATS_TYPE_ATTACK_POWER] += 1.0f;
-        stats_weights_[STATS_TYPE_ARMOR_PENETRATION] += 2.3f;
-        stats_weights_[STATS_TYPE_HIT] += 1.9f;
-        stats_weights_[STATS_TYPE_CRIT] += 1.5f;
-        stats_weights_[STATS_TYPE_HASTE] += 2.1f;
-        stats_weights_[STATS_TYPE_EXPERTISE] += 2.1f;
-        stats_weights_[STATS_TYPE_MELEE_DPS] += 15.0f;
+        weights[STATS_TYPE_AGILITY] += 2.2f;
+        weights[STATS_TYPE_STRENGTH] += 2.4f;
+        weights[STATS_TYPE_ATTACK_POWER] += 1.0f;
+        weights[STATS_TYPE_ARMOR_PENETRATION] += 2.3f;
+        weights[STATS_TYPE_HIT] += 1.9f;
+        weights[STATS_TYPE_CRIT] += 1.5f;
+        weights[STATS_TYPE_HASTE] += 2.1f;
+        weights[STATS_TYPE_EXPERTISE] += 2.1f;
+        weights[STATS_TYPE_MELEE_DPS] += 15.0f;
     }
     else if (cls == CLASS_ROGUE && (tab == ROGUE_TAB_ASSASSINATION || tab == ROGUE_TAB_SUBTLETY))
     {
-        stats_weights_[STATS_TYPE_AGILITY] += 1.5f;
-        stats_weights_[STATS_TYPE_STRENGTH] += 1.1f;
-        stats_weights_[STATS_TYPE_ATTACK_POWER] += 1.0f;
-        stats_weights_[STATS_TYPE_ARMOR_PENETRATION] += 1.2f;
-        stats_weights_[STATS_TYPE_HIT] += 2.1f;
-        stats_weights_[STATS_TYPE_CRIT] += 1.1f;
-        stats_weights_[STATS_TYPE_HASTE] += 1.8f;
-        stats_weights_[STATS_TYPE_EXPERTISE] += 2.1f;
-        stats_weights_[STATS_TYPE_MELEE_DPS] += 5.0f;
+        weights[STATS_TYPE_AGILITY] += 1.5f;
+        weights[STATS_TYPE_STRENGTH] += 1.1f;
+        weights[STATS_TYPE_ATTACK_POWER] += 1.0f;
+        weights[STATS_TYPE_ARMOR_PENETRATION] += 1.2f;
+        weights[STATS_TYPE_HIT] += 2.1f;
+        weights[STATS_TYPE_CRIT] += 1.1f;
+        weights[STATS_TYPE_HASTE] += 1.8f;
+        weights[STATS_TYPE_EXPERTISE] += 2.1f;
+        weights[STATS_TYPE_MELEE_DPS] += 5.0f;
     }
     else if (cls == CLASS_WARRIOR && tab == WARRIOR_TAB_FURY)
     {
-        stats_weights_[STATS_TYPE_AGILITY] += 1.8f;
-        stats_weights_[STATS_TYPE_STRENGTH] += 2.6f;
-        stats_weights_[STATS_TYPE_ATTACK_POWER] += 1.0f;
-        stats_weights_[STATS_TYPE_ARMOR_PENETRATION] += 2.1f;
-        stats_weights_[STATS_TYPE_HIT] += 2.3f;
-        stats_weights_[STATS_TYPE_CRIT] += 2.2f;
-        stats_weights_[STATS_TYPE_HASTE] += 1.8f;
-        stats_weights_[STATS_TYPE_EXPERTISE] += 2.5f;
-        stats_weights_[STATS_TYPE_MELEE_DPS] += 7.0f;
+        weights[STATS_TYPE_AGILITY] += 1.8f;
+        weights[STATS_TYPE_STRENGTH] += 2.6f;
+        weights[STATS_TYPE_ATTACK_POWER] += 1.0f;
+        weights[STATS_TYPE_ARMOR_PENETRATION] += 2.1f;
+        weights[STATS_TYPE_HIT] += 2.3f;
+        weights[STATS_TYPE_CRIT] += 2.2f;
+        weights[STATS_TYPE_HASTE] += 1.8f;
+        weights[STATS_TYPE_EXPERTISE] += 2.5f;
+        weights[STATS_TYPE_MELEE_DPS] += 7.0f;
     }
     else if (cls == CLASS_WARRIOR && tab == WARRIOR_TAB_ARMS)
     {
-        stats_weights_[STATS_TYPE_AGILITY] += 1.6f;
-        stats_weights_[STATS_TYPE_STRENGTH] += 2.3f;
-        stats_weights_[STATS_TYPE_ATTACK_POWER] += 1.0f;
-        stats_weights_[STATS_TYPE_ARMOR_PENETRATION] += 1.7f;
-        stats_weights_[STATS_TYPE_HIT] += 2.0f;
-        stats_weights_[STATS_TYPE_CRIT] += 1.9f;
-        stats_weights_[STATS_TYPE_HASTE] += 0.8f;
-        stats_weights_[STATS_TYPE_EXPERTISE] += 1.4f;
-        stats_weights_[STATS_TYPE_MELEE_DPS] += 7.0f;
+        weights[STATS_TYPE_AGILITY] += 1.6f;
+        weights[STATS_TYPE_STRENGTH] += 2.3f;
+        weights[STATS_TYPE_ATTACK_POWER] += 1.0f;
+        weights[STATS_TYPE_ARMOR_PENETRATION] += 1.7f;
+        weights[STATS_TYPE_HIT] += 2.0f;
+        weights[STATS_TYPE_CRIT] += 1.9f;
+        weights[STATS_TYPE_HASTE] += 0.8f;
+        weights[STATS_TYPE_EXPERTISE] += 1.4f;
+        weights[STATS_TYPE_MELEE_DPS] += 7.0f;
     }
     else if (cls == CLASS_DEATH_KNIGHT && tab == DEATH_KNIGHT_TAB_FROST)
     {
-        stats_weights_[STATS_TYPE_AGILITY] += 1.7f;
-        stats_weights_[STATS_TYPE_STRENGTH] += 2.8f;
-        stats_weights_[STATS_TYPE_ATTACK_POWER] += 1.0f;
-        stats_weights_[STATS_TYPE_ARMOR_PENETRATION] += 2.7f;
-        stats_weights_[STATS_TYPE_HIT] += 2.3f;
-        stats_weights_[STATS_TYPE_CRIT] += 2.2f;
-        stats_weights_[STATS_TYPE_HASTE] += 2.1f;
-        stats_weights_[STATS_TYPE_EXPERTISE] += 2.5f;
-        stats_weights_[STATS_TYPE_MELEE_DPS] += 7.0f;
+        weights[STATS_TYPE_AGILITY] += 1.7f;
+        weights[STATS_TYPE_STRENGTH] += 2.8f;
+        weights[STATS_TYPE_ATTACK_POWER] += 1.0f;
+        weights[STATS_TYPE_ARMOR_PENETRATION] += 2.7f;
+        weights[STATS_TYPE_HIT] += 2.3f;
+        weights[STATS_TYPE_CRIT] += 2.2f;
+        weights[STATS_TYPE_HASTE] += 2.1f;
+        weights[STATS_TYPE_EXPERTISE] += 2.5f;
+        weights[STATS_TYPE_MELEE_DPS] += 7.0f;
     }
     else if (cls == CLASS_DEATH_KNIGHT && tab == DEATH_KNIGHT_TAB_UNHOLY)
     {
-        stats_weights_[STATS_TYPE_AGILITY] += 0.9f;
-        stats_weights_[STATS_TYPE_STRENGTH] += 2.5f;
-        stats_weights_[STATS_TYPE_ATTACK_POWER] += 1.0f;
-        stats_weights_[STATS_TYPE_ARMOR_PENETRATION] += 1.3f;
-        stats_weights_[STATS_TYPE_HIT] += 2.2f;
-        stats_weights_[STATS_TYPE_CRIT] += 1.7f;
-        stats_weights_[STATS_TYPE_HASTE] += 1.8f;
-        stats_weights_[STATS_TYPE_EXPERTISE] += 1.5f;
-        stats_weights_[STATS_TYPE_MELEE_DPS] += 5.0f;
+        weights[STATS_TYPE_AGILITY] += 0.9f;
+        weights[STATS_TYPE_STRENGTH] += 2.5f;
+        weights[STATS_TYPE_ATTACK_POWER] += 1.0f;
+        weights[STATS_TYPE_ARMOR_PENETRATION] += 1.3f;
+        weights[STATS_TYPE_HIT] += 2.2f;
+        weights[STATS_TYPE_CRIT] += 1.7f;
+        weights[STATS_TYPE_HASTE] += 1.8f;
+        weights[STATS_TYPE_EXPERTISE] += 1.5f;
+        weights[STATS_TYPE_MELEE_DPS] += 5.0f;
     }
     else if (cls == CLASS_PALADIN && tab == PALADIN_TAB_RETRIBUTION)
     {
-        stats_weights_[STATS_TYPE_AGILITY] += 1.6f;
-        stats_weights_[STATS_TYPE_STRENGTH] += 2.5f;
-        stats_weights_[STATS_TYPE_INTELLECT] += 0.1f;
-        stats_weights_[STATS_TYPE_ATTACK_POWER] += 1.0f;
-        stats_weights_[STATS_TYPE_SPELL_POWER] += 0.3f;
-        stats_weights_[STATS_TYPE_ARMOR_PENETRATION] += 1.5f;
-        stats_weights_[STATS_TYPE_HIT] += 1.9f;
-        stats_weights_[STATS_TYPE_CRIT] += 1.7f;
-        stats_weights_[STATS_TYPE_HASTE] += 1.6f;
-        stats_weights_[STATS_TYPE_EXPERTISE] += 2.0f;
-        stats_weights_[STATS_TYPE_MELEE_DPS] += 9.0f;
+        weights[STATS_TYPE_AGILITY] += 1.6f;
+        weights[STATS_TYPE_STRENGTH] += 2.5f;
+        weights[STATS_TYPE_INTELLECT] += 0.1f;
+        weights[STATS_TYPE_ATTACK_POWER] += 1.0f;
+        weights[STATS_TYPE_SPELL_POWER] += 0.3f;
+        weights[STATS_TYPE_ARMOR_PENETRATION] += 1.5f;
+        weights[STATS_TYPE_HIT] += 1.9f;
+        weights[STATS_TYPE_CRIT] += 1.7f;
+        weights[STATS_TYPE_HASTE] += 1.6f;
+        weights[STATS_TYPE_EXPERTISE] += 2.0f;
+        weights[STATS_TYPE_MELEE_DPS] += 9.0f;
     }
     else if ((cls == CLASS_SHAMAN && tab == SHAMAN_TAB_ENHANCEMENT))
     {
-        stats_weights_[STATS_TYPE_AGILITY] += 1.4f;
-        stats_weights_[STATS_TYPE_STRENGTH] += 1.1f;
-        stats_weights_[STATS_TYPE_INTELLECT] += 0.3f;
-        stats_weights_[STATS_TYPE_ATTACK_POWER] += 1.0f;
-        stats_weights_[STATS_TYPE_SPELL_POWER] += 0.95f;
-        stats_weights_[STATS_TYPE_ARMOR_PENETRATION] += 0.9f;
-        stats_weights_[STATS_TYPE_HIT] += 2.1f;
-        stats_weights_[STATS_TYPE_CRIT] += 1.5f;
-        stats_weights_[STATS_TYPE_HASTE] += 1.8f;
-        stats_weights_[STATS_TYPE_EXPERTISE] += 2.0f;
-        stats_weights_[STATS_TYPE_MELEE_DPS] += 8.5f;
+        weights[STATS_TYPE_AGILITY] += 1.4f;
+        weights[STATS_TYPE_STRENGTH] += 1.1f;
+        weights[STATS_TYPE_INTELLECT] += 0.3f;
+        weights[STATS_TYPE_ATTACK_POWER] += 1.0f;
+        weights[STATS_TYPE_SPELL_POWER] += 0.95f;
+        weights[STATS_TYPE_ARMOR_PENETRATION] += 0.9f;
+        weights[STATS_TYPE_HIT] += 2.1f;
+        weights[STATS_TYPE_CRIT] += 1.5f;
+        weights[STATS_TYPE_HASTE] += 1.8f;
+        weights[STATS_TYPE_EXPERTISE] += 2.0f;
+        weights[STATS_TYPE_MELEE_DPS] += 8.5f;
     }
     else if (cls == CLASS_WARLOCK ||
              (cls == CLASS_MAGE && tab != MAGE_TAB_FIRE) ||
              (cls == CLASS_PRIEST && tab == PRIEST_TAB_SHADOW) ||
              (cls == CLASS_DRUID && tab == DRUID_TAB_BALANCE))
     {
-        stats_weights_[STATS_TYPE_INTELLECT] += 0.3f;
-        stats_weights_[STATS_TYPE_SPIRIT] += 0.6f;
-        stats_weights_[STATS_TYPE_SPELL_POWER] += 1.0f;
-        stats_weights_[STATS_TYPE_HIT] += 1.1f;
-        stats_weights_[STATS_TYPE_CRIT] += 0.8f;
-        stats_weights_[STATS_TYPE_HASTE] += 1.0f;
-        stats_weights_[STATS_TYPE_RANGED_DPS] += 1.0f;
+        weights[STATS_TYPE_INTELLECT] += 0.3f;
+        weights[STATS_TYPE_SPIRIT] += 0.6f;
+        weights[STATS_TYPE_SPELL_POWER] += 1.0f;
+        weights[STATS_TYPE_HIT] += 1.1f;
+        weights[STATS_TYPE_CRIT] += 0.8f;
+        weights[STATS_TYPE_HASTE] += 1.0f;
+        weights[STATS_TYPE_RANGED_DPS] += 1.0f;
     }
     else if (cls == CLASS_MAGE && tab == MAGE_TAB_FIRE)
     {
-        stats_weights_[STATS_TYPE_INTELLECT] += 0.3f;
-        stats_weights_[STATS_TYPE_SPIRIT] += 0.7f;
-        stats_weights_[STATS_TYPE_SPELL_POWER] += 1.0f;
-        stats_weights_[STATS_TYPE_HIT] += 1.2f;
-        stats_weights_[STATS_TYPE_CRIT] += 1.1f;
-        stats_weights_[STATS_TYPE_HASTE] += 0.8f;
-        stats_weights_[STATS_TYPE_RANGED_DPS] += 1.0f;
+        weights[STATS_TYPE_INTELLECT] += 0.3f;
+        weights[STATS_TYPE_SPIRIT] += 0.7f;
+        weights[STATS_TYPE_SPELL_POWER] += 1.0f;
+        weights[STATS_TYPE_HIT] += 1.2f;
+        weights[STATS_TYPE_CRIT] += 1.1f;
+        weights[STATS_TYPE_HASTE] += 0.8f;
+        weights[STATS_TYPE_RANGED_DPS] += 1.0f;
     }
     else if (cls == CLASS_SHAMAN && tab == SHAMAN_TAB_ELEMENTAL)
     {
-        stats_weights_[STATS_TYPE_INTELLECT] += 0.25f;
-        stats_weights_[STATS_TYPE_SPELL_POWER] += 1.0f;
-        stats_weights_[STATS_TYPE_HIT] += 1.1f;
-        stats_weights_[STATS_TYPE_CRIT] += 0.8f;
-        stats_weights_[STATS_TYPE_HASTE] += 1.0f;
+        weights[STATS_TYPE_INTELLECT] += 0.25f;
+        weights[STATS_TYPE_SPELL_POWER] += 1.0f;
+        weights[STATS_TYPE_HIT] += 1.1f;
+        weights[STATS_TYPE_CRIT] += 0.8f;
+        weights[STATS_TYPE_HASTE] += 1.0f;
     }
     else if ((cls == CLASS_PALADIN && tab == PALADIN_TAB_HOLY) ||
              (cls == CLASS_SHAMAN && tab == SHAMAN_TAB_RESTORATION))
     {
-        stats_weights_[STATS_TYPE_INTELLECT] += 0.9f;
-        stats_weights_[STATS_TYPE_SPIRIT] += 0.15f;
-        stats_weights_[STATS_TYPE_HEAL_POWER] += 1.0f;
-        stats_weights_[STATS_TYPE_MANA_REGENERATION] += 0.9f;
-        stats_weights_[STATS_TYPE_CRIT] += 0.6f;
-        stats_weights_[STATS_TYPE_HASTE] += 0.8f;
+        weights[STATS_TYPE_INTELLECT] += 0.9f;
+        weights[STATS_TYPE_SPIRIT] += 0.15f;
+        weights[STATS_TYPE_HEAL_POWER] += 1.0f;
+        weights[STATS_TYPE_MANA_REGENERATION] += 0.9f;
+        weights[STATS_TYPE_CRIT] += 0.6f;
+        weights[STATS_TYPE_HASTE] += 0.8f;
     }
     else if ((cls == CLASS_PRIEST && tab != PRIEST_TAB_SHADOW) ||
              (cls == CLASS_DRUID && tab == DRUID_TAB_RESTORATION))
     {
-        stats_weights_[STATS_TYPE_INTELLECT] += 0.8f;
-        stats_weights_[STATS_TYPE_SPIRIT] += 0.6f;
-        stats_weights_[STATS_TYPE_HEAL_POWER] += 1.0f;
-        stats_weights_[STATS_TYPE_MANA_REGENERATION] += 0.9f;
-        stats_weights_[STATS_TYPE_CRIT] += 0.6f;
-        stats_weights_[STATS_TYPE_HASTE] += 0.8f;
-        stats_weights_[STATS_TYPE_RANGED_DPS] += 1.0f;
+        weights[STATS_TYPE_INTELLECT] += 0.8f;
+        weights[STATS_TYPE_SPIRIT] += 0.6f;
+        weights[STATS_TYPE_HEAL_POWER] += 1.0f;
+        weights[STATS_TYPE_MANA_REGENERATION] += 0.9f;
+        weights[STATS_TYPE_CRIT] += 0.6f;
+        weights[STATS_TYPE_HASTE] += 0.8f;
+        weights[STATS_TYPE_RANGED_DPS] += 1.0f;
     }
     else if ((cls == CLASS_WARRIOR && tab == WARRIOR_TAB_PROTECTION) ||
              (cls == CLASS_PALADIN && tab == PALADIN_TAB_PROTECTION))
     {
-        stats_weights_[STATS_TYPE_AGILITY] += 2.0f;
-        stats_weights_[STATS_TYPE_STRENGTH] += 1.0f;
-        stats_weights_[STATS_TYPE_STAMINA] += 3.5f;
-        stats_weights_[STATS_TYPE_ATTACK_POWER] += 0.2f;
-        stats_weights_[STATS_TYPE_DEFENSE] += 2.5f;
-        stats_weights_[STATS_TYPE_PARRY] += 2.0f;
-        stats_weights_[STATS_TYPE_DODGE] += 2.0f;
-        // stats_weights_[STATS_TYPE_RESILIENCE] += 2.0f;
-        stats_weights_[STATS_TYPE_BLOCK_RATING] += 1.0f;
-        stats_weights_[STATS_TYPE_BLOCK_VALUE] += 0.5f;
-        stats_weights_[STATS_TYPE_ARMOR] += 0.15f;
-        stats_weights_[STATS_TYPE_HIT] += 2.0f;
-        stats_weights_[STATS_TYPE_CRIT] += 0.2f;
-        stats_weights_[STATS_TYPE_HASTE] += 0.5f;
-        stats_weights_[STATS_TYPE_EXPERTISE] += 3.0f;
-        stats_weights_[STATS_TYPE_MELEE_DPS] += 2.0f;
+        weights[STATS_TYPE_AGILITY] += 2.0f;
+        weights[STATS_TYPE_STRENGTH] += 1.0f;
+        weights[STATS_TYPE_STAMINA] += 3.5f;
+        weights[STATS_TYPE_ATTACK_POWER] += 0.2f;
+        weights[STATS_TYPE_DEFENSE] += 2.5f;
+        weights[STATS_TYPE_PARRY] += 2.0f;
+        weights[STATS_TYPE_DODGE] += 2.0f;
+        weights[STATS_TYPE_BLOCK_RATING] += 1.0f;
+        weights[STATS_TYPE_BLOCK_VALUE] += 0.5f;
+        weights[STATS_TYPE_ARMOR] += 0.15f;
+        weights[STATS_TYPE_HIT] += 2.0f;
+        weights[STATS_TYPE_CRIT] += 0.2f;
+        weights[STATS_TYPE_HASTE] += 0.5f;
+        weights[STATS_TYPE_EXPERTISE] += 3.0f;
+        weights[STATS_TYPE_MELEE_DPS] += 2.0f;
     }
     else if (cls == CLASS_DEATH_KNIGHT && tab == DEATH_KNIGHT_TAB_BLOOD)
     {
-        stats_weights_[STATS_TYPE_AGILITY] += 2.0f;
-        stats_weights_[STATS_TYPE_STRENGTH] += 1.0f;
-        stats_weights_[STATS_TYPE_STAMINA] += 3.5f;
-        stats_weights_[STATS_TYPE_ATTACK_POWER] += 0.2f;
-        stats_weights_[STATS_TYPE_DEFENSE] += 3.5f;
-        stats_weights_[STATS_TYPE_PARRY] += 2.0f;
-        stats_weights_[STATS_TYPE_DODGE] += 2.0f;
-        // stats_weights_[STATS_TYPE_RESILIENCE] += 2.0f;
-        stats_weights_[STATS_TYPE_ARMOR] += 0.15f;
-        stats_weights_[STATS_TYPE_HIT] += 2.0f;
-        stats_weights_[STATS_TYPE_CRIT] += 0.5f;
-        stats_weights_[STATS_TYPE_HASTE] += 0.5f;
-        stats_weights_[STATS_TYPE_EXPERTISE] += 3.5f;
-        stats_weights_[STATS_TYPE_MELEE_DPS] += 2.0f;
+        weights[STATS_TYPE_AGILITY] += 2.0f;
+        weights[STATS_TYPE_STRENGTH] += 1.0f;
+        weights[STATS_TYPE_STAMINA] += 3.5f;
+        weights[STATS_TYPE_ATTACK_POWER] += 0.2f;
+        weights[STATS_TYPE_DEFENSE] += 3.5f;
+        weights[STATS_TYPE_PARRY] += 2.0f;
+        weights[STATS_TYPE_DODGE] += 2.0f;
+        weights[STATS_TYPE_ARMOR] += 0.15f;
+        weights[STATS_TYPE_HIT] += 2.0f;
+        weights[STATS_TYPE_CRIT] += 0.5f;
+        weights[STATS_TYPE_HASTE] += 0.5f;
+        weights[STATS_TYPE_EXPERTISE] += 3.5f;
+        weights[STATS_TYPE_MELEE_DPS] += 2.0f;
     }
     else
     {
         // BEAR DRUID TANK
-        stats_weights_[STATS_TYPE_AGILITY] += 2.2f;
-        stats_weights_[STATS_TYPE_STRENGTH] += 2.4f;
-        stats_weights_[STATS_TYPE_STAMINA] += 4.0f;
-        stats_weights_[STATS_TYPE_ATTACK_POWER] += 1.0f;
-        stats_weights_[STATS_TYPE_DEFENSE] += 0.3f;
-        stats_weights_[STATS_TYPE_DODGE] += 0.7f;
-        // stats_weights_[STATS_TYPE_RESILIENCE] += 1.0f;
-        stats_weights_[STATS_TYPE_ARMOR] += 0.15f;
-        stats_weights_[STATS_TYPE_HIT] += 3.0f;
-        stats_weights_[STATS_TYPE_CRIT] += 1.3f;
-        stats_weights_[STATS_TYPE_HASTE] += 2.3f;
-        stats_weights_[STATS_TYPE_EXPERTISE] += 3.7f;
-        stats_weights_[STATS_TYPE_MELEE_DPS] += 3.0f;
+        weights[STATS_TYPE_AGILITY] += 2.2f;
+        weights[STATS_TYPE_STRENGTH] += 2.4f;
+        weights[STATS_TYPE_STAMINA] += 4.0f;
+        weights[STATS_TYPE_ATTACK_POWER] += 1.0f;
+        weights[STATS_TYPE_DEFENSE] += 0.3f;
+        weights[STATS_TYPE_DODGE] += 0.7f;
+        weights[STATS_TYPE_ARMOR] += 0.15f;
+        weights[STATS_TYPE_HIT] += 3.0f;
+        weights[STATS_TYPE_CRIT] += 1.3f;
+        weights[STATS_TYPE_HASTE] += 2.3f;
+        weights[STATS_TYPE_EXPERTISE] += 3.7f;
+        weights[STATS_TYPE_MELEE_DPS] += 3.0f;
     }
 }
 
-void StatsWeightCalculator::GenerateAdditionalWeights(Player* player)
+void ApplyAdditionalWeights(Player* player, float* weights)
 {
     uint8 cls = player->getClass();
-    // int tab = AiFactory::GetPlayerSpecTab(player);
     if (cls == CLASS_HUNTER)
     {
         if (player->HasAura(34484))
-            stats_weights_[STATS_TYPE_INTELLECT] += 1.1f;
+            weights[STATS_TYPE_INTELLECT] += 1.1f;
         if (player->HasAura(56341))
-            stats_weights_[STATS_TYPE_STAMINA] += 0.3f;
+            weights[STATS_TYPE_STAMINA] += 0.3f;
     }
     else if (cls == CLASS_WARRIOR)
     {
         if (player->HasAura(61222))
-            stats_weights_[STATS_TYPE_ARMOR] += 0.03f;
+            weights[STATS_TYPE_ARMOR] += 0.03f;
     }
     else if (cls == CLASS_SHAMAN)
     {
         if (player->HasAura(51885))
-            stats_weights_[STATS_TYPE_INTELLECT] += 1.1f;
+            weights[STATS_TYPE_INTELLECT] += 1.1f;
     }
+}
+
+uint32 BuildSmartMaskFromWeights(float const* weights)
+{
+    uint32 mask = SMARTSTAT_NONE;
+
+    if (weights[STATS_TYPE_HIT] >= kSmartStatWeightThreshold)
+        mask |= SMARTSTAT_HIT;
+    if (weights[STATS_TYPE_SPELL_POWER] >= kSmartStatWeightThreshold ||
+        weights[STATS_TYPE_HEAL_POWER] >= kSmartStatWeightThreshold)
+        mask |= SMARTSTAT_SPELL_POWER;
+    if (weights[STATS_TYPE_HASTE] >= kSmartStatWeightThreshold)
+        mask |= SMARTSTAT_HASTE;
+    if (weights[STATS_TYPE_CRIT] >= kSmartStatWeightThreshold)
+        mask |= SMARTSTAT_CRIT;
+    if (weights[STATS_TYPE_INTELLECT] >= kSmartStatWeightThreshold)
+        mask |= SMARTSTAT_INTELLECT;
+    if (weights[STATS_TYPE_SPIRIT] >= kSmartStatWeightThreshold)
+        mask |= SMARTSTAT_SPIRIT;
+    if (weights[STATS_TYPE_EXPERTISE] >= kSmartStatWeightThreshold)
+        mask |= SMARTSTAT_EXPERTISE;
+    if (weights[STATS_TYPE_ATTACK_POWER] >= kSmartStatWeightThreshold)
+        mask |= SMARTSTAT_ATTACK_POWER;
+    if (weights[STATS_TYPE_ARMOR_PENETRATION] >= kSmartStatWeightThreshold)
+        mask |= SMARTSTAT_ARMOR_PEN;
+    if (weights[STATS_TYPE_AGILITY] >= kSmartStatWeightThreshold)
+        mask |= SMARTSTAT_AGILITY;
+    if (weights[STATS_TYPE_STAMINA] >= kSmartStatWeightThreshold)
+        mask |= SMARTSTAT_STAMINA;
+    if (weights[STATS_TYPE_DEFENSE] >= kSmartStatWeightThreshold ||
+        weights[STATS_TYPE_DODGE] >= kSmartStatWeightThreshold ||
+        weights[STATS_TYPE_PARRY] >= kSmartStatWeightThreshold ||
+        weights[STATS_TYPE_BLOCK_RATING] >= kSmartStatWeightThreshold ||
+        weights[STATS_TYPE_BLOCK_VALUE] >= kSmartStatWeightThreshold)
+        mask |= SMARTSTAT_AVOIDANCE;
+    if (weights[STATS_TYPE_MANA_REGENERATION] >= kSmartStatWeightThreshold)
+        mask |= SMARTSTAT_MP5;
+    if (weights[STATS_TYPE_STRENGTH] >= kSmartStatWeightThreshold)
+        mask |= SMARTSTAT_STRENGTH;
+
+    return mask;
+}
+} // namespace
+
+uint32 StatsWeightCalculator::BuildSmartStatMask(Player* player)
+{
+    if (!player)
+        return SMARTSTAT_NONE;
+
+    StatsWeightCalculator calculator(player);
+    calculator.Reset();
+    calculator.GenerateWeights(player);
+
+    return BuildSmartMaskFromWeights(calculator.stats_weights_);
+}
+
+void StatsWeightCalculator::GenerateBasicWeights(Player* player)
+{
+    ApplyBasicWeights(player, cls, tab, stats_weights_);
+}
+
+void StatsWeightCalculator::GenerateAdditionalWeights(Player* player)
+{
+    ApplyAdditionalWeights(player, stats_weights_);
 }
 
 void StatsWeightCalculator::CalculateItemSetMod(Player* player, ItemTemplate const* proto)

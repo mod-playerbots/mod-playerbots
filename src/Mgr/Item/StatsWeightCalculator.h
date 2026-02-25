@@ -23,6 +23,25 @@ enum StatsOverflowThreshold
     ARMOR_PENETRATION_OVERFLOW = 100
 };
 
+enum SmartStatFlag : uint32
+{
+    SMARTSTAT_NONE = 0,
+    SMARTSTAT_HIT = 1u << 0,
+    SMARTSTAT_SPELL_POWER = 1u << 1,
+    SMARTSTAT_HASTE = 1u << 2,
+    SMARTSTAT_CRIT = 1u << 3,
+    SMARTSTAT_INTELLECT = 1u << 4,
+    SMARTSTAT_SPIRIT = 1u << 5,
+    SMARTSTAT_EXPERTISE = 1u << 6,
+    SMARTSTAT_ATTACK_POWER = 1u << 7,
+    SMARTSTAT_ARMOR_PEN = 1u << 8,
+    SMARTSTAT_AGILITY = 1u << 9,
+    SMARTSTAT_STAMINA = 1u << 10,
+    SMARTSTAT_AVOIDANCE = 1u << 11,
+    SMARTSTAT_MP5 = 1u << 12,
+    SMARTSTAT_STRENGTH = 1u << 13
+};
+
 class StatsWeightCalculator
 {
 public:
@@ -30,6 +49,7 @@ public:
     void Reset();
     float CalculateItem(uint32 itemId, int32 randomPropertyId = 0);
     float CalculateEnchant(uint32 enchantId);
+    static uint32 BuildSmartStatMask(Player* player);
 
     void SetOverflowPenalty(bool apply) { enable_overflow_penalty_ = apply; }
     void SetItemSetBonus(bool apply) { enable_item_set_bonus_ = apply; }
