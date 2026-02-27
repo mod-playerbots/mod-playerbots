@@ -201,7 +201,6 @@ bool PartyMemberToHealOutOfSpellRangeTrigger::IsActive()
     if (!target)
         return false;
 
-    float combatReach = bot->GetCombatReach() + target->GetCombatReach();
     return target && (ServerFacade::instance().GetDistance2d(bot, target) > (distance + sPlayerbotAIConfig.contactDistance) ||
                       !bot->IsWithinLOSInMap(target));
 }

@@ -1,19 +1,16 @@
 #include "RaidIccActions.h"
 #include "NearestNpcsValue.h"
 #include "ObjectAccessor.h"
-#include "RaidIccStrategy.h"
 #include "Playerbots.h"
-#include "Timer.h"
 #include "Vehicle.h"
 #include "RtiValue.h"
 #include "GenericSpellActions.h"
 #include "GenericActions.h"
-#include <fstream>
 #include "RaidIccTriggers.h"
 #include "Multiplier.h"
 
 // Lord Marrowgwar
-bool IccLmTankPositionAction::Execute(Event event)
+bool IccLmTankPositionAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "lord marrowgar");
     if (!boss)
@@ -73,7 +70,7 @@ bool IccLmTankPositionAction::MoveTowardPosition(const Position& position, float
                   MovementPriority::MOVEMENT_COMBAT);
 }
 
-bool IccSpikeAction::Execute(Event event)
+bool IccSpikeAction::Execute(Event /*event*/)
 {
     // If we're impaled, we can't do anything
     if (botAI->GetAura("Impaled", bot))
@@ -183,7 +180,7 @@ void IccSpikeAction::UpdateRaidTargetIcon(Unit* target)
 }
 
 // Lady Deathwhisper
-bool IccDarkReckoningAction::Execute(Event event)
+bool IccDarkReckoningAction::Execute(Event /*event*/)
 {
     constexpr float SAFE_DISTANCE_THRESHOLD = 2.0f;
 
@@ -201,7 +198,7 @@ bool IccDarkReckoningAction::Execute(Event event)
     return false;
 }
 
-bool IccRangedPositionLadyDeathwhisperAction::Execute(Event event)
+bool IccRangedPositionLadyDeathwhisperAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "lady deathwhisper");
     if (!boss)
@@ -301,7 +298,7 @@ bool IccRangedPositionLadyDeathwhisperAction::MaintainRangedSpacing()
     return false;  // Everyone is properly spaced
 }
 
-bool IccAddsLadyDeathwhisperAction::Execute(Event event)
+bool IccAddsLadyDeathwhisperAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "lady deathwhisper");
     if (!boss)
@@ -419,7 +416,7 @@ void IccAddsLadyDeathwhisperAction::UpdateRaidTargetIcon(Unit* target)
     }
 }
 
-bool IccShadeLadyDeathwhisperAction::Execute(Event event)
+bool IccShadeLadyDeathwhisperAction::Execute(Event /*event*/)
 {
     static constexpr uint32 VENGEFUL_SHADE_ID = NPC_SHADE;
     static constexpr float SAFE_DISTANCE = 12.0f;
@@ -473,7 +470,7 @@ bool IccShadeLadyDeathwhisperAction::Execute(Event event)
     return false;
 }
 
-bool IccRottingFrostGiantTankPositionAction::Execute(Event event)
+bool IccRottingFrostGiantTankPositionAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "rotting frost giant");
     if (!boss)
@@ -696,7 +693,7 @@ bool IccRottingFrostGiantTankPositionAction::Execute(Event event)
 }
 
 //Gunship
-bool IccCannonFireAction::Execute(Event event)
+bool IccCannonFireAction::Execute(Event /*event*/)
 {
     Unit* vehicleBase = bot->GetVehicleBase();
     Vehicle* vehicle = bot->GetVehicle();
@@ -755,7 +752,7 @@ bool IccCannonFireAction::TryCastCannonSpell(uint32 spellId, Unit* target, Unit*
     return false;
 }
 
-bool IccGunshipEnterCannonAction::Execute(Event event)
+bool IccGunshipEnterCannonAction::Execute(Event /*event*/)
 {
     // Do not switch vehicles if already in one
     if (bot->GetVehicle())
@@ -855,7 +852,7 @@ bool IccGunshipEnterCannonAction::EnterVehicle(Unit* vehicleBase, bool moveIfFar
     return true;
 }
 
-bool IccGunshipTeleportAllyAction::Execute(Event event)
+bool IccGunshipTeleportAllyAction::Execute(Event /*event*/)
 {
     static constexpr float MAX_WAITING_DISTANCE = 45.0f;
     static constexpr float MAX_ATTACK_DISTANCE = 15.0f;
@@ -922,7 +919,7 @@ void IccGunshipTeleportAllyAction::UpdateBossSkullIcon(Unit* boss, uint8_t SKULL
     }
 }
 
-bool IccGunshipTeleportHordeAction::Execute(Event event)
+bool IccGunshipTeleportHordeAction::Execute(Event /*event*/)
 {
     static constexpr float MAX_WAITING_DISTANCE = 45.0f;
     static constexpr float MAX_ATTACK_DISTANCE = 15.0f;
@@ -990,7 +987,7 @@ void IccGunshipTeleportHordeAction::UpdateBossSkullIcon(Unit* boss, uint8_t SKUL
 }
 
 //DBS
-bool IccDbsTankPositionAction::Execute(Event event)
+bool IccDbsTankPositionAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "deathbringer saurfang");
     if (!boss)
@@ -1231,7 +1228,7 @@ bool IccDbsTankPositionAction::PositionInRangedFormation()
     return false;
 }
 
-bool IccAddsDbsAction::Execute(Event event)
+bool IccAddsDbsAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "deathbringer saurfang");
     if (!boss)
@@ -1295,7 +1292,7 @@ void IccAddsDbsAction::UpdateSkullMarker(Unit* priorityTarget)
 }
 
 // Festergut
-bool IccFestergutGroupPositionAction::Execute(Event event)
+bool IccFestergutGroupPositionAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "festergut");
     if (!boss)
@@ -1511,7 +1508,7 @@ int IccFestergutGroupPositionAction::CalculatePositionIndex(Group* group)
     return -1;
 }
 
-bool IccFestergutSporeAction::Execute(Event event)
+bool IccFestergutSporeAction::Execute(Event /*event*/)
 {
     constexpr float POSITION_TOLERANCE = 4.0f;
     constexpr float SPREAD_RADIUS = 2.0f;
@@ -1551,8 +1548,10 @@ Position IccFestergutSporeAction::CalculateSpreadPosition()
     float angle = (bot->GetGUID().GetCounter() % 16) * (M_PI / 8);
 
     Position spreadRangedPos = ICC_FESTERGUT_RANGED_SPORE;
-    spreadRangedPos.m_positionX += cos(angle) * SPREAD_RADIUS;
-    spreadRangedPos.m_positionY += sin(angle) * SPREAD_RADIUS;
+    spreadRangedPos.Relocate(spreadRangedPos.GetPositionX() + cos(angle) * SPREAD_RADIUS,
+                             spreadRangedPos.GetPositionY() + sin(angle) * SPREAD_RADIUS,
+                             spreadRangedPos.GetPositionZ(),
+                             spreadRangedPos.GetOrientation());
 
     return spreadRangedPos;
 }
@@ -1624,7 +1623,7 @@ bool IccFestergutSporeAction::CheckMainTankSpore()
 }
 
 // Rotface
-bool IccRotfaceTankPositionAction::Execute(Event event)
+bool IccRotfaceTankPositionAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "rotface");
     if (!boss)
@@ -1700,7 +1699,7 @@ bool IccRotfaceTankPositionAction::HandleAssistTankPositioning(Unit* boss)
     return HandleBigOozePositioning(boss);
 }
 
-bool IccRotfaceTankPositionAction::HandleBigOozePositioning(Unit* boss)
+bool IccRotfaceTankPositionAction::HandleBigOozePositioning(Unit*)
 {
     // Find all big oozes
     GuidVector bigOozes = AI_VALUE(GuidVector, "nearest hostile npcs");
@@ -1801,8 +1800,7 @@ bool IccRotfaceTankPositionAction::HandleBigOozePositioning(Unit* boss)
                         Unit* puddle = botAI->GetUnit(puddleGuid);
                         if (puddle && botAI->GetAura("Ooze Flood", puddle))
                         {
-                            float puddleDistance = std::sqrt(std::pow(newX - puddle->GetPositionX(), 2) +
-                                                             std::pow(newY - puddle->GetPositionY(), 2));
+                            float puddleDistance = puddle->GetDistance2d(newX, newY);
                             if (puddleDistance < puddleSafeDistance)
                             {
                                 isSafeFromPuddles = false;
@@ -1824,7 +1822,7 @@ bool IccRotfaceTankPositionAction::HandleBigOozePositioning(Unit* boss)
     return false;
 }
 
-bool IccRotfaceGroupPositionAction::Execute(Event event)
+bool IccRotfaceGroupPositionAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "rotface");
     if (!boss)
@@ -1891,7 +1889,7 @@ bool IccRotfaceGroupPositionAction::HandlePuddleAvoidance(Unit* boss)
     return false;
 }
 
-bool IccRotfaceGroupPositionAction::MoveAwayFromPuddle(Unit* boss, Unit* puddle, float puddleDistance)
+bool IccRotfaceGroupPositionAction::MoveAwayFromPuddle(Unit* boss, Unit* puddle, float)
 {
     if (!boss || !puddle)
         return false;
@@ -1922,8 +1920,7 @@ bool IccRotfaceGroupPositionAction::MoveAwayFromPuddle(Unit* boss, Unit* puddle,
             float moveZ = bot->GetPositionZ();
 
             // Check distances and line of sight
-            float newPuddleDistance =
-                sqrt(pow(moveX - puddle->GetPositionX(), 2) + pow(moveY - puddle->GetPositionY(), 2));
+            float newPuddleDistance = puddle->GetDistance2d(moveX, moveY);
             float newCenterDistance = sqrt(pow(moveX - ICC_ROTFACE_CENTER_POSITION.GetPositionX(), 2) +
                                            pow(moveY - ICC_ROTFACE_CENTER_POSITION.GetPositionY(), 2));
 
@@ -2126,8 +2123,7 @@ bool IccRotfaceGroupPositionAction::FindAndMoveFromClosestMember(Unit* boss, Uni
             // Ensure the target position is at least 30 yards away from the puddle
             if (puddle)
             {
-                float puddleDistance = std::sqrt(std::pow(targetX - puddle->GetPositionX(), 2) +
-                                                 std::pow(targetY - puddle->GetPositionY(), 2));
+                float puddleDistance = puddle->GetDistance2d(targetX, targetY);
                 if (puddleDistance < puddleSafeDistance)
                 {
                     // Adjust the target position to move further away from the puddle
@@ -2175,7 +2171,7 @@ bool IccRotfaceGroupPositionAction::FindAndMoveFromClosestMember(Unit* boss, Uni
     return false;  // Everyone is properly spaced
 }
 
-bool IccRotfaceMoveAwayFromExplosionAction::Execute(Event event)
+bool IccRotfaceMoveAwayFromExplosionAction::Execute(Event /*event*/)
 {
     // Skip if main tank or ooze flood
     if (botAI->IsMainTank(bot))
@@ -2204,8 +2200,7 @@ bool IccRotfaceMoveAwayFromExplosionAction::MoveToRandomSafeLocation()
         if (!puddle || !botAI->HasAura("Ooze Flood", puddle))
             continue;
 
-        float puddleDistance =
-            std::sqrt(std::pow(moveX - puddle->GetPositionX(), 2) + std::pow(moveY - puddle->GetPositionY(), 2));
+        float puddleDistance = puddle->GetDistance2d(moveX, moveY);
         if (puddleDistance < 30.0f)
         {
             // Adjust the position to move further away from the puddle
@@ -2258,7 +2253,7 @@ bool IccRotfaceMoveAwayFromExplosionAction::MoveToRandomSafeLocation()
 }
 
 // Proffesor Putricide
-bool IccPutricideGrowingOozePuddleAction::Execute(Event event)
+bool IccPutricideGrowingOozePuddleAction::Execute(Event /*event*/)
 {
     Unit* closestPuddle = FindClosestThreateningPuddle();
     if (!closestPuddle)
@@ -2408,7 +2403,7 @@ bool IccPutricideGrowingOozePuddleAction::IsPositionTooCloseToOtherPuddles(float
         if (Aura* grow = unit->GetAura(SPELL_GROW_AURA))
             safeDistance += (grow->GetStackAmount() * STACK_MULTIPLIER);
 
-        float dist = sqrt(pow(x - unit->GetPositionX(), 2) + pow(y - unit->GetPositionY(), 2));
+        float dist = unit->GetDistance2d(x, y);
         if (dist < safeDistance)
             return true;
     }
@@ -2416,7 +2411,7 @@ bool IccPutricideGrowingOozePuddleAction::IsPositionTooCloseToOtherPuddles(float
     return false;
 }
 
-bool IccPutricideVolatileOozeAction::Execute(Event event)
+bool IccPutricideVolatileOozeAction::Execute(Event /*event*/)
 {
     static const float STACK_DISTANCE = 7.0f;
 
@@ -2529,7 +2524,7 @@ Unit* IccPutricideVolatileOozeAction::FindAuraTarget()
     return nullptr;
 }
 
-bool IccPutricideGasCloudAction::Execute(Event event)
+bool IccPutricideGasCloudAction::Execute(Event /*event*/)
 {
     Unit* gasCloud = AI_VALUE2(Unit*, "find target", "gas cloud");
     if (!gasCloud)
@@ -2651,7 +2646,7 @@ bool IccPutricideGasCloudAction::HandleGaseousBloatMovement(Unit* gasCloud)
             float minGasBombDist = FLT_MAX;
             for (Unit* bomb : gasBombs)
             {
-                float bombDist = sqrt(pow(testX - bomb->GetPositionX(), 2) + pow(testY - bomb->GetPositionY(), 2));
+                float bombDist = bomb->GetDistance2d(testX, testY);
                 if (bombDist < minGasBombDist)
                     minGasBombDist = bombDist;
             }
@@ -2718,8 +2713,7 @@ bool IccPutricideGasCloudAction::HandleGaseousBloatMovement(Unit* gasCloud)
         float minEmergencyGasBombDist = FLT_MAX;
         for (Unit* bomb : gasBombs)
         {
-            float bombDist = sqrt(pow(emergencyPos.GetPositionX() - bomb->GetPositionX(), 2) +
-                                  pow(emergencyPos.GetPositionY() - bomb->GetPositionY(), 2));
+            float bombDist = bomb->GetDistance2d(emergencyPos.GetPositionX(), emergencyPos.GetPositionY());
             if (bombDist < minEmergencyGasBombDist)
                 minEmergencyGasBombDist = bombDist;
         }
@@ -2806,7 +2800,6 @@ Position IccPutricideGasCloudAction::CalculateEmergencyPosition(const Position& 
     Position bestPos =
         Position(botPos.GetPositionX() + dx * 15.0f, botPos.GetPositionY() + dy * 15.0f, botPos.GetPositionZ());
     float bestFreedom = 0.0f;
-    static const float MOVEMENT_INCREMENT = 5.0f;  // Fixed movement increment
 
     // Try fewer directions for emergency but still avoid corners
     for (int i = 0; i < 8; i++)
@@ -2922,9 +2915,7 @@ bool IccPutricideGasCloudAction::HandleGroupAuraSituation(Unit* gasCloud)
                               gasCloud->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
             }
             else
-            {
                 return Attack(gasCloud);
-            }
         }
     }
 
@@ -2942,7 +2933,7 @@ bool IccPutricideGasCloudAction::GroupHasGaseousBloat(Group* group)
     return false;
 }
 
-bool IccPutricideAvoidMalleableGooAction::Execute(Event event)
+bool IccPutricideAvoidMalleableGooAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "professor putricide");
     if (!boss)
@@ -2964,7 +2955,7 @@ bool IccPutricideAvoidMalleableGooAction::Execute(Event event)
     return HandleBossPositioning(boss);
 }
 
-bool IccPutricideAvoidMalleableGooAction::HandleTankPositioning(Unit* boss)
+bool IccPutricideAvoidMalleableGooAction::HandleTankPositioning(Unit*)
 {
     if (!botAI->IsTank(bot))
         return false;
@@ -3229,7 +3220,7 @@ Position IccPutricideAvoidMalleableGooAction::CalculateIncrementalMove(const Pos
 }
 
 // BPC
-bool IccBpcKelesethTankAction::Execute(Event event)
+bool IccBpcKelesethTankAction::Execute(Event /*event*/)
 {
     if (!botAI->IsAssistTank(bot))
         return false;
@@ -3310,7 +3301,7 @@ bool IccBpcKelesethTankAction::Execute(Event event)
     return false;
 }
 
-bool IccBpcMainTankAction::Execute(Event event)
+bool IccBpcMainTankAction::Execute(Event /*event*/)
 {
     // Main tank specific behavior (higher priority)
     if (botAI->IsMainTank(bot))
@@ -3427,7 +3418,7 @@ void IccBpcMainTankAction::MarkEmpoweredPrince()
     }
 }
 
-bool IccBpcEmpoweredVortexAction::Execute(Event event)
+bool IccBpcEmpoweredVortexAction::Execute(Event /*event*/)
 {
     Unit* valanar = AI_VALUE2(Unit*, "find target", "prince valanar");
     if (!valanar)
@@ -3612,7 +3603,7 @@ bool IccBpcEmpoweredVortexAction::HandleEmpoweredVortexSpread()
     return false;  // Everyone is properly spaced
 }
 
-bool IccBpcKineticBombAction::Execute(Event event)
+bool IccBpcKineticBombAction::Execute(Event /*event*/)
 {
     // Early exit if not ranged DPS
     if (!botAI->IsRangedDps(bot))
@@ -3758,7 +3749,7 @@ bool IccBpcKineticBombAction::IsBombAlreadyHandled(Unit* bomb, Group* group)
     return false;
 }
 
-bool IccBpcBallOfFlameAction::Execute(Event event)
+bool IccBpcBallOfFlameAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "prince taldaram");
     if (!boss)
@@ -3839,7 +3830,7 @@ bool IccBpcBallOfFlameAction::Execute(Event event)
 }
 
 // Blood Queen Lana'thel
-bool IccBqlGroupPositionAction::Execute(Event event)
+bool IccBqlGroupPositionAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "blood-queen lana'thel");
     if (!boss)
@@ -4491,8 +4482,7 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
             // Maintain minimum distance from center position (if too close to center, move out)
             float centerX = ICC_BQL_CENTER_POSITION.GetPositionX();
             float centerY = ICC_BQL_CENTER_POSITION.GetPositionY();
-            float centerDist =
-                std::sqrt(std::pow(bot->GetPositionX() - centerX, 2) + std::pow(bot->GetPositionY() - centerY, 2));
+            float centerDist = bot->GetDistance2d(centerX, centerY);
             if (centerDist < MIN_CENTER_DISTANCE && !((boss->GetPositionZ() - bot->GetPositionZ()) > 5.0f))
             {
                 float dx = bot->GetPositionX() - centerX;
@@ -4601,7 +4591,7 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
     return false;
 }
 
-bool IccBqlPactOfDarkfallenAction::Execute(Event event)
+bool IccBqlPactOfDarkfallenAction::Execute(Event /*event*/)
 {
     // Check if bot has Pact of the Darkfallen
     if (!botAI->GetAura("Pact of the Darkfallen", bot))
@@ -4720,7 +4710,7 @@ bool IccBqlPactOfDarkfallenAction::MoveToTargetPosition(const Position& targetPo
     return false;
 }
 
-bool IccBqlVampiricBiteAction::Execute(Event event)
+bool IccBqlVampiricBiteAction::Execute(Event /*event*/)
 {
     // Only act when bot has Frenzied Bloodthirst
     if (!botAI->GetAura("Frenzied Bloodthirst", bot))
@@ -4857,7 +4847,7 @@ bool IccBqlVampiricBiteAction::CastVampiricBite(Player* target)
 }
 
 // Sister Svalna
-bool IccValkyreSpearAction::Execute(Event event)
+bool IccValkyreSpearAction::Execute(Event /*event*/)
 {
     // Find the nearest spear
     Creature* spear = bot->FindNearestCreature(NPC_SPEAR, 100.0f);
@@ -4883,7 +4873,7 @@ bool IccValkyreSpearAction::Execute(Event event)
     return false;
 }
 
-bool IccSisterSvalnaAction::Execute(Event event)
+bool IccSisterSvalnaAction::Execute(Event /*event*/)
 {
     Unit* svalna = AI_VALUE2(Unit*, "find target", "sister svalna");
     if (!svalna || !svalna->HasAura(SPELL_AETHER_SHIELD)) // Check for Aether Shield aura
@@ -4908,7 +4898,7 @@ bool IccSisterSvalnaAction::Execute(Event event)
 }
 
 // VDW
-bool IccValithriaGroupAction::Execute(Event event)
+bool IccValithriaGroupAction::Execute(Event /*event*/)
 {
     // Helper lambda to find nearest creature of given entries
     auto findNearestCreature = [this](std::initializer_list<uint32> entries, float range) -> Creature*
@@ -5318,7 +5308,7 @@ bool IccValithriaGroupAction::Handle10ManGroupLogic()
     return false;
 }
 
-bool IccValithriaPortalAction::Execute(Event event)
+bool IccValithriaPortalAction::Execute(Event /*event*/)
 {
     // Only healers should take portals, and not if already inside
     if (!botAI->IsHeal(bot) || bot->HasAura(SPELL_DREAM_STATE))
@@ -5451,7 +5441,7 @@ bool IccValithriaPortalAction::Execute(Event event)
     return false;
 }
 
-bool IccValithriaHealAction::Execute(Event event)
+bool IccValithriaHealAction::Execute(Event /*event*/)
 {
     // Early validation checks
     if (!botAI->IsHeal(bot) || bot->GetHealthPct() < 50.0f)
@@ -5541,7 +5531,7 @@ bool IccValithriaHealAction::Execute(Event event)
     return false;
 }
 
-bool IccValithriaDreamCloudAction::Execute(Event event)
+bool IccValithriaDreamCloudAction::Execute(Event /*event*/)
 {
     // Only execute if we're in dream state
     if (!bot->HasAura(SPELL_DREAM_STATE))
@@ -5824,7 +5814,7 @@ bool IccValithriaDreamCloudAction::Execute(Event event)
 }
 
 // Sindragosa
-bool IccSindragosaGroupPositionAction::Execute(Event event)
+bool IccSindragosaGroupPositionAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "sindragosa");
     if (!boss || boss->HasUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY))
@@ -6083,7 +6073,7 @@ bool IccSindragosaGroupPositionAction::MoveIncrementallyToPosition(const Positio
                   MovementPriority::MOVEMENT_COMBAT);
 }
 
-bool IccSindragosaTankSwapPositionAction::Execute(Event event)
+bool IccSindragosaTankSwapPositionAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "sindragosa");
     if (!boss)
@@ -6107,7 +6097,7 @@ bool IccSindragosaTankSwapPositionAction::Execute(Event event)
     return false;
 }
 
-bool IccSindragosaFrostBeaconAction::Execute(Event event)
+bool IccSindragosaFrostBeaconAction::Execute(Event /*event*/)
 {
     const Unit* boss = AI_VALUE2(Unit*, "find target", "sindragosa");
     if (!boss)
@@ -6341,7 +6331,7 @@ bool IccSindragosaFrostBeaconAction::IsBossFlying(const Unit* boss)
                                 ICC_SINDRAGOSA_FLYING_POSITION.GetPositionY()) < 30.0f;
 }
 
-bool IccSindragosaBlisteringColdAction::Execute(Event event)
+bool IccSindragosaBlisteringColdAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "sindragosa");
     if (!boss)
@@ -6389,7 +6379,7 @@ bool IccSindragosaBlisteringColdAction::Execute(Event event)
     return false;
 }
 
-bool IccSindragosaUnchainedMagicAction::Execute(Event event)
+bool IccSindragosaUnchainedMagicAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "sindragosa");
     if (!boss)
@@ -6411,7 +6401,7 @@ bool IccSindragosaUnchainedMagicAction::Execute(Event event)
     return false;
 }
 
-bool IccSindragosaChilledToTheBoneAction::Execute(Event event)
+bool IccSindragosaChilledToTheBoneAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "sindragosa");
     if (!boss)
@@ -6434,7 +6424,7 @@ bool IccSindragosaChilledToTheBoneAction::Execute(Event event)
     return false;
 }
 
-bool IccSindragosaMysticBuffetAction::Execute(Event event)
+bool IccSindragosaMysticBuffetAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "sindragosa");
     if (!boss || !bot || !bot->IsAlive())
@@ -6517,7 +6507,7 @@ bool IccSindragosaMysticBuffetAction::Execute(Event event)
     return false;
 }
 
-bool IccSindragosaFrostBombAction::Execute(Event event)
+bool IccSindragosaFrostBombAction::Execute(Event /*event*/)
 {
     if (!bot || !bot->IsAlive() || bot->HasAura(SPELL_ICE_TOMB))  // Skip if dead or in Ice Tomb
         return false;
@@ -6802,7 +6792,7 @@ bool IccSindragosaFrostBombAction::Execute(Event event)
 }
 
 // The Lich King
-bool IccLichKingShadowTrapAction::Execute(Event event)
+bool IccLichKingShadowTrapAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "the lich king");
     if (!boss || !botAI->IsTank(bot))
@@ -6908,7 +6898,7 @@ bool IccLichKingShadowTrapAction::Execute(Event event)
             Unit* trap = botAI->GetUnit(trapGuid);
             if (!trap)
                 continue;
-            float distToTrap = sqrt(pow(testX - trap->GetPositionX(), 2) + pow(testY - trap->GetPositionY(), 2));
+            float distToTrap = trap->GetDistance2d(testX, testY);
             if (distToTrap < SAFE_DISTANCE)
             {
                 isSafe = false;
@@ -6929,7 +6919,7 @@ bool IccLichKingShadowTrapAction::Execute(Event event)
     return false;
 }
 
-bool IccLichKingNecroticPlagueAction::Execute(Event event)
+bool IccLichKingNecroticPlagueAction::Execute(Event /*event*/)
 {
     bool hasPlague = botAI->HasAura("Necrotic Plague", bot);
     // Only execute if we have the plague
@@ -6981,7 +6971,7 @@ bool IccLichKingNecroticPlagueAction::Execute(Event event)
     return false;
 }
 
-bool IccLichKingWinterAction::Execute(Event event)
+bool IccLichKingWinterAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "the lich king");
     if (!boss)
@@ -7783,7 +7773,7 @@ void IccLichKingWinterAction::HandleAssistTankAddManagement(Unit* boss, const Po
     }
 }
 
-bool IccLichKingAddsAction::Execute(Event event)
+bool IccLichKingAddsAction::Execute(Event /*event*/)
 {
     if (bot->HasAura(SPELL_HARVEST_SOUL_VALKYR))  // Don't process actions if bot is picked up by Val'kyr
         return false;

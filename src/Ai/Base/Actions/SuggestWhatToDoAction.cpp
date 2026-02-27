@@ -7,25 +7,19 @@
 
 #include "SuggestWhatToDoAction.h"
 #include "ServerFacade.h"
-#include "ChannelMgr.h"
 #include "Event.h"
 #include "ItemVisitors.h"
 #include "AiFactory.h"
 #include "ChatHelper.h"
 #include "Playerbots.h"
-#include "PlayerbotTextMgr.h"
-#include "Config.h"
 #include "BroadcastHelper.h"
 #include "AiFactory.h"
-#include "ChannelMgr.h"
 #include "ChatHelper.h"
-#include "Config.h"
 #include "Event.h"
-#include "GuildMgr.h"
 #include "ItemVisitors.h"
-#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
+#include "Channel.h"
 
 enum eTalkType
 {
@@ -62,7 +56,7 @@ bool SuggestWhatToDoAction::isUseful()
     return (time(0) - lastSaid) > 30;
 }
 
-bool SuggestWhatToDoAction::Execute(Event event)
+bool SuggestWhatToDoAction::Execute(Event /*event*/)
 {
     uint32 index = rand() % suggestions.size();
     auto fnct_ptr = suggestions[index];
@@ -258,7 +252,7 @@ private:
 
 SuggestDungeonAction::SuggestDungeonAction(PlayerbotAI* botAI) : SuggestWhatToDoAction(botAI, "suggest dungeon") {}
 
-bool SuggestDungeonAction::Execute(Event event)
+bool SuggestDungeonAction::Execute(Event /*event*/)
 {
     // TODO: use PlayerbotDungeonRepository::instance()
 
@@ -325,7 +319,7 @@ bool SuggestDungeonAction::Execute(Event event)
 
 SuggestTradeAction::SuggestTradeAction(PlayerbotAI* botAI) : SuggestWhatToDoAction(botAI, "suggest trade") {}
 
-bool SuggestTradeAction::Execute(Event event)
+bool SuggestTradeAction::Execute(Event /*event*/)
 {
     uint32 quality = urand(0, 100);
     if (quality > 95)

@@ -5,7 +5,7 @@
 
 #include "ItemCountValue.h"
 
-#include "Playerbots.h"
+#include "PlayerbotAI.h"
 
 std::vector<Item*> InventoryItemValueBase::Find(std::string const qualifier)
 {
@@ -25,9 +25,7 @@ uint32 ItemCountValue::Calculate()
     uint32 count = 0;
     std::vector<Item*> items = Find(qualifier);
     for (Item* item : items)
-    {
         count += item->GetCount();
-    }
 
     return count;
 }

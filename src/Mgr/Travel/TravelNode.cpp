@@ -81,7 +81,7 @@ void TravelNodePath::calculateCost(bool distanceOnly)
             }
         }
 
-        if (lastPoint && point.getMapId() == lastPoint.getMapId())
+        if (lastPoint && point.GetMapId() == lastPoint.GetMapId())
         {
             if (!distanceOnly && (point.isInWater() || lastPoint.isInWater()))
                 swimDistance += point.distance(lastPoint);
@@ -364,7 +364,7 @@ std::vector<TravelNode*> TravelNode::getNodeMap(bool importantOnly, std::vector<
         }
     }
 
-    return std::move(closeList);
+    return closeList;
 }
 
 bool TravelNode::isUselessLink(TravelNode* farNode)
@@ -687,7 +687,7 @@ bool TravelPath::makeShortCut(WorldPosition startPos, float maxDist)
         // if (p.point.getMapId() != startPos.getMapId())
         //    continue;
 
-        if (p.point.getMapId() == startPos.getMapId())
+        if (p.point.GetMapId() == startPos.GetMapId())
         {
             float curDist = p.point.sqDistance(startPos);
 
@@ -722,7 +722,7 @@ bool TravelPath::makeShortCut(WorldPosition startPos, float maxDist)
         newPath.push_back(p);
     }
 
-    if (newPath.empty() || minDist > maxDistSq || newPath.front().point.getMapId() != startPos.getMapId())
+    if (newPath.empty() || minDist > maxDistSq || newPath.front().point.GetMapId() != startPos.GetMapId())
     {
         clear();
         return false;
@@ -800,7 +800,7 @@ bool TravelPath::shouldMoveToNextPoint(WorldPosition startPos, std::vector<PathN
 
     float nextMove = p->point.distance(nextP->point);
 
-    if (p->point.getMapId() != startPos.getMapId() ||
+    if (p->point.GetMapId() != startPos.GetMapId() ||
         ((moveDist + nextMove > maxDist || startPos.distance(nextP->point) > maxDist) && moveDist > 0))
     {
         return false;
@@ -827,7 +827,7 @@ WorldPosition TravelPath::getNextPoint(WorldPosition startPos, float maxDist, Tr
     // Get the closest point on the path to start from.
     for (auto p = startP; p != ed; p++)
     {
-        if (p->point.getMapId() != startPos.getMapId())
+        if (p->point.GetMapId() != startPos.GetMapId())
             continue;
 
         float curDist = p->point.distance(startPos);
@@ -1126,7 +1126,7 @@ std::vector<TravelNode*> TravelNodeMap::getNodes(WorldPosition pos, float range)
 
     for (auto& node : m_nodes)
     {
-        if (node->getMapId() == pos.getMapId())
+        if (node->getMapId() == pos.GetMapId())
             if (range == -1 || node->getDistance(pos) <= range)
                 retVec.push_back(node);
     }
@@ -1135,7 +1135,7 @@ std::vector<TravelNode*> TravelNodeMap::getNodes(WorldPosition pos, float range)
               [pos](TravelNode* i, TravelNode* j)
               { return i->getPosition()->distance(pos) < j->getPosition()->distance(pos); });
 
-    return std::move(retVec);
+    return retVec;
 }
 
 TravelNode* TravelNodeMap::getNode(WorldPosition pos, [[maybe_unused]] std::vector<WorldPosition>& ppath, Unit* bot,
@@ -1787,8 +1787,9 @@ void TravelNodeMap::generateTransportNodes()
                             float dy = -1 * p.second->Y;
 
                             WorldPosition pos =
-                                WorldPosition(basePos.getMapId(), basePos.getX() + dx, basePos.getY() + dy,
-                                              basePos.getZ() + p.second->Z, basePos.getO());
+                                WorldPosition(basePos.GetMapId(), basePos.GetPositionX() + dx,
+                                              basePos.GetPositionY() + dy, basePos.GetPositionZ() + p.second->Z,
+                                              basePos.GetOrientation());
 
                             if (prevNode)
                             {
@@ -1830,8 +1831,9 @@ void TravelNodeMap::generateTransportNodes()
                                 float dx = -1 * p.second->X;
                                 float dy = -1 * p.second->Y;
                                 WorldPosition pos =
-                                    WorldPosition(basePos.getMapId(), basePos.getX() + dx, basePos.getY() + dy,
-                                                  basePos.getZ() + p.second->Z, basePos.getO());
+                                    WorldPosition(basePos.GetMapId(), basePos.GetPositionX() + dx,
+                                                  basePos.GetPositionY() + dy, basePos.GetPositionZ() + p.second->Z,
+                                                  basePos.GetOrientation());
 
                                 ppath.push_back(pos);
 
@@ -2356,10 +2358,10 @@ void TravelNodeMap::saveNodeStore()
                     stmt->SetData(0, i);
                     stmt->SetData(1, saveNodes.find(link.first)->second);
                     stmt->SetData(2, j);
-                    stmt->SetData(3, point.getMapId());
-                    stmt->SetData(4, point.getX());
-                    stmt->SetData(5, point.getY());
-                    stmt->SetData(6, point.getZ());
+                    stmt->SetData(3, point.GetMapId());
+                    stmt->SetData(4, point.GetPositionX());
+                    stmt->SetData(5, point.GetPositionY());
+                    stmt->SetData(6, point.GetPositionZ());
                     trans->Append(stmt);
 
                     points++;
@@ -2516,10 +2518,10 @@ void TravelNodeMap::calcMapOffset()
             }
             else
             {
-                min.back().setX(std::min(min.back().getX(), node->getX()));
-                min.back().setY(std::min(min.back().getY(), node->getY()));
-                max.back().setX(std::max(max.back().getX(), node->getX()));
-                max.back().setY(std::max(max.back().getY(), node->getY()));
+                min.back().setX(std::min(min.back().GetPositionX(), node->getX()));
+                min.back().setY(std::min(min.back().GetPositionY(), node->getY()));
+                max.back().setX(std::max(max.back().GetPositionX(), node->getX()));
+                max.back().setY(std::max(max.back().GetPositionY(), node->getY()));
             }
         }
     }
@@ -2533,14 +2535,15 @@ void TravelNodeMap::calcMapOffset()
     for (auto& mapId : mapIds)
     {
         mapOffsets.push_back(std::make_pair(
-            mapId, WorldPosition(mapId, curPos.getX() - min[i].getX(), curPos.getY() - max[i].getY(), 0, 0)));
+            mapId, WorldPosition(mapId, curPos.GetPositionX() - min[i].GetPositionX(),
+                                 curPos.GetPositionY() - max[i].GetPositionY(), 0, 0)));
 
-        maxY = std::max(maxY, (max[i].getY() - min[i].getY() + 500));
-        curPos.setX(curPos.getX() + (max[i].getX() - min[i].getX() + 500));
+        maxY = std::max(maxY, (max[i].GetPositionY() - min[i].GetPositionY() + 500));
+        curPos.setX(curPos.GetPositionX() + (max[i].GetPositionX() - min[i].GetPositionX() + 500));
 
-        if (curPos.getX() > endPos.getX())
+        if (curPos.GetPositionX() > endPos.GetPositionX())
         {
-            curPos.setY(curPos.getY() - maxY);
+            curPos.setY(curPos.GetPositionY() - maxY);
             curPos.setX(-13000);
         }
 

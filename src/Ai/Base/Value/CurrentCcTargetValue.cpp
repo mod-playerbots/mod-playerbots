@@ -4,8 +4,7 @@
  */
 
 #include "CurrentCcTargetValue.h"
-
-#include "Playerbots.h"
+#include "PlayerbotAI.h"
 
 class FindCurrentCcTargetStrategy : public FindTargetStrategy
 {

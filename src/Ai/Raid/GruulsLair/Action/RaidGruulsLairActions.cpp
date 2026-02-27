@@ -10,7 +10,7 @@ using namespace GruulsLairHelpers;
 // High King Maulgar Actions
 
 // Main tank on Maulgar
-bool HighKingMaulgarMainTankAttackMaulgarAction::Execute(Event event)
+bool HighKingMaulgarMainTankAttackMaulgarAction::Execute(Event /*event*/)
 {
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
     if (!maulgar)
@@ -44,7 +44,7 @@ bool HighKingMaulgarMainTankAttackMaulgarAction::Execute(Event event)
 }
 
 // First offtank on Olm
-bool HighKingMaulgarFirstAssistTankAttackOlmAction::Execute(Event event)
+bool HighKingMaulgarFirstAssistTankAttackOlmAction::Execute(Event /*event*/)
 {
     Unit* olm = AI_VALUE2(Unit*, "find target", "olm the summoner");
     if (!olm)
@@ -79,7 +79,7 @@ bool HighKingMaulgarFirstAssistTankAttackOlmAction::Execute(Event event)
 }
 
 // Second offtank on Blindeye
-bool HighKingMaulgarSecondAssistTankAttackBlindeyeAction::Execute(Event event)
+bool HighKingMaulgarSecondAssistTankAttackBlindeyeAction::Execute(Event /*event*/)
 {
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
     if (!blindeye)
@@ -113,7 +113,7 @@ bool HighKingMaulgarSecondAssistTankAttackBlindeyeAction::Execute(Event event)
 }
 
 // Mage with highest max HP on Krosh
-bool HighKingMaulgarMageTankAttackKroshAction::Execute(Event event)
+bool HighKingMaulgarMageTankAttackKroshAction::Execute(Event /*event*/)
 {
     Unit* krosh = AI_VALUE2(Unit*, "find target", "krosh firehand");
     if (!krosh)
@@ -166,7 +166,7 @@ bool HighKingMaulgarMageTankAttackKroshAction::Execute(Event event)
 }
 
 // Moonkin with highest max HP on Kiggler
-bool HighKingMaulgarMoonkinTankAttackKigglerAction::Execute(Event event)
+bool HighKingMaulgarMoonkinTankAttackKigglerAction::Execute(Event /*event*/)
 {
     Unit* kiggler = AI_VALUE2(Unit*, "find target", "kiggler the crazed");
     if (!kiggler)
@@ -188,7 +188,7 @@ bool HighKingMaulgarMoonkinTankAttackKigglerAction::Execute(Event event)
     return false;
 }
 
-bool HighKingMaulgarAssignDPSPriorityAction::Execute(Event event)
+bool HighKingMaulgarAssignDPSPriorityAction::Execute(Event /*event*/)
 {
     // Target priority 1: Blindeye
     Unit* blindeye = AI_VALUE2(Unit*, "find target", "blindeye the seer");
@@ -297,7 +297,7 @@ bool HighKingMaulgarAssignDPSPriorityAction::Execute(Event event)
 }
 
 // Avoid Whirlwind and Blast Wave and generally try to stay near the center of the room
-bool HighKingMaulgarHealerFindSafePositionAction::Execute(Event event)
+bool HighKingMaulgarHealerFindSafePositionAction::Execute(Event /*event*/)
 {
     const Position& center = MAULGAR_ROOM_CENTER;
     const float maxDistanceFromCenter = 50.0f;
@@ -331,7 +331,7 @@ bool HighKingMaulgarHealerFindSafePositionAction::Execute(Event event)
 }
 
 // Run away from Maulgar during Whirlwind (logic for after all other ogres are dead)
-bool HighKingMaulgarRunAwayFromWhirlwindAction::Execute(Event event)
+bool HighKingMaulgarRunAwayFromWhirlwindAction::Execute(Event /*event*/)
 {
     Unit* maulgar = AI_VALUE2(Unit*, "find target", "high king maulgar");
     if (!maulgar)
@@ -366,7 +366,7 @@ bool HighKingMaulgarRunAwayFromWhirlwindAction::Execute(Event event)
     return false;
 }
 
-bool HighKingMaulgarBanishFelstalkerAction::Execute(Event event)
+bool HighKingMaulgarBanishFelstalkerAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -411,7 +411,7 @@ bool HighKingMaulgarBanishFelstalkerAction::Execute(Event event)
 
 // Hunter 1: Misdirect Olm to first offtank and have pet attack Blindeye
 // Hunter 2: Misdirect Blindeye to second offtank
-bool HighKingMaulgarMisdirectOlmAndBlindeyeAction::Execute(Event event)
+bool HighKingMaulgarMisdirectOlmAndBlindeyeAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -491,7 +491,7 @@ bool HighKingMaulgarMisdirectOlmAndBlindeyeAction::Execute(Event event)
 // Gruul the Dragonkiller Actions
 
 // Position in center of the room
-bool GruulTheDragonkillerTanksPositionBossAction::Execute(Event event)
+bool GruulTheDragonkillerTanksPositionBossAction::Execute(Event /*event*/)
 {
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
     if (!gruul)
@@ -525,7 +525,7 @@ bool GruulTheDragonkillerTanksPositionBossAction::Execute(Event event)
 
 // Ranged will take initial positions around the middle of the room, 25-40 yards from center
 // Ranged should spread out 10 yards from each other
-bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
+bool GruulTheDragonkillerSpreadRangedAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -618,7 +618,7 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event event)
 }
 
 // Try to get away from other group members when Ground Slam is cast
-bool GruulTheDragonkillerShatterSpreadAction::Execute(Event event)
+bool GruulTheDragonkillerShatterSpreadAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)

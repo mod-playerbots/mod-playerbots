@@ -10,9 +10,7 @@
 #include "GenericTriggers.h"
 #include "SharedDefines.h"
 #include "Trigger.h"
-#include <set>
 #include "TotemsShamanStrategy.h"
-#include "Player.h"
 #include "PlayerbotAI.h"
 #include <ctime>
 

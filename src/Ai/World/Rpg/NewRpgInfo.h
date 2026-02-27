@@ -13,7 +13,8 @@ using NewRpgStatusTransitionProb = std::vector<std::vector<int>>;
 
 struct NewRpgInfo
 {
-    NewRpgInfo() {}
+    NewRpgInfo() : data(Idle{}) {}
+    ~NewRpgInfo() = default;
 
     // RPG_GO_GRIND
     struct GoGrind
@@ -61,7 +62,6 @@ struct NewRpgInfo
     struct Idle
     {
     };
-    NewRpgStatus status{RPG_IDLE};
 
     uint32 startT{0};  // start timestamp of the current status
 
@@ -72,18 +72,19 @@ struct NewRpgInfo
     WorldPosition moveFarPos;
     // END MOVE_FAR
 
-    union
-    {
-        GoGrind go_grind;
-        GoCamp go_camp;
-        WanderNpc wander_npc;
-        WanderRandom WANDER_RANDOM;
-        DoQuest do_quest;
-        Rest rest;
-        DoQuest quest;
-        TravelFlight flight;
-    };
+    using RpgData = std::variant<
+        Idle,
+        GoGrind,
+        GoCamp,
+        WanderNpc,
+        WanderRandom,
+        DoQuest,
+        Rest,
+        TravelFlight
+    >;
+    RpgData data;
 
+    NewRpgStatus GetStatus();
     bool HasStatusPersisted(uint32 maxDuration) { return GetMSTimeDiffToNow(startT) > maxDuration; }
     void ChangeToGoGrind(WorldPosition pos);
     void ChangeToGoCamp(WorldPosition pos);
@@ -126,8 +127,5 @@ struct NewRpgStatistic
         return *this;
     }
 };
-
-// not sure is it necessary but keep it for now
-#define RPG_INFO(x, y) botAI->rpgInfo.x.y
 
 #endif

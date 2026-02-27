@@ -6,6 +6,7 @@
 #ifndef _PLAYERBOT_STRATEGYCONTEXT_H
 #define _PLAYERBOT_STRATEGYCONTEXT_H
 
+#include "AggressiveStrategy.h"
 #include "AttackEnemyPlayersStrategy.h"
 #include "BattlegroundStrategy.h"
 #include "CastTimeStrategy.h"
@@ -61,6 +62,7 @@ public:
         creators["gather"] = &StrategyContext::gather;
         creators["emote"] = &StrategyContext::emote;
         creators["passive"] = &StrategyContext::passive;
+        creators["aggressive"] = &StrategyContext::aggressive;
         creators["save mana"] = &StrategyContext::auto_save_mana;
         creators["food"] = &StrategyContext::food;
         creators["chat"] = &StrategyContext::chat;
@@ -144,6 +146,7 @@ private:
     static Strategy* gather(PlayerbotAI* botAI) { return new GatherStrategy(botAI); }
     static Strategy* emote(PlayerbotAI* botAI) { return new EmoteStrategy(botAI); }
     static Strategy* passive(PlayerbotAI* botAI) { return new PassiveStrategy(botAI); }
+    static Strategy* aggressive(PlayerbotAI* botAI) { return new AggressiveStrategy(botAI); }
     // static Strategy* conserve_mana(PlayerbotAI* botAI) { return new ConserveManaStrategy(botAI); }
     static Strategy* auto_save_mana(PlayerbotAI* botAI) { return new HealerAutoSaveManaStrategy(botAI); }
     static Strategy* food(PlayerbotAI* botAI) { return new UseFoodStrategy(botAI); }

@@ -1,9 +1,8 @@
 #include "RaidAq20Actions.h"
 
-#include "Playerbots.h"
 #include "RaidAq20Utils.h"
 
-bool Aq20UseCrystalAction::Execute(Event event)
+bool Aq20UseCrystalAction::Execute(Event /*event*/)
 {
     if (Unit* boss = AI_VALUE2(Unit*, "find target", "ossirian the unscarred"))
     {

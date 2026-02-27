@@ -8,13 +8,10 @@
 #include "AiFactory.h"
 #include "Event.h"
 #include "PlayerbotAI.h"
-#include "PlayerbotAIConfig.h"
-#include "PlayerbotFactory.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
 #include "../../../../../src/server/scripts/Spells/spell_generic.cpp"
 #include "GenericBuffUtils.h"
-#include "Config.h"
 #include "Group.h"
 #include "ObjectAccessor.h"
 
@@ -167,7 +164,7 @@ Value<Unit*>* CastBlessingOnPartyAction::GetTargetValue()
     return context->GetValue<Unit*>("party member without aura", MakeAuraQualifierForBuff(spell));
 }
 
-bool CastBlessingOfMightAction::Execute(Event event)
+bool CastBlessingOfMightAction::Execute(Event /*event*/)
 {
     Unit* target = GetTarget();
     if (!target)
@@ -188,7 +185,7 @@ Value<Unit*>* CastBlessingOfMightOnPartyAction::GetTargetValue()
     );
 }
 
-bool CastBlessingOfMightOnPartyAction::Execute(Event event)
+bool CastBlessingOfMightOnPartyAction::Execute(Event /*event*/)
 {
     Unit* target = GetTarget();
     if (!target)
@@ -201,7 +198,7 @@ bool CastBlessingOfMightOnPartyAction::Execute(Event event)
     return botAI->CastSpell(castName, target);
 }
 
-bool CastBlessingOfWisdomAction::Execute(Event event)
+bool CastBlessingOfWisdomAction::Execute(Event /*event*/)
 {
     Unit* target = GetTarget();
     if (!target)
@@ -222,7 +219,7 @@ Value<Unit*>* CastBlessingOfWisdomOnPartyAction::GetTargetValue()
     );
 }
 
-bool CastBlessingOfWisdomOnPartyAction::Execute(Event event)
+bool CastBlessingOfWisdomOnPartyAction::Execute(Event /*event*/)
 {
     Unit* target = GetTarget();
     if (!target)
@@ -258,7 +255,7 @@ Value<Unit*>* CastBlessingOfSanctuaryOnPartyAction::GetTargetValue()
     );
 }
 
-bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event event)
+bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event /*event*/)
 {
     if (!bot->HasSpell(SPELL_BLESSING_OF_SANCTUARY))
         return false;
@@ -382,7 +379,7 @@ Value<Unit*>* CastBlessingOfKingsOnPartyAction::GetTargetValue()
     );
 }
 
-bool CastBlessingOfKingsOnPartyAction::Execute(Event event)
+bool CastBlessingOfKingsOnPartyAction::Execute(Event /*event*/)
 {
     Unit* target = GetTarget();
     if (!target)
@@ -493,7 +490,7 @@ bool CastDivineSacrificeAction::isUseful()
            !botAI->HasAura("divine guardian", GetTarget(), false, false, -1, true);
 }
 
-bool CastCancelDivineSacrificeAction::Execute(Event event)
+bool CastCancelDivineSacrificeAction::Execute(Event /*event*/)
 {
     botAI->RemoveAura("divine sacrifice");
     return true;
