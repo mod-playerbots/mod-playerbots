@@ -30,6 +30,11 @@ bool AttackEnemyFlagCarrierAction::isUseful()
            PlayerHasFlag::IsCapturingFlag(bot);
 }
 
+bool AggressiveTargetAction::isUseful()
+{
+    return !this->bot->IsInCombat();
+}
+
 bool AttackAnythingAction::isUseful()
 {
     if (!bot || !botAI)  // Prevents invalid accesses
