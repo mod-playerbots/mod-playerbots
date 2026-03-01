@@ -423,12 +423,12 @@ public:
     static bool IsRangedDps(Player* player, bool bySpec = false);
     static bool IsCombo(Player* player);
     static bool IsBotMainTank(Player* player);
-    static bool IsMainTank(Player* player);
+    static bool IsMainTank(Player* player, bool ignoreMemberFlag = false);
     static uint32 GetGroupTankNum(Player* player);
     static bool IsAssistTank(Player* player);
-    static bool IsAssistTankOfIndex(Player* player, int index, bool ignoreDeadPlayers = false);
-    static bool IsAssistHealOfIndex(Player* player, int index, bool ignoreDeadPlayers = false);
-    static bool IsAssistRangedDpsOfIndex(Player* player, int index, bool ignoreDeadPlayers = false);
+    static bool IsAssistTankOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers = false);
+    static bool IsAssistHealOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers = false);
+    static bool IsAssistRangedDpsOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers = false);
     bool HasAggro(Unit* unit);
     static int32 GetAssistTankIndex(Player* player);
     int32 GetGroupSlotIndex(Player* player);

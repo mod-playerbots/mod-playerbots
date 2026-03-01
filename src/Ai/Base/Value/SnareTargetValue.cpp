@@ -14,7 +14,6 @@ Unit* SnareTargetValue::Calculate()
     std::string const spell = qualifier;
 
     GuidVector attackers = botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get();
-    Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
     for (ObjectGuid const guid : attackers)
     {
         Unit* unit = botAI->GetUnit(guid);

@@ -66,7 +66,8 @@ bool SetCraftAction::Execute(Event event)
         if (!spellInfo)
             continue;
 
-        if (SkillLineAbilityEntry const* skillLine = skillSpells[spellId])
+        SkillLineAbilityEntry const* skillLine = skillSpells[spellId];
+        if (skillLine != nullptr)
         {
             for (uint8 i = 0; i < 3; ++i)
             {

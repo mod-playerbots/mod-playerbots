@@ -994,7 +994,7 @@ void RandomPlayerbotMgr::CheckBgQueue()
 
             // Arena logic
             bool isRated = false;
-            if (uint8 arenaType = BattlegroundMgr::BGArenaType(queueTypeId))
+            if (BattlegroundMgr::BGArenaType(queueTypeId))
             {
                 BattlegroundQueue& bgQueue = sBattlegroundMgr->GetBattlegroundQueue(queueTypeId);
                 GroupQueueInfo ginfo;
@@ -1081,7 +1081,7 @@ void RandomPlayerbotMgr::CheckBgQueue()
             BattlegroundData[queueTypeId][bracketId].minLevel = pvpDiff->minLevel;
             BattlegroundData[queueTypeId][bracketId].maxLevel = pvpDiff->maxLevel;
 
-            if (uint8 arenaType = BattlegroundMgr::BGArenaType(queueTypeId))
+            if (BattlegroundMgr::BGArenaType(queueTypeId))
             {
                 bool isRated = false;
                 BattlegroundQueue& bgQueue = sBattlegroundMgr->GetBattlegroundQueue(queueTypeId);
@@ -1986,13 +1986,9 @@ void RandomPlayerbotMgr::PrepareTeleportCache()
                 for (int i = bracket.low; i <= bracket.high; i++)
                 {
                     if (forHorde)
-                    {
                         hordeStarterPerLevelCache[i].push_back(loc);
-                    }
                     if (forAlliance)
-                    {
                         allianceStarterPerLevelCache[i].push_back(loc);
-                    }
                 }
 
             } while (results->NextRow());
@@ -3146,10 +3142,10 @@ void RandomPlayerbotMgr::PrintStats()
     uint32 heal = 0;
     uint32 tank = 0;
     uint32 active = 0;
-    uint32 update = 0;
+/*    uint32 update = 0;
     uint32 randomize = 0;
     uint32 teleport = 0;
-    uint32 changeStrategy = 0;
+    uint32 changeStrategy = 0;*/
     uint32 dead = 0;
     uint32 combat = 0;
     // uint32 revive = 0; //not used, line marked for removal.
@@ -3189,7 +3185,7 @@ void RandomPlayerbotMgr::PrintStats()
 
         if (botAI->AllowActivity())
             ++active;
-
+        /* TODO: Review statistics on rpg merge
         if (botAI->GetAiObjectContext()->GetValue<bool>("random bot update")->Get())
             ++update;
 
@@ -3202,7 +3198,7 @@ void RandomPlayerbotMgr::PrintStats()
 
         if (!GetEventValue(botId, "change_strategy"))
             ++changeStrategy;
-
+        */
         if (bot->isDead())
         {
             ++dead;

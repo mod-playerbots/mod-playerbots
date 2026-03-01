@@ -47,7 +47,6 @@ bool StayAction::isUseful()
     PositionInfo stayPosition = AI_VALUE(PositionMap&, "position")["stay"];
     if (stayPosition.isSet())
     {
-        const float distance = bot->GetDistance(stayPosition.x, stayPosition.y, stayPosition.z);
         if (sPlayerbotAIConfig.followDistance)
             return false;
     }

@@ -8,9 +8,6 @@ bool SartharionTankPositionAction::Execute(Event /*event*/)
     Unit* boss = AI_VALUE2(Unit*, "find target", "sartharion");
     if (!boss) { return false; }
 
-    // Unit* shadron = AI_VALUE2(Unit*, "find target", "shadron");
-    // Unit* tenebron = AI_VALUE2(Unit*, "find target", "tenebron");
-    // Unit* vesperon = AI_VALUE2(Unit*, "find target", "vesperon");
     Unit* shadron = nullptr;
     Unit* tenebron = nullptr;
     Unit* vesperon = nullptr;
@@ -96,9 +93,7 @@ bool AvoidTwilightFissureAction::Execute(Event /*event*/)
         {
             float currentDistance = bot->GetDistance2d(unit);
             if (currentDistance < radius)
-            {
                 return MoveAway(unit, radius - currentDistance);
-            }
         }
     }
     return false;
@@ -127,39 +122,29 @@ bool AvoidFlameTsunamiAction::Execute(Event /*event*/)
             {
                 bool wavePassed = currentPos.GetPositionX() > unit->GetPositionX();
                 if (wavePassed)
-                {
                     return false;
-                }
 
                 if (bot->GetExactDist2d(currentPos.GetPositionX(), TSUNAMI_RIGHT_SAFE_ALL) > looseDistance)
-                {
                     return MoveTo(OS_MAP_ID, currentPos.GetPositionX(), TSUNAMI_RIGHT_SAFE_ALL, currentPos.GetPositionZ(),
                         false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
-                }
             }
             else    // LEFT WAVE
             {
                 bool wavePassed = currentPos.GetPositionX() < unit->GetPositionX();
                 if (wavePassed)
-                {
                     return false;
-                }
 
                 if (botAI->IsMelee(bot))
                 {
                     if (bot->GetExactDist2d(currentPos.GetPositionX(), TSUNAMI_LEFT_SAFE_MELEE) > looseDistance)
-                    {
                         return MoveTo(OS_MAP_ID, currentPos.GetPositionX(), TSUNAMI_LEFT_SAFE_MELEE, currentPos.GetPositionZ(),
                             false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
-                    }
                 }
                 else    // Ranged/healers
                 {
                     if (bot->GetExactDist2d(currentPos.GetPositionX(), TSUNAMI_LEFT_SAFE_RANGED) > looseDistance)
-                    {
                         return MoveTo(OS_MAP_ID, currentPos.GetPositionX(), TSUNAMI_LEFT_SAFE_RANGED, currentPos.GetPositionZ(),
                             false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
-                    }
                 }
             }
         }
@@ -178,30 +163,18 @@ bool SartharionAttackPriorityAction::Execute(Event /*event*/)
     Unit* target = nullptr;
 
     if (acolyte)
-    {
         target = acolyte;
-    }
     else if (vesperon)
-    {
         target = vesperon;
-    }
     else if (tenebron)
-    {
         target = tenebron;
-    }
     else if (shadron)
-    {
         target = shadron;
-    }
     else if (sartharion)
-    {
         target = sartharion;
-    }
 
     if (target && AI_VALUE(Unit*, "current target") != target)
-    {
         return Attack(target);
-    }
 
     return false;
 }
@@ -215,9 +188,7 @@ bool EnterTwilightPortalAction::Execute(Event /*event*/)
     if (!portal) { return false; }
 
     if (!portal->IsAtInteractDistance(bot))
-    {
         return MoveTo(portal, fmaxf(portal->GetInteractionDistance() - 1.0f, 0.0f));
-    }
 
     // Go through portal
     WorldPacket data1(CMSG_GAMEOBJ_USE);
@@ -230,12 +201,11 @@ bool EnterTwilightPortalAction::Execute(Event /*event*/)
 bool ExitTwilightPortalAction::Execute(Event /*event*/)
 {
     GameObject* portal = bot->FindNearestGameObject(GO_NORMAL_PORTAL, 100.0f);
-    if (!portal) { return false; }
+    if (!portal)
+        return false;
 
     if (!portal->IsAtInteractDistance(bot))
-    {
         return MoveTo(portal, fmaxf(portal->GetInteractionDistance() - 1.0f, 0.0f));
-    }
 
     // Go through portal
     WorldPacket data1(CMSG_GAMEOBJ_USE);

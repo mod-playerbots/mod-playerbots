@@ -17,7 +17,6 @@
 bool BuyPetitionAction::Execute(Event /*event*/)
 {
     GuidVector vendors = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-    bool vendored = false, result = false;
     for (GuidVector::iterator i = vendors.begin(); i != vendors.end(); ++i)
     {
         ObjectGuid vendorguid = *i;
@@ -97,7 +96,6 @@ bool BuyPetitionAction::canBuyPetition(Player* bot)
 
 bool PetitionOfferAction::Execute(Event event)
 {
-    uint32 petitionEntry = 5863;  // GUILD_CHARTER
     std::vector<Item*> petitions = AI_VALUE2(std::vector<Item*>, "inventory items", chat->FormatQItem(5863));
 
     if (petitions.empty())
@@ -212,7 +210,6 @@ bool PetitionOfferNearbyAction::isUseful()
 bool PetitionTurnInAction::Execute(Event /*event*/)
 {
     GuidVector vendors = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-    bool vendored = false, result = false;
     std::vector<Item*> petitions = AI_VALUE2(std::vector<Item*>, "inventory items", chat->FormatQItem(5863));
 
     if (petitions.empty())

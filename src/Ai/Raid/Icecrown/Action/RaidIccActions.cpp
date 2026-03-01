@@ -1034,8 +1034,6 @@ bool IccDbsTankPositionAction::CrowdControlBloodBeasts()
                                                        NPC_BLOOD_BEAST4};
     const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
 
-    bool appliedCC = false;
-
     for (auto const& npc : npcs)
     {
         Unit* unit = botAI->GetUnit(npc);
@@ -1054,73 +1052,43 @@ bool IccDbsTankPositionAction::CrowdControlBloodBeasts()
         {
             case CLASS_MAGE:
                 if (!botAI->HasAura("Frost Nova", unit))
-                {
                     botAI->CastSpell("Frost Nova", unit);
-                    appliedCC = true;
-                }
                 break;
             case CLASS_DRUID:
                 if (!botAI->HasAura("Entangling Roots", unit))
-                {
                     botAI->CastSpell("Entangling Roots", unit);
-                    appliedCC = true;
-                }
                 break;
             case CLASS_PALADIN:
                 if (!botAI->HasAura("Hammer of Justice", unit))
-                {
                     botAI->CastSpell("Hammer of Justice", unit);
-                    appliedCC = true;
-                }
                 break;
             case CLASS_WARRIOR:
                 if (!botAI->HasAura("Hamstring", unit))
-                {
                     botAI->CastSpell("Hamstring", unit);
-                    appliedCC = true;
-                }
                 break;
             case CLASS_HUNTER:
                 if (!botAI->HasAura("Concussive Shot", unit))
-                {
                     botAI->CastSpell("Concussive Shot", unit);
-                    appliedCC = true;
-                }
                 break;
             case CLASS_ROGUE:
                 if (!botAI->HasAura("Kidney Shot", unit))
-                {
                     botAI->CastSpell("Kidney Shot", unit);
-                    appliedCC = true;
-                }
                 break;
             case CLASS_SHAMAN:
                 if (!botAI->HasAura("Frost Shock", unit))
-                {
                     botAI->CastSpell("Frost Shock", unit);
-                    appliedCC = true;
-                }
                 break;
             case CLASS_DEATH_KNIGHT:
                 if (!botAI->HasAura("Chains of Ice", unit))
-                {
                     botAI->CastSpell("Chains of Ice", unit);
-                    appliedCC = true;
-                }
                 break;
             case CLASS_PRIEST:
                 if (!botAI->HasAura("Psychic Scream", unit))
-                {
                     botAI->CastSpell("Psychic Scream", unit);
-                    appliedCC = true;
-                }
                 break;
             case CLASS_WARLOCK:
                 if (!botAI->HasAura("Fear", unit))
-                {
                     botAI->CastSpell("Fear", unit);
-                    appliedCC = true;
-                }
                 break;
             default:
                 break;
@@ -1464,7 +1432,6 @@ int IccFestergutGroupPositionAction::CalculatePositionIndex(Group* group)
             else
             {
                 // Fill remaining spots in second row
-                int spotsInFirstRow = 6;
                 int spotsInSecondRow = healerSpotsUsed - 6;
                 int remainingInSecondRow = 6 - spotsInSecondRow;
 
@@ -1511,7 +1478,6 @@ int IccFestergutGroupPositionAction::CalculatePositionIndex(Group* group)
 bool IccFestergutSporeAction::Execute(Event /*event*/)
 {
     constexpr float POSITION_TOLERANCE = 4.0f;
-    constexpr float SPREAD_RADIUS = 2.0f;
 
     // Check if bot has spore
     bool hasSpore = bot->HasAura(SPELL_GAS_SPORE);  // gas spore
@@ -1661,7 +1627,7 @@ bool IccRotfaceTankPositionAction::PositionMainTankAndMelee(Unit* boss)
 {
     bool isBossCasting = false;
     if (boss && boss->HasUnitState(UNIT_STATE_CASTING) && boss->GetCurrentSpell(SPELL_SLIME_SPRAY))
-        bool isBossCasting = true;
+        isBossCasting = true;
 
     if (bot->GetExactDist2d(ICC_ROTFACE_CENTER_POSITION) > 7.0f && botAI->HasAggro(boss) && botAI->IsMainTank(bot))
         MoveTo(bot->GetMapId(), ICC_ROTFACE_CENTER_POSITION.GetPositionX(),
@@ -1829,21 +1795,7 @@ bool IccRotfaceGroupPositionAction::Execute(Event /*event*/)
         return false;
 
     const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
-    bool floodPresent = false;
 
-    for (auto const& npc : npcs)
-    {
-        Unit* unit = botAI->GetUnit(npc);
-        if (!unit || !botAI->HasAura("Ooze Flood", unit))
-            continue;
-
-        float puddleDistance = bot->GetExactDist2d(unit);
-
-        if (puddleDistance < 30.0f)
-            floodPresent = true;
-    }
-
-    Unit* bigOoze = AI_VALUE2(Unit*, "find target", "big ooze");
     bool hasOozeFlood = botAI->HasAura("Ooze Flood", bot);
     Unit* smallOoze = AI_VALUE2(Unit*, "find target", "little ooze");
     bool hasMutatedInfection = botAI->HasAura("Mutated Infection", bot);
@@ -2014,7 +1966,7 @@ bool IccRotfaceGroupPositionAction::PositionRangedAndHealers(Unit* boss,Unit *sm
     Difficulty diff = bot->GetRaidDifficulty();
     bool isBossCasting = false;
     if (boss && boss->HasUnitState(UNIT_STATE_CASTING) && boss->GetCurrentSpell(SPELL_SLIME_SPRAY))
-        bool isBossCasting = true;
+        isBossCasting = true;
 
     bool isHeroic = (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC);
 
@@ -2070,7 +2022,6 @@ bool IccRotfaceGroupPositionAction::FindAndMoveFromClosestMember(Unit* boss, Uni
     const float maxMoveDistance = 12.0f;     // Limit maximum movement distance
     const float puddleSafeDistance = 30.0f;  // Minimum distance to stay away from puddle
     const float minCenterDistance = 20.0f;   // Minimum distance from center position
-    const bool isRanged = botAI->IsRanged(bot) || botAI->IsHeal(bot);
 
     // Ranged: spread from other members
     const GuidVector members = AI_VALUE(GuidVector, "group members");
@@ -2233,7 +2184,6 @@ bool IccRotfaceMoveAwayFromExplosionAction::MoveToRandomSafeLocation()
     // Move in increments of 5.0f towards the calculated position
     float currentX = bot->GetPositionX();
     float currentY = bot->GetPositionY();
-    float currentZ = bot->GetPositionZ();
 
     float directionX = moveX - currentX;
     float directionY = moveY - currentY;
@@ -2276,7 +2226,6 @@ Unit* IccPutricideGrowingOozePuddleAction::FindClosestThreateningPuddle()
 
     Unit* closestPuddle = nullptr;
     float closestDistance = FLT_MAX;
-    float closestSafeDistance = BASE_RADIUS;
 
     for (auto const& npc : npcs)
     {
@@ -2293,7 +2242,6 @@ Unit* IccPutricideGrowingOozePuddleAction::FindClosestThreateningPuddle()
         if (currentDistance < safeDistance && currentDistance < closestDistance)
         {
             closestDistance = currentDistance;
-            closestSafeDistance = safeDistance;
             closestPuddle = unit;
         }
     }
@@ -3648,7 +3596,6 @@ bool IccBpcKineticBombAction::Execute(Event /*event*/)
 
 Unit* IccBpcKineticBombAction::FindOptimalKineticBomb()
 {
-    static constexpr float MAX_HEIGHT_DIFF = 20.0f;
     static constexpr std::array<uint32_t, 4> KINETIC_BOMB_ENTRIES = {NPC_KINETIC_BOMB1, NPC_KINETIC_BOMB2,
                                                                      NPC_KINETIC_BOMB3, NPC_KINETIC_BOMB4};
 
@@ -4012,7 +3959,6 @@ bool IccBqlGroupPositionAction::HandleShadowsMovement()
 
         // Find closest safe point by searching in both directions from closest point
         Position safeMoveTarget = closestPoint;
-        float safeMoveTargetDist = FLT_MAX;
         bool foundSafe = closestIsSafe;
 
         // Only search for safe spots if the closest point isn't already safe
@@ -4083,7 +4029,6 @@ bool IccBqlGroupPositionAction::HandleShadowsMovement()
         if (foundSafe)
         {
             // If we found a safe point, penalize based on travel distance along the curve to reach it
-            float stepsToCurve = minDist / 2.0f;  // Approximate steps to reach the curve
             float safeDist = bot->GetExactDist2d(safeMoveTarget);
 
             // Add distance penalty based on how far we need to move along the curve
@@ -4364,7 +4309,6 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
             rangedBots.erase(std::remove(rangedBots.begin(), rangedBots.end(), h), rangedBots.end());
 
         // Distribute remaining ranged evenly
-        size_t totalRanged = leftSide.size() + rightSide.size() + rangedBots.size();
         size_t leftCount = leftSide.size();
         size_t rightCount = rightSide.size();
         for (Player* p : rangedBots)
@@ -5562,7 +5506,6 @@ bool IccValithriaDreamCloudAction::Execute(Event /*event*/)
     auto it = std::find(dreamBots.begin(), dreamBots.end(), bot);
     if (it == dreamBots.end())
         return false;
-    size_t myIndex = std::distance(dreamBots.begin(), it);
 
     // Check if all dream bots are stacked within 3f of the current leader (lowest guid)
     constexpr float STACK_RADIUS = 2.0f;
@@ -6699,7 +6642,6 @@ bool IccSindragosaFrostBombAction::Execute(Event /*event*/)
         }
     }
     Unit* losTomb = myTombs[bestIdx];
-    ObjectGuid losTombGuid = myTombGuids[bestIdx];
 
     // Calculate position for LOS (stand at least 6.5f behind the tomb from the bomb)
     float angle = marker->GetAngle(losTomb);
@@ -6782,7 +6724,6 @@ bool IccSindragosaFrostBombAction::Execute(Event /*event*/)
                 // Clear the marker for our group's icon
                 group->SetTargetIcon(iconIndex, bot->GetGUID(), ObjectGuid::Empty);
             }
-            Unit* boss = AI_VALUE2(Unit*, "find target", "sindragosa");
             bot->AttackStop();
             return true;
         }
@@ -7021,10 +6962,7 @@ bool IccLichKingWinterAction::Execute(Event /*event*/)
     {
         const ObjectGuid currentSkullTarget = group->GetTargetIcon(7);
         if (!currentSkullTarget.IsEmpty())
-        {
-            Unit* skullTarget = ObjectAccessor::GetUnit(*bot, currentSkullTarget);
             group->SetTargetIcon(7, bot->GetGUID(), ObjectGuid::Empty);
-        }
     }
 
     if (isVictim)
@@ -7802,7 +7740,6 @@ bool IccLichKingAddsAction::Execute(Event /*event*/)
         //------CHEAT-------
     }
 
-    Unit* spiritWarden = AI_VALUE2(Unit*, "find target", "spirit warden");
     bool hasPlague = botAI->HasAura("Necrotic Plague", bot);
     Unit* terenasMenethilHC = bot->FindNearestCreature(NPC_TERENAS_MENETHIL_HC, 55.0f);
 
@@ -8475,8 +8412,6 @@ bool IccLichKingAddsAction::HandleAssistTankAddManagement(Unit* boss, Difficulty
         // In heroic mode, stay at melee position
         if (diff && (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
         {
-            Unit* mainTank = AI_VALUE(Unit*, "main tank");
-
             if (bot->GetExactDist2d(ICC_LICH_KING_ASSISTHC_POSITION.GetPositionX(),
                                     ICC_LICH_KING_ASSISTHC_POSITION.GetPositionY()) > 2.0f)
             {
@@ -8713,7 +8648,6 @@ void IccLichKingAddsAction::HandleDefileMechanics(Unit* boss, Difficulty diff)
 
     // Gather all defile units
     std::vector<Unit*> defiles;
-    Unit* closestDefile = nullptr;
     float closestDistance = std::numeric_limits<float>::max();
 
     GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
@@ -8725,10 +8659,7 @@ void IccLichKingAddsAction::HandleDefileMechanics(Unit* boss, Difficulty diff)
             defiles.push_back(unit);
             float dist = bot->GetDistance(unit);
             if (dist < closestDistance)
-            {
                 closestDistance = dist;
-                closestDefile = unit;
-            }
         }
     }
 
@@ -9068,7 +8999,6 @@ void IccLichKingAddsAction::HandleValkyrMarking(const std::vector<Unit*>& grabbi
     std::sort(sortedValkyrs.begin(), sortedValkyrs.end(), [](Unit* a, Unit* b) { return a->GetGUID() < b->GetGUID(); });
 
     static constexpr uint8_t ICON_INDICES[] = {7, 6, 0};  // Skull, Cross, Star
-    static constexpr const char* ICON_NAMES[] = {"skull", "cross", "star"};
 
     // In heroic mode, clean up invalid markers for all possible icons
     if (diff && (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
