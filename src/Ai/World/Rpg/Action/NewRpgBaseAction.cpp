@@ -262,10 +262,10 @@ bool NewRpgBaseAction::CanInteractWithQuestGiver(Object* questGiver)
     // that removes the distance check and keeps all other checks
     switch (questGiver->GetTypeId())
     {
-        case TYPEID_UNIT:
+        case TYPEID_UNIT: // Player::GetNPCIfCanInteractWith
         {
             ObjectGuid guid = questGiver->GetGUID();
-            uint32 npcflagmask = UNIT_NPC_FLAG_QUESTGIVER;
+
             // unit checks
             if (!guid)
                 return false;
@@ -292,7 +292,7 @@ bool NewRpgBaseAction::CanInteractWithQuestGiver(Object* questGiver)
                 return false;
 
             // appropriate npc type
-            if (npcflagmask && !creature->HasNpcFlag(NPCFlags(npcflagmask)))
+            if (!creature->HasNpcFlag(UNIT_NPC_FLAG_QUESTGIVER))
                 return false;
 
             // not allow interaction under control, but allow with own pets
@@ -303,35 +303,24 @@ bool NewRpgBaseAction::CanInteractWithQuestGiver(Object* questGiver)
             if (creature->GetReactionTo(bot) <= REP_UNFRIENDLY)
                 return false;
 
-            Trainer::Trainer* trainer = sObjectMgr->GetTrainer(creature->GetEntry());
-
-            // pussywizard: many npcs have missing conditions for class training and rogue trainer can for eg. train
-            // dual wield to a shaman :/ too many to change in sql and watch in the future pussywizard: this function is
-            // not used when talking, but when already taking action (buy spell, reset talents, show spell list)
-            if (npcflagmask & (UNIT_NPC_FLAG_TRAINER | UNIT_NPC_FLAG_TRAINER_CLASS) &&
-                trainer->GetTrainerType() == Trainer::Type::Class &&
-                !trainer->IsTrainerValidForPlayer(bot))
-                return false;
-
             return true;
         }
-        case TYPEID_GAMEOBJECT:
+        case TYPEID_GAMEOBJECT: // Player::GetGameObjectIfCanInteractWith
         {
             ObjectGuid guid = questGiver->GetGUID();
-            GameobjectTypes type = GAMEOBJECT_TYPE_QUESTGIVER;
+
             if (GameObject* go = bot->GetMap()->GetGameObject(guid))
             {
-                if (go->GetGoType() == type)
+                if (go->GetGoType() == GAMEOBJECT_TYPE_QUESTGIVER)
                 {
                     // Players cannot interact with gameobjects that use the "Point" icon
                     if (go->GetGOInfo()->IconName == "Point")
-                    {
                         return false;
-                    }
 
                     return true;
                 }
             }
+
             return false;
         }
         // unused for now

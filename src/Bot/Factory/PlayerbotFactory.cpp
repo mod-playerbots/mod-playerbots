@@ -4739,38 +4739,13 @@ void PlayerbotFactory::InitAttunementQuests()
 
     uint32 currentXP = bot->GetUInt32Value(PLAYER_XP);
 
-    // List of attunement quest IDs
-    std::list<uint32> attunementQuestsTBC = {
-        // Caverns of Time - Part 1
-        10279, // To The Master's Lair
-        10277, // The Caverns of Time
-
-        // Caverns of Time - Part 2 (Escape from Durnholde Keep)
-        10282, // Old Hillsbrad
-        10283, // Taretha's Diversion
-        10284, // Escape from Durnholde
-        10285, // Return to Andormu
-
-        // Caverns of Time - Part 2 (The Black Morass)
-        10296, // The Black Morass
-        10297, // The Opening of the Dark Portal
-        10298, // Hero of the Brood
-
-        // Magister's Terrace Attunement
-        11481, // Crisis at the Sunwell
-        11482, // Duty Calls
-        11488, // Magisters' Terrace
-        11490, // The Scryer's Scryer
-        11492  // Hard to Kill
-    };
-
     // Complete all level-appropriate attunement quests for the bot
     if (level >= 60)
     {
         std::list<uint32> questsToComplete;
 
         // Check each quest status before adding to the completion list
-        for (uint32 questId : attunementQuestsTBC)
+        for (uint32 questId : sPlayerbotAIConfig.attunementQuests)
         {
             QuestStatus questStatus = bot->GetQuestStatus(questId);
 

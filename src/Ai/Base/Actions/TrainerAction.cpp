@@ -9,77 +9,120 @@
 #include "Event.h"
 #include "PlayerbotFactory.h"
 #include "Playerbots.h"
+#include "Trainer.h"
 
-void TrainerAction::Learn(uint32 cost, const Trainer::Spell tSpell, std::ostringstream& msg)
+bool TrainerAction::Execute(Event event)
 {
-    if (sPlayerbotAIConfig.autoTrainSpells != "free" && !botAI->HasCheat(BotCheatMask::gold))
-    {
-        if (AI_VALUE2(uint32, "free money for", (uint32)NeedMoneyFor::spells) < cost)
-        {
-            msg << " - too expensive";
-            return;
-        }
+    std::string const param = event.getParam();
 
-        bot->ModifyMoney(-int32(cost));
-    }
+    Creature* target = GetCreatureTarget();
+    if (!target)
+        return false;
 
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(tSpell.SpellId);
-    if (!spellInfo)
-        return;
+    Trainer::Trainer* trainer = sObjectMgr->GetTrainer(target->GetEntry());
+    if (!trainer)
+        return false;
 
-    bool learned = false;
-    for (uint8 j = 0; j < 3; ++j)
-    {
-        if (spellInfo->Effects[j].Effect == SPELL_EFFECT_LEARN_SPELL)
-        {
-            uint32 learnedSpell = spellInfo->Effects[j].TriggerSpell;
-            if (!bot->HasSpell(learnedSpell))
-            {
-                bot->learnSpell(learnedSpell);
-                learned = true;
-            }
-        }
-    }
+    // NOTE: Original version uses SpellIds here, but occasionally only inserts
+    // a single spell ID value from parameters. If someone wants to impl multiple
+    // spells as parameters, check SkipSpellsListAction::parseIds as an example.
+    uint32 spellId = chat->parseSpell(param);
 
-    if (!learned && !bot->HasSpell(tSpell.SpellId))
-        bot->learnSpell(tSpell.SpellId);
+    bool learnSpells = param.find("learn") != std::string::npos || sRandomPlayerbotMgr.IsRandomBot(bot) ||
+                       (sPlayerbotAIConfig.allowLearnTrainerSpells &&
+                        // TODO: Rewrite to only exclude start primary profession skills and make config dependent.
+                        (trainer->GetTrainerType() != Trainer::Type::Tradeskill || !botAI->HasActivePlayerMaster()));
 
-    msg << " - learned";
+    Iterate(target, learnSpells, spellId);
+
+    return true;
 }
 
-void TrainerAction::Iterate(Creature* creature, TrainerSpellAction action, SpellIds& spells)
+bool TrainerAction::isUseful()
+{
+    Creature* target = GetCreatureTarget();
+    if (!target)
+        return false;
+
+    if (!target->IsInWorld() || target->IsDuringRemoveFromWorld() || !target->IsAlive())
+        return false;
+
+    return target->IsTrainer();
+}
+
+bool TrainerAction::isPossible()
+{
+    Creature* target = GetCreatureTarget();
+    if (!target)
+        return false;
+
+    Trainer::Trainer* trainer = sObjectMgr->GetTrainer(target->GetEntry());
+    if (!trainer)
+        return false;
+
+    if (!trainer->IsTrainerValidForPlayer(bot))
+        return false;
+
+    if (trainer->GetSpells().empty())
+        return false;
+
+    return true;
+}
+
+Unit* TrainerAction::GetTarget()
+{
+    // There are just two scenarios: the bot has a master or it doesn't. If the
+    // bot has a master, the master should target a unit; otherwise, the bot
+    // should target the unit itself.
+    if (Player* master = GetMaster())
+        return master->GetSelectedUnit();
+
+    return bot->GetSelectedUnit();
+}
+
+Creature* TrainerAction::GetCreatureTarget()
+{
+    Unit* target = GetTarget();
+    return target ? target->ToCreature() : nullptr;
+}
+
+void TrainerAction::Iterate(Creature* creature, bool learnSpells, uint32 spellId)
 {
     TellHeader(creature);
 
     Trainer::Trainer* trainer = sObjectMgr->GetTrainer(creature->GetEntry());
-
     if (!trainer)
         return;
 
-    float fDiscountMod = bot->GetReputationPriceDiscount(creature);
+    float reputationDiscount = bot->GetReputationPriceDiscount(creature);
     uint32 totalCost = 0;
 
     for (auto& spell : trainer->GetSpells())
     {
-        if (!trainer->CanTeachSpell(bot, trainer->GetSpell(spell.SpellId)))
+        // simplified version of Trainer::TeachSpell method
+
+        Trainer::Spell const* trainerSpell = trainer->GetSpell(spell.SpellId);
+        if (!trainerSpell)
             continue;
 
-        if (!spells.empty() && spells.find(spell.SpellId) == spells.end())
+        if (!trainer->CanTeachSpell(bot, trainerSpell))
             continue;
 
-        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell.SpellId);
+        if (spellId && trainerSpell->SpellId != spellId)
+            continue;
 
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(trainerSpell->SpellId);
         if (!spellInfo)
             continue;
 
-        uint32 cost = uint32(floor(spell.MoneyCost * fDiscountMod));
+        uint32 cost = static_cast<uint32>(floor(trainerSpell->MoneyCost * reputationDiscount));
         totalCost += cost;
 
         std::ostringstream out;
         out << chat->FormatSpell(spellInfo) << chat->formatMoney(cost);
 
-        if (action)
-            (this->*action)(cost, spell, out);
+        if (learnSpells)
+            Learn(spellInfo, cost, out);
 
         botAI->TellMaster(out);
     }
@@ -87,55 +130,25 @@ void TrainerAction::Iterate(Creature* creature, TrainerSpellAction action, Spell
     TellFooter(totalCost);
 }
 
-bool TrainerAction::Execute(Event event)
+void TrainerAction::Learn(SpellInfo const* spellInfo, uint32 cost, std::ostringstream& out)
 {
-    std::string const text = event.getParam();
-
-    Player* master = GetMaster();
-
-    Creature* creature = botAI->GetCreature(bot->GetTarget());
-
-    if (master)
+    if (!botAI->HasCheat(BotCheatMask::gold))
     {
-        creature = master->GetSelectedUnit() ? master->GetSelectedUnit()->ToCreature() : nullptr;
-    }
-    // if (AI_VALUE(GuidPosition, "rpg target") != bot->GetTarget())
-    //     if (master)
-    //         creature = botAI->GetCreature(master->GetTarget());
-    //     else
-    //         return false;
+        if (AI_VALUE2(uint32, "free money for", (uint32)NeedMoneyFor::spells) < cost)
+        {
+            out << " - too expensive";
+            return;
+        }
 
-    if (!creature || !creature->IsTrainer())
-        return false;
-
-    Trainer::Trainer* trainer = sObjectMgr->GetTrainer(creature->GetEntry());
-
-    if (!trainer || !trainer->IsTrainerValidForPlayer(bot))
-        return false;
-
-    std::vector<Trainer::Spell> trainer_spells = trainer->GetSpells();
-
-    if (trainer_spells.empty())
-    {
-        botAI->TellError("No spells can be learned from this trainer");
-        return false;
+        bot->ModifyMoney(-static_cast<int32>(cost));
     }
 
-    uint32 spell = chat->parseSpell(text);
-    SpellIds spells;
-    if (spell)
-        spells.insert(spell);
-
-    if (text.find("learn") != std::string::npos || sRandomPlayerbotMgr.IsRandomBot(bot) ||
-        (sPlayerbotAIConfig.autoTrainSpells != "no" &&
-         (trainer->GetTrainerType() != Trainer::Type::Tradeskill ||
-          !botAI->HasActivePlayerMaster())))  // Todo rewrite to only exclude start primary profession skills and make
-                                              // config dependent.
-        Iterate(creature, &TrainerAction::Learn, spells);
+    if (spellInfo->HasEffect(SPELL_EFFECT_LEARN_SPELL))
+        bot->CastSpell(bot, spellInfo->Id, true);
     else
-        Iterate(creature, nullptr, spells);
+        bot->learnSpell(spellInfo->Id, false);
 
-    return true;
+    out << " - learned";
 }
 
 void TrainerAction::TellHeader(Creature* creature)
@@ -245,7 +258,8 @@ bool MaintenanceAction::Execute(Event /*event*/)
         if (sPlayerbotAIConfig.altMaintenanceKeyring)
             factory.InitKeyring();
 
-        if (sPlayerbotAIConfig.altMaintenanceGemsEnchants && bot->GetLevel() >= sPlayerbotAIConfig.minEnchantingBotLevel)
+        if (sPlayerbotAIConfig.altMaintenanceGemsEnchants &&
+            bot->GetLevel() >= sPlayerbotAIConfig.minEnchantingBotLevel)
             factory.ApplyEnchantAndGemsNew();
     }
 

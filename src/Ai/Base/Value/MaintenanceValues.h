@@ -58,6 +58,14 @@ public:
     bool Calculate() override;
 };
 
+class CanTrainValue : public BoolCalculatedValue
+{
+public:
+    CanTrainValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI, "can train", 2 * 2000) {}
+
+    bool Calculate() override;
+};
+
 class CanFightEqualValue : public BoolCalculatedValue
 {
 public:
