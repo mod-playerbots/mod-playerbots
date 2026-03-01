@@ -1534,10 +1534,11 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
 {
     static const std::vector<std::string> allInstanceStrategies =
     {
-        "onyxia", "moltencore", "bwl", "aq20", "karazhan", "hyjal", "magtheridon", "ssc",
-        "gruulslair", "wotlk-uk", "wotlk-up", "wotlk-nex", "wotlk-occ", "wotlk-cos", "wotlk-hos", 
-        "wotlk-dtk", "wotlk-an", "wotlk-hol", "ulduar", "wotlk-gd", "wotlk-vh", "wotlk-os", 
-        "wotlk-eoe", "wotlk-ok", "voa", "icc", "wotlk-fos", "wotlk-toc", "wotlk-pos", "wotlk-hor"
+        "aq20", "bwl", "karazhan", "gruulslair", "icc", "magtheridon", "moltencore",
+        "onyxia", "ssc", "tempestkeep", "ulduar", "voa", "wotlk-an", "wotlk-cos",
+        "wotlk-dtk", "wotlk-eoe", "wotlk-fos", "wotlk-gd", "wotlk-hol", "wotlk-hor",
+        "wotlk-hos", "wotlk-nex", "wotlk-occ", "wotlk-ok", "wotlk-os", "wotlk-pos",
+        "wotlk-toc", "wotlk-uk", "wotlk-up", "wotlk-vh"
     };
 
     for (const std::string& strat : allInstanceStrategies)
