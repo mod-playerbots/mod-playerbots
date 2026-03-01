@@ -128,7 +128,7 @@ namespace GruulsLairHelpers
         Unit* krosh = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "krosh firehand")->Get();
         if (krosh && krosh->IsAlive())
         {
-            float dist = sqrt(pow(pos.GetPositionX() - krosh->GetPositionX(), 2) + pow(pos.GetPositionY() - krosh->GetPositionY(), 2));
+            float dist = krosh->GetDistance2d(pos.GetPositionX(), pos.GetPositionY());
             if (dist < KROSH_SAFE_DISTANCE)
                 isSafe = false;
         }
@@ -136,7 +136,7 @@ namespace GruulsLairHelpers
         Unit* maulgar = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "high king maulgar")->Get();
         if (botAI->IsRanged(bot) && maulgar && maulgar->IsAlive())
         {
-            float dist = sqrt(pow(pos.GetPositionX() - maulgar->GetPositionX(), 2) + pow(pos.GetPositionY() - maulgar->GetPositionY(), 2));
+            float dist = maulgar->GetDistance2d(pos.GetPositionX(), pos.GetPositionY());
             if (dist < MAULGAR_SAFE_DISTANCE)
                 isSafe = false;
         }
@@ -182,7 +182,7 @@ namespace GruulsLairHelpers
 
             if (IsPositionSafe(botAI, bot, candidatePos))
             {
-                float movementDistance = sqrt(pow(destX - bot->GetPositionX(), 2) + pow(destY - bot->GetPositionY(), 2));
+                float movementDistance = bot->GetDistance2d(destX, destY);
                 if (movementDistance < bestScore)
                 {
                     bestScore = movementDistance;
