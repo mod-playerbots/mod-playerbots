@@ -1800,8 +1800,7 @@ bool IccRotfaceTankPositionAction::HandleBigOozePositioning(Unit*)
                         Unit* puddle = botAI->GetUnit(puddleGuid);
                         if (puddle && botAI->GetAura("Ooze Flood", puddle))
                         {
-                            float puddleDistance = std::sqrt(std::pow(newX - puddle->GetPositionX(), 2) +
-                                                             std::pow(newY - puddle->GetPositionY(), 2));
+                            float puddleDistance = puddle->GetDistance2d(newX, newY);
                             if (puddleDistance < puddleSafeDistance)
                             {
                                 isSafeFromPuddles = false;
@@ -1921,8 +1920,7 @@ bool IccRotfaceGroupPositionAction::MoveAwayFromPuddle(Unit* boss, Unit* puddle,
             float moveZ = bot->GetPositionZ();
 
             // Check distances and line of sight
-            float newPuddleDistance =
-                sqrt(pow(moveX - puddle->GetPositionX(), 2) + pow(moveY - puddle->GetPositionY(), 2));
+            float newPuddleDistance = puddle->GetDistance2d(moveX, moveY);
             float newCenterDistance = sqrt(pow(moveX - ICC_ROTFACE_CENTER_POSITION.GetPositionX(), 2) +
                                            pow(moveY - ICC_ROTFACE_CENTER_POSITION.GetPositionY(), 2));
 
@@ -2125,8 +2123,7 @@ bool IccRotfaceGroupPositionAction::FindAndMoveFromClosestMember(Unit* boss, Uni
             // Ensure the target position is at least 30 yards away from the puddle
             if (puddle)
             {
-                float puddleDistance = std::sqrt(std::pow(targetX - puddle->GetPositionX(), 2) +
-                                                 std::pow(targetY - puddle->GetPositionY(), 2));
+                float puddleDistance = puddle->GetDistance2d(targetX, targetY);
                 if (puddleDistance < puddleSafeDistance)
                 {
                     // Adjust the target position to move further away from the puddle
@@ -2203,8 +2200,7 @@ bool IccRotfaceMoveAwayFromExplosionAction::MoveToRandomSafeLocation()
         if (!puddle || !botAI->HasAura("Ooze Flood", puddle))
             continue;
 
-        float puddleDistance =
-            std::sqrt(std::pow(moveX - puddle->GetPositionX(), 2) + std::pow(moveY - puddle->GetPositionY(), 2));
+        float puddleDistance = puddle->GetDistance2d(moveX, moveY);
         if (puddleDistance < 30.0f)
         {
             // Adjust the position to move further away from the puddle
@@ -2407,7 +2403,7 @@ bool IccPutricideGrowingOozePuddleAction::IsPositionTooCloseToOtherPuddles(float
         if (Aura* grow = unit->GetAura(SPELL_GROW_AURA))
             safeDistance += (grow->GetStackAmount() * STACK_MULTIPLIER);
 
-        float dist = sqrt(pow(x - unit->GetPositionX(), 2) + pow(y - unit->GetPositionY(), 2));
+        float dist = unit->GetDistance2d(x, y);
         if (dist < safeDistance)
             return true;
     }
@@ -2650,7 +2646,7 @@ bool IccPutricideGasCloudAction::HandleGaseousBloatMovement(Unit* gasCloud)
             float minGasBombDist = FLT_MAX;
             for (Unit* bomb : gasBombs)
             {
-                float bombDist = sqrt(pow(testX - bomb->GetPositionX(), 2) + pow(testY - bomb->GetPositionY(), 2));
+                float bombDist = bomb->GetDistance2d(testX, testY);
                 if (bombDist < minGasBombDist)
                     minGasBombDist = bombDist;
             }
@@ -2717,8 +2713,7 @@ bool IccPutricideGasCloudAction::HandleGaseousBloatMovement(Unit* gasCloud)
         float minEmergencyGasBombDist = FLT_MAX;
         for (Unit* bomb : gasBombs)
         {
-            float bombDist = sqrt(pow(emergencyPos.GetPositionX() - bomb->GetPositionX(), 2) +
-                                  pow(emergencyPos.GetPositionY() - bomb->GetPositionY(), 2));
+            float bombDist = bomb->GetDistance2d(emergencyPos.GetPositionX(), emergencyPos.GetPositionY());
             if (bombDist < minEmergencyGasBombDist)
                 minEmergencyGasBombDist = bombDist;
         }
@@ -4487,8 +4482,7 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
             // Maintain minimum distance from center position (if too close to center, move out)
             float centerX = ICC_BQL_CENTER_POSITION.GetPositionX();
             float centerY = ICC_BQL_CENTER_POSITION.GetPositionY();
-            float centerDist =
-                std::sqrt(std::pow(bot->GetPositionX() - centerX, 2) + std::pow(bot->GetPositionY() - centerY, 2));
+            float centerDist = bot->GetDistance2d(centerX, centerY);
             if (centerDist < MIN_CENTER_DISTANCE && !((boss->GetPositionZ() - bot->GetPositionZ()) > 5.0f))
             {
                 float dx = bot->GetPositionX() - centerX;
@@ -6904,7 +6898,7 @@ bool IccLichKingShadowTrapAction::Execute(Event /*event*/)
             Unit* trap = botAI->GetUnit(trapGuid);
             if (!trap)
                 continue;
-            float distToTrap = sqrt(pow(testX - trap->GetPositionX(), 2) + pow(testY - trap->GetPositionY(), 2));
+            float distToTrap = trap->GetDistance2d(testX, testY);
             if (distToTrap < SAFE_DISTANCE)
             {
                 isSafe = false;

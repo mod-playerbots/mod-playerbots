@@ -98,6 +98,7 @@ public:
     std::set<uint32> aoeAvoidSpellWhitelist;
     bool tellWhenAvoidAoe;
     std::set<uint32> disallowedGameObjects;
+    std::set<uint32> attunementQuests;
 
     uint32 openGoSpell;
     bool randomBotAutologin;
@@ -352,7 +353,7 @@ public:
     bool syncQuestWithPlayer;
     bool syncQuestForPlayer;
     bool dropObsoleteQuests;
-    std::string autoTrainSpells;
+    bool allowLearnTrainerSpells;
     bool autoPickTalents;
     bool autoUpgradeEquip;
     int32 hunterWolfPet;
