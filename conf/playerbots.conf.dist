@@ -566,7 +566,10 @@ AiPlayerbot.AutoGearScoreLimit = 0
 # Default: food, taxi, and raid are enabled
 AiPlayerbot.BotCheats = "food,taxi,raid"
 
-# Attunement quests (comma-separated list of quest IDs)
+# List of attunement quests (comma-separated list of quest IDs) that are automatically completed for all bots via the 'maintenance' chat command.  
+# mod-playerbots does not restore removed attunement requirements, although other mods, such as mod-individual-progression, may do so.
+# This is meant to exclude bots from such requirements.
+# 
 # Default:
 # Caverns of Time - Part 1
 # - 10279, To The Master's Lair
