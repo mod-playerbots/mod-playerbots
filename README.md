@@ -6,7 +6,7 @@
 
 
 <div align="center">
-  <img src="icon.png" alt="Playerbots Icon" width="700px">
+  <img src="banner.png" alt="Playerbots Banner" width="700px">
 </div>
 
 <div align="center">
