@@ -20,6 +20,7 @@
 #include "Map.h"
 #include "Corpse.h"
 #include "CellImpl.h"
+#include "RaceMgr.h"
 
 WorldPosition::WorldPosition(std::string const str)
 {
@@ -3335,7 +3336,7 @@ void TravelMgr::LoadQuestTravelTable()
 
             std::ostringstream out;
 
-            for (uint8 race = RACE_HUMAN; race < MAX_RACES; race++)
+            for (uint8 race = RACE_HUMAN; race < sRaceMgr->GetMaxRaces(); race++)
             {
                 for (uint8 cls = CLASS_WARRIOR; cls < MAX_CLASSES; ++cls)
                 {

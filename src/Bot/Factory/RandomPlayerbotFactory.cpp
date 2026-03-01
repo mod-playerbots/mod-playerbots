@@ -14,9 +14,10 @@
 #include "SocialMgr.h"
 #include "Timer.h"
 #include "Log.h"
+#include "RaceMgr.h"
 
 constexpr RandomPlayerbotFactory::NameRaceAndGender RandomPlayerbotFactory::CombineRaceAndGender(uint8 race,
-                                                                                                uint8 gender)
+                                                                                                 uint8 gender)
 {
     NameRaceAndGender baseIndex;
     switch (race)
@@ -60,7 +61,7 @@ Player* RandomPlayerbotFactory::CreateRandomBot(WorldSession* session, uint8 cls
     const bool alliance = static_cast<bool>(urand(0, 1));
 
     std::vector<uint8> raceOptions;
-    for (uint8 race = RACE_HUMAN; race < MAX_RACES; ++race)
+    for (uint8 race = RACE_HUMAN; race < sRaceMgr->GetMaxRaces(); ++race)
     {
         // skip disabled with config races
         if ((1 << (race - 1)) & sWorld->getIntConfig(CONFIG_CHARACTER_CREATING_DISABLED_RACEMASK))
