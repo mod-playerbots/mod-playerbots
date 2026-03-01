@@ -154,66 +154,67 @@ bool RpgSellTrigger::IsActive()
 
 bool RpgRepairTrigger::IsActive()
 {
-    GuidPosition guidP(getGuidP());
+    GuidPosition guidP{this->getGuidP()};
 
     if (!guidP.HasNpcFlag(UNIT_NPC_FLAG_REPAIR))
-        return false;
-
-    if (AI_VALUE2_LAZY(bool, "group or", "should sell,can sell,following party,near leader"))
-        return true;
-
-    if (AI_VALUE2_LAZY(bool, "group or", "should repair,can repair,following party,near leader"))
-        return true;
-
-    return false;
-}
-
-bool RpgTrainTrigger::IsTrainerOf(CreatureTemplate const* cInfo, Player* pPlayer)
-{
-    Trainer::Trainer* trainer = sObjectMgr->GetTrainer(cInfo->Entry);
-
-    if (trainer->GetTrainerType() == Trainer::Type::Mount && trainer->GetTrainerRequirement() != pPlayer->getRace())
     {
-        if (FactionTemplateEntry const* faction_template = sFactionTemplateStore.LookupEntry(cInfo->faction))
-            if (pPlayer->GetReputationRank(faction_template->faction) == REP_EXALTED)
-                return true;
-
         return false;
     }
 
-    return trainer->IsTrainerValidForPlayer(pPlayer);
+    Value<bool>* sellValue = this->context->GetValue<bool>("group or", "should sell,can sell,following party,near leader");
+
+    if (sellValue == nullptr)
+    {
+        return false;
+    }
+
+    if (sellValue->Get())
+    {
+        return true;
+    }
+
+    Value<bool>* repairValue = this->context->GetValue<bool>("group or", "should repair,can repair,following party,near leader");
+
+    if (repairValue == nullptr)
+    {
+        return false;
+    }
+
+    if (repairValue->Get())
+    {
+        return true;
+    }
+
+    return false;
 }
 
 bool RpgTrainTrigger::IsActive()
 {
-    GuidPosition guidP(getGuidP());
+    GuidPosition guidP{this->getGuidP()};
 
-    if (!guidP.HasNpcFlag(UNIT_NPC_FLAG_TRAINER))
-        return false;
-
-    CreatureTemplate const* cInfo = guidP.GetCreatureTemplate();
-
-    if (!IsTrainerOf(cInfo, bot))
-        return false;
-
-    Trainer::Trainer* trainer = sObjectMgr->GetTrainer(cInfo->Entry);
-    FactionTemplateEntry const* factionTemplate = sFactionTemplateStore.LookupEntry(cInfo->faction);
-    float fDiscountMod = bot->GetReputationPriceDiscount(factionTemplate);
-
-    for (auto& spell : trainer->GetSpells())
+    if (guidP.IsEmpty())
     {
-        if (!trainer->CanTeachSpell(bot, trainer->GetSpell(spell.SpellId)))
-            continue;
-
-        uint32 cost = uint32(floor(spell.MoneyCost * fDiscountMod));
-
-        if (cost > AI_VALUE2(uint32, "free money for", (uint32)NeedMoneyFor::spells))
-            continue;
-
-        return true;
+        return false;
     }
 
-    return false;
+    if (!guidP.HasNpcFlag(UNIT_NPC_FLAG_TRAINER))
+    {
+        return false;
+    }
+
+    Value<bool>* trainValue = this->context->GetValue<bool>("can train");
+
+    if (trainValue == nullptr)
+    {
+        return false;
+    }
+
+    if (!trainValue->Get())
+    {
+        return false;
+    }
+
+    return true;
 }
 
 bool RpgHealTrigger::IsActive()

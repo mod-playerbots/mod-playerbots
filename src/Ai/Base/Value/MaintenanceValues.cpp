@@ -44,6 +44,18 @@ bool CanSellValue::Calculate()
             AI_VALUE2(uint32, "item count", "usage " + std::to_string(ITEM_USAGE_AH))) > 1;
 }
 
+bool CanTrainValue::Calculate()
+{
+    Value<uint32_t>* const freeMoneyForSpells = this->context->GetValue<uint32_t>("free money for", (uint32)NeedMoneyFor::spells);
+
+    if (freeMoneyForSpells == nullptr)
+    {
+        return false;
+    }
+
+    return freeMoneyForSpells->Get() > 0;
+}
+
 bool CanFightEqualValue::Calculate() { return AI_VALUE(uint8, "durability") > 20; }
 
 bool CanFightEliteValue::Calculate()

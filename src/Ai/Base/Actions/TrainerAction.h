@@ -8,7 +8,6 @@
 
 #include "Action.h"
 #include "ChatHelper.h"
-#include "Trainer.h"
 
 class Creature;
 class PlayerbotAI;
@@ -21,13 +20,16 @@ public:
     TrainerAction(PlayerbotAI* botAI) : Action(botAI, "trainer") {}
 
     bool Execute(Event event) override;
+    bool isUseful() override;
+    bool isPossible() override;
+    Unit* GetTarget() override;
 
 private:
-    typedef void (TrainerAction::*TrainerSpellAction)(uint32, const Trainer::Spell, std::ostringstream& msg);
-    void Iterate(Creature* creature, TrainerSpellAction action, SpellIds& spells);
-    void Learn(uint32 cost, const Trainer::Spell tSpell, std::ostringstream& msg);
-    void TellHeader(Creature* creature);
-    void TellFooter(uint32 totalCost);
+    [[nodiscard]] Creature* getCreatureTarget() noexcept;
+    void iterate(const Creature* const creature, const bool learnSpells, const uint32_t spellId);
+    [[nodiscard]] const std::string learn(const SpellInfo& spellInfo, const uint32_t cost);
+    void tellHeader(const Creature* const creature) const;
+    void tellFooter(const uint32_t totalCost);
 };
 
 class MaintenanceAction : public Action
@@ -35,6 +37,10 @@ class MaintenanceAction : public Action
 public:
     MaintenanceAction(PlayerbotAI* botAI) : Action(botAI, "maintenance") {}
     bool Execute(Event event) override;
+
+private:
+    void performAltMaintenance();
+    void performRandomBotMaintenance();
 };
 
 class RemoveGlyphAction : public Action

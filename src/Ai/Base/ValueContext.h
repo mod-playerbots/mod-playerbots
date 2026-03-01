@@ -273,6 +273,7 @@ public:
         creators["can repair"] = &ValueContext::can_repair;
         creators["should sell"] = &ValueContext::should_sell;
         creators["can sell"] = &ValueContext::can_sell;
+        creators["can train"] = &ValueContext::can_train;
         creators["can fight equal"] = &ValueContext::can_fight_equal;
         creators["can fight elite"] = &ValueContext::can_fight_elite;
         creators["can fight boss"] = &ValueContext::can_fight_boss;
@@ -520,6 +521,7 @@ private:
     static UntypedValue* can_repair(PlayerbotAI* botAI) { return new CanRepairValue(botAI); }
     static UntypedValue* should_sell(PlayerbotAI* botAI) { return new ShouldSellValue(botAI); }
     static UntypedValue* can_sell(PlayerbotAI* botAI) { return new CanSellValue(botAI); }
+    static UntypedValue* can_train(PlayerbotAI* botAI) { return new CanTrainValue(botAI); }
     static UntypedValue* can_fight_equal(PlayerbotAI* botAI) { return new CanFightEqualValue(botAI); }
     static UntypedValue* can_fight_elite(PlayerbotAI* botAI) { return new CanFightEliteValue(botAI); }
     static UntypedValue* can_fight_boss(PlayerbotAI* botAI) { return new CanFightBossValue(botAI); }

@@ -25,6 +25,61 @@ enum class NeedMoneyFor : uint32
     anything = 9
 };
 
+[[nodiscard]] inline static constexpr NeedMoneyFor needMoneyForFromIntegerLikeString(const std::string& str) noexcept
+{
+    if (str == "0")
+    {
+        return NeedMoneyFor::none;
+    }
+
+    if (str == "1")
+    {
+        return NeedMoneyFor::repair;
+    }
+
+    if (str == "2")
+    {
+        return NeedMoneyFor::ammo;
+    }
+
+    if (str == "3")
+    {
+        return NeedMoneyFor::spells;
+    }
+
+    if (str == "4")
+    {
+        return NeedMoneyFor::travel;
+    }
+
+    if (str == "5")
+    {
+        return NeedMoneyFor::consumables;
+    }
+
+    if (str == "6")
+    {
+        return NeedMoneyFor::gear;
+    }
+
+    if (str == "7")
+    {
+        return NeedMoneyFor::guild;
+    }
+
+    if (str == "8")
+    {
+        return NeedMoneyFor::tradeskill;
+    }
+
+    if (str == "9")
+    {
+        return NeedMoneyFor::anything;
+    }
+
+    return NeedMoneyFor::none;
+}
+
 class MaxGearRepairCostValue : public Uint32CalculatedValue
 {
 public:

@@ -22,9 +22,9 @@ class RpgHelper : public AiObject
 public:
     RpgHelper(PlayerbotAI* botAI) : AiObject(botAI) {}
     virtual ~RpgHelper() = default;
-    void OnExecute(std::string nextAction = "rpg");
+    void onExecute(std::string nextAction = "rpg");
     void BeforeExecute();
-    void AfterExecute(bool doDelay = true, bool waitForGroup = false);
+    void afterExecute(const bool doDelay = true, const bool waitForGroup = false);
 
     virtual GuidPosition guidP();
     virtual ObjectGuid guid();
@@ -167,6 +167,9 @@ class RpgTrainAction : public RpgSubAction
 {
 public:
     RpgTrainAction(PlayerbotAI* botAI, std::string const name = "rpg train") : RpgSubAction(botAI, name) {}
+
+    bool isPossible() override;
+    bool isUseful() override;
 
 private:
     NextAction::Factory getActionFactory() const override;

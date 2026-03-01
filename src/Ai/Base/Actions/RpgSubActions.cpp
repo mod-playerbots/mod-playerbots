@@ -9,6 +9,7 @@
 #include "BattleGroundJoinAction.h"
 #include "BuyAction.h"
 #include "CastCustomSpellAction.h"
+#include "BudgetValues.h"
 #include "ChooseRpgTargetAction.h"
 #include "DruidActions.h"
 #include "EmoteAction.h"
@@ -30,7 +31,7 @@
 #include "TradeAction.h"
 #include "TrainerAction.h"
 
-void RpgHelper::OnExecute(std::string nextAction)
+void RpgHelper::onExecute(std::string nextAction)
 {
     if (botAI->HasRealPlayerMaster() && nextAction == "rpg")
         nextAction = "rpg cancel";
@@ -40,34 +41,53 @@ void RpgHelper::OnExecute(std::string nextAction)
 
 void RpgHelper::BeforeExecute()
 {
-    OnExecute();
+    onExecute();
 
     bot->SetTarget(guidP());
 
     setFacingTo(guidP());
 }
 
-void RpgHelper::AfterExecute(bool doDelay, bool waitForGroup)
+void RpgHelper::afterExecute(const bool doDelay, const bool waitForGroup)
 {
-    OnExecute();
+    this->onExecute();
 
-    bot->SetTarget(guidP());
+    this->bot->SetTarget(guidP());
 
-    setFacingTo(guidP());
+    this->setFacingTo(this->guidP());
 
     if (doDelay)
-        setDelay(waitForGroup);
+    {
+        this->setDelay(waitForGroup);
+    }
 
-    setFacing(guidP());
+    this->setFacing(this->guidP());
 }
 
-GuidPosition RpgHelper::guidP() { return AI_VALUE(GuidPosition, "rpg target"); }
+GuidPosition RpgHelper::guidP()
+{
+    Value<GuidPosition>* value = this->context->GetValue<GuidPosition>("rpg target");
 
-ObjectGuid RpgHelper::guid() { return (ObjectGuid)guidP(); }
+    if (value == nullptr)
+    {
+        return GuidPosition{};
+    }
+
+    return value->Get();
+}
+
+ObjectGuid RpgHelper::guid()
+{
+    return (ObjectGuid)this->guidP();
+}
 
 bool RpgHelper::InRange()
 {
-    return guidP() ? (guidP().sqDistance2d(bot) < INTERACTION_DISTANCE * INTERACTION_DISTANCE) : false;
+    GuidPosition gp = guidP();
+    if (!gp)
+        return false;
+
+    return gp.sqDistance2d(bot) < INTERACTION_DISTANCE * INTERACTION_DISTANCE;
 }
 
 void RpgHelper::setFacingTo(GuidPosition guidPosition)
@@ -109,7 +129,7 @@ bool RpgSubAction::isUseful()
 bool RpgSubAction::Execute(Event event)
 {
     bool doAction = botAI->DoSpecificAction(this->getActionFactory(), this->ActionEvent(event), true);
-    this->rpg->AfterExecute(doAction, true);
+    this->rpg->afterExecute(doAction, true);
     return doAction;
 }
 
@@ -135,7 +155,7 @@ bool RpgStayAction::Execute(Event)
 {
     this->bot->PlayerTalkClass->SendCloseGossip();
 
-    this->rpg->AfterExecute();
+    this->rpg->afterExecute();
 
     return true;
 }
@@ -148,7 +168,7 @@ bool RpgWorkAction::isUseful()
 bool RpgWorkAction::Execute(Event)
 {
     this->bot->HandleEmoteCommand(EMOTE_STATE_USE_STANDING);
-    this->rpg->AfterExecute();
+    this->rpg->afterExecute();
     return true;
 }
 
@@ -166,7 +186,7 @@ bool RpgEmoteAction::Execute(Event)
 
     this->bot->GetSession()->HandleGossipHelloOpcode(p1);
     this->bot->HandleEmoteCommand(type);
-    this->rpg->AfterExecute();
+    this->rpg->afterExecute();
 
     return true;
 }
@@ -174,7 +194,7 @@ bool RpgEmoteAction::Execute(Event)
 bool RpgCancelAction::Execute(Event)
 {
     RESET_AI_VALUE(GuidPosition, "rpg target");
-    this->rpg->OnExecute("");
+    this->rpg->onExecute("");
     return true;
 }
 
@@ -239,7 +259,7 @@ bool RpgTaxiAction::Execute(Event)
 
     this->bot->SetMoney(money);
 
-    this->rpg->AfterExecute();
+    this->rpg->afterExecute();
 
     return true;
 }
@@ -312,6 +332,99 @@ Event RpgSellAction::ActionEvent(Event)
 NextAction::Factory RpgRepairAction::getActionFactory() const
 {
     return CreateNextAction<RepairAllAction>(1.0f).factory;
+}
+
+bool RpgTrainAction::isUseful()
+{
+    if (!this->rpg->InRange())
+    {
+        return false;
+    }
+
+    const Creature* const creature = this->rpg->guidP().GetCreature();
+
+    if (creature == nullptr)
+    {
+        return false;
+    }
+
+    if (!creature->IsInWorld() || creature->IsDuringRemoveFromWorld() || !creature->IsAlive())
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool RpgTrainAction::isPossible()
+{
+    const GuidPosition gp = this->rpg->guidP();
+
+    const CreatureTemplate* const cinfo = gp.GetCreatureTemplate();
+
+    if (cinfo == nullptr)
+    {
+        return false;
+    }
+
+    ObjectMgr* const objectMgr = ObjectMgr::instance();
+
+    if (objectMgr == nullptr)
+    {
+        return false;
+    }
+
+    Trainer::Trainer* const trainer = objectMgr->GetTrainer(cinfo->Entry);
+
+    if (trainer == nullptr)
+    {
+        return false;
+    }
+
+    if (!trainer->IsTrainerValidForPlayer(this->bot))
+    {
+        return false;
+    }
+
+    const FactionTemplateEntry* const factionTemplate = sFactionTemplateStore.LookupEntry(cinfo->faction);
+    const float reputationDiscount = this->bot->GetReputationPriceDiscount(factionTemplate);
+
+    Value<uint32_t>* const freeMoneyFor = this->context->GetValue<uint32_t>("free money for", uint32_t(NeedMoneyFor::spells));
+
+    if (freeMoneyFor == nullptr)
+    {
+        return false;
+    }
+
+    const uint32_t currentGold = freeMoneyFor->Get();
+
+    for (const Trainer::Spell& spell : trainer->GetSpells())
+    {
+        const Trainer::Spell* const trainerSpell = trainer->GetSpell(spell.SpellId);
+
+        if (trainerSpell == nullptr)
+        {
+            continue;
+        }
+
+        if (!trainer->CanTeachSpell(bot, trainerSpell))
+        {
+            continue;
+        }
+
+        const uint32_t realCost = uint32_t(floor(trainerSpell->MoneyCost * reputationDiscount));
+
+        if (currentGold < realCost)
+        {
+            continue;
+        }
+
+        // we only check if at least one spell can be learned from the trainer;
+        // otherwise, the train action should not be allowed
+        return true;
+    }
+
+    return false;
 }
 
 NextAction::Factory RpgTrainAction::getActionFactory() const

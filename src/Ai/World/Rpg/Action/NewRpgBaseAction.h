@@ -38,7 +38,7 @@ protected:
     ObjectGuid ChooseNpcOrGameObjectToInteract(bool questgiverOnly = false, float distanceLimit = 0.0f);
     bool HasQuestToAcceptOrReward(WorldObject* object);
     bool InteractWithNpcOrGameObjectForQuest(ObjectGuid guid);
-    bool CanInteractWithQuestGiver(Object* questGiver);
+    [[nodiscard]] bool canInteractWithQuestGiver(const Object* const questGiver);
     bool IsWithinInteractionDist(Object* object);
     uint32 BestRewardIndex(Quest const* quest);
     bool IsQuestWorthDoing(Quest const* quest);
