@@ -592,7 +592,17 @@ AiPlayerbot.BotCheats = "food,taxi,raid"
 #
 # Serpentshrine Cavern
 # - 10901, The Cudgel of Kar'desh
-AiPlayerbot.AttunementQuests = 10279,10277,10282,10283,10284,10285,10296,10297,10298,11481,11482,11488,11490,11492,10901
+#
+# The Eye
+# - 10888, Trial of the Naaru: Magtheridon
+#
+# Mount Hyjal
+# - 10445, The Vials of Eternity
+#
+# Black Temple
+# - 10985, A Distraction for Akama
+#
+AiPlayerbot.AttunementQuests = 10279,10277,10282,10283,10284,10285,10296,10297,10298,11481,11482,11488,11490,11492,10901,10888,10445,10985
 
 #
 #
