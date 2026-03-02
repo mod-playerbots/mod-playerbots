@@ -231,7 +231,6 @@ void TalkToQuestGiverAction::AskToSelectReward(Quest const* quest, std::ostrings
     for (uint8 i = 0; i < quest->GetRewChoiceItemsCount(); ++i)
     {
         ItemTemplate const* item = sObjectMgr->GetItemTemplate(quest->RewardChoiceItemId[i]);
-        ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", quest->RewardChoiceItemId[i]);
 
         if (!forEquip || BestRewards(quest).count(i) > 0)
         {
@@ -248,7 +247,6 @@ bool TurnInQueryQuestAction::Execute(Event event)
     WorldPacket pakcet = event.getPacket();
     ObjectGuid guid;
     uint32 questId;
-    ObjectGuid unk1;
     pakcet >> guid >> questId;
     Object* object =
         ObjectAccessor::GetObjectByTypeMask(*bot, guid, TYPEMASK_UNIT | TYPEMASK_GAMEOBJECT | TYPEMASK_ITEM);

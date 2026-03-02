@@ -1556,6 +1556,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         case 548:
             strategyName = "ssc";  // Serpentshrine Cavern
             break;
+        case 550:
+            strategyName = "tempestkeep";  // Tempest Keep
+            break;
         case 565:
             strategyName = "gruulslair";  // Gruul's Lair
             break;
@@ -1797,98 +1800,104 @@ bool PlayerbotAI::IsCombo(Player* player)
 
 bool PlayerbotAI::IsRangedDps(Player* player, bool bySpec) { return IsRanged(player, bySpec) && IsDps(player, bySpec); }
 
-bool PlayerbotAI::IsAssistHealOfIndex(Player* player, int index, bool ignoreDeadPlayers)
+bool PlayerbotAI::IsAssistHealOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers)
 {
+    if (!IsHeal(player))
+        return false;
+
+    if (ignoreDeadPlayers && !player->IsAlive())
+        return false;
+
     Group* group = player->GetGroup();
     if (!group)
         return false;
 
-    int counter = 0;
+    uint8 totalAssistants = 0;
+    uint8 assistantsBeforePlayer = 0;
+    uint8 nonAssistantsBeforePlayer = 0;
+    bool playerFound = false;
 
-    // First, assistants
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member)
+        if (!member || (ignoreDeadPlayers && !member->IsAlive()) || !IsHeal(member))
             continue;
 
-        if (ignoreDeadPlayers && !member->IsAlive())
-            continue;
+        bool isAssistant = group->IsAssistant(member->GetGUID());
 
-        if (group->IsAssistant(member->GetGUID()) && IsHeal(member))
+        if (isAssistant)
+            totalAssistants++;
+
+        if (member == player)
+            playerFound = true;
+        else if (!playerFound)
         {
-            if (index == counter)
-                return player == member;
-            counter++;
+            if (isAssistant)
+                assistantsBeforePlayer++;
+            else
+                nonAssistantsBeforePlayer++;
         }
     }
 
-    // If not enough assistants, get non-assistants
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member)
-            continue;
+    if (!playerFound)
+        return false;
 
-        if (ignoreDeadPlayers && !member->IsAlive())
-            continue;
+    // If the player is an assistant, their index is just the number of assistants before them.
+    // If they are a non-assistant, their index is shifted by the total number of assistants.
+    uint8 playerIndex = group->IsAssistant(player->GetGUID())
+        ? assistantsBeforePlayer : (totalAssistants + nonAssistantsBeforePlayer);
 
-        if (!group->IsAssistant(member->GetGUID()) && IsHeal(member))
-        {
-            if (index == counter)
-                return player == member;
-            counter++;
-        }
-    }
-
-    return false;
+    return playerIndex == index;
 }
 
-bool PlayerbotAI::IsAssistRangedDpsOfIndex(Player* player, int index, bool ignoreDeadPlayers)
+bool PlayerbotAI::IsAssistRangedDpsOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers)
 {
+    if (!IsRangedDps(player))
+        return false;
+
+    if (ignoreDeadPlayers && !player->IsAlive())
+        return false;
+
     Group* group = player->GetGroup();
     if (!group)
         return false;
 
-    int counter = 0;
+    uint8 totalAssistants = 0;
+    uint8 assistantsBeforePlayer = 0;
+    uint8 nonAssistantsBeforePlayer = 0;
+    bool playerFound = false;
 
-    // First, assistants
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member)
+        if (!member || (ignoreDeadPlayers && !member->IsAlive()) || !IsRangedDps(member))
             continue;
 
-        if (ignoreDeadPlayers && !member->IsAlive())
-            continue;
+        bool isAssistant = group->IsAssistant(member->GetGUID());
 
-        if (group->IsAssistant(member->GetGUID()) && IsRangedDps(member))
+        if (isAssistant)
+            totalAssistants++;
+
+        if (member == player)
+            playerFound = true;
+        else if (!playerFound)
         {
-            if (index == counter)
-                return player == member;
-            counter++;
+            if (isAssistant)
+                assistantsBeforePlayer++;
+            else
+                nonAssistantsBeforePlayer++;
         }
     }
 
-    // If not enough assistants, get non-assistants
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member)
-            continue;
+    if (!playerFound)
+        return false;
 
-        if (ignoreDeadPlayers && !member->IsAlive())
-            continue;
+    // If the player is an assistant, their index is just the number of assistants before them.
+    // If they are a non-assistant, their index is shifted by the total number of assistants.
+    uint8 playerIndex = group->IsAssistant(player->GetGUID())
+        ? assistantsBeforePlayer : (totalAssistants + nonAssistantsBeforePlayer);
 
-        if (!group->IsAssistant(member->GetGUID()) && IsRangedDps(member))
-        {
-            if (index == counter)
-                return player == member;
-            counter++;
-        }
-    }
-
-    return false;
+    return playerIndex == index;
 }
 
 bool PlayerbotAI::HasAggro(Unit* unit)
@@ -2226,43 +2235,44 @@ bool PlayerbotAI::IsDps(Player* player, bool bySpec)
     return false;
 }
 
-bool PlayerbotAI::IsMainTank(Player* player)
+bool PlayerbotAI::IsMainTank(Player* player, bool ignoreMemberFlag)
 {
     Group* group = player->GetGroup();
     if (!group)
-    {
         return IsTank(player);
-    }
 
     ObjectGuid mainTank = ObjectGuid();
-    Group::MemberSlotList const& slots = group->GetMemberSlots();
 
-    for (Group::member_citerator itr = slots.begin(); itr != slots.end(); ++itr)
+    // (1) Check for main tank flag (any class or spec)
+    if (!ignoreMemberFlag)
     {
-        if (itr->flags & MEMBER_FLAG_MAINTANK)
+        Group::MemberSlotList const& slots = group->GetMemberSlots();
+
+        for (Group::member_citerator itr = slots.begin(); itr != slots.end(); ++itr)
         {
-            mainTank = itr->guid;
-            break;
+            if (itr->flags & MEMBER_FLAG_MAINTANK)
+            {
+                mainTank = itr->guid;
+                break;
+            }
         }
+
+        if (mainTank != ObjectGuid::Empty)
+            return player->GetGUID() == mainTank;
     }
 
-    if (mainTank != ObjectGuid::Empty)
-    {
-        return player->GetGUID() == mainTank;
-    }
+    // (2) If no main tank flag, return the first tank
+    if (!IsTank(player) || !player->IsAlive())
+        return false;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
         if (!member)
-        {
             continue;
-        }
 
         if (IsTank(member) && member->IsAlive())
-        {
             return player->GetGUID() == member->GetGUID();
-        }
     }
 
     return false;
@@ -2281,47 +2291,31 @@ bool PlayerbotAI::IsBotMainTank(Player* player)
         return false;
 
     if (IsMainTank(player))
-    {
         return true;
-    }
 
     Group* group = player->GetGroup();
     if (!group)
-    {
-        return true;  // If no group, consider the bot as main tank
-    }
+        return true;
 
     int32 botAssistTankIndex = GetAssistTankIndex(player);
     if (botAssistTankIndex == -1)
-    {
         return false;
-    }
 
     for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
     {
         Player* member = gref->GetSource();
         if (!member)
-        {
             continue;
-        }
 
         int32 memberAssistTankIndex = GetAssistTankIndex(member);
         if (memberAssistTankIndex == -1)
-        {
             continue;
-        }
 
         if (memberAssistTankIndex == botAssistTankIndex && player == member)
-        {
             return true;
-        }
 
         if (memberAssistTankIndex < botAssistTankIndex && member->GetSession()->IsBot())
-        {
             return false;
-        }
-
-        return false;
     }
 
     return false;
@@ -2331,73 +2325,76 @@ uint32 PlayerbotAI::GetGroupTankNum(Player* player)
 {
     Group* group = player->GetGroup();
     if (!group)
-    {
         return 0;
-    }
+
     uint32 result = 0;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
 
         if (!member)
-        {
             continue;
-        }
 
         if (IsTank(member) && member->IsAlive())
-        {
             result++;
-        }
     }
+
     return result;
 }
 
-bool PlayerbotAI::IsAssistTank(Player* player) { return IsTank(player) && !IsMainTank(player); }
-
-bool PlayerbotAI::IsAssistTankOfIndex(Player* player, int index, bool ignoreDeadPlayers)
+bool PlayerbotAI::IsAssistTank(Player* player)
 {
+    return IsTank(player) && !IsMainTank(player);
+}
+
+bool PlayerbotAI::IsAssistTankOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers)
+{
+    if (!IsAssistTank(player))
+        return false;
+
+    if (ignoreDeadPlayers && !player->IsAlive())
+        return false;
+
     Group* group = player->GetGroup();
     if (!group)
         return false;
 
-    int counter = 0;
+    uint8 totalAssistants = 0;
+    uint8 assistantsBeforePlayer = 0;
+    uint8 nonAssistantsBeforePlayer = 0;
+    bool playerFound = false;
 
-    // First, assistants
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member)
+        if (!member || (ignoreDeadPlayers && !member->IsAlive()) || !IsAssistTank(member))
             continue;
 
-        if (ignoreDeadPlayers && !member->IsAlive())
-            continue;
+        bool isAssistant = group->IsAssistant(member->GetGUID());
 
-        if (group->IsAssistant(member->GetGUID()) && IsAssistTank(member))
+        if (isAssistant)
+            totalAssistants++;
+
+        if (member == player)
+            playerFound = true;
+        else if (!playerFound)
         {
-            if (index == counter)
-                return player == member;
-            counter++;
+            if (isAssistant)
+                assistantsBeforePlayer++;
+            else
+                nonAssistantsBeforePlayer++;
         }
     }
 
-    // If not enough assistants, get non-assistants
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member)
-            continue;
+    if (!playerFound)
+        return false;
 
-        if (ignoreDeadPlayers && !member->IsAlive())
-            continue;
+    // If the player is an assistant, their index is just the number of assistants before them.
+    // If they are a non-assistant, their index is shifted by the total number of assistants.
+    uint8 playerIndex = group->IsAssistant(player->GetGUID())
+        ? assistantsBeforePlayer : (totalAssistants + nonAssistantsBeforePlayer);
 
-        if (!group->IsAssistant(member->GetGUID()) && IsAssistTank(member))
-        {
-            if (index == counter)
-                return player == member;
-            counter++;
-        }
-    }
-    return false;
+    return playerIndex == index;
 }
 
 namespace acore
