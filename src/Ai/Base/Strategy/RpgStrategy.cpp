@@ -163,6 +163,14 @@ void RpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
+    triggers.push_back(
+        new TriggerNode(
+            "rpg duel",
+            {
+                NextAction("rpg duel", 5.0f)
+            }
+        )
+    );
 }
 
 void RpgStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

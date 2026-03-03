@@ -357,8 +357,8 @@ bool RpgDuelTrigger::IsActive()
 
     if (botAI->HasRealPlayerMaster())
     {
-        // do not auto duel if master is not afk
-        if (botAI->GetMaster() && !botAI->GetMaster()->isAFK())
+        // do not auto duel if master is afk
+        if (botAI->GetMaster() && botAI->GetMaster()->isAFK())
             return false;
     }
 
