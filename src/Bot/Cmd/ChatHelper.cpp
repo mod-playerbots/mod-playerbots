@@ -598,7 +598,7 @@ uint32 ChatHelper::parseSlot(std::string const text)
     return EQUIPMENT_SLOT_END;
 }
 
-bool ChatHelper::parseable(std::string const text)
+bool ChatHelper::parseableItem(std::string const text)
 {
     return text.find("|Hitem:") != std::string::npos || text == "questitem" || text == "ammo" ||
            substrContainsInMap<uint32>(text, consumableSubClasses) ||
