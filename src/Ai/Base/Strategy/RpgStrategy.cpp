@@ -167,7 +167,7 @@ void RpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "rpg duel",
             {
-                NextAction("rpg duel", 5.0f)
+                NextAction("rpg duel", 1.010f)
             }
         )
     );
