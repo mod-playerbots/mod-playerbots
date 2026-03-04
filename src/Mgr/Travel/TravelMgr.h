@@ -986,4 +986,6 @@ private:
     std::map<uint32, LevelBracket> zone2LevelBracket;
 };
 
+#define sTravelMgr TravelMgr::instance()
+
 #endif
