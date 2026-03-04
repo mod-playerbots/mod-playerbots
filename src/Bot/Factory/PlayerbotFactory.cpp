@@ -5,7 +5,6 @@
 
 #include "PlayerbotFactory.h"
 
-#include <random>
 #include <utility>
 
 #include "AccountMgr.h"
@@ -20,9 +19,7 @@
 #include "ItemTemplate.h"
 #include "ItemVisitors.h"
 #include "Log.h"
-#include "LogCommon.h"
 #include "LootMgr.h"
-#include "MapMgr.h"
 #include "ObjectMgr.h"
 #include "PerfMonitor.h"
 #include "PetDefines.h"
@@ -37,7 +34,6 @@
 #include "RandomPlayerbotFactory.h"
 #include "ReputationMgr.h"
 #include "SharedDefines.h"
-#include "SpellAuraDefines.h"
 #include "StatsWeightCalculator.h"
 #include "World.h"
 #include "AiObjectContext.h"
@@ -241,19 +237,17 @@ void PlayerbotFactory::Randomize(bool incremental)
     Prepare();
     LOG_DEBUG("playerbots", "Resetting player...");
     PerfMonitorOperation* pmo = sPerfMonitor.start(PERF_MON_RNDBOT, "PlayerbotFactory_Reset");
-    if (!sPlayerbotAIConfig.equipmentPersistence || level < sPlayerbotAIConfig.equipmentPersistenceLevel)
-    {
+
+    if (!PlayerbotAIConfig::instance().equipmentPersistence || level < PlayerbotAIConfig::instance().equipmentPersistenceLevel)
         bot->resetTalents(true);
-    }
+
     if (!incremental)
     {
         ClearSkills();
         ClearSpells();
         ResetQuests();
-        if (!sPlayerbotAIConfig.equipmentPersistence || level < sPlayerbotAIConfig.equipmentPersistenceLevel)
-        {
+        if (!PlayerbotAIConfig::instance().equipmentPersistence || level < PlayerbotAIConfig::instance().equipmentPersistenceLevel)
             ClearAllItems();
-        }
     }
     ClearInventory();
     bot->RemoveAllSpellCooldown();
@@ -954,8 +948,6 @@ void PlayerbotFactory::InitPet()
                 continue;
             if (co->Name.size() > 21)
                 continue;
-            uint32 guid = map->GenerateLowGuid<HighGuid::Pet>();
-            uint32 pet_number = sObjectMgr->GeneratePetNumber();
             if (bot->GetPetStable() && bot->GetPetStable()->CurrentPet)
             {
                 auto petGuid = bot->GetPetStable()->CurrentPet.value(); // To correct the build warnin in VS
@@ -1787,9 +1779,8 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
 
         int32 desiredQuality = itemQuality;
         if (urand(0, 100) < 100 * sPlayerbotAIConfig.randomGearLoweringChance && desiredQuality > ITEM_QUALITY_NORMAL)
-        {
             desiredQuality--;
-        }
+
         do
         {
             for (uint32 requiredLevel = bot->GetLevel(); requiredLevel > std::max((int32)bot->GetLevel() - delta, 0);
@@ -1912,7 +1903,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
         if (oldItem)
             continue;
 
-        Item* newItem = bot->EquipNewItem(dest, bestItemForSlot, true);
+        bot->EquipNewItem(dest, bestItemForSlot, true);
         bot->AutoUnequipOffhandIfNeed();
         // if (newItem)
         // {
@@ -1943,7 +1934,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                 (slot != EQUIPMENT_SLOT_RANGED))
                 continue;
 
-            if (Item* oldItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+            if (bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot) != nullptr)
                 bot->DestroyItem(INVENTORY_SLOT_BAG_0, slot, true);
 
             std::vector<uint32>& ids = items[slot];
@@ -1973,21 +1964,16 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
             }
 
             if (bestItemForSlot == 0)
-            {
                 continue;
-            }
+
             uint16 dest;
             if (!CanEquipUnseenItem(slot, dest, bestItemForSlot))
-            {
                 continue;
-            }
+
             Item* newItem = bot->EquipNewItem(dest, bestItemForSlot, true);
+
+            bot->EquipNewItem(dest, bestItemForSlot, true);
             bot->AutoUnequipOffhandIfNeed();
-            // if (newItem)
-            // {
-            //     newItem->AddToWorld();
-            //     newItem->AddToUpdateQueueOf(bot);
-            // }
         }
     }
 }
@@ -2000,16 +1986,10 @@ bool PlayerbotFactory::IsDesiredReplacement(Item* item)
     ItemTemplate const* proto = item->GetTemplate();
     uint32 requiredLevel = proto->RequiredLevel;
     if (!requiredLevel)
-    {
         return true;
-    }
-    // if (!requiredLevel)
-    // {
-    //     requiredLevel = sRandomItemMgr.GetMinLevelFromCache(proto->ItemId);
-    // }
 
     uint32 delta = 1 + (80 - bot->GetLevel()) / 10;
-    return proto->Quality < ITEM_QUALITY_RARE || int32(bot->GetLevel() - requiredLevel) > delta;
+    return proto->Quality < ITEM_QUALITY_RARE || (bot->GetLevel() - requiredLevel) > delta;
 }
 
 inline Item* StoreNewItemInInventorySlot(Player* player, uint32 newItemId, uint32 count)
@@ -2019,9 +1999,7 @@ inline Item* StoreNewItemInInventorySlot(Player* player, uint32 newItemId, uint3
     if (msg == EQUIP_ERR_OK)
     {
         if (Item* newItem = player->StoreNewItem(vDest, newItemId, true, Item::GenerateItemRandomPropertyId(newItemId)))
-        {
             return newItem;
-        }
     }
 
     return nullptr;
@@ -2143,21 +2121,18 @@ void PlayerbotFactory::InitBags(bool destroyOld)
         uint32 newItemId = 51809;
         Item* old_bag = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
         if (old_bag && old_bag->GetTemplate()->ItemId == newItemId)
-        {
             continue;
-        }
+
         uint16 dest;
         if (!CanEquipUnseenItem(slot, dest, newItemId))
             continue;
 
         if (old_bag && destroyOld)
-        {
             bot->DestroyItem(INVENTORY_SLOT_BAG_0, slot, true);
-        }
+
         if (old_bag)
-        {
             continue;
-        }
+
         Item* newItem = bot->EquipNewItem(dest, newItemId, true);
         // if (newItem)
         // {
@@ -2887,7 +2862,6 @@ void PlayerbotFactory::AddPrevQuests(uint32 questId, std::list<uint32>& questIds
 
 void PlayerbotFactory::InitQuests(std::list<uint32>& questMap, bool withRewardItem)
 {
-    uint32 count = 0;
     for (std::list<uint32>::iterator i = questMap.begin(); i != questMap.end(); ++i)
     {
         uint32 questId = *i;
@@ -3292,7 +3266,6 @@ void PlayerbotFactory::InitFood()
 
 void PlayerbotFactory::InitReagents()
 {
-    int specTab = AiFactory::GetPlayerSpecTab(bot);
     std::vector<std::pair<uint32, uint32>> items;
     switch (bot->getClass())
     {
@@ -4348,15 +4321,11 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool destroyOld)
                 continue;
 
             if (!item->IsFitToSpellRequirements(spellInfo))
-            {
                 continue;
-            }
 
             uint32 requiredLevel = spellInfo->BaseLevel;
             if (requiredLevel > bot->GetLevel())
-            {
                 continue;
-            }
 
             // disable next expansion enchantments
             if (sPlayerbotAIConfig.limitEnchantExpansion && bot->GetLevel() <= 60 && enchantSpell >= 27899)
@@ -4376,9 +4345,8 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool destroyOld)
 
                 SpellItemEnchantmentEntry const* enchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
                 if (!enchant || (enchant->slot != PERM_ENCHANTMENT_SLOT && enchant->slot != TEMP_ENCHANTMENT_SLOT))
-                {
                     continue;
-                }
+
                 if (enchant->requiredSkill &&
                     (!bot->HasSkill(enchant->requiredSkill) ||
                      (bot->GetSkillValue(enchant->requiredSkill) < enchant->requiredSkillValue)))
@@ -4386,9 +4354,8 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool destroyOld)
                     continue;
                 }
                 if (enchant->requiredLevel > bot->GetLevel())
-                {
                     continue;
-                }
+
                 float score = calculator.CalculateEnchant(enchant_id);
                 if (score >= bestScore)
                 {
@@ -4411,11 +4378,9 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool destroyOld)
         {
             uint8 socketColor = item->GetTemplate()->Socket[enchant_slot - SOCK_ENCHANTMENT_SLOT].Color;
             if (!socketColor)
-            {
                 continue;
-            }
+
             int32 enchantIdChosen = -1;
-            int32 colorChosen;
             bool jewelersGemChosen;
             float bestGemScore = -1;
             for (uint32& enchantGem : availableGems)
@@ -4460,7 +4425,6 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool destroyOld)
                 if (score > bestGemScore)
                 {
                     enchantIdChosen = enchant_id;
-                    colorChosen = gemProperties->color;
                     bestGemScore = score;
                     jewelersGemChosen = isJewelersGem;
                 }
@@ -4751,38 +4715,13 @@ void PlayerbotFactory::InitAttunementQuests()
 
     uint32 currentXP = bot->GetUInt32Value(PLAYER_XP);
 
-    // List of attunement quest IDs
-    std::list<uint32> attunementQuestsTBC = {
-        // Caverns of Time - Part 1
-        10279, // To The Master's Lair
-        10277, // The Caverns of Time
-
-        // Caverns of Time - Part 2 (Escape from Durnholde Keep)
-        10282, // Old Hillsbrad
-        10283, // Taretha's Diversion
-        10284, // Escape from Durnholde
-        10285, // Return to Andormu
-
-        // Caverns of Time - Part 2 (The Black Morass)
-        10296, // The Black Morass
-        10297, // The Opening of the Dark Portal
-        10298, // Hero of the Brood
-
-        // Magister's Terrace Attunement
-        11481, // Crisis at the Sunwell
-        11482, // Duty Calls
-        11488, // Magisters' Terrace
-        11490, // The Scryer's Scryer
-        11492  // Hard to Kill
-    };
-
     // Complete all level-appropriate attunement quests for the bot
     if (level >= 60)
     {
         std::list<uint32> questsToComplete;
 
         // Check each quest status before adding to the completion list
-        for (uint32 questId : attunementQuestsTBC)
+        for (uint32 questId : sPlayerbotAIConfig.attunementQuests)
         {
             QuestStatus questStatus = bot->GetQuestStatus(questId);
 

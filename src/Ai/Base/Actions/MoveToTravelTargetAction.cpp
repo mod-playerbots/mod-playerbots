@@ -7,10 +7,9 @@
 
 #include "ChooseRpgTargetAction.h"
 #include "LootObjectStack.h"
-#include "PathGenerator.h"
 #include "Playerbots.h"
 
-bool MoveToTravelTargetAction::Execute(Event event)
+bool MoveToTravelTargetAction::Execute(Event /*event*/)
 {
     TravelTarget* target = AI_VALUE(TravelTarget*, "travel target");
 

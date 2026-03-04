@@ -37,12 +37,14 @@
 #include "Ai/Raid/BlackwingLair/RaidBwlTriggerContext.h"
 #include "Ai/Raid/Karazhan/RaidKarazhanActionContext.h"
 #include "Ai/Raid/Karazhan/RaidKarazhanTriggerContext.h"
-#include "Ai/Raid/Magtheridon/RaidMagtheridonActionContext.h"
-#include "Ai/Raid/Magtheridon/RaidMagtheridonTriggerContext.h"
 #include "Ai/Raid/GruulsLair/RaidGruulsLairActionContext.h"
 #include "Ai/Raid/GruulsLair/RaidGruulsLairTriggerContext.h"
+#include "Ai/Raid/Magtheridon/RaidMagtheridonActionContext.h"
+#include "Ai/Raid/Magtheridon/RaidMagtheridonTriggerContext.h"
 #include "Ai/Raid/SerpentshrineCavern/RaidSSCActionContext.h"
 #include "Ai/Raid/SerpentshrineCavern/RaidSSCTriggerContext.h"
+#include "Ai/Raid/TempestKeep/RaidTempestKeepActionContext.h"
+#include "Ai/Raid/TempestKeep/RaidTempestKeepTriggerContext.h"
 #include "Ai/Raid/EyeOfEternity/RaidEoEActionContext.h"
 #include "Ai/Raid/EyeOfEternity/RaidEoETriggerContext.h"
 #include "Ai/Raid/VaultOfArchavon/RaidVoAActionContext.h"
@@ -115,9 +117,10 @@ void AiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Act
     actionContexts.Add(new RaidMcActionContext());
     actionContexts.Add(new RaidBwlActionContext());
     actionContexts.Add(new RaidKarazhanActionContext());
-    actionContexts.Add(new RaidMagtheridonActionContext());
     actionContexts.Add(new RaidGruulsLairActionContext());
+    actionContexts.Add(new RaidMagtheridonActionContext());
     actionContexts.Add(new RaidSSCActionContext());
+    actionContexts.Add(new RaidTempestKeepActionContext());
     actionContexts.Add(new RaidOsActionContext());
     actionContexts.Add(new RaidEoEActionContext());
     actionContexts.Add(new RaidVoAActionContext());
@@ -150,9 +153,10 @@ void AiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Tr
     triggerContexts.Add(new RaidMcTriggerContext());
     triggerContexts.Add(new RaidBwlTriggerContext());
     triggerContexts.Add(new RaidKarazhanTriggerContext());
-    triggerContexts.Add(new RaidMagtheridonTriggerContext());
     triggerContexts.Add(new RaidGruulsLairTriggerContext());
+    triggerContexts.Add(new RaidMagtheridonTriggerContext());
     triggerContexts.Add(new RaidSSCTriggerContext());
+    triggerContexts.Add(new RaidTempestKeepTriggerContext());
     triggerContexts.Add(new RaidOsTriggerContext());
     triggerContexts.Add(new RaidEoETriggerContext());
     triggerContexts.Add(new RaidVoATriggerContext());

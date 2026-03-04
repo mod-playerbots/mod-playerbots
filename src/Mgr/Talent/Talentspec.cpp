@@ -6,7 +6,9 @@
 #include "Talentspec.h"
 
 #include "Event.h"
-#include "Playerbots.h"
+#include "Player.h"
+#include "SpellMgr.h"
+#include "World.h"
 
 uint32 TalentSpec::TalentListEntry::tabPage() const
 {

@@ -98,6 +98,7 @@ public:
     std::set<uint32> aoeAvoidSpellWhitelist;
     bool tellWhenAvoidAoe;
     std::set<uint32> disallowedGameObjects;
+    std::set<uint32> attunementQuests;
 
     uint32 openGoSpell;
     bool randomBotAutologin;
@@ -352,7 +353,7 @@ public:
     bool syncQuestWithPlayer;
     bool syncQuestForPlayer;
     bool dropObsoleteQuests;
-    std::string autoTrainSpells;
+    bool allowLearnTrainerSpells;
     bool autoPickTalents;
     bool autoUpgradeEquip;
     int32 hunterWolfPet;
@@ -423,10 +424,10 @@ public:
     uint32 useFastFlyMountAtMinLevel;
 
     // stagger flightpath takeoff
-    uint32 delayMin;
-    uint32 delayMax;
-    uint32 gapMs;
-    uint32 gapJitterMs;
+    uint32 botTaxiDelayMin;
+    uint32 botTaxiDelayMax;
+    uint32 botTaxiGapMs;
+    uint32 botTaxiGapJitterMs;
 
     std::string const GetTimestampStr();
     bool hasLog(std::string const fileName)

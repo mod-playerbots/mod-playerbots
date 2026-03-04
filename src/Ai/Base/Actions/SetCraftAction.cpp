@@ -49,9 +49,7 @@ bool SetCraftAction::Execute(Event event)
     if (skillSpells.empty())
     {
         for (SkillLineAbilityEntry const* skillLine : sSkillLineAbilityStore)
-        {
             skillSpells[skillLine->Spell] = skillLine;
-        }
     }
 
     data.required.clear();
@@ -68,7 +66,8 @@ bool SetCraftAction::Execute(Event event)
         if (!spellInfo)
             continue;
 
-        if (SkillLineAbilityEntry const* skillLine = skillSpells[spellId])
+        SkillLineAbilityEntry const* skillLine = skillSpells[spellId];
+        if (skillLine != nullptr)
         {
             for (uint8 i = 0; i < 3; ++i)
             {
@@ -78,9 +77,7 @@ bool SetCraftAction::Execute(Event event)
                     for (uint32 x = 0; x < MAX_SPELL_REAGENTS; ++x)
                     {
                         if (spellInfo->Reagent[x] <= 0)
-                        {
                             continue;
-                        }
 
                         uint32 itemid = spellInfo->Reagent[x];
                         uint32 reagentsRequired = spellInfo->ReagentCount[x];
@@ -132,9 +129,8 @@ void SetCraftAction::TellCraft()
         if (ItemTemplate const* reagent = sObjectMgr->GetItemTemplate(item))
         {
             if (first)
-            {
                 first = false;
-            }
+
             else
                 out << ", ";
 
@@ -142,9 +138,7 @@ void SetCraftAction::TellCraft()
 
             uint32 given = data.obtained[item];
             if (given)
-            {
                 out << "|cffffff00(x" << given << " given)|r ";
-            }
         }
     }
 

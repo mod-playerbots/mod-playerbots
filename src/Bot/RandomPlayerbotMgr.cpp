@@ -24,7 +24,6 @@
 #include "Define.h"
 #include "FleeManager.h"
 #include "GridNotifiers.h"
-#include "GuildTaskMgr.h"
 #include "LFGMgr.h"
 #include "MapMgr.h"
 #include "NewRpgInfo.h"
@@ -950,7 +949,7 @@ void RandomPlayerbotMgr::CheckBgQueue()
 
             // Arena logic
             bool isRated = false;
-            if (uint8 arenaType = BattlegroundMgr::BGArenaType(queueTypeId))
+            if (BattlegroundMgr::BGArenaType(queueTypeId))
             {
                 BattlegroundQueue& bgQueue = sBattlegroundMgr->GetBattlegroundQueue(queueTypeId);
                 GroupQueueInfo ginfo;
@@ -1037,7 +1036,7 @@ void RandomPlayerbotMgr::CheckBgQueue()
             BattlegroundData[queueTypeId][bracketId].minLevel = pvpDiff->minLevel;
             BattlegroundData[queueTypeId][bracketId].maxLevel = pvpDiff->maxLevel;
 
-            if (uint8 arenaType = BattlegroundMgr::BGArenaType(queueTypeId))
+            if (BattlegroundMgr::BGArenaType(queueTypeId))
             {
                 bool isRated = false;
                 BattlegroundQueue& bgQueue = sBattlegroundMgr->GetBattlegroundQueue(queueTypeId);
@@ -2678,10 +2677,10 @@ void RandomPlayerbotMgr::PrintStats()
     uint32 heal = 0;
     uint32 tank = 0;
     uint32 active = 0;
-    uint32 update = 0;
+/*    uint32 update = 0;
     uint32 randomize = 0;
     uint32 teleport = 0;
-    uint32 changeStrategy = 0;
+    uint32 changeStrategy = 0;*/
     uint32 dead = 0;
     uint32 combat = 0;
     // uint32 revive = 0; //not used, line marked for removal.
@@ -2721,7 +2720,7 @@ void RandomPlayerbotMgr::PrintStats()
 
         if (botAI->AllowActivity())
             ++active;
-
+        /* TODO: Review statistics on rpg merge
         if (botAI->GetAiObjectContext()->GetValue<bool>("random bot update")->Get())
             ++update;
 
@@ -2734,7 +2733,7 @@ void RandomPlayerbotMgr::PrintStats()
 
         if (!GetEventValue(botId, "change_strategy"))
             ++changeStrategy;
-
+        */
         if (bot->isDead())
         {
             ++dead;
@@ -2742,40 +2741,38 @@ void RandomPlayerbotMgr::PrintStats()
             //++revive;
         }
         if (bot->IsInCombat())
-        {
             ++combat;
-        }
+
         if (bot->isMoving())
-        {
             ++moving;
-        }
+
         if (bot->IsInFlight())
-        {
             ++inFlight;
-        }
+
         if (bot->IsMounted())
-        {
             ++mounted;
-        }
+
         if (bot->InBattleground() || bot->InArena())
-        {
             ++inBg;
-        }
+
         if (bot->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING))
-        {
             ++rest;
-        }
+
         if (botAI->GetState() == BOT_STATE_NON_COMBAT)
             ++engine_noncombat;
+
         else if (botAI->GetState() == BOT_STATE_COMBAT)
             ++engine_combat;
+
         else
             ++engine_dead;
 
         if (botAI->IsHeal(bot, true))
             ++heal;
+
         else if (botAI->IsTank(bot, true))
             ++tank;
+
         else
             ++dps;
 
