@@ -28,7 +28,6 @@
 #include "StatsWeightCalculator.h"
 #include "Timer.h"
 #include "TravelMgr.h"
-#include "WorldNavigationMgr.h"
 
 bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
 {
@@ -866,7 +865,7 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
 
 WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)
 {
-    const std::vector<WorldLocation>& locs = sWorldNavigationMgr.GetLocsPerLevelCache(bot->GetLevel());
+    const std::vector<WorldLocation>& locs = sTravelMgr.GetLocsPerLevelCache(bot->GetLevel());
     float hiRange = 500.0f;
     float loRange = 2500.0f;
     if (bot->GetLevel() < 5)
@@ -924,7 +923,7 @@ WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)
 
 WorldPosition NewRpgBaseAction::SelectRandomCampPos(Player* bot)
 {
-    const std::vector<WorldLocation> locs = sWorldNavigationMgr.GetTravelHubs(bot);
+    const std::vector<WorldLocation> locs = sTravelMgr.GetTravelHubs(bot);
 
     bool inCity = false;
 
@@ -967,11 +966,11 @@ WorldPosition NewRpgBaseAction::SelectRandomCampPos(Player* bot)
 
 bool NewRpgBaseAction::SelectRandomFlightTaxiNode(ObjectGuid& flightMaster, std::vector<uint32>& path)
 {
-    flightMaster = sWorldNavigationMgr.GetNearestFlightMasterGuid(bot);
+    flightMaster = sTravelMgr.GetNearestFlightMasterGuid(bot);
     if (!flightMaster)
         return false;
 
-    std::vector<std::vector<uint32>> availablePaths = sWorldNavigationMgr.GetOptimalFlightDestinations(bot);
+    std::vector<std::vector<uint32>> availablePaths = sTravelMgr.GetOptimalFlightDestinations(bot);
     if (availablePaths.empty())
         return false;
 

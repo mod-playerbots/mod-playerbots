@@ -44,7 +44,6 @@
 #include "TravelMgr.h"
 #include "Unit.h"
 #include "World.h"
-#include "WorldNavigationMgr.h"
 #include "Cell.h"
 #include "GridNotifiers.h"
 #include "CellImpl.h"
@@ -1769,13 +1768,13 @@ void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
     if (bot->InBattleground())
         return;
 
-    std::vector<WorldLocation> locs = sWorldNavigationMgr.GetCityLocations(bot);
+    std::vector<WorldLocation> locs = sTravelMgr.GetCityLocations(bot);
     if (!locs.empty())
     {
         RandomTeleport(bot, locs, true);
         return;
     }
-    locs = sWorldNavigationMgr.GetTeleportLocations(bot);
+    locs = sTravelMgr.GetTeleportLocations(bot);
     if (!locs.empty())
     {
         RandomTeleport(bot, locs, false);
@@ -1788,7 +1787,7 @@ void RandomPlayerbotMgr::RandomTeleportGrindForLevel(Player* bot)
     if (bot->InBattleground())
         return;
 
-    std::vector<WorldLocation> locs =  sWorldNavigationMgr.GetTeleportLocations(bot);
+    std::vector<WorldLocation> locs = sTravelMgr.GetTeleportLocations(bot);
     LOG_DEBUG("playerbots", "Random teleporting bot {} for level {} ({} locations available)", bot->GetName().c_str(),
               bot->GetLevel(), locs.size());
 
