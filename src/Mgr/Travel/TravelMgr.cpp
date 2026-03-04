@@ -4356,10 +4356,6 @@ void TravelMgr::printObj(WorldObject* obj, std::string const type)
     }
 }
 
-// ============================================================
-// TravelMgr navigation methods (formerly WorldNavigationMgr)
-// ============================================================
-
 void TravelMgr::Init()
 {
     if (sPlayerbotAIConfig.enabled)
