@@ -298,9 +298,24 @@ AiPlayerbot.TwoRoundsGearInit = 0
 # Default: 0 (disabled)
 AiPlayerbot.FreeMethodLoot = 0
 
-# Bots' loot roll level (0 = pass, 1 = greed, 2 = need)
+# Bots' Roll level bots will use for items they Need (0 = pass, 1 = greed, 2 = need)
 # Default: 1 (greed)
 AiPlayerbot.LootRollLevel = 1
+
+# Enable bots to roll GREED on items (global toggle)
+# If disabled, bots will PASS instead of GREED on all items
+# Default: 0 (disabled - bots only NEED or PASS)
+AiPlayerbot.LootRollGreed = 0
+
+# Enable bots to roll on recipes. Will NEED on learnable profession recipes they don't already know
+# Bots will roll GREED on BoE recipes they can't learn if LootRollGreed is enabled.
+# Default: 0 (disabled)
+AiPlayerbot.LootRollRecipe = 0
+
+# Bots with enchanting will roll DISENCHANT instead of GREED on disenchantable items
+# If disabled, bots will GREED on disenchantable items instead
+# Default: 1 (enabled)
+AiPlayerbot.LootRollDisenchant = 1
 
 #
 #

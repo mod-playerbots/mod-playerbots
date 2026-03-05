@@ -346,6 +346,9 @@ public:
 
     bool freeMethodLoot;
     int32 lootRollLevel;
+    bool lootRollRecipe;
+    bool lootRollDisenchant;
+    bool lootRollGreed;
     std::string autoPickReward;
     bool autoEquipUpgradeLoot;
     float equipUpgradeThreshold;
