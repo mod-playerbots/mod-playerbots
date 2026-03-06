@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
+#include <unordered_set>
 #include <openssl/sha.h>
 #include <iomanip>
 #include <algorithm>
