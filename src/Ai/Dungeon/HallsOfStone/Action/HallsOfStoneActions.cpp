@@ -1,8 +1,7 @@
 #include "Playerbots.h"
 #include "HallsOfStoneActions.h"
-#include "HallsOfStoneStrategy.h"
 
-bool ShatterSpreadAction::Execute(Event event)
+bool ShatterSpreadAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "krystallus");
     if (!boss) { return false; }
@@ -35,7 +34,7 @@ bool ShatterSpreadAction::Execute(Event event)
     return false;
 }
 
-bool AvoidLightningRingAction::Execute(Event event)
+bool AvoidLightningRingAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "sjonnir the ironshaper");
     if (!boss) { return false; }

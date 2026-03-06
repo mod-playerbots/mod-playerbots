@@ -11,8 +11,6 @@
 #include "CreatureAI.h"
 #include "Playerbots.h"
 #include "CharmInfo.h"
-#include "SharedDefines.h"
-#include "ObjectGuid.h"
 #include "SpellMgr.h"
 #include "SpellInfo.h"
 #include <vector>
@@ -54,7 +52,7 @@ bool MeleeAction::isUseful()
     return true;
 }
 
-bool TogglePetSpellAutoCastAction::Execute(Event event)
+bool TogglePetSpellAutoCastAction::Execute(Event /*event*/)
 {
     Pet* pet = bot->GetPet();
     if (!pet)
@@ -119,7 +117,7 @@ bool TogglePetSpellAutoCastAction::Execute(Event event)
     return toggled;
 }
 
-bool PetAttackAction::Execute(Event event)
+bool PetAttackAction::Execute(Event /*event*/)
 {
     Guardian* pet = bot->GetGuardianPet();
     if (!pet)

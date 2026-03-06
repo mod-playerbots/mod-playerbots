@@ -8,7 +8,7 @@
 
 using namespace MagtheridonHelpers;
 
-bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event event)
+bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event /*event*/)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (!magtheridon)
@@ -67,7 +67,7 @@ bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event event)
     return false;
 }
 
-bool MagtheridonFirstAssistTankAttackNWChannelerAction::Execute(Event event)
+bool MagtheridonFirstAssistTankAttackNWChannelerAction::Execute(Event /*event*/)
 {
     Creature* channelerDiamond = GetChanneler(bot, NORTHWEST_CHANNELER);
     if (!channelerDiamond)
@@ -100,7 +100,7 @@ bool MagtheridonFirstAssistTankAttackNWChannelerAction::Execute(Event event)
     return false;
 }
 
-bool MagtheridonSecondAssistTankAttackNEChannelerAction::Execute(Event event)
+bool MagtheridonSecondAssistTankAttackNEChannelerAction::Execute(Event /*event*/)
 {
     Creature* channelerTriangle = GetChanneler(bot, NORTHEAST_CHANNELER);
     if (!channelerTriangle)
@@ -134,7 +134,7 @@ bool MagtheridonSecondAssistTankAttackNEChannelerAction::Execute(Event event)
 }
 
 // Misdirect West & East Channelers to Main Tank
-bool MagtheridonMisdirectHellfireChannelers::Execute(Event event)
+bool MagtheridonMisdirectHellfireChannelers::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -211,7 +211,7 @@ bool MagtheridonMisdirectHellfireChannelers::Execute(Event event)
     return false;
 }
 
-bool MagtheridonAssignDPSPriorityAction::Execute(Event event)
+bool MagtheridonAssignDPSPriorityAction::Execute(Event /*event*/)
 {
     // Listed in order of priority
     Creature* channelerSquare   = GetChanneler(bot, SOUTH_CHANNELER);
@@ -285,7 +285,7 @@ bool MagtheridonAssignDPSPriorityAction::Execute(Event event)
 
 // Assign Burning Abyssals to Warlocks to Banish
 // Burning Abyssals in excess of Warlocks in party will be Feared
-bool MagtheridonWarlockCCBurningAbyssalAction::Execute(Event event)
+bool MagtheridonWarlockCCBurningAbyssalAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -338,7 +338,7 @@ bool MagtheridonWarlockCCBurningAbyssalAction::Execute(Event event)
 }
 
 // Main tank will back up to the Northern point of the room
-bool MagtheridonMainTankPositionBossAction::Execute(Event event)
+bool MagtheridonMainTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (!magtheridon)
@@ -376,7 +376,7 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event event)
 std::unordered_map<ObjectGuid, Position> MagtheridonSpreadRangedAction::initialPositions;
 std::unordered_map<ObjectGuid, bool> MagtheridonSpreadRangedAction::hasReachedInitialPosition;
 
-bool MagtheridonSpreadRangedAction::Execute(Event event)
+bool MagtheridonSpreadRangedAction::Execute(Event /*event*/)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (!magtheridon)
@@ -486,7 +486,7 @@ bool MagtheridonSpreadRangedAction::Execute(Event event)
 
 // For bots that are assigned to click cubes
 // Magtheridon casts Blast Nova every 54.35 to 55.40s, with a 2s cast time
-bool MagtheridonUseManticronCubeAction::Execute(Event event)
+bool MagtheridonUseManticronCubeAction::Execute(Event /*event*/)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (!magtheridon)
@@ -627,7 +627,7 @@ bool MagtheridonUseManticronCubeAction::HandleCubeInteraction(const CubeInfo& cu
 // is not interrupted or takes too long to interrupt, the timer will be thrown off for the rest of the encounter.
 // Correcting this issue is complicated and probably would need some rewriting--I have not done so and
 // and view the current solution as sufficient since in TBC a missed Blast Nova would be a guaranteed wipe anyway.
-bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event event)
+bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event /*event*/)
 {
     Unit* magtheridon = AI_VALUE2(Unit*, "find target", "magtheridon");
     if (!magtheridon)
@@ -640,7 +640,7 @@ bool MagtheridonManageTimersAndAssignmentsAction::Execute(Event event)
                            magtheridon->FindCurrentSpellBySpellId(SPELL_BLAST_NOVA);
     bool lastBlastNova = lastBlastNovaState[instanceId];
 
-    if (lastBlastNova && !blastNovaActive && IsMechanicTrackerBot(botAI, bot, MAGTHERIDON_MAP_ID, nullptr))
+    if (lastBlastNova && !blastNovaActive)
         blastNovaTimer[instanceId] = now;
 
     lastBlastNovaState[instanceId] = blastNovaActive;

@@ -1,8 +1,7 @@
 #include "Playerbots.h"
 #include "NexusActions.h"
-#include "NexusStrategy.h"
 
-bool MoveFromWhirlwindAction::Execute(Event event)
+bool MoveFromWhirlwindAction::Execute(Event /*event*/)
 {
     Unit* boss = nullptr;
     uint8 faction = bot->GetTeamId();
@@ -12,23 +11,19 @@ bool MoveFromWhirlwindAction::Execute(Event event)
     {
         case DUNGEON_DIFFICULTY_NORMAL:
             if (faction == TEAM_ALLIANCE)
-            {
                 boss = AI_VALUE2(Unit*, "find target", "horde commander");
-            }
+
             else // TEAM_HORDE
-            {
                 boss = AI_VALUE2(Unit*, "find target", "alliance commander");
-            }
+
             break;
         case DUNGEON_DIFFICULTY_HEROIC:
             if (faction == TEAM_ALLIANCE)
-            {
                 boss = AI_VALUE2(Unit*, "find target", "commander kolurg");
-            }
+
             else // TEAM_HORDE
-            {
                 boss = AI_VALUE2(Unit*, "find target", "commander stoutbeard");
-            }
+
             break;
         default:
             break;
@@ -36,23 +31,19 @@ bool MoveFromWhirlwindAction::Execute(Event event)
 
     // Ensure boss is valid before accessing its methods
     if (!boss)
-    {
         return false;
-    }
 
     float bossDistance = bot->GetExactDist2d(boss->GetPosition());
 
     // Check if the bot is already at a safe distance
     if (bossDistance > targetDist)
-    {
         return false;
-    }
 
     // Move away from the boss to avoid Whirlwind
     return MoveAway(boss, targetDist - bossDistance);
 }
 
-bool FirebombSpreadAction::Execute(Event event)
+bool FirebombSpreadAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "grand magus telestra");
     float radius = 5.0f;
@@ -66,15 +57,14 @@ bool FirebombSpreadAction::Execute(Event event)
         if (!unit || bot->GetGUID() == member) { continue; }
 
         if (bot->GetExactDist2d(unit) < targetDist)
-        {
             return MoveAway(unit, targetDist);
-        }
+
     }
     return false;
 }
 
 bool TelestraSplitTargetAction::isUseful() { return !botAI->IsHeal(bot); }
-bool TelestraSplitTargetAction::Execute(Event event)
+bool TelestraSplitTargetAction::Execute(Event /*event*/)
 {
     GuidVector attackers = AI_VALUE(GuidVector, "attackers");
     Unit* splitTargets[3] = {nullptr, nullptr, nullptr};
@@ -107,9 +97,8 @@ bool TelestraSplitTargetAction::Execute(Event event)
         if (target)
         {
             if (AI_VALUE(Unit*, "current target") != target)
-            {
                 return Attack(target);
-            }
+
             // Don't continue loop here, the target exists so we don't
             // want to move down the prio list. We just don't need to send attack
             // command again, just return false and exit the loop that way
@@ -121,7 +110,7 @@ bool TelestraSplitTargetAction::Execute(Event event)
 }
 
 bool ChaoticRiftTargetAction::isUseful() { return !botAI->IsHeal(bot); }
-bool ChaoticRiftTargetAction::Execute(Event event)
+bool ChaoticRiftTargetAction::Execute(Event /*event*/)
 {
     Unit* chaoticRift = nullptr;
 
@@ -139,9 +128,8 @@ bool ChaoticRiftTargetAction::Execute(Event event)
         }
     }
     if (!chaoticRift || AI_VALUE(Unit*, "current target") == chaoticRift)
-    {
         return false;
-    }
+
     return Attack(chaoticRift);
 }
 
@@ -152,7 +140,7 @@ bool DodgeSpikesAction::isUseful()
 
     return bot->GetExactDist2d(boss) > 0.5f;
 }
-bool DodgeSpikesAction::Execute(Event event)
+bool DodgeSpikesAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "ormorok the tree-shaper");
     if (!boss) { return false; }
@@ -160,7 +148,7 @@ bool DodgeSpikesAction::Execute(Event event)
     return Move(bot->GetAngle(boss), bot->GetExactDist2d(boss) - 0.3f);
 }
 
-bool IntenseColdJumpAction::Execute(Event event)
+bool IntenseColdJumpAction::Execute(Event /*event*/)
 {
     // This needs improving but maybe it should be done in the playerbot core.
     // Jump doesn't seem to support zero offset (eg. jump on the spot) so need to add a tiny delta.

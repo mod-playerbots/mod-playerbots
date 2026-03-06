@@ -1700,7 +1700,7 @@ std::vector<uint32> RandomItemMgr::GetQuestIdsForItem(uint32 itemId)
         }
     }
 
-    return std::move(questIds);
+    return questIds;
 }
 
 uint32 RandomItemMgr::GetUpgrade(Player* player, std::string spec, uint8 slot, uint32 quality, uint32 itemId)
@@ -1827,12 +1827,11 @@ std::vector<uint32> RandomItemMgr::GetUpgradeList(Player* player, std::string sp
 {
     std::vector<uint32> listItems;
     if (!player)
-        return std::move(listItems);
+        return listItems;
 
     // get old item statWeight
     uint32 oldStatWeight = 0;
     uint32 specId = 0;
-    uint32 closestUpgrade = 0;
     uint32 closestUpgradeWeight = 0;
     std::vector<uint32> classspecs;
 
@@ -1848,7 +1847,7 @@ std::vector<uint32> RandomItemMgr::GetUpgradeList(Player* player, std::string sp
     }
 
     if (!specId)
-        return std::move(listItems);
+        return listItems;
 
     if (itemId && itemInfoCache.find(itemId) != itemInfoCache.end())
     {
@@ -1933,7 +1932,6 @@ std::vector<uint32> RandomItemMgr::GetUpgradeList(Player* player, std::string sp
         // pick closest upgrade
         if (info.weights[specId] > closestUpgradeWeight)
         {
-            closestUpgrade = info.itemId;
             closestUpgradeWeight = info.weights[specId];
         }
     }
@@ -1942,7 +1940,7 @@ std::vector<uint32> RandomItemMgr::GetUpgradeList(Player* player, std::string sp
         LOG_INFO("playerbots", "New Items: {}, Old item:%d, New items max: {}", listItems.size(), oldStatWeight,
                  closestUpgradeWeight);
 
-    return std::move(listItems);
+    return listItems;
 }
 
 bool RandomItemMgr::HasStatWeight(uint32 itemId)
@@ -2771,9 +2769,8 @@ inline bool IsCraftedBySpellInfo(ItemTemplate const* proto, SpellInfo const* spe
         }
 
         if (proto->ItemId == spellInfo->Reagent[x])
-        {
             return true;
-        }
+
     }
 
     for (uint8 i = 0; i < 3; ++i)
@@ -2781,9 +2778,7 @@ inline bool IsCraftedBySpellInfo(ItemTemplate const* proto, SpellInfo const* spe
         if (spellInfo->Effects[i].Effect == SPELL_EFFECT_CREATE_ITEM)
         {
             if (spellInfo->Effects[i].ItemType == proto->ItemId)
-            {
                 return true;
-            }
         }
     }
 

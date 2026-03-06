@@ -1,5 +1,4 @@
 #include "TrialOfTheChampionStrategy.h"
-#include "TrialOfTheChampionMultipliers.h"
 
 void WotlkDungeonToCStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 {

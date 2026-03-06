@@ -1,5 +1,4 @@
 #include "RaidKarazhanHelpers.h"
-#include "RaidKarazhanActions.h"
 #include "Playerbots.h"
 
 namespace KarazhanHelpers
@@ -304,10 +303,8 @@ namespace KarazhanHelpers
     {
         float sx = start.GetPositionX();
         float sy = start.GetPositionY();
-        float sz = start.GetPositionZ();
         float tx = target.GetPositionX();
         float ty = target.GetPositionY();
-        float tz = target.GetPositionZ();
 
         const float totalDist = start.GetExactDist2d(target.GetPositionX(), target.GetPositionY());
         if (totalDist == 0.0f)
@@ -318,7 +315,6 @@ namespace KarazhanHelpers
             float t = checkDist / totalDist;
             float checkX = sx + (tx - sx) * t;
             float checkY = sy + (ty - sy) * t;
-            float checkZ = sz + (tz - sz) * t;
             for (Unit* hazard : hazards)
             {
                 const float hx = checkX - hazard->GetPositionX();

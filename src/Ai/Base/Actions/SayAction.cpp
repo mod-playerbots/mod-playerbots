@@ -9,9 +9,7 @@
 #include <regex>
 #include <string>
 
-#include "ChannelMgr.h"
 #include "Event.h"
-#include "GuildMgr.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 
@@ -56,7 +54,7 @@ static const std::unordered_set<std::string> noReplyMsgStarts = {"e ", "accept "
 
 SayAction::SayAction(PlayerbotAI* botAI) : Action(botAI, "say"), Qualified() {}
 
-bool SayAction::Execute(Event event)
+bool SayAction::Execute(Event /*event*/)
 {
     std::string text = "";
     std::map<std::string, std::string> placeholders;
@@ -92,7 +90,6 @@ bool SayAction::Execute(Event event)
     }
 
     // set delay before next say
-    time_t lastSaid = AI_VALUE2(time_t, "last said", qualifier);
     uint32 nextTime = time(nullptr) + urand(1, 30);
     botAI->GetAiObjectContext()->GetValue<time_t>("last said", qualifier)->Set(nextTime);
 
@@ -159,7 +156,6 @@ bool SayAction::isUseful()
 
 void ChatReplyAction::ChatReplyDo(Player* bot, uint32& type, uint32& guid1, uint32& guid2, std::string& msg, std::string& chanName, std::string& name)
 {
-    ChatReplyType replyType = REPLY_NOT_UNDERSTAND;  // default not understand
     std::string respondsText = "";
 
     // if we're just commanding bots around, don't respond...

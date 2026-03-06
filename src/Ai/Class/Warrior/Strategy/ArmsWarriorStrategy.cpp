@@ -5,8 +5,6 @@
 
 #include "ArmsWarriorStrategy.h"
 
-#include "Playerbots.h"
-
 class ArmsWarriorStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
 public:

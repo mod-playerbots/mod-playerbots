@@ -7,7 +7,6 @@
 #define _PLAYERBOT_AIFACTORY_H
 
 #include <map>
-
 #include "Common.h"
 
 class AiObjectContext;

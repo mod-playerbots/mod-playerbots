@@ -29,7 +29,6 @@ public:
             foundHighPriority = true;
             return;
         }
-        Unit* victim = attacker->GetVictim();
         if (!result || CalcThreatGap(attacker, threatMgr) > CalcThreatGap(result, &result->GetThreatMgr()))
             result = attacker;
     }
@@ -144,7 +143,7 @@ public:
     {
     }
 
-    void CheckAttacker(Unit* attacker, ThreatMgr* threatMgr) override
+    void CheckAttacker(Unit* attacker, ThreatMgr*) override
     {
         if (Group* group = botAI->GetBot()->GetGroup())
         {
@@ -195,7 +194,6 @@ public:
     }
     int32_t GetIntervalLevel(Unit* unit)
     {
-        float time = unit->GetHealth() / dps_;
         float dis = unit->GetDistance(botAI->GetBot());
         float attackRange =
             botAI->IsRanged(botAI->GetBot()) ? sPlayerbotAIConfig.spellDistance : sPlayerbotAIConfig.meleeDistance;
@@ -218,7 +216,7 @@ public:
     {
     }
 
-    void CheckAttacker(Unit* attacker, ThreatMgr* threatMgr) override
+    void CheckAttacker(Unit* attacker, ThreatMgr*) override
     {
         if (Group* group = botAI->GetBot()->GetGroup())
         {
@@ -276,7 +274,6 @@ public:
     }
     int32_t GetIntervalLevel(Unit* unit)
     {
-        float time = unit->GetHealth() / dps_;
         float dis = unit->GetDistance(botAI->GetBot());
         float attackRange =
             botAI->IsRanged(botAI->GetBot()) ? sPlayerbotAIConfig.spellDistance : sPlayerbotAIConfig.meleeDistance;
@@ -322,7 +319,7 @@ class FindMaxHpTargetStrategy : public FindTargetStrategy
 public:
     FindMaxHpTargetStrategy(PlayerbotAI* botAI) : FindTargetStrategy(botAI), maxHealth(0) {}
 
-    void CheckAttacker(Unit* attacker, ThreatMgr* threatMgr) override
+    void CheckAttacker(Unit* attacker, ThreatMgr*) override
     {
         if (Group* group = botAI->GetBot()->GetGroup())
         {

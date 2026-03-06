@@ -6,7 +6,8 @@
 #include "GuildBankAction.h"
 
 #include "GuildMgr.h"
-#include "Playerbots.h"
+#include "PlayerbotAI.h"
+#include "AiObjectContext.h"
 
 bool GuildBankAction::Execute(Event event)
 {

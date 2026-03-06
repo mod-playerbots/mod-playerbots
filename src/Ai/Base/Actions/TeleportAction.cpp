@@ -7,9 +7,12 @@
 
 #include "Event.h"
 #include "LastMovementValue.h"
-#include "Playerbots.h"
+#include "AiObjectContext.h"
+#include "PlayerbotAI.h"
+#include "SpellMgr.h"
+#include "Spell.h"
 
-bool TeleportAction::Execute(Event event)
+bool TeleportAction::Execute(Event /*event*/)
 {
     /*
     // List of allowed portal entries (you can populate this dynamically)
@@ -74,7 +77,7 @@ bool TeleportAction::Execute(Event event)
             continue;
 
         uint32 spellId = goInfo->spellcaster.spellId;
-        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        SpellInfo const* spellInfo = SpellMgr::instance()->GetSpellInfo(spellId);
         if (!spellInfo || !spellInfo->HasEffect(SPELL_EFFECT_TELEPORT_UNITS))
             continue;
 

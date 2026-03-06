@@ -5,8 +5,6 @@
 
 #include "TankWarriorStrategy.h"
 
-#include "Playerbots.h"
-
 class TankWarriorStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
 public:

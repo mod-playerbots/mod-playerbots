@@ -7,13 +7,13 @@
 
 #include "ChatActionContext.h"
 #include "Event.h"
-#include "Playerbots.h"
+#include "AiObjectContext.h"
 
 HelpAction::HelpAction(PlayerbotAI* botAI) : Action(botAI, "help") { chatContext = new ChatActionContext(); }
 
 HelpAction::~HelpAction() { delete chatContext; }
 
-bool HelpAction::Execute(Event event)
+bool HelpAction::Execute(Event /*event*/)
 {
     TellChatCommands();
     TellStrategies();

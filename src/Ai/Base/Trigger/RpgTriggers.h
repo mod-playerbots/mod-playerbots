@@ -134,8 +134,6 @@ class RpgTrainTrigger : public RpgTrigger
 public:
     RpgTrainTrigger(PlayerbotAI* botAI, std::string const name = "rpg train") : RpgTrigger(botAI, name) {}
 
-    static bool IsTrainerOf(CreatureTemplate const* cInfo, Player* pPlayer);
-
     bool IsActive() override;
 };
 

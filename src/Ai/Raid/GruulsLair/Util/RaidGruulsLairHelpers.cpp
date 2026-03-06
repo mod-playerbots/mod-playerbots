@@ -128,7 +128,7 @@ namespace GruulsLairHelpers
         Unit* krosh = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "krosh firehand")->Get();
         if (krosh && krosh->IsAlive())
         {
-            float dist = sqrt(pow(pos.GetPositionX() - krosh->GetPositionX(), 2) + pow(pos.GetPositionY() - krosh->GetPositionY(), 2));
+            float dist = krosh->GetDistance2d(pos.GetPositionX(), pos.GetPositionY());
             if (dist < KROSH_SAFE_DISTANCE)
                 isSafe = false;
         }
@@ -136,7 +136,7 @@ namespace GruulsLairHelpers
         Unit* maulgar = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "high king maulgar")->Get();
         if (botAI->IsRanged(bot) && maulgar && maulgar->IsAlive())
         {
-            float dist = sqrt(pow(pos.GetPositionX() - maulgar->GetPositionX(), 2) + pow(pos.GetPositionY() - maulgar->GetPositionY(), 2));
+            float dist = maulgar->GetDistance2d(pos.GetPositionX(), pos.GetPositionY());
             if (dist < MAULGAR_SAFE_DISTANCE)
                 isSafe = false;
         }
@@ -164,25 +164,25 @@ namespace GruulsLairHelpers
         {
             float angle = 2 * M_PI * i / NUM_POSITIONS;
             Position candidatePos;
-            candidatePos.m_positionX = bot->GetPositionX() + SEARCH_RADIUS * cos(angle);
-            candidatePos.m_positionY = bot->GetPositionY() + SEARCH_RADIUS * sin(angle);
-            candidatePos.m_positionZ = bot->GetPositionZ();
+            candidatePos.Relocate(bot->GetPositionX() + SEARCH_RADIUS * cos(angle),
+                                  bot->GetPositionY() + SEARCH_RADIUS * sin(angle),
+                                  bot->GetPositionZ());
 
-            float destX = candidatePos.m_positionX, destY = candidatePos.m_positionY, destZ = candidatePos.m_positionZ;
+            float destX = candidatePos.GetPositionX();
+            float destY = candidatePos.GetPositionY();
+            float destZ = candidatePos.GetPositionZ();
             if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(),
                 bot->GetPositionZ(), destX, destY, destZ, true))
                 continue;
 
-            if (destX != candidatePos.m_positionX || destY != candidatePos.m_positionY)
+            if (destX != candidatePos.GetPositionX() || destY != candidatePos.GetPositionY())
                 continue;
 
-            candidatePos.m_positionX = destX;
-            candidatePos.m_positionY = destY;
-            candidatePos.m_positionZ = destZ;
+            candidatePos.Relocate(destX, destY, destZ);
 
             if (IsPositionSafe(botAI, bot, candidatePos))
             {
-                float movementDistance = sqrt(pow(destX - bot->GetPositionX(), 2) + pow(destY - bot->GetPositionY(), 2));
+                float movementDistance = bot->GetDistance2d(destX, destY);
                 if (movementDistance < bestScore)
                 {
                     bestScore = movementDistance;

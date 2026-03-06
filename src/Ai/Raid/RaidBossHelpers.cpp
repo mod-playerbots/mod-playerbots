@@ -77,102 +77,87 @@ void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
 // Intended for purposes of storing and erasing timers and trackers in associative containers
 bool IsMechanicTrackerBot(PlayerbotAI* botAI, Player* bot, uint32 mapId, Player* exclude)
 {
-    if (Group* group = bot->GetGroup())
+    if (!botAI->IsDps(bot) || !bot->IsAlive() || bot->GetMapId() != mapId)
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || member->GetMapId() != mapId)
-                continue;
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || member->GetMapId() != mapId || member == exclude)
+            continue;
 
-            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-            if (!memberAI || !memberAI->IsDps(member))
-                continue;
+        PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+        if (!memberAI || !memberAI->IsDps(member))
+            continue;
 
-            if (member != exclude)
-                return member == bot;
-        }
+        return member == bot;
     }
 
     return false;
 }
 
-// Requires the main tank to be alive (IsMainTank() will return the player with
-// the main tank flag, even if dead)
+// Requires the main tank to be alive
+// Note that IsMainTank() will return the player with the main tank flag, even if dead
 Player* GetGroupMainTank(PlayerbotAI* botAI, Player* bot)
 {
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
-                continue;
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
 
-            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-            if (memberAI && memberAI->IsMainTank(member))
-                return member;
-        }
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive())
+            continue;
+
+        if (botAI->IsMainTank(member))
+            return member;
     }
 
     return nullptr;
 }
 
-// The below functions require the assist tanks to be alive (the 3rd parameter of
-// IsAssistTankOfIndex() otherwise by default does not require them to be alive)
-Player* GetGroupFirstAssistTank(PlayerbotAI* botAI, Player* bot)
+// Returns the alive assist tank of the specified index (0 = first, 1 = second, etc.)
+// Priority: Assistants first, then Non-Assistants.
+Player* GetGroupAssistTank(PlayerbotAI* botAI, Player* bot, uint8 index)
 {
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
-                continue;
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
 
-            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-            if (memberAI && memberAI->IsAssistTankOfIndex(member, 0, false))
-                return member;
+    uint8 assistantCount = 0;
+    std::vector<Player*> nonAssistantTanks;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive())
+            continue;
+
+        if (botAI->IsAssistTank(member))
+        {
+            if (group->IsAssistant(member->GetGUID()))
+            {
+                if (assistantCount == index)
+                    return member;
+
+                assistantCount++;
+            }
+            else
+            {
+                nonAssistantTanks.push_back(member);
+            }
         }
     }
 
-    return nullptr;
-}
-
-Player* GetGroupSecondAssistTank(PlayerbotAI* botAI, Player* bot)
-{
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
-                continue;
-
-            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-            if (memberAI && memberAI->IsAssistTankOfIndex(member, 1, false))
-                return member;
-        }
-    }
-
-    return nullptr;
-}
-
-Player* GetGroupThirdAssistTank(PlayerbotAI* botAI, Player* bot)
-{
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive())
-                continue;
-
-            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-            if (memberAI && memberAI->IsAssistTankOfIndex(member, 2, false))
-                return member;
-        }
-    }
+    // If the index wasn't found among assistants, check the non-assistants that were saved
+    uint8 nonAssistantIndex = index - assistantCount;
+    if (nonAssistantIndex < nonAssistantTanks.size())
+        return nonAssistantTanks[nonAssistantIndex];
 
     return nullptr;
 }
