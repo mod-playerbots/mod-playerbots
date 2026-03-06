@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
+ */
+
 #include "RaidSSCActions.h"
 #include "RaidSSCHelpers.h"
 #include "AiFactory.h"
@@ -365,7 +370,7 @@ bool HydrossTheUnstableMisdirectBossToTankAction::TryMisdirectToFrostTank(
 bool HydrossTheUnstableMisdirectBossToTankAction::TryMisdirectToNatureTank(
     Unit* hydross)
 {
-    Player* natureTank = GetGroupFirstAssistTank(botAI, bot);
+    Player* natureTank = GetGroupAssistTank(botAI, bot, 0);
     if (!natureTank)
         return false;
 
@@ -594,20 +599,23 @@ bool TheLurkerBelowSpreadRangedInArcAction::Execute(Event /*event*/)
 bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event /*event*/)
 {
     Player* mainTank = GetGroupMainTank(botAI, bot);
-    Player* firstAssistTank = GetGroupFirstAssistTank(botAI, bot);
-    Player* secondAssistTank = GetGroupSecondAssistTank(botAI, bot);
+    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
+    Player* secondAssistTank = GetGroupAssistTank(botAI, bot, 1);
     if (!mainTank || !firstAssistTank || !secondAssistTank)
         return false;
 
     std::vector<Unit*> guardians;
-    std::list<Creature* > creatureList;
-    constexpr float searchRadius = 100.0f;
-    bot->GetCreatureListWithEntryInGrid(creatureList, NPC_COILFANG_GUARDIAN, searchRadius);
+    auto const& attackers =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
 
-    for (Creature* creature : creatureList)
+    for (auto guid : attackers)
     {
-        if (creature && creature->IsAlive())
-            guardians.push_back(creature);
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->IsAlive() &&
+            unit->GetEntry() == NPC_COILFANG_GUARDIAN)
+        {
+            guardians.push_back(unit);
+        }
     }
 
     if (guardians.size() < 3)
@@ -631,7 +639,7 @@ bool TheLurkerBelowTanksPickUpAddsAction::Execute(Event /*event*/)
             MarkTargetWithIcon(bot, guardian, rtiIndices[i]);
             SetRtiTarget(botAI, rtiNames[i], guardian);
 
-            if (bot->GetTarget() != guardian->GetGUID())
+            if (bot->GetVictim() != guardian)
                 return Attack(guardian);
         }
     }
@@ -682,14 +690,14 @@ bool LeotherasTheBlindTargetSpellbindersAction::Execute(Event /*event*/)
 // Use tank strategy for Demon Form and DPS strategy for Human Form
 bool LeotherasTheBlindDemonFormTankAttackBossAction::Execute(Event /*event*/)
 {
+    auto const& attackers =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+
     Unit* innerDemon = nullptr;
-    std::list<Creature*> creatureList;
-    constexpr float searchRadius = 50.0f;
-
-    bot->GetCreatureListWithEntryInGrid(creatureList, NPC_INNER_DEMON, searchRadius);
-
-    for (Creature* creature : creatureList)
+    for (auto guid : attackers)
     {
+        Unit* unit = botAI->GetUnit(guid);
+        Creature* creature = unit ? unit->ToCreature() : nullptr;
         if (creature && creature->GetEntry() == NPC_INNER_DEMON &&
             creature->GetSummonerGUID() == bot->GetGUID())
         {
@@ -807,14 +815,14 @@ bool LeotherasTheBlindMeleeDpsRunAwayFromBossAction::Execute(Event /*event*/)
 // Hardcoded actions for healers and bear tanks to kill Inner Demons
 bool LeotherasTheBlindDestroyInnerDemonAction::Execute(Event /*event*/)
 {
+    auto const& attackers =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+
     Unit* innerDemon = nullptr;
-    std::list<Creature*> creatureList;
-    constexpr float searchRadius = 50.0f;
-
-    bot->GetCreatureListWithEntryInGrid(creatureList, NPC_INNER_DEMON, searchRadius);
-
-    for (Creature* creature : creatureList)
+    for (auto guid : attackers)
     {
+        Unit* unit = botAI->GetUnit(guid);
+        Creature* creature = unit ? unit->ToCreature() : nullptr;
         if (creature && creature->GetEntry() == NPC_INNER_DEMON &&
             creature->GetSummonerGUID() == bot->GetGUID())
         {
@@ -1278,17 +1286,17 @@ bool FathomLordKarathressMisdirectBossesToTanksAction::Execute(Event /*event*/)
     if (hunterIndex == 0)
     {
         bossTarget = AI_VALUE2(Unit*, "find target", "fathom-guard caribdis");
-        tankTarget = GetGroupFirstAssistTank(botAI, bot);
+        tankTarget = GetGroupAssistTank(botAI, bot, 0);
     }
     else if (hunterIndex == 1)
     {
         bossTarget = AI_VALUE2(Unit*, "find target", "fathom-guard tidalvess");
-        tankTarget = GetGroupThirdAssistTank(botAI, bot);
+        tankTarget = GetGroupAssistTank(botAI, bot, 2);
     }
     else if (hunterIndex == 2)
     {
         bossTarget = AI_VALUE2(Unit*, "find target", "fathom-guard sharkkis");
-        tankTarget = GetGroupSecondAssistTank(botAI, bot);
+        tankTarget = GetGroupAssistTank(botAI, bot, 1);
     }
 
     if (!bossTarget || !tankTarget)
@@ -1945,7 +1953,7 @@ bool LadyVashjMisdirectStriderToFirstAssistTankAction::Execute(Event /*event*/)
     if (!strider)
         return false;
 
-    Player* firstAssistTank = GetGroupFirstAssistTank(botAI, bot);
+    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
     if (!firstAssistTank || strider->GetVictim() == firstAssistTank)
         return false;
 
@@ -2820,11 +2828,8 @@ bool LadyVashjUseFreeActionAbilitiesAction::Execute(Event /*event*/)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !member->HasAura(SPELL_ENTANGLE))
-            continue;
-
-        PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-        if (!memberAI || !memberAI->IsMelee(member))
+        if (!member || !member->IsAlive() || !member->HasAura(SPELL_ENTANGLE) ||
+            !botAI->IsMelee(member))
             continue;
 
         bool nearToxicSpore = false;
@@ -2839,7 +2844,7 @@ bool LadyVashjUseFreeActionAbilitiesAction::Execute(Event /*event*/)
 
         if (nearToxicSpore)
         {
-            if (memberAI->IsMainTank(member))
+            if (botAI->IsMainTank(member))
                 mainTankToxic = member;
 
             if (!anyToxic)
@@ -2848,7 +2853,7 @@ bool LadyVashjUseFreeActionAbilitiesAction::Execute(Event /*event*/)
 
         if (member->HasAura(SPELL_STATIC_CHARGE))
         {
-            if (memberAI->IsMainTank(member))
+            if (botAI->IsMainTank(member))
                 mainTankStatic = member;
 
             if (!anyStatic)

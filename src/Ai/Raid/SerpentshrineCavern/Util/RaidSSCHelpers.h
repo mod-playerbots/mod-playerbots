@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
+ */
+
 #ifndef _PLAYERBOT_RAIDSSCHELPERS_H_
 #define _PLAYERBOT_RAIDSSCHELPERS_H_
 
@@ -160,7 +165,7 @@ namespace SerpentShrineCavernHelpers
     extern std::unordered_map<ObjectGuid, Position> intendedLineup;
     extern std::unordered_map<uint32, time_t> lastImbueAttempt;
     extern std::unordered_map<ObjectGuid, time_t> lastCoreInInventoryTime;
-    bool IsMainTankInSameSubgroup(Player* bot);
+    bool IsMainTankInSameSubgroup(PlayerbotAI* botAI, Player* bot);
     bool IsLadyVashjInPhase1(PlayerbotAI* botAI);
     bool IsLadyVashjInPhase2(PlayerbotAI* botAI);
     bool IsLadyVashjInPhase3(PlayerbotAI* botAI);

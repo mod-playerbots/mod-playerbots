@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
+ */
+
 #include "RaidSSCHelpers.h"
 #include "AiFactory.h"
 #include "Creature.h"
@@ -117,13 +122,16 @@ namespace SerpentShrineCavernHelpers
         return phase2 ? phase2 : phase3;
     }
 
+    // (1) First priority is an assistant Warlock (real player or bot)
+    // (2) If no assistant Warlock, then look for any Warlock bot
     Player* GetLeotherasDemonFormTank(Player* bot)
     {
         Group* group = bot->GetGroup();
         if (!group)
             return nullptr;
 
-        // (1) First loop: Return the first assistant Warlock (real player or bot)
+        Player* fallbackWarlock = nullptr;
+
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
@@ -132,21 +140,12 @@ namespace SerpentShrineCavernHelpers
 
             if (group->IsAssistant(member->GetGUID()))
                 return member;
+
+            if (!fallbackWarlock && GET_PLAYERBOT_AI(member))
+                fallbackWarlock = member;
         }
 
-        // (2) Fall back to first found bot Warlock
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
-                member->getClass() != CLASS_WARLOCK)
-                continue;
-
-            return member;
-        }
-
-        // (3) Return nullptr if none found
-        return nullptr;
+        return fallbackWarlock;
     }
 
     // Fathom-Lord Karathress
@@ -180,7 +179,7 @@ namespace SerpentShrineCavernHelpers
     std::unordered_map<uint32, time_t> lastImbueAttempt;
     std::unordered_map<ObjectGuid, time_t> lastCoreInInventoryTime;
 
-    bool IsMainTankInSameSubgroup(Player* bot)
+    bool IsMainTankInSameSubgroup(PlayerbotAI* botAI, Player* bot)
     {
         Group* group = bot->GetGroup();
         if (!group || !group->isRaidGroup())
@@ -199,8 +198,7 @@ namespace SerpentShrineCavernHelpers
             if (group->GetMemberGroup(member->GetGUID()) != botSubGroup)
                 continue;
 
-            PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-            if (memberAI && memberAI->IsMainTank(member))
+            if (botAI->IsMainTank(member))
                 return true;
         }
 
@@ -275,10 +273,15 @@ namespace SerpentShrineCavernHelpers
         if (!leaderGuid.IsEmpty())
             leader = ObjectAccessor::FindPlayer(leaderGuid);
 
+        // If cheats are disabled, the group leader will be the designated looter
         if (!botAI->HasCheat(BotCheatMask::raid))
             return leader;
 
-        Player* fallback = leader;
+        // Priority: (1) assistant melee DPS, (2) other melee DPS, (3) any ranged DPS
+        Player* meleeDpsAssistant = nullptr;
+        Player* meleeDps = nullptr;
+        Player* rangedDps = nullptr;
+
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
@@ -289,14 +292,27 @@ namespace SerpentShrineCavernHelpers
             if (!memberAI)
                 continue;
 
-            if (memberAI->IsMelee(member) && memberAI->IsDps(member))
-                return member;
+            if (!meleeDpsAssistant && memberAI->IsMelee(member) &&
+                memberAI->IsDps(member) && group->IsAssistant(member->GetGUID()))
+            {
+                meleeDpsAssistant = member;
+                break;
+            }
 
-            if (!fallback && memberAI->IsRangedDps(member))
-                fallback = member;
+            if (!meleeDps && memberAI->IsMelee(member) && memberAI->IsDps(member))
+                meleeDps = member;
+
+            if (!rangedDps && memberAI->IsRangedDps(member))
+                rangedDps = member;
         }
 
-        return fallback ? fallback : leader;
+        if (meleeDpsAssistant)
+            return meleeDpsAssistant;
+        if (meleeDps)
+            return meleeDps;
+        if (rangedDps)
+            return rangedDps;
+        return leader;
     }
 
     Player* GetFirstTaintedCorePasser(PlayerbotAI* botAI, Player* bot)

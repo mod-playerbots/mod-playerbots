@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
+ */
+
 #include "RaidSSCMultipliers.h"
 #include "RaidSSCActions.h"
 #include "RaidSSCHelpers.h"
@@ -610,7 +615,7 @@ float LadyVashjMainTankGroupShamanUseGroundingTotemMultiplier::GetValue(Action* 
     if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
         return 1.0f;
 
-    if (!IsMainTankInSameSubgroup(bot))
+    if (!IsMainTankInSameSubgroup(botAI, bot))
         return 1.0f;
 
     if (dynamic_cast<CastWindfuryTotemAction*>(action) ||
