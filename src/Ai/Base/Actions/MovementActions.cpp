@@ -93,9 +93,6 @@ bool MovementAction::MoveNear(WorldObject* target, float distance, MovementPrior
 
     distance += target->GetCombatReach();
 
-    float x = target->GetPositionX();
-    float y = target->GetPositionY();
-    float z = target->GetPositionZ();
     float followAngle = GetFollowAngle();
 
     for (float angle = followAngle; angle <= followAngle + static_cast<float>(2 * M_PI);
@@ -113,7 +110,6 @@ bool MovementAction::MoveNear(WorldObject* target, float distance, MovementPrior
             return true;
     }
 
-    // botAI->TellError("All paths not in LOS");
     return false;
 }
 
@@ -121,9 +117,6 @@ bool MovementAction::MoveToLOS(WorldObject* target, bool ranged)
 {
     if (!target)
         return false;
-
-    // std::ostringstream out; out << "Moving to LOS!";
-    // bot->Say(out.str(), LANG_UNIVERSAL);
 
     float x = target->GetPositionX();
     float y = target->GetPositionY();
@@ -257,7 +250,6 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
             //     bot->CastStop();
             //     botAI->InterruptSpell();
             // }
-            G3D::Vector3 endP = path.back();
             DoMovePoint(bot, x, y, z, generatePath, backwards);
             float delay = 1000.0f * MoveDelay(distance, backwards);
             if (lessDelay)
@@ -772,8 +764,6 @@ bool MovementAction::MoveTo(WorldObject* target, float distance, MovementPriorit
     float by = bot->GetPositionY();
     float bz = bot->GetPositionZ();
 
-    float tx = target->GetPositionX();
-    float ty = target->GetPositionY();
     float tz = target->GetPositionZ();
 
     float distanceToTarget = bot->GetDistance(target);
@@ -804,10 +794,6 @@ bool MovementAction::ReachCombatTo(Unit* target, float distance)
 {
     if (!IsMovingAllowed(target))
         return false;
-
-    float bx = bot->GetPositionX();
-    float by = bot->GetPositionY();
-    float bz = bot->GetPositionZ();
 
     float tx = target->GetPositionX();
     float ty = target->GetPositionY();
@@ -1413,7 +1399,6 @@ bool MovementAction::Flee(Unit* target)
                 if (botAI->IsTank(player))
                 {
                     float distanceToTank = ServerFacade::instance().GetDistance2d(bot, player);
-                    float distanceToTarget = ServerFacade::instance().GetDistance2d(bot, target);
                     if (distanceToTank < fleeDistance)
                     {
                         fleeTarget = player;
@@ -1434,8 +1419,6 @@ bool MovementAction::Flee(Unit* target)
     else  // bot is not targeted, try to flee dps/healers
     {
         bool isHealer = botAI->IsHeal(bot);
-        bool isDps = !isHealer && !botAI->IsTank(bot);
-        bool isTank = botAI->IsTank(bot);
         bool needHealer = !isHealer && AI_VALUE2(uint8, "health", "self target") < 50;
         bool isRanged = botAI->IsRanged(bot);
 
@@ -2771,9 +2754,7 @@ bool MoveRandomAction::Execute(Event /*event*/)
         float angle = (float)rand_norm() * static_cast<float>(M_PI);
         x += urand(0, distance) * cos(angle);
         y += urand(0, distance) * sin(angle);
-        float ox = x;
-        float oy = y;
-        float oz = z;
+
         if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(),
                                                             bot->GetPositionZ(), x, y, z))
             continue;
@@ -2894,10 +2875,8 @@ bool MoveAwayFromCreatureAction::isPossible() { return bot->CanFreeMove(); }
 
 bool MoveAwayFromPlayerWithDebuffAction::Execute(Event /*event*/)
 {
-    Player* closestPlayer = nullptr;
-    float minDistance = 0.0f;
+    Group* const group = bot->GetGroup();
 
-    Group* group = bot->GetGroup();
     if (!group)
         return false;
 

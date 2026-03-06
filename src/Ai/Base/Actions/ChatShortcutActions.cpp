@@ -68,9 +68,7 @@ bool FollowChatShortcutAction::Execute(Event /*event*/)
         std::string const target = formation->GetTargetName();
         bool moved = false;
         if (!target.empty())
-        {
             moved = Follow(AI_VALUE(Unit*, target));
-        }
         else
         {
             WorldLocation loc = formation->GetLocation();
@@ -83,9 +81,7 @@ bool FollowChatShortcutAction::Execute(Event /*event*/)
         }
 
         if (Pet* pet = bot->GetPet())
-        {
             botAI->PetFollow();
-        }
 
         if (moved)
         {

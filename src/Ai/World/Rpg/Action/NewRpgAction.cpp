@@ -435,7 +435,6 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
         botAI->rpgInfo.ChangeToIdle();
         return true;
     }
-    const TaxiNodesEntry* entry = sTaxiNodesStore.LookupEntry(data.toNode);
     if (bot->GetDistance(flightMaster) > INTERACTION_DISTANCE)
         return MoveFarTo(flightMaster);
 

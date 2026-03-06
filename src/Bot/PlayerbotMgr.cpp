@@ -71,7 +71,6 @@ class PlayerbotLoginQueryHolder : public LoginQueryHolder
 {
 private:
     uint32 masterAccountId;
-    PlayerbotHolder* playerbotHolder;
 public:
     PlayerbotLoginQueryHolder(uint32 masterAccount, uint32 accountId, ObjectGuid guid)
         : LoginQueryHolder(accountId, guid), masterAccountId(masterAccount)

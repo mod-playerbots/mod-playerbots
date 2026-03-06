@@ -16,7 +16,6 @@
 #include "ObjectAccessor.h"
 
 using ai::buff::MakeAuraQualifierForBuff;
-using ai::buff::UpgradeToGroupIfAppropriate;
 
 // Helper : detect tank role on the target (player bot or not) return true if spec is tank or if the bot have tank strategies (bear/tank/tank face).
 static inline bool IsTankRole(Player* p)
@@ -51,11 +50,6 @@ static inline bool IsOnlyPaladinInGroup(Player* bot)
         if (p->getClass() == CLASS_PALADIN) ++pals;
     }
     return pals == 1u;
-}
-
-static inline bool GroupHasTankOfClass(Group* g, uint8 classId)
-{
-    return GroupHasTankOfClass(g, static_cast<Classes>(classId));
 }
 
 inline std::string const GetActualBlessingOfMight(Unit* target)

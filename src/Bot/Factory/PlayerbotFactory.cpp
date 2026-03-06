@@ -948,8 +948,6 @@ void PlayerbotFactory::InitPet()
                 continue;
             if (co->Name.size() > 21)
                 continue;
-            uint32 guid = map->GenerateLowGuid<HighGuid::Pet>();
-            uint32 pet_number = sObjectMgr->GeneratePetNumber();
             if (bot->GetPetStable() && bot->GetPetStable()->CurrentPet)
             {
                 auto petGuid = bot->GetPetStable()->CurrentPet.value(); // To correct the build warnin in VS
@@ -1905,7 +1903,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
         if (oldItem)
             continue;
 
-        Item* newItem = bot->EquipNewItem(dest, bestItemForSlot, true);
+        bot->EquipNewItem(dest, bestItemForSlot, true);
         bot->AutoUnequipOffhandIfNeed();
         // if (newItem)
         // {
@@ -1936,7 +1934,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                 (slot != EQUIPMENT_SLOT_RANGED))
                 continue;
 
-            if (Item* oldItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+            if (bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot) != nullptr)
                 bot->DestroyItem(INVENTORY_SLOT_BAG_0, slot, true);
 
             std::vector<uint32>& ids = items[slot];
@@ -1973,12 +1971,9 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                 continue;
 
             Item* newItem = bot->EquipNewItem(dest, bestItemForSlot, true);
+
+            bot->EquipNewItem(dest, bestItemForSlot, true);
             bot->AutoUnequipOffhandIfNeed();
-            // if (newItem)
-            // {
-            //     newItem->AddToWorld();
-            //     newItem->AddToUpdateQueueOf(bot);
-            // }
         }
     }
 }
@@ -1991,16 +1986,10 @@ bool PlayerbotFactory::IsDesiredReplacement(Item* item)
     ItemTemplate const* proto = item->GetTemplate();
     uint32 requiredLevel = proto->RequiredLevel;
     if (!requiredLevel)
-    {
         return true;
-    }
-    // if (!requiredLevel)
-    // {
-    //     requiredLevel = sRandomItemMgr.GetMinLevelFromCache(proto->ItemId);
-    // }
 
     uint32 delta = 1 + (80 - bot->GetLevel()) / 10;
-    return proto->Quality < ITEM_QUALITY_RARE || int32(bot->GetLevel() - requiredLevel) > delta;
+    return proto->Quality < ITEM_QUALITY_RARE || (bot->GetLevel() - requiredLevel) > delta;
 }
 
 inline Item* StoreNewItemInInventorySlot(Player* player, uint32 newItemId, uint32 count)
@@ -2010,9 +1999,7 @@ inline Item* StoreNewItemInInventorySlot(Player* player, uint32 newItemId, uint3
     if (msg == EQUIP_ERR_OK)
     {
         if (Item* newItem = player->StoreNewItem(vDest, newItemId, true, Item::GenerateItemRandomPropertyId(newItemId)))
-        {
             return newItem;
-        }
     }
 
     return nullptr;
@@ -2875,7 +2862,6 @@ void PlayerbotFactory::AddPrevQuests(uint32 questId, std::list<uint32>& questIds
 
 void PlayerbotFactory::InitQuests(std::list<uint32>& questMap, bool withRewardItem)
 {
-    uint32 count = 0;
     for (std::list<uint32>::iterator i = questMap.begin(); i != questMap.end(); ++i)
     {
         uint32 questId = *i;
@@ -3280,7 +3266,6 @@ void PlayerbotFactory::InitFood()
 
 void PlayerbotFactory::InitReagents()
 {
-    int specTab = AiFactory::GetPlayerSpecTab(bot);
     std::vector<std::pair<uint32, uint32>> items;
     switch (bot->getClass())
     {
@@ -4336,15 +4321,11 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool destroyOld)
                 continue;
 
             if (!item->IsFitToSpellRequirements(spellInfo))
-            {
                 continue;
-            }
 
             uint32 requiredLevel = spellInfo->BaseLevel;
             if (requiredLevel > bot->GetLevel())
-            {
                 continue;
-            }
 
             // disable next expansion enchantments
             if (sPlayerbotAIConfig.limitEnchantExpansion && bot->GetLevel() <= 60 && enchantSpell >= 27899)
@@ -4364,9 +4345,8 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool destroyOld)
 
                 SpellItemEnchantmentEntry const* enchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
                 if (!enchant || (enchant->slot != PERM_ENCHANTMENT_SLOT && enchant->slot != TEMP_ENCHANTMENT_SLOT))
-                {
                     continue;
-                }
+
                 if (enchant->requiredSkill &&
                     (!bot->HasSkill(enchant->requiredSkill) ||
                      (bot->GetSkillValue(enchant->requiredSkill) < enchant->requiredSkillValue)))
@@ -4374,9 +4354,8 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool destroyOld)
                     continue;
                 }
                 if (enchant->requiredLevel > bot->GetLevel())
-                {
                     continue;
-                }
+
                 float score = calculator.CalculateEnchant(enchant_id);
                 if (score >= bestScore)
                 {
@@ -4399,11 +4378,9 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool destroyOld)
         {
             uint8 socketColor = item->GetTemplate()->Socket[enchant_slot - SOCK_ENCHANTMENT_SLOT].Color;
             if (!socketColor)
-            {
                 continue;
-            }
+
             int32 enchantIdChosen = -1;
-            int32 colorChosen;
             bool jewelersGemChosen;
             float bestGemScore = -1;
             for (uint32& enchantGem : availableGems)
@@ -4448,7 +4425,6 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool destroyOld)
                 if (score > bestGemScore)
                 {
                     enchantIdChosen = enchant_id;
-                    colorChosen = gemProperties->color;
                     bestGemScore = score;
                     jewelersGemChosen = isJewelersGem;
                 }
