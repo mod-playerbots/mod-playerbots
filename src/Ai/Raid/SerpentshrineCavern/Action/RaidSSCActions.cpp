@@ -2123,7 +2123,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
 
     Unit* closestTrigger = nullptr;
     if (Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
-        closestTrigger = GetNearestActiveShieldGeneratorTriggerByEntry(tainted))
+        (closestTrigger = GetNearestActiveShieldGeneratorTriggerByEntry(tainted)))
     {
         nearestTriggerGuid.try_emplace(instanceId, closestTrigger->GetGUID());
     }
