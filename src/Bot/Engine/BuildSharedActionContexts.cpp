@@ -7,6 +7,7 @@
 #include "Ai/Raid/BlackwingLair/RaidBwlActionContext.h"
 #include "Ai/Raid/Karazhan/RaidKarazhanActionContext.h"
 #include "Ai/Raid/GruulsLair/RaidGruulsLairActionContext.h"
+#include "Ai/Raid/Naxxramas/RaidNaxxActionContext.h"
 #include "Ai/Raid/Magtheridon/RaidMagtheridonActionContext.h"
 #include "Ai/Raid/SerpentshrineCavern/RaidSSCActionContext.h"
 #include "Ai/Raid/TempestKeep/RaidTempestKeepActionContext.h"
@@ -31,6 +32,7 @@ void AiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Act
     actionContexts.Add(new RaidMagtheridonActionContext());
     actionContexts.Add(new RaidSSCActionContext());
     actionContexts.Add(new RaidTempestKeepActionContext());
+    actionContexts.Add(new RaidNaxxActionContext());
     actionContexts.Add(new RaidOsActionContext());
     actionContexts.Add(new RaidEoEActionContext());
     actionContexts.Add(new RaidVoAActionContext());
