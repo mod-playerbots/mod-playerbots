@@ -84,12 +84,12 @@ bool LootRollAction::Execute(Event /*event*/)
         }
         if (vote == NEED)
         {
-            if (sPlayerbotAIConfig.lootRollLevel == 0 || RollUniqueCheck(proto, bot))
+            if (sPlayerbotAIConfig.lootNeedRollLevel == 0 || RollUniqueCheck(proto, bot))
                 vote = PASS;
-            else if (sPlayerbotAIConfig.lootRollLevel == 1)
+            else if (sPlayerbotAIConfig.lootNeedRollLevel == 1)
                 vote = GREED;
         }
-        else if (vote == GREED && !sPlayerbotAIConfig.lootRollGreed)
+        else if (vote == GREED && !sPlayerbotAIConfig.lootGreedRollLevel)
             vote = PASS;
 
         switch (group->GetLootMethod())
@@ -111,6 +111,13 @@ bool LootRollAction::Execute(Event /*event*/)
 
 RollVote LootRollAction::CalculateRollVote(ItemTemplate const* proto, ItemUsage usage)
 {
+    if (usage == ITEM_USAGE_NONE)
+    {
+        std::ostringstream out;
+        out << proto->ItemId;
+        usage = AI_VALUE2(ItemUsage, "item usage", out.str());
+    }
+
     RollVote needVote = PASS;
     switch (usage)
     {
