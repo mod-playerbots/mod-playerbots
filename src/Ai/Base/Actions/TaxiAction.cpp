@@ -7,124 +7,212 @@
 
 #include "Event.h"
 #include "LastMovementValue.h"
-#include "Playerbots.h"
 #include "PlayerbotAIConfig.h"
-#include "Config.h"
+#include "PlayerbotAI.h"
+#include "AiObjectContext.h"
 
+// @TODO: Refactor this to a more maintainable structure
 bool TaxiAction::Execute(Event event)
 {
-    botAI->RemoveShapeshift();
+    this->botAI->RemoveShapeshift();
 
-    LastMovement& movement = context->GetValue<LastMovement&>("last taxi")->Get();
+    Value<LastMovementValue>* lastMovementValue = this->context->GetValue<LastMovementValue>("last taxi");
 
-    WorldPacket& p = event.getPacket();
-    std::string const param = event.getParam();
-    if ((!p.empty() && (p.GetOpcode() == CMSG_TAXICLEARALLNODES || p.GetOpcode() == CMSG_TAXICLEARNODE)) ||
-        param == "clear")
+    if (lastMovementValue == nullptr)
+    {
+        this->botAI->TellError("I don't know where to fly");
+
+        return false;
+    }
+
+    LastMovement& movement = lastMovementValue->Get();
+
+    WorldPacket& packet = event.getPacket();
+    const std::string& param = event.getParam();
+
+    if ((!packet.empty() && (packet.GetOpcode() == CMSG_TAXICLEARALLNODES || packet.GetOpcode() == CMSG_TAXICLEARNODE)) || param == "clear")
     {
         movement.taxiNodes.clear();
         movement.Set(nullptr);
-        botAI->TellMaster("I am ready for the next flight");
+
+        this->botAI->TellMaster("I am ready for the next flight");
+
         return true;
     }
 
-    GuidVector units = *context->GetValue<GuidVector>("nearest npcs");
-    for (ObjectGuid const guid : units)
+    Value<GuidVector>* nearestNpcsValue = this->context->GetValue<GuidVector>("nearest npcs");
+
+    if (nearestNpcsValue == nullptr)
     {
-        Creature* npc = bot->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_FLIGHTMASTER);
-        if (!npc)
-            continue;
+        this->botAI->TellError("I don't see any NPCs around");
 
-        uint32 curloc = sObjectMgr->GetNearestTaxiNode(npc->GetPositionX(), npc->GetPositionY(), npc->GetPositionZ(),
-                                                       npc->GetMapId(), bot->GetTeamId());
+        return false;
+    }
 
-        std::vector<uint32> nodes;
-        for (uint32 i = 0; i < sTaxiPathStore.GetNumRows(); ++i)
+    GuidVector units = nearestNpcsValue->Get();
+
+    const PlayerbotAIConfig& configuration = PlayerbotAIConfig::instance();
+
+    for (const ObjectGuid guid : units)
+    {
+        Creature* const npc = ObjectAccessor::GetCreature(*this->bot, guid);
+
+        if (npc == nullptr || !npc->IsAlive())
         {
-            if (TaxiPathEntry const* entry = sTaxiPathStore.LookupEntry(i))
-                if (entry->from == curloc)
-                {
-                    uint8 field = uint8((i - 1) / 32);
-                    if (field < TaxiMaskSize)
-                        nodes.push_back(i);
-                }
+            continue;
         }
 
-        // stagger bot takeoff
-        uint32 delayMin = sConfigMgr->GetOption<uint32>("AiPlayerbot.BotTaxiDelayMinMs", 350u, false);
-        uint32 delayMax = sConfigMgr->GetOption<uint32>("AiPlayerbot.BotTaxiDelayMaxMs", 5000u, false);
-        uint32 gapMs = sConfigMgr->GetOption<uint32>("AiPlayerbot.BotTaxiGapMs", 200u, false);
-        uint32 gapJitterMs = sConfigMgr->GetOption<uint32>("AiPlayerbot.BotTaxiGapJitterMs", 100u, false);
+        if (!(npc->GetNpcFlags() & UNIT_NPC_FLAG_FLIGHTMASTER))
+        {
+            continue;
+        }
+
+        if (this->bot->GetDistance(npc) > configuration.farDistance)
+        {
+            continue;
+        }
+
+        ObjectMgr* const objectMgr = ObjectMgr::instance();
+
+        if (objectMgr == nullptr)
+        {
+            this->botAI->TellError("Cannot access ObjectMgr");
+
+            return false;
+        }
+
+        const uint32_t curloc = objectMgr->GetNearestTaxiNode(
+            npc->GetPositionX(),
+            npc->GetPositionY(),
+            npc->GetPositionZ(),
+        npc->GetMapId(),
+        this->bot->GetTeamId()
+    );
+
+        std::vector<uint32_t> nodes{};
+
+        for (uint32_t i = 0; i < sTaxiPathStore.GetNumRows(); ++i)
+        {
+            const TaxiPathEntry* entry = sTaxiPathStore.LookupEntry(i);
+
+            if (entry == nullptr)
+            {
+                continue;
+            }
+
+            if (entry->from != curloc)
+            {
+                continue;
+            }
+
+            const uint8_t field = uint8_t((i - 1) / 32);
+
+            if (field >= TaxiMaskSize)
+            {
+                continue;
+            }
+
+            nodes.push_back(i);
+        }
 
         // Only for follower bots
-        if (botAI->HasRealPlayerMaster())
+        if (this->botAI->HasRealPlayerMaster())
         {
-            uint32 index = botAI->GetGroupSlotIndex(bot);
-            uint32 delay = delayMin + index * gapMs + urand(0, gapJitterMs);
+            const uint32_t index = this->botAI->GetGroupSlotIndex(this->bot);
+            uint32_t delay = configuration.botTaxiDelayMin + index * configuration.botTaxiGapMs + urand(0, configuration.botTaxiGapJitterMs);
 
-            delay = std::min(delay, delayMax);
+            delay = std::min(delay, configuration.botTaxiDelayMax);
 
-            // Store the npc’s GUID so we can re-acquire the pointer later
-            ObjectGuid npcGuid = npc->GetGUID();
+            // Store the NPC's GUID so we can re-acquire the pointer later
+            const ObjectGuid npcGuid = npc->GetGUID();
 
             // schedule the take-off
-            botAI->AddTimedEvent(
+            this->botAI->AddTimedEvent(
                 [bot = bot, &movement, npcGuid]() -> void
                 {
-                    if (Creature* npcPtr = ObjectAccessor::GetCreature(*bot, npcGuid))
-                        if (!movement.taxiNodes.empty())
-                            bot->ActivateTaxiPathTo(movement.taxiNodes, npcPtr, 0);
+                    Creature* const npcPtr = ObjectAccessor::GetCreature(*bot, npcGuid);
+
+                    if (npcPtr == nullptr)
+                    {
+                        return;
+                    }
+
+                    if (movement.taxiNodes.empty())
+                    {
+                        return;
+                    }
+
+                    bot->ActivateTaxiPathTo(movement.taxiNodes, npcPtr, 0);
                 },
-                delay);
-            botAI->SetNextCheckDelay(delay + 50);
+                delay
+            );
+
+            this->botAI->SetNextCheckDelay(delay + 50);
+
             return true;
         }
 
         if (param == "?")
         {
-            botAI->TellMasterNoFacing("=== Taxi ===");
+            this->botAI->TellMasterNoFacing("=== Taxi ===");
 
-            uint32 index = 1;
-            for (uint32 node : nodes)
+            uint32_t index = 1;
+
+            for (uint32_t node : nodes)
             {
-                TaxiPathEntry const* entry = sTaxiPathStore.LookupEntry(node);
-                if (!entry)
-                    continue;
+                const TaxiPathEntry* const entry = sTaxiPathStore.LookupEntry(node);
 
-                TaxiNodesEntry const* dest = sTaxiNodesStore.LookupEntry(entry->to);
-                if (!dest)
+                if (entry == nullptr)
+                {
                     continue;
+                }
 
-                std::ostringstream out;
-                out << index++ << ": " << dest->name[0];
-                botAI->TellMasterNoFacing(out.str());
+                const TaxiNodesEntry* const dest = sTaxiNodesStore.LookupEntry(entry->to);
+
+                if (dest == nullptr)
+                {
+                    continue;
+                }
+
+                std::ostringstream out{};
+                out << index << ": " << dest->name[0];
+
+                this->botAI->TellMasterNoFacing(out.str());
+
+                ++index;
             }
 
             return true;
         }
 
-        uint32 selected = atoi(param.c_str());
-        if (selected)
-        {
-            uint32 path = nodes[selected - 1];
-            TaxiPathEntry const* entry = sTaxiPathStore.LookupEntry(path);
-            if (!entry)
-                return false;
+        const uint32_t selected = atoi(param.c_str());
 
-            return bot->ActivateTaxiPathTo({entry->from, entry->to}, npc, 0);
+        if (selected != 0)
+        {
+            const uint32_t path = nodes[selected - 1];
+            const TaxiPathEntry* const entry = sTaxiPathStore.LookupEntry(path);
+
+            if (entry == nullptr)
+            {
+                return false;
+            }
+
+            return this->bot->ActivateTaxiPathTo({entry->from, entry->to}, npc, 0);
         }
 
-        if (!movement.taxiNodes.empty() && !bot->ActivateTaxiPathTo(movement.taxiNodes, npc, 0))
+        if (!movement.taxiNodes.empty() && !this->bot->ActivateTaxiPathTo(movement.taxiNodes, npc, 0))
         {
             movement.taxiNodes.clear();
             movement.Set(nullptr);
-            botAI->TellError("I can't fly with you");
+            this->botAI->TellError("I can't fly with you");
+
             return false;
         }
 
         return true;
     }
 
-    botAI->TellError("Cannot find any flightmaster to talk");
+    this->botAI->TellError("Cannot find any flightmaster to talk");
+
     return false;
 }
