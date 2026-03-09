@@ -30,3 +30,8 @@ bool BlessingTrigger::IsActive()
     return SpellTrigger::IsActive() && !botAI->HasAnyAuraOf(target, "blessing of might", "blessing of wisdom",
                                                             "blessing of kings", "blessing of sanctuary", nullptr);
 }
+
+bool NotSensingUndeadTrigger::IsActive()
+{
+    return !botAI->HasAura("sense undead", bot);
+}

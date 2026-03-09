@@ -2553,17 +2553,15 @@ void PlayerbotFactory::InitClassSpells()
                 bot->learnSpell(7386, false);  // Sunder Armor
             }
             if (level >= 30)
-            {
                 bot->learnSpell(2458, false);  // Berserker Stance
-            }
             break;
         case CLASS_PALADIN:
             bot->learnSpell(21084, true);
             bot->learnSpell(635, true);
             if (level >= 12)
-            {
                 bot->learnSpell(7328, false);  // Redemption
-            }
+            if (level >= 20)
+                bot->learnSpell(5502, false); // Sense Undead
             break;
         case CLASS_ROGUE:
             bot->learnSpell(1752, true);
@@ -2605,17 +2603,11 @@ void PlayerbotFactory::InitClassSpells()
             bot->learnSpell(686, true);
             bot->learnSpell(688, false);  // summon imp
             if (level >= 10)
-            {
                 bot->learnSpell(697, false);  // summon voidwalker
-            }
             if (level >= 20)
-            {
                 bot->learnSpell(712, false);  // summon succubus
-            }
             if (level >= 30)
-            {
                 bot->learnSpell(691, false);  // summon felhunter
-            }
             break;
         case CLASS_DRUID:
             bot->learnSpell(5176, true);
@@ -2632,17 +2624,11 @@ void PlayerbotFactory::InitClassSpells()
             bot->learnSpell(331, true);
             // bot->learnSpell(66747, true); // Totem of the Earthen Ring
             if (level >= 4)
-            {
                 bot->learnSpell(8071, false);  // stoneskin totem
-            }
             if (level >= 10)
-            {
                 bot->learnSpell(3599, false);  // searing totem
-            }
             if (level >= 20)
-            {
                 bot->learnSpell(5394, false);  // healing stream totem
-            }
             break;
         default:
             break;
