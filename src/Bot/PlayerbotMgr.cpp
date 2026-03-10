@@ -362,6 +362,9 @@ void PlayerbotHolder::LogoutPlayerBot(ObjectGuid guid)
         if (master)
             masterWorldSessionPtr = master->GetSession();
 
+        // TODO: Review whether or not to implement timed logout.
+        // Unused block. Useful only for timed logout.
+/*
         // check for instant logout
         bool logout = botWorldSessionPtr->ShouldLogOut(time(nullptr));
 
@@ -373,24 +376,15 @@ void PlayerbotHolder::LogoutPlayerBot(ObjectGuid guid)
 
         if (bot->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) || bot->HasUnitState(UNIT_STATE_IN_FLIGHT) ||
             botWorldSessionPtr->GetSecurity() >= (AccountTypes)sWorld->getIntConfig(CONFIG_INSTANT_LOGOUT))
-        {
             logout = true;
-        }
 
         if (master &&
             (master->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) || master->HasUnitState(UNIT_STATE_IN_FLIGHT) ||
              (masterWorldSessionPtr &&
               masterWorldSessionPtr->GetSecurity() >= (AccountTypes)sWorld->getIntConfig(CONFIG_INSTANT_LOGOUT))))
-        {
             logout = true;
-        }
-
-        TravelTarget* target = nullptr;
-        if (botAI->GetAiObjectContext())  // Maybe some day re-write to delate all pointer values.
-        {
-            target = botAI->GetAiObjectContext()->GetValue<TravelTarget*>("travel target")->Get();
-        }
-        if (bot)
+*/
+        // Instant logout (the only option right now)
         {
             std::string message = PlayerbotTextMgr::instance().GetBotTextOrDefault(
                 "goodbye", "Goodbye!", {});
