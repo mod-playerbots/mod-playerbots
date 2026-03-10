@@ -935,8 +935,8 @@ bool LeotherasTheBlindDestroyInnerDemonAction::HandleHealerStrategy(Unit* innerD
             botAI->CastSpell("holy shock", innerDemon))
             casted = true;
 
-        if (botAI->CanCastSpell("judgment of light", innerDemon) &&
-            botAI->CastSpell("judgment of light", innerDemon))
+        if (botAI->CanCastSpell("judgement of light", innerDemon) &&
+            botAI->CastSpell("judgement of light", innerDemon))
             casted = true;
 
         return casted;
