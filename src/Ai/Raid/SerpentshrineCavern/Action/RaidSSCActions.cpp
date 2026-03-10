@@ -2196,7 +2196,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
         {
             const time_t now = std::time(nullptr);
             auto it = lastImbueAttempt.find(instanceId);
-            if ((now - it->second) >= 2)
+            if (it == lastImbueAttempt.end() || (now - it->second) >= 2)
             {
                 lastImbueAttempt.insert_or_assign(instanceId, now);
                 botAI->ImbueItem(item, secondCorePasser);
@@ -2213,7 +2213,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
         {
             const time_t now = std::time(nullptr);
             auto it = lastImbueAttempt.find(instanceId);
-            if ((now - it->second) >= 2)
+            if (it == lastImbueAttempt.end() || (now - it->second) >= 2)
             {
                 lastImbueAttempt.insert_or_assign(instanceId, now);
                 botAI->ImbueItem(item, thirdCorePasser);
@@ -2230,7 +2230,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
         {
             const time_t now = std::time(nullptr);
             auto it = lastImbueAttempt.find(instanceId);
-            if ((now - it->second) >= 2)
+            if (it == lastImbueAttempt.end() || (now - it->second) >= 2)
             {
                 lastImbueAttempt.insert_or_assign(instanceId, now);
                 botAI->ImbueItem(item, fourthCorePasser);
