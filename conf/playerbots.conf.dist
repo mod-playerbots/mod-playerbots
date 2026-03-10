@@ -314,8 +314,8 @@ AiPlayerbot.LootRollRecipe = 0
 
 # Bots with enchanting will roll DISENCHANT instead of GREED on disenchantable items
 # If disabled, bots will GREED on disenchantable items instead
-# Default: 1 (enabled)
-AiPlayerbot.LootRollDisenchant = 1
+# Default: 0 (disabled)
+AiPlayerbot.LootRollDisenchant = 0
 
 #
 #
