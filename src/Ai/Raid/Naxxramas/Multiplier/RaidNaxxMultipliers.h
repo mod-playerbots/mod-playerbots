@@ -84,10 +84,10 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class FourhorsemanGenericMultiplier : public Multiplier
+class FourHorsemenGenericMultiplier : public Multiplier
 {
 public:
-    FourhorsemanGenericMultiplier(PlayerbotAI* ai) : Multiplier(ai, "fourhorseman generic") {}
+    FourHorsemenGenericMultiplier(PlayerbotAI* ai) : Multiplier(ai, "four horsemen generic") {}
 
 public:
     virtual float GetValue(Action* action);

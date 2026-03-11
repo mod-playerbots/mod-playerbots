@@ -31,8 +31,8 @@ public:
         creators["razuvious use obedience crystal"] = &RaidNaxxActionContext::razuvious_use_obedience_crystal;
         creators["razuvious target"] = &RaidNaxxActionContext::razuvious_target;
 
-        creators["horseman attract alternatively"] = &RaidNaxxActionContext::horseman_attract_alternatively;
-        creators["horseman attack in order"] = &RaidNaxxActionContext::horseman_attack_in_order;
+        creators["four horsemen attract alternatively"] = &RaidNaxxActionContext::four_horsemen_attract_alternatively;
+        creators["four horsemen attack in order"] = &RaidNaxxActionContext::four_horsemen_attack_in_order;
 
         creators["sapphiron ground position"] = &RaidNaxxActionContext::sapphiron_ground_position;
         creators["sapphiron flight position"] = &RaidNaxxActionContext::sapphiron_flight_position;
@@ -70,11 +70,8 @@ private:
     {
         return new RazuviousUseObedienceCrystalAction(ai);
     }
-    static Action* horseman_attract_alternatively(PlayerbotAI* ai)
-    {
-        return new HorsemanAttractAlternativelyAction(ai);
-    }
-    static Action* horseman_attack_in_order(PlayerbotAI* ai) { return new HorsemanAttackInOrderAction(ai); }
+    static Action* four_horsemen_attract_alternatively(PlayerbotAI* ai) { return new FourHorsemenAttractAlternativelyAction(ai); }
+    static Action* four_horsemen_attack_in_order(PlayerbotAI* ai) { return new FourHorsemenAttackInOrderAction(ai); }
     // static Action* sapphiron_ground_main_tank_position(PlayerbotAI* ai) { return new
     // SapphironGroundMainTankPositionAction(ai); }
     static Action* sapphiron_ground_position(PlayerbotAI* ai) { return new SapphironGroundPositionAction(ai); }

@@ -114,7 +114,7 @@ bool RazuviousNontankTrigger::IsActive()
     return helper.UpdateBossAI() && !(bot->getClass() == CLASS_PRIEST);
 }
 
-bool HorsemanAttractorsTrigger::IsActive()
+bool FourHorsemenAttractorsTrigger::IsActive()
 {
     if (!helper.UpdateBossAI())
         return false;
@@ -122,7 +122,7 @@ bool HorsemanAttractorsTrigger::IsActive()
     return helper.IsAttracter(bot);
 }
 
-bool HorsemanExceptAttractorsTrigger::IsActive()
+bool FourHorsemenExceptAttractorsTrigger::IsActive()
 {
     if (!helper.UpdateBossAI())
         return false;

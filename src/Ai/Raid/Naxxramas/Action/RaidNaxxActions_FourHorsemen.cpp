@@ -2,7 +2,7 @@
 
 #include "Playerbots.h"
 
-bool HorsemanAttractAlternativelyAction::Execute(Event /*event*/)
+bool FourHorsemenAttractAlternativelyAction::Execute(Event /*event*/)
 {
     if (!helper.UpdateBossAI())
         return false;
@@ -19,7 +19,7 @@ bool HorsemanAttractAlternativelyAction::Execute(Event /*event*/)
     return false;
 }
 
-bool HorsemanAttackInOrderAction::Execute(Event /*event*/)
+bool FourHorsemenAttackInOrderAction::Execute(Event /*event*/)
 {
     if (!helper.UpdateBossAI())
         return false;

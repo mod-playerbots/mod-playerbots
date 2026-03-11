@@ -173,26 +173,26 @@ private:
     RazuviousBossHelper helper;
 };
 
-class HorsemanAttractAlternativelyAction : public AttackAction
+class FourHorsemenAttractAlternativelyAction : public AttackAction
 {
 public:
-    HorsemanAttractAlternativelyAction(PlayerbotAI* ai) : AttackAction(ai, "horseman attract alternatively"), helper(ai)
+    FourHorsemenAttractAlternativelyAction(PlayerbotAI* ai) : AttackAction(ai, "four horsemen attract alternatively"), helper(ai)
     {
     }
     bool Execute(Event event) override;
 
 protected:
-    FourhorsemanBossHelper helper;
+    FourHorsemenBossHelper helper;
 };
 
-class HorsemanAttackInOrderAction : public AttackAction
+class FourHorsemenAttackInOrderAction : public AttackAction
 {
 public:
-    HorsemanAttackInOrderAction(PlayerbotAI* ai) : AttackAction(ai, "horseman attack in order"), helper(ai) {}
+    FourHorsemenAttackInOrderAction(PlayerbotAI* ai) : AttackAction(ai, "four horsemen attack in order"), helper(ai) {}
     bool Execute(Event event) override;
 
 protected:
-    FourhorsemanBossHelper helper;
+    FourHorsemenBossHelper helper;
 };
 
 // class SapphironGroundMainTankPositionAction : public MovementAction

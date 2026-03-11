@@ -245,7 +245,7 @@ float AnubrekhanGenericMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float FourhorsemanGenericMultiplier::GetValue(Action* action)
+float FourHorsemenGenericMultiplier::GetValue(Action* action)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "sir zeliek");
     if (!boss)

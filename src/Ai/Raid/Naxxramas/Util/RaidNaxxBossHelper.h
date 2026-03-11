@@ -363,13 +363,13 @@ private:
     Unit* _unit = nullptr;
 };
 
-class FourhorsemanBossHelper : public AiObject
+class FourHorsemenBossHelper : public AiObject
 {
 public:
     const float posZ = 241.27f;
     const std::pair<float, float> attractPos[2] = {{2502.03f, -2910.90f},
                                                    {2484.61f, -2947.07f}};  // left (sir zeliek), right (lady blaumeux)
-    FourhorsemanBossHelper(PlayerbotAI* botAI) : AiObject(botAI) {}
+    FourHorsemenBossHelper(PlayerbotAI* botAI) : AiObject(botAI) {}
     bool UpdateBossAI()
     {
         if (!bot->IsInCombat())
