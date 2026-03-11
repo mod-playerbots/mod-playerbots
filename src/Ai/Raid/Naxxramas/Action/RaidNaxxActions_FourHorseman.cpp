@@ -13,13 +13,13 @@ bool HorsemanAttractAlternativelyAction::Execute(Event /*event*/)
         return true;
 
     Unit* attackTarget = helper.CurrentAttackTarget();
-    if (context->GetValue<Unit*>("current target")->Get() != attackTarget)
+    if (attackTarget && context->GetValue<Unit*>("current target")->Get() != attackTarget)
         return Attack(attackTarget);
 
     return false;
 }
 
-bool HorsemanAttactInOrderAction::Execute(Event /*event*/)
+bool HorsemanAttackInOrderAction::Execute(Event /*event*/)
 {
     if (!helper.UpdateBossAI())
         return false;

@@ -202,7 +202,7 @@ public:
     }
     bool FindPosToAvoidChill(std::vector<float>& dest)
     {
-        Aura* aura = NaxxSpellIds::GetAnyAura(bot, {NaxxSpellIds::Chill25});
+        Aura* aura = NaxxSpellIds::GetAnyAura(bot, {NaxxSpellIds::Chill10, NaxxSpellIds::Chill25});
         if (!aura)
         {
             // Fallback to name for custom spell data.
@@ -497,7 +497,8 @@ public:
         if (feugen && feugen->IsAlive())
             unit = feugen;
 
-        if (stalagg && stalagg->IsAlive() && (!feugen || bot->GetDistance(stalagg) < bot->GetDistance(feugen)))
+        if (stalagg && stalagg->IsAlive() &&
+            (!feugen || !feugen->IsAlive() || bot->GetDistance(stalagg) < bot->GetDistance(feugen)))
             unit = stalagg;
 
         return unit;
