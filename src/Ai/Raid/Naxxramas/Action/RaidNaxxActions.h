@@ -37,10 +37,10 @@ public:
     uint32 GetCurrWaypoint() override;
 };
 
-class GrobblusMoveCenterAction : public MoveInsideAction
+class GrobbulusMoveCenterAction : public MoveInsideAction
 {
 public:
-    GrobblusMoveCenterAction(PlayerbotAI* ai) : MoveInsideAction(ai, 3281.23f, -3310.38f, 5.0f) {}
+    GrobbulusMoveCenterAction(PlayerbotAI* ai) : MoveInsideAction(ai, 3281.23f, -3310.38f, 5.0f) {}
 };
 
 class GrobbulusMoveAwayAction : public MovementAction
