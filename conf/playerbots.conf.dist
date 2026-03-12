@@ -566,7 +566,10 @@ AiPlayerbot.AutoGearScoreLimit = 0
 # Default: food, taxi, and raid are enabled
 AiPlayerbot.BotCheats = "food,taxi,raid"
 
-# Attunement quests (comma-separated list of quest IDs)
+# List of attunement quests (comma-separated list of quest IDs) that are automatically completed for all bots.  
+# While mod-playerbots does not restore removed attunement requirements, although other mods, such as mod-individual-progression, may do so.
+# This is meant to exclude bots from such requirements.
+# 
 # Default:
 # Caverns of Time - Part 1
 # - 10279, To The Master's Lair
@@ -592,7 +595,17 @@ AiPlayerbot.BotCheats = "food,taxi,raid"
 #
 # Serpentshrine Cavern
 # - 10901, The Cudgel of Kar'desh
-AiPlayerbot.AttunementQuests = 10279,10277,10282,10283,10284,10285,10296,10297,10298,11481,11482,11488,11490,11492,10901
+#
+# The Eye
+# - 10888, Trial of the Naaru: Magtheridon
+#
+# Mount Hyjal
+# - 10445, The Vials of Eternity
+#
+# Black Temple
+# - 10985, A Distraction for Akama
+#
+AiPlayerbot.AttunementQuests = 10279,10277,10282,10283,10284,10285,10296,10297,10298,11481,11482,11488,11490,11492,10901,10888,10445,10985
 
 #
 #
@@ -795,6 +808,10 @@ AiPlayerbot.LimitGearExpansion = 1
 # Chance randombot will have less-than-optimized generated gear
 # Set between 0 (0%) and 1 (100%)
 AiPlayerbot.RandomGearLoweringChance = 0
+
+# Unobtainable or unusable items (comma-separated list of item IDs)
+# Default: Chilton Wand (12468), Totem of the Earthen Ring (46978)
+AiPlayerbot.UnobtainableItems = 12468,46978
 
 # Randombots check player's gearscore level and deny the group invitation if it's too low
 # Default: 0 (disabled)

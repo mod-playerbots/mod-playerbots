@@ -12,6 +12,7 @@
 #include "BudgetValues.h"
 #include "PathGenerator.h"
 #include "Playerbots.h"
+#include "RaceMgr.h"
 #include "ServerFacade.h"
 #include "TransportMgr.h"
 
@@ -1661,7 +1662,7 @@ void TravelNodeMap::generateStartNodes()
     startNames[RACE_GNOME] = "Dwarf and Gnome";
     startNames[RACE_TROLL] = "Orc and Troll";
 
-    for (uint32 i = 0; i < MAX_RACES; i++)
+    for (uint32 i = 0; i < sRaceMgr->GetMaxRaces(); i++)
     {
         for (uint32 j = 0; j < MAX_CLASSES; j++)
         {

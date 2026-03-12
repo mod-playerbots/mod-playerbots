@@ -854,6 +854,11 @@ float MovementAction::GetFollowAngle()
     if (!group)
         return 0.0f;
 
+    // Prevent bots with orphaned raid groups from dividing by 0, which freezes the server.
+    uint32 memberCount = group->GetMembersCount();
+    if (memberCount <= 1)
+        return 0.0f;
+
     uint32 index = 1;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -861,7 +866,7 @@ float MovementAction::GetFollowAngle()
             continue;
 
         if (ref->GetSource() == bot)
-            return 2 * M_PI / (group->GetMembersCount() - 1) * index;
+            return 2 * M_PI / (memberCount - 1) * index;
 
         ++index;
     }
