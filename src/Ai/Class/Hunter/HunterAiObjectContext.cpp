@@ -51,14 +51,12 @@ public:
     {
         creators["bspeed"] = &HunterBuffStrategyFactoryInternal::bspeed;
         creators["bdps"] = &HunterBuffStrategyFactoryInternal::bdps;
-        creators["bmana"] = &HunterBuffStrategyFactoryInternal::bmana;
         creators["rnature"] = &HunterBuffStrategyFactoryInternal::rnature;
     }
 
 private:
     static Strategy* bspeed(PlayerbotAI* botAI) { return new HunterBuffSpeedStrategy(botAI); }
     static Strategy* bdps(PlayerbotAI* botAI) { return new HunterBuffDpsStrategy(botAI); }
-    static Strategy* bmana(PlayerbotAI* botAI) { return new HunterBuffManaStrategy(botAI); }
     static Strategy* rnature(PlayerbotAI* botAI) { return new HunterNatureResistanceStrategy(botAI); }
 };
 

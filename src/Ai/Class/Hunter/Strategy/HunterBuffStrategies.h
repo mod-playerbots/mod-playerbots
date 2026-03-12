@@ -19,15 +19,6 @@ public:
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
 };
 
-class HunterBuffManaStrategy : public NonCombatStrategy
-{
-public:
-    HunterBuffManaStrategy(PlayerbotAI* botAI) : NonCombatStrategy(botAI) {}
-
-    std::string const getName() override { return "bmana"; }
-    void InitTriggers(std::vector<TriggerNode*>& triggers) override;
-};
-
 class HunterBuffDpsStrategy : public NonCombatStrategy
 {
 public:
