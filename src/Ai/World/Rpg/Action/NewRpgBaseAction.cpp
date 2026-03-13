@@ -965,7 +965,6 @@ bool NewRpgBaseAction::SelectRandomFlightTaxiNode(ObjectGuid& flightMaster, std:
         return false;
 
     path = availablePaths[urand(0, availablePaths.size() - 1)];
-    //TODO: If selected node in other map, teleport?
     LOG_DEBUG("playerbots", "[New RPG] Bot {} select random flight taxi node from:{} (node {}) to:{} ({} available)",
               bot->GetName(), flightMaster.GetEntry(), path[0], path[path.size() - 1], availablePaths.size());
     return true;
