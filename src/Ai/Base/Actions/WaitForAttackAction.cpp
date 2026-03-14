@@ -7,6 +7,7 @@
 
 #include "ObjectAccessor.h"
 #include "PlayerbotAI.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "TravelMgr.h"
@@ -120,27 +121,43 @@ bool SetWaitForAttackTimeAction::Execute(Event event)
 
     if (newTimeStr.empty())
     {
-        botAI->TellMaster("Please provide a time to set (in seconds)");
+        std::string const text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "wait_for_attack_provide_time",
+            "Please provide a time to set (in seconds)",
+            std::map<std::string, std::string>());
+        botAI->TellMaster(text);
         return false;
     }
 
     if (newTimeStr.find_first_not_of("0123456789") != std::string::npos)
     {
-        botAI->TellMaster("Please provide valid time to set (in seconds) between 0 and 99");
+        std::string const text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "wait_for_attack_invalid_time",
+            "Please provide valid time to set (in seconds) between 0 and 99",
+            std::map<std::string, std::string>());
+        botAI->TellMaster(text);
         return false;
     }
 
     int newTime = std::stoi(newTimeStr);
     if (newTime < 0 || newTime > 99)
     {
-        botAI->TellMaster("Please provide valid time to set (in seconds) between 0 and 99");
+        std::string const text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "wait_for_attack_invalid_time",
+            "Please provide valid time to set (in seconds) between 0 and 99",
+            std::map<std::string, std::string>());
+        botAI->TellMaster(text);
         return false;
     }
 
     context->GetValue<uint8>("wait for attack time")->Set(static_cast<uint8>(newTime));
 
-    std::ostringstream out;
-    out << "Wait for attack time set to " << newTime << " seconds";
-    botAI->TellMaster(out.str());
+    std::map<std::string, std::string> placeholders;
+    placeholders["%new_time"] = std::to_string(newTime);
+    std::string const text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+        "wait_for_attack_time_set",
+        "Wait for attack time set to %new_time seconds",
+        placeholders);
+    botAI->TellMaster(text);
     return true;
 }
