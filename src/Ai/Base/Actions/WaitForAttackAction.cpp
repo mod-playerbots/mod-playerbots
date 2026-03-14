@@ -5,6 +5,9 @@
 
 #include "WaitForAttackAction.h"
 
+#include <algorithm>
+#include <cctype>
+
 #include "ObjectAccessor.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotTextMgr.h"
@@ -28,7 +31,7 @@ WorldPosition GetBestPoint(AiObjectContext* context, Player* bot, Unit* target,
                        frand(0.0f, radiansIncrement) * startDir;
     float distance = frand(minDistance, maxDistance);
 
-    std::list<ObjectGuid> enemies = AI_VALUE(std::list<ObjectGuid>, "possible targets no los");
+    GuidVector enemies = AI_VALUE(GuidVector, "possible targets no los");
 
     for (float tryAngle = 0.0f; tryAngle < static_cast<float>(M_PI); tryAngle += radiansIncrement)
     {
@@ -129,7 +132,7 @@ bool SetWaitForAttackTimeAction::Execute(Event event)
         return false;
     }
 
-    if (newTimeStr.find_first_not_of("0123456789") != std::string::npos)
+    if (!std::all_of(newTimeStr.begin(), newTimeStr.end(), ::isdigit))
     {
         std::string const text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
             "wait_for_attack_invalid_time",
