@@ -84,6 +84,7 @@
 #include "TellGlyphsAction.h"
 #include "EquipGlyphsAction.h"
 #include "PetsAction.h"
+#include "WaitForAttackAction.h"
 
 class ChatActionContext : public NamedObjectContext<Action>
 {
@@ -199,6 +200,7 @@ public:
         creators["pet"] = &ChatActionContext::pet;
         creators["pet attack"] = &ChatActionContext::pet_attack;
         creators["roll"] = &ChatActionContext::roll_action;
+        creators["wait for attack time"] = &ChatActionContext::wait_for_attack_time;
     }
 
 private:
@@ -311,6 +313,7 @@ private:
     static Action* pet(PlayerbotAI* botAI) { return new PetsAction(botAI); }
     static Action* pet_attack(PlayerbotAI* botAI) { return new PetsAction(botAI, "attack"); }
     static Action* roll_action(PlayerbotAI* botAI) { return new RollAction(botAI); }
+    static Action* wait_for_attack_time(PlayerbotAI* botAI) { return new SetWaitForAttackTimeAction(botAI); }
 };
 
 #endif
