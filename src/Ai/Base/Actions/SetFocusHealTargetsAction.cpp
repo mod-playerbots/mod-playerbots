@@ -7,6 +7,7 @@
 
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
+#include "PlayerbotTextMgr.h"
 
 static std::string LowercaseString(std::string const& str)
 {
@@ -39,14 +40,22 @@ bool SetFocusHealTargetsAction::Execute(Event event)
 {
     if (!botAI->IsHeal(bot) && !botAI->HasStrategy("offheal", BOT_STATE_COMBAT))
     {
-        botAI->TellMasterNoFacing("I'm not a healer or offhealer (please change my strats to heal or offheal)");
+        std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "focus_heal_not_healer",
+            "I'm not a healer or offhealer (please change my strats to heal or offheal)",
+            {});
+        botAI->TellMasterNoFacing(text);
         return false;
     }
 
     std::string const param = LowercaseString(event.getParam());
     if (param.empty())
     {
-        botAI->TellMasterNoFacing("Please provide one or more player names");
+        std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "focus_heal_provide_names",
+            "Please provide one or more player names",
+            {});
+        botAI->TellMasterNoFacing(text);
         return false;
     }
 
@@ -56,27 +65,37 @@ bool SetFocusHealTargetsAction::Execute(Event event)
     // Query current focus targets
     if (param.find('?') != std::string::npos)
     {
-        std::stringstream ss;
         if (focusHealTargets.empty())
         {
-            ss << "I don't have any focus heal targets";
+            std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "focus_heal_no_targets",
+                "I don't have any focus heal targets",
+                {});
+            botAI->TellMasterNoFacing(text);
         }
         else
         {
-            ss << "My focus heal targets are ";
+            std::stringstream targetNames;
             for (auto it = focusHealTargets.begin(); it != focusHealTargets.end(); ++it)
             {
                 Unit* target = botAI->GetUnit(*it);
                 if (target)
                 {
                     if (it != focusHealTargets.begin())
-                        ss << ", ";
-                    ss << target->GetName();
+                        targetNames << ", ";
+                    targetNames << target->GetName();
                 }
             }
+
+            std::map<std::string, std::string> placeholders;
+            placeholders["%targets"] = targetNames.str();
+            std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "focus_heal_current_targets",
+                "My focus heal targets are %targets",
+                placeholders);
+            botAI->TellMasterNoFacing(text);
         }
 
-        botAI->TellMasterNoFacing(ss.str());
         return true;
     }
 
@@ -86,7 +105,11 @@ bool SetFocusHealTargetsAction::Execute(Event event)
         focusHealTargets.clear();
         SET_AI_VALUE(std::list<ObjectGuid>, "focus heal targets", focusHealTargets);
         botAI->ChangeStrategy("-focus heal targets", BOT_STATE_COMBAT);
-        botAI->TellMasterNoFacing("Removed focus heal targets");
+        std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "focus_heal_cleared",
+            "Removed focus heal targets",
+            {});
+        botAI->TellMasterNoFacing(text);
         return true;
     }
 
@@ -106,13 +129,21 @@ bool SetFocusHealTargetsAction::Execute(Event event)
 
     if (targetNames.empty())
     {
-        botAI->TellMasterNoFacing("Please provide one or more player names");
+        std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "focus_heal_provide_names",
+            "Please provide one or more player names",
+            {});
+        botAI->TellMasterNoFacing(text);
         return false;
     }
 
     if (!bot->GetGroup())
     {
-        botAI->TellMasterNoFacing("I'm not in a group");
+        std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "focus_heal_not_in_group",
+            "I'm not in a group",
+            {});
+        botAI->TellMasterNoFacing(text);
         return false;
     }
 
@@ -122,7 +153,11 @@ bool SetFocusHealTargetsAction::Execute(Event event)
         bool const remove = targetName.find("-") != std::string::npos;
         if (!add && !remove)
         {
-            botAI->TellMasterNoFacing("Please specify a + for add or - to remove a target");
+            std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "focus_heal_add_remove_syntax",
+                "Please specify a + for add or - to remove a target",
+                {});
+            botAI->TellMasterNoFacing(text);
             continue;
         }
 
@@ -130,9 +165,13 @@ bool SetFocusHealTargetsAction::Execute(Event event)
         Player* target = FindGroupPlayerByName(bot, playerName);
         if (!target)
         {
-            std::ostringstream msg;
-            msg << "I'm not in a group with " << playerName;
-            botAI->TellMasterNoFacing(msg.str());
+            std::map<std::string, std::string> placeholders;
+            placeholders["%player_name"] = playerName;
+            std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "focus_heal_not_in_group_with",
+                "I'm not in a group with %player_name",
+                placeholders);
+            botAI->TellMasterNoFacing(text);
             continue;
         }
 
@@ -145,16 +184,24 @@ bool SetFocusHealTargetsAction::Execute(Event event)
                 focusHealTargets.push_back(targetGuid);
             }
 
-            std::ostringstream msg;
-            msg << "Added " << playerName << " to focus heal targets";
-            botAI->TellMasterNoFacing(msg.str());
+            std::map<std::string, std::string> placeholders;
+            placeholders["%player_name"] = playerName;
+            std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "focus_heal_added",
+                "Added %player_name to focus heal targets",
+                placeholders);
+            botAI->TellMasterNoFacing(text);
         }
         else
         {
             focusHealTargets.remove(targetGuid);
-            std::ostringstream msg;
-            msg << "Removed " << playerName << " from focus heal targets";
-            botAI->TellMasterNoFacing(msg.str());
+            std::map<std::string, std::string> placeholders;
+            placeholders["%player_name"] = playerName;
+            std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "focus_heal_removed",
+                "Removed %player_name from focus heal targets",
+                placeholders);
+            botAI->TellMasterNoFacing(text);
         }
     }
 
