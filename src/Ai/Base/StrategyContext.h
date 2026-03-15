@@ -19,6 +19,7 @@
 #include "DuelStrategy.h"
 #include "EmoteStrategy.h"
 #include "FleeStrategy.h"
+#include "FocusTargetStrategy.h"
 #include "FollowMasterStrategy.h"
 #include "GrindingStrategy.h"
 #include "GroupStrategy.h"
@@ -124,6 +125,7 @@ public:
         creators["worldbuff"] = &StrategyContext::world_buff;
         creators["use bobber"] = &StrategyContext::bobber_strategy;
         creators["master fishing"] = &StrategyContext::master_fishing;
+        creators["focus heal targets"] = &StrategyContext::focus_heal_targets;
     }
 
 private:
@@ -195,6 +197,7 @@ private:
     static Strategy* world_buff(PlayerbotAI* botAI) { return new WorldBuffStrategy(botAI); }
     static Strategy* bobber_strategy(PlayerbotAI* botAI) { return new UseBobberStrategy(botAI); }
     static Strategy* master_fishing(PlayerbotAI* botAI) { return new MasterFishingStrategy(botAI); }
+    static Strategy* focus_heal_targets(PlayerbotAI* botAI) { return new FocusHealTargetsStrategy(botAI); }
 };
 
 class MovementStrategyContext : public NamedObjectContext<Strategy>

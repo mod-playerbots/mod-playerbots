@@ -140,4 +140,11 @@ public:
 public:
     Unit* Calculate();
 };
+
+class FocusHealTargetValue : public ManualSetValue<std::list<ObjectGuid>>
+{
+public:
+    FocusHealTargetValue(PlayerbotAI* botAI) : ManualSetValue<std::list<ObjectGuid>>(botAI, {}, "focus heal targets") {}
+};
+
 #endif

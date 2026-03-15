@@ -37,6 +37,7 @@
 #include "LogLevelAction.h"
 #include "LootStrategyAction.h"
 #include "LootRollAction.h"
+#include "SetFocusHealTargetsAction.h"
 #include "MailAction.h"
 #include "NamedObjectContext.h"
 #include "NewRpgAction.h"
@@ -199,6 +200,7 @@ public:
         creators["pet"] = &ChatActionContext::pet;
         creators["pet attack"] = &ChatActionContext::pet_attack;
         creators["roll"] = &ChatActionContext::roll_action;
+        creators["focus heal targets"] = &ChatActionContext::focus_heal_targets;
     }
 
 private:
@@ -311,6 +313,7 @@ private:
     static Action* pet(PlayerbotAI* botAI) { return new PetsAction(botAI); }
     static Action* pet_attack(PlayerbotAI* botAI) { return new PetsAction(botAI, "attack"); }
     static Action* roll_action(PlayerbotAI* botAI) { return new RollAction(botAI); }
+    static Action* focus_heal_targets(PlayerbotAI* botAI) { return new SetFocusHealTargetsAction(botAI); }
 };
 
 #endif

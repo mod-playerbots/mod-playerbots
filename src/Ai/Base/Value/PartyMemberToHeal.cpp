@@ -38,6 +38,36 @@ Unit* PartyMemberToHeal::Calculate()
     bool isRaid = bot->GetGroup()->isRaidGroup();
     MinValueCalculator calc(100);
 
+    // If focus heal targets strategy is active, only heal those targets
+    if (botAI->HasStrategy("focus heal targets", BOT_STATE_COMBAT))
+    {
+        std::list<ObjectGuid> const focusHealTargets =
+            AI_VALUE(std::list<ObjectGuid>, "focus heal targets");
+
+        for (ObjectGuid const& focusHealTarget : focusHealTargets)
+        {
+            Player* player = ObjectAccessor::FindPlayer(focusHealTarget);
+            if (!player || !player->IsAlive() || !player->IsInSameGroupWith(bot))
+                continue;
+
+            uint8 health = player->GetHealthPct();
+            if (isRaid || health < sPlayerbotAIConfig.mediumHealth ||
+                !IsTargetOfSpellCast(player, predicate))
+            {
+                uint32 probeValue = 100;
+                if (player->GetDistance2d(bot) > sPlayerbotAIConfig.healDistance)
+                    probeValue = health + 30;
+                else
+                    probeValue = health + player->GetDistance2d(bot) / 10;
+
+                if (probeValue < calc.minValue && Check(player))
+                    calc.probe(probeValue, player);
+            }
+        }
+
+        return (Unit*)calc.param;
+    }
+
     for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
     {
         Player* player = gref->GetSource();
