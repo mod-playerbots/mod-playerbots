@@ -29,16 +29,13 @@ HealDruidStrategy::HealDruidStrategy(PlayerbotAI* botAI) : GenericDruidStrategy(
     actionNodeFactories.Add(new HealDruidStrategyActionNodeFactory());
 }
 
-std::vector<NextAction> HealDruidStrategy::getDefaultActions()
-{
-    return {
-        NextAction("tree form", ACTION_DEFAULT),
-    };
-}
-
 void HealDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericDruidStrategy::InitTriggers(triggers);
+
+    // no healer dps strategy
+    triggers.push_back(new TriggerNode("no healer dps strategy",
+                                       { NextAction("tree form", ACTION_DEFAULT) }));
 
     triggers.push_back(new TriggerNode(
         "party member to heal out of spell range",
