@@ -62,7 +62,7 @@ void HealDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "group heal setting",
         {
-                          NextAction("tree form", ACTION_CRITICAL_HEAL + 4.1f),
+                          NextAction("tree form", ACTION_MEDIUM_HEAL + 2.3f),
                           NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 2.2f),
                           NextAction("rejuvenation on not full", ACTION_MEDIUM_HEAL + 2.1f),
                           }));
@@ -70,7 +70,7 @@ void HealDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(
         new TriggerNode("medium group heal setting",
                         {
-                        NextAction("tree form", ACTION_CRITICAL_HEAL + 4.1f),
+                        NextAction("tree form", ACTION_CRITICAL_HEAL + 0.6f),
                         NextAction("tranquility", ACTION_CRITICAL_HEAL + 0.5f) }));
 
     // LOW
