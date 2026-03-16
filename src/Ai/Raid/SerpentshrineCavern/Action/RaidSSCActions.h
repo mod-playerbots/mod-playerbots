@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
+ */
+
 #ifndef _PLAYERBOT_RAIDSSCACTIONS_H
 #define _PLAYERBOT_RAIDSSCACTIONS_H
 
@@ -75,8 +80,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool TryMisdirectToFrostTank(Unit* hydross, Group* group);
-    bool TryMisdirectToNatureTank(Unit* hydross, Group* group);
+    bool TryMisdirectToFrostTank(Unit* hydross);
+    bool TryMisdirectToNatureTank(Unit* hydross);
 };
 
 class HydrossTheUnstableStopDpsUponPhaseChangeAction : public Action
@@ -413,10 +418,10 @@ private:
     bool LineUpSecondCorePasser(Player* firstCorePasser, Unit* closestTrigger);
     bool LineUpThirdCorePasser(Player* designatedLooter, Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger);
     bool LineUpFourthCorePasser(Player* firstCorePasser, Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger);
-    bool IsFirstCorePasserInIntendedPosition(Player* designatedLooter, Player* firstCorePasser, Unit* closestTrigger);
-    bool IsSecondCorePasserInIntendedPosition(Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger);
-    bool IsThirdCorePasserInIntendedPosition(Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger);
-    bool IsFourthCorePasserInIntendedPosition(Player* thirdCorePasser, Player* fourthCorePasser, Unit* closestTrigger);
+    bool IsFirstCorePasserInPosition(Player* designatedLooter, Player* firstCorePasser, Unit* closestTrigger);
+    bool IsSecondCorePasserInPosition(Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger);
+    bool IsThirdCorePasserInPosition(Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger);
+    bool IsFourthCorePasserInPosition(Player* thirdCorePasser, Player* fourthCorePasser, Unit* closestTrigger);
     void ScheduleTransferCoreAfterImbue(PlayerbotAI* botAI, Player* giver, Player* receiver);
     bool UseCoreOnNearestGenerator(const uint32 instanceId);
 };
@@ -428,19 +433,12 @@ public:
     bool Execute(Event event) override;
 };
 
-class LadyVashjEraseCorePassingTrackersAction : public Action
-{
-public:
-    LadyVashjEraseCorePassingTrackersAction(PlayerbotAI* botAI, std::string const name = "lady vashj erase core passing trackers") : Action(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 class LadyVashjAvoidToxicSporesAction : public MovementAction
 {
 public:
     LadyVashjAvoidToxicSporesAction(PlayerbotAI* botAI, std::string const name = "lady vashj avoid toxic spores") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
-    static std::vector<Unit*> GetAllSporeDropTriggers(PlayerbotAI* botAI, Player* bot);
+    static std::vector<Unit*> GetAllSporeDropTriggers(Player* bot);
 
 private:
     Position FindSafestNearbyPosition(const std::vector<Unit*>& spores, const Position& position, float maxRadius, float hazardRadius);

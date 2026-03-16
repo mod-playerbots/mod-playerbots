@@ -186,24 +186,24 @@ private:
     ThaddiusBossHelper helper;
 };
 
-class HorsemanAttractorsTrigger : public Trigger
+class FourHorsemenAttractorsTrigger : public Trigger
 {
 public:
-    HorsemanAttractorsTrigger(PlayerbotAI* ai) : Trigger(ai, "fourhorsemen attractors"), helper(ai) {}
+    FourHorsemenAttractorsTrigger(PlayerbotAI* ai) : Trigger(ai, "four horsemen attractors"), helper(ai) {}
     bool IsActive() override;
 
 private:
-    FourhorsemanBossHelper helper;
+    FourHorsemenBossHelper helper;
 };
 
-class HorsemanExceptAttractorsTrigger : public Trigger
+class FourHorsemenExceptAttractorsTrigger : public Trigger
 {
 public:
-    HorsemanExceptAttractorsTrigger(PlayerbotAI* ai) : Trigger(ai, "fourhorsemen except attractors"), helper(ai) {}
+    FourHorsemenExceptAttractorsTrigger(PlayerbotAI* ai) : Trigger(ai, "four horsemen except attractors"), helper(ai) {}
     bool IsActive() override;
 
 private:
-    FourhorsemanBossHelper helper;
+    FourHorsemenBossHelper helper;
 };
 
 class SapphironGroundTrigger : public Trigger

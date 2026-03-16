@@ -97,13 +97,13 @@ void RaidNaxxStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("razuvious target", ACTION_RAID + 1) }
     ));
 
-    // four horseman
-    triggers.push_back(new TriggerNode("horseman attractors",
-        { NextAction("horseman attract alternatively", ACTION_RAID + 1) }
+    // four horsemen
+    triggers.push_back(new TriggerNode("four horsemen attractors",
+        { NextAction("four horsemen attract alternatively", ACTION_RAID + 1) }
     ));
 
-    triggers.push_back(new TriggerNode("horseman except attractors",
-        { NextAction("horseman attack in order", ACTION_RAID + 1) }
+    triggers.push_back(new TriggerNode("four horsemen except attractors",
+        { NextAction("four horsemen attack in order", ACTION_RAID + 1) }
     ));
 
     // sapphiron
@@ -150,7 +150,7 @@ void RaidNaxxStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new InstructorRazuviousGenericMultiplier(botAI));
     multipliers.push_back(new KelthuzadGenericMultiplier(botAI));
     multipliers.push_back(new AnubrekhanGenericMultiplier(botAI));
-    multipliers.push_back(new FourhorsemanGenericMultiplier(botAI));
+    multipliers.push_back(new FourHorsemenGenericMultiplier(botAI));
     // multipliers.push_back(new GothikGenericMultiplier(botAI));
     multipliers.push_back(new GluthGenericMultiplier(botAI));
 }

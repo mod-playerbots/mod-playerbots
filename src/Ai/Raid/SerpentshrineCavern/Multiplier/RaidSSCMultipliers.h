@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
+ */
+
 #ifndef _PLAYERBOT_RAIDSSCMULTIPLIERS_H
 #define _PLAYERBOT_RAIDSSCMULTIPLIERS_H
 
@@ -190,6 +195,14 @@ class LadyVashjDelayCooldownsMultiplier : public Multiplier
 public:
     LadyVashjDelayCooldownsMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj delay cooldowns") {}
+    virtual float GetValue(Action* action);
+};
+
+class LadyVashjMainTankGroupShamanUseGroundingTotemMultiplier : public Multiplier
+{
+public:
+    LadyVashjMainTankGroupShamanUseGroundingTotemMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "lady vashj main tank group shaman use grounding totem") {}
     virtual float GetValue(Action* action);
 };
 

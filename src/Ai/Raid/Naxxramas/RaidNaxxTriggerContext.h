@@ -30,8 +30,8 @@ public:
         creators["razuvious tank"] = &RaidNaxxTriggerContext::razuvious_tank;
         creators["razuvious nontank"] = &RaidNaxxTriggerContext::razuvious_nontank;
 
-        creators["horseman attractors"] = &RaidNaxxTriggerContext::horseman_attractors;
-        creators["horseman except attractors"] = &RaidNaxxTriggerContext::horseman_except_attractors;
+        creators["four horsemen attractors"] = &RaidNaxxTriggerContext::four_horsemen_attractors;
+        creators["four horsemen except attractors"] = &RaidNaxxTriggerContext::four_horsemen_except_attractors;
 
         creators["sapphiron ground"] = &RaidNaxxTriggerContext::sapphiron_ground;
         creators["sapphiron flight"] = &RaidNaxxTriggerContext::sapphiron_flight;
@@ -66,8 +66,8 @@ private:
     static Trigger* razuvious_tank(PlayerbotAI* ai) { return new RazuviousTankTrigger(ai); }
     static Trigger* razuvious_nontank(PlayerbotAI* ai) { return new RazuviousNontankTrigger(ai); }
 
-    static Trigger* horseman_attractors(PlayerbotAI* ai) { return new HorsemanAttractorsTrigger(ai); }
-    static Trigger* horseman_except_attractors(PlayerbotAI* ai) { return new HorsemanExceptAttractorsTrigger(ai); }
+    static Trigger* four_horsemen_attractors(PlayerbotAI* ai) { return new FourHorsemenAttractorsTrigger(ai); }
+    static Trigger* four_horsemen_except_attractors(PlayerbotAI* ai) { return new FourHorsemenExceptAttractorsTrigger(ai); }
 
     static Trigger* sapphiron_ground(PlayerbotAI* ai) { return new SapphironGroundTrigger(ai); }
     static Trigger* sapphiron_flight(PlayerbotAI* ai) { return new SapphironFlightTrigger(ai); }

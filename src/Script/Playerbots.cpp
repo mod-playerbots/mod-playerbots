@@ -17,6 +17,7 @@
 
 #include "Playerbots.h"
 
+#include "BattlefieldScript.h"
 #include "Channel.h"
 #include "Config.h"
 #include "DatabaseEnv.h"
@@ -518,12 +519,20 @@ public:
     void OnBattlegroundEnd(Battleground* bg, TeamId /*winnerTeam*/) override { bgStrategies.erase(bg->GetInstanceID()); }
 };
 
+// Workaround for missing InitEnabledHooksIfNeeded for new BattlefieldScript in ScriptMgr
+class PlayerbotsBattlefieldScript : public BattlefieldScript
+{
+public:
+    PlayerbotsBattlefieldScript() : BattlefieldScript("PlayerbotsBattlefieldScript") { }
+};
+
 void AddPlayerbotsSecureLoginScripts();
 
 void AddSC_TempestKeepBotScripts();
 
 void AddPlayerbotsScripts()
 {
+    new PlayerbotsBattlefieldScript();
     new PlayerbotsDatabaseScript();
     new PlayerbotsPlayerScript();
     new PlayerbotsMiscScript();
