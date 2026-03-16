@@ -91,8 +91,9 @@ BloodDKStrategy::BloodDKStrategy(PlayerbotAI* botAI) : GenericDKStrategy(botAI)
 std::vector<NextAction> BloodDKStrategy::getDefaultActions()
 {
     return {
-        NextAction("rune strike", ACTION_DEFAULT + 0.5f),
-        NextAction("icy touch", ACTION_DEFAULT + 0.4f),
+        NextAction("rune strike", ACTION_DEFAULT + 0.6f),
+        NextAction("icy touch", ACTION_DEFAULT + 0.5f),
+        NextAction("heart strike", ACTION_DEFAULT + 0.4f),
         NextAction("dancing rune weapon", ACTION_DEFAULT + 0.3f),
         NextAction("death coil", ACTION_DEFAULT + 0.2f),
         NextAction("horn of winter", ACTION_DEFAULT + 0.1f),
@@ -158,14 +159,6 @@ void BloodDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "plague strike",
             {
                 NextAction("plague strike", ACTION_HIGH + 2)
-            }
-        )
-    );
-    triggers.push_back(
-        new TriggerNode(
-            "high blood rune",
-            {
-                NextAction("heart strike", ACTION_HIGH + 1)
             }
         )
     );
