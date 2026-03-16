@@ -50,7 +50,9 @@ private:
             {
                 NextAction("frost presence")
             },
-            /*A*/ {},
+            /*A*/ {
+                NextAction("blood strike")
+            },
             /*C*/ {}
         );
     }
@@ -89,13 +91,10 @@ BloodDKStrategy::BloodDKStrategy(PlayerbotAI* botAI) : GenericDKStrategy(botAI)
 std::vector<NextAction> BloodDKStrategy::getDefaultActions()
 {
     return {
-        NextAction("rune strike", ACTION_DEFAULT + 0.8f),
-        NextAction("icy touch", ACTION_DEFAULT + 0.7f),
-        NextAction("heart strike", ACTION_DEFAULT + 0.6f),
-        NextAction("blood strike", ACTION_DEFAULT + 0.5f),
-        NextAction("dancing rune weapon", ACTION_DEFAULT + 0.4f),
-        NextAction("death coil", ACTION_DEFAULT + 0.3f),
-        NextAction("plague strike", ACTION_DEFAULT + 0.2f),
+        NextAction("rune strike", ACTION_DEFAULT + 0.5f),
+        NextAction("icy touch", ACTION_DEFAULT + 0.4f),
+        NextAction("dancing rune weapon", ACTION_DEFAULT + 0.3f),
+        NextAction("death coil", ACTION_DEFAULT + 0.2f),
         NextAction("horn of winter", ACTION_DEFAULT + 0.1f),
         NextAction("melee", ACTION_DEFAULT)
     };
@@ -159,6 +158,22 @@ void BloodDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "plague strike",
             {
                 NextAction("plague strike", ACTION_HIGH + 2)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "high blood rune",
+            {
+                NextAction("heart strike", ACTION_HIGH + 1)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "high unholy rune",
+            {
+                NextAction("death strike", ACTION_HIGH + 1)
             }
         )
     );
