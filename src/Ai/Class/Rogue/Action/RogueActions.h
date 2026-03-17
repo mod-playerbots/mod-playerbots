@@ -82,8 +82,6 @@ class CastColdBloodAction : public CastBuffSpellAction
 {
 public:
     CastColdBloodAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "cold blood") {}
-
-    std::string const GetTargetName() override { return "self target"; }
 };
 
 class CastDismantleAction : public CastSpellAction
