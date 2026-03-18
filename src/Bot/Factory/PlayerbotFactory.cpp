@@ -762,7 +762,7 @@ void PlayerbotFactory::InitPetTalents()
         // pet_family->petTalentType);
         return;
     }
-    std::unordered_map<uint32, std::vector<TalentEntry const*>> spells;
+    std::map<uint32, std::vector<TalentEntry const*>> spells;
     bool diveTypePet = (1LL << ci->family) & diveMask;
 
     for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
@@ -2667,7 +2667,7 @@ void PlayerbotFactory::InitSpecialSpells()
 void PlayerbotFactory::InitTalents(uint32 specNo)
 {
     uint32 classMask = bot->getClassMask();
-    std::unordered_map<uint32, std::vector<TalentEntry const*>> spells;
+    std::map<uint32, std::vector<TalentEntry const*>> spells;
     for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
     {
         TalentEntry const* talentInfo = sTalentStore.LookupEntry(i);
