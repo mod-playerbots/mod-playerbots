@@ -43,21 +43,21 @@ any impact on performance, you may skip these question. If necessary, a maintain
 ## Impact Assessment
 <!-- As a generic test, before and after measure of pmon (playerbot pmon tick) can help you here. -->
 - Does this change increase per-bot/per-tick processing or risk scaling poorly with thousands of bots?
-    - [ ] No, not at all
-    - [ ] Minimal impact (**explain below**)
-    - [ ] Moderate impact (**explain below**)
+    - - [ ] No, not at all
+    - - [ ] Minimal impact (**explain below**)
+    - - [ ] Moderate impact (**explain below**)
 
 
 
 - Does this change modify default bot behavior?
-    - [ ] No
-    - [ ] Yes (**explain why**)
+    - - [ ] No
+    - - [ ] Yes (**explain why**)
 
 
 
 - Does this change add new decision branches or increase maintenance complexity?
-    - [ ] No
-    - [ ] Yes (**explain below**)
+    - - [ ] No
+    - - [ ] Yes (**explain below**)
 
 
 
@@ -68,8 +68,8 @@ the message is in a translatable format, and list in the table the message_key a
 Search for GetBotTextOrDefault in the codebase for examples.
 -->
 Does this change add bot messages to translate?
-- [ ] No
-- [ ] Yes (**list messages in the table**)
+    - - [ ] No
+    - - [ ] Yes (**list messages in the table**)
 
 | Message key  | Default message |
 | --------------- | ------------------ |
@@ -82,8 +82,8 @@ AI assistance is allowed, but all submitted code must be fully understood, revie
 We expect contributors to be honest about what they do and do not understand.
 -->
 Was AI assistance used while working on this change?
-- [ ] No
-- [ ] Yes (**explain below**)
+    - - [ ] No
+    - - [ ] Yes (**explain below**)
 <!--
 If yes, please specify:
 - Purpose of usage (e.g. brainstorming, refactoring, documentation, code generation).
@@ -94,10 +94,10 @@ If yes, please specify:
 
 ## Final Checklist
 
-- [ ] Stability is not compromised.
-- [ ] Performance impact is understood, tested, and acceptable.
-- [ ] Added logic complexity is justified and explained.
-- [ ] Documentation updated if needed (Conf comments, WiKi commands).
+- - [ ] Stability is not compromised.
+- - [ ] Performance impact is understood, tested, and acceptable.
+- - [ ] Added logic complexity is justified and explained.
+- - [ ] Documentation updated if needed (Conf comments, WiKi commands).
 
 ## Notes for Reviewers
 <!-- Anything else that's helpful to review or test your pull request. -->
