@@ -57,11 +57,9 @@ public:
         if (packet.GetOpcode() != CMSG_PLAYER_LOGIN)
             return true;
 
-        WorldPacket& pkt = const_cast<WorldPacket&>(packet);
-        auto const oldPos = pkt.rpos();
+        WorldPacket pkt(packet);
         ObjectGuid loginGuid;
         pkt >> loginGuid;
-        pkt.rpos(oldPos);
 
         if (!loginGuid)
             return true;
