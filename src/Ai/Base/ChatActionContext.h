@@ -20,7 +20,6 @@
 #include "CustomStrategyEditAction.h"
 #include "DebugAction.h"
 #include "DestroyItemAction.h"
-#include "DruidShapeshiftActions.h"
 #include "DropQuestAction.h"
 #include "EquipAction.h"
 #include "FlagAction.h"
