@@ -14,6 +14,7 @@
 #include "MapMgr.h"
 #include "PathGenerator.h"
 #include "Playerbots.h"
+#include "RaceMgr.h"
 #include "TransportMgr.h"
 #include "VMapFactory.h"
 #include "VMapMgr2.h"
@@ -3335,7 +3336,7 @@ void TravelMgr::LoadQuestTravelTable()
 
             std::ostringstream out;
 
-            for (uint8 race = RACE_HUMAN; race < MAX_RACES; race++)
+            for (uint8 race = RACE_HUMAN; race < sRaceMgr->GetMaxRaces(); race++)
             {
                 for (uint8 cls = CLASS_WARRIOR; cls < MAX_CLASSES; ++cls)
                 {

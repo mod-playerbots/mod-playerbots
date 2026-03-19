@@ -1,0 +1,57 @@
+#include "AiObjectContext.h"
+#include "ActionContext.h"
+#include "ChatActionContext.h"
+#include "WorldPacketActionContext.h"
+#include "Ai/Raid/Aq20/RaidAq20ActionContext.h"
+#include "Ai/Raid/MoltenCore/RaidMcActionContext.h"
+#include "Ai/Raid/BlackwingLair/RaidBwlActionContext.h"
+#include "Ai/Raid/Karazhan/RaidKarazhanActionContext.h"
+#include "Ai/Raid/GruulsLair/RaidGruulsLairActionContext.h"
+#include "Ai/Raid/Naxxramas/RaidNaxxActionContext.h"
+#include "Ai/Raid/Magtheridon/RaidMagtheridonActionContext.h"
+#include "Ai/Raid/SerpentshrineCavern/RaidSSCActionContext.h"
+#include "Ai/Raid/TempestKeep/RaidTempestKeepActionContext.h"
+#include "Ai/Raid/ObsidianSanctum/RaidOsActionContext.h"
+#include "Ai/Raid/EyeOfEternity/RaidEoEActionContext.h"
+#include "Ai/Raid/VaultOfArchavon/RaidVoAActionContext.h"
+#include "Ai/Raid/Ulduar/RaidUlduarActionContext.h"
+#include "Ai/Raid/Onyxia/RaidOnyxiaActionContext.h"
+#include "Ai/Raid/Icecrown/RaidIccActionContext.h"
+#include "Ai/Dungeon/WotlkDungeonActionContext.h"
+
+void AiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)
+{
+    actionContexts.Add(new ActionContext());
+    actionContexts.Add(new ChatActionContext());
+    actionContexts.Add(new WorldPacketActionContext());
+    actionContexts.Add(new RaidAq20ActionContext());
+    actionContexts.Add(new RaidMcActionContext());
+    actionContexts.Add(new RaidBwlActionContext());
+    actionContexts.Add(new RaidKarazhanActionContext());
+    actionContexts.Add(new RaidGruulsLairActionContext());
+    actionContexts.Add(new RaidMagtheridonActionContext());
+    actionContexts.Add(new RaidSSCActionContext());
+    actionContexts.Add(new RaidTempestKeepActionContext());
+    actionContexts.Add(new RaidNaxxActionContext());
+    actionContexts.Add(new RaidOsActionContext());
+    actionContexts.Add(new RaidEoEActionContext());
+    actionContexts.Add(new RaidVoAActionContext());
+    actionContexts.Add(new RaidUlduarActionContext());
+    actionContexts.Add(new RaidOnyxiaActionContext());
+    actionContexts.Add(new RaidIccActionContext());
+    actionContexts.Add(new WotlkDungeonUKActionContext());
+    actionContexts.Add(new WotlkDungeonNexActionContext());
+    actionContexts.Add(new WotlkDungeonANActionContext());
+    actionContexts.Add(new WotlkDungeonOKActionContext());
+    actionContexts.Add(new WotlkDungeonDTKActionContext());
+    actionContexts.Add(new WotlkDungeonVHActionContext());
+    actionContexts.Add(new WotlkDungeonGDActionContext());
+    actionContexts.Add(new WotlkDungeonHoSActionContext());
+    actionContexts.Add(new WotlkDungeonHoLActionContext());
+    actionContexts.Add(new WotlkDungeonOccActionContext());
+    actionContexts.Add(new WotlkDungeonUPActionContext());
+    actionContexts.Add(new WotlkDungeonCoSActionContext());
+    actionContexts.Add(new WotlkDungeonFoSActionContext());
+    actionContexts.Add(new WotlkDungeonPoSActionContext());
+    actionContexts.Add(new WotlkDungeonToCActionContext());
+}
