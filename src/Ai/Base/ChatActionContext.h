@@ -169,13 +169,6 @@ public:
         creators["tell target"] = &ChatActionContext::tell_target;
         creators["formation"] = &ChatActionContext::formation;
         creators["stance"] = &ChatActionContext::stance;
-        creators["cancel tree form"] = &ChatActionContext::cancel_tree_form;
-        creators["cancel travel form"] = &ChatActionContext::cancel_travel_form;
-        creators["cancel bear form"] = &ChatActionContext::cancel_bear_form;
-        creators["cancel dire bear form"] = &ChatActionContext::cancel_dire_bear_form;
-        creators["cancel cat form"] = &ChatActionContext::cancel_cat_form;
-        creators["cancel moonkin form"] = &ChatActionContext::cancel_moonkin_form;
-        creators["cancel aquatic form"] = &ChatActionContext::cancel_aquatic_form;
         creators["sendmail"] = &ChatActionContext::sendmail;
         creators["mail"] = &ChatActionContext::mail;
         creators["go"] = &ChatActionContext::go;
@@ -225,13 +218,6 @@ private:
     static Action* sendmail(PlayerbotAI* botAI) { return new SendMailAction(botAI); }
     static Action* formation(PlayerbotAI* botAI) { return new SetFormationAction(botAI); }
     static Action* stance(PlayerbotAI* botAI) { return new SetStanceAction(botAI); }
-    static Action* cancel_tree_form(PlayerbotAI* botAI) { return new CastCancelTreeFormAction(botAI); }
-    static Action* cancel_travel_form(PlayerbotAI* botAI) { return new CastCancelTravelFormAction(botAI); }
-    static Action* cancel_bear_form(PlayerbotAI* botAI) { return new CastCancelBearFormAction(botAI); }
-    static Action* cancel_dire_bear_form(PlayerbotAI* botAI) { return new CastCancelDireBearFormAction(botAI); }
-    static Action* cancel_cat_form(PlayerbotAI* botAI) { return new CastCancelCatFormAction(botAI); }
-    static Action* cancel_moonkin_form(PlayerbotAI* botAI) { return new CastCancelMoonkinFormAction(botAI); }
-    static Action* cancel_aquatic_form(PlayerbotAI* botAI) { return new CastCancelAquaticFormAction(botAI); }
     static Action* tell_attackers(PlayerbotAI* botAI) { return new TellAttackersAction(botAI); }
     static Action* max_dps_chat_shortcut(PlayerbotAI* botAI) { return new MaxDpsChatShortcutAction(botAI); }
     static Action* save_mana(PlayerbotAI* botAI) { return new SaveManaAction(botAI); }
