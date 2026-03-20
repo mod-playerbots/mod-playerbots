@@ -14,7 +14,7 @@
 
 namespace ZulAmanHelpers
 {
-    enum ZulAmanSpells
+    enum class ZulAmanSpells : uint32
     {
         // Akil'zon <Eagle Avatar>
         SPELL_ELECTRICAL_STORM          = 43648,
@@ -33,13 +33,13 @@ namespace ZulAmanHelpers
         SPELL_SHAPE_OF_THE_EAGLE        = 42606,
         SPELL_SHAPE_OF_THE_LYNX         = 42607,
         SPELL_SHAPE_OF_THE_DRAGONHAWK   = 42608,
-        // SPELL_CLAW_RAGE              = 43149, // Requires getting Zul'jin's bossai
+        // SPELL_CLAW_RAGE              = 43149, // Would require getting Zul'jin's bossai
 
         // Hunter
         SPELL_MISDIRECTION              = 35079,
     };
 
-    enum ZulAmanNPCs
+    enum class ZulAmanNPCs : uint32
     {
         // Trash
         NPC_AMANI_HEALING_WARD          = 23757,
@@ -68,7 +68,7 @@ namespace ZulAmanHelpers
         NPC_FEATHER_VORTEX              = 24136,
     };
 
-    enum ZulAmanObjects
+    enum class ZulAmanObjects : uint32
     {
         GO_FREEZING_TRAP                = 186669,
     };
@@ -81,6 +81,8 @@ namespace ZulAmanHelpers
     bool IsPathSafeFromHazards(
         const Position& start, const Position& end,
         const std::vector<Unit*>& hazards, float hazardRadius);
+    bool IsPositionSafeFromHazards(
+        float x, float y, const std::vector<Unit*>& hazards, float hazardRadius);
     std::vector<Unit*> GetAllHazardTriggers(
         Player* bot, uint32 entry, float searchRadius);
 

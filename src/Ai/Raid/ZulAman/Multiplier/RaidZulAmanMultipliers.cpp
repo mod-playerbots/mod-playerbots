@@ -77,10 +77,12 @@ float NalorakkDisableTankActionsMultiplier::GetValue(Action* action)
 
     bool shouldTankBoss = false;
 
-    if (botAI->IsMainTank(bot) && !nalorakk->HasAura(SPELL_BEARFORM))
+    if (botAI->IsMainTank(bot) &&
+        !nalorakk->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_BEARFORM)))
         shouldTankBoss = true;
 
-    if (botAI->IsAssistTankOfIndex(bot, 0, true) && nalorakk->HasAura(SPELL_BEARFORM))
+    if (botAI->IsAssistTankOfIndex(bot, 0, true) &&
+        nalorakk->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_BEARFORM)))
         shouldTankBoss = true;
 
     if (!shouldTankBoss &&
@@ -125,7 +127,8 @@ float JanalaiDisableTankActionsMultiplier::GetValue(Action* action)
         return 0.0f;
 
     if (botAI->IsAssistTank(bot) &&
-        !GetFirstAliveUnitByEntry(botAI, NPC_AMANI_DRAGONHAWK_HATCHLING) &&
+        !GetFirstAliveUnitByEntry(
+            botAI, static_cast<uint32>(ZulAmanNPCs::NPC_AMANI_DRAGONHAWK_HATCHLING)) &&
         dynamic_cast<TankAssistAction*>(action))
         return 0.0f;
 
@@ -232,7 +235,8 @@ float HexLordMalacrassAvoidWhirlwindMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
-    if (!malacrass || !malacrass->HasAura(SPELL_HEX_LORD_WHIRLWIND))
+    if (!malacrass ||
+        !malacrass->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_HEX_LORD_WHIRLWIND)))
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
@@ -249,7 +253,8 @@ float HexLordMalacrassStopAttackingDuringSpellReflectionMultiplier::GetValue(Act
         return 1.0f;
 
     Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
-    if (!malacrass || !malacrass->HasAura(SPELL_HEX_LORD_SPELL_REFLECTION))
+    if (!malacrass ||
+        !malacrass->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_HEX_LORD_SPELL_REFLECTION)))
         return 1.0f;
 
     auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
@@ -285,7 +290,7 @@ float HexLordMalacrassDoNotDispelUnstableAfflictionMultiplier::GetValue(Action* 
         if (!member || !member->IsAlive())
             continue;
 
-        if (member->HasAura(SPELL_UNSTABLE_AFFLICTION))
+        if (member->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_UNSTABLE_AFFLICTION)))
         {
             hasUnstableAffliction = true;
             break;
@@ -313,7 +318,8 @@ float ZuljinDisableTankFaceMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (!zuljin || zuljin->HasAura(SPELL_SHAPE_OF_THE_DRAGONHAWK))
+    if (!zuljin ||
+        zuljin->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_SHAPE_OF_THE_DRAGONHAWK)))
         return 1.0f;
 
     if (dynamic_cast<TankFaceAction*>(action))
@@ -328,7 +334,8 @@ float ZuljinAvoidWhirlwindMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (!zuljin || !zuljin->HasAura(SPELL_ZULJIN_WHIRLWIND))
+    if (!zuljin ||
+        !zuljin->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_ZULJIN_WHIRLWIND)))
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
@@ -342,7 +349,8 @@ float ZuljinAvoidWhirlwindMultiplier::GetValue(Action* action)
 float ZuljinDisableAvoidAoeMultiplier::GetValue(Action* action)
 {
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (!zuljin || !zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE))
+    if (!zuljin ||
+        !zuljin->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_SHAPE_OF_THE_EAGLE)))
         return 1.0f;
 
     if (dynamic_cast<AvoidAoeAction*>(action))
@@ -357,7 +365,8 @@ float ZuljinDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
         return 1.0f;
 
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (!zuljin || zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE))
+    if (!zuljin ||
+        zuljin->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_SHAPE_OF_THE_EAGLE)))
         return 1.0f;
 
     if (dynamic_cast<CastBloodlustAction*>(action) ||

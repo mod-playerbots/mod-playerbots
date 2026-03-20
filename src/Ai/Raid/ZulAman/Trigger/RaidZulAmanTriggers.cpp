@@ -121,7 +121,8 @@ bool JanalaiAmanishiHatchersSpawnedTrigger::IsActive()
         !AI_VALUE2(Unit*, "find target", "jan'alai"))
         return false;
 
-    return bot->FindNearestCreature(NPC_AMANISHI_HATCHER, 40.0f);
+    return bot->FindNearestCreature(
+               static_cast<uint32>(ZulAmanNPCs::NPC_AMANISHI_HATCHER), 40.0f);
 }
 
 // Halazzi <Lynx Avatar>
@@ -173,7 +174,8 @@ bool HexLordMalacrassDeterminingKillOrderTrigger::IsActive()
 bool HexLordMalacrassBossIsChannelingWhirlwindTrigger::IsActive()
 {
     Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
-    if (!malacrass || !malacrass->HasAura(SPELL_HEX_LORD_WHIRLWIND))
+    if (!malacrass ||
+        !malacrass->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_HEX_LORD_WHIRLWIND)))
         return false;
 
     return !(botAI->IsTank(bot) && malacrass->GetVictim() == bot);
@@ -185,13 +187,15 @@ bool HexLordMalacrassBossHasSpellReflectionTrigger::IsActive()
         return false;
 
     Unit* malacrass = AI_VALUE2(Unit*, "find target", "hex lord malacrass");
-    return malacrass && malacrass->HasAura(SPELL_HEX_LORD_SPELL_REFLECTION);
+    return malacrass &&
+           malacrass->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_HEX_LORD_SPELL_REFLECTION));
 }
 
 bool HexLordMalacrassBossPlacedFreezingTrapTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "hex lord malacrass") &&
-           bot->FindNearestGameObject(GO_FREEZING_TRAP, 20.0f, true);
+           bot->FindNearestGameObject(
+               static_cast<uint32>(ZulAmanObjects::GO_FREEZING_TRAP), 20.0f, true);
 }
 
 // Zul'jin
@@ -208,9 +212,12 @@ bool ZuljinMainTankNeedsAggroUponPullOrPhaseChangeTrigger::IsActive()
     float hp = zuljin->GetHealthPct();
 
     return (hp <= 100.0f && hp > 95.0f) ||
-           (hp <= 80.0f && hp > 75.0f && zuljin->HasAura(SPELL_SHAPE_OF_THE_BEAR)) ||
-           (hp <= 40.0f && hp > 35.0f && zuljin->HasAura(SPELL_SHAPE_OF_THE_LYNX)) ||
-           (hp <= 20.0f && hp > 15.0f && zuljin->HasAura(SPELL_SHAPE_OF_THE_DRAGONHAWK));
+           (hp <= 80.0f && hp > 75.0f &&
+            zuljin->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_SHAPE_OF_THE_BEAR))) ||
+           (hp <= 40.0f && hp > 35.0f &&
+            zuljin->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_SHAPE_OF_THE_LYNX))) ||
+           (hp <= 20.0f && hp > 15.0f &&
+            zuljin->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_SHAPE_OF_THE_DRAGONHAWK)));
 }
 
 bool ZuljinBossEngagedByTanksTrigger::IsActive()
@@ -219,14 +226,16 @@ bool ZuljinBossEngagedByTanksTrigger::IsActive()
         return false;
 
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    return zuljin && !zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE) &&
-           !zuljin->HasAura(SPELL_SHAPE_OF_THE_DRAGONHAWK);
+    return zuljin &&
+           !zuljin->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_SHAPE_OF_THE_EAGLE)) &&
+           !zuljin->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_SHAPE_OF_THE_DRAGONHAWK));
 }
 
 bool ZuljinBossIsChannelingWhirlwindInTrollFormTrigger::IsActive()
 {
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    if (!zuljin || !zuljin->HasAura(SPELL_ZULJIN_WHIRLWIND))
+    if (!zuljin ||
+        !zuljin->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_ZULJIN_WHIRLWIND)))
         return false;
 
     return !(botAI->IsTank(bot) && zuljin->GetVictim() == bot);
@@ -235,7 +244,8 @@ bool ZuljinBossIsChannelingWhirlwindInTrollFormTrigger::IsActive()
 bool ZuljinBossIsSummoningCyclonesInEagleFormTrigger::IsActive()
 {
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    return zuljin && zuljin->HasAura(SPELL_SHAPE_OF_THE_EAGLE);
+    return zuljin &&
+           zuljin->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_SHAPE_OF_THE_EAGLE));
 }
 
 bool ZuljinBossCastsAoeAbilitiesInDragonhawkFormTrigger::IsActive()
@@ -244,5 +254,6 @@ bool ZuljinBossCastsAoeAbilitiesInDragonhawkFormTrigger::IsActive()
         return false;
 
     Unit* zuljin = AI_VALUE2(Unit*, "find target", "zul'jin");
-    return zuljin && zuljin->HasAura(SPELL_SHAPE_OF_THE_DRAGONHAWK);
+    return zuljin &&
+           zuljin->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_SHAPE_OF_THE_DRAGONHAWK));
 }

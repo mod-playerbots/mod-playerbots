@@ -10,8 +10,9 @@
 namespace ZulAmanHelpers
 {
     // General
-    Position FindSafestNearbyPosition(Player* bot, const std::vector<Unit*>& hazards,
-        const Position& safeZoneCenter, float safeZoneRadius, float hazardRadius, bool requireSafePath)
+    Position FindSafestNearbyPosition(Player* bot,
+        const std::vector<Unit*>& hazards, const Position& safeZoneCenter,
+        float safeZoneRadius, float hazardRadius, bool requireSafePath)
     {
         constexpr float searchStep = M_PI / 8.0f;
         constexpr float distanceStep = 1.0f;
@@ -31,17 +32,7 @@ namespace ZulAmanHelpers
                 if (safeZoneCenter.GetExactDist2d(x, y) > safeZoneRadius)
                     continue;
 
-                bool isSafe = true;
-                for (Unit* hazard : hazards)
-                {
-                    if (hazard->GetDistance2d(x, y) < hazardRadius)
-                    {
-                        isSafe = false;
-                        break;
-                    }
-                }
-
-                if (!isSafe)
+                if (!IsPositionSafeFromHazards(x, y, hazards, hazardRadius))
                     continue;
 
                 Position testPos(x, y, bot->GetPositionZ());
@@ -84,12 +75,20 @@ namespace ZulAmanHelpers
             float checkX = start.GetPositionX() + dx * ratio;
             float checkY = start.GetPositionY() + dy * ratio;
 
-            for (Unit* hazard : hazards)
-            {
-                float distToHazard = hazard->GetDistance2d(checkX, checkY);
-                if (distToHazard < hazardRadius)
-                    return false;
-            }
+            if (!IsPositionSafeFromHazards(checkX, checkY, hazards, hazardRadius))
+                return false;
+        }
+
+        return true;
+    }
+
+    bool IsPositionSafeFromHazards(
+        float x, float y, const std::vector<Unit*>& hazards, float hazardRadius)
+    {
+        for (Unit* hazard : hazards)
+        {
+            if (hazard->GetDistance2d(x, y) < hazardRadius)
+                return false;
         }
 
         return true;
@@ -122,7 +121,8 @@ namespace ZulAmanHelpers
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && member->HasAura(SPELL_ELECTRICAL_STORM))
+            if (member &&
+                member->HasAura(static_cast<uint32>(ZulAmanSpells::SPELL_ELECTRICAL_STORM)))
                 return member;
         }
 
@@ -139,7 +139,8 @@ namespace ZulAmanHelpers
     {
         constexpr float searchRadius = 30.0f;
         std::list<Creature*> creatureList;
-        bot->GetCreatureListWithEntryInGrid(creatureList, NPC_FIRE_BOMB, searchRadius);
+        bot->GetCreatureListWithEntryInGrid(
+            creatureList, static_cast<uint32>(ZulAmanNPCs::NPC_FIRE_BOMB), searchRadius);
 
         for (Creature* creature : creatureList)
         {
@@ -159,7 +160,8 @@ namespace ZulAmanHelpers
              botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
         {
             Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->GetEntry() == NPC_AMANISHI_HATCHER)
+            if (unit &&
+                unit->GetEntry() == static_cast<uint32>(ZulAmanNPCs::NPC_AMANISHI_HATCHER))
             {
                 if (!lowest || unit->GetGUID().GetCounter() < lowest->GetGUID().GetCounter())
                     lowest = unit;
