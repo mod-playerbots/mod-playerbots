@@ -58,6 +58,7 @@ namespace NaxxSpellIds
     // Sapphiron
     static constexpr uint32 Icebolt10 = 28522;
     static constexpr uint32 Icebolt25 = 28526;
+    static constexpr uint32 Chill10 = 28547;
     static constexpr uint32 Chill25 = 55699;
 /*
     // Fight

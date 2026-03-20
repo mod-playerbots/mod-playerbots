@@ -1,6 +1,6 @@
 
-#ifndef _PLAYERRBOT_RAIDNAXXMULTIPLIERS_H
-#define _PLAYERRBOT_RAIDNAXXMULTIPLIERS_H
+#ifndef _PLAYERBOT_RAIDNAXXMULTIPLIERS_H
+#define _PLAYERBOT_RAIDNAXXMULTIPLIERS_H
 
 #include "Multiplier.h"
 #include "RaidNaxxBossHelper.h"
@@ -84,10 +84,10 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class FourhorsemanGenericMultiplier : public Multiplier
+class FourHorsemenGenericMultiplier : public Multiplier
 {
 public:
-    FourhorsemanGenericMultiplier(PlayerbotAI* ai) : Multiplier(ai, "fourhorseman generic") {}
+    FourHorsemenGenericMultiplier(PlayerbotAI* ai) : Multiplier(ai, "four horsemen generic") {}
 
 public:
     virtual float GetValue(Action* action);
