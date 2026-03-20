@@ -10,9 +10,20 @@
 class BuffHunterStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
 public:
-    BuffHunterStrategyActionNodeFactory() { creators["aspect of the hawk"] = &aspect_of_the_hawk; }
+    BuffHunterStrategyActionNodeFactory()
+    {
+        creators["aspect of the dragonhawk"] = &aspect_of_the_dragonhawk;
+        creators["aspect of the hawk"] = &aspect_of_the_hawk;
+    }
 
 private:
+    static ActionNode* aspect_of_the_dragonhawk([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode("aspect of the dragonhawk",
+                              /*P*/ {},
+                              /*A*/ { NextAction("aspect of the hawk") },
+                              /*C*/ {});
+    }
     static ActionNode* aspect_of_the_hawk([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("aspect of the hawk",
@@ -30,18 +41,35 @@ HunterBuffDpsStrategy::HunterBuffDpsStrategy(PlayerbotAI* botAI) : NonCombatStra
 void HunterBuffDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("aspect of the hawk", { NextAction("aspect of the dragonhawk", 20.1f),
-                                                NextAction("aspect of the hawk", 20.0f) }));
+        new TriggerNode(
+            "aspect of the dragonhawk",
+            {
+                NextAction("aspect of the dragonhawk", ACTION_HIGH)
+            }
+        )
+    );
 }
 
 void HunterNatureResistanceStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("aspect of the wild",
-                                       { NextAction("aspect of the wild", 20.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "aspect of the wild",
+            {
+                NextAction("aspect of the wild", ACTION_HIGH)
+            }
+        )
+    );
 }
 
 void HunterBuffSpeedStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("aspect of the pack",
-                                       { NextAction("aspect of the pack", 20.0f) }));
+    triggers.push_back(
+        new TriggerNode(
+            "aspect of the pack",
+            {
+                NextAction("aspect of the pack", ACTION_HIGH)
+            }
+        )
+    );
 }

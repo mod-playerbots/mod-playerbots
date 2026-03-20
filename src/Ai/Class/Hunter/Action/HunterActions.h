@@ -22,10 +22,17 @@ public:
     CastTrueshotAuraAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "trueshot aura") {}
 };
 
+class CastAspectOfTheDragonhawkAction : public CastBuffSpellAction
+{
+public:
+    CastAspectOfTheDragonhawkAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "aspect of the dragonhawk") {}
+};
+
 class CastAspectOfTheHawkAction : public CastBuffSpellAction
 {
 public:
     CastAspectOfTheHawkAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "aspect of the hawk") {}
+
     bool isUseful() override;
 };
 
@@ -33,12 +40,6 @@ class CastAspectOfTheMonkeyAction : public CastBuffSpellAction
 {
 public:
     CastAspectOfTheMonkeyAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "aspect of the monkey") {}
-};
-
-class CastAspectOfTheDragonhawkAction : public CastBuffSpellAction
-{
-public:
-    CastAspectOfTheDragonhawkAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "aspect of the dragonhawk") {}
 };
 
 class CastAspectOfTheWildAction : public CastBuffSpellAction
@@ -157,7 +158,7 @@ public:
 class CastMisdirectionOnMainTankAction : public BuffOnMainTankAction
 {
 public:
-    CastMisdirectionOnMainTankAction(PlayerbotAI* ai) : BuffOnMainTankAction(ai, "misdirection", true) {}
+    CastMisdirectionOnMainTankAction(PlayerbotAI* botAI) : BuffOnMainTankAction(botAI, "misdirection", true) {}
 };
 
 class CastFeignDeathAction : public CastBuffSpellAction
@@ -322,10 +323,10 @@ public:
     CastExplosiveTrapAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "explosive trap") {}
 };
 
-class CastBlackArrow : public CastDebuffSpellAction
+class CastBlackArrowAction : public CastDebuffSpellAction
 {
 public:
-    CastBlackArrow(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "black arrow", true) {}
+    CastBlackArrowAction(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "black arrow", true) {}
     bool isUseful() override
     {
         if (botAI->HasStrategy("trap weave", BOT_STATE_COMBAT))
@@ -335,22 +336,18 @@ public:
     }
 };
 
-class CastExplosiveShotAction : public CastDebuffSpellAction
+class CastExplosiveShotBaseAction : public CastDebuffSpellAction
 {
 public:
-    CastExplosiveShotAction(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "explosive shot", true, 0.0f) {}
-    bool isUseful() override
-    {
-        // Bypass TTL check
-        return CastAuraSpellAction::isUseful();
-    }
+    CastExplosiveShotBaseAction(PlayerbotAI* botAI)
+        : CastDebuffSpellAction(botAI, "explosive shot", true, 0.0f) {}
 };
 
 // Rank 4
-class CastExplosiveShotRank4Action : public CastDebuffSpellAction
+class CastExplosiveShotRank4Action : public CastExplosiveShotBaseAction
 {
 public:
-    CastExplosiveShotRank4Action(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "explosive shot", true, 0.0f) {}
+    CastExplosiveShotRank4Action(PlayerbotAI* botAI) : CastExplosiveShotBaseAction(botAI) {}
 
     bool Execute(Event event) override { return botAI->CastSpell(60053, GetTarget()); }
     bool isUseful() override
@@ -363,10 +360,10 @@ public:
 };
 
 // Rank 3
-class CastExplosiveShotRank3Action : public CastDebuffSpellAction
+class CastExplosiveShotRank3Action : public CastExplosiveShotBaseAction
 {
 public:
-    CastExplosiveShotRank3Action(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "explosive shot", true, 0.0f) {}
+    CastExplosiveShotRank3Action(PlayerbotAI* botAI) : CastExplosiveShotBaseAction(botAI) {}
 
     bool Execute(Event event) override { return botAI->CastSpell(60052, GetTarget()); }
     bool isUseful() override
@@ -379,10 +376,10 @@ public:
 };
 
 // Rank 2
-class CastExplosiveShotRank2Action : public CastDebuffSpellAction
+class CastExplosiveShotRank2Action : public CastExplosiveShotBaseAction
 {
 public:
-    CastExplosiveShotRank2Action(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "explosive shot", true, 0.0f) {}
+    CastExplosiveShotRank2Action(PlayerbotAI* botAI) : CastExplosiveShotBaseAction(botAI) {}
 
     bool Execute(Event event) override { return botAI->CastSpell(60051, GetTarget()); }
     bool isUseful() override
@@ -395,10 +392,10 @@ public:
 };
 
 // Rank 1
-class CastExplosiveShotRank1Action : public CastDebuffSpellAction
+class CastExplosiveShotRank1Action : public CastExplosiveShotBaseAction
 {
 public:
-    CastExplosiveShotRank1Action(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "explosive shot", true, 0.0f) {}
+    CastExplosiveShotRank1Action(PlayerbotAI* botAI) : CastExplosiveShotBaseAction(botAI) {}
 
     bool Execute(Event event) override { return botAI->CastSpell(53301, GetTarget()); }
     bool isUseful() override

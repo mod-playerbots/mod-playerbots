@@ -12,36 +12,35 @@ class SurvivalHunterStrategyActionNodeFactory : public NamedObjectFactory<Action
 public:
     SurvivalHunterStrategyActionNodeFactory()
     {
-        creators["auto shot"] = &auto_shot;
-        creators["kill command"] = &kill_command;
-        creators["kill shot"] = &kill_shot;
-        creators["explosive shot"] = &explosive_shot;
-        creators["black arrow"] = &black_arrow;
-        creators["viper sting"] = &viper_sting;
-        creators["serpent sting"] = serpent_sting;
-        creators["aimed shot"] = &aimed_shot;
-        creators["arcane shot"] = &arcane_shot;
-        creators["steady shot"] = &steady_shot;
-        creators["multi-shot"] = &multi_shot;
-        creators["volley"] = &volley;
+        creators["explosive shot rank 4"] = &explosive_shot_rank_4;
+        creators["explosive shot rank 3"] = &explosive_shot_rank_3;
+        creators["explosive shot rank 2"] = &explosive_shot_rank_2;
     }
 
 private:
-    static ActionNode* auto_shot(PlayerbotAI*) { return new ActionNode("auto shot", {}, {}, {}); }
-    static ActionNode* kill_command(PlayerbotAI*) { return new ActionNode("kill command", {}, {}, {}); }
-    static ActionNode* kill_shot(PlayerbotAI*) { return new ActionNode("kill shot", {}, {}, {}); }
-    static ActionNode* explosive_shot(PlayerbotAI*) { return new ActionNode("explosive shot", {}, {}, {}); }
-    static ActionNode* black_arrow(PlayerbotAI*) { return new ActionNode("black arrow", {}, {}, {}); }
-    static ActionNode* viper_sting(PlayerbotAI*) { return new ActionNode("viper sting", {}, {}, {}); }
-    static ActionNode* serpent_sting(PlayerbotAI*) { return new ActionNode("serpent sting", {}, {}, {}); }
-    static ActionNode* aimed_shot(PlayerbotAI*) { return new ActionNode("aimed shot", {}, {}, {}); }
-    static ActionNode* arcane_shot(PlayerbotAI*) { return new ActionNode("arcane shot", {}, {}, {}); }
-    static ActionNode* steady_shot(PlayerbotAI*) { return new ActionNode("steady shot", {}, {}, {}); }
-    static ActionNode* multi_shot(PlayerbotAI*) { return new ActionNode("multi shot", {}, {}, {}); }
-    static ActionNode* volley(PlayerbotAI*) { return new ActionNode("volley", {}, {}, {}); }
+    static ActionNode* explosive_shot_rank_4([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode("explosive shot rank 4",
+                              /*P*/ {},
+                              /*A*/ { NextAction("explosive shot rank 3") },
+                              /*C*/ {});
+    }
+    static ActionNode* explosive_shot_rank_3([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode("explosive shot rank 3",
+                              /*P*/ {},
+                              /*A*/ { NextAction("explosive shot rank 2") },
+                              /*C*/ {});
+    }
+    static ActionNode* explosive_shot_rank_2([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode("explosive shot rank 2",
+                              /*P*/ {},
+                              /*A*/ { NextAction("explosive shot rank 1") },
+                              /*C*/ {});
+    }
 };
 
-// ===== Single Target Strategy =====
 SurvivalHunterStrategy::SurvivalHunterStrategy(PlayerbotAI* botAI) : GenericHunterStrategy(botAI)
 {
     actionNodeFactories.Add(new SurvivalHunterStrategyActionNodeFactory());
@@ -73,30 +72,6 @@ void SurvivalHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "lock and load",
             {
                 NextAction("explosive shot rank 4", 28.0f)
-            }
-        )
-    );
-    triggers.push_back(
-        new TriggerNode(
-            "lock and load",
-            {
-                NextAction("explosive shot rank 3", 27.5f)
-            }
-        )
-    );
-    triggers.push_back(
-        new TriggerNode(
-            "lock and load",
-            {
-                NextAction("explosive shot rank 2", 27.0f)
-            }
-        )
-    );
-    triggers.push_back(
-        new TriggerNode(
-            "lock and load",
-            {
-                NextAction("explosive shot rank 1", 26.5f)
             }
         )
     );

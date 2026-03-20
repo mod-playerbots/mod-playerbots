@@ -16,16 +16,10 @@ class PlayerbotAI;
 
 // Buff and Out of Combat Triggers
 
-class HunterAspectOfTheMonkeyTrigger : public BuffTrigger
+class HunterAspectOfTheDragonhawkTrigger : public BuffTrigger
 {
 public:
-    HunterAspectOfTheMonkeyTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "aspect of the monkey") {}
-};
-
-class HunterAspectOfTheHawkTrigger : public BuffTrigger
-{
-public:
-    HunterAspectOfTheHawkTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "aspect of the hawk") {}
+    HunterAspectOfTheDragonhawkTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "aspect of the dragonhawk") {}
     bool IsActive() override;
 };
 
@@ -130,10 +124,10 @@ public:
     FreezingTrapTrigger(PlayerbotAI* botAI) : HasCcTargetTrigger(botAI, "freezing trap") {}
 };
 
-class ConsussiveShotSnareTrigger : public SnareTargetTrigger
+class ConcussiveShotOnSnareTargetTrigger : public SnareTargetTrigger
 {
 public:
-    ConsussiveShotSnareTrigger(PlayerbotAI* botAI) : SnareTargetTrigger(botAI, "concussive shot") {}
+    ConcussiveShotOnSnareTargetTrigger(PlayerbotAI* botAI) : SnareTargetTrigger(botAI, "concussive shot") {}
 };
 
 class ScareBeastTrigger : public HasCcTargetTrigger
@@ -212,25 +206,25 @@ public:
 class MisdirectionOnMainTankTrigger : public BuffOnMainTankTrigger
 {
 public:
-    MisdirectionOnMainTankTrigger(PlayerbotAI* ai) : BuffOnMainTankTrigger(ai, "misdirection", true) {}
+    MisdirectionOnMainTankTrigger(PlayerbotAI* botAI) : BuffOnMainTankTrigger(botAI, "misdirection", true) {}
 };
 
 class TargetRemoveEnrageTrigger : public TargetAuraDispelTrigger
 {
 public:
-    TargetRemoveEnrageTrigger(PlayerbotAI* ai) : TargetAuraDispelTrigger(ai, "tranquilizing shot", DISPEL_ENRAGE) {}
+    TargetRemoveEnrageTrigger(PlayerbotAI* botAI) : TargetAuraDispelTrigger(botAI, "tranquilizing shot", DISPEL_ENRAGE) {}
 };
 
 class TargetRemoveMagicTrigger : public TargetAuraDispelTrigger
 {
 public:
-    TargetRemoveMagicTrigger(PlayerbotAI* ai) : TargetAuraDispelTrigger(ai, "tranquilizing shot", DISPEL_MAGIC) {}
+    TargetRemoveMagicTrigger(PlayerbotAI* botAI) : TargetAuraDispelTrigger(botAI, "tranquilizing shot", DISPEL_MAGIC) {}
 };
 
 class ImmolationTrapNoCdTrigger : public SpellNoCooldownTrigger
 {
 public:
-    ImmolationTrapNoCdTrigger(PlayerbotAI* ai) : SpellNoCooldownTrigger(ai, "immolation trap") {}
+    ImmolationTrapNoCdTrigger(PlayerbotAI* botAI) : SpellNoCooldownTrigger(botAI, "immolation trap") {}
 };
 
 BEGIN_TRIGGER(HuntersPetDeadTrigger, Trigger)

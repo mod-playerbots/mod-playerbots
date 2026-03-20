@@ -27,7 +27,7 @@ bool BlackArrowTrigger::IsActive()
     return DebuffTrigger::IsActive();
 }
 
-bool HunterAspectOfTheHawkTrigger::IsActive()
+bool HunterAspectOfTheDragonhawkTrigger::IsActive()
 {
     Unit* target = GetTarget();
     if (!target)
@@ -50,7 +50,7 @@ bool HunterNoStingsActiveTrigger::IsActive()
 {
     Unit* target = AI_VALUE(Unit*, "current target");
     return DebuffTrigger::IsActive() && target && !botAI->HasAura("serpent sting", target, false, true) &&
-           !botAI->HasAura("scorpid sting", target, false, true) && 
+           !botAI->HasAura("scorpid sting", target, false, true) &&
            !botAI->HasAura("viper sting", target, false, true);
 }
 
@@ -101,8 +101,8 @@ bool HunterLowAmmoTrigger::IsActive()
     return bot->GetGroup() && ammoCount > 0 && ammoCount < 100;
 }
 
-bool HunterHasAmmoTrigger::IsActive() 
-{ 
+bool HunterHasAmmoTrigger::IsActive()
+{
     return !AmmoCountTrigger::IsActive();
 }
 
@@ -156,7 +156,7 @@ bool SerpentStingOnAttackerTrigger::IsActive()
            !botAI->HasAura("viper sting", target, false, true);
 }
 
-const std::set<uint32> VolleyChannelCheckTrigger::VOLLEY_SPELL_IDS = 
+const std::set<uint32> VolleyChannelCheckTrigger::VOLLEY_SPELL_IDS =
 {
     1510,   // Volley Rank 1
     14294,  // Volley Rank 2
