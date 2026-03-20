@@ -21,7 +21,6 @@ bool NewRpgOutdoorPvpAction::Execute(Event event)
     {
         if (!capturePoint->_capturePoint)
             data.capturePoint = nullptr;
-
         else
         {
             float threshold = capturePoint->GetMinValue();
@@ -104,9 +103,14 @@ OPvPCapturePoint* NewRpgOutdoorPvpAction::SelectNewObjective()
 
 void NewRpgOutdoorPvpAction::GetCapturePoints()
 {
-    outdoorPvP = sOutdoorPvPMgr->GetOutdoorPvPToZoneId(bot->GetZoneId());
+    uint32 zoneId = bot->GetZoneId();
+    if (zoneId == AREA_NAGRAND)
+        return; 
+
+    outdoorPvP = sOutdoorPvPMgr->GetOutdoorPvPToZoneId(zoneId);
     if (!outdoorPvP)
         return;
+
     capturePointMap = outdoorPvP->GetCapturePoints();
 }
 
