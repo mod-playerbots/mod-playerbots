@@ -762,7 +762,7 @@ void PlayerbotFactory::InitPetTalents()
         // pet_family->petTalentType);
         return;
     }
-    std::unordered_map<uint32, std::vector<TalentEntry const*>> spells;
+    std::map<uint32, std::vector<TalentEntry const*>> spells;
     bool diveTypePet = (1LL << ci->family) & diveMask;
 
     for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
@@ -2553,17 +2553,15 @@ void PlayerbotFactory::InitClassSpells()
                 bot->learnSpell(7386, false);  // Sunder Armor
             }
             if (level >= 30)
-            {
                 bot->learnSpell(2458, false);  // Berserker Stance
-            }
             break;
         case CLASS_PALADIN:
             bot->learnSpell(21084, true);
             bot->learnSpell(635, true);
             if (level >= 12)
-            {
                 bot->learnSpell(7328, false);  // Redemption
-            }
+            if (level >= 20)
+                bot->learnSpell(5502, false); // Sense Undead
             break;
         case CLASS_ROGUE:
             bot->learnSpell(1752, true);
@@ -2605,17 +2603,11 @@ void PlayerbotFactory::InitClassSpells()
             bot->learnSpell(686, true);
             bot->learnSpell(688, false);  // summon imp
             if (level >= 10)
-            {
                 bot->learnSpell(697, false);  // summon voidwalker
-            }
             if (level >= 20)
-            {
                 bot->learnSpell(712, false);  // summon succubus
-            }
             if (level >= 30)
-            {
                 bot->learnSpell(691, false);  // summon felhunter
-            }
             break;
         case CLASS_DRUID:
             bot->learnSpell(5176, true);
@@ -2632,17 +2624,11 @@ void PlayerbotFactory::InitClassSpells()
             bot->learnSpell(331, true);
             // bot->learnSpell(66747, true); // Totem of the Earthen Ring
             if (level >= 4)
-            {
                 bot->learnSpell(8071, false);  // stoneskin totem
-            }
             if (level >= 10)
-            {
                 bot->learnSpell(3599, false);  // searing totem
-            }
             if (level >= 20)
-            {
                 bot->learnSpell(5394, false);  // healing stream totem
-            }
             break;
         default:
             break;
@@ -2667,7 +2653,7 @@ void PlayerbotFactory::InitSpecialSpells()
 void PlayerbotFactory::InitTalents(uint32 specNo)
 {
     uint32 classMask = bot->getClassMask();
-    std::unordered_map<uint32, std::vector<TalentEntry const*>> spells;
+    std::map<uint32, std::vector<TalentEntry const*>> spells;
     for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
     {
         TalentEntry const* talentInfo = sTalentStore.LookupEntry(i);
@@ -3342,18 +3328,36 @@ void PlayerbotFactory::InitReagents()
                 items.push_back({44615, 40});  // Devout Candle
             break;
         case CLASS_SHAMAN:
-            if (level >= 4)
-                items.push_back({5175, 1});  // Earth Totem
-            if (level >= 10)
-                items.push_back({5176, 1});  // Flame Totem
-            if (level >= 20)
-                items.push_back({5177, 1});  // Water Totem
+        {
+            HasRelicBySubclassVisitor relicVisitor(ITEM_SUBCLASS_ARMOR_TOTEM);
+            IterateItems(&relicVisitor, (IterateItemsMask)(ITERATE_ITEMS_IN_BAGS | ITERATE_ITEMS_IN_EQUIP));
+            bool hasRelic = relicVisitor.found;
+
+            if (!hasRelic)
+            {
+                if (level >= 4)
+                    items.push_back({5175, 1});  // Earth Totem
+                if (level >= 10)
+                    items.push_back({5176, 1});  // Flame Totem
+                if (level >= 20)
+                    items.push_back({5177, 1});  // Water Totem
+            }
+            else
+            {
+                ItemIds totemIds = {5175, 5176, 5177, 5178};
+                FindItemByIdsVisitor totemVisitor(totemIds);
+                IterateItems(&totemVisitor, (IterateItemsMask)(ITERATE_ITEMS_IN_BAGS | ITERATE_ITEMS_IN_EQUIP | ITERATE_ITEMS_IN_BANK));
+                for (Item* item : totemVisitor.GetResult())
+                    bot->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
+            }
             if (level >= 30)
             {
-                items.push_back({5178, 1});  // Air Totem
+                if (!hasRelic)
+                    items.push_back({5178, 1});  // Air Totem
                 items.push_back({17030, 20});  // Ankh
             }
             break;
+        }
         case CLASS_WARLOCK:
             items.push_back({6265, 5});  // Soul Shard
             break;

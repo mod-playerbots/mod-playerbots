@@ -19,14 +19,15 @@ void GenericPaladinNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& tr
     NonCombatStrategy::InitTriggers(triggers);
 
     triggers.push_back(new TriggerNode("party member dead", { NextAction("redemption", ACTION_CRITICAL_HEAL + 10) }));
-    triggers.push_back(new TriggerNode("party member almost full health", { NextAction("flash of light on party", 25.0f) }));
-    triggers.push_back(new TriggerNode("party member medium health", { NextAction("flash of light on party", 26.0f) }));
-    triggers.push_back(new TriggerNode("party member low health", { NextAction("holy light on party", 27.0f) }));
-    triggers.push_back(new TriggerNode("party member critical health", { NextAction("holy light on party", 28.0f) }));
+    triggers.push_back(new TriggerNode("party member almost full health", { NextAction("flash of light on party", ACTION_MEDIUM_HEAL + 5.0f) }));
+    triggers.push_back(new TriggerNode("party member medium health", { NextAction("flash of light on party", ACTION_MEDIUM_HEAL + 6.0f) }));
+    triggers.push_back(new TriggerNode("party member low health", { NextAction("holy light on party", ACTION_MEDIUM_HEAL + 7.0f) }));
+    triggers.push_back(new TriggerNode("party member critical health", { NextAction("holy light on party", ACTION_MEDIUM_HEAL + 8.0f) }));
+    triggers.push_back(new TriggerNode("not sensing undead", { NextAction("sense undead", ACTION_IDLE + 1.0f) }));
 
     int specTab = AiFactory::GetPlayerSpecTab(botAI->GetBot());
-    if (specTab == 0 || specTab == 1) // Holy or Protection
-        triggers.push_back(new TriggerNode("often", { NextAction("apply oil", 1.0f) }));
-    if (specTab == 2) // Retribution
-        triggers.push_back(new TriggerNode("often", { NextAction("apply stone", 1.0f) }));
+    if (specTab == PALADIN_TAB_HOLY || specTab == PALADIN_TAB_PROTECTION)
+        triggers.push_back(new TriggerNode("often", { NextAction("apply oil", ACTION_IDLE + 1.0f) }));
+    if (specTab == PALADIN_TAB_RETRIBUTION)
+        triggers.push_back(new TriggerNode("often", { NextAction("apply stone", ACTION_IDLE + 1.0f) }));
 }

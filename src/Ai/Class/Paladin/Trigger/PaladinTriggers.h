@@ -77,9 +77,7 @@ class BlessingOnPartyTrigger : public BuffOnPartyTrigger
 {
 public:
     BlessingOnPartyTrigger(PlayerbotAI* botAI)
-        : BuffOnPartyTrigger(botAI, "blessing of kings,blessing of might,blessing of wisdom", 2 * 2000)
-    {
-    }
+        : BuffOnPartyTrigger(botAI, "blessing of kings,blessing of might,blessing of wisdom", 2 * 2000) {}
 };
 
 class BlessingTrigger : public BuffTrigger
@@ -93,7 +91,8 @@ public:
 class HammerOfJusticeInterruptSpellTrigger : public InterruptSpellTrigger
 {
 public:
-    HammerOfJusticeInterruptSpellTrigger(PlayerbotAI* botAI) : InterruptSpellTrigger(botAI, "hammer of justice") {}
+    HammerOfJusticeInterruptSpellTrigger(PlayerbotAI* botAI)
+        : InterruptSpellTrigger(botAI, "hammer of justice") {}
 };
 
 class HammerOfJusticeSnareTrigger : public SnareTargetTrigger
@@ -144,9 +143,7 @@ class CleanseCurePartyMemberDiseaseTrigger : public PartyMemberNeedCureTrigger
 {
 public:
     CleanseCurePartyMemberDiseaseTrigger(PlayerbotAI* botAI)
-        : PartyMemberNeedCureTrigger(botAI, "cleanse", DISPEL_DISEASE)
-    {
-    }
+        : PartyMemberNeedCureTrigger(botAI, "cleanse", DISPEL_DISEASE) {}
 };
 
 class CleanseCurePoisonTrigger : public NeedCureTrigger
@@ -159,9 +156,7 @@ class CleanseCurePartyMemberPoisonTrigger : public PartyMemberNeedCureTrigger
 {
 public:
     CleanseCurePartyMemberPoisonTrigger(PlayerbotAI* botAI)
-        : PartyMemberNeedCureTrigger(botAI, "cleanse", DISPEL_POISON)
-    {
-    }
+        : PartyMemberNeedCureTrigger(botAI, "cleanse", DISPEL_POISON) {}
 };
 
 class CleanseCureMagicTrigger : public NeedCureTrigger
@@ -173,21 +168,29 @@ public:
 class CleanseCurePartyMemberMagicTrigger : public PartyMemberNeedCureTrigger
 {
 public:
-    CleanseCurePartyMemberMagicTrigger(PlayerbotAI* botAI) : PartyMemberNeedCureTrigger(botAI, "cleanse", DISPEL_MAGIC)
-    {
-    }
+    CleanseCurePartyMemberMagicTrigger(PlayerbotAI* botAI)
+        : PartyMemberNeedCureTrigger(botAI, "cleanse", DISPEL_MAGIC) {}
 };
 
 class HammerOfJusticeEnemyHealerTrigger : public InterruptEnemyHealerTrigger
 {
 public:
-    HammerOfJusticeEnemyHealerTrigger(PlayerbotAI* botAI) : InterruptEnemyHealerTrigger(botAI, "hammer of justice") {}
+    HammerOfJusticeEnemyHealerTrigger(PlayerbotAI* botAI)
+        : InterruptEnemyHealerTrigger(botAI, "hammer of justice") {}
 };
 
 class DivineFavorTrigger : public BuffTrigger
 {
 public:
     DivineFavorTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "divine favor") {}
+};
+
+class NotSensingUndeadTrigger : public BuffTrigger
+{
+public:
+    NotSensingUndeadTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "not sensing undead") {}
+
+    bool IsActive() override;
 };
 
 class TurnUndeadTrigger : public HasCcTargetTrigger
@@ -201,7 +204,8 @@ DEBUFF_TRIGGER(AvengerShieldTrigger, "avenger's shield");
 class BeaconOfLightOnMainTankTrigger : public BuffOnMainTankTrigger
 {
 public:
-    BeaconOfLightOnMainTankTrigger(PlayerbotAI* ai) : BuffOnMainTankTrigger(ai, "beacon of light", true) {}
+    BeaconOfLightOnMainTankTrigger(PlayerbotAI* ai)
+        : BuffOnMainTankTrigger(ai, "beacon of light", true) {}
 };
 
 class SacredShieldOnMainTankTrigger : public BuffOnMainTankTrigger
@@ -213,34 +217,29 @@ public:
 class BlessingOfKingsOnPartyTrigger : public BuffOnPartyTrigger
 {
 public:
-    BlessingOfKingsOnPartyTrigger(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, "blessing of kings", 2 * 2000) {}
+    BlessingOfKingsOnPartyTrigger(PlayerbotAI* botAI)
+        : BuffOnPartyTrigger(botAI, "blessing of kings", 2 * 2000) {}
 };
 
 class BlessingOfWisdomOnPartyTrigger : public BuffOnPartyTrigger
 {
 public:
     BlessingOfWisdomOnPartyTrigger(PlayerbotAI* botAI)
-        : BuffOnPartyTrigger(botAI, "blessing of might,blessing of wisdom", 2 * 2000)
-    {
-    }
+        : BuffOnPartyTrigger(botAI, "blessing of might,blessing of wisdom", 2 * 2000) {}
 };
 
 class BlessingOfMightOnPartyTrigger : public BuffOnPartyTrigger
 {
 public:
     BlessingOfMightOnPartyTrigger(PlayerbotAI* botAI)
-        : BuffOnPartyTrigger(botAI, "blessing of might,blessing of wisdom", 2 * 2000)
-    {
-    }
+        : BuffOnPartyTrigger(botAI, "blessing of might,blessing of wisdom", 2 * 2000) {}
 };
 
 class BlessingOfSanctuaryOnPartyTrigger : public BuffOnPartyTrigger
 {
 public:
     BlessingOfSanctuaryOnPartyTrigger(PlayerbotAI* botAI)
-        : BuffOnPartyTrigger(botAI, "blessing of sanctuary", 2 * 2000)
-    {
-    }
+        : BuffOnPartyTrigger(botAI, "blessing of sanctuary", 2 * 2000) {}
 };
 
 class AvengingWrathTrigger : public BoostTrigger
@@ -248,4 +247,5 @@ class AvengingWrathTrigger : public BoostTrigger
 public:
     AvengingWrathTrigger(PlayerbotAI* botAI) : BoostTrigger(botAI, "avenging wrath") {}
 };
+
 #endif
