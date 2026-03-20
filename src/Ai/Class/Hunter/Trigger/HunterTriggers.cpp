@@ -49,7 +49,8 @@ bool HunterAspectOfTheDragonhawkTrigger::IsActive()
 bool HunterNoStingsActiveTrigger::IsActive()
 {
     Unit* target = AI_VALUE(Unit*, "current target");
-    return DebuffTrigger::IsActive() && target && !botAI->HasAura("serpent sting", target, false, true) &&
+    return DebuffTrigger::IsActive() && target &&
+           !botAI->HasAura("serpent sting", target, false, true) &&
            !botAI->HasAura("scorpid sting", target, false, true) &&
            !botAI->HasAura("viper sting", target, false, true);
 }
@@ -62,7 +63,8 @@ bool HuntersPetDeadTrigger::IsActive()
 bool HuntersPetLowHealthTrigger::IsActive()
 {
     Unit* pet = AI_VALUE(Unit*, "pet target");
-    return pet && AI_VALUE2(uint8, "health", "pet target") < 40 && !AI_VALUE2(bool, "dead", "pet target") &&
+    return pet && AI_VALUE2(uint8, "health", "pet target") < 40 &&
+           !AI_VALUE2(bool, "dead", "pet target") &&
            !AI_VALUE2(bool, "mounted", "self target");
 }
 
@@ -168,13 +170,11 @@ const std::set<uint32> VolleyChannelCheckTrigger::VOLLEY_SPELL_IDS =
 
 bool VolleyChannelCheckTrigger::IsActive()
 {
-    if (Spell* spell = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+    if (Spell* spell = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
+        spell && VOLLEY_SPELL_IDS.count(spell->m_spellInfo->Id))
     {
-        if (VOLLEY_SPELL_IDS.count(spell->m_spellInfo->Id))
-        {
-            uint8 attackerCount = AI_VALUE(uint8, "attacker count");
-            return attackerCount < minEnemies;
-        }
+        uint8 attackerCount = AI_VALUE(uint8, "attacker count");
+        return attackerCount < minEnemies;
     }
 
     return false;
