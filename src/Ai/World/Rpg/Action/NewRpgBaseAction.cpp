@@ -1087,7 +1087,7 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
         }
         case RPG_OUTDOOR_PVP:
         {
-            botAI->rpgInfo.ChangeToOutdoorPvp(nullptr);
+            botAI->rpgInfo.ChangeToOutdoorPvp();
             return true;
         }
         default:

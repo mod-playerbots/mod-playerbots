@@ -10,27 +10,32 @@ bool NewRpgOutdoorPvpAction::Execute(Event event)
     OPvPCapturePoint* objective = nullptr;
     if (!this->outdoorPvP)
     {
-        // Not in an outdoor PvP zone, go back to idle
         botAI->rpgInfo.ChangeToIdle();
         return false;
     }
     auto& data = std::get<NewRpgInfo::OutdoorPvP>(info.data);
 
-    OPvPCapturePoint* capturePoint = data.capturePoint;
-    if (capturePoint)
+    // Re-resolve stored spawn ID from the capture point map each tick (avoids dangling pointers)
+    if (data.capturePointSpawnId && capturePointMap)
     {
-        if (!capturePoint->_capturePoint)
-            data.capturePoint = nullptr;
-        else
+        auto it = capturePointMap->find(data.capturePointSpawnId);
+        if (it != capturePointMap->end())
         {
-            float threshold = capturePoint->GetMinValue();
-            float slider = capturePoint->GetSlider();
-            uint8 faction = bot->GetTeamId();
-            LOG_DEBUG("playerbots", "[NEW RPG] Bot {} with faction {} is evaluating existing RPG objective {} with threshold {} and slider value {}", bot->GetName(), faction, capturePoint->_capturePoint->GetName(), threshold, slider);
-            if ((faction == TEAM_HORDE && slider >= -threshold) ||
-                (faction == TEAM_ALLIANCE && slider <= threshold))
-                objective = capturePoint;
+            OPvPCapturePoint* capturePoint = it->second;
+            if (capturePoint && capturePoint->_capturePoint)
+            {
+                float threshold = capturePoint->GetMinValue();
+                float slider = capturePoint->GetSlider();
+                uint8 faction = bot->GetTeamId();
+                LOG_DEBUG("playerbots", "[NEW RPG] Bot {} with faction {} is evaluating existing RPG objective {} with threshold {} and slider value {}", bot->GetName(), faction, capturePoint->_capturePoint->GetName(), threshold, slider);
+                if ((faction == TEAM_HORDE && slider >= -threshold) ||
+                    (faction == TEAM_ALLIANCE && slider <= threshold))
+                    objective = capturePoint;
+            }
         }
+
+        if (!objective)
+            data.capturePointSpawnId = 0;
     }
 
     if (!objective)
@@ -39,10 +44,11 @@ bool NewRpgOutdoorPvpAction::Execute(Event event)
         if (!objective)
         {
             botAI->rpgInfo.ChangeToIdle();
-            return true; // No valid objectives, possibly all captured
+            return true;
         }
-        data.capturePoint = objective;
+        data.capturePointSpawnId = objective->m_capturePointSpawnId;
     }
+
     GameObject* objectiveGO = objective->_capturePoint;
     if (!objectiveGO)
         return false;
@@ -54,7 +60,6 @@ bool NewRpgOutdoorPvpAction::Execute(Event event)
     if (!objectiveGO->IsWithinDistInMap(bot, radius) || !bot->IsOutdoorPvPActive())
         return MoveFarTo(WorldPosition(objectiveGO));
 
-    // Within capture range - patrol the area while capturing
     return PatrolCapturePoint(objectiveGO, radius);
 }
 
@@ -82,7 +87,7 @@ OPvPCapturePoint* NewRpgOutdoorPvpAction::SelectNewObjective()
         if (faction == TEAM_HORDE)
         {
             if (slider > -threshold)
-            candidateObjectives.push_back(point);
+                candidateObjectives.push_back(point);
         }
         else
         {
@@ -104,8 +109,9 @@ OPvPCapturePoint* NewRpgOutdoorPvpAction::SelectNewObjective()
 void NewRpgOutdoorPvpAction::GetCapturePoints()
 {
     uint32 zoneId = bot->GetZoneId();
+    // Nagrand (Halaa) uses different mechanics that needs to be handled
     if (zoneId == AREA_NAGRAND)
-        return; 
+        return;
 
     outdoorPvP = sOutdoorPvPMgr->GetOutdoorPvPToZoneId(zoneId);
     if (!outdoorPvP)

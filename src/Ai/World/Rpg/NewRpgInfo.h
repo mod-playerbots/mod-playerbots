@@ -9,8 +9,6 @@
 #include "Timer.h"
 #include "TravelMgr.h"
 
-class OPvPCapturePoint;
-
 using NewRpgStatusTransitionProb = std::vector<std::vector<int>>;
 
 struct NewRpgInfo
@@ -63,7 +61,7 @@ struct NewRpgInfo
     // RPG_OUTDOOR_PVP
     struct OutdoorPvP
     {
-        OPvPCapturePoint* capturePoint{nullptr};
+        ObjectGuid::LowType capturePointSpawnId{0};
     };
     struct Idle
     {
@@ -99,7 +97,7 @@ struct NewRpgInfo
     void ChangeToWanderRandom();
     void ChangeToDoQuest(uint32 questId, const Quest* quest);
     void ChangeToTravelFlight(ObjectGuid fromFlightMaster, std::vector<uint32> path);
-    void ChangeToOutdoorPvp(OPvPCapturePoint* capturePoint);
+    void ChangeToOutdoorPvp(ObjectGuid::LowType capturePointSpawnId = 0);
     void ChangeToRest();
     void ChangeToIdle();
     bool CanChangeTo(NewRpgStatus status);

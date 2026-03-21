@@ -47,11 +47,11 @@ void NewRpgInfo::ChangeToTravelFlight(ObjectGuid fromFlightMaster, std::vector<u
     data = flight;
 }
 
-void NewRpgInfo::ChangeToOutdoorPvp(OPvPCapturePoint* capturePoint)
+void NewRpgInfo::ChangeToOutdoorPvp(ObjectGuid::LowType capturePointSpawnId)
 {
     startT = getMSTime();
     OutdoorPvP pvp;
-    pvp.capturePoint = capturePoint;
+    pvp.capturePointSpawnId = capturePointSpawnId;
     data = pvp;
 }
 
@@ -165,10 +165,10 @@ std::string NewRpgInfo::ToString()
         else if constexpr (std::is_same_v<T, OutdoorPvP>)
         {
             out << "OUTDOOR_PVP";
-            if (!arg.capturePoint)
+            if (!arg.capturePointSpawnId)
                 out << "\nNo capture point assigned.";
             else
-                out << "\nobjectiveEntry: " << arg.capturePoint->_capturePoint->GetName();
+                out << "\ncapturePointSpawnId: " << arg.capturePointSpawnId;
         }
         else
             out << "UNKNOWN";
