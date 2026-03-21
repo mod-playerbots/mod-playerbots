@@ -91,6 +91,7 @@ BloodDKStrategy::BloodDKStrategy(PlayerbotAI* botAI) : GenericDKStrategy(botAI)
 std::vector<NextAction> BloodDKStrategy::getDefaultActions()
 {
     return {
+        NextAction("hysteria", ACTION_DEFAULT + 0.7f),
         NextAction("rune strike", ACTION_DEFAULT + 0.6f),
         NextAction("icy touch", ACTION_DEFAULT + 0.5f),
         NextAction("heart strike", ACTION_DEFAULT + 0.4f),
