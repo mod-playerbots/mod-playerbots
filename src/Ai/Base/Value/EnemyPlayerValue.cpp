@@ -62,9 +62,8 @@ Unit* EnemyPlayerValue::Calculate()
             !bot->IsWithinDist(pTarget, VISIBILITY_DISTANCE_NORMAL))
             continue;
 
-        if (bot->GetTeamId() == TEAM_HORDE && Target->HasAura(23333))
-            return pTarget;
-        else if (bot->GetTeamId() == TEAM_ALLIANCE && pTarget->HasAura(23335))
+        if ((bot->GetTeamId() == TEAM_HORDE && Target->HasAura(23333)) ||
+            (bot->GetTeamId() == TEAM_ALLIANCE && pTarget->HasAura(23335)))
             return pTarget;
 
         targets.push_back(pTarget);
