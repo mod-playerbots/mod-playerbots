@@ -71,7 +71,6 @@ class PlayerbotLoginQueryHolder : public LoginQueryHolder
 {
 private:
     uint32 masterAccountId;
-    PlayerbotHolder* playerbotHolder;
 public:
     PlayerbotLoginQueryHolder(uint32 masterAccount, uint32 accountId, ObjectGuid guid)
         : LoginQueryHolder(accountId, guid), masterAccountId(masterAccount)
@@ -1797,7 +1796,7 @@ PlayerbotAI* PlayerbotsMgr::GetPlayerbotAI(Player* player)
     if (itr != _playerbotsAIMap.end())
     {
         if (itr->second->IsBotAI())
-            return reinterpret_cast<PlayerbotAI*>(itr->second);
+            return dynamic_cast<PlayerbotAI*>(itr->second);
     }
 
     return nullptr;
@@ -1813,7 +1812,7 @@ PlayerbotMgr* PlayerbotsMgr::GetPlayerbotMgr(Player* player)
     if (itr != _playerbotsMgrMap.end())
     {
         if (!itr->second->IsBotAI())
-            return reinterpret_cast<PlayerbotMgr*>(itr->second);
+            return dynamic_cast<PlayerbotMgr*>(itr->second);
     }
 
     return nullptr;

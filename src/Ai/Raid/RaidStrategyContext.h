@@ -6,9 +6,11 @@
 #include "RaidMcStrategy.h"
 #include "RaidBwlStrategy.h"
 #include "RaidKarazhanStrategy.h"
-#include "RaidMagtheridonStrategy.h"
 #include "RaidGruulsLairStrategy.h"
+#include "RaidMagtheridonStrategy.h"
+#include "RaidNaxxStrategy.h"
 #include "RaidSSCStrategy.h"
+#include "RaidTempestKeepStrategy.h"
 #include "RaidOsStrategy.h"
 #include "RaidEoEStrategy.h"
 #include "RaidVoAStrategy.h"
@@ -25,9 +27,11 @@ public:
         creators["moltencore"] = &RaidStrategyContext::moltencore;
         creators["bwl"] = &RaidStrategyContext::bwl;
         creators["karazhan"] = &RaidStrategyContext::karazhan;
-        creators["magtheridon"] = &RaidStrategyContext::magtheridon;
         creators["gruulslair"] = &RaidStrategyContext::gruulslair;
+        creators["magtheridon"] = &RaidStrategyContext::magtheridon;
+        creators["naxx"] = &RaidStrategyContext::naxx;
         creators["ssc"] = &RaidStrategyContext::ssc;
+        creators["tempestkeep"] = &RaidStrategyContext::tempestkeep;
         creators["wotlk-os"] = &RaidStrategyContext::wotlk_os;
         creators["wotlk-eoe"] = &RaidStrategyContext::wotlk_eoe;
         creators["voa"] = &RaidStrategyContext::voa;
@@ -41,9 +45,11 @@ private:
     static Strategy* moltencore(PlayerbotAI* botAI) { return new RaidMcStrategy(botAI); }
     static Strategy* bwl(PlayerbotAI* botAI) { return new RaidBwlStrategy(botAI); }
     static Strategy* karazhan(PlayerbotAI* botAI) { return new RaidKarazhanStrategy(botAI); }
-    static Strategy* magtheridon(PlayerbotAI* botAI) { return new RaidMagtheridonStrategy(botAI); }
     static Strategy* gruulslair(PlayerbotAI* botAI) { return new RaidGruulsLairStrategy(botAI); }
+    static Strategy* magtheridon(PlayerbotAI* botAI) { return new RaidMagtheridonStrategy(botAI); }
+    static Strategy* naxx(PlayerbotAI* botAI) { return new RaidNaxxStrategy(botAI); }
     static Strategy* ssc(PlayerbotAI* botAI) { return new RaidSSCStrategy(botAI); }
+    static Strategy* tempestkeep(PlayerbotAI* botAI) { return new RaidTempestKeepStrategy(botAI); }
     static Strategy* wotlk_os(PlayerbotAI* botAI) { return new RaidOsStrategy(botAI); }
     static Strategy* wotlk_eoe(PlayerbotAI* botAI) { return new RaidEoEStrategy(botAI); }
     static Strategy* voa(PlayerbotAI* botAI) { return new RaidVoAStrategy(botAI); }

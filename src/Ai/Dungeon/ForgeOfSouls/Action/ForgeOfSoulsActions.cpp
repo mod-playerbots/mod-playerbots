@@ -17,11 +17,9 @@ bool MoveFromBronjahmAction::Execute(Event /*event*/)
 
 bool AttackCorruptedSoulFragmentAction::Execute(Event /*event*/)
 {
-    Unit* currentTarget = AI_VALUE(Unit*, "current target");
     GuidVector targets = AI_VALUE(GuidVector, "possible targets");
 
     // If no valid skull target, search for corrupted soul fragment
-    Unit* empoweredPrince = nullptr;
     for (auto i = targets.begin(); i != targets.end(); ++i)
     {
         Unit* unit = botAI->GetUnit(*i);
@@ -30,8 +28,6 @@ bool AttackCorruptedSoulFragmentAction::Execute(Event /*event*/)
 
         if (unit->GetEntry() == NPC_CORRUPTED_SOUL_FRAGMENT)
         {
-                empoweredPrince = unit;
-
                 // Mark corrupted soul fragment with skull if in group and not already marked
                 if (Group* group = bot->GetGroup())
                 {

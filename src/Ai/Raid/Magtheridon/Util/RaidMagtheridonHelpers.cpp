@@ -132,7 +132,7 @@ namespace MagtheridonHelpers
         }
         for (Unit* hazard : debrisHazards)
         {
-            float dist = std::sqrt(std::pow(x - hazard->GetPositionX(), 2) + std::pow(y - hazard->GetPositionY(), 2));
+            float dist = hazard->GetDistance2d(x, y);
             if (dist < 9.0f)
                 return false;
         }
@@ -145,7 +145,7 @@ namespace MagtheridonHelpers
             if (!go || go->GetEntry() != GO_BLAZE)
                 continue;
 
-            float dist = std::sqrt(std::pow(x - go->GetPositionX(), 2) + std::pow(y - go->GetPositionY(), 2));
+            float dist = go->GetDistance2d(x, y);
             if (dist < 5.0f)
                 return false;
         }

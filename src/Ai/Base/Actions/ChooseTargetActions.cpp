@@ -30,6 +30,14 @@ bool AttackEnemyFlagCarrierAction::isUseful()
            PlayerHasFlag::IsCapturingFlag(bot);
 }
 
+bool AggressiveTargetAction::isUseful()
+{
+    if (bot->IsInCombat())
+        return false;
+
+    return true;
+}
+
 bool DropTargetAction::Execute(Event /*event*/)
 {
     Unit* target = context->GetValue<Unit*>("current target")->Get();

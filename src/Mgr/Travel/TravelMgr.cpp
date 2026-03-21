@@ -14,6 +14,7 @@
 #include "MapMgr.h"
 #include "PathGenerator.h"
 #include "Playerbots.h"
+#include "RaceMgr.h"
 #include "TransportMgr.h"
 #include "VMapFactory.h"
 #include "VMapMgr2.h"
@@ -228,13 +229,13 @@ WorldPosition WorldPosition::offset(WorldPosition* center)
 
 float WorldPosition::size()
 {
-    return sqrt(pow(GetPositionX(), 2.0) + pow(GetPositionY(), 2.0) + pow(GetPositionZ(), 2.0));
+    return GetExactDist(0.0f, 0.0f, 0.0f);
 }
 
 float WorldPosition::distance(WorldPosition* center)
 {
     if (GetMapId() == center->GetMapId())
-        return relPoint(center).size();
+        return GetExactDist(center->GetPositionX(), center->GetPositionY(), center->GetPositionZ());
 
     // this -> mapTransfer | mapTransfer -> center
     return TravelMgr::instance().mapTransDistance(*this, *center);
@@ -243,7 +244,7 @@ float WorldPosition::distance(WorldPosition* center)
 float WorldPosition::fDist(WorldPosition* center)
 {
     if (GetMapId() == center->GetMapId())
-        return sqrt(sqDistance2d(center));
+        return GetExactDist2d(center->GetPositionX(), center->GetPositionY());
 
     // this -> mapTransfer | mapTransfer -> center
     return TravelMgr::instance().fastMapTransDistance(*this, *center);
@@ -3335,7 +3336,7 @@ void TravelMgr::LoadQuestTravelTable()
 
             std::ostringstream out;
 
-            for (uint8 race = RACE_HUMAN; race < MAX_RACES; race++)
+            for (uint8 race = RACE_HUMAN; race < sRaceMgr->GetMaxRaces(); race++)
             {
                 for (uint8 cls = CLASS_WARRIOR; cls < MAX_CLASSES; ++cls)
                 {

@@ -192,9 +192,12 @@ AiPlayerbot.AutoInitOnly = 0
 # Default: 1.0 (same with the player)
 AiPlayerbot.AutoInitEquipLevelLimitRatio = 1.0
 
-# Bot automatically trains spells when talking to trainer
-# yes = train all available spells as long as the bot has the money, free = auto trains with no money cost, no = only list spells
-AiPlayerbot.AutoTrainSpells = yes
+#
+#    AllowLearnTrainerSpells
+#        Description: Allow the bot to learn trainers' spells as long as it has the money.
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
+AiPlayerbot.AllowLearnTrainerSpells = 1
 
 #
 #
@@ -563,6 +566,47 @@ AiPlayerbot.AutoGearScoreLimit = 0
 # Default: food, taxi, and raid are enabled
 AiPlayerbot.BotCheats = "food,taxi,raid"
 
+# List of attunement quests (comma-separated list of quest IDs) that are automatically completed for all bots.  
+# While mod-playerbots does not restore removed attunement requirements, although other mods, such as mod-individual-progression, may do so.
+# This is meant to exclude bots from such requirements.
+# 
+# Default:
+# Caverns of Time - Part 1
+# - 10279, To The Master's Lair
+# - 10277, The Caverns of Time
+#
+# Caverns of Time - Part 2 (Escape from Durnholde Keep)
+# - 10282, Old Hillsbrad
+# - 10283, Taretha's Diversion
+# - 10284, Escape from Durnholde
+# - 10285, Return to Andormu
+#
+# Caverns of Time - Part 2 (The Black Morass)
+# - 10296, The Black Morass
+# - 10297, The Opening of the Dark Portal
+# - 10298, Hero of the Brood
+#
+# Magister's Terrace Attunement
+# - 11481, Crisis at the Sunwell
+# - 11482, Duty Calls
+# - 11488, Magisters' Terrace
+# - 11490, The Scryer's Scryer
+# - 11492, Hard to Kill
+#
+# Serpentshrine Cavern
+# - 10901, The Cudgel of Kar'desh
+#
+# The Eye
+# - 10888, Trial of the Naaru: Magtheridon
+#
+# Mount Hyjal
+# - 10445, The Vials of Eternity
+#
+# Black Temple
+# - 10985, A Distraction for Akama
+#
+AiPlayerbot.AttunementQuests = 10279,10277,10282,10283,10284,10285,10296,10297,10298,11481,11482,11488,11490,11492,10901,10888,10445,10985
+
 #
 #
 #
@@ -764,6 +808,10 @@ AiPlayerbot.LimitGearExpansion = 1
 # Chance randombot will have less-than-optimized generated gear
 # Set between 0 (0%) and 1 (100%)
 AiPlayerbot.RandomGearLoweringChance = 0
+
+# Unobtainable or unusable items (comma-separated list of item IDs)
+# Default: Chilton Wand (12468), Totem of the Earthen Ring (46978)
+AiPlayerbot.UnobtainableItems = 12468,46978
 
 # Randombots check player's gearscore level and deny the group invitation if it's too low
 # Default: 0 (disabled)
