@@ -1,4 +1,4 @@
-/*
+\/*
  * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
@@ -62,16 +62,10 @@ Unit* EnemyPlayerValue::Calculate()
             !bot->IsWithinDist(pTarget, VISIBILITY_DISTANCE_NORMAL))
             continue;
 
-        if (bot->GetTeamId() == TEAM_HORDE)
-        {
-            if (pTarget->HasAura(23333))
-                return pTarget;
-        }
-        else
-        {
-            if (pTarget->HasAura(23335))
-                return pTarget;
-        }
+        if (bot->GetTeamId() == TEAM_HORDE && Target->HasAura(23333))
+            return pTarget;
+        else if (bot->GetTeamId() == TEAM_ALLIANCE && pTarget->HasAura(23335))
+            return pTarget;
 
         targets.push_back(pTarget);
     }
