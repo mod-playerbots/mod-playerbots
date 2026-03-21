@@ -32,7 +32,6 @@ public:
         {
             if (victim->ToPlayer() && botAI->IsMainTank(victim->ToPlayer()))
                 return;
-
         }
         if (minThreat >= threat)
         {
