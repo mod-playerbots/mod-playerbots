@@ -61,7 +61,7 @@ Unit* CastHysteriaAction::GetTarget()
 
     Unit* rangedDps = nullptr;
     Unit* tank = nullptr;
-    
+
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
