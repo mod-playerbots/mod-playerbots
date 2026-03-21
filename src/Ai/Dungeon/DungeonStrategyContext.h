@@ -44,7 +44,11 @@ class DungeonStrategyContext : public NamedObjectContext<Strategy>
             // ...
 
             // Burning Crusade
+<<<<<<< Updated upstream
             // ...
+=======
+            creators["tbc-ac"] = &DungeonStrategyContext::tbc_ac;           // Auchindoun: Auchenai Crypts
+>>>>>>> Stashed changes
 
             // Wrath of the Lich King
             creators["wotlk-uk"] = &DungeonStrategyContext::wotlk_uk;       // Utgarde Keep
