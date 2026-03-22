@@ -13,33 +13,31 @@
 // Flee from Focus Fire and dont run back in
 float FleeFocusFireMultiplier::GetValue(Action* action)
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "shirrak the dead watcher");
-    if (!boss)
+    if (!AI_VALUE2(Unit*, "find target", "shirrak the dead watcher"))
         return 1.0f;
 
    constexpr float searchRadius = 20.0f;
         std::list<Creature*> creatureList;
-        bot->GetCreatureListWithEntryInGrid(creatureList, NPC_FOCUS_FIRE, 20.0f);
+        bot->GetCreatureListWithEntryInGrid(creatureList, static_cast<uint32>(AuchenaiCryptsIDs::NPC_FOCUS_FIRE), 20.0f);
 
     for (Creature* flare : creatureList)
     {
         if (flare && flare->IsAlive())
-
         {
-
             if (dynamic_cast<CastReachTargetSpellAction*>(action))
-            return 0.0f;
+                return 0.0f;
 
             float currentDistance = bot->GetDistance2d(flare);
-            constexpr float safeDistance = 20.0f; 
+            constexpr float safeDistance = 20.0f;
+            constexpr float buffer = 5.0f;
 
-            if (currentDistance < safeDistance)
-            {
-              if (dynamic_cast<CombatFormationMoveAction*>(action) ||
+            if (currentDistance < safeDistance + buffer && (
+                dynamic_cast<CombatFormationMoveAction*>(action) ||
                 dynamic_cast<FleeAction*>(action) ||
                 dynamic_cast<FollowAction*>(action) ||
                 dynamic_cast<ReachTargetAction*>(action) ||
-                dynamic_cast<AvoidAoeAction*>(action))
+                dynamic_cast<AvoidAoeAction*>(action)))
+            {
                 return 0.0f;
             }
         }

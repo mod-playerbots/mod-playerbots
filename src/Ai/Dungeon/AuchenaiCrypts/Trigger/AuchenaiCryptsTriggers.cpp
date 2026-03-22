@@ -8,18 +8,17 @@
 bool ShirrakTankPositionBossTrigger::IsActive()
 {
     return botAI->IsTank(bot) &&
-            AI_VALUE2(Unit*, "find target", "shirrak the dead watcher");
+        AI_VALUE2(Unit*, "find target", "shirrak the dead watcher");
 }
 
 bool FleeFocusFireTrigger::IsActive()
 {
-    Unit* boss = AI_VALUE2(Unit*, "find target", "shirrak the dead watcher");
-    if (!boss)
+    if (!AI_VALUE2(Unit*, "find target", "shirrak the dead watcher"))
         return false;
 
    constexpr float searchRadius = 20.0f;
         std::list<Creature*> creatureList;
-        bot->GetCreatureListWithEntryInGrid(creatureList, NPC_FOCUS_FIRE, 20.0f);
+        bot->GetCreatureListWithEntryInGrid(creatureList, static_cast<uint32>(AuchenaiCryptsIDs::NPC_FOCUS_FIRE), 20.0f);
 
     for (Creature* flare : creatureList)
     {

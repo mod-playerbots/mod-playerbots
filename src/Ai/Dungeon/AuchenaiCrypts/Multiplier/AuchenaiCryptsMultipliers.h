@@ -8,7 +8,6 @@ class FleeFocusFireMultiplier : public Multiplier
 public:
     FleeFocusFireMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "flee focus fire") {}
     float GetValue(Action* action) override;
-    
 };
 
 #endif

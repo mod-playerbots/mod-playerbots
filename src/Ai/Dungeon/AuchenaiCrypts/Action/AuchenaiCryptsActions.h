@@ -1,7 +1,6 @@
 #ifndef _PLAYERBOT_TBCDUNGEONAUCHENAICRYPTSACTIONS_H
 #define _PLAYERBOT_TBCDUNGEONAUCHENAICRYPTSACTIONS_H
 
-#include "Action.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
 #include "AuchenaiCryptsTriggers.h"
@@ -11,7 +10,7 @@
 class ShirrakTankPositionBossAction : public AttackAction
 {  
 public:
-    ShirrakTankPositionBossAction(PlayerbotAI* botAI) : AttackAction(botAI, "shirrak tank position") {}
+    ShirrakTankPositionBossAction(PlayerbotAI* botAI) : AttackAction(botAI, "shirrak tank position boss") {}
     bool Execute(Event event) override;
 };
 

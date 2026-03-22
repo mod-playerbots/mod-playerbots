@@ -32,7 +32,7 @@ bool ShirrakTankPositionBossAction::Execute(Event /*event*/)
             float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-            return MoveTo(558, moveX, moveY, bot->GetPositionZ(), false, false,
+            return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false,
                    false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
@@ -46,7 +46,7 @@ bool FleeFocusFireAction::Execute(Event /*event*/)
 {
     constexpr float searchRadius = 20.0f;
         std::list<Creature*> creatureList;
-        bot->GetCreatureListWithEntryInGrid(creatureList, NPC_FOCUS_FIRE, 20.0f);
+        bot->GetCreatureListWithEntryInGrid(creatureList, static_cast<uint32>(AuchenaiCryptsIDs::NPC_FOCUS_FIRE), 20.0f);
 
     for (Creature* flare : creatureList)
     {
@@ -58,14 +58,12 @@ bool FleeFocusFireAction::Execute(Event /*event*/)
 
             if (currentDistance < safeDistance)
             {
-                
                 bot->AttackStop();
                 bot->InterruptNonMeleeSpells(true);
 
                 float distanceToMove = safeDistance - currentDistance + buffer;
 
                 return MoveAway(flare, distanceToMove);
-
             }
         }
     }

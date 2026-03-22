@@ -5,22 +5,18 @@
 #include "GenericTriggers.h"
 #include "DungeonStrategyUtils.h"
 
-enum AuchenaiCryptsIDs
+enum class AuchenaiCryptsIDs : uint32
 {
     // Shirrak The Dead Watcher
     NPC_FOCUS_FIRE                  = 18374,
-    SPELL_FOCUS_CAST                = 32300,
-    SPELL_FIERY_BLAST               = 32302,
-    SPELL_FOCUS_FIRE_VISUAL         = 32286,
 };
  
 class ShirrakTankPositionBossTrigger : public Trigger
 {
 public:
-    ShirrakTankPositionBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "shirrak tank position") {}
+    ShirrakTankPositionBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "shirrak tank position boss") {}
 
     bool IsActive() override;
-
 };
 
 class FleeFocusFireTrigger : public Trigger
