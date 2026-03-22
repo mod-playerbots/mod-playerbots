@@ -99,6 +99,7 @@ public:
     bool tellWhenAvoidAoe;
     std::set<uint32> disallowedGameObjects;
     std::set<uint32> attunementQuests;
+    std::set<uint32> unobtainableItems;
 
     uint32 openGoSpell;
     bool randomBotAutologin;

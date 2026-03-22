@@ -1532,6 +1532,21 @@ std::vector<std::string> PlayerbotAI::GetStrategies(BotState type)
 
 void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
 {
+    static const std::vector<std::string> allInstanceStrategies =
+    {
+        "aq20", "bwl", "karazhan", "gruulslair", "icc", "magtheridon", "moltencore",
+        "naxx", "onyxia", "ssc", "tempestkeep", "ulduar", "voa", "wotlk-an", "wotlk-cos",
+        "wotlk-dtk", "wotlk-eoe", "wotlk-fos", "wotlk-gd", "wotlk-hol", "wotlk-hor",
+        "wotlk-hos", "wotlk-nex", "wotlk-occ", "wotlk-ok", "wotlk-os", "wotlk-pos",
+        "wotlk-toc", "wotlk-uk", "wotlk-up", "wotlk-vh"
+    };
+
+    for (const std::string& strat : allInstanceStrategies)
+    {
+        engines[BOT_STATE_COMBAT]->removeStrategy(strat);
+        engines[BOT_STATE_NON_COMBAT]->removeStrategy(strat);
+    }
+
     std::string strategyName;
     switch (mapId)
     {
@@ -1549,6 +1564,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             break;
         case 532:
             strategyName = "karazhan";  // Karazhan
+            break;
+        case 533:
+            strategyName = "naxx";  // Naxxramas
             break;
         case 544:
             strategyName = "magtheridon";  // Magtheridon's Lair
@@ -1628,10 +1646,13 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         default:
             break;
     }
+
     if (strategyName.empty())
         return;
+
     engines[BOT_STATE_COMBAT]->addStrategy(strategyName);
     engines[BOT_STATE_NON_COMBAT]->addStrategy(strategyName);
+
     if (tellMaster && !strategyName.empty())
     {
         std::ostringstream out;
