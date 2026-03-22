@@ -1,7 +1,6 @@
-#include "RaidNaxxActions.h"
-
 #include "ObjectGuid.h"
 #include "Playerbots.h"
+#include "RaidNaxxActions.h"
 
 bool AnubrekhanChooseTargetAction::Execute(Event /*event*/)
 {
@@ -66,13 +65,10 @@ bool AnubrekhanPositionAction::Execute(Event /*event*/)
         {
             uint32 nearest = FindNearestWaypoint();
             uint32 next_point;
-            if (inPhase)
-                next_point = (nearest + 1) % intervals;
-            else
-                next_point = nearest;
+            next_point = (nearest + 1) % intervals;
 
-            return MoveTo(bot->GetMapId(), waypoints[next_point].first, waypoints[next_point].second, bot->GetPositionZ(), false, false,
-                          false, false, MovementPriority::MOVEMENT_COMBAT);
+            return MoveTo(bot->GetMapId(), waypoints[next_point].first, waypoints[next_point].second,
+                          bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
         }
         else
             return MoveInside(533, 3272.49f, -3476.27f, bot->GetPositionZ(), 3.0f, MovementPriority::MOVEMENT_COMBAT);
