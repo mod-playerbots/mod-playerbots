@@ -5,9 +5,11 @@
 
 #include "PaladinTriggers.h"
 
+#include "MovementHelper.h"
 #include "PaladinActions.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
+#include "PaladinHelper.h"
 
 bool SealTrigger::IsActive()
 {
@@ -29,6 +31,27 @@ bool BlessingTrigger::IsActive()
     Unit* target = GetTarget();
     return SpellTrigger::IsActive() && !botAI->HasAnyAuraOf(target, "blessing of might", "blessing of wisdom",
                                                             "blessing of kings", "blessing of sanctuary", nullptr);
+}
+
+Unit* HandOfFreedomOnPartyTrigger::GetTarget()
+{
+    if (ai::movement::IsMovementImpaired(bot) && !ai::paladin::HasAnyPaladinHandFromCaster(bot, bot))
+        return bot;
+
+    return Trigger::GetTarget();
+}
+
+bool HandOfFreedomOnPartyTrigger::IsActive()
+{
+    Unit* target = GetTarget();
+    if (!target)
+        return false;
+
+    if (!botAI->CanCastSpell("hand of freedom", target))
+        return false;
+
+    return !ai::paladin::HasAnyPaladinHandFromCaster(target, bot) &&
+           ai::movement::IsMovementImpaired(target);
 }
 
 bool NotSensingUndeadTrigger::IsActive()
