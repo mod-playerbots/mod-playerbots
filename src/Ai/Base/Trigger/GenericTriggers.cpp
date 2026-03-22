@@ -16,7 +16,7 @@
 #include "PositionValue.h"
 #include "SharedDefines.h"
 #include "TemporarySummon.h"
-#include "ThreatMgr.h"
+#include "ThreatManager.h"
 #include "Timer.h"
 #include "PlayerbotAI.h"
 #include "Player.h"
@@ -217,7 +217,7 @@ bool LowTankThreatTrigger::IsActive()
     if (!current_target)
         return false;
 
-    ThreatMgr& mgr = current_target->GetThreatMgr();
+    ThreatManager& mgr = current_target->GetThreatMgr();
     float threat = mgr.GetThreat(bot);
     float tankThreat = mgr.GetThreat(mt);
     return tankThreat == 0.0f || threat > tankThreat * 0.5f;
