@@ -41,7 +41,7 @@ bool HunterAspectOfTheDragonhawkTrigger::IsActive()
         return false;
 
     if (botAI->HasAura("aspect of the viper", target))
-        return AI_VALUE2(uint8, "mana", "self target") > 70;
+        return AI_VALUE2(uint8, "mana", "self target") >= 60;
 
     return true;
 }
