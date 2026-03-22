@@ -212,6 +212,14 @@ public:
     bool IsActive() override;
 };
 
+class ArchimondeBossEngagedByMainTankTrigger : public Trigger
+{
+public:
+    ArchimondeBossEngagedByMainTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "archimonde boss engaged by main tank") {}
+    bool IsActive() override;
+};
+
 class ArchimondeBossCastsFearTrigger : public Trigger
 {
 public:

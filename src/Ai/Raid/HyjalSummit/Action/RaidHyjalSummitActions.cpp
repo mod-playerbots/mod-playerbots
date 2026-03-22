@@ -18,19 +18,16 @@ bool HyjalSummitEraseTrackersAction::Execute(Event /*event*/)
     const ObjectGuid guid = bot->GetGUID();
 
     bool erased = false;
-
     if (!AI_VALUE2(Unit*, "find target", "rage winterchill") &&
         hasReachedWinterchillPosition.erase(guid) > 0)
     {
         erased = true;
     }
-
     if (!AI_VALUE2(Unit*, "find target", "anetheron") &&
         hasReachedAnetheronPosition.erase(guid) > 0)
     {
         erased = true;
     }
-
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
     {
         if (isBelowManaThreshold.erase(guid) > 0)
@@ -38,13 +35,11 @@ bool HyjalSummitEraseTrackersAction::Execute(Event /*event*/)
         if (kazrogalTankStep.erase(guid) > 0)
             erased = true;
     }
-
     if (!AI_VALUE2(Unit*, "find target", "azgalor") &&
         azgalorTankStep.erase(guid) > 0)
     {
         erased = true;
     }
-
     if (!AI_VALUE2(Unit*, "find target", "archimonde") &&
         doomfireTrails.erase(bot->GetMap()->GetInstanceId()) > 0)
     {
@@ -69,7 +64,8 @@ bool RageWinterchillMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", winterchill))
+    if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MISDIRECTION)) &&
+        botAI->CanCastSpell("steady shot", winterchill))
         return botAI->CastSpell("steady shot", winterchill);
 
     return false;
@@ -202,7 +198,8 @@ bool AnetheronMisdirectBossAndInfernalsToTanksAction::Execute(Event /*event*/)
         if (botAI->CanCastSpell("misdirection", mainTank))
             return botAI->CastSpell("misdirection", mainTank);
 
-        if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", anetheron))
+        if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MISDIRECTION)) &&
+            botAI->CanCastSpell("steady shot", anetheron))
             return botAI->CastSpell("steady shot", anetheron);
     }
 
@@ -216,7 +213,8 @@ bool AnetheronMisdirectBossAndInfernalsToTanksAction::Execute(Event /*event*/)
         if (botAI->CanCastSpell("misdirection", firstAssistTank))
             return botAI->CastSpell("misdirection", firstAssistTank);
 
-        if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", infernal))
+        if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MISDIRECTION)) &&
+            botAI->CanCastSpell("steady shot", infernal))
             return botAI->CastSpell("steady shot", infernal);
     }
 
@@ -476,7 +474,8 @@ bool KazrogalMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", kazrogal))
+    if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MISDIRECTION)) &&
+        botAI->CanCastSpell("steady shot", kazrogal))
         return botAI->CastSpell("steady shot", kazrogal);
 
     return false;
@@ -628,7 +627,8 @@ bool KazrogalLowManaBotMoveFromGroupAction::Execute(Event /*event*/)
         if (bot->GetPower(POWER_MANA) <= 3200)
             isBelowManaThreshold.try_emplace(bot->GetGUID(), true);
 
-        if (bot->HasAura(SPELL_MARK_OF_KAZROGAL) && bot->GetPower(POWER_MANA) <= 1200)
+        if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MARK_OF_KAZROGAL)) &&
+            bot->GetPower(POWER_MANA) <= 1200)
         {
             if (bot->getClass() == CLASS_MAGE &&
                 botAI->CanCastSpell("ice block", bot) &&
@@ -695,7 +695,8 @@ bool AzgalorMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", azgalor))
+    if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MISDIRECTION)) &&
+        botAI->CanCastSpell("steady shot", azgalor))
         return botAI->CastSpell("steady shot", azgalor);
 
     return false;
@@ -906,8 +907,40 @@ bool ArchimondeMisdirectBossToMainTankAction::Execute(Event /*event*/)
     if (botAI->CanCastSpell("misdirection", mainTank))
         return botAI->CastSpell("misdirection", mainTank);
 
-    if (bot->HasAura(SPELL_MISDIRECTION) && botAI->CanCastSpell("steady shot", archimonde))
+    if (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_MISDIRECTION)) &&
+        botAI->CanCastSpell("steady shot", archimonde))
         return botAI->CastSpell("steady shot", archimonde);
+
+    return false;
+}
+
+bool ArchimondeMoveBossToInitialPositionAction::Execute(Event /*event*/)
+{
+    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+    if (!archimonde)
+        return false;
+
+    if (bot->GetVictim() != archimonde)
+        return Attack(archimonde);
+
+    if (archimonde->GetVictim() == bot && bot->IsWithinMeleeRange(archimonde))
+    {
+        const Position& position = ARCHIMONDE_INITIAL_POSITION;
+        float distToPosition =
+            bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY());
+
+        if (distToPosition > 2.0f)
+        {
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(5.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+            return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, position.GetPositionZ(), false,
+                          false, false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        }
+    }
 
     return false;
 }
@@ -949,7 +982,8 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
     if (archimonde->HasUnitState(UNIT_STATE_CASTING))
     {
         Spell* spell = archimonde->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-        if (spell && spell->m_spellInfo->Id == SPELL_AIR_BURST)
+        if (spell && spell->m_spellInfo->Id ==
+            static_cast<uint32>(HyjalSummitSpells::SPELL_AIR_BURST))
         {
             Player* mainTank = GetGroupMainTank(botAI, bot);
             if (mainTank && spell->m_targets.GetUnitTarget() == mainTank)
@@ -986,7 +1020,6 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
 bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
 {
     constexpr float dangerDist = 9.0f;
-    // The doomfire spirit despawns after 27s, but the fire trail persist for 18s
     constexpr uint32 TRAIL_DURATION = 19000;
 
     uint32 instanceId = bot->GetMap()->GetInstanceId();
@@ -1002,40 +1035,33 @@ bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
             return getMSTimeDiff(d.recordTime, now) > TRAIL_DURATION;
         }), it->second.end());
 
-    const Position* nearest = nullptr;
-    float nearestDist = std::numeric_limits<float>::max();
+    float totalDx = 0.0f, totalDy = 0.0f;
     for (auto const& data : it->second)
     {
         float d = bot->GetExactDist2d(data.position.GetPositionX(), data.position.GetPositionY());
-        if (d < dangerDist && d < nearestDist)
+        if (d < dangerDist && d > 0.0f)
         {
-            nearest = &data.position;
-            nearestDist = d;
+            float weight = (dangerDist - d) / dangerDist;
+            totalDx += (bot->GetPositionX() - data.position.GetPositionX()) / d * weight;
+            totalDy += (bot->GetPositionY() - data.position.GetPositionY()) / d * weight;
         }
     }
 
-    if (!nearest)
-        return false;
-
-    float dx = bot->GetPositionX() - nearest->GetPositionX();
-    float dy = bot->GetPositionY() - nearest->GetPositionY();
-    float moveX, moveY;
-
-    if (nearestDist == 0.0f)
+    if (totalDx != 0.0f || totalDy != 0.0f)
     {
-        float angle = frand(0.0f, static_cast<float>(M_PI * 2.0));
-        moveX = nearest->GetPositionX() + std::cos(angle) * dangerDist;
-        moveY = nearest->GetPositionY() + std::sin(angle) * dangerDist;
-    }
-    else
-    {
-        float invDist = 1.0f / nearestDist;
-        moveX = nearest->GetPositionX() + (dx * invDist) * dangerDist;
-        moveY = nearest->GetPositionY() + (dy * invDist) * dangerDist;
+        float norm = std::sqrt(totalDx * totalDx + totalDy * totalDy);
+        float moveDist = std::min(norm * dangerDist, dangerDist);
+        if (moveDist < 0.5f)
+            return false;
+
+        float targetX = bot->GetPositionX() + (totalDx / norm) * moveDist;
+        float targetY = bot->GetPositionY() + (totalDy / norm) * moveDist;
+
+        return MoveTo(HYJAL_SUMMIT_MAP_ID, targetX, targetY, bot->GetPositionZ(), false, false,
+               false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
-    return MoveTo(HYJAL_SUMMIT_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-                  false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+    return false;
 }
 
 bool ArchimondeRemoveDoomfireDotAction::Execute(Event /*event*/)

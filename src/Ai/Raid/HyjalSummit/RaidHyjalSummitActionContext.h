@@ -92,6 +92,9 @@ public:
         creators["archimonde misdirect boss to main tank"] =
             &RaidHyjalSummitActionContext::archimonde_misdirect_boss_to_main_tank;
 
+        creators["archimonde move boss to initial position"] =
+            &RaidHyjalSummitActionContext::archimonde_move_boss_to_initial_position;
+
         creators["archimonde cast fear immunity spell"] =
             &RaidHyjalSummitActionContext::archimonde_cast_fear_immunity_spell;
 
@@ -183,6 +186,9 @@ private:
     // Archimonde
     static Action* archimonde_misdirect_boss_to_main_tank(
         PlayerbotAI* botAI) { return new ArchimondeMisdirectBossToMainTankAction(botAI); }
+
+    static Action* archimonde_move_boss_to_initial_position(
+        PlayerbotAI* botAI) { return new ArchimondeMoveBossToInitialPositionAction(botAI); }
 
     static Action* archimonde_cast_fear_immunity_spell(
         PlayerbotAI* botAI) { return new ArchimondeCastFearImmunitySpellAction(botAI); }

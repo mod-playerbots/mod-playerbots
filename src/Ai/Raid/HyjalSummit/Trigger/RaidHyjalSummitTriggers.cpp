@@ -189,7 +189,8 @@ bool KazrogalMarkDealsShadowDamageTrigger::IsActive()
          botAI->HasAura("shadow protection", bot)))
         return false;
 
-    return bot->HasAura(SPELL_MARK_OF_KAZROGAL);
+    return bot->HasAura(
+        static_cast<uint32>(HyjalSummitSpells::SPELL_MARK_OF_KAZROGAL));
 }
 
 // Azgalor
@@ -216,9 +217,6 @@ bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
         azgalor->GetVictim() == bot)
         return false;
 
-    if (bot->HasAura(SPELL_RAIN_OF_FIRE))
-        return false;
-
     if (botAI->IsMainTank(bot))
         return false;
 
@@ -233,8 +231,14 @@ bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
         else
             return false;
     }
-
-    return GetAzgalorTankStep(botAI, bot) < 2;
+    else if (botAI->IsMelee(bot))
+    {
+        return GetAzgalorTankStep(botAI, bot) < 2;
+    }
+    else
+    {
+        return GetAzgalorTankStep(botAI, bot) < 1;
+    }
 }
 
 // Spread to mitigate Rain of Fire, but GTFO if Rain of Fire is on the bot
@@ -244,7 +248,8 @@ bool AzgalorBossCastsRainOfFireTrigger::IsActive()
         return false;
 
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-    if (!azgalor || bot->HasAura(SPELL_DOOM))
+    if (!azgalor ||
+        bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)))
         return false;
 
     if (azgalor->GetHealthPct() < 85.0f)
@@ -259,7 +264,7 @@ bool AzgalorBossCastsRainOfFireTrigger::IsActive()
 
 bool AzgalorBotIsDoomedTrigger::IsActive()
 {
-    return bot->HasAura(SPELL_DOOM);
+    return bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM));
 }
 
 bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
@@ -270,7 +275,8 @@ bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
 
     // Exclude second assist tank also, unless first assist tank has Doom
     Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
-    if (firstAssistTank && !firstAssistTank->HasAura(SPELL_DOOM) &&
+    if (firstAssistTank &&
+        !firstAssistTank->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)) &&
         botAI->IsAssistTankOfIndex(bot, 1, true))
         return false;
 
@@ -292,6 +298,15 @@ bool ArchimondePullingBossTrigger::IsActive()
 
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
     return archimonde && archimonde->GetHealthPct() > 95.0f;
+}
+
+bool ArchimondeBossEngagedByMainTankTrigger::IsActive()
+{
+    if (!botAI->IsMainTank(bot))
+        return false;
+
+    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
+    return archimonde && archimonde->GetHealthPct() > 90.0f;
 }
 
 bool ArchimondeBossCastsFearTrigger::IsActive()
@@ -325,7 +340,8 @@ bool ArchimondeBossSummonedDoomfireTrigger::IsActive()
 
     // If I don't make an exception, bots actually refuse to enter the
     // Doomfire even when feared
-    return !bot->HasAura(SPELL_ARCHIMONDE_FEAR);
+    return !bot->HasAura(
+        static_cast<uint32>(HyjalSummitSpells::SPELL_ARCHIMONDE_FEAR));
 }
 
 bool ArchimondeBotStoodInDoomfireTrigger::IsActive()
@@ -335,5 +351,7 @@ bool ArchimondeBotStoodInDoomfireTrigger::IsActive()
         bot->getClass() != CLASS_PALADIN)
         return false;
 
-    return bot->HasAura(SPELL_DOOMFIRE_AURA) && bot->GetHealthPct() < 40.0f;
+    return bot->GetHealthPct() < 40.0f &&
+           (bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOMFIRE)) ||
+            bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOMFIRE_DOT)));
 }

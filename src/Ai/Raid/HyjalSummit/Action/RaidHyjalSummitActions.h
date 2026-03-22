@@ -214,6 +214,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class ArchimondeMoveBossToInitialPositionAction : public AttackAction
+{
+public:
+    ArchimondeMoveBossToInitialPositionAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "archimonde move boss to initial position") {}
+    bool Execute(Event event) override;
+};
+
 class ArchimondeCastFearImmunitySpellAction : public Action
 {
 public:

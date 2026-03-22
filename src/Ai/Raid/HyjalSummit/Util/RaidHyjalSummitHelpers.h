@@ -14,7 +14,7 @@
 
 namespace HyjalSummitHelpers
 {
-    enum HyjalSummitSpells
+    enum class HyjalSummitSpells : uint32
     {
         // Anetheron
         SPELL_INFERNO          = 31299,
@@ -27,8 +27,8 @@ namespace HyjalSummitHelpers
         SPELL_DOOM             = 31347,
 
         // Archimonde
-        SPELL_DOOMFIRE         = 31943, // dynamic object spell for doomfire
-        SPELL_DOOMFIRE_AURA    = 31944,
+        SPELL_DOOMFIRE         = 31944, // Damaging part of trail
+        SPELL_DOOMFIRE_DOT     = 31969, // DoT after exiting trail
         SPELL_ARCHIMONDE_FEAR  = 31970,
         SPELL_AIR_BURST        = 32014,
 
@@ -39,7 +39,7 @@ namespace HyjalSummitHelpers
         SPELL_FEAR_WARD        =  6346,
     };
 
-    enum HyjalSummitNPCs
+    enum class HyjalSummitNPCs : uint32
     {
         // Anetheron
         NPC_TOWERING_INFERNAL  = 17818,
@@ -85,6 +85,7 @@ namespace HyjalSummitHelpers
         Position position;
         uint32 recordTime;
     };
+    extern const Position ARCHIMONDE_INITIAL_POSITION;
     extern std::unordered_map<uint32, std::vector<DoomfireTrailData>> doomfireTrails;
     extern std::unordered_map<ObjectGuid, uint32> doomfireLastSampleTime;
 }

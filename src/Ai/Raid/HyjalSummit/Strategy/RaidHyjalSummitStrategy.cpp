@@ -86,6 +86,9 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("archimonde pulling boss", {
         NextAction("archimonde misdirect boss to main tank", ACTION_RAID + 2) }));
 
+    triggers.push_back(new TriggerNode("archimonde boss engaged by main tank", {
+        NextAction("archimonde move boss to initial position", ACTION_RAID + 2) }));
+
     triggers.push_back(new TriggerNode("archimonde boss casts fear", {
         NextAction("archimonde cast fear immunity spell", ACTION_RAID + 2) }));
 

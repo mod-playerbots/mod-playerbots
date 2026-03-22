@@ -203,7 +203,8 @@ float AzgalorDisableTankActionsMultiplier::GetValue(Action* action)
 
     // Exclude second assist tank also, unless first assist tank has Doom
     Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
-    if (firstAssistTank && !firstAssistTank->HasAura(SPELL_DOOM) &&
+    if (firstAssistTank &&
+        !firstAssistTank->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)) &&
         botAI->IsAssistTankOfIndex(bot, 1, true))
         return 1.0f;
 
@@ -220,7 +221,7 @@ float AzgalorDisableTankActionsMultiplier::GetValue(Action* action)
 
 float AzgalorDoomedBotPrioritizePositioningMultiplier::GetValue(Action* action)
 {
-    if (!bot->HasAura(SPELL_DOOM))
+    if (!bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)))
         return 1.0f;
 
     if (dynamic_cast<MovementAction*>(action) &&

@@ -28,7 +28,8 @@ namespace HyjalSummitHelpers
             return nullptr;
 
         Spell* spell = anetheron->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-        if (spell && spell->m_spellInfo->Id == SPELL_INFERNO)
+        if (spell && spell->m_spellInfo->Id ==
+            static_cast<uint32>(HyjalSummitSpells::SPELL_INFERNO))
         {
             Unit* spellTarget = spell->m_targets.GetUnitTarget();
             if (spellTarget && spellTarget->GetTypeId() == TYPEID_PLAYER)
@@ -80,7 +81,8 @@ namespace HyjalSummitHelpers
             for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             {
                 Player* member = ref->GetSource();
-                if (member && member->HasAura(SPELL_DOOM))
+                if (member &&
+                    member->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)))
                     return true;
             }
         }
@@ -90,6 +92,7 @@ namespace HyjalSummitHelpers
 
     // Archimonde
 
+    const Position ARCHIMONDE_INITIAL_POSITION = { 5648.791f, -3419.050f, 1588.426f };
     std::unordered_map<uint32, std::vector<DoomfireTrailData>> doomfireTrails;
     std::unordered_map<ObjectGuid, uint32> doomfireLastSampleTime;
 }

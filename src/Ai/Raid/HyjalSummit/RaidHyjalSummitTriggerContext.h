@@ -92,6 +92,9 @@ public:
         creators["archimonde pulling boss"] =
             &RaidHyjalSummitTriggerContext::archimonde_pulling_boss;
 
+        creators["archimonde boss engaged by main tank"] =
+            &RaidHyjalSummitTriggerContext::archimonde_boss_engaged_by_main_tank;
+
         creators["archimonde boss casts fear"] =
             &RaidHyjalSummitTriggerContext::archimonde_boss_casts_fear;
 
@@ -183,6 +186,9 @@ private:
     // Archimonde
     static Trigger* archimonde_pulling_boss(
         PlayerbotAI* botAI) { return new ArchimondePullingBossTrigger(botAI); }
+
+    static Trigger* archimonde_boss_engaged_by_main_tank(
+        PlayerbotAI* botAI) { return new ArchimondeBossEngagedByMainTankTrigger(botAI); }
 
     static Trigger* archimonde_boss_casts_fear(
         PlayerbotAI* botAI) { return new ArchimondeBossCastsFearTrigger(botAI); }
