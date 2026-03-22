@@ -473,6 +473,14 @@ bool LossOfControlTrigger::IsActive()
            bot->HasAuraType(SPELL_AURA_MOD_CHARM);
 }
 
+bool FearCharmSleepTrigger::IsActive()
+{
+    return bot->HasAuraType(SPELL_AURA_MOD_FEAR) ||
+           bot->HasAuraType(SPELL_AURA_MOD_CHARM) ||
+           bot->HasAuraType(SPELL_AURA_AOE_CHARM) ||
+           bot->HasAuraWithMechanic(1 << MECHANIC_SLEEP);
+}
+
 bool HasAuraStackTrigger::IsActive()
 {
     Aura* aura = botAI->GetAura(getName(), GetTarget(), false, true, stack);

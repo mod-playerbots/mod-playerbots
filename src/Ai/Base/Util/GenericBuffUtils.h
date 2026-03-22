@@ -18,21 +18,21 @@ class PlayerbotAI;
 namespace ai::buff
 {
 
-    // Build an aura qualifier "single + greater" to avoid double-buffing
-    std::string MakeAuraQualifierForBuff(std::string const& name);
+// Build an aura qualifier "single + greater" to avoid double-buffing
+std::string MakeAuraQualifierForBuff(std::string const& name);
 
-    // Returns the group spell name for a given single-target buff.
-    // If no group equivalent exists, returns "".
-    std::string GroupVariantFor(std::string const& name);
+// Returns the group spell name for a given single-target buff.
+// If no group equivalent exists, returns "".
+std::string GroupVariantFor(std::string const& name);
 
-    // Checks if the bot has the required reagents to cast a spell (by its spellId).
-    // Returns false if the spellId is invalid.
-    bool HasRequiredReagents(Player* bot, uint32 spellId);
+// Checks if the bot has the required reagents to cast a spell (by its spellId).
+// Returns false if the spellId is invalid.
+bool HasRequiredReagents(Player* bot, uint32 spellId);
 
-    // Applies the "switch to group buff" policy if: the bot is in a group of size x+,
-    // the group variant is known/useful, and reagents are available. Otherwise, returns baseName.
-    // If announceOnMissing == true and reagents are missing, calls the 'announce' callback
-    // (if provided) to notify the party/raid.
+// Applies the "switch to group buff" policy if: the bot is in a group of size x+,
+// the group variant is known/useful, and reagents are available. Otherwise, returns baseName.
+// If announceOnMissing == true and reagents are missing, calls the 'announce' callback
+// (if provided) to notify the party/raid.
     std::string UpgradeToGroupIfAppropriate(
         Player* bot,
         PlayerbotAI* botAI,
@@ -40,6 +40,11 @@ namespace ai::buff
         bool announceOnMissing = false,
         std::function<void(std::string const&)> announce = {}
     );
+}
+
+namespace ai::spell
+{
+    bool HasSpellOrCategoryCooldown(Player* bot, uint32 spellId);
 }
 
 namespace ai::chat {
