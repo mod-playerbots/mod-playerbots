@@ -24,7 +24,7 @@ public:
         creators["swipe"] = &swipe;
         creators["lacerate"] = &lacerate;
         creators["demoralizing roar"] = &demoralizing_roar;
-        creators["taunt spell"] = &growl;
+        creators["taunt spell"] = &taunt_spell;
     }
 
 private:
@@ -138,12 +138,12 @@ private:
         );
     }
 
-    static ActionNode* growl([[maybe_unused]] PlayerbotAI* botAI)
+    static ActionNode* taunt_spell([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
             "growl",
             /*P*/ {},
-            /*A*/ {},
+            /*A*/ { NextAction("challenging roar") },
             /*C*/ {}
         );
     }
@@ -216,7 +216,7 @@ void BearTankDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "lose aggro",
             {
-                NextAction("growl", ACTION_HIGH + 8)
+                NextAction("taunt spell", ACTION_HIGH + 8)
             }
         )
     );
