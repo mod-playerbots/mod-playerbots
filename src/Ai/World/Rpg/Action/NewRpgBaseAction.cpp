@@ -1152,7 +1152,11 @@ bool NewRpgBaseAction::CheckRpgStatusAvailable(NewRpgStatus status)
         }
         case RPG_OUTDOOR_PVP:
         {
-            OutdoorPvP* outdoorPvP = sOutdoorPvPMgr->GetOutdoorPvPToZoneId(bot->GetZoneId());
+            uint32 zoneId = bot->GetZoneId();
+            if (zoneId == AREA_NAGRAND)
+                return false;
+
+            OutdoorPvP* outdoorPvP = sOutdoorPvPMgr->GetOutdoorPvPToZoneId(zondId);
             return outdoorPvP != nullptr;
         }
         default:

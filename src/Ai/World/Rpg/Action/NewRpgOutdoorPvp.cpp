@@ -13,8 +13,10 @@ bool NewRpgOutdoorPvpAction::Execute(Event event)
         botAI->rpgInfo.ChangeToIdle();
         return false;
     }
-    auto& data = std::get<NewRpgInfo::OutdoorPvP>(info.data);
-
+    auto* dataPtr = std::get_if<NewRpgInfo::OutdoorPvP>(&info.data);
+    if (!dataPtr)
+        return false;
+    auto& data = *dataPtr;
     // Re-resolve stored spawn ID from the capture point map each tick (avoids dangling pointers)
     if (data.capturePointSpawnId && capturePointMap)
     {
@@ -84,16 +86,10 @@ OPvPCapturePoint* NewRpgOutdoorPvpAction::SelectNewObjective()
 
         float threshold = point->GetMinValue();
         float slider = point->GetSlider();
-        if (faction == TEAM_HORDE)
-        {
-            if (slider > -threshold)
-                candidateObjectives.push_back(point);
-        }
-        else
-        {
-            if (slider < threshold)
-                candidateObjectives.push_back(point);
-        }
+        if (faction == TEAM_HORDE && slider > -threshold)
+            candidateObjectives.push_back(point);
+        else if (faction == TEAM_ALLIANCE && slider < threshold)
+            candidateObjectives.push_back(point);
     }
     if (candidateObjectives.empty())
     {
@@ -109,7 +105,7 @@ OPvPCapturePoint* NewRpgOutdoorPvpAction::SelectNewObjective()
 void NewRpgOutdoorPvpAction::GetCapturePoints()
 {
     uint32 zoneId = bot->GetZoneId();
-    // Nagrand (Halaa) uses different mechanics that needs to be handled
+    // Nagrand (Halaa) uses different mechanics that needs to be handled, see also NewRpgBaseAction::CheckRpgStatusAvailable
     if (zoneId == AREA_NAGRAND)
         return;
 
