@@ -4,7 +4,7 @@
 
 void TbcDungeonAuchenaiCryptsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-  // Shirrak The Dead Watcher
+    // Shirrak The Dead Watcher
     triggers.push_back(new TriggerNode("shirrak tank position boss", {
         NextAction("shirrak tank position boss", ACTION_RAID + 1) }));
         

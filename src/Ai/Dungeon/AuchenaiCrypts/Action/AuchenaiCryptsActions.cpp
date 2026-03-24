@@ -6,7 +6,6 @@
 // Shirrak the Dead Watcher
 
 static const Position SHIRRAK_TANK_POSITION = { -53.898f, -163.214f, 26.389f };
-// static const Position STAIRS_TOP_POSITION = { -17.170f, -162.580f, 26.013f };
 
 // Tank will position Shirrak at the specified coordinates
 
@@ -40,13 +39,12 @@ bool ShirrakTankPositionBossAction::Execute(Event /*event*/)
     return false;
 }
 
-//Flee from Shirrak's Focus Fire
+//  Flee from Shirrak's Focus Fire
 
 bool FleeFocusFireAction::Execute(Event /*event*/)
 {
-    constexpr float searchRadius = 20.0f;
-        std::list<Creature*> creatureList;
-        bot->GetCreatureListWithEntryInGrid(creatureList, static_cast<uint32>(AuchenaiCryptsIDs::NPC_FOCUS_FIRE), 20.0f);
+    std::list<Creature*> creatureList;
+    bot->GetCreatureListWithEntryInGrid(creatureList, static_cast<uint32>(AuchenaiCryptsIDs::NPC_FOCUS_FIRE), 20.0f);
 
     for (Creature* flare : creatureList)
     {
