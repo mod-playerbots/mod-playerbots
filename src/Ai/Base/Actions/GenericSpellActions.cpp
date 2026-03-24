@@ -329,11 +329,12 @@ bool CastEveryManForHimselfAction::isPossible()
 
 bool CastEveryManForHimselfAction::isUseful()
 {
-    return bot->HasAuraType(SPELL_AURA_MOD_STUN) ||
+    return (bot->HasAuraType(SPELL_AURA_MOD_STUN) ||
            bot->HasAuraType(SPELL_AURA_MOD_FEAR) ||
            bot->HasAuraType(SPELL_AURA_MOD_ROOT) ||
            bot->HasAuraType(SPELL_AURA_MOD_CONFUSE) ||
-           bot->HasAuraType(SPELL_AURA_MOD_CHARM);
+           bot->HasAuraType(SPELL_AURA_MOD_CHARM))
+        && CastSpellAction::isUseful();
 }
 
 bool CastWillOfTheForsakenAction::isPossible()
@@ -353,10 +354,11 @@ bool CastWillOfTheForsakenAction::isPossible()
 
 bool CastWillOfTheForsakenAction::isUseful()
 {
-    return bot->HasAuraType(SPELL_AURA_MOD_FEAR) ||
+    return (bot->HasAuraType(SPELL_AURA_MOD_FEAR) ||
            bot->HasAuraType(SPELL_AURA_MOD_CHARM) ||
            bot->HasAuraType(SPELL_AURA_AOE_CHARM) ||
-           bot->HasAuraWithMechanic(1 << MECHANIC_SLEEP);
+           bot->HasAuraWithMechanic(1 << MECHANIC_SLEEP))
+        && CastSpellAction::isUseful();
 }
 
 bool UseTrinketAction::Execute(Event /*event*/)
