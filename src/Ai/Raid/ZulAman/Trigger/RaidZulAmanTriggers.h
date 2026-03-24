@@ -44,11 +44,19 @@ public:
     bool IsActive() override;
 };
 
-class AkilzonElectricalStormHasFormedTrigger : public Trigger
+class AkilzonElectricalStormIncomingTrigger : public Trigger
 {
 public:
-    AkilzonElectricalStormHasFormedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "akil'zon electrical storm has formed") {}
+    AkilzonElectricalStormIncomingTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "akil'zon electrical storm incoming") {}
+    bool IsActive() override;
+};
+
+class AkilzonBotsNeedToPrepareForElectricalStormTrigger : public Trigger
+{
+public:
+    AkilzonBotsNeedToPrepareForElectricalStormTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "akil'zon bots need to prepare for electrical storm") {}
     bool IsActive() override;
 };
 

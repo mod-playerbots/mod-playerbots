@@ -28,8 +28,11 @@ public:
         creators["akil'zon boss casts static disruption"] =
             &RaidZulAmanTriggerContext::akilzon_boss_casts_static_disruption;
 
-        creators["akil'zon electrical storm has formed"] =
-            &RaidZulAmanTriggerContext::akilzon_electrical_storm_has_formed;
+        creators["akil'zon electrical storm incoming"] =
+            &RaidZulAmanTriggerContext::akilzon_electrical_storm_incoming;
+
+        creators["akil'zon bots need to prepare for electrical storm"] =
+            &RaidZulAmanTriggerContext::akilzon_bots_need_to_prepare_for_electrical_storm;
 
         // Nalorakk <Bear Avatar>
         creators["nalorakk pulling boss"] =
@@ -120,8 +123,11 @@ private:
     static Trigger* akilzon_boss_casts_static_disruption(
         PlayerbotAI* botAI) { return new AkilzonBossCastsStaticDisruptionTrigger(botAI); }
 
-    static Trigger* akilzon_electrical_storm_has_formed(
-        PlayerbotAI* botAI) { return new AkilzonElectricalStormHasFormedTrigger(botAI); }
+    static Trigger* akilzon_electrical_storm_incoming(
+        PlayerbotAI* botAI) { return new AkilzonElectricalStormIncomingTrigger(botAI); }
+
+    static Trigger* akilzon_bots_need_to_prepare_for_electrical_storm(
+        PlayerbotAI* botAI) { return new AkilzonBotsNeedToPrepareForElectricalStormTrigger(botAI); }
 
     // Nalorakk <Bear Avatar>
     static Trigger* nalorakk_pulling_boss(

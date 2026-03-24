@@ -88,6 +88,8 @@ namespace ZulAmanHelpers
 
     // Akil'zon <Eagle Avatar>
     extern const Position AKILZON_TANK_POSITION;
+    extern std::unordered_map<uint32, time_t> akilzonStormTimer;
+    bool IsInStormWindow(time_t start, time_t now);
     Player* GetElectricalStormTarget(Player* bot);
 
     // Nalorakk <Bear Avatar>

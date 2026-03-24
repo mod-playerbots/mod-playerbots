@@ -44,16 +44,28 @@ bool AkilzonBossCastsStaticDisruptionTrigger::IsActive()
         !AI_VALUE2(Unit*, "find target", "akil'zon"))
         return false;
 
-    return !GetElectricalStormTarget(bot);
+    auto it = akilzonStormTimer.find(bot->GetMap()->GetInstanceId());
+    if (it == akilzonStormTimer.end())
+        return true;
+
+    return !IsInStormWindow(it->second, std::time(nullptr));
 }
 
-bool AkilzonElectricalStormHasFormedTrigger::IsActive()
+bool AkilzonElectricalStormIncomingTrigger::IsActive()
 {
     if (!AI_VALUE2(Unit*, "find target", "akil'zon"))
         return false;
 
-    Player* stormTarget = GetElectricalStormTarget(bot);
-    return stormTarget && stormTarget != bot;
+    auto it = akilzonStormTimer.find(bot->GetMap()->GetInstanceId());
+    if (it == akilzonStormTimer.end())
+        return false;
+
+    return IsInStormWindow(it->second, std::time(nullptr));
+}
+
+bool AkilzonBotsNeedToPrepareForElectricalStormTrigger::IsActive()
+{
+    return IsMechanicTrackerBot(botAI, bot, ZULAMAN_MAP_ID);
 }
 
 // Nalorakk <Bear Avatar>

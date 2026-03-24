@@ -31,6 +31,9 @@ public:
         creators["akil'zon move to eye of the storm"] =
             &RaidZulAmanActionContext::akilzon_move_to_eye_of_the_storm;
 
+        creators["akil'zon manage electrical storm timer"] =
+            &RaidZulAmanActionContext::akilzon_manage_electrical_storm_timer;
+
         // Nalorakk <Bear Avatar>
         creators["nalorakk misdirect boss to main tank"] =
             &RaidZulAmanActionContext::nalorakk_misdirect_boss_to_main_tank;
@@ -120,6 +123,9 @@ private:
 
     static Action* akilzon_move_to_eye_of_the_storm(
         PlayerbotAI* botAI) { return new AkilzonMoveToEyeOfTheStormAction(botAI); }
+
+    static Action* akilzon_manage_electrical_storm_timer(
+        PlayerbotAI* botAI) { return new AkilzonManageElectricalStormTimerAction(botAI); }
 
     // Nalorakk <Bear Avatar>
     static Action* nalorakk_misdirect_boss_to_main_tank(

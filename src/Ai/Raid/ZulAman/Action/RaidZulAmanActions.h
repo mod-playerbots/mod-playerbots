@@ -54,6 +54,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class AkilzonManageElectricalStormTimerAction : public Action
+{
+public:
+    AkilzonManageElectricalStormTimerAction(
+        PlayerbotAI* botAI, std::string const name = "akil'zon manage electrical storm timer") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 // Nalorakk <Bear Avatar>
 
 class NalorakkMisdirectBossToMainTankAction : public AttackAction

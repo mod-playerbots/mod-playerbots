@@ -41,8 +41,13 @@ float AkilzonDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 
 float AkilzonStayInEyeOfTheStormMultiplier::GetValue(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "akil'zon") ||
-        !GetElectricalStormTarget(bot))
+    if (!AI_VALUE2(Unit*, "find target", "akil'zon") /* ||
+        !GetElectricalStormTarget(bot)*/)
+        return 1.0f;
+
+    auto it = akilzonStormTimer.find(bot->GetMap()->GetInstanceId());
+    if (it == akilzonStormTimer.end() ||
+        !IsInStormWindow(it->second, std::time(nullptr)))
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||

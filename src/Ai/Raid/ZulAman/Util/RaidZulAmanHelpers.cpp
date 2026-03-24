@@ -111,6 +111,14 @@ namespace ZulAmanHelpers
 
     // Akil'zon <Eagle Avatar>
     const Position AKILZON_TANK_POSITION = { 378.369f, 1407.718f, 74.797f };
+    std::unordered_map<uint32, time_t> akilzonStormTimer;
+
+    bool IsInStormWindow(time_t start, time_t now)
+    {
+        time_t elapsed = now - start;
+        uint32 seconds = elapsed % 60;
+        return elapsed >= 55 && (seconds >= 55 || seconds < 10);
+    }
 
     Player* GetElectricalStormTarget(Player* bot)
     {

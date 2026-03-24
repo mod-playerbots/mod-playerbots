@@ -22,8 +22,11 @@ void RaidZulAmanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("akil'zon boss casts static disruption", {
         NextAction("akil'zon spread ranged", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("akil'zon electrical storm has formed", {
+    triggers.push_back(new TriggerNode("akil'zon electrical storm incoming", {
         NextAction("akil'zon move to eye of the storm", ACTION_EMERGENCY + 6) }));
+
+    triggers.push_back(new TriggerNode("akil'zon bots need to prepare for electrical storm", {
+        NextAction("akil'zon manage electrical storm timer", ACTION_EMERGENCY + 10) }));
 
     // Nalorakk <Bear Avatar>
     triggers.push_back(new TriggerNode("nalorakk pulling boss", {
