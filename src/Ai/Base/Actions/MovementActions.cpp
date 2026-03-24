@@ -1387,8 +1387,8 @@ bool MovementAction::Flee(Unit* target)
         }
     }
 
-    HostileReference* ref = target->GetThreatMgr().getCurrentVictim();
-    if (ref && ref->getTarget() == bot)  // bot is target - try to flee to tank or master
+    Unit* currentVictim = target->GetThreatMgr().GetCurrentVictim();
+    if (currentVictim && currentVictim == bot)  // bot is target - try to flee to tank or master
     {
         if (Group* group = bot->GetGroup())
         {
