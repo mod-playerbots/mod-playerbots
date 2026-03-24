@@ -1156,7 +1156,7 @@ bool NewRpgBaseAction::CheckRpgStatusAvailable(NewRpgStatus status)
             if (zoneId == AREA_NAGRAND)
                 return false;
 
-            OutdoorPvP* outdoorPvP = sOutdoorPvPMgr->GetOutdoorPvPToZoneId(zondId);
+            OutdoorPvP* outdoorPvP = sOutdoorPvPMgr->GetOutdoorPvPToZoneId(zoneId);
             return outdoorPvP != nullptr;
         }
         default:

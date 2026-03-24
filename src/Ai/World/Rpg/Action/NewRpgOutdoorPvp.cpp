@@ -4,24 +4,27 @@
 
 bool NewRpgOutdoorPvpAction::Execute(Event event)
 {
-    NewRpgInfo& info = botAI->rpgInfo;
-
-    GetCapturePoints();
-    OPvPCapturePoint* objective = nullptr;
-    if (!this->outdoorPvP)
+    uint32 zoneId = bot->GetZoneId();
+    OutdoorPvP* outdoorPvP = sOutdoorPvPMgr->GetOutdoorPvPToZoneId(zoneId);
+    if (!outdoorPvP || zoneId == AREA_NAGRAND)
     {
         botAI->rpgInfo.ChangeToIdle();
         return false;
     }
+
+    OutdoorPvP::OPvPCapturePointMap capturePointMap = outdoorPvP->GetCapturePoints();
+
+    NewRpgInfo& info = botAI->rpgInfo;
     auto* dataPtr = std::get_if<NewRpgInfo::OutdoorPvP>(&info.data);
     if (!dataPtr)
         return false;
     auto& data = *dataPtr;
     // Re-resolve stored spawn ID from the capture point map each tick (avoids dangling pointers)
-    if (data.capturePointSpawnId && capturePointMap)
+    OPvPCapturePoint* objective = nullptr;
+    if (data.capturePointSpawnId && !capturePointMap.empty())
     {
-        auto it = capturePointMap->find(data.capturePointSpawnId);
-        if (it != capturePointMap->end())
+        auto it = capturePointMap.find(data.capturePointSpawnId);
+        if (it != capturePointMap.end())
         {
             OPvPCapturePoint* capturePoint = it->second;
             if (capturePoint && capturePoint->_capturePoint)
@@ -42,7 +45,7 @@ bool NewRpgOutdoorPvpAction::Execute(Event event)
 
     if (!objective)
     {
-        objective = SelectNewObjective();
+        objective = SelectNewObjective(capturePointMap);
         if (!objective)
         {
             botAI->rpgInfo.ChangeToIdle();
@@ -65,20 +68,18 @@ bool NewRpgOutdoorPvpAction::Execute(Event event)
     return PatrolCapturePoint(objectiveGO, radius);
 }
 
-OPvPCapturePoint* NewRpgOutdoorPvpAction::SelectNewObjective()
+OPvPCapturePoint* NewRpgOutdoorPvpAction::SelectNewObjective(OutdoorPvP::OPvPCapturePointMap capturePointMap)
 {
     OPvPCapturePoint* objective = nullptr;
     uint8 faction = bot->GetTeamId();
     std::vector<OPvPCapturePoint*> candidateObjectives;
-    if (!this->outdoorPvP)
-        GetCapturePoints();
 
-    if (!this->capturePointMap)
+    if (capturePointMap.empty())
     {
         botAI->rpgInfo.ChangeToIdle();
         return objective;
     }
-    for (auto const& [guid, point] : *capturePointMap)
+    for (auto const& [guid, point] : capturePointMap)
     {
         GameObject* capturePointObject = point->_capturePoint;
         if (!capturePointObject)
@@ -100,20 +101,6 @@ OPvPCapturePoint* NewRpgOutdoorPvpAction::SelectNewObjective()
     int randomIndex = urand(0, candidateObjectives.size() - 1);
     objective = candidateObjectives[randomIndex];
     return objective;
-}
-
-void NewRpgOutdoorPvpAction::GetCapturePoints()
-{
-    uint32 zoneId = bot->GetZoneId();
-    // Nagrand (Halaa) uses different mechanics that needs to be handled, see also NewRpgBaseAction::CheckRpgStatusAvailable
-    if (zoneId == AREA_NAGRAND)
-        return;
-
-    outdoorPvP = sOutdoorPvPMgr->GetOutdoorPvPToZoneId(zoneId);
-    if (!outdoorPvP)
-        return;
-
-    capturePointMap = outdoorPvP->GetCapturePoints();
 }
 
 bool NewRpgOutdoorPvpAction::PatrolCapturePoint(GameObject* objectiveGO, float radius)
