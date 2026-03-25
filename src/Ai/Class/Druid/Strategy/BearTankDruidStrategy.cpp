@@ -217,7 +217,7 @@ void BearTankDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "lose aggro",
             {
-                NextAction("taunt spell", ACTION_HIGH + 8)
+                NextAction("growl", ACTION_HIGH + 8)
             }
         )
     );
