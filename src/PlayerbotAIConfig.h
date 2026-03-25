@@ -6,13 +6,13 @@
 #ifndef _PLAYERBOT_PLAYERbotAICONFIG_H
 #define _PLAYERBOT_PLAYERbotAICONFIG_H
 
-#include <mutex>
-#include <unordered_map>
-#include <set>
-#include <vector>
-#include <map>
 #include <algorithm>
+#include <map>
+#include <mutex>
+#include <set>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 #include "DBCEnums.h"
 #include "SharedDefines.h"
@@ -42,7 +42,7 @@ enum class HealingManaEfficiency : uint8
 
 enum NewRpgStatus : int
 {
-    //Initial Status
+    // Initial Status
     RPG_IDLE = 0,
     RPG_GO_GRIND = 1,
     RPG_GO_CAMP = 2,
@@ -98,6 +98,8 @@ public:
     std::set<uint32> aoeAvoidSpellWhitelist;
     bool tellWhenAvoidAoe;
     std::set<uint32> disallowedGameObjects;
+    std::set<uint32> attunementQuests;
+    std::set<uint32> unobtainableItems;
 
     uint32 openGoSpell;
     bool randomBotAutologin;
@@ -396,25 +398,11 @@ public:
     int32 addClassCommand;
     int32 addClassAccountPoolSize;
     int32 maintenanceCommand;
-    bool altMaintenanceAttunementQs,
-            altMaintenanceBags,
-            altMaintenanceAmmo,
-            altMaintenanceFood,
-            altMaintenanceReagents,
-            altMaintenanceConsumables,
-            altMaintenancePotions,
-            altMaintenanceTalentTree,
-            altMaintenancePet,
-            altMaintenancePetTalents,
-            altMaintenanceClassSpells,
-            altMaintenanceAvailableSpells,
-            altMaintenanceSkills,
-            altMaintenanceReputation,
-            altMaintenanceSpecialSpells,
-            altMaintenanceMounts,
-            altMaintenanceGlyphs,
-            altMaintenanceKeyring,
-            altMaintenanceGemsEnchants;
+    bool altMaintenanceAttunementQs, altMaintenanceBags, altMaintenanceAmmo, altMaintenanceFood, altMaintenanceReagents,
+        altMaintenanceConsumables, altMaintenancePotions, altMaintenanceTalentTree, altMaintenancePet,
+        altMaintenancePetTalents, altMaintenanceClassSpells, altMaintenanceAvailableSpells, altMaintenanceSkills,
+        altMaintenanceReputation, altMaintenanceSpecialSpells, altMaintenanceMounts, altMaintenanceGlyphs,
+        altMaintenanceKeyring, altMaintenanceGemsEnchants;
     int32 autoGearCommand, autoGearCommandAltBots, autoGearQualityLimit, autoGearScoreLimit;
 
     uint32 useGroundMountAtMinLevel;
