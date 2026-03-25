@@ -38,7 +38,6 @@ bool NewRpgOutdoorPvpAction::Execute(Event event)
                     objective = capturePoint;
             }
         }
-
         if (!objective)
             data.capturePointSpawnId = 0;
     }
@@ -52,6 +51,7 @@ bool NewRpgOutdoorPvpAction::Execute(Event event)
             return true;
         }
         data.capturePointSpawnId = objective->m_capturePointSpawnId;
+        LOG_DEBUG("playerbots","[NEW RPG] Bot {} selected OutDoorPvP target capturePointSpawnId {}", bot->GetName(), data.capturePointSpawnId);
     }
 
     GameObject* objectiveGO = objective->_capturePoint;
