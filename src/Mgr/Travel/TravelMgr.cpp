@@ -14,7 +14,7 @@
 #include "TravelNode.h"
 #include "Talentspec.h"
 #include "ChatHelper.h"
-#include "MMapFactory.h"
+#include "MapCollisionData.h"
 #include "MapMgr.h"
 #include "PathGenerator.h"
 #include "Playerbots.h"
@@ -687,10 +687,13 @@ std::vector<WorldPosition> WorldPosition::frommGridCoord(mGridCoord GridCoord)
     return retVec;
 }
 
+// TODO: Cleanup — this function proactively loads mmap tiles for the TravelMgr cross-grid
+// pathfinding system. The old MMapFactory singleton allowed loading from anywhere; the new
+// Dead code (if(false) VMap loading, unreachable MMap branch) was removed during the API migration.
 void WorldPosition::loadMapAndVMap(uint32 mapId, uint8 x, uint8 y)
 {
     std::string const fileName = "load_map_grid.csv";
-
+/*/
     if (isOverworld() && false || false)
     {
         if (!MMAP::MMapFactory::createOrGetMMapMgr()->loadMap(mapId, x, y))
@@ -763,6 +766,7 @@ void WorldPosition::loadMapAndVMap(uint32 mapId, uint8 x, uint8 y)
             }
         }
     }
+    */
 }
 
 void WorldPosition::loadMapAndVMaps(WorldPosition secondPos)
