@@ -61,29 +61,14 @@ any impact on performance, you may skip these question. If necessary, a maintain
 
 
 
-## Messages to Translate
-<!--
-Bot messages have to be translatable, but you don't need to do the translations here. You only need to make sure
-the message is in a translatable format, and list in the table the message_key and the default English message.
-Search for GetBotTextOrDefault in the codebase for examples.
--->
-- Does this change add bot messages to translate?
-    - - [ ] No
-    - - [ ] Yes (**list messages in the table**)
-
-| Message key  | Default message |
-| --------------- | ------------------ |
-|			 |			      |
-|			 |			      |
-
 ## AI Assistance
 <!--
 AI assistance is allowed, but all submitted code must be fully understood, reviewed, and owned by the contributor.
 We expect contributors to be honest about what they do and do not understand.
 -->
-- Was AI assistance used while working on this change?
-    - - [ ] No
-    - - [ ] Yes (**explain below**)
+Was AI assistance used while working on this change?
+- - [ ] No
+- - [ ] Yes (**explain below**)
 <!--
 If yes, please specify:
 - Purpose of usage (e.g. brainstorming, refactoring, documentation, code generation).
@@ -92,12 +77,25 @@ If yes, please specify:
 
 
 
+<!--
+TRANSLATIONS:
+Anything new that the bots say in chat must be in a translatable format. This is done using GetBotTextOrDefault,
+which you can search for in the codebase to find examples. Your code needs to have English as the default fallback,
+while the full translations need to be in an SQL update file. The languages in the file are the nine language
+options supported by AzerothCore: English, Korean, French, German, Chinese, Taiwanese, Spanish, Spanish Mexico, and
+Russian. See data/sql/playerbots/updates/2025_12_27_ai_playerbot_fishing_text.sql as an example of a translation SQL
+update, whose content are called within the codebase at src/strategy/actions/FishingAction.cpp
+-->
+
 ## Final Checklist
 
 - - [ ] Stability is not compromised.
 - - [ ] Performance impact is understood, tested, and acceptable.
 - - [ ] Added logic complexity is justified and explained.
+- - [ ] Any new bot dialogue lines are translated.
 - - [ ] Documentation updated if needed (Conf comments, WiKi commands).
 
 ## Notes for Reviewers
 <!-- Anything else that's helpful to review or test your pull request. -->
+
+
