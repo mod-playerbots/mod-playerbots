@@ -352,7 +352,7 @@ bool JanalaiAvoidFireBombsAction::Execute(Event /*event*/)
         return false;
 
     const Position& janalaiCenter = JANALAI_TANK_POSITION;
-    constexpr float safeZoneRadius = 25.0f;
+    constexpr float safeZoneRadius = 17.0f;
 
     Position safestPos =
         FindSafestNearbyPosition(bot, bombs, janalaiCenter, safeZoneRadius, hazardRadius, false);
