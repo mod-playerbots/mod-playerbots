@@ -10,7 +10,7 @@ public:
     NewRpgOutdoorPvpAction(PlayerbotAI* botAI) : NewRpgBaseAction(botAI, "new rpg outdoor pvp") {}
 
     virtual bool Execute(Event event) override;
-    OPvPCapturePoint* SelectNewObjective(OutdoorPvP::OPvPCapturePointMap capturePointMap);
+    OPvPCapturePoint* SelectNewObjective(OutdoorPvP::OPvPCapturePointMap const& capturePointMap);
 
 private:
     bool PatrolCapturePoint(GameObject* objectiveGO, float radius);

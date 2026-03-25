@@ -1152,6 +1152,8 @@ bool NewRpgBaseAction::CheckRpgStatusAvailable(NewRpgStatus status)
         }
         case RPG_OUTDOOR_PVP:
         {
+            if (!bot->IsPvP())
+                return false;
             uint32 zoneId = bot->GetZoneId();
             if (zoneId == AREA_NAGRAND)
                 return false;

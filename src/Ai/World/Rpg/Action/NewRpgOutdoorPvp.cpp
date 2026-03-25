@@ -4,6 +4,14 @@
 
 bool NewRpgOutdoorPvpAction::Execute(Event event)
 {
+    if (!bot->IsPvP())
+    {
+        botAI->rpgInfo.ChangeToIdle();
+        return false;
+    }
+    if (IsWaitingForLastMove(MovementPriority::MOVEMENT_NORMAL) || !bot->IsOutdoorPvPActive())
+        return false;
+
     uint32 zoneId = bot->GetZoneId();
     OutdoorPvP* outdoorPvP = sOutdoorPvPMgr->GetOutdoorPvPToZoneId(zoneId);
     if (!outdoorPvP || zoneId == AREA_NAGRAND)
@@ -12,7 +20,7 @@ bool NewRpgOutdoorPvpAction::Execute(Event event)
         return false;
     }
 
-    OutdoorPvP::OPvPCapturePointMap capturePointMap = outdoorPvP->GetCapturePoints();
+    OutdoorPvP::OPvPCapturePointMap const& capturePointMap = outdoorPvP->GetCapturePoints();
 
     NewRpgInfo& info = botAI->rpgInfo;
     auto* dataPtr = std::get_if<NewRpgInfo::OutdoorPvP>(&info.data);
@@ -62,13 +70,13 @@ bool NewRpgOutdoorPvpAction::Execute(Event event)
         return false;
 
     float radius = objectiveGO->GetGOInfo()->capturePoint.radius / 2.0f;
-    if (!objectiveGO->IsWithinDistInMap(bot, radius) || !bot->IsOutdoorPvPActive())
+    if (!objectiveGO->IsWithinDistInMap(bot, radius))
         return MoveFarTo(WorldPosition(objectiveGO));
 
     return PatrolCapturePoint(objectiveGO, radius);
 }
 
-OPvPCapturePoint* NewRpgOutdoorPvpAction::SelectNewObjective(OutdoorPvP::OPvPCapturePointMap capturePointMap)
+OPvPCapturePoint* NewRpgOutdoorPvpAction::SelectNewObjective(OutdoorPvP::OPvPCapturePointMap const& capturePointMap)
 {
     OPvPCapturePoint* objective = nullptr;
     uint8 faction = bot->GetTeamId();
