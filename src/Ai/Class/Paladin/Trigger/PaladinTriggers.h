@@ -185,6 +185,14 @@ public:
     DivineFavorTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "divine favor") {}
 };
 
+class DivineShieldLowHealthTrigger : public Trigger
+{
+public:
+    DivineShieldLowHealthTrigger(PlayerbotAI* botAI) : Trigger(botAI, "divine shield low health") {}
+
+    bool IsActive() override;
+};
+
 class NotSensingUndeadTrigger : public BuffTrigger
 {
 public:
