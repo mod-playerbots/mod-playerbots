@@ -33,7 +33,7 @@ private:
     }
 };
 
-HunterBuffDpsStrategy::HunterBuffDpsStrategy(PlayerbotAI* botAI) : NonCombatStrategy(botAI)
+HunterBuffDpsStrategy::HunterBuffDpsStrategy(PlayerbotAI* botAI) : Strategy(botAI)
 {
     actionNodeFactories.Add(new BuffHunterStrategyActionNodeFactory());
 }
