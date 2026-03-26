@@ -236,6 +236,14 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     );
     triggers.push_back(
         new TriggerNode(
+            "naxx",
+            {
+                CreateNextAction<NaxxChatShortcutAction>(relevance)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
         "tank attack",
         {
             CreateNextAction<TankAttackChatShortcutAction>(relevance)

@@ -1582,6 +1582,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         case 532:
             strategyName = "karazhan";  // Karazhan
             break;
+        case 533:
+            strategyName = "naxx";  // Naxxramas
+            break;
         case 544:
             strategyName = "magtheridon";  // Magtheridon's Lair
             break;
@@ -6100,6 +6103,7 @@ bool PlayerbotAI::IsInRealGuild()
 
 void PlayerbotAI::QueueChatResponse(const ChatQueuedReply chatReply) { chatReplies.push_back(std::move(chatReply)); }
 
+// @TODO: This has no reason whatsoever to be a non static method nor to be attached to PlayerbotAI.
 bool PlayerbotAI::EqualLowercaseName(std::string s1, std::string s2)
 {
     if (s1.length() != s2.length())

@@ -77,9 +77,10 @@ bool FollowChatShortcutAction::Execute(Event)
             if (Formation::IsNullLocation(loc))
                 return false;
 
-            MovementPriority priority = botAI->GetState() == BOT_STATE_COMBAT ? MovementPriority::MOVEMENT_COMBAT : MovementPriority::MOVEMENT_NORMAL;
-            moved = MoveTo(loc.GetMapId(), loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ(), false, false, false,
-                        true, priority);
+            MovementPriority priority = botAI->GetState() == BOT_STATE_COMBAT ? MovementPriority::MOVEMENT_COMBAT
+                                                                              : MovementPriority::MOVEMENT_NORMAL;
+            moved = MoveTo(loc.GetMapId(), loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ(), false, false,
+                           false, true, priority);
         }
 
         if (bot->GetPet() != nullptr)
@@ -241,6 +242,23 @@ bool MaxDpsChatShortcutAction::Execute(Event)
     return true;
 }
 
+bool NaxxChatShortcutAction::Execute(Event)
+{
+    const Player* const master = this->GetMaster();
+
+    if (master == nullptr)
+    {
+        return false;
+    }
+
+    this->botAI->Reset();
+    this->botAI->ChangeStrategy("+naxx", BOT_STATE_NON_COMBAT);
+    this->botAI->ChangeStrategy("+naxx", BOT_STATE_COMBAT);
+    this->botAI->TellMasterNoFacing("Add Naxx Strategies!");
+
+    return true;
+}
+
 bool BwlChatShortcutAction::Execute(Event)
 {
     Player* master = GetMaster();
@@ -251,5 +269,6 @@ bool BwlChatShortcutAction::Execute(Event)
     botAI->ChangeStrategy("+bwl", BOT_STATE_NON_COMBAT);
     botAI->ChangeStrategy("+bwl", BOT_STATE_COMBAT);
     botAI->TellMasterNoFacing("Add Bwl Strategies!");
+
     return true;
 }
