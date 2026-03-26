@@ -997,7 +997,6 @@ void MovementAction::UpdateMovementState()
             bot->AddUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
             bot->AddUnitMovementFlag(MOVEMENTFLAG_FLYING);
             movementFlagsUpdated = true;
-
         }
         else if (!wantsFly && !isWaterWalking && (isFlying || hasGravityDisabled))
         {
@@ -1013,7 +1012,7 @@ void MovementAction::UpdateMovementState()
             bot->RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING);
             movementFlagsUpdated = true;
         }
-        
+
         // detect if movement/CC restrictions have been ended, refresh movement state for animations.
         if (wasMovementRestricted)
             movementFlagsUpdated = true;
