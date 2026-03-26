@@ -16,6 +16,7 @@
 #include "DBCStores.h"
 #include "EmoteAction.h"
 #include "Engine.h"
+#include "ReactionEngine.h"
 #include "EventProcessor.h"
 #include "ExternalEventHelper.h"
 #include "GameObjectData.h"
@@ -157,6 +158,7 @@ PlayerbotAI::PlayerbotAI(Player* bot)
     engines[BOT_STATE_COMBAT] = AiFactory::createCombatEngine(bot, this, aiObjectContext);
     engines[BOT_STATE_NON_COMBAT] = AiFactory::createNonCombatEngine(bot, this, aiObjectContext);
     engines[BOT_STATE_DEAD] = AiFactory::createDeadEngine(bot, this, aiObjectContext);
+    engines[BOT_STATE_REACTION] = reactionEngine = AiFactory::createReactionEngine(bot, this, aiObjectContext);
 
     if (sPlayerbotAIConfig.applyInstanceStrategies)
         ApplyInstanceStrategies(bot->GetMapId());
@@ -249,7 +251,10 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     if (nextAICheckDelay > elapsed)
         nextAICheckDelay -= elapsed;
     else
+    {
         nextAICheckDelay = 0;
+        isWaiting = false;
+    }
 
     // Early return if bot is in invalid state
     if (!bot || !bot->GetSession() || !bot->IsInWorld() || bot->IsBeingTeleported() ||
@@ -271,6 +276,29 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     }
 
     AllowActivity();
+
+    // Wake up if combat state changed (unless explicitly waiting or casting)
+    bool isCasting = bot->IsNonMeleeSpellCast(true);
+    if (bot->IsInCombat())
+    {
+        if (!inCombat && !isCasting && !isWaiting)
+            ResetActionDuration();
+
+        inCombat = true;
+    }
+    else
+    {
+        if (inCombat && !isCasting && !isWaiting)
+            ResetActionDuration();
+
+        inCombat = false;
+    }
+
+    // Reaction engine: runs even when main engines are paused (e.g. during eat/drink).
+    // Only update the main AI when no reaction is running and the internal delay allows it.
+    bool doMinimalReaction = minimal || !AllowActivity();
+    if (UpdateAIReaction(elapsed, doMinimalReaction, bot->IsTaxiFlying()))
+        return;
 
     if (!CanUpdateAI())
         return;
@@ -407,6 +435,44 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     // Update internal AI
     UpdateAIInternal(elapsed, minimal);
     YieldThread(bot, GetReactDelay());
+}
+
+bool PlayerbotAI::UpdateAIReaction(uint32 elapsed, bool minimal, bool isStunned)
+{
+    if (!reactionEngine)
+        return false;
+
+    bool reactionFound = false;
+    bool const reactionInProgress = reactionEngine->Update(elapsed, minimal, isStunned, reactionFound);
+
+    if (reactionFound)
+    {
+        Reaction const* reaction = reactionEngine->GetReaction();
+        if (reaction)
+        {
+            if (reaction->ShouldInterruptCast())
+                InterruptSpell();
+
+            if (reaction->ShouldInterruptMovement())
+                bot->StopMoving();
+        }
+    }
+
+    return reactionInProgress;
+}
+
+void PlayerbotAI::SetActionDuration(Action const* action)
+{
+    if (!action)
+        return;
+
+    if (action->IsReaction())
+    {
+        if (reactionEngine)
+            reactionEngine->SetReactionDuration(action);
+    }
+    else
+        PlayerbotAIBase::SetActionDuration(action->GetDuration());
 }
 
 // Helper function for UpdateAI to check group membership and handle removal if necessary

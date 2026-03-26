@@ -62,7 +62,7 @@ bool DrinkAction::Execute(Event event)
         else
             delay = 12000.0f * (100 - p) / 100.0f;
 
-        botAI->SetNextCheckDelay(delay);
+        botAI->SetActionDuration(delay);
 
         bot->AddAura(25990, bot);
         return true;
@@ -122,7 +122,7 @@ bool EatAction::Execute(Event event)
         else
             delay = 12000.0f * (100 - p) / 100.0f;
 
-        botAI->SetNextCheckDelay(delay);
+        botAI->SetActionDuration(delay);
 
         bot->AddAura(25990, bot);
         return true;

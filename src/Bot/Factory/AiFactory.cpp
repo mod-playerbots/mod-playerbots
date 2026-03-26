@@ -6,6 +6,8 @@
 
 #include "AiFactory.h"
 #include "BattlegroundMgr.h"
+#include "ReactionEngine.h"
+#include "ReactionStrategy.h"
 #include "DKAiObjectContext.h"
 #include "DruidAiObjectContext.h"
 #include "Engine.h"
@@ -737,4 +739,17 @@ Engine* AiFactory::createDeadEngine(Player* player, PlayerbotAI* const facade, A
     AddDefaultDeadStrategies(player, facade, deadEngine);
     deadEngine->Init();
     return deadEngine;
+}
+
+void AiFactory::AddDefaultReactionStrategies(Player* player, PlayerbotAI* const facade, ReactionEngine* reactionEngine)
+{
+    reactionEngine->addStrategies("react", "potions", nullptr);
+}
+
+ReactionEngine* AiFactory::createReactionEngine(Player* player, PlayerbotAI* const facade, AiObjectContext* aiObjectContext)
+{
+    ReactionEngine* reactionEngine = new ReactionEngine(facade, aiObjectContext);
+    AddDefaultReactionStrategies(player, facade, reactionEngine);
+    reactionEngine->Init();
+    return reactionEngine;
 }
