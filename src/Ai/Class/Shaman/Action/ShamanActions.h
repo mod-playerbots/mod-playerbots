@@ -29,51 +29,46 @@ public:
         CastBuffSpellAction(botAI, "lightning shield") {}
 };
 
-class CastRockbiterWeaponAction : public CastEnchantItemAction
+class CastRockbiterWeaponMainHandAction : public CastEnchantItemMainHandAction
 {
 public:
-    CastRockbiterWeaponAction(PlayerbotAI* botAI) :
-        CastEnchantItemAction(botAI, "rockbiter weapon") {}
+    CastRockbiterWeaponMainHandAction(PlayerbotAI* botAI) :
+        CastEnchantItemMainHandAction(botAI, "rockbiter weapon") {}
 };
 
-class CastFlametongueWeaponMainHandAction : public CastEnchantItemAction
+class CastFlametongueWeaponMainHandAction : public CastEnchantItemMainHandAction
 {
 public:
     CastFlametongueWeaponMainHandAction(PlayerbotAI* botAI) :
-        CastEnchantItemAction(botAI, "flametongue weapon") {}
-    bool isPossible() override;
+        CastEnchantItemMainHandAction(botAI, "flametongue weapon") {}
 };
 
-class CastFlametongueWeaponOffHandAction : public CastEnchantItemAction
+class CastFlametongueWeaponOffHandAction : public CastEnchantItemOffHandAction
 {
 public:
     CastFlametongueWeaponOffHandAction(PlayerbotAI* botAI) :
-        CastEnchantItemAction(botAI, "flametongue weapon") {}
-    bool isPossible() override;
+        CastEnchantItemOffHandAction(botAI, "flametongue weapon") {}
 };
 
-/* class CastFrostbrandWeaponAction : public CastEnchantItemAction
+/* class CastFrostbrandWeaponOffHandAction : public CastEnchantItemOffHandAction
 {
 public:
-    CastFrostbrandWeaponAction(PlayerbotAI* botAI) :
-        CastEnchantItemAction(botAI, "frostbrand weapon") {}
+    CastFrostbrandWeaponOffHandAction(PlayerbotAI* botAI) :
+        CastEnchantItemOffHandAction(botAI, "frostbrand weapon") {}
 }; */
 
-class CastEarthlivingWeaponMainHandAction : public CastEnchantItemAction
+class CastEarthlivingWeaponMainHandAction : public CastEnchantItemMainHandAction
 {
 public:
     CastEarthlivingWeaponMainHandAction(PlayerbotAI* botAI) :
-        CastEnchantItemAction(botAI, "earthliving weapon") {}
-    bool isPossible() override;
+        CastEnchantItemMainHandAction(botAI, "earthliving weapon") {}
 };
 
-class CastWindfuryWeaponMainHandAction : public CastEnchantItemAction
+class CastWindfuryWeaponMainHandAction : public CastEnchantItemMainHandAction
 {
 public:
     CastWindfuryWeaponMainHandAction(PlayerbotAI* botAI) :
-        CastEnchantItemAction(botAI, "windfury weapon") {}
-
-    bool isPossible() override;
+        CastEnchantItemMainHandAction(botAI, "windfury weapon") {}
 };
 
 class CastAncestralSpiritAction : public ResurrectPartyMemberAction

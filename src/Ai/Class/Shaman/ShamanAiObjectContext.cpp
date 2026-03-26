@@ -264,10 +264,10 @@ public:
         creators["lightning shield"] = &ShamanAiObjectContextInternal::lightning_shield;
         creators["wind shear"] = &ShamanAiObjectContextInternal::wind_shear;
         creators["wind shear on enemy healer"] = &ShamanAiObjectContextInternal::wind_shear_on_enemy_healer;
-        creators["rockbiter weapon"] = &ShamanAiObjectContextInternal::rockbiter_weapon;
+        creators["rockbiter weapon main hand"] = &ShamanAiObjectContextInternal::rockbiter_weapon_main_hand;
         creators["flametongue weapon main hand"] = &ShamanAiObjectContextInternal::flametongue_weapon_main_hand;
         creators["flametongue weapon off hand"] = &ShamanAiObjectContextInternal::flametongue_weapon_off_hand;
-        // creators["frostbrand weapon"] = &ShamanAiObjectContextInternal::frostbrand_weapon;
+        // creators["frostbrand weapon off hand"] = &ShamanAiObjectContextInternal::frostbrand_weapon_off_hand;
         creators["windfury weapon main hand"] = &ShamanAiObjectContextInternal::windfury_weapon_main_hand;
         creators["earthliving weapon main hand"] = &ShamanAiObjectContextInternal::earthliving_weapon_main_hand;
         creators["purge"] = &ShamanAiObjectContextInternal::purge;
@@ -372,10 +372,10 @@ private:
     static Action* lightning_shield(PlayerbotAI* botAI) { return new CastLightningShieldAction(botAI); }
     static Action* fire_nova(PlayerbotAI* botAI) { return new CastFireNovaAction(botAI); }
     static Action* wind_shear(PlayerbotAI* botAI) { return new CastWindShearAction(botAI); }
-    static Action* rockbiter_weapon(PlayerbotAI* botAI) { return new CastRockbiterWeaponAction(botAI); }
+    static Action* rockbiter_weapon_main_hand(PlayerbotAI* botAI) { return new CastRockbiterWeaponMainHandAction(botAI); }
     static Action* flametongue_weapon_main_hand(PlayerbotAI* botAI) { return new CastFlametongueWeaponMainHandAction(botAI); }
     static Action* flametongue_weapon_off_hand(PlayerbotAI* botAI) { return new CastFlametongueWeaponOffHandAction(botAI); }
-    // static Action* frostbrand_weapon(PlayerbotAI* botAI) { return new CastFrostbrandWeaponAction(botAI); }
+    // static Action* frostbrand_weapon_off_hand(PlayerbotAI* botAI) { return new CastFrostbrandWeaponOffHandAction(botAI); }
     static Action* earthliving_weapon_main_hand(PlayerbotAI* botAI) { return new CastEarthlivingWeaponMainHandAction(botAI); }
     static Action* windfury_weapon_main_hand(PlayerbotAI* botAI) { return new CastWindfuryWeaponMainHandAction(botAI); }
     static Action* purge(PlayerbotAI* botAI) { return new CastPurgeAction(botAI); }

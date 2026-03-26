@@ -124,7 +124,7 @@ void FireResistanceTotemStrategy::InitTriggers(std::vector<TriggerNode*>& trigge
 {
     GenericShamanStrategy::InitTriggers(triggers);
     triggers.push_back(new TriggerNode("set fire resistance totem", { NextAction("set fire resistance totem", 60.0f) }));
-    triggers.push_back(new TriggerNode("no fire totem", { NextAction("fire resistance totem", 55.0f) }));
+    triggers.push_back(new TriggerNode("no water totem", { NextAction("fire resistance totem", 55.0f) }));
 }
 
 // Air Totems
