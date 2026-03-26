@@ -8,7 +8,7 @@
 // Shirrak the Dead Watcher
 
 class ShirrakTankPositionBossAction : public AttackAction
-{  
+{
 public:
     ShirrakTankPositionBossAction(PlayerbotAI* botAI) : AttackAction(botAI, "shirrak tank position boss") {}
     bool Execute(Event event) override;

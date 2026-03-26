@@ -15,7 +15,7 @@ float FleeFocusFireMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "shirrak the dead watcher"))
         return 1.0f;
-        
+
         std::list<Creature*> creatureList;
         bot->GetCreatureListWithEntryInGrid(creatureList, static_cast<uint32>(AuchenaiCryptsIDs::NPC_FOCUS_FIRE), 20.0f);
 

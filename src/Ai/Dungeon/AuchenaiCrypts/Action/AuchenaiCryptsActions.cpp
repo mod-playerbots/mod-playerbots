@@ -9,7 +9,7 @@ static const Position SHIRRAK_TANK_POSITION = { -53.898f, -163.214f, 26.389f };
 
 // Tank will position Shirrak at the specified coordinates
 
-bool ShirrakTankPositionBossAction::Execute(Event /*event*/) 
+bool ShirrakTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* shirrak = AI_VALUE2(Unit*, "find target", "shirrak the dead watcher");
     if (!shirrak)
@@ -51,7 +51,7 @@ bool FleeFocusFireAction::Execute(Event /*event*/)
         if (flare && flare->IsAlive())
         {
             float currentDistance = bot->GetDistance2d(flare);
-            constexpr float safeDistance = 20.0f; 
+            constexpr float safeDistance = 20.0f;
             constexpr float buffer = 5.0f;
 
             if (currentDistance < safeDistance)

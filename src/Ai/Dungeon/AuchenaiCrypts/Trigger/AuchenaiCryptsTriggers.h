@@ -10,7 +10,7 @@ enum class AuchenaiCryptsIDs : uint32
     // Shirrak The Dead Watcher
     NPC_FOCUS_FIRE                  = 18374,
 };
- 
+
 class ShirrakTankPositionBossTrigger : public Trigger
 {
 public:
