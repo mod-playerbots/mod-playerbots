@@ -33,12 +33,12 @@ bool HasRequiredReagents(Player* bot, uint32 spellId);
 // the group variant is known/useful, and reagents are available. Otherwise, returns baseName.
 // If announceOnMissing == true and reagents are missing, calls the 'announce' callback
 // (if provided) to notify the party/raid.
-    std::string UpgradeToGroupIfAppropriate(
-        Player* bot,
-        PlayerbotAI* botAI,
-        std::string const& baseName,
-        bool announceOnMissing = false,
-        std::function<void(std::string const&)> announce = {}
+std::string UpgradeToGroupIfAppropriate(
+    Player* bot,
+    PlayerbotAI* botAI,
+    std::string const& baseName,
+    bool announceOnMissing = false,
+    std::function<void(std::string const&)> announce = {}
     );
 }
 
