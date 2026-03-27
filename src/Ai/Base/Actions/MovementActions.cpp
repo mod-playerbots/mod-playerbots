@@ -853,24 +853,45 @@ bool MovementAction::ReachCombatTo(Unit* target, float distance)
 
 float MovementAction::GetFollowAngle()
 {
-    Player* master = GetMaster();
-    Group* group = master ? master->GetGroup() : bot->GetGroup();
-    if (!group)
-        return 0.0f;
+    Group* group = this->bot->GetGroup();
 
-    uint32 index = 1;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    Player* const master = this->GetMaster();
+
+    if (master != nullptr && master->GetGroup() != nullptr)
+    {
+        group = master->GetGroup();
+    }
+
+    if (group == nullptr)
+    {
+        return 0.0f;
+    }
+
+    const uint32_t memberCount = group->GetMembersCount();
+
+    if (memberCount < 2)
+    {
+        return 0.0f;
+    }
+
+    uint32_t index = 1;
+
+    for (const GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         if (ref->GetSource() == master)
+        {
             continue;
+        }
 
-        if (ref->GetSource() == bot)
-            return 2 * M_PI / (group->GetMembersCount() - 1) * index;
+        if (ref->GetSource() == this->bot)
+        {
+            return 2 * M_PI / (memberCount - 1) * index;
+        }
 
         ++index;
     }
 
-    return 0;
+    return 0.0f;
 }
 
 bool MovementAction::IsMovingAllowed(WorldObject* target)
