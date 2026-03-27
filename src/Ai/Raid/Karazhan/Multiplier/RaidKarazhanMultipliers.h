@@ -32,7 +32,7 @@ class MaidenOfVirtueDisableCombatFormationMoveMultiplier : public Multiplier
 public:
     MaidenOfVirtueDisableCombatFormationMoveMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "maiden of virtue disable combat formation move multiplier") {}
-    virtual float GetValue(Action* action);
+    virtual float GetValue(Action& action);
 };
 
 class TheCuratorDisableTankAssistMultiplier : public Multiplier
@@ -48,7 +48,7 @@ class TheCuratorDisableCombatFormationMoveMultiplier : public Multiplier
 public:
     TheCuratorDisableCombatFormationMoveMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "the curator disable combat formation move multiplier") {}
-    virtual float GetValue(Action* action);
+    virtual float GetValue(Action& action);
 };
 
 class TheCuratorDelayBloodlustAndHeroismMultiplier : public Multiplier
