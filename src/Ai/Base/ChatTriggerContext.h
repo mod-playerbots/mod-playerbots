@@ -145,6 +145,7 @@ public:
         creators["pet"] = &ChatTriggerContext::pet;
         creators["pet attack"] = &ChatTriggerContext::pet_attack;
         creators["roll"] = &ChatTriggerContext::roll_action;
+        creators["wait for attack time"] = &ChatTriggerContext::wait_for_attack_time;
     }
 
 private:
@@ -269,6 +270,7 @@ private:
     static Trigger* pet(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "pet"); }
     static Trigger* pet_attack(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "pet attack"); }
     static Trigger* roll_action(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "roll"); }
+    static Trigger* wait_for_attack_time(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "wait for attack time"); }
 };
 
 #endif
