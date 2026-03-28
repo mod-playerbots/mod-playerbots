@@ -7,7 +7,7 @@ INSERT INTO `ai_playerbot_texts`
      `text_loc1`, `text_loc2`, `text_loc3`, `text_loc4`,
      `text_loc5`, `text_loc6`, `text_loc7`, `text_loc8`)
 VALUES (
-    1740,
+    1743,
     'bot_not_your_master',
     "You are not my master!",
     0, 0,
@@ -35,7 +35,7 @@ INSERT INTO `ai_playerbot_texts`
      `text_loc1`, `text_loc2`, `text_loc3`, `text_loc4`,
      `text_loc5`, `text_loc6`, `text_loc7`, `text_loc8`)
 VALUES (
-    1741,
+    1744,
     'bot_rndbot_no_logout',
     "You can't command me to logout!",
     0, 0,
