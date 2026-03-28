@@ -12,6 +12,7 @@
 #include "Ai/Raid/SerpentshrineCavern/RaidSSCActionContext.h"
 #include "Ai/Raid/TempestKeep/RaidTempestKeepActionContext.h"
 #include "Ai/Raid/HyjalSummit/RaidHyjalSummitActionContext.h"
+#include "Ai/Raid/ZulAman/RaidZulAmanActionContext.h"
 #include "Ai/Raid/ObsidianSanctum/RaidOsActionContext.h"
 #include "Ai/Raid/EyeOfEternity/RaidEoEActionContext.h"
 #include "Ai/Raid/VaultOfArchavon/RaidVoAActionContext.h"
@@ -34,6 +35,7 @@ void AiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Act
     actionContexts.Add(new RaidSSCActionContext());
     actionContexts.Add(new RaidTempestKeepActionContext());
     actionContexts.Add(new RaidHyjalSummitActionContext());
+    actionContexts.Add(new RaidZulAmanActionContext());
     actionContexts.Add(new RaidNaxxActionContext());
     actionContexts.Add(new RaidOsActionContext());
     actionContexts.Add(new RaidEoEActionContext());

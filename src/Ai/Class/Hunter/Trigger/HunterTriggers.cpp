@@ -107,6 +107,8 @@ bool SwitchToMeleeTrigger::IsActive()
             ServerFacade::instance().IsDistanceLessOrEqualThan(AI_VALUE2(float, "distance", "current target"), 8.0f));
 }
 
+// Valid targets for "Improved Tracking".
+// Optional/Utility targets (uncomment for selfbot).
 bool NoTrackTrigger::IsActive()
 {
     std::vector<std::string> track_list = {
@@ -115,8 +117,13 @@ bool NoTrackTrigger::IsActive()
         "track dragonkin",
         "track elementals",
         "track giants",
-        "track hidden",
-        "track humanoids"
+        "track humanoids",
+        "track undead",
+        // "track hidden",
+        // "find herbs",
+        // "find minerals",
+        // "find fish",
+        // "find treasure",
     };
 
     for (auto &track: track_list)
