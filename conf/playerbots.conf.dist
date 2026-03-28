@@ -868,7 +868,7 @@ AiPlayerbot.BotActiveAloneForceWhenInRadius = 150
 AiPlayerbot.BotActiveAloneForceWhenInZone = 1
 AiPlayerbot.BotActiveAloneForceWhenInMap = 0
 AiPlayerbot.BotActiveAloneForceWhenIsFriend = 0
-AiPlayerbot.BotActiveAloneForceWhenInGuild = 0
+AiPlayerbot.BotActiveAloneForceWhenInGuild = 1
 
 # SmartScale (automatic scaling of percentage of active bots based on latency)
 # The default is 1. When enabled (smart) scales the 'BotActiveAlone' value.
