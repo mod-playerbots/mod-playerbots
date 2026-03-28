@@ -860,14 +860,15 @@ AiPlayerbot.ExcludedHunterPetFamilies = ""
 # The default is 100% but will be automatically adjusted if botActiveAloneSmartScale
 # is enabled. Regardless, this value is only applied to inactive areas where no real players
 # are detected. When real players are nearby, the value is always enforced to 100%
-AiPlayerbot.BotActiveAlone = 100
+AiPlayerbot.BotActiveAlone = 50
+AiPlayerbot.BotActiveAloneDurationSeconds = 30
 
 # Force botActiveAlone when bot is within the specified distance of a real player
 AiPlayerbot.BotActiveAloneForceWhenInRadius = 150
 AiPlayerbot.BotActiveAloneForceWhenInZone = 1
 AiPlayerbot.BotActiveAloneForceWhenInMap = 0
-AiPlayerbot.BotActiveAloneForceWhenIsFriend = 1
-AiPlayerbot.BotActiveAloneForceWhenInGuild = 1
+AiPlayerbot.BotActiveAloneForceWhenIsFriend = 0
+AiPlayerbot.BotActiveAloneForceWhenInGuild = 0
 
 # SmartScale (automatic scaling of percentage of active bots based on latency)
 # The default is 1. When enabled (smart) scales the 'BotActiveAlone' value.
