@@ -1119,9 +1119,6 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                 if (guid1.IsEmpty() || p.size() > p.DEFAULT_SIZE)
                     return;
 
-                if (lang == LANG_ADDON)
-                        return;
-
                 if (p.GetOpcode() == SMSG_GM_MESSAGECHAT)
                 {
                     p >> textLen;
@@ -1170,6 +1167,8 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                         return;
 
                     if (HasRealPlayerMaster() && guid1 != GetMaster()->GetGUID())
+                        return;
+                    if (lang == LANG_ADDON)
                         return;
 
                     if (message.starts_with(sPlayerbotAIConfig.toxicLinksPrefix) &&
@@ -1250,10 +1249,17 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
 
             p >> guid.ReadAsPacked() >> counter >> vcos >> vsin >> horizontalSpeed >> verticalSpeed;
             if (horizontalSpeed <= 0.1f)
+            {
                 horizontalSpeed = 0.11f;
+            }
             verticalSpeed = -verticalSpeed;
-
+            // high vertical may result in stuck as bot can not handle gravity
+            if (verticalSpeed > 35.0f)
+                break;
+            // stop casting
             InterruptSpell();
+
+            // stop movement
             bot->StopMoving();
             bot->GetMotionMaster()->Clear();
 
@@ -4339,21 +4345,24 @@ Player* PlayerbotAI::GetGroupLeader()
     return master;
 }
 
-uint32 PlayerbotAI::GetFixedBotNumer(uint32 maxNum, float cyclePerMin)
+uint32 PlayerbotAI::GetFixedBotNumber(uint32 maxNum)
 {
-    uint32 randseed = rand32();                               // Seed random number
-    uint32 randnum = bot->GetGUID().GetCounter() + randseed;  // Semi-random but fixed number for each bot.
+    // Deterministic pseudo-random hash based on the bot GUID
+    // Ensures bots are evenly and consistently distributed across active slots
+    uint32 id = bot->GetGUID().GetCounter();
+    uint32 h = id;
+    h ^= h >> 16;
+    h *= 0x7feb352d;
+    h ^= h >> 15;
+    h *= 0x846ca68b;
+    h ^= h >> 16;
 
-    if (cyclePerMin > 0)
-    {
-        uint32 cycle = floor(getMSTime() / (1000));  // Semi-random number adds 1 each second.
-        cycle = cycle * cyclePerMin / 60;            // Cycles cyclePerMin per minute.
-        randnum += cycle;                            // Make the random number cylce.
-    }
+    // Current time slot
+    uint32 timeSlot = (getMSTime() / 1000) / sPlayerbotAIConfig.BotActiveAloneDurationSeconds;
 
-    randnum =
-        (randnum % (maxNum + 1));  // Loops the randomnumber at maxNum. Bassically removes all the numbers above 99.
-    return randnum;  // Now we have a number unique for each bot between 0 and maxNum that increases by cyclePerMin.
+    // Divide maxNum into exact slots for rotation
+    // Each bot will stay in its assigned slot for exactly activeDuration seconds
+    return (h + timeSlot) % maxNum;
 }
 
 /*
@@ -4370,7 +4379,7 @@ enum GrouperType
 
 GrouperType PlayerbotAI::GetGrouperType()
 {
-    uint32 grouperNumber = GetFixedBotNumer(100, 0);
+    uint32 grouperNumber = GetFixedBotNumber(100);
 
     if (grouperNumber < 20 && !HasRealPlayerMaster())
         return GrouperType::SOLO;
@@ -4392,7 +4401,7 @@ GrouperType PlayerbotAI::GetGrouperType()
 
 GuilderType PlayerbotAI::GetGuilderType()
 {
-    uint32 grouperNumber = GetFixedBotNumer(100, 0);
+    uint32 grouperNumber = GetFixedBotNumber(100);
 
     if (grouperNumber < 20 && !HasRealPlayerMaster())
         return GuilderType::SOLO;
@@ -4716,22 +4725,22 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
     // situations are usable for scaling when enabled.
     // #######################################################################################
 
-    // Below is code to have a specified % of bots active at all times.
-    // The default is 100%. With 1% of all bots going active or inactive each minute.
-    uint32 mod = sPlayerbotAIConfig.botActiveAlone > 100 ? 100 : sPlayerbotAIConfig.botActiveAlone;
+    // Base percentage of bots to be active
+    uint32 mod = sPlayerbotAIConfig.botActiveAlone;
+
+    // Apply SmartScale if enabled
     if (sPlayerbotAIConfig.botActiveAloneSmartScale &&
         bot->GetLevel() >= sPlayerbotAIConfig.botActiveAloneSmartScaleWhenMinLevel &&
         bot->GetLevel() <= sPlayerbotAIConfig.botActiveAloneSmartScaleWhenMaxLevel)
     {
-        mod = AutoScaleActivity(mod);
+        mod = AutoScaleActivity(mod);  // mod reflects on latency throttling
     }
 
-    uint32 ActivityNumber =
-        GetFixedBotNumer(100, sPlayerbotAIConfig.botActiveAlone * static_cast<float>(mod) / 100 * 0.01f);
+    // Get deterministic bucket + timeSlot
+    uint32 ActivityNumber = GetFixedBotNumber(100);
 
-    return ActivityNumber <=
-           (sPlayerbotAIConfig.botActiveAlone * mod) /
-               100;  // The given percentage of bots should be active and rotate 1% of those active bots each minute.
+    // Check if this bot is in the active set
+    return ActivityNumber < mod;  // mod is directly the number of bots active (0–100)
 }
 
 bool PlayerbotAI::AllowActivity(ActivityType activityType, bool checkNow)
@@ -6480,7 +6489,7 @@ ChatChannelSource PlayerbotAI::GetChatChannelSource(Player* bot, uint32 type, st
     return ChatChannelSource::SRC_UNDEFINED;
 }
 
-bool PlayerbotAI::StarterLevelDistanceCheck(Player* player, const WorldLocation& loc, bool fromStartUp)
+bool PlayerbotAI::CheckLocationDistanceByLevel(Player* player, const WorldLocation& loc, bool fromStartUp)
 {
     if (player->GetLevel() > 16)
         return true;
