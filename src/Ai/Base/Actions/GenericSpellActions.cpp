@@ -17,10 +17,11 @@
 #include "WorldPacket.h"
 #include "Group.h"
 #include "Chat.h"
-#include "GenericBuffUtils.h"
+#include "Ai/Base/Util/GenericBuffUtils.h"
 #include "PlayerbotAI.h"
 
 using ai::buff::MakeAuraQualifierForBuff;
+using ai::spell::HasSpellOrCategoryCooldown;
 
 CastSpellAction::CastSpellAction(PlayerbotAI* botAI, std::string const spell)
     : Action(botAI, spell), range(botAI->GetRange("spell")), spell(spell)
@@ -320,7 +321,7 @@ bool CastEveryManForHimselfAction::isPossible()
     if (!bot->HasSpell(spellId))
         return false;
 
-    if (bot->HasSpellCooldown(spellId))
+    if (HasSpellOrCategoryCooldown(bot, spellId))
         return false;
 
     return true;
@@ -328,11 +329,36 @@ bool CastEveryManForHimselfAction::isPossible()
 
 bool CastEveryManForHimselfAction::isUseful()
 {
-    return bot->HasAuraType(SPELL_AURA_MOD_STUN) ||
+    return (bot->HasAuraType(SPELL_AURA_MOD_STUN) ||
            bot->HasAuraType(SPELL_AURA_MOD_FEAR) ||
            bot->HasAuraType(SPELL_AURA_MOD_ROOT) ||
            bot->HasAuraType(SPELL_AURA_MOD_CONFUSE) ||
-           bot->HasAuraType(SPELL_AURA_MOD_CHARM);
+           bot->HasAuraType(SPELL_AURA_MOD_CHARM))
+        && CastSpellAction::isUseful();
+}
+
+bool CastWillOfTheForsakenAction::isPossible()
+{
+    uint32 spellId = AI_VALUE2(uint32, "spell id", spell);
+    if (!spellId)
+        return false;
+
+    if (!bot->HasSpell(spellId))
+        return false;
+
+    if (HasSpellOrCategoryCooldown(bot, spellId))
+        return false;
+
+    return true;
+}
+
+bool CastWillOfTheForsakenAction::isUseful()
+{
+    return (bot->HasAuraType(SPELL_AURA_MOD_FEAR) ||
+           bot->HasAuraType(SPELL_AURA_MOD_CHARM) ||
+           bot->HasAuraType(SPELL_AURA_AOE_CHARM) ||
+           bot->HasAuraWithMechanic(1 << MECHANIC_SLEEP))
+        && CastSpellAction::isUseful();
 }
 
 bool UseTrinketAction::Execute(Event /*event*/)
