@@ -70,11 +70,14 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("azgalor main tank is positioning boss", {
         NextAction("azgalor wait at safe position", ACTION_EMERGENCY + 1) }));
 
-    triggers.push_back(new TriggerNode("azgalor boss casts rain of fire", {
+    triggers.push_back(new TriggerNode("azgalor boss casts rain of fire on ranged", {
         NextAction("azgalor disperse ranged", ACTION_RAID + 2) }));
 
+    triggers.push_back(new TriggerNode("azgalor boss casts rain of fire on melee", {
+        NextAction("azgalor melee get out of fire", ACTION_EMERGENCY + 2) }));
+
     triggers.push_back(new TriggerNode("azgalor bot is doomed", {
-        NextAction("azgalor move to doomguard tank", ACTION_EMERGENCY + 2) }));
+        NextAction("azgalor move to doomguard tank", ACTION_EMERGENCY + 3) }));
 
     triggers.push_back(new TriggerNode("azgalor doomguards must be controlled", {
         NextAction("azgalor first assist tank position doomguard", ACTION_RAID + 1) }));
@@ -124,7 +127,7 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Azgalor
     multipliers.push_back(new AzgalorDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new AzgalorDoomedBotPrioritizePositioningMultiplier(botAI));
-    multipliers.push_back(new AzgalorMeleeJustStandInFireMultiplier(botAI));
+    multipliers.push_back(new AzgalorMeleeControlAvoidanceMultiplier(botAI));
 
     // Archimonde
     multipliers.push_back(new ArchimondeDisableCombatFormationMoveMultiplier(botAI));

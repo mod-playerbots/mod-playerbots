@@ -180,6 +180,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class AzgalorMeleeGetOutOfFireAction : public MovementAction
+{
+public:
+    AzgalorMeleeGetOutOfFireAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "azgalor melee get out of fire") {}
+    bool Execute(Event event) override;
+};
+
 class AzgalorMoveToDoomguardTankAction : public MovementAction
 {
 public:

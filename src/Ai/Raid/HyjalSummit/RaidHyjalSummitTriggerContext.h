@@ -76,8 +76,11 @@ public:
         creators["azgalor main tank is positioning boss"] =
             &RaidHyjalSummitTriggerContext::azgalor_main_tank_is_positioning_boss;
 
-        creators["azgalor boss casts rain of fire"] =
-            &RaidHyjalSummitTriggerContext::azgalor_boss_casts_rain_of_fire;
+        creators["azgalor boss casts rain of fire on ranged"] =
+            &RaidHyjalSummitTriggerContext::azgalor_boss_casts_rain_of_fire_on_ranged;
+
+        creators["azgalor boss casts rain of fire on melee"] =
+            &RaidHyjalSummitTriggerContext::azgalor_boss_casts_rain_of_fire_on_melee;
 
         creators["azgalor bot is doomed"] =
             &RaidHyjalSummitTriggerContext::azgalor_bot_is_doomed;
@@ -171,8 +174,11 @@ private:
     static Trigger* azgalor_main_tank_is_positioning_boss(
         PlayerbotAI* botAI) { return new AzgalorMainTankIsPositioningBossTrigger(botAI); }
 
-    static Trigger* azgalor_boss_casts_rain_of_fire(
-        PlayerbotAI* botAI) { return new AzgalorBossCastsRainOfFireTrigger(botAI); }
+    static Trigger* azgalor_boss_casts_rain_of_fire_on_ranged(
+        PlayerbotAI* botAI) { return new AzgalorBossCastsRainOfFireOnRangedTrigger(botAI); }
+
+    static Trigger* azgalor_boss_casts_rain_of_fire_on_melee(
+        PlayerbotAI* botAI) { return new AzgalorBossCastsRainOfFireOnMeleeTrigger(botAI); }
 
     static Trigger* azgalor_bot_is_doomed(
         PlayerbotAI* botAI) { return new AzgalorBotIsDoomedTrigger(botAI); }

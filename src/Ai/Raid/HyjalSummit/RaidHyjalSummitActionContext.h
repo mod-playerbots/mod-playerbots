@@ -79,6 +79,9 @@ public:
         creators["azgalor disperse ranged"] =
             &RaidHyjalSummitActionContext::azgalor_disperse_ranged;
 
+        creators["azgalor melee get out of fire"] =
+            &RaidHyjalSummitActionContext::azgalor_melee_get_out_of_fire;
+
         creators["azgalor move to doomguard tank"] =
             &RaidHyjalSummitActionContext::azgalor_move_to_doomguard_tank;
 
@@ -173,6 +176,9 @@ private:
 
     static Action* azgalor_disperse_ranged(
         PlayerbotAI* botAI) { return new AzgalorDisperseRangedAction(botAI); }
+
+    static Action* azgalor_melee_get_out_of_fire(
+        PlayerbotAI* botAI) { return new AzgalorMeleeGetOutOfFireAction(botAI); }
 
     static Action* azgalor_move_to_doomguard_tank(
         PlayerbotAI* botAI) { return new AzgalorMoveToDoomguardTankAction(botAI); }

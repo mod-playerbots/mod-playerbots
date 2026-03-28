@@ -104,11 +104,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class AzgalorMeleeJustStandInFireMultiplier : public Multiplier
+class AzgalorMeleeControlAvoidanceMultiplier : public Multiplier
 {
 public:
-    AzgalorMeleeJustStandInFireMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "azgalor melee just stand in fire multiplier") {}
+    AzgalorMeleeControlAvoidanceMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "azgalor melee control avoidance multiplier") {}
     virtual float GetValue(Action* action);
 };
 

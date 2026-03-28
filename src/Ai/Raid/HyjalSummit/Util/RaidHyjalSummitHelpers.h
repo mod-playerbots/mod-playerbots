@@ -46,7 +46,6 @@ namespace HyjalSummitHelpers
 
         // Archimonde
         NPC_DOOMFIRE           = 18095,
-        // NPC_DOOMFIRE_SPIRIT    = 18104,
     };
 
     // General
@@ -74,8 +73,13 @@ namespace HyjalSummitHelpers
     extern const Position AZGALOR_TANK_TRANSITION_POSITION;
     extern const Position AZGALOR_TANK_FINAL_POSITION;
     extern const Position AZGALOR_DOOMGUARD_POSITION;
-    extern const Position AZGALOR_WAITING_POSITION;
     extern std::unordered_map<ObjectGuid, uint8> azgalorTankStep;
+    struct RainOfFireData
+    {
+        Position position;
+        uint32 spawnTime;
+    };
+    extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, RainOfFireData>> rainOfFirePosition;
     int GetAzgalorTankStep(PlayerbotAI* botAI, Player* bot);
     bool AnyGroupMemberHasDoom(Player* bot);
 

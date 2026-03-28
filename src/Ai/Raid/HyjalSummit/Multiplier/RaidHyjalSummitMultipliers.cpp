@@ -19,6 +19,8 @@
 
 using namespace HyjalSummitHelpers;
 
+// I don't like having to run this checks on every boss, but otherwise
+// Bloodlust/Heroism will be blown on cooldown due to the trash wave composition
 float HyjalSummitTimeBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
     if (bot->getClass() != CLASS_SHAMAN)
@@ -193,28 +195,22 @@ float AzgalorDisableTankActionsMultiplier::GetValue(Action* action)
     if (!botAI->IsTank(bot) || !AI_VALUE2(Unit*, "find target", "azgalor"))
         return 1.0f;
 
-    if (dynamic_cast<TankFaceAction*>(action) ||
-        dynamic_cast<TankAssistAction*>(action))
+    if (dynamic_cast<TankFaceAction*>(action))
         return 0.0f;
 
-    if (!botAI->IsAssistTankOfIndex(bot, 0, true) &&
-        !botAI->IsAssistTankOfIndex(bot, 1, true))
-        return 1.0f;
-
-    // Exclude second assist tank also, unless first assist tank has Doom
-    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
-    if (firstAssistTank &&
-        !firstAssistTank->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)) &&
-        botAI->IsAssistTankOfIndex(bot, 1, true))
-        return 1.0f;
-
-    // Only move to Doomguard position if a player has Doom
-    // Exception: if a prior Doomguard is still up
-    if (AnyGroupMemberHasDoom(bot) &&
-        (dynamic_cast<ReachTargetAction*>(action) ||
-         dynamic_cast<CastReachTargetSpellAction*>(action) ||
-         dynamic_cast<CombatFormationMoveAction*>(action)))
-        return 0.0f;
+    if (dynamic_cast<TankAssistAction*>(action))
+    {
+        if (botAI->IsMainTank(bot))
+        {
+            return 0.0f;
+        }
+        else if (botAI->IsAssistTank(bot) &&
+                 (AnyGroupMemberHasDoom(bot) ||
+                  AI_VALUE2(Unit*, "find target", "lesser doomguard")))
+        {
+            return 0.0f;
+        }
+    }
 
     return 1.0f;
 }
@@ -233,14 +229,39 @@ float AzgalorDoomedBotPrioritizePositioningMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-// The alternative is running in front of Azgalor and getting cleaved
-float AzgalorMeleeJustStandInFireMultiplier::GetValue(Action* action)
+float AzgalorMeleeControlAvoidanceMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsMelee(bot) || !AI_VALUE2(Unit*, "find target", "azgalor"))
+    if (botAI->IsRanged(bot) || !AI_VALUE2(Unit*, "find target", "azgalor"))
         return 1.0f;
 
     if (dynamic_cast<AvoidAoeAction*>(action))
         return 0.0f;
+
+    if (!botAI->IsDps(bot))
+        return 1.0f;
+
+    constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
+    uint32 now = getMSTime();
+
+    auto instanceIt = rainOfFirePosition.find(bot->GetMap()->GetInstanceId());
+    if (instanceIt == rainOfFirePosition.end())
+        return 1.0f;
+
+    for (auto const& [guid, data] : instanceIt->second)
+    {
+        if (getMSTimeDiff(data.spawnTime, now) < RAIN_OF_FIRE_DURATION &&
+            bot->GetExactDist2d(data.position) < 23.0f)
+        {
+            if (dynamic_cast<MovementAction*>(action) &&
+                !dynamic_cast<AzgalorMeleeGetOutOfFireAction*>(action))
+                return 0.0f;
+
+            if (dynamic_cast<CastReachTargetSpellAction*>(action))
+                return 0.0f;
+
+            break;
+        }
+    }
 
     return 1.0f;
 }
@@ -249,8 +270,7 @@ float AzgalorMeleeJustStandInFireMultiplier::GetValue(Action* action)
 
 float ArchimondeDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
-    Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    if (!archimonde)
+    if (!AI_VALUE2(Unit*, "find target", "archimonde"))
         return 1.0f;
 
     if (dynamic_cast<CombatFormationMoveAction*>(action) &&

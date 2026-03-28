@@ -58,7 +58,7 @@ bool AnetheronBossEngagedByMainTankTrigger::IsActive()
 
 bool AnetheronBossCastsCarrionSwarmTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
+    if (botAI->IsMelee(bot))
         return false;
 
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
@@ -212,9 +212,11 @@ bool AzgalorBossEngagedByMainTankTrigger::IsActive()
 
 bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
 {
+    if (botAI->IsRanged(bot))
+        return false;
+
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-    if (!azgalor || azgalor->GetHealthPct() < 85.0f ||
-        azgalor->GetVictim() == bot)
+    if (!azgalor || azgalor->GetVictim() == bot)
         return false;
 
     if (botAI->IsMainTank(bot))
@@ -225,41 +227,57 @@ bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
         return false;
 
     if (!GET_PLAYERBOT_AI(mainTank))
-    {
-        if (botAI->IsMelee(bot) && azgalor->GetHealthPct() > 95.0f)
-            return true;
-        else
-            return false;
-    }
-    else if (botAI->IsMelee(bot))
-    {
-        return GetAzgalorTankStep(botAI, bot) < 2;
-    }
-    else
-    {
-        return GetAzgalorTankStep(botAI, bot) < 1;
-    }
+        return azgalor->GetHealthPct() > 95.0f;
+
+    return GetAzgalorTankStep(botAI, bot) < 1;
 }
 
-// Spread to mitigate Rain of Fire, but GTFO if Rain of Fire is on the bot
-bool AzgalorBossCastsRainOfFireTrigger::IsActive()
+bool AzgalorBossCastsRainOfFireOnRangedTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
+    if (botAI->IsMelee(bot))
         return false;
 
     Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
-    if (!azgalor ||
+    return azgalor && azgalor->GetVictim() != bot &&
+           !bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM));
+}
+
+bool AzgalorBossCastsRainOfFireOnMeleeTrigger::IsActive()
+{
+    if (botAI->IsRanged(bot) || botAI->IsTank(bot))
+        return false;
+
+    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
+    if (!azgalor || azgalor->GetVictim() == bot ||
         bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)))
         return false;
 
-    if (azgalor->GetHealthPct() < 85.0f)
-        return true;
+    constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
+    uint32 now = getMSTime();
 
-    Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (mainTank && GET_PLAYERBOT_AI(mainTank))
-        return GetAzgalorTankStep(botAI, bot) == 2;
-    else
-        return true;
+    auto instanceIt = rainOfFirePosition.find(bot->GetMap()->GetInstanceId());
+    if (instanceIt == rainOfFirePosition.end())
+        return false;
+
+    auto& dynObjMap = instanceIt->second;
+    for (auto it = dynObjMap.begin(); it != dynObjMap.end(); )
+    {
+        if (getMSTimeDiff(it->second.spawnTime, now) >= RAIN_OF_FIRE_DURATION)
+            it = dynObjMap.erase(it);
+        else
+            ++it;
+    }
+
+    if (dynObjMap.empty())
+        return false;
+
+    for (auto const& [guid, data] : dynObjMap)
+    {
+        if (bot->GetExactDist2d(data.position) < 16.0f)
+            return true;
+    }
+
+    return false;
 }
 
 bool AzgalorBotIsDoomedTrigger::IsActive()
@@ -269,19 +287,29 @@ bool AzgalorBotIsDoomedTrigger::IsActive()
 
 bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
 {
-    if (!botAI->IsAssistTankOfIndex(bot, 0, true) &&
-        !botAI->IsAssistTankOfIndex(bot, 1, true))
+    if (!botAI->IsAssistTank(bot) ||
+        !AI_VALUE2(Unit*, "find target", "azgalor"))
         return false;
 
-    // Exclude second assist tank also, unless first assist tank has Doom
-    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
-    if (firstAssistTank &&
-        !firstAssistTank->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)) &&
-        botAI->IsAssistTankOfIndex(bot, 1, true))
-        return false;
+    if (botAI->IsAssistTankOfIndex(bot, 0, true))
+    {
+        return AI_VALUE2(Unit*, "find target", "lesser doomguard") ||
+               AnyGroupMemberHasDoom(bot);
+    }
 
-    return AI_VALUE2(Unit*, "find target", "lesser doomguard") ||
-           AnyGroupMemberHasDoom(bot);
+    if (botAI->IsAssistTankOfIndex(bot, 1, true))
+    {
+        // Trigger for second assist tank only if first assist tank has Doom
+        Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
+        if (firstAssistTank &&
+            !firstAssistTank->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)))
+            return false;
+
+        return AI_VALUE2(Unit*, "find target", "lesser doomguard") ||
+               AnyGroupMemberHasDoom(bot);
+    }
+
+    return false;
 }
 
 bool AzgalorDoomguardsContinueToSpawnTrigger::IsActive()
@@ -306,7 +334,7 @@ bool ArchimondeBossEngagedByMainTankTrigger::IsActive()
         return false;
 
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
-    return archimonde && archimonde->GetHealthPct() > 90.0f;
+    return archimonde && archimonde->GetHealthPct() > 95.0f;
 }
 
 bool ArchimondeBossCastsFearTrigger::IsActive()
@@ -333,9 +361,6 @@ bool ArchimondeBossSummonedDoomfireTrigger::IsActive()
 {
     Unit* archimonde = AI_VALUE2(Unit*, "find target", "archimonde");
     if (!archimonde || archimonde->GetHealthPct() <= 10.0f)
-        return false;
-
-    if (bot->GetExactDist2d(archimonde) <= 0.0f)
         return false;
 
     // If I don't make an exception, bots actually refuse to enter the

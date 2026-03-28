@@ -170,11 +170,19 @@ public:
     bool IsActive() override;
 };
 
-class AzgalorBossCastsRainOfFireTrigger : public Trigger
+class AzgalorBossCastsRainOfFireOnRangedTrigger : public Trigger
 {
 public:
-    AzgalorBossCastsRainOfFireTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "azgalor boss casts rain of fire") {}
+    AzgalorBossCastsRainOfFireOnRangedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "azgalor boss casts rain of fire on ranged") {}
+    bool IsActive() override;
+};
+
+class AzgalorBossCastsRainOfFireOnMeleeTrigger : public Trigger
+{
+public:
+    AzgalorBossCastsRainOfFireOnMeleeTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "azgalor boss casts rain of fire on melee") {}
     bool IsActive() override;
 };
 
