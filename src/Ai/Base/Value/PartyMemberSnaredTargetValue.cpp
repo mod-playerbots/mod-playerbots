@@ -7,14 +7,16 @@
 
 #include <limits>
 
-#include "MovementHelper.h"
 #include "PlayerbotAIAware.h"
 #include "Playerbots.h"
 
 class PartyMemberSnaredTargetPredicate : public FindPlayerPredicate, public PlayerbotAIAware
 {
 public:
-    PartyMemberSnaredTargetPredicate(PlayerbotAI* botAI) : PlayerbotAIAware(botAI) {}
+    PartyMemberSnaredTargetPredicate(PlayerbotAI* botAI)
+        : PlayerbotAIAware(botAI)
+    {
+    }
 
     bool Check(Unit* unit) override
     {
@@ -27,10 +29,7 @@ public:
         if (!botAI->GetBot()->IsWithinLOSInMap(unit))
             return false;
 
-        if (botAI->GetBot()->GetDistance2d(unit) > botAI->GetRange("spell"))
-            return false;
-
-        return ai::movement::IsMovementImpaired(unit);
+        return botAI->IsMovementImpaired(unit);
     }
 };
 
@@ -42,7 +41,7 @@ Unit* PartyMemberSnaredTargetValue::Calculate()
 
     PartyMemberSnaredTargetPredicate predicate(botAI);
     Player* bestTarget = nullptr;
-    float closestDistance = std::numeric_limits<float>::max();
+    float closestDistanceSq = std::numeric_limits<float>::max();
 
     for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
     {
@@ -53,10 +52,10 @@ Unit* PartyMemberSnaredTargetValue::Calculate()
         if (!predicate.Check(member))
             continue;
 
-        float distance = bot->GetDistance2d(member);
-        if (distance < closestDistance)
+        float const distanceSq = bot->GetExactDist2dSq(member->GetPositionX(), member->GetPositionY());
+        if (distanceSq < closestDistanceSq)
         {
-            closestDistance = distance;
+            closestDistanceSq = distanceSq;
             bestTarget = member;
         }
     }

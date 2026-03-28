@@ -5,7 +5,6 @@
 
 #include "PaladinTriggers.h"
 
-#include "MovementHelper.h"
 #include "PaladinActions.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
@@ -35,7 +34,18 @@ bool BlessingTrigger::IsActive()
 
 Unit* HandOfFreedomOnPartyTrigger::GetTarget()
 {
-    if (ai::movement::IsMovementImpaired(bot) && !ai::paladin::HasAnyPaladinHandFromCaster(bot, bot))
+    bool const selfImpaired = botAI->IsMovementImpaired(bot);
+    bool const hasSelfHand = selfImpaired && ai::paladin::HasAnyPaladinHandFromCaster(bot, bot);
+
+    if (!bot->GetGroup())
+    {
+        if (selfImpaired && !hasSelfHand)
+            return bot;
+
+        return nullptr;
+    }
+
+    if (selfImpaired && !hasSelfHand)
         return bot;
 
     return Trigger::GetTarget();
@@ -47,11 +57,13 @@ bool HandOfFreedomOnPartyTrigger::IsActive()
     if (!target)
         return false;
 
+    if (target != bot && bot->GetExactDist2dSq(target->GetPositionX(), target->GetPositionY()) > 30.0f * 30.0f)
+        return false;
+
     if (!botAI->CanCastSpell("hand of freedom", target))
         return false;
 
-    return !ai::paladin::HasAnyPaladinHandFromCaster(target, bot) &&
-           ai::movement::IsMovementImpaired(target);
+    return !ai::paladin::HasAnyPaladinHandFromCaster(target, bot) && botAI->IsMovementImpaired(target);
 }
 
 bool NotSensingUndeadTrigger::IsActive()

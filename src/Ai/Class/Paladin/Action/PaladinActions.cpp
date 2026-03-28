@@ -11,7 +11,6 @@
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
-#include <MovementHelper.h>
 #include "../../../../../src/server/scripts/Spells/spell_generic.cpp"
 #include "GenericBuffUtils.h"
 #include "Group.h"
@@ -472,7 +471,18 @@ Value<Unit*>* CastTurnUndeadAction::GetTargetValue() { return context->GetValue<
 
 Unit* CastHandOfFreedomOnPartyAction::GetTarget()
 {
-    if (ai::movement::IsMovementImpaired(bot) && !ai::paladin::HasAnyPaladinHandFromCaster(bot, bot))
+    bool const selfImpaired = botAI->IsMovementImpaired(bot);
+    bool const hasSelfHand = selfImpaired && ai::paladin::HasAnyPaladinHandFromCaster(bot, bot);
+
+    if (!bot->GetGroup())
+    {
+        if (selfImpaired && !hasSelfHand)
+            return bot;
+
+        return nullptr;
+    }
+
+    if (selfImpaired && !hasSelfHand)
         return bot;
 
     return CastBuffSpellAction::GetTarget();
