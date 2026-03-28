@@ -14,6 +14,7 @@ public:
     {
         creators["aspect of the dragonhawk"] = &aspect_of_the_dragonhawk;
         creators["aspect of the hawk"] = &aspect_of_the_hawk;
+        creators["aspect of the pack"] = &aspect_of_the_pack;
     }
 
 private:
@@ -29,6 +30,13 @@ private:
         return new ActionNode("aspect of the hawk",
                               /*P*/ {},
                               /*A*/ { NextAction("aspect of the monkey") },
+                              /*C*/ {});
+    }
+    static ActionNode* aspect_of_the_pack([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode("aspect of the pack",
+                              /*P*/ {},
+                              /*A*/ { NextAction("aspect of the cheetah") },
                               /*C*/ {});
     }
 };

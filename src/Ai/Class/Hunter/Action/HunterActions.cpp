@@ -16,11 +16,6 @@ bool CastViperStingAction::isUseful()
            AI_VALUE2(uint8, "mana", "current target") >= 30;
 }
 
-bool CastAspectOfTheCheetahAction::isUseful()
-{
-    return !botAI->HasAnyAuraOf(GetTarget(), "aspect of the cheetah", "aspect of the pack", nullptr);
-}
-
 bool CastAspectOfTheHawkAction::isUseful()
 {
     Unit* target = GetTarget();
@@ -39,7 +34,8 @@ bool CastArcaneShotAction::isUseful()
     if (!target)
         return false;
 
-    if (bot->HasSpell(53301) || bot->HasSpell(60051) || bot->HasSpell(60052) || bot->HasSpell(60053))  // Explosive Shot spell IDs
+    if (bot->HasSpell(53301) || bot->HasSpell(60051) ||
+        bot->HasSpell(60052) || bot->HasSpell(60053))  // Explosive Shot spell IDs
         return false;
 
     // Armor Penetration rating check - will not cast Arcane Shot above 435 ArP

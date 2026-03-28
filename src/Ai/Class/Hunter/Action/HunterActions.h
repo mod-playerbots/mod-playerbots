@@ -57,7 +57,6 @@ class CastAspectOfTheCheetahAction : public CastBuffSpellAction
 public:
     CastAspectOfTheCheetahAction(PlayerbotAI* botAI) :
         CastBuffSpellAction(botAI, "aspect of the cheetah") {}
-    bool isUseful() override;
 };
 
 class CastAspectOfThePackAction : public CastBuffSpellAction
