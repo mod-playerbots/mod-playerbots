@@ -91,7 +91,6 @@ BloodDKStrategy::BloodDKStrategy(PlayerbotAI* botAI) : GenericDKStrategy(botAI)
 std::vector<NextAction> BloodDKStrategy::getDefaultActions()
 {
     return {
-        NextAction("hysteria", ACTION_DEFAULT + 0.7f),
         NextAction("rune strike", ACTION_DEFAULT + 0.6f),
         NextAction("icy touch", ACTION_DEFAULT + 0.5f),
         NextAction("heart strike", ACTION_DEFAULT + 0.4f),
@@ -106,6 +105,14 @@ void BloodDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericDKStrategy::InitTriggers(triggers);
 
+    triggers.push_back(
+        new TriggerNode(
+            "hysteria no cd",
+            {
+                NextAction("hysteria", ACTION_NORMAL + 4)
+            }
+        )
+    );
     triggers.push_back(
         new TriggerNode(
             "rune strike",

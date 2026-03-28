@@ -154,13 +154,6 @@ void UnholyDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         )
     );
     triggers.push_back(
-        new TriggerNode("no rune",
-            {
-                NextAction("empower rune weapon", ACTION_HIGH + 1)
-            }
-        )
-    );
-    triggers.push_back(
         new TriggerNode(
             "army of the dead",
             {

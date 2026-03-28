@@ -185,4 +185,11 @@ void GenericDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
                                                         NextAction("blood boil", ACTION_NORMAL + 3) }));
     triggers.push_back(
         new TriggerNode("pestilence glyph", { NextAction("pestilence", ACTION_HIGH + 9) }));
+    triggers.push_back(
+        new TriggerNode("no rune",
+            {
+                NextAction("empower rune weapon", ACTION_HIGH + 1)
+            }
+        )
+    );
 }
