@@ -13,7 +13,7 @@ public:
     {
     }
 
-    void CheckAttacker(Unit* attacker, ThreatMgr*) override
+    void CheckAttacker(Unit* attacker, ThreatManager*) override
     {
         if (botAI->HasAura(spell, attacker))
             result = attacker;
