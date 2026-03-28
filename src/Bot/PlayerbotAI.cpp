@@ -4347,10 +4347,9 @@ Player* PlayerbotAI::GetGroupLeader()
 
 uint32 PlayerbotAI::GetFixedBotNumber(uint32 maxNum)
 {
-    // get the unique numeric part of the bot's GUID
+    // Deterministic pseudo-random hash based on the bot GUID
+    // Ensures bots are evenly and consistently distributed across active slots
     uint32 id = bot->GetGUID().GetCounter();
-
-    // pseudo-random hash from the bot ID
     uint32 h = id;
     h ^= h >> 16;
     h *= 0x7feb352d;
@@ -4358,12 +4357,12 @@ uint32 PlayerbotAI::GetFixedBotNumber(uint32 maxNum)
     h *= 0x846ca68b;
     h ^= h >> 16;
 
-    uint32 bucket = h % maxNum; // set range
-    const uint32 activeDuration = sPlayerbotAIConfig.BotActiveAloneDurationSeconds;
-    uint32 group = (getMSTime() / 1000) / activeDuration; //current time interval group
+    // Current time slot
+    uint32 timeSlot = (getMSTime() / 1000) / sPlayerbotAIConfig.BotActiveAloneDurationSeconds;
 
-    // combine bucket and time group, rotate numbers over time, and ensure the result is within bucket range
-    return (bucket + group * (maxNum / 4)) % maxNum;
+    // Divide maxNum into exact slots for rotation
+    // Each bot will stay in its assigned slot for exactly activeDuration seconds
+    return (h + timeSlot) % maxNum;
 }
 
 /*
@@ -4726,19 +4725,22 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
     // situations are usable for scaling when enabled.
     // #######################################################################################
 
-    // Below is code to have a specified % of bots active at all times.
-    // The default is 100%. With 1% of all bots going active or inactive each minute.
-    uint32 mod = sPlayerbotAIConfig.botActiveAlone > 100 ? 100 : sPlayerbotAIConfig.botActiveAlone;
+    // Base percentage of bots to be active
+    uint32 mod = sPlayerbotAIConfig.botActiveAlone;
+
+    // Apply SmartScale if enabled
     if (sPlayerbotAIConfig.botActiveAloneSmartScale &&
         bot->GetLevel() >= sPlayerbotAIConfig.botActiveAloneSmartScaleWhenMinLevel &&
         bot->GetLevel() <= sPlayerbotAIConfig.botActiveAloneSmartScaleWhenMaxLevel)
     {
-        mod = AutoScaleActivity(mod);
+        mod = AutoScaleActivity(mod);  // mod reflects on latency throttling
     }
 
+    // Get deterministic bucket + timeSlot
     uint32 ActivityNumber = GetFixedBotNumber(100);
 
-    return ActivityNumber <= (sPlayerbotAIConfig.botActiveAlone * mod) / 100;
+    // Check if this bot is in the active set
+    return ActivityNumber < mod;  // mod is directly the number of bots active (0–100)
 }
 
 bool PlayerbotAI::AllowActivity(ActivityType activityType, bool checkNow)
