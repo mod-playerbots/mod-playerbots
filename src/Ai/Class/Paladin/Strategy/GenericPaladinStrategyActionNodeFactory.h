@@ -22,6 +22,9 @@ public:
         creators["cleanse magic"] = &cleanse_magic;
         creators["cleanse poison on party"] = &cleanse_poison_on_party;
         creators["cleanse disease on party"] = &cleanse_disease_on_party;
+        creators["seal of corruption"] = &seal_of_corruption;
+        creators["seal of vengeance"] = &seal_of_vengeance;
+        creators["seal of command"] = &seal_of_command;
         creators["seal of wisdom"] = &seal_of_wisdom;
         creators["seal of justice"] = &seal_of_justice;
         creators["hand of reckoning"] = &hand_of_reckoning;
@@ -41,7 +44,6 @@ public:
         creators["blessing of wisdom on party"] = &blessing_of_wisdom_on_party;
         creators["blessing of sanctuary on party"] = &blessing_of_sanctuary_on_party;
         creators["blessing of sanctuary"] = &blessing_of_sanctuary;
-        creators["seal of command"] = &seal_of_command;
         creators["taunt spell"] = &hand_of_reckoning;
         creators["righteous defense"] = &righteous_defense;
         creators["avenger's shield"] = &avengers_shield;
@@ -155,18 +157,39 @@ private:
                               /*A*/ { NextAction("purify disease on party") },
                               /*C*/ {});
     }
+    static ActionNode* seal_of_corruption(PlayerbotAI* /* ai */)
+    {
+        return new ActionNode("seal of corruption",
+                              /*P*/ {},
+                              /*A*/ { NextAction("seal of vengeance") },
+                              /*C*/ {});
+    }
+    static ActionNode* seal_of_vengeance(PlayerbotAI* /* ai */)
+    {
+        return new ActionNode("seal of vengeance",
+                              /*P*/ {},
+                              /*A*/ { NextAction("seal of command") },
+                              /*C*/ {});
+    }
+    static ActionNode* seal_of_command(PlayerbotAI* /* ai */)
+    {
+        return new ActionNode("seal of command",
+                              /*P*/ {},
+                              /*A*/ { NextAction("seal of righteousness") },
+                              /*C*/ {});
+    }
     static ActionNode* seal_of_wisdom(PlayerbotAI* /* ai */)
     {
         return new ActionNode ("seal of wisdom",
             /*P*/ {},
-            /*A*/ { NextAction("seal of righteousness") },
+            /*A*/ { NextAction("seal of corruption") },
             /*C*/ {});
     }
     static ActionNode* seal_of_justice(PlayerbotAI* /* ai */)
     {
         return new ActionNode("seal of justice",
                               /*P*/ {},
-                              /*A*/ { NextAction("seal of righteousness") },
+                              /*A*/ { NextAction("seal of corruption") },
                               /*C*/ {});
     }
     static ActionNode* hand_of_reckoning(PlayerbotAI* /* ai */)
@@ -244,13 +267,6 @@ private:
         return new ActionNode("hammer of wrath",
                               /*P*/ {},
                               /*A*/ {},
-                              /*C*/ {});
-    }
-    static ActionNode* seal_of_command(PlayerbotAI* /* ai */)
-    {
-        return new ActionNode("seal of command",
-                              /*P*/ {},
-                              /*A*/ { NextAction("seal of righteousness") },
                               /*C*/ {});
     }
 };

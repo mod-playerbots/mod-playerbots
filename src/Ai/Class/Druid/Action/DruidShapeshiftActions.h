@@ -71,14 +71,78 @@ public:
     bool isPossible() override { return true; }
 };
 
-class CastCancelTreeFormAction : public CastBuffSpellAction
+class CastCancelDruidAction : public CastBuffSpellAction
 {
 public:
-    CastCancelTreeFormAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "cancel tree form") {}
+    CastCancelDruidAction(PlayerbotAI* botAI, std::string const& actionName, std::string const& auraName, uint32 auraId)
+        : CastBuffSpellAction(botAI, actionName), auraName(auraName), auraId(auraId)
+    {
+    }
 
     bool Execute(Event event) override;
     bool isUseful() override;
     bool isPossible() override { return true; }
+
+private:
+    std::string auraName;
+    uint32 auraId;
+};
+
+class CastCancelTreeFormAction : public CastCancelDruidAction
+{
+public:
+    CastCancelTreeFormAction(PlayerbotAI* botAI)
+        : CastCancelDruidAction(botAI, "cancel tree form", "tree of life", 33891)
+    {
+    }
+};
+
+class CastCancelTravelFormAction : public CastCancelDruidAction
+{
+public:
+    CastCancelTravelFormAction(PlayerbotAI* botAI)
+        : CastCancelDruidAction(botAI, "cancel travel form", "travel form", 783)
+    {
+    }
+};
+
+class CastCancelBearFormAction : public CastCancelDruidAction
+{
+public:
+    CastCancelBearFormAction(PlayerbotAI* botAI) : CastCancelDruidAction(botAI, "cancel bear form", "bear form", 5487) {}
+};
+
+class CastCancelDireBearFormAction : public CastCancelDruidAction
+{
+public:
+    CastCancelDireBearFormAction(PlayerbotAI* botAI)
+        : CastCancelDruidAction(botAI, "cancel dire bear form", "dire bear form", 9634)
+    {
+    }
+};
+
+class CastCancelCatFormAction : public CastCancelDruidAction
+{
+public:
+    CastCancelCatFormAction(PlayerbotAI* botAI) : CastCancelDruidAction(botAI, "cancel cat form", "cat form", 768) {}
+};
+
+class CastCancelMoonkinFormAction : public CastCancelDruidAction
+{
+public:
+    CastCancelMoonkinFormAction(PlayerbotAI* botAI)
+        : CastCancelDruidAction(botAI, "cancel moonkin form", "moonkin form", 24858)
+    {
+    }
+};
+
+class CastCancelAquaticFormAction : public CastCancelDruidAction
+{
+public:
+    CastCancelAquaticFormAction(PlayerbotAI* botAI)
+        : CastCancelDruidAction(botAI, "cancel aquatic form", "aquatic form", 1066)
+    {
+    }
 };
 
 #endif

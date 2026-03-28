@@ -67,7 +67,7 @@ Bot messages have to be translatable, but you don't need to do the translations 
 the message is in a translatable format, and list in the table the message_key and the default English message.
 Search for GetBotTextOrDefault in the codebase for examples.
 -->
-Does this change add bot messages to translate?
+- Does this change add bot messages to translate?
     - - [ ] No
     - - [ ] Yes (**list messages in the table**)
 
@@ -81,7 +81,7 @@ Does this change add bot messages to translate?
 AI assistance is allowed, but all submitted code must be fully understood, reviewed, and owned by the contributor.
 We expect contributors to be honest about what they do and do not understand.
 -->
-Was AI assistance used while working on this change?
+- Was AI assistance used while working on this change?
     - - [ ] No
     - - [ ] Yes (**explain below**)
 <!--

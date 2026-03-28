@@ -311,6 +311,30 @@ bool CastVehicleSpellAction::Execute(Event /*event*/)
     return botAI->CastVehicleSpell(spellId, GetTarget());
 }
 
+bool CastEveryManForHimselfAction::isPossible()
+{
+    uint32 spellId = AI_VALUE2(uint32, "spell id", spell);
+    if (!spellId)
+        return false;
+
+    if (!bot->HasSpell(spellId))
+        return false;
+
+    if (bot->HasSpellCooldown(spellId))
+        return false;
+
+    return true;
+}
+
+bool CastEveryManForHimselfAction::isUseful()
+{
+    return bot->HasAuraType(SPELL_AURA_MOD_STUN) ||
+           bot->HasAuraType(SPELL_AURA_MOD_FEAR) ||
+           bot->HasAuraType(SPELL_AURA_MOD_ROOT) ||
+           bot->HasAuraType(SPELL_AURA_MOD_CONFUSE) ||
+           bot->HasAuraType(SPELL_AURA_MOD_CHARM);
+}
+
 bool UseTrinketAction::Execute(Event /*event*/)
 {
     Item* trinket1 = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_TRINKET1);

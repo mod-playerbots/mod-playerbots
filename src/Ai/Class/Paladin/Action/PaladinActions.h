@@ -91,9 +91,8 @@ public:
 class CastBlessingOnPartyAction : public BuffOnPartyAction
 {
 public:
-    CastBlessingOnPartyAction(PlayerbotAI* botAI, std::string const name) : BuffOnPartyAction(botAI, name), name(name)
-    {
-    }
+    CastBlessingOnPartyAction(PlayerbotAI* botAI, std::string const name)
+        : BuffOnPartyAction(botAI, name), name(name) {}
 
     Value<Unit*>* GetTargetValue() override;
 
@@ -154,9 +153,7 @@ public:
 class CastBlessingOfSanctuaryOnPartyAction : public BuffOnPartyAction
 {
 public:
-    CastBlessingOfSanctuaryOnPartyAction(PlayerbotAI* botAI) : BuffOnPartyAction(botAI, "blessing of sanctuary")
-    {
-    }
+    CastBlessingOfSanctuaryOnPartyAction(PlayerbotAI* botAI) : BuffOnPartyAction(botAI, "blessing of sanctuary") {}
 
     std::string const getName() override { return "blessing of sanctuary on party"; }
     Value<Unit*>* GetTargetValue() override;
@@ -173,18 +170,14 @@ class CastHolyShockOnPartyAction : public HealPartyMemberAction
 {
 public:
     CastHolyShockOnPartyAction(PlayerbotAI* botAI)
-        : HealPartyMemberAction(botAI, "holy shock", 25.0f, HealingManaEfficiency::LOW)
-    {
-    }
+        : HealPartyMemberAction(botAI, "holy shock", 25.0f, HealingManaEfficiency::LOW) {}
 };
 
 class CastHolyLightOnPartyAction : public HealPartyMemberAction
 {
 public:
     CastHolyLightOnPartyAction(PlayerbotAI* botAI)
-        : HealPartyMemberAction(botAI, "holy light", 50.0f, HealingManaEfficiency::MEDIUM)
-    {
-    }
+        : HealPartyMemberAction(botAI, "holy light", 50.0f, HealingManaEfficiency::MEDIUM) {}
 };
 
 class CastFlashOfLightAction : public CastHealingSpellAction
@@ -197,9 +190,7 @@ class CastFlashOfLightOnPartyAction : public HealPartyMemberAction
 {
 public:
     CastFlashOfLightOnPartyAction(PlayerbotAI* botAI)
-        : HealPartyMemberAction(botAI, "flash of light", 15.0f, HealingManaEfficiency::HIGH)
-    {
-    }
+        : HealPartyMemberAction(botAI, "flash of light", 15.0f, HealingManaEfficiency::HIGH) {}
 };
 
 class CastLayOnHandsAction : public CastHealingSpellAction
@@ -357,15 +348,19 @@ class CastHammerOfJusticeOnEnemyHealerAction : public CastSpellOnEnemyHealerActi
 {
 public:
     CastHammerOfJusticeOnEnemyHealerAction(PlayerbotAI* botAI)
-        : CastSpellOnEnemyHealerAction(botAI, "hammer of justice")
-    {
-    }
+        : CastSpellOnEnemyHealerAction(botAI, "hammer of justice") {}
 };
 
 class CastHammerOfJusticeSnareAction : public CastSnareSpellAction
 {
 public:
     CastHammerOfJusticeSnareAction(PlayerbotAI* botAI) : CastSnareSpellAction(botAI, "hammer of justice") {}
+};
+
+class CastSenseUndeadAction : public CastBuffSpellAction
+{
+public:
+    CastSenseUndeadAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "sense undead") {}
 };
 
 class CastTurnUndeadAction : public CastBuffSpellAction
@@ -381,25 +376,25 @@ PROTECT_ACTION(CastBlessingOfProtectionProtectAction, "blessing of protection");
 class CastDivinePleaAction : public CastBuffSpellAction
 {
 public:
-    CastDivinePleaAction(PlayerbotAI* ai) : CastBuffSpellAction(ai, "divine plea") {}
+    CastDivinePleaAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "divine plea") {}
 };
 
 class ShieldOfRighteousnessAction : public CastMeleeSpellAction
 {
 public:
-    ShieldOfRighteousnessAction(PlayerbotAI* ai) : CastMeleeSpellAction(ai, "shield of righteousness") {}
+    ShieldOfRighteousnessAction(PlayerbotAI* botAI) : CastMeleeSpellAction(botAI, "shield of righteousness") {}
 };
 
 class CastBeaconOfLightOnMainTankAction : public BuffOnMainTankAction
 {
 public:
-    CastBeaconOfLightOnMainTankAction(PlayerbotAI* ai) : BuffOnMainTankAction(ai, "beacon of light", true) {}
+    CastBeaconOfLightOnMainTankAction(PlayerbotAI* botAI) : BuffOnMainTankAction(botAI, "beacon of light", true) {}
 };
 
 class CastSacredShieldOnMainTankAction : public BuffOnMainTankAction
 {
 public:
-    CastSacredShieldOnMainTankAction(PlayerbotAI* ai) : BuffOnMainTankAction(ai, "sacred shield", false) {}
+    CastSacredShieldOnMainTankAction(PlayerbotAI* botAI) : BuffOnMainTankAction(botAI, "sacred shield", false) {}
 };
 
 class CastAvengingWrathAction : public CastBuffSpellAction
@@ -428,4 +423,5 @@ public:
     bool Execute(Event event) override;
     bool isUseful() override;
 };
+
 #endif

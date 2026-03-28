@@ -59,6 +59,7 @@ public:
         creators["party member almost full health"] = &TriggerContext::PartyMemberAlmostFullHealth;
 
         creators["generic boost"] = &TriggerContext::generic_boost;
+        creators["loss of control"] = &TriggerContext::loss_of_control;
 
         creators["protect party member"] = &TriggerContext::protect_party_member;
 
@@ -103,7 +104,8 @@ public:
         creators["enemy within melee"] = &TriggerContext::enemy_within_melee;
         creators["party member to heal out of spell range"] = &TriggerContext::party_member_to_heal_out_of_spell_range;
 
-        creators["combo points available"] = &TriggerContext::ComboPointsAvailable;
+        creators["combo points 5 available"] = &TriggerContext::ComboPoints5Available;
+        creators["combo points 4 available"] = &TriggerContext::ComboPoints4Available;
         creators["combo points 3 available"] = &TriggerContext::ComboPoints3Available;
         creators["target with combo points almost dead"] = &TriggerContext::target_with_combo_points_almost_dead;
         creators["combo points not full"] = &TriggerContext::ComboPointsNotFull;
@@ -338,7 +340,8 @@ private:
     {
         return new PartyMemberToHealOutOfSpellRangeTrigger(botAI);
     }
-    static Trigger* ComboPointsAvailable(PlayerbotAI* botAI) { return new ComboPointsAvailableTrigger(botAI); }
+    static Trigger* ComboPoints5Available(PlayerbotAI* botAI) { return new ComboPointsAvailableTrigger(botAI, 5); }
+    static Trigger* ComboPoints4Available(PlayerbotAI* botAI) { return new ComboPointsAvailableTrigger(botAI, 4); }
     static Trigger* ComboPoints3Available(PlayerbotAI* botAI) { return new ComboPointsAvailableTrigger(botAI, 3); }
     static Trigger* target_with_combo_points_almost_dead(PlayerbotAI* ai)
     {
@@ -361,6 +364,7 @@ private:
         return new PartyMemberAlmostFullHealthTrigger(botAI);
     }
     static Trigger* generic_boost(PlayerbotAI* botAI) { return new GenericBoostTrigger(botAI); }
+    static Trigger* loss_of_control(PlayerbotAI* botAI) { return new LossOfControlTrigger(botAI); }
     static Trigger* PartyMemberCriticalHealth(PlayerbotAI* botAI)
     {
         return new PartyMemberCriticalHealthTrigger(botAI);
