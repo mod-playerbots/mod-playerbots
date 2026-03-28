@@ -116,8 +116,8 @@ public:
         creators["kael'thas sunstrider assign legendary weapon dps priority"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_assign_legendary_weapon_dps_priority;
 
-        creators["kael'thas sunstrider main tank move devastation away"] =
-            &RaidTempestKeepActionContext::kaelthas_sunstrider_main_tank_move_devastation_away;
+        creators["kael'thas sunstrider move devastation away"] =
+            &RaidTempestKeepActionContext::kaelthas_sunstrider_move_devastation_away;
 
         creators["kael'thas sunstrider loot legendary weapons"] =
             &RaidTempestKeepActionContext::kaelthas_sunstrider_loot_legendary_weapons;
@@ -255,7 +255,7 @@ private:
     static Action* kaelthas_sunstrider_assign_legendary_weapon_dps_priority(
         PlayerbotAI* botAI) { return new KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction(botAI); }
 
-    static Action* kaelthas_sunstrider_main_tank_move_devastation_away(
+    static Action* kaelthas_sunstrider_move_devastation_away(
         PlayerbotAI* botAI) { return new KaelthasSunstriderMoveDevastationAwayAction(botAI); }
 
     static Action* kaelthas_sunstrider_loot_legendary_weapons(

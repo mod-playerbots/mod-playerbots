@@ -7,6 +7,7 @@
 #define _PLAYERBOT_TRAVELMGR_H
 
 #include <boost/functional/hash.hpp>
+#include <map>
 #include <random>
 
 #include "AiObject.h"
@@ -15,6 +16,7 @@
 #include "GridDefines.h"
 #include "PlayerbotAIConfig.h"
 
+class Creature;
 class GuidPosition;
 class ObjectGuid;
 class Quest;
@@ -854,6 +856,16 @@ public:
     void Clear();
     void LoadQuestTravelTable();
 
+    // Navigation
+    void Init();
+    Creature* GetNearestFlightMaster(Player* bot);
+    ObjectGuid GetNearestFlightMasterGuid(Player* bot);
+    std::vector<std::vector<uint32>> GetOptimalFlightDestinations(Player* bot);
+    const std::vector<WorldLocation> GetTeleportLocations(Player* bot);
+    const std::vector<WorldLocation> GetTravelHubs(Player* bot);
+    std::vector<WorldLocation> GetCityLocations(Player* bot);
+    const std::vector<WorldLocation>& GetLocsPerLevelCache(uint8 level) { return locsPerLevelCache[level]; }
+
     template <class D, class W, class URBG>
     void weighted_shuffle(D first, D last, W first_weight, W last_weight, URBG&& g)
     {
@@ -943,6 +955,37 @@ private:
 
     TravelMgr(TravelMgr&&) = delete;
     TravelMgr& operator=(TravelMgr&&) = delete;
+
+    // Navigation initialization
+    void PrepareZone2LevelBracket();
+    void PrepareDestinationCache();
+
+    // Internal types
+    struct LevelBracket
+    {
+        uint32 low;
+        uint32 high;
+        bool InsideBracket(uint32 val) const { return val >= low && val <= high; }
+    };
+
+    struct BankerLocation
+    {
+        WorldLocation loc;
+        uint32 entry;
+    };
+
+    // Navigation caches
+    std::map<uint32, WorldPosition> allianceFlightMasterCache;
+    std::map<uint32, WorldPosition> hordeFlightMasterCache;
+    std::map<uint8, std::vector<WorldLocation>> allianceHubsPerLevelCache;
+    std::map<uint8, std::vector<WorldLocation>> hordeHubsPerLevelCache;
+    std::map<uint8, std::vector<BankerLocation>> bankerLocsPerLevelCache;
+    std::unordered_map<uint32, WorldLocation> bankerEntryToLocation;
+    std::map<uint8, std::vector<WorldLocation>> locsPerLevelCache;
+    std::unordered_map<uint32, std::vector<WorldLocation>> creatureSpawnsByTemplate;
+    std::map<uint32, LevelBracket> zone2LevelBracket;
 };
+
+#define sTravelMgr TravelMgr::instance()
 
 #endif

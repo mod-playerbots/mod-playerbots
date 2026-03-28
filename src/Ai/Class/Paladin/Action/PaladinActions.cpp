@@ -11,7 +11,7 @@
 #include "Playerbots.h"
 #include "SharedDefines.h"
 #include "../../../../../src/server/scripts/Spells/spell_generic.cpp"
-#include "GenericBuffUtils.h"
+#include "Ai/Base/Util/GenericBuffUtils.h"
 #include "Group.h"
 #include "ObjectAccessor.h"
 
@@ -472,9 +472,8 @@ Unit* CastRighteousDefenseAction::GetTarget()
 {
     Unit* current_target = AI_VALUE(Unit*, "current target");
     if (!current_target)
-    {
-        return NULL;
-    }
+        return nullptr;
+
     return current_target->GetVictim();
 }
 

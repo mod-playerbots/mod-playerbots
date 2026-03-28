@@ -284,6 +284,26 @@ public:
     CastBerserkingAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "berserking") {}
 };
 
+class CastEveryManForHimselfAction : public CastSpellAction
+{
+public:
+    CastEveryManForHimselfAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "every man for himself") {}
+
+    std::string const GetTargetName() override { return "self target"; }
+    bool isPossible() override;
+    bool isUseful() override;
+};
+
+class CastWillOfTheForsakenAction : public CastSpellAction
+{
+public:
+    CastWillOfTheForsakenAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "will of the forsaken") {}
+
+    std::string const GetTargetName() override { return "self target"; }
+    bool isPossible() override;
+    bool isUseful() override;
+};
+
 class UseTrinketAction : public Action
 {
 public:

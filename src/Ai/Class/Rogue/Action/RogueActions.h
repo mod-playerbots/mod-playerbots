@@ -78,6 +78,12 @@ public:
     CastFeintAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "feint") {}
 };
 
+class CastColdBloodAction : public CastBuffSpellAction
+{
+public:
+    CastColdBloodAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "cold blood") {}
+};
+
 class CastDismantleAction : public CastSpellAction
 {
 public:

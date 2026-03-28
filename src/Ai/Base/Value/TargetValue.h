@@ -11,7 +11,7 @@
 #include "Value.h"
 
 class PlayerbotAI;
-class ThreatMgr;
+class ThreatManager;
 class Unit;
 
 class FindTargetStrategy
@@ -20,7 +20,7 @@ public:
     FindTargetStrategy(PlayerbotAI* botAI) : result(nullptr), botAI(botAI) {}
 
     Unit* GetResult();
-    virtual void CheckAttacker(Unit* attacker, ThreatMgr* threatMgr) = 0;
+    virtual void CheckAttacker(Unit* attacker, ThreatManager* threatMgr) = 0;
     void GetPlayerCount(Unit* creature, uint32* tankCount, uint32* dpsCount);
     bool IsHighPriority(Unit* attacker);
 
@@ -129,7 +129,7 @@ class FindBossTargetStrategy : public FindTargetStrategy
 {
 public:
     FindBossTargetStrategy(PlayerbotAI* ai) : FindTargetStrategy(ai) {}
-    virtual void CheckAttacker(Unit* attacker, ThreatMgr* threatManager);
+    virtual void CheckAttacker(Unit* attacker, ThreatManager* threatManager);
 };
 
 class BossTargetValue : public TargetValue, public Qualified

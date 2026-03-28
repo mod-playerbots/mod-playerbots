@@ -23,7 +23,6 @@
 #include "DatabaseEnv.h"
 #include "Define.h"
 #include "FleeManager.h"
-#include "FlightMasterCache.h"
 #include "GridNotifiers.h"
 #include "LFGMgr.h"
 #include "MapMgr.h"
@@ -47,9 +46,7 @@
 #include "World.h"
 #include "Cell.h"
 #include "GridNotifiers.h"
-// Required for Cell because of poor AC implementation
 #include "CellImpl.h"
-// Required for GridNotifiers because of poor AC implementation
 #include "GridNotifiersImpl.h"
 
 struct GuidClassRaceInfo
@@ -58,48 +55,6 @@ struct GuidClassRaceInfo
     uint32 rClass;
     uint32 rRace;
 };
-
-enum class CityId : uint8 {
-    STORMWIND, IRONFORGE, DARNASSUS, EXODAR,
-    ORGRIMMAR, UNDERCITY, THUNDER_BLUFF, SILVERMOON_CITY,
-    SHATTRATH_CITY, DALARAN
-};
-
-enum class FactionId : uint8 { ALLIANCE, HORDE, NEUTRAL };
-
-// Map of banker entry → city + faction
-static const std::unordered_map<uint16, std::pair<CityId, FactionId>> bankerToCity = {
-    {2455,  {CityId::STORMWIND,       FactionId::ALLIANCE}}, {2456,  {CityId::STORMWIND,       FactionId::ALLIANCE}}, {2457,  {CityId::STORMWIND,       FactionId::ALLIANCE}},
-    {2460,  {CityId::IRONFORGE,       FactionId::ALLIANCE}}, {2461,  {CityId::IRONFORGE,       FactionId::ALLIANCE}}, {5099,  {CityId::IRONFORGE,       FactionId::ALLIANCE}},
-    {4155,  {CityId::DARNASSUS,       FactionId::ALLIANCE}}, {4208,  {CityId::DARNASSUS,       FactionId::ALLIANCE}}, {4209,  {CityId::DARNASSUS,       FactionId::ALLIANCE}},
-    {17773, {CityId::EXODAR,          FactionId::ALLIANCE}}, {18350, {CityId::EXODAR,          FactionId::ALLIANCE}}, {16710, {CityId::EXODAR,          FactionId::ALLIANCE}},
-    {3320,  {CityId::ORGRIMMAR,       FactionId::HORDE}},    {3309,  {CityId::ORGRIMMAR,       FactionId::HORDE}},    {3318,  {CityId::ORGRIMMAR,       FactionId::HORDE}},
-    {4549,  {CityId::UNDERCITY,       FactionId::HORDE}},    {2459,  {CityId::UNDERCITY,       FactionId::HORDE}},    {2458,  {CityId::UNDERCITY,       FactionId::HORDE}},    {4550, {CityId::UNDERCITY, FactionId::HORDE}},
-    {2996,  {CityId::THUNDER_BLUFF,   FactionId::HORDE}},    {8356,  {CityId::THUNDER_BLUFF,   FactionId::HORDE}},    {8357,  {CityId::THUNDER_BLUFF,   FactionId::HORDE}},
-    {17631, {CityId::SILVERMOON_CITY, FactionId::HORDE}},    {17632, {CityId::SILVERMOON_CITY, FactionId::HORDE}},    {17633, {CityId::SILVERMOON_CITY, FactionId::HORDE}},
-    {16615, {CityId::SILVERMOON_CITY, FactionId::HORDE}},    {16616, {CityId::SILVERMOON_CITY, FactionId::HORDE}},    {16617, {CityId::SILVERMOON_CITY, FactionId::HORDE}},
-    {19246, {CityId::SHATTRATH_CITY,  FactionId::NEUTRAL}},  {19338, {CityId::SHATTRATH_CITY,  FactionId::NEUTRAL}},
-    {19034, {CityId::SHATTRATH_CITY,  FactionId::NEUTRAL}},  {19318, {CityId::SHATTRATH_CITY,  FactionId::NEUTRAL}},
-    {30604, {CityId::DALARAN,         FactionId::NEUTRAL}},  {30605, {CityId::DALARAN,         FactionId::NEUTRAL}},  {30607, {CityId::DALARAN,         FactionId::NEUTRAL}},
-    {28675, {CityId::DALARAN,         FactionId::NEUTRAL}},  {28676, {CityId::DALARAN,         FactionId::NEUTRAL}},  {28677, {CityId::DALARAN,         FactionId::NEUTRAL}}
-};
-
-// Map of city → available banker entries
-static const std::unordered_map<CityId, std::vector<uint16>> cityToBankers = {
-    {CityId::STORMWIND,       {2455, 2456, 2457}},
-    {CityId::IRONFORGE,       {2460, 2461, 5099}},
-    {CityId::DARNASSUS,       {4155, 4208, 4209}},
-    {CityId::EXODAR,          {17773, 18350, 16710}},
-    {CityId::ORGRIMMAR,       {3320, 3309, 3318}},
-    {CityId::UNDERCITY,       {4549, 2459, 2458, 4550}},
-    {CityId::THUNDER_BLUFF,   {2996, 8356, 8357}},
-    {CityId::SILVERMOON_CITY, {17631, 17632, 17633, 16615, 16616, 16617}},
-    {CityId::SHATTRATH_CITY,  {19246, 19338, 19034, 19318}},
-    {CityId::DALARAN,         {30604, 30605, 30607, 28675, 28676, 28677, 29530}}
-};
-
-// Quick lookup map: banker entry → location
-static std::unordered_map<uint32, WorldLocation> bankerEntryToLocation;
 
 void PrintStatsThread() { sRandomPlayerbotMgr.PrintStats(); }
 
@@ -1718,7 +1673,7 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot, std::vector<WorldLocation>&
 
         z = 0.05f + ground;
 
-        if (!botAI->CheckLocationDistanceByLevel(bot, loc, true))
+        if (!botAI->StarterLevelDistanceCheck(bot, loc, true))
             continue;
 
         const LocaleConstant& locale = sWorld->GetDefaultDbcLocale();
@@ -1762,329 +1717,6 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot, std::vector<WorldLocation>&
     //           tlocs.size());
 }
 
-void RandomPlayerbotMgr::PrepareZone2LevelBracket()
-{
-    // Classic WoW - Low - level zones
-    zone2LevelBracket[1] = {5, 12};     // Dun Morogh
-    zone2LevelBracket[12] = {5, 12};    // Elwynn Forest
-    zone2LevelBracket[14] = {5, 12};    // Durotar
-    zone2LevelBracket[85] = {5, 12};    // Tirisfal Glades
-    zone2LevelBracket[141] = {5, 12};   // Teldrassil
-    zone2LevelBracket[215] = {5, 12};   // Mulgore
-    zone2LevelBracket[3430] = {5, 12};  // Eversong Woods
-    zone2LevelBracket[3524] = {5, 12};  // Azuremyst Isle
-
-    // Classic WoW - Mid - level zones
-    zone2LevelBracket[17] = {10, 25};    // Barrens
-    zone2LevelBracket[38] = {10, 20};    // Loch Modan
-    zone2LevelBracket[40] = {10, 21};    // Westfall
-    zone2LevelBracket[130] = {10, 23};   // Silverpine Forest
-    zone2LevelBracket[148] = {10, 21};   // Darkshore
-    zone2LevelBracket[3433] = {10, 22};  // Ghostlands
-    zone2LevelBracket[3525] = {10, 21};  // Bloodmyst Isle
-
-    // Classic WoW - High - level zones
-    zone2LevelBracket[10] = {19, 33};   // Duskwood
-    zone2LevelBracket[11] = {21, 30};   // Wetlands
-    zone2LevelBracket[44] = {16, 28};   // Redridge Mountains
-    zone2LevelBracket[267] = {20, 34};  // Hillsbrad Foothills
-    zone2LevelBracket[331] = {18, 33};  // Ashenvale
-    zone2LevelBracket[400] = {24, 36};  // Thousand Needles
-    zone2LevelBracket[406] = {16, 29};  // Stonetalon Mountains
-
-    // Classic WoW - Higher - level zones
-    zone2LevelBracket[3] = {36, 46};    // Badlands
-    zone2LevelBracket[8] = {36, 46};    // Swamp of Sorrows
-    zone2LevelBracket[15] = {35, 46};   // Dustwallow Marsh
-    zone2LevelBracket[16] = {45, 52};   // Azshara
-    zone2LevelBracket[33] = {32, 47};   // Stranglethorn Vale
-    zone2LevelBracket[45] = {30, 42};   // Arathi Highlands
-    zone2LevelBracket[47] = {42, 51};   // Hinterlands
-    zone2LevelBracket[51] = {45, 51};   // Searing Gorge
-    zone2LevelBracket[357] = {40, 52};  // Feralas
-    zone2LevelBracket[405] = {30, 41};  // Desolace
-    zone2LevelBracket[440] = {41, 52};  // Tanaris
-
-    // Classic WoW - Top - level zones
-    zone2LevelBracket[4] = {52, 57};     // Blasted Lands
-    zone2LevelBracket[28] = {50, 60};    // Western Plaguelands
-    zone2LevelBracket[46] = {51, 60};    // Burning Steppes
-    zone2LevelBracket[139] = {54, 62};   // Eastern Plaguelands
-    zone2LevelBracket[361] = {47, 57};   // Felwood
-    zone2LevelBracket[490] = {49, 56};   // Un'Goro Crater
-    zone2LevelBracket[618] = {54, 61};   // Winterspring
-    zone2LevelBracket[1377] = {54, 63};  // Silithus
-
-    // The Burning Crusade - Zones
-    zone2LevelBracket[3483] = {58, 66};  // Hellfire Peninsula
-    zone2LevelBracket[3518] = {64, 70};  // Nagrand
-    zone2LevelBracket[3519] = {62, 73};  // Terokkar Forest
-    zone2LevelBracket[3520] = {66, 73};  // Shadowmoon Valley
-    zone2LevelBracket[3521] = {60, 67};  // Zangarmarsh
-    zone2LevelBracket[3522] = {64, 73};  // Blade's Edge Mountains
-    zone2LevelBracket[3523] = {67, 73};  // Netherstorm
-    zone2LevelBracket[4080] = {68, 73};  // Isle of Quel'Danas
-
-    // Wrath of the Lich King - Zones
-    zone2LevelBracket[65] = {71, 77};    // Dragonblight
-    zone2LevelBracket[66] = {74, 80};    // Zul'Drak
-    zone2LevelBracket[67] = {77, 80};    // Storm Peaks
-    zone2LevelBracket[210] = {77, 80};   // Icecrown Glacier
-    zone2LevelBracket[394] = {72, 78};   // Grizzly Hills
-    zone2LevelBracket[495] = {68, 74};   // Howling Fjord
-    zone2LevelBracket[2817] = {77, 80};  // Crystalsong Forest
-    zone2LevelBracket[3537] = {68, 75};  // Borean Tundra
-    zone2LevelBracket[3711] = {75, 80};  // Sholazar Basin
-    zone2LevelBracket[4197] = {79, 80};  // Wintergrasp
-
-    // Override with values from config
-    for (auto const& [zoneId, bracketPair] : sPlayerbotAIConfig.zoneBrackets)
-    {
-        zone2LevelBracket[zoneId] = {bracketPair.first, bracketPair.second};
-    }
-}
-
-void RandomPlayerbotMgr::PrepareTeleportCache()
-{
-    uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
-
-    LOG_INFO("playerbots", "Preparing random teleport caches for {} levels...", maxLevel);
-
-    QueryResult results = WorldDatabase.Query(
-        "SELECT "
-        "g.map, "
-        "position_x, "
-        "position_y, "
-        "position_z, "
-        "t.minlevel, "
-        "t.maxlevel "
-        "FROM "
-        "(SELECT "
-        "map, "
-        "MIN( c.guid ) guid "
-        "FROM "
-        "creature c "
-        "INNER JOIN creature_template t ON c.id1 = t.entry "
-        "WHERE "
-        "t.npcflag = 0 "
-        "AND t.lootid != 0 "
-        "AND t.maxlevel - t.minlevel < 3 "
-        "AND map IN ({}) "
-        "AND t.entry not in (32820, 24196, 30627, 30617) "
-        "AND c.spawntimesecs < 1000 "
-        "AND t.faction not in (11, 71, 79, 85, 188, 1575) "
-        "AND (t.unit_flags & 256) = 0 "
-        "AND (t.unit_flags & 4096) = 0 "
-        "AND t.rank = 0 "
-        // "AND (t.flags_extra & 32768) = 0 "
-        "GROUP BY "
-        "map, "
-        "ROUND(position_x / 50), "
-        "ROUND(position_y / 50), "
-        "ROUND(position_z / 50) "
-        "HAVING "
-        "count(*) >= 2) "
-        "AS g "
-        "INNER JOIN creature c ON g.guid = c.guid "
-        "INNER JOIN creature_template t on c.id1 = t.entry "
-        "ORDER BY "
-        "t.minlevel;",
-        sPlayerbotAIConfig.randomBotMapsAsString.c_str());
-    uint32 collected_locs = 0;
-    if (results)
-    {
-        do
-        {
-            Field* fields = results->Fetch();
-            uint16 mapId = fields[0].Get<uint16>();
-            float x = fields[1].Get<float>();
-            float y = fields[2].Get<float>();
-            float z = fields[3].Get<float>();
-            uint32 min_level = fields[4].Get<uint32>();
-            uint32 max_level = fields[5].Get<uint32>();
-            uint32 level = (min_level + max_level + 1) / 2;
-            WorldLocation loc(mapId, x, y, z, 0);
-            collected_locs++;
-            for (int32 l = (int32)level - (int32)sPlayerbotAIConfig.randomBotTeleLowerLevel;
-                 l <= (int32)level + (int32)sPlayerbotAIConfig.randomBotTeleHigherLevel; l++)
-            {
-                if (l < 1 || l > maxLevel)
-                {
-                    continue;
-                }
-                locsPerLevelCache[(uint8)l].push_back(loc);
-            }
-        } while (results->NextRow());
-    }
-    LOG_INFO("playerbots", ">> {} locations for level collected.", collected_locs);
-
-    if (sPlayerbotAIConfig.enableNewRpgStrategy)
-    {
-        PrepareZone2LevelBracket();
-        LOG_INFO("playerbots", "Preparing innkeepers / flightmasters locations for level...");
-        results = WorldDatabase.Query(
-            "SELECT "
-            "map, "
-            "position_x, "
-            "position_y, "
-            "position_z, "
-            "orientation, "
-            "t.faction, "
-            "t.entry, "
-            "t.npcflag, "
-            "c.guid "
-            "FROM "
-            "creature c "
-            "INNER JOIN creature_template t on c.id1 = t.entry "
-            "WHERE "
-            "t.npcflag & 73728 "
-            "AND map IN ({}) "
-            "ORDER BY "
-            "t.minlevel;",
-            sPlayerbotAIConfig.randomBotMapsAsString.c_str());
-        collected_locs = 0;
-        if (results)
-        {
-            do
-            {
-                Field* fields = results->Fetch();
-                uint16 mapId = fields[0].Get<uint16>();
-                float x = fields[1].Get<float>();
-                float y = fields[2].Get<float>();
-                float z = fields[3].Get<float>();
-                float orient = fields[4].Get<float>();
-                uint32 faction = fields[5].Get<uint32>();
-                uint32 tEntry = fields[6].Get<uint32>();
-                uint32 tNpcflag = fields[7].Get<uint32>();
-                uint32 guid = fields[8].Get<uint32>();
-
-                if (tEntry == 3838 || tEntry == 29480)
-                    continue;
-
-                const FactionTemplateEntry* entry = sFactionTemplateStore.LookupEntry(faction);
-
-                WorldLocation loc(mapId, x + cos(orient) * 5.0f, y + sin(orient) * 5.0f, z + 0.5f, orient + M_PI);
-                collected_locs++;
-                Map* map = sMapMgr->FindMap(loc.GetMapId(), 0);
-                if (!map)
-                    continue;
-                bool forHorde = !(entry->hostileMask & 4);
-                bool forAlliance = !(entry->hostileMask & 2);
-                if (tNpcflag & UNIT_NPC_FLAG_FLIGHTMASTER)
-                {
-                    WorldPosition pos(mapId, x, y, z, orient);
-                    if (forHorde)
-                        FlightMasterCache::Instance().AddHordeFlightMaster(guid, pos);
-
-                    if (forAlliance)
-                        FlightMasterCache::Instance().AddAllianceFlightMaster(guid, pos);
-                }
-                const AreaTableEntry* area = sAreaTableStore.LookupEntry(map->GetAreaId(PHASEMASK_NORMAL, x, y, z));
-                uint32 zoneId = area->zone ? area->zone : area->ID;
-                if (zone2LevelBracket.find(zoneId) == zone2LevelBracket.end())
-                    continue;
-                LevelBracket bracket = zone2LevelBracket[zoneId];
-                for (int i = bracket.low; i <= bracket.high; i++)
-                {
-                    if (forHorde)
-                        hordeStarterPerLevelCache[i].push_back(loc);
-                    if (forAlliance)
-                        allianceStarterPerLevelCache[i].push_back(loc);
-                }
-
-            } while (results->NextRow());
-        }
-
-        // add all initial position
-        for (uint32 i = 1; i < sRaceMgr->GetMaxRaces(); i++)
-        {
-            for (uint32 j = 1; j < MAX_CLASSES; j++)
-            {
-                PlayerInfo const* info = sObjectMgr->GetPlayerInfo(i, j);
-
-                if (!info)
-                    continue;
-
-                WorldPosition pos(info->mapId, info->positionX, info->positionY, info->positionZ, info->orientation);
-
-                for (int32 l = 1; l <= 5; l++)
-                {
-                    if ((1 << (i - 1)) & sRaceMgr->GetAllianceRaceMask())
-                        allianceStarterPerLevelCache[(uint8)l].push_back(pos);
-                    else
-                        hordeStarterPerLevelCache[(uint8)l].push_back(pos);
-                }
-                break;
-            }
-        }
-        LOG_INFO("playerbots", ">> {} innkeepers locations for level collected.", collected_locs);
-    }
-
-    results = WorldDatabase.Query(
-        "SELECT "
-        "map, "
-        "position_x, "
-        "position_y, "
-        "position_z, "
-        "orientation, "
-        "t.minlevel, "
-        "t.entry "
-        "FROM "
-        "creature c "
-        "INNER JOIN creature_template t on c.id1 = t.entry "
-        "WHERE "
-        "t.npcflag & 131072 "
-        "AND t.npcflag != 135298 "
-        "AND t.minlevel != 55 "
-        "AND t.minlevel != 65 "
-        "AND t.faction not in (35, 474, 69, 57) "
-        "AND t.entry not in (30606, 30608, 29282) "
-        "AND map IN ({}) "
-        "ORDER BY "
-        "t.minlevel;",
-        sPlayerbotAIConfig.randomBotMapsAsString.c_str());
-    collected_locs = 0;
-    if (results)
-    {
-        do
-        {
-            Field* fields = results->Fetch();
-            uint16 mapId = fields[0].Get<uint16>();
-            float x = fields[1].Get<float>();
-            float y = fields[2].Get<float>();
-            float z = fields[3].Get<float>();
-            float orient = fields[4].Get<float>();
-            uint32 level = fields[5].Get<uint32>();
-            uint32 entry = fields[6].Get<uint32>();
-            BankerLocation bLoc;
-            bLoc.loc = WorldLocation(mapId, x + cos(orient) * 6.0f, y + sin(orient) * 6.0f, z + 2.0f, orient + M_PI);
-            bLoc.entry = entry;
-            collected_locs++;
-            for (int32 l = 1; l <= maxLevel; l++)
-            {
-                // Bots 1-60 go to base game bankers (all have minlevel 30 or 45)
-                if (l <=60 && level > 45)
-                {
-                    continue;
-                }
-                // Bots 61-70 go to Shattrath bankers (all have minlevel 60 or 70)
-                if ((l >=61 && l <=70) && (level < 60 || level > 70))
-                {
-                    continue;
-                }
-                // Bots 71+ go to Dalaran bankers (all have minlevel 75)
-                if ((l >=71) && level != 75)
-                {
-                    continue;
-                }
-                bankerLocsPerLevelCache[(uint8)l].push_back(bLoc);
-                bankerEntryToLocation[bLoc.entry] = bLoc.loc;
-            }
-        } while (results->NextRow());
-    }
-    LOG_INFO("playerbots", ">> {} banker locations for level collected.", collected_locs);
-}
-
 void RandomPlayerbotMgr::PrepareAddclassCache()
 {
     // Using accounts marked as type 2 (AddClass)
@@ -2125,11 +1757,6 @@ void RandomPlayerbotMgr::Init()
     if (sPlayerbotAIConfig.addClassCommand)
         sRandomPlayerbotMgr.PrepareAddclassCache();
 
-    if (sPlayerbotAIConfig.enabled)
-    {
-        sRandomPlayerbotMgr.PrepareTeleportCache();
-    }
-
     if (sPlayerbotAIConfig.randomBotJoinBG)
         sRandomPlayerbotMgr.LoadBattleMastersCache();
 
@@ -2141,103 +1768,17 @@ void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
     if (bot->InBattleground())
         return;
 
-    uint32 level = bot->GetLevel();
-    uint8 race = bot->getRace();
-    std::vector<WorldLocation>* locs = nullptr;
-    if (sPlayerbotAIConfig.enableNewRpgStrategy)
-        locs = IsAlliance(race) ? &allianceStarterPerLevelCache[level] : &hordeStarterPerLevelCache[level];
-    else
-        locs = &locsPerLevelCache[level];
-    if (level >= 10 && urand(0, 100) < sPlayerbotAIConfig.probTeleToBankers * 100)
+    std::vector<WorldLocation> locs = sTravelMgr.GetCityLocations(bot);
+    if (!locs.empty())
     {
-        std::vector<WorldLocation> fallbackLocs;
-        for (auto& bLoc : bankerLocsPerLevelCache[level])
-            fallbackLocs.push_back(bLoc.loc);
-
-        if (!sPlayerbotAIConfig.enableWeightTeleToCityBankers)
-        {
-            RandomTeleport(bot, fallbackLocs, true);
-            return;
-        }
-
-        // Collect valid cities based on bot faction.
-        std::unordered_set<CityId> validBankerCities;
-        for (auto& loc : bankerLocsPerLevelCache[level])
-        {
-            auto cityIt = bankerToCity.find(loc.entry);
-            if (cityIt == bankerToCity.end()) continue;
-
-            CityId cityId = cityIt->second.first;
-            FactionId cityFactionId = cityIt->second.second;
-
-            if ((IsAlliance(bot->getRace()) && cityFactionId == FactionId::ALLIANCE) ||
-                (!IsAlliance(bot->getRace()) && cityFactionId == FactionId::HORDE) ||
-                (cityFactionId == FactionId::NEUTRAL))
-            {
-                validBankerCities.insert(cityId);
-            }
-        }
-
-        // Fallback if no valid cities
-        if (validBankerCities.empty())
-        {
-            RandomTeleport(bot, fallbackLocs, true);
-            return;
-        }
-
-        // Apply weights to valid cities
-        std::vector<CityId> weightedCities;
-        for (CityId city : validBankerCities)
-        {
-            int weight = 0;
-            switch (city)
-            {
-                case CityId::STORMWIND:       weight = sPlayerbotAIConfig.weightTeleToStormwind; break;
-                case CityId::IRONFORGE:       weight = sPlayerbotAIConfig.weightTeleToIronforge; break;
-                case CityId::DARNASSUS:       weight = sPlayerbotAIConfig.weightTeleToDarnassus; break;
-                case CityId::EXODAR:          weight = sPlayerbotAIConfig.weightTeleToExodar; break;
-                case CityId::ORGRIMMAR:       weight = sPlayerbotAIConfig.weightTeleToOrgrimmar; break;
-                case CityId::UNDERCITY:       weight = sPlayerbotAIConfig.weightTeleToUndercity; break;
-                case CityId::THUNDER_BLUFF:   weight = sPlayerbotAIConfig.weightTeleToThunderBluff; break;
-                case CityId::SILVERMOON_CITY: weight = sPlayerbotAIConfig.weightTeleToSilvermoonCity; break;
-                case CityId::SHATTRATH_CITY:  weight = sPlayerbotAIConfig.weightTeleToShattrathCity; break;
-                case CityId::DALARAN:         weight = sPlayerbotAIConfig.weightTeleToDalaran; break;
-                default:              weight = 0; break;
-            }
-            if (weight <= 0) continue;
-
-            for (int i = 0; i < weight; ++i)
-            {
-                weightedCities.push_back(city);
-            }
-        }
-
-        // Fallback if no valid cities
-        if (weightedCities.empty())
-        {
-            RandomTeleport(bot, fallbackLocs, true);
-            return;
-        }
-
-        // Pick a weighted city randomly, then a random banker in that city
-        //   then teleport to that banker
-        CityId selectedCity = weightedCities[urand(0, weightedCities.size() - 1)];
-        auto const& bankers = cityToBankers.at(selectedCity);
-        uint32 selectedBankerEntry = bankers[urand(0, bankers.size() - 1)];
-        auto locIt = bankerEntryToLocation.find(selectedBankerEntry);
-        if (locIt != bankerEntryToLocation.end())
-        {
-            std::vector<WorldLocation> teleportTarget = { locIt->second };
-            RandomTeleport(bot, teleportTarget, true);
-            return;
-        }
-
-        // Fallback if something went wrong
-        RandomTeleport(bot, *locs);
+        RandomTeleport(bot, locs, true);
+        return;
     }
-    else
+    locs = sTravelMgr.GetTeleportLocations(bot);
+    if (!locs.empty())
     {
-        RandomTeleport(bot, *locs);
+        RandomTeleport(bot, locs, false);
+        return;
     }
 }
 
@@ -2246,17 +1787,11 @@ void RandomPlayerbotMgr::RandomTeleportGrindForLevel(Player* bot)
     if (bot->InBattleground())
         return;
 
-    uint32 level = bot->GetLevel();
-    uint8 race = bot->getRace();
-    std::vector<WorldLocation>* locs = nullptr;
-    if (sPlayerbotAIConfig.enableNewRpgStrategy)
-        locs = IsAlliance(race) ? &allianceStarterPerLevelCache[level] : &hordeStarterPerLevelCache[level];
-    else
-        locs = &locsPerLevelCache[level];
+    std::vector<WorldLocation> locs = sTravelMgr.GetTeleportLocations(bot);
     LOG_DEBUG("playerbots", "Random teleporting bot {} for level {} ({} locations available)", bot->GetName().c_str(),
-              bot->GetLevel(), locs->size());
+              bot->GetLevel(), locs.size());
 
-    RandomTeleport(bot, *locs);
+    RandomTeleport(bot, locs);
 }
 
 void RandomPlayerbotMgr::RandomTeleport(Player* bot)

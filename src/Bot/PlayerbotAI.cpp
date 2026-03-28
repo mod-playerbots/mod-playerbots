@@ -1015,28 +1015,58 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
     }
     else if (filtered == "logout")
     {
-        if (!bot->GetSession()->isLogingOut())
+        if (bot->GetSession()->isLogingOut())
+            return;
+
+        // Verify the command came from this bot's master. Also handles nullptr
+        if (fromPlayer != master)
         {
             if (type == CHAT_MSG_WHISPER)
-                TellMaster("I'm logging out!");
+            {
+                std::string message = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "bot_not_your_master", "You are not my master!", {});
+                bot->Whisper(message, LANG_UNIVERSAL, fromPlayer);
+            }
+            return;
+        }
 
-            PlayerbotMgr* masterBotMgr = nullptr;
-            if (master)
-                masterBotMgr = GET_PLAYERBOT_MGR(master);
-            if (masterBotMgr)
-                masterBotMgr->LogoutPlayerBot(bot->GetGUID());
+        PlayerbotMgr* masterBotMgr = GET_PLAYERBOT_MGR(master);
+        if (!masterBotMgr)
+            return;
+
+        // Only respond if this bot is in master's collection (alt/addclass)
+        if (masterBotMgr->GetPlayerBot(bot->GetGUID()))
+        {
+            if (type == CHAT_MSG_WHISPER)
+            {
+                std::string message = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "logout_start", "I'm logging out!", {});
+                TellMaster(message);
+            }
+
+            masterBotMgr->LogoutPlayerBot(bot->GetGUID());
+        }
+        else if (type == CHAT_MSG_WHISPER)
+        {
+            std::string message = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "bot_rndbot_no_logout", "You can't command me to logout!", {});
+            TellMaster(message);
         }
     }
     else if (filtered == "logout cancel")
     {
-        if (bot->GetSession()->isLogingOut())
-        {
-            if (type == CHAT_MSG_WHISPER)
-                TellMaster("Logout cancelled!");
+        if (!bot->GetSession()->isLogingOut())
+            return;
 
-            WorldPackets::Character::LogoutCancel data = WorldPacket(CMSG_LOGOUT_CANCEL);
-            bot->GetSession()->HandleLogoutCancelOpcode(data);
+        if (type == CHAT_MSG_WHISPER)
+        {
+            std::string message = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "logout_cancel", "Logout cancelled!", {});
+            TellMaster(message);
         }
+
+        WorldPackets::Character::LogoutCancel data = WorldPacket(CMSG_LOGOUT_CANCEL);
+        bot->GetSession()->HandleLogoutCancelOpcode(data);
     }
     else
     {
@@ -1119,6 +1149,9 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                 if (guid1.IsEmpty() || p.size() > p.DEFAULT_SIZE)
                     return;
 
+                if (lang == LANG_ADDON)
+                        return;
+
                 if (p.GetOpcode() == SMSG_GM_MESSAGECHAT)
                 {
                     p >> textLen;
@@ -1167,8 +1200,6 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                         return;
 
                     if (HasRealPlayerMaster() && guid1 != GetMaster()->GetGUID())
-                        return;
-                    if (lang == LANG_ADDON)
                         return;
 
                     if (message.starts_with(sPlayerbotAIConfig.toxicLinksPrefix) &&
@@ -1249,17 +1280,10 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
 
             p >> guid.ReadAsPacked() >> counter >> vcos >> vsin >> horizontalSpeed >> verticalSpeed;
             if (horizontalSpeed <= 0.1f)
-            {
                 horizontalSpeed = 0.11f;
-            }
             verticalSpeed = -verticalSpeed;
-            // high vertical may result in stuck as bot can not handle gravity
-            if (verticalSpeed > 35.0f)
-                break;
-            // stop casting
-            InterruptSpell();
 
-            // stop movement
+            InterruptSpell();
             bot->StopMoving();
             bot->GetMotionMaster()->Clear();
 
@@ -1538,7 +1562,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         "naxx", "onyxia", "ssc", "tempestkeep", "ulduar", "voa", "wotlk-an", "wotlk-cos",
         "wotlk-dtk", "wotlk-eoe", "wotlk-fos", "wotlk-gd", "wotlk-hol", "wotlk-hor",
         "wotlk-hos", "wotlk-nex", "wotlk-occ", "wotlk-ok", "wotlk-os", "wotlk-pos",
-        "wotlk-toc", "wotlk-uk", "wotlk-up", "wotlk-vh"
+        "wotlk-toc", "wotlk-uk", "wotlk-up", "wotlk-vh", "zulaman"
     };
 
     for (const std::string& strat : allInstanceStrategies)
@@ -1579,6 +1603,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             break;
         case 565:
             strategyName = "gruulslair";  // Gruul's Lair
+            break;
+        case 568:
+            strategyName = "zulaman";  // Zul'Aman
             break;
         case 574:
             strategyName = "wotlk-uk";  // Utgarde Keep
@@ -6486,7 +6513,7 @@ ChatChannelSource PlayerbotAI::GetChatChannelSource(Player* bot, uint32 type, st
     return ChatChannelSource::SRC_UNDEFINED;
 }
 
-bool PlayerbotAI::CheckLocationDistanceByLevel(Player* player, const WorldLocation& loc, bool fromStartUp)
+bool PlayerbotAI::StarterLevelDistanceCheck(Player* player, const WorldLocation& loc, bool fromStartUp)
 {
     if (player->GetLevel() > 16)
         return true;
