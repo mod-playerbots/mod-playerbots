@@ -35,7 +35,7 @@ INSERT INTO `ai_playerbot_texts`
      `text_loc1`, `text_loc2`, `text_loc3`, `text_loc4`,
      `text_loc5`, `text_loc6`, `text_loc7`, `text_loc8`)
 VALUES (
-    1743,
+    1745,
     'focus_heal_not_healer',
     'I''m not a healer or offhealer (please change my strats to heal or offheal)',
     0, 0,
@@ -56,7 +56,7 @@ INSERT INTO `ai_playerbot_texts`
      `text_loc1`, `text_loc2`, `text_loc3`, `text_loc4`,
      `text_loc5`, `text_loc6`, `text_loc7`, `text_loc8`)
 VALUES (
-    1744,
+    1746,
     'focus_heal_provide_names',
     'Please provide one or more player names',
     0, 0,
@@ -77,7 +77,7 @@ INSERT INTO `ai_playerbot_texts`
      `text_loc1`, `text_loc2`, `text_loc3`, `text_loc4`,
      `text_loc5`, `text_loc6`, `text_loc7`, `text_loc8`)
 VALUES (
-    1745,
+    1747,
     'focus_heal_no_targets',
     'I don''t have any focus heal targets',
     0, 0,
@@ -98,7 +98,7 @@ INSERT INTO `ai_playerbot_texts`
      `text_loc1`, `text_loc2`, `text_loc3`, `text_loc4`,
      `text_loc5`, `text_loc6`, `text_loc7`, `text_loc8`)
 VALUES (
-    1746,
+    1748,
     'focus_heal_current_targets',
     'My focus heal targets are %targets',
     0, 0,
@@ -119,7 +119,7 @@ INSERT INTO `ai_playerbot_texts`
      `text_loc1`, `text_loc2`, `text_loc3`, `text_loc4`,
      `text_loc5`, `text_loc6`, `text_loc7`, `text_loc8`)
 VALUES (
-    1747,
+    1749,
     'focus_heal_cleared',
     'Removed focus heal targets',
     0, 0,
@@ -140,7 +140,7 @@ INSERT INTO `ai_playerbot_texts`
      `text_loc1`, `text_loc2`, `text_loc3`, `text_loc4`,
      `text_loc5`, `text_loc6`, `text_loc7`, `text_loc8`)
 VALUES (
-    1748,
+    1750,
     'focus_heal_add_remove_syntax',
     'Please specify a + for add or - to remove a target',
     0, 0,
@@ -161,7 +161,7 @@ INSERT INTO `ai_playerbot_texts`
      `text_loc1`, `text_loc2`, `text_loc3`, `text_loc4`,
      `text_loc5`, `text_loc6`, `text_loc7`, `text_loc8`)
 VALUES (
-    1749,
+    1751,
     'focus_heal_not_in_group',
     'I''m not in a group',
     0, 0,
@@ -182,7 +182,7 @@ INSERT INTO `ai_playerbot_texts`
      `text_loc1`, `text_loc2`, `text_loc3`, `text_loc4`,
      `text_loc5`, `text_loc6`, `text_loc7`, `text_loc8`)
 VALUES (
-    1750,
+    1752,
     'focus_heal_not_in_group_with',
     'I''m not in a group with %player_name',
     0, 0,
@@ -203,7 +203,7 @@ INSERT INTO `ai_playerbot_texts`
      `text_loc1`, `text_loc2`, `text_loc3`, `text_loc4`,
      `text_loc5`, `text_loc6`, `text_loc7`, `text_loc8`)
 VALUES (
-    1751,
+    1753,
     'focus_heal_added',
     'Added %player_name to focus heal targets',
     0, 0,
@@ -224,7 +224,7 @@ INSERT INTO `ai_playerbot_texts`
      `text_loc1`, `text_loc2`, `text_loc3`, `text_loc4`,
      `text_loc5`, `text_loc6`, `text_loc7`, `text_loc8`)
 VALUES (
-    1752,
+    1754,
     'focus_heal_removed',
     'Removed %player_name from focus heal targets',
     0, 0,
