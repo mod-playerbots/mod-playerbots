@@ -948,14 +948,15 @@ void MovementAction::UpdateMovementState()
         const auto liquidState = bot->GetLiquidData().Status;
         const float gZ = bot->GetMapWaterOrGroundLevel(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
         const bool onGroundZ = bot->GetPositionZ() < gZ + 1.f;
-        const bool canSwim = liquidState == LIQUID_MAP_IN_WATER || liquidState == LIQUID_MAP_UNDER_WATER;
-        const bool canFly = bot->HasIncreaseMountedFlightSpeedAura() || bot->HasFlyAura();
+        const bool wantsSwim = liquidState == LIQUID_MAP_IN_WATER || liquidState == LIQUID_MAP_UNDER_WATER;
+        const bool wantsFly = bot->HasIncreaseMountedFlightSpeedAura() || bot->HasFlyAura();
         const bool canWaterWalk = bot->HasWaterWalkAura();
         const bool isMasterFlying = master ? master->HasUnitMovementFlag(MOVEMENTFLAG_FLYING) : true;
         const bool isMasterSwimming = master ? master->HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING) : true;
         const bool isFlying = bot->HasUnitMovementFlag(MOVEMENTFLAG_FLYING);
         const bool isSwimming = bot->HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
         const bool isWaterWalking = bot->HasUnitMovementFlag(MOVEMENTFLAG_WATERWALKING);
+        const bool hasGravityDisabled = bot->HasUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
         bool movementFlagsUpdated = false;
 
         // handle water (fragile logic do not alter without testing every detail, animation and transition)
@@ -970,11 +971,11 @@ void MovementAction::UpdateMovementState()
             else if ((!canWaterWalk || isMasterSwimming) && isWaterWalking)
             {
                 bot->RemoveUnitMovementFlag(MOVEMENTFLAG_WATERWALKING);
-                if (canSwim)
+                if (wantsSwim)
                     bot->SetSwim(true);
                 movementFlagsUpdated = true;
             }
-            else if (!canSwim && isSwimming)
+            else if (!wantsSwim && isSwimming)
             {
                 bot->SetSwim(false);
                 movementFlagsUpdated = true;
@@ -990,17 +991,21 @@ void MovementAction::UpdateMovementState()
         }
 
         // handle flying
-        if ((canFly && !isFlying) && isMasterFlying)
+        if (wantsFly && !isFlying && isMasterFlying)
         {
             bot->AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
             bot->AddUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
             bot->AddUnitMovementFlag(MOVEMENTFLAG_FLYING);
-
-            // required for transition and state monitoring.
-            if (MotionMaster* mm = bot->GetMotionMaster())
-                mm->MoveTakeoff(0, {bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ() + 1.F}, 0.F, true);
+            movementFlagsUpdated = true;
         }
-        else if ((!canFly && !isWaterWalking && isFlying) || (!isMasterFlying && isFlying && onGroundZ))
+        else if (!wantsFly && !isWaterWalking && (isFlying || hasGravityDisabled))
+        {
+            bot->RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
+            bot->RemoveUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
+            bot->RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING);
+            movementFlagsUpdated = true;
+        }
+        else if (!isMasterFlying && isFlying && onGroundZ)
         {
             bot->RemoveUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
             bot->RemoveUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);

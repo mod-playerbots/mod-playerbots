@@ -91,6 +91,7 @@
 #include "ThreatValues.h"
 #include "TradeValues.h"
 #include "Value.h"
+#include "WaitForAttackTimeValue.h"
 
 class PlayerbotAI;
 
@@ -322,6 +323,8 @@ public:
         creators["can fish"] = &ValueContext::can_fish;
         creators["can use fishing bobber"] = &ValueContext::can_use_fishing_bobber;
         creators["fishing spot"] = &ValueContext::fishing_spot;
+        creators["wait for attack time"] = &ValueContext::wait_for_attack_time;
+        creators["combat start time"] = &ValueContext::combat_start_time;
     }
 
 private:
@@ -578,6 +581,8 @@ private:
     {
         return new ManualSetValue<bool>(ai, false, "custom_glyphs");
     }
+    static UntypedValue* wait_for_attack_time(PlayerbotAI* ai) { return new WaitForAttackTimeValue(ai); }
+    static UntypedValue* combat_start_time(PlayerbotAI* ai) { return new CombatStartTimeValue(ai); }
 };
 
 #endif
