@@ -62,6 +62,7 @@ public:
         creators["generic boost"] = &TriggerContext::generic_boost;
         creators["loss of control"] = &TriggerContext::loss_of_control;
         creators["fear charm sleep"] = &TriggerContext::fear_charm_sleep;
+        creators["fear sleep sap"] = &TriggerContext::fear_sleep_sap;
 
         creators["protect party member"] = &TriggerContext::protect_party_member;
 
@@ -369,6 +370,7 @@ private:
     static Trigger* generic_boost(PlayerbotAI* botAI) { return new GenericBoostTrigger(botAI); }
     static Trigger* loss_of_control(PlayerbotAI* botAI) { return new LossOfControlTrigger(botAI); }
     static Trigger* fear_charm_sleep(PlayerbotAI* botAI) { return new FearCharmSleepTrigger(botAI); }
+    static Trigger* fear_sleep_sap(PlayerbotAI* botAI) { return new FearSleepSapTrigger(botAI); }
     static Trigger* PartyMemberCriticalHealth(PlayerbotAI* botAI)
     {
         return new PartyMemberCriticalHealthTrigger(botAI);
