@@ -22,10 +22,10 @@ bool LootRollAction::Execute(Event /*event*/)
     std::vector<Roll*> rolls = group->GetRolls();
     for (Roll*& roll : rolls)
     {
-        if (roll->playerVote.find(bot->GetGUID())->second != NOT_EMITED_YET)
-        {
+        auto voteItr = roll->playerVote.find(bot->GetGUID());
+        if (voteItr == roll->playerVote.end() || voteItr->second != NOT_EMITED_YET)
             continue;
-        }
+
         ObjectGuid guid = roll->itemGUID;
         uint32 itemId = roll->itemid;
         int32 randomProperty = 0;
@@ -41,27 +41,22 @@ bool LootRollAction::Execute(Event /*event*/)
 
         std::string itemUsageParam;
         if (randomProperty != 0)
-        {
             itemUsageParam = std::to_string(itemId) + "," + std::to_string(randomProperty);
-        }
         else
-        {
             itemUsageParam = std::to_string(itemId);
-        }
+
         ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", itemUsageParam);
 
         // Armor Tokens are classed as MISC JUNK (Class 15, Subclass 0), luckily no other items I found have class bits and epic quality.
         if (proto->Class == ITEM_CLASS_MISC && proto->SubClass == ITEM_SUBCLASS_JUNK && proto->Quality == ITEM_QUALITY_EPIC)
         {
             if (CanBotUseToken(proto, bot))
-            {
                 vote = NEED; // Eligible for "Need"
-            }
             else
-            {
                 vote = GREED; // Not eligible, so "Greed"
-            }
         }
+        else if (usage == ITEM_USAGE_DISENCHANT)
+            vote = sPlayerbotAIConfig.lootRollDisenchant ? DISENCHANT : GREED;
         else
         {
             switch (proto->Class)
@@ -69,40 +64,34 @@ bool LootRollAction::Execute(Event /*event*/)
                 case ITEM_CLASS_WEAPON:
                 case ITEM_CLASS_ARMOR:
                     if (usage == ITEM_USAGE_EQUIP || usage == ITEM_USAGE_REPLACE || usage == ITEM_USAGE_BAD_EQUIP)
-                    {
                         vote = NEED;
-                    }
                     else if (usage != ITEM_USAGE_NONE)
-                    {
                         vote = GREED;
-                    }
+                    break;
+                case ITEM_CLASS_RECIPE:
+                    if (!sPlayerbotAIConfig.lootRollRecipe)
+                        vote = PASS;
+                    else if (usage == ITEM_USAGE_SKILL)
+                        vote = NEED;  // Bot can learn this recipe
+                    else if (proto->Bonding != BIND_WHEN_PICKED_UP)
+                        vote = GREED;  // BoE recipe bot can't learn - GREED for AH/trade
                     break;
                 default:
                     if (StoreLootAction::IsLootAllowed(itemId, botAI))
-                        vote = CalculateRollVote(proto); // Ensure correct Need/Greed behavior
+                        vote = CalculateRollVote(proto, usage);
                     break;
             }
         }
-        if (sPlayerbotAIConfig.lootRollLevel == 0)
+        if (vote == NEED)
         {
+            if (sPlayerbotAIConfig.lootNeedRollLevel == 0 || RollUniqueCheck(proto, bot))
+                vote = PASS;
+            else if (sPlayerbotAIConfig.lootNeedRollLevel == 1)
+                vote = GREED;
+        }
+        else if (vote == GREED && !sPlayerbotAIConfig.lootGreedRollLevel)
             vote = PASS;
-        }
-        else if (sPlayerbotAIConfig.lootRollLevel == 1)
-        {
-            // Level 1 = "greed" mode: bots greed on useful items but never need
-            // Only downgrade NEED to GREED, preserve GREED votes as-is
-            if (vote == NEED)
-            {
-                if (RollUniqueCheck(proto, bot))
-                    {
-                        vote = PASS;
-                    }
-                else
-                    {
-                        vote = GREED;
-                    }
-            }
-        }
+
         switch (group->GetLootMethod())
         {
             case MASTER_LOOT:
@@ -120,11 +109,14 @@ bool LootRollAction::Execute(Event /*event*/)
     return false;
 }
 
-RollVote LootRollAction::CalculateRollVote(ItemTemplate const* proto)
+RollVote LootRollAction::CalculateRollVote(ItemTemplate const* proto, ItemUsage usage)
 {
-    std::ostringstream out;
-    out << proto->ItemId;
-    ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", out.str());
+    if (usage == ITEM_USAGE_NONE)
+    {
+        std::ostringstream out;
+        out << proto->ItemId;
+        usage = AI_VALUE2(ItemUsage, "item usage", out.str());
+    }
 
     RollVote needVote = PASS;
     switch (usage)
@@ -137,10 +129,12 @@ RollVote LootRollAction::CalculateRollVote(ItemTemplate const* proto)
             break;
         case ITEM_USAGE_SKILL:
         case ITEM_USAGE_USE:
-        case ITEM_USAGE_DISENCHANT:
         case ITEM_USAGE_AH:
         case ITEM_USAGE_VENDOR:
             needVote = GREED;
+            break;
+        case ITEM_USAGE_DISENCHANT:
+            needVote = sPlayerbotAIConfig.lootRollDisenchant ? DISENCHANT : GREED;
             break;
         default:
             break;
@@ -195,9 +189,7 @@ bool CanBotUseToken(ItemTemplate const* proto, Player* bot)
 
     // Check if the bot's class is allowed to use the token
     if (proto->AllowableClass & botClassMask)
-    {
         return true; // Bot's class is eligible to use this token
-    }
 
     return false; // Bot's class cannot use this token
 }
@@ -213,13 +205,9 @@ bool RollUniqueCheck(ItemTemplate const* proto, Player* bot)
     // Determine if the unique item is already equipped
     bool isEquipped = (totalItemCount > bagItemCount);
     if (isEquipped && proto->HasFlag(ITEM_FLAG_UNIQUE_EQUIPPABLE))
-    {
         return true;  // Unique Item is already equipped
-    }
     else if (proto->HasFlag(ITEM_FLAG_UNIQUE_EQUIPPABLE) && (bagItemCount > 1))
-    {
         return true; // Unique item already in bag, don't roll for it
-    }
     return false; // Item is not equipped or in bags, roll for it
 }
 

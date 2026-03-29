@@ -231,7 +231,6 @@ bool NewRpgDoQuestAction::Execute(Event /*event*/)
         return false;
     auto& data = *dataPtr;
     uint32 questId = data.questId;
-    const Quest* quest = data.quest;
     uint8 questStatus = bot->GetQuestStatus(questId);
     switch (questStatus)
     {
@@ -438,7 +437,7 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
     if (bot->GetDistance(flightMaster) > INTERACTION_DISTANCE)
         return MoveFarTo(flightMaster);
 
-    std::vector<uint32> nodes = {data.fromNode, data.toNode};
+    std::vector<uint32> nodes = data.path;
 
     botAI->RemoveShapeshift();
     if (bot->IsMounted())
@@ -447,7 +446,7 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
     if (!bot->ActivateTaxiPathTo(nodes, flightMaster, 0))
     {
         LOG_DEBUG("playerbots", "[New RPG] {} active taxi path {} (from {} to {}) failed", bot->GetName(),
-                  flightMaster->GetEntry(), nodes[0], nodes[1]);
+                  flightMaster->GetEntry(), nodes[0], nodes[nodes.size() - 1]);
         botAI->rpgInfo.ChangeToIdle();
     }
     return true;

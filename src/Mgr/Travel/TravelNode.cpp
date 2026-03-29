@@ -7,6 +7,7 @@
 
 #include <iomanip>
 #include <regex>
+#include <unordered_set>
 
 #include "BudgetValues.h"
 #include "PathGenerator.h"
@@ -2446,4 +2447,128 @@ WorldPosition TravelNodeMap::getMapOffset(uint32 mapId)
     }
 
     return WorldPosition(mapId, 0, 0, 0, 0);
+}
+
+// ============================================================
+// TravelNodeMap taxi graph (BFS-based flight path lookup)
+// ============================================================
+
+void TravelNodeMap::InitTaxiGraph()
+{
+    BuildTaxiGraph();
+    ComputeAllPaths();
+}
+
+std::vector<uint32> TravelNodeMap::FindTaxiPath(uint32 fromNode, uint32 toNode)
+{
+    if (fromNode == toNode)
+        return {};
+
+    TaxiNodesEntry const* startNode = sTaxiNodesStore.LookupEntry(fromNode);
+    TaxiNodesEntry const* endNode = sTaxiNodesStore.LookupEntry(toNode);
+
+    if (!startNode || !endNode || startNode->map_id != endNode->map_id)
+        return {};
+
+    auto cacheItr = taxiPathCache.find(fromNode);
+    if (cacheItr == taxiPathCache.end())
+        return {};
+
+    auto toNodeItr = cacheItr->second.find(toNode);
+    if (toNodeItr == cacheItr->second.end())
+        return {};
+
+    return toNodeItr->second;
+}
+
+void TravelNodeMap::BuildTaxiGraph()
+{
+    taxiGraph.clear();
+    std::unordered_map<uint32, std::unordered_set<uint32>> tempGraph;
+    for (uint32 i = 0; i < sTaxiPathStore.GetNumRows(); ++i)
+    {
+        TaxiPathEntry const* path = sTaxiPathStore.LookupEntry(i);
+        if (!path)
+            continue;
+
+        if (path->to == 0 || path->to == uint32(-1))
+            continue;
+
+        tempGraph[path->from].insert(path->to);
+        tempGraph[path->to].insert(path->from);
+    }
+    for (auto const& [node, neighbors] : tempGraph)
+        taxiGraph[node] = std::vector<uint32>(neighbors.begin(), neighbors.end());
+}
+
+void TravelNodeMap::ComputeAllPaths()
+{
+    std::set<uint32> allNodes;
+    for (auto const& [source, neighbors] : taxiGraph)
+        allNodes.insert(source);
+
+    for (uint32 source : allNodes)
+    {
+        auto parentMap = BFS(source);
+
+        for (uint32 target : allNodes)
+        {
+            if (source == target)
+                continue;
+
+            auto path = BuildPath(source, target, parentMap);
+            if (!path.empty())
+                taxiPathCache[source][target] = path;
+        }
+    }
+}
+
+std::unordered_map<uint32, uint32> TravelNodeMap::BFS(uint32 fromNode)
+{
+    std::queue<uint32> workQueue;
+    std::unordered_set<uint32> visited;
+    std::unordered_map<uint32, uint32> parentMap;
+
+    workQueue.push(fromNode);
+    visited.insert(fromNode);
+    parentMap[fromNode] = 0;
+
+    while (!workQueue.empty())
+    {
+        uint32 current = workQueue.front();
+        workQueue.pop();
+
+        for (uint32 next : taxiGraph.at(current))
+        {
+            if (visited.count(next))
+                continue;
+
+            visited.insert(next);
+            parentMap[next] = current;
+            workQueue.push(next);
+        }
+    }
+    return parentMap;
+}
+
+std::vector<uint32> TravelNodeMap::BuildPath(uint32 fromNode, uint32 toNode,
+                                              const std::unordered_map<uint32, uint32>& parentMap)
+{
+    if (!parentMap.count(toNode))
+        return {}; // unreachable
+
+    std::vector<uint32> path;
+    uint32 current = toNode;
+    while (current != fromNode)
+    {
+        path.push_back(current);
+        auto it = parentMap.find(current);
+        if (it == parentMap.end() || it->second == 0)
+            break;
+        current = it->second;
+    }
+
+    path.push_back(fromNode);
+    std::reverse(path.begin(), path.end());
+    return path;
 }

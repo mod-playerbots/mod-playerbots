@@ -132,6 +132,7 @@ public:
             &PaladinTriggerFactoryInternal::hammer_of_justice_on_enemy_target;
         creators["hammer of justice on snare target"] =
             &PaladinTriggerFactoryInternal::hammer_of_justice_on_snare_target;
+        creators["not sensing undead"] = &PaladinTriggerFactoryInternal::not_sensing_undead;
         creators["divine favor"] = &PaladinTriggerFactoryInternal::divine_favor;
         creators["turn undead"] = &PaladinTriggerFactoryInternal::turn_undead;
         creators["avenger's shield"] = &PaladinTriggerFactoryInternal::avenger_shield;
@@ -151,6 +152,7 @@ public:
     }
 
 private:
+    static Trigger* not_sensing_undead(PlayerbotAI* botAI) { return new NotSensingUndeadTrigger(botAI); }
     static Trigger* turn_undead(PlayerbotAI* botAI) { return new TurnUndeadTrigger(botAI); }
     static Trigger* divine_favor(PlayerbotAI* botAI) { return new DivineFavorTrigger(botAI); }
     static Trigger* holy_shield(PlayerbotAI* botAI) { return new HolyShieldTrigger(botAI); }
@@ -288,6 +290,7 @@ public:
         creators["hammer of justice on snare target"] =
             &PaladinAiObjectContextInternal::hammer_of_justice_on_snare_target;
         creators["divine favor"] = &PaladinAiObjectContextInternal::divine_favor;
+        creators["sense undead"] = &PaladinAiObjectContextInternal::sense_undead;
         creators["turn undead"] = &PaladinAiObjectContextInternal::turn_undead;
         creators["blessing of protection on party"] = &PaladinAiObjectContextInternal::blessing_of_protection_on_party;
         creators["righteous defense"] = &PaladinAiObjectContextInternal::righteous_defense;
@@ -312,6 +315,7 @@ private:
     {
         return new CastBlessingOfProtectionProtectAction(botAI);
     }
+    static Action* sense_undead(PlayerbotAI* botAI) { return new CastSenseUndeadAction(botAI); }
     static Action* turn_undead(PlayerbotAI* botAI) { return new CastTurnUndeadAction(botAI); }
     static Action* divine_favor(PlayerbotAI* botAI) { return new CastDivineFavorAction(botAI); }
     static Action* righteous_fury(PlayerbotAI* botAI) { return new CastRighteousFuryAction(botAI); }

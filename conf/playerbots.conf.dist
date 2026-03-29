@@ -298,9 +298,24 @@ AiPlayerbot.TwoRoundsGearInit = 0
 # Default: 0 (disabled)
 AiPlayerbot.FreeMethodLoot = 0
 
-# Bots' loot roll level (0 = pass, 1 = greed, 2 = need)
+# Bots' Roll level bots will use for items they Need (0 = pass, 1 = greed, 2 = need)
 # Default: 1 (greed)
-AiPlayerbot.LootRollLevel = 1
+AiPlayerbot.LootNeedRollLevel = 1
+
+# Enable bots to roll GREED on items (global toggle)
+# If disabled, bots will PASS instead of GREED on all items
+# Default: 0 (disabled - bots only NEED or PASS)
+AiPlayerbot.LootGreedRollLevel = 0
+
+# Enable bots to roll on recipes. Will NEED on learnable profession recipes they don't already know
+# Bots will roll GREED on BoE recipes they can't learn if LootRollGreed is enabled.
+# Default: 0 (disabled)
+AiPlayerbot.LootRollRecipe = 0
+
+# Bots with enchanting will roll DISENCHANT instead of GREED on disenchantable items
+# If disabled, bots will GREED on disenchantable items instead
+# Default: 0 (disabled)
+AiPlayerbot.LootRollDisenchant = 0
 
 #
 #
@@ -1391,28 +1406,28 @@ AiPlayerbot.PremadeSpecLink.1.5.80 = 0502300123-3-250031220223012521332113321
 #
 
 AiPlayerbot.PremadeSpecName.2.0 = holy pve
-AiPlayerbot.PremadeSpecGlyph.2.0 = 41106,43367,45741,43369,43365,41109
+AiPlayerbot.PremadeSpecGlyph.2.0 = 41106,43367,45741,43368,43365,41109
 AiPlayerbot.PremadeSpecLink.2.0.60 = 50350151020013053100515221
 AiPlayerbot.PremadeSpecLink.2.0.80 = 50350152220013053100515221-503201312
 AiPlayerbot.PremadeSpecName.2.1 = prot pve
-AiPlayerbot.PremadeSpecGlyph.2.1 = 41099,43367,43869,43369,43365,45745
+AiPlayerbot.PremadeSpecGlyph.2.1 = 41099,43367,43869,43368,43369,45745
 AiPlayerbot.PremadeSpecLink.2.1.60 = -05005135203102311333112321
 AiPlayerbot.PremadeSpecLink.2.1.80 = -05005135203102311333312321-502302012003
 AiPlayerbot.PremadeSpecName.2.2 = ret pve
-AiPlayerbot.PremadeSpecGlyph.2.2 = 41092,43367,41099,43369,43365,43869
+AiPlayerbot.PremadeSpecGlyph.2.2 = 41092,43367,41099,43368,43369,43869
 AiPlayerbot.PremadeSpecLink.2.2.60 = --05230051203331302133231131
 AiPlayerbot.PremadeSpecLink.2.2.65 = -05-05230051203331302133231131
 AiPlayerbot.PremadeSpecLink.2.2.80 = 050501-05-05232051203331302133231331
 AiPlayerbot.PremadeSpecName.2.3 = holy pvp
-AiPlayerbot.PremadeSpecGlyph.2.3 = 41110,43367,45746,43366,43365,45747
+AiPlayerbot.PremadeSpecGlyph.2.3 = 41110,43367,45746,43369,43365,45747
 AiPlayerbot.PremadeSpecLink.2.3.60 = 50332150300013050133215221
 AiPlayerbot.PremadeSpecLink.2.3.80 = 50332150300013050133315221-5032013122
 AiPlayerbot.PremadeSpecName.2.4 = prot pvp
-AiPlayerbot.PremadeSpecGlyph.2.4 = 41092,43369,41101,43368,43365,45745
+AiPlayerbot.PremadeSpecGlyph.2.4 = 41092,43367,41101,43369,43365,45745
 AiPlayerbot.PremadeSpecLink.2.4.60 = -15320130223122311323311321
 AiPlayerbot.PremadeSpecLink.2.4.80 = -15320130223122321333312321-052300502
 AiPlayerbot.PremadeSpecName.2.5 = ret pvp
-AiPlayerbot.PremadeSpecGlyph.2.5 = 41095,43369,41102,43368,43365,45747
+AiPlayerbot.PremadeSpecGlyph.2.5 = 41095,43367,41102,43369,43365,45747
 AiPlayerbot.PremadeSpecLink.2.5.60 = --05230250203331222133201321
 AiPlayerbot.PremadeSpecLink.2.5.80 = -1532013022-05230250203331322133201321
 

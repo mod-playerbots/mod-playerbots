@@ -746,6 +746,14 @@ public:
     bool IsActive() override;
 };
 
+class LossOfControlTrigger : public Trigger
+{
+public:
+    LossOfControlTrigger(PlayerbotAI* botAI) : Trigger(botAI, "loss of control", 1) {}
+
+    bool IsActive() override;
+};
+
 class IsSwimmingTrigger : public Trigger
 {
 public:
