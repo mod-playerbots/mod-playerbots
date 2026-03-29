@@ -18,7 +18,7 @@ namespace HyjalSummitHelpers
     // Anetheron
 
     const Position ANETHERON_TANK_POSITION =       { 5033.177f, -1765.996f, 1324.195f };
-    const Position ANETHERON_E_INFERNAL_POSITION = { 5022.587f, -1802.805f, 1322.026f };
+    const Position ANETHERON_E_INFERNAL_POSITION = { 5016.578f, -1800.233f, 1323.070f };
     const Position ANETHERON_W_INFERNAL_POSITION = { 5048.911f, -1722.164f, 1321.408f };
     std::unordered_map<ObjectGuid, bool> hasReachedAnetheronPosition;
 

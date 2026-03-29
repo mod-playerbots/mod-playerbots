@@ -64,11 +64,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class AnetheronSpreadRangedInArcAction : public MovementAction
+class AnetheronSpreadRangedInCircleAction : public MovementAction
 {
 public:
-    AnetheronSpreadRangedInArcAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "anetheron spread ranged in arc") {}
+    AnetheronSpreadRangedInCircleAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "anetheron spread ranged in circle") {}
     bool Execute(Event event) override;
 };
 

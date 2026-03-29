@@ -30,7 +30,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("anetheron main tank position boss", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("anetheron boss casts carrion swarm", {
-        NextAction("anetheron spread ranged in arc", ACTION_RAID + 2) }));
+        NextAction("anetheron spread ranged in circle", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("anetheron bot is targeted by infernal", {
         NextAction("anetheron bring infernal to infernal tank", ACTION_EMERGENCY + 2) }));

@@ -258,7 +258,7 @@ bool AnetheronMainTankPositionBossAction::Execute(Event /*event*/)
     return false;
 }
 
-bool AnetheronSpreadRangedInArcAction::Execute(Event /*event*/)
+bool AnetheronSpreadRangedInCircleAction::Execute(Event /*event*/)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -290,8 +290,8 @@ bool AnetheronSpreadRangedInArcAction::Execute(Event /*event*/)
         const float radius = botAI->IsHeal(bot) ? 27.0f : 34.0f;
         float angle = 0.0f;
 
-        constexpr float arcSpan = 3.0f * M_PI / 2.0f;
-        constexpr float arcCenter = 0.165f;
+        constexpr float arcSpan = M_PI * 2.0f;
+        constexpr float arcCenter = 0.0f;
         constexpr float arcStart = arcCenter - arcSpan / 2.0f;
 
         if (botAI->IsHeal(bot))
@@ -1071,7 +1071,6 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
     if (archimonde->GetHealthPct() < 90.0f)
         return false;
 
-    constexpr float safeDistFromVictim = 16.0f;
     constexpr float safeDistFromPlayer = 8.0f;
     constexpr uint32 minInterval = 2000;
 

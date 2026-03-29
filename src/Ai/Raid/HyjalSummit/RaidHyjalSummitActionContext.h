@@ -35,8 +35,8 @@ public:
         creators["anetheron main tank position boss"] =
             &RaidHyjalSummitActionContext::anetheron_main_tank_position_boss;
 
-        creators["anetheron spread ranged in arc"] =
-            &RaidHyjalSummitActionContext::anetheron_spread_ranged_in_arc;
+        creators["anetheron spread ranged in circle"] =
+            &RaidHyjalSummitActionContext::anetheron_spread_ranged_in_circle;
 
         creators["anetheron bring infernal to infernal tank"] =
             &RaidHyjalSummitActionContext::anetheron_bring_infernal_to_infernal_tank;
@@ -133,8 +133,8 @@ private:
     static Action* anetheron_main_tank_position_boss(
         PlayerbotAI* botAI) { return new AnetheronMainTankPositionBossAction(botAI); }
 
-    static Action* anetheron_spread_ranged_in_arc(
-        PlayerbotAI* botAI) { return new AnetheronSpreadRangedInArcAction(botAI); }
+    static Action* anetheron_spread_ranged_in_circle(
+        PlayerbotAI* botAI) { return new AnetheronSpreadRangedInCircleAction(botAI); }
 
     static Action* anetheron_bring_infernal_to_infernal_tank(
         PlayerbotAI* botAI) { return new AnetheronBringInfernalToInfernalTankAction(botAI); }
