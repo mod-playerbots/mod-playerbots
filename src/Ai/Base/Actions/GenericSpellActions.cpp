@@ -210,8 +210,7 @@ CastEnchantItemMainHandAction::CastEnchantItemMainHandAction(PlayerbotAI* botAI,
 
 bool CastEnchantItemMainHandAction::isPossible()
 {
-    uint32 spellId = AI_VALUE2(uint32, "spell id", spell);
-    if (!spellId || !AI_VALUE2(Item*, "item for spell", spellId))
+    if (!CastEnchantItemAction::isPossible())
         return false;
 
     Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
@@ -224,8 +223,7 @@ CastEnchantItemOffHandAction::CastEnchantItemOffHandAction(PlayerbotAI* botAI, s
 
 bool CastEnchantItemOffHandAction::isPossible()
 {
-    uint32 spellId = AI_VALUE2(uint32, "spell id", spell);
-    if (!spellId || !AI_VALUE2(Item*, "item for spell", spellId))
+    if (!CastEnchantItemAction::isPossible())
         return false;
 
     Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
