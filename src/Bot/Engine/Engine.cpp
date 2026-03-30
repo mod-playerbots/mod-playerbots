@@ -138,7 +138,7 @@ void Engine::Init()
     }
 }
 
-bool Engine::DoNextAction(Unit* unit, uint32 depth, bool minimal)
+bool Engine::DoNextAction(Unit* /*unit*/, uint32 /*depth*/, bool minimal)
 {
     LogAction("--- AI Tick ---");
 

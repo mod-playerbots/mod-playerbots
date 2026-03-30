@@ -1661,7 +1661,7 @@ void PlayerbotMgr::TellError(std::string const botName, std::string const text)
     errors[text] = names;
 }
 
-void PlayerbotMgr::CheckTellErrors(uint32 elapsed)
+void PlayerbotMgr::CheckTellErrors(uint32 /*elapsed*/)
 {
     time_t now = time(nullptr);
     if ((now - lastErrorTell) < sPlayerbotAIConfig.errorDelay / 1000)

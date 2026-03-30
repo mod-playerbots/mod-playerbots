@@ -889,7 +889,7 @@ bool MovementAction::IsMovingAllowed(WorldObject* target)
     return IsMovingAllowed();
 }
 
-bool MovementAction::IsMovingAllowed(uint32 mapId, float x, float y, float z)
+bool MovementAction::IsMovingAllowed(uint32 /*mapId*/, float /*x*/, float /*y*/, float /*z*/)
 {
     // removed sqrt as means distance limit was effectively 22500 (ReactDistance�)
     // leaving it commented incase we find ReactDistance limit causes problems
@@ -902,7 +902,7 @@ bool MovementAction::IsMovingAllowed(uint32 mapId, float x, float y, float z)
     return IsMovingAllowed();
 }
 
-bool MovementAction::IsDuplicateMove(uint32 mapId, float x, float y, float z)
+bool MovementAction::IsDuplicateMove(uint32 /*mapId*/, float x, float y, float z)
 {
     LastMovement& lastMove = *context->GetValue<LastMovement&>("last movement");
 
@@ -1278,7 +1278,7 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
     return true;
 }
 
-bool MovementAction::ChaseTo(WorldObject* obj, float distance, float angle)
+bool MovementAction::ChaseTo(WorldObject* obj, float distance, float /*angle*/)
 {
     if (!IsMovingAllowed())
     {
@@ -1851,7 +1851,7 @@ bool FleeAction::isUseful()
 
 bool FleeWithPetAction::Execute(Event /*event*/)
 {
-    if (Pet* pet = bot->GetPet())
+    if (bot->GetPet())
         botAI->PetFollow();
 
     return Flee(AI_VALUE(Unit*, "current target"));

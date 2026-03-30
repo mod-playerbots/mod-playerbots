@@ -275,7 +275,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
 
 // One Ember will be tanked by the second assist tank in Phase 2, and the other by
 // the main tank or first assist tank (whichever is not tanking Al'ar)
-bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Unit* alar)
+bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Unit* /*alar*/)
 {
     auto [firstEmber, secondEmber] = GetFirstTwoEmbersOfAlar(botAI);
 

@@ -2001,7 +2001,7 @@ bool IccRotfaceGroupPositionAction::PositionRangedAndHealers(Unit* boss,Unit *sm
     return FindAndMoveFromClosestMember(boss, smallOoze);
 }
 
-bool IccRotfaceGroupPositionAction::FindAndMoveFromClosestMember(Unit* boss, Unit* smallOoze)
+bool IccRotfaceGroupPositionAction::FindAndMoveFromClosestMember(Unit* /*boss*/, Unit* smallOoze)
 {
 
     const GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
@@ -7124,7 +7124,7 @@ const Position* IccLichKingWinterAction::GetMainTankRangedPosition()
         return &ICC_LK_FROSTR3_POSITION;
 }
 
-bool IccLichKingWinterAction::IsPositionSafeFromDefile(float x, float y, float z, float minSafeDistance)
+bool IccLichKingWinterAction::IsPositionSafeFromDefile(float x, float y, float /*z*/, float minSafeDistance)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "the lich king");
     if (!boss)
@@ -7484,7 +7484,7 @@ void IccLichKingWinterAction::HandleRangedPositioning()
     }
 }
 
-void IccLichKingWinterAction::HandleMainTankAddManagement(Unit* boss, const Position* tankPos)
+void IccLichKingWinterAction::HandleMainTankAddManagement(Unit* /*boss*/, const Position* tankPos)
 {
     if (!botAI->IsMainTank(bot))
         return;
@@ -7607,7 +7607,7 @@ void IccLichKingWinterAction::HandleMainTankAddManagement(Unit* boss, const Posi
     }
 }
 
-void IccLichKingWinterAction::HandleAssistTankAddManagement(Unit* boss, const Position* tankPos)
+void IccLichKingWinterAction::HandleAssistTankAddManagement(Unit* /*boss*/, const Position* tankPos)
 {
     if (!botAI->IsAssistTank(bot))
         return;
@@ -8251,7 +8251,7 @@ bool IccLichKingAddsAction::HandleQuakeMechanics(Unit* boss)
     return false;
 }
 
-void IccLichKingAddsAction::HandleShamblingHorrors(Unit* boss, bool hasPlague)
+void IccLichKingAddsAction::HandleShamblingHorrors(Unit* /*boss*/, bool /*hasPlague*/)
 {
     // Find closest shambling horror
     GuidVector npcs2 = AI_VALUE(GuidVector, "nearest hostile npcs");

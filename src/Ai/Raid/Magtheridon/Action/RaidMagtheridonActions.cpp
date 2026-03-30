@@ -520,7 +520,7 @@ bool MagtheridonUseManticronCubeAction::Execute(Event /*event*/)
     return false;
 }
 
-bool MagtheridonUseManticronCubeAction::HandleCubeRelease(Unit* magtheridon, GameObject* cube)
+bool MagtheridonUseManticronCubeAction::HandleCubeRelease(Unit* magtheridon, GameObject* /*cube*/)
 {
     if (bot->HasAura(SPELL_SHADOW_GRASP) &&
         !(magtheridon->HasUnitState(UNIT_STATE_CASTING) &&

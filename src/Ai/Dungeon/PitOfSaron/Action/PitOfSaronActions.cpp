@@ -134,7 +134,7 @@ bool IckAndKrickAction::PoisonNova(bool poisonNova, Unit* boss)
     return false;
 }
 
-bool IckAndKrickAction::ExplosiveBarrage(bool explosiveBarrage, Unit* boss)
+bool IckAndKrickAction::ExplosiveBarrage(bool /*explosiveBarrage*/, Unit* boss)
 {
     std::vector<Unit*> orbs;
     Unit* closestOrb = nullptr;

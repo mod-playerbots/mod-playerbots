@@ -65,7 +65,7 @@ void ReleaseSpiritAction::IncrementDeathCount() const
     }
 }
 
-void ReleaseSpiritAction::LogRelease(const std::string& releaseMsg, bool isAutoRelease) const
+void ReleaseSpiritAction::LogRelease(const std::string& releaseMsg, bool /*isAutoRelease*/) const
 {
     const std::string teamPrefix = bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H";
 
