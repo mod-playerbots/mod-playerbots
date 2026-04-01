@@ -164,25 +164,8 @@ public:
     static uint8 GetTeamClassIdx(bool isAlliance, uint8 claz) { return isAlliance * 20 + claz; }
 
     void PrepareAddclassCache();
-    void PrepareZone2LevelBracket();
-    void PrepareTeleportCache();
     void Init();
     std::map<uint8, std::unordered_set<ObjectGuid>> addclassCache;
-    std::map<uint8, std::vector<WorldLocation>> locsPerLevelCache;
-    std::map<uint8, std::vector<WorldLocation>> allianceStarterPerLevelCache;
-    std::map<uint8, std::vector<WorldLocation>> hordeStarterPerLevelCache;
-
-    struct LevelBracket {
-        uint32 low;
-        uint32 high;
-        bool InsideBracket(uint32 val) { return val >= low && val <= high; }
-    };
-    std::map<uint32, LevelBracket> zone2LevelBracket;
-    struct BankerLocation {
-        WorldLocation loc;
-        uint32 entry;
-    };
-    std::map<uint8, std::vector<BankerLocation>> bankerLocsPerLevelCache;
 
     // Account type management
     void AssignAccountTypes();

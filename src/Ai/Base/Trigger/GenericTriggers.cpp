@@ -16,7 +16,7 @@
 #include "PositionValue.h"
 #include "SharedDefines.h"
 #include "TemporarySummon.h"
-#include "ThreatMgr.h"
+#include "ThreatManager.h"
 #include "Timer.h"
 #include "PlayerbotAI.h"
 #include "Player.h"
@@ -217,7 +217,7 @@ bool LowTankThreatTrigger::IsActive()
     if (!current_target)
         return false;
 
-    ThreatMgr& mgr = current_target->GetThreatMgr();
+    ThreatManager& mgr = current_target->GetThreatMgr();
     float threat = mgr.GetThreat(bot);
     float tankThreat = mgr.GetThreat(mt);
     return tankThreat == 0.0f || threat > tankThreat * 0.5f;
@@ -463,6 +463,15 @@ bool DeflectSpellTrigger::IsActive()
 bool AttackerCountTrigger::IsActive() { return AI_VALUE(uint8, "attacker count") >= amount; }
 
 bool HasAuraTrigger::IsActive() { return botAI->HasAura(getName(), GetTarget(), false, false, -1, true); }
+
+bool LossOfControlTrigger::IsActive()
+{
+    return bot->HasAuraType(SPELL_AURA_MOD_STUN) ||
+           bot->HasAuraType(SPELL_AURA_MOD_FEAR) ||
+           bot->HasAuraType(SPELL_AURA_MOD_ROOT) ||
+           bot->HasAuraType(SPELL_AURA_MOD_CONFUSE) ||
+           bot->HasAuraType(SPELL_AURA_MOD_CHARM);
+}
 
 bool HasAuraStackTrigger::IsActive()
 {

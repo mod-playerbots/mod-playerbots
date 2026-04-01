@@ -160,6 +160,13 @@ ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : Pas
     supported.push_back("save mana");
     supported.push_back("formation");
     supported.push_back("stance");
+    supported.push_back("cancel tree form");
+    supported.push_back("cancel travel form");
+    supported.push_back("cancel bear form");
+    supported.push_back("cancel dire bear form");
+    supported.push_back("cancel cat form");
+    supported.push_back("cancel moonkin form");
+    supported.push_back("cancel aquatic form");
     supported.push_back("sendmail");
     supported.push_back("mail");
     supported.push_back("outfit");

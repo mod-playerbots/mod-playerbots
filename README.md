@@ -32,13 +32,11 @@ We also have a **[Discord server](https://discord.gg/NQm5QShwf9)** where you can
 
 ## Installation
 
-Supported platforms are Ubuntu, Windows, and macOS. Other Linux distributions may work, but may not receive support. 
+Supported platforms are Ubuntu, Windows, and macOS. Other Linux distributions may work, but may not receive support.
 
-**All `mod-playerbots` installations require a custom branch of AzerothCore: [mod-playerbots/azerothcore-wotlk/tree/Playerbot](https://github.com/mod-playerbots/azerothcore-wotlk/tree/Playerbot).** This branch allows the `mod-playerbots` module to build and function. Updates from the upstream are implemented regularly to this branch. Instructions for installing this required branch and this module are provided below.
+> **Important:** All `mod-playerbots` installations require a custom fork of AzerothCore: [mod-playerbots/azerothcore-wotlk (Playerbot branch)](https://github.com/mod-playerbots/azerothcore-wotlk/tree/Playerbot). The standard AzerothCore repository will **not** work.
 
-### Cloning the Repositories
-
-To install both the required branch of AzerothCore and the `mod-playerbots` module from source, run the following:
+### Quick Start
 
 ```bash
 git clone https://github.com/mod-playerbots/azerothcore-wotlk.git --branch=Playerbot
@@ -46,44 +44,18 @@ cd azerothcore-wotlk/modules
 git clone https://github.com/mod-playerbots/mod-playerbots.git --branch=master
 ```
 
-For more information, refer to the [AzerothCore Installation Guide](https://www.azerothcore.org/wiki/installation) and [Installing a Module](https://www.azerothcore.org/wiki/installing-a-module) pages.
+Then build the server following the platform-specific instructions in our **[Installation Guide](https://github.com/mod-playerbots/mod-playerbots/wiki/Installation-Guide)**.
 
-### Docker Installation
+> **Testing branch:** A `test-staging` branch is available with the latest features and fixes before they are merged into `master`. To use it, clone with `--branch=test-staging` instead. Note that this branch may contain unstable or breaking changes — use it at your own risk and only if you are comfortable troubleshooting issues.
 
-Docker installations are considered experimental (unofficial with limited support), and previous Docker experience is recommended. To install `mod-playerbots` on Docker, first clone the required branch of AzerothCore and this module:
+### Detailed Guides
 
-```bash
-git clone https://github.com/mod-playerbots/azerothcore-wotlk.git --branch=Playerbot
-cd azerothcore-wotlk/modules
-git clone https://github.com/mod-playerbots/mod-playerbots.git --branch=master
-```
+| Guide | Description |
+|---|---|
+| **[Installation Guide](https://github.com/mod-playerbots/mod-playerbots/wiki/Installation-Guide)** | Full step-by-step instructions for clean installs, migrating from existing AzerothCore, Docker setup, adding modules, and updating |
+| **[Troubleshooting](https://github.com/mod-playerbots/mod-playerbots/wiki/Troubleshooting)** | Solutions to the most common build errors, database issues, configuration mistakes, crashes, and platform-specific problems |
 
-Afterwards, create a `docker-compose.override.yml` file in the `azerothcore-wotlk` directory. This override file allows for mounting the modules directory to the `ac-worldserver` service which is required for it to run. Put the following inside and save:
-
-```yml
-services:
-  ac-worldserver:
-    volumes:
-      - ./modules:/azerothcore/modules:ro
-```
-
-Additionally, this override file can be used to set custom configuration settings for `ac-worldserver` and any modules you install as environment variables:
-
-```yml
-services:
-  ac-worldserver:
-    environment:
-      AC_RATE_XP_KILL: "1"
-      AC_AI_PLAYERBOT_RANDOM_BOT_AUTOLOGIN: "1"
-    volumes:
-      - ./modules:/azerothcore/modules:ro
-```
-
-For example, to double the experience gain rate per kill, take the setting `Rate.XP.Kill = 1` from [woldserver.conf](https://github.com/mod-playerbots/azerothcore-wotlk/blob/Playerbot/src/server/apps/worldserver/worldserver.conf.dist), convert it to an environment variable, and change it to the desired setting in the override file to get `AC_RATE_XP_KILL: "2"`. If you wanted to disable random bots from logging in automatically, take the `AiPlayerbot.RandomBotAutologin = 1` setting from [playerbots.conf](https://github.com/mod-playerbots/mod-playerbots/blob/master/conf/playerbots.conf.dist) and do the same to get `AC_AI_PLAYERBOT_RANDOM_BOT_AUTOLOGIN: "0"`. For more information on how to configure Azerothcore, Playerbots, and other module settings as environment variables in Docker Compose, see the "Configuring AzerothCore in Containers" section in the [Install With Docker](https://www.azerothcore.org/wiki/install-with-docker) guide.
-
-Before building, consider setting the database password. One way to do this is to create a `.env` file in the root `azerothcore-wotlk` directory using the [template](https://github.com/mod-playerbots/azerothcore-wotlk/blob/Playerbot/conf/dist/env.docker). This file also allows you to set the user and group Docker uses for the services in case you run into any permissions issues, which are the most common cause for Docker installation problems.
-
-Use `docker compose up -d --build` to build and run the server. For more information, including how to create an account and taking backups, refer to the [Install With Docker](https://www.azerothcore.org/wiki/install-with-docker) page.
+For additional references, see the [AzerothCore Installation Guide](https://www.azerothcore.org/wiki/installation) and [Installing a Module](https://www.azerothcore.org/wiki/installing-a-module) pages.
 
 ## Documentation
 

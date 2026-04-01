@@ -163,6 +163,7 @@ public:
         creators["war stomp"] = &ActionContext::war_stomp;
         creators["blood fury"] = &ActionContext::blood_fury;
         creators["berserking"] = &ActionContext::berserking;
+        creators["every man for himself"] = &ActionContext::every_man_for_himself;
         creators["use trinket"] = &ActionContext::use_trinket;
         creators["auto talents"] = &ActionContext::auto_talents;
         creators["auto share quest"] = &ActionContext::auto_share_quest;
@@ -357,6 +358,7 @@ private:
     static Action* war_stomp(PlayerbotAI* botAI) { return new CastWarStompAction(botAI); }
     static Action* blood_fury(PlayerbotAI* botAI) { return new CastBloodFuryAction(botAI); }
     static Action* berserking(PlayerbotAI* botAI) { return new CastBerserkingAction(botAI); }
+    static Action* every_man_for_himself(PlayerbotAI* botAI) { return new CastEveryManForHimselfAction(botAI); }
     static Action* use_trinket(PlayerbotAI* botAI) { return new UseTrinketAction(botAI); }
     static Action* auto_talents(PlayerbotAI* botAI) { return new AutoSetTalentsAction(botAI); }
     static Action* auto_share_quest(PlayerbotAI* ai) { return new AutoShareQuestAction(ai); }
