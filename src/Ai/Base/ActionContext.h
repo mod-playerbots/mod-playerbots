@@ -242,6 +242,7 @@ public:
         creators["rpg end quest"] = &ActionContext::rpg_end_quest;
         creators["rpg buy"] = &ActionContext::rpg_buy;
         creators["ah sell"] = &ActionContext::ah_sell;
+        creators["ah buy"] = &ActionContext::ah_buy;
         creators["rpg sell"] = &ActionContext::rpg_sell;
         creators["rpg repair"] = &ActionContext::rpg_repair;
         creators["rpg train"] = &ActionContext::rpg_train;
@@ -441,6 +442,7 @@ private:
     static Action* rpg_end_quest(PlayerbotAI* botAI) { return new RpgEndQuestAction(botAI); }
     static Action* rpg_buy(PlayerbotAI* botAI) { return new RpgBuyAction(botAI); }
     static Action* ah_sell(PlayerbotAI* botAI) { return new AhSellAction(botAI); }
+    static Action* ah_buy(PlayerbotAI* botAI) { return new AhBuyAction(botAI); }
     static Action* rpg_sell(PlayerbotAI* botAI) { return new RpgSellAction(botAI); }
     static Action* rpg_repair(PlayerbotAI* botAI) { return new RpgRepairAction(botAI); }
     static Action* rpg_train(PlayerbotAI* botAI) { return new RpgTrainAction(botAI); }

@@ -31,6 +31,7 @@ public:
         creators["trade status"] = &WorldPacketTriggerContext::trade_status;
         creators["trade status extended"] = &WorldPacketTriggerContext::trade_status_extended;
         creators["loot response"] = &WorldPacketTriggerContext::loot_response;
+        creators["ah search result"] = &WorldPacketTriggerContext::ah_search_result;
         creators["out of react range"] = &WorldPacketTriggerContext::out_of_react_range;
 
         // quest
@@ -109,6 +110,7 @@ private:
 
     static Trigger* out_of_react_range(PlayerbotAI* botAI) { return new OutOfReactRangeTrigger(botAI); }
     static Trigger* loot_response(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "loot response"); }
+    static Trigger* ah_search_result(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "ah search result"); }
     static Trigger* trade_status(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "trade status"); }
     static Trigger* trade_status_extended(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "trade status extended"); }
     static Trigger* cannot_equip(PlayerbotAI* botAI) { return new WorldPacketTrigger(botAI, "cannot equip"); }

@@ -37,6 +37,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     triggers.push_back(new TriggerNode("area trigger", { NextAction("reach area trigger", relevance) }));
     triggers.push_back(new TriggerNode("within area trigger", { NextAction("area trigger", relevance) }));
     triggers.push_back(new TriggerNode("loot response", { NextAction("store loot", relevance) }));
+    triggers.push_back(new TriggerNode("ah search result", { NextAction("ah buy", relevance) }));
     triggers.push_back(new TriggerNode("item push result", { NextAction("unlock items", relevance),
                                                                                 NextAction("open items", relevance),
                                                                                 NextAction("query item usage", relevance),
