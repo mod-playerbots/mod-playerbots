@@ -8,6 +8,8 @@
 
 #include "Value.h"
 
+#include <vector>
+
 class PlayerbotAI;
 
 class CanMoveAroundValue : public BoolCalculatedValue
@@ -53,7 +55,46 @@ public:
 class CanSellValue : public BoolCalculatedValue
 {
 public:
-    CanSellValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI, "can sell", 2 * 2000) {}
+    CanSellValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI, "can sell", MINUTE * IN_MILLISECONDS) {}
+
+    bool Calculate() override;
+};
+
+class AhSellListValue : public CalculatedValue<std::vector<uint32>>
+{
+public:
+    AhSellListValue(PlayerbotAI* botAI)
+        : CalculatedValue<std::vector<uint32>>(botAI, "ah sell list", MINUTE * IN_MILLISECONDS) {}
+
+    std::vector<uint32> Calculate() override;
+
+private:
+    uint32 ComputeBagFingerprint();
+    uint32 _lastFingerprint{0};
+    std::vector<uint32> _cachedList;
+};
+
+class ShouldAHSellValue : public BoolCalculatedValue
+{
+public:
+    ShouldAHSellValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI, "should ah sell", MINUTE * IN_MILLISECONDS) {}
+
+    bool Calculate() override;
+};
+
+class AhBuyListValue : public CalculatedValue<std::vector<uint8>>
+{
+public:
+    AhBuyListValue(PlayerbotAI* botAI)
+        : CalculatedValue<std::vector<uint8>>(botAI, "ah buy list", HOUR * IN_MILLISECONDS) {}
+
+    std::vector<uint8> Calculate() override;
+};
+
+class ShouldAHBuyValue : public BoolCalculatedValue
+{
+public:
+    ShouldAHBuyValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI, "should ah buy", MINUTE * IN_MILLISECONDS) {}
 
     bool Calculate() override;
 };

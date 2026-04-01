@@ -528,7 +528,7 @@ bool NewRpgGoCityAction::Execute(Event /*event*/)
                 data.wantSell = false;
                 return true;
             }
-            if (data.wantBuy && (AI_VALUE(bool, "should ah buy") || AI_VALUE(bool, "can ah buy")))
+            if (data.wantBuy && AI_VALUE(bool, "should ah buy"))
             {
                 LOG_DEBUG("playerbots", "[New RPG] Bot {} at auctioneer {}, triggering buy",
                           bot->GetName(), auctioneer->GetEntry());

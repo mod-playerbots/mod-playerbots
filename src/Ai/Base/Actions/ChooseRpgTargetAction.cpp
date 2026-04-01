@@ -107,9 +107,6 @@ float ChooseRpgTargetAction::getMaxRelevance(GuidPosition guidP)
     if (!maxRelevance)
         return 0.0;
 
-    if (guidP.HasNpcFlag(UNIT_NPC_FLAG_AUCTIONEER))
-        maxRelevance = std::max(maxRelevance, 1.20f);
-
     return floor((maxRelevance - 1.0) * 1000.0f);
 }
 

@@ -276,6 +276,10 @@ public:
         creators["can repair"] = &ValueContext::can_repair;
         creators["should sell"] = &ValueContext::should_sell;
         creators["can sell"] = &ValueContext::can_sell;
+        creators["ah sell list"] = &ValueContext::ah_sell_list;
+        creators["should ah sell"] = &ValueContext::should_ah_sell;
+        creators["ah buy list"] = &ValueContext::ah_buy_list;
+        creators["should ah buy"] = &ValueContext::should_ah_buy;
         creators["can train"] = &ValueContext::can_train;
         creators["can fight equal"] = &ValueContext::can_fight_equal;
         creators["can fight elite"] = &ValueContext::can_fight_elite;
@@ -527,6 +531,10 @@ private:
     static UntypedValue* can_repair(PlayerbotAI* botAI) { return new CanRepairValue(botAI); }
     static UntypedValue* should_sell(PlayerbotAI* botAI) { return new ShouldSellValue(botAI); }
     static UntypedValue* can_sell(PlayerbotAI* botAI) { return new CanSellValue(botAI); }
+    static UntypedValue* ah_sell_list(PlayerbotAI* botAI) { return new AhSellListValue(botAI); }
+    static UntypedValue* should_ah_sell(PlayerbotAI* botAI) { return new ShouldAHSellValue(botAI); }
+    static UntypedValue* ah_buy_list(PlayerbotAI* botAI) { return new AhBuyListValue(botAI); }
+    static UntypedValue* should_ah_buy(PlayerbotAI* botAI) { return new ShouldAHBuyValue(botAI); }
     static UntypedValue* can_train(PlayerbotAI* botAI) { return new CanTrainValue(botAI); }
     static UntypedValue* can_fight_equal(PlayerbotAI* botAI) { return new CanFightEqualValue(botAI); }
     static UntypedValue* can_fight_elite(PlayerbotAI* botAI) { return new CanFightEliteValue(botAI); }
