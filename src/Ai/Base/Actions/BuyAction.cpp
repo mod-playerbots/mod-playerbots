@@ -5,20 +5,13 @@
 
 #include "BuyAction.h"
 
-#include "AuctionHouseMgr.h"
 #include "BudgetValues.h"
 #include "Event.h"
 #include "ItemCountValue.h"
-#include "ItemUsageValue.h"
 #include "ItemVisitors.h"
 #include "Log.h"
-#include "PlayerbotOperations.h"
-#include "PlayerbotTextMgr.h"
-#include "PlayerbotWorldThreadProcessor.h"
 #include "Playerbots.h"
 #include "StatsWeightCalculator.h"
-
-#include <limits>
 
 bool BuyAction::Execute(Event event)
 {
@@ -378,15 +371,31 @@ bool AhBuyAction::BuyBestCandidate(std::vector<AhItem>& candidates)
         return false;
 
     // Buyout if affordable, otherwise bid
-    uint32 price = (bestCandidate->buyout && bestCandidate->buyout <= AI_VALUE2(uint32, "free money for", uint32(NeedMoneyFor::gear)))
+    uint32 gearBudget = AI_VALUE2(uint32, "free money for", uint32(NeedMoneyFor::gear));
+    uint32 price = (bestCandidate->buyout && bestCandidate->buyout <= gearBudget)
         ? bestCandidate->buyout
         : bestCandidate->bidPrice;
 
-    auto bidOperation = std::make_unique<AuctionPlaceBidOperation>(
-        bot->GetGUID(), auctioneerGuid,
-        bestCandidate->auctionId, price, bestCandidate->itemEntry);
+    uint32 botMoney = bot->GetMoney();
 
-    return PlayerbotWorldThreadProcessor::instance().QueueOperation(std::move(bidOperation));
+    WorldPacket bidPacket(CMSG_AUCTION_PLACE_BID);
+    bidPacket << auctioneerGuid;
+    bidPacket << bestCandidate->auctionId;
+    bidPacket << price;
+
+    bot->GetSession()->HandleAuctionPlaceBid(bidPacket);
+
+    if (botAI->HasCheat(BotCheatMask::gold))
+        bot->SetMoney(botMoney);
+
+    ItemTemplate const* boughtProto = sObjectMgr->GetItemTemplate(bestCandidate->itemEntry);
+    LOG_DEBUG("playerbots", "[AH Buy] Bot {} {} {} for {}",
+              bot->GetName(),
+              price == bestCandidate->buyout ? "bought" : "bid on",
+              boughtProto ? boughtProto->Name1 : std::to_string(bestCandidate->itemEntry),
+              price);
+
+    return true;
 }
 
 bool AhBuyAction::Execute(Event event)

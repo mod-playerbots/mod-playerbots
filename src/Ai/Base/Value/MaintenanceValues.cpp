@@ -3,13 +3,13 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include "AuctionHouseBotHelper.h"
 #include "MaintenanceValues.h"
 
 #include "Bag.h"
 #include "BudgetValues.h"
 #include "ItemUsageValue.h"
 #include "PlayerbotAIConfig.h"
+#include "PlayerbotAuctionHouseUtil.h"
 #include "Playerbots.h"
 
 bool CanMoveAroundValue::Calculate()
@@ -81,11 +81,41 @@ uint32 AhSellListValue::ComputeBagFingerprint()
     return hash;
 }
 
+bool AhSellListValue::IsItemSellableOnAh(Item* item) const
+{
+    if (!item)
+        return false;
+
+    ItemTemplate const* proto = item->GetTemplate();
+    if (!proto || !item->CanBeTraded())
+        return false;
+
+    // Cheap pre-filter — skip items that are clearly not AH material
+    if (!IsPreferredAuctionHouseItem(proto))
+        return false;
+
+    if (proto->Bonding == BIND_WHEN_PICKED_UP || proto->Bonding == BIND_QUEST_ITEM)
+        return false;
+
+    uint32 entry = item->GetEntry();
+    if (sPlayerbotAIConfig.IsInAuctionHouseExcludedItemList(entry))
+        return false;
+
+    if (!sPlayerbotAHUtil.IsSellable(entry))
+        return false;
+
+    // Expensive check last
+    if (AI_VALUE2(ItemUsage, "item usage", entry) != ITEM_USAGE_AH)
+        return false;
+
+    return true;
+}
+
 std::vector<uint32> AhSellListValue::Calculate()
 {
     if (!sPlayerbotAIConfig.enableAuctionHouseBotting)
         return {};
-    //Lets use a cache to avoid iterating through items.
+
     uint32 fingerprint = ComputeBagFingerprint();
     if (fingerprint == _lastFingerprint && !_cachedList.empty())
         return _cachedList;
@@ -97,10 +127,7 @@ std::vector<uint32> AhSellListValue::Calculate()
     for (uint8 i = INVENTORY_SLOT_ITEM_START; i < INVENTORY_SLOT_ITEM_END; ++i)
     {
         Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
-        if (!item)
-            continue;
-
-        if (AI_VALUE2(ItemUsage, "item usage", item->GetEntry()) == ITEM_USAGE_AH)
+        if (IsItemSellableOnAh(item))
             _cachedList.push_back(item->GetEntry());
     }
 
@@ -114,10 +141,7 @@ std::vector<uint32> AhSellListValue::Calculate()
         for (uint32 i = 0; i < pBag->GetBagSize(); ++i)
         {
             Item* item = bot->GetItemByPos(bag, i);
-            if (!item)
-                continue;
-
-            if (AI_VALUE2(ItemUsage, "item usage", item->GetEntry()) == ITEM_USAGE_AH)
+            if (IsItemSellableOnAh(item))
                 _cachedList.push_back(item->GetEntry());
         }
     }

@@ -25,7 +25,6 @@
 #include "GuildTaskMgr.h"
 #include "PlayerScript.h"
 #include "PlayerbotAIConfig.h"
-#include "PlayerbotAuctionHousePolicy.h"
 #include "PlayerbotGuildMgr.h"
 #include "PlayerbotSpellRepository.h"
 #include "PlayerbotWorldThreadProcessor.h"
@@ -371,9 +370,6 @@ public:
 
         LOG_INFO("server.loading", ">> Loaded playerbots config in {} ms", GetMSTimeDiffToNow(oldMSTime));
         LOG_INFO("server.loading", " ");
-
-        if (sPlayerbotAIConfig.enableAuctionHouseBotting)
-            sPlayerbotAuctionHousePolicyMgr.Initialize();
 
         PlayerbotSpellRepository::Instance().Initialize();
 

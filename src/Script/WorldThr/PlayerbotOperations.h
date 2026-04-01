@@ -9,9 +9,6 @@
 #include "Group.h"
 #include "GroupMgr.h"
 #include "GuildMgr.h"
-#include "AuctionHouseMgr.h"
-#include "ChatHelper.h"
-#include "Item.h"
 #include "Playerbots.h"
 #include "ObjectAccessor.h"
 #include "PlayerbotOperation.h"
@@ -20,7 +17,6 @@
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotMgr.h"
 #include "PlayerbotRepository.h"
-#include "PlayerbotTextMgr.h"
 #include "RandomPlayerbotMgr.h"
 #include "UseMeetingStoneAction.h"
 #include "WorldSession.h"
@@ -525,14 +521,13 @@ private:
     uint32 m_masterAccountId = 0;
 };
 
-class AuctionBuyOperation : public PlayerbotOperation
+class AuctionPacketOperation : public PlayerbotOperation
 {
 public:
-    AuctionBuyOperation(ObjectGuid botGuid, ObjectGuid auctioneerGuid,
-        uint32 auctionId, uint32 buyout, uint32 itemTemplateId)
+    AuctionPacketOperation(ObjectGuid botGuid, ObjectGuid auctioneerGuid,
+                           WorldPacket&& packet)
         : m_botGuid(botGuid), m_auctioneerGuid(auctioneerGuid),
-          m_auctionId(auctionId), m_buyout(buyout),
-          m_itemTemplateId(itemTemplateId)
+          m_packet(std::move(packet))
     {
     }
 
@@ -546,63 +541,28 @@ public:
         if (!botAI)
             return false;
 
-        Creature* auctioneer =
-            bot->GetNPCIfCanInteractWith(m_auctioneerGuid,
-                UNIT_NPC_FLAG_AUCTIONEER);
-        if (!auctioneer)
-            return false;
-
-        AuctionHouseObject* auctionHouse =
-            sAuctionMgr->GetAuctionsMap(auctioneer->GetFaction());
-        if (!auctionHouse || !auctionHouse->GetAuction(m_auctionId))
+        if (!bot->GetNPCIfCanInteractWith(m_auctioneerGuid, UNIT_NPC_FLAG_AUCTIONEER))
             return false;
 
         uint32 botMoney = bot->GetMoney();
 
-        WorldPacket packet(CMSG_AUCTION_PLACE_BID);
-        packet << m_auctioneerGuid;
-        packet << m_auctionId;
-        packet << m_buyout;
-
-        bot->GetSession()->HandleAuctionPlaceBid(packet);
+        uint16 opcode = m_packet.GetOpcode();
+        if (opcode == CMSG_AUCTION_SELL_ITEM)
+            bot->GetSession()->HandleAuctionSellItem(m_packet);
+        else if (opcode == CMSG_AUCTION_PLACE_BID)
+            bot->GetSession()->HandleAuctionPlaceBid(m_packet);
+        else
+            return false;
 
         if (botAI->HasCheat(BotCheatMask::gold))
             bot->SetMoney(botMoney);
-
-        if (auctionHouse->GetAuction(m_auctionId))
-        {
-            LOG_DEBUG("playerbots",
-                "{}: failed to buy auction {} via {} (buyout={})",
-                bot->GetName(), m_auctionId,
-                m_auctioneerGuid.ToString(), m_buyout);
-            return false;
-        }
-
-        ItemTemplate const* boughtItemProto =
-            sObjectMgr->GetItemTemplate(m_itemTemplateId);
-
-        LOG_DEBUG("playerbots",
-            "{}: bought {} from auction house via {} for {}",
-            bot->GetName(), boughtItemProto ? boughtItemProto->Name1 :
-            std::to_string(m_itemTemplateId),
-            m_auctioneerGuid.ToString(), m_buyout);
-
-        std::map<std::string, std::string> placeholders =
-        {
-            {"%item_link", boughtItemProto ? ChatHelper::FormatItem(boughtItemProto) : std::to_string(m_itemTemplateId)},
-            {"%cost", ChatHelper::formatMoney(m_buyout)}
-        };
-        botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "auction_buy_success",
-            "Buying from auction house %item_link for %cost",
-            placeholders));
 
         return true;
     }
 
     ObjectGuid GetBotGuid() const override { return m_botGuid; }
     uint32 GetPriority() const override { return 50; }
-    std::string GetName() const override { return "AuctionBuy"; }
+    std::string GetName() const override { return "AuctionPacket"; }
 
     bool IsValid() const override
     {
@@ -612,116 +572,7 @@ public:
 private:
     ObjectGuid m_botGuid;
     ObjectGuid m_auctioneerGuid;
-    uint32 m_auctionId;
-    uint32 m_buyout;
-    uint32 m_itemTemplateId;
-};
-
-class AuctionSellOperation : public PlayerbotOperation
-{
-public:
-    AuctionSellOperation(ObjectGuid botGuid, ObjectGuid auctioneerGuid,
-        ObjectGuid itemGuid, uint32 itemEntry, uint32 itemCount,
-        uint32 startBid, uint32 buyout, uint32 etime)
-        : m_botGuid(botGuid), m_auctioneerGuid(auctioneerGuid),
-          m_itemGuid(itemGuid), m_itemEntry(itemEntry),
-          m_itemCount(itemCount), m_startBid(startBid),
-          m_buyout(buyout), m_etime(etime)
-    {
-    }
-
-    bool Execute() override
-    {
-        Player* bot = ObjectAccessor::FindConnectedPlayer(m_botGuid);
-        if (!bot)
-            return false;
-
-        PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-        if (!botAI)
-            return false;
-
-        Creature* auctioneer =
-            bot->GetNPCIfCanInteractWith(m_auctioneerGuid,
-                UNIT_NPC_FLAG_AUCTIONEER);
-        if (!auctioneer)
-            return false;
-
-        Item* item = bot->GetItemByGuid(m_itemGuid);
-        if (!item || item->GetCount() < m_itemCount)
-            return false;
-
-        ItemTemplate const* proto = item->GetTemplate();
-        if (!proto)
-            proto = sObjectMgr->GetItemTemplate(m_itemEntry);
-
-        uint32 oldCount = bot->GetItemCount(m_itemEntry, true);
-        uint32 botMoney = bot->GetMoney();
-
-        WorldPacket packet(CMSG_AUCTION_SELL_ITEM);
-        packet << m_auctioneerGuid;
-        packet << uint32(1);
-        packet << m_itemGuid;
-        packet << m_itemCount;
-        packet << m_startBid;
-        packet << m_buyout;
-        packet << m_etime;
-
-        bot->GetSession()->HandleAuctionSellItem(packet);
-
-        if (botAI->HasCheat(BotCheatMask::gold))
-            bot->SetMoney(botMoney);
-
-        if (bot->GetItemCount(m_itemEntry, true) >= oldCount)
-        {
-            LOG_DEBUG("playerbots",
-                "{}: failed to post {} x{} to auction house via {} "
-                "(bid={}, buyout={})",
-                bot->GetName(), proto ? proto->Name1 :
-                std::to_string(m_itemEntry),
-                m_itemCount, m_auctioneerGuid.ToString(), m_startBid,
-                m_buyout);
-            return false;
-        }
-
-        LOG_DEBUG("playerbots",
-            "{}: posted {} x{} to auction house via {} (bid={}, buyout={})",
-            bot->GetName(), proto ? proto->Name1 :
-            std::to_string(m_itemEntry),
-            m_itemCount, m_auctioneerGuid.ToString(), m_startBid,
-            m_buyout);
-
-        std::map<std::string, std::string> placeholders =
-        {
-            {"%item_link", proto ? ChatHelper::FormatItem(proto, m_itemCount) : std::to_string(m_itemEntry)},
-            {"%start_bid", ChatHelper::formatMoney(m_startBid)},
-            {"%buyout", ChatHelper::formatMoney(m_buyout)}
-        };
-        botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "auction_sell_success",
-            "Posting to auction house %item_link for %start_bid..%buyout",
-            placeholders));
-
-        return true;
-    }
-
-    ObjectGuid GetBotGuid() const override { return m_botGuid; }
-    uint32 GetPriority() const override { return 50; }
-    std::string GetName() const override { return "AuctionSell"; }
-
-    bool IsValid() const override
-    {
-        return ObjectAccessor::FindConnectedPlayer(m_botGuid) != nullptr;
-    }
-
-private:
-    ObjectGuid m_botGuid;
-    ObjectGuid m_auctioneerGuid;
-    ObjectGuid m_itemGuid;
-    uint32 m_itemEntry;
-    uint32 m_itemCount;
-    uint32 m_startBid;
-    uint32 m_buyout;
-    uint32 m_etime;
+    WorldPacket m_packet;
 };
 
 #endif

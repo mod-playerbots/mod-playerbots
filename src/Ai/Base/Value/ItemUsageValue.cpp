@@ -3,7 +3,6 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include "AuctionHouseBotHelper.h"
 #include "ItemUsageValue.h"
 
 #include "AiFactory.h"
@@ -13,24 +12,13 @@
 #include "Item.h"
 #include "LootObjectStack.h"
 #include "PlayerbotAIConfig.h"
+#include "PlayerbotAuctionHouseUtil.h"
 #include "PlayerbotFactory.h"
-#include "PlayerbotAuctionHousePolicy.h"
 #include "Playerbots.h"
 #include "RandomItemMgr.h"
 #include "ServerFacade.h"
 #include "StatsWeightCalculator.h"
 
-namespace
-{
-    bool IsSpellReagentItem(ItemTemplate const* proto)
-    {
-        if (!proto)
-            return false;
-
-        return proto->Class == ITEM_CLASS_REAGENT ||
-               (proto->Class == ITEM_CLASS_MISC && proto->SubClass == ITEM_SUBCLASS_REAGENT);
-    }
-}
 
 ItemUsage ItemUsageValue::Calculate()
 {
@@ -51,27 +39,26 @@ ItemUsage ItemUsageValue::Calculate()
     }
     else
     {
-        bool needItem = false;
+        bool neededSkillItem = false;
 
         if (IsItemNeededForSkill(proto))
-            needItem = true;
+            needneededSkillItemItem = true;
         else
         {
             bool lowBagSpace = AI_VALUE(uint8, "bag space") > 50;
 
-            if (proto->Class == ITEM_CLASS_TRADE_GOODS || proto->Class == ITEM_CLASS_MISC ||
-                proto->Class == ITEM_CLASS_REAGENT)
-                needItem = IsItemNeededForUsefullSpell(proto, lowBagSpace);
+            if (proto->Class == ITEM_CLASS_TRADE_GOODS || IsSpellReagentItem(proto))
+                neededSkillItem = IsItemNeededForUsefullSpell(proto, lowBagSpace);
             else if (proto->Class == ITEM_CLASS_RECIPE)
             {
                 if (bot->HasSpell(proto->Spells[2].SpellId))
-                    needItem = false;
+                    neededSkillItem = false;
                 else
-                    needItem = bot->BotCanUseItem(proto) == EQUIP_ERR_OK;
+                    neededSkillItem = bot->BotCanUseItem(proto) == EQUIP_ERR_OK;
             }
         }
 
-        if (needItem)
+        if (neededSkillItem)
         {
             if (IsAuctionHouseMaterial(proto))
             {
@@ -177,38 +164,14 @@ ItemUsage ItemUsageValue::Calculate()
     // Need to add something like free bagspace or item value.
     if (proto->SellPrice > 0)
     {
-        if (proto->Quality == ITEM_QUALITY_POOR)
-            return ITEM_USAGE_VENDOR;
-
-        if (proto->Class == ITEM_CLASS_PROJECTILE)
-            return ITEM_USAGE_VENDOR;
-
-        if (PlayerbotSpellRepository::Instance().IsItemBuyable(itemId) && IsSpellReagentItem(proto))
+        if (proto->Quality == ITEM_QUALITY_POOR || proto->Class == ITEM_CLASS_PROJECTILE)
             return ITEM_USAGE_VENDOR;
 
         if (IsSpellReagentItem(proto))
             return IsItemNeededForUsefullSpell(proto, false) ? ITEM_USAGE_KEEP : ITEM_USAGE_VENDOR;
 
-        if (!sPlayerbotAIConfig.enableAuctionHouseBotting)
-            return ITEM_USAGE_VENDOR;
-
-        if (sPlayerbotAIConfig.IsInAuctionHouseExcludedItemList(itemId))
-            return ITEM_USAGE_KEEP;
-
-        if (!sPlayerbotAuctionHousePolicyMgr.IsSellable(itemId))
-            return ITEM_USAGE_KEEP;
-
-        if (proto->Quality == ITEM_QUALITY_NORMAL && !IsAuctionHouseMaterial(proto))
-            return ITEM_USAGE_VENDOR;
-
-        if (proto->Quality >= ITEM_QUALITY_NORMAL && !isSoulbound)
-        {
-            uint32 itemCount = bot->GetItemCount(itemId, true);
-            if (IsAuctionHouseMaterial(proto) && itemCount > 0 && itemCount < AuctionHouseMaterialMinCount)
-                return ITEM_USAGE_KEEP;
-
+        if (sPlayerbotAIConfig.enableAuctionHouseBotting && !isSoulbound && IsPreferredAuctionHouseItem(proto))
             return ITEM_USAGE_AH;
-        }
 
         return ITEM_USAGE_VENDOR;
     }
@@ -928,6 +891,15 @@ bool ItemUsageValue::SpellGivesSkillUp(uint32 spellId, Player* bot)
     }
 
     return false;
+}
+
+bool ItemUsageValue::IsSpellReagentItem(ItemTemplate const* proto)
+{
+    if (!proto)
+        return false;
+
+    return proto->Class == ITEM_CLASS_REAGENT ||
+           (proto->Class == ITEM_CLASS_MISC && proto->SubClass == ITEM_SUBCLASS_REAGENT);
 }
 
 std::string const ItemUsageValue::GetConsumableType(ItemTemplate const* proto, bool hasMana)

@@ -5,7 +5,6 @@
 
 #include "SellAction.h"
 
-#include "AuctionHouseBotHelper.h"
 #include "Db/PlayerbotSpellRepository.h"
 #include "Event.h"
 #include "ItemUsageValue.h"
@@ -197,29 +196,54 @@ bool AhSellAction::Execute(Event /*event*/)
 
     ObjectGuid auctioneerGuid;
     if (!HasNearbyAuctioneer(bot, npcs, auctioneerGuid))
-    {
-        LOG_DEBUG("playerbots", "{}: cannot post item {} to auction house - no nearby auctioneer",
-            bot->GetName(), proto->ItemId);
         return false;
-    }
-    return false;
+
+    Creature* auctioneer = bot->GetNPCIfCanInteractWith(auctioneerGuid, UNIT_NPC_FLAG_AUCTIONEER);
+    if (!auctioneer)
+        return false;
 
     uint32 itemCount = GetAuctionStackCount(item, policy);
     if (!itemCount)
         return false;
 
-    auto sellOp = std::make_unique<AuctionSellOperation>(
-        bot->GetGUID(), auctioneerGuid, item->GetGUID(), proto->ItemId,
-        itemCount, policy);
+    // Compute pricing on map thread — AH market data read is safe here
+    AuctionHouseObject* auctionHouse = sAuctionMgr->GetAuctionsMap(auctioneer->GetFaction());
 
-    bool queued = PlayerbotWorldThreadProcessor::instance().QueueOperation(
-        std::move(sellOp));
+    PlayerbotAuctionMarketSnapshot marketSnapshot;
+    uint32 unitPrice = GetAuctionUnitPrice(bot, proto, auctionHouse, policy, &marketSnapshot);
+    if (!unitPrice)
+        return false;
 
-    if (queued)
+    if (policy.undercutChance && urand(1, 100) <= policy.undercutChance)
     {
-        LOG_DEBUG("playerbots", "[AH Sell] Bot {} posted {} x{} to auction house",
-                  bot->GetName(), proto->ItemId, itemCount);
+        uint32 minPct = std::max<uint32>(100, sPlayerbotAIConfig.auctionHouseUndercutMinPct);
+        uint32 maxPct = std::max<uint32>(minPct, sPlayerbotAIConfig.auctionHouseUndercutMaxPct);
+        uint32 anchorUnitPrice = marketSnapshot.HasData() ? marketSnapshot.minUnitBuyout : unitPrice;
+        unitPrice = std::max<uint32>(1, RoundAuctionPrice(double(anchorUnitPrice) * 100.0 / urand(minPct, maxPct)));
     }
 
-    return queued;
+    uint32 startBid = std::max<uint32>(sPlayerbotAIConfig.auctionHouseMinBidPrice,
+        RoundAuctionPrice(double(itemCount) * unitPrice * std::max<uint32>(1, policy.minBidPct) / 100.0));
+    uint32 minBuyoutPct = std::max<uint32>(100, policy.buyoutMinPct);
+    uint32 maxBuyoutPct = std::max<uint32>(minBuyoutPct, policy.buyoutMaxPct);
+    uint32 buyout = RoundAuctionPrice(double(startBid) * urand(minBuyoutPct, maxBuyoutPct) / 100.0);
+    if (buyout <= startBid)
+        buyout = startBid + 1;
+
+    uint32 etime = uint32(12 * HOUR / MINUTE);
+
+    // Build packet and queue to world thread
+    WorldPacket packet(CMSG_AUCTION_SELL_ITEM);
+    packet << auctioneerGuid;
+    packet << uint32(1);
+    packet << item->GetGUID();
+    packet << itemCount;
+    packet << startBid;
+    packet << buyout;
+    packet << etime;
+
+    auto op = std::make_unique<AuctionPacketOperation>(
+        bot->GetGUID(), auctioneerGuid, std::move(packet));
+
+    return PlayerbotWorldThreadProcessor::instance().QueueOperation(std::move(op));
 }

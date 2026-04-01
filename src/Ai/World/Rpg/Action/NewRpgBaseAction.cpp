@@ -1,6 +1,5 @@
 #include "NewRpgBaseAction.h"
 
-#include "AuctionHouseBotHelper.h"
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
 #include "Creature.h"

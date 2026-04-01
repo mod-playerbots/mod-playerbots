@@ -5,11 +5,8 @@
 
 #include "ChooseTravelTargetAction.h"
 
-#include "AuctionHouseBotHelper.h"
 #include "ChatHelper.h"
-#include "ItemUsageValue.h"
 #include "LootObjectStack.h"
-#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 
 bool ChooseTravelTargetAction::Execute(Event /*event*/)

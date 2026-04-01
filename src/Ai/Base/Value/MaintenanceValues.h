@@ -69,6 +69,7 @@ public:
     std::vector<uint32> Calculate() override;
 
 private:
+    bool IsItemSellableOnAh(Item* item) const;
     uint32 ComputeBagFingerprint();
     uint32 _lastFingerprint{0};
     std::vector<uint32> _cachedList;
