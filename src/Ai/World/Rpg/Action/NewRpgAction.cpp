@@ -528,13 +528,17 @@ bool NewRpgGoCityAction::Execute(Event /*event*/)
                 // No more items to sell
                 data.wantSell = false;
             }
-            if (data.wantBuy && AI_VALUE(bool, "should ah buy"))
+            if (data.wantBuy)
             {
-                LOG_DEBUG("playerbots", "[New RPG] Bot {} at auctioneer {}, triggering buy",
-                          bot->GetName(), auctioneer->GetEntry());
-                botAI->DoSpecificAction("buy", Event("rpg action", "auction"), true);
-                data.wantBuy = false;
-                return true;
+                std::vector<uint8> buyList = AI_VALUE(std::vector<uint8>, "ah buy list");
+                if (buyList.empty())
+                    data.wantBuy = false;
+                else
+                {
+                    uint8 slot = buyList.front();
+                    SendAhSearchForSlot(auctioneer, slot);
+                    return true;
+                }
             }
         }
     }
@@ -547,4 +551,75 @@ bool NewRpgGoCityAction::Execute(Event /*event*/)
     }
 
     return true;
+}
+
+void NewRpgGoCityAction::SendAhSearchForSlot(Creature* auctioneer, uint8 equipSlot)
+{
+    if (!auctioneer)
+        return;
+
+    // Map equipment slot to AH inventory type filter
+    uint32 inventoryType = 0;
+    switch (equipSlot)
+    {
+        case EQUIPMENT_SLOT_HEAD:      inventoryType = INVTYPE_HEAD; break;
+        case EQUIPMENT_SLOT_NECK:      inventoryType = INVTYPE_NECK; break;
+        case EQUIPMENT_SLOT_SHOULDERS: inventoryType = INVTYPE_SHOULDERS; break;
+        case EQUIPMENT_SLOT_CHEST:     inventoryType = INVTYPE_CHEST; break;
+        case EQUIPMENT_SLOT_WAIST:     inventoryType = INVTYPE_WAIST; break;
+        case EQUIPMENT_SLOT_LEGS:      inventoryType = INVTYPE_LEGS; break;
+        case EQUIPMENT_SLOT_FEET:      inventoryType = INVTYPE_FEET; break;
+        case EQUIPMENT_SLOT_WRISTS:    inventoryType = INVTYPE_WRISTS; break;
+        case EQUIPMENT_SLOT_HANDS:     inventoryType = INVTYPE_HANDS; break;
+        case EQUIPMENT_SLOT_FINGER1:
+        case EQUIPMENT_SLOT_FINGER2:   inventoryType = INVTYPE_FINGER; break;
+        case EQUIPMENT_SLOT_TRINKET1:
+        case EQUIPMENT_SLOT_TRINKET2:  inventoryType = INVTYPE_TRINKET; break;
+        case EQUIPMENT_SLOT_BACK:      inventoryType = INVTYPE_CLOAK; break;
+        case EQUIPMENT_SLOT_MAINHAND:
+        case EQUIPMENT_SLOT_OFFHAND:
+        case EQUIPMENT_SLOT_RANGED:    inventoryType = 0; break;
+        default: return;
+    }
+
+    // Armor class for armor slots, any for weapons/jewelry
+    uint32 itemClass = 0xFFFFFFFF;
+    uint32 itemSubClass = 0xFFFFFFFF;
+    if (inventoryType != 0 &&
+        equipSlot != EQUIPMENT_SLOT_FINGER1 &&
+        equipSlot != EQUIPMENT_SLOT_FINGER2 &&
+        equipSlot != EQUIPMENT_SLOT_TRINKET1 &&
+        equipSlot != EQUIPMENT_SLOT_TRINKET2 &&
+        equipSlot != EQUIPMENT_SLOT_NECK &&
+        equipSlot != EQUIPMENT_SLOT_BACK)
+    {
+        itemClass = ITEM_CLASS_ARMOR;
+    }
+
+    uint8 levelMin = bot->GetLevel() > 5 ? bot->GetLevel() - 5 : 1;
+    uint8 levelMax = bot->GetLevel();
+
+    WorldPacket packet(CMSG_AUCTION_LIST_ITEMS);
+    packet << auctioneer->GetGUID();
+    packet << uint32(0);                       // listfrom (page 0)
+    packet << std::string("");                 // no name filter
+    packet << levelMin;
+    packet << levelMax;
+    packet << inventoryType;
+    packet << itemClass;
+    packet << itemSubClass;
+    packet << uint32(ITEM_QUALITY_UNCOMMON);   // green minimum
+    packet << uint8(1);                        // usable only
+
+    packet << uint8(0);                        // getAll = false
+
+    // Sort: rarity descending (best quality first), then level descending (highest ilvl first)
+    packet << uint8(2);
+    packet << uint8(AUCTION_SORT_RARITY) << uint8(1);
+    packet << uint8(AUCTION_SORT_MINLEVEL) << uint8(1);
+
+    bot->GetSession()->HandleAuctionListItems(packet);
+
+    LOG_DEBUG("playerbots", "[New RPG] Bot {} sent AH search for slot {} (invType={}, level={}-{})",
+              bot->GetName(), equipSlot, inventoryType, levelMin, levelMax);
 }

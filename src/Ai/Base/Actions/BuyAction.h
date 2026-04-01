@@ -8,10 +8,6 @@
 
 #include "InventoryAction.h"
 
-#include "AuctionHouseMgr.h"
-#include "BudgetValues.h"
-#include "ItemUsageValue.h"
-
 class FindItemVisitor;
 class ObjectGuid;
 class Item;
@@ -29,14 +25,30 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool BuyFromAuctionHouse();
-    bool BuyAuction(ObjectGuid auctioneerGuid, AuctionEntry* auction);
-    bool IsAuctionItemUseful(ItemTemplate const* proto, uint32 buyout,
-                             NeedMoneyFor& needMoneyFor);
-    NeedMoneyFor GetBudgetTypeForUsage(ItemUsage usage) const;
     bool BuyItem(VendorItemData const* tItems, ObjectGuid vendorguid, ItemTemplate const* proto);
     bool TradeItem(FindItemVisitor* visitor, int8 slot);
     bool TradeItem(Item const* item, int8 slot);
+};
+
+struct AhItem
+{
+    uint32 auctionId;
+    uint32 itemEntry;
+    uint32 buyout;
+    uint32 bidPrice;
+    uint32 itemCount;
+};
+
+class AhBuyAction : public Action
+{
+public:
+    AhBuyAction(PlayerbotAI* botAI) : Action(botAI, "ah buy") {}
+
+    bool Execute(Event event) override;
+
+private:
+    bool ParseAuctionPacket(WorldPacket& p, uint32 gearBudget, std::vector<AhItem>& candidates);
+    bool BuyBestCandidate(std::vector<AhItem>& candidates);
 };
 
 #endif

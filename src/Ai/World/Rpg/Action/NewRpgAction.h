@@ -109,6 +109,9 @@ class NewRpgGoCityAction : public NewRpgBaseAction
 public:
     NewRpgGoCityAction(PlayerbotAI* botAI) : NewRpgBaseAction(botAI, "new rpg go city") {}
     bool Execute(Event event) override;
+
+private:
+    void SendAhSearchForSlot(Creature* auctioneer, uint8 equipSlot);
 };
 
 #endif

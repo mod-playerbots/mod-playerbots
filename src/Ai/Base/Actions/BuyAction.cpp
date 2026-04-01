@@ -240,131 +240,6 @@ bool BuyAction::Execute(Event event)
     return true;
 }
 
-bool BuyAction::BuyFromAuctionHouse()
-{
-    if (!sPlayerbotAIConfig.enableAuctionHouseBotting)
-        return false;
-
-    GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-
-    ObjectGuid auctioneerGuid;
-    Creature* auctioneer = nullptr;
-    for (ObjectGuid const& guid : npcs)
-    {
-        auctioneer = bot->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_AUCTIONEER);
-        if (auctioneer)
-        {
-            auctioneerGuid = guid;
-            break;
-        }
-    }
-
-    if (!auctioneer)
-    {
-        botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "auction_no_auctioneers_nearby", "There are no auctioneers nearby", {}));
-        return false;
-    }
-
-    AuctionHouseObject* auctionHouse = sAuctionMgr->GetAuctionsMap(auctioneer->GetFaction());
-    if (!auctionHouse)
-        return false;
-
-    AuctionEntry* bestAuction = nullptr;
-    uint32 bestPrice = std::numeric_limits<uint32>::max();
-    uint32 scanned = 0;
-
-    for (auto itr = auctionHouse->GetAuctionsBegin(); itr != auctionHouse->GetAuctionsEnd(); ++itr)
-    {
-        if (++scanned > 300)
-            break;
-
-        AuctionEntry* auction = itr->second;
-        if (!auction || !auction->buyout)
-            continue;
-
-        if (auction->owner == bot->GetGUID())
-            continue;
-
-        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(auction->item_template);
-        if (!proto)
-            continue;
-
-        NeedMoneyFor needMoneyFor = NeedMoneyFor::none;
-        if (!IsAuctionItemUseful(proto, auction->buyout, needMoneyFor))
-            continue;
-
-        if (auction->buyout < bestPrice)
-        {
-            bestPrice = auction->buyout;
-            bestAuction = auction;
-        }
-    }
-
-    if (!bestAuction)
-        return false;
-
-    return BuyAuction(auctioneerGuid, bestAuction);
-}
-
-bool BuyAction::BuyAuction(ObjectGuid auctioneerGuid, AuctionEntry* auction)
-{
-    if (!auction || !auction->buyout)
-        return false;
-
-    uint32 const auctionId = auction->Id;
-    uint32 const buyout = auction->buyout;
-    uint32 const itemTemplateId = auction->item_template;
-
-    auto buyOp = std::make_unique<AuctionBuyOperation>(
-        bot->GetGUID(), auctioneerGuid, auctionId, buyout, itemTemplateId);
-
-    return PlayerbotWorldThreadProcessor::instance().QueueOperation(
-        std::move(buyOp));
-}
-
-bool BuyAction::IsAuctionItemUseful(ItemTemplate const* proto, uint32 buyout,
-                                    NeedMoneyFor& needMoneyFor)
-{
-    if (!proto || !buyout)
-        return false;
-
-    ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", proto->ItemId);
-    needMoneyFor = GetBudgetTypeForUsage(usage);
-    if (needMoneyFor == NeedMoneyFor::none)
-        return false;
-
-    if (AI_VALUE2(uint32, "free money for", uint32(needMoneyFor)) < buyout)
-        return false;
-
-    if ((proto->Class == ITEM_CLASS_CONSUMABLE || proto->Class == ITEM_CLASS_PROJECTILE) &&
-        bot->GetItemCount(proto->ItemId, true) > 200)
-        return false;
-
-    return true;
-}
-
-NeedMoneyFor BuyAction::GetBudgetTypeForUsage(ItemUsage usage) const
-{
-    switch (usage)
-    {
-        case ITEM_USAGE_REPLACE:
-        case ITEM_USAGE_EQUIP:
-        case ITEM_USAGE_BAD_EQUIP:
-        case ITEM_USAGE_BROKEN_EQUIP:
-            return NeedMoneyFor::gear;
-        case ITEM_USAGE_AMMO:
-            return NeedMoneyFor::ammo;
-        case ITEM_USAGE_QUEST:
-            return NeedMoneyFor::anything;
-        case ITEM_USAGE_USE:
-            return NeedMoneyFor::consumables;
-        case ITEM_USAGE_SKILL:
-            return NeedMoneyFor::tradeskill;
-        default:
-            return NeedMoneyFor::none;
-    }
-}
 
 bool BuyAction::BuyItem(VendorItemData const* tItems, ObjectGuid vendorguid, ItemTemplate const* proto)
 {
@@ -401,4 +276,137 @@ bool BuyAction::BuyItem(VendorItemData const* tItems, ObjectGuid vendorguid, Ite
     }
 
     return false;
+}
+
+// === AH Buy Action — receives SMSG_AUCTION_LIST_RESULT, scores top items, bids/buys ===
+bool AhBuyAction::ParseAuctionPacket(WorldPacket& p, uint32 gearBudget, std::vector<AhItem>& candidates)
+{
+    uint32 count;
+    p >> count;
+
+    if (!count)
+        return false;
+
+    candidates.reserve(std::min(count, uint32(50)));
+
+    for (uint32 i = 0; i < count; ++i)
+    {
+        uint32 auctionId, itemEntry;
+        p >> auctionId >> itemEntry;
+
+        // Skip enchant data (MAX_INSPECTED_ENCHANTMENT_SLOT * 3 uint32s)
+        for (uint8 j = 0; j < MAX_INSPECTED_ENCHANTMENT_SLOT; ++j)
+        {
+            uint32 enchantId, enchantDuration, enchantCharges;
+            p >> enchantId >> enchantDuration >> enchantCharges;
+        }
+
+        int32 randomPropertyId;
+        uint32 suffixFactor, itemCount;
+        int32 spellCharges;
+        uint32 flags;
+        ObjectGuid ownerGuid;
+        uint32 startbid, minOutbid, buyout, timeLeft;
+        ObjectGuid bidderGuid;
+        uint32 currentBid;
+
+        p >> randomPropertyId >> suffixFactor >> itemCount >> spellCharges >> flags;
+        p >> ownerGuid >> startbid >> minOutbid >> buyout >> timeLeft;
+        p >> bidderGuid >> currentBid;
+
+        if (ownerGuid == bot->GetGUID())
+            continue;
+
+        uint32 bidPrice = minOutbid ? minOutbid : startbid;
+        bool canBuyout = buyout && buyout <= gearBudget;
+        bool canBid = bidPrice && bidPrice <= gearBudget;
+        if (!canBuyout && !canBid)
+            continue;
+
+        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemEntry);
+        if (!proto || proto->RequiredLevel > bot->GetLevel())
+            continue;
+
+        if (bot->BotCanUseItem(proto) != EQUIP_ERR_OK)
+            continue;
+
+        candidates.push_back({auctionId, itemEntry, buyout, bidPrice, itemCount});
+    }
+
+    return !candidates.empty();
+}
+
+bool AhBuyAction::BuyBestCandidate(std::vector<AhItem>& candidates)
+{
+    StatsWeightCalculator calculator(bot);
+    calculator.SetItemSetBonus(false);
+    calculator.SetOverflowPenalty(false);
+
+    AhItem const* bestCandidate = nullptr;
+    float bestScore = 0.0f;
+    uint32 evaluated = 0;
+
+    for (AhItem const& candidate : candidates)
+    {
+        //evaluate only top 10 items sent.
+        if (++evaluated > 10)
+            break;
+
+        float score = calculator.CalculateItem(c.itemEntry);
+        if (score > bestScore)
+        {
+            bestScore = score;
+            bestCandidate = &candidate;
+        }
+    }
+
+    if (!bestCandidate || bestScore <= 0.0f)
+        return false;
+
+    GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+    ObjectGuid auctioneerGuid;
+    for (ObjectGuid const& guid : npcs)
+    {
+        if (bot->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_AUCTIONEER))
+        {
+            auctioneerGuid = guid;
+            break;
+        }
+    }
+
+    if (auctioneerGuid.IsEmpty())
+        return false;
+
+    // Buyout if affordable, otherwise bid
+    uint32 price = (bestCandidate->buyout && bestCandidate->buyout <= AI_VALUE2(uint32, "free money for", uint32(NeedMoneyFor::gear)))
+        ? bestCandidate->buyout
+        : bestCandidate->bidPrice;
+
+    auto bidOperation = std::make_unique<AuctionPlaceBidOperation>(
+        bot->GetGUID(), auctioneerGuid,
+        bestCandidate->auctionId, price, bestCandidate->itemEntry);
+
+    return PlayerbotWorldThreadProcessor::instance().QueueOperation(std::move(bidOperation));
+}
+
+bool AhBuyAction::Execute(Event event)
+{
+    if (!sPlayerbotAIConfig.enableAuctionHouseBotting)
+        return false;
+
+    WorldPacket p(event.getPacket());
+    if (p.empty())
+        return false;
+
+    p.rpos(0);
+
+    uint32 gearBudget = AI_VALUE2(uint32, "free money for", uint32(NeedMoneyFor::gear));
+    if (!gearBudget)
+        return false;
+
+    std::vector<AhItem> candidates;
+    if (!ParseAuctionPacket(p, gearBudget, candidates))
+        return false;
+
+    return BuyBestCandidate(candidates);
 }
