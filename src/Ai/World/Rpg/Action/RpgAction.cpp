@@ -11,7 +11,6 @@
 #include "EmoteAction.h"
 #include "Event.h"
 #include "Formations.h"
-#include "ItemUsageValue.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "RpgSubActions.h"
@@ -45,38 +44,6 @@ bool RpgAction::isUseful() { return AI_VALUE(GuidPosition, "rpg target"); }
 
 bool RpgAction::SetNextRpgAction()
 {
-    if (sPlayerbotAIConfig.enableAuctionHouseBotting)
-    {
-        GuidVector auctionCandidates = AI_VALUE(GuidVector, "possible rpg targets");
-        if (auctionCandidates.empty())
-            auctionCandidates = AI_VALUE(GuidVector, "nearest npcs");
-
-        for (ObjectGuid const& guid : auctionCandidates)
-        {
-            Creature* auctioneer = bot->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_AUCTIONEER);
-            if (!auctioneer)
-                continue;
-
-            GuidPosition auctioneerPosition(auctioneer);
-
-            uint32 ahItemCount =
-                AI_VALUE2(uint32, "item count", "usage " + std::to_string(ITEM_USAGE_AH));
-            if (ahItemCount > 0)
-            {
-                SET_AI_VALUE(GuidPosition, "rpg target", auctioneerPosition);
-                SET_AI_VALUE(std::string, "next rpg action", "rpg sell");
-                return true;
-            }
-
-            if (urand(1, 100) <= 25)
-            {
-                SET_AI_VALUE(GuidPosition, "rpg target", auctioneerPosition);
-                SET_AI_VALUE(std::string, "next rpg action", "rpg buy");
-                return true;
-            }
-        }
-    }
-
     Strategy* rpgStrategy;
     std::vector<Action*> actions;
     std::vector<uint32> relevances;
