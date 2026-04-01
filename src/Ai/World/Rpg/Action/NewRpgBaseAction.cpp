@@ -205,72 +205,92 @@ bool NewRpgBaseAction::ForceToWait(uint32 duration, MovementPriority priority)
     return true;
 }
 
-bool NewRpgBaseAction::ShouldTriggerAuctionHouseFromGrind()
+
+bool NewRpgBaseAction::TakeFlight(std::vector<uint32> const& taxiNodes, Creature* flightMaster)
 {
-    if (!sPlayerbotAIConfig.enableAuctionHouseBotting)
+    if (taxiNodes.size() < 2 || !flightMaster || !flightMaster->IsAlive())
         return false;
 
-    if (!sPlayerbotAIConfig.rpgGrindAuctionThreshold)
-        return false;
+    botAI->RemoveShapeshift();
+    if (bot->IsMounted())
+        bot->Dismount();
 
-    uint32 ahItemCount = AI_VALUE2(uint32, "item count", "usage " + std::to_string(ITEM_USAGE_AH));
-    if (!ahItemCount)
+    if (!bot->ActivateTaxiPathTo(taxiNodes, flightMaster, 0))
+    {
+        LOG_DEBUG("playerbots", "[New RPG] Bot {} flight ({} nodes, {} to {}) failed",
+                  bot->GetName(), taxiNodes.size(), taxiNodes.front(), taxiNodes.back());
         return false;
+    }
 
-    return ahItemCount >= sPlayerbotAIConfig.rpgGrindAuctionThreshold;
+    LOG_DEBUG("playerbots", "[New RPG] Bot {} taking flight ({} nodes, {} to {})",
+              bot->GetName(), taxiNodes.size(), taxiNodes.front(), taxiNodes.back());
+    return true;
 }
 
-WorldPosition NewRpgBaseAction::SelectAuctionHouseTravelPos()
+bool NewRpgBaseAction::FollowTravelPath()
 {
-    WorldPosition botPos(bot);
-    WorldPosition bestPos;
-    float bestDistance = std::numeric_limits<float>::max();
+    NewRpgInfo& rpgInfo = botAI->rpgInfo;
+    if (!rpgInfo.HasTravelPath())
+        return false;
 
-    for (CreatureData const* creatureData : WorldPosition().getCreaturesNear())
+    if (bot->IsInFlight())
+        return true;
+
+    WorldPosition currentPos(bot->GetMapId(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
+    float maxDist = pathFinderDis;
+
+    TravelNodePathType pathType = TravelNodePathType::none;
+    uint32 entry = 0;
+    WorldPosition movePosition = rpgInfo.travelPath.GetNextPoint(currentPos, maxDist, pathType, entry);
+
+    if (movePosition == WorldPosition())
+        return false;
+
+    // After detecting a flight path step, determine if within intaction distance from a flightmaster
+    // and once in position combine all consecutive flight legs into one and fly.
+    if (pathType == TravelNodePathType::flightPath && entry)
     {
-        if (!creatureData)
-            continue;
+        ObjectGuid flightMasterGuid = sTravelMgr.GetNearestFlightMasterGuid(bot);
+        Creature* flightMaster = flightMasterGuid ? ObjectAccessor::GetCreature(*bot, flightMasterGuid) : nullptr;
+        if (!flightMaster || !flightMaster->IsAlive())
+            return false;
 
-        CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(creatureData->id1);
-        if (!creatureInfo)
-            continue;
+        if (bot->GetDistance(flightMaster) > INTERACTION_DISTANCE)
+            return MoveFarTo(flightMaster);
 
-        if (!(creatureInfo->npcflag & UNIT_NPC_FLAG_AUCTIONEER))
-            continue;
-
-        FactionTemplateEntry const* factionEntry = sFactionTemplateStore.LookupEntry(creatureInfo->faction);
-        ReputationRank reaction = Unit::GetFactionReactionTo(bot->GetFactionTemplateEntry(), factionEntry);
-        if (reaction < REP_NEUTRAL)
-            continue;
-
-        WorldPosition candidatePos(creatureData->mapid, creatureData->posX, creatureData->posY, creatureData->posZ,
-                                   creatureData->orientation);
-
-        float distance = candidatePos.distance(&botPos);
-        if (distance < bestDistance)
+        // Collect all consecutive flight legs into one multi-hop route
+        // Each leg is stored as two NODE_FLIGHTPATH points with the same entry,
+        // so deduplicate by tracking seen entries.
+        std::vector<uint32> taxiNodes;
+        std::set<uint32> seenEntries;
+        for (PathNodePoint const& path : rpgInfo.travelPath.GetPath())
         {
-            bestDistance = distance;
-            bestPos = candidatePos;
+            if (path.type != NODE_FLIGHTPATH)
+            {
+                if (!taxiNodes.empty())
+                    break;
+                continue;
+            }
+
+            if (!seenEntries.insert(path.entry).second)
+                continue;
+
+            TaxiPathEntry const* tEntry = sTaxiPathStore.LookupEntry(path.entry);
+            if (!tEntry)
+                continue;
+
+            if (taxiNodes.empty() || taxiNodes.back() != tEntry->from)
+                taxiNodes.push_back(tEntry->from);
+            taxiNodes.push_back(tEntry->to);
         }
+
+        return TakeFlight(taxiNodes, flightMaster);
     }
+    // Walk / default — move toward the point
+    if (movePosition.GetMapId() != bot->GetMapId())
+        return false;
 
-    if (bestPos != WorldPosition())
-        return bestPos;
-
-    for (WorldLocation const& cityLocation : sTravelMgr.GetCityLocations(bot))
-    {
-        WorldPosition candidatePos(cityLocation.GetMapId(), cityLocation.GetPositionX(), cityLocation.GetPositionY(),
-                                   cityLocation.GetPositionZ(), cityLocation.GetOrientation());
-
-        float distance = candidatePos.distance(&botPos);
-        if (distance < bestDistance)
-        {
-            bestDistance = distance;
-            bestPos = candidatePos;
-        }
-    }
-
-    return bestPos;
+    return MoveFarTo(movePosition);
 }
 
 /// @TODO: Fix redundant code
@@ -676,30 +696,6 @@ ObjectGuid NewRpgBaseAction::ChooseNpcOrGameObjectToInteract(bool questgiverOnly
 
     if (possibleTargets.empty() && possibleGameObjects.empty())
         return ObjectGuid();
-
-    uint32 ahItemCount = AI_VALUE2(uint32, "item count", "usage " + std::to_string(ITEM_USAGE_AH));
-    if (!questgiverOnly && ahItemCount > 0)
-    {
-        WorldObject* nearestAuctioneer = nullptr;
-        for (ObjectGuid& guid : possibleTargets)
-        {
-            Creature* creature = ObjectAccessor::GetCreature(*bot, guid);
-            if (!creature || !creature->IsInWorld())
-                continue;
-
-            if (!creature->HasNpcFlag(UNIT_NPC_FLAG_AUCTIONEER))
-                continue;
-
-            if (distanceLimit && bot->GetDistance(creature) > distanceLimit)
-                continue;
-
-            if (!nearestAuctioneer || bot->GetExactDist(nearestAuctioneer) > bot->GetExactDist(creature))
-                nearestAuctioneer = creature;
-        }
-
-        if (nearestAuctioneer)
-            return nearestAuctioneer->GetGUID();
-    }
 
     WorldObject* nearestObject = nullptr;
     for (ObjectGuid& guid : possibleTargets)
@@ -1121,32 +1117,10 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
         }
         case RPG_GO_GRIND:
         {
-            bool travelToAuctionHouse = ShouldTriggerAuctionHouseFromGrind();
-            uint32 ahItemCount = 0;
-            if (travelToAuctionHouse)
-                ahItemCount = AI_VALUE2(uint32, "item count", "usage " + std::to_string(ITEM_USAGE_AH));
-
-            WorldPosition pos = travelToAuctionHouse ? SelectAuctionHouseTravelPos() : WorldPosition();
-            if (pos == WorldPosition())
-            {
-                if (travelToAuctionHouse)
-                    LOG_DEBUG("playerbots",
-                              "[New RPG] Bot {} reached AH grind threshold ({} >= {}) but found no auctioneer travel position",
-                              bot->GetName(), ahItemCount, sPlayerbotAIConfig.rpgGrindAuctionThreshold);
-
-                travelToAuctionHouse = false;
-                pos = SelectRandomGrindPos(bot);
-            }
-
+            WorldPosition pos = SelectRandomGrindPos(bot);
             if (pos != WorldPosition())
             {
-                if (travelToAuctionHouse)
-                    LOG_DEBUG("playerbots",
-                              "[New RPG] Bot {} rerouting GoGrind to auction house at Map:{} X:{} Y:{} Z:{} with {} AH items (threshold {})",
-                              bot->GetName(), pos.GetMapId(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(),
-                              ahItemCount, sPlayerbotAIConfig.rpgGrindAuctionThreshold);
-
-                botAI->rpgInfo.ChangeToGoGrind(pos, travelToAuctionHouse);
+                botAI->rpgInfo.ChangeToGoGrind(pos);
                 return true;
             }
             return false;
@@ -1199,6 +1173,47 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
             }
             return false;
         }
+        case RPG_GO_CITY:
+        {
+            // Not useful if already in a capital city
+            if (AreaTableEntry const* zone = sAreaTableStore.LookupEntry(bot->GetZoneId()))
+            {
+                if (zone->flags & AREA_FLAG_CAPITAL)
+                    return false;
+            }
+
+            bool shouldSell = AI_VALUE(bool, "should ah sell");
+            bool shouldBuy = AI_VALUE(bool, "should ah buy");
+
+            WorldPosition pos;
+            ObjectGuid targetNpc;
+
+            if (shouldSell || shouldBuy)
+            {
+                // Need AH — pick an area with an auctioneer on our map
+                uint32 entry = 0;
+                if (SelectAuctionHouseTarget(pos, entry))
+                    targetNpc = ObjectGuid(HighGuid::Unit, entry, uint32(0));
+            }
+            else
+            {
+                // No AH need — pick any nearby city/town
+                std::vector<WorldLocation> cities = sTravelMgr.GetCityLocations(bot);
+                if (!cities.empty())
+                {
+                    WorldLocation const& cityLoc = cities[urand(0, cities.size() - 1)];
+                    pos = WorldPosition(cityLoc.GetMapId(), cityLoc.GetPositionX(),
+                                        cityLoc.GetPositionY(), cityLoc.GetPositionZ(),
+                                        cityLoc.GetOrientation());
+                }
+            }
+
+            if (pos == WorldPosition())
+                return false;
+
+            botAI->rpgInfo.ChangeToGoCity(pos, targetNpc, shouldSell, shouldBuy);
+            return true;
+        }
         case RPG_IDLE:
         {
             botAI->rpgInfo.ChangeToIdle();
@@ -1234,12 +1249,29 @@ bool NewRpgBaseAction::CheckRpgStatusAvailable(NewRpgStatus status)
         }
         case RPG_GO_GRIND:
         {
-            bool travelToAuctionHouse = ShouldTriggerAuctionHouseFromGrind();
-            WorldPosition pos = travelToAuctionHouse ? SelectAuctionHouseTravelPos() : SelectRandomGrindPos(bot);
-            if (!pos.IsValid() && travelToAuctionHouse)
-                pos = SelectRandomGrindPos(bot);
+            WorldPosition pos = SelectRandomGrindPos(bot);
+            return pos != WorldPosition();
+        }
+        case RPG_GO_CITY:
+        {
+            if (AreaTableEntry const* zone = sAreaTableStore.LookupEntry(bot->GetZoneId()))
+            {
+                if (zone->flags & AREA_FLAG_CAPITAL)
+                    return false;
+            }
 
-            return pos.IsValid();
+            bool shouldSell = AI_VALUE(bool, "should ah sell");
+            bool shouldBuy = AI_VALUE(bool, "should ah buy");
+            if (shouldSell || shouldBuy)
+            {
+                WorldPosition pos;
+                uint32 entry = 0;
+                return SelectAuctionHouseTarget(pos, entry);
+            }
+
+            // No AH need — any city will do
+            std::vector<WorldLocation> cities = sTravelMgr.GetCityLocations(bot);
+            return !cities.empty();
         }
         case RPG_GO_CAMP:
         {
@@ -1249,24 +1281,7 @@ bool NewRpgBaseAction::CheckRpgStatusAvailable(NewRpgStatus status)
         case RPG_WANDER_NPC:
         {
             GuidVector possibleTargets = AI_VALUE(GuidVector, "possible new rpg targets");
-            if (possibleTargets.empty())
-                return false;
-
-            uint32 ahItemCount = AI_VALUE2(uint32, "item count", "usage " + std::to_string(ITEM_USAGE_AH));
-            if (!ahItemCount)
-                return possibleTargets.size() >= 3;
-
-            for (ObjectGuid const& guid : possibleTargets)
-            {
-                Creature* creature = ObjectAccessor::GetCreature(*bot, guid);
-                if (!creature || !creature->IsInWorld())
-                    continue;
-
-                if (creature->HasNpcFlag(UNIT_NPC_FLAG_AUCTIONEER))
-                    return true;
-            }
-
-            return false;
+            return possibleTargets.size() >= 3;
         }
         case RPG_DO_QUEST:
         {
@@ -1293,6 +1308,20 @@ bool NewRpgBaseAction::CheckRpgStatusAvailable(NewRpgStatus status)
         }
         default:
             return false;
+    }
+    return false;
+}
+
+bool NewRpgBaseAction::SelectAuctionHouseTarget(WorldPosition& outPos, uint32& outEntry)
+{
+    TravelMgr::NpcLocation auctioneer;
+    if (sTravelMgr.SelectAuctioneerByMap(bot, auctioneer))
+    {
+        outPos = WorldPosition(auctioneer.loc.GetMapId(), auctioneer.loc.GetPositionX(),
+                               auctioneer.loc.GetPositionY(), auctioneer.loc.GetPositionZ(),
+                               auctioneer.loc.GetOrientation());
+        outEntry = auctioneer.entry;
+        return true;
     }
     return false;
 }

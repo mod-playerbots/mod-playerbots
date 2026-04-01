@@ -102,7 +102,7 @@ public:
 
     // Getters
     bool getComplete() { return complete || pathType != TravelNodePathType::walk; }
-    std::vector<WorldPosition> getPath() { return path; }
+    std::vector<WorldPosition> GetPath() { return path; }
 
     TravelNodePathType getPathType() { return pathType; }
     uint32 getPathObject() { return pathObject; }
@@ -425,7 +425,7 @@ public:
     bool shouldMoveToNextPoint(WorldPosition startPos, std::vector<PathNodePoint>::iterator beg,
                                std::vector<PathNodePoint>::iterator ed, std::vector<PathNodePoint>::iterator p,
                                float& moveDist, float maxDist);
-    WorldPosition getNextPoint(WorldPosition startPos, float maxDist, TravelNodePathType& pathType, uint32& entry);
+    WorldPosition GetNextPoint(WorldPosition startPos, float maxDist, TravelNodePathType& pathType, uint32& entry);
 
     std::ostringstream const print();
 
@@ -537,14 +537,14 @@ public:
     }
 
     // Finds the best nodePath between two nodes
-    TravelNodeRoute getRoute(TravelNode* start, TravelNode* goal, Player* bot = nullptr);
+    TravelNodeRoute GetRoute(TravelNode* start, TravelNode* goal, Player* bot = nullptr);
 
     // Find the best node between two positions
-    TravelNodeRoute getRoute(WorldPosition startPos, WorldPosition endPos, std::vector<WorldPosition>& startPath,
+    TravelNodeRoute GetRoute(WorldPosition startPos, WorldPosition endPos, std::vector<WorldPosition>& startPath,
                              Player* bot = nullptr);
 
     // Find the full path between those locations
-    static TravelPath getFullPath(WorldPosition startPos, WorldPosition endPos, Player* bot = nullptr);
+    TravelPath GetFullPath(WorldPosition startPos, WorldPosition endPos, Player* bot = nullptr);
 
     // Manage/update nodes
     void manageNodes(Unit* bot, bool mapFull = false);
@@ -571,7 +571,7 @@ public:
 
     void printNodeStore();
     void saveNodeStore();
-    void loadNodeStore();
+    void LoadNodeStore();
 
     bool cropUselessNode(TravelNode* startNode);
     TravelNode* addZoneLinkNode(TravelNode* startNode);

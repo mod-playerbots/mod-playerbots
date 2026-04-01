@@ -62,25 +62,28 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
     {
         case RPG_IDLE:
             return RandomChangeStatus({RPG_GO_CAMP, RPG_GO_GRIND, RPG_WANDER_RANDOM, RPG_WANDER_NPC, RPG_DO_QUEST,
-                                       RPG_TRAVEL_FLIGHT, RPG_REST});
+                                       RPG_TRAVEL_FLIGHT, RPG_GO_CITY, RPG_REST});
 
         case RPG_GO_GRIND:
         {
             auto& data = std::get<NewRpgInfo::GoGrind>(info.data);
-            WorldPosition& originalPos = data.pos;
             assert(data.pos != WorldPosition());
-            // GO_GRIND -> WANDER_RANDOM or WANDER_NPC when the grind leg was rerouted to an auctioneer
-            if (bot->GetExactDist(originalPos) < 10.0f)
+            // GO_GRIND -> WANDER_RANDOM
+            if (bot->GetExactDist(data.pos) < 10.0f)
             {
-                if (data.auctionHouse)
-                {
-                    LOG_DEBUG("playerbots",
-                              "[New RPG] Bot {} arrived at auction house grind destination and is switching to NPC interaction",
-                              bot->GetName());
-                    info.ChangeToWanderNpc();
-                }
-                else
-                    info.ChangeToWanderRandom();
+                info.ChangeToWanderRandom();
+                return true;
+            }
+            break;
+        }
+        case RPG_GO_CITY:
+        {
+            auto& data = std::get<NewRpgInfo::GoCity>(info.data);
+            assert(data.pos != WorldPosition());
+            if (info.HasStatusPersisted(statusGoCityDuration))
+            {
+                info.travelPath.clear();
+                info.ChangeToIdle();
                 return true;
             }
             break;
@@ -210,13 +213,7 @@ bool NewRpgWanderNpcAction::Execute(Event /*event*/)
         if (!data.lastReach)
         {
             data.lastReach = getMSTime();
-            if (Creature* creature = object->ToCreature(); creature && creature->HasNpcFlag(UNIT_NPC_FLAG_AUCTIONEER))
-            {
-                LOG_DEBUG("playerbots", "[New RPG] Bot {} reached auctioneer {} and is triggering auction sell action",
-                          bot->GetName(), creature->GetEntry());
-                botAI->DoSpecificAction("sell", Event("rpg action", "auction"), true);
-            }
-            else if (bot->CanInteractWithQuestGiver(object))
+            if (bot->CanInteractWithQuestGiver(object))
                 InteractWithNpcOrGameObjectForQuest(data.npcOrGo);
             return true;
         }
@@ -451,17 +448,103 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
     if (bot->GetDistance(flightMaster) > INTERACTION_DISTANCE)
         return MoveFarTo(flightMaster);
 
-    std::vector<uint32> nodes = data.path;
-
-    botAI->RemoveShapeshift();
-    if (bot->IsMounted())
-        bot->Dismount();
-
-    if (!bot->ActivateTaxiPathTo(nodes, flightMaster, 0))
+    if (!TakeFlight(data.path, flightMaster))
     {
-        LOG_DEBUG("playerbots", "[New RPG] {} active taxi path {} (from {} to {}) failed", bot->GetName(),
-                  flightMaster->GetEntry(), nodes[0], nodes[nodes.size() - 1]);
         botAI->rpgInfo.ChangeToIdle();
+        return true;
     }
+    return true;
+}
+
+bool NewRpgGoCityAction::Execute(Event /*event*/)
+{
+    auto* dataPtr = std::get_if<NewRpgInfo::GoCity>(&botAI->rpgInfo.data);
+    if (!dataPtr)
+        return false;
+    auto& data = *dataPtr;
+
+    // Stage 1: Travel to the target city
+    if (bot->IsInFlight())
+        return false;
+
+    if (bot->GetDistance(data.pos) > 50.0f)
+    {
+        // Follow existing travel path if one is active
+        if (botAI->rpgInfo.HasTravelPath())
+            return FollowTravelPath();
+
+        // Compute a travel path
+        WorldPosition currentPos(bot->GetMapId(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
+        TravelPath path = sTravelNodeMap.getFullPath(currentPos, data.pos, bot);
+        if (!path.empty())
+        {
+            botAI->rpgInfo.travelPath = std::move(path);
+            return FollowTravelPath();
+        }
+
+        return MoveFarTo(data.pos);
+    }
+
+    if ((data.wantSell || data.wantBuy) && sPlayerbotAIConfig.enableAuctionHouseBotting)
+    {
+        Creature* auctioneer = nullptr;
+
+        uint32 auctioneerGuid= data.targetNpc.GetEntry();
+        if (auctioneerGuid)
+            auctioneer = bot->FindNearestCreature(auctioneerGuid, 100.0f);
+
+        // Fallback: scan nearby NPCs for any auctioneer
+        if (!auctioneer)
+        {
+            GuidVector targets = AI_VALUE(GuidVector, "possible new rpg targets");
+            for (ObjectGuid const& guid : targets)
+            {
+                Creature* creature = ObjectAccessor::GetCreature(*bot, guid);
+                if (creature && creature->HasNpcFlag(UNIT_NPC_FLAG_AUCTIONEER))
+                {
+                    auctioneer = creature;
+                    break;
+                }
+            }
+        }
+
+        if (!auctioneer)
+        {
+            LOG_DEBUG("playerbots", "[New RPG] Bot {} at city but no auctioneer found nearby",
+                      bot->GetName());
+            data.wantSell = false;
+            data.wantBuy = false;
+        }
+        else if (bot->GetDistance(auctioneer) > INTERACTION_DISTANCE)
+            return MoveWorldObjectTo(auctioneer->GetGUID());
+        else
+        {
+            // At the auctioneer — sell then buy
+            if (data.wantSell && AI_VALUE(bool, "should ah sell"))
+            {
+                LOG_DEBUG("playerbots", "[New RPG] Bot {} at auctioneer {}, triggering sell",
+                          bot->GetName(), auctioneer->GetEntry());
+                botAI->DoSpecificAction("sell", Event("rpg action", "auction"), true);
+                data.wantSell = false;
+                return true;
+            }
+            if (data.wantBuy && (AI_VALUE(bool, "should ah buy") || AI_VALUE(bool, "can ah buy")))
+            {
+                LOG_DEBUG("playerbots", "[New RPG] Bot {} at auctioneer {}, triggering buy",
+                          bot->GetName(), auctioneer->GetEntry());
+                botAI->DoSpecificAction("buy", Event("rpg action", "auction"), true);
+                data.wantBuy = false;
+                return true;
+            }
+        }
+    }
+
+    if (!data.wantSell && !data.wantBuy)
+    {
+        botAI->rpgInfo.travelPath.clear();
+        botAI->rpgInfo.ChangeToIdle();
+        return true;
+    }
+
     return true;
 }

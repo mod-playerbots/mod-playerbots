@@ -8,6 +8,7 @@
 #include "Strategy.h"
 #include "Timer.h"
 #include "TravelMgr.h"
+#include "TravelNode.h"
 
 using NewRpgStatusTransitionProb = std::vector<std::vector<int>>;
 
@@ -62,6 +63,14 @@ struct NewRpgInfo
     struct Idle
     {
     };
+    // RPG_GO_CITY
+    struct GoCity
+    {
+        WorldPosition pos{0};
+        ObjectGuid targetNpc{0};
+        bool wantSell{false};
+        bool wantBuy{false};
+    };
 
     uint32 startT{0};  // start timestamp of the current status
 
@@ -72,6 +81,10 @@ struct NewRpgInfo
     WorldPosition moveFarPos;
     // END MOVE_FAR
 
+    // Travel Node System for moving to distant places
+    TravelPath travelPath{};
+    bool HasTravelPath() const { return !travelPath.empty(); }
+
     using RpgData = std::variant<
         Idle,
         GoGrind,
@@ -80,7 +93,8 @@ struct NewRpgInfo
         WanderRandom,
         DoQuest,
         Rest,
-        TravelFlight
+        TravelFlight,
+        GoCity
     >;
     RpgData data;
 
@@ -88,6 +102,7 @@ struct NewRpgInfo
     bool HasStatusPersisted(uint32 maxDuration) { return GetMSTimeDiffToNow(startT) > maxDuration; }
     void ChangeToGoGrind(WorldPosition pos, bool auctionHouse = false);
     void ChangeToGoCamp(WorldPosition pos);
+    void ChangeToGoCity(WorldPosition pos, ObjectGuid targetNpc, bool wantSell, bool wantBuy);
     void ChangeToWanderNpc();
     void ChangeToWanderRandom();
     void ChangeToDoQuest(uint32 questId, const Quest* quest);

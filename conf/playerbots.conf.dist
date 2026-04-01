@@ -581,10 +581,10 @@ AiPlayerbot.AutoGearScoreLimit = 0
 # Default: food, taxi, and raid are enabled
 AiPlayerbot.BotCheats = "food,taxi,raid"
 
-# List of attunement quests (comma-separated list of quest IDs) that are automatically completed for all bots.  
+# List of attunement quests (comma-separated list of quest IDs) that are automatically completed for all bots.
 # While mod-playerbots does not restore removed attunement requirements, although other mods, such as mod-individual-progression, may do so.
 # This is meant to exclude bots from such requirements.
-# 
+#
 # Default:
 # Caverns of Time - Part 1
 # - 10279, To The Master's Lair
@@ -1014,6 +1014,7 @@ AiPlayerbot.RpgStatusProbWeight.GoCamp = 10
 AiPlayerbot.RpgStatusProbWeight.DoQuest = 60
 AiPlayerbot.RpgStatusProbWeight.TravelFlight = 15
 AiPlayerbot.RpgStatusProbWeight.Rest = 5
+AiPlayerbot.RpgStatusProbWeight.GoCity = 10
 
 # When GoGrind is selected and the bot has at least this many AH-eligible item units,
 # route that grind trip to the nearest auctioneer instead of a random grind spot.

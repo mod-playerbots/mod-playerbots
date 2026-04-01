@@ -33,6 +33,8 @@ protected:
     bool MoveWorldObjectTo(ObjectGuid guid, float distance = INTERACTION_DISTANCE);
     bool MoveRandomNear(float moveStep = 50.0f, MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
     bool ForceToWait(uint32 duration, MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
+    bool FollowTravelPath();
+    bool TakeFlight(std::vector<uint32> const& taxiNodes, Creature* flightMaster);
 
     /* QUEST RELATED CHECK */
     ObjectGuid ChooseNpcOrGameObjectToInteract(bool questgiverOnly = false, float distanceLimit = 0.0f);
@@ -52,8 +54,7 @@ protected:
 
 protected:
     bool GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector<POIInfo>& poiInfo, bool toComplete = false);
-    bool ShouldTriggerAuctionHouseFromGrind();
-    WorldPosition SelectAuctionHouseTravelPos();
+    bool SelectAuctionHouseTarget(WorldPosition& outPos, uint32& outEntry);
     static WorldPosition SelectRandomGrindPos(Player* bot);
     static WorldPosition SelectRandomCampPos(Player* bot);
     bool SelectRandomFlightTaxiNode(ObjectGuid& flightMaster, std::vector<uint32>& path);

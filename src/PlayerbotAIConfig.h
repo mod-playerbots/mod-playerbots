@@ -52,11 +52,12 @@ enum NewRpgStatus : int
     // Do Quest (based on quest status)
     RPG_DO_QUEST = 5,
     // Travel
-
     RPG_TRAVEL_FLIGHT = 6,
     // Taking a break
     RPG_REST = 7,
-    RPG_STATUS_END = 8
+    // Travel to city
+    RPG_GO_CITY = 8,
+    RPG_STATUS_END = 9
 };
 
 #define MAX_SPECNO 20

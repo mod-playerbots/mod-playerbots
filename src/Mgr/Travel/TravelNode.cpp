@@ -202,7 +202,7 @@ TravelNodePath* TravelNode::buildPath(TravelNode* endNode, Unit* bot, bool postP
     if (returnNodePath->getComplete())  // Path is already complete. Return it.
         return returnNodePath;
 
-    std::vector<WorldPosition> path = returnNodePath->getPath();
+    std::vector<WorldPosition> path = returnNodePath->GetPath();
 
     if (path.empty())
         path = {*getPosition()};  // Start the path from the current Node.
@@ -219,7 +219,7 @@ TravelNodePath* TravelNode::buildPath(TravelNode* endNode, Unit* bot, bool postP
 
         if (backNodePath.getPathType() == TravelNodePathType::walk)
         {
-            std::vector<WorldPosition> bPath = backNodePath.getPath();
+            std::vector<WorldPosition> bPath = backNodePath.GetPath();
 
             if (!backNodePath.getComplete())  // Build it if it's not already complete.
             {
@@ -399,7 +399,7 @@ bool TravelNode::isUselessLink(TravelNode* farNode)
         }
         else
         {
-            TravelNodeRoute route = TravelNodeMap::instance().getRoute(nearNode, farNode, nullptr);
+            TravelNodeRoute route = TravelNodeMap::instance().GetRoute(nearNode, farNode, nullptr);
 
             if (route.isEmpty())
                 continue;
@@ -498,7 +498,7 @@ bool TravelNode::cropUselessLinks()
             }
             else
             {
-                TravelNodeRoute route = TravelNodeMap::instance().getRoute(firstNode, secondNode, false);
+                TravelNodeRoute route = TravelNodeMap::instance().GetRoute(firstNode, secondNode, false);
 
                 if (route.isEmpty())
                     continue;
@@ -546,7 +546,7 @@ bool TravelNode::cropUselessLinks()
                 }
                 else
                 {
-                    TravelNodeRoute route = TravelNodeMap::instance().getRoute(firstNode, secondNode, false);
+                    TravelNodeRoute route = TravelNodeMap::instance().GetRoute(firstNode, secondNode, false);
 
                     if (route.isEmpty())
                         continue;
@@ -630,7 +630,7 @@ void TravelNode::print([[maybe_unused]] bool printFailed)
         if (!hasLinkTo(endNode) && urand(0, 20) && !printFailed)
             continue;
 
-        ppath = path->getPath();
+        ppath = path->GetPath();
 
         if (ppath.size() < 2 && hasLinkTo(endNode))
         {
@@ -675,7 +675,7 @@ void TravelNode::print([[maybe_unused]] bool printFailed)
 // Attempts to move ahead of the path.
 bool TravelPath::makeShortCut(WorldPosition startPos, float maxDist)
 {
-    if (getPath().empty())
+    if (GetPath().empty())
         return false;
 
     float maxDistSq = maxDist * maxDist;
@@ -814,10 +814,10 @@ bool TravelPath::shouldMoveToNextPoint(WorldPosition startPos, std::vector<PathN
 }
 
 // Next position to move to
-WorldPosition TravelPath::getNextPoint(WorldPosition startPos, float maxDist, TravelNodePathType& pathType,
+WorldPosition TravelPath::GetNextPoint(WorldPosition startPos, float maxDist, TravelNodePathType& pathType,
                                        uint32& entry)
 {
-    if (getPath().empty())
+    if (GetPath().empty())
         return WorldPosition();
 
     auto beg = fullPath.begin();
@@ -895,7 +895,7 @@ WorldPosition TravelPath::getNextPoint(WorldPosition startPos, float maxDist, Tr
     // We have to move far for next point. Try to make a cropped path.
     if (moveDist < sPlayerbotAIConfig.targetPosRecalcDistance && std::next(startP) != ed)
     {
-        // std::vector<WorldPosition> path = startPos.getPathTo(std::next(startP)->point, nullptr);
+        // std::vector<WorldPosition> path = startPos.GetPathTo(std::next(startP)->point, nullptr);
         // startP->point = startPos.lastInRange(path, -1, maxDist);
         return WorldPosition();
     }
@@ -964,7 +964,7 @@ TravelPath TravelNodeRoute::buildPath(std::vector<WorldPosition> pathToStart, st
             {
                 returnNodePath =
                     *node->buildPath(prevNode, nullptr);  // Build reverse path and save it to a temporary variable.
-                std::vector<WorldPosition> path = returnNodePath.getPath();
+                std::vector<WorldPosition> path = returnNodePath.GetPath();
                 std::reverse(path.begin(), path.end());  // Reverse the path
                 returnNodePath.setPath(path);
                 nodePath = &returnNodePath;
@@ -1001,7 +1001,7 @@ TravelPath TravelNodeRoute::buildPath(std::vector<WorldPosition> pathToStart, st
             }
             else
             {
-                std::vector<WorldPosition> path = nodePath->getPath();
+                std::vector<WorldPosition> path = nodePath->GetPath();
 
                 if (path.size() > 1 &&
                     node != nodes.back())  // Remove the last point since that will also be the start of the next path.
@@ -1167,7 +1167,7 @@ TravelNode* TravelNodeMap::getNode(WorldPosition pos, [[maybe_unused]] std::vect
     return nullptr;
 }
 
-TravelNodeRoute TravelNodeMap::getRoute(TravelNode* start, TravelNode* goal, Player* bot)
+TravelNodeRoute TravelNodeMap::GetRoute(TravelNode* start, TravelNode* goal, Player* bot)
 {
     float botSpeed = bot ? bot->GetSpeed(MOVE_RUN) : 7.0f;
 
@@ -1315,7 +1315,7 @@ TravelNodeRoute TravelNodeMap::getRoute(TravelNode* start, TravelNode* goal, Pla
     return TravelNodeRoute();
 }
 
-TravelNodeRoute TravelNodeMap::getRoute(WorldPosition startPos, WorldPosition endPos,
+TravelNodeRoute TravelNodeMap::GetRoute(WorldPosition startPos, WorldPosition endPos,
                                         std::vector<WorldPosition>& startPath, Player* bot)
 {
     if (m_nodes.empty())
@@ -1346,7 +1346,7 @@ TravelNodeRoute TravelNodeMap::getRoute(WorldPosition startPos, WorldPosition en
 
         float maxStartDistance = startNode->isTransport() ? 20.0f : sPlayerbotAIConfig.targetPosRecalcDistance;
 
-        TravelNodeRoute route = getRoute(startNode, endNode, bot);
+        TravelNodeRoute route = GetRoute(startNode, endNode, bot);
 
         if (!route.isEmpty())
         {
@@ -1389,7 +1389,7 @@ TravelNodeRoute TravelNodeMap::getRoute(WorldPosition startPos, WorldPosition en
         while (endI < 5)
         {
             TravelNode* endNode = endNodes[endI];
-            TravelNodeRoute route = getRoute(botNode, endNode, bot);
+            TravelNodeRoute route = GetRoute(botNode, endNode, bot);
 
             if (!route.isEmpty())
                 return route;
@@ -1400,7 +1400,7 @@ TravelNodeRoute TravelNodeMap::getRoute(WorldPosition startPos, WorldPosition en
     return TravelNodeRoute();
 }
 
-TravelPath TravelNodeMap::getFullPath(WorldPosition startPos, WorldPosition endPos, Player* bot)
+TravelPath TravelNodeMap::GetFullPath(WorldPosition startPos, WorldPosition endPos, Player* bot)
 {
     TravelPath movePath;
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
@@ -1414,11 +1414,11 @@ TravelPath TravelNodeMap::getFullPath(WorldPosition startPos, WorldPosition endP
     //[[Node pathfinding system]]
     // We try to find nodes near the bot and near the end position that have a route between them.
     // Then bot has to move towards/along the route.
-    TravelNodeMap::instance().m_nMapMtx.lock_shared();
+    m_nMapMtx.lock_shared();
 
     // Find the route of nodes starting at a node closest to the start position and ending at a node closest to the
     // endposition. Also returns longPath: The path from the start position to the first node in the route.
-    TravelNodeRoute route = TravelNodeMap::instance().getRoute(startPos, endPos, beginPath, bot);
+    TravelNodeRoute route = GetRoute(startPos, endPos, beginPath, bot);
 
     if (route.isEmpty())
         return movePath;
@@ -1444,7 +1444,7 @@ TravelPath TravelNodeMap::getFullPath(WorldPosition startPos, WorldPosition endP
         }
     }
 
-    TravelNodeMap::instance().m_nMapMtx.unlock_shared();
+    m_nMapMtx.unlock_shared();
 
     return movePath;
 }
@@ -1477,7 +1477,7 @@ TravelNode* TravelNodeMap::addZoneLinkNode(TravelNode* startNode)
         //TravelNode* endNode = path.first; //not used, line marked for removal.
 
         std::string zoneName = startNode->getPosition()->getAreaName(true, true);
-        for (auto& pos : path.second.getPath())
+        for (auto& pos : path.second.GetPath())
         {
             std::string const newZoneName = pos.getAreaName(true, true);
             if (zoneName != newZoneName)
@@ -1508,7 +1508,7 @@ TravelNode* TravelNodeMap::addRandomExtNode(TravelNode* startNode)
         auto random_it = std::next(std::begin(paths), urand(0, paths.size() - 1));
 
         TravelNode* endNode = random_it->first;
-        std::vector<WorldPosition> path = random_it->second.getPath();
+        std::vector<WorldPosition> path = random_it->second.GetPath();
 
         if (path.empty())
             continue;
@@ -2234,7 +2234,7 @@ void TravelNodeMap::saveNodeStore()
 
                 paths++;
 
-                std::vector<WorldPosition> ppath = path->getPath();
+                std::vector<WorldPosition> ppath = path->GetPath();
 
                 for (uint32 j = 0; j < ppath.size(); j++)
                 {
@@ -2262,7 +2262,7 @@ void TravelNodeMap::saveNodeStore()
     PlayerbotsDatabase.CommitTransaction(trans);
 }
 
-void TravelNodeMap::loadNodeStore()
+void TravelNodeMap::LoadNodeStore()
 {
     std::string const query = "SELECT id, name, map_id, x, y, z, linked FROM playerbots_travelnode";
 
@@ -2349,7 +2349,7 @@ void TravelNodeMap::loadNodeStore()
 
                 TravelNodePath* path = startNode->getPathTo(endNode);
 
-                std::vector<WorldPosition> ppath = path->getPath();
+                std::vector<WorldPosition> ppath = path->GetPath();
                 ppath.push_back(WorldPosition(fields[3].Get<uint32>(), fields[4].Get<float>(), fields[5].Get<float>(),
                                               fields[6].Get<float>()));
 

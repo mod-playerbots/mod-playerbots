@@ -852,6 +852,12 @@ protected:
 class TravelMgr
 {
 public:
+    struct NpcLocation
+    {
+        WorldLocation loc;
+        uint32 entry;
+    };
+
     static TravelMgr& instance()
     {
         static TravelMgr instance;
@@ -870,6 +876,7 @@ public:
     const std::vector<WorldLocation> GetTeleportLocations(Player* bot);
     const std::vector<WorldLocation> GetTravelHubs(Player* bot);
     std::vector<WorldLocation> GetCityLocations(Player* bot);
+    bool SelectAuctioneerByMap(Player* bot, NpcLocation& outAuctioneer);
     const std::vector<WorldLocation>& GetLocsPerLevelCache(uint8 level) { return locsPerLevelCache[level]; }
 
     template <class D, class W, class URBG>
@@ -974,18 +981,14 @@ private:
         bool InsideBracket(uint32 val) const { return val >= low && val <= high; }
     };
 
-    struct BankerLocation
-    {
-        WorldLocation loc;
-        uint32 entry;
-    };
-
     // Navigation caches
     std::map<uint32, WorldPosition> allianceFlightMasterCache;
     std::map<uint32, WorldPosition> hordeFlightMasterCache;
     std::map<uint8, std::vector<WorldLocation>> allianceHubsPerLevelCache;
     std::map<uint8, std::vector<WorldLocation>> hordeHubsPerLevelCache;
-    std::map<uint8, std::vector<BankerLocation>> bankerLocsPerLevelCache;
+    std::map<uint8, std::vector<NpcLocation>> bankerLocsPerLevelCache;
+    std::unordered_map<uint16, std::unordered_map<uint32, std::vector<NpcLocation>>> hordeAuctioneerCache;
+    std::unordered_map<uint16, std::unordered_map<uint32, std::vector<NpcLocation>>> allianceAuctioneerCache;
     std::unordered_map<uint32, WorldLocation> bankerEntryToLocation;
     std::map<uint8, std::vector<WorldLocation>> locsPerLevelCache;
     std::unordered_map<uint32, std::vector<WorldLocation>> creatureSpawnsByTemplate;
