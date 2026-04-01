@@ -519,14 +519,14 @@ bool NewRpgGoCityAction::Execute(Event /*event*/)
             return MoveWorldObjectTo(auctioneer->GetGUID());
         else
         {
-            // At the auctioneer — sell then buy
-            if (data.wantSell && AI_VALUE(bool, "should ah sell"))
+            // At the auctioneer — sell one item per tick, then buy one per tick
+            if (data.wantSell)
             {
-                LOG_DEBUG("playerbots", "[New RPG] Bot {} at auctioneer {}, triggering sell",
-                          bot->GetName(), auctioneer->GetEntry());
-                botAI->DoSpecificAction("sell", Event("rpg action", "auction"), true);
+                if (botAI->DoSpecificAction("ah sell", Event(), true))
+                    return true;
+
+                // No more items to sell
                 data.wantSell = false;
-                return true;
             }
             if (data.wantBuy && AI_VALUE(bool, "should ah buy"))
             {

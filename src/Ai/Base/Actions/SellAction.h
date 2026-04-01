@@ -20,7 +20,14 @@ public:
     bool Execute(Event event) override;
     void Sell(FindItemVisitor* visitor);
     void Sell(Item* item);
-    bool SellToAuctionHouse(Item* item);
+};
+
+class AhSellAction : public Action
+{
+public:
+    AhSellAction(PlayerbotAI* botAI) : Action(botAI, "ah sell") {}
+
+    bool Execute(Event event) override;
 };
 
 #endif
