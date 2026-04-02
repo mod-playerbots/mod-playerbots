@@ -7,6 +7,8 @@
 #define _PLAYERBOT_RAIDHYJALSUMMITHELPERS_H_
 
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include "AiObject.h"
 #include "Position.h"
@@ -50,6 +52,14 @@ namespace HyjalSummitHelpers
 
     // General
     constexpr uint32 HYJAL_SUMMIT_MAP_ID = 534;
+    struct RangedGroups
+    {
+        std::vector<Player*> healers;
+        std::vector<Player*> rangedDps;
+    };
+    RangedGroups GetRangedGroups(Player* bot, PlayerbotAI* botAI);
+    std::pair<size_t, size_t> GetBotCircleIndexAndCount(Player* bot, PlayerbotAI* botAI,
+                                                        const RangedGroups& groups);
 
     // Rage Winterchill
     extern const Position WINTERCHILL_TANK_POSITION;

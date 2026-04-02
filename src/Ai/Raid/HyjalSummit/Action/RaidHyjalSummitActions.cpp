@@ -106,52 +106,22 @@ bool RageWinterchillMainTankPositionBossAction::Execute(Event /*event*/)
 // Spread ranged DPS in a circle initially--after the initial spread, movement is free
 bool RageWinterchillSpreadRangedInCircleAction::Execute(Event /*event*/)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
+    RangedGroups groups = GetRangedGroups(bot, botAI);
 
-    std::vector<Player*> healers;
-    std::vector<Player*> rangedDps;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !botAI->IsRanged(member))
-            continue;
-
-        if (botAI->IsHeal(member))
-            healers.push_back(member);
-        else
-            rangedDps.push_back(member);
-    }
-
-    if (healers.empty() && rangedDps.empty())
+    if (groups.healers.empty() && groups.rangedDps.empty())
         return false;
 
     const ObjectGuid guid = bot->GetGUID();
 
     if (!hasReachedWinterchillPosition[guid])
     {
-        size_t count = healers.size() + rangedDps.size();
-        size_t botIndex = 0;
+        auto [botIndex, count] = GetBotCircleIndexAndCount(bot, botAI, groups);
         const float radius = botAI->IsHeal(bot) ? 25.0f : 35.0f;
         float angle = 0.0f;
 
         constexpr float arcSpan = 2.0f * M_PI;
         constexpr float arcCenter = 0.0f;
         constexpr float arcStart = arcCenter - arcSpan / 2.0f;
-
-        if (botAI->IsHeal(bot))
-        {
-            auto findIt = std::find(healers.begin(), healers.end(), bot);
-            botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
-            count = healers.size();
-        }
-        else
-        {
-            auto findIt = std::find(rangedDps.begin(), rangedDps.end(), bot);
-            botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
-            count = rangedDps.size();
-        }
 
         angle = (count == 1) ? arcCenter :
             (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
@@ -260,52 +230,22 @@ bool AnetheronMainTankPositionBossAction::Execute(Event /*event*/)
 
 bool AnetheronSpreadRangedInCircleAction::Execute(Event /*event*/)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
+    RangedGroups groups = GetRangedGroups(bot, botAI);
 
-    std::vector<Player*> healers;
-    std::vector<Player*> rangedDps;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !botAI->IsRanged(member))
-            continue;
-
-        if (botAI->IsHeal(member))
-            healers.push_back(member);
-        else
-            rangedDps.push_back(member);
-    }
-
-    if (healers.empty() && rangedDps.empty())
+    if (groups.healers.empty() && groups.rangedDps.empty())
         return false;
 
     const ObjectGuid guid = bot->GetGUID();
 
     if (!hasReachedAnetheronPosition[guid])
     {
-        size_t count = healers.size() + rangedDps.size();
-        size_t botIndex = 0;
+        auto [botIndex, count] = GetBotCircleIndexAndCount(bot, botAI, groups);
         const float radius = botAI->IsHeal(bot) ? 27.0f : 34.0f;
         float angle = 0.0f;
 
         constexpr float arcSpan = M_PI * 2.0f;
         constexpr float arcCenter = 0.0f;
         constexpr float arcStart = arcCenter - arcSpan / 2.0f;
-
-        if (botAI->IsHeal(bot))
-        {
-            auto findIt = std::find(healers.begin(), healers.end(), bot);
-            botIndex = (findIt != healers.end()) ? std::distance(healers.begin(), findIt) : 0;
-            count = healers.size();
-        }
-        else
-        {
-            auto findIt = std::find(rangedDps.begin(), rangedDps.end(), bot);
-            botIndex = (findIt != rangedDps.end()) ? std::distance(rangedDps.begin(), findIt) : 0;
-            count = rangedDps.size();
-        }
 
         angle = (count == 1) ? arcCenter :
             (arcStart + arcSpan * static_cast<float>(botIndex) / static_cast<float>(count - 1));
@@ -391,7 +331,8 @@ bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event /*event*/)
     if (bot->GetVictim() != infernal)
         return Attack(infernal);
 
-    if (infernal->GetVictim() == bot && bot->IsWithinMeleeRange(infernal))
+    if ((infernoTarget && infernoTarget == bot) ||
+        (infernal->GetVictim() == bot && bot->IsWithinMeleeRange(infernal)))
     {
         const Position& position = GetClosestInfernalTankPosition(bot);
         float distToPosition =
@@ -1087,7 +1028,7 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
 
 bool ArchimondeAvoidDoomfireAction::Execute(Event /*event*/)
 {
-    constexpr float dangerDist = 10.0f;
+    constexpr float dangerDist = 11.0f;
     constexpr uint32 TRAIL_DURATION = 19000;
 
     uint32 instanceId = bot->GetMap()->GetInstanceId();

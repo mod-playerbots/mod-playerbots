@@ -4,12 +4,48 @@
  */
 
 #include "RaidHyjalSummitHelpers.h"
-#include "Group.h"
+
+#include <algorithm>
+
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
 namespace HyjalSummitHelpers
 {
+    // General
+
+    RangedGroups GetRangedGroups(Player* bot, PlayerbotAI* botAI)
+    {
+        RangedGroups result;
+        Group* group = bot->GetGroup();
+        if (!group)
+            return result;
+
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !botAI->IsRanged(member))
+                continue;
+
+            if (botAI->IsHeal(member))
+                result.healers.push_back(member);
+            else
+                result.rangedDps.push_back(member);
+        }
+
+        return result;
+    }
+
+    std::pair<size_t, size_t> GetBotCircleIndexAndCount(Player* bot, PlayerbotAI* botAI,
+                                                        const RangedGroups& groups)
+    {
+        const std::vector<Player*>& vec = botAI->IsHeal(bot) ? groups.healers : groups.rangedDps;
+        auto it = std::find(vec.begin(), vec.end(), bot);
+        size_t index = (it != vec.end()) ? std::distance(vec.begin(), it) : 0;
+
+        return {index, vec.size()};
+    }
+
     // Rage Winterchill
 
     const Position WINTERCHILL_TANK_POSITION = { 5031.061f, -1784.521f, 1321.626f };
