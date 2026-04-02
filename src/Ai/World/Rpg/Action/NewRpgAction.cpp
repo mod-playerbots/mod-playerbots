@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdlib>
 
+#include "AuctionHouseSearcher.h"
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
 #include "G3D/Vector2.h"
@@ -18,6 +19,7 @@
 #include "PathGenerator.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
+#include "Playerbots.h"
 #include "QuestDef.h"
 #include "Random.h"
 #include "SharedDefines.h"
@@ -475,7 +477,7 @@ bool NewRpgGoCityAction::Execute(Event /*event*/)
 
         // Compute a travel path
         WorldPosition currentPos(bot->GetMapId(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
-        TravelPath path = sTravelNodeMap.getFullPath(currentPos, data.pos, bot);
+        TravelPath path = sTravelNodeMap.GetFullPath(currentPos, data.pos, bot);
         if (!path.empty())
         {
             botAI->rpgInfo.travelPath = std::move(path);

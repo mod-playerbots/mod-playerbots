@@ -51,7 +51,7 @@ protected:
     const int32 statusWanderRandomDuration = 5 * 60 * 1000;
     const int32 statusRestDuration = 30 * 1000;
     const int32 statusDoQuestDuration = 30 * 60 * 1000;
-    const int32 statusGoCityDuration = 30 * MINUTES * IN_MILLISECONDS;
+    const int32 statusGoCityDuration = 30 * MINUTE * IN_MILLISECONDS;
 };
 
 class NewRpgGoGrindAction : public NewRpgBaseAction

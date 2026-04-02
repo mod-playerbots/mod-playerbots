@@ -67,7 +67,7 @@ struct NewRpgInfo
     struct GoCity
     {
         WorldPosition pos{0};
-        ObjectGuid targetNpc{0};
+        ObjectGuid targetNpc{};
         bool wantSell{false};
         bool wantBuy{false};
     };

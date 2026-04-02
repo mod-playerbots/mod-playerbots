@@ -42,7 +42,7 @@ ItemUsage ItemUsageValue::Calculate()
         bool neededSkillItem = false;
 
         if (IsItemNeededForSkill(proto))
-            needneededSkillItemItem = true;
+            neededSkillItem = true;
         else
         {
             bool lowBagSpace = AI_VALUE(uint8, "bag space") > 50;

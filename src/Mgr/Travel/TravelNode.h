@@ -408,8 +408,8 @@ public:
     }
     void clear() { fullPath.clear(); }
 
-    bool empty() { return fullPath.empty(); }
-    std::vector<PathNodePoint> getPath() { return fullPath; }
+    bool empty() const { return fullPath.empty(); }
+    std::vector<PathNodePoint> GetPath() { return fullPath; }
     WorldPosition getFront() { return fullPath.front().point; }
     WorldPosition getBack() { return fullPath.back().point; }
 

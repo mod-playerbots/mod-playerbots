@@ -101,7 +101,7 @@ bool AhSellListValue::IsItemSellableOnAh(Item* item) const
     if (sPlayerbotAIConfig.IsInAuctionHouseExcludedItemList(entry))
         return false;
 
-    if (!sPlayerbotAHUtil.IsSellable(entry))
+    if (!sPlayerbotAuctionHouseUtil.IsSellable(entry))
         return false;
 
     // Expensive check last

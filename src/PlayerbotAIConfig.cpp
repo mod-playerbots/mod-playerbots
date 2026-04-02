@@ -711,7 +711,7 @@ bool PlayerbotAIConfig::Initialize()
     sTravelMgr.Init();
 
     if (sPlayerbotAIConfig.enableAuctionHouseBotting)
-        sPlayerbotAHUtil.Initialize();
+        sPlayerbotAuctionHouseUtil.Initialize();
 
     excludedHunterPetFamilies.clear();
     LoadList<std::vector<uint32>>(sConfigMgr->GetOption<std::string>("AiPlayerbot.ExcludedHunterPetFamilies", ""), excludedHunterPetFamilies);

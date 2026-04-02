@@ -16,25 +16,14 @@
 bool BuyAction::Execute(Event event)
 {
     bool buyUseful = false;
-    bool buyAuction = false;
     ItemIds itemIds;
     std::string const link = event.getParam();
 
     if (link == "vendor")
         buyUseful = true;
-    else if (link == "auction")
-        buyAuction = true;
     else
     {
         itemIds = chat->parseItems(link);
-    }
-
-    if (buyAuction)
-    {
-        if (!sPlayerbotAIConfig.enableAuctionHouseBotting)
-            return false;
-
-        return BuyFromAuctionHouse();
     }
 
     GuidVector vendors = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
@@ -345,7 +334,7 @@ bool AhBuyAction::BuyBestCandidate(std::vector<AhItem>& candidates)
         if (++evaluated > 10)
             break;
 
-        float score = calculator.CalculateItem(c.itemEntry);
+        float score = calculator.CalculateItem(candidate.itemEntry);
         if (score > bestScore)
         {
             bestScore = score;

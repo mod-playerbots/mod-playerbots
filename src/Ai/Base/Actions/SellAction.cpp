@@ -16,6 +16,7 @@
 #include "Playerbots.h"
 
 #include "PlayerbotWorldThreadProcessor.h"
+#include "ItemPackets.h"
 
 class SellItemsVisitor : public IterateItemsVisitor
 {
@@ -185,7 +186,7 @@ bool AhSellAction::Execute(Event /*event*/)
         ItemUsageValue::IsSpellReagentItem(proto))
         return false;
 
-    PlayerbotAuctionItemPolicy policy = sPlayerbotAHUtil.GetPolicy(entry);
+    PlayerbotAuctionItemPolicy policy = sPlayerbotAuctionHouseUtil.GetPolicy(entry);
     if (!policy.sellable)
         return false;
 

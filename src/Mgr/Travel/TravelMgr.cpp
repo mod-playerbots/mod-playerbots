@@ -2393,7 +2393,7 @@ void TravelMgr::LoadQuestTravelTable()
     sPlayerbotAIConfig.openLog("unload_grid.csv", "w");
     sPlayerbotAIConfig.openLog("unload_obj.csv", "w");
 
-    TravelNodeMap::instance().loadNodeStore();
+    TravelNodeMap::instance().LoadNodeStore();
 
     TravelNodeMap::instance().generateAll();
 
