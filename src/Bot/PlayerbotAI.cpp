@@ -1571,6 +1571,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         case 550:
             strategyName = "tempestkeep";  // Tempest Keep
             break;
+        case 558:
+            strategyName = "tbc-ac"; // Auchindoun: Auchenai Crypts
+            break;
         case 565:
             strategyName = "gruulslair";  // Gruul's Lair
             break;

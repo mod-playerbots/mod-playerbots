@@ -32,6 +32,7 @@ float ShirrakFleeFocusFireMultiplier::GetValue(Action* action)
 
             if (currentDistance < safeDistance + buffer && (
                 dynamic_cast<CombatFormationMoveAction*>(action) ||
+                dynamic_cast<ShirrakRangedKeepDistanceAction*>(action) ||
                 dynamic_cast<FleeAction*>(action) ||
                 dynamic_cast<FollowAction*>(action) ||
                 dynamic_cast<ReachTargetAction*>(action) ||
