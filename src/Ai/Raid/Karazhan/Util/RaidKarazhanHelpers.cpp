@@ -272,7 +272,7 @@ namespace KarazhanHelpers
         return voidZones;
     }
 
-    bool IsSafePosition(float x, float y, float /*z*/, const std::vector<Unit*>& hazards, float hazardRadius)
+    bool IsSafePosition(float x, float y, const std::vector<Unit*>& hazards, float hazardRadius)
     {
         for (Unit* hazard : hazards)
         {
