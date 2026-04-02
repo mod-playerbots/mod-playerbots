@@ -19,10 +19,18 @@ public:
     bool IsActive() override;
 };
 
-class FleeFocusFireTrigger : public Trigger
+class ShirrakFleeFocusFireTrigger : public Trigger
 {
 public:
-    FleeFocusFireTrigger(PlayerbotAI* botAI) : Trigger(botAI, "flee focus fire") {}
+    ShirrakFleeFocusFireTrigger(PlayerbotAI* botAI) : Trigger(botAI, "shirrak flee focus fire") {}
+
+    bool IsActive() override;
+};
+
+class ShirrakRangedKeepDistanceTrigger : public Trigger
+{
+public:
+    ShirrakRangedKeepDistanceTrigger(PlayerbotAI* botAI) : Trigger(botAI, "shirrak ranged keep distance") {}
 
     bool IsActive() override;
 };

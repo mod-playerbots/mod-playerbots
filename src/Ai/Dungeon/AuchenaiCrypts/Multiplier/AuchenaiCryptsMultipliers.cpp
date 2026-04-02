@@ -11,7 +11,7 @@
 // Shirrak the Dead Watcher
 
 // Flee from Focus Fire and dont run back in
-float FleeFocusFireMultiplier::GetValue(Action* action)
+float ShirrakFleeFocusFireMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "shirrak the dead watcher"))
         return 1.0f;
@@ -27,7 +27,7 @@ float FleeFocusFireMultiplier::GetValue(Action* action)
                 return 0.0f;
 
             float currentDistance = bot->GetDistance2d(flare);
-            constexpr float safeDistance = 20.0f;
+            constexpr float safeDistance = 12.0f;
             constexpr float buffer = 5.0f;
 
             if (currentDistance < safeDistance + buffer && (

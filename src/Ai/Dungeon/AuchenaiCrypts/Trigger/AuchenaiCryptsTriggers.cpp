@@ -11,7 +11,7 @@ bool ShirrakTankPositionBossTrigger::IsActive()
         AI_VALUE2(Unit*, "find target", "shirrak the dead watcher");
 }
 
-bool FleeFocusFireTrigger::IsActive()
+bool ShirrakFleeFocusFireTrigger::IsActive()
 {
     if (!AI_VALUE2(Unit*, "find target", "shirrak the dead watcher"))
         return false;
@@ -25,4 +25,10 @@ bool FleeFocusFireTrigger::IsActive()
             return true;
     }
     return false;
+}
+
+bool ShirrakRangedKeepDistanceTrigger::IsActive()
+{
+    return botAI->IsRanged(bot) &&
+        AI_VALUE2(Unit*, "find target", "shirrak the dead watcher");
 }

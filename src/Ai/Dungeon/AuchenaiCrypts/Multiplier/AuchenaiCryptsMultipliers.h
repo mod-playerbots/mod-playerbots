@@ -3,10 +3,10 @@
 
 #include "Multiplier.h"
 
-class FleeFocusFireMultiplier : public Multiplier
+class ShirrakFleeFocusFireMultiplier : public Multiplier
 {
 public:
-    FleeFocusFireMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "flee focus fire") {}
+    ShirrakFleeFocusFireMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "shirrak flee focus fire") {}
     float GetValue(Action* action) override;
 };
 

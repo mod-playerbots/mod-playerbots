@@ -14,10 +14,17 @@ public:
     bool Execute(Event event) override;
 };
 
-class FleeFocusFireAction : public MovementAction
+class ShirrakFleeFocusFireAction : public MovementAction
 {
 public:
-    FleeFocusFireAction(PlayerbotAI* botAI) : MovementAction(botAI, "flee focus fire") {}
+    ShirrakFleeFocusFireAction(PlayerbotAI* botAI) : MovementAction(botAI, "shirrak flee focus fire") {}
+    bool Execute(Event event) override;
+};
+
+class ShirrakRangedKeepDistanceAction : public AttackAction
+{
+public:
+    ShirrakRangedKeepDistanceAction(PlayerbotAI* botAI) : AttackAction(botAI, "shirrak ranged keep distance") {}
     bool Execute(Event event) override;
 };
 
