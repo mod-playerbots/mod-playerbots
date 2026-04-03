@@ -8,14 +8,7 @@
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
-
-static std::string LowercaseString(std::string const& str)
-{
-    std::string result = str;
-    std::transform(result.begin(), result.end(), result.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
-    return result;
-}
+#include <Util.cpp>
 
 static Player* FindGroupPlayerByName(Player* player, std::string const& playerName)
 {
@@ -29,8 +22,13 @@ static Player* FindGroupPlayerByName(Player* player, std::string const& playerNa
     for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
     {
         Player* member = gref->GetSource();
-        if (member && LowercaseString(member->GetName()) == playerName)
-            return member;
+        if (member)
+        {
+            std::string memberName = member->GetName();
+            strToLower(memberName);
+            if (memberName == playerName)
+                return member;
+        }
     }
 
     return nullptr;
@@ -48,7 +46,8 @@ bool SetFocusHealTargetsAction::Execute(Event event)
         return false;
     }
 
-    std::string const param = LowercaseString(event.getParam());
+    std::string param = event.getParam();
+    strToLower(param);
     if (param.empty())
     {
         std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
@@ -123,9 +122,7 @@ bool SetFocusHealTargetsAction::Execute(Event event)
             targetNames.push_back(targetName);
     }
     else
-    {
         targetNames.push_back(param);
-    }
 
     if (targetNames.empty())
     {
@@ -180,9 +177,7 @@ bool SetFocusHealTargetsAction::Execute(Event event)
         {
             if (std::find(focusHealTargets.begin(), focusHealTargets.end(), targetGuid) ==
                 focusHealTargets.end())
-            {
                 focusHealTargets.push_back(targetGuid);
-            }
 
             std::map<std::string, std::string> placeholders;
             placeholders["%player_name"] = playerName;
