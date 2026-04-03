@@ -50,11 +50,11 @@ Unit* PartyMemberToHeal::Calculate()
             if (!player || !player->IsAlive() || !player->IsInSameGroupWith(bot))
                 continue;
 
-            uint8 health = player->GetHealthPct();
+            float health = player->GetHealthPct();
             if (isRaid || health < sPlayerbotAIConfig.mediumHealth ||
                 !IsTargetOfSpellCast(player, predicate))
             {
-                uint32 probeValue = 100;
+                float probeValue = 100.0f;
                 if (player->GetDistance2d(bot) > sPlayerbotAIConfig.healDistance)
                     probeValue = health + 30;
                 else
@@ -75,10 +75,10 @@ Unit* PartyMemberToHeal::Calculate()
             continue;
         if (player && player->IsAlive())
         {
-            uint8 health = player->GetHealthPct();
+            float health = player->GetHealthPct();
             if (isRaid || health < sPlayerbotAIConfig.mediumHealth || !IsTargetOfSpellCast(player, predicate))
             {
-                uint32 probeValue = 100;
+                float probeValue = 100.0f;
                 if (player->GetDistance2d(bot) > sPlayerbotAIConfig.healDistance)
                 {
                     probeValue = health + 30;
@@ -98,8 +98,8 @@ Unit* PartyMemberToHeal::Calculate()
         Pet* pet = player->GetPet();
         if (pet && pet->IsAlive())
         {
-            uint8 health = ((Unit*)pet)->GetHealthPct();
-            uint32 probeValue = 100;
+            float health = ((Unit*)pet)->GetHealthPct();
+            float probeValue = 100.0f;
             if (isRaid || health < sPlayerbotAIConfig.mediumHealth)
                 probeValue = health + 30;
             // delay Check pet to here for better performance
@@ -112,8 +112,8 @@ Unit* PartyMemberToHeal::Calculate()
         Unit* charm = player->GetCharm();
         if (charm && charm->IsAlive())
         {
-            uint8 health = charm->GetHealthPct();
-            uint32 probeValue = 100;
+            float health = charm->GetHealthPct();
+            float probeValue = 100.0f;
             if (isRaid || health < sPlayerbotAIConfig.mediumHealth)
                 probeValue = health + 30;
             // delay Check charm to here for better performance
