@@ -3307,7 +3307,7 @@ void PlayerbotFactory::InitReagents()
             break;
         case CLASS_PALADIN:
             if (level >= 52)
-                items.push_back({21177, 80});   // Symbol of Kings
+                items.push_back({21177, 100});   // Symbol of Kings
             break;
         case CLASS_PRIEST:
             if (level >= 48 && level < 56)

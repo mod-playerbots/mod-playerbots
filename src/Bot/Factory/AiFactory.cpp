@@ -363,7 +363,7 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
             else
                 engine->addStrategiesNoInit("surv", nullptr);
 
-            engine->addStrategiesNoInit("cc", "dps assist", "aoe", nullptr);
+            engine->addStrategiesNoInit("cc", "dps assist", "aoe", "bdps", nullptr);
             break;
         case CLASS_ROGUE:
             if (tab == ROGUE_TAB_ASSASSINATION || tab == ROGUE_TAB_SUBTLETY)
