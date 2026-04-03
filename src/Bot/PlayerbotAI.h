@@ -430,6 +430,7 @@ public:
     static bool IsAssistHealOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers = false);
     static bool IsAssistRangedDpsOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers = false);
     bool HasAggro(Unit* unit);
+    bool IsMovementImpaired(Unit* unit);
     static int32 GetAssistTankIndex(Player* player);
     int32 GetGroupSlotIndex(Player* player);
     int32 GetRangedIndex(Player* player);

@@ -242,6 +242,16 @@ public:
         : BuffOnPartyTrigger(botAI, "blessing of sanctuary", 2 * 2000) {}
 };
 
+class HandOfFreedomOnPartyTrigger : public Trigger
+{
+public:
+    HandOfFreedomOnPartyTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hand of freedom on party", 1) {}
+
+    Unit* GetTarget() override;
+    std::string const GetTargetName() override { return "party member snared target"; }
+    bool IsActive() override;
+};
+
 class AvengingWrathTrigger : public BoostTrigger
 {
 public:

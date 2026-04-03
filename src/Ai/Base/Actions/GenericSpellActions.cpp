@@ -151,7 +151,9 @@ bool CastMeleeSpellAction::isUseful()
     return CastSpellAction::isUseful();
 }
 
-CastMeleeDebuffSpellAction::CastMeleeDebuffSpellAction(PlayerbotAI* botAI, std::string const spell, bool isOwner, float needLifeTime) : CastDebuffSpellAction(botAI, spell, isOwner, needLifeTime)
+CastMeleeDebuffSpellAction::CastMeleeDebuffSpellAction(
+    PlayerbotAI* botAI, std::string const spell, bool isOwner, float needLifeTime) :
+    CastDebuffSpellAction(botAI, spell, isOwner, needLifeTime)
 {
     range = ATTACK_DISTANCE;
 }
@@ -201,6 +203,35 @@ bool CastEnchantItemAction::isPossible()
     // botAI->TellMasterNoFacing("spell: " + spell + ", spell id: " + std::to_string(spellId) + " item for spell: " +
     // std::to_string(ok));
     return spellId && AI_VALUE2(Item*, "item for spell", spellId);
+}
+
+CastEnchantItemMainHandAction::CastEnchantItemMainHandAction(PlayerbotAI* botAI, std::string const spell)
+    : CastEnchantItemAction(botAI, spell) {}
+
+bool CastEnchantItemMainHandAction::isPossible()
+{
+    if (!CastEnchantItemAction::isPossible())
+        return false;
+
+    Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+    return item && !item->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT) &&
+           item->GetTemplate()->Class == ITEM_CLASS_WEAPON;
+}
+
+CastEnchantItemOffHandAction::CastEnchantItemOffHandAction(PlayerbotAI* botAI, std::string const spell)
+    : CastEnchantItemAction(botAI, spell) {}
+
+bool CastEnchantItemOffHandAction::isPossible()
+{
+    if (!CastEnchantItemAction::isPossible())
+        return false;
+
+    Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+    if (!item || item->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
+        return false;
+
+    uint32 invType = item->GetTemplate()->InventoryType;
+    return invType == INVTYPE_WEAPON || invType == INVTYPE_WEAPONOFFHAND;
 }
 
 CastHealingSpellAction::CastHealingSpellAction(PlayerbotAI* botAI, std::string const spell, uint8 estAmount,

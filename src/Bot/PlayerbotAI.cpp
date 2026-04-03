@@ -1962,6 +1962,11 @@ bool PlayerbotAI::HasAggro(Unit* unit)
     return false;
 }
 
+bool PlayerbotAI::IsMovementImpaired(Unit* unit)
+{
+    return unit && (unit->HasAuraType(SPELL_AURA_MOD_ROOT) || unit->IsRooted() || unit->GetSpeedRate(MOVE_RUN) < 1.0f);
+}
+
 int32 PlayerbotAI::GetAssistTankIndex(Player* player)
 {
     Group* group = player->GetGroup();

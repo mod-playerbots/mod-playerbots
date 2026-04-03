@@ -582,7 +582,7 @@ AiPlayerbot.AutoGearScoreLimit = 0
 AiPlayerbot.BotCheats = "food,taxi,raid"
 
 # List of attunement quests (comma-separated list of quest IDs) that are automatically completed for all bots.  
-# While mod-playerbots does not restore removed attunement requirements, although other mods, such as mod-individual-progression, may do so.
+# While mod-playerbots does not restore removed attunement requirements, other mods, such as mod-individual-progression, may do so.
 # This is meant to exclude bots from such requirements.
 # 
 # Default:
@@ -1687,7 +1687,7 @@ AiPlayerbot.PremadeSpecLink.9.1.60 = -003203301135112530135201051
 AiPlayerbot.PremadeSpecLink.9.1.70 = -003203301135112530135201051-55
 AiPlayerbot.PremadeSpecLink.9.1.80 = -003203301135112530135221351-55000005
 AiPlayerbot.PremadeSpecName.9.2 = destro pve
-AiPlayerbot.PremadeSpecGlyph.9.2 = 45785,43390,42454,43394,43393,45785
+AiPlayerbot.PremadeSpecGlyph.9.2 = 45785,43390,42454,43394,43393,42453
 AiPlayerbot.PremadeSpecLink.9.2.60 = --05203215200231051305031151
 AiPlayerbot.PremadeSpecLink.9.2.80 = 23-0302-05203215220331051335231351
 AiPlayerbot.PremadeSpecName.9.3 = affli pvp

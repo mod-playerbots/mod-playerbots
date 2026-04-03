@@ -8,6 +8,7 @@
 #include "PaladinActions.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
+#include "PaladinHelper.h"
 
 bool SealTrigger::IsActive()
 {
@@ -29,6 +30,40 @@ bool BlessingTrigger::IsActive()
     Unit* target = GetTarget();
     return SpellTrigger::IsActive() && !botAI->HasAnyAuraOf(target, "blessing of might", "blessing of wisdom",
                                                             "blessing of kings", "blessing of sanctuary", nullptr);
+}
+
+Unit* HandOfFreedomOnPartyTrigger::GetTarget()
+{
+    bool const selfImpaired = botAI->IsMovementImpaired(bot);
+    bool const hasSelfHand = selfImpaired && ai::paladin::HasAnyPaladinHandFromCaster(bot, bot);
+
+    if (!bot->GetGroup())
+    {
+        if (selfImpaired && !hasSelfHand)
+            return bot;
+
+        return nullptr;
+    }
+
+    if (selfImpaired && !hasSelfHand)
+        return bot;
+
+    return Trigger::GetTarget();
+}
+
+bool HandOfFreedomOnPartyTrigger::IsActive()
+{
+    Unit* target = GetTarget();
+    if (!target)
+        return false;
+
+    if (target != bot && bot->GetExactDist2dSq(target->GetPositionX(), target->GetPositionY()) > 30.0f * 30.0f)
+        return false;
+
+    if (!botAI->CanCastSpell("hand of freedom", target))
+        return false;
+
+    return !ai::paladin::HasAnyPaladinHandFromCaster(target, bot) && botAI->IsMovementImpaired(target);
 }
 
 bool NotSensingUndeadTrigger::IsActive()

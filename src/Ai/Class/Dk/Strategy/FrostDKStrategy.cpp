@@ -91,7 +91,6 @@ std::vector<NextAction> FrostDKStrategy::getDefaultActions()
     return {
         NextAction("obliterate", ACTION_DEFAULT + 0.7f),
         NextAction("frost strike", ACTION_DEFAULT + 0.4f),
-        NextAction("empower rune weapon", ACTION_DEFAULT + 0.3f),
         NextAction("horn of winter", ACTION_DEFAULT + 0.1f),
         NextAction("melee", ACTION_DEFAULT)
     };
