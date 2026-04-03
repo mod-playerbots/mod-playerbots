@@ -25,7 +25,7 @@ void PlayerbotAIBase::UpdateAI(uint32 elapsed, bool minimal)
         return;
 
     UpdateAIInternal(elapsed, minimal);
-    YieldThread();
+    YieldThread(nullptr);
 }
 
 void PlayerbotAIBase::SetNextCheckDelay(uint32 const delay)
@@ -49,10 +49,14 @@ void PlayerbotAIBase::IncreaseNextCheckDelay(uint32 delay)
 
 bool PlayerbotAIBase::CanUpdateAI() { return nextAICheckDelay == 0; }
 
-void PlayerbotAIBase::YieldThread(uint32 delay)
+void PlayerbotAIBase::YieldThread(Player* bot, uint32 delay)
 {
     if (nextAICheckDelay < delay)
-        nextAICheckDelay = delay;
+    {
+        // Adding a deterministic per-bot slight offset (0–200 ms) to stagger updates and prevent cpu spikes.
+        uint32 offset = bot ? (bot->GetGUID().GetCounter() % 201) : 0;
+        nextAICheckDelay = delay + offset;
+    }
 }
 
 bool PlayerbotAIBase::IsActive() { return nextAICheckDelay < sPlayerbotAIConfig.maxWaitForMove; }
