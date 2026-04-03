@@ -35,6 +35,9 @@ void GenericPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "protect party member",
         { NextAction("blessing of protection on party", ACTION_EMERGENCY + 2) }));
+    triggers.push_back(new TriggerNode(
+        "hand of freedom on party",
+        { NextAction("hand of freedom on party", ACTION_HIGH + 4) }));
     triggers.push_back(
         new TriggerNode("high mana", { NextAction("divine plea", ACTION_HIGH) }));
 }

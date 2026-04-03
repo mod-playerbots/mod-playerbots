@@ -7,11 +7,12 @@
 
 #include "AiFactory.h"
 #include "Event.h"
+#include "PaladinHelper.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
 #include "../../../../../src/server/scripts/Spells/spell_generic.cpp"
-#include "GenericBuffUtils.h"
+#include "Ai/Base/Util/GenericBuffUtils.h"
 #include "Group.h"
 #include "ObjectAccessor.h"
 
@@ -467,6 +468,39 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event /*event*/)
 bool CastSealSpellAction::isUseful() { return AI_VALUE2(bool, "combat", "self target"); }
 
 Value<Unit*>* CastTurnUndeadAction::GetTargetValue() { return context->GetValue<Unit*>("cc target", getName()); }
+
+Unit* CastHandOfFreedomOnPartyAction::GetTarget()
+{
+    bool const selfImpaired = botAI->IsMovementImpaired(bot);
+    bool const hasSelfHand = selfImpaired && ai::paladin::HasAnyPaladinHandFromCaster(bot, bot);
+
+    if (!bot->GetGroup())
+    {
+        if (selfImpaired && !hasSelfHand)
+            return bot;
+
+        return nullptr;
+    }
+
+    if (selfImpaired && !hasSelfHand)
+        return bot;
+
+    return CastBuffSpellAction::GetTarget();
+}
+
+Value<Unit*>* CastHandOfFreedomOnPartyAction::GetTargetValue()
+{
+    return context->GetValue<Unit*>("party member snared target");
+}
+
+bool CastHandOfFreedomOnPartyAction::isUseful()
+{
+    Unit* target = GetTarget();
+    if (!target)
+        return false;
+
+    return CastBuffSpellAction::isUseful() && !ai::paladin::HasAnyPaladinHandFromCaster(target, bot);
+}
 
 Unit* CastRighteousDefenseAction::GetTarget()
 {

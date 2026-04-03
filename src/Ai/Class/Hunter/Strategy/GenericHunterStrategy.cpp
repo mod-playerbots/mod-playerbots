@@ -11,11 +11,6 @@ public:
     GenericHunterStrategyActionNodeFactory()
     {
         creators["rapid fire"] = &rapid_fire;
-        creators["boost"] = &rapid_fire;
-        creators["aspect of the pack"] = &aspect_of_the_pack;
-        creators["aspect of the dragonhawk"] = &aspect_of_the_dragonhawk;
-        creators["feign death"] = &feign_death;
-        creators["wing clip"] = &wing_clip;
         creators["mongoose bite"] = &mongoose_bite;
         creators["raptor strike"] = &raptor_strike;
         creators["explosive trap"] = &explosive_trap;
@@ -29,40 +24,6 @@ private:
                               /*A*/ { NextAction("readiness") },
                               /*C*/ {});
     }
-
-    static ActionNode* aspect_of_the_pack([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("aspect of the pack",
-                              /*P*/ {},
-                              /*A*/ { NextAction("aspect of the cheetah") },
-                              /*C*/ {});
-    }
-
-    static ActionNode* aspect_of_the_dragonhawk([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("aspect of the dragonhawk",
-                              /*P*/ {},
-                              /*A*/ { NextAction("aspect of the hawk") },
-                              /*C*/ {});
-    }
-
-    static ActionNode* feign_death([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("feign death",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
-    }
-
-    static ActionNode* wing_clip([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("wing clip",
-                              /*P*/ {},
-                              // /*A*/ { NextAction("mongoose bite") },
-                              {},
-                              /*C*/ {});
-    }
-
     static ActionNode* mongoose_bite([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("mongoose bite",
@@ -70,7 +31,6 @@ private:
                               /*A*/ { NextAction("raptor strike") },
                               /*C*/ {});
     }
-
     static ActionNode* raptor_strike([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("raptor strike",
@@ -78,7 +38,6 @@ private:
                               /*A*/ {},
                               /*C*/ {});
     }
-
     static ActionNode* explosive_trap([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("explosive trap",
@@ -102,7 +61,6 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("hunter's mark", { NextAction("hunter's mark", 29.5f) }));
     triggers.push_back(new TriggerNode("rapid fire", { NextAction("rapid fire", 29.0f) }));
     triggers.push_back(new TriggerNode("aspect of the viper", { NextAction("aspect of the viper", 28.0f) }));
-    triggers.push_back(new TriggerNode("aspect of the hawk", { NextAction("aspect of the dragonhawk", 27.5f) }));
 
     // Aggro/Threat/Defensive Triggers
     triggers.push_back(new TriggerNode("has aggro", { NextAction("concussive shot", 20.0f) }));
@@ -118,14 +76,12 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("tranquilizing shot magic", { NextAction("tranquilizing shot", 61.0f) }));
 
     // Ranged-based Triggers
-    triggers.push_back(new TriggerNode("enemy within melee", {
-                                                         NextAction("explosive trap", 37.0f),
-                                                         NextAction("mongoose bite", 22.0f),
-                                                         NextAction("wing clip", 21.0f) }));
+    triggers.push_back(new TriggerNode("enemy within melee", { NextAction("explosive trap", 37.0f),
+                                                               NextAction("mongoose bite", 22.0f),
+                                                               NextAction("wing clip", 21.0f) }));
 
-    triggers.push_back(new TriggerNode("enemy too close for auto shot", {
-                                                                    NextAction("disengage", 35.0f),
-                                                                    NextAction("flee", 34.0f) }));
+    triggers.push_back(new TriggerNode("enemy too close for auto shot", { NextAction("disengage", 35.0f),
+                                                                          NextAction("flee", 34.0f) }));
 }
 
 // ===== AoE Strategy, 2/3+ enemies =====
@@ -136,10 +92,6 @@ void AoEHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("volley channel check", { NextAction("cancel channel", 23.0f) }));
     triggers.push_back(new TriggerNode("medium aoe", { NextAction("volley", 22.0f) }));
     triggers.push_back(new TriggerNode("light aoe", { NextAction("multi-shot", 21.0f) }));
-}
-
-void HunterBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
-{
 }
 
 void HunterCcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
