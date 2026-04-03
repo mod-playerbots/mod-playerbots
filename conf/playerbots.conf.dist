@@ -866,22 +866,32 @@ AiPlayerbot.ExcludedHunterPetFamilies = ""
 #
 ####################################################################################################
 
-
 ####################################################################################################
-# ACTIVITIES
+# ACTIVITY
 #
+# BotActiveAlone (%)
+# - Determines the percentage of bots that remain active when no real players are nearby.
+# - Default is 40% (which is practise kinda translates into 45-50%).
+# - If `botActiveAloneSmartScale` is enabled, automatically temporarily down scale activity based on latency.
+# - 40% will be activated in a random rotation for the amount of seconds specified in <BotActiveAloneDurationSeconds>.
+# - There are multiple conditions when bots will forced to be active e.g. when in BG/instance/attacked, some are configurable below.
+#-  When 100$ all bots will be active without any rotation or logic applied but comes with performance hit. 
 #
-# Specify percent of active bots
-# The default is 100% but will be automatically adjusted if botActiveAloneSmartScale
-# is enabled. Regardless, this value is only applied to inactive areas where no real players
-# are detected. When real players are nearby, the value is always enforced to 100%
-AiPlayerbot.BotActiveAlone = 100
+AiPlayerbot.BotActiveAlone = 10
+AiPlayerbot.BotActiveAloneDurationSeconds = 30
 
-# Force botActiveAlone when bot is within the specified distance of a real player
+# Some additional rules that enforces the bot to be active
+#
+# - bot is within this distance from a real player.
+# - bot is in the same zone as a real player.
+# - bot is in the same continent as a real player.
+# - bot is a real player's friend.
+# - bot is in a real player's guild.
+#
 AiPlayerbot.BotActiveAloneForceWhenInRadius = 150
 AiPlayerbot.BotActiveAloneForceWhenInZone = 1
 AiPlayerbot.BotActiveAloneForceWhenInMap = 0
-AiPlayerbot.BotActiveAloneForceWhenIsFriend = 1
+AiPlayerbot.BotActiveAloneForceWhenIsFriend = 0
 AiPlayerbot.BotActiveAloneForceWhenInGuild = 1
 
 # SmartScale (automatic scaling of percentage of active bots based on latency)
