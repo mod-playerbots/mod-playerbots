@@ -3039,8 +3039,10 @@ void PlayerbotFactory::InitMounts()
                 fast = {23228, 23227, 23229};
             }
             else // Human mounts
-            slow = {6654, 6653, 580};
-            fast = {23250, 23252, 23251};
+            {
+                slow = {6654, 6653, 580};
+                fast = {23250, 23252, 23251};
+            }
     }
 
     switch (bot->GetTeamId())
