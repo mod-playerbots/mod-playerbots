@@ -47,7 +47,7 @@ Unit* PartyMemberToHeal::Calculate()
         for (ObjectGuid const& focusHealTarget : focusHealTargets)
         {
             Player* player = ObjectAccessor::FindPlayer(focusHealTarget);
-            if (!player || !player->IsAlive() || !player->IsInSameGroupWith(bot))
+            if (!player || !player->IsInWorld() || !player->IsAlive() || !player->IsInSameGroupWith(bot))
                 continue;
 
             float health = player->GetHealthPct();
@@ -56,9 +56,9 @@ Unit* PartyMemberToHeal::Calculate()
             {
                 float probeValue = 100.0f;
                 if (player->GetDistance2d(bot) > sPlayerbotAIConfig.healDistance)
-                    probeValue = health + 30;
+                    probeValue = health + 30.0f;
                 else
-                    probeValue = health + player->GetDistance2d(bot) / 10;
+                    probeValue = health + player->GetDistance2d(bot) / 10.0f;
 
                 if (probeValue < calc.minValue && Check(player))
                     calc.probe(probeValue, player);
@@ -81,11 +81,11 @@ Unit* PartyMemberToHeal::Calculate()
                 float probeValue = 100.0f;
                 if (player->GetDistance2d(bot) > sPlayerbotAIConfig.healDistance)
                 {
-                    probeValue = health + 30;
+                    probeValue = health + 30.0f;
                 }
                 else
                 {
-                    probeValue = health + player->GetDistance2d(bot) / 10;
+                    probeValue = health + player->GetDistance2d(bot) / 10.0f;
                 }
                 // delay Check player to here for better performance
                 if (probeValue < calc.minValue && Check(player))
@@ -101,7 +101,7 @@ Unit* PartyMemberToHeal::Calculate()
             float health = ((Unit*)pet)->GetHealthPct();
             float probeValue = 100.0f;
             if (isRaid || health < sPlayerbotAIConfig.mediumHealth)
-                probeValue = health + 30;
+                probeValue = health + 30.0f;
             // delay Check pet to here for better performance
             if (probeValue < calc.minValue && Check(pet))
             {
@@ -115,7 +115,7 @@ Unit* PartyMemberToHeal::Calculate()
             float health = charm->GetHealthPct();
             float probeValue = 100.0f;
             if (isRaid || health < sPlayerbotAIConfig.mediumHealth)
-                probeValue = health + 30;
+                probeValue = health + 30.0f;
             // delay Check charm to here for better performance
             if (probeValue < calc.minValue && Check(charm))
             {
