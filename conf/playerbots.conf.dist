@@ -36,6 +36,7 @@
 #        SPELLS
 #        STRATEGIES
 #        RPG STRATEGY
+#        AUCTION HOUSE
 #        TELEPORTS
 #        BATTLEGROUND & ARENA & PVP
 #        RANDOM BOT TIMING AND BEHAVIOR
@@ -997,15 +998,16 @@ AiPlayerbot.RestrictedHealerDPSMaps = "33,34,36,43,47,48,70,90,109,129,209,229,2
 # Default: 1 (enabled)
 AiPlayerbot.EnableNewRpgStrategy = 1
 
-# Control probability weights for RPG status of bots. Takes effect only when the status meets its premise.​
+# Control probability weights for RPG status of bots. Takes effect only when the status meets its premise.
 # Sum of weights need not be 100. Set to 0 to disable the status.
 #
 # WanderRandom  (Default: 15  Move randomly nearby to find and kill mobs)
-# WanderNpc     (Default: 20  Randomly interact with nearby NPCs​)
+# WanderNpc     (Default: 20  Randomly interact with nearby NPCs)
 # GoGrind       (Default: 15  Go to nearby level-appropriate locations to grind for killing mobs)
-# GoCamp        (Default: 10  Return to a nearby camp depending on innkeeper/flightmaster)​
-# DoQuest       (Default: 60  Select quest from the quest log and head to the location to attempt completion​)
+# GoCamp        (Default: 10  Return to a nearby camp depending on innkeeper/flightmaster)
+# DoQuest       (Default: 60  Select quest from the quest log and head to the location to attempt completion)
 # TravelFlight  (Default: 15  Go to the nearest flightmaster and fly to a level-appropriate area)
+# GoCity        (Default: 10  Travel to a capital city to use the auction house or visit vendors)
 # Rest          (Default: 5   Take a break for a while and do nothing)
 AiPlayerbot.RpgStatusProbWeight.WanderRandom = 15
 AiPlayerbot.RpgStatusProbWeight.WanderNpc = 20
@@ -1013,15 +1015,8 @@ AiPlayerbot.RpgStatusProbWeight.GoGrind = 15
 AiPlayerbot.RpgStatusProbWeight.GoCamp = 10
 AiPlayerbot.RpgStatusProbWeight.DoQuest = 60
 AiPlayerbot.RpgStatusProbWeight.TravelFlight = 15
-AiPlayerbot.RpgStatusProbWeight.Rest = 5
 AiPlayerbot.RpgStatusProbWeight.GoCity = 10
-
-# When GoGrind is selected and the bot has at least this many AH-eligible item units,
-# route that grind trip to the nearest auctioneer instead of a random grind spot.
-# Set to 0 to disable this explicit grind -> auction house handoff.
-# Legacy compatibility: if this key is unset, the old AiPlayerbot.RpgFarmingAuctionThreshold
-# value is still used as a fallback.
-AiPlayerbot.RpgGrindAuctionThreshold = 0
+AiPlayerbot.RpgStatusProbWeight.Rest = 5
 
 # Bots' minimum and maximum level when teleporting in and out of a zone, according to the new RPG strategy
 # Format: AiPlayerbot.ZoneBracket.zoneID = minLevel,maxLevel
@@ -1157,6 +1152,60 @@ AiPlayerbot.ZoneBracket.2817 = 77,80
 AiPlayerbot.ZoneBracket.3537 = 68,75
 AiPlayerbot.ZoneBracket.3711 = 75,80
 AiPlayerbot.ZoneBracket.4197 = 79,80
+
+#
+#
+#
+####################################################################################################
+
+####################################################################################################
+# AUCTION HOUSE
+#
+# All auction house settings require AiPlayerbot.EnableAuctionHouseBotting = 1 to take effect.
+# When enabled, bots will sell surplus items and buy gear upgrades through the auction house
+# as part of the GoCity RPG status.
+#
+
+# Master switch for all playerbot auction-house routing, buying, and selling.
+# Default: 0 (disabled)
+AiPlayerbot.EnableAuctionHouseBotting = 0
+
+# When GoGrind is selected and the bot has at least this many AH-eligible item units,
+# route that grind trip to the nearest auctioneer instead of a random grind spot.
+# Set to 0 to disable this grind -> auction house handoff.
+# Default: 0
+AiPlayerbot.RpgGrindAuctionThreshold = 0
+
+# Posting settings
+# RandomStackSize = 1 posts a random partial stack when possible, 0 posts the full stack
+# Built-in AH exclusions: gray items, projectile ammo, spell reagents,
+# and white non-material items. White materials can still be posted.
+# Default: 1
+AiPlayerbot.AuctionHouseRandomStackSize = 1
+
+# Comma-separated item IDs that bots must never post to the auction house.
+# Useful for class essentials (e.g. ammo) you want bots to keep.
+# Example: 2512,2515
+# Default: (empty)
+AiPlayerbot.AuctionHouseExcludedItemIds =
+
+# Minimum opening bid in copper when bots post to the auction house.
+# Example: 100 = 1 silver
+# Default: 100
+AiPlayerbot.AuctionHouseMinBidPrice = 100
+
+# Pricing variance
+# UndercutChance: percent chance to undercut the base item valuation before computing bid and buyout
+# UndercutMinPct / UndercutMaxPct: when undercut triggers, base value is divided by a random pct in this range
+# Default: 15, 110, 200
+AiPlayerbot.AuctionHouseUndercutChance = 15
+AiPlayerbot.AuctionHouseUndercutMinPct = 110
+AiPlayerbot.AuctionHouseUndercutMaxPct = 200
+
+# Buyout is derived from the opening bid using a random percent in this range
+# Default: 110, 133
+AiPlayerbot.AuctionHouseBuyoutMinPct = 110
+AiPlayerbot.AuctionHouseBuyoutMaxPct = 133
 
 #
 #
@@ -2222,37 +2271,6 @@ AiPlayerbot.PremadeAvoidAoe = 62234-4
 
 AiPlayerbot.MinRandomBotsPriceChangeInterval = 7200
 AiPlayerbot.MaxRandomBotsPriceChangeInterval = 172800
-
-# Master switch for all playerbot auction-house routing, buying, and selling.
-# Default: 0 (disabled) until the new AH flow has broader runtime coverage.
-AiPlayerbot.EnableAuctionHouseBotting = 0
-
-# Auction house pricing for items marked as ITEM_USAGE_AH
-# No effect unless AiPlayerbot.EnableAuctionHouseBotting = 1
-# RandomStackSize = 1 posts a random partial stack when possible, 0 posts the full stack
-# Built-in AH exclusions: gray items, projectile ammo, spell reagents,
-# and white non-material items. White materials can still be posted.
-AiPlayerbot.AuctionHouseRandomStackSize = 1
-
-# Comma-separated item IDs that bots must never post to the auction house.
-# Useful for class essentials (e.g. ammo) you want bots to keep.
-# Example: 2512,2515
-AiPlayerbot.AuctionHouseExcludedItemIds =
-
-# Minimum opening bid in copper when bots post to the auction house
-# Example: 100 = 1 silver
-AiPlayerbot.AuctionHouseMinBidPrice = 100
-
-# Chance in percent to undercut the base item valuation before computing bid and buyout
-AiPlayerbot.AuctionHouseUndercutChance = 15
-
-# If undercut triggers, the base value is divided by a random percent in this range
-AiPlayerbot.AuctionHouseUndercutMinPct = 110
-AiPlayerbot.AuctionHouseUndercutMaxPct = 200
-
-# Buyout is derived from the opening bid using a random percent in this range
-AiPlayerbot.AuctionHouseBuyoutMinPct = 110
-AiPlayerbot.AuctionHouseBuyoutMaxPct = 133
 
 AiPlayerbot.MinRandomBotChangeStrategyTime = 180
 AiPlayerbot.MaxRandomBotChangeStrategyTime = 720
