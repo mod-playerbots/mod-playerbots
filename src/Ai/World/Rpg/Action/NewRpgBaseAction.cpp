@@ -1082,7 +1082,6 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
             probSum += sPlayerbotAIConfig.RpgStatusProbWeight[status];
         }
     }
-    // Safety check. Default to "rest" if all RPG weights = 0
     if (availableStatus.empty() || probSum == 0)
     {
         botAI->rpgInfo.ChangeToRest();
@@ -1174,29 +1173,28 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
         }
         case RPG_GO_CITY:
         {
-            // Not useful if already in a capital city
-            if (AreaTableEntry const* zone = sAreaTableStore.LookupEntry(bot->GetZoneId()))
+            std::vector<uint32> sellItems = AI_VALUE(std::vector<uint32>, "ah sell list");
+            std::vector<uint8> buySlots = AI_VALUE(std::vector<uint8>, "ah buy list");
+            if (sellItems.empty() && buySlots.empty())
             {
-                if (zone->flags & AREA_FLAG_CAPITAL)
-                    return false;
+                if (AreaTableEntry const* zone = sAreaTableStore.LookupEntry(bot->GetZoneId()))
+                {
+                    if (zone->flags & AREA_FLAG_CAPITAL)
+                        return false;
+                }
             }
-
-            bool shouldSell = AI_VALUE(bool, "should ah sell");
-            bool shouldBuy = AI_VALUE(bool, "should ah buy");
 
             WorldPosition pos;
             ObjectGuid targetNpc;
 
-            if (shouldSell || shouldBuy)
+            if (!sellItems.empty() || !buySlots.empty())
             {
-                // Need AH — pick an area with an auctioneer on our map
                 uint32 entry = 0;
                 if (SelectAuctionHouseTarget(pos, entry))
                     targetNpc = ObjectGuid(HighGuid::Unit, entry, uint32(0));
             }
             else
             {
-                // No AH need — pick any nearby city/town
                 std::vector<WorldLocation> cities = sTravelMgr.GetCityLocations(bot);
                 if (!cities.empty())
                 {
@@ -1210,7 +1208,8 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
             if (pos == WorldPosition())
                 return false;
 
-            botAI->rpgInfo.ChangeToGoCity(pos, targetNpc, shouldSell, shouldBuy);
+            LOG_DEBUG("playerbots", "[New RPG] Bot {} -> GO_CITY sell={} buy={}", bot->GetName(), sellItems.size(), buySlots.size());
+            botAI->rpgInfo.ChangeToGoCity(pos, targetNpc, std::move(sellItems), std::move(buySlots));
             return true;
         }
         case RPG_IDLE:
@@ -1268,7 +1267,6 @@ bool NewRpgBaseAction::CheckRpgStatusAvailable(NewRpgStatus status)
                 return SelectAuctionHouseTarget(pos, entry);
             }
 
-            // No AH need — any city will do
             std::vector<WorldLocation> cities = sTravelMgr.GetCityLocations(bot);
             return !cities.empty();
         }

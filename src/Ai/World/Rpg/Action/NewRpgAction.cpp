@@ -84,7 +84,6 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
             assert(data.pos != WorldPosition());
             if (info.HasStatusPersisted(statusGoCityDuration))
             {
-                info.travelPath.clear();
                 info.ChangeToIdle();
                 return true;
             }
@@ -457,7 +456,10 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
     }
     return true;
 }
-
+/*The idea behind this action is to go do activities in a city that a player would do.
+ Instead of wandering around to a rancom NPC, visis class and skill trainers, vendors, etc. Potentially even "Camp" and
+ wait for duels outside city spots. This can be extended to a mini state, where on setting the state you set a number
+ of flags regarding actions to perform, and randomly select what to do.*/
 bool NewRpgGoCityAction::Execute(Event /*event*/)
 {
     auto* dataPtr = std::get_if<NewRpgInfo::GoCity>(&botAI->rpgInfo.data);
@@ -465,37 +467,49 @@ bool NewRpgGoCityAction::Execute(Event /*event*/)
         return false;
     auto& data = *dataPtr;
 
-    // Stage 1: Travel to the target city
     if (bot->IsInFlight())
         return false;
 
-    if (bot->GetDistance(data.pos) > 50.0f)
-    {
-        // Follow existing travel path if one is active
-        if (botAI->rpgInfo.HasTravelPath())
-            return FollowTravelPath();
+    float distToCity = bot->GetDistance(data.pos);
 
-        // Compute a travel path
+    // Long distance: use travel node network — feeds splines directly to the engine
+    if (distToCity > 300.0f)
+    {
+        if (botAI->rpgInfo.HasActiveTravelExec())
+            return ExecuteTravelPath(botAI->rpgInfo.travelExec);
+
         WorldPosition currentPos(bot->GetMapId(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
+        uint32 t0 = getMSTime();
         TravelPath path = sTravelNodeMap.GetFullPath(currentPos, data.pos, bot);
+        uint32 pathMs = GetMSTimeDiffToNow(t0);
+        if (pathMs > 5)
+            LOG_DEBUG("playerbots", "[New RPG] Bot {} GetFullPath took {}ms (found={})",
+                      bot->GetName(), pathMs, !path.empty());
         if (!path.empty())
         {
-            botAI->rpgInfo.travelPath = std::move(path);
-            return FollowTravelPath();
+            botAI->rpgInfo.travelExec = SegmentTravelPath(path);
+            return ExecuteTravelPath(botAI->rpgInfo.travelExec);
         }
 
         return MoveFarTo(data.pos);
     }
 
-    if ((data.wantSell || data.wantBuy) && sPlayerbotAIConfig.enableAuctionHouseBotting)
+    // Medium distance: clear any leftover travel execution and walk
+    if (distToCity > INTERACTION_DISTANCE)
+    {
+        botAI->rpgInfo.ClearTravel();
+        return MoveFarTo(data.pos);
+    }
+
+    // At city — interact with auctioneer
+    if ((!data.sellItems.empty() || !data.buySlots.empty()) && sPlayerbotAIConfig.enableAuctionHouseBotting)
     {
         Creature* auctioneer = nullptr;
 
-        uint32 auctioneerGuid= data.targetNpc.GetEntry();
+        uint32 auctioneerGuid = data.targetNpc.GetEntry();
         if (auctioneerGuid)
             auctioneer = bot->FindNearestCreature(auctioneerGuid, 100.0f);
 
-        // Fallback: scan nearby NPCs for any auctioneer
         if (!auctioneer)
         {
             GuidVector targets = AI_VALUE(GuidVector, "possible new rpg targets");
@@ -512,42 +526,32 @@ bool NewRpgGoCityAction::Execute(Event /*event*/)
 
         if (!auctioneer)
         {
-            LOG_DEBUG("playerbots", "[New RPG] Bot {} at city but no auctioneer found nearby",
-                      bot->GetName());
-            data.wantSell = false;
-            data.wantBuy = false;
+            data.sellItems.clear();
+            data.buySlots.clear();
         }
         else if (bot->GetDistance(auctioneer) > INTERACTION_DISTANCE)
             return MoveWorldObjectTo(auctioneer->GetGUID());
         else
         {
-            // At the auctioneer — sell one item per tick, then buy one per tick
-            if (data.wantSell)
+            if (!data.sellItems.empty())
             {
-                if (botAI->DoSpecificAction("ah sell", Event(), true))
+                bool sold = botAI->DoSpecificAction("ah sell", Event(), true);
+                data.sellItems.erase(data.sellItems.begin());
+                if (sold)
                     return true;
-
-                // No more items to sell
-                data.wantSell = false;
             }
-            if (data.wantBuy)
+            if (!data.buySlots.empty())
             {
-                std::vector<uint8> buyList = AI_VALUE(std::vector<uint8>, "ah buy list");
-                if (buyList.empty())
-                    data.wantBuy = false;
-                else
-                {
-                    uint8 slot = buyList.front();
-                    SendAhSearchForSlot(auctioneer, slot);
-                    return true;
-                }
+                uint8 slot = data.buySlots.front();
+                data.buySlots.erase(data.buySlots.begin());
+                SendAhSearchForSlot(auctioneer, slot);
+                return true;
             }
         }
     }
 
-    if (!data.wantSell && !data.wantBuy)
+    if (data.sellItems.empty() && data.buySlots.empty())
     {
-        botAI->rpgInfo.travelPath.clear();
         botAI->rpgInfo.ChangeToIdle();
         return true;
     }
@@ -596,6 +600,7 @@ void NewRpgGoCityAction::SendAhSearchForSlot(Creature* auctioneer, uint8 equipSl
         equipSlot != EQUIPMENT_SLOT_BACK)
     {
         itemClass = ITEM_CLASS_ARMOR;
+        //TODO, filter iotems based on class/spec
     }
 
     uint8 levelMin = bot->GetLevel() > 5 ? bot->GetLevel() - 5 : 1;

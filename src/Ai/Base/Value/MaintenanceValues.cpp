@@ -123,7 +123,6 @@ std::vector<uint32> AhSellListValue::Calculate()
     _lastFingerprint = fingerprint;
     _cachedList.clear();
 
-    // Default backpack
     for (uint8 i = INVENTORY_SLOT_ITEM_START; i < INVENTORY_SLOT_ITEM_END; ++i)
     {
         Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
@@ -131,7 +130,6 @@ std::vector<uint32> AhSellListValue::Calculate()
             _cachedList.push_back(item->GetEntry());
     }
 
-    // Extra bags
     for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
     {
         Bag const* pBag = dynamic_cast<Bag const*>(bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bag));
@@ -174,8 +172,8 @@ std::vector<uint8> AhBuyListValue::Calculate()
             weakSlots.push_back(slot);
             continue;
         }
-
-        if (item->GetTemplate()->ItemLevel < botLevel)
+        //TODO: The Criteria for what qualifies as a bad slot is not great atm.
+        if (item->GetTemplate()->RequiredLevel < botLevel-2)
             weakSlots.push_back(slot);
     }
 

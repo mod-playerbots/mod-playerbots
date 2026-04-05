@@ -168,8 +168,8 @@ std::string NewRpgInfo::ToString()
                 << arg.pos.GetPositionY() << " " << arg.pos.GetPositionZ();
             if (arg.targetNpc)
                 out << "\ntargetNpc: " << arg.targetNpc.GetEntry();
-            out << "\nwantSell: " << arg.wantSell;
-            out << "\nwantBuy: " << arg.wantBuy;
+            out << "\nsellItems: " << arg.sellItems.size();
+            out << "\nbuySlots: " << arg.buySlots.size();
         }
         else
             out << "UNKNOWN";

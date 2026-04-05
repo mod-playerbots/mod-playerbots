@@ -68,8 +68,8 @@ struct NewRpgInfo
     {
         WorldPosition pos{0};
         ObjectGuid targetNpc{};
-        bool wantSell{false};
-        bool wantBuy{false};
+        std::vector<uint32> sellItems{};
+        std::vector<uint8> buySlots{};
     };
 
     uint32 startT{0};  // start timestamp of the current status
@@ -83,7 +83,7 @@ struct NewRpgInfo
 
     // Travel Node System for moving to distant places
     TravelPath travelPath{};
-    bool HasTravelPath() const { return !travelPath.empty(); }
+    bool HasActiveTravelExec() const { return travelExec.IsActive(); }
 
     using RpgData = std::variant<
         Idle,
@@ -102,7 +102,7 @@ struct NewRpgInfo
     bool HasStatusPersisted(uint32 maxDuration) { return GetMSTimeDiffToNow(startT) > maxDuration; }
     void ChangeToGoGrind(WorldPosition pos, bool auctionHouse = false);
     void ChangeToGoCamp(WorldPosition pos);
-    void ChangeToGoCity(WorldPosition pos, ObjectGuid targetNpc, bool wantSell, bool wantBuy);
+    void ChangeToGoCity(WorldPosition pos, ObjectGuid targetNpc, std::vector<uint32> sellItems, std::vector<uint8> buySlots);
     void ChangeToWanderNpc();
     void ChangeToWanderRandom();
     void ChangeToDoQuest(uint32 questId, const Quest* quest);
