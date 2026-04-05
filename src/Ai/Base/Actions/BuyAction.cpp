@@ -394,17 +394,32 @@ bool AhBuyAction::Execute(Event event)
 
     WorldPacket p(event.getPacket());
     if (p.empty())
+    {
+        LOG_DEBUG("playerbots", "[AH Buy] Bot {} received empty AH packet", bot->GetName());
         return false;
+    }
+
+    LOG_DEBUG("playerbots", "[AH Buy] Bot {} received AH packet (opcode={}, size={})",
+              bot->GetName(), p.GetOpcode(), p.size());
 
     p.rpos(0);
 
     uint32 gearBudget = AI_VALUE2(uint32, "free money for", uint32(NeedMoneyFor::gear));
     if (!gearBudget)
+    {
+        LOG_DEBUG("playerbots", "[AH Buy] Bot {} no gear budget, skipping", bot->GetName());
         return false;
+    }
 
     std::vector<AhItem> candidates;
     if (!ParseAuctionPacket(p, gearBudget, candidates))
+    {
+        LOG_DEBUG("playerbots", "[AH Buy] Bot {} no viable candidates from AH packet (budget={})",
+                  bot->GetName(), gearBudget);
         return false;
+    }
 
+    LOG_DEBUG("playerbots", "[AH Buy] Bot {} found {} candidates (budget={})",
+              bot->GetName(), candidates.size(), gearBudget);
     return BuyBestCandidate(candidates);
 }
