@@ -762,7 +762,7 @@ void PlayerbotFactory::InitPetTalents()
         // pet_family->petTalentType);
         return;
     }
-    std::unordered_map<uint32, std::vector<TalentEntry const*>> spells;
+    std::map<uint32, std::vector<TalentEntry const*>> spells;
     bool diveTypePet = (1LL << ci->family) & diveMask;
 
     for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
@@ -948,8 +948,6 @@ void PlayerbotFactory::InitPet()
                 continue;
             if (co->Name.size() > 21)
                 continue;
-            uint32 guid = map->GenerateLowGuid<HighGuid::Pet>();
-            uint32 pet_number = sObjectMgr->GeneratePetNumber();
             if (bot->GetPetStable() && bot->GetPetStable()->CurrentPet)
             {
                 auto petGuid = bot->GetPetStable()->CurrentPet.value(); // To correct the build warnin in VS
@@ -1905,7 +1903,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
         if (oldItem)
             continue;
 
-        Item* newItem = bot->EquipNewItem(dest, bestItemForSlot, true);
+        bot->EquipNewItem(dest, bestItemForSlot, true);
         bot->AutoUnequipOffhandIfNeed();
         // if (newItem)
         // {
@@ -1936,7 +1934,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                 (slot != EQUIPMENT_SLOT_RANGED))
                 continue;
 
-            if (Item* oldItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+            if (bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot) != nullptr)
                 bot->DestroyItem(INVENTORY_SLOT_BAG_0, slot, true);
 
             std::vector<uint32>& ids = items[slot];
@@ -1973,12 +1971,9 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                 continue;
 
             Item* newItem = bot->EquipNewItem(dest, bestItemForSlot, true);
+
+            bot->EquipNewItem(dest, bestItemForSlot, true);
             bot->AutoUnequipOffhandIfNeed();
-            // if (newItem)
-            // {
-            //     newItem->AddToWorld();
-            //     newItem->AddToUpdateQueueOf(bot);
-            // }
         }
     }
 }
@@ -1991,16 +1986,10 @@ bool PlayerbotFactory::IsDesiredReplacement(Item* item)
     ItemTemplate const* proto = item->GetTemplate();
     uint32 requiredLevel = proto->RequiredLevel;
     if (!requiredLevel)
-    {
         return true;
-    }
-    // if (!requiredLevel)
-    // {
-    //     requiredLevel = sRandomItemMgr.GetMinLevelFromCache(proto->ItemId);
-    // }
 
     uint32 delta = 1 + (80 - bot->GetLevel()) / 10;
-    return proto->Quality < ITEM_QUALITY_RARE || int32(bot->GetLevel() - requiredLevel) > delta;
+    return proto->Quality < ITEM_QUALITY_RARE || (bot->GetLevel() - requiredLevel) > delta;
 }
 
 inline Item* StoreNewItemInInventorySlot(Player* player, uint32 newItemId, uint32 count)
@@ -2010,9 +1999,7 @@ inline Item* StoreNewItemInInventorySlot(Player* player, uint32 newItemId, uint3
     if (msg == EQUIP_ERR_OK)
     {
         if (Item* newItem = player->StoreNewItem(vDest, newItemId, true, Item::GenerateItemRandomPropertyId(newItemId)))
-        {
             return newItem;
-        }
     }
 
     return nullptr;
@@ -2566,17 +2553,15 @@ void PlayerbotFactory::InitClassSpells()
                 bot->learnSpell(7386, false);  // Sunder Armor
             }
             if (level >= 30)
-            {
                 bot->learnSpell(2458, false);  // Berserker Stance
-            }
             break;
         case CLASS_PALADIN:
             bot->learnSpell(21084, true);
             bot->learnSpell(635, true);
             if (level >= 12)
-            {
                 bot->learnSpell(7328, false);  // Redemption
-            }
+            if (level >= 20)
+                bot->learnSpell(5502, false); // Sense Undead
             break;
         case CLASS_ROGUE:
             bot->learnSpell(1752, true);
@@ -2618,17 +2603,11 @@ void PlayerbotFactory::InitClassSpells()
             bot->learnSpell(686, true);
             bot->learnSpell(688, false);  // summon imp
             if (level >= 10)
-            {
                 bot->learnSpell(697, false);  // summon voidwalker
-            }
             if (level >= 20)
-            {
                 bot->learnSpell(712, false);  // summon succubus
-            }
             if (level >= 30)
-            {
                 bot->learnSpell(691, false);  // summon felhunter
-            }
             break;
         case CLASS_DRUID:
             bot->learnSpell(5176, true);
@@ -2645,17 +2624,11 @@ void PlayerbotFactory::InitClassSpells()
             bot->learnSpell(331, true);
             // bot->learnSpell(66747, true); // Totem of the Earthen Ring
             if (level >= 4)
-            {
                 bot->learnSpell(8071, false);  // stoneskin totem
-            }
             if (level >= 10)
-            {
                 bot->learnSpell(3599, false);  // searing totem
-            }
             if (level >= 20)
-            {
                 bot->learnSpell(5394, false);  // healing stream totem
-            }
             break;
         default:
             break;
@@ -2680,7 +2653,7 @@ void PlayerbotFactory::InitSpecialSpells()
 void PlayerbotFactory::InitTalents(uint32 specNo)
 {
     uint32 classMask = bot->getClassMask();
-    std::unordered_map<uint32, std::vector<TalentEntry const*>> spells;
+    std::map<uint32, std::vector<TalentEntry const*>> spells;
     for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
     {
         TalentEntry const* talentInfo = sTalentStore.LookupEntry(i);
@@ -2875,7 +2848,6 @@ void PlayerbotFactory::AddPrevQuests(uint32 questId, std::list<uint32>& questIds
 
 void PlayerbotFactory::InitQuests(std::list<uint32>& questMap, bool withRewardItem)
 {
-    uint32 count = 0;
     for (std::list<uint32>::iterator i = questMap.begin(); i != questMap.end(); ++i)
     {
         uint32 questId = *i;
@@ -3280,7 +3252,6 @@ void PlayerbotFactory::InitFood()
 
 void PlayerbotFactory::InitReagents()
 {
-    int specTab = AiFactory::GetPlayerSpecTab(bot);
     std::vector<std::pair<uint32, uint32>> items;
     switch (bot->getClass())
     {
@@ -3357,18 +3328,36 @@ void PlayerbotFactory::InitReagents()
                 items.push_back({44615, 40});  // Devout Candle
             break;
         case CLASS_SHAMAN:
-            if (level >= 4)
-                items.push_back({5175, 1});  // Earth Totem
-            if (level >= 10)
-                items.push_back({5176, 1});  // Flame Totem
-            if (level >= 20)
-                items.push_back({5177, 1});  // Water Totem
+        {
+            HasRelicBySubclassVisitor relicVisitor(ITEM_SUBCLASS_ARMOR_TOTEM);
+            IterateItems(&relicVisitor, (IterateItemsMask)(ITERATE_ITEMS_IN_BAGS | ITERATE_ITEMS_IN_EQUIP));
+            bool hasRelic = relicVisitor.found;
+
+            if (!hasRelic)
+            {
+                if (level >= 4)
+                    items.push_back({5175, 1});  // Earth Totem
+                if (level >= 10)
+                    items.push_back({5176, 1});  // Flame Totem
+                if (level >= 20)
+                    items.push_back({5177, 1});  // Water Totem
+            }
+            else
+            {
+                ItemIds totemIds = {5175, 5176, 5177, 5178};
+                FindItemByIdsVisitor totemVisitor(totemIds);
+                IterateItems(&totemVisitor, (IterateItemsMask)(ITERATE_ITEMS_IN_BAGS | ITERATE_ITEMS_IN_EQUIP | ITERATE_ITEMS_IN_BANK));
+                for (Item* item : totemVisitor.GetResult())
+                    bot->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
+            }
             if (level >= 30)
             {
-                items.push_back({5178, 1});  // Air Totem
+                if (!hasRelic)
+                    items.push_back({5178, 1});  // Air Totem
                 items.push_back({17030, 20});  // Ankh
             }
             break;
+        }
         case CLASS_WARLOCK:
             items.push_back({6265, 5});  // Soul Shard
             break;
@@ -4336,15 +4325,11 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool destroyOld)
                 continue;
 
             if (!item->IsFitToSpellRequirements(spellInfo))
-            {
                 continue;
-            }
 
             uint32 requiredLevel = spellInfo->BaseLevel;
             if (requiredLevel > bot->GetLevel())
-            {
                 continue;
-            }
 
             // disable next expansion enchantments
             if (sPlayerbotAIConfig.limitEnchantExpansion && bot->GetLevel() <= 60 && enchantSpell >= 27899)
@@ -4364,9 +4349,8 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool destroyOld)
 
                 SpellItemEnchantmentEntry const* enchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
                 if (!enchant || (enchant->slot != PERM_ENCHANTMENT_SLOT && enchant->slot != TEMP_ENCHANTMENT_SLOT))
-                {
                     continue;
-                }
+
                 if (enchant->requiredSkill &&
                     (!bot->HasSkill(enchant->requiredSkill) ||
                      (bot->GetSkillValue(enchant->requiredSkill) < enchant->requiredSkillValue)))
@@ -4374,9 +4358,8 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool destroyOld)
                     continue;
                 }
                 if (enchant->requiredLevel > bot->GetLevel())
-                {
                     continue;
-                }
+
                 float score = calculator.CalculateEnchant(enchant_id);
                 if (score >= bestScore)
                 {
@@ -4399,11 +4382,9 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool destroyOld)
         {
             uint8 socketColor = item->GetTemplate()->Socket[enchant_slot - SOCK_ENCHANTMENT_SLOT].Color;
             if (!socketColor)
-            {
                 continue;
-            }
+
             int32 enchantIdChosen = -1;
-            int32 colorChosen;
             bool jewelersGemChosen;
             float bestGemScore = -1;
             for (uint32& enchantGem : availableGems)
@@ -4448,7 +4429,6 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool destroyOld)
                 if (score > bestGemScore)
                 {
                     enchantIdChosen = enchant_id;
-                    colorChosen = gemProperties->color;
                     bestGemScore = score;
                     jewelersGemChosen = isJewelersGem;
                 }
@@ -4739,38 +4719,13 @@ void PlayerbotFactory::InitAttunementQuests()
 
     uint32 currentXP = bot->GetUInt32Value(PLAYER_XP);
 
-    // List of attunement quest IDs
-    std::list<uint32> attunementQuestsTBC = {
-        // Caverns of Time - Part 1
-        10279, // To The Master's Lair
-        10277, // The Caverns of Time
-
-        // Caverns of Time - Part 2 (Escape from Durnholde Keep)
-        10282, // Old Hillsbrad
-        10283, // Taretha's Diversion
-        10284, // Escape from Durnholde
-        10285, // Return to Andormu
-
-        // Caverns of Time - Part 2 (The Black Morass)
-        10296, // The Black Morass
-        10297, // The Opening of the Dark Portal
-        10298, // Hero of the Brood
-
-        // Magister's Terrace Attunement
-        11481, // Crisis at the Sunwell
-        11482, // Duty Calls
-        11488, // Magisters' Terrace
-        11490, // The Scryer's Scryer
-        11492  // Hard to Kill
-    };
-
     // Complete all level-appropriate attunement quests for the bot
     if (level >= 60)
     {
         std::list<uint32> questsToComplete;
 
         // Check each quest status before adding to the completion list
-        for (uint32 questId : attunementQuestsTBC)
+        for (uint32 questId : sPlayerbotAIConfig.attunementQuests)
         {
             QuestStatus questStatus = bot->GetQuestStatus(questId);
 

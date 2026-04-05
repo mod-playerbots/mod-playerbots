@@ -55,10 +55,6 @@ bool ToCLanceAction::Execute(Event /*event*/)
     // If we found the lance, equip it
     if (lanceItem)
     {
-        // Store the lance's current position
-        uint8 srcBag = lanceItem->GetBagSlot();
-        uint8 srcSlot = lanceItem->GetSlot();
-
         // First unequip current weapon if it exists
         if (oldWeapon)
             bot->SwapItem(oldWeapon->GetPos(), lanceItem->GetPos());

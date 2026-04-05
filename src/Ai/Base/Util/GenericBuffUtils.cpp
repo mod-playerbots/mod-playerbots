@@ -67,7 +67,7 @@ namespace ai::buff
                 if (info->Reagent[i] > 0)
                 {
                     uint32 const itemId = info->Reagent[i];
-                    int32  const need   = info->ReagentCount[i];
+                    int32 const need = info->ReagentCount[i];
                     if ((int32)bot->GetItemCount(itemId, false) < need)
                         return false;
                 }
@@ -141,5 +141,30 @@ namespace ai::buff
             }
         }
         return castName;
+    }
+}
+
+namespace ai::spell
+{
+    bool HasSpellOrCategoryCooldown(Player* bot, uint32 spellId)
+    {
+        if (bot->HasSpellCooldown(spellId))
+            return true;
+
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        if (!spellInfo)
+            return false;
+
+        uint32 category = spellInfo->GetCategory();
+        if (!category)
+            return false;
+
+        for (auto const& [cooldownSpellId, cooldown] : bot->GetSpellCooldownMap())
+        {
+            if (cooldown.category == category && bot->GetSpellCooldownDelay(cooldownSpellId) > 0)
+                return true;
+        }
+
+        return false;
     }
 }

@@ -45,18 +45,18 @@ void StatsCollector::CollectItemStats(ItemTemplate const* proto)
         switch (proto->Spells[j].SpellTrigger)
         {
             case ITEM_SPELLTRIGGER_ON_USE:
-                CollectSpellStats(proto->Spells[j].SpellId, 1.0f, proto->Spells[j].SpellCooldown);
+                CollectSpellStats(proto->Spells[j].SpellId, 1.0f, Milliseconds(proto->Spells[j].SpellCooldown));
                 break;
             case ITEM_SPELLTRIGGER_ON_EQUIP:
-                CollectSpellStats(proto->Spells[j].SpellId, 1.0f, 0);
+                CollectSpellStats(proto->Spells[j].SpellId, 1.0f, Milliseconds(0));
                 break;
             case ITEM_SPELLTRIGGER_CHANCE_ON_HIT:
                 if (type_ & CollectorType::MELEE)
                 {
                     if (proto->Spells[j].SpellPPMRate > 0.01f)
-                        CollectSpellStats(proto->Spells[j].SpellId, 1.0f, 60000 / proto->Spells[j].SpellPPMRate);
+                        CollectSpellStats(proto->Spells[j].SpellId, 1.0f, Milliseconds(static_cast<int>(60000 / proto->Spells[j].SpellPPMRate)));
                     else
-                        CollectSpellStats(proto->Spells[j].SpellId, 1.0f, 60000 / 1.8f);  // Default PPM = 1.8
+                        CollectSpellStats(proto->Spells[j].SpellId, 1.0f, Milliseconds(static_cast<int>(60000 / 1.8f)));  // Default PPM = 1.8
                 }
                 break;
             default:
@@ -71,7 +71,7 @@ void StatsCollector::CollectItemStats(ItemTemplate const* proto)
     }
 }
 
-void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, int32 spellCooldown)
+void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, Milliseconds spellCooldown)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
 
@@ -81,21 +81,21 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, int32 s
     if (SpecialSpellFilter(spellId))
         return;
 
-    const SpellProcEventEntry* eventEntry = sSpellMgr->GetSpellProcEvent(spellInfo->Id);
+    const SpellProcEntry* eventEntry = sSpellMgr->GetSpellProcEntry(spellInfo->Id);
 
-    uint32 triggerCooldown = eventEntry ? eventEntry->cooldown : 0;
+    Milliseconds triggerCooldown = eventEntry ? eventEntry->Cooldown : 0ms;
 
     bool canNextTrigger = true;
 
     uint32 procFlags;
     uint32 procChance;
-    if (eventEntry && eventEntry->procFlags)
-        procFlags = eventEntry->procFlags;
+    if (eventEntry && eventEntry->ProcFlags)
+        procFlags = eventEntry->ProcFlags;
     else
         procFlags = spellInfo->ProcFlags;
 
-    if (eventEntry && eventEntry->customChance)
-        procChance = eventEntry->customChance;
+    if (eventEntry && eventEntry->Chance)
+        procChance = eventEntry->Chance;
     else
         procChance = spellInfo->ProcChance;
     bool lowChance = procChance <= 5;
@@ -142,11 +142,11 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, int32 s
                     break;
 
                 float coverage;
-                if (spellCooldown <= 2000 || spellInfo->GetDuration() == -1)
+                if (spellCooldown.count() <= 2000 || spellInfo->GetDuration() == -1)
                     coverage = 1.0f;
                 else
                     coverage =
-                        std::min(1.0f, (float)spellInfo->GetDuration() / (spellInfo->GetDuration() + spellCooldown));
+                        std::min(1.0f, (float)spellInfo->GetDuration() / (spellInfo->GetDuration() + spellCooldown.count()));
 
                 multiplier *= coverage;
                 HandleApplyAura(effectInfo, multiplier, canNextTrigger, triggerCooldown);
@@ -155,9 +155,9 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, int32 s
             case SPELL_EFFECT_HEAL:
             {
                 /// @todo Handle spell without cooldown
-                if (!spellCooldown)
+                if (!spellCooldown.count())
                     break;
-                float normalizedCd = std::max((float)spellCooldown / 1000, 5.0f);
+                float normalizedCd = std::max((float)spellCooldown.count() / 1000, 5.0f);
                 int32 val = AverageValue(effectInfo);
                 float transfer_multiplier = 1;
                 stats[STATS_TYPE_HEAL_POWER] += (float)val / normalizedCd * multiplier * transfer_multiplier;
@@ -166,11 +166,11 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, int32 s
             case SPELL_EFFECT_ENERGIZE:
             {
                 /// @todo Handle spell without cooldown
-                if (!spellCooldown)
+                if (!spellCooldown.count())
                     break;
                 if (effectInfo.MiscValue != POWER_MANA)
                     break;
-                float normalizedCd = std::max((float)spellCooldown / 1000, 5.0f);
+                float normalizedCd = std::max((float)spellCooldown.count() / 1000, 5.0f);
                 int32 val = AverageValue(effectInfo);
                 float transfer_multiplier = 0.2;
                 stats[STATS_TYPE_MANA_REGENERATION] += (float)val / normalizedCd * multiplier * transfer_multiplier;
@@ -179,9 +179,9 @@ void StatsCollector::CollectSpellStats(uint32 spellId, float multiplier, int32 s
             case SPELL_EFFECT_SCHOOL_DAMAGE:
             {
                 /// @todo Handle spell without cooldown
-                if (!spellCooldown)
+                if (!spellCooldown.count())
                     break;
-                float normalizedCd = std::max((float)spellCooldown / 1000, 5.0f);
+                float normalizedCd = std::max((float)spellCooldown.count() / 1000, 5.0f);
                 int32 val = AverageValue(effectInfo);
                 if (type_ & (CollectorType::MELEE | CollectorType::RANGED))
                 {
@@ -352,12 +352,12 @@ bool StatsCollector::SpecialEnchantFilter(uint32 enchantSpellId)
 
 bool StatsCollector::CanBeTriggeredByType(SpellInfo const* spellInfo, uint32 procFlags, bool strict)
 {
-    const SpellProcEventEntry* eventEntry = sSpellMgr->GetSpellProcEvent(spellInfo->Id);
+    const SpellProcEntry* eventEntry = sSpellMgr->GetSpellProcEntry(spellInfo->Id);
     uint32 spellFamilyName = 0;
     if (eventEntry)
     {
-        spellFamilyName = eventEntry->spellFamilyName;
-        flag96 spellFamilyMask = eventEntry->spellFamilyMask;
+        spellFamilyName = eventEntry->SpellFamilyName;
+        flag96 spellFamilyMask = eventEntry->SpellFamilyMask;
         if (spellFamilyName != 0)
         {
             if (!CheckSpellValidation(spellFamilyName, spellFamilyMask, strict))
@@ -548,7 +548,7 @@ void StatsCollector::CollectByItemStatType(uint32 itemStatType, int32 val)
 }
 
 void StatsCollector::HandleApplyAura(const SpellEffectInfo& effectInfo, float multiplier, bool canNextTrigger,
-                                     uint32 triggerCooldown)
+                                     Milliseconds triggerCooldown)
 {
     if (effectInfo.Effect != SPELL_EFFECT_APPLY_AURA)
         return;

@@ -104,6 +104,13 @@ public:
         creators["target"] = &ChatTriggerContext::target;
         creators["formation"] = &ChatTriggerContext::formation;
         creators["stance"] = &ChatTriggerContext::stance;
+        creators["cancel tree form"] = &ChatTriggerContext::cancel_tree_form;
+        creators["cancel travel form"] = &ChatTriggerContext::cancel_travel_form;
+        creators["cancel bear form"] = &ChatTriggerContext::cancel_bear_form;
+        creators["cancel dire bear form"] = &ChatTriggerContext::cancel_dire_bear_form;
+        creators["cancel cat form"] = &ChatTriggerContext::cancel_cat_form;
+        creators["cancel moonkin form"] = &ChatTriggerContext::cancel_moonkin_form;
+        creators["cancel aquatic form"] = &ChatTriggerContext::cancel_aquatic_form;
         creators["sendmail"] = &ChatTriggerContext::sendmail;
         creators["mail"] = &ChatTriggerContext::mail;
         creators["outfit"] = &ChatTriggerContext::outfit;
@@ -127,7 +134,6 @@ public:
         creators["guild leave"] = &ChatTriggerContext::guild_leave;
         creators["rtsc"] = &ChatTriggerContext::rtsc;
         creators["drink"] = &ChatTriggerContext::drink;
-        // creators["bwl"] = &ChatTriggerContext::bwl;
         creators["dps"] = &ChatTriggerContext::dps;
         creators["disperse"] = &ChatTriggerContext::disperse;
         creators["calc"] = &ChatTriggerContext::calc;
@@ -139,6 +145,7 @@ public:
         creators["pet"] = &ChatTriggerContext::pet;
         creators["pet attack"] = &ChatTriggerContext::pet_attack;
         creators["roll"] = &ChatTriggerContext::roll_action;
+        creators["wait for attack time"] = &ChatTriggerContext::wait_for_attack_time;
     }
 
 private:
@@ -160,6 +167,13 @@ private:
     static Trigger* sendmail(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "sendmail"); }
     static Trigger* formation(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "formation"); }
     static Trigger* stance(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "stance"); }
+    static Trigger* cancel_tree_form(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "cancel tree form"); }
+    static Trigger* cancel_travel_form(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "cancel travel form"); }
+    static Trigger* cancel_bear_form(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "cancel bear form"); }
+    static Trigger* cancel_dire_bear_form(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "cancel dire bear form"); }
+    static Trigger* cancel_cat_form(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "cancel cat form"); }
+    static Trigger* cancel_moonkin_form(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "cancel moonkin form"); }
+    static Trigger* cancel_aquatic_form(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "cancel aquatic form"); }
     static Trigger* attackers(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "attackers"); }
     static Trigger* target(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "target"); }
     static Trigger* max_dps(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "max dps"); }
@@ -245,7 +259,6 @@ private:
     static Trigger* guild_leave(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "guild leave"); }
     static Trigger* rtsc(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "rtsc"); }
     static Trigger* drink(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "drink"); }
-    // static Trigger* bwl(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "bwl"); }
     static Trigger* dps(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "dps"); }
     static Trigger* disperse(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "disperse"); }
     static Trigger* calc(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "calc"); }
@@ -257,6 +270,7 @@ private:
     static Trigger* pet(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "pet"); }
     static Trigger* pet_attack(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "pet attack"); }
     static Trigger* roll_action(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "roll"); }
+    static Trigger* wait_for_attack_time(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "wait for attack time"); }
 };
 
 #endif

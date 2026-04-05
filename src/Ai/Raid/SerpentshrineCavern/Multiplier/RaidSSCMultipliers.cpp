@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
+ */
+
 #include "RaidSSCMultipliers.h"
 #include "RaidSSCActions.h"
 #include "RaidSSCHelpers.h"
@@ -28,12 +33,10 @@ using namespace SerpentShrineCavernHelpers;
 
 float UnderbogColossusEscapeToxicPoolMultiplier::GetValue(Action* action)
 {
-    if (bot->HasAura(SPELL_TOXIC_POOL))
-    {
-        if (dynamic_cast<MovementAction*>(action) &&
-            !dynamic_cast<UnderbogColossusEscapeToxicPoolAction*>(action))
-            return 0.0f;
-    }
+    if (bot->HasAura(SPELL_TOXIC_POOL) &&
+        dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<UnderbogColossusEscapeToxicPoolAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -53,16 +56,16 @@ float HydrossTheUnstableDisableTankActionsMultiplier::GetValue(Action* action)
         dynamic_cast<CombatFormationMoveAction*>(action))
         return 0.0f;
 
+    if ((botAI->IsMainTank(bot) && !hydross->HasAura(SPELL_CORRUPTION)) ||
+        (botAI->IsAssistTankOfIndex(bot, 0, true) && hydross->HasAura(SPELL_CORRUPTION)))
+        return 1.0f;
+
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
         dynamic_cast<ReachTargetAction*>(action) ||
         (dynamic_cast<AttackAction*>(action) &&
          !dynamic_cast<HydrossTheUnstablePositionFrostTankAction*>(action) &&
          !dynamic_cast<HydrossTheUnstablePositionNatureTankAction*>(action)))
-    {
-        if ((botAI->IsMainTank(bot) && hydross->HasAura(SPELL_CORRUPTION)) ||
-            (botAI->IsAssistTankOfIndex(bot, 0, true) && !hydross->HasAura(SPELL_CORRUPTION)))
-            return 0.0f;
-    }
+        return 0.0f;
 
     return 1.0f;
 }
@@ -97,13 +100,13 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
         bool aboutToChange = (itPhase != hydrossChangeToFrostPhaseTimer.end() &&
                               (now - itPhase->second) > phaseChangeWaitSeconds);
 
-        if (justChanged || aboutToChange)
-        {
-            if (dynamic_cast<AttackAction*>(action) ||
-                (dynamic_cast<CastSpellAction*>(action) &&
-                 !dynamic_cast<CastHealingSpellAction*>(action)))
-                 return 0.0f;
-        }
+        if (!justChanged && !aboutToChange)
+            return 1.0f;
+
+        if (dynamic_cast<AttackAction*>(action) ||
+            (dynamic_cast<CastSpellAction*>(action) &&
+             !dynamic_cast<CastHealingSpellAction*>(action)))
+            return 0.0f;
     }
 
     if (hydross->HasAura(SPELL_CORRUPTION) && !botAI->IsAssistTankOfIndex(bot, 0, true))
@@ -116,13 +119,13 @@ float HydrossTheUnstableWaitForDpsMultiplier::GetValue(Action* action)
         bool aboutToChange = (itPhase != hydrossChangeToNaturePhaseTimer.end() &&
                               (now - itPhase->second) > phaseChangeWaitSeconds);
 
-        if (justChanged || aboutToChange)
-        {
-            if (dynamic_cast<AttackAction*>(action) ||
-                (dynamic_cast<CastSpellAction*>(action) &&
-                 !dynamic_cast<CastHealingSpellAction*>(action)))
-                 return 0.0f;
-        }
+        if (!justChanged && !aboutToChange)
+            return 1.0f;
+
+        if (dynamic_cast<AttackAction*>(action) ||
+            (dynamic_cast<CastSpellAction*>(action) &&
+             !dynamic_cast<CastHealingSpellAction*>(action)))
+            return 0.0f;
     }
 
     return 1.0f;
@@ -133,11 +136,9 @@ float HydrossTheUnstableControlMisdirectionMultiplier::GetValue(Action* action)
     if (bot->getClass() != CLASS_HUNTER)
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "hydross the unstable"))
-    {
-        if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
-            return 0.0f;
-    }
+    if (AI_VALUE2(Unit*, "find target", "hydross the unstable") &&
+        dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -175,14 +176,14 @@ float TheLurkerBelowMaintainRangedSpreadMultiplier::GetValue(Action* action)
     if (!botAI->IsRanged(bot))
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "the lurker below"))
-    {
-        if (dynamic_cast<CombatFormationMoveAction*>(action) ||
-            dynamic_cast<FleeAction*>(action) ||
-            dynamic_cast<CastDisengageAction*>(action) ||
-            dynamic_cast<CastBlinkBackAction*>(action))
-            return 0.0f;
-    }
+    if (!AI_VALUE2(Unit*, "find target", "the lurker below"))
+        return 1.0f;
+
+    if (dynamic_cast<CombatFormationMoveAction*>(action) ||
+        dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<CastDisengageAction*>(action) ||
+        dynamic_cast<CastBlinkBackAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -215,11 +216,11 @@ float TheLurkerBelowDisableTankAssistMultiplier::GetValue(Action* action)
             ++tankCount;
     }
 
-    if (tankCount >= 3)
-    {
-        if (dynamic_cast<TankAssistAction*>(action))
-            return 0.0f;
-    }
+    if (tankCount < 3)
+        return 1.0f;
+
+    if (dynamic_cast<TankAssistAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -234,22 +235,18 @@ float LeotherasTheBlindAvoidWhirlwindMultiplier::GetValue(Action* action)
     if (bot->HasAura(SPELL_INSIDIOUS_WHISPER))
         return 1.0f;
 
-    Unit* leotherasHuman = GetLeotherasHuman(botAI);
-    if (!leotherasHuman)
+    Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
+    if (!leotheras || (!leotheras->HasAura(SPELL_WHIRLWIND) &&
+        !leotheras->HasAura(SPELL_WHIRLWIND_CHANNEL)))
         return 1.0f;
 
-    if (!leotherasHuman->HasAura(SPELL_LEOTHERAS_BANISHED) &&
-        (leotherasHuman->HasAura(SPELL_WHIRLWIND) ||
-         leotherasHuman->HasAura(SPELL_WHIRLWIND_CHANNEL)))
-    {
-        if (dynamic_cast<CastReachTargetSpellAction*>(action))
-            return 0.0f;
+    if (dynamic_cast<CastReachTargetSpellAction*>(action))
+        return 0.0f;
 
-        if (dynamic_cast<MovementAction*>(action) &&
-            !dynamic_cast<AttackAction*>(action) &&
-            !dynamic_cast<LeotherasTheBlindRunAwayFromWhirlwindAction*>(action))
-            return 0.0f;
-    }
+    if (dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<AttackAction*>(action) &&
+        !dynamic_cast<LeotherasTheBlindRunAwayFromWhirlwindAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -262,10 +259,10 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "leotheras the blind"))
         return 1.0f;
 
-    if (GetPhase2LeotherasDemon(botAI) && dynamic_cast<AttackAction*>(action))
+    if (GetPhase2LeotherasDemon(bot) && dynamic_cast<AttackAction*>(action))
         return 0.0f;
 
-    if (!GetPhase3LeotherasDemon(botAI) && dynamic_cast<CastBerserkAction*>(action))
+    if (!GetPhase3LeotherasDemon(bot) && dynamic_cast<CastBerserkAction*>(action))
         return 0.0f;
 
     return 1.0f;
@@ -273,21 +270,21 @@ float LeotherasTheBlindDisableTankActionsMultiplier::GetValue(Action* action)
 
 float LeotherasTheBlindFocusOnInnerDemonMultiplier::GetValue(Action* action)
 {
-    if (bot->HasAura(SPELL_INSIDIOUS_WHISPER))
-    {
-        if (dynamic_cast<TankAssistAction*>(action) ||
-            dynamic_cast<DpsAssistAction*>(action) ||
-            dynamic_cast<CastHealingSpellAction*>(action) ||
-            dynamic_cast<CastCureSpellAction*>(action) ||
-            dynamic_cast<CurePartyMemberAction*>(action) ||
-            dynamic_cast<CastBuffSpellAction*>(action) ||
-            dynamic_cast<ResurrectPartyMemberAction*>(action) ||
-            dynamic_cast<PartyMemberActionNameSupport*>(action) ||
-            dynamic_cast<CastBearFormAction*>(action) ||
-            dynamic_cast<CastDireBearFormAction*>(action) ||
-            dynamic_cast<CastTreeFormAction*>(action))
-            return 0.0f;
-    }
+    if (!bot->HasAura(SPELL_INSIDIOUS_WHISPER))
+        return 1.0f;
+
+    if (dynamic_cast<TankAssistAction*>(action) ||
+        dynamic_cast<DpsAssistAction*>(action) ||
+        dynamic_cast<CastHealingSpellAction*>(action) ||
+        dynamic_cast<CastCureSpellAction*>(action) ||
+        dynamic_cast<CurePartyMemberAction*>(action) ||
+        dynamic_cast<CastBuffSpellAction*>(action) ||
+        dynamic_cast<ResurrectPartyMemberAction*>(action) ||
+        dynamic_cast<PartyMemberActionNameSupport*>(action) ||
+        dynamic_cast<CastBearFormAction*>(action) ||
+        dynamic_cast<CastDireBearFormAction*>(action) ||
+        dynamic_cast<CastTreeFormAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -297,19 +294,19 @@ float LeotherasTheBlindMeleeDpsAvoidChaosBlastMultiplier::GetValue(Action* actio
     if (botAI->IsRanged(bot) || botAI->IsTank(bot))
         return 1.0f;
 
-    if (!GetPhase2LeotherasDemon(botAI))
+    if (!GetPhase2LeotherasDemon(bot))
         return 1.0f;
 
     Aura* chaosBlast = bot->GetAura(SPELL_CHAOS_BLAST);
-    if (chaosBlast && chaosBlast->GetStackAmount() >= 5)
-    {
-        if (dynamic_cast<AttackAction*>(action) ||
-            dynamic_cast<ReachTargetAction*>(action) ||
-            dynamic_cast<CombatFormationMoveAction*>(action) ||
-            dynamic_cast<CastReachTargetSpellAction*>(action) ||
-            dynamic_cast<CastKillingSpreeAction*>(action))
-            return 0.0f;
-    }
+    if (!chaosBlast || chaosBlast->GetStackAmount() < 5)
+        return 1.0f;
+
+    if (dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<ReachTargetAction*>(action) ||
+        dynamic_cast<CombatFormationMoveAction*>(action) ||
+        dynamic_cast<CastReachTargetSpellAction*>(action) ||
+        dynamic_cast<CastKillingSpreeAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -330,8 +327,8 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
     const time_t now = std::time(nullptr);
 
     constexpr uint8 dpsWaitSecondsPhase1 = 5;
-    Unit* leotherasHuman = GetLeotherasHuman(botAI);
-    Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(botAI);
+    Unit* leotherasHuman = GetLeotherasHuman(bot);
+    Unit* leotherasPhase3Demon = GetPhase3LeotherasDemon(bot);
     if (leotherasHuman && !leotherasHuman->HasAura(SPELL_LEOTHERAS_BANISHED) &&
         !leotherasPhase3Demon)
     {
@@ -345,12 +342,12 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
             if (dynamic_cast<AttackAction*>(action) ||
                 (dynamic_cast<CastSpellAction*>(action) &&
                  !dynamic_cast<CastHealingSpellAction*>(action)))
-                 return 0.0f;
+                return 0.0f;
         }
     }
 
     constexpr uint8 dpsWaitSecondsPhase2 = 12;
-    Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(botAI);
+    Unit* leotherasPhase2Demon = GetPhase2LeotherasDemon(bot);
     Player* demonFormTank = GetLeotherasDemonFormTank(bot);
     if (leotherasPhase2Demon)
     {
@@ -367,7 +364,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
             if (dynamic_cast<AttackAction*>(action) ||
                 (dynamic_cast<CastSpellAction*>(action) &&
                  !dynamic_cast<CastHealingSpellAction*>(action)))
-                 return 0.0f;
+                return 0.0f;
         }
     }
 
@@ -384,7 +381,7 @@ float LeotherasTheBlindWaitForDpsMultiplier::GetValue(Action* action)
             if (dynamic_cast<AttackAction*>(action) ||
                 (dynamic_cast<CastSpellAction*>(action) &&
                  !dynamic_cast<CastHealingSpellAction*>(action)))
-                 return 0.0f;
+                return 0.0f;
         }
     }
 
@@ -398,12 +395,12 @@ float LeotherasTheBlindDelayBloodlustAndHeroismMultiplier::GetValue(Action* acti
         return 1.0f;
 
     Unit* leotheras = AI_VALUE2(Unit*, "find target", "leotheras the blind");
-    if (leotheras && leotheras->HasAura(SPELL_LEOTHERAS_BANISHED))
-    {
-        if (dynamic_cast<CastHeroismAction*>(action) ||
-            dynamic_cast<CastBloodlustAction*>(action))
-            return 0.0f;
-    }
+    if (!leotheras || !leotheras->HasAura(SPELL_LEOTHERAS_BANISHED))
+        return 1.0f;
+
+    if (dynamic_cast<CastHeroismAction*>(action) ||
+        dynamic_cast<CastBloodlustAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -447,14 +444,12 @@ float FathomLordKarathressDisableAoeMultiplier::GetValue(Action* action)
     if (!botAI->IsDps(bot))
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
-    {
-        if (auto castSpellAction = dynamic_cast<CastSpellAction*>(action))
-        {
-            if (castSpellAction->getThreatType() == Action::ActionThreatType::Aoe)
-                return 0.0f;
-        }
-    }
+    if (!AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
+        return 1.0f;
+
+    auto castSpellAction = dynamic_cast<CastSpellAction*>(action);
+    if (castSpellAction && castSpellAction->getThreatType() == Action::ActionThreatType::Aoe)
+        return 0.0f;
 
     return 1.0f;
 }
@@ -464,11 +459,11 @@ float FathomLordKarathressControlMisdirectionMultiplier::GetValue(Action* action
     if (bot->getClass() != CLASS_HUNTER)
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
-    {
-        if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
-            return 0.0f;
-    }
+    if (!AI_VALUE2(Unit*, "find target", "fathom-lord karathress"))
+        return 1.0f;
+
+    if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -494,7 +489,7 @@ float FathomLordKarathressWaitForDpsMultiplier::GetValue(Action* action)
         if (dynamic_cast<AttackAction*>(action) ||
             (dynamic_cast<CastSpellAction*>(action) &&
              !dynamic_cast<CastHealingSpellAction*>(action)))
-             return 0.0f;
+            return 0.0f;
     }
 
     return 1.0f;
@@ -505,12 +500,12 @@ float FathomLordKarathressCaribdisTankHealerMaintainPositionMultiplier::GetValue
     if (!botAI->IsAssistHealOfIndex(bot, 0, true))
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "fathom-guard caribdis"))
-    {
-        if (dynamic_cast<FleeAction*>(action) ||
-            dynamic_cast<FollowAction*>(action))
-            return 0.0f;
-    }
+    if (!AI_VALUE2(Unit*, "find target", "fathom-guard caribdis"))
+        return 1.0f;
+
+    if (dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<FollowAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -526,12 +521,12 @@ float MorogrimTidewalkerDelayBloodlustAndHeroismMultiplier::GetValue(Action* act
     if (!AI_VALUE2(Unit*, "find target", "morogrim tidewalker"))
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "tidewalker lurker"))
-    {
-        if (dynamic_cast<CastHeroismAction*>(action) ||
-            dynamic_cast<CastBloodlustAction*>(action))
-            return 0.0f;
-    }
+    if (AI_VALUE2(Unit*, "find target", "tidewalker lurker"))
+        return 1.0f;
+
+    if (dynamic_cast<CastHeroismAction*>(action) ||
+        dynamic_cast<CastBloodlustAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -541,11 +536,11 @@ float MorogrimTidewalkerDisableTankActionsMultiplier::GetValue(Action* action)
     if (!botAI->IsMainTank(bot))
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "morogrim tidewalker"))
-    {
-        if (dynamic_cast<CombatFormationMoveAction*>(action))
-            return 0.0f;
-    }
+    if (!AI_VALUE2(Unit*, "find target", "morogrim tidewalker"))
+        return 1.0f;
+
+    if (dynamic_cast<CombatFormationMoveAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -556,17 +551,14 @@ float MorogrimTidewalkerMaintainPhase2StackingMultiplier::GetValue(Action* actio
         return 1.0f;
 
     Unit* tidewalker = AI_VALUE2(Unit*, "find target", "morogrim tidewalker");
-    if (!tidewalker)
+    if (!tidewalker || tidewalker->GetHealthPct() > 25.0f)
         return 1.0f;
 
-    if (tidewalker->GetHealthPct() < 25.0f)
-    {
-        if (dynamic_cast<CombatFormationMoveAction*>(action) ||
-            dynamic_cast<FleeAction*>(action) ||
-            dynamic_cast<CastDisengageAction*>(action) ||
-            dynamic_cast<CastBlinkBackAction*>(action))
-            return 0.0f;
-    }
+    if (dynamic_cast<CombatFormationMoveAction*>(action) ||
+        dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<CastDisengageAction*>(action) ||
+        dynamic_cast<CastBlinkBackAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -580,41 +572,59 @@ float LadyVashjDelayCooldownsMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
         return 1.0f;
 
-    if (bot->getClass() == CLASS_SHAMAN)
-    {
-        if (IsLadyVashjInPhase3(botAI))
-            return 1.0f;
+    if (bot->getClass() == CLASS_SHAMAN &&
+        !IsLadyVashjInPhase3(botAI) &&
+        (dynamic_cast<CastBloodlustAction*>(action) ||
+         dynamic_cast<CastHeroismAction*>(action)))
+        return 0.0f;
 
-        if (dynamic_cast<CastBloodlustAction*>(action) ||
-            dynamic_cast<CastHeroismAction*>(action))
-            return 0.0f;
-    }
+    if (!botAI->IsDps(bot) || !IsLadyVashjInPhase1(botAI))
+        return 1.0f;
 
-    if (botAI->IsDps(bot) && IsLadyVashjInPhase1(botAI))
-    {
-        if (dynamic_cast<CastMetamorphosisAction*>(action) ||
-            dynamic_cast<CastAdrenalineRushAction*>(action) ||
-            dynamic_cast<CastBladeFlurryAction*>(action) ||
-            dynamic_cast<CastIcyVeinsAction*>(action) ||
-            dynamic_cast<CastColdSnapAction*>(action) ||
-            dynamic_cast<CastArcanePowerAction*>(action) ||
-            dynamic_cast<CastPresenceOfMindAction*>(action) ||
-            dynamic_cast<CastCombustionAction*>(action) ||
-            dynamic_cast<CastRapidFireAction*>(action) ||
-            dynamic_cast<CastReadinessAction*>(action) ||
-            dynamic_cast<CastAvengingWrathAction*>(action) ||
-            dynamic_cast<CastElementalMasteryAction*>(action) ||
-            dynamic_cast<CastFeralSpiritAction*>(action) ||
-            dynamic_cast<CastFireElementalTotemAction*>(action) ||
-            dynamic_cast<CastFireElementalTotemMeleeAction*>(action) ||
-            dynamic_cast<CastForceOfNatureAction*>(action) ||
-            dynamic_cast<CastArmyOfTheDeadAction*>(action) ||
-            dynamic_cast<CastSummonGargoyleAction*>(action) ||
-            dynamic_cast<CastBerserkingAction*>(action) ||
-            dynamic_cast<CastBloodFuryAction*>(action) ||
-            dynamic_cast<UseTrinketAction*>(action))
-            return 0.0f;
-    }
+    if (dynamic_cast<CastMetamorphosisAction*>(action) ||
+        dynamic_cast<CastAdrenalineRushAction*>(action) ||
+        dynamic_cast<CastBladeFlurryAction*>(action) ||
+        dynamic_cast<CastIcyVeinsAction*>(action) ||
+        dynamic_cast<CastColdSnapAction*>(action) ||
+        dynamic_cast<CastArcanePowerAction*>(action) ||
+        dynamic_cast<CastPresenceOfMindAction*>(action) ||
+        dynamic_cast<CastCombustionAction*>(action) ||
+        dynamic_cast<CastRapidFireAction*>(action) ||
+        dynamic_cast<CastReadinessAction*>(action) ||
+        dynamic_cast<CastAvengingWrathAction*>(action) ||
+        dynamic_cast<CastElementalMasteryAction*>(action) ||
+        dynamic_cast<CastFeralSpiritAction*>(action) ||
+        dynamic_cast<CastFireElementalTotemAction*>(action) ||
+        dynamic_cast<CastFireElementalTotemMeleeAction*>(action) ||
+        dynamic_cast<CastForceOfNatureAction*>(action) ||
+        dynamic_cast<CastArmyOfTheDeadAction*>(action) ||
+        dynamic_cast<CastSummonGargoyleAction*>(action) ||
+        dynamic_cast<CastBerserkingAction*>(action) ||
+        dynamic_cast<CastBloodFuryAction*>(action) ||
+        dynamic_cast<UseTrinketAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
+}
+
+float LadyVashjMainTankGroupShamanUseGroundingTotemMultiplier::GetValue(Action* action)
+{
+    if (bot->getClass() != CLASS_SHAMAN)
+        return 1.0f;
+
+    if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
+        return 1.0f;
+
+    if (!IsMainTankInSameSubgroup(botAI, bot))
+        return 1.0f;
+
+    if (dynamic_cast<CastWindfuryTotemAction*>(action) ||
+        dynamic_cast<SetWindfuryTotemAction*>(action) ||
+        dynamic_cast<CastWrathOfAirTotemAction*>(action) ||
+        dynamic_cast<SetWrathOfAirTotemAction*>(action) ||
+        dynamic_cast<CastNatureResistanceTotemAction*>(action) ||
+        dynamic_cast<SetNatureResistanceTotemAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -624,15 +634,15 @@ float LadyVashjMaintainPhase1RangedSpreadMultiplier::GetValue(Action* action)
     if (!botAI->IsRanged(bot))
         return 1.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "lady vashj") &&
-        IsLadyVashjInPhase1(botAI))
-    {
-        if (dynamic_cast<CombatFormationMoveAction*>(action) ||
-            dynamic_cast<FleeAction*>(action) ||
-            dynamic_cast<CastDisengageAction*>(action) ||
-            dynamic_cast<CastBlinkBackAction*>(action))
-            return 0.0f;
-    }
+    if (!AI_VALUE2(Unit*, "find target", "lady vashj") ||
+        !IsLadyVashjInPhase1(botAI))
+        return 1.0f;
+
+    if (dynamic_cast<CombatFormationMoveAction*>(action) ||
+        dynamic_cast<FleeAction*>(action) ||
+        dynamic_cast<CastDisengageAction*>(action) ||
+        dynamic_cast<CastBlinkBackAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -658,19 +668,18 @@ float LadyVashjStaticChargeStayAwayFromGroupMultiplier::GetValue(Action* action)
 // Bots should not loot the core with normal looting logic
 float LadyVashjDoNotLootTheTaintedCoreMultiplier::GetValue(Action* action)
 {
-    if (AI_VALUE2(Unit*, "find target", "lady vashj"))
-    {
-        if (dynamic_cast<LootAction*>(action))
-            return 0.0f;
-    }
+    if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
+        return 1.0f;
+
+    if (dynamic_cast<LootAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
 
 float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "lady vashj") ||
-        !IsLadyVashjInPhase2(botAI))
+    if (!AI_VALUE2(Unit*, "find target", "lady vashj") || !IsLadyVashjInPhase2(botAI))
         return 1.0f;
 
     if (dynamic_cast<WipeAction*>(action) ||
@@ -678,65 +687,43 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
         dynamic_cast<LadyVashjDestroyTaintedCoreAction*>(action))
         return 1.0f;
 
-    Group* group = bot->GetGroup();
-    if (!group)
-        return 1.0f;
+    auto coreHandlers = GetCoreHandlers(botAI, bot);
 
-    Player* designatedLooter = GetDesignatedCoreLooter(group, botAI);
-    Player* firstCorePasser = GetFirstTaintedCorePasser(group, botAI);
-    Player* secondCorePasser = GetSecondTaintedCorePasser(group, botAI);
-    Player* thirdCorePasser = GetThirdTaintedCorePasser(group, botAI);
-    Player* fourthCorePasser = GetFourthTaintedCorePasser(group, botAI);
+    bool isCoreHandler = false;
+    int myIndex = -1;
+    for (int i = 0; i < static_cast<int>(coreHandlers.size()); ++i)
+    {
+        if (coreHandlers[i] && coreHandlers[i] == bot)
+        {
+            isCoreHandler = true;
+            myIndex = i;
+        }
+    }
+    if (!isCoreHandler)
+        return 1.0f;
 
     auto hasCore = [](Player* player)
     {
         return player && player->HasItemCount(ITEM_TAINTED_CORE, 1, false);
     };
 
-    if (hasCore(bot))
-    {
-        if (!dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
-            return 0.0f;
-    }
+    // If the bot actually has the core, only allow core handling
+    if (hasCore(bot) && !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
+        return 0.0f;
 
-    if (bot == designatedLooter)
-    {
-        if (!hasCore(bot))
-            return 1.0f;
-    }
-    else if (bot == firstCorePasser)
-    {
-        if (hasCore(secondCorePasser) || hasCore(thirdCorePasser) ||
-            hasCore(fourthCorePasser))
-            return 1.0f;
-    }
-    else if (bot == secondCorePasser)
-    {
-        if (hasCore(thirdCorePasser) || hasCore(fourthCorePasser))
-            return 1.0f;
-    }
-    else if (bot == thirdCorePasser)
-    {
-        if (hasCore(fourthCorePasser))
-            return 1.0f;
-    }
-    else if (bot != fourthCorePasser)
-        return 1.0f;
+    // First and second passers block movement when the looter teleports to the elemental
+    Unit* tainted = AI_VALUE2(Unit*, "find target", "tainted elemental");
+    if (tainted && coreHandlers[0]->GetExactDist2d(tainted) < 5.0f &&
+        (bot == coreHandlers[1] || bot == coreHandlers[2]) &&
+        (dynamic_cast<MovementAction*>(action) &&
+         !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action)))
+        return 0.0f;
 
-    if (AI_VALUE2(Unit*, "find target", "tainted elemental") &&
-        (bot == firstCorePasser || bot == secondCorePasser))
-    {
-        if (dynamic_cast<MovementAction*>(action) &&
-            !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
-            return 0.0f;
-    }
-
-    if (AnyRecentCoreInInventory(group, botAI))
-    {
-        if (dynamic_cast<MovementAction*>(action) &&
-            !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
-            return 0.0f;
-    }
+    // If any prior handler (including self) recently had the core, block other movement
+    if (AnyRecentCoreInInventory(botAI, bot) &&
+        dynamic_cast<MovementAction*>(action) &&
+        !dynamic_cast<LadyVashjPassTheTaintedCoreAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -745,7 +732,8 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
 // So the standard target selection system must be disabled
 float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *action)
 {
-    if (!AI_VALUE2(Unit*, "find target", "lady vashj"))
+    Unit* vashj = AI_VALUE2(Unit*, "find target", "lady vashj");
+    if (!vashj)
         return 1.0f;
 
     if (dynamic_cast<AvoidAoeAction*>(action))
@@ -755,24 +743,26 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
     {
         if (dynamic_cast<DpsAssistAction*>(action) ||
             dynamic_cast<TankAssistAction*>(action) ||
-            dynamic_cast<FollowAction*>(action) ||
             dynamic_cast<FleeAction*>(action))
+            return 0.0f;
+
+        if (bot->GetExactDist2d(vashj) < 60.0f &&
+            dynamic_cast<FollowAction*>(action))
             return 0.0f;
 
         if (!botAI->IsHeal(bot) && dynamic_cast<CastHealingSpellAction*>(action))
             return 0.0f;
 
         Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
-        if (enchanted && bot->GetVictim() == enchanted)
-        {
-            if (dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
-                return 0.0f;
-        }
+        if (enchanted && bot->GetVictim() == enchanted &&
+            dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+            return 0.0f;
     }
 
     if (IsLadyVashjInPhase3(botAI))
     {
-        if (dynamic_cast<DpsAssistAction*>(action))
+        if (dynamic_cast<DpsAssistAction*>(action) ||
+            dynamic_cast<TankAssistAction*>(action))
             return 0.0f;
 
         Unit* enchanted = AI_VALUE2(Unit*, "find target", "enchanted elemental");
@@ -780,16 +770,13 @@ float LadyVashjDisableAutomaticTargetingAndMovementModifier::GetValue(Action *ac
         Unit* elite = AI_VALUE2(Unit*, "find target", "coilfang elite");
         if (enchanted || strider || elite)
         {
-            if (dynamic_cast<TankAssistAction*>(action) ||
-                dynamic_cast<FollowAction*>(action) ||
+            if (dynamic_cast<FollowAction*>(action) ||
                 dynamic_cast<FleeAction*>(action))
                 return 0.0f;
 
-            if (enchanted && bot->GetVictim() == enchanted)
-            {
-                if (dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
-                    return 0.0f;
-            }
+            if (enchanted && bot->GetVictim() == enchanted &&
+                dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+                return 0.0f;
         }
         else if (dynamic_cast<CombatFormationMoveAction*>(action))
             return 0.0f;
