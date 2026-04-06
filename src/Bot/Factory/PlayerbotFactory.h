@@ -93,6 +93,12 @@ private:
     bool CanEquipItem(ItemTemplate const* proto);
     bool CanEquipUnseenItem(uint8 slot, uint16& dest, uint32 item);
     void InitTradeSkills();
+    void InitTradeSpecializations();
+    bool InitAlchemySpecialization();
+    bool InitEngineeringSpecialization();
+    bool InitLeatherworkingSpecialization();
+    bool InitTailoringSpecialization();
+    bool InitBlacksmithingSpecialization();
     void UpdateTradeSkills();
     void SetRandomSkill(uint16 id);
     void ClearSpells();

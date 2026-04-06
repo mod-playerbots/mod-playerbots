@@ -61,6 +61,51 @@ std::unordered_map<uint32, std::vector<uint32>> PlayerbotFactory::trainerIdCache
 
 namespace
 {
+    enum ProfessionSpecializationSpell : uint32
+    {
+        S_WEAPON = 9787,
+        S_ARMOR = 9788,
+        S_HAMMER = 17040,
+        S_AXE = 17041,
+        S_SWORD = 17039,
+
+        S_LEARN_WEAPON = 9789,
+        S_LEARN_ARMOR = 9790,
+        S_LEARN_HAMMER = 39099,
+        S_LEARN_AXE = 39098,
+        S_LEARN_SWORD = 39097,
+
+        S_DRAGON = 10656,
+        S_ELEMENTAL = 10658,
+        S_TRIBAL = 10660,
+
+        S_LEARN_DRAGON = 10657,
+        S_LEARN_ELEMENTAL = 10659,
+        S_LEARN_TRIBAL = 10661,
+
+        S_SPELLFIRE = 26797,
+        S_MOONCLOTH = 26798,
+        S_SHADOWEAVE = 26801,
+
+        S_GOBLIN = 20222,
+        S_GNOMISH = 20219,
+
+        S_LEARN_GOBLIN = 20221,
+        S_LEARN_GNOMISH = 20220,
+
+        S_LEARN_SPELLFIRE = 26796,
+        S_LEARN_MOONCLOTH = 26799,
+        S_LEARN_SHADOWEAVE = 26800,
+
+        S_TRANSMUTE = 28672,
+        S_ELIXIR = 28677,
+        S_POTION = 28675,
+
+        S_LEARN_TRANSMUTE = 28674,
+        S_LEARN_ELIXIR = 28678,
+        S_LEARN_POTION = 28676
+    };
+
     enum ProfessionRollType : uint32
     {
         PROFESSION_ROLL_RANDOM = 1,
@@ -313,6 +358,43 @@ namespace
         }
 
         return selectedPool->back().first;
+    }
+
+    uint32 GetStoredOrRandomValue(Player* bot,
+                                  std::string const& key,
+                                  uint32 minValue,
+                                  uint32 maxValue)
+    {
+        uint32 value = sRandomPlayerbotMgr.GetValue(bot, key);
+        if (value < minValue || value > maxValue)
+        {
+            value = urand(minValue, maxValue);
+            sRandomPlayerbotMgr.SetValue(bot, key, value);
+        }
+
+        return value;
+    }
+
+    bool HasAnySpell(Player* bot, std::vector<uint32> const& spells)
+    {
+        for (uint32 spellId : spells)
+        {
+            if (bot->HasSpell(spellId))
+                return true;
+        }
+
+        return false;
+    }
+
+    bool LearnProfessionSpecialization(Player* bot,
+                                       uint32 knownSpellId,
+                                       uint32 learnSpellId)
+    {
+        if (bot->HasSpell(knownSpellId))
+            return false;
+
+        bot->CastSpell(bot, learnSpellId, true);
+        return bot->HasSpell(knownSpellId);
     }
 }
 
@@ -2615,12 +2697,260 @@ void PlayerbotFactory::InitTradeSkills()
                   bot->GetName().c_str(), spellId, skillId);
     }
 
+    InitTradeSpecializations();
+
     LOG_DEBUG("playerbots",
               "Bot {} profession setup complete: primary {} / {} (limit {}), secondary {}, {}, {}",
               bot->GetName().c_str(), firstSkill,
               (keepExistingProfessionPair || maxPrimaryTradeSkills > 1) ? secondSkill : 0,
               maxPrimaryTradeSkills, SKILL_FIRST_AID,
               SKILL_FISHING, SKILL_COOKING);
+}
+
+void PlayerbotFactory::InitTradeSpecializations()
+{
+    bool learnedSpecialization = false;
+
+    learnedSpecialization = InitAlchemySpecialization() || learnedSpecialization;
+    learnedSpecialization = InitEngineeringSpecialization() || learnedSpecialization;
+    learnedSpecialization = InitLeatherworkingSpecialization() || learnedSpecialization;
+    learnedSpecialization = InitTailoringSpecialization() || learnedSpecialization;
+    learnedSpecialization = InitBlacksmithingSpecialization() || learnedSpecialization;
+
+    if (learnedSpecialization)
+        bot->SaveToDB(false, false);
+}
+
+bool PlayerbotFactory::InitAlchemySpecialization()
+{
+    if (!bot->HasSkill(SKILL_ALCHEMY) ||
+        bot->GetBaseSkillValue(SKILL_ALCHEMY) < 325 ||
+        bot->GetLevel() <= 67)
+        return false;
+
+    if (HasAnySpell(bot, {S_TRANSMUTE, S_ELIXIR, S_POTION}))
+        return false;
+
+    switch (GetStoredOrRandomValue(bot, "alchemySpecialization", 1, 3))
+    {
+        case 1:
+            if (LearnProfessionSpecialization(bot, S_TRANSMUTE,
+                                             S_LEARN_TRANSMUTE))
+            {
+                LOG_DEBUG("playerbots", "Bot {} assigned alchemy specialization: Transmute",
+                          bot->GetName().c_str());
+                return true;
+            }
+            break;
+        case 2:
+            if (LearnProfessionSpecialization(bot, S_ELIXIR, S_LEARN_ELIXIR))
+            {
+                LOG_DEBUG("playerbots", "Bot {} assigned alchemy specialization: Elixir",
+                          bot->GetName().c_str());
+                return true;
+            }
+            break;
+        case 3:
+        default:
+            if (LearnProfessionSpecialization(bot, S_POTION, S_LEARN_POTION))
+            {
+                LOG_DEBUG("playerbots", "Bot {} assigned alchemy specialization: Potion",
+                          bot->GetName().c_str());
+                return true;
+            }
+            break;
+    }
+
+    return false;
+}
+
+bool PlayerbotFactory::InitEngineeringSpecialization()
+{
+    if (!bot->HasSkill(SKILL_ENGINEERING) ||
+        bot->GetBaseSkillValue(SKILL_ENGINEERING) < 200 ||
+        bot->GetLevel() < 30)
+        return false;
+
+    if (HasAnySpell(bot, {S_GOBLIN, S_GNOMISH}))
+        return false;
+
+    switch (GetStoredOrRandomValue(bot, "engineeringSpecialization", 1, 2))
+    {
+        case 1:
+            if (LearnProfessionSpecialization(bot, S_GOBLIN,
+                                             S_LEARN_GOBLIN))
+            {
+                LOG_DEBUG("playerbots", "Bot {} assigned engineering specialization: Goblin",
+                          bot->GetName().c_str());
+                return true;
+            }
+            break;
+        case 2:
+        default:
+            if (LearnProfessionSpecialization(bot, S_GNOMISH,
+                                             S_LEARN_GNOMISH))
+            {
+                LOG_DEBUG("playerbots", "Bot {} assigned engineering specialization: Gnomish",
+                          bot->GetName().c_str());
+                return true;
+            }
+            break;
+    }
+
+    return false;
+}
+
+bool PlayerbotFactory::InitLeatherworkingSpecialization()
+{
+    if (!bot->HasSkill(SKILL_LEATHERWORKING) ||
+        bot->GetBaseSkillValue(SKILL_LEATHERWORKING) < 225 ||
+        bot->GetLevel() <= 40)
+        return false;
+
+    if (HasAnySpell(bot, {S_DRAGON, S_ELEMENTAL, S_TRIBAL}))
+        return false;
+
+    switch (GetStoredOrRandomValue(bot, "leatherSpecialization", 1, 3))
+    {
+        case 1:
+            if (LearnProfessionSpecialization(bot, S_DRAGON, S_LEARN_DRAGON))
+            {
+                LOG_DEBUG("playerbots", "Bot {} assigned leatherworking specialization: Dragonscale",
+                          bot->GetName().c_str());
+                return true;
+            }
+            break;
+        case 2:
+            if (LearnProfessionSpecialization(bot, S_ELEMENTAL, S_LEARN_ELEMENTAL))
+            {
+                LOG_DEBUG("playerbots", "Bot {} assigned leatherworking specialization: Elemental",
+                          bot->GetName().c_str());
+                return true;
+            }
+            break;
+        case 3:
+        default:
+            if (LearnProfessionSpecialization(bot, S_TRIBAL, S_LEARN_TRIBAL))
+            {
+                LOG_DEBUG("playerbots", "Bot {} assigned leatherworking specialization: Tribal",
+                          bot->GetName().c_str());
+                return true;
+            }
+            break;
+    }
+
+    return false;
+}
+
+bool PlayerbotFactory::InitTailoringSpecialization()
+{
+    if (!bot->HasSkill(SKILL_TAILORING) ||
+        bot->GetBaseSkillValue(SKILL_TAILORING) < 350 ||
+        bot->GetLevel() <= 59)
+        return false;
+
+    if (HasAnySpell(bot, {S_SPELLFIRE, S_MOONCLOTH, S_SHADOWEAVE}))
+        return false;
+
+    switch (GetStoredOrRandomValue(bot, "tailorSpecialization", 1, 3))
+    {
+        case 1:
+            if (LearnProfessionSpecialization(bot, S_SPELLFIRE,
+                                             S_LEARN_SPELLFIRE))
+            {
+                LOG_DEBUG("playerbots", "Bot {} assigned tailoring specialization: Spellfire",
+                          bot->GetName().c_str());
+                return true;
+            }
+            break;
+        case 2:
+            if (LearnProfessionSpecialization(bot, S_MOONCLOTH,
+                                             S_LEARN_MOONCLOTH))
+            {
+                LOG_DEBUG("playerbots", "Bot {} assigned tailoring specialization: Mooncloth",
+                          bot->GetName().c_str());
+                return true;
+            }
+            break;
+        case 3:
+        default:
+            if (LearnProfessionSpecialization(bot, S_SHADOWEAVE,
+                                             S_LEARN_SHADOWEAVE))
+            {
+                LOG_DEBUG("playerbots", "Bot {} assigned tailoring specialization: Shadoweave",
+                          bot->GetName().c_str());
+                return true;
+            }
+            break;
+    }
+
+    return false;
+}
+
+bool PlayerbotFactory::InitBlacksmithingSpecialization()
+{
+    bool learnedSpecialization = false;
+
+    if (!bot->HasSkill(SKILL_BLACKSMITHING) ||
+        bot->GetBaseSkillValue(SKILL_BLACKSMITHING) < 225)
+        return false;
+
+    if (!bot->HasSpell(S_ARMOR) && !bot->HasSpell(S_WEAPON))
+    {
+        switch (GetStoredOrRandomValue(bot, "blacksmithSpecialization", 1, 2))
+        {
+            case 1:
+                learnedSpecialization = LearnProfessionSpecialization(bot, S_ARMOR, S_LEARN_ARMOR);
+                if (learnedSpecialization)
+                    LOG_DEBUG("playerbots", "Bot {} assigned blacksmith specialization: Armorsmith",
+                              bot->GetName().c_str());
+                break;
+            case 2:
+            default:
+                learnedSpecialization = LearnProfessionSpecialization(bot, S_WEAPON, S_LEARN_WEAPON);
+                if (learnedSpecialization)
+                    LOG_DEBUG("playerbots", "Bot {} assigned blacksmith specialization: Weaponsmith",
+                              bot->GetName().c_str());
+                break;
+        }
+    }
+
+    if (!bot->HasSpell(S_WEAPON) ||
+        bot->GetBaseSkillValue(SKILL_BLACKSMITHING) < 250 ||
+        bot->GetLevel() <= 49 ||
+        HasAnySpell(bot, {S_HAMMER, S_AXE, S_SWORD}))
+        return learnedSpecialization;
+
+    switch (GetStoredOrRandomValue(bot, "blacksmithWeaponSpecialization", 1, 3))
+    {
+        case 1:
+            if (LearnProfessionSpecialization(bot, S_HAMMER, S_LEARN_HAMMER))
+            {
+                LOG_DEBUG("playerbots", "Bot {} assigned weaponsmith specialization: Hammersmith",
+                          bot->GetName().c_str());
+                return true;
+            }
+            break;
+        case 2:
+            if (LearnProfessionSpecialization(bot, S_AXE, S_LEARN_AXE))
+            {
+                LOG_DEBUG("playerbots", "Bot {} assigned weaponsmith specialization: Axesmith",
+                          bot->GetName().c_str());
+                return true;
+            }
+            break;
+        case 3:
+        default:
+            if (LearnProfessionSpecialization(bot, S_SWORD, S_LEARN_SWORD))
+            {
+                LOG_DEBUG("playerbots", "Bot {} assigned weaponsmith specialization: Swordsmith",
+                          bot->GetName().c_str());
+                return true;
+            }
+            break;
+    }
+
+    return learnedSpecialization;
 }
 
 void PlayerbotFactory::UpdateTradeSkills()
