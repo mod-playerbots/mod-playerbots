@@ -279,7 +279,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
             if (spellTarget && !spellTarget->IsAlive() && !spellInfo->IsAllowingDeadTarget())
             {
                 InterruptSpell();
-                YieldThread(GetReactDelay());
+                YieldThread(bot, GetReactDelay());
                 return;
             }
 
@@ -288,7 +288,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
             if (goSpellTarget && !goSpellTarget->isSpawned())
             {
                 InterruptSpell();
-                YieldThread(GetReactDelay());
+                YieldThread(bot, GetReactDelay());
                 return;
             }
 
@@ -320,7 +320,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
             if (isHeal && isSingleTarget && spellTarget && spellTarget->IsFullHealth())
             {
                 InterruptSpell();
-                YieldThread(GetReactDelay());
+                YieldThread(bot, GetReactDelay());
                 return;
             }
 
@@ -332,7 +332,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
             }
 
             // Wait for spell cast
-            YieldThread(GetReactDelay());
+            YieldThread(bot, GetReactDelay());
             return;
         }
     }
@@ -368,7 +368,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 
     // Update internal AI
     UpdateAIInternal(elapsed, minimal);
-    YieldThread(GetReactDelay());
+    YieldThread(bot, GetReactDelay());
 }
 
 // Helper function for UpdateAI to check group membership and handle removal if necessary
@@ -1960,6 +1960,11 @@ bool PlayerbotAI::HasAggro(Unit* unit)
         return true;
     }
     return false;
+}
+
+bool PlayerbotAI::IsMovementImpaired(Unit* unit)
+{
+    return unit && (unit->HasAuraType(SPELL_AURA_MOD_ROOT) || unit->IsRooted() || unit->GetSpeedRate(MOVE_RUN) < 1.0f);
 }
 
 int32 PlayerbotAI::GetAssistTankIndex(Player* player)
@@ -4372,21 +4377,27 @@ Player* PlayerbotAI::GetGroupLeader()
     return master;
 }
 
-uint32 PlayerbotAI::GetFixedBotNumer(uint32 maxNum, float cyclePerMin)
+uint32 PlayerbotAI::GetFixedBotNumber(uint32 maxNum)
 {
-    uint32 randseed = rand32();                               // Seed random number
-    uint32 randnum = bot->GetGUID().GetCounter() + randseed;  // Semi-random but fixed number for each bot.
+    if (maxNum == 0)
+        return 0;
 
-    if (cyclePerMin > 0)
-    {
-        uint32 cycle = floor(getMSTime() / (1000));  // Semi-random number adds 1 each second.
-        cycle = cycle * cyclePerMin / 60;            // Cycles cyclePerMin per minute.
-        randnum += cycle;                            // Make the random number cylce.
-    }
+    // Deterministic pseudo-random hash based on the bot GUID evenly distributed across active slots
+    uint32 id = bot->GetGUID().GetCounter();
+    uint32 h = id;
+    h ^= h >> 16;
+    h *= 0x7feb352d;
+    h ^= h >> 15;
+    h *= 0x846ca68b;
+    h ^= h >> 16;
 
-    randnum =
-        (randnum % (maxNum + 1));  // Loops the randomnumber at maxNum. Bassically removes all the numbers above 99.
-    return randnum;  // Now we have a number unique for each bot between 0 and maxNum that increases by cyclePerMin.
+    // Current time slot
+    uint32 timeSlot = (getMSTime() / 1000) / sPlayerbotAIConfig.BotActiveAloneDurationSeconds;
+
+    // Mix timeSlot into the hash to reshuffle every rotation window
+    uint32 mixed = h ^ (timeSlot * 0x9e3779b9);  // with multiplicative constant
+
+    return mixed % maxNum;
 }
 
 /*
@@ -4403,7 +4414,7 @@ enum GrouperType
 
 GrouperType PlayerbotAI::GetGrouperType()
 {
-    uint32 grouperNumber = GetFixedBotNumer(100, 0);
+    uint32 grouperNumber = GetFixedBotNumber(100);
 
     if (grouperNumber < 20 && !HasRealPlayerMaster())
         return GrouperType::SOLO;
@@ -4425,7 +4436,7 @@ GrouperType PlayerbotAI::GetGrouperType()
 
 GuilderType PlayerbotAI::GetGuilderType()
 {
-    uint32 grouperNumber = GetFixedBotNumer(100, 0);
+    uint32 grouperNumber = GetFixedBotNumber(100);
 
     if (grouperNumber < 20 && !HasRealPlayerMaster())
         return GuilderType::SOLO;
@@ -4749,44 +4760,40 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
     // situations are usable for scaling when enabled.
     // #######################################################################################
 
-    // Below is code to have a specified % of bots active at all times.
-    // The default is 100%. With 1% of all bots going active or inactive each minute.
+    // Base percentage of bots to be active
     uint32 mod = sPlayerbotAIConfig.botActiveAlone > 100 ? 100 : sPlayerbotAIConfig.botActiveAlone;
+
+    // Apply SmartScale if enabled
     if (sPlayerbotAIConfig.botActiveAloneSmartScale &&
         bot->GetLevel() >= sPlayerbotAIConfig.botActiveAloneSmartScaleWhenMinLevel &&
         bot->GetLevel() <= sPlayerbotAIConfig.botActiveAloneSmartScaleWhenMaxLevel)
     {
-        mod = AutoScaleActivity(mod);
+        mod = AutoScaleActivity(mod);  // mod reflects on latency throttling
     }
 
-    uint32 ActivityNumber =
-        GetFixedBotNumer(100, sPlayerbotAIConfig.botActiveAlone * static_cast<float>(mod) / 100 * 0.01f);
+    // Get deterministic bucket + timeSlot
+    uint32 ActivityNumber = GetFixedBotNumber(100);
 
-    return ActivityNumber <=
-           (sPlayerbotAIConfig.botActiveAlone * mod) /
-               100;  // The given percentage of bots should be active and rotate 1% of those active bots each minute.
+    // Check if this bot is in the active set
+    return ActivityNumber < mod;  // mod is directly the number of bots active (0–100)
 }
 
 bool PlayerbotAI::AllowActivity(ActivityType activityType, bool checkNow)
 {
     const int activityIndex = static_cast<int>(activityType);
 
-    // Unknown/out-of-range avoid blocking, added logging for further analysing should not happen in the first place.
-    if (activityIndex <= 0 || activityIndex >= MAX_ACTIVITY_TYPE)
-    {
-        LOG_ERROR("playerbots", "AllowActivity received invalid activity type value: {}", activityIndex);
-        return true;
-    }
-
     if (!allowActiveCheckTimer[activityIndex])
-        allowActiveCheckTimer[activityIndex] = time(nullptr);
+        allowActiveCheckTimer[activityIndex] = getMSTime();
 
-    if (!checkNow && time(nullptr) < (allowActiveCheckTimer[activityIndex] + 5))
+    // 4500ms base + 0–499ms per-bot offset = 4500–4999ms, capping at just under 5 seconds
+    uint32 offset = bot->GetGUID().GetCounter() % 500;
+
+    if (!checkNow && getMSTime() < (allowActiveCheckTimer[activityIndex] + 4500 + offset))
         return allowActive[activityIndex];
 
     const bool allowed = AllowActive(activityType);
     allowActive[activityIndex] = allowed;
-    allowActiveCheckTimer[activityIndex] = time(nullptr);
+    allowActiveCheckTimer[activityIndex] = getMSTime();
 
     return allowed;
 }
