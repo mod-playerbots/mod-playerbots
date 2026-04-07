@@ -331,6 +331,15 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
                 ServerFacade::instance().SetFacingTo(bot, spellTarget);
             }
 
+            // Allow external scripts to interrupt a cast in progress
+            if (pendingCastInterrupt)
+            {
+                pendingCastInterrupt = false;
+                InterruptSpell();
+                YieldThread(GetReactDelay());
+                return;
+            }
+
             // Wait for spell cast
             YieldThread(GetReactDelay());
             return;
@@ -1558,11 +1567,12 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
 {
     static const std::vector<std::string> allInstanceStrategies =
     {
-        "aq20", "bwl", "karazhan", "gruulslair", "icc", "magtheridon", "moltencore",
-        "naxx", "onyxia", "ssc", "tempestkeep", "hyjal", "ulduar", "voa", "wotlk-an",
-        "wotlk-cos", "wotlk-dtk", "wotlk-eoe", "wotlk-fos", "wotlk-gd", "wotlk-hol",
-        "wotlk-hor", "wotlk-hos", "wotlk-nex", "wotlk-occ", "wotlk-ok", "wotlk-os",
-        "wotlk-pos", "wotlk-toc", "wotlk-uk", "wotlk-up", "wotlk-vh", "zulaman"
+        "aq20", "blacktemple", "bwl", "karazhan", "gruulslair", "hyjal", "icc",
+        "magtheridon", "moltencore", "naxx", "onyxia", "ssc", "tempestkeep",
+        "ulduar", "voa", "wotlk-an", "wotlk-cos", "wotlk-dtk", "wotlk-eoe", "wotlk-fos",
+        "wotlk-gd", "wotlk-hol", "wotlk-hor", "wotlk-hos", "wotlk-nex", "wotlk-occ",
+        "wotlk-ok", "wotlk-os", "wotlk-pos", "wotlk-toc", "wotlk-uk", "wotlk-up",
+        "wotlk-vh", "zulaman"
     };
 
     for (const std::string& strat : allInstanceStrategies)
@@ -1593,7 +1603,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             strategyName = "naxx";  // Naxxramas
             break;
         case 534:
-            strategyName = "hyjal";  // Hyjal Summit (Battle for Mount Hyjal)
+            strategyName = "hyjal";  // The Battle for Mount Hyjal (Hyjal Summit)
             break;
         case 544:
             strategyName = "magtheridon";  // Magtheridon's Lair
