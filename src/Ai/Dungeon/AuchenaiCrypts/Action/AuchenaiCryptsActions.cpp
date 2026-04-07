@@ -94,7 +94,7 @@ bool ShirrakRangedKeepDistanceAction::Execute(Event /*event*/)
     float arcCenter = M_PI;
     float arcStart = arcCenter - (arcSpan / 2.0f);
 
-    constexpr float angle = (count <= 1) ? arcCenter : (arcStart + (arcSpan * (float)botIndex / (float)(count - 1)));
+    float angle = (count <= 1) ? arcCenter : (arcStart + (arcSpan * (float)botIndex / (float)(count - 1)));
     
     constexpr float spreadRadius = 5.0f; 
     float targetX = SHIRRAK_RANGED_POSITION.GetPositionX() + cos(angle) * spreadRadius;
