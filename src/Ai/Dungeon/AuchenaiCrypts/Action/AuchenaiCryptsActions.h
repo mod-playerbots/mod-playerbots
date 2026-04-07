@@ -21,10 +21,10 @@ public:
     bool Execute(Event event) override;
 };
 
-class ShirrakRangedKeepDistanceAction : public AttackAction
+class ShirrakRangedKeepDistanceAction : public MovementAction
 {
 public:
-    ShirrakRangedKeepDistanceAction(PlayerbotAI* botAI) : AttackAction(botAI, "shirrak ranged keep distance") {}
+    ShirrakRangedKeepDistanceAction(PlayerbotAI* botAI) : MovementAction(botAI, "shirrak ranged keep distance") {}
     bool Execute(Event event) override;
 };
 

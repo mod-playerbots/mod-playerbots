@@ -1,7 +1,7 @@
 #ifndef _PLAYERBOT_TBCDUNGEONAUCHENAICRYPTSTRIGGERCONTEXT_H
 #define _PLAYERBOT_TBCDUNGEONAUCHENAICRYPTSTRIGGERCONTEXT_H
 
-#include "AIObjectContext.h"
+#include "AiObjectContext.h"
 #include "TriggerContext.h"
 #include "AuchenaiCryptsTriggers.h"
 

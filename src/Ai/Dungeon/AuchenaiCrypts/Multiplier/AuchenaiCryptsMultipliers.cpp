@@ -2,10 +2,9 @@
 #include "AuchenaiCryptsActions.h"
 #include "AuchenaiCryptsTriggers.h"
 #include "MovementActions.h"
-#include "AttackAction.h"
 #include "ReachTargetActions.h"
 #include "FollowActions.h"
-#include "AIObjectContext.h"
+#include "AiObjectContext.h"
 #include "Playerbots.h"
 
 // Shirrak the Dead Watcher

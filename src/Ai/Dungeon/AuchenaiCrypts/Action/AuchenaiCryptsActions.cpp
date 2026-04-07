@@ -19,7 +19,9 @@ bool ShirrakTankPositionBossAction::Execute(Event /*event*/)
     if (bot->GetVictim() != shirrak)
         return Attack(shirrak);
 
-    if (shirrak->GetVictim() == bot && bot->IsWithinMeleeRange(shirrak))
+    if (shirrak->GetVictim() == bot && bot->IsWithinMeleeRange(shirrak) &&
+        bot->GetHealthPct()>50.0f)
+    
     {
         const Position& position = SHIRRAK_TANK_POSITION;
         float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
@@ -72,20 +74,14 @@ bool ShirrakFleeFocusFireAction::Execute(Event /*event*/)
 
 bool ShirrakRangedKeepDistanceAction::Execute(Event /*event*/)
 {
-    Unit* shirrak = AI_VALUE2(Unit*, "find target", "shirrak the dead watcher");
-    if (!shirrak)
-        return false;
     
-    if (bot->GetVictim() != shirrak)
-        return Attack(shirrak);
-
     std::vector<Player*> rangedBots;
     if (Group* group = bot->GetGroup())
     {
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (member && botAI->IsRanged(member) && member->IsAlive())
+            if (member && botAI->IsRanged(member))
                 rangedBots.push_back(member);
         }
     }
@@ -98,9 +94,9 @@ bool ShirrakRangedKeepDistanceAction::Execute(Event /*event*/)
     float arcCenter = M_PI;
     float arcStart = arcCenter - (arcSpan / 2.0f);
 
-    float angle = (count <= 1) ? arcCenter : (arcStart + (arcSpan * (float)botIndex / (float)(count - 1)));
+    constexpr float angle = (count <= 1) ? arcCenter : (arcStart + (arcSpan * (float)botIndex / (float)(count - 1)));
     
-    float spreadRadius = 5.0f; 
+    constexpr float spreadRadius = 5.0f; 
     float targetX = SHIRRAK_RANGED_POSITION.GetPositionX() + cos(angle) * spreadRadius;
     float targetY = SHIRRAK_RANGED_POSITION.GetPositionY() + sin(angle) * spreadRadius;
 

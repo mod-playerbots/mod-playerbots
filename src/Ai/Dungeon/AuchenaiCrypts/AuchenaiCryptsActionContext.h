@@ -1,7 +1,7 @@
 #ifndef _PLAYERBOT_TBCDUNGEONAUCHENAICRYPTSACTIONCONTEXT_H
 #define _PLAYERBOT_TBCDUNGEONAUCHENAICRYPTSACTIONCONTEXT_H
 
-#include "AIObjectContext.h"
+#include "AiObjectContext.h"
 #include "Action.h"
 #include "AuchenaiCryptsActions.h"
 
