@@ -58,7 +58,6 @@ bool ShirrakFleeFocusFireAction::Execute(Event /*event*/)
             if (currentDistance < safeDistance)
             {
                 bot->AttackStop();
-                bot->InterruptNonMeleeSpells(true);
 
                 float distanceToMove = safeDistance - currentDistance + buffer;
 
