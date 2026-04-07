@@ -331,6 +331,15 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
                 ServerFacade::instance().SetFacingTo(bot, spellTarget);
             }
 
+            // Allow external scripts to interrupt a cast in progress
+            if (pendingCastInterrupt)
+            {
+                pendingCastInterrupt = false;
+                InterruptSpell();
+                YieldThread(GetReactDelay());
+                return;
+            }
+
             // Wait for spell cast
             YieldThread(GetReactDelay());
             return;
@@ -1599,7 +1608,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             strategyName = "ssc";  // Serpentshrine Cavern
             break;
         case 550:
-            strategyName = "tempestkeep";  // Tempest Keep
+            strategyName = "tempestkeep";  // Tempest Keep: The Eye
             break;
         case 565:
             strategyName = "gruulslair";  // Gruul's Lair
