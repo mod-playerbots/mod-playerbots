@@ -130,11 +130,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class KazrogalLowManaBotMoveFromGroupAction : public MovementAction
+class KazrogalLowManaBotTakeDefensiveMeasuresAction : public MovementAction
 {
 public:
-    KazrogalLowManaBotMoveFromGroupAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "kaz'rogal low mana bot move from group") {}
+KazrogalLowManaBotTakeDefensiveMeasuresAction(
+        PlayerbotAI* botAI) : MovementAction(botAI, "kaz'rogal low mana bot take defensive measures") {}
     bool Execute(Event event) override;
 };
 

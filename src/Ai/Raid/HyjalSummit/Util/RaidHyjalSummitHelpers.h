@@ -57,8 +57,8 @@ namespace HyjalSummitHelpers
         std::vector<Player*> healers;
         std::vector<Player*> rangedDps;
     };
-    RangedGroups GetRangedGroups(Player* bot, PlayerbotAI* botAI);
-    std::pair<size_t, size_t> GetBotCircleIndexAndCount(Player* bot, PlayerbotAI* botAI,
+    RangedGroups GetRangedGroups(PlayerbotAI* botAI, Player* bot);
+    std::pair<size_t, size_t> GetBotCircleIndexAndCount(PlayerbotAI* botAI, Player* bot,
                                                         const RangedGroups& groups);
 
     // Rage Winterchill

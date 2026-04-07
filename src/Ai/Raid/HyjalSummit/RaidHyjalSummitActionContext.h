@@ -60,8 +60,8 @@ public:
         creators["kaz'rogal spread ranged in arc"] =
             &RaidHyjalSummitActionContext::kazrogal_spread_ranged_in_arc;
 
-        creators["kaz'rogal low mana bot move from group"] =
-            &RaidHyjalSummitActionContext::kazrogal_low_mana_bot_move_from_group;
+        creators["kaz'rogal low mana bot take defensive measures"] =
+            &RaidHyjalSummitActionContext::kazrogal_low_mana_bot_take_defensive_measures;
 
         creators["kaz'rogal cast shadow protection spell"] =
             &RaidHyjalSummitActionContext::kazrogal_cast_shadow_protection_spell;
@@ -158,8 +158,8 @@ private:
     static Action* kazrogal_spread_ranged_in_arc(
         PlayerbotAI* botAI) { return new KazrogalSpreadRangedInArcAction(botAI); }
 
-    static Action* kazrogal_low_mana_bot_move_from_group(
-        PlayerbotAI* botAI) { return new KazrogalLowManaBotMoveFromGroupAction(botAI); }
+    static Action* kazrogal_low_mana_bot_take_defensive_measures(
+        PlayerbotAI* botAI) { return new KazrogalLowManaBotTakeDefensiveMeasuresAction(botAI); }
 
     static Action* kazrogal_cast_shadow_protection_spell(
         PlayerbotAI* botAI) { return new KazrogalCastShadowProtectionSpellAction(botAI); }

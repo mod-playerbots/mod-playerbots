@@ -55,7 +55,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("kaz'rogal spread ranged in arc", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("kaz'rogal bot is low on mana", {
-        NextAction("kaz'rogal low mana bot move from group", ACTION_EMERGENCY + 1) }));
+        NextAction("kaz'rogal low mana bot take defensive measures", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("kaz'rogal mark deals shadow damage", {
         NextAction("kaz'rogal cast shadow protection spell", ACTION_EMERGENCY + 6) }));

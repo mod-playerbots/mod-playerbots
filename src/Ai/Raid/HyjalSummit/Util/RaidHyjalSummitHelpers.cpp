@@ -14,7 +14,7 @@ namespace HyjalSummitHelpers
 {
     // General
 
-    RangedGroups GetRangedGroups(Player* bot, PlayerbotAI* botAI)
+    RangedGroups GetRangedGroups(PlayerbotAI* botAI, Player* bot)
     {
         RangedGroups result;
         Group* group = bot->GetGroup();
@@ -36,7 +36,7 @@ namespace HyjalSummitHelpers
         return result;
     }
 
-    std::pair<size_t, size_t> GetBotCircleIndexAndCount(Player* bot, PlayerbotAI* botAI,
+    std::pair<size_t, size_t> GetBotCircleIndexAndCount(PlayerbotAI* botAI, Player* bot,
                                                         const RangedGroups& groups)
     {
         const std::vector<Player*>& vec = botAI->IsHeal(bot) ? groups.healers : groups.rangedDps;
