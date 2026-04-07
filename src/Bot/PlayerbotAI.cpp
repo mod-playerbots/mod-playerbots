@@ -119,7 +119,7 @@ PlayerbotAI::PlayerbotAI()
 
     for (uint8 i = 0; i < MAX_ACTIVITY_TYPE; i++)
     {
-        allowActiveCheckTimer[i] = time(nullptr);
+        allowActiveCheckTimer[i] = 0;
         allowActive[i] = false;
     }
 }
@@ -137,7 +137,7 @@ PlayerbotAI::PlayerbotAI(Player* bot)
 
     for (uint8 i = 0; i < MAX_ACTIVITY_TYPE; i++)
     {
-        allowActiveCheckTimer[i] = time(nullptr);
+        allowActiveCheckTimer[i] = 0;
         allowActive[i] = false;
     }
 
