@@ -467,8 +467,8 @@ void StatsWeightCalculator::GenerateAdditionalWeights(Player* player)
             && !player->HasSpell(SPELL_MOLTEN_ARMOR_RANK_2)
             && !player->HasSpell(SPELL_MOLTEN_ARMOR_RANK_3))
         {
-            stats_weights_[STATS_TYPE_INTELLECT] += 0.7f;
-            stats_weights_[STATS_TYPE_SPIRIT] -= 0.3f;
+            stats_weights_[STATS_TYPE_INTELLECT] += 0.2f;
+            stats_weights_[STATS_TYPE_SPIRIT] -= 0.0f;
         }       
     }
 }
