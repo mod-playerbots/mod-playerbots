@@ -85,6 +85,13 @@ public:
     bool Execute(Event event) override;
 };
 
+class NaxxChatShortcutAction : public Action
+{
+public:
+    NaxxChatShortcutAction(PlayerbotAI* ai) : Action(ai, "naxx chat shortcut") {}
+    virtual bool Execute(Event event);
+};
+
 class BwlChatShortcutAction : public Action
 {
 public:

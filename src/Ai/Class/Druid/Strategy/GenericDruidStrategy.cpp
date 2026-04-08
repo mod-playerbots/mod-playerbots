@@ -149,10 +149,10 @@ void DruidHealerDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(
         new TriggerNode("healer should attack",
                         {
-                            NextAction("cancel tree form", ACTION_DEFAULT + 0.3f),
-                            NextAction("moonfire", ACTION_DEFAULT + 0.2f),
-                            NextAction("wrath", ACTION_DEFAULT + 0.1f),
-                            NextAction("starfire", ACTION_DEFAULT),
+                            NextAction("cancel tree form", ACTION_DEFAULT + 0.4f),
+                            NextAction("moonfire", ACTION_DEFAULT + 0.3f),
+                            NextAction("wrath", ACTION_DEFAULT + 0.2f),
+                            NextAction("starfire", ACTION_DEFAULT + 0.1f),
 }));
 
 }

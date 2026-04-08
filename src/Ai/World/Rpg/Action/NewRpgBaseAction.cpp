@@ -3,7 +3,6 @@
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
 #include "Creature.h"
-#include "FlightMasterCache.h"
 #include "G3D/Vector2.h"
 #include "GameObject.h"
 #include "GossipDef.h"
@@ -262,10 +261,10 @@ bool NewRpgBaseAction::CanInteractWithQuestGiver(Object* questGiver)
     // that removes the distance check and keeps all other checks
     switch (questGiver->GetTypeId())
     {
-        case TYPEID_UNIT:
+        case TYPEID_UNIT: // Player::GetNPCIfCanInteractWith
         {
             ObjectGuid guid = questGiver->GetGUID();
-            uint32 npcflagmask = UNIT_NPC_FLAG_QUESTGIVER;
+
             // unit checks
             if (!guid)
                 return false;
@@ -292,7 +291,7 @@ bool NewRpgBaseAction::CanInteractWithQuestGiver(Object* questGiver)
                 return false;
 
             // appropriate npc type
-            if (npcflagmask && !creature->HasNpcFlag(NPCFlags(npcflagmask)))
+            if (!creature->HasNpcFlag(UNIT_NPC_FLAG_QUESTGIVER))
                 return false;
 
             // not allow interaction under control, but allow with own pets
@@ -303,35 +302,24 @@ bool NewRpgBaseAction::CanInteractWithQuestGiver(Object* questGiver)
             if (creature->GetReactionTo(bot) <= REP_UNFRIENDLY)
                 return false;
 
-            Trainer::Trainer* trainer = sObjectMgr->GetTrainer(creature->GetEntry());
-
-            // pussywizard: many npcs have missing conditions for class training and rogue trainer can for eg. train
-            // dual wield to a shaman :/ too many to change in sql and watch in the future pussywizard: this function is
-            // not used when talking, but when already taking action (buy spell, reset talents, show spell list)
-            if (npcflagmask & (UNIT_NPC_FLAG_TRAINER | UNIT_NPC_FLAG_TRAINER_CLASS) &&
-                trainer->GetTrainerType() == Trainer::Type::Class &&
-                !trainer->IsTrainerValidForPlayer(bot))
-                return false;
-
             return true;
         }
-        case TYPEID_GAMEOBJECT:
+        case TYPEID_GAMEOBJECT: // Player::GetGameObjectIfCanInteractWith
         {
             ObjectGuid guid = questGiver->GetGUID();
-            GameobjectTypes type = GAMEOBJECT_TYPE_QUESTGIVER;
+
             if (GameObject* go = bot->GetMap()->GetGameObject(guid))
             {
-                if (go->GetGoType() == type)
+                if (go->GetGoType() == GAMEOBJECT_TYPE_QUESTGIVER)
                 {
                     // Players cannot interact with gameobjects that use the "Point" icon
                     if (go->GetGOInfo()->IconName == "Point")
-                    {
                         return false;
-                    }
 
                     return true;
                 }
             }
+
             return false;
         }
         // unused for now
@@ -371,7 +359,6 @@ bool NewRpgBaseAction::IsWithinInteractionDist(Object* questGiver)
         case TYPEID_GAMEOBJECT:
         {
             ObjectGuid guid = questGiver->GetGUID();
-            GameobjectTypes type = GAMEOBJECT_TYPE_QUESTGIVER;
             if (GameObject* go = bot->GetMap()->GetGameObject(guid))
             {
                 if (go->IsWithinDistInMap(bot))
@@ -557,7 +544,9 @@ bool NewRpgBaseAction::OrganizeQuestLog()
             continue;
 
         const Quest* quest = sObjectMgr->GetQuestTemplate(questId);
-        if (quest->GetZoneOrSort() < 0 || (quest->GetZoneOrSort() > 0 && quest->GetZoneOrSort() != bot->GetZoneId()))
+        const int64_t botZoneId = this->bot->GetZoneId();
+
+        if (quest->GetZoneOrSort() < 0 || (quest->GetZoneOrSort() > 0 && quest->GetZoneOrSort() != botZoneId))
         {
             LOG_DEBUG("playerbots", "[New RPG] {} drop quest {}", bot->GetName(), questId);
             WorldPacket packet(CMSG_QUESTLOG_REMOVE_QUEST);
@@ -866,7 +855,7 @@ bool NewRpgBaseAction::GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector
 
 WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)
 {
-    const std::vector<WorldLocation>& locs = sRandomPlayerbotMgr.locsPerLevelCache[bot->GetLevel()];
+    const std::vector<WorldLocation>& locs = sTravelMgr.GetLocsPerLevelCache(bot->GetLevel());
     float hiRange = 500.0f;
     float loRange = 2500.0f;
     if (bot->GetLevel() < 5)
@@ -924,9 +913,7 @@ WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)
 
 WorldPosition NewRpgBaseAction::SelectRandomCampPos(Player* bot)
 {
-    const std::vector<WorldLocation>& locs = IsAlliance(bot->getRace())
-                                                 ? sRandomPlayerbotMgr.allianceStarterPerLevelCache[bot->GetLevel()]
-                                                 : sRandomPlayerbotMgr.hordeStarterPerLevelCache[bot->GetLevel()];
+    const std::vector<WorldLocation> locs = sTravelMgr.GetTravelHubs(bot);
 
     bool inCity = false;
 
@@ -967,70 +954,19 @@ WorldPosition NewRpgBaseAction::SelectRandomCampPos(Player* bot)
     return dest;
 }
 
-bool NewRpgBaseAction::SelectRandomFlightTaxiNode(ObjectGuid& flightMaster, uint32& fromNode, uint32& toNode)
+bool NewRpgBaseAction::SelectRandomFlightTaxiNode(ObjectGuid& flightMaster, std::vector<uint32>& path)
 {
-    Creature* nearestFlightMaster = FlightMasterCache::Instance().GetNearestFlightMaster(bot);
-    if (!nearestFlightMaster || bot->GetDistance(nearestFlightMaster) > 500.0f)
+    flightMaster = sTravelMgr.GetNearestFlightMasterGuid(bot);
+    if (!flightMaster)
         return false;
 
-    fromNode = sObjectMgr->GetNearestTaxiNode(nearestFlightMaster->GetPositionX(), nearestFlightMaster->GetPositionY(),
-                                              nearestFlightMaster->GetPositionZ(), nearestFlightMaster->GetMapId(),
-                                              bot->GetTeamId());
-
-    if (!fromNode)
+    std::vector<std::vector<uint32>> availablePaths = sTravelMgr.GetOptimalFlightDestinations(bot);
+    if (availablePaths.empty())
         return false;
 
-    std::vector<uint32> availableToNodes;
-    for (uint32 i = 1; i < sTaxiNodesStore.GetNumRows(); ++i)
-    {
-        if (fromNode == i)
-            continue;
-
-        TaxiNodesEntry const* node = sTaxiNodesStore.LookupEntry(i);
-
-        // check map
-        if (!node || node->map_id != bot->GetMapId() ||
-            (!node->MountCreatureID[bot->GetTeamId() == TEAM_ALLIANCE ? 1 : 0]))  // dk flight
-            continue;
-
-        // check taxi node known
-        if (!bot->isTaxiCheater() && !bot->m_taxi.IsTaximaskNodeKnown(i))
-            continue;
-
-        // check distance by level
-        if (!botAI->CheckLocationDistanceByLevel(bot, WorldLocation(node->map_id, node->x, node->y, node->z), false))
-            continue;
-
-        // check path
-        uint32 path, cost;
-        sObjectMgr->GetTaxiPath(fromNode, i, path, cost);
-        if (!path)
-            continue;
-
-        // check area level
-        uint32 nodeZoneId = bot->GetMap()->GetZoneId(bot->GetPhaseMask(), node->x, node->y, node->z);
-        bool capital = false;
-        if (AreaTableEntry const* zone = sAreaTableStore.LookupEntry(nodeZoneId))
-        {
-            capital = zone->flags & AREA_FLAG_CAPITAL;
-        }
-
-        auto itr = sRandomPlayerbotMgr.zone2LevelBracket.find(nodeZoneId);
-        if (!capital && itr == sRandomPlayerbotMgr.zone2LevelBracket.end())
-            continue;
-
-        if (!capital && (bot->GetLevel() < itr->second.low || bot->GetLevel() > itr->second.high))
-            continue;
-
-        availableToNodes.push_back(i);
-    }
-    if (availableToNodes.empty())
-        return false;
-
-    flightMaster = nearestFlightMaster->GetGUID();
-    toNode = availableToNodes[urand(0, availableToNodes.size() - 1)];
+    path = availablePaths[urand(0, availablePaths.size() - 1)];
     LOG_DEBUG("playerbots", "[New RPG] Bot {} select random flight taxi node from:{} (node {}) to:{} ({} available)",
-              bot->GetName(), flightMaster.GetEntry(), fromNode, toNode, availableToNodes.size());
+              bot->GetName(), flightMaster.GetEntry(), path[0], path[path.size() - 1], availablePaths.size());
     return true;
 }
 
@@ -1131,10 +1067,10 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
         case RPG_TRAVEL_FLIGHT:
         {
             ObjectGuid flightMaster;
-            uint32 fromNode, toNode;
-            if (SelectRandomFlightTaxiNode(flightMaster, fromNode, toNode))
+            std::vector<uint32> path;
+            if (SelectRandomFlightTaxiNode(flightMaster, path))
             {
-                botAI->rpgInfo.ChangeToTravelFlight(flightMaster, fromNode, toNode);
+                botAI->rpgInfo.ChangeToTravelFlight(flightMaster, path);
                 return true;
             }
             return false;
@@ -1207,8 +1143,8 @@ bool NewRpgBaseAction::CheckRpgStatusAvailable(NewRpgStatus status)
         case RPG_TRAVEL_FLIGHT:
         {
             ObjectGuid flightMaster;
-            uint32 fromNode, toNode;
-            return SelectRandomFlightTaxiNode(flightMaster, fromNode, toNode);
+            std::vector<uint32> path;
+            return SelectRandomFlightTaxiNode(flightMaster, path);
         }
         default:
             return false;

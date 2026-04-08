@@ -61,7 +61,7 @@ bool CastEnvenomAction::isUseful()
 bool CastEnvenomAction::isPossible()
 {
     // alternate to eviscerate if talents unlearned
-    return botAI->HasAura(58410, bot) /* Master Poisoner */;
+    return botAI->HasAura(58410, bot) /* Master Poisoner Rank 3 */;
 }
 
 bool CastTricksOfTheTradeOnMainTankAction::isUseful()

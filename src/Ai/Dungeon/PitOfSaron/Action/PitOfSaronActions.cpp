@@ -201,8 +201,7 @@ bool IckAndKrickAction::ExplosiveBarrage(bool explosiveBarrage, Unit* boss)
                 continue;
 
             // Check if position is within maximum allowed distance from boss
-            if (boss && sqrt(pow(potentialPos.GetPositionX() - boss->GetPositionX(), 2) +
-                             pow(potentialPos.GetPositionY() - boss->GetPositionY(), 2)) > MAX_BOSS_DISTANCE)
+            if (boss && boss->GetDistance2d(potentialPos.GetPositionX(), potentialPos.GetPositionY()) > MAX_BOSS_DISTANCE)
                 continue;
 
             // Score this position based on:
@@ -215,8 +214,7 @@ bool IckAndKrickAction::ExplosiveBarrage(bool explosiveBarrage, Unit* boss)
             float minOrbDist = std::numeric_limits<float>::max();
             for (Unit* orb : orbs)
             {
-                float orbDist = sqrt(pow(potentialPos.GetPositionX() - orb->GetPositionX(), 2) +
-                                     pow(potentialPos.GetPositionY() - orb->GetPositionY(), 2));
+                float orbDist = orb->GetDistance2d(potentialPos.GetPositionX(), potentialPos.GetPositionY());
                 minOrbDist = std::min(minOrbDist, orbDist);
             }
             score += minOrbDist * 2.0f;  // Weight orb distance more heavily
@@ -232,8 +230,7 @@ bool IckAndKrickAction::ExplosiveBarrage(bool explosiveBarrage, Unit* boss)
             // Factor in proximity to boss (closer is better, as long as we're safe from orbs)
             if (boss)
             {
-                float bossDist = sqrt(pow(potentialPos.GetPositionX() - boss->GetPositionX(), 2) +
-                                      pow(potentialPos.GetPositionY() - boss->GetPositionY(), 2));
+                float bossDist = boss->GetDistance2d(potentialPos.GetPositionX(), potentialPos.GetPositionY());
                 // Add points for being closer to boss (inverse relationship)
                 // but only if we're safely away from orbs
                 if (minOrbDist > SAFE_DISTANCE)

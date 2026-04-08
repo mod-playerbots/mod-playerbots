@@ -283,20 +283,6 @@ static uint32 GetRequiredTotemSpellId(PlayerbotAI* ai, const char* strategies[],
     return 0;  // No relevant strategy active, or bot doesn't know any rank
 }
 
-// Get the spellId of the currently summoned totem in the slot
-static uint32 GetSummonedTotemSpellId(Player* bot, uint8 slot)
-{
-    ObjectGuid guid = bot->m_SummonSlot[slot];
-    if (guid.IsEmpty())
-        return 0;
-
-    Creature* totem = bot->GetMap()->GetCreature(guid);
-    if (!totem)
-        return 0;
-
-    return totem->GetUInt32Value(UNIT_CREATED_BY_SPELL);
-}
-
 bool NoEarthTotemTrigger::IsActive()
 {
     // Check if the bot has Stoneskin Totem (required level 4) and prevents the trigger firing if it doesn't

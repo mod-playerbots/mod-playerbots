@@ -6,6 +6,7 @@
 #ifndef _PLAYERBOT_STRATEGYCONTEXT_H
 #define _PLAYERBOT_STRATEGYCONTEXT_H
 
+#include "AggressiveStrategy.h"
 #include "AttackEnemyPlayersStrategy.h"
 #include "BattlegroundStrategy.h"
 #include "CastTimeStrategy.h"
@@ -49,6 +50,7 @@
 #include "TravelStrategy.h"
 #include "UseFoodStrategy.h"
 #include "UsePotionsStrategy.h"
+#include "WaitForAttackStrategy.h"
 #include "WorldPacketHandlerStrategy.h"
 
 class StrategyContext : public NamedObjectContext<Strategy>
@@ -61,6 +63,7 @@ public:
         creators["gather"] = &StrategyContext::gather;
         creators["emote"] = &StrategyContext::emote;
         creators["passive"] = &StrategyContext::passive;
+        creators["aggressive"] = &StrategyContext::aggressive;
         creators["save mana"] = &StrategyContext::auto_save_mana;
         creators["food"] = &StrategyContext::food;
         creators["chat"] = &StrategyContext::chat;
@@ -122,6 +125,7 @@ public:
         creators["worldbuff"] = &StrategyContext::world_buff;
         creators["use bobber"] = &StrategyContext::bobber_strategy;
         creators["master fishing"] = &StrategyContext::master_fishing;
+        creators["wait for attack"] = &StrategyContext::wait_for_attack;
     }
 
 private:
@@ -144,6 +148,7 @@ private:
     static Strategy* gather(PlayerbotAI* botAI) { return new GatherStrategy(botAI); }
     static Strategy* emote(PlayerbotAI* botAI) { return new EmoteStrategy(botAI); }
     static Strategy* passive(PlayerbotAI* botAI) { return new PassiveStrategy(botAI); }
+    static Strategy* aggressive(PlayerbotAI* botAI) { return new AggressiveStrategy(botAI); }
     // static Strategy* conserve_mana(PlayerbotAI* botAI) { return new ConserveManaStrategy(botAI); }
     static Strategy* auto_save_mana(PlayerbotAI* botAI) { return new HealerAutoSaveManaStrategy(botAI); }
     static Strategy* food(PlayerbotAI* botAI) { return new UseFoodStrategy(botAI); }
@@ -192,6 +197,7 @@ private:
     static Strategy* world_buff(PlayerbotAI* botAI) { return new WorldBuffStrategy(botAI); }
     static Strategy* bobber_strategy(PlayerbotAI* botAI) { return new UseBobberStrategy(botAI); }
     static Strategy* master_fishing(PlayerbotAI* botAI) { return new MasterFishingStrategy(botAI); }
+    static Strategy* wait_for_attack(PlayerbotAI* botAI) { return new WaitForAttackStrategy(botAI); }
 };
 
 class MovementStrategyContext : public NamedObjectContext<Strategy>
