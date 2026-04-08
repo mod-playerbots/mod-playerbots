@@ -279,7 +279,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
             if (spellTarget && !spellTarget->IsAlive() && !spellInfo->IsAllowingDeadTarget())
             {
                 InterruptSpell();
-                YieldThread(GetReactDelay());
+                YieldThread(bot, GetReactDelay());
                 return;
             }
 
@@ -288,7 +288,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
             if (goSpellTarget && !goSpellTarget->isSpawned())
             {
                 InterruptSpell();
-                YieldThread(GetReactDelay());
+                YieldThread(bot, GetReactDelay());
                 return;
             }
 
@@ -320,7 +320,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
             if (isHeal && isSingleTarget && spellTarget && spellTarget->IsFullHealth())
             {
                 InterruptSpell();
-                YieldThread(GetReactDelay());
+                YieldThread(bot, GetReactDelay());
                 return;
             }
 
@@ -332,7 +332,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
             }
 
             // Wait for spell cast
-            YieldThread(GetReactDelay());
+            YieldThread(bot, GetReactDelay());
             return;
         }
     }
@@ -368,7 +368,7 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 
     // Update internal AI
     UpdateAIInternal(elapsed, minimal);
-    YieldThread(GetReactDelay());
+    YieldThread(bot, GetReactDelay());
 }
 
 // Helper function for UpdateAI to check group membership and handle removal if necessary
@@ -1015,28 +1015,58 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
     }
     else if (filtered == "logout")
     {
-        if (!bot->GetSession()->isLogingOut())
+        if (bot->GetSession()->isLogingOut())
+            return;
+
+        // Verify the command came from this bot's master. Also handles nullptr
+        if (fromPlayer != master)
         {
             if (type == CHAT_MSG_WHISPER)
-                TellMaster("I'm logging out!");
+            {
+                std::string message = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "bot_not_your_master", "You are not my master!", {});
+                bot->Whisper(message, LANG_UNIVERSAL, fromPlayer);
+            }
+            return;
+        }
 
-            PlayerbotMgr* masterBotMgr = nullptr;
-            if (master)
-                masterBotMgr = GET_PLAYERBOT_MGR(master);
-            if (masterBotMgr)
-                masterBotMgr->LogoutPlayerBot(bot->GetGUID());
+        PlayerbotMgr* masterBotMgr = GET_PLAYERBOT_MGR(master);
+        if (!masterBotMgr)
+            return;
+
+        // Only respond if this bot is in master's collection (alt/addclass)
+        if (masterBotMgr->GetPlayerBot(bot->GetGUID()))
+        {
+            if (type == CHAT_MSG_WHISPER)
+            {
+                std::string message = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "logout_start", "I'm logging out!", {});
+                TellMaster(message);
+            }
+
+            masterBotMgr->LogoutPlayerBot(bot->GetGUID());
+        }
+        else if (type == CHAT_MSG_WHISPER)
+        {
+            std::string message = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "bot_rndbot_no_logout", "You can't command me to logout!", {});
+            TellMaster(message);
         }
     }
     else if (filtered == "logout cancel")
     {
-        if (bot->GetSession()->isLogingOut())
-        {
-            if (type == CHAT_MSG_WHISPER)
-                TellMaster("Logout cancelled!");
+        if (!bot->GetSession()->isLogingOut())
+            return;
 
-            WorldPackets::Character::LogoutCancel data = WorldPacket(CMSG_LOGOUT_CANCEL);
-            bot->GetSession()->HandleLogoutCancelOpcode(data);
+        if (type == CHAT_MSG_WHISPER)
+        {
+            std::string message = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "logout_cancel", "Logout cancelled!", {});
+            TellMaster(message);
         }
+
+        WorldPackets::Character::LogoutCancel data = WorldPacket(CMSG_LOGOUT_CANCEL);
+        bot->GetSession()->HandleLogoutCancelOpcode(data);
     }
     else
     {
@@ -1119,6 +1149,9 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                 if (guid1.IsEmpty() || p.size() > p.DEFAULT_SIZE)
                     return;
 
+                if (lang == LANG_ADDON)
+                        return;
+
                 if (p.GetOpcode() == SMSG_GM_MESSAGECHAT)
                 {
                     p >> textLen;
@@ -1167,8 +1200,6 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                         return;
 
                     if (HasRealPlayerMaster() && guid1 != GetMaster()->GetGUID())
-                        return;
-                    if (lang == LANG_ADDON)
                         return;
 
                     if (message.starts_with(sPlayerbotAIConfig.toxicLinksPrefix) &&
@@ -1249,17 +1280,10 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
 
             p >> guid.ReadAsPacked() >> counter >> vcos >> vsin >> horizontalSpeed >> verticalSpeed;
             if (horizontalSpeed <= 0.1f)
-            {
                 horizontalSpeed = 0.11f;
-            }
             verticalSpeed = -verticalSpeed;
-            // high vertical may result in stuck as bot can not handle gravity
-            if (verticalSpeed > 35.0f)
-                break;
-            // stop casting
-            InterruptSpell();
 
-            // stop movement
+            InterruptSpell();
             bot->StopMoving();
             bot->GetMotionMaster()->Clear();
 
@@ -1532,6 +1556,21 @@ std::vector<std::string> PlayerbotAI::GetStrategies(BotState type)
 
 void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
 {
+    static const std::vector<std::string> allInstanceStrategies =
+    {
+        "aq20", "bwl", "karazhan", "gruulslair", "icc", "magtheridon", "moltencore",
+        "naxx", "onyxia", "ssc", "tempestkeep", "ulduar", "voa", "wotlk-an", "wotlk-cos",
+        "wotlk-dtk", "wotlk-eoe", "wotlk-fos", "wotlk-gd", "wotlk-hol", "wotlk-hor",
+        "wotlk-hos", "wotlk-nex", "wotlk-occ", "wotlk-ok", "wotlk-os", "wotlk-pos",
+        "wotlk-toc", "wotlk-uk", "wotlk-up", "wotlk-vh", "zulaman"
+    };
+
+    for (const std::string& strat : allInstanceStrategies)
+    {
+        engines[BOT_STATE_COMBAT]->removeStrategy(strat);
+        engines[BOT_STATE_NON_COMBAT]->removeStrategy(strat);
+    }
+
     std::string strategyName;
     switch (mapId)
     {
@@ -1550,14 +1589,23 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         case 532:
             strategyName = "karazhan";  // Karazhan
             break;
+        case 533:
+            strategyName = "naxx";  // Naxxramas
+            break;
         case 544:
             strategyName = "magtheridon";  // Magtheridon's Lair
             break;
         case 548:
             strategyName = "ssc";  // Serpentshrine Cavern
             break;
+        case 550:
+            strategyName = "tempestkeep";  // Tempest Keep
+            break;
         case 565:
             strategyName = "gruulslair";  // Gruul's Lair
+            break;
+        case 568:
+            strategyName = "zulaman";  // Zul'Aman
             break;
         case 574:
             strategyName = "wotlk-uk";  // Utgarde Keep
@@ -1625,10 +1673,13 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         default:
             break;
     }
+
     if (strategyName.empty())
         return;
+
     engines[BOT_STATE_COMBAT]->addStrategy(strategyName);
     engines[BOT_STATE_NON_COMBAT]->addStrategy(strategyName);
+
     if (tellMaster && !strategyName.empty())
     {
         std::ostringstream out;
@@ -1797,98 +1848,104 @@ bool PlayerbotAI::IsCombo(Player* player)
 
 bool PlayerbotAI::IsRangedDps(Player* player, bool bySpec) { return IsRanged(player, bySpec) && IsDps(player, bySpec); }
 
-bool PlayerbotAI::IsAssistHealOfIndex(Player* player, int index, bool ignoreDeadPlayers)
+bool PlayerbotAI::IsAssistHealOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers)
 {
+    if (!IsHeal(player))
+        return false;
+
+    if (ignoreDeadPlayers && !player->IsAlive())
+        return false;
+
     Group* group = player->GetGroup();
     if (!group)
         return false;
 
-    int counter = 0;
+    uint8 totalAssistants = 0;
+    uint8 assistantsBeforePlayer = 0;
+    uint8 nonAssistantsBeforePlayer = 0;
+    bool playerFound = false;
 
-    // First, assistants
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member)
+        if (!member || (ignoreDeadPlayers && !member->IsAlive()) || !IsHeal(member))
             continue;
 
-        if (ignoreDeadPlayers && !member->IsAlive())
-            continue;
+        bool isAssistant = group->IsAssistant(member->GetGUID());
 
-        if (group->IsAssistant(member->GetGUID()) && IsHeal(member))
+        if (isAssistant)
+            totalAssistants++;
+
+        if (member == player)
+            playerFound = true;
+        else if (!playerFound)
         {
-            if (index == counter)
-                return player == member;
-            counter++;
+            if (isAssistant)
+                assistantsBeforePlayer++;
+            else
+                nonAssistantsBeforePlayer++;
         }
     }
 
-    // If not enough assistants, get non-assistants
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member)
-            continue;
+    if (!playerFound)
+        return false;
 
-        if (ignoreDeadPlayers && !member->IsAlive())
-            continue;
+    // If the player is an assistant, their index is just the number of assistants before them.
+    // If they are a non-assistant, their index is shifted by the total number of assistants.
+    uint8 playerIndex = group->IsAssistant(player->GetGUID())
+        ? assistantsBeforePlayer : (totalAssistants + nonAssistantsBeforePlayer);
 
-        if (!group->IsAssistant(member->GetGUID()) && IsHeal(member))
-        {
-            if (index == counter)
-                return player == member;
-            counter++;
-        }
-    }
-
-    return false;
+    return playerIndex == index;
 }
 
-bool PlayerbotAI::IsAssistRangedDpsOfIndex(Player* player, int index, bool ignoreDeadPlayers)
+bool PlayerbotAI::IsAssistRangedDpsOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers)
 {
+    if (!IsRangedDps(player))
+        return false;
+
+    if (ignoreDeadPlayers && !player->IsAlive())
+        return false;
+
     Group* group = player->GetGroup();
     if (!group)
         return false;
 
-    int counter = 0;
+    uint8 totalAssistants = 0;
+    uint8 assistantsBeforePlayer = 0;
+    uint8 nonAssistantsBeforePlayer = 0;
+    bool playerFound = false;
 
-    // First, assistants
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member)
+        if (!member || (ignoreDeadPlayers && !member->IsAlive()) || !IsRangedDps(member))
             continue;
 
-        if (ignoreDeadPlayers && !member->IsAlive())
-            continue;
+        bool isAssistant = group->IsAssistant(member->GetGUID());
 
-        if (group->IsAssistant(member->GetGUID()) && IsRangedDps(member))
+        if (isAssistant)
+            totalAssistants++;
+
+        if (member == player)
+            playerFound = true;
+        else if (!playerFound)
         {
-            if (index == counter)
-                return player == member;
-            counter++;
+            if (isAssistant)
+                assistantsBeforePlayer++;
+            else
+                nonAssistantsBeforePlayer++;
         }
     }
 
-    // If not enough assistants, get non-assistants
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member)
-            continue;
+    if (!playerFound)
+        return false;
 
-        if (ignoreDeadPlayers && !member->IsAlive())
-            continue;
+    // If the player is an assistant, their index is just the number of assistants before them.
+    // If they are a non-assistant, their index is shifted by the total number of assistants.
+    uint8 playerIndex = group->IsAssistant(player->GetGUID())
+        ? assistantsBeforePlayer : (totalAssistants + nonAssistantsBeforePlayer);
 
-        if (!group->IsAssistant(member->GetGUID()) && IsRangedDps(member))
-        {
-            if (index == counter)
-                return player == member;
-            counter++;
-        }
-    }
-
-    return false;
+    return playerIndex == index;
 }
 
 bool PlayerbotAI::HasAggro(Unit* unit)
@@ -1903,6 +1960,11 @@ bool PlayerbotAI::HasAggro(Unit* unit)
         return true;
     }
     return false;
+}
+
+bool PlayerbotAI::IsMovementImpaired(Unit* unit)
+{
+    return unit && (unit->HasAuraType(SPELL_AURA_MOD_ROOT) || unit->IsRooted() || unit->GetSpeedRate(MOVE_RUN) < 1.0f);
 }
 
 int32 PlayerbotAI::GetAssistTankIndex(Player* player)
@@ -2226,43 +2288,44 @@ bool PlayerbotAI::IsDps(Player* player, bool bySpec)
     return false;
 }
 
-bool PlayerbotAI::IsMainTank(Player* player)
+bool PlayerbotAI::IsMainTank(Player* player, bool ignoreMemberFlag)
 {
     Group* group = player->GetGroup();
     if (!group)
-    {
         return IsTank(player);
-    }
 
     ObjectGuid mainTank = ObjectGuid();
-    Group::MemberSlotList const& slots = group->GetMemberSlots();
 
-    for (Group::member_citerator itr = slots.begin(); itr != slots.end(); ++itr)
+    // (1) Check for main tank flag (any class or spec)
+    if (!ignoreMemberFlag)
     {
-        if (itr->flags & MEMBER_FLAG_MAINTANK)
+        Group::MemberSlotList const& slots = group->GetMemberSlots();
+
+        for (Group::member_citerator itr = slots.begin(); itr != slots.end(); ++itr)
         {
-            mainTank = itr->guid;
-            break;
+            if (itr->flags & MEMBER_FLAG_MAINTANK)
+            {
+                mainTank = itr->guid;
+                break;
+            }
         }
+
+        if (mainTank != ObjectGuid::Empty)
+            return player->GetGUID() == mainTank;
     }
 
-    if (mainTank != ObjectGuid::Empty)
-    {
-        return player->GetGUID() == mainTank;
-    }
+    // (2) If no main tank flag, return the first tank
+    if (!IsTank(player) || !player->IsAlive())
+        return false;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
         if (!member)
-        {
             continue;
-        }
 
         if (IsTank(member) && member->IsAlive())
-        {
             return player->GetGUID() == member->GetGUID();
-        }
     }
 
     return false;
@@ -2281,47 +2344,31 @@ bool PlayerbotAI::IsBotMainTank(Player* player)
         return false;
 
     if (IsMainTank(player))
-    {
         return true;
-    }
 
     Group* group = player->GetGroup();
     if (!group)
-    {
-        return true;  // If no group, consider the bot as main tank
-    }
+        return true;
 
     int32 botAssistTankIndex = GetAssistTankIndex(player);
     if (botAssistTankIndex == -1)
-    {
         return false;
-    }
 
     for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
     {
         Player* member = gref->GetSource();
         if (!member)
-        {
             continue;
-        }
 
         int32 memberAssistTankIndex = GetAssistTankIndex(member);
         if (memberAssistTankIndex == -1)
-        {
             continue;
-        }
 
         if (memberAssistTankIndex == botAssistTankIndex && player == member)
-        {
             return true;
-        }
 
         if (memberAssistTankIndex < botAssistTankIndex && member->GetSession()->IsBot())
-        {
             return false;
-        }
-
-        return false;
     }
 
     return false;
@@ -2331,73 +2378,76 @@ uint32 PlayerbotAI::GetGroupTankNum(Player* player)
 {
     Group* group = player->GetGroup();
     if (!group)
-    {
         return 0;
-    }
+
     uint32 result = 0;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
 
         if (!member)
-        {
             continue;
-        }
 
         if (IsTank(member) && member->IsAlive())
-        {
             result++;
-        }
     }
+
     return result;
 }
 
-bool PlayerbotAI::IsAssistTank(Player* player) { return IsTank(player) && !IsMainTank(player); }
-
-bool PlayerbotAI::IsAssistTankOfIndex(Player* player, int index, bool ignoreDeadPlayers)
+bool PlayerbotAI::IsAssistTank(Player* player)
 {
+    return IsTank(player) && !IsMainTank(player);
+}
+
+bool PlayerbotAI::IsAssistTankOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers)
+{
+    if (!IsAssistTank(player))
+        return false;
+
+    if (ignoreDeadPlayers && !player->IsAlive())
+        return false;
+
     Group* group = player->GetGroup();
     if (!group)
         return false;
 
-    int counter = 0;
+    uint8 totalAssistants = 0;
+    uint8 assistantsBeforePlayer = 0;
+    uint8 nonAssistantsBeforePlayer = 0;
+    bool playerFound = false;
 
-    // First, assistants
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member)
+        if (!member || (ignoreDeadPlayers && !member->IsAlive()) || !IsAssistTank(member))
             continue;
 
-        if (ignoreDeadPlayers && !member->IsAlive())
-            continue;
+        bool isAssistant = group->IsAssistant(member->GetGUID());
 
-        if (group->IsAssistant(member->GetGUID()) && IsAssistTank(member))
+        if (isAssistant)
+            totalAssistants++;
+
+        if (member == player)
+            playerFound = true;
+        else if (!playerFound)
         {
-            if (index == counter)
-                return player == member;
-            counter++;
+            if (isAssistant)
+                assistantsBeforePlayer++;
+            else
+                nonAssistantsBeforePlayer++;
         }
     }
 
-    // If not enough assistants, get non-assistants
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member)
-            continue;
+    if (!playerFound)
+        return false;
 
-        if (ignoreDeadPlayers && !member->IsAlive())
-            continue;
+    // If the player is an assistant, their index is just the number of assistants before them.
+    // If they are a non-assistant, their index is shifted by the total number of assistants.
+    uint8 playerIndex = group->IsAssistant(player->GetGUID())
+        ? assistantsBeforePlayer : (totalAssistants + nonAssistantsBeforePlayer);
 
-        if (!group->IsAssistant(member->GetGUID()) && IsAssistTank(member))
-        {
-            if (index == counter)
-                return player == member;
-            counter++;
-        }
-    }
-    return false;
+    return playerIndex == index;
 }
 
 namespace acore
@@ -4327,21 +4377,27 @@ Player* PlayerbotAI::GetGroupLeader()
     return master;
 }
 
-uint32 PlayerbotAI::GetFixedBotNumer(uint32 maxNum, float cyclePerMin)
+uint32 PlayerbotAI::GetFixedBotNumber(uint32 maxNum)
 {
-    uint32 randseed = rand32();                               // Seed random number
-    uint32 randnum = bot->GetGUID().GetCounter() + randseed;  // Semi-random but fixed number for each bot.
+    if (maxNum == 0)
+        return 0;
 
-    if (cyclePerMin > 0)
-    {
-        uint32 cycle = floor(getMSTime() / (1000));  // Semi-random number adds 1 each second.
-        cycle = cycle * cyclePerMin / 60;            // Cycles cyclePerMin per minute.
-        randnum += cycle;                            // Make the random number cylce.
-    }
+    // Deterministic pseudo-random hash based on the bot GUID evenly distributed across active slots
+    uint32 id = bot->GetGUID().GetCounter();
+    uint32 h = id;
+    h ^= h >> 16;
+    h *= 0x7feb352d;
+    h ^= h >> 15;
+    h *= 0x846ca68b;
+    h ^= h >> 16;
 
-    randnum =
-        (randnum % (maxNum + 1));  // Loops the randomnumber at maxNum. Bassically removes all the numbers above 99.
-    return randnum;  // Now we have a number unique for each bot between 0 and maxNum that increases by cyclePerMin.
+    // Current time slot
+    uint32 timeSlot = (getMSTime() / 1000) / sPlayerbotAIConfig.BotActiveAloneDurationSeconds;
+
+    // Mix timeSlot into the hash to reshuffle every rotation window
+    uint32 mixed = h ^ (timeSlot * 0x9e3779b9);  // with multiplicative constant
+
+    return mixed % maxNum;
 }
 
 /*
@@ -4358,7 +4414,7 @@ enum GrouperType
 
 GrouperType PlayerbotAI::GetGrouperType()
 {
-    uint32 grouperNumber = GetFixedBotNumer(100, 0);
+    uint32 grouperNumber = GetFixedBotNumber(100);
 
     if (grouperNumber < 20 && !HasRealPlayerMaster())
         return GrouperType::SOLO;
@@ -4380,7 +4436,7 @@ GrouperType PlayerbotAI::GetGrouperType()
 
 GuilderType PlayerbotAI::GetGuilderType()
 {
-    uint32 grouperNumber = GetFixedBotNumer(100, 0);
+    uint32 grouperNumber = GetFixedBotNumber(100);
 
     if (grouperNumber < 20 && !HasRealPlayerMaster())
         return GuilderType::SOLO;
@@ -4704,44 +4760,40 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
     // situations are usable for scaling when enabled.
     // #######################################################################################
 
-    // Below is code to have a specified % of bots active at all times.
-    // The default is 100%. With 1% of all bots going active or inactive each minute.
+    // Base percentage of bots to be active
     uint32 mod = sPlayerbotAIConfig.botActiveAlone > 100 ? 100 : sPlayerbotAIConfig.botActiveAlone;
+
+    // Apply SmartScale if enabled
     if (sPlayerbotAIConfig.botActiveAloneSmartScale &&
         bot->GetLevel() >= sPlayerbotAIConfig.botActiveAloneSmartScaleWhenMinLevel &&
         bot->GetLevel() <= sPlayerbotAIConfig.botActiveAloneSmartScaleWhenMaxLevel)
     {
-        mod = AutoScaleActivity(mod);
+        mod = AutoScaleActivity(mod);  // mod reflects on latency throttling
     }
 
-    uint32 ActivityNumber =
-        GetFixedBotNumer(100, sPlayerbotAIConfig.botActiveAlone * static_cast<float>(mod) / 100 * 0.01f);
+    // Get deterministic bucket + timeSlot
+    uint32 ActivityNumber = GetFixedBotNumber(100);
 
-    return ActivityNumber <=
-           (sPlayerbotAIConfig.botActiveAlone * mod) /
-               100;  // The given percentage of bots should be active and rotate 1% of those active bots each minute.
+    // Check if this bot is in the active set
+    return ActivityNumber < mod;  // mod is directly the number of bots active (0–100)
 }
 
 bool PlayerbotAI::AllowActivity(ActivityType activityType, bool checkNow)
 {
     const int activityIndex = static_cast<int>(activityType);
 
-    // Unknown/out-of-range avoid blocking, added logging for further analysing should not happen in the first place.
-    if (activityIndex <= 0 || activityIndex >= MAX_ACTIVITY_TYPE)
-    {
-        LOG_ERROR("playerbots", "AllowActivity received invalid activity type value: {}", activityIndex);
-        return true;
-    }
-
     if (!allowActiveCheckTimer[activityIndex])
-        allowActiveCheckTimer[activityIndex] = time(nullptr);
+        allowActiveCheckTimer[activityIndex] = getMSTime();
 
-    if (!checkNow && time(nullptr) < (allowActiveCheckTimer[activityIndex] + 5))
+    // 4500ms base + 0–499ms per-bot offset = 4500–4999ms, capping at just under 5 seconds
+    uint32 offset = bot->GetGUID().GetCounter() % 500;
+
+    if (!checkNow && getMSTime() < (allowActiveCheckTimer[activityIndex] + 4500 + offset))
         return allowActive[activityIndex];
 
     const bool allowed = AllowActive(activityType);
     allowActive[activityIndex] = allowed;
-    allowActiveCheckTimer[activityIndex] = time(nullptr);
+    allowActiveCheckTimer[activityIndex] = getMSTime();
 
     return allowed;
 }
@@ -6468,7 +6520,7 @@ ChatChannelSource PlayerbotAI::GetChatChannelSource(Player* bot, uint32 type, st
     return ChatChannelSource::SRC_UNDEFINED;
 }
 
-bool PlayerbotAI::CheckLocationDistanceByLevel(Player* player, const WorldLocation& loc, bool fromStartUp)
+bool PlayerbotAI::StarterLevelDistanceCheck(Player* player, const WorldLocation& loc, bool fromStartUp)
 {
     if (player->GetLevel() > 16)
         return true;

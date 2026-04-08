@@ -27,11 +27,27 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class MaidenOfVirtueDisableCombatFormationMoveMultiplier : public Multiplier
+{
+public:
+    MaidenOfVirtueDisableCombatFormationMoveMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "maiden of virtue disable combat formation move multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
 class TheCuratorDisableTankAssistMultiplier : public Multiplier
 {
 public:
     TheCuratorDisableTankAssistMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "the curator disable tank assist multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class TheCuratorDisableCombatFormationMoveMultiplier : public Multiplier
+{
+public:
+    TheCuratorDisableCombatFormationMoveMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "the curator disable combat formation move multiplier") {}
     virtual float GetValue(Action* action);
 };
 

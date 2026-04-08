@@ -166,12 +166,6 @@ void GenericDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     MeleeCombatStrategy::InitTriggers(triggers);
 
     triggers.push_back(
-        new TriggerNode("no pet", { NextAction("raise dead", ACTION_NORMAL + 5) }));
-    triggers.push_back(
-        new TriggerNode("has pet", { NextAction("toggle pet spell", 60.0f) }));
-    triggers.push_back(
-        new TriggerNode("new pet", { NextAction("set pet stance", 60.0f) }));
-    triggers.push_back(
         new TriggerNode("mind freeze", { NextAction("mind freeze", ACTION_HIGH + 1) }));
     triggers.push_back(
         new TriggerNode("mind freeze on enemy healer",
@@ -179,7 +173,8 @@ void GenericDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "horn of winter", { NextAction("horn of winter", ACTION_NORMAL + 1) }));
     triggers.push_back(new TriggerNode("critical health",
-                                       { NextAction("death pact", ACTION_HIGH + 5) }));
+                                       { NextAction("raise dead", ACTION_HIGH + 6),
+                                         NextAction("death pact", ACTION_HIGH + 5) }));
 
     triggers.push_back(
         new TriggerNode("low health", { NextAction("icebound fortitude", ACTION_HIGH + 5),
@@ -190,4 +185,11 @@ void GenericDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
                                                         NextAction("blood boil", ACTION_NORMAL + 3) }));
     triggers.push_back(
         new TriggerNode("pestilence glyph", { NextAction("pestilence", ACTION_HIGH + 9) }));
+    triggers.push_back(
+        new TriggerNode("no rune",
+            {
+                NextAction("empower rune weapon", ACTION_HIGH + 1)
+            }
+        )
+    );
 }

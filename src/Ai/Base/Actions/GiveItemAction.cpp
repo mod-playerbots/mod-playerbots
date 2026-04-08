@@ -28,7 +28,6 @@ bool GiveItemAction::Execute(Event /*event*/)
     if (receiverAi->GetAiObjectContext()->GetValue<uint32>("item count", item)->Get())
         return true;
 
-    bool moved = false;
     std::vector<Item*> items = InventoryAction::parseItems(item, ITERATE_ITEMS_IN_BAGS);
     for (Item* item : items)
     {
@@ -42,7 +41,6 @@ bool GiveItemAction::Execute(Event /*event*/)
             bot->MoveItemFromInventory(item->GetBagSlot(), item->GetSlot(), true);
             item->SetOwnerGUID(target->GetGUID());
             receiver->MoveItemToInventory(dest, item, true);
-            moved = true;
 
             std::ostringstream out;
             out << "Got " << chat->FormatItem(item->GetTemplate(), item->GetCount()) << " from " << bot->GetName();

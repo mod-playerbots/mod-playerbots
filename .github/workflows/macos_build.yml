@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: 'mod-playerbots/azerothcore-wotlk'
-          ref: 'Playerbot'
+          ref: ${{ (github.base_ref || github.ref_name) == 'test-staging' && 'test-staging' || 'Playerbot' }}
       - name: Checkout Playerbot Module
         uses: actions/checkout@v4
         with:

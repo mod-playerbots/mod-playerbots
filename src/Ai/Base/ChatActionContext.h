@@ -84,6 +84,7 @@
 #include "TellGlyphsAction.h"
 #include "EquipGlyphsAction.h"
 #include "PetsAction.h"
+#include "WaitForAttackAction.h"
 
 class ChatActionContext : public NamedObjectContext<Action>
 {
@@ -120,7 +121,6 @@ public:
         creators["use"] = &ChatActionContext::use;
         creators["item count"] = &ChatActionContext::item_count;
         creators["equip"] = &ChatActionContext::equip;
-        creators["equip upgrades"] = &ChatActionContext::equip_upgrade;
         creators["unequip"] = &ChatActionContext::unequip;
         creators["sell"] = &ChatActionContext::sell;
         creators["buy"] = &ChatActionContext::buy;
@@ -188,6 +188,7 @@ public:
         creators["guild leave"] = &ChatActionContext::guild_leave;
         creators["rtsc"] = &ChatActionContext::rtsc;
         creators["bwl chat shortcut"] = &ChatActionContext::bwl_chat_shortcut;
+        creators["naxx chat shortcut"] = &ChatActionContext::naxx_chat_shortcut;
         creators["tell estimated dps"] = &ChatActionContext::tell_estimated_dps;
         creators["join"] = &ChatActionContext::join;
         creators["lfg"] = &ChatActionContext::lfg;
@@ -199,6 +200,7 @@ public:
         creators["pet"] = &ChatActionContext::pet;
         creators["pet attack"] = &ChatActionContext::pet_attack;
         creators["roll"] = &ChatActionContext::roll_action;
+        creators["wait for attack time"] = &ChatActionContext::wait_for_attack_time;
     }
 
 private:
@@ -299,6 +301,7 @@ private:
     static Action* guild_remove(PlayerbotAI* botAI) { return new GuildRemoveAction(botAI); }
     static Action* guild_leave(PlayerbotAI* botAI) { return new GuildLeaveAction(botAI); }
     static Action* rtsc(PlayerbotAI* botAI) { return new RTSCAction(botAI); }
+    static Action* naxx_chat_shortcut(PlayerbotAI* ai) { return new NaxxChatShortcutAction(ai); }
     static Action* bwl_chat_shortcut(PlayerbotAI* ai) { return new BwlChatShortcutAction(ai); }
     static Action* tell_estimated_dps(PlayerbotAI* ai) { return new TellEstimatedDpsAction(ai); }
     static Action* join(PlayerbotAI* ai) { return new JoinGroupAction(ai); }
@@ -310,6 +313,7 @@ private:
     static Action* pet(PlayerbotAI* botAI) { return new PetsAction(botAI); }
     static Action* pet_attack(PlayerbotAI* botAI) { return new PetsAction(botAI, "attack"); }
     static Action* roll_action(PlayerbotAI* botAI) { return new RollAction(botAI); }
+    static Action* wait_for_attack_time(PlayerbotAI* botAI) { return new SetWaitForAttackTimeAction(botAI); }
 };
 
 #endif

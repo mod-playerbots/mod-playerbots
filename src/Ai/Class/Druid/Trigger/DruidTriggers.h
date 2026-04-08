@@ -280,4 +280,15 @@ protected:
     static const std::set<uint32> HURRICANE_SPELL_IDS;
 };
 
+class NoHealerDpsStrategyTrigger : public Trigger
+{
+public:
+    NoHealerDpsStrategyTrigger(PlayerbotAI* botAI) : Trigger(botAI, "no healer dps strategy") {}
+
+    bool IsActive() override
+    {
+        return !botAI->HasStrategy("healer dps", BOT_STATE_COMBAT);
+    }
+};
+
 #endif

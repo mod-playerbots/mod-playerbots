@@ -11,11 +11,6 @@
 #include "ServerFacade.h"
 #include "SharedDefines.h"
 
-static float GetSpeedInMotion(Unit* target)
-{
-    return target->GetSpeed(Movement::SelectSpeedType(target->GetUnitMovementFlags()));
-}
-
 bool EnemyTooCloseForSpellTrigger::IsActive()
 {
     Unit* target = AI_VALUE(Unit*, "current target");

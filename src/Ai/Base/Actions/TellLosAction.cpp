@@ -95,7 +95,6 @@ bool TellAuraAction::Execute(Event /*event*/)
         std::string caster_name = caster ? caster->GetName() : "unknown";
         bool is_area = aura->IsArea();
         int32 duration = aura->GetDuration();
-        const SpellInfo* spellInfo = aura->GetSpellInfo();
         int32 spellId = aura->GetSpellInfo()->Id;
         bool isPositive = aura->GetSpellInfo()->IsPositive();
         sLog->outMessage("playerbot", LOG_LEVEL_DEBUG,

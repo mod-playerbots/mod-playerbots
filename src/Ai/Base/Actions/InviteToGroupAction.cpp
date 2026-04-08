@@ -167,8 +167,6 @@ std::vector<Player*> InviteGuildToGroupAction::getGuildMembers()
 
 bool InviteGuildToGroupAction::Execute(Event /*event*/)
 {
-    Guild* guild = sGuildMgr->GetGuildById(bot->GetGuildId());
-
     for (auto& member : getGuildMembers())
     {
         Player* player = member;
