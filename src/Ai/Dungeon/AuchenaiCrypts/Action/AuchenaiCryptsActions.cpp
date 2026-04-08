@@ -20,7 +20,7 @@ bool ShirrakTankPositionBossAction::Execute(Event /*event*/)
         return Attack(shirrak);
 
     if (shirrak->GetVictim() == bot && bot->IsWithinMeleeRange(shirrak) &&
-        bot->GetHealthPct()>50.0f)
+        bot->GetHealthPct()>30.0f)
     
     {
         const Position& position = SHIRRAK_TANK_POSITION;
@@ -96,7 +96,7 @@ bool ShirrakRangedKeepDistanceAction::Execute(Event /*event*/)
 
     float angle = (count <= 1) ? arcCenter : (arcStart + (arcSpan * (float)botIndex / (float)(count - 1)));
     
-    constexpr float spreadRadius = 5.0f; 
+    constexpr float spreadRadius = 3.0f; 
     float targetX = SHIRRAK_RANGED_POSITION.GetPositionX() + cos(angle) * spreadRadius;
     float targetY = SHIRRAK_RANGED_POSITION.GetPositionY() + sin(angle) * spreadRadius;
 
