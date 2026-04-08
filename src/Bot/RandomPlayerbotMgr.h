@@ -255,6 +255,7 @@ private:
 
     //void ScaleBotActivity();      // Deprecated function
     static inline uint32 NowSeconds() { return static_cast<uint32>(GameTime::GetGameTime().count()); }
+    void InitArenaTeamCache();
 };
 
 #define sRandomPlayerbotMgr RandomPlayerbotMgr::instance()

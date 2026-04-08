@@ -16,6 +16,24 @@ void PlayerbotGuildMgr::Init()
     ValidateGuildCache();
 }
 
+void PlayerbotGuildMgr::RefreshNeedMoreGuilds()
+{
+    if (sPlayerbotAIConfig.randomBotGuildCount == 0)
+    {
+        _needMoreGuilds = false;
+        return;
+    }
+
+    size_t botGuildCount = std::count_if(
+        _guildCache.begin(), _guildCache.end(),
+        [](std::pair<uint32 const, GuildCache> const& entry)
+        {
+            return !entry.second.hasRealPlayer;
+        });
+
+    _needMoreGuilds = botGuildCount < sPlayerbotAIConfig.randomBotGuildCount;
+}
+
 bool PlayerbotGuildMgr::CreateGuild(Player* player, std::string guildName)
 {
     Guild* guild = new Guild();
@@ -39,6 +57,7 @@ bool PlayerbotGuildMgr::CreateGuild(Player* player, std::string guildName)
     entry.faction = player->GetTeamId();
 
     _guildCache[guild->GetId()] = entry;
+    RefreshNeedMoreGuilds();
     return true;
 }
 
@@ -146,6 +165,7 @@ void PlayerbotGuildMgr::OnGuildUpdate(Guild* guild)
             break;
         }
     }
+    RefreshNeedMoreGuilds();
 }
 
 void PlayerbotGuildMgr::ResetGuildCache()
@@ -156,6 +176,8 @@ void PlayerbotGuildMgr::ResetGuildCache()
     // Mark all names as available until ValidateGuildCache marks existing guild names as used.
     for (auto& nameEntry : _guildNames)
         nameEntry.second = true;
+
+    RefreshNeedMoreGuilds();
 }
 
 void PlayerbotGuildMgr::LoadGuildNames()
@@ -239,6 +261,8 @@ void PlayerbotGuildMgr::ValidateGuildCache()
             }
         }
     }
+
+    RefreshNeedMoreGuilds();
 }
 
 void PlayerbotGuildMgr::DeleteBotGuilds()

@@ -3914,13 +3914,6 @@ void PlayerbotFactory::InitInventoryEquip()
     }
 }
 
-void PlayerbotFactory::EnsureGuild()
-{
-    // Keep the config gate in a single place so external callers do not duplicate checks.
-    if (sPlayerbotAIConfig.randomBotGuildCount > 0)
-        InitGuild();
-}
-
 void PlayerbotFactory::InitGuild()
 {
     if (uint32 guildId = bot->GetGuildId())
@@ -4053,17 +4046,6 @@ void PlayerbotFactory::InitImmersive()
             name << "immersive_stat_" << i;
             sRandomPlayerbotMgr.SetValue(owner, name.str(), percentMap[type]);
         }
-    }
-}
-
-void PlayerbotFactory::EnsureArenaTeams()
-{
-    // Keep the config gate centralized to avoid duplicated checks at call sites.
-    if (sPlayerbotAIConfig.randomBotArenaTeam2v2Count ||
-        sPlayerbotAIConfig.randomBotArenaTeam3v3Count ||
-        sPlayerbotAIConfig.randomBotArenaTeam5v5Count)
-    {
-        InitArenaTeam();
     }
 }
 

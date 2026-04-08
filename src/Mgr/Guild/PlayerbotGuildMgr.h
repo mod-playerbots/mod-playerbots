@@ -26,6 +26,8 @@ public:
     void DeleteBotGuilds();
     bool IsRealGuild(uint32 guildId);
     bool IsRealGuild(Player* bot);
+    bool NeedMoreGuilds() const { return _needMoreGuilds; }
+    void RefreshNeedMoreGuilds();
 
 private:
     PlayerbotGuildMgr() = default;
@@ -50,6 +52,7 @@ private:
     };
     std::unordered_map<uint32 , GuildCache> _guildCache;
     std::vector<std::string> _shuffled_guild_keys;
+    bool _needMoreGuilds = false;
 };
 
 void PlayerBotsGuildValidationScript();

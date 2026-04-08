@@ -13,8 +13,10 @@
 #include <ctime>
 #include <iomanip>
 #include <random>
+#include <unordered_set>
 
 #include "AiFactory.h"
+#include "ArenaTeamMgr.h"
 #include "Battleground.h"
 #include "BattlegroundMgr.h"
 #include "ChannelMgr.h"
@@ -34,6 +36,7 @@
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotFactory.h"
+#include "PlayerbotGuildMgr.h"
 #include "Playerbots.h"
 #include "Position.h"
 #include "RaceMgr.h"
@@ -1752,6 +1755,37 @@ void RandomPlayerbotMgr::PrepareAddclassCache()
     LOG_INFO("playerbots", ">> {} characters collected for addclass command from {} AddClass accounts.", collected, addClassTypeAccounts.size());
 }
 
+void RandomPlayerbotMgr::InitArenaTeamCache()
+{
+    sPlayerbotAIConfig.randomBotArenaTeams.clear();
+
+    if (sArenaTeamMgr->GetArenaTeams().empty())
+    {
+        LOG_ERROR("playerbots", "No arena teams found in database, resetting arena team cache");
+        return;
+    }
+
+    std::unordered_set<uint32> cachedTeamIds;
+    for (auto const& [teamId, arenaTeam] : sArenaTeamMgr->GetArenaTeams())
+    {
+        if (!arenaTeam)
+            continue;
+
+        ObjectGuid captainGuid = arenaTeam->GetCaptain();
+        if (!captainGuid || !captainGuid.IsPlayer())
+            continue;
+
+        uint32 accountId = sCharacterCache->GetCharacterAccountIdByGuid(captainGuid);
+        if (!sPlayerbotAIConfig.IsInRandomAccountList(accountId))
+            continue;
+
+        if (cachedTeamIds.insert(teamId).second)
+            sPlayerbotAIConfig.randomBotArenaTeams.push_back(teamId);
+    }
+
+    LOG_INFO("playerbots", ">> Loaded {} random bot arena teams from ArenaTeamMgr", sPlayerbotAIConfig.randomBotArenaTeams.size());
+}
+
 void RandomPlayerbotMgr::Init()
 {
     if (sPlayerbotAIConfig.addClassCommand)
@@ -1759,6 +1793,13 @@ void RandomPlayerbotMgr::Init()
 
     if (sPlayerbotAIConfig.randomBotJoinBG)
         sRandomPlayerbotMgr.LoadBattleMastersCache();
+
+    if (sPlayerbotAIConfig.randomBotArenaTeam2v2Count ||
+        sPlayerbotAIConfig.randomBotArenaTeam3v3Count ||
+        sPlayerbotAIConfig.randomBotArenaTeam5v5Count)
+    {
+        sRandomPlayerbotMgr.InitArenaTeamCache();
+    }
 
     PlayerbotsDatabase.Execute("DELETE FROM playerbots_random_bots WHERE event = 'add'");
 }
@@ -2529,12 +2570,20 @@ void RandomPlayerbotMgr::OnBotLoginInternal(Player* const bot)
         }
     }
 
-    // Run guild recovery/assignment at login to handle empty guild tables after restart.
+    // Run guild recovery/assignment only when guild pool needs to be replenished.
     PlayerbotFactory factory(bot, bot->GetLevel());
-    factory.EnsureGuild();
+    if (PlayerbotGuildMgr::instance().NeedMoreGuilds())
+        factory.InitGuild();
 
-    // Run arena team recovery/creation at login so teams can be rebuilt after manual table wipes.
-    factory.EnsureArenaTeams();
+    // Arena teams are initialized from startup cache, but recreation still needs online bots as captains.
+    // Running the factory init here covers manual arena table wipes after restart.
+    if (bot->GetLevel() >= 70 &&
+        (sPlayerbotAIConfig.randomBotArenaTeam2v2Count ||
+         sPlayerbotAIConfig.randomBotArenaTeam3v3Count ||
+         sPlayerbotAIConfig.randomBotArenaTeam5v5Count))
+    {
+        factory.InitArenaTeam();
+    }
 
     if (sPlayerbotAIConfig.randomBotFixedLevel)
     {
