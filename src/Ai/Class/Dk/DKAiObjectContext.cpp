@@ -100,6 +100,7 @@ public:
         creators["dd cd and no desolation"] = &DeathKnightTriggerFactoryInternal::dd_cd_and_no_desolation;
         creators["death and decay cooldown"] = &DeathKnightTriggerFactoryInternal::death_and_decay_cooldown;
         creators["army of the dead"] = &DeathKnightTriggerFactoryInternal::army_of_the_dead;
+        creators["hysteria no cd"] = &DeathKnightTriggerFactoryInternal::hysteria_no_cd;
     }
 
 private:
@@ -152,6 +153,7 @@ private:
     }
     static Trigger* death_and_decay_cooldown(PlayerbotAI* botAI) { return new DeathAndDecayCooldownTrigger(botAI); }
     static Trigger* army_of_the_dead(PlayerbotAI* botAI) { return new ArmyOfTheDeadTrigger(botAI); }
+    static Trigger* hysteria_no_cd(PlayerbotAI* botAI) { return new HysteriaNoCooldownTrigger(botAI); }
 };
 
 class DeathKnightAiObjectContextInternal : public NamedObjectContext<Action>
@@ -209,7 +211,7 @@ public:
         creators["vampiric blood"] = &DeathKnightAiObjectContextInternal::vampiric_blood;
         creators["death pact"] = &DeathKnightAiObjectContextInternal::death_pact;
         creators["death rune_mastery"] = &DeathKnightAiObjectContextInternal::death_rune_mastery;
-        // creators["hysteria"] = &DeathKnightAiObjectContextInternal::hysteria;
+        creators["hysteria"] = &DeathKnightAiObjectContextInternal::hysteria;
         creators["dancing rune weapon"] = &DeathKnightAiObjectContextInternal::dancing_rune_weapon;
         creators["dark command"] = &DeathKnightAiObjectContextInternal::dark_command;
     }
@@ -265,7 +267,7 @@ private:
     static Action* vampiric_blood(PlayerbotAI* botAI) { return new CastVampiricBloodAction(botAI); }
     static Action* death_pact(PlayerbotAI* botAI) { return new CastDeathPactAction(botAI); }
     static Action* death_rune_mastery(PlayerbotAI* botAI) { return new CastDeathRuneMasteryAction(botAI); }
-    // static Action* hysteria(PlayerbotAI* botAI) { return new CastHysteriaAction(botAI); }
+    static Action* hysteria(PlayerbotAI* botAI) { return new CastHysteriaAction(botAI); }
     static Action* dancing_rune_weapon(PlayerbotAI* botAI) { return new CastDancingRuneWeaponAction(botAI); }
     static Action* dark_command(PlayerbotAI* botAI) { return new CastDarkCommandAction(botAI); }
     static Action* mind_freeze_on_enemy_healer(PlayerbotAI* botAI)

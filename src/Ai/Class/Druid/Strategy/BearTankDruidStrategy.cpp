@@ -212,6 +212,7 @@ void BearTankDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
+    triggers.push_back(new TriggerNode("high aoe", {NextAction("challenging roar", ACTION_HIGH + 8)}));
     triggers.push_back(
         new TriggerNode(
             "lose aggro",

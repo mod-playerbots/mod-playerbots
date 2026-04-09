@@ -185,6 +185,14 @@ public:
     DivineFavorTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "divine favor") {}
 };
 
+class DivineShieldLowHealthTrigger : public Trigger
+{
+public:
+    DivineShieldLowHealthTrigger(PlayerbotAI* botAI) : Trigger(botAI, "divine shield low health") {}
+
+    bool IsActive() override;
+};
+
 class NotSensingUndeadTrigger : public BuffTrigger
 {
 public:
@@ -240,6 +248,16 @@ class BlessingOfSanctuaryOnPartyTrigger : public BuffOnPartyTrigger
 public:
     BlessingOfSanctuaryOnPartyTrigger(PlayerbotAI* botAI)
         : BuffOnPartyTrigger(botAI, "blessing of sanctuary", 2 * 2000) {}
+};
+
+class HandOfFreedomOnPartyTrigger : public Trigger
+{
+public:
+    HandOfFreedomOnPartyTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hand of freedom on party", 1) {}
+
+    Unit* GetTarget() override;
+    std::string const GetTargetName() override { return "party member snared target"; }
+    bool IsActive() override;
 };
 
 class AvengingWrathTrigger : public BoostTrigger
