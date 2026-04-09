@@ -471,7 +471,7 @@ public:
     void SpellInterrupted(uint32 spellid);
     int32 CalculateGlobalCooldown(uint32 spellid);
     void InterruptSpell();
-    void RequestCastInterrupt() { pendingCastInterrupt = true; }
+    void RequestSpellInterrupt();
     void RemoveAura(std::string const name);
     void RemoveShapeshift();
     void WaitForSpellCast(Spell* spell);
@@ -650,7 +650,7 @@ protected:
     BotCheatMask cheatMask = BotCheatMask::none;
     Position jumpDestination = Position();
     uint32 nextTransportCheck = 0;
-    bool pendingCastInterrupt = false;
+    bool spellInterruptRequested = false;
 };
 
 #endif

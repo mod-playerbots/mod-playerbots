@@ -264,86 +264,101 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     if (!CanUpdateAI())
         return;
 
-    // Handle the current spell
+    // Handle the current spell that is being cast, if any.
     Spell* currentSpell = bot->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (!currentSpell)
-        currentSpell = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
-
     if (currentSpell)
     {
-        const SpellInfo* spellInfo = currentSpell->GetSpellInfo();
-        if (spellInfo && currentSpell->getState() == SPELL_STATE_PREPARING)
+        if (currentSpell->getState() == SPELL_STATE_PREPARING)
         {
-            Unit* spellTarget = currentSpell->m_targets.GetUnitTarget();
-            // Interrupt if target is dead or spell can't target dead units
-            if (spellTarget && !spellTarget->IsAlive() && !spellInfo->IsAllowingDeadTarget())
-            {
-                InterruptSpell();
-                YieldThread(bot, GetReactDelay());
-                return;
-            }
-
-            GameObject* goSpellTarget = currentSpell->m_targets.GetGOTarget();
-
-            if (goSpellTarget && !goSpellTarget->isSpawned())
-            {
-                InterruptSpell();
-                YieldThread(bot, GetReactDelay());
-                return;
-            }
-
-            bool isHeal = false;
-            bool isSingleTarget = true;
-
-            for (uint8 i = 0; i < 3; ++i)
-            {
-                if (!spellInfo->Effects[i].Effect)
-                    continue;
-
-                // Check if spell is a heal
-                if (spellInfo->Effects[i].Effect == SPELL_EFFECT_HEAL ||
-                    spellInfo->Effects[i].Effect == SPELL_EFFECT_HEAL_MAX_HEALTH ||
-                    spellInfo->Effects[i].Effect == SPELL_EFFECT_HEAL_MECHANICAL)
-                    isHeal = true;
-
-                // Check if spell is single-target
-                if ((spellInfo->Effects[i].TargetA.GetTarget() &&
-                     spellInfo->Effects[i].TargetA.GetTarget() != TARGET_UNIT_TARGET_ALLY) ||
-                    (spellInfo->Effects[i].TargetB.GetTarget() &&
-                     spellInfo->Effects[i].TargetB.GetTarget() != TARGET_UNIT_TARGET_ALLY))
-                {
-                    isSingleTarget = false;
-                }
-            }
-
-            // Interrupt if target ally has full health (heal by other member)
-            if (isHeal && isSingleTarget && spellTarget && spellTarget->IsFullHealth())
-            {
-                InterruptSpell();
-                YieldThread(bot, GetReactDelay());
-                return;
-            }
-
-            // Ensure bot is facing target if necessary
-            if (spellTarget && !bot->HasInArc(CAST_ANGLE_IN_FRONT, spellTarget) &&
-                (spellInfo->FacingCasterFlags & SPELL_FACING_FLAG_INFRONT))
-            {
-                ServerFacade::instance().SetFacingTo(bot, spellTarget);
-            }
-
             // Allow external scripts to interrupt a cast in progress
-            if (pendingCastInterrupt)
+            if (spellInterruptRequested)
             {
-                pendingCastInterrupt = false;
+                spellInterruptRequested = false;
                 InterruptSpell();
                 YieldThread(bot, GetReactDelay());
                 return;
             }
 
-            // Wait for spell cast
+            const SpellInfo* spellInfo = currentSpell->GetSpellInfo();
+            if (spellInfo)
+            {
+                Unit* spellTarget = currentSpell->m_targets.GetUnitTarget();
+                // Interrupt if target is dead or spell can't target dead units
+                if (spellTarget && !spellTarget->IsAlive() && !spellInfo->IsAllowingDeadTarget())
+                {
+                    InterruptSpell();
+                    YieldThread(bot, GetReactDelay());
+                    return;
+                }
+
+                GameObject* goSpellTarget = currentSpell->m_targets.GetGOTarget();
+
+                if (goSpellTarget && !goSpellTarget->isSpawned())
+                {
+                    InterruptSpell();
+                    YieldThread(bot, GetReactDelay());
+                    return;
+                }
+
+                bool isHeal = false;
+                bool isSingleTarget = true;
+
+                for (uint8 i = 0; i < 3; ++i)
+                {
+                    if (!spellInfo->Effects[i].Effect)
+                        continue;
+
+                    // Check if spell is a heal
+                    if (spellInfo->Effects[i].Effect == SPELL_EFFECT_HEAL ||
+                        spellInfo->Effects[i].Effect == SPELL_EFFECT_HEAL_MAX_HEALTH ||
+                        spellInfo->Effects[i].Effect == SPELL_EFFECT_HEAL_MECHANICAL)
+                        isHeal = true;
+
+                    // Check if spell is single-target
+                    if ((spellInfo->Effects[i].TargetA.GetTarget() &&
+                         spellInfo->Effects[i].TargetA.GetTarget() != TARGET_UNIT_TARGET_ALLY) ||
+                        (spellInfo->Effects[i].TargetB.GetTarget() &&
+                         spellInfo->Effects[i].TargetB.GetTarget() != TARGET_UNIT_TARGET_ALLY))
+                    {
+                        isSingleTarget = false;
+                    }
+                }
+
+                // Interrupt if target ally has full health (heal by other member)
+                if (isHeal && isSingleTarget && spellTarget && spellTarget->IsFullHealth())
+                {
+                    InterruptSpell();
+                    YieldThread(bot, GetReactDelay());
+                    return;
+                }
+
+                // Ensure bot is facing target if necessary
+                if (spellTarget && !bot->HasInArc(CAST_ANGLE_IN_FRONT, spellTarget) &&
+                    (spellInfo->FacingCasterFlags & SPELL_FACING_FLAG_INFRONT))
+                {
+                    ServerFacade::instance().SetFacingTo(bot, spellTarget);
+                }
+
+                // Wait for spell cast
+                YieldThread(bot, GetReactDelay());
+                return;
+            }
+        }
+    }
+
+    if (spellInterruptRequested)
+    {
+        // At this point the preparing-cast branch above did not consume the request.
+        // Interrupt a current channel if one still exists; otherwise, clear the stale request.
+        if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+        {
+            spellInterruptRequested = false;
+            InterruptSpell();
             YieldThread(bot, GetReactDelay());
             return;
         }
+
+        spellInterruptRequested = false;
     }
 
     // Handle transport check delay
@@ -4197,6 +4212,19 @@ void PlayerbotAI::RemoveAura(std::string const name)
     uint32 spellid = aiObjectContext->GetValue<uint32>("spell id", name)->Get();
     if (spellid && HasAura(spellid, bot))
         bot->RemoveAurasDueToSpell(spellid);
+}
+
+void PlayerbotAI::RequestSpellInterrupt()
+{
+    Spell* currentSpell = bot->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    if (currentSpell && currentSpell->getState() == SPELL_STATE_PREPARING)
+    {
+        spellInterruptRequested = true;
+        return;
+    }
+
+    if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+        spellInterruptRequested = true;
 }
 
 bool PlayerbotAI::IsInterruptableSpellCasting(Unit* target, std::string const spell)
