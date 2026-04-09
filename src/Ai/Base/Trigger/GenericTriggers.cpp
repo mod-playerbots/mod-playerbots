@@ -481,6 +481,13 @@ bool FearCharmSleepTrigger::IsActive()
            bot->HasAuraWithMechanic(1 << MECHANIC_SLEEP);
 }
 
+bool FearSleepSapTrigger::IsActive()
+{
+    return bot->HasAuraType(SPELL_AURA_MOD_FEAR) ||
+           bot->HasAuraWithMechanic(1 << MECHANIC_SLEEP) ||
+           bot->HasAuraWithMechanic(1 << MECHANIC_SAPPED);
+}
+
 bool HasAuraStackTrigger::IsActive()
 {
     Aura* aura = botAI->GetAura(getName(), GetTarget(), false, true, stack);

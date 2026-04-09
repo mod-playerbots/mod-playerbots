@@ -32,6 +32,11 @@ bool BlessingTrigger::IsActive()
                                                             "blessing of kings", "blessing of sanctuary", nullptr);
 }
 
+bool DivineShieldLowHealthTrigger::IsActive()
+{
+    return botAI->HasAura("divine shield", bot) && AI_VALUE2(uint8, "health", "self target") < 80;
+}
+
 Unit* HandOfFreedomOnPartyTrigger::GetTarget()
 {
     bool const selfImpaired = botAI->IsMovementImpaired(bot);

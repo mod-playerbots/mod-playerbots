@@ -311,7 +311,7 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
             else
                 engine->addStrategiesNoInit("frost", nullptr);
 
-            engine->addStrategiesNoInit("dps", "dps assist", "cure", "aoe", nullptr);
+            engine->addStrategiesNoInit("dps", "dps assist", "cure", "cc", "aoe", nullptr);
             break;
         case CLASS_WARRIOR:
             if (tab == WARRIOR_TAB_PROTECTION)
