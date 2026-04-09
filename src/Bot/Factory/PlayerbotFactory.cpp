@@ -3032,6 +3032,17 @@ void PlayerbotFactory::InitMounts()
             slow = {33660, 35020, 35022, 35018};
             fast = {35025, 35025, 35027};
             break;
+        default:
+            if (bot->GetTeamId() == TEAM_HORDE)
+            { // Orc mounts
+                slow = {470, 6648, 458, 472};
+                fast = {23228, 23227, 23229};
+            }
+            else // Human mounts
+            {
+                slow = {6654, 6653, 580};
+                fast = {23250, 23252, 23251};
+            }
     }
 
     switch (bot->GetTeamId())
@@ -3307,7 +3318,7 @@ void PlayerbotFactory::InitReagents()
             break;
         case CLASS_PALADIN:
             if (level >= 52)
-                items.push_back({21177, 80});   // Symbol of Kings
+                items.push_back({21177, 100});   // Symbol of Kings
             break;
         case CLASS_PRIEST:
             if (level >= 48 && level < 56)

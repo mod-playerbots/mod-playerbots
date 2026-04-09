@@ -762,6 +762,14 @@ public:
     bool IsActive() override;
 };
 
+class FearSleepSapTrigger : public Trigger
+{
+public:
+    FearSleepSapTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fear sleep sap", 1) {}
+
+    bool IsActive() override;
+};
+
 class IsSwimmingTrigger : public Trigger
 {
 public:

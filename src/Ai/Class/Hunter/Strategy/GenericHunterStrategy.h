@@ -30,15 +30,6 @@ public:
     std::string const getName() override { return "aoe"; }
 };
 
-class HunterBoostStrategy : public Strategy
-{
-public:
-    HunterBoostStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
-
-    std::string const getName() override { return "boost"; }
-    void InitTriggers(std::vector<TriggerNode*>& triggers) override;
-};
-
 class HunterCcStrategy : public Strategy
 {
 public:

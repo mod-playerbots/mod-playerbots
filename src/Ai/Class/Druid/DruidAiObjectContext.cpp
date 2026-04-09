@@ -183,6 +183,7 @@ public:
         creators["bash"] = &DruidAiObjectContextInternal::bash;
         creators["swipe"] = &DruidAiObjectContextInternal::swipe;
         creators["growl"] = &DruidAiObjectContextInternal::growl;
+        creators["challenging roar"] = &DruidAiObjectContextInternal::challenging_roar;
         creators["demoralizing roar"] = &DruidAiObjectContextInternal::demoralizing_roar;
         creators["hibernate"] = &DruidAiObjectContextInternal::hibernate;
         creators["entangling roots"] = &DruidAiObjectContextInternal::entangling_roots;
@@ -277,6 +278,7 @@ private:
     static Action* bash(PlayerbotAI* botAI) { return new CastBashAction(botAI); }
     static Action* swipe(PlayerbotAI* botAI) { return new CastSwipeAction(botAI); }
     static Action* growl(PlayerbotAI* botAI) { return new CastGrowlAction(botAI); }
+    static Action* challenging_roar(PlayerbotAI* botAI) { return new CastChallengingRoarAction(botAI); }
     static Action* demoralizing_roar(PlayerbotAI* botAI) { return new CastDemoralizingRoarAction(botAI); }
     static Action* moonkin_form(PlayerbotAI* botAI) { return new CastMoonkinFormAction(botAI); }
     static Action* hibernate(PlayerbotAI* botAI) { return new CastHibernateAction(botAI); }
