@@ -8,7 +8,17 @@
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
-#include <Util.cpp>
+
+#include <algorithm>
+#include <cctype>
+
+static std::string LowercaseString(std::string const& str)
+{
+    std::string result = str;
+    std::transform(result.begin(), result.end(), result.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+    return result;
+}
 
 static Player* FindGroupPlayerByName(Player* player, std::string const& playerName)
 {
@@ -25,8 +35,7 @@ static Player* FindGroupPlayerByName(Player* player, std::string const& playerNa
         if (member)
         {
             std::string memberName = member->GetName();
-            strToLower(memberName);
-            if (memberName == playerName)
+            if (LowercaseString(memberName) == playerName)
                 return member;
         }
     }
@@ -46,8 +55,7 @@ bool SetFocusHealTargetsAction::Execute(Event event)
         return false;
     }
 
-    std::string param = event.getParam();
-    strToLower(param);
+    std::string const param = LowercaseString(event.getParam());
     if (param.empty())
     {
         std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
