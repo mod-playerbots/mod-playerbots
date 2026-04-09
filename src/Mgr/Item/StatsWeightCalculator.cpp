@@ -469,7 +469,7 @@ void StatsWeightCalculator::GenerateAdditionalWeights(Player* player)
         {
             stats_weights_[STATS_TYPE_INTELLECT] += 0.2f;
             stats_weights_[STATS_TYPE_SPIRIT] -= 0.0f;
-        }       
+        }
     }
 }
 
