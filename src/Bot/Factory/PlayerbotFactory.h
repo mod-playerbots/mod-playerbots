@@ -88,6 +88,7 @@ public:
     void InitKeyring();
     void InitReputation();
     void InitAttunementQuests();
+    void InitGuild();
 
 private:
     enum class ProfessionSpecializationSpell : uint32
@@ -199,7 +200,6 @@ private:
     void InitInventoryEquip();
     void InitInventorySkill();
     Item* StoreItem(uint32 itemId, uint32 count);
-    void InitGuild();
     void InitArenaTeam();
     void InitImmersive();
     static void AddPrevQuests(uint32 questId, std::list<uint32>& questIds);

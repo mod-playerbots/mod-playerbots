@@ -2532,6 +2532,13 @@ void RandomPlayerbotMgr::OnBotLoginInternal(Player* const bot)
         }
     }
 
+    // Run guild recovery/assignment at login to handle empty guild tables after restart.
+    if (sPlayerbotAIConfig.randomBotGuildCount > 0)
+    {
+        PlayerbotFactory factory(bot, bot->GetLevel());
+        factory.InitGuild();
+    }
+
     if (sPlayerbotAIConfig.randomBotFixedLevel)
     {
         bot->SetPlayerFlag(PLAYER_FLAGS_NO_XP_GAIN);
