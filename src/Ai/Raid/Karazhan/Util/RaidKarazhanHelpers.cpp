@@ -351,7 +351,7 @@ namespace KarazhanHelpers
                                                                     destX, destY, destZ, true))
                     continue;
 
-                if (!IsSafePosition(destX, destY, destZ, hazards, safeDistance))
+                if (!IsSafePosition(destX, destY, hazards, safeDistance))
                     continue;
 
                 if (requireSafePath)
