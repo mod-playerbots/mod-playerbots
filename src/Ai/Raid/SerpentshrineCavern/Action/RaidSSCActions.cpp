@@ -2151,7 +2151,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
     {
         // Passer order: HealAssistantOfIndex 0, 1, 2, then RangedDpsAssistantOfIndex 0
         if (bot == firstCorePasser &&
-            LineUpFirstCorePasser(designatedLooter, closestTrigger))
+            LineUpFirstCorePasser(designatedLooter))
         {
             return true;
         }
