@@ -31,19 +31,8 @@ void GenericPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("protect party member",
         { NextAction("blessing of protection on party", ACTION_EMERGENCY + 3) }));
     triggers.push_back(new TriggerNode("high mana", { NextAction("divine plea", ACTION_HIGH) }));
-    triggers.push_back(new TriggerNode(
-        "critical health", { NextAction("lay on hands", ACTION_EMERGENCY) }));
-    triggers.push_back(
-        new TriggerNode("party member critical health",
-                        { NextAction("lay on hands on party", ACTION_EMERGENCY + 1) }));
-    triggers.push_back(new TriggerNode(
-        "protect party member",
-        { NextAction("blessing of protection on party", ACTION_EMERGENCY + 2) }));
-    triggers.push_back(new TriggerNode(
-        "hand of freedom on party",
+    triggers.push_back(new TriggerNode("hand of freedom on party",
         { NextAction("hand of freedom on party", ACTION_HIGH + 4) }));
-    triggers.push_back(
-        new TriggerNode("high mana", { NextAction("divine plea", ACTION_HIGH) }));
 }
 
 void PaladinCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
