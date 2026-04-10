@@ -264,8 +264,11 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     if (!CanUpdateAI())
         return;
 
-    // Handle the current spell that is being cast, if any.
+    // Handle a spell that is still in its preparing phase (including channeled spells).
     Spell* currentSpell = bot->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    if (!currentSpell)
+        currentSpell = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
+
     if (currentSpell)
     {
         if (currentSpell->getState() == SPELL_STATE_PREPARING)
