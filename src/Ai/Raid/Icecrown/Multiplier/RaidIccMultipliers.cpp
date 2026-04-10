@@ -647,7 +647,7 @@ float IccSindragosaMultiplier::GetValue(Action* action)
             dynamic_cast<CastWhirlwindAction*>(action) || dynamic_cast<CastMindSearAction*>(action) ||
             dynamic_cast<CastMagmaTotemAction*>(action) || dynamic_cast<CastConsecrationAction*>(action) ||
             dynamic_cast<CastFlamestrikeAction*>(action) || dynamic_cast<CastExplosiveTrapAction*>(action) ||
-            dynamic_cast<CastExplosiveShotAction*>(action))
+            dynamic_cast<CastExplosiveShotBaseAction*>(action))
             return 0.0f;
     }
 
@@ -774,7 +774,7 @@ float IccLichKingAddsMultiplier::GetValue(Action* action)
             dynamic_cast<CastStarfallAction*>(action) || dynamic_cast<FanOfKnivesAction*>(action) ||
             dynamic_cast<CastWhirlwindAction*>(action) || dynamic_cast<CastMindSearAction*>(action) ||
             dynamic_cast<CastMagmaTotemAction*>(action) || dynamic_cast<CastFlamestrikeAction*>(action) ||
-            dynamic_cast<CastExplosiveTrapAction*>(action) || dynamic_cast<CastExplosiveShotAction*>(action))
+            dynamic_cast<CastExplosiveTrapAction*>(action) || dynamic_cast<CastExplosiveShotBaseAction*>(action))
             return 0.0f;
     }
 

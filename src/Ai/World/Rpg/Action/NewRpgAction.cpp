@@ -151,7 +151,14 @@ bool NewRpgGoGrindAction::Execute(Event /*event*/)
     if (SearchQuestGiverAndAcceptOrReward())
         return true;
     if (auto* data = std::get_if<NewRpgInfo::GoGrind>(&botAI->rpgInfo.data))
-        return MoveFarTo(data->pos);
+    {
+        if (MoveFarTo(data->pos))
+            return true;
+        // Small nudge so the next tick's MoveFarTo starts from a
+        // slightly different position. Kept small so it doesn't look
+        // like the bot is abandoning its destination.
+        return MoveRandomNear(10.0f);
+    }
 
     return false;
 }
@@ -162,7 +169,11 @@ bool NewRpgGoCampAction::Execute(Event /*event*/)
         return true;
 
     if (auto* data = std::get_if<NewRpgInfo::GoCamp>(&botAI->rpgInfo.data))
-        return MoveFarTo(data->pos);
+    {
+        if (MoveFarTo(data->pos))
+            return true;
+        return MoveRandomNear(10.0f);
+    }
 
     return false;
 }
@@ -215,7 +226,14 @@ bool NewRpgWanderNpcAction::Execute(Event /*event*/)
         data.lastReach = 0;
     }
     else
-        return MoveWorldObjectTo(data.npcOrGo);
+    {
+        if (MoveWorldObjectTo(data.npcOrGo))
+            return true;
+        // NPC pathing failed (random offset in a wall, mmap hiccup, etc).
+        // Take a small random step so the next tick retries from a
+        // different spot instead of staring at the NPC from afar.
+        return MoveRandomNear(15.0f);
+    }
 
     return true;
 }
@@ -305,7 +323,12 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
 
     if (bot->GetDistance(data.pos) > 10.0f && !data.lastReachPOI)
     {
-        return MoveFarTo(data.pos);
+        if (MoveFarTo(data.pos))
+            return true;
+        // Long-range sampler couldn't land a candidate — nudge the
+        // bot a short distance so the next tick retries from a
+        // different position instead of sitting idle.
+        return MoveRandomNear(10.0f);
     }
     // Now we are near the quest objective
     // kill mobs and looting quest should be done automatically by grind strategy
@@ -352,7 +375,11 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
         return true;
     }
 
-    return MoveRandomNear(20.0f);
+    // At the POI: keep the bot actively placed but avoid large
+    // random 20yd hops that look like pacing back and forth. A small
+    // ~8yd wander reads as the bot looking around while grind/loot
+    // strategies do their work.
+    return MoveRandomNear(8.0f);
 }
 
 bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
@@ -392,7 +419,11 @@ bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
         return false;
 
     if (bot->GetDistance(data.pos) > 10.0f && !data.lastReachPOI)
-        return MoveFarTo(data.pos);
+    {
+        if (MoveFarTo(data.pos))
+            return true;
+        return MoveRandomNear(10.0f);
+    }
 
     // Now we are near the qoi of reward
     // the quest should be rewarded by SearchQuestGiverAndAcceptOrReward
