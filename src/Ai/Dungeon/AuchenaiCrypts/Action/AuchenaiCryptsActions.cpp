@@ -53,7 +53,7 @@ bool ShirrakFleeFocusFireAction::Execute(Event /*event*/)
         if (flare && flare->IsAlive())
         {
             float currentDistance = bot->GetDistance2d(flare);
-            constexpr float safeDistance = 12.0f; 
+            constexpr float safeDistance = 12.0f;
             constexpr float buffer = 5.0f;
 
             if (currentDistance < safeDistance)
@@ -73,7 +73,7 @@ bool ShirrakFleeFocusFireAction::Execute(Event /*event*/)
 
 bool ShirrakRangedKeepDistanceAction::Execute(Event /*event*/)
 {
-    
+
     std::vector<Player*> rangedBots;
     if (Group* group = bot->GetGroup())
     {
@@ -84,18 +84,18 @@ bool ShirrakRangedKeepDistanceAction::Execute(Event /*event*/)
                 rangedBots.push_back(member);
         }
     }
-    
+
     auto findIt = std::find(rangedBots.begin(), rangedBots.end(), bot);
     size_t botIndex = (findIt != rangedBots.end()) ? std::distance(rangedBots.begin(), findIt) : 0;
     size_t count = rangedBots.size();
 
-    constexpr float arcSpan = M_PI / 2.0f; 
+    constexpr float arcSpan = M_PI / 2.0f;
     float arcCenter = M_PI;
     float arcStart = arcCenter - (arcSpan / 2.0f);
 
     float angle = (count <= 1) ? arcCenter : (arcStart + (arcSpan * (float)botIndex / (float)(count - 1)));
-    
-    constexpr float spreadRadius = 3.0f; 
+
+    constexpr float spreadRadius = 3.0f;
     float targetX = SHIRRAK_RANGED_POSITION.GetPositionX() + cos(angle) * spreadRadius;
     float targetY = SHIRRAK_RANGED_POSITION.GetPositionY() + sin(angle) * spreadRadius;
 
@@ -105,7 +105,7 @@ bool ShirrakRangedKeepDistanceAction::Execute(Event /*event*/)
     {
         float dX = targetX - bot->GetPositionX();
         float dY = targetY - bot->GetPositionY();
-        
+
         float moveDist = std::min(2.0f, distToSpot);
         float moveX = bot->GetPositionX() + (dX / distToSpot) * moveDist;
         float moveY = bot->GetPositionY() + (dY / distToSpot) * moveDist;
