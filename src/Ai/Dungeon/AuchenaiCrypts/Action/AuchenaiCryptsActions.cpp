@@ -21,7 +21,6 @@ bool ShirrakTankPositionBossAction::Execute(Event /*event*/)
 
     if (shirrak->GetVictim() == bot && bot->IsWithinMeleeRange(shirrak) &&
         bot->GetHealthPct()>30.0f)
-    
     {
         const Position& position = SHIRRAK_TANK_POSITION;
         float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
@@ -47,7 +46,7 @@ bool ShirrakTankPositionBossAction::Execute(Event /*event*/)
 bool ShirrakFleeFocusFireAction::Execute(Event /*event*/)
 {
     std::list<Creature*> creatureList;
-    bot->GetCreatureListWithEntryInGrid(creatureList, static_cast<uint32>(AuchenaiCryptsIDs::NPC_FOCUS_FIRE), 20.0f);
+        bot->GetCreatureListWithEntryInGrid(creatureList, static_cast<uint32>(AuchenaiCryptsIDs::NPC_FOCUS_FIRE), 20.0f);
 
     for (Creature* flare : creatureList)
     {
@@ -116,4 +115,3 @@ bool ShirrakRangedKeepDistanceAction::Execute(Event /*event*/)
     }
     return false;
 }
-    
