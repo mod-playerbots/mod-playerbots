@@ -199,12 +199,6 @@ AiPlayerbot.AutoInitEquipLevelLimitRatio = 1.0
 #                     0 - (Disabled)
 AiPlayerbot.AllowLearnTrainerSpells = 1
 
-# Percentage of randombots in each class bucket that receive a class-matching
-# weighted profession combination. The remaining randombots use the weighted
-# random sane-pair profession pool.
-# Default: 30
-AiPlayerbot.ClassMatchingProfessionChance = 30
-
 #
 #
 #
@@ -657,8 +651,13 @@ AiPlayerbot.BotTaxiGapJitterMs = 100
 
 ####################################################################################################
 # PROFESSIONS
-# Note: Random bots currently do not get professions
 #
+
+# Percentage of randombots in each class bucket that receive a class-matching
+# weighted profession combination. The remaining randombots use the weighted
+# random sane-pair profession pool.
+# Default: 30
+AiPlayerbot.ClassMatchingProfessionChance = 30
 
 # Automatically adds the 'master fishing' strategy to bots that have the fishing skill when the bots master fishes.
 # Default: 1 (Enabled)
