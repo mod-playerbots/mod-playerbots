@@ -16,6 +16,7 @@
 #include "NewRpgStrategy.h"
 #include "NewRpgTriggers.h"
 #include "PvpTriggers.h"
+#include "PullTriggers.h"
 #include "RpgTriggers.h"
 #include "RtiTriggers.h"
 #include "StuckTriggers.h"
@@ -129,6 +130,9 @@ public:
         creators["has attackers"] = &TriggerContext::has_attackers;
         creators["no possible targets"] = &TriggerContext::no_possible_targets;
         creators["possible adds"] = &TriggerContext::possible_adds;
+        creators["pull start"] = &TriggerContext::pull_start;
+        creators["pull end"] = &TriggerContext::pull_end;
+        creators["return to pull position"] = &TriggerContext::return_to_pull_position;
 
         creators["no drink"] = &TriggerContext::no_drink;
         creators["no food"] = &TriggerContext::no_food;
@@ -280,6 +284,9 @@ private:
     static Trigger* swimming(PlayerbotAI* botAI) { return new IsSwimmingTrigger(botAI); }
     static Trigger* no_possible_targets(PlayerbotAI* botAI) { return new NoPossibleTargetsTrigger(botAI); }
     static Trigger* possible_adds(PlayerbotAI* botAI) { return new PossibleAddsTrigger(botAI); }
+    static Trigger* pull_start(PlayerbotAI* botAI) { return new PullStartTrigger(botAI); }
+    static Trigger* pull_end(PlayerbotAI* botAI) { return new PullEndTrigger(botAI); }
+    static Trigger* return_to_pull_position(PlayerbotAI* botAI) { return new ReturnToPullPositionTrigger(botAI); }
     static Trigger* can_loot(PlayerbotAI* botAI) { return new CanLootTrigger(botAI); }
     static Trigger* far_from_loot_target(PlayerbotAI* botAI) { return new FarFromCurrentLootTrigger(botAI); }
     static Trigger* far_from_master(PlayerbotAI* botAI) { return new FarFromMasterTrigger(botAI); }

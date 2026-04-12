@@ -1776,6 +1776,11 @@ bool PlayerbotAI::ContainsStrategy(StrategyType type)
 
 bool PlayerbotAI::HasStrategy(std::string const name, BotState type) { return engines[type]->HasStrategy(name); }
 
+Strategy* PlayerbotAI::GetStrategy(std::string const name, BotState type)
+{
+    return engines[type] ? engines[type]->GetStrategy(name) : nullptr;
+}
+
 void PlayerbotAI::ResetStrategies(bool load)
 {
     for (uint8 i = 0; i < BOT_STATE_MAX; i++)

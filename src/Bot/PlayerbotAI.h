@@ -405,6 +405,7 @@ public:
     void ChangeStrategy(std::string const name, BotState type);
     void ClearStrategies(BotState type);
     std::vector<std::string> GetStrategies(BotState type);
+    Strategy* GetStrategy(std::string const name, BotState type);
     void ApplyInstanceStrategies(uint32 mapId, bool tellMaster = false);
     void EvaluateHealerDpsStrategy();
     bool ContainsStrategy(StrategyType type);
