@@ -75,6 +75,17 @@ std::string PullStrategy::GetPullActionName() const
     if (!bot)
         return actionName;
 
+    if (bot->getClass() == CLASS_WARRIOR && actionName == "shoot")
+    {
+        Unit* target = GetTarget();
+        uint32 const heroicThrowSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "heroic throw")->Get();
+        if (target && heroicThrowSpellId && bot->HasSpell(heroicThrowSpellId) &&
+            botAI->CanCastSpell(heroicThrowSpellId, target))
+        {
+            return "heroic throw";
+        }
+    }
+
     if (bot->getClass() == CLASS_DRUID && actionName == "faerie fire")
     {
         uint32 const faerieFireFeralId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "faerie fire (feral)")->Get();
