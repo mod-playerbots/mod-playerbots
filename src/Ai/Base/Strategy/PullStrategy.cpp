@@ -86,6 +86,27 @@ std::string PullStrategy::GetPullActionName() const
         }
     }
 
+    if (bot->getClass() == CLASS_DEATH_KNIGHT && actionName == "death grip")
+    {
+        Unit* target = GetTarget();
+        if (target)
+        {
+            uint32 const icyTouchSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "icy touch")->Get();
+            if (icyTouchSpellId && bot->HasSpell(icyTouchSpellId) &&
+                botAI->CanCastSpell(icyTouchSpellId, target))
+            {
+                return "icy touch";
+            }
+
+            uint32 const darkCommandSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "dark command")->Get();
+            if (darkCommandSpellId && bot->HasSpell(darkCommandSpellId) &&
+                botAI->CanCastSpell(darkCommandSpellId, target))
+            {
+                return "dark command";
+            }
+        }
+    }
+
     if (bot->getClass() == CLASS_PALADIN && actionName == "judgement" &&
         (botAI->HasStrategy("tank", BOT_STATE_COMBAT) || botAI->HasStrategy("tank", BOT_STATE_NON_COMBAT)))
     {
@@ -110,11 +131,28 @@ std::string PullStrategy::GetPullActionName() const
 
     if (bot->getClass() == CLASS_DRUID && actionName == "faerie fire")
     {
+        Unit* target = GetTarget();
+        uint32 pullSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", actionName)->Get();
+
         uint32 const faerieFireFeralId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "faerie fire (feral)")->Get();
         if (faerieFireFeralId && bot->HasSpell(faerieFireFeralId) &&
             (botAI->HasStrategy("tank feral", BOT_STATE_COMBAT) || botAI->HasStrategy("dps feral", BOT_STATE_COMBAT)))
         {
             actionName = "faerie fire (feral)";
+            pullSpellId = faerieFireFeralId;
+        }
+
+        if (pullSpellId && bot->HasSpell(pullSpellId) &&
+            (!target || botAI->CanCastSpell(pullSpellId, target)))
+        {
+            return actionName;
+        }
+
+        uint32 const growlSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "growl")->Get();
+        if (growlSpellId && bot->HasSpell(growlSpellId) &&
+            (!target || botAI->CanCastSpell(growlSpellId, target)))
+        {
+            return "growl";
         }
     }
 
@@ -185,23 +223,36 @@ std::string PullStrategy::GetPreActionName() const
 bool PullStrategy::CanDoPullAction(Unit* target)
 {
     Player* bot = botAI->GetBot();
-    if (!bot || !target)
+    if (!bot || !botAI->IsTank(bot, true))
         return false;
-
-    if (!target->IsInWorld() || target->GetMapId() != bot->GetMapId())
-        return false;
-
-    if (bot->getClass() != CLASS_DRUID && bot->getClass() != CLASS_PALADIN &&
-        GetPullActionName() == "shoot" && !bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED))
-    {
-        return false;
-    }
 
     std::string const spellName = GetSpellName();
     if (spellName.empty())
         return false;
 
-    return true;
+    if (spellName == "shoot bow" || spellName == "shoot gun" ||
+        spellName == "shoot crossbow" || spellName == "throw")
+    {
+        return bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED) != nullptr;
+    }
+
+    if (!target)
+        target = GetTarget();
+
+    if (!target)
+        return bot->HasSpell(botAI->GetAiObjectContext()->GetValue<uint32>("spell id", spellName)->Get());
+
+    if (!target->IsInWorld() || target->GetMapId() != bot->GetMapId())
+        return false;
+
+    uint32 const spellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", spellName)->Get();
+    if (!spellId)
+        return false;
+
+    if (!bot->HasSpell(spellId))
+        return false;
+
+    return botAI->CanCastSpell(spellId, target);
 }
 
 void PullStrategy::RequestPull(Unit* target, bool resetTime)

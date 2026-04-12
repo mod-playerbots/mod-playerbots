@@ -32,7 +32,7 @@ public:
     bool IsPullPendingToStart() const { return pendingToStart; }
     bool HasPullStarted() const { return pullStartTime > 0; }
 
-    bool CanDoPullAction(Unit* target);
+    bool CanDoPullAction(Unit* target = nullptr);
     Unit* GetTarget() const;
     bool HasTarget() const;
 

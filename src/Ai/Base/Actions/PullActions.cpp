@@ -69,6 +69,12 @@ bool PullRequestAction::Execute(Event event)
     return true;
 }
 
+bool PullRequestAction::isPossible()
+{
+    PullStrategy* strategy = PullStrategy::Get(botAI);
+    return strategy && strategy->CanDoPullAction();
+}
+
 Unit* PullMyTargetAction::GetPullTarget(Event event)
 {
     Player* requester = event.getOwner() ? event.getOwner() : GetMaster();
