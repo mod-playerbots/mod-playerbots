@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
+ */
+
 #ifndef _PLAYERBOT_RAIDSSCHELPERS_H_
 #define _PLAYERBOT_RAIDSSCHELPERS_H_
 
@@ -64,9 +69,6 @@ namespace SerpentShrineCavernHelpers
 
         // Warlock
         SPELL_CURSE_OF_EXHAUSTION    = 18223,
-
-        // Item
-        SPELL_HEAVY_NETHERWEAVE_NET  = 31368,
     };
 
     enum SerpentShrineCavernNPCs
@@ -105,9 +107,6 @@ namespace SerpentShrineCavernHelpers
     {
         // Lady Vashj <Coilfang Matron>
         ITEM_TAINTED_CORE            = 31088,
-
-        // Tailoring
-        ITEM_HEAVY_NETHERWEAVE_NET   = 24269,
     };
 
     constexpr uint32 SSC_MAP_ID = 548;
@@ -134,10 +133,10 @@ namespace SerpentShrineCavernHelpers
     extern std::unordered_map<uint32, time_t> leotherasHumanFormDpsWaitTimer;
     extern std::unordered_map<uint32, time_t> leotherasDemonFormDpsWaitTimer;
     extern std::unordered_map<uint32, time_t> leotherasFinalPhaseDpsWaitTimer;
-    Unit* GetLeotherasHuman(PlayerbotAI* botAI);
-    Unit* GetPhase2LeotherasDemon(PlayerbotAI* botAI);
-    Unit* GetPhase3LeotherasDemon(PlayerbotAI* botAI);
-    Unit* GetActiveLeotherasDemon(PlayerbotAI* botAI);
+    Unit* GetLeotherasHuman(Player* bot);
+    Unit* GetPhase2LeotherasDemon(Player* bot);
+    Unit* GetPhase3LeotherasDemon(Player* bot);
+    Unit* GetActiveLeotherasDemon(Player* bot);
     Player* GetLeotherasDemonFormTank(Player* bot);
 
     // Fathom-Lord Karathress
@@ -158,25 +157,26 @@ namespace SerpentShrineCavernHelpers
     extern std::unordered_map<ObjectGuid, uint8> tidewalkerRangedStep;
 
     // Lady Vashj <Coilfang Matron>
-    constexpr float VASHJ_PLATFORM_Z = 42.985f;
+    constexpr float VASHJ_PLATFORM_CENTER_Z = 42.902f;
+    constexpr float VASHJ_PLATFORM_EDGE_Z = 41.097f;
     extern const Position VASHJ_PLATFORM_CENTER_POSITION;
-    extern std::unordered_map<ObjectGuid, Position> vashjRangedPositions;
     extern std::unordered_map<ObjectGuid, bool> hasReachedVashjRangedPosition;
     extern std::unordered_map<uint32, ObjectGuid> nearestTriggerGuid;
     extern std::unordered_map<ObjectGuid, Position> intendedLineup;
     extern std::unordered_map<uint32, time_t> lastImbueAttempt;
-    extern std::unordered_map<uint32, time_t> lastCoreInInventoryTime;
-    bool IsMainTankInSameSubgroup(Player* bot);
+    extern std::unordered_map<ObjectGuid, time_t> lastCoreInInventoryTime;
+    bool IsMainTankInSameSubgroup(PlayerbotAI* botAI, Player* bot);
     bool IsLadyVashjInPhase1(PlayerbotAI* botAI);
     bool IsLadyVashjInPhase2(PlayerbotAI* botAI);
     bool IsLadyVashjInPhase3(PlayerbotAI* botAI);
     bool IsValidLadyVashjCombatNpc(Unit* unit, PlayerbotAI* botAI);
-    bool AnyRecentCoreInInventory(Group* group, PlayerbotAI* botAI, uint32 graceSeconds = 3);
-    Player* GetDesignatedCoreLooter(Group* group, PlayerbotAI* botAI);
-    Player* GetFirstTaintedCorePasser(Group* group, PlayerbotAI* botAI);
-    Player* GetSecondTaintedCorePasser(Group* group, PlayerbotAI* botAI);
-    Player* GetThirdTaintedCorePasser(Group* group, PlayerbotAI* botAI);
-    Player* GetFourthTaintedCorePasser(Group* group, PlayerbotAI* botAI);
+    Player* GetDesignatedCoreLooter(PlayerbotAI* botAI, Player* bot);
+    Player* GetFirstTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
+    Player* GetSecondTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
+    Player* GetThirdTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
+    Player* GetFourthTaintedCorePasser(PlayerbotAI* botAI, Player* bot);
+    std::array<Player*, 5> GetCoreHandlers(PlayerbotAI* botAI, Player* bot);
+    bool AnyRecentCoreInInventory(PlayerbotAI* botAI, Player* bot);
     struct GeneratorInfo { ObjectGuid guid; float x, y, z; };
     extern const std::vector<uint32> SHIELD_GENERATOR_DB_GUIDS;
     std::vector<GeneratorInfo> GetAllGeneratorInfosByDbGuids(

@@ -9,7 +9,13 @@
 #include "GenericTriggers.h"
 #include "PlayerbotAI.h"
 
-BUFF_TRIGGER(BattleShoutTrigger, "battle shout");
+class BattleShoutTrigger : public BuffTrigger
+{
+public:
+    BattleShoutTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "battle shout") {}
+    bool IsActive() override;
+};
+
 BUFF_TRIGGER(BattleStanceTrigger, "battle stance");
 BUFF_TRIGGER(DefensiveStanceTrigger, "defensive stance");
 BUFF_TRIGGER(BerserkerStanceTrigger, "berserker stance");
@@ -85,4 +91,5 @@ public:
 // public:
 //     SlamTrigger(PlayerbotAI* ai) : HasAuraTrigger(ai, "slam!") {}
 // };
+
 #endif

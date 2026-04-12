@@ -130,6 +130,20 @@ public:
     std::string const GetTargetName() override { return "self target"; }
 };
 
+class CastEnchantItemMainHandAction : public CastEnchantItemAction
+{
+public:
+    CastEnchantItemMainHandAction(PlayerbotAI* botAI, std::string const spell);
+    bool isPossible() override;
+};
+
+class CastEnchantItemOffHandAction : public CastEnchantItemAction
+{
+public:
+    CastEnchantItemOffHandAction(PlayerbotAI* botAI, std::string const spell);
+    bool isPossible() override;
+};
+
 class CastHealingSpellAction : public CastAuraSpellAction
 {
 public:
@@ -282,6 +296,26 @@ class CastBerserkingAction : public CastBuffSpellAction
 {
 public:
     CastBerserkingAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "berserking") {}
+};
+
+class CastEveryManForHimselfAction : public CastSpellAction
+{
+public:
+    CastEveryManForHimselfAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "every man for himself") {}
+
+    std::string const GetTargetName() override { return "self target"; }
+    bool isPossible() override;
+    bool isUseful() override;
+};
+
+class CastWillOfTheForsakenAction : public CastSpellAction
+{
+public:
+    CastWillOfTheForsakenAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "will of the forsaken") {}
+
+    std::string const GetTargetName() override { return "self target"; }
+    bool isPossible() override;
+    bool isUseful() override;
 };
 
 class UseTrinketAction : public Action

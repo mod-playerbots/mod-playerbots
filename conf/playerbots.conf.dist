@@ -298,9 +298,24 @@ AiPlayerbot.TwoRoundsGearInit = 0
 # Default: 0 (disabled)
 AiPlayerbot.FreeMethodLoot = 0
 
-# Bots' loot roll level (0 = pass, 1 = greed, 2 = need)
+# Bots' Roll level bots will use for items they Need (0 = pass, 1 = greed, 2 = need)
 # Default: 1 (greed)
-AiPlayerbot.LootRollLevel = 1
+AiPlayerbot.LootNeedRollLevel = 1
+
+# Enable bots to roll GREED on items (global toggle)
+# If disabled, bots will PASS instead of GREED on all items
+# Default: 0 (disabled - bots only NEED or PASS)
+AiPlayerbot.LootGreedRollLevel = 0
+
+# Enable bots to roll on recipes. Will NEED on learnable profession recipes they don't already know
+# Bots will roll GREED on BoE recipes they can't learn if LootRollGreed is enabled.
+# Default: 0 (disabled)
+AiPlayerbot.LootRollRecipe = 0
+
+# Bots with enchanting will roll DISENCHANT instead of GREED on disenchantable items
+# If disabled, bots will GREED on disenchantable items instead
+# Default: 0 (disabled)
+AiPlayerbot.LootRollDisenchant = 0
 
 #
 #
@@ -566,7 +581,10 @@ AiPlayerbot.AutoGearScoreLimit = 0
 # Default: food, taxi, and raid are enabled
 AiPlayerbot.BotCheats = "food,taxi,raid"
 
-# Attunement quests (comma-separated list of quest IDs)
+# List of attunement quests (comma-separated list of quest IDs) that are automatically completed for all bots.  
+# While mod-playerbots does not restore removed attunement requirements, other mods, such as mod-individual-progression, may do so.
+# This is meant to exclude bots from such requirements.
+# 
 # Default:
 # Caverns of Time - Part 1
 # - 10279, To The Master's Lair
@@ -592,7 +610,17 @@ AiPlayerbot.BotCheats = "food,taxi,raid"
 #
 # Serpentshrine Cavern
 # - 10901, The Cudgel of Kar'desh
-AiPlayerbot.AttunementQuests = 10279,10277,10282,10283,10284,10285,10296,10297,10298,11481,11482,11488,11490,11492,10901
+#
+# The Eye
+# - 10888, Trial of the Naaru: Magtheridon
+#
+# Mount Hyjal
+# - 10445, The Vials of Eternity
+#
+# Black Temple
+# - 10985, A Distraction for Akama
+#
+AiPlayerbot.AttunementQuests = 10279,10277,10282,10283,10284,10285,10296,10297,10298,11481,11482,11488,11490,11492,10901,10888,10445,10985
 
 #
 #
@@ -796,6 +824,10 @@ AiPlayerbot.LimitGearExpansion = 1
 # Set between 0 (0%) and 1 (100%)
 AiPlayerbot.RandomGearLoweringChance = 0
 
+# Unobtainable or unusable items (comma-separated list of item IDs)
+# Default: Chilton Wand (12468), Totem of the Earthen Ring (46978)
+AiPlayerbot.UnobtainableItems = 12468,46978
+
 # Randombots check player's gearscore level and deny the group invitation if it's too low
 # Default: 0 (disabled)
 AiPlayerbot.GearScoreCheck = 0
@@ -833,34 +865,65 @@ AiPlayerbot.ExcludedHunterPetFamilies = ""
 #
 #
 ####################################################################################################
-
-
 ####################################################################################################
-# ACTIVITIES
+# ACTIVITY
 #
+# BotActiveAlone
+# - Controls how many bots are active when no real players are nearby.
+# - Think of it as a rough percentage: 10 means approximately 10% of bots will be active.
+#   Not exact — the actual number may vary slightly per rotation cycle.
+# - The active bots rotate: every <DurationSeconds> a different set of bots takes a turn.
+# - The real number of active bots will always be higher than this value, because bots in
+#   combat, dungeons, battlegrounds, LFG queue, groups with real players, etc. are always
+#   forced active on top of this (see force rules below).
+# - Set to 100 (with SmartScale off) = all bots always active. Maximum server load.
+# - Set to 0 = only bots that match a force rule below will be active.
 #
-# Specify percent of active bots
-# The default is 100% but will be automatically adjusted if botActiveAloneSmartScale
-# is enabled. Regardless, this value is only applied to inactive areas where no real players
-# are detected. When real players are nearby, the value is always enforced to 100%
-AiPlayerbot.BotActiveAlone = 100
+# BotActiveAloneDurationSeconds
+# - How often the active roster rotates (in seconds). A different group of bots wakes up
+#   and the previous group may go idle.
+# - This is a minimum, not exact. If a bot is in combat or meets any force rule when the
+#   rotation happens, it stays active until those conditions end — it won't be cut off
+#   mid-fight just because its turn expired.
+#
+AiPlayerbot.BotActiveAlone = 10
+AiPlayerbot.BotActiveAloneDurationSeconds = 30
 
-# Force botActiveAlone when bot is within the specified distance of a real player
+#
+# Force-active rules (1 = on, 0 = off)
+# These override the percentage above. If any of these conditions is true, the bot stays active.
+#
+# InRadius  - A real player is within this many yards (set to 0 to disable).
+# InZone    - A real player is in the same zone (e.g. Elwynn Forest).
+# InMap     - A real player is on the same continent (e.g. Eastern Kingdoms).
+# IsFriend  - A real player has this bot on their friends list.
+# InGuild   - This bot is in a guild that has a real player in it.
+#
+# Bots are also always forced active (not configurable) when:
+#   in combat, inside a dungeon/raid/BG, in a BG or LFG queue,
+#   grouped with a real player, or controlled by a real player.
+#
 AiPlayerbot.BotActiveAloneForceWhenInRadius = 150
 AiPlayerbot.BotActiveAloneForceWhenInZone = 1
 AiPlayerbot.BotActiveAloneForceWhenInMap = 0
-AiPlayerbot.BotActiveAloneForceWhenIsFriend = 1
+AiPlayerbot.BotActiveAloneForceWhenIsFriend = 0
 AiPlayerbot.BotActiveAloneForceWhenInGuild = 1
 
-# SmartScale (automatic scaling of percentage of active bots based on latency)
-# The default is 1. When enabled (smart) scales the 'BotActiveAlone' value.
-# (The scaling will be overruled by the BotActiveAloneForceWhen...rules)
+# SmartScale — automatically reduces active bots when the server is struggling.
+# Monitors the server's update time (how long each server tick takes in milliseconds).
+# When the server slows down, fewer bots are kept active to reduce load.
 #
-#   Limitfloor - when DIFF (latency) is above floor, activity scaling begins
-#   LimitCeiling - when DIFF (latency) is above ceiling, activity is 0%
+#   Floor (default 50ms)   - Below this, no reduction. Server is running fine.
+#   Ceiling (default 200ms) - At or above this, all non-forced bots are paused.
+#   Between floor and ceiling, activity scales down gradually.
+#     Example: BotActiveAlone=10, floor=50, ceiling=200
+#       Server at 50ms  → ~10% active (no reduction)
+#       Server at 125ms → ~5% active (half reduction)
+#       Server at 200ms → 0% active (only forced bots remain)
 #
-#   MinLevel - only apply scaling when level is above or equal to min(bot)Level
-#   MaxLevel - only apply scaling when level is lower or equal of max(bot)Level
+# MinLevel/MaxLevel — only bots within this level range are affected by SmartScale.
+#   Bots outside the range always use the full BotActiveAlone value.
+#   Force rules always win over SmartScale.
 #
 AiPlayerbot.botActiveAloneSmartScale = 1
 AiPlayerbot.botActiveAloneSmartScaleDiffLimitfloor = 50
@@ -975,6 +1038,7 @@ AiPlayerbot.EnableNewRpgStrategy = 1
 # DoQuest       (Default: 60  Select quest from the quest log and head to the location to attempt completion​)
 # TravelFlight  (Default: 15  Go to the nearest flightmaster and fly to a level-appropriate area)
 # Rest          (Default: 5   Take a break for a while and do nothing)
+# OutdoorPvp    (Default: 10  Participate in outdoor PvP capture points if already in an outdoor PvP zone)
 AiPlayerbot.RpgStatusProbWeight.WanderRandom = 15
 AiPlayerbot.RpgStatusProbWeight.WanderNpc = 20
 AiPlayerbot.RpgStatusProbWeight.GoGrind = 15
@@ -982,6 +1046,7 @@ AiPlayerbot.RpgStatusProbWeight.GoCamp = 10
 AiPlayerbot.RpgStatusProbWeight.DoQuest = 60
 AiPlayerbot.RpgStatusProbWeight.TravelFlight = 15
 AiPlayerbot.RpgStatusProbWeight.Rest = 5
+AiPlayerbot.RpgStatusProbWeight.OutdoorPvp = 10
 
 # Bots' minimum and maximum level when teleporting in and out of a zone, according to the new RPG strategy
 # Format: AiPlayerbot.ZoneBracket.zoneID = minLevel,maxLevel
@@ -1374,28 +1439,28 @@ AiPlayerbot.PremadeSpecLink.1.5.80 = 0502300123-3-250031220223012521332113321
 #
 
 AiPlayerbot.PremadeSpecName.2.0 = holy pve
-AiPlayerbot.PremadeSpecGlyph.2.0 = 41106,43367,45741,43369,43365,41109
+AiPlayerbot.PremadeSpecGlyph.2.0 = 41106,43367,45741,43368,43365,41109
 AiPlayerbot.PremadeSpecLink.2.0.60 = 50350151020013053100515221
 AiPlayerbot.PremadeSpecLink.2.0.80 = 50350152220013053100515221-503201312
 AiPlayerbot.PremadeSpecName.2.1 = prot pve
-AiPlayerbot.PremadeSpecGlyph.2.1 = 41099,43367,43869,43369,43365,45745
+AiPlayerbot.PremadeSpecGlyph.2.1 = 41099,43367,43869,43368,43369,45745
 AiPlayerbot.PremadeSpecLink.2.1.60 = -05005135203102311333112321
 AiPlayerbot.PremadeSpecLink.2.1.80 = -05005135203102311333312321-502302012003
 AiPlayerbot.PremadeSpecName.2.2 = ret pve
-AiPlayerbot.PremadeSpecGlyph.2.2 = 41092,43367,41099,43369,43365,43869
+AiPlayerbot.PremadeSpecGlyph.2.2 = 41092,43367,41099,43368,43369,43869
 AiPlayerbot.PremadeSpecLink.2.2.60 = --05230051203331302133231131
 AiPlayerbot.PremadeSpecLink.2.2.65 = -05-05230051203331302133231131
 AiPlayerbot.PremadeSpecLink.2.2.80 = 050501-05-05232051203331302133231331
 AiPlayerbot.PremadeSpecName.2.3 = holy pvp
-AiPlayerbot.PremadeSpecGlyph.2.3 = 41110,43367,45746,43366,43365,45747
+AiPlayerbot.PremadeSpecGlyph.2.3 = 41110,43367,45746,43369,43365,45747
 AiPlayerbot.PremadeSpecLink.2.3.60 = 50332150300013050133215221
 AiPlayerbot.PremadeSpecLink.2.3.80 = 50332150300013050133315221-5032013122
 AiPlayerbot.PremadeSpecName.2.4 = prot pvp
-AiPlayerbot.PremadeSpecGlyph.2.4 = 41092,43369,41101,43368,43365,45745
+AiPlayerbot.PremadeSpecGlyph.2.4 = 41092,43367,41101,43369,43365,45745
 AiPlayerbot.PremadeSpecLink.2.4.60 = -15320130223122311323311321
 AiPlayerbot.PremadeSpecLink.2.4.80 = -15320130223122321333312321-052300502
 AiPlayerbot.PremadeSpecName.2.5 = ret pvp
-AiPlayerbot.PremadeSpecGlyph.2.5 = 41095,43369,41102,43368,43365,45747
+AiPlayerbot.PremadeSpecGlyph.2.5 = 41095,43367,41102,43369,43365,45747
 AiPlayerbot.PremadeSpecLink.2.5.60 = --05230250203331222133201321
 AiPlayerbot.PremadeSpecLink.2.5.80 = -1532013022-05230250203331322133201321
 
@@ -1655,7 +1720,7 @@ AiPlayerbot.PremadeSpecLink.9.1.60 = -003203301135112530135201051
 AiPlayerbot.PremadeSpecLink.9.1.70 = -003203301135112530135201051-55
 AiPlayerbot.PremadeSpecLink.9.1.80 = -003203301135112530135221351-55000005
 AiPlayerbot.PremadeSpecName.9.2 = destro pve
-AiPlayerbot.PremadeSpecGlyph.9.2 = 45785,43390,42454,43394,43393,45785
+AiPlayerbot.PremadeSpecGlyph.9.2 = 45785,43390,42454,43394,43393,42453
 AiPlayerbot.PremadeSpecLink.9.2.60 = --05203215200231051305031151
 AiPlayerbot.PremadeSpecLink.9.2.80 = 23-0302-05203215220331051335231351
 AiPlayerbot.PremadeSpecName.9.3 = affli pvp

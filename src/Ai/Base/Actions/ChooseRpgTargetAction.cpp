@@ -112,7 +112,6 @@ float ChooseRpgTargetAction::getMaxRelevance(GuidPosition guidP)
 
 bool ChooseRpgTargetAction::Execute(Event /*event*/)
 {
-    //TravelTarget* travelTarget = AI_VALUE(TravelTarget*, "travel target"); //not used, line marked for removal.
     Player* master = botAI->GetMaster();
     GuidPosition masterRpgTarget;
     if (master && master != bot && GET_PLAYERBOT_AI(master) && master->GetMapId() == bot->GetMapId() && !master->IsBeingTeleported())
@@ -124,7 +123,6 @@ bool ChooseRpgTargetAction::Execute(Event /*event*/)
         master = nullptr;
 
     std::unordered_map<ObjectGuid, uint32> targets;
-    // uint32 num = 0; //not used, line marked for removal.
     GuidVector possibleTargets = AI_VALUE(GuidVector, "possible rpg targets");
     GuidVector possibleObjects = AI_VALUE(GuidVector, "nearest game objects no los");
     GuidVector possiblePlayers = AI_VALUE(GuidVector, "nearest friendly players");

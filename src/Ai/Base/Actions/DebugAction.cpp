@@ -520,8 +520,8 @@ bool DebugAction::Execute(Event event)
                 botPos.setY(botPos.GetPositionY() + (dy - 5) * 5);
                 botPos.setZ(botPos.getHeight());
 
-                Creature* wpCreature = bot->SummonCreature(effect, botPos.GetPositionX(), botPos.GetPositionY(), botPos.GetPositionZ(), 0,
-                                                           TEMPSUMMON_TIMED_DESPAWN, 10000.0f);
+                bot->SummonCreature(effect, botPos.GetPositionX(), botPos.GetPositionY(), botPos.GetPositionZ(), 0,
+                                    TEMPSUMMON_TIMED_DESPAWN, 10000.0f);
             }
         }
         return true;

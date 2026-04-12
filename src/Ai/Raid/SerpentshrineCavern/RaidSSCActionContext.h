@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
+ */
+
 #ifndef _PLAYERBOT_RAIDSSCACTIONCONTEXT_H
 #define _PLAYERBOT_RAIDSSCACTIONCONTEXT_H
 
@@ -161,9 +166,6 @@ public:
         creators["lady vashj destroy tainted core"] =
             &RaidSSCActionContext::lady_vashj_destroy_tainted_core;
 
-        creators["lady vashj erase core passing trackers"] =
-            &RaidSSCActionContext::lady_vashj_erase_core_passing_trackers;
-
         creators["lady vashj avoid toxic spores"] =
             &RaidSSCActionContext::lady_vashj_avoid_toxic_spores;
 
@@ -323,9 +325,6 @@ private:
 
     static Action* lady_vashj_destroy_tainted_core(
         PlayerbotAI* botAI) { return new LadyVashjDestroyTaintedCoreAction(botAI); }
-
-    static Action* lady_vashj_erase_core_passing_trackers(
-        PlayerbotAI* botAI) { return new LadyVashjEraseCorePassingTrackersAction(botAI); }
 
     static Action* lady_vashj_avoid_toxic_spores(
         PlayerbotAI* botAI) { return new LadyVashjAvoidToxicSporesAction(botAI); }

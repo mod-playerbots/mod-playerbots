@@ -14,6 +14,7 @@
 #include "ServerFacade.h"
 #include "SharedDefines.h"
 #include "Unit.h"
+#include "WaitForAttackStrategy.h"
 
 bool AttackAction::Execute(Event /*event*/)
 {
@@ -164,7 +165,8 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
 
     botAI->ChangeEngine(BOT_STATE_COMBAT);
 
-    bot->Attack(target, shouldMelee);
+    if (!WaitForAttackStrategy::ShouldWait(botAI))
+        bot->Attack(target, shouldMelee);
     /* prevent pet dead immediately in group */
     // if (bot->GetMap()->IsDungeon() && bot->GetGroup() && !target->IsInCombat())
     // {

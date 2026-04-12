@@ -132,7 +132,9 @@ public:
             &PaladinTriggerFactoryInternal::hammer_of_justice_on_enemy_target;
         creators["hammer of justice on snare target"] =
             &PaladinTriggerFactoryInternal::hammer_of_justice_on_snare_target;
+        creators["not sensing undead"] = &PaladinTriggerFactoryInternal::not_sensing_undead;
         creators["divine favor"] = &PaladinTriggerFactoryInternal::divine_favor;
+        creators["divine shield low health"] = &PaladinTriggerFactoryInternal::divine_shield_low_health;
         creators["turn undead"] = &PaladinTriggerFactoryInternal::turn_undead;
         creators["avenger's shield"] = &PaladinTriggerFactoryInternal::avenger_shield;
         creators["consecration"] = &PaladinTriggerFactoryInternal::consecration;
@@ -141,6 +143,7 @@ public:
         creators["repentance interrupt"] = &PaladinTriggerFactoryInternal::repentance_interrupt;
         creators["beacon of light on main tank"] = &PaladinTriggerFactoryInternal::beacon_of_light_on_main_tank;
         creators["sacred shield on main tank"] = &PaladinTriggerFactoryInternal::sacred_shield_on_main_tank;
+        creators["hand of freedom on party"] = &PaladinTriggerFactoryInternal::hand_of_freedom_on_party;
 
         creators["blessing of kings on party"] = &PaladinTriggerFactoryInternal::blessing_of_kings_on_party;
         creators["blessing of wisdom on party"] = &PaladinTriggerFactoryInternal::blessing_of_wisdom_on_party;
@@ -151,8 +154,10 @@ public:
     }
 
 private:
+    static Trigger* not_sensing_undead(PlayerbotAI* botAI) { return new NotSensingUndeadTrigger(botAI); }
     static Trigger* turn_undead(PlayerbotAI* botAI) { return new TurnUndeadTrigger(botAI); }
     static Trigger* divine_favor(PlayerbotAI* botAI) { return new DivineFavorTrigger(botAI); }
+    static Trigger* divine_shield_low_health(PlayerbotAI* botAI) { return new DivineShieldLowHealthTrigger(botAI); }
     static Trigger* holy_shield(PlayerbotAI* botAI) { return new HolyShieldTrigger(botAI); }
     static Trigger* righteous_fury(PlayerbotAI* botAI) { return new RighteousFuryTrigger(botAI); }
     static Trigger* judgement(PlayerbotAI* botAI) { return new JudgementTrigger(botAI); }
@@ -205,6 +210,7 @@ private:
     static Trigger* repentance_interrupt(PlayerbotAI* botAI) { return new RepentanceInterruptTrigger(botAI); }
     static Trigger* beacon_of_light_on_main_tank(PlayerbotAI* ai) { return new BeaconOfLightOnMainTankTrigger(ai); }
     static Trigger* sacred_shield_on_main_tank(PlayerbotAI* ai) { return new SacredShieldOnMainTankTrigger(ai); }
+    static Trigger* hand_of_freedom_on_party(PlayerbotAI* botAI) { return new HandOfFreedomOnPartyTrigger(botAI); }
 
     static Trigger* blessing_of_kings_on_party(PlayerbotAI* botAI) { return new BlessingOfKingsOnPartyTrigger(botAI); }
     static Trigger* blessing_of_wisdom_on_party(PlayerbotAI* botAI)
@@ -288,6 +294,7 @@ public:
         creators["hammer of justice on snare target"] =
             &PaladinAiObjectContextInternal::hammer_of_justice_on_snare_target;
         creators["divine favor"] = &PaladinAiObjectContextInternal::divine_favor;
+        creators["sense undead"] = &PaladinAiObjectContextInternal::sense_undead;
         creators["turn undead"] = &PaladinAiObjectContextInternal::turn_undead;
         creators["blessing of protection on party"] = &PaladinAiObjectContextInternal::blessing_of_protection_on_party;
         creators["righteous defense"] = &PaladinAiObjectContextInternal::righteous_defense;
@@ -305,6 +312,7 @@ public:
         creators["divine illumination"] = &PaladinAiObjectContextInternal::divine_illumination;
         creators["divine sacrifice"] = &PaladinAiObjectContextInternal::divine_sacrifice;
         creators["cancel divine sacrifice"] = &PaladinAiObjectContextInternal::cancel_divine_sacrifice;
+        creators["hand of freedom on party"] = &PaladinAiObjectContextInternal::hand_of_freedom_on_party;
     }
 
 private:
@@ -312,6 +320,7 @@ private:
     {
         return new CastBlessingOfProtectionProtectAction(botAI);
     }
+    static Action* sense_undead(PlayerbotAI* botAI) { return new CastSenseUndeadAction(botAI); }
     static Action* turn_undead(PlayerbotAI* botAI) { return new CastTurnUndeadAction(botAI); }
     static Action* divine_favor(PlayerbotAI* botAI) { return new CastDivineFavorAction(botAI); }
     static Action* righteous_fury(PlayerbotAI* botAI) { return new CastRighteousFuryAction(botAI); }
@@ -410,6 +419,7 @@ private:
     static Action* divine_illumination(PlayerbotAI* ai) { return new CastDivineIlluminationAction(ai); }
     static Action* divine_sacrifice(PlayerbotAI* ai) { return new CastDivineSacrificeAction(ai); }
     static Action* cancel_divine_sacrifice(PlayerbotAI* ai) { return new CastCancelDivineSacrificeAction(ai); }
+    static Action* hand_of_freedom_on_party(PlayerbotAI* ai) { return new CastHandOfFreedomOnPartyAction(ai); }
 };
 
 SharedNamedObjectContextList<Strategy> PaladinAiObjectContext::sharedStrategyContexts;

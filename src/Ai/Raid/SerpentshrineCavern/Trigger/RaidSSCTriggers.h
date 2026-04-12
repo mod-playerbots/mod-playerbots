@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
+ * and/or modify it under version 3 of the License, or (at your option), any later version.
+ */
+
 #ifndef _PLAYERBOT_RAIDSSCTRIGGERS_H
 #define _PLAYERBOT_RAIDSSCTRIGGERS_H
 
@@ -384,14 +389,6 @@ class LadyVashjTaintedCoreIsUnusableTrigger : public Trigger
 public:
     LadyVashjTaintedCoreIsUnusableTrigger(
         PlayerbotAI* botAI) : Trigger(botAI, "lady vashj tainted core is unusable") {}
-    bool IsActive() override;
-};
-
-class LadyVashjNeedToResetCorePassingTrackersTrigger : public Trigger
-{
-public:
-    LadyVashjNeedToResetCorePassingTrackersTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "lady vashj need to reset core passing trackers") {}
     bool IsActive() override;
 };
 

@@ -146,7 +146,9 @@ void RaidKarazhanStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers
     multipliers.push_back(new AttumenTheHuntsmanDisableTankAssistMultiplier(botAI));
     multipliers.push_back(new AttumenTheHuntsmanStayStackedMultiplier(botAI));
     multipliers.push_back(new AttumenTheHuntsmanWaitForDpsMultiplier(botAI));
+    multipliers.push_back(new MaidenOfVirtueDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new TheCuratorDisableTankAssistMultiplier(botAI));
+    multipliers.push_back(new TheCuratorDisableCombatFormationMoveMultiplier(botAI));
     multipliers.push_back(new TheCuratorDelayBloodlustAndHeroismMultiplier(botAI));
     multipliers.push_back(new ShadeOfAranArcaneExplosionDisableChargeMultiplier(botAI));
     multipliers.push_back(new ShadeOfAranFlameWreathDisableMovementMultiplier(botAI));

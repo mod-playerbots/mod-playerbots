@@ -261,13 +261,13 @@ bool TotemicRecallTrigger::IsActive()
 }
 
 // Find the active totem strategy for this slot, and return the highest-rank spellId the bot knows for it
-static uint32 GetRequiredTotemSpellId(PlayerbotAI* ai, const char* strategies[],
+static uint32 GetRequiredTotemSpellId(PlayerbotAI* botAI, const char* strategies[],
     const uint32* spellList[], const size_t spellCounts[], size_t numStrategies)
 {
-    Player* bot = ai->GetBot();
+    Player* bot = botAI->GetBot();
     for (size_t i = 0; i < numStrategies; ++i)
     {
-        if (ai->HasStrategy(strategies[i], BOT_STATE_COMBAT))
+        if (botAI->HasStrategy(strategies[i], BOT_STATE_COMBAT))
         {
             // Find the highest-rank spell the bot knows
             for (size_t j = 0; j < spellCounts[i]; ++j)
@@ -281,20 +281,6 @@ static uint32 GetRequiredTotemSpellId(PlayerbotAI* ai, const char* strategies[],
     }
 
     return 0;  // No relevant strategy active, or bot doesn't know any rank
-}
-
-// Get the spellId of the currently summoned totem in the slot
-static uint32 GetSummonedTotemSpellId(Player* bot, uint8 slot)
-{
-    ObjectGuid guid = bot->m_SummonSlot[slot];
-    if (guid.IsEmpty())
-        return 0;
-
-    Creature* totem = bot->GetMap()->GetCreature(guid);
-    if (!totem)
-        return 0;
-
-    return totem->GetUInt32Value(UNIT_CREATED_BY_SPELL);
 }
 
 bool NoEarthTotemTrigger::IsActive()

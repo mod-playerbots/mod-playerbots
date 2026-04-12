@@ -84,6 +84,8 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     triggers.push_back(
         new TriggerNode("ready", { NextAction("ready check", relevance) }));
     triggers.push_back(
+        new TriggerNode("naxx", {NextAction("naxx chat shortcut", relevance)}));
+    triggers.push_back(
         new TriggerNode("bwl", { NextAction("bwl chat shortcut", relevance) }));
     triggers.push_back(
         new TriggerNode("dps", { NextAction("tell estimated dps", relevance) }));
@@ -105,6 +107,7 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     triggers.push_back(new TriggerNode("pet", { NextAction("pet", relevance) }));
     triggers.push_back(new TriggerNode("pet attack", { NextAction("pet attack", relevance) }));
     triggers.push_back(new TriggerNode("roll", { NextAction("roll", relevance) }));
+    triggers.push_back(new TriggerNode("focus heal", { NextAction("focus heal targets", relevance) }));
 }
 
 ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI)
@@ -158,6 +161,13 @@ ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : Pas
     supported.push_back("save mana");
     supported.push_back("formation");
     supported.push_back("stance");
+    supported.push_back("cancel tree form");
+    supported.push_back("cancel travel form");
+    supported.push_back("cancel bear form");
+    supported.push_back("cancel dire bear form");
+    supported.push_back("cancel cat form");
+    supported.push_back("cancel moonkin form");
+    supported.push_back("cancel aquatic form");
     supported.push_back("sendmail");
     supported.push_back("mail");
     supported.push_back("outfit");
@@ -190,4 +200,6 @@ ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : Pas
     supported.push_back("glyph equip"); // Added for custom Glyphs
     supported.push_back("pet");
     supported.push_back("pet attack");
+    supported.push_back("wait for attack time");
+    supported.push_back("focus heal");
 }

@@ -16,5 +16,5 @@ bool NoRtiTrigger::IsActive()
         return false;
 
     Unit* target = AI_VALUE(Unit*, "rti target");
-    return target != nullptr;
+    return target == nullptr;
 }

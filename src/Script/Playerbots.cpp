@@ -17,6 +17,7 @@
 
 #include "Playerbots.h"
 
+#include "BattlefieldScript.h"
 #include "Channel.h"
 #include "DatabaseEnv.h"
 #include "GuildTaskMgr.h"
@@ -67,13 +68,10 @@ public:
 
             if (sPlayerbotAIConfig.enabled || sPlayerbotAIConfig.randomBotAutologin)
             {
-                std::string roundedTime =
-                    std::to_string(std::ceil((sPlayerbotAIConfig.maxRandomBots * 0.11 / 60) * 10) / 10.0);
-                roundedTime = roundedTime.substr(0, roundedTime.find('.') + 2);
+                std::string maxAllowedBotCount = std::to_string(sRandomPlayerbotMgr.GetMaxAllowedBotCount());
 
                 ChatHandler(player->GetSession()).SendSysMessage(
-                    "|cff00ff00Playerbots:|r bot initialization at server startup takes about '"
-                    + roundedTime + "' minutes.");
+                    "|cff00ff00Playerbots:|r The server is configured with " + maxAllowedBotCount + " bots.");
             }
         }
     }
@@ -474,10 +472,20 @@ public:
     void OnBattlegroundEnd(Battleground* bg, TeamId /*winnerTeam*/) override { bgStrategies.erase(bg->GetInstanceID()); }
 };
 
+// Workaround for missing InitEnabledHooksIfNeeded for new BattlefieldScript in ScriptMgr
+class PlayerbotsBattlefieldScript : public BattlefieldScript
+{
+public:
+    PlayerbotsBattlefieldScript() : BattlefieldScript("PlayerbotsBattlefieldScript") { }
+};
+
 void AddPlayerbotsSecureLoginScripts();
+
+void AddSC_TempestKeepBotScripts();
 
 void AddPlayerbotsScripts()
 {
+    new PlayerbotsBattlefieldScript();
     new PlayerbotsPlayerScript();
     new PlayerbotsMiscScript();
     new PlayerbotsServerScript();
@@ -487,4 +495,5 @@ void AddPlayerbotsScripts()
     AddPlayerbotsSecureLoginScripts();
     AddPlayerbotsCommandscripts();
     PlayerBotsGuildValidationScript();
+    AddSC_TempestKeepBotScripts();
 }
