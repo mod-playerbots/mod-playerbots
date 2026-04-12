@@ -57,7 +57,9 @@ bool ReturnToPullPositionTrigger::IsActive()
     if (!bot)
         return false;
 
-    if (!strategy || !strategy->HasTarget() || !botAI->HasStrategy("pull back", BOT_STATE_COMBAT))
+    Unit* target = strategy ? strategy->GetTarget() : nullptr;
+    if (!strategy || !strategy->HasPullStarted() || !target || !target->IsInCombat() ||
+        !botAI->HasStrategy("pull back", BOT_STATE_COMBAT))
         return false;
 
     PositionInfo pullPosition = AI_VALUE(PositionMap&, "position")["pull"];

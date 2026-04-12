@@ -10,6 +10,7 @@
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
+#include "SpellMgr.h"
 
 class PullStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
@@ -119,6 +120,15 @@ std::string PullStrategy::GetSpellName() const
 
 float PullStrategy::GetRange() const
 {
+    Player* bot = botAI->GetBot();
+    std::string const spellName = GetSpellName();
+    if (bot && !spellName.empty())
+    {
+        uint32 const spellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", spellName)->Get();
+        if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId))
+            return bot->GetSpellMaxRangeForTarget(GetTarget(), spellInfo) - CONTACT_DISTANCE;
+    }
+
     return (action == "shoot" ? botAI->GetRange("shoot") : botAI->GetRange("spell")) - CONTACT_DISTANCE;
 }
 
@@ -148,7 +158,10 @@ bool PullStrategy::CanDoPullAction(Unit* target)
     }
 
     std::string const spellName = GetSpellName();
-    return !spellName.empty();
+    if (spellName.empty())
+        return false;
+
+    return true;
 }
 
 void PullStrategy::RequestPull(Unit* target, bool resetTime)
@@ -226,7 +239,6 @@ std::vector<NextAction> PullStrategy::getDefaultActions()
 {
     return {
         NextAction("pull action", 105.0f),
-        NextAction("follow", 104.0f),
     };
 }
 

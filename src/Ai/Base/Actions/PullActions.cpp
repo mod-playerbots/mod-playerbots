@@ -149,6 +149,9 @@ bool PullAction::Execute(Event event)
     if (!target || !target->IsInWorld())
         return false;
 
+    if (target->IsInCombat())
+        return false;
+
     if (!bot->IsWithinCombatRange(target, strategy->GetRange()))
     {
         strategy->RequestPull(target, false);
@@ -166,7 +169,6 @@ bool PullAction::Execute(Event event)
     if (!botAI->DoSpecificAction(strategy->GetPullActionName(), event, true))
         return false;
 
-    strategy->RequestPull(target);
     return true;
 }
 
@@ -247,13 +249,15 @@ bool ReturnToPullPositionAction::Execute(Event /*event*/)
     if (!pullPosition.isSet() || pullPosition.mapId != bot->GetMapId())
         return false;
 
-    return MoveTo(pullPosition.mapId, pullPosition.x, pullPosition.y, pullPosition.z, false, false);
+    return MoveTo(pullPosition.mapId, pullPosition.x, pullPosition.y, pullPosition.z,
+                  false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true);
 }
 
 bool ReturnToPullPositionAction::isUseful()
 {
     PullStrategy* strategy = PullStrategy::Get(botAI);
-    if (!strategy || !strategy->HasTarget())
+    Unit* target = strategy ? strategy->GetTarget() : nullptr;
+    if (!strategy || !target || !target->IsInCombat())
         return false;
 
     PositionInfo pullPosition = AI_VALUE(PositionMap&, "position")["pull"];
@@ -264,7 +268,8 @@ bool ReturnToPullPositionAction::isUseful()
 bool ReachPullAction::Execute(Event /*event*/)
 {
     Unit* target = GetTarget();
-    return target && ReachCombatTo(target, distance);
+    PullStrategy* strategy = PullStrategy::Get(botAI);
+    return target && strategy && ReachCombatTo(target, strategy->GetRange());
 }
 
 Unit* ReachPullAction::GetTarget()
