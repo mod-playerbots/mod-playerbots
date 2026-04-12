@@ -86,6 +86,28 @@ std::string PullStrategy::GetPullActionName() const
         }
     }
 
+    if (bot->getClass() == CLASS_PALADIN && actionName == "judgement" &&
+        (botAI->HasStrategy("tank", BOT_STATE_COMBAT) || botAI->HasStrategy("tank", BOT_STATE_NON_COMBAT)))
+    {
+        Unit* target = GetTarget();
+        if (target)
+        {
+            uint32 const avengersShieldSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "avenger's shield")->Get();
+            if (avengersShieldSpellId && bot->HasSpell(avengersShieldSpellId) &&
+                botAI->CanCastSpell(avengersShieldSpellId, target))
+            {
+                return "avenger's shield";
+            }
+
+            uint32 const handOfReckoningSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "hand of reckoning")->Get();
+            if (handOfReckoningSpellId && bot->HasSpell(handOfReckoningSpellId) &&
+                botAI->CanCastSpell(handOfReckoningSpellId, target))
+            {
+                return "hand of reckoning";
+            }
+        }
+    }
+
     if (bot->getClass() == CLASS_DRUID && actionName == "faerie fire")
     {
         uint32 const faerieFireFeralId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "faerie fire (feral)")->Get();
@@ -147,6 +169,13 @@ std::string PullStrategy::GetPreActionName() const
 {
     Player* bot = botAI->GetBot();
     std::string actionName = preAction;
+
+    if (bot && bot->getClass() == CLASS_PALADIN && actionName == "seal of righteousness" &&
+        (botAI->HasStrategy("tank", BOT_STATE_COMBAT) || botAI->HasStrategy("tank", BOT_STATE_NON_COMBAT)))
+    {
+        actionName.clear();
+    }
+
     if (bot && bot->getClass() == CLASS_DRUID && actionName == "dire bear form" && GetPullActionName() == "faerie fire")
         actionName.clear();
 
