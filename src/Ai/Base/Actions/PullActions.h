@@ -15,7 +15,6 @@ public:
     PullRequestAction(PlayerbotAI* botAI, std::string const name) : Action(botAI, name) {}
 
     bool Execute(Event event) override;
-    bool isPossible() override;
 
 protected:
     virtual Unit* GetPullTarget(Event event) = 0;

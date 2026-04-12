@@ -28,7 +28,7 @@ public:
 
 private:
     static Strategy* nc(PlayerbotAI* botAI) { return new GenericDKNonCombatStrategy(botAI); }
-    static Strategy* pull(PlayerbotAI* botAI) { return new PullStrategy(botAI, "death grip"); }
+    static Strategy* pull(PlayerbotAI* botAI) { return new PullStrategy(botAI, "icy touch"); }
     static Strategy* frost_aoe(PlayerbotAI* botAI) { return new FrostDKAoeStrategy(botAI); }
     static Strategy* unholy_aoe(PlayerbotAI* botAI) { return new UnholyDKAoeStrategy(botAI); }
 };
