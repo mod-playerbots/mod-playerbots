@@ -54,6 +54,7 @@
 #include "Unit.h"
 #include "UpdateTime.h"
 #include "Vehicle.h"
+#include "../../../../src/server/scripts/Spells/spell_dk.cpp"
 
 const int SPELL_TITAN_GRIP = 49152;
 
@@ -2163,7 +2164,7 @@ bool PlayerbotAI::IsTank(Player* player, bool bySpec)
     switch (player->getClass())
     {
         case CLASS_DEATH_KNIGHT:
-            if (tab == DEATH_KNIGHT_TAB_BLOOD)
+            if (tab == DEATH_KNIGHT_TAB_BLOOD || player->HasAura(SPELL_DK_FROST_PRESENCE))
             {
                 return true;
             }
