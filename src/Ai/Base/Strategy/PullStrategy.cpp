@@ -112,9 +112,24 @@ std::string PullStrategy::GetPullActionName() const
     {
         uint32 const faerieFireFeralId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "faerie fire (feral)")->Get();
         if (faerieFireFeralId && bot->HasSpell(faerieFireFeralId) &&
-            (botAI->HasStrategy("tank feral", BOT_STATE_COMBAT) || botAI->HasStrategy("dps feral", BOT_STATE_COMBAT)))
+            (botAI->HasStrategy("bear", BOT_STATE_COMBAT) || botAI->HasStrategy("cat", BOT_STATE_COMBAT)))
         {
             actionName = "faerie fire (feral)";
+        }
+    }
+
+    if (bot->getClass() == CLASS_DEATH_KNIGHT && actionName == "icy touch" &&
+        (botAI->HasStrategy("blood", BOT_STATE_COMBAT) || botAI->HasStrategy("blood", BOT_STATE_NON_COMBAT)))
+    {
+        Unit* target = GetTarget();
+        if (target)
+        {
+            uint32 const deathGripSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "death grip")->Get();
+            if (deathGripSpellId && bot->HasSpell(deathGripSpellId) &&
+                botAI->CanCastSpell(deathGripSpellId, target))
+            {
+                return "death grip";
+            }
         }
     }
 
@@ -176,8 +191,12 @@ std::string PullStrategy::GetPreActionName() const
         actionName.clear();
     }
 
-    if (bot && bot->getClass() == CLASS_DRUID && actionName == "dire bear form" && GetPullActionName() == "faerie fire")
-        actionName.clear();
+    if (bot && bot->getClass() == CLASS_DRUID && actionName == "dire bear form")
+    {
+        std::string const pullAction = GetPullActionName();
+        if (pullAction == "faerie fire" || pullAction == "faerie fire (feral)")
+            actionName.clear();
+    }
 
     return actionName;
 }

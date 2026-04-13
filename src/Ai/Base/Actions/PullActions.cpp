@@ -195,14 +195,7 @@ bool PullAction::isPossible()
     if (!target || !target->IsInWorld() || target->GetMapId() != bot->GetMapId() || spellName.empty())
         return false;
 
-    // Shoot/throw spells may not be in the bot's spellbook (warriors, rogues, etc.)
-    // but are usable when a ranged weapon is equipped. Skip CastSpellAction::isPossible()
-    // for these since CanDoPullAction already validates the ranged weapon.
-    if (spellName == "shoot bow" || spellName == "shoot gun" ||
-        spellName == "shoot crossbow" || spellName == "throw")
-        return true;
-
-    return CastSpellAction::isPossible();
+    return true;
 }
 
 void PullAction::InitPullAction()
