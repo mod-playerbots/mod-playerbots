@@ -53,22 +53,6 @@ bool AttackMyTargetAction::Execute(Event /*event*/)
 
 bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
 {
-    Unit* oldTarget = context->GetValue<Unit*>("current target")->Get();
-    bool shouldMelee = bot->IsWithinMeleeRange(target) || botAI->IsMelee(bot);
-
-    bool sameTarget = oldTarget == target && bot->GetVictim() == target;
-    bool inCombat = botAI->GetState() == BOT_STATE_COMBAT;
-    bool sameAttackMode = bot->HasUnitState(UNIT_STATE_MELEE_ATTACKING) == shouldMelee;
-
-    if (bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE ||
-        bot->HasUnitState(UNIT_STATE_IN_FLIGHT))
-    {
-        if (verbose)
-            botAI->TellError("I cannot attack in flight");
-
-        return false;
-    }
-
     if (!target)
     {
         if (verbose)
@@ -81,6 +65,22 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
     {
         if (verbose)
             botAI->TellError(std::string(target->GetName()) + " is no longer in the world.");
+
+        return false;
+    }
+
+    Unit* oldTarget = context->GetValue<Unit*>("current target")->Get();
+    bool shouldMelee = bot->IsWithinMeleeRange(target) || botAI->IsMelee(bot);
+
+    bool sameTarget = oldTarget == target && bot->GetVictim() == target;
+    bool inCombat = botAI->GetState() == BOT_STATE_COMBAT;
+    bool sameAttackMode = bot->HasUnitState(UNIT_STATE_MELEE_ATTACKING) == shouldMelee;
+
+    if (bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE ||
+        bot->HasUnitState(UNIT_STATE_IN_FLIGHT))
+    {
+        if (verbose)
+            botAI->TellError("I cannot attack in flight");
 
         return false;
     }
