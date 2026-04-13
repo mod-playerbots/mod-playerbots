@@ -20,6 +20,9 @@ bool PullRequestAction::Execute(Event event)
     if (!strategy)
         return false;
 
+    if (!botAI->IsTank(bot))
+        return false;
+
     Unit* target = GetPullTarget(event);
     if (!target || !target->IsInWorld())
     {

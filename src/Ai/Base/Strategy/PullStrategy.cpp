@@ -114,7 +114,17 @@ std::string PullStrategy::GetPullActionName() const
         if (faerieFireFeralId && bot->HasSpell(faerieFireFeralId) &&
             (botAI->HasStrategy("bear", BOT_STATE_COMBAT) || botAI->HasStrategy("cat", BOT_STATE_COMBAT)))
         {
-            actionName = "faerie fire (feral)";
+                actionName = "faerie fire (feral)";
+        }
+
+        Unit* target = GetTarget();
+        uint32 const faerieFireSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", actionName)->Get();
+        if (target && (!faerieFireSpellId || !bot->HasSpell(faerieFireSpellId) ||
+            !botAI->CanCastSpell(faerieFireSpellId, target)))
+        {
+            uint32 const growlSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "growl")->Get();
+            if (growlSpellId && bot->HasSpell(growlSpellId) && botAI->CanCastSpell(growlSpellId, target))
+                return "growl";
         }
     }
 
@@ -129,6 +139,18 @@ std::string PullStrategy::GetPullActionName() const
                 botAI->CanCastSpell(deathGripSpellId, target))
             {
                 return "death grip";
+            }
+
+            uint32 const icyTouchSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", actionName)->Get();
+            if (!icyTouchSpellId || !bot->HasSpell(icyTouchSpellId) ||
+                !botAI->CanCastSpell(icyTouchSpellId, target))
+            {
+                uint32 const darkCommandSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "dark command")->Get();
+                if (darkCommandSpellId && bot->HasSpell(darkCommandSpellId) &&
+                    botAI->CanCastSpell(darkCommandSpellId, target))
+                {
+                    return "dark command";
+                }
             }
         }
     }
@@ -194,7 +216,7 @@ std::string PullStrategy::GetPreActionName() const
     if (bot && bot->getClass() == CLASS_DRUID && actionName == "dire bear form")
     {
         std::string const pullAction = GetPullActionName();
-        if (pullAction == "faerie fire" || pullAction == "faerie fire (feral)")
+        if (pullAction == "faerie fire")
             actionName.clear();
     }
 
