@@ -268,12 +268,6 @@ public:
     std::vector<mGridCoord> getmGridCoords(WorldPosition secondPos);
     std::vector<WorldPosition> frommGridCoord(mGridCoord GridCoord);
 
-    void loadMapAndVMap(uint32 mapId, uint8 x, uint8 y);
-
-    void loadMapAndVMap() { loadMapAndVMap(GetMapId(), getmGridCoord().first, getmGridCoord().second); }
-
-    void loadMapAndVMaps(WorldPosition secondPos);
-
     // Display functions
     WorldPosition getDisplayLocation();
     float getDisplayX() { return getDisplayLocation().GetPositionY() * -1.0; }
