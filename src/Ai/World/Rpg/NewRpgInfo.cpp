@@ -54,12 +54,13 @@ void NewRpgInfo::ChangeToDoQuest(uint32 questId, const Quest* quest)
     data = do_quest;
 }
 
-void NewRpgInfo::ChangeToTravelFlight(ObjectGuid fromFlightMaster, std::vector<uint32> path)
+void NewRpgInfo::ChangeToTravelFlight(ObjectGuid fromFlightMaster, WorldPosition fromPos, std::vector<uint32> path)
 {
     startT = getMSTime();
     ClearTravel();
     TravelFlight flight;
     flight.fromFlightMaster = fromFlightMaster;
+    flight.fromPos = fromPos;
     flight.path = std::move(path);
     flight.inFlight = false;
     data = flight;
@@ -181,6 +182,8 @@ std::string NewRpgInfo::ToString()
         {
             out << "TRAVEL_FLIGHT";
             out << "\nfromFlightMaster: " << arg.fromFlightMaster.GetEntry();
+            out << "\nfromPos: " << arg.fromPos.GetPositionX() << " "
+                << arg.fromPos.GetPositionY() << " " << arg.fromPos.GetPositionZ();
             out << "\nfromNode: " << arg.path[0];
             out << "\ntoNode: " << arg.path[arg.path.size() - 1];
             out << "\ninFlight: " << arg.inFlight;

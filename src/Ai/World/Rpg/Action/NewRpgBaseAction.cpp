@@ -1190,11 +1190,15 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
         }
         case RPG_TRAVEL_FLIGHT:
         {
-            ObjectGuid flightMaster;
+            ObjectGuid flightMasterGuid;
             std::vector<uint32> path;
-            if (SelectRandomFlightTaxiNode(flightMaster, path))
+            if (SelectRandomFlightTaxiNode(flightMasterGuid, path))
             {
-                botAI->rpgInfo.ChangeToTravelFlight(flightMaster, path);
+                Creature* flightMaster = ObjectAccessor::GetCreature(*bot, flightMasterGuid);
+                if (!flightMaster)
+                    return false;
+                WorldPosition fromPos = WorldPosition(flightMaster);
+                botAI->rpgInfo.ChangeToTravelFlight(flightMaster, fromPos, path);
                 return true;
             }
             return false;

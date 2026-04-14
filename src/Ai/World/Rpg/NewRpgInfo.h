@@ -52,6 +52,7 @@ struct NewRpgInfo
     struct TravelFlight
     {
         ObjectGuid fromFlightMaster{};
+        WorldPosition fromPos{};
         std::vector<uint32> path;
         bool inFlight{false};
     };
@@ -106,13 +107,14 @@ struct NewRpgInfo
 
     NewRpgStatus GetStatus();
     bool HasStatusPersisted(uint32 maxDuration) { return GetMSTimeDiffToNow(startT) > maxDuration; }
+    void ClearTravel();
     void ChangeToGoGrind(WorldPosition pos, bool auctionHouse = false);
     void ChangeToGoCamp(WorldPosition pos);
     void ChangeToGoCity(WorldPosition pos, ObjectGuid targetNpc, std::vector<uint32> sellItems, std::vector<uint8> buySlots);
     void ChangeToWanderNpc();
     void ChangeToWanderRandom();
     void ChangeToDoQuest(uint32 questId, const Quest* quest);
-    void ChangeToTravelFlight(ObjectGuid fromFlightMaster, std::vector<uint32> path);
+    void ChangeToTravelFlight(ObjectGuid fromFlightMaster, WorldPosition fromPos, std::vector<uint32> path);
     void ChangeToOutdoorPvp(ObjectGuid::LowType capturePointSpawnId = 0);
     void ChangeToRest();
     void ChangeToIdle();
