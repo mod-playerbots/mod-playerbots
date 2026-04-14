@@ -68,8 +68,8 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
             bot->GetName(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetMapId(),
             dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), dest.GetMapId(), bot->GetZoneId(),
             zone_name);
-        bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
-        return bot->TeleportTo(dest);
+        botAI->TeleportTo(dest);
+        return true;
     }
 
     float dis = bot->GetExactDist(dest);
