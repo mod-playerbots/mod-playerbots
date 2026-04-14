@@ -371,6 +371,19 @@ public:
     Value<Unit*>* GetTargetValue() override;
 };
 
+class CastHandOfFreedomOnPartyAction : public CastBuffSpellAction, public PartyMemberActionNameSupport
+{
+public:
+    CastHandOfFreedomOnPartyAction(PlayerbotAI* botAI)
+        : CastBuffSpellAction(botAI, "hand of freedom"), PartyMemberActionNameSupport("hand of freedom") {}
+
+    Unit* GetTarget() override;
+    Value<Unit*>* GetTargetValue() override;
+    std::string const GetTargetName() override { return "party member snared target"; }
+    std::string const getName() override { return PartyMemberActionNameSupport::getName(); }
+    bool isUseful() override;
+};
+
 PROTECT_ACTION(CastBlessingOfProtectionProtectAction, "blessing of protection");
 
 class CastDivinePleaAction : public CastBuffSpellAction

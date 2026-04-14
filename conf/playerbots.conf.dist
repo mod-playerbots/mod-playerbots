@@ -582,7 +582,7 @@ AiPlayerbot.AutoGearScoreLimit = 0
 AiPlayerbot.BotCheats = "food,taxi,raid"
 
 # List of attunement quests (comma-separated list of quest IDs) that are automatically completed for all bots.  
-# While mod-playerbots does not restore removed attunement requirements, although other mods, such as mod-individual-progression, may do so.
+# While mod-playerbots does not restore removed attunement requirements, other mods, such as mod-individual-progression, may do so.
 # This is meant to exclude bots from such requirements.
 # 
 # Default:
@@ -865,34 +865,65 @@ AiPlayerbot.ExcludedHunterPetFamilies = ""
 #
 #
 ####################################################################################################
-
-
 ####################################################################################################
-# ACTIVITIES
+# ACTIVITY
 #
+# BotActiveAlone
+# - Controls how many bots are active when no real players are nearby.
+# - Think of it as a rough percentage: 10 means approximately 10% of bots will be active.
+#   Not exact — the actual number may vary slightly per rotation cycle.
+# - The active bots rotate: every <DurationSeconds> a different set of bots takes a turn.
+# - The real number of active bots will always be higher than this value, because bots in
+#   combat, dungeons, battlegrounds, LFG queue, groups with real players, etc. are always
+#   forced active on top of this (see force rules below).
+# - Set to 100 (with SmartScale off) = all bots always active. Maximum server load.
+# - Set to 0 = only bots that match a force rule below will be active.
 #
-# Specify percent of active bots
-# The default is 100% but will be automatically adjusted if botActiveAloneSmartScale
-# is enabled. Regardless, this value is only applied to inactive areas where no real players
-# are detected. When real players are nearby, the value is always enforced to 100%
-AiPlayerbot.BotActiveAlone = 100
+# BotActiveAloneDurationSeconds
+# - How often the active roster rotates (in seconds). A different group of bots wakes up
+#   and the previous group may go idle.
+# - This is a minimum, not exact. If a bot is in combat or meets any force rule when the
+#   rotation happens, it stays active until those conditions end — it won't be cut off
+#   mid-fight just because its turn expired.
+#
+AiPlayerbot.BotActiveAlone = 10
+AiPlayerbot.BotActiveAloneDurationSeconds = 30
 
-# Force botActiveAlone when bot is within the specified distance of a real player
+#
+# Force-active rules (1 = on, 0 = off)
+# These override the percentage above. If any of these conditions is true, the bot stays active.
+#
+# InRadius  - A real player is within this many yards (set to 0 to disable).
+# InZone    - A real player is in the same zone (e.g. Elwynn Forest).
+# InMap     - A real player is on the same continent (e.g. Eastern Kingdoms).
+# IsFriend  - A real player has this bot on their friends list.
+# InGuild   - This bot is in a guild that has a real player in it.
+#
+# Bots are also always forced active (not configurable) when:
+#   in combat, inside a dungeon/raid/BG, in a BG or LFG queue,
+#   grouped with a real player, or controlled by a real player.
+#
 AiPlayerbot.BotActiveAloneForceWhenInRadius = 150
 AiPlayerbot.BotActiveAloneForceWhenInZone = 1
 AiPlayerbot.BotActiveAloneForceWhenInMap = 0
-AiPlayerbot.BotActiveAloneForceWhenIsFriend = 1
+AiPlayerbot.BotActiveAloneForceWhenIsFriend = 0
 AiPlayerbot.BotActiveAloneForceWhenInGuild = 1
 
-# SmartScale (automatic scaling of percentage of active bots based on latency)
-# The default is 1. When enabled (smart) scales the 'BotActiveAlone' value.
-# (The scaling will be overruled by the BotActiveAloneForceWhen...rules)
+# SmartScale — automatically reduces active bots when the server is struggling.
+# Monitors the server's update time (how long each server tick takes in milliseconds).
+# When the server slows down, fewer bots are kept active to reduce load.
 #
-#   Limitfloor - when DIFF (latency) is above floor, activity scaling begins
-#   LimitCeiling - when DIFF (latency) is above ceiling, activity is 0%
+#   Floor (default 50ms)   - Below this, no reduction. Server is running fine.
+#   Ceiling (default 200ms) - At or above this, all non-forced bots are paused.
+#   Between floor and ceiling, activity scales down gradually.
+#     Example: BotActiveAlone=10, floor=50, ceiling=200
+#       Server at 50ms  → ~10% active (no reduction)
+#       Server at 125ms → ~5% active (half reduction)
+#       Server at 200ms → 0% active (only forced bots remain)
 #
-#   MinLevel - only apply scaling when level is above or equal to min(bot)Level
-#   MaxLevel - only apply scaling when level is lower or equal of max(bot)Level
+# MinLevel/MaxLevel — only bots within this level range are affected by SmartScale.
+#   Bots outside the range always use the full BotActiveAlone value.
+#   Force rules always win over SmartScale.
 #
 AiPlayerbot.botActiveAloneSmartScale = 1
 AiPlayerbot.botActiveAloneSmartScaleDiffLimitfloor = 50
@@ -1687,7 +1718,7 @@ AiPlayerbot.PremadeSpecLink.9.1.60 = -003203301135112530135201051
 AiPlayerbot.PremadeSpecLink.9.1.70 = -003203301135112530135201051-55
 AiPlayerbot.PremadeSpecLink.9.1.80 = -003203301135112530135221351-55000005
 AiPlayerbot.PremadeSpecName.9.2 = destro pve
-AiPlayerbot.PremadeSpecGlyph.9.2 = 45785,43390,42454,43394,43393,45785
+AiPlayerbot.PremadeSpecGlyph.9.2 = 45785,43390,42454,43394,43393,42453
 AiPlayerbot.PremadeSpecLink.9.2.60 = --05203215200231051305031151
 AiPlayerbot.PremadeSpecLink.9.2.80 = 23-0302-05203215220331051335231351
 AiPlayerbot.PremadeSpecName.9.3 = affli pvp

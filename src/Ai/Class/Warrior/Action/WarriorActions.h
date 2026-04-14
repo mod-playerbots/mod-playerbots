@@ -78,7 +78,15 @@ REACH_ACTION(CastInterceptAction, "intercept", 8.0f);
 ENEMY_HEALER_ACTION(CastInterceptOnEnemyHealerAction, "intercept");
 SNARE_ACTION(CastInterceptOnSnareTargetAction, "intercept");
 MELEE_ACTION(CastSlamAction, "slam");
-BUFF_ACTION(CastBerserkerRageAction, "berserker rage");
+class CastBerserkerRageAction : public CastSpellAction
+{
+public:
+    CastBerserkerRageAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "berserker rage") {}
+
+    std::string const GetTargetName() override { return "self target"; }
+    bool isPossible() override;
+    bool isUseful() override;
+};
 MELEE_ACTION(CastWhirlwindAction, "whirlwind");
 MELEE_ACTION(CastPummelAction, "pummel");
 ENEMY_HEALER_ACTION(CastPummelOnEnemyHealerAction, "pummel");
