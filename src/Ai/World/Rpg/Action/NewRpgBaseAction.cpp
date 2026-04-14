@@ -46,17 +46,51 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
         return false;
     }
 
+    // Let previously committed movement finish before recomputing.
+    //
+    // MoveTo internally caps its stored delay at maxWaitForMove
+    // (default 5s), but a long path (200+ yd routed around a
+    // mountain) takes 30+ seconds to walk. After 5s
+    // IsWaitingForLastMove returns false and MoveFarTo re-enters.
+    // Without this gate, DoMovePoint would call mm->Clear() and
+    // reissue MovePoint from the new bot position — and from a new
+    // position mmap's partial-path endpoint often differs, so the
+    // bot gets clobbered mid-walk and ends up oscillating (e.g.
+    // cave entrance -> inside cave -> cave entrance -> mountain
+    // base -> cave entrance...) around an unreachable destination.
+    //
+    // If the bot is still actively walking toward its last
+    // committed point on the same map, just let the current spline
+    // finish. The stuck counter below continues to track real
+    // progress toward dest and triggers teleport recovery if the
+    // committed paths genuinely aren't closing the gap.
+    {
+        LastMovement& lastMove = AI_VALUE(LastMovement&, "last movement");
+        if (bot->isMoving() && lastMove.lastMoveToMapId == bot->GetMapId())
+        {
+            float remaining = bot->GetExactDist(lastMove.lastMoveToX, lastMove.lastMoveToY, lastMove.lastMoveToZ);
+            if (remaining > 10.0f)
+                return true;
+        }
+    }
+
     // stuck check
     float disToDest = bot->GetDistance(dest);
-    if (disToDest + 1.0f < botAI->rpgInfo.nearestMoveFarDis)
+    // Require a meaningful improvement (5yd) to reset the stuck counter.
+    // The old 1yd threshold was small enough that bots oscillating back
+    // and forth around an obstacle would keep "making progress" forever
+    // and never trigger the teleport recovery below.
+    if (disToDest + 5.0f < botAI->rpgInfo.nearestMoveFarDis)
     {
         botAI->rpgInfo.nearestMoveFarDis = disToDest;
         botAI->rpgInfo.stuckTs = getMSTime();
         botAI->rpgInfo.stuckAttempts = 0;
     }
-    else if (++botAI->rpgInfo.stuckAttempts >= 10 && GetMSTimeDiffToNow(botAI->rpgInfo.stuckTs) >= stuckTime)
+    else if (++botAI->rpgInfo.stuckAttempts >= 5 && GetMSTimeDiffToNow(botAI->rpgInfo.stuckTs) >= stuckTime)
     {
-        // Unfortunately we've been stuck here for over 5 mins, fallback to teleporting directly to the destination
+        // No meaningful progress toward dest for `stuckTime`: fall
+        // back to teleporting directly so the bot can get on with
+        // its RPG objective instead of oscillating indefinitely.
         botAI->rpgInfo.stuckTs = getMSTime();
         botAI->rpgInfo.stuckAttempts = 0;
         const AreaTableEntry* entry = sAreaTableStore.LookupEntry(bot->GetZoneId());
@@ -78,26 +112,62 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
                       false, true);
     }
 
+    const uint32 typeOk = PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_FARFROMPOLY;
+
+    // Primary strategy: ask mmap for a route to the TRUE destination.
+    // If mmap can reach it directly (PATHFIND_NORMAL) or partially
+    // (PATHFIND_INCOMPLETE — destinations beyond the smooth-path cap
+    // of ~296 yards, or where local geometry blocks the final step),
+    // walk to the furthest reachable waypoint mmap computed. This
+    // lets bots follow the real route around obstacles (mountains,
+    // cave walls, cliffs) instead of trying to cut straight through.
+    // The spline system walks the whole returned path smoothly, so
+    // subsequent ticks early-out via IsWaitingForLastMove and no
+    // further PathGenerator calls fire until the bot arrives.
+    {
+        PathGenerator path(bot);
+        path.CalculatePath(dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ());
+        PathType type = path.GetPathType();
+        bool canReach = !(type & (~typeOk));
+        if (canReach)
+        {
+            const G3D::Vector3& endPos = path.GetActualEndPosition();
+            // Only commit if the mmap endpoint actually makes progress
+            // toward the destination. For pathological INCOMPLETE
+            // results (e.g. disconnected polys that still report
+            // INCOMPLETE) the endpoint can land right under the bot;
+            // fall through to cone sampling in that case.
+            float endDistToDest = dest.GetExactDist(endPos.x, endPos.y, endPos.z);
+            if (endDistToDest + 5.0f < disToDest)
+            {
+                return MoveTo(bot->GetMapId(), endPos.x, endPos.y, endPos.z, false, false, false, true);
+            }
+        }
+    }
+
+    // Fallback: mmap couldn't route to the destination. Sample the
+    // forward cone for a reachable stepping stone so the bot keeps
+    // moving and can try again from a new vantage point. Cap at 2
+    // samples — we already spent one PathGenerator call above and at
+    // 3000 bots every extra CalculatePath matters.
     float minDelta = M_PI;
     const float x = bot->GetPositionX();
     const float y = bot->GetPositionY();
     const float z = bot->GetPositionZ();
+    const float baseAngle = bot->GetAngle(&dest);
     float rx, ry, rz;
     bool found = false;
-    int attempt = 3;
-    while (attempt--)
+    for (int attempt = 0; attempt < 2; ++attempt)
     {
-        float angle = bot->GetAngle(&dest);
-        float delta = urand(1, 100) <= 75 ? (rand_norm() - 0.5) * M_PI * 0.5 : (rand_norm() - 0.5) * M_PI * 2;
-        angle += delta;
-        float dis = rand_norm() * pathFinderDis;
-        float dx = x + cos(angle) * dis;
-        float dy = y + sin(angle) * dis;
+        float delta = (rand_norm() - 0.5f) * static_cast<float>(M_PI);  // ±π/2, forward cone
+        float sampleDis = (0.5f + rand_norm() * 0.5f) * pathFinderDis;
+        float angle = baseAngle + delta;
+        float dx = x + cos(angle) * sampleDis;
+        float dy = y + sin(angle) * sampleDis;
         float dz = z + 0.5f;
         PathGenerator path(bot);
         path.CalculatePath(dx, dy, dz);
         PathType type = path.GetPathType();
-        uint32 typeOk = PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_FARFROMPOLY;
         bool canReach = !(type & (~typeOk));
 
         if (canReach && fabs(delta) <= minDelta)
@@ -159,14 +229,18 @@ bool NewRpgBaseAction::MoveRandomNear(float moveStep, MovementPriority priority)
         return false;
     }
 
-    float distance = rand_norm() * moveStep;
     Map* map = bot->GetMap();
     const float x = bot->GetPositionX();
     const float y = bot->GetPositionY();
     const float z = bot->GetPositionZ();
-    int attempts = 1;
-    while (attempts--)
+    // Previously: attempts = 1. A single random sample often landed in
+    // water / blocked geometry / unreachable poly, the function returned
+    // false, and the caller had no fallback — bot stood still. Retry a
+    // handful of times with a fresh distance each loop so a bad roll
+    // doesn't lock the bot in place.
+    for (int attempt = 0; attempt < 8; ++attempt)
     {
+        float distance = (0.4f + rand_norm() * 0.6f) * moveStep;
         float angle = (float)rand_norm() * 2 * static_cast<float>(M_PI);
         float dx = x + distance * cos(angle);
         float dy = y + distance * sin(angle);

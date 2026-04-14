@@ -119,7 +119,7 @@ PlayerbotAI::PlayerbotAI()
 
     for (uint8 i = 0; i < MAX_ACTIVITY_TYPE; i++)
     {
-        allowActiveCheckTimer[i] = time(nullptr);
+        allowActiveCheckTimer[i] = 0;
         allowActive[i] = false;
     }
 }
@@ -137,19 +137,20 @@ PlayerbotAI::PlayerbotAI(Player* bot)
 
     for (uint8 i = 0; i < MAX_ACTIVITY_TYPE; i++)
     {
-        allowActiveCheckTimer[i] = time(nullptr);
+        allowActiveCheckTimer[i] = 0;
         allowActive[i] = false;
     }
 
     accountId = bot->GetSession()->GetAccountId();
-
     aiObjectContext = AiFactory::createAiObjectContext(bot, this);
 
     engines[BOT_STATE_COMBAT] = AiFactory::createCombatEngine(bot, this, aiObjectContext);
     engines[BOT_STATE_NON_COMBAT] = AiFactory::createNonCombatEngine(bot, this, aiObjectContext);
     engines[BOT_STATE_DEAD] = AiFactory::createDeadEngine(bot, this, aiObjectContext);
+
     if (sPlayerbotAIConfig.applyInstanceStrategies)
         ApplyInstanceStrategies(bot->GetMapId());
+
     currentEngine = engines[BOT_STATE_NON_COMBAT];
     currentState = BOT_STATE_NON_COMBAT;
 
@@ -445,9 +446,11 @@ void PlayerbotAI::UpdateAIInternal([[maybe_unused]] uint32 elapsed, bool minimal
     if (!bot->GetMap())
         return; // instances are created and destroyed on demand
 
+    // kinda expensive call to make on every single updateAI, do we really need this information?
     std::string const mapString = WorldPosition(bot).isOverworld() ? std::to_string(bot->GetMapId()) : "I";
     PerfMonitorOperation* pmo =
         sPerfMonitor.start(PERF_MON_TOTAL, "PlayerbotAI::UpdateAIInternal " + mapString);
+
     ExternalEventHelper helper(aiObjectContext);
 
     // chat replies
@@ -1202,23 +1205,18 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                     if (HasRealPlayerMaster() && guid1 != GetMaster()->GetGUID())
                         return;
 
+                    auto itemIds = GetChatHelper()->ExtractAllItemIds(message);
                     if (message.starts_with(sPlayerbotAIConfig.toxicLinksPrefix) &&
-                        (GetChatHelper()->ExtractAllItemIds(message).size() > 0 ||
-                         GetChatHelper()->ExtractAllQuestIds(message).size() > 0) &&
+                        (itemIds.size() > 0 || GetChatHelper()->ExtractAllQuestIds(message).size() > 0) &&
                         sPlayerbotAIConfig.toxicLinksRepliesChance)
                     {
                         if (urand(0, 50) > 0 || urand(1, 100) > sPlayerbotAIConfig.toxicLinksRepliesChance)
-                        {
                             return;
-                        }
                     }
-                    else if ((GetChatHelper()->ExtractAllItemIds(message).count(19019) &&
-                              sPlayerbotAIConfig.thunderfuryRepliesChance))
+                    else if (itemIds.count(19019) && sPlayerbotAIConfig.thunderfuryRepliesChance)
                     {
                         if (urand(0, 60) > 0 || urand(1, 100) > sPlayerbotAIConfig.thunderfuryRepliesChance)
-                        {
                             return;
-                        }
                     }
                     else
                     {
@@ -4459,7 +4457,6 @@ GuilderType PlayerbotAI::GetGuilderType()
 bool PlayerbotAI::HasPlayerNearby(WorldPosition* pos, float range)
 {
     float sqRange = range * range;
-    bool nearPlayer = false;
     for (auto& player : sRandomPlayerbotMgr.GetPlayers())
     {
         if (!player->IsGameMaster() || player->isGMVisible())
@@ -4468,19 +4465,18 @@ bool PlayerbotAI::HasPlayerNearby(WorldPosition* pos, float range)
                 continue;
 
             if (pos->sqDistance(WorldPosition(player)) < sqRange)
-                nearPlayer = true;
+                return true;
 
-            // if player is far check farsight/cinematic camera
             WorldObject* viewObj = player->GetViewpoint();
             if (viewObj && viewObj != player)
             {
                 if (pos->sqDistance(WorldPosition(viewObj)) < sqRange)
-                    nearPlayer = true;
+                    return true;
             }
         }
     }
 
-    return nearPlayer;
+    return false;
 }
 
 bool PlayerbotAI::HasPlayerNearby(float range)
@@ -4489,173 +4485,97 @@ bool PlayerbotAI::HasPlayerNearby(float range)
     return HasPlayerNearby(&botPos, range);
 };
 
-bool PlayerbotAI::HasManyPlayersNearby(uint32 trigerrValue, float range)
-{
-    float sqRange = range * range;
-    uint32 found = 0;
-
-    for (auto& player : sRandomPlayerbotMgr.GetPlayers())
-    {
-        if ((!player->IsGameMaster() || player->isGMVisible()) && ServerFacade::instance().GetDistance2d(player, bot) < sqRange)
-        {
-            found++;
-
-            if (found >= trigerrValue)
-                return true;
-        }
-    }
-
-    return false;
-}
-
-inline bool HasRealPlayers(Map* map)
-{
-    Map::PlayerList const& players = map->GetPlayers();
-    if (players.IsEmpty())
-    {
-        return false;
-    }
-
-    for (auto const& itr : players)
-    {
-        Player* player = itr.GetSource();
-        if (!player || !player->IsVisible())
-        {
-            continue;
-        }
-
-        PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-        if (!botAI || botAI->IsRealPlayer() || botAI->HasRealPlayerMaster())
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-inline bool ZoneHasRealPlayers(Player* bot)
-{
-    Map* map = bot->GetMap();
-    if (!bot || !map)
-    {
-        return false;
-    }
-
-    for (Player* player : sRandomPlayerbotMgr.GetPlayers())
-    {
-        if (player->GetMapId() != bot->GetMapId())
-            continue;
-
-        if (player->IsGameMaster() && !player->IsVisible())
-        {
-            continue;
-        }
-
-        if (player->GetZoneId() == bot->GetZoneId())
-        {
-            PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-            if (!botAI || botAI->IsRealPlayer() || botAI->HasRealPlayerMaster())
-            {
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
 bool PlayerbotAI::AllowActive(ActivityType activityType)
 {
-    // Early return if bot is in invalid state
+    // bot is in an invalid state, not safe to process
     if (!bot || !bot->GetSession() || !bot->IsInWorld() || bot->IsBeingTeleported() ||
         bot->GetSession()->isLogingOut() || bot->IsDuringRemoveFromWorld())
         return false;
 
-    // when botActiveAlone is 100% and smartScale disabled
-    if (sPlayerbotAIConfig.botActiveAlone >= 100 && !sPlayerbotAIConfig.botActiveAloneSmartScale)
-    {
+    // always allow packet handling (e.g. group invites, trade, loot, friend requests etc)
+    if (activityType == PACKET_ACTIVITY)
         return true;
-    }
 
-    // Is in combat. Always defend yourself.
+    // all bots forced active, no rotation or scaling needed
+    if (sPlayerbotAIConfig.botActiveAlone >= 100 && !sPlayerbotAIConfig.botActiveAloneSmartScale)
+        return true;
+
+    // bot is in combat, always defend yourself
     if (activityType != OUT_OF_PARTY_ACTIVITY && activityType != PACKET_ACTIVITY)
     {
         if (bot->IsInCombat())
-        {
             return true;
-        }
     }
 
-    // only keep updating till initializing time has completed,
-    // which prevents unneeded expensive GameTime calls.
-    if (_isBotInitializing)
-    {
-        _isBotInitializing = GameTime::GetUptime().count() < sPlayerbotAIConfig.maxRandomBots * 0.11;
-
-        // no activity allowed during bot initialization
-        if (_isBotInitializing)
-        {
-            return false;
-        }
-    }
-
-    // General exceptions
-    if (activityType == PACKET_ACTIVITY)
-    {
-        return true;
-    }
-
-    // bg, raid, dungeon
+    // bot is inside a BG, dungeon, or raid — always active
     if (!WorldPosition(bot).isOverworld())
-    {
         return true;
-    }
 
-    // bot map has active players.
-    if (sPlayerbotAIConfig.BotActiveAloneForceWhenInMap)
-    {
-        if (HasRealPlayers(bot->GetMap()))
-        {
-            return true;
-        }
-    }
+    // bot is waiting in a BG queue — stay active to speed up join
+    if (bot->InBattlegroundQueue())
+        return true;
 
-    // bot zone has active players.
-    if (sPlayerbotAIConfig.BotActiveAloneForceWhenInZone)
-    {
-        if (ZoneHasRealPlayers(bot))
-        {
-            return true;
-        }
-    }
-
-    // when in real guild
+    // bot is in a guild that contains a real player
     if (sPlayerbotAIConfig.BotActiveAloneForceWhenInGuild)
     {
-        if (IsInRealGuild())
-        {
+        if (IsInRealGuild())  // checks cache list
             return true;
+    }
+
+    // a real player is in the same zone (e.g. Elwynn Forest), same continent or within configured yard radius
+    // combined into a single loop to multiple iterations since this function is called so often
+    bool checkMap = sPlayerbotAIConfig.BotActiveAloneForceWhenInMap;
+    bool checkZone = sPlayerbotAIConfig.BotActiveAloneForceWhenInZone;
+    bool checkRadius = sPlayerbotAIConfig.BotActiveAloneForceWhenInRadius > 0;
+    if (checkMap || checkZone || checkRadius)
+    {
+        uint32 botMapId = bot->GetMapId();
+        uint32 botZoneId = checkZone ? bot->GetZoneId() : 0;
+        float sqRange = 0.0f;
+        WorldPosition botPos(bot);
+        if (checkRadius)
+        {
+            float range = static_cast<float>(sPlayerbotAIConfig.BotActiveAloneForceWhenInRadius);
+            sqRange = range * range;
+        }
+
+        for (auto& player : sRandomPlayerbotMgr.GetPlayers())
+        {
+            if (!player || player->GetMapId() != botMapId)
+                continue;
+
+            bool isGM = player->IsGameMaster();
+
+            // map check
+            if (checkMap && !(isGM && !player->IsVisible()))
+                return true;
+
+            // zone check
+            if (checkZone && !(isGM && !player->IsVisible()) && player->GetZoneId() == botZoneId)
+                return true;
+
+            // radius check
+            if (checkRadius && (!isGM || player->isGMVisible()))
+            {
+                if (botPos.sqDistance(WorldPosition(player)) < sqRange)
+                    return true;
+
+                WorldObject* viewObj = player->GetViewpoint();
+                if (viewObj && viewObj != player && botPos.sqDistance(WorldPosition(viewObj)) < sqRange)
+                    return true;
+            }
         }
     }
 
-    // Player is near. Always active.
-    if (HasPlayerNearby(sPlayerbotAIConfig.BotActiveAloneForceWhenInRadius))
-    {
-        return true;
-    }
-
-    // Has player master. Always active.
+    // bot has a real player master (not another bot)
     if (GetMaster())
     {
         PlayerbotAI* masterBotAI = GET_PLAYERBOT_AI(GetMaster());
         if (!masterBotAI || masterBotAI->IsRealPlayer())
-        {
             return true;
-        }
     }
 
-    // if grouped up
+    // bot is grouped with a real player (or a bot owned by one)
     Group* group = bot->GetGroup();
     if (group)
     {
@@ -4666,52 +4586,37 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
                 continue;
 
             if (member == bot)
-            {
                 continue;
-            }
 
             PlayerbotAI* memberBotAI = GET_PLAYERBOT_AI(member);
-            {
-                if (!memberBotAI || memberBotAI->HasRealPlayerMaster())
-                {
-                    return true;
-                }
-            }
 
+            // group member is a real player or owned by one — stay active
+            if (!memberBotAI || memberBotAI->HasRealPlayerMaster())
+                return true;
+
+            // if group leader (bot) is inactive, follow suit
             if (group->IsLeader(member->GetGUID()))
             {
                 if (!memberBotAI->AllowActivity(PARTY_ACTIVITY))
-                {
                     return false;
-                }
             }
         }
     }
 
-    // In bg queue. Speed up bg queue/join.
-    if (bot->InBattlegroundQueue())
-    {
-        return true;
-    }
-
+    // bot is in LFG queue — stay active
     bool isLFG = false;
     if (group)
     {
         if (sLFGMgr->GetState(group->GetGUID()) != lfg::LFG_STATE_NONE)
-        {
             isLFG = true;
-        }
     }
     if (sLFGMgr->GetState(bot->GetGUID()) != lfg::LFG_STATE_NONE)
-    {
         isLFG = true;
-    }
-    if (isLFG)
-    {
-        return true;
-    }
 
-    // HasFriend
+    if (isLFG)
+        return true;
+
+    // a real player has this bot on their friends list
     if (sPlayerbotAIConfig.BotActiveAloneForceWhenIsFriend)
     {
         // shouldnt be needed analyse in future
@@ -4728,54 +4633,37 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
             if (!playerAI || !playerAI->IsRealPlayer())
                 continue;
 
-            // if a real player has the bot as a friend
             PlayerSocial* social = player->GetSocial();
             if (social && social->HasFriend(bot->GetGUID()))
                 return true;
         }
     }
 
-    // Force the bots to spread
-    if (activityType == OUT_OF_PARTY_ACTIVITY || activityType == GRIND_ACTIVITY)
-    {
-        if (HasManyPlayersNearby(10, 40))
-        {
-            return true;
-        }
-    }
-
-    // Bots don't need react to PathGenerator activities
+    // pathfinding only runs for bots forced active by the rules above —
+    // skip it for bots that would only be active via random rotation
     if (activityType == DETAILED_MOVE_ACTIVITY)
-    {
         return false;
-    }
 
+    // #######################################################################################
+    // Acitivity throttling logic
+    // #######################################################################################
     if (sPlayerbotAIConfig.botActiveAlone <= 0)
-    {
         return false;
-    }
 
-    // #######################################################################################
-    // All mandatory conditations are checked to be active or not, from here the remaining
-    // situations are usable for scaling when enabled.
-    // #######################################################################################
-
-    // Base percentage of bots to be active
+    // base threshold capped at 100
     uint32 mod = sPlayerbotAIConfig.botActiveAlone > 100 ? 100 : sPlayerbotAIConfig.botActiveAlone;
 
-    // Apply SmartScale if enabled
+    // reduce threshold based on server tick time when SmartScale is enabled
     if (sPlayerbotAIConfig.botActiveAloneSmartScale &&
         bot->GetLevel() >= sPlayerbotAIConfig.botActiveAloneSmartScaleWhenMinLevel &&
         bot->GetLevel() <= sPlayerbotAIConfig.botActiveAloneSmartScaleWhenMaxLevel)
     {
-        mod = AutoScaleActivity(mod);  // mod reflects on latency throttling
+        mod = AutoScaleActivity(mod);
     }
 
-    // Get deterministic bucket + timeSlot
+    // deterministic rotation — bot is active if its hash falls below the threshold
     uint32 ActivityNumber = GetFixedBotNumber(100);
-
-    // Check if this bot is in the active set
-    return ActivityNumber < mod;  // mod is directly the number of bots active (0–100)
+    return ActivityNumber < mod;
 }
 
 bool PlayerbotAI::AllowActivity(ActivityType activityType, bool checkNow)

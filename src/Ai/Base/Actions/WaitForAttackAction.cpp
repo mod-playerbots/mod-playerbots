@@ -44,7 +44,12 @@ WorldPosition GetBestPoint(AiObjectContext* context, Player* bot, Unit* target,
             float z = targetPosition.GetPositionZ() + 1.0f;
 
             WorldPosition point(targetPosition.GetMapId(), x, y, z);
-            point.setZ(point.getHeight());
+
+            float groundZ = bot->GetMapHeight(x, y, z);
+            if (groundZ == INVALID_HEIGHT || groundZ == VMAP_INVALID_HEIGHT_VALUE)
+                continue;
+
+            point.setZ(groundZ);
 
             // Check line of sight to target
             if (!target->IsWithinLOS(point.GetPositionX(), point.GetPositionY(),
@@ -88,8 +93,11 @@ bool WaitForAttackKeepSafeDistanceAction::Execute(Event /*event*/)
 {
     Unit* target = AI_VALUE(Unit*, "current target");
 
+    if (!target)
+        return false;
+
     // If our target is moving towards a stationary unit, use that unit as anchor
-    if (target && !target->IsStopped())
+    if (!target->IsStopped())
     {
         ObjectGuid targetGuid = target->GetTarget();
         if (targetGuid)
@@ -100,7 +108,7 @@ bool WaitForAttackKeepSafeDistanceAction::Execute(Event /*event*/)
         }
     }
 
-    if (target && target->IsAlive())
+    if (target->IsAlive())
     {
         float safeDistance = std::max(
             target->GetCombatReach() + ATTACK_DISTANCE,

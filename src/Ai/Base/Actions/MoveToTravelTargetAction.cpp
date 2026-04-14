@@ -74,8 +74,18 @@ bool MoveToTravelTargetAction::Execute(Event /*event*/)
 
     float maxDistance = target->getDestination()->getRadiusMin();
 
-    // Evenly distribute around the target.
-    float angle = 2 * M_PI * urand(0, 100) / 100.0;
+    // Spread bots around the target but keep the offset stable per
+    // (bot, destination) pair. Previously the angle and radius were
+    // re-rolled every time the action re-entered (i.e. every tick the
+    // bot wasn't already moving), which made bots oscillate between
+    // two random points around the same quest POI instead of
+    // committing to one approach.
+    uint32 botLow = bot->GetGUID().GetCounter();
+    int32 destSeed = static_cast<int32>(location.GetPositionX()) * 73856093 ^
+                     static_cast<int32>(location.GetPositionY()) * 19349663;
+    uint32 seed = botLow ^ static_cast<uint32>(destSeed);
+    float angle = 2.0f * static_cast<float>(M_PI) * static_cast<float>(seed % 1000) / 1000.0f;
+    float mod = 0.5f + static_cast<float>((seed / 1000) % 1000) / 2000.0f;  // [0.5, 1.0]
 
     if (target->getMaxTravelTime() > target->getTimeLeft())  // The bot is late. Speed it up.
     {
@@ -88,9 +98,6 @@ bool MoveToTravelTargetAction::Execute(Event /*event*/)
     float y = location.GetPositionY();
     float z = location.GetPositionZ();
     float mapId = location.GetMapId();
-
-    // Move between 0.5 and 1.0 times the maxDistance.
-    float mod = frand(50.f, 100.f) / 100.0f;
 
     x += cos(angle) * maxDistance * mod;
     y += sin(angle) * maxDistance * mod;
