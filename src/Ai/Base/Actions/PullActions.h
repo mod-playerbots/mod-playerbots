@@ -74,6 +74,7 @@ public:
     ReachPullAction(PlayerbotAI* botAI) : ReachTargetAction(botAI, "reach pull", botAI->GetRange("spell")) {}
 
     bool Execute(Event event) override;
+    bool isUseful() override;
     Unit* GetTarget() override;
 };
 

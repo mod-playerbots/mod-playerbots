@@ -14,6 +14,25 @@
 #include "RtiTargetValue.h"
 #include "ServerFacade.h"
 
+#include <algorithm>
+
+namespace
+{
+float GetPullReachDistance(Player* bot, Unit* target, PullStrategy const* strategy)
+{
+    if (!bot || !target || !strategy)
+        return 0.0f;
+
+    float const combatDistance = bot->GetCombatReach() + target->GetCombatReach();
+    return std::max(0.0f, strategy->GetRange() - combatDistance);
+}
+
+bool IsWithinPullRange(Player* bot, Unit* target, PullStrategy const* strategy)
+{
+    return bot && target && strategy && bot->GetExactDist(target) <= strategy->GetRange();
+}
+}
+
 bool PullRequestAction::Execute(Event event)
 {
     PullStrategy* strategy = PullStrategy::Get(botAI);
@@ -146,8 +165,8 @@ std::vector<NextAction> PullAction::getPrerequisites()
     if (!strategy || !target)
         return {};
 
-    return bot->IsWithinCombatRange(target, strategy->GetRange()) ? std::vector<NextAction>{}
-                                                                   : std::vector<NextAction>{ NextAction("reach pull", ACTION_MOVE) };
+    return IsWithinPullRange(bot, target, strategy) ? std::vector<NextAction>{}
+                                                     : std::vector<NextAction>{ NextAction("reach pull", ACTION_MOVE) };
 }
 
 bool PullAction::Execute(Event event)
@@ -165,7 +184,7 @@ bool PullAction::Execute(Event event)
     if (target->IsInCombat())
         return false;
 
-    if (!bot->IsWithinCombatRange(target, strategy->GetRange()))
+    if (!IsWithinPullRange(bot, target, strategy))
     {
         strategy->RequestPull(target, false);
         return false;
@@ -275,7 +294,24 @@ bool ReachPullAction::Execute(Event /*event*/)
 {
     Unit* target = GetTarget();
     PullStrategy* strategy = PullStrategy::Get(botAI);
-    return target && strategy && ReachCombatTo(target, strategy->GetRange());
+    if (!target || !strategy)
+        return false;
+
+    float const reachDistance = GetPullReachDistance(bot, target, strategy);
+    return ReachCombatTo(target, reachDistance);
+}
+
+bool ReachPullAction::isUseful()
+{
+    if (botAI->HasStrategy("stay", botAI->GetState()))
+        return false;
+
+    if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL) != nullptr)
+        return false;
+
+    PullStrategy* strategy = PullStrategy::Get(botAI);
+    Unit* target = strategy ? strategy->GetTarget() : nullptr;
+    return target && !IsWithinPullRange(bot, target, strategy);
 }
 
 Unit* ReachPullAction::GetTarget()
