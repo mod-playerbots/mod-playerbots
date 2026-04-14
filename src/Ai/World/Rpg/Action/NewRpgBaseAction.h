@@ -33,7 +33,7 @@ protected:
     void StartTravelPlan(WorldPosition dest);
     bool UpdateTravelPlan();
     bool MoveWorldObjectTo(ObjectGuid guid, float distance = INTERACTION_DISTANCE);
-    bool MoveRandomNear(float moveStep = 50.0f, MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
+    bool MoveRandomNear(float moveStep = 50.0f, MovementPriority priority = MovementPriority::MOVEMENT_NORMAL, WorldObject* center = nullptr);
     bool ForceToWait(uint32 duration, MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
     bool TakeFlight(std::vector<uint32> const& taxiNodes, Creature* flightMaster);
 
@@ -65,7 +65,14 @@ protected:
 protected:
     /* FOR MOVE FAR */
     const float pathFinderDis = 70.0f;
-    const uint32 stuckTime = 5 * 60 * 1000;
+    // Time without real progress toward dest before MoveFarTo
+    // falls back to teleport recovery. Kept short enough that a
+    // bot truly oscillating around an unreachable destination
+    // (mmap returning non-progressing partial paths, or NOPATH +
+    // cone fallback wandering) doesn't spin for 5 minutes before
+    // the teleport fires, but long enough that a genuine long
+    // walk that is slowly making progress never triggers it.
+    const uint32 stuckTime = 90 * 1000;
 };
 
 #endif

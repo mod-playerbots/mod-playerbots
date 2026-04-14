@@ -6,44 +6,35 @@
 #ifndef _PLAYERBOT_HUNTERBUFFSTRATEGIES_H
 #define _PLAYERBOT_HUNTERBUFFSTRATEGIES_H
 
-#include "NonCombatStrategy.h"
+#include "Strategy.h"
 
 class PlayerbotAI;
 
-class HunterBuffSpeedStrategy : public NonCombatStrategy
+class HunterBuffSpeedStrategy : public Strategy
 {
 public:
-    HunterBuffSpeedStrategy(PlayerbotAI* botAI) : NonCombatStrategy(botAI) {}
+    HunterBuffSpeedStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 
+    void InitTriggers(std::vector<TriggerNode*>& triggers) override;
     std::string const getName() override { return "bspeed"; }
-    void InitTriggers(std::vector<TriggerNode*>& triggers) override;
 };
 
-class HunterBuffManaStrategy : public NonCombatStrategy
-{
-public:
-    HunterBuffManaStrategy(PlayerbotAI* botAI) : NonCombatStrategy(botAI) {}
-
-    std::string const getName() override { return "bmana"; }
-    void InitTriggers(std::vector<TriggerNode*>& triggers) override;
-};
-
-class HunterBuffDpsStrategy : public NonCombatStrategy
+class HunterBuffDpsStrategy : public Strategy
 {
 public:
     HunterBuffDpsStrategy(PlayerbotAI* botAI);
 
-    std::string const getName() override { return "bdps"; }
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
+    std::string const getName() override { return "bdps"; }
 };
 
-class HunterNatureResistanceStrategy : public NonCombatStrategy
+class HunterNatureResistanceStrategy : public Strategy
 {
 public:
-    HunterNatureResistanceStrategy(PlayerbotAI* botAI) : NonCombatStrategy(botAI) {}
+    HunterNatureResistanceStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
 
-    std::string const getName() override { return "rnature"; }
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
+    std::string const getName() override { return "rnature"; }
 };
 
 #endif

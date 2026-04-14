@@ -6,41 +6,9 @@
 #include "BeastMasteryHunterStrategy.h"
 #include "Playerbots.h"
 
-// ===== Action Node Factory =====
-class BeastMasteryHunterStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
-{
-public:
-    BeastMasteryHunterStrategyActionNodeFactory()
-    {
-        creators["auto shot"] = &auto_shot;
-        creators["kill command"] = &kill_command;
-        creators["kill shot"] = &kill_shot;
-        creators["viper sting"] = &viper_sting;
-        creators["serpent sting"] = serpent_sting;
-        creators["aimed shot"] = &aimed_shot;
-        creators["arcane shot"] = &arcane_shot;
-        creators["steady shot"] = &steady_shot;
-        creators["multi-shot"] = &multi_shot;
-        creators["volley"] = &volley;
-    }
-
-private:
-    static ActionNode* auto_shot(PlayerbotAI*) { return new ActionNode("auto shot", {}, {}, {}); }
-    static ActionNode* kill_command(PlayerbotAI*) { return new ActionNode("kill command", {}, {}, {}); }
-    static ActionNode* kill_shot(PlayerbotAI*) { return new ActionNode("kill shot", {}, {}, {}); }
-    static ActionNode* viper_sting(PlayerbotAI*) { return new ActionNode("viper sting", {}, {}, {}); }
-    static ActionNode* serpent_sting(PlayerbotAI*) { return new ActionNode("serpent sting", {}, {}, {}); }
-    static ActionNode* aimed_shot(PlayerbotAI*) { return new ActionNode("aimed shot", {}, {}, {}); }
-    static ActionNode* arcane_shot(PlayerbotAI*) { return new ActionNode("arcane shot", {}, {}, {}); }
-    static ActionNode* steady_shot(PlayerbotAI*) { return new ActionNode("steady shot", {}, {}, {}); }
-    static ActionNode* multi_shot(PlayerbotAI*) { return new ActionNode("multi shot", {}, {}, {}); }
-    static ActionNode* volley(PlayerbotAI*) { return new ActionNode("volley", {}, {}, {}); }
-};
-
-// ===== Single Target Strategy =====
 BeastMasteryHunterStrategy::BeastMasteryHunterStrategy(PlayerbotAI* botAI) : GenericHunterStrategy(botAI)
 {
-    actionNodeFactories.Add(new BeastMasteryHunterStrategyActionNodeFactory());
+    // No custom ActionNodeFactory needed
 }
 
 // ===== Default Actions =====

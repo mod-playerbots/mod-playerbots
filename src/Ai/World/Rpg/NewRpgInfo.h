@@ -60,6 +60,11 @@ struct NewRpgInfo
     {
         Rest() = default;
     };
+    // RPG_OUTDOOR_PVP
+    struct OutdoorPvP
+    {
+        ObjectGuid::LowType capturePointSpawnId{0};
+    };
     struct Idle
     {
     };
@@ -95,6 +100,7 @@ struct NewRpgInfo
         Rest,
         TravelFlight,
         GoCity
+        OutdoorPvP
     >;
     RpgData data;
 
@@ -107,6 +113,7 @@ struct NewRpgInfo
     void ChangeToWanderRandom();
     void ChangeToDoQuest(uint32 questId, const Quest* quest);
     void ChangeToTravelFlight(ObjectGuid fromFlightMaster, std::vector<uint32> path);
+    void ChangeToOutdoorPvp(ObjectGuid::LowType capturePointSpawnId = 0);
     void ChangeToRest();
     void ChangeToIdle();
     bool CanChangeTo(NewRpgStatus status);

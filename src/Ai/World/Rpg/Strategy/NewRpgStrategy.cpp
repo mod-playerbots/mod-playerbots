@@ -67,6 +67,14 @@ void NewRpgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     );
     triggers.push_back(
         new TriggerNode(
+            "outdoor pvp status",
+            {
+                NextAction("new rpg outdoor pvp", 3.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
             "go city status",
             {
                 NextAction("new rpg go city", 3.0f)
