@@ -50,6 +50,14 @@ namespace HyjalSummitHelpers
         NPC_DOOMFIRE           = 18095,
     };
 
+    enum class TankPositionState : uint8
+    {
+        MovingToTransition = 0,
+        MovingToFinal      = 1,
+        Positioned         = 2,
+        Unknown            = 255,
+    };
+
     // General
     constexpr uint32 HYJAL_SUMMIT_MAP_ID = 534;
     struct RangedGroups
@@ -76,21 +84,22 @@ namespace HyjalSummitHelpers
     // Kaz'rogal
     extern const Position KAZROGAL_TANK_TRANSITION_POSITION;
     extern const Position KAZROGAL_TANK_FINAL_POSITION;
-    extern std::unordered_map<ObjectGuid, uint8> kazrogalTankStep;
+    extern std::unordered_map<ObjectGuid, TankPositionState> kazrogalTankStep;
     extern std::unordered_map<ObjectGuid, bool> isBelowManaThreshold;
+    TankPositionState GetKazrogalTankPositionState(PlayerbotAI* botAI, Player* bot);
 
     // Azgalor
     extern const Position AZGALOR_TANK_TRANSITION_POSITION;
     extern const Position AZGALOR_TANK_FINAL_POSITION;
     extern const Position AZGALOR_DOOMGUARD_POSITION;
-    extern std::unordered_map<ObjectGuid, uint8> azgalorTankStep;
+    extern std::unordered_map<ObjectGuid, TankPositionState> azgalorTankStep;
     struct RainOfFireData
     {
         Position position;
         uint32 spawnTime;
     };
     extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, RainOfFireData>> rainOfFirePosition;
-    int GetAzgalorTankStep(PlayerbotAI* botAI, Player* bot);
+    TankPositionState GetAzgalorTankPositionState(PlayerbotAI* botAI, Player* bot);
     bool AnyGroupMemberHasDoom(Player* bot);
 
     // Archimonde

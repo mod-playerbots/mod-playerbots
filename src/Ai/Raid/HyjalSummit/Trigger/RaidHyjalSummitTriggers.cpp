@@ -105,8 +105,7 @@ bool KazrogalPullingBossTrigger::IsActive()
 
 bool KazrogalBossEngagedByMainTankTrigger::IsActive()
 {
-    return botAI->IsMainTank(bot) &&
-           AI_VALUE2(Unit*, "find target", "kaz'rogal");
+    return botAI->IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "kaz'rogal");
 }
 
 bool KazrogalBossEngagedByAssistTanksTrigger::IsActive()
@@ -229,7 +228,9 @@ bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
     if (!GET_PLAYERBOT_AI(mainTank))
         return azgalor->GetHealthPct() > 95.0f;
 
-    return GetAzgalorTankStep(botAI, bot) < 1;
+    TankPositionState tankState = GetAzgalorTankPositionState(botAI, bot);
+    return tankState == TankPositionState::Unknown ||
+           tankState == TankPositionState::MovingToTransition;
 }
 
 bool AzgalorBossCastsRainOfFireOnRangedTrigger::IsActive()

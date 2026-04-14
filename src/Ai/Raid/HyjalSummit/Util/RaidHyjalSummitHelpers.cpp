@@ -87,27 +87,41 @@ namespace HyjalSummitHelpers
 
     const Position KAZROGAL_TANK_TRANSITION_POSITION = { 5528.792f, -2636.486f, 1481.293f };
     const Position KAZROGAL_TANK_FINAL_POSITION =      { 5511.514f, -2662.466f, 1480.288f };
-    std::unordered_map<ObjectGuid, uint8> kazrogalTankStep;
+    std::unordered_map<ObjectGuid, TankPositionState> kazrogalTankStep;
     std::unordered_map<ObjectGuid, bool> isBelowManaThreshold;
+
+    TankPositionState GetKazrogalTankPositionState(PlayerbotAI* botAI, Player* bot)
+    {
+        Player* mainTank = GetGroupMainTank(botAI, bot);
+        if (!mainTank)
+            return TankPositionState::Unknown;
+
+        auto it = kazrogalTankStep.find(mainTank->GetGUID());
+        if (it != kazrogalTankStep.end())
+            return it->second;
+
+        return TankPositionState::Unknown;
+    }
 
     // Azgalor
 
     const Position AZGALOR_TANK_TRANSITION_POSITION = { 5486.787f, -2696.215f, 1482.007f };
     const Position AZGALOR_TANK_FINAL_POSITION =      { 5496.379f, -2675.265f, 1481.053f };
     const Position AZGALOR_DOOMGUARD_POSITION =       { 5485.555f, -2731.659f, 1485.555f };
-    std::unordered_map<ObjectGuid, uint8> azgalorTankStep;
+    std::unordered_map<ObjectGuid, TankPositionState> azgalorTankStep;
     std::unordered_map<uint32, std::unordered_map<ObjectGuid, RainOfFireData>> rainOfFirePosition;
 
-    int GetAzgalorTankStep(PlayerbotAI* botAI, Player* bot)
+    TankPositionState GetAzgalorTankPositionState(PlayerbotAI* botAI, Player* bot)
     {
         Player* mainTank = GetGroupMainTank(botAI, bot);
-        if (!mainTank) return -1;
+        if (!mainTank)
+            return TankPositionState::Unknown;
 
         auto it = azgalorTankStep.find(mainTank->GetGUID());
         if (it != azgalorTankStep.end())
             return it->second;
 
-        return -1;
+        return TankPositionState::Unknown;
     }
 
     bool AnyGroupMemberHasDoom(Player* bot)

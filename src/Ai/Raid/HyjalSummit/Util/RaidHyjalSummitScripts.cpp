@@ -6,6 +6,7 @@
 #include "RaidHyjalSummitHelpers.h"
 #include "AllCreatureScript.h"
 #include "DynamicObjectScript.h"
+#include "Playerbots.h"
 #include "ScriptMgr.h"
 #include "Timer.h"
 
@@ -48,6 +49,24 @@ public:
             {
                 return getMSTimeDiff(d.recordTime, now) > TRAIL_DURATION;
             }), trail.end());
+
+        constexpr float DOOMFIRE_DANGER_RANGE = 10.0f;
+        Map::PlayerList const& players = creature->GetMap()->GetPlayers();
+        for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+        {
+            Player* player = it->GetSource();
+            if (!player || !player->IsAlive())
+                continue;
+
+            PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+            if (!botAI)
+                continue;
+
+            if (creature->GetDistance(player) > DOOMFIRE_DANGER_RANGE)
+                continue;
+
+            botAI->RequestSpellInterrupt();
+        }
     }
 
     void OnCreatureRemoveWorld(Creature* creature) override
