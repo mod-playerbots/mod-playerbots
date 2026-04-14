@@ -12,7 +12,7 @@
 
 // THEORY
 //
-//  Pathfinding in (c)mangos is based on detour recast an opensource nashmesh creation and pathfinding codebase.
+//  Pathfinding in (c)mangos is based on detour recast, an opensource navmesh creation and pathfinding codebase.
 //  This system is used for mob and npc pathfinding and in this codebase also for bots.
 //  Because mobs and npc movement is based on following a player or a set path the PathGenerator is limited to 296y.
 //  This means that when trying to find a path from A to B distances beyond 296y will be a best guess often moving in a
@@ -24,32 +24,82 @@
 //   <S> ---> [N1] ---> [N2] ---> [N3] ---> <E>
 //
 //  Bot at <S> wants to move to <E>
-//  [N1],[N2],[N3] are predefined nodes for wich we know we can move from [N1] to [N2] and from [N2] to [N3] but not
-//  from [N1] to [N3] If we can move fom [S] to [N1] and from [N3] to [E] we have a complete route to travel.
+//  [N1],[N2],[N3] are predefined nodes for which we know we can move from [N1] to [N2] and from [N2] to [N3] but not
+//  from [N1] to [N3]. If we can move from [S] to [N1] and from [N3] to [E] we have a complete route to travel.
 //
-//  Termonology:
-//  Node: a location on a map for which we know bots are likely to want to travel to or need to travel past to reach
-//  other nodes. Link: the connection between two nodes. A link signifies that the bot can travel from one node to
-//  another. A link is one-directional. Path: the waypointpath returned by the standard PathGenerator to move from one
-//  node (or position) to another. A path can be imcomplete or empty which means there is no link. Route: the list of
-//  nodes that give the shortest route from a node to a distant node. Routes are calculated using a standard A* search
-//  based on links.
+//  Terminology:
+//  Node:  A location on a map for which we know bots are likely to want to travel to or need to travel past to reach
+//         other nodes. Stored in DB table `playerbots_travelnode`.
+//  Link:  The connection between two nodes. A link signifies that the bot can travel from one node to another.
+//         A link is one-directional. Stored in `playerbots_travelnode_link`.
+//  Path:  The waypoint path returned by the standard PathGenerator to move from one node (or position) to another.
+//         A path can be incomplete or empty which means there is no link. Stored in `playerbots_travelnode_path`.
+//  Route: The list of nodes that give the shortest route from a node to a distant node. Routes are calculated using
+//         a standard A* search based on links.
 //
-//  On server start saved nodes and links are loaded. Paths and routes are calculated on the fly but saved for future
-//  use. Nodes can be added and removed realtime however because bots access the nodes from different threads this
-//  requires a locking mechanism.
+//  Edge types (TravelNodePathType):
+//    walk(1)          — Walk via navmesh waypoints (stored in DB)
+//    portal(2)        — AreaTrigger teleport (auto-discovered at startup)
+//    transport(3)     — Boat/zeppelin (auto-discovered from MO_TRANSPORT)
+//    flightPath(4)    — Taxi flight between flight masters
+//    teleportSpell(5) — Spell-based teleport (e.g. mage portals)
+//    staticPortal(6)  — Manually defined teleport link (DB only, not pruned by generation)
+//    flyingMount (7)  — Use Bots Flying mount to travel (Not currently enabled)
+//
+//  On server start saved nodes and links are loaded via TravelNodeMap::Init(). An index of nodes by zone is prepared
+//  (instead of scanning all ~4000 nodes), precomputes connected components for O(1) reachability checks, and builds
+//  a taxi BFS graph. Paths and routes are calculated on the fly and saved for future use. Nodes are only added at
+//  startup or via the console `.generate` command — runtime mutation was removed because taking a unique_lock
+//  caused 100-250ms contention spikes against bot threads.
 //
 //  Initially the current nodes have been made:
 //  Flightmasters and Inns (Bots can use these to fast-travel so eventually they will be included in the route
-//  calculation) WorldBosses and Unique bosses in instances (These are a logical places bots might want to go in
+//  calculation) WorldBosses and Unique bosses in instances (These are logical places bots might want to go in
 //  instances) Player start spawns (Obviously all lvl1 bots will spawn and move from here) Area triggers locations with
 //  teleport and their teleport destinations (These used to travel in or between maps) Transports including elevators
 //  (Again used to travel in and in maps) (sub)Zone means (These are the center most point for each sub-zone which is
-//  good for global coverage)
+//  good for global coverage).
 //
-//  To increase coverage/linking extra nodes can be automatically be created.
-//  Current implentation places nodes on paths (including complete) at sub-zone transitions or randomly.
-//  After calculating possible links the node is removed if it does not create local coverage.
+//  To increase coverage/linking extra nodes must be manually created via the "playerbot travel generatenode"
+//  console command after importing the specified node. Current implementation places nodes on paths (including
+//  complete) at sub-zone transitions or randomly. After calculating possible links the node is removed if it
+//  does not create local coverage (.fullgenerate only).
+//
+//  Travel Flow — TravelPlan State Machine:
+//
+//  Originally the system planned the entire path from start to finish before executing. This is very expensive
+//  and does not scale properly. Instead this has been replaced by an incremental system where we assume bots
+//  will be able to get to where they are going, as long as we can identify generally how to get there. This
+//  system distributes the computations over time across multiple ticks by deferred segmentation, resolved
+//  when appropriate.
+//
+//  Phase                    Work done
+//  -------------------------------------------------------------------
+//  FIND_START_NODE          Zone-filtered nearest node lookup
+//  WALK_TO_START_NODE       PathGenerator + launch spline
+//  FIND_END_NODE            Zone-filtered nearest node lookup
+//  RESOLVE_ROUTE            A* over node graph (read-only)
+//  WALK_NODE_PATH           Copy stored path, launch spline
+//    (repeats for each hop)
+//  FLY                      ActivateTaxiPathTo
+//  FLY_MOUNT                Flying mount between nodes (stub — teleports for now)
+//  USE_PORTAL               PlayerbotAI::TeleportTo
+//  WALK_TO_DESTINATION      PathGenerator for final < 296y
+//  COMPLETE                 Done
+//
+//  If any phase cannot resolve (no node, no route, no flight), the bot teleports directly to the destination
+//  as a fallback. Instance portals are skipped unless the destination is inside that instance. Cross-map travel
+//  uses FindMapConnection() to locate a portal/transport node bridging the bot's map to the destination map,
+//  routes to it, teleports through, then continues on the other side.
+//
+//  The use of hearthstones and mage teleporting was removed — it caused route mutations requiring locking that no longer made sense. Mage portals may be future item.
+//
+//  Thread Safety:
+//
+//  The node graph is immutable at runtime (no adds/removes after Init). A shared_timed_mutex (m_nMapMtx) still
+//  exists and shared_locks are taken in RESOLVE_ROUTE and WALK_NODE_PATH for safety, but since there are no
+//  runtime mutations these are effectively uncontested. The only exclusive locks are taken at startup
+//  (saveNodeStore) and by the debug dump command.
 //
 
 enum class TravelNodePathType : uint8
@@ -59,18 +109,15 @@ enum class TravelNodePathType : uint8
     portal = 2,
     transport = 3,
     flightPath = 4,
-    teleportSpell = 5
+    teleportSpell = 5,
+    staticPortal = 6,
+    flyingMount = 7
 };
 
 // A connection between two nodes.
 class TravelNodePath
 {
 public:
-    // Legacy Constructor for travelnodestore
-    // TravelNodePath(float distance1, float extraCost1, bool portal1 = false, uint32 portalId1 = 0, bool transport1 =
-    // false, bool calculated = false, uint8 maxLevelMob1 = 0, uint8 maxLevelAlliance1 = 0, uint8 maxLevelHorde1 = 0,
-    // float swimDistance1 = 0, bool flightPath1 = false);
-
     // Constructor
     TravelNodePath(float distance = 0.1f, float extraCost = 0,
                    uint8 pathType = (uint8)TravelNodePathType::walk,
@@ -131,9 +178,6 @@ public:
         calculateCost(true);
         extraCost = distance / speed;
     }
-
-    // void setPortal(bool portal1, uint32 portalId1 = 0) { portal = portal1; portalId = portalId1; }
-    // void setTransport(bool transport1) { transport = transport1; }
 
     void setPathType(TravelNodePathType pathType1) { pathType = pathType1; }
 
@@ -299,7 +343,7 @@ public:
     {
         return hasPathTo(node) && getPathTo(node)->getComplete();
     }
-    TravelNodePath* buildPath(TravelNode* endNode, Unit* bot,
+    TravelNodePath* BuildPath(TravelNode* endNode, Unit* bot,
                               bool postProcess = false);
 
     void setLinkTo(TravelNode* node, float distance = 0.1f)
@@ -376,25 +420,8 @@ protected:
     // uint32 transportId = 0;
 };
 
-class PortalNode : public TravelNode
-{
-public:
-    PortalNode(TravelNode* baseNode) : TravelNode(baseNode) {}
-
-    void SetPortal(TravelNode* baseNode, TravelNode* endNode, uint32 portalSpell)
-    {
-        nodeName = baseNode->getName();
-        point = *baseNode->getPosition();
-        paths.clear();
-        links.clear();
-        TravelNodePath path(0.1f, 0.1f, (uint8)TravelNodePathType::teleportSpell,
-            portalSpell, true);
-        setPathTo(endNode, path);
-    }
-};
-
 // Route step type
-enum PathNodeType
+enum class PathNodeType : uint8
 {
     NODE_PREPATH = 0,
     NODE_PATH = 1,
@@ -402,13 +429,14 @@ enum PathNodeType
     NODE_PORTAL = 3,
     NODE_TRANSPORT = 4,
     NODE_FLIGHTPATH = 5,
-    NODE_TELEPORT = 6
+    NODE_TELEPORT = 6,
+    NODE_FLYING_MOUNT = 7
 };
 
 struct PathNodePoint
 {
     WorldPosition point;
-    PathNodeType type = NODE_PATH;
+    PathNodeType type = PathNodeType::NODE_PATH;
     uint32 entry = 0;
 };
 
@@ -419,11 +447,6 @@ public:
     TravelPath() {}
     TravelPath(std::vector<PathNodePoint> fullPath1)
     {
-        fullPath = fullPath1;
-    }
-    TravelPath(std::vector<WorldPosition> path,
-               PathNodeType type = PathNodeType::NODE_PATH,
-               uint32 entry = 0)
         fullPath = fullPath1;
     }
     TravelPath(std::vector<WorldPosition> path,
@@ -498,7 +521,7 @@ public:
 
     std::vector<TravelNode*> getNodes() { return nodes; }
 
-    TravelPath buildPath(
+    TravelPath BuildPath(
         std::vector<WorldPosition> pathToStart = {},
         std::vector<WorldPosition> pathToEnd = {},
         Unit* bot = nullptr);
@@ -635,7 +658,7 @@ public:
     void removeUselessPaths();
     void calculatePathCosts();
     void generateTaxiPaths();
-    void generatePaths();
+    void generatePaths(bool fullGen = false);
 
     void generateAll();
 
@@ -658,8 +681,14 @@ public:
     void InitTaxiGraph();
     std::vector<uint32> FindTaxiPath(uint32 fromNode, uint32 toNode);
 
+    void BuildZoneIndex();
+    void PrecomputeReachability();
+
+    TravelNode* GetNearestNodeInZone(WorldPosition pos, uint32 zoneId);
+    TravelNode* GetNearestNodeOnMap(WorldPosition pos);
+    TravelNode* FindMapConnection(uint32 fromMapId, uint32 toMapId);
+
     std::shared_timed_mutex m_nMapMtx;
-    std::unordered_map<ObjectGuid, std::unordered_map<uint32, TravelNode*>> teleportNodes;
 
 private:
     TravelNodeMap() = default;
@@ -675,7 +704,7 @@ private:
     void BuildTaxiGraph();
     void ComputeAllPaths();
     std::unordered_map<uint32, uint32> BFS(uint32 startNode);
-    std::vector<uint32> buildPath(
+    std::vector<uint32> BuildPath(
         uint32 fromNode, uint32 toNode,
         const std::unordered_map<uint32, uint32>& parentMap);
 
@@ -684,6 +713,9 @@ private:
         m_taxiPathCache;
 
     std::vector<TravelNode*> nodes;
+
+    std::unordered_map<uint32, std::vector<TravelNode*>> m_zoneIndex;
+    std::unordered_map<uint32, std::vector<TravelNode*>> m_mapIndex;
 
     std::vector<std::pair<uint32, WorldPosition>> mapOffsets;
 
