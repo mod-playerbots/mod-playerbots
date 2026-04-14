@@ -81,9 +81,9 @@ struct NewRpgInfo
     WorldPosition moveFarPos;
     // END MOVE_FAR
 
-    // Travel Node System for moving to distant places
-    TravelPath travelPath{};
-    bool HasActiveTravelExec() const { return travelExec.IsActive(); }
+    // TravelPlan for traveling long distances.
+    TravelPlan travelPlan{};
+    bool HasActiveTravelPlan() const { return travelPlan.IsActive(); }
 
     using RpgData = std::variant<
         Idle,

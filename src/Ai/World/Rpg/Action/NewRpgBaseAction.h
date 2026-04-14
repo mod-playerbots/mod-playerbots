@@ -30,10 +30,11 @@ public:
 protected:
     /* MOVEMENT RELATED */
     bool MoveFarTo(WorldPosition dest);
+    void StartTravelPlan(WorldPosition dest);
+    bool UpdateTravelPlan();
     bool MoveWorldObjectTo(ObjectGuid guid, float distance = INTERACTION_DISTANCE);
     bool MoveRandomNear(float moveStep = 50.0f, MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
     bool ForceToWait(uint32 duration, MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
-    bool FollowTravelPath();
     bool TakeFlight(std::vector<uint32> const& taxiNodes, Creature* flightMaster);
 
     /* QUEST RELATED CHECK */

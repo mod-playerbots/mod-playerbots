@@ -76,7 +76,7 @@ bool DebugAction::Execute(Event event)
                 return false;
 
             std::vector<WorldPosition> beginPath, endPath;
-            TravelNodeRoute route = TravelNodeMap::instance().GetRoute(botPos, *points.front(), beginPath, bot);
+            TravelNodeRoute route = TravelNodeMap::instance().GetNearestNodes(botPos, *points.front(), beginPath, bot);
 
             std::ostringstream out;
             out << "Traveling to " << dest->getTitle() << ": ";

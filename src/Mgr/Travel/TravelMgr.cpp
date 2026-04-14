@@ -2823,7 +2823,7 @@ void TravelMgr::LoadQuestTravelTable()
 
                 TravelNodePath nodePath = *path.second;
 
-                std::vector<WorldPosition> pPath = nodePath.getPath();
+                std::vector<WorldPosition> pPath = nodePath.GetPath();
                 std::reverse(pPath.begin(), pPath.end());
 
                 nodePath.setPath(pPath);

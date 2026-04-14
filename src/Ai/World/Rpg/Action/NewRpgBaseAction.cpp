@@ -118,6 +118,27 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
     return false;
 }
 
+void NewRpgBaseAction::StartTravelPlan(WorldPosition dest)
+{
+    botAI->rpgInfo.travelPlan.Reset();
+    botAI->rpgInfo.travelPlan.destination = dest;
+    botAI->rpgInfo.travelPlan.phase = TravelPhase::FIND_START_NODE;
+
+    LOG_DEBUG("playerbots", "[New RPG] Bot {} starting travel plan to ({:.0f},{:.0f},{:.0f}) map={}",
+              bot->GetName(), dest.GetPositionX(), dest.GetPositionY(),
+              dest.GetPositionZ(), dest.GetMapId());
+}
+
+bool NewRpgBaseAction::UpdateTravelPlan()
+{
+    bool result = ExecuteTravelPlan(botAI->rpgInfo.travelPlan);
+
+    if (botAI->rpgInfo.travelPlan.phase == TravelPhase::COMPLETE)
+        botAI->rpgInfo.ClearTravel();
+
+    return result;
+}
+
 bool NewRpgBaseAction::MoveWorldObjectTo(ObjectGuid guid, float distance)
 {
     if (IsWaitingForLastMove(MovementPriority::MOVEMENT_NORMAL))
@@ -224,72 +245,6 @@ bool NewRpgBaseAction::TakeFlight(std::vector<uint32> const& taxiNodes, Creature
     LOG_DEBUG("playerbots", "[New RPG] Bot {} taking flight ({} nodes, {} to {})",
               bot->GetName(), taxiNodes.size(), taxiNodes.front(), taxiNodes.back());
     return true;
-}
-
-bool NewRpgBaseAction::FollowTravelPath()
-{
-    NewRpgInfo& rpgInfo = botAI->rpgInfo;
-    if (!rpgInfo.HasTravelPath())
-        return false;
-
-    if (bot->IsInFlight())
-        return true;
-
-    WorldPosition currentPos(bot->GetMapId(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
-    float maxDist = pathFinderDis;
-
-    TravelNodePathType pathType = TravelNodePathType::none;
-    uint32 entry = 0;
-    WorldPosition movePosition = rpgInfo.travelPath.GetNextPoint(currentPos, maxDist, pathType, entry);
-
-    if (movePosition == WorldPosition())
-        return false;
-
-    // After detecting a flight path step, determine if within intaction distance from a flightmaster
-    // and once in position combine all consecutive flight legs into one and fly.
-    if (pathType == TravelNodePathType::flightPath && entry)
-    {
-        ObjectGuid flightMasterGuid = sTravelMgr.GetNearestFlightMasterGuid(bot);
-        Creature* flightMaster = flightMasterGuid ? ObjectAccessor::GetCreature(*bot, flightMasterGuid) : nullptr;
-        if (!flightMaster || !flightMaster->IsAlive())
-            return false;
-
-        if (bot->GetDistance(flightMaster) > INTERACTION_DISTANCE)
-            return MoveFarTo(flightMaster);
-
-        // Collect all consecutive flight legs into one multi-hop route
-        // Each leg is stored as two NODE_FLIGHTPATH points with the same entry,
-        // so deduplicate by tracking seen entries.
-        std::vector<uint32> taxiNodes;
-        std::set<uint32> seenEntries;
-        for (PathNodePoint const& path : rpgInfo.travelPath.GetPath())
-        {
-            if (path.type != NODE_FLIGHTPATH)
-            {
-                if (!taxiNodes.empty())
-                    break;
-                continue;
-            }
-
-            if (!seenEntries.insert(path.entry).second)
-                continue;
-
-            TaxiPathEntry const* tEntry = sTaxiPathStore.LookupEntry(path.entry);
-            if (!tEntry)
-                continue;
-
-            if (taxiNodes.empty() || taxiNodes.back() != tEntry->from)
-                taxiNodes.push_back(tEntry->from);
-            taxiNodes.push_back(tEntry->to);
-        }
-
-        return TakeFlight(taxiNodes, flightMaster);
-    }
-    // Walk / default — move toward the point
-    if (movePosition.GetMapId() != bot->GetMapId())
-        return false;
-
-    return MoveFarTo(movePosition);
 }
 
 /// @TODO: Fix redundant code

@@ -472,26 +472,13 @@ bool NewRpgGoCityAction::Execute(Event /*event*/)
 
     float distToCity = bot->GetDistance(data.pos);
 
-    // Long distance: use travel node network — feeds splines directly to the engine
+    // Long distance: use travel node system
     if (distToCity > 300.0f)
     {
-        if (botAI->rpgInfo.HasActiveTravelExec())
-            return ExecuteTravelPath(botAI->rpgInfo.travelExec);
+        if (!botAI->rpgInfo.HasActiveTravelPlan())
+            StartTravelPlan(data.pos);
 
-        WorldPosition currentPos(bot->GetMapId(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
-        uint32 t0 = getMSTime();
-        TravelPath path = sTravelNodeMap.GetFullPath(currentPos, data.pos, bot);
-        uint32 pathMs = GetMSTimeDiffToNow(t0);
-        if (pathMs > 5)
-            LOG_DEBUG("playerbots", "[New RPG] Bot {} GetFullPath took {}ms (found={})",
-                      bot->GetName(), pathMs, !path.empty());
-        if (!path.empty())
-        {
-            botAI->rpgInfo.travelExec = SegmentTravelPath(path);
-            return ExecuteTravelPath(botAI->rpgInfo.travelExec);
-        }
-
-        return MoveFarTo(data.pos);
+        return UpdateTravelPlan();
     }
 
     // Medium distance: clear any leftover travel execution and walk
