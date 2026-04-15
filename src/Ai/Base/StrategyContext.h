@@ -50,6 +50,7 @@
 #include "TravelStrategy.h"
 #include "UseFoodStrategy.h"
 #include "UsePotionsStrategy.h"
+#include "WaitForAttackStrategy.h"
 #include "WorldPacketHandlerStrategy.h"
 
 class StrategyContext : public NamedObjectContext<Strategy>
@@ -124,6 +125,7 @@ public:
         creators["worldbuff"] = &StrategyContext::world_buff;
         creators["use bobber"] = &StrategyContext::bobber_strategy;
         creators["master fishing"] = &StrategyContext::master_fishing;
+        creators["wait for attack"] = &StrategyContext::wait_for_attack;
     }
 
 private:
@@ -195,6 +197,7 @@ private:
     static Strategy* world_buff(PlayerbotAI* botAI) { return new WorldBuffStrategy(botAI); }
     static Strategy* bobber_strategy(PlayerbotAI* botAI) { return new UseBobberStrategy(botAI); }
     static Strategy* master_fishing(PlayerbotAI* botAI) { return new MasterFishingStrategy(botAI); }
+    static Strategy* wait_for_attack(PlayerbotAI* botAI) { return new WaitForAttackStrategy(botAI); }
 };
 
 class MovementStrategyContext : public NamedObjectContext<Strategy>

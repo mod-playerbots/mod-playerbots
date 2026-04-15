@@ -112,6 +112,7 @@ public:
         creators["mangle (cat)"] = &DruidTriggerFactoryInternal::mangle_cat;
         creators["ferocious bite time"] = &DruidTriggerFactoryInternal::ferocious_bite_time;
         creators["hurricane channel check"] = &DruidTriggerFactoryInternal::hurricane_channel_check;
+        creators["no healer dps strategy"] = &DruidTriggerFactoryInternal::no_healer_dps_strategy;
     }
 
 private:
@@ -149,6 +150,7 @@ private:
     static Trigger* mangle_cat(PlayerbotAI* ai) { return new MangleCatTrigger(ai); }
     static Trigger* ferocious_bite_time(PlayerbotAI* ai) { return new FerociousBiteTimeTrigger(ai); }
     static Trigger* hurricane_channel_check(PlayerbotAI* ai) { return new HurricaneChannelCheckTrigger(ai); }
+    static Trigger* no_healer_dps_strategy(PlayerbotAI* ai) { return new NoHealerDpsStrategyTrigger(ai); }
 };
 
 class DruidAiObjectContextInternal : public NamedObjectContext<Action>
@@ -181,6 +183,7 @@ public:
         creators["bash"] = &DruidAiObjectContextInternal::bash;
         creators["swipe"] = &DruidAiObjectContextInternal::swipe;
         creators["growl"] = &DruidAiObjectContextInternal::growl;
+        creators["challenging roar"] = &DruidAiObjectContextInternal::challenging_roar;
         creators["demoralizing roar"] = &DruidAiObjectContextInternal::demoralizing_roar;
         creators["hibernate"] = &DruidAiObjectContextInternal::hibernate;
         creators["entangling roots"] = &DruidAiObjectContextInternal::entangling_roots;
@@ -275,6 +278,7 @@ private:
     static Action* bash(PlayerbotAI* botAI) { return new CastBashAction(botAI); }
     static Action* swipe(PlayerbotAI* botAI) { return new CastSwipeAction(botAI); }
     static Action* growl(PlayerbotAI* botAI) { return new CastGrowlAction(botAI); }
+    static Action* challenging_roar(PlayerbotAI* botAI) { return new CastChallengingRoarAction(botAI); }
     static Action* demoralizing_roar(PlayerbotAI* botAI) { return new CastDemoralizingRoarAction(botAI); }
     static Action* moonkin_form(PlayerbotAI* botAI) { return new CastMoonkinFormAction(botAI); }
     static Action* hibernate(PlayerbotAI* botAI) { return new CastHibernateAction(botAI); }

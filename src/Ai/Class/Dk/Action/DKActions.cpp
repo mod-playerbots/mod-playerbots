@@ -48,3 +48,55 @@ bool CastRaiseDeadAction::Execute(Event event)
 
     return true;
 }
+
+Unit* CastHysteriaAction::GetTarget()
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+    {
+        if (!bot->HasAura(49016))
+            return bot;
+        return nullptr;
+    }
+
+    Unit* rangedDps = nullptr;
+    Unit* tank = nullptr;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive())
+            continue;
+
+        if (member->GetMap() != bot->GetMap() || bot->GetDistance(member) > sPlayerbotAIConfig.spellDistance)
+            continue;
+
+        // Skip if already has hysteria
+        if (member->HasAura(49016))
+            continue;
+
+        // Priority 1: Melee DPS
+        if (botAI->IsMelee(member) && botAI->IsDps(member))
+            return member;
+
+        // Priority 2: Ranged DPS (physical, not casters)
+        if (!rangedDps && botAI->IsRanged(member) && botAI->IsDps(member) && !botAI->IsCaster(member))
+            rangedDps = member;
+
+        // Priority 3: Tank
+        if (!tank && botAI->IsTank(member))
+            tank = member;
+    }
+
+    if (rangedDps)
+        return rangedDps;
+
+    if (tank)
+        return tank;
+
+    // Fallback to self if no hysteria
+    if (!bot->HasAura(49016))
+        return bot;
+
+    return nullptr;
+}

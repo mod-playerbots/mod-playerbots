@@ -14,7 +14,7 @@
 #include "TravelNode.h"
 #include "Talentspec.h"
 #include "ChatHelper.h"
-#include "MMapFactory.h"
+#include "MapCollisionData.h"
 #include "MapMgr.h"
 #include "PathGenerator.h"
 #include "Playerbots.h"
@@ -687,10 +687,11 @@ std::vector<WorldPosition> WorldPosition::frommGridCoord(mGridCoord GridCoord)
     return retVec;
 }
 
+// TODO: Cleanup — make this actually work.
 void WorldPosition::loadMapAndVMap(uint32 mapId, uint8 x, uint8 y)
 {
     std::string const fileName = "load_map_grid.csv";
-
+/*
     if (isOverworld() && false || false)
     {
         if (!MMAP::MMapFactory::createOrGetMMapMgr()->loadMap(mapId, x, y))
@@ -745,22 +746,22 @@ void WorldPosition::loadMapAndVMap(uint32 mapId, uint8 x, uint8 y)
                     sPlayerbotAIConfig.log(fileName, out.str().c_str());
                 }
             }
+*/
+    if (!TravelMgr::instance().isBadMmap(mapId, x, y))
+    {
+        // load navmesh
+        Map* map = getMap();
+        if (map && map->GetMapCollisionData().LoadMMapTile(x, y) == MMAP::MMAP_LOAD_RESULT_ERROR)
+            TravelMgr::instance().addBadMmap(mapId, x, y);
 
-        if (!TravelMgr::instance().isBadMmap(mapId, x, y))
+        if (sPlayerbotAIConfig.hasLog(fileName))
         {
-            // load navmesh
-            if (!MMAP::MMapFactory::createOrGetMMapMgr()->loadMap(mapId, x, y))
-                TravelMgr::instance().addBadMmap(mapId, x, y);
-
-            if (sPlayerbotAIConfig.hasLog(fileName))
-            {
-                std::ostringstream out;
-                out << sPlayerbotAIConfig.GetTimestampStr();
-                out << "+00,\"mmap\", " << x << "," << y << "," << (TravelMgr::instance().isBadMmap(mapId, x, y) ? "0" : "1")
-                    << ",";
-                printWKT(fromGridCoord(GridCoord(x, y)), out, 1, true);
-                sPlayerbotAIConfig.log(fileName, out.str().c_str());
-            }
+            std::ostringstream out;
+            out << sPlayerbotAIConfig.GetTimestampStr();
+            out << "+00,\"mmap\", " << x << "," << y << "," << (TravelMgr::instance().isBadMmap(mapId, x, y) ? "0" : "1")
+                << ",";
+            printWKT(fromGridCoord(GridCoord(x, y)), out, 1, true);
+            sPlayerbotAIConfig.log(fileName, out.str().c_str());
         }
     }
 }
@@ -4418,6 +4419,7 @@ std::vector<std::vector<uint32>> TravelMgr::GetOptimalFlightDestinations(Player*
                                             bot->GetTeamId());
     if (!fromNode)
         return validDestinations;
+
     std::vector<WorldLocation> candidateLocations;
     if (bot->GetLevel() >= 10 && urand(0, 100) < sPlayerbotAIConfig.probTeleToBankers * 100)
         candidateLocations = GetCityLocations(bot);
@@ -4672,6 +4674,31 @@ void TravelMgr::PrepareDestinationCache()
                 if (forAlliance)
                     allianceFlightMasterCache[guid] = pos;
                 flightMastersCount++;
+
+                // Zones that have flight masters but no innkeepers — use flight master as hub
+                static const std::set<uint32> zonesWithoutInnkeeper = {
+                    4,    // Blasted Lands (52-57)
+                    16,   // Azshara (45-52)
+                    28,   // Western Plaguelands (50-60)
+                    46,   // Burning Steppes (51-60)
+                    51,   // Searing Gorge (45-51)
+                    361,  // Felwood (47-57)
+                    490,  // Un'Goro Crater (49-56)
+                    2817, // Crystalsong Forest (77-80)
+                    4197  // Wintergrasp (79-80)
+                };
+                if (zonesWithoutInnkeeper.count(areaId))
+                {
+                    LevelBracket bracket = zone2LevelBracket[areaId];
+                    WorldPosition loc(mapId, x + cos(orient) * 5.0f, y + sin(orient) * 5.0f, z + 0.5f, orient + M_PI);
+                    for (int i = bracket.low; i <= bracket.high; i++)
+                    {
+                        if (forHorde)
+                            hordeHubsPerLevelCache[i].push_back(loc);
+                        if (forAlliance)
+                            allianceHubsPerLevelCache[i].push_back(loc);
+                    }
+                }
             }
             else if (creatureTemplate->npcflag & UNIT_NPC_FLAG_INNKEEPER)
             {

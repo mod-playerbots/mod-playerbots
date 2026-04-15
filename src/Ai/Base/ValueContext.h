@@ -66,6 +66,7 @@
 #include "PartyMemberToDispel.h"
 #include "PartyMemberToHeal.h"
 #include "PartyMemberToResurrect.h"
+#include "PartyMemberSnaredTargetValue.h"
 #include "PartyMemberWithoutAuraValue.h"
 #include "PartyMemberWithoutItemValue.h"
 #include "PetTargetValue.h"
@@ -91,6 +92,7 @@
 #include "ThreatValues.h"
 #include "TradeValues.h"
 #include "Value.h"
+#include "WaitForAttackTimeValue.h"
 
 class PlayerbotAI;
 
@@ -151,6 +153,7 @@ public:
         creators["duel target"] = &ValueContext::duel_target;
         creators["party member to dispel"] = &ValueContext::party_member_to_dispel;
         creators["party member to protect"] = &ValueContext::party_member_to_protect;
+        creators["party member snared target"] = &ValueContext::party_member_snared_target;
         creators["health"] = &ValueContext::health;
         creators["rage"] = &ValueContext::rage;
         creators["energy"] = &ValueContext::energy;
@@ -322,6 +325,8 @@ public:
         creators["can fish"] = &ValueContext::can_fish;
         creators["can use fishing bobber"] = &ValueContext::can_use_fishing_bobber;
         creators["fishing spot"] = &ValueContext::fishing_spot;
+        creators["wait for attack time"] = &ValueContext::wait_for_attack_time;
+        creators["combat start time"] = &ValueContext::combat_start_time;
     }
 
 private:
@@ -447,6 +452,7 @@ private:
     static UntypedValue* party_member_to_resurrect(PlayerbotAI* botAI) { return new PartyMemberToResurrect(botAI); }
     static UntypedValue* party_member_to_dispel(PlayerbotAI* botAI) { return new PartyMemberToDispel(botAI); }
     static UntypedValue* party_member_to_protect(PlayerbotAI* botAI) { return new PartyMemberToProtect(botAI); }
+    static UntypedValue* party_member_snared_target(PlayerbotAI* botAI) { return new PartyMemberSnaredTargetValue(botAI); }
     static UntypedValue* current_target(PlayerbotAI* botAI) { return new CurrentTargetValue(botAI); }
     static UntypedValue* old_target(PlayerbotAI* botAI) { return new CurrentTargetValue(botAI); }
     static UntypedValue* self_target(PlayerbotAI* botAI) { return new SelfTargetValue(botAI); }
@@ -578,6 +584,8 @@ private:
     {
         return new ManualSetValue<bool>(ai, false, "custom_glyphs");
     }
+    static UntypedValue* wait_for_attack_time(PlayerbotAI* ai) { return new WaitForAttackTimeValue(ai); }
+    static UntypedValue* combat_start_time(PlayerbotAI* ai) { return new CombatStartTimeValue(ai); }
 };
 
 #endif

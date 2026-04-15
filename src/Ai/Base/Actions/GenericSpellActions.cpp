@@ -17,10 +17,11 @@
 #include "WorldPacket.h"
 #include "Group.h"
 #include "Chat.h"
-#include "GenericBuffUtils.h"
+#include "Ai/Base/Util/GenericBuffUtils.h"
 #include "PlayerbotAI.h"
 
 using ai::buff::MakeAuraQualifierForBuff;
+using ai::spell::HasSpellOrCategoryCooldown;
 
 CastSpellAction::CastSpellAction(PlayerbotAI* botAI, std::string const spell)
     : Action(botAI, spell), range(botAI->GetRange("spell")), spell(spell)
@@ -150,7 +151,9 @@ bool CastMeleeSpellAction::isUseful()
     return CastSpellAction::isUseful();
 }
 
-CastMeleeDebuffSpellAction::CastMeleeDebuffSpellAction(PlayerbotAI* botAI, std::string const spell, bool isOwner, float needLifeTime) : CastDebuffSpellAction(botAI, spell, isOwner, needLifeTime)
+CastMeleeDebuffSpellAction::CastMeleeDebuffSpellAction(
+    PlayerbotAI* botAI, std::string const spell, bool isOwner, float needLifeTime) :
+    CastDebuffSpellAction(botAI, spell, isOwner, needLifeTime)
 {
     range = ATTACK_DISTANCE;
 }
@@ -200,6 +203,35 @@ bool CastEnchantItemAction::isPossible()
     // botAI->TellMasterNoFacing("spell: " + spell + ", spell id: " + std::to_string(spellId) + " item for spell: " +
     // std::to_string(ok));
     return spellId && AI_VALUE2(Item*, "item for spell", spellId);
+}
+
+CastEnchantItemMainHandAction::CastEnchantItemMainHandAction(PlayerbotAI* botAI, std::string const spell)
+    : CastEnchantItemAction(botAI, spell) {}
+
+bool CastEnchantItemMainHandAction::isPossible()
+{
+    if (!CastEnchantItemAction::isPossible())
+        return false;
+
+    Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+    return item && !item->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT) &&
+           item->GetTemplate()->Class == ITEM_CLASS_WEAPON;
+}
+
+CastEnchantItemOffHandAction::CastEnchantItemOffHandAction(PlayerbotAI* botAI, std::string const spell)
+    : CastEnchantItemAction(botAI, spell) {}
+
+bool CastEnchantItemOffHandAction::isPossible()
+{
+    if (!CastEnchantItemAction::isPossible())
+        return false;
+
+    Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+    if (!item || item->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
+        return false;
+
+    uint32 invType = item->GetTemplate()->InventoryType;
+    return invType == INVTYPE_WEAPON || invType == INVTYPE_WEAPONOFFHAND;
 }
 
 CastHealingSpellAction::CastHealingSpellAction(PlayerbotAI* botAI, std::string const spell, uint8 estAmount,
@@ -320,7 +352,7 @@ bool CastEveryManForHimselfAction::isPossible()
     if (!bot->HasSpell(spellId))
         return false;
 
-    if (bot->HasSpellCooldown(spellId))
+    if (HasSpellOrCategoryCooldown(bot, spellId))
         return false;
 
     return true;
@@ -328,11 +360,36 @@ bool CastEveryManForHimselfAction::isPossible()
 
 bool CastEveryManForHimselfAction::isUseful()
 {
-    return bot->HasAuraType(SPELL_AURA_MOD_STUN) ||
+    return (bot->HasAuraType(SPELL_AURA_MOD_STUN) ||
            bot->HasAuraType(SPELL_AURA_MOD_FEAR) ||
            bot->HasAuraType(SPELL_AURA_MOD_ROOT) ||
            bot->HasAuraType(SPELL_AURA_MOD_CONFUSE) ||
-           bot->HasAuraType(SPELL_AURA_MOD_CHARM);
+           bot->HasAuraType(SPELL_AURA_MOD_CHARM))
+        && CastSpellAction::isUseful();
+}
+
+bool CastWillOfTheForsakenAction::isPossible()
+{
+    uint32 spellId = AI_VALUE2(uint32, "spell id", spell);
+    if (!spellId)
+        return false;
+
+    if (!bot->HasSpell(spellId))
+        return false;
+
+    if (HasSpellOrCategoryCooldown(bot, spellId))
+        return false;
+
+    return true;
+}
+
+bool CastWillOfTheForsakenAction::isUseful()
+{
+    return (bot->HasAuraType(SPELL_AURA_MOD_FEAR) ||
+           bot->HasAuraType(SPELL_AURA_MOD_CHARM) ||
+           bot->HasAuraType(SPELL_AURA_AOE_CHARM) ||
+           bot->HasAuraWithMechanic(1 << MECHANIC_SLEEP))
+        && CastSpellAction::isUseful();
 }
 
 bool UseTrinketAction::Execute(Event /*event*/)
