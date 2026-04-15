@@ -12,9 +12,9 @@
 #include "OffhealRetPaladinStrategy.h"
 #include "PaladinActions.h"
 #include "PaladinBuffStrategies.h"
+#include "PaladinPullStrategy.h"
 #include "PaladinTriggers.h"
 #include "Playerbots.h"
-#include "PullStrategy.h"
 #include "TankPaladinStrategy.h"
 
 class PaladinStrategyFactoryInternal : public NamedObjectContext<Strategy>
@@ -33,7 +33,7 @@ public:
 
 private:
     static Strategy* nc(PlayerbotAI* botAI) { return new GenericPaladinNonCombatStrategy(botAI); }
-    static Strategy* pull(PlayerbotAI* botAI) { return new PullStrategy(botAI, "judgement", "seal of righteousness"); }
+    static Strategy* pull(PlayerbotAI* botAI) { return new PaladinPullStrategy(botAI); }
     static Strategy* cure(PlayerbotAI* botAI) { return new PaladinCureStrategy(botAI); }
     static Strategy* boost(PlayerbotAI* botAI) { return new PaladinBoostStrategy(botAI); }
     static Strategy* cc(PlayerbotAI* botAI) { return new PaladinCcStrategy(botAI); }

@@ -36,10 +36,10 @@ public:
     Unit* GetTarget() const;
     bool HasTarget() const;
 
-    std::string GetPullActionName() const;
+    virtual std::string GetPullActionName() const;
     std::string GetSpellName() const;
     float GetRange() const;
-    std::string GetPreActionName() const;
+    virtual std::string GetPreActionName() const;
 
     void RequestPull(Unit* target, bool resetTime = true);
     void OnPullStarted();

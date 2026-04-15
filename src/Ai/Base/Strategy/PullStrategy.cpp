@@ -70,92 +70,7 @@ void PullStrategy::SetTarget(Unit* target)
 
 std::string PullStrategy::GetPullActionName() const
 {
-    Player* bot = botAI->GetBot();
-    std::string actionName = action;
-    if (!bot)
-        return actionName;
-
-    if (bot->getClass() == CLASS_WARRIOR && actionName == "shoot")
-    {
-        Unit* target = GetTarget();
-        uint32 const heroicThrowSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "heroic throw")->Get();
-        if (target && heroicThrowSpellId && bot->HasSpell(heroicThrowSpellId) &&
-            botAI->CanCastSpell(heroicThrowSpellId, target))
-        {
-            return "heroic throw";
-        }
-    }
-
-    if (bot->getClass() == CLASS_PALADIN && actionName == "judgement" &&
-        (botAI->HasStrategy("tank", BOT_STATE_COMBAT) || botAI->HasStrategy("tank", BOT_STATE_NON_COMBAT)))
-    {
-        Unit* target = GetTarget();
-        if (target)
-        {
-            uint32 const avengersShieldSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "avenger's shield")->Get();
-            if (avengersShieldSpellId && bot->HasSpell(avengersShieldSpellId) &&
-                botAI->CanCastSpell(avengersShieldSpellId, target))
-            {
-                return "avenger's shield";
-            }
-
-            uint32 const handOfReckoningSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "hand of reckoning")->Get();
-            if (handOfReckoningSpellId && bot->HasSpell(handOfReckoningSpellId) &&
-                botAI->CanCastSpell(handOfReckoningSpellId, target))
-            {
-                return "hand of reckoning";
-            }
-        }
-    }
-
-    if (bot->getClass() == CLASS_DRUID && actionName == "faerie fire")
-    {
-        uint32 const faerieFireFeralId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "faerie fire (feral)")->Get();
-        if (faerieFireFeralId && bot->HasSpell(faerieFireFeralId) &&
-            (botAI->HasStrategy("bear", BOT_STATE_COMBAT) || botAI->HasStrategy("cat", BOT_STATE_COMBAT)))
-        {
-                actionName = "faerie fire (feral)";
-        }
-
-        Unit* target = GetTarget();
-        uint32 const faerieFireSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", actionName)->Get();
-        if (target && (!faerieFireSpellId || !bot->HasSpell(faerieFireSpellId) ||
-            !botAI->CanCastSpell(faerieFireSpellId, target)))
-        {
-            uint32 const growlSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "growl")->Get();
-            if (growlSpellId && bot->HasSpell(growlSpellId) && botAI->CanCastSpell(growlSpellId, target))
-                return "growl";
-        }
-    }
-
-    if (bot->getClass() == CLASS_DEATH_KNIGHT && actionName == "icy touch" &&
-        (botAI->HasStrategy("blood", BOT_STATE_COMBAT) || botAI->HasStrategy("blood", BOT_STATE_NON_COMBAT)))
-    {
-        Unit* target = GetTarget();
-        if (target)
-        {
-            uint32 const deathGripSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "death grip")->Get();
-            if (deathGripSpellId && bot->HasSpell(deathGripSpellId) &&
-                botAI->CanCastSpell(deathGripSpellId, target))
-            {
-                return "death grip";
-            }
-
-            uint32 const icyTouchSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", actionName)->Get();
-            if (!icyTouchSpellId || !bot->HasSpell(icyTouchSpellId) ||
-                !botAI->CanCastSpell(icyTouchSpellId, target))
-            {
-                uint32 const darkCommandSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "dark command")->Get();
-                if (darkCommandSpellId && bot->HasSpell(darkCommandSpellId) &&
-                    botAI->CanCastSpell(darkCommandSpellId, target))
-                {
-                    return "dark command";
-                }
-            }
-        }
-    }
-
-    return actionName;
+    return action;
 }
 
 std::string PullStrategy::GetSpellName() const
@@ -204,23 +119,7 @@ float PullStrategy::GetRange() const
 
 std::string PullStrategy::GetPreActionName() const
 {
-    Player* bot = botAI->GetBot();
-    std::string actionName = preAction;
-
-    if (bot && bot->getClass() == CLASS_PALADIN && actionName == "seal of righteousness" &&
-        (botAI->HasStrategy("tank", BOT_STATE_COMBAT) || botAI->HasStrategy("tank", BOT_STATE_NON_COMBAT)))
-    {
-        actionName.clear();
-    }
-
-    if (bot && bot->getClass() == CLASS_DRUID && actionName == "dire bear form")
-    {
-        std::string const pullAction = GetPullActionName();
-        if (pullAction == "faerie fire")
-            actionName.clear();
-    }
-
-    return actionName;
+    return preAction;
 }
 
 bool PullStrategy::CanDoPullAction(Unit* target)

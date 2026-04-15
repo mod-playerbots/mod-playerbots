@@ -19,7 +19,7 @@
 #include "MeleeDruidStrategy.h"
 #include "OffhealDruidCatStrategy.h"
 #include "Playerbots.h"
-#include "PullStrategy.h"
+#include "DruidPullStrategy.h"
 
 class DruidStrategyFactoryInternal : public NamedObjectContext<Strategy>
 {
@@ -42,7 +42,7 @@ public:
 
 private:
     static Strategy* nc(PlayerbotAI* botAI) { return new GenericDruidNonCombatStrategy(botAI); }
-    static Strategy* pull(PlayerbotAI* botAI) { return new PullStrategy(botAI, "faerie fire", "dire bear form"); }
+    static Strategy* pull(PlayerbotAI* botAI) { return new DruidPullStrategy(botAI); }
     static Strategy* cat_aoe(PlayerbotAI* botAI) { return new CatAoeDruidStrategy(botAI); }
     static Strategy* caster_aoe(PlayerbotAI* botAI) { return new CasterDruidAoeStrategy(botAI); }
     static Strategy* caster_debuff(PlayerbotAI* botAI) { return new CasterDruidDebuffStrategy(botAI); }
