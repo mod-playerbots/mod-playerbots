@@ -3,17 +3,14 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include "PullActions.h"
-
 #include "AttackersValue.h"
 #include "CreatureAI.h"
+#include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
 #include "PositionValue.h"
-#include "Playerbots.h"
+#include "PullActions.h"
 #include "PullStrategy.h"
 #include "RtiTargetValue.h"
-#include "ServerFacade.h"
-
 #include <algorithm>
 
 namespace

@@ -303,10 +303,6 @@ CastShootAction::CastShootAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "s
 
 bool CastShootAction::isPossible()
 {
-    // Shoot/throw spells are implicit ranged abilities that may not appear in the
-    // bot's spellbook (warriors, rogues, etc.). If we resolved a valid spell ID from
-    // the equipped ranged weapon, bypass the name-based SpellIdValue lookup and check
-    // castability directly with checkHasSpell=false.
     if (shootSpellId)
         return botAI->CanCastSpell(shootSpellId, GetTarget(), false);
 
@@ -315,8 +311,6 @@ bool CastShootAction::isPossible()
 
 bool CastShootAction::Execute(Event /*event*/)
 {
-    // If we have a direct spell ID (from ranged weapon), cast by ID to avoid the
-    // SpellIdValue lookup which fails for classes without shoot in their spellbook.
     if (shootSpellId)
         return botAI->CastSpell(shootSpellId, GetTarget());
 
