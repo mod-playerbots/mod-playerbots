@@ -514,21 +514,9 @@ bool NewRpgGoCityAction::Execute(Event /*event*/)
 
     float distToCity = bot->GetDistance(data.pos);
 
-    // Long distance: use travel node system
-    if (distToCity > 300.0f)
-    {
-        if (!botAI->rpgInfo.HasActiveTravelPlan())
-            StartTravelPlan(data.pos);
-
-        return UpdateTravelPlan();
-    }
-
-    // Medium distance: clear any leftover travel execution and walk
+    // Not at city yet — MoveFarTo handles travel nodes vs mmap internally
     if (distToCity > INTERACTION_DISTANCE)
-    {
-        botAI->rpgInfo.ClearTravel();
         return MoveFarTo(data.pos);
-    }
 
     // At city — interact with auctioneer
     if ((!data.sellItems.empty() || !data.buySlots.empty()) && sPlayerbotAIConfig.enableAuctionHouseBotting)

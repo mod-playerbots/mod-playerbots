@@ -105,6 +105,22 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
     }
 
     float dis = bot->GetExactDist(dest);
+
+    // Long distance + travel nodes enabled: use the pre-computed node graph
+    // (A*, flight paths, transports) instead of repeated mmap hops.
+    if (dis > MAX_PATHFINDING_DISTANCE && sPlayerbotAIConfig.enableTravelNodes)
+    {
+        if (!botAI->rpgInfo.HasActiveTravelPlan())
+            StartTravelPlan(dest);
+
+        return UpdateTravelPlan();
+    }
+
+    // Crossed below the travel-node threshold — clear any leftover plan
+    if (botAI->rpgInfo.HasActiveTravelPlan())
+        botAI->rpgInfo.ClearTravel();
+
+    // Short range: close enough for a single mmap call
     if (dis < pathFinderDis)
     {
         return MoveTo(dest.GetMapId(), dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), false, false,

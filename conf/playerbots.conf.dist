@@ -1029,6 +1029,12 @@ AiPlayerbot.RestrictedHealerDPSMaps = "33,34,36,43,47,48,70,90,109,129,209,229,2
 # Default: 1 (enabled)
 AiPlayerbot.EnableNewRpgStrategy = 1
 
+# Use pre-computed travel node paths for long-distance movement (>300 yards).
+# When enabled, bots use the travel node graph (A*, flight paths, transports)
+# instead of repeated mmap hops. Experimental.
+# Default: 0 (disabled)
+AiPlayerbot.EnableTravelNodes = 0
+
 # Control probability weights for RPG status of bots. Takes effect only when the status meets its premise.
 # Sum of weights need not be 100. Set to 0 to disable the status.
 #
