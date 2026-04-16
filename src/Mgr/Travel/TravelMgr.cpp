@@ -699,34 +699,42 @@ std::vector<WorldPosition> WorldPosition::fromPointsArray(std::vector<G3D::Vecto
 // A single pathfinding attempt from one position to another. Returns pathfinding status and path.
 std::vector<WorldPosition> WorldPosition::getPathStepFrom(WorldPosition startPos, Unit* bot)
 {
-    if (!bot)
-        return {};
+    Unit* pathUnit = bot;
+    Creature* tempCreature = nullptr;
 
-    // Load mmaps and vmaps between the two points.
-    loadMapAndVMaps(startPos);
+    if (!pathUnit)
+    {
+        // Create a temporary creature for PathGenerator (same entry as DebugAction "show node")
+        Map* map = sMapMgr->FindBaseMap(startPos.GetMapId());
+        if (!map)
+            return {};
 
-    PathGenerator path(bot);
-    path.CalculatePath(startPos.GetPositionX(), startPos.GetPositionY(), startPos.GetPositionZ());
+        tempCreature = new Creature();
+        if (!tempCreature->Create(map->GenerateLowGuid<HighGuid::Unit>(), map,
+                                   PHASEMASK_NORMAL, 1 /*entry*/, 0,
+                                   startPos.GetPositionX(), startPos.GetPositionY(),
+                                   startPos.GetPositionZ(), 0))
+        {
+            delete tempCreature;
+            return {};
+        }
+        pathUnit = tempCreature;
+
+        // Ensure grids are created at both endpoints so mmap tiles are available.
+        // EnsureGridCreated loads terrain + vmaps + mmaps but NOT objects,
+        // which is all PathGenerator needs.
+        map->EnsureGridCreated(Acore::ComputeGridCoord(startPos.GetPositionX(), startPos.GetPositionY()));
+        map->EnsureGridCreated(Acore::ComputeGridCoord(GetPositionX(), GetPositionY()));
+    }
+
+    PathGenerator path(pathUnit);
+    path.CalculatePath(GetPositionX(), GetPositionY(), GetPositionZ());
 
     Movement::PointsArray points = path.GetPath();
     PathType type = path.GetPathType();
 
-    if (sPlayerbotAIConfig.hasLog("pathfind_attempt_point.csv"))
-    {
-        std::ostringstream out;
-        out << std::fixed << std::setprecision(1);
-        printWKT({startPos, *this}, out);
-        sPlayerbotAIConfig.log("pathfind_attempt_point.csv", out.str().c_str());
-    }
-
-    if (sPlayerbotAIConfig.hasLog("pathfind_attempt.csv") && (type == PATHFIND_INCOMPLETE || type == PATHFIND_NORMAL))
-    {
-        std::ostringstream out;
-        out << sPlayerbotAIConfig.GetTimestampStr() << "+00,";
-        out << std::fixed << std::setprecision(1) << type << ",";
-        printWKT(fromPointsArray(points), out, 1);
-        sPlayerbotAIConfig.log("pathfind_attempt.csv", out.str().c_str());
-    }
+    if (tempCreature)
+        delete tempCreature;
 
     if (type == PATHFIND_INCOMPLETE || type == PATHFIND_NORMAL)
         return fromPointsArray(points);
@@ -2306,9 +2314,7 @@ void TravelMgr::LoadQuestTravelTable()
     sPlayerbotAIConfig.openLog("unload_grid.csv", "w");
     sPlayerbotAIConfig.openLog("unload_obj.csv", "w");
 
-    TravelNodeMap::instance().LoadNodeStore();
-
-    TravelNodeMap::instance().generateAll();
+    // Node loading/generation is handled by TravelNodeMap::Init() called from TravelMgr::Init().
 
     /*
     bool fullNavPointReload = false;
@@ -2699,7 +2705,7 @@ void TravelMgr::LoadQuestTravelTable()
                 //if (preloadUnlinkedPaths && !startNode->hasLinkTo(endNode) && startNode->isUselessLink(endNode))
                 //    continue;
 
-                startNode->buildPath(endNode, nullptr, false);
+                startNode->BuildPath(endNode, nullptr, false);
 
                 //if (startNode->hasLinkTo(endNode) && !startNode->getPathTo(endNode)->getComplete())
                     //startNode->removeLinkTo(endNode);
@@ -4286,9 +4292,7 @@ void TravelMgr::Init()
         PrepareZone2LevelBracket();
         PrepareDestinationCache();
     }
-    sTravelNodeMap.LoadNodeStore();
-    sTravelNodeMap.InitTaxiGraph();
-    LOG_INFO("playerbots", "Playerbots travel nodes, taxi graph, and destination cache built.");
+    sTravelNodeMap.Init();
 }
 
 Creature* TravelMgr::GetNearestFlightMaster(Player* bot)

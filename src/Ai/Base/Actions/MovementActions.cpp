@@ -11,6 +11,7 @@
 #include <string>
 
 #include "Corpse.h"
+#include "DBCStores.h"
 #include "Event.h"
 #include "FleeManager.h"
 #include "G3D/Vector3.h"
@@ -19,7 +20,9 @@
 #include "LootObjectStack.h"
 #include "Map.h"
 #include "MotionMaster.h"
+#include "MoveSpline.h"
 #include "MoveSplineInitArgs.h"
+#include "TravelNode.h"
 #include "MovementGenerator.h"
 #include "ObjectDefines.h"
 #include "ObjectGuid.h"
@@ -36,6 +39,7 @@
 #include "SpellInfo.h"
 #include "Stances.h"
 #include "Timer.h"
+#include "Transport.h"
 #include "Unit.h"
 #include "Vehicle.h"
 #include "WaypointMovementGenerator.h"
@@ -128,10 +132,8 @@ bool MovementAction::MoveToLOS(WorldObject* target, bool ranged)
     float z = target->GetPositionZ();
 
     // Use standard PathGenerator to find a route.
-    PathGenerator path(bot);
-    path.CalculatePath(x, y, z, false);
-    PathType type = path.GetPathType();
-    if (type != PATHFIND_NORMAL && type != PATHFIND_INCOMPLETE)
+    PathResult path = GeneratePath(x, y, z, DEFAULT_PATH_ACCEPT_MASK, false);
+    if (!path.reachable)
         return false;
 
     if (!ranged)
@@ -140,9 +142,9 @@ bool MovementAction::MoveToLOS(WorldObject* target, bool ranged)
     float dist = FLT_MAX;
     PositionInfo dest;
 
-    if (!path.GetPath().empty())
+    if (!path.points.empty())
     {
-        for (auto& point : path.GetPath())
+        for (auto& point : path.points)
         {
             if (botAI->HasStrategy("debug move", BOT_STATE_NON_COMBAT))
                 CreateWp(bot, point.x, point.y, point.z, 0.0, 2334);
@@ -1732,6 +1734,19 @@ bool MovementAction::MoveInside(uint32 mapId, float x, float y, float z, float d
 //     return current_z;
 // }
 
+PathResult MovementAction::GeneratePath(float x, float y, float z, uint32 acceptMask, bool forceDestination)
+{
+    PathResult result;
+    PathGenerator gen(bot);
+    gen.CalculatePath(x, y, z, forceDestination);
+    result.pathType = gen.GetPathType();
+    result.reachable = !(result.pathType & (~acceptMask));
+    result.points = gen.GetPath();
+    result.actualEnd = gen.GetActualEndPosition();
+    result.end = gen.GetEndPosition();
+    return result;
+}
+
 const Movement::PointsArray MovementAction::SearchForBestPath(float x, float y, float z, float& modified_z,
                                                               int maxSearchCount, bool normal_only, float step)
 {
@@ -2972,4 +2987,509 @@ bool MoveAwayFromPlayerWithDebuffAction::Execute(Event /*event*/)
     return false;
 }
 
-bool MoveAwayFromPlayerWithDebuffAction::isPossible() { return bot->CanFreeMove(); }
+bool MoveAwayFromPlayerWithDebuffAction::isPossible()
+{
+    return bot->CanFreeMove();
+}
+
+bool MovementAction::CheckSplineProgress(TravelPlan& state)
+{
+    if (!state.splineActive)
+        return false;
+
+    if (bot->movespline->Finalized())
+    {
+        G3D::Vector3 const& endPt = state.walkPoints.back();
+        float distToEnd = bot->GetExactDist(endPt.x, endPt.y, endPt.z);
+
+        if (distToEnd < 10.0f)
+        {
+            state.splineActive = false;
+            state.walkPoints.clear();
+            return true;  // Arrived
+        }
+
+        // If we havent arrived to destination, but are done moving then something interrupted it.
+        // Need to restart. Reset state
+        state.splineActive = false;
+        return false;
+    }
+
+    // Stuck detection
+    if (state.splineStartTime &&
+        GetMSTimeDiffToNow(state.splineStartTime) > state.expectedDuration * 2 + (30 * IN_MILLISECONDS))
+    {
+        G3D::Vector3 const& endPt = state.walkPoints.back();
+        botAI->TeleportTo(WorldLocation(bot->GetMapId(), endPt.x, endPt.y, endPt.z));
+        state.splineActive = false;
+        state.walkPoints.clear();
+        return true;
+    }
+
+    return false;  // Still moving
+}
+
+bool MovementAction::LaunchWalkSpline(TravelPlan& state)
+{
+    if (state.walkPoints.size() < 2)
+    {
+        state.walkPoints.clear();
+        return false;
+    }
+
+    // Trim to current position
+    G3D::Vector3 botPos(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
+    float closestDist = FLT_MAX;
+    size_t closestIdx = 0;
+    for (size_t i = 0; i < state.walkPoints.size(); ++i)
+    {
+        float distance = (state.walkPoints[i] - botPos).squaredLength();
+        if (distance < closestDist)
+        {
+            closestDist = distance;
+            closestIdx = i;
+        }
+    }
+    if (closestIdx > 0)
+        state.walkPoints.erase(state.walkPoints.begin(), state.walkPoints.begin() + closestIdx);
+    state.walkPoints.insert(state.walkPoints.begin(), botPos);
+
+    if (state.walkPoints.size() < 2)
+    {
+        state.walkPoints.clear();
+        return true;
+    }
+
+    // Mount up
+    if (!bot->IsMounted() && !bot->IsInCombat() && bot->IsOutdoors() && bot->IsAlive())
+        botAI->DoSpecificAction("check mount state", Event(), true);
+
+    float totalDist = 0;
+    for (size_t i = 1; i < state.walkPoints.size(); ++i)
+        totalDist += (state.walkPoints[i] - state.walkPoints[i - 1]).length();
+
+    float speed = bot->GetSpeed(MOVE_RUN);
+    state.expectedDuration = static_cast<uint32>((totalDist / speed) * IN_MILLISECONDS);
+
+    bot->GetMotionMaster()->MoveSplinePath(&state.walkPoints, FORCED_MOVEMENT_RUN);
+
+    state.splineStartTime = getMSTime();
+    state.splineActive = true;
+
+    LOG_DEBUG("playerbots", "[TravelPlan] Bot {} walk spline: {} points, {:.0f}y",
+              bot->GetName(), state.walkPoints.size(), totalDist);
+
+    return false;  // Walking
+}
+
+bool MovementAction::MoveToSpline(TravelPlan& state, WorldPosition target)
+{
+    if (!IsMovingAllowed())
+        return false;
+
+    // Generate path
+    state.walkPoints.clear();
+    PathResult path = GeneratePath(target.GetPositionX(), target.GetPositionY(),
+        target.GetPositionZ());
+    for (auto const& pt : path.points)
+        state.walkPoints.push_back(G3D::Vector3(pt.x, pt.y, pt.z));
+
+    if (state.walkPoints.size() < 2)
+    {
+        state.walkPoints.clear();
+        return false;
+    }
+
+    // Launch spline movement
+    LaunchWalkSpline(state);
+    return true;
+}
+
+bool MovementAction::GetTravelPlan(TravelPlan& plan, WorldPosition destination)
+{
+    WorldPosition botPos(bot->GetMapId(), bot->GetPositionX(),
+                         bot->GetPositionY(), bot->GetPositionZ());
+
+    bool havePlan = sTravelNodeMap.GetFullPath(plan, botPos,
+        bot->GetZoneId(), bot->GetTeamId(),
+        destination);
+
+    if (!havePlan)
+        TeleportFallback(plan, destination, "no plan");
+
+    return havePlan;
+}
+
+bool MovementAction::ExecuteTravelPlan(TravelPlan& state)
+{
+    if (!state.IsActive())
+        return false;
+
+    if (bot->IsInFlight())
+        return true;
+
+    // Handle active spline
+    if (state.splineActive)
+    {
+        if (!CheckSplineProgress(state))
+        {
+            if (state.splineActive)
+                return true;  // Still moving
+            else
+                LaunchWalkSpline(state);  // Interrupted, re-launch
+        }
+        return true;
+    }
+
+    if (state.stepIdx >= state.steps.size())
+    {
+        state.Reset();
+        return true;
+    }
+
+    const PathNodePoint& pt = state.steps[state.stepIdx];
+
+    switch (pt.type)
+    {
+        case PathNodeType::NODE_PREPATH:
+        case PathNodeType::NODE_PATH:
+        case PathNodeType::NODE_NODE:
+        {
+            // Batch consecutive walk points into one spline, capped at 100 points per tick.
+            static constexpr uint32 MAX_SPLINE_POINTS = 100;
+            state.walkPoints.clear();
+            while (state.stepIdx < state.steps.size() && state.walkPoints.size() < MAX_SPLINE_POINTS)
+            {
+                const PathNodePoint& wp = state.steps[state.stepIdx];
+                if (wp.type != PathNodeType::NODE_PREPATH && wp.type != PathNodeType::NODE_PATH && wp.type != PathNodeType::NODE_NODE)
+                    break;
+                state.walkPoints.push_back(G3D::Vector3(wp.point.GetPositionX(), wp.point.GetPositionY(), wp.point.GetPositionZ()));
+                state.stepIdx++;
+            }
+
+            if (state.walkPoints.empty())
+                return true;
+
+            // Already near end of batch?
+            G3D::Vector3 const& last = state.walkPoints.back();
+            float dist = bot->GetExactDist(last.x, last.y, last.z);
+            if (dist < 10.0f)
+            {
+                state.walkPoints.clear();
+                return true;
+            }
+
+            // Too far from first point — teleport
+            if (state.walkPoints.size() >= 2)
+            {
+                G3D::Vector3 const& first = state.walkPoints.front();
+                float distToFirst = bot->GetExactDist( first.x, first.y, first.z);
+                if (distToFirst > MAX_PATHFINDING_DISTANCE)
+                {
+                    TeleportFallback(state, WorldPosition(bot->GetMapId(), last.x, last.y, last.z), "walk batch too far");
+                    state.walkPoints.clear();
+                    return true;
+                }
+            }
+            // Single point — use PathGenerator directly
+            if (state.walkPoints.size() < 2)
+            {
+                WorldPosition target(bot->GetMapId(), last.x, last.y, last.z);
+                MoveToSpline(state, target);
+                state.walkPoints.clear();
+                return true;
+            }
+            LaunchWalkSpline(state);
+            return true;
+        }
+
+        case PathNodeType::NODE_PORTAL:
+        {
+            // Pair: source (pointIdx) + dest (pointIdx+1)
+            if (state.stepIdx + 1 >= state.steps.size())
+            {
+                state.Reset();
+                return false;
+            }
+
+            const PathNodePoint& src = state.steps[state.stepIdx];
+            const PathNodePoint& dst = state.steps[state.stepIdx + 1];
+
+            // Already on destination map?
+            if (bot->GetMapId() == dst.point.GetMapId())
+            {
+                state.stepIdx += 2;
+                return true;
+            }
+            // Walk to portal source
+            float dist = bot->GetExactDist(src.point.GetPositionX(), src.point.GetPositionY(), src.point.GetPositionZ());
+            if (dist > INTERACTION_DISTANCE)
+                return MoveTo(src.point.GetMapId(), src.point.GetPositionX(), src.point.GetPositionY(), src.point.GetPositionZ());
+
+            // At portal, but havent teleported though
+            TeleportFallback(state, dst.point, "portal walk-through");
+            state.stepIdx += 2;
+            return true;
+        }
+
+        case PathNodeType::NODE_TRANSPORT:
+        {
+            if (state.stepIdx + 1 >= state.steps.size())
+            {
+                state.Reset();
+                return false;
+            }
+
+            const PathNodePoint& board = state.steps[state.stepIdx];
+            const PathNodePoint& arrive = state.steps[state.stepIdx + 1];
+            // Arrived at destination?
+            if (bot->GetMapId() == arrive.point.GetMapId() && !bot->GetTransport())
+            {
+                state.stepIdx += 2;
+                return true;
+            }
+            // On transport — wait
+            if (bot->GetTransport())
+            {
+                if (bot->GetMapId() == arrive.point.GetMapId())
+                {
+                    bot->GetTransport()->RemovePassenger(bot);
+                    bot->StopMovingOnCurrentPos();
+                    state.stepIdx += 2;
+                }
+                return true;
+            }
+
+            // Walk to boarding point
+            float dist = bot->GetExactDist(board.point.GetPositionX(), board.point.GetPositionY(), board.point.GetPositionZ());
+            if (dist > 60.0f)
+                return MoveTo(board.point.GetMapId(), board.point.GetPositionX(), board.point.GetPositionY(), board.point.GetPositionZ());
+
+            // Try to board
+            if (board.entry)
+            {
+                Map* map = bot->GetMap();
+                if (map)
+                {
+                    Transport* transport =
+                        GetTransportForPosTolerant(map, bot, bot->GetPhaseMask(), board.point.GetPositionX(),
+                            board.point.GetPositionY(), board.point.GetPositionZ());
+                    if (transport && transport->GetEntry() == board.entry)
+                    {
+                        BoardTransport(transport);
+                        return true;
+                    }
+                }
+            }
+            // Wait at boarding point
+            if (dist > INTERACTION_DISTANCE)
+                return MoveTo(board.point.GetMapId(), board.point.GetPositionX(), board.point.GetPositionY(), board.point.GetPositionZ());
+            return true;
+        }
+
+        case PathNodeType::NODE_FLIGHTPATH:
+        {
+            if (state.stepIdx + 1 >= state.steps.size())
+            {
+                state.Reset();
+                return false;
+            }
+
+            const PathNodePoint& dep = state.steps[state.stepIdx];
+            const PathNodePoint& arr = state.steps[state.stepIdx + 1];
+
+            if (bot->IsInFlight())
+                return true;
+
+            // Resolve taxi path
+            if (state.route.empty())
+            {
+                uint32 fromTaxi = sObjectMgr->GetNearestTaxiNode(dep.point.GetPositionX(), dep.point.GetPositionY(),
+                        dep.point.GetPositionZ(), dep.point.GetMapId(), bot->GetTeamId());
+                uint32 toTaxi =  sObjectMgr->GetNearestTaxiNode(arr.point.GetPositionX(), arr.point.GetPositionY(),
+                        arr.point.GetPositionZ(), arr.point.GetMapId(), bot->GetTeamId());
+
+                if (fromTaxi && toTaxi && fromTaxi != toTaxi)
+                    state.route = sTravelNodeMap.FindTaxiPath(fromTaxi, toTaxi);
+
+                if (state.route.empty())
+                {
+                    state.stepIdx += 2;
+                    return true;
+                }
+            }
+
+            Creature* flightMaster = sTravelMgr.GetNearestFlightMaster(bot);
+            if (!flightMaster || !flightMaster->IsAlive())
+            {
+                state.route.clear();
+                state.stepIdx += 2;
+                return true;
+            }
+
+            if (bot->GetDistance(flightMaster) > INTERACTION_DISTANCE)
+                return MoveTo(flightMaster, INTERACTION_DISTANCE);
+
+            botAI->RemoveShapeshift();
+            if (bot->IsMounted())
+                bot->Dismount();
+
+            if (bot->ActivateTaxiPathTo(state.route, flightMaster, 0))
+                LOG_DEBUG("playerbots","[TravelPlan] Bot {} taking flight ({} nodes)", bot->GetName(), state.route.size());
+
+            state.route.clear();
+            state.stepIdx += 2;
+            return true;
+        }
+
+        case PathNodeType::NODE_TELEPORT:
+        {
+            if (state.stepIdx + 1 >= state.steps.size())
+            {
+                state.Reset();
+                return false;
+            }
+
+            const PathNodePoint& dst = state.steps[state.stepIdx + 1];
+            TeleportFallback(state, dst.point, "teleport spell");
+            state.stepIdx += 2;
+            return true;
+        }
+
+        case PathNodeType::NODE_FLYING_MOUNT:
+        {
+            if (state.stepIdx + 1 >= state.steps.size())
+            {
+                state.Reset();
+                return false;
+            }
+
+            const PathNodePoint& dst = state.steps[state.stepIdx + 1];
+            TeleportFallback(state, dst.point, "flying mount not implemented");
+            state.stepIdx += 2;
+            return true;
+        }
+    }
+    return false;
+}
+
+void MovementAction::TeleportFallback(TravelPlan& state, WorldPosition target, char const* reason)
+{
+    LOG_INFO("playerbots", "[TravelPlan] Bot {} teleport fallback ({}): from map={} ({:.0f},{:.0f},{:.0f}) to map={} ({:.0f},{:.0f},{:.0f})",
+        bot->GetName(), reason, bot->GetMapId(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), target.GetMapId(), target.GetPositionX(),
+        target.GetPositionY(), target.GetPositionZ());
+
+    botAI->TeleportTo(target);
+}
+
+Transport* MovementAction::GetTransportForPosTolerant(Map* map, WorldObject* ref, uint32 phaseMask, float x, float y, float z)
+{
+    if (!map || !ref)
+        return nullptr;
+
+    std::array<float, 4> const probes = { z, z + 0.5f, z + 1.5f, z - 0.5f };
+    for (float const pz : probes)
+    {
+        if (Transport* transport = map->GetTransportForPos(phaseMask, x, y, pz, ref))
+            return transport;
+    }
+    return nullptr;
+}
+
+bool MovementAction::FindBoardingPointOnTransport(Map* map, Transport* expectedTransport, WorldObject* ref,
+    float refX, float refY, float refZ, float botX, float botY, float botZ, float& outX, float& outY, float& outZ)
+{
+    if (!map || !expectedTransport || !ref)
+        return false;
+
+    uint32 const phaseMask = ref->GetPhaseMask();
+    if (GetTransportForPosTolerant(map, ref, phaseMask, refX, refY, refZ)
+        != expectedTransport)
+        return false;
+
+    float const probeZ = std::max(refZ, botZ);
+    float const dx2 = botX - refX;
+    float const dy2 = botY - refY;
+    float const dist2d = std::sqrt(dx2 * dx2 + dy2 * dy2);
+    int32 const steps = std::clamp(static_cast<int32>(dist2d / 0.75f), 10, 28);
+    float const dx = (botX - refX) / static_cast<float>(steps);
+    float const dy = (botY - refY) / static_cast<float>(steps);
+
+    if (map->GetTransportForPos(phaseMask, refX, refY, probeZ, ref) != expectedTransport)
+        return false;
+
+    float lastX = refX;
+    float lastY = refY;
+    bool found = false;
+
+    for (int32 i = 1; i <= steps; ++i)
+    {
+        float const px = refX + dx * i;
+        float const py = refY + dy * i;
+        Transport* const t = GetTransportForPosTolerant(map, ref, phaseMask, px, py, probeZ);
+        if (t != expectedTransport)
+            break;
+        lastX = px;
+        lastY = py;
+        found = true;
+    }
+
+    if (!found)
+        return false;
+
+    outX = lastX;
+    outY = lastY;
+    outZ = refZ;
+    return true;
+}
+
+bool MovementAction::BoardTransport(Transport* transport)
+{
+    if (!transport || transport->IsStaticTransport())
+        return false;
+
+    Map* map = bot->GetMap();
+    if (!map)
+        return false;
+
+    // Already on this transport
+    if (bot->GetTransport() == transport)
+        return true;
+
+    // Check if bot is on the transport surface
+    float probeZ = std::max(bot->GetPositionZ(), transport->GetPositionZ());
+    Transport* surface = GetTransportForPosTolerant(map, bot, bot->GetPhaseMask(), bot->GetPositionX(),
+        bot->GetPositionY(), probeZ);
+
+    if (surface == transport)
+    {
+        transport->AddPassenger(bot, true);
+        bot->StopMovingOnCurrentPos();
+        return true;
+    }
+    // Not on surface — move toward the transport
+    float destX = transport->GetPositionX();
+    float destY = transport->GetPositionY();
+    float destZ = transport->GetPositionZ();
+
+    // Try to find nearest boarding edge
+    float edgeX, edgeY, edgeZ;
+    if (FindBoardingPointOnTransport(map, transport, transport, transport->GetPositionX(), transport->GetPositionY(),
+        transport->GetPositionZ(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), edgeX, edgeY, edgeZ))
+    {
+        destX = edgeX;
+        destY = edgeY;
+        destZ = edgeZ;
+    }
+
+    // MovePoint without pathfinding (transport is a moving object)
+    if (MotionMaster* mm = bot->GetMotionMaster())
+    {
+        if (bot->IsSitState())
+            bot->SetStandState(UNIT_STAND_STATE_STAND);
+
+        mm->MovePoint(0, destX, destY, destZ, FORCED_MOVEMENT_NONE, 0.0f, 0.0f, false, false);
+    }
+
+    return false;
+}

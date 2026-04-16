@@ -97,12 +97,9 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
         botAI->rpgInfo.stuckAttempts = 0;
         const AreaTableEntry* entry = sAreaTableStore.LookupEntry(bot->GetZoneId());
         std::string zone_name = PlayerbotAI::GetLocalizedAreaName(entry);
-        LOG_DEBUG(
-            "playerbots",
-            "[New RPG] Teleport {} from ({},{},{},{}) to ({},{},{},{}) as it stuck when moving far - Zone: {} ({})",
+        LOG_DEBUG("playerbots","[New RPG] Teleport {} from ({},{},{},{}) to ({},{},{},{}) as it stuck when moving far - Zone: {} ({})",
             bot->GetName(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetMapId(),
-            dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), dest.GetMapId(), bot->GetZoneId(),
-            zone_name);
+            dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), dest.GetMapId(), bot->GetZoneId(), zone_name);
         botAI->TeleportTo(dest);
         return true;
     }
@@ -113,9 +110,6 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
         return MoveTo(dest.GetMapId(), dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), false, false,
                       false, true);
     }
-
-    const uint32 typeOk = PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_FARFROMPOLY;
-
     // Primary strategy: ask mmap for a route to the TRUE destination.
     // If mmap can reach it directly (PATHFIND_NORMAL) or partially
     // (PATHFIND_INCOMPLETE — destinations beyond the smooth-path cap
@@ -127,23 +121,18 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
     // subsequent ticks early-out via IsWaitingForLastMove and no
     // further PathGenerator calls fire until the bot arrives.
     {
-        PathGenerator path(bot);
-        path.CalculatePath(dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ());
-        PathType type = path.GetPathType();
-        bool canReach = !(type & (~typeOk));
-        if (canReach)
+        PathResult path = GeneratePath(dest.GetPositionX(), dest.GetPositionY(),
+            dest.GetPositionZ(), RELAXED_PATH_ACCEPT_MASK);
+        if (path.reachable)
         {
-            const G3D::Vector3& endPos = path.GetActualEndPosition();
             // Only commit if the mmap endpoint actually makes progress
             // toward the destination. For pathological INCOMPLETE
             // results (e.g. disconnected polys that still report
             // INCOMPLETE) the endpoint can land right under the bot;
             // fall through to cone sampling in that case.
-            float endDistToDest = dest.GetExactDist(endPos.x, endPos.y, endPos.z);
+            float endDistToDest = dest.GetExactDist(path.actualEnd.x, path.actualEnd.y, path.actualEnd.z);
             if (endDistToDest + 5.0f < disToDest)
-            {
-                return MoveTo(bot->GetMapId(), endPos.x, endPos.y, endPos.z, false, false, false, true);
-            }
+                return MoveTo(bot->GetMapId(), path.actualEnd.x, path.actualEnd.y, path.actualEnd.z, false, false, false, true);
         }
     }
 
@@ -167,18 +156,14 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
         float dx = x + cos(angle) * sampleDis;
         float dy = y + sin(angle) * sampleDis;
         float dz = z + 0.5f;
-        PathGenerator path(bot);
-        path.CalculatePath(dx, dy, dz);
-        PathType type = path.GetPathType();
-        bool canReach = !(type & (~typeOk));
+        PathResult path = GeneratePath(dx, dy, dz, RELAXED_PATH_ACCEPT_MASK);
 
-        if (canReach && fabs(delta) <= minDelta)
+        if (path.reachable && fabs(delta) <= minDelta)
         {
             found = true;
-            const G3D::Vector3& endPos = path.GetActualEndPosition();
-            rx = endPos.x;
-            ry = endPos.y;
-            rz = endPos.z;
+            rx = path.actualEnd.x;
+            ry = path.actualEnd.y;
+            rz = path.actualEnd.z;
             minDelta = fabs(delta);
         }
     }
@@ -191,20 +176,20 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
 
 void NewRpgBaseAction::StartTravelPlan(WorldPosition dest)
 {
-    botAI->rpgInfo.travelPlan.Reset();
-    botAI->rpgInfo.travelPlan.destination = dest;
-    botAI->rpgInfo.travelPlan.phase = TravelPhase::FIND_START_NODE;
+    TravelPlan& plan = botAI->rpgInfo.travelPlan;
+    GetTravelPlan(plan, dest);
 
-    LOG_DEBUG("playerbots", "[New RPG] Bot {} starting travel plan to ({:.0f},{:.0f},{:.0f}) map={}",
-              bot->GetName(), dest.GetPositionX(), dest.GetPositionY(),
-              dest.GetPositionZ(), dest.GetMapId());
+    LOG_DEBUG("playerbots","[New RPG] Bot {} starting travel plan to ({:.0f},{:.0f},{:.0f}) map={}, {} points",
+        bot->GetName(), dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), dest.GetMapId(), plan.steps.size());
 }
 
 bool NewRpgBaseAction::UpdateTravelPlan()
 {
-    bool result = ExecuteTravelPlan(botAI->rpgInfo.travelPlan);
+    TravelPlan& plan = botAI->rpgInfo.travelPlan;
 
-    if (botAI->rpgInfo.travelPlan.phase == TravelPhase::COMPLETE)
+    bool result = ExecuteTravelPlan(plan);
+
+    if (!plan.IsActive())
         botAI->rpgInfo.ClearTravel();
 
     return result;
@@ -213,9 +198,7 @@ bool NewRpgBaseAction::UpdateTravelPlan()
 bool NewRpgBaseAction::MoveWorldObjectTo(ObjectGuid guid, float distance)
 {
     if (IsWaitingForLastMove(MovementPriority::MOVEMENT_NORMAL))
-    {
         return false;
-    }
 
     WorldObject* object = botAI->GetWorldObject(guid);
     if (!object)
@@ -267,13 +250,9 @@ bool NewRpgBaseAction::MoveRandomNear(float moveStep, MovementPriority priority,
         float dy = y + distance * sin(angle);
         float dz = z;
 
-        PathGenerator path(bot);
-        path.CalculatePath(dx, dy, dz);
-        PathType type = path.GetPathType();
-        uint32 typeOk = PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_FARFROMPOLY;
-        bool canReach = !(type & (~typeOk));
+        PathResult path = GeneratePath(dx, dy, dz, RELAXED_PATH_ACCEPT_MASK);
 
-        if (!canReach)
+        if (!path.reachable)
             continue;
 
         if (!map->CanReachPositionAndGetValidCoords(bot, dx, dy, dz))
@@ -1198,7 +1177,7 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
                 if (!flightMaster)
                     return false;
                 WorldPosition fromPos = WorldPosition(flightMaster);
-                botAI->rpgInfo.ChangeToTravelFlight(flightMaster, fromPos, path);
+                botAI->rpgInfo.ChangeToTravelFlight(flightMasterGuid, fromPos, path);
                 return true;
             }
             return false;

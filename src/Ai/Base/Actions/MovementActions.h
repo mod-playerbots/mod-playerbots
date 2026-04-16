@@ -10,6 +10,7 @@
 
 #include "Action.h"
 #include "LastMovementValue.h"
+#include "PathGenerator.h"
 #include "PlayerbotAIConfig.h"
 
 class Player;
@@ -21,6 +22,19 @@ class Position;
 #define ANGLE_45_DEG (static_cast<float>(M_PI) / 4.f)
 #define ANGLE_90_DEG M_PI_2
 #define ANGLE_120_DEG (2.f * static_cast<float>(M_PI) / 3.f)
+
+// Default acceptable path types for GeneratePath
+constexpr uint32 DEFAULT_PATH_ACCEPT_MASK = 0x01 /*PATHFIND_NORMAL*/ | 0x04 /*PATHFIND_INCOMPLETE*/;
+uint32 typeOk = PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_FARFROMPOLY;
+
+struct PathResult
+{
+    Movement::PointsArray points;
+    G3D::Vector3 actualEnd;
+    G3D::Vector3 end;
+    PathType pathType;
+    bool reachable;
+};
 
 class MovementAction : public Action
 {
@@ -66,6 +80,26 @@ protected:
     Position BestPositionForRangedToFlee(Position pos, float radius);
     bool FleePosition(Position pos, float radius, uint32 minInterval = 1000);
     bool CheckLastFlee(float curAngle, std::list<FleeInfo>& infoList);
+
+    PathResult GeneratePath(float x, float y, float z, uint32 acceptMask = DEFAULT_PATH_ACCEPT_MASK, bool forceDestination = true);
+
+    bool GetTravelPlan(TravelPlan& plan, WorldPosition destination);
+    bool ExecuteTravelPlan(TravelPlan& state);
+
+    // Transport boarding helpers (shared by FollowAction and travel plan)
+    static Transport* GetTransportForPosTolerant(Map* map, WorldObject* ref,
+        uint32 phaseMask, float x, float y, float z);
+    static bool FindBoardingPointOnTransport(Map* map, Transport* transport,
+        WorldObject* ref, float refX, float refY, float refZ,
+        float botX, float botY, float botZ,
+        float& outX, float& outY, float& outZ);
+    bool BoardTransport(Transport* transport);
+
+private:
+    bool LaunchWalkSpline(TravelPlan& state);
+    bool CheckSplineProgress(TravelPlan& state);
+    bool MoveToSpline(TravelPlan& state, WorldPosition target);
+    void TeleportFallback(TravelPlan& state, WorldPosition target, char const* reason);
 
 protected:
     struct CheckAngle

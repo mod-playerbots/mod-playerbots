@@ -114,7 +114,7 @@ struct NewRpgInfo
     void ChangeToWanderNpc();
     void ChangeToWanderRandom();
     void ChangeToDoQuest(uint32 questId, const Quest* quest);
-    void ChangeToTravelFlight(ObjectGuid fromFlightMaster, WorldPosition fromPos, std::vector<uint32> path);
+    void ChangeToTravelFlight(ObjectGuid fromFlightMasterGuid, WorldPosition fromPos, std::vector<uint32> path);
     void ChangeToOutdoorPvp(ObjectGuid::LowType capturePointSpawnId = 0);
     void ChangeToRest();
     void ChangeToIdle();

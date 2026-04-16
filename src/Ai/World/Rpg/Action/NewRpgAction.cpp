@@ -480,14 +480,16 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
         data.inFlight = true;
         return false;
     }
-    Creature* flightMaster = ObjectAccessor::GetCreature(*bot, data.fromFlightMaster);
+
+    if (bot->GetDistance(data.fromPos) > INTERACTION_DISTANCE)
+        return MoveFarTo(data.fromPos);
+
+    Creature* flightMaster = ObjectAccessor::GetCreature(*bot, data.fromFlightMasterGuid);
     if (!flightMaster || !flightMaster->IsAlive())
     {
         botAI->rpgInfo.ChangeToIdle();
         return true;
     }
-    if (bot->GetDistance(flightMaster) > INTERACTION_DISTANCE)
-        return MoveFarTo(flightMaster);
 
     if (!TakeFlight(data.path, flightMaster))
     {

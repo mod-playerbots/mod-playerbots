@@ -8,6 +8,7 @@
 
 #include <shared_mutex>
 
+#include "G3D/Vector3.h"
 #include "TravelMgr.h"
 
 // THEORY
@@ -65,42 +66,27 @@
 //  complete) at sub-zone transitions or randomly. After calculating possible links the node is removed if it
 //  does not create local coverage (.fullgenerate only).
 //
-//  Travel Flow — TravelPlan State Machine:
+//  Travel Flow:
 //
-//  Originally the system planned the entire path from start to finish before executing. This is very expensive
-//  and does not scale properly. Instead this has been replaced by an incremental system where we assume bots
-//  will be able to get to where they are going, as long as we can identify generally how to get there. This
-//  system distributes the computations over time across multiple ticks by deferred segmentation, resolved
-//  when appropriate.
+//  GetFullPath finds nearest nodes (zone-indexed), runs A* to get a node route, then
+//  BuildPath assembles a flat TravelPath with typed waypoints (walk, portal, transport, flight).
+//  ExecuteTravelPlan iterates the path by stepIdx, dispatching on each point's PathNodeType.
+//  Cross-map travel is handled naturally by portal/transport edges in the A* graph.
 //
-//  Phase                    Work done
-//  -------------------------------------------------------------------
-//  FIND_START_NODE          Zone-filtered nearest node lookup
-//  WALK_TO_START_NODE       PathGenerator + launch spline
-//  FIND_END_NODE            Zone-filtered nearest node lookup
-//  RESOLVE_ROUTE            A* over node graph (read-only)
-//  WALK_NODE_PATH           Copy stored path, launch spline
-//    (repeats for each hop)
-//  FLY                      ActivateTaxiPathTo
-//  FLY_MOUNT                Flying mount between nodes (stub — teleports for now)
-//  USE_PORTAL               PlayerbotAI::TeleportTo
-//  WALK_TO_DESTINATION      PathGenerator for final < 296y
-//  COMPLETE                 Done
-//
-//  If any phase cannot resolve (no node, no route, no flight), the bot teleports directly to the destination
-//  as a fallback. Instance portals are skipped unless the destination is inside that instance. Cross-map travel
-//  uses FindMapConnection() to locate a portal/transport node bridging the bot's map to the destination map,
-//  routes to it, teleports through, then continues on the other side.
+//  If setup cannot resolve (no node, no route, no flight), the bot teleports directly to the destination
+//  as a fallback.
 //
 //  The use of hearthstones and mage teleporting was removed — it caused route mutations requiring locking that no longer made sense. Mage portals may be future item.
 //
 //  Thread Safety:
 //
 //  The node graph is immutable at runtime (no adds/removes after Init). A shared_timed_mutex (m_nMapMtx) still
-//  exists and shared_locks are taken in RESOLVE_ROUTE and WALK_NODE_PATH for safety, but since there are no
+//  exists and shared_locks are taken in GetFullPath and GenerateWalkPath for safety, but since there are no
 //  runtime mutations these are effectively uncontested. The only exclusive locks are taken at startup
 //  (saveNodeStore) and by the debug dump command.
 //
+
+constexpr float MAX_PATHFINDING_DISTANCE = 296.0f;
 
 enum class TravelNodePathType : uint8
 {
@@ -392,6 +378,9 @@ public:
         return routes.find(node) != routes.end();
     }
 
+    void clearRoutes() { routes.clear(); }
+    void setRouteTo(TravelNode* node) { routes[node] = true; }
+
     void print(bool printFailed = true);
 
 protected:
@@ -477,7 +466,10 @@ public:
     void clear() { fullPath.clear(); }
 
     bool empty() const { return fullPath.empty(); }
+    size_t size() const { return fullPath.size(); }
+    const PathNodePoint& operator[](size_t idx) const { return fullPath[idx]; }
     std::vector<PathNodePoint> GetPath() { return fullPath; }
+    const std::vector<PathNodePoint>& GetPathRef() const { return fullPath; }
     WorldPosition getFront() { return fullPath.front().point; }
     WorldPosition getBack() { return fullPath.back().point; }
 
@@ -490,10 +482,6 @@ public:
     }
 
     bool makeShortCut(WorldPosition startPos, float maxDist);
-    bool shouldMoveToNextPoint(WorldPosition startPos, std::vector<PathNodePoint>::iterator beg,
-                               std::vector<PathNodePoint>::iterator ed, std::vector<PathNodePoint>::iterator p,
-                               float& moveDist, float maxDist);
-    WorldPosition GetNextPoint(WorldPosition startPos, float maxDist, TravelNodePathType& pathType, uint32& entry);
 
     std::ostringstream const print();
 
@@ -550,6 +538,38 @@ public:
     bool closed = false;
     TravelNodeStub* parent = nullptr;
     uint32 currentGold = 0;
+};
+
+struct TravelPlan
+{
+    WorldPosition destination;
+
+    // Flat waypoint path built upfront by GetFullPath:
+    TravelPath steps;
+    uint32 stepIdx{0};
+
+    // Spline scratch (used by executor):
+    std::vector<G3D::Vector3> walkPoints;
+    bool splineActive{false};
+    uint32 splineStartTime{0};
+    uint32 expectedDuration{0};
+
+    // Taxi scratch:
+    std::vector<uint32> route;
+
+    bool IsActive() const { return !steps.empty(); }
+
+    void Reset()
+    {
+        destination = WorldPosition();
+        steps.clear();
+        stepIdx = 0;
+        walkPoints.clear();
+        splineActive = false;
+        splineStartTime = 0;
+        expectedDuration = 0;
+        route.clear();
+    }
 };
 
 // The container of all nodes.
@@ -633,13 +653,6 @@ public:
                                     std::vector<WorldPosition>& startPath,
                                     Player* bot = nullptr);
 
-    // Legacy: returns a fully-resolved TravelPath (kept for debug)
-    TravelPath GetFullPath(WorldPosition startPos, WorldPosition endPos,
-                           Player* bot = nullptr);
-
-    // Generate a walking path between two positions
-    TravelPath GenerateWalkPath(WorldPosition startPos,
-                                WorldPosition endPos, Player* bot);
 
     // Manage/update nodes
     void manageNodes(Unit* bot, bool mapFull = false);
@@ -686,7 +699,18 @@ public:
 
     TravelNode* GetNearestNodeInZone(WorldPosition pos, uint32 zoneId);
     TravelNode* GetNearestNodeOnMap(WorldPosition pos);
-    TravelNode* FindMapConnection(uint32 fromMapId, uint32 toMapId);
+
+    bool GetFullPath(TravelPlan& plan, WorldPosition botPos,
+        uint32 botZoneId, uint32 teamId,
+        WorldPosition destination);
+
+    // Resolve A* route between two world positions (returns node vector)
+    std::vector<TravelNode*> ResolveRoute(WorldPosition startPos,
+        WorldPosition endPos);
+
+    // Get stored walk points for one edge (from→to). Empty if no path.
+    std::vector<G3D::Vector3> GetEdgeWalkPoints(TravelNode* from,
+        TravelNode* to);
 
     std::shared_timed_mutex m_nMapMtx;
 
