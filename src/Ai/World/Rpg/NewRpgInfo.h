@@ -8,7 +8,6 @@
 #include "Strategy.h"
 #include "Timer.h"
 #include "TravelMgr.h"
-#include "TravelNode.h"
 
 using NewRpgStatusTransitionProb = std::vector<std::vector<int>>;
 
@@ -86,10 +85,6 @@ struct NewRpgInfo
     uint32 stuckAttempts{0};
     WorldPosition moveFarPos;
     // END MOVE_FAR
-
-    // TravelPlan for traveling long distances.
-    TravelPlan travelPlan{};
-    bool HasActiveTravelPlan() const { return travelPlan.IsActive(); }
 
     using RpgData = std::variant<
         Idle,

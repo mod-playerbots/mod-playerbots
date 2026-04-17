@@ -736,21 +736,6 @@ void PlayerbotAI::HandleCommand(uint32 type, const std::string& text, Player& fr
     }
 }
 
-void PlayerbotAI::TeleportTo(WorldLocation loc, bool resetAI)
-{
-    if (!bot || bot->IsBeingTeleported() || !bot->IsInWorld())
-        return;
-
-    bot->GetMotionMaster()->Clear();
-    if (resetAI)
-        Reset(true);
-    else
-        InterruptSpell();
-    bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
-    bot->TeleportTo(loc.GetMapId(), loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ(), 0);
-    bot->SendMovementFlagUpdate();
-}
-
 void PlayerbotAI::HandleTeleportAck()
 {
     if (!bot || !bot->GetSession())

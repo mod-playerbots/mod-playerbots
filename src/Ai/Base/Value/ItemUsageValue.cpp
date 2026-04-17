@@ -19,7 +19,6 @@
 #include "ServerFacade.h"
 #include "StatsWeightCalculator.h"
 
-
 ItemUsage ItemUsageValue::Calculate()
 {
     ParsedItemUsage const parsed = GetItemIdFromQualifier();

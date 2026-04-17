@@ -491,10 +491,17 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
         return true;
     }
 
-    if (!TakeFlight(data.path, flightMaster))
+    std::vector<uint32> nodes = data.path;
+
+    botAI->RemoveShapeshift();
+    if (bot->IsMounted())
+        bot->Dismount();
+
+    if (!bot->ActivateTaxiPathTo(nodes, flightMaster, 0))
     {
+        LOG_DEBUG("playerbots", "[New RPG] {} active taxi path {} (from {} to {}) failed", bot->GetName(),
+                  flightMaster->GetEntry(), nodes[0], nodes[nodes.size() - 1]);
         botAI->rpgInfo.ChangeToIdle();
-        return true;
     }
     return true;
 }
