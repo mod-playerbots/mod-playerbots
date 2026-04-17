@@ -471,18 +471,17 @@ void StatsWeightCalculator::GenerateAdditionalWeights(Player* player)
             && !player->HasSpell(SPELL_MOLTEN_ARMOR_RANK_2)
             && !player->HasSpell(SPELL_MOLTEN_ARMOR_RANK_3))
         {
-            stats_weights_[STATS_TYPE_INTELLECT] += 0.2f;
-            stats_weights_[STATS_TYPE_SPIRIT] -= 0.0f;
+            if (tab != MAGE_TAB_FIRE)
+                stats_weights_[STATS_TYPE_SPIRIT] -= 0.6f;
+            else
+                stats_weights_[STATS_TYPE_SPIRIT] -= 0.7f;
         }
     }
     else if (cls == CLASS_WARLOCK)
     {
         if (!player->HasSpell(SPELL_FEL_ARMOR_RANK_1) && !player->HasSpell(SPELL_FEL_ARMOR_RANK_2) &&
             !player->HasSpell(SPELL_FEL_ARMOR_RANK_3) && !player->HasSpell(SPELL_FEL_ARMOR_RANK_4))
-        {
-            stats_weights_[STATS_TYPE_INTELLECT] += 0.2f;
-            stats_weights_[STATS_TYPE_SPIRIT] -= 0.2f;
-        }
+            stats_weights_[STATS_TYPE_SPIRIT] -= 0.4f;
     }
 }
 
