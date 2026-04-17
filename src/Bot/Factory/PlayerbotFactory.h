@@ -169,12 +169,12 @@ private:
                                              ProfessionSpecializationSpell knownSpell,
                                              ProfessionSpecializationSpell learnSpell);
     void InitTradeSkills();
-    void InitTradeSpecializations(std::vector<std::string>& learnedSpecializations);
-    bool InitAlchemySpecialization(std::vector<std::string>& learnedSpecializations);
-    bool InitEngineeringSpecialization(std::vector<std::string>& learnedSpecializations);
-    bool InitLeatherworkingSpecialization(std::vector<std::string>& learnedSpecializations);
-    bool InitTailoringSpecialization(std::vector<std::string>& learnedSpecializations);
-    bool InitBlacksmithingSpecialization(std::vector<std::string>& learnedSpecializations);
+    void InitTradeSpecializations();
+    bool InitAlchemySpecialization();
+    bool InitEngineeringSpecialization();
+    bool InitLeatherworkingSpecialization();
+    bool InitTailoringSpecialization();
+    bool InitBlacksmithingSpecialization();
     void UpdateTradeSkills();
     void SetRandomSkill(uint16 id);
     void ClearSpells();
