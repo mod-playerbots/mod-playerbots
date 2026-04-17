@@ -45,6 +45,7 @@
 #include "NonCombatActions.h"
 #include "OutfitAction.h"
 #include "PositionAction.h"
+#include "PullActions.h"
 #include "DropQuestAction.h"
 #include "RandomBotUpdateAction.h"
 #include "ReachTargetActions.h"
@@ -105,6 +106,13 @@ public:
         creators["shoot"] = &ActionContext::shoot;
         creators["lifeblood"] = &ActionContext::lifeblood;
         creators["arcane torrent"] = &ActionContext::arcane_torrent;
+        creators["pull my target"] = &ActionContext::pull_my_target;
+        creators["pull rti target"] = &ActionContext::pull_rti_target;
+        creators["pull start"] = &ActionContext::pull_start;
+        creators["pull action"] = &ActionContext::pull_action;
+        creators["pull end"] = &ActionContext::pull_end;
+        creators["return to pull position"] = &ActionContext::return_to_pull_position;
+        creators["reach pull"] = &ActionContext::reach_pull;
         creators["end pull"] = &ActionContext::end_pull;
         creators["healthstone"] = &ActionContext::healthstone;
         creators["healing potion"] = &ActionContext::healing_potion;
@@ -313,6 +321,13 @@ private:
     static Action* gift_of_the_naaru(PlayerbotAI* botAI) { return new CastGiftOfTheNaaruAction(botAI); }
     static Action* lifeblood(PlayerbotAI* botAI) { return new CastLifeBloodAction(botAI); }
     static Action* arcane_torrent(PlayerbotAI* botAI) { return new CastArcaneTorrentAction(botAI); }
+    static Action* pull_my_target(PlayerbotAI* botAI) { return new PullMyTargetAction(botAI); }
+    static Action* pull_rti_target(PlayerbotAI* botAI) { return new PullRtiTargetAction(botAI); }
+    static Action* pull_start(PlayerbotAI* botAI) { return new PullStartAction(botAI); }
+    static Action* pull_action(PlayerbotAI* botAI) { return new PullAction(botAI); }
+    static Action* pull_end(PlayerbotAI* botAI) { return new PullEndAction(botAI); }
+    static Action* return_to_pull_position(PlayerbotAI* botAI) { return new ReturnToPullPositionAction(botAI); }
+    static Action* reach_pull(PlayerbotAI* botAI) { return new ReachPullAction(botAI); }
     static Action* mana_tap(PlayerbotAI* botAI) { return new CastManaTapAction(botAI); }
     static Action* end_pull(PlayerbotAI* botAI) { return new ChangeCombatStrategyAction(botAI, "-pull"); }
     static Action* cancel_channel(PlayerbotAI* botAI) { return new CancelChannelAction(botAI); }

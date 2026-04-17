@@ -428,6 +428,12 @@ void Engine::toggleStrategy(std::string const name)
 
 bool Engine::HasStrategy(std::string const name) { return strategies.find(name) != strategies.end(); }
 
+Strategy* Engine::GetStrategy(std::string const name)
+{
+    std::map<std::string, Strategy*>::iterator i = strategies.find(name);
+    return i != strategies.end() ? i->second : nullptr;
+}
+
 void Engine::ProcessTriggers(bool minimal)
 {
     std::unordered_map<Trigger*, Event> fires;

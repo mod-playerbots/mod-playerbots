@@ -167,11 +167,13 @@ bool PlayerbotAIConfig::Initialize()
         pvpProhibitedZoneIds);
     LoadList<std::vector<uint32>>(
         sConfigMgr->GetOption<std::string>("AiPlayerbot.PvpProhibitedAreaIds",
-                                           "976,35,392,2268,4161,4010,4317,4312,3649,3887,3958,3724,4080,3938,3754,3786,3973"),
+                                           "976,35,392,2268,4161,4010,4317,4312,3649,3887,3958,3724,4080,3938,3754,3786,"
+                                           "3973,4085,4086,4087,4088"),
         pvpProhibitedAreaIds);
     fastReactInBG = sConfigMgr->GetOption<bool>("AiPlayerbot.FastReactInBG", true);
     LoadList<std::vector<uint32>>(
-        sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotQuestIds", "3802,5505,6502,7761,7848,10277,10285,11492,13188,13189,24499,24511,24710,24712"),
+        sConfigMgr->GetOption<std::string>("AiPlayerbot.RandomBotQuestIds", "3802,5505,6502,7761,7848,10277,10285,11492,"
+                                           "13188,13189,24499,24511,24710,24712"),
         randomBotQuestIds);
 
     LoadSet<std::set<uint32>>(
@@ -181,7 +183,8 @@ bool PlayerbotAIConfig::Initialize()
                                            "165739,165738,175245,175970,176325,176327,123329,2560"),
         disallowedGameObjects);
     LoadSet<std::set<uint32>>(
-        sConfigMgr->GetOption<std::string>("AiPlayerbot.AttunementQuests", "10279,10277,10282,10283,10284,10285,10296,10297,10298,11481,11482,11488,11490,11492,10901,10888,10445,10985"),
+        sConfigMgr->GetOption<std::string>("AiPlayerbot.AttunementQuests", "10279,10277,10282,10283,10284,10285,10296,"
+                                           "10297,10298,11481,11482,11488,11490,11492,10901,10888,10445,10985"),
         attunementQuests);
 
     LoadSet<std::set<uint32>>(
@@ -233,6 +236,8 @@ bool PlayerbotAIConfig::Initialize()
     EnableICCBuffs = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableICCBuffs", true);
 
     //////////////////////////// Professions
+    classMatchingProfessionChance =
+        std::min<uint32>(100, sConfigMgr->GetOption<uint32>("AiPlayerbot.ClassMatchingProfessionChance", 30));
     fishingDistanceFromMaster = sConfigMgr->GetOption<float>("AiPlayerbot.FishingDistanceFromMaster", 10.0f);
     endFishingWithMaster = sConfigMgr->GetOption<float>("AiPlayerbot.EndFishingWithMaster", 30.0f);
     fishingDistance = sConfigMgr->GetOption<float>("AiPlayerbot.FishingDistance", 40.0f);

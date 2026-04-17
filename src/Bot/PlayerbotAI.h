@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PLAYERbotAI_H
-#define _PLAYERBOT_PLAYERbotAI_H
+#ifndef _PLAYERBOT_PLAYERBOTAI_H
+#define _PLAYERBOT_PLAYERBOTAI_H
 
 #include <stack>
 
@@ -405,6 +405,7 @@ public:
     void ChangeStrategy(std::string const name, BotState type);
     void ClearStrategies(BotState type);
     std::vector<std::string> GetStrategies(BotState type);
+    Strategy* GetStrategy(std::string const name, BotState type);
     void ApplyInstanceStrategies(uint32 mapId, bool tellMaster = false);
     void EvaluateHealerDpsStrategy();
     bool ContainsStrategy(StrategyType type);
@@ -471,6 +472,7 @@ public:
     void SpellInterrupted(uint32 spellid);
     int32 CalculateGlobalCooldown(uint32 spellid);
     void InterruptSpell();
+    void RequestSpellInterrupt();
     void RemoveAura(std::string const name);
     void RemoveShapeshift();
     void WaitForSpellCast(Spell* spell);
@@ -647,6 +649,7 @@ protected:
     BotCheatMask cheatMask = BotCheatMask::none;
     Position jumpDestination = Position();
     uint32 nextTransportCheck = 0;
+    bool spellInterruptRequested = false;
 };
 
 #endif
