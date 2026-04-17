@@ -68,8 +68,8 @@ namespace HyjalSummitHelpers
             static_cast<uint32>(HyjalSummitSpells::SPELL_INFERNO))
         {
             Unit* spellTarget = spell->m_targets.GetUnitTarget();
-            if (spellTarget && spellTarget->GetTypeId() == TYPEID_PLAYER)
-                return static_cast<Player*>(spellTarget);
+            if (spellTarget && spellTarget->IsPlayer())
+                return spellTarget->ToPlayer();
         }
 
         return nullptr;
