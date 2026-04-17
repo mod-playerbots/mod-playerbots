@@ -38,6 +38,36 @@ Unit* PartyMemberToHeal::Calculate()
     bool isRaid = bot->GetGroup()->isRaidGroup();
     MinValueCalculator calc(100);
 
+    // If focus heal targets strategy is active, only heal those targets
+    if (botAI->HasStrategy("focus heal targets", BOT_STATE_COMBAT))
+    {
+        std::list<ObjectGuid> const focusHealTargets =
+            AI_VALUE(std::list<ObjectGuid>, "focus heal targets");
+
+        for (ObjectGuid const& focusHealTarget : focusHealTargets)
+        {
+            Player* player = ObjectAccessor::FindPlayer(focusHealTarget);
+            if (!player || !player->IsInWorld() || !player->IsAlive() || !player->IsInSameGroupWith(bot))
+                continue;
+
+            float health = player->GetHealthPct();
+            if (isRaid || health < sPlayerbotAIConfig.mediumHealth ||
+                !IsTargetOfSpellCast(player, predicate))
+            {
+                float probeValue = 100.0f;
+                if (player->GetDistance2d(bot) > sPlayerbotAIConfig.healDistance)
+                    probeValue = health + 30.0f;
+                else
+                    probeValue = health + player->GetDistance2d(bot) / 10.0f;
+
+                if (probeValue < calc.minValue && Check(player))
+                    calc.probe(probeValue, player);
+            }
+        }
+
+        return (Unit*)calc.param;
+    }
+
     for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
     {
         Player* player = gref->GetSource();
@@ -45,17 +75,17 @@ Unit* PartyMemberToHeal::Calculate()
             continue;
         if (player && player->IsAlive())
         {
-            uint8 health = player->GetHealthPct();
+            float health = player->GetHealthPct();
             if (isRaid || health < sPlayerbotAIConfig.mediumHealth || !IsTargetOfSpellCast(player, predicate))
             {
-                uint32 probeValue = 100;
+                float probeValue = 100.0f;
                 if (player->GetDistance2d(bot) > sPlayerbotAIConfig.healDistance)
                 {
-                    probeValue = health + 30;
+                    probeValue = health + 30.0f;
                 }
                 else
                 {
-                    probeValue = health + player->GetDistance2d(bot) / 10;
+                    probeValue = health + player->GetDistance2d(bot) / 10.0f;
                 }
                 // delay Check player to here for better performance
                 if (probeValue < calc.minValue && Check(player))
@@ -68,10 +98,10 @@ Unit* PartyMemberToHeal::Calculate()
         Pet* pet = player->GetPet();
         if (pet && pet->IsAlive())
         {
-            uint8 health = ((Unit*)pet)->GetHealthPct();
-            uint32 probeValue = 100;
+            float health = ((Unit*)pet)->GetHealthPct();
+            float probeValue = 100.0f;
             if (isRaid || health < sPlayerbotAIConfig.mediumHealth)
-                probeValue = health + 30;
+                probeValue = health + 30.0f;
             // delay Check pet to here for better performance
             if (probeValue < calc.minValue && Check(pet))
             {
@@ -82,10 +112,10 @@ Unit* PartyMemberToHeal::Calculate()
         Unit* charm = player->GetCharm();
         if (charm && charm->IsAlive())
         {
-            uint8 health = charm->GetHealthPct();
-            uint32 probeValue = 100;
+            float health = charm->GetHealthPct();
+            float probeValue = 100.0f;
             if (isRaid || health < sPlayerbotAIConfig.mediumHealth)
-                probeValue = health + 30;
+                probeValue = health + 30.0f;
             // delay Check charm to here for better performance
             if (probeValue < calc.minValue && Check(charm))
             {
