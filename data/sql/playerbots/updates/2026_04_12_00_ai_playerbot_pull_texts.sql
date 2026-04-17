@@ -23,7 +23,7 @@ INSERT INTO `ai_playerbot_texts`
      `text_loc1`, `text_loc2`, `text_loc3`, `text_loc4`,
      `text_loc5`, `text_loc6`, `text_loc7`, `text_loc8`)
 VALUES (
-    1759,
+    1755,
     'pull_no_target_error',
     'You have no target',
     0, 0,
@@ -44,7 +44,7 @@ INSERT INTO `ai_playerbot_texts`
      `text_loc1`, `text_loc2`, `text_loc3`, `text_loc4`,
      `text_loc5`, `text_loc6`, `text_loc7`, `text_loc8`)
 VALUES (
-    1760,
+    1756,
     'pull_target_too_far_error',
     'The target is too far away',
     0, 0,
@@ -65,7 +65,7 @@ INSERT INTO `ai_playerbot_texts`
      `text_loc1`, `text_loc2`, `text_loc3`, `text_loc4`,
      `text_loc5`, `text_loc6`, `text_loc7`, `text_loc8`)
 VALUES (
-    1761,
+    1757,
     'pull_invalid_target_error',
     'The target can''t be pulled',
     0, 0,
@@ -86,7 +86,7 @@ INSERT INTO `ai_playerbot_texts`
      `text_loc1`, `text_loc2`, `text_loc3`, `text_loc4`,
      `text_loc5`, `text_loc6`, `text_loc7`, `text_loc8`)
 VALUES (
-    1762,
+    1758,
     'pull_action_unavailable_error',
     'Can''t perform pull action ''%action_name''',
     0, 0,
