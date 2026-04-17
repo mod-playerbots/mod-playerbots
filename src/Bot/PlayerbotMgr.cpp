@@ -380,29 +380,21 @@ void PlayerbotHolder::LogoutPlayerBot(ObjectGuid guid)
             masterWorldSessionPtr = master->GetSession();
 
         // Instant logout checking:
-        bool logout = botWorldSessionPtr->ShouldLogOut(time(nullptr));
-
-        if (masterWorldSessionPtr && masterWorldSessionPtr->ShouldLogOut(time(nullptr)))
-            logout = true;
-
-        if (masterWorldSessionPtr && !masterWorldSessionPtr->GetPlayer())
-            logout = true;
-
-        // Master's socket is already gone (EXIT GAME -> EXIT NOW is the most typical cause).
-        // Force instant logout. Without this, the bot restarts its 20-second countdown and fires LogoutPlayer() 20 seconds
-        // after the master's Player object has been deleted, causing the bot's logout to crash on the now deleted master.
-        if (masterWorldSessionPtr && masterWorldSessionPtr->IsSocketClosed())
-            logout = true;
-
-        if (bot->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) || bot->HasUnitState(UNIT_STATE_IN_FLIGHT))
-            logout = true;
-
-        // If the bot's master has security clearance for `InstantLogout` in worldserver.conf, so does the bot.
-        if (master &&
-            (master->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) || master->HasUnitState(UNIT_STATE_IN_FLIGHT) ||
-             (masterWorldSessionPtr &&
-              masterWorldSessionPtr->GetSecurity() >= (AccountTypes)sWorld->getIntConfig(CONFIG_INSTANT_LOGOUT))))
-            logout = true;
+        bool logout =
+            bot->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) ||
+            bot->HasUnitState(UNIT_STATE_IN_FLIGHT) ||
+            (masterWorldSessionPtr && !masterWorldSessionPtr->GetPlayer()) ||
+            // Master's socket is already gone (EXIT GAME -> EXIT NOW is the most typical cause).
+            // Force instant logout. Without this, the bot restarts its 20-second countdown and fires LogoutPlayer() 20 seconds
+            // after the master's Player object has been deleted, causing the bot's logout to crash on the now deleted master.
+            (masterWorldSessionPtr && masterWorldSessionPtr->IsSocketClosed()) ||
+            (masterWorldSessionPtr && masterWorldSessionPtr->ShouldLogOut(time(nullptr))) ||
+            // If the bot's master has security clearance for `InstantLogout` in worldserver.conf, so does the bot.
+            (master &&
+                (master->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) ||
+                 master->HasUnitState(UNIT_STATE_IN_FLIGHT) ||
+                 (masterWorldSessionPtr &&
+                  masterWorldSessionPtr->GetSecurity() >= (AccountTypes)sWorld->getIntConfig(CONFIG_INSTANT_LOGOUT))));
 
         if (!logout)
         {
