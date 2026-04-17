@@ -25,6 +25,10 @@ namespace
 constexpr uint32 SPELL_MOLTEN_ARMOR_RANK_1 = 30482;
 constexpr uint32 SPELL_MOLTEN_ARMOR_RANK_2 = 43045;
 constexpr uint32 SPELL_MOLTEN_ARMOR_RANK_3 = 43046;
+constexpr uint32 SPELL_FEL_ARMOR_RANK_1 = 28176;
+constexpr uint32 SPELL_FEL_ARMOR_RANK_2 = 28189;
+constexpr uint32 SPELL_FEL_ARMOR_RANK_3 = 47892;
+constexpr uint32 SPELL_FEL_ARMOR_RANK_4 = 47893;
 }
 
 StatsWeightCalculator::StatsWeightCalculator(Player* player) : player_(player)
@@ -469,6 +473,15 @@ void StatsWeightCalculator::GenerateAdditionalWeights(Player* player)
         {
             stats_weights_[STATS_TYPE_INTELLECT] += 0.2f;
             stats_weights_[STATS_TYPE_SPIRIT] -= 0.0f;
+        }
+    }
+    else if (cls == CLASS_WARLOCK)
+    {
+        if (!player->HasSpell(SPELL_FEL_ARMOR_RANK_1) && !player->HasSpell(SPELL_FEL_ARMOR_RANK_2) &&
+            !player->HasSpell(SPELL_FEL_ARMOR_RANK_3) && !player->HasSpell(SPELL_FEL_ARMOR_RANK_4))
+        {
+            stats_weights_[STATS_TYPE_INTELLECT] += 0.2f;
+            stats_weights_[STATS_TYPE_SPIRIT] -= 0.2f;
         }
     }
 }
