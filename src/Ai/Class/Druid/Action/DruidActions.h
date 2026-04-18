@@ -128,6 +128,14 @@ public:
     CastThornsOnMainTankAction(PlayerbotAI* botAI) : BuffOnMainTankAction(botAI, "thorns", false) {}
 };
 
+class CastLifebloomOnMainTankAction : public BuffOnMainTankAction
+{
+public:
+    CastLifebloomOnMainTankAction(PlayerbotAI* botAI) : BuffOnMainTankAction(botAI, "lifebloom", true) {}
+
+    bool isUseful() override;
+};
+
 class CastOmenOfClarityAction : public CastBuffSpellAction
 {
 public:

@@ -61,6 +61,12 @@ public:
     OmenOfClarityTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "omen of clarity") {}
 };
 
+class ClearcastingTrigger : public HasAuraTrigger
+{
+public:
+    ClearcastingTrigger(PlayerbotAI* botAI) : HasAuraTrigger(botAI, "clearcasting") {}
+};
+
 class RakeTrigger : public DebuffTrigger
 {
 public:

@@ -430,6 +430,7 @@ public:
     static bool IsAssistHealOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers = false);
     static bool IsAssistRangedDpsOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers = false);
     bool HasAggro(Unit* unit);
+    bool IsMovementImpaired(Unit* unit);
     static int32 GetAssistTankIndex(Player* player);
     int32 GetGroupSlotIndex(Player* player);
     int32 GetRangedIndex(Player* player);
@@ -540,13 +541,11 @@ public:
     // Checks if the bot is summoned as alt of a player
     bool IsAlt();
     Player* GetGroupLeader();
-    // Returns a semi-random (cycling) number that is fixed for each bot.
-    uint32 GetFixedBotNumer(uint32 maxNum = 100, float cyclePerMin = 1);
+    uint32 GetFixedBotNumber(uint32 maxNum = 100);
     GrouperType GetGrouperType();
     GuilderType GetGuilderType();
     bool HasPlayerNearby(WorldPosition* pos, float range = sPlayerbotAIConfig.reactDistance);
     bool HasPlayerNearby(float range = sPlayerbotAIConfig.reactDistance);
-    bool HasManyPlayersNearby(uint32 trigerrValue = 20, float range = sPlayerbotAIConfig.sightDistance);
     bool AllowActive(ActivityType activityType);
     bool AllowActivity(ActivityType activityType = ALL_ACTIVITY, bool checkNow = false);
     uint32 AutoScaleActivity(uint32 mod);
@@ -614,7 +613,6 @@ private:
     Item* FindItemInInventory(std::function<bool(ItemTemplate const*)> checkItem) const;
     void HandleCommands();
     void HandleCommand(uint32 type, const std::string& text, Player& fromPlayer, const uint32 lang = LANG_UNIVERSAL);
-    bool _isBotInitializing = false;
     inline bool IsValidUnit(const Unit* unit) const
     {
         return unit && unit->IsInWorld() && !unit->IsDuringRemoveFromWorld();

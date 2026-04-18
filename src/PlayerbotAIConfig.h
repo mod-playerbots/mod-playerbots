@@ -56,7 +56,8 @@ enum NewRpgStatus : int
     RPG_TRAVEL_FLIGHT = 6,
     // Taking a break
     RPG_REST = 7,
-    RPG_STATUS_END = 8
+    RPG_OUTDOOR_PVP = 8,
+    RPG_STATUS_END = 9
 };
 
 #define MAX_SPECNO 20
@@ -336,6 +337,7 @@ public:
     bool disableDeathKnightLogin;
     bool limitTalentsExpansion;
     uint32 botActiveAlone;
+    uint32 BotActiveAloneDurationSeconds;
     uint32 BotActiveAloneForceWhenInRadius;
     bool BotActiveAloneForceWhenInZone;
     bool BotActiveAloneForceWhenInMap;

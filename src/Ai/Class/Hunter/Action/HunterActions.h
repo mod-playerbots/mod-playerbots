@@ -19,52 +19,58 @@ class Unit;
 class CastTrueshotAuraAction : public CastBuffSpellAction
 {
 public:
-    CastTrueshotAuraAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "trueshot aura") {}
+    CastTrueshotAuraAction(PlayerbotAI* botAI) :
+        CastBuffSpellAction(botAI, "trueshot aura") {}
+};
+
+class CastAspectOfTheDragonhawkAction : public CastBuffSpellAction
+{
+public:
+    CastAspectOfTheDragonhawkAction(PlayerbotAI* botAI) :
+        CastBuffSpellAction(botAI, "aspect of the dragonhawk") {}
 };
 
 class CastAspectOfTheHawkAction : public CastBuffSpellAction
 {
 public:
-    CastAspectOfTheHawkAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "aspect of the hawk") {}
+    CastAspectOfTheHawkAction(PlayerbotAI* botAI) :
+        CastBuffSpellAction(botAI, "aspect of the hawk") {}
     bool isUseful() override;
 };
 
 class CastAspectOfTheMonkeyAction : public CastBuffSpellAction
 {
 public:
-    CastAspectOfTheMonkeyAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "aspect of the monkey") {}
-};
-
-class CastAspectOfTheDragonhawkAction : public CastBuffSpellAction
-{
-public:
-    CastAspectOfTheDragonhawkAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "aspect of the dragonhawk") {}
+    CastAspectOfTheMonkeyAction(PlayerbotAI* botAI) :
+        CastBuffSpellAction(botAI, "aspect of the monkey") {}
 };
 
 class CastAspectOfTheWildAction : public CastBuffSpellAction
 {
 public:
-    CastAspectOfTheWildAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "aspect of the wild") {}
+    CastAspectOfTheWildAction(PlayerbotAI* botAI) :
+        CastBuffSpellAction(botAI, "aspect of the wild") {}
 };
 
 class CastAspectOfTheCheetahAction : public CastBuffSpellAction
 {
 public:
-    CastAspectOfTheCheetahAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "aspect of the cheetah") {}
-
-    bool isUseful() override;
+    CastAspectOfTheCheetahAction(PlayerbotAI* botAI) :
+        CastBuffSpellAction(botAI, "aspect of the cheetah") {}
 };
 
 class CastAspectOfThePackAction : public CastBuffSpellAction
 {
 public:
-    CastAspectOfThePackAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "aspect of the pack") {}
+    CastAspectOfThePackAction(PlayerbotAI* botAI) :
+        CastBuffSpellAction(botAI, "aspect of the pack") {}
 };
 
 class CastAspectOfTheViperAction : public CastBuffSpellAction
 {
 public:
-    CastAspectOfTheViperAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "aspect of the viper") {}
+    CastAspectOfTheViperAction(PlayerbotAI* botAI) :
+        CastBuffSpellAction(botAI, "aspect of the viper") {}
 };
 
 // Cooldown Spells
@@ -72,26 +78,28 @@ public:
 class CastRapidFireAction : public CastBuffSpellAction
 {
 public:
-    CastRapidFireAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "rapid fire") {}
+    CastRapidFireAction(PlayerbotAI* botAI) :
+        CastBuffSpellAction(botAI, "rapid fire") {}
 };
 
 class CastDeterrenceAction : public CastBuffSpellAction
 {
 public:
-    CastDeterrenceAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "deterrence") {}
+    CastDeterrenceAction(PlayerbotAI* botAI) :
+        CastBuffSpellAction(botAI, "deterrence") {}
 };
 
 class CastReadinessAction : public CastBuffSpellAction
 {
 public:
-    CastReadinessAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "readiness") {}
+    CastReadinessAction(PlayerbotAI* botAI) :
+        CastBuffSpellAction(botAI, "readiness") {}
 };
 
 class CastDisengageAction : public CastSpellAction
 {
 public:
     CastDisengageAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "disengage") {}
-
     bool Execute(Event event) override;
     bool isUseful() override;
 };
@@ -101,14 +109,15 @@ public:
 class CastScareBeastAction : public CastSpellAction
 {
 public:
-    CastScareBeastAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "scare beast") {}
+    CastScareBeastAction(PlayerbotAI* botAI) :
+        CastSpellAction(botAI, "scare beast") {}
 };
 
 class CastScareBeastCcAction : public CastSpellAction
 {
 public:
-    CastScareBeastCcAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "scare beast on cc") {}
-
+    CastScareBeastCcAction(PlayerbotAI* botAI) :
+        CastSpellAction(botAI, "scare beast on cc") {}
     Value<Unit*>* GetTargetValue() override;
     bool Execute(Event event) override;
 };
@@ -116,34 +125,41 @@ public:
 class CastFreezingTrap : public CastDebuffSpellAction
 {
 public:
-    CastFreezingTrap(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "freezing trap") {}
-
+    CastFreezingTrap(PlayerbotAI* botAI) :
+        CastDebuffSpellAction(botAI, "freezing trap") {}
     Value<Unit*>* GetTargetValue() override;
 };
 
 class CastWyvernStingAction : public CastDebuffSpellAction
 {
 public:
-    CastWyvernStingAction(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "wyvern sting", true) {}
+    CastWyvernStingAction(PlayerbotAI* botAI) :
+        CastDebuffSpellAction(botAI, "wyvern sting", true) {}
 };
 
 class CastSilencingShotAction : public CastSpellAction
 {
 public:
-    CastSilencingShotAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "silencing shot") {}
+    CastSilencingShotAction(PlayerbotAI* botAI) :
+        CastSpellAction(botAI, "silencing shot") {}
 };
 
 class CastConcussiveShotAction : public CastSnareSpellAction
 {
 public:
-    CastConcussiveShotAction(PlayerbotAI* botAI) : CastSnareSpellAction(botAI, "concussive shot") {}
+    CastConcussiveShotAction(PlayerbotAI* botAI) :
+        CastSnareSpellAction(botAI, "concussive shot") {}
 };
 
 class CastIntimidationAction : public CastBuffSpellAction
 {
 public:
-    CastIntimidationAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "intimidation", false, 5000) {}
-    std::string const GetTargetName() override { return "pet target"; }
+    CastIntimidationAction(PlayerbotAI* botAI) :
+        CastBuffSpellAction(botAI, "intimidation", false, 5000) {}
+    std::string const GetTargetName() override
+    {
+        return "pet target";
+    }
 };
 
 // Threat Spells
@@ -151,19 +167,22 @@ public:
 class CastDistractingShotAction : public CastSpellAction
 {
 public:
-    CastDistractingShotAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "distracting shot") {}
+    CastDistractingShotAction(PlayerbotAI* botAI) :
+        CastSpellAction(botAI, "distracting shot") {}
 };
 
 class CastMisdirectionOnMainTankAction : public BuffOnMainTankAction
 {
 public:
-    CastMisdirectionOnMainTankAction(PlayerbotAI* ai) : BuffOnMainTankAction(ai, "misdirection", true) {}
+    CastMisdirectionOnMainTankAction(PlayerbotAI* botAI) :
+        BuffOnMainTankAction(botAI, "misdirection", true) {}
 };
 
 class CastFeignDeathAction : public CastBuffSpellAction
 {
 public:
-    CastFeignDeathAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "feign death") {}
+    CastFeignDeathAction(PlayerbotAI* botAI) :
+        CastBuffSpellAction(botAI, "feign death") {}
 };
 
 // Pet Spells
@@ -172,7 +191,6 @@ class FeedPetAction : public Action
 {
 public:
     FeedPetAction(PlayerbotAI* botAI) : Action(botAI, "feed pet") {}
-
     bool Execute(Event event) override;
 };
 
@@ -186,27 +204,39 @@ class CastMendPetAction : public CastAuraSpellAction
 {
 public:
     CastMendPetAction(PlayerbotAI* botAI) : CastAuraSpellAction(botAI, "mend pet") {}
-    std::string const GetTargetName() override { return "pet target"; }
+    std::string const GetTargetName() override
+    {
+        return "pet target";
+    }
 };
 
 class CastRevivePetAction : public CastBuffSpellAction
 {
 public:
-    CastRevivePetAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "revive pet") {}
+    CastRevivePetAction(PlayerbotAI* botAI) :
+        CastBuffSpellAction(botAI, "revive pet") {}
 };
 
 class CastKillCommandAction : public CastBuffSpellAction
 {
 public:
-    CastKillCommandAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "kill command", false, 5000) {}
-    std::string const GetTargetName() override { return "pet target"; }
+    CastKillCommandAction(PlayerbotAI* botAI) :
+        CastBuffSpellAction(botAI, "kill command", false, 5000) {}
+    std::string const GetTargetName() override
+    {
+        return "pet target";
+    }
 };
 
 class CastBestialWrathAction : public CastBuffSpellAction
 {
 public:
-    CastBestialWrathAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "bestial wrath", false, 5000) {}
-    std::string const GetTargetName() override { return "pet target"; }
+    CastBestialWrathAction(PlayerbotAI* botAI) :
+        CastBuffSpellAction(botAI, "bestial wrath", false, 5000) {}
+    std::string const GetTargetName() override
+    {
+        return "pet target";
+    }
 };
 
 // Direct Damage Spells
@@ -215,14 +245,18 @@ class CastAutoShotAction : public CastSpellAction
 {
 public:
     CastAutoShotAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "auto shot") {}
-    ActionThreatType getThreatType() override { return ActionThreatType::None; }
+    ActionThreatType getThreatType() override
+    {
+        return ActionThreatType::None;
+    }
     bool isUseful() override;
 };
 
 class CastArcaneShotAction : public CastSpellAction
 {
 public:
-    CastArcaneShotAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "arcane shot") {}
+    CastArcaneShotAction(PlayerbotAI* botAI) :
+        CastSpellAction(botAI, "arcane shot") {}
     bool isUseful() override;
 };
 
@@ -235,7 +269,8 @@ public:
 class CastChimeraShotAction : public CastSpellAction
 {
 public:
-    CastChimeraShotAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "chimera shot") {}
+    CastChimeraShotAction(PlayerbotAI* botAI) :
+        CastSpellAction(botAI, "chimera shot") {}
 };
 
 class CastSteadyShotAction : public CastSpellAction
@@ -255,7 +290,8 @@ public:
 class CastHuntersMarkAction : public CastDebuffSpellAction
 {
 public:
-    CastHuntersMarkAction(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "hunter's mark") {}
+    CastHuntersMarkAction(PlayerbotAI* botAI) :
+        CastDebuffSpellAction(botAI, "hunter's mark") {}
     bool isUseful() override
     {
         // Bypass TTL check
@@ -266,20 +302,23 @@ public:
 class CastTranquilizingShotAction : public CastSpellAction
 {
 public:
-    CastTranquilizingShotAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "tranquilizing shot") {}
+    CastTranquilizingShotAction(PlayerbotAI* botAI) :
+        CastSpellAction(botAI, "tranquilizing shot") {}
 };
 
 class CastViperStingAction : public CastDebuffSpellAction
 {
 public:
-    CastViperStingAction(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "viper sting", true) {}
+    CastViperStingAction(PlayerbotAI* botAI) :
+        CastDebuffSpellAction(botAI, "viper sting", true) {}
     bool isUseful() override;
 };
 
 class CastSerpentStingAction : public CastDebuffSpellAction
 {
 public:
-    CastSerpentStingAction(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "serpent sting", true) {}
+    CastSerpentStingAction(PlayerbotAI* botAI) :
+        CastDebuffSpellAction(botAI, "serpent sting", true) {}
     bool isUseful() override
     {
         // Bypass TTL check
@@ -290,7 +329,8 @@ public:
 class CastScorpidStingAction : public CastDebuffSpellAction
 {
 public:
-    CastScorpidStingAction(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "scorpid sting", true) {}
+    CastScorpidStingAction(PlayerbotAI* botAI) :
+        CastDebuffSpellAction(botAI, "scorpid sting", true) {}
     bool isUseful() override
     {
         // Bypass TTL check
@@ -301,7 +341,8 @@ public:
 class CastSerpentStingOnAttackerAction : public CastDebuffSpellOnAttackerAction
 {
 public:
-    CastSerpentStingOnAttackerAction(PlayerbotAI* botAI) : CastDebuffSpellOnAttackerAction(botAI, "serpent sting", true) {}
+    CastSerpentStingOnAttackerAction(PlayerbotAI* botAI)
+        : CastDebuffSpellOnAttackerAction(botAI, "serpent sting", true) {}
     bool isUseful() override
     {
         // Bypass TTL check
@@ -312,20 +353,23 @@ public:
 class CastImmolationTrapAction : public CastSpellAction
 {
 public:
-    CastImmolationTrapAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "immolation trap") {}
+    CastImmolationTrapAction(PlayerbotAI* botAI) :
+        CastSpellAction(botAI, "immolation trap") {}
     bool isUseful() override;
 };
 
 class CastExplosiveTrapAction : public CastSpellAction
 {
 public:
-    CastExplosiveTrapAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "explosive trap") {}
+    CastExplosiveTrapAction(PlayerbotAI* botAI) :
+        CastSpellAction(botAI, "explosive trap") {}
 };
 
-class CastBlackArrow : public CastDebuffSpellAction
+class CastBlackArrowAction : public CastDebuffSpellAction
 {
 public:
-    CastBlackArrow(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "black arrow", true) {}
+    CastBlackArrowAction(PlayerbotAI* botAI) :
+        CastDebuffSpellAction(botAI, "black arrow", true) {}
     bool isUseful() override
     {
         if (botAI->HasStrategy("trap weave", BOT_STATE_COMBAT))
@@ -335,77 +379,89 @@ public:
     }
 };
 
-class CastExplosiveShotAction : public CastDebuffSpellAction
+class CastExplosiveShotBaseAction : public CastDebuffSpellAction
 {
 public:
-    CastExplosiveShotAction(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "explosive shot", true, 0.0f) {}
-    bool isUseful() override
-    {
-        // Bypass TTL check
-        return CastAuraSpellAction::isUseful();
-    }
+    CastExplosiveShotBaseAction(PlayerbotAI* botAI)
+        : CastDebuffSpellAction(botAI, "explosive shot", true, 0.0f) {}
 };
 
 // Rank 4
-class CastExplosiveShotRank4Action : public CastDebuffSpellAction
+class CastExplosiveShotRank4Action : public CastExplosiveShotBaseAction
 {
 public:
-    CastExplosiveShotRank4Action(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "explosive shot", true, 0.0f) {}
-
-    bool Execute(Event event) override { return botAI->CastSpell(60053, GetTarget()); }
+    CastExplosiveShotRank4Action(PlayerbotAI* botAI) :
+        CastExplosiveShotBaseAction(botAI) {}
+    bool Execute(Event event) override
+    {
+        return botAI->CastSpell(60053, GetTarget());
+    }
     bool isUseful() override
     {
         Unit* target = GetTarget();
         if (!target)
             return false;
+
         return !target->HasAura(60053);
     }
 };
 
 // Rank 3
-class CastExplosiveShotRank3Action : public CastDebuffSpellAction
+class CastExplosiveShotRank3Action : public CastExplosiveShotBaseAction
 {
 public:
-    CastExplosiveShotRank3Action(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "explosive shot", true, 0.0f) {}
-
-    bool Execute(Event event) override { return botAI->CastSpell(60052, GetTarget()); }
+    CastExplosiveShotRank3Action(PlayerbotAI* botAI) :
+        CastExplosiveShotBaseAction(botAI) {}
+    bool Execute(Event event) override
+    {
+        return botAI->CastSpell(60052, GetTarget());
+    }
     bool isUseful() override
     {
         Unit* target = GetTarget();
         if (!target)
             return false;
+
         return !target->HasAura(60052);
     }
 };
 
 // Rank 2
-class CastExplosiveShotRank2Action : public CastDebuffSpellAction
+class CastExplosiveShotRank2Action : public CastExplosiveShotBaseAction
 {
 public:
-    CastExplosiveShotRank2Action(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "explosive shot", true, 0.0f) {}
-
-    bool Execute(Event event) override { return botAI->CastSpell(60051, GetTarget()); }
+    CastExplosiveShotRank2Action(PlayerbotAI* botAI) :
+        CastExplosiveShotBaseAction(botAI) {}
+    bool Execute(Event event) override
+    {
+        return botAI->CastSpell(60051, GetTarget());
+    }
     bool isUseful() override
     {
         Unit* target = GetTarget();
         if (!target)
             return false;
+
         return !target->HasAura(60051);
     }
 };
 
 // Rank 1
-class CastExplosiveShotRank1Action : public CastDebuffSpellAction
+class CastExplosiveShotRank1Action : public CastExplosiveShotBaseAction
 {
 public:
-    CastExplosiveShotRank1Action(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "explosive shot", true, 0.0f) {}
-
-    bool Execute(Event event) override { return botAI->CastSpell(53301, GetTarget()); }
+    CastExplosiveShotRank1Action(PlayerbotAI* botAI) :
+        CastExplosiveShotBaseAction(botAI) {}
+    bool Execute(Event event) override
+    {
+        return botAI->CastSpell(53301, GetTarget());
+    }
     bool isUseful() override
     {
         Unit* target = GetTarget();
         if (!target)
             return false;
+
         return !target->HasAura(53301);
     }
 };
@@ -415,8 +471,8 @@ public:
 class CastWingClipAction : public CastSpellAction
 {
 public:
-    CastWingClipAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "wing clip") {}
-
+    CastWingClipAction(PlayerbotAI* botAI) :
+        CastSpellAction(botAI, "wing clip") {}
     bool isUseful() override;
     std::vector<NextAction> getPrerequisites() override;
 };
@@ -424,13 +480,15 @@ public:
 class CastRaptorStrikeAction : public CastSpellAction
 {
 public:
-    CastRaptorStrikeAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "raptor strike") {}
+    CastRaptorStrikeAction(PlayerbotAI* botAI) :
+        CastSpellAction(botAI, "raptor strike") {}
 };
 
 class CastMongooseBiteAction : public CastSpellAction
 {
 public:
-    CastMongooseBiteAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "mongoose bite") {}
+    CastMongooseBiteAction(PlayerbotAI* botAI) :
+        CastSpellAction(botAI, "mongoose bite") {}
 };
 
 // AoE Spells
@@ -445,7 +503,10 @@ class CastVolleyAction : public CastSpellAction
 {
 public:
     CastVolleyAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "volley") {}
-    ActionThreatType getThreatType() override { return ActionThreatType::Aoe; }
+    ActionThreatType getThreatType() override
+    {
+        return ActionThreatType::Aoe;
+    }
 };
 
 #endif

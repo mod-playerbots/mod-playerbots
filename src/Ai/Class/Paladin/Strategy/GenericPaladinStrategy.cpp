@@ -16,27 +16,23 @@ void GenericPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     CombatStrategy::InitTriggers(triggers);
 
-    triggers.push_back(new TriggerNode("critical health", { NextAction("divine shield",
-        ACTION_HIGH + 5) }));
-    triggers.push_back(
-        new TriggerNode("hammer of justice interrupt",
-                        { NextAction("hammer of justice", ACTION_INTERRUPT) }));
-    triggers.push_back(new TriggerNode(
-        "hammer of justice on enemy healer",
+    triggers.push_back(new TriggerNode("hammer of justice interrupt",
+        { NextAction("hammer of justice", ACTION_INTERRUPT) }));
+    triggers.push_back(new TriggerNode("hammer of justice on enemy healer",
         { NextAction("hammer of justice on enemy healer", ACTION_INTERRUPT) }));
-    triggers.push_back(new TriggerNode(
-        "hammer of justice on snare target",
+    triggers.push_back(new TriggerNode("hammer of justice on snare target",
         { NextAction("hammer of justice on snare target", ACTION_INTERRUPT) }));
-    triggers.push_back(new TriggerNode(
-        "critical health", { NextAction("lay on hands", ACTION_EMERGENCY) }));
-    triggers.push_back(
-        new TriggerNode("party member critical health",
-                        { NextAction("lay on hands on party", ACTION_EMERGENCY + 1) }));
-    triggers.push_back(new TriggerNode(
-        "protect party member",
-        { NextAction("blessing of protection on party", ACTION_EMERGENCY + 2) }));
-    triggers.push_back(
-        new TriggerNode("high mana", { NextAction("divine plea", ACTION_HIGH) }));
+    triggers.push_back(new TriggerNode("critical health", { NextAction("divine shield", ACTION_EMERGENCY) }));
+    triggers.push_back(new TriggerNode("critical health", { NextAction("lay on hands", ACTION_EMERGENCY + 1) }));
+    triggers.push_back(new TriggerNode("party member critical health",
+        { NextAction("lay on hands on party", ACTION_EMERGENCY + 2) }));
+    triggers.push_back(new TriggerNode("divine shield low health",
+        { NextAction("flash of light", ACTION_EMERGENCY + 3), NextAction("holy light", ACTION_EMERGENCY + 2)}));
+    triggers.push_back(new TriggerNode("protect party member",
+        { NextAction("blessing of protection on party", ACTION_EMERGENCY + 3) }));
+    triggers.push_back(new TriggerNode("high mana", { NextAction("divine plea", ACTION_HIGH) }));
+    triggers.push_back(new TriggerNode("hand of freedom on party",
+        { NextAction("hand of freedom on party", ACTION_HIGH + 4) }));
 }
 
 void PaladinCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

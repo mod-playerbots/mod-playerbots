@@ -79,6 +79,7 @@ public:
     DruidTriggerFactoryInternal()
     {
         creators["omen of clarity"] = &DruidTriggerFactoryInternal::omen_of_clarity;
+        creators["clearcasting"] = &DruidTriggerFactoryInternal::clearcasting;
         creators["thorns"] = &DruidTriggerFactoryInternal::thorns;
         creators["thorns on party"] = &DruidTriggerFactoryInternal::thorns_on_party;
         creators["thorns on main tank"] = &DruidTriggerFactoryInternal::thorns_on_main_tank;
@@ -117,6 +118,7 @@ public:
 
 private:
     static Trigger* natures_swiftness(PlayerbotAI* botAI) { return new NaturesSwiftnessTrigger(botAI); }
+    static Trigger* clearcasting(PlayerbotAI* botAI) { return new ClearcastingTrigger(botAI); }
     static Trigger* eclipse_solar(PlayerbotAI* botAI) { return new EclipseSolarTrigger(botAI); }
     static Trigger* eclipse_lunar(PlayerbotAI* botAI) { return new EclipseLunarTrigger(botAI); }
     static Trigger* thorns(PlayerbotAI* botAI) { return new ThornsTrigger(botAI); }
@@ -183,6 +185,7 @@ public:
         creators["bash"] = &DruidAiObjectContextInternal::bash;
         creators["swipe"] = &DruidAiObjectContextInternal::swipe;
         creators["growl"] = &DruidAiObjectContextInternal::growl;
+        creators["challenging roar"] = &DruidAiObjectContextInternal::challenging_roar;
         creators["demoralizing roar"] = &DruidAiObjectContextInternal::demoralizing_roar;
         creators["hibernate"] = &DruidAiObjectContextInternal::hibernate;
         creators["entangling roots"] = &DruidAiObjectContextInternal::entangling_roots;
@@ -208,6 +211,7 @@ public:
         creators["thorns"] = &DruidAiObjectContextInternal::thorns;
         creators["thorns on party"] = &DruidAiObjectContextInternal::thorns_on_party;
         creators["thorns on main tank"] = &DruidAiObjectContextInternal::thorns_on_main_tank;
+        creators["lifebloom on main tank"] = &DruidAiObjectContextInternal::lifebloom_on_main_tank;
         creators["cure poison"] = &DruidAiObjectContextInternal::cure_poison;
         creators["cure poison on party"] = &DruidAiObjectContextInternal::cure_poison_on_party;
         creators["abolish poison"] = &DruidAiObjectContextInternal::abolish_poison;
@@ -277,6 +281,7 @@ private:
     static Action* bash(PlayerbotAI* botAI) { return new CastBashAction(botAI); }
     static Action* swipe(PlayerbotAI* botAI) { return new CastSwipeAction(botAI); }
     static Action* growl(PlayerbotAI* botAI) { return new CastGrowlAction(botAI); }
+    static Action* challenging_roar(PlayerbotAI* botAI) { return new CastChallengingRoarAction(botAI); }
     static Action* demoralizing_roar(PlayerbotAI* botAI) { return new CastDemoralizingRoarAction(botAI); }
     static Action* moonkin_form(PlayerbotAI* botAI) { return new CastMoonkinFormAction(botAI); }
     static Action* hibernate(PlayerbotAI* botAI) { return new CastHibernateAction(botAI); }
@@ -302,6 +307,7 @@ private:
     static Action* thorns(PlayerbotAI* botAI) { return new CastThornsAction(botAI); }
     static Action* thorns_on_party(PlayerbotAI* botAI) { return new CastThornsOnPartyAction(botAI); }
     static Action* thorns_on_main_tank(PlayerbotAI* botAI) { return new CastThornsOnMainTankAction(botAI); }
+    static Action* lifebloom_on_main_tank(PlayerbotAI* botAI) { return new CastLifebloomOnMainTankAction(botAI); }
     static Action* cure_poison(PlayerbotAI* botAI) { return new CastCurePoisonAction(botAI); }
     static Action* cure_poison_on_party(PlayerbotAI* botAI) { return new CastCurePoisonOnPartyAction(botAI); }
     static Action* abolish_poison(PlayerbotAI* botAI) { return new CastAbolishPoisonAction(botAI); }

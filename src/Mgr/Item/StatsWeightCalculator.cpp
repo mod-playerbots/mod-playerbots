@@ -20,6 +20,13 @@
 #include "StatsCollector.h"
 #include "Unit.h"
 
+namespace
+{
+constexpr uint32 SPELL_MOLTEN_ARMOR_RANK_1 = 30482;
+constexpr uint32 SPELL_MOLTEN_ARMOR_RANK_2 = 43045;
+constexpr uint32 SPELL_MOLTEN_ARMOR_RANK_3 = 43046;
+}
+
 StatsWeightCalculator::StatsWeightCalculator(Player* player) : player_(player)
 {
     if (PlayerbotAI::IsHeal(player))
@@ -453,6 +460,16 @@ void StatsWeightCalculator::GenerateAdditionalWeights(Player* player)
     {
         if (player->HasAura(51885))
             stats_weights_[STATS_TYPE_INTELLECT] += 1.1f;
+    }
+    else if (cls == CLASS_MAGE)
+    {
+        if (!player->HasSpell(SPELL_MOLTEN_ARMOR_RANK_1)
+            && !player->HasSpell(SPELL_MOLTEN_ARMOR_RANK_2)
+            && !player->HasSpell(SPELL_MOLTEN_ARMOR_RANK_3))
+        {
+            stats_weights_[STATS_TYPE_INTELLECT] += 0.2f;
+            stats_weights_[STATS_TYPE_SPIRIT] -= 0.0f;
+        }
     }
 }
 

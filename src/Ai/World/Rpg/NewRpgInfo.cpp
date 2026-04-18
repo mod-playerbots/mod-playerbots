@@ -47,6 +47,14 @@ void NewRpgInfo::ChangeToTravelFlight(ObjectGuid fromFlightMaster, std::vector<u
     data = flight;
 }
 
+void NewRpgInfo::ChangeToOutdoorPvp(ObjectGuid::LowType capturePointSpawnId)
+{
+    startT = getMSTime();
+    OutdoorPvP pvp;
+    pvp.capturePointSpawnId = capturePointSpawnId;
+    data = pvp;
+}
+
 void NewRpgInfo::ChangeToRest()
 {
     startT = getMSTime();
@@ -90,6 +98,7 @@ NewRpgStatus NewRpgInfo::GetStatus()
         if constexpr (std::is_same_v<T, Rest>) return RPG_REST;
         if constexpr (std::is_same_v<T, DoQuest>) return RPG_DO_QUEST;
         if constexpr (std::is_same_v<T, TravelFlight>) return RPG_TRAVEL_FLIGHT;
+        if constexpr (std::is_same_v<T, OutdoorPvP>) return RPG_OUTDOOR_PVP;
         return RPG_IDLE;
     }, data);
 }
@@ -152,6 +161,14 @@ std::string NewRpgInfo::ToString()
             out << "\nfromNode: " << arg.path[0];
             out << "\ntoNode: " << arg.path[arg.path.size() - 1];
             out << "\ninFlight: " << arg.inFlight;
+        }
+        else if constexpr (std::is_same_v<T, OutdoorPvP>)
+        {
+            out << "OUTDOOR_PVP";
+            if (!arg.capturePointSpawnId)
+                out << "\nNo capture point assigned.";
+            else
+                out << "\ncapturePointSpawnId: " << arg.capturePointSpawnId;
         }
         else
             out << "UNKNOWN";
