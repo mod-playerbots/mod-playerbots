@@ -41,11 +41,8 @@ namespace HyjalSummitHelpers
         SPELL_FEAR_WARD        =  6346,
     };
 
-    enum class HyjalSummitNPCs : uint32
+    enum class HyjalSummitNpcs : uint32
     {
-        // Anetheron
-        NPC_TOWERING_INFERNAL  = 17818,
-
         // Archimonde
         NPC_DOOMFIRE           = 18095,
     };
