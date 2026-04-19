@@ -23,7 +23,7 @@ public:
 
     void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
     {
-        if (creature->GetEntry() != static_cast<uint32>(HyjalSummitNPCs::NPC_DOOMFIRE))
+        if (creature->GetEntry() != static_cast<uint32>(HyjalSummitNpcs::NPC_DOOMFIRE))
             return;
 
         uint32 now = getMSTime();
@@ -71,7 +71,7 @@ public:
 
     void OnCreatureRemoveWorld(Creature* creature) override
     {
-        if (creature->GetEntry() != static_cast<uint32>(HyjalSummitNPCs::NPC_DOOMFIRE))
+        if (creature->GetEntry() != static_cast<uint32>(HyjalSummitNpcs::NPC_DOOMFIRE))
             return;
 
         doomfireLastSampleTime.erase(creature->GetGUID());
