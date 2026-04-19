@@ -55,7 +55,8 @@ Unit* PullStrategy::GetTarget() const
 
     Unit* target = botAI->GetUnit(guid);
     Player* bot = botAI->GetBot();
-    if (!bot || !target || !target->IsInWorld() || target->GetMapId() != bot->GetMapId())
+    if (!bot || !target || !target->IsAlive() || !target->IsInWorld() ||
+        target->GetMapId() != bot->GetMapId())
         return nullptr;
 
     return target;
