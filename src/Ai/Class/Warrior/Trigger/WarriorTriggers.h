@@ -10,22 +10,13 @@
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 
-//BUFF_TRIGGER(BattleShoutTrigger, "battle shout");
 class BattleShoutTrigger : public BuffTrigger
 {
 public:
     BattleShoutTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "battle shout") {}
-
-    bool IsActive() override
-    {
-        Unit* target = GetTarget();
-        if (!target)
-            return false;
-
-        return BuffTrigger::IsActive() && !botAI->HasAura("blessing of might", target) &&
-               !botAI->HasAura("greater blessing of might", target);
-    }
+    bool IsActive() override;
 };
+
 BUFF_TRIGGER(BattleStanceTrigger, "battle stance");
 BUFF_TRIGGER(DefensiveStanceTrigger, "defensive stance");
 BUFF_TRIGGER(BerserkerStanceTrigger, "berserker stance");
@@ -101,4 +92,5 @@ public:
 // public:
 //     SlamTrigger(PlayerbotAI* ai) : HasAuraTrigger(ai, "slam!") {}
 // };
+
 #endif

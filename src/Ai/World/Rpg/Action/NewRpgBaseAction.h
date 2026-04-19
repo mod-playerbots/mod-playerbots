@@ -31,7 +31,7 @@ protected:
     /* MOVEMENT RELATED */
     bool MoveFarTo(WorldPosition dest);
     bool MoveWorldObjectTo(ObjectGuid guid, float distance = INTERACTION_DISTANCE);
-    bool MoveRandomNear(float moveStep = 50.0f, MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
+    bool MoveRandomNear(float moveStep = 50.0f, MovementPriority priority = MovementPriority::MOVEMENT_NORMAL, WorldObject* center = nullptr);
     bool ForceToWait(uint32 duration, MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
 
     /* QUEST RELATED CHECK */
@@ -54,14 +54,21 @@ protected:
     bool GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector<POIInfo>& poiInfo, bool toComplete = false);
     static WorldPosition SelectRandomGrindPos(Player* bot);
     static WorldPosition SelectRandomCampPos(Player* bot);
-    bool SelectRandomFlightTaxiNode(ObjectGuid& flightMaster, uint32& fromNode, uint32& toNode);
+    bool SelectRandomFlightTaxiNode(ObjectGuid& flightMaster, std::vector<uint32>& path);
     bool RandomChangeStatus(std::vector<NewRpgStatus> candidateStatus);
     bool CheckRpgStatusAvailable(NewRpgStatus status);
 
 protected:
     /* FOR MOVE FAR */
     const float pathFinderDis = 70.0f;
-    const uint32 stuckTime = 5 * 60 * 1000;
+    // Time without real progress toward dest before MoveFarTo
+    // falls back to teleport recovery. Kept short enough that a
+    // bot truly oscillating around an unreachable destination
+    // (mmap returning non-progressing partial paths, or NOPATH +
+    // cone fallback wandering) doesn't spin for 5 minutes before
+    // the teleport fires, but long enough that a genuine long
+    // walk that is slowly making progress never triggers it.
+    const uint32 stuckTime = 90 * 1000;
 };
 
 #endif

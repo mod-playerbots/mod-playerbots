@@ -7,6 +7,33 @@
 
 #include "Playerbots.h"
 
+bool CastBerserkerRageAction::isPossible()
+{
+    if (botAI->IsInVehicle() && !botAI->IsInVehicle(false, false, true))
+        return false;
+
+    uint32 spellId = AI_VALUE2(uint32, "spell id", spell);
+    if (!spellId)
+        return false;
+
+    if (!bot->HasSpell(spellId))
+        return false;
+
+    if (bot->HasSpellCooldown(spellId))
+        return false;
+
+    return true;
+}
+
+bool CastBerserkerRageAction::isUseful()
+{
+    return (bot->HasAuraType(SPELL_AURA_MOD_FEAR) ||
+           bot->HasAuraWithMechanic(1 << MECHANIC_SLEEP) ||
+           bot->HasAuraWithMechanic(1 << MECHANIC_SAPPED))
+        && !botAI->HasAura("berserker rage", bot)
+        && CastSpellAction::isUseful();
+}
+
 bool CastSunderArmorAction::isUseful()
 {
     Aura* aura = botAI->GetAura("sunder armor", GetTarget(), false, true);

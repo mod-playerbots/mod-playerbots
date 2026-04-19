@@ -77,39 +77,101 @@ void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
 // Intended for purposes of storing and erasing timers and trackers in associative containers
 bool IsMechanicTrackerBot(PlayerbotAI* botAI, Player* bot, uint32 mapId, Player* exclude)
 {
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || member->GetMapId() != mapId ||
-                !GET_PLAYERBOT_AI(member) || !botAI->IsDps(member))
-                continue;
+    if (!botAI->IsDps(bot) || !bot->IsAlive() || bot->GetMapId() != mapId)
+        return false;
 
-            if (member != exclude)
-                return member == bot;
-        }
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || member->GetMapId() != mapId || member == exclude)
+            continue;
+
+        PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+        if (!memberAI || !memberAI->IsDps(member))
+            continue;
+
+        return member == bot;
     }
 
     return false;
 }
 
-// Return the first matching alive unit from a cell search of nearby npcs
-// More responsive than "find target," but performance cost is much higher
-// Re: using the third parameter (false by default), some units are never considered
-// to be in combat (e.g., totems)
-Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry, bool requireInCombat)
+// Requires the main tank to be alive
+// Note that IsMainTank() will return the player with the main tank flag, even if dead
+Player* GetGroupMainTank(PlayerbotAI* botAI, Player* bot)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive())
+            continue;
+
+        if (botAI->IsMainTank(member))
+            return member;
+    }
+
+    return nullptr;
+}
+
+// Returns the alive assist tank of the specified index (0 = first, 1 = second, etc.)
+// Priority: Assistants first, then Non-Assistants.
+Player* GetGroupAssistTank(PlayerbotAI* botAI, Player* bot, uint8 index)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    uint8 assistantCount = 0;
+    std::vector<Player*> nonAssistantTanks;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive())
+            continue;
+
+        if (botAI->IsAssistTank(member))
+        {
+            if (group->IsAssistant(member->GetGUID()))
+            {
+                if (assistantCount == index)
+                    return member;
+
+                assistantCount++;
+            }
+            else
+            {
+                nonAssistantTanks.push_back(member);
+            }
+        }
+    }
+
+    // If the index wasn't found among assistants, check the non-assistants that were saved
+    uint8 nonAssistantIndex = index - assistantCount;
+    if (nonAssistantIndex < nonAssistantTanks.size())
+        return nonAssistantTanks[nonAssistantIndex];
+
+    return nullptr;
+}
+
+// Return the first matching alive unit from PossibleTargetsValue within sightDistance from config
+Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
 {
     auto const& npcs =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
     for (auto const& npcGuid : npcs)
     {
         Unit* unit = botAI->GetUnit(npcGuid);
         if (unit && unit->IsAlive() && unit->GetEntry() == entry)
-        {
-            if (!requireInCombat || unit->IsInCombat())
-                return unit;
-        }
+            return unit;
     }
 
     return nullptr;

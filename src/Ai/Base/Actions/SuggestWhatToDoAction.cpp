@@ -63,7 +63,6 @@ bool SuggestWhatToDoAction::Execute(Event /*event*/)
     fnct_ptr();
 
     std::string const qualifier = "suggest what to do";
-    time_t lastSaid = AI_VALUE2(time_t, "last said", qualifier);
     botAI->GetAiObjectContext()->GetValue<time_t>("last said", qualifier)->Set(time(nullptr) + urand(1, 60));
 
     return true;
@@ -221,7 +220,7 @@ void SuggestWhatToDoAction::thunderfury()
 class FindTradeItemsVisitor : public IterateItemsVisitor
 {
 public:
-    FindTradeItemsVisitor(uint32 quality) : quality(quality), IterateItemsVisitor() {}
+    FindTradeItemsVisitor(uint32 quality) : IterateItemsVisitor(), quality(quality) {}
 
     bool Visit(Item* item) override
     {

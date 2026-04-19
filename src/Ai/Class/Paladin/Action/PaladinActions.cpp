@@ -9,6 +9,8 @@
 #include "Config.h"
 #include "Event.h"
 #include "GenericBuffUtils.h"
+#include "PaladinHelper.h"
+#include "GenericBuffUtils.h"
 #include "Group.h"
 #include "ObjectAccessor.h"
 #include "PaladinBlessingStateValue.h"
@@ -19,7 +21,6 @@
 #include "SharedDefines.h"
 
 using ai::buff::MakeAuraQualifierForBuff;
-using ai::buff::UpgradeToGroupIfAppropriate;
 
 // Readable tag to identify the group in the logs based on the leader
 static inline std::string MakeGroupTag(Group* group)
@@ -569,6 +570,39 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event /*event*/)
 bool CastSealSpellAction::isUseful() { return AI_VALUE2(bool, "combat", "self target"); }
 
 Value<Unit*>* CastTurnUndeadAction::GetTargetValue() { return context->GetValue<Unit*>("cc target", getName()); }
+
+Unit* CastHandOfFreedomOnPartyAction::GetTarget()
+{
+    bool const selfImpaired = botAI->IsMovementImpaired(bot);
+    bool const hasSelfHand = selfImpaired && ai::paladin::HasAnyPaladinHandFromCaster(bot, bot);
+
+    if (!bot->GetGroup())
+    {
+        if (selfImpaired && !hasSelfHand)
+            return bot;
+
+        return nullptr;
+    }
+
+    if (selfImpaired && !hasSelfHand)
+        return bot;
+
+    return CastBuffSpellAction::GetTarget();
+}
+
+Value<Unit*>* CastHandOfFreedomOnPartyAction::GetTargetValue()
+{
+    return context->GetValue<Unit*>("party member snared target");
+}
+
+bool CastHandOfFreedomOnPartyAction::isUseful()
+{
+    Unit* target = GetTarget();
+    if (!target)
+        return false;
+
+    return CastBuffSpellAction::isUseful() && !ai::paladin::HasAnyPaladinHandFromCaster(target, bot);
+}
 
 Unit* CastRighteousDefenseAction::GetTarget()
 {

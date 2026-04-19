@@ -66,7 +66,7 @@ public:
     static uint32 parseSlot(std::string const text);
     uint32 parseSkill(std::string const text);
 
-    static bool parseable(std::string const text);
+    static bool parseableItem(std::string const text);
 
     void eraseAllSubStr(std::string& mainStr, std::string const toErase);
 

@@ -4,7 +4,6 @@
  */
 
 #include "EnhancementShamanStrategy.h"
-
 #include "Playerbots.h"
 
 // ===== Action Node Factory =====
@@ -13,19 +12,10 @@ class EnhancementShamanStrategyActionNodeFactory : public NamedObjectFactory<Act
 public:
     EnhancementShamanStrategyActionNodeFactory()
     {
-        creators["stormstrike"] = &stormstrike;
         creators["lava lash"] = &lava_lash;
-        creators["feral spirit"] = &feral_spirit;
-        creators["lightning bolt"] = &lightning_bolt;
-        creators["earth shock"] = &earth_shock;
-        creators["flame shock"] = &flame_shock;
-        creators["shamanistic rage"] = &shamanistic_rage;
-        creators["call of the elements"] = &call_of_the_elements;
-        creators["lightning shield"] = &lightning_shield;
     }
 
 private:
-    static ActionNode* stormstrike(PlayerbotAI*) { return new ActionNode("stormstrike", {}, {}, {}); }
     static ActionNode* lava_lash([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
@@ -35,13 +25,6 @@ private:
             /*C*/ {}
         );
     }
-    static ActionNode* feral_spirit(PlayerbotAI*) { return new ActionNode("feral spirit", {}, {}, {}); }
-    static ActionNode* lightning_bolt(PlayerbotAI*) { return new ActionNode("lightning bolt", {}, {}, {}); }
-    static ActionNode* earth_shock(PlayerbotAI*) { return new ActionNode("earth shock", {}, {}, {}); }
-    static ActionNode* flame_shock(PlayerbotAI*) { return new ActionNode("flame shock", {}, {}, {}); }
-    static ActionNode* shamanistic_rage(PlayerbotAI*) { return new ActionNode("shamanistic rage", {}, {}, {}); }
-    static ActionNode* call_of_the_elements(PlayerbotAI*) { return new ActionNode("call of the elements", {}, {}, {}); }
-    static ActionNode* lightning_shield(PlayerbotAI*) { return new ActionNode("lightning shield", {}, {}, {}); }
 };
 
 // ===== Single Target Strategy =====

@@ -19,6 +19,7 @@
 #include "MeleeDruidStrategy.h"
 #include "OffhealDruidCatStrategy.h"
 #include "Playerbots.h"
+#include "DruidPullStrategy.h"
 
 class DruidStrategyFactoryInternal : public NamedObjectContext<Strategy>
 {
@@ -26,6 +27,7 @@ public:
     DruidStrategyFactoryInternal()
     {
         creators["nc"] = &DruidStrategyFactoryInternal::nc;
+        creators["pull"] = &DruidStrategyFactoryInternal::pull;
         creators["cat aoe"] = &DruidStrategyFactoryInternal::cat_aoe;
         creators["caster aoe"] = &DruidStrategyFactoryInternal::caster_aoe;
         creators["caster debuff"] = &DruidStrategyFactoryInternal::caster_debuff;
@@ -40,6 +42,7 @@ public:
 
 private:
     static Strategy* nc(PlayerbotAI* botAI) { return new GenericDruidNonCombatStrategy(botAI); }
+    static Strategy* pull(PlayerbotAI* botAI) { return new DruidPullStrategy(botAI); }
     static Strategy* cat_aoe(PlayerbotAI* botAI) { return new CatAoeDruidStrategy(botAI); }
     static Strategy* caster_aoe(PlayerbotAI* botAI) { return new CasterDruidAoeStrategy(botAI); }
     static Strategy* caster_debuff(PlayerbotAI* botAI) { return new CasterDruidDebuffStrategy(botAI); }
@@ -79,6 +82,7 @@ public:
     DruidTriggerFactoryInternal()
     {
         creators["omen of clarity"] = &DruidTriggerFactoryInternal::omen_of_clarity;
+        creators["clearcasting"] = &DruidTriggerFactoryInternal::clearcasting;
         creators["thorns"] = &DruidTriggerFactoryInternal::thorns;
         creators["thorns on party"] = &DruidTriggerFactoryInternal::thorns_on_party;
         creators["thorns on main tank"] = &DruidTriggerFactoryInternal::thorns_on_main_tank;
@@ -112,10 +116,12 @@ public:
         creators["mangle (cat)"] = &DruidTriggerFactoryInternal::mangle_cat;
         creators["ferocious bite time"] = &DruidTriggerFactoryInternal::ferocious_bite_time;
         creators["hurricane channel check"] = &DruidTriggerFactoryInternal::hurricane_channel_check;
+        creators["no healer dps strategy"] = &DruidTriggerFactoryInternal::no_healer_dps_strategy;
     }
 
 private:
     static Trigger* natures_swiftness(PlayerbotAI* botAI) { return new NaturesSwiftnessTrigger(botAI); }
+    static Trigger* clearcasting(PlayerbotAI* botAI) { return new ClearcastingTrigger(botAI); }
     static Trigger* eclipse_solar(PlayerbotAI* botAI) { return new EclipseSolarTrigger(botAI); }
     static Trigger* eclipse_lunar(PlayerbotAI* botAI) { return new EclipseLunarTrigger(botAI); }
     static Trigger* thorns(PlayerbotAI* botAI) { return new ThornsTrigger(botAI); }
@@ -149,6 +155,7 @@ private:
     static Trigger* mangle_cat(PlayerbotAI* ai) { return new MangleCatTrigger(ai); }
     static Trigger* ferocious_bite_time(PlayerbotAI* ai) { return new FerociousBiteTimeTrigger(ai); }
     static Trigger* hurricane_channel_check(PlayerbotAI* ai) { return new HurricaneChannelCheckTrigger(ai); }
+    static Trigger* no_healer_dps_strategy(PlayerbotAI* ai) { return new NoHealerDpsStrategyTrigger(ai); }
 };
 
 class DruidAiObjectContextInternal : public NamedObjectContext<Action>
@@ -170,11 +177,18 @@ public:
         creators["aquatic form"] = &DruidAiObjectContextInternal::aquatic_form;
         creators["caster form"] = &DruidAiObjectContextInternal::caster_form;
         creators["cancel tree form"] = &DruidAiObjectContextInternal::cancel_tree_form;
+        creators["cancel travel form"] = &DruidAiObjectContextInternal::cancel_travel_form;
+        creators["cancel bear form"] = &DruidAiObjectContextInternal::cancel_bear_form;
+        creators["cancel dire bear form"] = &DruidAiObjectContextInternal::cancel_dire_bear_form;
+        creators["cancel cat form"] = &DruidAiObjectContextInternal::cancel_cat_form;
+        creators["cancel moonkin form"] = &DruidAiObjectContextInternal::cancel_moonkin_form;
+        creators["cancel aquatic form"] = &DruidAiObjectContextInternal::cancel_aquatic_form;
         creators["mangle (bear)"] = &DruidAiObjectContextInternal::mangle_bear;
         creators["maul"] = &DruidAiObjectContextInternal::maul;
         creators["bash"] = &DruidAiObjectContextInternal::bash;
         creators["swipe"] = &DruidAiObjectContextInternal::swipe;
         creators["growl"] = &DruidAiObjectContextInternal::growl;
+        creators["challenging roar"] = &DruidAiObjectContextInternal::challenging_roar;
         creators["demoralizing roar"] = &DruidAiObjectContextInternal::demoralizing_roar;
         creators["hibernate"] = &DruidAiObjectContextInternal::hibernate;
         creators["entangling roots"] = &DruidAiObjectContextInternal::entangling_roots;
@@ -200,6 +214,7 @@ public:
         creators["thorns"] = &DruidAiObjectContextInternal::thorns;
         creators["thorns on party"] = &DruidAiObjectContextInternal::thorns_on_party;
         creators["thorns on main tank"] = &DruidAiObjectContextInternal::thorns_on_main_tank;
+        creators["lifebloom on main tank"] = &DruidAiObjectContextInternal::lifebloom_on_main_tank;
         creators["cure poison"] = &DruidAiObjectContextInternal::cure_poison;
         creators["cure poison on party"] = &DruidAiObjectContextInternal::cure_poison_on_party;
         creators["abolish poison"] = &DruidAiObjectContextInternal::abolish_poison;
@@ -258,11 +273,18 @@ private:
     static Action* aquatic_form(PlayerbotAI* botAI) { return new CastAquaticFormAction(botAI); }
     static Action* caster_form(PlayerbotAI* botAI) { return new CastCasterFormAction(botAI); }
     static Action* cancel_tree_form(PlayerbotAI* botAI) { return new CastCancelTreeFormAction(botAI); }
+    static Action* cancel_travel_form(PlayerbotAI* botAI) { return new CastCancelTravelFormAction(botAI); }
+    static Action* cancel_bear_form(PlayerbotAI* botAI) { return new CastCancelBearFormAction(botAI); }
+    static Action* cancel_dire_bear_form(PlayerbotAI* botAI) { return new CastCancelDireBearFormAction(botAI); }
+    static Action* cancel_cat_form(PlayerbotAI* botAI) { return new CastCancelCatFormAction(botAI); }
+    static Action* cancel_moonkin_form(PlayerbotAI* botAI) { return new CastCancelMoonkinFormAction(botAI); }
+    static Action* cancel_aquatic_form(PlayerbotAI* botAI) { return new CastCancelAquaticFormAction(botAI); }
     static Action* mangle_bear(PlayerbotAI* botAI) { return new CastMangleBearAction(botAI); }
     static Action* maul(PlayerbotAI* botAI) { return new CastMaulAction(botAI); }
     static Action* bash(PlayerbotAI* botAI) { return new CastBashAction(botAI); }
     static Action* swipe(PlayerbotAI* botAI) { return new CastSwipeAction(botAI); }
     static Action* growl(PlayerbotAI* botAI) { return new CastGrowlAction(botAI); }
+    static Action* challenging_roar(PlayerbotAI* botAI) { return new CastChallengingRoarAction(botAI); }
     static Action* demoralizing_roar(PlayerbotAI* botAI) { return new CastDemoralizingRoarAction(botAI); }
     static Action* moonkin_form(PlayerbotAI* botAI) { return new CastMoonkinFormAction(botAI); }
     static Action* hibernate(PlayerbotAI* botAI) { return new CastHibernateAction(botAI); }
@@ -288,6 +310,7 @@ private:
     static Action* thorns(PlayerbotAI* botAI) { return new CastThornsAction(botAI); }
     static Action* thorns_on_party(PlayerbotAI* botAI) { return new CastThornsOnPartyAction(botAI); }
     static Action* thorns_on_main_tank(PlayerbotAI* botAI) { return new CastThornsOnMainTankAction(botAI); }
+    static Action* lifebloom_on_main_tank(PlayerbotAI* botAI) { return new CastLifebloomOnMainTankAction(botAI); }
     static Action* cure_poison(PlayerbotAI* botAI) { return new CastCurePoisonAction(botAI); }
     static Action* cure_poison_on_party(PlayerbotAI* botAI) { return new CastCurePoisonOnPartyAction(botAI); }
     static Action* abolish_poison(PlayerbotAI* botAI) { return new CastAbolishPoisonAction(botAI); }

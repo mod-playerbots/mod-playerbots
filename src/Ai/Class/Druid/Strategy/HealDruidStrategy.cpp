@@ -33,6 +33,10 @@ void HealDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericDruidStrategy::InitTriggers(triggers);
 
+    // no healer dps strategy
+    triggers.push_back(new TriggerNode("no healer dps strategy",
+                                       { NextAction("tree form", ACTION_DEFAULT) }));
+
     triggers.push_back(new TriggerNode(
         "party member to heal out of spell range",
         { NextAction("reach party member to heal", ACTION_CRITICAL_HEAL + 9) }));
@@ -51,6 +55,9 @@ void HealDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(
         new TriggerNode("party member critical health",
                         { NextAction("nature's swiftness", ACTION_CRITICAL_HEAL + 4) }));
+
+    triggers.push_back(new TriggerNode("clearcasting",
+        { NextAction("lifebloom on main tank", ACTION_CRITICAL_HEAL - 1) }));
 
     triggers.push_back(new TriggerNode(
         "group heal setting",

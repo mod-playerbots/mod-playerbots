@@ -35,7 +35,7 @@ private:
     static ActionNode* ice_lance(PlayerbotAI*) { return new ActionNode("ice lance", {}, {}, {}); }
     static ActionNode* fire_blast(PlayerbotAI*) { return new ActionNode("fire blast", {}, {}, {}); }
     static ActionNode* fireball(PlayerbotAI*) { return new ActionNode("fireball", {}, {}, {}); }
-    static ActionNode* frostfire_bolt(PlayerbotAI*) { return new ActionNode("frostfire bolt", {}, {}, {}); }
+    static ActionNode* frostfire_bolt(PlayerbotAI*) { return new ActionNode("frostfire bolt", {}, { NextAction("fireball") }, {}); }
 };
 
 // ===== Single Target Strategy =====

@@ -70,6 +70,7 @@ public:
     void addStrategiesNoInit(std::string first, ...);
     bool removeStrategy(std::string const name, bool init = true);
     bool HasStrategy(std::string const name);
+    Strategy* GetStrategy(std::string const name);
     void removeAllStrategies();
     void toggleStrategy(std::string const name);
     std::string const ListStrategies();

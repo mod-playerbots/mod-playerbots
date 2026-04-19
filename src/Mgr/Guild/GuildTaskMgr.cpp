@@ -1070,7 +1070,7 @@ void GuildTaskMgr::CheckKillTaskInternal(Player* player, Unit* victim)
     if (!victim->IsCreature())
         return;
 
-    Creature* creature = reinterpret_cast<Creature*>(victim);
+    Creature* creature = dynamic_cast<Creature*>(victim);
     if (!creature)
         return;
 
