@@ -2010,7 +2010,7 @@ AiPlayerbot.RandomClassSpecIndex.11.3 = 3
 #
 #
 
-# NOTE: Playerbots DB is now configured in worldserver.conf
+# NOTE: Playerbots DB is now configured in worldserver.conf.
 # to be managed by the core DBLoader/DBUpdater.
 #
 
