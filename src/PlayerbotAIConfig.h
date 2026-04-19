@@ -56,7 +56,8 @@ enum NewRpgStatus : int
     RPG_TRAVEL_FLIGHT = 6,
     // Taking a break
     RPG_REST = 7,
-    RPG_STATUS_END = 8
+    RPG_OUTDOOR_PVP = 8,
+    RPG_STATUS_END = 9
 };
 
 #define MAX_SPECNO 20
@@ -98,6 +99,8 @@ public:
     std::set<uint32> aoeAvoidSpellWhitelist;
     bool tellWhenAvoidAoe;
     std::set<uint32> disallowedGameObjects;
+    std::set<uint32> attunementQuests;
+    std::set<uint32> unobtainableItems;
 
     uint32 openGoSpell;
     bool randomBotAutologin;
@@ -149,6 +152,7 @@ public:
 
     // Professions
     bool enableFishingWithMaster;
+    uint32 classMatchingProfessionChance;
     float fishingDistanceFromMaster, fishingDistance, endFishingWithMaster;
 
     // chat
@@ -332,6 +336,7 @@ public:
     bool disableDeathKnightLogin;
     bool limitTalentsExpansion;
     uint32 botActiveAlone;
+    uint32 BotActiveAloneDurationSeconds;
     uint32 BotActiveAloneForceWhenInRadius;
     bool BotActiveAloneForceWhenInZone;
     bool BotActiveAloneForceWhenInMap;
@@ -344,7 +349,10 @@ public:
     uint32 botActiveAloneSmartScaleWhenMaxLevel;
 
     bool freeMethodLoot;
-    int32 lootRollLevel;
+    int32 lootNeedRollLevel;
+    bool lootGreedRollLevel;
+    bool lootRollRecipe;
+    bool lootRollDisenchant;
     std::string autoPickReward;
     bool autoEquipUpgradeLoot;
     float equipUpgradeThreshold;
@@ -352,7 +360,7 @@ public:
     bool syncQuestWithPlayer;
     bool syncQuestForPlayer;
     bool dropObsoleteQuests;
-    std::string autoTrainSpells;
+    bool allowLearnTrainerSpells;
     bool autoPickTalents;
     bool autoUpgradeEquip;
     int32 hunterWolfPet;
@@ -423,10 +431,10 @@ public:
     uint32 useFastFlyMountAtMinLevel;
 
     // stagger flightpath takeoff
-    uint32 delayMin;
-    uint32 delayMax;
-    uint32 gapMs;
-    uint32 gapJitterMs;
+    uint32 botTaxiDelayMin;
+    uint32 botTaxiDelayMax;
+    uint32 botTaxiGapMs;
+    uint32 botTaxiGapJitterMs;
 
     std::string const GetTimestampStr();
     bool hasLog(std::string const fileName)

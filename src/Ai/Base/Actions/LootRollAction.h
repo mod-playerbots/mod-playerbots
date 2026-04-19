@@ -22,7 +22,7 @@ public:
     bool Execute(Event event) override;
 
 protected:
-    RollVote CalculateRollVote(ItemTemplate const* proto);
+    RollVote CalculateRollVote(ItemTemplate const* proto, ItemUsage usage = ITEM_USAGE_NONE);
 };
 
 bool CanBotUseToken(ItemTemplate const* proto, Player* bot);

@@ -24,8 +24,6 @@
 // LK global variables
 namespace
 {
-uint32 g_lastPlagueTime = 0;
-bool g_plagueAllowedToCure = false;
 std::map<ObjectGuid, uint32> g_plagueTimes;
 std::map<ObjectGuid, bool> g_allowCure;
 std::mutex g_plagueMutex;  // Lock before accessing shared variables
@@ -649,7 +647,7 @@ float IccSindragosaMultiplier::GetValue(Action* action)
             dynamic_cast<CastWhirlwindAction*>(action) || dynamic_cast<CastMindSearAction*>(action) ||
             dynamic_cast<CastMagmaTotemAction*>(action) || dynamic_cast<CastConsecrationAction*>(action) ||
             dynamic_cast<CastFlamestrikeAction*>(action) || dynamic_cast<CastExplosiveTrapAction*>(action) ||
-            dynamic_cast<CastExplosiveShotAction*>(action))
+            dynamic_cast<CastExplosiveShotBaseAction*>(action))
             return 0.0f;
     }
 
@@ -776,7 +774,7 @@ float IccLichKingAddsMultiplier::GetValue(Action* action)
             dynamic_cast<CastStarfallAction*>(action) || dynamic_cast<FanOfKnivesAction*>(action) ||
             dynamic_cast<CastWhirlwindAction*>(action) || dynamic_cast<CastMindSearAction*>(action) ||
             dynamic_cast<CastMagmaTotemAction*>(action) || dynamic_cast<CastFlamestrikeAction*>(action) ||
-            dynamic_cast<CastExplosiveTrapAction*>(action) || dynamic_cast<CastExplosiveShotAction*>(action))
+            dynamic_cast<CastExplosiveTrapAction*>(action) || dynamic_cast<CastExplosiveShotBaseAction*>(action))
             return 0.0f;
     }
 

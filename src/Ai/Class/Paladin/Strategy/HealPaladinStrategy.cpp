@@ -30,7 +30,7 @@ void HealPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "seal",
             {
-                NextAction("seal of wisdom", ACTION_HIGH)
+                NextAction("seal of wisdom", ACTION_HIGH),
             }
         )
     );

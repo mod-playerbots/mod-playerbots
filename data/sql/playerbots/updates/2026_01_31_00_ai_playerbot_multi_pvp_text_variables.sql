@@ -4,15 +4,19 @@
 -- zhTW, esES, esMX, ruRU)
 -- #########################################################
 
+DELETE FROM ai_playerbot_texts WHERE name IN ('pvp_currency', 'pvp_arena_team', 'pvp_no_arena_team');
+DELETE FROM ai_playerbot_texts_chance WHERE name IN ('pvp_currency', 'pvp_arena_team', 'pvp_no_arena_team');
+
 -- ---------------------------------------------------------
 -- pvp_currency
 -- [PVP] Arena points: %arena_points | Honor Points: %honor_points
 -- ---------------------------------------------------------
 INSERT INTO `ai_playerbot_texts`
-    (`name`, `text`, `say_type`, `reply_type`,
+    (`id`, `name`, `text`, `say_type`, `reply_type`,
      `text_loc1`, `text_loc2`, `text_loc3`, `text_loc4`,
      `text_loc5`, `text_loc6`, `text_loc7`, `text_loc8`)
-SELECT
+VALUES (
+	1737,
     'pvp_currency',
     '[PVP] Arena points: %arena_points | Honor Points: %honor_points',
     0, 0,
@@ -31,20 +35,20 @@ SELECT
     -- esMX
     '[PVP] Puntos de arena: %arena_points | Puntos de honor: %honor_points',
     -- ruRU
-    '[PVP] Очки арены: %arena_points | Очки чести: %honor_points'
-WHERE NOT EXISTS (
-    SELECT 1 FROM `ai_playerbot_texts` WHERE `name` = 'pvp_currency'
-);
+    '[PVP] Очки арены: %arena_points | Очки чести: %honor_points');
+    
+INSERT INTO ai_playerbot_texts_chance (name, probability) VALUES ('pvp_currency',   100);
 
 -- ---------------------------------------------------------
 -- pvp_arena_team
 -- [PVP] %bracket: <%team_name> (rating %team_rating)
 -- ---------------------------------------------------------
 INSERT INTO `ai_playerbot_texts`
-    (`name`, `text`, `say_type`, `reply_type`,
+    (`id`, `name`, `text`, `say_type`, `reply_type`,
      `text_loc1`, `text_loc2`, `text_loc3`, `text_loc4`,
      `text_loc5`, `text_loc6`, `text_loc7`, `text_loc8`)
-SELECT
+VALUES (
+	1738,
     'pvp_arena_team',
     '[PVP] %bracket: <%team_name> (rating %team_rating)',
     0, 0,
@@ -63,20 +67,20 @@ SELECT
     -- esMX
     '[PVP] %bracket: <%team_name> (índice %team_rating)',
     -- ruRU
-    '[PVP] %bracket: <%team_name> (рейтинг %team_rating)'
-WHERE NOT EXISTS (
-    SELECT 1 FROM `ai_playerbot_texts` WHERE `name` = 'pvp_arena_team'
-);
+    '[PVP] %bracket: <%team_name> (рейтинг %team_rating)');
+    
+INSERT INTO ai_playerbot_texts_chance (name, probability) VALUES ('pvp_arena_team',   100);
 
 -- ---------------------------------------------------------
 -- pvp_no_arena_team
 -- [PVP] I have no Arena Team.
 -- ---------------------------------------------------------
 INSERT INTO `ai_playerbot_texts`
-    (`name`, `text`, `say_type`, `reply_type`,
+    (`id`, `name`, `text`, `say_type`, `reply_type`,
      `text_loc1`, `text_loc2`, `text_loc3`, `text_loc4`,
      `text_loc5`, `text_loc6`, `text_loc7`, `text_loc8`)
-SELECT
+VALUES (
+	1739,
     'pvp_no_arena_team',
     '[PVP] I have no Arena Team.',
     0, 0,
@@ -95,7 +99,6 @@ SELECT
     -- esMX
     '[PVP] No tengo equipo de arena.',
     -- ruRU
-    '[PVP] У меня нет команды арены.'
-WHERE NOT EXISTS (
-    SELECT 1 FROM `ai_playerbot_texts` WHERE `name` = 'pvp_no_arena_team'
-);
+    '[PVP] У меня нет команды арены.');
+    
+INSERT INTO ai_playerbot_texts_chance (name, probability) VALUES ('pvp_no_arena_team',   100);

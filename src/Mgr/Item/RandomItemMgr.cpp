@@ -1832,7 +1832,6 @@ std::vector<uint32> RandomItemMgr::GetUpgradeList(Player* player, std::string sp
     // get old item statWeight
     uint32 oldStatWeight = 0;
     uint32 specId = 0;
-    uint32 closestUpgrade = 0;
     uint32 closestUpgradeWeight = 0;
     std::vector<uint32> classspecs;
 
@@ -1933,7 +1932,6 @@ std::vector<uint32> RandomItemMgr::GetUpgradeList(Player* player, std::string sp
         // pick closest upgrade
         if (info.weights[specId] > closestUpgradeWeight)
         {
-            closestUpgrade = info.itemId;
             closestUpgradeWeight = info.weights[specId];
         }
     }
@@ -2257,10 +2255,7 @@ void RandomItemMgr::BuildEquipCacheNew()
             continue;
         }
 
-        // Unobtainable or unusable items
-        if (itemId == 12468 || // Chilton Wand
-            itemId == 22784 || // Sunwell Orb
-            itemId == 46978) // Totem of the Earthen Ring
+        if (sPlayerbotAIConfig.unobtainableItems.find(itemId) != sPlayerbotAIConfig.unobtainableItems.end())
             continue;
 
         equipCacheNew[proto->RequiredLevel][proto->InventoryType].push_back(itemId);

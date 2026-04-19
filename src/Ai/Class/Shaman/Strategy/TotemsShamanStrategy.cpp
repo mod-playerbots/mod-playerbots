@@ -75,13 +75,9 @@ void TotemOfWrathStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // If the bot hasn't learned Totem of Wrath yet, set Flametongue Totem instead.
     Player* bot = botAI->GetBot();
     if (bot->HasSpell(30706))
-    {
         triggers.push_back(new TriggerNode("set totem of wrath", { NextAction("set totem of wrath", 60.0f) }));
-    }
     else if (bot->HasSpell(8227))
-    {
         triggers.push_back(new TriggerNode("set flametongue totem", { NextAction("set flametongue totem", 60.0f) }));
-    }
     triggers.push_back(new TriggerNode("no fire totem", { NextAction("totem of wrath", 55.0f) }));
 }
 
@@ -117,13 +113,9 @@ void CleansingTotemStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // If the bot hasn't learned Cleansing Totem yet, set Mana Spring Totem instead.
     Player* bot = botAI->GetBot();
     if (bot->HasSpell(8170))
-    {
         triggers.push_back(new TriggerNode("set cleansing totem", { NextAction("set cleansing totem", 60.0f) }));
-    }
     else if (bot->HasSpell(5675))
-    {
         triggers.push_back(new TriggerNode("set mana spring totem", { NextAction("set mana spring totem", 60.0f) }));
-    }
     triggers.push_back(new TriggerNode("no water totem", { NextAction("cleansing totem", 55.0f) }));
 }
 
@@ -143,15 +135,10 @@ void WrathOfAirTotemStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // If the bot hasn't learned Wrath of Air Totem yet, set Grounding Totem instead.
     Player* bot = botAI->GetBot();
     if (bot->HasSpell(3738))
-    {
         triggers.push_back(new TriggerNode("set wrath of air totem", { NextAction("set wrath of air totem", 60.0f) }));
-    }
     else if (bot->HasSpell(8177))
-    {
         triggers.push_back(new TriggerNode("set grounding totem", { NextAction("set grounding totem", 60.0f) }));
-    }
-    triggers.push_back(
-        new TriggerNode("no air totem", { NextAction("wrath of air totem", 55.0f) }));
+    triggers.push_back( new TriggerNode("no air totem", { NextAction("wrath of air totem", 55.0f) }));
 }
 
 WindfuryTotemStrategy::WindfuryTotemStrategy(PlayerbotAI* botAI) : GenericShamanStrategy(botAI) {}
@@ -161,13 +148,9 @@ void WindfuryTotemStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // If the bot hasn't learned Windfury Totem yet, set Grounding Totem instead.
     Player* bot = botAI->GetBot();
     if (bot->HasSpell(8512))
-    {
         triggers.push_back(new TriggerNode("set windfury totem", { NextAction("set windfury totem", 60.0f) }));
-    }
     else if (bot->HasSpell(8177))
-    {
         triggers.push_back(new TriggerNode("set grounding totem", { NextAction("set grounding totem", 60.0f) }));
-    }
     triggers.push_back(new TriggerNode("no air totem", { NextAction("windfury totem", 55.0f) }));
 }
 

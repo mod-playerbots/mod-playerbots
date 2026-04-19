@@ -144,8 +144,6 @@ UnitPosition MultiLineUnitPlacer::Place(FormationUnit* unit, uint32 index, uint3
     uint32 lineNo = index / 6;
     uint32 indexInLine = index % 6;
     uint32 lineSize = std::max(count - lineNo * 6, uint32(6));
-    float x = cos(orientation) * sPlayerbotAIConfig.followDistance * lineNo;
-    float y = sin(orientation) * sPlayerbotAIConfig.followDistance * lineNo;
     return placer.Place(unit, indexInLine, lineSize);
 }
 
@@ -160,17 +158,13 @@ UnitPosition SingleLineUnitPlacer::Place(FormationUnit* unit, uint32 index, uint
 void FormationSlot::Move(float dx, float dy)
 {
     for (FormationUnit* unit : units)
-    {
         unit->SetLocation(unit->GetX() + dx, unit->GetY() + dy);
-    }
 }
 
 FormationSlot::~FormationSlot()
 {
     for (FormationUnit* unit : units)
-    {
         delete unit;
-    }
 
     units.clear();
 }

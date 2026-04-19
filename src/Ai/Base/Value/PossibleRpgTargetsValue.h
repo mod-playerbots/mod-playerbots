@@ -35,6 +35,8 @@ public:
 protected:
     void FindUnits(std::list<Unit*>& targets) override;
     bool AcceptUnit(Unit* unit) override;
+private:
+    float defaultRange;
 };
 
 class PossibleNewRpgGameObjectsValue : public ObjectGuidListCalculatedValue

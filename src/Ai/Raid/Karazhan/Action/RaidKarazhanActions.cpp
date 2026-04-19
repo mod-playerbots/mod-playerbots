@@ -116,9 +116,9 @@ bool AttumenTheHuntsmanStackBehindAction::Execute(Event /*event*/)
     float rearX = attumenMounted->GetPositionX() + std::cos(orientation) * distanceBehind;
     float rearY = attumenMounted->GetPositionY() + std::sin(orientation) * distanceBehind;
 
-    if (bot->GetExactDist2d(rearX, rearY) > 1.0f)
+    if (bot->GetDistance2d(rearX, rearY) > 1.0f)
     {
-        return MoveTo(KARAZHAN_MAP_ID, rearX, rearY, attumenMounted->GetPositionZ(), false, false, false, false,
+        return MoveTo(KARAZHAN_MAP_ID, rearX, rearY, bot->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
@@ -870,7 +870,6 @@ bool NetherspiteAvoidBeamAndVoidZoneAction::Execute(Event /*event*/)
     if (!netherspite)
         return false;
 
-    auto [redBlocker, greenBlocker, blueBlocker] = GetCurrentBeamBlockers(botAI, bot);
     std::vector<Unit*> voidZones = GetAllVoidZones(botAI, bot);
 
     bool nearVoidZone = !IsSafePosition(bot->GetPositionX(), bot->GetPositionY(),
@@ -1179,7 +1178,7 @@ bool PrinceMalchezaarNonTankAvoidInfernalAction::Execute(Event /*event*/)
             bot->AttackStop();
             bot->InterruptNonMeleeSpells(true);
             return MoveTo(KARAZHAN_MAP_ID, bestDestX, bestDestY, bestDestZ, false, false, false, false,
-                          MovementPriority::MOVEMENT_FORCED, true, false);
+                          MovementPriority::MOVEMENT_COMBAT, true, false);
         }
     }
 
@@ -1245,7 +1244,7 @@ bool PrinceMalchezaarMainTankMovementAction::Execute(Event /*event*/)
         {
             bot->AttackStop();
             return MoveTo(KARAZHAN_MAP_ID, bestDestX, bestDestY, bestDestZ, false, false, false, false,
-                          MovementPriority::MOVEMENT_FORCED, true, false);
+                          MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
 

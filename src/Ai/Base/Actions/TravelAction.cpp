@@ -134,8 +134,6 @@ bool MoveFromDarkPortalAction::Execute(Event /*event*/)
 
     if (bot->GetTeamId() == TEAM_ALLIANCE)
         return MoveTo(530, -319.261f, 1027.213, 54.172638f, false, true);
-    else
-        return MoveTo(530, -180.444f, 1027.947, 54.181538f, false, true);
 
-    return false;
+    return MoveTo(530, -180.444f, 1027.947, 54.181538f, false, true);
 }

@@ -7,16 +7,16 @@
 
 #include "AiFactory.h"
 #include "Event.h"
+#include "PaladinHelper.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
 #include "../../../../../src/server/scripts/Spells/spell_generic.cpp"
-#include "GenericBuffUtils.h"
+#include "Ai/Base/Util/GenericBuffUtils.h"
 #include "Group.h"
 #include "ObjectAccessor.h"
 
 using ai::buff::MakeAuraQualifierForBuff;
-using ai::buff::UpgradeToGroupIfAppropriate;
 
 // Helper : detect tank role on the target (player bot or not) return true if spec is tank or if the bot have tank strategies (bear/tank/tank face).
 static inline bool IsTankRole(Player* p)
@@ -51,11 +51,6 @@ static inline bool IsOnlyPaladinInGroup(Player* bot)
         if (p->getClass() == CLASS_PALADIN) ++pals;
     }
     return pals == 1u;
-}
-
-static inline bool GroupHasTankOfClass(Group* g, uint8 classId)
-{
-    return GroupHasTankOfClass(g, static_cast<Classes>(classId));
 }
 
 inline std::string const GetActualBlessingOfMight(Unit* target)
@@ -474,13 +469,45 @@ bool CastSealSpellAction::isUseful() { return AI_VALUE2(bool, "combat", "self ta
 
 Value<Unit*>* CastTurnUndeadAction::GetTargetValue() { return context->GetValue<Unit*>("cc target", getName()); }
 
+Unit* CastHandOfFreedomOnPartyAction::GetTarget()
+{
+    bool const selfImpaired = botAI->IsMovementImpaired(bot);
+    bool const hasSelfHand = selfImpaired && ai::paladin::HasAnyPaladinHandFromCaster(bot, bot);
+
+    if (!bot->GetGroup())
+    {
+        if (selfImpaired && !hasSelfHand)
+            return bot;
+
+        return nullptr;
+    }
+
+    if (selfImpaired && !hasSelfHand)
+        return bot;
+
+    return CastBuffSpellAction::GetTarget();
+}
+
+Value<Unit*>* CastHandOfFreedomOnPartyAction::GetTargetValue()
+{
+    return context->GetValue<Unit*>("party member snared target");
+}
+
+bool CastHandOfFreedomOnPartyAction::isUseful()
+{
+    Unit* target = GetTarget();
+    if (!target)
+        return false;
+
+    return CastBuffSpellAction::isUseful() && !ai::paladin::HasAnyPaladinHandFromCaster(target, bot);
+}
+
 Unit* CastRighteousDefenseAction::GetTarget()
 {
     Unit* current_target = AI_VALUE(Unit*, "current target");
     if (!current_target)
-    {
-        return NULL;
-    }
+        return nullptr;
+
     return current_target->GetVictim();
 }
 
