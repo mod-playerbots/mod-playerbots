@@ -557,48 +557,72 @@ bool NewRpgGoCityAction::Execute(Event /*event*/)
     if (bot->GetDistance(auctioneer) > INTERACTION_DISTANCE)
         return MoveWorldObjectTo(auctioneer->GetGUID());
 
-    // At auctioneer. Consume one sell entry per tick, then one buy slot per
-    // tick. AhSellAction receives the target entry via Event param and handles
-    // the state transitions (cache lookup, query, post, cooldown). The entry
-    // stays at the back of sellItems only while it's PendingCheck — every
-    // other outcome (posted, cooling down, inventory gone, policy reject)
-    // pops it so the queue always makes forward progress.
+    // At auctioneer. One action per tick, sells first:
+    //   - AhSellAction scans the live sellList, picks the first actionable
+    //     entry (Complete → post; Idle cache-hit → post; Idle cache-miss →
+    //     fire query + PendingCheck). PendingCheck entries are skipped by
+    //     AhSellAction until their 10s timeout flips them to Failed.
     auto& sellList = AI_VALUE(std::unordered_map<uint32, AhItemState>&, "ah sell list");
+    time_t now = time(nullptr);
 
-    while (!data.sellItems.empty())
+    // Drop Failed entries as we go — reconcile will re-insert them as Idle
+    // from inventory next pass if the item is still bag-side. First non-Failed
+    // entry hands off to AhSellAction and ends this tick.
+    for (auto it = sellList.begin(); it != sellList.end(); )
     {
-        uint32 entry = data.sellItems.back();
-        auto it = sellList.find(entry);
-
-        // Item gone from inventory or got reclassified as a buy-intent entry
-        // by AhBuyAction — skip without involving the sell logic.
-        if (it == sellList.end() || it->second.intent == AhIntent::Buy)
+        if (it->second.status == AhStatus::Failed)
         {
-            data.sellItems.pop_back();
+            it = sellList.erase(it);
             continue;
         }
-
-        botAI->DoSpecificAction("ah sell", Event("new rpg go city", std::to_string(entry)), true);
-
-        // Re-lookup — AhSellAction may have mutated state or (via PostAuctionSell)
-        // left the entry in Idle. Keep only while actively waiting on AH.
-        auto newIt = sellList.find(entry);
-        if (newIt != sellList.end() && newIt->second.status == AhStatus::PendingCheck)
-            return true;
-
-        data.sellItems.pop_back();
+        botAI->DoSpecificAction("ah sell", Event(), true);
         return true;
     }
 
-    // Sells done — drive buy-side by sending one slot query per tick.
-    if (!data.buySlots.empty())
+    // Advance state and fire one query per Idle slot. Stuck PendingCheck
+    // (>10s) is cooled down to recover from lost response packets.
+    auto& buyList = AI_VALUE(std::unordered_map<uint8, AhItemState>&, "ah buy list");
+    bool pendingInFlight = false;
+    for (auto& buyKeyValue : buyList)
     {
-        uint8 slot = data.buySlots.back();
-        data.buySlots.pop_back();
-        SendAhSearchForSlot(auctioneer, slot);
-        return true;
+        AhItemState& ahItemState = buyKeyValue.second;
+
+        if (ahItemState.status == AhStatus::PendingCheck)
+        {
+            if (now - ahItemState.changedAt > AH_PENDING_CHECK_TIMEOUT_SECONDS)
+            {
+                ahItemState.status = AhStatus::Failed;
+                ahItemState.changedAt = now;
+                ahItemState.retryAfter = now + AH_BUY_SLOT_COOLDOWN_SECONDS;
+            }
+            else
+                pendingInFlight = true;
+
+            continue;
+        }
+        //If, somehow, the bot is still here after an hour lets check again.
+        if (ahItemState.status == AhStatus::Failed && now >= ahItemState.retryAfter)
+        {
+            ahItemState.status = AhStatus::Idle;
+            ahItemState.retryAfter = 0;
+        }
+
+        if (ahItemState.status == AhStatus::Idle)
+        {
+            uint8 targetSlot = buyKeyValue.first;
+            SendAhSearchForSlot(auctioneer, targetSlot);
+            AhItemState& st = buyList[targetSlot];
+            st.status = AhStatus::PendingCheck;
+            st.changedAt = now;
+            return true;
+        }
     }
-    //Nothing left to do. Reset.
+
+    if (pendingInFlight)
+        return true;
+
+    // Nothing actionable left this trip. Return to Idle and let the usual
+    // RPG selection pick up again (persistent Failed cooldowns keep cooling).
     botAI->rpgInfo.ChangeToIdle();
     return true;
 }

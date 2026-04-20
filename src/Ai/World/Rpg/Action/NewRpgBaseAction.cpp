@@ -12,6 +12,7 @@
 #include "NewRpgInfo.h"
 #include "NewRpgStrategy.h"
 #include "Object.h"
+#include "PlayerbotAuctionHouseUtil.h"
 #include "ObjectAccessor.h"
 #include "OutdoorPvPMgr.h"
 #include "ObjectDefines.h"
@@ -1163,9 +1164,11 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
         }
         case RPG_GO_CITY:
         {
-            std::vector<uint32> sellItems = AI_VALUE(std::vector<uint32>, "ah sell list");
-            std::vector<uint8> buySlots = AI_VALUE(std::vector<uint8>, "ah buy list");
-            if (sellItems.empty() && buySlots.empty())
+            auto& sellList = AI_VALUE(std::unordered_map<uint32, AhItemState>&, "ah sell list");
+            auto& buyList = AI_VALUE(std::unordered_map<uint8, AhItemState>&, "ah buy list");
+
+            bool needAh = !sellList.empty() || !buyList.empty();
+            if (!needAh)
             {
                 if (AreaTableEntry const* zone = sAreaTableStore.LookupEntry(bot->GetZoneId()))
                 {
@@ -1176,8 +1179,7 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
 
             WorldPosition pos;
             ObjectGuid targetNpc;
-
-            if (!sellItems.empty() || !buySlots.empty())
+            if (needAh)
             {
                 uint32 entry = 0;
                 if (SelectAuctionHouseTarget(pos, entry))
@@ -1198,8 +1200,9 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
             if (pos == WorldPosition())
                 return false;
 
-            LOG_DEBUG("playerbots", "[New RPG] Bot {} -> GO_CITY sell={} buy={}", bot->GetName(), sellItems.size(), buySlots.size());
-            botAI->rpgInfo.ChangeToGoCity(pos, targetNpc, std::move(sellItems), std::move(buySlots));
+            LOG_DEBUG("playerbots", "[New RPG] Bot {} -> GO_CITY sell={} buy={}",
+                      bot->GetName(), sellList.size(), buyList.size());
+            botAI->rpgInfo.ChangeToGoCity(pos, targetNpc);
             return true;
         }
         case RPG_IDLE:

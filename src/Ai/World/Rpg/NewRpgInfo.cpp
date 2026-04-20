@@ -10,11 +10,10 @@ void NewRpgInfo::ChangeToGoGrind(WorldPosition pos)
     data = GoGrind{pos};
 }
 
-void NewRpgInfo::ChangeToGoCity(WorldPosition pos, ObjectGuid targetNpc,
-                                std::vector<uint32> sellItems, std::vector<uint8> buySlots)
+void NewRpgInfo::ChangeToGoCity(WorldPosition pos, ObjectGuid targetNpc)
 {
     startT = getMSTime();
-    data = GoCity{pos, targetNpc, std::move(sellItems), std::move(buySlots)};
+    data = GoCity{pos, targetNpc};
 }
 
 void NewRpgInfo::ChangeToGoCamp(WorldPosition pos)
@@ -180,7 +179,6 @@ std::string NewRpgInfo::ToString()
                 << arg.pos.GetPositionY() << " " << arg.pos.GetPositionZ();
             if (arg.targetNpc)
                 out << "\ntargetNpc: " << arg.targetNpc.GetEntry();
-            out << "\nbuySlots: " << arg.buySlots.size();
         }
         else if constexpr (std::is_same_v<T, OutdoorPvP>)
         {
