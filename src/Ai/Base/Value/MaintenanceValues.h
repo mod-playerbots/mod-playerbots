@@ -6,8 +6,10 @@
 #ifndef _PLAYERBOT_MAINTANCEVALUE_H
 #define _PLAYERBOT_MAINTANCEVALUE_H
 
+#include "PlayerbotAuctionHouseUtil.h"
 #include "Value.h"
 
+#include <unordered_map>
 #include <vector>
 
 class PlayerbotAI;
@@ -60,19 +62,22 @@ public:
     bool Calculate() override;
 };
 
-class AhSellListValue : public CalculatedValue<std::vector<uint32>>
+class AhSellListValue : public ManualSetValue<std::unordered_map<uint32, AhItemState>&>
 {
 public:
     AhSellListValue(PlayerbotAI* botAI)
-        : CalculatedValue<std::vector<uint32>>(botAI, "ah sell list", MINUTE * IN_MILLISECONDS) {}
+        : ManualSetValue<std::unordered_map<uint32, AhItemState>&>(botAI, _data, "ah sell list") {}
 
-    std::vector<uint32> Calculate() override;
+    std::unordered_map<uint32, AhItemState>& Get() override;
 
 private:
     bool IsItemSellableOnAh(Item* item) const;
     uint32 ComputeBagFingerprint();
+    void CheckInventory();
+
+    std::unordered_map<uint32, AhItemState> _data;
     uint32 _lastFingerprint{0};
-    std::vector<uint32> _cachedList;
+    uint32 _lastReconcileMs{0};
 };
 
 class ShouldAHSellValue : public BoolCalculatedValue
@@ -83,13 +88,20 @@ public:
     bool Calculate() override;
 };
 
-class AhBuyListValue : public CalculatedValue<std::vector<uint8>>
+class AhBuyListValue : public ManualSetValue<std::unordered_map<uint8, AhItemState>&>
 {
 public:
     AhBuyListValue(PlayerbotAI* botAI)
-        : CalculatedValue<std::vector<uint8>>(botAI, "ah buy list", HOUR * IN_MILLISECONDS) {}
+        : ManualSetValue<std::unordered_map<uint8, AhItemState>&>(botAI, _data, "ah buy list") {}
 
-    std::vector<uint8> Calculate() override;
+    std::unordered_map<uint8, AhItemState>& Get() override;
+
+private:
+    bool IsSlotWeak(uint8 slot) const;
+    void CheckEquipment();
+
+    std::unordered_map<uint8, AhItemState> _data;
+    uint32 _lastReconcileMs{0};
 };
 
 class ShouldAHBuyValue : public BoolCalculatedValue

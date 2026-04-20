@@ -43,7 +43,7 @@ bool ShouldSellValue::Calculate() { return AI_VALUE(uint8, "bag space") > 60; }
 
 bool CanSellValue::Calculate()
 {
-    uint32 ahCount = AI_VALUE(std::vector<uint32>, "ah sell list").size();
+    uint32 ahCount = AI_VALUE(std::unordered_map<uint32, AhItemState>&, "ah sell list").size();
     if (ahCount > 0)
         return true;
 
@@ -111,23 +111,36 @@ bool AhSellListValue::IsItemSellableOnAh(Item* item) const
     return true;
 }
 
-std::vector<uint32> AhSellListValue::Calculate()
+std::unordered_map<uint32, AhItemState>& AhSellListValue::Get()
+{
+    CheckInventory();
+    return _data;
+}
+
+void AhSellListValue::CheckInventory()
 {
     if (!sPlayerbotAIConfig.enableAuctionHouseBotting)
-        return {};
+    {
+        _data.clear();
+        return;
+    }
+    uint32 nowMs = getMSTime();
+    if (_lastReconcileMs && nowMs - _lastReconcileMs < MINUTE * IN_MILLISECONDS)
+        return;
+    _lastReconcileMs = nowMs;
 
     uint32 fingerprint = ComputeBagFingerprint();
-    if (fingerprint == _lastFingerprint && !_cachedList.empty())
-        return _cachedList;
-
+    if (fingerprint == _lastFingerprint && !_data.empty())
+        return;
     _lastFingerprint = fingerprint;
-    _cachedList.clear();
 
+    // Collect currently sellable entries.
+    std::unordered_set<uint32> newItemEntries;
     for (uint8 i = INVENTORY_SLOT_ITEM_START; i < INVENTORY_SLOT_ITEM_END; ++i)
     {
         Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
         if (IsItemSellableOnAh(item))
-            _cachedList.push_back(item->GetEntry());
+            newItemEntries.insert(item->GetEntry());
     }
 
     for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
@@ -140,11 +153,21 @@ std::vector<uint32> AhSellListValue::Calculate()
         {
             Item* item = bot->GetItemByPos(bag, i);
             if (IsItemSellableOnAh(item))
-                _cachedList.push_back(item->GetEntry());
+                newItemEntries.insert(item->GetEntry());
         }
     }
 
-    return _cachedList;
+    // Remove entries that no longer match inventory.
+    for (auto it = _data.begin(); it != _data.end(); )
+    {
+        if (newItemEntries.count(it->first))
+            ++it;
+        else
+            it = _data.erase(it);
+    }
+
+    for (uint32 entry : newItemEntries)
+        _data.try_emplace(entry);
 }
 
 bool ShouldAHSellValue::Calculate()
@@ -152,32 +175,55 @@ bool ShouldAHSellValue::Calculate()
     if (!sPlayerbotAIConfig.enableAuctionHouseBotting)
         return false;
 
-    return !AI_VALUE(std::vector<uint32>, "ah sell list").empty();
+    return !AI_VALUE(std::unordered_map<uint32, AhItemState>&, "ah sell list").empty();
 }
 
-std::vector<uint8> AhBuyListValue::Calculate()
+bool AhBuyListValue::IsSlotWeak(uint8 slot) const
 {
-    std::vector<uint8> weakSlots;
+    if (slot == EQUIPMENT_SLOT_BODY || slot == EQUIPMENT_SLOT_TABARD)
+        return false;
 
-    uint32 botLevel = bot->GetLevel();
+    Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
+    if (!item)
+        return true;
+
+    //TODO: The criteria for what qualifies as a bad slot is not great atm.
+    return item->GetTemplate()->RequiredLevel < bot->GetLevel() - 2;
+}
+
+std::unordered_map<uint8, AhItemState>& AhBuyListValue::Get()
+{
+    CheckEquipment();
+    return _data;
+}
+
+void AhBuyListValue::CheckEquipment()
+{
+    if (!sPlayerbotAIConfig.enableAuctionHouseBotting)
+    {
+        _data.clear();
+        return;
+    }
+
+    uint32 nowMs = getMSTime();
+    if (_lastReconcileMs && nowMs - _lastReconcileMs < MINUTE * IN_MILLISECONDS)
+        return;
+    _lastReconcileMs = nowMs;
+
+    // Drop slots that are no longer weak.
+    for (auto it = _data.begin(); it != _data.end(); )
+    {
+        if (IsSlotWeak(it->first))
+            ++it;
+        else
+            it = _data.erase(it);
+    }
 
     for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
     {
-        if (slot == EQUIPMENT_SLOT_BODY || slot == EQUIPMENT_SLOT_TABARD)
-            continue;
-
-        Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
-        if (!item)
-        {
-            weakSlots.push_back(slot);
-            continue;
-        }
-        //TODO: The Criteria for what qualifies as a bad slot is not great atm.
-        if (item->GetTemplate()->RequiredLevel < botLevel-2)
-            weakSlots.push_back(slot);
+        if (IsSlotWeak(slot))
+            _data.try_emplace(slot);
     }
-
-    return weakSlots;
 }
 
 bool ShouldAHBuyValue::Calculate()
@@ -192,7 +238,18 @@ bool ShouldAHBuyValue::Calculate()
     if (!gearBudget)
         return false;
 
-    return !AI_VALUE(std::vector<uint8>, "ah buy list").empty();
+    // Any Idle or expired-Failed slot counts as actionable. PendingCheck-only
+    // or cooldown-only states shouldn't trigger a city trip.
+    auto& buyList = AI_VALUE(std::unordered_map<uint8, AhItemState>&, "ah buy list");
+    time_t now = time(nullptr);
+    for (auto const& kv : buyList)
+    {
+        if (kv.second.status == AhStatus::Idle)
+            return true;
+        else if (kv.second.status == AhStatus::Failed && now >= kv.second.retryAfter)
+            return true;
+    }
+    return false;
 }
 
 bool CanTrainValue::Calculate()
