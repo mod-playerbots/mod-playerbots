@@ -20,9 +20,6 @@ bool PullStartTrigger::IsActive()
 bool PullEndTrigger::IsActive()
 {
     PullStrategy const* strategy = PullStrategy::Get(botAI);
-    Player* bot = botAI->GetBot();
-    if (!bot)
-        return false;
 
     if (!strategy || !strategy->HasPullStarted())
         return false;
@@ -53,9 +50,6 @@ bool PullEndTrigger::IsActive()
 bool ReturnToPullPositionTrigger::IsActive()
 {
     PullStrategy const* strategy = PullStrategy::Get(botAI);
-    Player* bot = botAI->GetBot();
-    if (!bot)
-        return false;
 
     Unit* target = strategy ? strategy->GetTarget() : nullptr;
     if (!strategy || !strategy->HasPullStarted() || !target || !target->IsInCombat() ||
