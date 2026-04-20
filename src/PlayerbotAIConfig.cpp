@@ -226,9 +226,7 @@ bool PlayerbotAIConfig::Initialize()
     auctionHouseUndercutMaxPct = sConfigMgr->GetOption<uint32>("AiPlayerbot.AuctionHouseUndercutMaxPct", 200);
     auctionHouseBuyoutMinPct = sConfigMgr->GetOption<uint32>("AiPlayerbot.AuctionHouseBuyoutMinPct", 110);
     auctionHouseBuyoutMaxPct = sConfigMgr->GetOption<uint32>("AiPlayerbot.AuctionHouseBuyoutMaxPct", 133);
-    rpgGrindAuctionThreshold = sConfigMgr->GetOption<uint32>(
-        "AiPlayerbot.RpgGrindAuctionThreshold",
-        sConfigMgr->GetOption<uint32>("AiPlayerbot.RpgFarmingAuctionThreshold", 0));
+    auctionPriceCacheTtlSeconds = sConfigMgr->GetOption<uint32>("AiPlayerbot.AuctionPriceCacheTtlSeconds", 600);
     LoadSet<std::set<uint32>>(
         sConfigMgr->GetOption<std::string>("AiPlayerbot.AuctionHouseExcludedItemIds", ""),
         auctionHouseExcludedItemIds);

@@ -4,13 +4,14 @@
 
 #include "Timer.h"
 
-void NewRpgInfo::ChangeToGoGrind(WorldPosition pos, bool auctionHouse)
+void NewRpgInfo::ChangeToGoGrind(WorldPosition pos)
 {
     startT = getMSTime();
-    data = GoGrind{pos, auctionHouse};
+    data = GoGrind{pos};
 }
 
-void NewRpgInfo::ChangeToGoCity(WorldPosition pos, ObjectGuid targetNpc, std::vector<uint32> sellItems, std::vector<uint8> buySlots)
+void NewRpgInfo::ChangeToGoCity(WorldPosition pos, ObjectGuid targetNpc,
+                                std::vector<uint32> sellItems, std::vector<uint8> buySlots)
 {
     startT = getMSTime();
     data = GoCity{pos, targetNpc, std::move(sellItems), std::move(buySlots)};
@@ -123,7 +124,6 @@ std::string NewRpgInfo::ToString()
             out << "GO_GRIND";
             out << "\nGrindPos: " << arg.pos.GetMapId() << " " << arg.pos.GetPositionX() << " "
                 << arg.pos.GetPositionY() << " " << arg.pos.GetPositionZ();
-            out << "\nauctionHouse: " << arg.auctionHouse;
             out << "\nlastGoGrind: " << startT;
         }
         else if constexpr (std::is_same_v<T, GoCamp>)
@@ -166,7 +166,7 @@ std::string NewRpgInfo::ToString()
         else if constexpr (std::is_same_v<T, TravelFlight>)
         {
             out << "TRAVEL_FLIGHT";
-            out << "\nfromFlightMaster: " << arg.fromFlightMaster.GetEntry();
+            out << "\nfromFlightMaster: " << arg.fromFlightMasterGuid.GetEntry();
             out << "\nfromPos: " << arg.fromPos.GetPositionX() << " "
                 << arg.fromPos.GetPositionY() << " " << arg.fromPos.GetPositionZ();
             out << "\nfromNode: " << arg.path[0];
@@ -175,13 +175,13 @@ std::string NewRpgInfo::ToString()
         }
         else if constexpr (std::is_same_v<T, GoCity>)
         {
-            out << "GO_City";
+            out << "GO_CITY";
             out << "\nPos: " << arg.pos.GetMapId() << " " << arg.pos.GetPositionX() << " "
                 << arg.pos.GetPositionY() << " " << arg.pos.GetPositionZ();
             if (arg.targetNpc)
                 out << "\ntargetNpc: " << arg.targetNpc.GetEntry();
-            out << "\nsellItems: " << arg.sellItems.size();
             out << "\nbuySlots: " << arg.buySlots.size();
+        }
         else if constexpr (std::is_same_v<T, OutdoorPvP>)
         {
             out << "OUTDOOR_PVP";

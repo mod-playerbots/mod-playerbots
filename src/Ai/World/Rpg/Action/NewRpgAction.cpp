@@ -19,6 +19,7 @@
 #include "PathGenerator.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
+#include "PlayerbotAuctionHouseUtil.h"
 #include "Playerbots.h"
 #include "QuestDef.h"
 #include "Random.h"
@@ -519,67 +520,86 @@ bool NewRpgGoCityAction::Execute(Event /*event*/)
     if (bot->IsInFlight())
         return false;
 
-    float distToCity = bot->GetDistance(data.pos);
-
-    // Not at city yet — MoveFarTo handles travel nodes vs mmap internally
-    if (distToCity > INTERACTION_DISTANCE)
+    if (bot->GetDistance(data.pos) > INTERACTION_DISTANCE)
         return MoveFarTo(data.pos);
 
-    // At city — interact with auctioneer
-    if ((!data.sellItems.empty() || !data.buySlots.empty()) && sPlayerbotAIConfig.enableAuctionHouseBotting)
+    if (!sPlayerbotAIConfig.enableAuctionHouseBotting)
     {
-        Creature* auctioneer = nullptr;
+        //No other actions currently available in a city.
+        botAI->rpgInfo.ChangeToIdle();
+        return true;
+    }
 
-        uint32 auctioneerGuid = data.targetNpc.GetEntry();
-        if (auctioneerGuid)
-            auctioneer = bot->FindNearestCreature(auctioneerGuid, 100.0f);
+    Creature* auctioneer = nullptr;
+    if (uint32 entry = data.targetNpc.GetEntry())
+        auctioneer = bot->FindNearestCreature(entry, 100.0f);
 
-        if (!auctioneer)
+    if (!auctioneer)
+    {
+        GuidVector targets = AI_VALUE(GuidVector, "possible new rpg targets");
+        for (ObjectGuid const& guid : targets)
         {
-            GuidVector targets = AI_VALUE(GuidVector, "possible new rpg targets");
-            for (ObjectGuid const& guid : targets)
+            Creature* creature = ObjectAccessor::GetCreature(*bot, guid);
+            if (creature && creature->HasNpcFlag(UNIT_NPC_FLAG_AUCTIONEER))
             {
-                Creature* creature = ObjectAccessor::GetCreature(*bot, guid);
-                if (creature && creature->HasNpcFlag(UNIT_NPC_FLAG_AUCTIONEER))
-                {
-                    auctioneer = creature;
-                    break;
-                }
-            }
-        }
-
-        if (!auctioneer)
-        {
-            data.sellItems.clear();
-            data.buySlots.clear();
-        }
-        else if (bot->GetDistance(auctioneer) > INTERACTION_DISTANCE)
-            return MoveWorldObjectTo(auctioneer->GetGUID());
-        else
-        {
-            if (!data.sellItems.empty())
-            {
-                bool sold = botAI->DoSpecificAction("ah sell", Event(), true);
-                data.sellItems.erase(data.sellItems.begin());
-                if (sold)
-                    return true;
-            }
-            if (!data.buySlots.empty())
-            {
-                uint8 slot = data.buySlots.front();
-                data.buySlots.erase(data.buySlots.begin());
-                SendAhSearchForSlot(auctioneer, slot);
-                return true;
+                auctioneer = creature;
+                break;
             }
         }
     }
 
-    if (data.sellItems.empty() && data.buySlots.empty())
+    if (!auctioneer)
     {
         botAI->rpgInfo.ChangeToIdle();
         return true;
     }
 
+    if (bot->GetDistance(auctioneer) > INTERACTION_DISTANCE)
+        return MoveWorldObjectTo(auctioneer->GetGUID());
+
+    // At auctioneer. Consume one sell entry per tick, then one buy slot per
+    // tick. AhSellAction receives the target entry via Event param and handles
+    // the state transitions (cache lookup, query, post, cooldown). The entry
+    // stays at the back of sellItems only while it's PendingCheck — every
+    // other outcome (posted, cooling down, inventory gone, policy reject)
+    // pops it so the queue always makes forward progress.
+    auto& sellList = AI_VALUE(std::unordered_map<uint32, AhItemState>&, "ah sell list");
+
+    while (!data.sellItems.empty())
+    {
+        uint32 entry = data.sellItems.back();
+        auto it = sellList.find(entry);
+
+        // Item gone from inventory or got reclassified as a buy-intent entry
+        // by AhBuyAction — skip without involving the sell logic.
+        if (it == sellList.end() || it->second.intent == AhIntent::Buy)
+        {
+            data.sellItems.pop_back();
+            continue;
+        }
+
+        botAI->DoSpecificAction("ah sell", Event("new rpg go city", std::to_string(entry)), true);
+
+        // Re-lookup — AhSellAction may have mutated state or (via PostAuctionSell)
+        // left the entry in Idle. Keep only while actively waiting on AH.
+        auto newIt = sellList.find(entry);
+        if (newIt != sellList.end() && newIt->second.status == AhStatus::PendingCheck)
+            return true;
+
+        data.sellItems.pop_back();
+        return true;
+    }
+
+    // Sells done — drive buy-side by sending one slot query per tick.
+    if (!data.buySlots.empty())
+    {
+        uint8 slot = data.buySlots.back();
+        data.buySlots.pop_back();
+        SendAhSearchForSlot(auctioneer, slot);
+        return true;
+    }
+    //Nothing left to do. Reset.
+    botAI->rpgInfo.ChangeToIdle();
     return true;
 }
 

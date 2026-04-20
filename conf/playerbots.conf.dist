@@ -1209,12 +1209,6 @@ AiPlayerbot.ZoneBracket.4197 = 79,80
 # Default: 0 (disabled)
 AiPlayerbot.EnableAuctionHouseBotting = 0
 
-# When GoGrind is selected and the bot has at least this many AH-eligible item units,
-# route that grind trip to the nearest auctioneer instead of a random grind spot.
-# Set to 0 to disable this grind -> auction house handoff.
-# Default: 0
-AiPlayerbot.RpgGrindAuctionThreshold = 0
-
 # Posting settings
 # RandomStackSize = 1 posts a random partial stack when possible, 0 posts the full stack
 # Built-in AH exclusions: gray items, projectile ammo, spell reagents,

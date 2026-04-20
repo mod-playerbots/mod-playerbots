@@ -20,7 +20,6 @@ struct NewRpgInfo
     struct GoGrind
     {
         WorldPosition pos{};
-        bool auctionHouse{false};
     };
     // RPG_GO_CAMP
     struct GoCamp
