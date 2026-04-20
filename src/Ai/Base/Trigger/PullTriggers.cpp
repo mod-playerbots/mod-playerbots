@@ -25,7 +25,7 @@ bool PullEndTrigger::IsActive()
         return false;
 
     Unit* target = strategy->GetTarget();
-    if (!target || !target->IsInWorld())
+    if (!target || !target->IsInWorld() || !target->IsAlive())
         return true;
 
     time_t const secondsSincePullStarted = time(nullptr) - strategy->GetPullStartTime();
