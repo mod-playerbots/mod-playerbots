@@ -30,25 +30,4 @@ private:
     bool TradeItem(Item const* item, int8 slot);
 };
 
-struct AhItem
-{
-    uint32 auctionId;
-    uint32 itemEntry;
-    uint32 buyout;
-    uint32 bidPrice;
-    uint32 itemCount;
-};
-
-class AhBuyAction : public Action
-{
-public:
-    AhBuyAction(PlayerbotAI* botAI) : Action(botAI, "ah buy") {}
-
-    bool Execute(Event event) override;
-
-private:
-    bool ParseAuctionPacket(WorldPacket& p, uint32 gearBudget, std::vector<AhItem>& candidates);
-    bool BuyBestCandidate(std::vector<AhItem>& candidates);
-};
-
 #endif

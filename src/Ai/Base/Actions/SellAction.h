@@ -10,6 +10,7 @@
 
 class FindItemVisitor;
 class Item;
+class ObjectGuid;
 class PlayerbotAI;
 
 class SellAction : public InventoryAction
@@ -20,14 +21,6 @@ public:
     bool Execute(Event event) override;
     void Sell(FindItemVisitor* visitor);
     void Sell(Item* item);
-};
-
-class AhSellAction : public Action
-{
-public:
-    AhSellAction(PlayerbotAI* botAI) : Action(botAI, "ah sell") {}
-
-    bool Execute(Event event) override;
 };
 
 #endif
