@@ -63,7 +63,7 @@ public:
 
     static uint32 tradeSkills[];
     static float CalculateEnchantScore(uint32 enchant_id, Player* bot);
-    void InitTalentsTree(bool incremental = false, bool use_template = true, bool reset = false);
+    uint32 InitTalentsTree(bool incremental = false, bool use_template = true, bool reset = false);
     static void InitTalentsBySpecNo(Player* bot, int specNo, bool reset);
     static void InitTalentsByParsedSpecLink(Player* bot, std::vector<std::vector<uint32>> parsedSpecLink, bool reset);
     void InitAvailableSpells();
@@ -189,6 +189,8 @@ private:
     std::vector<uint32> GetCurrentGemsCount();
     bool CanEquipArmor(ItemTemplate const* proto);
     bool CanEquipWeapon(ItemTemplate const* proto);
+    static void BuildCcBreakTrinketCache();
+    static uint8 GetPreferredArmorType(uint8 cls);
     void EnchantItem(Item* item);
     void AddItemStats(uint32 mod, uint8& sp, uint8& ap, uint8& tank);
     bool CheckItemStats(uint8 sp, uint8 ap, uint8 tank);
@@ -220,6 +222,9 @@ private:
     static std::unordered_map<uint32, std::vector<uint32>> trainerIdCache;
     static std::vector<uint32> enchantSpellIdCache;
     static std::vector<uint32> enchantGemIdCache;
+    static std::vector<uint32> ccBreakTrinketCache;
+    static std::map<uint32, uint32> questRewardItemCache;
+    static void BuildQuestRewardCache();
 
 protected:
     EnchantContainer m_EnchantContainer;

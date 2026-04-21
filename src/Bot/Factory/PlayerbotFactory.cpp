@@ -59,6 +59,8 @@ std::list<uint32> PlayerbotFactory::specialQuestIds;
 std::vector<uint32> PlayerbotFactory::enchantSpellIdCache;
 std::vector<uint32> PlayerbotFactory::enchantGemIdCache;
 std::unordered_map<uint32, std::vector<uint32>> PlayerbotFactory::trainerIdCache;
+std::vector<uint32> PlayerbotFactory::ccBreakTrinketCache;
+std::map<uint32, uint32> PlayerbotFactory::questRewardItemCache;
 
 bool PlayerbotFactory::IsPrimaryTradeSkill(uint16 skillId)
 {
@@ -460,6 +462,124 @@ void PlayerbotFactory::Init()
         enchantGemIdCache.push_back(gemId);
     }
     LOG_INFO("playerbots", "Loading {} enchantment gems", enchantGemIdCache.size());
+
+    BuildCcBreakTrinketCache();
+    if (sPlayerbotAIConfig.autogearAllowsQuestRewards)
+        BuildQuestRewardCache();
+}
+
+void PlayerbotFactory::BuildCcBreakTrinketCache()
+{
+    ccBreakTrinketCache.clear();
+    // Spell 42292: removes all movement-impairing and loss-of-control effects — the PvP trinket spell.
+    QueryResult result = WorldDatabase.Query(
+        "SELECT entry, ItemLevel FROM item_template "
+        "WHERE Quality >= 2 AND InventoryType = 12 "
+        "AND (FlagsExtra & 8192) = 0 "
+        "AND (spellid_1 = 42292 OR spellid_2 = 42292 OR spellid_3 = 42292 "
+        "  OR spellid_4 = 42292 OR spellid_5 = 42292)");
+
+    if (!result)
+    {
+        LOG_INFO("playerbots", "CC-break trinket cache: no items found.");
+        return;
+    }
+
+    struct CcItem { uint32 itemId; uint16 itemLevel; };
+    std::vector<CcItem> tmp;
+    do
+    {
+        Field* f = result->Fetch();
+        tmp.push_back({f[0].Get<uint32>(), f[1].Get<uint16>()});
+    } while (result->NextRow());
+
+    std::sort(tmp.begin(), tmp.end(), [](const CcItem& a, const CcItem& b) {
+        return a.itemLevel > b.itemLevel;
+    });
+    for (auto& c : tmp)
+        ccBreakTrinketCache.push_back(c.itemId);
+
+    LOG_INFO("playerbots", "CC-break trinket cache: {} items.", ccBreakTrinketCache.size());
+}
+
+void PlayerbotFactory::BuildQuestRewardCache()
+{
+    questRewardItemCache.clear();
+
+    ObjectMgr::QuestMap const& questTemplates = sObjectMgr->GetQuestTemplates();
+    for (auto& [questId, quest] : questTemplates)
+    {
+        uint32 questLevel = quest->GetMinLevel();
+
+        // Check direct reward items (up to 4)
+        for (uint8 i = 0; i < QUEST_REWARDS_COUNT; i++)
+        {
+            uint32 itemId = quest->RewardItemId[i];
+            if (itemId > 0)
+            {
+                ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
+                if (!proto)
+                    continue;
+
+                // Only cache armor and weapons (equippable items)
+                if (proto->Class != ITEM_CLASS_ARMOR && proto->Class != ITEM_CLASS_WEAPON)
+                    continue;
+
+                // Store the quest's min level as the item's effective level
+                // Only store if not already in cache (keeps first/lowest level quest)
+                if (questRewardItemCache.find(itemId) == questRewardItemCache.end())
+                    questRewardItemCache[itemId] = questLevel;
+            }
+        }
+
+        // Check choice reward items (up to 6)
+        for (uint8 i = 0; i < QUEST_REWARD_CHOICES_COUNT; i++)
+        {
+            uint32 itemId = quest->RewardChoiceItemId[i];
+            if (itemId > 0)
+            {
+                ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
+                if (!proto)
+                    continue;
+
+                // Only cache armor and weapons (equippable items)
+                if (proto->Class != ITEM_CLASS_ARMOR && proto->Class != ITEM_CLASS_WEAPON)
+                    continue;
+
+                if (questRewardItemCache.find(itemId) == questRewardItemCache.end())
+                    questRewardItemCache[itemId] = questLevel;
+            }
+        }
+    }
+
+    LOG_INFO("playerbots", "Quest reward item cache: {} equippable items.", questRewardItemCache.size());
+}
+
+/*static*/ uint8 PlayerbotFactory::GetPreferredArmorType(uint8 cls)
+{
+    switch (cls)
+    {
+        case CLASS_WARRIOR:
+        case CLASS_PALADIN:
+        case CLASS_DEATH_KNIGHT:
+            return ITEM_SUBCLASS_ARMOR_PLATE;
+
+        case CLASS_HUNTER:
+        case CLASS_SHAMAN:
+            return ITEM_SUBCLASS_ARMOR_MAIL;
+
+        case CLASS_ROGUE:
+        case CLASS_DRUID:
+            return ITEM_SUBCLASS_ARMOR_LEATHER;
+
+        case CLASS_PRIEST:
+        case CLASS_MAGE:
+        case CLASS_WARLOCK:
+            return ITEM_SUBCLASS_ARMOR_CLOTH;
+
+        default:
+            return 0;
+    }
 }
 
 void PlayerbotFactory::Prepare()
@@ -561,9 +681,9 @@ void PlayerbotFactory::Randomize(bool incremental)
     if (!incremental || !sPlayerbotAIConfig.equipmentPersistence ||
         bot->GetLevel() < sPlayerbotAIConfig.equipmentPersistenceLevel)
     {
-        InitTalentsTree();
+        uint32 specIndex = InitTalentsTree();
+        sRandomPlayerbotMgr.SetValue(bot->GetGUID().GetCounter(), "specNo", specIndex + 1);
     }
-    sRandomPlayerbotMgr.SetValue(bot->GetGUID().GetCounter(), "specNo", 0);
     if (botAI)
     {
         PlayerbotRepository::instance().Reset(botAI);
@@ -1359,7 +1479,7 @@ void PlayerbotFactory::ResetQuests()
     }
 }
 
-void PlayerbotFactory::InitTalentsTree(bool increment /*false*/, bool use_template /*true*/, bool reset /*false*/)
+uint32 PlayerbotFactory::InitTalentsTree(bool increment /*false*/, bool use_template /*true*/, bool reset /*false*/)
 {
     uint32 specTab;
     uint8 cls = bot->getClass();
@@ -1427,7 +1547,14 @@ void PlayerbotFactory::InitTalentsTree(bool increment /*false*/, bool use_templa
     if (bot->GetFreeTalentPoints())
         InitTalents((specTab + 2) % 3);
 
+    if (bot->getClass() == CLASS_SHAMAN && bot->HasSpell(30798))
+    {
+        bot->SetSkill(SKILL_DUAL_WIELD, 0, 1, 1);
+        bot->SetCanDualWield(true);
+    }
+
     bot->SendTalentsInfoData(false);
+    return sPlayerbotAIConfig.randomClassSpecIndex[cls][specTab];
 }
 
 void PlayerbotFactory::InitTalentsBySpecNo(Player* bot, int specNo, bool reset)
@@ -1505,7 +1632,15 @@ void PlayerbotFactory::InitTalentsBySpecNo(Player* bot, int specNo, bool reset)
             break;
         }
     }
+
+    if (bot->getClass() == CLASS_SHAMAN && bot->HasSpell(30798))
+    {
+        bot->SetSkill(SKILL_DUAL_WIELD, 0, 1, 1);
+        bot->SetCanDualWield(true);
+    }
+
     bot->SendTalentsInfoData(false);
+    sRandomPlayerbotMgr.SetValue(bot->GetGUID().GetCounter(), "specNo", (uint32)specNo + 1);
 }
 
 void PlayerbotFactory::InitTalentsByParsedSpecLink(Player* bot, std::vector<std::vector<uint32>> parsedSpecLink,
@@ -1801,9 +1936,26 @@ bool PlayerbotFactory::CanEquipItem(ItemTemplate const* proto)
     // disable since bad performance
     bool hasItem = bot->HasItemCount(proto->ItemId, 1, false);
     // bot->GetItemCount()
-    // !requiredLevel -> it's a quest reward item
-    if (!requiredLevel && hasItem)
-        return false;
+    if (!requiredLevel)
+    {
+        // Check if it's a known quest reward in our cache
+        auto it = questRewardItemCache.find(proto->ItemId);
+        if (it != questRewardItemCache.end())
+        {
+            // It's a quest reward - use the quest's min level as the effective required level
+            requiredLevel = it->second;
+        }
+        else if (hasItem)
+        {
+            // Unknown no-level item and bot already has it, skip it
+            return false;
+        }
+        else
+        {
+            // Unknown no-level item and bot doesn't have it, skip it
+            return false;
+        }
+    }
 
     uint32 level = bot->GetLevel();
 
@@ -2008,25 +2160,60 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
     uint32 blevel = bot->GetLevel();
     int32 delta = std::min(blevel, 10u);
 
+    bool isPvp = sRandomPlayerbotMgr.IsSpecPvp(bot->GetGUID().GetCounter(), bot->getClass());
+
     StatsWeightCalculator calculator(bot);
+    if (isPvp)
+        calculator.SetPvpSpec(true);
+
+    // Pre-select CC-break trinket for PvP specs: best available by item level
+    // that the bot meets the level requirement for.
+    // Humans (Every Man for Himself) and Undead (Will of the Forsaken) have a
+    // racial that shares the PvP trinket cooldown, so they don't need one.
+    bool racialHasCcBreak = (bot->getRace() == RACE_HUMAN || bot->getRace() == RACE_UNDEAD_PLAYER);
+    uint32 pvpTrinket1 = 0;
+    if (isPvp && level >= 50 && !racialHasCcBreak)
+    {
+        for (uint32 itemId : ccBreakTrinketCache)
+        {
+            ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
+            if (!proto) continue;
+            // Respect gear quality limit: trinket must not exceed itemQuality setting
+            if (static_cast<int32>(proto->Quality) > itemQuality) continue;
+            if (proto->RequiredLevel > level) continue;
+            if (!CanEquipItem(proto)) continue;
+            uint16 dest;
+            if (!CanEquipUnseenItem(EQUIPMENT_SLOT_TRINKET1, dest, itemId)) continue;
+            pvpTrinket1 = itemId;
+            break;
+        }
+    }
+
     for (int32 slot : initSlotsOrder)
     {
         if (slot == EQUIPMENT_SLOT_TABARD || slot == EQUIPMENT_SLOT_BODY)
             continue;
 
-        if (level < 50 && (slot == EQUIPMENT_SLOT_TRINKET1 || slot == EQUIPMENT_SLOT_TRINKET2))
-            continue;
+        if (!sPlayerbotAIConfig.equipAllSlotsAtAnyLevel)
+        {
+            if (level < 50 && (slot == EQUIPMENT_SLOT_TRINKET1 || slot == EQUIPMENT_SLOT_TRINKET2))
+                continue;
 
-        if (level < 30 && (slot == EQUIPMENT_SLOT_NECK || slot == EQUIPMENT_SLOT_HEAD))
-            continue;
+            if (level < 30 && (slot == EQUIPMENT_SLOT_NECK || slot == EQUIPMENT_SLOT_HEAD))
+                continue;
 
-        if (level < 20 && (slot == EQUIPMENT_SLOT_FINGER1 || slot == EQUIPMENT_SLOT_FINGER2))
-            continue;
+            if (level < 20 && (slot == EQUIPMENT_SLOT_FINGER1 || slot == EQUIPMENT_SLOT_FINGER2))
+                continue;
 
-        if (level < 5 && (slot != EQUIPMENT_SLOT_MAINHAND) && (slot != EQUIPMENT_SLOT_OFFHAND) &&
-            (slot != EQUIPMENT_SLOT_FEET) && (slot != EQUIPMENT_SLOT_LEGS) && (slot != EQUIPMENT_SLOT_CHEST) &&
-            (slot != EQUIPMENT_SLOT_RANGED))
-            continue;
+            if (level < 5 && (slot != EQUIPMENT_SLOT_MAINHAND) && (slot != EQUIPMENT_SLOT_OFFHAND) &&
+                (slot != EQUIPMENT_SLOT_FEET) && (slot != EQUIPMENT_SLOT_LEGS) && (slot != EQUIPMENT_SLOT_CHEST) &&
+                (slot != EQUIPMENT_SLOT_RANGED))
+                continue;
+        }
+
+        // Exclude resilience weighting for trinkets
+        bool isTrinketSlot = (slot == EQUIPMENT_SLOT_TRINKET1 || slot == EQUIPMENT_SLOT_TRINKET2);
+        calculator.SetExcludeResilience(isTrinketSlot);
 
         Item* oldItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
 
@@ -2036,6 +2223,28 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
         }
 
         oldItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
+
+        // PvP specs: force TRINKET1 to the best available CC-break trinket.
+        if (slot == EQUIPMENT_SLOT_TRINKET1 && pvpTrinket1 != 0)
+        {
+            if (oldItem)
+            {
+                uint8 bagIndex = oldItem->GetBagSlot();
+                uint8 oldSlot  = oldItem->GetSlot();
+                uint8 dstBag   = NULL_BAG;
+                WorldPacket packet(CMSG_AUTOSTORE_BAG_ITEM, 3);
+                packet << bagIndex << oldSlot << dstBag;
+                WorldPackets::Item::AutoStoreBagItem nicePacket(std::move(packet));
+                nicePacket.Read();
+                bot->GetSession()->HandleAutoStoreBagItemOpcode(nicePacket);
+                oldItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
+                if (oldItem) continue;
+            }
+            uint16 dest;
+            if (CanEquipUnseenItem(slot, dest, pvpTrinket1))
+                bot->EquipNewItem(dest, pvpTrinket1, true);
+            continue;
+        }
 
         int32 desiredQuality = itemQuality;
         if (urand(0, 100) < 100 * sPlayerbotAIConfig.randomGearLoweringChance && desiredQuality > ITEM_QUALITY_NORMAL)
@@ -2054,6 +2263,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                         if (urand(1, 100) <= skipProb)
                             continue;
 
+                        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
                         // disable next expansion gear
                         if (sPlayerbotAIConfig.limitGearExpansion && bot->GetLevel() <= 60 && itemId >= 23728)
                             continue;
@@ -2064,7 +2274,6 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                                               // wearable TBC items above 35570 but nothing of significance
                             continue;
 
-                        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
                         if (!proto)
                             continue;
 
@@ -2115,7 +2324,15 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
 
             ItemTemplate const* proto = sObjectMgr->GetItemTemplate(newItemId);
 
-            float cur_score = calculator.CalculateItem(newItemId);
+            float cur_score = calculator.CalculateItem(newItemId, 0, slot);
+
+            if (cur_score > 0.0f && proto && proto->Class == ITEM_CLASS_ARMOR && sPlayerbotAIConfig.preferClassArmorType)
+            {
+                uint8 preferredArmorType = GetPreferredArmorType(bot->getClass());
+                if (preferredArmorType != 0 && proto->SubClass == preferredArmorType)
+                    cur_score *= 3.0f;  // 3x multiplier for preferred armor type
+            }
+
             if (cur_score > bestScoreForSlot)
             {
                 // delay heavy check to here
@@ -2141,7 +2358,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
 
         if (incremental && oldItem)
         {
-            float old_score = calculator.CalculateItem(oldItem->GetEntry(), oldItem->GetItemRandomPropertyId());
+            float old_score = calculator.CalculateItem(oldItem->GetEntry(), oldItem->GetItemRandomPropertyId(), slot);
             if (bestScoreForSlot < 1.2f * old_score)
                 continue;
         }
@@ -2180,21 +2397,31 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
             if (slot == EQUIPMENT_SLOT_TABARD || slot == EQUIPMENT_SLOT_BODY)
                 continue;
 
-            if (level < 50 && (slot == EQUIPMENT_SLOT_TRINKET1 || slot == EQUIPMENT_SLOT_TRINKET2))
+            if (!sPlayerbotAIConfig.equipAllSlotsAtAnyLevel)
+            {
+                if (level < 50 && (slot == EQUIPMENT_SLOT_TRINKET1 || slot == EQUIPMENT_SLOT_TRINKET2))
+                    continue;
+
+                if (level < 30 && (slot == EQUIPMENT_SLOT_NECK || slot == EQUIPMENT_SLOT_HEAD))
+                    continue;
+
+                if (level < 20 && (slot == EQUIPMENT_SLOT_FINGER1 || slot == EQUIPMENT_SLOT_FINGER2))
+                    continue;
+
+                if (level < 5 && (slot != EQUIPMENT_SLOT_MAINHAND) && (slot != EQUIPMENT_SLOT_OFFHAND) &&
+                    (slot != EQUIPMENT_SLOT_FEET) && (slot != EQUIPMENT_SLOT_LEGS) && (slot != EQUIPMENT_SLOT_CHEST) &&
+                    (slot != EQUIPMENT_SLOT_RANGED))
+                    continue;
+            }
+
+            // CC-break trinket was force-equipped in the main pass; leave it alone.
+            if (slot == EQUIPMENT_SLOT_TRINKET1 && pvpTrinket1 != 0)
                 continue;
 
-            if (level < 30 && (slot == EQUIPMENT_SLOT_NECK || slot == EQUIPMENT_SLOT_HEAD))
-                continue;
+            bool isTrinketSlot = (slot == EQUIPMENT_SLOT_TRINKET1 || slot == EQUIPMENT_SLOT_TRINKET2);
+            calculator.SetExcludeResilience(isTrinketSlot);
 
-            if (level < 20 && (slot == EQUIPMENT_SLOT_FINGER1 || slot == EQUIPMENT_SLOT_FINGER2))
-                continue;
-
-            if (level < 5 && (slot != EQUIPMENT_SLOT_MAINHAND) && (slot != EQUIPMENT_SLOT_OFFHAND) &&
-                (slot != EQUIPMENT_SLOT_FEET) && (slot != EQUIPMENT_SLOT_LEGS) && (slot != EQUIPMENT_SLOT_CHEST) &&
-                (slot != EQUIPMENT_SLOT_RANGED))
-                continue;
-
-            if (bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot) != nullptr)
+            if (Item* oldItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
                 bot->DestroyItem(INVENTORY_SLOT_BAG_0, slot, true);
 
             std::vector<uint32>& ids = items[slot];
@@ -2209,7 +2436,15 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
 
                 ItemTemplate const* proto = sObjectMgr->GetItemTemplate(newItemId);
 
-                float cur_score = calculator.CalculateItem(newItemId);
+                float cur_score = calculator.CalculateItem(newItemId, 0, slot);
+
+                if (cur_score > 0.0f && proto && proto->Class == ITEM_CLASS_ARMOR && sPlayerbotAIConfig.preferClassArmorType)
+                {
+                    uint8 preferredArmorType = GetPreferredArmorType(bot->getClass());
+                    if (preferredArmorType != 0 && proto->SubClass == preferredArmorType)
+                        cur_score *= 3.0f;  // 3x multiplier for preferred armor type
+                }
+
                 if (cur_score > bestScoreForSlot)
                 {
                     // delay heavy check to here

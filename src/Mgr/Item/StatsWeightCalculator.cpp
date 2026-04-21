@@ -68,7 +68,7 @@ void StatsWeightCalculator::Reset()
     }
 }
 
-float StatsWeightCalculator::CalculateItem(uint32 itemId, int32 randomPropertyIds)
+float StatsWeightCalculator::CalculateItem(uint32 itemId, int32 randomPropertyIds, int32 slot)
 {
     ItemTemplate const* proto = &sObjectMgr->GetItemTemplateStore()->at(itemId);
 
@@ -107,10 +107,12 @@ float StatsWeightCalculator::CalculateItem(uint32 itemId, int32 randomPropertyId
             weight_ *= PlayerbotFactory::CalcMixedGearScore(lvl, ITEM_QUALITY_EPIC);
         else
             weight_ *= PlayerbotFactory::CalcMixedGearScore(proto->ItemLevel, proto->Quality);
-
-        return weight_;
     }
-    // If quality/level blending is disabled, also return the calculated weight.
+
+    // Apply weapon speed governance if slot is provided and this is a weapon
+    if (sPlayerbotAIConfig.weaponSpeedGovernance && slot >= 0 && proto->Class == ITEM_CLASS_WEAPON)
+        weight_ *= ApplyWeaponSpeedGovernance(proto, slot);
+
     return weight_;
 }
 
@@ -208,6 +210,7 @@ void StatsWeightCalculator::GenerateBasicWeights(Player* player)
         stats_weights_[STATS_TYPE_HIT] += 1.7f;
         stats_weights_[STATS_TYPE_CRIT] += 1.4f;
         stats_weights_[STATS_TYPE_HASTE] += 1.6f;
+        stats_weights_[STATS_TYPE_SPELL_POWER] -= 1.0f;
         stats_weights_[STATS_TYPE_RANGED_DPS] += 7.5f;
     }
     else if (cls == CLASS_HUNTER && tab == HUNTER_TAB_MARKSMANSHIP)
@@ -218,6 +221,7 @@ void StatsWeightCalculator::GenerateBasicWeights(Player* player)
         stats_weights_[STATS_TYPE_HIT] += 2.1f;
         stats_weights_[STATS_TYPE_CRIT] += 2.0f;
         stats_weights_[STATS_TYPE_HASTE] += 1.8f;
+        stats_weights_[STATS_TYPE_SPELL_POWER] -= 1.0f;
         stats_weights_[STATS_TYPE_RANGED_DPS] += 10.0f;
     }
     else if (cls == CLASS_ROGUE && tab == ROGUE_TAB_COMBAT)
@@ -229,6 +233,7 @@ void StatsWeightCalculator::GenerateBasicWeights(Player* player)
         stats_weights_[STATS_TYPE_HIT] += 2.1f;
         stats_weights_[STATS_TYPE_CRIT] += 1.4f;
         stats_weights_[STATS_TYPE_HASTE] += 1.7f;
+        stats_weights_[STATS_TYPE_SPELL_POWER] -= 1.0f;
         stats_weights_[STATS_TYPE_EXPERTISE] += 2.0f;
         stats_weights_[STATS_TYPE_MELEE_DPS] += 7.0f;
     }
@@ -253,64 +258,69 @@ void StatsWeightCalculator::GenerateBasicWeights(Player* player)
         stats_weights_[STATS_TYPE_HIT] += 2.1f;
         stats_weights_[STATS_TYPE_CRIT] += 1.1f;
         stats_weights_[STATS_TYPE_HASTE] += 1.8f;
+        stats_weights_[STATS_TYPE_SPELL_POWER] -= 1.0f;
         stats_weights_[STATS_TYPE_EXPERTISE] += 2.1f;
         stats_weights_[STATS_TYPE_MELEE_DPS] += 5.0f;
     }
     else if (cls == CLASS_WARRIOR && tab == WARRIOR_TAB_FURY)
     {
-        stats_weights_[STATS_TYPE_AGILITY] += 1.8f;
-        stats_weights_[STATS_TYPE_STRENGTH] += 2.6f;
-        stats_weights_[STATS_TYPE_ATTACK_POWER] += 1.0f;
+        stats_weights_[STATS_TYPE_AGILITY] += 0.8f;
+        stats_weights_[STATS_TYPE_STRENGTH] += 2.5f;
+        stats_weights_[STATS_TYPE_ATTACK_POWER] += 0.8f;
         stats_weights_[STATS_TYPE_ARMOR_PENETRATION] += 2.1f;
         stats_weights_[STATS_TYPE_HIT] += 2.3f;
         stats_weights_[STATS_TYPE_CRIT] += 2.2f;
-        stats_weights_[STATS_TYPE_HASTE] += 1.8f;
+        stats_weights_[STATS_TYPE_HASTE] += 0.8f;
+        stats_weights_[STATS_TYPE_SPELL_POWER] -= 2.0f;
+        stats_weights_[STATS_TYPE_DEFENSE] -= 1.0f;
         stats_weights_[STATS_TYPE_EXPERTISE] += 2.5f;
         stats_weights_[STATS_TYPE_MELEE_DPS] += 7.0f;
     }
     else if (cls == CLASS_WARRIOR && tab == WARRIOR_TAB_ARMS)
     {
-        stats_weights_[STATS_TYPE_AGILITY] += 1.6f;
-        stats_weights_[STATS_TYPE_STRENGTH] += 2.3f;
-        stats_weights_[STATS_TYPE_ATTACK_POWER] += 1.0f;
+        stats_weights_[STATS_TYPE_AGILITY] += 0.8f;
+        stats_weights_[STATS_TYPE_STRENGTH] += 2.5f;
+        stats_weights_[STATS_TYPE_ATTACK_POWER] += 0.8f;
         stats_weights_[STATS_TYPE_ARMOR_PENETRATION] += 1.7f;
         stats_weights_[STATS_TYPE_HIT] += 2.0f;
         stats_weights_[STATS_TYPE_CRIT] += 1.9f;
         stats_weights_[STATS_TYPE_HASTE] += 0.8f;
+        stats_weights_[STATS_TYPE_SPELL_POWER] -= 2.0f;
+        stats_weights_[STATS_TYPE_DEFENSE] -= 1.0f;
         stats_weights_[STATS_TYPE_EXPERTISE] += 1.4f;
         stats_weights_[STATS_TYPE_MELEE_DPS] += 7.0f;
     }
     else if (cls == CLASS_DEATH_KNIGHT && tab == DEATH_KNIGHT_TAB_FROST)
     {
-        stats_weights_[STATS_TYPE_AGILITY] += 1.7f;
-        stats_weights_[STATS_TYPE_STRENGTH] += 2.8f;
-        stats_weights_[STATS_TYPE_ATTACK_POWER] += 1.0f;
+        stats_weights_[STATS_TYPE_AGILITY] += 0.5f;
+        stats_weights_[STATS_TYPE_STRENGTH] += 2.5f;
+        stats_weights_[STATS_TYPE_ATTACK_POWER] += 0.5f;
         stats_weights_[STATS_TYPE_ARMOR_PENETRATION] += 2.7f;
         stats_weights_[STATS_TYPE_HIT] += 2.3f;
         stats_weights_[STATS_TYPE_CRIT] += 2.2f;
         stats_weights_[STATS_TYPE_HASTE] += 2.1f;
+        stats_weights_[STATS_TYPE_SPELL_POWER] -= 1.0f;
         stats_weights_[STATS_TYPE_EXPERTISE] += 2.5f;
         stats_weights_[STATS_TYPE_MELEE_DPS] += 7.0f;
     }
     else if (cls == CLASS_DEATH_KNIGHT && tab == DEATH_KNIGHT_TAB_UNHOLY)
     {
-        stats_weights_[STATS_TYPE_AGILITY] += 0.9f;
+        stats_weights_[STATS_TYPE_AGILITY] += 0.5f;
         stats_weights_[STATS_TYPE_STRENGTH] += 2.5f;
-        stats_weights_[STATS_TYPE_ATTACK_POWER] += 1.0f;
+        stats_weights_[STATS_TYPE_ATTACK_POWER] += 0.5f;
         stats_weights_[STATS_TYPE_ARMOR_PENETRATION] += 1.3f;
         stats_weights_[STATS_TYPE_HIT] += 2.2f;
         stats_weights_[STATS_TYPE_CRIT] += 1.7f;
         stats_weights_[STATS_TYPE_HASTE] += 1.8f;
+        stats_weights_[STATS_TYPE_SPELL_POWER] -= 1.0f;
         stats_weights_[STATS_TYPE_EXPERTISE] += 1.5f;
         stats_weights_[STATS_TYPE_MELEE_DPS] += 5.0f;
     }
     else if (cls == CLASS_PALADIN && tab == PALADIN_TAB_RETRIBUTION)
     {
-        stats_weights_[STATS_TYPE_AGILITY] += 1.6f;
+        stats_weights_[STATS_TYPE_AGILITY] += 0.5f;
         stats_weights_[STATS_TYPE_STRENGTH] += 2.5f;
-        stats_weights_[STATS_TYPE_INTELLECT] += 0.1f;
-        stats_weights_[STATS_TYPE_ATTACK_POWER] += 1.0f;
-        stats_weights_[STATS_TYPE_SPELL_POWER] += 0.3f;
+        stats_weights_[STATS_TYPE_ATTACK_POWER] += 0.5f;
         stats_weights_[STATS_TYPE_ARMOR_PENETRATION] += 1.5f;
         stats_weights_[STATS_TYPE_HIT] += 1.9f;
         stats_weights_[STATS_TYPE_CRIT] += 1.7f;
@@ -324,7 +334,7 @@ void StatsWeightCalculator::GenerateBasicWeights(Player* player)
         stats_weights_[STATS_TYPE_STRENGTH] += 1.1f;
         stats_weights_[STATS_TYPE_INTELLECT] += 0.3f;
         stats_weights_[STATS_TYPE_ATTACK_POWER] += 1.0f;
-        stats_weights_[STATS_TYPE_SPELL_POWER] += 0.95f;
+        stats_weights_[STATS_TYPE_SPELL_POWER] += 0.5f;
         stats_weights_[STATS_TYPE_ARMOR_PENETRATION] += 0.9f;
         stats_weights_[STATS_TYPE_HIT] += 2.1f;
         stats_weights_[STATS_TYPE_CRIT] += 1.5f;
@@ -343,6 +353,7 @@ void StatsWeightCalculator::GenerateBasicWeights(Player* player)
         stats_weights_[STATS_TYPE_HIT] += 1.1f;
         stats_weights_[STATS_TYPE_CRIT] += 0.8f;
         stats_weights_[STATS_TYPE_HASTE] += 1.0f;
+        stats_weights_[STATS_TYPE_ATTACK_POWER] -= 1.0f;
         stats_weights_[STATS_TYPE_RANGED_DPS] += 1.0f;
     }
     else if (cls == CLASS_MAGE && tab == MAGE_TAB_FIRE)
@@ -353,15 +364,17 @@ void StatsWeightCalculator::GenerateBasicWeights(Player* player)
         stats_weights_[STATS_TYPE_HIT] += 1.2f;
         stats_weights_[STATS_TYPE_CRIT] += 1.1f;
         stats_weights_[STATS_TYPE_HASTE] += 0.8f;
+        stats_weights_[STATS_TYPE_ATTACK_POWER] -= 1.0f;
         stats_weights_[STATS_TYPE_RANGED_DPS] += 1.0f;
     }
     else if (cls == CLASS_SHAMAN && tab == SHAMAN_TAB_ELEMENTAL)
     {
-        stats_weights_[STATS_TYPE_INTELLECT] += 0.25f;
-        stats_weights_[STATS_TYPE_SPELL_POWER] += 1.0f;
+        stats_weights_[STATS_TYPE_INTELLECT] += 0.5f;
+        stats_weights_[STATS_TYPE_SPELL_POWER] += 1.2f;
         stats_weights_[STATS_TYPE_HIT] += 1.1f;
         stats_weights_[STATS_TYPE_CRIT] += 0.8f;
         stats_weights_[STATS_TYPE_HASTE] += 1.0f;
+        stats_weights_[STATS_TYPE_MANA_REGENERATION] += 0.5f;
     }
     else if ((cls == CLASS_PALADIN && tab == PALADIN_TAB_HOLY) ||
              (cls == CLASS_SHAMAN && tab == SHAMAN_TAB_RESTORATION))
@@ -382,14 +395,15 @@ void StatsWeightCalculator::GenerateBasicWeights(Player* player)
         stats_weights_[STATS_TYPE_MANA_REGENERATION] += 0.9f;
         stats_weights_[STATS_TYPE_CRIT] += 0.6f;
         stats_weights_[STATS_TYPE_HASTE] += 0.8f;
+        stats_weights_[STATS_TYPE_ATTACK_POWER] -= 1.0f;
         stats_weights_[STATS_TYPE_RANGED_DPS] += 1.0f;
     }
     else if ((cls == CLASS_WARRIOR && tab == WARRIOR_TAB_PROTECTION) ||
              (cls == CLASS_PALADIN && tab == PALADIN_TAB_PROTECTION))
     {
-        stats_weights_[STATS_TYPE_AGILITY] += 2.0f;
-        stats_weights_[STATS_TYPE_STRENGTH] += 1.0f;
-        stats_weights_[STATS_TYPE_STAMINA] += 3.5f;
+        stats_weights_[STATS_TYPE_AGILITY] += 0.2f;
+        stats_weights_[STATS_TYPE_STRENGTH] += 1.3f;
+        stats_weights_[STATS_TYPE_STAMINA] += 3.0f;
         stats_weights_[STATS_TYPE_ATTACK_POWER] += 0.2f;
         stats_weights_[STATS_TYPE_DEFENSE] += 2.5f;
         stats_weights_[STATS_TYPE_PARRY] += 2.0f;
@@ -399,26 +413,26 @@ void StatsWeightCalculator::GenerateBasicWeights(Player* player)
         stats_weights_[STATS_TYPE_BLOCK_VALUE] += 0.5f;
         stats_weights_[STATS_TYPE_ARMOR] += 0.15f;
         stats_weights_[STATS_TYPE_HIT] += 2.0f;
-        stats_weights_[STATS_TYPE_CRIT] += 0.2f;
-        stats_weights_[STATS_TYPE_HASTE] += 0.5f;
+        stats_weights_[STATS_TYPE_SPELL_POWER] -= 2.0f;
         stats_weights_[STATS_TYPE_EXPERTISE] += 3.0f;
         stats_weights_[STATS_TYPE_MELEE_DPS] += 2.0f;
     }
     else if (cls == CLASS_DEATH_KNIGHT && tab == DEATH_KNIGHT_TAB_BLOOD)
     {
-        stats_weights_[STATS_TYPE_AGILITY] += 2.0f;
-        stats_weights_[STATS_TYPE_STRENGTH] += 1.0f;
-        stats_weights_[STATS_TYPE_STAMINA] += 3.5f;
+        stats_weights_[STATS_TYPE_AGILITY] += 0.2f;
+        stats_weights_[STATS_TYPE_STRENGTH] += 1.3f;
+        stats_weights_[STATS_TYPE_STAMINA] += 3.0f;
         stats_weights_[STATS_TYPE_ATTACK_POWER] += 0.2f;
-        stats_weights_[STATS_TYPE_DEFENSE] += 3.5f;
+        stats_weights_[STATS_TYPE_DEFENSE] += 2.5f;
         stats_weights_[STATS_TYPE_PARRY] += 2.0f;
         stats_weights_[STATS_TYPE_DODGE] += 2.0f;
+        stats_weights_[STATS_TYPE_BLOCK_RATING] -= 2.0f;
+        stats_weights_[STATS_TYPE_BLOCK_VALUE] -= 2.0f;
         // stats_weights_[STATS_TYPE_RESILIENCE] += 2.0f;
         stats_weights_[STATS_TYPE_ARMOR] += 0.15f;
         stats_weights_[STATS_TYPE_HIT] += 2.0f;
-        stats_weights_[STATS_TYPE_CRIT] += 0.5f;
-        stats_weights_[STATS_TYPE_HASTE] += 0.5f;
-        stats_weights_[STATS_TYPE_EXPERTISE] += 3.5f;
+        stats_weights_[STATS_TYPE_SPELL_POWER] -= 1.0f;
+        stats_weights_[STATS_TYPE_EXPERTISE] += 3.0f;
         stats_weights_[STATS_TYPE_MELEE_DPS] += 2.0f;
     }
     else
@@ -438,6 +452,11 @@ void StatsWeightCalculator::GenerateBasicWeights(Player* player)
         stats_weights_[STATS_TYPE_EXPERTISE] += 3.7f;
         stats_weights_[STATS_TYPE_MELEE_DPS] += 3.0f;
     }
+
+    if (pvpSpec_ && !exclude_resilience_)
+        stats_weights_[STATS_TYPE_RESILIENCE] += 7.0f;
+    else if (!pvpSpec_)
+        stats_weights_[STATS_TYPE_RESILIENCE] -= 3.0f;
 }
 
 void StatsWeightCalculator::GenerateAdditionalWeights(Player* player)
@@ -561,7 +580,8 @@ void StatsWeightCalculator::CalculateItemTypePenalty(ItemTemplate const* proto)
                  (cls == CLASS_WARRIOR && tab == WARRIOR_TAB_FURY && !player_->CanTitanGrip() &&
                   player_->CanDualWield()) ||
                  (cls == CLASS_WARRIOR && tab == WARRIOR_TAB_PROTECTION) ||
-                 (cls == CLASS_PALADIN && tab == PALADIN_TAB_PROTECTION)))
+                 (cls == CLASS_PALADIN && tab == PALADIN_TAB_PROTECTION) ||
+                 (cls == CLASS_PALADIN && tab == PALADIN_TAB_HOLY)))
             {
                 weight_ *= 0.1;
             }
@@ -580,10 +600,15 @@ void StatsWeightCalculator::CalculateItemTypePenalty(ItemTemplate const* proto)
                 weight_ *= 0.1;
             }
             // caster's main hand (cannot duel weapon but can equip two-hands stuff)
-            if (cls == CLASS_MAGE || cls == CLASS_PRIEST || cls == CLASS_WARLOCK || cls == CLASS_DRUID ||
-                (cls == CLASS_SHAMAN && !player_->CanDualWield()))
+            if ((cls == CLASS_MAGE || cls == CLASS_PRIEST || cls == CLASS_WARLOCK || cls == CLASS_DRUID ||
+                (cls == CLASS_SHAMAN && !player_->CanDualWield())) &&
+                !(cls == CLASS_PALADIN && tab == PALADIN_TAB_HOLY))
             {
                 weight_ *= 0.65;
+            }
+            if (cls == CLASS_PALADIN && tab == PALADIN_TAB_HOLY)
+            {
+                weight_ *= 0.8;
             }
         }
         // fury with titan's grip
@@ -754,4 +779,168 @@ void StatsWeightCalculator::ApplyWeightFinetune(Player* player)
                 stats_weights_[STATS_TYPE_ARMOR_PENETRATION] *= 1.2f;
         }
     }
+}
+
+float StatsWeightCalculator::ApplyWeaponSpeedGovernance(ItemTemplate const* proto, int32 slot)
+{
+    // Weapon speed governance: multiply score by (1 + weight) when this weapon's Delay
+    // matches the spec-ideal speed. weight = 2.0f, giving a 3x boost for matching weapons.
+    float weight = 2.0f;
+
+    if (weight == 0.0f)
+        return 1.0f;
+
+    // Applies to mainhand, offhand, and ranged slots only.
+    if (slot != EQUIPMENT_SLOT_MAINHAND &&
+        slot != EQUIPMENT_SLOT_OFFHAND  &&
+        slot != EQUIPMENT_SLOT_RANGED)
+        return 1.0f;
+
+    uint32 delay = proto->Delay;  // milliseconds
+    float boost = 1.0f + weight;  // applied on a match
+
+    // Hunter: melee weapons are stat sticks — speed irrelevant.
+    // Ranged weapons scale Aimed/Chimera/Explosive Shot from top-end damage,
+    // so a slow ranged weapon (>=2600 ms) is strongly preferred.
+    if (cls == CLASS_HUNTER)
+    {
+        if (slot == EQUIPMENT_SLOT_RANGED && delay >= 2600)
+            return boost;
+        return 1.0f;
+    }
+
+    // Feral Druid: forms normalise attack speed; raw weapon Delay is irrelevant.
+    if (cls == CLASS_DRUID && tab == DRUID_TAB_FERAL)
+        return 1.0f;
+
+    switch (cls)
+    {
+        case CLASS_WARRIOR:
+            if (tab == WARRIOR_TAB_ARMS)
+            {
+                // Arms: slow 2H axes or polearms in mainhand only (Axe Specialization: +5% crit).
+                bool isAxeOrPolearm = (proto->SubClass == ITEM_SUBCLASS_WEAPON_AXE2 ||
+                                       proto->SubClass == ITEM_SUBCLASS_WEAPON_POLEARM);
+                if (slot == EQUIPMENT_SLOT_MAINHAND && delay >= 3400 && isAxeOrPolearm)
+                    return boost;
+            }
+            else if (tab == WARRIOR_TAB_FURY)
+            {
+                if (!player_->CanDualWield())
+                {
+                    // Pre-DW: treat like Arms — slow 2H in mainhand only.
+                    if (slot == EQUIPMENT_SLOT_MAINHAND && delay >= 3400)
+                        return boost;
+                }
+                else if (player_->CanTitanGrip())
+                {
+                    // TG: slow 2H (>=3400) in both hands.
+                    if (delay >= 3400)
+                        return boost;
+                }
+                else
+                {
+                    // SMF: slow 1H (>=2600) in both hands.
+                    // 2H must be excluded — delay >= 2600 would otherwise pass
+                    // for a 2H heirloom (~3600ms) just as it did for Enhancement.
+                    if (proto->InventoryType == INVTYPE_2HWEAPON)
+                        break;
+                    if (delay >= 2600)
+                        return boost;
+                }
+            }
+            else if (tab == WARRIOR_TAB_PROTECTION)
+            {
+                // Prot: slow 1H (>=2600) in mainhand. Shield in offhand, no speed bonus.
+                if (slot == EQUIPMENT_SLOT_MAINHAND && delay >= 2600)
+                    return boost;
+            }
+            break;
+
+        case CLASS_PALADIN:
+            if (tab == PALADIN_TAB_RETRIBUTION)
+            {
+                // Ret: slow 2H in mainhand only.
+                if (slot == EQUIPMENT_SLOT_MAINHAND && delay >= 3400)
+                    return boost;
+            }
+            else if (tab == PALADIN_TAB_PROTECTION)
+            {
+                // Prot: slow 1H (>=2600) in mainhand. Shield in offhand.
+                if (slot == EQUIPMENT_SLOT_MAINHAND && delay >= 2600)
+                    return boost;
+            }
+            break;
+
+        case CLASS_DEATH_KNIGHT:
+            if (tab == DEATH_KNIGHT_TAB_BLOOD || tab == DEATH_KNIGHT_TAB_UNHOLY)
+            {
+                // Blood / Unholy: slow 2H in mainhand only.
+                if (slot == EQUIPMENT_SLOT_MAINHAND && delay >= 3400)
+                    return boost;
+            }
+            else if (tab == DEATH_KNIGHT_TAB_FROST)
+            {
+                // Frost DK has Dual Wield innately — always dual-wields 1H.
+                if (proto->InventoryType == INVTYPE_2HWEAPON)
+                    break;
+                if (delay >= 2600)
+                    return boost;
+            }
+            break;
+
+        case CLASS_SHAMAN:
+            if (tab == SHAMAN_TAB_ENHANCEMENT)
+            {
+                if (!player_->CanDualWield())
+                {
+                    // Pre-Dual Wield: Enhancement plays like a 2H spec.
+                    if (slot == EQUIPMENT_SLOT_MAINHAND && delay >= 3400)
+                        return boost;
+                }
+                else
+                {
+                    // Post-Dual Wield: slow 1H (>=2600) in both hands.
+                    if (proto->InventoryType == INVTYPE_2HWEAPON)
+                        break;
+
+                    if (delay >= 2600)
+                    {
+                        float mult = boost;
+                        if (slot == EQUIPMENT_SLOT_OFFHAND)
+                        {
+                            Item* mh = player_->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+                            if (mh && mh->GetTemplate() && mh->GetTemplate()->Delay == delay)
+                                mult *= boost;  // synchronized: ×(1+weight)² total = ×9 for 2.0f weight
+                        }
+                        return mult;
+                    }
+                }
+            }
+            break;
+
+        case CLASS_ROGUE:
+            if (tab == ROGUE_TAB_COMBAT)
+            {
+                // Combat: slow MH (>=2600), fast OH (<=1500).
+                if (slot == EQUIPMENT_SLOT_MAINHAND && delay >= 2600)
+                    return boost;
+                if (slot == EQUIPMENT_SLOT_OFFHAND && delay <= 1500)
+                    return boost;
+            }
+            else  // Assassination or Subtlety: slow dagger MH, fast dagger OH.
+            {
+                bool isDagger = (proto->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER);
+                if (slot == EQUIPMENT_SLOT_MAINHAND && isDagger && delay >= 1700)
+                    return boost;
+                if (slot == EQUIPMENT_SLOT_OFFHAND && isDagger && delay <= 1500)
+                    return boost;
+            }
+            break;
+
+        default:
+            break;
+    }
+
+    return 1.0f;
 }

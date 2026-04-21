@@ -234,6 +234,11 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
     calculator.SetItemSetBonus(false);
     calculator.SetOverflowPenalty(false);
 
+    // Apply PvP weights if the bot is specced for PvP
+    bool isPvp = sRandomPlayerbotMgr.IsSpecPvp(bot->GetGUID().GetCounter(), bot->getClass());
+    if (isPvp)
+        calculator.SetPvpSpec(true);
+
     float itemScore = calculator.CalculateItem(itemProto->ItemId, randomPropertyId);
 
     if (itemScore)
