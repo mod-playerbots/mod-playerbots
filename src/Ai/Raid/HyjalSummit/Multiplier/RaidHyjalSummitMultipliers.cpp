@@ -19,8 +19,8 @@
 
 using namespace HyjalSummitHelpers;
 
-// I don't like having to run this checks on every boss, but otherwise
-// Bloodlust/Heroism will be blown on cooldown due to the trash wave composition
+// Without this multiplier, Bloodlust/Heroism will not be available for
+// bosses because it will be used on cooldown during trash waves
 float HyjalSummitTimeBloodlustAndHeroismMultiplier::GetValue(Action* action)
 {
     if (bot->getClass() != CLASS_SHAMAN)
