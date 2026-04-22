@@ -36,10 +36,25 @@ bool RageWinterchillBossEngagedByMainTankTrigger::IsActive()
            AI_VALUE2(Unit*, "find target", "rage winterchill");
 }
 
-bool RageWinterchillBossCastsDeathAndDecayTrigger::IsActive()
+bool RageWinterchillBossCastsDeathAndDecayOnRangedTrigger::IsActive()
 {
     return botAI->IsRanged(bot) &&
            AI_VALUE2(Unit*, "find target", "rage winterchill");
+}
+
+bool RageWinterchillMeleeIsStandingInDeathAndDecayTrigger::IsActive()
+{
+    if (botAI->IsRanged(bot))
+        return false;
+
+    Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
+    if (!winterchill || winterchill->GetVictim() == bot)
+        return false;
+
+    if (botAI->IsMainTank(bot))
+        return false;
+
+    return IsInDeathAndDecay(bot, DEATH_AND_DECAY_SAFE_RADIUS);
 }
 
 // Anetheron
@@ -253,32 +268,7 @@ bool AzgalorBossCastsRainOfFireOnMeleeTrigger::IsActive()
         bot->HasAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DOOM)))
         return false;
 
-    constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
-    uint32 now = getMSTime();
-
-    auto instanceIt = rainOfFirePosition.find(bot->GetMap()->GetInstanceId());
-    if (instanceIt == rainOfFirePosition.end())
-        return false;
-
-    auto& dynObjMap = instanceIt->second;
-    for (auto it = dynObjMap.begin(); it != dynObjMap.end(); )
-    {
-        if (getMSTimeDiff(it->second.spawnTime, now) >= RAIN_OF_FIRE_DURATION)
-            it = dynObjMap.erase(it);
-        else
-            ++it;
-    }
-
-    if (dynObjMap.empty())
-        return false;
-
-    for (auto const& [guid, data] : dynObjMap)
-    {
-        if (bot->GetExactDist2d(data.position) < 16.0f)
-            return true;
-    }
-
-    return false;
+    return IsInRainOfFire(bot, RAIN_OF_FIRE_RADIUS);
 }
 
 bool AzgalorBotIsDoomedTrigger::IsActive()
@@ -313,9 +303,10 @@ bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
     return false;
 }
 
-bool AzgalorDoomguardsContinueToSpawnTrigger::IsActive()
+bool AzgalorDoomguardsMustDieTrigger::IsActive()
 {
-    return botAI->IsDps(bot) && AI_VALUE2(Unit*, "find target", "azgalor");
+    return botAI->IsRangedDps(bot) &&
+           AI_VALUE2(Unit*, "find target", "azgalor");
 }
 
 // Archimonde

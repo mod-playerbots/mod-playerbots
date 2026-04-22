@@ -18,19 +18,19 @@ public:
 
 // Rage Winterchill
 
-class RageWinterchillDisableMainTankAvoidAoeMultiplier : public Multiplier
-{
-public:
-    RageWinterchillDisableMainTankAvoidAoeMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "rage winterchill disable main tank avoid aoe multiplier") {}
-    virtual float GetValue(Action* action);
-};
-
 class RageWinterchillDisableCombatFormationMoveMultiplier : public Multiplier
 {
 public:
     RageWinterchillDisableCombatFormationMoveMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "rage winterchill disable combat formation move multiplier") {}
+    virtual float GetValue(Action* action);
+};
+
+class RageWinterchillMeleeControlAvoidanceMultiplier : public Multiplier
+{
+public:
+    RageWinterchillMeleeControlAvoidanceMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "rage winterchill melee control avoidance multiplier") {}
     virtual float GetValue(Action* action);
 };
 
@@ -104,11 +104,11 @@ public:
     virtual float GetValue(Action* action);
 };
 
-class AzgalorMeleeControlAvoidanceMultiplier : public Multiplier
+class AzgalorMeleeDpsControlAvoidanceMultiplier : public Multiplier
 {
 public:
-    AzgalorMeleeControlAvoidanceMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "azgalor melee control avoidance multiplier") {}
+    AzgalorMeleeDpsControlAvoidanceMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "azgalor melee dps control avoidance multiplier") {}
     virtual float GetValue(Action* action);
 };
 

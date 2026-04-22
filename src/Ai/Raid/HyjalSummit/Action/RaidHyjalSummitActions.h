@@ -46,6 +46,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class RageWinterchillMeleeGetOutOfDeathAndDecayAction : public AttackAction
+{
+public:
+    RageWinterchillMeleeGetOutOfDeathAndDecayAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "rage winterchill melee get out of death and decay") {}
+    bool Execute(Event event) override;
+};
+
 // Anetheron
 
 class AnetheronMisdirectBossAndInfernalsToTanksAction : public AttackAction
@@ -180,11 +188,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class AzgalorMeleeGetOutOfFireAction : public MovementAction
+class AzgalorMeleeGetOutOfFireAndSwapTargetsAction : public AttackAction
 {
 public:
-    AzgalorMeleeGetOutOfFireAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "azgalor melee get out of fire") {}
+    AzgalorMeleeGetOutOfFireAndSwapTargetsAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "azgalor melee get out of fire and swap targets") {}
     bool Execute(Event event) override;
 };
 
@@ -204,11 +212,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class AzgalorAssignDpsPriorityAction : public AttackAction
+class AzgalorRangedDpsPrioritizeDoomguardsAction : public AttackAction
 {
 public:
-    AzgalorAssignDpsPriorityAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "azgalor assign dps priority") {}
+    AzgalorRangedDpsPrioritizeDoomguardsAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "azgalor ranged dps prioritize doomguards") {}
     bool Execute(Event event) override;
 };
 

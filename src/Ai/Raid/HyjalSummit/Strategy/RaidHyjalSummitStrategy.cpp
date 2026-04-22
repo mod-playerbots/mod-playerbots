@@ -19,8 +19,11 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("rage winterchill boss engaged by main tank", {
         NextAction("rage winterchill main tank position boss", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("rage winterchill boss casts death and decay", {
+    triggers.push_back(new TriggerNode("rage winterchill boss casts death and decay on ranged", {
         NextAction("rage winterchill spread ranged in circle", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("rage winterchill melee is standing in death and decay", {
+        NextAction("rage winterchill melee get out of death and decay", ACTION_EMERGENCY + 1) }));
 
     // Anetheron
     triggers.push_back(new TriggerNode("anetheron pulling boss or infernal", {
@@ -74,7 +77,7 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("azgalor disperse ranged", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("azgalor boss casts rain of fire on melee", {
-        NextAction("azgalor melee get out of fire", ACTION_EMERGENCY + 2) }));
+        NextAction("azgalor melee get out of fire and swap targets", ACTION_EMERGENCY + 2) }));
 
     triggers.push_back(new TriggerNode("azgalor bot is doomed", {
         NextAction("azgalor move to doomguard tank", ACTION_EMERGENCY + 3) }));
@@ -82,8 +85,8 @@ void RaidHyjalSummitStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("azgalor doomguards must be controlled", {
         NextAction("azgalor first assist tank position doomguard", ACTION_RAID + 1) }));
 
-    triggers.push_back(new TriggerNode("azgalor doomguards continue to spawn", {
-        NextAction("azgalor assign dps priority", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("azgalor doomguards must die", {
+        NextAction("azgalor ranged dps prioritize doomguards", ACTION_RAID + 1) }));
 
     // Archimonde
     triggers.push_back(new TriggerNode("archimonde pulling boss", {
@@ -111,8 +114,8 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     multipliers.push_back(new HyjalSummitTimeBloodlustAndHeroismMultiplier(botAI));
 
     // Rage Winterchill
-    multipliers.push_back(new RageWinterchillDisableMainTankAvoidAoeMultiplier(botAI));
     multipliers.push_back(new RageWinterchillDisableCombatFormationMoveMultiplier(botAI));
+    multipliers.push_back(new RageWinterchillMeleeControlAvoidanceMultiplier(botAI));
 
     // Anetheron
     multipliers.push_back(new AnetheronDisableTankActionsMultiplier(botAI));
@@ -127,7 +130,7 @@ void RaidHyjalSummitStrategy::InitMultipliers(std::vector<Multiplier*>& multipli
     // Azgalor
     multipliers.push_back(new AzgalorDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new AzgalorDoomedBotPrioritizePositioningMultiplier(botAI));
-    multipliers.push_back(new AzgalorMeleeControlAvoidanceMultiplier(botAI));
+    multipliers.push_back(new AzgalorMeleeDpsControlAvoidanceMultiplier(botAI));
 
     // Archimonde
     multipliers.push_back(new ArchimondeDisableCombatFormationMoveMultiplier(botAI));

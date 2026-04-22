@@ -57,18 +57,6 @@ float HyjalSummitTimeBloodlustAndHeroismMultiplier::GetValue(Action* action)
 
 // Rage Winterchill
 
-float RageWinterchillDisableMainTankAvoidAoeMultiplier::GetValue(Action* action)
-{
-    if (!botAI->IsMainTank(bot) ||
-        !AI_VALUE2(Unit*, "find target", "rage winterchill"))
-        return 1.0f;
-
-    if (dynamic_cast<AvoidAoeAction*>(action))
-        return 0.0f;
-
-    return 1.0f;
-}
-
 float RageWinterchillDisableCombatFormationMoveMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "rage winterchill"))
@@ -77,6 +65,34 @@ float RageWinterchillDisableCombatFormationMoveMultiplier::GetValue(Action* acti
     if (dynamic_cast<CombatFormationMoveAction*>(action) &&
         !dynamic_cast<SetBehindTargetAction*>(action))
         return 0.0f;
+
+    return 1.0f;
+}
+
+float RageWinterchillMeleeControlAvoidanceMultiplier::GetValue(Action* action)
+{
+    if (botAI->IsRanged(bot))
+        return 1.0f;
+
+    Unit* winterchill = AI_VALUE2(Unit*, "find target", "rage winterchill");
+    if (!winterchill)
+        return 1.0f;
+
+    if (IsInDeathAndDecay(bot, DEATH_AND_DECAY_SAFE_RADIUS + 2.0f))
+    {
+        if (dynamic_cast<AvoidAoeAction*>(action))
+            return 0.0f;
+
+        if (botAI->IsMainTank(bot) || winterchill->GetVictim() == bot)
+            return 1.0f;
+
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<RageWinterchillMeleeGetOutOfDeathAndDecayAction*>(action))
+            return 0.0f;
+
+        if (dynamic_cast<CastReachTargetSpellAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -198,7 +214,7 @@ float AzgalorDisableTankActionsMultiplier::GetValue(Action* action)
     if (dynamic_cast<TankFaceAction*>(action))
         return 0.0f;
 
-    if (dynamic_cast<TankAssistAction*>(action))
+    if (dynamic_cast<TankAssistAction*>(action) || dynamic_cast<AvoidAoeAction*>(action))
     {
         if (botAI->IsMainTank(bot))
         {
@@ -229,38 +245,36 @@ float AzgalorDoomedBotPrioritizePositioningMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float AzgalorMeleeControlAvoidanceMultiplier::GetValue(Action* action)
+float AzgalorMeleeDpsControlAvoidanceMultiplier::GetValue(Action* action)
 {
-    if (botAI->IsRanged(bot) || !AI_VALUE2(Unit*, "find target", "azgalor"))
+    if (botAI->IsRanged(bot) || botAI->IsTank(bot))
         return 1.0f;
 
-    if (dynamic_cast<AvoidAoeAction*>(action))
-        return 0.0f;
-
-    if (!botAI->IsDps(bot))
+    Unit* azgalor = AI_VALUE2(Unit*, "find target", "azgalor");
+    if (!azgalor)
         return 1.0f;
 
-    constexpr uint32 RAIN_OF_FIRE_DURATION = 10000;
-    uint32 now = getMSTime();
-
-    auto instanceIt = rainOfFirePosition.find(bot->GetMap()->GetInstanceId());
-    if (instanceIt == rainOfFirePosition.end())
-        return 1.0f;
-
-    for (auto const& [guid, data] : instanceIt->second)
+    TankPositionState tankState = GetAzgalorTankPositionState(botAI, bot);
+    if ((tankState == TankPositionState::Unknown ||
+         tankState == TankPositionState::MovingToTransition) &&
+         dynamic_cast<MovementAction*>(action) &&
+         !dynamic_cast<AzgalorWaitAtSafePositionAction*>(action))
     {
-        if (getMSTimeDiff(data.spawnTime, now) < RAIN_OF_FIRE_DURATION &&
-            bot->GetExactDist2d(data.position) < 23.0f)
-        {
-            if (dynamic_cast<MovementAction*>(action) &&
-                !dynamic_cast<AzgalorMeleeGetOutOfFireAction*>(action))
-                return 0.0f;
+        return 0.0f;
+    }
 
-            if (dynamic_cast<CastReachTargetSpellAction*>(action))
-                return 0.0f;
+    constexpr float singleTickMoveAwayDist = 6.0f;
+    if (IsInRainOfFire(bot, RAIN_OF_FIRE_RADIUS + singleTickMoveAwayDist))
+    {
+        if (dynamic_cast<AvoidAoeAction*>(action))
+            return 0.0f;
 
-            break;
-        }
+        if (dynamic_cast<MovementAction*>(action) &&
+            !dynamic_cast<AzgalorMeleeGetOutOfFireAndSwapTargetsAction*>(action))
+            return 0.0f;
+
+        if (dynamic_cast<CastReachTargetSpellAction*>(action))
+            return 0.0f;
     }
 
     return 1.0f;

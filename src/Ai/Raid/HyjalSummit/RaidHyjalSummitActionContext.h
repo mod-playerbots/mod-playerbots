@@ -28,6 +28,9 @@ public:
         creators["rage winterchill spread ranged in circle"] =
             &RaidHyjalSummitActionContext::rage_winterchill_spread_ranged_in_circle;
 
+        creators["rage winterchill melee get out of death and decay"] =
+            &RaidHyjalSummitActionContext::rage_winterchill_melee_get_out_of_death_and_decay;
+
         // Anetheron
         creators["anetheron misdirect boss and infernals to tanks"] =
             &RaidHyjalSummitActionContext::anetheron_misdirect_boss_and_infernals_to_tanks;
@@ -79,8 +82,8 @@ public:
         creators["azgalor disperse ranged"] =
             &RaidHyjalSummitActionContext::azgalor_disperse_ranged;
 
-        creators["azgalor melee get out of fire"] =
-            &RaidHyjalSummitActionContext::azgalor_melee_get_out_of_fire;
+        creators["azgalor melee get out of fire and swap targets"] =
+            &RaidHyjalSummitActionContext::azgalor_melee_get_out_of_fire_and_swap_targets;
 
         creators["azgalor move to doomguard tank"] =
             &RaidHyjalSummitActionContext::azgalor_move_to_doomguard_tank;
@@ -88,8 +91,8 @@ public:
         creators["azgalor first assist tank position doomguard"] =
             &RaidHyjalSummitActionContext::azgalor_first_assist_tank_position_doomguard;
 
-        creators["azgalor assign dps priority"] =
-            &RaidHyjalSummitActionContext::azgalor_assign_dps_priority;
+        creators["azgalor ranged dps prioritize doomguards"] =
+            &RaidHyjalSummitActionContext::azgalor_ranged_dps_prioritize_doomguards;
 
         // Archimonde
         creators["archimonde misdirect boss to main tank"] =
@@ -125,6 +128,9 @@ private:
 
     static Action* rage_winterchill_spread_ranged_in_circle(
         PlayerbotAI* botAI) { return new RageWinterchillSpreadRangedInCircleAction(botAI); }
+
+    static Action* rage_winterchill_melee_get_out_of_death_and_decay(
+        PlayerbotAI* botAI) { return new RageWinterchillMeleeGetOutOfDeathAndDecayAction(botAI); }
 
     // Anetheron
     static Action* anetheron_misdirect_boss_and_infernals_to_tanks(
@@ -177,8 +183,8 @@ private:
     static Action* azgalor_disperse_ranged(
         PlayerbotAI* botAI) { return new AzgalorDisperseRangedAction(botAI); }
 
-    static Action* azgalor_melee_get_out_of_fire(
-        PlayerbotAI* botAI) { return new AzgalorMeleeGetOutOfFireAction(botAI); }
+    static Action* azgalor_melee_get_out_of_fire_and_swap_targets(
+        PlayerbotAI* botAI) { return new AzgalorMeleeGetOutOfFireAndSwapTargetsAction(botAI); }
 
     static Action* azgalor_move_to_doomguard_tank(
         PlayerbotAI* botAI) { return new AzgalorMoveToDoomguardTankAction(botAI); }
@@ -186,8 +192,8 @@ private:
     static Action* azgalor_first_assist_tank_position_doomguard(
         PlayerbotAI* botAI) { return new AzgalorFirstAssistTankPositionDoomguardAction(botAI); }
 
-    static Action* azgalor_assign_dps_priority(
-        PlayerbotAI* botAI) { return new AzgalorAssignDpsPriorityAction(botAI); }
+    static Action* azgalor_ranged_dps_prioritize_doomguards(
+        PlayerbotAI* botAI) { return new AzgalorRangedDpsPrioritizeDoomguardsAction(botAI); }
 
     // Archimonde
     static Action* archimonde_misdirect_boss_to_main_tank(

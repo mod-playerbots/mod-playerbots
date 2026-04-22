@@ -9,10 +9,35 @@
 
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include "Timer.h"
 
 namespace HyjalSummitHelpers
 {
     // General
+
+    bool GetGroundedStepPosition(
+        Player* bot, float destinationX, float destinationY, float moveDist,
+        float& stepX, float& stepY, float& stepZ)
+    {
+        float distance = bot->GetExactDist2d(destinationX, destinationY);
+        if (distance <= 0.0f)
+            return false;
+
+        float stepDistance = std::min(moveDist, distance);
+        float deltaX = destinationX - bot->GetPositionX();
+        float deltaY = destinationY - bot->GetPositionY();
+        stepX = bot->GetPositionX() + (deltaX / distance) * stepDistance;
+        stepY = bot->GetPositionY() + (deltaY / distance) * stepDistance;
+        stepZ = bot->GetMapWaterOrGroundLevel(stepX, stepY, bot->GetPositionZ());
+        if (stepZ <= INVALID_HEIGHT)
+            stepZ = bot->GetPositionZ();
+
+        bot->GetMap()->CheckCollisionAndGetValidCoords(
+            bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
+            stepX, stepY, stepZ, false);
+
+        return true;
+    }
 
     RangedGroups GetRangedGroups(PlayerbotAI* botAI, Player* bot)
     {
@@ -50,6 +75,54 @@ namespace HyjalSummitHelpers
 
     const Position WINTERCHILL_TANK_POSITION = { 5031.061f, -1784.521f, 1321.626f };
     std::unordered_map<ObjectGuid, bool> hasReachedWinterchillPosition;
+    std::unordered_map<uint32, DeathAndDecayData> deathAndDecayPosition;
+
+    DeathAndDecayData* GetActiveWinterchillDeathAndDecay(uint32 instanceId)
+    {
+        auto instanceIt = deathAndDecayPosition.find(instanceId);
+        if (instanceIt == deathAndDecayPosition.end())
+            return nullptr;
+
+        uint32 now = getMSTime();
+        uint32 elapsed = getMSTimeDiff(instanceIt->second.spawnTime, now);
+        if (elapsed >= DEATH_AND_DECAY_REACQUIRE_DELAY)
+        {
+            deathAndDecayPosition.erase(instanceIt);
+            return nullptr;
+        }
+
+        if (elapsed >= DEATH_AND_DECAY_DURATION)
+            return nullptr;
+
+        return &instanceIt->second;
+    }
+
+    bool IsInDeathAndDecay(Player* bot, float radius)
+    {
+        uint32 instanceId = bot->GetMap()->GetInstanceId();
+        Aura* aura = bot->GetAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DEATH_AND_DECAY));
+        if (aura)
+        {
+            DynamicObject* dynObj = aura->GetDynobjOwner();
+            if (dynObj && dynObj->IsInWorld())
+            {
+                uint32 now = getMSTime();
+                auto instanceIt = deathAndDecayPosition.find(instanceId);
+                if (instanceIt == deathAndDecayPosition.end() ||
+                    getMSTimeDiff(instanceIt->second.spawnTime, now) >= DEATH_AND_DECAY_REACQUIRE_DELAY)
+                {
+                    deathAndDecayPosition[instanceId] =
+                        DeathAndDecayData{ dynObj->GetPosition(), now };
+                }
+            }
+        }
+
+        DeathAndDecayData* data = GetActiveWinterchillDeathAndDecay(instanceId);
+        if (!data)
+            return false;
+
+        return bot->GetExactDist2d(data->position) < radius;
+    }
 
     // Anetheron
 
@@ -109,7 +182,27 @@ namespace HyjalSummitHelpers
     const Position AZGALOR_TANK_FINAL_POSITION =      { 5496.379f, -2675.265f, 1481.053f };
     const Position AZGALOR_DOOMGUARD_POSITION =       { 5485.555f, -2731.659f, 1485.555f };
     std::unordered_map<ObjectGuid, TankPositionState> azgalorTankStep;
-    std::unordered_map<uint32, std::unordered_map<ObjectGuid, RainOfFireData>> rainOfFirePosition;
+    std::unordered_map<uint32, RainOfFireData> rainOfFirePosition;
+
+    RainOfFireData* GetActiveAzgalorRainOfFire(uint32 instanceId)
+    {
+        auto instanceIt = rainOfFirePosition.find(instanceId);
+        if (instanceIt == rainOfFirePosition.end())
+            return nullptr;
+
+        uint32 now = getMSTime();
+        uint32 elapsed = getMSTimeDiff(instanceIt->second.spawnTime, now);
+        if (elapsed >= RAIN_OF_FIRE_REACQUIRE_DELAY)
+        {
+            rainOfFirePosition.erase(instanceIt);
+            return nullptr;
+        }
+
+        if (elapsed >= RAIN_OF_FIRE_DURATION)
+            return nullptr;
+
+        return &instanceIt->second;
+    }
 
     TankPositionState GetAzgalorTankPositionState(PlayerbotAI* botAI, Player* bot)
     {
@@ -122,6 +215,15 @@ namespace HyjalSummitHelpers
             return it->second;
 
         return TankPositionState::Unknown;
+    }
+
+    bool IsInRainOfFire(Player* bot, float radius)
+    {
+        RainOfFireData* data = GetActiveAzgalorRainOfFire(bot->GetMap()->GetInstanceId());
+        if (!data)
+            return false;
+
+        return bot->GetExactDist2d(data->position) < radius;
     }
 
     bool AnyGroupMemberHasDoom(Player* bot)
@@ -143,6 +245,24 @@ namespace HyjalSummitHelpers
     // Archimonde
 
     const Position ARCHIMONDE_INITIAL_POSITION = { 5640.502f, -3421.238f, 1587.453f };
+    std::unordered_map<uint32, AirBurstData> archimondeAirBurstTargets;
     std::unordered_map<uint32, std::vector<DoomfireTrailData>> doomfireTrails;
     std::unordered_map<ObjectGuid, uint32> doomfireLastSampleTime;
+
+    AirBurstData* GetRecentArchimondeAirBurst(uint32 instanceId)
+    {
+        auto instanceIt = archimondeAirBurstTargets.find(instanceId);
+        if (instanceIt == archimondeAirBurstTargets.end())
+            return nullptr;
+
+        constexpr uint32 airBurstReactionWindow = 2000;
+        uint32 now = getMSTime();
+        if (getMSTimeDiff(instanceIt->second.castTime, now) >= airBurstReactionWindow)
+        {
+            archimondeAirBurstTargets.erase(instanceIt);
+            return nullptr;
+        }
+
+        return &instanceIt->second;
+    }
 }

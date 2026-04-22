@@ -25,8 +25,11 @@ public:
         creators["rage winterchill boss engaged by main tank"] =
             &RaidHyjalSummitTriggerContext::rage_winterchill_boss_engaged_by_main_tank;
 
-        creators["rage winterchill boss casts death and decay"] =
-            &RaidHyjalSummitTriggerContext::rage_winterchill_boss_casts_death_and_decay;
+        creators["rage winterchill boss casts death and decay on ranged"] =
+            &RaidHyjalSummitTriggerContext::rage_winterchill_boss_casts_death_and_decay_on_ranged;
+
+        creators["rage winterchill melee is standing in death and decay"] =
+            &RaidHyjalSummitTriggerContext::rage_winterchill_melee_is_standing_in_death_and_decay;
 
         // Anetheron
         creators["anetheron pulling boss or infernal"] =
@@ -88,8 +91,8 @@ public:
         creators["azgalor doomguards must be controlled"] =
             &RaidHyjalSummitTriggerContext::azgalor_doomguards_must_be_controlled;
 
-        creators["azgalor doomguards continue to spawn"] =
-            &RaidHyjalSummitTriggerContext::azgalor_doomguards_continue_to_spawn;
+        creators["azgalor doomguards must die"] =
+            &RaidHyjalSummitTriggerContext::azgalor_doomguards_must_die;
 
         // Archimonde
         creators["archimonde pulling boss"] =
@@ -123,8 +126,11 @@ private:
     static Trigger* rage_winterchill_boss_engaged_by_main_tank(
         PlayerbotAI* botAI) { return new RageWinterchillBossEngagedByMainTankTrigger(botAI); }
 
-    static Trigger* rage_winterchill_boss_casts_death_and_decay(
-        PlayerbotAI* botAI) { return new RageWinterchillBossCastsDeathAndDecayTrigger(botAI); }
+    static Trigger* rage_winterchill_boss_casts_death_and_decay_on_ranged(
+        PlayerbotAI* botAI) { return new RageWinterchillBossCastsDeathAndDecayOnRangedTrigger(botAI); }
+
+    static Trigger* rage_winterchill_melee_is_standing_in_death_and_decay(
+        PlayerbotAI* botAI) { return new RageWinterchillMeleeIsStandingInDeathAndDecayTrigger(botAI); }
 
     // Anetheron
     static Trigger* anetheron_pulling_boss_or_infernal(
@@ -186,8 +192,8 @@ private:
     static Trigger* azgalor_doomguards_must_be_controlled(
         PlayerbotAI* botAI) { return new AzgalorDoomguardsMustBeControlledTrigger(botAI); }
 
-    static Trigger* azgalor_doomguards_continue_to_spawn(
-        PlayerbotAI* botAI) { return new AzgalorDoomguardsContinueToSpawnTrigger(botAI); }
+    static Trigger* azgalor_doomguards_must_die(
+        PlayerbotAI* botAI) { return new AzgalorDoomguardsMustDieTrigger(botAI); }
 
     // Archimonde
     static Trigger* archimonde_pulling_boss(
