@@ -499,7 +499,6 @@ void PlayerbotFactory::BuildCcBreakTrinketCache()
     LOG_INFO("playerbots", "CC-break trinket cache: {} items.", ccBreakTrinketCache.size());
 }
 
-
 /*static*/ uint8 PlayerbotFactory::GetPreferredArmorType(uint8 cls)
 {
     switch (cls)
