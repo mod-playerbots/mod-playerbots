@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdlib>
 
+#include "AreaDefines.h"
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
 #include "G3D/Vector2.h"
@@ -468,10 +469,14 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
         data.inFlight = true;
         return false;
     }
-    Creature* flightMaster = ObjectAccessor::GetCreature(*bot, data.fromFlightMaster);
+
+    if (bot->GetDistance(data.flightMasterPos) > INTERACTION_DISTANCE)
+        return MoveFarTo(data.flightMasterPos);
+
+    Creature* flightMaster = bot->FindNearestCreature(data.flightMasterEntry, INTERACTION_DISTANCE * 3);
     if (!flightMaster || !flightMaster->IsAlive())
     {
-        botAI->rpgInfo.ChangeToIdle();
+        info.ChangeToIdle();
         return true;
     }
     if (bot->GetDistance(flightMaster) > INTERACTION_DISTANCE)
@@ -487,7 +492,8 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
     {
         LOG_DEBUG("playerbots", "[New RPG] {} active taxi path {} (from {} to {}) failed", bot->GetName(),
                   flightMaster->GetEntry(), nodes[0], nodes[nodes.size() - 1]);
-        botAI->rpgInfo.ChangeToIdle();
+        info.ChangeToIdle();
+        return true;
     }
     return true;
 }
