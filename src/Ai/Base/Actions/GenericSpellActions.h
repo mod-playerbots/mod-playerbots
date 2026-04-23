@@ -253,7 +253,12 @@ class CastShootAction : public CastSpellAction
 public:
     CastShootAction(PlayerbotAI* botAI);
 
+    bool isPossible() override;
+    bool Execute(Event event) override;
     ActionThreatType getThreatType() override { return ActionThreatType::None; }
+
+private:
+    uint32 shootSpellId;
 };
 
 class CastLifeBloodAction : public CastHealingSpellAction

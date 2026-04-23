@@ -82,6 +82,12 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     triggers.push_back(
         new TriggerNode("target", { NextAction("tell target", relevance) }));
     triggers.push_back(
+        new TriggerNode("pull", { NextAction("pull my target", relevance) }));
+    triggers.push_back(
+        new TriggerNode("pull back", { NextAction("pull my target", relevance) }));
+    triggers.push_back(
+        new TriggerNode("pull rti", { NextAction("pull rti target", relevance) }));
+    triggers.push_back(
         new TriggerNode("ready", { NextAction("ready check", relevance) }));
     triggers.push_back(
         new TriggerNode("naxx", {NextAction("naxx chat shortcut", relevance)}));
@@ -107,6 +113,7 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     triggers.push_back(new TriggerNode("pet", { NextAction("pet", relevance) }));
     triggers.push_back(new TriggerNode("pet attack", { NextAction("pet attack", relevance) }));
     triggers.push_back(new TriggerNode("roll", { NextAction("roll", relevance) }));
+    triggers.push_back(new TriggerNode("focus heal", { NextAction("focus heal targets", relevance) }));
 }
 
 ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI)
@@ -200,4 +207,5 @@ ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : Pas
     supported.push_back("pet");
     supported.push_back("pet attack");
     supported.push_back("wait for attack time");
+    supported.push_back("focus heal");
 }
