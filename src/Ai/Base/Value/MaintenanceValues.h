@@ -6,7 +6,7 @@
 #ifndef _PLAYERBOT_MAINTANCEVALUE_H
 #define _PLAYERBOT_MAINTANCEVALUE_H
 
-#include "PlayerbotAuctionHouseUtil.h"
+#include "AhActions.h"
 #include "Value.h"
 
 #include <unordered_map>

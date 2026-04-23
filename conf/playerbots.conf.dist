@@ -1218,9 +1218,25 @@ AiPlayerbot.AuctionHouseRandomStackSize = 1
 
 # Comma-separated item IDs that bots must never post to the auction house.
 # Useful for class essentials (e.g. ammo) you want bots to keep.
-# Example: 2512,2515
-# Default: (empty)
-AiPlayerbot.AuctionHouseExcludedItemIds =
+# Default list excludes everything the `.playerbots maintenance` command grants
+# to bots — sharpening/weight stones, oils, class reagents, poisons, totems —
+# so bots don't immediately list the consumables they were just given.
+#
+# Sharpening stones: 2862, 2863, 2871, 7964, 12404, 18262, 23528, 23529
+# Weightstones:      3239, 3240, 3241, 7965, 12643, 28420, 28421
+# Mana oils:         20745, 20747, 20748, 22521
+# Wizard oils:       20744, 20746, 20749, 20750, 22522
+# Rogue poisons:     2892, 2893, 6947, 6949, 6950, 8926, 8927, 8928, 8984, 8985,
+#                    20844, 21927, 22053, 22054, 43230, 43231, 43232, 43233
+# DK reagent:        37201
+# Druid reagents:    17034, 17035, 17036, 17037, 17038, 22147, 44614,
+#                    17021, 17026, 22148, 44605
+# Mage reagents:     17020, 17031, 17032
+# Paladin reagent:   21177
+# Priest reagents:   17028, 17029, 44615
+# Shaman totems:     5175, 5176, 5177, 5178, 17030
+# Warlock reagent:   6265
+AiPlayerbot.AuctionHouseExcludedItemIds = 2862,2863,2871,2892,2893,3239,3240,3241,5175,5176,5177,5178,6265,6947,6949,6950,7964,7965,8926,8927,8928,8984,8985,12404,12643,17020,17021,17026,17028,17029,17030,17031,17032,17034,17035,17036,17037,17038,18262,20744,20745,20746,20747,20748,20749,20750,20844,21177,21927,22053,22054,22147,22148,22521,22522,23528,23529,28420,28421,37201,43230,43231,43232,43233,44605,44614,44615
 
 # Minimum opening bid in copper when bots post to the auction house.
 # Example: 100 = 1 silver
@@ -1239,6 +1255,12 @@ AiPlayerbot.AuctionHouseUndercutMaxPct = 200
 # Default: 110, 133
 AiPlayerbot.AuctionHouseBuyoutMinPct = 110
 AiPlayerbot.AuctionHouseBuyoutMaxPct = 133
+
+# Threshold for "meaningful holding" of a tradeable material. Bots keep up
+# to this many of a skill material before listing surplus on the AH, and
+# list materials in stacks of at least this size. 20 = one standard stack.
+# Default: 20
+AiPlayerbot.AuctionHouseMaterialStackSize = 20
 
 #
 #

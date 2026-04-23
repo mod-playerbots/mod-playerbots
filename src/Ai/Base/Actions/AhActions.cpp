@@ -27,15 +27,15 @@ bool AhSellAction::PostAuctionSell(Item* item, ItemTemplate const* proto, Object
         uint32 minPct = std::max<uint32>(100, sPlayerbotAIConfig.auctionHouseUndercutMinPct);
         uint32 maxPct = std::max<uint32>(minPct, sPlayerbotAIConfig.auctionHouseUndercutMaxPct);
         uint32 anchorUnitPrice = marketSnapshot.HasData() ? marketSnapshot.minUnitBuyout : unitPrice;
-        unitPrice = std::max<uint32>(1,
-            RoundAuctionPrice(double(anchorUnitPrice) * 100.0 / urand(minPct, maxPct)));
+        unitPrice = BotAuctionUtils::RoundAuctionPrice(
+            double(anchorUnitPrice) * 100.0 / urand(minPct, maxPct));
     }
 
     uint32 startBid = std::max<uint32>(sPlayerbotAIConfig.auctionHouseMinBidPrice,
-        RoundAuctionPrice(double(itemCount) * unitPrice * std::max<uint32>(1, policy.minBidPct) / 100.0));
+        BotAuctionUtils::RoundAuctionPrice(double(itemCount) * unitPrice * policy.minBidPct / 100.0));
     uint32 minBuyoutPct = std::max<uint32>(100, policy.buyoutMinPct);
     uint32 maxBuyoutPct = std::max<uint32>(minBuyoutPct, policy.buyoutMaxPct);
-    uint32 buyout = RoundAuctionPrice(double(startBid) * urand(minBuyoutPct, maxBuyoutPct) / 100.0);
+    uint32 buyout = BotAuctionUtils::RoundAuctionPrice(double(startBid) * urand(minBuyoutPct, maxBuyoutPct) / 100.0);
     if (buyout <= startBid)
         buyout = startBid + 1;
 
@@ -58,9 +58,29 @@ bool AhSellAction::PostAuctionSell(Item* item, ItemTemplate const* proto, Object
 
     // Invalidate cache so the next pricing pass re-queries and includes this
     // freshly posted listing.
-    sPlayerbotAuctionHouseUtil.Invalidate(
-        {proto->ItemId, ResolveAhFactionBucket(auctioneerFaction)});
+    sPlayerbotAuctionHouseUtil.InvalidateMarketSnapshot(proto->ItemId, auctioneerFaction);
     return true;
+}
+
+bool AhSellAction::QueueMarketQuery(ItemTemplate const* proto, ObjectGuid const& auctioneerGuid)
+{
+    WorldPacket queryPacket(CMSG_AUCTION_LIST_ITEMS);
+    queryPacket << auctioneerGuid;
+    queryPacket << uint32(0);                    // listfrom (page 0)
+    queryPacket << std::string(proto->Name1);    // name filter
+    queryPacket << uint8(0);                     // levelMin
+    queryPacket << uint8(0);                     // levelMax
+    queryPacket << uint32(0xFFFFFFFF);           // inventoryType (any)
+    queryPacket << uint32(0xFFFFFFFF);           // itemClass (any)
+    queryPacket << uint32(0xFFFFFFFF);           // itemSubClass (any)
+    queryPacket << uint32(0xFFFFFFFF);           // quality (any)
+    queryPacket << uint8(0);                     // usable only = false
+    queryPacket << uint8(0);                     // getAll = false
+    queryPacket << uint8(0);                     // no sort keys
+
+    auto queryOp = std::make_unique<AuctionPacketOperation>(
+        bot->GetGUID(), auctioneerGuid, std::move(queryPacket));
+    return PlayerbotWorldThreadProcessor::instance().QueueOperation(std::move(queryOp));
 }
 
 bool AhSellAction::Execute(Event /*event*/)
@@ -74,7 +94,7 @@ bool AhSellAction::Execute(Event /*event*/)
 
     GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
     ObjectGuid auctioneerGuid;
-    if (!HasNearbyAuctioneer(bot, npcs, auctioneerGuid))
+    if (!BotAuctionUtils::HasNearbyAuctioneer(bot, npcs, auctioneerGuid))
         return false;
 
     Creature* auctioneer = bot->GetNPCIfCanInteractWith(auctioneerGuid, UNIT_NPC_FLAG_AUCTIONEER);
@@ -117,8 +137,7 @@ bool AhSellAction::Execute(Event /*event*/)
 
         if (st.status == AhStatus::Idle)
         {
-            PlayerbotAuctionMarketSnapshot snap;
-            if (GetCachedAuctionSnapshot(kv.first, auctioneerFaction, snap))
+            if (sPlayerbotAuctionHouseUtil.GetMarketSnapshot(kv.first, auctioneerFaction))
             {
                 readyItem = kv.first;
                 break;
@@ -143,20 +162,20 @@ bool AhSellAction::Execute(Event /*event*/)
     if (!policy.chanceToSell || urand(1, 100) > policy.chanceToSell)
         return false;
 
-    uint32 itemCount = GetAuctionStackCount(item, policy);
+    uint32 itemCount = BotAuctionUtils::GetAuctionStackCount(item, policy);
     if (!itemCount)
         return false;
 
     uint32 unitPrice = 0;
     PlayerbotAuctionMarketSnapshot marketSnapshot;
-    AuctionPriceStatus priceStatus =
-        GetAuctionUnitPrice(bot, proto, policy, auctioneerFaction, unitPrice, &marketSnapshot);
+    BotAuctionUtils::AuctionPriceStatus priceStatus =
+        sPlayerbotAuctionHouseUtil.GetAuctionPrice(bot, proto, auctioneerFaction, unitPrice, &marketSnapshot);
 
-    if (priceStatus == AuctionPriceStatus::NoData)
+    if (priceStatus == BotAuctionUtils::AuctionPriceStatus::NoData)
     {
-        // First tick (or stale cache): fire the query, mark PendingCheck.
-        if (!SendAuctionQueryForItem(bot, auctioneerGuid, proto))
+        if (!QueueMarketQuery(proto, auctioneerGuid))
             return false;
+
         st.status = AhStatus::PendingCheck;
         st.changedAt = now;
         st.retryAfter = 0;
@@ -171,7 +190,7 @@ bool AhSellAction::Execute(Event /*event*/)
     return posted;
 }
 
-bool AhSearchResultAction::ParseAuctionPacket(WorldPacket& p, uint32 gearBudget, uint8 ahBucket,
+bool AhSearchResultAction::ParseAuctionPacket(WorldPacket& p, uint32 gearBudget, uint32 auctioneerFaction,
                                               std::vector<AhItem>& buyCandidates)
 {
     uint32 count;
@@ -257,13 +276,12 @@ bool AhSearchResultAction::ParseAuctionPacket(WorldPacket& p, uint32 gearBudget,
     time_t now = time(nullptr);
     for (auto const& keyValue : perItem)
     {
-        PlayerbotCachedAuctionPrice entry;
-        entry.minUnitBuyout = keyValue.second.minUnit;
-        entry.avgUnitBuyout = keyValue.second.sampleCount
+        PlayerbotAuctionMarketSnapshot snapshot;
+        snapshot.minUnitBuyout = keyValue.second.minUnit;
+        snapshot.avgUnitBuyout = keyValue.second.sampleCount
             ? uint32(keyValue.second.totalUnit / keyValue.second.sampleCount) : 0;
-        entry.sampleCount = uint16(std::min<uint32>(keyValue.second.sampleCount, 0xFFFF));
-        entry.updatedAt = now;
-        sPlayerbotAuctionHouseUtil.Store({keyValue.first, ahBucket}, entry);
+        snapshot.sampleCount = keyValue.second.sampleCount;
+        sPlayerbotAuctionHouseUtil.StoreMarketSnapshot(keyValue.first, auctioneerFaction, snapshot);
 
         auto stateItr = sellList.find(keyValue.first);
         if (stateItr != sellList.end() && stateItr->second.status == AhStatus::PendingCheck)
@@ -304,7 +322,7 @@ AhItem const* AhSearchResultAction::PickBestCandidate(std::vector<AhItem> const&
 }
 
 bool AhSearchResultAction::PostAuctionBid(AhItem const& candidate, ObjectGuid auctioneerGuid,
-                                          uint8 ahBucket, uint32 gearBudget)
+                                          uint32 auctioneerFaction, uint32 gearBudget)
 {
     if (auctioneerGuid.IsEmpty())
         return false;
@@ -324,7 +342,7 @@ bool AhSearchResultAction::PostAuctionBid(AhItem const& candidate, ObjectGuid au
     if (!PlayerbotWorldThreadProcessor::instance().QueueOperation(std::move(op)))
         return false;
 
-    sPlayerbotAuctionHouseUtil.Invalidate({candidate.itemEntry, ahBucket});
+    sPlayerbotAuctionHouseUtil.InvalidateMarketSnapshot(candidate.itemEntry, auctioneerFaction);
 
     ItemTemplate const* boughtProto = sObjectMgr->GetItemTemplate(candidate.itemEntry);
     LOG_DEBUG("playerbots", "[AH Buy] Bot {} {} {} for {}",
@@ -367,15 +385,13 @@ bool AhSearchResultAction::Execute(Event event)
             break;
         }
     }
-    uint8 ahBucket = auctioneer
-        ? ResolveAhFactionBucket(auctioneer->GetFaction())
-        : static_cast<uint8>(AuctionHouseId::Neutral);
+    uint32 auctioneerFaction = auctioneer ? auctioneer->GetFaction() : 0;
 
     uint32 gearBudget = AI_VALUE2(uint32, "free money for", uint32(NeedMoneyFor::gear));
 
     // First lets parse the packet and add to cache and see if there is anything useful in the packet.
     std::vector<AhItem> buyCandidates;
-    bool haveCandidates = ParseAuctionPacket(p, gearBudget, ahBucket, buyCandidates);
+    bool haveCandidates = ParseAuctionPacket(p, gearBudget, auctioneerFaction, buyCandidates);
 
     if (!haveCandidates)
         return true;
@@ -399,7 +415,7 @@ bool AhSearchResultAction::Execute(Event event)
     {
         best = PickBestCandidate(buyCandidates);
         if (best)
-            bidPlaced = PostAuctionBid(*best, auctioneerGuid, ahBucket, gearBudget);
+            bidPlaced = PostAuctionBid(*best, auctioneerGuid, auctioneerFaction, gearBudget);
     }
 
     time_t now = time(nullptr);

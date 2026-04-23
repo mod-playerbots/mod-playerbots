@@ -59,10 +59,10 @@ ItemUsage ItemUsageValue::Calculate()
 
         if (neededSkillItem)
         {
-            if (IsAuctionHouseMaterial(proto))
+            if (BotAuctionUtils::IsAuctionableReagent(proto))
             {
                 uint32 itemCount = bot->GetItemCount(proto->ItemId, true);
-                if (itemCount < AuctionHouseMaterialMinCount)
+                if (itemCount < sPlayerbotAIConfig.auctionHouseMaterialStackSize)
                     return itemCount ? ITEM_USAGE_KEEP : ITEM_USAGE_SKILL;
             }
             else
@@ -169,7 +169,7 @@ ItemUsage ItemUsageValue::Calculate()
         if (IsSpellReagentItem(proto))
             return IsItemNeededForUsefullSpell(proto, false) ? ITEM_USAGE_KEEP : ITEM_USAGE_VENDOR;
 
-        if (sPlayerbotAIConfig.enableAuctionHouseBotting && !isSoulbound && IsPreferredAuctionHouseItem(proto))
+        if (sPlayerbotAIConfig.enableAuctionHouseBotting && !isSoulbound && BotAuctionUtils::IsAuctionableGear(proto))
             return ITEM_USAGE_AH;
 
         return ITEM_USAGE_VENDOR;

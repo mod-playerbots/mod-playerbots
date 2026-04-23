@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdlib>
 
+#include "AhActions.h"
 #include "AuctionHouseSearcher.h"
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
@@ -19,7 +20,6 @@
 #include "PathGenerator.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
-#include "PlayerbotAuctionHouseUtil.h"
 #include "Playerbots.h"
 #include "QuestDef.h"
 #include "Random.h"
@@ -600,7 +600,10 @@ bool NewRpgGoCityAction::Execute(Event /*event*/)
 
             continue;
         }
-        //If, somehow, the bot is still here after an hour lets check again.
+        if (ahItemState.status == AhStatus::Watch || ahItemState.status == AhStatus::Complete)
+            continue;
+
+        // If, somehow, the bot is still here after the cooldown, let us re-check.
         if (ahItemState.status == AhStatus::Failed && now >= ahItemState.retryAfter)
         {
             ahItemState.status = AhStatus::Idle;

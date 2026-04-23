@@ -151,6 +151,7 @@ public:
     uint32 auctionHouseUndercutMaxPct;
     uint32 auctionHouseBuyoutMinPct;
     uint32 auctionHouseBuyoutMaxPct;
+    uint32 auctionHouseMaterialStackSize;
     uint32 auctionPriceCacheTtlSeconds;
     std::set<uint32> auctionHouseExcludedItemIds;
     uint32 disabledWithoutRealPlayerLoginDelay, disabledWithoutRealPlayerLogoutDelay;

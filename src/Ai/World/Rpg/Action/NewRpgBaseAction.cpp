@@ -1,5 +1,6 @@
 #include "NewRpgBaseAction.h"
 
+#include "AhActions.h"
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
 #include "Creature.h"
@@ -12,7 +13,6 @@
 #include "NewRpgInfo.h"
 #include "NewRpgStrategy.h"
 #include "Object.h"
-#include "PlayerbotAuctionHouseUtil.h"
 #include "ObjectAccessor.h"
 #include "OutdoorPvPMgr.h"
 #include "ObjectDefines.h"

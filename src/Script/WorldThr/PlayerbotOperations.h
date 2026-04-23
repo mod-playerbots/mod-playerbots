@@ -551,6 +551,8 @@ public:
             bot->GetSession()->HandleAuctionSellItem(m_packet);
         else if (opcode == CMSG_AUCTION_PLACE_BID)
             bot->GetSession()->HandleAuctionPlaceBid(m_packet);
+        else if (opcode == CMSG_AUCTION_LIST_ITEMS)
+            bot->GetSession()->HandleAuctionListItems(m_packet);
         else
             return false;
 

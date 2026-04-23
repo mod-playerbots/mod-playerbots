@@ -91,7 +91,7 @@ bool AhSellListValue::IsItemSellableOnAh(Item* item) const
         return false;
 
     // Cheap pre-filter — skip items that are clearly not AH material
-    if (!IsPreferredAuctionHouseItem(proto))
+    if (!BotAuctionUtils::IsAuctionableGear(proto))
         return false;
 
     if (proto->Bonding == BIND_WHEN_PICKED_UP || proto->Bonding == BIND_QUEST_ITEM)
@@ -101,7 +101,7 @@ bool AhSellListValue::IsItemSellableOnAh(Item* item) const
     if (sPlayerbotAIConfig.IsInAuctionHouseExcludedItemList(entry))
         return false;
 
-    if (!sPlayerbotAuctionHouseUtil.IsSellable(entry))
+    if (!sPlayerbotAuctionHouseUtil.GetPolicy(entry).sellable)
         return false;
 
     // Expensive check last

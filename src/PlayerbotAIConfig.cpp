@@ -226,6 +226,7 @@ bool PlayerbotAIConfig::Initialize()
     auctionHouseUndercutMaxPct = sConfigMgr->GetOption<uint32>("AiPlayerbot.AuctionHouseUndercutMaxPct", 200);
     auctionHouseBuyoutMinPct = sConfigMgr->GetOption<uint32>("AiPlayerbot.AuctionHouseBuyoutMinPct", 110);
     auctionHouseBuyoutMaxPct = sConfigMgr->GetOption<uint32>("AiPlayerbot.AuctionHouseBuyoutMaxPct", 133);
+    auctionHouseMaterialStackSize = sConfigMgr->GetOption<uint32>("AiPlayerbot.AuctionHouseMaterialStackSize", 20);
     auctionPriceCacheTtlSeconds = sConfigMgr->GetOption<uint32>("AiPlayerbot.AuctionPriceCacheTtlSeconds", 600);
     LoadSet<std::set<uint32>>(
         sConfigMgr->GetOption<std::string>("AiPlayerbot.AuctionHouseExcludedItemIds", ""),
