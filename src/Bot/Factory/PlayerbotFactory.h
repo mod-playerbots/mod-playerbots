@@ -190,7 +190,7 @@ private:
     bool CanEquipArmor(ItemTemplate const* proto);
     bool CanEquipWeapon(ItemTemplate const* proto);
     static void BuildCcBreakTrinketCache();
-    static uint8 GetPreferredArmorType(uint8 cls);
+    uint8 GetPreferredArmorType(uint8 cls);
     void EnchantItem(Item* item);
     void AddItemStats(uint32 mod, uint8& sp, uint8& ap, uint8& tank);
     bool CheckItemStats(uint8 sp, uint8 ap, uint8 tank);

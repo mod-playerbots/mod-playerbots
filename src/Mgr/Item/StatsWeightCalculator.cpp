@@ -783,12 +783,8 @@ void StatsWeightCalculator::ApplyWeightFinetune(Player* player)
 
 float StatsWeightCalculator::ApplyPreferredSpecWeapons(ItemTemplate const* proto, int32 slot)
 {
-    // Weapon speed governance: multiply score by (1 + weight) when this weapon's Delay
-    // matches the spec-ideal speed. weight = 2.0f, giving a 3x boost for matching weapons.
+    // Multiply score by 3x when this weapon's delay matches the spec-ideal speed.
     float weight = 2.0f;
-
-    if (weight == 0.0f)
-        return 1.0f;
 
     // Applies to mainhand, offhand, and ranged slots only.
     if (slot != EQUIPMENT_SLOT_MAINHAND &&
