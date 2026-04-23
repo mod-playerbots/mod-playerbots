@@ -4407,7 +4407,7 @@ std::vector<std::vector<uint32>> TravelMgr::GetOptimalFlightDestinations(Player*
     std::vector<std::vector<uint32>> validDestinations;
 
     FlightMasterInfo const* nearestFlightMaster = GetNearestFlightMasterInfo(bot);
-    if (!nearestFlightMaster || bot->GetDistance(nearestFlightMaster) > 500.0f)
+    if (!nearestFlightMaster || bot->GetDistance(nearestFlightMaster->pos) > 500.0f)
         return validDestinations;
 
     uint32 fromNode = nearestFlightMaster->taxiNodeId;
