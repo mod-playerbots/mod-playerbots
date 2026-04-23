@@ -129,9 +129,7 @@ public:
     int32 randomGearQualityLimit;
     int32 randomGearScoreLimit;
     bool preferClassArmorType;
-    bool autogearAllowsQuestRewards;
-    bool equipAllSlotsAtAnyLevel;
-    bool weaponSpeedGovernance;
+    bool preferredSpecWeapons;
     float randomBotMinLevelChance, randomBotMaxLevelChance;
     float randomBotRpgChance;
     uint32 minRandomBots, maxRandomBots;

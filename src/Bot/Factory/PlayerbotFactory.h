@@ -223,8 +223,6 @@ private:
     static std::vector<uint32> enchantSpellIdCache;
     static std::vector<uint32> enchantGemIdCache;
     static std::vector<uint32> ccBreakTrinketCache;
-    static std::map<uint32, uint32> questRewardItemCache;
-    static void BuildQuestRewardCache();
 
 protected:
     EnchantContainer m_EnchantContainer;

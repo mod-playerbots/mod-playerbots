@@ -110,8 +110,8 @@ float StatsWeightCalculator::CalculateItem(uint32 itemId, int32 randomPropertyId
     }
 
     // Apply weapon speed governance if slot is provided and this is a weapon
-    if (sPlayerbotAIConfig.weaponSpeedGovernance && slot >= 0 && proto->Class == ITEM_CLASS_WEAPON)
-        weight_ *= ApplyWeaponSpeedGovernance(proto, slot);
+    if (sPlayerbotAIConfig.preferredSpecWeapons && slot >= 0 && proto->Class == ITEM_CLASS_WEAPON)
+        weight_ *= ApplyPreferredSpecWeapons(proto, slot);
 
     return weight_;
 }
@@ -452,11 +452,6 @@ void StatsWeightCalculator::GenerateBasicWeights(Player* player)
         stats_weights_[STATS_TYPE_EXPERTISE] += 3.7f;
         stats_weights_[STATS_TYPE_MELEE_DPS] += 3.0f;
     }
-
-    if (pvpSpec_ && !exclude_resilience_)
-        stats_weights_[STATS_TYPE_RESILIENCE] += 7.0f;
-    else if (!pvpSpec_)
-        stats_weights_[STATS_TYPE_RESILIENCE] -= 3.0f;
 }
 
 void StatsWeightCalculator::GenerateAdditionalWeights(Player* player)
@@ -490,6 +485,11 @@ void StatsWeightCalculator::GenerateAdditionalWeights(Player* player)
             stats_weights_[STATS_TYPE_SPIRIT] -= 0.0f;
         }
     }
+
+    if (pvpSpec_ && !exclude_resilience_)
+        stats_weights_[STATS_TYPE_RESILIENCE] += 7.0f;
+    else if (!pvpSpec_)
+        stats_weights_[STATS_TYPE_RESILIENCE] -= 3.0f;
 }
 
 void StatsWeightCalculator::CalculateItemSetMod(Player* player, ItemTemplate const* proto)
@@ -781,7 +781,7 @@ void StatsWeightCalculator::ApplyWeightFinetune(Player* player)
     }
 }
 
-float StatsWeightCalculator::ApplyWeaponSpeedGovernance(ItemTemplate const* proto, int32 slot)
+float StatsWeightCalculator::ApplyPreferredSpecWeapons(ItemTemplate const* proto, int32 slot)
 {
     // Weapon speed governance: multiply score by (1 + weight) when this weapon's Delay
     // matches the spec-ideal speed. weight = 2.0f, giving a 3x boost for matching weapons.
@@ -834,13 +834,13 @@ float StatsWeightCalculator::ApplyWeaponSpeedGovernance(ItemTemplate const* prot
                 }
                 else if (player_->CanTitanGrip())
                 {
-                    // TG: slow 2H (>=3400) in both hands.
+                    // Titan's Grip: slow 2H (>=3400) in both hands.
                     if (delay >= 3400)
                         return boost;
                 }
                 else
                 {
-                    // SMF: slow 1H (>=2600) in both hands.
+                    // 1H DW: slow 1H (>=2600) in both hands.
                     // 2H must be excluded — delay >= 2600 would otherwise pass
                     // for a 2H heirloom (~3600ms) just as it did for Enhancement.
                     if (proto->InventoryType == INVTYPE_2HWEAPON)

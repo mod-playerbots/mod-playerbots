@@ -820,38 +820,12 @@ AiPlayerbot.RandomGearScoreLimit = 0
 # Default: 0 (disabled)
 AiPlayerbot.PreferClassArmorType = 0
 
-# Allow autogear to equip items from quest rewards
-# Quest rewards are available based on the quest's minimum level requirement
-# When enabled, bots can equip suitable armor and weapons from quest rewards during autogear
-# Default: 0 (disabled)
-AiPlayerbot.AutogearAllowsQuestRewards = 0
 
-# Bypass low-level slot restrictions during autogear.
-# Normally, certain equipment slots are locked until the bot reaches a minimum level:
-#   Trinkets: level 50+
-#   Head / Neck: level 30+
-#   Rings: level 20+
-#   All other non-weapon slots: level 5+
-# When enabled, bots equip all slots regardless of level.
+# When enabled, bots prefer spec-appropriate weapons based on speed and weapon type during autogear.
+# Examples: Arms Warriors favor slow 2H axes/polearms (Axe Specialization), Combat Rogues
+# favor a slow MH with a fast OH, and Enhancement Shamans favor synchronized slow 1H weapons.
 # Default: 0 (disabled)
-AiPlayerbot.EquipAllSlotsAtAnyLevel = 0
-
-# Apply weapon speed governance during autogear item scoring.
-# When enabled, gives a 3x score multiplier to weapons matching the spec's preferred speed profile:
-#   Arms Warrior:                                      Slow 2H (>=3400ms) in mainhand; poleaxes and axes preferred (Axe Specialization)
-#   Ret Paladin / Blood & Unholy DK:                   Slow 2H (>=3400ms) in mainhand
-#   Prot Warrior & Paladin:                            Slow 1H (>=2600ms) in mainhand
-#   Fury Warrior SMF:                                  Slow 1H (>=2600ms) in both hands
-#   Fury Warrior TG:                                   Slow 2H (>=3400ms) in both hands
-#   Frost DK:                                          Slow 1H (>=2600ms) in both hands; 2H excluded
-#   Enhancement Shaman (DW):                           Slow 1H (>=2600ms) in both hands; synchronized MH/OH speeds get an additional bonus
-#   Enhancement Shaman (pre-DW):                       Slow 2H (>=3400ms) in mainhand
-#   Combat Rogue:                                      Slow MH (>=2600ms) + Fast OH (<=1500ms)
-#   Assassination / Subtlety Rogue:                    Slow dagger MH (>=1700ms) + Fast dagger OH (<=1500ms)
-#   Hunter:                                            Slow ranged (>=2600ms); melee is a stat stick, speed ignored
-#   Feral Druid:                                       No preference (forms normalize attack speed)
-# Default: 0 (disabled)
-AiPlayerbot.WeaponSpeedGovernance = 0
+AiPlayerbot.PreferredSpecWeapons = 0
 
 # If disabled, random bots can only upgrade equipment through looting and quests
 # Default: 1 (enabled)

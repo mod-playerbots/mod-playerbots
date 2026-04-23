@@ -60,7 +60,6 @@ std::vector<uint32> PlayerbotFactory::enchantSpellIdCache;
 std::vector<uint32> PlayerbotFactory::enchantGemIdCache;
 std::unordered_map<uint32, std::vector<uint32>> PlayerbotFactory::trainerIdCache;
 std::vector<uint32> PlayerbotFactory::ccBreakTrinketCache;
-std::map<uint32, uint32> PlayerbotFactory::questRewardItemCache;
 
 bool PlayerbotFactory::IsPrimaryTradeSkill(uint16 skillId)
 {
@@ -464,8 +463,6 @@ void PlayerbotFactory::Init()
     LOG_INFO("playerbots", "Loading {} enchantment gems", enchantGemIdCache.size());
 
     BuildCcBreakTrinketCache();
-    if (sPlayerbotAIConfig.autogearAllowsQuestRewards)
-        BuildQuestRewardCache();
 }
 
 void PlayerbotFactory::BuildCcBreakTrinketCache()
@@ -502,58 +499,6 @@ void PlayerbotFactory::BuildCcBreakTrinketCache()
     LOG_INFO("playerbots", "CC-break trinket cache: {} items.", ccBreakTrinketCache.size());
 }
 
-void PlayerbotFactory::BuildQuestRewardCache()
-{
-    questRewardItemCache.clear();
-
-    ObjectMgr::QuestMap const& questTemplates = sObjectMgr->GetQuestTemplates();
-    for (auto& [questId, quest] : questTemplates)
-    {
-        uint32 questLevel = quest->GetMinLevel();
-
-        // Check direct reward items (up to 4)
-        for (uint8 i = 0; i < QUEST_REWARDS_COUNT; i++)
-        {
-            uint32 itemId = quest->RewardItemId[i];
-            if (itemId > 0)
-            {
-                ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
-                if (!proto)
-                    continue;
-
-                // Only cache armor and weapons (equippable items)
-                if (proto->Class != ITEM_CLASS_ARMOR && proto->Class != ITEM_CLASS_WEAPON)
-                    continue;
-
-                // Store the quest's min level as the item's effective level
-                // Only store if not already in cache (keeps first/lowest level quest)
-                if (questRewardItemCache.find(itemId) == questRewardItemCache.end())
-                    questRewardItemCache[itemId] = questLevel;
-            }
-        }
-
-        // Check choice reward items (up to 6)
-        for (uint8 i = 0; i < QUEST_REWARD_CHOICES_COUNT; i++)
-        {
-            uint32 itemId = quest->RewardChoiceItemId[i];
-            if (itemId > 0)
-            {
-                ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
-                if (!proto)
-                    continue;
-
-                // Only cache armor and weapons (equippable items)
-                if (proto->Class != ITEM_CLASS_ARMOR && proto->Class != ITEM_CLASS_WEAPON)
-                    continue;
-
-                if (questRewardItemCache.find(itemId) == questRewardItemCache.end())
-                    questRewardItemCache[itemId] = questLevel;
-            }
-        }
-    }
-
-    LOG_INFO("playerbots", "Quest reward item cache: {} equippable items.", questRewardItemCache.size());
-}
 
 /*static*/ uint8 PlayerbotFactory::GetPreferredArmorType(uint8 cls)
 {
@@ -1936,26 +1881,9 @@ bool PlayerbotFactory::CanEquipItem(ItemTemplate const* proto)
     // disable since bad performance
     bool hasItem = bot->HasItemCount(proto->ItemId, 1, false);
     // bot->GetItemCount()
-    if (!requiredLevel)
-    {
-        // Check if it's a known quest reward in our cache
-        auto it = questRewardItemCache.find(proto->ItemId);
-        if (it != questRewardItemCache.end())
-        {
-            // It's a quest reward - use the quest's min level as the effective required level
-            requiredLevel = it->second;
-        }
-        else if (hasItem)
-        {
-            // Unknown no-level item and bot already has it, skip it
-            return false;
-        }
-        else
-        {
-            // Unknown no-level item and bot doesn't have it, skip it
-            return false;
-        }
-    }
+    // !requiredLevel -> it's a quest reward item
+    if (!requiredLevel && hasItem)
+        return false;
 
     uint32 level = bot->GetLevel();
 
@@ -2194,22 +2122,19 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
         if (slot == EQUIPMENT_SLOT_TABARD || slot == EQUIPMENT_SLOT_BODY)
             continue;
 
-        if (!sPlayerbotAIConfig.equipAllSlotsAtAnyLevel)
-        {
-            if (level < 50 && (slot == EQUIPMENT_SLOT_TRINKET1 || slot == EQUIPMENT_SLOT_TRINKET2))
-                continue;
+        if (level < 50 && (slot == EQUIPMENT_SLOT_TRINKET1 || slot == EQUIPMENT_SLOT_TRINKET2))
+            continue;
 
-            if (level < 30 && (slot == EQUIPMENT_SLOT_NECK || slot == EQUIPMENT_SLOT_HEAD))
-                continue;
+        if (level < 30 && (slot == EQUIPMENT_SLOT_NECK || slot == EQUIPMENT_SLOT_HEAD))
+            continue;
 
-            if (level < 20 && (slot == EQUIPMENT_SLOT_FINGER1 || slot == EQUIPMENT_SLOT_FINGER2))
-                continue;
+        if (level < 20 && (slot == EQUIPMENT_SLOT_FINGER1 || slot == EQUIPMENT_SLOT_FINGER2))
+            continue;
 
-            if (level < 5 && (slot != EQUIPMENT_SLOT_MAINHAND) && (slot != EQUIPMENT_SLOT_OFFHAND) &&
-                (slot != EQUIPMENT_SLOT_FEET) && (slot != EQUIPMENT_SLOT_LEGS) && (slot != EQUIPMENT_SLOT_CHEST) &&
-                (slot != EQUIPMENT_SLOT_RANGED))
-                continue;
-        }
+        if (level < 5 && (slot != EQUIPMENT_SLOT_MAINHAND) && (slot != EQUIPMENT_SLOT_OFFHAND) &&
+            (slot != EQUIPMENT_SLOT_FEET) && (slot != EQUIPMENT_SLOT_LEGS) && (slot != EQUIPMENT_SLOT_CHEST) &&
+            (slot != EQUIPMENT_SLOT_RANGED))
+            continue;
 
         // Exclude resilience weighting for trinkets
         bool isTrinketSlot = (slot == EQUIPMENT_SLOT_TRINKET1 || slot == EQUIPMENT_SLOT_TRINKET2);
@@ -2397,22 +2322,19 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
             if (slot == EQUIPMENT_SLOT_TABARD || slot == EQUIPMENT_SLOT_BODY)
                 continue;
 
-            if (!sPlayerbotAIConfig.equipAllSlotsAtAnyLevel)
-            {
-                if (level < 50 && (slot == EQUIPMENT_SLOT_TRINKET1 || slot == EQUIPMENT_SLOT_TRINKET2))
-                    continue;
+            if (level < 50 && (slot == EQUIPMENT_SLOT_TRINKET1 || slot == EQUIPMENT_SLOT_TRINKET2))
+                continue;
 
-                if (level < 30 && (slot == EQUIPMENT_SLOT_NECK || slot == EQUIPMENT_SLOT_HEAD))
-                    continue;
+            if (level < 30 && (slot == EQUIPMENT_SLOT_NECK || slot == EQUIPMENT_SLOT_HEAD))
+                continue;
 
-                if (level < 20 && (slot == EQUIPMENT_SLOT_FINGER1 || slot == EQUIPMENT_SLOT_FINGER2))
-                    continue;
+            if (level < 20 && (slot == EQUIPMENT_SLOT_FINGER1 || slot == EQUIPMENT_SLOT_FINGER2))
+                continue;
 
-                if (level < 5 && (slot != EQUIPMENT_SLOT_MAINHAND) && (slot != EQUIPMENT_SLOT_OFFHAND) &&
-                    (slot != EQUIPMENT_SLOT_FEET) && (slot != EQUIPMENT_SLOT_LEGS) && (slot != EQUIPMENT_SLOT_CHEST) &&
-                    (slot != EQUIPMENT_SLOT_RANGED))
-                    continue;
-            }
+            if (level < 5 && (slot != EQUIPMENT_SLOT_MAINHAND) && (slot != EQUIPMENT_SLOT_OFFHAND) &&
+                (slot != EQUIPMENT_SLOT_FEET) && (slot != EQUIPMENT_SLOT_LEGS) && (slot != EQUIPMENT_SLOT_CHEST) &&
+                (slot != EQUIPMENT_SLOT_RANGED))
+                continue;
 
             // CC-break trinket was force-equipped in the main pass; leave it alone.
             if (slot == EQUIPMENT_SLOT_TRINKET1 && pvpTrinket1 != 0)
