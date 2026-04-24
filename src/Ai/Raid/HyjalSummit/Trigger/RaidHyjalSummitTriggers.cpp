@@ -16,7 +16,7 @@ using namespace HyjalSummitHelpers;
 
 bool HyjalSummitBotIsNotInCombatTrigger::IsActive()
 {
-    return !bot->IsInCombat();
+    return !bot->IsInCombat() && bot->GetMapId() == HYJAL_SUMMIT_MAP_ID;
 }
 
 // Rage Winterchill
