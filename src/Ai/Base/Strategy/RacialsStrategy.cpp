@@ -11,7 +11,7 @@ public:
     RacialsStrategyActionNodeFactory() { creators["lifeblood"] = &lifeblood; }
 
 private:
-    static ActionNode* lifeblood(PlayerbotAI* botAI)
+    static ActionNode* lifeblood(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode("lifeblood",
                               /*P*/ {},

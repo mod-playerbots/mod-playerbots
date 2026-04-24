@@ -864,8 +864,6 @@ bool ItemUsageValue::SpellGivesSkillUp(uint32 spellId, Player* bot)
         {
             uint32 SkillValue = bot->GetPureSkillValue(skill->SkillLine);
 
-            uint32 craft_skill_gain = sWorld->getIntConfig(CONFIG_SKILL_GAIN_CRAFTING);
-
             if (SkillGainChance(SkillValue, skill->TrivialSkillLineRankHigh,
                                 (skill->TrivialSkillLineRankHigh + skill->TrivialSkillLineRankLow) / 2,
                                 skill->TrivialSkillLineRankLow) > 0)

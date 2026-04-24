@@ -65,7 +65,7 @@ void ReleaseSpiritAction::IncrementDeathCount() const
     }
 }
 
-void ReleaseSpiritAction::LogRelease(const std::string& releaseMsg, bool isAutoRelease) const
+void ReleaseSpiritAction::LogRelease(const std::string& releaseMsg) const
 {
     const std::string teamPrefix = bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H";
 
@@ -82,13 +82,13 @@ bool AutoReleaseSpiritAction::Execute(Event /*event*/)
 {
     IncrementDeathCount();
     bot->DurabilityRepairAll(false, 1.0f, false);
-    LogRelease("auto released", true);
+    LogRelease("auto released");
 
     WorldPacket packet(CMSG_REPOP_REQUEST);
     packet << uint8(0);
     bot->GetSession()->HandleRepopRequestOpcode(packet);
 
-    LogRelease("releases spirit", true);
+    LogRelease("releases spirit");
 
     if (bot->InBattleground())
     {

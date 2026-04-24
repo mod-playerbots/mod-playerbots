@@ -118,8 +118,6 @@ bool CleanQuestLogAction::Execute(Event event)
             bot->SetQuestStatus(questId, QUEST_STATUS_NONE);
             bot->RemoveRewardedQuest(questId);
 
-            numQuest--;
-
             if (botAI->HasStrategy("debug rpg", BotState::BOT_STATE_COMBAT))
             {
                 const std::string text_quest = ChatHelper::FormatQuest(quest);
@@ -151,7 +149,6 @@ void CleanQuestLogAction::DropQuestType(uint8& numQuest, uint8 wantNum, bool isG
     {
         std::random_device rd;
         std::mt19937 g(rd());
-
         std::shuffle(slots.begin(), slots.end(), g);
     }
 
@@ -177,8 +174,10 @@ void CleanQuestLogAction::DropQuestType(uint8& numQuest, uint8 wantNum, bool isG
             bot->GetLevel() <= bot->GetQuestLevel(quest) + uint32(lowLevelDiff))  // Quest is not gray
         {
             if (bot->GetLevel() + 5 > bot->GetQuestLevel(quest))  // Quest is not red
+            {
                 if (!isGreen)
                     continue;
+            }
         }
         else  // Quest is gray
         {
