@@ -7,9 +7,7 @@
 #ifndef PLAYERBOTS_PLAYERBOTFACTORY_H
 #define PLAYERBOTS_PLAYERBOTFACTORY_H
 
-#include <string>
-#include <utility>
-
+#include "Battleground.h"
 #include "InventoryAction.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
@@ -203,7 +201,6 @@ private:
     void InitInventoryEquip();
     void InitInventorySkill();
     Item* StoreItem(uint32 itemId, uint32 count);
-    void InitArenaTeam();
     void InitImmersive();
     static void AddPrevQuests(uint32 questId, std::list<uint32>& questIds);
     void LoadEnchantContainer();

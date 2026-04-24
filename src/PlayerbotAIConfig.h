@@ -388,14 +388,12 @@ public:
     int32 enableRandomBotTrading;
     uint32 tweakValue;  // Debugging config
 
-    uint32 randomBotArenaTeamCount;
     uint32 randomBotArenaTeamMaxRating;
     uint32 randomBotArenaTeamMinRating;
     uint32 randomBotArenaTeam2v2Count;
     uint32 randomBotArenaTeam3v3Count;
     uint32 randomBotArenaTeam5v5Count;
     bool deleteRandomBotArenaTeams;
-    std::vector<uint32> randomBotArenaTeams;
 
     uint32 selfBotLevel;
     bool downgradeMaxLevelBot;
