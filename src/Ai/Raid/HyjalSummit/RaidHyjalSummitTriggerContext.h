@@ -79,8 +79,8 @@ public:
         creators["azgalor main tank is positioning boss"] =
             &RaidHyjalSummitTriggerContext::azgalor_main_tank_is_positioning_boss;
 
-        creators["azgalor boss casts rain of fire on ranged"] =
-            &RaidHyjalSummitTriggerContext::azgalor_boss_casts_rain_of_fire_on_ranged;
+        creators["azgalor boss engaged by ranged"] =
+            &RaidHyjalSummitTriggerContext::azgalor_boss_engaged_by_ranged;
 
         creators["azgalor boss casts rain of fire on melee"] =
             &RaidHyjalSummitTriggerContext::azgalor_boss_casts_rain_of_fire_on_melee;
@@ -180,8 +180,8 @@ private:
     static Trigger* azgalor_main_tank_is_positioning_boss(
         PlayerbotAI* botAI) { return new AzgalorMainTankIsPositioningBossTrigger(botAI); }
 
-    static Trigger* azgalor_boss_casts_rain_of_fire_on_ranged(
-        PlayerbotAI* botAI) { return new AzgalorBossCastsRainOfFireOnRangedTrigger(botAI); }
+    static Trigger* azgalor_boss_engaged_by_ranged(
+        PlayerbotAI* botAI) { return new AzgalorBossEngagedByRangedTrigger(botAI); }
 
     static Trigger* azgalor_boss_casts_rain_of_fire_on_melee(
         PlayerbotAI* botAI) { return new AzgalorBossCastsRainOfFireOnMeleeTrigger(botAI); }

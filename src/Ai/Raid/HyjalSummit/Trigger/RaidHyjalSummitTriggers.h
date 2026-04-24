@@ -178,11 +178,11 @@ public:
     bool IsActive() override;
 };
 
-class AzgalorBossCastsRainOfFireOnRangedTrigger : public Trigger
+class AzgalorBossEngagedByRangedTrigger : public Trigger
 {
 public:
-    AzgalorBossCastsRainOfFireOnRangedTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "azgalor boss casts rain of fire on ranged") {}
+    AzgalorBossEngagedByRangedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "azgalor boss engaged by ranged") {}
     bool IsActive() override;
 };
 

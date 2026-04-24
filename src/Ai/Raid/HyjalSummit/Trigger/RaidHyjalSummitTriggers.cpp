@@ -248,7 +248,7 @@ bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
            tankState == TankPositionState::MovingToTransition;
 }
 
-bool AzgalorBossCastsRainOfFireOnRangedTrigger::IsActive()
+bool AzgalorBossEngagedByRangedTrigger::IsActive()
 {
     if (botAI->IsMelee(bot))
         return false;
