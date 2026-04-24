@@ -20,15 +20,12 @@ bool PullStartTrigger::IsActive()
 bool PullEndTrigger::IsActive()
 {
     PullStrategy const* strategy = PullStrategy::Get(botAI);
-    Player* bot = botAI->GetBot();
-    if (!bot)
-        return false;
 
     if (!strategy || !strategy->HasPullStarted())
         return false;
 
     Unit* target = strategy->GetTarget();
-    if (!target || !target->IsInWorld())
+    if (!target || !target->IsInWorld() || !target->IsAlive())
         return true;
 
     time_t const secondsSincePullStarted = time(nullptr) - strategy->GetPullStartTime();
@@ -53,9 +50,6 @@ bool PullEndTrigger::IsActive()
 bool ReturnToPullPositionTrigger::IsActive()
 {
     PullStrategy const* strategy = PullStrategy::Get(botAI);
-    Player* bot = botAI->GetBot();
-    if (!bot)
-        return false;
 
     Unit* target = strategy ? strategy->GetTarget() : nullptr;
     if (!strategy || !strategy->HasPullStarted() || !target || !target->IsInCombat() ||

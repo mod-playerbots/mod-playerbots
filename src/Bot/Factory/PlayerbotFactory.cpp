@@ -2386,8 +2386,6 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
             if (!CanEquipUnseenItem(slot, dest, bestItemForSlot))
                 continue;
 
-            Item* newItem = bot->EquipNewItem(dest, bestItemForSlot, true);
-
             bot->EquipNewItem(dest, bestItemForSlot, true);
             bot->AutoUnequipOffhandIfNeed();
         }
@@ -2549,7 +2547,7 @@ void PlayerbotFactory::InitBags(bool destroyOld)
         if (old_bag)
             continue;
 
-        Item* newItem = bot->EquipNewItem(dest, newItemId, true);
+        bot->EquipNewItem(dest, newItemId, true);
         // if (newItem)
         // {
         //     newItem->AddToWorld();
@@ -4885,7 +4883,7 @@ void PlayerbotFactory::ApplyEnchantTemplate(uint8 spec)
     // const SpellItemEnchantmentEntry* a = sSpellItemEnchantmentStore.LookupEntry(1);
 }
 
-void PlayerbotFactory::ApplyEnchantAndGemsNew(bool destroyOld)
+void PlayerbotFactory::ApplyEnchantAndGemsNew(bool /*destroyOld*/)
 {
     //int32 bestGemEnchantId[4] = {-1, -1, -1, -1};  // 1, 2, 4, 8 color //not used, line marked for removal.
     //float bestGemScore[4] = {0, 0, 0, 0}; //not used, line marked for removal.

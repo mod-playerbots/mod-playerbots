@@ -114,6 +114,11 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
         return false;
     }
 
+    // Infantry attacks are not allowed from vehicles drivers.
+    // Check is needed to stop some auto-attack situations.
+    if (botAI->IsInVehicle() && !botAI->IsInVehicle(false, false, true))
+        return false;
+
     Unit* oldTarget = context->GetValue<Unit*>("current target")->Get();
     bool shouldMelee = bot->IsWithinMeleeRange(target) || botAI->IsMelee(bot);
 

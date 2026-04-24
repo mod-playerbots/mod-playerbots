@@ -278,7 +278,7 @@ void RandomPlayerbotMgr::LogPlayerLocation()
     }
 }
 
-void RandomPlayerbotMgr::UpdateAIInternal(uint32 elapsed, bool /*minimal*/)
+void RandomPlayerbotMgr::UpdateAIInternal(uint32 /*elapsed*/, bool /*minimal*/)
 {
     if (totalPmo)
         totalPmo->finish();
@@ -2540,6 +2540,13 @@ void RandomPlayerbotMgr::OnBotLoginInternal(Player* const bot)
         {
             _isBotLogging = false;
         }
+    }
+
+    // Run guild recovery/assignment at login to handle empty guild tables after restart.
+    if (sPlayerbotAIConfig.randomBotGuildCount > 0)
+    {
+        PlayerbotFactory factory(bot, bot->GetLevel());
+        factory.InitGuild();
     }
 
     if (sPlayerbotAIConfig.randomBotFixedLevel)

@@ -25,6 +25,10 @@ namespace
 constexpr uint32 SPELL_MOLTEN_ARMOR_RANK_1 = 30482;
 constexpr uint32 SPELL_MOLTEN_ARMOR_RANK_2 = 43045;
 constexpr uint32 SPELL_MOLTEN_ARMOR_RANK_3 = 43046;
+constexpr uint32 SPELL_FEL_ARMOR_RANK_1 = 28176;
+constexpr uint32 SPELL_FEL_ARMOR_RANK_2 = 28189;
+constexpr uint32 SPELL_FEL_ARMOR_RANK_3 = 47892;
+constexpr uint32 SPELL_FEL_ARMOR_RANK_4 = 47893;
 }
 
 StatsWeightCalculator::StatsWeightCalculator(Player* player) : player_(player)
@@ -481,9 +485,17 @@ void StatsWeightCalculator::GenerateAdditionalWeights(Player* player)
             && !player->HasSpell(SPELL_MOLTEN_ARMOR_RANK_2)
             && !player->HasSpell(SPELL_MOLTEN_ARMOR_RANK_3))
         {
-            stats_weights_[STATS_TYPE_INTELLECT] += 0.2f;
-            stats_weights_[STATS_TYPE_SPIRIT] -= 0.0f;
+            if (tab != MAGE_TAB_FIRE)
+                stats_weights_[STATS_TYPE_SPIRIT] -= 0.6f;
+            else
+                stats_weights_[STATS_TYPE_SPIRIT] -= 0.7f;
         }
+    }
+    else if (cls == CLASS_WARLOCK)
+    {
+        if (!player->HasSpell(SPELL_FEL_ARMOR_RANK_1) && !player->HasSpell(SPELL_FEL_ARMOR_RANK_2) &&
+            !player->HasSpell(SPELL_FEL_ARMOR_RANK_3) && !player->HasSpell(SPELL_FEL_ARMOR_RANK_4))
+            stats_weights_[STATS_TYPE_SPIRIT] -= 0.4f;
     }
 
     if (pvpSpec_ && !exclude_resilience_)
@@ -536,7 +548,7 @@ void StatsWeightCalculator::CalculateItemSetMod(Player* player, ItemTemplate con
     weight_ *= multiplier;
 }
 
-void StatsWeightCalculator::CalculateSocketBonus(Player* player, ItemTemplate const* proto)
+void StatsWeightCalculator::CalculateSocketBonus(Player* /*player*/, ItemTemplate const* proto)
 {
     uint32 socketNum = 0;
     for (uint32 enchant_slot = SOCK_ENCHANTMENT_SLOT; enchant_slot < SOCK_ENCHANTMENT_SLOT + MAX_GEM_SOCKETS;

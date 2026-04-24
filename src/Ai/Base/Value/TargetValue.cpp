@@ -161,7 +161,7 @@ Unit* FindTargetValue::Calculate()
     return nullptr;
 }
 
-void FindBossTargetStrategy::CheckAttacker(Unit* attacker, ThreatManager* threatManager)
+void FindBossTargetStrategy::CheckAttacker(Unit* attacker, ThreatManager* /*threatManager*/)
 {
     UnitAI* unitAI = attacker->GetAI();
     BossAI* bossAI = dynamic_cast<BossAI*>(unitAI);
