@@ -72,12 +72,6 @@ bool CleanQuestLogAction::Execute(Event event)
         botAI->TellMaster("Clean Quest Log command received, removing grey/trivial quests...");
 
     uint8 botLevel = bot->GetLevel();  // Get bot's level
-    uint8 numQuest = 0;
-    for (uint8 slot = 0; slot < MAX_QUEST_LOG_SIZE; ++slot)
-    {
-        if (bot->GetQuestSlotQuestId(slot))
-            numQuest++;
-    }
 
     for (uint8 slot = 0; slot < MAX_QUEST_LOG_SIZE; ++slot)
     {
