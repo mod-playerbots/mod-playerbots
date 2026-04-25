@@ -100,7 +100,7 @@ struct NewRpgInfo
         DoQuest,
         Rest,
         TravelFlight,
-        GoCity
+        GoCity,
         OutdoorPvP
     >;
     RpgData data;
@@ -108,7 +108,7 @@ struct NewRpgInfo
     NewRpgStatus GetStatus();
     bool HasStatusPersisted(uint32 maxDuration) { return GetMSTimeDiffToNow(startT) > maxDuration; }
     void ClearTravel();
-    void ChangeToGoGrind(WorldPosition pos, bool auctionHouse = false);
+    void ChangeToGoGrind(WorldPosition pos);
     void ChangeToGoCamp(WorldPosition pos);
     void ChangeToGoCity(WorldPosition pos, ObjectGuid targetNpc);
     void ChangeToWanderNpc();
