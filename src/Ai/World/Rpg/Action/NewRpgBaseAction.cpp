@@ -1199,45 +1199,26 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
         }
         case RPG_GO_CITY:
         {
-            auto& sellList = AI_VALUE(AhListMap&, "ah sell list");
-            auto& buyList = AI_VALUE(AhListMap&, "ah buy list");
+            std::vector<NewRpgInfo::CityTask> taskList;
+            if (!BuildCityTasks(taskList))
+                return false;
 
-            bool needAh = !sellList.empty() || !buyList.empty();
-            if (!needAh)
+
+            //if the only task is visiting a city, make sure we arent already in one.
+            if (taskList.size() <= 1)
             {
                 if (AreaTableEntry const* zone = sAreaTableStore.LookupEntry(bot->GetZoneId()))
                 {
                     if (zone->flags & AREA_FLAG_CAPITAL)
                         return false;
                 }
+                if (urand(0, 100) >= sPlayerbotAIConfig.probTeleToBankers * 100)
+                    return false;
             }
 
-            WorldPosition pos;
-            ObjectGuid targetNpc;
-            if (needAh)
-            {
-                uint32 entry = 0;
-                if (SelectAuctionHouseTarget(pos, entry))
-                    targetNpc = ObjectGuid(HighGuid::Unit, entry, uint32(0));
-            }
-            else
-            {
-                std::vector<WorldLocation> cities = sTravelMgr.GetCityLocations(bot);
-                if (!cities.empty())
-                {
-                    WorldLocation const& cityLoc = cities[urand(0, cities.size() - 1)];
-                    pos = WorldPosition(cityLoc.GetMapId(), cityLoc.GetPositionX(),
-                                        cityLoc.GetPositionY(), cityLoc.GetPositionZ(),
-                                        cityLoc.GetOrientation());
-                }
-            }
-
-            if (pos == WorldPosition())
-                return false;
-
-            LOG_DEBUG("playerbots", "[New RPG] Bot {} -> GO_CITY sell={} buy={}",
-                      bot->GetName(), sellList.size(), buyList.size());
-            botAI->rpgInfo.ChangeToGoCity(pos, targetNpc);
+            LOG_DEBUG("playerbots", "[New RPG] Bot {} -> GO_CITY tasks={}",
+                      bot->GetName(), taskList.size());
+            botAI->rpgInfo.ChangeToGoCity(std::move(taskList));
             return true;
         }
         case RPG_IDLE:
@@ -1366,4 +1347,47 @@ bool NewRpgBaseAction::SelectAuctionHouseTarget(WorldPosition& outPos, uint32& o
         return true;
     }
     return false;
+}
+
+bool NewRpgBaseAction::BuildCityTasks(std::vector<NewRpgInfo::CityTask>& outTaskList)
+{
+    outTaskList.clear();
+    WorldPosition cityPosition;
+
+    // --- Auctioneer task ---
+    if (AI_VALUE(bool, "should ah sell") || AI_VALUE(bool, "should ah buy"))
+    {
+        WorldPosition auctioneerPos;
+        uint32 entry = 0;
+        if (SelectAuctionHouseTarget(auctioneerPos, entry))
+        {
+            NewRpgInfo::CityTask task;
+            task.kind = NewRpgInfo::CityTaskType::Auctioneer;
+            task.npc = ObjectGuid(HighGuid::Unit, entry, uint32(0));
+            task.location = auctioneerPos;
+            outTaskList.push_back(task);
+            cityPosition = auctioneerPos;
+        }
+    }
+    // TODO: Other cases
+
+    if (cityPosition == WorldPosition())
+    {
+        std::vector<WorldLocation> cities = sTravelMgr.GetCityLocations(bot);
+        if (cities.empty())
+            return false;
+
+        WorldLocation const& cityLoc = cities[urand(0, cities.size() - 1)];
+        cityPosition = WorldPosition(cityLoc.GetMapId(), cityLoc.GetPositionX(),
+                               cityLoc.GetPositionY(), cityLoc.GetPositionZ(),
+                               cityLoc.GetOrientation());
+    }
+
+    NewRpgInfo::CityTask visit;
+    visit.kind = NewRpgInfo::CityTaskType::Visit;
+    visit.location = cityPosition;
+    visit.requiresCity = false;
+    outTaskList.insert(outTaskList.begin(), std::move(visit));
+
+    return true;
 }

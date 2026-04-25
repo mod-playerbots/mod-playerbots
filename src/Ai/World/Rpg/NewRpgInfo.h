@@ -69,14 +69,27 @@ struct NewRpgInfo
     {
     };
     // RPG_GO_CITY
-    // No per-trip queues — the sequencer reads the live sell and buy state
-    // maps on AhSellListValue / AhBuyListValue each tick; per-entry state
-    // machines (PendingCheck / Complete / Failed + retryAfter) drive
-    // forward progress and survive trip boundaries.
+    enum class CityTaskType : uint8
+    {
+        Visit, //Initial state to get to a city.
+        Auctioneer,
+        // TODO: Vendor, RepairVendor, Trainer, Innkeeper, etc...
+    };
+
+    struct CityTask
+    {
+        CityTaskType kind{CityTaskType::Visit};
+        ObjectGuid npc{};
+        WorldPosition location{};
+        bool requiresCity{true};
+    };
+
     struct GoCity
     {
-        WorldPosition pos{0};
-        ObjectGuid targetNpc{};
+        std::vector<CityTask> taskList;
+        CityTaskType currentTaskKind{CityTaskType::Visit};
+        ObjectGuid     currentTaskNpc{};
+        WorldPosition  currentTaskLocation{};
     };
 
     uint32 startT{0};  // start timestamp of the current status
@@ -107,10 +120,9 @@ struct NewRpgInfo
 
     NewRpgStatus GetStatus();
     bool HasStatusPersisted(uint32 maxDuration) { return GetMSTimeDiffToNow(startT) > maxDuration; }
-    void ClearTravel();
     void ChangeToGoGrind(WorldPosition pos);
     void ChangeToGoCamp(WorldPosition pos);
-    void ChangeToGoCity(WorldPosition pos, ObjectGuid targetNpc);
+    void ChangeToGoCity(std::vector<CityTask> taskList);
     void ChangeToWanderNpc();
     void ChangeToWanderRandom();
     void ChangeToDoQuest(uint32 questId, const Quest* quest);

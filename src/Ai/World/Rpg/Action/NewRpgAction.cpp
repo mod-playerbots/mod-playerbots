@@ -4,7 +4,8 @@
 #include <cstdlib>
 
 #include "AhActions.h"
-#include "AuctionHouseSearcher.h"
+#include "PlayerbotUtils.h"
+#include "PlayerbotAuctionHouseUtil.h"
 #include "AreaDefines.h"
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
@@ -82,8 +83,6 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
         }
         case RPG_GO_CITY:
         {
-            auto& data = std::get<NewRpgInfo::GoCity>(info.data);
-            assert(data.pos != WorldPosition());
             if (info.HasStatusPersisted(statusGoCityDuration))
             {
                 info.ChangeToIdle();
@@ -507,10 +506,6 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
     }
     return true;
 }
-/*The idea behind this action is to go do activities in a city that a player would do.
- Instead of wandering around to a rancom NPC, visis class and skill trainers, vendors, etc. Potentially even "Camp" and
- wait for duels outside city spots. This can be extended to a mini state, where on setting the state you set a number
- of flags regarding actions to perform, and randomly select what to do.*/
 bool NewRpgGoCityAction::Execute(Event /*event*/)
 {
     auto* dataPtr = std::get_if<NewRpgInfo::GoCity>(&botAI->rpgInfo.data);
@@ -520,49 +515,63 @@ bool NewRpgGoCityAction::Execute(Event /*event*/)
 
     if (bot->IsInFlight())
         return false;
-
-    if (bot->GetDistance(data.pos) > INTERACTION_DISTANCE)
-        return MoveFarTo(data.pos);
-
-    if (!sPlayerbotAIConfig.enableAuctionHouseBotting)
+    //Get new target if we dont have one.
+    if (data.currentTaskLocation == WorldPosition())
     {
-        //No other actions currently available in a city.
-        botAI->rpgInfo.ChangeToIdle();
-        return true;
-    }
-
-    Creature* auctioneer = nullptr;
-    if (uint32 entry = data.targetNpc.GetEntry())
-        auctioneer = bot->FindNearestCreature(entry, 100.0f);
-
-    if (!auctioneer)
-    {
-        GuidVector targets = AI_VALUE(GuidVector, "possible new rpg targets");
-        for (ObjectGuid const& guid : targets)
+        if (data.taskList.empty())
         {
-            Creature* creature = ObjectAccessor::GetCreature(*bot, guid);
-            if (creature && creature->HasNpcFlag(UNIT_NPC_FLAG_AUCTIONEER))
-            {
-                auctioneer = creature;
-                break;
-            }
+            botAI->rpgInfo.ChangeToIdle();
+            return true;
         }
+        NewRpgInfo::CityTask next = std::move(data.taskList.front());
+        data.taskList.erase(data.taskList.begin());
+        data.currentTaskKind = next.kind;
+        data.currentTaskNpc = next.npc;
+        data.currentTaskLocation = next.location;
     }
 
-    if (!auctioneer)
+    if (bot->GetDistance(data.currentTaskLocation) > INTERACTION_DISTANCE)
+            return MoveFarTo(data.currentTaskLocation);
+
+    // stillWorking runs until task state returns false indicating its done doing what it had to do.
+    bool stillWorking = true;
+    switch (data.currentTaskKind)
     {
-        botAI->rpgInfo.ChangeToIdle();
-        return true;
+        case NewRpgInfo::CityTaskType::Visit:
+            // Empty handler: arriving at the location is the
+            // whole job. Fall through to promote next.
+            stillWorking = false;
+        break;
+        case NewRpgInfo::CityTaskType::Auctioneer:
+            stillWorking = ExecuteAuctioneerTask(data);
+            break;
+        // Handle all other cases.
+        default:
+            stillWorking = false;
+            break;
     }
 
-    if (bot->GetDistance(auctioneer) > INTERACTION_DISTANCE)
-        return MoveWorldObjectTo(auctioneer->GetGUID());
+    if (stillWorking)
+        return true;
 
-    // At auctioneer. One action per tick, sells first:
-    //   - AhSellAction scans the live sellList, picks the first actionable
-    //     entry (Complete → post; Idle cache-hit → post; Idle cache-miss →
-    //     fire query + PendingCheck). PendingCheck entries are skipped by
-    //     AhSellAction until their 10s timeout flips them to Failed.
+    // Erase Current task location and npc, on next check it will  empty so the next loop iteration promotes the next task (or exits to Idle if the list is dry).
+    data.currentTaskLocation = WorldPosition();
+    data.currentTaskNpc = ObjectGuid();
+    return true;
+}
+
+bool NewRpgGoCityAction::ExecuteAuctioneerTask(NewRpgInfo::GoCity& data)
+{
+    if (!sPlayerbotAIConfig.enableAuctionHouseBotting)
+        return false;
+
+    Creature* auctioneer = ai::npc::FindNpcByFlag(
+        bot, UNIT_NPC_FLAG_AUCTIONEER,
+        AI_VALUE(GuidVector, "possible new rpg targets"),
+        data.currentTaskNpc);
+    if (!auctioneer)
+        return false;
+
     auto& sellList = AI_VALUE(AhListMap&, "ah sell list");
     time_t now = time(nullptr);
 
@@ -625,80 +634,7 @@ bool NewRpgGoCityAction::Execute(Event /*event*/)
     if (pendingInFlight)
         return true;
 
-    // Nothing actionable left this trip. Return to Idle and let the usual
-    // RPG selection pick up again (persistent Failed cooldowns keep cooling).
-    botAI->rpgInfo.ChangeToIdle();
-    return true;
+    // Nothing actionable left for the auctioneer this trip.
+    return false;
 }
 
-void NewRpgGoCityAction::SendAhSearchForSlot(Creature* auctioneer, uint8 equipSlot)
-{
-    if (!auctioneer)
-        return;
-
-    // Map equipment slot to AH inventory type filter
-    uint32 inventoryType = 0;
-    switch (equipSlot)
-    {
-        case EQUIPMENT_SLOT_HEAD:      inventoryType = INVTYPE_HEAD; break;
-        case EQUIPMENT_SLOT_NECK:      inventoryType = INVTYPE_NECK; break;
-        case EQUIPMENT_SLOT_SHOULDERS: inventoryType = INVTYPE_SHOULDERS; break;
-        case EQUIPMENT_SLOT_CHEST:     inventoryType = INVTYPE_CHEST; break;
-        case EQUIPMENT_SLOT_WAIST:     inventoryType = INVTYPE_WAIST; break;
-        case EQUIPMENT_SLOT_LEGS:      inventoryType = INVTYPE_LEGS; break;
-        case EQUIPMENT_SLOT_FEET:      inventoryType = INVTYPE_FEET; break;
-        case EQUIPMENT_SLOT_WRISTS:    inventoryType = INVTYPE_WRISTS; break;
-        case EQUIPMENT_SLOT_HANDS:     inventoryType = INVTYPE_HANDS; break;
-        case EQUIPMENT_SLOT_FINGER1:
-        case EQUIPMENT_SLOT_FINGER2:   inventoryType = INVTYPE_FINGER; break;
-        case EQUIPMENT_SLOT_TRINKET1:
-        case EQUIPMENT_SLOT_TRINKET2:  inventoryType = INVTYPE_TRINKET; break;
-        case EQUIPMENT_SLOT_BACK:      inventoryType = INVTYPE_CLOAK; break;
-        case EQUIPMENT_SLOT_MAINHAND:
-        case EQUIPMENT_SLOT_OFFHAND:
-        case EQUIPMENT_SLOT_RANGED:    inventoryType = 0; break;
-        default: return;
-    }
-
-    // Armor class for armor slots, any for weapons/jewelry
-    uint32 itemClass = 0xFFFFFFFF;
-    uint32 itemSubClass = 0xFFFFFFFF;
-    if (inventoryType != 0 &&
-        equipSlot != EQUIPMENT_SLOT_FINGER1 &&
-        equipSlot != EQUIPMENT_SLOT_FINGER2 &&
-        equipSlot != EQUIPMENT_SLOT_TRINKET1 &&
-        equipSlot != EQUIPMENT_SLOT_TRINKET2 &&
-        equipSlot != EQUIPMENT_SLOT_NECK &&
-        equipSlot != EQUIPMENT_SLOT_BACK)
-    {
-        itemClass = ITEM_CLASS_ARMOR;
-        //TODO, filter iotems based on class/spec
-    }
-
-    uint8 levelMin = bot->GetLevel() > 5 ? bot->GetLevel() - 5 : 1;
-    uint8 levelMax = bot->GetLevel();
-
-    WorldPacket packet(CMSG_AUCTION_LIST_ITEMS);
-    packet << auctioneer->GetGUID();
-    packet << uint32(0);                       // listfrom (page 0)
-    packet << std::string("");                 // no name filter
-    packet << levelMin;
-    packet << levelMax;
-    packet << inventoryType;
-    packet << itemClass;
-    packet << itemSubClass;
-    packet << uint32(ITEM_QUALITY_UNCOMMON);   // green minimum
-    packet << uint8(1);                        // usable only
-
-    packet << uint8(0);                        // getAll = false
-
-    // Sort: rarity descending (best quality first), then level descending (highest ilvl first)
-    packet << uint8(2);
-    packet << uint8(AUCTION_SORT_RARITY) << uint8(1);
-    packet << uint8(AUCTION_SORT_MINLEVEL) << uint8(1);
-
-    bot->GetSession()->HandleAuctionListItems(packet);
-
-    LOG_DEBUG("playerbots", "[New RPG] Bot {} sent AH search for slot {} (invType={}, level={}-{})",
-              bot->GetName(), equipSlot, inventoryType, levelMin, levelMax);
-}

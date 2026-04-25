@@ -112,7 +112,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    void SendAhSearchForSlot(Creature* auctioneer, uint8 equipSlot);
+    bool ExecuteAuctioneerTask(NewRpgInfo::GoCity& data);
 };
 
 #endif

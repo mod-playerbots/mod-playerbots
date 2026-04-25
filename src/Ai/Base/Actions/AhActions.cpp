@@ -9,6 +9,7 @@
 
 #include "BudgetValues.h"
 #include "Event.h"
+#include "PlayerbotUtils.h"
 #include "ItemPackets.h"
 #include "ItemUsageValue.h"
 #include "Log.h"
@@ -93,14 +94,11 @@ bool AhSellAction::Execute(Event /*event*/)
         return false;
 
     GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-    ObjectGuid auctioneerGuid;
-    if (!BotAuctionUtils::HasNearbyAuctioneer(bot, npcs, auctioneerGuid))
-        return false;
-
-    Creature* auctioneer = bot->GetNPCIfCanInteractWith(auctioneerGuid, UNIT_NPC_FLAG_AUCTIONEER);
+    Creature* auctioneer = ai::npc::FindNpcByFlag(bot, UNIT_NPC_FLAG_AUCTIONEER, npcs);
     if (!auctioneer)
         return false;
 
+    ObjectGuid auctioneerGuid = auctioneer->GetGUID();
     uint32 auctioneerFaction = auctioneer->GetFaction();
     time_t now = time(nullptr);
 
@@ -374,17 +372,8 @@ bool AhSearchResultAction::Execute(Event event)
     // Resolve auctioneer once so ParseAuctionPacket + PostAuctionBid agree on
     // which AH bucket we're dealing with.
     GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-    ObjectGuid auctioneerGuid;
-    Creature* auctioneer = nullptr;
-    for (ObjectGuid const& guid : npcs)
-    {
-        if (Creature* c = bot->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_AUCTIONEER))
-        {
-            auctioneerGuid = guid;
-            auctioneer = c;
-            break;
-        }
-    }
+    Creature* auctioneer = ai::npc::FindNpcByFlag(bot, UNIT_NPC_FLAG_AUCTIONEER, npcs);
+    ObjectGuid auctioneerGuid = auctioneer ? auctioneer->GetGUID() : ObjectGuid::Empty;
     uint32 auctioneerFaction = auctioneer ? auctioneer->GetFaction() : 0;
 
     uint32 gearBudget = AI_VALUE2(uint32, "free money for", uint32(NeedMoneyFor::gear));
