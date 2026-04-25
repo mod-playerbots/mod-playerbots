@@ -88,7 +88,7 @@ bool AhSellAction::Execute(Event /*event*/)
     if (!sPlayerbotAIConfig.enableAuctionHouseBotting)
         return false;
 
-    auto& sellList = AI_VALUE(std::unordered_map<uint32, AhItemState>&, "ah sell list");
+    auto& sellList = AI_VALUE(AhListMap&, "ah sell list");
     if (sellList.empty())
         return false;
 
@@ -205,8 +205,8 @@ bool AhSearchResultAction::ParseAuctionPacket(WorldPacket& p, uint32 gearBudget,
     struct Aggregate { uint32 minUnit = 0; uint64 totalUnit = 0; uint32 sampleCount = 0; };
     std::unordered_map<uint32, Aggregate> perItem;
 
-    auto& sellList = AI_VALUE(std::unordered_map<uint32, AhItemState>&, "ah sell list");
-    auto& buyList = AI_VALUE(std::unordered_map<uint8, AhItemState>&, "ah buy list");
+    auto& sellList = AI_VALUE(AhListMap&, "ah sell list");
+    auto& buyList = AI_VALUE(AhListMap&, "ah buy list");
 
     for (uint32 i = 0; i < count; ++i)
     {
@@ -396,8 +396,8 @@ bool AhSearchResultAction::Execute(Event event)
     if (!haveCandidates)
         return true;
 
-    auto& buyList = AI_VALUE(std::unordered_map<uint8, AhItemState>&, "ah buy list");
-    uint8 pendingSlot = 0xFF;
+    auto& buyList = AI_VALUE(AhListMap&, "ah buy list");
+    uint32 pendingSlot = 0xFF;
     for (auto& kv : buyList)
     {
         if (kv.second.status == AhStatus::PendingCheck)
@@ -465,7 +465,7 @@ bool AhCommandResultAction::Execute(Event event)
         return true;
     }
 
-    auto& buyList = AI_VALUE(std::unordered_map<uint8, AhItemState>&, "ah buy list");
+    auto& buyList = AI_VALUE(AhListMap&, "ah buy list");
     for (auto& kv : buyList)
     {
         if (kv.second.status == AhStatus::Watch && kv.second.auctionId == auctionId)
@@ -509,7 +509,7 @@ bool AhBidderNotificationAction::Execute(Event event)
     ObjectGuid bidder;
     p >> location >> auctionId >> bidder;
 
-    auto& buyList = AI_VALUE(std::unordered_map<uint8, AhItemState>&, "ah buy list");
+    auto& buyList = AI_VALUE(AhListMap&, "ah buy list");
     for (auto& kv : buyList)
     {
         if (kv.second.status != AhStatus::Watch || kv.second.auctionId != auctionId)

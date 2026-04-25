@@ -62,20 +62,20 @@ public:
     bool Calculate() override;
 };
 
-class AhSellListValue : public ManualSetValue<std::unordered_map<uint32, AhItemState>&>
+class AhSellListValue : public ManualSetValue<AhListMap&>
 {
 public:
     AhSellListValue(PlayerbotAI* botAI)
-        : ManualSetValue<std::unordered_map<uint32, AhItemState>&>(botAI, _data, "ah sell list") {}
+        : ManualSetValue<AhListMap&>(botAI, _data, "ah sell list") {}
 
-    std::unordered_map<uint32, AhItemState>& Get() override;
+    AhListMap& Get() override;
 
 private:
     bool IsItemSellableOnAh(Item* item) const;
     uint32 ComputeBagFingerprint();
     void CheckInventory();
 
-    std::unordered_map<uint32, AhItemState> _data;
+    AhListMap _data;
     uint32 _lastFingerprint{0};
     uint32 _lastReconcileMs{0};
 };
@@ -88,19 +88,19 @@ public:
     bool Calculate() override;
 };
 
-class AhBuyListValue : public ManualSetValue<std::unordered_map<uint8, AhItemState>&>
+class AhBuyListValue : public ManualSetValue<AhListMap&>
 {
 public:
     AhBuyListValue(PlayerbotAI* botAI)
-        : ManualSetValue<std::unordered_map<uint8, AhItemState>&>(botAI, _data, "ah buy list") {}
+        : ManualSetValue<AhListMap&>(botAI, _data, "ah buy list") {}
 
-    std::unordered_map<uint8, AhItemState>& Get() override;
+    AhListMap& Get() override;
 
 private:
     bool IsSlotWeak(uint8 slot) const;
     void CheckEquipment();
 
-    std::unordered_map<uint8, AhItemState> _data;
+    AhListMap _data;
     uint32 _lastReconcileMs{0};
 };
 

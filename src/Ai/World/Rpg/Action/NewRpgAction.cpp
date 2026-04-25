@@ -563,7 +563,7 @@ bool NewRpgGoCityAction::Execute(Event /*event*/)
     //     entry (Complete → post; Idle cache-hit → post; Idle cache-miss →
     //     fire query + PendingCheck). PendingCheck entries are skipped by
     //     AhSellAction until their 10s timeout flips them to Failed.
-    auto& sellList = AI_VALUE(std::unordered_map<uint32, AhItemState>&, "ah sell list");
+    auto& sellList = AI_VALUE(AhListMap&, "ah sell list");
     time_t now = time(nullptr);
 
     // Drop Failed entries as we go — reconcile will re-insert them as Idle
@@ -582,7 +582,7 @@ bool NewRpgGoCityAction::Execute(Event /*event*/)
 
     // Advance state and fire one query per Idle slot. Stuck PendingCheck
     // (>10s) is cooled down to recover from lost response packets.
-    auto& buyList = AI_VALUE(std::unordered_map<uint8, AhItemState>&, "ah buy list");
+    auto& buyList = AI_VALUE(AhListMap&, "ah buy list");
     bool pendingInFlight = false;
     for (auto& buyKeyValue : buyList)
     {

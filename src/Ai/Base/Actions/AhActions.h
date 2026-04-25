@@ -7,6 +7,7 @@
 #define _PLAYERBOT_AHACTIONS_H
 
 #include <ctime>
+#include <unordered_map>
 
 #include "Action.h"
 #include "Common.h"
@@ -52,6 +53,8 @@ struct AhItem
     uint32 bidPrice;
     uint32 itemCount;
 };
+
+using AhListMap = std::unordered_map<uint32, AhItemState>;
 
 class AhSellAction : public Action
 {

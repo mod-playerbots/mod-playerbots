@@ -1199,8 +1199,8 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
         }
         case RPG_GO_CITY:
         {
-            auto& sellList = AI_VALUE(std::unordered_map<uint32, AhItemState>&, "ah sell list");
-            auto& buyList = AI_VALUE(std::unordered_map<uint8, AhItemState>&, "ah buy list");
+            auto& sellList = AI_VALUE(AhListMap&, "ah sell list");
+            auto& buyList = AI_VALUE(AhListMap&, "ah buy list");
 
             bool needAh = !sellList.empty() || !buyList.empty();
             if (!needAh)

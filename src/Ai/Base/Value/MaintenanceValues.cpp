@@ -43,7 +43,7 @@ bool ShouldSellValue::Calculate() { return AI_VALUE(uint8, "bag space") > 60; }
 
 bool CanSellValue::Calculate()
 {
-    uint32 ahCount = AI_VALUE(std::unordered_map<uint32, AhItemState>&, "ah sell list").size();
+    uint32 ahCount = AI_VALUE(AhListMap&, "ah sell list").size();
     if (ahCount > 0)
         return true;
 
@@ -111,7 +111,7 @@ bool AhSellListValue::IsItemSellableOnAh(Item* item) const
     return true;
 }
 
-std::unordered_map<uint32, AhItemState>& AhSellListValue::Get()
+AhListMap& AhSellListValue::Get()
 {
     CheckInventory();
     return _data;
@@ -175,7 +175,7 @@ bool ShouldAHSellValue::Calculate()
     if (!sPlayerbotAIConfig.enableAuctionHouseBotting)
         return false;
 
-    return !AI_VALUE(std::unordered_map<uint32, AhItemState>&, "ah sell list").empty();
+    return !AI_VALUE(AhListMap&, "ah sell list").empty();
 }
 
 bool AhBuyListValue::IsSlotWeak(uint8 slot) const
@@ -191,7 +191,7 @@ bool AhBuyListValue::IsSlotWeak(uint8 slot) const
     return item->GetTemplate()->RequiredLevel < bot->GetLevel() - 2;
 }
 
-std::unordered_map<uint8, AhItemState>& AhBuyListValue::Get()
+AhListMap& AhBuyListValue::Get()
 {
     CheckEquipment();
     return _data;
@@ -213,7 +213,7 @@ void AhBuyListValue::CheckEquipment()
     // Drop slots that are no longer weak.
     for (auto it = _data.begin(); it != _data.end(); )
     {
-        if (IsSlotWeak(it->first))
+        if (IsSlotWeak(static_cast<uint8>(it->first)))
             ++it;
         else
             it = _data.erase(it);
@@ -240,7 +240,7 @@ bool ShouldAHBuyValue::Calculate()
 
     // Any Idle or expired-Failed slot counts as actionable. PendingCheck-only
     // or cooldown-only states shouldn't trigger a city trip.
-    auto& buyList = AI_VALUE(std::unordered_map<uint8, AhItemState>&, "ah buy list");
+    auto& buyList = AI_VALUE(AhListMap&, "ah buy list");
     time_t now = time(nullptr);
     for (auto const& kv : buyList)
     {
