@@ -342,8 +342,7 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
         case CLASS_DRUID:
             if (tab == DRUID_TAB_BALANCE)
             {
-                engine->addStrategiesNoInit("caster", "cure", "caster aoe", "dps assist", nullptr);
-                engine->addStrategy("caster debuff", false);
+                engine->addStrategiesNoInit("balance", "cure", "aoe", "dps assist", nullptr);
             }
             else if (tab == DRUID_TAB_RESTORATION)
                 engine->addStrategiesNoInit("heal", "cure", "dps assist", nullptr);
@@ -426,8 +425,7 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
                 {
                     if (tab == DRUID_TAB_RESTORATION)
                     {
-                        engine->addStrategiesNoInit("caster", "caster aoe", nullptr);
-                        engine->addStrategy("caster debuff", false);
+                        engine->addStrategiesNoInit("caster", "aoe", nullptr);
                     }
                     break;
                 }

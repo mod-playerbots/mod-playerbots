@@ -77,18 +77,21 @@ class InsectSwarmTrigger : public DebuffTrigger
 {
 public:
     InsectSwarmTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "insect swarm", 1, true) {}
+    bool IsActive() override { return BuffTrigger::IsActive(); }
 };
 
 class MoonfireTrigger : public DebuffTrigger
 {
 public:
     MoonfireTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "moonfire", 1, true) {}
+    bool IsActive() override { return BuffTrigger::IsActive(); }
 };
 
 class FaerieFireTrigger : public DebuffTrigger
 {
 public:
-    FaerieFireTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "faerie fire", 1, false, 25.0f) {}
+    FaerieFireTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "faerie fire", 1, true) {}
+    bool IsActive() override { return BuffTrigger::IsActive() && bot->HasAura(33602); }
 };
 
 class FaerieFireFeralTrigger : public DebuffTrigger
@@ -145,6 +148,12 @@ class HibernateTrigger : public HasCcTargetTrigger
 {
 public:
     HibernateTrigger(PlayerbotAI* botAI) : HasCcTargetTrigger(botAI, "hibernate") {}
+};
+
+class CycloneTrigger : public HasCcTargetTrigger
+{
+public:
+    CycloneTrigger(PlayerbotAI* botAI) : HasCcTargetTrigger(botAI, "cyclone") {}
 };
 
 class CurePoisonTrigger : public NeedCureTrigger
@@ -218,18 +227,16 @@ public:
     }
 };
 
-class EclipseSolarCooldownTrigger : public SpellCooldownTrigger
+class StarfallNoCdTrigger : public SpellNoCooldownTrigger
 {
 public:
-    EclipseSolarCooldownTrigger(PlayerbotAI* ai) : SpellCooldownTrigger(ai, "eclipse (solar)") {}
-    bool IsActive() override { return bot->HasSpellCooldown(48517); }
+    StarfallNoCdTrigger(PlayerbotAI* botAI) : SpellNoCooldownTrigger(botAI, "starfall") {}
 };
 
-class EclipseLunarCooldownTrigger : public SpellCooldownTrigger
+class ForceOfNatureNoCdTrigger : public SpellNoCooldownTrigger
 {
 public:
-    EclipseLunarCooldownTrigger(PlayerbotAI* ai) : SpellCooldownTrigger(ai, "eclipse (lunar)") {}
-    bool IsActive() override { return bot->HasSpellCooldown(48518); }
+    ForceOfNatureNoCdTrigger(PlayerbotAI* botAI) : SpellNoCooldownTrigger(botAI, "force of nature") {}
 };
 
 class MangleCatTrigger : public DebuffTrigger

@@ -6,7 +6,7 @@
 #include "DruidAiObjectContext.h"
 
 #include "BearTankDruidStrategy.h"
-#include "CasterDruidStrategy.h"
+#include "BalanceDruidStrategy.h"
 #include "CatDpsDruidStrategy.h"
 #include "DruidActions.h"
 #include "DruidBearActions.h"
@@ -29,9 +29,7 @@ public:
         creators["nc"] = &DruidStrategyFactoryInternal::nc;
         creators["pull"] = &DruidStrategyFactoryInternal::pull;
         creators["cat aoe"] = &DruidStrategyFactoryInternal::cat_aoe;
-        creators["caster aoe"] = &DruidStrategyFactoryInternal::caster_aoe;
-        creators["caster debuff"] = &DruidStrategyFactoryInternal::caster_debuff;
-        creators["dps debuff"] = &DruidStrategyFactoryInternal::caster_debuff;
+        creators["aoe"] = &DruidStrategyFactoryInternal::aoe;
         creators["cure"] = &DruidStrategyFactoryInternal::cure;
         creators["melee"] = &DruidStrategyFactoryInternal::melee;
         creators["buff"] = &DruidStrategyFactoryInternal::buff;
@@ -44,8 +42,7 @@ private:
     static Strategy* nc(PlayerbotAI* botAI) { return new GenericDruidNonCombatStrategy(botAI); }
     static Strategy* pull(PlayerbotAI* botAI) { return new DruidPullStrategy(botAI); }
     static Strategy* cat_aoe(PlayerbotAI* botAI) { return new CatAoeDruidStrategy(botAI); }
-    static Strategy* caster_aoe(PlayerbotAI* botAI) { return new CasterDruidAoeStrategy(botAI); }
-    static Strategy* caster_debuff(PlayerbotAI* botAI) { return new CasterDruidDebuffStrategy(botAI); }
+    static Strategy* aoe(PlayerbotAI* botAI) { return new DruidAoeStrategy(botAI); }
     static Strategy* cure(PlayerbotAI* botAI) { return new DruidCureStrategy(botAI); }
     static Strategy* melee(PlayerbotAI* botAI) { return new MeleeDruidStrategy(botAI); }
     static Strategy* buff(PlayerbotAI* botAI) { return new GenericDruidBuffStrategy(botAI); }
@@ -62,7 +59,8 @@ public:
         creators["bear"] = &DruidDruidStrategyFactoryInternal::bear;
         creators["tank"] = &DruidDruidStrategyFactoryInternal::bear;
         creators["cat"] = &DruidDruidStrategyFactoryInternal::cat;
-        creators["caster"] = &DruidDruidStrategyFactoryInternal::caster;
+        creators["balance"] = &DruidDruidStrategyFactoryInternal::balance;
+        creators["caster"] = &DruidDruidStrategyFactoryInternal::balance;
         creators["dps"] = &DruidDruidStrategyFactoryInternal::cat;
         creators["heal"] = &DruidDruidStrategyFactoryInternal::heal;
         creators["offheal"] = &DruidDruidStrategyFactoryInternal::offheal;
@@ -71,7 +69,7 @@ public:
 private:
     static Strategy* bear(PlayerbotAI* botAI) { return new BearTankDruidStrategy(botAI); }
     static Strategy* cat(PlayerbotAI* botAI) { return new CatDpsDruidStrategy(botAI); }
-    static Strategy* caster(PlayerbotAI* botAI) { return new CasterDruidStrategy(botAI); }
+    static Strategy* balance(PlayerbotAI* botAI) { return new BalanceDruidStrategy(botAI); }
     static Strategy* heal(PlayerbotAI* botAI) { return new HealDruidStrategy(botAI); }
     static Strategy* offheal(PlayerbotAI* botAI) { return new OffhealDruidCatStrategy(botAI); }
 };
@@ -111,12 +109,14 @@ public:
         creators["bash on enemy healer"] = &DruidTriggerFactoryInternal::bash_on_enemy_healer;
         creators["nature's swiftness"] = &DruidTriggerFactoryInternal::natures_swiftness;
         creators["party member remove curse"] = &DruidTriggerFactoryInternal::party_member_remove_curse;
-        creators["eclipse (solar) cooldown"] = &DruidTriggerFactoryInternal::eclipse_solar_cooldown;
-        creators["eclipse (lunar) cooldown"] = &DruidTriggerFactoryInternal::eclipse_lunar_cooldown;
+
         creators["mangle (cat)"] = &DruidTriggerFactoryInternal::mangle_cat;
         creators["ferocious bite time"] = &DruidTriggerFactoryInternal::ferocious_bite_time;
         creators["hurricane channel check"] = &DruidTriggerFactoryInternal::hurricane_channel_check;
         creators["no healer dps strategy"] = &DruidTriggerFactoryInternal::no_healer_dps_strategy;
+        creators["starfall"] = &DruidTriggerFactoryInternal::starfall;
+        creators["force of nature"] = &DruidTriggerFactoryInternal::force_of_nature;
+        creators["cyclone"] = &DruidTriggerFactoryInternal::cyclone;
     }
 
 private:
@@ -150,12 +150,13 @@ private:
     static Trigger* bash_on_enemy_healer(PlayerbotAI* botAI) { return new BashInterruptEnemyHealerSpellTrigger(botAI); }
     static Trigger* omen_of_clarity(PlayerbotAI* botAI) { return new OmenOfClarityTrigger(botAI); }
     static Trigger* party_member_remove_curse(PlayerbotAI* ai) { return new DruidPartyMemberRemoveCurseTrigger(ai); }
-    static Trigger* eclipse_solar_cooldown(PlayerbotAI* ai) { return new EclipseSolarCooldownTrigger(ai); }
-    static Trigger* eclipse_lunar_cooldown(PlayerbotAI* ai) { return new EclipseLunarCooldownTrigger(ai); }
     static Trigger* mangle_cat(PlayerbotAI* ai) { return new MangleCatTrigger(ai); }
     static Trigger* ferocious_bite_time(PlayerbotAI* ai) { return new FerociousBiteTimeTrigger(ai); }
     static Trigger* hurricane_channel_check(PlayerbotAI* ai) { return new HurricaneChannelCheckTrigger(ai); }
     static Trigger* no_healer_dps_strategy(PlayerbotAI* ai) { return new NoHealerDpsStrategyTrigger(ai); }
+    static Trigger* starfall(PlayerbotAI* ai) { return new StarfallNoCdTrigger(ai); }
+    static Trigger* force_of_nature(PlayerbotAI* ai) { return new ForceOfNatureNoCdTrigger(ai); }
+    static Trigger* cyclone(PlayerbotAI* ai) { return new CycloneTrigger(ai); }
 };
 
 class DruidAiObjectContextInternal : public NamedObjectContext<Action>
@@ -195,6 +196,7 @@ public:
         creators["entangling roots on cc"] = &DruidAiObjectContextInternal::entangling_roots_on_cc;
         creators["hibernate"] = &DruidAiObjectContextInternal::hibernate;
         creators["hibernate on cc"] = &DruidAiObjectContextInternal::hibernate_on_cc;
+        creators["cyclone on cc"] = &DruidAiObjectContextInternal::cyclone_on_cc;
         creators["wrath"] = &DruidAiObjectContextInternal::wrath;
         creators["starfall"] = &DruidAiObjectContextInternal::starfall;
         creators["insect swarm"] = &DruidAiObjectContextInternal::insect_swarm;
@@ -254,6 +256,7 @@ public:
         creators["moonfire on attacker"] = &DruidAiObjectContextInternal::moonfire_on_attacker;
         creators["enrage"] = &DruidAiObjectContextInternal::enrage;
         creators["force of nature"] = &DruidAiObjectContextInternal::force_of_nature;
+        creators["typhoon"] = &DruidAiObjectContextInternal::typhoon;
     }
 
 private:
@@ -291,6 +294,7 @@ private:
     static Action* entangling_roots(PlayerbotAI* botAI) { return new CastEntanglingRootsAction(botAI); }
     static Action* hibernate_on_cc(PlayerbotAI* botAI) { return new CastHibernateCcAction(botAI); }
     static Action* entangling_roots_on_cc(PlayerbotAI* botAI) { return new CastEntanglingRootsCcAction(botAI); }
+    static Action* cyclone_on_cc(PlayerbotAI* botAI) { return new CastCycloneCcAction(botAI); }
     static Action* wrath(PlayerbotAI* botAI) { return new CastWrathAction(botAI); }
     static Action* starfall(PlayerbotAI* botAI) { return new CastStarfallAction(botAI); }
     static Action* insect_swarm(PlayerbotAI* botAI) { return new CastInsectSwarmAction(botAI); }
@@ -347,6 +351,7 @@ private:
     static Action* moonfire_on_attacker(PlayerbotAI* ai) { return new CastMoonfireOnAttackerAction(ai); }
     static Action* enrage(PlayerbotAI* ai) { return new CastEnrageAction(ai); }
     static Action* force_of_nature(PlayerbotAI* ai) { return new CastForceOfNatureAction(ai); }
+    static Action* typhoon(PlayerbotAI* ai) { return new CastTyphoonAction(ai); }
 };
 
 SharedNamedObjectContextList<Strategy> DruidAiObjectContext::sharedStrategyContexts;

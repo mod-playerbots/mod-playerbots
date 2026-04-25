@@ -15,7 +15,8 @@ class Unit;
 class CastFaerieFireAction : public CastDebuffSpellAction
 {
 public:
-    CastFaerieFireAction(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "faerie fire") {}
+    CastFaerieFireAction(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "faerie fire", true) {}
+    bool isUseful() override { return CastAuraSpellAction::isUseful(); }
 };
 
 class CastFaerieFireFeralAction : public CastSpellAction
@@ -146,6 +147,9 @@ class CastWrathAction : public CastSpellAction
 {
 public:
     CastWrathAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "wrath") {}
+    bool isUseful() override;
+private:
+    time_t _lunarProcTime = 0;
 };
 
 class CastStarfallAction : public CastSpellAction
@@ -163,22 +167,35 @@ public:
     ActionThreatType getThreatType() override { return ActionThreatType::Aoe; }
 };
 
+class CastTyphoonAction : public CastSpellAction
+{
+public:
+    CastTyphoonAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "typhoon") {}
+    ActionThreatType getThreatType() override { return ActionThreatType::Aoe; }
+    bool isUseful() override;
+};
+
 class CastMoonfireAction : public CastDebuffSpellAction
 {
 public:
     CastMoonfireAction(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "moonfire", true) {}
+    bool isUseful() override { return CastAuraSpellAction::isUseful(); }
 };
 
 class CastInsectSwarmAction : public CastDebuffSpellAction
 {
 public:
     CastInsectSwarmAction(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "insect swarm", true) {}
+    bool isUseful() override { return CastAuraSpellAction::isUseful(); }
 };
 
 class CastStarfireAction : public CastSpellAction
 {
 public:
     CastStarfireAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "starfire") {}
+    bool isUseful() override;
+private:
+    time_t _solarProcTime = 0;
 };
 
 class CastEntanglingRootsAction : public CastSpellAction
@@ -205,6 +222,14 @@ class CastHibernateCcAction : public CastSpellAction
 {
 public:
     CastHibernateCcAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "hibernate on cc") {}
+    Value<Unit*>* GetTargetValue() override;
+    bool Execute(Event event) override;
+};
+
+class CastCycloneCcAction : public CastSpellAction
+{
+public:
+    CastCycloneCcAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "cyclone on cc") {}
     Value<Unit*>* GetTargetValue() override;
     bool Execute(Event event) override;
 };
@@ -306,13 +331,15 @@ public:
 class CastInsectSwarmOnAttackerAction : public CastDebuffSpellOnAttackerAction
 {
 public:
-    CastInsectSwarmOnAttackerAction(PlayerbotAI* ai) : CastDebuffSpellOnAttackerAction(ai, "insect swarm") {}
+    CastInsectSwarmOnAttackerAction(PlayerbotAI* ai) : CastDebuffSpellOnAttackerAction(ai, "insect swarm", true, 0.0f) {}
+    bool isUseful() override { return CastAuraSpellAction::isUseful(); }
 };
 
 class CastMoonfireOnAttackerAction : public CastDebuffSpellOnAttackerAction
 {
 public:
-    CastMoonfireOnAttackerAction(PlayerbotAI* ai) : CastDebuffSpellOnAttackerAction(ai, "moonfire") {}
+    CastMoonfireOnAttackerAction(PlayerbotAI* ai) : CastDebuffSpellOnAttackerAction(ai, "moonfire", true, 0.0f) {}
+    bool isUseful() override { return CastAuraSpellAction::isUseful(); }
 };
 
 class CastEnrageAction : public CastBuffSpellAction

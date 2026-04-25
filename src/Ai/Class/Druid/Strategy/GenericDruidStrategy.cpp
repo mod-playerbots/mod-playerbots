@@ -5,6 +5,7 @@
 
 #include "GenericDruidStrategy.h"
 
+#include "AiFactory.h"
 #include "Playerbots.h"
 
 class GenericDruidStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
@@ -130,12 +131,21 @@ void DruidCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void DruidBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode(
-        "nature's swiftness", { NextAction("nature's swiftness", ACTION_HIGH + 9) }));
+    triggers.push_back(new TriggerNode("nature's swiftness", { NextAction("nature's swiftness", 29.0f) }));
+
+    Player* bot = botAI->GetBot();
+    int tab = AiFactory::GetPlayerSpecTab(bot);
+
+    if (tab == DRUID_TAB_BALANCE)
+    {
+        triggers.push_back(new TriggerNode("force of nature", { NextAction("force of nature", 29.0f) }));
+    }
 }
 
 void DruidCcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    triggers.push_back(new TriggerNode(
+        "cyclone", { NextAction("cyclone on cc", ACTION_HIGH + 4) }));
     triggers.push_back(new TriggerNode(
         "entangling roots", { NextAction("entangling roots on cc", ACTION_HIGH + 2) }));
     triggers.push_back(new TriggerNode(
@@ -155,4 +165,21 @@ void DruidHealerDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
                             NextAction("starfire", ACTION_DEFAULT + 0.1f),
 }));
 
+}
+
+void DruidAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+{
+    Player* bot = botAI->GetBot();
+    int tab = AiFactory::GetPlayerSpecTab(bot);
+
+    if (tab == DRUID_TAB_BALANCE)
+    {
+        triggers.push_back(new TriggerNode("hurricane channel check", { NextAction("cancel channel", 22.0f) }));
+        triggers.push_back(new TriggerNode("starfall", { NextAction("starfall", 28.5f) }));
+        triggers.push_back(new TriggerNode("medium aoe", { NextAction("hurricane", 23.0f) }));
+        triggers.push_back(new TriggerNode("enemy within melee", { NextAction("typhoon", 40.0f) }));
+
+        triggers.push_back(new TriggerNode("light aoe",
+            { NextAction("insect swarm on attacker", 19.5f), NextAction("moonfire on attacker", 19.0f) }));
+    }
 }
