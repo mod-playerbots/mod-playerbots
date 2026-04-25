@@ -623,7 +623,7 @@ bool NewRpgGoCityAction::ExecuteAuctioneerTask(NewRpgInfo::GoCity& data)
         if (ahItemState.status == AhStatus::Idle)
         {
             uint8 targetSlot = buyKeyValue.first;
-            SendAhSearchForSlot(auctioneer, targetSlot);
+            BotAuctionUtils::SendAhSearchForSlot(bot, auctioneer, targetSlot);
             AhItemState& st = buyList[targetSlot];
             st.status = AhStatus::PendingCheck;
             st.changedAt = now;
