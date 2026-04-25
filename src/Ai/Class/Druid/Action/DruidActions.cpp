@@ -11,22 +11,6 @@
 #include "AoeValues.h"
 #include "TargetValue.h"
 
-namespace
-{
-    bool PrepareThornsTarget(PlayerbotAI* botAI, Unit* target)
-    {
-        if (!target)
-            return false;
-
-        Aura* existingThorns = botAI->GetAura("thorns", target, true);
-        if (!existingThorns)
-            return true;
-
-        target->RemoveAura(existingThorns);
-        return true;
-    }
-}
-
 std::vector<NextAction> CastAbolishPoisonAction::getAlternatives()
 {
     return NextAction::merge({ NextAction("cure poison") },
@@ -47,21 +31,6 @@ bool CastLifebloomOnMainTankAction::isUseful()
 
     Aura* lifebloom = botAI->GetAura("lifebloom", target, true, true);
     return !lifebloom || lifebloom->GetStackAmount() < 3 || lifebloom->GetDuration() < 2000;
-}
-
-bool CastThornsAction::Execute(Event event)
-{
-    return PrepareThornsTarget(botAI, GetTarget()) && CastBuffSpellAction::Execute(event);
-}
-
-bool CastThornsOnPartyAction::Execute(Event event)
-{
-    return PrepareThornsTarget(botAI, GetTarget()) && BuffOnPartyAction::Execute(event);
-}
-
-bool CastThornsOnMainTankAction::Execute(Event event)
-{
-    return PrepareThornsTarget(botAI, GetTarget()) && BuffOnMainTankAction::Execute(event);
 }
 
 Value<Unit*>* CastEntanglingRootsCcAction::GetTargetValue()
