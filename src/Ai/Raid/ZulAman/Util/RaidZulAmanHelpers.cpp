@@ -143,7 +143,7 @@ namespace ZulAmanHelpers
     // Jan'alai <Dragonhawk Avatar>
     const Position JANALAI_TANK_POSITION = { -33.873f, 1149.571f, 19.146f };
 
-    bool HasFireBombNearby(PlayerbotAI* botAI, Player* bot)
+    bool HasFireBombNearby(Player* bot)
     {
         constexpr float searchRadius = 30.0f;
         std::list<Creature*> creatureList;

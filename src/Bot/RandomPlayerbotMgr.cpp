@@ -278,7 +278,7 @@ void RandomPlayerbotMgr::LogPlayerLocation()
     }
 }
 
-void RandomPlayerbotMgr::UpdateAIInternal(uint32 elapsed, bool /*minimal*/)
+void RandomPlayerbotMgr::UpdateAIInternal(uint32 /*elapsed*/, bool /*minimal*/)
 {
     if (totalPmo)
         totalPmo->finish();
@@ -2266,6 +2266,16 @@ CachedEvent* RandomPlayerbotMgr::FindEvent(uint32 bot, std::string const& event)
     return &e;
 }
 
+bool RandomPlayerbotMgr::IsSpecPvp(uint32 bot, uint8 cls)
+{
+    uint32 stored = GetValue(bot, "specNo");
+    if (!stored)
+        return false;
+    uint32 specIndex = stored - 1;
+    std::string const& name = sPlayerbotAIConfig.premadeSpecName[cls][specIndex];
+    return !name.empty() && name.find("pvp") != std::string::npos;
+}
+
 uint32 RandomPlayerbotMgr::GetEventValue(uint32 bot, std::string const& event)
 {
     if (CachedEvent* e = FindEvent(bot, event))
@@ -2530,6 +2540,13 @@ void RandomPlayerbotMgr::OnBotLoginInternal(Player* const bot)
         {
             _isBotLogging = false;
         }
+    }
+
+    // Run guild recovery/assignment at login to handle empty guild tables after restart.
+    if (sPlayerbotAIConfig.randomBotGuildCount > 0)
+    {
+        PlayerbotFactory factory(bot, bot->GetLevel());
+        factory.InitGuild();
     }
 
     if (sPlayerbotAIConfig.randomBotFixedLevel)
