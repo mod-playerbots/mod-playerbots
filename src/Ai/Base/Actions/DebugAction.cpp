@@ -76,7 +76,7 @@ bool DebugAction::Execute(Event event)
                 return false;
 
             std::vector<WorldPosition> beginPath, endPath;
-            TravelNodeRoute route = TravelNodeMap::instance().getRoute(botPos, *points.front(), beginPath, bot);
+            TravelNodeRoute route = TravelNodeMap::instance().FindRouteNearestNodes(botPos, *points.front(), beginPath, bot);
 
             std::ostringstream out;
             out << "Traveling to " << dest->getTitle() << ": ";
@@ -275,7 +275,7 @@ bool DebugAction::Execute(Event event)
             []
             {
                 TravelNodeMap::instance().removeNodes();
-                TravelNodeMap::instance().loadNodeStore();
+                TravelNodeMap::instance().LoadNodeStore();
             });
 
         t.detach();
@@ -297,7 +297,7 @@ bool DebugAction::Execute(Event event)
 
                 // uint32 time = 60 * IN_MILLISECONDS; //not used, line marked for removal.
 
-                std::vector<WorldPosition> ppath = l.second->getPath();
+                std::vector<WorldPosition> ppath = l.second->GetPath();
 
                 for (auto p : ppath)
                 {

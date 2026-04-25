@@ -5,6 +5,7 @@
 
 #include "AhActions.h"
 #include "AuctionHouseSearcher.h"
+#include "AreaDefines.h"
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
 #include "G3D/Vector2.h"
@@ -132,17 +133,8 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
             }
             break;
         }
-        case RPG_TRAVEL_FLIGHT:
-        {
-            auto& data = std::get<NewRpgInfo::TravelFlight>(info.data);
-            if (data.inFlight && !bot->IsInFlight())
-            {
-                // flight arrival
-                info.ChangeToIdle();
-                return true;
-            }
-            break;
-        }
+        // RPG_TRAVEL_FLIGHT arrival is handled inside NewRpgTravelFlightAction
+        // so the flight action owns both take-off and landing transitions.
         case RPG_REST:
         {
             // REST -> IDLE
@@ -476,33 +468,42 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
         return false;
 
     auto& data = *dataPtr;
+
+    // Arrival: we had boarded a flight (data.inFlight) and we're no longer in
+    // it → we just landed. Special-case Rut'theran: walk to the portal GO so
+    // it teleports the bot into Darnassus, flipping the zone to AREA_DARNASSUS
+    // so this branch falls through to ChangeToIdle on the next tick.
+    if (data.inFlight && !bot->IsInFlight())
+    {
+        if (bot->GetZoneId() == AREA_TELDRASSIL)
+        {
+            static WorldPosition const rutTheranPortalEntrance(1, 8799.41f, 969.787f, 26.2409f, 0.0f);
+            return MoveFarTo(rutTheranPortalEntrance);
+        }
+        info.ChangeToIdle();
+        return true;
+    }
+
     if (bot->IsInFlight())
     {
         data.inFlight = true;
         return false;
     }
 
-    if (bot->GetDistance(data.fromPos) > INTERACTION_DISTANCE)
-        return MoveFarTo(data.fromPos);
+    if (bot->GetDistance(data.flightMasterPos) > INTERACTION_DISTANCE)
+        return MoveFarTo(data.flightMasterPos);
 
-    Creature* flightMaster = ObjectAccessor::GetCreature(*bot, data.fromFlightMasterGuid);
+    Creature* flightMaster = bot->FindNearestCreature(data.flightMasterEntry, INTERACTION_DISTANCE * 3);
     if (!flightMaster || !flightMaster->IsAlive())
     {
-        botAI->rpgInfo.ChangeToIdle();
+        info.ChangeToIdle();
         return true;
     }
 
-    std::vector<uint32> nodes = data.path;
-
-    botAI->RemoveShapeshift();
-    if (bot->IsMounted())
-        bot->Dismount();
-
-    if (!bot->ActivateTaxiPathTo(nodes, flightMaster, 0))
+    if (!TakeFlight(data.path, flightMaster))
     {
-        LOG_DEBUG("playerbots", "[New RPG] {} active taxi path {} (from {} to {}) failed", bot->GetName(),
-                  flightMaster->GetEntry(), nodes[0], nodes[nodes.size() - 1]);
-        botAI->rpgInfo.ChangeToIdle();
+        info.ChangeToIdle();
+        return true;
     }
     return true;
 }

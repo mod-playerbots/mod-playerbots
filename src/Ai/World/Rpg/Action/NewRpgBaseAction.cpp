@@ -98,25 +98,35 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
         botAI->rpgInfo.stuckAttempts = 0;
         const AreaTableEntry* entry = sAreaTableStore.LookupEntry(bot->GetZoneId());
         std::string zone_name = PlayerbotAI::GetLocalizedAreaName(entry);
-        LOG_DEBUG(
-            "playerbots",
-            "[New RPG] Teleport {} from ({},{},{},{}) to ({},{},{},{}) as it stuck when moving far - Zone: {} ({})",
+        LOG_DEBUG("playerbots","[New RPG] Teleport {} from ({},{},{},{}) to ({},{},{},{}) as it stuck when moving far - Zone: {} ({})",
             bot->GetName(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetMapId(),
-            dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), dest.GetMapId(), bot->GetZoneId(),
-            zone_name);
-        bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
-        return bot->TeleportTo(dest);
+            dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), dest.GetMapId(), bot->GetZoneId(), zone_name);
+        botAI->TeleportTo(dest);
+        return true;
     }
 
     float dis = bot->GetExactDist(dest);
+
+    // Long distance + travel nodes enabled: use the pre-computed node graph
+    // (A*, flight paths, transports) instead of repeated mmap hops.
+    if (dis > MAX_PATHFINDING_DISTANCE && sPlayerbotAIConfig.enableTravelNodes)
+    {
+        if (!botAI->rpgInfo.HasActiveTravelPlan())
+            StartTravelPlan(dest);
+
+        return UpdateTravelPlan();
+    }
+
+    // Crossed below the travel-node threshold — clear any leftover plan
+    if (botAI->rpgInfo.HasActiveTravelPlan())
+        botAI->rpgInfo.ClearTravel();
+
+    // Short range: close enough for a single mmap call
     if (dis < pathFinderDis)
     {
         return MoveTo(dest.GetMapId(), dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), false, false,
                       false, true);
     }
-
-    const uint32 typeOk = PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_FARFROMPOLY;
-
     // Primary strategy: ask mmap for a route to the TRUE destination.
     // If mmap can reach it directly (PATHFIND_NORMAL) or partially
     // (PATHFIND_INCOMPLETE — destinations beyond the smooth-path cap
@@ -128,23 +138,18 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
     // subsequent ticks early-out via IsWaitingForLastMove and no
     // further PathGenerator calls fire until the bot arrives.
     {
-        PathGenerator path(bot);
-        path.CalculatePath(dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ());
-        PathType type = path.GetPathType();
-        bool canReach = !(type & (~typeOk));
-        if (canReach)
+        PathResult path = GeneratePath(dest.GetPositionX(), dest.GetPositionY(),
+            dest.GetPositionZ(), RELAXED_PATH_ACCEPT_MASK);
+        if (path.reachable)
         {
-            const G3D::Vector3& endPos = path.GetActualEndPosition();
             // Only commit if the mmap endpoint actually makes progress
             // toward the destination. For pathological INCOMPLETE
             // results (e.g. disconnected polys that still report
             // INCOMPLETE) the endpoint can land right under the bot;
             // fall through to cone sampling in that case.
-            float endDistToDest = dest.GetExactDist(endPos.x, endPos.y, endPos.z);
+            float endDistToDest = dest.GetExactDist(path.actualEnd.x, path.actualEnd.y, path.actualEnd.z);
             if (endDistToDest + 5.0f < disToDest)
-            {
-                return MoveTo(bot->GetMapId(), endPos.x, endPos.y, endPos.z, false, false, false, true);
-            }
+                return MoveTo(bot->GetMapId(), path.actualEnd.x, path.actualEnd.y, path.actualEnd.z, false, false, false, true);
         }
     }
 
@@ -168,18 +173,14 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
         float dx = x + cos(angle) * sampleDis;
         float dy = y + sin(angle) * sampleDis;
         float dz = z + 0.5f;
-        PathGenerator path(bot);
-        path.CalculatePath(dx, dy, dz);
-        PathType type = path.GetPathType();
-        bool canReach = !(type & (~typeOk));
+        PathResult path = GeneratePath(dx, dy, dz, RELAXED_PATH_ACCEPT_MASK);
 
-        if (canReach && fabs(delta) <= minDelta)
+        if (path.reachable && fabs(delta) <= minDelta)
         {
             found = true;
-            const G3D::Vector3& endPos = path.GetActualEndPosition();
-            rx = endPos.x;
-            ry = endPos.y;
-            rz = endPos.z;
+            rx = path.actualEnd.x;
+            ry = path.actualEnd.y;
+            rz = path.actualEnd.z;
             minDelta = fabs(delta);
         }
     }
@@ -190,12 +191,31 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
     return false;
 }
 
+void NewRpgBaseAction::StartTravelPlan(WorldPosition dest)
+{
+    TravelPlan& plan = botAI->rpgInfo.travelPlan;
+    GetTravelPlan(plan, dest);
+
+    LOG_DEBUG("playerbots","[New RPG] Bot {} starting travel plan to ({:.0f},{:.0f},{:.0f}) map={}, {} points",
+        bot->GetName(), dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), dest.GetMapId(), plan.steps.size());
+}
+
+bool NewRpgBaseAction::UpdateTravelPlan()
+{
+    TravelPlan& plan = botAI->rpgInfo.travelPlan;
+
+    bool result = ExecuteTravelPlan(plan);
+
+    if (!plan.IsActive())
+        botAI->rpgInfo.ClearTravel();
+
+    return result;
+}
+
 bool NewRpgBaseAction::MoveWorldObjectTo(ObjectGuid guid, float distance)
 {
     if (IsWaitingForLastMove(MovementPriority::MOVEMENT_NORMAL))
-    {
         return false;
-    }
 
     WorldObject* object = botAI->GetWorldObject(guid);
     if (!object)
@@ -247,13 +267,9 @@ bool NewRpgBaseAction::MoveRandomNear(float moveStep, MovementPriority priority,
         float dy = y + distance * sin(angle);
         float dz = z;
 
-        PathGenerator path(bot);
-        path.CalculatePath(dx, dy, dz);
-        PathType type = path.GetPathType();
-        uint32 typeOk = PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_FARFROMPOLY;
-        bool canReach = !(type & (~typeOk));
+        PathResult path = GeneratePath(dx, dy, dz, RELAXED_PATH_ACCEPT_MASK);
 
-        if (!canReach)
+        if (!path.reachable)
             continue;
 
         if (!map->CanReachPositionAndGetValidCoords(bot, dx, dy, dz))
@@ -275,6 +291,27 @@ bool NewRpgBaseAction::ForceToWait(uint32 duration, MovementPriority priority)
     AI_VALUE(LastMovement&, "last movement")
         .Set(bot->GetMapId(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetOrientation(),
              duration, priority);
+    return true;
+}
+
+bool NewRpgBaseAction::TakeFlight(std::vector<uint32> const& taxiNodes, Creature* flightMaster)
+{
+    if (taxiNodes.size() < 2 || !flightMaster || !flightMaster->IsAlive())
+        return false;
+
+    botAI->RemoveShapeshift();
+    if (bot->IsMounted())
+        bot->Dismount();
+
+    if (!bot->ActivateTaxiPathTo(taxiNodes, flightMaster, 0))
+    {
+        LOG_DEBUG("playerbots", "[New RPG] Bot {} flight ({} nodes, {} to {}) failed",
+                  bot->GetName(), taxiNodes.size(), taxiNodes.front(), taxiNodes.back());
+        return false;
+    }
+
+    LOG_DEBUG("playerbots", "[New RPG] Bot {} taking flight ({} nodes, {} to {})",
+              bot->GetName(), taxiNodes.size(), taxiNodes.front(), taxiNodes.back());
     return true;
 }
 
@@ -1037,19 +1074,21 @@ WorldPosition NewRpgBaseAction::SelectRandomCampPos(Player* bot)
     return dest;
 }
 
-bool NewRpgBaseAction::SelectRandomFlightTaxiNode(ObjectGuid& flightMaster, std::vector<uint32>& path)
+bool NewRpgBaseAction::SelectRandomFlightTaxiNode(uint32& flightMasterEntry, WorldPosition& flightMasterPos, std::vector<uint32>& path)
 {
-    flightMaster = sTravelMgr.GetNearestFlightMasterGuid(bot);
-    if (!flightMaster)
+    TravelMgr::FlightMasterInfo const* info = sTravelMgr.GetNearestFlightMasterInfo(bot);
+    if (!info)
         return false;
 
     std::vector<std::vector<uint32>> availablePaths = sTravelMgr.GetOptimalFlightDestinations(bot);
     if (availablePaths.empty())
         return false;
 
+    flightMasterEntry = info->templateEntry;
+    flightMasterPos = info->pos;
     path = availablePaths[urand(0, availablePaths.size() - 1)];
     LOG_DEBUG("playerbots", "[New RPG] Bot {} select random flight taxi node from:{} (node {}) to:{} ({} available)",
-              bot->GetName(), flightMaster.GetEntry(), path[0], path[path.size() - 1], availablePaths.size());
+              bot->GetName(), flightMasterEntry, path[0], path[path.size() - 1], availablePaths.size());
     return true;
 }
 
@@ -1068,7 +1107,6 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
             probSum += sPlayerbotAIConfig.RpgStatusProbWeight[status];
         }
     }
-    // Safety check. Default to "rest" if all RPG weights = 0
     if (availableStatus.empty() || probSum == 0)
     {
         botAI->rpgInfo.ChangeToRest();
@@ -1149,15 +1187,12 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
         }
         case RPG_TRAVEL_FLIGHT:
         {
-            ObjectGuid flightMasterGuid;
+            uint32 flightMasterEntry = 0;
+            WorldPosition flightMasterPos;
             std::vector<uint32> path;
-            if (SelectRandomFlightTaxiNode(flightMasterGuid, path))
+            if (SelectRandomFlightTaxiNode(flightMasterEntry, flightMasterPos, path))
             {
-                Creature* flightMaster = ObjectAccessor::GetCreature(*bot, flightMasterGuid);
-                if (!flightMaster)
-                    return false;
-                WorldPosition fromPos = WorldPosition(flightMaster);
-                botAI->rpgInfo.ChangeToTravelFlight(flightMasterGuid, fromPos, path);
+                botAI->rpgInfo.ChangeToTravelFlight(flightMasterEntry, flightMasterPos, path);
                 return true;
             }
             return false;
@@ -1297,9 +1332,10 @@ bool NewRpgBaseAction::CheckRpgStatusAvailable(NewRpgStatus status)
         }
         case RPG_TRAVEL_FLIGHT:
         {
-            ObjectGuid flightMaster;
+            uint32 flightMasterEntry = 0;
+            WorldPosition flightMasterPos;
             std::vector<uint32> path;
-            return SelectRandomFlightTaxiNode(flightMaster, path);
+            return SelectRandomFlightTaxiNode(flightMasterEntry, flightMasterPos, path);
         }
         case RPG_OUTDOOR_PVP:
         {

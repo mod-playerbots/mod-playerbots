@@ -6,10 +6,10 @@
 #include "CheckValuesAction.h"
 
 #include "Event.h"
+#include "ObjectGuid.h"
 #include "ServerFacade.h"
 
 #include "PlayerbotAI.h"
-#include "TravelNode.h"
 #include "AiObjectContext.h"
 
 CheckValuesAction::CheckValuesAction(PlayerbotAI* botAI) : Action(botAI, "check values") {}
@@ -19,11 +19,6 @@ bool CheckValuesAction::Execute(Event /*event*/)
     if (botAI->HasStrategy("debug move", BOT_STATE_NON_COMBAT))
     {
         botAI->Ping(bot->GetPositionX(), bot->GetPositionY());
-    }
-
-    if (botAI->HasStrategy("map", BOT_STATE_NON_COMBAT) || botAI->HasStrategy("map full", BOT_STATE_NON_COMBAT))
-    {
-        TravelNodeMap::instance().manageNodes(bot, botAI->HasStrategy("map full", BOT_STATE_NON_COMBAT));
     }
 
     GuidVector possible_targets = *context->GetValue<GuidVector>("possible targets");
