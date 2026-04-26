@@ -66,6 +66,7 @@
 #include "PartyMemberToDispel.h"
 #include "PartyMemberToHeal.h"
 #include "PartyMemberToResurrect.h"
+#include "PartyMemberSnaredTargetValue.h"
 #include "PartyMemberWithoutAuraValue.h"
 #include "PartyMemberWithoutItemValue.h"
 #include "PetTargetValue.h"
@@ -152,6 +153,7 @@ public:
         creators["duel target"] = &ValueContext::duel_target;
         creators["party member to dispel"] = &ValueContext::party_member_to_dispel;
         creators["party member to protect"] = &ValueContext::party_member_to_protect;
+        creators["party member snared target"] = &ValueContext::party_member_snared_target;
         creators["health"] = &ValueContext::health;
         creators["rage"] = &ValueContext::rage;
         creators["energy"] = &ValueContext::energy;
@@ -239,6 +241,8 @@ public:
         creators["travel target"] = &ValueContext::travel_target;
         creators["talk target"] = &ValueContext::talk_target;
         creators["pull target"] = &ValueContext::pull_target;
+        creators["pull strategy target"] = &ValueContext::pull_strategy_target;
+        creators["focus heal targets"] = &ValueContext::focus_heal_targets;
         creators["group"] = &ValueContext::group;
         creators["range"] = &ValueContext::range;
         creators["inside target"] = &ValueContext::inside_target;
@@ -450,6 +454,7 @@ private:
     static UntypedValue* party_member_to_resurrect(PlayerbotAI* botAI) { return new PartyMemberToResurrect(botAI); }
     static UntypedValue* party_member_to_dispel(PlayerbotAI* botAI) { return new PartyMemberToDispel(botAI); }
     static UntypedValue* party_member_to_protect(PlayerbotAI* botAI) { return new PartyMemberToProtect(botAI); }
+    static UntypedValue* party_member_snared_target(PlayerbotAI* botAI) { return new PartyMemberSnaredTargetValue(botAI); }
     static UntypedValue* current_target(PlayerbotAI* botAI) { return new CurrentTargetValue(botAI); }
     static UntypedValue* old_target(PlayerbotAI* botAI) { return new CurrentTargetValue(botAI); }
     static UntypedValue* self_target(PlayerbotAI* botAI) { return new SelfTargetValue(botAI); }
@@ -494,6 +499,8 @@ private:
     static UntypedValue* next_rpg_action(PlayerbotAI* botAI) { return new NextRpgActionValue(botAI); }
     static UntypedValue* travel_target(PlayerbotAI* botAI) { return new TravelTargetValue(botAI); }
     static UntypedValue* pull_target(PlayerbotAI* botAI) { return new PullTargetValue(botAI); }
+    static UntypedValue* pull_strategy_target(PlayerbotAI* botAI) { return new PullStrategyTargetValue(botAI); }
+    static UntypedValue* focus_heal_targets(PlayerbotAI* botAI) { return new FocusHealTargetValue(botAI); }
 
     static UntypedValue* bg_master(PlayerbotAI* botAI) { return new BgMasterValue(botAI); }
     static UntypedValue* bg_role(PlayerbotAI* botAI) { return new BgRoleValue(botAI); }

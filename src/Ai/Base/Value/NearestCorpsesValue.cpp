@@ -28,4 +28,4 @@ void NearestCorpsesValue::FindUnits(std::list<Unit*>& targets)
     Cell::VisitObjects(bot, searcher, range);
 }
 
-bool NearestCorpsesValue::AcceptUnit(Unit* unit) { return true; }
+bool NearestCorpsesValue::AcceptUnit(Unit* /*unit*/) { return true; }

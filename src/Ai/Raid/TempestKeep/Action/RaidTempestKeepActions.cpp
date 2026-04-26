@@ -213,7 +213,7 @@ bool AlarAssistTanksPickUpEmbersAction::Execute(Event /*event*/)
     if (!isAlarInPhase2[alar->GetMap()->GetInstanceId()])
         return HandlePhase1Embers(alar);
     else
-        return HandlePhase2Embers(alar);
+        return HandlePhase2Embers();
 }
 
 // Embers will be tanked by only the second assist tank in Phase 1
@@ -275,7 +275,7 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
 
 // One Ember will be tanked by the second assist tank in Phase 2, and the other by
 // the main tank or first assist tank (whichever is not tanking Al'ar)
-bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers(Unit* alar)
+bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers()
 {
     auto [firstEmber, secondEmber] = GetFirstTwoEmbersOfAlar(botAI);
 

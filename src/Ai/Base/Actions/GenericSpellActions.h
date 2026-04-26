@@ -130,6 +130,20 @@ public:
     std::string const GetTargetName() override { return "self target"; }
 };
 
+class CastEnchantItemMainHandAction : public CastEnchantItemAction
+{
+public:
+    CastEnchantItemMainHandAction(PlayerbotAI* botAI, std::string const spell);
+    bool isPossible() override;
+};
+
+class CastEnchantItemOffHandAction : public CastEnchantItemAction
+{
+public:
+    CastEnchantItemOffHandAction(PlayerbotAI* botAI, std::string const spell);
+    bool isPossible() override;
+};
+
 class CastHealingSpellAction : public CastAuraSpellAction
 {
 public:
@@ -239,7 +253,12 @@ class CastShootAction : public CastSpellAction
 public:
     CastShootAction(PlayerbotAI* botAI);
 
+    bool isPossible() override;
+    bool Execute(Event event) override;
     ActionThreatType getThreatType() override { return ActionThreatType::None; }
+
+private:
+    uint32 shootSpellId;
 };
 
 class CastLifeBloodAction : public CastHealingSpellAction

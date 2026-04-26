@@ -28,12 +28,14 @@ class StatsWeightCalculator
 public:
     StatsWeightCalculator(Player* player);
     void Reset();
-    float CalculateItem(uint32 itemId, int32 randomPropertyId = 0);
+    float CalculateItem(uint32 itemId, int32 randomPropertyId = 0, int32 slot = -1);
     float CalculateEnchant(uint32 enchantId);
 
     void SetOverflowPenalty(bool apply) { enable_overflow_penalty_ = apply; }
     void SetItemSetBonus(bool apply) { enable_item_set_bonus_ = apply; }
     void SetQualityBlend(bool apply) { enable_quality_blend_ = apply; }
+    void SetPvpSpec(bool isPvp) { pvpSpec_ = isPvp; }
+    void SetExcludeResilience(bool exclude) { exclude_resilience_ = exclude; }
 
     private:
     void GenerateWeights(Player* player);
@@ -45,6 +47,7 @@ public:
     void CalculateSocketBonus(Player* player, ItemTemplate const* proto);
 
     void CalculateItemTypePenalty(ItemTemplate const* proto);
+    float ApplyPreferredSpecWeapons(ItemTemplate const* proto, int32 slot);
 
     bool NotBestArmorType(uint32 item_subclass_armor);
 
@@ -65,6 +68,8 @@ private:
 
     float weight_;
     float stats_weights_[STATS_TYPE_MAX];
+    bool pvpSpec_ = false;
+    bool exclude_resilience_ = false;
 };
 
 #endif

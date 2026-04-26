@@ -234,6 +234,11 @@ ItemUsage ItemUsageValue::QueryItemUsageForEquip(ItemTemplate const* itemProto, 
     calculator.SetItemSetBonus(false);
     calculator.SetOverflowPenalty(false);
 
+    // Apply PvP weights if the bot is specced for PvP
+    bool isPvp = sRandomPlayerbotMgr.IsSpecPvp(bot->GetGUID().GetCounter(), bot->getClass());
+    if (isPvp)
+        calculator.SetPvpSpec(true);
+
     float itemScore = calculator.CalculateItem(itemProto->ItemId, randomPropertyId);
 
     if (itemScore)
@@ -863,8 +868,6 @@ bool ItemUsageValue::SpellGivesSkillUp(uint32 spellId, Player* bot)
         if (skill->SkillLine)
         {
             uint32 SkillValue = bot->GetPureSkillValue(skill->SkillLine);
-
-            uint32 craft_skill_gain = sWorld->getIntConfig(CONFIG_SKILL_GAIN_CRAFTING);
 
             if (SkillGainChance(SkillValue, skill->TrivialSkillLineRankHigh,
                                 (skill->TrivialSkillLineRankHigh + skill->TrivialSkillLineRankLow) / 2,

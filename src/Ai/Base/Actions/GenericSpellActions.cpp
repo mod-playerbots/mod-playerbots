@@ -151,7 +151,9 @@ bool CastMeleeSpellAction::isUseful()
     return CastSpellAction::isUseful();
 }
 
-CastMeleeDebuffSpellAction::CastMeleeDebuffSpellAction(PlayerbotAI* botAI, std::string const spell, bool isOwner, float needLifeTime) : CastDebuffSpellAction(botAI, spell, isOwner, needLifeTime)
+CastMeleeDebuffSpellAction::CastMeleeDebuffSpellAction(
+    PlayerbotAI* botAI, std::string const spell, bool isOwner, float needLifeTime) :
+    CastDebuffSpellAction(botAI, spell, isOwner, needLifeTime)
 {
     range = ATTACK_DISTANCE;
 }
@@ -203,6 +205,35 @@ bool CastEnchantItemAction::isPossible()
     return spellId && AI_VALUE2(Item*, "item for spell", spellId);
 }
 
+CastEnchantItemMainHandAction::CastEnchantItemMainHandAction(PlayerbotAI* botAI, std::string const spell)
+    : CastEnchantItemAction(botAI, spell) {}
+
+bool CastEnchantItemMainHandAction::isPossible()
+{
+    if (!CastEnchantItemAction::isPossible())
+        return false;
+
+    Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+    return item && !item->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT) &&
+           item->GetTemplate()->Class == ITEM_CLASS_WEAPON;
+}
+
+CastEnchantItemOffHandAction::CastEnchantItemOffHandAction(PlayerbotAI* botAI, std::string const spell)
+    : CastEnchantItemAction(botAI, spell) {}
+
+bool CastEnchantItemOffHandAction::isPossible()
+{
+    if (!CastEnchantItemAction::isPossible())
+        return false;
+
+    Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+    if (!item || item->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
+        return false;
+
+    uint32 invType = item->GetTemplate()->InventoryType;
+    return invType == INVTYPE_WEAPON || invType == INVTYPE_WEAPONOFFHAND;
+}
+
 CastHealingSpellAction::CastHealingSpellAction(PlayerbotAI* botAI, std::string const spell, uint8 estAmount,
                                                HealingManaEfficiency manaEfficiency, bool isOwner)
     : CastAuraSpellAction(botAI, spell, isOwner), estAmount(estAmount), manaEfficiency(manaEfficiency)
@@ -242,7 +273,7 @@ bool BuffOnPartyAction::Execute(Event /*event*/)
 }
 // End greater buff fix
 
-CastShootAction::CastShootAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "shoot")
+CastShootAction::CastShootAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "shoot"), shootSpellId(0)
 {
     if (Item* const pItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED))
     {
@@ -252,15 +283,38 @@ CastShootAction::CastShootAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "s
         {
             case ITEM_SUBCLASS_WEAPON_GUN:
                 spell += " gun";
+                shootSpellId = 3018;
                 break;
             case ITEM_SUBCLASS_WEAPON_BOW:
                 spell += " bow";
+                shootSpellId = 3018;
                 break;
             case ITEM_SUBCLASS_WEAPON_CROSSBOW:
                 spell += " crossbow";
+                shootSpellId = 3018;
+                break;
+            case ITEM_SUBCLASS_WEAPON_THROWN:
+                spell = "throw";
+                shootSpellId = 2764;
                 break;
         }
     }
+}
+
+bool CastShootAction::isPossible()
+{
+    if (shootSpellId)
+        return botAI->CanCastSpell(shootSpellId, GetTarget(), false);
+
+    return CastSpellAction::isPossible();
+}
+
+bool CastShootAction::Execute(Event /*event*/)
+{
+    if (shootSpellId)
+        return botAI->CastSpell(shootSpellId, GetTarget());
+
+    return botAI->CastSpell(spell, GetTarget());
 }
 
 Value<Unit*>* CastDebuffSpellOnAttackerAction::GetTargetValue()

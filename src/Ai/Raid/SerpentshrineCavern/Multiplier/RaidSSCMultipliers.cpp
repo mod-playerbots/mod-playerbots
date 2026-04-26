@@ -690,13 +690,11 @@ float LadyVashjCorePassersPrioritizePositioningMultiplier::GetValue(Action* acti
     auto coreHandlers = GetCoreHandlers(botAI, bot);
 
     bool isCoreHandler = false;
-    int myIndex = -1;
     for (int i = 0; i < static_cast<int>(coreHandlers.size()); ++i)
     {
         if (coreHandlers[i] && coreHandlers[i] == bot)
         {
             isCoreHandler = true;
-            myIndex = i;
         }
     }
     if (!isCoreHandler)

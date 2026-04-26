@@ -66,7 +66,7 @@ public:
 
 private:
     bool HandlePhase1Embers(Unit* alar);
-    bool HandlePhase2Embers(Unit* alar);
+    bool HandlePhase2Embers();
 };
 
 class AlarRangedDpsPrioritizeEmbersAction : public AttackAction

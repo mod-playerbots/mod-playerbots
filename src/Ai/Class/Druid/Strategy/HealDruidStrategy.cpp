@@ -56,6 +56,9 @@ void HealDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode("party member critical health",
                         { NextAction("nature's swiftness", ACTION_CRITICAL_HEAL + 4) }));
 
+    triggers.push_back(new TriggerNode("clearcasting",
+        { NextAction("lifebloom on main tank", ACTION_CRITICAL_HEAL - 1) }));
+
     triggers.push_back(new TriggerNode(
         "group heal setting",
         {

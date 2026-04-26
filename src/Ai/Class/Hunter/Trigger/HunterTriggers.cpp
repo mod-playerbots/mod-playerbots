@@ -16,8 +16,7 @@
 
 bool KillCommandTrigger::IsActive()
 {
-    Unit* target = GetTarget();
-    return !botAI->HasAura("kill command", target);
+    return !botAI->HasAura("kill command", GetTarget());
 }
 
 bool BlackArrowTrigger::IsActive()
@@ -26,36 +25,46 @@ bool BlackArrowTrigger::IsActive()
         return false;
 
     return DebuffTrigger::IsActive();
-    return BuffTrigger::IsActive();
 }
 
-bool HunterAspectOfTheHawkTrigger::IsActive()
+bool HunterAspectOfTheDragonhawkTrigger::IsActive()
 {
     Unit* target = GetTarget();
-    return SpellTrigger::IsActive() && !botAI->HasAura("aspect of the hawk", target) &&
-           !botAI->HasAura("aspect of the dragonhawk", target) &&
-           (!AI_VALUE2(bool, "has mana", "self target") || AI_VALUE2(uint8, "mana", "self target") > 70);
+    if (!target)
+        return false;
+
+    if (!SpellTrigger::IsActive())
+        return false;
+
+    if (botAI->HasAura("aspect of the hawk", target) ||
+        botAI->HasAura("aspect of the dragonhawk", target))
+        return false;
+
+    if (botAI->HasAura("aspect of the viper", target))
+        return AI_VALUE2(uint8, "mana", "self target") >= 60;
+
+    return true;
 }
 
 bool HunterNoStingsActiveTrigger::IsActive()
 {
     Unit* target = AI_VALUE(Unit*, "current target");
-    return DebuffTrigger::IsActive() && target && !botAI->HasAura("serpent sting", target, false, true) &&
-           !botAI->HasAura("scorpid sting", target, false, true) && !botAI->HasAura("viper sting", target, false, true);
-    return BuffTrigger::IsActive();
+    return DebuffTrigger::IsActive() && target &&
+           !botAI->HasAura("serpent sting", target, false, true) &&
+           !botAI->HasAura("scorpid sting", target, false, true) &&
+           !botAI->HasAura("viper sting", target, false, true);
 }
 
 bool HuntersPetDeadTrigger::IsActive()
 {
-    // Unit* pet = AI_VALUE(Unit*, "pet target");
-    // return pet && AI_VALUE2(bool, "dead", "pet target") && !AI_VALUE2(bool, "mounted", "self target");
     return AI_VALUE(bool, "pet dead") && !AI_VALUE2(bool, "mounted", "self target");
 }
 
 bool HuntersPetLowHealthTrigger::IsActive()
 {
     Unit* pet = AI_VALUE(Unit*, "pet target");
-    return pet && AI_VALUE2(uint8, "health", "pet target") < 40 && !AI_VALUE2(bool, "dead", "pet target") &&
+    return pet && AI_VALUE2(uint8, "health", "pet target") < 40 &&
+           !AI_VALUE2(bool, "dead", "pet target") &&
            !AI_VALUE2(bool, "mounted", "self target");
 }
 
@@ -73,9 +82,14 @@ bool HunterPetNotHappy::IsActive()
 
 bool HunterAspectOfTheViperTrigger::IsActive()
 {
-    return SpellTrigger::IsActive() && !botAI->HasAura(spell, GetTarget()) &&
+    if (botAI->HasStrategy("rnature", BotState::BOT_STATE_COMBAT) ||
+        botAI->HasStrategy("rnature", BotState::BOT_STATE_NON_COMBAT) ||
+        botAI->HasStrategy("bspeed", BotState::BOT_STATE_COMBAT) ||
+        botAI->HasStrategy("bspeed", BotState::BOT_STATE_NON_COMBAT))
+        return false;
+
+    return BuffTrigger::IsActive() &&
            AI_VALUE2(uint8, "mana", "self target") < (sPlayerbotAIConfig.lowMana / 2);
-    ;
 }
 
 bool HunterAspectOfThePackTrigger::IsActive()
@@ -85,11 +99,14 @@ bool HunterAspectOfThePackTrigger::IsActive()
 
 bool HunterLowAmmoTrigger::IsActive()
 {
-    return bot->GetGroup() && (AI_VALUE2(uint32, "item count", "ammo") < 100) &&
-           (AI_VALUE2(uint32, "item count", "ammo") > 0);
+    uint32 ammoCount = AI_VALUE2(uint32, "item count", "ammo");
+    return bot->GetGroup() && ammoCount > 0 && ammoCount < 100;
 }
 
-bool HunterHasAmmoTrigger::IsActive() { return !AmmoCountTrigger::IsActive(); }
+bool HunterHasAmmoTrigger::IsActive()
+{
+    return !AmmoCountTrigger::IsActive();
+}
 
 bool SwitchToRangedTrigger::IsActive()
 {
@@ -131,6 +148,7 @@ bool NoTrackTrigger::IsActive()
         if (botAI->HasAura(track, bot))
             return false;
     }
+
     return true;
 }
 
@@ -138,17 +156,17 @@ bool SerpentStingOnAttackerTrigger::IsActive()
 {
     if (!DebuffOnAttackerTrigger::IsActive())
         return false;
+
     Unit* target = GetTarget();
     if (!target)
-    {
         return false;
-    }
+
     return !botAI->HasAura("scorpid sting", target, false, true) &&
            !botAI->HasAura("viper sting", target, false, true);
-    return BuffTrigger::IsActive();
 }
 
-const std::set<uint32> VolleyChannelCheckTrigger::VOLLEY_SPELL_IDS = {
+const std::set<uint32> VolleyChannelCheckTrigger::VOLLEY_SPELL_IDS =
+{
     1510,   // Volley Rank 1
     14294,  // Volley Rank 2
     14295,  // Volley Rank 3
@@ -159,19 +177,12 @@ const std::set<uint32> VolleyChannelCheckTrigger::VOLLEY_SPELL_IDS = {
 
 bool VolleyChannelCheckTrigger::IsActive()
 {
-    Player* bot = botAI->GetBot();
-
-    // Check if the bot is channeling a spell
-    if (Spell* spell = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+    if (Spell* spell = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
+        spell && VOLLEY_SPELL_IDS.count(spell->m_spellInfo->Id))
     {
-        // Only trigger if the spell being channeled is Volley
-        if (VOLLEY_SPELL_IDS.count(spell->m_spellInfo->Id))
-        {
-            uint8 attackerCount = AI_VALUE(uint8, "attacker count");
-            return attackerCount < minEnemies;
-        }
+        uint8 attackerCount = AI_VALUE(uint8, "attacker count");
+        return attackerCount < minEnemies;
     }
 
-    // Not channeling Volley
     return false;
 }

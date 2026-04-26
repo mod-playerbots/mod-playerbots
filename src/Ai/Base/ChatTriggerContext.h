@@ -66,6 +66,9 @@ public:
         creators["autogear"] = &ChatTriggerContext::autogear;
         creators["equip upgrade"] = &ChatTriggerContext::equip_upgrade;
         creators["attack"] = &ChatTriggerContext::attack;
+        creators["pull"] = &ChatTriggerContext::pull;
+        creators["pull back"] = &ChatTriggerContext::pull_back;
+        creators["pull rti"] = &ChatTriggerContext::pull_rti;
         creators["chat"] = &ChatTriggerContext::chat;
         creators["accept"] = &ChatTriggerContext::accept;
         creators["home"] = &ChatTriggerContext::home;
@@ -146,6 +149,7 @@ public:
         creators["pet attack"] = &ChatTriggerContext::pet_attack;
         creators["roll"] = &ChatTriggerContext::roll_action;
         creators["wait for attack time"] = &ChatTriggerContext::wait_for_attack_time;
+        creators["focus heal"] = &ChatTriggerContext::focus_heal;
     }
 
 private:
@@ -208,6 +212,9 @@ private:
     static Trigger* accept(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "accept"); }
     static Trigger* chat(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "chat"); }
     static Trigger* attack(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "attack"); }
+    static Trigger* pull(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "pull"); }
+    static Trigger* pull_back(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "pull back"); }
+    static Trigger* pull_rti(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "pull rti"); }
     static Trigger* trainer(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "trainer"); }
     static Trigger* maintenance(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "maintenance"); }
     static Trigger* remove_glyph(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "remove glyph"); }
@@ -271,6 +278,7 @@ private:
     static Trigger* pet_attack(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "pet attack"); }
     static Trigger* roll_action(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "roll"); }
     static Trigger* wait_for_attack_time(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "wait for attack time"); }
+    static Trigger* focus_heal(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "focus heal"); }
 };
 
 #endif

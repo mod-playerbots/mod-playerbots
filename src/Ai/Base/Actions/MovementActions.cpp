@@ -63,10 +63,10 @@ void MovementAction::CreateWp(Player* wpOwner, float x, float y, float z, float 
 bool MovementAction::JumpTo(uint32 mapId, float x, float y, float z, MovementPriority priority)
 {
     UpdateMovementState();
-    if (!IsMovingAllowed(mapId, x, y, z))
+    if (!IsMovingAllowed())
         return false;
 
-    if (IsDuplicateMove(mapId, x, y, z))
+    if (IsDuplicateMove(x, y, z))
         return false;
 
     if (IsWaitingForLastMove(priority))
@@ -101,6 +101,11 @@ bool MovementAction::MoveNear(WorldObject* target, float distance, MovementPrior
         float x = target->GetPositionX() + cos(angle) * distance;
         float y = target->GetPositionY() + sin(angle) * distance;
         float z = target->GetPositionZ();
+        // Clamp Z to the terrain under the offset point so we don't
+        // hand PointMovementGenerator a Z that matches the target's
+        // floor but not the sampled (x,y) — avoids straight-line
+        // fallbacks through geometry.
+        bot->UpdateAllowedPositionZ(x, y, z);
 
         if (!bot->IsWithinLOS(x, y, z))
             continue;
@@ -166,11 +171,11 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
                             bool exact_waypoint, MovementPriority priority, bool lessDelay, bool backwards)
 {
     UpdateMovementState();
-    if (!IsMovingAllowed(mapId, x, y, z))
+    if (!IsMovingAllowed())
     {
         return false;
     }
-    if (IsDuplicateMove(mapId, x, y, z))
+    if (IsDuplicateMove(x, y, z))
     {
         return false;
     }
@@ -250,7 +255,7 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
             //     bot->CastStop();
             //     botAI->InterruptSpell();
             // }
-            DoMovePoint(bot, x, y, z, generatePath, backwards);
+            DoMovePoint(bot, x, y, modifiedZ, generatePath, backwards);
             float delay = 1000.0f * MoveDelay(distance, backwards);
             if (lessDelay)
             {
@@ -258,7 +263,8 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
             }
             delay = std::max(.0f, delay);
             delay = std::min((float)sPlayerbotAIConfig.maxWaitForMove, delay);
-            AI_VALUE(LastMovement&, "last movement").Set(mapId, x, y, z, bot->GetOrientation(), delay, priority);
+            AI_VALUE(LastMovement&, "last movement")
+                .Set(mapId, x, y, modifiedZ, bot->GetOrientation(), delay, priority);
             return true;
         }
     }
@@ -778,15 +784,17 @@ bool MovementAction::MoveTo(WorldObject* target, float distance, MovementPriorit
 
     float dx = cos(angle) * needToGo + bx;
     float dy = sin(angle) * needToGo + by;
-    float dz;  // = std::max(bz, tz); // calc accurate z position to avoid stuck
+    // Start from a seed Z between bot and target, then clamp to the
+    // terrain under (dx,dy). Linear interpolation alone ignores hills
+    // between the two units and fed PointMovementGenerator a Z that
+    // could be well above/below ground, triggering straight-line
+    // fallbacks through walls.
+    float dz;
     if (distanceToTarget > CONTACT_DISTANCE)
-    {
         dz = bz + (tz - bz) * (needToGo / distanceToTarget);
-    }
     else
-    {
         dz = tz;
-    }
+    bot->UpdateAllowedPositionZ(dx, dy, dz);
     return MoveTo(target->GetMapId(), dx, dy, dz, false, false, false, false, priority);
 }
 
@@ -889,20 +897,7 @@ bool MovementAction::IsMovingAllowed(WorldObject* target)
     return IsMovingAllowed();
 }
 
-bool MovementAction::IsMovingAllowed(uint32 mapId, float x, float y, float z)
-{
-    // removed sqrt as means distance limit was effectively 22500 (ReactDistance�)
-    // leaving it commented incase we find ReactDistance limit causes problems
-    // float distance = sqrt(bot->GetDistance(x, y, z));
-
-    // Remove react distance limit
-    // if (!bot->InBattleground())
-    //     return false;
-
-    return IsMovingAllowed();
-}
-
-bool MovementAction::IsDuplicateMove(uint32 mapId, float x, float y, float z)
+bool MovementAction::IsDuplicateMove(float x, float y, float z)
 {
     LastMovement& lastMove = *context->GetValue<LastMovement&>("last movement");
 
@@ -1278,7 +1273,7 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
     return true;
 }
 
-bool MovementAction::ChaseTo(WorldObject* obj, float distance, float angle)
+bool MovementAction::ChaseTo(WorldObject* obj, float distance)
 {
     if (!IsMovingAllowed())
     {
@@ -1851,7 +1846,7 @@ bool FleeAction::isUseful()
 
 bool FleeWithPetAction::Execute(Event /*event*/)
 {
-    if (Pet* pet = bot->GetPet())
+    if (bot->GetPet())
         botAI->PetFollow();
 
     return Flee(AI_VALUE(Unit*, "current target"));
