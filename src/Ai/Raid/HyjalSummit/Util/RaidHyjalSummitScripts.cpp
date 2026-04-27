@@ -25,9 +25,6 @@ static Player* GetFirstPlayerSpellTarget(Spell* spell, Unit* caster)
         return unitTarget->ToPlayer();
 
     std::list<TargetInfo> const& targets = *spell->GetUniqueTargetInfo();
-    if (targets.empty())
-        return nullptr;
-
     for (TargetInfo const& targetInfo : targets)
     {
         if (Player* target = ObjectAccessor::GetPlayer(*caster, targetInfo.targetGUID))
@@ -46,10 +43,10 @@ static bool ShouldInterruptForArchimondeAirBurst(PlayerbotAI* botAI, Player* bot
     if (!mainTank || bot == mainTank)
         return false;
 
-    if (target == mainTank)
-        return bot->GetExactDist2d(mainTank) < AIR_BURST_SAFE_DISTANCE;
+    float distanceToMainTank = bot->GetExactDist2d(mainTank);
 
-    return target == bot && bot->GetExactDist2d(mainTank) < AIR_BURST_SAFE_DISTANCE;
+    return (target == mainTank || target == bot) &&
+           distanceToMainTank < AIR_BURST_SAFE_DISTANCE;
 }
 
 // Records the active Rain of Fire dynamic object so that melee bots can avoid it by running
@@ -76,6 +73,25 @@ public:
         {
             return;
         }
+
+        bool shouldTrackRainOfFire = false;
+        Map::PlayerList const& players = dynobj->GetMap()->GetPlayers();
+        for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+        {
+            Player* player = it->GetSource();
+            if (!player || !player->IsAlive())
+                continue;
+
+            PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+            if (!botAI || !botAI->HasStrategy("hyjal", BOT_STATE_COMBAT))
+                continue;
+
+            shouldTrackRainOfFire = true;
+            break;
+        }
+
+        if (!shouldTrackRainOfFire)
+            return;
 
         rainOfFirePosition[instanceId] = RainOfFireData{ dynobj->GetPosition(), now };
     }
@@ -127,8 +143,11 @@ public:
                 continue;
 
             PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-            if (!botAI || creature->GetDistance(player) > DOOMFIRE_DANGER_RANGE)
+            if (!botAI || !botAI->HasStrategy("hyjal", BOT_STATE_COMBAT) ||
+                creature->GetDistance(player) > DOOMFIRE_DANGER_RANGE)
+            {
                 continue;
+            }
 
             botAI->RequestSpellInterrupt();
         }
@@ -173,8 +192,11 @@ public:
                 continue;
 
             PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-            if (!botAI || !ShouldInterruptForArchimondeAirBurst(botAI, player, target))
+            if (!botAI || !botAI->HasStrategy("hyjal", BOT_STATE_COMBAT) ||
+                !ShouldInterruptForArchimondeAirBurst(botAI, player, target))
+            {
                 continue;
+            }
 
             botAI->RequestSpellInterrupt();
         }

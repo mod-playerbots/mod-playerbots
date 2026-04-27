@@ -1073,19 +1073,14 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
     Player* mainTank = GetGroupMainTank(botAI, bot);
     if (mainTank && bot != mainTank)
     {
+        float distanceToMainTank = bot->GetDistance2d(mainTank);
         bool shouldMoveFromMainTank = false;
         if (AirBurstData* data = GetRecentArchimondeAirBurst(bot->GetMap()->GetInstanceId()))
         {
-            if (data->targetGuid == mainTank->GetGUID())
-            {
-                shouldMoveFromMainTank =
-                    bot->GetDistance2d(mainTank) < AIR_BURST_SAFE_DISTANCE;
-            }
-            else if (data->targetGuid == bot->GetGUID())
-            {
-                shouldMoveFromMainTank =
-                    bot->GetDistance2d(mainTank) < AIR_BURST_SAFE_DISTANCE;
-            }
+            bool isRelevantAirBurstTarget =
+                data->targetGuid == mainTank->GetGUID() || data->targetGuid == bot->GetGUID();
+            shouldMoveFromMainTank =
+                isRelevantAirBurstTarget && distanceToMainTank < AIR_BURST_SAFE_DISTANCE;
         }
 
         if (!shouldMoveFromMainTank && archimonde->HasUnitState(UNIT_STATE_CASTING))
@@ -1096,7 +1091,7 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
             {
                 Unit* spellTarget = spell->m_targets.GetUnitTarget();
                 if ((spellTarget == mainTank || spellTarget == bot) &&
-                    bot->GetDistance2d(mainTank) < AIR_BURST_SAFE_DISTANCE)
+                    distanceToMainTank < AIR_BURST_SAFE_DISTANCE)
                 {
                     shouldMoveFromMainTank = true;
                 }
@@ -1104,7 +1099,7 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
         }
 
         if (shouldMoveFromMainTank)
-            return MoveAway(mainTank, AIR_BURST_SAFE_DISTANCE - bot->GetDistance2d(mainTank));
+            return MoveAway(mainTank, AIR_BURST_SAFE_DISTANCE - distanceToMainTank);
     }
 
     if (archimonde->GetHealthPct() < 90.0f)
