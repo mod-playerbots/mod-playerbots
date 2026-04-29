@@ -7,7 +7,7 @@
 #define _PLAYERBOT_RAIDHYJALSUMMITTRIGGERCONTEXT_H
 
 #include "RaidHyjalSummitTriggers.h"
-#include "AiObjectContext.h"
+#include "NamedObjectContext.h"
 
 class RaidHyjalSummitTriggerContext : public NamedObjectContext<Trigger>
 {
