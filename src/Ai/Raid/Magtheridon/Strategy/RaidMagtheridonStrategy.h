@@ -2,7 +2,6 @@
 #define _PLAYERBOT_RAIDMAGTHERIDONSTRATEGY_H
 
 #include "Strategy.h"
-#include "Multiplier.h"
 
 class RaidMagtheridonStrategy : public Strategy
 {

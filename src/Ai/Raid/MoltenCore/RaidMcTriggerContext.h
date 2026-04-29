@@ -1,7 +1,6 @@
 #ifndef _PLAYERBOT_RAIDMCTRIGGERCONTEXT_H
 #define _PLAYERBOT_RAIDMCTRIGGERCONTEXT_H
 
-#include "AiObjectContext.h"
 #include "BossAuraTriggers.h"
 #include "NamedObjectContext.h"
 #include "RaidMcTriggers.h"

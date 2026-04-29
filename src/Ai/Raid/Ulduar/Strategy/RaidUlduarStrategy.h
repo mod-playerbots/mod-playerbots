@@ -2,7 +2,6 @@
 #ifndef _PLAYERBOT_RAIDULDUARSTRATEGY_H
 #define _PLAYERBOT_RAIDULDUARSTRATEGY_H
 
-#include "AiObjectContext.h"
 #include "Strategy.h"
 
 class RaidUlduarStrategy : public Strategy

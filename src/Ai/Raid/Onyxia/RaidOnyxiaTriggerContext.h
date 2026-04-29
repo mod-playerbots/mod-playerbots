@@ -1,7 +1,6 @@
 #ifndef _PLAYERBOT_RAIDONYXIATRIGGERCONTEXT_H
 #define _PLAYERBOT_RAIDONYXIATRIGGERCONTEXT_H
 
-#include "AiObjectContext.h"
 #include "NamedObjectContext.h"
 #include "RaidOnyxiaTriggers.h"
 

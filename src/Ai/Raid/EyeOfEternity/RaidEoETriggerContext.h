@@ -1,7 +1,6 @@
 #ifndef _PLAYERBOT_RAIDEOETRIGGERCONTEXT_H
 #define _PLAYERBOT_RAIDEOETRIGGERCONTEXT_H
 
-#include "AiObjectContext.h"
 #include "NamedObjectContext.h"
 #include "RaidEoETriggers.h"
 
