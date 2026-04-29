@@ -4,15 +4,20 @@
  */
 
 #include "CheckMountStateAction.h"
+#include "AreaDefines.h"
 #include "BattleGroundTactics.h"
 #include "BattlegroundEY.h"
 #include "BattlegroundWS.h"
+#include "DBCStores.h"
 #include "Event.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "SpellAuraEffects.h"
+
+// Cold Weather Flying — required to fly anywhere on the Northrend continent.
+static constexpr uint32 SPELL_COLD_WEATHER_FLYING = 54197;
 
 // Define the static map / init bool for caching bot preferred mount data globally
 std::unordered_map<uint32, PreferredMountCache> CheckMountStateAction::mountCache;
@@ -94,9 +99,10 @@ bool CheckMountStateAction::Execute(Event /*event*/)
     }
 
     bool inBattleground = bot->InBattleground();
+    bool const noRealMaster = (!master || master == bot);
 
     // If there is a master and bot not in BG, follow master's mount state regardless of group leader
-    if (master && !inBattleground)
+    if (!noRealMaster && !inBattleground)
     {
         if (ShouldFollowMasterMountState(master, noAttackers, shouldMount))
             return Mount();
@@ -110,8 +116,8 @@ bool CheckMountStateAction::Execute(Event /*event*/)
         return false;
     }
 
-    // If there is no master or bot in BG
-    if ((!master || inBattleground) && !bot->IsMounted() &&
+    // No real master (random bot or self-bot) OR bot in BG
+    if ((noRealMaster || inBattleground) && !bot->IsMounted() &&
         noAttackers && shouldMount && !bot->IsInCombat())
         return Mount();
 
@@ -228,6 +234,25 @@ void CheckMountStateAction::Dismount()
 
     WorldPacket emptyPacket;
     bot->GetSession()->HandleCancelMountAuraOpcode(emptyPacket);
+
+    float const x = bot->GetPositionX();
+    float const y = bot->GetPositionY();
+    float const startZ = bot->GetPositionZ();
+    float groundZ = startZ;
+    bot->UpdateAllowedPositionZ(x, y, groundZ);
+    float const fallHeight = startZ - groundZ;
+
+    //quick snap to the ground without animation
+    if (fallHeight < 1.0f)
+    {
+        bot->UpdatePosition(x, y, groundZ, bot->GetOrientation(), false);
+        return;
+    }
+
+    bot->GetMotionMaster()->MoveFall();
+    MovementInfo fallInfo = bot->m_movementInfo;
+    fallInfo.pos.Relocate(x, y, groundZ);
+    bot->HandleFall(fallInfo);
 }
 
 bool CheckMountStateAction::TryForms(Player* master, int32 masterMountType, int32 masterSpeed) const
@@ -434,6 +459,26 @@ bool CheckMountStateAction::ShouldDismountForMaster(Player* master) const
     return !isMasterMounted && bot->IsMounted();
 }
 
+static bool BotCanUseFlyingMount(Player const* bot)
+{
+    // Cheap eligibility: without Expert Riding or higher, no flight spell
+    // could be cast anyway. Lets us skip the DBC lookup for low-level bots.
+    if (bot->GetPureSkillValue(SKILL_RIDING) < 225)
+        return false;
+
+    AreaTableEntry const* area = sAreaTableStore.LookupEntry(bot->GetAreaId());
+    if (!area || !area->IsFlyable())
+        return false;
+    if (area->flags & AREA_FLAG_NO_FLY_ZONE)
+        return false;
+
+    uint32 const vmap = GetVirtualMapForMapAndZone(bot->GetMapId(), bot->GetZoneId());
+    if (vmap == MAP_NORTHREND && !bot->HasSpell(SPELL_COLD_WEATHER_FLYING))
+        return false;
+
+    return true;
+}
+
 int32 CheckMountStateAction::CalculateMasterMountSpeed(Player* master, const MountData& mountData) const
 {
     // Check riding skill and level requirements
@@ -443,9 +488,12 @@ int32 CheckMountStateAction::CalculateMasterMountSpeed(Player* master, const Mou
     if (ridingSkill <= 75 && botLevel < static_cast<int32>(sPlayerbotAIConfig.useFastGroundMountAtMinLevel))
         return 59;
 
-    // If there is a master and bot not in BG, use master's aura effects.
-    if (master && !bot->InBattleground())
+    // check if bot has master and if master is self
+    bool const noRealMaster = (!master || master == bot);
+
+    if (!noRealMaster && !bot->InBattleground())
     {
+        // Following a real master — mirror their current mount or shapeshift.
         auto auraEffects = master->GetAuraEffectsByType(SPELL_AURA_MOUNTED);
         if (!auraEffects.empty())
         {
@@ -458,27 +506,31 @@ int32 CheckMountStateAction::CalculateMasterMountSpeed(Player* master, const Mou
             return 279;
         else if (masterInShapeshiftForm == FORM_FLIGHT)
             return 149;
-    }
-    else
-    {
-        // Bots on their own.
-        int32 speed = mountData.maxSpeed;
-        if (bot->InBattleground() && speed > 99)
-            return 99;
-
-        return speed;
+        return 59;  // master not currently mounted/formed → walk pace
     }
 
-    return 59;
+    // No real master OR battleground: pick speed by skill tier.
+    if (!bot->InBattleground() && BotCanUseFlyingMount(bot))
+        return (ridingSkill >= 300) ? 279 : 149;
+
+    int32 maxGround = (ridingSkill >= 150) ? 99 : 59;
+    if (bot->InBattleground() && maxGround > 99)
+        maxGround = 99;
+    return maxGround;
 }
 
 uint32 CheckMountStateAction::GetMountType(Player* master) const
 {
-    if (!master)
-        return 0;
+    bool const noRealMaster = (!master || master == bot);
+
+    if (noRealMaster)
+    {
+        // Same map+skill check CalculateMasterMountSpeed uses — keeps
+        // type/speed consistent so the mount filter finds a matching spell.
+        return (!bot->InBattleground() && BotCanUseFlyingMount(bot)) ? 1 : 0;
+    }
 
     auto auraEffects = master->GetAuraEffectsByType(SPELL_AURA_MOUNTED);
-
     if (!auraEffects.empty())
     {
         SpellInfo const* masterSpell = auraEffects.front()->GetSpellInfo();
