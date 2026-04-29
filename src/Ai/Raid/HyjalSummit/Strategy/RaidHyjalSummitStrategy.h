@@ -7,7 +7,6 @@
 #define _PLAYERBOT_RAIDHYJALSUMMITSTRATEGY_H_
 
 #include "Strategy.h"
-#include "Multiplier.h"
 
 class RaidHyjalSummitStrategy : public Strategy
 {
