@@ -235,7 +235,6 @@ protected:
     uint32 dispelType;
 };
 
-// Make Bots Paladin, druid, mage use the greater buff rank spell
 class BuffOnPartyAction : public CastBuffSpellAction, public PartyMemberActionNameSupport
 {
 public:
@@ -246,7 +245,6 @@ public:
     bool Execute(Event event) override;
     std::string const getName() override { return PartyMemberActionNameSupport::getName(); }
 };
-// End Fix
 
 class CastShootAction : public CastSpellAction
 {

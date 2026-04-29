@@ -234,6 +234,33 @@ bool CastEnchantItemOffHandAction::isPossible()
     return invType == INVTYPE_WEAPON || invType == INVTYPE_WEAPONOFFHAND;
 }
 
+bool CastBuffSpellAction::isUseful()
+{
+    Unit* target = GetTarget();
+    if (!target || !CastSpellAction::isUseful())
+        return false;
+
+    if (ai::buff::IsGroupVariantEnabled(bot, spell))
+    {
+        std::string const groupVariant = ai::buff::GroupVariantFor(spell);
+        if (!groupVariant.empty() && botAI->HasAura(groupVariant, target, false, isOwner, -1, checkDuration))
+            return false;
+    }
+
+    Aura* aura = botAI->GetAura(spell, target, isOwner, checkDuration);
+    if (!aura)
+        return true;
+    if (beforeDuration && aura->GetDuration() < beforeDuration)
+        return true;
+    return false;
+}
+
+bool CastBuffSpellAction::Execute(Event /*event*/)
+{
+    std::string const castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, spell);
+    return botAI->CastSpell(castName, GetTarget());
+}
+
 CastHealingSpellAction::CastHealingSpellAction(PlayerbotAI* botAI, std::string const spell, uint8 estAmount,
                                                HealingManaEfficiency manaEfficiency, bool isOwner)
     : CastAuraSpellAction(botAI, spell, isOwner), estAmount(estAmount), manaEfficiency(manaEfficiency)
@@ -255,8 +282,6 @@ Value<Unit*>* CurePartyMemberAction::GetTargetValue()
     return context->GetValue<Unit*>("party member to dispel", dispelType);
 }
 
-// Make Bots Paladin, druid, mage use the greater buff rank spell
-// TODO Priest doen't verify il he have components
 Value<Unit*>* BuffOnPartyAction::GetTargetValue()
 {
     return context->GetValue<Unit*>("party member without aura", MakeAuraQualifierForBuff(spell));
@@ -264,14 +289,8 @@ Value<Unit*>* BuffOnPartyAction::GetTargetValue()
 
 bool BuffOnPartyAction::Execute(Event /*event*/)
 {
-    std::string castName = spell; // default = mono
-
-    auto SendGroupRP = ai::chat::MakeGroupAnnouncer(bot);
-    castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, castName, /*announceOnMissing=*/true, SendGroupRP);
-
-    return botAI->CastSpell(castName, GetTarget());
+    return CastBuffSpellAction::Execute(Event());
 }
-// End greater buff fix
 
 CastShootAction::CastShootAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "shoot"), shootSpellId(0)
 {
