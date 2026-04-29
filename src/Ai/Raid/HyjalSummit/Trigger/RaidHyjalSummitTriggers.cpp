@@ -67,8 +67,7 @@ bool AnetheronPullingBossOrInfernalTrigger::IsActive()
 
 bool AnetheronBossEngagedByMainTankTrigger::IsActive()
 {
-    return botAI->IsMainTank(bot) &&
-           AI_VALUE2(Unit*, "find target", "anetheron");
+    return botAI->IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "anetheron");
 }
 
 bool AnetheronBossCastsCarrionSwarmTrigger::IsActive()
@@ -86,7 +85,7 @@ bool AnetheronBossCastsCarrionSwarmTrigger::IsActive()
 bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
 {
     Unit* anetheron = AI_VALUE2(Unit*, "find target", "anetheron");
-    if (!anetheron)
+    if (!anetheron || botAI->IsMainTank(bot))
         return false;
 
     if (botAI->IsMainTank(bot))
@@ -103,8 +102,7 @@ bool AnetheronInfernalsNeedToBeKeptAwayFromRaidTrigger::IsActive()
 
 bool AnetheronInfernalsContinueToSpawnTrigger::IsActive()
 {
-    return !botAI->IsTank(bot) &&
-           AI_VALUE2(Unit*, "find target", "anetheron");
+    return !botAI->IsTank(bot) && AI_VALUE2(Unit*, "find target", "anetheron");
 }
 
 // Kaz'rogal
@@ -136,8 +134,7 @@ bool KazrogalBossEngagedByAssistTanksTrigger::IsActive()
 
 bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
 {
-    if (bot->getClass() == CLASS_WARRIOR ||
-        bot->getClass() == CLASS_ROGUE ||
+    if (bot->getClass() == CLASS_WARRIOR || bot->getClass() == CLASS_ROGUE ||
         bot->getClass() == CLASS_DEATH_KNIGHT)
         return false;
 
@@ -166,8 +163,7 @@ bool KazrogalLowManaBotsNeedEscapePathTrigger::IsActive()
 
 bool KazrogalBotIsLowOnManaTrigger::IsActive()
 {
-    if (bot->getClass() == CLASS_WARRIOR ||
-        bot->getClass() == CLASS_ROGUE ||
+    if (bot->getClass() == CLASS_WARRIOR || bot->getClass() == CLASS_ROGUE ||
         bot->getClass() == CLASS_DEATH_KNIGHT)
         return false;
 
@@ -190,8 +186,7 @@ bool KazrogalBotIsLowOnManaTrigger::IsActive()
 
 bool KazrogalMarkDealsShadowDamageTrigger::IsActive()
 {
-    if (bot->getClass() != CLASS_PALADIN &&
-        bot->getClass() != CLASS_WARLOCK)
+    if (bot->getClass() != CLASS_PALADIN && bot->getClass() != CLASS_WARLOCK)
         return false;
 
     if (!AI_VALUE2(Unit*, "find target", "kaz'rogal"))
@@ -220,8 +215,7 @@ bool AzgalorPullingBossTrigger::IsActive()
 
 bool AzgalorBossEngagedByMainTankTrigger::IsActive()
 {
-    return botAI->IsMainTank(bot) &&
-           AI_VALUE2(Unit*, "find target", "azgalor");
+    return botAI->IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "azgalor");
 }
 
 bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
@@ -233,15 +227,9 @@ bool AzgalorMainTankIsPositioningBossTrigger::IsActive()
     if (!azgalor || azgalor->GetVictim() == bot)
         return false;
 
-    if (botAI->IsMainTank(bot))
-        return false;
-
     Player* mainTank = GetGroupMainTank(botAI, bot);
-    if (!mainTank)
+    if (!mainTank || !GET_PLAYERBOT_AI(mainTank) || botAI->IsMainTank(bot))
         return false;
-
-    if (!GET_PLAYERBOT_AI(mainTank))
-        return azgalor->GetHealthPct() > 95.0f;
 
     TankPositionState tankState = GetAzgalorTankPositionState(botAI, bot);
     return tankState == TankPositionState::Unknown ||
@@ -305,8 +293,7 @@ bool AzgalorDoomguardsMustBeControlledTrigger::IsActive()
 
 bool AzgalorDoomguardsMustDieTrigger::IsActive()
 {
-    return botAI->IsRangedDps(bot) &&
-           AI_VALUE2(Unit*, "find target", "azgalor");
+    return botAI->IsRangedDps(bot) && AI_VALUE2(Unit*, "find target", "azgalor");
 }
 
 // Archimonde
@@ -363,8 +350,7 @@ bool ArchimondeBossSummonedDoomfireTrigger::IsActive()
 
 bool ArchimondeBotStoodInDoomfireTrigger::IsActive()
 {
-    if (bot->getClass() != CLASS_MAGE &&
-        bot->getClass() != CLASS_ROGUE &&
+    if (bot->getClass() != CLASS_MAGE && bot->getClass() != CLASS_ROGUE &&
         bot->getClass() != CLASS_PALADIN)
         return false;
 

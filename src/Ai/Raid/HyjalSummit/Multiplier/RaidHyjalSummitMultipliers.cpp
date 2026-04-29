@@ -167,9 +167,8 @@ float KazrogalLowManaBotStayAwayFromGroupMultiplier::GetValue(Action* action)
 
 float KazrogalKeepAspectOfTheViperActiveMultiplier::GetValue(Action* action)
 {
-    if (bot->getClass() != CLASS_HUNTER ||
-        !AI_VALUE2(Unit*, "find target", "kaz'rogal") ||
-        bot->GetPower(POWER_MANA) > 4000)
+    if (bot->getClass() != CLASS_HUNTER || bot->GetPower(POWER_MANA) > 4000 ||
+        !AI_VALUE2(Unit*, "find target", "kaz'rogal"))
         return 1.0f;
 
     if (dynamic_cast<CastAspectOfTheHawkAction*>(action) ||
@@ -220,9 +219,8 @@ float AzgalorDisableTankActionsMultiplier::GetValue(Action* action)
         {
             return 0.0f;
         }
-        else if (botAI->IsAssistTank(bot) &&
-                 (AnyGroupMemberHasDoom(bot) ||
-                  AI_VALUE2(Unit*, "find target", "lesser doomguard")))
+        else if (botAI->IsAssistTank(bot) && (AnyGroupMemberHasDoom(bot) ||
+                 AI_VALUE2(Unit*, "find target", "lesser doomguard")))
         {
             return 0.0f;
         }

@@ -19,13 +19,13 @@ namespace HyjalSummitHelpers
         Player* bot, float destinationX, float destinationY, float moveDist,
         float& stepX, float& stepY, float& stepZ)
     {
-        float distance = bot->GetExactDist2d(destinationX, destinationY);
+        const float distance = bot->GetExactDist2d(destinationX, destinationY);
         if (distance <= 0.0f)
             return false;
 
-        float stepDistance = std::min(moveDist, distance);
-        float deltaX = destinationX - bot->GetPositionX();
-        float deltaY = destinationY - bot->GetPositionY();
+        const float stepDistance = std::min(moveDist, distance);
+        const float deltaX = destinationX - bot->GetPositionX();
+        const float deltaY = destinationY - bot->GetPositionY();
         stepX = bot->GetPositionX() + (deltaX / distance) * stepDistance;
         stepY = bot->GetPositionY() + (deltaY / distance) * stepDistance;
         stepZ = bot->GetMapWaterOrGroundLevel(stepX, stepY, bot->GetPositionZ());
@@ -83,8 +83,8 @@ namespace HyjalSummitHelpers
         if (instanceIt == deathAndDecayPosition.end())
             return nullptr;
 
-        uint32 now = getMSTime();
-        uint32 elapsed = getMSTimeDiff(instanceIt->second.spawnTime, now);
+        const uint32 now = getMSTime();
+        const uint32 elapsed = getMSTimeDiff(instanceIt->second.spawnTime, now);
         if (elapsed >= DEATH_AND_DECAY_REACQUIRE_DELAY)
         {
             deathAndDecayPosition.erase(instanceIt);
@@ -99,14 +99,14 @@ namespace HyjalSummitHelpers
 
     bool IsInDeathAndDecay(Player* bot, float radius)
     {
-        uint32 instanceId = bot->GetMap()->GetInstanceId();
+        const uint32 instanceId = bot->GetMap()->GetInstanceId();
         Aura* aura = bot->GetAura(static_cast<uint32>(HyjalSummitSpells::SPELL_DEATH_AND_DECAY));
         if (aura)
         {
             DynamicObject* dynObj = aura->GetDynobjOwner();
             if (dynObj && dynObj->IsInWorld())
             {
-                uint32 now = getMSTime();
+                const uint32 now = getMSTime();
                 auto instanceIt = deathAndDecayPosition.find(instanceId);
                 if (instanceIt == deathAndDecayPosition.end() ||
                     getMSTimeDiff(instanceIt->second.spawnTime, now) >= DEATH_AND_DECAY_REACQUIRE_DELAY)
@@ -190,8 +190,8 @@ namespace HyjalSummitHelpers
         if (instanceIt == rainOfFirePosition.end())
             return nullptr;
 
-        uint32 now = getMSTime();
-        uint32 elapsed = getMSTimeDiff(instanceIt->second.spawnTime, now);
+        const uint32 now = getMSTime();
+        const uint32 elapsed = getMSTimeDiff(instanceIt->second.spawnTime, now);
         if (elapsed >= RAIN_OF_FIRE_REACQUIRE_DELAY)
         {
             rainOfFirePosition.erase(instanceIt);
@@ -256,7 +256,7 @@ namespace HyjalSummitHelpers
             return nullptr;
 
         constexpr uint32 airBurstReactionWindow = 2000;
-        uint32 now = getMSTime();
+        const uint32 now = getMSTime();
         if (getMSTimeDiff(instanceIt->second.castTime, now) >= airBurstReactionWindow)
         {
             archimondeAirBurstTargets.erase(instanceIt);
