@@ -16,7 +16,6 @@
 #include "ServerFacade.h"
 #include "SpellAuraEffects.h"
 
-// Cold Weather Flying — required to fly anywhere on the Northrend continent.
 static constexpr uint32 SPELL_COLD_WEATHER_FLYING = 54197;
 
 // Define the static map / init bool for caching bot preferred mount data globally
@@ -467,8 +466,6 @@ bool CheckMountStateAction::ShouldDismountForMaster(Player* master) const
 
 static bool BotCanUseFlyingMount(Player const* bot)
 {
-    // Cheap eligibility: without Expert Riding or higher, no flight spell
-    // could be cast anyway. Lets us skip the DBC lookup for low-level bots.
     if (bot->GetPureSkillValue(SKILL_RIDING) < 225)
         return false;
 
@@ -499,7 +496,6 @@ int32 CheckMountStateAction::CalculateMasterMountSpeed(Player* master, const Mou
 
     if (!noRealMaster && !bot->InBattleground())
     {
-        // Following a real master — mirror their current mount or shapeshift.
         auto auraEffects = master->GetAuraEffectsByType(SPELL_AURA_MOUNTED);
         if (!auraEffects.empty())
         {
@@ -512,7 +508,7 @@ int32 CheckMountStateAction::CalculateMasterMountSpeed(Player* master, const Mou
             return 279;
         else if (masterInShapeshiftForm == FORM_FLIGHT)
             return 149;
-        return 59;  // master not currently mounted/formed → walk pace
+        return 59;  // walk pace
     }
 
     // No real master OR battleground: pick speed by skill tier.
@@ -530,11 +526,7 @@ uint32 CheckMountStateAction::GetMountType(Player* master) const
     bool const noRealMaster = (!master || master == bot);
 
     if (noRealMaster)
-    {
-        // Same map+skill check CalculateMasterMountSpeed uses — keeps
-        // type/speed consistent so the mount filter finds a matching spell.
         return (!bot->InBattleground() && BotCanUseFlyingMount(bot)) ? 1 : 0;
-    }
 
     auto auraEffects = master->GetAuraEffectsByType(SPELL_AURA_MOUNTED);
     if (!auraEffects.empty())
