@@ -234,6 +234,12 @@ void CheckMountStateAction::Dismount()
 
     WorldPacket emptyPacket;
     bot->GetSession()->HandleCancelMountAuraOpcode(emptyPacket);
+}
+
+void CheckMountStateAction::CompleteDismountFall(Player* bot)
+{
+    if (!bot || !bot->IsInWorld())
+        return;
 
     float const x = bot->GetPositionX();
     float const y = bot->GetPositionY();
