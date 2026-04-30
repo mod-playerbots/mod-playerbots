@@ -1373,7 +1373,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
             p >> guid.ReadAsPacked();
             if (guid != bot->GetGUID())
                 return;
-            CheckMountStateAction::CompleteDismountFall(bot);
+            CheckMountStateAction::CompleteDismount(bot);
             return;
         }
         default:

@@ -42,7 +42,7 @@ public:
     bool isPossible() override { return true; }
     bool Mount();
 
-    static void CompleteDismountFall(Player* bot);
+    static void CompleteDismount(Player* bot);
 
 private:
     Player* master;

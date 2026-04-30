@@ -247,7 +247,7 @@ void CheckMountStateAction::Dismount()
     }
 }
 
-void CheckMountStateAction::CompleteDismountFall(Player* bot)
+void CheckMountStateAction::CompleteDismount(Player* bot)
 {
     if (!bot || !bot->IsInWorld())
         return;
