@@ -233,6 +233,18 @@ void CheckMountStateAction::Dismount()
 
     WorldPacket emptyPacket;
     bot->GetSession()->HandleCancelMountAuraOpcode(emptyPacket);
+
+    bool const wantsFly = bot->HasIncreaseMountedFlightSpeedAura() || bot->HasFlyAura();
+    bool const isWaterWalking = bot->HasUnitMovementFlag(MOVEMENTFLAG_WATERWALKING);
+    bool const isFlying = bot->HasUnitMovementFlag(MOVEMENTFLAG_FLYING);
+    bool const hasGravityDisabled = bot->HasUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
+    if (!wantsFly && !isWaterWalking && (isFlying || hasGravityDisabled))
+    {
+        bot->RemoveUnitMovementFlag(
+            MOVEMENTFLAG_FLYING | MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_DISABLE_GRAVITY);
+        if (!bot->IsRooted())
+            bot->SendMovementFlagUpdate();
+    }
 }
 
 void CheckMountStateAction::CompleteDismountFall(Player* bot)
@@ -242,22 +254,14 @@ void CheckMountStateAction::CompleteDismountFall(Player* bot)
 
     float const x = bot->GetPositionX();
     float const y = bot->GetPositionY();
-    float const startZ = bot->GetPositionZ();
-    float groundZ = startZ;
+    float groundZ = bot->GetPositionZ();
     bot->UpdateAllowedPositionZ(x, y, groundZ);
-    float const fallHeight = startZ - groundZ;
-
-    //quick snap to the ground without animation
-    if (fallHeight < 1.0f)
-    {
-        bot->UpdatePosition(x, y, groundZ, bot->GetOrientation(), false);
-        return;
-    }
 
     bot->GetMotionMaster()->MoveFall();
     MovementInfo fallInfo = bot->m_movementInfo;
     fallInfo.pos.Relocate(x, y, groundZ);
     bot->HandleFall(fallInfo);
+    bot->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR);
 }
 
 bool CheckMountStateAction::TryForms(Player* master, int32 masterMountType, int32 masterSpeed) const
