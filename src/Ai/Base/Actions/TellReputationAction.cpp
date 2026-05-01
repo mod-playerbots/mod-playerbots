@@ -5,10 +5,7 @@
 
 #include "TellReputationAction.h"
 
-#include <array>
 #include <algorithm>
-#include <utility>
-#include <vector>
 
 #include "Event.h"
 #include "PlayerbotAI.h"
@@ -16,59 +13,54 @@
 
 #include "SharedDefines.h"
 
-namespace
+std::string TellReputationAction::BuildReputationLine(FactionEntry const* entry)
 {
-    void AppendRankText(std::ostringstream& out, ReputationRank rank)
+    ReputationMgr& repMgr = bot->GetReputationMgr();
+    ReputationRank rank = repMgr.GetRank(entry);
+    int32 reputation = repMgr.GetReputation(entry->ID);
+
+    std::ostringstream out;
+    out << entry->name[0] << ": |cff";
+
+    switch (rank)
     {
-        switch (rank)
-        {
-            case REP_HATED:
-                out << "cc2222hated";
-                break;
-            case REP_HOSTILE:
-                out << "ff0000hostile";
-                break;
-            case REP_UNFRIENDLY:
-                out << "ee6622unfriendly";
-                break;
-            case REP_NEUTRAL:
-                out << "ffff00neutral";
-                break;
-            case REP_FRIENDLY:
-                out << "00ff00friendly";
-                break;
-            case REP_HONORED:
-                out << "00ff88honored";
-                break;
-            case REP_REVERED:
-                out << "00ffccrevered";
-                break;
-            case REP_EXALTED:
-                out << "00ffffexalted";
-                break;
-            default:
-                out << "808080unknown";
-                break;
-        }
+        case REP_HATED:
+            out << "cc2222hated";
+            break;
+        case REP_HOSTILE:
+            out << "ff0000hostile";
+            break;
+        case REP_UNFRIENDLY:
+            out << "ee6622unfriendly";
+            break;
+        case REP_NEUTRAL:
+            out << "ffff00neutral";
+            break;
+        case REP_FRIENDLY:
+            out << "00ff00friendly";
+            break;
+        case REP_HONORED:
+            out << "00ff88honored";
+            break;
+        case REP_REVERED:
+            out << "00ffccrevered";
+            break;
+        case REP_EXALTED:
+            out << "00ffffexalted";
+            break;
+        default:
+            out << "808080unknown";
+            break;
     }
 
-    std::string BuildReputationLine(ReputationMgr& repMgr, FactionEntry const* entry)
-    {
-        ReputationRank rank = repMgr.GetRank(entry);
-        int32 reputation = repMgr.GetReputation(entry->ID);
+    out << "|cffffffff";
 
-        std::ostringstream out;
-        out << entry->name[0] << ": |cff";
-        AppendRankText(out, rank);
-        out << "|cffffffff";
+    int32 base = ReputationMgr::Reputation_Cap + 1;
+    for (int32 i = MAX_REPUTATION_RANK - 1; i >= rank; --i)
+        base -= ReputationMgr::PointsInRank[i];
 
-        int32 base = ReputationMgr::Reputation_Cap + 1;
-        for (int32 i = MAX_REPUTATION_RANK - 1; i >= rank; --i)
-            base -= ReputationMgr::PointsInRank[i];
-
-        out << " (" << (reputation - base) << "/" << ReputationMgr::PointsInRank[rank] << ")";
-        return out.str();
-    }
+    out << " (" << (reputation - base) << "/" << ReputationMgr::PointsInRank[rank] << ")";
+    return out.str();
 }
 
 bool TellReputationAction::Execute(Event event)
@@ -77,8 +69,7 @@ bool TellReputationAction::Execute(Event event)
     if (param == "all")
     {
         ReputationMgr& repMgr = bot->GetReputationMgr();
-
-        std::vector<std::pair<std::string, std::string>> lines;
+        std::vector<std::string> lines;
 
         FactionStateList const& stateList = repMgr.GetStateList();
         lines.reserve(stateList.size());
@@ -97,18 +88,14 @@ bool TellReputationAction::Execute(Event event)
             if (!entry)
                 continue;
 
-            LOG_INFO("playerbots", "TellReputationAction: bot {} reputation {} - {}",
-                bot->GetGUID().ToString(), entry->ID, entry->name[0]);
-
-            lines.emplace_back(entry->name[0], BuildReputationLine(repMgr, entry));
+            lines.push_back(BuildReputationLine(entry));
         }
 
-        std::sort(lines.begin(), lines.end(),
-            [](auto const& left, auto const& right) { return left.first < right.first; });
+        std::sort(lines.begin(), lines.end());
 
         botAI->TellMaster("=== Reputations ===");
         for (auto const& line : lines)
-            botAI->TellMaster(line.second);
+            botAI->TellMaster(line);
 
         return true;
     }
@@ -131,8 +118,7 @@ bool TellReputationAction::Execute(Event event)
     if (!entry)
         return false;
 
-    ReputationMgr& repMgr = bot->GetReputationMgr();
-    botAI->TellMaster(BuildReputationLine(repMgr, entry));
+    botAI->TellMaster(BuildReputationLine(entry));
 
     return true;
 }
