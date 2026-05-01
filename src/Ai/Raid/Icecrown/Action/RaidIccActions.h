@@ -286,7 +286,7 @@ public:
     bool HandleOozeTargeting();
     bool HandleOozeMemberPositioning();
     bool PositionRangedAndHealers(Unit* boss,Unit* smallOoze);
-    bool FindAndMoveFromClosestMember(Unit* boss, Unit* smallOoze);
+    bool FindAndMoveFromClosestMember(Unit* smallOoze);
 };
 
 class IccRotfaceMoveAwayFromExplosionAction : public MovementAction
@@ -623,12 +623,12 @@ class IccLichKingWinterAction : public AttackAction
 
         void HandlePositionCorrection();
         bool IsValidCollectibleAdd(Unit* unit);
-        bool IsPositionSafeFromDefile(float x, float y, float z, float minSafeDistance);
+        bool IsPositionSafeFromDefile(float x, float y, float minSafeDistance);
         void HandleTankPositioning();
         void HandleMeleePositioning();
         void HandleRangedPositioning();
-        void HandleMainTankAddManagement(Unit* boss, const Position* tankPos);
-        void HandleAssistTankAddManagement(Unit* boss, const Position* tankPos);
+        void HandleMainTankAddManagement(const Position* tankPos);
+        void HandleAssistTankAddManagement(const Position* tankPos);
 
     private:
         const Position* GetMainTankPosition();
@@ -648,7 +648,7 @@ class IccLichKingAddsAction : public AttackAction
         void HandleHeroicNonTankPositioning(Difficulty diff, Unit* terenasMenethilHC);
         void HandleSpiritMarkingAndTargeting(Difficulty diff, Unit* terenasMenethilHC);
         bool HandleQuakeMechanics(Unit* boss);
-        void HandleShamblingHorrors(Unit* boss, bool hasPlague);
+        void HandleShamblingHorrors();
         bool HandleAssistTankAddManagement(Unit* boss, Difficulty diff);
         void HandleMeleePositioning(Unit* boss, bool hasPlague, Difficulty diff);
         void HandleMainTankTargeting(Unit* boss, Difficulty diff);

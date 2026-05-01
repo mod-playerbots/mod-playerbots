@@ -125,6 +125,8 @@ bool PlayerbotAIConfig::Initialize()
     incrementalGearInit = sConfigMgr->GetOption<bool>("AiPlayerbot.IncrementalGearInit", true);
     randomGearQualityLimit = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomGearQualityLimit", 3);
     randomGearScoreLimit = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomGearScoreLimit", 0);
+    preferClassArmorType  = sConfigMgr->GetOption<bool>("AiPlayerbot.PreferClassArmorType", false);
+    preferredSpecWeapons  = sConfigMgr->GetOption<bool>("AiPlayerbot.PreferredSpecWeapons", false);
 
     randomBotMinLevelChance = sConfigMgr->GetOption<float>("AiPlayerbot.RandomBotMinLevelChance", 0.1f);
     randomBotMaxLevelChance = sConfigMgr->GetOption<float>("AiPlayerbot.RandomBotMaxLevelChance", 0.1f);

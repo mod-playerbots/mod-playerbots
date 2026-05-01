@@ -157,7 +157,7 @@ float JanalaiStayAwayFromFireBombsMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "jan'alai"))
         return 1.0f;
 
-    if (!HasFireBombNearby(botAI, bot))
+    if (!HasFireBombNearby(bot))
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||

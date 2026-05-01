@@ -48,23 +48,6 @@ Item* ItemForSpellValue::Calculate()
         }
     }
 
-    // Workaround as some spells have no item mask (e.g. shaman weapon enhancements)
-    if (!strcmpi(spellInfo->SpellName[0], "rockbiter weapon") ||
-        !strcmpi(spellInfo->SpellName[0], "flametongue weapon") ||
-        !strcmpi(spellInfo->SpellName[0], "earthliving weapon") ||
-        !strcmpi(spellInfo->SpellName[0], "frostbrand weapon") || !strcmpi(spellInfo->SpellName[0], "windfury weapon"))
-    {
-        itemForSpell = GetItemFitsToSpellRequirements(EQUIPMENT_SLOT_MAINHAND, spellInfo);
-        if (itemForSpell && itemForSpell->GetTemplate()->Class == ITEM_CLASS_WEAPON)
-            return itemForSpell;
-
-        itemForSpell = GetItemFitsToSpellRequirements(EQUIPMENT_SLOT_OFFHAND, spellInfo);
-        if (itemForSpell && itemForSpell->GetTemplate()->Class == ITEM_CLASS_WEAPON)
-            return itemForSpell;
-
-        return nullptr;
-    }
-
     if (!(spellInfo->Targets & TARGET_FLAG_ITEM))
         return nullptr;
 

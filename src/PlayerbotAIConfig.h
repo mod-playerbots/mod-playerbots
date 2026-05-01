@@ -128,6 +128,8 @@ public:
     bool incrementalGearInit;
     int32 randomGearQualityLimit;
     int32 randomGearScoreLimit;
+    bool preferClassArmorType;
+    bool preferredSpecWeapons;
     float randomBotMinLevelChance, randomBotMaxLevelChance;
     float randomBotRpgChance;
     uint32 minRandomBots, maxRandomBots;

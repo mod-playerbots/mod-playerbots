@@ -806,6 +806,27 @@ AiPlayerbot.RandomGearQualityLimit = 3
 # Default: 0 (no limit)
 AiPlayerbot.RandomGearScoreLimit = 0
 
+# Prefer armor of the class's ideal type: apply 3x score multiplier to class-appropriate armor.
+# When enabled, Warriors strongly prefer plate, Shamans prefer mail, etc.
+# A truly superior item can still win (no hard filtering), but same-quality
+# armor of the preferred type will score 3x higher and be equipped instead.
+#
+# ARMOR TYPE PREFERENCES:
+#   Plate:  Warriors, Paladins, Death Knights
+#   Mail:   Hunters, Shamans
+#   Leather: Rogues, Druids
+#   Cloth:  Priests, Mages, Warlocks
+#
+# Default: 0 (disabled)
+AiPlayerbot.PreferClassArmorType = 0
+
+
+# When enabled, bots prefer spec-appropriate weapons based on speed and weapon type during autogear.
+# Examples: Arms Warriors favor slow 2H axes/polearms (Axe Specialization), Combat Rogues
+# favor a slow MH with a fast OH, and Enhancement Shamans favor synchronized slow 1H weapons.
+# Default: 0 (disabled)
+AiPlayerbot.PreferredSpecWeapons = 0
+
 # If disabled, random bots can only upgrade equipment through looting and quests
 # Default: 1 (enabled)
 AiPlayerbot.IncrementalGearInit = 1
@@ -1836,12 +1857,24 @@ AiPlayerbot.WorldBuffMatrix = # WARRIOR ARMS 1:0,1,0,80,80:53760,57358; # WARRIO
 #
 #
 
+# arms pve
 AiPlayerbot.RandomClassSpecProb.1.0 = 20
 AiPlayerbot.RandomClassSpecIndex.1.0 = 0
+# fury pve
 AiPlayerbot.RandomClassSpecProb.1.1 = 40
 AiPlayerbot.RandomClassSpecIndex.1.1 = 1
+# prot pve
 AiPlayerbot.RandomClassSpecProb.1.2 = 40
 AiPlayerbot.RandomClassSpecIndex.1.2 = 2
+# arms pvp
+AiPlayerbot.RandomClassSpecProb.1.3 = 0
+AiPlayerbot.RandomClassSpecIndex.1.3 = 3
+# fury pvp
+AiPlayerbot.RandomClassSpecProb.1.4 = 0
+AiPlayerbot.RandomClassSpecIndex.1.4 = 4
+# prot pvp
+AiPlayerbot.RandomClassSpecProb.1.5 = 0
+AiPlayerbot.RandomClassSpecIndex.1.5 = 5
 
 #
 #
@@ -1853,12 +1886,24 @@ AiPlayerbot.RandomClassSpecIndex.1.2 = 2
 #
 #
 
+# holy pve
 AiPlayerbot.RandomClassSpecProb.2.0 = 30
 AiPlayerbot.RandomClassSpecIndex.2.0 = 0
+# prot pve
 AiPlayerbot.RandomClassSpecProb.2.1 = 40
 AiPlayerbot.RandomClassSpecIndex.2.1 = 1
+# ret pve
 AiPlayerbot.RandomClassSpecProb.2.2 = 30
 AiPlayerbot.RandomClassSpecIndex.2.2 = 2
+# holy pvp
+AiPlayerbot.RandomClassSpecProb.2.3 = 0
+AiPlayerbot.RandomClassSpecIndex.2.3 = 3
+# prot pvp
+AiPlayerbot.RandomClassSpecProb.2.4 = 0
+AiPlayerbot.RandomClassSpecIndex.2.4 = 4
+# ret pvp
+AiPlayerbot.RandomClassSpecProb.2.5 = 0
+AiPlayerbot.RandomClassSpecIndex.2.5 = 5
 
 #
 #
@@ -1870,12 +1915,24 @@ AiPlayerbot.RandomClassSpecIndex.2.2 = 2
 #
 #
 
+# bm pve
 AiPlayerbot.RandomClassSpecProb.3.0 = 33
 AiPlayerbot.RandomClassSpecIndex.3.0 = 0
+# mm pve
 AiPlayerbot.RandomClassSpecProb.3.1 = 33
 AiPlayerbot.RandomClassSpecIndex.3.1 = 1
+# surv pve
 AiPlayerbot.RandomClassSpecProb.3.2 = 33
 AiPlayerbot.RandomClassSpecIndex.3.2 = 2
+# bm pvp
+AiPlayerbot.RandomClassSpecProb.3.3 = 0
+AiPlayerbot.RandomClassSpecIndex.3.3 = 3
+# mm pvp
+AiPlayerbot.RandomClassSpecProb.3.4 = 0
+AiPlayerbot.RandomClassSpecIndex.3.4 = 4
+# surv pvp
+AiPlayerbot.RandomClassSpecProb.3.5 = 0
+AiPlayerbot.RandomClassSpecIndex.3.5 = 5
 
 #
 #
@@ -1887,12 +1944,24 @@ AiPlayerbot.RandomClassSpecIndex.3.2 = 2
 #
 #
 
+# as pve
 AiPlayerbot.RandomClassSpecProb.4.0 = 45
 AiPlayerbot.RandomClassSpecIndex.4.0 = 0
+# combat pve
 AiPlayerbot.RandomClassSpecProb.4.1 = 45
 AiPlayerbot.RandomClassSpecIndex.4.1 = 1
+# subtlety pve
 AiPlayerbot.RandomClassSpecProb.4.2 = 10
 AiPlayerbot.RandomClassSpecIndex.4.2 = 2
+# as pvp
+AiPlayerbot.RandomClassSpecProb.4.3 = 0
+AiPlayerbot.RandomClassSpecIndex.4.3 = 3
+# combat pvp
+AiPlayerbot.RandomClassSpecProb.4.4 = 0
+AiPlayerbot.RandomClassSpecIndex.4.4 = 4
+# subtlety pvp
+AiPlayerbot.RandomClassSpecProb.4.5 = 0
+AiPlayerbot.RandomClassSpecIndex.4.5 = 5
 
 #
 #
@@ -1904,12 +1973,24 @@ AiPlayerbot.RandomClassSpecIndex.4.2 = 2
 #
 #
 
+# disc pve
 AiPlayerbot.RandomClassSpecProb.5.0 = 40
 AiPlayerbot.RandomClassSpecIndex.5.0 = 0
+# holy pve
 AiPlayerbot.RandomClassSpecProb.5.1 = 35
 AiPlayerbot.RandomClassSpecIndex.5.1 = 1
+# shadow pve
 AiPlayerbot.RandomClassSpecProb.5.2 = 25
 AiPlayerbot.RandomClassSpecIndex.5.2 = 2
+# disc pvp
+AiPlayerbot.RandomClassSpecProb.5.3 = 0
+AiPlayerbot.RandomClassSpecIndex.5.3 = 3
+# holy pvp
+AiPlayerbot.RandomClassSpecProb.5.4 = 0
+AiPlayerbot.RandomClassSpecIndex.5.4 = 4
+# shadow pvp
+AiPlayerbot.RandomClassSpecProb.5.5 = 0
+AiPlayerbot.RandomClassSpecIndex.5.5 = 5
 
 #
 #
@@ -1921,12 +2002,27 @@ AiPlayerbot.RandomClassSpecIndex.5.2 = 2
 #
 #
 
+# blood pve
 AiPlayerbot.RandomClassSpecProb.6.0 = 30
 AiPlayerbot.RandomClassSpecIndex.6.0 = 0
+# frost pve
 AiPlayerbot.RandomClassSpecProb.6.1 = 40
 AiPlayerbot.RandomClassSpecIndex.6.1 = 1
+# unholy pve
 AiPlayerbot.RandomClassSpecProb.6.2 = 30
 AiPlayerbot.RandomClassSpecIndex.6.2 = 2
+# double aura blood pve
+AiPlayerbot.RandomClassSpecProb.6.3 = 0
+AiPlayerbot.RandomClassSpecIndex.6.3 = 3
+# blood pvp
+AiPlayerbot.RandomClassSpecProb.6.4 = 0
+AiPlayerbot.RandomClassSpecIndex.6.4 = 4
+# frost pvp
+AiPlayerbot.RandomClassSpecProb.6.5 = 0
+AiPlayerbot.RandomClassSpecIndex.6.5 = 5
+# unholy pvp
+AiPlayerbot.RandomClassSpecProb.6.6 = 0
+AiPlayerbot.RandomClassSpecIndex.6.6 = 6
 
 #
 #
@@ -1938,12 +2034,24 @@ AiPlayerbot.RandomClassSpecIndex.6.2 = 2
 #
 #
 
+# ele pve
 AiPlayerbot.RandomClassSpecProb.7.0 = 33
 AiPlayerbot.RandomClassSpecIndex.7.0 = 0
+# enh pve
 AiPlayerbot.RandomClassSpecProb.7.1 = 33
 AiPlayerbot.RandomClassSpecIndex.7.1 = 1
+# resto pve
 AiPlayerbot.RandomClassSpecProb.7.2 = 33
 AiPlayerbot.RandomClassSpecIndex.7.2 = 2
+# ele pvp
+AiPlayerbot.RandomClassSpecProb.7.3 = 0
+AiPlayerbot.RandomClassSpecIndex.7.3 = 3
+# enh pvp
+AiPlayerbot.RandomClassSpecProb.7.4 = 0
+AiPlayerbot.RandomClassSpecIndex.7.4 = 4
+# resto pvp
+AiPlayerbot.RandomClassSpecProb.7.5 = 0
+AiPlayerbot.RandomClassSpecIndex.7.5 = 5
 
 #
 #
@@ -1955,12 +2063,27 @@ AiPlayerbot.RandomClassSpecIndex.7.2 = 2
 #
 #
 
+# arcane pve
 AiPlayerbot.RandomClassSpecProb.8.0 = 30
 AiPlayerbot.RandomClassSpecIndex.8.0 = 0
+# fire pve
 AiPlayerbot.RandomClassSpecProb.8.1 = 30
 AiPlayerbot.RandomClassSpecIndex.8.1 = 1
+# frost pve
 AiPlayerbot.RandomClassSpecProb.8.2 = 40
 AiPlayerbot.RandomClassSpecIndex.8.2 = 2
+# frostfire pve
+AiPlayerbot.RandomClassSpecProb.8.3 = 0
+AiPlayerbot.RandomClassSpecIndex.8.3 = 3
+# arcane pvp
+AiPlayerbot.RandomClassSpecProb.8.4 = 0
+AiPlayerbot.RandomClassSpecIndex.8.4 = 4
+# fire pvp
+AiPlayerbot.RandomClassSpecProb.8.5 = 0
+AiPlayerbot.RandomClassSpecIndex.8.5 = 5
+# frost pvp
+AiPlayerbot.RandomClassSpecProb.8.6 = 0
+AiPlayerbot.RandomClassSpecIndex.8.6 = 6
 
 #
 #
@@ -1972,12 +2095,24 @@ AiPlayerbot.RandomClassSpecIndex.8.2 = 2
 #
 #
 
+# affli pve
 AiPlayerbot.RandomClassSpecProb.9.0 = 33
 AiPlayerbot.RandomClassSpecIndex.9.0 = 0
+# demo pve
 AiPlayerbot.RandomClassSpecProb.9.1 = 34
 AiPlayerbot.RandomClassSpecIndex.9.1 = 1
+# destro pve
 AiPlayerbot.RandomClassSpecProb.9.2 = 33
 AiPlayerbot.RandomClassSpecIndex.9.2 = 2
+# affli pvp
+AiPlayerbot.RandomClassSpecProb.9.3 = 0
+AiPlayerbot.RandomClassSpecIndex.9.3 = 3
+# demo pvp
+AiPlayerbot.RandomClassSpecProb.9.4 = 0
+AiPlayerbot.RandomClassSpecIndex.9.4 = 4
+# destro pvp
+AiPlayerbot.RandomClassSpecProb.9.5 = 0
+AiPlayerbot.RandomClassSpecIndex.9.5 = 5
 
 #
 #
@@ -1989,14 +2124,27 @@ AiPlayerbot.RandomClassSpecIndex.9.2 = 2
 #
 #
 
+# balance pve
 AiPlayerbot.RandomClassSpecProb.11.0 = 20
 AiPlayerbot.RandomClassSpecIndex.11.0 = 0
+# bear pve
 AiPlayerbot.RandomClassSpecProb.11.1 = 25
 AiPlayerbot.RandomClassSpecIndex.11.1 = 1
+# resto pve
 AiPlayerbot.RandomClassSpecProb.11.2 = 35
 AiPlayerbot.RandomClassSpecIndex.11.2 = 2
+# cat pve
 AiPlayerbot.RandomClassSpecProb.11.3 = 20
 AiPlayerbot.RandomClassSpecIndex.11.3 = 3
+# balance pvp
+AiPlayerbot.RandomClassSpecProb.11.4 = 0
+AiPlayerbot.RandomClassSpecIndex.11.4 = 4
+# cat pvp
+AiPlayerbot.RandomClassSpecProb.11.5 = 0
+AiPlayerbot.RandomClassSpecIndex.11.5 = 5
+# resto pvp
+AiPlayerbot.RandomClassSpecProb.11.6 = 0
+AiPlayerbot.RandomClassSpecIndex.11.6 = 6
 
 #
 #

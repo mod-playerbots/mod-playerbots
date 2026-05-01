@@ -49,13 +49,14 @@ PullStrategy* PullStrategy::Get(PlayerbotAI* botAI)
 
 Unit* PullStrategy::GetTarget() const
 {
-    ObjectGuid const guid = botAI->GetAiObjectContext()->GetValue<ObjectGuid>("pull target")->Get();
+    ObjectGuid const guid = botAI->GetAiObjectContext()->GetValue<ObjectGuid>("pull strategy target")->Get();
     if (guid.IsEmpty())
         return nullptr;
 
     Unit* target = botAI->GetUnit(guid);
     Player* bot = botAI->GetBot();
-    if (!bot || !target || !target->IsInWorld() || target->GetMapId() != bot->GetMapId())
+    if (!bot || !target || !target->IsAlive() || !target->IsInWorld() ||
+        target->GetMapId() != bot->GetMapId())
         return nullptr;
 
     return target;
@@ -65,7 +66,7 @@ bool PullStrategy::HasTarget() const { return GetTarget() != nullptr; }
 
 void PullStrategy::SetTarget(Unit* target)
 {
-    botAI->GetAiObjectContext()->GetValue<ObjectGuid>("pull target")->Set(target ? target->GetGUID() : ObjectGuid::Empty);
+    botAI->GetAiObjectContext()->GetValue<ObjectGuid>("pull strategy target")->Set(target ? target->GetGUID() : ObjectGuid::Empty);
 }
 
 std::string PullStrategy::GetPullActionName() const
@@ -167,6 +168,9 @@ float PullMultiplier::GetValue(Action* action)
 {
     PullStrategy const* strategy = PullStrategy::Get(botAI);
     if (!strategy || !strategy->HasTarget() || !action)
+        return 1.0f;
+
+    if (!strategy->IsPullPendingToStart() && !strategy->HasPullStarted())
         return 1.0f;
 
     std::string const actionName = action->getName();

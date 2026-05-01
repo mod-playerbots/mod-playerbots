@@ -29,8 +29,8 @@ namespace GruulsLairHelpers
     constexpr uint32 GRUULS_LAIR_MAP_ID = 565;
 
     bool IsAnyOgreBossAlive(PlayerbotAI* botAI);
-    bool IsKroshMageTank(PlayerbotAI* botAI, Player* bot);
-    bool IsKigglerMoonkinTank(PlayerbotAI* botAI, Player* bot);
+    bool IsKroshMageTank(Player* bot);
+    bool IsKigglerMoonkinTank(Player* bot);
     bool IsPositionSafe(PlayerbotAI* botAI, Player* bot, Position pos);
     bool TryGetNewSafePosition(PlayerbotAI* botAI, Player* bot, Position& outPos);
 

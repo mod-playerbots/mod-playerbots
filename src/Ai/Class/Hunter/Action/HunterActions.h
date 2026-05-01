@@ -392,7 +392,7 @@ class CastExplosiveShotRank4Action : public CastExplosiveShotBaseAction
 public:
     CastExplosiveShotRank4Action(PlayerbotAI* botAI) :
         CastExplosiveShotBaseAction(botAI) {}
-    bool Execute(Event event) override
+    bool Execute(Event /*event*/) override
     {
         return botAI->CastSpell(60053, GetTarget());
     }
@@ -412,7 +412,7 @@ class CastExplosiveShotRank3Action : public CastExplosiveShotBaseAction
 public:
     CastExplosiveShotRank3Action(PlayerbotAI* botAI) :
         CastExplosiveShotBaseAction(botAI) {}
-    bool Execute(Event event) override
+    bool Execute(Event /*event*/) override
     {
         return botAI->CastSpell(60052, GetTarget());
     }
@@ -432,7 +432,7 @@ class CastExplosiveShotRank2Action : public CastExplosiveShotBaseAction
 public:
     CastExplosiveShotRank2Action(PlayerbotAI* botAI) :
         CastExplosiveShotBaseAction(botAI) {}
-    bool Execute(Event event) override
+    bool Execute(Event /*event*/) override
     {
         return botAI->CastSpell(60051, GetTarget());
     }
@@ -452,7 +452,7 @@ class CastExplosiveShotRank1Action : public CastExplosiveShotBaseAction
 public:
     CastExplosiveShotRank1Action(PlayerbotAI* botAI) :
         CastExplosiveShotBaseAction(botAI) {}
-    bool Execute(Event event) override
+    bool Execute(Event /*event*/) override
     {
         return botAI->CastSpell(53301, GetTarget());
     }

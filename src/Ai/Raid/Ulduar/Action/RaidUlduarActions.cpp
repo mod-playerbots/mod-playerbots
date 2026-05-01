@@ -2332,7 +2332,6 @@ bool MimironRocketStrikeAction::isUseful()
 
 bool MimironRocketStrikeAction::Execute(Event /*event*/)
 {
-    Unit* leviathanMkII = nullptr;
     Unit* vx001 = nullptr;
     Unit* aerialCommandUnit = nullptr;
 
@@ -2344,9 +2343,7 @@ bool MimironRocketStrikeAction::Execute(Event /*event*/)
         if (!target || !target->IsAlive())
             continue;
 
-        if (target->GetEntry() == NPC_LEVIATHAN_MKII)
-            leviathanMkII = target;
-        else if (target->GetEntry() == NPC_VX001)
+        if (target->GetEntry() == NPC_VX001)
             vx001 = target;
         else if (target->GetEntry() == NPC_AERIAL_COMMAND_UNIT)
             aerialCommandUnit = target;

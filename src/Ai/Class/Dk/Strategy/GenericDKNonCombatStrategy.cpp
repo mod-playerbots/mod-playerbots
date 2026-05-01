@@ -47,7 +47,7 @@ void GenericDKNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode("bone shield", { NextAction("bone shield", 21.0f) }));
 }
 
-void DKBuffDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void DKBuffDpsStrategy::InitTriggers(std::vector<TriggerNode*>& /*triggers*/)
 {
 
 }

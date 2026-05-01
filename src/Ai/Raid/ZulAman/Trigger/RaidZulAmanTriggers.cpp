@@ -108,7 +108,7 @@ bool JanalaiBossEngagedByTanksTrigger::IsActive()
         !AI_VALUE2(Unit*, "find target", "jan'alai"))
         return false;
 
-    return !HasFireBombNearby(botAI, bot);
+    return !HasFireBombNearby(bot);
 }
 
 bool JanalaiBossCastsFlameBreathTrigger::IsActive()
@@ -118,13 +118,13 @@ bool JanalaiBossCastsFlameBreathTrigger::IsActive()
         AI_VALUE2(Unit*, "find target", "amani dragonhawk hatchling"))
         return false;
 
-    return !HasFireBombNearby(botAI, bot);
+    return !HasFireBombNearby(bot);
 }
 
 bool JanalaiBossSummoningFireBombsTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "jan'alai") &&
-           HasFireBombNearby(botAI, bot);
+           HasFireBombNearby(bot);
 }
 
 bool JanalaiAmanishiHatchersSpawnedTrigger::IsActive()

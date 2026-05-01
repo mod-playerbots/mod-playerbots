@@ -80,7 +80,7 @@ bool FollowChatShortcutAction::Execute(Event /*event*/)
                         true, priority);
         }
 
-        if (Pet* pet = bot->GetPet())
+        if (bot->GetPet())
             botAI->PetFollow();
 
         if (moved)
