@@ -2,7 +2,6 @@
 #define _PLAYERBOT_RAIDGRUULSLAIRSTRATEGY_H
 
 #include "Strategy.h"
-#include "Multiplier.h"
 
 class RaidGruulsLairStrategy : public Strategy
 {

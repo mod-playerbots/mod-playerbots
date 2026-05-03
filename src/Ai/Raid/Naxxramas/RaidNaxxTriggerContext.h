@@ -6,7 +6,6 @@
 #ifndef _PLAYERBOT_RAIDNAXXTRIGGERCONTEXT_H
 #define _PLAYERBOT_RAIDNAXXTRIGGERCONTEXT_H
 
-#include "AiObjectContext.h"
 #include "NamedObjectContext.h"
 #include "RaidNaxxTriggers.h"
 

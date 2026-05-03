@@ -2,7 +2,7 @@
 #define _PLAYERBOT_RAIDGRUULSLAIRTRIGGERCONTEXT_H
 
 #include "RaidGruulsLairTriggers.h"
-#include "AiObjectContext.h"
+#include "NamedObjectContext.h"
 
 class RaidGruulsLairTriggerContext : public NamedObjectContext<Trigger>
 {

@@ -7,7 +7,6 @@
 #define _PLAYERBOT_RAIDZULAMANSTRATEGY_H_
 
 #include "Strategy.h"
-#include "Multiplier.h"
 
 class RaidZulAmanStrategy : public Strategy
 {
