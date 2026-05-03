@@ -3513,7 +3513,7 @@ void PlayerbotFactory::InitQuests(std::list<uint32>& questMap, bool withRewardIt
 
 void PlayerbotFactory::InitInstanceQuests()
 {
-    // Yunfan: use configuration instead of hard code
+    // Yunfan: use configuration instead of hard code.
     uint32 currentXP = bot->GetUInt32Value(PLAYER_XP);
     // LOG_INFO("playerbots", "Initializing quests...");
     InitQuests(classQuestIds, false);
