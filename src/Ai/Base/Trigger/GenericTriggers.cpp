@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "GenericBuffUtils.h"
 #include "CreatureAI.h"
 #include "ItemVisitors.h"
 #include "LastSpellCastValue.h"
@@ -43,7 +44,6 @@ bool NoPetTrigger::IsActive()
 bool HasPetTrigger::IsActive()
 {
     return (AI_VALUE(Unit*, "pet target")) && !AI_VALUE2(bool, "mounted", "self target");
-    ;
 }
 
 bool PetAttackTrigger::IsActive()
@@ -157,21 +157,36 @@ bool OutNumberedTrigger::IsActive()
 bool BuffTrigger::IsActive()
 {
     Unit* target = GetTarget();
-    if (!target)
+    if (!target || !SpellTrigger::IsActive())
         return false;
-    if (!SpellTrigger::IsActive())
-        return false;
+
+    if (ai::buff::IsGroupVariantEnabled(bot, spell))
+    {
+        std::string const groupVariant = ai::buff::GroupVariantFor(spell);
+        if (!groupVariant.empty() && botAI->HasAura(groupVariant, target, false, checkIsOwner, -1, checkDuration))
+            return false;
+    }
+
     Aura* aura = botAI->GetAura(spell, target, checkIsOwner, checkDuration);
-    if (!aura)
+    if (!aura || (beforeDuration && aura->GetDuration() < beforeDuration))
         return true;
-    if (beforeDuration && aura->GetDuration() < beforeDuration)
-        return true;
+
     return false;
 }
 
 Value<Unit*>* BuffOnPartyTrigger::GetTargetValue()
 {
-    return context->GetValue<Unit*>("party member without aura", spell);
+    return context->GetValue<Unit*>(
+        "party member without aura", ai::buff::MakeAuraQualifierForBuff(spell));
+}
+
+bool BuffOnPartyTrigger::IsActive()
+{
+    Unit* target = GetTarget();
+    if (ai::buff::ShouldDeferPartyBuffEvaluationForRecentLogin(bot, target, spell))
+        return false;
+
+    return BuffTrigger::IsActive();
 }
 
 bool ProtectPartyMemberTrigger::IsActive() { return AI_VALUE(Unit*, "party member to protect"); }

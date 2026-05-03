@@ -40,6 +40,13 @@ enum class HealingManaEfficiency : uint8
     SUPERIOR = 32
 };
 
+enum class AutoPartyBuffMode : uint8
+{
+    DISABLED = 0,
+    RAID_ONLY = 1,
+    GROUP_OR_RAID = 2
+};
+
 enum NewRpgStatus : int
 {
     //Initial Status
@@ -94,6 +101,8 @@ public:
     uint32 lowMana, mediumMana, highMana;
     bool autoSaveMana;
     uint32 saveManaThreshold;
+    AutoPartyBuffMode autoGreaterBlessings;
+    AutoPartyBuffMode autoPartyBuffs;
     bool autoAvoidAoe;
     float maxAoeAvoidRadius;
     std::set<uint32> aoeAvoidSpellWhitelist;
@@ -145,12 +154,6 @@ public:
     uint32 minRandomBotsPriceChangeInterval, maxRandomBotsPriceChangeInterval;
     uint32 disabledWithoutRealPlayerLoginDelay, disabledWithoutRealPlayerLogoutDelay;
     bool randomBotJoinLfg;
-
-    // Buff system
-    // Min group size to use Greater buffs (Paladin, Mage, Druid). Default: 3
-    int32 minBotsForGreaterBuff;
-    // Cooldown (seconds) between reagent-missing RP warnings, per bot & per buff. Default: 30
-    int32 rpWarningCooldown;
 
     // Professions
     bool enableFishingWithMaster;

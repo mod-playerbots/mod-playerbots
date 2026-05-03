@@ -119,28 +119,25 @@ public:
     CastBuffSpellAction(PlayerbotAI* botAI, std::string const spell, bool checkIsOwner = false, uint32 beforeDuration = 0);
 
     std::string const GetTargetName() override { return "self target"; }
+    bool isUseful() override;
+    bool Execute(Event event) override;
 };
 
-class CastEnchantItemAction : public CastSpellAction
-{
-public:
-    CastEnchantItemAction(PlayerbotAI* botAI, std::string const spell);
-
-    bool isPossible() override;
-    std::string const GetTargetName() override { return "self target"; }
-};
-
-class CastEnchantItemMainHandAction : public CastEnchantItemAction
+class CastEnchantItemMainHandAction : public CastSpellAction
 {
 public:
     CastEnchantItemMainHandAction(PlayerbotAI* botAI, std::string const spell);
+    std::string const GetTargetName() override { return "self target"; }
+    bool Execute(Event event) override;
     bool isPossible() override;
 };
 
-class CastEnchantItemOffHandAction : public CastEnchantItemAction
+class CastEnchantItemOffHandAction : public CastSpellAction
 {
 public:
     CastEnchantItemOffHandAction(PlayerbotAI* botAI, std::string const spell);
+    std::string const GetTargetName() override { return "self target"; }
+    bool Execute(Event event) override;
     bool isPossible() override;
 };
 
@@ -235,7 +232,6 @@ protected:
     uint32 dispelType;
 };
 
-// Make Bots Paladin, druid, mage use the greater buff rank spell
 class BuffOnPartyAction : public CastBuffSpellAction, public PartyMemberActionNameSupport
 {
 public:
@@ -246,7 +242,6 @@ public:
     bool Execute(Event event) override;
     std::string const getName() override { return PartyMemberActionNameSupport::getName(); }
 };
-// End Fix
 
 class CastShootAction : public CastSpellAction
 {

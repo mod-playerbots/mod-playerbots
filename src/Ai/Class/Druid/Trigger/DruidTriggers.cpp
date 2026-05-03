@@ -9,7 +9,7 @@
 
 bool MarkOfTheWildOnPartyTrigger::IsActive()
 {
-    return BuffOnPartyTrigger::IsActive() && !botAI->HasAura("gift of the wild", GetTarget());
+    return BuffOnPartyTrigger::IsActive();
 }
 
 bool MarkOfTheWildTrigger::IsActive()

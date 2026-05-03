@@ -344,6 +344,7 @@ public:
     }
 
     Value<Unit*>* GetTargetValue() override;
+    bool IsActive() override;
     std::string const getName() override { return spell + " on party"; }
 };
 

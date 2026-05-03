@@ -83,8 +83,6 @@ bool PlayerbotAIConfig::Initialize()
     sitDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.SitDelay", 20000);
     returnDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.ReturnDelay", 2000);
     lootDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.LootDelay", 1000);
-    minBotsForGreaterBuff = sConfigMgr->GetOption<int32>("AiPlayerbot.MinBotsForGreaterBuff", 3);
-    rpWarningCooldown     = sConfigMgr->GetOption<int32>("AiPlayerbot.RPWarningCooldown", 30);
     disabledWithoutRealPlayerLoginDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.DisabledWithoutRealPlayerLoginDelay", 30);
     disabledWithoutRealPlayerLogoutDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.DisabledWithoutRealPlayerLogoutDelay", 300);
 
@@ -115,6 +113,32 @@ bool PlayerbotAIConfig::Initialize()
     highMana = sConfigMgr->GetOption<int32>("AiPlayerbot.HighMana", 65);
     autoSaveMana = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoSaveMana", true);
     saveManaThreshold = sConfigMgr->GetOption<int32>("AiPlayerbot.SaveManaThreshold", 60);
+    switch (sConfigMgr->GetOption<uint32>("AiPlayerbot.AutoGreaterBlessings", 1))
+    {
+        case 0:
+            autoGreaterBlessings = AutoPartyBuffMode::DISABLED;
+            break;
+        case 2:
+            autoGreaterBlessings = AutoPartyBuffMode::GROUP_OR_RAID;
+            break;
+        case 1:
+        default:
+            autoGreaterBlessings = AutoPartyBuffMode::RAID_ONLY;
+            break;
+    }
+    switch (sConfigMgr->GetOption<uint32>("AiPlayerbot.AutoPartyBuffs", 2))
+    {
+        case 0:
+            autoPartyBuffs = AutoPartyBuffMode::DISABLED;
+            break;
+        case 1:
+            autoPartyBuffs = AutoPartyBuffMode::RAID_ONLY;
+            break;
+        case 2:
+        default:
+            autoPartyBuffs = AutoPartyBuffMode::GROUP_OR_RAID;
+            break;
+    }
     autoAvoidAoe = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoAvoidAoe", true);
     maxAoeAvoidRadius = sConfigMgr->GetOption<float>("AiPlayerbot.MaxAoeAvoidRadius", 15.0f);
     LoadSet<std::set<uint32>>(sConfigMgr->GetOption<std::string>("AiPlayerbot.AoeAvoidSpellWhitelist", "50759,57491,13810,29946"),

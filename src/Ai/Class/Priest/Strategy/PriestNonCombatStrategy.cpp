@@ -55,12 +55,6 @@ void PriestBuffStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     NonCombatStrategy::InitTriggers(triggers);
 
     triggers.push_back(
-        new TriggerNode("prayer of fortitude on party",
-                       { NextAction("prayer of fortitude on party", 12.0f) }));
-    triggers.push_back(
-        new TriggerNode("prayer of spirit on party",
-                       { NextAction("prayer of spirit on party", 14.0f) }));
-    triggers.push_back(
         new TriggerNode("power word: fortitude on party",
                        { NextAction("power word: fortitude on party", 11.0f) }));
     triggers.push_back(new TriggerNode("divine spirit on party",
