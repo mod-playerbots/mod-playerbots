@@ -148,8 +148,6 @@ class CastWrathAction : public CastSpellAction
 public:
     CastWrathAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "wrath") {}
     bool isUseful() override;
-private:
-    time_t _lunarProcTime = 0;
 };
 
 class CastStarfallAction : public CastSpellAction
@@ -194,8 +192,6 @@ class CastStarfireAction : public CastSpellAction
 public:
     CastStarfireAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "starfire") {}
     bool isUseful() override;
-private:
-    time_t _solarProcTime = 0;
 };
 
 class CastEntanglingRootsAction : public CastSpellAction

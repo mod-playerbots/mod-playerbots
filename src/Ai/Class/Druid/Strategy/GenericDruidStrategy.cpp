@@ -131,15 +131,14 @@ void DruidCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void DruidBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    triggers.push_back(new TriggerNode("nature's swiftness", { NextAction("nature's swiftness", 29.0f) }));
-
     Player* bot = botAI->GetBot();
     int tab = AiFactory::GetPlayerSpecTab(bot);
 
+    if (tab == DRUID_TAB_RESTORATION)
+        triggers.push_back(new TriggerNode("nature's swiftness", { NextAction("nature's swiftness", 29.0f) }));
+
     if (tab == DRUID_TAB_BALANCE)
-    {
         triggers.push_back(new TriggerNode("force of nature", { NextAction("force of nature", 29.0f) }));
-    }
 }
 
 void DruidCcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -178,8 +177,7 @@ void DruidAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         triggers.push_back(new TriggerNode("starfall", { NextAction("starfall", 28.5f) }));
         triggers.push_back(new TriggerNode("medium aoe", { NextAction("hurricane", 23.0f) }));
         triggers.push_back(new TriggerNode("enemy within melee", { NextAction("typhoon", 40.0f) }));
-
-        triggers.push_back(new TriggerNode("light aoe",
-            { NextAction("insect swarm on attacker", 19.5f), NextAction("moonfire on attacker", 19.0f) }));
+        triggers.push_back(new TriggerNode("insect swarm on attacker", { NextAction("insect swarm on attacker", 5.2f) }));
+        triggers.push_back(new TriggerNode("moonfire on attacker", { NextAction("moonfire on attacker", 5.1f) }));
     }
 }

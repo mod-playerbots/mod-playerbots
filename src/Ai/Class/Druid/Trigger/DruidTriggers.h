@@ -80,6 +80,13 @@ public:
     bool IsActive() override { return BuffTrigger::IsActive(); }
 };
 
+class InsectSwarmOnAttackerTrigger : public DebuffOnAttackerTrigger
+{
+public:
+    InsectSwarmOnAttackerTrigger(PlayerbotAI* botAI) : DebuffOnAttackerTrigger(botAI, "insect swarm", true) {}
+    bool IsActive() override { return BuffTrigger::IsActive(); }
+};
+
 class MoonfireTrigger : public DebuffTrigger
 {
 public:
@@ -87,11 +94,18 @@ public:
     bool IsActive() override { return BuffTrigger::IsActive(); }
 };
 
+class MoonfireOnAttackerTrigger : public DebuffOnAttackerTrigger
+{
+public:
+    MoonfireOnAttackerTrigger(PlayerbotAI* botAI) : DebuffOnAttackerTrigger(botAI, "moonfire", true) {}
+    bool IsActive() override { return BuffTrigger::IsActive(); }
+};
+
 class FaerieFireTrigger : public DebuffTrigger
 {
 public:
     FaerieFireTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "faerie fire", 1, true) {}
-    bool IsActive() override { return BuffTrigger::IsActive() && bot->HasAura(33602); }
+    bool IsActive() override;
 };
 
 class FaerieFireFeralTrigger : public DebuffTrigger
@@ -227,16 +241,16 @@ public:
     }
 };
 
-class StarfallNoCdTrigger : public SpellNoCooldownTrigger
+class StarfallTrigger : public SpellNoCooldownTrigger
 {
 public:
-    StarfallNoCdTrigger(PlayerbotAI* botAI) : SpellNoCooldownTrigger(botAI, "starfall") {}
+    StarfallTrigger(PlayerbotAI* botAI) : SpellNoCooldownTrigger(botAI, "starfall") {}
 };
 
-class ForceOfNatureNoCdTrigger : public SpellNoCooldownTrigger
+class ForceOfNatureTrigger : public SpellNoCooldownTrigger
 {
 public:
-    ForceOfNatureNoCdTrigger(PlayerbotAI* botAI) : SpellNoCooldownTrigger(botAI, "force of nature") {}
+    ForceOfNatureTrigger(PlayerbotAI* botAI) : SpellNoCooldownTrigger(botAI, "force of nature") {}
 };
 
 class MangleCatTrigger : public DebuffTrigger

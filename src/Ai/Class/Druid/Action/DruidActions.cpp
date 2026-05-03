@@ -10,6 +10,22 @@
 #include "ServerFacade.h"
 #include "AoeValues.h"
 #include "TargetValue.h"
+#include <unordered_map>
+
+// Eclipse phase tracking — keyed by bot GUID so multiple Balance Druids are independent.
+// Static lifetime means state survives action-object recreation (bot death, strategy reset, etc.).
+//
+// sSolarProcTime[guid]: time when Solar Eclipse (48517) was first detected.
+//   Set by CastWrathAction (which IS selected during Solar via the eclipse trigger).
+//   Read by CastStarfireAction to stay off Starfire for 30 s post-Solar.
+//
+// sLunarProcTime[guid]: time when Lunar Eclipse (48518) was first detected.
+//   Set by CastStarfireAction (which IS selected during Lunar via the eclipse trigger).
+//   Read by CastWrathAction to stay off Wrath for 30 s post-Lunar.
+//
+// Each function also cross-updates the other map as a belt-and-suspenders measure.
+static std::unordered_map<ObjectGuid, time_t> sSolarProcTime;
+static std::unordered_map<ObjectGuid, time_t> sLunarProcTime;
 
 std::vector<NextAction> CastAbolishPoisonAction::getAlternatives()
 {
@@ -36,34 +52,68 @@ bool CastLifebloomOnMainTankAction::isUseful()
 bool CastWrathAction::isUseful()
 {
     time_t now = time(nullptr);
-    // Lunar Eclipse appeared — start blocking wrath so starfire can fish for Solar
-    if (bot->HasAura(48518) && _lunarProcTime == 0)
-        _lunarProcTime = now;
-    // Solar Eclipse procced — fishing succeeded, no need to keep blocking wrath
-    if (bot->HasAura(48517) && _lunarProcTime != 0)
-        _lunarProcTime = 0;
-    // Full 30s elapsed — cooldown window over
-    if (_lunarProcTime && (now - _lunarProcTime) >= 30)
-        _lunarProcTime = 0;
-    if (_lunarProcTime)
+    ObjectGuid guid = bot->GetGUID();
+    time_t& solarTime = sSolarProcTime[guid];
+    time_t& lunarTime = sLunarProcTime[guid];
+
+    // --- Update Solar Eclipse tracking ---
+    // Wrath is selected during Solar Eclipse (eclipse trigger at 20.0f), so we reliably see it here.
+    if (bot->HasAura(48517) && !solarTime)
+        solarTime = now;
+    // Lunar procced — Solar fishing window is over, new cycle begins
+    if (bot->HasAura(48518) && solarTime)
+        solarTime = 0;
+    // 30 s cooldown window expired
+    if (solarTime && (now - solarTime) >= 30)
+        solarTime = 0;
+
+    // --- Update Lunar Eclipse tracking (belt-and-suspenders in case Starfire isn't evaluated) ---
+    if (bot->HasAura(48518) && !lunarTime)
+        lunarTime = now;
+    // Solar procced — Lunar fishing window is over
+    if (bot->HasAura(48517) && lunarTime)
+        lunarTime = 0;
+    if (lunarTime && (now - lunarTime) >= 30)
+        lunarTime = 0;
+
+    // Block Wrath while in Lunar Eclipse / post-Lunar fishing window
+    if (lunarTime)
         return false;
+
     return CastSpellAction::isUseful();
 }
 
 bool CastStarfireAction::isUseful()
 {
     time_t now = time(nullptr);
-    // Solar Eclipse appeared — start blocking starfire so wrath can fish for Lunar
-    if (bot->HasAura(48517) && _solarProcTime == 0)
-        _solarProcTime = now;
-    // Lunar Eclipse procced — fishing succeeded, no need to keep blocking starfire
-    if (bot->HasAura(48518) && _solarProcTime != 0)
-        _solarProcTime = 0;
-    // Full 30s elapsed — cooldown window over
-    if (_solarProcTime && (now - _solarProcTime) >= 30)
-        _solarProcTime = 0;
-    if (_solarProcTime)
+    ObjectGuid guid = bot->GetGUID();
+    time_t& solarTime = sSolarProcTime[guid];
+    time_t& lunarTime = sLunarProcTime[guid];
+
+    // --- Update Lunar Eclipse tracking ---
+    // Starfire is selected during Lunar Eclipse (eclipse trigger at 20.0f), so we reliably see it here.
+    if (bot->HasAura(48518) && !lunarTime)
+        lunarTime = now;
+    // Solar procced — Lunar fishing window is over, new cycle begins
+    if (bot->HasAura(48517) && lunarTime)
+        lunarTime = 0;
+    // 30 s cooldown window expired
+    if (lunarTime && (now - lunarTime) >= 30)
+        lunarTime = 0;
+
+    // --- Update Solar Eclipse tracking (belt-and-suspenders in case Wrath isn't evaluated) ---
+    if (bot->HasAura(48517) && !solarTime)
+        solarTime = now;
+    // Lunar procced — Solar fishing window is over
+    if (bot->HasAura(48518) && solarTime)
+        solarTime = 0;
+    if (solarTime && (now - solarTime) >= 30)
+        solarTime = 0;
+
+    // Block Starfire while in Solar Eclipse / post-Solar fishing window
+    if (solarTime)
         return false;
+
     return CastSpellAction::isUseful();
 }
 

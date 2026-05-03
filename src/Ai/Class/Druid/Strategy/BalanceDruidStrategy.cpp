@@ -180,8 +180,8 @@ BalanceDruidStrategy::BalanceDruidStrategy(PlayerbotAI* botAI) : GenericDruidStr
 std::vector<NextAction> BalanceDruidStrategy::getDefaultActions()
 {
     return {
-        NextAction("starfire", 5.2f),
-        NextAction("wrath", 5.1f),
+        NextAction("starfire", 5.4f),
+        NextAction("wrath", 5.3f),
     };
 }
 

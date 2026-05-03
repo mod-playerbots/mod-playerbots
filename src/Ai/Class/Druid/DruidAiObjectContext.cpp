@@ -88,7 +88,9 @@ public:
         creators["faerie fire (feral)"] = &DruidTriggerFactoryInternal::faerie_fire_feral;
         creators["faerie fire"] = &DruidTriggerFactoryInternal::faerie_fire;
         creators["insect swarm"] = &DruidTriggerFactoryInternal::insect_swarm;
+        creators["insect swarm on attacker"] = &DruidTriggerFactoryInternal::insect_swarm_on_attacker;
         creators["moonfire"] = &DruidTriggerFactoryInternal::moonfire;
+        creators["moonfire on attacker"] = &DruidTriggerFactoryInternal::moonfire_on_attacker;
         creators["nature's grasp"] = &DruidTriggerFactoryInternal::natures_grasp;
         creators["tiger's fury"] = &DruidTriggerFactoryInternal::tigers_fury;
         creators["berserk"] = &DruidTriggerFactoryInternal::berserk;
@@ -130,7 +132,9 @@ private:
     static Trigger* bash(PlayerbotAI* botAI) { return new BashInterruptSpellTrigger(botAI); }
     static Trigger* faerie_fire_feral(PlayerbotAI* botAI) { return new FaerieFireFeralTrigger(botAI); }
     static Trigger* insect_swarm(PlayerbotAI* botAI) { return new InsectSwarmTrigger(botAI); }
+    static Trigger* insect_swarm_on_attacker(PlayerbotAI* botAI) { return new InsectSwarmOnAttackerTrigger(botAI); }
     static Trigger* moonfire(PlayerbotAI* botAI) { return new MoonfireTrigger(botAI); }
+    static Trigger* moonfire_on_attacker(PlayerbotAI* botAI) { return new MoonfireOnAttackerTrigger(botAI); }
     static Trigger* faerie_fire(PlayerbotAI* botAI) { return new FaerieFireTrigger(botAI); }
     static Trigger* natures_grasp(PlayerbotAI* botAI) { return new NaturesGraspTrigger(botAI); }
     static Trigger* tigers_fury(PlayerbotAI* botAI) { return new TigersFuryTrigger(botAI); }
@@ -154,8 +158,8 @@ private:
     static Trigger* ferocious_bite_time(PlayerbotAI* ai) { return new FerociousBiteTimeTrigger(ai); }
     static Trigger* hurricane_channel_check(PlayerbotAI* ai) { return new HurricaneChannelCheckTrigger(ai); }
     static Trigger* no_healer_dps_strategy(PlayerbotAI* ai) { return new NoHealerDpsStrategyTrigger(ai); }
-    static Trigger* starfall(PlayerbotAI* ai) { return new StarfallNoCdTrigger(ai); }
-    static Trigger* force_of_nature(PlayerbotAI* ai) { return new ForceOfNatureNoCdTrigger(ai); }
+    static Trigger* starfall(PlayerbotAI* ai) { return new StarfallTrigger(ai); }
+    static Trigger* force_of_nature(PlayerbotAI* ai) { return new ForceOfNatureTrigger(ai); }
     static Trigger* cyclone(PlayerbotAI* ai) { return new CycloneTrigger(ai); }
 };
 

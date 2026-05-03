@@ -4,8 +4,23 @@
  */
 
 #include "DruidTriggers.h"
+#include "Creature.h"
+#include "DynamicObject.h"
 #include "Player.h"
 #include "Playerbots.h"
+
+bool FaerieFireTrigger::IsActive()
+{
+    if (!BuffTrigger::IsActive())
+        return false;
+
+    Unit* target = GetTarget();
+    if (!target)
+        return false;
+
+    Creature* creature = target->ToCreature();
+    return creature && creature->GetCreatureTemplate()->rank == CREATURE_ELITE_WORLDBOSS;
+}
 
 bool MarkOfTheWildOnPartyTrigger::IsActive()
 {
@@ -47,17 +62,38 @@ bool HurricaneChannelCheckTrigger::IsActive()
 {
     Player* bot = botAI->GetBot();
 
-    // Check if the bot is channeling a spell
     if (Spell* spell = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
     {
-        // Only trigger if the spell being channeled is Hurricane
-        if (HURRICANE_SPELL_IDS.count(spell->m_spellInfo->Id))
+        if (!HURRICANE_SPELL_IDS.count(spell->m_spellInfo->Id))
+            return false;
+
+        // Find this bot's own Hurricane DynamicObject
+        DynamicObject* dynObj = nullptr;
+        for (uint32 spellId : HURRICANE_SPELL_IDS)
         {
-            uint8 attackerCount = AI_VALUE(uint8, "attacker count");
-            return attackerCount < minEnemies;
+            dynObj = bot->GetDynObject(spellId);
+            if (dynObj)
+                break;
         }
+
+        if (!dynObj)
+            return false;
+
+        // Count attackers actually inside the Hurricane AoE
+        float radius = dynObj->GetRadius();
+        GuidVector attackers = AI_VALUE(GuidVector, "attackers");
+        uint32 count = 0;
+        for (ObjectGuid const& guid : attackers)
+        {
+            Unit* unit = botAI->GetUnit(guid);
+            if (!unit || !unit->IsAlive())
+                continue;
+            if (unit->GetDistance(dynObj->GetPosition()) <= radius)
+                count++;
+        }
+
+        return count < minEnemies;
     }
 
-    // Not channeling Hurricane
     return false;
 }
