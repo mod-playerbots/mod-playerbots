@@ -7,7 +7,7 @@
 #define _PLAYERBOT_RAIDZULAMANTRIGGERCONTEXT_H
 
 #include "RaidZulAmanTriggers.h"
-#include "AiObjectContext.h"
+#include "NamedObjectContext.h"
 
 class RaidZulAmanTriggerContext : public NamedObjectContext<Trigger>
 {

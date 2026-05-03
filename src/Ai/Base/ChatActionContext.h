@@ -66,6 +66,7 @@
 #include "TaxiAction.h"
 #include "TeleportAction.h"
 #include "TellCastFailedAction.h"
+#include "TellEmblemsAction.h"
 #include "TellItemCountAction.h"
 #include "TellLosAction.h"
 #include "TellReputationAction.h"
@@ -120,6 +121,7 @@ public:
         creators["teleport"] = &ChatActionContext::teleport;
         creators["taxi"] = &ChatActionContext::taxi;
         creators["repair"] = &ChatActionContext::repair;
+        creators["emblems"] = &ChatActionContext::emblems;
         creators["use"] = &ChatActionContext::use;
         creators["item count"] = &ChatActionContext::item_count;
         creators["equip"] = &ChatActionContext::equip;
@@ -276,6 +278,7 @@ private:
     static Action* item_count(PlayerbotAI* botAI) { return new TellItemCountAction(botAI); }
     static Action* use(PlayerbotAI* botAI) { return new UseItemAction(botAI); }
     static Action* repair(PlayerbotAI* botAI) { return new RepairAllAction(botAI); }
+    static Action* emblems(PlayerbotAI* botAI) { return new TellEmblemsAction(botAI); }
     static Action* taxi(PlayerbotAI* botAI) { return new TaxiAction(botAI); }
     static Action* teleport(PlayerbotAI* botAI) { return new TeleportAction(botAI); }
     static Action* release(PlayerbotAI* botAI) { return new ReleaseSpiritAction(botAI); }

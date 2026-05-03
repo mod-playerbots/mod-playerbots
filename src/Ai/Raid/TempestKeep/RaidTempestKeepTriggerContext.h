@@ -2,7 +2,7 @@
 #define _PLAYERBOT_RAIDTEMPESTKEEPTRIGGERCONTEXT_H
 
 #include "RaidTempestKeepTriggers.h"
-#include "AiObjectContext.h"
+#include "NamedObjectContext.h"
 
 class RaidTempestKeepTriggerContext : public NamedObjectContext<Trigger>
 {
