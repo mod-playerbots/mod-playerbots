@@ -88,9 +88,6 @@ bool AnetheronBotIsTargetedByInfernalTrigger::IsActive()
     if (!anetheron || botAI->IsMainTank(bot))
         return false;
 
-    if (botAI->IsMainTank(bot))
-        return false;
-
     return GetInfernoTarget(anetheron) == bot;
 }
 
