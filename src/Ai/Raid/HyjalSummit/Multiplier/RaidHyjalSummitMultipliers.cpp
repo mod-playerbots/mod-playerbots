@@ -255,18 +255,17 @@ float AzgalorMeleeDpsControlAvoidanceMultiplier::GetValue(Action* action)
     constexpr float singleTickMoveAwayDist = 6.0f;
     if (IsInRainOfFire(bot, RAIN_OF_FIRE_RADIUS + singleTickMoveAwayDist))
     {
-        if (dynamic_cast<AvoidAoeAction*>(action))
+        if (dynamic_cast<AvoidAoeAction*>(action) ||
+            dynamic_cast<CastReachTargetSpellAction*>(action))
             return 0.0f;
 
         if (dynamic_cast<MovementAction*>(action) &&
             !dynamic_cast<AzgalorMeleeGetOutOfFireAndSwapTargetsAction*>(action))
             return 0.0f;
-
-        if (dynamic_cast<CastReachTargetSpellAction*>(action))
-            return 0.0f;
     }
 
-    if (!GetGroupMainTank(botAI, bot))
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    if (!mainTank || !GET_PLAYERBOT_AI(mainTank))
         return 1.0f;
 
     TankPositionState tankState = GetAzgalorTankPositionState(botAI, bot);
