@@ -39,11 +39,8 @@ bool LeaveLargeGuildTrigger::IsActive()
 
     Player* leader = ObjectAccessor::FindPlayer(guild->GetLeaderGUID());
 
-    // Only leave the guild if we know the leader is not a real player.
-    if (!leader || !GET_PLAYERBOT_AI(leader) || !GET_PLAYERBOT_AI(leader)->IsRealPlayer())
-        return false;
-
-    PlayerbotAI* leaderBotAI = GET_PLAYERBOT_AI(leader);
+    // Only leave the guild if the leader is an online bot (not a real player).
+    PlayerbotAI* leaderBotAI = leader ? GET_PLAYERBOT_AI(leader) : nullptr;
     if (!leaderBotAI || leaderBotAI->IsRealPlayer())
         return false;
 
