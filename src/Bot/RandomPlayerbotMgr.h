@@ -12,6 +12,8 @@
 #include "GameTime.h"
 #include "PlayerbotCommandServer.h"
 
+#include <mutex>
+
 struct BattlegroundInfo
 {
     std::vector<uint32> bgInstances;
@@ -176,6 +178,9 @@ protected:
     void OnBotLoginInternal(Player* const bot) override;
 
 private:
+    bool ShouldThrottleCraftReply(Player* requester, uint32 itemId, time_t now);
+    void PruneCraftRepliesLocked(time_t now);
+
     RandomPlayerbotMgr() : PlayerbotHolder(), processTicks(0)
     {
         this->playersLevel = sPlayerbotAIConfig.randombotStartingLevel;
@@ -246,6 +251,8 @@ private:
     std::map<uint32, std::map<uint32, std::vector<WorldLocation>>> rpgLocsCacheLevel;
     std::map<TeamId, std::map<BattlegroundTypeId, std::vector<uint32>>> BattleMastersCache;
     std::unordered_map<uint32, BotEventCache> eventCache;
+    std::mutex recentCraftRepliesLock;
+    std::unordered_map<std::string, time_t> recentCraftReplies;
     std::list<uint32> currentBots;
     uint32 bgBotsCount;
     uint32 playersLevel;

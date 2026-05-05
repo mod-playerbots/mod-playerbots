@@ -40,6 +40,7 @@
 #include "Random.h"
 #include "RandomPlayerbotFactory.h"
 #include "ServerFacade.h"
+#include "SetCraftAction.h"
 #include "SharedDefines.h"
 #include "TravelMgr.h"
 #include "Unit.h"
@@ -55,6 +56,71 @@ struct GuidClassRaceInfo
     uint32 rClass;
     uint32 rRace;
 };
+
+namespace
+{
+bool IsCraftReplyChannel(ChatChannelSource source)
+{
+    return source == ChatChannelSource::SRC_GENERAL ||
+           source == ChatChannelSource::SRC_TRADE;
+}
+
+std::string MakeCraftReplyKey(Player* requester, uint32 itemId)
+{
+    std::ostringstream key;
+    key << requester->GetGUID().GetCounter() << ':' << itemId;
+    return key.str();
+}
+
+bool IsBetterCraftCandidate(Player* candidateBot,
+                            SetCraftAction::CraftReplyData const& candidate,
+                            Player* currentBot,
+                            SetCraftAction::CraftReplyData const& current)
+{
+    if (!currentBot)
+        return true;
+
+    if (candidate.HasAllReagents() != current.HasAllReagents())
+        return candidate.HasAllReagents();
+
+    if (candidate.GetTotalMissingCount() != current.GetTotalMissingCount())
+        return candidate.GetTotalMissingCount() < current.GetTotalMissingCount();
+
+    if (candidate.skillValue != current.skillValue)
+        return candidate.skillValue > current.skillValue;
+
+    return candidateBot->GetGUID().GetCounter() <
+           currentBot->GetGUID().GetCounter();
+}
+} // namespace
+
+bool RandomPlayerbotMgr::ShouldThrottleCraftReply(Player* requester,
+                                                  uint32 itemId,
+                                                  time_t now)
+{
+    std::lock_guard<std::mutex> guard(recentCraftRepliesLock);
+    PruneCraftRepliesLocked(now);
+
+    std::string const replyKey = MakeCraftReplyKey(requester, itemId);
+    auto const recentReply = recentCraftReplies.find(replyKey);
+    if (recentReply != recentCraftReplies.end() && recentReply->second > now)
+        return true;
+
+    recentCraftReplies[replyKey] =
+        now + sPlayerbotAIConfig.craftingReplyCooldown;
+    return false;
+}
+
+void RandomPlayerbotMgr::PruneCraftRepliesLocked(time_t now)
+{
+    for (auto it = recentCraftReplies.begin(); it != recentCraftReplies.end();)
+    {
+        if (it->second <= now)
+            it = recentCraftReplies.erase(it);
+        else
+            ++it;
+    }
+}
 
 void PrintStatsThread() { sRandomPlayerbotMgr.PrintStats(); }
 
@@ -2486,6 +2552,81 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* handler, cha
 
 void RandomPlayerbotMgr::HandleCommand(uint32 type, std::string const text, Player* fromPlayer, std::string channelName)
 {
+    if (sPlayerbotAIConfig.enableCraftingReplies && fromPlayer &&
+        type == CHAT_MSG_CHANNEL && !channelName.empty())
+    {
+        std::set<uint32> requestedItemIds;
+        if (SetCraftAction::ParseCraftRequest(text, requestedItemIds))
+        {
+            Player* bestBot = nullptr;
+            SetCraftAction::CraftReplyData bestCraftReply;
+
+            for (PlayerBotMap::const_iterator it = GetPlayerBotsBegin();
+                 it != GetPlayerBotsEnd(); ++it)
+            {
+                Player* const bot = it->second;
+                if (!bot)
+                    continue;
+
+                if (!channelName.empty())
+                {
+                    if (ChannelMgr* cMgr = ChannelMgr::forTeam(bot->GetTeamId()))
+                    {
+                        Channel* chn = cMgr->GetChannel(channelName, bot);
+                        if (!chn)
+                            continue;
+                    }
+                }
+
+                PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+                if (!botAI)
+                    continue;
+
+                if (!IsCraftReplyChannel(
+                        botAI->GetChatChannelSource(bot, type, channelName)))
+                    continue;
+
+                for (uint32 itemId : requestedItemIds)
+                {
+                    SetCraftAction::CraftReplyData candidate;
+                    if (!SetCraftAction::BuildCraftReplyData(bot, itemId,
+                                                            candidate))
+                        continue;
+
+                    if (IsBetterCraftCandidate(bot, candidate, bestBot,
+                                               bestCraftReply))
+                    {
+                        bestBot = bot;
+                        bestCraftReply = candidate;
+                    }
+                }
+            }
+
+            if (!bestBot)
+                return;
+
+            time_t now = time(nullptr);
+            if (ShouldThrottleCraftReply(fromPlayer, bestCraftReply.itemId,
+                                         now))
+                return;
+
+            if (PlayerbotAI* bestAI = GET_PLAYERBOT_AI(bestBot))
+            {
+                std::string const message =
+                    SetCraftAction::FormatCraftReply(bestAI, bestCraftReply);
+                if (!message.empty())
+                {
+                    bestAI->Whisper(message, fromPlayer->GetName());
+                    bestAI->GetAiObjectContext()
+                        ->GetValue<time_t>("last said", "chat")
+                        ->Set(now + urand(5, 25));
+                }
+            }
+
+            return;
+        }
+    }
+
     for (PlayerBotMap::const_iterator it = GetPlayerBotsBegin(); it != GetPlayerBotsEnd(); ++it)
     {
         Player* const bot = it->second;

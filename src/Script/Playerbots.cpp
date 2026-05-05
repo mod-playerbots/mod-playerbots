@@ -259,7 +259,7 @@ public:
         if (playerbotMgr != nullptr && channel->GetFlags() & 0x18)
             playerbotMgr->HandleCommand(type, msg);
 
-        sRandomPlayerbotMgr.HandleCommand(type, msg, player);
+        sRandomPlayerbotMgr.HandleCommand(type, msg, player, channel->GetName());
 
         return true;
     }

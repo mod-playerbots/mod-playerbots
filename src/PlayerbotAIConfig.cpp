@@ -244,6 +244,8 @@ bool PlayerbotAIConfig::Initialize()
     endFishingWithMaster = sConfigMgr->GetOption<float>("AiPlayerbot.EndFishingWithMaster", 30.0f);
     fishingDistance = sConfigMgr->GetOption<float>("AiPlayerbot.FishingDistance", 40.0f);
     enableFishingWithMaster = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableFishingWithMaster", true);
+    enableCraftingReplies = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableCraftingReplies", true);
+    craftingReplyCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.CraftingReplyCooldown", 15);
     //////////////////////////// CHAT
     enableBroadcasts = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableBroadcasts", true);
     randomBotTalk = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotTalk", false);

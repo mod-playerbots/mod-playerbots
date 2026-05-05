@@ -5,6 +5,7 @@
 
 #include "AiFactory.h"
 #include "SayAction.h"
+#include "SetCraftAction.h"
 
 #include <regex>
 #include <string>
@@ -201,6 +202,13 @@ void ChatReplyAction::ChatReplyDo(Player* bot, uint32& type, uint32& guid1, std:
         return;
     }
 
+    if ((chatChannelSource == ChatChannelSource::SRC_GENERAL ||
+         chatChannelSource == ChatChannelSource::SRC_TRADE) &&
+        HandleCraftRequestMessage(msg))
+    {
+        return;
+    }
+
     //toxic links
     if (msg.starts_with(sPlayerbotAIConfig.toxicLinksPrefix)
         && (GET_PLAYERBOT_AI(bot)->GetChatHelper()->ExtractAllItemIds(msg).size() > 0 || GET_PLAYERBOT_AI(bot)->GetChatHelper()->ExtractAllQuestIds(msg).size() > 0))
@@ -218,6 +226,12 @@ void ChatReplyAction::ChatReplyDo(Player* bot, uint32& type, uint32& guid1, std:
 
     auto messageRepy = GenerateReplyMessage(bot, msg, guid1, name);
     SendGeneralResponse(bot, chatChannelSource, messageRepy, name);
+}
+
+bool ChatReplyAction::HandleCraftRequestMessage(std::string const& msg)
+{
+    std::set<uint32> itemIds;
+    return SetCraftAction::ParseCraftRequest(msg, itemIds);
 }
 
 bool ChatReplyAction::HandleThunderfuryReply(Player* bot, ChatChannelSource chatChannelSource)

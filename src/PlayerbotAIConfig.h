@@ -154,6 +154,8 @@ public:
 
     // Professions
     bool enableFishingWithMaster;
+    bool enableCraftingReplies;
+    uint32 craftingReplyCooldown;
     uint32 classMatchingProfessionChance;
     float fishingDistanceFromMaster, fishingDistance, endFishingWithMaster;
 
