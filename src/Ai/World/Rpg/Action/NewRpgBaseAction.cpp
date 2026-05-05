@@ -1162,6 +1162,11 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
             bot->SetStandState(UNIT_STAND_STATE_SIT);
             return true;
         }
+        case RPG_DO_CRAFT:
+        {
+            botAI->rpgInfo.ChangeToDoCraft();
+            return true;
+        }
         case RPG_OUTDOOR_PVP:
         {
             botAI->rpgInfo.ChangeToOutdoorPvp();
@@ -1239,8 +1244,67 @@ bool NewRpgBaseAction::CheckRpgStatusAvailable(NewRpgStatus status)
             OutdoorPvP* outdoorPvP = sOutdoorPvPMgr->GetOutdoorPvPToZoneId(zoneId);
             return outdoorPvP != nullptr;
         }
+        case RPG_DO_CRAFT:
+        {
+            return AI_VALUE2(uint32, "item count", "recipe") > 0 ||
+                   CanCraftSomething() ||
+                   CanEnchantSomething() ||
+                   CanDisenchantSomething();
+        }
         default:
             return false;
     }
     return false;
+}
+
+bool NewRpgBaseAction::CanCraftSomething()
+{
+    CraftRandomItemAction craftAction(botAI);
+
+    for (PlayerSpellMap::iterator itr = bot->GetSpellMap().begin();
+         itr != bot->GetSpellMap().end(); ++itr)
+    {
+        uint32 spellId = itr->first;
+        if (itr->second->State == PLAYERSPELL_REMOVED || !itr->second->Active)
+            continue;
+
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        if (!spellInfo || !craftAction.AcceptSpell(spellInfo))
+            continue;
+
+        if (botAI->CanCastSpell(spellId, bot, true))
+            return true;
+    }
+
+    return false;
+}
+
+bool NewRpgBaseAction::CanEnchantSomething()
+{
+    EnchantRandomItemAction enchantAction(botAI);
+
+    for (PlayerSpellMap::iterator itr = bot->GetSpellMap().begin();
+         itr != bot->GetSpellMap().end(); ++itr)
+    {
+        uint32 spellId = itr->first;
+        if (itr->second->State == PLAYERSPELL_REMOVED || !itr->second->Active)
+            continue;
+
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        if (!spellInfo || !enchantAction.AcceptSpell(spellInfo))
+            continue;
+
+        if (AI_VALUE2(Item*, "item for spell", spellId) &&
+            botAI->CanCastSpell(spellId, bot, true))
+            return true;
+    }
+
+    return false;
+}
+
+bool NewRpgBaseAction::CanDisenchantSomething()
+{
+    return botAI->HasSkill(SKILL_ENCHANTING) &&
+           AI_VALUE2(uint32, "item count",
+                     "usage " + std::to_string(ITEM_USAGE_DISENCHANT)) > 0;
 }

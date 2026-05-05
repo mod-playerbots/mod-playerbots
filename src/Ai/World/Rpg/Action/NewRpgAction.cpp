@@ -63,7 +63,7 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
     {
         case RPG_IDLE:
             return RandomChangeStatus({RPG_GO_CAMP, RPG_GO_GRIND, RPG_WANDER_RANDOM, RPG_WANDER_NPC, RPG_DO_QUEST,
-                                       RPG_TRAVEL_FLIGHT, RPG_REST, RPG_OUTDOOR_PVP});
+                                       RPG_TRAVEL_FLIGHT, RPG_REST, RPG_OUTDOOR_PVP, RPG_DO_CRAFT});
 
         case RPG_GO_GRIND:
         {
@@ -114,6 +114,16 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
         {
             // DO_QUEST -> IDLE
             if (info.HasStatusPersisted(statusDoQuestDuration))
+            {
+                info.ChangeToIdle();
+                return true;
+            }
+            break;
+        }
+        case RPG_DO_CRAFT:
+        {
+            if (!CheckRpgStatusAvailable(RPG_DO_CRAFT) ||
+                info.HasStatusPersisted(statusDoCraftDuration))
             {
                 info.ChangeToIdle();
                 return true;
@@ -454,6 +464,43 @@ bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
         return true;
     }
     return false;
+}
+
+bool NewRpgDoCraftAction::Execute(Event /*event*/)
+{
+    if (SearchQuestGiverAndAcceptOrReward())
+        return true;
+
+    if (bot->isMoving())
+        return false;
+
+    auto* data = std::get_if<NewRpgInfo::DoCraft>(&botAI->rpgInfo.data);
+    if (!data)
+        return false;
+
+    if (botAI->DoSpecificAction("use random recipe", Event(), true))
+        return true;
+
+    if (botAI->DoSpecificAction("craft random item", Event(), true))
+    {
+        ++data->craftedCount;
+        return true;
+    }
+
+    if (botAI->DoSpecificAction("enchant random item", Event(), true))
+    {
+        ++data->craftedCount;
+        return true;
+    }
+
+    if (botAI->DoSpecificAction("disenchant random item", Event(), true))
+    {
+        ++data->craftedCount;
+        return true;
+    }
+
+    botAI->rpgInfo.ChangeToIdle();
+    return true;
 }
 
 bool NewRpgTravelFlightAction::Execute(Event /*event*/)

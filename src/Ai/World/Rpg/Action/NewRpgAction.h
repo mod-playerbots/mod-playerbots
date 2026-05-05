@@ -51,6 +51,7 @@ protected:
     const int32 statusWanderRandomDuration = 5 * MINUTE  * IN_MILLISECONDS ;
     const int32 statusRestDuration = 30 * IN_MILLISECONDS ;
     const int32 statusDoQuestDuration = 30 * MINUTE  * IN_MILLISECONDS ;
+    const int32 statusDoCraftDuration = 2 * MINUTE * IN_MILLISECONDS;
     const int32 statusOutDoorPvPDuration = HOUR * IN_MILLISECONDS ;
 };
 
@@ -95,6 +96,13 @@ protected:
     bool DoCompletedQuest(NewRpgInfo::DoQuest& data);
 
     const uint32 poiStayTime = 5 * 60 * 1000;
+};
+
+class NewRpgDoCraftAction : public NewRpgBaseAction
+{
+public:
+    NewRpgDoCraftAction(PlayerbotAI* botAI) : NewRpgBaseAction(botAI, "new rpg do craft") {}
+    bool Execute(Event event) override;
 };
 
 class NewRpgTravelFlightAction : public NewRpgBaseAction

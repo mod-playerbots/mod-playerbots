@@ -37,6 +37,12 @@ void NewRpgInfo::ChangeToDoQuest(uint32 questId, const Quest* quest)
     data = do_quest;
 }
 
+void NewRpgInfo::ChangeToDoCraft()
+{
+    startT = getMSTime();
+    data = DoCraft{};
+}
+
 void NewRpgInfo::ChangeToTravelFlight(uint32 flightMasterEntry, WorldPosition flightMasterPos, std::vector<uint32> path)
 {
     startT = getMSTime();
@@ -98,6 +104,7 @@ NewRpgStatus NewRpgInfo::GetStatus()
         if constexpr (std::is_same_v<T, WanderRandom>) return RPG_WANDER_RANDOM;
         if constexpr (std::is_same_v<T, Rest>) return RPG_REST;
         if constexpr (std::is_same_v<T, DoQuest>) return RPG_DO_QUEST;
+        if constexpr (std::is_same_v<T, DoCraft>) return RPG_DO_CRAFT;
         if constexpr (std::is_same_v<T, TravelFlight>) return RPG_TRAVEL_FLIGHT;
         if constexpr (std::is_same_v<T, OutdoorPvP>) return RPG_OUTDOOR_PVP;
         return RPG_IDLE;
@@ -154,6 +161,12 @@ std::string NewRpgInfo::ToString()
             out << "\npoiPos: " << arg.pos.GetMapId() << " " << arg.pos.GetPositionX() << " "
                 << arg.pos.GetPositionY() << " " << arg.pos.GetPositionZ();
             out << "\nlastReachPOI: " << (arg.lastReachPOI ? GetMSTimeDiffToNow(arg.lastReachPOI) : 0);
+        }
+        else if constexpr (std::is_same_v<T, DoCraft>)
+        {
+            out << "DO_CRAFT";
+            out << "\ncraftedCount: " << arg.craftedCount;
+            out << "\nlastCraft: " << startT;
         }
         else if constexpr (std::is_same_v<T, TravelFlight>)
         {

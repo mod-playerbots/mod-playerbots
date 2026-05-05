@@ -4,6 +4,7 @@ This file documents the currently wired RPG behavior in `mod-playerbots`, includ
 
 - legacy `rpg`
 - `new rpg`
+- public crafting request replies in chat
 - shared systems such as travel, combat, and loot
 - legacy side branches that exist in code but are not fully wired into `RpgStrategy`
 
@@ -29,6 +30,7 @@ flowchart TB
         S6[Loot actions]
         S7[Possible target values for npc go and friendly player]
         S8[Quest vendor trainer taxi and gossip systems]
+        S9[Chat routing and reply systems]
     end
 
     subgraph LEG[Legacy rpg flow]
@@ -116,6 +118,28 @@ flowchart TB
         LX6 -.-> LX7
     end
 
+    subgraph PUB[Public crafting request flow]
+        P1[Player posts linked item request in General or Trade] --> P2[Playerbots chat hook receives channel message]
+        P2 --> P3[Pass channel name to RandomPlayerbotMgr HandleCommand]
+        P3 --> P4{Crafting replies enabled}
+        P4 -- no --> P99[Fall back to normal channel handling]
+        P4 -- yes --> P5{Message contains linked item and craft or make keyword}
+        P5 -- no --> P99
+        P5 -- yes --> P6[Iterate online random bots in same channel]
+        P6 --> P7[Reject bots not resolved to General or Trade reply source]
+        P7 --> P8[Build craft reply data from learned recipes and supported professions]
+        P8 --> P9[Validate profession recipe and required skill]
+        P9 --> P10[Calculate required available and missing reagents]
+        P10 --> P11[Pick one best-fit bot]
+        P11 --> P12{Per player and item cooldown active}
+        P12 -- yes --> P98[Suppress duplicate whisper]
+        P12 -- no --> P13[Format reply with profession skill fee and mats status]
+        P13 --> P14[Selected bot whispers player]
+        P14 --> P15[Update last said chat cooldown]
+        P5 --> P16[Generic chat reply path notices craft request]
+        P16 --> P17[Suppress normal social chatter for valid craft requests]
+    end
+
     subgraph NEW[New rpg flow]
         N1[Default action new rpg status update] --> N2{Current rpg info status}
         N2 -- idle --> N3[Random change status]
@@ -132,6 +156,7 @@ flowchart TB
         N6 --> N13[Farming]
         N6 --> N14[Rest]
         N6 --> N15[Outdoor pvp]
+        N6 --> N17[Do craft]
 
         N7 --> N20[Store grind position]
         N8 --> N21[Store camp position]
@@ -142,6 +167,7 @@ flowchart TB
         N13 --> N26[Store farming position and gather state]
         N14 --> N27[Sit and idle]
         N15 --> N28[Store outdoor pvp objective state]
+        N17 --> N29[Store craft work state]
 
         N20 --> NT1[Go grind status action]
         N21 --> NT2[Go camp status action]
@@ -151,6 +177,7 @@ flowchart TB
         N25 --> NT6[Travel flight status action]
         N26 --> NT7[Farming status action]
         N28 --> NT8[Outdoor pvp status action]
+        N29 --> NT9[Do craft status action]
 
         NT1 --> NA1[Quest giver check then move far to grind spot]
         NT2 --> NA2[Quest giver check then move far to camp]
@@ -160,6 +187,7 @@ flowchart TB
         NT6 --> NA6[Move to flight master activate taxi and wait for landing]
         NT7 --> NA7{Tracked gather node}
         NT8 --> NA8[Choose and patrol outdoor pvp capture point]
+        NT9 --> NA16[Learn random recipe then craft enchant or disenchant if useful]
 
         NA7 -- yes --> NA9[Queue node into available loot and loot target]
         NA9 --> NA10[Move to node if needed]
@@ -188,6 +216,8 @@ flowchart TB
         NX8 -- yes --> N16
         N2 -- outdoor pvp --> NX9{No valid objective or invalid zone}
         NX9 -- yes --> N16
+        N2 -- do craft --> NX10{No craft work left or expired}
+        NX10 -- yes --> N16
         N16 --> N1
     end
 
@@ -198,6 +228,7 @@ flowchart TB
         X4[New rpg quest and farming reuse normal combat and loot execution]
         X5[Grind target value is farming aware in farming status]
         X6[Farming combat priority becomes skinnable mobs first and cloth humanoids second]
+        X7[Legacy Rpg craft is still unwired but new rpg do craft and public crafting replies are live]
     end
 
     L4 --> S7
@@ -208,6 +239,8 @@ flowchart TB
     L32 --> S8
     L33 --> S8
     L34 --> S8
+    P2 --> S9
+    P8 --> S9
     N25 --> S8
     NA5 --> S2
     NA9 --> S4
@@ -226,6 +259,8 @@ flowchart TB
     X4 --> S4
     X4 --> S5
     X4 --> S6
+    LX3 --> X7
+    X7 --> P3
 
     A4 --> N1
     A5 --> L1
@@ -235,5 +270,9 @@ flowchart TB
 
 - The **legacy `rpg`** system is target-centric: choose a target, move to it, then choose a target-specific RPG sub-action.
 - The **`new rpg`** system is state-centric: choose a state, store state in `rpgInfo`, then run the action attached to that state.
+- The **public crafting reply** system is chat-centric: a player posts a linked item request in General or Trade, `RandomPlayerbotMgr` evaluates online bots, then exactly one best-fit crafter whispers back.
 - `RPG_FARMING` is distinct from legacy grind logic, but it still reuses shared combat and loot systems.
-- Several legacy RPG actions exist in code but are **not currently wired into `RpgStrategy::InitTriggers`**.
+- Public crafting replies are gated by `AiPlayerbot.EnableCraftingReplies` and rate-limited by `AiPlayerbot.CraftingReplyCooldown`.
+- `SetCraftAction` is now shared infrastructure: it still powers direct craft setup, but it also parses public craft requests, validates recipes and profession skill, and formats the reply text.
+- `ChatReplyAction` suppresses generic chatter on valid craft requests so the public whisper path does not compete with normal social replies.
+- Several legacy RPG actions exist in code but are **not currently wired into `RpgStrategy::InitTriggers`**. That still includes legacy `Rpg craft`, which is separate from the live public crafting-request reply path.

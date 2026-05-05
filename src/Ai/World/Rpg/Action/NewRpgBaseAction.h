@@ -2,6 +2,7 @@
 #define _PLAYERBOT_NEWRPGBASEACTION_H
 
 #include "Duration.h"
+#include "CastCustomSpellAction.h"
 #include "LastMovementValue.h"
 #include "MovementActions.h"
 #include "NewRpgInfo.h"
@@ -57,6 +58,9 @@ protected:
     bool SelectRandomFlightTaxiNode(uint32& flightMasterEntry, WorldPosition& flightMasterPos, std::vector<uint32>& path);
     bool RandomChangeStatus(std::vector<NewRpgStatus> candidateStatus);
     bool CheckRpgStatusAvailable(NewRpgStatus status);
+    bool CanCraftSomething();
+    bool CanEnchantSomething();
+    bool CanDisenchantSomething();
 
 protected:
     /* FOR MOVE FAR */

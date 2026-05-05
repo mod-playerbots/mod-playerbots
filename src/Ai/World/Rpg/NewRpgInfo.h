@@ -54,6 +54,11 @@ struct NewRpgInfo
         std::vector<uint32> path;
         bool inFlight{false};
     };
+    // RPG_DO_CRAFT
+    struct DoCraft
+    {
+        uint32 craftedCount{0};
+    };
     // RPG_REST
     struct Rest
     {
@@ -84,6 +89,7 @@ struct NewRpgInfo
         WanderNpc,
         WanderRandom,
         DoQuest,
+        DoCraft,
         Rest,
         TravelFlight,
         OutdoorPvP
@@ -97,6 +103,7 @@ struct NewRpgInfo
     void ChangeToWanderNpc();
     void ChangeToWanderRandom();
     void ChangeToDoQuest(uint32 questId, const Quest* quest);
+    void ChangeToDoCraft();
     void ChangeToTravelFlight(uint32 flightMasterEntry, WorldPosition flightMasterPos, std::vector<uint32> path);
     void ChangeToOutdoorPvp(ObjectGuid::LowType capturePointSpawnId = 0);
     void ChangeToRest();

@@ -1070,6 +1070,7 @@ AiPlayerbot.RpgStatusProbWeight.WanderNpc = 20
 AiPlayerbot.RpgStatusProbWeight.GoGrind = 15
 AiPlayerbot.RpgStatusProbWeight.GoCamp = 10
 AiPlayerbot.RpgStatusProbWeight.DoQuest = 60
+AiPlayerbot.RpgStatusProbWeight.DoCraft = 10
 AiPlayerbot.RpgStatusProbWeight.TravelFlight = 15
 AiPlayerbot.RpgStatusProbWeight.Rest = 5
 AiPlayerbot.RpgStatusProbWeight.OutdoorPvp = 10
