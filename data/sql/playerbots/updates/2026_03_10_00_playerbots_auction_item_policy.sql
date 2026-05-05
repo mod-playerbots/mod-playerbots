@@ -13,4 +13,4 @@ CREATE TABLE IF NOT EXISTS `playerbots_auction_item_policy` (
     `undercut_chance` tinyint unsigned NOT NULL DEFAULT 15,
     `market_price_weight_pct` smallint unsigned NOT NULL DEFAULT 75,
     PRIMARY KEY (`item_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

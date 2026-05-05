@@ -10,4 +10,4 @@ CREATE TABLE IF NOT EXISTS `playerbots_auction_price_cache` (
     `samples`    varchar(3200) NOT NULL DEFAULT '',
     PRIMARY KEY (`item_entry`, `ah_faction`),
     KEY `idx_updated_at` (`updated_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
