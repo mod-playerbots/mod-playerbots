@@ -49,7 +49,7 @@ PullStrategy* PullStrategy::Get(PlayerbotAI* botAI)
 
 Unit* PullStrategy::GetTarget() const
 {
-    ObjectGuid const guid = botAI->GetAiObjectContext()->GetValue<ObjectGuid>("pull target")->Get();
+    ObjectGuid const guid = botAI->GetAiObjectContext()->GetValue<ObjectGuid>("pull strategy target")->Get();
     if (guid.IsEmpty())
         return nullptr;
 
@@ -66,7 +66,7 @@ bool PullStrategy::HasTarget() const { return GetTarget() != nullptr; }
 
 void PullStrategy::SetTarget(Unit* target)
 {
-    botAI->GetAiObjectContext()->GetValue<ObjectGuid>("pull target")->Set(target ? target->GetGUID() : ObjectGuid::Empty);
+    botAI->GetAiObjectContext()->GetValue<ObjectGuid>("pull strategy target")->Set(target ? target->GetGUID() : ObjectGuid::Empty);
 }
 
 std::string PullStrategy::GetPullActionName() const
