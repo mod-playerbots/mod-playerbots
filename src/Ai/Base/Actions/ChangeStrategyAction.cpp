@@ -26,6 +26,10 @@ bool ChangeCombatStrategyAction::Execute(Event event)
                 case '~':
                     PlayerbotRepository::instance().Save(botAI);
                     break;
+                case '!':
+                    botAI->SelectiveResetStrategies(BOT_STATE_COMBAT);
+                    PlayerbotRepository::instance().Save(botAI);
+                    break;
                 case '?':
                     break;
             }
@@ -62,6 +66,10 @@ bool ChangeNonCombatStrategyAction::Execute(Event event)
                 case '+':
                 case '-':
                 case '~':
+                    PlayerbotRepository::instance().Save(botAI);
+                    break;
+                case '!':
+                    botAI->SelectiveResetStrategies(BOT_STATE_NON_COMBAT);
                     PlayerbotRepository::instance().Save(botAI);
                     break;
                 case '?':

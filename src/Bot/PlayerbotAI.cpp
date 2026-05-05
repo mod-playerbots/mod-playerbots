@@ -1573,6 +1573,27 @@ void PlayerbotAI::ClearStrategies(BotState type)
     e->removeAllStrategies();
 }
 
+// Resets only the combat or non-combat engine: wipe strategies, repopulate with class/spec defaults,
+// re-apply current map's instance strategy (if any), and call Init() to rebuild trigger/action lists.
+void PlayerbotAI::SelectiveResetStrategies(BotState type)
+{
+    Engine* e = engines[type];
+    if (!e)
+        return;
+
+    e->removeAllStrategies();
+
+    if (type == BOT_STATE_COMBAT)
+        AiFactory::AddDefaultCombatStrategies(bot, this, e);
+    else if (type == BOT_STATE_NON_COMBAT)
+        AiFactory::AddDefaultNonCombatStrategies(bot, this, e);
+
+    if (sPlayerbotAIConfig.applyInstanceStrategies)
+        ApplyInstanceStrategies(bot->GetMapId());
+
+    e->Init();
+}
+
 std::vector<std::string> PlayerbotAI::GetStrategies(BotState type)
 {
     Engine* e = engines[type];
