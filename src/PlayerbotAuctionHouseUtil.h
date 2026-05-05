@@ -329,9 +329,9 @@ namespace BotAuctionUtils
         packet << uint8(AUCTION_SORT_RARITY) << uint8(1);
         packet << uint8(AUCTION_SORT_MINLEVEL) << uint8(1);
 
-        auto packet = std::make_unique<AuctionPacketOperation>(
+        auto opPacket = std::make_unique<AuctionPacketOperation>(
             bot->GetGUID(), auctioneer->GetGUID(), std::move(packet));
-        PlayerbotWorldThreadProcessor::instance().QueueOperation(std::move(packet));
+        PlayerbotWorldThreadProcessor::instance().QueueOperation(std::move(opPacket));
 
         LOG_DEBUG("playerbots", "[AH] Bot {} sent AH search for slot {} (invType={}, level={}-{})",
                   bot->GetName(), equipSlot, inventoryType, levelMin, levelMax);
