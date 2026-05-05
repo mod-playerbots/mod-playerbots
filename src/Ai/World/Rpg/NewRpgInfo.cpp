@@ -6,7 +6,7 @@
 
 void NewRpgInfo::ChangeToGoGrind(WorldPosition pos)
 {
-    Reset();
+    startT = getMSTime();
     data = GoGrind{pos};
 }
 
@@ -23,37 +23,37 @@ void NewRpgInfo::ChangeToGoCity(std::vector<CityTask> taskList)
 
 void NewRpgInfo::ChangeToGoCamp(WorldPosition pos)
 {
-    Reset();
+    startT = getMSTime();
     data = GoCamp{pos};
 }
 
 void NewRpgInfo::ChangeToWanderNpc()
 {
-    Reset();
+    startT = getMSTime();
     data = WanderNpc{};
 }
 
 void NewRpgInfo::ChangeToWanderRandom()
 {
-    Reset();
+    startT = getMSTime();
     data = WanderRandom{};
 }
 
 void NewRpgInfo::ChangeToDoQuest(uint32 questId, const Quest* quest)
 {
-    Reset();
+    startT = getMSTime();
     DoQuest do_quest;
     do_quest.questId = questId;
     do_quest.quest = quest;
     data = do_quest;
 }
 
-void NewRpgInfo::ChangeToTravelFlight(uint32 flightMasterEntry, WorldPosition flightMasterPos, std::vector<uint32> path)
+void NewRpgInfo::ChangeToTravelFlight(ObjectGuid fromFlightMasterGuid, WorldPosition fromPos, std::vector<uint32> path)
 {
-    Reset();
+    startT = getMSTime();
     TravelFlight flight;
-    flight.flightMasterEntry = flightMasterEntry;
-    flight.flightMasterPos = flightMasterPos;
+    flight.fromFlightMasterGuid = fromFlightMasterGuid;
+    flight.fromPos = fromPos;
     flight.path = std::move(path);
     flight.inFlight = false;
     data = flight;
@@ -69,13 +69,13 @@ void NewRpgInfo::ChangeToOutdoorPvp(ObjectGuid::LowType capturePointSpawnId)
 
 void NewRpgInfo::ChangeToRest()
 {
-    Reset();
+    startT = getMSTime();
     data = Rest{};
 }
 
 void NewRpgInfo::ChangeToIdle()
 {
-    Reset();
+    startT = getMSTime();
     data = Idle{};
 }
 
@@ -88,7 +88,6 @@ void NewRpgInfo::Reset()
 {
     data = Idle{};
     startT = getMSTime();
-    ClearTravel();
 }
 
 void NewRpgInfo::SetMoveFarTo(WorldPosition pos)
@@ -171,7 +170,9 @@ std::string NewRpgInfo::ToString()
         else if constexpr (std::is_same_v<T, TravelFlight>)
         {
             out << "TRAVEL_FLIGHT";
-            out << "\nflightMasterEntry: " << arg.flightMasterEntry;
+            out << "\nfromFlightMaster: " << arg.fromFlightMasterGuid.GetEntry();
+            out << "\nfromPos: " << arg.fromPos.GetPositionX() << " "
+                << arg.fromPos.GetPositionY() << " " << arg.fromPos.GetPositionZ();
             out << "\nfromNode: " << arg.path[0];
             out << "\ntoNode: " << arg.path[arg.path.size() - 1];
             out << "\ninFlight: " << arg.inFlight;

@@ -1061,7 +1061,7 @@ AiPlayerbot.EnableNewRpgStrategy = 1
 # Default: 0 (disabled)
 AiPlayerbot.EnableTravelNodes = 0
 
-# Control probability weights for RPG status of bots. Takes effect only when the status meets its premise.​
+# Control probability weights for RPG status of bots. Takes effect only when the status meets its premise.
 # Sum of weights need not be 100. Set to 0 to disable the status.
 #
 # WanderRandom  (Default: 15  Move randomly nearby to find and kill mobs)

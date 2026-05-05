@@ -8,7 +8,6 @@
 #include "Strategy.h"
 #include "Timer.h"
 #include "TravelMgr.h"
-#include "TravelNode.h"
 
 using NewRpgStatusTransitionProb = std::vector<std::vector<int>>;
 
@@ -50,8 +49,8 @@ struct NewRpgInfo
     // RPG_TRAVEL_FLIGHT
     struct TravelFlight
     {
-        uint32 flightMasterEntry{0};
-        WorldPosition flightMasterPos{};
+        ObjectGuid fromFlightMaster{};
+        WorldPosition fromPos{};
         std::vector<uint32> path;
         bool inFlight{false};
     };
@@ -99,10 +98,7 @@ struct NewRpgInfo
     uint32 stuckTs{0};
     uint32 stuckAttempts{0};
     WorldPosition moveFarPos;
-    // Travel Node System
-    TravelPlan travelPlan;
-    bool HasActiveTravelPlan() const { return travelPlan.IsActive(); }
-    void ClearTravel() { travelPlan.Reset(); }
+    // END MOVE_FAR
 
     using RpgData = std::variant<
         Idle,
@@ -126,7 +122,7 @@ struct NewRpgInfo
     void ChangeToWanderNpc();
     void ChangeToWanderRandom();
     void ChangeToDoQuest(uint32 questId, const Quest* quest);
-    void ChangeToTravelFlight(uint32 flightMasterEntry, WorldPosition flightMasterPos, std::vector<uint32> path);
+    void ChangeToTravelFlight(ObjectGuid fromFlightMasterGuid, WorldPosition fromPos, std::vector<uint32> path);
     void ChangeToOutdoorPvp(ObjectGuid::LowType capturePointSpawnId = 0);
     void ChangeToRest();
     void ChangeToIdle();
