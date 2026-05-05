@@ -254,11 +254,15 @@ void CheckMountStateAction::CompleteDismount(Player* bot)
 
     float const x = bot->GetPositionX();
     float const y = bot->GetPositionY();
-    float groundZ = bot->GetPositionZ();
+    float const startZ = bot->GetPositionZ();
+
+    float groundZ = startZ;
     bot->UpdateAllowedPositionZ(x, y, groundZ);
 
     bot->GetMotionMaster()->MoveFall();
     MovementInfo fallInfo = bot->m_movementInfo;
+    // Need to set the start of the fall, otherwise the fall may start from too high of a Z and kill the bot.
+    bot->SetFallInformation(0, startZ);
     fallInfo.pos.Relocate(x, y, groundZ);
     bot->HandleFall(fallInfo);
     bot->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR);
