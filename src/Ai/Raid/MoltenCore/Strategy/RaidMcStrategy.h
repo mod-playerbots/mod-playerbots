@@ -1,8 +1,6 @@
 #ifndef _PLAYERBOT_RAIDMCSTRATEGY_H
 #define _PLAYERBOT_RAIDMCSTRATEGY_H
 
-#include "AiObjectContext.h"
-#include "Multiplier.h"
 #include "Strategy.h"
 
 class RaidMcStrategy : public Strategy

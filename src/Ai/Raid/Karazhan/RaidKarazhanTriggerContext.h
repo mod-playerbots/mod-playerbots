@@ -2,7 +2,7 @@
 #define _PLAYERBOT_RAIDKARAZHANTRIGGERCONTEXT_H
 
 #include "RaidKarazhanTriggers.h"
-#include "AiObjectContext.h"
+#include "NamedObjectContext.h"
 
 class RaidKarazhanTriggerContext : public NamedObjectContext<Trigger>
 {

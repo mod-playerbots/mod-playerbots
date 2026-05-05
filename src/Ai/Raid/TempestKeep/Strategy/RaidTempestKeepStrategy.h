@@ -2,7 +2,6 @@
 #define _PLAYERBOT_RAIDTEMPESTKEEPSTRATEGY_H_
 
 #include "Strategy.h"
-#include "Multiplier.h"
 
 class RaidTempestKeepStrategy : public Strategy
 {

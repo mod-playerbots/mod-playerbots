@@ -1,7 +1,6 @@
 #ifndef _PLAYERBOT_RAIDICCTRIGGERCONTEXT_H
 #define _PLAYERBOT_RAIDICCTRIGGERCONTEXT_H
 
-#include "AiObjectContext.h"
 #include "NamedObjectContext.h"
 #include "RaidIccTriggers.h"
 
