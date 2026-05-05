@@ -6,7 +6,6 @@
 #ifndef _PLAYERBOT_RAIDULDUARTRIGGERCONTEXT_H
 #define _PLAYERBOT_RAIDULDUARTRIGGERCONTEXT_H
 
-#include "AiObjectContext.h"
 #include "NamedObjectContext.h"
 #include "RaidUlduarTriggers.h"
 #include "BossAuraTriggers.h"
