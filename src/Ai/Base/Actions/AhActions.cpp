@@ -124,11 +124,13 @@ bool AhSellAction::Execute(Event /*event*/)
 
         if (st.status == AhStatus::PendingCheck)
         {
+            // Scan response never arrived. Distinct from a real post failure —
+            // back off for AH_FAILED_BACKOFF_SECONDS, then re-issue the query.
             if (now - st.changedAt > AH_PENDING_CHECK_TIMEOUT_SECONDS)
             {
                 st.status = AhStatus::Failed;
                 st.changedAt = now;
-                st.retryAfter = now + AH_PENDING_CHECK_TIMEOUT_SECONDS;
+                st.retryAfter = now + AH_FAILED_BACKOFF_SECONDS;
             }
             continue;
         }

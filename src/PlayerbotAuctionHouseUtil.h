@@ -24,6 +24,8 @@
 #include "Log.h"
 #include "ObjectGuid.h"
 #include "PlayerbotAIConfig.h"
+#include "PlayerbotOperations.h"
+#include "PlayerbotWorldThreadProcessor.h"
 #include "Player.h"
 #include "RandomPlayerbotMgr.h"
 
@@ -84,6 +86,9 @@ struct MarketSample
 };
 static_assert(sizeof(MarketSample) == 16,
     "MarketSample must be 16 bytes — persisted as packed little-endian on disk.");
+static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
+    "MarketSample blob is packed in host byte order; only little-endian targets are supported. "
+    "Switch to explicit LE byte-by-byte packing in PackHistory/UnpackHistory if porting.");
 
 // Rolling buffer of up to 100 MarketSamples per (item, faction). Newest sample
 // sits at `(head - 1 + kCapacity) % kCapacity`. `dirty` means there are
@@ -243,13 +248,15 @@ namespace BotAuctionUtils
         if (!IsAuctionableReagent(item->GetTemplate()))
             return 1;
 
-        // Reagents: random stack between the policy floor and the
-        // available-stack ceiling (inventory + WoW stack cap + policy cap).
-        uint32 maxStackCount = std::min<uint32>(itemCount, item->GetMaxStackCount());
-        if (policy.maxStackCount)
-            maxStackCount = std::min<uint32>(maxStackCount, policy.maxStackCount);
+        uint32 const naturalUnit = std::max<uint32>(1, sPlayerbotAIConfig.auctionHouseMaterialStackSize);
+        uint32 const inventoryCap = std::min<uint32>(itemCount, item->GetMaxStackCount());
 
-        uint32 minStackCount = policy.minStackCount ? std::min<uint32>(policy.minStackCount, maxStackCount) : 1;
+        uint32 maxStackCount = policy.maxStackCount ? policy.maxStackCount : naturalUnit;
+        maxStackCount = std::min<uint32>(maxStackCount, inventoryCap);
+
+        uint32 minStackCount = policy.minStackCount ? policy.minStackCount : naturalUnit;
+        minStackCount = std::min<uint32>(minStackCount, maxStackCount);
+
         if (maxStackCount <= minStackCount)
             return maxStackCount;
 
@@ -322,7 +329,9 @@ namespace BotAuctionUtils
         packet << uint8(AUCTION_SORT_RARITY) << uint8(1);
         packet << uint8(AUCTION_SORT_MINLEVEL) << uint8(1);
 
-        bot->GetSession()->HandleAuctionListItems(packet);
+        auto packet = std::make_unique<AuctionPacketOperation>(
+            bot->GetGUID(), auctioneer->GetGUID(), std::move(packet));
+        PlayerbotWorldThreadProcessor::instance().QueueOperation(std::move(packet));
 
         LOG_DEBUG("playerbots", "[AH] Bot {} sent AH search for slot {} (invType={}, level={}-{})",
                   bot->GetName(), equipSlot, inventoryType, levelMin, levelMax);

@@ -603,7 +603,7 @@ bool NewRpgGoCityAction::ExecuteAuctioneerTask(NewRpgInfo::GoCity& data)
             {
                 ahItemState.status = AhStatus::Failed;
                 ahItemState.changedAt = now;
-                ahItemState.retryAfter = now + AH_BUY_SLOT_COOLDOWN_SECONDS;
+                ahItemState.retryAfter = now + AH_FAILED_BACKOFF_SECONDS;
             }
             else
                 pendingInFlight = true;

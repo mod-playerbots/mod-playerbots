@@ -5,6 +5,8 @@
 
 #include "MaintenanceValues.h"
 
+#include <unordered_set>
+
 #include "Bag.h"
 #include "BudgetValues.h"
 #include "ItemUsageValue.h"

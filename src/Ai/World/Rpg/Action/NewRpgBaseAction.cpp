@@ -1350,7 +1350,6 @@ bool NewRpgBaseAction::BuildCityTasks(std::vector<NewRpgInfo::CityTask>& outTask
     NewRpgInfo::CityTask visit;
     visit.kind = NewRpgInfo::CityTaskType::Visit;
     visit.location = cityPosition;
-    visit.requiresCity = false;
     outTaskList.insert(outTaskList.begin(), std::move(visit));
 
     return true;

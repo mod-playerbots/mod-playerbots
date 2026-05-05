@@ -249,31 +249,11 @@ Event RpgEndQuestAction::ActionEvent(Event /*event*/)
 
 std::string const RpgBuyAction::ActionName() { return "buy"; }
 
-Event RpgBuyAction::ActionEvent(Event /*event*/)
-{
-    GuidPosition guidP = rpg->guidP();
-    if (sPlayerbotAIConfig.enableAuctionHouseBotting && guidP.HasNpcFlag(UNIT_NPC_FLAG_AUCTIONEER))
-    {
-        LOG_DEBUG("playerbots", "{}: selected RPG auction buy action", bot->GetName());
-        return Event("rpg action", "auction");
-    }
-
-    return Event("rpg action", "vendor");
-}
+Event RpgBuyAction::ActionEvent(Event /*event*/) { return Event("rpg action", "vendor"); }
 
 std::string const RpgSellAction::ActionName() { return "sell"; }
 
-Event RpgSellAction::ActionEvent(Event /*event*/)
-{
-    GuidPosition guidP = rpg->guidP();
-    if (sPlayerbotAIConfig.enableAuctionHouseBotting && guidP.HasNpcFlag(UNIT_NPC_FLAG_AUCTIONEER))
-    {
-        LOG_DEBUG("playerbots", "{}: selected RPG auction sell action", bot->GetName());
-        return Event("rpg action", "auction");
-    }
-
-    return Event("rpg action", "vendor");
-}
+Event RpgSellAction::ActionEvent(Event /*event*/) { return Event("rpg action", "vendor"); }
 
 std::string const RpgRepairAction::ActionName() { return "repair"; }
 

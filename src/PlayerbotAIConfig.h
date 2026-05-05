@@ -146,7 +146,6 @@ public:
     uint32 randomBotsPerInterval;
     uint32 minRandomBotsPriceChangeInterval, maxRandomBotsPriceChangeInterval;
     bool enableAuctionHouseBotting;
-    bool auctionHouseRandomStackSize;
     uint32 auctionHouseMinBidPrice;
     uint32 auctionHouseUndercutChance;
     uint32 auctionHouseUndercutMinPct;

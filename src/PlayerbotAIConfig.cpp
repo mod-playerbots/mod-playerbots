@@ -224,11 +224,10 @@ bool PlayerbotAIConfig::Initialize()
     maxRandomBotsPriceChangeInterval =
         sConfigMgr->GetOption<int32>("AiPlayerbot.MaxRandomBotsPriceChangeInterval", 48 * HOUR);
     enableAuctionHouseBotting = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableAuctionHouseBotting", false);
-    auctionHouseRandomStackSize = sConfigMgr->GetOption<bool>("AiPlayerbot.AuctionHouseRandomStackSize", true);
     auctionHouseMinBidPrice = sConfigMgr->GetOption<uint32>("AiPlayerbot.AuctionHouseMinBidPrice", 100);
     auctionHouseUndercutChance = sConfigMgr->GetOption<uint32>("AiPlayerbot.AuctionHouseUndercutChance", 15);
-    auctionHouseUndercutMinPct = sConfigMgr->GetOption<uint32>("AiPlayerbot.AuctionHouseUndercutMinPct", 110);
-    auctionHouseUndercutMaxPct = sConfigMgr->GetOption<uint32>("AiPlayerbot.AuctionHouseUndercutMaxPct", 200);
+    auctionHouseUndercutMinPct = sConfigMgr->GetOption<uint32>("AiPlayerbot.AuctionHouseUndercutMinPct", 102);
+    auctionHouseUndercutMaxPct = sConfigMgr->GetOption<uint32>("AiPlayerbot.AuctionHouseUndercutMaxPct", 108);
     auctionHouseBuyoutMinPct = sConfigMgr->GetOption<uint32>("AiPlayerbot.AuctionHouseBuyoutMinPct", 110);
     auctionHouseBuyoutMaxPct = sConfigMgr->GetOption<uint32>("AiPlayerbot.AuctionHouseBuyoutMaxPct", 133);
     auctionHouseMaterialStackSize = sConfigMgr->GetOption<uint32>("AiPlayerbot.AuctionHouseMaterialStackSize", 20);

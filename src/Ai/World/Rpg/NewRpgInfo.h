@@ -49,7 +49,7 @@ struct NewRpgInfo
     // RPG_TRAVEL_FLIGHT
     struct TravelFlight
     {
-        ObjectGuid fromFlightMaster{};
+        ObjectGuid fromFlightMasterGuid{};
         WorldPosition fromPos{};
         std::vector<uint32> path;
         bool inFlight{false};
@@ -80,7 +80,6 @@ struct NewRpgInfo
         CityTaskType kind{CityTaskType::Visit};
         ObjectGuid npc{};
         WorldPosition location{};
-        bool requiresCity{true};
     };
 
     struct GoCity

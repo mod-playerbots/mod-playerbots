@@ -1235,12 +1235,8 @@ AiPlayerbot.ZoneBracket.4197 = 79,80
 # Default: 0 (disabled)
 AiPlayerbot.EnableAuctionHouseBotting = 0
 
-# Posting settings
-# RandomStackSize = 1 posts a random partial stack when possible, 0 posts the full stack
 # Built-in AH exclusions: gray items, projectile ammo, spell reagents,
 # and white non-material items. White materials can still be posted.
-# Default: 1
-AiPlayerbot.AuctionHouseRandomStackSize = 1
 
 # Comma-separated item IDs that bots must never post to the auction house.
 # Useful for class essentials (e.g. ammo) you want bots to keep.
@@ -1272,21 +1268,32 @@ AiPlayerbot.AuctionHouseMinBidPrice = 100
 # Pricing variance
 # UndercutChance: percent chance to undercut the base item valuation before computing bid and buyout
 # UndercutMinPct / UndercutMaxPct: when undercut triggers, base value is divided by a random pct in this range
-# Default: 15, 110, 200
+# (e.g. 102 = ~2% off, 108 = ~7% off — mirrors typical player undercut behavior)
+# Default: 15, 102, 108
 AiPlayerbot.AuctionHouseUndercutChance = 15
-AiPlayerbot.AuctionHouseUndercutMinPct = 110
-AiPlayerbot.AuctionHouseUndercutMaxPct = 200
+AiPlayerbot.AuctionHouseUndercutMinPct = 102
+AiPlayerbot.AuctionHouseUndercutMaxPct = 108
 
 # Buyout is derived from the opening bid using a random percent in this range
 # Default: 110, 133
 AiPlayerbot.AuctionHouseBuyoutMinPct = 110
 AiPlayerbot.AuctionHouseBuyoutMaxPct = 133
 
-# Threshold for "meaningful holding" of a tradeable material. Bots keep up
-# to this many of a skill material before listing surplus on the AH, and
-# list materials in stacks of at least this size. 20 = one standard stack.
+# Natural stack unit for tradeable materials. Drives two behaviors:
+#   - "Meaningful holding": bots keep up to this many of a skill material
+#     before listing surplus on the AH.
+#   - Default auction stack size: when no per-item override exists in
+#     playerbots_auction_item_policy, materials post in stacks of exactly
+#     this size (clamped to inventory + WoW per-stack cap).
+# 20 = one classic stack.
 # Default: 20
 AiPlayerbot.AuctionHouseMaterialStackSize = 20
+
+# Freshness window for the AH price cache, in seconds. Within this window,
+# pricing reuses the most recent observation; afterwards a re-query is
+# triggered before posting. Lower = more accurate, more AH traffic.
+# Default: 600 (10 minutes)
+AiPlayerbot.AuctionPriceCacheTtlSeconds = 600
 
 #
 #
