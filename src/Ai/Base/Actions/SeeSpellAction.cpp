@@ -15,7 +15,7 @@
 
 std::set<uint32> const FISHING_SPELLS = {7620, 7731, 7732, 18248, 33095, 51294};
 
-Creature* SeeSpellAction::CreateWps(Player* wpOwner, float x, float y, float z, float o, uint32 entry, Creature* lastWp,
+Creature* SeeSpellAction::CreateWps(Player* wpOwner, float x, float y, float z, float o, uint32 entry, Creature* /*lastWp*/,
                                     bool important)
 {
     float dist = wpOwner->GetDistance(x, y, z);

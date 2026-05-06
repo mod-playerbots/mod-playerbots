@@ -11,7 +11,7 @@ public:
     ChatCommandActionNodeFactoryInternal() { creators["tank attack chat shortcut"] = &tank_attack_chat_shortcut; }
 
 private:
-    static ActionNode* tank_attack_chat_shortcut(PlayerbotAI* botAI)
+    static ActionNode* tank_attack_chat_shortcut(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode("tank attack chat shortcut",
                               /*P*/ {},
@@ -81,6 +81,12 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
         new TriggerNode("attackers", { NextAction("tell attackers", relevance) }));
     triggers.push_back(
         new TriggerNode("target", { NextAction("tell target", relevance) }));
+    triggers.push_back(
+        new TriggerNode("pull", { NextAction("pull my target", relevance) }));
+    triggers.push_back(
+        new TriggerNode("pull back", { NextAction("pull my target", relevance) }));
+    triggers.push_back(
+        new TriggerNode("pull rti", { NextAction("pull rti target", relevance) }));
     triggers.push_back(
         new TriggerNode("ready", { NextAction("ready check", relevance) }));
     triggers.push_back(

@@ -17,7 +17,7 @@ void CollisionStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode("collision", { NextAction("move out of collision", 2.0f) }));
 }
 
-void MountStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void MountStrategy::InitTriggers(std::vector<TriggerNode*>& /*triggers*/)
 {
 }
 

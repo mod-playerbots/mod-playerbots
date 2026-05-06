@@ -559,7 +559,7 @@ bool IccBqlVampiricBiteTrigger::IsActive()
 bool IccValkyreSpearTrigger::IsActive()
 {
     // Check if there's a spear nearby
-    if (Creature* spear = bot->FindNearestCreature(NPC_SPEAR, 100.0f))
+    if (bot->FindNearestCreature(NPC_SPEAR, 100.0f))
         return true;
 
     return false;

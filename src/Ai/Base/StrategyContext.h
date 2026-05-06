@@ -95,6 +95,7 @@ public:
         creators["sit"] = &StrategyContext::sit;
         creators["mark rti"] = &StrategyContext::mark_rti;
         creators["adds"] = &StrategyContext::possible_adds;
+        creators["pull back"] = &StrategyContext::pull_back;
         creators["close"] = &StrategyContext::close;
         creators["ranged"] = &StrategyContext::ranged;
         creators["behind"] = &StrategyContext::behind;
@@ -171,6 +172,7 @@ private:
     static Strategy* map_full(PlayerbotAI* botAI) { return new MapFullStrategy(botAI); }
     static Strategy* sit(PlayerbotAI* botAI) { return new SitStrategy(botAI); }
     static Strategy* possible_adds(PlayerbotAI* botAI) { return new PossibleAddsStrategy(botAI); }
+    static Strategy* pull_back(PlayerbotAI* botAI) { return new PullBackStrategy(botAI); }
     static Strategy* mount(PlayerbotAI* botAI) { return new MountStrategy(botAI); }
     static Strategy* bg(PlayerbotAI* botAI) { return new BGStrategy(botAI); }
     static Strategy* battleground(PlayerbotAI* botAI) { return new BattlegroundStrategy(botAI); }

@@ -57,7 +57,7 @@ float HighKingMaulgarDisableArcaneShotOnKroshMultiplier::GetValue(Action* action
 
 float HighKingMaulgarDisableMageTankAOEMultiplier::GetValue(Action* action)
 {
-    if (IsKroshMageTank(botAI, bot) &&
+    if (IsKroshMageTank(bot) &&
         (dynamic_cast<CastFrostNovaAction*>(action) || dynamic_cast<CastBlizzardAction*>(action) ||
         dynamic_cast<CastConeOfColdAction*>(action) || dynamic_cast<CastFlamestrikeAction*>(action) ||
         dynamic_cast<CastDragonsBreathAction*>(action) || dynamic_cast<CastBlastWaveAction*>(action)))

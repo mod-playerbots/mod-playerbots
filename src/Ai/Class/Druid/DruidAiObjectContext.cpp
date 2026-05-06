@@ -19,6 +19,7 @@
 #include "MeleeDruidStrategy.h"
 #include "OffhealDruidCatStrategy.h"
 #include "Playerbots.h"
+#include "DruidPullStrategy.h"
 
 class DruidStrategyFactoryInternal : public NamedObjectContext<Strategy>
 {
@@ -26,6 +27,7 @@ public:
     DruidStrategyFactoryInternal()
     {
         creators["nc"] = &DruidStrategyFactoryInternal::nc;
+        creators["pull"] = &DruidStrategyFactoryInternal::pull;
         creators["cat aoe"] = &DruidStrategyFactoryInternal::cat_aoe;
         creators["caster aoe"] = &DruidStrategyFactoryInternal::caster_aoe;
         creators["caster debuff"] = &DruidStrategyFactoryInternal::caster_debuff;
@@ -40,6 +42,7 @@ public:
 
 private:
     static Strategy* nc(PlayerbotAI* botAI) { return new GenericDruidNonCombatStrategy(botAI); }
+    static Strategy* pull(PlayerbotAI* botAI) { return new DruidPullStrategy(botAI); }
     static Strategy* cat_aoe(PlayerbotAI* botAI) { return new CatAoeDruidStrategy(botAI); }
     static Strategy* caster_aoe(PlayerbotAI* botAI) { return new CasterDruidAoeStrategy(botAI); }
     static Strategy* caster_debuff(PlayerbotAI* botAI) { return new CasterDruidDebuffStrategy(botAI); }

@@ -54,7 +54,7 @@ void PaladinCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
                         { NextAction("cleanse magic on party", ACTION_DISPEL + 1) }));
 }
 
-void PaladinBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void PaladinBoostStrategy::InitTriggers(std::vector<TriggerNode*>& /*triggers*/)
 {
 
     // triggers.push_back(new TriggerNode("divine favor", { NextAction("divine favor",

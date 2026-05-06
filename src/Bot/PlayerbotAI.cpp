@@ -266,77 +266,104 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     if (!CanUpdateAI())
         return;
 
-    // Handle the current spell
+    // Handle a spell that is still in its preparing phase (including channeled spells).
     Spell* currentSpell = bot->GetCurrentSpell(CURRENT_GENERIC_SPELL);
     if (!currentSpell)
         currentSpell = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
 
     if (currentSpell)
     {
-        const SpellInfo* spellInfo = currentSpell->GetSpellInfo();
-        if (spellInfo && currentSpell->getState() == SPELL_STATE_PREPARING)
+        if (currentSpell->getState() == SPELL_STATE_PREPARING)
         {
-            Unit* spellTarget = currentSpell->m_targets.GetUnitTarget();
-            // Interrupt if target is dead or spell can't target dead units
-            if (spellTarget && !spellTarget->IsAlive() && !spellInfo->IsAllowingDeadTarget())
+            // Allow external scripts to interrupt a cast in progress
+            if (spellInterruptRequested)
             {
+                spellInterruptRequested = false;
                 InterruptSpell();
                 YieldThread(bot, GetReactDelay());
                 return;
             }
 
-            GameObject* goSpellTarget = currentSpell->m_targets.GetGOTarget();
-
-            if (goSpellTarget && !goSpellTarget->isSpawned())
+            const SpellInfo* spellInfo = currentSpell->GetSpellInfo();
+            if (spellInfo)
             {
-                InterruptSpell();
-                YieldThread(bot, GetReactDelay());
-                return;
-            }
-
-            bool isHeal = false;
-            bool isSingleTarget = true;
-
-            for (uint8 i = 0; i < 3; ++i)
-            {
-                if (!spellInfo->Effects[i].Effect)
-                    continue;
-
-                // Check if spell is a heal
-                if (spellInfo->Effects[i].Effect == SPELL_EFFECT_HEAL ||
-                    spellInfo->Effects[i].Effect == SPELL_EFFECT_HEAL_MAX_HEALTH ||
-                    spellInfo->Effects[i].Effect == SPELL_EFFECT_HEAL_MECHANICAL)
-                    isHeal = true;
-
-                // Check if spell is single-target
-                if ((spellInfo->Effects[i].TargetA.GetTarget() &&
-                     spellInfo->Effects[i].TargetA.GetTarget() != TARGET_UNIT_TARGET_ALLY) ||
-                    (spellInfo->Effects[i].TargetB.GetTarget() &&
-                     spellInfo->Effects[i].TargetB.GetTarget() != TARGET_UNIT_TARGET_ALLY))
+                Unit* spellTarget = currentSpell->m_targets.GetUnitTarget();
+                // Interrupt if target is dead or spell can't target dead units
+                if (spellTarget && !spellTarget->IsAlive() && !spellInfo->IsAllowingDeadTarget())
                 {
-                    isSingleTarget = false;
+                    InterruptSpell();
+                    YieldThread(bot, GetReactDelay());
+                    return;
                 }
-            }
 
-            // Interrupt if target ally has full health (heal by other member)
-            if (isHeal && isSingleTarget && spellTarget && spellTarget->IsFullHealth())
-            {
-                InterruptSpell();
+                GameObject* goSpellTarget = currentSpell->m_targets.GetGOTarget();
+
+                if (goSpellTarget && !goSpellTarget->isSpawned())
+                {
+                    InterruptSpell();
+                    YieldThread(bot, GetReactDelay());
+                    return;
+                }
+
+                bool isHeal = false;
+                bool isSingleTarget = true;
+
+                for (uint8 i = 0; i < 3; ++i)
+                {
+                    if (!spellInfo->Effects[i].Effect)
+                        continue;
+
+                    // Check if spell is a heal
+                    if (spellInfo->Effects[i].Effect == SPELL_EFFECT_HEAL ||
+                        spellInfo->Effects[i].Effect == SPELL_EFFECT_HEAL_MAX_HEALTH ||
+                        spellInfo->Effects[i].Effect == SPELL_EFFECT_HEAL_MECHANICAL)
+                        isHeal = true;
+
+                    // Check if spell is single-target
+                    if ((spellInfo->Effects[i].TargetA.GetTarget() &&
+                         spellInfo->Effects[i].TargetA.GetTarget() != TARGET_UNIT_TARGET_ALLY) ||
+                        (spellInfo->Effects[i].TargetB.GetTarget() &&
+                         spellInfo->Effects[i].TargetB.GetTarget() != TARGET_UNIT_TARGET_ALLY))
+                    {
+                        isSingleTarget = false;
+                    }
+                }
+
+                // Interrupt if target ally has full health (heal by other member)
+                if (isHeal && isSingleTarget && spellTarget && spellTarget->IsFullHealth())
+                {
+                    InterruptSpell();
+                    YieldThread(bot, GetReactDelay());
+                    return;
+                }
+
+                // Ensure bot is facing target if necessary
+                if (spellTarget && !bot->HasInArc(CAST_ANGLE_IN_FRONT, spellTarget) &&
+                    (spellInfo->FacingCasterFlags & SPELL_FACING_FLAG_INFRONT))
+                {
+                    ServerFacade::instance().SetFacingTo(bot, spellTarget);
+                }
+
+                // Wait for spell cast
                 YieldThread(bot, GetReactDelay());
                 return;
             }
+        }
+    }
 
-            // Ensure bot is facing target if necessary
-            if (spellTarget && !bot->HasInArc(CAST_ANGLE_IN_FRONT, spellTarget) &&
-                (spellInfo->FacingCasterFlags & SPELL_FACING_FLAG_INFRONT))
-            {
-                ServerFacade::instance().SetFacingTo(bot, spellTarget);
-            }
-
-            // Wait for spell cast
+    if (spellInterruptRequested)
+    {
+        // At this point the preparing-cast branch above did not consume the request.
+        // Interrupt a current channel if one still exists; otherwise, clear the stale request.
+        if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+        {
+            spellInterruptRequested = false;
+            InterruptSpell();
             YieldThread(bot, GetReactDelay());
             return;
         }
+
+        spellInterruptRequested = false;
     }
 
     // Handle transport check delay
@@ -464,7 +491,7 @@ void PlayerbotAI::UpdateAIInternal([[maybe_unused]] uint32 elapsed, bool minimal
             continue;
         }
 
-        ChatReplyAction::ChatReplyDo(bot, it->m_type, it->m_guid1, it->m_guid2, it->m_msg, it->m_chanName, it->m_name);
+        ChatReplyAction::ChatReplyDo(bot, it->m_type, it->m_guid1, it->m_msg, it->m_chanName, it->m_name);
         it = chatReplies.erase(it);
     }
 
@@ -840,6 +867,7 @@ void PlayerbotAI::Reset(bool full)
     aiObjectContext->GetValue<Unit*>("current target")->Set(nullptr);
     aiObjectContext->GetValue<GuidVector>("prioritized targets")->Reset();
     aiObjectContext->GetValue<ObjectGuid>("pull target")->Set(ObjectGuid::Empty);
+    aiObjectContext->GetValue<ObjectGuid>("pull strategy target")->Set(ObjectGuid::Empty);
     aiObjectContext->GetValue<GuidPosition>("rpg target")->Set(GuidPosition());
     aiObjectContext->GetValue<LootObject>("loot target")->Set(LootObject());
     aiObjectContext->GetValue<uint32>("lfg proposal")->Set(0);
@@ -1449,6 +1477,7 @@ void PlayerbotAI::DoNextAction(bool min)
         aiObjectContext->GetValue<Unit*>("current target")->Set(nullptr);
         aiObjectContext->GetValue<Unit*>("enemy player target")->Set(nullptr);
         aiObjectContext->GetValue<ObjectGuid>("pull target")->Set(ObjectGuid::Empty);
+        aiObjectContext->GetValue<ObjectGuid>("pull strategy target")->Set(ObjectGuid::Empty);
         aiObjectContext->GetValue<LootObject>("loot target")->Set(LootObject());
 
         ChangeEngine(BOT_STATE_DEAD);
@@ -1558,7 +1587,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
     static const std::vector<std::string> allInstanceStrategies =
     {
         "aq20", "bwl", "karazhan", "gruulslair", "icc", "magtheridon", "moltencore",
-        "naxx", "onyxia", "ssc", "tempestkeep", "ulduar", "voa", "wotlk-an", "wotlk-cos",
+        "naxx", "onyxia", "ssc", "tbc-ac", "tempestkeep", "ulduar", "voa", "wotlk-an", "wotlk-cos",
         "wotlk-dtk", "wotlk-eoe", "wotlk-fos", "wotlk-gd", "wotlk-hol", "wotlk-hor",
         "wotlk-hos", "wotlk-nex", "wotlk-occ", "wotlk-ok", "wotlk-os", "wotlk-pos",
         "wotlk-toc", "wotlk-uk", "wotlk-up", "wotlk-vh", "zulaman"
@@ -1598,7 +1627,10 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             strategyName = "ssc";  // Serpentshrine Cavern
             break;
         case 550:
-            strategyName = "tempestkeep";  // Tempest Keep
+            strategyName = "tempestkeep";  // Tempest Keep: The Eye
+            break;
+        case 558:
+            strategyName = "tbc-ac"; // Auchindoun: Auchenai Crypts
             break;
         case 565:
             strategyName = "gruulslair";  // Gruul's Lair
@@ -1776,7 +1808,12 @@ bool PlayerbotAI::ContainsStrategy(StrategyType type)
 
 bool PlayerbotAI::HasStrategy(std::string const name, BotState type) { return engines[type]->HasStrategy(name); }
 
-void PlayerbotAI::ResetStrategies(bool load)
+Strategy* PlayerbotAI::GetStrategy(std::string const name, BotState type)
+{
+    return engines[type] ? engines[type]->GetStrategy(name) : nullptr;
+}
+
+void PlayerbotAI::ResetStrategies(bool /*load*/)
 {
     for (uint8 i = 0; i < BOT_STATE_MAX; i++)
         engines[i]->removeAllStrategies();
@@ -4187,6 +4224,19 @@ void PlayerbotAI::RemoveAura(std::string const name)
     uint32 spellid = aiObjectContext->GetValue<uint32>("spell id", name)->Get();
     if (spellid && HasAura(spellid, bot))
         bot->RemoveAurasDueToSpell(spellid);
+}
+
+void PlayerbotAI::RequestSpellInterrupt()
+{
+    Spell* currentSpell = bot->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    if (currentSpell && currentSpell->getState() == SPELL_STATE_PREPARING)
+    {
+        spellInterruptRequested = true;
+        return;
+    }
+
+    if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+        spellInterruptRequested = true;
 }
 
 bool PlayerbotAI::IsInterruptableSpellCasting(Unit* target, std::string const spell)

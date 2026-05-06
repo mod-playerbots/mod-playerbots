@@ -15,6 +15,6 @@ void WotlkDungeonToCStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 
 }
 
-void WotlkDungeonToCStrategy::InitMultipliers(std::vector<Multiplier*> &multipliers)
+void WotlkDungeonToCStrategy::InitMultipliers(std::vector<Multiplier*> &/*multipliers*/)
 {
 }

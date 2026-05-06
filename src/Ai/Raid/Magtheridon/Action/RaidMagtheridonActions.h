@@ -81,7 +81,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool HandleCubeRelease(Unit* magtheridon, GameObject* cube);
+    bool HandleCubeRelease(Unit* magtheridon);
     bool ShouldActivateCubeLogic(Unit* magtheridon);
     bool HandleWaitingPhase(const MagtheridonHelpers::CubeInfo& cubeInfo);
     bool HandleCubeInteraction(const MagtheridonHelpers::CubeInfo& cubeInfo, GameObject* cube);
