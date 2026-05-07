@@ -124,13 +124,15 @@ bool AhSellAction::Execute(Event /*event*/)
 
         if (st.status == AhStatus::PendingCheck)
         {
-            // Scan response never arrived. Distinct from a real post failure —
-            // back off for AH_FAILED_BACKOFF_SECONDS, then re-issue the query.
+            // Scan response never arrived. Tombstone the cache so the next
+            // pass posts at template price with default purchasing rules
+            // instead of looping back into NoData.
             if (now - st.changedAt > AH_PENDING_CHECK_TIMEOUT_SECONDS)
             {
-                st.status = AhStatus::Failed;
+                sPlayerbotAuctionHouseUtil.StoreMarketSnapshot(
+                    kv.first, auctioneerFaction, PlayerbotAuctionMarketSnapshot{});
+                st.status = AhStatus::Complete;
                 st.changedAt = now;
-                st.retryAfter = now + AH_FAILED_BACKOFF_SECONDS;
             }
             continue;
         }
@@ -156,8 +158,10 @@ bool AhSellAction::Execute(Event /*event*/)
     Item* item = bot->GetItemByEntry(entry);
     ItemTemplate const* proto = item ? item->GetTemplate() : nullptr;
     if (!item || !proto)
+    {
+        sellList.erase(entry);
         return false;  // inventory moved — next reconcile drops the entry.
-
+    }
     PlayerbotAuctionItemPolicy policy = sPlayerbotAuctionHouseUtil.GetPolicy(entry);
     if (!policy.chanceToSell || urand(1, 100) > policy.chanceToSell)
         return false;
@@ -196,6 +200,12 @@ bool AhSearchResultAction::ParseAuctionPacket(WorldPacket& p, uint32 gearBudget,
     uint32 count;
     p >> count;
 
+    auto& sellList = AI_VALUE(AhListMap&, "ah sell list");
+    auto& buyList = AI_VALUE(AhListMap&, "ah buy list");
+
+    // Empty responses are not tombstoned here: with multiple sell-side queries
+    // potentially in flight, we cannot tell which item this empty response is
+    // for. The PendingCheck timeout in AhSellAction::Execute handles that case.
     if (!count)
         return false;
 
@@ -204,9 +214,6 @@ bool AhSearchResultAction::ParseAuctionPacket(WorldPacket& p, uint32 gearBudget,
     // Per-item aggregation for cache write-through.
     struct Aggregate { uint32 minUnit = 0; uint64 totalUnit = 0; uint32 sampleCount = 0; };
     std::unordered_map<uint32, Aggregate> perItem;
-
-    auto& sellList = AI_VALUE(AhListMap&, "ah sell list");
-    auto& buyList = AI_VALUE(AhListMap&, "ah buy list");
 
     for (uint32 i = 0; i < count; ++i)
     {
@@ -384,9 +391,6 @@ bool AhSearchResultAction::Execute(Event event)
     std::vector<AhItem> buyCandidates;
     bool haveCandidates = ParseAuctionPacket(p, gearBudget, auctioneerFaction, buyCandidates);
 
-    if (!haveCandidates)
-        return true;
-
     auto& buyList = AI_VALUE(AhListMap&, "ah buy list");
     uint32 pendingSlot = 0xFF;
     for (auto& kv : buyList)
@@ -397,8 +401,20 @@ bool AhSearchResultAction::Execute(Event event)
             break;
         }
     }
+
     if (pendingSlot == 0xFF)
         return false;
+
+    if (!haveCandidates)
+    {
+        time_t now = time(nullptr);
+        AhItemState& st = buyList[pendingSlot];
+        st.status = AhStatus::Failed;
+        st.auctionId = 0;
+        st.changedAt = now;
+        st.retryAfter = now + AH_BUY_SLOT_COOLDOWN_SECONDS;
+        return true;
+    }
 
     AhItem const* best = nullptr;
     bool bidPlaced = false;

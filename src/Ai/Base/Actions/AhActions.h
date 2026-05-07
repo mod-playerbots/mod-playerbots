@@ -39,7 +39,7 @@ struct AhItemState
     uint32 auctionId = 0;
 };
 
-constexpr time_t AH_PENDING_CHECK_TIMEOUT_SECONDS = 10;   // drop stuck PendingCheck
+constexpr time_t AH_PENDING_CHECK_TIMEOUT_SECONDS = 3;    // drop stuck PendingCheck
 constexpr time_t AH_FAILED_BACKOFF_SECONDS = MINUTE;      // sell cooldown after Failed
 constexpr time_t AH_BUY_SLOT_COOLDOWN_SECONDS = HOUR;     // buy-slot cooldown after a bid or empty result
 
