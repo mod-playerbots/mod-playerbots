@@ -16,7 +16,6 @@
 #include "Playerbots.h"
 #include "PossibleRpgTargetsValue.h"
 #include "SocialMgr.h"
-#include "Log.h"
 
 void RpgHelper::OnExecute(std::string nextAction)
 {

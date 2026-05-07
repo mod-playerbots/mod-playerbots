@@ -215,7 +215,6 @@ bool BuyAction::Execute(Event event)
     return vendored;
 }
 
-
 bool BuyAction::BuyItem(VendorItemData const* tItems, ObjectGuid vendorguid, ItemTemplate const* proto)
 {
     if (!tItems || !proto)

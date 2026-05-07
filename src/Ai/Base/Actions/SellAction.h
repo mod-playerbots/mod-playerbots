@@ -10,7 +10,6 @@
 
 class FindItemVisitor;
 class Item;
-class ObjectGuid;
 class PlayerbotAI;
 
 class SellAction : public InventoryAction
