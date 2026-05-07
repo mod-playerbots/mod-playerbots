@@ -13,7 +13,7 @@
 #include "ItemPackets.h"
 #include "ItemUsageValue.h"
 #include "Log.h"
-#include "PlayerbotAuctionHouseUtil.h"
+#include "BotAHUtil.h"
 #include "PlayerbotOperations.h"
 #include "PlayerbotWorldThreadProcessor.h"
 #include "Playerbots.h"
@@ -59,7 +59,7 @@ bool AhSellAction::PostAuctionSell(Item* item, ItemTemplate const* proto, Object
 
     // Invalidate cache so the next pricing pass re-queries and includes this
     // freshly posted listing.
-    sPlayerbotAuctionHouseUtil.InvalidateMarketSnapshot(proto->ItemId, auctioneerFaction);
+    sBotAHUtil.InvalidateMarketSnapshot(proto->ItemId, auctioneerFaction);
     return true;
 }
 
@@ -129,7 +129,7 @@ bool AhSellAction::Execute(Event /*event*/)
             // instead of looping back into NoData.
             if (now - st.changedAt > AH_PENDING_CHECK_TIMEOUT_SECONDS)
             {
-                sPlayerbotAuctionHouseUtil.StoreMarketSnapshot(
+                sBotAHUtil.StoreMarketSnapshot(
                     kv.first, auctioneerFaction, PlayerbotAuctionMarketSnapshot{});
                 st.status = AhStatus::Complete;
                 st.changedAt = now;
@@ -139,7 +139,7 @@ bool AhSellAction::Execute(Event /*event*/)
 
         if (st.status == AhStatus::Idle)
         {
-            if (sPlayerbotAuctionHouseUtil.GetMarketSnapshot(kv.first, auctioneerFaction))
+            if (sBotAHUtil.GetMarketSnapshot(kv.first, auctioneerFaction))
             {
                 readyItem = kv.first;
                 break;
@@ -162,7 +162,7 @@ bool AhSellAction::Execute(Event /*event*/)
         sellList.erase(entry);
         return false;  // inventory moved — next reconcile drops the entry.
     }
-    PlayerbotAuctionItemPolicy policy = sPlayerbotAuctionHouseUtil.GetPolicy(entry);
+    PlayerbotAuctionItemPolicy policy = sBotAHUtil.GetPolicy(entry);
     if (!policy.chanceToSell || urand(1, 100) > policy.chanceToSell)
         return false;
 
@@ -173,7 +173,7 @@ bool AhSellAction::Execute(Event /*event*/)
     uint32 unitPrice = 0;
     PlayerbotAuctionMarketSnapshot marketSnapshot;
     BotAuctionUtils::AuctionPriceStatus priceStatus =
-        sPlayerbotAuctionHouseUtil.GetAuctionPrice(bot, proto, auctioneerFaction, unitPrice, &marketSnapshot);
+        sBotAHUtil.GetAuctionPrice(bot, proto, auctioneerFaction, unitPrice, &marketSnapshot);
 
     if (priceStatus == BotAuctionUtils::AuctionPriceStatus::NoData)
     {
@@ -288,7 +288,7 @@ bool AhSearchResultAction::ParseAuctionPacket(WorldPacket& p, uint32 gearBudget,
         snapshot.avgUnitBuyout = keyValue.second.sampleCount
             ? uint32(keyValue.second.totalUnit / keyValue.second.sampleCount) : 0;
         snapshot.sampleCount = keyValue.second.sampleCount;
-        sPlayerbotAuctionHouseUtil.StoreMarketSnapshot(keyValue.first, auctioneerFaction, snapshot);
+        sBotAHUtil.StoreMarketSnapshot(keyValue.first, auctioneerFaction, snapshot);
 
         auto stateItr = sellList.find(keyValue.first);
         if (stateItr != sellList.end() && stateItr->second.status == AhStatus::PendingCheck)
@@ -349,7 +349,7 @@ bool AhSearchResultAction::PostAuctionBid(AhItem const& candidate, ObjectGuid au
     if (!PlayerbotWorldThreadProcessor::instance().QueueOperation(std::move(op)))
         return false;
 
-    sPlayerbotAuctionHouseUtil.InvalidateMarketSnapshot(candidate.itemEntry, auctioneerFaction);
+    sBotAHUtil.InvalidateMarketSnapshot(candidate.itemEntry, auctioneerFaction);
 
     ItemTemplate const* boughtProto = sObjectMgr->GetItemTemplate(candidate.itemEntry);
     LOG_DEBUG("playerbots", "[AH Buy] Bot {} {} {} for {}",

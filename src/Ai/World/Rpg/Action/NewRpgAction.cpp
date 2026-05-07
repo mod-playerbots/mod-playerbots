@@ -22,7 +22,7 @@
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "PlayerbotUtils.h"
-#include "PlayerbotAuctionHouseUtil.h"
+#include "BotAHUtil.h"
 #include "QuestDef.h"
 #include "Random.h"
 #include "SharedDefines.h"

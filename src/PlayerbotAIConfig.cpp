@@ -7,7 +7,7 @@
 #include <iostream>
 #include "Config.h"
 #include "NewRpgInfo.h"
-#include "PlayerbotAuctionHouseUtil.h"
+#include "BotAHUtil.h"
 #include "PlayerbotDungeonRepository.h"
 #include "PlayerbotFactory.h"
 #include "Playerbots.h"
@@ -719,7 +719,7 @@ bool PlayerbotAIConfig::Initialize()
     sTravelMgr.Init();
 
     if (sPlayerbotAIConfig.enableAuctionHouseBotting)
-        sPlayerbotAuctionHouseUtil.Initialize();
+        sBotAHUtil.Initialize();
 
     excludedHunterPetFamilies.clear();
     LoadList<std::vector<uint32>>(sConfigMgr->GetOption<std::string>("AiPlayerbot.ExcludedHunterPetFamilies", ""), excludedHunterPetFamilies);

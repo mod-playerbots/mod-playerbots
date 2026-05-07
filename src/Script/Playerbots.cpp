@@ -25,7 +25,7 @@
 #include "GuildTaskMgr.h"
 #include "PlayerScript.h"
 #include "PlayerbotAIConfig.h"
-#include "PlayerbotAuctionHouseUtil.h"
+#include "BotAHUtil.h"
 #include "PlayerbotGuildMgr.h"
 #include "PlayerbotSpellRepository.h"
 #include "PlayerbotWorldThreadProcessor.h"
@@ -389,7 +389,7 @@ public:
         if (_auctionFlushAccumulatorMs >= kAuctionFlushIntervalMs)
         {
             _auctionFlushAccumulatorMs = 0;
-            sPlayerbotAuctionHouseUtil.FlushDirty();
+            sBotAHUtil.FlushDirty();
         }
     }
 
@@ -397,7 +397,7 @@ public:
     {
         // Final flush before process exit so the last ~15 min of market
         // observations aren't lost.
-        sPlayerbotAuctionHouseUtil.FlushDirty();
+        sBotAHUtil.FlushDirty();
     }
 
 private:

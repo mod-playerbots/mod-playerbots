@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_AUCTIONHOUSEUTIL_H
-#define _PLAYERBOT_AUCTIONHOUSEUTIL_H
+#ifndef _BOT_AH_UTIL_H
+#define _BOT_AH_UTIL_H
 
 #include <algorithm>
 #include <array>
@@ -126,7 +126,7 @@ struct CachedPriceHistory
 };
 
 // ---------------------------------------------------------------------------
-// PlayerbotAuctionHouseUtil — AH policy + price-history singleton.
+// BotAHUtil — AH policy + price-history singleton.
 //
 // Owns two pieces of state (shared_mutex, reads dominate):
 //   - _policies: (DB: playerbots_auction_item_policy) per-item posting knobs
@@ -338,12 +338,12 @@ namespace BotAuctionUtils
     }
 }
 
-class PlayerbotAuctionHouseUtil
+class BotAHUtil
 {
 public:
-    static PlayerbotAuctionHouseUtil& instance()
+    static BotAHUtil& instance()
     {
-        static PlayerbotAuctionHouseUtil instance;
+        static BotAHUtil instance;
         return instance;
     }
 
@@ -719,6 +719,6 @@ private:
         PlayerbotAuctionPriceKeyHash> _prices;
 };
 
-#define sPlayerbotAuctionHouseUtil PlayerbotAuctionHouseUtil::instance()
+#define sBotAHUtil BotAHUtil::instance()
 
 #endif

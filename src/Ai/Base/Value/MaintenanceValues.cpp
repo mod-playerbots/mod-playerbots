@@ -11,7 +11,7 @@
 #include "BudgetValues.h"
 #include "ItemUsageValue.h"
 #include "PlayerbotAIConfig.h"
-#include "PlayerbotAuctionHouseUtil.h"
+#include "BotAHUtil.h"
 #include "Playerbots.h"
 
 bool CanMoveAroundValue::Calculate()
@@ -103,7 +103,7 @@ bool AhSellListValue::IsItemSellableOnAh(Item* item) const
     if (sPlayerbotAIConfig.IsInAuctionHouseExcludedItemList(entry))
         return false;
 
-    if (!sPlayerbotAuctionHouseUtil.GetPolicy(entry).sellable)
+    if (!sBotAHUtil.GetPolicy(entry).sellable)
         return false;
 
     // Expensive check last

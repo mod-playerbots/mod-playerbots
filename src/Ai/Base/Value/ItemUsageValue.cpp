@@ -12,7 +12,7 @@
 #include "Item.h"
 #include "LootObjectStack.h"
 #include "PlayerbotAIConfig.h"
-#include "PlayerbotAuctionHouseUtil.h"
+#include "BotAHUtil.h"
 #include "PlayerbotFactory.h"
 #include "Playerbots.h"
 #include "RandomItemMgr.h"
