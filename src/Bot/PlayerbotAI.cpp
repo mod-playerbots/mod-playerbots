@@ -54,9 +54,9 @@
 #include "Unit.h"
 #include "UpdateTime.h"
 #include "Vehicle.h"
-#include "../../../../src/server/scripts/Spells/spell_dk.cpp"
 
-const int SPELL_TITAN_GRIP = 49152;
+constexpr uint32 SPELL_TITAN_GRIP = 49152;
+constexpr uint32 SPELL_DK_FROST_PRESENCE = 48263;
 
 std::vector<std::string> PlayerbotAI::dispel_whitelist = {
     "mutating injection",

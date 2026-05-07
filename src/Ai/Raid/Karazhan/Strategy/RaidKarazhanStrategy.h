@@ -2,7 +2,6 @@
 #define _PLAYERBOT_RAIDKARAZHANSTRATEGY_H_
 
 #include "Strategy.h"
-#include "Multiplier.h"
 
 class RaidKarazhanStrategy : public Strategy
 {

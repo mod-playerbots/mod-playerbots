@@ -6,8 +6,11 @@
 #ifndef _PLAYERBOT_TELLREPUTATIONACTION_H
 #define _PLAYERBOT_TELLREPUTATIONACTION_H
 
+#include <string>
+
 #include "Action.h"
 
+struct FactionEntry;
 class PlayerbotAI;
 
 class TellReputationAction : public Action
@@ -16,6 +19,9 @@ public:
     TellReputationAction(PlayerbotAI* botAI) : Action(botAI, "reputation") {}
 
     bool Execute(Event event) override;
+
+private:
+    std::string BuildReputationLine(FactionEntry const* entry);
 };
 
 #endif

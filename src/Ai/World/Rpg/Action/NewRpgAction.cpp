@@ -4,8 +4,6 @@
 #include <cstdlib>
 
 #include "AhActions.h"
-#include "PlayerbotUtils.h"
-#include "PlayerbotAuctionHouseUtil.h"
 #include "AreaDefines.h"
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
@@ -23,6 +21,8 @@
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
+#include "PlayerbotUtils.h"
+#include "PlayerbotAuctionHouseUtil.h"
 #include "QuestDef.h"
 #include "Random.h"
 #include "SharedDefines.h"
@@ -482,13 +482,13 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
         return false;
     }
 
-    if (bot->GetDistance(data.fromPos) > INTERACTION_DISTANCE)
-        return MoveFarTo(data.fromPos);
+    if (bot->GetDistance(data.flightMasterPos) > INTERACTION_DISTANCE)
+        return MoveFarTo(data.flightMasterPos);
 
-    Creature* flightMaster = ObjectAccessor::GetCreature(*bot, data.fromFlightMasterGuid);
+    Creature* flightMaster = bot->FindNearestCreature(data.flightMasterEntry, INTERACTION_DISTANCE * 3);
     if (!flightMaster || !flightMaster->IsAlive())
     {
-        botAI->rpgInfo.ChangeToIdle();
+        info.ChangeToIdle();
         return true;
     }
 
@@ -502,7 +502,8 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
     {
         LOG_DEBUG("playerbots", "[New RPG] {} active taxi path {} (from {} to {}) failed", bot->GetName(),
                   flightMaster->GetEntry(), nodes[0], nodes[nodes.size() - 1]);
-        botAI->rpgInfo.ChangeToIdle();
+        info.ChangeToIdle();
+        return true;
     }
     return true;
 }
