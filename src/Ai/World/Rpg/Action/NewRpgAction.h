@@ -13,10 +13,10 @@
 #include "QuestDef.h"
 #include "TravelMgr.h"
 
-class TellRpgStatusAction : public Action
+class TellRpgStatusAction : public NewRpgBaseAction
 {
 public:
-    TellRpgStatusAction(PlayerbotAI* botAI) : Action(botAI, "rpg status") {}
+    TellRpgStatusAction(PlayerbotAI* botAI) : NewRpgBaseAction(botAI, "rpg status") {}
 
     bool Execute(Event event) override;
 };
