@@ -11,8 +11,6 @@
 #include "ServerFacade.h"
 #include "SharedDefines.h"
 
-Value<Unit*>* CastPolymorphAction::GetTargetValue() { return context->GetValue<Unit*>("cc target", getName()); }
-
 bool UseManaSapphireAction::isUseful()
 {
     Player* bot = botAI->GetBot();
