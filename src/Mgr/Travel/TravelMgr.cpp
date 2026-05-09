@@ -4687,9 +4687,9 @@ void TravelMgr::PrepareDestinationCache()
             (creatureTemplate->unit_flags & 4096) == 0 &&
             creatureTemplate->rank == 0)
         {
-            uint32 roundX = static_cast<uint32>(std::round(x / 50.0f));
-            uint32 roundY = static_cast<uint32>(std::round(y / 50.0f));
-            uint32 roundZ = static_cast<uint32>(std::round(z / 50.0f));
+            int32 roundX = static_cast<int32>(std::lround(x / 50.0f));
+            int32 roundY = static_cast<int32>(std::lround(y / 50.0f));
+            int32 roundZ = static_cast<int32>(std::lround(z / 50.0f));
             tempLocsCache[std::make_tuple(mapId, roundX, roundY, roundZ)].push_back(creatureData);
             tempCreatureCache[templateEntry][areaId].push_back(WorldLocation(mapId, x, y, z));
         }
