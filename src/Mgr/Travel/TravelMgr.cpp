@@ -4821,7 +4821,10 @@ void TravelMgr::PrepareDestinationCache()
                 if (l < 1 || l > maxLevel)
                     continue;
 
-                locsPerLevelCache[(uint8)l].push_back(WorldLocation(std::get<0>(gridTuple)));
+                    locsPerLevelCache[(uint8)l].push_back(WorldLocation(std::get<0>(gridTuple),
+                        static_cast<float>(std::get<1>(gridTuple)) * 50.0f,
+                        static_cast<float>(std::get<2>(gridTuple)) * 50.0f,
+                        static_cast<float>(std::get<3>(gridTuple)) * 50.0f));
             }
         }
     }
