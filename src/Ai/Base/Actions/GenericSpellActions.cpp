@@ -280,11 +280,6 @@ Value<Unit*>* BuffOnPartyAction::GetTargetValue()
     return context->GetValue<Unit*>("party member without aura", MakeAuraQualifierForBuff(spell));
 }
 
-bool BuffOnPartyAction::Execute(Event /*event*/)
-{
-    return CastBuffSpellAction::Execute(Event());
-}
-
 CastShootAction::CastShootAction(
     PlayerbotAI* botAI) : CastSpellAction(botAI, "shoot"), shootSpellId(0)
 {

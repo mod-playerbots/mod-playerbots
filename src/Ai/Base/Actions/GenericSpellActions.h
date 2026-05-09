@@ -239,7 +239,6 @@ public:
         : CastBuffSpellAction(botAI, spell), PartyMemberActionNameSupport(spell) { }
 
     Value<Unit*>* GetTargetValue() override;
-    bool Execute(Event event) override;
     std::string const getName() override { return PartyMemberActionNameSupport::getName(); }
 };
 
