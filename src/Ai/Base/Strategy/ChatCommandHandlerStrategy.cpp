@@ -66,6 +66,9 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     triggers.push_back(new TriggerNode("max dps", { NextAction("max dps chat shortcut", relevance) }));
     triggers.push_back(new TriggerNode("attackers", { NextAction("tell attackers", relevance) }));
     triggers.push_back(new TriggerNode("target", { NextAction("tell target", relevance) }));
+    triggers.push_back(new TriggerNode("pull", { NextAction("pull my target", relevance) }));
+    triggers.push_back(new TriggerNode("pull back", { NextAction("pull my target", relevance) }));
+    triggers.push_back(new TriggerNode("pull rti", { NextAction("pull rti target", relevance) }));
     triggers.push_back(new TriggerNode("ready", { NextAction("ready check", relevance) }));
     triggers.push_back(new TriggerNode("naxx", {NextAction("naxx chat shortcut", relevance) }));
     triggers.push_back(new TriggerNode("bwl", { NextAction("bwl chat shortcut", relevance) }));
@@ -158,11 +161,11 @@ ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : Pas
     supported.push_back("rtsc");
     supported.push_back("drink");
     supported.push_back("calc");
-    supported.push_back("wipe");
     supported.push_back("roll");
     supported.push_back("open items");
     supported.push_back("unlock items");
     supported.push_back("unlock traded item");
+    supported.push_back("wipe");
     supported.push_back("tame");
     supported.push_back("glyphs");
     supported.push_back("glyph equip");
