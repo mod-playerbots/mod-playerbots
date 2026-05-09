@@ -6,10 +6,10 @@
 #include "SellAction.h"
 
 #include "Event.h"
+#include "ItemPackets.h"
 #include "ItemUsageValue.h"
 #include "ItemVisitors.h"
 #include "Playerbots.h"
-#include "ItemPackets.h"
 
 class SellItemsVisitor : public IterateItemsVisitor
 {
@@ -50,7 +50,7 @@ public:
     bool Visit(Item* item) override
     {
         ItemUsage usage = context->GetValue<ItemUsage>("item usage", item->GetEntry())->Get();
-        if (usage != ITEM_USAGE_VENDOR && usage != ITEM_USAGE_AH)
+        if (usage != ITEM_USAGE_VENDOR)
             return true;
 
         return SellItemsVisitor::Visit(item);
@@ -84,7 +84,7 @@ bool SellAction::Execute(Event event)
         return true;
     }
 
-    botAI->TellError("Usage: s gray/*/vendor/[item link]");
+    botAI->TellError("Usage: s gray/*/vendor/auction/[item link]");
     return false;
 }
 
@@ -100,6 +100,9 @@ void SellAction::Sell(FindItemVisitor* visitor)
 
 void SellAction::Sell(Item* item)
 {
+    if (!item)
+        return;
+
     std::ostringstream out;
 
     GuidVector vendors = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();

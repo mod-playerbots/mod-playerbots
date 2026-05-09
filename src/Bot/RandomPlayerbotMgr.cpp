@@ -2879,10 +2879,11 @@ void RandomPlayerbotMgr::PrintStats()
         LOG_INFO("playerbots", "Bots rpg status:");
         LOG_INFO("playerbots",
                  "    Idle: {}, Rest: {}, GoGrind: {}, GoCamp: {}, MoveRandom: {}, MoveNpc: {}, DoQuest: {}, "
-                 "TravelFlight: {}, OutdoorPvP: {}",
+                 "TravelFlight: {}, OutdoorPvP: {}, GoCity: {}",
                  rpgStatusCount[RPG_IDLE], rpgStatusCount[RPG_REST], rpgStatusCount[RPG_GO_GRIND],
                  rpgStatusCount[RPG_GO_CAMP], rpgStatusCount[RPG_WANDER_RANDOM], rpgStatusCount[RPG_WANDER_NPC],
-                 rpgStatusCount[RPG_DO_QUEST], rpgStatusCount[RPG_TRAVEL_FLIGHT], rpgStatusCount[RPG_OUTDOOR_PVP]);
+                 rpgStatusCount[RPG_DO_QUEST], rpgStatusCount[RPG_TRAVEL_FLIGHT], rpgStatusCount[RPG_OUTDOOR_PVP],
+                 rpgStatusCount[RPG_GO_CITY]);
 
         LOG_INFO("playerbots", "Bots total quests:");
         LOG_INFO("playerbots", "    Accepted: {}, Rewarded: {}, Dropped: {}", rpgStasticTotal.questAccepted,

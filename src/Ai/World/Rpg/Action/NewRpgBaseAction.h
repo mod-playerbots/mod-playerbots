@@ -52,6 +52,8 @@ protected:
 
 protected:
     bool GetQuestPOIPosAndObjectiveIdx(uint32 questId, std::vector<POIInfo>& poiInfo, bool toComplete = false);
+    bool SelectAuctionHouseTarget(WorldPosition& outPos, uint32& outEntry);
+    bool BuildCityTasks(std::vector<NewRpgInfo::CityTask>& outTaskList);
     static WorldPosition SelectRandomGrindPos(Player* bot);
     static WorldPosition SelectRandomCampPos(Player* bot);
     bool SelectRandomFlightTaxiNode(uint32& flightMasterEntry, WorldPosition& flightMasterPos, std::vector<uint32>& path);

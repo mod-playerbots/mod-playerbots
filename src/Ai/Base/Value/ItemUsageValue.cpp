@@ -7,10 +7,12 @@
 
 #include "AiFactory.h"
 #include "ChatHelper.h"
+#include "Db/PlayerbotSpellRepository.h"
 #include "GuildTaskMgr.h"
 #include "Item.h"
 #include "LootObjectStack.h"
 #include "PlayerbotAIConfig.h"
+#include "BotAHUtil.h"
 #include "PlayerbotFactory.h"
 #include "Playerbots.h"
 #include "RandomItemMgr.h"
@@ -36,33 +38,41 @@ ItemUsage ItemUsageValue::Calculate()
     }
     else
     {
-        bool needItem = false;
+        bool neededSkillItem = false;
 
         if (IsItemNeededForSkill(proto))
-            needItem = true;
+            neededSkillItem = true;
         else
         {
             bool lowBagSpace = AI_VALUE(uint8, "bag space") > 50;
 
-            if (proto->Class == ITEM_CLASS_TRADE_GOODS || proto->Class == ITEM_CLASS_MISC ||
-                proto->Class == ITEM_CLASS_REAGENT)
-                needItem = IsItemNeededForUsefullSpell(proto, lowBagSpace);
+            if (proto->Class == ITEM_CLASS_TRADE_GOODS || IsSpellReagentItem(proto))
+                neededSkillItem = IsItemNeededForUsefullSpell(proto, lowBagSpace);
             else if (proto->Class == ITEM_CLASS_RECIPE)
             {
                 if (bot->HasSpell(proto->Spells[2].SpellId))
-                    needItem = false;
+                    neededSkillItem = false;
                 else
-                    needItem = bot->BotCanUseItem(proto) == EQUIP_ERR_OK;
+                    neededSkillItem = bot->BotCanUseItem(proto) == EQUIP_ERR_OK;
             }
         }
 
-        if (needItem)
+        if (neededSkillItem)
         {
-            float stacks = CurrentStacks(proto);
-            if (stacks < 1)
-                return ITEM_USAGE_SKILL;  // Buy more.
-            if (stacks < 2)
-                return ITEM_USAGE_KEEP;  // Keep current amount.
+            if (BotAuctionUtils::IsAuctionableReagent(proto))
+            {
+                uint32 itemCount = bot->GetItemCount(proto->ItemId, true);
+                if (itemCount < sPlayerbotAIConfig.auctionHouseMaterialStackSize)
+                    return itemCount ? ITEM_USAGE_KEEP : ITEM_USAGE_SKILL;
+            }
+            else
+            {
+                float stacks = CurrentStacks(proto);
+                if (stacks < 1)
+                    return ITEM_USAGE_SKILL;  // Buy more.
+                if (stacks < 2)
+                    return ITEM_USAGE_KEEP;  // Keep current amount.
+            }
         }
     }
 
@@ -153,10 +163,16 @@ ItemUsage ItemUsageValue::Calculate()
     // Need to add something like free bagspace or item value.
     if (proto->SellPrice > 0)
     {
-        if (proto->Quality >= ITEM_QUALITY_NORMAL && !isSoulbound && proto->Bonding != BIND_WHEN_PICKED_UP)
-            return ITEM_USAGE_AH;
-        else
+        if (proto->Quality == ITEM_QUALITY_POOR || proto->Class == ITEM_CLASS_PROJECTILE)
             return ITEM_USAGE_VENDOR;
+
+        if (IsSpellReagentItem(proto))
+            return IsItemNeededForUsefullSpell(proto, false) ? ITEM_USAGE_KEEP : ITEM_USAGE_VENDOR;
+
+        if (sPlayerbotAIConfig.enableAuctionHouseBotting && !isSoulbound && BotAuctionUtils::IsAuctionableGear(proto))
+            return ITEM_USAGE_AH;
+
+        return ITEM_USAGE_VENDOR;
     }
 
     return ITEM_USAGE_NONE;
@@ -850,6 +866,15 @@ bool ItemUsageValue::SpellGivesSkillUp(uint32 spellId, Player* bot)
     }
 
     return false;
+}
+
+bool ItemUsageValue::IsSpellReagentItem(ItemTemplate const* proto)
+{
+    if (!proto)
+        return false;
+
+    return proto->Class == ITEM_CLASS_REAGENT ||
+           (proto->Class == ITEM_CLASS_MISC && proto->SubClass == ITEM_SUBCLASS_REAGENT);
 }
 
 std::string const ItemUsageValue::GetConsumableType(ItemTemplate const* proto, bool hasMana)

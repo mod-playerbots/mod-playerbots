@@ -521,4 +521,60 @@ private:
     uint32 m_masterAccountId = 0;
 };
 
+class AuctionPacketOperation : public PlayerbotOperation
+{
+public:
+    AuctionPacketOperation(ObjectGuid botGuid, ObjectGuid auctioneerGuid,
+                           WorldPacket&& packet)
+        : m_botGuid(botGuid), m_auctioneerGuid(auctioneerGuid),
+          m_packet(std::move(packet))
+    {
+    }
+
+    bool Execute() override
+    {
+        Player* bot = ObjectAccessor::FindConnectedPlayer(m_botGuid);
+        if (!bot)
+            return false;
+
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+        if (!botAI)
+            return false;
+
+        if (!bot->GetNPCIfCanInteractWith(m_auctioneerGuid, UNIT_NPC_FLAG_AUCTIONEER))
+            return false;
+
+        uint32 botMoney = bot->GetMoney();
+
+        uint16 opcode = m_packet.GetOpcode();
+        if (opcode == CMSG_AUCTION_SELL_ITEM)
+            bot->GetSession()->HandleAuctionSellItem(m_packet);
+        else if (opcode == CMSG_AUCTION_PLACE_BID)
+            bot->GetSession()->HandleAuctionPlaceBid(m_packet);
+        else if (opcode == CMSG_AUCTION_LIST_ITEMS)
+            bot->GetSession()->HandleAuctionListItems(m_packet);
+        else
+            return false;
+
+        if (botAI->HasCheat(BotCheatMask::gold))
+            bot->SetMoney(botMoney);
+
+        return true;
+    }
+
+    ObjectGuid GetBotGuid() const override { return m_botGuid; }
+    uint32 GetPriority() const override { return 50; }
+    std::string GetName() const override { return "AuctionPacket"; }
+
+    bool IsValid() const override
+    {
+        return ObjectAccessor::FindConnectedPlayer(m_botGuid) != nullptr;
+    }
+
+private:
+    ObjectGuid m_botGuid;
+    ObjectGuid m_auctioneerGuid;
+    WorldPacket m_packet;
+};
+
 #endif

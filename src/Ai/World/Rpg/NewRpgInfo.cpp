@@ -10,6 +10,17 @@ void NewRpgInfo::ChangeToGoGrind(WorldPosition pos)
     data = GoGrind{pos};
 }
 
+void NewRpgInfo::ChangeToGoCity(std::vector<CityTask> taskList)
+{
+    Reset();
+    GoCity goCity;
+    goCity.taskList = std::move(taskList);
+    // current* fields stay default-constructed; NewRpgGoCityAction's
+    // dispatcher promotes the first task on its first tick and again
+    // each time the active handler signals done.
+    data = std::move(goCity);
+}
+
 void NewRpgInfo::ChangeToGoCamp(WorldPosition pos)
 {
     startT = getMSTime();
@@ -99,6 +110,7 @@ NewRpgStatus NewRpgInfo::GetStatus()
         if constexpr (std::is_same_v<T, Rest>) return RPG_REST;
         if constexpr (std::is_same_v<T, DoQuest>) return RPG_DO_QUEST;
         if constexpr (std::is_same_v<T, TravelFlight>) return RPG_TRAVEL_FLIGHT;
+        if constexpr (std::is_same_v<T, GoCity>) return RPG_GO_CITY;
         if constexpr (std::is_same_v<T, OutdoorPvP>) return RPG_OUTDOOR_PVP;
         return RPG_IDLE;
     }, data);
@@ -162,6 +174,24 @@ std::string NewRpgInfo::ToString()
             out << "\nfromNode: " << arg.path[0];
             out << "\ntoNode: " << arg.path[arg.path.size() - 1];
             out << "\ninFlight: " << arg.inFlight;
+        }
+        else if constexpr (std::is_same_v<T, GoCity>)
+        {
+            out << "GO_CITY";
+            out << "\ncurrentTask: kind=" << static_cast<int>(arg.currentTaskKind)
+                << " location=(" << arg.currentTaskLocation.GetMapId() << ","
+                << arg.currentTaskLocation.GetPositionX() << ","
+                << arg.currentTaskLocation.GetPositionY() << ","
+                << arg.currentTaskLocation.GetPositionZ() << ")";
+            if (arg.currentTaskNpc)
+                out << " npc=" << arg.currentTaskNpc.GetEntry();
+            out << "\ntaskList: " << arg.taskList.size() << " upcoming";
+            for (auto const& task : arg.taskList)
+            {
+                out << "\n  kind=" << static_cast<int>(task.kind);
+                if (task.npc)
+                    out << " npc=" << task.npc.GetEntry();
+            }
         }
         else if constexpr (std::is_same_v<T, OutdoorPvP>)
         {

@@ -67,6 +67,28 @@ struct NewRpgInfo
     struct Idle
     {
     };
+    // RPG_GO_CITY
+    enum class CityTaskType : uint8
+    {
+        Visit, //Initial state to get to a city.
+        Auctioneer,
+        // TODO: Vendor, RepairVendor, Trainer, Innkeeper, etc...
+    };
+
+    struct CityTask
+    {
+        CityTaskType kind{CityTaskType::Visit};
+        ObjectGuid npc{};
+        WorldPosition location{};
+    };
+
+    struct GoCity
+    {
+        std::vector<CityTask> taskList;
+        CityTaskType currentTaskKind{CityTaskType::Visit};
+        ObjectGuid     currentTaskNpc{};
+        WorldPosition  currentTaskLocation{};
+    };
 
     uint32 startT{0};  // start timestamp of the current status
 
@@ -86,6 +108,7 @@ struct NewRpgInfo
         DoQuest,
         Rest,
         TravelFlight,
+        GoCity,
         OutdoorPvP
     >;
     RpgData data;
@@ -94,6 +117,7 @@ struct NewRpgInfo
     bool HasStatusPersisted(uint32 maxDuration) { return GetMSTimeDiffToNow(startT) > maxDuration; }
     void ChangeToGoGrind(WorldPosition pos);
     void ChangeToGoCamp(WorldPosition pos);
+    void ChangeToGoCity(std::vector<CityTask> taskList);
     void ChangeToWanderNpc();
     void ChangeToWanderRandom();
     void ChangeToDoQuest(uint32 questId, const Quest* quest);

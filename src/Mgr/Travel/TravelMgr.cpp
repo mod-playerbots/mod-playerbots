@@ -4555,6 +4555,34 @@ std::vector<WorldLocation> TravelMgr::GetCityLocations(Player* bot)
     return fallbackLocations;
 }
 
+bool TravelMgr::SelectAuctioneerByMap(Player* bot, NpcLocation& outAuctioneer)
+{
+    uint16 botMapId = bot->GetMapId();
+    auto const& cache = (bot->GetTeamId() == TEAM_HORDE) ? hordeAuctioneerCache : allianceAuctioneerCache;
+
+    auto mapIt = cache.find(botMapId);
+    if (mapIt == cache.end() || mapIt->second.empty())
+        return false;
+
+    // Collect all areas on this map that have auctioneers
+    std::vector<uint32> areaIds;
+    areaIds.reserve(mapIt->second.size());
+    for (auto const& [areaId, npcs] : mapIt->second)
+    {
+        if (!npcs.empty())
+            areaIds.push_back(areaId);
+    }
+
+    if (areaIds.empty())
+        return false;
+
+    // Pick a random area, then a random auctioneer in that area
+    uint32 selectedArea = areaIds[urand(0, areaIds.size() - 1)];
+    auto const& auctioneers = mapIt->second.at(selectedArea);
+    outAuctioneer = auctioneers[urand(0, auctioneers.size() - 1)];
+    return true;
+}
+
 void TravelMgr::PrepareZone2LevelBracket()
 {
     // Classic WoW - starter zones
@@ -4641,6 +4669,7 @@ void TravelMgr::PrepareDestinationCache()
     uint32 flightMastersCount = 0;
     uint32 innkeepersCount = 0;
     uint32 bankerCount = 0;
+    uint32 auctioneerCount = 0;
 
     LOG_INFO("playerbots", "Preparing destination caches for {} levels...", maxLevel);
     // Temporary map to group creatures by entry and area
@@ -4783,7 +4812,7 @@ void TravelMgr::PrepareDestinationCache()
                  creatureTemplate->Entry != 30606 && creatureTemplate->Entry != 30608 &&
                  creatureTemplate->Entry != 29282)
         {
-            BankerLocation bLoc;
+            NpcLocation bLoc;
             bLoc.loc = WorldLocation(mapId, x + cos(orient) * 6.0f, y + sin(orient) * 6.0f, z + 2.0f, orient + M_PI);
             bLoc.entry = templateEntry;
             uint32 level = (creatureTemplate->minlevel + creatureTemplate->maxlevel + 1) / 2;
@@ -4806,6 +4835,31 @@ void TravelMgr::PrepareDestinationCache()
             }
             bankerCount++;
         }
+        // === AUCTIONEERS ===
+        else if (creatureTemplate->npcflag & UNIT_NPC_FLAG_AUCTIONEER)
+        {
+            FactionTemplateEntry const* factionEntry = sFactionTemplateStore.LookupEntry(creatureTemplate->faction);
+            if (!factionEntry)
+                continue;
+
+            bool forHorde = !(factionEntry->hostileMask & 4);
+            bool forAlliance = !(factionEntry->hostileMask & 2);
+
+            if (!forHorde && !forAlliance)
+                continue;
+
+            NpcLocation aLoc;
+            aLoc.loc = WorldLocation(mapId, x + cos(orient) * 3.0f, y + sin(orient) * 3.0f, z + 0.5f, orient + M_PI);
+            aLoc.entry = templateEntry;
+
+            if (forHorde)
+                hordeAuctioneerCache[mapId][areaId].push_back(aLoc);
+
+            if (forAlliance)
+                allianceAuctioneerCache[mapId][areaId].push_back(aLoc);
+
+            auctioneerCount++;
+        }
     }
 
     // Process temporary caches
@@ -4815,13 +4869,29 @@ void TravelMgr::PrepareDestinationCache()
         {
             CreatureTemplate const* creatureTemplate = sObjectMgr->GetCreatureTemplate(creatureDataList[0].id1);
             uint32 level = (creatureTemplate->minlevel + creatureTemplate->maxlevel + 1) / 2;
+
+            float totalX = 0.0f;
+            float totalY = 0.0f;
+            float totalZ = 0.0f;
+            for (CreatureData const& creatureData : creatureDataList)
+            {
+                totalX += creatureData.posX;
+                totalY += creatureData.posY;
+                totalZ += creatureData.posZ;
+            }
+
+            float avgX = totalX / creatureDataList.size();
+            float avgY = totalY / creatureDataList.size();
+            float avgZ = totalZ / creatureDataList.size();
+            uint32 mapId = std::get<0>(gridTuple);
+
             for (int32 l = (int32)level - (int32)sPlayerbotAIConfig.randomBotTeleLowerLevel;
                  l <= (int32)level + (int32)sPlayerbotAIConfig.randomBotTeleHigherLevel; l++)
             {
                 if (l < 1 || l > maxLevel)
                     continue;
 
-                locsPerLevelCache[(uint8)l].push_back(WorldLocation(std::get<0>(gridTuple)));
+                locsPerLevelCache[(uint8)l].push_back(WorldLocation(mapId, avgX, avgY, avgZ, 0.0f));
             }
         }
     }
@@ -4867,5 +4937,5 @@ void TravelMgr::PrepareDestinationCache()
             break;
         }
     }
-    LOG_INFO("playerbots", ">> {} flight masters and {} innkeepers and {} banker locations for level collected.", flightMastersCount, innkeepersCount, bankerCount);
+    LOG_INFO("playerbots", ">> {} flight masters, {} innkeepers, {} bankers, {} auctioneers collected.", flightMastersCount, innkeepersCount, bankerCount, auctioneerCount);
 }

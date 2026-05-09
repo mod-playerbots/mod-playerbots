@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdlib>
 
+#include "AhActions.h"
 #include "AreaDefines.h"
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
@@ -19,6 +20,9 @@
 #include "PathGenerator.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
+#include "Playerbots.h"
+#include "PlayerbotUtils.h"
+#include "BotAHUtil.h"
 #include "QuestDef.h"
 #include "Random.h"
 #include "SharedDefines.h"
@@ -63,17 +67,25 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
     {
         case RPG_IDLE:
             return RandomChangeStatus({RPG_GO_CAMP, RPG_GO_GRIND, RPG_WANDER_RANDOM, RPG_WANDER_NPC, RPG_DO_QUEST,
-                                       RPG_TRAVEL_FLIGHT, RPG_REST, RPG_OUTDOOR_PVP});
+                                       RPG_TRAVEL_FLIGHT, RPG_GO_CITY, RPG_OUTDOOR_PVP, RPG_REST});
 
         case RPG_GO_GRIND:
         {
             auto& data = std::get<NewRpgInfo::GoGrind>(info.data);
-            WorldPosition& originalPos = data.pos;
             assert(data.pos != WorldPosition());
             // GO_GRIND -> WANDER_RANDOM
-            if (bot->GetExactDist(originalPos) < 10.0f)
+            if (bot->GetExactDist(data.pos) < 10.0f)
             {
                 info.ChangeToWanderRandom();
+                return true;
+            }
+            break;
+        }
+        case RPG_GO_CITY:
+        {
+            if (info.HasStatusPersisted(statusGoCityDuration))
+            {
+                info.ChangeToIdle();
                 return true;
             }
             break;
@@ -479,8 +491,6 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
         info.ChangeToIdle();
         return true;
     }
-    if (bot->GetDistance(flightMaster) > INTERACTION_DISTANCE)
-        return MoveFarTo(flightMaster);
 
     std::vector<uint32> nodes = data.path;
 
@@ -497,3 +507,135 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
     }
     return true;
 }
+bool NewRpgGoCityAction::Execute(Event /*event*/)
+{
+    auto* dataPtr = std::get_if<NewRpgInfo::GoCity>(&botAI->rpgInfo.data);
+    if (!dataPtr)
+        return false;
+    auto& data = *dataPtr;
+
+    if (bot->IsInFlight())
+        return false;
+    //Get new target if we dont have one.
+    if (data.currentTaskLocation == WorldPosition())
+    {
+        if (data.taskList.empty())
+        {
+            botAI->rpgInfo.ChangeToIdle();
+            return true;
+        }
+        NewRpgInfo::CityTask next = std::move(data.taskList.front());
+        data.taskList.erase(data.taskList.begin());
+        data.currentTaskKind = next.kind;
+        data.currentTaskNpc = next.npc;
+        data.currentTaskLocation = next.location;
+    }
+
+    if (bot->GetDistance(data.currentTaskLocation) > INTERACTION_DISTANCE)
+            return MoveFarTo(data.currentTaskLocation);
+
+    // stillWorking runs until task state returns false indicating its done doing what it had to do.
+    bool stillWorking = true;
+    switch (data.currentTaskKind)
+    {
+        case NewRpgInfo::CityTaskType::Visit:
+            // Empty handler: arriving at the location is the
+            // whole job. Fall through to promote next.
+            stillWorking = false;
+        break;
+        case NewRpgInfo::CityTaskType::Auctioneer:
+            stillWorking = ExecuteAuctioneerTask(data);
+            break;
+        // Handle all other cases.
+        default:
+            stillWorking = false;
+            break;
+    }
+
+    if (stillWorking)
+        return true;
+
+    // Erase Current task location and npc, on next check it will  empty so the next loop iteration promotes the next task (or exits to Idle if the list is dry).
+    data.currentTaskLocation = WorldPosition();
+    data.currentTaskNpc = ObjectGuid();
+    return true;
+}
+
+bool NewRpgGoCityAction::ExecuteAuctioneerTask(NewRpgInfo::GoCity& data)
+{
+    if (!sPlayerbotAIConfig.enableAuctionHouseBotting)
+        return false;
+
+    Creature* auctioneer = ai::npc::FindNpcByFlag(
+        bot, UNIT_NPC_FLAG_AUCTIONEER,
+        AI_VALUE(GuidVector, "possible new rpg targets"),
+        data.currentTaskNpc);
+    if (!auctioneer)
+        return false;
+
+    auto& sellList = AI_VALUE(AhListMap&, "ah sell list");
+    time_t now = time(nullptr);
+
+    // Drop Failed entries as we go — reconcile will re-insert them as Idle
+    // from inventory next pass if the item is still bag-side. First non-Failed
+    // entry hands off to AhSellAction and ends this tick.
+    for (auto it = sellList.begin(); it != sellList.end(); )
+    {
+        if (it->second.status == AhStatus::Failed)
+        {
+            it = sellList.erase(it);
+            continue;
+        }
+        botAI->DoSpecificAction("ah sell", Event(), true);
+        return true;
+    }
+
+    // Advance state and fire one query per Idle slot. Stuck PendingCheck
+    // (>10s) is cooled down to recover from lost response packets.
+    auto& buyList = AI_VALUE(AhListMap&, "ah buy list");
+    bool pendingInFlight = false;
+    for (auto& buyKeyValue : buyList)
+    {
+        AhItemState& ahItemState = buyKeyValue.second;
+
+        if (ahItemState.status == AhStatus::PendingCheck)
+        {
+            if (now - ahItemState.changedAt > AH_PENDING_CHECK_TIMEOUT_SECONDS)
+            {
+                ahItemState.status = AhStatus::Failed;
+                ahItemState.changedAt = now;
+                ahItemState.retryAfter = now + AH_FAILED_BACKOFF_SECONDS;
+            }
+            else
+                pendingInFlight = true;
+
+            continue;
+        }
+        if (ahItemState.status == AhStatus::Watch || ahItemState.status == AhStatus::Complete)
+            continue;
+
+        // If, somehow, the bot is still here after the cooldown, let us re-check.
+        if (ahItemState.status == AhStatus::Failed && now >= ahItemState.retryAfter)
+        {
+            ahItemState.status = AhStatus::Idle;
+            ahItemState.retryAfter = 0;
+        }
+
+        if (ahItemState.status == AhStatus::Idle)
+        {
+            uint8 targetSlot = buyKeyValue.first;
+            BotAuctionUtils::SendAhSearchForSlot(bot, auctioneer, targetSlot);
+            AhItemState& st = buyList[targetSlot];
+            st.status = AhStatus::PendingCheck;
+            st.changedAt = now;
+            return true;
+        }
+    }
+
+    if (pendingInFlight)
+        return true;
+
+    // Nothing actionable left for the auctioneer this trip.
+    return false;
+}
+

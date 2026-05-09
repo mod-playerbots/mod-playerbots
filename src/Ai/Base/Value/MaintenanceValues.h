@@ -6,7 +6,11 @@
 #ifndef _PLAYERBOT_MAINTANCEVALUE_H
 #define _PLAYERBOT_MAINTANCEVALUE_H
 
+#include "AhActions.h"
 #include "Value.h"
+
+#include <unordered_map>
+#include <vector>
 
 class PlayerbotAI;
 
@@ -53,7 +57,57 @@ public:
 class CanSellValue : public BoolCalculatedValue
 {
 public:
-    CanSellValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI, "can sell", 2 * 2000) {}
+    CanSellValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI, "can sell", MINUTE * IN_MILLISECONDS) {}
+
+    bool Calculate() override;
+};
+
+class AhSellListValue : public ManualSetValue<AhListMap&>
+{
+public:
+    AhSellListValue(PlayerbotAI* botAI)
+        : ManualSetValue<AhListMap&>(botAI, _data, "ah sell list") {}
+
+    AhListMap& Get() override;
+
+private:
+    bool IsItemSellableOnAh(Item* item) const;
+    uint32 ComputeBagFingerprint();
+    void CheckInventory();
+
+    AhListMap _data;
+    uint32 _lastFingerprint{0};
+    uint32 _lastReconcileMs{0};
+};
+
+class ShouldAHSellValue : public BoolCalculatedValue
+{
+public:
+    ShouldAHSellValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI, "should ah sell", MINUTE * IN_MILLISECONDS) {}
+
+    bool Calculate() override;
+};
+
+class AhBuyListValue : public ManualSetValue<AhListMap&>
+{
+public:
+    AhBuyListValue(PlayerbotAI* botAI)
+        : ManualSetValue<AhListMap&>(botAI, _data, "ah buy list") {}
+
+    AhListMap& Get() override;
+
+private:
+    bool IsSlotWeak(uint8 slot) const;
+    void CheckEquipment();
+
+    AhListMap _data;
+    uint32 _lastReconcileMs{0};
+};
+
+class ShouldAHBuyValue : public BoolCalculatedValue
+{
+public:
+    ShouldAHBuyValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI, "should ah buy", MINUTE * IN_MILLISECONDS) {}
 
     bool Calculate() override;
 };

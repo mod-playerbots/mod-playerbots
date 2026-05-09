@@ -507,7 +507,7 @@ public:
         radiusMin = radiusMin1;
         radiusMax = radiusMax1;
     }
-    virtual ~TravelDestination() = default;
+    virtual ~TravelDestination();
 
     void addPoint(WorldPosition* pos) { points.push_back(pos); }
 
@@ -673,7 +673,7 @@ public:
     bool isActive(Player* bot) override;
     virtual CreatureTemplate const* GetCreatureTemplate();
     std::string const getName() override { return "RpgTravelDestination"; }
-    int32 getEntry() override { return 0; }
+    int32 getEntry() override { return entry; }
     std::string const getTitle() override;
 
 protected:
@@ -985,18 +985,14 @@ private:
         bool InsideBracket(uint32 val) const { return val >= low && val <= high; }
     };
 
-    struct BankerLocation
-    {
-        WorldLocation loc;
-        uint32 entry;
-    };
-
     // Navigation caches
     std::map<uint32, FlightMasterInfo> allianceFlightMasterCache;
     std::map<uint32, FlightMasterInfo> hordeFlightMasterCache;
     std::map<uint8, std::vector<WorldLocation>> allianceHubsPerLevelCache;
     std::map<uint8, std::vector<WorldLocation>> hordeHubsPerLevelCache;
-    std::map<uint8, std::vector<BankerLocation>> bankerLocsPerLevelCache;
+    std::map<uint8, std::vector<NpcLocation>> bankerLocsPerLevelCache;
+    std::unordered_map<uint16, std::unordered_map<uint32, std::vector<NpcLocation>>> hordeAuctioneerCache;
+    std::unordered_map<uint16, std::unordered_map<uint32, std::vector<NpcLocation>>> allianceAuctioneerCache;
     std::unordered_map<uint32, WorldLocation> bankerEntryToLocation;
     std::map<uint8, std::vector<WorldLocation>> locsPerLevelCache;
     std::unordered_map<uint32, std::vector<WorldLocation>> creatureSpawnsByTemplate;

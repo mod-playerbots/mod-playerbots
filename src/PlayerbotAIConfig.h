@@ -44,20 +44,21 @@ enum NewRpgStatus : int
 {
     //Initial Status
     RPG_IDLE = 0,
-    RPG_GO_GRIND = 1,
-    RPG_GO_CAMP = 2,
+    RPG_GO_GRIND,
+    RPG_GO_CAMP,
     // Exploring nearby
-    RPG_WANDER_RANDOM = 3,
-    RPG_WANDER_NPC = 4,
+    RPG_WANDER_RANDOM,
+    RPG_WANDER_NPC,
     // Do Quest (based on quest status)
-    RPG_DO_QUEST = 5,
+    RPG_DO_QUEST,
     // Travel
-
-    RPG_TRAVEL_FLIGHT = 6,
+    RPG_TRAVEL_FLIGHT,
     // Taking a break
-    RPG_REST = 7,
-    RPG_OUTDOOR_PVP = 8,
-    RPG_STATUS_END = 9
+    RPG_REST,
+    RPG_OUTDOOR_PVP,
+    // Travel to city
+    RPG_GO_CITY,
+    RPG_STATUS_END,
 };
 
 #define MAX_SPECNO 20
@@ -75,6 +76,7 @@ public:
     bool Initialize();
     bool IsInRandomAccountList(uint32 id);
     bool IsInRandomQuestItemList(uint32 id);
+    bool IsInAuctionHouseExcludedItemList(uint32 id) const;
     bool IsPvpProhibited(uint32 zoneId, uint32 areaId);
     bool IsInPvpProhibitedZone(uint32 id);
     bool IsInPvpProhibitedArea(uint32 id);
@@ -143,6 +145,16 @@ public:
     uint32 minRandomBotPvpTime, maxRandomBotPvpTime;
     uint32 randomBotsPerInterval;
     uint32 minRandomBotsPriceChangeInterval, maxRandomBotsPriceChangeInterval;
+    bool enableAuctionHouseBotting;
+    uint32 auctionHouseMinBidPrice;
+    uint32 auctionHouseUndercutChance;
+    uint32 auctionHouseUndercutMinPct;
+    uint32 auctionHouseUndercutMaxPct;
+    uint32 auctionHouseBuyoutMinPct;
+    uint32 auctionHouseBuyoutMaxPct;
+    uint32 auctionHouseMaterialStackSize;
+    uint32 auctionPriceCacheTtlSeconds;
+    std::set<uint32> auctionHouseExcludedItemIds;
     uint32 disabledWithoutRealPlayerLoginDelay, disabledWithoutRealPlayerLogoutDelay;
     bool randomBotJoinLfg;
 
@@ -372,6 +384,7 @@ public:
     bool autoLearnTrainerSpells;
     bool autoDoQuests;
     bool enableNewRpgStrategy;
+    bool enableTravelNodes;
     std::unordered_map<NewRpgStatus, uint32> RpgStatusProbWeight;
     bool syncLevelWithPlayers;
     bool autoLearnQuestSpells;
