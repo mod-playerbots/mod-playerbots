@@ -404,6 +404,7 @@ public:
                                   std::string const qualifier = "");
     void ChangeStrategy(std::string const name, BotState type);
     void ClearStrategies(BotState type);
+    void SelectiveResetStrategies(BotState type);
     std::vector<std::string> GetStrategies(BotState type);
     Strategy* GetStrategy(std::string const name, BotState type);
     void ApplyInstanceStrategies(uint32 mapId, bool tellMaster = false);
