@@ -56,7 +56,6 @@ jobs:
         env:
           CMAKE_GENERATOR: Ninja
         run: |
-          # Set MSVC environment then run acore.sh under bash so acore.sh behaves as expected
           $vcvars = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           if (-Not (Test-Path $vcvars)) {
             $vcvars = "C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
@@ -65,6 +64,25 @@ jobs:
             Write-Error "vcvars64.bat not found. Ensure Visual Studio 2022 is installed on the runner."
             exit 1
           }
-          # Call vcvars to populate MSVC env, then run bash with that environment
-          cmd.exe /c "`"$vcvars`" && bash -lc 'export CTOOLS_BUILD=all; export CMAKE_GENERATOR=\"Ninja\"; ./acore.sh compiler build'"
+
+          # Run vcvars in cmd and capture the environment, then import into PowerShell env
+          $envLines = cmd.exe /c "`"$vcvars`" && set"
+          foreach ($line in $envLines) {
+            if ($line -match "^(.*?)=(.*)$") {
+              $name = $matches[1]
+              $value = $matches[2]
+              # Avoid overwriting PATH entirely; append if PATH variable
+              if ($name -eq "PATH") {
+                $env:PATH = $value
+              } else {
+                $env:$name = $value
+              }
+            }
+          }
+
+          # Set build-specific env and run acore.sh under bash (inherits MSVC env)
+          $env:CTOOLS_BUILD = "all"
+          $env:CMAKE_GENERATOR = "Ninja"
+          bash -lc "./acore.sh compiler build"
+
 
