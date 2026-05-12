@@ -34,31 +34,25 @@ jobs:
           repository: 'mod-playerbots/mod-playerbots'
           path: ac/modules/mod-playerbots
 
-      - name: Move repo to short path
+      - name: Install Ninja
         shell: powershell
         run: |
-          mkdir C:\ac
-          robocopy ac C:\ac /E
-
-      - name: Enable long paths
-        shell: powershell
-        run: |
-          reg add HKLM\SYSTEM\CurrentControlSet\Control\FileSystem /v LongPathsEnabled /t REG_DWORD /d 1 /f
+          choco install ninja -y
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2.13
 
       - name: Configure OS
         shell: bash
-        working-directory: C:\ac
+        working-directory: ac
         env:
           CONTINUOUS_INTEGRATION: true
         run: |
           ./acore.sh install-deps
 
-      - name: Build
+      - name: Build (Ninja)
         shell: bash
-        working-directory: C:\ac
+        working-directory: ac
         run: |
           export CTOOLS_BUILD=all
-          ./acore.sh compiler build
+          ./acore.sh compiler build -G "Ninja"
