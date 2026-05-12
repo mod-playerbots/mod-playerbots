@@ -2467,7 +2467,7 @@ std::vector<uint32> TravelNodeMap::FindTaxiPath(uint32 fromNode, uint32 toNode)
     TaxiNodesEntry const* startNode = sTaxiNodesStore.LookupEntry(fromNode);
     TaxiNodesEntry const* endNode = sTaxiNodesStore.LookupEntry(toNode);
 
-    if (!startNode || !endNode || startNode->map_id != endNode->map_id)
+    if (!startNode || !endNode)
         return {};
 
     auto cacheItr = taxiPathCache.find(fromNode);

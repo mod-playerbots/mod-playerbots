@@ -1027,19 +1027,21 @@ WorldPosition NewRpgBaseAction::SelectRandomCampPos(Player* bot)
     return dest;
 }
 
-bool NewRpgBaseAction::SelectRandomFlightTaxiNode(ObjectGuid& flightMaster, std::vector<uint32>& path)
+bool NewRpgBaseAction::SelectRandomFlightTaxiNode(uint32& flightMasterEntry, WorldPosition& flightMasterPos, std::vector<uint32>& path)
 {
-    flightMaster = sTravelMgr.GetNearestFlightMasterGuid(bot);
-    if (!flightMaster)
+    TravelMgr::FlightMasterInfo const* info = sTravelMgr.GetNearestFlightMasterInfo(bot);
+    if (!info)
         return false;
 
     std::vector<std::vector<uint32>> availablePaths = sTravelMgr.GetOptimalFlightDestinations(bot);
     if (availablePaths.empty())
         return false;
 
+    flightMasterEntry = info->templateEntry;
+    flightMasterPos = info->pos;
     path = availablePaths[urand(0, availablePaths.size() - 1)];
     LOG_DEBUG("playerbots", "[New RPG] Bot {} select random flight taxi node from:{} (node {}) to:{} ({} available)",
-              bot->GetName(), flightMaster.GetEntry(), path[0], path[path.size() - 1], availablePaths.size());
+              bot->GetName(), flightMasterEntry, path[0], path[path.size() - 1], availablePaths.size());
     return true;
 }
 
@@ -1139,11 +1141,12 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
         }
         case RPG_TRAVEL_FLIGHT:
         {
-            ObjectGuid flightMaster;
+            uint32 flightMasterEntry = 0;
+            WorldPosition flightMasterPos;
             std::vector<uint32> path;
-            if (SelectRandomFlightTaxiNode(flightMaster, path))
+            if (SelectRandomFlightTaxiNode(flightMasterEntry, flightMasterPos, path))
             {
-                botAI->rpgInfo.ChangeToTravelFlight(flightMaster, path);
+                botAI->rpgInfo.ChangeToTravelFlight(flightMasterEntry, flightMasterPos, path);
                 return true;
             }
             return false;
@@ -1220,9 +1223,10 @@ bool NewRpgBaseAction::CheckRpgStatusAvailable(NewRpgStatus status)
         }
         case RPG_TRAVEL_FLIGHT:
         {
-            ObjectGuid flightMaster;
+            uint32 flightMasterEntry = 0;
+            WorldPosition flightMasterPos;
             std::vector<uint32> path;
-            return SelectRandomFlightTaxiNode(flightMaster, path);
+            return SelectRandomFlightTaxiNode(flightMasterEntry, flightMasterPos, path);
         }
         case RPG_OUTDOOR_PVP:
         {

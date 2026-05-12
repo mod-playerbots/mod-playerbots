@@ -619,7 +619,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
         else
             password = accountName;
 
-        AccountMgr::CreateAccount(accountName, password);
+        sAccountMgr->CreateAccount(accountName, password);
 
         LOG_DEBUG("playerbots", "Account {} created for random bots", accountName.c_str());
     }
