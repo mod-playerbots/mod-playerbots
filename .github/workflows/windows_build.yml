@@ -43,7 +43,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2.13
 
       - name: Configure OS
-        shell: bash
+        shell: powershell
         working-directory: ac
         env:
           CONTINUOUS_INTEGRATION: true
@@ -51,10 +51,10 @@ jobs:
           ./acore.sh install-deps
 
       - name: Build (Ninja)
-        shell: bash
+        shell: powershell
         working-directory: ac
         env:
           CMAKE_GENERATOR: Ninja
         run: |
-          export CTOOLS_BUILD=all
+          $env:CTOOLS_BUILD="all"
           ./acore.sh compiler build
