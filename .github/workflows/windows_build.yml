@@ -53,6 +53,8 @@ jobs:
       - name: Build (Ninja)
         shell: bash
         working-directory: ac
+        env:
+          CMAKE_GENERATOR: Ninja
         run: |
           export CTOOLS_BUILD=all
-          ./acore.sh compiler build -G "Ninja"
+          ./acore.sh compiler build
