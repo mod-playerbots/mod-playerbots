@@ -1,6 +1,8 @@
 #ifndef _PLAYERBOT_NEWRPGACTION_H
 #define _PLAYERBOT_NEWRPGACTION_H
 
+#include <string>
+
 #include "Duration.h"
 #include "MovementActions.h"
 #include "NewRpgBaseAction.h"
@@ -13,12 +15,20 @@
 #include "QuestDef.h"
 #include "TravelMgr.h"
 
+class Player;
+
 class TellRpgStatusAction : public NewRpgBaseAction
 {
 public:
     TellRpgStatusAction(PlayerbotAI* botAI) : NewRpgBaseAction(botAI, "rpg status") {}
 
     bool Execute(Event event) override;
+
+private:
+    static constexpr char const* RPG_STATUS_CHANGED_KEY = "rpg_status_changed";
+    static constexpr char const* RPG_STATUS_CHANGED_DEFAULT = "rpg status -> %status";
+
+    void WhisperStatusChange(Player* owner, std::string const& statusName);
 };
 
 class StartRpgDoQuestAction : public Action

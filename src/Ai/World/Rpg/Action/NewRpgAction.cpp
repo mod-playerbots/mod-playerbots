@@ -26,6 +26,14 @@
 #include "Timer.h"
 #include "TravelMgr.h"
 
+void TellRpgStatusAction::WhisperStatusChange(Player* owner, std::string const& statusName)
+{
+    std::string msg = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+        RPG_STATUS_CHANGED_KEY, RPG_STATUS_CHANGED_DEFAULT,
+        {{"%status", statusName}});
+    bot->Whisper(msg, LANG_UNIVERSAL, owner);
+}
+
 bool TellRpgStatusAction::Execute(Event event)
 {
     Player* owner = event.getOwner();
@@ -54,10 +62,20 @@ bool TellRpgStatusAction::Execute(Event event)
 
     std::string name = text;
     uint32 questId = 0;
-    if (text.find("do quest ") != std::string::npos)
+    static std::string const doQuestPrefix = "do quest ";
+    size_t doQuestPos = text.find(doQuestPrefix);
+    if (doQuestPos != std::string::npos)
     {
-        questId = stoi(text.substr(9));
         name = "do quest";
+        std::string idStr = text.substr(doQuestPos + doQuestPrefix.length());
+        try
+        {
+            questId = static_cast<uint32>(std::stoul(idStr));
+        }
+        catch (std::exception const&)
+        {
+            questId = 0;
+        }
     }
 
     NewRpgStatus status = NewRpgInfo::StatusFromString(name);
@@ -66,38 +84,26 @@ bool TellRpgStatusAction::Execute(Event event)
     if (status == RPG_IDLE)
     {
         info.ChangeToIdle();
-        std::string msg = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "rpg_status_changed", "rpg status -> %status",
-            {{"status", "IDLE"}});
-        bot->Whisper(msg, LANG_UNIVERSAL, owner);
+        WhisperStatusChange(owner, "IDLE");
         return true;
     }
     else if (status == RPG_REST)
     {
         info.ChangeToRest();
         bot->SetStandState(UNIT_STAND_STATE_SIT);
-        std::string msg = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "rpg_status_changed", "rpg status -> %status",
-            {{"status", "REST"}});
-        bot->Whisper(msg, LANG_UNIVERSAL, owner);
+        WhisperStatusChange(owner, "REST");
         return true;
     }
     else if (status == RPG_WANDER_RANDOM)
     {
         info.ChangeToWanderRandom();
-        std::string msg = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "rpg_status_changed", "rpg status -> %status",
-            {{"status", "WANDER_RANDOM"}});
-        bot->Whisper(msg, LANG_UNIVERSAL, owner);
+        WhisperStatusChange(owner, "WANDER_RANDOM");
         return true;
     }
     else if (status == RPG_WANDER_NPC)
     {
         info.ChangeToWanderNpc();
-        std::string msg = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "rpg_status_changed", "rpg status -> %status",
-            {{"status", "WANDER_NPC"}});
-        bot->Whisper(msg, LANG_UNIVERSAL, owner);
+        WhisperStatusChange(owner, "WANDER_NPC");
         return true;
     }
     else if (status == RPG_GO_GRIND)
@@ -111,10 +117,7 @@ bool TellRpgStatusAction::Execute(Event event)
             return false;
         }
         info.ChangeToGoGrind(pos);
-        std::string msg = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "rpg_status_changed", "rpg status -> %status",
-            {{"status", "GO_GRIND"}});
-        bot->Whisper(msg, LANG_UNIVERSAL, owner);
+        WhisperStatusChange(owner, "GO_GRIND");
         return true;
     }
     else if (status == RPG_GO_CAMP)
@@ -128,10 +131,7 @@ bool TellRpgStatusAction::Execute(Event event)
             return false;
         }
         info.ChangeToGoCamp(pos);
-        std::string msg = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "rpg_status_changed", "rpg status -> %status",
-            {{"status", "GO_CAMP"}});
-        bot->Whisper(msg, LANG_UNIVERSAL, owner);
+        WhisperStatusChange(owner, "GO_CAMP");
         return true;
     }
     else if (status == RPG_TRAVEL_FLIGHT)
@@ -147,19 +147,13 @@ bool TellRpgStatusAction::Execute(Event event)
             return false;
         }
         info.ChangeToTravelFlight(flightMasterEntry, flightMasterPos, std::move(path));
-        std::string msg = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "rpg_status_changed", "rpg status -> %status",
-            {{"status", "TRAVEL_FLIGHT"}});
-        bot->Whisper(msg, LANG_UNIVERSAL, owner);
+        WhisperStatusChange(owner, "TRAVEL_FLIGHT");
         return true;
     }
     else if (status == RPG_OUTDOOR_PVP)
     {
         info.ChangeToOutdoorPvp();
-        std::string msg = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "rpg_status_changed", "rpg status -> %status",
-            {{"status", "OUTDOOR_PVP"}});
-        bot->Whisper(msg, LANG_UNIVERSAL, owner);
+        WhisperStatusChange(owner, "OUTDOOR_PVP");
         return true;
     }
     else if (status == RPG_DO_QUEST)
@@ -187,19 +181,17 @@ bool TellRpgStatusAction::Execute(Event event)
             return false;
         }
         Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
-        if (!quest)
+S        QuestStatus questStatus = bot->GetQuestStatus(questId);
+        if (!quest || (questStatus != QUEST_STATUS_INCOMPLETE && questStatus != QUEST_STATUS_COMPLETE))
         {
             std::string msg = PlayerbotTextMgr::instance().GetBotTextOrDefault(
                 "rpg_invalid_quest_error", "Invalid quest %quest_id",
-                {{"quest_id", std::to_string(questId)}});
+                {{"%quest_id", std::to_string(questId)}});
             bot->Whisper(msg, LANG_UNIVERSAL, owner);
             return false;
         }
         info.ChangeToDoQuest(questId, quest);
-        std::string msg = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "rpg_status_changed", "rpg status -> %status",
-            {{"status", "DO_QUEST " + std::to_string(questId)}});
-        bot->Whisper(msg, LANG_UNIVERSAL, owner);
+        WhisperStatusChange(owner, "DO_QUEST " + std::to_string(questId));
         return true;
     }
 
