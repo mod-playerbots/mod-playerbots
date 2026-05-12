@@ -32,6 +32,10 @@ jobs:
           repository: 'mod-playerbots/mod-playerbots'
           #path: 'modules/mod-playerbots'
           path: ac/modules/mod-playerbots
+      - name: Enable long paths
+        shell: powershell
+        run: |
+          reg add HKLM\SYSTEM\CurrentControlSet\Control\FileSystem /v LongPathsEnable
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2.13
       - name: Configure OS
