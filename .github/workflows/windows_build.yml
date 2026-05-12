@@ -19,6 +19,7 @@ jobs:
     name: ${{ matrix.os }}
     env:
       BOOST_ROOT: C:\local\boost_1_82_0
+
     steps:
       - name: Checkout AzerothCore
         uses: actions/checkout@v3
@@ -26,35 +27,38 @@ jobs:
           repository: 'mod-playerbots/azerothcore-wotlk'
           ref: ${{ (github.base_ref || github.ref_name) == 'test-staging' && 'test-staging' || 'Playerbot' }}
           path: 'ac'
+
       - name: Checkout Playerbot Module
         uses: actions/checkout@v3
         with:
           repository: 'mod-playerbots/mod-playerbots'
-          #path: 'modules/mod-playerbots'
           path: ac/modules/mod-playerbots
-      # Move repo to short path
+
       - name: Move repo to short path
         shell: powershell
         run: |
           mkdir C:\ac
           robocopy ac C:\ac /E
-      # Enable long paths    
+
       - name: Enable long paths
         shell: powershell
         run: |
           reg add HKLM\SYSTEM\CurrentControlSet\Control\FileSystem /v LongPathsEnabled /t REG_DWORD /d 1 /f
+
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2.13
+
       - name: Configure OS
         shell: bash
-        working-directory: ac
+        working-directory: C:\ac
         env:
           CONTINUOUS_INTEGRATION: true
         run: |
           ./acore.sh install-deps
+
       - name: Build
         shell: bash
-        working-directory: ac
+        working-directory: C:\ac
         run: |
           export CTOOLS_BUILD=all
           ./acore.sh compiler build
