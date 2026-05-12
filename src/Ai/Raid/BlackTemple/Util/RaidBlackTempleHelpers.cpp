@@ -14,9 +14,6 @@ namespace BlackTempleHelpers
     const Position NAJENTUS_TANK_POSITION = { 438.515f, 772.436f, 11.931f };
 
     // Supremus
-    const Position SUPREMUS_TANK_POSITION = { 704.651f, 684.401f, 72.608f };
-
-    std::unordered_map<ObjectGuid, Position> supremusRangedPositions;
     std::unordered_map<uint32, time_t> supremusPhaseTimer;
 
     bool HasSupremusVolcanoNearby(PlayerbotAI* botAI, Player* bot)

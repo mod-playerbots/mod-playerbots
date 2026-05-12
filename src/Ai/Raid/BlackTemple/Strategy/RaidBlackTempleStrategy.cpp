@@ -127,7 +127,7 @@ void RaidBlackTempleStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("illidari council main tank reflect judgement of command", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("illidari council malande engaged by first assist tank", {
-        NextAction("illidari council first assist tank position malande", ACTION_RAID + 1) }));
+        NextAction("illidari council first assist tank focus malande", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("illidari council darkshadow engaged by second assist tank", {
         NextAction("illidari council second assist tank position darkshadow", ACTION_RAID + 1) }));

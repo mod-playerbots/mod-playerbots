@@ -131,8 +131,8 @@ public:
         creators["illidari council main tank reflect judgement of command"] =
             &RaidBlackTempleActionContext::illidari_council_main_tank_reflect_judgement_of_command;
 
-        creators["illidari council first assist tank position malande"] =
-            &RaidBlackTempleActionContext::illidari_council_first_assist_tank_position_malande;
+        creators["illidari council first assist tank focus malande"] =
+            &RaidBlackTempleActionContext::illidari_council_first_assist_tank_focus_malande;
 
         creators["illidari council second assist tank position darkshadow"] =
             &RaidBlackTempleActionContext::illidari_council_second_assist_tank_position_darkshadow;
@@ -326,8 +326,8 @@ private:
     static Action* illidari_council_main_tank_reflect_judgement_of_command(
         PlayerbotAI* botAI) { return new IllidariCouncilMainTankReflectJudgementOfCommandAction(botAI); }
 
-    static Action* illidari_council_first_assist_tank_position_malande(
-        PlayerbotAI* botAI) { return new IllidariCouncilFirstAssistTankPositionMalandeAction(botAI); }
+    static Action* illidari_council_first_assist_tank_focus_malande(
+        PlayerbotAI* botAI) { return new IllidariCouncilFirstAssistTankFocusMalandeAction(botAI); }
 
     static Action* illidari_council_second_assist_tank_position_darkshadow(
         PlayerbotAI* botAI) { return new IllidariCouncilSecondAssistTankPositionDarkshadowAction(botAI); }

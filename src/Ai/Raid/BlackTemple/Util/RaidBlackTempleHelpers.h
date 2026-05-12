@@ -138,8 +138,6 @@ constexpr uint32 BLACK_TEMPLE_MAP_ID = 564;
 extern const Position NAJENTUS_TANK_POSITION;
 
 // Supremus
-extern const Position SUPREMUS_TANK_POSITION;
-extern std::unordered_map<ObjectGuid, Position> supremusRangedPositions;
 extern std::unordered_map<uint32, time_t> supremusPhaseTimer;
 bool HasSupremusVolcanoNearby(PlayerbotAI* botAI, Player* bot);
 

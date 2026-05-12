@@ -1485,8 +1485,7 @@ bool IllidariCouncilMainTankReflectJudgementOfCommandAction::Execute(Event /*eve
     return false;
 }
 
-// Rename to something like "focus" Malande if this works
-bool IllidariCouncilFirstAssistTankPositionMalandeAction::Execute(Event /*event*/)
+bool IllidariCouncilFirstAssistTankFocusMalandeAction::Execute(Event /*event*/)
 {
     Unit* malande = AI_VALUE2(Unit*, "find target", "lady malande");
     if (!malande)
@@ -1504,25 +1503,6 @@ bool IllidariCouncilFirstAssistTankPositionMalandeAction::Execute(Event /*event*
 
     if (AI_VALUE(Unit*, "current target") != malande)
         return Attack(malande);
-
-    /* if (malande->GetVictim() == bot)
-    {
-        const Position& position = MALANDE_TANK_POSITION;
-        const float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
-                                                         position.GetPositionY());
-        if (distToPosition > 5.0f)
-        {
-            const float dX = position.GetPositionX() - bot->GetPositionX();
-            const float dY = position.GetPositionY() - bot->GetPositionY();
-            const float moveDist = std::min(5.0f, distToPosition);
-            const float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-            const float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
-
-            return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY, position.GetPositionZ(),
-                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT,
-                          true, true);
-        }
-    } */
 
     return false;
 }
@@ -2360,6 +2340,9 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
         }
         waypoints = &W_GLAIVE_TANK_POSITIONS;
     }
+
+    if (!waypoints)
+        return false;
 
     size_t& waypointIndex = flameTankWaypointIndex[bot->GetGUID()];
     const Position& target = (*waypoints)[waypointIndex];

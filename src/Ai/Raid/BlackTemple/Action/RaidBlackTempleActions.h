@@ -337,11 +337,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class IllidariCouncilFirstAssistTankPositionMalandeAction : public AttackAction
+class IllidariCouncilFirstAssistTankFocusMalandeAction : public AttackAction
 {
 public:
-    IllidariCouncilFirstAssistTankPositionMalandeAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "illidari council first assist tank position malande") {}
+    IllidariCouncilFirstAssistTankFocusMalandeAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "illidari council first assist tank focus malande") {}
     bool Execute(Event event) override;
 };
 
