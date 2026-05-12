@@ -32,6 +32,13 @@ jobs:
           repository: 'mod-playerbots/mod-playerbots'
           #path: 'modules/mod-playerbots'
           path: ac/modules/mod-playerbots
+      # Move repo to short path
+      - name: Move repo to short path
+        shell: powershell
+        run: |
+          mkdir C:\ac
+          robocopy ac C:\ac /E
+      # Enable long paths    
       - name: Enable long paths
         shell: powershell
         run: |
