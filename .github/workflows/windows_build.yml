@@ -21,7 +21,7 @@ jobs:
     name: ${{ matrix.os }}
 
     env:
-      BOOST_ROOT: C:\local\boost_1_82_0
+      BOOST_ROOT: C:\local\boost_1_87_0
       CMAKE_GENERATOR: Ninja
       CTOOLS_BUILD: all
 
@@ -44,11 +44,6 @@ jobs:
         run: |
           choco install ninja -y
 
-      - name: Setup MSVC
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
-
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2.13
 
@@ -60,13 +55,38 @@ jobs:
         run: |
           ./acore.sh install-deps
 
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
       - name: Build
         shell: bash
         working-directory: a
         run: |
           export CTOOLS_BUILD=all
           export CMAKE_GENERATOR=Ninja
+
+          export CC=cl
+          export CXX=cl
+          export RC=rc
+
+          export CMAKE_C_COMPILER=cl
+          export CMAKE_CXX_COMPILER=cl
+          export CMAKE_RC_COMPILER=rc
+
           cmake --version
           ninja --version
+
           echo "CMAKE_GENERATOR=$CMAKE_GENERATOR"
+          echo "CC=$CC"
+          echo "CXX=$CXX"
+
+          which cl || true
+          which rc || true
+          cl || true
+          rc || true
+
+          rm -rf var/build/obj
+
           ./acore.sh compiler build
