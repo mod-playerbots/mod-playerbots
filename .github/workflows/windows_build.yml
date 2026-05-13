@@ -1,4 +1,5 @@
 name: windows-build
+
 on:
   push:
     branches: [ "master", "test-staging" ]
@@ -6,7 +7,7 @@ on:
     branches: [ "master", "test-staging" ]
 
 concurrency:
-  group: "windows-build-${{ github.event.pull_request.number }}"
+  group: "windows-build-${{ github.event.pull_request.number || github.ref }}"
   cancel-in-progress: true
 
 jobs:
@@ -15,10 +16,14 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest]
+
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }}
+
     env:
       BOOST_ROOT: C:\local\boost_1_82_0
+      CMAKE_GENERATOR: Ninja
+      CTOOLS_BUILD: all
 
     steps:
       - name: Checkout AzerothCore
@@ -26,63 +31,42 @@ jobs:
         with:
           repository: 'mod-playerbots/azerothcore-wotlk'
           ref: ${{ (github.base_ref || github.ref_name) == 'test-staging' && 'test-staging' || 'Playerbot' }}
-          path: 'ac'
+          path: a
 
       - name: Checkout Playerbot Module
         uses: actions/checkout@v3
         with:
           repository: 'mod-playerbots/mod-playerbots'
-          path: ac/modules/mod-playerbots
+          path: a/modules/mod-playerbots
 
       - name: Install Ninja
         shell: powershell
         run: |
           choco install ninja -y
 
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2.13
 
       - name: Configure OS
-        shell: powershell
-        working-directory: ac
+        shell: bash
+        working-directory: a
         env:
           CONTINUOUS_INTEGRATION: true
         run: |
-          bash ./acore.sh install-deps
+          ./acore.sh install-deps
 
-      - name: Build (Ninja)
-        shell: powershell
-        working-directory: ac
-        env:
-          CMAKE_GENERATOR: Ninja
+      - name: Build
+        shell: bash
+        working-directory: a
         run: |
-          $vcvars = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          if (-Not (Test-Path $vcvars)) {
-            $vcvars = "C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          }
-          if (-Not (Test-Path $vcvars)) {
-            Write-Error "vcvars64.bat not found. Ensure Visual Studio 2022 is installed on the runner."
-            exit 1
-          }
-
-          # Run vcvars in cmd and capture the environment, then import into PowerShell env
-          $envLines = cmd.exe /c "`"$vcvars`" && set"
-          foreach ($line in $envLines) {
-            if ($line -match "^(.*?)=(.*)$") {
-              $name = $matches[1]
-              $value = $matches[2]
-              # Avoid overwriting PATH entirely; append if PATH variable
-              if ($name -eq "PATH") {
-                $env:PATH = $value
-              } else {
-                $env:$name = $value
-              }
-            }
-          }
-
-          # Set build-specific env and run acore.sh under bash (inherits MSVC env)
-          $env:CTOOLS_BUILD = "all"
-          $env:CMAKE_GENERATOR = "Ninja"
-          bash -lc "./acore.sh compiler build"
-
-
+          export CTOOLS_BUILD=all
+          export CMAKE_GENERATOR=Ninja
+          cmake --version
+          ninja --version
+          echo "CMAKE_GENERATOR=$CMAKE_GENERATOR"
+          ./acore.sh compiler build
