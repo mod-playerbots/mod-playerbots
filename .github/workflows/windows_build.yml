@@ -55,6 +55,24 @@ jobs:
         run: |
           ./acore.sh install-deps
 
+      - name: Create AzerothCore CI config
+        shell: bash
+        working-directory: a
+        run: |
+          cat > conf/config.sh <<'EOF'
+          CCOMPILERC="cl"
+          CCOMPILERCXX="cl"
+
+          CTYPE="Release"
+          CSCRIPTS="static"
+          CMODULES="static"
+          CTOOLS_BUILD="all"
+
+          CCUSTOMOPTIONS="-DCMAKE_RC_COMPILER=rc"
+          EOF
+
+          cat conf/config.sh
+
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
         with:
@@ -70,10 +88,6 @@ jobs:
           export CC=cl
           export CXX=cl
           export RC=rc
-
-          export CMAKE_C_COMPILER=cl
-          export CMAKE_CXX_COMPILER=cl
-          export CMAKE_RC_COMPILER=rc
 
           cmake --version
           ninja --version
