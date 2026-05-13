@@ -118,7 +118,7 @@ namespace MagtheridonHelpers
     std::unordered_map<uint32, time_t> spreadWaitTimer;
     std::unordered_map<uint32, time_t> dpsWaitTimer;
 
-    bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* bot, float x, float y, float z)
+    bool IsSafeFromMagtheridonHazards(PlayerbotAI* botAI, Player* /*bot*/, float x, float y, float /*z*/)
     {
         // Debris
         std::vector<Unit*> debrisHazards;

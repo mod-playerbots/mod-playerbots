@@ -7,7 +7,7 @@
 #define _PLAYERBOT_RAIDSSCTRIGGERCONTEXT_H
 
 #include "RaidSSCTriggers.h"
-#include "AiObjectContext.h"
+#include "NamedObjectContext.h"
 
 class RaidSSCTriggerContext : public NamedObjectContext<Trigger>
 {

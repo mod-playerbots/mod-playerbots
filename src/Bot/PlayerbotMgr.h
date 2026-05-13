@@ -57,7 +57,7 @@ protected:
     virtual void OnBotLoginInternal(Player* const bot) = 0;
 
     PlayerBotMap playerBots;
-    static std::unordered_set<ObjectGuid> botLoading;
+    static std::unordered_map<ObjectGuid, uint32> botLoading;
 };
 
 class PlayerbotMgr : public PlayerbotHolder

@@ -13,7 +13,7 @@ void MaintenanceStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
         new TriggerNode(
-            "random",
+            "seldom",
             {
                 NextAction("clean quest log", 6.0f)
             }

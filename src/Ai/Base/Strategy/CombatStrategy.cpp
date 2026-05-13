@@ -64,11 +64,11 @@ std::vector<NextAction> AvoidAoeStrategy::getDefaultActions()
     };
 }
 
-void AvoidAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void AvoidAoeStrategy::InitTriggers(std::vector<TriggerNode*>& /*triggers*/)
 {
 }
 
-void AvoidAoeStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
+void AvoidAoeStrategy::InitMultipliers(std::vector<Multiplier*>& /*multipliers*/)
 {
 }
 
@@ -81,7 +81,7 @@ std::vector<NextAction> TankFaceStrategy::getDefaultActions()
     };
 }
 
-void TankFaceStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void TankFaceStrategy::InitTriggers(std::vector<TriggerNode*>& /*triggers*/)
 {
 }
 

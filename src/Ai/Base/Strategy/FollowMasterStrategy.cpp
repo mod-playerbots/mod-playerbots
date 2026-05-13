@@ -12,6 +12,6 @@ std::vector<NextAction> FollowMasterStrategy::getDefaultActions()
     };
 }
 
-void FollowMasterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void FollowMasterStrategy::InitTriggers(std::vector<TriggerNode*>& /*triggers*/)
 {
 }

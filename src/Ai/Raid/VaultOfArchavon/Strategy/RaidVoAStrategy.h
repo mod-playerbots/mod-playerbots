@@ -3,10 +3,6 @@
 #define _PLAYERBOT_RAIDVOASTRATEGY_H
 
 #include "Strategy.h"
-#include "PlayerbotAI.h"
-#include "string"
-#include "Trigger.h"
-#include "vector"
 
 class RaidVoAStrategy : public Strategy
 {

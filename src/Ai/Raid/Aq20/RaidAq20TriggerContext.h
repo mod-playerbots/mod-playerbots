@@ -1,7 +1,6 @@
 #ifndef _PLAYERBOT_RAIDAQ20TRIGGERCONTEXT_H
 #define _PLAYERBOT_RAIDAQ20TRIGGERCONTEXT_H
 
-#include "AiObjectContext.h"
 #include "NamedObjectContext.h"
 #include "RaidAq20Triggers.h"
 

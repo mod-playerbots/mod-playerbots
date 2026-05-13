@@ -1466,16 +1466,16 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::Execute(Event /*event*/)
     if (tidewalker->GetVictim() == bot && bot->IsWithinMeleeRange(tidewalker))
     {
         if (tidewalker->GetHealthPct() > 26.0f)
-            return MoveToPhase1TankPosition(tidewalker);
+            return MoveToPhase1TankPosition();
         else
-            return MoveToPhase2TankPosition(tidewalker);
+            return MoveToPhase2TankPosition();
     }
 
     return false;
 }
 
 // Phase 1: tank position is up against the Northeast pillar
-bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase1TankPosition(Unit* tidewalker)
+bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase1TankPosition()
 {
     const Position& phase1 = TIDEWALKER_PHASE_1_TANK_POSITION;
     float distToPhase1 = bot->GetExactDist2d(phase1.GetPositionX(), phase1.GetPositionY());
@@ -1495,7 +1495,7 @@ bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase1TankPosition(Un
 }
 
 // Phase 2: move in two steps to get around the pillar and back up into the Northeast corner
-bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase2TankPosition(Unit* tidewalker)
+bool MorogrimTidewalkerMoveBossToTankPositionAction::MoveToPhase2TankPosition()
 {
     const Position& phase2 = TIDEWALKER_PHASE_2_TANK_POSITION;
     const Position& transition = TIDEWALKER_PHASE_TRANSITION_WAYPOINT;
@@ -2151,7 +2151,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
     {
         // Passer order: HealAssistantOfIndex 0, 1, 2, then RangedDpsAssistantOfIndex 0
         if (bot == firstCorePasser &&
-            LineUpFirstCorePasser(designatedLooter, closestTrigger))
+            LineUpFirstCorePasser(designatedLooter))
         {
             return true;
         }
@@ -2176,7 +2176,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
         // Designated core looter logic
         // Applicable only if cheat mode is on and thus looter is a bot
         if (bot == designatedLooter &&
-            IsFirstCorePasserInPosition(designatedLooter, firstCorePasser, closestTrigger))
+            IsFirstCorePasserInPosition(firstCorePasser))
         {
             const time_t now = std::time(nullptr);
             auto it = lastImbueAttempt.find(instanceId);
@@ -2192,7 +2192,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
         // First core passer: receive core from looter at the top of the stairs,
         // pass to second core passer
         else if (bot == firstCorePasser &&
-                 IsSecondCorePasserInPosition(firstCorePasser, secondCorePasser, closestTrigger))
+                 IsSecondCorePasserInPosition(secondCorePasser))
         {
             const time_t now = std::time(nullptr);
             auto it = lastImbueAttempt.find(instanceId);
@@ -2209,7 +2209,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
         // of the first passer, move to the generator; otherwise, move as close as
         // possible to the generator while staying in passing range
         else if (bot == secondCorePasser && !UseCoreOnNearestGenerator(instanceId) &&
-                 IsThirdCorePasserInPosition(secondCorePasser, thirdCorePasser, closestTrigger))
+                 IsThirdCorePasserInPosition(thirdCorePasser))
         {
             const time_t now = std::time(nullptr);
             auto it = lastImbueAttempt.find(instanceId);
@@ -2226,7 +2226,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
         // of the second passer, move to the generator; otherwise, move as close as
         // possible to the generator while staying in passing range
         else if (bot == thirdCorePasser && !UseCoreOnNearestGenerator(instanceId) &&
-                 IsFourthCorePasserInPosition(thirdCorePasser, fourthCorePasser, closestTrigger))
+                 IsFourthCorePasserInPosition(fourthCorePasser))
         {
             const time_t now = std::time(nullptr);
             auto it = lastImbueAttempt.find(instanceId);
@@ -2249,7 +2249,7 @@ bool LadyVashjPassTheTaintedCoreAction::Execute(Event /*event*/)
 }
 
 bool LadyVashjPassTheTaintedCoreAction::LineUpFirstCorePasser(
-    Player* designatedLooter, Unit* closestTrigger)
+    Player* designatedLooter)
 {
     const float centerX = VASHJ_PLATFORM_CENTER_POSITION.GetPositionX();
     const float centerY = VASHJ_PLATFORM_CENTER_POSITION.GetPositionY();
@@ -2287,8 +2287,6 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(
     auto itFirst = intendedLineup.find(firstCorePasser->GetGUID());
     if (itFirst == intendedLineup.end())
         return false;
-
-    const Position& firstLineup = itFirst->second;
 
     auto itSecond = intendedLineup.find(bot->GetGUID());
     if (itSecond == intendedLineup.end())
@@ -2343,9 +2341,9 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(
     Player* secondCorePasser, Unit* closestTrigger)
 {
     bool needThirdPasser =
-        (IsFirstCorePasserInPosition(designatedLooter, firstCorePasser, closestTrigger) &&
+        (IsFirstCorePasserInPosition(firstCorePasser) &&
          firstCorePasser->GetExactDist2d(closestTrigger) > 42.0f) ||
-        (IsSecondCorePasserInPosition(firstCorePasser, secondCorePasser, closestTrigger) &&
+        (IsSecondCorePasserInPosition(secondCorePasser) &&
          secondCorePasser->GetExactDist2d(closestTrigger) > 4.0f);
 
     if (!needThirdPasser)
@@ -2408,9 +2406,9 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(
     Player* thirdCorePasser, Unit* closestTrigger)
 {
     bool needFourthPasser =
-        (IsSecondCorePasserInPosition(firstCorePasser, secondCorePasser, closestTrigger) &&
+        (IsSecondCorePasserInPosition(secondCorePasser) &&
          secondCorePasser->GetExactDist2d(closestTrigger) > 42.0f) ||
-        (IsThirdCorePasserInPosition(secondCorePasser, thirdCorePasser, closestTrigger) &&
+        (IsThirdCorePasserInPosition(thirdCorePasser) &&
          thirdCorePasser->GetExactDist2d(closestTrigger) > 4.0f);
 
     if (!needFourthPasser)
@@ -2460,8 +2458,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(
 
 // The next four functions check if the respective passer is <= 2 yards of their intended
 // position and are used to determine when the prior bot in the chain can pass the core
-bool LadyVashjPassTheTaintedCoreAction::IsFirstCorePasserInPosition(
-    Player* designatedLooter, Player* firstCorePasser, Unit* closestTrigger)
+bool LadyVashjPassTheTaintedCoreAction::IsFirstCorePasserInPosition(Player* firstCorePasser)
 {
     auto itSnap = intendedLineup.find(firstCorePasser->GetGUID());
     if (itSnap != intendedLineup.end())
@@ -2474,8 +2471,7 @@ bool LadyVashjPassTheTaintedCoreAction::IsFirstCorePasserInPosition(
     return false;
 }
 
-bool LadyVashjPassTheTaintedCoreAction::IsSecondCorePasserInPosition(
-    Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger)
+bool LadyVashjPassTheTaintedCoreAction::IsSecondCorePasserInPosition(Player* secondCorePasser)
 {
     auto itSnap = intendedLineup.find(secondCorePasser->GetGUID());
     if (itSnap != intendedLineup.end())
@@ -2488,8 +2484,7 @@ bool LadyVashjPassTheTaintedCoreAction::IsSecondCorePasserInPosition(
     return false;
 }
 
-bool LadyVashjPassTheTaintedCoreAction::IsThirdCorePasserInPosition(
-    Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger)
+bool LadyVashjPassTheTaintedCoreAction::IsThirdCorePasserInPosition(Player* thirdCorePasser)
 {
     auto itSnap = intendedLineup.find(thirdCorePasser->GetGUID());
     if (itSnap != intendedLineup.end())
@@ -2502,8 +2497,7 @@ bool LadyVashjPassTheTaintedCoreAction::IsThirdCorePasserInPosition(
     return false;
 }
 
-bool LadyVashjPassTheTaintedCoreAction::IsFourthCorePasserInPosition(
-    Player* thirdCorePasser, Player* fourthCorePasser, Unit* closestTrigger)
+bool LadyVashjPassTheTaintedCoreAction::IsFourthCorePasserInPosition(Player* fourthCorePasser)
 {
     auto itSnap = intendedLineup.find(fourthCorePasser->GetGUID());
     if (itSnap != intendedLineup.end())
