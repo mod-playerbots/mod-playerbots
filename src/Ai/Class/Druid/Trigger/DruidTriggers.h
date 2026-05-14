@@ -55,22 +55,30 @@ public:
     bool IsActive() override;
 };
 
-class OmenOfClarityTrigger : public BuffTrigger
-{
-public:
-    OmenOfClarityTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "omen of clarity") {}
-};
-
 class ClearcastingTrigger : public HasAuraTrigger
 {
 public:
     ClearcastingTrigger(PlayerbotAI* botAI) : HasAuraTrigger(botAI, "clearcasting") {}
 };
 
+class PredatorsSwiftnessTrigger : public HasAuraTrigger
+{
+public:
+    PredatorsSwiftnessTrigger(PlayerbotAI* botAI) : HasAuraTrigger(botAI, "predator's swiftness") {}
+};
+
+class NaturesSwiftnessActiveTrigger : public HasAuraTrigger
+{
+public:
+    NaturesSwiftnessActiveTrigger(PlayerbotAI* botAI) : HasAuraTrigger(botAI, "nature's swiftness") {}
+    bool IsActive() override { return botAI->HasAura("nature's swiftness", bot); }
+};
+
 class RakeTrigger : public DebuffTrigger
 {
 public:
     RakeTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "rake", 1, true) {}
+    bool IsActive() override { return !botAI->HasAura("prowl", bot) && BuffTrigger::IsActive(); }
 };
 
 class InsectSwarmTrigger : public DebuffTrigger
@@ -79,10 +87,24 @@ public:
     InsectSwarmTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "insect swarm", 1, true) {}
 };
 
+class InsectSwarmOnAttackerTrigger : public DebuffOnAttackerTrigger
+{
+public:
+    InsectSwarmOnAttackerTrigger(PlayerbotAI* botAI) : DebuffOnAttackerTrigger(botAI, "insect swarm", true) {}
+    bool IsActive() override { return BuffTrigger::IsActive(); }
+};
+
 class MoonfireTrigger : public DebuffTrigger
 {
 public:
     MoonfireTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "moonfire", 1, true) {}
+};
+
+class MoonfireOnAttackerTrigger : public DebuffOnAttackerTrigger
+{
+public:
+    MoonfireOnAttackerTrigger(PlayerbotAI* botAI) : DebuffOnAttackerTrigger(botAI, "moonfire", true) {}
+    bool IsActive() override { return BuffTrigger::IsActive(); }
 };
 
 class FaerieFireTrigger : public DebuffTrigger
@@ -95,6 +117,35 @@ class FaerieFireFeralTrigger : public DebuffTrigger
 {
 public:
     FaerieFireFeralTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "faerie fire (feral)") {}
+
+    bool IsActive() override
+    {
+        if (!bot->IsInCombat())
+            return false;
+
+        // Bear: every cast generates immediate threat/damage for free — spam it
+        if (botAI->HasAnyAuraOf(bot, "bear form", "dire bear form", nullptr))
+        {
+            Unit* target = GetTarget();
+            return target && target->IsAlive() && target->IsInWorld();
+        }
+
+        if (!botAI->HasAura("cat form", bot))
+            return false;
+
+        if (botAI->HasAura("prowl", bot))
+            return false;
+
+        // Cat with Omen of Clarity: spam to fish for Clearcasting procs
+        if (bot->HasAura(16864) /*omen of clarity*/)
+        {
+            Unit* target = GetTarget();
+            return target && target->IsAlive() && target->IsInWorld();
+        }
+
+        // Cat without Omen of Clarity: apply as a normal debuff, don't reapply
+        return DebuffTrigger::IsActive();
+    }
 };
 
 class BashInterruptSpellTrigger : public InterruptSpellTrigger
@@ -107,12 +158,19 @@ class TigersFuryTrigger : public BuffTrigger
 {
 public:
     TigersFuryTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "tiger's fury") {}
+    bool IsActive() override;
 };
 
 class BerserkTrigger : public BoostTrigger
 {
 public:
     BerserkTrigger(PlayerbotAI* botAI) : BoostTrigger(botAI, "berserk") {}
+};
+
+class BerserkActiveTrigger : public HasAuraTrigger
+{
+public:
+    BerserkActiveTrigger(PlayerbotAI* botAI) : HasAuraTrigger(botAI, "berserk") {}
 };
 
 class SavageRoarTrigger : public BuffTrigger
@@ -131,6 +189,8 @@ class EntanglingRootsTrigger : public HasCcTargetTrigger
 {
 public:
     EntanglingRootsTrigger(PlayerbotAI* botAI) : HasCcTargetTrigger(botAI, "entangling roots") {}
+
+    bool IsActive() override;
 };
 
 class EntanglingRootsKiteTrigger : public DebuffTrigger
@@ -145,6 +205,16 @@ class HibernateTrigger : public HasCcTargetTrigger
 {
 public:
     HibernateTrigger(PlayerbotAI* botAI) : HasCcTargetTrigger(botAI, "hibernate") {}
+
+    bool IsActive() override;
+};
+
+class CycloneTrigger : public HasCcTargetTrigger
+{
+public:
+    CycloneTrigger(PlayerbotAI* botAI) : HasCcTargetTrigger(botAI, "cyclone") {}
+
+    bool IsActive() override;
 };
 
 class CurePoisonTrigger : public NeedCureTrigger
@@ -185,6 +255,15 @@ public:
     bool IsActive() override;
 };
 
+class AquaticFormTrigger : public Trigger
+{
+public:
+    AquaticFormTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aquatic form") {}
+
+    bool IsActive() override;
+};
+
+
 class EclipseSolarTrigger : public HasAuraTrigger
 {
 public:
@@ -218,18 +297,69 @@ public:
     }
 };
 
-class EclipseSolarCooldownTrigger : public SpellCooldownTrigger
+class StarfallTrigger : public SpellNoCooldownTrigger
 {
 public:
-    EclipseSolarCooldownTrigger(PlayerbotAI* ai) : SpellCooldownTrigger(ai, "eclipse (solar)") {}
-    bool IsActive() override { return bot->HasSpellCooldown(48517); }
+    StarfallTrigger(PlayerbotAI* botAI) : SpellNoCooldownTrigger(botAI, "starfall") {}
 };
 
-class EclipseLunarCooldownTrigger : public SpellCooldownTrigger
+class ForceOfNatureTrigger : public BoostTrigger
 {
 public:
-    EclipseLunarCooldownTrigger(PlayerbotAI* ai) : SpellCooldownTrigger(ai, "eclipse (lunar)") {}
-    bool IsActive() override { return bot->HasSpellCooldown(48518); }
+    ForceOfNatureTrigger(PlayerbotAI* botAI) : BoostTrigger(botAI, "force of nature") {}
+};
+
+class MangleBearTrigger : public DebuffTrigger
+{
+public:
+    MangleBearTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "mangle (bear)") {}
+
+    bool IsActive() override
+    {
+        if (!bot->IsInCombat() || !botAI->HasAnyAuraOf(bot, "bear form", "dire bear form", nullptr))
+            return false;
+        Unit* target = GetTarget();
+        return target && target->IsAlive() && target->IsInWorld();
+    }
+};
+
+class LacerateTrigger : public DebuffTrigger
+{
+public:
+    LacerateTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "lacerate") {}
+
+    bool IsActive() override
+    {
+        if (!bot->IsInCombat() || !botAI->HasAnyAuraOf(bot, "bear form", "dire bear form", nullptr))
+            return false;
+
+        Unit* target = GetTarget();
+        if (!target || !target->IsAlive() || !target->IsInWorld())
+            return false;
+
+        Aura* lacerate = botAI->GetAura("lacerate", target, false, false);
+        if (!lacerate)
+            return true;
+
+        if (lacerate->GetStackAmount() < 5)
+            return true;
+
+        return lacerate->GetDuration() <= 6000;
+    }
+};
+
+class DemoralizeRoarTrigger : public DebuffTrigger
+{
+public:
+    DemoralizeRoarTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "demoralizing roar") {}
+
+    bool IsActive() override
+    {
+        return DebuffTrigger::IsActive()
+            && !botAI->HasAura("curse of weakness",  GetTarget(), false, false)
+            && !botAI->HasAura("demoralizing shout", GetTarget(), false, false)
+            && !botAI->HasAura("vindication",        GetTarget(), false, false);
+    }
 };
 
 class MangleCatTrigger : public DebuffTrigger
@@ -238,6 +368,8 @@ public:
     MangleCatTrigger(PlayerbotAI* ai) : DebuffTrigger(ai, "mangle (cat)", 1, false, 0.0f) {}
     bool IsActive() override
     {
+        if (botAI->HasAura("prowl", bot))
+            return false;
         return DebuffTrigger::IsActive() && !botAI->HasAura("mangle (bear)", GetTarget(), false, false, -1, true)
             && !botAI->HasAura("trauma", GetTarget(), false, false, -1, true);
     }
@@ -271,10 +403,36 @@ public:
     }
 };
 
+class FerociousBiteExecuteTrigger : public Trigger
+{
+public:
+    FerociousBiteExecuteTrigger(PlayerbotAI* ai) : Trigger(ai, "ferocious bite execute") {}
+    bool IsActive() override
+    {
+        Unit* target = AI_VALUE(Unit*, "current target");
+        if (!target || !target->IsAlive())
+            return false;
+
+        if (!AI_VALUE2(uint32, "spell id", "ferocious bite"))
+            return false;
+
+        if (AI_VALUE2(uint8, "combo", "current target") < 1)
+            return false;
+
+        if (target->GetHealthPct() >= 25.0f)
+            return false;
+
+        if (target->GetHealth() >= 20000)
+            return false;
+
+        return true;
+    }
+};
+
 class HurricaneChannelCheckTrigger : public Trigger
 {
 public:
-    HurricaneChannelCheckTrigger(PlayerbotAI* botAI, uint32 minEnemies = 2)
+    HurricaneChannelCheckTrigger(PlayerbotAI* botAI, uint32 minEnemies = 3)
         : Trigger(botAI, "hurricane channel check"), minEnemies(minEnemies)
     {
     }
@@ -295,6 +453,14 @@ public:
     {
         return !botAI->HasStrategy("healer dps", BOT_STATE_COMBAT);
     }
+};
+
+class ProwlTrigger : public Trigger
+{
+public:
+    ProwlTrigger(PlayerbotAI* botAI) : Trigger(botAI, "prowl") {}
+
+    bool IsActive() override;
 };
 
 #endif

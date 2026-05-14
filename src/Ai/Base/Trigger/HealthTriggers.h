@@ -143,6 +143,15 @@ public:
     TargetCriticalHealthTrigger(PlayerbotAI* botAI) : TargetLowHealthTrigger(botAI, 20) {}
 };
 
+class HealerLowManaTrigger : public Trigger
+{
+public:
+    HealerLowManaTrigger(PlayerbotAI* botAI) : Trigger(botAI, "healer low mana") {}
+
+    std::string const GetTargetName() override { return "healer low mana"; }
+    bool IsActive() override;
+};
+
 class PartyMemberDeadTrigger : public Trigger
 {
 public:

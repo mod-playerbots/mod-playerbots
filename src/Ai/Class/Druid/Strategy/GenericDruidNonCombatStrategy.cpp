@@ -23,6 +23,8 @@ public:
         creators["remove curse on party"] = &remove_curse_on_party;
         creators["abolish poison on party"] = &abolish_poison_on_party;
         creators["revive"] = &revive;
+        creators["prowl"] = &prowl;
+        creators["aquatic form"] = &aquatic_form;
     }
 
 private:
@@ -92,6 +94,23 @@ private:
                               /*A*/ {},
                               /*C*/ {});
     }
+
+    static ActionNode* prowl([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode("prowl",
+                              /*P*/ { NextAction("cat form") },
+                              /*A*/ {},
+                              /*C*/ {});
+    }
+
+    static ActionNode* aquatic_form([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode("aquatic form",
+                              /*P*/ { NextAction("caster form") },
+                              /*A*/ {},
+                              /*C*/ {});
+    }
+
 };
 
 GenericDruidNonCombatStrategy::GenericDruidNonCombatStrategy(PlayerbotAI* botAI) : NonCombatStrategy(botAI)
@@ -165,11 +184,16 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
                        NextAction("remove curse on party", ACTION_DISPEL + 7),
                        }));
 
+    triggers.push_back(new TriggerNode("aquatic form", { NextAction("aquatic form", 10.0f) }));
+
     int specTab = AiFactory::GetPlayerSpecTab(botAI->GetBot());
     if (specTab == 0 || specTab == 2) // Balance or Restoration
         triggers.push_back(new TriggerNode("often", { NextAction("apply oil", 1.0f) }));
     if (specTab == 1) // Feral
+    {
         triggers.push_back(new TriggerNode("often", { NextAction("apply stone", 1.0f) }));
+        triggers.push_back(new TriggerNode("prowl", { NextAction("prowl", ACTION_INTERRUPT) }));
+    }
 
 }
 

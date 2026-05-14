@@ -15,6 +15,14 @@ class CastFeralChargeCatAction : public CastReachTargetSpellAction
 {
 public:
     CastFeralChargeCatAction(PlayerbotAI* botAI) : CastReachTargetSpellAction(botAI, "feral charge - cat", 1.5f) {}
+
+    bool isUseful() override
+    {
+        if (botAI->HasAura("prowl", bot))
+            return false;
+
+        return CastReachTargetSpellAction::isUseful();
+    }
 };
 
 class CastCowerAction : public CastBuffSpellAction
@@ -48,34 +56,71 @@ public:
     CastRakeAction(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "rake", true, 6.0f) {}
 };
 
-class CastRakeOnMeleeAttackersAction : public CastDebuffSpellOnMeleeAttackerAction
-{
-public:
-    CastRakeOnMeleeAttackersAction(PlayerbotAI* botAI) : CastDebuffSpellOnMeleeAttackerAction(botAI, "rake", true, 6.0f) {}
-};
-
 class CastClawAction : public CastMeleeSpellAction
 {
 public:
     CastClawAction(PlayerbotAI* botAI) : CastMeleeSpellAction(botAI, "claw") {}
+
+    bool isUseful() override
+    {
+        if (botAI->HasAura("prowl", bot))
+        {
+            if (bot->HasSpell(9005)) // Pounce Rank 1 — learned at level 36
+                return false;
+            // No Pounce yet — allow Claw to act as the stealth opener/fallback.
+        }
+
+        return CastMeleeSpellAction::isUseful();
+    }
 };
 
 class CastMangleCatAction : public CastMeleeSpellAction
 {
 public:
     CastMangleCatAction(PlayerbotAI* botAI) : CastMeleeSpellAction(botAI, "mangle (cat)") {}
+
+    bool isUseful() override
+    {
+        if (botAI->HasAura("prowl", bot))
+            return false;
+
+        return CastMeleeSpellAction::isUseful();
+    }
 };
 
 class CastSwipeCatAction : public CastMeleeSpellAction
 {
 public:
     CastSwipeCatAction(PlayerbotAI* botAI) : CastMeleeSpellAction(botAI, "swipe (cat)") {}
+
+    bool isUseful() override
+    {
+        if (botAI->HasAura("prowl", bot))
+            return false;
+
+        return CastMeleeSpellAction::isUseful();
+    }
 };
 
 class CastFerociousBiteAction : public CastMeleeSpellAction
 {
 public:
     CastFerociousBiteAction(PlayerbotAI* botAI) : CastMeleeSpellAction(botAI, "ferocious bite") {}
+};
+
+class CastMaimAction : public CastMeleeSpellAction
+{
+public:
+    CastMaimAction(PlayerbotAI* botAI) : CastMeleeSpellAction(botAI, "maim") {}
+
+    bool isUseful() override
+    {
+        Unit* target = GetTarget();
+        if (!target || !target->ToPlayer())
+            return false;
+
+        return CastMeleeSpellAction::isUseful();
+    }
 };
 
 class CastRipAction : public CastMeleeDebuffSpellAction
@@ -88,6 +133,14 @@ class CastShredAction : public CastMeleeSpellAction
 {
 public:
     CastShredAction(PlayerbotAI* botAI) : CastMeleeSpellAction(botAI, "shred") {}
+
+    bool isUseful() override
+    {
+        if (botAI->HasAura("prowl", bot) && bot->HasSpell(6785)) // Ravage Rank 1 — learned at level 32
+            return false;
+
+        return CastMeleeSpellAction::isUseful();
+    }
 };
 
 class CastProwlAction : public CastBuffSpellAction
@@ -106,12 +159,28 @@ class CastRavageAction : public CastMeleeSpellAction
 {
 public:
     CastRavageAction(PlayerbotAI* botAI) : CastMeleeSpellAction(botAI, "ravage") {}
+
+    bool isUseful() override
+    {
+        if (!botAI->HasAura("prowl", bot))
+            return false;
+
+        return CastMeleeSpellAction::isUseful();
+    }
 };
 
 class CastPounceAction : public CastMeleeSpellAction
 {
 public:
     CastPounceAction(PlayerbotAI* botAI) : CastMeleeSpellAction(botAI, "pounce") {}
+
+    bool isUseful() override
+    {
+        if (!botAI->HasAura("prowl", bot))
+            return false;
+
+        return CastMeleeSpellAction::isUseful();
+    }
 };
 
 #endif

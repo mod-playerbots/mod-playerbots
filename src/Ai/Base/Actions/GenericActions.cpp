@@ -49,6 +49,12 @@ bool MeleeAction::isUseful()
     if (botAI->IsInVehicle() && !botAI->IsInVehicle(false, false, true))
         return false;
 
+    // Do not start autoattack while prowled — let opener spells break stealth intentionally.
+    // Future rogue stealth implementation should use this instead:
+    // if (botAI->HasAura("stealth", bot) || botAI->HasAura("prowl", bot))
+    if (botAI->HasAura("prowl", bot))
+        return false;
+
     return true;
 }
 
