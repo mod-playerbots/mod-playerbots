@@ -10,8 +10,6 @@
 #include "PlayerbotAIAware.h"
 #include "Playerbots.h"
 
-inline const uint32 SPELL_STEALTH = 1784;
-
 class PartyMemberSnaredTargetPredicate : public FindPlayerPredicate, public PlayerbotAIAware
 {
 public:
@@ -31,7 +29,7 @@ public:
         if (!botAI->GetBot()->IsWithinLOSInMap(unit))
             return false;
 
-        return botAI->IsMovementImpaired(unit) && !unit->HasAura(SPELL_STEALTH);
+        return botAI->IsMovementImpaired(unit) && !botAI->HasAnyAuraOf(unit, "stealth", "prowl", nullptr);
     }
 };
 
