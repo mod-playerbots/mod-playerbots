@@ -19,7 +19,7 @@ bool HighKingMaulgarMainTankAttackMaulgarAction::Execute(Event /*event*/)
     MarkTargetWithSquare(bot, maulgar);
     SetRtiTarget(botAI, "square", maulgar);
 
-    if (bot->GetVictim() != maulgar)
+    if (AI_VALUE(Unit*, "current target") != maulgar)
         return Attack(maulgar);
 
     if (maulgar->GetVictim() == bot)
@@ -53,7 +53,7 @@ bool HighKingMaulgarFirstAssistTankAttackOlmAction::Execute(Event /*event*/)
     MarkTargetWithCircle(bot, olm);
     SetRtiTarget(botAI, "circle", olm);
 
-    if (bot->GetVictim() != olm)
+    if (AI_VALUE(Unit*, "current target") != olm)
         return Attack(olm);
 
     if (olm->GetVictim() == bot)
@@ -88,7 +88,7 @@ bool HighKingMaulgarSecondAssistTankAttackBlindeyeAction::Execute(Event /*event*
     MarkTargetWithStar(bot, blindeye);
     SetRtiTarget(botAI, "star", blindeye);
 
-    if (bot->GetVictim() != blindeye)
+    if (AI_VALUE(Unit*, "current target") != blindeye)
         return Attack(blindeye);
 
     if (blindeye->GetVictim() == bot)
@@ -128,7 +128,7 @@ bool HighKingMaulgarMageTankAttackKroshAction::Execute(Event /*event*/)
     if (!bot->HasAura(SPELL_SPELL_SHIELD) && botAI->CanCastSpell("fire ward", bot))
         return botAI->CastSpell("fire ward", bot);
 
-    if (bot->GetTarget() != krosh->GetGUID())
+    if (AI_VALUE(Unit*, "current target") != krosh)
         return Attack(krosh);
 
     if (krosh->GetVictim() == bot)
@@ -175,7 +175,7 @@ bool HighKingMaulgarMoonkinTankAttackKigglerAction::Execute(Event /*event*/)
     MarkTargetWithDiamond(bot, kiggler);
     SetRtiTarget(botAI, "diamond", kiggler);
 
-    if (bot->GetTarget() != kiggler->GetGUID())
+    if (AI_VALUE(Unit*, "current target") != kiggler)
         return Attack(kiggler);
 
     Position safePos;
@@ -205,7 +205,7 @@ bool HighKingMaulgarAssignDPSPriorityAction::Execute(Event /*event*/)
 
         SetRtiTarget(botAI, "star", blindeye);
 
-        if (bot->GetTarget() != blindeye->GetGUID())
+        if (AI_VALUE(Unit*, "current target") != blindeye)
             return Attack(blindeye);
 
         return false;
@@ -226,7 +226,7 @@ bool HighKingMaulgarAssignDPSPriorityAction::Execute(Event /*event*/)
 
         SetRtiTarget(botAI, "circle", olm);
 
-        if (bot->GetTarget() != olm->GetGUID())
+        if (AI_VALUE(Unit*, "current target") != olm)
             return Attack(olm);
 
         return false;
@@ -247,7 +247,7 @@ bool HighKingMaulgarAssignDPSPriorityAction::Execute(Event /*event*/)
 
         SetRtiTarget(botAI, "triangle", krosh);
 
-        if (bot->GetTarget() != krosh->GetGUID())
+        if (AI_VALUE(Unit*, "current target") != krosh)
             return Attack(krosh);
 
         return false;
@@ -268,7 +268,7 @@ bool HighKingMaulgarAssignDPSPriorityAction::Execute(Event /*event*/)
 
         SetRtiTarget(botAI, "diamond", kiggler);
 
-        if (bot->GetTarget() != kiggler->GetGUID())
+        if (AI_VALUE(Unit*, "current target") != kiggler)
             return Attack(kiggler);
 
         return false;
@@ -289,7 +289,7 @@ bool HighKingMaulgarAssignDPSPriorityAction::Execute(Event /*event*/)
 
         SetRtiTarget(botAI, "square", maulgar);
 
-        if (bot->GetTarget() != maulgar->GetGUID())
+        if (AI_VALUE(Unit*, "current target") != maulgar)
             return Attack(maulgar);
     }
 
@@ -499,7 +499,7 @@ bool GruulTheDragonkillerTanksPositionBossAction::Execute(Event /*event*/)
     if (!gruul)
         return false;
 
-    if (bot->GetVictim() != gruul)
+    if (AI_VALUE(Unit*, "current target") != gruul)
         return Attack(gruul);
 
     if (gruul->GetVictim() == bot)
