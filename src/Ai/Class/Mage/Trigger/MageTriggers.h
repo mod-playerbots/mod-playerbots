@@ -11,19 +11,15 @@
 #include "SharedDefines.h"
 #include "Trigger.h"
 #include "Playerbots.h"
-#include "PlayerbotAI.h"
-#include <set>
 #include <unordered_set>
-
-class PlayerbotAI;
 
 // Buff and Out of Combat Triggers
 
 class ArcaneIntellectOnPartyTrigger : public BuffOnPartyTrigger
 {
 public:
-    ArcaneIntellectOnPartyTrigger(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, "arcane intellect", 2 * 2000) {}
-
+    ArcaneIntellectOnPartyTrigger(PlayerbotAI* botAI)
+        : BuffOnPartyTrigger(botAI, "arcane intellect", 2 * 2000) {}
     bool IsActive() override;
 };
 
@@ -38,6 +34,13 @@ class MageArmorTrigger : public BuffTrigger
 {
 public:
     MageArmorTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "mage armor", 5 * 2000) {}
+    bool IsActive() override;
+};
+
+class MoltenArmorTrigger : public BuffTrigger
+{
+public:
+    MoltenArmorTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "molten armor", 5 * 2000) {}
     bool IsActive() override;
 };
 
@@ -58,7 +61,6 @@ class NoManaGemTrigger : public Trigger
 {
 public:
     NoManaGemTrigger(PlayerbotAI* botAI) : Trigger(botAI, "no mana gem") {}
-
     bool IsActive() override;
 };
 
@@ -109,10 +111,8 @@ public:
 class ArcaneBlast4StacksAndMissileBarrageTrigger : public TwoTriggers
 {
 public:
-    ArcaneBlast4StacksAndMissileBarrageTrigger(PlayerbotAI* ai)
-        : TwoTriggers(ai, "arcane blast stack", "missile barrage")
-    {
-    }
+    ArcaneBlast4StacksAndMissileBarrageTrigger(PlayerbotAI* botAI)
+        : TwoTriggers(botAI, "arcane blast stack", "missile barrage") {}
 };
 
 class CombustionTrigger : public BoostTrigger
@@ -138,7 +138,7 @@ public:
 class ColdSnapTrigger : public TwoTriggers
 {
 public:
-    ColdSnapTrigger(PlayerbotAI* ai) : TwoTriggers(ai, "icy veins on cd", "deep freeze on cd") {}
+    ColdSnapTrigger(PlayerbotAI* botAI) : TwoTriggers(botAI, "icy veins on cd", "deep freeze on cd") {}
 };
 
 class MirrorImageTrigger : public BoostTrigger
@@ -181,9 +181,8 @@ public:
 class PartyMemberRemoveCurseTrigger : public PartyMemberNeedCureTrigger
 {
 public:
-    PartyMemberRemoveCurseTrigger(PlayerbotAI* botAI) : PartyMemberNeedCureTrigger(botAI, "remove curse", DISPEL_CURSE)
-    {
-    }
+    PartyMemberRemoveCurseTrigger(PlayerbotAI* botAI)
+        : PartyMemberNeedCureTrigger(botAI, "remove curse", DISPEL_CURSE) {}
 };
 
 class SpellstealTrigger : public TargetAuraDispelTrigger
@@ -216,7 +215,7 @@ public:
 class LivingBombOnAttackersTrigger : public DebuffOnAttackerTrigger
 {
 public:
-    LivingBombOnAttackersTrigger(PlayerbotAI* ai) : DebuffOnAttackerTrigger(ai, "living bomb", true) {}
+    LivingBombOnAttackersTrigger(PlayerbotAI* botAI) : DebuffOnAttackerTrigger(botAI, "living bomb", true) {}
     bool IsActive() override { return BuffTrigger::IsActive(); }
 };
 
@@ -282,13 +281,13 @@ public:
 
 protected:
     float radius;
-    static const std::set<uint32> FLAMESTRIKE_SPELL_IDS;
+    static const std::unordered_set<uint32> FLAMESTRIKE_SPELL_IDS;
 };
 
 class FlamestrikeBlizzardTrigger : public TwoTriggers
 {
 public:
-    FlamestrikeBlizzardTrigger(PlayerbotAI* ai) : TwoTriggers(ai, "flamestrike nearby", "medium aoe") {}
+    FlamestrikeBlizzardTrigger(PlayerbotAI* botAI) : TwoTriggers(botAI, "flamestrike nearby", "medium aoe") {}
 };
 
 class BlizzardChannelCheckTrigger : public Trigger
@@ -301,7 +300,7 @@ public:
 
 protected:
     uint32 minEnemies;
-    static const std::set<uint32> BLIZZARD_SPELL_IDS;
+    static const std::unordered_set<uint32> BLIZZARD_SPELL_IDS;
 };
 
 class BlastWaveOffCdTrigger : public SpellNoCooldownTrigger
@@ -313,7 +312,8 @@ public:
 class BlastWaveOffCdTriggerAndMediumAoeTrigger : public TwoTriggers
 {
 public:
-    BlastWaveOffCdTriggerAndMediumAoeTrigger(PlayerbotAI* ai) : TwoTriggers(ai, "blast wave off cd", "medium aoe") {}
+    BlastWaveOffCdTriggerAndMediumAoeTrigger(PlayerbotAI* botAI)
+        : TwoTriggers(botAI, "blast wave off cd", "medium aoe") {}
 };
 
 class NoFirestarterStrategyTrigger : public Trigger
