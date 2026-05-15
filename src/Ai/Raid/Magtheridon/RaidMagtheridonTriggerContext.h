@@ -2,7 +2,7 @@
 #define _PLAYERBOT_RAIDMAGTHERIDONTRIGGERCONTEXT_H
 
 #include "RaidMagtheridonTriggers.h"
-#include "AiObjectContext.h"
+#include "NamedObjectContext.h"
 
 class RaidMagtheridonTriggerContext : public NamedObjectContext<Trigger>
 {

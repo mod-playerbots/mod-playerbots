@@ -23,6 +23,12 @@ public:
     CastGrowlAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "growl") {}
 };
 
+class CastChallengingRoarAction : public CastMeleeDebuffSpellAction
+{
+public:
+    CastChallengingRoarAction(PlayerbotAI* botAI) : CastMeleeDebuffSpellAction(botAI, "challenging roar") {}
+};
+
 class CastMaulAction : public CastMeleeSpellAction
 {
 public:

@@ -124,12 +124,12 @@ void AoEWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     );
 }
 
-void WarlockBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void WarlockBoostStrategy::InitTriggers(std::vector<TriggerNode*>& /*triggers*/)
 {
     // Placeholder for future boost triggers
 }
 
-void WarlockPetStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void WarlockPetStrategy::InitTriggers(std::vector<TriggerNode*>& /*triggers*/)
 {
     // Placeholder for future pet triggers
 }

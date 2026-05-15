@@ -1,8 +1,6 @@
 #ifndef _PLAYERBOT_RAIDAQ20STRATEGY_H
 #define _PLAYERBOT_RAIDAQ20STRATEGY_H
 
-#include "AiObjectContext.h"
-#include "Multiplier.h"
 #include "Strategy.h"
 
 class RaidAq20Strategy : public Strategy

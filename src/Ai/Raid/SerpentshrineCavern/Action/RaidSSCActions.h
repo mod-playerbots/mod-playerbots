@@ -312,8 +312,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool MoveToPhase1TankPosition(Unit* tidewalker);
-    bool MoveToPhase2TankPosition(Unit* tidewalker);
+    bool MoveToPhase1TankPosition();
+    bool MoveToPhase2TankPosition();
 };
 
 class MorogrimTidewalkerPhase2RepositionRangedAction : public MovementAction
@@ -414,14 +414,14 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool LineUpFirstCorePasser(Player* designatedLooter, Unit* closestTrigger);
+    bool LineUpFirstCorePasser(Player* designatedLooter);
     bool LineUpSecondCorePasser(Player* firstCorePasser, Unit* closestTrigger);
     bool LineUpThirdCorePasser(Player* designatedLooter, Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger);
     bool LineUpFourthCorePasser(Player* firstCorePasser, Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger);
-    bool IsFirstCorePasserInPosition(Player* designatedLooter, Player* firstCorePasser, Unit* closestTrigger);
-    bool IsSecondCorePasserInPosition(Player* firstCorePasser, Player* secondCorePasser, Unit* closestTrigger);
-    bool IsThirdCorePasserInPosition(Player* secondCorePasser, Player* thirdCorePasser, Unit* closestTrigger);
-    bool IsFourthCorePasserInPosition(Player* thirdCorePasser, Player* fourthCorePasser, Unit* closestTrigger);
+    bool IsFirstCorePasserInPosition(Player* firstCorePasser);
+    bool IsSecondCorePasserInPosition(Player* secondCorePasser);
+    bool IsThirdCorePasserInPosition(Player* thirdCorePasser);
+    bool IsFourthCorePasserInPosition(Player* fourthCorePasser);
     void ScheduleTransferCoreAfterImbue(PlayerbotAI* botAI, Player* giver, Player* receiver);
     bool UseCoreOnNearestGenerator(const uint32 instanceId);
 };

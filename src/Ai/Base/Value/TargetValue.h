@@ -116,6 +116,15 @@ public:
     }
 };
 
+class PullStrategyTargetValue : public ManualSetValue<ObjectGuid>
+{
+public:
+    PullStrategyTargetValue(PlayerbotAI* botAI, std::string const name = "pull strategy target")
+        : ManualSetValue<ObjectGuid>(botAI, ObjectGuid::Empty, name)
+    {
+    }
+};
+
 class FindTargetValue : public UnitCalculatedValue, public Qualified
 {
 public:
@@ -140,4 +149,11 @@ public:
 public:
     Unit* Calculate();
 };
+
+class FocusHealTargetValue : public ManualSetValue<std::list<ObjectGuid>>
+{
+public:
+    FocusHealTargetValue(PlayerbotAI* botAI) : ManualSetValue<std::list<ObjectGuid>>(botAI, {}, "focus heal targets") {}
+};
+
 #endif

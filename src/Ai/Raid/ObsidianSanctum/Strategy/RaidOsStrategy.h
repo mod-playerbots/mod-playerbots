@@ -1,8 +1,6 @@
 #ifndef _PLAYERBOT_RAIDOSSTRATEGY_H
 #define _PLAYERBOT_RAIDOSSTRATEGY_H
 
-#include "AiObjectContext.h"
-#include "Multiplier.h"
 #include "Strategy.h"
 
 class RaidOsStrategy : public Strategy

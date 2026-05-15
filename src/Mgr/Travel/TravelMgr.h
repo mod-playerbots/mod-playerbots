@@ -846,6 +846,21 @@ protected:
 class TravelMgr
 {
 public:
+    struct NpcLocation
+    {
+        WorldLocation loc;
+        uint32 entry;
+    };
+
+    struct FlightMasterInfo
+    {
+        WorldPosition pos;
+        uint32        zoneId;          // resolved once at cache load
+        uint32        taxiNodeId;      // DBC taxi node nearest to this flight master
+        uint32        templateEntry;   // creature template ID (for ObjectGuid construction)
+        uint32        dbGuid;          // DB spawn GUID (for ObjectGuid construction)
+    };
+
     static TravelMgr& instance()
     {
         static TravelMgr instance;
@@ -858,12 +873,14 @@ public:
 
     // Navigation
     void Init();
-    Creature* GetNearestFlightMaster(Player* bot);
-    ObjectGuid GetNearestFlightMasterGuid(Player* bot);
+
+    FlightMasterInfo const* GetNearestFlightMasterInfo(Player* bot) const;
     std::vector<std::vector<uint32>> GetOptimalFlightDestinations(Player* bot);
     const std::vector<WorldLocation> GetTeleportLocations(Player* bot);
     const std::vector<WorldLocation> GetTravelHubs(Player* bot);
     std::vector<WorldLocation> GetCityLocations(Player* bot);
+    std::vector<uint32> GetFlightNodesInZone(uint32 zoneId, TeamId team, uint32 excludeNode = 0) const;
+    bool SelectAuctioneerByMap(Player* bot, NpcLocation& outAuctioneer);
     const std::vector<WorldLocation>& GetLocsPerLevelCache(uint8 level) { return locsPerLevelCache[level]; }
 
     template <class D, class W, class URBG>
@@ -975,8 +992,8 @@ private:
     };
 
     // Navigation caches
-    std::map<uint32, WorldPosition> allianceFlightMasterCache;
-    std::map<uint32, WorldPosition> hordeFlightMasterCache;
+    std::map<uint32, FlightMasterInfo> allianceFlightMasterCache;
+    std::map<uint32, FlightMasterInfo> hordeFlightMasterCache;
     std::map<uint8, std::vector<WorldLocation>> allianceHubsPerLevelCache;
     std::map<uint8, std::vector<WorldLocation>> hordeHubsPerLevelCache;
     std::map<uint8, std::vector<BankerLocation>> bankerLocsPerLevelCache;

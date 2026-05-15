@@ -82,6 +82,7 @@ float WaitForAttackMultiplier::GetValue(Action* action)
         actionName != "set facing" &&
         actionName != "pull my target" &&
         actionName != "pull rti target" &&
+        actionName != "reach pull" &&
         actionName != "pull start" &&
         actionName != "pull action" &&
         actionName != "pull end")

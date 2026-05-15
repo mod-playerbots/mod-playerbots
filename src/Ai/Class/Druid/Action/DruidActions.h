@@ -114,18 +114,32 @@ class CastThornsAction : public CastBuffSpellAction
 {
 public:
     CastThornsAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "thorns") {}
+
+    bool Execute(Event event) override;
 };
 
 class CastThornsOnPartyAction : public BuffOnPartyAction
 {
 public:
     CastThornsOnPartyAction(PlayerbotAI* botAI) : BuffOnPartyAction(botAI, "thorns") {}
+
+    bool Execute(Event event) override;
 };
 
 class CastThornsOnMainTankAction : public BuffOnMainTankAction
 {
 public:
     CastThornsOnMainTankAction(PlayerbotAI* botAI) : BuffOnMainTankAction(botAI, "thorns", false) {}
+
+    bool Execute(Event event) override;
+};
+
+class CastLifebloomOnMainTankAction : public BuffOnMainTankAction
+{
+public:
+    CastLifebloomOnMainTankAction(PlayerbotAI* botAI) : BuffOnMainTankAction(botAI, "lifebloom", true) {}
+
+    bool isUseful() override;
 };
 
 class CastOmenOfClarityAction : public CastBuffSpellAction

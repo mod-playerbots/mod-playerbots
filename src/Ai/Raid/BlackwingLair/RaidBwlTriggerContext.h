@@ -1,7 +1,6 @@
 #ifndef _PLAYERBOT_RAIDBWLTRIGGERCONTEXT_H
 #define _PLAYERBOT_RAIDBWLTRIGGERCONTEXT_H
 
-#include "AiObjectContext.h"
 #include "NamedObjectContext.h"
 #include "RaidBwlTriggers.h"
 

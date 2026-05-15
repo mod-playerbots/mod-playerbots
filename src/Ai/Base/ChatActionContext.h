@@ -37,11 +37,13 @@
 #include "LogLevelAction.h"
 #include "LootStrategyAction.h"
 #include "LootRollAction.h"
+#include "SetFocusHealTargetsAction.h"
 #include "MailAction.h"
 #include "NamedObjectContext.h"
 #include "NewRpgAction.h"
 #include "PassLeadershipToMasterAction.h"
 #include "PositionAction.h"
+#include "PullActions.h"
 #include "QueryItemUsageAction.h"
 #include "QueryQuestAction.h"
 #include "RangeAction.h"
@@ -64,6 +66,7 @@
 #include "TaxiAction.h"
 #include "TeleportAction.h"
 #include "TellCastFailedAction.h"
+#include "TellEmblemsAction.h"
 #include "TellItemCountAction.h"
 #include "TellLosAction.h"
 #include "TellReputationAction.h"
@@ -118,6 +121,7 @@ public:
         creators["teleport"] = &ChatActionContext::teleport;
         creators["taxi"] = &ChatActionContext::taxi;
         creators["repair"] = &ChatActionContext::repair;
+        creators["emblems"] = &ChatActionContext::emblems;
         creators["use"] = &ChatActionContext::use;
         creators["item count"] = &ChatActionContext::item_count;
         creators["equip"] = &ChatActionContext::equip;
@@ -137,6 +141,8 @@ public:
         creators["autogear"] = &ChatActionContext::autogear;
         creators["equip upgrade"] = &ChatActionContext::equip_upgrade;
         creators["attack my target"] = &ChatActionContext::attack_my_target;
+        creators["pull my target"] = &ChatActionContext::pull_my_target;
+        creators["pull rti target"] = &ChatActionContext::pull_rti_target;
         creators["chat"] = &ChatActionContext::chat;
         creators["home"] = &ChatActionContext::home;
         creators["destroy"] = &ChatActionContext::destroy;
@@ -201,6 +207,7 @@ public:
         creators["pet attack"] = &ChatActionContext::pet_attack;
         creators["roll"] = &ChatActionContext::roll_action;
         creators["wait for attack time"] = &ChatActionContext::wait_for_attack_time;
+        creators["focus heal targets"] = &ChatActionContext::focus_heal_targets;
     }
 
 private:
@@ -248,6 +255,8 @@ private:
     static Action* home(PlayerbotAI* botAI) { return new SetHomeAction(botAI); }
     static Action* chat(PlayerbotAI* botAI) { return new ChangeChatAction(botAI); }
     static Action* attack_my_target(PlayerbotAI* botAI) { return new AttackMyTargetAction(botAI); }
+    static Action* pull_my_target(PlayerbotAI* botAI) { return new PullMyTargetAction(botAI); }
+    static Action* pull_rti_target(PlayerbotAI* botAI) { return new PullRtiTargetAction(botAI); }
     static Action* trainer(PlayerbotAI* botAI) { return new TrainerAction(botAI); }
     static Action* maintenance(PlayerbotAI* botAI) { return new MaintenanceAction(botAI); }
     static Action* remove_glyph(PlayerbotAI* botAI) { return new RemoveGlyphAction(botAI); }
@@ -269,6 +278,7 @@ private:
     static Action* item_count(PlayerbotAI* botAI) { return new TellItemCountAction(botAI); }
     static Action* use(PlayerbotAI* botAI) { return new UseItemAction(botAI); }
     static Action* repair(PlayerbotAI* botAI) { return new RepairAllAction(botAI); }
+    static Action* emblems(PlayerbotAI* botAI) { return new TellEmblemsAction(botAI); }
     static Action* taxi(PlayerbotAI* botAI) { return new TaxiAction(botAI); }
     static Action* teleport(PlayerbotAI* botAI) { return new TeleportAction(botAI); }
     static Action* release(PlayerbotAI* botAI) { return new ReleaseSpiritAction(botAI); }
@@ -314,6 +324,7 @@ private:
     static Action* pet_attack(PlayerbotAI* botAI) { return new PetsAction(botAI, "attack"); }
     static Action* roll_action(PlayerbotAI* botAI) { return new RollAction(botAI); }
     static Action* wait_for_attack_time(PlayerbotAI* botAI) { return new SetWaitForAttackTimeAction(botAI); }
+    static Action* focus_heal_targets(PlayerbotAI* botAI) { return new SetFocusHealTargetsAction(botAI); }
 };
 
 #endif

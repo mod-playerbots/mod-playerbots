@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdlib>
 
+#include "AreaDefines.h"
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
 #include "G3D/Vector2.h"
@@ -62,7 +63,7 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
     {
         case RPG_IDLE:
             return RandomChangeStatus({RPG_GO_CAMP, RPG_GO_GRIND, RPG_WANDER_RANDOM, RPG_WANDER_NPC, RPG_DO_QUEST,
-                                       RPG_TRAVEL_FLIGHT, RPG_REST});
+                                       RPG_TRAVEL_FLIGHT, RPG_REST, RPG_OUTDOOR_PVP});
 
         case RPG_GO_GRIND:
         {
@@ -140,6 +141,15 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
             }
             break;
         }
+        case RPG_OUTDOOR_PVP:
+        {
+            if (info.HasStatusPersisted(statusOutDoorPvPDuration))
+            {
+                info.ChangeToIdle();
+                return true;
+            }
+            break;
+        }
         default:
             break;
     }
@@ -151,7 +161,14 @@ bool NewRpgGoGrindAction::Execute(Event /*event*/)
     if (SearchQuestGiverAndAcceptOrReward())
         return true;
     if (auto* data = std::get_if<NewRpgInfo::GoGrind>(&botAI->rpgInfo.data))
-        return MoveFarTo(data->pos);
+    {
+        if (MoveFarTo(data->pos))
+            return true;
+        // Small nudge so the next tick's MoveFarTo starts from a
+        // slightly different position. Kept small so it doesn't look
+        // like the bot is abandoning its destination.
+        return MoveRandomNear(10.0f);
+    }
 
     return false;
 }
@@ -162,7 +179,11 @@ bool NewRpgGoCampAction::Execute(Event /*event*/)
         return true;
 
     if (auto* data = std::get_if<NewRpgInfo::GoCamp>(&botAI->rpgInfo.data))
-        return MoveFarTo(data->pos);
+    {
+        if (MoveFarTo(data->pos))
+            return true;
+        return MoveRandomNear(10.0f);
+    }
 
     return false;
 }
@@ -215,7 +236,14 @@ bool NewRpgWanderNpcAction::Execute(Event /*event*/)
         data.lastReach = 0;
     }
     else
-        return MoveWorldObjectTo(data.npcOrGo);
+    {
+        if (MoveWorldObjectTo(data.npcOrGo))
+            return true;
+        // NPC pathing failed (random offset in a wall, mmap hiccup, etc).
+        // Take a small random step so the next tick retries from a
+        // different spot instead of staring at the NPC from afar.
+        return MoveRandomNear(15.0f);
+    }
 
     return true;
 }
@@ -305,7 +333,12 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
 
     if (bot->GetDistance(data.pos) > 10.0f && !data.lastReachPOI)
     {
-        return MoveFarTo(data.pos);
+        if (MoveFarTo(data.pos))
+            return true;
+        // Long-range sampler couldn't land a candidate — nudge the
+        // bot a short distance so the next tick retries from a
+        // different position instead of sitting idle.
+        return MoveRandomNear(10.0f);
     }
     // Now we are near the quest objective
     // kill mobs and looting quest should be done automatically by grind strategy
@@ -352,7 +385,11 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
         return true;
     }
 
-    return MoveRandomNear(20.0f);
+    // At the POI: keep the bot actively placed but avoid large
+    // random 20yd hops that look like pacing back and forth. A small
+    // ~8yd wander reads as the bot looking around while grind/loot
+    // strategies do their work.
+    return MoveRandomNear(8.0f);
 }
 
 bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
@@ -392,7 +429,11 @@ bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)
         return false;
 
     if (bot->GetDistance(data.pos) > 10.0f && !data.lastReachPOI)
-        return MoveFarTo(data.pos);
+    {
+        if (MoveFarTo(data.pos))
+            return true;
+        return MoveRandomNear(10.0f);
+    }
 
     // Now we are near the qoi of reward
     // the quest should be rewarded by SearchQuestGiverAndAcceptOrReward
@@ -428,10 +469,14 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
         data.inFlight = true;
         return false;
     }
-    Creature* flightMaster = ObjectAccessor::GetCreature(*bot, data.fromFlightMaster);
+
+    if (bot->GetDistance(data.flightMasterPos) > INTERACTION_DISTANCE)
+        return MoveFarTo(data.flightMasterPos);
+
+    Creature* flightMaster = bot->FindNearestCreature(data.flightMasterEntry, INTERACTION_DISTANCE * 3);
     if (!flightMaster || !flightMaster->IsAlive())
     {
-        botAI->rpgInfo.ChangeToIdle();
+        info.ChangeToIdle();
         return true;
     }
     if (bot->GetDistance(flightMaster) > INTERACTION_DISTANCE)
@@ -447,7 +492,8 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
     {
         LOG_DEBUG("playerbots", "[New RPG] {} active taxi path {} (from {} to {}) failed", bot->GetName(),
                   flightMaster->GetEntry(), nodes[0], nodes[nodes.size() - 1]);
-        botAI->rpgInfo.ChangeToIdle();
+        info.ChangeToIdle();
+        return true;
     }
     return true;
 }

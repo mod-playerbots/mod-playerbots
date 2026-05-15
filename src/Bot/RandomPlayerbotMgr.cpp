@@ -278,7 +278,7 @@ void RandomPlayerbotMgr::LogPlayerLocation()
     }
 }
 
-void RandomPlayerbotMgr::UpdateAIInternal(uint32 elapsed, bool /*minimal*/)
+void RandomPlayerbotMgr::UpdateAIInternal(uint32 /*elapsed*/, bool /*minimal*/)
 {
     if (totalPmo)
         totalPmo->finish();
@@ -1768,13 +1768,16 @@ void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
     if (bot->InBattleground())
         return;
 
-    std::vector<WorldLocation> locs = sTravelMgr.GetCityLocations(bot);
-    if (!locs.empty())
+    if (bot->GetLevel() >= 10 && urand(0, 100) < sPlayerbotAIConfig.probTeleToBankers * 100)
     {
-        RandomTeleport(bot, locs, true);
-        return;
+        std::vector<WorldLocation> locs = sTravelMgr.GetCityLocations(bot);
+        if (!locs.empty())
+        {
+            RandomTeleport(bot, locs, true);
+            return;
+        }
     }
-    locs = sTravelMgr.GetTeleportLocations(bot);
+    std::vector<WorldLocation> locs = sTravelMgr.GetTeleportLocations(bot);
     if (!locs.empty())
     {
         RandomTeleport(bot, locs, false);
@@ -2074,7 +2077,7 @@ void RandomPlayerbotMgr::Refresh(Player* bot)
 
     bot->DurabilityRepairAll(false, 1.0f, false);
     bot->SetFullHealth();
-    bot->SetPvP(true);
+    bot->SetPvP(sWorld->IsPvPRealm());
     PlayerbotFactory factory(bot, bot->GetLevel());
     factory.Refresh();
 
@@ -2261,6 +2264,16 @@ CachedEvent* RandomPlayerbotMgr::FindEvent(uint32 bot, std::string const& event)
     }
 
     return &e;
+}
+
+bool RandomPlayerbotMgr::IsSpecPvp(uint32 bot, uint8 cls)
+{
+    uint32 stored = GetValue(bot, "specNo");
+    if (!stored)
+        return false;
+    uint32 specIndex = stored - 1;
+    std::string const& name = sPlayerbotAIConfig.premadeSpecName[cls][specIndex];
+    return !name.empty() && name.find("pvp") != std::string::npos;
 }
 
 uint32 RandomPlayerbotMgr::GetEventValue(uint32 bot, std::string const& event)
@@ -2529,6 +2542,13 @@ void RandomPlayerbotMgr::OnBotLoginInternal(Player* const bot)
         }
     }
 
+    // Run guild recovery/assignment at login to handle empty guild tables after restart.
+    if (sPlayerbotAIConfig.randomBotGuildCount > 0)
+    {
+        PlayerbotFactory factory(bot, bot->GetLevel());
+        factory.InitGuild();
+    }
+
     if (sPlayerbotAIConfig.randomBotFixedLevel)
     {
         bot->SetPlayerFlag(PLAYER_FLAGS_NO_XP_GAIN);
@@ -2622,6 +2642,7 @@ void RandomPlayerbotMgr::OnPlayerLogin(Player* player)
     {
         // ObjectGuid::LowType guid = player->GetGUID().GetCounter(); //not used, conditional could be rewritten for
         // simplicity. line marked for removal.
+        player->SetPvP(sWorld->IsPvPRealm());
     }
     else
     {
@@ -2858,10 +2879,10 @@ void RandomPlayerbotMgr::PrintStats()
         LOG_INFO("playerbots", "Bots rpg status:");
         LOG_INFO("playerbots",
                  "    Idle: {}, Rest: {}, GoGrind: {}, GoCamp: {}, MoveRandom: {}, MoveNpc: {}, DoQuest: {}, "
-                 "TravelFlight: {}",
+                 "TravelFlight: {}, OutdoorPvP: {}",
                  rpgStatusCount[RPG_IDLE], rpgStatusCount[RPG_REST], rpgStatusCount[RPG_GO_GRIND],
                  rpgStatusCount[RPG_GO_CAMP], rpgStatusCount[RPG_WANDER_RANDOM], rpgStatusCount[RPG_WANDER_NPC],
-                 rpgStatusCount[RPG_DO_QUEST], rpgStatusCount[RPG_TRAVEL_FLIGHT]);
+                 rpgStatusCount[RPG_DO_QUEST], rpgStatusCount[RPG_TRAVEL_FLIGHT], rpgStatusCount[RPG_OUTDOOR_PVP]);
 
         LOG_INFO("playerbots", "Bots total quests:");
         LOG_INFO("playerbots", "    Accepted: {}, Rewarded: {}, Dropped: {}", rpgStasticTotal.questAccepted,
