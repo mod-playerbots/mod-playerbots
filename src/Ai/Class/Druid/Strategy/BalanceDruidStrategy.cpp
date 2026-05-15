@@ -189,7 +189,7 @@ void BalanceDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericDruidStrategy::InitTriggers(triggers);
 
-    // Debuffs and DoTs 
+    // Debuffs and DoTs
     triggers.push_back(new TriggerNode("faerie fire", { NextAction("faerie fire", 29.5f) }));
     triggers.push_back(new TriggerNode("insect swarm", { NextAction("insect swarm", 18.0f) }));
     triggers.push_back(new TriggerNode("moonfire", { NextAction("moonfire", 17.5f) }));
@@ -197,7 +197,7 @@ void BalanceDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // Eclipse procs
     triggers.push_back(new TriggerNode("eclipse (solar)", { NextAction("wrath", 20.0f) }));
     triggers.push_back(new TriggerNode("eclipse (lunar)", { NextAction("starfire", 20.0f) }));
-    
+
     // Utility/Defensive
     triggers.push_back(new TriggerNode("medium mana", { NextAction("innervate", 29.0f) }));
     triggers.push_back(new TriggerNode("enemy too close for spell", { NextAction("flee", 39.0f) }));

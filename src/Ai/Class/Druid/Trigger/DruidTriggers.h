@@ -263,7 +263,6 @@ public:
     bool IsActive() override;
 };
 
-
 class EclipseSolarTrigger : public HasAuraTrigger
 {
 public:

@@ -217,7 +217,6 @@ void DruidHealerDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
                         }));
 }
 
-
 void DruidAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     Player* bot = botAI->GetBot();

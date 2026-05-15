@@ -84,7 +84,6 @@ bool AquaticFormTrigger::IsActive()
            bot->GetLiquidData().Status == LIQUID_MAP_UNDER_WATER;
 }
 
-
 bool TigersFuryTrigger::IsActive()
 {
     return bot->IsInCombat() && BuffTrigger::IsActive() && bot->GetPower(POWER_ENERGY) < 30;
