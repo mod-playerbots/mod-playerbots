@@ -1,35 +1,40 @@
 #include "RaidBwlActions.h"
 
 #include "Playerbots.h"
+#include "RaidBwlHelpers.h"
+
+using namespace BlackwingLairHelpers;
+
+// General
 
 bool BwlOnyxiaScaleCloakAuraCheckAction::Execute(Event /*event*/)
 {
-    bot->AddAura(22683, bot);
+    bot->AddAura(SPELL_ONYXIA_SCALE_CLOAK, bot);
     return true;
 }
 
-bool BwlOnyxiaScaleCloakAuraCheckAction::isUseful() { return !bot->HasAura(22683); }
+bool BwlOnyxiaScaleCloakAuraCheckAction::isUseful()
+{
+    return !bot->HasAura(SPELL_ONYXIA_SCALE_CLOAK);
+}
 
 bool BwlTurnOffSuppressionDeviceAction::Execute(Event /*event*/)
 {
     GuidVector gos = AI_VALUE(GuidVector, "nearest game objects");
-    for (GuidVector::iterator i = gos.begin(); i != gos.end(); i++)
+    for (auto i = gos.begin(); i != gos.end(); ++i)
     {
         GameObject* go = botAI->GetGameObject(*i);
-        if (!go)
+        if (IsActiveSuppressionDeviceInRange(go, bot))
         {
-            continue;
+            go->SetGoState(GO_STATE_ACTIVE);
         }
-        if (go->GetEntry() != 179784 || go->GetDistance(bot) >= 15.0f || go->GetGoState() != GO_STATE_READY)
-        {
-            continue;
-        }
-        go->SetGoState(GO_STATE_ACTIVE);
     }
     return true;
 }
 
+// Chromaggus
+
 bool BwlUseHourglassSandAction::Execute(Event /*event*/)
 {
-    return botAI->CastSpell(23645, bot);
+    return botAI->CastSpell(SPELL_HOURGLASS_SAND, bot);
 }
