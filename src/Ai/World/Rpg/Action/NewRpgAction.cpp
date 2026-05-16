@@ -181,7 +181,7 @@ bool TellRpgStatusAction::Execute(Event event)
             return false;
         }
         Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
-S        QuestStatus questStatus = bot->GetQuestStatus(questId);
+        QuestStatus questStatus = bot->GetQuestStatus(questId);
         if (!quest || (questStatus != QUEST_STATUS_INCOMPLETE && questStatus != QUEST_STATUS_COMPLETE))
         {
             std::string msg = PlayerbotTextMgr::instance().GetBotTextOrDefault(
