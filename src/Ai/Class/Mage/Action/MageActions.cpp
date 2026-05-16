@@ -27,8 +27,6 @@ std::vector<NextAction> CastMageArmorAction::getAlternatives()
     return CastBuffSpellAction::getAlternatives();
 }
 
-Value<Unit*>* CastPolymorphAction::GetTargetValue() { return context->GetValue<Unit*>("cc target", getName()); }
-
 bool UseManaSapphireAction::isUseful()
 {
     Player* bot = botAI->GetBot();

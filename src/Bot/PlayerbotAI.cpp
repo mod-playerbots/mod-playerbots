@@ -1619,9 +1619,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
 {
     static const std::vector<std::string> allInstanceStrategies =
     {
-        "aq20", "bwl", "karazhan", "gruulslair", "hyjal", "icc", "magtheridon",
-        "moltencore", "naxx", "onyxia", "ssc", "tbc-ac", "tempestkeep", "ulduar",
-        "voa", "wotlk-an", "wotlk-cos", "wotlk-dtk", "wotlk-eoe", "wotlk-fos",
+        "aq20", "blacktemple", "bwl", "gruulslair", "hyjal", "icc", "karazhan",
+        "magtheridon", "moltencore", "naxx", "onyxia", "ssc", "tbc-ac", "tempestkeep",
+        "ulduar", "voa", "wotlk-an", "wotlk-cos", "wotlk-dtk", "wotlk-eoe", "wotlk-fos",
         "wotlk-gd", "wotlk-hol", "wotlk-hor", "wotlk-hos", "wotlk-nex", "wotlk-occ",
         "wotlk-ok", "wotlk-os", "wotlk-pos", "wotlk-toc", "wotlk-uk", "wotlk-up",
         "wotlk-vh", "zulaman"
@@ -1668,6 +1668,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             break;
         case 558:
             strategyName = "tbc-ac"; // Auchindoun: Auchenai Crypts
+            break;
+        case 564:
+            strategyName = "blacktemple";  // Black Temple
             break;
         case 565:
             strategyName = "gruulslair";  // Gruul's Lair
@@ -2874,7 +2877,7 @@ bool PlayerbotAI::SayToParty(const std::string& msg)
 
 bool PlayerbotAI::SayToRaid(const std::string& msg)
 {
-    if (!bot->GetGroup() || bot->GetGroup()->isRaidGroup())
+    if (!bot->GetGroup() || !bot->GetGroup()->isRaidGroup())
         return false;
 
     WorldPacket data;
@@ -5560,7 +5563,7 @@ Item* PlayerbotAI::FindStoneFor(Item* weapon) const
         SOLID_SHARPENING_STONE,      HEAVY_SHARPENING_STONE, COARSE_SHARPENING_STONE,    ROUGH_SHARPENING_STONE};
 
     static const std::vector<uint32_t> uPrioritizedWeightStoneIds = {
-        ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE,    DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE,
+        ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE,    ELEMENTAL_SHARPENING_STONE, DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE,
         HEAVY_WEIGHTSTONE,      COARSE_WEIGHTSTONE, ROUGH_WEIGHTSTONE};
 
     Item* stone = nullptr;

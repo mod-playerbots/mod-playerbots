@@ -267,7 +267,7 @@ float HexLordMalacrassStopAttackingDuringSpellReflectionMultiplier::GetValue(Act
         return 1.0f;
 
     if (castSpellAction->getThreatType() == Action::ActionThreatType::Aoe ||
-        (bot->GetVictim() == malacrass &&
+        (AI_VALUE(Unit*, "current target") == malacrass &&
          castSpellAction->getThreatType() == Action::ActionThreatType::Single))
         return 0.0f;
 
