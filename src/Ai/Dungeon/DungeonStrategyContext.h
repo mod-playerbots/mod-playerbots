@@ -6,18 +6,18 @@
 #include "UKStrategy.h"
 #include "NexStrategy.h"
 #include "ANStrategy.h"
-#include "OKStrategy.h"
+#include "AKStrategy.h"
 #include "DTKStrategy.h"
 #include "VHStrategy.h"
-#include "GunStrategy.h"
+#include "GDStrategy.h"
 #include "HoSStrategy.h"
 #include "HoLStrategy.h"
-#include "OcuStrategy.h"
+#include "OCStrategy.h"
 #include "UPStrategy.h"
 #include "CoSStrategy.h"
 #include "FoSStrategy.h"
 #include "PoSStrategy.h"
-#include "ToCStrategy.h"
+#include "TOCStrategy.h"
 
 /*
 Full list/TODO:
