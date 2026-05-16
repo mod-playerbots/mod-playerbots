@@ -255,7 +255,7 @@ private:
         std::vector<ai::gbless::CachedBlessingBucketAssignment>& outAssignments);
     bool FindPendingAssignment(
         ai::gbless::GreaterBlessingPlayerAssignment& outAssignment,
-        ai::gbless::BlessingType& outCastType, std::string& outSpellName);
+        std::string& outSpellName);
 };
 
 #endif

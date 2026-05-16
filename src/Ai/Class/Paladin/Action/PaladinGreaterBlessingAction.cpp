@@ -120,8 +120,11 @@ namespace
         auto const& priority = BASE_BLESSING_PRIORITIES[role];
         uint8 requestedCount = std::min<uint8>(paladinCount, MAX_BLESSING_SLOTS);
 
-        for (uint8 index = 0; index < requestedCount; ++index)
+        for (uint8 index = 0; index < MAX_BLESSING_SLOTS; ++index)
         {
+            if (desired.count >= requestedCount)
+                break;
+
             BaseBlessingCategory category = priority.priorities[index];
             if (category == BASE_NONE)
                 continue;
@@ -272,7 +275,7 @@ namespace
         bool anySanctuaryAvailable = false;
         for (Player* paladin : botPaladins)
         {
-            if (paladin && paladin->HasSpell(ai::paladin::SPELL_BLESSING_OF_SANCTUARY))
+            if (paladin->HasSpell(ai::paladin::SPELL_BLESSING_OF_SANCTUARY))
             {
                 anySanctuaryAvailable = true;
                 break;
@@ -491,11 +494,8 @@ bool IsAutoGreaterBlessingActive(Player const* bot)
 
 static bool HasMyExactBlessing(PlayerbotAI* botAI, Unit* target, BlessingType type)
 {
-    std::string name = BlessingSpellName(type);
-    if (name.empty())
-        return false;
-
-    return botAI->HasAura(name.c_str(), target, false, true);
+    std::string const name = BlessingSpellName(type);
+    return !name.empty() && botAI->HasAura(name.c_str(), target, false, true);
 }
 
 static bool MatchesBucket(Player* player, CachedBlessingBucketAssignment const& assignment)
@@ -550,22 +550,19 @@ bool CastGreaterBlessingAssignmentAction::isUseful()
 bool CastGreaterBlessingAssignmentAction::HasPendingAssignment()
 {
     ai::gbless::GreaterBlessingPlayerAssignment assignment;
-    ai::gbless::BlessingType castType = ai::gbless::BLESSING_NONE;
     std::string spellName;
 
-    return FindPendingAssignment(assignment, castType, spellName);
+    return FindPendingAssignment(assignment, spellName);
 }
 
 bool CastGreaterBlessingAssignmentAction::Execute(Event /*event*/)
 {
     ai::gbless::GreaterBlessingPlayerAssignment assignment;
-    ai::gbless::BlessingType castType = ai::gbless::BLESSING_NONE;
     std::string spellName;
-    if (!FindPendingAssignment(assignment, castType, spellName))
+    if (!FindPendingAssignment(assignment, spellName))
         return false;
 
-    uint32 finalId = AI_VALUE2(uint32, "spell id", spellName);
-    if (!finalId)
+    if (!AI_VALUE2(uint32, "spell id", spellName))
         return false;
 
     return botAI->CastSpell(spellName, assignment.player);
@@ -573,7 +570,6 @@ bool CastGreaterBlessingAssignmentAction::Execute(Event /*event*/)
 
 bool CastGreaterBlessingAssignmentAction::FindPendingAssignment(
     ai::gbless::GreaterBlessingPlayerAssignment& outAssignment,
-    ai::gbless::BlessingType& outCastType,
     std::string& outSpellName)
 {
     std::vector<ai::gbless::CachedBlessingBucketAssignment> assignments;
@@ -608,7 +604,6 @@ bool CastGreaterBlessingAssignmentAction::FindPendingAssignment(
             continue;
 
         outAssignment = {target, assigned.blessing};
-        outCastType = castType;
         outSpellName = spellName;
         return true;
     }
