@@ -197,32 +197,44 @@ public:
         : BuffOnMainTankTrigger(botAI, "sacred shield", false) {}
 };
 
-class BlessingOfKingsOnPartyTrigger : public BuffOnPartyTrigger
+class BlessingOfKingsOnPartyTrigger : public BlessingOnPartyTrigger
 {
 public:
     BlessingOfKingsOnPartyTrigger(PlayerbotAI* botAI)
-        : BuffOnPartyTrigger(botAI, "blessing of kings", 2 * 2000) {}
+        : BlessingOnPartyTrigger(botAI)
+    {
+        spell = "blessing of kings";
+    }
 };
 
-class BlessingOfWisdomOnPartyTrigger : public BuffOnPartyTrigger
+class BlessingOfWisdomOnPartyTrigger : public BlessingOnPartyTrigger
 {
 public:
     BlessingOfWisdomOnPartyTrigger(PlayerbotAI* botAI)
-        : BuffOnPartyTrigger(botAI, "blessing of might,blessing of wisdom", 2 * 2000) {}
+        : BlessingOnPartyTrigger(botAI)
+    {
+        spell = "blessing of might,blessing of wisdom";
+    }
 };
 
-class BlessingOfMightOnPartyTrigger : public BuffOnPartyTrigger
+class BlessingOfMightOnPartyTrigger : public BlessingOnPartyTrigger
 {
 public:
     BlessingOfMightOnPartyTrigger(PlayerbotAI* botAI)
-        : BuffOnPartyTrigger(botAI, "blessing of might,blessing of wisdom", 2 * 2000) {}
+        : BlessingOnPartyTrigger(botAI)
+    {
+        spell = "blessing of might,blessing of wisdom";
+    }
 };
 
-class BlessingOfSanctuaryOnPartyTrigger : public BuffOnPartyTrigger
+class BlessingOfSanctuaryOnPartyTrigger : public BlessingOnPartyTrigger
 {
 public:
     BlessingOfSanctuaryOnPartyTrigger(PlayerbotAI* botAI)
-        : BuffOnPartyTrigger(botAI, "blessing of sanctuary", 2 * 2000) {}
+        : BlessingOnPartyTrigger(botAI)
+    {
+        spell = "blessing of sanctuary";
+    }
 };
 
 class HandOfFreedomOnPartyTrigger : public Trigger

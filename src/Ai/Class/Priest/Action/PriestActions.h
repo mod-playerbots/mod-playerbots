@@ -13,9 +13,26 @@
 class PlayerbotAI;
 
 // disc
-BUFF_ACTION(CastPowerWordFortitudeAction, "power word: fortitude");
-BUFF_PARTY_ACTION(CastPowerWordFortitudeOnPartyAction, "power word: fortitude");
-BUFF_PARTY_ACTION(CastPrayerOfFortitudeOnPartyAction, "prayer of fortitude");
+class CastPowerWordFortitudeAction : public GroupBuffSpellAction
+{
+public:
+    CastPowerWordFortitudeAction(PlayerbotAI* botAI)
+        : GroupBuffSpellAction(botAI, "power word: fortitude") {}
+};
+
+class CastPowerWordFortitudeOnPartyAction : public GroupBuffOnPartyAction
+{
+public:
+    CastPowerWordFortitudeOnPartyAction(PlayerbotAI* botAI)
+        : GroupBuffOnPartyAction(botAI, "power word: fortitude") {}
+};
+
+class CastPrayerOfFortitudeOnPartyAction : public GroupBuffOnPartyAction
+{
+public:
+    CastPrayerOfFortitudeOnPartyAction(PlayerbotAI* botAI)
+        : GroupBuffOnPartyAction(botAI, "prayer of fortitude") {}
+};
 BUFF_ACTION(CastPowerWordShieldAction, "power word: shield");
 
 BUFF_ACTION(CastInnerFireAction, "inner fire");
@@ -26,9 +43,26 @@ CC_ACTION(CastShackleUndeadAction, "shackle undead");
 SPELL_ACTION_U(CastManaBurnAction, "mana burn",
                AI_VALUE2(uint8, "mana", "self target") < 50 && AI_VALUE2(uint8, "mana", "current target") >= 20);
 BUFF_ACTION(CastLevitateAction, "levitate");
-BUFF_ACTION(CastDivineSpiritAction, "divine spirit");
-BUFF_PARTY_ACTION(CastDivineSpiritOnPartyAction, "divine spirit");
-BUFF_PARTY_ACTION(CastPrayerOfSpiritOnPartyAction, "prayer of spirit");
+class CastDivineSpiritAction : public GroupBuffSpellAction
+{
+public:
+    CastDivineSpiritAction(PlayerbotAI* botAI)
+        : GroupBuffSpellAction(botAI, "divine spirit") {}
+};
+
+class CastDivineSpiritOnPartyAction : public GroupBuffOnPartyAction
+{
+public:
+    CastDivineSpiritOnPartyAction(PlayerbotAI* botAI)
+        : GroupBuffOnPartyAction(botAI, "divine spirit") {}
+};
+
+class CastPrayerOfSpiritOnPartyAction : public GroupBuffOnPartyAction
+{
+public:
+    CastPrayerOfSpiritOnPartyAction(PlayerbotAI* botAI)
+        : GroupBuffOnPartyAction(botAI, "prayer of spirit") {}
+};
 // disc 2.4.3
 SPELL_ACTION(CastMassDispelAction, "mass dispel");
 
@@ -103,9 +137,26 @@ SPELL_ACTION(CastMindBlastAction, "mind blast");
 SPELL_ACTION(CastPsychicScreamAction, "psychic scream");
 DEBUFF_ACTION(CastMindSootheAction, "mind soothe");
 BUFF_ACTION_U(CastFadeAction, "fade", bot->GetGroup());
-BUFF_ACTION(CastShadowProtectionAction, "shadow protection");
-BUFF_PARTY_ACTION(CastShadowProtectionOnPartyAction, "shadow protection");
-BUFF_PARTY_ACTION(CastPrayerOfShadowProtectionAction, "prayer of shadow protection");
+class CastShadowProtectionAction : public GroupBuffSpellAction
+{
+public:
+    CastShadowProtectionAction(PlayerbotAI* botAI)
+        : GroupBuffSpellAction(botAI, "shadow protection") {}
+};
+
+class CastShadowProtectionOnPartyAction : public GroupBuffOnPartyAction
+{
+public:
+    CastShadowProtectionOnPartyAction(PlayerbotAI* botAI)
+        : GroupBuffOnPartyAction(botAI, "shadow protection") {}
+};
+
+class CastPrayerOfShadowProtectionAction : public GroupBuffOnPartyAction
+{
+public:
+    CastPrayerOfShadowProtectionAction(PlayerbotAI* botAI)
+        : GroupBuffOnPartyAction(botAI, "prayer of shadow protection") {}
+};
 
 // shadow talents
 SPELL_ACTION(CastMindFlayAction, "mind flay");
