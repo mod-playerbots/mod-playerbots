@@ -1639,7 +1639,7 @@ void PlayerbotMgr::OnPlayerLogin(Player* player)
 
     // For bot texts (DB-driven), prefer the database locale with a safe fallback.
     LocaleConstant usedLocale = databaseLocale;
-    if (usedLocale >= MAX_LOCALES)
+    if (usedLocale >= TOTAL_LOCALES)
         usedLocale = LOCALE_enUS; // fallback
 
     // set locale priority for bot texts

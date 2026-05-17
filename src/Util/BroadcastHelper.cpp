@@ -11,7 +11,7 @@ uint8 BroadcastHelper::GetLocale()
 {
     uint8 locale = sWorld->GetDefaultDbcLocale();
     // -- In case we're using auto detect on config file^M
-    if (locale >= MAX_LOCALES)
+    if (locale >= TOTAL_LOCALES)
         locale = LocaleConstant::LOCALE_enUS;
     return locale;
 }
