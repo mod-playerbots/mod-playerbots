@@ -121,7 +121,9 @@ namespace
         auto const& priority = BASE_BLESSING_PRIORITIES[role];
         uint8 requestedCount = std::min<uint8>(paladinCount, MAX_BLESSING_SLOTS);
 
-        for (uint8 index = 0; index < requestedCount; ++index)
+        for (uint8 index = 0;
+             index < MAX_BLESSING_SLOTS && desired.count < requestedCount;
+             ++index)
         {
             BaseBlessingCategory category = priority.priorities[index];
             if (category == BASE_NONE)
@@ -401,20 +403,8 @@ namespace
                         exclusiveBases.push_back(category);
                 }
 
-                std::vector<int> availablePaladins;
-                availablePaladins.reserve(allPaladins.size());
-                for (int paladinIndex : allPaladins)
-                {
-                    bool usedByClassWide = std::find(
-                        classWideOwners.begin(), classWideOwners.end(),
-                        paladinIndex) != classWideOwners.end();
-
-                    if (!usedByClassWide)
-                        availablePaladins.push_back(paladinIndex);
-                }
-
                 std::vector<int> exclusiveOwners;
-                if (!ComputeBestOwners(exclusiveBases, botPaladins, availablePaladins, exclusiveOwners))
+                if (!ComputeBestOwners(exclusiveBases, botPaladins, allPaladins, exclusiveOwners))
                     return false;
 
                 for (size_t index = 0; index < exclusiveBases.size(); ++index)
