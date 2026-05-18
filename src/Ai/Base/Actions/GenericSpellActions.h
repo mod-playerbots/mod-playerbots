@@ -121,26 +121,21 @@ public:
     std::string const GetTargetName() override { return "self target"; }
 };
 
-class CastEnchantItemAction : public CastSpellAction
-{
-public:
-    CastEnchantItemAction(PlayerbotAI* botAI, std::string const spell);
-
-    bool isPossible() override;
-    std::string const GetTargetName() override { return "self target"; }
-};
-
-class CastEnchantItemMainHandAction : public CastEnchantItemAction
+class CastEnchantItemMainHandAction : public CastSpellAction
 {
 public:
     CastEnchantItemMainHandAction(PlayerbotAI* botAI, std::string const spell);
+    std::string const GetTargetName() override { return "self target"; }
+    bool Execute(Event event) override;
     bool isPossible() override;
 };
 
-class CastEnchantItemOffHandAction : public CastEnchantItemAction
+class CastEnchantItemOffHandAction : public CastSpellAction
 {
 public:
     CastEnchantItemOffHandAction(PlayerbotAI* botAI, std::string const spell);
+    std::string const GetTargetName() override { return "self target"; }
+    bool Execute(Event event) override;
     bool isPossible() override;
 };
 

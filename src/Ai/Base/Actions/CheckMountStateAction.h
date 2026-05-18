@@ -42,6 +42,8 @@ public:
     bool isPossible() override { return true; }
     bool Mount();
 
+    static void CompleteDismount(Player* bot);
+
 private:
     Player* master;
     ShapeshiftForm masterInShapeshiftForm;

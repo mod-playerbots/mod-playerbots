@@ -7,6 +7,7 @@
 
 #include "Event.h"
 #include "ItemVisitors.h"
+#include "PlayerbotRepository.h"
 #include "Playerbots.h"
 #include "ItemPackets.h"
 
@@ -28,6 +29,7 @@ bool OutfitAction::Execute(Event event)
         if (!name.empty())
         {
             Save(name, items);
+            PlayerbotRepository::instance().Save(botAI);
 
             std::ostringstream out;
             out << "Setting outfit " << name << " as " << param;
@@ -86,6 +88,7 @@ bool OutfitAction::Execute(Event event)
             botAI->TellMaster(out);
 
             Save(name, ItemIds());
+            PlayerbotRepository::instance().Save(botAI);
             return true;
         }
         else if (command == "update")
@@ -95,6 +98,7 @@ bool OutfitAction::Execute(Event event)
             botAI->TellMaster(out);
 
             Update(name);
+            PlayerbotRepository::instance().Save(botAI);
             return true;
         }
 
@@ -124,6 +128,7 @@ bool OutfitAction::Execute(Event event)
         }
 
         Save(name, outfit);
+        PlayerbotRepository::instance().Save(botAI);
     }
 
     return true;

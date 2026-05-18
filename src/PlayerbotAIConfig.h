@@ -306,6 +306,7 @@ public:
     uint32 iterationsPerTick;
 
     std::mutex m_logMtx;
+    bool enableAutoTradeOnItemMention;
     std::vector<std::string> tradeActionExcludedPrefixes;
     std::vector<std::string> allowedLogFiles;
     std::unordered_map<std::string, std::pair<FILE*, bool>> logFiles;

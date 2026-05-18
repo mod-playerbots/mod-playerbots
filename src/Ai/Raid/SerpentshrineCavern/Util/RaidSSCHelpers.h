@@ -48,6 +48,7 @@ namespace SerpentShrineCavernHelpers
 
         // Lady Vashj <Coilfang Matron>
         SPELL_FEAR_WARD              =  6346,
+        SPELL_MAGIC_BARRIER          = 38112,
         SPELL_POISON_BOLT            = 38253,
         SPELL_STATIC_CHARGE          = 38280,
         SPELL_ENTANGLE               = 38316,
