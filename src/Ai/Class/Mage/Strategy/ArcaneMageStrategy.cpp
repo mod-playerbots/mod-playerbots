@@ -22,7 +22,7 @@ public:
     }
 
 private:
-    static ActionNode* arcane_blast(PlayerbotAI*) { return new ActionNode("arcane blast", {}, {}, {}); }
+    static ActionNode* arcane_blast(PlayerbotAI*) { return new ActionNode("arcane blast", {}, { NextAction("arcane barrage") }, {}); }
     static ActionNode* arcane_barrage(PlayerbotAI*) { return new ActionNode("arcane barrage", {}, {}, {}); }
     static ActionNode* arcane_missiles(PlayerbotAI*) { return new ActionNode("arcane missiles", {}, {}, {}); }
     static ActionNode* fire_blast(PlayerbotAI*) { return new ActionNode("fire blast", {}, {}, {}); }
