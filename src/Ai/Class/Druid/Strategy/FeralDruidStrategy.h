@@ -8,6 +8,9 @@
 
 #include "GenericDruidStrategy.h"
 
+constexpr uint32 SPELL_CAT_FORM  = 768;
+constexpr uint32 AURA_THICK_HIDE = 16931;
+
 class PlayerbotAI;
 
 class ShapeshiftDruidStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>

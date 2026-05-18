@@ -12,10 +12,8 @@ class BearDruidStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 public:
     BearDruidStrategyActionNodeFactory()
     {
-        creators["melee"] = &melee;
         creators["feral charge - bear"] = &feral_charge_bear;
         creators["swipe (bear)"] = &swipe_bear;
-        creators["faerie fire (feral)"] = &faerie_fire_feral;
         creators["bear form"] = &bear_form;
         creators["dire bear form"] = &dire_bear_form;
         creators["mangle (bear)"] = &mangle_bear;
@@ -28,16 +26,6 @@ public:
     }
 
 private:
-    static ActionNode* melee([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "melee",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {}
-        );
-    }
-
     static ActionNode* feral_charge_bear([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
@@ -52,16 +40,6 @@ private:
     {
         return new ActionNode(
             "swipe (bear)",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* faerie_fire_feral([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "faerie fire (feral)",
             /*P*/ {},
             /*A*/ {},
             /*C*/ {}

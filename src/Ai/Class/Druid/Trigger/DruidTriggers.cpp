@@ -24,47 +24,6 @@ bool ThornsOnPartyTrigger::IsActive()
     return BuffOnPartyTrigger::IsActive() && !botAI->HasAura("thorns", GetTarget());
 }
 
-bool EntanglingRootsTrigger::IsActive()
-{
-    Unit* rtiCcTarget = context->GetValue<Unit*>("rti cc target")->Get();
-    if (!rtiCcTarget)
-        return false;
-
-    // Standard path: RTI CC target is already in the attackers list
-    Unit* ccTarget = context->GetValue<Unit*>("cc target", "entangling roots")->Get();
-    if (ccTarget && ccTarget == rtiCcTarget)
-        return HasCcTargetTrigger::IsActive();
-
-    // Fallback: RTI CC target exists but hasn't engaged yet — check directly
-    return botAI->CanCastSpell("entangling roots", rtiCcTarget);
-}
-
-bool HibernateTrigger::IsActive()
-{
-    Unit* rtiCcTarget = context->GetValue<Unit*>("rti cc target")->Get();
-    if (!rtiCcTarget)
-        return false;
-
-    Unit* ccTarget = context->GetValue<Unit*>("cc target", "hibernate")->Get();
-    if (ccTarget && ccTarget == rtiCcTarget)
-        return HasCcTargetTrigger::IsActive();
-
-    return botAI->CanCastSpell("hibernate", rtiCcTarget);
-}
-
-bool CycloneTrigger::IsActive()
-{
-    Unit* rtiCcTarget = context->GetValue<Unit*>("rti cc target")->Get();
-    if (!rtiCcTarget)
-        return false;
-
-    Unit* ccTarget = context->GetValue<Unit*>("cc target", "cyclone")->Get();
-    if (ccTarget && ccTarget == rtiCcTarget)
-        return HasCcTargetTrigger::IsActive();
-
-    return botAI->CanCastSpell("cyclone", rtiCcTarget);
-}
-
 bool EntanglingRootsKiteTrigger::IsActive()
 {
     return DebuffTrigger::IsActive() && AI_VALUE(uint8, "attacker count") < 3 && !GetTarget()->GetPower(POWER_MANA);
@@ -82,11 +41,6 @@ bool AquaticFormTrigger::IsActive()
 {
     return !bot->IsInCombat() && !botAI->HasAura("aquatic form", bot) &&
            bot->GetLiquidData().Status == LIQUID_MAP_UNDER_WATER;
-}
-
-bool TigersFuryTrigger::IsActive()
-{
-    return bot->IsInCombat() && BuffTrigger::IsActive() && bot->GetPower(POWER_ENERGY) < 30;
 }
 
 bool ProwlTrigger::IsActive()
@@ -132,8 +86,6 @@ const std::set<uint32> HurricaneChannelCheckTrigger::HURRICANE_SPELL_IDS = {
 
 bool HurricaneChannelCheckTrigger::IsActive()
 {
-    Player* bot = botAI->GetBot();
-
     if (Spell* spell = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
     {
         if (!HURRICANE_SPELL_IDS.count(spell->m_spellInfo->Id))

@@ -196,7 +196,7 @@ void CatDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     );
     triggers.push_back(
         new TriggerNode(
-            "tiger's fury", {
+            "low energy", {
                 NextAction("tiger's fury", 27.0f)
             }
         )

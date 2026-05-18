@@ -165,10 +165,9 @@ bool CastStarfallAction::isUseful()
             return false;
     }
 
-    // Suppress if any unengaged hostile NPC is within 40 yards — Starfall's 36-yard radius would pull them.
-    // "nearest hostile npcs" pre-filters to IsHostileTo, which excludes neutral-faction trigger/dummy/invisible creatures.
+    // Suppress if any unengaged hostile unit is within 40 yards — Starfall's 36-yard radius would pull them.
     Unit* currentTarget = AI_VALUE(Unit*, "current target");
-    GuidVector const& nearbyNpcs = AI_VALUE(GuidVector, "nearest hostile npcs");
+    GuidVector const& nearbyNpcs = AI_VALUE(GuidVector, "possible targets");
     for (ObjectGuid const& guid : nearbyNpcs)
     {
         Unit* unit = botAI->GetUnit(guid);
@@ -275,34 +274,30 @@ Unit* CastBlanketHotAction::GetBlanketTarget(std::string const& auraName)
                !botAI->HasAura(auraName, member, false, true);
     };
 
-    // Pass 1: tanks
+    Player* firstTank   = nullptr;
+    Player* firstMelee  = nullptr;
+    Player* firstRanged = nullptr;
+
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!eligible(member) || !PlayerbotAI::IsTank(member))
+        if (!eligible(member))
             continue;
-        return member;
+
+        if (!firstTank && PlayerbotAI::IsTank(member))
+            firstTank = member;
+        else if (!firstMelee && PlayerbotAI::IsMelee(member) && !PlayerbotAI::IsTank(member))
+            firstMelee = member;
+        else if (!firstRanged && PlayerbotAI::IsRanged(member))
+            firstRanged = member;
+
+        if (firstTank && firstMelee && firstRanged)
+            break;
     }
 
-    // Pass 2: melee non-tanks
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!eligible(member) || !PlayerbotAI::IsMelee(member) || PlayerbotAI::IsTank(member))
-            continue;
-        return member;
-    }
-
-    // Pass 3: ranged
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!eligible(member) || !PlayerbotAI::IsRanged(member))
-            continue;
-        return member;
-    }
-
-    return nullptr;
+    if (firstTank)  return firstTank;
+    if (firstMelee) return firstMelee;
+    return firstRanged;
 }
 
 Unit* CastRejuvenationBlanketAction::GetTarget()

@@ -62,7 +62,6 @@ public:
         creators["tank"] = &DruidDruidStrategyFactoryInternal::bear;
         creators["cat"] = &DruidDruidStrategyFactoryInternal::cat;
         creators["balance"] = &DruidDruidStrategyFactoryInternal::balance;
-        creators["caster"] = &DruidDruidStrategyFactoryInternal::balance;
         creators["dps"] = &DruidDruidStrategyFactoryInternal::cat;
         creators["heal"] = &DruidDruidStrategyFactoryInternal::heal;
     }
@@ -91,7 +90,6 @@ public:
         creators["moonfire"] = &DruidTriggerFactoryInternal::moonfire;
         creators["moonfire on attacker"] = &DruidTriggerFactoryInternal::moonfire_on_attacker;
         creators["nature's grasp"] = &DruidTriggerFactoryInternal::natures_grasp;
-        creators["tiger's fury"] = &DruidTriggerFactoryInternal::tigers_fury;
         creators["berserk"] = &DruidTriggerFactoryInternal::berserk;
         creators["berserk active"] = &DruidTriggerFactoryInternal::berserk_active;
         creators["savage roar"] = &DruidTriggerFactoryInternal::savage_roar;
@@ -152,7 +150,6 @@ private:
     static Trigger* moonfire_on_attacker(PlayerbotAI* botAI) { return new MoonfireOnAttackerTrigger(botAI); }
     static Trigger* faerie_fire(PlayerbotAI* botAI) { return new FaerieFireTrigger(botAI); }
     static Trigger* natures_grasp(PlayerbotAI* botAI) { return new NaturesGraspTrigger(botAI); }
-    static Trigger* tigers_fury(PlayerbotAI* botAI) { return new TigersFuryTrigger(botAI); }
     static Trigger* berserk(PlayerbotAI* botAI) { return new BerserkTrigger(botAI); }
     static Trigger* berserk_active(PlayerbotAI* botAI) { return new BerserkActiveTrigger(botAI); }
     static Trigger* savage_roar(PlayerbotAI* botAI) { return new SavageRoarTrigger(botAI); }

@@ -11,11 +11,11 @@ class RestoDruidStrategyActionNodeFactory : public NamedObjectFactory<ActionNode
 {
 public:
     RestoDruidStrategyActionNodeFactory() {
-        creators["nourish on party"] = &nourtish_on_party;
+        creators["nourish on party"] = &nourish_on_party;
     }
 
 private:
-    static ActionNode* nourtish_on_party([[maybe_unused]] PlayerbotAI* botAI)
+    static ActionNode* nourish_on_party([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("nourish on party",
                               /*P*/ {},

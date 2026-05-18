@@ -425,7 +425,7 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
                 {
                     if (tab == DRUID_TAB_RESTORATION)
                     {
-                        engine->addStrategiesNoInit("caster", "aoe", nullptr);
+                        engine->addStrategiesNoInit("aoe", nullptr);
                     }
                     break;
                 }

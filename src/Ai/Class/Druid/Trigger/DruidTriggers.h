@@ -8,12 +8,15 @@
 
 #include "CureTriggers.h"
 #include "GenericTriggers.h"
+#include "RtiTriggers.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
 #include "Trigger.h"
 #include <set>
+
+constexpr uint32 AURA_OMEN_OF_CLARITY = 16864;
 
 class PlayerbotAI;
 
@@ -78,7 +81,7 @@ class RakeTrigger : public DebuffTrigger
 {
 public:
     RakeTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "rake", 1, true) {}
-    bool IsActive() override { return !botAI->HasAura("prowl", bot) && BuffTrigger::IsActive(); }
+    bool IsActive() override { return !botAI->HasAura("prowl", bot) && DebuffTrigger::IsActive(); }
 };
 
 class InsectSwarmTrigger : public DebuffTrigger
@@ -137,7 +140,7 @@ public:
             return false;
 
         // Cat with Omen of Clarity: spam to fish for Clearcasting procs
-        if (bot->HasAura(16864) /*omen of clarity*/)
+        if (bot->HasAura(AURA_OMEN_OF_CLARITY))
         {
             Unit* target = GetTarget();
             return target && target->IsAlive() && target->IsInWorld();
@@ -152,13 +155,6 @@ class BashInterruptSpellTrigger : public InterruptSpellTrigger
 {
 public:
     BashInterruptSpellTrigger(PlayerbotAI* botAI) : InterruptSpellTrigger(botAI, "bash") {}
-};
-
-class TigersFuryTrigger : public BuffTrigger
-{
-public:
-    TigersFuryTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "tiger's fury") {}
-    bool IsActive() override;
 };
 
 class BerserkTrigger : public BoostTrigger
@@ -185,12 +181,10 @@ public:
     NaturesGraspTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "nature's grasp") {}
 };
 
-class EntanglingRootsTrigger : public HasCcTargetTrigger
+class EntanglingRootsTrigger : public RtiCcTrigger
 {
 public:
-    EntanglingRootsTrigger(PlayerbotAI* botAI) : HasCcTargetTrigger(botAI, "entangling roots") {}
-
-    bool IsActive() override;
+    EntanglingRootsTrigger(PlayerbotAI* botAI) : RtiCcTrigger(botAI, "entangling roots") {}
 };
 
 class EntanglingRootsKiteTrigger : public DebuffTrigger
@@ -201,20 +195,16 @@ public:
     bool IsActive() override;
 };
 
-class HibernateTrigger : public HasCcTargetTrigger
+class HibernateTrigger : public RtiCcTrigger
 {
 public:
-    HibernateTrigger(PlayerbotAI* botAI) : HasCcTargetTrigger(botAI, "hibernate") {}
-
-    bool IsActive() override;
+    HibernateTrigger(PlayerbotAI* botAI) : RtiCcTrigger(botAI, "hibernate") {}
 };
 
-class CycloneTrigger : public HasCcTargetTrigger
+class CycloneTrigger : public RtiCcTrigger
 {
 public:
-    CycloneTrigger(PlayerbotAI* botAI) : HasCcTargetTrigger(botAI, "cyclone") {}
-
-    bool IsActive() override;
+    CycloneTrigger(PlayerbotAI* botAI) : RtiCcTrigger(botAI, "cyclone") {}
 };
 
 class CurePoisonTrigger : public NeedCureTrigger
