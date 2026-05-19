@@ -552,9 +552,8 @@ void PlayerbotFactory::Prepare()
 void PlayerbotFactory::Randomize(bool incremental)
 {
     // if (sPlayerbotAIConfig.disableRandomLevels)
-    // {
     //     return;
-    // }
+
     LOG_DEBUG("playerbots", "{} randomizing {} (level {} class = {})...", (incremental ? "Incremental" : "Full"),
              bot->GetName().c_str(), level, bot->getClass());
     // LOG_DEBUG("playerbots", "Preparing to {} randomize...", (incremental ? "incremental" : "full"));
@@ -562,7 +561,7 @@ void PlayerbotFactory::Randomize(bool incremental)
     LOG_DEBUG("playerbots", "Resetting player...");
     PerfMonitorOperation* pmo = sPerfMonitor.start(PERF_MON_RNDBOT, "PlayerbotFactory_Reset");
 
-    if (!PlayerbotAIConfig::instance().equipmentPersistence || level < PlayerbotAIConfig::instance().equipmentPersistenceLevel)
+    if (!sPlayerbotAIConfig.equipmentPersistence || level < sPlayerbotAIConfig.equipmentPersistenceLevel)
         bot->resetTalents(true);
 
     if (!incremental)
@@ -570,7 +569,7 @@ void PlayerbotFactory::Randomize(bool incremental)
         ClearSkills();
         ClearSpells();
         ResetQuests();
-        if (!PlayerbotAIConfig::instance().equipmentPersistence || level < PlayerbotAIConfig::instance().equipmentPersistenceLevel)
+        if (!sPlayerbotAIConfig.equipmentPersistence || level < sPlayerbotAIConfig.equipmentPersistenceLevel)
             ClearAllItems();
     }
     ClearInventory();
@@ -673,8 +672,7 @@ void PlayerbotFactory::Randomize(bool incremental)
     if (!incremental || !sPlayerbotAIConfig.equipmentPersistence ||
         bot->GetLevel() < sPlayerbotAIConfig.equipmentPersistenceLevel)
     {
-        if (sPlayerbotAIConfig.incrementalGearInit || !incremental)
-            InitEquipment(incremental, incremental ? false : sPlayerbotAIConfig.twoRoundsGearInit);
+        InitEquipment(incremental, incremental ? false : sPlayerbotAIConfig.twoRoundsGearInit);
     }
     // bot->SaveToDB(false, false);
     if (pmo)
@@ -811,7 +809,8 @@ void PlayerbotFactory::Randomize(bool incremental)
 void PlayerbotFactory::Refresh()
 {
     // Prepare();
-    // if (!sPlayerbotAIConfig.equipmentPersistence || bot->GetLevel() < sPlayerbotAIConfig.equipmentPersistenceLevel)
+    // if (!sPlayerbotAIConfig.equipmentPersistence ||
+    //     bot->GetLevel() < sPlayerbotAIConfig.equipmentPersistenceLevel)
     // {
     //     InitEquipment(true);
     // }
@@ -831,14 +830,13 @@ void PlayerbotFactory::Refresh()
     InitSpecialSpells();
     InitMounts();
     InitKeyring();
-    if (!sPlayerbotAIConfig.equipmentPersistence || bot->GetLevel() < sPlayerbotAIConfig.equipmentPersistenceLevel)
+    if (!sPlayerbotAIConfig.equipmentPersistence ||
+        bot->GetLevel() < sPlayerbotAIConfig.equipmentPersistenceLevel)
     {
         InitTalentsTree(true, true, true);
     }
     if (bot->GetLevel() >= sPlayerbotAIConfig.minEnchantingBotLevel)
-    {
         ApplyEnchantAndGemsNew();
-    }
     bot->DurabilityRepairAll(false, 1.0f, false);
     if (bot->isDead())
         bot->ResurrectPlayer(1.0f, false);
@@ -2037,9 +2035,6 @@ void Shuffle(std::vector<uint32>& items)
 
 void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
 {
-    if (incremental && !sPlayerbotAIConfig.incrementalGearInit)
-        return;
-
     if (level < 5)
     {
         // original items

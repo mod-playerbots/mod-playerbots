@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PLAYERbotAICONFIG_H
-#define _PLAYERBOT_PLAYERbotAICONFIG_H
+#ifndef _PLAYERBOT_PLAYERBOTAICONFIG_H
+#define _PLAYERBOT_PLAYERBOTAICONFIG_H
 
 #include <mutex>
 #include <unordered_map>
@@ -125,7 +125,6 @@ public:
     std::vector<uint32> randomBotQuestIds;
     uint32 randomBotTeleportDistance;
     float randomGearLoweringChance;
-    bool incrementalGearInit;
     int32 randomGearQualityLimit;
     int32 randomGearScoreLimit;
     bool preferClassArmorType;
@@ -224,10 +223,6 @@ public:
 
     uint32 guildRepliesRate;
 
-    bool suggestDungeonsInLowerCaseRandomly;
-
-    // --
-
     bool randomBotJoinBG;
     bool randomBotAutoJoinBG;
 
@@ -249,7 +244,6 @@ public:
     uint32 randomBotAutoJoinBGRatedArena3v3Count;
     uint32 randomBotAutoJoinBGRatedArena5v5Count;
 
-    bool randomBotLoginAtStartup;
     uint32 randomBotTeleLowerLevel, randomBotTeleHigherLevel;
     std::map<uint32, std::pair<uint32, uint32>> zoneBrackets;
     bool logInGroupOnly, logValuesPerTick;
