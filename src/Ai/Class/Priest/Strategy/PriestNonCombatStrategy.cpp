@@ -19,6 +19,8 @@ void PriestNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(
         new TriggerNode("inner fire",{ NextAction("inner fire", 10.0f) }));
+    triggers.push_back(
+        new TriggerNode("vampiric embrace", { NextAction("vampiric embrace", 16.0f) }));
     triggers.push_back(new TriggerNode(
         "party member dead",{ NextAction("remove shadowform", ACTION_CRITICAL_HEAL + 11),
                                                NextAction("resurrection", ACTION_CRITICAL_HEAL + 10) }));
