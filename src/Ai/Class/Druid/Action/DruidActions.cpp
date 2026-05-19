@@ -274,7 +274,6 @@ Unit* CastBlanketHotAction::GetBlanketTarget(std::string const& auraName)
                !botAI->HasAura(auraName, member, false, true);
     };
 
-    Player* firstTank   = nullptr;
     Player* firstMelee  = nullptr;
     Player* firstRanged = nullptr;
 
@@ -284,18 +283,17 @@ Unit* CastBlanketHotAction::GetBlanketTarget(std::string const& auraName)
         if (!eligible(member))
             continue;
 
-        if (!firstTank && PlayerbotAI::IsTank(member))
-            firstTank = member;
+        if (PlayerbotAI::IsTank(member))
+            return member;
         else if (!firstMelee && PlayerbotAI::IsMelee(member) && !PlayerbotAI::IsTank(member))
             firstMelee = member;
         else if (!firstRanged && PlayerbotAI::IsRanged(member))
             firstRanged = member;
 
-        if (firstTank && firstMelee && firstRanged)
+        if (firstMelee && firstRanged)
             break;
     }
 
-    if (firstTank)  return firstTank;
     if (firstMelee) return firstMelee;
     return firstRanged;
 }
