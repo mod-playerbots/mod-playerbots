@@ -8,6 +8,7 @@
 #include "Player.h"
 #include "Pet.h"
 #include "PlayerbotAIConfig.h"
+#include "PlayerbotTextMgr.h"
 #include "CreatureAI.h"
 #include "Playerbots.h"
 #include "CharmInfo.h"
@@ -178,7 +179,8 @@ bool SetPetStanceAction::Execute(Event /*event*/)
     // If there are no controlled pets or guardians, notify the player and exit
     if (targets.empty())
     {
-        botAI->TellError("You have no pet or guardian pet.");
+        botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "pet_no_pet_error", "You have no pet or guardian pet.", {}));
         return false;
     }
 
