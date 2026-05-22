@@ -1542,6 +1542,24 @@ void PlayerbotMgr::HandleMasterIncomingPacket(WorldPacket const& packet)
         // if master is logging out, log out all bots
         case CMSG_LOGOUT_REQUEST:
         {
+            Player* master = GetMaster();
+            if (master)
+            {
+                // Replicate the AFK logout prevention checks from WorldSession::HandleLogoutRequestOpcode
+                // so bots are not logged out when the master's own logout is going to be prevented.
+                AreaTableEntry const* areaEntry = sAreaTableStore.LookupEntry(master->GetAreaId());
+                bool preventAfkSanctuaryLogout = sWorld->getIntConfig(CONFIG_AFK_PREVENT_LOGOUT) == 1
+                                                 && master->isAFK() && areaEntry && areaEntry->IsSanctuary();
+
+                bool preventAfkLogout = sWorld->getIntConfig(CONFIG_AFK_PREVENT_LOGOUT) == 2
+                                        && master->isAFK();
+
+                if (preventAfkSanctuaryLogout || preventAfkLogout)
+                {
+                    break;
+                }
+            }
+
             LogoutAllBots();
             break;
         }

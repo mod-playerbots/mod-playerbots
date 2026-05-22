@@ -520,6 +520,7 @@ bool PlayerbotAIConfig::Initialize()
 
     LoadListString<std::vector<std::string>>(sConfigMgr->GetOption<std::string>("AiPlayerbot.AllowedLogFiles", ""),
                                              allowedLogFiles);
+    enableAutoTradeOnItemMention = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableAutoTradeOnItemMention", true);
     LoadListString<std::vector<std::string>>(sConfigMgr->GetOption<std::string>("AiPlayerbot.TradeActionExcludedPrefixes", ""),
                                              tradeActionExcludedPrefixes);
 
