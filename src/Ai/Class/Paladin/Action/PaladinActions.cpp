@@ -8,13 +8,10 @@
 #include "AiFactory.h"
 #include "Event.h"
 #include "GenericBuffUtils.h"
-#include "ObjectAccessor.h"
 #include "PaladinGreaterBlessingAction.h"
 #include "PaladinHelper.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
-
-using ai::buff::MakeAuraQualifierForBuff;
 
 static bool IsBlessingTargetCandidate(Player* bot, Player* player)
 {
@@ -221,12 +218,6 @@ inline std::string const GetActualBlessingOfSanctuary(Unit* target, Player* bot)
         return "blessing of sanctuary";
 
     return "";
-}
-
-Value<Unit*>* CastBlessingOnPartyAction::GetTargetValue()
-{
-    return context->GetValue<Unit*>(
-        "party member without aura", MakeAuraQualifierForBuff(spell));
 }
 
 Unit* CastBlessingOfMightOnPartyAction::GetTarget()

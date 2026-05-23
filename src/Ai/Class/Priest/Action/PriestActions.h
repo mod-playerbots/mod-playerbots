@@ -26,13 +26,6 @@ public:
     CastPowerWordFortitudeOnPartyAction(PlayerbotAI* botAI)
         : GroupBuffOnPartyAction(botAI, "power word: fortitude") {}
 };
-
-class CastPrayerOfFortitudeOnPartyAction : public GroupBuffOnPartyAction
-{
-public:
-    CastPrayerOfFortitudeOnPartyAction(PlayerbotAI* botAI)
-        : GroupBuffOnPartyAction(botAI, "prayer of fortitude") {}
-};
 BUFF_ACTION(CastPowerWordShieldAction, "power word: shield");
 
 BUFF_ACTION(CastInnerFireAction, "inner fire");
@@ -55,13 +48,6 @@ class CastDivineSpiritOnPartyAction : public GroupBuffOnPartyAction
 public:
     CastDivineSpiritOnPartyAction(PlayerbotAI* botAI)
         : GroupBuffOnPartyAction(botAI, "divine spirit") {}
-};
-
-class CastPrayerOfSpiritOnPartyAction : public GroupBuffOnPartyAction
-{
-public:
-    CastPrayerOfSpiritOnPartyAction(PlayerbotAI* botAI)
-        : GroupBuffOnPartyAction(botAI, "prayer of spirit") {}
 };
 // disc 2.4.3
 SPELL_ACTION(CastMassDispelAction, "mass dispel");
@@ -149,13 +135,6 @@ class CastShadowProtectionOnPartyAction : public GroupBuffOnPartyAction
 public:
     CastShadowProtectionOnPartyAction(PlayerbotAI* botAI)
         : GroupBuffOnPartyAction(botAI, "shadow protection") {}
-};
-
-class CastPrayerOfShadowProtectionAction : public GroupBuffOnPartyAction
-{
-public:
-    CastPrayerOfShadowProtectionAction(PlayerbotAI* botAI)
-        : GroupBuffOnPartyAction(botAI, "prayer of shadow protection") {}
 };
 
 // shadow talents

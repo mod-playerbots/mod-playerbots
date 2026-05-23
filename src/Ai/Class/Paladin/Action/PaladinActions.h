@@ -8,8 +8,6 @@
 
 #include "AiObject.h"
 #include "GenericSpellActions.h"
-#include "Playerbots.h"
-#include "SharedDefines.h"
 
 // seals
 BUFF_ACTION(CastSealOfRighteousnessAction, "seal of righteousness");
@@ -86,15 +84,6 @@ public:
     bool Execute(Event event) override;
 };
 
-class CastBlessingOnPartyAction : public BuffOnPartyAction
-{
-public:
-    CastBlessingOnPartyAction(PlayerbotAI* botAI, std::string const name)
-        : BuffOnPartyAction(botAI, name) {}
-
-    Value<Unit*>* GetTargetValue() override;
-};
-
 class CastBlessingOfMightOnPartyAction : public BuffOnPartyAction
 {
 public:
@@ -131,10 +120,10 @@ public:
     CastBlessingOfKingsAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "blessing of kings") {}
 };
 
-class CastBlessingOfKingsOnPartyAction : public CastBlessingOnPartyAction
+class CastBlessingOfKingsOnPartyAction : public BuffOnPartyAction
 {
 public:
-    CastBlessingOfKingsOnPartyAction(PlayerbotAI* botAI) : CastBlessingOnPartyAction(botAI, "blessing of kings") {}
+    CastBlessingOfKingsOnPartyAction(PlayerbotAI* botAI) : BuffOnPartyAction(botAI, "blessing of kings") {}
 
     std::string const getName() override { return "blessing of kings on party"; }
     Unit* GetTarget() override;

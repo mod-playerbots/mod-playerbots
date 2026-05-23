@@ -92,22 +92,6 @@ public:
     bool IsActive() override;
 };
 
-class PrayerOfFortitudeTrigger : public BuffOnPartyTrigger
-{
-public:
-    PrayerOfFortitudeTrigger(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, "prayer of fortitude", 4 * 2000) {}
-
-    bool IsActive() override;
-};
-
-class PrayerOfSpiritTrigger : public BuffOnPartyTrigger
-{
-public:
-    PrayerOfSpiritTrigger(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, "prayer of spirit", 4 * 2000) {}
-
-    bool IsActive() override;
-};
-
 class BindingHealTrigger : public PartyMemberLowHealthTrigger
 {
 public:
