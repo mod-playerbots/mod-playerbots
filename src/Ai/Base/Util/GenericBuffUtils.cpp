@@ -34,11 +34,8 @@ namespace ai::buff
     }
 
     static bool HasEnoughSameMapMissingPlayersForGroupVariant(
-        Player* bot,
-        PlayerbotAI* botAI,
-        std::string const& baseName,
-        std::string const& groupName,
-        uint32 requiredCount = 3)
+        Player* bot, PlayerbotAI* botAI, std::string const& baseName,
+        std::string const& groupName, uint32 requiredCount = 3)
     {
         Group* group = bot->GetGroup();
         if (!group)
@@ -48,8 +45,11 @@ namespace ai::buff
         for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
         {
             Player* member = gref->GetSource();
-            if (!member || !member->IsInWorld() || member->GetMap() != bot->GetMap())
+            if (!member || !member->IsInWorld() || !member->IsAlive() ||
+                member->GetMap() != bot->GetMap())
+            {
                 continue;
+            }
 
             if (botAI->HasAura(baseName, member) || botAI->HasAura(groupName, member))
                 continue;
@@ -149,9 +149,7 @@ namespace ai::buff
     }
 
     bool ShouldDeferPartyBuffEvaluationForRecentLogin(
-        Player* bot,
-        Unit* target,
-        std::string const& spell)
+        Player* bot, Unit* target, std::string const& spell)
     {
         if (!NeedsPostLoginBuffGrace(spell))
             return false;
@@ -208,9 +206,7 @@ namespace ai::buff
     }
 
     std::string UpgradeToGroupIfAppropriate(
-        Player* bot,
-        PlayerbotAI* botAI,
-        std::string const& baseName)
+        Player* bot, PlayerbotAI* botAI, std::string const& baseName)
     {
         if (!IsGroupVariantEnabled(bot, baseName))
             return baseName;
