@@ -63,7 +63,7 @@ public:
         creators["cat"] = &DruidDruidStrategyFactoryInternal::cat;
         creators["balance"] = &DruidDruidStrategyFactoryInternal::balance;
         creators["dps"] = &DruidDruidStrategyFactoryInternal::cat;
-        creators["heal"] = &DruidDruidStrategyFactoryInternal::heal;
+        creators["resto"] = &DruidDruidStrategyFactoryInternal::heal;
     }
 
 private:

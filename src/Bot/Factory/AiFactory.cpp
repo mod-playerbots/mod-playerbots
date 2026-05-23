@@ -342,7 +342,7 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
                 engine->addStrategiesNoInit("balance", "cure", "aoe", "cc", "dps assist", nullptr);
             }
             else if (tab == DRUID_TAB_RESTORATION)
-                engine->addStrategiesNoInit("heal", "cure", "dps assist", "blanketing", "tranquility", nullptr);
+                engine->addStrategiesNoInit("resto", "cure", "dps assist", "blanketing", "tranquility", nullptr);
             else
             {
                 if (player->HasSpell(768) /*cat form*/ && !player->HasAura(16931) /*thick hide*/)
