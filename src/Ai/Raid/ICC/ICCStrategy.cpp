@@ -1,6 +1,6 @@
-#include "RaidIccStrategy.h"
+#include "ICCStrategy.h"
 
-#include "RaidIccMultipliers.h"
+#include "ICCMultipliers.h"
 
 void RaidIccStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
@@ -28,33 +28,31 @@ void RaidIccStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back( new TriggerNode("icc in cannon",
         { NextAction("icc cannon fire", ACTION_RAID+5) }));
 
-    triggers.push_back(new TriggerNode("icc gunship teleport ally",
-        { NextAction("icc gunship teleport ally", ACTION_RAID + 4) }));
+    triggers.push_back(new TriggerNode("icc gunship rocket jump",
+        { NextAction("icc gunship rocket jump", ACTION_RAID + 4)}));
 
-    triggers.push_back(new TriggerNode("icc gunship teleport horde",
-        { NextAction("icc gunship teleport horde", ACTION_RAID + 4) }));
+    triggers.push_back(new TriggerNode("icc gunship rocket pack setup",
+        { NextAction("icc gunship rocket pack setup", ACTION_RAID + 2)}));
 
     //DBS
     triggers.push_back(new TriggerNode("icc dbs",
         { NextAction("icc dbs tank position", ACTION_RAID + 3),
                              NextAction("icc adds dbs", ACTION_RAID + 5) }));
 
-    triggers.push_back(new TriggerNode("icc dbs main tank rune of blood",
-        { NextAction("taunt spell", ACTION_EMERGENCY + 4) }));
+    // Boss taunt on Rune of Blood is handled inside icc dbs tank position action
 
-    //DOGS
-    triggers.push_back(new TriggerNode("icc stinky precious main tank mortal wound",
-        { NextAction("taunt spell", ACTION_EMERGENCY + 4) }));
+    triggers.push_back(new TriggerNode("icc dogs",
+        { NextAction("icc dogs tank position", ACTION_RAID + 3) }));
 
     //FESTERGUT
     triggers.push_back(new TriggerNode("icc festergut group position",
         { NextAction("icc festergut group position", ACTION_MOVE + 4) }));
 
-    triggers.push_back(new TriggerNode("icc festergut main tank gastric bloat",
-        { NextAction("taunt spell", ACTION_EMERGENCY + 6) }));
-
     triggers.push_back(new TriggerNode("icc festergut spore",
         { NextAction("icc festergut spore", ACTION_MOVE + 5) }));
+
+    triggers.push_back(new TriggerNode("icc festergut avoid malleable goo",
+        { NextAction("icc festergut avoid malleable goo", ACTION_RAID + 7) }));
 
     //ROTFACE
     triggers.push_back(new TriggerNode("icc rotface tank position",
@@ -66,6 +64,9 @@ void RaidIccStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("icc rotface move away from explosion",
         { NextAction("icc rotface move away from explosion", ACTION_RAID +7) }));
 
+    triggers.push_back(new TriggerNode("icc rotface avoid vile gas",
+        { NextAction("icc rotface avoid vile gas", ACTION_RAID + 8) }));
+
     //PP
     triggers.push_back(new TriggerNode("icc putricide volatile ooze",
         { NextAction("icc putricide volatile ooze", ACTION_RAID + 4) }));
@@ -76,11 +77,14 @@ void RaidIccStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("icc putricide growing ooze puddle",
         { NextAction("icc putricide growing ooze puddle", ACTION_RAID + 3) }));
 
-    triggers.push_back(new TriggerNode("icc putricide main tank mutated plague",
-        { NextAction("taunt spell", ACTION_RAID + 10) }));
+    triggers.push_back(new TriggerNode("icc putricide mutated plague",
+        { NextAction("icc putricide mutated plague", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("icc putricide malleable goo",
-        { NextAction("icc putricide avoid malleable goo", ACTION_RAID + 2) }));
+        { NextAction("icc putricide avoid malleable goo", ACTION_RAID + 6) }));
+
+    triggers.push_back(new TriggerNode("icc putricide abomination",
+        { NextAction("icc putricide abomination", ACTION_RAID + 7) }));
 
     //BPC
     triggers.push_back(new TriggerNode("icc bpc keleseth tank",
@@ -119,6 +123,9 @@ void RaidIccStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("icc valithria group",
         { NextAction("icc valithria group", ACTION_RAID + 1) }));
 
+    triggers.push_back(new TriggerNode("icc valithria zombie kite",
+        { NextAction("icc valithria zombie kite", ACTION_EMERGENCY + 9) }));
+
     triggers.push_back(new TriggerNode("icc valithria portal",
         { NextAction("icc valithria portal", ACTION_RAID + 5) }));
 
@@ -134,6 +141,9 @@ void RaidIccStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("icc sindragosa frost beacon",
         { NextAction("icc sindragosa frost beacon", ACTION_RAID + 5) }));
+
+    triggers.push_back(new TriggerNode("icc sindragosa hot",
+        { NextAction("icc sindragosa hot", ACTION_RAID + 6) }));
 
     triggers.push_back(new TriggerNode("icc sindragosa blistering cold",
         { NextAction("icc sindragosa blistering cold", ACTION_EMERGENCY + 4) }));
@@ -168,6 +178,9 @@ void RaidIccStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("icc lich king adds",
         { NextAction("icc lich king adds", ACTION_RAID +2) }));
+
+    triggers.push_back(new TriggerNode("icc lich king spirit bomb",
+        { NextAction("icc lich king spirit bomb", ACTION_RAID +7) }));
 }
 
 void RaidIccStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
@@ -183,4 +196,6 @@ void RaidIccStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new IccValithriaDreamCloudMultiplier(botAI));
     multipliers.push_back(new IccSindragosaMultiplier(botAI));
     multipliers.push_back(new IccLichKingAddsMultiplier(botAI));
+    multipliers.push_back(new IccLichKingSpiritBombMultiplier(botAI));
+    multipliers.push_back(new IccGunshipMultiplier(botAI));
 }

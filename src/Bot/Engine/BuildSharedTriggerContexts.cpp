@@ -12,13 +12,14 @@
 #include "Ai/Raid/SerpentshrineCavern/RaidSSCTriggerContext.h"
 #include "Ai/Raid/TempestKeep/RaidTempestKeepTriggerContext.h"
 #include "Ai/Raid/HyjalSummit/RaidHyjalSummitTriggerContext.h"
+#include "Ai/Raid/BlackTemple/RaidBlackTempleTriggerContext.h"
 #include "Ai/Raid/ZulAman/RaidZulAmanTriggerContext.h"
 #include "Ai/Raid/ObsidianSanctum/RaidOsTriggerContext.h"
 #include "Ai/Raid/EyeOfEternity/RaidEoETriggerContext.h"
 #include "Ai/Raid/VaultOfArchavon/RaidVoATriggerContext.h"
 #include "Ai/Raid/Ulduar/RaidUlduarTriggerContext.h"
 #include "Ai/Raid/Onyxia/RaidOnyxiaTriggerContext.h"
-#include "Ai/Raid/Icecrown/RaidIccTriggerContext.h"
+#include "Ai/Raid/ICC/ICCTriggerContext.h"
 #include "Ai/Dungeon/TbcDungeonTriggerContext.h"
 #include "Ai/Dungeon/WotlkDungeonTriggerContext.h"
 
@@ -37,6 +38,7 @@ void AiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Tr
     triggerContexts.Add(new RaidSSCTriggerContext());
     triggerContexts.Add(new RaidTempestKeepTriggerContext());
     triggerContexts.Add(new RaidHyjalSummitTriggerContext());
+    triggerContexts.Add(new RaidBlackTempleTriggerContext());
     triggerContexts.Add(new RaidZulAmanTriggerContext());
     triggerContexts.Add(new RaidOsTriggerContext());
     triggerContexts.Add(new RaidEoETriggerContext());

@@ -1,4 +1,5 @@
 name: windows-build
+
 on:
   push:
     branches: [ "master", "test-staging" ]
@@ -6,7 +7,7 @@ on:
     branches: [ "master", "test-staging" ]
 
 concurrency:
-  group: "windows-build-${{ github.event.pull_request.number }}"
+  group: "windows-build-${{ github.event.pull_request.number || github.ref }}"
   cancel-in-progress: true
 
 jobs:
@@ -15,35 +16,108 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest]
+
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }}
+
     env:
-      BOOST_ROOT: C:\local\boost_1_82_0
+      BOOST_ROOT: C:\local\boost_1_87_0
+      CMAKE_GENERATOR: Ninja
+      CTOOLS_BUILD: all
+
     steps:
       - name: Checkout AzerothCore
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'mod-playerbots/azerothcore-wotlk'
           ref: ${{ (github.base_ref || github.ref_name) == 'test-staging' && 'test-staging' || 'Playerbot' }}
-          path: 'ac'
+          path: a
+
       - name: Checkout Playerbot Module
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'mod-playerbots/mod-playerbots'
-          #path: 'modules/mod-playerbots'
-          path: ac/modules/mod-playerbots
+          path: a/modules/mod-playerbots
+
+      - name: Move source tree to short path
+        shell: powershell
+        run: |
+          if (Test-Path C:\ac) {
+            Remove-Item C:\ac -Recurse -Force
+          }
+
+          New-Item -ItemType Directory -Path C:\ac | Out-Null
+
+          robocopy "${{ github.workspace }}\a" "C:\ac" /MIR
+
+          if ($LASTEXITCODE -le 7) {
+            exit 0
+          }
+
+          exit $LASTEXITCODE
+
+      - name: Install Ninja
+        shell: powershell
+        run: |
+          choco install ninja -y
+
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2.13
+
       - name: Configure OS
         shell: bash
-        working-directory: ac
+        working-directory: C:\ac
         env:
           CONTINUOUS_INTEGRATION: true
         run: |
           ./acore.sh install-deps
+
+      - name: Create AzerothCore CI config
+        shell: bash
+        working-directory: C:\ac
+        run: |
+          cat > conf/config.sh <<'EOF'
+          CCOMPILERC="cl"
+          CCOMPILERCXX="cl"
+
+          CTYPE="Release"
+          CSCRIPTS="static"
+          CMODULES="static"
+          CTOOLS_BUILD="all"
+
+          CCUSTOMOPTIONS="-DCMAKE_RC_COMPILER=rc -DCMAKE_NINJA_FORCE_RESPONSE_FILE=ON -DCMAKE_NINJA_CMCLDEPS_RC=OFF -DCMAKE_C_USE_RESPONSE_FILE_FOR_OBJECTS=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_OBJECTS=ON -DCMAKE_C_USE_RESPONSE_FILE_FOR_INCLUDES=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES=ON -DCMAKE_C_USE_RESPONSE_FILE_FOR_LIBRARIES=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_LIBRARIES=ON"
+          EOF
+
+          cat conf/config.sh
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
+        with:
+          arch: x64
+
       - name: Build
         shell: bash
-        working-directory: ac
+        working-directory: C:\ac
         run: |
           export CTOOLS_BUILD=all
+          export CMAKE_GENERATOR=Ninja
+
+          export CC=cl
+          export CXX=cl
+          export RC=rc
+
+          cmake --version
+          ninja --version
+
+          echo "CMAKE_GENERATOR=$CMAKE_GENERATOR"
+          echo "CC=$CC"
+          echo "CXX=$CXX"
+
+          which cl || true
+          which rc || true
+          cl || true
+          rc || true
+
+          rm -rf var/build/obj
+
           ./acore.sh compiler build
