@@ -4,7 +4,6 @@
  */
 
 #include "MageTriggers.h"
-#include "MageActions.h"
 #include "Playerbots.h"
 #include "Player.h"
 #include "Spell.h"
@@ -23,7 +22,7 @@ bool NoManaGemTrigger::IsActive()
         5513,   // Mana Jade
         5514    // Mana Agate
     };
-    Player* bot = botAI->GetBot();
+
     for (uint32 gemId : gemIds)
     {
         if (bot->GetItemCount(gemId, false) > 0)  // false = only in bags
@@ -45,17 +44,35 @@ bool ArcaneIntellectTrigger::IsActive()
 bool MageArmorTrigger::IsActive()
 {
     Unit* target = GetTarget();
+    if (botAI->HasAura("mage armor", target))
+        return false;
+
+    if (AI_VALUE2(uint32, "spell id", "mage armor"))
+        return true;
+
     return !botAI->HasAura("ice armor", target) && !botAI->HasAura("frost armor", target) &&
-           !botAI->HasAura("molten armor", target) && !botAI->HasAura("mage armor", target);
+           !botAI->HasAura("molten armor", target);
+}
+
+bool MoltenArmorTrigger::IsActive()
+{
+    Unit* target = GetTarget();
+    if (botAI->HasAura("molten armor", target))
+        return false;
+
+    if (AI_VALUE2(uint32, "spell id", "molten armor"))
+        return true;
+
+    return !botAI->HasAura("ice armor", target) && !botAI->HasAura("frost armor", target) &&
+           !botAI->HasAura("mage armor", target);
 }
 
 bool FrostNovaOnTargetTrigger::IsActive()
 {
     Unit* target = GetTarget();
     if (!target || !target->IsAlive() || !target->IsInWorld())
-    {
         return false;
-    }
+
     return botAI->HasAura(spell, target);
 }
 
@@ -63,15 +80,14 @@ bool FrostbiteOnTargetTrigger::IsActive()
 {
     Unit* target = GetTarget();
     if (!target || !target->IsAlive() || !target->IsInWorld())
-    {
         return false;
-    }
+
     return botAI->HasAura(spell, target);
 }
 
 bool NoFocusMagicTrigger::IsActive()
 {
-    if (!bot->HasSpell(54646))
+    if (!bot->HasSpell(54646)) // Focus Magic
         return false;
 
     Group* group = bot->GetGroup();
@@ -92,24 +108,19 @@ bool NoFocusMagicTrigger::IsActive()
 
 bool DeepFreezeCooldownTrigger::IsActive()
 {
-    Player* bot = botAI->GetBot();
-    static const uint32 DEEP_FREEZE_SPELL_ID = 44572;
-
     // If the bot does NOT have Deep Freeze, treat as "on cooldown"
-    if (!bot->HasSpell(DEEP_FREEZE_SPELL_ID))
+    if (!bot->HasSpell(44572)) // Deep Freeze
         return true;
 
-    // Otherwise, use the default cooldown logic
     return SpellCooldownTrigger::IsActive();
 }
 
-const std::set<uint32> FlamestrikeNearbyTrigger::FLAMESTRIKE_SPELL_IDS = {2120,  2121,  8422,  8423, 10215,
-                                                                          10216, 27086, 42925, 42926};
+const std::unordered_set<uint32> FlamestrikeNearbyTrigger::FLAMESTRIKE_SPELL_IDS = {
+    2120, 2121, 8422, 8423, 10215, 10216, 27086, 42925, 42926
+};
 
 bool FlamestrikeNearbyTrigger::IsActive()
 {
-    Player* bot = botAI->GetBot();
-
     for (uint32 spellId : FLAMESTRIKE_SPELL_IDS)
     {
         Aura* aura = bot->GetAura(spellId, bot->GetGUID());
@@ -133,7 +144,6 @@ bool ImprovedScorchTrigger::IsActive()
     if (!target || !target->IsAlive() || !target->IsInWorld())
         return false;
 
-    // List of all spell IDs for Improved Scorch, Winter's Chill, and Shadow Mastery
     static const uint32 ImprovedScorchExclusiveDebuffs[] = {// Shadow Mastery
                                                             17794, 17797, 17798, 17799, 17800,
                                                             // Winter's Chill
@@ -147,11 +157,10 @@ bool ImprovedScorchTrigger::IsActive()
             return false;
     }
 
-    // Use default DebuffTrigger logic for the rest (only trigger if debuff is missing or expiring)
     return DebuffTrigger::IsActive();
 }
 
-const std::set<uint32> BlizzardChannelCheckTrigger::BLIZZARD_SPELL_IDS = {
+const std::unordered_set<uint32> BlizzardChannelCheckTrigger::BLIZZARD_SPELL_IDS = {
     10,     // Blizzard Rank 1
     6141,   // Blizzard Rank 2
     8427,   // Blizzard Rank 3
@@ -165,19 +174,12 @@ const std::set<uint32> BlizzardChannelCheckTrigger::BLIZZARD_SPELL_IDS = {
 
 bool BlizzardChannelCheckTrigger::IsActive()
 {
-    Player* bot = botAI->GetBot();
-
-    // Check if the bot is channeling a spell
-    if (Spell* spell = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+    if (Spell* spell = bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL);
+        spell && BLIZZARD_SPELL_IDS.count(spell->m_spellInfo->Id))
     {
-        // Only trigger if the spell being channeled is Blizzard
-        if (BLIZZARD_SPELL_IDS.count(spell->m_spellInfo->Id))
-        {
-            uint8 attackerCount = AI_VALUE(uint8, "attacker count");
-            return attackerCount < minEnemies;
-        }
+        uint8 attackerCount = AI_VALUE(uint8, "attacker count");
+        return attackerCount < minEnemies;
     }
 
-    // Not channeling Blizzard
     return false;
 }

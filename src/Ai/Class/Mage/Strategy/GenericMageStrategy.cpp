@@ -15,16 +15,8 @@ public:
     {
         creators["frostbolt"] = &frostbolt;
         creators["frostfire bolt"] = &frostfire_bolt;
-        creators["ice lance"] = &ice_lance;
-        creators["fire blast"] = &fire_blast;
         creators["scorch"] = &scorch;
-        creators["frost nova"] = &frost_nova;
-        creators["cone of cold"] = &cone_of_cold;
-        creators["icy veins"] = &icy_veins;
-        creators["combustion"] = &combustion;
         creators["evocation"] = &evocation;
-        creators["dragon's breath"] = &dragons_breath;
-        creators["blast wave"] = &blast_wave;
         creators["remove curse"] = &remove_curse;
         creators["remove curse on party"] = &remove_curse_on_party;
         creators["fireball"] = &fireball;
@@ -47,22 +39,6 @@ private:
                               /*C*/ {});
     }
 
-    static ActionNode* ice_lance([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("ice lance",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
-    }
-
-    static ActionNode* fire_blast([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("fire blast",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
-    }
-
     static ActionNode* scorch([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("scorch",
@@ -71,59 +47,11 @@ private:
                               /*C*/ {});
     }
 
-    static ActionNode* frost_nova([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("frost nova",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
-    }
-
-    static ActionNode* cone_of_cold([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("cone of cold",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
-    }
-
-    static ActionNode* icy_veins([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("icy veins",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
-    }
-
-    static ActionNode* combustion([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("combustion",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
-    }
-
     static ActionNode* evocation([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("evocation",
                               /*P*/ {},
                               /*A*/ { NextAction("mana potion") },
-                              /*C*/ {});
-    }
-
-    static ActionNode* dragons_breath([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("dragon's breath",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
-    }
-
-    static ActionNode* blast_wave([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("blast wave",
-                              /*P*/ {},
-                              /*A*/ {},
                               /*C*/ {});
     }
 
@@ -206,13 +134,13 @@ void MageBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     Player* bot = botAI->GetBot();
     int tab = AiFactory::GetPlayerSpecTab(bot);
 
-    if (tab == 0)  // Arcane
+    if (tab == MAGE_TAB_ARCANE)
     {
         triggers.push_back(new TriggerNode("arcane power", { NextAction("arcane power", 29.0f) }));
         triggers.push_back(new TriggerNode("icy veins", { NextAction("icy veins", 28.5f) }));
         triggers.push_back(new TriggerNode("mirror image", { NextAction("mirror image", 28.0f) }));
     }
-    else if (tab == 1)
+    else if (tab == MAGE_TAB_FIRE)
     {
         if (bot->HasSpell(44614) /*Frostfire Bolt*/ && bot->HasAura(15047) /*Ice Shards*/)
         { // Frostfire
@@ -226,7 +154,7 @@ void MageBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             triggers.push_back(new TriggerNode("mirror image", { NextAction("mirror image", 17.5f) }));
         }
     }
-    else if (tab == 2)  // Frost
+    else if (tab == MAGE_TAB_FROST)  // Frost
     {
         triggers.push_back(new TriggerNode("cold snap", { NextAction("cold snap", 28.0f) }));
         triggers.push_back(new TriggerNode("icy veins", { NextAction("icy veins", 27.5f) }));
@@ -254,15 +182,14 @@ void MageAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     Player* bot = botAI->GetBot();
     int tab = AiFactory::GetPlayerSpecTab(bot);
 
-    if (tab == 0)  // Arcane
+    if (tab == MAGE_TAB_ARCANE)
     {
         triggers.push_back(new TriggerNode("flamestrike active and medium aoe", { NextAction("blizzard", 24.0f) }));
         triggers.push_back(new TriggerNode("medium aoe", {
                                                      NextAction("flamestrike", 23.0f),
                                                      NextAction("blizzard", 22.0f) }));
-        triggers.push_back(new TriggerNode("light aoe", { NextAction("arcane explosion", 21.0f) }));
     }
-    else if (tab == 1)  // Fire and Frostfire
+    else if (tab == MAGE_TAB_FIRE)
     {
         triggers.push_back(
             new TriggerNode("medium aoe", {
@@ -275,7 +202,7 @@ void MageAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         triggers.push_back(new TriggerNode("firestarter", { NextAction("flamestrike", 40.0f) }));
         triggers.push_back(new TriggerNode("living bomb on attackers", { NextAction("living bomb on attackers", 21.0f) }));
     }
-    else if (tab == 2)  // Frost
+    else if (tab == MAGE_TAB_FROST)
     {
         triggers.push_back(new TriggerNode("flamestrike active and medium aoe", { NextAction("blizzard", 24.0f) }));
         triggers.push_back(new TriggerNode("medium aoe", {

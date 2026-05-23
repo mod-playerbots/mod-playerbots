@@ -2,11 +2,8 @@
 #define _PLAYERBOT_RAIDBWLACTIONS_H
 
 #include "Action.h"
-#include "AttackAction.h"
-#include "GenericActions.h"
-#include "MovementActions.h"
-#include "PlayerbotAI.h"
-#include "Playerbots.h"
+
+// General
 
 class BwlOnyxiaScaleCloakAuraCheckAction : public Action
 {
@@ -22,6 +19,8 @@ public:
     BwlTurnOffSuppressionDeviceAction(PlayerbotAI* botAI) : Action(botAI, "bwl turn off suppression device") {}
     bool Execute(Event event) override;
 };
+
+// Chromaggus
 
 class BwlUseHourglassSandAction : public Action
 {

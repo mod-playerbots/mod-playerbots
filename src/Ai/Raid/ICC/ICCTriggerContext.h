@@ -1,8 +1,8 @@
-#ifndef _PLAYERBOT_RAIDICCTRIGGERCONTEXT_H
-#define _PLAYERBOT_RAIDICCTRIGGERCONTEXT_H
+#ifndef _PLAYERBOT_ICCTRIGGERCONTEXT_H
+#define _PLAYERBOT_ICCTRIGGERCONTEXT_H
 
 #include "NamedObjectContext.h"
-#include "RaidIccTriggers.h"
+#include "ICCTriggers.h"
 
 class RaidIccTriggerContext : public NamedObjectContext<Trigger>
 {
@@ -17,27 +17,29 @@ public:
         creators["icc rotting frost giant tank position"] = &RaidIccTriggerContext::icc_rotting_frost_giant_tank_position;
         creators["icc in cannon"] = &RaidIccTriggerContext::icc_in_cannon;
         creators["icc gunship cannon near"] = &RaidIccTriggerContext::icc_gunship_cannon_near;
-        creators["icc gunship teleport ally"] = &RaidIccTriggerContext::icc_gunship_teleport_ally;
-        creators["icc gunship teleport horde"] = &RaidIccTriggerContext::icc_gunship_teleport_horde;
+        creators["icc gunship rocket jump"] = &RaidIccTriggerContext::icc_gunship_rocket_jump;
+        creators["icc gunship rocket pack setup"] = &RaidIccTriggerContext::icc_gunship_rocket_pack_setup;
 
         creators["icc dbs"] = &RaidIccTriggerContext::icc_dbs;
         creators["icc dbs main tank rune of blood"] = &RaidIccTriggerContext::icc_dbs_main_tank_rune_of_blood;
 
-        creators["icc stinky precious main tank mortal wound"] = &RaidIccTriggerContext::icc_stinky_precious_main_tank_mortal_wound;
+        creators["icc dogs"] = &RaidIccTriggerContext::icc_dogs;
 
         creators["icc festergut group position"] = &RaidIccTriggerContext::icc_festergut_group_position;
-        creators["icc festergut main tank gastric bloat"] = &RaidIccTriggerContext::icc_festergut_main_tank_gastric_bloat;
         creators["icc festergut spore"] = &RaidIccTriggerContext::icc_festergut_spore;
+        creators["icc festergut avoid malleable goo"] = &RaidIccTriggerContext::icc_festergut_avoid_malleable_goo;
 
         creators["icc rotface tank position"] = &RaidIccTriggerContext::icc_rotface_tank_position;
         creators["icc rotface group position"] = &RaidIccTriggerContext::icc_rotface_group_position;
         creators["icc rotface move away from explosion"] = &RaidIccTriggerContext::icc_rotface_move_away_from_explosion;
+        creators["icc rotface avoid vile gas"] = &RaidIccTriggerContext::icc_rotface_avoid_vile_gas;
 
         creators["icc putricide volatile ooze"] = &RaidIccTriggerContext::icc_putricide_volatile_ooze;
         creators["icc putricide gas cloud"] = &RaidIccTriggerContext::icc_putricide_gas_cloud;
         creators["icc putricide growing ooze puddle"] = &RaidIccTriggerContext::icc_putricide_growing_ooze_puddle;
-        creators["icc putricide main tank mutated plague"] = &RaidIccTriggerContext::icc_putricide_main_tank_mutated_plague;
+        creators["icc putricide mutated plague"] = &RaidIccTriggerContext::icc_putricide_mutated_plague;
         creators["icc putricide malleable goo"] = &RaidIccTriggerContext::icc_putricide_malleable_goo;
+        creators["icc putricide abomination"] = &RaidIccTriggerContext::icc_putricide_abomination;
 
         creators["icc bpc keleseth tank"] = &RaidIccTriggerContext::icc_bpc_keleseth_tank;
         creators["icc bpc main tank"] = &RaidIccTriggerContext::icc_bpc_main_tank;
@@ -56,9 +58,11 @@ public:
         creators["icc valithria portal"] = &RaidIccTriggerContext::icc_valithria_portal;
         creators["icc valithria heal"] = &RaidIccTriggerContext::icc_valithria_heal;
         creators["icc valithria dream cloud"] = &RaidIccTriggerContext::icc_valithria_dream_cloud;
+        creators["icc valithria zombie kite"] = &RaidIccTriggerContext::icc_valithria_zombie_kite;
 
         creators["icc sindragosa group position"] = &RaidIccTriggerContext::icc_sindragosa_group_position;
         creators["icc sindragosa frost beacon"] = &RaidIccTriggerContext::icc_sindragosa_frost_beacon;
+        creators["icc sindragosa hot"] = &RaidIccTriggerContext::icc_sindragosa_hot;
         creators["icc sindragosa blistering cold"] = &RaidIccTriggerContext::icc_sindragosa_blistering_cold;
         creators["icc sindragosa unchained magic"] = &RaidIccTriggerContext::icc_sindragosa_unchained_magic;
         creators["icc sindragosa chilled to the bone"] = &RaidIccTriggerContext::icc_sindragosa_chilled_to_the_bone;
@@ -71,6 +75,7 @@ public:
         creators["icc lich king necrotic plague"] = &RaidIccTriggerContext::icc_lich_king_necrotic_plague;
         creators["icc lich king winter"] = &RaidIccTriggerContext::icc_lich_king_winter;
         creators["icc lich king adds"] = &RaidIccTriggerContext::icc_lich_king_adds;
+        creators["icc lich king spirit bomb"] = &RaidIccTriggerContext::icc_lich_king_spirit_bomb;
     }
 
 private:
@@ -82,27 +87,29 @@ private:
     static Trigger* icc_rotting_frost_giant_tank_position(PlayerbotAI* ai) { return new IccRottingFrostGiantTankPositionTrigger(ai); }
     static Trigger* icc_in_cannon(PlayerbotAI* ai) { return new IccInCannonTrigger(ai); }
     static Trigger* icc_gunship_cannon_near(PlayerbotAI* ai) { return new IccGunshipCannonNearTrigger(ai); }
-    static Trigger* icc_gunship_teleport_ally(PlayerbotAI* ai) { return new IccGunshipTeleportAllyTrigger(ai); }
-    static Trigger* icc_gunship_teleport_horde(PlayerbotAI* ai) { return new IccGunshipTeleportHordeTrigger(ai); }
+    static Trigger* icc_gunship_rocket_jump(PlayerbotAI* ai) { return new IccGunshipRocketJumpTrigger(ai); }
+    static Trigger* icc_gunship_rocket_pack_setup(PlayerbotAI* ai) { return new IccGunshipRocketPackSetupTrigger(ai); }
 
     static Trigger* icc_dbs(PlayerbotAI* ai) { return new IccDbsTrigger(ai); }
     static Trigger* icc_dbs_main_tank_rune_of_blood(PlayerbotAI* ai) { return new IccDbsMainTankRuneOfBloodTrigger(ai); }
 
-    static Trigger* icc_stinky_precious_main_tank_mortal_wound(PlayerbotAI* ai) { return new IccStinkyPreciousMainTankMortalWoundTrigger(ai); }
+    static Trigger* icc_dogs(PlayerbotAI* ai) { return new IccDogsTrigger(ai); }
 
     static Trigger* icc_festergut_group_position(PlayerbotAI* ai) { return new IccFestergutGroupPositionTrigger(ai); }
-    static Trigger* icc_festergut_main_tank_gastric_bloat(PlayerbotAI* ai) { return new IccFestergutMainTankGastricBloatTrigger(ai); }
     static Trigger* icc_festergut_spore(PlayerbotAI* ai) { return new IccFestergutSporeTrigger(ai); }
+    static Trigger* icc_festergut_avoid_malleable_goo(PlayerbotAI* ai) { return new IccFestergutAvoidMalleableGooTrigger(ai); }
 
     static Trigger* icc_rotface_tank_position(PlayerbotAI* ai) { return new IccRotfaceTankPositionTrigger(ai); }
     static Trigger* icc_rotface_group_position(PlayerbotAI* ai) { return new IccRotfaceGroupPositionTrigger(ai); }
     static Trigger* icc_rotface_move_away_from_explosion(PlayerbotAI* ai) { return new IccRotfaceMoveAwayFromExplosionTrigger(ai); }
+    static Trigger* icc_rotface_avoid_vile_gas(PlayerbotAI* ai) { return new IccRotfaceAvoidVileGasTrigger(ai); }
 
     static Trigger* icc_putricide_volatile_ooze(PlayerbotAI* ai) { return new IccPutricideVolatileOozeTrigger(ai); }
     static Trigger* icc_putricide_gas_cloud(PlayerbotAI* ai) { return new IccPutricideGasCloudTrigger(ai); }
     static Trigger* icc_putricide_growing_ooze_puddle(PlayerbotAI* ai) { return new IccPutricideGrowingOozePuddleTrigger(ai); }
-    static Trigger* icc_putricide_main_tank_mutated_plague(PlayerbotAI* ai) { return new IccPutricideMainTankMutatedPlagueTrigger(ai); }
+    static Trigger* icc_putricide_mutated_plague(PlayerbotAI* ai) { return new IccPutricideMutatedPlagueTrigger(ai); }
     static Trigger* icc_putricide_malleable_goo(PlayerbotAI* ai) { return new IccPutricideMalleableGooTrigger(ai); }
+    static Trigger* icc_putricide_abomination(PlayerbotAI* ai) { return new IccPutricideAbominationTrigger(ai); }
 
     static Trigger* icc_bpc_keleseth_tank(PlayerbotAI* ai) { return new IccBpcKelesethTankTrigger(ai); }
     static Trigger* icc_bpc_main_tank(PlayerbotAI* ai) { return new IccBpcMainTankTrigger(ai); }
@@ -120,10 +127,12 @@ private:
     static Trigger* icc_valithria_group(PlayerbotAI* ai) { return new IccValithriaGroupTrigger(ai); }
     static Trigger* icc_valithria_portal(PlayerbotAI* ai) { return new IccValithriaPortalTrigger(ai); }
     static Trigger* icc_valithria_heal(PlayerbotAI* ai) { return new IccValithriaHealTrigger(ai); }
+    static Trigger* icc_valithria_zombie_kite(PlayerbotAI* ai) { return new IccValithriaZombieKiteTrigger(ai); }
     static Trigger* icc_valithria_dream_cloud(PlayerbotAI* ai) { return new IccValithriaDreamCloudTrigger(ai); }
 
     static Trigger* icc_sindragosa_group_position(PlayerbotAI* ai) { return new IccSindragosaGroupPositionTrigger(ai); }
     static Trigger* icc_sindragosa_frost_beacon(PlayerbotAI* ai) { return new IccSindragosaFrostBeaconTrigger(ai); }
+    static Trigger* icc_sindragosa_hot(PlayerbotAI* ai) { return new IccSindragosaHotTrigger(ai); }
     static Trigger* icc_sindragosa_blistering_cold(PlayerbotAI* ai) { return new IccSindragosaBlisteringColdTrigger(ai); }
     static Trigger* icc_sindragosa_unchained_magic(PlayerbotAI* ai) { return new IccSindragosaUnchainedMagicTrigger(ai); }
     static Trigger* icc_sindragosa_chilled_to_the_bone(PlayerbotAI* ai) { return new IccSindragosaChilledToTheBoneTrigger(ai); }
@@ -136,6 +145,7 @@ private:
     static Trigger* icc_lich_king_necrotic_plague(PlayerbotAI* ai) { return new IccLichKingNecroticPlagueTrigger(ai); }
     static Trigger* icc_lich_king_winter(PlayerbotAI* ai) { return new IccLichKingWinterTrigger(ai); }
     static Trigger* icc_lich_king_adds(PlayerbotAI* ai) { return new IccLichKingAddsTrigger(ai); }
+    static Trigger* icc_lich_king_spirit_bomb(PlayerbotAI* ai) { return new IccLichKingSpiritBombTrigger(ai); }
 
 };
 
