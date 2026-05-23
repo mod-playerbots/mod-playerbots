@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDICCSTRATEGY_H
-#define _PLAYERBOT_RAIDICCSTRATEGY_H
+#ifndef _PLAYERBOT_ICCS_H
+#define _PLAYERBOT_ICCS_H
 
 #include "Strategy.h"
 

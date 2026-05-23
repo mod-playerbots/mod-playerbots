@@ -19,7 +19,7 @@
 #include "Ai/Raid/VaultOfArchavon/RaidVoAActionContext.h"
 #include "Ai/Raid/Ulduar/RaidUlduarActionContext.h"
 #include "Ai/Raid/Onyxia/RaidOnyxiaActionContext.h"
-#include "Ai/Raid/Icecrown/RaidIccActionContext.h"
+#include "Ai/Raid/ICC/ICCActionContext.h"
 #include "Ai/Dungeon/TbcDungeonActionContext.h"
 #include "Ai/Dungeon/WotlkDungeonActionContext.h"
 

@@ -6,35 +6,9 @@
 #include "ArcaneMageStrategy.h"
 #include "Playerbots.h"
 
-// ===== Action Node Factory =====
-class ArcaneMageStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
-{
-public:
-    ArcaneMageStrategyActionNodeFactory()
-    {
-        creators["arcane blast"] = &arcane_blast;
-        creators["arcane barrage"] = &arcane_barrage;
-        creators["arcane missiles"] = &arcane_missiles;
-        creators["fire blast"] = &fire_blast;
-        creators["frostbolt"] = &frostbolt;
-        creators["arcane power"] = &arcane_power;
-        creators["icy veins"] = &icy_veins;
-    }
-
-private:
-    static ActionNode* arcane_blast(PlayerbotAI*) { return new ActionNode("arcane blast", {}, {}, {}); }
-    static ActionNode* arcane_barrage(PlayerbotAI*) { return new ActionNode("arcane barrage", {}, {}, {}); }
-    static ActionNode* arcane_missiles(PlayerbotAI*) { return new ActionNode("arcane missiles", {}, {}, {}); }
-    static ActionNode* fire_blast(PlayerbotAI*) { return new ActionNode("fire blast", {}, {}, {}); }
-    static ActionNode* frostbolt(PlayerbotAI*) { return new ActionNode("frostbolt", {}, {}, {}); }
-    static ActionNode* arcane_power(PlayerbotAI*) { return new ActionNode("arcane power", {}, {}, {}); }
-    static ActionNode* icy_veins(PlayerbotAI*) { return new ActionNode("icy veins", {}, {}, {}); }
-};
-
-// ===== Single Target Strategy =====
 ArcaneMageStrategy::ArcaneMageStrategy(PlayerbotAI* botAI) : GenericMageStrategy(botAI)
 {
-    actionNodeFactories.Add(new ArcaneMageStrategyActionNodeFactory());
+    // No custom ActionNodeFactory needed
 }
 
 // ===== Default Actions =====
