@@ -1,4 +1,4 @@
-#include "RaidBwlHelpers.h"
+#include "BWLHelpers.h"
 
 namespace BlackwingLairHelpers
 {

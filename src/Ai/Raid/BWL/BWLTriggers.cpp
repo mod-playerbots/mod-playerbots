@@ -1,7 +1,7 @@
 #include "BWLTriggers.h"
 
 #include "Playerbots.h"
-#include "RaidBwlHelpers.h"
+#include "BWLHelpers.h"
 
 using namespace BlackwingLairHelpers;
 
