@@ -209,35 +209,24 @@ namespace SerpentShrineCavernHelpers
     {
         Unit* vashj =
             botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
-        if (!vashj)
-            return false;
 
-        Creature* vashjCreature = vashj->ToCreature();
-        return vashjCreature && vashjCreature->GetHealthPct() > 70.0f &&
-               vashjCreature->GetReactState() != REACT_PASSIVE;
+        return vashj && vashj->GetHealthPct() > 70.0f;
     }
 
     bool IsLadyVashjInPhase2(PlayerbotAI* botAI)
     {
         Unit* vashj =
             botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
-        if (!vashj)
-            return false;
 
-        Creature* vashjCreature = vashj->ToCreature();
-        return vashjCreature && vashjCreature->GetReactState() == REACT_PASSIVE;
+        return vashj && vashj->GetHealthPct() <= 70.0f && vashj->HasAura(SPELL_MAGIC_BARRIER);
     }
 
     bool IsLadyVashjInPhase3(PlayerbotAI* botAI)
     {
         Unit* vashj =
             botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady vashj")->Get();
-        if (!vashj)
-            return false;
 
-        Creature* vashjCreature = vashj->ToCreature();
-        return vashjCreature && vashjCreature->GetHealthPct() <= 50.0f &&
-               vashjCreature->GetReactState() != REACT_PASSIVE;
+        return vashj && vashj->GetHealthPct() <= 70.0f && !vashj->HasAura(SPELL_MAGIC_BARRIER);
     }
 
     bool IsValidLadyVashjCombatNpc(Unit* unit, PlayerbotAI* botAI)

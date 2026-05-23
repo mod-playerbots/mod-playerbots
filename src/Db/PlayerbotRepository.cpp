@@ -39,6 +39,8 @@ void PlayerbotRepository::Load(PlayerbotAI* botAI)
                 botAI->ChangeStrategy(value, BOT_STATE_DEAD);
         } while (result->NextRow());
 
+        botAI->GetAiObjectContext()->GetUntypedValue("outfit list");
+
         botAI->GetAiObjectContext()->Load(values);
     }
 }
