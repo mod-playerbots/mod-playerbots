@@ -443,12 +443,19 @@ public:
     PaladinValueContextInternal()
     {
         creators["greater blessing assignments"] = &PaladinValueContextInternal::greater_blessing_assignments;
+        creators["greater blessing pending assignment"] =
+            &PaladinValueContextInternal::greater_blessing_pending_assignment;
     }
 
 private:
     static UntypedValue* greater_blessing_assignments(PlayerbotAI* botAI)
     {
         return ai::gbless::greater_blessing_assignments_value(botAI);
+    }
+
+    static UntypedValue* greater_blessing_pending_assignment(PlayerbotAI* botAI)
+    {
+        return ai::gbless::greater_blessing_pending_assignment_value(botAI);
     }
 };
 

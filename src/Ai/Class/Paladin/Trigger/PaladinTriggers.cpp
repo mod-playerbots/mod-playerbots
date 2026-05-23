@@ -87,6 +87,20 @@ bool GreaterBlessingNeededTrigger::IsActive()
     if (ai::buff::ShouldDeferGreaterBlessingAssignmentForRecentLogin(bot))
         return false;
 
-    CastGreaterBlessingAssignmentAction action(botAI);
-    return action.HasPendingAssignment();
+    Group* group = bot->GetGroup();
+    uint32 const groupKey = group ? group->GetLeaderGUID().GetCounter() : 0;
+
+    Value<ai::gbless::CachedPendingBlessingAssignment>* pendingValue =
+        context->GetValue<ai::gbless::CachedPendingBlessingAssignment>("greater blessing pending assignment");
+    if (!pendingValue)
+        return false;
+
+    ai::gbless::CachedPendingBlessingAssignment pendingAssignment = pendingValue->Get();
+    if (pendingAssignment.groupKey != groupKey)
+    {
+        pendingValue->Reset();
+        pendingAssignment = pendingValue->Get();
+    }
+
+    return pendingAssignment.valid && pendingAssignment.groupKey == groupKey;
 }

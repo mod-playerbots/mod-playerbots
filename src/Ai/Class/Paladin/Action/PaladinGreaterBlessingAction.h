@@ -236,7 +236,16 @@ namespace ai::gbless
         std::vector<CachedBlessingBucketAssignment> assignments;
     };
 
+    struct CachedPendingBlessingAssignment
+    {
+        uint32 groupKey = 0;
+        bool valid = false;
+        GreaterBlessingPlayerAssignment assignment;
+        std::string spellName;
+    };
+
     UntypedValue* greater_blessing_assignments_value(PlayerbotAI* botAI);
+    UntypedValue* greater_blessing_pending_assignment_value(PlayerbotAI* botAI);
     bool IsEligibleGroupForAutoBlessings(Group const* group);
     bool IsAutoGreaterBlessingActive(Player const* bot);
 }
