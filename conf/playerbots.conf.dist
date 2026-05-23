@@ -752,6 +752,11 @@ AiPlayerbot.EnableRandomBotTrading = 1
 # Configure message prefixes which will be excluded in analysis in trade action to open trade window
 AiPlayerbot.TradeActionExcludedPrefixes = "RPLL_H_,DBMv4,{звезда} Questie,{rt1} Questie"
 
+# Allow bots to send mail. When disabled, bots will not mail items or money in
+# response to chat commands ("send mail").
+# Default: 1 (enabled)
+AiPlayerbot.BotSendMailEnabled = 1
+
 #
 #
 #

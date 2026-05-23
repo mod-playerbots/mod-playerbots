@@ -14,6 +14,9 @@
 
 bool SendMailAction::Execute(Event event)
 {
+    if (!sPlayerbotAIConfig.botSendMailEnabled)
+        return false;
+
     uint32 account = bot->GetSession()->GetAccountId();
     bool randomBot = sPlayerbotAIConfig.IsInRandomAccountList(account);
 
