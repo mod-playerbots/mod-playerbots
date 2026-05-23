@@ -2075,7 +2075,6 @@ AiPlayerbot.RandomClassSpecIndex.11.6 = 6
 ####################################################################################################
 #
 #
-#
 
 # Enable buffs in ICC to make Heroic easier and more casual.
 # 30% more damage, 40% damage reduction (tank bots), increased all resistances, reduced threat for
@@ -2084,7 +2083,6 @@ AiPlayerbot.RandomClassSpecIndex.11.6 = 6
 # Default: 1 (enabled)
 AiPlayerbot.EnableICCBuffs = 1
 
-#
 #
 #
 ####################################################################################################
