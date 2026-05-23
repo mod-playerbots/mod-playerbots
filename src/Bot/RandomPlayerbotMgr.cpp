@@ -34,6 +34,7 @@
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotFactory.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "Position.h"
 #include "RaceMgr.h"
@@ -2589,7 +2590,8 @@ void RandomPlayerbotMgr::OnPlayerLogin(Player* player)
                 {
                     botAI->SetMaster(player);
                     botAI->ResetStrategies();
-                    botAI->TellMaster("Hello");
+                    botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                        "hello", "Hello", {}));
                 }
 
                 break;

@@ -12,7 +12,7 @@ bool SecurityCheckAction::isUseful()
 {
     return RandomPlayerbotMgr::instance().IsRandomBot(bot)
         && botAI->GetMaster()
-        && botAI->GetMaster()->GetSession()->GetSecurity() < SEC_GAMEMASTER
+        && !botAI->GetMaster()->CanBeGameMaster()
         && !GET_PLAYERBOT_AI(botAI->GetMaster());
 }
 

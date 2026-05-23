@@ -5,6 +5,7 @@
 
 #include "PlayerbotAIConfig.h"
 #include <iostream>
+#include "BisListMgr.h"
 #include "Config.h"
 #include "NewRpgInfo.h"
 #include "PlayerbotDungeonRepository.h"
@@ -595,6 +596,7 @@ bool PlayerbotAIConfig::Initialize()
 
     autoGearCommand = sConfigMgr->GetOption<int32>("AiPlayerbot.AutoGearCommand", 1);
     autoGearCommandAltBots = sConfigMgr->GetOption<int32>("AiPlayerbot.AutoGearCommandAltBots", 1);
+    autoGearBisCommand = sConfigMgr->GetOption<int32>("AiPlayerbot.AutoGearBisCommand", 0);
     autoGearQualityLimit = sConfigMgr->GetOption<int32>("AiPlayerbot.AutoGearQualityLimit", 3);
     autoGearScoreLimit = sConfigMgr->GetOption<int32>("AiPlayerbot.AutoGearScoreLimit", 0);
 
@@ -692,6 +694,7 @@ bool PlayerbotAIConfig::Initialize()
     PlayerbotGuildMgr::instance().Init();
     sRandomItemMgr.Init();
     sRandomItemMgr.InitAfterAhBot();
+    sBisListMgr->LoadAll();
     PlayerbotTextMgr::instance().LoadBotTexts();
     PlayerbotTextMgr::instance().LoadBotTextChance();
     PlayerbotFactory::Init();

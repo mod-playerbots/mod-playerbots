@@ -19,7 +19,7 @@
 #include "Ai/Raid/VaultOfArchavon/RaidVoATriggerContext.h"
 #include "Ai/Raid/Ulduar/RaidUlduarTriggerContext.h"
 #include "Ai/Raid/Onyxia/RaidOnyxiaTriggerContext.h"
-#include "Ai/Raid/Icecrown/RaidIccTriggerContext.h"
+#include "Ai/Raid/ICC/ICCTriggerContext.h"
 #include "Ai/Dungeon/TbcDungeonTriggerContext.h"
 #include "Ai/Dungeon/WotlkDungeonTriggerContext.h"
 
