@@ -53,7 +53,7 @@ void RestoDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(
         new TriggerNode("party member critical health",
-                        { NextAction("nature's swiftness", 56.0f) }));
+                        { NextAction("nature's swiftness", 58.0f) }));
 
     triggers.push_back(new TriggerNode(
         "nature's swiftness active",
