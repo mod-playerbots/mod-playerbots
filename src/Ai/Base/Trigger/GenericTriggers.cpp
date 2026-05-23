@@ -156,8 +156,6 @@ bool OutNumberedTrigger::IsActive()
 
 bool BuffTrigger::IsActive()
 {
-    if (!AI_VALUE2(uint32, "spell id", spell))
-        return false;
     Unit* target = GetTarget();
     if (!target)
         return false;
