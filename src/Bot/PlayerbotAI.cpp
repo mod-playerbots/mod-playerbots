@@ -43,6 +43,7 @@
 #include "PlayerbotGuildMgr.h"
 #include "Playerbots.h"
 #include "PositionValue.h"
+#include "RBAC.h"
 #include "RandomPlayerbotMgr.h"
 #include "SayAction.h"
 #include "ScriptMgr.h"
@@ -507,7 +508,7 @@ void PlayerbotAI::UpdateAIInternal([[maybe_unused]] uint32 elapsed, bool minimal
             logout = true;
 
         if (bot->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) || bot->HasUnitState(UNIT_STATE_IN_FLIGHT) ||
-            botWorldSessionPtr->GetSecurity() >= (AccountTypes)sWorld->getIntConfig(CONFIG_INSTANT_LOGOUT))
+            botWorldSessionPtr->HasPermission(rbac::RBAC_PERM_INSTANT_LOGOUT))
         {
             logout = true;
         }
@@ -515,7 +516,7 @@ void PlayerbotAI::UpdateAIInternal([[maybe_unused]] uint32 elapsed, bool minimal
         if (master &&
             (master->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) || master->HasUnitState(UNIT_STATE_IN_FLIGHT) ||
              (master->GetSession() &&
-              master->GetSession()->GetSecurity() >= (AccountTypes)sWorld->getIntConfig(CONFIG_INSTANT_LOGOUT))))
+              master->GetSession()->HasPermission(rbac::RBAC_PERM_INSTANT_LOGOUT))))
         {
             logout = true;
         }
@@ -3003,7 +3004,7 @@ bool PlayerbotAI::IsTellAllowed(PlayerbotSecurityLevel securityLevel)
         return false;
 
     if (sPlayerbotAIConfig.whisperDistance && !bot->GetGroup() && sRandomPlayerbotMgr.IsRandomBot(bot) &&
-        master->GetSession()->GetSecurity() < SEC_GAMEMASTER &&
+        !master->CanBeGameMaster() &&
         (bot->GetMapId() != master->GetMapId() ||
          ServerFacade::instance().GetDistance2d(bot, master) > sPlayerbotAIConfig.whisperDistance))
         return false;

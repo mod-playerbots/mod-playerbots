@@ -20,13 +20,14 @@
 #include "WarriorActions.h"
 #include "PlayerbotAI.h"
 #include "ICCTriggers.h"
+#include "ICCScripts.h"
 
 // LK global variables
 namespace
 {
 std::map<ObjectGuid, uint32> g_plagueTimes;
 std::map<ObjectGuid, bool> g_allowCure;
-std::mutex g_plagueMutex;  // Lock before accessing shared variables
+std::mutex g_plagueMutex; // Lock before accessing shared variables
 }
 
 // Lady Deathwhisper
@@ -36,7 +37,7 @@ float IccLadyDeathwhisperMultiplier::GetValue(Action* action)
     if (!boss)
         return 1.0f;
 
-    if (dynamic_cast<FleeAction*>(action) || dynamic_cast<FollowAction*>(action) || dynamic_cast<CombatFormationMoveAction*>(action))
+    if (dynamic_cast<FleeAction*>(action) || dynamic_cast<CastBlinkBackAction*>(action) || dynamic_cast<FollowAction*>(action) || dynamic_cast<CombatFormationMoveAction*>(action))
         return 0.0f;
 
     static constexpr uint32 VENGEFUL_SHADE_ID = NPC_SHADE;
@@ -58,7 +59,7 @@ float IccLadyDeathwhisperMultiplier::GetValue(Action* action)
         if (!shade->GetVictim() || shade->GetVictim()->GetGUID() != bot->GetGUID())
             continue;
 
-        return 0.0f;  // Cancel all other actions when we need to handle Vengeful Shade
+        return 0.0f; // Cancel all other actions when we need to handle Vengeful Shade
     }
 
     return 1.0f;
@@ -76,49 +77,102 @@ float IccAddsDbsMultiplier::GetValue(Action* action)
         dynamic_cast<CastStarfallAction*>(action) || dynamic_cast<FanOfKnivesAction*>(action) ||
         dynamic_cast<CastWhirlwindAction*>(action) || dynamic_cast<CastMindSearAction*>(action) ||
         dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FollowAction*>(action) ||
-        dynamic_cast<FleeAction*>(action))
+        dynamic_cast<FleeAction*>(action) || dynamic_cast<CastArmyOfTheDeadAction*>(action))
         return 0.0f;
 
     if (botAI->IsRanged(bot))
         if (dynamic_cast<ReachSpellAction*>(action))
             return 0.0f;
 
-    if (botAI->IsMainTank(bot))
+    if (botAI->IsTank(bot))
     {
         Aura* aura = botAI->GetAura("rune of blood", bot);
         if (aura)
         {
+            if (dynamic_cast<CastTauntAction*>(action) ||
+                dynamic_cast<CastDarkCommandAction*>(action) ||
+                dynamic_cast<CastHandOfReckoningAction*>(action) ||
+                dynamic_cast<CastGrowlAction*>(action))
+                return 0.0f;
+
             if (dynamic_cast<MovementAction*>(action))
                 return 1.0f;
-            else
-                return 0.0f;
+
+            return 0.0f;
         }
     }
 
     return 1.0f;
 }
 
-// dogs
-float IccDogsMultiplier::GetValue(Action* action)
+// Gunship
+float IccGunshipMultiplier::GetValue(Action* action)
 {
-    bool bossPresent = false;
-    if (AI_VALUE2(Unit*, "find target", "stinky") || AI_VALUE2(Unit*, "find target", "precious"))
-        bossPresent = true;
-
-    if (!bossPresent)
+    // Detect gunship encounter via hostile enemy captain nearby
+    Unit* saurfang = bot->FindNearestCreature(NPC_HIGH_OVERLORD_SAURFANG, 200.0f);
+    Unit* muradin = bot->FindNearestCreature(NPC_MURADIN_BRONZEBEARD, 200.0f);
+    bool const inGunship = (saurfang && saurfang->IsAlive() && saurfang->IsHostileTo(bot)) ||
+                           (muradin && muradin->IsAlive() && muradin->IsHostileTo(bot));
+    if (!inGunship)
         return 1.0f;
 
-    if (botAI->IsMainTank(bot))
+    if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FollowAction*>(action))
+        return 0.0f;
+
+    // Main tank is locked to captain via IccGunshipRocketJumpAction — block RTI targeting
+    if (botAI->IsMainTank(bot) && dynamic_cast<AttackRtiTargetAction*>(action))
+        return 0.0f;
+
+    // Bot in transit between ships: lock to rocket-jump action only so combat/movement
+    // actions don't interfere with jump packet timing.
+    bool const isHordeSide = muradin && muradin->IsAlive() && muradin->IsHostileTo(bot);
+    bool const isAllySide = saurfang && saurfang->IsAlive() && saurfang->IsHostileTo(bot);
+    Position const friendlyPoint = isHordeSide ? ICC_GUNSHIP_ROCKET_JUMP_HORDE_FRIENDLY_POINT
+                                               : ICC_GUNSHIP_ROCKET_JUMP_ALLY_FRIENDLY_POINT;
+    Position const middlePoint = isHordeSide ? ICC_GUNSHIP_ROCKET_JUMP_HORDE_MIDDLE_POINT
+                                             : ICC_GUNSHIP_ROCKET_JUMP_ALLY_MIDDLE_POINT;
+    Position const attackPos = isHordeSide ? ICC_GUNSHIP_ROCKET_JUMP_HORDE
+                                           : ICC_GUNSHIP_ROCKET_JUMP_ALLY;
+    static constexpr float JUMP_GATE = 30.0f;
+    bool const nearFriendly = bot->GetExactDist2d(friendlyPoint) <= JUMP_GATE;
+    bool const nearMiddle = bot->GetExactDist2d(middlePoint) <= JUMP_GATE;
+    bool const nearAttack = bot->GetExactDist2d(attackPos) <= JUMP_GATE;
+    if (!nearFriendly && !nearMiddle && !nearAttack)
+    {
+        if (!dynamic_cast<IccGunshipRocketJumpAction*>(action))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+// Dogs
+float IccDogsMultiplier::GetValue(Action* action)
+{
+    if (!AI_VALUE2(Unit*, "find target", "stinky") && !AI_VALUE2(Unit*, "find target", "precious"))
+        return 1.0f;
+
+    if (botAI->IsTank(bot))
     {
         Aura* aura = botAI->GetAura("mortal wound", bot, false, true);
         if (aura && aura->GetStackAmount() >= 8)
         {
             if (dynamic_cast<MovementAction*>(action))
                 return 1.0f;
-            else
+
+            if (dynamic_cast<CastTauntAction*>(action) ||
+                dynamic_cast<CastDarkCommandAction*>(action) ||
+                dynamic_cast<CastHandOfReckoningAction*>(action) ||
+                dynamic_cast<CastGrowlAction*>(action))
                 return 0.0f;
+
+            return 0.0f;
         }
     }
+
+    if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FollowAction*>(action))
+        return 0.0f;
+
     return 1.0f;
 }
 
@@ -135,15 +189,24 @@ float IccFestergutMultiplier::GetValue(Action* action)
     if (dynamic_cast<FleeAction*>(action))
         return 0.0f;
 
-    if (botAI->IsMainTank(bot))
+    if (dynamic_cast<CastDisengageAction*>(action) || dynamic_cast<CastBlinkBackAction*>(action))
+        return 0.0f;
+
+    if (botAI->IsTank(bot))
     {
         Aura* aura = botAI->GetAura("gastric bloat", bot, false, true);
         if (aura && aura->GetStackAmount() >= 6)
         {
+            if (dynamic_cast<CastTauntAction*>(action) ||
+                dynamic_cast<CastDarkCommandAction*>(action) ||
+                dynamic_cast<CastHandOfReckoningAction*>(action) ||
+                dynamic_cast<CastGrowlAction*>(action))
+                return 0.0f;
+
             if (dynamic_cast<MovementAction*>(action))
                 return 1.0f;
-            else
-                return 0.0f;
+
+            return 0.0f;
         }
     }
 
@@ -151,7 +214,27 @@ float IccFestergutMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if (bot->HasAura(SPELL_GAS_SPORE))
-        return 0.0f;
+    {
+        if (dynamic_cast<MovementAction*>(action) || dynamic_cast<FleeAction*>(action) ||
+            dynamic_cast<ReachSpellAction*>(action))
+            return 0.0f;
+    }
+
+    // Hold position during the 8s malleable goo wait window so the bot can
+    // keep DPS/heal rotations running without drifting back into the impact.
+    // Avoid action itself is whitelisted (may still need to dodge new goos).
+    {
+        auto const& waitMap = IcecrownHelpers::festergutGooWaitUntil;
+        auto it = waitMap.find(bot->GetGUID());
+        if (it != waitMap.end() && getMSTime() < it->second)
+        {
+            if (dynamic_cast<IccFestergutAvoidMalleableGooAction*>(action))
+                return 1.0f;
+
+            if (dynamic_cast<MovementAction*>(action))
+                return 0.0f;
+        }
+    }
 
     return 1.0f;
 }
@@ -163,64 +246,69 @@ float IccRotfaceMultiplier::GetValue(Action* action)
     if (!boss1)
         return 1.0f;
 
-    if (dynamic_cast<CombatFormationMoveAction*>(action))
+    {
+        uint32 const now = getMSTime();
+        auto const& waitMap = IcecrownHelpers::rotfaceVileGasWaitUntil;
+        auto it = waitMap.find(bot->GetGUID());
+        bool const inWait = it != waitMap.end() && now < it->second;
+        auto vgIt = IcecrownHelpers::rotfaceVileGas.find(bot->GetMap()->GetInstanceId());
+        bool const isVictim =
+            vgIt != IcecrownHelpers::rotfaceVileGas.end() &&
+            vgIt->second.victimGuid == bot->GetGUID() &&
+            getMSTimeDiff(vgIt->second.castTime, now) < 8000;
+
+        if (isVictim || inWait || botAI->HasAura("Vile Gas", bot))
+        {
+            if (dynamic_cast<IccRotfaceAvoidVileGasAction*>(action))
+                return 1.0f;
+            if (dynamic_cast<MovementAction*>(action))
+                return 0.0f;
+        }
+    }
+
+    if (botAI->HasAura("Vile Gas", bot))
+        return 0.0f;
+
+    if (botAI->IsTank(bot) && dynamic_cast<TankAssistAction*>(action))
+        return 0.0f;
+
+    if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<AvoidAoeAction*>(action))
         return 0.0f;
 
     if (dynamic_cast<FleeAction*>(action) && !(bot->getClass() == CLASS_HUNTER))
         return 0.0f;
 
-    if (dynamic_cast<CastBlinkBackAction*>(action))
+    if (dynamic_cast<CastBlinkBackAction*>(action) || dynamic_cast<CastArmyOfTheDeadAction*>(action))
         return 0.0f;
 
-    if (botAI->IsAssistTank(bot) && (dynamic_cast<AttackRtiTargetAction*>(action) || dynamic_cast<TankAssistAction*>(action)))
+    if (botAI->IsAssistTank(bot) &&
+        (dynamic_cast<AttackRtiTargetAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
+         dynamic_cast<CastTauntAction*>(action) || dynamic_cast<CastDarkCommandAction*>(action) ||
+         dynamic_cast<CastHandOfReckoningAction*>(action) || dynamic_cast<CastGrowlAction*>(action)))
         return 0.0f;
 
-    Unit* boss = AI_VALUE2(Unit*, "find target", "big ooze");
-    if (!boss)
-        return 1.0f;
-
-    static std::map<ObjectGuid, uint32> lastExplosionTimes;
-    static std::map<ObjectGuid, bool> hasMoved;
-
-    ObjectGuid botGuid = bot->GetGUID();
-
-    // When cast starts, record the time
-    if (boss->HasUnitState(UNIT_STATE_CASTING) && boss->FindCurrentSpellBySpellId(SPELL_UNSTABLE_OOZE_EXPLOSION))
+    if (botAI->IsAssistTank(bot) && boss1 && bot->GetVictim() == boss1)
     {
-        if (lastExplosionTimes[botGuid] == 0)  // Only set if not already set
-        {
-            lastExplosionTimes[botGuid] = time(nullptr);
-            hasMoved[botGuid] = false;
-        }
-    }
-
-    // If explosion cast is no longer active, reset the timers
-    if (!boss->HasUnitState(UNIT_STATE_CASTING) || !boss->FindCurrentSpellBySpellId(SPELL_UNSTABLE_OOZE_EXPLOSION))
-    {
-        if (lastExplosionTimes[botGuid] > 0 && time(nullptr) - lastExplosionTimes[botGuid] >= 16)
-        {
-            lastExplosionTimes[botGuid] = 0;
-            hasMoved[botGuid] = false;
-            return 1.0f;  // Allow normal actions to resume
-        }
-    }
-
-    // If 9 seconds have passed since cast start and we haven't moved yet
-    if (lastExplosionTimes[botGuid] > 0 && !hasMoved[botGuid] && time(nullptr) - lastExplosionTimes[botGuid] >= 9)
-    {
-        if (dynamic_cast<MovementAction*>(action)
-            && !dynamic_cast<IccRotfaceMoveAwayFromExplosionAction*>(action))
-        {
-            return 0.0f;  // Block other movement actions
-        }
-        hasMoved[botGuid] = true;  // Mark that we've initiated movement
-    }
-
-    // Continue blocking other movements for 7 seconds after moving
-    if (hasMoved[botGuid] && time(nullptr) - lastExplosionTimes[botGuid] < 16  // 9 seconds wait + 7 seconds stay
-        && dynamic_cast<MovementAction*>(action)
-        && !dynamic_cast<IccRotfaceMoveAwayFromExplosionAction*>(action))
+        bot->AttackStop();
+        bot->SetTarget(ObjectGuid::Empty);
         return 0.0f;
+    }
+
+    // Never cure/dispel Mutated Infection — it must expire naturally to spawn a small ooze
+    if (dynamic_cast<CurePartyMemberAction*>(action) || dynamic_cast<CastCleanseDiseaseAction*>(action) ||
+        dynamic_cast<CastCleanseDiseaseOnPartyAction*>(action) ||
+        dynamic_cast<CastCleanseSpiritCurseOnPartyAction*>(action) || dynamic_cast<CastCleanseSpiritAction*>(action))
+        return 0.0f;
+
+    {
+        Creature* bigOoze = bot->FindNearestCreature(NPC_BIG_OOZE, 100.0f);
+        bool castingNow = bigOoze && bigOoze->IsAlive() &&
+            bigOoze->HasUnitState(UNIT_STATE_CASTING) && bigOoze->FindCurrentSpellBySpellId(SPELL_UNSTABLE_OOZE_EXPLOSION);
+
+        if (castingNow && (dynamic_cast<MovementAction*>(action) || dynamic_cast<IccRotfaceGroupPositionAction*>(action)) &&
+            !dynamic_cast<IccRotfaceMoveAwayFromExplosionAction*>(action))
+            return 0.0f;
+    }
 
     return 1.0f;
 }
@@ -231,9 +319,35 @@ float IccAddsPutricideMultiplier::GetValue(Action* action)
     Unit* boss = AI_VALUE2(Unit*, "find target", "professor putricide");
     if (!boss)
         return 1.0f;
+    Unit* boss1 = AI_VALUE2(Unit*, "find target", "rotface");
+    if (boss1)
+        return 1.0f;
+    Unit* boss2 = AI_VALUE2(Unit*, "find target", "festergut");
+    if (boss2)
+        return 1.0f;
+
+    if (Unit* vehBase = bot->GetVehicleBase())
+    {
+        uint32 e = vehBase->GetEntry();
+        if (e == NPC_MUTATED_ABOMINATION_10 || e == NPC_MUTATED_ABOMINATION_25)
+        {
+            if (dynamic_cast<IccPutricideAbominationAction*>(action))
+                return 1.0f;
+            return 0.0f;
+        }
+    }
 
     bool hasGaseousBloat = botAI->HasAura("Gaseous Bloat", bot);
     bool hasUnboundPlague = botAI->HasAura("Unbound Plague", bot);
+
+    if (botAI->IsTank(bot) &&
+        bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == FOLLOW_MOTION_TYPE)
+    {
+        if (dynamic_cast<FollowAction*>(action) ||
+            dynamic_cast<IccPutricideAvoidMalleableGooAction*>(action))
+            return 1.0f;
+        return 0.0f;
+    }
 
     if (!(bot->getClass() == CLASS_HUNTER) && dynamic_cast<FleeAction*>(action))
         return 0.0f;
@@ -247,15 +361,56 @@ float IccAddsPutricideMultiplier::GetValue(Action* action)
     if (dynamic_cast<CastBlinkBackAction*>(action))
         return 0.0f;
 
-    if (botAI->IsMainTank(bot))
+    if (botAI->IsTank(bot))
     {
-        Aura* aura = botAI->GetAura("mutated plague", bot, false, true);
-        if (aura && aura->GetStackAmount() >= 4)
+        auto GetPlagueStacks = [&](Unit* unit) -> uint32
         {
+            if (!unit)
+                return 0;
+            Aura* a = botAI->GetAura("mutated plague", unit, false, true);
+            return a ? a->GetStackAmount() : 0;
+        };
+
+        uint32 const myStacks = GetPlagueStacks(bot);
+
+        // Another tank has fewer stacks — they should be tanking instead of us.
+        // Block generic taunts (so we don't fight for aggro), keep movement, and
+        // cancel the rest of the rotation (IccPutricideMutatedPlagueAction owns
+        // the AttackStop/taunt handoff).
+        bool anotherTankHasFewer = false;
+        if (Group* group = bot->GetGroup())
+        {
+            for (GroupReference* itr = group->GetFirstMember(); itr; itr = itr->next())
+            {
+                Player* member = itr->GetSource();
+                if (!member || member == bot || !member->IsAlive() || !member->IsInWorld())
+                    continue;
+                if (!PlayerbotAI::IsTank(member))
+                    continue;
+
+                if (GetPlagueStacks(member) < myStacks)
+                {
+                    anotherTankHasFewer = true;
+                    break;
+                }
+            }
+        }
+
+        if (anotherTankHasFewer)
+        {
+            if (dynamic_cast<CastTauntAction*>(action) ||
+                dynamic_cast<CastDarkCommandAction*>(action) ||
+                dynamic_cast<CastHandOfReckoningAction*>(action) ||
+                dynamic_cast<CastGrowlAction*>(action))
+                return 0.0f;
+
             if (dynamic_cast<MovementAction*>(action))
                 return 1.0f;
-            else
-                return 0.0f;
+
+            if (dynamic_cast<IccPutricideMutatedPlagueAction*>(action))
+                return 1.0f;
+
+            return 0.0f;
         }
     }
 
@@ -270,7 +425,7 @@ float IccAddsPutricideMultiplier::GetValue(Action* action)
         if (botAI->IsHeal(bot))
             return 1.0f;
         else
-            return 0.0f;  // Cancel all other actions when we need to handle Gaseous Bloat
+            return 0.0f; // Cancel all other actions when we need to handle Gaseous Bloat
     }
 
     if (hasUnboundPlague && boss && !boss->HealthBelowPct(35))
@@ -278,17 +433,15 @@ float IccAddsPutricideMultiplier::GetValue(Action* action)
         if (dynamic_cast<IccPutricideAvoidMalleableGooAction*>(action))
             return 1.0f;
         else
-            return 0.0f;  // Cancel all other actions when we need to handle Unbound Plague
+            return 0.0f; // Cancel all other actions when we need to handle Unbound Plague
     }
 
     if (dynamic_cast<IccPutricideVolatileOozeAction*>(action))
     {
         if (dynamic_cast<IccPutricideAvoidMalleableGooAction*>(action))
-            return 0.0f;
+            return 1.0f;
         if (dynamic_cast<IccPutricideGrowingOozePuddleAction*>(action) && !botAI->IsMainTank(bot))
             return 0.0f;
-        //if (dynamic_cast<IccPutricideGasCloudAction*>(action) && !hasGaseousBloat)
-            //return 0.0f;
     }
 
     return 1.0f;
@@ -301,14 +454,114 @@ float IccBpcAssistMultiplier::GetValue(Action* action)
     if (!keleseth)
         return 1.0f;
 
-    if (dynamic_cast<DpsAoeAction*>(action) || dynamic_cast<CastHurricaneAction*>(action) ||
+    if (keleseth && (dynamic_cast<DpsAoeAction*>(action) || dynamic_cast<CastHurricaneAction*>(action) ||
         dynamic_cast<CastVolleyAction*>(action) || dynamic_cast<CastBlizzardAction*>(action) ||
         dynamic_cast<CastStarfallAction*>(action) || dynamic_cast<FanOfKnivesAction*>(action) ||
         dynamic_cast<CastWhirlwindAction*>(action) || dynamic_cast<CastMindSearAction*>(action) ||
-        dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FollowAction*>(action))
+        dynamic_cast<CastMagmaTotemAction*>(action) || dynamic_cast<CastFlamestrikeAction*>(action) ||
+        dynamic_cast<CastExplosiveTrapAction*>(action) || dynamic_cast<CastExplosiveShotBaseAction*>(action) ||
+        dynamic_cast<CastArmyOfTheDeadAction*>(action)))
         return 0.0f;
 
     Aura* aura = botAI->GetAura("Shadow Prison", bot, false, true);
+
+    // Bomb assignment check (done early so it can override shadow prison stack limits)
+    static const std::array<uint32, 4> bombEntries = {NPC_KINETIC_BOMB1, NPC_KINETIC_BOMB2, NPC_KINETIC_BOMB3,
+                                                      NPC_KINETIC_BOMB4};
+    GuidVector const bombs = AI_VALUE(GuidVector, "possible targets no los");
+
+    std::vector<Unit*> kineticBombs;
+    for (auto const& guid : bombs)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (!unit || !unit->IsAlive())
+            continue;
+
+        if (std::find(bombEntries.begin(), bombEntries.end(), unit->GetEntry()) == bombEntries.end())
+            continue;
+
+        if (unit->GetPositionZ() - bot->GetPositionZ() > 35.0f)
+            continue;
+
+        kineticBombs.push_back(unit);
+    }
+
+    bool botAssignedToBomb = false;
+    if (!kineticBombs.empty() && botAI->IsRangedDps(bot) &&
+        !(aura && aura->GetStackAmount() > 18))
+    {
+        std::sort(kineticBombs.begin(), kineticBombs.end(),
+                  [](Unit* a, Unit* b) { return a->GetPositionZ() < b->GetPositionZ(); });
+
+        std::vector<Player*> rangedDps;
+        Group* group = bot->GetGroup();
+        if (group)
+        {
+            for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+            {
+                Player* member = itr->GetSource();
+                if (member && member->IsAlive() && GET_PLAYERBOT_AI(member) && botAI->IsRangedDps(member))
+                    rangedDps.push_back(member);
+            }
+        }
+
+        static float const MAX_ASSIGN_RANGE = 80.0f;
+        std::set<Player*> assigned;
+        for (Unit* bomb : kineticBombs)
+        {
+            Player* nearest = nullptr;
+            float nearestDist = std::numeric_limits<float>::max();
+
+            // Priority classes: hunter > druid > any
+            static constexpr std::array<uint8, 3> classPriority = {CLASS_HUNTER, CLASS_DRUID, 0};
+            for (uint8 priorityClass : classPriority)
+            {
+                nearest = nullptr;
+                nearestDist = std::numeric_limits<float>::max();
+
+                for (Player* dps : rangedDps)
+                {
+                    if (assigned.count(dps))
+                        continue;
+
+                    if (priorityClass != 0 && dps->getClass() != priorityClass)
+                        continue;
+
+                    float dist = dps->GetDistance(bomb);
+                    if (dist < nearestDist && dist < MAX_ASSIGN_RANGE)
+                    {
+                        nearestDist = dist;
+                        nearest = dps;
+                    }
+                }
+
+                if (nearest)
+                    break;
+            }
+
+            if (nearest)
+            {
+                assigned.insert(nearest);
+                if (nearest == bot)
+                    botAssignedToBomb = true;
+            }
+        }
+    }
+
+    // Bomb-assigned bot: block target switching and non-bomb BPC actions, allow combat rotation
+    if (botAssignedToBomb)
+    {
+        if (dynamic_cast<IccBpcKineticBombAction*>(action) || dynamic_cast<AvoidAoeAction*>(action))
+            return 1.0f;
+
+        if (dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
+            dynamic_cast<AttackRtiTargetAction*>(action) || dynamic_cast<IccBpcEmpoweredVortexAction*>(action) ||
+            dynamic_cast<IccBpcBallOfFlameAction*>(action) || dynamic_cast<CombatFormationMoveAction*>(action) ||
+            dynamic_cast<FollowAction*>(action))
+            return 0.0f;
+    }
+
+    // Shadow prison movement block (non-bomb bots use normal 12 stack limit)
     if (aura)
     {
         if (aura->GetStackAmount() > 18 && botAI->IsTank(bot))
@@ -337,7 +590,7 @@ float IccBpcAssistMultiplier::GetValue(Action* action)
         if (dynamic_cast<AvoidAoeAction*>(action) || dynamic_cast<IccBpcEmpoweredVortexAction*>(action))
             return 1.0f;
         else
-            return 0.0f;  // Cancel all other actions when we need to handle Empowered Vortex
+            return 0.0f;
     }
 
     Unit* flame1 = bot->FindNearestCreature(NPC_BALL_OF_FLAME, 100.0f);
@@ -356,48 +609,9 @@ float IccBpcAssistMultiplier::GetValue(Action* action)
 
     if (ballOfFlame || infernoFlame)
     {
-        // If bot is tank, do nothing special
         if (dynamic_cast<IccBpcBallOfFlameAction*>(action))
             return 1.0f;
         else
-            return 0.0f;  // Cancel all other actions when we need to handle Ball of Flame
-    }
-
-    static const std::array<uint32, 4> bombEntries = {NPC_KINETIC_BOMB1, NPC_KINETIC_BOMB2, NPC_KINETIC_BOMB3,
-                                                      NPC_KINETIC_BOMB4};
-    const GuidVector bombs = AI_VALUE(GuidVector, "possible targets no los");
-
-    bool bombFound = false;
-
-    for (const auto entry : bombEntries)
-    {
-        for (auto const& guid : bombs)
-        {
-            if (Unit* unit = botAI->GetUnit(guid))
-            {
-                if (unit->GetEntry() == entry)
-                {
-                    // Check if bomb is within valid Z-axis range
-                    if (unit->GetPositionZ() - bot->GetPositionZ() < 25.0f)
-                    {
-                        bombFound = true;
-                        break;
-                    }
-                }
-            }
-        }
-        if (bombFound)
-            break;
-    }
-
-    if (bombFound && !(aura && aura->GetStackAmount() > 12) && !botAI->IsTank(bot))
-    {
-        // If kinetic bomb action is active, disable these actions
-        if (dynamic_cast<IccBpcKineticBombAction*>(action))
-            return 1.0f;
-
-        if (dynamic_cast<DpsAssistAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
-            dynamic_cast<AttackRtiTargetAction*>(action))
             return 0.0f;
     }
 
@@ -408,13 +622,11 @@ float IccBpcAssistMultiplier::GetValue(Action* action)
         if (dynamic_cast<IccBpcKelesethTankAction*>(action))
             return 1.0f;
 
-        // Disable normal assist behavior
+        // Disable normal assist behavior (allow RTI targeting)
         if (dynamic_cast<TankAssistAction*>(action) ||
             dynamic_cast<FleeAction*>(action) ||
-            dynamic_cast<AttackRtiTargetAction*>(action) ||
             dynamic_cast<CastConsecrationAction*>(action))
             return 0.0f;
-
     }
 
     return 1.0f;
@@ -439,21 +651,22 @@ float IccBqlMultiplier::GetValue(Action* action)
     if (bot->HasAura(SPELL_PACT_OF_THE_DARKFALLEN))
     {
         if (dynamic_cast<IccBqlPactOfDarkfallenAction*>(action))
-            return 1.0f;  // Allow Pact of Darkfallen action
+            return 1.0f; // Allow Pact of Darkfallen action
         else
-            return 0.0f;  // Cancel all other actions when we need to handle Pact of Darkfallen
+            return 0.0f; // Cancel all other actions when we need to handle Pact of Darkfallen
     }
 
-    if (botAI->IsMelee(bot) && ((boss->GetPositionZ() - ICC_BQL_CENTER_POSITION.GetPositionZ()) > 5.0f) && !aura)
+    // Air phase: block movement/chase actions, allow combat rotation (attacks/heals)
+    if (((boss->GetPositionZ() - ICC_BQL_CENTER_POSITION.GetPositionZ()) > 5.0f) && !aura)
     {
-        if (dynamic_cast<IccBqlGroupPositionAction*>(action))
-            return 1.0f;
-        else
+        if (dynamic_cast<AvoidAoeAction*>(action) || dynamic_cast<FleeAction*>(action) ||
+            dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<CastDisengageAction*>(action) ||
+            dynamic_cast<ReachMeleeAction*>(action) || dynamic_cast<ReachTargetAction*>(action))
             return 0.0f;
     }
 
     // If bot has frenzied bloodthirst, allow highest priority for bite action
-    if (aura)  // If bot has frenzied bloodthirst
+    if (aura) // If bot has frenzied bloodthirst
     {
         if (dynamic_cast<IccBqlVampiricBiteAction*>(action))
             return 1.0f;
@@ -493,10 +706,69 @@ float IccValithriaDreamCloudMultiplier::GetValue(Action* action)
     if (dynamic_cast<FollowAction*>(action) || dynamic_cast<CombatFormationMoveAction*>(action))
         return 0.0f;
 
+    // Zombie victim: only the kite action runs. Blocks combat/movement so bot
+    // doesn't try to attack/cast/move toward marks while being chased.
+    if (boss && !botAI->IsTank(bot))
+    {
+        Creature* attackingZombie = nullptr;
+        std::list<Creature*> zombies;
+        bot->GetCreatureListWithEntryInGrid(zombies, NPC_BLISTERING_ZOMBIE, 100.0f);
+        for (Creature* z : zombies)
+        {
+            if (z && z->IsAlive() && z->GetVictim() == bot)
+            {
+                attackingZombie = z;
+                break;
+            }
+        }
+        if (attackingZombie)
+        {
+            if (dynamic_cast<IccValithriaZombieKiteAction*>(action))
+                return 1.0f;
+            return 0.0f;
+        }
+    }
+
     if (botAI->IsTank(bot))
     {
         if (dynamic_cast<AttackRtiTargetAction*>(action))
             return 0.0f;
+    }
+    else
+    {
+        // Non-tanks must strictly follow RTI marks. Block generic assist actions
+        // so bots never attack unmarked adds; AttackRtiTargetAction drives them to
+        // skull/cross targets set by HandleMarkingLogic.
+        if (dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
+
+        // Melee bots must not engage Blistering Zombies (one-shot melee swing).
+        // Only ranged DPS handle them. If RTI/current target is a zombie, block
+        // attack actions so melee falls through to other priorities.
+        if (!PlayerbotAI::IsRangedDps(bot) && !botAI->IsHeal(bot))
+        {
+            Unit* victim = bot->GetVictim();
+            bool victimIsZombie = victim && victim->GetEntry() == NPC_BLISTERING_ZOMBIE;
+
+            bool rtiIsZombie = false;
+            if (Group* group = bot->GetGroup())
+            {
+                ObjectGuid rtiGuid = group->GetTargetIcon(7);
+                if (!rtiGuid.IsEmpty())
+                {
+                    Unit* rtiUnit = ObjectAccessor::GetUnit(*bot, rtiGuid);
+                    if (rtiUnit && rtiUnit->GetEntry() == NPC_BLISTERING_ZOMBIE)
+                        rtiIsZombie = true;
+                }
+            }
+
+            if (victimIsZombie || rtiIsZombie)
+            {
+                if (dynamic_cast<AttackRtiTargetAction*>(action) ||
+                    dynamic_cast<DpsAssistAction*>(action))
+                    return 0.0f;
+            }
+        }
     }
 
     if (botAI->IsHeal(bot) && (twistedNightmares || emeraldVigor))
@@ -506,9 +778,9 @@ float IccValithriaDreamCloudMultiplier::GetValue(Action* action)
     if (bot->HasAura(SPELL_DREAM_STATE) && !bot->HealthBelowPct(50))
     {
         if (dynamic_cast<IccValithriaDreamCloudAction*>(action))
-            return 1.0f;  // Allow Dream Cloud action
+            return 1.0f; // Allow Dream Cloud action
         else
-            return 0.0f;  // Cancel all other actions when we need to handle Dream Cloud
+            return 0.0f; // Cancel all other actions when we need to handle Dream Cloud
     }
 
     return 1.0f;
@@ -522,6 +794,13 @@ float IccSindragosaMultiplier::GetValue(Action* action)
     Unit* boss = bot->FindNearestCreature(NPC_SINDRAGOSA, 200.0f);
     if (!boss)
         return 1.0f;
+
+    // HoT support is an instant cast that never moves the bot. Always allow so
+    // beaconed targets stay topped up across air phase, blistering cold cast,
+    // phase 3 tank lockdown, and other "everything else 0.0f" branches below.
+    if (dynamic_cast<IccSindragosaHotAction*>(action))
+        return 1.0f;
+
     Aura* aura = botAI->GetAura("Unchained Magic", bot, false, true);
 
     Difficulty diff = bot->GetRaidDifficulty();
@@ -544,8 +823,8 @@ float IccSindragosaMultiplier::GetValue(Action* action)
 
     // Check if boss is casting blistering cold (using both normal and heroic spell IDs)
     if (boss->HasUnitState(UNIT_STATE_CASTING) &&
-        (boss->FindCurrentSpellBySpellId(70123) || boss->FindCurrentSpellBySpellId(71047) ||
-         boss->FindCurrentSpellBySpellId(71048) || boss->FindCurrentSpellBySpellId(71049)))
+        (boss->FindCurrentSpellBySpellId(SPELL_BLISTERING_COLD1) || boss->FindCurrentSpellBySpellId(SPELL_BLISTERING_COLD2) ||
+         boss->FindCurrentSpellBySpellId(SPELL_BLISTERING_COLD3) || boss->FindCurrentSpellBySpellId(SPELL_BLISTERING_COLD4)))
     {
         // If this is the blistering cold action, give it highest priority
         if (dynamic_cast<IccSindragosaBlisteringColdAction*>(action) ||
@@ -553,6 +832,16 @@ float IccSindragosaMultiplier::GetValue(Action* action)
             dynamic_cast<ReachPartyMemberToHealAction*>(action) ||
             dynamic_cast<IccSindragosaTankSwapPositionAction*>(action))
             return 1.0f;
+
+        // Ranged / healer already beyond the blast radius: keep DPSing or
+        // healing, just block any movement so they don't wander back in.
+        bool const safe = bot->GetExactDist2d(boss) >= 33.0f;
+        if (safe && (botAI->IsRanged(bot) || botAI->IsHeal(bot)))
+        {
+            if (dynamic_cast<MovementAction*>(action))
+                return 0.0f;
+            return 1.0f;
+        }
 
         // Disable all other actions while blistering cold is casting
         return 0.0f;
@@ -647,7 +936,7 @@ float IccSindragosaMultiplier::GetValue(Action* action)
             dynamic_cast<CastWhirlwindAction*>(action) || dynamic_cast<CastMindSearAction*>(action) ||
             dynamic_cast<CastMagmaTotemAction*>(action) || dynamic_cast<CastConsecrationAction*>(action) ||
             dynamic_cast<CastFlamestrikeAction*>(action) || dynamic_cast<CastExplosiveTrapAction*>(action) ||
-            dynamic_cast<CastExplosiveShotBaseAction*>(action))
+            dynamic_cast<CastExplosiveShotBaseAction*>(action) || dynamic_cast<CastBlinkBackAction*>(action))
             return 0.0f;
     }
 
@@ -656,217 +945,264 @@ float IccSindragosaMultiplier::GetValue(Action* action)
 
 float IccLichKingAddsMultiplier::GetValue(Action* action)
 {
-    Unit* terenasMenethilHC = bot->FindNearestCreature(NPC_TERENAS_MENETHIL_HC, 55.0f);
+    if (bot->FindNearestCreature(NPC_VALITHRIA_DREAMWALKER, 100.0f))
+        return 1.0f;
 
-    if (!terenasMenethilHC)
-        if (dynamic_cast<CastStarfallAction*>(action))
-            return 0.0f;
-
-    if (terenasMenethilHC)
+    Unit* terenas = bot->FindNearestCreature(NPC_TERENAS_MENETHIL_HC, 55.0f);
+    if (terenas)
     {
-        Unit* mainTank = AI_VALUE(Unit*, "main tank");
-
-        if (!botAI->IsMainTank(bot) && mainTank && bot->GetExactDist2d(mainTank->GetPositionX(), mainTank->GetPositionY()) < 2.0f)
-        {
-            if (dynamic_cast<MovementAction*>(action))
-                return 0.0f;
-        }
-
-        if (botAI->IsMelee(bot) || (bot->getClass() == CLASS_WARLOCK))
+        // Warlocks and melee stay functional (movement + adds action only)
+        if (botAI->IsMelee(bot) || bot->getClass() == CLASS_WARLOCK)
         {
             if (dynamic_cast<MovementAction*>(action) || dynamic_cast<IccLichKingAddsAction*>(action))
                 return 1.0f;
-            else
-                return 0.0f;
+            return 0.0f;
         }
 
+        // Main tank near another tank: suppress movement jitter
+        Unit* mainTank = AI_VALUE(Unit*, "main tank");
+        if (!botAI->IsMainTank(bot) && mainTank && bot->GetExactDist2d(mainTank) < 2.0f &&
+            dynamic_cast<MovementAction*>(action))
+            return 0.0f;
+
+        // Suppress all these regardless of role
         if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FollowAction*>(action) ||
             dynamic_cast<FleeAction*>(action) || dynamic_cast<CastBlinkBackAction*>(action) ||
             dynamic_cast<CastDisengageAction*>(action) || dynamic_cast<CastChargeAction*>(action) ||
             dynamic_cast<CastFeralChargeBearAction*>(action) || dynamic_cast<CastIceBlockAction*>(action) ||
-            dynamic_cast<CastRevivePetAction*>(action) || dynamic_cast<TankAssistAction*>(action))
+            dynamic_cast<CastRevivePetAction*>(action) || dynamic_cast<TankAssistAction*>(action) ||
+            dynamic_cast<CastArmyOfTheDeadAction*>(action))
             return 0.0f;
+
+        return 1.0f;
     }
 
     Unit* boss = AI_VALUE2(Unit*, "find target", "the lich king");
     if (!boss)
         return 1.0f;
 
-    // Handle cure actions
+    // Allow cure actions only after a brief delay so the plague can spread once
     if (dynamic_cast<CurePartyMemberAction*>(action) || dynamic_cast<CastCleanseDiseaseAction*>(action) ||
         dynamic_cast<CastCleanseDiseaseOnPartyAction*>(action) ||
         dynamic_cast<CastCleanseSpiritCurseOnPartyAction*>(action) || dynamic_cast<CastCleanseSpiritAction*>(action))
     {
+        Unit* boss = AI_VALUE2(Unit*, "find target", "the lich king");
+        if (!boss)
+            return 1.0f;
+
         Group* group = bot->GetGroup();
         if (!group)
             return 1.0f;
 
-        // Check if any bot in the group has plague
-        bool anyBotHasPlague = false;
-        ObjectGuid plaguedPlayerGuid;  // Track who has plague
+        static constexpr float DELIVER_RANGE = 3.0f;
+        static constexpr std::array<uint32, 4> HorrorEntries = {NPC_SHAMBLING_HORROR1, NPC_SHAMBLING_HORROR2,
+                                                                NPC_SHAMBLING_HORROR3, NPC_SHAMBLING_HORROR4};
+
+        // Check whether any Shambling Horror is alive anywhere in the encounter
+        auto const anyHorrorAlive = [&]() -> bool
+        {
+            GuidVector const& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
+            for (ObjectGuid const& guid : npcs)
+            {
+                Unit* unit = botAI->GetUnit(guid);
+                if (!unit || !unit->IsAlive())
+                    continue;
+
+                uint32 const entry = unit->GetEntry();
+                if (entry == NPC_SHAMBLING_HORROR1 || entry == NPC_SHAMBLING_HORROR2 ||
+                    entry == NPC_SHAMBLING_HORROR3 || entry == NPC_SHAMBLING_HORROR4)
+                    return true;
+            }
+            return false;
+        };
+
+        bool anyPlagued = false;
+        bool allDelivered = true;
+
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            if (Player* member = ref->GetSource())
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive())
+                continue;
+
+            if (!botAI->HasAura("Necrotic Plague", member))
+                continue;
+
+            anyPlagued = true;
+
+            bool nearHorror = false;
+            for (uint32 const entry : HorrorEntries)
             {
-                if (botAI->HasAura("Necrotic Plague", member))
+                Creature* horror = member->FindNearestCreature(entry, DELIVER_RANGE);
+                if (horror && horror->IsAlive())
                 {
-                    anyBotHasPlague = true;
-                    plaguedPlayerGuid = member->GetGUID();  // Changed from GetObjectGuid()
+                    nearHorror = true;
                     break;
                 }
             }
+
+            if (!nearHorror)
+            {
+                allDelivered = false;
+                break;
+            }
         }
 
-        uint32 currentTime = getMSTime();
-
-        // Reset state if no one has plague
-        if (!anyBotHasPlague)
-        {
-            std::lock_guard<std::mutex> lock(g_plagueMutex);  // Properly initialized
-            g_plagueTimes.clear();
-            g_allowCure.clear();
+        if (!anyPlagued)
             return 1.0f;
-        }
 
-        {                                                     // New scope for lock_guard
-            std::lock_guard<std::mutex> lock(g_plagueMutex);  // Properly initialized
+        // No Horror alive at all — allow immediate dispel to prevent
+        // uncontrolled spread wiping the raid
+        if (!anyHorrorAlive())
+            return 1.0f;
 
-            // Start timer if this is a new plague
-            if (g_plagueTimes.find(plaguedPlayerGuid) == g_plagueTimes.end())
-            {
-                g_plagueTimes[plaguedPlayerGuid] = currentTime;
-                g_allowCure[plaguedPlayerGuid] = false;
-                return 0.0f;
-            }
-
-            // Once we allow cure, keep allowing it until plague is gone
-            if (g_allowCure[plaguedPlayerGuid])
-            {
-                return 1.0f;
-            }
-
-            // Check if enough time has passed (2,5 seconds)
-            if (currentTime - g_plagueTimes[plaguedPlayerGuid] >= 2500)
-            {
-                g_allowCure[plaguedPlayerGuid] = true;
-                return 1.0f;
-            }
-        }  // lock_guard is automatically released here
-
-        return 0.0f;
+        // Horrors exist but not everyone has delivered yet — suppress cures
+        return allDelivered ? 1.0f : 0.0f;
     }
-
-    if (dynamic_cast<FleeAction*>(action) && (bot->getClass() != CLASS_HUNTER))
-        return 0.0f;
 
     if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FollowAction*>(action) ||
         dynamic_cast<CastBlinkBackAction*>(action) || dynamic_cast<CastDisengageAction*>(action))
         return 0.0f;
 
-    if (boss && !boss->HealthBelowPct(71))
+    // Hunters may flee (kite mechanics); everyone else stays put
+    if (dynamic_cast<FleeAction*>(action) && bot->getClass() != CLASS_HUNTER)
+        return 0.0f;
+
+    if (boss->HealthAbovePct(71))
     {
-        if (!botAI->IsTank(bot))
-            if (dynamic_cast<CastConsecrationAction*>(action))
-                return 0.0f;
+        // Assist tank targeting is fully managed by HandleAssistTankAddManagement —
+        // suppress generic target-switching actions so they don't override it.
+        if (botAI->IsAssistTank(bot) &&
+            (dynamic_cast<TankAssistAction*>(action) || dynamic_cast<AttackRtiTargetAction*>(action) ||
+             dynamic_cast<DpsAssistAction*>(action)))
+            return 0.0f;
+
+        if (!botAI->IsTank(bot) && dynamic_cast<CastConsecrationAction*>(action))
+            return 0.0f;
 
         if (dynamic_cast<DpsAoeAction*>(action) || dynamic_cast<CastHurricaneAction*>(action) ||
             dynamic_cast<CastVolleyAction*>(action) || dynamic_cast<CastBlizzardAction*>(action) ||
             dynamic_cast<CastStarfallAction*>(action) || dynamic_cast<FanOfKnivesAction*>(action) ||
             dynamic_cast<CastWhirlwindAction*>(action) || dynamic_cast<CastMindSearAction*>(action) ||
             dynamic_cast<CastMagmaTotemAction*>(action) || dynamic_cast<CastFlamestrikeAction*>(action) ||
-            dynamic_cast<CastExplosiveTrapAction*>(action) || dynamic_cast<CastExplosiveShotBaseAction*>(action))
+            dynamic_cast<CastExplosiveTrapAction*>(action) || dynamic_cast<CastExplosiveShotBaseAction*>(action) ||
+            dynamic_cast<CastArmyOfTheDeadAction*>(action))
             return 0.0f;
     }
 
-    Unit* currentTarget = AI_VALUE(Unit*, "current target");
-
-    bool hasWinterAura = false;
-    if (boss && (boss->HasAura(SPELL_REMORSELESS_WINTER1) || boss->HasAura(SPELL_REMORSELESS_WINTER2) ||
-                 boss->HasAura(SPELL_REMORSELESS_WINTER3) || boss->HasAura(SPELL_REMORSELESS_WINTER4)))
-        hasWinterAura = true;
-
-    bool hasWinter2Aura = false;
-    if (boss && (boss->HasAura(SPELL_REMORSELESS_WINTER5) || boss->HasAura(SPELL_REMORSELESS_WINTER6) ||
-                 boss->HasAura(SPELL_REMORSELESS_WINTER7) || boss->HasAura(SPELL_REMORSELESS_WINTER8)))
-        hasWinter2Aura = true;
-
-    bool isCasting = false;
-    if (boss && boss->HasUnitState(UNIT_STATE_CASTING))
-        isCasting = true;
-
-    bool isWinter = false;
-    if (boss && (boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER1) ||
-        boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER2) ||
-        boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER5) ||
-        boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER6) ||
-        boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER3) ||
-        boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER4) ||
-        boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER7) ||
-        boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER8)))
-        isWinter = true;
-
-    if (hasWinterAura || hasWinter2Aura || (isCasting && isWinter))
+    auto const hasWinterAura = [&]() -> bool
     {
+        return boss->HasAura(SPELL_REMORSELESS_WINTER1) || boss->HasAura(SPELL_REMORSELESS_WINTER2) ||
+               boss->HasAura(SPELL_REMORSELESS_WINTER3) || boss->HasAura(SPELL_REMORSELESS_WINTER4) ||
+               boss->HasAura(SPELL_REMORSELESS_WINTER5) || boss->HasAura(SPELL_REMORSELESS_WINTER6) ||
+               boss->HasAura(SPELL_REMORSELESS_WINTER7) || boss->HasAura(SPELL_REMORSELESS_WINTER8);
+    };
+
+    auto const isCastingWinter = [&]() -> bool
+    {
+        if (!boss->HasUnitState(UNIT_STATE_CASTING))
+            return false;
+
+        return boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER1) ||
+               boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER2) ||
+               boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER3) ||
+               boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER4) ||
+               boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER5) ||
+               boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER6) ||
+               boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER7) ||
+               boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER8);
+    };
+
+    if (hasWinterAura() || isCastingWinter())
+    {
+        // Winter action and facing take priority
         if (dynamic_cast<IccLichKingWinterAction*>(action) || dynamic_cast<SetFacingTargetAction*>(action))
             return 1.0f;
 
-        if (botAI->IsAssistTank(bot) && dynamic_cast<TankAssistAction*>(action))
+        // Staging window: while boss is casting Winter, non-tanks must commit
+        // to the staging move. Only heals are allowed; everything else blocked.
+        if (isCastingWinter() && !botAI->IsTank(bot))
+        {
+            if (dynamic_cast<HealPartyMemberAction*>(action) ||
+                dynamic_cast<ReachPartyMemberToHealAction*>(action))
+                return 1.0f;
             return 0.0f;
+        }
 
+        // Adds action is suppressed during winter
         if (dynamic_cast<IccLichKingAddsAction*>(action))
             return 0.0f;
 
-        if (currentTarget && boss && bot->GetDistance2d(boss->GetPositionX(), boss->GetPositionY()) > 50.0f && currentTarget == boss)
+        if (dynamic_cast<CastArmyOfTheDeadAction*>(action))
+            return 0.0f;
+
+        // Assist tank should not pick up adds independently during winter
+        if (botAI->IsAssistTank(bot) && dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
+
+        // Suppress movement/attack toward the boss if we are far away
+        Unit* currentTarget = AI_VALUE(Unit*, "current target");
+        if (currentTarget && currentTarget == boss && bot->GetDistance2d(boss) > 50.0f)
         {
-            if (dynamic_cast<AttackRtiTargetAction*>(action) || dynamic_cast<ReachSpellAction*>(action) ||
+            if (dynamic_cast<ReachSpellAction*>(action) ||
                 dynamic_cast<ReachMeleeAction*>(action) || dynamic_cast<ReachTargetAction*>(action) ||
-                dynamic_cast<TankAssistAction*>(action) || dynamic_cast<DpsAssistAction*>(action) ||
-                dynamic_cast<MovementAction*>(action))
+                dynamic_cast<TankAssistAction*>(action) || dynamic_cast<DpsAssistAction*>(action))
                 return 0.0f;
         }
 
-        if (currentTarget && (currentTarget->GetEntry() == NPC_ICE_SPHERE1 || currentTarget->GetEntry() == NPC_ICE_SPHERE2 ||
-            currentTarget->GetEntry() == NPC_ICE_SPHERE3 || currentTarget->GetEntry() == NPC_ICE_SPHERE4))
+        // Suppress movement toward boss/sphere — but allow target-switching actions
+        // (DpsAssistAction, AttackRtiTargetAction) so bots can pick up skull-marked adds.
+        if (currentTarget &&
+            (currentTarget == boss || currentTarget->GetEntry() == NPC_ICE_SPHERE1 ||
+             currentTarget->GetEntry() == NPC_ICE_SPHERE2 ||
+             currentTarget->GetEntry() == NPC_ICE_SPHERE3 || currentTarget->GetEntry() == NPC_ICE_SPHERE4))
         {
-            if (dynamic_cast<MovementAction*>(action) || dynamic_cast<ReachMeleeAction*>(action) ||
-                dynamic_cast<TankAssistAction*>(action))
+            if (dynamic_cast<ReachMeleeAction*>(action) || dynamic_cast<ReachSpellAction*>(action) ||
+                dynamic_cast<ReachTargetAction*>(action) || dynamic_cast<TankAssistAction*>(action))
                 return 0.0f;
         }
-
     }
 
     if (botAI->IsRanged(bot) && !botAI->GetAura("Harvest Soul", bot, false, false))
     {
-        // Check for defile presence
-        GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
+        GuidVector const& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
         bool defilePresent = false;
-        for (auto& npc : npcs)
+        for (ObjectGuid const& guid : npcs)
         {
-            Unit* unit = botAI->GetUnit(npc);
-            if (unit && unit->IsAlive() && unit->GetEntry() == DEFILE_NPC_ID)  // Defile entry
+            Unit* unit = botAI->GetUnit(guid);
+            if (unit && unit->IsAlive() && unit->GetEntry() == DEFILE_NPC_ID)
             {
                 defilePresent = true;
                 break;
             }
         }
 
-        // Only disable movement if defile is present
-        if (defilePresent && (
-            dynamic_cast<CombatFormationMoveAction*>(action) ||
-            dynamic_cast<FollowAction*>(action) ||
-            dynamic_cast<FleeAction*>(action) ||
-            dynamic_cast<MoveRandomAction*>(action) ||
-            dynamic_cast<MoveFromGroupAction*>(action)))
-        {
+        if (defilePresent && (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FollowAction*>(action) ||
+                              dynamic_cast<FleeAction*>(action) || dynamic_cast<MoveRandomAction*>(action) ||
+                              dynamic_cast<MoveFromGroupAction*>(action)))
             return 0.0f;
-        }
     }
 
-    if (botAI->IsAssistTank(bot) && boss && !boss->HealthBelowPct(71) && currentTarget == boss)
+    if (botAI->IsAssistTank(bot) && boss->HealthAbovePct(71))
     {
-        if (dynamic_cast<AttackRtiTargetAction*>(action))
+        Unit* currentTarget = AI_VALUE(Unit*, "current target");
+        if (currentTarget && currentTarget == boss && dynamic_cast<AttackRtiTargetAction*>(action))
             return 0.0f;
     }
 
     return 1.0f;
+}
+
+float IccLichKingSpiritBombMultiplier::GetValue(Action* action)
+{
+    if (!IccLichKingSpiritBombAction::IsBombThreatActive(botAI, bot))
+        return 1.0f;
+
+    // Allowlist: only the avoidance move and facing run during a bomb threat.
+    // Everything else is suppressed so the avoidance move sticks.
+    if (dynamic_cast<IccLichKingSpiritBombAction*>(action) ||
+        dynamic_cast<SetFacingTargetAction*>(action))
+        return 1.0f;
+
+    return 0.0f;
 }

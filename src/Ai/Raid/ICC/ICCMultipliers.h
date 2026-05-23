@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDICCMULTIPLIERS_H
-#define _PLAYERBOT_RAIDICCMULTIPLIERS_H
+#ifndef _PLAYERBOT_ICCM_H
+#define _PLAYERBOT_ICCM_H
 
 #include "Multiplier.h"
 
@@ -96,6 +96,21 @@ class IccLichKingAddsMultiplier : public Multiplier
 {
 public:
     IccLichKingAddsMultiplier(PlayerbotAI* ai) : Multiplier(ai, "icc lich king adds") {}
+    virtual float GetValue(Action* action);
+};
+
+class IccLichKingSpiritBombMultiplier : public Multiplier
+{
+public:
+    IccLichKingSpiritBombMultiplier(PlayerbotAI* ai) : Multiplier(ai, "icc lich king spirit bomb") {}
+    virtual float GetValue(Action* action);
+};
+
+//GUNSHIP
+class IccGunshipMultiplier : public Multiplier
+{
+public:
+    IccGunshipMultiplier(PlayerbotAI* ai) : Multiplier(ai, "icc gunship") {}
     virtual float GetValue(Action* action);
 };
 

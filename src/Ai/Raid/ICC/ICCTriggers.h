@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDICCTRIGGERS_H
-#define _PLAYERBOT_RAIDICCTRIGGERS_H
+#ifndef _PLAYERBOT_ICCT_H
+#define _PLAYERBOT_ICCT_H
 
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
@@ -9,11 +9,23 @@ enum CreatureIdsICC
 {
 
     // Lord Marrowgar
-    NPC_SPIKE1                          = 36619,
-    NPC_SPIKE2                          = 38711,
-    NPC_SPIKE3                          = 38712,
+    NPC_SPIKE1                          = 36619,  // 10N base
+    NPC_SPIKE1_10H                      = 38233,  // 10H
+    NPC_SPIKE1_25N                      = 38459,  // 25N
+    NPC_SPIKE1_25H                      = 38460,  // 25H
+    NPC_SPIKE2                          = 38711,  // 25N base
+    NPC_SPIKE2_10H                      = 38970,
+    NPC_SPIKE2_25N                      = 38971,
+    NPC_SPIKE2_25H                      = 38972,
+    NPC_SPIKE3                          = 38712,  // 25N base
+    NPC_SPIKE3_10H                      = 38973,
+    NPC_SPIKE3_25N                      = 38974,
+    NPC_SPIKE3_25H                      = 38975,
+    NPC_COLDFLAME                       = 36672,
 
     // Lady Deathwhisper
+    NPC_DARNAVAN_10                     = 38472,
+    NPC_DARNAVAN_25                     = 38485,
     NPC_SHADE                           = 38222,
 
     // Gunship Battle
@@ -29,6 +41,8 @@ enum CreatureIdsICC
     NPC_CANNONH                         = 36839,
     NPC_MURADIN_BRONZEBEARD             = 36948,
     NPC_HIGH_OVERLORD_SAURFANG          = 36939,
+    NPC_ZAFOD_BOOMBOX                   = 37184,
+    ITEM_GOBLIN_ROCKET_PACK             = 49278,
 
     // Deathbringer Saurfang
     NPC_BLOOD_BEAST1                    = 38508,
@@ -38,9 +52,11 @@ enum CreatureIdsICC
 
     // Rotface
     NPC_PUDDLE                          = 37013,
+    NPC_SMALL_OOZE                      = 36897,
     NPC_BIG_OOZE                        = 36899,
 
     // Putricide
+    NPC_PROFESSOR_PUTRICIDE             = 36678,
     NPC_MALLEABLE_OOZE_STALKER          = 38556,
     NPC_GROWING_OOZE_PUDDLE             = 37690,
     NPC_CHOKING_GAS_BOMB                = 38159,
@@ -56,6 +72,7 @@ enum CreatureIdsICC
     NPC_KINETIC_BOMB4                   = 38777,
     NPC_BALL_OF_FLAME                   = 38332,
     NPC_BALL_OF_INFERNO_FLAME           = 38451,
+    NPC_SHOCK_VORTEX                    = 38422,
 
     // Blood Queen Lana'thel
     NPC_SWARMING_SHADOWS                = 38163,
@@ -133,26 +150,47 @@ enum SpellIdsICC
     SPELL_NO_THREAT                     = 70115, //reduce threat
     SPELL_SPITEFULL_FURY                = 36886, //500% more threat
     SPELL_NITRO_BOOSTS                  = 54861, //Speed
+    SPELL_FROST_TRAP1                   = 13809, //Hunter slow trap
     SPELL_PAIN_SUPPRESION               = 69910, //40% dmg reduction
     SPELL_AGEIS_OF_DALARAN              = 71638, //268 all ress
     SPELL_CYCLONE                       = 33786,
     SPELL_HAMMER_OF_JUSTICE             = 10308, //stun
+    // Taunt spells (used to reset cooldowns for assist tank)
+    SPELL_TAUNT_WARRIOR                 = 355,
+    SPELL_TAUNT_PALADIN                 = 62124,  // Hand of Reckoning
+    SPELL_TAUNT_DK                      = 56222,  // Dark Command
+    SPELL_TAUNT_DRUID                   = 6795,   // Growl
+    SPELL_VIPER_STING                   = 3034,
+
+    // Lord Marrowgar
+    SPELL_LM_IMPALED                    = 69065,
 
     // Lady Deathwhisper
     SPELL_DARK_RECKONING                = 69483,
+    SPELL_TOUCH_OF_INSIGNIFICANCE       = 71204,
 
     // Gunship Battle
     SPELL_DEATH_PLAGUE                  = 72865,
+    SPELL_FROZEN_CANNON                 = 69704,
     SPELL_BELOW_ZERO                    = 69705,
+    SPELL_ROCKET_PACK_USE               = 68645,
+    SPELL_ROCKET_PACK_USEABLE           = 70348,
+    SPELL_BATTLE_FURY1                  = 69637,
+    SPELL_BATTLE_FURY2                  = 69638,
+    SPELL_BATTLE_FURY3                  = 72306,
+    SPELL_BATTLE_FURY4                  = 72307,
+    SPELL_BATTLE_FURY5                  = 72308,
 
     // Festergut
     SPELL_GAS_SPORE                     = 69279,
-
     // Rotface
     SPELL_SLIME_SPRAY                   = 69508,
     SPELL_OOZE_FLOOD                    = 71215,
     SPELL_UNSTABLE_OOZE_EXPLOSION       = 69839,
     SPELL_OOZE_FLOOD_VISUAL             = 69785,
+    // Cast by Professor Putricide from balcony during Rotface heroic.
+    // Single ID (no difficulty variants in spelldifficulty_dbc).
+    SPELL_VILE_GAS_H                    = 69240,
 
     // Putricide
     SPELL_MALLEABLE_GOO                 = 70852,
@@ -166,6 +204,7 @@ enum SpellIdsICC
 
     // Blood Queen Lana'thel
     SPELL_PACT_OF_THE_DARKFALLEN        = 71340,
+    SPELL_BLOODBOLT_WHIRL               = 71772,
 
     // Sister Svalna
     SPELL_AETHER_SHIELD                 = 71463,
@@ -173,6 +212,7 @@ enum SpellIdsICC
     // Valithria Dreamwalker
     SPELL_DREAM_STATE                   = 70766,
     SPELL_EMERALD_VIGOR                 = 70873,
+    SPELL_ACID_BURST                    = 70744,
 
     // Sindragosa
     SPELL_FROST_BEACON                  = 70126,
@@ -182,6 +222,9 @@ enum SpellIdsICC
     SPELL_BLISTERING_COLD2              = 71047,
     SPELL_BLISTERING_COLD3              = 71048,
     SPELL_BLISTERING_COLD4              = 71049,
+    SPELL_HAND_OF_FREEDOM               = 1044,
+    ITEM_RED_SMOKE_FLARE                = 23769,
+    ITEM_BLUE_SMOKE_FLARE               = 23770,
 
     // The Lich King
     SPELL_HARVEST_SOUL_VALKYR           = 68985,
@@ -194,12 +237,26 @@ enum SpellIdsICC
     SPELL_REMORSELESS_WINTER6           = 74270,
     SPELL_REMORSELESS_WINTER7           = 74271,
     SPELL_REMORSELESS_WINTER8           = 74272,
+    SPELL_VALKYR_CARRY                  = 30440,
+    SPELL_HARVEST_SOUL_LK               = 68980,
+    SPELL_HARVEST_SOULS_LK_25           = 73654,
+    SPELL_HARVEST_SOULS_LK_H1           = 74295,
+    SPELL_HARVEST_SOULS_LK_H2           = 74296,
+    SPELL_HARVEST_SOULS_LK_H3           = 74297,
 };
 
-const uint32 DEFILE_AURAS[] = {72756, 74162, 74163, 74164};
-const uint32 DEFILE_CAST_ID = 72762;
-const uint32 DEFILE_NPC_ID = 38757;
-const size_t DEFILE_AURA_COUNT = 4;
+inline constexpr uint32 DEFILE_AURAS[]         = {72756, 74162, 74163, 74164};
+inline constexpr uint32 DEFILE_CAST_ID         = 72762;
+inline constexpr uint32 DEFILE_NPC_ID          = 38757;
+inline constexpr size_t DEFILE_AURA_COUNT      = 4;
+
+// Malleable Goo (Putricide / Festergut-heroic). Multiple variants because of
+// SpellDifficulty remapping and the balcony stalker variant.
+inline constexpr uint32 SPELL_MALLEABLE_GOO_10N     = 70852;
+inline constexpr uint32 SPELL_MALLEABLE_GOO_25N     = 72297;
+inline constexpr uint32 SPELL_MALLEABLE_GOO_10H     = 74280;
+inline constexpr uint32 SPELL_MALLEABLE_GOO_25H     = 74281;
+inline constexpr uint32 SPELL_MALLEABLE_GOO_BALCONY = 72296;
 
 // All fanatics and adherents entry ids Lady Deathwhisper
 static const std::array<uint32, 23> addEntriesLady    = {
@@ -212,8 +269,8 @@ const std::vector<uint32> spellEntriesFlood           = {
                                                         69799, 69801, 69802, 69795};
 
 const std::vector<uint32> availableTargetsGS          = {
-    NPC_KOR_KRON_AXETHROWER, NPC_KOR_KRON_ROCKETEER,        NPC_KOR_KRON_BATTLE_MAGE, NPC_IGB_HIGH_OVERLORD_SAURFANG,
-    NPC_SKYBREAKER_RIFLEMAN, NPC_SKYBREAKER_MORTAR_SOLDIER, NPC_SKYBREAKER_SORCERER,  NPC_IGB_MURADIN_BRONZEBEARD};
+                                                        NPC_KOR_KRON_ROCKETEER,        NPC_KOR_KRON_AXETHROWER,       NPC_KOR_KRON_BATTLE_MAGE, NPC_IGB_HIGH_OVERLORD_SAURFANG,
+                                                        NPC_SKYBREAKER_MORTAR_SOLDIER, NPC_SKYBREAKER_RIFLEMAN,       NPC_SKYBREAKER_SORCERER,  NPC_IGB_MURADIN_BRONZEBEARD};
 
 static std::vector<ObjectGuid> sporeOrder;
 
@@ -262,17 +319,17 @@ public:
     bool IsActive() override;
 };
 
-class IccGunshipTeleportAllyTrigger : public Trigger
+class IccGunshipRocketJumpTrigger : public Trigger
 {
 public:
-    IccGunshipTeleportAllyTrigger(PlayerbotAI* botAI) : Trigger(botAI, "icc gunship teleport ally") {}
+    IccGunshipRocketJumpTrigger(PlayerbotAI* botAI) : Trigger(botAI, "icc gunship rocket jump") {}
     bool IsActive() override;
 };
 
-class IccGunshipTeleportHordeTrigger : public Trigger
+class IccGunshipRocketPackSetupTrigger : public Trigger
 {
 public:
-    IccGunshipTeleportHordeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "icc gunship teleport horde") {}
+    IccGunshipRocketPackSetupTrigger(PlayerbotAI* botAI) : Trigger(botAI, "icc gunship rocket pack setup") {}
     bool IsActive() override;
 };
 
@@ -291,11 +348,10 @@ public:
     bool IsActive() override;
 };
 
-//DOGS
-class IccStinkyPreciousMainTankMortalWoundTrigger : public Trigger
+class IccDogsTrigger : public Trigger
 {
 public:
-    IccStinkyPreciousMainTankMortalWoundTrigger(PlayerbotAI* botAI) : Trigger(botAI, "icc stinky precious main tank mortal wound") {}
+    IccDogsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "icc dogs") {}
     bool IsActive() override;
 };
 
@@ -321,6 +377,14 @@ public:
     bool IsActive() override;
 };
 
+class IccFestergutAvoidMalleableGooTrigger : public Trigger
+{
+public:
+    IccFestergutAvoidMalleableGooTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "icc festergut avoid malleable goo") {}
+    bool IsActive() override;
+};
+
 //ROTFACE
 class IccRotfaceTankPositionTrigger : public Trigger
 {
@@ -339,7 +403,20 @@ public:
 class IccRotfaceMoveAwayFromExplosionTrigger : public Trigger
 {
 public:
-    IccRotfaceMoveAwayFromExplosionTrigger(PlayerbotAI* botAI) : Trigger(botAI, "icc rotface move away from explosion") {}
+    IccRotfaceMoveAwayFromExplosionTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "icc rotface move away from explosion"), _castEndTime(0), _wasCasting(false) {}
+    bool IsActive() override;
+
+private:
+    time_t _castEndTime;
+    bool _wasCasting;
+};
+
+class IccRotfaceAvoidVileGasTrigger : public Trigger
+{
+public:
+    IccRotfaceAvoidVileGasTrigger(PlayerbotAI* botAI)
+        : Trigger(botAI, "icc rotface avoid vile gas") {}
     bool IsActive() override;
 };
 
@@ -365,10 +442,10 @@ public:
     bool IsActive() override;
 };
 
-class IccPutricideMainTankMutatedPlagueTrigger : public Trigger
+class IccPutricideMutatedPlagueTrigger : public Trigger
 {
 public:
-    IccPutricideMainTankMutatedPlagueTrigger(PlayerbotAI* botAI) : Trigger(botAI, "icc putricide main tank mutated plague") {}
+    IccPutricideMutatedPlagueTrigger(PlayerbotAI* botAI) : Trigger(botAI, "icc putricide mutated plague") {}
     bool IsActive() override;
 };
 
@@ -376,6 +453,13 @@ class IccPutricideMalleableGooTrigger : public Trigger
 {
 public:
     IccPutricideMalleableGooTrigger(PlayerbotAI* ai) : Trigger(ai, "icc putricide malleable goo") {}
+    bool IsActive() override;
+};
+
+class IccPutricideAbominationTrigger : public Trigger
+{
+public:
+    IccPutricideAbominationTrigger(PlayerbotAI* ai) : Trigger(ai, "icc putricide abomination") {}
     bool IsActive() override;
 };
 
@@ -461,6 +545,13 @@ public:
     bool IsActive() override;
 };
 
+class IccValithriaZombieKiteTrigger : public Trigger
+{
+public:
+    IccValithriaZombieKiteTrigger(PlayerbotAI* botAI) : Trigger(botAI, "icc valithria zombie kite") {}
+    bool IsActive() override;
+};
+
 class IccValithriaPortalTrigger : public Trigger
 {
 public:
@@ -494,6 +585,13 @@ class IccSindragosaFrostBeaconTrigger : public Trigger
 {
 public:
     IccSindragosaFrostBeaconTrigger(PlayerbotAI* botAI) : Trigger(botAI, "icc sindragosa frost beacon") {}
+    bool IsActive() override;
+};
+
+class IccSindragosaHotTrigger : public Trigger
+{
+public:
+    IccSindragosaHotTrigger(PlayerbotAI* botAI) : Trigger(botAI, "icc sindragosa hot") {}
     bool IsActive() override;
 };
 
@@ -572,6 +670,13 @@ class IccLichKingAddsTrigger : public Trigger
 {
 public:
     IccLichKingAddsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "icc lich king adds") {}
+    bool IsActive() override;
+};
+
+class IccLichKingSpiritBombTrigger : public Trigger
+{
+public:
+    IccLichKingSpiritBombTrigger(PlayerbotAI* botAI) : Trigger(botAI, "icc lich king spirit bomb") {}
     bool IsActive() override;
 };
 
