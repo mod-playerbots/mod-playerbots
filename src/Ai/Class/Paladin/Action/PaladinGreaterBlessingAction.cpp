@@ -27,6 +27,13 @@ namespace
     constexpr uint8 MAX_BLESSING_SLOTS = 4;
     constexpr uint8 MAX_CLASS_ID = 12;
 
+    constexpr size_t BaseBlessingCategoryCount = MAX_BLESSING_SLOTS;
+
+    constexpr size_t BaseBlessingIndex(BaseBlessingCategory category)
+    {
+        return static_cast<size_t>(static_cast<uint8>(category) - static_cast<uint8>(BASE_MIGHT));
+    }
+
     bool UsesRoleBucket(uint8 classId)
     {
         switch (classId)
@@ -103,7 +110,7 @@ namespace
     struct DesiredBlessingSet
     {
         std::array<BaseBlessingCategory, MAX_BLESSING_SLOTS> ordered = {};
-        std::array<bool, BASE_SANCTUARY + 1> wants = {};
+        std::array<bool, BaseBlessingCategoryCount> wants = {};
         uint8 count = 0;
     };
 
@@ -135,11 +142,11 @@ namespace
             if (category == BASE_SANCTUARY && !anySanctuaryAvailable)
                 category = BASE_KINGS;
 
-            if (category == BASE_NONE || desired.wants[category])
+            if (category == BASE_NONE || desired.wants[BaseBlessingIndex(category)])
                 continue;
 
             desired.ordered[desired.count++] = category;
-            desired.wants[category] = true;
+            desired.wants[BaseBlessingIndex(category)] = true;
         }
 
         return desired;
@@ -147,7 +154,7 @@ namespace
 
     std::vector<BaseBlessingCategory> OrderedCommonBases(
         std::vector<PresentBucket const*> const& classBuckets,
-        std::array<bool, BASE_SANCTUARY + 1> const& commonBases)
+        std::array<bool, BaseBlessingCategoryCount> const& commonBases)
     {
         std::vector<BaseBlessingCategory> ordered;
 
@@ -156,7 +163,7 @@ namespace
             for (uint8 index = 0; index < bucket->desired.count; ++index)
             {
                 BaseBlessingCategory category = bucket->desired.ordered[index];
-                if (!commonBases[category])
+                if (!commonBases[BaseBlessingIndex(category)])
                     continue;
 
                 if (std::find(ordered.begin(), ordered.end(), category) == ordered.end())
@@ -421,7 +428,7 @@ namespace
             if (std::all_of(classBuckets.begin(), classBuckets.end(),
                             [&](PresentBucket const* bucket)
                             {
-                                return bucket->desired.wants[category];
+                                return bucket->desired.wants[BaseBlessingIndex(category)];
                             }))
             {
                 commonUnionMask |= static_cast<uint8>(1u << static_cast<uint8>(category));
@@ -451,11 +458,11 @@ namespace
                 }
             }
 
-            std::array<bool, BASE_SANCTUARY + 1> promotedCommonBases = {};
+            std::array<bool, BaseBlessingCategoryCount> promotedCommonBases = {};
             for (uint8 baseValue = BASE_MIGHT; baseValue <= BASE_SANCTUARY; ++baseValue)
             {
                 BaseBlessingCategory category = static_cast<BaseBlessingCategory>(baseValue);
-                promotedCommonBases[category] =
+                promotedCommonBases[BaseBlessingIndex(category)] =
                     (promotedMask & static_cast<uint8>(1u << static_cast<uint8>(category))) != 0;
             }
 
