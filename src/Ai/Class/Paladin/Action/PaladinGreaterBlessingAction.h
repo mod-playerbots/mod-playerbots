@@ -247,7 +247,6 @@ namespace ai::gbless
     UntypedValue* greater_blessing_assignments_value(PlayerbotAI* botAI);
     UntypedValue* greater_blessing_pending_assignment_value(PlayerbotAI* botAI);
     bool IsEligibleGroupForAutoBlessings(Group const* group);
-    bool IsAutoGreaterBlessingActive(Player const* bot);
 }
 
 class CastGreaterBlessingAssignmentAction : public Action
@@ -260,8 +259,6 @@ public:
     bool HasPendingAssignment();
 
 private:
-    bool GetAssignments(
-        std::vector<ai::gbless::CachedBlessingBucketAssignment>& outAssignments);
     bool FindPendingAssignment(
         ai::gbless::GreaterBlessingPlayerAssignment& outAssignment,
         std::string& outSpellName);

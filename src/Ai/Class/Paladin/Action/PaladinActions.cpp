@@ -40,7 +40,7 @@ static bool HasBlessingAura(
 
 static bool IsGreaterBlessingMode(Player* bot)
 {
-    return ai::gbless::IsAutoGreaterBlessingActive(bot);
+    return ai::gbless::IsEligibleGroupForAutoBlessings(bot->GetGroup());
 }
 
 template <typename Predicate>

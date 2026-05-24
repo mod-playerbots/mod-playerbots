@@ -81,7 +81,7 @@ bool NotSensingUndeadTrigger::IsActive()
 
 bool GreaterBlessingNeededTrigger::IsActive()
 {
-    if (!ai::gbless::IsAutoGreaterBlessingActive(bot))
+    if (!ai::gbless::IsEligibleGroupForAutoBlessings(bot->GetGroup()))
         return false;
 
     if (ai::buff::ShouldDeferGreaterBlessingAssignmentForRecentLogin(bot))
