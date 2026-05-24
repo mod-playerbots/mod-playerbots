@@ -20,7 +20,6 @@ class ArcaneIntellectOnPartyTrigger : public BuffOnPartyTrigger
 public:
     ArcaneIntellectOnPartyTrigger(PlayerbotAI* botAI)
         : BuffOnPartyTrigger(botAI, "arcane intellect", 4 * 2000) {}
-    bool IsActive() override;
 };
 
 class ArcaneIntellectTrigger : public BuffTrigger

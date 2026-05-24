@@ -333,9 +333,7 @@ class BuffOnPartyTrigger : public BuffTrigger
 {
 public:
     BuffOnPartyTrigger(PlayerbotAI* botAI, std::string const spell, int32 checkInterval = 1)
-        : BuffTrigger(botAI, spell, checkInterval)
-    {
-    }
+        : BuffTrigger(botAI, spell, checkInterval) {}
 
     Value<Unit*>* GetTargetValue() override;
     bool IsActive() override;

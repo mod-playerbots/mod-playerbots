@@ -45,7 +45,8 @@ BOOST_TRIGGER_A(ShadowfiendTrigger, "shadowfiend");
 class ShadowProtectionTrigger : public BuffTrigger
 {
 public:
-    ShadowProtectionTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "shadow protection", 4 * 2000) {}
+    ShadowProtectionTrigger(PlayerbotAI* botAI)
+    : BuffTrigger(botAI, "shadow protection", 4 * 2000) {}
 
     bool IsActive() override;
 };
@@ -53,25 +54,22 @@ public:
 class ShadowProtectionOnPartyTrigger : public BuffOnPartyTrigger
 {
 public:
-    ShadowProtectionOnPartyTrigger(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, "shadow protection", 4 * 2000) {}
-
-    bool IsActive() override;
+    ShadowProtectionOnPartyTrigger(PlayerbotAI* botAI)
+        : BuffOnPartyTrigger(botAI, "shadow protection", 4 * 2000) {}
 };
 
 class PowerWordFortitudeOnPartyTrigger : public BuffOnPartyTrigger
 {
 public:
-    PowerWordFortitudeOnPartyTrigger(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, "power word: fortitude", 4 * 2000)
-    {
-    }
-
-    bool IsActive() override;
+    PowerWordFortitudeOnPartyTrigger(PlayerbotAI* botAI)
+        : BuffOnPartyTrigger(botAI, "power word: fortitude", 4 * 2000) {}
 };
 
 class PowerWordFortitudeTrigger : public BuffTrigger
 {
 public:
-    PowerWordFortitudeTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "power word: fortitude", 4 * 2000) {}
+    PowerWordFortitudeTrigger(PlayerbotAI* botAI)
+        : BuffTrigger(botAI, "power word: fortitude", 4 * 2000) {}
 
     bool IsActive() override;
 };
@@ -79,15 +77,15 @@ public:
 class DivineSpiritOnPartyTrigger : public BuffOnPartyTrigger
 {
 public:
-    DivineSpiritOnPartyTrigger(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, "divine spirit", 4 * 2000) {}
-
-    bool IsActive() override;
+    DivineSpiritOnPartyTrigger(PlayerbotAI* botAI)
+        : BuffOnPartyTrigger(botAI, "divine spirit", 4 * 2000) {}
 };
 
 class DivineSpiritTrigger : public BuffTrigger
 {
 public:
-    DivineSpiritTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "divine spirit", 4 * 2000) {}
+    DivineSpiritTrigger(PlayerbotAI* botAI)
+        : BuffTrigger(botAI, "divine spirit", 4 * 2000) {}
 
     bool IsActive() override;
 };
@@ -104,9 +102,7 @@ class MindSearChannelCheckTrigger : public Trigger
 {
 public:
     MindSearChannelCheckTrigger(PlayerbotAI* botAI, uint32 minEnemies = 2)
-        : Trigger(botAI, "mind sear channel check"), minEnemies(minEnemies)
-    {
-    }
+        : Trigger(botAI, "mind sear channel check"), minEnemies(minEnemies) {}
 
     bool IsActive() override;
 
