@@ -338,15 +338,17 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
             break;
         case CLASS_DRUID:
             if (tab == DRUID_TAB_BALANCE)
-                engine->addStrategiesNoInit("caster", "cure", "caster aoe", "caster debuff", "dps assist", nullptr);
+            {
+                engine->addStrategiesNoInit("balance", "cure", "aoe", "cc", "dps assist", nullptr);
+            }
             else if (tab == DRUID_TAB_RESTORATION)
-                engine->addStrategiesNoInit("heal", "cure", "dps assist", nullptr);
-            else // if (tab == DRUID_TAB_FERAL)
+                engine->addStrategiesNoInit("resto", "cure", "dps assist", "blanketing", "tranquility", nullptr);
+            else
             {
                 if (player->HasSpell(768) /*cat form*/ && !player->HasAura(16931) /*thick hide*/)
-                    engine->addStrategiesNoInit("cat", "dps assist", nullptr);
+                    engine->addStrategiesNoInit("cat", "aoe", "cc", "dps assist", "feral charge", nullptr);
                 else
-                    engine->addStrategiesNoInit("bear", "tank assist", "pull", "pull back", nullptr);
+                    engine->addStrategiesNoInit("bear", "tank assist", "pull", "pull back", "feral charge", nullptr);
             }
             break;
         case CLASS_HUNTER:
@@ -420,8 +422,7 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
                 {
                     if (tab == DRUID_TAB_RESTORATION)
                     {
-                        engine->addStrategiesNoInit("caster", "caster aoe", nullptr);
-                        engine->addStrategy("caster debuff", false);
+                        engine->addStrategiesNoInit("aoe", nullptr);
                     }
                     break;
                 }

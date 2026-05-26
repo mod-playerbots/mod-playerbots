@@ -998,6 +998,7 @@ void PlayerbotFactory::InitConsumables()
         }
         case CLASS_WARRIOR:
         case CLASS_HUNTER:
+        case CLASS_DEATH_KNIGHT:
         {
             std::vector<uint32> sharpening_stones = {
                 ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE, DENSE_SHARPENING_STONE, SOLID_SHARPENING_STONE,

@@ -3,17 +3,17 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_CATDPSDRUIDSTRATEGY_H
-#define _PLAYERBOT_CATDPSDRUIDSTRATEGY_H
+#ifndef _PLAYERBOT_CATDRUIDSTRATEGY_H
+#define _PLAYERBOT_CATDRUIDSTRATEGY_H
 
 #include "FeralDruidStrategy.h"
 
 class PlayerbotAI;
 
-class CatDpsDruidStrategy : public FeralDruidStrategy
+class CatDruidStrategy : public FeralDruidStrategy
 {
 public:
-    CatDpsDruidStrategy(PlayerbotAI* botAI);
+    CatDruidStrategy(PlayerbotAI* botAI);
 
 public:
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
@@ -22,14 +22,16 @@ public:
     uint32 GetType() const override { return STRATEGY_TYPE_COMBAT | STRATEGY_TYPE_MELEE; }
 };
 
-class CatAoeDruidStrategy : public CombatStrategy
+// Optional additive strategy. Layers emergency heals on top of the "cat" strategy.
+// Enable : co +offheal
+// Disable: co -offheal
+class CatOffhealStrategy : public CombatStrategy
 {
 public:
-    CatAoeDruidStrategy(PlayerbotAI* botAI) : CombatStrategy(botAI) {}
+    CatOffhealStrategy(PlayerbotAI* botAI);
 
-public:
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
-    std::string const getName() override { return "cat aoe"; }
+    std::string const getName() override { return "offheal"; }
 };
 
 #endif

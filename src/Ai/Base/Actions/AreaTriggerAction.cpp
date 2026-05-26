@@ -7,6 +7,7 @@
 
 #include "Event.h"
 #include "LastMovementValue.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "Transport.h"
 
@@ -36,7 +37,8 @@ bool ReachAreaTriggerAction::Execute(Event event)
 
     if (bot->GetMapId() != at->map)
     {
-        botAI->TellError("I won't follow: too far away");
+        botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "area_trigger_follow_too_far_error", "I won't follow: too far away", {}));
         return true;
     }
 
@@ -51,7 +53,8 @@ bool ReachAreaTriggerAction::Execute(Event event)
 
     float distance = bot->GetDistance(at->x, at->y, at->z);
     float delay = 1000.0f * distance / bot->GetSpeed(MOVE_RUN) + sPlayerbotAIConfig.reactDelay;
-    botAI->TellError("Wait for me");
+    botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+        "area_trigger_wait_for_me", "Wait for me", {}));
     botAI->SetNextCheckDelay(delay);
     context->GetValue<LastMovement&>("last area trigger")->Get().lastAreaTrigger = triggerId;
 
@@ -76,6 +79,6 @@ bool AreaTriggerAction::Execute(Event /*event*/)
     p.rpos(0);
     bot->GetSession()->HandleAreaTriggerOpcode(p);
 
-    botAI->TellMaster("Hello");
+    botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault("hello", "Hello", {}));
     return true;
 }
