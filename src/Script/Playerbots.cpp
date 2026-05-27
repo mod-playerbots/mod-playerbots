@@ -19,9 +19,7 @@
 
 #include "BattlefieldScript.h"
 #include "Channel.h"
-#include "Config.h"
 #include "DatabaseEnv.h"
-#include "DatabaseLoader.h"
 #include "GuildTaskMgr.h"
 #include "PlayerScript.h"
 #include "PlayerbotAIConfig.h"
@@ -33,48 +31,6 @@
 #include "PlayerbotCommandScript.h"
 #include "cmath"
 #include "BattleGroundTactics.h"
-
-class PlayerbotsDatabaseScript : public DatabaseScript
-{
-public:
-    PlayerbotsDatabaseScript() : DatabaseScript("PlayerbotsDatabaseScript") {}
-
-    bool OnDatabasesLoading() override
-    {
-        DatabaseLoader playerbotLoader("server.playerbots");
-        playerbotLoader.SetUpdateFlags(sConfigMgr->GetOption<bool>("Playerbots.Updates.EnableDatabases", true)
-                                           ? DatabaseLoader::DATABASE_PLAYERBOTS
-                                           : 0);
-        playerbotLoader.AddDatabase(PlayerbotsDatabase, "Playerbots");
-
-        return playerbotLoader.Load();
-    }
-
-    void OnDatabasesKeepAlive() override { PlayerbotsDatabase.KeepAlive(); }
-
-    void OnDatabasesClosing() override { PlayerbotsDatabase.Close(); }
-
-    void OnDatabaseWarnAboutSyncQueries(bool apply) override { PlayerbotsDatabase.WarnAboutSyncQueries(apply); }
-
-    void OnDatabaseSelectIndexLogout(Player* player, uint32& statementIndex, uint32& statementParam) override
-    {
-        statementIndex = CHAR_UPD_CHAR_OFFLINE;
-        statementParam = player->GetGUID().GetCounter();
-    }
-
-    void OnDatabaseGetDBRevision(std::string& revision) override
-    {
-        if (QueryResult resultPlayerbot =
-                PlayerbotsDatabase.Query("SELECT date FROM version_db_playerbots ORDER BY date DESC LIMIT 1"))
-        {
-            Field* fields = resultPlayerbot->Fetch();
-            revision = fields[0].Get<std::string>();
-        }
-
-        if (revision.empty())
-            revision = "Unknown Playerbots Database Revision";
-    }
-};
 
 class PlayerbotsPlayerScript : public PlayerScript
 {
@@ -532,7 +488,6 @@ void AddSC_HyjalSummitBotScripts();
 void AddPlayerbotsScripts()
 {
     new PlayerbotsBattlefieldScript();
-    new PlayerbotsDatabaseScript();
     new PlayerbotsPlayerScript();
     new PlayerbotsMiscScript();
     new PlayerbotsServerScript();
