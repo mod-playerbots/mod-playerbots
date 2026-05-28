@@ -862,8 +862,9 @@ AiPlayerbot.LimitGearExpansion = 1
 AiPlayerbot.RandomGearLoweringChance = 0
 
 # Unobtainable or unusable items (comma-separated list of item IDs)
-# Default: Chilton Wand (12468), Totem of the Earthen Ring (46978)
-AiPlayerbot.UnobtainableItems = 12468,46978
+# Defaults: Chilton Wand (12468), Frenzyheart Insignia of Fury test/on-use row (44869),
+#           Oracle Talisman of Ablution test/on-use row (44870), Totem of the Earthen Ring (46978)
+AiPlayerbot.UnobtainableItems = 12468,44869,44870,46978
 
 # Randombots check player's gearscore level and deny the group invitation if it's too low
 # Default: 0 (disabled)

@@ -6,6 +6,8 @@
 #include "GenericSpellActions.h"
 
 #include <ctime>
+#include <unordered_map>
+#include <unordered_set>
 
 #include "Event.h"
 #include "ItemTemplate.h"
@@ -22,6 +24,116 @@
 
 using ai::buff::MakeAuraQualifierForBuff;
 using ai::spell::HasSpellOrCategoryCooldown;
+
+namespace
+{
+    std::unordered_set<uint32> const& GetMixedTriggerTrinketSpellIds()
+    {
+        static std::unordered_set<uint32> const mixedTriggerSpellIds = []()
+        {
+            std::unordered_set<uint32> onUseSpellIds;
+            std::unordered_set<uint32> onEquipSpellIds;
+            std::unordered_set<uint32> mixedSpellIds;
+
+            auto const* itemTemplates = sObjectMgr->GetItemTemplateStore();
+            if (!itemTemplates)
+                return mixedSpellIds;
+
+            auto const markSpellId = [&](int32 spellId, uint8 spellTrigger)
+            {
+                if (spellId <= 0)
+                    return;
+
+                if (spellTrigger == ITEM_SPELLTRIGGER_ON_USE)
+                {
+                    if (onEquipSpellIds.find(spellId) != onEquipSpellIds.end())
+                        mixedSpellIds.insert(spellId);
+
+                    onUseSpellIds.insert(spellId);
+                }
+                else if (spellTrigger == ITEM_SPELLTRIGGER_ON_EQUIP)
+                {
+                    if (onUseSpellIds.find(spellId) != onUseSpellIds.end())
+                        mixedSpellIds.insert(spellId);
+
+                    onEquipSpellIds.insert(spellId);
+                }
+            };
+
+            for (auto const& itr : *itemTemplates)
+            {
+                ItemTemplate const& proto = itr.second;
+                if (proto.InventoryType != INVTYPE_TRINKET)
+                    continue;
+
+                for (uint8 spellIndex = 0; spellIndex < MAX_ITEM_PROTO_SPELLS; ++spellIndex)
+                {
+                    auto const& spellData = proto.Spells[spellIndex];
+                    markSpellId(spellData.SpellId, spellData.SpellTrigger);
+                }
+            }
+
+            return mixedSpellIds;
+        }();
+
+        return mixedTriggerSpellIds;
+    }
+
+    bool IsManaRestoreEffect(SpellEffectInfo const& effectInfo)
+    {
+        return (effectInfo.Effect == SPELL_EFFECT_ENERGIZE &&
+                effectInfo.MiscValue == POWER_MANA) ||
+               (effectInfo.Effect == SPELL_EFFECT_APPLY_AURA &&
+                effectInfo.ApplyAuraName == SPELL_AURA_PERIODIC_ENERGIZE &&
+                effectInfo.MiscValue == POWER_MANA);
+    }
+
+    bool IsManaEfficiencyEffect(SpellEffectInfo const& effectInfo)
+    {
+        return effectInfo.Effect == SPELL_EFFECT_APPLY_AURA &&
+               (((effectInfo.ApplyAuraName == SPELL_AURA_MOD_POWER_REGEN ||
+                  effectInfo.ApplyAuraName == SPELL_AURA_MOD_POWER_REGEN_PERCENT) &&
+                 effectInfo.MiscValue == POWER_MANA) ||
+                effectInfo.ApplyAuraName == SPELL_AURA_MOD_POWER_COST_SCHOOL ||
+                effectInfo.ApplyAuraName == SPELL_AURA_MOD_POWER_COST_SCHOOL_PCT ||
+                effectInfo.ApplyAuraName == SPELL_AURA_MOD_MANA_REGEN_INTERRUPT);
+    }
+
+    bool IsDefensiveTankEffect(SpellEffectInfo const& effectInfo)
+    {
+        if (effectInfo.Effect != SPELL_EFFECT_APPLY_AURA)
+            return false;
+
+        uint32 const tankRatingsMask =
+            (1u << CR_DEFENSE_SKILL) |
+            (1u << CR_DODGE) |
+            (1u << CR_PARRY) |
+            (1u << CR_BLOCK) |
+            (1u << CR_HIT_TAKEN_MELEE) |
+            (1u << CR_HIT_TAKEN_RANGED) |
+            (1u << CR_HIT_TAKEN_SPELL) |
+            (1u << CR_CRIT_TAKEN_MELEE) |
+            (1u << CR_CRIT_TAKEN_RANGED) |
+            (1u << CR_CRIT_TAKEN_SPELL);
+
+        switch (effectInfo.ApplyAuraName)
+        {
+            case SPELL_AURA_MOD_RESISTANCE:
+                return (effectInfo.MiscValue & SPELL_SCHOOL_MASK_NORMAL) != 0;
+            case SPELL_AURA_MOD_RATING:
+                return (effectInfo.MiscValue & tankRatingsMask) != 0;
+            case SPELL_AURA_MOD_INCREASE_HEALTH:
+            case SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT:
+            case SPELL_AURA_MOD_PARRY_PERCENT:
+            case SPELL_AURA_MOD_DODGE_PERCENT:
+            case SPELL_AURA_MOD_BLOCK_PERCENT:
+            case SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN:
+                return true;
+            default:
+                return false;
+        }
+    }
+}
 
 CastSpellAction::CastSpellAction(PlayerbotAI* botAI, std::string const spell)
     : Action(botAI, spell), range(botAI->GetRange("spell")), spell(spell)
@@ -427,70 +539,155 @@ bool UseTrinketAction::Execute(Event /*event*/)
 
 bool UseTrinketAction::UseTrinket(Item* item)
 {
-    if (bot->CanUseItem(item) != EQUIP_ERR_OK)
-        return false;
-
-    if (bot->IsNonMeleeSpellCast(true))
+    if (bot->CanUseItem(item) != EQUIP_ERR_OK || bot->IsNonMeleeSpellCast(true))
         return false;
 
     uint8 bagIndex = item->GetBagSlot();
     uint8 slot = item->GetSlot();
-    // uint8 spell_index = 0; //not used, line marked for removal.
     uint8 cast_count = 1;
     ObjectGuid item_guid = item->GetGUID();
     uint32 glyphIndex = 0;
     uint8 castFlags = 0;
     uint32 targetFlag = TARGET_FLAG_NONE;
     uint32 spellId = 0;
+    int32 itemSpellCooldown = 0;
+    uint32 itemSpellCategory = 0;
+    int32 itemSpellCategoryCooldown = 0;
+    static std::unordered_map<ObjectGuid::LowType, std::unordered_map<uint64, uint32>>
+        trinketItemCooldownExpiries;
+    static std::unordered_map<ObjectGuid::LowType, std::unordered_map<uint32, uint32>>
+        trinketCategoryCooldownExpiries;
+
     for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
     {
         if (item->GetTemplate()->Spells[i].SpellId > 0 &&
             item->GetTemplate()->Spells[i].SpellTrigger == ITEM_SPELLTRIGGER_ON_USE)
         {
             spellId = item->GetTemplate()->Spells[i].SpellId;
-            const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+            itemSpellCooldown = item->GetTemplate()->Spells[i].SpellCooldown;
+            itemSpellCategory = item->GetTemplate()->Spells[i].SpellCategory;
+            itemSpellCategoryCooldown = item->GetTemplate()->Spells[i].SpellCategoryCooldown;
+            ObjectGuid::LowType const botGuid = bot->GetGUID().GetCounter();
+            uint64 const itemCooldownKey = (static_cast<uint64>(item->GetEntry()) << 32) | spellId;
+            uint32 const now = getMSTime();
 
+            auto itemCooldownsItr = trinketItemCooldownExpiries.find(botGuid);
+            if (itemSpellCooldown > 0 && itemCooldownsItr != trinketItemCooldownExpiries.end())
+            {
+                auto const itemCooldownItr = itemCooldownsItr->second.find(itemCooldownKey);
+                if (itemCooldownItr != itemCooldownsItr->second.end())
+                {
+                    if (itemCooldownItr->second > now)
+                        return false;
+
+                    itemCooldownsItr->second.erase(itemCooldownItr);
+                    if (itemCooldownsItr->second.empty())
+                        trinketItemCooldownExpiries.erase(itemCooldownsItr);
+                }
+            }
+
+            auto categoryCooldownsItr = trinketCategoryCooldownExpiries.find(botGuid);
+            if (itemSpellCategory && itemSpellCategoryCooldown > 0 &&
+                categoryCooldownsItr != trinketCategoryCooldownExpiries.end())
+            {
+                auto const categoryCooldownItr = categoryCooldownsItr->second.find(itemSpellCategory);
+                if (categoryCooldownItr != categoryCooldownsItr->second.end())
+                {
+                    if (categoryCooldownItr->second > now)
+                        return false;
+
+                    categoryCooldownsItr->second.erase(categoryCooldownItr);
+                    if (categoryCooldownsItr->second.empty())
+                        trinketCategoryCooldownExpiries.erase(categoryCooldownsItr);
+                }
+            }
+
+            const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(spellId);
             if (!spellInfo || !spellInfo->IsPositive())
                 return false;
 
             bool applyAura = false;
+            bool restoresMana = false;
+            bool improvesManaEfficiency = false;
+            bool defensiveTankEffect = false;
             for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
             {
                 const SpellEffectInfo& effectInfo = spellInfo->Effects[i];
                 if (effectInfo.Effect == SPELL_EFFECT_APPLY_AURA)
-                {
                     applyAura = true;
-                    break;
+
+                restoresMana = restoresMana || IsManaRestoreEffect(effectInfo);
+                improvesManaEfficiency = improvesManaEfficiency || IsManaEfficiencyEffect(effectInfo);
+                defensiveTankEffect = defensiveTankEffect || IsDefensiveTankEffect(effectInfo);
+            }
+
+            if (!applyAura && !restoresMana)
+                return false;
+
+            if (restoresMana || improvesManaEfficiency)
+            {
+                if (!AI_VALUE2(bool, "has mana", "self target"))
+                    return false;
+
+                uint8 const manaPct = AI_VALUE2(uint8, "mana", "self target");
+                if ((restoresMana && manaPct >= sPlayerbotAIConfig.mediumMana) ||
+                    manaPct >= sPlayerbotAIConfig.highMana)
+                {
+                    return false;
                 }
             }
 
-            if (!applyAura)
-                return false;
-
-            uint32 spellProcFlag = spellInfo->ProcFlags;
-
-            // Handle items with procflag "if you kill a target that grants honor or experience"
-            // Bots will "learn" the trinket proc, so CanCastSpell() will be true
-            // e.g. on Item https://www.wowhead.com/wotlk/item=44074/oracle-talisman-of-ablution leading to
-            // constant casting of the proc spell onto themselfes https://www.wowhead.com/wotlk/spell=59787/oracle-ablutions
-            // This will lead to multiple hundreds of entries in m_appliedAuras -> Once killing an enemy -> Big diff time spikes
-            if (spellProcFlag != 0) return false;
-
-            if (!botAI->CanCastSpell(spellId, bot, false))
+            if (defensiveTankEffect)
             {
-                return false;
+                uint8 const healthPct = AI_VALUE2(uint8, "health", "self target");
+                if (healthPct > sPlayerbotAIConfig.lowHealth)
+                    return false;
             }
+
+            auto const& mixedTriggerTrinketSpellIds = GetMixedTriggerTrinketSpellIds();
+            // Exclude trinkets that expose the same spell as both ON_EQUIP and ON_USE across
+            // item templates. Those are equip/proc effects leaking into the active-use path,
+            // as seen with the error versions of Oracle Talisman of Ablution (44870) and
+            // Frenzyheart Insignia of Fury (44869).
+            if (mixedTriggerTrinketSpellIds.find(spellId) != mixedTriggerTrinketSpellIds.end())
+                return false;
+
+            if (!botAI->CanCastSpell(spellId, bot, false, nullptr, item))
+                return false;
+
             break;
         }
     }
+
     if (!spellId)
         return false;
+
     WorldPacket packet(CMSG_USE_ITEM);
     packet << bagIndex << slot << cast_count << spellId << item_guid << glyphIndex << castFlags;
 
     targetFlag = TARGET_FLAG_NONE;
     packet << targetFlag << bot->GetPackGUID();
+
     bot->GetSession()->HandleUseItemOpcode(packet);
+
+    ObjectGuid::LowType const botGuid = bot->GetGUID().GetCounter();
+    uint32 const now = getMSTime();
+    uint32 const cooldownDelay = bot->GetSpellCooldownDelay(spellId);
+    if (cooldownDelay > 0)
+    {
+        if (itemSpellCooldown > 0)
+        {
+            uint64 const itemCooldownKey = (static_cast<uint64>(item->GetEntry()) << 32) | spellId;
+            trinketItemCooldownExpiries[botGuid][itemCooldownKey] = now + static_cast<uint32>(itemSpellCooldown);
+        }
+
+        if (itemSpellCategory && itemSpellCategoryCooldown > 0)
+        {
+            trinketCategoryCooldownExpiries[botGuid][itemSpellCategory] =
+                now + static_cast<uint32>(itemSpellCategoryCooldown);
+        }
+    }
+
     return true;
 }
 
