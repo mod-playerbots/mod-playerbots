@@ -45,10 +45,14 @@ bool CastSunderArmorAction::isUseful()
             for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
             {
                 Player* member = ref->GetSource();
-                if (!member || member == bot || !member->IsAlive() || !member->IsInWorld())
+                if (!member || member == bot || !member->IsAlive() || !member->IsInWorld() ||
+                    member->GetMapId() != bot->GetMapId())
+                {
                     continue;
+                }
 
-                if (member->getClass() == CLASS_WARRIOR && AiFactory::GetPlayerSpecTab(member) == WARRIOR_TAB_PROTECTION)
+                if (member->getClass() == CLASS_WARRIOR &&
+                    AiFactory::GetPlayerSpecTab(member) == WARRIOR_TAB_PROTECTION)
                     return false;
             }
         }
