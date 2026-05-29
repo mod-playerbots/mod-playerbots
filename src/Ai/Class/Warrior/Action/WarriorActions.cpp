@@ -37,24 +37,24 @@ bool CastBerserkerRageAction::isUseful()
 
 bool CastSunderArmorAction::isUseful()
 {
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
     if (AiFactory::GetPlayerSpecTab(bot) != WARRIOR_TAB_PROTECTION)
     {
-        Group* group = bot->GetGroup();
-        if (group)
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+            Player* member = ref->GetSource();
+            if (!member || member == bot || !member->IsAlive() || !member->IsInWorld() ||
+                member->GetMapId() != bot->GetMapId())
             {
-                Player* member = ref->GetSource();
-                if (!member || member == bot || !member->IsAlive() || !member->IsInWorld() ||
-                    member->GetMapId() != bot->GetMapId())
-                {
-                    continue;
-                }
-
-                if (member->getClass() == CLASS_WARRIOR &&
-                    AiFactory::GetPlayerSpecTab(member) == WARRIOR_TAB_PROTECTION)
-                    return false;
+                continue;
             }
+
+            if (member->getClass() == CLASS_WARRIOR &&
+                AiFactory::GetPlayerSpecTab(member) == WARRIOR_TAB_PROTECTION)
+                return false;
         }
     }
 
