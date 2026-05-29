@@ -5,6 +5,7 @@
 
 #include "WarriorActions.h"
 
+#include "AiFactory.h"
 #include "Playerbots.h"
 
 bool CastBerserkerRageAction::isPossible()
@@ -36,6 +37,23 @@ bool CastBerserkerRageAction::isUseful()
 
 bool CastSunderArmorAction::isUseful()
 {
+    if (AiFactory::GetPlayerSpecTab(bot) != WARRIOR_TAB_PROTECTION)
+    {
+        Group* group = bot->GetGroup();
+        if (group)
+        {
+            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+            {
+                Player* member = ref->GetSource();
+                if (!member || member == bot || !member->IsAlive() || !member->IsInWorld())
+                    continue;
+
+                if (member->getClass() == CLASS_WARRIOR && AiFactory::GetPlayerSpecTab(member) == WARRIOR_TAB_PROTECTION)
+                    return false;
+            }
+        }
+    }
+
     Aura* aura = botAI->GetAura("sunder armor", GetTarget(), false, true);
     return !aura || aura->GetStackAmount() < 5 || aura->GetDuration() <= 6000;
 }
