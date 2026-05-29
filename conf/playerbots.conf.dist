@@ -769,7 +769,7 @@ AiPlayerbot.RandomBotXPRate = 1.0
 # Default: 1 (enabled)
 AiPlayerbot.AutoUpgradeEquip = 1
 
-# Enable/disable which (if any) randombots preserve their current equipment and talents during login
+# Enable/disable which (if any) randombots preserve their current equipment AND talents during login
 # and periodic randomization (i.e., persistence).
 # Default: 1 (enabled)
 AiPlayerbot.EquipmentPersistence = 1
@@ -868,6 +868,7 @@ AiPlayerbot.ExcludedHunterPetFamilies = ""
 
 ####################################################################################################
 # ACTIVITY
+#
 
 # BotActiveAlone
 # - Controls how many bots are active when no real players are nearby.
@@ -1337,11 +1338,10 @@ AiPlayerbot.RandomBotCountChangeMaxInterval = 7200
 AiPlayerbot.MinRandomBotInWorldTime = 600
 AiPlayerbot.MaxRandomBotInWorldTime = 28800
 
-# Many aspects of randombots, including their inventories, reputation levels, and, for randombots
-# without persistence under EquipAndTalentPersistenceLevel, equipment and talents are periodically
-# randomized while they are logged in and idle. This config sets the minimum and maximum seconds
-# between such randomization events. Note that randombots are randomized upon login, regardless of
-# these settings.
+# Many aspects of randombots are periodically randomized while they are logged in and idle, including
+# their inventories and, if EquipmentPersistence is disabled, their equipment and talents.
+# This config sets the minimum and maximum seconds between such randomization events. Note that
+# randombots are randomized upon login, regardless of these settings.
 # Defaults: 7200 (min - 2 hours), 1209600 (max - 14 days)
 AiPlayerbot.MinRandomBotRandomizeTime = 7200
 AiPlayerbot.MaxRandomBotRandomizeTime = 1209600
