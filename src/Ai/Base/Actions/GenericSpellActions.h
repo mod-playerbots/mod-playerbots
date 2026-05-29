@@ -323,8 +323,13 @@ class UseTrinketAction : public Action
 public:
     UseTrinketAction(PlayerbotAI* botAI) : Action(botAI, "use trinket") {}
     bool Execute(Event event) override;
+
 protected:
     bool UseTrinket(Item* trinket);
+
+private:
+    std::unordered_map<uint64, uint32> trinketItemCooldownExpiries;
+    std::unordered_map<uint32, uint32> trinketCategoryCooldownExpiries;
 };
 
 class CastSpellOnEnemyHealerAction : public CastSpellAction

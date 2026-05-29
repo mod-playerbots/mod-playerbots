@@ -6,7 +6,6 @@
 #include "GenericSpellActions.h"
 
 #include <ctime>
-#include <unordered_map>
 #include <unordered_set>
 
 #include "Event.h"
@@ -553,10 +552,6 @@ bool UseTrinketAction::UseTrinket(Item* item)
     int32 itemSpellCooldown = 0;
     uint32 itemSpellCategory = 0;
     int32 itemSpellCategoryCooldown = 0;
-    static std::unordered_map<ObjectGuid::LowType, std::unordered_map<uint64, uint32>>
-        trinketItemCooldownExpiries;
-    static std::unordered_map<ObjectGuid::LowType, std::unordered_map<uint32, uint32>>
-        trinketCategoryCooldownExpiries;
 
     for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
     {
@@ -567,38 +562,30 @@ bool UseTrinketAction::UseTrinket(Item* item)
             itemSpellCooldown = item->GetTemplate()->Spells[i].SpellCooldown;
             itemSpellCategory = item->GetTemplate()->Spells[i].SpellCategory;
             itemSpellCategoryCooldown = item->GetTemplate()->Spells[i].SpellCategoryCooldown;
-            ObjectGuid::LowType const botGuid = bot->GetGUID().GetCounter();
             uint64 const itemCooldownKey = (static_cast<uint64>(item->GetEntry()) << 32) | spellId;
             uint32 const now = getMSTime();
 
-            auto itemCooldownsItr = trinketItemCooldownExpiries.find(botGuid);
-            if (itemSpellCooldown > 0 && itemCooldownsItr != trinketItemCooldownExpiries.end())
+            if (itemSpellCooldown > 0)
             {
-                auto const itemCooldownItr = itemCooldownsItr->second.find(itemCooldownKey);
-                if (itemCooldownItr != itemCooldownsItr->second.end())
+                auto const itemCooldownItr = trinketItemCooldownExpiries.find(itemCooldownKey);
+                if (itemCooldownItr != trinketItemCooldownExpiries.end())
                 {
                     if (itemCooldownItr->second > now)
                         return false;
 
-                    itemCooldownsItr->second.erase(itemCooldownItr);
-                    if (itemCooldownsItr->second.empty())
-                        trinketItemCooldownExpiries.erase(itemCooldownsItr);
+                    trinketItemCooldownExpiries.erase(itemCooldownItr);
                 }
             }
 
-            auto categoryCooldownsItr = trinketCategoryCooldownExpiries.find(botGuid);
-            if (itemSpellCategory && itemSpellCategoryCooldown > 0 &&
-                categoryCooldownsItr != trinketCategoryCooldownExpiries.end())
+            if (itemSpellCategory && itemSpellCategoryCooldown > 0)
             {
-                auto const categoryCooldownItr = categoryCooldownsItr->second.find(itemSpellCategory);
-                if (categoryCooldownItr != categoryCooldownsItr->second.end())
+                auto const categoryCooldownItr = trinketCategoryCooldownExpiries.find(itemSpellCategory);
+                if (categoryCooldownItr != trinketCategoryCooldownExpiries.end())
                 {
                     if (categoryCooldownItr->second > now)
                         return false;
 
-                    categoryCooldownsItr->second.erase(categoryCooldownItr);
-                    if (categoryCooldownsItr->second.empty())
-                        trinketCategoryCooldownExpiries.erase(categoryCooldownsItr);
+                    trinketCategoryCooldownExpiries.erase(categoryCooldownItr);
                 }
             }
 
@@ -670,7 +657,6 @@ bool UseTrinketAction::UseTrinket(Item* item)
 
     bot->GetSession()->HandleUseItemOpcode(packet);
 
-    ObjectGuid::LowType const botGuid = bot->GetGUID().GetCounter();
     uint32 const now = getMSTime();
     uint32 const cooldownDelay = bot->GetSpellCooldownDelay(spellId);
     if (cooldownDelay > 0)
@@ -678,13 +664,12 @@ bool UseTrinketAction::UseTrinket(Item* item)
         if (itemSpellCooldown > 0)
         {
             uint64 const itemCooldownKey = (static_cast<uint64>(item->GetEntry()) << 32) | spellId;
-            trinketItemCooldownExpiries[botGuid][itemCooldownKey] = now + static_cast<uint32>(itemSpellCooldown);
+            trinketItemCooldownExpiries[itemCooldownKey] = now + static_cast<uint32>(itemSpellCooldown);
         }
 
         if (itemSpellCategory && itemSpellCategoryCooldown > 0)
         {
-            trinketCategoryCooldownExpiries[botGuid][itemSpellCategory] =
-                now + static_cast<uint32>(itemSpellCategoryCooldown);
+            trinketCategoryCooldownExpiries[itemSpellCategory] = now + static_cast<uint32>(itemSpellCategoryCooldown);
         }
     }
 
