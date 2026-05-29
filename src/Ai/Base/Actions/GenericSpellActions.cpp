@@ -173,10 +173,7 @@ bool CastBuffSpellAction::isUseful()
         return false;
 
     Aura* aura = botAI->GetAura(spell, target, isOwner, checkDuration);
-    if (!aura || (beforeDuration && aura->GetDuration() < beforeDuration))
-        return true;
-
-    return false;
+    return !aura || (beforeDuration && aura->GetDuration() < beforeDuration);
 }
 
 bool CastBuffSpellAction::Execute(Event /*event*/)

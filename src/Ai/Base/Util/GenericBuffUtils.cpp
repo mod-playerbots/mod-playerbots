@@ -215,8 +215,8 @@ namespace ai::buff
         if (groupName.empty())
             return baseName;
 
-        // Prefer singles when no more than two same-map members are missing this buff family;
-        // use the group spell once enough nearby members still need it.
+        // Prefer singles until at least three living, in-world group members on the bot's map
+        // are missing both the single-target buff and its group variant.
         if (!HasEnoughSameMapMissingPlayersForGroupVariant(bot, botAI, baseName, groupName))
             return baseName;
 
