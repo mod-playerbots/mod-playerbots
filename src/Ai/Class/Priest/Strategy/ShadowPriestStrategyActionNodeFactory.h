@@ -51,7 +51,7 @@ private:
     {
         return new ActionNode("dispersion",
                               /*P*/ {},
-                              /*A*/ { NextAction("mana potion") },
+                              /*A*/ {},
                               /*C*/ {});
     }
 };

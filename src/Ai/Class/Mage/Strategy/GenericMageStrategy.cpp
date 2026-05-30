@@ -51,7 +51,7 @@ private:
     {
         return new ActionNode("evocation",
                               /*P*/ {},
-                              /*A*/ { NextAction("mana potion") },
+                              /*A*/ {},
                               /*C*/ {});
     }
 
@@ -115,7 +115,6 @@ void GenericMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     else if (bot->HasSpell(759))  // Mana Agate
         triggers.push_back(new TriggerNode("high mana", { NextAction("use mana agate", 90.0f) }));
 
-    triggers.push_back(new TriggerNode("medium mana", { NextAction("mana potion", 90.0f) }));
     triggers.push_back(new TriggerNode("low mana", { NextAction("evocation", 90.0f) }));
 
     // Counterspell / Spellsteal Triggers

@@ -92,7 +92,7 @@ private:
     {
         return new ActionNode("innervate",
                               /*P*/ {},
-                              /*A*/ { NextAction("mana potion") },
+                              /*A*/ {},
                               /*C*/ {});
     }
 };
