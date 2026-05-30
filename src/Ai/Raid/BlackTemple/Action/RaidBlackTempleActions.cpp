@@ -1941,7 +1941,7 @@ bool IllidanStormrageMainTankRepositionBossAction::MoveToShadowTrap(GameObject* 
         if (distToTrap <= 0.0f)
             return false;
 
-        constexpr float distBeyondTrap = 4.0f;
+        constexpr float distBeyondTrap = 6.0f;
 
         const float dx = trapX - bot->GetPositionX();
         const float dy = trapY - bot->GetPositionY();

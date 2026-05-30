@@ -38,6 +38,7 @@
 #include "ObjectMgr.h"
 #include "PerfMonitor.h"
 #include "Player.h"
+#include "PlayerbotTextMgr.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotMgr.h"
 #include "PlayerbotGuildMgr.h"
@@ -451,9 +452,11 @@ void PlayerbotAI::UpdateAIGroupMaster()
                 botAI->ChangeStrategy("+follow", BOT_STATE_NON_COMBAT);
 
                 if (botAI->GetMaster() == botAI->GetGroupLeader())
-                    botAI->TellMaster("Hello, I follow you!");
+                    botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                        "hello_follow", "Hello, I follow you!", {}));
                 else
-                    botAI->TellMaster(!urand(0, 2) ? "Hello!" : "Hi!");
+                    botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                        "hello", "Hello!", {}));
             }
             else
             {
@@ -857,7 +860,8 @@ void PlayerbotAI::Reset(bool full)
     {
         WorldPackets::Character::LogoutCancel data = WorldPacket(CMSG_LOGOUT_CANCEL);
         bot->GetSession()->HandleLogoutCancelOpcode(data);
-        TellMaster("Logout cancelled!");
+        TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "logout_cancel", "Logout cancelled!", {}));
     }
 
     currentEngine = engines[BOT_STATE_NON_COMBAT];
@@ -5965,29 +5969,6 @@ void PlayerbotAI::EnchantItemT(uint32 spellid, uint8 slot)
     bot->ApplyEnchantment(pItem, PERM_ENCHANTMENT_SLOT, true);
 
     LOG_INFO("playerbots", "{}: items was enchanted successfully!", bot->GetName().c_str());
-}
-
-uint32 PlayerbotAI::GetBuffedCount(Player* player, std::string const spellname)
-{
-    uint32 bcount = 0;
-
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
-        {
-            Player* member = gref->GetSource();
-            if (!member || !member->IsInWorld())
-                continue;
-
-            if (!member->IsInSameRaidWith(player))
-                continue;
-
-            if (HasAura(spellname, member, true))
-                bcount++;
-        }
-    }
-
-    return bcount;
 }
 
 int32 PlayerbotAI::GetNearGroupMemberCount(float dis)

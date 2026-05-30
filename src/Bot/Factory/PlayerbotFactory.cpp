@@ -1002,6 +1002,7 @@ void PlayerbotFactory::InitConsumables()
         }
         case CLASS_WARRIOR:
         case CLASS_HUNTER:
+        case CLASS_DEATH_KNIGHT:
         {
             std::vector<uint32> sharpening_stones = {
                 ADAMANTITE_SHARPENING_STONE, FEL_SHARPENING_STONE, DENSE_SHARPENING_STONE, SOLID_SHARPENING_STONE,
@@ -2081,7 +2082,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
         return;
     }
 
-    std::unordered_map<uint8, std::vector<uint32>> items;
+    std::unordered_map<uint8, std::vector<std::pair<uint32, int32>>> items;
     // int tab = AiFactory::GetPlayerSpecTab(bot);
 
     uint32 blevel = bot->GetLevel();
@@ -2228,13 +2229,17 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                         if (slot == EQUIPMENT_SLOT_OFFHAND && bot->getClass() == CLASS_ROGUE &&
                             proto->Class != ITEM_CLASS_WEAPON)
                             continue;
-                        items[slot].push_back(itemId);
+
+                        int32 bestRandomProp = 0;
+                        if (proto->RandomProperty || proto->RandomSuffix)
+                            bestRandomProp = calculator.PickBestRandomPropertyId(itemId);
+                        items[slot].push_back({itemId, bestRandomProp});
                     }
                 }
             }
         } while (items[slot].size() < 25 && desiredQuality-- > ITEM_QUALITY_POOR);
 
-        std::vector<uint32>& ids = items[slot];
+        std::vector<std::pair<uint32, int32>>& ids = items[slot];
         if (ids.empty())
         {
             continue;
@@ -2242,13 +2247,15 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
 
         float bestScoreForSlot = -1;
         uint32 bestItemForSlot = 0;
+        int32 bestRandomPropForSlot = 0;
         for (int index = 0; index < ids.size(); index++)
         {
-            uint32 newItemId = ids[index];
+            uint32 newItemId = ids[index].first;
+            int32 newItemProp = ids[index].second;
 
             ItemTemplate const* proto = sObjectMgr->GetItemTemplate(newItemId);
 
-            float cur_score = calculator.CalculateItem(newItemId, 0, slot);
+            float cur_score = calculator.CalculateItem(newItemId, newItemProp, slot);
 
             if (cur_score > 0.0f && proto && proto->Class == ITEM_CLASS_ARMOR && sPlayerbotAIConfig.preferClassArmorType)
             {
@@ -2267,6 +2274,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                     continue;
                 bestScoreForSlot = cur_score;
                 bestItemForSlot = newItemId;
+                bestRandomPropForSlot = newItemProp;
             }
         }
 
@@ -2304,7 +2312,16 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
         if (oldItem)
             continue;
 
-        bot->EquipNewItem(dest, bestItemForSlot, true);
+        if (Item* equipped = bot->EquipNewItem(dest, bestItemForSlot, true))
+        {
+            if (bestRandomPropForSlot != 0)
+            {
+                uint8 equipSlot = equipped->GetSlot();
+                bot->_ApplyItemMods(equipped, equipSlot, false);
+                equipped->SetItemRandomProperties(bestRandomPropForSlot);
+                bot->_ApplyItemMods(equipped, equipSlot, true);
+            }
+        }
         bot->AutoUnequipOffhandIfNeed();
         // if (newItem)
         // {
@@ -2345,19 +2362,21 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
             if (Item* oldItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
                 bot->DestroyItem(INVENTORY_SLOT_BAG_0, slot, true);
 
-            std::vector<uint32>& ids = items[slot];
+            std::vector<std::pair<uint32, int32>>& ids = items[slot];
             if (ids.empty())
                 continue;
 
             float bestScoreForSlot = -1;
             uint32 bestItemForSlot = 0;
+            int32 bestRandomPropForSlot = 0;
             for (int index = 0; index < ids.size(); index++)
             {
-                uint32 newItemId = ids[index];
+                uint32 newItemId = ids[index].first;
+                int32 newItemProp = ids[index].second;
 
                 ItemTemplate const* proto = sObjectMgr->GetItemTemplate(newItemId);
 
-                float cur_score = calculator.CalculateItem(newItemId, 0, slot);
+                float cur_score = calculator.CalculateItem(newItemId, newItemProp, slot);
 
                 if (cur_score > 0.0f && proto && proto->Class == ITEM_CLASS_ARMOR && sPlayerbotAIConfig.preferClassArmorType)
                 {
@@ -2376,6 +2395,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                         continue;
                     bestScoreForSlot = cur_score;
                     bestItemForSlot = newItemId;
+                    bestRandomPropForSlot = newItemProp;
                 }
             }
 
@@ -2386,7 +2406,16 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
             if (!CanEquipUnseenItem(slot, dest, bestItemForSlot))
                 continue;
 
-            bot->EquipNewItem(dest, bestItemForSlot, true);
+            if (Item* equipped = bot->EquipNewItem(dest, bestItemForSlot, true))
+            {
+                if (bestRandomPropForSlot != 0)
+                {
+                    uint8 equipSlot = equipped->GetSlot();
+                    bot->_ApplyItemMods(equipped, equipSlot, false);
+                    equipped->SetItemRandomProperties(bestRandomPropForSlot);
+                    bot->_ApplyItemMods(equipped, equipSlot, true);
+                }
+            }
             bot->AutoUnequipOffhandIfNeed();
         }
     }

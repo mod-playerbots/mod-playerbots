@@ -6,9 +6,31 @@
 #include "ArcaneMageStrategy.h"
 #include "Playerbots.h"
 
+// ===== Action Node Factory =====
+class ArcaneMageStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
+{
+public:
+    ArcaneMageStrategyActionNodeFactory()
+    {
+        creators["arcane blast"] = &arcane_blast;
+    }
+
+private:
+    // Arcane Barrage is the alternate for Arcane Blast (cast while moving, or
+    // when Arcane Blast is unavailable - e.g. not yet learned at low levels).
+    static ActionNode* arcane_blast([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode("arcane blast",
+                              /*P*/ {},
+                              /*A*/ { NextAction("arcane barrage") },
+                              /*C*/ {});
+    }
+};
+
+// ===== Single Target Strategy =====
 ArcaneMageStrategy::ArcaneMageStrategy(PlayerbotAI* botAI) : GenericMageStrategy(botAI)
 {
-    // No custom ActionNodeFactory needed
+    actionNodeFactories.Add(new ArcaneMageStrategyActionNodeFactory());
 }
 
 // ===== Default Actions =====

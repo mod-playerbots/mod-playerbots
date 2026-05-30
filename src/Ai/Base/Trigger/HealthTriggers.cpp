@@ -22,6 +22,15 @@ bool DeadTrigger::IsActive() { return AI_VALUE2(bool, "dead", GetTargetName()); 
 
 bool AoeHealTrigger::IsActive() { return AI_VALUE2(uint8, "aoe heal", type) >= count; }
 
+bool HealerLowManaTrigger::IsActive()
+{
+    Unit* target = GetTarget();
+    if (!target)
+        return false;
+
+    return target->GetPowerPct(POWER_MANA) < sPlayerbotAIConfig.lowMana;
+}
+
 bool AoeInGroupTrigger::IsActive()
 {
     int32 member = botAI->GetNearGroupMemberCount();

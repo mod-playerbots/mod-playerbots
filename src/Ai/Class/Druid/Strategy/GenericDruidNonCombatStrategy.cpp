@@ -17,12 +17,13 @@ public:
         creators["thorns on party"] = &thorns_on_party;
         creators["mark of the wild"] = &mark_of_the_wild;
         creators["mark of the wild on party"] = &mark_of_the_wild_on_party;
-        // creators["innervate"] = &innervate;
         creators["regrowth_on_party"] = &regrowth_on_party;
         creators["rejuvenation on party"] = &rejuvenation_on_party;
         creators["remove curse on party"] = &remove_curse_on_party;
         creators["abolish poison on party"] = &abolish_poison_on_party;
         creators["revive"] = &revive;
+        creators["prowl"] = &prowl;
+        creators["aquatic form"] = &aquatic_form;
     }
 
 private:
@@ -92,6 +93,23 @@ private:
                               /*A*/ {},
                               /*C*/ {});
     }
+
+    static ActionNode* prowl([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode("prowl",
+                              /*P*/ { NextAction("cat form") },
+                              /*A*/ {},
+                              /*C*/ {});
+    }
+
+    static ActionNode* aquatic_form([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode("aquatic form",
+                              /*P*/ { NextAction("caster form") },
+                              /*A*/ {},
+                              /*C*/ {});
+    }
+
 };
 
 GenericDruidNonCombatStrategy::GenericDruidNonCombatStrategy(PlayerbotAI* botAI) : NonCombatStrategy(botAI)
@@ -165,11 +183,16 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
                        NextAction("remove curse on party", ACTION_DISPEL + 7),
                        }));
 
+    triggers.push_back(new TriggerNode("aquatic form", { NextAction("aquatic form", 10.0f) }));
+
     int specTab = AiFactory::GetPlayerSpecTab(botAI->GetBot());
-    if (specTab == 0 || specTab == 2) // Balance or Restoration
+    if (specTab == DRUID_TAB_BALANCE || specTab == DRUID_TAB_RESTORATION)
         triggers.push_back(new TriggerNode("often", { NextAction("apply oil", 1.0f) }));
-    if (specTab == 1) // Feral
+    if (specTab == DRUID_TAB_FERAL)
+    {
         triggers.push_back(new TriggerNode("often", { NextAction("apply stone", 1.0f) }));
+        triggers.push_back(new TriggerNode("prowl", { NextAction("prowl", ACTION_INTERRUPT) }));
+    }
 
 }
 

@@ -22,7 +22,6 @@
 #        THRESHOLDS
 #        QUESTS
 #        COMBAT
-#        GREATER BUFFS STRATEGIES
 #        CHEATS
 #        SPELLS
 #        FLIGHTPATH
@@ -464,6 +463,23 @@ AiPlayerbot.AutoSaveMana = 1
 # Healer bot save mana threshold
 # Default: 60 (60%)
 AiPlayerbot.SaveManaThreshold = 60
+
+# Enable Paladin bots to use greater blessings, with the blessing used being based on the
+# number of Paladins in the raid/group and the spec of the recipient. Priorities for each
+# spec are hardcoded in GreaterBlessingActions.h.
+# 0 = disabled
+# 1 = enabled in raid groups only
+# 2 = enabled in all groups
+# Default: 1 (raid only)
+AiPlayerbot.AutoGreaterBlessings = 1
+
+# Enable bots to use group reagent buffs: Gift of the Wild, Arcane Brilliance,
+# Prayer of Fortitude, Prayer of Spirit, and Prayer of Shadow Protection.
+# 0 = disabled
+# 1 = enabled in raid groups only
+# 2 = enabled in all groups
+# Default: 2 (all groups)
+AiPlayerbot.AutoPartyBuffs = 2
 
 # Bots can flee from enemies
 AiPlayerbot.FleeingEnabled = 1
@@ -1247,44 +1263,47 @@ AiPlayerbot.RandomBotAutoJoinBG = 0
 # This section controls the level brackets and automatic bot participation in battlegrounds and arenas.
 #
 # Brackets:
-# - Specify the level ranges for bots to auto-join:
-#   - Warsong Gulch (WS): 0 = 10-19, 1 = 20-29, 2 = 30-39, ..., 7 = 80 (Default: 7)
-#   - Rated Arena: 0 = 10-14, 1 = 15-19, ..., 14 = 80-84 (Default: 14)
-# - Multiple brackets can be specified as a comma-separated list (e.g., "0,2,5").
+# - Specify the level ranges for bots to auto-join (bracket IDs are per-BG and start at 0 from each BG's minimum level):
+#   - Warsong Gulch    (WS): 0=10-19, 1=20-29, 2=30-39, 3=40-49, 4=50-59, 5=60-69, 6=70-79, 7=80    (Default: 7)
+#   - Arathi Basin     (AB): 0=20-29, 1=30-39, 2=40-49, 3=50-59, 4=60-69, 5=70-79, 6=80             (Default: 6)
+#   - Alterac Valley   (AV): 0=51-60, 1=61-70, 2=71-79, 3=80                                        (Default: 3)
+#   - Eye of the Storm (EY): 0=61-69, 1=70-79, 2=80                                                 (Default: 2)
+#   - Isle of Conquest (IC): 0=71-79, 1=80                                                          (Default: 1)
+# - Multiple BG brackets can be specified as a comma-separated list (e.g., "0,2,5"). Not applicable for Rated Arena.
+#   - Rated Arena:           0=10-14, 1=15-19, 2=20-24, ..., 13=75-79, 14=80-84                     (Default: 14)
 #
 # Counts:
-# - Specify the number of battlegrounds to auto-fill per bracket.
-# - For battlegrounds, 'Count" is the number of bots per bracket. For example:
-#   - Warsong Gulch Count = 1 adds 20 bots (10 per team).
+# - Specify the number of battles to auto-fill per bracket.
+# - For battlegrounds, 'Count" is the number of battles per bracket. For example:
+#   - RandomBotAutoJoinWSBrackets = 6,7
+#   - RandomBotAutoJoinBGWSCount = 1
+#   - These configs would create two battles, one for bracket 6 and one for bracket 7.
 # - Ensure there are enough eligible bots to meet the specified counts.
-#
-# Arena Considerations:
-# - Rated arena brackets default to level 80-84 (bracket 14).
-# - Custom code changes are required for lower-level arena brackets to function properly.
-#
+
 # Battleground bracket range possibilities:
-# AiPlayerbot.RandomBotAutoJoinICBrackets = 0,1
-# AiPlayerbot.RandomBotAutoJoinEYBrackets = 0,1,2
-# AiPlayerbot.RandomBotAutoJoinAVBrackets = 0,1,2,3
-# AiPlayerbot.RandomBotAutoJoinABBrackets = 0,1,2,3,4,5,6
 # AiPlayerbot.RandomBotAutoJoinWSBrackets = 0,1,2,3,4,5,6,7
-
-AiPlayerbot.RandomBotAutoJoinICBrackets = 1
-AiPlayerbot.RandomBotAutoJoinEYBrackets = 2
-AiPlayerbot.RandomBotAutoJoinAVBrackets = 3
-AiPlayerbot.RandomBotAutoJoinABBrackets = 6
+# AiPlayerbot.RandomBotAutoJoinABBrackets = 0,1,2,3,4,5,6
+# AiPlayerbot.RandomBotAutoJoinAVBrackets = 0,1,2,3
+# AiPlayerbot.RandomBotAutoJoinEYBrackets = 0,1,2
+# AiPlayerbot.RandomBotAutoJoinICBrackets = 0,1
 AiPlayerbot.RandomBotAutoJoinWSBrackets = 7
+AiPlayerbot.RandomBotAutoJoinABBrackets = 6
+AiPlayerbot.RandomBotAutoJoinAVBrackets = 3
+AiPlayerbot.RandomBotAutoJoinEYBrackets = 2
+AiPlayerbot.RandomBotAutoJoinICBrackets = 1
 
-# Battlegrounds count (per bracket!):
-AiPlayerbot.RandomBotAutoJoinBGICCount = 0
-AiPlayerbot.RandomBotAutoJoinBGEYCount = 1
-AiPlayerbot.RandomBotAutoJoinBGAVCount = 0
-AiPlayerbot.RandomBotAutoJoinBGABCount = 1
+# Battlegrounds battles count (per bracket):
 AiPlayerbot.RandomBotAutoJoinBGWSCount = 1
+AiPlayerbot.RandomBotAutoJoinBGABCount = 1
+AiPlayerbot.RandomBotAutoJoinBGAVCount = 0
+AiPlayerbot.RandomBotAutoJoinBGEYCount = 1
+AiPlayerbot.RandomBotAutoJoinBGICCount = 0
 
-# Arena configuration:
+# Arena bracket (single bracket only):
+# Custom code changes are required for lower-level arena brackets to function properly.
 AiPlayerbot.RandomBotAutoJoinArenaBracket = 14
 
+# Arena battles count:
 AiPlayerbot.RandomBotAutoJoinBGRatedArena2v2Count = 0
 AiPlayerbot.RandomBotAutoJoinBGRatedArena3v3Count = 0
 AiPlayerbot.RandomBotAutoJoinBGRatedArena5v5Count = 0
@@ -1715,18 +1734,18 @@ AiPlayerbot.PremadeSpecLink.9.5.80 = -2032003311302-05230015220331351005031051
 
 AiPlayerbot.PremadeSpecName.11.0 = balance pve
 AiPlayerbot.PremadeSpecGlyph.11.0 = 40916,43331,40921,43335,44922,40919
-AiPlayerbot.PremadeSpecLink.11.0.60 = 5022203105331003213005301231
-AiPlayerbot.PremadeSpecLink.11.0.80 = 5032203105331303213305301231--205003012
+AiPlayerbot.PremadeSpecLink.11.0.60 = 5032003125031003213304301231
+AiPlayerbot.PremadeSpecLink.11.0.80 = 5032003125331303213305301231--205003012
 AiPlayerbot.PremadeSpecName.11.1 = bear pve
 AiPlayerbot.PremadeSpecGlyph.11.1 = 40897,43331,46372,43335,43332,40899
-AiPlayerbot.PremadeSpecLink.11.1.60 = -500232130322110353100301310501
+AiPlayerbot.PremadeSpecLink.11.1.60 = -503232132322010303120300013501
 AiPlayerbot.PremadeSpecLink.11.1.80 = -503232132322010353120303013511-20350001
 AiPlayerbot.PremadeSpecName.11.2 = resto pve
-AiPlayerbot.PremadeSpecGlyph.11.2 = 40913,43331,40906,43335,43674,45602
-AiPlayerbot.PremadeSpecLink.11.2.60 = --230033312031500531050113051
-AiPlayerbot.PremadeSpecLink.11.2.80 = 05320131003--230023312131500531050313051
+AiPlayerbot.PremadeSpecGlyph.11.2 = 40906,43331,45602,43335,43674,45603
+AiPlayerbot.PremadeSpecLink.11.2.60 = --230033312031502331050313031
+AiPlayerbot.PremadeSpecLink.11.2.80 = 05320031--230033312031502431053313051
 AiPlayerbot.PremadeSpecName.11.3 = cat pve
-AiPlayerbot.PremadeSpecGlyph.11.3 = 40902,43331,40901,43335,43674,45604
+AiPlayerbot.PremadeSpecGlyph.11.3 = 40902,43331,40901,43674,43335,45604
 AiPlayerbot.PremadeSpecLink.11.3.60 = -552202032322010053100030310501
 AiPlayerbot.PremadeSpecLink.11.3.80 = -553202032322010053120030310511-203503012
 AiPlayerbot.PremadeSpecName.11.4 = balance pvp

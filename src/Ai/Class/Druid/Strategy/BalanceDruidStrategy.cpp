@@ -3,15 +3,15 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include "CasterDruidStrategy.h"
+#include "BalanceDruidStrategy.h"
 
 #include "AiObjectContext.h"
 #include "FeralDruidStrategy.h"
 
-class CasterDruidStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
+class BalanceDruidStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
 public:
-    CasterDruidStrategyActionNodeFactory()
+    BalanceDruidStrategyActionNodeFactory()
     {
         creators["faerie fire"] = &faerie_fire;
         creators["hibernate"] = &hibernate;
@@ -23,6 +23,10 @@ public:
         creators["moonfire"] = &moonfire;
         creators["starfire"] = &starfire;
         creators["moonkin form"] = &moonkin_form;
+        creators["typhoon"] = &typhoon;
+        creators["hurricane"] = &hurricane;
+        creators["force of nature"] = &force_of_nature;
+        creators["cyclone on cc"] = &cyclone_on_cc;
     }
 
 private:
@@ -125,130 +129,76 @@ private:
             /*C*/ {}
         );
     }
+
+    static ActionNode* typhoon([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "typhoon",
+            /*P*/ { NextAction("moonkin form") },
+            /*A*/ {},
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* hurricane([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "hurricane",
+            /*P*/ { NextAction("moonkin form") },
+            /*A*/ {},
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* force_of_nature([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "force of nature",
+            /*P*/ { NextAction("moonkin form") },
+            /*A*/ {},
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* cyclone_on_cc([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "cyclone on cc",
+            /*P*/ { NextAction("moonkin form") },
+            /*A*/ {},
+            /*C*/ {}
+        );
+    }
 };
 
-CasterDruidStrategy::CasterDruidStrategy(PlayerbotAI* botAI) : GenericDruidStrategy(botAI)
+BalanceDruidStrategy::BalanceDruidStrategy(PlayerbotAI* botAI) : GenericDruidStrategy(botAI)
 {
-    actionNodeFactories.Add(new CasterDruidStrategyActionNodeFactory());
+    actionNodeFactories.Add(new BalanceDruidStrategyActionNodeFactory());
     actionNodeFactories.Add(new ShapeshiftDruidStrategyActionNodeFactory());
 }
 
-std::vector<NextAction> CasterDruidStrategy::getDefaultActions()
+std::vector<NextAction> BalanceDruidStrategy::getDefaultActions()
 {
     return {
-        NextAction("starfall", ACTION_HIGH + 1.0f),
-        NextAction("force of nature", ACTION_DEFAULT + 1.0f),
-        NextAction("wrath", ACTION_DEFAULT + 0.1f),
+        NextAction("starfire", 5.4f),
+        NextAction("wrath", 5.3f),
     };
 }
 
-void CasterDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void BalanceDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericDruidStrategy::InitTriggers(triggers);
 
-    triggers.push_back(
-        new TriggerNode(
-            "eclipse (lunar) cooldown",
-            {
-                NextAction("starfire", ACTION_DEFAULT + 0.2f)
-            }
-        )
-    );
-    triggers.push_back(
-        new TriggerNode(
-            "eclipse (solar) cooldown",
-            {
-                NextAction("wrath", ACTION_DEFAULT + 0.2f)
-            }
-        )
-    );
-    triggers.push_back(
-        new TriggerNode(
-            "insect swarm",
-            {
-                NextAction("insect swarm", ACTION_NORMAL + 5)
-            }
-        )
-    );
-    triggers.push_back(
-        new TriggerNode(
-            "moonfire",
-            {
-                NextAction("moonfire", ACTION_NORMAL + 4)
-            }
-        )
-    );
-    triggers.push_back(
-        new TriggerNode(
-            "eclipse (solar)",
-            {
-                NextAction("wrath", ACTION_NORMAL + 6)
-            }
-        )
-    );
-    triggers.push_back(
-        new TriggerNode(
-            "eclipse (lunar)",
-            {
-                NextAction("starfire", ACTION_NORMAL + 6)
-            }
-        )
-    );
-    triggers.push_back(
-        new TriggerNode(
-            "medium mana",
-            {
-                NextAction("innervate", ACTION_HIGH + 9)
-            }
-        )
-    );
-    triggers.push_back(
-        new TriggerNode(
-            "enemy too close for spell",
-            {
-                NextAction("flee", ACTION_MOVE + 9)
-            }
-        )
-    );
-}
+    // Debuffs and DoTs
+    triggers.push_back(new TriggerNode("faerie fire", { NextAction("faerie fire", 29.5f) }));
+    triggers.push_back(new TriggerNode("insect swarm", { NextAction("insect swarm", 18.0f) }));
+    triggers.push_back(new TriggerNode("moonfire", { NextAction("moonfire", 17.5f) }));
 
-void CasterDruidAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
-{
-    triggers.push_back(
-        new TriggerNode(
-            "hurricane channel check",
-            {
-                NextAction("cancel channel", ACTION_HIGH + 2)
-            }
-        )
-    );
-    triggers.push_back(
-        new TriggerNode(
-            "medium aoe",
-            {
-                NextAction("hurricane", ACTION_HIGH + 1)
-            }
-        )
-    );
-    triggers.push_back(
-        new TriggerNode(
-            "light aoe",
-            {
-                NextAction("insect swarm on attacker", ACTION_NORMAL + 3),
-                NextAction("moonfire on attacker", ACTION_NORMAL + 3)
-            }
-        )
-    );
-}
+    // Eclipse procs
+    triggers.push_back(new TriggerNode("eclipse (solar)", { NextAction("wrath", 20.0f) }));
+    triggers.push_back(new TriggerNode("eclipse (lunar)", { NextAction("starfire", 20.0f) }));
 
-void CasterDruidDebuffStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
-{
-    triggers.push_back(
-        new TriggerNode(
-            "faerie fire",
-            {
-                NextAction("faerie fire", ACTION_HIGH)
-            }
-        )
-    );
+    // Utility/Defensive
+    triggers.push_back(new TriggerNode("medium mana", { NextAction("innervate", 29.0f) }));
+    triggers.push_back(new TriggerNode("enemy too close for spell", { NextAction("flee", 39.0f) }));
 }

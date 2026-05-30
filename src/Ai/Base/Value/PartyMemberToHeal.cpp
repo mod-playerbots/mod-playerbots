@@ -135,6 +135,32 @@ bool PartyMemberToHeal::Check(Unit* player)
            bot->GetDistance2d(player) < sPlayerbotAIConfig.healDistance * 2 && bot->IsWithinLOSInMap(player);
 }
 
+Unit* HealerLowMana::Calculate()
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    MinValueCalculator calc(100);
+
+    for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
+    {
+        Player* player = gref->GetSource();
+        if (!player || player == bot)
+            continue;
+        if (player->IsGameMaster() || !player->IsAlive())
+            continue;
+        if (!botAI->IsHeal(player))
+            continue;
+
+        float mana = player->GetPowerPct(POWER_MANA);
+        if (mana < calc.minValue)
+            calc.probe(mana, player);
+    }
+
+    return (Unit*)calc.param;
+}
+
 Unit* PartyMemberToProtect::Calculate()
 {
     return nullptr;

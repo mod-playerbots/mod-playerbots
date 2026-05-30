@@ -3,19 +3,17 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include "BearTankDruidStrategy.h"
+#include "BearDruidStrategy.h"
 
 #include "Playerbots.h"
 
-class BearTankDruidStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
+class BearDruidStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
 public:
-    BearTankDruidStrategyActionNodeFactory()
+    BearDruidStrategyActionNodeFactory()
     {
-        creators["melee"] = &melee;
         creators["feral charge - bear"] = &feral_charge_bear;
         creators["swipe (bear)"] = &swipe_bear;
-        creators["faerie fire (feral)"] = &faerie_fire_feral;
         creators["bear form"] = &bear_form;
         creators["dire bear form"] = &dire_bear_form;
         creators["mangle (bear)"] = &mangle_bear;
@@ -28,16 +26,6 @@ public:
     }
 
 private:
-    static ActionNode* melee([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "melee",
-            /*P*/ { NextAction("feral charge - bear") },
-            /*A*/ {},
-            /*C*/ {}
-        );
-    }
-
     static ActionNode* feral_charge_bear([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
@@ -53,16 +41,6 @@ private:
         return new ActionNode(
             "swipe (bear)",
             /*P*/ {},
-            /*A*/ {},
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* faerie_fire_feral([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "faerie fire (feral)",
-            /*P*/ { NextAction("feral charge - bear") },
             /*A*/ {},
             /*C*/ {}
         );
@@ -159,99 +137,81 @@ private:
     }
 };
 
-BearTankDruidStrategy::BearTankDruidStrategy(PlayerbotAI* botAI) : FeralDruidStrategy(botAI)
+BearDruidStrategy::BearDruidStrategy(PlayerbotAI* botAI) : FeralDruidStrategy(botAI)
 {
-    actionNodeFactories.Add(new BearTankDruidStrategyActionNodeFactory());
+    actionNodeFactories.Add(new BearDruidStrategyActionNodeFactory());
 }
 
-std::vector<NextAction> BearTankDruidStrategy::getDefaultActions()
+std::vector<NextAction> BearDruidStrategy::getDefaultActions()
 {
     return {
-        NextAction("mangle (bear)", ACTION_DEFAULT + 0.5f),
-        NextAction("faerie fire (feral)", ACTION_DEFAULT + 0.4f),
-        NextAction("lacerate", ACTION_DEFAULT + 0.3f),
-        NextAction("maul", ACTION_DEFAULT + 0.2f),
-        NextAction("enrage", ACTION_DEFAULT + 0.1f),
-        NextAction("melee", ACTION_DEFAULT)
+        NextAction("maul",   5.2f),
+        NextAction("enrage", 5.1f),
+        NextAction("melee",  5.0f)
     };
 }
 
-void BearTankDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void BearDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     FeralDruidStrategy::InitTriggers(triggers);
 
     triggers.push_back(
         new TriggerNode(
-            "enemy out of melee",
-            {
-                NextAction("feral charge - bear", ACTION_NORMAL + 8)
-            }
-        )
-    );
-    triggers.push_back(
-        new TriggerNode(
             "bear form",
-            {
-                NextAction("dire bear form", ACTION_HIGH + 8)
-            }
+            { NextAction("dire bear form", 28.0f) }
         )
     );
     triggers.push_back(
         new TriggerNode(
-            "low health",
-            {
-                NextAction("frenzied regeneration", ACTION_HIGH + 7)
-            }
+            "medium health",
+            { NextAction("frenzied regeneration", 27.0f) }
         )
     );
-    triggers.push_back(
-        new TriggerNode(
-            "faerie fire (feral)",
-            {
-                NextAction("faerie fire (feral)", ACTION_HIGH + 7)
-            }
-        )
-    );
-    triggers.push_back(new TriggerNode("high aoe", {NextAction("challenging roar", ACTION_HIGH + 8)}));
-    triggers.push_back(
-        new TriggerNode(
-            "lose aggro",
-            {
-                NextAction("growl", ACTION_HIGH + 8)
-            }
-        )
-    );
+    triggers.push_back(new TriggerNode(
+        "mangle (bear)", { NextAction("mangle (bear)", 17.5f) }
+    ));
+    triggers.push_back(new TriggerNode(
+        "faerie fire (feral)", { NextAction("faerie fire (feral)", 17.0f) }
+    ));
+    triggers.push_back(new TriggerNode(
+        "lacerate", { NextAction("lacerate", 16.0f) }
+    ));
+    triggers.push_back(new TriggerNode(
+        "demoralizing roar", { NextAction("demoralizing roar", 15.5f) }
+    ));
+    triggers.push_back(new TriggerNode("high aoe",    { NextAction("challenging roar", 26.5f) }));
+    triggers.push_back(new TriggerNode("lose aggro",
+        {
+            NextAction("growl",               26.0f),
+            NextAction("faerie fire (feral)", 25.5f)
+        }
+    ));
+    triggers.push_back(new TriggerNode("berserk active", { NextAction("mangle (bear)", 25.0f) }));
     triggers.push_back(
         new TriggerNode(
             "medium aoe",
             {
-                NextAction("demoralizing roar", ACTION_HIGH + 6),
-                NextAction("swipe (bear)", ACTION_HIGH + 6)
+                NextAction("demoralizing roar", 24.5f),
+                NextAction("swipe (bear)",      24.0f)
             }
         )
     );
     triggers.push_back(
         new TriggerNode(
             "light aoe",
-            {
-                NextAction("swipe (bear)", ACTION_HIGH + 5)
-            }
+            { NextAction("swipe (bear)", 24.0f) }
         )
     );
     triggers.push_back(
         new TriggerNode(
             "bash",
-            {
-                NextAction("bash", ACTION_INTERRUPT + 2)
-            }
+            { NextAction("bash", 42.0f) }
         )
     );
     triggers.push_back(
         new TriggerNode(
             "bash on enemy healer",
-            {
-                NextAction("bash on enemy healer", ACTION_INTERRUPT + 1)
-            }
+            { NextAction("bash on enemy healer", 41.0f) }
         )
     );
 }
