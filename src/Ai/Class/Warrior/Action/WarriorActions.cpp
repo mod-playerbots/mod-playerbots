@@ -41,7 +41,7 @@ bool CastSunderArmorAction::isUseful()
     if (!group)
         return false;
 
-    if (AiFactory::GetPlayerSpecTab(bot) != WARRIOR_TAB_PROTECTION)
+    if (!botAI->IsTank(bot, false))
     {
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
@@ -53,7 +53,7 @@ bool CastSunderArmorAction::isUseful()
             }
 
             if (member->getClass() == CLASS_WARRIOR &&
-                AiFactory::GetPlayerSpecTab(member) == WARRIOR_TAB_PROTECTION)
+                botAI->IsTank(member, false))
                 return false;
         }
     }
