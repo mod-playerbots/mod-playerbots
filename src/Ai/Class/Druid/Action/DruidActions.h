@@ -87,16 +87,16 @@ public:
     bool isUseful() override;
 };
 
-class CastMarkOfTheWildAction : public CastBuffSpellAction
+class CastMarkOfTheWildAction : public GroupBuffSpellAction
 {
 public:
-    CastMarkOfTheWildAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "mark of the wild") {}
+    CastMarkOfTheWildAction(PlayerbotAI* botAI) : GroupBuffSpellAction(botAI, "mark of the wild") {}
 };
 
-class CastMarkOfTheWildOnPartyAction : public BuffOnPartyAction
+class CastMarkOfTheWildOnPartyAction : public GroupBuffOnPartyAction
 {
 public:
-    CastMarkOfTheWildOnPartyAction(PlayerbotAI* botAI) : BuffOnPartyAction(botAI, "mark of the wild") {}
+    CastMarkOfTheWildOnPartyAction(PlayerbotAI* botAI) : GroupBuffOnPartyAction(botAI, "mark of the wild") {}
 };
 
 class CastSurvivalInstinctsAction : public CastBuffSpellAction

@@ -22,7 +22,6 @@
 #        THRESHOLDS
 #        QUESTS
 #        COMBAT
-#        GREATER BUFFS STRATEGIES
 #        CHEATS
 #        SPELLS
 #        FLIGHTPATH
@@ -478,26 +477,25 @@ AiPlayerbot.AutoSaveMana = 1
 # Default: 60 (60%)
 AiPlayerbot.SaveManaThreshold = 60
 
+# Enable Paladin bots to use greater blessings, with the blessing used being based on the
+# number of Paladins in the raid/group and the spec of the recipient. Priorities for each
+# spec are hardcoded in GreaterBlessingActions.h.
+# 0 = disabled
+# 1 = enabled in raid groups only
+# 2 = enabled in all groups
+# Default: 1 (raid only)
+AiPlayerbot.AutoGreaterBlessings = 1
+
+# Enable bots to use group reagent buffs: Gift of the Wild, Arcane Brilliance,
+# Prayer of Fortitude, Prayer of Spirit, and Prayer of Shadow Protection.
+# 0 = disabled
+# 1 = enabled in raid groups only
+# 2 = enabled in all groups
+# Default: 2 (all groups)
+AiPlayerbot.AutoPartyBuffs = 2
+
 # Bots can flee from enemies
 AiPlayerbot.FleeingEnabled = 1
-
-#
-#
-#
-####################################################################################################
-
-####################################################################################################
-# GREATER BUFFS STRATEGIES
-#
-#
-
-# Min group size to use Greater buffs (Paladin, Mage, Druid)
-# Default: 3
-AiPlayerbot.MinBotsForGreaterBuff = 3
-
-# Cooldown (seconds) between reagent-missing RP warnings, per bot & per buff
-# Default: 30
-AiPlayerbot.RPWarningCooldown = 30
 
 #
 #
@@ -751,6 +749,11 @@ AiPlayerbot.EnableRandomBotTrading = 1
 
 # Configure message prefixes which will be excluded in analysis in trade action to open trade window
 AiPlayerbot.TradeActionExcludedPrefixes = "RPLL_H_,DBMv4,{звезда} Questie,{rt1} Questie"
+
+# Allow bots to send mail. When disabled, bots will not mail items or money in
+# response to chat commands ("send mail").
+# Default: 1 (enabled)
+AiPlayerbot.BotSendMailEnabled = 1
 
 #
 #
@@ -1293,44 +1296,47 @@ AiPlayerbot.RandomBotAutoJoinBG = 0
 # This section controls the level brackets and automatic bot participation in battlegrounds and arenas.
 #
 # Brackets:
-# - Specify the level ranges for bots to auto-join:
-#   - Warsong Gulch (WS): 0 = 10-19, 1 = 20-29, 2 = 30-39, ..., 7 = 80 (Default: 7)
-#   - Rated Arena: 0 = 10-14, 1 = 15-19, ..., 14 = 80-84 (Default: 14)
-# - Multiple brackets can be specified as a comma-separated list (e.g., "0,2,5").
+# - Specify the level ranges for bots to auto-join (bracket IDs are per-BG and start at 0 from each BG's minimum level):
+#   - Warsong Gulch    (WS): 0=10-19, 1=20-29, 2=30-39, 3=40-49, 4=50-59, 5=60-69, 6=70-79, 7=80    (Default: 7)
+#   - Arathi Basin     (AB): 0=20-29, 1=30-39, 2=40-49, 3=50-59, 4=60-69, 5=70-79, 6=80             (Default: 6)
+#   - Alterac Valley   (AV): 0=51-60, 1=61-70, 2=71-79, 3=80                                        (Default: 3)
+#   - Eye of the Storm (EY): 0=61-69, 1=70-79, 2=80                                                 (Default: 2)
+#   - Isle of Conquest (IC): 0=71-79, 1=80                                                          (Default: 1)
+# - Multiple BG brackets can be specified as a comma-separated list (e.g., "0,2,5"). Not applicable for Rated Arena.
+#   - Rated Arena:           0=10-14, 1=15-19, 2=20-24, ..., 13=75-79, 14=80-84                     (Default: 14)
 #
 # Counts:
-# - Specify the number of battlegrounds to auto-fill per bracket.
-# - For battlegrounds, 'Count" is the number of bots per bracket. For example:
-#   - Warsong Gulch Count = 1 adds 20 bots (10 per team).
+# - Specify the number of battles to auto-fill per bracket.
+# - For battlegrounds, 'Count" is the number of battles per bracket. For example:
+#   - RandomBotAutoJoinWSBrackets = 6,7
+#   - RandomBotAutoJoinBGWSCount = 1
+#   - These configs would create two battles, one for bracket 6 and one for bracket 7.
 # - Ensure there are enough eligible bots to meet the specified counts.
-#
-# Arena Considerations:
-# - Rated arena brackets default to level 80-84 (bracket 14).
-# - Custom code changes are required for lower-level arena brackets to function properly.
-#
+
 # Battleground bracket range possibilities:
-# AiPlayerbot.RandomBotAutoJoinICBrackets = 0,1
-# AiPlayerbot.RandomBotAutoJoinEYBrackets = 0,1,2
-# AiPlayerbot.RandomBotAutoJoinAVBrackets = 0,1,2,3
-# AiPlayerbot.RandomBotAutoJoinABBrackets = 0,1,2,3,4,5,6
 # AiPlayerbot.RandomBotAutoJoinWSBrackets = 0,1,2,3,4,5,6,7
-
-AiPlayerbot.RandomBotAutoJoinICBrackets = 1
-AiPlayerbot.RandomBotAutoJoinEYBrackets = 2
-AiPlayerbot.RandomBotAutoJoinAVBrackets = 3
-AiPlayerbot.RandomBotAutoJoinABBrackets = 6
+# AiPlayerbot.RandomBotAutoJoinABBrackets = 0,1,2,3,4,5,6
+# AiPlayerbot.RandomBotAutoJoinAVBrackets = 0,1,2,3
+# AiPlayerbot.RandomBotAutoJoinEYBrackets = 0,1,2
+# AiPlayerbot.RandomBotAutoJoinICBrackets = 0,1
 AiPlayerbot.RandomBotAutoJoinWSBrackets = 7
+AiPlayerbot.RandomBotAutoJoinABBrackets = 6
+AiPlayerbot.RandomBotAutoJoinAVBrackets = 3
+AiPlayerbot.RandomBotAutoJoinEYBrackets = 2
+AiPlayerbot.RandomBotAutoJoinICBrackets = 1
 
-# Battlegrounds count (per bracket!):
-AiPlayerbot.RandomBotAutoJoinBGICCount = 0
-AiPlayerbot.RandomBotAutoJoinBGEYCount = 1
-AiPlayerbot.RandomBotAutoJoinBGAVCount = 0
-AiPlayerbot.RandomBotAutoJoinBGABCount = 1
+# Battlegrounds battles count (per bracket):
 AiPlayerbot.RandomBotAutoJoinBGWSCount = 1
+AiPlayerbot.RandomBotAutoJoinBGABCount = 1
+AiPlayerbot.RandomBotAutoJoinBGAVCount = 0
+AiPlayerbot.RandomBotAutoJoinBGEYCount = 1
+AiPlayerbot.RandomBotAutoJoinBGICCount = 0
 
-# Arena configuration:
+# Arena bracket (single bracket only):
+# Custom code changes are required for lower-level arena brackets to function properly.
 AiPlayerbot.RandomBotAutoJoinArenaBracket = 14
 
+# Arena battles count:
 AiPlayerbot.RandomBotAutoJoinBGRatedArena2v2Count = 0
 AiPlayerbot.RandomBotAutoJoinBGRatedArena3v3Count = 0
 AiPlayerbot.RandomBotAutoJoinBGRatedArena5v5Count = 0
