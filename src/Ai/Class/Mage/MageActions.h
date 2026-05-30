@@ -40,16 +40,16 @@ public:
     CastFrostArmorAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "frost armor") {}
 };
 
-class CastArcaneIntellectAction : public CastBuffSpellAction
+class CastArcaneIntellectAction : public GroupBuffSpellAction
 {
 public:
-    CastArcaneIntellectAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "arcane intellect") {}
+    CastArcaneIntellectAction(PlayerbotAI* botAI) : GroupBuffSpellAction(botAI, "arcane intellect") {}
 };
 
-class CastArcaneIntellectOnPartyAction : public BuffOnPartyAction
+class CastArcaneIntellectOnPartyAction : public GroupBuffOnPartyAction
 {
 public:
-    CastArcaneIntellectOnPartyAction(PlayerbotAI* botAI) : BuffOnPartyAction(botAI, "arcane intellect") {}
+    CastArcaneIntellectOnPartyAction(PlayerbotAI* botAI) : GroupBuffOnPartyAction(botAI, "arcane intellect") {}
 };
 
 class CastFocusMagicOnPartyAction : public CastSpellAction

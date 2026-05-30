@@ -8,6 +8,7 @@
 
 #include <map>
 #include <set>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -172,9 +173,11 @@ public:
     static bool IsUsedBySkill(ItemTemplate const* proto, uint32 skillId);
     bool IsTestItem(uint32 itemId) { return itemForTest.find(itemId) != itemForTest.end(); }
     std::vector<uint32> GetCachedEquipments(uint32 requiredLevel, uint32 inventoryType);
+    std::vector<uint32> const& GetEnchantmentPool(uint32 entry) const;
 
 private:
     void BuildRandomItemCache();
+    void LoadEnchantmentPool();
     void BuildEquipCache();
     void BuildEquipCacheNew();
     void BuildItemInfoCache();
@@ -217,6 +220,8 @@ private:
     static std::set<uint32> itemCache;
     // equipCacheNew[RequiredLevel][InventoryType]
     std::map<uint32, std::map<uint32, std::vector<uint32>>> equipCacheNew;
+    // enchPoolCache[item_enchantment_template.entry] -> list of enchantment ids
+    std::unordered_map<uint32, std::vector<uint32>> enchPoolCache;
 };
 
 #define sRandomItemMgr RandomItemMgr::instance()

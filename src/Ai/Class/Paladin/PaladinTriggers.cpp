@@ -5,10 +5,11 @@
 
 #include "PaladinTriggers.h"
 
+#include "GenericBuffUtils.h"
+#include "PaladinGreaterBlessingAction.h"
 #include "PaladinActions.h"
-#include "PlayerbotAIConfig.h"
-#include "Playerbots.h"
 #include "PaladinHelper.h"
+#include "Playerbots.h"
 
 bool SealTrigger::IsActive()
 {
@@ -28,8 +29,9 @@ bool CrusaderAuraTrigger::IsActive()
 bool BlessingTrigger::IsActive()
 {
     Unit* target = GetTarget();
-    return SpellTrigger::IsActive() && !botAI->HasAnyAuraOf(target, "blessing of might", "blessing of wisdom",
-                                                            "blessing of kings", "blessing of sanctuary", nullptr);
+    return SpellTrigger::IsActive() &&
+           !botAI->HasAnyAuraOf(target, "blessing of might", "blessing of wisdom",
+                                "blessing of kings", "blessing of sanctuary", nullptr);
 }
 
 bool DivineShieldLowHealthTrigger::IsActive()
@@ -62,7 +64,8 @@ bool HandOfFreedomOnPartyTrigger::IsActive()
     if (!target)
         return false;
 
-    if (target != bot && bot->GetExactDist2dSq(target->GetPositionX(), target->GetPositionY()) > 30.0f * 30.0f)
+    if (target != bot &&
+        bot->GetExactDist2dSq(target->GetPositionX(), target->GetPositionY()) > 30.0f * 30.0f)
         return false;
 
     if (!botAI->CanCastSpell("hand of freedom", target))
@@ -74,4 +77,30 @@ bool HandOfFreedomOnPartyTrigger::IsActive()
 bool NotSensingUndeadTrigger::IsActive()
 {
     return !botAI->HasAura("sense undead", bot);
+}
+
+bool GreaterBlessingNeededTrigger::IsActive()
+{
+    if (!ai::gbless::IsEligibleGroupForAutoBlessings(bot->GetGroup()))
+        return false;
+
+    if (ai::buff::ShouldDeferGreaterBlessingAssignmentForRecentLogin(bot))
+        return false;
+
+    Group* group = bot->GetGroup();
+    uint32 const groupKey = group ? group->GetLeaderGUID().GetCounter() : 0;
+
+    Value<ai::gbless::CachedPendingBlessingAssignment>* pendingValue =
+        context->GetValue<ai::gbless::CachedPendingBlessingAssignment>("greater blessing pending assignment");
+    if (!pendingValue)
+        return false;
+
+    ai::gbless::CachedPendingBlessingAssignment pendingAssignment = pendingValue->Get();
+    if (pendingAssignment.groupKey != groupKey)
+    {
+        pendingValue->Reset();
+        pendingAssignment = pendingValue->Get();
+    }
+
+    return pendingAssignment.valid && pendingAssignment.groupKey == groupKey;
 }

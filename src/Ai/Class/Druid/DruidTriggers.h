@@ -23,15 +23,13 @@ class PlayerbotAI;
 class MarkOfTheWildOnPartyTrigger : public BuffOnPartyTrigger
 {
 public:
-    MarkOfTheWildOnPartyTrigger(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, "mark of the wild", 2 * 2000) {}
-
-    bool IsActive() override;
+    MarkOfTheWildOnPartyTrigger(PlayerbotAI* botAI) : BuffOnPartyTrigger(botAI, "mark of the wild", 4 * 2000) {}
 };
 
 class MarkOfTheWildTrigger : public BuffTrigger
 {
 public:
-    MarkOfTheWildTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "mark of the wild", 2 * 2000) {}
+    MarkOfTheWildTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "mark of the wild", 4 * 2000) {}
 
     bool IsActive() override;
 };

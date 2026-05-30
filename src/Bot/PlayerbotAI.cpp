@@ -5971,29 +5971,6 @@ void PlayerbotAI::EnchantItemT(uint32 spellid, uint8 slot)
     LOG_INFO("playerbots", "{}: items was enchanted successfully!", bot->GetName().c_str());
 }
 
-uint32 PlayerbotAI::GetBuffedCount(Player* player, std::string const spellname)
-{
-    uint32 bcount = 0;
-
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
-        {
-            Player* member = gref->GetSource();
-            if (!member || !member->IsInWorld())
-                continue;
-
-            if (!member->IsInSameRaidWith(player))
-                continue;
-
-            if (HasAura(spellname, member, true))
-                bcount++;
-        }
-    }
-
-    return bcount;
-}
-
 int32 PlayerbotAI::GetNearGroupMemberCount(float dis)
 {
     int count = 1;  // yourself

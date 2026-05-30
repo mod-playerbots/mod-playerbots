@@ -10,4 +10,10 @@ void RaidBwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("bwl affliction bronze", {
         NextAction("bwl use hourglass sand", ACTION_RAID) }));
+
+    triggers.push_back(new TriggerNode("bwl wild magic", {
+        NextAction("ice block", ACTION_RAID) }));
+
+    triggers.push_back(new TriggerNode("bwl nefarian fear ward", {
+        NextAction("bwl nefarian fear ward", ACTION_RAID) }));
 }

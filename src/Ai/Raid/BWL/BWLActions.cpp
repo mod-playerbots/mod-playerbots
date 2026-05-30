@@ -38,3 +38,16 @@ bool BwlUseHourglassSandAction::Execute(Event /*event*/)
 {
     return botAI->CastSpell(SPELL_HOURGLASS_SAND, bot);
 }
+
+bool BwlNefarianFearWardAction::Execute(Event /*event*/)
+{
+    Unit* nefarian = AI_VALUE2(Unit*, "find target", "nefarian");
+    if (!nefarian)
+        return false;
+
+    Unit* victim = nefarian->GetVictim();
+    if (!victim)
+        return false;
+
+    return botAI->CastSpell("fear ward", victim);
+}
