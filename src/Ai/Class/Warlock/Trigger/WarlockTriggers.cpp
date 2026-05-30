@@ -50,22 +50,6 @@ bool TooManySoulShardsTrigger::IsActive() { return GetSoulShardCount(botAI->GetB
 
 bool OutOfSoulstoneTrigger::IsActive() { return GetSoulstoneCount(botAI->GetBot()) == 0; }
 
-// Checks if the target marked with the moon icon can be banished
-bool BanishTrigger::IsActive()
-{
-    Unit* ccTarget = context->GetValue<Unit*>("cc target", "banish")->Get();
-    Unit* moonTarget = context->GetValue<Unit*>("rti cc target")->Get();
-    return ccTarget && moonTarget && ccTarget == moonTarget && HasCcTargetTrigger::IsActive();
-}
-
-// Checks if the target marked with the moon icon can be feared
-bool FearTrigger::IsActive()
-{
-    Unit* ccTarget = context->GetValue<Unit*>("cc target", "fear")->Get();
-    Unit* moonTarget = context->GetValue<Unit*>("rti cc target")->Get();
-    return ccTarget && moonTarget && ccTarget == moonTarget && HasCcTargetTrigger::IsActive();
-}
-
 bool DemonArmorTrigger::IsActive()
 {
     Unit* target = GetTarget();

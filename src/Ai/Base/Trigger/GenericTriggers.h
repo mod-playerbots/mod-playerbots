@@ -550,6 +550,17 @@ public:
     bool IsActive() override;
 };
 
+class LowEnergyTrigger : public Trigger
+{
+public:
+    LowEnergyTrigger(PlayerbotAI* botAI, uint8 threshold = 30) : Trigger(botAI, "low energy"), threshold(threshold) {}
+
+    bool IsActive() override;
+
+private:
+    uint8 threshold;
+};
+
 BEGIN_TRIGGER(PanicTrigger, Trigger) // cppcheck-suppress unknownMacro
 std::string const getName() override { return "panic"; }
 END_TRIGGER()

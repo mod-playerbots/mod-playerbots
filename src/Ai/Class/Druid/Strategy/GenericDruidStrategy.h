@@ -55,4 +55,13 @@ public:
     std::string const getName() override { return "healer dps"; }
 };
 
+class DruidAoeStrategy : public Strategy
+{
+public:
+    DruidAoeStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
+
+    void InitTriggers(std::vector<TriggerNode*>& triggers) override;
+    std::string const getName() override { return "aoe"; }
+};
+
 #endif

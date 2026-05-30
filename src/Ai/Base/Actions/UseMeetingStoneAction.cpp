@@ -11,6 +11,7 @@
 #include "GridNotifiersImpl.h"
 #include "NearestGameObjects.h"
 #include "PlayerbotAIConfig.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "PositionValue.h"
 
@@ -36,7 +37,8 @@ bool UseMeetingStoneAction::Execute(Event event)
 
     if (bot->IsInCombat())
     {
-        botAI->TellError("I am in combat");
+        botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "meeting_stone_in_combat", "I am in combat", {}));
         return false;
     }
 
@@ -73,13 +75,15 @@ bool SummonAction::Execute(Event /*event*/)
 
     if (SummonUsingGos(master, bot, true) || SummonUsingNpcs(master, bot, true))
     {
-        botAI->TellMasterNoFacing("Hello!");
+        botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "hello", "Hello!", {}));
         return true;
     }
 
     if (SummonUsingGos(bot, master, true) || SummonUsingNpcs(bot, master, true))
     {
-        botAI->TellMasterNoFacing("Welcome!");
+        botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "meeting_stone_welcome", "Welcome!", {}));
         return true;
     }
 
@@ -99,7 +103,10 @@ bool SummonAction::SummonUsingGos(Player* summoner, Player* player, bool preserv
             return Teleport(summoner, player, preserveAuras);
     }
 
-    botAI->TellError(summoner == bot ? "There is no meeting stone nearby" : "There is no meeting stone near you");
+    botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+        summoner == bot ? "meeting_stone_none_nearby" : "meeting_stone_none_near_you",
+        summoner == bot ? "There is no meeting stone nearby" : "There is no meeting stone near you",
+        {}));
     return false;
 }
 
@@ -119,13 +126,19 @@ bool SummonAction::SummonUsingNpcs(Player* summoner, Player* player, bool preser
         {
             if (!player->HasItemCount(6948, 1, false))
             {
-                botAI->TellError(player == bot ? "I have no hearthstone" : "You have no hearthstone");
+                botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    player == bot ? "meeting_stone_no_hearthstone_self" : "meeting_stone_no_hearthstone_you",
+                    player == bot ? "I have no hearthstone" : "You have no hearthstone",
+                    {}));
                 return false;
             }
 
             if (player->HasSpellCooldown(8690))
             {
-                botAI->TellError(player == bot ? "My hearthstone is not ready" : "Your hearthstone is not ready");
+                botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    player == bot ? "meeting_stone_hearthstone_not_ready_self" : "meeting_stone_hearthstone_not_ready_you",
+                    player == bot ? "My hearthstone is not ready" : "Your hearthstone is not ready",
+                    {}));
                 return false;
             }
 
@@ -141,7 +154,10 @@ bool SummonAction::SummonUsingNpcs(Player* summoner, Player* player, bool preser
         }
     }
 
-    botAI->TellError(summoner == bot ? "There are no innkeepers nearby" : "There are no innkeepers near you");
+    botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+        summoner == bot ? "meeting_stone_no_innkeepers_nearby" : "meeting_stone_no_innkeepers_near_you",
+        summoner == bot ? "There are no innkeepers nearby" : "There are no innkeepers near you",
+        {}));
     return false;
 }
 
@@ -153,7 +169,8 @@ bool SummonAction::Teleport(Player* summoner, Player* player, bool preserveAuras
 
     if (player->GetVehicle())
     {
-        botAI->TellError("You cannot summon me while I'm on a vehicle");
+        botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "meeting_stone_cannot_summon_vehicle", "You cannot summon me while I'm on a vehicle", {}));
         return false;
     }
 
@@ -174,20 +191,29 @@ bool SummonAction::Teleport(Player* summoner, Player* player, bool preserveAuras
 
                 if (summoner->IsInCombat() && !sPlayerbotAIConfig.allowSummonInCombat)
                 {
-                    botAI->TellError("You cannot summon me while you're in combat");
+                    botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                        "meeting_stone_cannot_summon_master_in_combat",
+                        "You cannot summon me while you're in combat",
+                        {}));
                     return false;
                 }
 
                 if (!summoner->IsAlive() && !sPlayerbotAIConfig.allowSummonWhenMasterIsDead)
                 {
-                    botAI->TellError("You cannot summon me while you're dead");
+                    botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                        "meeting_stone_cannot_summon_master_dead",
+                        "You cannot summon me while you're dead",
+                        {}));
                     return false;
                 }
 
                 if (bot->isDead() && !bot->HasPlayerFlag(PLAYER_FLAGS_GHOST) &&
                     !sPlayerbotAIConfig.allowSummonWhenBotIsDead)
                 {
-                    botAI->TellError("You cannot summon me while I'm dead, you need to release my spirit first");
+                    botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                        "meeting_stone_cannot_summon_bot_dead",
+                        "You cannot summon me while I'm dead, you need to release my spirit first",
+                        {}));
                     return false;
                 }
 
@@ -199,7 +225,8 @@ bool SummonAction::Teleport(Player* summoner, Player* player, bool preserveAuras
                 {
                     bot->ResurrectPlayer(1.0f, false);
                     bot->SpawnCorpseBones();
-                    botAI->TellMasterNoFacing("I live, again!");
+                    botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                        "meeting_stone_revived", "I live, again!", {}));
                     botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Reset();
                 }
 
@@ -229,6 +256,7 @@ bool SummonAction::Teleport(Player* summoner, Player* player, bool preserveAuras
     }
 
     if (summoner != player)
-         botAI->TellError("Not enough place to summon");
+         botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+             "meeting_stone_not_enough_space", "Not enough place to summon", {}));
     return false;
 }

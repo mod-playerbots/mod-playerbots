@@ -18,12 +18,14 @@ class CastMoltenArmorAction : public CastBuffSpellAction
 {
 public:
     CastMoltenArmorAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "molten armor") {}
+    std::vector<NextAction> getAlternatives() override;
 };
 
 class CastMageArmorAction : public CastBuffSpellAction
 {
 public:
     CastMageArmorAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "mage armor") {}
+    std::vector<NextAction> getAlternatives() override;
 };
 
 class CastIceArmorAction : public CastBuffSpellAction
@@ -60,7 +62,8 @@ public:
 class CastSummonWaterElementalAction : public CastBuffSpellAction
 {
 public:
-    CastSummonWaterElementalAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "summon water elemental") {}
+    CastSummonWaterElementalAction(PlayerbotAI* botAI)
+        : CastBuffSpellAction(botAI, "summon water elemental") {}
 };
 
 // Boost Actions
@@ -236,7 +239,8 @@ public:
 class CastCounterspellOnEnemyHealerAction : public CastSpellOnEnemyHealerAction
 {
 public:
-    CastCounterspellOnEnemyHealerAction(PlayerbotAI* botAI) : CastSpellOnEnemyHealerAction(botAI, "counterspell") {}
+    CastCounterspellOnEnemyHealerAction(PlayerbotAI* botAI)
+        : CastSpellOnEnemyHealerAction(botAI, "counterspell") {}
 };
 
 class CastFrostNovaAction : public CastSpellAction
@@ -275,9 +279,7 @@ class CastRemoveLesserCurseOnPartyAction : public CurePartyMemberAction
 {
 public:
     CastRemoveLesserCurseOnPartyAction(PlayerbotAI* botAI)
-        : CurePartyMemberAction(botAI, "remove lesser curse", DISPEL_CURSE)
-    {
-    }
+        : CurePartyMemberAction(botAI, "remove lesser curse", DISPEL_CURSE) {}
 };
 
 // Damage and Debuff Actions
@@ -331,7 +333,6 @@ public:
     CastLivingBombAction(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "living bomb", true) {}
     bool isUseful() override
     {
-        // Bypass TTL check
         return CastAuraSpellAction::isUseful();
     }
 };
@@ -342,7 +343,6 @@ public:
     CastLivingBombOnAttackersAction(PlayerbotAI* botAI) : CastDebuffSpellOnAttackerAction(botAI, "living bomb", true) {}
     bool isUseful() override
     {
-        // Bypass TTL check
         return CastAuraSpellAction::isUseful();
     }
 };
