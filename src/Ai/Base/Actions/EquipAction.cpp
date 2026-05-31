@@ -342,7 +342,13 @@ ItemIds EquipAction::SelectInventoryItemsToEquip()
         if (!item)
             continue;
 
-        ItemTemplate const* itemTemplate = item->GetTemplate();
+        // Re-validate item is still in inventory — prevents use-after-free
+        // when AI_VALUE2 evaluation in a previous iteration triggered inventory mutations
+        Item* validatedItem = bot->GetItemByGuid(item->GetGUID());
+        if (!validatedItem)
+            continue;
+
+        ItemTemplate const* itemTemplate = validatedItem->GetTemplate();
         if (!itemTemplate)
             continue;
 
@@ -351,8 +357,8 @@ ItemIds EquipAction::SelectInventoryItemsToEquip()
         if (itemTemplate->InventoryType == INVTYPE_NON_EQUIP)
             continue;
 
-        int32 randomProperty = item->GetItemRandomPropertyId();
-        uint32 itemId = item->GetTemplate()->ItemId;
+        int32 randomProperty = validatedItem->GetItemRandomPropertyId();
+        uint32 itemId = validatedItem->GetTemplate()->ItemId;
         std::string itemUsageParam;
         if (randomProperty != 0)
             itemUsageParam = std::to_string(itemId) + "," + std::to_string(randomProperty);
