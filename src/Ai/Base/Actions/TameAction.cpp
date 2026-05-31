@@ -422,10 +422,9 @@ bool TameAction::RenamePet(const std::string& newName)
 
     // Remove the current pet and (re-)cast Call Pet spell if the bot is a hunter
     bot->RemovePet(nullptr, PET_SAVE_AS_CURRENT, true);
-    if (bot->getClass() == CLASS_HUNTER && bot->HasSpell(883))
-    {
-        bot->CastSpell(bot, 883, true);
-    }
+    constexpr uint32 SPELL_CALL_PET = 883;
+    if (bot->getClass() == CLASS_HUNTER && bot->HasSpell(SPELL_CALL_PET))
+        bot->CastSpell(bot, SPELL_CALL_PET, true);
 
     return true;
 }

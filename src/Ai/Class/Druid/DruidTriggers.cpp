@@ -28,7 +28,11 @@ bool ThornsTrigger::IsActive() { return BuffTrigger::IsActive() && !botAI->HasAu
 
 bool BearFormTrigger::IsActive() { return !botAI->HasAnyAuraOf(bot, "bear form", "dire bear form", nullptr); }
 
-bool TreeFormTrigger::IsActive() { return !botAI->HasAura(33891, bot); }
+bool TreeFormTrigger::IsActive()
+{
+    constexpr uint32 SPELL_TREE_OF_LIFE = 33891;
+    return !bot->HasAura(SPELL_TREE_OF_LIFE);
+}
 
 bool CatFormTrigger::IsActive() { return !botAI->HasAura("cat form", bot); }
 
@@ -43,8 +47,11 @@ bool ProwlTrigger::IsActive()
     if (botAI->HasAura("prowl", bot) || bot->IsInCombat())
         return false;
 
-    uint32 prowlId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "prowl")->Get();
-    if (!prowlId || !bot->HasSpell(prowlId) || bot->HasSpellCooldown(prowlId))
+    if (!botAI->HasSpell("prowl"))
+        return false;
+
+    uint32 const prowlId = AI_VALUE2(uint32, "spell id", "prowl");
+    if (bot->HasSpellCooldown(prowlId))
         return false;
 
     float distance = 30.f;

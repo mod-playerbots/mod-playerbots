@@ -79,8 +79,10 @@ bool CastRainOfFireAction::isUseful()
     Unit* target = GetTarget();
     if (!target)
         return false;
-    if (bot->HasSpell(27243) || bot->HasSpell(47835) || bot->HasSpell(47836)) // Seed of Corruption spell IDs
+
+    if (botAI->HasSpell("seed of corruption"))
         return false;
+
     return true;
 }
 

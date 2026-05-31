@@ -1531,7 +1531,7 @@ bool VezaxShadowCrashTrigger::IsActive()
     if (!boss || !boss->IsAlive())
         return false;
 
-    return botAI->HasAura(SPELL_VEZAX_SHADOW_CRASH, bot);
+    return bot->HasAura(SPELL_VEZAX_SHADOW_CRASH);
 }
 
 bool VezaxMarkOfTheFacelessTrigger::IsActive()
@@ -1542,7 +1542,7 @@ bool VezaxMarkOfTheFacelessTrigger::IsActive()
     if (!boss || !boss->IsAlive())
         return false;
 
-    if (!botAI->HasAura(SPELL_MARK_OF_THE_FACELESS, bot))
+    if (!bot->HasAura(SPELL_MARK_OF_THE_FACELESS))
         return false;
 
     float distance = bot->GetDistance2d(ULDUAR_VEZAX_MARK_OF_THE_FACELESS_SPOT.GetPositionX(),

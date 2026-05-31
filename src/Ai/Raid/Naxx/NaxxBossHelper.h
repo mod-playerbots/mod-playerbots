@@ -192,7 +192,7 @@ public:
         {
             Player* member = ref->GetSource();
             if (member &&
-                (NaxxSpellIds::HasAnyAura(botAI, member, {NaxxSpellIds::Icebolt10, NaxxSpellIds::Icebolt25}) ||
+                (NaxxSpellIds::HasAnyAura(member, {NaxxSpellIds::Icebolt10, NaxxSpellIds::Icebolt25}) ||
                  botAI->HasAura("icebolt", member, false, false, -1, true)))
             {
                 return true;

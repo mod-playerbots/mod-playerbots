@@ -236,7 +236,7 @@ float AnubrekhanGenericMultiplier::GetValue(Action* action)
         return 1.0f;
 
     if (NaxxSpellIds::HasAnyAura(
-            botAI, boss, {NaxxSpellIds::LocustSwarm10, NaxxSpellIds::LocustSwarm10Alt, NaxxSpellIds::LocustSwarm25}) ||
+            boss, {NaxxSpellIds::LocustSwarm10, NaxxSpellIds::LocustSwarm10Alt, NaxxSpellIds::LocustSwarm25}) ||
         botAI->HasAura("locust swarm", boss))
     {
         if (dynamic_cast<FleeAction*>(action))

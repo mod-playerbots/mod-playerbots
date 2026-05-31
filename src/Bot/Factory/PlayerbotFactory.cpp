@@ -61,6 +61,56 @@ std::vector<uint32> PlayerbotFactory::enchantGemIdCache;
 std::unordered_map<uint32, std::vector<uint32>> PlayerbotFactory::trainerIdCache;
 std::vector<uint32> PlayerbotFactory::ccBreakTrinketCache;
 
+namespace
+{
+constexpr uint32 SPELL_DRUID_THICK_HIDE = 16931;
+constexpr uint32 SPELL_OWLKIN_FRENZY = 48393;
+constexpr uint32 SPELL_PRIMAL_TENACITY = 33957;
+constexpr uint32 SPELL_IMPROVED_BARKSKIN = 63411;
+
+constexpr uint32 SPELL_SECOND_WIND = 29838;
+constexpr uint32 SPELL_BLOOD_CRAZE = 16492;
+constexpr uint32 SPELL_GAG_ORDER = 12958;
+
+constexpr uint32 SPELL_SACRED_CLEANSING = 53553;
+constexpr uint32 SPELL_RECKONING = 20179;
+constexpr uint32 SPELL_DIVINE_PURPOSE = 31872;
+
+constexpr uint32 SPELL_HUNTER_THICK_HIDE = 19612;
+constexpr uint32 SPELL_CONCUSSIVE_BARRAGE = 35102;
+constexpr uint32 SPELL_ENTRAPMENT = 19388;
+
+constexpr uint32 SPELL_DEADLY_BREW = 51626;
+constexpr uint32 SPELL_THROWING_SPECIALIZATION = 51679;
+constexpr uint32 SPELL_WAYLAY = 51696;
+
+constexpr uint32 SPELL_IMPROVED_MANA_BURN = 14772;
+constexpr uint32 SPELL_BODY_AND_SOUL = 64129;
+constexpr uint32 SPELL_IMPROVED_VAMPIRIC_EMBRACE = 27840;
+
+constexpr uint32 SPELL_ABOMINATIONS_MIGHT = 53138;
+constexpr uint32 SPELL_IMPROVED_ICY_TALONS = 55610;
+constexpr uint32 SPELL_SUDDEN_DOOM = 49529;
+constexpr uint32 SPELL_ACCLIMATION = 50152;
+constexpr uint32 SPELL_MAGIC_SUPPRESSION = 49611;
+
+constexpr uint32 SPELL_SHAMAN_DUAL_WIELD = 30798;
+constexpr uint32 SPELL_ASTRAL_SHIFT = 51479;
+constexpr uint32 SPELL_EARTHEN_POWER = 51524;
+constexpr uint32 SPELL_FOCUSED_MIND = 30866;
+
+constexpr uint32 SPELL_BURNOUT = 44472;
+constexpr uint32 SPELL_ICE_SHARDS = 15047;
+constexpr uint32 SPELL_IMPROVED_BLINK = 31570;
+constexpr uint32 SPELL_FIERY_PAYBACK = 64357;
+constexpr uint32 SPELL_SHATTERED_BARRIER = 54787;
+
+constexpr uint32 SPELL_IMPROVED_HOWL_OF_TERROR = 30057;
+constexpr uint32 SPELL_NEMESIS = 63123;
+constexpr uint32 SPELL_INTENSITY = 18136;
+constexpr uint32 SPELL_NETHER_PROTECTION = 30302;
+}
+
 bool PlayerbotFactory::IsPrimaryTradeSkill(uint16 skillId)
 {
     SkillLineEntry const* skillLine = sSkillLineStore.LookupEntry(skillId);
@@ -1440,7 +1490,7 @@ uint32 PlayerbotFactory::InitTalentsTree(bool increment /*false*/, bool use_temp
         /// @todo: fix cat druid hardcode
         if (bot->getClass() == CLASS_DRUID && specTab == DRUID_TAB_FERAL && bot->GetLevel() >= 20)
         {
-            bool isCat = !bot->HasAura(16931);
+            bool isCat = !bot->HasAura(SPELL_DRUID_THICK_HIDE);
             if (!isCat && bot->GetLevel() == 20)
             {
                 uint32 bearP = sPlayerbotAIConfig.randomClassSpecProb[cls][1];
@@ -1495,7 +1545,7 @@ uint32 PlayerbotFactory::InitTalentsTree(bool increment /*false*/, bool use_temp
     if (bot->GetFreeTalentPoints())
         InitTalents((specTab + 2) % 3);
 
-    if (bot->getClass() == CLASS_SHAMAN && bot->HasSpell(30798))
+    if (bot->getClass() == CLASS_SHAMAN && bot->HasSpell(SPELL_SHAMAN_DUAL_WIELD))
     {
         bot->SetSkill(SKILL_DUAL_WIELD, 0, 1, 1);
         bot->SetCanDualWield(true);
@@ -1581,7 +1631,7 @@ void PlayerbotFactory::InitTalentsBySpecNo(Player* bot, int specNo, bool reset)
         }
     }
 
-    if (bot->getClass() == CLASS_SHAMAN && bot->HasSpell(30798))
+    if (bot->getClass() == CLASS_SHAMAN && bot->HasSpell(SPELL_SHAMAN_DUAL_WIELD))
     {
         bot->SetSkill(SKILL_DUAL_WIELD, 0, 1, 1);
         bot->SetCanDualWield(true);
@@ -4170,13 +4220,13 @@ void PlayerbotFactory::InitGlyphs(bool increment)
     if (bot->getClass() == CLASS_WARRIOR)
     {
         // Arms PvP (spec index 3): If the bot has the Second Wind talent
-        if (bot->HasAura(29838))
+        if (bot->HasAura(SPELL_SECOND_WIND))
             tab = 3;
         // Fury PvP (spec index 4): If the bot has the Blood Craze talent
-        else if (bot->HasAura(16492))
+        else if (bot->HasAura(SPELL_BLOOD_CRAZE))
             tab = 4;
         // Protection PvP (spec index 5): If the bot has the Gag Order talent
-        else if (bot->HasAura(12958))
+        else if (bot->HasAura(SPELL_GAG_ORDER))
             tab = 5;
     }
 
@@ -4184,13 +4234,13 @@ void PlayerbotFactory::InitGlyphs(bool increment)
     if (bot->getClass() == CLASS_PALADIN)
     {
         // Holy PvP (spec index 3): If the bot has the Sacred Cleansing talent
-        if (bot->HasAura(53553))
+        if (bot->HasAura(SPELL_SACRED_CLEANSING))
             tab = 3;
         // Protection PvP (spec index 4): If the bot has the Reckoning talent
-        else if (bot->HasAura(20179))
+        else if (bot->HasAura(SPELL_RECKONING))
             tab = 4;
         // Retribution PvP (spec index 5): If the bot has the Divine Purpose talent
-        else if (bot->HasAura(31872))
+        else if (bot->HasAura(SPELL_DIVINE_PURPOSE))
             tab = 5;
     }
 
@@ -4198,13 +4248,13 @@ void PlayerbotFactory::InitGlyphs(bool increment)
     if (bot->getClass() == CLASS_HUNTER)
     {
         // Beast Mastery PvP (spec index 3): If the bot has the Thick Hide talent
-        if (bot->HasAura(19612))
+        if (bot->HasAura(SPELL_HUNTER_THICK_HIDE))
             tab = 3;
         // Marksmanship PvP (spec index 4): If the bot has the Concussive Barrage talent
-        else if (bot->HasAura(35102))
+        else if (bot->HasAura(SPELL_CONCUSSIVE_BARRAGE))
             tab = 4;
         // Survival PvP (spec index 5): If the bot has the Entrapment talent and does NOT have the Concussive Barrage talent
-        else if (bot->HasAura(19388) && !bot->HasAura(35102))
+        else if (bot->HasAura(SPELL_ENTRAPMENT) && !bot->HasAura(SPELL_CONCUSSIVE_BARRAGE))
             tab = 5;
     }
 
@@ -4212,13 +4262,13 @@ void PlayerbotFactory::InitGlyphs(bool increment)
     if (bot->getClass() == CLASS_ROGUE)
     {
         // Assassination PvP (spec index 3): If the bot has the Deadly Brew talent
-        if (bot->HasAura(51626))
+        if (bot->HasAura(SPELL_DEADLY_BREW))
             tab = 3;
         // Combat PvP (spec index 4): If the bot has the Throwing Specialization talent
-        else if (bot->HasAura(51679))
+        else if (bot->HasAura(SPELL_THROWING_SPECIALIZATION))
             tab = 4;
         // Subtlety PvP (spec index 5): If the bot has the Waylay talent
-        else if (bot->HasAura(51696))
+        else if (bot->HasAura(SPELL_WAYLAY))
             tab = 5;
     }
 
@@ -4226,13 +4276,13 @@ void PlayerbotFactory::InitGlyphs(bool increment)
     if (bot->getClass() == CLASS_PRIEST)
     {
         // Discipline PvP (spec index 3): If the bot has the Improved Mana Burn talent
-        if (bot->HasAura(14772))
+        if (bot->HasAura(SPELL_IMPROVED_MANA_BURN))
             tab = 3;
         // Holy PvP (spec index 4): If the bot has the Body and Soul talent
-        else if (bot->HasAura(64129))
+        else if (bot->HasAura(SPELL_BODY_AND_SOUL))
             tab = 4;
         // Shadow PvP (spec index 5): If the bot has the Improved Vampiric Embrace talent
-        else if (bot->HasAura(27840))
+        else if (bot->HasAura(SPELL_IMPROVED_VAMPIRIC_EMBRACE))
             tab = 5;
     }
 
@@ -4241,16 +4291,16 @@ void PlayerbotFactory::InitGlyphs(bool increment)
     {
         // Double Aura Blood PvE (spec index 3): If the bot has both the Abomination's Might and Improved Icy Talons
         // talents
-        if (bot->HasAura(53138) && bot->HasAura(55610))
+        if (bot->HasAura(SPELL_ABOMINATIONS_MIGHT) && bot->HasAura(SPELL_IMPROVED_ICY_TALONS))
             tab = 3;
         // Blood PvP (spec index 4): If the bot has the Sudden Doom talent
-        else if (bot->HasAura(49529))
+        else if (bot->HasAura(SPELL_SUDDEN_DOOM))
             tab = 4;
         // Frost PvP (spec index 5): If the bot has the Acclimation talent
-        else if (bot->HasAura(50152))
+        else if (bot->HasAura(SPELL_ACCLIMATION))
             tab = 5;
         // Unholy PvP (spec index 6): If the bot has the Magic Suppression talent
-        else if (bot->HasAura(49611))
+        else if (bot->HasAura(SPELL_MAGIC_SUPPRESSION))
             tab = 6;
     }
 
@@ -4258,13 +4308,13 @@ void PlayerbotFactory::InitGlyphs(bool increment)
     if (bot->getClass() == CLASS_SHAMAN)
     {
         // Elemental PvP (spec index 3): If the bot has the Astral Shift talent
-        if (bot->HasAura(51479))
+        if (bot->HasAura(SPELL_ASTRAL_SHIFT))
             tab = 3;
         // Enhancement PvP (spec index 4): If the bot has the Earthen Power talent
-        else if (bot->HasAura(51524))
+        else if (bot->HasAura(SPELL_EARTHEN_POWER))
             tab = 4;
         // Restoration PvP (spec index 5): If the bot has the Focused Mind talent
-        else if (bot->HasAura(30866))
+        else if (bot->HasAura(SPELL_FOCUSED_MIND))
             tab = 5;
     }
 
@@ -4272,16 +4322,16 @@ void PlayerbotFactory::InitGlyphs(bool increment)
     if (bot->getClass() == CLASS_MAGE)
     {
         // Frostfire PvE (spec index 3): If the bot has both the Burnout talent and the Ice Shards talent
-        if (bot->HasAura(44472) && bot->HasAura(15047))
+        if (bot->HasAura(SPELL_BURNOUT) && bot->HasAura(SPELL_ICE_SHARDS))
             tab = 3;
         // Arcane PvP (spec index 4): If the bot has the Improved Blink talent
-        else if (bot->HasAura(31570))
+        else if (bot->HasAura(SPELL_IMPROVED_BLINK))
             tab = 4;
         // Fire PvP (spec index 5): If the bot has the Fiery Payback talent
-        else if (bot->HasAura(64357))
+        else if (bot->HasAura(SPELL_FIERY_PAYBACK))
             tab = 5;
         // Frost PvP (spec index 6): If the bot has the Shattered Barrier talent
-        else if (bot->HasAura(54787))
+        else if (bot->HasAura(SPELL_SHATTERED_BARRIER))
             tab = 6;
     }
 
@@ -4289,13 +4339,13 @@ void PlayerbotFactory::InitGlyphs(bool increment)
     if (bot->getClass() == CLASS_WARLOCK)
     {
         // Affliction PvP (spec index 3): If the bot has the Improved Howl of Terror talent
-        if (bot->HasAura(30057))
+        if (bot->HasAura(SPELL_IMPROVED_HOWL_OF_TERROR))
             tab = 3;
         // Demonology PvP (spec index 4): If the bot has both the Nemesis talent and the Intensity talent
-        else if (bot->HasAura(63123) && bot->HasAura(18136))
+        else if (bot->HasAura(SPELL_NEMESIS) && bot->HasAura(SPELL_INTENSITY))
             tab = 4;
         // Destruction PvP (spec index 5): If the bot has the Nether Protection talent
-        else if (bot->HasAura(30302))
+        else if (bot->HasAura(SPELL_NETHER_PROTECTION))
             tab = 5;
     }
 
@@ -4303,16 +4353,16 @@ void PlayerbotFactory::InitGlyphs(bool increment)
     if (bot->getClass() == CLASS_DRUID)
     {
         // Cat PvE (spec index 3): If the bot is Feral spec, level 20 or higher, and does NOT have the Thick Hide talent
-        if (tab == DRUID_TAB_FERAL && bot->GetLevel() >= 20 && !bot->HasAura(16931))
+        if (tab == DRUID_TAB_FERAL && bot->GetLevel() >= 20 && !bot->HasAura(SPELL_DRUID_THICK_HIDE))
             tab = 3;
         // Balance PvP (spec index 4): If the bot has the Owlkin Frenzy talent
-        else if (bot->HasAura(48393))
+        else if (bot->HasAura(SPELL_OWLKIN_FRENZY))
             tab = 4;
         // Feral PvP (spec index 5): If the bot has the Primal Tenacity talent
-        else if (bot->HasAura(33957))
+        else if (bot->HasAura(SPELL_PRIMAL_TENACITY))
             tab = 5;
         // Resto PvP (spec index 6): If the bot has the Improved Barkskin talent
-        else if (bot->HasAura(63411))
+        else if (bot->HasAura(SPELL_IMPROVED_BARKSKIN))
             tab = 6;
     }
 

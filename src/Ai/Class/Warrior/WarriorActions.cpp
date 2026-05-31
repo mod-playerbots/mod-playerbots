@@ -8,6 +8,15 @@
 #include "AiFactory.h"
 #include "Playerbots.h"
 
+namespace
+{
+constexpr uint32 SPELL_RETALIATION = 20230;
+constexpr uint32 SPELL_DIVINE_SHIELD = 642;
+constexpr uint32 SPELL_ICE_BLOCK = 45438;
+constexpr uint32 SPELL_BLESSING_OF_PROTECTION = 41450;
+constexpr uint32 SPELL_SHATTERING_THROW = 64382;
+}
+
 bool CastBerserkerRageAction::isPossible()
 {
     if (botAI->IsInVehicle() && !botAI->IsInVehicle(false, false, true))
@@ -153,14 +162,8 @@ bool CastVigilanceAction::Execute(Event /*event*/)
 
 bool CastRetaliationAction::isUseful()
 {
-    // Spell cooldown check
-    if (!bot->HasSpell(20230))
-    {
-        return false;
-    }
-
-    // Spell cooldown check
-    if (bot->HasSpellCooldown(20230))
+    if (!bot->HasSpell(SPELL_RETALIATION) || bot->HasSpellCooldown(SPELL_RETALIATION) ||
+        bot->HasAura(SPELL_RETALIATION))
     {
         return false;
     }
@@ -199,8 +202,8 @@ bool CastRetaliationAction::isUseful()
             break;
     }
 
-    // Only cast Retaliation if there are at least 2 melee attackers and the buff is not active
-    return meleeAttackers >= 2 && !botAI->HasAura("retaliation", bot);
+    // Only cast Retaliation if there are at least 2 melee attackers
+    return meleeAttackers >= 2;
 }
 
 Unit* CastShatteringThrowAction::GetTarget()
@@ -214,15 +217,15 @@ Unit* CastShatteringThrowAction::GetTarget()
             continue;
 
         if (bot->IsWithinDistInMap(enemy, 25.0f) &&
-            (enemy->HasAura(642) ||   // Divine Shield
-             enemy->HasAura(45438) || // Ice Block
-             enemy->HasAura(41450)))  // Blessing of Protection
+            (enemy->HasAura(SPELL_DIVINE_SHIELD) ||
+             enemy->HasAura(SPELL_ICE_BLOCK) ||
+             enemy->HasAura(SPELL_BLESSING_OF_PROTECTION)))
         {
             return enemy;
         }
     }
 
-    return nullptr; // No valid target
+    return nullptr;
 }
 
 bool CastShatteringThrowAction::Execute(Event /*event*/)
@@ -236,7 +239,7 @@ bool CastShatteringThrowAction::Execute(Event /*event*/)
 
 bool CastShatteringThrowAction::isUseful()
 {
-    if (!bot->HasSpell(64382) || bot->HasSpellCooldown(64382))
+    if (!bot->HasSpell(SPELL_SHATTERING_THROW) || bot->HasSpellCooldown(SPELL_SHATTERING_THROW))
         return false;
 
     GuidVector enemies = AI_VALUE(GuidVector, "possible targets");
@@ -247,17 +250,16 @@ bool CastShatteringThrowAction::isUseful()
         if (!enemy || !enemy->IsAlive() || enemy->IsFriendlyTo(bot))
             continue;
 
-        // Check if the enemy is within 25 yards and has the specific auras
         if (bot->IsWithinDistInMap(enemy, 25.0f) &&
-            (enemy->HasAura(642) ||   // Divine Shield
-             enemy->HasAura(45438) || // Ice Block
-             enemy->HasAura(41450)))  // Blessing of Protection
+            (enemy->HasAura(SPELL_DIVINE_SHIELD) ||
+             enemy->HasAura(SPELL_ICE_BLOCK) ||
+             enemy->HasAura(SPELL_BLESSING_OF_PROTECTION)))
         {
             return true;
         }
     }
 
-    return false; // No valid targets within range
+    return false;
 }
 
 bool CastShatteringThrowAction::isPossible()

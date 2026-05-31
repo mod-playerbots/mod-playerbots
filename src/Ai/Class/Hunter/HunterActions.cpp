@@ -19,23 +19,13 @@ bool CastViperStingAction::isUseful()
 bool CastAspectOfTheHawkAction::isUseful()
 {
     Unit* target = GetTarget();
-    if (!target)
-        return false;
-
-    if (bot->HasSpell(61846) || bot->HasSpell(61847))  // Aspect of the Dragonhawk spell IDs
-        return false;
-
-    return true;
+    return target && !botAI->HasSpell("aspect of the dragonhawk");
 }
 
 bool CastArcaneShotAction::isUseful()
 {
     Unit* target = GetTarget();
-    if (!target)
-        return false;
-
-    if (bot->HasSpell(53301) || bot->HasSpell(60051) ||
-        bot->HasSpell(60052) || bot->HasSpell(60053))  // Explosive Shot spell IDs
+    if (!target || !botAI->HasSpell("explosive shot"))
         return false;
 
     // Armor Penetration rating check - will not cast Arcane Shot above 435 ArP
@@ -50,14 +40,7 @@ bool CastArcaneShotAction::isUseful()
 bool CastImmolationTrapAction::isUseful()
 {
     Unit* target = GetTarget();
-    if (!target)
-        return false;
-
-    if (bot->HasSpell(13813) || bot->HasSpell(14316) || bot->HasSpell(14317) || bot->HasSpell(27025) ||
-        bot->HasSpell(49066) || bot->HasSpell(49067)) // Explosive Trap spell IDs
-        return false;
-
-    return true;
+    return target && !botAI->HasSpell("explosive trap");
 }
 
 Value<Unit*>* CastFreezingTrap::GetTargetValue()

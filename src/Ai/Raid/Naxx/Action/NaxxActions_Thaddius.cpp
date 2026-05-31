@@ -111,15 +111,13 @@ bool ThaddiusMovePolarityAction::Execute(Event /*event*/)
         {3504.68f, -2936.68f},
     };
     uint32 idx;
-    if (NaxxSpellIds::HasAnyAura(
-            botAI, bot,
+    if (NaxxSpellIds::HasAnyAura(bot,
             {NaxxSpellIds::NegativeCharge10, NaxxSpellIds::NegativeCharge25, NaxxSpellIds::NegativeChargeStack}) ||
         botAI->HasAura("negative charge", bot, false, false, -1, true))
     {
         idx = 0;
     }
-    else if (NaxxSpellIds::HasAnyAura(
-                 botAI, bot,
+    else if (NaxxSpellIds::HasAnyAura(bot,
                  {NaxxSpellIds::PositiveCharge10, NaxxSpellIds::PositiveCharge25, NaxxSpellIds::PositiveChargeStack}) ||
              botAI->HasAura("positive charge", bot, false, false, -1, true))
     {
