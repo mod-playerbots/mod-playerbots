@@ -334,17 +334,11 @@ uint32 RandomPlayerbotFactory::CalculateTotalAccountCount()
                 sPlayerbotAIConfig.addClassAccountPoolSize == 0 ? 2 : -1);
 
             if (!res || res->Fetch()[0].Get<uint64>() == 0)
-            {
                 break;
-            }
 
             std::this_thread::sleep_for(std::chrono::milliseconds(50));     // Extra 50ms fixed delay for safety.
         }
     }
-
-    // Checks if randomBotAccountCount is set, otherwise calculate it dynamically.
-    if (sPlayerbotAIConfig.randomBotAccountCount > 0)
-        return sPlayerbotAIConfig.randomBotAccountCount;
 
     // Check existing account types
     uint32 existingRndBotAccounts = 0;
@@ -366,16 +360,14 @@ uint32 RandomPlayerbotFactory::CalculateTotalAccountCount()
         } while (typeCheck->NextRow());
     }
 
-    // Determine divisor based on Death Knight login eligibility and requested A&H faction ratio
+    // Determine divisor based on Death Knight availability and requested A&H faction ratio
     int divisor = CalculateAvailableCharsPerAccount();
 
     // Calculate max bots
     int maxBots = sPlayerbotAIConfig.maxRandomBots;
-    // Take periodic online - offline into account
+    // Take periodic online/offline into account
     if (sPlayerbotAIConfig.enablePeriodicOnlineOffline)
-    {
         maxBots *= sPlayerbotAIConfig.periodicOnlineOfflineRatio;
-    }
 
     // Calculate number of accounts needed for RNDbots
     // Result is rounded up for maxBots not cleanly divisible by the divisor
@@ -416,11 +408,22 @@ uint32 RandomPlayerbotFactory::CalculateTotalAccountCount()
     }
 
     // Return existing total plus any additional accounts needed
-    return existingTotal + additionalAccountsNeeded;
+    uint32 calculatedTotal = existingTotal + additionalAccountsNeeded;
+
+    // Manually set randomBotAccountCount meets the requirements
+    if (sPlayerbotAIConfig.randomBotAccountCount >= calculatedTotal)
+        return sPlayerbotAIConfig.randomBotAccountCount;
+    // Manually set randomBotAccountCount doesn't meet the requirements. Using calculated value
+    if (sPlayerbotAIConfig.randomBotAccountCount > 0)
+        LOG_WARN("playerbots", "RandomBotAccountCount ({}) is lower than the required calculated value ({}). Using the calculated value instead.",
+            sPlayerbotAIConfig.randomBotAccountCount, calculatedTotal);
+
+    return calculatedTotal;
 }
 
 uint32 RandomPlayerbotFactory::CalculateAvailableCharsPerAccount()
 {
+    // Death Knight availability according to their login eligibility, and if WotLK is enabled at all.
     bool noDK = sPlayerbotAIConfig.disableDeathKnightLogin || sWorld->getIntConfig(CONFIG_EXPANSION) != EXPANSION_WRATH_OF_THE_LICH_KING;
 
     uint32 availableChars = noDK ? 9 : 10;
@@ -434,11 +437,9 @@ uint32 RandomPlayerbotFactory::CalculateAvailableCharsPerAccount()
     float unavailableRatio = static_cast<float>((std::max(hordeRatio, allianceRatio) - std::min(hordeRatio, allianceRatio))) /
         (std::max(hordeRatio, allianceRatio) * 2);
 
+    // Conservative floor to ensure enough characters (may result in more accounts than needed).
     if (unavailableRatio != 0)
-    {
-        // conservative floor to ensure enough chars (may result in more accounts than needed)
         availableChars = availableChars - availableChars * unavailableRatio;
-    }
 
     return availableChars;
 }
