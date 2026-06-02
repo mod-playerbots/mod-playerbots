@@ -16,7 +16,6 @@ public:
         creators["frostbolt"] = &frostbolt;
         creators["frostfire bolt"] = &frostfire_bolt;
         creators["scorch"] = &scorch;
-        creators["evocation"] = &evocation;
         creators["remove curse"] = &remove_curse;
         creators["remove curse on party"] = &remove_curse_on_party;
         creators["fireball"] = &fireball;
@@ -44,14 +43,6 @@ private:
         return new ActionNode("scorch",
                               /*P*/ {},
                               /*A*/ { NextAction("shoot") },
-                              /*C*/ {});
-    }
-
-    static ActionNode* evocation([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("evocation",
-                              /*P*/ {},
-                              /*A*/ {},
                               /*C*/ {});
     }
 

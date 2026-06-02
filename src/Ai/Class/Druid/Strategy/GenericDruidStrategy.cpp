@@ -20,7 +20,6 @@ public:
         creators["abolish poison on party"] = &abolish_poison_on_party;
         creators["rebirth"] = &rebirth;
         creators["entangling roots on cc"] = &entangling_roots_on_cc;
-        creators["innervate"] = &innervate;
     }
 
 private:
@@ -88,13 +87,6 @@ private:
                               /*C*/ {});
     }
 
-    static ActionNode* innervate([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("innervate",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
-    }
 };
 
 GenericDruidStrategy::GenericDruidStrategy(PlayerbotAI* botAI) : CombatStrategy(botAI)
