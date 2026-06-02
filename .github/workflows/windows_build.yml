@@ -48,13 +48,21 @@ jobs:
 
           New-Item -ItemType Directory -Path C:\ac | Out-Null
 
-          robocopy "${{ github.workspace }}\a" "C:\ac" /MIR
+          # Robocopy silent with multithread, no per-file output, write full log
+          robocopy "${{ github.workspace }}\a" "C:\ac" /MIR /MT:16 /R:1 /W:1 /NFL /NDL /NJH /NJS /NP /LOG:C:\ac\robocopy.log
+          $rc = $LASTEXITCODE
 
-          if ($LASTEXITCODE -le 7) {
-            exit 0
+          # Show only the summary (last lines) to keep the job log clean
+          if (Test-Path C:\ac\robocopy.log) {
+            Get-Content C:\ac\robocopy.log -Tail 20
           }
 
-          exit $LASTEXITCODE
+          # robocopy exit codes: 0-7 are success/acceptable, >=8 is failure
+          if ($rc -le 7) {
+            exit 0
+          }
+          Write-Error "robocopy failed with exit code $rc. See C:\ac\robocopy.log for details."
+          exit $rc
 
       - name: Install Ninja
         shell: powershell
