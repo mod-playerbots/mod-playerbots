@@ -70,40 +70,33 @@ jobs:
         env:
           CONTINUOUS_INTEGRATION: true
         run: |
-          # Try the standard installer (may fail if a specific choco package version is missing)
-          set -o pipefail
           ./acore.sh install-deps || echo "acore.sh install-deps failed or partially failed; continuing to ensure DB is present"
 
       - name: Ensure MySQL or MariaDB is installed
         shell: powershell
         run: |
           # Refresh environment so choco-installed tools are available in the same session
-          refreshenv || true
+          refreshenv
 
           # If mysql client is already present, skip installation
-          $mysqlExists = & bash -lc "which mysql" 2>$null
-          if ($LASTEXITCODE -eq 0 -and $mysqlExists) {
+          if (Get-Command mysql -ErrorAction SilentlyContinue) {
             Write-Host "mysql client already present"
             exit 0
           }
 
           Write-Host "Attempting to install mysql via Chocolatey (no fixed version)..."
-          choco install mysql -y --no-progress || $LASTEXITCODE = $LASTEXITCODE
+          choco install mysql -y --no-progress
 
-          # Re-check
-          refreshenv || true
-          & bash -lc "which mysql" 2>$null
-          if ($LASTEXITCODE -eq 0) {
+          # Re-check presence of mysql client
+          if (Get-Command mysql -ErrorAction SilentlyContinue) {
             Write-Host "mysql installed successfully"
             exit 0
           }
 
           Write-Host "mysql install failed; attempting MariaDB as fallback..."
-          choco install mariadb -y --no-progress || $LASTEXITCODE = $LASTEXITCODE
+          choco install mariadb -y --no-progress
 
-          refreshenv || true
-          & bash -lc "which mysql" 2>$null
-          if ($LASTEXITCODE -eq 0) {
+          if (Get-Command mysql -ErrorAction SilentlyContinue) {
             Write-Host "MariaDB installed successfully (mysql client available)"
             exit 0
           }
