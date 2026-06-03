@@ -23,11 +23,19 @@ namespace ai::gbless
 namespace
 {
     constexpr uint32 GREATER_BLESSING_ASSIGNMENT_CACHE_MS = 4 * 1000;
-    constexpr uint32 GREATER_BLESSING_PENDING_ASSIGNMENT_CACHE_MS = 100;
+    constexpr uint32 GREATER_BLESSING_PENDING_ASSIGNMENT_CACHE_MS = 500;
     constexpr uint8 MAX_BLESSING_SLOTS = 4;
     constexpr uint8 MAX_CLASS_ID = 12;
 
     constexpr size_t BaseBlessingCategoryCount = MAX_BLESSING_SLOTS;
+
+    enum PaladinBlessingCapability : uint8
+    {
+        PALADIN_BLESSING_CAPABILITY_NONE            = 0,
+        PALADIN_BLESSING_CAPABILITY_IMPROVED_WISDOM = 1 << 0,
+        PALADIN_BLESSING_CAPABILITY_IMPROVED_MIGHT  = 1 << 1,
+        PALADIN_BLESSING_CAPABILITY_SANCTUARY       = 1 << 2
+    };
 
     constexpr size_t BaseBlessingIndex(BaseBlessingCategory category)
     {
@@ -58,22 +66,38 @@ namespace
                (!left.byRole || left.role == right.role);
     }
 
-    int TalentScore(Player* player)
+    uint8 GetPaladinBlessingCapabilities(Player* player)
     {
         if (!player)
-            return 0;
+            return PALADIN_BLESSING_CAPABILITY_NONE;
 
-        int score = 0;
+        uint8 capabilities = PALADIN_BLESSING_CAPABILITY_NONE;
         if (player->HasAura(SPELL_IMPROVED_MIGHT_R1) ||
             player->HasAura(SPELL_IMPROVED_MIGHT_R2))
         {
-            score += 2;
+            capabilities |= PALADIN_BLESSING_CAPABILITY_IMPROVED_MIGHT;
         }
         if (player->HasAura(SPELL_IMPROVED_WISDOM_R1) ||
             player->HasAura(SPELL_IMPROVED_WISDOM_R2))
         {
-            score += 1;
+            capabilities |= PALADIN_BLESSING_CAPABILITY_IMPROVED_WISDOM;
         }
+        if (player->HasSpell(ai::paladin::SPELL_BLESSING_OF_SANCTUARY))
+            capabilities |= PALADIN_BLESSING_CAPABILITY_SANCTUARY;
+
+        return capabilities;
+    }
+
+    int TalentScore(Player* player)
+    {
+        uint8 const capabilities = GetPaladinBlessingCapabilities(player);
+        int score = 0;
+
+        if (capabilities & PALADIN_BLESSING_CAPABILITY_IMPROVED_MIGHT)
+            score += 2;
+
+        if (capabilities & PALADIN_BLESSING_CAPABILITY_IMPROVED_WISDOM)
+            score += 1;
 
         return score;
     }
@@ -83,28 +107,72 @@ namespace
         if (!player)
             return std::numeric_limits<int>::min() / 4;
 
+        uint8 const capabilities = GetPaladinBlessingCapabilities(player);
+
         if (category == BASE_SANCTUARY)
         {
-            if (!player->HasSpell(ai::paladin::SPELL_BLESSING_OF_SANCTUARY))
+            if (!(capabilities & PALADIN_BLESSING_CAPABILITY_SANCTUARY))
                 return std::numeric_limits<int>::min() / 4;
 
             return 2;
         }
 
         if (category == BASE_MIGHT &&
-            (player->HasAura(SPELL_IMPROVED_MIGHT_R1) ||
-             player->HasAura(SPELL_IMPROVED_MIGHT_R2)))
+            (capabilities & PALADIN_BLESSING_CAPABILITY_IMPROVED_MIGHT))
         {
             return 1;
         }
         if (category == BASE_WISDOM &&
-            (player->HasAura(SPELL_IMPROVED_WISDOM_R1) ||
-             player->HasAura(SPELL_IMPROVED_WISDOM_R2)))
+            (capabilities & PALADIN_BLESSING_CAPABILITY_IMPROVED_WISDOM))
         {
             return 1;
         }
 
         return 0;
+    }
+
+    void SelectActivePaladinPool(
+        std::vector<Player*>& botPaladins)
+    {
+        std::sort(botPaladins.begin(), botPaladins.end(),
+                  [](Player* left, Player* right)
+                  {
+                      return left->GetGUID() < right->GetGUID();
+                  });
+
+        std::vector<Player*> selectedPaladins;
+        selectedPaladins.reserve(botPaladins.size());
+        std::vector<bool> selected(botPaladins.size(), false);
+
+        auto const selectFirstWithCapability = [&](uint8 capability)
+        {
+            for (size_t index = 0; index < botPaladins.size(); ++index)
+            {
+                if (selected[index])
+                    continue;
+
+                if (!(GetPaladinBlessingCapabilities(botPaladins[index]) & capability))
+                    continue;
+
+                selected[index] = true;
+                selectedPaladins.push_back(botPaladins[index]);
+                return;
+            }
+        };
+
+        selectFirstWithCapability(PALADIN_BLESSING_CAPABILITY_SANCTUARY);
+        selectFirstWithCapability(PALADIN_BLESSING_CAPABILITY_IMPROVED_MIGHT);
+        selectFirstWithCapability(PALADIN_BLESSING_CAPABILITY_IMPROVED_WISDOM);
+
+        for (size_t index = 0; index < botPaladins.size(); ++index)
+        {
+            if (selected[index])
+                continue;
+
+            selectedPaladins.push_back(botPaladins[index]);
+        }
+
+        botPaladins = std::move(selectedPaladins);
     }
 
     struct DesiredBlessingSet
@@ -593,28 +661,21 @@ namespace
         if (botPaladins.empty())
             return false;
 
+        SelectActivePaladinPool(botPaladins);
+
+        uint8 activePaladinCount =
+            std::min<uint8>(static_cast<uint8>(botPaladins.size()), MAX_BLESSING_SLOTS);
+
         bool anySanctuaryAvailable = false;
-        for (Player* paladin : botPaladins)
+        for (uint8 paladinIndex = 0; paladinIndex < activePaladinCount; ++paladinIndex)
         {
-            if (paladin && paladin->HasSpell(ai::paladin::SPELL_BLESSING_OF_SANCTUARY))
+            if (GetPaladinBlessingCapabilities(botPaladins[paladinIndex]) &
+                PALADIN_BLESSING_CAPABILITY_SANCTUARY)
             {
                 anySanctuaryAvailable = true;
                 break;
             }
         }
-
-        std::sort(botPaladins.begin(), botPaladins.end(),
-                  [](Player* a, Player* b)
-                  {
-                      int sa = TalentScore(a);
-                      int sb = TalentScore(b);
-                      if (sa != sb)
-                          return sa > sb;
-                      return a->GetGUID() < b->GetGUID();
-                  });
-
-        uint8 activePaladinCount =
-            std::min<uint8>(static_cast<uint8>(botPaladins.size()), MAX_BLESSING_SLOTS);
 
         int mySlot = -1;
         for (size_t i = 0; i < botPaladins.size(); ++i)
@@ -695,7 +756,9 @@ namespace
                     classBuckets, botPaladins, allPaladins,
                     classWideOwners, exclusiveOwnersByBucket, classWideBases,
                     exclusiveBasesByBucket))
-                return false;
+            {
+                continue;
+            }
 
             for (size_t index = 0; index < classWideBases.size(); ++index)
             {
