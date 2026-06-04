@@ -77,13 +77,7 @@ bool CastShadowflameAction::isUseful()
 bool CastRainOfFireAction::isUseful()
 {
     Unit* target = GetTarget();
-    if (!target)
-        return false;
-
-    if (botAI->HasSpell("seed of corruption"))
-        return false;
-
-    return true;
+    return target && !botAI->HasSpell("seed of corruption");
 }
 
 // Checks if the enemies are close enough to use Hellfire
