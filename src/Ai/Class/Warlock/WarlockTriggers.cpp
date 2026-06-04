@@ -105,10 +105,7 @@ bool LifeTapTrigger::IsActive()
 bool LifeTapGlyphBuffTrigger::IsActive()
 {
     constexpr uint32 SPELL_LIFE_TAP_GLYPH = 63320;
-    if (!bot->HasAura(SPELL_LIFE_TAP_GLYPH))
-        return false;
-
-    return BuffTrigger::IsActive();
+    return bot->HasAura(SPELL_LIFE_TAP_GLYPH) && BuffTrigger::IsActive();
 }
 
 // Checks if the target has a conflicting debuff that is equal to Curse of the Elements
