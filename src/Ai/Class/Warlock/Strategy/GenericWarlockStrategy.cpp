@@ -5,29 +5,9 @@
 
 #include "GenericWarlockStrategy.h"
 
-class GenericWarlockStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
-{
-public:
-    GenericWarlockStrategyActionNodeFactory()
-    {
-        creators["banish on cc"] = &banish_on_cc;
-        creators["fear on cc"] = &fear_on_cc;
-        creators["spell lock"] = &spell_lock;
-        creators["devour magic purge"] = &devour_magic_purge;
-        creators["devour magic cleanse"] = &devour_magic_cleanse;
-    }
-
-private:
-    static ActionNode* banish_on_cc(PlayerbotAI*) { return new ActionNode("banish on cc", {}, {}, {}); }
-    static ActionNode* fear_on_cc(PlayerbotAI*) { return new ActionNode("fear on cc", {}, {}, {}); }
-    static ActionNode* spell_lock(PlayerbotAI*) { return new ActionNode("spell lock", {}, {}, {}); }
-    static ActionNode* devour_magic_purge(PlayerbotAI*) { return new ActionNode("devour magic purge", {}, {}, {}); }
-    static ActionNode* devour_magic_cleanse(PlayerbotAI*) { return new ActionNode("devour magic cleanse", {}, {}, {}); }
-};
-
 GenericWarlockStrategy::GenericWarlockStrategy(PlayerbotAI* botAI) : CombatStrategy(botAI)
 {
-    actionNodeFactories.Add(new GenericWarlockStrategyActionNodeFactory());
+    // No custom ActionNodeFactory needed
 }
 
 std::vector<NextAction> GenericWarlockStrategy::getDefaultActions()

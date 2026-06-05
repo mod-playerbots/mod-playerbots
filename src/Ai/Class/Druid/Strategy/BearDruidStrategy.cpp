@@ -13,16 +13,11 @@ public:
     BearDruidStrategyActionNodeFactory()
     {
         creators["feral charge - bear"] = &feral_charge_bear;
-        creators["swipe (bear)"] = &swipe_bear;
-        creators["bear form"] = &bear_form;
         creators["dire bear form"] = &dire_bear_form;
-        creators["mangle (bear)"] = &mangle_bear;
         creators["maul"] = &maul;
         creators["bash"] = &bash;
         creators["swipe"] = &swipe;
         creators["lacerate"] = &lacerate;
-        creators["demoralizing roar"] = &demoralizing_roar;
-        creators["taunt spell"] = &growl;
     }
 
 private:
@@ -36,42 +31,12 @@ private:
         );
     }
 
-    static ActionNode* swipe_bear([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "swipe (bear)",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* bear_form([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "bear form",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {}
-        );
-    }
-
     static ActionNode* dire_bear_form([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
             "dire bear form",
             /*P*/ { NextAction("caster form") },
             /*A*/ { NextAction("bear form") },
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* mangle_bear([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "mangle (bear)",
-            /*P*/ {},
-            /*A*/ {},
             /*C*/ {}
         );
     }
@@ -112,26 +77,6 @@ private:
             "lacerate",
             /*P*/ {},
             /*A*/ { NextAction("maul") },
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* growl([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "growl",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* demoralizing_roar([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "demoralizing roar",
-            /*P*/ {},
-            /*A*/ {},
             /*C*/ {}
         );
     }

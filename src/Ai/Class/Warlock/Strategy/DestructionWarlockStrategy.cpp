@@ -6,49 +6,9 @@
 #include "DestructionWarlockStrategy.h"
 #include "Playerbots.h"
 
-// ===== Action Node Factory =====
-class DestructionWarlockStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
-{
-public:
-    DestructionWarlockStrategyActionNodeFactory()
-    {
-        creators["immolate"] = &immolate;
-        creators["conflagrate"] = &conflagrate;
-        creators["chaos bolt"] = &chaos_bolt;
-        creators["incinerate"] = &incinerate;
-        creators["corruption"] = &corruption;
-        creators["corruption on attacker"] = &corruption_on_attacker;
-        creators["shadow bolt"] = &shadow_bolt;
-        creators["shadowburn"] = &shadowburn;
-        creators["life tap"] = &life_tap;
-        creators["shadowfury"] = &shadowfury;
-        creators["shadowflame"] = &shadowflame;
-        creators["seed of corruption"] = &seed_of_corruption;
-        creators["seed of corruption on attacker"] = &seed_of_corruption;
-        creators["rain of fire"] = &rain_of_fire;
-    }
-
-private:
-    static ActionNode* immolate(PlayerbotAI*) { return new ActionNode("immolate", {}, {}, {}); }
-    static ActionNode* conflagrate(PlayerbotAI*) { return new ActionNode("conflagrate", {}, {}, {}); }
-    static ActionNode* chaos_bolt(PlayerbotAI*) { return new ActionNode("chaos bolt", {}, {}, {}); }
-    static ActionNode* incinerate(PlayerbotAI*) { return new ActionNode("incinerate", {}, {}, {}); }
-    static ActionNode* corruption(PlayerbotAI*) { return new ActionNode("corruption", {}, {}, {}); }
-    static ActionNode* corruption_on_attacker(PlayerbotAI*) { return new ActionNode("corruption on attacker", {}, {}, {}); }
-    static ActionNode* shadow_bolt(PlayerbotAI*) { return new ActionNode("shadow bolt", {}, {}, {}); }
-    static ActionNode* shadowburn(PlayerbotAI*) { return new ActionNode("shadowburn", {}, {}, {}); }
-    static ActionNode* life_tap(PlayerbotAI*) { return new ActionNode("life tap", {}, {}, {}); }
-    static ActionNode* shadowfury(PlayerbotAI*) { return new ActionNode("shadowfury", {}, {}, {}); }
-    static ActionNode* shadowflame(PlayerbotAI*) { return new ActionNode("shadowflame", {}, {}, {}); }
-    static ActionNode* seed_of_corruption(PlayerbotAI*) { return new ActionNode("seed of corruption", {}, {}, {}); }
-    static ActionNode* seed_of_corruption_on_attacker(PlayerbotAI*) { return new ActionNode("seed of corruption on attacker", {}, {}, {}); }
-    static ActionNode* rain_of_fire(PlayerbotAI*) { return new ActionNode("rain of fire", {}, {}, {}); }
-};
-
-// ===== Single Target Strategy =====
 DestructionWarlockStrategy::DestructionWarlockStrategy(PlayerbotAI* botAI) : GenericWarlockStrategy(botAI)
 {
-    actionNodeFactories.Add(new DestructionWarlockStrategyActionNodeFactory());
+    // No custom ActionNodeFactory needed
 }
 
 // ===== Default Actions =====
