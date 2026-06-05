@@ -97,7 +97,7 @@ bool RageWinterchillMainTankPositionBossAction::Execute(Event /*event*/)
     if (!winterchill)
         return false;
 
-    if (bot->GetVictim() != winterchill)
+    if (AI_VALUE(Unit*, "current target") != winterchill)
         return Attack(winterchill);
 
     if (winterchill->GetVictim() == bot)
@@ -265,7 +265,7 @@ bool AnetheronMainTankPositionBossAction::Execute(Event /*event*/)
     MarkTargetWithSquare(bot, anetheron);
     SetRtiTarget(botAI, "square", anetheron);
 
-    if (bot->GetVictim() != anetheron)
+    if (AI_VALUE(Unit*, "current target") != anetheron)
         return Attack(anetheron);
 
     if (anetheron->GetVictim() == bot)
@@ -395,7 +395,7 @@ bool AnetheronFirstAssistTankPickUpInfernalsAction::Execute(Event /*event*/)
     MarkTargetWithDiamond(bot, infernal);
     SetRtiTarget(botAI, "diamond", infernal);
 
-    if (bot->GetVictim() != infernal)
+    if (AI_VALUE(Unit*, "current target") != infernal)
         return Attack(infernal);
 
     if ((infernoTarget && infernoTarget == bot) ||
@@ -432,7 +432,7 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
     {
         SetRtiTarget(botAI, "square", anetheron);
 
-        if (bot->GetVictim() != anetheron)
+        if (AI_VALUE(Unit*, "current target") != anetheron)
             return Attack(anetheron);
 
         return false;
@@ -455,7 +455,7 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
             {
                 SetRtiTarget(botAI, "diamond", infernal);
 
-                if (bot->GetTarget() != infernal->GetGUID())
+                if (AI_VALUE(Unit*, "current target") != infernal)
                     return Attack(infernal);
             }
         }
@@ -464,7 +464,7 @@ bool AnetheronAssignDpsPriorityAction::Execute(Event /*event*/)
     {
         SetRtiTarget(botAI, "square", anetheron);
 
-        if (bot->GetTarget() != anetheron->GetGUID())
+        if (AI_VALUE(Unit*, "current target") != anetheron)
             return Attack(anetheron);
     }
 
@@ -500,7 +500,7 @@ bool KazrogalMainTankPositionBossAction::Execute(Event /*event*/)
     if (!kazrogal)
         return false;
 
-    if (bot->GetVictim() != kazrogal)
+    if (AI_VALUE(Unit*, "current target") != kazrogal)
         return Attack(kazrogal);
 
     if (kazrogal->GetVictim() == bot && bot->IsWithinMeleeRange(kazrogal))
@@ -734,7 +734,7 @@ bool AzgalorMainTankPositionBossAction::Execute(Event /*event*/)
     MarkTargetWithStar(bot, azgalor);
     SetRtiTarget(botAI, "star", azgalor);
 
-    if (bot->GetVictim() != azgalor)
+    if (AI_VALUE(Unit*, "current target") != azgalor)
         return Attack(azgalor);
 
     if (azgalor->GetVictim() == bot && bot->IsWithinMeleeRange(azgalor))
@@ -801,7 +801,7 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
     {
         return FleePosition(doomguard->GetPosition(), safeDistFromDoomguard);
     }
-    else if (!doomguard || bot->GetTarget() != doomguard->GetGUID())
+    else if (!doomguard || AI_VALUE(Unit*, "current target") != doomguard)
     {
         Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer);
         if (nearestPlayer)
@@ -848,7 +848,7 @@ bool AzgalorMeleeGetOutOfFireAndSwapTargetsAction::Execute(Event /*event*/)
         }
     }
 
-    if (bot->GetVictim() != desiredTarget || bot->GetTarget() != desiredTarget->GetGUID())
+    if (AI_VALUE(Unit*, "current target") != desiredTarget)
         return Attack(desiredTarget);
 
     return false;
@@ -912,7 +912,7 @@ bool AzgalorFirstAssistTankPositionDoomguardAction::Execute(Event /*event*/)
         MarkTargetWithCircle(bot, doomguard);
         SetRtiTarget(botAI, "circle", doomguard);
 
-        if (bot->GetVictim() != doomguard)
+        if (AI_VALUE(Unit*, "current target") != doomguard)
             return Attack(doomguard);
 
         if (doomguard->GetVictim() == bot && bot->IsWithinMeleeRange(doomguard) &&
@@ -963,7 +963,7 @@ bool AzgalorRangedDpsPrioritizeDoomguardsAction::Execute(Event /*event*/)
         {
             SetRtiTarget(botAI, "circle", doomguard);
 
-            if (bot->GetTarget() != doomguard->GetGUID())
+            if (AI_VALUE(Unit*, "current target") != doomguard)
                 return Attack(doomguard);
         }
     }
@@ -971,7 +971,7 @@ bool AzgalorRangedDpsPrioritizeDoomguardsAction::Execute(Event /*event*/)
     {
         SetRtiTarget(botAI, "star", azgalor);
 
-        if (bot->GetTarget() != azgalor->GetGUID())
+        if (AI_VALUE(Unit*, "current target") != azgalor)
             return Attack(azgalor);
     }
 
@@ -1007,7 +1007,7 @@ bool ArchimondeMoveBossToInitialPositionAction::Execute(Event /*event*/)
     if (!archimonde)
         return false;
 
-    if (bot->GetVictim() != archimonde)
+    if (AI_VALUE(Unit*, "current target") != archimonde)
         return Attack(archimonde);
 
     if (archimonde->GetVictim() == bot && bot->IsWithinMeleeRange(archimonde) &&

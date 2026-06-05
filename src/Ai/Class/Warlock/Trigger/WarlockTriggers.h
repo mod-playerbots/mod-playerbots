@@ -8,6 +8,7 @@
 
 #include "GenericTriggers.h"
 #include "PlayerbotAI.h"
+#include "RtiTriggers.h"
 #include "Playerbots.h"
 #include "CureTriggers.h"
 #include "Trigger.h"
@@ -137,18 +138,16 @@ public:
 
 // CC and Pet Triggers
 
-class BanishTrigger : public HasCcTargetTrigger
+class BanishTrigger : public RtiCcTrigger
 {
 public:
-    BanishTrigger(PlayerbotAI* botAI) : HasCcTargetTrigger(botAI, "banish") {}
-    bool IsActive() override;
+    BanishTrigger(PlayerbotAI* botAI) : RtiCcTrigger(botAI, "banish") {}
 };
 
-class FearTrigger : public HasCcTargetTrigger
+class FearTrigger : public RtiCcTrigger
 {
 public:
-    FearTrigger(PlayerbotAI* botAI) : HasCcTargetTrigger(botAI, "fear") {}
-    bool IsActive() override;
+    FearTrigger(PlayerbotAI* botAI) : RtiCcTrigger(botAI, "fear") {}
 };
 
 class SpellLockInterruptSpellTrigger : public InterruptSpellTrigger

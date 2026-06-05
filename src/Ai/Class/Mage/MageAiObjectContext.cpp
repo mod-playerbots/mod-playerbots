@@ -89,6 +89,7 @@ public:
         creators["arcane intellect"] = &MageTriggerFactoryInternal::arcane_intellect;
         creators["arcane intellect on party"] = &MageTriggerFactoryInternal::arcane_intellect_on_party;
         creators["mage armor"] = &MageTriggerFactoryInternal::mage_armor;
+        creators["molten armor"] = &MageTriggerFactoryInternal::molten_armor;
         creators["remove curse"] = &MageTriggerFactoryInternal::remove_curse;
         creators["remove curse on party"] = &MageTriggerFactoryInternal::remove_curse_on_party;
         creators["counterspell"] = &MageTriggerFactoryInternal::counterspell;
@@ -143,6 +144,7 @@ private:
     static Trigger* arcane_intellect(PlayerbotAI* botAI) { return new ArcaneIntellectTrigger(botAI); }
     static Trigger* arcane_intellect_on_party(PlayerbotAI* botAI) { return new ArcaneIntellectOnPartyTrigger(botAI); }
     static Trigger* mage_armor(PlayerbotAI* botAI) { return new MageArmorTrigger(botAI); }
+    static Trigger* molten_armor(PlayerbotAI* botAI) { return new MoltenArmorTrigger(botAI); }
     static Trigger* remove_curse(PlayerbotAI* botAI) { return new RemoveCurseTrigger(botAI); }
     static Trigger* remove_curse_on_party(PlayerbotAI* botAI) { return new PartyMemberRemoveCurseTrigger(botAI); }
     static Trigger* counterspell(PlayerbotAI* botAI) { return new CounterspellInterruptSpellTrigger(botAI); }

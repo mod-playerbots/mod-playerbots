@@ -38,11 +38,13 @@
 #include "ObjectMgr.h"
 #include "PerfMonitor.h"
 #include "Player.h"
+#include "PlayerbotTextMgr.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotMgr.h"
 #include "PlayerbotGuildMgr.h"
 #include "Playerbots.h"
 #include "PositionValue.h"
+#include "RBAC.h"
 #include "RandomPlayerbotMgr.h"
 #include "SayAction.h"
 #include "ScriptMgr.h"
@@ -450,9 +452,11 @@ void PlayerbotAI::UpdateAIGroupMaster()
                 botAI->ChangeStrategy("+follow", BOT_STATE_NON_COMBAT);
 
                 if (botAI->GetMaster() == botAI->GetGroupLeader())
-                    botAI->TellMaster("Hello, I follow you!");
+                    botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                        "hello_follow", "Hello, I follow you!", {}));
                 else
-                    botAI->TellMaster(!urand(0, 2) ? "Hello!" : "Hi!");
+                    botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                        "hello", "Hello!", {}));
             }
             else
             {
@@ -507,7 +511,7 @@ void PlayerbotAI::UpdateAIInternal([[maybe_unused]] uint32 elapsed, bool minimal
             logout = true;
 
         if (bot->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) || bot->HasUnitState(UNIT_STATE_IN_FLIGHT) ||
-            botWorldSessionPtr->GetSecurity() >= (AccountTypes)sWorld->getIntConfig(CONFIG_INSTANT_LOGOUT))
+            botWorldSessionPtr->HasPermission(rbac::RBAC_PERM_INSTANT_LOGOUT))
         {
             logout = true;
         }
@@ -515,7 +519,7 @@ void PlayerbotAI::UpdateAIInternal([[maybe_unused]] uint32 elapsed, bool minimal
         if (master &&
             (master->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) || master->HasUnitState(UNIT_STATE_IN_FLIGHT) ||
              (master->GetSession() &&
-              master->GetSession()->GetSecurity() >= (AccountTypes)sWorld->getIntConfig(CONFIG_INSTANT_LOGOUT))))
+              master->GetSession()->HasPermission(rbac::RBAC_PERM_INSTANT_LOGOUT))))
         {
             logout = true;
         }
@@ -856,7 +860,8 @@ void PlayerbotAI::Reset(bool full)
     {
         WorldPackets::Character::LogoutCancel data = WorldPacket(CMSG_LOGOUT_CANCEL);
         bot->GetSession()->HandleLogoutCancelOpcode(data);
-        TellMaster("Logout cancelled!");
+        TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "logout_cancel", "Logout cancelled!", {}));
     }
 
     currentEngine = engines[BOT_STATE_NON_COMBAT];
@@ -1619,9 +1624,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
 {
     static const std::vector<std::string> allInstanceStrategies =
     {
-        "aq20", "bwl", "karazhan", "gruulslair", "hyjal", "icc", "magtheridon",
-        "moltencore", "naxx", "onyxia", "ssc", "tbc-ac", "tempestkeep", "ulduar",
-        "voa", "wotlk-an", "wotlk-cos", "wotlk-dtk", "wotlk-eoe", "wotlk-fos",
+        "aq20", "blacktemple", "bwl", "gruulslair", "hyjal", "icc", "karazhan",
+        "magtheridon", "moltencore", "naxx", "onyxia", "ssc", "tbc-ac", "tempestkeep",
+        "ulduar", "voa", "wotlk-an", "wotlk-cos", "wotlk-dtk", "wotlk-eoe", "wotlk-fos",
         "wotlk-gd", "wotlk-hol", "wotlk-hor", "wotlk-hos", "wotlk-nex", "wotlk-occ",
         "wotlk-ok", "wotlk-os", "wotlk-pos", "wotlk-toc", "wotlk-uk", "wotlk-up",
         "wotlk-vh", "zulaman"
@@ -1671,6 +1676,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             break;
         case 558:
             strategyName = "tbc-ac"; // Auchindoun: Auchenai Crypts
+            break;
+        case 564:
+            strategyName = "blacktemple";  // Black Temple
             break;
         case 565:
             strategyName = "gruulslair";  // Gruul's Lair
@@ -2877,7 +2885,7 @@ bool PlayerbotAI::SayToParty(const std::string& msg)
 
 bool PlayerbotAI::SayToRaid(const std::string& msg)
 {
-    if (!bot->GetGroup() || bot->GetGroup()->isRaidGroup())
+    if (!bot->GetGroup() || !bot->GetGroup()->isRaidGroup())
         return false;
 
     WorldPacket data;
@@ -3003,7 +3011,7 @@ bool PlayerbotAI::IsTellAllowed(PlayerbotSecurityLevel securityLevel)
         return false;
 
     if (sPlayerbotAIConfig.whisperDistance && !bot->GetGroup() && sRandomPlayerbotMgr.IsRandomBot(bot) &&
-        master->GetSession()->GetSecurity() < SEC_GAMEMASTER &&
+        !master->CanBeGameMaster() &&
         (bot->GetMapId() != master->GetMapId() ||
          ServerFacade::instance().GetDistance2d(bot, master) > sPlayerbotAIConfig.whisperDistance))
         return false;
@@ -5563,7 +5571,7 @@ Item* PlayerbotAI::FindStoneFor(Item* weapon) const
         SOLID_SHARPENING_STONE,      HEAVY_SHARPENING_STONE, COARSE_SHARPENING_STONE,    ROUGH_SHARPENING_STONE};
 
     static const std::vector<uint32_t> uPrioritizedWeightStoneIds = {
-        ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE,    DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE,
+        ADAMANTITE_WEIGHTSTONE, FEL_WEIGHTSTONE,    ELEMENTAL_SHARPENING_STONE, DENSE_WEIGHTSTONE, SOLID_WEIGHTSTONE,
         HEAVY_WEIGHTSTONE,      COARSE_WEIGHTSTONE, ROUGH_WEIGHTSTONE};
 
     Item* stone = nullptr;
