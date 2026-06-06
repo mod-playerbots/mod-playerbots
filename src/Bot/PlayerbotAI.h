@@ -230,6 +230,15 @@ enum class BotTypeNumber : uint8
     GUILDER_TYPE_NUMBER = 3,
 };
 
+enum class BotAccountType : uint8
+{
+    UNDEFINED = 0,
+    ALT,
+    RANDOMBOT,
+    ADDCLASS,
+    REALPLAYER  // self-bot
+};
+
 enum class GrouperType : uint8
 {
     SOLO = 0,
@@ -533,15 +542,18 @@ public:
     Player* GetMaster() { return master; }
     Player* FindNewMaster();
 
-    // Checks if the bot is really a player. Players always have themselves as master.
-    bool IsRealPlayer() { return master ? (master == bot) : false; }
+    bool IsRealPlayer() { return GetAccountType() == BotAccountType::REALPLAYER; }
+    BotAccountType GetAccountType() const { return _accountType; }
+    void SetAccountType(BotAccountType type) { _accountType = type; }
+    bool IsRandomBot() { return GetAccountType() == BotAccountType::RANDOMBOT; }
+    bool IsAddclass() { return GetAccountType() == BotAccountType::ADDCLASS; }
     // Bot has a master that is a player.
     bool HasRealPlayerMaster();
     // Bot has a master that is activly playing.
     bool HasActivePlayerMaster();
     // Get the group leader or the master of the bot.
     // Checks if the bot is summoned as alt of a player
-    bool IsAlt();
+    bool IsAlt() { return GetAccountType() == BotAccountType::ALT; }
     Player* GetGroupLeader();
     uint32 GetFixedBotNumber(uint32 maxNum = 100);
     GrouperType GetGrouperType();
@@ -650,6 +662,7 @@ protected:
     Position jumpDestination = Position();
     uint32 nextTransportCheck = 0;
     bool spellInterruptRequested = false;
+    BotAccountType _accountType = BotAccountType::UNDEFINED;
 };
 
 #endif

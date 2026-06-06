@@ -4459,8 +4459,6 @@ bool PlayerbotAI::HasRealPlayerMaster()
 
 bool PlayerbotAI::HasActivePlayerMaster() { return master && !GET_PLAYERBOT_AI(master); }
 
-bool PlayerbotAI::IsAlt() { return HasRealPlayerMaster() && !sRandomPlayerbotMgr.IsRandomBot(bot); }
-
 Player* PlayerbotAI::GetGroupLeader()
 {
     if (!bot->InBattleground())
