@@ -729,7 +729,7 @@ std::string const PlayerbotHolder::ProcessBotCommand(std::string const cmd, Obje
     if (!bot)
         return "bot not found";
 
-    bool addClassBot = sRandomPlayerbotMgr.IsAddclassBot(guid.GetCounter());
+    bool addClassBot = sRandomPlayerbotMgr.IsAddclassBot(bot);
 
     if (!addClassBot)
     {

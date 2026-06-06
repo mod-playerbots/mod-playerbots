@@ -2106,10 +2106,10 @@ bool RandomPlayerbotMgr::IsRandomBot(Player* bot)
     if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
         return botAI->GetAccountType() == BotAccountType::RANDOMBOT;
 
-    return IsRandomBot(bot->GetGUID().GetCounter());
+    return isRandomBot(bot->GetGUID().GetCounter());
 }
 
-bool RandomPlayerbotMgr::IsRandomBot(ObjectGuid::LowType bot)
+bool RandomPlayerbotMgr::isRandomBot(ObjectGuid::LowType bot)
 {
     ObjectGuid guid = ObjectGuid::Create<HighGuid::Player>(bot);
     if (!sPlayerbotAIConfig.IsInRandomAccountList(sCharacterCache->GetCharacterAccountIdByGuid(guid)))
@@ -2430,10 +2430,9 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* handler, cha
 
                     uint32 botId = fields[0].Get<uint32>();
                     ObjectGuid guid = ObjectGuid::Create<HighGuid::Player>(botId);
-                    if (!sRandomPlayerbotMgr.IsRandomBot(guid.GetCounter()))
-                    {
+                    if (!sRandomPlayerbotMgr.isRandomBot(guid.GetCounter()))
                         continue;
-                    }
+
                     Player* bot = ObjectAccessor::FindPlayer(guid);
                     if (!bot)
                         continue;

@@ -4251,7 +4251,7 @@ bool ArenaTactics::Execute(Event /*event*/)
 {
     if (!bot->InBattleground())
     {
-        bool IsRandomBot = sRandomPlayerbotMgr.IsRandomBot(bot->GetGUID().GetCounter());
+        bool IsRandomBot = sRandomPlayerbotMgr.IsRandomBot(bot);
         botAI->ChangeStrategy("-arena", BOT_STATE_COMBAT);
         botAI->ChangeStrategy("-arena", BOT_STATE_NON_COMBAT);
         botAI->ResetStrategies(!IsRandomBot);
