@@ -212,3 +212,41 @@ bool McGolemaggAssistTankAttackCoreRagerAction::Execute(Event event)
 
     return false;
 }
+
+bool McCoreHoundMarkAction::Execute(Event /*event*/)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Unit* highestHealthHound = nullptr;
+    for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
+    {
+        Unit* unit = ref->GetOwner();
+        if (unit && unit->IsAlive() && unit->GetEntry() == NPC_CORE_HOUND)
+        {
+            if (!highestHealthHound || unit->GetHealth() > highestHealthHound->GetHealth())
+                highestHealthHound = unit;
+        }
+    }
+
+    if (!highestHealthHound)
+        return false;
+
+    ObjectGuid currentSkullGuid = group->GetTargetIcon(RtiTargetValue::skullIndex);
+    if (!currentSkullGuid.IsEmpty() && currentSkullGuid != highestHealthHound->GetGUID())
+    {
+        // Only switch skull if the new target has meaningfully more health (10% buffer) to prevent rapid re-marking
+        if (Unit* currentSkullUnit = botAI->GetUnit(currentSkullGuid))
+            if (currentSkullUnit->IsAlive() && highestHealthHound->GetHealth() <= currentSkullUnit->GetHealth() * 1.10f)
+                return false;
+    }
+
+    if (currentSkullGuid.IsEmpty() || currentSkullGuid != highestHealthHound->GetGUID())
+    {
+        group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), highestHealthHound->GetGUID());
+        return true;
+    }
+
+    return false;
+}
