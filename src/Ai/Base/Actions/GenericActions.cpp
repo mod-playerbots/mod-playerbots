@@ -86,7 +86,7 @@ bool TogglePetSpellAutoCastAction::Execute(Event /*event*/)
 
         uint32 spellId = itr->first;
         const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-        if (!spellInfo->IsAutocastable())
+        if (!spellInfo || !spellInfo->IsAutocastable())
             continue;
 
         bool shouldApply = true;

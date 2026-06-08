@@ -160,6 +160,7 @@ void RandomItemMgr::Init()
     BuildPotionCache();
     BuildFoodCache();
     BuildTradeCache();
+    LoadEnchantmentPool();
 }
 
 void RandomItemMgr::InitAfterAhBot()
@@ -450,6 +451,39 @@ bool RandomItemMgr::CheckItemStats(uint8 clazz, uint8 sp, uint8 ap, uint8 tank)
 std::vector<uint32> RandomItemMgr::GetCachedEquipments(uint32 requiredLevel, uint32 inventoryType)
 {
     return equipCacheNew[requiredLevel][inventoryType];
+}
+
+void RandomItemMgr::LoadEnchantmentPool()
+{
+    enchPoolCache.clear();
+
+    QueryResult result = WorldDatabase.Query("SELECT entry, ench FROM item_enchantment_template");
+    if (!result)
+    {
+        LOG_WARN("playerbots", "item_enchantment_template empty; bot autogear cannot evaluate random suffixes");
+        return;
+    }
+
+    uint32 count = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+        uint32 entry = fields[0].Get<uint32>();
+        uint32 ench = fields[1].Get<uint32>();
+        enchPoolCache[entry].push_back(ench);
+        ++count;
+    } while (result->NextRow());
+
+    LOG_INFO("playerbots", "Loaded {} item enchantment pool rows for bot autogear", count);
+}
+
+std::vector<uint32> const& RandomItemMgr::GetEnchantmentPool(uint32 entry) const
+{
+    static std::vector<uint32> const empty;
+    auto it = enchPoolCache.find(entry);
+    if (it == enchPoolCache.end())
+        return empty;
+    return it->second;
 }
 
 bool RandomItemMgr::ShouldEquipArmorForSpec(uint8 playerclass, uint8 spec, ItemTemplate const* proto)

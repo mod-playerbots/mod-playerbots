@@ -112,6 +112,7 @@ std::vector<NextAction> ArmsWarriorStrategy::getDefaultActions()
     return {
         NextAction("bladestorm", ACTION_DEFAULT + 0.2f),
         NextAction("mortal strike", ACTION_DEFAULT + 0.1f),
+        NextAction("sunder armor", ACTION_DEFAULT + 0.05f),
         NextAction("melee", ACTION_DEFAULT)
     };
 }

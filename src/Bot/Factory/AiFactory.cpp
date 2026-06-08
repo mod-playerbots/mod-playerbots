@@ -500,21 +500,21 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
     switch (player->getClass())
     {
         case CLASS_PRIEST:
-            nonCombatEngine->addStrategiesNoInit("dps assist", "cure", nullptr);
+            nonCombatEngine->addStrategiesNoInit("dps assist", "cure", "rshadow", nullptr);
             break;
         case CLASS_PALADIN:
             if (tab == PALADIN_TAB_PROTECTION)
             {
                 nonCombatEngine->addStrategiesNoInit("bthreat", "tank assist", "pull", "barmor", nullptr);
                 if (player->GetLevel() >= 20)
-                    nonCombatEngine->addStrategy("bhealth", false);
+                    nonCombatEngine->addStrategy("bsanc", false);
                 else
-                    nonCombatEngine->addStrategy("bdps", false);
+                    nonCombatEngine->addStrategy("bmight", false);
             }
             else if (tab == PALADIN_TAB_HOLY)
-                nonCombatEngine->addStrategiesNoInit("dps assist", "bmana", "bcast", nullptr);
+                nonCombatEngine->addStrategiesNoInit("dps assist", "bwisdom", "bcast", nullptr);
             else
-                nonCombatEngine->addStrategiesNoInit("dps assist", "bdps", "baoe", nullptr);
+                nonCombatEngine->addStrategiesNoInit("dps assist", "bmight", "baoe", nullptr);
 
             nonCombatEngine->addStrategiesNoInit("cure", nullptr);
             break;

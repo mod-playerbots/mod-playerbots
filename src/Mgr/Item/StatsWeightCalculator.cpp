@@ -14,6 +14,7 @@
 #include "ObjectMgr.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotFactory.h"
+#include "RandomItemMgr.h"
 #include "SharedDefines.h"
 #include "SpellAuraDefines.h"
 #include "SpellMgr.h"
@@ -188,6 +189,53 @@ void StatsWeightCalculator::CalculateRandomProperty(int32 randomPropertyId, uint
                 collector_->CollectEnchantStats(enchant, enchant_amount);
         }
     }
+}
+
+int32 StatsWeightCalculator::PickBestRandomPropertyId(uint32 itemId)
+{
+    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
+    if (!proto)
+        return 0;
+
+    bool isSuffix = false;
+    uint32 poolEntry = proto->RandomProperty;
+    if (!poolEntry)
+    {
+        poolEntry = proto->RandomSuffix;
+        isSuffix = true;
+    }
+    if (!poolEntry)
+        return 0;
+
+    std::vector<uint32> const& pool = sRandomItemMgr.GetEnchantmentPool(poolEntry);
+    if (pool.empty())
+        return 0;
+
+    Reset();
+    GenerateWeights(player_);
+
+    int32 bestId = 0;
+    float bestScore = 0.0f;
+    for (uint32 enchId : pool)
+    {
+        int32 candidate = isSuffix ? -static_cast<int32>(enchId) : static_cast<int32>(enchId);
+
+        collector_->Reset();
+        CalculateRandomProperty(candidate, itemId);
+
+        float score = 0.0f;
+        for (uint32 i = 0; i < STATS_TYPE_MAX; ++i)
+            score += stats_weights_[i] * collector_->stats[i];
+
+        if (bestId == 0 || score > bestScore)
+        {
+            bestId = candidate;
+            bestScore = score;
+        }
+    }
+
+    collector_->Reset();
+    return bestId;
 }
 
 void StatsWeightCalculator::GenerateWeights(Player* player)
