@@ -123,14 +123,14 @@ namespace NaxxSpellIds
     SPELL_INEVITABLE_DOOM                       = 29204,
     SPELL_BERSERK                               = 26662
 */
-    inline bool HasAnyAura(PlayerbotAI* botAI, Unit* unit, std::initializer_list<uint32> spellIds)
+    inline bool HasAnyAura(Unit* unit, std::initializer_list<uint32> spellIds)
     {
-        if (!botAI || !unit)
+        if (!unit)
             return false;
 
         for (uint32 spellId : spellIds)
         {
-            if (botAI->HasAura(spellId, unit))
+            if (unit->HasAura(spellId))
                 return true;
         }
         return false;

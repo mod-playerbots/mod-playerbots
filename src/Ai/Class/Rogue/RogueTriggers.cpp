@@ -9,6 +9,12 @@
 #include "Playerbots.h"
 #include "ServerFacade.h"
 
+namespace
+{
+constexpr uint32 SPELL_STEALTH = 1784;
+constexpr uint32 SPELL_SPRINT_RANK_1 = 2983;
+}
+
 // bool AdrenalineRushTrigger::isPossible()
 // {
 //     return !botAI->HasAura("stealth", bot);
@@ -29,7 +35,7 @@ bool UnstealthTrigger::IsActive()
 
 bool StealthTrigger::IsActive()
 {
-    if (botAI->HasAura("stealth", bot) || bot->IsInCombat() || bot->HasSpellCooldown(1784))
+    if (bot->HasAura(SPELL_STEALTH) || bot->IsInCombat() || bot->HasSpellCooldown(SPELL_STEALTH))
         return false;
 
     float distance = 30.f;
@@ -63,13 +69,13 @@ bool StealthTrigger::IsActive()
     return target && ServerFacade::instance().GetDistance2d(bot, target) < distance;
 }
 
-bool SapTrigger::IsPossible() { return bot->GetLevel() > 10 && bot->HasSpell(6770) && !bot->IsInCombat(); }
+bool SapTrigger::IsPossible() { return bot->GetLevel() > 10 && botAI->HasSpell("sap") && !bot->IsInCombat(); }
 
-bool SprintTrigger::IsPossible() { return bot->HasSpell(2983); }
+bool SprintTrigger::IsPossible() { return bot->HasSpell(SPELL_SPRINT_RANK_1); }
 
 bool SprintTrigger::IsActive()
 {
-    if (bot->HasSpellCooldown(2983))
+    if (bot->HasSpellCooldown(SPELL_SPRINT_RANK_1))
         return false;
 
     float distance = botAI->GetMaster() ? 45.0f : 35.0f;
@@ -105,7 +111,7 @@ bool SprintTrigger::IsActive()
 
 bool ExposeArmorTrigger::IsActive()
 {
-    Unit* target = AI_VALUE(Unit*, "current target"); // Get the bot's current target
+    Unit* target = AI_VALUE(Unit*, "current target");
     return DebuffTrigger::IsActive() && !botAI->HasAura("sunder armor", target, false, false, -1, true) &&
            AI_VALUE2(uint8, "combo", "current target") <= 3;
 }

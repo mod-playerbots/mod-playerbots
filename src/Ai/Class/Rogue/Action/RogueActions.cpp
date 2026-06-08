@@ -11,6 +11,14 @@
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 
+namespace
+{
+constexpr uint32 SPELL_WARSONG_FLAG = 23333;
+constexpr uint32 SPELL_SILVERWING_FLAG = 23335;
+constexpr uint32 SPELL_NETHERSTORM_FLAG = 34976;
+constexpr uint32 SPELL_MASTER_POISONER_RANK_3 = 58410;
+}
+
 bool CastStealthAction::isUseful()
 {
     Unit* target = AI_VALUE(Unit*, "current target");
@@ -22,7 +30,8 @@ bool CastStealthAction::isUseful()
 bool CastStealthAction::isPossible()
 {
     // do not use with WSG flag or EYE flag
-    return !botAI->HasAura(23333, bot) && !botAI->HasAura(23335, bot) && !botAI->HasAura(34976, bot);
+    return !bot->HasAura(SPELL_WARSONG_FLAG) && !bot->HasAura(SPELL_SILVERWING_FLAG) &&
+           !bot->HasAura(SPELL_NETHERSTORM_FLAG);
 }
 
 bool UnstealthAction::Execute(Event /*event*/)
@@ -50,7 +59,8 @@ bool CheckStealthAction::Execute(Event /*event*/)
 bool CastVanishAction::isUseful()
 {
     // do not use with WSG flag or EYE flag
-    return !botAI->HasAura(23333, bot) && !botAI->HasAura(23335, bot) && !botAI->HasAura(34976, bot);
+    return !bot->HasAura(SPELL_WARSONG_FLAG) && !bot->HasAura(SPELL_SILVERWING_FLAG) &&
+           !bot->HasAura(SPELL_NETHERSTORM_FLAG);
 }
 
 bool CastEnvenomAction::isUseful()
@@ -61,7 +71,7 @@ bool CastEnvenomAction::isUseful()
 bool CastEnvenomAction::isPossible()
 {
     // alternate to eviscerate if talents unlearned
-    return botAI->HasAura(58410, bot) /* Master Poisoner Rank 3 */;
+    return bot->HasAura(SPELL_MASTER_POISONER_RANK_3);
 }
 
 bool CastTricksOfTheTradeOnMainTankAction::isUseful()
