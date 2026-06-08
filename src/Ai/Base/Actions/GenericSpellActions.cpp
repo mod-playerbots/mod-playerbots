@@ -491,32 +491,13 @@ bool CastVehicleSpellAction::Execute(Event /*event*/)
 bool CastEveryManForHimselfAction::isPossible()
 {
     uint32 spellId = AI_VALUE2(uint32, "spell id", spell);
-    return spellId && bot->HasSpell(spellId) && !HasSpellOrCategoryCooldown(bot, spellId);
-}
-
-bool CastEveryManForHimselfAction::isUseful()
-{
-    return (bot->HasAuraType(SPELL_AURA_MOD_STUN) ||
-            bot->HasAuraType(SPELL_AURA_MOD_FEAR) ||
-            bot->HasAuraType(SPELL_AURA_MOD_ROOT) ||
-            bot->HasAuraType(SPELL_AURA_MOD_CONFUSE) ||
-            bot->HasAuraType(SPELL_AURA_MOD_CHARM))
-           && CastSpellAction::isUseful();
+    return spellId && !HasSpellOrCategoryCooldown(bot, spellId);
 }
 
 bool CastWillOfTheForsakenAction::isPossible()
 {
     uint32 spellId = AI_VALUE2(uint32, "spell id", spell);
-    return spellId && bot->HasSpell(spellId) && !HasSpellOrCategoryCooldown(bot, spellId);
-}
-
-bool CastWillOfTheForsakenAction::isUseful()
-{
-    return (bot->HasAuraType(SPELL_AURA_MOD_FEAR) ||
-            bot->HasAuraType(SPELL_AURA_MOD_CHARM) ||
-            bot->HasAuraType(SPELL_AURA_AOE_CHARM) ||
-            bot->HasAuraWithMechanic(1 << MECHANIC_SLEEP))
-           && CastSpellAction::isUseful();
+    return spellId && !HasSpellOrCategoryCooldown(bot, spellId);
 }
 
 bool UseTrinketAction::Execute(Event /*event*/)

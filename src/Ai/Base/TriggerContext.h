@@ -66,6 +66,8 @@ public:
         creators["loss of control"] = &TriggerContext::loss_of_control;
         creators["fear charm sleep"] = &TriggerContext::fear_charm_sleep;
         creators["fear sleep sap"] = &TriggerContext::fear_sleep_sap;
+        creators["poison disease bleed"] = &TriggerContext::poison_disease_bleed;
+        creators["movement impaired"] = &TriggerContext::movement_impaired;
 
         creators["protect party member"] = &TriggerContext::protect_party_member;
 
@@ -382,6 +384,8 @@ private:
     static Trigger* loss_of_control(PlayerbotAI* botAI) { return new LossOfControlTrigger(botAI); }
     static Trigger* fear_charm_sleep(PlayerbotAI* botAI) { return new FearCharmSleepTrigger(botAI); }
     static Trigger* fear_sleep_sap(PlayerbotAI* botAI) { return new FearSleepSapTrigger(botAI); }
+    static Trigger* poison_disease_bleed(PlayerbotAI* botAI) { return new PoisonDiseaseBleedTrigger(botAI); }
+    static Trigger* movement_impaired(PlayerbotAI* botAI) { return new MovementImpairedTrigger(botAI); }
     static Trigger* PartyMemberCriticalHealth(PlayerbotAI* botAI)
     {
         return new PartyMemberCriticalHealthTrigger(botAI);
