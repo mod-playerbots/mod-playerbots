@@ -24,6 +24,12 @@ namespace BlackwingLairHelpers
         GO_SUPPRESSION_DEVICE = 179784
     };
 
+    enum BlackwingLairNPCs
+    {
+        // Trash
+        NPC_DEATH_TALON_WYRMGUARD = 12460
+    };
+
     bool IsActiveSuppressionDeviceInRange(const GameObject* go, const Player* bot);
 }
 

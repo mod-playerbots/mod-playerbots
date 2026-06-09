@@ -37,4 +37,20 @@ public:
     bool IsActive() override;
 };
 
+// Trash
+
+class BwlDeathTalonWyrmguardTankTrigger : public Trigger
+{
+public:
+    BwlDeathTalonWyrmguardTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl death talon wyrmguard tank") {}
+    bool IsActive() override;
+};
+
+class BwlDeathTalonWyrmguardRangedTrigger : public Trigger
+{
+public:
+    BwlDeathTalonWyrmguardRangedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl death talon wyrmguard ranged") {}
+    bool IsActive() override;
+};
+
 #endif
