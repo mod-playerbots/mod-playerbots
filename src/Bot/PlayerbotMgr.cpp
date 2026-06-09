@@ -1068,7 +1068,7 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
             messages.push_back("Enable player botAI");
             PlayerbotsMgr::instance().AddPlayerbotData(master, true);
             GET_PLAYERBOT_AI(master)->SetMaster(master);
-            GET_PLAYERBOT_AI(master)->SetAccountType(BotAccountType::REALPLAYER);
+            GET_PLAYERBOT_AI(master)->SetBotType(BotType::REALPLAYER);
         }
 
         return messages;
@@ -1636,9 +1636,9 @@ void PlayerbotMgr::OnBotLoginInternal(Player* const bot)
     // Any bot summoned off a randombot account (random pool or addclass) is
     // treated as an addclass bot; only a player's own characters are alts.
     uint32 botAccountId = bot->GetSession()->GetAccountId();
-    botAI->SetAccountType(sPlayerbotAIConfig.IsInRandomAccountList(botAccountId)
-                              ? BotAccountType::ADDCLASS
-                              : BotAccountType::ALT);
+    botAI->SetBotType(sPlayerbotAIConfig.IsInRandomAccountList(botAccountId)
+                              ? BotType::ADDCLASSBOT
+                              : BotType::ALTBOT);
 
     LOG_INFO("playerbots", "Bot {} logged in", bot->GetName().c_str());
 }

@@ -2104,7 +2104,7 @@ bool RandomPlayerbotMgr::IsRandomBot(Player* bot)
         return false;
 
     if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
-        return botAI->GetAccountType() == BotAccountType::RANDOMBOT;
+        return botAI->GetBotType() == BotType::RANDOMBOT;
 
     return isRandomBot(bot->GetGUID().GetCounter());
 }
@@ -2127,7 +2127,7 @@ bool RandomPlayerbotMgr::IsAddclassBot(Player* bot)
         return false;
 
     if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
-        return botAI->GetAccountType() == BotAccountType::ADDCLASS;
+        return botAI->GetBotType() == BotType::ADDCLASSBOT;
 
     return IsAddclassBot(bot->GetGUID().GetCounter());
 }
@@ -2531,7 +2531,7 @@ void RandomPlayerbotMgr::OnBotLoginInternal(Player* const bot)
     }
 
     if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
-        botAI->SetAccountType(BotAccountType::RANDOMBOT);
+        botAI->SetBotType(BotType::RANDOMBOT);
 
     // Run guild recovery/assignment at login to handle empty guild tables after restart.
     if (sPlayerbotAIConfig.randomBotGuildCount > 0)
