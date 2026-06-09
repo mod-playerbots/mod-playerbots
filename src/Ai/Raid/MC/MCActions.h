@@ -69,6 +69,7 @@ class McCoreHoundMarkAction : public Action
 public:
     McCoreHoundMarkAction(PlayerbotAI* botAI, std::string const name = "mc core hound mark")
         : Action(botAI, name) {};
+    Unit* GetTarget() override;
     bool Execute(Event event) override;
 };
 
