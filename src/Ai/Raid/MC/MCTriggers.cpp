@@ -41,5 +41,5 @@ bool McGolemaggIsAssistTankTrigger::IsActive()
 
 bool McCoreHoundMarkTrigger::IsActive()
 {
-    return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "core hound");
+    return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "core hound");
 }
