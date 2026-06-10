@@ -30,4 +30,7 @@ void GenericPaladinNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& tr
         triggers.push_back(new TriggerNode("often", { NextAction("apply oil", ACTION_IDLE + 1.0f) }));
     if (specTab == PALADIN_TAB_PROTECTION || specTab == PALADIN_TAB_RETRIBUTION)
         triggers.push_back(new TriggerNode("often", { NextAction("apply stone", ACTION_IDLE + 1.0f) }));
+
+    triggers.push_back(new TriggerNode("greater blessing needed",
+        { NextAction("cast greater blessing assignment", ACTION_NORMAL) }));
 }

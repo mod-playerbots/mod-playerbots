@@ -7,6 +7,7 @@
 
 #include "DpsPaladinStrategy.h"
 #include "GenericPaladinNonCombatStrategy.h"
+#include "PaladinGreaterBlessingAction.h"
 #include "HealPaladinStrategy.h"
 #include "NamedObjectContext.h"
 #include "OffhealRetPaladinStrategy.h"
@@ -70,17 +71,17 @@ class PaladinBuffStrategyFactoryInternal : public NamedObjectContext<Strategy>
 public:
     PaladinBuffStrategyFactoryInternal() : NamedObjectContext<Strategy>(false, true)
     {
-        creators["bhealth"] = &PaladinBuffStrategyFactoryInternal::bhealth;
-        creators["bmana"] = &PaladinBuffStrategyFactoryInternal::bmana;
-        creators["bdps"] = &PaladinBuffStrategyFactoryInternal::bdps;
-        creators["bstats"] = &PaladinBuffStrategyFactoryInternal::bstats;
+        creators["bsanc"] = &PaladinBuffStrategyFactoryInternal::bsanc;
+        creators["bwisdom"] = &PaladinBuffStrategyFactoryInternal::bwisdom;
+        creators["bmight"] = &PaladinBuffStrategyFactoryInternal::bmight;
+        creators["bkings"] = &PaladinBuffStrategyFactoryInternal::bkings;
     }
 
 private:
-    static Strategy* bhealth(PlayerbotAI* botAI) { return new PaladinBuffHealthStrategy(botAI); }
-    static Strategy* bmana(PlayerbotAI* botAI) { return new PaladinBuffManaStrategy(botAI); }
-    static Strategy* bdps(PlayerbotAI* botAI) { return new PaladinBuffDpsStrategy(botAI); }
-    static Strategy* bstats(PlayerbotAI* botAI) { return new PaladinBuffStatsStrategy(botAI); }
+    static Strategy* bsanc(PlayerbotAI* botAI) { return new PaladinBuffHealthStrategy(botAI); }
+    static Strategy* bwisdom(PlayerbotAI* botAI) { return new PaladinBuffManaStrategy(botAI); }
+    static Strategy* bmight(PlayerbotAI* botAI) { return new PaladinBuffDpsStrategy(botAI); }
+    static Strategy* bkings(PlayerbotAI* botAI) { return new PaladinBuffStatsStrategy(botAI); }
 };
 
 class PaladinCombatStrategyFactoryInternal : public NamedObjectContext<Strategy>
@@ -154,6 +155,7 @@ public:
         creators["blessing of sanctuary on party"] = &PaladinTriggerFactoryInternal::blessing_of_sanctuary_on_party;
 
         creators["avenging wrath"] = &PaladinTriggerFactoryInternal::avenging_wrath;
+        creators["greater blessing needed"] = &PaladinTriggerFactoryInternal::greater_blessing_needed;
     }
 
 private:
@@ -211,8 +213,8 @@ private:
     static Trigger* repentance_on_enemy_healer(PlayerbotAI* botAI) { return new RepentanceOnHealerTrigger(botAI); }
     static Trigger* repentance_on_snare_target(PlayerbotAI* botAI) { return new RepentanceSnareTrigger(botAI); }
     static Trigger* repentance_interrupt(PlayerbotAI* botAI) { return new RepentanceInterruptTrigger(botAI); }
-    static Trigger* beacon_of_light_on_main_tank(PlayerbotAI* ai) { return new BeaconOfLightOnMainTankTrigger(ai); }
-    static Trigger* sacred_shield_on_main_tank(PlayerbotAI* ai) { return new SacredShieldOnMainTankTrigger(ai); }
+    static Trigger* beacon_of_light_on_main_tank(PlayerbotAI* botAI) { return new BeaconOfLightOnMainTankTrigger(botAI); }
+    static Trigger* sacred_shield_on_main_tank(PlayerbotAI* botAI) { return new SacredShieldOnMainTankTrigger(botAI); }
     static Trigger* hand_of_freedom_on_party(PlayerbotAI* botAI) { return new HandOfFreedomOnPartyTrigger(botAI); }
 
     static Trigger* blessing_of_kings_on_party(PlayerbotAI* botAI) { return new BlessingOfKingsOnPartyTrigger(botAI); }
@@ -227,6 +229,10 @@ private:
     }
 
     static Trigger* avenging_wrath(PlayerbotAI* botAI) { return new AvengingWrathTrigger(botAI); }
+    static Trigger* greater_blessing_needed(PlayerbotAI* botAI)
+    {
+        return new GreaterBlessingNeededTrigger(botAI);
+    }
 };
 
 class PaladinAiObjectContextInternal : public NamedObjectContext<Action>
@@ -316,6 +322,8 @@ public:
         creators["divine sacrifice"] = &PaladinAiObjectContextInternal::divine_sacrifice;
         creators["cancel divine sacrifice"] = &PaladinAiObjectContextInternal::cancel_divine_sacrifice;
         creators["hand of freedom on party"] = &PaladinAiObjectContextInternal::hand_of_freedom_on_party;
+        creators["cast greater blessing assignment"] =
+            &PaladinAiObjectContextInternal::cast_greater_blessing_assignment;
     }
 
 private:
@@ -414,15 +422,41 @@ private:
     static Action* sanctity_aura(PlayerbotAI* botAI) { return new CastSanctityAuraAction(botAI); }
     static Action* holy_shock(PlayerbotAI* botAI) { return new CastHolyShockAction(botAI); }
     static Action* holy_shock_on_party(PlayerbotAI* botAI) { return new CastHolyShockOnPartyAction(botAI); }
-    static Action* divine_plea(PlayerbotAI* ai) { return new CastDivinePleaAction(ai); }
-    static Action* shield_of_righteousness(PlayerbotAI* ai) { return new ShieldOfRighteousnessAction(ai); }
-    static Action* beacon_of_light_on_main_tank(PlayerbotAI* ai) { return new CastBeaconOfLightOnMainTankAction(ai); }
-    static Action* sacred_shield_on_main_tank(PlayerbotAI* ai) { return new CastSacredShieldOnMainTankAction(ai); }
-    static Action* avenging_wrath(PlayerbotAI* ai) { return new CastAvengingWrathAction(ai); }
-    static Action* divine_illumination(PlayerbotAI* ai) { return new CastDivineIlluminationAction(ai); }
-    static Action* divine_sacrifice(PlayerbotAI* ai) { return new CastDivineSacrificeAction(ai); }
-    static Action* cancel_divine_sacrifice(PlayerbotAI* ai) { return new CastCancelDivineSacrificeAction(ai); }
-    static Action* hand_of_freedom_on_party(PlayerbotAI* ai) { return new CastHandOfFreedomOnPartyAction(ai); }
+    static Action* divine_plea(PlayerbotAI* botAI) { return new CastDivinePleaAction(botAI); }
+    static Action* shield_of_righteousness(PlayerbotAI* botAI) { return new ShieldOfRighteousnessAction(botAI); }
+    static Action* beacon_of_light_on_main_tank(PlayerbotAI* botAI) { return new CastBeaconOfLightOnMainTankAction(botAI); }
+    static Action* sacred_shield_on_main_tank(PlayerbotAI* botAI) { return new CastSacredShieldOnMainTankAction(botAI); }
+    static Action* avenging_wrath(PlayerbotAI* botAI) { return new CastAvengingWrathAction(botAI); }
+    static Action* divine_illumination(PlayerbotAI* botAI) { return new CastDivineIlluminationAction(botAI); }
+    static Action* divine_sacrifice(PlayerbotAI* botAI) { return new CastDivineSacrificeAction(botAI); }
+    static Action* cancel_divine_sacrifice(PlayerbotAI* botAI) { return new CastCancelDivineSacrificeAction(botAI); }
+    static Action* hand_of_freedom_on_party(PlayerbotAI* botAI) { return new CastHandOfFreedomOnPartyAction(botAI); }
+    static Action* cast_greater_blessing_assignment(PlayerbotAI* botAI)
+    {
+        return new CastGreaterBlessingAssignmentAction(botAI);
+    }
+};
+
+class PaladinValueContextInternal : public NamedObjectContext<UntypedValue>
+{
+public:
+    PaladinValueContextInternal()
+    {
+        creators["greater blessing assignments"] = &PaladinValueContextInternal::greater_blessing_assignments;
+        creators["greater blessing pending assignment"] =
+            &PaladinValueContextInternal::greater_blessing_pending_assignment;
+    }
+
+private:
+    static UntypedValue* greater_blessing_assignments(PlayerbotAI* botAI)
+    {
+        return ai::gbless::greater_blessing_assignments_value(botAI);
+    }
+
+    static UntypedValue* greater_blessing_pending_assignment(PlayerbotAI* botAI)
+    {
+        return ai::gbless::greater_blessing_pending_assignment_value(botAI);
+    }
 };
 
 SharedNamedObjectContextList<Strategy> PaladinAiObjectContext::sharedStrategyContexts;
@@ -467,4 +501,5 @@ void PaladinAiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContext
 void PaladinAiObjectContext::BuildSharedValueContexts(SharedNamedObjectContextList<UntypedValue>& valueContexts)
 {
     AiObjectContext::BuildSharedValueContexts(valueContexts);
+    valueContexts.Add(new PaladinValueContextInternal());
 }

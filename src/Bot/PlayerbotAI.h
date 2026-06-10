@@ -493,7 +493,6 @@ public:
     void ImbueItem(Item* item, Unit* target);
     void ImbueItem(Item* item);
     void EnchantItemT(uint32 spellid, uint8 slot);
-    uint32 GetBuffedCount(Player* player, std::string const spellname);
     int32 GetNearGroupMemberCount(float dis = sPlayerbotAIConfig.sightDistance);
 
     virtual bool CanCastSpell(std::string const name, Unit* target, Item* itemTarget = nullptr);
