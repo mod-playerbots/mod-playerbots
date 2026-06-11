@@ -359,6 +359,11 @@ void PlayerbotHolder::LogoutPlayerBot(ObjectGuid guid)
         PlayerbotWorldThreadProcessor::instance().QueueOperation(std::move(cleanupOp));
 
         LOG_DEBUG("playerbots", "Bot {} logging out", bot->GetName().c_str());
+
+        // Remove taxi cheat flag on alts.
+        if (!sRandomPlayerbotMgr.IsRandomBot(bot) && bot->isTaxiCheater())
+            bot->SetTaxiCheater(false);
+
         bot->SaveToDB(false, false);
 
         WorldSession* botWorldSessionPtr = bot->GetSession();
