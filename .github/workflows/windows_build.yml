@@ -1,204 +1,152 @@
 name: windows-build
 
 on:
-  push:
-    branches: [ "master", "test-staging" ]
-  pull_request:
-    branches: [ "master", "test-staging" ]
+push:
+branches: [ "master", "test-staging" ]
+pull_request:
+branches: [ "master", "test-staging" ]
 
 concurrency:
-  group: "windows-build-${{ github.event.pull_request.number || github.ref }}"
-  cancel-in-progress: true
+group: "windows-build-${{ github.event.pull_request.number || github.ref }}"
+cancel-in-progress: true
 
 jobs:
-  windows-build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest]
+windows-build:
+strategy:
+fail-fast: false
+matrix:
+os: [windows-latest]
 
-    runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os }}
+runs-on: ${{ matrix.os }}
+name: ${{ matrix.os }}
 
+env:
+  BOOST_ROOT: C:\local\boost_1_87_0
+  CMAKE_GENERATOR: Ninja
+  CTOOLS_BUILD: all
+
+steps:
+  - name: Checkout AzerothCore
+    uses: actions/checkout@v4
+    with:
+      repository: 'mod-playerbots/azerothcore-wotlk'
+      ref: ${{ (github.base_ref || github.ref_name) == 'test-staging' && 'test-staging' || 'Playerbot' }}
+      path: a
+
+  - name: Checkout Playerbot Module
+    uses: actions/checkout@v4
+    with:
+      repository: 'mod-playerbots/mod-playerbots'
+      path: a/modules/mod-playerbots
+
+  - name: Move source tree to short path
+    shell: powershell
+    run: |
+      if (Test-Path C:\ac) {
+        Remove-Item C:\ac -Recurse -Force
+      }
+
+      New-Item -ItemType Directory -Path C:\ac | Out-Null
+
+      $log = Join-Path $env:TEMP "robocopy.log"
+
+      robocopy "${{ github.workspace }}\a" "C:\ac" /MIR /MT:16 /R:1 /W:1 /NFL /NDL /NJH /NJS /NP /LOG:$log
+      $rc = $LASTEXITCODE
+
+      if (Test-Path $log) {
+        Write-Host "Robocopy log: $log"
+        Get-Content $log -Tail 20
+      }
+
+      if ($rc -le 7) {
+        exit 0
+      }
+
+      Write-Error "robocopy failed with exit code $rc. See $log for details."
+      exit $rc
+
+  - name: Install Ninja
+    shell: powershell
+    run: |
+      choco install ninja -y --no-progress
+
+  - name: Configure OS dependencies
+    shell: bash
+    working-directory: C:\ac
     env:
-      BOOST_ROOT: C:\local\boost_1_87_0
-      CMAKE_GENERATOR: Ninja
-      CTOOLS_BUILD: all
+      CONTINUOUS_INTEGRATION: true
+    run: |
+      ./acore.sh install-deps || echo "acore.sh install-deps failed or partially failed; continuing"
 
-    steps:
-      - name: Checkout AzerothCore
-        uses: actions/checkout@v4
-        with:
-          repository: 'mod-playerbots/azerothcore-wotlk'
-          ref: ${{ (github.base_ref || github.ref_name) == 'test-staging' && 'test-staging' || 'Playerbot' }}
-          path: a
+  - name: Ensure MySQL client is installed
+    shell: powershell
+    run: |
+      refreshenv
 
-      - name: Checkout Playerbot Module
-        uses: actions/checkout@v4
-        with:
-          repository: 'mod-playerbots/mod-playerbots'
-          path: a/modules/mod-playerbots
+      if (Get-Command mysql -ErrorAction SilentlyContinue) {
+        Write-Host "mysql client already present"
+        exit 0
+      }
 
-      - name: Move source tree to short path
-        shell: powershell
-        run: |
-          if (Test-Path C:\ac) {
-            Remove-Item C:\ac -Recurse -Force
-          }
-          New-Item -ItemType Directory -Path C:\ac | Out-Null
-          $log = Join-Path $env:TEMP "robocopy.log"
-          robocopy "${{ github.workspace }}\a" "C:\ac" /MIR /MT:16 /R:1 /W:1 /NFL /NDL /NJH /NJS /NP /LOG:$log
-          $rc = $LASTEXITCODE
-          if (Test-Path $log) {
-            Write-Host "Robocopy log: $log"
-            Get-Content $log -Tail 20
-          }
-          if ($rc -le 7) { exit 0 }
-          Write-Error "robocopy failed with exit code $rc. See $log for details."
-          exit $rc
+      Write-Host "Installing mysql via Chocolatey..."
+      choco install mysql -y --no-progress
 
-      - name: Install Ninja
-        shell: powershell
-        run: |
-          choco install ninja -y
+      refreshenv
 
-      - name: Cache vcpkg
-        uses: actions/cache@v4
-        with:
-          path: |
-            C:\vcpkg\installed
-            C:\vcpkg\packages
-            C:\vcpkg\buildtrees
-            C:\vcpkg\downloads
-          key: vcpkg-${{ runner.os }}-x64-${{ hashFiles('**/vcpkg.json') }}
-          restore-keys: |
-            vcpkg-${{ runner.os }}-x64-
+      if (Get-Command mysql -ErrorAction SilentlyContinue) {
+        Write-Host "mysql installed successfully"
+        exit 0
+      }
 
-      - name: Install vcpkg and required Boost components
-        shell: powershell
-        run: |
-          if (-Not (Test-Path C:\vcpkg)) {
-            git clone https://github.com/microsoft/vcpkg.git C:\vcpkg
-            & C:\vcpkg\bootstrap-vcpkg.bat
-          } else {
-            Write-Host "vcpkg already present"
-          }
-          # Install only required Boost components for x64-windows
-          C:\vcpkg\vcpkg.exe install boost-filesystem:x64-windows boost-program-options:x64-windows boost-iostreams:x64-windows boost-regex:x64-windows boost-thread:x64-windows --recurse
-          echo "VCPKG_ROOT=C:\vcpkg" >> $env:GITHUB_ENV
-          echo "CMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake" >> $env:GITHUB_ENV
+      Write-Error "mysql client could not be installed via Chocolatey."
+      exit 1
 
-      - name: ccache
-        uses: hendrikmuhs/ccache-action@v1.2.13
+  - name: Create AzerothCore CI config
+    shell: bash
+    working-directory: C:\ac
+    run: |
+      cat > conf/config.sh <<'EOF'
+      CCOMPILERC="cl"
+      CCOMPILERCXX="cl"
 
-      - name: Configure OS (run acore.sh install-deps but tolerate failures)
-        shell: bash
-        working-directory: C:\ac
-        env:
-          CONTINUOUS_INTEGRATION: true
-          VCPKG_ROOT: C:\vcpkg
-          CMAKE_TOOLCHAIN_FILE: C:\vcpkg\scripts\buildsystems\vcpkg.cmake
-        run: |
-          ./acore.sh install-deps || echo "acore.sh install-deps failed or partially failed; continuing"
+      CTYPE="Release"
+      CSCRIPTS="static"
+      CMODULES="static"
+      CTOOLS_BUILD="all"
 
-      - name: Ensure MySQL client is available
-        shell: powershell
-        run: |
-          refreshenv
-          if (Get-Command mysql -ErrorAction SilentlyContinue) {
-            Write-Host "mysql client already present"
-            exit 0
-          }
-          Write-Host "Attempting to install mysql via Chocolatey..."
-          choco install mysql -y --no-progress
-          if (Get-Command mysql -ErrorAction SilentlyContinue) {
-            Write-Host "mysql installed successfully"
-            exit 0
-          }
-          Write-Error "mysql client could not be installed via Chocolatey. Failing the job."
-          exit 1
+      CCUSTOMOPTIONS="-DCMAKE_RC_COMPILER=rc -DCMAKE_NINJA_FORCE_RESPONSE_FILE=ON -DCMAKE_NINJA_CMCLDEPS_RC=OFF -DCMAKE_C_USE_RESPONSE_FILE_FOR_OBJECTS=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_OBJECTS=ON -DCMAKE_C_USE_RESPONSE_FILE_FOR_INCLUDES=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES=ON -DCMAKE_C_USE_RESPONSE_FILE_FOR_LIBRARIES=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_LIBRARIES=ON"
+      EOF
 
-      - name: Create AzerothCore CI config
-        shell: bash
-        working-directory: C:\ac
-        env:
-          VCPKG_ROOT: C:\vcpkg
-          CMAKE_TOOLCHAIN_FILE: C:\vcpkg\scripts\buildsystems\vcpkg.cmake
-        run: |
-          cat > conf/config.sh <<'EOF'
-          CCOMPILERC="cl"
-          CCOMPILERCXX="cl"
-          CTYPE="Release"
-          CSCRIPTS="static"
-          CMODULES="static"
-          CTOOLS_BUILD="all"
-          CCUSTOMOPTIONS="-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_RC_COMPILER=rc -DCMAKE_NINJA_FORCE_RESPONSE_FILE=ON -DCMAKE_NINJA_CMCLDEPS_RC=OFF -DCMAKE_C_USE_RESPONSE_FILE_FOR_OBJECTS=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_OBJECTS=ON -DCMAKE_C_USE_RESPONSE_FILE_FOR_INCLUDES=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES=ON -DCMAKE_C_USE_RESPONSE_FILE_FOR_LIBRARIES=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_LIBRARIES=ON"
-          EOF
-          cat conf/config.sh
+      cat conf/config.sh
 
-      - name: Setup MSVC
-        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
-        with:
-          arch: x64
+  - name: Setup MSVC
+    uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
+    with:
+      arch: x64
 
-      - name: Build (Ninja + MSVC + vcpkg) - explicit configure
-        shell: bash
-        working-directory: C:\ac
-        env:
-          CTOOLS_BUILD: all
-          CMAKE_GENERATOR: Ninja
-          CC: cl
-          CXX: cl
-          RC: rc
-          VCPKG_ROOT: C:\vcpkg
-          CMAKE_TOOLCHAIN_FILE: C:\vcpkg\scripts\buildsystems\vcpkg.cmake
-        run: |
-          set -euo pipefail || true
+  - name: Build
+    shell: bash
+    working-directory: C:\ac
+    run: |
+      export CTOOLS_BUILD=all
+      export CMAKE_GENERATOR=Ninja
 
-          echo "=== Environment checks ==="
-          cmake --version
-          ninja --version || true
-          echo "CMAKE_GENERATOR=$CMAKE_GENERATOR"
-          echo "VCPKG_ROOT=$VCPKG_ROOT"
-          echo "CMAKE_TOOLCHAIN_FILE=$CMAKE_TOOLCHAIN_FILE"
-          echo "CC=$(which cl || echo cl-not-found)"
-          echo "RC=$(which rc || echo rc-not-found)"
+      export CC=cl
+      export CXX=cl
+      export RC=rc
 
-          echo "=== vcpkg installed packages (short) ==="
-          /c/vcpkg/vcpkg.exe list || true
+      cmake --version
+      ninja --version
 
-          echo "=== Check for Boost Asio header ==="
-          if [ -f "/c/vcpkg/installed/x64-windows/include/boost/asio/io_context.hpp" ]; then
-            echo "Found boost/asio/io_context.hpp"
-          else
-            echo "Missing boost/asio/io_context.hpp — listing include dir"
-            ls -la /c/vcpkg/installed/x64-windows/include || true
-          fi
+      echo "CMAKE_GENERATOR=$CMAKE_GENERATOR"
+      echo "CC=$CC"
+      echo "CXX=$CXX"
 
-          echo "=== Clean previous CMake state ==="
-          rm -rf var/build/obj CMakeCache.txt || true
-          mkdir -p var/build/obj
+      which cl || true
+      which rc || true
+      cl || true
+      rc || true
 
-          echo "=== Configure CMake explicitly with vcpkg toolchain ==="
-          cmake -S . -B var/build/obj -G Ninja \
-            -DCMAKE_TOOLCHAIN_FILE="$CMAKE_TOOLCHAIN_FILE" \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCTOOLS_BUILD=all
+      rm -rf var/build/obj
 
-          if [ $? -ne 0 ]; then
-            echo "CMake configure failed; dumping CMake logs (if any)"
-            find var/build/obj -type f -name "CMakeError.log" -o -name "CMakeOutput.log" -print -exec sed -n '1,200p' {} \; || true
-            exit 1
-          fi
-
-          echo "=== Build (cmake --build) ==="
-          cmake --build var/build/obj -- -j
-
-          if [ $? -ne 0 ]; then
-            echo "Build failed; attempting to show Ninja log snippet"
-            ninja -C var/build/obj -v || true
-            exit 1
-          fi
-
-          echo "=== Optional: run acore.sh build wrapper (no-op if already built) ==="
-          ./acore.sh compiler build || true
+      ./acore.sh compiler build
