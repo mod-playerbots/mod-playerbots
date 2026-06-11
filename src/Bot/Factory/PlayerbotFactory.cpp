@@ -3682,6 +3682,22 @@ uint32 PlayerbotFactory::CalcMixedGearScore(uint32 gs, uint32 quality)
     return gs * PlayerbotAI::GetItemScoreMultiplier(ItemQualities(quality));
 }
 
+void PlayerbotFactory::AutoGear(Player* bot, uint32 itemQuality, uint32 ilvl, bool incremental, bool secondChance,
+                                bool applyFinishers)
+{
+    uint32 gs = ilvl == 0 ? 0 : CalcMixedGearScore(ilvl, itemQuality);
+    PlayerbotFactory factory(bot, bot->GetLevel(), itemQuality, gs);
+    factory.InitEquipment(incremental, secondChance);
+
+    if (!applyFinishers)
+        return;
+
+    factory.InitAmmo();
+    if (bot->GetLevel() >= sPlayerbotAIConfig.minEnchantingBotLevel)
+        factory.ApplyEnchantAndGemsNew();
+    bot->DurabilityRepairAll(false, 1.0f, false);
+}
+
 void PlayerbotFactory::InitMounts()
 {
     uint32 firstmount = sPlayerbotAIConfig.useGroundMountAtMinLevel;

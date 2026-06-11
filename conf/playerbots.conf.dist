@@ -535,6 +535,11 @@ AiPlayerbot.AltMaintenanceKeyring = 1
 
 # Enable/Disable autogear command, which automatically upgrades bots' gear
 # The quality is limited by AutoGearQualityLimit and AutoGearScoreLimit
+# In-game syntax (the argument can only request at or below the configured limits):
+#   autogear            - gear to the configured AutoGearQualityLimit / AutoGearScoreLimit
+#   autogear green      - cap quality to uncommon (also: white, blue/rare, purple/epic, orange/legendary)
+#   autogear match      - match the commanding player's average item level
+#   autogear 200        - target a specific item level (clamped to AutoGearScoreLimit when that is non-zero)
 # Default: 1 (enabled)
 AiPlayerbot.AutoGearCommand = 1
 
