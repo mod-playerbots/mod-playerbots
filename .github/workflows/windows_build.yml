@@ -81,38 +81,27 @@ jobs:
         env:
           CONTINUOUS_INTEGRATION: true
         run: |
-          ./acore.sh install-deps || echo "acore.sh install-deps failed or partially failed; continuing to ensure DB is present"
+          ./acore.sh install-deps || echo "acore.sh install-deps failed or partially failed; continuing"
 
-      - name: Ensure MySQL or MariaDB is installed
+      - name: Ensure MySQL client is available
         shell: powershell
         run: |
-          # Refresh environment so choco-installed tools are available in the same session
           refreshenv
 
-          # If mysql client is already present, skip installation
           if (Get-Command mysql -ErrorAction SilentlyContinue) {
             Write-Host "mysql client already present"
             exit 0
           }
 
-          Write-Host "Attempting to install mysql via Chocolatey (no fixed version)..."
+          Write-Host "Attempting to install mysql via Chocolatey..."
           choco install mysql -y --no-progress
 
-          # Re-check presence of mysql client
           if (Get-Command mysql -ErrorAction SilentlyContinue) {
             Write-Host "mysql installed successfully"
             exit 0
           }
 
-          Write-Host "mysql install failed; attempting MariaDB as fallback..."
-          choco install mariadb -y --no-progress
-
-          if (Get-Command mysql -ErrorAction SilentlyContinue) {
-            Write-Host "MariaDB installed successfully (mysql client available)"
-            exit 0
-          }
-
-          Write-Error "Neither mysql nor mariadb could be installed via Chocolatey. Failing the job."
+          Write-Error "mysql client could not be installed via Chocolatey. Failing the job."
           exit 1
 
       - name: Create AzerothCore CI config
