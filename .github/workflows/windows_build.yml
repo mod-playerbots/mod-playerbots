@@ -21,9 +21,10 @@ jobs:
     name: ${{ matrix.os }}
 
     env:
-      BOOST_ROOT: C:\local\boost_1_87_0
       CMAKE_GENERATOR: Ninja
       CTOOLS_BUILD: all
+      VCPKG_ROOT: C:\vcpkg
+      CMAKE_TOOLCHAIN_FILE: C:\vcpkg\scripts\buildsystems\vcpkg.cmake
 
     steps:
       - name: Checkout AzerothCore
@@ -70,11 +71,49 @@ jobs:
         run: |
           choco install ninja -y --no-progress
 
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
+        with:
+          arch: x64
+
+      - name: Cache vcpkg
+        uses: actions/cache@v4
+        with:
+          path: |
+            C:\vcpkg\installed
+            C:\vcpkg\packages
+            C:\vcpkg\buildtrees
+            C:\vcpkg\downloads
+          key: vcpkg-${{ runner.os }}-boost-${{ hashFiles('a/**/*.cmake', 'a/**/CMakeLists.txt') }}
+          restore-keys: |
+            vcpkg-${{ runner.os }}-boost-
+
+      - name: Install Boost with vcpkg
+        shell: powershell
+        run: |
+          if (-Not (Test-Path C:\vcpkg\vcpkg.exe)) {
+            git clone https://github.com/microsoft/vcpkg.git C:\vcpkg
+            C:\vcpkg\bootstrap-vcpkg.bat
+          }
+
+          C:\vcpkg\vcpkg.exe install `
+            boost-filesystem:x64-windows `
+            boost-program-options:x64-windows `
+            boost-iostreams:x64-windows `
+            boost-regex:x64-windows `
+            boost-thread:x64-windows `
+            --recurse
+
+          echo "VCPKG_ROOT=C:\vcpkg" >> $env:GITHUB_ENV
+          echo "CMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake" >> $env:GITHUB_ENV
+
       - name: Configure OS dependencies
         shell: bash
         working-directory: C:\ac
         env:
           CONTINUOUS_INTEGRATION: true
+          VCPKG_ROOT: C:\vcpkg
+          CMAKE_TOOLCHAIN_FILE: C:\vcpkg\scripts\buildsystems\vcpkg.cmake
         run: |
           ./acore.sh install-deps || echo "acore.sh install-deps failed or partially failed; continuing"
 
@@ -114,38 +153,45 @@ jobs:
           CMODULES="static"
           CTOOLS_BUILD="all"
 
-          CCUSTOMOPTIONS="-DCMAKE_RC_COMPILER=rc -DCMAKE_NINJA_FORCE_RESPONSE_FILE=ON -DCMAKE_NINJA_CMCLDEPS_RC=OFF -DCMAKE_C_USE_RESPONSE_FILE_FOR_OBJECTS=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_OBJECTS=ON -DCMAKE_C_USE_RESPONSE_FILE_FOR_INCLUDES=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES=ON -DCMAKE_C_USE_RESPONSE_FILE_FOR_LIBRARIES=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_LIBRARIES=ON"
+          CCUSTOMOPTIONS="-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_RC_COMPILER=rc -DCMAKE_NINJA_FORCE_RESPONSE_FILE=ON -DCMAKE_NINJA_CMCLDEPS_RC=OFF -DCMAKE_C_USE_RESPONSE_FILE_FOR_OBJECTS=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_OBJECTS=ON -DCMAKE_C_USE_RESPONSE_FILE_FOR_INCLUDES=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES=ON -DCMAKE_C_USE_RESPONSE_FILE_FOR_LIBRARIES=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_LIBRARIES=ON"
           EOF
 
           cat conf/config.sh
 
-      - name: Setup MSVC
-        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
-        with:
-          arch: x64
-
       - name: Build
         shell: bash
         working-directory: C:\ac
+        env:
+          CTOOLS_BUILD: all
+          CMAKE_GENERATOR: Ninja
+          CC: cl
+          CXX: cl
+          RC: rc
+          VCPKG_ROOT: C:\vcpkg
+          CMAKE_TOOLCHAIN_FILE: C:\vcpkg\scripts\buildsystems\vcpkg.cmake
         run: |
-          export CTOOLS_BUILD=all
-          export CMAKE_GENERATOR=Ninja
-
-          export CC=cl
-          export CXX=cl
-          export RC=rc
-
           cmake --version
           ninja --version
 
           echo "CMAKE_GENERATOR=$CMAKE_GENERATOR"
+          echo "VCPKG_ROOT=$VCPKG_ROOT"
+          echo "CMAKE_TOOLCHAIN_FILE=$CMAKE_TOOLCHAIN_FILE"
           echo "CC=$CC"
           echo "CXX=$CXX"
+          echo "RC=$RC"
 
           which cl || true
           which rc || true
           cl || true
           rc || true
+
+          echo "=== Installed vcpkg packages ==="
+          /c/vcpkg/vcpkg.exe list || true
+
+          echo "=== Check Boost headers ==="
+          test -f /c/vcpkg/installed/x64-windows/include/boost/version.hpp
+          test -f /c/vcpkg/installed/x64-windows/include/boost/filesystem.hpp
+          test -f /c/vcpkg/installed/x64-windows/include/boost/asio.hpp
 
           rm -rf var/build/obj
 
