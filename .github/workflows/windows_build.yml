@@ -72,6 +72,24 @@ jobs:
         run: |
           choco install ninja -y
 
+      - name: Install vcpkg and Boost via vcpkg
+        shell: powershell
+        run: |
+          if (-Not (Test-Path C:\vcpkg)) {
+            git clone https://github.com/microsoft/vcpkg.git C:\vcpkg
+          } else {
+            Write-Host "vcpkg already present"
+          }
+
+          & C:\vcpkg\bootstrap-vcpkg.bat
+
+          # Install only required Boost components for AzerothCore (x64)
+          C:\vcpkg\vcpkg.exe install boost-filesystem:x64-windows boost-program-options:x64-windows boost-iostreams:x64-windows boost-regex:x64-windows boost-thread:x64-windows --recurse
+
+          # Export vcpkg variables for subsequent steps
+          echo "VCPKG_ROOT=C:\vcpkg" >> $env:GITHUB_ENV
+          echo "CMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake" >> $env:GITHUB_ENV
+
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2.13
 
@@ -80,6 +98,8 @@ jobs:
         working-directory: C:\ac
         env:
           CONTINUOUS_INTEGRATION: true
+          VCPKG_ROOT: C:\vcpkg
+          CMAKE_TOOLCHAIN_FILE: C:\vcpkg\scripts\buildsystems\vcpkg.cmake
         run: |
           ./acore.sh install-deps || echo "acore.sh install-deps failed or partially failed; continuing"
 
@@ -107,6 +127,9 @@ jobs:
       - name: Create AzerothCore CI config
         shell: bash
         working-directory: C:\ac
+        env:
+          VCPKG_ROOT: C:\vcpkg
+          CMAKE_TOOLCHAIN_FILE: C:\vcpkg\scripts\buildsystems\vcpkg.cmake
         run: |
           cat > conf/config.sh <<'EOF'
           CCOMPILERC="cl"
@@ -117,7 +140,7 @@ jobs:
           CMODULES="static"
           CTOOLS_BUILD="all"
 
-          CCUSTOMOPTIONS="-DCMAKE_RC_COMPILER=rc -DCMAKE_NINJA_FORCE_RESPONSE_FILE=ON -DCMAKE_NINJA_CMCLDEPS_RC=OFF -DCMAKE_C_USE_RESPONSE_FILE_FOR_OBJECTS=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_OBJECTS=ON -DCMAKE_C_USE_RESPONSE_FILE_FOR_INCLUDES=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES=ON -DCMAKE_C_USE_RESPONSE_FILE_FOR_LIBRARIES=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_LIBRARIES=ON"
+          CCUSTOMOPTIONS="-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_RC_COMPILER=rc -DCMAKE_NINJA_FORCE_RESPONSE_FILE=ON -DCMAKE_NINJA_CMCLDEPS_RC=OFF -DCMAKE_C_USE_RESPONSE_FILE_FOR_OBJECTS=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_OBJECTS=ON -DCMAKE_C_USE_RESPONSE_FILE_FOR_INCLUDES=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES=ON -DCMAKE_C_USE_RESPONSE_FILE_FOR_LIBRARIES=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_LIBRARIES=ON"
           EOF
 
           cat conf/config.sh
@@ -127,29 +150,35 @@ jobs:
         with:
           arch: x64
 
-      - name: Build
+      - name: Build (Ninja + MSVC + vcpkg)
         shell: bash
         working-directory: C:\ac
+        env:
+          CTOOLS_BUILD: all
+          CMAKE_GENERATOR: Ninja
+          CC: cl
+          CXX: cl
+          RC: rc
+          VCPKG_ROOT: C:\vcpkg
+          CMAKE_TOOLCHAIN_FILE: C:\vcpkg\scripts\buildsystems\vcpkg.cmake
         run: |
-          export CTOOLS_BUILD=all
-          export CMAKE_GENERATOR=Ninja
-
-          export CC=cl
-          export CXX=cl
-          export RC=rc
-
+          # show versions and environment sanity checks
           cmake --version
           ninja --version
 
           echo "CMAKE_GENERATOR=$CMAKE_GENERATOR"
           echo "CC=$CC"
           echo "CXX=$CXX"
+          echo "VCPKG_ROOT=$VCPKG_ROOT"
+          echo "CMAKE_TOOLCHAIN_FILE=$CMAKE_TOOLCHAIN_FILE"
 
           which cl || true
           which rc || true
           cl || true
           rc || true
 
-          rm -rf var/build/obj
+          # ensure a clean build directory
+          rm -rf var/build/obj || true
 
+          # run the AzerothCore build script (acore.sh reads CMAKE_TOOLCHAIN_FILE and CMAKE_GENERATOR)
           ./acore.sh compiler build
