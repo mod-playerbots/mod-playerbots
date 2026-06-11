@@ -48,7 +48,7 @@ jobs:
 
           New-Item -ItemType Directory -Path C:\ac | Out-Null
 
-          robocopy "${{ github.workspace }}\a" "C:\ac" /MIR
+          robocopy "${{ github.workspace }}\a" "C:\ac" /MIR /NFL /NDL /NJH /NJS /NP
 
           if ($LASTEXITCODE -le 7) {
             exit 0
