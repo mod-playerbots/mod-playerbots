@@ -488,6 +488,8 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
     if (bot->IsMounted())
         bot->Dismount();
 
+    bot->GetSession()->SendLearnNewTaxiNode(flightMaster);
+
     if (!bot->ActivateTaxiPathTo(nodes, flightMaster, 0))
     {
         LOG_DEBUG("playerbots", "[New RPG] {} active taxi path {} (from {} to {}) failed", bot->GetName(),
