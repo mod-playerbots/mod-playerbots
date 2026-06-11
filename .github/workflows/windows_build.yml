@@ -45,25 +45,15 @@ jobs:
           if (Test-Path C:\ac) {
             Remove-Item C:\ac -Recurse -Force
           }
-
           New-Item -ItemType Directory -Path C:\ac | Out-Null
-
           $log = Join-Path $env:TEMP "robocopy.log"
-
-          # Robocopy silent with multithread, no per-file output, write full log outside destination
           robocopy "${{ github.workspace }}\a" "C:\ac" /MIR /MT:16 /R:1 /W:1 /NFL /NDL /NJH /NJS /NP /LOG:$log
           $rc = $LASTEXITCODE
-
-          # Show only the summary (last lines) to keep the job log clean
           if (Test-Path $log) {
             Write-Host "Robocopy log: $log"
             Get-Content $log -Tail 20
           }
-
-          # robocopy exit codes: 0-7 are success/acceptable, >=8 is failure
-          if ($rc -le 7) {
-            exit 0
-          }
+          if ($rc -le 7) { exit 0 }
           Write-Error "robocopy failed with exit code $rc. See $log for details."
           exit $rc
 
@@ -72,21 +62,29 @@ jobs:
         run: |
           choco install ninja -y
 
-      - name: Install vcpkg and Boost via vcpkg
+      - name: Cache vcpkg
+        uses: actions/cache@v4
+        with:
+          path: |
+            C:\vcpkg\installed
+            C:\vcpkg\packages
+            C:\vcpkg\buildtrees
+            C:\vcpkg\downloads
+          key: vcpkg-${{ runner.os }}-x64-${{ hashFiles('**/vcpkg.json') }}
+          restore-keys: |
+            vcpkg-${{ runner.os }}-x64-
+
+      - name: Install vcpkg and required Boost components
         shell: powershell
         run: |
           if (-Not (Test-Path C:\vcpkg)) {
             git clone https://github.com/microsoft/vcpkg.git C:\vcpkg
+            & C:\vcpkg\bootstrap-vcpkg.bat
           } else {
             Write-Host "vcpkg already present"
           }
-
-          & C:\vcpkg\bootstrap-vcpkg.bat
-
-          # Install only required Boost components for AzerothCore (x64)
+          # Install only required Boost components for x64-windows
           C:\vcpkg\vcpkg.exe install boost-filesystem:x64-windows boost-program-options:x64-windows boost-iostreams:x64-windows boost-regex:x64-windows boost-thread:x64-windows --recurse
-
-          # Export vcpkg variables for subsequent steps
           echo "VCPKG_ROOT=C:\vcpkg" >> $env:GITHUB_ENV
           echo "CMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake" >> $env:GITHUB_ENV
 
@@ -107,20 +105,16 @@ jobs:
         shell: powershell
         run: |
           refreshenv
-
           if (Get-Command mysql -ErrorAction SilentlyContinue) {
             Write-Host "mysql client already present"
             exit 0
           }
-
           Write-Host "Attempting to install mysql via Chocolatey..."
           choco install mysql -y --no-progress
-
           if (Get-Command mysql -ErrorAction SilentlyContinue) {
             Write-Host "mysql installed successfully"
             exit 0
           }
-
           Write-Error "mysql client could not be installed via Chocolatey. Failing the job."
           exit 1
 
@@ -134,15 +128,12 @@ jobs:
           cat > conf/config.sh <<'EOF'
           CCOMPILERC="cl"
           CCOMPILERCXX="cl"
-
           CTYPE="Release"
           CSCRIPTS="static"
           CMODULES="static"
           CTOOLS_BUILD="all"
-
           CCUSTOMOPTIONS="-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_RC_COMPILER=rc -DCMAKE_NINJA_FORCE_RESPONSE_FILE=ON -DCMAKE_NINJA_CMCLDEPS_RC=OFF -DCMAKE_C_USE_RESPONSE_FILE_FOR_OBJECTS=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_OBJECTS=ON -DCMAKE_C_USE_RESPONSE_FILE_FOR_INCLUDES=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES=ON -DCMAKE_C_USE_RESPONSE_FILE_FOR_LIBRARIES=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_LIBRARIES=ON"
           EOF
-
           cat conf/config.sh
 
       - name: Setup MSVC
@@ -162,23 +153,16 @@ jobs:
           VCPKG_ROOT: C:\vcpkg
           CMAKE_TOOLCHAIN_FILE: C:\vcpkg\scripts\buildsystems\vcpkg.cmake
         run: |
-          # show versions and environment sanity checks
           cmake --version
           ninja --version
-
           echo "CMAKE_GENERATOR=$CMAKE_GENERATOR"
           echo "CC=$CC"
           echo "CXX=$CXX"
           echo "VCPKG_ROOT=$VCPKG_ROOT"
           echo "CMAKE_TOOLCHAIN_FILE=$CMAKE_TOOLCHAIN_FILE"
-
           which cl || true
           which rc || true
           cl || true
           rc || true
-
-          # ensure a clean build directory
           rm -rf var/build/obj || true
-
-          # run the AzerothCore build script (acore.sh reads CMAKE_TOOLCHAIN_FILE and CMAKE_GENERATOR)
           ./acore.sh compiler build
