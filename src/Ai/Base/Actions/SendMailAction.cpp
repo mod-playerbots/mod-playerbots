@@ -34,23 +34,22 @@ bool SendMailAction::Execute(Event event)
     Player* receiver = GetMaster();
     Player* tellTo = receiver;
 
-    std::vector<std::string> ss = split(text, ' ');
-    if (ss.size() > 1)
-    {
-        if (Player* p = ObjectAccessor::FindPlayer(ObjectGuid(uint64(ss[ss.size() - 1].c_str()))))
-            receiver = p;
-    }
-
     if (!receiver)
         receiver = event.getOwner();
 
     if (!receiver || receiver == bot)
-    {
         return false;
-    }
 
     if (!tellTo)
         tellTo = receiver;
+
+    if (!sPlayerbotAIConfig.botSendMailEnabled)
+    {
+        bot->Whisper(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                         "send_mail_disabled", "I cannot send mail", {}),
+                     LANG_UNIVERSAL, tellTo);
+        return false;
+    }
 
     if (!mailboxFound && !randomBot)
     {

@@ -5,38 +5,26 @@
 
 #include "DeathKnightPullStrategy.h"
 
-#include "AiObjectContext.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 
 std::string DeathKnightPullStrategy::GetPullActionName() const
 {
-    Player* bot = botAI->GetBot();
     Unit* target = GetTarget();
-    if (!bot || !target ||
+    if (!target ||
         (!botAI->HasStrategy("blood", BOT_STATE_COMBAT) && !botAI->HasStrategy("blood", BOT_STATE_NON_COMBAT)))
     {
         return PullStrategy::GetPullActionName();
     }
 
-    uint32 const deathGripSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "death grip")->Get();
-    if (deathGripSpellId && bot->HasSpell(deathGripSpellId) &&
-        botAI->CanCastSpell(deathGripSpellId, target))
-    {
+    if (botAI->CanCastSpell("death grip", target))
         return "death grip";
-    }
 
-    uint32 const icyTouchSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "icy touch")->Get();
-    if (!icyTouchSpellId || !bot->HasSpell(icyTouchSpellId) ||
-        !botAI->CanCastSpell(icyTouchSpellId, target))
+    if (!botAI->CanCastSpell("icy touch", target) &&
+        botAI->CanCastSpell("dark command", target))
     {
-        uint32 const darkCommandSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "dark command")->Get();
-        if (darkCommandSpellId && bot->HasSpell(darkCommandSpellId) &&
-            botAI->CanCastSpell(darkCommandSpellId, target))
-        {
-            return "dark command";
-        }
+        return "dark command";
     }
 
     return PullStrategy::GetPullActionName();

@@ -44,6 +44,21 @@ bool ResetAiAction::Execute(Event event)
             }
         }
     }
+    if (Player* master = botAI->GetMaster())
+    {
+        Group* botGroup = bot->GetGroup();
+        Group* masterGroup = master->GetGroup();
+        if (botGroup && (!masterGroup || masterGroup != botGroup))
+            botAI->SetMaster(nullptr);
+    }
+    if (sRandomPlayerbotMgr.IsRandomBot(bot) && !bot->InBattleground())
+    {
+        if (bot->GetGroup() && (!botAI->GetMaster() || GET_PLAYERBOT_AI(botAI->GetMaster())))
+        {
+            if (Player* newMaster = botAI->FindNewMaster())
+                botAI->SetMaster(newMaster);
+        }
+    }
     PlayerbotRepository::instance().Reset(botAI);
     botAI->ResetStrategies(false);
     botAI->TellMaster("AI was reset to defaults");

@@ -4,23 +4,89 @@
  */
 
 #include "GenericBuffUtils.h"
-#include "PlayerbotAIConfig.h"
 
-#include <map>
-
-#include "Player.h"
-#include "Group.h"
-#include "SpellMgr.h"
-#include "Chat.h"
-#include "PlayerbotAI.h"
-#include "ServerFacade.h"
 #include "AiObjectContext.h"
+
+#include "GameTime.h"
+#include "Group.h"
+#include "Player.h"
+#include "PlayerbotAI.h"
+#include "PlayerbotAIConfig.h"
+#include "SpellMgr.h"
+#include "Unit.h"
 #include "Value.h"
-#include "Config.h"
-#include "PlayerbotTextMgr.h"
 
 namespace ai::buff
 {
+    namespace
+    {
+        // Prevents bots from immediately casting already-present buffs upon logging in
+        constexpr uint32 POST_LOGIN_BUFF_GRACE_MS = 5 * IN_MILLISECONDS;
+
+        bool IsWithinPostLoginBuffGrace(Player* player)
+        {
+            if (!player)
+                return false;
+
+            return getMSTimeDiff(
+                player->GetInGameTime(), GameTime::GetGameTimeMS().count()) < POST_LOGIN_BUFF_GRACE_MS;
+        }
+    }
+
+    static bool HasEnoughSameMapMissingPlayersForGroupVariant(
+        Player* bot, PlayerbotAI* botAI, std::string const& baseName,
+        std::string const& groupName, uint32 requiredCount = 3)
+    {
+        Group* group = bot->GetGroup();
+        if (!group)
+            return false;
+
+        uint32 missingCount = 0;
+        for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
+        {
+            Player* member = gref->GetSource();
+            if (!member || !member->IsInWorld() || !member->IsAlive() ||
+                member->GetMap() != bot->GetMap())
+            {
+                continue;
+            }
+
+            if (botAI->HasAura(baseName, member) || botAI->HasAura(groupName, member))
+                continue;
+
+            if (++missingCount >= requiredCount)
+                return true;
+        }
+
+        return false;
+    }
+
+    static bool IsEligibleGroupForPartyBuffs(Group const* group)
+    {
+        if (!group)
+            return false;
+
+        switch (sPlayerbotAIConfig.autoPartyBuffs)
+        {
+            case AutoPartyBuffMode::RAID_ONLY:
+                return group->isRaidGroup();
+            case AutoPartyBuffMode::GROUP_OR_RAID:
+                return true;
+            case AutoPartyBuffMode::DISABLED:
+                return false;
+        }
+
+        return false;
+    }
+
+    bool IsGroupVariantEnabled(Player* bot, std::string const& name)
+    {
+        if (!IsEligibleGroupForPartyBuffs(bot->GetGroup()))
+            return false;
+
+        return !GroupVariantFor(name).empty();
+    }
+
     std::string MakeAuraQualifierForBuff(std::string const& name)
     {
         // Paladin
@@ -34,25 +100,87 @@ namespace ai::buff
         if (name == "arcane intellect")         return "arcane intellect,arcane brilliance";
         // Priest
         if (name == "power word: fortitude")    return "power word: fortitude,prayer of fortitude";
+        if (name == "divine spirit")            return "divine spirit,prayer of spirit";
+        if (name == "shadow protection")        return "shadow protection,prayer of shadow protection";
 
         return name;
     }
 
     std::string GroupVariantFor(std::string const& name)
     {
-        // Paladin
-        if (name == "blessing of kings")        return "greater blessing of kings";
-        if (name == "blessing of might")        return "greater blessing of might";
-        if (name == "blessing of wisdom")       return "greater blessing of wisdom";
-        if (name == "blessing of sanctuary")    return "greater blessing of sanctuary";
         // Druid
         if (name == "mark of the wild")         return "gift of the wild";
         // Mage
         if (name == "arcane intellect")         return "arcane brilliance";
         // Priest
         if (name == "power word: fortitude")    return "prayer of fortitude";
+        if (name == "divine spirit")            return "prayer of spirit";
+        if (name == "shadow protection")        return "prayer of shadow protection";
 
+        // Paladin blessings are intentionally not included here because they are
+        // coordinated by the auto greater blessing system instead.
         return std::string();
+    }
+
+    bool NeedsPostLoginBuffGrace(std::string const& name)
+    {
+        static char const* const trackedBuffs[] = {
+            "mark of the wild",
+            "arcane intellect",
+            "power word: fortitude",
+            "prayer of fortitude",
+            "divine spirit",
+            "prayer of spirit",
+            "shadow protection",
+            "prayer of shadow protection",
+            "blessing of kings",
+            "blessing of might",
+            "blessing of wisdom",
+            "blessing of sanctuary"
+        };
+
+        for (char const* trackedBuff : trackedBuffs)
+        {
+            if (name.find(trackedBuff) != std::string::npos)
+                return true;
+        }
+
+        return false;
+    }
+
+    bool ShouldDeferPartyBuffEvaluationForRecentLogin(
+        Player* bot, Unit* target, std::string const& spell)
+    {
+        if (!NeedsPostLoginBuffGrace(spell))
+            return false;
+
+        if (IsWithinPostLoginBuffGrace(bot))
+            return true;
+
+        Player* playerTarget = target ? target->ToPlayer() : nullptr;
+        return IsWithinPostLoginBuffGrace(playerTarget);
+    }
+
+    bool ShouldDeferGreaterBlessingAssignmentForRecentLogin(Player* bot)
+    {
+        if (IsWithinPostLoginBuffGrace(bot))
+            return true;
+
+        Group* group = bot->GetGroup();
+        if (!group)
+            return false;
+
+        for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
+        {
+            Player* member = gref->GetSource();
+            if (!member || !member->IsInWorld())
+                continue;
+
+            if (IsWithinPostLoginBuffGrace(member))
+                return true;
+        }
+
+        return false;
     }
 
     bool HasRequiredReagents(Player* bot, uint32 spellId)
@@ -72,75 +200,33 @@ namespace ai::buff
                         return false;
                 }
             }
-            // No reagent required
             return true;
         }
         return false;
     }
 
     std::string UpgradeToGroupIfAppropriate(
-        Player* bot,
-        PlayerbotAI* botAI,
-        std::string const& baseName,
-        bool announceOnMissing,
-        std::function<void(std::string const&)> announce)
+        Player* bot, PlayerbotAI* botAI, std::string const& baseName)
     {
-        std::string castName = baseName;
-        Group* g = bot->GetGroup();
-        if (!g || g->GetMembersCount() < static_cast<uint32>(sPlayerbotAIConfig.minBotsForGreaterBuff))
-            return castName; // Group too small: stay in solo mode
+        if (!IsGroupVariantEnabled(bot, baseName))
+            return baseName;
 
-        if (std::string const groupName = GroupVariantFor(baseName); !groupName.empty())
-        {
-            uint32 const groupVariantSpellId = botAI->GetAiObjectContext()
+        std::string const groupName = GroupVariantFor(baseName);
+        if (groupName.empty())
+            return baseName;
+
+        // Prefer singles until at least three living, in-world group members on the bot's map
+        // are missing both the single-target buff and its group variant.
+        if (!HasEnoughSameMapMissingPlayersForGroupVariant(bot, botAI, baseName, groupName))
+            return baseName;
+
+        uint32 const groupSpellId = botAI->GetAiObjectContext()
             ->GetValue<uint32>("spell id", groupName)->Get();
 
-            // We check usefulness on the **basic** buff (not the greater version),
-            // because "spell cast useful" may return false for the greater variant.
-            bool const usefulBase = botAI->GetAiObjectContext()
-            ->GetValue<bool>("spell cast useful", baseName)->Get();
+        if (groupSpellId && HasRequiredReagents(bot, groupSpellId))
+            return groupName;
 
-            if (groupVariantSpellId && HasRequiredReagents(bot, groupVariantSpellId))
-            {
-                // Learned + reagents OK -> switch to greater
-                return groupName;
-            }
-
-            // Missing reagents -> announce if (a) greater is known, (b) base buff is useful,
-            // (c) announce was requested, (d) a callback is provided.
-            if (announceOnMissing && groupVariantSpellId && usefulBase && announce)
-            {
-                static std::map<std::pair<uint32, std::string>, time_t> s_lastWarn; // par bot & par buff
-                time_t now = std::time(nullptr);
-                uint32 botLow = static_cast<uint32>(bot->GetGUID().GetCounter());
-                time_t& last = s_lastWarn[ std::make_pair(botLow, groupName) ];
-                if (!last || now - last >= sPlayerbotAIConfig.rpWarningCooldown) // Configurable anti-spam
-                {
-                    // DB Key choice in regard of the buff
-                    std::string key;
-                    if (groupName.find("greater blessing") != std::string::npos)
-                        key = "rp_missing_reagent_greater_blessing";
-                    else if (groupName == "gift of the wild")
-                        key = "rp_missing_reagent_gift_of_the_wild";
-                    else if (groupName == "arcane brilliance")
-                        key = "rp_missing_reagent_arcane_brilliance";
-                    else
-                        key = "rp_missing_reagent_generic";
-
-                    // Placeholders
-                    std::map<std::string, std::string> placeholders;
-                    placeholders["%group_spell"] = groupName;
-                    placeholders["%base_spell"] = baseName;
-
-                    std::string announceText = PlayerbotTextMgr::instance().GetBotTextOrDefault(key,
-                    "Out of components for %group_spell. Using %base_spell!", placeholders);
-
-                    announce(announceText);
-                    last = now;
-                }
-            }
-        }
-        return castName;
+        return baseName;
     }
 }
 

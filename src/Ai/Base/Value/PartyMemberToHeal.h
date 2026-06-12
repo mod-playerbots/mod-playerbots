@@ -37,4 +37,13 @@ protected:
     Unit* Calculate() override;
 };
 
+class HealerLowMana : public PartyMemberValue
+{
+public:
+    HealerLowMana(PlayerbotAI* botAI) : PartyMemberValue(botAI, "healer low mana") {}
+
+protected:
+    Unit* Calculate() override;
+};
+
 #endif
