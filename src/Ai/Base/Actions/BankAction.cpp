@@ -7,6 +7,7 @@
 
 #include "Event.h"
 #include "ItemCountValue.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 
 bool BankAction::Execute(Event event)
@@ -23,11 +24,12 @@ bool BankAction::Execute(Event event)
         return ExecuteBank(text, npc);
     }
 
-    botAI->TellError("Cannot find banker nearby");
+    botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+        "bank_no_banker_nearby_error", "Cannot find banker nearby", {}));
     return false;
 }
 
-bool BankAction::ExecuteBank(std::string const text, Unit* bank)
+bool BankAction::ExecuteBank(std::string const text, Unit* /*bank*/)
 {
     if (text.empty() || text == "?")
     {

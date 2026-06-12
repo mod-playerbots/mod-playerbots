@@ -78,7 +78,7 @@ private:
 class TakeMailProcessor : public MailProcessor
 {
 public:
-    bool Process(uint32 index, Mail* mail, PlayerbotAI* botAI) override
+    bool Process(uint32 /*index*/, Mail* mail, PlayerbotAI* botAI) override
     {
         Player* bot = botAI->GetBot();
         if (!CheckBagSpace(bot))
@@ -104,7 +104,7 @@ public:
         {
             std::vector<uint32> guids;
             for (MailItemInfoVec::iterator i = mail->items.begin(); i != mail->items.end(); ++i)
-                if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(i->item_template))
+                if (sObjectMgr->GetItemTemplate(i->item_template))
                     guids.push_back(i->item_guid);
 
             for (std::vector<uint32>::iterator i = guids.begin(); i != guids.end(); ++i)
@@ -157,7 +157,7 @@ private:
 class DeleteMailProcessor : public MailProcessor
 {
 public:
-    bool Process(uint32 index, Mail* mail, PlayerbotAI* botAI) override
+    bool Process(uint32 /*index*/, Mail* mail, PlayerbotAI* botAI) override
     {
         std::ostringstream out;
         out << "|cffffffff" << mail->subject << "|cffff0000 deleted";
@@ -172,7 +172,7 @@ public:
 class ReadMailProcessor : public MailProcessor
 {
 public:
-    bool Process(uint32 index, Mail* mail, PlayerbotAI* botAI) override
+    bool Process(uint32 /*index*/, Mail* mail, PlayerbotAI* botAI) override
     {
         std::ostringstream out, body;
         out << "|cffffffff" << mail->subject;

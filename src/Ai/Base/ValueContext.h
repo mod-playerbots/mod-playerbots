@@ -132,6 +132,7 @@ public:
         creators["attacker without aura"] = &ValueContext::attacker_without_aura;
         creators["melee attacker without aura"] = &ValueContext::melee_attacker_without_aura;
         creators["party member to heal"] = &ValueContext::party_member_to_heal;
+        creators["healer low mana"] = &ValueContext::healer_low_mana;
         creators["party member to resurrect"] = &ValueContext::party_member_to_resurrect;
         creators["current target"] = &ValueContext::current_target;
         creators["self target"] = &ValueContext::self_target;
@@ -241,6 +242,7 @@ public:
         creators["travel target"] = &ValueContext::travel_target;
         creators["talk target"] = &ValueContext::talk_target;
         creators["pull target"] = &ValueContext::pull_target;
+        creators["pull strategy target"] = &ValueContext::pull_strategy_target;
         creators["focus heal targets"] = &ValueContext::focus_heal_targets;
         creators["group"] = &ValueContext::group;
         creators["range"] = &ValueContext::range;
@@ -450,6 +452,7 @@ private:
         return new MeleeAttackerWithoutAuraTargetValue(botAI);
     }
     static UntypedValue* party_member_to_heal(PlayerbotAI* botAI) { return new PartyMemberToHeal(botAI); }
+    static UntypedValue* healer_low_mana(PlayerbotAI* botAI) { return new HealerLowMana(botAI); }
     static UntypedValue* party_member_to_resurrect(PlayerbotAI* botAI) { return new PartyMemberToResurrect(botAI); }
     static UntypedValue* party_member_to_dispel(PlayerbotAI* botAI) { return new PartyMemberToDispel(botAI); }
     static UntypedValue* party_member_to_protect(PlayerbotAI* botAI) { return new PartyMemberToProtect(botAI); }
@@ -498,6 +501,7 @@ private:
     static UntypedValue* next_rpg_action(PlayerbotAI* botAI) { return new NextRpgActionValue(botAI); }
     static UntypedValue* travel_target(PlayerbotAI* botAI) { return new TravelTargetValue(botAI); }
     static UntypedValue* pull_target(PlayerbotAI* botAI) { return new PullTargetValue(botAI); }
+    static UntypedValue* pull_strategy_target(PlayerbotAI* botAI) { return new PullStrategyTargetValue(botAI); }
     static UntypedValue* focus_heal_targets(PlayerbotAI* botAI) { return new FocusHealTargetValue(botAI); }
 
     static UntypedValue* bg_master(PlayerbotAI* botAI) { return new BgMasterValue(botAI); }

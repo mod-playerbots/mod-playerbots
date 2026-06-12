@@ -815,6 +815,7 @@ void RandomPlayerbotFactory::CreateRandomBots()
         AccountMgr::CreateAccount(accountName, password);
         createdAccountNames.push_back(accountName);
         selectedAccountNames.push_back(accountName);
+        sAccountMgr->CreateAccount(accountName, password);
 
         LOG_DEBUG("playerbots", "Account {} created for random bots", accountName.c_str());
     }

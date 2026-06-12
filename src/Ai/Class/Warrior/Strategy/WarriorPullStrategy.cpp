@@ -5,23 +5,16 @@
 
 #include "WarriorPullStrategy.h"
 
-#include "AiObjectContext.h"
-#include "Player.h"
 #include "PlayerbotAI.h"
 
 std::string WarriorPullStrategy::GetPullActionName() const
 {
-    Player* bot = botAI->GetBot();
     Unit* target = GetTarget();
-    if (!bot || !target)
+    if (!target)
         return PullStrategy::GetPullActionName();
 
-    uint32 const heroicThrowSpellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", "heroic throw")->Get();
-    if (heroicThrowSpellId && bot->HasSpell(heroicThrowSpellId) &&
-        botAI->CanCastSpell(heroicThrowSpellId, target))
-    {
+    if (botAI->CanCastSpell("heroic throw", target))
         return "heroic throw";
-    }
 
     return PullStrategy::GetPullActionName();
 }

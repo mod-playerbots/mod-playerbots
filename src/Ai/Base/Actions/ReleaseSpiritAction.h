@@ -18,7 +18,7 @@ public:
         : Action(botAI, name) {}
 
     bool Execute(Event event) override;
-    void LogRelease(const std::string& releaseType, bool isAutoRelease = false) const;
+    void LogRelease(const std::string& releaseType) const;
 
 protected:
     void IncrementDeathCount() const;

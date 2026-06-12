@@ -41,13 +41,14 @@ void GenericDKNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
 {
     NonCombatStrategy::InitTriggers(triggers);
 
+    triggers.push_back(new TriggerNode("often", { NextAction("apply stone", 1.0f) }));
     triggers.push_back(
         new TriggerNode("horn of winter", { NextAction("horn of winter", 21.0f) }));
     triggers.push_back(
         new TriggerNode("bone shield", { NextAction("bone shield", 21.0f) }));
 }
 
-void DKBuffDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void DKBuffDpsStrategy::InitTriggers(std::vector<TriggerNode*>& /*triggers*/)
 {
 
 }
