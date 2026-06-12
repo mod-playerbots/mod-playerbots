@@ -976,6 +976,17 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
         filtered = filtered.substr(sPlayerbotAIConfig.commandPrefix.size());
     }
 
+    // Strip any [BRACKET] prefix (e.g., [VIP], [MOD], [ADMIN]) if present
+    if (filtered.find('[') == 0)
+    {
+        size_t const closeBracket = filtered.find(']');
+        if (closeBracket != std::string::npos)
+        {
+            filtered = filtered.substr(closeBracket + 1);
+            filtered = trim(filtered);
+        }
+    }
+
     if (chatMap.empty())
     {
         chatMap["#w "] = CHAT_MSG_WHISPER;
