@@ -11,6 +11,7 @@
 #include "DatabaseEnv.h"
 #include "PlayerbotAI.h"
 #include "RaceMgr.h"
+#include "Realm.h"
 #include "ScriptMgr.h"
 #include "SharedDefines.h"
 #include "SocialMgr.h"
@@ -583,13 +584,24 @@ uint32 RandomPlayerbotFactory::CalculateAvailableCharsPerAccount()
 
 uint32 RandomPlayerbotFactory::GetCurrentRealmId()
 {
-    return static_cast<uint32>(sConfigMgr->GetOption<int32>("RealmID", 0));
+    if (realm.Id.Realm == 0)
+    {
+        LOG_ERROR("playerbots", "GetCurrentRealmId(): RealmID is 0. Verify 'RealmID' is set in worldserver.conf");
+        return 0;
+    }
+    return realm.Id.Realm;
 }
 
 std::vector<uint32> RandomPlayerbotFactory::GetOwnedRandomBotAccounts()
 {
     std::vector<uint32> accountIds;
     uint32 const realmId = GetCurrentRealmId();
+
+    if (realmId == 0)
+    {
+        LOG_ERROR("playerbots", "GetOwnedRandomBotAccounts(): Invalid RealmID (0). Refusing to operate on shared auth accounts.");
+        return accountIds;
+    }
 
     QueryResult result = LoginDatabase.Query(
         "SELECT a.id FROM account a "
@@ -615,6 +627,12 @@ void RandomPlayerbotFactory::CreateRandomBots()
     /* multi-thread here is meaningless? since the async db operations */
 
     uint32 const realmId = GetCurrentRealmId();
+
+    if (realmId == 0)
+    {
+        LOG_ERROR("playerbots", "CreateRandomBots(): Invalid RealmID (0). Refusing to create/delete randombot accounts.");
+        return;
+    }
 
     if (sPlayerbotAIConfig.deleteRandomBotAccounts)
     {

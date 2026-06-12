@@ -1,5 +1,4 @@
-DROP TABLE IF EXISTS `playerbots_account_ownership`;
-CREATE TABLE `playerbots_account_ownership` (
+CREATE TABLE IF NOT EXISTS `playerbots_account_ownership` (
     `account_id` INT UNSIGNED NOT NULL,
     `owner_realm_id` INT UNSIGNED NOT NULL,
     `claimed_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
