@@ -104,6 +104,10 @@ public:
 
 Unit* TankTargetValue::Calculate()
 {
+    Unit* rtiTarget = RtiTargetValue::Calculate();
+    if (rtiTarget)
+        return rtiTarget;
+
     // FindTargetForTankStrategy strategy(botAI);
     FindTankTargetSmartStrategy strategy(botAI);
     return FindTarget(&strategy);

@@ -2034,7 +2034,7 @@ bool PlayerbotAI::HasAggro(Unit* unit)
     if (!IsValidUnit(unit))
         return false;
 
-    bool isMT = IsMainTank(bot);
+    bool isMT = IsExplicitMainTank(bot);
     Unit* victim = unit->GetVictim();
     if (victim && (victim->GetGUID() == bot->GetGUID() || (!isMT && victim->ToPlayer() && IsTank(victim->ToPlayer()))))
     {
@@ -2365,6 +2365,20 @@ bool PlayerbotAI::IsDps(Player* player, bool bySpec)
                 return true;
             }
             break;
+    }
+    return false;
+}
+
+bool PlayerbotAI::IsExplicitMainTank(Player* player)
+{
+    Group* group = player->GetGroup();
+    if (!group)
+        return false;
+
+    for (Group::member_citerator itr = group->GetMemberSlots().begin(); itr != group->GetMemberSlots().end(); ++itr)
+    {
+        if (itr->flags & MEMBER_FLAG_MAINTANK)
+            return player->GetGUID() == itr->guid;
     }
     return false;
 }

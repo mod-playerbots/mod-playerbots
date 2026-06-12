@@ -6,14 +6,14 @@
 #ifndef _PLAYERBOT_TANKTARGETVALUE_H
 #define _PLAYERBOT_TANKTARGETVALUE_H
 
-#include "TargetValue.h"
+#include "RtiTargetValue.h"
 
 class PlayerbotAI;
 
-class TankTargetValue : public TargetValue
+class TankTargetValue : public RtiTargetValue
 {
 public:
-    TankTargetValue(PlayerbotAI* botAI, std::string const name = "tank target") : TargetValue(botAI, name) {}
+    TankTargetValue(PlayerbotAI* botAI, std::string const name = "tank target") : RtiTargetValue(botAI, "rti", name) {}
 
     Unit* Calculate() override;
 };
