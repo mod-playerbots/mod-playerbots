@@ -114,7 +114,6 @@ bool IccValithriaGroupAction::Execute(Event /*event*/)
     Creature* portal = portalList.empty() ? nullptr : portalList.front();
 
     Creature* worm = bot->FindNearestCreature(NPC_ROT_WORM, 100.0f);
-    Creature* zombie = bot->FindNearestCreature(NPC_BLISTERING_ZOMBIE, 100.0f);
     Creature* manaVoid = bot->FindNearestCreature(NPC_MANA_VOID, 100.0f);
 
     // Column of Frost units - still hostile so the hostile list is fine here

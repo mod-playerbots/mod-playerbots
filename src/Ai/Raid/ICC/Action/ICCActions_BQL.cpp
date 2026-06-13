@@ -671,8 +671,6 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
             {34.0f, 336.0f * D2R}, {34.0f, 348.0f * D2R},
         };
         int const totalSlots = sizeof(allSlots) / sizeof(allSlots[0]);
-        int const OUTER_RING_START = 8 + 15 + 20;  // first index of outer ring
-        int const MID_RING_START = 8 + 15;
 
         float const cx = ICC_BQL_CENTER_POSITION.GetPositionX();
         float const cy = ICC_BQL_CENTER_POSITION.GetPositionY();

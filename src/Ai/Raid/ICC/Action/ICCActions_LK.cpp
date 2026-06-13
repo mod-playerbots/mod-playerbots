@@ -65,11 +65,6 @@ static bool IsLkCollectibleAdd(Unit* unit)
            entry == NPC_DRUDGE_GHOUL3 || entry == NPC_DRUDGE_GHOUL4;
 }
 
-static bool HasFrontalAbility(uint32 entry)
-{
-    return IsLkShambling(entry) || IsLkRagingSpirit(entry);
-}
-
 static bool IsHeroicLk(Difficulty diff)
 {
     return diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC;

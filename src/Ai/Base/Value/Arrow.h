@@ -16,11 +16,6 @@ class UnitPosition
 {
 public:
     UnitPosition(float x, float y) : x(x), y(y) {}
-    UnitPosition(UnitPosition const& other)
-    {
-        x = other.x;
-        y = other.y;
-    }
 
     float x, y;
 };
