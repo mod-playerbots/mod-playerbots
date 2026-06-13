@@ -314,8 +314,17 @@ bool GroupBuffSpellAction::isUseful()
 
 bool GroupBuffSpellAction::Execute(Event /*event*/)
 {
-    std::string const castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, spell);
-    return botAI->CastSpell(castName, GetTarget());
+    std::string missingReagentGroupName;
+    std::string const castName = ai::buff::UpgradeToGroupIfAppropriate(
+        bot, botAI, spell, &missingReagentGroupName);
+
+    if (!botAI->CastSpell(castName, GetTarget()))
+        return false;
+
+    if (!missingReagentGroupName.empty())
+        ai::buff::TryAnnounceMissingBuffReagents(botAI, spell, missingReagentGroupName);
+
+    return true;
 }
 
 CastEnchantItemMainHandAction::CastEnchantItemMainHandAction(
