@@ -873,7 +873,7 @@ bool GurtoggBloodboilRotateRangedGroupsAction::Execute(Event /*event*/)
     int activeGroup = GetGurtoggActiveRotationGroup(gurtogg);
 
     bool inActiveGroup = false;
-    if (activeGroup >= 0 && activeGroup < groups.size())
+    if (activeGroup >= 0 && (size_t)activeGroup < groups.size())
     {
         auto const& group = groups[activeGroup];
         inActiveGroup = std::find(group.begin(), group.end(), bot) != group.end();
@@ -2105,7 +2105,7 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
 }
 
 bool IllidanStormrageIsolateBotWithParasiteAction::InfectedBotMoveFromGroup(
-    Unit* illidan, const Position& target)
+    Unit* /*illidan*/, const Position& target)
 {
     if (bot->GetExactDist2d(target) < 1.0f)
         return false;
@@ -2116,7 +2116,7 @@ bool IllidanStormrageIsolateBotWithParasiteAction::InfectedBotMoveFromGroup(
 }
 
 bool IllidanStormrageIsolateBotWithParasiteAction::FreezeTrapShadowfiend(
-    Player* bot, Unit* illidan, const Position& target)
+    Player* bot, Unit* /*illidan*/, const Position& target)
 {
     if (bot->HasSpellCooldown(static_cast<uint32>(BlackTempleSpells::SPELL_FROST_TRAP)))
         return false;
@@ -2266,7 +2266,7 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::Execute(Event /*ev
 }
 
 bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidEyeBlast(
-    Unit* illidan, const EyeBlastDangerArea& dangerArea)
+    Unit* /*illidan*/, const EyeBlastDangerArea& dangerArea)
 {
     if (!IsPositionInEyeBlastDangerArea(bot->GetPosition(), dangerArea))
         return false;

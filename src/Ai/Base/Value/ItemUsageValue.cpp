@@ -708,7 +708,7 @@ bool ItemUsageValue::HasItemsNeededForSpell(uint32 spellId, ItemTemplate const* 
     for (uint8 i = 0; i < MAX_SPELL_REAGENTS; i++)
         if (spellInfo->ReagentCount[i] > 0 && spellInfo->Reagent[i])
         {
-            if (proto && proto->ItemId == spellInfo->Reagent[i] &&
+            if (proto && proto->ItemId == uint32(spellInfo->Reagent[i]) &&
                 spellInfo->ReagentCount[i] == 1)  // If we only need 1 item then current item does not need to be
                                                   // checked since we are looting/buying or already have it.
                 continue;
@@ -807,7 +807,7 @@ std::vector<uint32> ItemUsageValue::SpellsUsingItem(uint32 itemId, Player* bot)
             continue;
 
         for (uint8 i = 0; i < MAX_SPELL_REAGENTS; i++)
-            if (spellInfo->ReagentCount[i] > 0 && spellInfo->Reagent[i] == itemId)
+            if (spellInfo->ReagentCount[i] > 0 && uint32(spellInfo->Reagent[i]) == itemId)
                 retSpells.push_back(spellId);
     }
 

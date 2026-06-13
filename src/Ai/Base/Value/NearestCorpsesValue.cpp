@@ -12,7 +12,7 @@
 class AnyDeadUnitInObjectRangeCheck
 {
 public:
-    AnyDeadUnitInObjectRangeCheck(WorldObject const* obj, float range) : i_obj(obj), i_range(range) {}
+    AnyDeadUnitInObjectRangeCheck(WorldObject const* obj, float /*range*/) : i_obj(obj) {}
     WorldObject const& GetFocusObject() const { return *i_obj; }
     bool operator()(Unit* u) { return !u->IsAlive(); }
 

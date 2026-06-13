@@ -93,7 +93,7 @@ float EregosMultiplier::GetValue(Action* action)
     Unit* boss = AI_VALUE2(Unit*, "find target", "ley-guardian eregos");
     if (!boss) { return 1.0f; }
 
-    if (boss->HasAura(SPELL_PLANAR_SHIFT && dynamic_cast<OccDrakeAttackAction*>(action)))
+    if (boss->HasAura(SPELL_PLANAR_SHIFT) && dynamic_cast<OccDrakeAttackAction*>(action))
         return 0.0f;
 
     return 1.0f;

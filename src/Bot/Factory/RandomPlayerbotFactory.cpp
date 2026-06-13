@@ -240,7 +240,7 @@ std::string const RandomPlayerbotFactory::CreateRandomBotName(NameRaceAndGender 
         botName += (botName.size() < 2) ? groupFormEnd[gender][rand() % 4] : "";
 
         // Replace Catagory value with random Letter from that Catagory's Letter string for a given bot gender
-        for (int i = 0; i < botName.size(); i++)
+        for (size_t i = 0; i < botName.size(); i++)
         {
             botName[i] = groupLetter[gender][groupCategory.find(botName[i])]
                                     [rand() % groupLetter[gender][groupCategory.find(botName[i])].size()];

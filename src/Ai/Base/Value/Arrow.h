@@ -102,7 +102,7 @@ class ArrowFormation : public MoveAheadFormation
 {
 public:
     ArrowFormation(PlayerbotAI* botAI)
-        : MoveAheadFormation(botAI, "arrow"), built(false), masterUnit(nullptr), botUnit(nullptr)
+        : MoveAheadFormation(botAI, "arrow"), masterUnit(nullptr), botUnit(nullptr), built(false)
     {
     }
 

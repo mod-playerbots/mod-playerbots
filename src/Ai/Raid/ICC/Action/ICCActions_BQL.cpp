@@ -96,7 +96,7 @@ bool IccBqlGroupPositionAction::HandleShadowsMovement()
     constexpr int MAX_SHADOW_NPCS = 100;
     Unit* shadows[MAX_SHADOW_NPCS]{};  // Reasonable max estimate
     int shadowCount = 0;
-    for (int i = 0; i < npcs.size() && shadowCount < MAX_SHADOW_NPCS; i++)
+    for (uint32 i = 0; i < npcs.size() && shadowCount < MAX_SHADOW_NPCS; i++)
     {
         Unit* unit = botAI->GetUnit(npcs[i]);
         if (unit && unit->IsAlive() && unit->GetEntry() == NPC_SWARMING_SHADOWS)

@@ -336,7 +336,7 @@ bool ChooseRpgTargetAction::isFollowValid(Player* bot, WorldPosition pos)
     if (!botAI->HasActivePlayerMaster() && distance < 50.0f)
     {
         Player* player = groupLeader;
-        if (groupLeader && !groupLeader->isMoving() ||
+        if ((groupLeader && !groupLeader->isMoving()) ||
             PAI_VALUE(WorldPosition, "last long move").distance(pos) < sPlayerbotAIConfig.reactDistance)
             return true;
     }

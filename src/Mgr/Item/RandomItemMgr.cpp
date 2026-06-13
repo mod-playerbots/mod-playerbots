@@ -1630,7 +1630,7 @@ uint32 RandomItemMgr::CalculateStatWeight(uint8 playerclass, uint8 spec, ItemTem
     statWeight += attackPower;
 
     // handle negative stats
-    if (basicStatsWeight < 0 && (abs(basicStatsWeight) >= statWeight))
+    if (basicStatsWeight < 0 && (uint32(abs(basicStatsWeight)) >= statWeight))
         statWeight = 0;
     else
         statWeight += basicStatsWeight;
@@ -1816,7 +1816,7 @@ uint32 RandomItemMgr::GetUpgrade(Player* player, std::string spec, uint8 slot, u
         }
 
         // skip no stats trinkets
-        if (info.weights[specId] == 1 && info.slot == EQUIPMENT_SLOT_NECK || info.slot == EQUIPMENT_SLOT_TRINKET1 ||
+        if ((info.weights[specId] == 1 && info.slot == EQUIPMENT_SLOT_NECK) || info.slot == EQUIPMENT_SLOT_TRINKET1 ||
             info.slot == EQUIPMENT_SLOT_TRINKET2 || info.slot == EQUIPMENT_SLOT_FINGER1 ||
             info.slot == EQUIPMENT_SLOT_FINGER2)
             continue;
@@ -2250,7 +2250,7 @@ void RandomItemMgr::BuildEquipCacheNew()
         if (quest->GetRequiredClasses())
             continue;
 
-        for (int j = 0; j < quest->GetRewChoiceItemsCount(); j++)
+        for (uint32 j = 0; j < quest->GetRewChoiceItemsCount(); j++)
             if (uint32 itemId = quest->RewardChoiceItemId[j])
             {
                 ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
@@ -2261,7 +2261,7 @@ void RandomItemMgr::BuildEquipCacheNew()
                 questItemIds.insert(itemId);
             }
 
-        for (int j = 0; j < quest->GetRewItemsCount(); j++)
+        for (uint32 j = 0; j < quest->GetRewItemsCount(); j++)
             if (uint32 itemId = quest->RewardItemId[j])
             {
                 ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
@@ -2406,7 +2406,7 @@ void RandomItemMgr::BuildPotionCache()
                 if (proto->Duration & 0x80000000)
                     continue;
 
-                if (proto->AllowableClass != -1)
+                if (proto->AllowableClass != uint32(-1))
                     continue;
 
                 bool hybrid = false;
@@ -2799,7 +2799,7 @@ inline bool IsCraftedBySpellInfo(ItemTemplate const* proto, SpellInfo const* spe
             continue;
         }
 
-        if (proto->ItemId == spellInfo->Reagent[x])
+        if (proto->ItemId == uint32(spellInfo->Reagent[x]))
             return true;
 
     }
