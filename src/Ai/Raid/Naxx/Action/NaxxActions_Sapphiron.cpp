@@ -75,7 +75,7 @@ bool SapphironFlightPositionAction::MoveToNearestIcebolt()
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (NaxxSpellIds::HasAnyAura(botAI, member, {NaxxSpellIds::Icebolt10, NaxxSpellIds::Icebolt25}) ||
+        if (NaxxSpellIds::HasAnyAura(member, {NaxxSpellIds::Icebolt10, NaxxSpellIds::Icebolt25}) ||
             botAI->HasAura("icebolt", member, false, false, -1, true))
         {
             if (!playerWithIcebolt || minDistance > bot->GetDistance(member))

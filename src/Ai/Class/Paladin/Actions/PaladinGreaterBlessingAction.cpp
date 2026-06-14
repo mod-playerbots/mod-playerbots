@@ -1145,8 +1145,7 @@ bool CastGreaterBlessingAssignmentAction::Execute(Event /*event*/)
     if (!FindPendingAssignment(assignment, spellName))
         return false;
 
-    uint32 finalId = AI_VALUE2(uint32, "spell id", spellName);
-    if (!finalId)
+    if (!botAI->HasSpell(spellName))
         return false;
 
     return botAI->CastSpell(spellName, assignment.player);
