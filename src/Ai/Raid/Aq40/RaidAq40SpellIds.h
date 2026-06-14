@@ -96,7 +96,7 @@ inline bool HasAnyAura(PlayerbotAI* botAI, Unit* unit, std::initializer_list<uin
 
     for (uint32 spellId : spellIds)
     {
-        if (botAI->HasAura(spellId, unit))
+        if (unit->HasAura(spellId))
             return true;
     }
 
