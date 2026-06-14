@@ -12,14 +12,13 @@
 #include <unordered_set>
 #include <vector>
 
+#include "Player.h"
 #include "AiFactory.h"
 #include "ItemTemplate.h"
 
 class ChatHandler;
 
 struct ItemTemplate;
-
-enum EquipmentSlots : uint32;
 
 enum RandomItemType
 {
