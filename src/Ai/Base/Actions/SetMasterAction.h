@@ -17,9 +17,6 @@ public:
 
     bool Execute(Event event) override;
     bool isUseful() override;
-
-protected:
- 
 };
 
 #endif

@@ -8,14 +8,14 @@
 #include "Log.h"
 #include "Playerbots.h"
 #include "PlayerbotAI.h"
-#include "BroadcastHelper.h"
+#include "PlayerbotTextMgr.h"
 
 bool SetMasterAction::Execute(Event event)
 {
     Player* newMaster = event.getOwner();
     Group* group = bot->GetGroup();
 
-    LOG_INFO("playerbots",
+    LOG_DEBUG("playerbots",
         "SetMaster: bot={}, owner={}, master={}, group={}, ownerName={}, masterName={}",
         bot->GetName(),
         newMaster ? newMaster->GetName() : "nullptr",
@@ -26,26 +26,27 @@ bool SetMasterAction::Execute(Event event)
 
     if (!newMaster)
     {
-        LOG_INFO("playerbots", "SetMaster: failed - owner is nullptr");
+        LOG_DEBUG("playerbots", "SetMaster: failed - owner is nullptr");
         return false;
     }
 
     if (!group || !group->IsMember(newMaster->GetGUID()))
     {
-        LOG_INFO("playerbots", "SetMaster: failed - no group or owner not member");
+        LOG_DEBUG("playerbots", "SetMaster: failed - no group or owner not member");
         return false;
     }
 
     botAI->SetMaster(newMaster);
     botAI->ChangeStrategy("+follow", BOT_STATE_NON_COMBAT);
 
-    std::string msg = "Now following " + std::string(newMaster->GetName()) + ".";
+    std::string msg = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+        "set_master_follow", "Now following %name.", {{"%name", newMaster->GetName()}});
     if (group->isRaidGroup())
         botAI->SayToRaid(msg);
     else
         botAI->SayToParty(msg);
 
-    LOG_INFO("playerbots", "SetMaster: success - now following {}", newMaster->GetName());
+    LOG_DEBUG("playerbots", "SetMaster: success - now following {}", newMaster->GetName());
     return true;
 }
 
