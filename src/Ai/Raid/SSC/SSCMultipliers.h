@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_RAIDSSCMULTIPLIERS_H
-#define _PLAYERBOT_RAIDSSCMULTIPLIERS_H
+#ifndef _PLAYERBOT_SSCMULTIPLIERS_H
+#define _PLAYERBOT_SSCMULTIPLIERS_H
 
 #include "Multiplier.h"
 

@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_WOTLKDUNGEONUKTRIGGERS_H
-#define _PLAYERBOT_WOTLKDUNGEONUKTRIGGERS_H
+#ifndef _PLAYERBOT_UKTRIGGERS_H
+#define _PLAYERBOT_UKTRIGGERS_H
 
 #include "Trigger.h"
 #include "PlayerbotAIConfig.h"

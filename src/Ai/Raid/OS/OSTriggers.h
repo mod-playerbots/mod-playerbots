@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDOSTRIGGERS_H
-#define _PLAYERBOT_RAIDOSTRIGGERS_H
+#ifndef _PLAYERBOT_OSTRIGGERS_H
+#define _PLAYERBOT_OSTRIGGERS_H
 
 #include "PlayerbotAI.h"
 #include "Playerbots.h"

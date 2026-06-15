@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_MAINTANCEVALUE_H
-#define _PLAYERBOT_MAINTANCEVALUE_H
+#ifndef _PLAYERBOT_MAINTENANCEVALUES_H
+#define _PLAYERBOT_MAINTENANCEVALUES_H
 
 #include "Value.h"
 

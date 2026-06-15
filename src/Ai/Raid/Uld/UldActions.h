@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDULDUARACTIONS_H
-#define _PLAYERBOT_RAIDULDUARACTIONS_H
+#ifndef _PLAYERBOT_ULDACTIONS_H
+#define _PLAYERBOT_ULDACTIONS_H
 
 #include "Action.h"
 #include "AttackAction.h"

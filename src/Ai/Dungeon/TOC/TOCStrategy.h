@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_WOTLKDUNGEONTOCSTRATEGY_H
-#define _PLAYERBOT_WOTLKDUNGEONTOCSTRATEGY_H
+#ifndef _PLAYERBOT_TOCSTRATEGY_H
+#define _PLAYERBOT_TOCSTRATEGY_H
 
 #include "AiObjectContext.h"
 #include "Multiplier.h"

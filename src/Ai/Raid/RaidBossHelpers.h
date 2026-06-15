@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDBOSSHELPERS_H_
-#define _PLAYERBOT_RAIDBOSSHELPERS_H_
+#ifndef _PLAYERBOT_RAIDBOSSHELPERS_H
+#define _PLAYERBOT_RAIDBOSSHELPERS_H
 
 #include "AiObject.h"
 #include "Unit.h"

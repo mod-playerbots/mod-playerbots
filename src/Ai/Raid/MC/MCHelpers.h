@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDMCHELPERS_H
-#define _PLAYERBOT_RAIDMCHELPERS_H
+#ifndef _PLAYERBOT_MCHELPERS_H
+#define _PLAYERBOT_MCHELPERS_H
 
 namespace MoltenCoreHelpers
 {

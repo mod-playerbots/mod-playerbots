@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_CHATSHORTCUTACTION_H
-#define _PLAYERBOT_CHATSHORTCUTACTION_H
+#ifndef _PLAYERBOT_CHATSHORTCUTACTIONS_H
+#define _PLAYERBOT_CHATSHORTCUTACTIONS_H
 
 #include "MovementActions.h"
 

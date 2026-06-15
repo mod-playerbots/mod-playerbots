@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDNAXXACTIONS_H
-#define _PLAYERBOT_RAIDNAXXACTIONS_H
+#ifndef _PLAYERBOT_NAXXACTIONS_H
+#define _PLAYERBOT_NAXXACTIONS_H
 
 #include "Action.h"
 #include "AttackAction.h"

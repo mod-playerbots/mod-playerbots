@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDULDUARTRIGGERS_H
-#define _PLAYERBOT_RAIDULDUARTRIGGERS_H
+#ifndef _PLAYERBOT_ULDTRIGGERS_H
+#define _PLAYERBOT_ULDTRIGGERS_H
 
 #include "EventMap.h"
 #include "GenericTriggers.h"

@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_RAIDHYJALSUMMITACTIONCONTEXT_H
-#define _PLAYERBOT_RAIDHYJALSUMMITACTIONCONTEXT_H
+#ifndef _PLAYERBOT_HYJALACTIONCONTEXT_H
+#define _PLAYERBOT_HYJALACTIONCONTEXT_H
 
 #include "HyjalActions.h"
 #include "NamedObjectContext.h"

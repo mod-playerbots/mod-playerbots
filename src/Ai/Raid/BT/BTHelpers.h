@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_RAIDBLACKTEMPLEHELPERS_H_
-#define _PLAYERBOT_RAIDBLACKTEMPLEHELPERS_H_
+#ifndef _PLAYERBOT_BTHELPERS_H
+#define _PLAYERBOT_BTHELPERS_H
 
 #include <array>
 #include <unordered_map>

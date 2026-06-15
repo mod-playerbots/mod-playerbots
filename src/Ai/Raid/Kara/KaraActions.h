@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDKARAZHANACTIONS_H
-#define _PLAYERBOT_RAIDKARAZHANACTIONS_H
+#ifndef _PLAYERBOT_KARAACTIONS_H
+#define _PLAYERBOT_KARAACTIONS_H
 
 #include "Action.h"
 #include "AttackAction.h"

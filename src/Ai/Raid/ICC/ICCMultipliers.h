@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_ICCM_H
-#define _PLAYERBOT_ICCM_H
+#ifndef _PLAYERBOT_ICCMULTIPLIERS_H
+#define _PLAYERBOT_ICCMULTIPLIERS_H
 
 #include "Multiplier.h"
 

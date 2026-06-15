@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDVOAACTIONS_H
-#define _PLAYERBOT_RAIDVOAACTIONS_H
+#ifndef _PLAYERBOT_VOAACTIONS_H
+#define _PLAYERBOT_VOAACTIONS_H
 
 #include "Action.h"
 #include "MovementActions.h"

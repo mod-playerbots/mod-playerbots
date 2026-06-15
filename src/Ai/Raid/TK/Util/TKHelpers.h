@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDTEMPESTKEEPHELPERS_H_
-#define _PLAYERBOT_RAIDTEMPESTKEEPHELPERS_H_
+#ifndef _PLAYERBOT_TKHELPERS_H
+#define _PLAYERBOT_TKHELPERS_H
 
 #include <ctime>
 #include <unordered_map>

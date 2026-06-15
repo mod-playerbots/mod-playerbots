@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_OPERATIONS_H
-#define _PLAYERBOT_OPERATIONS_H
+#ifndef _PLAYERBOT_PLAYERBOTOPERATIONS_H
+#define _PLAYERBOT_PLAYERBOTOPERATIONS_H
 
 #include "Group.h"
 #include "GroupMgr.h"

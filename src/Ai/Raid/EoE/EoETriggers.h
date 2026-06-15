@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDEOETRIGGERS_H
-#define _PLAYERBOT_RAIDEOETRIGGERS_H
+#ifndef _PLAYERBOT_EOETRIGGERS_H
+#define _PLAYERBOT_EOETRIGGERS_H
 
 #include "PlayerbotAI.h"
 #include "Playerbots.h"

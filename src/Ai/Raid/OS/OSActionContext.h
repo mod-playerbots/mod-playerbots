@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDOSACTIONCONTEXT_H
-#define _PLAYERBOT_RAIDOSACTIONCONTEXT_H
+#ifndef _PLAYERBOT_OSACTIONCONTEXT_H
+#define _PLAYERBOT_OSACTIONCONTEXT_H
 
 #include "Action.h"
 #include "NamedObjectContext.h"

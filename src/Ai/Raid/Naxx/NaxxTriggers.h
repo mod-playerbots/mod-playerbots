@@ -1,6 +1,6 @@
 
-#ifndef _PLAYERBOT_RAIDNAXXTRIGGERS_H
-#define _PLAYERBOT_RAIDNAXXTRIGGERS_H
+#ifndef _PLAYERBOT_NAXXTRIGGERS_H
+#define _PLAYERBOT_NAXXTRIGGERS_H
 
 #include "EventMap.h"
 #include "GenericTriggers.h"
