@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_WOTLKDUNGEONOKACTIONS_H
-#define _PLAYERBOT_WOTLKDUNGEONOKACTIONS_H
+#ifndef _PLAYERBOT_AKACTIONS_H
+#define _PLAYERBOT_AKACTIONS_H
 
 #include "Action.h"
 #include "AttackAction.h"

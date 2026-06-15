@@ -6,11 +6,11 @@
 #ifndef _PLAYERBOT_WORLDPACKETHANDLERSTRATEGY_H
 #define _PLAYERBOT_WORLDPACKETHANDLERSTRATEGY_H
 
-#include "PassTroughStrategy.h"
+#include "PassThroughStrategy.h"
 
 class PlayerbotAI;
 
-class WorldPacketHandlerStrategy : public PassTroughStrategy
+class WorldPacketHandlerStrategy : public PassThroughStrategy
 {
 public:
     WorldPacketHandlerStrategy(PlayerbotAI* botAI);
@@ -19,10 +19,10 @@ public:
     std::string const getName() override { return "default"; }
 };
 
-class ReadyCheckStrategy : public PassTroughStrategy
+class ReadyCheckStrategy : public PassThroughStrategy
 {
 public:
-    ReadyCheckStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI) { }
+    ReadyCheckStrategy(PlayerbotAI* botAI) : PassThroughStrategy(botAI) { }
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
     std::string const getName() override { return "ready check"; }

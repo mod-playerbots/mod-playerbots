@@ -6,9 +6,9 @@
 #ifndef _PLAYERBOT_LFGSTRATEGY_H
 #define _PLAYERBOT_LFGSTRATEGY_H
 
-#include "PassTroughStrategy.h"
+#include "PassThroughStrategy.h"
 
-class LfgStrategy : public PassTroughStrategy
+class LfgStrategy : public PassThroughStrategy
 {
 public:
     LfgStrategy(PlayerbotAI* botAI);

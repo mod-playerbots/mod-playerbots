@@ -6,7 +6,7 @@
 #ifndef _PLAYERBOT_NONCOMBATSTRATEGY_H
 #define _PLAYERBOT_NONCOMBATSTRATEGY_H
 
-#include "PassTroughStrategy.h"
+#include "PassThroughStrategy.h"
 
 class PlayerbotAI;
 

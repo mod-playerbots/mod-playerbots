@@ -10,10 +10,10 @@
 
 class PlayerbotAI;
 
-class PassTroughStrategy : public Strategy
+class PassThroughStrategy : public Strategy
 {
 public:
-    PassTroughStrategy(PlayerbotAI* botAI, float relevance = 100.0f) : Strategy(botAI), relevance(relevance) {}
+    PassThroughStrategy(PlayerbotAI* botAI, float relevance = 100.0f) : Strategy(botAI), relevance(relevance) {}
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
 

@@ -6,11 +6,11 @@
 #ifndef _PLAYERBOT_CHATCOMMANDHANDLERSTRATEGY_H
 #define _PLAYERBOT_CHATCOMMANDHANDLERSTRATEGY_H
 
-#include "PassTroughStrategy.h"
+#include "PassThroughStrategy.h"
 
 class PlayerbotAI;
 
-class ChatCommandHandlerStrategy : public PassTroughStrategy
+class ChatCommandHandlerStrategy : public PassThroughStrategy
 {
 public:
     ChatCommandHandlerStrategy(PlayerbotAI* botAI);

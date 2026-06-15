@@ -6,11 +6,11 @@
 #ifndef _PLAYERBOT_DUELSTRATEGY_H
 #define _PLAYERBOT_DUELSTRATEGY_H
 
-#include "PassTroughStrategy.h"
+#include "PassThroughStrategy.h"
 
 class PlayerbotAI;
 
-class DuelStrategy : public PassTroughStrategy
+class DuelStrategy : public PassThroughStrategy
 {
 public:
     DuelStrategy(PlayerbotAI* botAI);

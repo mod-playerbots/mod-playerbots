@@ -6,9 +6,9 @@
 #ifndef _PLAYERBOT_BATTLEGROUNDSTRATEGY_H
 #define _PLAYERBOT_BATTLEGROUNDSTRATEGY_H
 
-#include "PassTroughStrategy.h"
+#include "PassThroughStrategy.h"
 
-class BGStrategy : public PassTroughStrategy
+class BGStrategy : public PassThroughStrategy
 {
 public:
     BGStrategy(PlayerbotAI* botAI);

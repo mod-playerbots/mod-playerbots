@@ -6,11 +6,11 @@
 #ifndef _PLAYERBOT_QUESTSTRATEGIES_H
 #define _PLAYERBOT_QUESTSTRATEGIES_H
 
-#include "PassTroughStrategy.h"
+#include "PassThroughStrategy.h"
 
 class PlayerbotAI;
 
-class QuestStrategy : public PassTroughStrategy
+class QuestStrategy : public PassThroughStrategy
 {
 public:
     QuestStrategy(PlayerbotAI* botAI);

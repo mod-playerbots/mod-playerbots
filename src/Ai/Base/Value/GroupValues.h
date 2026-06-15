@@ -3,6 +3,9 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#ifndef _PLAYERBOT_GROUPVALUES_H
+#define _PLAYERBOT_GROUPVALUES_H
+
 #include "NamedObjectContext.h"
 #include "Value.h"
 
@@ -71,3 +74,5 @@ public:
 
     bool Calculate() override;
 };
+
+#endif
