@@ -39,5 +39,26 @@ bool PassLeadershipToMasterAction::isUseful()
 
 bool GiveLeaderAction::isUseful()
 {
-    return botAI->HasActivePlayerMaster() && bot->GetGroup() && bot->GetGroup()->IsLeader(bot->GetGUID());
+    return bot->GetGroup() && bot->GetGroup()->IsLeader(bot->GetGUID());
+}
+
+bool GiveLeaderAction::Execute(Event event)
+{
+    Player* target = event.getOwner();
+    if (!target || target == bot || !bot->GetGroup() || !bot->GetGroup()->IsMember(target->GetGUID()))
+        return false;
+
+    auto setLeaderOp = std::make_unique<GroupSetLeaderOperation>(bot->GetGUID(), target->GetGUID());
+    PlayerbotWorldThreadProcessor::instance().QueueOperation(std::move(setLeaderOp));
+
+    if (!message.empty())
+        botAI->TellMasterNoFacing(message);
+
+    if (sRandomPlayerbotMgr.IsRandomBot(bot))
+    {
+        botAI->ResetStrategies();
+        botAI->Reset();
+    }
+
+    return true;
 }
