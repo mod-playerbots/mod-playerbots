@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_BROADCASTHELPER_H
-#define _PLAYERBOT_BROADCASTHELPER_H
+#ifndef PLAYERBOTS_BROADCASTHELPER_H
+#define PLAYERBOTS_BROADCASTHELPER_H
 
 class PlayerbotAI;
 class Player;

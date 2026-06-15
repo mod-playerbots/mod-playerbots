@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_MCTRIGGERCONTEXT_H
-#define _PLAYERBOT_MCTRIGGERCONTEXT_H
+#ifndef PLAYERBOTS_MCTRIGGERCONTEXT_H
+#define PLAYERBOTS_MCTRIGGERCONTEXT_H
 
 #include "BossAuraTriggers.h"
 #include "NamedObjectContext.h"

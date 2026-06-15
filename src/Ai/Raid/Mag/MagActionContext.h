@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_MAGACTIONCONTEXT_H
-#define _PLAYERBOT_MAGACTIONCONTEXT_H
+#ifndef PLAYERBOTS_MAGACTIONCONTEXT_H
+#define PLAYERBOTS_MAGACTIONCONTEXT_H
 
 #include "MagActions.h"
 #include "NamedObjectContext.h"

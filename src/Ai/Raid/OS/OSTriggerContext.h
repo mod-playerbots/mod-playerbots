@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_OSTRIGGERCONTEXT_H
-#define _PLAYERBOT_OSTRIGGERCONTEXT_H
+#ifndef PLAYERBOTS_OSTRIGGERCONTEXT_H
+#define PLAYERBOTS_OSTRIGGERCONTEXT_H
 
 #include "NamedObjectContext.h"
 #include "OSTriggers.h"

@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_ACTRIGGERCONTEXT_H
-#define _PLAYERBOT_ACTRIGGERCONTEXT_H
+#ifndef PLAYERBOTS_ACTRIGGERCONTEXT_H
+#define PLAYERBOTS_ACTRIGGERCONTEXT_H
 
 #include "AiObjectContext.h"
 #include "TriggerContext.h"

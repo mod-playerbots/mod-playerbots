@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_TKACTIONS_H
-#define _PLAYERBOT_TKACTIONS_H
+#ifndef PLAYERBOTS_TKACTIONS_H
+#define PLAYERBOTS_TKACTIONS_H
 
 #include "TKHelpers.h"
 #include "TKKaelthasBossAI.h"

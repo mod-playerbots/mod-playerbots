@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_FROSTDKSTRATEGY_H
-#define _PLAYERBOT_FROSTDKSTRATEGY_H
+#ifndef PLAYERBOTS_FROSTDKSTRATEGY_H
+#define PLAYERBOTS_FROSTDKSTRATEGY_H
 
 #include "GenericDKStrategy.h"
 

@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_MAGHELPERS_H
-#define _PLAYERBOT_MAGHELPERS_H
+#ifndef PLAYERBOTS_MAGHELPERS_H
+#define PLAYERBOTS_MAGHELPERS_H
 
 #include <ctime>
 #include <unordered_map>

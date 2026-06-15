@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_SSCHELPERS_H
-#define _PLAYERBOT_SSCHELPERS_H
+#ifndef PLAYERBOTS_SSCHELPERS_H
+#define PLAYERBOTS_SSCHELPERS_H
 
 #include <ctime>
 #include <unordered_map>

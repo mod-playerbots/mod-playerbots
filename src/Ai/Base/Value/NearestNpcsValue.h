@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_NEARESTNPCSVALUE_H
-#define _PLAYERBOT_NEARESTNPCSVALUE_H
+#ifndef PLAYERBOTS_NEARESTNPCSVALUE_H
+#define PLAYERBOTS_NEARESTNPCSVALUE_H
 
 #include "NearestUnitsValue.h"
 #include "PlayerbotAIConfig.h"

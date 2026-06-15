@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PARTYMEMBERWITHOUTAURAVALUE_H
-#define _PLAYERBOT_PARTYMEMBERWITHOUTAURAVALUE_H
+#ifndef PLAYERBOTS_PARTYMEMBERWITHOUTAURAVALUE_H
+#define PLAYERBOTS_PARTYMEMBERWITHOUTAURAVALUE_H
 
 #include "NamedObjectContext.h"
 #include "PartyMemberValue.h"

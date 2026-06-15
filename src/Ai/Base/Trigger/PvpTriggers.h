@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PVPTRIGGERS_H
-#define _PLAYERBOT_PVPTRIGGERS_H
+#ifndef PLAYERBOTS_PVPTRIGGERS_H
+#define PLAYERBOTS_PVPTRIGGERS_H
 
 #include "Trigger.h"
 

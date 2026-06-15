@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_RANGEDCOMBATSTRATEGY_H
-#define _PLAYERBOT_RANGEDCOMBATSTRATEGY_H
+#ifndef PLAYERBOTS_RANGEDCOMBATSTRATEGY_H
+#define PLAYERBOTS_RANGEDCOMBATSTRATEGY_H
 
 #include "CombatStrategy.h"
 

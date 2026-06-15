@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_HOSSTRATEGY_H
-#define _PLAYERBOT_HOSSTRATEGY_H
+#ifndef PLAYERBOTS_HOSSTRATEGY_H
+#define PLAYERBOTS_HOSSTRATEGY_H
 
 #include "Multiplier.h"
 #include "AiObjectContext.h"

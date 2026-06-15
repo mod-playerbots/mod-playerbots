@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_BWLACTIONCONTEXT_H
-#define _PLAYERBOT_BWLACTIONCONTEXT_H
+#ifndef PLAYERBOTS_BWLACTIONCONTEXT_H
+#define PLAYERBOTS_BWLACTIONCONTEXT_H
 
 #include "Action.h"
 #include "NamedObjectContext.h"

@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_COSACTIONCONTEXT_H
-#define _PLAYERBOT_COSACTIONCONTEXT_H
+#ifndef PLAYERBOTS_COSACTIONCONTEXT_H
+#define PLAYERBOTS_COSACTIONCONTEXT_H
 
 #include "Action.h"
 #include "NamedObjectContext.h"

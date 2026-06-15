@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_ACTRIGGERS_H
-#define _PLAYERBOT_ACTRIGGERS_H
+#ifndef PLAYERBOTS_ACTRIGGERS_H
+#define PLAYERBOTS_ACTRIGGERS_H
 
 #include "Trigger.h"
 #include "GenericTriggers.h"

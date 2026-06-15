@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_VHSTRATEGY_H
-#define _PLAYERBOT_VHSTRATEGY_H
+#ifndef PLAYERBOTS_VHSTRATEGY_H
+#define PLAYERBOTS_VHSTRATEGY_H
 
 #include "Multiplier.h"
 #include "AiObjectContext.h"

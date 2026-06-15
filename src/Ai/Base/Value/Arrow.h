@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_ARROW_H
-#define _PLAYERBOT_ARROW_H
+#ifndef PLAYERBOTS_ARROW_H
+#define PLAYERBOTS_ARROW_H
 
 #include "Formations.h"
 #include "TravelMgr.h"

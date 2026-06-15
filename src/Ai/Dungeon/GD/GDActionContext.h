@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_GDACTIONCONTEXT_H
-#define _PLAYERBOT_GDACTIONCONTEXT_H
+#ifndef PLAYERBOTS_GDACTIONCONTEXT_H
+#define PLAYERBOTS_GDACTIONCONTEXT_H
 
 #include "Action.h"
 #include "NamedObjectContext.h"

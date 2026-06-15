@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_BTTRIGGERCONTEXT_H
-#define _PLAYERBOT_BTTRIGGERCONTEXT_H
+#ifndef PLAYERBOTS_BTTRIGGERCONTEXT_H
+#define PLAYERBOTS_BTTRIGGERCONTEXT_H
 
 #include "NamedObjectContext.h"
 #include "BTTriggers.h"

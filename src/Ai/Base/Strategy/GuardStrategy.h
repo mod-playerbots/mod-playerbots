@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_GUARDSTRATEGY_H
-#define _PLAYERBOT_GUARDSTRATEGY_H
+#ifndef PLAYERBOTS_GUARDSTRATEGY_H
+#define PLAYERBOTS_GUARDSTRATEGY_H
 
 #include "NonCombatStrategy.h"
 

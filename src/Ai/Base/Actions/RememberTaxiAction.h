@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_REMEMBERTAXIACTION_H
-#define _PLAYERBOT_REMEMBERTAXIACTION_H
+#ifndef PLAYERBOTS_REMEMBERTAXIACTION_H
+#define PLAYERBOTS_REMEMBERTAXIACTION_H
 
 #include "Action.h"
 

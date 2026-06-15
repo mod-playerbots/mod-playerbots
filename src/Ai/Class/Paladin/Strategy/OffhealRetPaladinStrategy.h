@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
- #ifndef _PLAYERBOT_OFFHEALRETPALADINSTRATEGY_H
-#define _PLAYERBOT_OFFHEALRETPALADINSTRATEGY_H
+ #ifndef PLAYERBOTS_OFFHEALRETPALADINSTRATEGY_H
+#define PLAYERBOTS_OFFHEALRETPALADINSTRATEGY_H
 
 #include "GenericPaladinStrategy.h"
 

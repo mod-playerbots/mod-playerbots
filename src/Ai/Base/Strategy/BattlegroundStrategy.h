@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_BATTLEGROUNDSTRATEGY_H
-#define _PLAYERBOT_BATTLEGROUNDSTRATEGY_H
+#ifndef PLAYERBOTS_BATTLEGROUNDSTRATEGY_H
+#define PLAYERBOTS_BATTLEGROUNDSTRATEGY_H
 
 #include "PassThroughStrategy.h"
 

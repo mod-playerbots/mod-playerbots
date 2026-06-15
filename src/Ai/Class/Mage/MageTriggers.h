@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_MAGETRIGGERS_H
-#define _PLAYERBOT_MAGETRIGGERS_H
+#ifndef PLAYERBOTS_MAGETRIGGERS_H
+#define PLAYERBOTS_MAGETRIGGERS_H
 
 #include "CureTriggers.h"
 #include "GenericTriggers.h"

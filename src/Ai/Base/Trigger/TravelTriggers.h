@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_TRAVELTRIGGERS_H
-#define _PLAYERBOT_TRAVELTRIGGERS_H
+#ifndef PLAYERBOTS_TRAVELTRIGGERS_H
+#define PLAYERBOTS_TRAVELTRIGGERS_H
 
 #include "Trigger.h"
 

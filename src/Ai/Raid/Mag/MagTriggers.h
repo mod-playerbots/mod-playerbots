@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_MAGTRIGGERS_H
-#define _PLAYERBOT_MAGTRIGGERS_H
+#ifndef PLAYERBOTS_MAGTRIGGERS_H
+#define PLAYERBOTS_MAGTRIGGERS_H
 
 #include "Trigger.h"
 #include "PlayerbotAI.h"

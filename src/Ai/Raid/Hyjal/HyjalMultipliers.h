@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_HYJALMULTIPLIERS_H
-#define _PLAYERBOT_HYJALMULTIPLIERS_H
+#ifndef PLAYERBOTS_HYJALMULTIPLIERS_H
+#define PLAYERBOTS_HYJALMULTIPLIERS_H
 
 #include "Multiplier.h"
 

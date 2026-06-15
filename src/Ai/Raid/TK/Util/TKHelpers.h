@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_TKHELPERS_H
-#define _PLAYERBOT_TKHELPERS_H
+#ifndef PLAYERBOTS_TKHELPERS_H
+#define PLAYERBOTS_TKHELPERS_H
 
 #include <ctime>
 #include <unordered_map>

@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_ONYACTIONCONTEXT_H
-#define _PLAYERBOT_ONYACTIONCONTEXT_H
+#ifndef PLAYERBOTS_ONYACTIONCONTEXT_H
+#define PLAYERBOTS_ONYACTIONCONTEXT_H
 
 #include "Action.h"
 #include "NamedObjectContext.h"

@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_LOGLEVELVALUE_H
-#define _PLAYERBOT_LOGLEVELVALUE_H
+#ifndef PLAYERBOTS_LOGLEVELVALUE_H
+#define PLAYERBOTS_LOGLEVELVALUE_H
 
 #include "LogCommon.h"
 #include "Value.h"

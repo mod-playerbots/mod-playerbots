@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_ENEMYPLAYERVALUE_H
-#define _PLAYERBOT_ENEMYPLAYERVALUE_H
+#ifndef PLAYERBOTS_ENEMYPLAYERVALUE_H
+#define PLAYERBOTS_ENEMYPLAYERVALUE_H
 
 #include "PlayerbotAIConfig.h"
 #include "PossibleTargetsValue.h"

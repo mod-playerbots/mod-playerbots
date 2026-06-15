@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_DROPQUESTACTION_H
-#define _PLAYERBOT_DROPQUESTACTION_H
+#ifndef PLAYERBOTS_DROPQUESTACTION_H
+#define PLAYERBOTS_DROPQUESTACTION_H
 
 #include "Action.h"
 

@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_TKTRIGGERCONTEXT_H
-#define _PLAYERBOT_TKTRIGGERCONTEXT_H
+#ifndef PLAYERBOTS_TKTRIGGERCONTEXT_H
+#define PLAYERBOTS_TKTRIGGERCONTEXT_H
 
 #include "TKTriggers.h"
 #include "NamedObjectContext.h"

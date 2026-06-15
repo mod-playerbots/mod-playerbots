@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_CHATHELPER_H
-#define _PLAYERBOT_CHATHELPER_H
+#ifndef PLAYERBOTS_CHATHELPER_H
+#define PLAYERBOTS_CHATHELPER_H
 
 #include <map>
 

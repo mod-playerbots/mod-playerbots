@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PALADINACTIONS_H
-#define _PLAYERBOT_PALADINACTIONS_H
+#ifndef PLAYERBOTS_PALADINACTIONS_H
+#define PLAYERBOTS_PALADINACTIONS_H
 
 #include "AiObject.h"
 #include "GenericSpellActions.h"

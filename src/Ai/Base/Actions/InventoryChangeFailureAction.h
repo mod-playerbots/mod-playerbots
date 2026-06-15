@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_INVENTORYCHANGEFAILUREACTION_H
-#define _PLAYERBOT_INVENTORYCHANGEFAILUREACTION_H
+#ifndef PLAYERBOTS_INVENTORYCHANGEFAILUREACTION_H
+#define PLAYERBOTS_INVENTORYCHANGEFAILUREACTION_H
 
 #include "Action.h"
 #include "Item.h"

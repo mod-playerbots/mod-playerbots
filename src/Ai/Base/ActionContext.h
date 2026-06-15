@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_ACTIONCONTEXT_H
-#define _PLAYERBOT_ACTIONCONTEXT_H
+#ifndef PLAYERBOTS_ACTIONCONTEXT_H
+#define PLAYERBOTS_ACTIONCONTEXT_H
 
 #include "AddLootAction.h"
 #include "AttackAction.h"

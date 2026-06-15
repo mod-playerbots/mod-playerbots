@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_ICCTRIGGERS_H
-#define _PLAYERBOT_ICCTRIGGERS_H
+#ifndef PLAYERBOTS_ICCTRIGGERS_H
+#define PLAYERBOTS_ICCTRIGGERS_H
 
 #include "PlayerbotAI.h"
 #include "Playerbots.h"

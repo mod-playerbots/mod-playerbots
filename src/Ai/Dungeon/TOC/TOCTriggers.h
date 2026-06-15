@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_TOCTRIGGERS_H
-#define _PLAYERBOT_TOCTRIGGERS_H
+#ifndef PLAYERBOTS_TOCTRIGGERS_H
+#define PLAYERBOTS_TOCTRIGGERS_H
 
 #include "Trigger.h"
 #include "PlayerbotAIConfig.h"

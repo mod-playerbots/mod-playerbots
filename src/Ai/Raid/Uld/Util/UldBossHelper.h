@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_ULDBOSSHELPER_H
-#define _PLAYERBOT_ULDBOSSHELPER_H
+#ifndef PLAYERBOTS_ULDBOSSHELPER_H
+#define PLAYERBOTS_ULDBOSSHELPER_H
 
 #include <string>
 #include <unordered_map>

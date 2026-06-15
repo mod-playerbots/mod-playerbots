@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_OSSTRATEGY_H
-#define _PLAYERBOT_OSSTRATEGY_H
+#ifndef PLAYERBOTS_OSSTRATEGY_H
+#define PLAYERBOTS_OSSTRATEGY_H
 
 #include "Strategy.h"
 

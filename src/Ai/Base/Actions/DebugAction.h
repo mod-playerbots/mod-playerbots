@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_DEBUGACTION_H
-#define _PLAYERBOT_DEBUGACTION_H
+#ifndef PLAYERBOTS_DEBUGACTION_H
+#define PLAYERBOTS_DEBUGACTION_H
 
 #include "Action.h"
 #include "ObjectGuid.h"

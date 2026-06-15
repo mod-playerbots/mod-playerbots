@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_CHOOSETARGETACTIONS_H
-#define _PLAYERBOT_CHOOSETARGETACTIONS_H
+#ifndef PLAYERBOTS_CHOOSETARGETACTIONS_H
+#define PLAYERBOTS_CHOOSETARGETACTIONS_H
 
 #include "AttackAction.h"
 

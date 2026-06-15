@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_TKSTRATEGY_H
-#define _PLAYERBOT_TKSTRATEGY_H
+#ifndef PLAYERBOTS_TKSTRATEGY_H
+#define PLAYERBOTS_TKSTRATEGY_H
 
 #include "Strategy.h"
 

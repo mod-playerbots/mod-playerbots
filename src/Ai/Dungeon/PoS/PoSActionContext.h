@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_POSACTIONCONTEXT_H
-#define _PLAYERBOT_POSACTIONCONTEXT_H
+#ifndef PLAYERBOTS_POSACTIONCONTEXT_H
+#define PLAYERBOTS_POSACTIONCONTEXT_H
 
 #include "Action.h"
 #include "NamedObjectContext.h"

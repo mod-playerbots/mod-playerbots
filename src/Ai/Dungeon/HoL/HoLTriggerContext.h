@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_HOLTRIGGERCONTEXT_H
-#define _PLAYERBOT_HOLTRIGGERCONTEXT_H
+#ifndef PLAYERBOTS_HOLTRIGGERCONTEXT_H
+#define PLAYERBOTS_HOLTRIGGERCONTEXT_H
 
 #include "NamedObjectContext.h"
 #include "AiObjectContext.h"

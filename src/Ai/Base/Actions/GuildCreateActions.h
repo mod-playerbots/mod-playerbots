@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_GUILDCREATEACTIONS_H
-#define _PLAYERBOT_GUILDCREATEACTIONS_H
+#ifndef PLAYERBOTS_GUILDCREATEACTIONS_H
+#define PLAYERBOTS_GUILDCREATEACTIONS_H
 
 #include "ChooseTravelTargetAction.h"
 #include "InventoryAction.h"

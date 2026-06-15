@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_FOSACTIONS_H
-#define _PLAYERBOT_FOSACTIONS_H
+#ifndef PLAYERBOTS_FOSACTIONS_H
+#define PLAYERBOTS_FOSACTIONS_H
 
 #include "Action.h"
 #include "AttackAction.h"

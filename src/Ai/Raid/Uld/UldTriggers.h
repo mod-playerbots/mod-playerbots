@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_ULDTRIGGERS_H
-#define _PLAYERBOT_ULDTRIGGERS_H
+#ifndef PLAYERBOTS_ULDTRIGGERS_H
+#define PLAYERBOTS_ULDTRIGGERS_H
 
 #include "EventMap.h"
 #include "GenericTriggers.h"

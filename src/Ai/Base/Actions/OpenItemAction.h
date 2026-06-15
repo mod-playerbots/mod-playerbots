@@ -3,8 +3,8 @@
  * you may redistribute it and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_OPENITEMACTION_H
-#define _PLAYERBOT_OPENITEMACTION_H
+#ifndef PLAYERBOTS_OPENITEMACTION_H
+#define PLAYERBOTS_OPENITEMACTION_H
 
 #include "Action.h"
 

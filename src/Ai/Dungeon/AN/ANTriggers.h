@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_ANTRIGGERS_H
-#define _PLAYERBOT_ANTRIGGERS_H
+#ifndef PLAYERBOTS_ANTRIGGERS_H
+#define PLAYERBOTS_ANTRIGGERS_H
 
 #include "Trigger.h"
 #include "PlayerbotAIConfig.h"

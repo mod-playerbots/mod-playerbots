@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_MCACTIONCONTEXT_H
-#define _PLAYERBOT_MCACTIONCONTEXT_H
+#ifndef PLAYERBOTS_MCACTIONCONTEXT_H
+#define PLAYERBOTS_MCACTIONCONTEXT_H
 
 #include "Action.h"
 #include "BossAuraActions.h"

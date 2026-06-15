@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_COSSTRATEGY_H
-#define _PLAYERBOT_COSSTRATEGY_H
+#ifndef PLAYERBOTS_COSSTRATEGY_H
+#define PLAYERBOTS_COSSTRATEGY_H
 
 #include "Multiplier.h"
 #include "AiObjectContext.h"

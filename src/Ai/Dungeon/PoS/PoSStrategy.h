@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_POSSTRATEGY_H
-#define _PLAYERBOT_POSSTRATEGY_H
+#ifndef PLAYERBOTS_POSSTRATEGY_H
+#define PLAYERBOTS_POSSTRATEGY_H
 #include "Multiplier.h"
 #include "Strategy.h"
 

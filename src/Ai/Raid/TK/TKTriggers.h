@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_TKTRIGGERS_H
-#define _PLAYERBOT_TKTRIGGERS_H
+#ifndef PLAYERBOTS_TKTRIGGERS_H
+#define PLAYERBOTS_TKTRIGGERS_H
 
 #include "Trigger.h"
 

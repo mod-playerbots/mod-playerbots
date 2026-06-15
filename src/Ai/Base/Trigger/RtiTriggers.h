@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_RTITRIGGERS_H
-#define _PLAYERBOT_RTITRIGGERS_H
+#ifndef PLAYERBOTS_RTITRIGGERS_H
+#define PLAYERBOTS_RTITRIGGERS_H
 
 #include "GenericTriggers.h"
 #include "Trigger.h"

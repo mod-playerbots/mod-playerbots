@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_NEXSTRATEGY_H
-#define _PLAYERBOT_NEXSTRATEGY_H
+#ifndef PLAYERBOTS_NEXSTRATEGY_H
+#define PLAYERBOTS_NEXSTRATEGY_H
 
 #include "Multiplier.h"
 #include "AiObjectContext.h"

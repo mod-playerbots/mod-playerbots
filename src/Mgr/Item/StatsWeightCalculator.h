@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_STATSWEIGHTCALCULATOR_H
-#define _PLAYERBOT_STATSWEIGHTCALCULATOR_H
+#ifndef PLAYERBOTS_STATSWEIGHTCALCULATOR_H
+#define PLAYERBOTS_STATSWEIGHTCALCULATOR_H
 
 #include "Player.h"
 #include "StatsCollector.h"

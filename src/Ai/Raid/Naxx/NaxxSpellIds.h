@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_NAXXSPELLIDS_H
-#define _PLAYERBOT_NAXXSPELLIDS_H
+#ifndef PLAYERBOTS_NAXXSPELLIDS_H
+#define PLAYERBOTS_NAXXSPELLIDS_H
 
 #include <initializer_list>
 

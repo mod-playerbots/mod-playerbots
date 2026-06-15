@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_ZAMULTIPLIERS_H
-#define _PLAYERBOT_ZAMULTIPLIERS_H
+#ifndef PLAYERBOTS_ZAMULTIPLIERS_H
+#define PLAYERBOTS_ZAMULTIPLIERS_H
 
 #include "Multiplier.h"
 

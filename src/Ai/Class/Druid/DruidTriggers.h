@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_DRUIDTRIGGERS_H
-#define _PLAYERBOT_DRUIDTRIGGERS_H
+#ifndef PLAYERBOTS_DRUIDTRIGGERS_H
+#define PLAYERBOTS_DRUIDTRIGGERS_H
 
 #include "CureTriggers.h"
 #include "GenericTriggers.h"

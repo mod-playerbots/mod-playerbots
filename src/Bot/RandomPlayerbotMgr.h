@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_RANDOMPLAYERBOTMGR_H
-#define _PLAYERBOT_RANDOMPLAYERBOTMGR_H
+#ifndef PLAYERBOTS_RANDOMPLAYERBOTMGR_H
+#define PLAYERBOTS_RANDOMPLAYERBOTMGR_H
 
 #include "NewRpgInfo.h"
 #include "ObjectGuid.h"

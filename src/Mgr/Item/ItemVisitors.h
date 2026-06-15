@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_ITEMVISITORS_H
-#define _PLAYERBOT_ITEMVISITORS_H
+#ifndef PLAYERBOTS_ITEMVISITORS_H
+#define PLAYERBOTS_ITEMVISITORS_H
 
 #include "ChatHelper.h"
 #include "Common.h"

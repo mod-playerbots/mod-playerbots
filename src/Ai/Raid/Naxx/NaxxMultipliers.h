@@ -1,6 +1,6 @@
 
-#ifndef _PLAYERBOT_NAXXMULTIPLIERS_H
-#define _PLAYERBOT_NAXXMULTIPLIERS_H
+#ifndef PLAYERBOTS_NAXXMULTIPLIERS_H
+#define PLAYERBOTS_NAXXMULTIPLIERS_H
 
 #include "Multiplier.h"
 #include "NaxxBossHelper.h"

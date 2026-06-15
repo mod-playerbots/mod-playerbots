@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_TKACTIONCONTEXT_H
-#define _PLAYERBOT_TKACTIONCONTEXT_H
+#ifndef PLAYERBOTS_TKACTIONCONTEXT_H
+#define PLAYERBOTS_TKACTIONCONTEXT_H
 
 #include "TKActions.h"
 #include "NamedObjectContext.h"

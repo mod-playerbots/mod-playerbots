@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_ACSTRATEGY_H
-#define _PLAYERBOT_ACSTRATEGY_H
+#ifndef PLAYERBOTS_ACSTRATEGY_H
+#define PLAYERBOTS_ACSTRATEGY_H
 
 #include "AiObjectContext.h"
 #include "Strategy.h"

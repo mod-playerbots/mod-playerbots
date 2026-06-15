@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_FISHINGACTION_H
-#define _PLAYERBOT_FISHINGACTION_H
+#ifndef PLAYERBOTS_FISHINGACTION_H
+#define PLAYERBOTS_FISHINGACTION_H
 
 #include "Action.h"
 #include "Event.h"

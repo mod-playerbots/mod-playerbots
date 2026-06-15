@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_VOATRIGGERS_H
-#define _PLAYERBOT_VOATRIGGERS_H
+#ifndef PLAYERBOTS_VOATRIGGERS_H
+#define PLAYERBOTS_VOATRIGGERS_H
 
 #include "EventMap.h"
 #include "GenericTriggers.h"

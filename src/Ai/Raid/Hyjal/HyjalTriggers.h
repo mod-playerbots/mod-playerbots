@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_HYJALTRIGGERS_H
-#define _PLAYERBOT_HYJALTRIGGERS_H
+#ifndef PLAYERBOTS_HYJALTRIGGERS_H
+#define PLAYERBOTS_HYJALTRIGGERS_H
 
 #include "Trigger.h"
 

@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_MAGACTIONS_H
-#define _PLAYERBOT_MAGACTIONS_H
+#ifndef PLAYERBOTS_MAGACTIONS_H
+#define PLAYERBOTS_MAGACTIONS_H
 
 #include "MagHelpers.h"
 #include "Action.h"

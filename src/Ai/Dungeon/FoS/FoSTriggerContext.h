@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_FOSTRIGGERCONTEXT_H
-#define _PLAYERBOT_FOSTRIGGERCONTEXT_H
+#ifndef PLAYERBOTS_FOSTRIGGERCONTEXT_H
+#define PLAYERBOTS_FOSTRIGGERCONTEXT_H
 
 #include "NamedObjectContext.h"
 #include "AiObjectContext.h"

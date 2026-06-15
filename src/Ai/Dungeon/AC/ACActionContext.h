@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_ACACTIONCONTEXT_H
-#define _PLAYERBOT_ACACTIONCONTEXT_H
+#ifndef PLAYERBOTS_ACACTIONCONTEXT_H
+#define PLAYERBOTS_ACACTIONCONTEXT_H
 
 #include "AiObjectContext.h"
 #include "Action.h"
