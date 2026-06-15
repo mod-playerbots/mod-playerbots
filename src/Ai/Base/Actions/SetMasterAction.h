@@ -19,7 +19,7 @@ public:
     bool isUseful() override;
 
 protected:
-    Player* GetPlayer(Event event);
+ 
 };
 
 #endif
