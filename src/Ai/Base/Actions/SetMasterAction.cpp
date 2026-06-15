@@ -61,18 +61,18 @@ bool SetMasterAction::Execute(Event event)
     if (newMaster == bot)
         return false;
 
-    botAI->SetMaster(newMaster);
+    Group* group = bot->GetGroup();
+    if (!group || !group->IsMember(newMaster->GetGUID()))
+        return false;
 
-    if (bot->GetGroup() && bot->GetGroup()->IsMember(newMaster->GetGUID()))
-    {
-        botAI->ChangeStrategy("+follow", BOT_STATE_NON_COMBAT);
-        botAI->TellMaster("Now following " + std::string(newMaster->GetName()) + ".");
-    }
+    botAI->SetMaster(newMaster);
+    botAI->ChangeStrategy("+follow", BOT_STATE_NON_COMBAT);
+
+    std::string msg = "Now following " + std::string(newMaster->GetName()) + ".";
+    if (group->isRaidGroup())
+        botAI->SayToRaid(msg);
     else
-    {
-        botAI->ChangeStrategy("-follow", BOT_STATE_NON_COMBAT);
-        botAI->TellMaster("Master set to " + std::string(newMaster->GetName()) + " (not in same group).");
-    }
+        botAI->SayToParty(msg);
 
     return true;
 }
