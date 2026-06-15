@@ -438,7 +438,7 @@ void PlayerbotAI::UpdateAIGroupMaster()
     if (master)
         masterBotAI = GET_PLAYERBOT_AI(master);
 
-    if (!master || (masterBotAI && !masterBotAI->IsRealPlayer()))
+    if (!master || (masterBotAI && !masterBotAI->IsRealPlayer()) || (botAI->IsRealPlayer() && group))
     {
         Player* newMaster = FindNewMaster();
         if (newMaster)

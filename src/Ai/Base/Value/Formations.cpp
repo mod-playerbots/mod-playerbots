@@ -283,15 +283,15 @@ public:
 
     WorldLocation GetLocation() override
     {
+        Player* master = GetMaster();
+        if (!ValidateTargetContext(master, bot))
+            return Formation::NullLocation;
+
         Group* group = bot->GetGroup();
         if (!group)
             return Formation::NullLocation;
 
         float range = sPlayerbotAIConfig.followDistance;
-
-        Player* master = GetMaster();
-        if (!master)
-            return Formation::NullLocation;
 
         float x = master->GetPositionX();
         float y = master->GetPositionY();
