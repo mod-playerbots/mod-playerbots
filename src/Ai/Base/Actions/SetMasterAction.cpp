@@ -12,11 +12,17 @@
 bool SetMasterAction::Execute(Event event)
 {
     Player* newMaster = event.getOwner();
-    if (!newMaster || newMaster == bot)
+    Group* group = bot->GetGroup();
+
+    if (!group)
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group || !group->IsMember(newMaster->GetGUID()))
+    if (!newMaster || newMaster == bot)
+    {
+        newMaster = ObjectAccessor::FindPlayer(group->GetLeaderGUID());
+    }
+
+    if (!newMaster || newMaster == bot || !group->IsMember(newMaster->GetGUID()))
         return false;
 
     botAI->SetMaster(newMaster);
