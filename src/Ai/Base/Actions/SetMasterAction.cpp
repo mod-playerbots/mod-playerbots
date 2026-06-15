@@ -5,6 +5,7 @@
 
 #include "SetMasterAction.h"
 
+#include "Log.h"
 #include "Playerbots.h"
 #include "PlayerbotAI.h"
 #include "BroadcastHelper.h"
@@ -14,16 +15,26 @@ bool SetMasterAction::Execute(Event event)
     Player* newMaster = event.getOwner();
     Group* group = bot->GetGroup();
 
-    if (!group)
-        return false;
+    LOG_INFO("playerbots",
+        "SetMaster: bot={}, owner={}, master={}, group={}, ownerName={}, masterName={}",
+        bot->GetName(),
+        newMaster ? newMaster->GetName() : "nullptr",
+        GetMaster() ? GetMaster()->GetName() : "nullptr",
+        group ? "yes" : "no",
+        newMaster ? (newMaster == bot ? "self" : newMaster->GetName()) : "nullptr",
+        GetMaster() ? (GetMaster() == bot ? "self" : GetMaster()->GetName()) : "nullptr");
 
     if (!newMaster || newMaster == bot)
     {
-        newMaster = ObjectAccessor::FindPlayer(group->GetLeaderGUID());
+        LOG_INFO("playerbots", "SetMaster: failed - owner is nullptr or self");
+        return false;
     }
 
-    if (!newMaster || newMaster == bot || !group->IsMember(newMaster->GetGUID()))
+    if (!group || !group->IsMember(newMaster->GetGUID()))
+    {
+        LOG_INFO("playerbots", "SetMaster: failed - no group or owner not member");
         return false;
+    }
 
     botAI->SetMaster(newMaster);
     botAI->ChangeStrategy("+follow", BOT_STATE_NON_COMBAT);
@@ -34,6 +45,7 @@ bool SetMasterAction::Execute(Event event)
     else
         botAI->SayToParty(msg);
 
+    LOG_INFO("playerbots", "SetMaster: success - now following {}", newMaster->GetName());
     return true;
 }
 
