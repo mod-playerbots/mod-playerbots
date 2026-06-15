@@ -51,6 +51,12 @@ bool GiveLeaderAction::Execute(Event event)
     auto setLeaderOp = std::make_unique<GroupSetLeaderOperation>(bot->GetGUID(), target->GetGUID());
     PlayerbotWorldThreadProcessor::instance().QueueOperation(std::move(setLeaderOp));
 
+    if (botAI->GetMaster() == bot)
+    {
+        botAI->SetMaster(target);
+        botAI->ChangeStrategy("+follow", BOT_STATE_NON_COMBAT);
+    }
+
     if (!message.empty())
         botAI->TellMasterNoFacing(message);
 
