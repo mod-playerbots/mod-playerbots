@@ -420,25 +420,16 @@ void PlayerbotAI::UpdateAIGroupMaster()
     // If bot is not in group verify that for is RandomBot before clearing  master and resetting.
     if (!group)
     {
-        if (master)
+        if (master && IsRandomBot)
         {
-            if (IsRandomBot)
-            {
-                SetMaster(nullptr);
-                Reset(true);
-                ResetStrategies();
-            }
-            else
-            {
-                PlayerbotMgr* masterBotMgr = GET_PLAYERBOT_MGR(master);
-                bool isAlt = masterBotMgr && masterBotMgr->GetPlayerBot(bot->GetGUID());
-                if (!isAlt)
-                {
-                    SetMaster(nullptr);
-                    Reset(true);
-                    ResetStrategies();
-                }
-            }
+            SetMaster(nullptr);
+            Reset(true);
+            ResetStrategies();
+        }
+        else if (master && master != bot)
+        {
+            SetMaster(bot);
+            ResetStrategies();
         }
         return;
     }
