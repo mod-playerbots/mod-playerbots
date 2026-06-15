@@ -24,9 +24,9 @@ bool SetMasterAction::Execute(Event event)
         newMaster ? (newMaster == bot ? "self" : newMaster->GetName()) : "nullptr",
         GetMaster() ? (GetMaster() == bot ? "self" : GetMaster()->GetName()) : "nullptr");
 
-    if (!newMaster || newMaster == bot)
+    if (!newMaster)
     {
-        LOG_INFO("playerbots", "SetMaster: failed - owner is nullptr or self");
+        LOG_INFO("playerbots", "SetMaster: failed - owner is nullptr");
         return false;
     }
 
