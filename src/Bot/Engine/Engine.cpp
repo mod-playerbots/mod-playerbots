@@ -114,8 +114,29 @@ void Engine::Reset()
     actionNodeFactories.creators.clear();
 }
 
+Engine::TickScope::TickScope(Engine* engine) : engine(engine) { ++engine->tickDepth; }
+
+Engine::TickScope::~TickScope()
+{
+    // When the outermost tick unwinds, apply any Init() that was deferred during it.
+    if (--engine->tickDepth == 0 && engine->initPending)
+    {
+        engine->initPending = false;
+        engine->Init();
+    }
+}
+
 void Engine::Init()
 {
+    // WL: never delete/rebuild the triggers/multipliers/queue while a tick is iterating them
+    // (a strategy change requested from inside an Action::Execute / Trigger::Check). Defer the
+    // rebuild to the TickScope at the bottom of the tick instead. See Engine.h for the rationale.
+    if (tickDepth > 0)
+    {
+        initPending = true;
+        return;
+    }
+
     Reset();
 
     for (std::map<std::string, Strategy*>::iterator i = strategies.begin(); i != strategies.end(); i++)
@@ -140,6 +161,8 @@ void Engine::Init()
 
 bool Engine::DoNextAction(Unit* /*unit*/, uint32 /*depth*/, bool minimal)
 {
+    TickScope tickScope(this);  // WL: defer any mid-tick Init() until this tick unwinds (re-entrancy UAF fix)
+
     LogAction("--- AI Tick ---");
 
     if (sPlayerbotAIConfig.logValuesPerTick)
@@ -304,6 +327,8 @@ bool Engine::MultiplyAndPush(
 
 ActionResult Engine::ExecuteAction(std::string const name, Event event, std::string const qualifier)
 {
+    TickScope tickScope(this);  // WL: defer any mid-tick Init() until this unwinds (re-entrancy UAF fix)
+
     bool result = false;
 
     ActionNode* actionNode = CreateActionNode(name);

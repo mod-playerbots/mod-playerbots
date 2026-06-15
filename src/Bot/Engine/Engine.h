@@ -104,6 +104,24 @@ private:
     void LogAction(char const* format, ...);
     void LogValues();
 
+    // WL: re-entrancy guard (single-thread use-after-free fix).
+    // An Action::Execute() or Trigger::Check() can call ChangeStrategy / addStrategy /
+    // removeStrategy / removeAllStrategies / Init on THIS engine while DoNextAction /
+    // ProcessTriggers is still iterating triggers/multipliers/queue. Init() -> Reset()
+    // then deletes the very containers being iterated -> dangling pointers -> heap
+    // corruption (the recurring bot-AI crash; reproduced even single-threaded, proving
+    // it is re-entrancy, not a thread race). Fix: while a tick is on the stack
+    // (tickDepth > 0) Init() only flags initPending and returns; the rebuild runs once,
+    // after the outermost tick unwinds.
+    int tickDepth = 0;
+    bool initPending = false;
+    struct TickScope
+    {
+        explicit TickScope(Engine* engine);
+        ~TickScope();
+        Engine* engine;
+    };
+
     ActionExecutionListeners actionExecutionListeners;
 
 protected:
