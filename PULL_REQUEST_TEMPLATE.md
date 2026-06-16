@@ -94,6 +94,7 @@ update, whose content are called within the codebase at src/strategy/actions/Fis
 - - [ ] Added logic complexity is justified and explained.
 - - [ ] Any new bot dialogue lines are translated.
 - - [ ] Documentation updated if needed (Conf comments, WiKi commands).
+- - [ ] New and modified files do not introduce new compiler warnings.
 
 ## Notes for Reviewers
 <!-- Anything else that's helpful to review or test your pull request. -->
