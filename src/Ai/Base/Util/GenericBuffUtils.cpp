@@ -251,6 +251,9 @@ namespace ai::buff
             return false;
 
         Player* bot = botAI->GetBot();
+        if (bot->InBattleground())
+            return false;
+
         auto const cooldownMs = sPlayerbotAIConfig.missingBuffReagentMessageCooldown * IN_MILLISECONDS;
         auto const now = GameTime::GetGameTimeMS().count();
         auto const noticeKey = MakeMissingBuffNoticeKey(bot, groupName);
