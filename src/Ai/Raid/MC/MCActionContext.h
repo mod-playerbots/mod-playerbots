@@ -26,6 +26,7 @@ public:
         creators["mc golemagg assist tank attack core rager"] = &RaidMcActionContext::golemagg_assist_tank_attack_core_rager;
         creators["mc majordomo shadow resistance"] = &RaidMcActionContext::majordomo_shadow_resistance;
         creators["mc ragnaros fire resistance"] = &RaidMcActionContext::ragnaros_fire_resistance;
+        creators["mc core hound mark"] = &RaidMcActionContext::core_hound_mark;
     }
 
 private:
@@ -44,6 +45,7 @@ private:
     static Action* golemagg_assist_tank_attack_core_rager(PlayerbotAI* botAI) { return new McGolemaggAssistTankAttackCoreRagerAction(botAI); }
     static Action* majordomo_shadow_resistance(PlayerbotAI* botAI) { return new BossShadowResistanceAction(botAI, "majordomo executus"); }
     static Action* ragnaros_fire_resistance(PlayerbotAI* botAI) { return new BossFireResistanceAction(botAI, "ragnaros"); }
+    static Action* core_hound_mark(PlayerbotAI* botAI) { return new McCoreHoundMarkAction(botAI); }
 };
 
 #endif

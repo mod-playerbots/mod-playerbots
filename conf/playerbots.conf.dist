@@ -89,10 +89,20 @@ AiPlayerbot.MinRandomBots = 500
 AiPlayerbot.MaxRandomBots = 500
 
 # Randombot accounts
-# If you are not using any expansion at all, you may have to set this manually, in which case please
-# ensure that RandomBotAccountCount is at least greater than (MaxRandomBots / 10 + AddClassAccountPoolSize)
+# Set to 0 to automatically calculate needed accounts based on MaxRandomBots, EnablePeriodicOnlineOffline
+# and its ratio, and AddClassAccountPoolSize. Set manually if you want to create more accounts than needed.
+# If the manual value is less than the required, the system will override it with the required value.
 # Default: 0 (automatic)
 AiPlayerbot.RandomBotAccountCount = 0
+
+# Addclass accounts
+# Number of accounts created for bots reserved for the addclass command. As with randombots, each account has
+# 10 bots (or 9 if WotLK is disabled), one bot for each class.
+AiPlayerbot.AddClassAccountPoolSize = 50
+
+# Prefix for created bot accounts (of any type).
+# Do not change this prefix while there are existing bot accounts.
+AiPlayerbot.RandomBotAccountPrefix = "rndbot"
 
 # Delete all randombot accounts
 # To apply this, set the number to 1 and run the Worldserver. Once deletion is complete, if you would
@@ -127,9 +137,6 @@ AiPlayerbot.MaxAddedBots = 40
 # Enable/Disable creating bots by addclass command (0 = GM only, 1 = enabled)
 # Default: 1 (enabled)
 AiPlayerbot.AddClassCommand = 1
-
-# Set the addclass command account pool size
-AiPlayerbot.AddClassAccountPoolSize = 50
 
 # Bot group invitation permission level (0 = GM only, 1 = accept based on level, 2 = always accept)
 # Default: 1 (accept based on level)
@@ -679,9 +686,6 @@ AiPlayerbot.EndFishingWithMaster = 30.0
 
 # Enable/Disable randomly generated password for randombot accounts
 AiPlayerbot.RandomBotRandomPassword = 0
-
-# Prefix for account names to create for randombots
-AiPlayerbot.RandomBotAccountPrefix = "rndbot"
 
 # Minimum and maximum levels for randombots
 AiPlayerbot.RandomBotMinLevel = 1

@@ -7,6 +7,9 @@ enum MoltenCoreNPCs
 {
     // Golemagg
     NPC_CORE_RAGER = 11672,
+
+    // Core Hound (trash)
+    NPC_CORE_HOUND = 11671,
 };
 enum MoltenCoreSpells
 {

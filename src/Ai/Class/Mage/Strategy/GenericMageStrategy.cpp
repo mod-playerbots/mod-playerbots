@@ -28,7 +28,6 @@ public:
         creators["frostbolt"] = &frostbolt;
         creators["frostfire bolt"] = &frostfire_bolt;
         creators["scorch"] = &scorch;
-        creators["evocation"] = &evocation;
         creators["remove curse"] = &remove_curse;
         creators["remove curse on party"] = &remove_curse_on_party;
         creators["fireball"] = &fireball;
@@ -56,14 +55,6 @@ private:
         return new ActionNode("scorch",
                               /*P*/ {},
                               /*A*/ { NextAction("shoot") },
-                              /*C*/ {});
-    }
-
-    static ActionNode* evocation([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("evocation",
-                              /*P*/ {},
-                              /*A*/ { NextAction("mana potion") },
                               /*C*/ {});
     }
 
@@ -127,7 +118,6 @@ void GenericMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     else if (bot->HasSpell(SPELL_CONJURE_MANA_AGATE))
         triggers.push_back(new TriggerNode("high mana", { NextAction("use mana agate", 90.0f) }));
 
-    triggers.push_back(new TriggerNode("medium mana", { NextAction("mana potion", 90.0f) }));
     triggers.push_back(new TriggerNode("low mana", { NextAction("evocation", 90.0f) }));
 
     // Counterspell / Spellsteal Triggers

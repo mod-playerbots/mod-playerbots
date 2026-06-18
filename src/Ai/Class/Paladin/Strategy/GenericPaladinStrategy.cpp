@@ -56,7 +56,6 @@ void PaladinCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void PaladinBoostStrategy::InitTriggers(std::vector<TriggerNode*>& /*triggers*/)
 {
-
     // triggers.push_back(new TriggerNode("divine favor", { NextAction("divine favor",
     // ACTION_HIGH + 1) }));
 }

@@ -109,7 +109,6 @@ private:
                               /*A*/ {},
                               /*C*/ {});
     }
-
 };
 
 GenericDruidNonCombatStrategy::GenericDruidNonCombatStrategy(PlayerbotAI* botAI) : NonCombatStrategy(botAI)

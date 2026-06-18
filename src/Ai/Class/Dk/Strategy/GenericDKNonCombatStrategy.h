@@ -20,13 +20,4 @@ public:
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
 };
 
-class DKBuffDpsStrategy : public Strategy
-{
-public:
-    DKBuffDpsStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
-
-    void InitTriggers(std::vector<TriggerNode*>& triggers) override;
-    std::string const getName() override { return "bdps"; }
-};
-
 #endif

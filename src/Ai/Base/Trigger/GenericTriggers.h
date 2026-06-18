@@ -752,6 +752,22 @@ public:
     bool IsActive() override;
 };
 
+class PoisonDiseaseBleedTrigger : public Trigger
+{
+public:
+    PoisonDiseaseBleedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "poison disease bleed", 1) {}
+
+    bool IsActive() override;
+};
+
+class MovementImpairedTrigger : public Trigger
+{
+public:
+    MovementImpairedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "movement impaired", 1) {}
+
+    bool IsActive() override;
+};
+
 class IsSwimmingTrigger : public Trigger
 {
 public:

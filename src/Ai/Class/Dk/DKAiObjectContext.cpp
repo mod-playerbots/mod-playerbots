@@ -51,18 +51,6 @@ private:
     static Strategy* blood(PlayerbotAI* botAI) { return new BloodDKStrategy(botAI); }
 };
 
-class DeathKnightDKBuffStrategyFactoryInternal : public NamedObjectContext<Strategy>
-{
-public:
-    DeathKnightDKBuffStrategyFactoryInternal() : NamedObjectContext<Strategy>(false, true)
-    {
-        creators["bdps"] = &DeathKnightDKBuffStrategyFactoryInternal::bdps;
-    }
-
-private:
-    static Strategy* bdps(PlayerbotAI* botAI) { return new DKBuffDpsStrategy(botAI); }
-};
-
 class DeathKnightTriggerFactoryInternal : public NamedObjectContext<Trigger>
 {
 public:
@@ -299,7 +287,6 @@ void DKAiObjectContext::BuildSharedStrategyContexts(SharedNamedObjectContextList
     AiObjectContext::BuildSharedStrategyContexts(strategyContexts);
     strategyContexts.Add(new DeathKnightStrategyFactoryInternal());
     strategyContexts.Add(new DeathKnightCombatStrategyFactoryInternal());
-    strategyContexts.Add(new DeathKnightDKBuffStrategyFactoryInternal());
 }
 
 void DKAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)

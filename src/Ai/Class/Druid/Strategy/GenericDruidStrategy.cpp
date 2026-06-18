@@ -14,76 +14,12 @@ class GenericDruidStrategyActionNodeFactory : public NamedObjectFactory<ActionNo
 public:
     GenericDruidStrategyActionNodeFactory()
     {
-        creators["melee"] = &melee;
-        creators["caster form"] = &caster_form;
-        creators["cure poison"] = &cure_poison;
-        creators["cure poison on party"] = &cure_poison_on_party;
-        creators["abolish poison"] = &abolish_poison;
-        creators["abolish poison on party"] = &abolish_poison_on_party;
-        creators["rebirth"] = &rebirth;
         creators["entangling roots on cc"] = &entangling_roots_on_cc;
         creators["cyclone on cc"] = &cyclone_on_cc;
         creators["hibernate on cc"] = &hibernate_on_cc;
-        creators["innervate"] = &innervate;
     }
 
 private:
-    static ActionNode* melee([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("melee",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
-    }
-
-    static ActionNode* caster_form([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("caster form",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
-    }
-
-    static ActionNode* cure_poison([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("cure poison",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
-    }
-
-    static ActionNode* cure_poison_on_party([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("cure poison on party",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
-    }
-
-    static ActionNode* abolish_poison([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("abolish poison",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
-    }
-
-    static ActionNode* abolish_poison_on_party([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("abolish poison on party",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
-    }
-
-    static ActionNode* rebirth([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("rebirth",
-                              /*P*/ {},
-                              /*A*/ {},
-                              /*C*/ {});
-    }
-
     static ActionNode* entangling_roots_on_cc([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("entangling roots on cc",
@@ -105,14 +41,6 @@ private:
         return new ActionNode("hibernate on cc",
                               /*P*/ { NextAction("caster form") },
                               /*A*/ {},
-                              /*C*/ {});
-    }
-
-    static ActionNode* innervate([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("innervate",
-                              /*P*/ {},
-                              /*A*/ { NextAction("mana potion") },
                               /*C*/ {});
     }
 };
