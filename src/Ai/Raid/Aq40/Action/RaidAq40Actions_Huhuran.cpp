@@ -2,8 +2,10 @@
 
 #include <algorithm>
 #include <cmath>
+#include <string>
 
 #include "../RaidAq40BossHelper.h"
+#include "../Util/RaidAq40Helpers_Shared.h"
 #include "../../RaidBossHelpers.h"
 
 namespace
@@ -77,7 +79,12 @@ bool Aq40HuhuranChooseTargetAction::Execute(Event /*event*/)
 
     // Tank marks Huhuran with skull so the base DpsAssist system auto-focuses her.
     if (Aq40BossHelper::IsEncounterTank(bot, bot))
+    {
         MarkTargetWithSkull(bot, target);
+        Aq40Helpers::LogAq40Info(bot, "raid_marker",
+            "huhuran:skull:" + Aq40Helpers::GetAq40LogUnit(target),
+            "boss=huhuran marker=skull target=" + Aq40Helpers::GetAq40LogUnit(target));
+    }
 
     // Startup ownership: primary tank establishes the boss before the raid commits.
     if (Aq40BossHelper::ShouldWaitForEncounterTankAggro(bot, bot, target, true))
@@ -86,6 +93,7 @@ bool Aq40HuhuranChooseTargetAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") == target && bot->GetVictim() == target)
         return false;
 
+    Aq40Helpers::LogAq40Target(bot, "huhuran", "boss", target);
     return Attack(target);
 }
 
@@ -115,6 +123,9 @@ bool Aq40HuhuranPoisonSpreadAction::Execute(Event /*event*/)
     if (bot->GetDistance2d(moveX, moveY) < 3.0f)
         return false;
 
+    Aq40Helpers::LogAq40Info(bot, "spread_position",
+        "huhuran:poison:" + std::to_string(slot),
+        "boss=huhuran hazard=poison slot=" + std::to_string(slot));
     return MoveTo(bot->GetMapId(), moveX, moveY, huhuran->GetPositionZ(), false, false, false, true,
                   MovementPriority::MOVEMENT_COMBAT, true, false);
 }

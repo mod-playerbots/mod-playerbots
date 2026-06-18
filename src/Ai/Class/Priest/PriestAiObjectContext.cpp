@@ -92,8 +92,6 @@ public:
         creators["shadow protection"] = &PriestTriggerFactoryInternal::shadow_protection;
         creators["shadow protection on party"] = &PriestTriggerFactoryInternal::shadow_protection_on_party;
         creators["shackle undead"] = &PriestTriggerFactoryInternal::shackle_undead;
-        creators["prayer of fortitude on party"] = &PriestTriggerFactoryInternal::prayer_of_fortitude_on_party;
-        creators["prayer of spirit on party"] = &PriestTriggerFactoryInternal::prayer_of_spirit_on_party;
         creators["holy fire"] = &PriestTriggerFactoryInternal::holy_fire;
         creators["touch of weakness"] = &PriestTriggerFactoryInternal::touch_of_weakness;
         creators["hex of weakness"] = &PriestTriggerFactoryInternal::hex_of_weakness;
@@ -136,8 +134,6 @@ private:
     static Trigger* shadow_protection_on_party(PlayerbotAI* botAI) { return new ShadowProtectionOnPartyTrigger(botAI); }
     static Trigger* shadow_protection(PlayerbotAI* botAI) { return new ShadowProtectionTrigger(botAI); }
     static Trigger* shackle_undead(PlayerbotAI* botAI) { return new ShackleUndeadTrigger(botAI); }
-    static Trigger* prayer_of_fortitude_on_party(PlayerbotAI* botAI) { return new PrayerOfFortitudeTrigger(botAI); }
-    static Trigger* prayer_of_spirit_on_party(PlayerbotAI* botAI) { return new PrayerOfSpiritTrigger(botAI); }
     static Trigger* feedback(PlayerbotAI* botAI) { return new FeedbackTrigger(botAI); }
     static Trigger* fear_ward(PlayerbotAI* botAI) { return new FearWardTrigger(botAI); }
     static Trigger* shadowguard(PlayerbotAI* botAI) { return new ShadowguardTrigger(botAI); }
@@ -207,8 +203,6 @@ public:
         creators["shadow protection"] = &PriestAiObjectContextInternal::shadow_protection;
         creators["shadow protection on party"] = &PriestAiObjectContextInternal::shadow_protection_on_party;
         creators["shackle undead"] = &PriestAiObjectContextInternal::shackle_undead;
-        creators["prayer of fortitude on party"] = &PriestAiObjectContextInternal::prayer_of_fortitude_on_party;
-        creators["prayer of spirit on party"] = &PriestAiObjectContextInternal::prayer_of_spirit_on_party;
         creators["power infusion on party"] = &PriestAiObjectContextInternal::power_infusion_on_party;
         creators["silence"] = &PriestAiObjectContextInternal::silence;
         creators["silence on enemy healer"] = &PriestAiObjectContextInternal::silence_on_enemy_healer;
@@ -311,11 +305,6 @@ private:
     static Action* fade(PlayerbotAI* botAI) { return new CastFadeAction(botAI); }
     static Action* inner_fire(PlayerbotAI* botAI) { return new CastInnerFireAction(botAI); }
     static Action* shackle_undead(PlayerbotAI* botAI) { return new CastShackleUndeadAction(botAI); }
-    static Action* prayer_of_spirit_on_party(PlayerbotAI* botAI) { return new CastPrayerOfSpiritOnPartyAction(botAI); }
-    static Action* prayer_of_fortitude_on_party(PlayerbotAI* botAI)
-    {
-        return new CastPrayerOfFortitudeOnPartyAction(botAI);
-    }
     static Action* feedback(PlayerbotAI* botAI) { return new CastFeedbackAction(botAI); }
     static Action* elunes_grace(PlayerbotAI* botAI) { return new CastElunesGraceAction(botAI); }
     static Action* starshards(PlayerbotAI* botAI) { return new CastStarshardsAction(botAI); }

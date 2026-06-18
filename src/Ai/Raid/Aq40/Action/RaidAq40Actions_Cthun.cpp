@@ -3,13 +3,15 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <string>
 #include <unordered_map>
 
 #include "GameObject.h"
 #include "ObjectGuid.h"
 #include "../RaidAq40BossHelper.h"
 #include "../RaidAq40SpellIds.h"
-#include "../Util/RaidAq40Helpers.h"
+#include "../Util/RaidAq40Helpers_Cthun.h"
+#include "../Util/RaidAq40Helpers_Shared.h"
 #include "Timer.h"
 
 namespace Aq40BossActions
@@ -298,25 +300,43 @@ bool Aq40CthunChooseTargetAction::Execute(Event /*event*/)
         return false;
 
     if (ShouldWaitForCthunPhase2Pickup(bot, botAI, encounterUnits))
+    {
+        Aq40Helpers::LogAq40Info(bot, "tank_pickup_wait", "cthun:phase2_adds",
+            "boss=cthun reason=phase2_pickup");
         return false;
+    }
 
     bool const isPrimaryTank = Aq40BossHelper::IsEncounterPrimaryTank(bot, bot);
     Unit* target = nullptr;
+    std::string reason;
 
     if (Aq40Helpers::IsCthunInStomach(bot, botAI))
+    {
         target = Aq40BossActions::FindUnitByAnyName(botAI, encounterUnits, { "flesh tentacle" });
+        reason = "stomach_flesh";
+    }
 
     if (!target)
+    {
         target = isPrimaryTank ? FindTankPriorityCthunAdd(botAI, encounterUnits) : FindHighestPriorityCthunAdd(botAI, encounterUnits);
+        if (target)
+            reason = isPrimaryTank ? "tank_add" : "add_priority";
+    }
 
     if (!target)
     {
         Unit* body = FindCthunBody(botAI, encounterUnits);
         Unit* eye = FindCthunEye(botAI, encounterUnits);
         if (body && Aq40Helpers::IsCthunVulnerableNow(botAI, encounterUnits))
+        {
             target = body;
+            reason = "vulnerable";
+        }
         else
+        {
             target = eye ? eye : body;
+            reason = eye ? "eye" : "body";
+        }
     }
 
     bool const isTankControlledAdd =
@@ -331,8 +351,14 @@ bool Aq40CthunChooseTargetAction::Execute(Event /*event*/)
     PinCthunTarget(botAI, context, target);
     if (!Aq40Helpers::IsCthunInStomach(bot, botAI) && !Aq40BossHelper::IsEncounterTank(bot, bot) &&
         ShouldBlockUnsafeCthunBossPursuit(bot, botAI, target))
+    {
+        Aq40Helpers::LogAq40Warn(bot, "movement_failure",
+            "cthun:unsafe_boss_pursuit:" + Aq40Helpers::GetAq40LogUnit(target),
+            "boss=cthun reason=unsafe_boss_pursuit target=" + Aq40Helpers::GetAq40LogUnit(target));
         return false;
+    }
 
+    Aq40Helpers::LogAq40Target(bot, "cthun", reason, target);
     return Attack(target);
 }
 
@@ -354,7 +380,12 @@ bool Aq40CthunMaintainSpreadAction::Execute(Event /*event*/)
         return false;
 
     if (Unit* spacingRisk = FindCthunBeamSpacingRisk(bot, botAI, FindCthunEye(botAI, encounterUnits)))
+    {
+        Aq40Helpers::LogAq40Info(bot, "avoid_hazard",
+            "cthun:eye_beam_spacing:" + Aq40Helpers::GetAq40LogUnit(spacingRisk),
+            "boss=cthun hazard=eye_beam_spacing source=" + Aq40Helpers::GetAq40LogUnit(spacingRisk));
         return MoveAway(spacingRisk, 12.0f - bot->GetDistance2d(spacingRisk));
+    }
 
     bool const isMelee = !botAI->IsRanged(bot) && !botAI->IsHeal(bot);
     Position assigned = GetAssignedCthunSpreadPosition(bot, botAI, boss, isMelee);
@@ -367,8 +398,16 @@ bool Aq40CthunMaintainSpreadAction::Execute(Event /*event*/)
         return false;
 
     if (!ResolveSafeCthunFloorPosition(bot, moveX, moveY, moveX, moveY, moveZ))
+    {
+        Aq40Helpers::LogAq40Warn(bot, "movement_failure", "cthun:spread:no_safe_floor",
+            "boss=cthun reason=no_safe_floor target=" + Aq40Helpers::GetAq40LogUnit(boss));
         return false;
+    }
 
+    Aq40Helpers::LogAq40Info(bot, "spread_position",
+        "cthun:" + Aq40Helpers::GetAq40LogUnit(boss),
+        "boss=cthun target=" + Aq40Helpers::GetAq40LogUnit(boss) +
+        " role=" + std::string(isMelee ? "melee" : "ranged"));
     return MoveTo(bot->GetMapId(), moveX, moveY, moveZ, false, false, false, true,
                   MovementPriority::MOVEMENT_COMBAT, true, false);
 }
@@ -419,8 +458,16 @@ bool Aq40CthunAvoidDarkGlareAction::Execute(Event /*event*/)
     float moveZ = bot->GetPositionZ();
 
     if (!ResolveSafeCthunFloorPosition(bot, moveX, moveY, moveX, moveY, moveZ))
+    {
+        Aq40Helpers::LogAq40Warn(bot, "movement_failure",
+            "cthun:dark_glare:no_safe_floor:" + Aq40Helpers::GetAq40LogUnit(boss),
+            "boss=cthun hazard=dark_glare reason=no_safe_floor source=" + Aq40Helpers::GetAq40LogUnit(boss));
         return false;
+    }
 
+    Aq40Helpers::LogAq40Info(bot, "avoid_hazard",
+        "cthun:dark_glare:" + Aq40Helpers::GetAq40LogUnit(boss),
+        "boss=cthun hazard=dark_glare source=" + Aq40Helpers::GetAq40LogUnit(boss));
     return MoveTo(bot->GetMapId(), moveX, moveY, moveZ, false, false, false, false,
                   MovementPriority::MOVEMENT_COMBAT);
 }
@@ -436,6 +483,7 @@ bool Aq40CthunStomachDpsAction::Execute(Event /*event*/)
         return false;
 
     PinCthunTarget(botAI, context, fleshTentacle);
+    Aq40Helpers::LogAq40Target(bot, "cthun", "stomach_flesh", fleshTentacle);
     return Attack(fleshTentacle);
 }
 
@@ -462,12 +510,18 @@ bool Aq40CthunStomachExitAction::Execute(Event /*event*/)
     GameObject* portal = Aq40Helpers::FindLikelyStomachExitPortal(bot, botAI);
     if (portal)
     {
+        Aq40Helpers::LogAq40Info(bot, "stomach_exit",
+            "cthun:portal:stacks:" + std::to_string(acid->GetStackAmount()),
+            "boss=cthun method=portal stacks=" + std::to_string(acid->GetStackAmount()));
         return MoveTo(bot->GetMapId(), portal->GetPositionX(), portal->GetPositionY(), portal->GetPositionZ(), false, false,
                       false, false, MovementPriority::MOVEMENT_COMBAT);
     }
 
     if (Creature* exitTrigger = FindLikelyStomachExitTrigger(bot))
     {
+        Aq40Helpers::LogAq40Info(bot, "stomach_exit",
+            "cthun:trigger:stacks:" + std::to_string(acid->GetStackAmount()),
+            "boss=cthun method=trigger stacks=" + std::to_string(acid->GetStackAmount()));
         return MoveTo(bot->GetMapId(), exitTrigger->GetPositionX(), exitTrigger->GetPositionY(), exitTrigger->GetPositionZ(),
                       false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
     }
@@ -479,6 +533,9 @@ bool Aq40CthunStomachExitAction::Execute(Event /*event*/)
     float moveX = bot->GetPositionX() + std::cos(angle) * moveDistance;
     float moveY = bot->GetPositionY() + std::sin(angle) * moveDistance;
 
+    Aq40Helpers::LogAq40Warn(bot, "stomach_exit",
+        "cthun:fallback:stacks:" + std::to_string(acid->GetStackAmount()),
+        "boss=cthun method=fallback stacks=" + std::to_string(acid->GetStackAmount()));
     return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_COMBAT);
 }
@@ -487,7 +544,11 @@ bool Aq40CthunPhase2AddPriorityAction::Execute(Event /*event*/)
 {
     GuidVector encounterUnits = Aq40BossHelper::GetEncounterUnits(botAI, context->GetValue<GuidVector>("attackers")->Get());
     if (ShouldWaitForCthunPhase2Pickup(bot, botAI, encounterUnits))
+    {
+        Aq40Helpers::LogAq40Info(bot, "tank_pickup_wait", "cthun:phase2_priority",
+            "boss=cthun reason=phase2_pickup");
         return false;
+    }
 
     Unit* target = Aq40BossHelper::IsEncounterPrimaryTank(bot, bot) ?
         FindTankPriorityCthunAdd(botAI, encounterUnits) : FindHighestPriorityCthunAdd(botAI, encounterUnits);
@@ -500,6 +561,7 @@ bool Aq40CthunPhase2AddPriorityAction::Execute(Event /*event*/)
         return false;
 
     PinCthunTarget(botAI, context, target);
+    Aq40Helpers::LogAq40Target(bot, "cthun", "phase2_add", target);
     return Attack(target);
 }
 
@@ -519,6 +581,9 @@ bool Aq40CthunVulnerableBurstAction::Execute(Event /*event*/)
         return false;
 
     PinCthunTarget(botAI, context, body);
+    Aq40Helpers::LogAq40Info(bot, "vulnerable", "cthun:body",
+        "boss=cthun phase=vulnerable target=" + Aq40Helpers::GetAq40LogUnit(body));
+    Aq40Helpers::LogAq40Target(bot, "cthun", "vulnerable", body);
     return Attack(body);
 }
 
@@ -537,9 +602,13 @@ bool Aq40CthunInterruptEyeAction::Execute(Event /*event*/)
         if (AI_VALUE(Unit*, "current target") != eye || bot->GetVictim() != eye)
         {
             PinCthunTarget(botAI, context, eye);
+            Aq40Helpers::LogAq40Target(bot, "cthun", "interrupt_setup", eye);
             return Attack(eye);
         }
 
+        Aq40Helpers::LogAq40Info(bot, "interrupt",
+            "cthun:" + Aq40Helpers::GetAq40LogUnit(eye),
+            "boss=cthun target=" + Aq40Helpers::GetAq40LogUnit(eye));
         return botAI->DoSpecificAction("interrupt spell", Event(), true);
     }
 

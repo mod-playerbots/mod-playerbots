@@ -2,23 +2,25 @@
 #include "TriggerContext.h"
 #include "ChatTriggerContext.h"
 #include "WorldPacketTriggerContext.h"
-#include "Ai/Raid/Aq20/RaidAq20TriggerContext.h"
+#include "Ai/Raid/Aq20/Aq20TriggerContext.h"
 #include "Ai/Raid/Aq40/RaidAq40TriggerContext.h"
-#include "Ai/Raid/MoltenCore/RaidMcTriggerContext.h"
-#include "Ai/Raid/BlackwingLair/RaidBwlTriggerContext.h"
-#include "Ai/Raid/Karazhan/RaidKarazhanTriggerContext.h"
-#include "Ai/Raid/GruulsLair/RaidGruulsLairTriggerContext.h"
-#include "Ai/Raid/Magtheridon/RaidMagtheridonTriggerContext.h"
-#include "Ai/Raid/Naxxramas/RaidNaxxTriggerContext.h"
-#include "Ai/Raid/SerpentshrineCavern/RaidSSCTriggerContext.h"
-#include "Ai/Raid/TempestKeep/RaidTempestKeepTriggerContext.h"
-#include "Ai/Raid/ZulAman/RaidZulAmanTriggerContext.h"
-#include "Ai/Raid/ObsidianSanctum/RaidOsTriggerContext.h"
-#include "Ai/Raid/EyeOfEternity/RaidEoETriggerContext.h"
-#include "Ai/Raid/VaultOfArchavon/RaidVoATriggerContext.h"
-#include "Ai/Raid/Ulduar/RaidUlduarTriggerContext.h"
-#include "Ai/Raid/Onyxia/RaidOnyxiaTriggerContext.h"
-#include "Ai/Raid/Icecrown/RaidIccTriggerContext.h"
+#include "MCTriggerContext.h"
+#include "BWLTriggerContext.h"
+#include "KaraTriggerContext.h"
+#include "GruulTriggerContext.h"
+#include "MagTriggerContext.h"
+#include "NaxxTriggerContext.h"
+#include "SSCTriggerContext.h"
+#include "TKTriggerContext.h"
+#include "HyjalTriggerContext.h"
+#include "BTTriggerContext.h"
+#include "ZATriggerContext.h"
+#include "OSTriggerContext.h"
+#include "EoETriggerContext.h"
+#include "VoATriggerContext.h"
+#include "UldTriggerContext.h"
+#include "OnyTriggerContext.h"
+#include "ICCTriggerContext.h"
 #include "Ai/Dungeon/TbcDungeonTriggerContext.h"
 #include "Ai/Dungeon/WotlkDungeonTriggerContext.h"
 
@@ -37,6 +39,8 @@ void AiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Tr
     triggerContexts.Add(new RaidNaxxTriggerContext());
     triggerContexts.Add(new RaidSSCTriggerContext());
     triggerContexts.Add(new RaidTempestKeepTriggerContext());
+    triggerContexts.Add(new RaidHyjalSummitTriggerContext());
+    triggerContexts.Add(new RaidBlackTempleTriggerContext());
     triggerContexts.Add(new RaidZulAmanTriggerContext());
     triggerContexts.Add(new RaidOsTriggerContext());
     triggerContexts.Add(new RaidEoETriggerContext());

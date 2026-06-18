@@ -80,20 +80,47 @@ void RaidAq40Strategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("aq40 huhuran poison phase",
         { NextAction("aq40 huhuran poison spread", ACTION_RAID + 4) }));
 
-    // Twin Emperors baseline strategy:
-    // - tanks move to assigned sides on room entry, raid holds center
-    // - warlock tanks engage Vek'lor, melee tanks engage Vek'nilash
-    // - at teleport each side's appropriate tank picks up the new boss
-    // - tanks that can't tank the current boss on their side hold position
-    triggers.push_back(new TriggerNode("aq40 twin emperors room entry",
-        { NextAction("aq40 twin emperors pre pull stage", ACTION_RAID + 8) }));
-    triggers.push_back(new TriggerNode("aq40 twin emperors active",
+    // Twin Emperors registration surface:
+    // - use an explicit approach stage before strict ready-to-open staging
+    // - route target selection through encounter-specific target bias
+    // - use request-first movement wrappers for script-armed hazards
+    // - keep post-teleport hold logic under the Twin multiplier instead of generic follow/assist churn
+    triggers.push_back(new TriggerNode("aq40 twin approach",
         {
-            NextAction("aq40 twin emperors choose target", ACTION_RAID + 2),
-            NextAction("aq40 twin emperors hold split", ACTION_RAID + 3),
-            NextAction("aq40 twin emperors warlock tank", ACTION_RAID + 4),
-            NextAction("aq40 twin emperors healer support", ACTION_RAID + 5),
-            NextAction("avoid aoe", ACTION_RAID + 6),
+            NextAction("aq40 twin approach stage", ACTION_RAID + 1),
+        }));
+    triggers.push_back(new TriggerNode("aq40 twin prepull ready",
+        {
+            NextAction("aq40 twin prepull stage", ACTION_RAID + 2),
+        }));
+    triggers.push_back(new TriggerNode("aq40 twin dual pull",
+        {
+            NextAction("aq40 twin dual pull engage", ACTION_RAID + 5),
+            NextAction("aq40 twin choose target", ACTION_RAID + 4),
+        }));
+    triggers.push_back(new TriggerNode("aq40 twin swap prep",
+        {
+            NextAction("aq40 twin swap prep stage", ACTION_RAID + 6),
+        }));
+    triggers.push_back(new TriggerNode("aq40 twin active",
+        {
+            NextAction("aq40 twin choose target", ACTION_RAID + 2),
+            NextAction("aq40 twin healer support", ACTION_RAID + 2),
+            NextAction("aq40 twin warlock tank", ACTION_RAID + 3),
+            NextAction("aq40 twin avoid veklor", ACTION_RAID + 4),
+        }));
+    triggers.push_back(new TriggerNode("aq40 twin blizzard",
+        { NextAction("aq40 twin dodge blizzard", ACTION_RAID + 5) }));
+    triggers.push_back(new TriggerNode("aq40 twin explode bug",
+        { NextAction("aq40 twin dodge explode bug", ACTION_RAID + 6) }));
+    triggers.push_back(new TriggerNode("aq40 twin arcane burst risk",
+        { NextAction("aq40 twin avoid veklor", ACTION_RAID + 5) }));
+    triggers.push_back(new TriggerNode("aq40 twin split risk",
+        { NextAction("aq40 twin hold split", ACTION_RAID + 4) }));
+    triggers.push_back(new TriggerNode("aq40 twin post swap hold",
+        {
+            NextAction("aq40 twin post swap hold", ACTION_RAID + 5),
+            NextAction("aq40 twin hold split", ACTION_RAID + 4),
         }));
 
     // Ouro baseline strategy:
@@ -162,8 +189,8 @@ void RaidAq40Strategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new Aq40SarturaMultiplier(botAI));
     multipliers.push_back(new Aq40FankrissMultiplier(botAI));
     multipliers.push_back(new Aq40HuhuranMultiplier(botAI));
+    multipliers.push_back(new Aq40TwinMultiplier(botAI));
     multipliers.push_back(new Aq40OuroMultiplier(botAI));
-    multipliers.push_back(new Aq40TwinEmperorsMultiplier(botAI));
     multipliers.push_back(new Aq40ViscidusMultiplier(botAI));
     multipliers.push_back(new Aq40CthunMultiplier(botAI));
 }

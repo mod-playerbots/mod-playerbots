@@ -63,10 +63,10 @@ void MovementAction::CreateWp(Player* wpOwner, float x, float y, float z, float 
 bool MovementAction::JumpTo(uint32 mapId, float x, float y, float z, MovementPriority priority)
 {
     UpdateMovementState();
-    if (!IsMovingAllowed(mapId, x, y, z))
+    if (!IsMovingAllowed())
         return false;
 
-    if (IsDuplicateMove(mapId, x, y, z))
+    if (IsDuplicateMove(x, y, z))
         return false;
 
     if (IsWaitingForLastMove(priority))
@@ -171,11 +171,11 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool idle, 
                             bool exact_waypoint, MovementPriority priority, bool lessDelay, bool backwards)
 {
     UpdateMovementState();
-    if (!IsMovingAllowed(mapId, x, y, z))
+    if (!IsMovingAllowed())
     {
         return false;
     }
-    if (IsDuplicateMove(mapId, x, y, z))
+    if (IsDuplicateMove(x, y, z))
     {
         return false;
     }
@@ -897,20 +897,7 @@ bool MovementAction::IsMovingAllowed(WorldObject* target)
     return IsMovingAllowed();
 }
 
-bool MovementAction::IsMovingAllowed(uint32 mapId, float x, float y, float z)
-{
-    // removed sqrt as means distance limit was effectively 22500 (ReactDistance�)
-    // leaving it commented incase we find ReactDistance limit causes problems
-    // float distance = sqrt(bot->GetDistance(x, y, z));
-
-    // Remove react distance limit
-    // if (!bot->InBattleground())
-    //     return false;
-
-    return IsMovingAllowed();
-}
-
-bool MovementAction::IsDuplicateMove(uint32 mapId, float x, float y, float z)
+bool MovementAction::IsDuplicateMove(float x, float y, float z)
 {
     LastMovement& lastMove = *context->GetValue<LastMovement&>("last movement");
 
@@ -1286,7 +1273,7 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
     return true;
 }
 
-bool MovementAction::ChaseTo(WorldObject* obj, float distance, float angle)
+bool MovementAction::ChaseTo(WorldObject* obj, float distance)
 {
     if (!IsMovingAllowed())
     {
@@ -1859,7 +1846,7 @@ bool FleeAction::isUseful()
 
 bool FleeWithPetAction::Execute(Event /*event*/)
 {
-    if (Pet* pet = bot->GetPet())
+    if (bot->GetPet())
         botAI->PetFollow();
 
     return Flee(AI_VALUE(Unit*, "current target"));
@@ -1934,6 +1921,7 @@ bool AvoidAoeAction::AvoidAuraWithDynamicObj()
     }
     std::ostringstream name;
     name << spellInfo->SpellName[LOCALE_enUS];  // << "] (aura)";
+    botAI->RequestSpellInterrupt();
     if (FleePosition(dynOwner->GetPosition(), radius))
     {
         if (sPlayerbotAIConfig.tellWhenAvoidAoe && lastTellTimer < time(NULL) - 10)
@@ -2002,6 +1990,7 @@ bool AvoidAoeAction::AvoidGameObjectWithDamage()
         }
         std::ostringstream name;
         name << spellInfo->SpellName[LOCALE_enUS];  // << "] (object)";
+        botAI->RequestSpellInterrupt();
         if (FleePosition(go->GetPosition(), radius))
         {
             if (sPlayerbotAIConfig.tellWhenAvoidAoe && lastTellTimer < time(NULL) - 10)
@@ -2069,6 +2058,7 @@ bool AvoidAoeAction::AvoidUnitWithDamageAura()
                             continue;
                         std::ostringstream name;
                         name << triggerSpellInfo->SpellName[LOCALE_enUS];  //<< "] (unit)";
+                        botAI->RequestSpellInterrupt();
                         if (FleePosition(unit->GetPosition(), radius))
                         {
                             if (sPlayerbotAIConfig.tellWhenAvoidAoe && lastTellTimer < time(NULL) - 10)

@@ -45,6 +45,13 @@ public:
     float GetValue(Action* action) override;
 };
 
+class Aq40TwinMultiplier : public Multiplier
+{
+public:
+    Aq40TwinMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "aq40 twin") {}
+    float GetValue(Action* action) override;
+};
+
 class Aq40OuroMultiplier : public Multiplier
 {
 public:
@@ -52,12 +59,6 @@ public:
     float GetValue(Action* action) override;
 };
 
-class Aq40TwinEmperorsMultiplier : public Multiplier
-{
-public:
-    Aq40TwinEmperorsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "aq40 twins") {}
-    float GetValue(Action* action) override;
-};
 
 class Aq40ViscidusMultiplier : public Multiplier
 {

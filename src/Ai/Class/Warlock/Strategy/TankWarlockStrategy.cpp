@@ -5,7 +5,7 @@
 
 #include "TankWarlockStrategy.h"
 
-// Combat strategy for a Warlock Tank, for certain bosses like Twin Emperors
+// Combat strategy for a Warlock Tank
 // Priority is set to spam Searing Pain and use Shadow Ward on CD
 // Disabled by default
 // To enable, type "co +tank"
@@ -41,6 +41,6 @@ std::vector<NextAction> TankWarlockStrategy::getDefaultActions()
     };
 }
 
-void TankWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void TankWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& /*triggers*/)
 {
 }

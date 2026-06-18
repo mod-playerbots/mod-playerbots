@@ -24,7 +24,7 @@ public:
     }
 
 private:
-    static ActionNode* heroic_throw_taunt(PlayerbotAI* botAI)
+    static ActionNode* heroic_throw_taunt(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "heroic throw",
@@ -34,7 +34,7 @@ private:
         );
     }
 
-    static ActionNode* heroic_throw_on_snare_target(PlayerbotAI* botAI)
+    static ActionNode* heroic_throw_on_snare_target(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "heroic throw on snare target",
@@ -44,7 +44,7 @@ private:
         );
     }
 
-    static ActionNode* last_stand(PlayerbotAI* botAI)
+    static ActionNode* last_stand(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "last stand",
@@ -54,7 +54,7 @@ private:
         );
     }
 
-    static ActionNode* devastate(PlayerbotAI* botAI)
+    static ActionNode* devastate(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "devastate",
@@ -64,7 +64,7 @@ private:
         );
     }
 
-    static ActionNode* commanding_shout(PlayerbotAI* botAI)
+    static ActionNode* commanding_shout(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "commanding shout",
@@ -74,7 +74,7 @@ private:
         );
     }
 
-    static ActionNode* sunder_armor(PlayerbotAI* botAI)
+    static ActionNode* sunder_armor(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "sunder armor",
@@ -84,7 +84,7 @@ private:
         );
     }
 
-    static ActionNode* charge(PlayerbotAI* botAI)
+    static ActionNode* charge(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "charge",
@@ -94,7 +94,7 @@ private:
         );
     }
 
-    static ActionNode* taunt(PlayerbotAI* botAI)
+    static ActionNode* taunt(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "taunt",
@@ -104,7 +104,7 @@ private:
         );
     }
 
-    static ActionNode* vigilance(PlayerbotAI* botAI)
+    static ActionNode* vigilance(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "vigilance",
@@ -114,7 +114,7 @@ private:
         );
     }
 
-    static ActionNode* enraged_regeneration(PlayerbotAI* botAI)
+    static ActionNode* enraged_regeneration(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "enraged regeneration",

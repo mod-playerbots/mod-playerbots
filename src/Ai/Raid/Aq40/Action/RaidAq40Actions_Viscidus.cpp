@@ -1,9 +1,11 @@
 #include "RaidAq40Actions.h"
 
 #include <cmath>
+#include <string>
 
 #include "../RaidAq40BossHelper.h"
 #include "../RaidAq40SpellIds.h"
+#include "../Util/RaidAq40Helpers_Shared.h"
 
 namespace Aq40BossActions
 {
@@ -31,14 +33,19 @@ bool Aq40ViscidusChooseTargetAction::Execute(Event /*event*/)
         return false;
 
     Unit* target = FindViscidusGlobTarget(botAI, encounterUnits);
+    char const* reason = target ? "glob" : "boss";
     if (!target)
         target = Aq40BossActions::FindViscidusTarget(botAI, encounterUnits);
     if (!target)
+    {
         target = Aq40BossActions::FindUnitByAnyName(botAI, encounterUnits, { "toxic slime" });
+        reason = "slime";
+    }
 
     if (!target || (AI_VALUE(Unit*, "current target") == target && bot->GetVictim() == target))
         return false;
 
+    Aq40Helpers::LogAq40Target(bot, "viscidus", reason, target);
     return Attack(target);
 }
 
@@ -64,11 +71,20 @@ bool Aq40ViscidusUseFrostAction::Execute(Event /*event*/)
     for (char const* spell : frostSpells)
     {
         if (botAI->CanCastSpell(spell, viscidus) && botAI->CastSpell(spell, viscidus))
+        {
+                Aq40Helpers::LogAq40Info(bot, "frost_applied",
+                    "viscidus:" + Aq40Helpers::GetAq40LogUnit(viscidus),
+                    "boss=viscidus spell=" + Aq40Helpers::GetAq40LogToken(spell) +
+                    " target=" + Aq40Helpers::GetAq40LogUnit(viscidus));
             return true;
+        }
     }
 
     if (AI_VALUE(Unit*, "current target") != viscidus)
+    {
+        Aq40Helpers::LogAq40Target(bot, "viscidus", "frost_setup", viscidus);
         return Attack(viscidus);
+    }
 
     return false;
 }
@@ -91,7 +107,10 @@ bool Aq40ViscidusShatterAction::Execute(Event /*event*/)
         return false;
 
     if (AI_VALUE(Unit*, "current target") != viscidus)
+    {
+        Aq40Helpers::LogAq40Target(bot, "viscidus", "shatter", viscidus);
         return Attack(viscidus);
+    }
 
     if (bot->GetDistance2d(viscidus) > 6.0f)
     {
@@ -108,6 +127,9 @@ bool Aq40ViscidusShatterAction::Execute(Event /*event*/)
         float desired = 4.0f;
         float moveX = viscidus->GetPositionX() + (dx / len) * desired;
         float moveY = viscidus->GetPositionY() + (dy / len) * desired;
+        Aq40Helpers::LogAq40Info(bot, "shatter",
+            "viscidus:melee:" + Aq40Helpers::GetAq40LogUnit(viscidus),
+            "boss=viscidus phase=shatter target=" + Aq40Helpers::GetAq40LogUnit(viscidus));
         return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_COMBAT);
     }

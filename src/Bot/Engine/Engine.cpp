@@ -138,7 +138,7 @@ void Engine::Init()
     }
 }
 
-bool Engine::DoNextAction(Unit* unit, uint32 depth, bool minimal)
+bool Engine::DoNextAction(Unit* /*unit*/, uint32 /*depth*/, bool minimal)
 {
     LogAction("--- AI Tick ---");
 
@@ -604,6 +604,9 @@ bool Engine::ListenAndExecute(Action* action, Event event)
 
 void Engine::LogAction(char const* format, ...)
 {
+    if (!testMode && !sPlayerbotAIConfig.engineActionTraceLog)
+        return;
+
     Player* bot = botAI->GetBot();
     if (sPlayerbotAIConfig.logInGroupOnly && (!bot->GetGroup() || !botAI->HasRealPlayerMaster()) && !testMode)
         return;

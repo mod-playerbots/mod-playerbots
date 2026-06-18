@@ -226,7 +226,7 @@ public:
         return true;
     }
 
-    bool OnPlayerCanUseChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Guild* guild) override
+    bool OnPlayerCanUseChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Guild* /*guild*/) override
     {
         if (type != CHAT_MSG_GUILD)
             return true;
@@ -445,7 +445,7 @@ public:
             playerbotMgr->HandleMasterOutgoingPacket(*packet);
     }
 
-    void OnPlayerbotUpdate(uint32 diff) override
+    void OnPlayerbotUpdate(uint32 /*diff*/) override
     {
         sRandomPlayerbotMgr.UpdateSessions();  // Per-bot updates only
     }
@@ -525,7 +525,10 @@ public:
 
 void AddPlayerbotsSecureLoginScripts();
 
+void AddSC_Aq40BotScripts();
 void AddSC_TempestKeepBotScripts();
+void AddSC_IcecrownBotScripts();
+void AddSC_HyjalSummitBotScripts();
 
 void AddPlayerbotsScripts()
 {
@@ -540,5 +543,8 @@ void AddPlayerbotsScripts()
     AddPlayerbotsSecureLoginScripts();
     AddPlayerbotsCommandscripts();
     PlayerBotsGuildValidationScript();
+    AddSC_Aq40BotScripts();
     AddSC_TempestKeepBotScripts();
+    AddSC_IcecrownBotScripts();
+    AddSC_HyjalSummitBotScripts();
 }

@@ -40,13 +40,13 @@ bool SpellCastUsefulValue::Calculate()
         return false;
     }
 
-    // TODO: workaround
-    if (qualifier == "windfury weapon" || qualifier == "flametongue weapon" || qualifier == "frostbrand weapon" ||
-        qualifier == "rockbiter weapon" || qualifier == "earthliving weapon" || qualifier == "spellstone")
+    if (qualifier == "windfury weapon" || qualifier == "flametongue weapon" ||
+        qualifier == "frostbrand weapon" ||  qualifier == "rockbiter weapon" ||
+        qualifier == "earthliving weapon" || qualifier == "spellstone")
     {
-        if (Item* item = AI_VALUE2(Item*, "item for spell", spellid))
-            if (item->IsInWorld() && item->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
-                return false;
+        if (Item* item = AI_VALUE2(Item*, "item for spell", spellid);
+            item && item->IsInWorld() && item->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
+            return false;
     }
 
     std::set<uint32>& skipSpells = AI_VALUE(std::set<uint32>&, "skip spells list");

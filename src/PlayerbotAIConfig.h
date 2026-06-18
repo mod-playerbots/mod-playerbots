@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PLAYERbotAICONFIG_H
-#define _PLAYERBOT_PLAYERbotAICONFIG_H
+#ifndef _PLAYERBOT_PLAYERBOTAICONFIG_H
+#define _PLAYERBOT_PLAYERBOTAICONFIG_H
 
 #include <mutex>
 #include <unordered_map>
@@ -38,6 +38,13 @@ enum class HealingManaEfficiency : uint8
     HIGH = 8,
     VERY_HIGH = 16,
     SUPERIOR = 32
+};
+
+enum class AutoPartyBuffMode : uint8
+{
+    DISABLED = 0,
+    RAID_ONLY = 1,
+    GROUP_OR_RAID = 2
 };
 
 enum NewRpgStatus : int
@@ -94,6 +101,8 @@ public:
     uint32 lowMana, mediumMana, highMana;
     bool autoSaveMana;
     uint32 saveManaThreshold;
+    AutoPartyBuffMode autoGreaterBlessings;
+    AutoPartyBuffMode autoPartyBuffs;
     bool autoAvoidAoe;
     float maxAoeAvoidRadius;
     std::set<uint32> aoeAvoidSpellWhitelist;
@@ -125,9 +134,10 @@ public:
     std::vector<uint32> randomBotQuestIds;
     uint32 randomBotTeleportDistance;
     float randomGearLoweringChance;
-    bool incrementalGearInit;
     int32 randomGearQualityLimit;
     int32 randomGearScoreLimit;
+    bool preferClassArmorType;
+    bool preferredSpecWeapons;
     float randomBotMinLevelChance, randomBotMaxLevelChance;
     float randomBotRpgChance;
     uint32 minRandomBots, maxRandomBots;
@@ -143,12 +153,6 @@ public:
     uint32 minRandomBotsPriceChangeInterval, maxRandomBotsPriceChangeInterval;
     uint32 disabledWithoutRealPlayerLoginDelay, disabledWithoutRealPlayerLogoutDelay;
     bool randomBotJoinLfg;
-
-    // Buff system
-    // Min group size to use Greater buffs (Paladin, Mage, Druid). Default: 3
-    int32 minBotsForGreaterBuff;
-    // Cooldown (seconds) between reagent-missing RP warnings, per bot & per buff. Default: 30
-    int32 rpWarningCooldown;
 
     // Professions
     bool enableFishingWithMaster;
@@ -222,10 +226,6 @@ public:
 
     uint32 guildRepliesRate;
 
-    bool suggestDungeonsInLowerCaseRandomly;
-
-    // --
-
     bool randomBotJoinBG;
     bool randomBotAutoJoinBG;
 
@@ -247,10 +247,11 @@ public:
     uint32 randomBotAutoJoinBGRatedArena3v3Count;
     uint32 randomBotAutoJoinBGRatedArena5v5Count;
 
-    bool randomBotLoginAtStartup;
     uint32 randomBotTeleLowerLevel, randomBotTeleHigherLevel;
     std::map<uint32, std::pair<uint32, uint32>> zoneBrackets;
-    bool logInGroupOnly, logValuesPerTick;
+    bool logInGroupOnly, logValuesPerTick, engineActionTraceLog;
+    bool aq40StrategyLog;
+    uint32 aq40StrategyLogThrottleMs;
     bool fleeingEnabled;
     bool summonAtInnkeepersEnabled;
     std::string combatStrategies, nonCombatStrategies;
@@ -293,6 +294,7 @@ public:
     float periodicOnlineOfflineRatio;
     bool gearscorecheck;
     bool randomBotPreQuests;
+    bool botSendMailEnabled;
 
     bool guildTaskEnabled;
     uint32 minGuildTaskChangeTime, maxGuildTaskChangeTime;
@@ -304,6 +306,7 @@ public:
     uint32 iterationsPerTick;
 
     std::mutex m_logMtx;
+    bool enableAutoTradeOnItemMention;
     std::vector<std::string> tradeActionExcludedPrefixes;
     std::vector<std::string> allowedLogFiles;
     std::unordered_map<std::string, std::pair<FILE*, bool>> logFiles;
@@ -388,8 +391,8 @@ public:
 
     uint32 selfBotLevel;
     bool downgradeMaxLevelBot;
-    bool equipmentPersistence;
-    int32 equipmentPersistenceLevel;
+    bool equipAndSpecPersistence;
+    int32 equipAndSpecPersistenceLevel;
     int32 groupInvitationPermission;
     bool keepAltsInGroup = false;
     bool KeepAltsInGroup() const { return keepAltsInGroup; }
@@ -399,6 +402,7 @@ public:
     int reviveBotWhenSummoned;
     bool botRepairWhenSummon;
     bool autoInitOnly;
+    bool resetInstanceIdForAltBots;
     float autoInitEquipLevelLimitRatio;
     int32 maxAddedBots;
     int32 addClassCommand;
@@ -424,6 +428,7 @@ public:
             altMaintenanceKeyring,
             altMaintenanceGemsEnchants;
     int32 autoGearCommand, autoGearCommandAltBots, autoGearQualityLimit, autoGearScoreLimit;
+    int32 autoGearBisCommand;
 
     uint32 useGroundMountAtMinLevel;
     uint32 useFastGroundMountAtMinLevel;

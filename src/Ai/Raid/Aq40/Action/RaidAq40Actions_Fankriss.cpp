@@ -1,6 +1,7 @@
 #include "RaidAq40Actions.h"
 
 #include "../RaidAq40SpellIds.h"
+#include "../Util/RaidAq40Helpers_Shared.h"
 
 namespace Aq40BossActions
 {
@@ -38,8 +39,16 @@ bool Aq40FankrissTankSwapAction::Execute(Event /*event*/)
         for (Unit* spawn : spawns)
         {
             if (!Aq40BossHelper::IsUnitHeldByEncounterTank(bot, spawn))
+            {
+                Aq40Helpers::LogAq40Info(bot, "tank_swap",
+                    "fankriss:spawn:" + Aq40Helpers::GetAq40LogUnit(spawn),
+                    "boss=fankriss reason=mortal_wound target=" + Aq40Helpers::GetAq40LogUnit(spawn));
                 return Attack(spawn);
+            }
         }
+        Aq40Helpers::LogAq40Info(bot, "tank_swap",
+            "fankriss:spawn:" + Aq40Helpers::GetAq40LogUnit(spawns.front()),
+            "boss=fankriss reason=mortal_wound target=" + Aq40Helpers::GetAq40LogUnit(spawns.front()));
         return Attack(spawns.front());
     }
 
@@ -47,5 +56,7 @@ bool Aq40FankrissTankSwapAction::Execute(Event /*event*/)
     // Returning true signals that the action "succeeded" (swap initiated).
     // The other tank will taunt naturally via the engine's tank-assist behavior.
     bot->AttackStop();
+    Aq40Helpers::LogAq40Warn(bot, "tank_swap", "fankriss:no_spawn",
+        "boss=fankriss reason=mortal_wound target=none");
     return true;
 }

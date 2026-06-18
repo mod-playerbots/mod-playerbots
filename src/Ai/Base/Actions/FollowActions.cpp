@@ -168,8 +168,8 @@ bool FollowAction::Execute(Event /*event*/)
                     ? MovementPriority::MOVEMENT_COMBAT
                     : MovementPriority::MOVEMENT_NORMAL;
 
-                bool const movingAllowed = IsMovingAllowed(mapId, destX, destY, destZ);
-                bool const dupMove = IsDuplicateMove(mapId, destX, destY, destZ);
+                bool const movingAllowed = IsMovingAllowed();
+                bool const dupMove = IsDuplicateMove(destX, destY, destZ);
                 bool const waiting = IsWaitingForLastMove(priority);
 
                 if (movingAllowed && !dupMove && !waiting)

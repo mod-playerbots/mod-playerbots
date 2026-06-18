@@ -4,6 +4,7 @@
 
 #include "SharedDefines.h"
 #include "../RaidAq40BossHelper.h"
+#include "../Util/RaidAq40Helpers_Shared.h"
 
 namespace
 {
@@ -116,6 +117,7 @@ bool Aq40OuroChooseTargetAction::Execute(Event /*event*/)
     if (!target || (AI_VALUE(Unit*, "current target") == target && bot->GetVictim() == target))
         return false;
 
+    Aq40Helpers::LogAq40Target(bot, "ouro", targetIsBoss ? "boss" : "scarab", target);
     return Attack(target);
 }
 
@@ -146,6 +148,9 @@ bool Aq40OuroHoldMeleeContactAction::Execute(Event /*event*/)
     float desired = 4.0f;
     float moveX = ouro->GetPositionX() + (dx / len) * desired;
     float moveY = ouro->GetPositionY() + (dy / len) * desired;
+    Aq40Helpers::LogAq40Info(bot, "tank_position",
+        "ouro:melee_contact:" + Aq40Helpers::GetAq40LogUnit(ouro),
+        "boss=ouro reason=melee_contact target=" + Aq40Helpers::GetAq40LogUnit(ouro));
     return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_COMBAT);
 }
@@ -176,6 +181,9 @@ bool Aq40OuroAvoidSweepAction::Execute(Event /*event*/)
     float desired = 16.0f;
     float moveX = ouro->GetPositionX() + (dx / len) * desired;
     float moveY = ouro->GetPositionY() + (dy / len) * desired;
+    Aq40Helpers::LogAq40Info(bot, "avoid_hazard",
+        "ouro:sweep:" + Aq40Helpers::GetAq40LogUnit(ouro),
+        "boss=ouro hazard=sweep source=" + Aq40Helpers::GetAq40LogUnit(ouro));
     return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_COMBAT);
 }
@@ -198,6 +206,9 @@ bool Aq40OuroAvoidSandBlastAction::Execute(Event /*event*/)
     float moveX = ouro->GetPositionX() + std::cos(behindAngle) * distance;
     float moveY = ouro->GetPositionY() + std::sin(behindAngle) * distance;
 
+    Aq40Helpers::LogAq40Info(bot, "avoid_hazard",
+        "ouro:sand_blast:" + Aq40Helpers::GetAq40LogUnit(ouro),
+        "boss=ouro hazard=sand_blast source=" + Aq40Helpers::GetAq40LogUnit(ouro));
     return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_COMBAT);
 }
@@ -228,6 +239,9 @@ bool Aq40OuroAvoidSubmergeAction::Execute(Event /*event*/)
     float desired = 26.0f;
     float moveX = hazard->GetPositionX() + (dx / len) * desired;
     float moveY = hazard->GetPositionY() + (dy / len) * desired;
+    Aq40Helpers::LogAq40Info(bot, "avoid_hazard",
+        "ouro:submerge:" + Aq40Helpers::GetAq40LogUnit(hazard),
+        "boss=ouro hazard=submerge source=" + Aq40Helpers::GetAq40LogUnit(hazard));
     return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_COMBAT);
 }

@@ -2,23 +2,25 @@
 #define _PLAYERBOT_RAIDSTRATEGYCONTEXT_H_
 
 #include "Strategy.h"
-#include "RaidAq20Strategy.h"
+#include "Aq20Strategy.h"
 #include "Strategy/RaidAq40Strategy.h"
-#include "RaidMcStrategy.h"
-#include "RaidBwlStrategy.h"
-#include "RaidKarazhanStrategy.h"
-#include "RaidGruulsLairStrategy.h"
-#include "RaidMagtheridonStrategy.h"
-#include "RaidNaxxStrategy.h"
-#include "RaidSSCStrategy.h"
-#include "RaidTempestKeepStrategy.h"
-#include "RaidZulAmanStrategy.h"
-#include "RaidOsStrategy.h"
-#include "RaidEoEStrategy.h"
-#include "RaidVoAStrategy.h"
-#include "RaidUlduarStrategy.h"
-#include "RaidOnyxiaStrategy.h"
-#include "RaidIccStrategy.h"
+#include "MCStrategy.h"
+#include "BWLStrategy.h"
+#include "KaraStrategy.h"
+#include "GruulStrategy.h"
+#include "MagStrategy.h"
+#include "NaxxStrategy.h"
+#include "SSCStrategy.h"
+#include "TKStrategy.h"
+#include "HyjalStrategy.h"
+#include "BTStrategy.h"
+#include "ZAStrategy.h"
+#include "OSStrategy.h"
+#include "EoEStrategy.h"
+#include "VoAStrategy.h"
+#include "UldStrategy.h"
+#include "OnyStrategy.h"
+#include "ICCStrategy.h"
 
 class RaidStrategyContext : public NamedObjectContext<Strategy>
 {
@@ -35,6 +37,8 @@ public:
         creators["naxx"] = &RaidStrategyContext::naxx;
         creators["ssc"] = &RaidStrategyContext::ssc;
         creators["tempestkeep"] = &RaidStrategyContext::tempestkeep;
+        creators["hyjal"] = &RaidStrategyContext::hyjal;
+        creators["blacktemple"] = &RaidStrategyContext::blacktemple;
         creators["zulaman"] = &RaidStrategyContext::zulaman;
         creators["wotlk-os"] = &RaidStrategyContext::wotlk_os;
         creators["wotlk-eoe"] = &RaidStrategyContext::wotlk_eoe;
@@ -55,6 +59,8 @@ private:
     static Strategy* naxx(PlayerbotAI* botAI) { return new RaidNaxxStrategy(botAI); }
     static Strategy* ssc(PlayerbotAI* botAI) { return new RaidSSCStrategy(botAI); }
     static Strategy* tempestkeep(PlayerbotAI* botAI) { return new RaidTempestKeepStrategy(botAI); }
+    static Strategy* hyjal(PlayerbotAI* botAI) { return new RaidHyjalSummitStrategy(botAI); }
+    static Strategy* blacktemple(PlayerbotAI* botAI) { return new RaidBlackTempleStrategy(botAI); }
     static Strategy* zulaman(PlayerbotAI* botAI) { return new RaidZulAmanStrategy(botAI); }
     static Strategy* wotlk_os(PlayerbotAI* botAI) { return new RaidOsStrategy(botAI); }
     static Strategy* wotlk_eoe(PlayerbotAI* botAI) { return new RaidEoEStrategy(botAI); }

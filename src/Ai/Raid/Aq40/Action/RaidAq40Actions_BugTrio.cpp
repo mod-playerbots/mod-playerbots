@@ -4,6 +4,7 @@
 
 #include "../RaidAq40BossHelper.h"
 #include "../RaidAq40SpellIds.h"
+#include "../Util/RaidAq40Helpers_Shared.h"
 #include "../../RaidBossHelpers.h"
 
 namespace Aq40BossActions
@@ -84,7 +85,12 @@ bool Aq40BugTrioChooseTargetAction::Execute(Event /*event*/)
         target = Aq40BossActions::FindBugTrioTarget(botAI, encounterUnits);
 
         if (target)
+        {
             MarkTargetWithSkull(bot, target);
+            Aq40Helpers::LogAq40Info(bot, "raid_marker",
+                "bug_trio:skull:" + Aq40Helpers::GetAq40LogUnit(target),
+                "boss=bug_trio marker=skull target=" + Aq40Helpers::GetAq40LogUnit(target));
+        }
     }
     else
     {
@@ -100,6 +106,8 @@ bool Aq40BugTrioChooseTargetAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") == target && bot->GetVictim() == target)
         return false;
 
+    Aq40Helpers::LogAq40Target(bot, "bug_trio",
+        Aq40BossHelper::IsEncounterTank(bot, bot) ? "kill_order" : "tank_held", target);
     return Attack(target);
 }
 
@@ -119,8 +127,14 @@ bool Aq40BugTrioInterruptHealAction::Execute(Event /*event*/)
         return false;
 
     if (AI_VALUE(Unit*, "current target") != yauj)
+    {
+        Aq40Helpers::LogAq40Target(bot, "bug_trio", "interrupt_setup", yauj);
         return Attack(yauj);
+    }
 
+    Aq40Helpers::LogAq40Info(bot, "interrupt",
+        "bug_trio:" + Aq40Helpers::GetAq40LogUnit(yauj),
+        "boss=bug_trio target=" + Aq40Helpers::GetAq40LogUnit(yauj));
     return botAI->DoSpecificAction("interrupt spell", Event(), true);
 }
 
@@ -150,5 +164,8 @@ bool Aq40BugTrioAvoidPoisonCloudAction::Execute(Event /*event*/)
 
     bot->AttackStop();
     bot->InterruptNonMeleeSpells(true);
+    Aq40Helpers::LogAq40Info(bot, "avoid_hazard",
+        "bug_trio:poison_cloud:" + Aq40Helpers::GetAq40LogUnit(kri),
+        "boss=bug_trio hazard=poison_cloud source=" + Aq40Helpers::GetAq40LogUnit(kri));
     return MoveAway(kri, desiredDistance - currentDistance);
 }

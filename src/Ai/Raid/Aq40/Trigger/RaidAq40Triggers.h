@@ -148,17 +148,73 @@ public:
     bool IsActive() override;
 };
 
-class Aq40TwinEmperorsActiveTrigger : public Trigger
+class Aq40TwinApproachTrigger : public Trigger
 {
 public:
-    Aq40TwinEmperorsActiveTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin emperors active") {}
+    Aq40TwinApproachTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin approach") {}
     bool IsActive() override;
 };
 
-class Aq40TwinEmperorsRoomEntryTrigger : public Trigger
+class Aq40TwinPrePullReadyTrigger : public Trigger
 {
 public:
-    Aq40TwinEmperorsRoomEntryTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin emperors room entry") {}
+    Aq40TwinPrePullReadyTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin prepull ready") {}
+    bool IsActive() override;
+};
+
+class Aq40TwinDualPullTrigger : public Trigger
+{
+public:
+    Aq40TwinDualPullTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin dual pull") {}
+    bool IsActive() override;
+};
+
+class Aq40TwinSwapPrepTrigger : public Trigger
+{
+public:
+    Aq40TwinSwapPrepTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin swap prep") {}
+    bool IsActive() override;
+};
+
+class Aq40TwinActiveTrigger : public Trigger
+{
+public:
+    Aq40TwinActiveTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin active") {}
+    bool IsActive() override;
+};
+
+class Aq40TwinBlizzardTrigger : public Trigger
+{
+public:
+    Aq40TwinBlizzardTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin blizzard") {}
+    bool IsActive() override;
+};
+
+class Aq40TwinExplodeBugTrigger : public Trigger
+{
+public:
+    Aq40TwinExplodeBugTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin explode bug") {}
+    bool IsActive() override;
+};
+
+class Aq40TwinArcaneBurstRiskTrigger : public Trigger
+{
+public:
+    Aq40TwinArcaneBurstRiskTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin arcane burst risk") {}
+    bool IsActive() override;
+};
+
+class Aq40TwinSplitRiskTrigger : public Trigger
+{
+public:
+    Aq40TwinSplitRiskTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin split risk") {}
+    bool IsActive() override;
+};
+
+class Aq40TwinPostSwapHoldTrigger : public Trigger
+{
+public:
+    Aq40TwinPostSwapHoldTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin post swap hold") {}
     bool IsActive() override;
 };
 
