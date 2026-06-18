@@ -114,6 +114,15 @@ static inline bool IsTankRole(Player* player)
     return false;
 }
 
+// Sanctuary is the top-priority blessing only for paladin tanks (its mana-regen
+// component); every other role prefers Kings or Might. In the single-blessing
+// path each member gets their top blessing, so Sanctuary is restricted to
+// paladin tanks here.
+static inline bool IsPaladinTank(Player* player)
+{
+    return player && player->getClass() == CLASS_PALADIN && IsTankRole(player);
+}
+
 static inline bool IsOnlyPaladinInGroup(Player* bot)
 {
     if (!bot)
@@ -204,17 +213,7 @@ inline std::string const GetActualBlessingOfSanctuary(Unit* target, Player* bot)
     if (!targetPlayer)
         return "";
 
-    if (auto* botAI = GET_PLAYERBOT_AI(bot))
-    {
-        if (Unit* mainTank =
-            botAI->GetAiObjectContext()->GetValue<Unit*>("main tank")->Get())
-        {
-            if (mainTank == target)
-                return "blessing of sanctuary";
-        }
-    }
-
-    if (targetPlayer->HasTankSpec())
+    if (IsPaladinTank(targetPlayer))
         return "blessing of sanctuary";
 
     return "";
@@ -372,7 +371,7 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event /*event*/)
     if (Player* self = bot->ToPlayer())
     {
         bool selfHasSanct = HasSanctAura(self);
-        bool needSelf = IsTankRole(self) && !selfHasSanct;
+        bool needSelf = IsPaladinTank(self) && !selfHasSanct;
 
         if (needSelf)
         {
@@ -385,7 +384,7 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event /*event*/)
     if (targetPlayer)
     {
         bool hasSanct = HasSanctAura(targetPlayer);
-        targetOk = IsTankRole(targetPlayer) && !hasSanct;
+        targetOk = IsPaladinTank(targetPlayer) && !hasSanct;
     }
 
     if (!targetOk)
@@ -397,7 +396,7 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event /*event*/)
                 Player* player = ref->GetSource();
                 if (!player) continue;
                 if (!player->IsInWorld() || !player->IsAlive()) continue;
-                if (!IsTankRole(player)) continue;
+                if (!IsPaladinTank(player)) continue;
 
                 bool hasSanct = HasSanctAura(player);
                 if (!hasSanct)
@@ -411,18 +410,10 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event /*event*/)
         }
     }
 
+    // With the HasSpell(Sanctuary) guard above, GetActualBlessingOfSanctuary is
+    // non-empty only for a paladin tank; anything else has no Sanctuary target.
     if (GetActualBlessingOfSanctuary(target, bot).empty())
-    {
-        if (targetPlayer)
-        {
-            if (IsTankRole(targetPlayer))
-                return botAI->CastSpell("blessing of sanctuary", target);
-            else
-                return false;
-        }
-        else
-            return false;
-    }
+        return false;
 
     return botAI->CastSpell("blessing of sanctuary", target);
 }
@@ -437,7 +428,7 @@ Unit* CastBlessingOfSanctuaryOnPartyAction::GetTarget()
 
     return FindBlessingTarget(bot, botAI, [&](Player* player)
     {
-        return IsTankRole(player) &&
+        return IsPaladinTank(player) &&
                !HasBlessingAura(botAI, player,
                    { "blessing of sanctuary", "greater blessing of sanctuary" });
     });

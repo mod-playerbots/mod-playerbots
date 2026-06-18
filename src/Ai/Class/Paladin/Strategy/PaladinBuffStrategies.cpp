@@ -18,9 +18,15 @@ void PaladinBuffManaStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void PaladinBuffHealthStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    // Sanctuary on paladin tanks (prio > Kings)
     triggers.push_back(
         new TriggerNode("blessing of sanctuary on party",
-                        { NextAction("blessing of sanctuary on party", 11.0f) }));
+                        { NextAction("blessing of sanctuary on party", 12.0f) }));
+
+    // Kings on everyone else; also covers a paladin tank lacking Sanctuary
+    triggers.push_back(
+        new TriggerNode("blessing of kings on party",
+                        { NextAction("blessing of kings on party", 11.0f) }));
 }
 
 void PaladinBuffDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

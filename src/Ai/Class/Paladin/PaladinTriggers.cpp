@@ -34,6 +34,18 @@ bool BlessingTrigger::IsActive()
                                 "blessing of kings", "blessing of sanctuary", nullptr);
 }
 
+Value<Unit*>* BlessingOfKingsOnPartyTrigger::GetTargetValue()
+{
+    // A member already carrying Sanctuary counts as blessed for Kings purposes,
+    // matching CastBlessingOfKingsOnPartyAction's targeting. Without this the
+    // trigger would stay active for a Sanctuary-buffed paladin tank and spin a
+    // no-op cast every interval.
+    return context->GetValue<Unit*>(
+        "party member without aura",
+        ai::buff::MakeAuraQualifierForBuff("blessing of kings") + "," +
+        ai::buff::MakeAuraQualifierForBuff("blessing of sanctuary"));
+}
+
 bool DivineShieldLowHealthTrigger::IsActive()
 {
     return botAI->HasAura("divine shield", bot) && AI_VALUE2(uint8, "health", "self target") < 80;

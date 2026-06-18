@@ -205,6 +205,12 @@ public:
     {
         spell = "blessing of kings";
     }
+
+    // Sanctuary satisfies Kings for targeting (the Kings action treats it the
+    // same), so a member already carrying Sanctuary should not keep this
+    // trigger active and spin a no-op cast. Keep the "blessing of kings" name;
+    // only widen the aura qualifier used to find a member still needing it.
+    Value<Unit*>* GetTargetValue() override;
 };
 
 class BlessingOfWisdomOnPartyTrigger : public BlessingOnPartyTrigger

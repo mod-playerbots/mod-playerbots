@@ -33,6 +33,7 @@ constexpr uint32 SPELL_ICE_SHARDS = 15047;
 constexpr uint32 SPELL_WHIRLWIND = 1680;
 constexpr uint32 SPELL_CAT_FORM = 768;
 constexpr uint32 SPELL_DRUID_THICK_HIDE = 16931;
+constexpr uint32 SPELL_BLESSING_OF_KINGS = 20217;
 }
 
 AiObjectContext* AiFactory::createAiObjectContext(Player* player, PlayerbotAI* botAI)
@@ -515,7 +516,12 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
             if (tab == PALADIN_TAB_PROTECTION)
             {
                 nonCombatEngine->addStrategiesNoInit("bthreat", "tank assist", "pull", "barmor", nullptr);
-                if (player->GetLevel() >= 20)
+                // Blessing of Kings is learned at level 20; below that fall
+                // back to Might. "bsanc" keeps Sanctuary on paladin tanks and
+                // Kings on everyone else, and Kings also covers the tank when
+                // the Sanctuary talent isn't trained -- so gating on Kings
+                // (which Sanctuary always implies) is enough.
+                if (player->HasSpell(SPELL_BLESSING_OF_KINGS))
                     nonCombatEngine->addStrategy("bsanc", false);
                 else
                     nonCombatEngine->addStrategy("bmight", false);
