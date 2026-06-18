@@ -19,6 +19,7 @@ namespace
 {
 std::unordered_map<std::string, uint32> sAq40LogLastMsByKey;
 std::mutex sAq40LogMutex;
+uint32 constexpr kAq40StrategyLogThrottleMs = 5000;
 
 std::string ToAq40LogToken(std::string value)
 {
@@ -59,12 +60,13 @@ uint32 GetAq40LogInstanceId(Player* bot)
 void LogAq40(Player* bot, std::string const& eventKey, std::string const& stateKey,
              std::string const& fields, uint32 throttleMs, bool warn)
 {
-    if (!sPlayerbotAIConfig.aq40StrategyLog || !bot)
+    // Reuse the existing debug toggle instead of carrying extra AQ40-only config.
+    if (!sPlayerbotAIConfig.logValuesPerTick || !bot)
         return;
 
     uint32 const instanceId = GetAq40LogInstanceId(bot);
     uint64 const botGuid = bot->GetGUID().GetRawValue();
-    uint32 const effectiveThrottleMs = throttleMs ? throttleMs : sPlayerbotAIConfig.aq40StrategyLogThrottleMs;
+    uint32 const effectiveThrottleMs = throttleMs ? throttleMs : kAq40StrategyLogThrottleMs;
 
     std::ostringstream key;
     key << instanceId << ":" << botGuid << ":" << ToAq40LogToken(eventKey) << ":" << stateKey;

@@ -207,12 +207,6 @@ bool BGJoinAction::canJoinBg(BattlegroundQueueTypeId queueTypeId, BattlegroundBr
 
     // check if the bracket exists for the bot's level for the specific Battleground/Arena type
     Battleground* bg = sBattlegroundMgr->GetBattlegroundTemplate(bgTypeId);
-    if (!bg)
-        return false;
-
-    if (!bot->CanJoinToBattleground(bg))
-        return false;
-
     uint32 mapId = bg->GetMapId();
     PvPDifficultyEntry const* pvpDiff = GetBattlegroundBracketByLevel(mapId, bot->GetLevel());
     if (!pvpDiff)

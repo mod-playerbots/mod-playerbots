@@ -297,10 +297,6 @@ bool PlayerWantsInBattlegroundTrigger::IsActive()
     if (bot->GetBattleground() && bot->GetBattleground()->GetStatus() == STATUS_IN_PROGRESS)
         return false;
 
-    // No specific Battleground template is available at this stage.
-    // BGJoinAction performs the concrete per-BG eligibility check once a queue
-    // candidate is being evaluated.
-
     if (bot->IsDeserter())
         return false;
 

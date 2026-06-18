@@ -249,9 +249,7 @@ public:
 
     uint32 randomBotTeleLowerLevel, randomBotTeleHigherLevel;
     std::map<uint32, std::pair<uint32, uint32>> zoneBrackets;
-    bool logInGroupOnly, logValuesPerTick, engineActionTraceLog;
-    bool aq40StrategyLog;
-    uint32 aq40StrategyLogThrottleMs;
+    bool logInGroupOnly, logValuesPerTick;
     bool fleeingEnabled;
     bool summonAtInnkeepersEnabled;
     std::string combatStrategies, nonCombatStrategies;

@@ -1921,7 +1921,6 @@ bool AvoidAoeAction::AvoidAuraWithDynamicObj()
     }
     std::ostringstream name;
     name << spellInfo->SpellName[LOCALE_enUS];  // << "] (aura)";
-    botAI->RequestSpellInterrupt();
     if (FleePosition(dynOwner->GetPosition(), radius))
     {
         if (sPlayerbotAIConfig.tellWhenAvoidAoe && lastTellTimer < time(NULL) - 10)
@@ -1990,7 +1989,6 @@ bool AvoidAoeAction::AvoidGameObjectWithDamage()
         }
         std::ostringstream name;
         name << spellInfo->SpellName[LOCALE_enUS];  // << "] (object)";
-        botAI->RequestSpellInterrupt();
         if (FleePosition(go->GetPosition(), radius))
         {
             if (sPlayerbotAIConfig.tellWhenAvoidAoe && lastTellTimer < time(NULL) - 10)
@@ -2058,7 +2056,6 @@ bool AvoidAoeAction::AvoidUnitWithDamageAura()
                             continue;
                         std::ostringstream name;
                         name << triggerSpellInfo->SpellName[LOCALE_enUS];  //<< "] (unit)";
-                        botAI->RequestSpellInterrupt();
                         if (FleePosition(unit->GetPosition(), radius))
                         {
                             if (sPlayerbotAIConfig.tellWhenAvoidAoe && lastTellTimer < time(NULL) - 10)
