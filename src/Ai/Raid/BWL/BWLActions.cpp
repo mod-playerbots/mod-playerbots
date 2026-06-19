@@ -95,7 +95,7 @@ bool BwlDeathTalonWyrmguardTankMoveAwayAction::Execute(Event /*event*/)
         return false;
 
     float distToTravel = WYRMGUARD_SAFE_DISTANCE - bot->GetDistance2d(target);
-    if (distToTravel <= 0)
+    if (distToTravel <= 0.0f)
         return false;
 
     return MoveAway(target, distToTravel);
@@ -128,7 +128,7 @@ bool BwlDeathTalonWyrmguardRangedMoveAwayAction::Execute(Event /*event*/)
         return false;
 
     float distToTravel = WYRMGUARD_SAFE_DISTANCE - bot->GetDistance2d(target);
-    if (distToTravel <= 0)
+    if (distToTravel <= 0.0f)
         return false;
 
     return MoveAway(target, distToTravel);
