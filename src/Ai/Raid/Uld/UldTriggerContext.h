@@ -3,8 +3,8 @@
 //  and/or modify it under version 3 of the License, or (at your option), any later version.
 //  */
 
-#ifndef _PLAYERBOT_RAIDULDUARTRIGGERCONTEXT_H
-#define _PLAYERBOT_RAIDULDUARTRIGGERCONTEXT_H
+#ifndef PLAYERBOTS_ULDTRIGGERCONTEXT_H
+#define PLAYERBOTS_ULDTRIGGERCONTEXT_H
 
 #include "NamedObjectContext.h"
 #include "UldTriggers.h"

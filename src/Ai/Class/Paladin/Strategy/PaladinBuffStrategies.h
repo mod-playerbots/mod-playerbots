@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PALADINBUFFSTRATEGIES_H
-#define _PLAYERBOT_PALADINBUFFSTRATEGIES_H
+#ifndef PLAYERBOTS_PALADINBUFFSTRATEGIES_H
+#define PLAYERBOTS_PALADINBUFFSTRATEGIES_H
 
 #include "Strategy.h"
 

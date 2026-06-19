@@ -3,11 +3,11 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#include "PassTroughStrategy.h"
+#include "PassThroughStrategy.h"
 
 #include "Playerbots.h"
 
-void PassTroughStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+void PassThroughStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     for (std::vector<std::string>::iterator i = supported.begin(); i != supported.end(); i++)
         triggers.push_back(

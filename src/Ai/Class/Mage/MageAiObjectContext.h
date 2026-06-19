@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_MAGEAIOBJECTCONTEXT_H
-#define _PLAYERBOT_MAGEAIOBJECTCONTEXT_H
+#ifndef PLAYERBOTS_MAGEAIOBJECTCONTEXT_H
+#define PLAYERBOTS_MAGEAIOBJECTCONTEXT_H
 
 #include "AiObjectContext.h"
 

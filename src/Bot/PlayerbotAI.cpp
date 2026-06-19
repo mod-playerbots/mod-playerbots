@@ -2589,7 +2589,7 @@ Player* PlayerbotAI::GetPlayer(ObjectGuid guid)
 uint32 GetCreatureIdForCreatureTemplateId(uint32 creatureTemplateId)
 {
     QueryResult results =
-        WorldDatabase.Query("SELECT guid FROM `creature` WHERE id1 = {} LIMIT 1;", creatureTemplateId);
+        WorldDatabase.Query("SELECT guid FROM `creature` WHERE id = {} LIMIT 1;", creatureTemplateId);
     if (results)
     {
         Field* fields = results->Fetch();
@@ -2610,7 +2610,7 @@ Unit* PlayerbotAI::GetUnit(CreatureData const* creatureData)
     uint32 spawnId = creatureData->spawnId;
     if (!spawnId)  // workaround for CreatureData with missing spawnId (this just uses first matching creatureId in DB,
                    // but thats ok this method is only used for battlemasters and theres only 1 of each type)
-        spawnId = GetCreatureIdForCreatureTemplateId(creatureData->id1);
+        spawnId = GetCreatureIdForCreatureTemplateId(creatureData->id);
     auto creatureBounds = map->GetCreatureBySpawnIdStore().equal_range(spawnId);
     if (creatureBounds.first == creatureBounds.second)
         return nullptr;

@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_SKIPSPELLSLISTVALUE_H
-#define _PLAYERBOT_SKIPSPELLSLISTVALUE_H
+#ifndef PLAYERBOTS_SKIPSPELLSLISTVALUE_H
+#define PLAYERBOTS_SKIPSPELLSLISTVALUE_H
 
 #include <set>
 

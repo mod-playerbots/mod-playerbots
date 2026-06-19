@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PRIESTNONCOMBATSTRATEGYACTIONNODEFACTORY_H
-#define _PLAYERBOT_PRIESTNONCOMBATSTRATEGYACTIONNODEFACTORY_H
+#ifndef PLAYERBOTS_PRIESTNONCOMBATSTRATEGYACTIONNODEFACTORY_H
+#define PLAYERBOTS_PRIESTNONCOMBATSTRATEGYACTIONNODEFACTORY_H
 
 #include "Action.h"
 #include "NamedObjectContext.h"

@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_TANKTARGETVALUE_H
-#define _PLAYERBOT_TANKTARGETVALUE_H
+#ifndef PLAYERBOTS_TANKTARGETVALUE_H
+#define PLAYERBOTS_TANKTARGETVALUE_H
 
 #include "TargetValue.h"
 

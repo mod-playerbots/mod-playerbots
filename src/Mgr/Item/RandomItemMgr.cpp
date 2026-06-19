@@ -2694,7 +2694,7 @@ void RandomItemMgr::BuildRarityCache()
                 ") chance, 'creature' type "
                 "FROM creature_loot_template lt "
                 "JOIN creature_template ct ON ct.LootId = lt.entry "
-                "JOIN creature c ON c.id1 = ct.entry "
+                "JOIN creature c ON c.id = ct.entry "
                 "WHERE lt.item = {} "
                 "union all "
                 // "-- Gameobject "
@@ -2712,7 +2712,7 @@ void RandomItemMgr::BuildRarityCache()
                 ") chance, 'gameobject' type "
                 "FROM gameobject_loot_template lt "
                 "JOIN gameobject_template ct ON ct.data1 = lt.entry "
-                "JOIN gameobject c ON c.id1 = ct.entry "
+                "JOIN gameobject c ON c.id = ct.entry "
                 "WHERE lt.item = {} "
                 "union all "
                 // "-- Disenchant "
@@ -2763,7 +2763,7 @@ void RandomItemMgr::BuildRarityCache()
                 ") chance, 'skinning' type "
                 "FROM skinning_loot_template lt "
                 "JOIN creature_template ct ON ct.SkinningLootId = lt.entry "
-                "JOIN creature c ON c.id1 = ct.entry "
+                "JOIN creature c ON c.id = ct.entry "
                 "WHERE lt.item = {}) q; ",
                 itr.first, itr.first, itr.first, itr.first, itr.first);
 

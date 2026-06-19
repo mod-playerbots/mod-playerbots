@@ -3,10 +3,10 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_NONCOMBATSTRATEGY_H
-#define _PLAYERBOT_NONCOMBATSTRATEGY_H
+#ifndef PLAYERBOTS_NONCOMBATSTRATEGY_H
+#define PLAYERBOTS_NONCOMBATSTRATEGY_H
 
-#include "PassTroughStrategy.h"
+#include "PassThroughStrategy.h"
 
 class PlayerbotAI;
 

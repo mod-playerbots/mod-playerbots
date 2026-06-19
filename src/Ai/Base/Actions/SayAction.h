@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_SAYACTION_H
-#define _PLAYERBOT_SAYACTION_H
+#ifndef PLAYERBOTS_SAYACTION_H
+#define PLAYERBOTS_SAYACTION_H
 
 #include "Action.h"
 #include "PlayerbotAI.h"

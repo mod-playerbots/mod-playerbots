@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PLAYERbotAIAWARE_H
-#define _PLAYERBOT_PLAYERbotAIAWARE_H
+#ifndef PLAYERBOTS_PLAYERBOTAIAWARE_H
+#define PLAYERBOTS_PLAYERBOTAIAWARE_H
 
 class PlayerbotAI;
 

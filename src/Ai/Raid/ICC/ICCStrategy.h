@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_ICCS_H
-#define _PLAYERBOT_ICCS_H
+#ifndef PLAYERBOTS_ICCSTRATEGY_H
+#define PLAYERBOTS_ICCSTRATEGY_H
 
 #include "Strategy.h"
 

@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_WITHINAREATRIGGER_H
-#define _PLAYERBOT_WITHINAREATRIGGER_H
+#ifndef PLAYERBOTS_WITHINAREATRIGGER_H
+#define PLAYERBOTS_WITHINAREATRIGGER_H
 
 #include "Trigger.h"
 

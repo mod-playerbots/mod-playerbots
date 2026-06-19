@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_HELPERS_H
-#define _PLAYERBOT_HELPERS_H
+#ifndef PLAYERBOTS_HELPERS_H
+#define PLAYERBOTS_HELPERS_H
 
 #include <string>
 #include <vector>

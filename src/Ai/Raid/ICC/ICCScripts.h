@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_ICCSCRIPTS_H
-#define _PLAYERBOT_ICCSCRIPTS_H
+#ifndef PLAYERBOTS_ICCSCRIPTS_H
+#define PLAYERBOTS_ICCSCRIPTS_H
 
 #include <map>
 #include <unordered_map>

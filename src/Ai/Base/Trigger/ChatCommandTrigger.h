@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_CHATCOMMANDTRIGGER_H
-#define _PLAYERBOT_CHATCOMMANDTRIGGER_H
+#ifndef PLAYERBOTS_CHATCOMMANDTRIGGER_H
+#define PLAYERBOTS_CHATCOMMANDTRIGGER_H
 
 #include "Trigger.h"
 

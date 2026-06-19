@@ -1,7 +1,7 @@
 
 // RaidOnyxiaStrategy.h
-#ifndef _PLAYERBOT_RAIDONYXIASTRATEGY_H_
-#define _PLAYERBOT_RAIDONYXIASTRATEGY_H_
+#ifndef PLAYERBOTS_ONYSTRATEGY_H
+#define PLAYERBOTS_ONYSTRATEGY_H
 
 #include "Strategy.h"
 

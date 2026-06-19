@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_GENERICTRIGGERS_H
-#define _PLAYERBOT_GENERICTRIGGERS_H
+#ifndef PLAYERBOTS_GENERICTRIGGERS_H
+#define PLAYERBOTS_GENERICTRIGGERS_H
 
 #include <utility>
 

@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_ICCACTIONCONTEXT_H
-#define _PLAYERBOT_ICCACTIONCONTEXT_H
+#ifndef PLAYERBOTS_ICCACTIONCONTEXT_H
+#define PLAYERBOTS_ICCACTIONCONTEXT_H
 
 #include "Action.h"
 #include "NamedObjectContext.h"
