@@ -1059,7 +1059,7 @@ static bool FindPendingAssignmentFromAssignments(
             uint32 spellId = aiContext->GetValue<uint32>("spell id", spellName)->Get();
             if (spellId && ai::buff::HasRequiredReagents(bot, spellId))
             {
-                ai::buff::ClearMissingBuffReagentNotice(bot, spellName);
+                ai::buff::ClearMissingBuffReagentNotice(botAI, spellName);
             }
             else
             {

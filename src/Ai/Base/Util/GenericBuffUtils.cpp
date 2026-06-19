@@ -16,18 +16,12 @@
 #include "Unit.h"
 #include "Value.h"
 
-#include <map>
-
 namespace ai::buff
 {
     namespace
     {
         // Prevents bots from immediately casting already-present buffs upon logging in
         constexpr uint32 POST_LOGIN_BUFF_GRACE_MS = 5 * IN_MILLISECONDS;
-
-        using MissingBuffNoticeKey = std::pair<uint32, std::string>;
-
-        std::map<MissingBuffNoticeKey, uint32> lastMissingBuffNoticeTimes;
 
         bool IsWithinPostLoginBuffGrace(Player* player)
         {
@@ -36,31 +30,6 @@ namespace ai::buff
 
             return getMSTimeDiff(
                 player->GetInGameTime(), GameTime::GetGameTimeMS().count()) < POST_LOGIN_BUFF_GRACE_MS;
-        }
-
-        MissingBuffNoticeKey MakeMissingBuffNoticeKey(Player* bot, std::string const& groupName)
-        {
-            return std::make_pair(bot->GetGUID().GetCounter(), groupName);
-        }
-
-        void PruneExpiredNoticeTimes(
-            std::map<MissingBuffNoticeKey, uint32>& lastNoticeTimes,
-            uint32 cooldownMs,
-            uint32 now)
-        {
-            if (!cooldownMs)
-            {
-                lastNoticeTimes.clear();
-                return;
-            }
-
-            for (auto noticeIt = lastNoticeTimes.begin(); noticeIt != lastNoticeTimes.end();)
-            {
-                if (getMSTimeDiff(noticeIt->second, now) >= cooldownMs)
-                    noticeIt = lastNoticeTimes.erase(noticeIt);
-                else
-                    ++noticeIt;
-            }
         }
     }
 
@@ -236,12 +205,14 @@ namespace ai::buff
         return false;
     }
 
-    void ClearMissingBuffReagentNotice(Player* bot, std::string const& groupName)
+    void ClearMissingBuffReagentNotice(PlayerbotAI* botAI, std::string const& groupName)
     {
-        if (!bot || groupName.empty())
+        if (!botAI || groupName.empty())
             return;
 
-        lastMissingBuffNoticeTimes.erase(MakeMissingBuffNoticeKey(bot, groupName));
+        botAI->GetAiObjectContext()
+            ->GetValue<MissingBuffReagentNoticeMap&>("missing buff reagent notice")->Get()
+            .erase(groupName);
     }
 
     bool TryAnnounceMissingBuffReagents(
@@ -256,12 +227,11 @@ namespace ai::buff
 
         auto const cooldownMs = sPlayerbotAIConfig.missingBuffReagentMessageCooldown * IN_MILLISECONDS;
         auto const now = GameTime::GetGameTimeMS().count();
-        auto const noticeKey = MakeMissingBuffNoticeKey(bot, groupName);
+        auto& noticeTimes = botAI->GetAiObjectContext()
+            ->GetValue<MissingBuffReagentNoticeMap&>("missing buff reagent notice")->Get();
+        auto const noticeIt = noticeTimes.find(groupName);
 
-        PruneExpiredNoticeTimes(lastMissingBuffNoticeTimes, cooldownMs, now);
-
-        auto const noticeIt = lastMissingBuffNoticeTimes.find(noticeKey);
-        if (cooldownMs && noticeIt != lastMissingBuffNoticeTimes.end() &&
+        if (cooldownMs && noticeIt != noticeTimes.end() &&
             getMSTimeDiff(noticeIt->second, now) < cooldownMs)
         {
             return false;
@@ -282,7 +252,7 @@ namespace ai::buff
             group->isRaidGroup() ? botAI->SayToRaid(message) : botAI->SayToParty(message);
 
         if (announced)
-            lastMissingBuffNoticeTimes[noticeKey] = now;
+            noticeTimes[groupName] = now;
 
         return announced;
     }
@@ -313,7 +283,7 @@ namespace ai::buff
 
         if (groupSpellId && HasRequiredReagents(bot, groupSpellId))
         {
-            ClearMissingBuffReagentNotice(bot, groupName);
+            ClearMissingBuffReagentNotice(botAI, groupName);
             return groupName;
         }
 
