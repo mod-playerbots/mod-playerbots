@@ -450,11 +450,11 @@ bool BisGearAction::Execute(Event event)
     // 2. Run full autogear on the empty bot so every slot gets a best-available pick.
     //    Uncovered slots will keep the autogear pick; BiS overwrites the rest below.
     if (sPlayerbotAIConfig.autoGearCommand)
-    {
         PlayerbotFactory::AutoGear(bot, sPlayerbotAIConfig.autoGearQualityLimit, ilvl, /*incremental*/ false,
                                    sPlayerbotAIConfig.twoRoundsGearInit, /*applyFinishers*/ false);
-    //     Autogear may have placed the exact item BiS wants into trinket2/finger2 (or vice versa);
-    //     unique-equipped enforcement would then make BiS's equip silently drop one copy.
+
+    // Autogear may have placed the exact item BiS wants into trinket2/finger2 (or vice versa);
+    // unique-equipped enforcement would then make BiS's equip silently drop one copy.
     std::set<uint32> bisEntries;
     for (auto const& kv : bisMap)
         bisEntries.insert(kv.second);
