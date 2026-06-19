@@ -185,7 +185,7 @@ bool HighKingMaulgarMoonkinTankAttackKigglerAction::Execute(Event /*event*/)
 
     if (kiggler->GetVictim() == bot)
     {
-        constexpr float safeDistance = 30.0f;
+        constexpr float safeDistance = 28.5f;
         const float currentDistance = bot->GetDistance2d(kiggler);
 
         if (currentDistance < safeDistance)
@@ -490,26 +490,16 @@ bool GruulTheDragonkillerTanksPositionBossAction::Execute(Event /*event*/)
 // Ranged should spread out 10 yards from each other
 bool GruulTheDragonkillerSpreadRangedAction::Execute(Event /*event*/)
 {
-    const ObjectGuid guid = bot->GetGUID();
-    static std::unordered_map<ObjectGuid, Position> initialPositions;
-    static std::unordered_set<ObjectGuid> hasReachedInitialPosition;
-
     Unit* gruul = AI_VALUE2(Unit*, "find target", "gruul the dragonkiller");
-    if (gruul && gruul->GetHealth() == gruul->GetMaxHealth())
-    {
-        initialPositions.erase(guid);
-        hasReachedInitialPosition.erase(guid);
-    }
+    if (!gruul)
+        return false;
+
+    if (gruul->GetHealth() == gruul->GetMaxHealth())
+        _hasReachedInitialPosition = false;
 
     Group* group = bot->GetGroup();
     if (!group)
         return false;
-
-    const Position& position = GRUUL_TANK_POSITION;
-    const float centerX = position.GetPositionX();
-    const float centerY = position.GetPositionY();
-    constexpr float minRadius = 25.0f;
-    constexpr float maxRadius = 40.0f;
 
     std::vector<Player*> members;
     Player* closestMember = nullptr;
@@ -533,32 +523,34 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event /*event*/)
         }
     }
 
-    if (!initialPositions.count(guid))
+    const Position& position = GRUUL_TANK_POSITION;
+
+    if (_initialPosition.GetPositionX() == 0.0f && _initialPosition.GetPositionY() == 0.0f)
     {
         auto it = std::find(members.begin(), members.end(), bot);
         uint8 botIndex = (it != members.end()) ? std::distance(members.begin(), it) : 0;
         uint8 count = members.size();
 
+        constexpr float minRadius = 25.0f;
+        constexpr float maxRadius = 40.0f;
         float angle = 2 * M_PI * botIndex / count;
         float radius = minRadius + static_cast<float>(rand()) /
                        static_cast<float>(RAND_MAX) * (maxRadius - minRadius);
-        float targetX = centerX + radius * cos(angle);
-        float targetY = centerY + radius * sin(angle);
+        float targetX = position.GetPositionX() + radius * cos(angle);
+        float targetY = position.GetPositionY() + radius * sin(angle);
 
-        initialPositions[guid] = Position(targetX, targetY, position.GetPositionZ());
-        hasReachedInitialPosition.erase(guid);
+        _initialPosition = Position(targetX, targetY, position.GetPositionZ());
     }
 
-    Position targetPosition = initialPositions[guid];
-    if (!hasReachedInitialPosition.count(guid))
+    if (!_hasReachedInitialPosition)
     {
         const float distanceToTarget =
-            bot->GetExactDist2d(targetPosition.GetPositionX(), targetPosition.GetPositionY());
+            bot->GetExactDist2d(_initialPosition.GetPositionX(), _initialPosition.GetPositionY());
         if (distanceToTarget > 2.0f)
         {
-            float destX = targetPosition.GetPositionX();
-            float destY = targetPosition.GetPositionY();
-            float destZ = targetPosition.GetPositionZ();
+            float destX = _initialPosition.GetPositionX();
+            float destY = _initialPosition.GetPositionY();
+            float destZ = _initialPosition.GetPositionZ();
 
             if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(),
                 bot->GetPositionY(), bot->GetPositionZ(), destX, destY, destZ))
@@ -570,7 +562,7 @@ bool GruulTheDragonkillerSpreadRangedAction::Execute(Event /*event*/)
                           false, MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
-        hasReachedInitialPosition.insert(guid);
+        _hasReachedInitialPosition = true;
     }
     else
     {

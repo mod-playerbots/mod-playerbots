@@ -99,6 +99,10 @@ public:
     GruulTheDragonkillerSpreadRangedAction(
         PlayerbotAI* botAI, std::string const name = "gruul the dragonkiller spread ranged") : MovementAction(botAI, name) {};
     bool Execute(Event event) override;
+
+private:
+    Position _initialPosition;
+    bool _hasReachedInitialPosition = false;
 };
 
 class GruulTheDragonkillerShatterSpreadAction : public MovementAction
