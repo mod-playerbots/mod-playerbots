@@ -26,6 +26,13 @@ public:
 
         creators["omor ranged spread"] =
             &TbcDungeonHellfireRampartsActionContext::omor_ranged_spread;
+
+        creators["omor mark fiendish hound"] =
+            &TbcDungeonHellfireRampartsActionContext::omor_mark_fiendish_hound;
+
+        // Vazruden
+        creators["vazruden tank position boss"] =
+            &TbcDungeonHellfireRampartsActionContext::vazruden_tank_position_boss;
     }
 private:
     // Watchkeeper Gargolmar
@@ -44,6 +51,13 @@ private:
 
     static Action* omor_ranged_spread(
         PlayerbotAI* botAI) { return new OmorRangedSpreadAction(botAI); }
+
+    static Action* omor_mark_fiendish_hound(
+        PlayerbotAI* botAI) { return new OmorMarkFiendishHoundAction(botAI); }
+
+    // Vazruden
+    static Action* vazruden_tank_position_boss(
+        PlayerbotAI* botAI) { return new VazrudenTankPositionBossAction(botAI); }
 
 };
 

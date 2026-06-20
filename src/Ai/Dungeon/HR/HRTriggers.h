@@ -10,8 +10,8 @@ enum class HellfireRampartsIDs : uint32
     // Omor the Unscarred
     SPELL_TREACHEROUS_AURA                = 30695,
     SPELL_BANE_OF_TREACHERY               = 37566,
-    NPC_FIENDISH_HOUND                    = 17540,
-    //Vazruden (Skull the two guards and dps them down. Tank Vazruden in the middle (X:-1405 Y: 1745 Z: 81) of the platform to prevent the tank from attempting to grab the dragon flying around the platform. Will see if bots need to avoid the flames, easiest fight in the dungeon.)
+    //NPC_FIENDISH_HOUND                    = 17540,
+    //Vazruden (Skull the two guards and dps them down. Tank Vazruden in the middle (X:-1407.405 Y: 1744.521 Z: 81.075) of the platform to prevent the tank from attempting to grab the dragon flying around the platform. Will see if bots need to avoid the flames, easiest fight in the dungeon.)
 
 };
 
@@ -54,6 +54,22 @@ public:
 class OmorRangedSpreadTrigger : public Trigger
 {
 public:    OmorRangedSpreadTrigger(PlayerbotAI* botAI) : Trigger(botAI, "omor ranged spread") {}
+
+    bool IsActive() override;
+};
+
+class OmorFiendishHoundIsActiveTrigger : public Trigger
+{
+public:    OmorFiendishHoundIsActiveTrigger(PlayerbotAI* botAI) : Trigger(botAI, "omor fiendish hound is active") {}
+
+    bool IsActive() override;
+};
+
+// Vazruden
+
+class VazrudenTankPositionBossTrigger : public Trigger
+{
+public:    VazrudenTankPositionBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "vazruden tank position boss") {}
 
     bool IsActive() override;
 };

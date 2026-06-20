@@ -13,7 +13,6 @@ constexpr uint32 HR_MAP_ID = 543;
 static const Position GARGOLMAR_TANK_POSITION = { -1196.097f, 1439.785f, 68.500f };
 
 // Tank will position Gargolmar at the specified coordinates to minimize risk of chaining other packs.
-
 bool GargolmarTankPositionBossAction::Execute(Event /*event*/)
 {
     Unit* gargolmar = AI_VALUE2(Unit*, "find target", "watchkeeper gargolmar");
@@ -53,8 +52,8 @@ bool GargolmarMarkHellfireWatchersAction::Execute(Event /*event*/)
     if (!watcher)
         return false;
 
-    MarkTargetWithSkull(bot, watcher);
-    SetRtiTarget(botAI, "skull", watcher);
+    if (IsMechanicTrackerBot(botAI, bot, HR_MAP_ID, nullptr))
+            MarkTargetWithSkull(bot, target);
 
     return true;
 }
@@ -90,47 +89,63 @@ bool OmorBaneOfTreacheryAuraFleeFromPlayersAction::Execute(Event /*event*/)
 // ranged spread out 15 yards from each other
 bool OmorRangedSpreadAction::Execute(Event /*event*/)
 {
-    Unit* omor = AI_VALUE2(Unit*, "find target", "omor the unscarred");
-    if (!omor)
-        return false;
+    const float minDistance = 15.0f;
+    Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance);
 
-    std::vector<Player*> rangedBots;
-    if (Group* group = bot->GetGroup())
+    if (nearestPlayer)
     {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && member->IsAlive() && botAI->IsRanged(member))
-                rangedBots.push_back(member);
-        }
+        bot->AttackStop();
+        bot->InterruptNonMeleeSpells(true);
+        return FleePosition(nearestPlayer->GetPosition(), minDistance);
     }
 
-    auto findIt = std::find(rangedBots.begin(), rangedBots.end(), bot);
-    if (findIt == rangedBots.end())
+    return false;
+}
+
+// Mark Fiendish Hound with skull
+bool OmorMarkFiendishHoundAction::Execute(Event /*event*/)
+{
+    Unit* hound = AI_VALUE2(Unit*, "find target", "fiendish hound");
+    if (!hound)
         return false;
 
-    size_t botIndex = std::distance(rangedBots.begin(), findIt);
-    size_t count = rangedBots.size();
+    if (IsMechanicTrackerBot(botAI, bot, HR_MAP_ID, nullptr))
+            MarkTargetWithSkull(bot, target);
 
-    float angle = (count <= 1) ? 0.0f : ((2.0f * M_PI) * (float)botIndex / (float)count);
+    return true;
+}
 
-    constexpr float spreadRadius = 18.0f;
-    float targetX = omor->GetPositionX() + cos(angle) * spreadRadius;
-    float targetY = omor->GetPositionY() + sin(angle) * spreadRadius;
+// Vazruden
 
-    float distToSpot = bot->GetExactDist2d(targetX, targetY);
+static const Position VAZRUDEN_TANK_POSITION = { -1407.405, 1744.521, 81.075 };
 
-    if (distToSpot > 3.0f)
+// Tank positions Vazruden on the middle of the platform (for some reason bots try to grab the dragon flying around the platform. This is to help prevent that.)
+bool VazrudenTankPositionBossAction::Execute(Event /*event*/)
+{
+    Unit* vazruden = AI_VALUE2(Unit*, "find target", "vazruden");
+    if (!vazruden)
+        return false;
+
+    if (bot->GetVictim() != vazruden)
+        return Attack(vazruden);
+
+    if (vazruden->GetVictim() == bot && bot->IsWithinMeleeRange(vazruden) &&
+        bot->GetHealthPct()>30.0f)
     {
-        float dX = targetX - bot->GetPositionX();
-        float dY = targetY - bot->GetPositionY();
+        const Position& position = VAZRUDEN_TANK_POSITION;
+        float distToPosition = bot->GetExactDist2d(position.GetPositionX(),
+                                                   position.GetPositionY());
+        if (distToPosition > 6.0f)
+        {
+            float dX = position.GetPositionX() - bot->GetPositionX();
+            float dY = position.GetPositionY() - bot->GetPositionY();
+            float moveDist = std::min(2.0f, distToPosition);
+            float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-        float moveDist = std::min(2.0f, distToSpot);
-        float moveX = bot->GetPositionX() + (dX / distToSpot) * moveDist;
-        float moveY = bot->GetPositionY() + (dY / distToSpot) * moveDist;
-
-        return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false,
-                      false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
+            return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false,
+                   false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        }
     }
 
     return false;

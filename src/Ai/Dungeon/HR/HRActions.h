@@ -50,4 +50,22 @@ public:
     bool Execute(Event event) override;
 };
 
+class OmorMarkFiendishHoundAction : public Action
+{
+public:
+    OmorMarkFiendishHoundAction(
+        PlayerbotAI* botAI, std::string const name = "omor mark fiendish hound") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+// Vazruden
+
+class VazrudenTankPositionBossAction : public AttackAction
+{
+public:
+    VazrudenTankPositionBossAction(
+        PlayerbotAI* botAI, std::string const name = "vazruden tank position boss") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 #endif

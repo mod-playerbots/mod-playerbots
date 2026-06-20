@@ -34,3 +34,17 @@ bool OmorRangedSpreadTrigger::IsActive()
     return botAI->IsRanged(bot) &&
            AI_VALUE2(Unit*, "find target", "omor the unscarred");
 }
+
+bool OmorFiendishHoundIsActiveTrigger::IsActive()
+{
+    return botAI->IsDps(bot) &&
+           AI_VALUE2(Unit*, "find target", "fiendish hound");
+}
+
+// Vazruden
+
+bool VazrudenTankPositionBossTrigger::IsActive()
+{
+    return botAI->IsTank(bot) &&
+           AI_VALUE2(Unit*, "find target", "vazruden");
+}

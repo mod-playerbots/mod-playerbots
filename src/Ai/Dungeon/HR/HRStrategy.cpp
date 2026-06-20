@@ -20,6 +20,13 @@ void TbcDungeonHellfireRampartsStrategy::InitTriggers(std::vector<TriggerNode*> 
 
     triggers.push_back(new TriggerNode("omor ranged spread", {
         NextAction("omor ranged spread", ACTION_RAID + 1)}));
+
+    triggers.push_back(new TriggerNode("omor fiendish hound is active", {
+        NextAction("omor mark fiendish hound", ACTION_RAID + 1)}));
+
+    // Vazruden
+    triggers.push_back(new TriggerNode("vazruden tank position boss", {
+        NextAction("vazruden tank position boss", ACTION_RAID + 1)}));
 }
 
 void TbcDungeonHellfireRampartsStrategy::InitMultipliers(std::vector<Multiplier*> &multipliers)
