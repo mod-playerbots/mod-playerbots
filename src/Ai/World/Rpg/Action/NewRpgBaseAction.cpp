@@ -225,7 +225,7 @@ bool NewRpgBaseAction::MoveWorldObjectTo(ObjectGuid guid, float distance)
     return MoveTo(mapId, x, y, z, false, false, false, true);
 }
 
-bool NewRpgBaseAction::MoveRandomNear(float moveStep, MovementPriority priority, WorldObject* /*center*/)
+bool NewRpgBaseAction::MoveRandomNear(float moveStep, MovementPriority priority, WorldObject*)
 {
     if (IsWaitingForLastMove(priority))
         return false;

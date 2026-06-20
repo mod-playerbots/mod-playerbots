@@ -1395,7 +1395,7 @@ bool IccLichKingWinterAction::HandleRangedPositioning()
     return false;
 }
 
-bool IccLichKingWinterAction::HandleMainTankAddManagement(Unit* /*boss*/, Position const* frostPos)
+bool IccLichKingWinterAction::HandleMainTankAddManagement(Unit*, Position const* frostPos)
 {
     static constexpr float ENGAGE_RADIUS = 12.0f;
     static constexpr float TAUNT_RADIUS = 30.0f;
@@ -1579,7 +1579,7 @@ bool IccLichKingWinterAction::HandleMainTankAddManagement(Unit* /*boss*/, Positi
     return false;
 }
 
-bool IccLichKingWinterAction::HandleAssistTankAddManagement(Unit* /*boss*/, Position const* frostPos)
+bool IccLichKingWinterAction::HandleAssistTankAddManagement(Unit*, Position const* frostPos)
 {
     static constexpr float FROST_TOL = 3.0f;
     static constexpr float MELE_RANGE = 5.0f;
@@ -2186,7 +2186,7 @@ bool IccLichKingSpiritBombAction::IsBombThreatActive(PlayerbotAI* botAI, Player*
     return false;
 }
 
-bool IccLichKingSpiritBombAction::Execute(Event /*event*/)
+bool IccLichKingSpiritBombAction::Execute(Event)
 {
     Difficulty const diff = bot->GetMap() ? bot->GetMap()->GetDifficulty() : RAID_DIFFICULTY_10MAN_NORMAL;
     Unit* terenas = bot->FindNearestCreature(NPC_TERENAS_MENETHIL_HC, 55.0f);
