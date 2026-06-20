@@ -15,7 +15,7 @@ float OmorTreacherousAuraFleeFromPlayersMultiplier::GetValue(Action* action)
     if (!omor)
         return 1.0f;
 
-    if (!bot->HasAura(static_cast<uint32>(SPELL_TREACHEROUS_AURA)))
+    if (!bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA)))
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
@@ -32,7 +32,7 @@ float OmorBaneOfTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
     if (!omor)
         return 1.0f;
 
-    if (!bot->HasAura(static_cast<uint32>(SPELL_BANE_OF_TREACHERY)))
+    if (!bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)))
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||

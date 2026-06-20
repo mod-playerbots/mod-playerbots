@@ -21,12 +21,12 @@ bool GargolmarHellfireWatchersAreActiveTrigger::IsActive()
 
 bool OmorTreacherousAuraTrigger::IsActive()
 {
-    return bot->HasAura(static_cast<uint32>(SPELL_TREACHEROUS_AURA));
+    return bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA));
 }
 
 bool OmorBaneOfTreacheryAuraTrigger::IsActive()
 {
-    return bot->HasAura(static_cast<uint32>(SPELL_BANE_OF_TREACHERY));
+    return bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY));
 }
 
 bool OmorRangedSpreadTrigger::IsActive()

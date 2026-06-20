@@ -48,3 +48,5 @@ public:
         PlayerbotAI* botAI, std::string const name = "omor ranged spread") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
+
+#endif
