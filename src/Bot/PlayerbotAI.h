@@ -408,6 +408,7 @@ public:
     std::vector<std::string> GetStrategies(BotState type);
     Strategy* GetStrategy(std::string const name, BotState type);
     void ApplyInstanceStrategies(uint32 mapId, bool tellMaster = false);
+    bool HasTargetExclusions() const;
     void EvaluateHealerDpsStrategy();
     bool ContainsStrategy(StrategyType type);
     bool HasStrategy(std::string const name, BotState type);

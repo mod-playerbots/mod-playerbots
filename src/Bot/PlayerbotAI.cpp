@@ -1672,7 +1672,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             strategyName = "tempestkeep";  // Tempest Keep: The Eye
             break;
         case 558:
-            strategyName = "tbc-ac"; // Auchindoun: Auchenai Crypts
+            strategyName = "tbc-ac";  // Auchindoun: Auchenai Crypts
             break;
         case 564:
             strategyName = "blacktemple";  // Black Temple
@@ -1762,6 +1762,11 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         out << "Added " << strategyName << " instance strategy";
         TellMasterNoFacing(out.str());
     }
+}
+
+bool PlayerbotAI::HasTargetExclusions() const
+{
+    return engines[BOT_STATE_COMBAT] && engines[BOT_STATE_COMBAT]->HasTargetExclusions();
 }
 
 bool PlayerbotAI::DoSpecificAction(std::string const name, Event event, bool silent, std::string const qualifier)
