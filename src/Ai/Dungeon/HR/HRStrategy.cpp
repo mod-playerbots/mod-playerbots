@@ -1,0 +1,25 @@
+#include "HRTriggers.h"
+#include "HRStrategy.h"
+#include "HRMultipliers.h"
+
+void TbcDungeonHellfireRampartsStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
+{
+    // Watchkeeper Gargolmar
+    triggers.push_back(new TriggerNode("gargolmar tank position boss", {
+        NextAction("gargolmar tank position boss", ACTION_RAID + 1)}));
+
+    triggers.push_back(new TriggerNode("gargolmar hellfire watchers are active", {
+        NextAction("gargolmar mark hellfire watchers", ACTION_RAID + 1)}));
+
+    // Omor the Unscarred
+    triggers.push_back(new TriggerNode("omor treacherous aura", {
+        NextAction("omor treacherous aura flee from players", ACTION_EMERGENCY + 1)}));
+
+    triggers.push_back(new TriggerNode("omor bane of treachery aura", {
+        NextAction("omor bane of treachery aura flee from players", ACTION_EMERGENCY + 1)}));
+}
+
+void TbcDungeonHellfireRampartsStrategy::InitMultipliers(std::vector<Multiplier*> &multipliers)
+{
+
+}
