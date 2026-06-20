@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDEOEACTIONS_H
-#define _PLAYERBOT_RAIDEOEACTIONS_H
+#ifndef PLAYERBOTS_EOEACTIONS_H
+#define PLAYERBOTS_EOEACTIONS_H
 
 #include "AttackAction.h"
 #include "GenericSpellActions.h"

@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDOSACTIONS_H
-#define _PLAYERBOT_RAIDOSACTIONS_H
+#ifndef PLAYERBOTS_OSACTIONS_H
+#define PLAYERBOTS_OSACTIONS_H
 
 #include "MovementActions.h"
 #include "AttackAction.h"

@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_FOLLOWMASTERSTRATEGY_H
-#define _PLAYERBOT_FOLLOWMASTERSTRATEGY_H
+#ifndef PLAYERBOTS_FOLLOWMASTERSTRATEGY_H
+#define PLAYERBOTS_FOLLOWMASTERSTRATEGY_H
 
 #include "NonCombatStrategy.h"
 

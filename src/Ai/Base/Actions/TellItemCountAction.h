@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_TELLITEMCOUNTACTION_H
-#define _PLAYERBOT_TELLITEMCOUNTACTION_H
+#ifndef PLAYERBOTS_TELLITEMCOUNTACTION_H
+#define PLAYERBOTS_TELLITEMCOUNTACTION_H
 
 #include "InventoryAction.h"
 

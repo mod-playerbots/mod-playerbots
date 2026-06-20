@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PALADIN_PULL_STRATEGY_H
-#define _PLAYERBOT_PALADIN_PULL_STRATEGY_H
+#ifndef PLAYERBOTS_PALADINPULLSTRATEGY_H
+#define PLAYERBOTS_PALADINPULLSTRATEGY_H
 
 #include "PullStrategy.h"
 

@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_DPSASSISTSTRATEGY_H
-#define _PLAYERBOT_DPSASSISTSTRATEGY_H
+#ifndef PLAYERBOTS_DPSASSISTSTRATEGY_H
+#define PLAYERBOTS_DPSASSISTSTRATEGY_H
 
 #include "NonCombatStrategy.h"
 

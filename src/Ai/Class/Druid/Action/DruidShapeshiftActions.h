@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_DRUIDSHAPESHIFTACTIONS_H
-#define _PLAYERBOT_DRUIDSHAPESHIFTACTIONS_H
+#ifndef PLAYERBOTS_DRUIDSHAPESHIFTACTIONS_H
+#define PLAYERBOTS_DRUIDSHAPESHIFTACTIONS_H
 
 #include "GenericSpellActions.h"
 

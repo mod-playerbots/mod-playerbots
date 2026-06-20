@@ -3,7 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#pragma once
+#ifndef PLAYERBOTS_ACTION_H
+#define PLAYERBOTS_ACTION_H
 
 #include "AiObject.h"
 #include "Event.h"
@@ -163,3 +164,5 @@ private:
     Event event;
     uint32_t created;
 };
+
+#endif

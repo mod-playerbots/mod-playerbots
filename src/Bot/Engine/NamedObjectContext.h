@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_NAMEDOBJECTCONEXT_H
-#define _PLAYERBOT_NAMEDOBJECTCONEXT_H
+#ifndef PLAYERBOTS_NAMEDOBJECTCONTEXT_H
+#define PLAYERBOTS_NAMEDOBJECTCONTEXT_H
 
 #include <list>
 #include <set>

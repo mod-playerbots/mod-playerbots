@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_WOTLKDUNGEONGDSTRATEGY_H
-#define _PLAYERBOT_WOTLKDUNGEONGDSTRATEGY_H
+#ifndef PLAYERBOTS_GDSTRATEGY_H
+#define PLAYERBOTS_GDSTRATEGY_H
 
 #include "Multiplier.h"
 #include "AiObjectContext.h"

@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_RAIDSSCACTIONCONTEXT_H
-#define _PLAYERBOT_RAIDSSCACTIONCONTEXT_H
+#ifndef PLAYERBOTS_SSCACTIONCONTEXT_H
+#define PLAYERBOTS_SSCACTIONCONTEXT_H
 
 #include "SSCActions.h"
 #include "NamedObjectContext.h"

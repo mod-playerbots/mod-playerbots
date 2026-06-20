@@ -3,17 +3,17 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PASSTHROUGHSTRATEGY_H
-#define _PLAYERBOT_PASSTHROUGHSTRATEGY_H
+#ifndef PLAYERBOTS_PASSTHROUGHSTRATEGY_H
+#define PLAYERBOTS_PASSTHROUGHSTRATEGY_H
 
 #include "Strategy.h"
 
 class PlayerbotAI;
 
-class PassTroughStrategy : public Strategy
+class PassThroughStrategy : public Strategy
 {
 public:
-    PassTroughStrategy(PlayerbotAI* botAI, float relevance = 100.0f) : Strategy(botAI), relevance(relevance) {}
+    PassThroughStrategy(PlayerbotAI* botAI, float relevance = 100.0f) : Strategy(botAI), relevance(relevance) {}
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
 

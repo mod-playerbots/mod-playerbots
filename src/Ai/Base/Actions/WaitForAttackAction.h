@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_WAITFORATTACKACTION_H
-#define _PLAYERBOT_WAITFORATTACKACTION_H
+#ifndef PLAYERBOTS_WAITFORATTACKACTION_H
+#define PLAYERBOTS_WAITFORATTACKACTION_H
 
 #include "MovementActions.h"
 

@@ -1,96 +1,109 @@
-#ifndef _PLAYERBOT_RAIDGRUULSLAIRTRIGGERS_H
-#define _PLAYERBOT_RAIDGRUULSLAIRTRIGGERS_H
+#ifndef PLAYERBOTS_GRUULTRIGGERS_H
+#define PLAYERBOTS_GRUULTRIGGERS_H
 
 #include "Trigger.h"
 
-class HighKingMaulgarIsMainTankTrigger : public Trigger
+class HighKingMaulgarBossEngagedByMainTankTrigger : public Trigger
 {
 public:
-    HighKingMaulgarIsMainTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar is main tank") {}
+    HighKingMaulgarBossEngagedByMainTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar engaged by main tank") {}
     bool IsActive() override;
 };
 
-class HighKingMaulgarIsFirstAssistTankTrigger : public Trigger
+class HighKingMaulgarOlmEngagedByFirstAssistTankTrigger : public Trigger
 {
 public:
-    HighKingMaulgarIsFirstAssistTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar is first assist tank") {}
+    HighKingMaulgarOlmEngagedByFirstAssistTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar olm engaged by first assist tank") {}
     bool IsActive() override;
 };
 
-class HighKingMaulgarIsSecondAssistTankTrigger : public Trigger
+class HighKingMaulgarBlindeyeEngagedBySecondAssistTankTrigger : public Trigger
 {
 public:
-    HighKingMaulgarIsSecondAssistTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar is second assist tank") {}
+    HighKingMaulgarBlindeyeEngagedBySecondAssistTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar blindeye engaged by second assist tank") {}
     bool IsActive() override;
 };
 
-class HighKingMaulgarIsMageTankTrigger : public Trigger
+class HighKingMaulgarKroshEngagedByMageTankTrigger : public Trigger
 {
 public:
-    HighKingMaulgarIsMageTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar is mage tank") {}
+    HighKingMaulgarKroshEngagedByMageTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar krosh engaged by mage tank") {}
     bool IsActive() override;
 };
 
-class HighKingMaulgarIsMoonkinTankTrigger : public Trigger
+class HighKingMaulgarKigglerEngagedByMoonkinTankTrigger : public Trigger
 {
 public:
-    HighKingMaulgarIsMoonkinTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar is moonkin tank") {}
+    HighKingMaulgarKigglerEngagedByMoonkinTankTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar kiggler engaged by moonkin tank") {}
     bool IsActive() override;
 };
 
 class HighKingMaulgarDeterminingKillOrderTrigger : public Trigger
 {
 public:
-    HighKingMaulgarDeterminingKillOrderTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar determining kill order") {}
-    bool IsActive() override;
-};
-
-class HighKingMaulgarHealerInDangerTrigger : public Trigger
-{
-public:
-    HighKingMaulgarHealerInDangerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar healers in danger") {}
+    HighKingMaulgarDeterminingKillOrderTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar determining kill order") {}
     bool IsActive() override;
 };
 
 class HighKingMaulgarBossChannelingWhirlwindTrigger : public Trigger
 {
 public:
-    HighKingMaulgarBossChannelingWhirlwindTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar boss channeling whirlwind") {}
+    HighKingMaulgarBossChannelingWhirlwindTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar boss channeling whirlwind") {}
     bool IsActive() override;
 };
 
-class HighKingMaulgarWildFelstalkerSpawnedTrigger : public Trigger
+class HighKingMaulgarKroshCastsBlastWaveTrigger : public Trigger
 {
 public:
-    HighKingMaulgarWildFelstalkerSpawnedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar wild felstalker spawned") {}
+    HighKingMaulgarKroshCastsBlastWaveTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar krosh casts blast wave") {}
     bool IsActive() override;
 };
 
-class HighKingMaulgarPullingOlmAndBlindeyeTrigger : public Trigger
+class HighKingMaulgarWildFelStalkerSpawnedTrigger : public Trigger
 {
 public:
-    HighKingMaulgarPullingOlmAndBlindeyeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar pulling olm and blindeye") {}
+    HighKingMaulgarWildFelStalkerSpawnedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar wild fel stalker spawned") {}
+    bool IsActive() override;
+};
+
+class HighKingMaulgarPullingOgreCouncilTrigger : public Trigger
+{
+public:
+    HighKingMaulgarPullingOgreCouncilTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "high king maulgar pulling ogre council") {}
     bool IsActive() override;
 };
 
 class GruulTheDragonkillerBossEngagedByTanksTrigger : public Trigger
 {
 public:
-    GruulTheDragonkillerBossEngagedByTanksTrigger(PlayerbotAI* botAI) : Trigger(botAI, "gruul the dragonkiller boss engaged by tanks") {}
+    GruulTheDragonkillerBossEngagedByTanksTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "gruul the dragonkiller boss engaged by tanks") {}
     bool IsActive() override;
 };
 
 class GruulTheDragonkillerBossEngagedByRangedTrigger : public Trigger
 {
 public:
-    GruulTheDragonkillerBossEngagedByRangedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "gruul the dragonkiller boss engaged by ranged") {}
+    GruulTheDragonkillerBossEngagedByRangedTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "gruul the dragonkiller boss engaged by ranged") {}
     bool IsActive() override;
 };
 
 class GruulTheDragonkillerIncomingShatterTrigger : public Trigger
 {
 public:
-    GruulTheDragonkillerIncomingShatterTrigger(PlayerbotAI* botAI) : Trigger(botAI, "gruul the dragonkiller incoming shatter") {}
+    GruulTheDragonkillerIncomingShatterTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "gruul the dragonkiller incoming shatter") {}
     bool IsActive() override;
 };
 

@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_RAIDBLACKTEMPLESTRATEGY_H_
-#define _PLAYERBOT_RAIDBLACKTEMPLESTRATEGY_H_
+#ifndef PLAYERBOTS_BTSTRATEGY_H
+#define PLAYERBOTS_BTSTRATEGY_H
 
 #include "Strategy.h"
 

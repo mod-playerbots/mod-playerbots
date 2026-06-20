@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_RAIDBLACKTEMPLETRIGGERS_H
-#define _PLAYERBOT_RAIDBLACKTEMPLETRIGGERS_H
+#ifndef PLAYERBOTS_BTTRIGGERS_H
+#define PLAYERBOTS_BTTRIGGERS_H
 
 #include "Trigger.h"
 

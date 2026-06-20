@@ -1,47 +1,69 @@
-#ifndef _PLAYERBOT_RAIDGRUULSLAIRMULTIPLIERS_H
-#define _PLAYERBOT_RAIDGRUULSLAIRMULTIPLIERS_H
+#ifndef PLAYERBOTS_GRUULMULTIPLIERS_H
+#define PLAYERBOTS_GRUULMULTIPLIERS_H
 
 #include "Multiplier.h"
 
-class HighKingMaulgarDisableTankAssistMultiplier : public Multiplier
+class HighKingMaulgarDelayBloodlustAndHeroismMultiplier : public Multiplier
 {
 public:
-    HighKingMaulgarDisableTankAssistMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar disable tank assist multiplier") {}
+    HighKingMaulgarDelayBloodlustAndHeroismMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar delay bloodlust and heroism multiplier") {}
+    float GetValue(Action* action) override;
+};
+
+class HighKingMaulgarControlTankActionsMultiplier : public Multiplier
+{
+public:
+    HighKingMaulgarControlTankActionsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar control tank actions multiplier") {}
     float GetValue(Action* action) override;
 };
 
 class HighKingMaulgarAvoidWhirlwindMultiplier : public Multiplier
 {
 public:
-    HighKingMaulgarAvoidWhirlwindMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar avoid whirlwind multiplier") {}
+    HighKingMaulgarAvoidWhirlwindMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar avoid whirlwind multiplier") {}
     float GetValue(Action* action) override;
 };
 
 class HighKingMaulgarDisableArcaneShotOnKroshMultiplier : public Multiplier
 {
 public:
-    HighKingMaulgarDisableArcaneShotOnKroshMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar disable arcane shot on krosh multiplier") {}
+    HighKingMaulgarDisableArcaneShotOnKroshMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar disable arcane shot on krosh multiplier") {}
     float GetValue(Action* action) override;
 };
 
-class HighKingMaulgarDisableMageTankAOEMultiplier : public Multiplier
+class HighKingMaulgarDisableMageTankAoeMultiplier : public Multiplier
 {
 public:
-    HighKingMaulgarDisableMageTankAOEMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar disable mage tank aoe multiplier") {}
+    HighKingMaulgarDisableMageTankAoeMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "high king maulgar disable mage tank aoe multiplier") {}
     float GetValue(Action* action) override;
 };
 
-class GruulTheDragonkillerMainTankMovementMultiplier : public Multiplier
+class GruulTheDragonkillerDelayBloodlustAndHeroismMultiplier : public Multiplier
 {
 public:
-    GruulTheDragonkillerMainTankMovementMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "gruul the dragonkiller main tank movement multiplier") {}
+    GruulTheDragonkillerDelayBloodlustAndHeroismMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "gruul the dragonkiller delay bloodlust and heroism multiplier") {}
     float GetValue(Action* action) override;
 };
 
-class GruulTheDragonkillerGroundSlamMultiplier : public Multiplier
+class GruulTheDragonkillerControlTankMovementMultiplier : public Multiplier
 {
 public:
-    GruulTheDragonkillerGroundSlamMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "gruul the dragonkiller ground slam multiplier") {}
+    GruulTheDragonkillerControlTankMovementMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "gruul the dragonkiller control tank movement multiplier") {}
+    float GetValue(Action* action) override;
+};
+
+class GruulTheDragonkillerStaySpreadForShatterMultiplier : public Multiplier
+{
+public:
+    GruulTheDragonkillerStaySpreadForShatterMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "gruul the dragonkiller stay spread for shatter multiplier") {}
     float GetValue(Action* action) override;
 };
 

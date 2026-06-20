@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDBWLTRIGGERS_H
-#define _PLAYERBOT_RAIDBWLTRIGGERS_H
+#ifndef PLAYERBOTS_BWLTRIGGERS_H
+#define PLAYERBOTS_BWLTRIGGERS_H
 
 #include "Trigger.h"
 
@@ -34,6 +34,22 @@ class BwlNefarianFearWardTrigger : public Trigger
 {
 public:
     BwlNefarianFearWardTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl nefarian fear ward") {}
+    bool IsActive() override;
+};
+
+// Trash
+
+class BwlDeathTalonWyrmguardTankTrigger : public Trigger
+{
+public:
+    BwlDeathTalonWyrmguardTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl death talon wyrmguard tank") {}
+    bool IsActive() override;
+};
+
+class BwlDeathTalonWyrmguardRangedTrigger : public Trigger
+{
+public:
+    BwlDeathTalonWyrmguardRangedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl death talon wyrmguard ranged") {}
     bool IsActive() override;
 };
 

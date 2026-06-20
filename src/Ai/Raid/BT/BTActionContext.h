@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_RAIDBLACKTEMPLEACTIONCONTEXT_H
-#define _PLAYERBOT_RAIDBLACKTEMPLEACTIONCONTEXT_H
+#ifndef PLAYERBOTS_BTACTIONCONTEXT_H
+#define PLAYERBOTS_BTACTIONCONTEXT_H
 
 #include "NamedObjectContext.h"
 #include "BTActions.h"

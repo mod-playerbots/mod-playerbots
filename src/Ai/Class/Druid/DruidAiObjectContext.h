@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_DRUIDAIOBJECTCONTEXT_H
-#define _PLAYERBOT_DRUIDAIOBJECTCONTEXT_H
+#ifndef PLAYERBOTS_DRUIDAIOBJECTCONTEXT_H
+#define PLAYERBOTS_DRUIDAIOBJECTCONTEXT_H
 
 #include "AiObjectContext.h"
 

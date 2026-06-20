@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_EstimatedLifetimeValue_H
-#define _PLAYERBOT_EstimatedLifetimeValue_H
+#ifndef PLAYERBOTS_ESTIMATEDLIFETIMEVALUE_H
+#define PLAYERBOTS_ESTIMATEDLIFETIMEVALUE_H
 
 #include "NamedObjectContext.h"
 #include "PossibleTargetsValue.h"

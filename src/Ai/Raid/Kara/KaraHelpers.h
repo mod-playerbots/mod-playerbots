@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDKARAZHANHELPERS_H_
-#define _PLAYERBOT_RAIDKARAZHANHELPERS_H_
+#ifndef PLAYERBOTS_KARAHELPERS_H
+#define PLAYERBOTS_KARAHELPERS_H
 
 #include <ctime>
 #include <unordered_map>

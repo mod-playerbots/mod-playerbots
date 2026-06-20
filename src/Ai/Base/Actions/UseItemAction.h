@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_USEITEMACTION_H
-#define _PLAYERBOT_USEITEMACTION_H
+#ifndef PLAYERBOTS_USEITEMACTION_H
+#define PLAYERBOTS_USEITEMACTION_H
 
 #include "Action.h"
 

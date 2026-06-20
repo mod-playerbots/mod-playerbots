@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_ROGUECOMBOACTIONS_H
-#define _PLAYERBOT_ROGUECOMBOACTIONS_H
+#ifndef PLAYERBOTS_ROGUECOMBOACTIONS_H
+#define PLAYERBOTS_ROGUECOMBOACTIONS_H
 
 #include "GenericSpellActions.h"
 

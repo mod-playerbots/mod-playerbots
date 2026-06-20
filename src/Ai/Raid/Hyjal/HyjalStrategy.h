@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_RAIDHYJALSUMMITSTRATEGY_H_
-#define _PLAYERBOT_RAIDHYJALSUMMITSTRATEGY_H_
+#ifndef PLAYERBOTS_HYJALSTRATEGY_H
+#define PLAYERBOTS_HYJALSTRATEGY_H
 
 #include "Strategy.h"
 

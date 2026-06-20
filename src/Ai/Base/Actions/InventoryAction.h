@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_INVENTORYACTION_H
-#define _PLAYERBOT_INVENTORYACTION_H
+#ifndef PLAYERBOTS_INVENTORYACTION_H
+#define PLAYERBOTS_INVENTORYACTION_H
 
 #include "Action.h"
 #include "ItemVisitors.h"
