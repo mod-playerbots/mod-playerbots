@@ -40,3 +40,11 @@ public:
         PlayerbotAI* botAI, std::string const name = "omor bane of treachery aura flee from players") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
+
+class OmorRangedSpreadAction : public MovementAction
+{
+public:
+    OmorRangedSpreadAction(
+        PlayerbotAI* botAI, std::string const name = "omor ranged spread") : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};

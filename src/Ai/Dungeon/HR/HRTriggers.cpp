@@ -28,3 +28,9 @@ bool OmorBaneOfTreacheryAuraTrigger::IsActive()
 {
     return bot->HasAura(static_cast<uint32>(SPELL_BANE_OF_TREACHERY));
 }
+
+bool OmorRangedSpreadTrigger::IsActive()
+{
+    return botAI->IsRanged(bot) &&
+           AI_VALUE2(Unit*, "find target", "omor the unscarred");
+}

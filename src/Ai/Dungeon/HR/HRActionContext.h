@@ -23,6 +23,9 @@ public:
 
         creators["omor bane of treachery aura flee from players"] =
             &TbcDungeonHellfireRampartsActionContext::omor_bane_of_treachery_aura_flee_from_players;
+
+        creators["omor ranged spread"] =
+            &TbcDungeonHellfireRampartsActionContext::omor_ranged_spread;
     }
 private:
     // Watchkeeper Gargolmar
@@ -38,6 +41,9 @@ private:
 
     static Action* omor_bane_of_treachery_aura_flee_from_players(
         PlayerbotAI* botAI) { return new OmorBaneOfTreacheryAuraFleeFromPlayersAction(botAI); }
+
+    static Action* omor_ranged_spread(
+        PlayerbotAI* botAI) { return new OmorRangedSpreadAction(botAI); }
 
 };
 

@@ -17,9 +17,14 @@ void TbcDungeonHellfireRampartsStrategy::InitTriggers(std::vector<TriggerNode*> 
 
     triggers.push_back(new TriggerNode("omor bane of treachery aura", {
         NextAction("omor bane of treachery aura flee from players", ACTION_EMERGENCY + 1)}));
+
+    triggers.push_back(new TriggerNode("omor ranged spread", {
+        NextAction("omor ranged spread", ACTION_RAID + 1)}));
 }
 
 void TbcDungeonHellfireRampartsStrategy::InitMultipliers(std::vector<Multiplier*> &multipliers)
 {
+    multipliers.push_back(new OmorTreacherousAuraFleeFromPlayersMultiplier(botAI));
 
+    multipliers.push_back(new OmorBaneOfTreacheryAuraFleeFromPlayersMultiplier(botAI));
 }

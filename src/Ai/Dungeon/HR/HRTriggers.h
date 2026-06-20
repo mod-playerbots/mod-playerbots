@@ -50,3 +50,12 @@ public:
 
     bool IsActive() override;
 };
+
+class OmorRangedSpreadTrigger : public Trigger
+{
+public:    OmorRangedSpreadTrigger(PlayerbotAI* botAI) : Trigger(botAI, "omor ranged spread") {}
+
+    bool IsActive() override;
+};
+
+#endif
