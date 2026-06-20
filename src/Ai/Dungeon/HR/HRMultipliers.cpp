@@ -4,7 +4,6 @@
 #include "MovementActions.h"
 #include "ReachTargetActions.h"
 #include "FollowActions.h"
-#include "AiObjectContext.h"
 #include "Playerbots.h"
 
 // Omor the Unscarred

@@ -3,6 +3,7 @@
 
 #include "AttackAction.h"
 #include "MovementActions.h"
+#include "Action.h"
 #include "HRTriggers.h"
 
 // Watchkeeper Gargolmar

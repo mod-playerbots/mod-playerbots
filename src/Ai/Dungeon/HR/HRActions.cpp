@@ -1,7 +1,9 @@
 #include "Playerbots.h"
+#include "PlayerbotAI.h"
 #include "AiFactory.h"
 #include "HRTriggers.h"
 #include "HRActions.h"
+#include "RaidBossHelpers.h"
 
 constexpr uint32 HR_MAP_ID = 543;
 
