@@ -116,9 +116,8 @@ bool ChooseRpgTargetAction::Execute(Event /*event*/)
     GuidPosition masterRpgTarget;
     if (master && master != bot && GET_PLAYERBOT_AI(master) && master->GetMapId() == bot->GetMapId() && !master->IsBeingTeleported())
     {
-        //TODO Implement
-        Player* player = botAI->GetMaster();
-        //GuidPosition masterRpgTarget = PAI_VALUE(GuidPosition, "rpg target"); //not used, line marked for removal.
+        Player* player = master;
+        masterRpgTarget = PAI_VALUE(GuidPosition, "rpg target");
     }
     else
         master = nullptr;
@@ -204,6 +203,7 @@ bool ChooseRpgTargetAction::Execute(Event /*event*/)
 
     SET_AI_VALUE(std::string, "next rpg action", "");
 
+    // Only fires when following a playerbot master.
     for (auto it = begin(targets); it != end(targets);)
     {
         //Remove empty targets.
