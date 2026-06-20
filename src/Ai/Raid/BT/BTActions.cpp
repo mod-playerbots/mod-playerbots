@@ -2373,14 +2373,26 @@ bool IllidanStormrageAssistTanksHandleFlamesOfAzzinothAction::RepositionToAvoidB
 
         if (distToNewPosition > 0.2f)
         {
-            return MoveTo(BLACK_TEMPLE_MAP_ID, newTarget.GetPositionX(), newTarget.GetPositionY(),
+            const float dX = newTarget.GetPositionX() - bot->GetPositionX();
+            const float dY = newTarget.GetPositionY() - bot->GetPositionY();
+            const float moveDist = std::min(5.0f, distToNewPosition);
+            const float moveX = bot->GetPositionX() + (dX / distToNewPosition) * moveDist;
+            const float moveY = bot->GetPositionY() + (dY / distToNewPosition) * moveDist;
+
+            return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY,
                           bot->GetPositionZ(), false, false, false, false,
                           MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
     else if (distToPosition > 0.2f)
     {
-        return MoveTo(BLACK_TEMPLE_MAP_ID, target.GetPositionX(), target.GetPositionY(),
+        const float dX = target.GetPositionX() - bot->GetPositionX();
+        const float dY = target.GetPositionY() - bot->GetPositionY();
+        const float moveDist = std::min(3.0f, distToPosition);
+        const float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+        const float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+        return MoveTo(BLACK_TEMPLE_MAP_ID, moveX, moveY,
                       bot->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_COMBAT, true, true);
     }
