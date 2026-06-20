@@ -2,6 +2,7 @@
 #define PLAYERBOTS_BWLHELPERS_H
 
 #include "Player.h"
+#include "PlayerbotAI.h"
 
 namespace BlackwingLairHelpers
 {
@@ -9,6 +10,12 @@ namespace BlackwingLairHelpers
     {
         // General
         SPELL_ONYXIA_SCALE_CLOAK = 22683,
+
+        // Razorgore the Untamed
+        SPELL_MINDCONTROL = 19832,
+
+        // Vaelastrasz the Corrupt
+        SPELL_BURNING_ADRENALINE = 18173,
 
         // Chromaggus
         SPELL_BROOD_AFFLICTION_BRONZE = 23170,
@@ -21,7 +28,10 @@ namespace BlackwingLairHelpers
     enum BlackwingLairGameObjects
     {
         // General
-        GO_SUPPRESSION_DEVICE = 179784
+        GO_SUPPRESSION_DEVICE = 179784,
+
+        // Razorgore the Untamed
+        GO_BLACK_DRAGON_EGG = 177807
     };
 
     enum BlackwingLairNPCs
@@ -31,6 +41,9 @@ namespace BlackwingLairHelpers
     };
 
     bool IsActiveSuppressionDeviceInRange(const GameObject* go, const Player* bot);
+    bool AreRazorgoreEggsAlive(PlayerbotAI* botAI);
+    bool IsRazorgoreOffTank(Player* bot);
+    bool IsNonBABotNearPosition(const Player* bot, Position const& position, float distance);
 }
 
 #endif //_PLAYERBOT_RAIDBWLHELPERS_H

@@ -14,11 +14,34 @@ bool BwlSuppressionDeviceTrigger::IsActive()
     {
         const GameObject* go = botAI->GetGameObject(*i);
         if (IsActiveSuppressionDeviceInRange(go, bot))
-        {
             return true;
-        }
     }
     return false;
+}
+
+// Razorgore the Untamed
+
+bool BwlRazorgoreNotMindControlledTrigger::IsActive()
+{
+    if (Unit* boss = AI_VALUE2(Unit*, "find target", "razorgore the untamed"))
+        return !boss->HasAura(SPELL_MINDCONTROL);
+    return false;
+}
+
+// Vaelastrasz the Corrupt
+
+bool BwlVaelastraszPositioningTrigger::IsActive()
+{
+    // Prevent non-tanks from rotating the boss while the tanks gain thread.
+    if (Unit* boss = AI_VALUE2(Unit*, "find target", "vaelastrasz the corrupt"))
+        return boss->GetVictim() != bot;
+    return false;
+}
+
+bool BwlVaelastraszBurningAdrenaline::IsActive()
+{
+    // No check for Vaelastrasz, because bots may still have burning adrenaline even after Vaelastrasz died.
+    return bot->HasAura(SPELL_BURNING_ADRENALINE);
 }
 
 // Chromaggus

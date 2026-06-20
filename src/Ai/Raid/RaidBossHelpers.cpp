@@ -57,6 +57,16 @@ void MarkTargetWithMoon(Player* bot, Unit* target)
     MarkTargetWithIcon(bot, target, RtiTargetValue::moonIndex);
 }
 
+void ClearTargetIcon(Player* bot, uint8 iconId)
+{
+    if (Group* group = bot->GetGroup())
+    {
+        ObjectGuid currentGuid = group->GetTargetIcon(iconId);
+        if (currentGuid != ObjectGuid::Empty)
+            group->SetTargetIcon(iconId, bot->GetGUID(), ObjectGuid::Empty);
+    }
+}
+
 // For bots to set their raid target icon to the specified icon on the specified target
 void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
 {
