@@ -79,6 +79,9 @@ bool ShouldHoldTwinReserveTankAssignmentNow(Aq40TwinEncounter::TwinEncounterStat
 bool DoesTwinAssignmentAllowBossTarget(Aq40TwinEncounter::TwinEncounterState const& state,
                                        Aq40TwinEncounter::TwinRoleAssignment const* assignment,
                                        Unit const* target);
+bool NeedsTwinPetPassiveCleanup(Pet* pet);
+bool HasTwinLocalCombatStateToClear(Player* bot, PlayerbotAI* botAI);
+bool IsTwinBugTarget(Unit const* unit);
 
 struct Direction2d
 {
@@ -355,6 +358,11 @@ bool IsTwinVeknilashTarget(Unit const* unit)
 bool IsTwinEmperorTarget(Unit const* unit)
 {
     return IsTwinVeklorTarget(unit) || IsTwinVeknilashTarget(unit);
+}
+
+bool IsTwinBugTarget(Unit const* unit)
+{
+    return unit && Aq40SpellIds::IsTwinBugEntry(unit->GetEntry());
 }
 
 size_t ToSideIndex(Aq40TwinEncounter::TwinSide side)
