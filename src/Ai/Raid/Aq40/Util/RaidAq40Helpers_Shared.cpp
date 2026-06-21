@@ -206,7 +206,7 @@ bool TryRecoverAq40FollowState(Player* bot, PlayerbotAI* botAI, std::string cons
                                  lastMovement.lastFlee || !lastMovement.taxiNodes.empty();
     bool const hadLastAreaTrigger = lastAreaTrigger.lastAreaTrigger || lastAreaTrigger.msTime;
     bool const hadLastTaxi = lastTaxi.lastMoveToMapId || lastTaxi.msTime || !lastTaxi.taxiNodes.empty();
-    MotionGeneratorType const motionType =
+    MovementGeneratorType const motionType =
         bot->GetMotionMaster() ? bot->GetMotionMaster()->GetCurrentMovementGeneratorType() : IDLE_MOTION_TYPE;
     bool const hadMotion = motionType != IDLE_MOTION_TYPE;
 
