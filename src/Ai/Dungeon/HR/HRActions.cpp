@@ -53,9 +53,11 @@ bool GargolmarMarkHellfireWatchersAction::Execute(Event /*event*/)
         return false;
 
     if (IsMechanicTrackerBot(botAI, bot, HR_MAP_ID, nullptr))
-            MarkTargetWithSkull(bot, target);
+            MarkTargetWithSkull(bot, watcher);
 
-    return true;
+    SetRtiTarget(botAI, "skull", watcher);
+
+    return false;
 }
 
 // Omor the Unscarred
@@ -110,9 +112,11 @@ bool OmorMarkFiendishHoundAction::Execute(Event /*event*/)
         return false;
 
     if (IsMechanicTrackerBot(botAI, bot, HR_MAP_ID, nullptr))
-            MarkTargetWithSkull(bot, target);
+            MarkTargetWithSkull(bot, hound);
 
-    return true;
+    SetRtiTarget(botAI, "skull", hound);
+
+    return false;
 }
 
 // Vazruden
