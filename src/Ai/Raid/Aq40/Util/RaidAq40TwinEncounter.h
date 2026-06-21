@@ -187,12 +187,14 @@ struct TwinEncounterState
     TwinRecoveryState recovery;
     TwinScriptedHazardWindows scriptedHazards;
     uint32 lastTeleportAtMs = 0;
+    uint8 teleportCount = 0;
     uint32 nextTeleportEarliestAtMs = 0;
     uint32 nextTeleportLatestAtMs = 0;
     uint32 swapPrepStartAtMs = 0;
     uint32 closestTargetGrantDelayMs = 1000;
     uint32 swapPrepArmedAtMs = 0;
     std::vector<TwinRoleAssignment> assignments;
+    uint32 assignmentsVersion = 0;
     std::string unsupportedReason;
 };
 

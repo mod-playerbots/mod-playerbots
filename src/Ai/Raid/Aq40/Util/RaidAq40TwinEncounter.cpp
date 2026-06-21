@@ -87,6 +87,17 @@ std::unordered_map<uint64, TwinManagedWarlockTankOverlay> sTwinWarlockTankOverla
 std::unordered_map<uint64, TwinPetControlState> sTwinPetControlByBot;
 std::unordered_map<uint64, uint32> sTwinLocalCleanupByBot;
 
+struct TwinAssignmentLookupCache
+{
+    TwinEncounterState const* state = nullptr;
+    uint32 assignmentsVersion = 0;
+    TwinRoleAssignment const* assignmentsData = nullptr;
+    size_t assignmentCount = 0;
+    std::unordered_map<uint64, TwinRoleAssignment const*> byMemberGuid;
+};
+
+thread_local TwinAssignmentLookupCache sTwinAssignmentLookupCache;
+
 size_t ToIndex(TwinBoss boss)
 {
     return boss == TwinBoss::Veknilash ? 1u : 0u;
@@ -316,18 +327,13 @@ std::vector<Player*> CollectTwinMembers(Player* bot, float radius)
     std::vector<Player*> members;
     if (!bot || !Aq40BossHelper::IsInAq40(bot))
         return members;
-
-    Group* group = bot->GetGroup();
-    if (!group)
+    if (!bot->GetGroup())
         return members;
 
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    std::vector<Player*> const sameInstanceMembers = Aq40BossHelper::GetSameInstanceGroupMembers(bot);
+    members.reserve(sameInstanceMembers.size());
+    for (Player* member : sameInstanceMembers)
     {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !member->IsInWorld())
-            continue;
-        if (!Aq40BossHelper::IsSameInstance(bot, member))
-            continue;
         if (!IsNearTwinRoom(member, radius))
             continue;
 
@@ -345,6 +351,21 @@ std::vector<Player*> CollectTwinApproachMembers(Player* bot)
 std::vector<Player*> CollectTwinStagedMembers(Player* bot)
 {
     return CollectTwinMembers(bot, kTwinRoomReadyRadius);
+}
+
+std::vector<Player*> CollectTwinStagedMembers(std::vector<Player*> const& approachMembers)
+{
+    std::vector<Player*> stagedMembers;
+    stagedMembers.reserve(approachMembers.size());
+    for (Player* member : approachMembers)
+    {
+        if (!member || !IsNearTwinRoom(member, kTwinRoomReadyRadius))
+            continue;
+
+        stagedMembers.push_back(member);
+    }
+
+    return stagedMembers;
 }
 
 bool AnyTwinMemberInCombat(std::vector<Player*> const& members)
@@ -366,17 +387,12 @@ bool HasAssignedMemberInCombat(Player* bot, TwinEncounterState const& state)
 {
     if (!bot || state.assignments.empty())
         return false;
-
-    Group* group = bot->GetGroup();
-    if (!group)
+    if (!bot->GetGroup())
         return false;
 
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    std::vector<Player*> const sameInstanceMembers = Aq40BossHelper::GetSameInstanceGroupMembers(bot);
+    for (Player* member : sameInstanceMembers)
     {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsInWorld() || !Aq40BossHelper::IsSameInstance(bot, member))
-            continue;
-
         if (!GetAssignmentForMember(state, member->GetGUID()))
             continue;
 
@@ -525,7 +541,10 @@ void ClearPrePullAssignments(TwinEncounterState& state, uint32 nowMs, bool clear
     if (state.phase != TwinEncounterPhase::PrePull)
         return;
 
+    bool const hadAssignments = !state.assignments.empty();
     state.assignments.clear();
+    if (hadAssignments)
+        ++state.assignmentsVersion;
     state.centerCommittedMemberCount = 0;
     state.strictReadyMemberCount = 0;
     state.ownership[ToIndex(TwinBoss::Veklor)] = TwinStableOwnership();
@@ -828,7 +847,7 @@ void RefreshPrePullAssignments(Player* bot, TwinEncounterState& state)
     size_t const previousStagedCount = state.stagedMemberCount;
     size_t const previousCenterCommittedCount = state.centerCommittedMemberCount;
     std::vector<Player*> const approachMembers = CollectTwinApproachMembers(bot);
-    std::vector<Player*> const stagedMembers = CollectTwinStagedMembers(bot);
+    std::vector<Player*> const stagedMembers = CollectTwinStagedMembers(approachMembers);
     state.approachMemberCount = static_cast<uint16>(approachMembers.size());
     state.stagedMemberCount = static_cast<uint16>(stagedMembers.size());
 
@@ -909,7 +928,11 @@ void RefreshPrePullAssignments(Player* bot, TwinEncounterState& state)
     bool const keepStrictReady = centerCommitted && state.mode == TwinStrategyMode::StandardCompReady &&
                                  !assignmentsChanged && !reasonChanged && !countsChanged && !centerCommitChanged;
 
-    state.assignments = buildResult.assignments;
+    if (assignmentsChanged)
+    {
+        state.assignments = buildResult.assignments;
+        ++state.assignmentsVersion;
+    }
     state.unsupportedReason.clear();
     state.centerCommittedMemberCount = static_cast<uint16>(centerCommittedCount);
     if (!keepStrictReady)
@@ -1169,16 +1192,26 @@ TwinEncounterGeometry const& GetGeometry()
 
 TwinRoleAssignment const* GetAssignmentForMember(TwinEncounterState const& state, ObjectGuid memberGuid)
 {
-    if (memberGuid.IsEmpty())
+    if (memberGuid.IsEmpty() || state.assignments.empty())
         return nullptr;
 
-    auto const itr = std::find_if(state.assignments.begin(), state.assignments.end(),
-        [memberGuid](TwinRoleAssignment const& assignment)
-        {
-            return assignment.memberGuid == memberGuid;
-        });
+    if (sTwinAssignmentLookupCache.state != &state ||
+        sTwinAssignmentLookupCache.assignmentsVersion != state.assignmentsVersion ||
+        sTwinAssignmentLookupCache.assignmentsData != state.assignments.data() ||
+        sTwinAssignmentLookupCache.assignmentCount != state.assignments.size())
+    {
+        sTwinAssignmentLookupCache.state = &state;
+        sTwinAssignmentLookupCache.assignmentsVersion = state.assignmentsVersion;
+        sTwinAssignmentLookupCache.assignmentsData = state.assignments.data();
+        sTwinAssignmentLookupCache.assignmentCount = state.assignments.size();
+        sTwinAssignmentLookupCache.byMemberGuid.clear();
+        sTwinAssignmentLookupCache.byMemberGuid.reserve(state.assignments.size());
+        for (TwinRoleAssignment const& assignment : state.assignments)
+            sTwinAssignmentLookupCache.byMemberGuid[assignment.memberGuid.GetRawValue()] = &assignment;
+    }
 
-    return itr != state.assignments.end() ? &(*itr) : nullptr;
+    auto const itr = sTwinAssignmentLookupCache.byMemberGuid.find(memberGuid.GetRawValue());
+    return itr != sTwinAssignmentLookupCache.byMemberGuid.end() ? itr->second : nullptr;
 }
 
 TwinRoleAssignment const* GetAssignmentForMember(Player const* bot)
@@ -1894,7 +1927,7 @@ bool IsPrimaryController(TwinEncounterState const& state, TwinBoss boss, ObjectG
         return ownership.candidateOwner == ownerGuid;
 
     if (IsSwapPrepActive(state))
-        return false;
+        return ownership.reserveOwner == ownerGuid;
 
     return ownership.expectedOwner == ownerGuid;
 }
@@ -2080,6 +2113,7 @@ void EnterTeleportWindow(TwinEncounterState& state, uint32 threatHoldDurationMs,
 {
     uint32 const now = ResolveNow(nowMs);
     state.lastTeleportAtMs = now;
+    ++state.teleportCount;
     ScheduleNextTeleportCadence(state, now);
     SetPhase(state, TwinEncounterPhase::TeleportWindow, now);
 

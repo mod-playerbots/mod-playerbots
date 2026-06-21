@@ -651,8 +651,11 @@ bool Aq40EraseTimersAndTrackersAction::Execute(Event /*event*/)
     bool const hadTwinLocalCleanup = Aq40TwinEncounter::ClearTwinLocalCombatState(bot, botAI);
     bool const hadTwinWarlockTankOverlay = Aq40TwinEncounter::ClearTwinWarlockTankStrategy(bot);
     bool const hadPersistentEncounterState = Aq40Helpers::ResetEncounterState(bot);
+    bool const recoveredFollowState = Aq40Helpers::TryRecoverAq40FollowState(
+        bot, botAI, "encounter_reset", "shared:follow_recovery", true);
     bool const recoveredDirtyState =
-        hadManagedResistance || hadTwinLocalCleanup || hadTwinWarlockTankOverlay || hadPersistentEncounterState;
+        hadManagedResistance || hadTwinLocalCleanup || hadTwinWarlockTankOverlay || hadPersistentEncounterState ||
+        recoveredFollowState;
 
     if (hadTwinWarlockTankOverlay)
     {

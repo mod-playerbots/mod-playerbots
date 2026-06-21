@@ -16,6 +16,8 @@ bool IsResistanceManagementNeeded(Player* bot, PlayerbotAI* botAI, GuidVector co
 bool ShouldRunOutOfCombatMaintenance(Player* bot, PlayerbotAI* botAI);
 bool HasPersistentEncounterState(Player* bot);
 bool ResetEncounterState(Player* bot);
+bool TryRecoverAq40FollowState(Player* bot, PlayerbotAI* botAI, std::string const& eventKey,
+                               std::string const& stateKey, bool executeFollowMovement = false);
 std::string GetAq40LogToken(std::string value);
 std::string GetAq40LogUnit(Unit* unit);
 std::string GetAq40LogRole(Player* bot, PlayerbotAI* botAI);

@@ -15,6 +15,7 @@
 #include "PlayerbotAI.h"
 #include "SharedDefines.h"
 #include "Spell.h"
+#include "Timer.h"
 #include "RaidAq40SpellIds.h"
 
 namespace Aq40BossHelper
@@ -26,12 +27,221 @@ inline bool IsInAq40(Player const* player)
     return player && player->GetMapId() == MAP_ID;
 }
 
+namespace Detail
+{
+constexpr float kEncounterCacheDefaultRange = 100.0f;
+
+struct EncounterMemberSnapshot
+{
+    uint64 botKey = 0;
+    uint32 cachedAtMs = 0;
+    uint32 mapId = 0;
+    uint32 instanceId = 0;
+    std::vector<Player*> sameInstanceMembers;
+    Player* primaryTank = nullptr;
+    std::array<Player*, 2> backupTanks = { nullptr, nullptr };
+    bool nearbyGroupMemberInCombat = false;
+    bool encounterCombatActive = false;
+};
+
+struct EncounterUnitSnapshot
+{
+    uint64 botKey = 0;
+    uint32 cachedAtMs = 0;
+    uint32 mapId = 0;
+    uint32 instanceId = 0;
+    GuidVector attackers;
+    GuidVector possibleTargetsNoLos;
+    GuidVector encounterUnits;
+    GuidVector activeCombatUnits;
+};
+
+inline EncounterMemberSnapshot& GetEncounterMemberSnapshotStorage()
+{
+    thread_local EncounterMemberSnapshot snapshot;
+    return snapshot;
+}
+
+inline EncounterUnitSnapshot& GetEncounterUnitSnapshotStorage()
+{
+    thread_local EncounterUnitSnapshot snapshot;
+    return snapshot;
+}
+
+inline void ResetEncounterMemberSnapshot(EncounterMemberSnapshot& snapshot)
+{
+    snapshot.botKey = 0;
+    snapshot.cachedAtMs = 0;
+    snapshot.mapId = 0;
+    snapshot.instanceId = 0;
+    snapshot.sameInstanceMembers.clear();
+    snapshot.primaryTank = nullptr;
+    snapshot.backupTanks = { nullptr, nullptr };
+    snapshot.nearbyGroupMemberInCombat = false;
+    snapshot.encounterCombatActive = false;
+}
+
+inline void ResetEncounterUnitSnapshot(EncounterUnitSnapshot& snapshot)
+{
+    snapshot.botKey = 0;
+    snapshot.cachedAtMs = 0;
+    snapshot.mapId = 0;
+    snapshot.instanceId = 0;
+    snapshot.attackers.clear();
+    snapshot.possibleTargetsNoLos.clear();
+    snapshot.encounterUnits.clear();
+    snapshot.activeCombatUnits.clear();
+}
+
+inline void RebuildEncounterMemberSnapshot(Player const* reference, EncounterMemberSnapshot& snapshot,
+                                           float range = kEncounterCacheDefaultRange)
+{
+    ResetEncounterMemberSnapshot(snapshot);
+    if (!reference)
+        return;
+
+    Player* player = const_cast<Player*>(reference);
+    snapshot.botKey = player->GetGUID().GetRawValue();
+    snapshot.cachedAtMs = getMSTime();
+    snapshot.mapId = player->GetMapId();
+    snapshot.instanceId = player->GetMap() ? player->GetMap()->GetInstanceId() : 0;
+
+    snapshot.nearbyGroupMemberInCombat = player->IsInCombat();
+
+    Group const* group = player->GetGroup();
+    if (!group)
+    {
+        if (player->IsAlive() && player->IsInWorld())
+        {
+            snapshot.sameInstanceMembers.push_back(player);
+            if (PlayerbotAI::IsTank(player))
+                snapshot.primaryTank = player;
+        }
+
+        return;
+    }
+
+    uint32 nearbyCombatants = 0;
+    for (GroupReference const* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || !member->IsInWorld())
+            continue;
+        if (member->GetMapId() != player->GetMapId())
+            continue;
+        if (member->GetMap() && member->GetMap()->GetInstanceId() != snapshot.instanceId)
+            continue;
+
+        snapshot.sameInstanceMembers.push_back(member);
+
+        if (member->IsInCombat() && player->GetDistance2d(member) <= range)
+        {
+            if (member != player)
+                snapshot.nearbyGroupMemberInCombat = true;
+
+            ++nearbyCombatants;
+        }
+    }
+
+    snapshot.encounterCombatActive = nearbyCombatants >= 2;
+
+    for (Player* member : snapshot.sameInstanceMembers)
+    {
+        if (!PlayerbotAI::IsTank(member))
+            continue;
+
+        if (PlayerbotAI::IsMainTank(member))
+        {
+            snapshot.primaryTank = member;
+            break;
+        }
+    }
+
+    if (!snapshot.primaryTank)
+    {
+        for (Player* member : snapshot.sameInstanceMembers)
+        {
+            if (!PlayerbotAI::IsTank(member))
+                continue;
+
+            snapshot.primaryTank = member;
+            break;
+        }
+    }
+
+    std::vector<Player*> backups;
+    backups.reserve(snapshot.sameInstanceMembers.size());
+    for (Player* member : snapshot.sameInstanceMembers)
+    {
+        if (!PlayerbotAI::IsTank(member) || member == snapshot.primaryTank)
+            continue;
+
+        backups.push_back(member);
+    }
+
+    std::stable_sort(backups.begin(), backups.end(), [group](Player* left, Player* right)
+    {
+        auto getPriority = [group](Player* member) -> uint32
+        {
+            if (PlayerbotAI::IsAssistTankOfIndex(member, 0, true))
+                return 0;
+            if (PlayerbotAI::IsAssistTankOfIndex(member, 1, true))
+                return 1;
+            if (PlayerbotAI::IsAssistTank(member))
+                return 2;
+            if (group && group->IsAssistant(member->GetGUID()))
+                return 3;
+            return 10;
+        };
+
+        uint32 const leftPriority = getPriority(left);
+        uint32 const rightPriority = getPriority(right);
+        if (leftPriority != rightPriority)
+            return leftPriority < rightPriority;
+
+        return left->GetGUID().GetRawValue() < right->GetGUID().GetRawValue();
+    });
+
+    for (size_t index = 0; index < snapshot.backupTanks.size() && index < backups.size(); ++index)
+        snapshot.backupTanks[index] = backups[index];
+}
+
+inline EncounterMemberSnapshot const& GetEncounterMemberSnapshot(Player const* reference,
+                                                                 float range = kEncounterCacheDefaultRange)
+{
+    EncounterMemberSnapshot& snapshot = GetEncounterMemberSnapshotStorage();
+    if (!reference)
+    {
+        ResetEncounterMemberSnapshot(snapshot);
+        return snapshot;
+    }
+
+    Player const* player = reference;
+    uint32 const nowMs = getMSTime();
+    uint64 const botKey = player->GetGUID().GetRawValue();
+    uint32 const mapId = player->GetMapId();
+    uint32 const instanceId = player->GetMap() ? player->GetMap()->GetInstanceId() : 0;
+    bool const needsRefresh = range != kEncounterCacheDefaultRange ||
+                              snapshot.cachedAtMs != nowMs ||
+                              snapshot.botKey != botKey ||
+                              snapshot.mapId != mapId ||
+                              snapshot.instanceId != instanceId;
+    if (needsRefresh)
+        RebuildEncounterMemberSnapshot(player, snapshot, range);
+
+    return snapshot;
+}
+}    // namespace Detail
+
     // Returns true if any group member near the caller (~100y, same instance) is currently in combat.
     // Scoped by proximity so that unrelated trash combat elsewhere in AQ40 does not prevent per-encounter state cleanup on wipe.
 inline bool IsNearbyGroupMemberInCombat(Player const* player, float range = 100.0f)
 {
     if (!player)
         return false;
+
+    if (range == Detail::kEncounterCacheDefaultRange)
+        return Detail::GetEncounterMemberSnapshot(player).nearbyGroupMemberInCombat;
 
     if (player->IsInCombat())
         return true;
@@ -67,13 +277,15 @@ inline bool IsEncounterCombatActive(Player const* player, float range = 100.0f)
     if (!player)
         return false;
 
+    if (range == Detail::kEncounterCacheDefaultRange)
+        return Detail::GetEncounterMemberSnapshot(player).encounterCombatActive;
+
     Group const* group = player->GetGroup();
     if (!group)
         return false;
 
     uint32 const instanceId = player->GetMap() ? player->GetMap()->GetInstanceId() : 0;
 
-    // Count in-combat members near the caller.
     uint32 nearbyCombatants = 0;
     for (GroupReference const* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -140,34 +352,7 @@ inline Player* GetEncounterPrimaryTank(Player* player)
     if (!player)
         return nullptr;
 
-    Group const* group = player->GetGroup();
-    if (!group)
-        return PlayerbotAI::IsTank(player) && player->IsAlive() ? player : nullptr;
-
-    for (GroupReference const* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !PlayerbotAI::IsTank(member))
-            continue;
-        if (!IsEncounterParticipant(player, member))
-            continue;
-
-        if (PlayerbotAI::IsMainTank(member))
-            return member;
-    }
-
-    for (GroupReference const* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !PlayerbotAI::IsTank(member))
-            continue;
-        if (!IsEncounterParticipant(player, member))
-            continue;
-
-        return member;
-    }
-
-    return nullptr;
+    return Detail::GetEncounterMemberSnapshot(player).primaryTank;
 }
 
 inline Player* GetEncounterBackupTank(Player* player, uint8 index = 0)
@@ -175,45 +360,13 @@ inline Player* GetEncounterBackupTank(Player* player, uint8 index = 0)
     if (!player)
         return nullptr;
 
-    Group const* group = player->GetGroup();
-    if (!group)
-        return nullptr;
+    Detail::EncounterMemberSnapshot const& snapshot = Detail::GetEncounterMemberSnapshot(player);
+    return index < snapshot.backupTanks.size() ? snapshot.backupTanks[index] : nullptr;
+}
 
-    Player* primaryTank = GetEncounterPrimaryTank(player);
-    std::vector<Player*> backups;
-    for (GroupReference const* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !PlayerbotAI::IsTank(member) || member == primaryTank)
-            continue;
-        if (!IsEncounterParticipant(player, member))
-            continue;
-
-        backups.push_back(member);
-    }
-
-    std::sort(backups.begin(), backups.end(), [](Player* left, Player* right)
-    {
-        auto getPriority = [](Player* member) -> uint32
-        {
-            if (PlayerbotAI::IsAssistTankOfIndex(member, 0, true))
-                return 0;
-            if (PlayerbotAI::IsAssistTankOfIndex(member, 1, true))
-                return 1;
-            if (PlayerbotAI::IsAssistTank(member))
-                return 2;
-            return 10;
-        };
-
-        uint32 const leftPriority = getPriority(left);
-        uint32 const rightPriority = getPriority(right);
-        if (leftPriority != rightPriority)
-            return leftPriority < rightPriority;
-
-        return left->GetGUID().GetRawValue() < right->GetGUID().GetRawValue();
-    });
-
-    return index < backups.size() ? backups[index] : nullptr;
+inline std::vector<Player*> GetSameInstanceGroupMembers(Player const* reference)
+{
+    return Detail::GetEncounterMemberSnapshot(reference).sameInstanceMembers;
 }
 
 inline bool IsEncounterPrimaryTank(Player* referencePlayer, Player* player)
@@ -403,89 +556,87 @@ inline bool IsNearbyEncounterUnit(Player* bot, PlayerbotAI* botAI, Unit* candida
 
 inline GuidVector GetEncounterUnits(PlayerbotAI* botAI, GuidVector const& attackers)
 {
-    GuidVector units;
+    Detail::EncounterUnitSnapshot& snapshot = Detail::GetEncounterUnitSnapshotStorage();
     if (!botAI)
-        return units;
+    {
+        Detail::ResetEncounterUnitSnapshot(snapshot);
+        return GuidVector();
+    }
 
     Player* bot = botAI->GetBot();
     if (!bot)
-        return units;
-
-    for (ObjectGuid const guid : attackers)
     {
-        Unit* unit = botAI->GetUnit(guid);
-        if (!unit || !unit->IsInWorld() || !unit->IsAlive() || unit->GetMapId() != bot->GetMapId() || unit->IsFriendlyTo(bot))
-            continue;
-
-        units.push_back(guid);
+        Detail::ResetEncounterUnitSnapshot(snapshot);
+        return GuidVector();
     }
-
-    // Do not pull in no-LOS AQ40 units unless there is an actual local
-    // encounter in progress. Otherwise nearby dead-room bosses/trash can
-    // suppress normal follow/formation behavior just by being visible.
-    if (attackers.empty() && !IsEncounterCombatActive(bot))
-        return units;
 
     GuidVector const& possibleTargetsNoLos =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
-    for (ObjectGuid const guid : possibleTargetsNoLos)
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        if (!IsNearbyEncounterUnit(bot, botAI, unit, attackers))
-            continue;
+    uint32 const nowMs = getMSTime();
+    uint64 const botKey = bot->GetGUID().GetRawValue();
+    uint32 const mapId = bot->GetMapId();
+    uint32 const instanceId = bot->GetMap() ? bot->GetMap()->GetInstanceId() : 0;
+    bool const needsRefresh = snapshot.cachedAtMs != nowMs ||
+                              snapshot.botKey != botKey ||
+                              snapshot.mapId != mapId ||
+                              snapshot.instanceId != instanceId ||
+                              snapshot.attackers != attackers ||
+                              snapshot.possibleTargetsNoLos != possibleTargetsNoLos;
 
-        if (std::find(units.begin(), units.end(), guid) == units.end())
-            units.push_back(guid);
+    if (needsRefresh)
+    {
+        Detail::ResetEncounterUnitSnapshot(snapshot);
+        snapshot.botKey = botKey;
+        snapshot.cachedAtMs = nowMs;
+        snapshot.mapId = mapId;
+        snapshot.instanceId = instanceId;
+        snapshot.attackers = attackers;
+        snapshot.possibleTargetsNoLos = possibleTargetsNoLos;
+
+        auto const appendUnique = [](GuidVector& units, ObjectGuid guid)
+        {
+            if (std::find(units.begin(), units.end(), guid) == units.end())
+                units.push_back(guid);
+        };
+
+        for (ObjectGuid const guid : attackers)
+        {
+            Unit* unit = botAI->GetUnit(guid);
+            if (!unit || !unit->IsInWorld() || !unit->IsAlive() || unit->GetMapId() != bot->GetMapId() ||
+                unit->IsFriendlyTo(bot))
+            {
+                continue;
+            }
+
+            snapshot.encounterUnits.push_back(guid);
+            snapshot.activeCombatUnits.push_back(guid);
+        }
+
+        bool const includeEncounterNoLos = !attackers.empty() || IsEncounterCombatActive(bot);
+        for (ObjectGuid const guid : possibleTargetsNoLos)
+        {
+            Unit* unit = botAI->GetUnit(guid);
+            if (!IsNearbyEncounterUnit(bot, botAI, unit, attackers))
+                continue;
+
+            if (includeEncounterNoLos)
+                appendUnique(snapshot.encounterUnits, guid);
+
+            bool const hasThreatVictim = unit && unit->IsCreature() && unit->GetThreatMgr().GetCurrentVictim();
+            bool const isCombatRelevant =
+                unit && (unit->IsInCombat() || unit->GetVictim() || unit->GetTarget() || hasThreatVictim);
+            if (isCombatRelevant)
+                appendUnique(snapshot.activeCombatUnits, guid);
+        }
     }
 
-    return units;
+    return snapshot.encounterUnits;
 }
 
 inline GuidVector GetActiveCombatUnits(PlayerbotAI* botAI, GuidVector const& attackers)
 {
-    GuidVector units;
-    if (!botAI)
-        return units;
-
-    Player* bot = botAI->GetBot();
-    if (!bot)
-        return units;
-
-    for (ObjectGuid const guid : attackers)
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        if (!unit || !unit->IsInWorld() || !unit->IsAlive() || unit->GetMapId() != bot->GetMapId() ||
-            unit->IsFriendlyTo(bot))
-            continue;
-
-        units.push_back(guid);
-    }
-
-    GuidVector const& possibleTargetsNoLos =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
-    for (ObjectGuid const guid : possibleTargetsNoLos)
-    {
-        if (std::find(units.begin(), units.end(), guid) != units.end())
-            continue;
-
-        Unit* unit = botAI->GetUnit(guid);
-        if (!IsNearbyEncounterUnit(bot, botAI, unit, attackers))
-            continue;
-
-        // Mind-controlled raid members can become hostile, but they are still
-        // players. Querying a player's ThreatManager current victim here can
-        // drive the core down creature-only AI update paths and trip
-        // ASSERT_NOTNULL(_owner->ToCreature()) in ThreatManager.
-        bool const hasThreatVictim = unit && unit->IsCreature() && unit->GetThreatMgr().GetCurrentVictim();
-        bool const isCombatRelevant =
-            unit->IsInCombat() || unit->GetVictim() || unit->GetTarget() || hasThreatVictim;
-        if (!isCombatRelevant)
-            continue;
-
-        units.push_back(guid);
-    }
-
-    return units;
+    GetEncounterUnits(botAI, attackers);
+    return Detail::GetEncounterUnitSnapshotStorage().activeCombatUnits;
 }
 
 inline bool HasAnyNamedUnit(PlayerbotAI* botAI, GuidVector const& units, std::initializer_list<char const*> names)

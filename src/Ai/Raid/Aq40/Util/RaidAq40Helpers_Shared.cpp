@@ -5,7 +5,12 @@
 #include <sstream>
 #include <unordered_map>
 
+#include "Event.h"
+#include "FollowActions.h"
+#include "LastMovementValue.h"
+#include "MotionMaster.h"
 #include "Playerbots.h"
+#include "PositionValue.h"
 #include "../RaidAq40BossHelper.h"
 #include "RaidAq40Helpers_Cthun.h"
 #include "RaidAq40Helpers_Skeram.h"
@@ -55,6 +60,30 @@ uint32 GetAq40LogInstanceId(Player* bot)
         return bot->GetMap()->GetInstanceId();
 
     return bot->GetMapId();
+}
+
+Player* GetAq40FollowLeader(PlayerbotAI* botAI)
+{
+    if (!botAI)
+        return nullptr;
+
+    if (Player* master = botAI->GetMaster())
+        return master;
+
+    return botAI->GetGroupLeader();
+}
+
+bool IsAq40FollowRecoveryCandidate(Player* bot, PlayerbotAI* botAI)
+{
+    if (!bot || !botAI || !botAI->GetAiObjectContext() || !Aq40BossHelper::IsInAq40(bot) || bot->IsInCombat() ||
+        bot->IsBeingTeleported() || bot->HasUnitState(UNIT_STATE_IN_FLIGHT) || bot->IsNonMeleeSpellCast(true) ||
+        !botAI->HasStrategy("follow", BOT_STATE_NON_COMBAT) || bot->isMoving())
+    {
+        return false;
+    }
+
+    FollowAction followAction(botAI);
+    return followAction.isUseful();
 }
 
 void LogAq40(Player* bot, std::string const& eventKey, std::string const& stateKey,
@@ -149,6 +178,142 @@ void LogAq40Target(Player* bot, std::string const& boss, std::string const& reas
                 fields.str(), throttleMs);
 }
 
+bool TryRecoverAq40FollowState(Player* bot, PlayerbotAI* botAI, std::string const& eventKey,
+                               std::string const& stateKey, bool executeFollowMovement)
+{
+    if (!IsAq40FollowRecoveryCandidate(bot, botAI))
+        return false;
+
+    auto* context = botAI->GetAiObjectContext();
+    PositionMap& positionMap = context->GetValue<PositionMap&>("position")->Get();
+    PositionInfo stayPosition = positionMap["stay"];
+    PositionInfo returnPosition = positionMap["return"];
+    PositionInfo randomPosition = positionMap["random"];
+    PositionInfo singleStayPosition = context->GetValue<PositionInfo>("pos", "stay")->Get();
+    Player* const followLeader = GetAq40FollowLeader(botAI);
+
+    bool const hadStayStrategyNonCombat = botAI->HasStrategy("stay", BOT_STATE_NON_COMBAT);
+    bool const hadStayStrategyCombat = botAI->HasStrategy("stay", BOT_STATE_COMBAT);
+    bool const hadStayPosition = stayPosition.isSet();
+    bool const hadReturnPosition = returnPosition.isSet();
+    bool const hadRandomPosition = randomPosition.isSet();
+    bool const hadSingleStayPosition = singleStayPosition.isSet();
+    time_t const stayTime = context->GetValue<time_t>("stay time")->Get();
+    LastMovement& lastMovement = context->GetValue<LastMovement&>("last movement")->Get();
+    LastMovement& lastAreaTrigger = context->GetValue<LastMovement&>("last area trigger")->Get();
+    LastMovement& lastTaxi = context->GetValue<LastMovement&>("last taxi")->Get();
+    bool const hadLastMovement = lastMovement.lastFollow || lastMovement.lastMoveToMapId || lastMovement.msTime ||
+                                 lastMovement.lastFlee || !lastMovement.taxiNodes.empty();
+    bool const hadLastAreaTrigger = lastAreaTrigger.lastAreaTrigger || lastAreaTrigger.msTime;
+    bool const hadLastTaxi = lastTaxi.lastMoveToMapId || lastTaxi.msTime || !lastTaxi.taxiNodes.empty();
+    MotionGeneratorType const motionType =
+        bot->GetMotionMaster() ? bot->GetMotionMaster()->GetCurrentMovementGeneratorType() : IDLE_MOTION_TYPE;
+    bool const hadMotion = motionType != IDLE_MOTION_TYPE;
+
+    bool changed = false;
+    if (hadStayStrategyNonCombat)
+    {
+        botAI->ChangeStrategy("-stay", BOT_STATE_NON_COMBAT);
+        changed = true;
+    }
+
+    if (hadStayStrategyCombat)
+    {
+        botAI->ChangeStrategy("-stay", BOT_STATE_COMBAT);
+        changed = true;
+    }
+
+    if (hadStayPosition)
+    {
+        stayPosition.Reset();
+        positionMap["stay"] = stayPosition;
+        changed = true;
+    }
+
+    if (hadReturnPosition)
+    {
+        returnPosition.Reset();
+        positionMap["return"] = returnPosition;
+        changed = true;
+    }
+
+    if (hadRandomPosition)
+    {
+        randomPosition.Reset();
+        positionMap["random"] = randomPosition;
+        changed = true;
+    }
+
+    if (hadSingleStayPosition)
+    {
+        context->GetValue<PositionInfo>("pos", "stay")->Reset();
+        changed = true;
+    }
+
+    if (stayTime)
+    {
+        context->GetValue<time_t>("stay time")->Set(0);
+        changed = true;
+    }
+
+    if (hadLastMovement)
+    {
+        lastMovement.clear();
+        changed = true;
+    }
+
+    if (hadLastAreaTrigger)
+    {
+        lastAreaTrigger.clear();
+        changed = true;
+    }
+
+    if (hadLastTaxi)
+    {
+        lastTaxi.clear();
+        changed = true;
+    }
+
+    if (hadMotion && bot->GetMotionMaster())
+    {
+        bot->GetMotionMaster()->Clear();
+        changed = true;
+    }
+
+    bot->ClearUnitState(UNIT_STATE_CHASE);
+    bot->ClearUnitState(UNIT_STATE_FOLLOW);
+
+    FollowAction followAction(botAI);
+    bool const followUsefulAfterReset = followAction.isUseful();
+    bool const executedFollow = executeFollowMovement && followUsefulAfterReset && followAction.Execute(Event());
+
+    if (!changed && !executedFollow)
+        return false;
+
+    std::ostringstream fields;
+    fields << "boss=shared state=follow_recovery"
+           << " trigger=" << GetAq40LogToken(stateKey)
+           << " follow_target=" << GetAq40LogUnit(followLeader)
+           << " follow_useful=" << (followUsefulAfterReset ? 1 : 0)
+           << " stay_strategy_nc=" << (hadStayStrategyNonCombat ? 1 : 0)
+           << " stay_strategy_combat=" << (hadStayStrategyCombat ? 1 : 0)
+           << " stay_position_set=" << (hadStayPosition ? 1 : 0)
+           << " return_position_set=" << (hadReturnPosition ? 1 : 0)
+           << " random_position_set=" << (hadRandomPosition ? 1 : 0)
+           << " single_stay_position_set=" << (hadSingleStayPosition ? 1 : 0)
+           << " stay_time_set=" << (stayTime ? 1 : 0)
+           << " last_movement_set=" << (hadLastMovement ? 1 : 0)
+           << " last_area_trigger_set=" << (hadLastAreaTrigger ? 1 : 0)
+           << " last_taxi_set=" << (hadLastTaxi ? 1 : 0)
+           << " motion_type=" << static_cast<uint32>(motionType)
+           << " executed_follow=" << (executedFollow ? 1 : 0);
+    if (followLeader)
+        fields << " follow_distance=" << bot->GetDistance2d(followLeader);
+
+    LogAq40Info(bot, eventKey, stateKey, fields.str(), 1000);
+    return true;
+}
+
 bool HasManagedResistanceStrategy(Player* bot, PlayerbotAI* botAI)
 {
     if (!bot || !botAI)
@@ -216,6 +381,9 @@ bool ShouldRunOutOfCombatMaintenance(Player* bot, PlayerbotAI* botAI)
 {
     if (!bot || !botAI)
         return false;
+
+    if (IsAq40FollowRecoveryCandidate(bot, botAI))
+        return true;
 
     bool const hasManagedResistanceStrategy = HasManagedResistanceStrategy(bot, botAI);
     bool const hasTwinLocalCleanupState = Aq40TwinEncounter::HasTwinLocalCleanupState(bot);
