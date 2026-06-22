@@ -10,8 +10,6 @@ enum class HellfireRampartsIDs : uint32
     // Omor the Unscarred
     SPELL_TREACHEROUS_AURA                = 30695,
     SPELL_BANE_OF_TREACHERY               = 37566,
-    //NPC_FIENDISH_HOUND                    = 17540,
-    //Vazruden (Skull the two guards and dps them down. Tank Vazruden in the middle (X:-1407.405 Y: 1744.521 Z: 81.075) of the platform to prevent the tank from attempting to grab the dragon flying around the platform. Will see if bots need to avoid the flames, easiest fight in the dungeon.)
 
 };
 

@@ -119,6 +119,8 @@ bool OmorMarkFiendishHoundAction::Execute(Event /*event*/)
     return false;
 }
 
+// Future logic for Tank getting hit with Treacherous Aura or Bane of Treachery
+
 // Vazruden
 
 static const Position VAZRUDEN_TANK_POSITION = { -1407.405, 1744.521, 81.075 };
