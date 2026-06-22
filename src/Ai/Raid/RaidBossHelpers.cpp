@@ -108,13 +108,14 @@ Player* GetGroupMainTank(PlayerbotAI* botAI, Player* bot)
     if (!group)
         return nullptr;
 
+    ObjectGuid const mainTankGuid = botAI->GetMainTankGuid(group);
+    if (mainTankGuid.IsEmpty())
+        return nullptr;
+
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive())
-            continue;
-
-        if (botAI->IsMainTank(member))
+        if (member && member->IsAlive() && member->GetGUID() == mainTankGuid)
             return member;
     }
 
@@ -129,28 +130,32 @@ Player* GetGroupAssistTank(PlayerbotAI* botAI, Player* bot, uint8 index)
     if (!group)
         return nullptr;
 
+    ObjectGuid const mainTankGuid = botAI->GetMainTankGuid(group);
+    if (mainTankGuid.IsEmpty())
+        return nullptr;
+
     uint8 assistantCount = 0;
     std::vector<Player*> nonAssistantTanks;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive())
-            continue;
-
-        if (botAI->IsAssistTank(member))
+        if (!member || !member->IsAlive() || !botAI->IsTank(member) ||
+            member->GetGUID() == mainTankGuid)
         {
-            if (group->IsAssistant(member->GetGUID()))
-            {
-                if (assistantCount == index)
-                    return member;
+            continue;
+        }
 
-                assistantCount++;
-            }
-            else
-            {
-                nonAssistantTanks.push_back(member);
-            }
+        if (group->IsAssistant(member->GetGUID()))
+        {
+            if (assistantCount == index)
+                return member;
+
+            assistantCount++;
+        }
+        else
+        {
+            nonAssistantTanks.push_back(member);
         }
     }
 

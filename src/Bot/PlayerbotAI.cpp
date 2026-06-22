@@ -2369,47 +2369,38 @@ bool PlayerbotAI::IsDps(Player* player, bool bySpec)
     return false;
 }
 
-bool PlayerbotAI::IsMainTank(Player* player, bool ignoreMemberFlag)
+ObjectGuid PlayerbotAI::GetMainTankGuid(Group* group)
+{
+    if (!group)
+        return ObjectGuid::Empty;
+
+    // Check for main tank flag
+    Group::MemberSlotList const& slots = group->GetMemberSlots();
+    for (Group::member_citerator itr = slots.begin(); itr != slots.end(); ++itr)
+    {
+        if (itr->flags & MEMBER_FLAG_MAINTANK)
+            return itr->guid;
+    }
+
+    // Fallback if no flag is set: return the first alive tank
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && IsTank(member) && member->IsAlive())
+            return member->GetGUID();
+    }
+
+    return ObjectGuid::Empty;
+}
+
+bool PlayerbotAI::IsMainTank(Player* player)
 {
     Group* group = player->GetGroup();
     if (!group)
         return IsTank(player);
 
-    ObjectGuid mainTank = ObjectGuid();
-
-    // (1) Check for main tank flag (any class or spec)
-    if (!ignoreMemberFlag)
-    {
-        Group::MemberSlotList const& slots = group->GetMemberSlots();
-
-        for (Group::member_citerator itr = slots.begin(); itr != slots.end(); ++itr)
-        {
-            if (itr->flags & MEMBER_FLAG_MAINTANK)
-            {
-                mainTank = itr->guid;
-                break;
-            }
-        }
-
-        if (mainTank != ObjectGuid::Empty)
-            return player->GetGUID() == mainTank;
-    }
-
-    // (2) If no main tank flag, return the first tank
-    if (!IsTank(player) || !player->IsAlive())
-        return false;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member)
-            continue;
-
-        if (IsTank(member) && member->IsAlive())
-            return player->GetGUID() == member->GetGUID();
-    }
-
-    return false;
+    ObjectGuid const mainTankGuid = GetMainTankGuid(group);
+    return !mainTankGuid.IsEmpty() && player->GetGUID() == mainTankGuid;
 }
 
 bool PlayerbotAI::IsBotMainTank(Player* player)
@@ -2478,19 +2469,31 @@ uint32 PlayerbotAI::GetGroupTankNum(Player* player)
 
 bool PlayerbotAI::IsAssistTank(Player* player)
 {
-    return IsTank(player) && !IsMainTank(player);
-}
-
-bool PlayerbotAI::IsAssistTankOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers)
-{
-    if (!IsAssistTank(player))
-        return false;
-
-    if (ignoreDeadPlayers && !player->IsAlive())
+    if (!IsTank(player))
         return false;
 
     Group* group = player->GetGroup();
     if (!group)
+        return false;
+
+    return player->GetGUID() != GetMainTankGuid(group);
+}
+
+bool PlayerbotAI::IsAssistTankOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers)
+{
+    if (!IsTank(player))
+        return false;
+
+    Group* group = player->GetGroup();
+    if (!group)
+        return false;
+
+    ObjectGuid const mainTankGuid = GetMainTankGuid(group);
+
+    if (player->GetGUID() == mainTankGuid)
+        return false;
+
+    if (ignoreDeadPlayers && !player->IsAlive())
         return false;
 
     uint8 totalAssistants = 0;
@@ -2501,8 +2504,11 @@ bool PlayerbotAI::IsAssistTankOfIndex(Player* player, uint8 index, bool ignoreDe
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || (ignoreDeadPlayers && !member->IsAlive()) || !IsAssistTank(member))
+        if (!member || (ignoreDeadPlayers && !member->IsAlive()) || !IsTank(member) ||
+            member->GetGUID() == mainTankGuid)
+        {
             continue;
+        }
 
         bool isAssistant = group->IsAssistant(member->GetGUID());
 
