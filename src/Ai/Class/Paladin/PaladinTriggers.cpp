@@ -34,6 +34,15 @@ bool BlessingTrigger::IsActive()
                                 "blessing of kings", "blessing of sanctuary", nullptr);
 }
 
+bool BlessingOnPartyTrigger::IsActive()
+{
+    Unit* target = GetPaladinPartyBlessingTarget(bot, botAI, spell);
+    if (!target)
+        return false;
+
+    return !ai::buff::ShouldDeferPartyBuffEvaluationForRecentLogin(bot, target, spell);
+}
+
 bool DivineShieldLowHealthTrigger::IsActive()
 {
     return botAI->HasAura("divine shield", bot) && AI_VALUE2(uint8, "health", "self target") < 80;

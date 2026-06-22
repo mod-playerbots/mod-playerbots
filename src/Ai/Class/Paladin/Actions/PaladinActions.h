@@ -84,15 +84,28 @@ public:
     bool Execute(Event event) override;
 };
 
-class CastBlessingOfMightOnPartyAction : public BuffOnPartyAction
+// Shared blessing-on-party dispatcher; the action's spell is the strategy's lead
+// blessing, with role-based fallbacks filled in by GetDesiredBlessingCategory.
+class CastBlessingOnPartyAction : public BuffOnPartyAction
 {
 public:
-    CastBlessingOfMightOnPartyAction(PlayerbotAI* botAI) : BuffOnPartyAction(botAI, "blessing of might") {}
+    CastBlessingOnPartyAction(PlayerbotAI* botAI, std::string const name)
+        : BuffOnPartyAction(botAI, name) {}
 
-    std::string const getName() override { return "blessing of might on party"; }
     Unit* GetTarget() override;
     Value<Unit*>* GetTargetValue() override;
+    bool isUseful() override;
+    bool isPossible() override;
     bool Execute(Event event) override;
+};
+
+class CastBlessingOfMightOnPartyAction : public CastBlessingOnPartyAction
+{
+public:
+    CastBlessingOfMightOnPartyAction(PlayerbotAI* botAI)
+        : CastBlessingOnPartyAction(botAI, "blessing of might") {}
+
+    std::string const getName() override { return "blessing of might on party"; }
 };
 
 class CastBlessingOfWisdomAction : public CastBuffSpellAction
@@ -103,15 +116,13 @@ public:
     bool Execute(Event event) override;
 };
 
-class CastBlessingOfWisdomOnPartyAction : public BuffOnPartyAction
+class CastBlessingOfWisdomOnPartyAction : public CastBlessingOnPartyAction
 {
 public:
-    CastBlessingOfWisdomOnPartyAction(PlayerbotAI* botAI) : BuffOnPartyAction(botAI, "blessing of wisdom") {}
+    CastBlessingOfWisdomOnPartyAction(PlayerbotAI* botAI)
+        : CastBlessingOnPartyAction(botAI, "blessing of wisdom") {}
 
     std::string const getName() override { return "blessing of wisdom on party"; }
-    Unit* GetTarget() override;
-    Value<Unit*>* GetTargetValue() override;
-    bool Execute(Event event) override;
 };
 
 class CastBlessingOfKingsAction : public CastBuffSpellAction
@@ -120,15 +131,13 @@ public:
     CastBlessingOfKingsAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "blessing of kings") {}
 };
 
-class CastBlessingOfKingsOnPartyAction : public BuffOnPartyAction
+class CastBlessingOfKingsOnPartyAction : public CastBlessingOnPartyAction
 {
 public:
-    CastBlessingOfKingsOnPartyAction(PlayerbotAI* botAI) : BuffOnPartyAction(botAI, "blessing of kings") {}
+    CastBlessingOfKingsOnPartyAction(PlayerbotAI* botAI)
+        : CastBlessingOnPartyAction(botAI, "blessing of kings") {}
 
     std::string const getName() override { return "blessing of kings on party"; }
-    Unit* GetTarget() override;
-    Value<Unit*>* GetTargetValue() override; // added for Sanctuary priority
-    bool Execute(Event event) override;      // added for 2 paladins logic
 };
 
 class CastBlessingOfSanctuaryAction : public CastBuffSpellAction
@@ -137,15 +146,15 @@ public:
     CastBlessingOfSanctuaryAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "blessing of sanctuary") {}
 };
 
-class CastBlessingOfSanctuaryOnPartyAction : public BuffOnPartyAction
+Unit* GetPaladinPartyBlessingTarget(Player* bot, PlayerbotAI* botAI, std::string const& preferred);
+
+class CastBlessingOfSanctuaryOnPartyAction : public CastBlessingOnPartyAction
 {
 public:
-    CastBlessingOfSanctuaryOnPartyAction(PlayerbotAI* botAI) : BuffOnPartyAction(botAI, "blessing of sanctuary") {}
+    CastBlessingOfSanctuaryOnPartyAction(PlayerbotAI* botAI)
+        : CastBlessingOnPartyAction(botAI, "blessing of sanctuary") {}
 
     std::string const getName() override { return "blessing of sanctuary on party"; }
-    Unit* GetTarget() override;
-    Value<Unit*>* GetTargetValue() override;
-    bool Execute(Event event) override;
 };
 
 class CastHolyLightAction : public CastHealingSpellAction

@@ -8,6 +8,7 @@
 #include "AiFactory.h"
 #include "Event.h"
 #include "GenericBuffUtils.h"
+#include "PaladinBlessingHelper.h"
 #include "PaladinGreaterBlessingAction.h"
 #include "PaladinHelper.h"
 #include "Playerbots.h"
@@ -24,18 +25,6 @@ static bool IsBlessingTargetCandidate(Player* bot, Player* player)
     return bot->GetDistance(player) < sPlayerbotAIConfig.spellDistance * 2 &&
            bot->IsWithinLOS(player->GetPositionX(), player->GetPositionY(),
                             player->GetPositionZ());
-}
-
-static bool HasBlessingAura(
-    PlayerbotAI* botAI, Unit* target, std::initializer_list<char const*> auraNames)
-{
-    for (char const* auraName : auraNames)
-    {
-        if (botAI->HasAura(auraName, target))
-            return true;
-    }
-
-    return false;
 }
 
 static bool IsGreaterBlessingMode(Player* bot)
@@ -90,48 +79,6 @@ static Unit* FindBlessingTarget(
     }
 
     return nullptr;
-}
-
-static inline bool IsTankRole(Player* player)
-{
-    if (!player)
-        return false;
-
-    if (player->HasTankSpec())
-        return true;
-
-    if (PlayerbotAI* otherAI = GET_PLAYERBOT_AI(player))
-    {
-        if (otherAI->HasStrategy("tank", BOT_STATE_NON_COMBAT) ||
-            otherAI->HasStrategy("tank", BOT_STATE_COMBAT)     ||
-            otherAI->HasStrategy("tank face", BOT_STATE_NON_COMBAT) ||
-            otherAI->HasStrategy("tank face", BOT_STATE_COMBAT)     ||
-            otherAI->HasStrategy("bear", BOT_STATE_NON_COMBAT) ||
-            otherAI->HasStrategy("bear", BOT_STATE_COMBAT))
-            return true;
-    }
-
-    return false;
-}
-
-static inline bool IsOnlyPaladinInGroup(Player* bot)
-{
-    if (!bot)
-        return false;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return true;
-
-    uint32 paladins = 0u;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* player = ref->GetSource();
-        if (!player || !player->IsInWorld()) continue;
-        if (player->getClass() == CLASS_PALADIN) ++paladins;
-    }
-
-    return paladins == 1u;
 }
 
 inline std::string const GetActualBlessingOfMight(Unit* target)
@@ -195,70 +142,94 @@ inline std::string const GetActualBlessingOfWisdom(Unit* target)
     return "blessing of wisdom";
 }
 
-inline std::string const GetActualBlessingOfSanctuary(Unit* target, Player* bot)
+// A strategy only leads with its blessing on targets whose role it actually
+// suits; everyone else falls through to the role priority below.
+static bool PreferredLeadAppliesTo(
+    ai::gbless::BaseBlessingCategory preferred, ai::gbless::RoleProfile role)
 {
-    if (!bot->HasSpell(ai::paladin::SPELL_BLESSING_OF_SANCTUARY))
-        return "";
-
-    Player* targetPlayer = target->ToPlayer();
-    if (!targetPlayer)
-        return "";
-
-    if (auto* botAI = GET_PLAYERBOT_AI(bot))
+    using namespace ai::gbless;
+    switch (preferred)
     {
-        if (Unit* mainTank =
-            botAI->GetAiObjectContext()->GetValue<Unit*>("main tank")->Get())
-        {
-            if (mainTank == target)
-                return "blessing of sanctuary";
-        }
+        case BASE_KINGS:     return true;
+        case BASE_MIGHT:     return role == ROLE_PHYSICAL_DPS || role == ROLE_HYBRID_DPS;
+        case BASE_WISDOM:    return role == ROLE_CASTER || role == ROLE_HYBRID_DPS;
+        case BASE_SANCTUARY: return ai::blessing::IsTankRoleProfile(role);
+        default:             return false;
     }
-
-    if (targetPlayer->HasTankSpec())
-        return "blessing of sanctuary";
-
-    return "";
 }
 
-Unit* CastBlessingOfMightOnPartyAction::GetTarget()
+// Highest-priority blessing (for the target's role) that this bot can cast and
+// that another paladin isn't already providing, so we complement rather than
+// duplicate. The strategy's preferred blessing leads where it applies.
+// BASE_NONE means nothing to add.
+static ai::gbless::BaseBlessingCategory GetDesiredBlessingCategory(
+    Unit* target, PlayerbotAI* botAI, ai::gbless::BaseBlessingCategory preferred,
+    bool tanksWantSanctuary)
+{
+    using namespace ai::gbless;
+
+    Player* targetPlayer = target ? target->ToPlayer() : nullptr;
+    if (!targetPlayer)
+        return BASE_NONE;
+
+    RoleProfile role = ResolveRoleProfile(targetPlayer);
+
+    auto canProvide = [&](BaseBlessingCategory category)
+    {
+        return category != BASE_NONE &&
+               botAI->HasSpell(BlessingSpellName(ToSingleVariant(category))) &&
+               !ai::blessing::AnotherPaladinHasEqualOrStronger(botAI, target, category);
+    };
+
+    if (PreferredLeadAppliesTo(preferred, role) && canProvide(preferred))
+        return preferred;
+
+    bool promoteSanctuary = tanksWantSanctuary && ai::blessing::IsTankRoleProfile(role);
+    if (promoteSanctuary && canProvide(BASE_SANCTUARY))
+        return BASE_SANCTUARY;
+
+    for (BaseBlessingCategory category : BASE_BLESSING_PRIORITIES[role].priorities)
+    {
+        if (promoteSanctuary && category == BASE_SANCTUARY)
+            continue;
+        if (canProvide(category))
+            return category;
+    }
+
+    return BASE_NONE;
+}
+
+static std::string GetActualPaladinPartyBlessing(
+    Unit* target, PlayerbotAI* botAI, std::string const& preferred)
+{
+    bool tanksWantSanctuary = !ai::blessing::GroupHasRenewedHopePriest(botAI->GetBot());
+    ai::gbless::BaseBlessingCategory category = GetDesiredBlessingCategory(
+        target, botAI, ai::blessing::CategoryFromName(preferred), tanksWantSanctuary);
+    if (category == ai::gbless::BASE_NONE)
+        return "";
+
+    return ai::gbless::BlessingSpellName(ai::gbless::ToSingleVariant(category));
+}
+
+Unit* GetPaladinPartyBlessingTarget(
+    Player* bot, PlayerbotAI* botAI, std::string const& preferred)
 {
     if (IsGreaterBlessingMode(bot))
         return nullptr;
 
+    ai::gbless::BaseBlessingCategory preferredCategory = ai::blessing::CategoryFromName(preferred);
+    bool tanksWantSanctuary = !ai::blessing::GroupHasRenewedHopePriest(bot);
     return FindBlessingTarget(bot, botAI, [&](Player* player)
     {
-        return !HasBlessingAura(botAI, player,
-            { "blessing of might", "greater blessing of might",
-              "blessing of wisdom", "greater blessing of wisdom",
-              "blessing of sanctuary", "greater blessing of sanctuary" });
+        ai::gbless::BaseBlessingCategory category = GetDesiredBlessingCategory(
+            player, botAI, preferredCategory, tanksWantSanctuary);
+        return category != ai::gbless::BASE_NONE &&
+               !ai::blessing::HasOwnBlessingCategory(botAI, player, category);
     });
 }
 
 bool CastBlessingOfMightAction::Execute(Event /*event*/)
 {
-    Unit* target = GetTarget();
-    if (!target)
-        return false;
-
-    std::string castName = GetActualBlessingOfMight(target);
-    return botAI->CastSpell(castName, target);
-}
-
-Value<Unit*>* CastBlessingOfMightOnPartyAction::GetTargetValue()
-{
-    return context->GetValue<Unit*>(
-    "party member without aura",
-    "blessing of might,greater blessing of might,blessing of wisdom,"
-    "greater blessing of wisdom,blessing of sanctuary,"
-    "greater blessing of sanctuary"
-    );
-}
-
-bool CastBlessingOfMightOnPartyAction::Execute(Event /*event*/)
-{
-    if (IsGreaterBlessingMode(bot))
-        return false;
-
     Unit* target = GetTarget();
     if (!target)
         return false;
@@ -277,260 +248,53 @@ bool CastBlessingOfWisdomAction::Execute(Event /*event*/)
     return botAI->CastSpell(castName, target);
 }
 
-Unit* CastBlessingOfWisdomOnPartyAction::GetTarget()
-{
-    if (IsGreaterBlessingMode(bot))
-        return nullptr;
-
-    return FindBlessingTarget(bot, botAI, [&](Player* player)
-    {
-        if (botAI->HasStrategy("bwisdom", BOT_STATE_NON_COMBAT) && IsTankRole(player))
-            return false;
-
-        return !HasBlessingAura(botAI, player,
-            { "blessing of might", "greater blessing of might",
-              "blessing of wisdom", "greater blessing of wisdom",
-              "blessing of sanctuary", "greater blessing of sanctuary" });
-    });
-}
-
-Value<Unit*>* CastBlessingOfWisdomOnPartyAction::GetTargetValue()
-{
-    return context->GetValue<Unit*>(
-    "party member without aura",
-    "blessing of wisdom,greater blessing of wisdom,blessing of might,greater blessing of might,"
-    "blessing of sanctuary,greater blessing of sanctuary"
-    );
-}
-
-bool CastBlessingOfWisdomOnPartyAction::Execute(Event /*event*/)
-{
-    if (IsGreaterBlessingMode(bot))
-        return false;
-
-    Unit* target = GetTarget();
-    if (!target)
-        return false;
-
-    Player* targetPlayer = target->ToPlayer();
-
-    if (Group* group = bot->GetGroup())
-        if (targetPlayer && !group->IsMember(targetPlayer->GetGUID()))
-            return false;
-
-    if (botAI->HasStrategy("bwisdom", BOT_STATE_NON_COMBAT) &&
-        targetPlayer && IsTankRole(targetPlayer))
-        return false;
-
-    std::string castName = GetActualBlessingOfWisdom(target);
-    if (castName.empty())
-        return false;
-
-    return botAI->CastSpell(castName, target);
-}
-
-Value<Unit*>* CastBlessingOfSanctuaryOnPartyAction::GetTargetValue()
+Value<Unit*>* CastBlessingOnPartyAction::GetTargetValue()
 {
     return context->GetValue<Unit*>(
         "party member without aura",
-        "blessing of sanctuary,greater blessing of sanctuary"
-    );
-}
-
-bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event /*event*/)
-{
-    if (IsGreaterBlessingMode(bot))
-        return false;
-
-    if (!bot->HasSpell(ai::paladin::SPELL_BLESSING_OF_SANCTUARY))
-        return false;
-
-    Unit* target = GetTarget();
-    if (!target)
-        target = bot;
-
-    Player* targetPlayer = target ? target->ToPlayer() : nullptr;
-
-    const auto HasSanctAura = [&](Unit* unit) -> bool {
-        return botAI->HasAura("blessing of sanctuary", unit) ||
-               botAI->HasAura("greater blessing of sanctuary", unit);
-    };
-
-    if (Group* group = bot->GetGroup())
-    {
-        if (targetPlayer && !group->IsMember(targetPlayer->GetGUID()))
-        {
-            target = bot;
-            targetPlayer = bot->ToPlayer();
-        }
-    }
-
-    if (Player* self = bot->ToPlayer())
-    {
-        bool selfHasSanct = HasSanctAura(self);
-        bool needSelf = IsTankRole(self) && !selfHasSanct;
-
-        if (needSelf)
-        {
-            target = self;
-            targetPlayer = self;
-        }
-    }
-
-    bool targetOk = false;
-    if (targetPlayer)
-    {
-        bool hasSanct = HasSanctAura(targetPlayer);
-        targetOk = IsTankRole(targetPlayer) && !hasSanct;
-    }
-
-    if (!targetOk)
-    {
-        if (Group* group = bot->GetGroup())
-        {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* player = ref->GetSource();
-                if (!player) continue;
-                if (!player->IsInWorld() || !player->IsAlive()) continue;
-                if (!IsTankRole(player)) continue;
-
-                bool hasSanct = HasSanctAura(player);
-                if (!hasSanct)
-                {
-                    target = player;
-                    targetPlayer = player;
-                    targetOk = true;
-                    break;
-                }
-            }
-        }
-    }
-
-    if (GetActualBlessingOfSanctuary(target, bot).empty())
-    {
-        if (targetPlayer)
-        {
-            if (IsTankRole(targetPlayer))
-                return botAI->CastSpell("blessing of sanctuary", target);
-            else
-                return false;
-        }
-        else
-            return false;
-    }
-
-    return botAI->CastSpell("blessing of sanctuary", target);
-}
-
-Unit* CastBlessingOfSanctuaryOnPartyAction::GetTarget()
-{
-    if (IsGreaterBlessingMode(bot))
-        return nullptr;
-
-    if (!bot->HasSpell(ai::paladin::SPELL_BLESSING_OF_SANCTUARY))
-        return nullptr;
-
-    return FindBlessingTarget(bot, botAI, [&](Player* player)
-    {
-        return IsTankRole(player) &&
-               !HasBlessingAura(botAI, player,
-                   { "blessing of sanctuary", "greater blessing of sanctuary" });
-    });
-}
-
-Value<Unit*>* CastBlessingOfKingsOnPartyAction::GetTargetValue()
-{
-    return context->GetValue<Unit*>(
-        "party member without aura",
+        "blessing of sanctuary,greater blessing of sanctuary,"
         "blessing of kings,greater blessing of kings,"
-        "blessing of sanctuary,greater blessing of sanctuary"
+        "blessing of might,greater blessing of might,"
+        "blessing of wisdom,greater blessing of wisdom"
     );
 }
 
-Unit* CastBlessingOfKingsOnPartyAction::GetTarget()
+Unit* CastBlessingOnPartyAction::GetTarget()
 {
-    if (IsGreaterBlessingMode(bot))
-        return nullptr;
-
-    const bool hasBwisdom = botAI->HasStrategy("bwisdom", BOT_STATE_NON_COMBAT);
-    const bool hasBkings = botAI->HasStrategy("bkings", BOT_STATE_NON_COMBAT);
-    const bool onlyPaladinInGroup = IsOnlyPaladinInGroup(bot);
-
-    return FindBlessingTarget(bot, botAI, [&](Player* player)
-    {
-        const bool isTank = IsTankRole(player);
-        const bool hasKingsOrSanct = HasBlessingAura(botAI, player,
-            { "blessing of kings", "greater blessing of kings",
-              "blessing of sanctuary", "greater blessing of sanctuary" });
-
-        if (hasKingsOrSanct)
-            return false;
-
-        if (hasBwisdom)
-            return isTank;
-
-        if (hasBkings)
-        {
-            if (isTank)
-                return false;
-
-            if (onlyPaladinInGroup && player == bot)
-                return false;
-        }
-
-        return true;
-    });
+    return GetPaladinPartyBlessingTarget(bot, botAI, spell);
 }
 
-bool CastBlessingOfKingsOnPartyAction::Execute(Event /*event*/)
+bool CastBlessingOnPartyAction::isUseful()
 {
-    if (IsGreaterBlessingMode(bot))
+    Unit* target = GetTarget();
+    if (!target || !target->IsInWorld() || target->GetMapId() != bot->GetMapId())
         return false;
 
+    std::string const blessing = GetActualPaladinPartyBlessing(target, botAI, spell);
+    return !blessing.empty() && AI_VALUE2(bool, "spell cast useful", blessing);
+}
+
+bool CastBlessingOnPartyAction::isPossible()
+{
     Unit* target = GetTarget();
     if (!target)
         return false;
 
-    Group* group = bot->GetGroup();
-    if (!group)
+    std::string const blessing = GetActualPaladinPartyBlessing(target, botAI, spell);
+    return !blessing.empty() && botAI->CanCastSpell(blessing, target);
+}
+
+bool CastBlessingOnPartyAction::Execute(Event /*event*/)
+{
+    Unit* target = GetTarget();
+    if (!target)
         return false;
 
-    if (botAI->HasStrategy("bkings", BOT_STATE_NON_COMBAT) &&
-        IsOnlyPaladinInGroup(bot))
-    {
-        if (target->GetGUID() == bot->GetGUID())
-            return false;
-    }
-
-    Player* targetPlayer = target->ToPlayer();
-    if (targetPlayer && !group->IsMember(targetPlayer->GetGUID()))
+    std::string const blessing = GetActualPaladinPartyBlessing(target, botAI, spell);
+    if (blessing.empty())
         return false;
 
-    const bool hasBwisdom = botAI->HasStrategy("bwisdom", BOT_STATE_NON_COMBAT);
-    const bool hasBkings = botAI->HasStrategy("bkings", BOT_STATE_NON_COMBAT);
-
-    if (hasBwisdom && (!targetPlayer || !IsTankRole(targetPlayer)))
-        return false;
-
-    if (targetPlayer)
-    {
-        const bool isTank = IsTankRole(targetPlayer);
-        const bool hasSanctFromMe =
-            target->HasAura(ai::paladin::SPELL_BLESSING_OF_SANCTUARY, bot->GetGUID()) ||
-            target->HasAura(ai::paladin::SPELL_GREATER_BLESSING_OF_SANCTUARY, bot->GetGUID());
-        const bool hasSanctAny =
-            botAI->HasAura("blessing of sanctuary", target) ||
-            botAI->HasAura("greater blessing of sanctuary", target);
-
-        if (isTank && hasSanctFromMe)
-            return false;
-
-        if (hasBkings && isTank && hasSanctAny)
-            return false;
-    }
-
-    return botAI->CastSpell("blessing of kings", target);
+    return botAI->CastSpell(blessing, target);
 }
 
 bool CastSealSpellAction::isUseful()

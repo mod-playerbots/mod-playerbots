@@ -52,6 +52,8 @@ class BlessingOnPartyTrigger : public BuffOnPartyTrigger
 public:
     BlessingOnPartyTrigger(PlayerbotAI* botAI)
         : BuffOnPartyTrigger(botAI, "blessing of kings,blessing of might,blessing of wisdom", 2 * 2000) {}
+
+    bool IsActive() override;
 };
 
 class BlessingTrigger : public BuffTrigger
@@ -213,7 +215,7 @@ public:
     BlessingOfWisdomOnPartyTrigger(PlayerbotAI* botAI)
         : BlessingOnPartyTrigger(botAI)
     {
-        spell = "blessing of might,blessing of wisdom";
+        spell = "blessing of wisdom";
     }
 };
 
@@ -223,7 +225,7 @@ public:
     BlessingOfMightOnPartyTrigger(PlayerbotAI* botAI)
         : BlessingOnPartyTrigger(botAI)
     {
-        spell = "blessing of might,blessing of wisdom";
+        spell = "blessing of might";
     }
 };
 
