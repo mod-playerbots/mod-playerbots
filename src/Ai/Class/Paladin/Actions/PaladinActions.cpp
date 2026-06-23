@@ -11,20 +11,21 @@
 #include "PaladinBlessingHelper.h"
 #include "PaladinGreaterBlessingAction.h"
 #include "PaladinHelper.h"
+#include "Pet.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
 
-static bool IsBlessingTargetCandidate(Player* bot, Player* player)
+static bool IsBlessingTargetCandidate(Player* bot, Unit* unit)
 {
-    if (!player || !player->IsAlive() || player->GetMapId() != bot->GetMapId())
+    if (!unit || !unit->IsAlive() || unit->GetMapId() != bot->GetMapId())
         return false;
 
-    if (player->IsGameMaster())
+    if (unit->IsPlayer() && unit->ToPlayer()->IsGameMaster())
         return false;
 
-    return bot->GetDistance(player) < sPlayerbotAIConfig.spellDistance * 2 &&
-           bot->IsWithinLOS(player->GetPositionX(), player->GetPositionY(),
-                            player->GetPositionZ());
+    return bot->GetDistance(unit) < sPlayerbotAIConfig.spellDistance * 2 &&
+           bot->IsWithinLOS(unit->GetPositionX(), unit->GetPositionY(),
+                            unit->GetPositionZ());
 }
 
 static bool IsGreaterBlessingMode(Player* bot)
@@ -36,25 +37,33 @@ template <typename Predicate>
 static Unit* FindBlessingTarget(
     Player* bot, PlayerbotAI* botAI, Predicate&& predicate)
 {
-    std::vector<Player*> masters;
-    std::vector<Player*> healers;
-    std::vector<Player*> tanks;
-    std::vector<Player*> others;
+    std::vector<Unit*> masters;
+    std::vector<Unit*> healers;
+    std::vector<Unit*> tanks;
+    std::vector<Unit*> others;
+    std::vector<Unit*> pets;
 
     Player* master = botAI->GetMaster();
     auto addPlayer = [&](Player* player)
     {
-        if (!IsBlessingTargetCandidate(bot, player))
+        if (!player)
             return;
 
-        if (player == master)
-            masters.push_back(player);
-        else if (botAI->IsHeal(player))
-            healers.push_back(player);
-        else if (botAI->IsTank(player))
-            tanks.push_back(player);
-        else
-            others.push_back(player);
+        if (IsBlessingTargetCandidate(bot, player))
+        {
+            if (player == master)
+                masters.push_back(player);
+            else if (botAI->IsHeal(player))
+                healers.push_back(player);
+            else if (botAI->IsTank(player))
+                tanks.push_back(player);
+            else
+                others.push_back(player);
+        }
+
+        if (Pet* pet = player->GetPet())
+            if (IsBlessingTargetCandidate(bot, pet))
+                pets.push_back(pet);
     };
 
     if (Group* group = bot->GetGroup())
@@ -67,14 +76,14 @@ static Unit* FindBlessingTarget(
         addPlayer(bot);
     }
 
-    std::vector<std::vector<Player*>*> orderedLists = {
-        &masters, &healers, &tanks, &others };
-    for (std::vector<Player*>* players : orderedLists)
+    std::vector<std::vector<Unit*>*> orderedLists = {
+        &masters, &healers, &tanks, &others, &pets };
+    for (std::vector<Unit*>* units : orderedLists)
     {
-        for (Player* player : *players)
+        for (Unit* unit : *units)
         {
-            if (predicate(player))
-                return player;
+            if (predicate(unit))
+                return unit;
         }
     }
 
@@ -168,11 +177,11 @@ static ai::gbless::BaseBlessingCategory GetDesiredBlessingCategory(
 {
     using namespace ai::gbless;
 
-    Player* targetPlayer = target ? target->ToPlayer() : nullptr;
-    if (!targetPlayer)
+    if (!target)
         return BASE_NONE;
 
-    RoleProfile role = ResolveRoleProfile(targetPlayer);
+    Player* targetPlayer = target->ToPlayer();
+    RoleProfile role = targetPlayer ? ResolveRoleProfile(targetPlayer) : ROLE_PHYSICAL_DPS;
 
     auto canProvide = [&](BaseBlessingCategory category)
     {
@@ -219,12 +228,12 @@ Unit* GetPaladinPartyBlessingTarget(
 
     ai::gbless::BaseBlessingCategory preferredCategory = ai::blessing::CategoryFromName(preferred);
     bool tanksWantSanctuary = !ai::blessing::GroupHasRenewedHopePriest(bot);
-    return FindBlessingTarget(bot, botAI, [&](Player* player)
+    return FindBlessingTarget(bot, botAI, [&](Unit* unit)
     {
         ai::gbless::BaseBlessingCategory category = GetDesiredBlessingCategory(
-            player, botAI, preferredCategory, tanksWantSanctuary);
+            unit, botAI, preferredCategory, tanksWantSanctuary);
         return category != ai::gbless::BASE_NONE &&
-               !ai::blessing::HasOwnBlessingCategory(botAI, player, category);
+               !ai::blessing::HasOwnBlessingCategory(botAI, unit, category);
     });
 }
 
