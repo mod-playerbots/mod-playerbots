@@ -5,10 +5,11 @@
 #include "ReachTargetActions.h"
 #include "FollowActions.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 
 // Omor the Unscarred
 
-float OmorTreacherousAuraFleeFromPlayersMultiplier::GetValue(Action* action)
+float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
 {
     Unit* omor = AI_VALUE2(Unit*, "find target", "omor the unscarred");
     if (!omor)
@@ -25,18 +26,23 @@ float OmorTreacherousAuraFleeFromPlayersMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float OmorBaneOfTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
+float OmorTreacheryAuraFleeFromTankMultiplier::GetValue(Action* action)
 {
     Unit* omor = AI_VALUE2(Unit*, "find target", "omor the unscarred");
     if (!omor)
         return 1.0f;
 
-    if (!bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)))
+    Player* tank = GetGroupMainTank(botAI, bot);
+    if (!tank)
+        return 1.0f;
+
+    if (!tank->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) &&
+        !tank->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA)))
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
         (dynamic_cast<MovementAction*>(action) &&
-         !dynamic_cast<OmorBaneOfTreacheryAuraFleeFromPlayersAction*>(action)))
+         !dynamic_cast<OmorTreacheryAuraFleeFromTankAction*>(action)))
         return 0.0f;
 
     return 1.0f;

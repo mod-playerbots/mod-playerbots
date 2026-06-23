@@ -18,17 +18,17 @@ public:
             &TbcDungeonHellfireRampartsTriggerContext::gargolmar_hellfire_watchers_are_active;
 
         // Omor the Unscarred
-        creators["omor treacherous aura"] =
-            &TbcDungeonHellfireRampartsTriggerContext::omor_treacherous_aura;
-
-        creators["omor bane of treachery aura"] =
-            &TbcDungeonHellfireRampartsTriggerContext::omor_bane_of_treachery_aura;
+        creators["omor treachery aura"] =
+            &TbcDungeonHellfireRampartsTriggerContext::omor_treachery_aura;
 
         creators["omor ranged spread"] =
             &TbcDungeonHellfireRampartsTriggerContext::omor_ranged_spread;
 
         creators["omor fiendish hound is active"] =
             &TbcDungeonHellfireRampartsTriggerContext::omor_fiendish_hound_is_active;
+
+        creators["omor tank has treachery aura"] =
+            &TbcDungeonHellfireRampartsTriggerContext::omor_tank_has_treachery_aura;
 
         // Vazruden
         creators["vazruden tank position boss"] =
@@ -43,17 +43,17 @@ private:
         PlayerbotAI* botAI) {return new GargolmarHellfireWatchersAreActiveTrigger(botAI); }
 
     // Omor the Unscarred
-    static Trigger* omor_treacherous_aura(
-        PlayerbotAI* botAI) {return new OmorTreacherousAuraTrigger(botAI); }
-
-    static Trigger* omor_bane_of_treachery_aura(
-        PlayerbotAI* botAI) {return new OmorBaneOfTreacheryAuraTrigger(botAI); }
+    static Trigger* omor_treachery_aura(
+        PlayerbotAI* botAI) {return new OmorTreacheryAuraTrigger(botAI); }
 
     static Trigger* omor_ranged_spread(
         PlayerbotAI* botAI) {return new OmorRangedSpreadTrigger(botAI); }
 
     static Trigger* omor_fiendish_hound_is_active(
         PlayerbotAI* botAI) {return new OmorFiendishHoundIsActiveTrigger(botAI); }
+
+    static Trigger* omor_tank_has_treachery_aura(
+        PlayerbotAI* botAI) {return new OmorTankHasTreacheryAuraTrigger(botAI); }
 
     // Vazruden
     static Trigger* vazruden_tank_position_boss(

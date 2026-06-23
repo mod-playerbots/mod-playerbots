@@ -33,18 +33,10 @@ public:
 
 // Omor the Unscarred
 
-class OmorTreacherousAuraTrigger : public Trigger
+class OmorTreacheryAuraTrigger : public Trigger
 {
 public:
-    OmorTreacherousAuraTrigger(PlayerbotAI* botAI) : Trigger(botAI, "omor treacherous aura") {}
-
-    bool IsActive() override;
-};
-
-class OmorBaneOfTreacheryAuraTrigger : public Trigger
-{
-public:
-    OmorBaneOfTreacheryAuraTrigger(PlayerbotAI* botAI) : Trigger(botAI, "omor bane of treachery aura") {}
+    OmorTreacheryAuraTrigger(PlayerbotAI* botAI) : Trigger(botAI, "omor treachery aura") {}
 
     bool IsActive() override;
 };
@@ -60,6 +52,12 @@ class OmorFiendishHoundIsActiveTrigger : public Trigger
 {
 public:    OmorFiendishHoundIsActiveTrigger(PlayerbotAI* botAI) : Trigger(botAI, "omor fiendish hound is active") {}
 
+    bool IsActive() override;
+};
+
+class OmorTankHasTreacheryAuraTrigger : public Trigger
+{
+public:    OmorTankHasTreacheryAuraTrigger(PlayerbotAI* botAI) : Trigger(botAI, "omor tank has treachery aura") {}
     bool IsActive() override;
 };
 

@@ -2,6 +2,7 @@
 #include "HRTriggers.h"
 #include "AiObject.h"
 #include "AiObjectContext.h"
+#include "RaidBossHelpers.h"
 
 // Watchkeeper Gargolmar
 
@@ -19,14 +20,11 @@ bool GargolmarHellfireWatchersAreActiveTrigger::IsActive()
 
 // Omor the Unscarred
 
-bool OmorTreacherousAuraTrigger::IsActive()
+bool OmorTreacheryAuraTrigger::IsActive()
 {
-    return bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA));
-}
-
-bool OmorBaneOfTreacheryAuraTrigger::IsActive()
-{
-    return bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY));
+    return (botAI->IsHeal(bot) || botAI->IsDps(bot)) &&
+            bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
+            bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA));
 }
 
 bool OmorRangedSpreadTrigger::IsActive()
@@ -39,6 +37,24 @@ bool OmorFiendishHoundIsActiveTrigger::IsActive()
 {
     return botAI->IsDps(bot) &&
            AI_VALUE2(Unit*, "find target", "fiendish hound");
+}
+
+bool OmorTankHasTreacheryAuraTrigger::IsActive()
+{
+    if (botAI->IsTank(bot))
+        return false;
+
+    Player* tank = GetGroupMainTank(botAI, bot);
+    if (!tank)
+        return false;
+
+    if (tank->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
+        tank->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA)))
+    {
+        return true;
+    }
+
+    return false;
 }
 
 // Vazruden

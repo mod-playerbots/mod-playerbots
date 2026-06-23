@@ -26,19 +26,11 @@ public:
 
 // Omor the Unscarred
 
-class OmorTreacherousAuraFleeFromPlayersAction : public MovementAction
+class OmorTreacheryAuraFleeFromPlayersAction : public MovementAction
 {
 public:
-    OmorTreacherousAuraFleeFromPlayersAction(
-        PlayerbotAI* botAI, std::string const name = "omor treacherous aura flee from players") : MovementAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
-class OmorBaneOfTreacheryAuraFleeFromPlayersAction : public MovementAction
-{
-public:
-    OmorBaneOfTreacheryAuraFleeFromPlayersAction(
-        PlayerbotAI* botAI, std::string const name = "omor bane of treachery aura flee from players") : MovementAction(botAI, name) {}
+    OmorTreacheryAuraFleeFromPlayersAction(
+        PlayerbotAI* botAI, std::string const name = "omor treachery aura flee from players") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 
@@ -55,6 +47,14 @@ class OmorMarkFiendishHoundAction : public Action
 public:
     OmorMarkFiendishHoundAction(
         PlayerbotAI* botAI, std::string const name = "omor mark fiendish hound") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class OmorTreacheryAuraFleeFromTankAction : public MovementAction
+{
+public:
+    OmorTreacheryAuraFleeFromTankAction(
+        PlayerbotAI* botAI, std::string const name = "omor treachery aura flee from tank") : MovementAction(botAI, name) {}
     bool Execute(Event event) override;
 };
 

@@ -3,17 +3,17 @@
 
 #include "Multiplier.h"
 
-class OmorTreacherousAuraFleeFromPlayersMultiplier : public Multiplier
+class OmorTreacheryAuraFleeFromPlayersMultiplier : public Multiplier
 {
 public:
-    OmorTreacherousAuraFleeFromPlayersMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "omor treacherous aura flee from players") {}
+    OmorTreacheryAuraFleeFromPlayersMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "omor treachery aura flee from players") {}
     float GetValue(Action* action) override;
 };
 
-class OmorBaneOfTreacheryAuraFleeFromPlayersMultiplier : public Multiplier
+class OmorTreacheryAuraFleeFromTankMultiplier : public Multiplier
 {
 public:
-    OmorBaneOfTreacheryAuraFleeFromPlayersMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "omor bane of treachery aura flee from players") {}
+    OmorTreacheryAuraFleeFromTankMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "omor treachery aura flee from tank") {}
     float GetValue(Action* action) override;
 };
 

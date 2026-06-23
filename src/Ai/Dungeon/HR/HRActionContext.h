@@ -18,17 +18,17 @@ public:
             &TbcDungeonHellfireRampartsActionContext::gargolmar_mark_hellfire_watchers;
 
         // Omor the Unscarred
-        creators["omor treacherous aura flee from players"] =
-            &TbcDungeonHellfireRampartsActionContext::omor_treacherous_aura_flee_from_players;
-
-        creators["omor bane of treachery aura flee from players"] =
-            &TbcDungeonHellfireRampartsActionContext::omor_bane_of_treachery_aura_flee_from_players;
+        creators["omor treachery aura flee from players"] =
+            &TbcDungeonHellfireRampartsActionContext::omor_treachery_aura_flee_from_players;
 
         creators["omor ranged spread"] =
             &TbcDungeonHellfireRampartsActionContext::omor_ranged_spread;
 
         creators["omor mark fiendish hound"] =
             &TbcDungeonHellfireRampartsActionContext::omor_mark_fiendish_hound;
+
+        creators["omor treachery aura flee from tank"] =
+            &TbcDungeonHellfireRampartsActionContext::omor_treachery_aura_flee_from_tank;
 
         // Vazruden
         creators["vazruden tank position boss"] =
@@ -43,17 +43,17 @@ private:
         PlayerbotAI* botAI) { return new GargolmarMarkHellfireWatchersAction(botAI); }
 
     // Omor the Unscarred
-    static Action* omor_treacherous_aura_flee_from_players(
-        PlayerbotAI* botAI) { return new OmorTreacherousAuraFleeFromPlayersAction(botAI); }
-
-    static Action* omor_bane_of_treachery_aura_flee_from_players(
-        PlayerbotAI* botAI) { return new OmorBaneOfTreacheryAuraFleeFromPlayersAction(botAI); }
+    static Action* omor_treachery_aura_flee_from_players(
+        PlayerbotAI* botAI) { return new OmorTreacheryAuraFleeFromPlayersAction(botAI); }
 
     static Action* omor_ranged_spread(
         PlayerbotAI* botAI) { return new OmorRangedSpreadAction(botAI); }
 
     static Action* omor_mark_fiendish_hound(
         PlayerbotAI* botAI) { return new OmorMarkFiendishHoundAction(botAI); }
+
+    static Action* omor_treachery_aura_flee_from_tank(
+        PlayerbotAI* botAI) { return new OmorTreacheryAuraFleeFromTankAction(botAI); }
 
     // Vazruden
     static Action* vazruden_tank_position_boss(
