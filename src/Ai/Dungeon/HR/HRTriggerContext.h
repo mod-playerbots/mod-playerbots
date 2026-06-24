@@ -11,9 +11,6 @@ public:
     TbcDungeonHellfireRampartsTriggerContext()
     {
         // Watchkeeper Gargolmar
-        creators["gargolmar tank position boss"] =
-            &TbcDungeonHellfireRampartsTriggerContext::gargolmar_tank_position_boss;
-
         creators["gargolmar hellfire watchers are active"] =
             &TbcDungeonHellfireRampartsTriggerContext::gargolmar_hellfire_watchers_are_active;
 
