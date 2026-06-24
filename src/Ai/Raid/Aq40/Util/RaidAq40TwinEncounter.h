@@ -183,6 +183,8 @@ struct TwinEncounterState
     uint16 stagedMemberCount = 0;
     uint16 centerCommittedMemberCount = 0;
     uint16 strictReadyMemberCount = 0;
+    uint8 eligibleWarlockCount = 0;
+    uint8 approachWarlockCount = 0;
     std::array<TwinStableOwnership, 2> ownership;
     TwinRecoveryState recovery;
     TwinScriptedHazardWindows scriptedHazards;
@@ -212,6 +214,9 @@ bool IsTwinAssignedParticipant(TwinEncounterState const& state, Player const* bo
 bool IsAssignedToCohort(TwinEncounterState const& state, ObjectGuid memberGuid, TwinRoleCohort cohort);
 bool HasDeterministicAssignments(TwinEncounterState const& state);
 std::string const& GetUnsupportedReason(TwinEncounterState const& state);
+size_t GetTwinPrePullQuorumRequirement(size_t assignedCount);
+bool IsTwinCenterCommitQuorumMet(Player* bot, TwinEncounterState const& state, size_t* outCommittedCount = nullptr,
+                                 std::string* outMissingCriticalRoles = nullptr);
 bool IsTwinApproachWindow(TwinEncounterState const& state, Player const* bot);
 bool IsTwinApproachWindow(Player const* bot);
 bool IsTwinCenterCommitted(TwinEncounterState const& state);

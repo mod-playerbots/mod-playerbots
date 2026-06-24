@@ -211,6 +211,14 @@ uint32 GetTwinSwapPrepElapsedMs(Aq40TwinEncounter::TwinEncounterState const& sta
 	return getMSTimeDiff(state.swapPrepStartAtMs, now);
 }
 
+void AppendTwinWarlockPoolTelemetryFields(std::ostringstream& fields,
+										  Aq40TwinEncounter::TwinEncounterState const& state)
+{
+	fields << " warlock_pool=full_instance"
+		   << " eligible_warlocks=" << static_cast<uint32>(state.eligibleWarlockCount)
+		   << " approach_warlocks=" << static_cast<uint32>(state.approachWarlockCount);
+}
+
 ObjectGuid GetTwinTelemetryControllerGuid(Aq40TwinEncounter::TwinEncounterState const& state,
 									  Aq40TwinEncounter::TwinBoss boss)
 {
@@ -590,18 +598,80 @@ Player* ResolveBossOwnerForSpell(Spell* spell, Unit* caster, uint32 spellId)
 	return ResolvePrimarySpellTargetPlayer(spell, caster);
 }
 
-void MarkEncounterCombat(Aq40TwinEncounter::TwinEncounterState& state, uint32 nowMs)
+bool MarkEncounterCombat(Aq40TwinEncounter::TwinEncounterState& state, Player* logBot, Unit* caster, uint32 spellId,
+						 uint32 nowMs)
 {
-	if (state.phase == Aq40TwinEncounter::TwinEncounterPhase::PrePull &&
-		(state.mode != Aq40TwinEncounter::TwinStrategyMode::StandardCompReady ||
-		 !Aq40TwinEncounter::HasDeterministicAssignments(state)))
+	if (state.phase != Aq40TwinEncounter::TwinEncounterPhase::PrePull)
 	{
-		return;
+		Aq40TwinEncounter::SetMode(state, Aq40TwinEncounter::TwinStrategyMode::Combat, nowMs);
+		return true;
 	}
 
-	Aq40TwinEncounter::SetMode(state, Aq40TwinEncounter::TwinStrategyMode::Combat, nowMs);
-	if (state.phase == Aq40TwinEncounter::TwinEncounterPhase::PrePull)
+	bool const hasDeterministicAssignments = Aq40TwinEncounter::HasDeterministicAssignments(state);
+	if (state.mode == Aq40TwinEncounter::TwinStrategyMode::StandardCompReady && hasDeterministicAssignments)
+	{
+		Aq40TwinEncounter::SetMode(state, Aq40TwinEncounter::TwinStrategyMode::Combat, nowMs);
 		Aq40TwinEncounter::EnterDualPullWindow(state, nowMs);
+		return true;
+	}
+
+	size_t committedCount = 0u;
+	std::string missingCriticalRoles;
+	bool const quorumSatisfied = hasDeterministicAssignments &&
+		Aq40TwinEncounter::IsTwinCenterCommitQuorumMet(logBot, state, &committedCount, &missingCriticalRoles);
+	size_t const quorumRequired = Aq40TwinEncounter::GetTwinPrePullQuorumRequirement(state.assignments.size());
+
+	if (quorumSatisfied)
+	{
+		if (logBot)
+		{
+			std::ostringstream fields;
+			fields << "boss=twin spell=" << spellId
+				   << " source=" << Aq40Helpers::GetAq40LogUnit(caster)
+				   << " phase=" << Aq40TwinEncounter::ToString(state.phase)
+				   << " mode=" << Aq40TwinEncounter::ToString(state.mode)
+				   << " reason=center_commit_quorum_met"
+				   << " approach=" << state.approachMemberCount
+				   << " staged=" << state.stagedMemberCount
+				   << " center_committed=" << committedCount
+				   << " strict_ready=" << state.strictReadyMemberCount
+				   << " assigned=" << state.assignments.size()
+				   << " quorum_required=" << quorumRequired
+				   << " missing_critical_roles="
+				   << (missingCriticalRoles.empty() ? "none" : missingCriticalRoles);
+			AppendTwinWarlockPoolTelemetryFields(fields, state);
+			Aq40Helpers::LogAq40Warn(logBot, "twin_script_window", "twin:early_pull_salvage", fields.str(), 1000);
+		}
+
+		Aq40TwinEncounter::SetMode(state, Aq40TwinEncounter::TwinStrategyMode::Combat, nowMs);
+		Aq40TwinEncounter::EnterDualPullWindow(state, nowMs);
+		return true;
+	}
+
+	if (logBot)
+	{
+		std::ostringstream fields;
+		fields << "boss=twin spell=" << spellId
+			   << " source=" << Aq40Helpers::GetAq40LogUnit(caster)
+			   << " phase=" << Aq40TwinEncounter::ToString(state.phase)
+			   << " mode=" << Aq40TwinEncounter::ToString(state.mode)
+			   << " reason="
+			   << (hasDeterministicAssignments
+					   ? (missingCriticalRoles.empty() ? "center_commit_quorum_unmet" : "missing_critical_roles")
+					   : "no_deterministic_assignments")
+			   << " approach=" << state.approachMemberCount
+			   << " staged=" << state.stagedMemberCount
+			   << " center_committed=" << committedCount
+			   << " strict_ready=" << state.strictReadyMemberCount
+			   << " assigned=" << state.assignments.size()
+			   << " quorum_required=" << quorumRequired
+			   << " missing_critical_roles="
+			   << (missingCriticalRoles.empty() ? "none" : missingCriticalRoles);
+		AppendTwinWarlockPoolTelemetryFields(fields, state);
+		Aq40Helpers::LogAq40Warn(logBot, "twin_script_window", "twin:early_pull_invalid", fields.str(), 1000);
+	}
+
+	return false;
 }
 
 void MaybeLockPickupAnchor(Aq40TwinEncounter::TwinEncounterState const& state, Player* owner,
@@ -609,7 +679,6 @@ void MaybeLockPickupAnchor(Aq40TwinEncounter::TwinEncounterState const& state, P
 {
 	if (!owner || !GET_PLAYERBOT_AI(owner) || !Aq40TwinEncounter::IsKnownSide(side))
 		return;
-
 	if (state.phase != Aq40TwinEncounter::TwinEncounterPhase::TeleportWindow &&
 		state.phase != Aq40TwinEncounter::TwinEncounterPhase::PickupRecovery &&
 		!Aq40TwinEncounter::IsThreatHoldWindowActive(state, boss, nowMs))
@@ -795,11 +864,13 @@ public:
 		Aq40TwinEncounter::TwinEncounterState& state =
 			statePtr ? *statePtr : Aq40TwinEncounter::EnsureEncounterState(logBot);
 		Aq40TwinEncounter::TwinScriptedHazardWindows& hazards = state.scriptedHazards;
+		bool const combatArmed =
+			!hasBossCaster || MarkEncounterCombat(state, logBot, caster, spellInfo->Id, nowMs);
 
-		if (hasBossCaster)
-			MarkEncounterCombat(state, nowMs);
+		if (hasBossCaster && !combatArmed && state.phase == Aq40TwinEncounter::TwinEncounterPhase::PrePull)
+			return;
 
-		if (hasBossCaster && spellInfo->Id != Aq40SpellIds::TwinTeleportPrimary &&
+		if (hasBossCaster && combatArmed && spellInfo->Id != Aq40SpellIds::TwinTeleportPrimary &&
 			spellInfo->Id != Aq40SpellIds::TwinTeleportSecondary && spellInfo->Id != Aq40SpellIds::TwinHealBrother)
 		{
 			ConfirmBossOwner(state, spell, caster, spellInfo->Id, boss, nowMs, logBot);

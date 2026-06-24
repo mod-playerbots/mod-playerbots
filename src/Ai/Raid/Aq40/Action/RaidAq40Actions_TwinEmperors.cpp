@@ -7,10 +7,12 @@
 #include <list>
 #include <sstream>
 #include <string>
+#include <unordered_set>
 
 #include "CharmInfo.h"
 #include "FollowActions.h"
 #include "Map.h"
+#include "MotionMaster.h"
 #include "Pet.h"
 #include "SpellInfo.h"
 #include "SpellMgr.h"
@@ -106,6 +108,15 @@ enum class TwinBugPriority : uint8
     Mutate = 1,
     Hostile = 2,
     None = 255,
+};
+
+struct TwinStrictReadyEvaluation
+{
+    size_t readyCount = 0u;
+    size_t quorumRequired = 0u;
+    uint8 criticalMask = 0u;
+    bool criticalReady = false;
+    bool ready = false;
 };
 
 struct TwinBugSelection
@@ -832,6 +843,54 @@ void AppendTwinAnchorLogFields(std::ostringstream& fields, Player const* bot,
     }
 }
 
+void AppendTwinWarlockPoolTelemetryFields(std::ostringstream& fields,
+                                          Aq40TwinEncounter::TwinEncounterState const& state)
+{
+    fields << " warlock_pool=full_instance"
+           << " eligible_warlocks=" << static_cast<uint32>(state.eligibleWarlockCount)
+           << " approach_warlocks=" << static_cast<uint32>(state.approachWarlockCount);
+}
+
+void AppendTwinMotionStateField(std::ostringstream& fields, Player* bot)
+{
+    MovementGeneratorType const motionType =
+        (bot && bot->GetMotionMaster()) ? bot->GetMotionMaster()->GetCurrentMovementGeneratorType()
+                                        : IDLE_MOTION_TYPE;
+    fields << " motion_type=" << static_cast<uint32>(motionType);
+}
+
+bool IsTwinCriticalPrePullCohort(Aq40TwinEncounter::TwinRoleCohort cohort)
+{
+    return cohort == Aq40TwinEncounter::TwinRoleCohort::WarlockTank ||
+           cohort == Aq40TwinEncounter::TwinRoleCohort::MeleeTank ||
+           cohort == Aq40TwinEncounter::TwinRoleCohort::SideHealer;
+}
+
+uint8 GetTwinCriticalPrePullBit(Aq40TwinEncounter::TwinRoleAssignment const& assignment)
+{
+    if (!Aq40TwinEncounter::IsKnownSide(assignment.stableSide))
+        return 0u;
+
+    switch (assignment.cohort)
+    {
+        case Aq40TwinEncounter::TwinRoleCohort::WarlockTank:
+            return assignment.stableSide == Aq40TwinEncounter::TwinSide::Side0 ? (1u << 0) : (1u << 1);
+        case Aq40TwinEncounter::TwinRoleCohort::MeleeTank:
+            return assignment.stableSide == Aq40TwinEncounter::TwinSide::Side0 ? (1u << 2) : (1u << 3);
+        case Aq40TwinEncounter::TwinRoleCohort::SideHealer:
+            return assignment.stableSide == Aq40TwinEncounter::TwinSide::Side0 ? (1u << 4) : (1u << 5);
+        default:
+            return 0u;
+    }
+}
+
+uint8 constexpr kTwinCriticalPrePullRequiredMask = (1u << 6) - 1u;
+
+bool IsTwinNearFullAssignedGate(size_t assignedCount, size_t satisfiedCount)
+{
+    return assignedCount > 0u && satisfiedCount < assignedCount && assignedCount - satisfiedCount <= 2u;
+}
+
 void LogTwinTankAttackIntentDecision(Player* bot, Aq40TwinEncounter::TwinEncounterState const& state,
                                      Aq40TwinEncounter::TwinRoleAssignment const& assignment,
                                      TwinPrePullAnchorChoice const& anchorChoice, Unit* requestedTarget,
@@ -856,6 +915,7 @@ void LogTwinTankAttackIntentDecision(Player* bot, Aq40TwinEncounter::TwinEncount
            << " strict_ready=" << state.strictReadyMemberCount
            << " requested_target=" << Aq40Helpers::GetAq40LogUnit(requestedTarget)
            << " opener_target=" << Aq40Helpers::GetAq40LogUnit(openerTarget);
+    AppendTwinWarlockPoolTelemetryFields(fields, state);
     AppendTwinBotTraceFields(fields, bot, botAI, decision, state.phase == Aq40TwinEncounter::TwinEncounterPhase::PrePull);
     AppendTwinOpeningOwnershipFields(fields, bot, state);
     Aq40Helpers::LogAq40Info(bot, "twin_prepull",
@@ -883,6 +943,7 @@ void LogTwinCenterCommitHandoff(Player* bot, Aq40TwinEncounter::TwinEncounterSta
            << " strict_ready=" << state.strictReadyMemberCount
            << " assigned=" << state.assignments.size()
            << " unsupported_reason=" << (state.unsupportedReason.empty() ? "none" : state.unsupportedReason);
+    AppendTwinWarlockPoolTelemetryFields(fields, state);
     AppendTwinBotTraceFields(fields, bot, GET_PLAYERBOT_AI(bot), "side_owned_stage", true);
     AppendTwinOpeningOwnershipFields(fields, bot, state);
     Aq40Helpers::LogAq40Info(bot, "twin_prepull", "twin:center_commit:handoff", fields.str(), 1000);
@@ -905,6 +966,7 @@ void LogTwinInitialEngagementArm(Player* bot, Aq40TwinEncounter::TwinEncounterSt
            << " center_committed=" << state.centerCommittedMemberCount
            << " strict_ready=" << state.strictReadyMemberCount
            << " assigned=" << state.assignments.size();
+    AppendTwinWarlockPoolTelemetryFields(fields, state);
     AppendTwinOpeningOwnershipFields(fields, bot, state);
     AppendTwinBotTraceFields(fields, bot, GET_PLAYERBOT_AI(bot), "arm_dual_pull");
     fields << " veklor_target=" << Aq40Helpers::GetAq40LogUnit(openingTargets.veklor)
@@ -1036,6 +1098,7 @@ bool TryArmTwinOpeningDualPullFromPrePull(Player* bot, Aq40TwinEncounter::TwinEn
            << " opener_target=" << Aq40Helpers::GetAq40LogUnit(GetTwinOpeningTargetForAssignment(assignment, openingTargets))
            << " veklor_target=" << Aq40Helpers::GetAq40LogUnit(openingTargets.veklor)
            << " veknilash_target=" << Aq40Helpers::GetAq40LogUnit(openingTargets.veknilash);
+    AppendTwinWarlockPoolTelemetryFields(fields, state);
     AppendTwinBotTraceFields(fields, bot, GET_PLAYERBOT_AI(bot), "arm_dual_pull");
     AppendTwinOpeningOwnershipFields(fields, bot, state, nowMs);
     Aq40Helpers::LogAq40Info(bot, "twin_dual_pull", "twin:prepull:arm_dual_pull", fields.str(), 1000);
@@ -3136,18 +3199,19 @@ bool SyncTwinWarlockTankOverlay(Player* bot, PlayerbotAI* botAI)
     return true;
 }
 
-size_t CountTwinAssignedMembersAtPrePullAnchors(Player* bot,
-                                                Aq40TwinEncounter::TwinEncounterState const& state,
-                                                float tolerance)
+TwinStrictReadyEvaluation EvaluateTwinStrictReadyStatus(Player* bot,
+                                                        Aq40TwinEncounter::TwinEncounterState const& state,
+                                                        float tolerance)
 {
+    TwinStrictReadyEvaluation evaluation;
+    evaluation.quorumRequired = Aq40TwinEncounter::GetTwinPrePullQuorumRequirement(state.assignments.size());
     if (!bot || state.phase != Aq40TwinEncounter::TwinEncounterPhase::PrePull)
-        return 0u;
+        return evaluation;
 
     Group* group = bot->GetGroup();
     if (!group)
-        return 0u;
+        return evaluation;
 
-    size_t readyCount = 0u;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
@@ -3163,11 +3227,16 @@ size_t CountTwinAssignedMembersAtPrePullAnchors(Player* bot,
         if (member->GetExactDist2d(anchorChoice.anchor.position.GetPositionX(),
                 anchorChoice.anchor.position.GetPositionY()) <= tolerance)
         {
-            ++readyCount;
+            ++evaluation.readyCount;
+            evaluation.criticalMask |= GetTwinCriticalPrePullBit(*assignment);
         }
     }
 
-    return readyCount;
+    evaluation.criticalReady =
+        (evaluation.criticalMask & kTwinCriticalPrePullRequiredMask) == kTwinCriticalPrePullRequiredMask;
+    evaluation.ready = !state.assignments.empty() && evaluation.criticalReady &&
+                       evaluation.readyCount >= evaluation.quorumRequired;
+    return evaluation;
 }
 
 void LogTwinStrictReady(Player* bot, Aq40TwinEncounter::TwinEncounterState const& state)
@@ -3183,6 +3252,7 @@ void LogTwinStrictReady(Player* bot, Aq40TwinEncounter::TwinEncounterState const
            << " center_committed=" << state.centerCommittedMemberCount
            << " strict_ready=" << state.strictReadyMemberCount
            << " assigned=" << state.assignments.size();
+    AppendTwinWarlockPoolTelemetryFields(fields, state);
     AppendTwinOpeningOwnershipFields(fields, bot, state);
     Aq40Helpers::LogAq40Info(bot, "twin_assignments", "twin:ready", fields.str(), 1000);
 }
@@ -3212,6 +3282,7 @@ void LogTwinPrePullStageWait(Player* bot,
            << " strict_ready=" << state.strictReadyMemberCount
            << " assigned=" << state.assignments.size()
            << " unsupported_reason=" << (state.unsupportedReason.empty() ? "none" : state.unsupportedReason);
+    AppendTwinWarlockPoolTelemetryFields(fields, state);
     AppendTwinBotTraceFields(fields, bot, GET_PLAYERBOT_AI(bot), waitReason, true);
     AppendTwinOpeningOwnershipFields(fields, bot, state);
     if (target)
@@ -3249,6 +3320,7 @@ void LogTwinApproachStageWait(Player* bot,
            << " strict_ready=" << state.strictReadyMemberCount
            << " assigned=" << state.assignments.size()
            << " unsupported_reason=" << (state.unsupportedReason.empty() ? "none" : state.unsupportedReason);
+    AppendTwinWarlockPoolTelemetryFields(fields, state);
     AppendTwinBotTraceFields(fields, bot, GET_PLAYERBOT_AI(bot), waitReason, true);
     AppendTwinOpeningOwnershipFields(fields, bot, state);
 
@@ -3284,11 +3356,88 @@ void LogTwinApproachFollowGap(Player* bot, PlayerbotAI* botAI,
            << " center_committed=" << state.centerCommittedMemberCount
            << " strict_ready=" << state.strictReadyMemberCount
            << " assigned=" << state.assignments.size();
+    AppendTwinWarlockPoolTelemetryFields(fields, state);
     AppendTwinBotTraceFields(fields, bot, botAI, "cleanup_only", true);
     AppendTwinOpeningOwnershipFields(fields, bot, state);
 
     Aq40Helpers::LogAq40Warn(bot, "twin_prepull",
         "twin:approach:follow_gap:" + std::string(anchorChoice.label), fields.str(), 1000);
+}
+
+void LogTwinCenterCommitLaggard(Player* bot, PlayerbotAI* botAI,
+                                Aq40TwinEncounter::TwinEncounterState const& state,
+                                Aq40TwinEncounter::TwinRoleAssignment const& assignment,
+                                TwinPrePullAnchorChoice const& anchorChoice)
+{
+    if (!bot || !botAI || !IsTwinNearFullAssignedGate(state.assignments.size(), state.centerCommittedMemberCount))
+        return;
+
+    Position const& roomCenter = Aq40TwinEncounter::GetGeometry().roomCenter.position;
+    float const centerDistance =
+        bot->GetExactDist2d(roomCenter.GetPositionX(), roomCenter.GetPositionY());
+    if (centerDistance <= 32.0f)
+        return;
+
+    std::ostringstream fields;
+    fields << "boss=twin phase=prepull mode=" << Aq40TwinEncounter::ToString(state.mode)
+           << " laggard_gate=center_commit"
+           << " cohort=" << Aq40TwinEncounter::ToString(assignment.cohort)
+           << " side=" << Aq40TwinEncounter::ToString(assignment.stableSide)
+           << " slot=" << static_cast<uint32>(assignment.slotIndex)
+           << " critical_role=" << (IsTwinCriticalPrePullCohort(assignment.cohort) ? 1 : 0)
+           << " center_distance=" << centerDistance
+           << " quorum_required=" << Aq40TwinEncounter::GetTwinPrePullQuorumRequirement(state.assignments.size())
+           << " approach=" << state.approachMemberCount
+           << " staged=" << state.stagedMemberCount
+           << " center_committed=" << state.centerCommittedMemberCount
+           << " strict_ready=" << state.strictReadyMemberCount
+           << " assigned=" << state.assignments.size()
+           << " laggards_remaining=" << (state.assignments.size() - state.centerCommittedMemberCount);
+    AppendTwinAnchorLogFields(fields, bot, anchorChoice.anchor, anchorChoice.label);
+    AppendTwinMotionStateField(fields, bot);
+    AppendTwinWarlockPoolTelemetryFields(fields, state);
+    AppendTwinBotTraceFields(fields, bot, botAI, "center_commit_laggard", true);
+    AppendTwinOpeningOwnershipFields(fields, bot, state);
+    Aq40Helpers::LogAq40Warn(bot, "twin_prepull", "twin:center_commit:laggard", fields.str(), 1000);
+}
+
+void LogTwinStrictReadyLaggard(Player* bot, PlayerbotAI* botAI,
+                               Aq40TwinEncounter::TwinEncounterState const& state,
+                               Aq40TwinEncounter::TwinRoleAssignment const& assignment,
+                               TwinPrePullAnchorChoice const& anchorChoice)
+{
+    if (!bot || !botAI || !IsTwinNearFullAssignedGate(state.assignments.size(), state.strictReadyMemberCount))
+        return;
+
+    float const anchorDistance =
+        bot->GetExactDist2d(anchorChoice.anchor.position.GetPositionX(), anchorChoice.anchor.position.GetPositionY());
+    if (anchorDistance <= kTwinStrictReadyAnchorTolerance)
+        return;
+
+    Position const& roomCenter = Aq40TwinEncounter::GetGeometry().roomCenter.position;
+    std::ostringstream fields;
+    fields << "boss=twin phase=prepull mode=" << Aq40TwinEncounter::ToString(state.mode)
+           << " laggard_gate=strict_ready"
+           << " cohort=" << Aq40TwinEncounter::ToString(assignment.cohort)
+           << " side=" << Aq40TwinEncounter::ToString(assignment.stableSide)
+           << " slot=" << static_cast<uint32>(assignment.slotIndex)
+           << " critical_role=" << (IsTwinCriticalPrePullCohort(assignment.cohort) ? 1 : 0)
+           << " center_distance="
+           << bot->GetExactDist2d(roomCenter.GetPositionX(), roomCenter.GetPositionY())
+           << " anchor_distance=" << anchorDistance
+           << " quorum_required=" << Aq40TwinEncounter::GetTwinPrePullQuorumRequirement(state.assignments.size())
+           << " approach=" << state.approachMemberCount
+           << " staged=" << state.stagedMemberCount
+           << " center_committed=" << state.centerCommittedMemberCount
+           << " strict_ready=" << state.strictReadyMemberCount
+           << " assigned=" << state.assignments.size()
+           << " laggards_remaining=" << (state.assignments.size() - state.strictReadyMemberCount);
+    AppendTwinAnchorLogFields(fields, bot, anchorChoice.anchor, anchorChoice.label);
+    AppendTwinMotionStateField(fields, bot);
+    AppendTwinWarlockPoolTelemetryFields(fields, state);
+    AppendTwinBotTraceFields(fields, bot, botAI, "strict_ready_laggard", true);
+    AppendTwinOpeningOwnershipFields(fields, bot, state);
+    Aq40Helpers::LogAq40Warn(bot, "twin_prepull", "twin:strict_ready:laggard", fields.str(), 1000);
 }
 }    // namespace
 
@@ -3332,6 +3481,7 @@ bool Aq40TwinApproachStageAction::Execute(Event /*event*/)
 
     LogTwinApproachFollowGap(bot, botAI, *state, *assignment, anchorChoice, cleanupReason);
     LogTwinApproachStageWait(bot, *state, *assignment, anchorChoice, "cleanup_only");
+    LogTwinCenterCommitLaggard(bot, botAI, *state, *assignment, anchorChoice);
     bool const recoveredFollowState = Aq40Helpers::TryRecoverAq40FollowState(
         bot, botAI, "twin_prepull",
         std::string("twin:approach:follow_recovery:") + anchorChoice.label, true);
@@ -3362,11 +3512,11 @@ bool Aq40TwinPrePullStageAction::Execute(Event /*event*/)
     bool const petChanged = SyncTwinEncounterPetPolicy(bot, botAI, *state, assignment, nullptr, GuidVector());
     TwinPrePullAnchorChoice const anchorChoice = GetTwinPrePullAnchorChoice(*state, *assignment);
     Aq40TwinEncounter::TwinAnchor const& anchor = anchorChoice.anchor;
-    size_t const strictReadyCount = CountTwinAssignedMembersAtPrePullAnchors(
-        bot, *state, kTwinStrictReadyAnchorTolerance);
+    TwinStrictReadyEvaluation const strictReadyEvaluation =
+        EvaluateTwinStrictReadyStatus(bot, *state, kTwinStrictReadyAnchorTolerance);
     state->strictReadyMemberCount = static_cast<uint16>(
-        std::min(strictReadyCount, state->assignments.size()));
-    bool const strictReady = state->strictReadyMemberCount >= state->assignments.size();
+        std::min(strictReadyEvaluation.readyCount, state->assignments.size()));
+    bool const strictReady = strictReadyEvaluation.ready;
     bool const readyLost = state->mode == Aq40TwinEncounter::TwinStrategyMode::StandardCompReady && !strictReady;
 
     if (readyLost)
@@ -3412,6 +3562,7 @@ bool Aq40TwinPrePullStageAction::Execute(Event /*event*/)
 
     if (!strictReady)
     {
+        LogTwinStrictReadyLaggard(bot, botAI, *state, *assignment, anchorChoice);
         LogTwinPrePullStageWait(bot, *state, *assignment, anchorChoice, "strict_ready_pending");
         return overlayChanged || readyLostOverlayChanged || releasedPinnedBoss || clearedIntent || petChanged;
     }
@@ -3487,6 +3638,15 @@ bool Aq40TwinDualPullEngageAction::Execute(Event /*event*/)
     if (ShouldHoldTwinReserveTankAssignmentNow(*state, *assignment))
         return HoldTwinReserveTankAtAnchor(bot, botAI, *state, *assignment) || releasedPinnedBoss || overlayChanged ||
                petChanged;
+    TwinPrePullAnchorChoice const prepullAnchorChoice = GetTwinPrePullAnchorChoice(*state, *assignment);
+    if (!IsTwinCriticalPrePullCohort(assignment->cohort) &&
+        bot->GetExactDist2d(prepullAnchorChoice.anchor.position.GetPositionX(),
+            prepullAnchorChoice.anchor.position.GetPositionY()) > kTwinStrictReadyAnchorTolerance)
+    {
+        return MaintainTwinAssignedAnchor(bot, botAI, *state, *assignment, prepullAnchorChoice.anchor,
+                   "twin:dual_pull:laggard_hold", prepullAnchorChoice.label) ||
+               releasedPinnedBoss || overlayChanged || petChanged;
+    }
     Unit* veklor = FindTwinBoss(botAI, encounterUnits, Aq40TwinEncounter::TwinBoss::Veklor);
     Unit* veknilash = FindTwinBoss(botAI, encounterUnits, Aq40TwinEncounter::TwinBoss::Veknilash);
     if (assignment)
