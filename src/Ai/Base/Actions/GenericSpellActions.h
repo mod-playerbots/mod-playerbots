@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_GENERICSPELLACTIONS_H
-#define _PLAYERBOT_GENERICSPELLACTIONS_H
+#ifndef PLAYERBOTS_GENERICSPELLACTIONS_H
+#define PLAYERBOTS_GENERICSPELLACTIONS_H
 
 #include "Action.h"
 #include "PlayerbotAI.h"
@@ -313,7 +313,6 @@ public:
 
     std::string const GetTargetName() override { return "self target"; }
     bool isPossible() override;
-    bool isUseful() override;
 };
 
 class CastWillOfTheForsakenAction : public CastSpellAction
@@ -323,7 +322,22 @@ public:
 
     std::string const GetTargetName() override { return "self target"; }
     bool isPossible() override;
-    bool isUseful() override;
+};
+
+class CastStoneformAction : public CastSpellAction
+{
+public:
+    CastStoneformAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "stoneform") {}
+
+    std::string const GetTargetName() override { return "self target"; }
+};
+
+class CastEscapeArtistAction : public CastSpellAction
+{
+public:
+    CastEscapeArtistAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "escape artist") {}
+
+    std::string const GetTargetName() override { return "self target"; }
 };
 
 class UseTrinketAction : public Action

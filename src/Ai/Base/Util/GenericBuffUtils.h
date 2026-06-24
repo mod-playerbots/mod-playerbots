@@ -3,7 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#pragma once
+#ifndef PLAYERBOTS_GENERICBUFFUTILS_H
+#define PLAYERBOTS_GENERICBUFFUTILS_H
 
 #include <string>
 #include "Common.h"
@@ -43,3 +44,5 @@ namespace ai::spell
 {
     bool HasSpellOrCategoryCooldown(Player* bot, uint32 spellId);
 }
+
+#endif

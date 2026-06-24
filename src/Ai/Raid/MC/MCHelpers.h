@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDMCHELPERS_H
-#define _PLAYERBOT_RAIDMCHELPERS_H
+#ifndef PLAYERBOTS_MCHELPERS_H
+#define PLAYERBOTS_MCHELPERS_H
 
 namespace MoltenCoreHelpers
 {
@@ -7,6 +7,9 @@ enum MoltenCoreNPCs
 {
     // Golemagg
     NPC_CORE_RAGER = 11672,
+
+    // Core Hound (trash)
+    NPC_CORE_HOUND = 11671,
 };
 enum MoltenCoreSpells
 {

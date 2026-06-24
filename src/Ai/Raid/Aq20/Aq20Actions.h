@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDAQ20ACTIONS_H
-#define _PLAYERBOT_RAIDAQ20ACTIONS_H
+#ifndef PLAYERBOTS_AQ20ACTIONS_H
+#define PLAYERBOTS_AQ20ACTIONS_H
 
 #include "MovementActions.h"
 #include "PlayerbotAI.h"

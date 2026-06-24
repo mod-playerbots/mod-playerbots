@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_ISBEHINDVALUE_H
-#define _PLAYERBOT_ISBEHINDVALUE_H
+#ifndef PLAYERBOTS_ISBEHINDVALUE_H
+#define PLAYERBOTS_ISBEHINDVALUE_H
 
 #include "NamedObjectContext.h"
 #include "Value.h"

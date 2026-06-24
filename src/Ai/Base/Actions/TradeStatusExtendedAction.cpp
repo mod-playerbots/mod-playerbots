@@ -67,9 +67,10 @@ bool TradeStatusExtendedAction::Execute(Event event)
                 return false;
             }
 
-            if (bot->getClass() == CLASS_ROGUE && bot->HasSpell(1804) && lockbox->IsLocked()) // Pick Lock spell
+            constexpr uint32 SPELL_PICK_LOCK = 1804;
+            if (bot->getClass() == CLASS_ROGUE && bot->HasSpell(SPELL_PICK_LOCK) && lockbox->IsLocked())
             {
-                // botAI->CastSpell(1804, bot, lockbox); // Attempt to cast Pick Lock on the lockbox
+                // botAI->CastSpell(SPELL_PICK_LOCK, bot, lockbox); // Attempt to cast Pick Lock on the lockbox
                 botAI->DoSpecificAction("unlock traded item");
                 botAI->SetNextCheckDelay(4000); // Delay before accepting trade
             }

@@ -491,6 +491,19 @@ bool FearSleepSapTrigger::IsActive()
            bot->HasAuraWithMechanic(1 << MECHANIC_SAPPED);
 }
 
+bool PoisonDiseaseBleedTrigger::IsActive()
+{
+    return botAI->HasAuraToDispel(bot, DISPEL_POISON) ||
+           botAI->HasAuraToDispel(bot, DISPEL_DISEASE) ||
+           bot->HasAuraWithMechanic(1 << MECHANIC_BLEED);
+}
+
+bool MovementImpairedTrigger::IsActive()
+{
+    return botAI->IsMovementImpaired(bot) &&
+           !botAI->HasAnyAuraOf(bot, "stealth", "prowl", nullptr);
+}
+
 bool HasAuraStackTrigger::IsActive()
 {
     return botAI->GetAura(getName(), GetTarget(), false, true, stack);

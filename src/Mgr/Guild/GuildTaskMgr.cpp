@@ -223,7 +223,7 @@ bool GuildTaskMgr::CreateKillTask(Player* player, uint32 guildId)
     uint32 level = player->GetLevel();
     QueryResult results = WorldDatabase.Query(
         "SELECT ct.Entry, c.map, c.position_x, c.position_y, ct.Name FROM creature_template ct "
-        "JOIN creature c ON ct.Entry = c.id1 WHERE ct.MaxLevel < {} AND ct.MinLevel > {} AND ct.Rank = {} ",
+        "JOIN creature c ON ct.Entry = c.id WHERE ct.MaxLevel < {} AND ct.MinLevel > {} AND ct.Rank = {} ",
         level + 4, level - 3, rank);
     if (results)
     {
@@ -387,7 +387,7 @@ bool GuildTaskMgr::SendKillAdvertisement(CharacterDatabaseTransaction& trans, ui
         return false;
 
     QueryResult result =
-        WorldDatabase.Query("SELECT map, position_x, position_y, position_z FROM creature WHERE id1 = {}", creatureId);
+        WorldDatabase.Query("SELECT map, position_x, position_y, position_z FROM creature WHERE id = {}", creatureId);
     if (!result)
         return false;
 

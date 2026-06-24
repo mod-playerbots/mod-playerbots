@@ -2589,7 +2589,7 @@ Player* PlayerbotAI::GetPlayer(ObjectGuid guid)
 uint32 GetCreatureIdForCreatureTemplateId(uint32 creatureTemplateId)
 {
     QueryResult results =
-        WorldDatabase.Query("SELECT guid FROM `creature` WHERE id1 = {} LIMIT 1;", creatureTemplateId);
+        WorldDatabase.Query("SELECT guid FROM `creature` WHERE id = {} LIMIT 1;", creatureTemplateId);
     if (results)
     {
         Field* fields = results->Fetch();
@@ -2610,7 +2610,7 @@ Unit* PlayerbotAI::GetUnit(CreatureData const* creatureData)
     uint32 spawnId = creatureData->spawnId;
     if (!spawnId)  // workaround for CreatureData with missing spawnId (this just uses first matching creatureId in DB,
                    // but thats ok this method is only used for battlemasters and theres only 1 of each type)
-        spawnId = GetCreatureIdForCreatureTemplateId(creatureData->id1);
+        spawnId = GetCreatureIdForCreatureTemplateId(creatureData->id);
     auto creatureBounds = map->GetCreatureBySpawnIdStore().equal_range(spawnId);
     if (creatureBounds.first == creatureBounds.second)
         return nullptr;
@@ -3027,6 +3027,8 @@ bool PlayerbotAI::TellMaster(std::string const text, PlayerbotSecurityLevel secu
     {
         if (sPlayerbotAIConfig.randomBotSayWithoutMaster)
             return TellMasterNoFacing(text, securityLevel);
+
+        return false;
     }
     if (!TellMasterNoFacing(text, securityLevel))
         return false;
@@ -3150,20 +3152,10 @@ bool PlayerbotAI::HasAura(std::string const name, Unit* unit, bool maxStack, boo
     return false;
 }
 
-bool PlayerbotAI::HasAura(uint32 spellId, Unit const* unit)
+bool PlayerbotAI::HasSpell(std::string const spellName) const
 {
-    if (!spellId || !unit)
-        return false;
-
-    return unit->HasAura(spellId);
-    // for (uint8 effect = EFFECT_0; effect <= EFFECT_2; effect++)
-    // {
-    //     AuraEffect const* aurEff = unit->GetAuraEffect(spellId, effect);
-    //     if (IsRealAura(bot, aurEff, unit))
-    //         return true;
-    // }
-
-    // return false;
+    uint32 const spellId = aiObjectContext->GetValue<uint32>("spell id", spellName)->Get();
+    return spellId && bot->HasSpell(spellId);
 }
 
 Aura* PlayerbotAI::GetAura(std::string const name, Unit* unit, bool checkIsOwner, bool checkDuration, int checkStack)
@@ -4267,7 +4259,7 @@ void PlayerbotAI::InterruptSpell()
 void PlayerbotAI::RemoveAura(std::string const name)
 {
     uint32 spellid = aiObjectContext->GetValue<uint32>("spell id", name)->Get();
-    if (spellid && HasAura(spellid, bot))
+    if (spellid && bot->HasAura(spellid))
         bot->RemoveAurasDueToSpell(spellid);
 }
 

@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_TRAVELNODE_H
-#define _PLAYERBOT_TRAVELNODE_H
+#ifndef PLAYERBOTS_TRAVELNODE_H
+#define PLAYERBOTS_TRAVELNODE_H
 
 #include <shared_mutex>
 

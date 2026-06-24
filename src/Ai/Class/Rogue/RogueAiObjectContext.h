@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_ROGUEAIOBJECTCONTEXT_H
-#define _PLAYERBOT_ROGUEAIOBJECTCONTEXT_H
+#ifndef PLAYERBOTS_ROGUEAIOBJECTCONTEXT_H
+#define PLAYERBOTS_ROGUEAIOBJECTCONTEXT_H
 
 #include "AiObjectContext.h"
 #include "Strategy.h"

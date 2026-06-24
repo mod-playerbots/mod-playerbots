@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_RAIDZULAMANHELPERS_H_
-#define _PLAYERBOT_RAIDZULAMANHELPERS_H_
+#ifndef PLAYERBOTS_ZAHELPERS_H
+#define PLAYERBOTS_ZAHELPERS_H
 
 #include <unordered_map>
 

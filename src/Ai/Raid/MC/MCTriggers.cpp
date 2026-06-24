@@ -38,3 +38,8 @@ bool McGolemaggIsAssistTankTrigger::IsActive()
 {
     return AI_VALUE2(Unit*, "find target", "golemagg the incinerator") && PlayerbotAI::IsAssistTank(bot);
 }
+
+bool McCoreHoundMarkTrigger::IsActive()
+{
+    return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "core hound");
+}

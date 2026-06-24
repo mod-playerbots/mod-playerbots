@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_ICCA_H
-#define _PLAYERBOT_ICCA_H
+#ifndef PLAYERBOTS_ICCACTIONS_H
+#define PLAYERBOTS_ICCACTIONS_H
 
 #include <set>
 

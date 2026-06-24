@@ -1069,6 +1069,7 @@ std::vector<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* arg
             PlayerbotsMgr::instance().AddPlayerbotData(master, true);
             GET_PLAYERBOT_AI(master)->SetMaster(master);
             GET_PLAYERBOT_AI(master)->SetBotType(BotType::REALPLAYER);
+            PlayerbotRepository::instance().Load(GET_PLAYERBOT_AI(master));
         }
 
         return messages;

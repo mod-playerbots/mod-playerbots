@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_LOOTROLLACTION_H
-#define _PLAYERBOT_LOOTROLLACTION_H
+#ifndef PLAYERBOTS_LOOTROLLACTION_H
+#define PLAYERBOTS_LOOTROLLACTION_H
 
 #include "QueryItemUsageAction.h"
 

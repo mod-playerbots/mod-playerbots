@@ -1,6 +1,6 @@
 // RaidOnyxiaActions.h
-#ifndef _PLAYERBOT_RAIDONYXIAACTIONS_H_
-#define _PLAYERBOT_RAIDONYXIAACTIONS_H_
+#ifndef PLAYERBOTS_ONYACTIONS_H
+#define PLAYERBOTS_ONYACTIONS_H
 
 #include "AttackAction.h"
 #include "GenericSpellActions.h"

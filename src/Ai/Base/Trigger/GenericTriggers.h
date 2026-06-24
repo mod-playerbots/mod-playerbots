@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_GENERICTRIGGERS_H
-#define _PLAYERBOT_GENERICTRIGGERS_H
+#ifndef PLAYERBOTS_GENERICTRIGGERS_H
+#define PLAYERBOTS_GENERICTRIGGERS_H
 
 #include <utility>
 
@@ -748,6 +748,22 @@ class FearSleepSapTrigger : public Trigger
 {
 public:
     FearSleepSapTrigger(PlayerbotAI* botAI) : Trigger(botAI, "fear sleep sap", 1) {}
+
+    bool IsActive() override;
+};
+
+class PoisonDiseaseBleedTrigger : public Trigger
+{
+public:
+    PoisonDiseaseBleedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "poison disease bleed", 1) {}
+
+    bool IsActive() override;
+};
+
+class MovementImpairedTrigger : public Trigger
+{
+public:
+    MovementImpairedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "movement impaired", 1) {}
 
     bool IsActive() override;
 };

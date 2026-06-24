@@ -71,6 +71,11 @@ void RaidMcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(
         new TriggerNode("mc ragnaros fire resistance",
                         { NextAction("mc ragnaros fire resistance", ACTION_RAID) }));
+
+    // Trash
+    triggers.push_back(
+        new TriggerNode("mc core hound mark",
+                        { NextAction("mc core hound mark", ACTION_RAID) }));
 }
 
 void RaidMcStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

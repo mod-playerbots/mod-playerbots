@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_OUTFITACTION_H
-#define _PLAYERBOT_OUTFITACTION_H
+#ifndef PLAYERBOTS_OUTFITACTION_H
+#define PLAYERBOTS_OUTFITACTION_H
 
 #include "ChatHelper.h"
 #include "EquipAction.h"

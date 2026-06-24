@@ -6,45 +6,9 @@
 #include "AfflictionWarlockStrategy.h"
 #include "Playerbots.h"
 
-// ===== Action Node Factory =====
-class AfflictionWarlockStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
-{
-public:
-    AfflictionWarlockStrategyActionNodeFactory()
-    {
-        creators["corruption"] = &corruption;
-        creators["corruption on attacker"] = &corruption;
-        creators["unstable affliction"] = &unstable_affliction;
-        creators["unstable affliction on attacker"] = &unstable_affliction;
-        creators["haunt"] = &haunt;
-        creators["shadow bolt"] = &shadow_bolt;
-        creators["drain soul"] = &drain_soul;
-        creators["life tap"] = &life_tap;
-        creators["shadowflame"] = &shadowflame;
-        creators["seed of corruption on attacker"] = &seed_of_corruption;
-        creators["seed of corruption"] = &seed_of_corruption;
-        creators["rain of fire"] = &rain_of_fire;
-    }
-
-private:
-    static ActionNode* corruption(PlayerbotAI*) { return new ActionNode("corruption", {}, {}, {}); }
-    static ActionNode* corruption_on_attacker(PlayerbotAI*) { return new ActionNode("corruption on attacker", {}, {}, {}); }
-    static ActionNode* unstable_affliction(PlayerbotAI*) { return new ActionNode("unstable affliction", {}, {}, {}); }
-    static ActionNode* unstable_affliction_on_attacker(PlayerbotAI*) { return new ActionNode("unstable affliction on attacker", {}, {}, {}); }
-    static ActionNode* haunt(PlayerbotAI*) { return new ActionNode("haunt", {}, {}, {}); }
-    static ActionNode* shadow_bolt(PlayerbotAI*) { return new ActionNode("shadow bolt", {}, {}, {}); }
-    static ActionNode* drain_soul(PlayerbotAI*) { return new ActionNode("drain soul", {}, {}, {}); }
-    static ActionNode* life_tap(PlayerbotAI*) { return new ActionNode("life tap", {}, {}, {}); }
-    static ActionNode* shadowflame(PlayerbotAI*) { return new ActionNode("shadowflame", {}, {}, {}); }
-    static ActionNode* seed_of_corruption_on_attacker(PlayerbotAI*) { return new ActionNode("seed of corruption on attacker", {}, {}, {}); }
-    static ActionNode* seed_of_corruption(PlayerbotAI*) { return new ActionNode("seed of corruption", {}, {}, {}); }
-    static ActionNode* rain_of_fire(PlayerbotAI*) { return new ActionNode("rain of fire", {}, {}, {}); }
-};
-
-// ===== Single Target Strategy =====
 AfflictionWarlockStrategy::AfflictionWarlockStrategy(PlayerbotAI* botAI) : GenericWarlockStrategy(botAI)
 {
-    actionNodeFactories.Add(new AfflictionWarlockStrategyActionNodeFactory());
+    // No custom ActionNodeFactory needed
 }
 
 // ===== Default Actions =====

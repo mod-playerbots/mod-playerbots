@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_SECURITYCHECKACTION_H
-#define _PLAYERBOT_SECURITYCHECKACTION_H
+#ifndef PLAYERBOTS_SECURITYCHECKACTION_H
+#define PLAYERBOTS_SECURITYCHECKACTION_H
 
 #include "Action.h"
 

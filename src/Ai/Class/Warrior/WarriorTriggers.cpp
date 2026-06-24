@@ -6,6 +6,16 @@
 #include "WarriorTriggers.h"
 #include "Playerbots.h"
 
+namespace
+{
+constexpr uint32 SPELL_VIGILANCE = 50720;
+constexpr uint32 SPELL_SHATTERING_THROW = 64382;
+constexpr uint32 SPELL_DIVINE_SHIELD = 642;
+constexpr uint32 SPELL_ICE_BLOCK = 45438;
+constexpr uint32 SPELL_BLESSING_OF_PROTECTION = 41450;
+constexpr uint32 SPELL_COMMANDING_PRESENCE_RANKS[] = { 12318, 12857, 12858, 12860, 12861 };
+}
+
 bool BloodrageBuffTrigger::IsActive()
 {
     return AI_VALUE2(uint8, "health", "self target") >= sPlayerbotAIConfig.mediumHealth &&
@@ -14,7 +24,7 @@ bool BloodrageBuffTrigger::IsActive()
 
 bool VigilanceTrigger::IsActive()
 {
-    if (!bot->HasSpell(50720))
+    if (!bot->HasSpell(SPELL_VIGILANCE))
         return false;
 
     Group* group = bot->GetGroup();
@@ -64,7 +74,7 @@ bool VigilanceTrigger::IsActive()
 
 bool ShatteringThrowTrigger::IsActive()
 {
-    if (!bot->HasSpell(64382) || bot->HasSpellCooldown(64382))
+    if (!bot->HasSpell(SPELL_SHATTERING_THROW) || bot->HasSpellCooldown(SPELL_SHATTERING_THROW))
         return false;
 
     GuidVector enemies = AI_VALUE(GuidVector, "possible targets");
@@ -76,9 +86,9 @@ bool ShatteringThrowTrigger::IsActive()
             continue;
 
         if (bot->IsWithinDistInMap(enemy, 25.0f) &&
-            (enemy->HasAura(642) ||   // Divine Shield
-             enemy->HasAura(45438) || // Ice Block
-             enemy->HasAura(41450)))  // Blessing of Protection
+            (enemy->HasAura(SPELL_DIVINE_SHIELD) ||
+             enemy->HasAura(SPELL_ICE_BLOCK) ||
+             enemy->HasAura(SPELL_BLESSING_OF_PROTECTION)))
         {
             return true;
         }
@@ -112,15 +122,13 @@ bool BattleShoutTrigger::IsActive()
     if (!bsApValue)
         return false;
 
-    static const uint32 commandingPresenceSpells[] = {
-        12318, 12857, 12858, 12860, 12861 };
     static const float commandingPresenceBonus[]   = {
         0.05f, 0.10f, 0.15f, 0.20f, 0.25f };
 
     float cpBonus = 0.0f;
     for (int rank = 4; rank >= 0; --rank)
     {
-        if (bot->HasAura(commandingPresenceSpells[rank]))
+        if (bot->HasAura(SPELL_COMMANDING_PRESENCE_RANKS[rank]))
         {
             cpBonus = commandingPresenceBonus[rank];
             break;

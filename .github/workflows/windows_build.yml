@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest]
+        os: [windows-2022]
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }}
@@ -48,7 +48,7 @@ jobs:
 
           New-Item -ItemType Directory -Path C:\ac | Out-Null
 
-          robocopy "${{ github.workspace }}\a" "C:\ac" /MIR
+          robocopy "${{ github.workspace }}\a" "C:\ac" /MIR /NFL /NDL /NJH /NJS /NP
 
           if ($LASTEXITCODE -le 7) {
             exit 0
@@ -56,26 +56,56 @@ jobs:
 
           exit $LASTEXITCODE
 
-      - name: Install Ninja
+      - name: Install Boost and Ninja
         shell: powershell
         run: |
-          choco install ninja -y
+          choco install ninja -y --no-progress
+          choco install boost-msvc-14.3 --version=1.87.0 -y --no-progress
+
+      - name: Prepare OpenSSL from runner image
+        shell: powershell
+        run: |
+          $candidates = @(
+            "C:\Program Files\OpenSSL",
+            "C:\Program Files\OpenSSL-Win64"
+          )
+
+          $opensslRoot = $null
+
+          foreach ($candidate in $candidates) {
+            if ((Test-Path "$candidate\bin\openssl.exe") -and (Test-Path "$candidate\include\openssl\ssl.h")) {
+              $opensslRoot = $candidate
+              break
+            }
+          }
+
+          if (-not $opensslRoot) {
+            Write-Host "OpenSSL candidates checked:"
+            $candidates | ForEach-Object { Write-Host " - $_" }
+            throw "OpenSSL development files not found on runner image"
+          }
+
+          if (Test-Path C:\openssl) {
+            Remove-Item C:\openssl -Recurse -Force
+          }
+
+          New-Item -ItemType Junction -Path C:\openssl -Target $opensslRoot | Out-Null
+
+          "OPENSSL_ROOT_DIR=C:\openssl" >> $env:GITHUB_ENV
+          "OPENSSL_DIR=C:\openssl" >> $env:GITHUB_ENV
+          "PATH=C:\openssl\bin;$env:PATH" >> $env:GITHUB_ENV
+
+          C:\openssl\bin\openssl.exe version
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2.13
-
-      - name: Configure OS
-        shell: bash
-        working-directory: C:\ac
-        env:
-          CONTINUOUS_INTEGRATION: true
-        run: |
-          ./acore.sh install-deps
 
       - name: Create AzerothCore CI config
         shell: bash
         working-directory: C:\ac
         run: |
+          mkdir -p conf
+
           cat > conf/config.sh <<'EOF'
           CCOMPILERC="cl"
           CCOMPILERCXX="cl"
@@ -85,7 +115,7 @@ jobs:
           CMODULES="static"
           CTOOLS_BUILD="all"
 
-          CCUSTOMOPTIONS="-DCMAKE_RC_COMPILER=rc -DCMAKE_NINJA_FORCE_RESPONSE_FILE=ON -DCMAKE_NINJA_CMCLDEPS_RC=OFF -DCMAKE_C_USE_RESPONSE_FILE_FOR_OBJECTS=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_OBJECTS=ON -DCMAKE_C_USE_RESPONSE_FILE_FOR_INCLUDES=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES=ON -DCMAKE_C_USE_RESPONSE_FILE_FOR_LIBRARIES=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_LIBRARIES=ON"
+          CCUSTOMOPTIONS="-DBOOST_ROOT=C:/local/boost_1_87_0 -DOPENSSL_ROOT_DIR=C:/openssl -DOPENSSL_USE_STATIC_LIBS=FALSE -DCMAKE_RC_COMPILER=rc -DCMAKE_NINJA_FORCE_RESPONSE_FILE=ON -DCMAKE_NINJA_CMCLDEPS_RC=OFF -DCMAKE_C_USE_RESPONSE_FILE_FOR_OBJECTS=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_OBJECTS=ON -DCMAKE_C_USE_RESPONSE_FILE_FOR_INCLUDES=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES=ON -DCMAKE_C_USE_RESPONSE_FILE_FOR_LIBRARIES=ON -DCMAKE_CXX_USE_RESPONSE_FILE_FOR_LIBRARIES=ON"
           EOF
 
           cat conf/config.sh
@@ -112,11 +142,16 @@ jobs:
           echo "CMAKE_GENERATOR=$CMAKE_GENERATOR"
           echo "CC=$CC"
           echo "CXX=$CXX"
+          echo "BOOST_ROOT=$BOOST_ROOT"
+          echo "OPENSSL_ROOT_DIR=$OPENSSL_ROOT_DIR"
 
           which cl || true
           which rc || true
+          which openssl || true
+
           cl || true
           rc || true
+          openssl version || true
 
           rm -rf var/build/obj
 

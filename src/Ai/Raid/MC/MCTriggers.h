@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDMCTRIGGERS_H
-#define _PLAYERBOT_RAIDMCTRIGGERS_H
+#ifndef PLAYERBOTS_MCTRIGGERS_H
+#define PLAYERBOTS_MCTRIGGERS_H
 
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
@@ -44,6 +44,13 @@ class McGolemaggIsAssistTankTrigger : public Trigger
 {
 public:
     McGolemaggIsAssistTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "mc golemagg is assist tank") {}
+    bool IsActive() override;
+};
+
+class McCoreHoundMarkTrigger : public Trigger
+{
+public:
+    McCoreHoundMarkTrigger(PlayerbotAI* botAI) : Trigger(botAI, "mc core hound mark") {}
     bool IsActive() override;
 };
 

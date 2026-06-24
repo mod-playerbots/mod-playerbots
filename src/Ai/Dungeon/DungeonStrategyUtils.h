@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_DUNGEONUTILS_H
-#define _PLAYERBOT_DUNGEONUTILS_H
+#ifndef PLAYERBOTS_DUNGEONSTRATEGYUTILS_H
+#define PLAYERBOTS_DUNGEONSTRATEGYUTILS_H
 
 template<class T> inline
 const T& DUNGEON_MODE(Player* bot, const T& normal5, const T& heroic10)

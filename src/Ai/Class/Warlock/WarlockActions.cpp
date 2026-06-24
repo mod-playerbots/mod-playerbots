@@ -77,11 +77,7 @@ bool CastShadowflameAction::isUseful()
 bool CastRainOfFireAction::isUseful()
 {
     Unit* target = GetTarget();
-    if (!target)
-        return false;
-    if (bot->HasSpell(27243) || bot->HasSpell(47835) || bot->HasSpell(47836)) // Seed of Corruption spell IDs
-        return false;
-    return true;
+    return target && !botAI->HasSpell("seed of corruption");
 }
 
 // Checks if the enemies are close enough to use Hellfire

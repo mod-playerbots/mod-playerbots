@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef PLAYERBOT_RELEASESPIRITACTION_H
-#define PLAYERBOT_RELEASESPIRITACTION_H
+#ifndef PLAYERBOTS_RELEASESPIRITACTION_H
+#define PLAYERBOTS_RELEASESPIRITACTION_H
 
 #include "Action.h"
 #include "ReviveFromCorpseAction.h"

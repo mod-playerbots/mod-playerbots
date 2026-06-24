@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_MANASAVELEVELVALUE_H
-#define _PLAYERBOT_MANASAVELEVELVALUE_H
+#ifndef PLAYERBOTS_MANASAVELEVELVALUE_H
+#define PLAYERBOTS_MANASAVELEVELVALUE_H
 
 #include "Value.h"
 

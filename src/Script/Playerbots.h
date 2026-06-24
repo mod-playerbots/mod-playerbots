@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_H
-#define _PLAYERBOT_H
+#ifndef PLAYERBOTS_PLAYERBOTS_H
+#define PLAYERBOTS_PLAYERBOTS_H
 
 #include "AiObjectContext.h"
 #include "Group.h"

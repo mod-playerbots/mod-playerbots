@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_RAIDHYJALSUMMITHELPERS_H_
-#define _PLAYERBOT_RAIDHYJALSUMMITHELPERS_H_
+#ifndef PLAYERBOTS_HYJALHELPERS_H
+#define PLAYERBOTS_HYJALHELPERS_H
 
 #include <unordered_map>
 #include <utility>

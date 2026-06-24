@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_AGGRESSIVESTRATEGY_H
-#define _PLAYERBOT_AGGRESSIVESTRATEGY_H
+#ifndef PLAYERBOTS_AGGRESSIVESTRATEGY_H
+#define PLAYERBOTS_AGGRESSIVESTRATEGY_H
 
 #include "NonCombatStrategy.h"
 

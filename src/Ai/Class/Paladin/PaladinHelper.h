@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PALADINHELPER_H
-#define _PLAYERBOT_PALADINHELPER_H
+#ifndef PLAYERBOTS_PALADINHELPER_H
+#define PLAYERBOTS_PALADINHELPER_H
 
 #include <initializer_list>
 

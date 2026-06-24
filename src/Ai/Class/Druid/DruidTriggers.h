@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_DRUIDTRIGGERS_H
-#define _PLAYERBOT_DRUIDTRIGGERS_H
+#ifndef PLAYERBOTS_DRUIDTRIGGERS_H
+#define PLAYERBOTS_DRUIDTRIGGERS_H
 
 #include "CureTriggers.h"
 #include "GenericTriggers.h"
@@ -393,14 +393,14 @@ public:
 class FerociousBiteExecuteTrigger : public Trigger
 {
 public:
-    FerociousBiteExecuteTrigger(PlayerbotAI* ai) : Trigger(ai, "ferocious bite execute") {}
+    FerociousBiteExecuteTrigger(PlayerbotAI* botAI) : Trigger(botAI, "ferocious bite execute") {}
     bool IsActive() override
     {
         Unit* target = AI_VALUE(Unit*, "current target");
         if (!target || !target->IsAlive())
             return false;
 
-        if (!AI_VALUE2(uint32, "spell id", "ferocious bite"))
+        if (!botAI->HasSpell("ferocious bite"))
             return false;
 
         if (AI_VALUE2(uint8, "combo", "current target") < 1)

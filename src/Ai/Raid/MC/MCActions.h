@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDMCACTIONS_H
-#define _PLAYERBOT_RAIDMCACTIONS_H
+#ifndef PLAYERBOTS_MCACTIONS_H
+#define PLAYERBOTS_MCACTIONS_H
 
 #include "AttackAction.h"
 #include "MovementActions.h"
@@ -61,6 +61,15 @@ class McGolemaggAssistTankAttackCoreRagerAction : public McGolemaggTankAction
 public:
     McGolemaggAssistTankAttackCoreRagerAction(PlayerbotAI* botAI, std::string const name = "mc golemagg assist tank attack core rager")
         : McGolemaggTankAction(botAI, name) {};
+    bool Execute(Event event) override;
+};
+
+class McCoreHoundMarkAction : public Action
+{
+public:
+    McCoreHoundMarkAction(PlayerbotAI* botAI, std::string const name = "mc core hound mark")
+        : Action(botAI, name) {};
+    Unit* GetTarget() override;
     bool Execute(Event event) override;
 };
 
