@@ -381,6 +381,10 @@ bool PlayerbotAIConfig::Initialize()
         sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotAutoJoinBGRatedArena5v5Count", 0);
     logInGroupOnly = sConfigMgr->GetOption<bool>("AiPlayerbot.LogInGroupOnly", true);
     logValuesPerTick = sConfigMgr->GetOption<bool>("AiPlayerbot.LogValuesPerTick", false);
+    // A40 logging only for development and testing, this should be removed once complete.
+    aq40StrategyLog = sConfigMgr->GetOption<bool>("AiPlayerbot.Aq40StrategyLog", false);
+    // Remove this line as well
+    aq40StrategyLogThrottleMs = sConfigMgr->GetOption<uint32>("AiPlayerbot.Aq40StrategyLogThrottleMs", 5000);
     fleeingEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.FleeingEnabled", true);
     summonAtInnkeepersEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.SummonAtInnkeepersEnabled", true);
     randomBotMinLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotMinLevel", 1);

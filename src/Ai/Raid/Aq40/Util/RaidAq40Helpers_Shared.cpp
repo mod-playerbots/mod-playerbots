@@ -1,5 +1,6 @@
 #include "RaidAq40Helpers_Shared.h"
 
+#include <algorithm>
 #include <cctype>
 #include <mutex>
 #include <sstream>
@@ -89,13 +90,16 @@ bool IsAq40FollowRecoveryCandidate(Player* bot, PlayerbotAI* botAI)
 void LogAq40(Player* bot, std::string const& eventKey, std::string const& stateKey,
              std::string const& fields, uint32 throttleMs, bool warn)
 {
-    // Reuse the existing debug toggle instead of carrying extra AQ40-only config.
-    if (!sPlayerbotAIConfig.logValuesPerTick || !bot)
+    if (!sPlayerbotAIConfig.aq40StrategyLog || !bot)
         return;
 
     uint32 const instanceId = GetAq40LogInstanceId(bot);
     uint64 const botGuid = bot->GetGUID().GetRawValue();
-    uint32 const effectiveThrottleMs = throttleMs ? throttleMs : kAq40StrategyLogThrottleMs;
+    uint32 effectiveThrottleMs = throttleMs;
+    if (uint32 const configuredThrottleMs = sPlayerbotAIConfig.aq40StrategyLogThrottleMs)
+        effectiveThrottleMs = effectiveThrottleMs ? std::max(effectiveThrottleMs, configuredThrottleMs) : configuredThrottleMs;
+    else if (!effectiveThrottleMs)
+        effectiveThrottleMs = kAq40StrategyLogThrottleMs;
 
     std::ostringstream key;
     key << instanceId << ":" << botGuid << ":" << ToAq40LogToken(eventKey) << ":" << stateKey;
