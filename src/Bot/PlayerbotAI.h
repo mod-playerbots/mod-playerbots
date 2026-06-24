@@ -543,7 +543,7 @@ public:
     Player* FindNewMaster();
 
     bool IsRealPlayer() { return GetBotType() == BotType::REALPLAYER; }
-    BotType GetBotType() const { return _botType; }
+    BotType GetBotType() const;
     void SetBotType(BotType type) { _botType = type; }
     bool IsRandomBot() { return GetBotType() == BotType::RANDOMBOT; }
     bool IsAddclass() { return GetBotType() == BotType::ADDCLASSBOT; }
