@@ -4280,7 +4280,7 @@ bool Aq40TwinHoldSplitAction::Execute(Event /*event*/)
 
 bool Aq40TwinWarlockTankAction::Execute(Event /*event*/)
 {
-    Aq40TwinEncounter::TwinEncounterState const* state = Aq40TwinEncounter::GetEncounterState(bot);
+    Aq40TwinEncounter::TwinEncounterState* state = Aq40TwinEncounter::GetEncounterState(bot);
     bool const overlayChanged = SyncTwinWarlockTankOverlay(bot, botAI);
     if (!IsTwinEncounterActive(state) || !Aq40TwinEncounter::ShouldUseTwinWarlockTankStrategy(bot) ||
         IsTwinHealerProfile(bot, botAI))
