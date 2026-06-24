@@ -330,13 +330,13 @@ bool IsTwinRegistrationWindow(Player* bot)
     bool const hasLockedPickupAnchor = Aq40TwinEncounter::HasActiveLockedPickupAnchor(bot);
     bool const approachTwin = Aq40TwinEncounter::IsTwinApproachWindow(*state, bot);
     bool const prepullStage = Aq40TwinEncounter::IsTwinPrePullStageWindow(*state, bot);
-    bool const activeTwin = assignedParticipant && Aq40TwinEncounter::IsActivePhase(state->phase) &&
-                            !Aq40TwinEncounter::IsTerminalPhase(state->phase);
+    bool const activeTwin = assignedParticipant && Aq40TwinEncounter::IsTwinCombatAuthorized(*state);
     bool const postSwapHold = !Aq40TwinEncounter::IsTerminalPhase(state->phase) &&
                               (hasLockedPickupAnchor ||
                                (assignedParticipant && Aq40TwinEncounter::IsAnyThreatHoldWindowActive(*state)));
     bool const terminalTwin = Aq40TwinEncounter::IsTerminalPhase(state->phase) &&
-                              (hasLockedPickupAnchor || assignedParticipant);
+                              (hasLockedPickupAnchor || assignedParticipant ||
+                               Aq40TwinEncounter::IsTwinEncounterParticipant(bot));
     Aq40TwinEncounter::TwinRoleAssignment const* assignment =
         Aq40TwinEncounter::GetAssignmentForMember(*state, bot->GetGUID());
     LogTwinRegistrationCandidateTransition(bot, *state, assignment, assignedParticipant, hasLockedPickupAnchor,
@@ -1206,16 +1206,17 @@ float Aq40TwinMultiplier::GetValue(Action* action)
     Aq40TwinEncounter::TwinRoleAssignment const* assignment =
         Aq40TwinEncounter::GetAssignmentForMember(*state, bot->GetGUID());
     bool const hasLockedPickupAnchor = Aq40TwinEncounter::HasActiveLockedPickupAnchor(bot);
-    if (!assignment && !hasLockedPickupAnchor)
+    bool const terminalRoomParticipant = Aq40TwinEncounter::IsTerminalPhase(state->phase) &&
+                                         Aq40TwinEncounter::IsTwinEncounterParticipant(bot);
+    if (!assignment && !hasLockedPickupAnchor && !terminalRoomParticipant)
         return 1.0f;
 
     bool const assignedParticipant = Aq40TwinEncounter::IsTwinAssignedParticipant(*state, bot);
     bool const approachTwin = Aq40TwinEncounter::IsTwinApproachWindow(*state, bot);
     bool const prepullStage = Aq40TwinEncounter::IsTwinPrePullStageWindow(*state, bot);
-    bool const activeTwin = assignedParticipant && Aq40TwinEncounter::IsActivePhase(state->phase) &&
-                            !Aq40TwinEncounter::IsTerminalPhase(state->phase);
+    bool const activeTwin = assignedParticipant && Aq40TwinEncounter::IsTwinCombatAuthorized(*state);
     bool const terminalTwin = Aq40TwinEncounter::IsTerminalPhase(state->phase) &&
-                              (hasLockedPickupAnchor || assignedParticipant);
+                              (hasLockedPickupAnchor || assignedParticipant || terminalRoomParticipant);
     bool const postSwapHold = !Aq40TwinEncounter::IsTerminalPhase(state->phase) &&
                               (hasLockedPickupAnchor ||
                                (assignedParticipant && Aq40TwinEncounter::IsAnyThreatHoldWindowActive(*state)));
@@ -1279,7 +1280,7 @@ float Aq40TwinMultiplier::GetValue(Action* action)
     bool const isTwinAction = actionName.compare(0, 10, "aq40 twin ") == 0;
     if (terminalTwin)
     {
-        if (isTwinAction || actionName == "aq40 choose target")
+        if (isTwinAction || actionName == "aq40 choose target" || actionName == "shoot")
             return 0.0f;
 
         if (dynamic_cast<PetAttackAction*>(action) || dynamic_cast<SetPetStanceAction*>(action) ||
@@ -1412,8 +1413,8 @@ float Aq40TwinMultiplier::GetValue(Action* action)
                                      dynamic_cast<CastReachTargetSpellAction*>(action);
     bool const offensiveSpellAction = dynamic_cast<CastSpellAction*>(action) &&
                                       !dynamic_cast<CastHealingSpellAction*>(action);
-    bool const usesCurrentTarget = attackOrReachAction || offensiveSpellAction;
     bool const targetlessShootAction = actionName == "shoot";
+    bool const usesCurrentTarget = attackOrReachAction || offensiveSpellAction || targetlessShootAction;
     std::array<Unit*, 4> const guardedTargets = {
         actionTarget,
         usesCurrentTarget ? currentTarget : nullptr,
@@ -1447,6 +1448,9 @@ float Aq40TwinMultiplier::GetValue(Action* action)
         IsTwinTrueCasterProfile(bot, botAI);
     bool const suppressAssignmentGuardedBossPressure =
         assignment && guardedBossTarget && !DoesTwinAssignmentAllowBossTarget(*state, assignment, guardedBossTarget);
+    bool const suppressNonHunterVeknilashShoot =
+        targetlessShootAction && guardedBossTarget && IsTwinVeknilashTarget(guardedBossTarget) &&
+        bot->getClass() != CLASS_HUNTER;
     bool const twinBugPriorityRole = IsTwinBugServiceRole(assignment, bot, botAI);
     bool const needsTwinVeklorSafetyCheck =
         dynamic_cast<PetAttackAction*>(action) || twinBugPriorityRole ||
@@ -1479,6 +1483,25 @@ float Aq40TwinMultiplier::GetValue(Action* action)
     bool const suppressBugPriorityBossPressure =
         activeTwin && guardedBossTarget && twinBugPriorityRole &&
         HasTwinBugPriorityTarget(bot, botAI, *state, assignment, getEncounterUnits(), liveVeklor);
+    bool const designatedWarlockTank = assignment &&
+                                       assignment->cohort == Aq40TwinEncounter::TwinRoleCohort::WarlockTank;
+    bool const veklorPickupEstablished =
+        Aq40TwinEncounter::IsPickupEstablished(*state, Aq40TwinEncounter::TwinBoss::Veklor);
+    bool const warlockTankPrePickupWindow =
+        designatedWarlockTank && !veklorPickupEstablished &&
+        (prepullStage || approachTwin || activeTwin || Aq40TwinEncounter::IsAnyThreatHoldWindowActive(*state));
+
+    if (warlockTankPrePickupWindow && targetlessShootAction)
+        return 0.0f;
+
+    if (suppressNonHunterVeknilashShoot)
+        return 0.0f;
+
+    if (warlockTankPrePickupWindow && offensiveSpellAction && actionName != "searing pain" &&
+        actionName != "shadow ward" && (targetsVeklor || guardedBossTarget))
+    {
+        return 0.0f;
+    }
 
     if (pendingSwapPrepVeklorWarlock && targetlessShootAction)
         return 0.0f;

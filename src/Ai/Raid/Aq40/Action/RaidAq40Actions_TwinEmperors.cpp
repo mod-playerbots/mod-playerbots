@@ -322,8 +322,7 @@ bool TryGetTwinExplodeBugHazard(Player* bot, PlayerbotAI* botAI,
 
 bool IsTwinEncounterActive(Aq40TwinEncounter::TwinEncounterState const* state)
 {
-    return state && Aq40TwinEncounter::IsActivePhase(state->phase) &&
-           !Aq40TwinEncounter::IsTerminalPhase(state->phase);
+    return state && Aq40TwinEncounter::IsTwinCombatAuthorized(*state);
 }
 
 bool IsTwinWarlockProfile(Player* bot)
@@ -1616,16 +1615,17 @@ bool SetTwinPetReactState(Pet* pet, ReactStates reactState)
     return true;
 }
 
-bool IsTwinPetTauntSpell(SpellInfo const* spellInfo)
+bool IsTwinPetSuppressedAutocastSpell(SpellInfo const* spellInfo)
 {
     if (!spellInfo)
         return false;
 
     std::string const spellToken = Aq40Helpers::GetAq40LogToken(spellInfo->SpellName[0]);
-    return spellToken == "growl" || spellToken == "torment" || spellToken == "suffering";
+    return spellToken == "growl" || spellToken == "torment" || spellToken == "suffering" ||
+           spellToken == "charge" || spellToken == "intercept";
 }
 
-bool DisableTwinPetTauntAutocast(Player* bot, Pet* pet)
+bool DisableTwinPetRiskAutocast(Player* bot, Pet* pet)
 {
     if (!bot || !pet)
         return false;
@@ -1641,7 +1641,7 @@ bool DisableTwinPetTauntAutocast(Player* bot, Pet* pet)
 
         uint32 const spellId = itr->first;
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-        if (!spellInfo || !spellInfo->IsAutocastable() || !IsTwinPetTauntSpell(spellInfo) ||
+        if (!spellInfo || !spellInfo->IsAutocastable() || !IsTwinPetSuppressedAutocastSpell(spellInfo) ||
             !IsTwinPetAutocastEnabled(pet, spellId))
         {
             continue;
@@ -1666,7 +1666,7 @@ bool DisableTwinPetTauntAutocast(Player* bot, Pet* pet)
     return changed;
 }
 
-bool HasTwinPetTauntAutocastEnabled(Pet* pet)
+bool HasTwinPetRiskAutocastEnabled(Pet* pet)
 {
     if (!pet)
         return false;
@@ -1678,7 +1678,7 @@ bool HasTwinPetTauntAutocastEnabled(Pet* pet)
 
         uint32 const spellId = itr->first;
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-        if (spellInfo && spellInfo->IsAutocastable() && IsTwinPetTauntSpell(spellInfo) &&
+        if (spellInfo && spellInfo->IsAutocastable() && IsTwinPetSuppressedAutocastSpell(spellInfo) &&
             IsTwinPetAutocastEnabled(pet, spellId))
         {
             return true;
@@ -1702,7 +1702,7 @@ bool NeedsTwinPetPassiveCleanup(Pet* pet)
             return true;
     }
 
-    return HasTwinPetTauntAutocastEnabled(pet);
+    return HasTwinPetRiskAutocastEnabled(pet);
 }
 
 bool ForceTwinPetPassiveFollow(Player* bot, PlayerbotAI* botAI, Pet* pet)
@@ -1924,7 +1924,7 @@ bool SyncTwinEncounterPetPolicy(Player* bot, PlayerbotAI* botAI,
     if (!ShouldApplyTwinPetPolicy(bot, state))
         return Aq40TwinEncounter::RestorePetControlState(bot);
 
-    bool changed = DisableTwinPetTauntAutocast(bot, pet);
+    bool changed = DisableTwinPetRiskAutocast(bot, pet);
     if (ShouldTwinHoldPetPassive(bot, botAI, state, assignment, target, units))
     {
         bool const passiveChanged = ForceTwinPetPassiveFollow(bot, botAI, pet);
@@ -3199,6 +3199,83 @@ bool SyncTwinWarlockTankOverlay(Player* bot, PlayerbotAI* botAI)
     return true;
 }
 
+bool TryTwinWarlockShadowWard(Player* bot, PlayerbotAI* botAI,
+                              Aq40TwinEncounter::TwinEncounterState& state,
+                              char const* reason)
+{
+    if (!bot || !botAI || bot->getClass() != CLASS_WARLOCK)
+        return false;
+
+    if (bot->GetCurrentSpell(CURRENT_GENERIC_SPELL) || bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+        return false;
+
+    uint32 const nowMs = getMSTime();
+    bool const alreadyActive = botAI->HasAura("shadow ward", bot);
+    if (alreadyActive)
+    {
+        if (!state.veklorWarlockShadowWardAtMs)
+        {
+            state.veklorWarlockShadowWardAtMs = nowMs;
+            state.veklorWarlockShadowWardCaster = bot->GetGUID();
+        }
+        return false;
+    }
+
+    if (!botAI->CanCastSpell("shadow ward", bot) || !botAI->CastSpell("shadow ward", bot))
+    {
+        return false;
+    }
+
+    state.veklorWarlockShadowWardAtMs = nowMs;
+    state.veklorWarlockShadowWardCaster = bot->GetGUID();
+
+    std::ostringstream fields;
+    fields << "boss=twin spell=shadow_ward"
+           << " reason=" << (reason ? reason : "warlock_tank")
+           << " phase=" << Aq40TwinEncounter::ToString(state.phase)
+           << " mode=" << Aq40TwinEncounter::ToString(state.mode)
+           << " caster=" << Aq40Helpers::GetAq40LogUnit(bot);
+    Aq40Helpers::LogAq40Info(bot, "twin_strategy", "twin:warlock_tank:shadow_ward",
+        fields.str(), 1000);
+    return true;
+}
+
+bool TryTwinWarlockSearingPain(Player* bot, PlayerbotAI* botAI,
+                               Aq40TwinEncounter::TwinEncounterState& state,
+                               Unit* veklor, char const* reason)
+{
+    if (!bot || !botAI || bot->getClass() != CLASS_WARLOCK || !veklor || !IsTwinVeklorTarget(veklor))
+        return false;
+
+    if (bot->GetCurrentSpell(CURRENT_GENERIC_SPELL) || bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+        return false;
+
+    if (!botAI->CanCastSpell("searing pain", veklor) || !botAI->CastSpell("searing pain", veklor))
+        return false;
+
+    state.veklorWarlockSearingPainAtMs = getMSTime();
+    state.veklorWarlockSearingPainCaster = bot->GetGUID();
+
+    std::ostringstream fields;
+    fields << "boss=twin spell=searing_pain"
+           << " reason=" << (reason ? reason : "warlock_tank")
+           << " phase=" << Aq40TwinEncounter::ToString(state.phase)
+           << " mode=" << Aq40TwinEncounter::ToString(state.mode)
+           << " caster=" << Aq40Helpers::GetAq40LogUnit(bot)
+           << " target=" << Aq40Helpers::GetAq40LogUnit(veklor);
+    Aq40Helpers::LogAq40Info(bot, "twin_strategy", "twin:warlock_tank:searing_pain",
+        fields.str(), 1000);
+    return true;
+}
+
+bool TryTwinWarlockThreatSpell(Player* bot, PlayerbotAI* botAI,
+                               Aq40TwinEncounter::TwinEncounterState& state,
+                               Unit* veklor, char const* reason)
+{
+    return TryTwinWarlockShadowWard(bot, botAI, state, reason) ||
+           TryTwinWarlockSearingPain(bot, botAI, state, veklor, reason);
+}
+
 TwinStrictReadyEvaluation EvaluateTwinStrictReadyStatus(Player* bot,
                                                         Aq40TwinEncounter::TwinEncounterState const& state,
                                                         float tolerance)
@@ -3591,6 +3668,12 @@ bool Aq40TwinPrePullStageAction::Execute(Event /*event*/)
         Unit* target = GetTwinOpeningTargetForAssignment(*assignment, openingTargets);
         if (target && AreTwinOpeningTargetsDiscoverable(openingTargets))
         {
+            if (IsTwinOpeningWarlockTankAssignment(*assignment) &&
+                TryTwinWarlockShadowWard(bot, botAI, *state, "prepull_opener"))
+            {
+                return true;
+            }
+
             if (pendingTankAttackTarget)
             {
                 LogTwinTankAttackIntentDecision(bot, *state, *assignment, anchorChoice, pendingTankAttackTarget,
@@ -3747,6 +3830,9 @@ bool Aq40TwinDualPullEngageAction::Execute(Event /*event*/)
             return MoveNear(target, kTwinWarlockPreferredRange, MovementPriority::MOVEMENT_COMBAT) ||
                    petSyncChanged;
         }
+
+        if (TryTwinWarlockThreatSpell(bot, botAI, *state, target, "dual_pull_opener"))
+            return true;
 
         return releasedPinnedBoss || overlayChanged || petSyncChanged;
     }
@@ -4270,6 +4356,9 @@ bool Aq40TwinWarlockTankAction::Execute(Event /*event*/)
                overlayChanged ||
                pickupAnchorChanged;
     }
+
+    if (TryTwinWarlockThreatSpell(bot, botAI, *state, veklor, "warlock_tank_hold"))
+        return true;
 
     return overlayChanged || pickupAnchorChanged;
 }

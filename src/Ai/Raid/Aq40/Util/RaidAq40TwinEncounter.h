@@ -195,6 +195,13 @@ struct TwinEncounterState
     uint32 swapPrepStartAtMs = 0;
     uint32 closestTargetGrantDelayMs = 1000;
     uint32 swapPrepArmedAtMs = 0;
+    uint32 firstEmperorCombatAtMs = 0;
+    uint32 veklorWarlockSearingPainAtMs = 0;
+    ObjectGuid veklorWarlockSearingPainCaster = ObjectGuid::Empty;
+    uint32 veklorWarlockShadowWardAtMs = 0;
+    ObjectGuid veklorWarlockShadowWardCaster = ObjectGuid::Empty;
+    uint16 petEmperorViolationCount = 0;
+    uint32 petEmperorViolationAtMs = 0;
     std::vector<TwinRoleAssignment> assignments;
     uint32 assignmentsVersion = 0;
     std::string unsupportedReason;
@@ -213,6 +220,7 @@ bool HasTwinAssignmentForMember(TwinEncounterState const& state, Player const* b
 bool IsTwinAssignedParticipant(TwinEncounterState const& state, Player const* bot, bool allowExtendedRoom = true);
 bool IsAssignedToCohort(TwinEncounterState const& state, ObjectGuid memberGuid, TwinRoleCohort cohort);
 bool HasDeterministicAssignments(TwinEncounterState const& state);
+bool IsTwinCombatAuthorized(TwinEncounterState const& state);
 std::string const& GetUnsupportedReason(TwinEncounterState const& state);
 size_t GetTwinPrePullQuorumRequirement(size_t assignedCount);
 bool IsTwinCenterCommitQuorumMet(Player* bot, TwinEncounterState const& state, size_t* outCommittedCount = nullptr,
@@ -231,6 +239,8 @@ bool ClearTwinLocalCombatState(Player* bot, PlayerbotAI* botAI, bool clearCleanu
 bool ShouldUseTwinWarlockTankStrategy(Player const* bot);
 bool SyncTwinWarlockTankStrategy(Player* bot);
 bool ClearTwinWarlockTankStrategy(Player* bot);
+bool HasTwinWarlockTankOverlay(Player const* bot);
+bool ApplyTwinPetPassiveControl(Player* bot, char const* reason);
 
 TwinStableOwnership& GetOwnership(TwinEncounterState& state, TwinBoss boss);
 TwinStableOwnership const& GetOwnership(TwinEncounterState const& state, TwinBoss boss);

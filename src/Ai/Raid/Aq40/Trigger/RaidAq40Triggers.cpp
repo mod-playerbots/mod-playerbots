@@ -530,6 +530,7 @@ bool Aq40TwinDualPullTrigger::IsActive()
 {
     Aq40TwinEncounter::TwinEncounterState const* state = GetTwinEncounterState(bot);
     return state && state->phase == Aq40TwinEncounter::TwinEncounterPhase::DualPullWindow &&
+           Aq40TwinEncounter::IsTwinCombatAuthorized(*state) &&
            Aq40TwinEncounter::IsTwinAssignedParticipant(*state, bot);
 }
 
@@ -537,7 +538,7 @@ bool Aq40TwinSwapPrepTrigger::IsActive()
 {
     Aq40TwinEncounter::TwinEncounterState const* state = GetTwinEncounterState(bot);
     return state && Aq40TwinEncounter::IsTwinAssignedParticipant(*state, bot) &&
-           Aq40TwinEncounter::IsActivePhase(state->phase) && !Aq40TwinEncounter::IsTerminalPhase(state->phase) &&
+           Aq40TwinEncounter::IsTwinCombatAuthorized(*state) &&
            Aq40TwinEncounter::IsSwapPrepActive(*state);
 }
 
@@ -545,8 +546,7 @@ bool Aq40TwinActiveTrigger::IsActive()
 {
     Aq40TwinEncounter::TwinEncounterState const* state = GetTwinEncounterState(bot);
     return state && Aq40TwinEncounter::IsTwinAssignedParticipant(*state, bot) &&
-           Aq40TwinEncounter::IsActivePhase(state->phase) &&
-           !Aq40TwinEncounter::IsTerminalPhase(state->phase);
+           Aq40TwinEncounter::IsTwinCombatAuthorized(*state);
 }
 
 bool Aq40TwinBlizzardTrigger::IsActive()

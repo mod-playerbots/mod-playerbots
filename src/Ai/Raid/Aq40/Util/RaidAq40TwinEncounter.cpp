@@ -13,6 +13,7 @@
 #include "SpellInfo.h"
 #include "SpellMgr.h"
 
+#include "AiFactory.h"
 #include "../RaidAq40BossHelper.h"
 #include "RaidAq40Helpers_Shared.h"
 #include "Playerbots.h"
@@ -231,6 +232,16 @@ bool IsPetSpellAutocastEnabled(Pet const* pet, uint32 spellId)
     return std::find(pet->m_autospells.begin(), pet->m_autospells.end(), spellId) != pet->m_autospells.end();
 }
 
+bool IsTwinPetAutocastSuppressionSpell(SpellInfo const* spellInfo)
+{
+    if (!spellInfo)
+        return false;
+
+    std::string const spellToken = Aq40Helpers::GetAq40LogToken(spellInfo->SpellName[0]);
+    return spellToken == "growl" || spellToken == "torment" || spellToken == "suffering" ||
+           spellToken == "charge" || spellToken == "intercept";
+}
+
 bool HasMeaningfulCadence(TwinEncounterState const& state)
 {
     return state.lastTeleportAtMs || state.nextTeleportEarliestAtMs || state.nextTeleportLatestAtMs ||
@@ -280,6 +291,17 @@ void ScheduleNextTeleportCadence(TwinEncounterState& state, uint32 referenceMs)
     state.swapPrepArmedAtMs = 0;
     if (!state.closestTargetGrantDelayMs)
         state.closestTargetGrantDelayMs = kTwinClosestTargetGrantDelayMs;
+}
+
+void ResetInitialEngagementValidation(TwinEncounterState& state)
+{
+    state.firstEmperorCombatAtMs = 0;
+    state.veklorWarlockSearingPainAtMs = 0;
+    state.veklorWarlockSearingPainCaster = ObjectGuid::Empty;
+    state.veklorWarlockShadowWardAtMs = 0;
+    state.veklorWarlockShadowWardCaster = ObjectGuid::Empty;
+    state.petEmperorViolationCount = 0;
+    state.petEmperorViolationAtMs = 0;
 }
 
 bool HasMeaningfulEncounterState(TwinEncounterState const& state)
@@ -359,12 +381,27 @@ void SortMembersByGuid(std::vector<Player*>& members)
     });
 }
 
+bool HasTwinGroupMainTankFlag(Player* member, Group const* group)
+{
+    if (!member || !group)
+        return false;
+
+    Group::MemberSlotList const& slots = group->GetMemberSlots();
+    for (Group::member_citerator itr = slots.begin(); itr != slots.end(); ++itr)
+    {
+        if (itr->guid == member->GetGUID() && (itr->flags & MEMBER_FLAG_MAINTANK))
+            return true;
+    }
+
+    return false;
+}
+
 uint32 GetTankAssignmentPriority(Player* member, Group const* group)
 {
     if (!member)
         return 99u;
 
-    if (PlayerbotAI::IsMainTank(member))
+    if (HasTwinGroupMainTankFlag(member, group) || PlayerbotAI::IsMainTank(member))
         return 0u;
     if (PlayerbotAI::IsAssistTankOfIndex(member, 0, true))
         return 1u;
@@ -373,6 +410,34 @@ uint32 GetTankAssignmentPriority(Player* member, Group const* group)
     if (group && group->IsAssistant(member->GetGUID()))
         return 3u;
     return 10u;
+}
+
+bool IsTwinMarkedDruidTankFallback(Player* member, Group const* group)
+{
+    if (!member || !group || member->getClass() != CLASS_DRUID)
+        return false;
+
+    if (AiFactory::GetPlayerSpecTab(member) != DRUID_TAB_FERAL)
+        return false;
+
+    // Twin assignments must resolve before pull, when a feral off-tank may still
+    // be out of Bear Form. Honor explicit raid tank-role signals so a valid OT
+    // does not trip the encounter into a terminal "have_1" state.
+    return HasTwinGroupMainTankFlag(member, group) || group->IsAssistant(member->GetGUID());
+}
+
+bool IsTwinMeleeTankCandidate(Player* member, Group const* group)
+{
+    if (!member)
+        return false;
+
+    if (PlayerbotAI::IsTank(member))
+        return true;
+
+    if (PlayerbotAI::IsTank(member, true))
+        return true;
+
+    return IsTwinMarkedDruidTankFallback(member, group);
 }
 
 template <typename PriorityFn>
@@ -621,6 +686,7 @@ void ClearPrePullAssignments(TwinEncounterState& state, uint32 nowMs, bool clear
     state.recovery = TwinRecoveryState();
     state.scriptedHazards = TwinScriptedHazardWindows();
     ResetTeleportCadence(state);
+    ResetInitialEngagementValidation(state);
     if (clearReason)
         state.unsupportedReason.clear();
 
@@ -771,7 +837,7 @@ TwinAssignmentBuildResult BuildTwinAssignments(Player* bot, std::vector<Player*>
     for (Player* member : approachMembers)
     {
         bool const isHealer = referenceAI->IsHeal(member);
-        bool const isTank = PlayerbotAI::IsTank(member, true);
+        bool const isTank = IsTwinMeleeTankCandidate(member, group);
         bool const isRanged = PlayerbotAI::IsRanged(member);
 
         if (member->getClass() == CLASS_WARLOCK)
@@ -984,14 +1050,16 @@ void RefreshPrePullAssignments(Player* bot, TwinEncounterState& state)
     bool const wasCenterCommitted = IsTwinCenterCommitted(state);
     size_t preservedCommittedCount = 0u;
     std::string preservedMissingCriticalRoles;
+    bool const preserveSeededCombatState =
+        HasDeterministicAssignments(state) && HasAssignedMemberInCombat(bot, state);
     bool const preserveCommittedState =
-        HasDeterministicAssignments(state) && HasAssignedMemberInCombat(bot, state) &&
+        preserveSeededCombatState &&
         (wasReady || wasCenterCommitted ||
          IsTwinCenterCommitQuorumMet(bot, state, &preservedCommittedCount, &preservedMissingCriticalRoles));
 
-    if (preserveCommittedState)
+    if (preserveSeededCombatState)
     {
-        if (!wasReady && !wasCenterCommitted)
+        if (preserveCommittedState && !wasReady && !wasCenterCommitted)
         {
             state.centerCommittedMemberCount = static_cast<uint16>(
                 std::min(preservedCommittedCount, state.assignments.size()));
@@ -1001,7 +1069,8 @@ void RefreshPrePullAssignments(Player* bot, TwinEncounterState& state)
         if (logBot)
         {
             std::ostringstream fields;
-            fields << "boss=twin state=retain_ready reason=first_contact_pending"
+            fields << "boss=twin state=retain_seeded reason="
+                   << (preserveCommittedState ? "first_contact_pending" : "activation_gate_pending")
                    << " assignments=" << state.assignments.size()
                    << " approach=" << state.approachMemberCount
                    << " staged=" << state.stagedMemberCount
@@ -1013,8 +1082,10 @@ void RefreshPrePullAssignments(Player* bot, TwinEncounterState& state)
                    << " missing_critical_roles="
                    << (preservedMissingCriticalRoles.empty() ? "none" : preservedMissingCriticalRoles);
             Aq40Helpers::LogAq40Info(logBot, "twin_prepull",
-                                     wasReady ? "twin:retain_ready:first_contact"
-                                              : "twin:retain_center_commit:first_contact",
+                                     preserveCommittedState
+                                         ? (wasReady ? "twin:retain_ready:first_contact"
+                                                     : "twin:retain_center_commit:first_contact")
+                                         : "twin:retain_seeded:combat_gate",
                                      fields.str(), 5000);
         }
 
@@ -1075,6 +1146,9 @@ void RefreshPrePullAssignments(Player* bot, TwinEncounterState& state)
     bool const centerCommitChanged = previousCenterCommittedCount != centerCommittedCount;
     bool const keepStrictReady = centerCommitted && state.mode == TwinStrategyMode::StandardCompReady &&
                                  !assignmentsChanged && !reasonChanged && !countsChanged && !centerCommitChanged;
+
+    if (assignmentsChanged || reasonChanged)
+        ResetInitialEngagementValidation(state);
 
     if (assignmentsChanged)
     {
@@ -1403,6 +1477,14 @@ bool HasDeterministicAssignments(TwinEncounterState const& state)
     return state.unsupportedReason.empty() && !state.assignments.empty();
 }
 
+bool IsTwinCombatAuthorized(TwinEncounterState const& state)
+{
+    if (!HasDeterministicAssignments(state) || !IsActivePhase(state.phase) || IsTerminalPhase(state.phase))
+        return false;
+
+    return state.mode == TwinStrategyMode::Combat || state.mode == TwinStrategyMode::Degraded;
+}
+
 std::string const& GetUnsupportedReason(TwinEncounterState const& state)
 {
     return state.unsupportedReason;
@@ -1525,7 +1607,8 @@ bool ShouldUseTwinWarlockTankStrategy(Player const* bot)
     if (!state || IsTerminalPhase(state->phase) || !IsTwinDesignatedWarlockTank(bot))
         return false;
 
-    return IsTwinPrePullReady(bot) || (IsActivePhase(state->phase) && IsTwinAssignedParticipant(*state, bot));
+    return IsTwinPrePullStageWindow(*state, bot) || IsTwinPrePullReady(bot) ||
+           (IsTwinCombatAuthorized(*state) && IsTwinAssignedParticipant(*state, bot));
 }
 
 bool SyncTwinWarlockTankStrategy(Player* bot)
@@ -1585,6 +1668,106 @@ bool ClearTwinWarlockTankStrategy(Player* bot)
 
     sTwinWarlockTankOverlayByBot.erase(managedItr);
     return removed;
+}
+
+bool HasTwinWarlockTankOverlay(Player const* bot)
+{
+    if (!bot || bot->getClass() != CLASS_WARLOCK)
+        return false;
+
+    uint32 const instanceId = GetInstanceId(bot);
+    if (!instanceId)
+        return false;
+
+    auto const itr = sTwinWarlockTankOverlayByBot.find(GetBotKey(bot));
+    if (itr == sTwinWarlockTankOverlayByBot.end() || itr->second.instanceId != instanceId ||
+        !itr->second.addedByTwin)
+    {
+        return false;
+    }
+
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(const_cast<Player*>(bot));
+    return botAI && botAI->HasStrategy("tank", BOT_STATE_COMBAT);
+}
+
+bool ApplyTwinPetPassiveControl(Player* bot, char const* reason)
+{
+    if (!bot)
+        return false;
+
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+    Pet* pet = bot->GetPet();
+    if (!botAI || !pet)
+        return false;
+
+    TwinPetControlState& controlState = EnsurePetControlState(bot);
+    if (controlState.petGuid != pet->GetGUID())
+    {
+        controlState.petGuid = pet->GetGUID();
+        controlState.forcedPassive = false;
+        controlState.previousReactStateCaptured = false;
+        controlState.previousReactState = static_cast<uint8>(pet->GetReactState());
+        controlState.disabledAutocastSpellIds.clear();
+    }
+
+    bool changed = false;
+    for (PetSpellMap::const_iterator itr = pet->m_spells.begin(); itr != pet->m_spells.end(); ++itr)
+    {
+        if (itr->second.state == PETSPELL_REMOVED)
+            continue;
+
+        uint32 const spellId = itr->first;
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        if (!spellInfo || !spellInfo->IsAutocastable() || !IsTwinPetAutocastSuppressionSpell(spellInfo) ||
+            !IsPetSpellAutocastEnabled(pet, spellId))
+        {
+            continue;
+        }
+
+        pet->ToggleAutocast(spellInfo, false);
+        if (std::find(controlState.disabledAutocastSpellIds.begin(), controlState.disabledAutocastSpellIds.end(),
+                spellId) == controlState.disabledAutocastSpellIds.end())
+        {
+            controlState.disabledAutocastSpellIds.push_back(spellId);
+        }
+        changed = true;
+    }
+
+    if (!controlState.previousReactStateCaptured)
+    {
+        controlState.previousReactState = static_cast<uint8>(pet->GetReactState());
+        controlState.previousReactStateCaptured = true;
+    }
+
+    bool needsFollow = pet->GetVictim() || pet->IsInCombat();
+    if (CharmInfo* charmInfo = pet->GetCharmInfo())
+        needsFollow = needsFollow || charmInfo->IsCommandAttack() || !charmInfo->IsReturning();
+
+    if (pet->GetReactState() != REACT_PASSIVE)
+    {
+        pet->SetReactState(REACT_PASSIVE);
+        if (CharmInfo* charmInfo = pet->GetCharmInfo())
+            charmInfo->SetPlayerReactState(REACT_PASSIVE);
+        needsFollow = true;
+        changed = true;
+    }
+
+    controlState.forcedPassive = true;
+    if (needsFollow)
+    {
+        botAI->PetFollow();
+        changed = true;
+    }
+
+    if (changed)
+    {
+        Aq40Helpers::LogAq40Info(bot, "twin_pet", "twin:pet:passive_failsafe",
+            std::string("boss=twin reason=") + (reason ? reason : "failsafe") +
+                " pet=" + Aq40Helpers::GetAq40LogUnit(pet),
+            1000);
+    }
+
+    return changed;
 }
 
 bool MarkTwinLocalCleanupState(Player* bot)

@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <sstream>
 #include <vector>
 
@@ -546,6 +547,25 @@ bool UpdateHazardTimestamp(uint32& hazardAtMs, uint32 nowMs, uint32 debounceMs =
 	return true;
 }
 
+Unit* ResolvePrimarySpellTargetUnit(Spell* spell, Unit* caster)
+{
+	if (!spell || !caster)
+		return nullptr;
+
+	std::list<TargetInfo> const* targets = spell->GetUniqueTargetInfo();
+	if (!targets)
+		return nullptr;
+
+	for (TargetInfo const& targetInfo : *targets)
+	{
+		Unit* target = ObjectAccessor::GetUnit(*caster, targetInfo.targetGUID);
+		if (target)
+			return target;
+	}
+
+	return nullptr;
+}
+
 Player* ResolvePrimarySpellTargetPlayer(Spell* spell, Unit* caster)
 {
 	if (!spell || !caster)
@@ -598,78 +618,178 @@ Player* ResolveBossOwnerForSpell(Spell* spell, Unit* caster, uint32 spellId)
 	return ResolvePrimarySpellTargetPlayer(spell, caster);
 }
 
+bool IsTwinExpectedOwnerValid(Aq40TwinEncounter::TwinEncounterState const& state,
+							  Aq40TwinEncounter::TwinBoss boss, ObjectGuid ownerGuid)
+{
+	if (ownerGuid.IsEmpty())
+		return false;
+
+	Aq40TwinEncounter::TwinRoleAssignment const* assignment =
+		Aq40TwinEncounter::GetAssignmentForMember(state, ownerGuid);
+	if (!assignment)
+		return false;
+
+	Aq40TwinEncounter::TwinRoleCohort const expectedCohort =
+		boss == Aq40TwinEncounter::TwinBoss::Veklor ? Aq40TwinEncounter::TwinRoleCohort::WarlockTank
+												 : Aq40TwinEncounter::TwinRoleCohort::MeleeTank;
+	return assignment->cohort == expectedCohort;
+}
+
+bool IsTwinStableWindowOwnershipValid(Aq40TwinEncounter::TwinEncounterState const& state,
+									  Aq40TwinEncounter::TwinBoss boss)
+{
+	Aq40TwinEncounter::TwinStableOwnership const& ownership = Aq40TwinEncounter::GetOwnership(state, boss);
+	ObjectGuid const pickupOwner = Aq40TwinEncounter::GetPickupOwner(state, boss);
+	if (!IsTwinExpectedOwnerValid(state, boss, ownership.expectedOwner) ||
+		!IsTwinExpectedOwnerValid(state, boss, ownership.reserveOwner) ||
+		!IsTwinExpectedOwnerValid(state, boss, ownership.stableOwner) ||
+		!IsTwinExpectedOwnerValid(state, boss, pickupOwner))
+	{
+		return false;
+	}
+
+	return ownership.stableOwner == pickupOwner;
+}
+
+std::string BuildTwinActivationFailureReason(Aq40TwinEncounter::TwinEncounterState const& state, Player* logBot)
+{
+	std::vector<std::string> reasons;
+	auto const addReason = [&reasons](char const* reason)
+	{
+		reasons.push_back(reason);
+	};
+
+	if (!Aq40TwinEncounter::HasDeterministicAssignments(state))
+		addReason("no_deterministic_assignments");
+
+	size_t const quorumRequired = Aq40TwinEncounter::GetTwinPrePullQuorumRequirement(state.assignments.size());
+	if (state.mode != Aq40TwinEncounter::TwinStrategyMode::StandardCompReady)
+		addReason("strict_ready_mode_missing");
+	if (state.strictReadyMemberCount < quorumRequired)
+		addReason("strict_ready_quorum_missing");
+
+	Aq40TwinEncounter::TwinStableOwnership const& veklorOwnership =
+		Aq40TwinEncounter::GetOwnership(state, Aq40TwinEncounter::TwinBoss::Veklor);
+	Aq40TwinEncounter::TwinStableOwnership const& veknilashOwnership =
+		Aq40TwinEncounter::GetOwnership(state, Aq40TwinEncounter::TwinBoss::Veknilash);
+	if (!IsTwinExpectedOwnerValid(state, Aq40TwinEncounter::TwinBoss::Veklor, veklorOwnership.expectedOwner))
+		addReason("veklor_expected_owner_invalid");
+	if (!IsTwinExpectedOwnerValid(state, Aq40TwinEncounter::TwinBoss::Veknilash, veknilashOwnership.expectedOwner))
+		addReason("veknilash_expected_owner_invalid");
+	if (!IsTwinExpectedOwnerValid(state, Aq40TwinEncounter::TwinBoss::Veklor, veklorOwnership.reserveOwner))
+		addReason("veklor_reserve_owner_invalid");
+	if (!IsTwinExpectedOwnerValid(state, Aq40TwinEncounter::TwinBoss::Veknilash, veknilashOwnership.reserveOwner))
+		addReason("veknilash_reserve_owner_invalid");
+
+	for (Aq40TwinEncounter::TwinRoleAssignment const& assignment : state.assignments)
+	{
+		if (assignment.cohort != Aq40TwinEncounter::TwinRoleCohort::WarlockTank)
+			continue;
+
+		Player* warlock = FindTwinInstanceMember(logBot, assignment.memberGuid);
+		if (!warlock || !Aq40TwinEncounter::HasTwinWarlockTankOverlay(warlock))
+		{
+			addReason("warlock_tank_overlay_missing");
+			break;
+		}
+	}
+
+	if (reasons.empty())
+		return "ok";
+
+	std::ostringstream out;
+	for (size_t index = 0; index < reasons.size(); ++index)
+	{
+		if (index)
+			out << "+";
+		out << reasons[index];
+	}
+	return out.str();
+}
+
+void LogTwinActivationGate(Player* logBot, Aq40TwinEncounter::TwinEncounterState const& state,
+						   Unit* caster, uint32 spellId, uint32 nowMs, char const* result,
+						   std::string const& reason)
+{
+	if (!logBot)
+		return;
+
+	std::ostringstream fields;
+	fields << "boss=twin spell=" << spellId
+		   << " source=" << Aq40Helpers::GetAq40LogUnit(caster)
+		   << " result=" << result
+		   << " reason=" << reason
+		   << " phase=" << Aq40TwinEncounter::ToString(state.phase)
+		   << " mode=" << Aq40TwinEncounter::ToString(state.mode)
+		   << " approach=" << state.approachMemberCount
+		   << " staged=" << state.stagedMemberCount
+		   << " center_committed=" << state.centerCommittedMemberCount
+		   << " strict_ready=" << state.strictReadyMemberCount
+		   << " assigned=" << state.assignments.size()
+		   << " quorum_required=" << Aq40TwinEncounter::GetTwinPrePullQuorumRequirement(state.assignments.size())
+		   << " unsupported_reason=" << (state.unsupportedReason.empty() ? "none" : state.unsupportedReason);
+	AppendTwinWarlockPoolTelemetryFields(fields, state);
+	AppendTwinInitialEngagementBossFields(fields, logBot, state, Aq40TwinEncounter::TwinBoss::Veklor, "veklor",
+		nowMs);
+	AppendTwinInitialEngagementBossFields(fields, logBot, state, Aq40TwinEncounter::TwinBoss::Veknilash,
+		"veknilash", nowMs);
+
+	if (std::string(result) == "ok")
+		Aq40Helpers::LogAq40Info(logBot, "twin_validation", "twin:activation_gate:ok", fields.str(), 1000);
+	else
+		Aq40Helpers::LogAq40Warn(logBot, "twin_terminal_failure", "twin:activation_gate:failed",
+			fields.str(), 1000);
+}
+
 bool MarkEncounterCombat(Aq40TwinEncounter::TwinEncounterState& state, Player* logBot, Unit* caster, uint32 spellId,
 						 uint32 nowMs)
 {
 	if (state.phase != Aq40TwinEncounter::TwinEncounterPhase::PrePull)
 	{
-		Aq40TwinEncounter::SetMode(state, Aq40TwinEncounter::TwinStrategyMode::Combat, nowMs);
-		return true;
+		if (Aq40TwinEncounter::IsTerminalPhase(state.phase))
+			return false;
+
+		if (!Aq40TwinEncounter::HasDeterministicAssignments(state))
+		{
+			Aq40TwinEncounter::EnterTerminalFailure(state, nowMs);
+			LogTwinActivationGate(logBot, state, caster, spellId, nowMs, "failed", "active_missing_assignments");
+			return false;
+		}
+
+		if (state.mode != Aq40TwinEncounter::TwinStrategyMode::Degraded)
+			Aq40TwinEncounter::SetMode(state, Aq40TwinEncounter::TwinStrategyMode::Combat, nowMs);
+		return Aq40TwinEncounter::IsTwinCombatAuthorized(state);
 	}
 
 	bool const hasDeterministicAssignments = Aq40TwinEncounter::HasDeterministicAssignments(state);
 	if (state.mode == Aq40TwinEncounter::TwinStrategyMode::StandardCompReady && hasDeterministicAssignments)
 	{
-		Aq40TwinEncounter::SetMode(state, Aq40TwinEncounter::TwinStrategyMode::Combat, nowMs);
-		Aq40TwinEncounter::EnterDualPullWindow(state, nowMs);
-		return true;
-	}
-
-	size_t committedCount = 0u;
-	std::string missingCriticalRoles;
-	bool const quorumSatisfied = hasDeterministicAssignments &&
-		Aq40TwinEncounter::IsTwinCenterCommitQuorumMet(logBot, state, &committedCount, &missingCriticalRoles);
-	size_t const quorumRequired = Aq40TwinEncounter::GetTwinPrePullQuorumRequirement(state.assignments.size());
-
-	if (quorumSatisfied)
-	{
-		if (logBot)
+		std::string const activationReason = BuildTwinActivationFailureReason(state, logBot);
+		if (activationReason != "ok")
 		{
-			std::ostringstream fields;
-			fields << "boss=twin spell=" << spellId
-				   << " source=" << Aq40Helpers::GetAq40LogUnit(caster)
-				   << " phase=" << Aq40TwinEncounter::ToString(state.phase)
-				   << " mode=" << Aq40TwinEncounter::ToString(state.mode)
-				   << " reason=center_commit_quorum_met"
-				   << " approach=" << state.approachMemberCount
-				   << " staged=" << state.stagedMemberCount
-				   << " center_committed=" << committedCount
-				   << " strict_ready=" << state.strictReadyMemberCount
-				   << " assigned=" << state.assignments.size()
-				   << " quorum_required=" << quorumRequired
-				   << " missing_critical_roles="
-				   << (missingCriticalRoles.empty() ? "none" : missingCriticalRoles);
-			AppendTwinWarlockPoolTelemetryFields(fields, state);
-			Aq40Helpers::LogAq40Warn(logBot, "twin_script_window", "twin:early_pull_salvage", fields.str(), 1000);
+			state.firstEmperorCombatAtMs = state.firstEmperorCombatAtMs ? state.firstEmperorCombatAtMs : nowMs;
+			Aq40TwinEncounter::EnterTerminalFailure(state, nowMs);
+			LogTwinActivationGate(logBot, state, caster, spellId, nowMs, "failed", activationReason);
+			return false;
 		}
 
+		state.firstEmperorCombatAtMs = state.firstEmperorCombatAtMs ? state.firstEmperorCombatAtMs : nowMs;
 		Aq40TwinEncounter::SetMode(state, Aq40TwinEncounter::TwinStrategyMode::Combat, nowMs);
 		Aq40TwinEncounter::EnterDualPullWindow(state, nowMs);
+		LogTwinActivationGate(logBot, state, caster, spellId, nowMs, "ok", "strict_ready");
 		return true;
 	}
 
-	if (logBot)
-	{
-		std::ostringstream fields;
-		fields << "boss=twin spell=" << spellId
-			   << " source=" << Aq40Helpers::GetAq40LogUnit(caster)
-			   << " phase=" << Aq40TwinEncounter::ToString(state.phase)
-			   << " mode=" << Aq40TwinEncounter::ToString(state.mode)
-			   << " reason="
-			   << (hasDeterministicAssignments
-					   ? (missingCriticalRoles.empty() ? "center_commit_quorum_unmet" : "missing_critical_roles")
-					   : "no_deterministic_assignments")
-			   << " approach=" << state.approachMemberCount
-			   << " staged=" << state.stagedMemberCount
-			   << " center_committed=" << committedCount
-			   << " strict_ready=" << state.strictReadyMemberCount
-			   << " assigned=" << state.assignments.size()
-			   << " quorum_required=" << quorumRequired
-			   << " missing_critical_roles="
-			   << (missingCriticalRoles.empty() ? "none" : missingCriticalRoles);
-		AppendTwinWarlockPoolTelemetryFields(fields, state);
-		Aq40Helpers::LogAq40Warn(logBot, "twin_script_window", "twin:early_pull_invalid", fields.str(), 1000);
-	}
+	std::string missingCriticalRoles;
+	if (hasDeterministicAssignments)
+		Aq40TwinEncounter::IsTwinCenterCommitQuorumMet(logBot, state, nullptr, &missingCriticalRoles);
+
+	state.firstEmperorCombatAtMs = state.firstEmperorCombatAtMs ? state.firstEmperorCombatAtMs : nowMs;
+	Aq40TwinEncounter::EnterTerminalFailure(state, nowMs);
+	std::string const reason = hasDeterministicAssignments
+		? (missingCriticalRoles.empty() ? "strict_ready_missing" : "missing_critical_roles")
+		: "no_deterministic_assignments";
+	LogTwinActivationGate(logBot, state, caster, spellId, nowMs, "failed", reason);
 
 	return false;
 }
@@ -785,8 +905,8 @@ bool ClearTwinTerminalFailureCombatState(Player* bot)
 		return false;
 
 	Aq40TwinEncounter::RequestImmediateMovementInterrupt(bot);
+	bool changed = Aq40TwinEncounter::ApplyTwinPetPassiveControl(bot, "terminal_failure");
 
-	bool changed = false;
 	if (bot->GetVictim())
 	{
 		bot->AttackStop();
@@ -837,6 +957,201 @@ bool ClearTwinTerminalFailureCombatState(Player* bot)
 
 	return changed;
 }
+
+bool IsTwinTrackedWarlockOpenerSpell(std::string const& spellToken)
+{
+	return spellToken == "searing pain" || spellToken == "shadow ward";
+}
+
+bool TryRecordTwinWarlockOpenerSpell(Spell* spell, Unit* caster, SpellInfo const* spellInfo)
+{
+	if (!spell || !caster || !spellInfo || !caster->IsPlayer())
+		return false;
+
+	Player* warlock = caster->ToPlayer();
+	if (!warlock || warlock->getClass() != CLASS_WARLOCK || !IsTwinRelevantBot(warlock, caster))
+		return false;
+
+	std::string const spellToken = Aq40Helpers::GetAq40LogToken(spellInfo->SpellName[0]);
+	if (!IsTwinTrackedWarlockOpenerSpell(spellToken))
+		return false;
+
+	Aq40TwinEncounter::TwinEncounterState* state = Aq40TwinEncounter::GetEncounterState(warlock);
+	if (!state || Aq40TwinEncounter::IsTerminalPhase(state->phase) ||
+		!Aq40TwinEncounter::IsTwinDesignatedWarlockTank(warlock))
+	{
+		return true;
+	}
+
+	Aq40TwinEncounter::TwinRoleAssignment const* assignment =
+		Aq40TwinEncounter::GetAssignmentForMember(*state, warlock->GetGUID());
+	if (!assignment || assignment->cohort != Aq40TwinEncounter::TwinRoleCohort::WarlockTank)
+		return true;
+
+	uint32 const nowMs = getMSTime();
+	if (spellToken == "searing pain")
+	{
+		Unit* target = ResolvePrimarySpellTargetUnit(spell, caster);
+		if (!IsTwinVeklorTarget(target))
+			return true;
+
+		state->veklorWarlockSearingPainAtMs = nowMs;
+		state->veklorWarlockSearingPainCaster = warlock->GetGUID();
+	}
+	else if (spellToken == "shadow ward")
+	{
+		state->veklorWarlockShadowWardAtMs = nowMs;
+		state->veklorWarlockShadowWardCaster = warlock->GetGUID();
+	}
+
+	std::ostringstream fields;
+	fields << "boss=twin spell=" << spellToken
+		   << " caster=" << Aq40Helpers::GetAq40LogUnit(warlock)
+		   << " phase=" << Aq40TwinEncounter::ToString(state->phase)
+		   << " mode=" << Aq40TwinEncounter::ToString(state->mode)
+		   << " cohort=" << Aq40TwinEncounter::ToString(assignment->cohort)
+		   << " side=" << Aq40TwinEncounter::ToString(assignment->stableSide)
+		   << " opener_searing_pain=" << (state->veklorWarlockSearingPainAtMs ? 1 : 0)
+		   << " opener_shadow_ward=" << (state->veklorWarlockShadowWardAtMs ? 1 : 0)
+		   << " assigned=" << state->assignments.size();
+	Aq40Helpers::LogAq40Info(warlock, "twin_validation", "twin:warlock_opener:attest",
+		fields.str(), 1000);
+	return true;
+}
+
+bool IsTwinPetEmperorViolationSpell(std::string const& spellToken)
+{
+	return spellToken == "growl" || spellToken == "torment" || spellToken == "suffering" ||
+		   spellToken == "charge" || spellToken == "intercept" || spellToken == "bite" ||
+		   spellToken == "claw" || spellToken == "rake" || spellToken == "shadow bite" ||
+		   spellToken == "firebolt";
+}
+
+bool TryRecordTwinPetEmperorViolation(Spell* spell, Unit* caster, SpellInfo const* spellInfo)
+{
+	if (!spell || !caster || !spellInfo)
+		return false;
+
+	Pet* pet = caster->ToPet();
+	if (!pet)
+		return false;
+
+	std::string const spellToken = Aq40Helpers::GetAq40LogToken(spellInfo->SpellName[0]);
+	if (!IsTwinPetEmperorViolationSpell(spellToken))
+		return false;
+
+	Unit* target = ResolvePrimarySpellTargetUnit(spell, caster);
+	if (!IsTwinVeklorTarget(target) && !IsTwinVeknilashTarget(target))
+		return false;
+
+	Player* owner = pet->GetOwner() ? pet->GetOwner()->ToPlayer() : nullptr;
+	if (!owner || !IsTwinRelevantBot(owner, caster))
+		return true;
+
+	Aq40TwinEncounter::TwinEncounterState* state = Aq40TwinEncounter::GetEncounterState(owner);
+	if (!state || Aq40TwinEncounter::IsTerminalPhase(state->phase))
+		return true;
+
+	uint32 const nowMs = getMSTime();
+	state->petEmperorViolationAtMs = nowMs;
+	if (state->petEmperorViolationCount < std::numeric_limits<uint16>::max())
+		++state->petEmperorViolationCount;
+
+	Aq40TwinEncounter::ApplyTwinPetPassiveControl(owner, "pet_emperor_violation");
+
+	std::ostringstream fields;
+	fields << "boss=twin spell=" << spellToken
+		   << " pet=" << Aq40Helpers::GetAq40LogUnit(pet)
+		   << " owner=" << Aq40Helpers::GetAq40LogUnit(owner)
+		   << " target=" << Aq40Helpers::GetAq40LogUnit(target)
+		   << " phase=" << Aq40TwinEncounter::ToString(state->phase)
+		   << " mode=" << Aq40TwinEncounter::ToString(state->mode)
+		   << " pet_violation_count=" << state->petEmperorViolationCount;
+	Aq40Helpers::LogAq40Warn(owner, "twin_validation", "twin:pet:emperor_violation",
+		fields.str(), 1000);
+	return true;
+}
+
+std::string BuildTwinPreTeleportGateFailureReason(Aq40TwinEncounter::TwinEncounterState const& state)
+{
+	std::vector<std::string> reasons;
+	auto const addReason = [&reasons](char const* reason)
+	{
+		reasons.push_back(reason);
+	};
+
+	if (!Aq40TwinEncounter::IsTwinCombatAuthorized(state))
+		addReason("unsupported_activation");
+	if (state.phase != Aq40TwinEncounter::TwinEncounterPhase::Stable)
+		addReason("stable_phase_missing");
+	if (!Aq40TwinEncounter::HasDeterministicAssignments(state))
+		addReason("assignments_missing");
+	if (!state.veklorWarlockSearingPainAtMs)
+		addReason("searing_pain_missing");
+	if (!state.veklorWarlockShadowWardAtMs)
+		addReason("shadow_ward_missing");
+	if (state.petEmperorViolationCount)
+		addReason("pet_emperor_violation");
+	if (state.scriptedHazards.healBrotherAtMs)
+		addReason("heal_brother_seen");
+	if (state.scriptedHazards.arcaneBurstAtMs)
+		addReason("arcane_burst_before_first_teleport");
+	if (!Aq40TwinEncounter::IsPickupEstablished(state, Aq40TwinEncounter::TwinBoss::Veklor))
+		addReason("veklor_pickup_missing");
+	if (!Aq40TwinEncounter::IsPickupEstablished(state, Aq40TwinEncounter::TwinBoss::Veknilash))
+		addReason("veknilash_pickup_missing");
+	if (!IsTwinStableWindowOwnershipValid(state, Aq40TwinEncounter::TwinBoss::Veklor))
+		addReason("veklor_ownership_unstable");
+	if (!IsTwinStableWindowOwnershipValid(state, Aq40TwinEncounter::TwinBoss::Veknilash))
+		addReason("veknilash_ownership_unstable");
+	if (state.recovery.splitBand != Aq40TwinEncounter::TwinSplitBand::Stable)
+		addReason("split_band_not_stable");
+
+	if (reasons.empty())
+		return "ok";
+
+	std::ostringstream out;
+	for (size_t index = 0; index < reasons.size(); ++index)
+	{
+		if (index)
+			out << "+";
+		out << reasons[index];
+	}
+	return out.str();
+}
+
+bool ValidateTwinPreTeleportGate(Aq40TwinEncounter::TwinEncounterState& state, Player* logBot,
+								 Unit* caster, uint32 spellId, uint32 nowMs)
+{
+	std::string const reason = BuildTwinPreTeleportGateFailureReason(state);
+	if (reason == "ok")
+		return true;
+
+	Aq40TwinEncounter::EnterTerminalFailure(state, nowMs);
+
+	std::ostringstream fields;
+	fields << "boss=twin spell=" << spellId
+		   << " source=" << Aq40Helpers::GetAq40LogUnit(caster)
+		   << " reason=" << reason
+		   << " phase=" << Aq40TwinEncounter::ToString(state.phase)
+		   << " mode=" << Aq40TwinEncounter::ToString(state.mode)
+		   << " split_band=" << Aq40TwinEncounter::ToString(state.recovery.splitBand)
+		   << " assigned=" << state.assignments.size()
+		   << " strict_ready=" << state.strictReadyMemberCount
+		   << " opener_searing_pain=" << (state.veklorWarlockSearingPainAtMs ? 1 : 0)
+		   << " opener_shadow_ward=" << (state.veklorWarlockShadowWardAtMs ? 1 : 0)
+		   << " pet_emperor_violation_count=" << state.petEmperorViolationCount
+		   << " heal_brother_seen=" << (state.scriptedHazards.healBrotherAtMs ? 1 : 0)
+		   << " arcane_burst_seen=" << (state.scriptedHazards.arcaneBurstAtMs ? 1 : 0)
+		   << " blizzard_seen=" << (state.scriptedHazards.blizzardAtMs ? 1 : 0);
+	AppendTwinInitialEngagementBossFields(fields, logBot, state, Aq40TwinEncounter::TwinBoss::Veklor, "veklor",
+		nowMs);
+	AppendTwinInitialEngagementBossFields(fields, logBot, state, Aq40TwinEncounter::TwinBoss::Veknilash,
+		"veknilash", nowMs);
+	Aq40Helpers::LogAq40Warn(logBot, "twin_terminal_failure", "twin:pre_teleport_gate:failed",
+		fields.str(), 1000);
+	return false;
+}
 }    // namespace
 
 class Aq40TwinEmperorsListenerScript : public AllSpellScript
@@ -846,7 +1161,13 @@ public:
 
 	void OnSpellCast(Spell* spell, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
 	{
-		if (!spell || !caster || !spellInfo || !Aq40SpellIds::IsTwinEncounterSpell(spellInfo) || !IsTwinRelevantCaster(caster))
+		if (!spell || !caster || !spellInfo)
+			return;
+
+		TryRecordTwinWarlockOpenerSpell(spell, caster, spellInfo);
+		TryRecordTwinPetEmperorViolation(spell, caster, spellInfo);
+
+		if (!Aq40SpellIds::IsTwinEncounterSpell(spellInfo) || !IsTwinRelevantCaster(caster))
 			return;
 
 		std::vector<Player*> twinBots = CollectTwinBots(caster);
@@ -867,8 +1188,13 @@ public:
 		bool const combatArmed =
 			!hasBossCaster || MarkEncounterCombat(state, logBot, caster, spellInfo->Id, nowMs);
 
-		if (hasBossCaster && !combatArmed && state.phase == Aq40TwinEncounter::TwinEncounterPhase::PrePull)
+		if (hasBossCaster && !combatArmed)
+		{
+			RequestInterruptForTwinBots(twinBots, caster);
+			for (Player* twinBot : twinBots)
+				ClearTwinTerminalFailureCombatState(twinBot);
 			return;
+		}
 
 		if (hasBossCaster && combatArmed && spellInfo->Id != Aq40SpellIds::TwinTeleportPrimary &&
 			spellInfo->Id != Aq40SpellIds::TwinTeleportSecondary && spellInfo->Id != Aq40SpellIds::TwinHealBrother)
@@ -885,6 +1211,14 @@ public:
 					return;
 
 				bool const firstTeleport = state.teleportCount == 0;
+				if (firstTeleport && !ValidateTwinPreTeleportGate(state, logBot, caster, spellInfo->Id, nowMs))
+				{
+					RequestInterruptForTwinBots(twinBots, caster);
+					for (Player* twinBot : twinBots)
+						ClearTwinTerminalFailureCombatState(twinBot);
+					return;
+				}
+
 				Aq40TwinEncounter::TwinEncounterState preTeleportState;
 				if (firstTeleport)
 					preTeleportState = state;
@@ -975,6 +1309,34 @@ public:
 					   << " phase_elapsed_ms=" << Aq40TwinEncounter::GetPhaseElapsedMs(state, nowMs)
 					   << " since_last_teleport_ms="
 					   << (state.lastTeleportAtMs ? getMSTimeDiff(state.lastTeleportAtMs, nowMs) : 0u);
+				Unit* veklorUnit = nullptr;
+				Unit* veknilashUnit = nullptr;
+				for (Player* twinBot : twinBots)
+				{
+					PlayerbotAI* twinBotAI = twinBot ? GET_PLAYERBOT_AI(twinBot) : nullptr;
+					if (!twinBotAI || !twinBotAI->GetAiObjectContext())
+						continue;
+
+					GuidVector encounterUnits = Aq40BossHelper::GetEncounterUnits(
+						twinBotAI,
+						twinBotAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get());
+					for (ObjectGuid const guid : encounterUnits)
+					{
+						Unit* unit = twinBotAI->GetUnit(guid);
+						if (IsTwinVeklorTarget(unit))
+							veklorUnit = unit;
+						else if (IsTwinVeknilashTarget(unit))
+							veknilashUnit = unit;
+					}
+					if (veklorUnit && veknilashUnit)
+						break;
+				}
+				fields << " emperor_distance="
+					   << (veklorUnit && veknilashUnit ? veklorUnit->GetDistance2d(veknilashUnit) : 0.0f);
+				AppendTwinInitialEngagementBossFields(
+					fields, logBot, state, Aq40TwinEncounter::TwinBoss::Veklor, "veklor", nowMs);
+				AppendTwinInitialEngagementBossFields(
+					fields, logBot, state, Aq40TwinEncounter::TwinBoss::Veknilash, "veknilash", nowMs);
 				Aq40Helpers::LogAq40Warn(logBot, "twin_terminal_failure", "twin:heal_brother", fields.str(), 1000);
 				return;
 			}
