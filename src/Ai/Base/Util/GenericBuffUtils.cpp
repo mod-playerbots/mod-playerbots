@@ -248,6 +248,9 @@ namespace ai::buff
             placeholders);
 
         Group* group = bot->GetGroup();
+        if (!group)
+            return false;
+
         const bool announced =
             group->isRaidGroup() ? botAI->SayToRaid(message) : botAI->SayToParty(message);
 
