@@ -15,14 +15,6 @@ enum class HellfireRampartsIDs : uint32
 
 // Watchkeeper Gargolmar
 
-class GargolmarTankPositionBossTrigger : public Trigger
-{
-public:
-    GargolmarTankPositionBossTrigger(PlayerbotAI* botAI) : Trigger(botAI, "gargolmar tank position boss") {}
-
-    bool IsActive() override;
-};
-
 class GargolmarHellfireWatchersAreActiveTrigger : public Trigger
 {
 public:

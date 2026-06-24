@@ -11,9 +11,6 @@ public:
     TbcDungeonHellfireRampartsActionContext() : NamedObjectContext<Action>(false, true)
     {
         // Watchkeeper Gargolmar
-        creators["gargolmar tank position boss"] =
-            &TbcDungeonHellfireRampartsActionContext::gargolmar_tank_position_boss;
-
         creators["gargolmar mark hellfire watchers"] =
             &TbcDungeonHellfireRampartsActionContext::gargolmar_mark_hellfire_watchers;
 
@@ -36,9 +33,6 @@ public:
     }
 private:
     // Watchkeeper Gargolmar
-    static Action* gargolmar_tank_position_boss(
-        PlayerbotAI* botAI) { return new GargolmarTankPositionBossAction(botAI); }
-
     static Action* gargolmar_mark_hellfire_watchers(
         PlayerbotAI* botAI) { return new GargolmarMarkHellfireWatchersAction(botAI); }
 

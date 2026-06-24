@@ -5,9 +5,6 @@
 void TbcDungeonHellfireRampartsStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 {
     // Watchkeeper Gargolmar
-    triggers.push_back(new TriggerNode("gargolmar tank position boss", {
-        NextAction("gargolmar tank position boss", ACTION_RAID + 1)}));
-
     triggers.push_back(new TriggerNode("gargolmar hellfire watchers are active", {
         NextAction("gargolmar mark hellfire watchers", ACTION_RAID + 1)}));
 

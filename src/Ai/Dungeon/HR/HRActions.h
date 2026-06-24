@@ -8,14 +8,6 @@
 
 // Watchkeeper Gargolmar
 
-class GargolmarTankPositionBossAction : public AttackAction
-{
-public:
-    GargolmarTankPositionBossAction(
-        PlayerbotAI* botAI, std::string const name = "gargolmar tank position boss") : AttackAction(botAI, name) {}
-    bool Execute(Event event) override;
-};
-
 class GargolmarMarkHellfireWatchersAction : public Action
 {
 public:

@@ -36,9 +36,6 @@ public:
     }
 private:
     // Watchkeeper Gargolmar
-    static Trigger* gargolmar_tank_position_boss(
-        PlayerbotAI* botAI) {return new GargolmarTankPositionBossTrigger(botAI); }
-
     static Trigger* gargolmar_hellfire_watchers_are_active(
         PlayerbotAI* botAI) {return new GargolmarHellfireWatchersAreActiveTrigger(botAI); }
 

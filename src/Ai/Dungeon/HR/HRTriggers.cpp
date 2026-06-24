@@ -6,12 +6,6 @@
 
 // Watchkeeper Gargolmar
 
-bool GargolmarTankPositionBossTrigger::IsActive()
-{
-    return botAI->IsTank(bot) &&
-           AI_VALUE2(Unit*, "find target", "watchkeeper gargolmar");
-}
-
 bool GargolmarHellfireWatchersAreActiveTrigger::IsActive()
 {
     return botAI->IsDps(bot) &&
