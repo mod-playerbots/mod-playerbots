@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_CHATVALUE_H
-#define _PLAYERBOT_CHATVALUE_H
+#ifndef PLAYERBOTS_CHATVALUE_H
+#define PLAYERBOTS_CHATVALUE_H
 
 #include "Value.h"
 

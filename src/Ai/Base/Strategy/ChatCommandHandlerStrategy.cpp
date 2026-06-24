@@ -23,7 +23,7 @@ private:
 // Commands where trigger name =/= action name.
 void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    PassTroughStrategy::InitTriggers(triggers);
+    PassThroughStrategy::InitTriggers(triggers);
 
     // Keep single action triggers on one line, and multi-action triggers on multiple lines.
     triggers.push_back(new TriggerNode("rep", { NextAction("reputation", relevance) }));
@@ -79,7 +79,7 @@ void ChatCommandHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
 }
 
 // Commands where trigger name == action name.
-ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI)
+ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : PassThroughStrategy(botAI)
 {
     actionNodeFactories.Add(new ChatCommandActionNodeFactoryInternal());
 

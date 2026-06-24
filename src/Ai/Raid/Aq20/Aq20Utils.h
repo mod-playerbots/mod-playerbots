@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDAQ20UTILS_H
-#define _PLAYERBOT_RAIDAQ20UTILS_H
+#ifndef PLAYERBOTS_AQ20UTILS_H
+#define PLAYERBOTS_AQ20UTILS_H
 
 #include "GameObject.h"
 #include "Unit.h"

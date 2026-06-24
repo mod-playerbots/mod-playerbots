@@ -1,45 +1,44 @@
-#ifndef RAID_GRUULSLAIRHELPERS_H
-#define RAID_GRUULSLAIRHELPERS_H
+#ifndef PLAYERBOTS_GRUULHELPERS_H
+#define PLAYERBOTS_GRUULHELPERS_H
 
 #include "PlayerbotAI.h"
 
 namespace GruulsLairHelpers
 {
-    enum GruulsLairSpells
-    {
-        // High King Maulgar
-        SPELL_WHIRLWIND     = 33238,
 
-        // Krosh Firehand
-        SPELL_SPELL_SHIELD  = 33054,
+enum class GruulsLairSpells : uint32
+{
+    // High King Maulgar
+    SPELL_WHIRLWIND     = 33238,
 
-        // Hunter
-        SPELL_MISDIRECTION  = 35079,
+    // Krosh Firehand
+    SPELL_SPELL_SHIELD  = 33054,
 
-        // Gruul the Dragonkiller
-        SPELL_GROUND_SLAM_1 = 33525,
-        SPELL_GROUND_SLAM_2 = 39187,
-    };
+    // Hunter
+    SPELL_MISDIRECTION  = 35079,
 
-    enum GruulsLairNPCs
-    {
-        NPC_WILD_FEL_STALKER = 18847,
-    };
+    // Gruul the Dragonkiller
+    SPELL_GROUND_SLAM_1 = 33525,
+    SPELL_GROUND_SLAM_2 = 39187,
+};
 
-    constexpr uint32 GRUULS_LAIR_MAP_ID = 565;
+enum class GruulsLairNpcs : uint32
+{
+    NPC_WILD_FEL_STALKER = 18847,
+};
 
-    bool IsAnyOgreBossAlive(PlayerbotAI* botAI);
-    bool IsKroshMageTank(Player* bot);
-    bool IsKigglerMoonkinTank(Player* bot);
-    bool IsPositionSafe(PlayerbotAI* botAI, Player* bot, Position pos);
-    bool TryGetNewSafePosition(PlayerbotAI* botAI, Player* bot, Position& outPos);
+constexpr uint32 GRUULS_LAIR_MAP_ID = 565;
 
-    extern const Position MAULGAR_TANK_POSITION;
-    extern const Position OLM_TANK_POSITION;
-    extern const Position BLINDEYE_TANK_POSITION;
-    extern const Position KROSH_TANK_POSITION;
-    extern const Position MAULGAR_ROOM_CENTER;
-    extern const Position GRUUL_TANK_POSITION;
+Player* GetKroshMageTank(Player* bot);
+Player* GetKigglerMoonkinTank(Player* bot);
+
+extern const Position MAULGAR_TANK_POSITION;
+extern const Position OLM_TANK_POSITION;
+extern const Position BLINDEYE_TANK_POSITION;
+extern const Position KROSH_TANK_POSITION;
+extern const Position MAULGAR_ROOM_CENTER;
+extern const Position GRUUL_TANK_POSITION;
+
 }
 
 #endif

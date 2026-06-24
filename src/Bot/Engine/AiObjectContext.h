@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_AIOBJECTCONTEXT_H
-#define _PLAYERBOT_AIOBJECTCONTEXT_H
+#ifndef PLAYERBOTS_AIOBJECTCONTEXT_H
+#define PLAYERBOTS_AIOBJECTCONTEXT_H
 
 #include <sstream>
 #include <string>

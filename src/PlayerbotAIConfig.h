@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PLAYERBOTAICONFIG_H
-#define _PLAYERBOT_PLAYERBOTAICONFIG_H
+#ifndef PLAYERBOTS_PLAYERBOTAICONFIG_H
+#define PLAYERBOTS_PLAYERBOTAICONFIG_H
 
 #include <mutex>
 #include <unordered_map>

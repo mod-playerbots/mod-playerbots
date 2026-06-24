@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDMCTRIGGERS_H
-#define _PLAYERBOT_RAIDMCTRIGGERS_H
+#ifndef PLAYERBOTS_MCTRIGGERS_H
+#define PLAYERBOTS_MCTRIGGERS_H
 
 #include "PlayerbotAI.h"
 #include "Playerbots.h"

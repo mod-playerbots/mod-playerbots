@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_BISLISTMGR_H
-#define _PLAYERBOT_BISLISTMGR_H
+#ifndef PLAYERBOTS_BISLISTMGR_H
+#define PLAYERBOTS_BISLISTMGR_H
 
 #include "Define.h"
 

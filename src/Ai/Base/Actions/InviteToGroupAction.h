@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_INVITETOGROUPACTION_H
-#define _PLAYERBOT_INVITETOGROUPACTION_H
+#ifndef PLAYERBOTS_INVITETOGROUPACTION_H
+#define PLAYERBOTS_INVITETOGROUPACTION_H
 
 #include "Action.h"
 #include "Player.h"

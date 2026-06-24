@@ -989,8 +989,8 @@ AiPlayerbot.RandomBotQuestItems = "5175,5176,5177,5178,6948,11000,12382,13704,16
 #
 
 # Randombots automatically learn class quest reward spells on levelup
-# Default: 0 (disabled)
-AiPlayerbot.AutoLearnQuestSpells = 0
+# Default: 1 (enabled)
+AiPlayerbot.AutoLearnQuestSpells = 1
 
 # Randombots automatically learn trainable spells on levelup
 # Default: 1 (enabled)

@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_WAITFORATTACKTRIGGERS_H
-#define _PLAYERBOT_WAITFORATTACKTRIGGERS_H
+#ifndef PLAYERBOTS_WAITFORATTACKTRIGGERS_H
+#define PLAYERBOTS_WAITFORATTACKTRIGGERS_H
 
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"

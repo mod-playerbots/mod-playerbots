@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_VALUECONTEXT_H
-#define _PLAYERBOT_VALUECONTEXT_H
+#ifndef PLAYERBOTS_VALUECONTEXT_H
+#define PLAYERBOTS_VALUECONTEXT_H
 
 #include "ActiveSpellValue.h"
 #include "AggressiveTargetValue.h"

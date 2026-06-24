@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_DRUIDCATACTIONS_H
-#define _PLAYERBOT_DRUIDCATACTIONS_H
+#ifndef PLAYERBOTS_DRUIDCATACTIONS_H
+#define PLAYERBOTS_DRUIDCATACTIONS_H
 
 #include "GenericSpellActions.h"
 #include "ReachTargetActions.h"

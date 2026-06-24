@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PALADINGREATERBLESSINGACTION_H
-#define _PLAYERBOT_PALADINGREATERBLESSINGACTION_H
+#ifndef PLAYERBOTS_PALADINGREATERBLESSINGACTION_H
+#define PLAYERBOTS_PALADINGREATERBLESSINGACTION_H
 
 #include <array>
 #include <string>

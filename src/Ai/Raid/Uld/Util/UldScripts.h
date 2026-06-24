@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDULDUARSCRIPTS_H
-#define _PLAYERBOT_RAIDULDUARSCRIPTS_H
+#ifndef PLAYERBOTS_ULDSCRIPTS_H
+#define PLAYERBOTS_ULDSCRIPTS_H
 
 #include "../../../../src/server/scripts/Northrend/Ulduar/Ulduar/ulduar.h"
 

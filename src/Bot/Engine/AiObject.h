@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_AIOBJECT_H
-#define _PLAYERBOT_AIOBJECT_H
+#ifndef PLAYERBOTS_AIOBJECT_H
+#define PLAYERBOTS_AIOBJECT_H
 
 #include "Common.h"
 #include "PlayerbotAIAware.h"

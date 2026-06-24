@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_TOTEMSSHAMANSTRATEGY_H
-#define _PLAYERBOT_TOTEMSSHAMANSTRATEGY_H
+#ifndef PLAYERBOTS_TOTEMSSHAMANSTRATEGY_H
+#define PLAYERBOTS_TOTEMSSHAMANSTRATEGY_H
 
 #include "GenericShamanStrategy.h"
 #include <vector>

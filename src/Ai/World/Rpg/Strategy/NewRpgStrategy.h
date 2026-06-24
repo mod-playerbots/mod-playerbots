@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_NEWRPGSTRATEGY_H
-#define _PLAYERBOT_NEWRPGSTRATEGY_H
+#ifndef PLAYERBOTS_NEWRPGSTRATEGY_H
+#define PLAYERBOTS_NEWRPGSTRATEGY_H
 
 #include "Strategy.h"
 #include "TravelMgr.h"

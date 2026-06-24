@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_POSITIONVALUE_H
-#define _PLAYERBOT_POSITIONVALUE_H
+#ifndef PLAYERBOTS_POSITIONVALUE_H
+#define PLAYERBOTS_POSITIONVALUE_H
 
 #include "NamedObjectContext.h"
 #include "TravelMgr.h"

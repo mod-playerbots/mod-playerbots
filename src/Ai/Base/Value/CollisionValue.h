@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_COLLISIONVALUE_H
-#define _PLAYERBOT_COLLISIONVALUE_H
+#ifndef PLAYERBOTS_COLLISIONVALUE_H
+#define PLAYERBOTS_COLLISIONVALUE_H
 
 #include "NamedObjectContext.h"
 #include "Value.h"

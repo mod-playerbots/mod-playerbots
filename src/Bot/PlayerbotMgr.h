@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PLAYERBOTMGR_H
-#define _PLAYERBOT_PLAYERBOTMGR_H
+#ifndef PLAYERBOTS_PLAYERBOTMGR_H
+#define PLAYERBOTS_PLAYERBOTMGR_H
 
 #include "ObjectGuid.h"
 #include "Player.h"

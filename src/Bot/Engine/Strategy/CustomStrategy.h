@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_CUSTOMSTRATEGY_H
-#define _PLAYERBOT_CUSTOMSTRATEGY_H
+#ifndef PLAYERBOTS_CUSTOMSTRATEGY_H
+#define PLAYERBOTS_CUSTOMSTRATEGY_H
 
 #include <map>
 

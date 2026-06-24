@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_CHATACTIONCONTEXTACTION_H
-#define _PLAYERBOT_CHATACTIONCONTEXTACTION_H
+#ifndef PLAYERBOTS_CHATACTIONCONTEXT_H
+#define PLAYERBOTS_CHATACTIONCONTEXT_H
 
 #include "AddLootAction.h"
 #include "AttackAction.h"

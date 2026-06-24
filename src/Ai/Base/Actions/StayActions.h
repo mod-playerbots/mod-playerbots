@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_STAYACTIONS_H
-#define _PLAYERBOT_STAYACTIONS_H
+#ifndef PLAYERBOTS_STAYACTIONS_H
+#define PLAYERBOTS_STAYACTIONS_H
 
 #include "MovementActions.h"
 

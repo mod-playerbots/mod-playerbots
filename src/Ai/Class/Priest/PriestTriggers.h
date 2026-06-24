@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PRIESTTRIGGERS_H
-#define _PLAYERBOT_PRIESTTRIGGERS_H
+#ifndef PLAYERBOTS_PRIESTTRIGGERS_H
+#define PLAYERBOTS_PRIESTTRIGGERS_H
 
 #include "CureTriggers.h"
 #include "SharedDefines.h"

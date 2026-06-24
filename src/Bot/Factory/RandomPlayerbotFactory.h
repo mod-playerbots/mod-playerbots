@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_RANDOMPLAYERBOTFACTORY_H
-#define _PLAYERBOT_RANDOMPLAYERBOTFACTORY_H
+#ifndef PLAYERBOTS_RANDOMPLAYERBOTFACTORY_H
+#define PLAYERBOTS_RANDOMPLAYERBOTFACTORY_H
 
 #include <map>
 #include <unordered_map>

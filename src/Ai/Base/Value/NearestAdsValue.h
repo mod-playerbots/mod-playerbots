@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_NEARESTADSVALUE_H
-#define _PLAYERBOT_NEARESTADSVALUE_H
+#ifndef PLAYERBOTS_NEARESTADSVALUE_H
+#define PLAYERBOTS_NEARESTADSVALUE_H
 
 #include "PlayerbotAIConfig.h"
 #include "PossibleTargetsValue.h"
