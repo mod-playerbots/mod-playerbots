@@ -24,9 +24,10 @@ namespace Aq40TwinEncounter
 namespace
 {
 float constexpr kPi = 3.14159265358979323846f;
-float constexpr kRoomCenterX = -8954.043f;
-float constexpr kRoomCenterY = 1236.379f;
-float constexpr kRoomCenterZ = -112.619f;
+float constexpr kRoomCenterX = -8954.31f;
+float constexpr kRoomCenterY = 1234.9718f;
+float constexpr kRoomCenterZ = -112.620445f;
+float constexpr kRoomCenterFacing = 4.8173985f;
 float constexpr kBossParkSide0X = -9027.082f;
 float constexpr kBossParkSide0Y = 1260.673f;
 float constexpr kBossParkSide0Z = -112.295f;
@@ -340,6 +341,15 @@ bool IsNearTwinRoom(Player const* bot, float radius)
     return const_cast<Player*>(bot)->GetExactDist2d(center.GetPositionX(), center.GetPositionY()) <= radius;
 }
 
+bool IsTwinBotControlled(Player* member)
+{
+    if (!member)
+        return false;
+
+    PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+    return memberAI && !memberAI->IsRealPlayer();
+}
+
 bool IsNearTwinApproach(Player const* bot)
 {
     return IsNearTwinRoom(bot, kTwinRoomApproachRadius);
@@ -430,6 +440,9 @@ bool IsTwinMeleeTankCandidate(Player* member, Group const* group)
 {
     if (!member)
         return false;
+
+    if (HasTwinGroupMainTankFlag(member, group))
+        return true;
 
     if (PlayerbotAI::IsTank(member))
         return true;
@@ -876,7 +889,7 @@ TwinAssignmentBuildResult BuildTwinAssignments(Player* bot, std::vector<Player*>
     buildResult.approachWarlockCount = approachWarlockCandidates.size();
     for (Player* member : sameInstanceMembers)
     {
-        if (member && member->getClass() == CLASS_WARLOCK)
+        if (IsTwinBotControlled(member) && member->getClass() == CLASS_WARLOCK)
             warlockCandidates.push_back(member);
     }
 
@@ -1315,7 +1328,7 @@ TwinEncounterGeometry BuildGeometry()
     Position const sidePrepSide0 = MakePosition(kSidePrepSide0X, kSidePrepSide0Y, kSidePrepSide0Z);
     Position const sidePrepSide1 = MakePosition(kSidePrepSide1X, kSidePrepSide1Y, kSidePrepSide1Z);
 
-    geometry.roomCenter = MakeAnchor(kRoomCenterX, kRoomCenterY, kRoomCenterZ);
+    geometry.roomCenter = MakeAnchor(kRoomCenterX, kRoomCenterY, kRoomCenterZ, 0.0f, kRoomCenterFacing);
 
     geometry.bossPark[kInitialVeknilashSideIndex] =
         MakeAnchor(kBossParkSide0X, kBossParkSide0Y, kBossParkSide0Z, 0.0f,
@@ -1707,10 +1720,12 @@ bool ApplyTwinPetPassiveControl(Player* bot, char const* reason)
         controlState.forcedPassive = false;
         controlState.previousReactStateCaptured = false;
         controlState.previousReactState = static_cast<uint8>(pet->GetReactState());
+        controlState.lastPassiveControlLogAtMs = 0;
         controlState.disabledAutocastSpellIds.clear();
     }
 
     bool changed = false;
+    bool policyStateChanged = !controlState.forcedPassive;
     for (PetSpellMap::const_iterator itr = pet->m_spells.begin(); itr != pet->m_spells.end(); ++itr)
     {
         if (itr->second.state == PETSPELL_REMOVED)
@@ -1731,6 +1746,7 @@ bool ApplyTwinPetPassiveControl(Player* bot, char const* reason)
             controlState.disabledAutocastSpellIds.push_back(spellId);
         }
         changed = true;
+        policyStateChanged = true;
     }
 
     if (!controlState.previousReactStateCaptured)
@@ -1750,6 +1766,7 @@ bool ApplyTwinPetPassiveControl(Player* bot, char const* reason)
             charmInfo->SetPlayerReactState(REACT_PASSIVE);
         needsFollow = true;
         changed = true;
+        policyStateChanged = true;
     }
 
     controlState.forcedPassive = true;
@@ -1759,8 +1776,13 @@ bool ApplyTwinPetPassiveControl(Player* bot, char const* reason)
         changed = true;
     }
 
-    if (changed)
+    uint32 const nowMs = getMSTime();
+    bool const shouldLog = changed && policyStateChanged &&
+                           (!controlState.lastPassiveControlLogAtMs ||
+                            getMSTimeDiff(controlState.lastPassiveControlLogAtMs, nowMs) >= 1000);
+    if (shouldLog)
     {
+        controlState.lastPassiveControlLogAtMs = nowMs;
         Aq40Helpers::LogAq40Info(bot, "twin_pet", "twin:pet:passive_failsafe",
             std::string("boss=twin reason=") + (reason ? reason : "failsafe") +
                 " pet=" + Aq40Helpers::GetAq40LogUnit(pet),

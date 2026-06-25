@@ -169,6 +169,7 @@ struct TwinPetControlState
     bool forcedPassive = false;
     bool previousReactStateCaptured = false;
     uint8 previousReactState = 0;
+    uint32 lastPassiveControlLogAtMs = 0;
     std::vector<uint32> disabledAutocastSpellIds;
 };
 
