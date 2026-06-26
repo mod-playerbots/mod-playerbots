@@ -707,6 +707,43 @@ std::string BuildTwinActivationFailureReason(Aq40TwinEncounter::TwinEncounterSta
 	return out.str();
 }
 
+std::string BuildTwinRequiredAssignmentFailureReason(Aq40TwinEncounter::TwinEncounterState const& state)
+{
+	std::vector<std::string> reasons;
+	auto const addReason = [&reasons](char const* reason)
+	{
+		reasons.push_back(reason);
+	};
+
+	if (!Aq40TwinEncounter::HasDeterministicAssignments(state))
+		addReason("no_deterministic_assignments");
+
+	Aq40TwinEncounter::TwinStableOwnership const& veklorOwnership =
+		Aq40TwinEncounter::GetOwnership(state, Aq40TwinEncounter::TwinBoss::Veklor);
+	Aq40TwinEncounter::TwinStableOwnership const& veknilashOwnership =
+		Aq40TwinEncounter::GetOwnership(state, Aq40TwinEncounter::TwinBoss::Veknilash);
+	if (!IsTwinExpectedOwnerValid(state, Aq40TwinEncounter::TwinBoss::Veklor, veklorOwnership.expectedOwner))
+		addReason("veklor_expected_owner_invalid");
+	if (!IsTwinExpectedOwnerValid(state, Aq40TwinEncounter::TwinBoss::Veknilash, veknilashOwnership.expectedOwner))
+		addReason("veknilash_expected_owner_invalid");
+	if (!IsTwinExpectedOwnerValid(state, Aq40TwinEncounter::TwinBoss::Veklor, veklorOwnership.reserveOwner))
+		addReason("veklor_reserve_owner_invalid");
+	if (!IsTwinExpectedOwnerValid(state, Aq40TwinEncounter::TwinBoss::Veknilash, veknilashOwnership.reserveOwner))
+		addReason("veknilash_reserve_owner_invalid");
+
+	if (reasons.empty())
+		return "ok";
+
+	std::ostringstream out;
+	for (size_t index = 0; index < reasons.size(); ++index)
+	{
+		if (index)
+			out << "+";
+		out << reasons[index];
+	}
+	return out.str();
+}
+
 void LogTwinActivationGate(Player* logBot, Aq40TwinEncounter::TwinEncounterState const& state,
 						   Unit* caster, uint32 spellId, uint32 nowMs, char const* result,
 						   std::string const& reason)
@@ -735,7 +772,16 @@ void LogTwinActivationGate(Player* logBot, Aq40TwinEncounter::TwinEncounterState
 		"veknilash", nowMs);
 
 	if (std::string(result) == "ok")
-		Aq40Helpers::LogAq40Info(logBot, "twin_validation", "twin:activation_gate:ok", fields.str(), 1000);
+	{
+		if (reason.find("manual_pull_activation") != std::string::npos)
+			Aq40Helpers::LogAq40Info(logBot, "twin_validation",
+				"twin:activation_gate:manual_pull_activation", fields.str(), 1000);
+		else if (reason.find("degraded_activation") != std::string::npos)
+			Aq40Helpers::LogAq40Warn(logBot, "twin_validation",
+				"twin:activation_gate:degraded_activation", fields.str(), 1000);
+		else
+			Aq40Helpers::LogAq40Info(logBot, "twin_validation", "twin:activation_gate:ok", fields.str(), 1000);
+	}
 	else
 		Aq40Helpers::LogAq40Warn(logBot, "twin_terminal_failure", "twin:activation_gate:failed",
 			fields.str(), 1000);
@@ -762,36 +808,38 @@ bool MarkEncounterCombat(Aq40TwinEncounter::TwinEncounterState& state, Player* l
 	}
 
 	bool const hasDeterministicAssignments = Aq40TwinEncounter::HasDeterministicAssignments(state);
-	if (state.mode == Aq40TwinEncounter::TwinStrategyMode::StandardCompReady && hasDeterministicAssignments)
+	if (spellId == Aq40SpellIds::TwinHealBrother)
 	{
-		std::string const activationReason = BuildTwinActivationFailureReason(state, logBot);
-		if (activationReason != "ok")
-		{
-			state.firstEmperorCombatAtMs = state.firstEmperorCombatAtMs ? state.firstEmperorCombatAtMs : nowMs;
-			Aq40TwinEncounter::EnterTerminalFailure(state, nowMs);
-			LogTwinActivationGate(logBot, state, caster, spellId, nowMs, "failed", activationReason);
-			return false;
-		}
-
 		state.firstEmperorCombatAtMs = state.firstEmperorCombatAtMs ? state.firstEmperorCombatAtMs : nowMs;
-		Aq40TwinEncounter::SetMode(state, Aq40TwinEncounter::TwinStrategyMode::Combat, nowMs);
-		Aq40TwinEncounter::EnterDualPullWindow(state, nowMs);
-		LogTwinActivationGate(logBot, state, caster, spellId, nowMs, "ok", "strict_ready");
-		return true;
+		Aq40TwinEncounter::EnterTerminalFailure(state, nowMs);
+		LogTwinActivationGate(logBot, state, caster, spellId, nowMs, "failed", "heal_brother");
+		return false;
 	}
 
-	std::string missingCriticalRoles;
-	if (hasDeterministicAssignments)
-		Aq40TwinEncounter::IsTwinCenterCommitQuorumMet(logBot, state, nullptr, &missingCriticalRoles);
+	std::string const requiredAssignmentFailure = BuildTwinRequiredAssignmentFailureReason(state);
+	if (!hasDeterministicAssignments || requiredAssignmentFailure != "ok")
+	{
+		state.firstEmperorCombatAtMs = state.firstEmperorCombatAtMs ? state.firstEmperorCombatAtMs : nowMs;
+		Aq40TwinEncounter::EnterTerminalFailure(state, nowMs);
+		LogTwinActivationGate(logBot, state, caster, spellId, nowMs, "failed",
+			requiredAssignmentFailure == "ok" ? "no_deterministic_assignments" : requiredAssignmentFailure);
+		return false;
+	}
 
 	state.firstEmperorCombatAtMs = state.firstEmperorCombatAtMs ? state.firstEmperorCombatAtMs : nowMs;
-	Aq40TwinEncounter::EnterTerminalFailure(state, nowMs);
-	std::string const reason = hasDeterministicAssignments
-		? (missingCriticalRoles.empty() ? "strict_ready_missing" : "missing_critical_roles")
-		: "no_deterministic_assignments";
-	LogTwinActivationGate(logBot, state, caster, spellId, nowMs, "failed", reason);
+	bool const wasStrictReady = state.mode == Aq40TwinEncounter::TwinStrategyMode::StandardCompReady;
+	std::string const activationReason = BuildTwinActivationFailureReason(state, logBot);
+	Aq40TwinEncounter::SetMode(state, Aq40TwinEncounter::TwinStrategyMode::Combat, nowMs);
+	Aq40TwinEncounter::EnterDualPullWindow(state, nowMs);
 
-	return false;
+	if (activationReason == "ok")
+		LogTwinActivationGate(logBot, state, caster, spellId, nowMs, "ok", "strict_ready");
+	else
+		LogTwinActivationGate(logBot, state, caster, spellId, nowMs, "ok",
+			std::string(wasStrictReady ? "degraded_activation+" : "manual_pull_activation+degraded_activation+") +
+				activationReason);
+
+	return true;
 }
 
 void MaybeLockPickupAnchor(Aq40TwinEncounter::TwinEncounterState const& state, Player* owner,

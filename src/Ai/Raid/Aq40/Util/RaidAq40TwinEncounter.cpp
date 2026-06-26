@@ -350,6 +350,15 @@ bool IsTwinBotControlled(Player* member)
     return memberAI && !memberAI->IsRealPlayer();
 }
 
+bool IsTwinHumanControlled(Player* member)
+{
+    if (!member)
+        return false;
+
+    PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+    return !memberAI || memberAI->IsRealPlayer();
+}
+
 bool IsNearTwinApproach(Player const* bot)
 {
     return IsNearTwinRoom(bot, kTwinRoomApproachRadius);
@@ -436,6 +445,25 @@ bool IsTwinMarkedDruidTankFallback(Player* member, Group const* group)
     return HasTwinGroupMainTankFlag(member, group) || group->IsAssistant(member->GetGUID());
 }
 
+bool IsTwinTankCapableClass(Player* member)
+{
+    if (!member)
+        return false;
+
+    switch (member->getClass())
+    {
+        case CLASS_DEATH_KNIGHT:
+        case CLASS_DRUID:
+        case CLASS_PALADIN:
+        case CLASS_WARRIOR:
+            return true;
+        default:
+            break;
+    }
+
+    return false;
+}
+
 bool IsTwinMeleeTankCandidate(Player* member, Group const* group)
 {
     if (!member)
@@ -450,7 +478,41 @@ bool IsTwinMeleeTankCandidate(Player* member, Group const* group)
     if (PlayerbotAI::IsTank(member, true))
         return true;
 
-    return IsTwinMarkedDruidTankFallback(member, group);
+    if (IsTwinMarkedDruidTankFallback(member, group))
+        return true;
+
+    // Human main tanks are often driven by the player rather than bot role
+    // strategies. If they are explicitly promoted/assisting and on a tank-capable
+    // class, keep them eligible for the Vek'nilash melee-tank package.
+    return IsTwinHumanControlled(member) && IsTwinTankCapableClass(member) &&
+           group && (group->IsLeader(member->GetGUID()) || group->IsAssistant(member->GetGUID()));
+}
+
+uint32 GetMeleeTankAssignmentPriority(Player* member, Group const* group, Player* referenceBot)
+{
+    if (!member)
+        return 99u;
+
+    if (HasTwinGroupMainTankFlag(member, group))
+        return 0u;
+    if (IsTwinHumanControlled(member) && IsTwinTankCapableClass(member))
+        return 1u;
+    if (Aq40BossHelper::IsEncounterPrimaryTank(referenceBot, member))
+        return 2u;
+    if (PlayerbotAI::IsMainTank(member))
+        return 3u;
+    if (PlayerbotAI::IsAssistTankOfIndex(member, 0, true))
+        return 4u;
+    if (PlayerbotAI::IsAssistTankOfIndex(member, 1, true))
+        return 5u;
+    if (group && group->IsAssistant(member->GetGUID()))
+        return 6u;
+    if (PlayerbotAI::IsTank(member))
+        return 7u;
+    if (PlayerbotAI::IsTank(member, true))
+        return 8u;
+
+    return 10u;
 }
 
 template <typename PriorityFn>
@@ -818,7 +880,8 @@ void LogTwinMemberScan(Player* logBot, size_t approachCount, size_t stagedCount)
 }
 
 TwinAssignmentBuildResult BuildTwinAssignments(Player* bot, std::vector<Player*> const& approachMembers,
-                                               std::vector<Player*> const& stagedMembers)
+                                               std::vector<Player*> const& stagedMembers,
+                                               bool allowMembersInCombat = false)
 {
     TwinAssignmentBuildResult buildResult;
     PlayerbotAI* referenceAI = GET_PLAYERBOT_AI(bot);
@@ -831,7 +894,7 @@ TwinAssignmentBuildResult BuildTwinAssignments(Player* bot, std::vector<Player*>
 
     buildResult.approachCount = approachMembers.size();
     buildResult.stagedCount = stagedMembers.size();
-    if (approachMembers.empty() || AnyTwinMemberInCombat(approachMembers))
+    if (approachMembers.empty() || (!allowMembersInCombat && AnyTwinMemberInCombat(approachMembers)))
         return buildResult;
 
     std::vector<Player*> const sameInstanceMembers = Aq40BossHelper::GetSameInstanceGroupMembers(bot);
@@ -912,7 +975,7 @@ TwinAssignmentBuildResult BuildTwinAssignments(Player* bot, std::vector<Player*>
     });
     SortMembersByPriority(meleeTankCandidates, [&](Player* member)
     {
-        return GetTankAssignmentPriority(member, group);
+        return GetMeleeTankAssignmentPriority(member, group, bot);
     });
     SortMembersByGuid(healerCandidates);
     SortMembersByGuid(hunterCandidates);
@@ -1035,6 +1098,132 @@ TwinAssignmentBuildResult BuildTwinAssignments(Player* bot, std::vector<Player*>
     return buildResult;
 }
 
+bool IsTwinCriticalAssignment(TwinRoleAssignment const& assignment)
+{
+    return assignment.cohort == TwinRoleCohort::WarlockTank ||
+           assignment.cohort == TwinRoleCohort::MeleeTank ||
+           assignment.cohort == TwinRoleCohort::SideHealer;
+}
+
+void LogTwinCriticalAssignmentDump(Player* logBot, TwinEncounterState const& state,
+                                   std::vector<Player*> const& approachMembers,
+                                   std::vector<Player*> const& stagedMembers,
+                                   char const* reason)
+{
+    if (!logBot)
+        return;
+
+    Group const* group = logBot->GetGroup();
+    Position const& roomCenter = GetGeometry().roomCenter.position;
+    for (TwinRoleAssignment const& assignment : state.assignments)
+    {
+        if (!IsTwinCriticalAssignment(assignment))
+            continue;
+
+        Player* member = FindTwinStagedMember(approachMembers, assignment.memberGuid);
+        bool const staged = FindTwinStagedMember(stagedMembers, assignment.memberGuid) != nullptr;
+
+        std::ostringstream fields;
+        fields << "boss=twin state=assignment_dump"
+               << " reason=" << (reason ? reason : "unknown")
+               << " member=" << Aq40Helpers::GetAq40LogUnit(member)
+               << " human_controlled=" << (IsTwinHumanControlled(member) ? 1 : 0)
+               << " bot_controlled=" << (IsTwinBotControlled(member) ? 1 : 0)
+               << " class=" << (member ? static_cast<uint32>(member->getClass()) : 0u)
+               << " tank_priority=" << GetMeleeTankAssignmentPriority(member, group, logBot)
+               << " group_main_tank=" << (HasTwinGroupMainTankFlag(member, group) ? 1 : 0)
+               << " encounter_primary_tank=" << (Aq40BossHelper::IsEncounterPrimaryTank(logBot, member) ? 1 : 0)
+               << " in_combat=" << (member && member->IsInCombat() ? 1 : 0)
+               << " approach=" << (member ? 1 : 0)
+               << " staged_member=" << (staged ? 1 : 0)
+               << " center_distance="
+               << (member ? member->GetExactDist2d(roomCenter.GetPositionX(), roomCenter.GetPositionY()) : 0.0f)
+               << " cohort=" << ToString(assignment.cohort)
+               << " side=" << ToString(assignment.stableSide)
+               << " slot=" << static_cast<uint32>(assignment.slotIndex)
+               << " phase=" << ToString(state.phase)
+               << " mode=" << ToString(state.mode)
+               << " assigned=" << state.assignments.size();
+        Aq40Helpers::LogAq40Info(logBot, "twin_assignments",
+            "twin:assignment:critical:" + std::string(ToString(assignment.cohort)) + ":" +
+                ToString(assignment.stableSide) + ":" + std::to_string(assignment.slotIndex),
+            fields.str(), 1000);
+    }
+}
+
+void SeedTwinManualPullOpeningOwners(TwinEncounterState& state, uint32 nowMs)
+{
+    for (TwinBoss boss : { TwinBoss::Veklor, TwinBoss::Veknilash })
+    {
+        ObjectGuid const expectedOwner = GetOwnership(state, boss).expectedOwner;
+        if (expectedOwner.IsEmpty())
+            continue;
+
+        SetCandidateOwner(state, boss, expectedOwner);
+        ConfirmOwner(state, boss, expectedOwner, nowMs);
+    }
+}
+
+void ApplyTwinManualPullPetFailsafe(std::vector<Player*> const& approachMembers, char const* reason)
+{
+    for (Player* member : approachMembers)
+    {
+        if (!IsTwinBotControlled(member))
+            continue;
+
+        ApplyTwinPetPassiveControl(member, reason ? reason : "manual_pull_activation");
+    }
+}
+
+void ActivateTwinManualPull(Player* logBot, TwinEncounterState& state,
+                            std::vector<Player*> const& approachMembers,
+                            std::vector<Player*> const& stagedMembers,
+                            char const* reason, bool rebuiltAssignments,
+                            bool wasReady, std::string const& missingCriticalRoles,
+                            uint32 nowMs)
+{
+    state.firstEmperorCombatAtMs = state.firstEmperorCombatAtMs ? state.firstEmperorCombatAtMs : nowMs;
+    SeedTwinManualPullOpeningOwners(state, nowMs);
+    SetMode(state, TwinStrategyMode::Combat, nowMs);
+    EnterDualPullWindow(state, nowMs);
+    ApplyTwinManualPullPetFailsafe(approachMembers, reason);
+
+    if (!logBot)
+        return;
+
+    Player* veklorOpener = FindTwinStagedMember(
+        approachMembers, GetOwnership(state, TwinBoss::Veklor).expectedOwner);
+    Player* veknilashOpener = FindTwinStagedMember(
+        approachMembers, GetOwnership(state, TwinBoss::Veknilash).expectedOwner);
+
+    std::ostringstream fields;
+    fields << "boss=twin state=manual_pull_activation"
+           << " reason=" << (reason ? reason : "assigned_member_in_combat")
+           << " phase=" << ToString(state.phase)
+           << " mode=" << ToString(state.mode)
+           << " assignments=" << state.assignments.size()
+           << " rebuilt_assignments=" << (rebuiltAssignments ? 1 : 0)
+           << " approach=" << state.approachMemberCount
+           << " staged=" << state.stagedMemberCount
+           << " center_committed=" << state.centerCommittedMemberCount
+           << " strict_ready=" << state.strictReadyMemberCount
+           << " manual_pull_activation=1"
+           << " degraded_activation=" << (wasReady ? 0 : 1)
+           << " warlock_pool=full_instance"
+           << " eligible_warlocks=" << static_cast<uint32>(state.eligibleWarlockCount)
+           << " approach_warlocks=" << static_cast<uint32>(state.approachWarlockCount)
+           << " missing_critical_roles="
+           << (missingCriticalRoles.empty() ? "none" : missingCriticalRoles)
+           << " veklor_opener=" << Aq40Helpers::GetAq40LogUnit(veklorOpener)
+           << " veklor_opener_human=" << (IsTwinHumanControlled(veklorOpener) ? 1 : 0)
+           << " veknilash_opener=" << Aq40Helpers::GetAq40LogUnit(veknilashOpener)
+           << " veknilash_opener_human=" << (IsTwinHumanControlled(veknilashOpener) ? 1 : 0);
+    Aq40Helpers::LogAq40Warn(logBot, "twin_validation",
+                             "twin:activation_gate:manual_pull_activation",
+                             fields.str(), 1000);
+    LogTwinCriticalAssignmentDump(logBot, state, approachMembers, stagedMembers, "manual_pull_activation");
+}
+
 void RefreshPrePullAssignments(Player* bot, TwinEncounterState& state)
 {
     if (!bot || state.phase != TwinEncounterPhase::PrePull)
@@ -1057,6 +1246,7 @@ void RefreshPrePullAssignments(Player* bot, TwinEncounterState& state)
 
     bool const wasReady = IsReadyPrePullState(state);
     bool const wasCenterCommitted = IsTwinCenterCommitted(state);
+    bool const approachMemberInCombat = AnyTwinMemberInCombat(approachMembers);
     size_t preservedCommittedCount = 0u;
     std::string preservedMissingCriticalRoles;
     bool const preserveSeededCombatState =
@@ -1075,40 +1265,15 @@ void RefreshPrePullAssignments(Player* bot, TwinEncounterState& state)
             SetMode(state, TwinStrategyMode::CenterCommitted, now);
         }
 
-        state.firstEmperorCombatAtMs = state.firstEmperorCombatAtMs ? state.firstEmperorCombatAtMs : now;
-        SetMode(state, TwinStrategyMode::Combat, now);
-        EnterDualPullWindow(state, now);
-
-        if (logBot)
-        {
-            std::ostringstream fields;
-            fields << "boss=twin state=manual_pull_activation reason=assigned_member_in_combat"
-                   << " phase=" << ToString(state.phase)
-                   << " mode=" << ToString(state.mode)
-                   << " assignments=" << state.assignments.size()
-                   << " approach=" << state.approachMemberCount
-                   << " staged=" << state.stagedMemberCount
-                   << " center_committed=" << state.centerCommittedMemberCount
-                   << " strict_ready=" << state.strictReadyMemberCount
-                   << " manual_pull_activation=1"
-                   << " degraded_activation=" << (wasReady ? 0 : 1)
-                   << " warlock_pool=full_instance"
-                   << " eligible_warlocks=" << static_cast<uint32>(state.eligibleWarlockCount)
-                   << " approach_warlocks=" << static_cast<uint32>(state.approachWarlockCount)
-                   << " missing_critical_roles="
-                   << (preservedMissingCriticalRoles.empty() ? "none" : preservedMissingCriticalRoles);
-            Aq40Helpers::LogAq40Warn(logBot, "twin_validation",
-                                     "twin:activation_gate:manual_pull_activation",
-                                     fields.str(), 1000);
-        }
-
+        ActivateTwinManualPull(logBot, state, approachMembers, stagedMembers,
+            "assigned_member_in_combat", false, wasReady, preservedMissingCriticalRoles, now);
         return;
     }
 
-    if (approachMembers.empty() || AnyTwinMemberInCombat(approachMembers))
+    if (approachMembers.empty())
     {
         bool const hadTrackedState = wasReady || !state.assignments.empty() || !state.unsupportedReason.empty();
-        std::string const clearReason = approachMembers.empty() ? "no_approach_members" : "approach_member_in_combat";
+        std::string const clearReason = "no_approach_members";
         ClearPrePullAssignments(state, now, true);
 
         if ((countsChanged || hadTrackedState) && logBot)
@@ -1121,6 +1286,90 @@ void RefreshPrePullAssignments(Player* bot, TwinEncounterState& state)
                                      fields.str(), 1000);
         }
 
+        return;
+    }
+
+    if (approachMemberInCombat)
+    {
+        TwinAssignmentBuildResult const buildResult =
+            BuildTwinAssignments(bot, approachMembers, stagedMembers, true);
+
+        bool const assignmentsChanged = !AreAssignmentsEqual(state.assignments, buildResult.assignments);
+        bool const reasonChanged = state.unsupportedReason != buildResult.unsupportedReason;
+        if (!buildResult.unsupportedReason.empty() || buildResult.assignments.empty())
+        {
+            bool const hadTrackedState = wasReady || !state.assignments.empty() || !state.unsupportedReason.empty();
+            ClearPrePullAssignments(state, now, false);
+            state.unsupportedReason = buildResult.unsupportedReason.empty()
+                ? "manual_pull_assignments_unavailable"
+                : buildResult.unsupportedReason;
+            state.eligibleWarlockCount = static_cast<uint8>(
+                std::min(buildResult.eligibleWarlockCount, static_cast<size_t>(255u)));
+            state.approachWarlockCount = static_cast<uint8>(
+                std::min(buildResult.approachWarlockCount, static_cast<size_t>(255u)));
+
+            if ((assignmentsChanged || reasonChanged || countsChanged || hadTrackedState) && logBot)
+            {
+                std::ostringstream fields;
+                fields << "boss=twin state=unsupported reason=" << state.unsupportedReason
+                       << " activation=manual_pull_blocked"
+                       << " approach=" << buildResult.approachCount
+                       << " staged=" << buildResult.stagedCount
+                       << " warlock_pool=full_instance"
+                       << " eligible_warlocks=" << buildResult.eligibleWarlockCount
+                       << " approach_warlocks=" << buildResult.approachWarlockCount;
+                Aq40Helpers::LogAq40Warn(logBot, "twin_prepull",
+                    "twin:unsupported:manual_pull:" + state.unsupportedReason, fields.str(), 1000);
+            }
+
+            ApplyTwinManualPullPetFailsafe(approachMembers, "manual_pull_blocked");
+            return;
+        }
+
+        TwinCenterCommitEvaluation const centerCommitEvaluation =
+            EvaluateTwinCenterCommitStatus(stagedMembers, buildResult.assignments);
+        bool const manualPullReadyToActivate = wasReady || wasCenterCommitted || centerCommitEvaluation.committed;
+        if (!manualPullReadyToActivate)
+        {
+            if ((assignmentsChanged || reasonChanged || countsChanged) && logBot)
+            {
+                std::ostringstream fields;
+                fields << "boss=twin state=manual_pull_pending"
+                       << " reason=center_commit_missing"
+                       << " approach=" << buildResult.approachCount
+                       << " staged=" << buildResult.stagedCount
+                       << " center_committed=" << centerCommitEvaluation.committedCount
+                       << " quorum_required=" << centerCommitEvaluation.quorumRequired
+                       << " assigned=" << buildResult.assignments.size()
+                       << " missing_critical_roles=" << centerCommitEvaluation.missingCriticalRoles
+                       << " warlock_pool=full_instance"
+                       << " eligible_warlocks=" << buildResult.eligibleWarlockCount
+                       << " approach_warlocks=" << buildResult.approachWarlockCount;
+                Aq40Helpers::LogAq40Warn(logBot, "twin_prepull",
+                    "twin:manual_pull:wait_center_commit", fields.str(), 1000);
+            }
+
+            ApplyTwinManualPullPetFailsafe(approachMembers, "manual_pull_pending");
+            return;
+        }
+
+        if (assignmentsChanged)
+        {
+            state.assignments = buildResult.assignments;
+            ++state.assignmentsVersion;
+        }
+        state.unsupportedReason.clear();
+        state.centerCommittedMemberCount = static_cast<uint16>(centerCommitEvaluation.committedCount);
+        state.strictReadyMemberCount = 0;
+        state.eligibleWarlockCount = static_cast<uint8>(
+            std::min(buildResult.eligibleWarlockCount, static_cast<size_t>(255u)));
+        state.approachWarlockCount = static_cast<uint8>(
+            std::min(buildResult.approachWarlockCount, static_cast<size_t>(255u)));
+        ConfigurePrePullOwnership(state, buildResult);
+        ActivateTwinManualPull(logBot, state, approachMembers, stagedMembers,
+            assignmentsChanged ? "approach_member_in_combat_rebuilt_assignments"
+                               : "approach_member_in_combat",
+            assignmentsChanged, wasReady, centerCommitEvaluation.missingCriticalRoles, now);
         return;
     }
 
@@ -1175,6 +1424,8 @@ void RefreshPrePullAssignments(Player* bot, TwinEncounterState& state)
     if (!keepStrictReady)
         state.strictReadyMemberCount = 0;
     ConfigurePrePullOwnership(state, buildResult);
+    if (assignmentsChanged)
+        LogTwinCriticalAssignmentDump(logBot, state, approachMembers, stagedMembers, "assignments_changed");
     SetPhase(state, TwinEncounterPhase::PrePull, now);
     if (centerCommitted)
     {
