@@ -669,6 +669,13 @@ bool IsTwinExpectedOwnerValid(Aq40TwinEncounter::TwinEncounterState const& state
 	return assignment->cohort == expectedCohort;
 }
 
+bool IsTwinOwnershipSignalSpell(uint32 spellId)
+{
+	return spellId == Aq40SpellIds::TwinShadowBolt ||
+		   spellId == Aq40SpellIds::TwinUppercut ||
+		   spellId == Aq40SpellIds::TwinUnbalancingStrike;
+}
+
 bool IsTwinStableWindowOwnershipValid(Aq40TwinEncounter::TwinEncounterState const& state,
 									  Aq40TwinEncounter::TwinBoss boss)
 {
@@ -922,6 +929,24 @@ void ConfirmBossOwner(Aq40TwinEncounter::TwinEncounterState& state, Spell* spell
 		return;
 
 	ObjectGuid const ownerGuid = owner->GetGUID();
+	if (!IsTwinExpectedOwnerValid(state, boss, ownerGuid))
+	{
+		if (logBot)
+		{
+			std::ostringstream fields;
+			fields << "boss=twin twin_boss=" << Aq40TwinEncounter::ToString(boss)
+				   << " rejected_owner=" << Aq40Helpers::GetAq40LogUnit(owner)
+				   << " source=" << Aq40Helpers::GetAq40LogUnit(caster)
+				   << " spell=" << spellId
+				   << " phase=" << Aq40TwinEncounter::ToString(state.phase)
+				   << " reason=invalid_owner_cohort";
+			Aq40Helpers::LogAq40Warn(logBot, "twin_validation",
+				std::string("twin:pickup_reject:") + Aq40TwinEncounter::ToString(boss),
+				fields.str(), 1000);
+		}
+		return;
+	}
+
 	bool changed = false;
 	changed |= Aq40TwinEncounter::ConfirmOwner(state, boss, ownerGuid, nowMs);
 	changed |= Aq40TwinEncounter::SetStableOwner(state, boss, ownerGuid, nowMs);
@@ -1279,8 +1304,7 @@ public:
 			return;
 		}
 
-		if (hasBossCaster && combatArmed && spellInfo->Id != Aq40SpellIds::TwinTeleportPrimary &&
-			spellInfo->Id != Aq40SpellIds::TwinTeleportSecondary && spellInfo->Id != Aq40SpellIds::TwinHealBrother)
+		if (hasBossCaster && combatArmed && IsTwinOwnershipSignalSpell(spellInfo->Id))
 		{
 			ConfirmBossOwner(state, spell, caster, spellInfo->Id, boss, nowMs, logBot);
 		}

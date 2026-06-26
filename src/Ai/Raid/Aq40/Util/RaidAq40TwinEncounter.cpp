@@ -691,24 +691,6 @@ bool IsReadyPrePullState(TwinEncounterState const& state)
            HasDeterministicAssignments(state);
 }
 
-bool HasAssignedMemberInCombat(Player* bot, TwinEncounterState const& state)
-{
-    if (!bot || state.assignments.empty())
-        return false;
-
-    std::vector<Player*> const instanceMembers = CollectTwinInstanceMembers(bot);
-    for (Player* member : instanceMembers)
-    {
-        if (!GetAssignmentForMember(state, member->GetGUID()))
-            continue;
-
-        if (member->IsInCombat())
-            return true;
-    }
-
-    return false;
-}
-
 bool ClearWarlockTankOverlaysForInstance(Player* bot)
 {
     if (!bot || !bot->GetMap())
@@ -1248,7 +1230,7 @@ void LogTwinCriticalAssignmentDump(Player* logBot, TwinEncounterState const& sta
     }
 }
 
-void SeedTwinManualPullOpeningOwners(TwinEncounterState& state, uint32 nowMs)
+void SeedTwinManualPullOpeningOwners(TwinEncounterState& state)
 {
     for (TwinBoss boss : { TwinBoss::Veklor, TwinBoss::Veknilash })
     {
@@ -1257,7 +1239,6 @@ void SeedTwinManualPullOpeningOwners(TwinEncounterState& state, uint32 nowMs)
             continue;
 
         SetCandidateOwner(state, boss, expectedOwner);
-        ConfirmOwner(state, boss, expectedOwner, nowMs);
     }
 }
 
@@ -1280,7 +1261,7 @@ void ActivateTwinManualPull(Player* logBot, TwinEncounterState& state,
                             uint32 nowMs)
 {
     state.firstEmperorCombatAtMs = state.firstEmperorCombatAtMs ? state.firstEmperorCombatAtMs : nowMs;
-    SeedTwinManualPullOpeningOwners(state, nowMs);
+    SeedTwinManualPullOpeningOwners(state);
     SetMode(state, TwinStrategyMode::Combat, nowMs);
     EnterDualPullWindow(state, nowMs);
     ApplyTwinManualPullPetFailsafe(approachMembers, reason);
@@ -1347,7 +1328,7 @@ void RefreshPrePullAssignments(Player* bot, TwinEncounterState& state)
     size_t preservedCommittedCount = 0u;
     std::string preservedMissingCriticalRoles;
     bool const preserveSeededCombatState =
-        HasDeterministicAssignments(state) && HasAssignedMemberInCombat(bot, state);
+        HasDeterministicAssignments(state) && approachMemberInCombat;
     bool const preserveCommittedState =
         preserveSeededCombatState &&
         (wasReady || wasCenterCommitted ||
@@ -1425,7 +1406,8 @@ void RefreshPrePullAssignments(Player* bot, TwinEncounterState& state)
 
         TwinCenterCommitEvaluation const centerCommitEvaluation =
             EvaluateTwinCenterCommitStatus(stagedMembers, buildResult.assignments);
-        bool const manualPullReadyToActivate = wasReady || wasCenterCommitted || centerCommitEvaluation.committed;
+        bool const manualPullReadyToActivate =
+            wasReady || wasCenterCommitted || centerCommitEvaluation.committed || !buildResult.assignments.empty();
         if (!manualPullReadyToActivate)
         {
             if ((assignmentsChanged || reasonChanged || countsChanged) && logBot)
