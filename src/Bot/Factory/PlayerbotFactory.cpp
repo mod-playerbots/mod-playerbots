@@ -588,15 +588,16 @@ void PlayerbotFactory::Prepare()
     {
         bot->SetUInt32Value(PLAYER_XP, 0);
     }
-    if (!sPlayerbotAIConfig.randomBotShowHelmet || !urand(0, 4))
-    {
+    
+    if (!sPlayerbotAIConfig.randomBotShowHelmet)
         bot->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_HELM);
-    }
+    else if (!urand(0, 4))
+        bot->ToggleFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_HELM);
 
-    if (!sPlayerbotAIConfig.randomBotShowCloak || !urand(0, 4))
-    {
+    if (!sPlayerbotAIConfig.randomBotShowCloak)
         bot->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK);
-    }
+    else if (!urand(0, 4))
+        bot->ToggleFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK);
 }
 
 void PlayerbotFactory::Randomize(bool incremental)
