@@ -381,26 +381,66 @@ bool HasPersistentEncounterState(Player* bot)
     return HasCthunEncounterState(bot) || HasSkeramEncounterState(bot) || Aq40TwinEncounter::HasPersistentState(bot);
 }
 
+bool ShouldSuppressTwinPrePullMaintenance(Player* bot, PlayerbotAI* botAI, char const* trigger)
+{
+    if (!bot || !botAI)
+        return false;
+
+    Aq40TwinEncounter::TwinEncounterState const* twinState = Aq40TwinEncounter::GetEncounterState(bot);
+    if (!twinState || !Aq40TwinEncounter::HasDeterministicAssignments(*twinState) ||
+        twinState->phase != Aq40TwinEncounter::TwinEncounterPhase::PrePull ||
+        Aq40TwinEncounter::IsTerminalPhase(twinState->phase))
+    {
+        return false;
+    }
+
+    bool const followRecoveryCandidate = IsAq40FollowRecoveryCandidate(bot, botAI);
+    bool const hasTwinLocalCleanupState = Aq40TwinEncounter::HasTwinLocalCleanupState(bot);
+    if (!followRecoveryCandidate && !hasTwinLocalCleanupState)
+        return false;
+
+    std::ostringstream fields;
+    fields << "boss=twin state=cleanup_suppressed"
+           << " trigger=" << GetAq40LogToken(trigger ? trigger : "maintenance")
+           << " phase=" << Aq40TwinEncounter::ToString(twinState->phase)
+           << " mode=" << Aq40TwinEncounter::ToString(twinState->mode)
+           << " approach=" << twinState->approachMemberCount
+           << " staged=" << twinState->stagedMemberCount
+           << " center_committed=" << twinState->centerCommittedMemberCount
+           << " strict_ready=" << twinState->strictReadyMemberCount
+           << " assigned=" << twinState->assignments.size()
+           << " follow_recovery_candidate=" << (followRecoveryCandidate ? 1 : 0)
+           << " local_cleanup_state=" << (hasTwinLocalCleanupState ? 1 : 0);
+    LogAq40Info(bot, "encounter_reset", "twin:cleanup_suppressed", fields.str(), 1000);
+    return true;
+}
+
 bool ShouldRunOutOfCombatMaintenance(Player* bot, PlayerbotAI* botAI)
 {
     if (!bot || !botAI)
         return false;
 
-    if (IsAq40FollowRecoveryCandidate(bot, botAI))
-        return true;
-
     bool const hasManagedResistanceStrategy = HasManagedResistanceStrategy(bot, botAI);
     bool const hasTwinLocalCleanupState = Aq40TwinEncounter::HasTwinLocalCleanupState(bot);
     Aq40TwinEncounter::TwinEncounterState const* twinState = Aq40TwinEncounter::GetEncounterState(bot);
+    bool const suppressTwinPrePullMaintenance =
+        ShouldSuppressTwinPrePullMaintenance(bot, botAI, "out_of_combat_maintenance");
+
+    if (hasManagedResistanceStrategy)
+        return true;
+
+    if (suppressTwinPrePullMaintenance)
+        return false;
+
+    if (IsAq40FollowRecoveryCandidate(bot, botAI))
+        return true;
+
     bool const isTwinPrePullReady =
         twinState &&
         twinState->mode == Aq40TwinEncounter::TwinStrategyMode::StandardCompReady &&
         twinState->phase == Aq40TwinEncounter::TwinEncounterPhase::PrePull &&
         Aq40TwinEncounter::HasDeterministicAssignments(*twinState);
     bool const hasPersistentEncounterState = HasPersistentEncounterState(bot);
-
-    if (hasManagedResistanceStrategy)
-        return true;
 
     if (hasTwinLocalCleanupState && !isTwinPrePullReady)
         return true;

@@ -14,6 +14,7 @@ bool HasManagedResistanceStrategy(Player* bot, PlayerbotAI* botAI);
 bool ClearManagedResistanceStrategies(Player* bot, PlayerbotAI* botAI);
 bool IsResistanceManagementNeeded(Player* bot, PlayerbotAI* botAI, GuidVector const& attackers);
 bool ShouldRunOutOfCombatMaintenance(Player* bot, PlayerbotAI* botAI);
+bool ShouldSuppressTwinPrePullMaintenance(Player* bot, PlayerbotAI* botAI, char const* trigger = nullptr);
 bool HasPersistentEncounterState(Player* bot);
 bool ResetEncounterState(Player* bot);
 bool TryRecoverAq40FollowState(Player* bot, PlayerbotAI* botAI, std::string const& eventKey,

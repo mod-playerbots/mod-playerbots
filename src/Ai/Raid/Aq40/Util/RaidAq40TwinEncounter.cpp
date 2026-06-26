@@ -50,7 +50,6 @@ float constexpr kSideHealerLateralDistance = 8.0f;
 float constexpr kTwinRoomReadyRadius = 180.0f;
 float constexpr kTwinRoomExtendedRadius = 220.0f;
 float constexpr kTwinRoomApproachRadius = kTwinRoomExtendedRadius;
-float constexpr kTwinCenterCommitRadius = 32.0f;
 uint32 constexpr kTwinTeleportCadenceEarliestMs = 30000;
 uint32 constexpr kTwinTeleportCadenceLatestMs = 35000;
 uint32 constexpr kTwinSwapPrepLeadMs = 5000;
@@ -253,7 +252,8 @@ bool HasMeaningfulCadence(TwinEncounterState const& state)
 bool HasOnlyPrePullAssignmentScaffold(TwinEncounterState const& state)
 {
     if (state.phase != TwinEncounterPhase::PrePull ||
-        (state.mode != TwinStrategyMode::Inactive && state.mode != TwinStrategyMode::StandardCompReady) ||
+        (state.mode != TwinStrategyMode::Inactive && state.mode != TwinStrategyMode::CenterCommitted &&
+         state.mode != TwinStrategyMode::StandardCompReady) ||
         state.recovery.splitBand != TwinSplitBand::Stable || state.recovery.splitBandEnteredAtMs ||
         HasMeaningfulHazards(state.scriptedHazards) || HasMeaningfulCadence(state))
     {
@@ -741,14 +741,10 @@ TwinCenterCommitEvaluation EvaluateTwinCenterCommitStatus(std::vector<Player*> c
     if (assignments.empty())
         return evaluation;
 
-    Position const& roomCenter = GetGeometry().roomCenter.position;
     for (TwinRoleAssignment const& assignment : assignments)
     {
         Player* member = FindTwinStagedMember(stagedMembers, assignment.memberGuid);
         if (!member)
-            continue;
-
-        if (member->GetExactDist2d(roomCenter.GetPositionX(), roomCenter.GetPositionY()) > kTwinCenterCommitRadius)
             continue;
 
         ++evaluation.committedCount;
@@ -1079,27 +1075,31 @@ void RefreshPrePullAssignments(Player* bot, TwinEncounterState& state)
             SetMode(state, TwinStrategyMode::CenterCommitted, now);
         }
 
+        state.firstEmperorCombatAtMs = state.firstEmperorCombatAtMs ? state.firstEmperorCombatAtMs : now;
+        SetMode(state, TwinStrategyMode::Combat, now);
+        EnterDualPullWindow(state, now);
+
         if (logBot)
         {
             std::ostringstream fields;
-            fields << "boss=twin state=retain_seeded reason="
-                   << (preserveCommittedState ? "first_contact_pending" : "activation_gate_pending")
+            fields << "boss=twin state=manual_pull_activation reason=assigned_member_in_combat"
+                   << " phase=" << ToString(state.phase)
+                   << " mode=" << ToString(state.mode)
                    << " assignments=" << state.assignments.size()
                    << " approach=" << state.approachMemberCount
                    << " staged=" << state.stagedMemberCount
                    << " center_committed=" << state.centerCommittedMemberCount
                    << " strict_ready=" << state.strictReadyMemberCount
+                   << " manual_pull_activation=1"
+                   << " degraded_activation=" << (wasReady ? 0 : 1)
                    << " warlock_pool=full_instance"
                    << " eligible_warlocks=" << static_cast<uint32>(state.eligibleWarlockCount)
                    << " approach_warlocks=" << static_cast<uint32>(state.approachWarlockCount)
                    << " missing_critical_roles="
                    << (preservedMissingCriticalRoles.empty() ? "none" : preservedMissingCriticalRoles);
-            Aq40Helpers::LogAq40Info(logBot, "twin_prepull",
-                                     preserveCommittedState
-                                         ? (wasReady ? "twin:retain_ready:first_contact"
-                                                     : "twin:retain_center_commit:first_contact")
-                                         : "twin:retain_seeded:combat_gate",
-                                     fields.str(), 5000);
+            Aq40Helpers::LogAq40Warn(logBot, "twin_validation",
+                                     "twin:activation_gate:manual_pull_activation",
+                                     fields.str(), 1000);
         }
 
         return;
@@ -1194,6 +1194,7 @@ void RefreshPrePullAssignments(Player* bot, TwinEncounterState& state)
                    << " eligible_warlocks=" << buildResult.eligibleWarlockCount
                    << " approach_warlocks=" << buildResult.approachWarlockCount
                    << " handoff=side_owned_stage"
+                   << " ready_blocker=strict_anchor_ready"
                    << " wait=strict_ready";
             Aq40Helpers::LogAq40Info(logBot, "twin_prepull", "twin:center_commit", fields.str(), 1000);
         }
@@ -1217,6 +1218,7 @@ void RefreshPrePullAssignments(Player* bot, TwinEncounterState& state)
                << " eligible_warlocks=" << buildResult.eligibleWarlockCount
                << " approach_warlocks=" << buildResult.approachWarlockCount
                << " missing_critical_roles=" << centerCommitEvaluation.missingCriticalRoles
+               << " ready_blocker=role_presence"
                << " authority=cleanup_only"
                << " movement=player_controlled"
                << " wait=center_commit";

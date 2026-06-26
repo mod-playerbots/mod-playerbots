@@ -647,12 +647,18 @@ bool Aq40EraseTimersAndTrackersAction::Execute(Event /*event*/)
     if (!Aq40Helpers::ShouldRunOutOfCombatMaintenance(bot, botAI))
         return false;
 
+    bool const suppressTwinPrePullMaintenance =
+        Aq40Helpers::ShouldSuppressTwinPrePullMaintenance(bot, botAI, "erase_timers");
     bool const hadManagedResistance = Aq40Helpers::ClearManagedResistanceStrategies(bot, botAI);
-    bool const hadTwinLocalCleanup = Aq40TwinEncounter::ClearTwinLocalCombatState(bot, botAI);
-    bool const hadTwinWarlockTankOverlay = Aq40TwinEncounter::ClearTwinWarlockTankStrategy(bot);
-    bool const hadPersistentEncounterState = Aq40Helpers::ResetEncounterState(bot);
-    bool const recoveredFollowState = Aq40Helpers::TryRecoverAq40FollowState(
-        bot, botAI, "encounter_reset", "shared:follow_recovery", true);
+    bool const hadTwinLocalCleanup =
+        suppressTwinPrePullMaintenance ? false : Aq40TwinEncounter::ClearTwinLocalCombatState(bot, botAI);
+    bool const hadTwinWarlockTankOverlay =
+        suppressTwinPrePullMaintenance ? false : Aq40TwinEncounter::ClearTwinWarlockTankStrategy(bot);
+    bool const hadPersistentEncounterState =
+        suppressTwinPrePullMaintenance ? false : Aq40Helpers::ResetEncounterState(bot);
+    bool const recoveredFollowState = suppressTwinPrePullMaintenance
+        ? false
+        : Aq40Helpers::TryRecoverAq40FollowState(bot, botAI, "encounter_reset", "shared:follow_recovery", true);
     bool const recoveredDirtyState =
         hadManagedResistance || hadTwinLocalCleanup || hadTwinWarlockTankOverlay || hadPersistentEncounterState ||
         recoveredFollowState;
