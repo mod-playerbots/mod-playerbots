@@ -4597,7 +4597,7 @@ bool Aq40TwinDodgeBlizzardAction::Execute(Event /*event*/)
 bool Aq40TwinDodgeExplodeBugAction::Execute(Event /*event*/)
 {
     Aq40TwinEncounter::TwinEncounterState const* state = Aq40TwinEncounter::GetEncounterState(bot);
-    if (!state || !IsTwinEncounterActive(state))
+    if (!state)
         return false;
 
     Aq40TwinEncounter::TwinRoleAssignment const* assignment =
@@ -4649,7 +4649,7 @@ bool Aq40TwinDodgeExplodeBugAction::Execute(Event /*event*/)
 bool Aq40TwinAvoidVeklorAction::Execute(Event /*event*/)
 {
     Aq40TwinEncounter::TwinEncounterState const* state = Aq40TwinEncounter::GetEncounterState(bot);
-    if (!state || Aq40TwinEncounter::IsTerminalPhase(state->phase))
+    if (!state)
         return false;
 
     GuidVector const encounterUnits = GetTwinEncounterUnits(botAI);

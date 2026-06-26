@@ -400,7 +400,22 @@ void SortMembersByGuid(std::vector<Player*>& members)
     });
 }
 
-bool HasTwinGroupMainTankFlag(Player* member, Group const* group)
+bool IsTwinGroupMember(Player* member, Group const* group)
+{
+    if (!member || !group)
+        return false;
+
+    Group::MemberSlotList const& slots = group->GetMemberSlots();
+    for (Group::member_citerator itr = slots.begin(); itr != slots.end(); ++itr)
+    {
+        if (itr->guid == member->GetGUID())
+            return true;
+    }
+
+    return false;
+}
+
+bool HasTwinGroupMainTankFlagInGroup(Player* member, Group const* group)
 {
     if (!member || !group)
         return false;
@@ -415,6 +430,44 @@ bool HasTwinGroupMainTankFlag(Player* member, Group const* group)
     return false;
 }
 
+bool HasTwinGroupMainTankFlag(Player* member, Group const* referenceGroup)
+{
+    if (!member)
+        return false;
+
+    if (HasTwinGroupMainTankFlagInGroup(member, referenceGroup))
+        return true;
+
+    Group const* memberGroup = member->GetGroup();
+    return memberGroup != referenceGroup && HasTwinGroupMainTankFlagInGroup(member, memberGroup);
+}
+
+bool IsTwinGroupAssistant(Player* member, Group const* referenceGroup)
+{
+    if (!member)
+        return false;
+
+    ObjectGuid const guid = member->GetGUID();
+    if (referenceGroup && IsTwinGroupMember(member, referenceGroup) && referenceGroup->IsAssistant(guid))
+        return true;
+
+    Group const* memberGroup = member->GetGroup();
+    return memberGroup && memberGroup != referenceGroup && memberGroup->IsAssistant(guid);
+}
+
+bool IsTwinGroupLeader(Player* member, Group const* referenceGroup)
+{
+    if (!member)
+        return false;
+
+    ObjectGuid const guid = member->GetGUID();
+    if (referenceGroup && IsTwinGroupMember(member, referenceGroup) && referenceGroup->IsLeader(guid))
+        return true;
+
+    Group const* memberGroup = member->GetGroup();
+    return memberGroup && memberGroup != referenceGroup && memberGroup->IsLeader(guid);
+}
+
 uint32 GetTankAssignmentPriority(Player* member, Group const* group)
 {
     if (!member)
@@ -426,14 +479,14 @@ uint32 GetTankAssignmentPriority(Player* member, Group const* group)
         return 1u;
     if (PlayerbotAI::IsAssistTankOfIndex(member, 1, true))
         return 2u;
-    if (group && group->IsAssistant(member->GetGUID()))
+    if (IsTwinGroupAssistant(member, group))
         return 3u;
     return 10u;
 }
 
 bool IsTwinMarkedDruidTankFallback(Player* member, Group const* group)
 {
-    if (!member || !group || member->getClass() != CLASS_DRUID)
+    if (!member || member->getClass() != CLASS_DRUID)
         return false;
 
     if (AiFactory::GetPlayerSpecTab(member) != DRUID_TAB_FERAL)
@@ -442,7 +495,9 @@ bool IsTwinMarkedDruidTankFallback(Player* member, Group const* group)
     // Twin assignments must resolve before pull, when a feral off-tank may still
     // be out of Bear Form. Honor explicit raid tank-role signals so a valid OT
     // does not trip the encounter into a terminal "have_1" state.
-    return HasTwinGroupMainTankFlag(member, group) || group->IsAssistant(member->GetGUID());
+    return HasTwinGroupMainTankFlag(member, group) || IsTwinGroupAssistant(member, group) ||
+           PlayerbotAI::IsMainTank(member) || PlayerbotAI::IsAssistTankOfIndex(member, 0, true) ||
+           PlayerbotAI::IsAssistTankOfIndex(member, 1, true);
 }
 
 bool IsTwinTankCapableClass(Player* member)
@@ -464,12 +519,15 @@ bool IsTwinTankCapableClass(Player* member)
     return false;
 }
 
-bool IsTwinMeleeTankCandidate(Player* member, Group const* group)
+bool IsTwinMeleeTankCandidate(Player* member, Group const* group, Player* referenceBot)
 {
     if (!member)
         return false;
 
     if (HasTwinGroupMainTankFlag(member, group))
+        return true;
+
+    if (Aq40BossHelper::IsEncounterTank(referenceBot, member))
         return true;
 
     if (PlayerbotAI::IsTank(member))
@@ -485,7 +543,7 @@ bool IsTwinMeleeTankCandidate(Player* member, Group const* group)
     // strategies. If they are explicitly promoted/assisting and on a tank-capable
     // class, keep them eligible for the Vek'nilash melee-tank package.
     return IsTwinHumanControlled(member) && IsTwinTankCapableClass(member) &&
-           group && (group->IsLeader(member->GetGUID()) || group->IsAssistant(member->GetGUID()));
+           (IsTwinGroupLeader(member, group) || IsTwinGroupAssistant(member, group));
 }
 
 uint32 GetMeleeTankAssignmentPriority(Player* member, Group const* group, Player* referenceBot)
@@ -505,7 +563,7 @@ uint32 GetMeleeTankAssignmentPriority(Player* member, Group const* group, Player
         return 4u;
     if (PlayerbotAI::IsAssistTankOfIndex(member, 1, true))
         return 5u;
-    if (group && group->IsAssistant(member->GetGUID()))
+    if (IsTwinGroupAssistant(member, group))
         return 6u;
     if (PlayerbotAI::IsTank(member))
         return 7u;
@@ -529,17 +587,60 @@ void SortMembersByPriority(std::vector<Player*>& members, PriorityFn&& priorityF
     });
 }
 
+void AddTwinInstanceMember(std::vector<Player*>& members, std::unordered_set<uint64>& seenGuids,
+                           Player* referenceBot, Player* member)
+{
+    if (!referenceBot || !member || !member->IsAlive() || !member->IsInWorld() ||
+        !Aq40BossHelper::IsInAq40(member))
+    {
+        return;
+    }
+
+    if (member->GetMapId() != referenceBot->GetMapId())
+        return;
+
+    uint32 const referenceInstanceId = GetInstanceId(referenceBot);
+    if (referenceInstanceId && GetInstanceId(member) != referenceInstanceId)
+        return;
+
+    uint64 const memberGuid = member->GetGUID().GetRawValue();
+    if (!seenGuids.insert(memberGuid).second)
+        return;
+
+    members.push_back(member);
+}
+
+std::vector<Player*> CollectTwinInstanceMembers(Player* bot)
+{
+    std::vector<Player*> members;
+    if (!bot || !bot->IsInWorld() || !Aq40BossHelper::IsInAq40(bot))
+        return members;
+
+    std::unordered_set<uint64> seenGuids;
+    if (bot->GetMap())
+    {
+        Map::PlayerList const& players = bot->GetMap()->GetPlayers();
+        for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+            AddTwinInstanceMember(members, seenGuids, bot, itr->GetSource());
+    }
+
+    std::vector<Player*> const sameInstanceMembers = Aq40BossHelper::GetSameInstanceGroupMembers(bot);
+    for (Player* member : sameInstanceMembers)
+        AddTwinInstanceMember(members, seenGuids, bot, member);
+
+    SortMembersByGuid(members);
+    return members;
+}
+
 std::vector<Player*> CollectTwinMembers(Player* bot, float radius)
 {
     std::vector<Player*> members;
     if (!bot || !Aq40BossHelper::IsInAq40(bot))
         return members;
-    if (!bot->GetGroup())
-        return members;
 
-    std::vector<Player*> const sameInstanceMembers = Aq40BossHelper::GetSameInstanceGroupMembers(bot);
-    members.reserve(sameInstanceMembers.size());
-    for (Player* member : sameInstanceMembers)
+    std::vector<Player*> const instanceMembers = CollectTwinInstanceMembers(bot);
+    members.reserve(instanceMembers.size());
+    for (Player* member : instanceMembers)
     {
         if (!IsNearTwinRoom(member, radius))
             continue;
@@ -594,11 +695,9 @@ bool HasAssignedMemberInCombat(Player* bot, TwinEncounterState const& state)
 {
     if (!bot || state.assignments.empty())
         return false;
-    if (!bot->GetGroup())
-        return false;
 
-    std::vector<Player*> const sameInstanceMembers = Aq40BossHelper::GetSameInstanceGroupMembers(bot);
-    for (Player* member : sameInstanceMembers)
+    std::vector<Player*> const instanceMembers = CollectTwinInstanceMembers(bot);
+    for (Player* member : instanceMembers)
     {
         if (!GetAssignmentForMember(state, member->GetGUID()))
             continue;
@@ -889,15 +988,13 @@ TwinAssignmentBuildResult BuildTwinAssignments(Player* bot, std::vector<Player*>
         return buildResult;
 
     Group* group = bot->GetGroup();
-    if (!group)
-        return buildResult;
 
     buildResult.approachCount = approachMembers.size();
     buildResult.stagedCount = stagedMembers.size();
     if (approachMembers.empty() || (!allowMembersInCombat && AnyTwinMemberInCombat(approachMembers)))
         return buildResult;
 
-    std::vector<Player*> const sameInstanceMembers = Aq40BossHelper::GetSameInstanceGroupMembers(bot);
+    std::vector<Player*> const sameInstanceMembers = CollectTwinInstanceMembers(bot);
     std::vector<Player*> warlockCandidates;
     std::vector<Player*> approachWarlockCandidates;
     std::vector<Player*> meleeTankCandidates;
@@ -909,7 +1006,7 @@ TwinAssignmentBuildResult BuildTwinAssignments(Player* bot, std::vector<Player*>
     for (Player* member : approachMembers)
     {
         bool const isHealer = referenceAI->IsHeal(member);
-        bool const isTank = IsTwinMeleeTankCandidate(member, group);
+        bool const isTank = IsTwinMeleeTankCandidate(member, group, bot);
         bool const isRanged = PlayerbotAI::IsRanged(member);
 
         if (member->getClass() == CLASS_WARLOCK)

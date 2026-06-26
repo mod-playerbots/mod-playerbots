@@ -162,6 +162,11 @@ bool IsTwinAssignedOrLockedParticipant(Player* bot, Aq40TwinEncounter::TwinEncou
     return Aq40TwinEncounter::HasActiveLockedPickupAnchor(bot) ||
            Aq40TwinEncounter::IsTwinAssignedParticipant(state, bot);
 }
+
+bool IsTwinHazardParticipant(Player* bot, Aq40TwinEncounter::TwinEncounterState const& state)
+{
+    return IsTwinAssignedOrLockedParticipant(bot, state) || Aq40TwinEncounter::IsTwinEncounterParticipant(bot);
+}
 }    // namespace
 
 bool Aq40BotIsNotInCombatTrigger::IsActive()
@@ -551,21 +556,18 @@ bool Aq40TwinActiveTrigger::IsActive()
 
 bool Aq40TwinBlizzardTrigger::IsActive()
 {
-    if (!Aq40TwinActiveTrigger(botAI).IsActive())
-        return false;
-
     if (Aq40SpellIds::HasAnyAura(botAI, bot, { Aq40SpellIds::TwinBlizzard }) || botAI->HasAura("blizzard", bot))
         return true;
 
     Aq40TwinEncounter::TwinEncounterState const* state = GetTwinEncounterState(bot);
-    return state && Aq40TwinEncounter::IsScriptedEventActive(
+    return state && IsTwinHazardParticipant(bot, *state) && Aq40TwinEncounter::IsScriptedEventActive(
         *state, Aq40TwinEncounter::TwinScriptedEvent::Blizzard, 5000);
 }
 
 bool Aq40TwinExplodeBugTrigger::IsActive()
 {
     Aq40TwinEncounter::TwinEncounterState const* state = GetTwinEncounterState(bot);
-    if (!Aq40TwinActiveTrigger(botAI).IsActive() || !state || IsTwinPrimaryTankController(bot, *state))
+    if (!state || !IsTwinHazardParticipant(bot, *state) || IsTwinPrimaryTankController(bot, *state))
         return false;
 
     bool const scriptedWindow = Aq40TwinEncounter::IsScriptedEventActive(
@@ -582,11 +584,11 @@ bool Aq40TwinExplodeBugTrigger::IsActive()
 
 bool Aq40TwinArcaneBurstRiskTrigger::IsActive()
 {
-    if (!Aq40TwinActiveTrigger(botAI).IsActive())
+    Aq40TwinEncounter::TwinEncounterState const* state = GetTwinEncounterState(bot);
+    if (!state || !IsTwinHazardParticipant(bot, *state))
         return false;
 
-    Aq40TwinEncounter::TwinEncounterState const* state = GetTwinEncounterState(bot);
-    if (state && Aq40TwinEncounter::IsTwinDesignatedWarlockTank(bot) &&
+    if (Aq40TwinEncounter::IsTwinDesignatedWarlockTank(bot) &&
         Aq40TwinEncounter::IsPrimaryController(*state, Aq40TwinEncounter::TwinBoss::Veklor, bot->GetGUID()))
     {
         return false;
@@ -601,7 +603,7 @@ bool Aq40TwinArcaneBurstRiskTrigger::IsActive()
     if (distance <= 18.0f)
         return true;
 
-    return state && distance <= 24.0f && Aq40TwinEncounter::IsScriptedEventActive(
+    return distance <= 24.0f && Aq40TwinEncounter::IsScriptedEventActive(
         *state, Aq40TwinEncounter::TwinScriptedEvent::ArcaneBurst, 2500);
 }
 

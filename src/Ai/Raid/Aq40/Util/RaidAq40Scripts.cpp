@@ -547,6 +547,40 @@ bool UpdateHazardTimestamp(uint32& hazardAtMs, uint32 nowMs, uint32 debounceMs =
 	return true;
 }
 
+void RecordTwinScriptedHazardForSpell(Aq40TwinEncounter::TwinEncounterState& state, Unit* caster, uint32 spellId,
+									  uint32 nowMs)
+{
+	Aq40TwinEncounter::TwinScriptedHazardWindows& hazards = state.scriptedHazards;
+	switch (spellId)
+	{
+		case Aq40SpellIds::TwinBlizzard:
+			UpdateHazardTimestamp(hazards.blizzardAtMs, nowMs);
+			break;
+		case Aq40SpellIds::TwinArcaneBurst:
+			UpdateHazardTimestamp(hazards.arcaneBurstAtMs, nowMs);
+			break;
+		case Aq40SpellIds::TwinHealBrother:
+			UpdateHazardTimestamp(hazards.healBrotherAtMs, nowMs);
+			break;
+		case Aq40SpellIds::TwinExplodeBug:
+			UpdateHazardTimestamp(hazards.explodeBugAtMs, nowMs);
+			if (caster)
+				Aq40TwinEncounter::SetExplodeBugSource(state, caster->GetGUID(), caster->GetPosition());
+			break;
+		case Aq40SpellIds::TwinMutateBug:
+			UpdateHazardTimestamp(hazards.mutateBugAtMs, nowMs);
+			break;
+		case Aq40SpellIds::TwinUppercut:
+			UpdateHazardTimestamp(hazards.uppercutAtMs, nowMs);
+			break;
+		case Aq40SpellIds::TwinUnbalancingStrike:
+			UpdateHazardTimestamp(hazards.unbalancingStrikeAtMs, nowMs);
+			break;
+		default:
+			break;
+	}
+}
+
 Unit* ResolvePrimarySpellTargetUnit(Spell* spell, Unit* caster)
 {
 	if (!spell || !caster)
@@ -1238,6 +1272,7 @@ public:
 
 		if (hasBossCaster && !combatArmed)
 		{
+			RecordTwinScriptedHazardForSpell(state, caster, spellInfo->Id, nowMs);
 			RequestInterruptForTwinBots(twinBots, caster);
 			for (Player* twinBot : twinBots)
 				ClearTwinTerminalFailureCombatState(twinBot);
