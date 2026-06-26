@@ -114,7 +114,7 @@ update, whose content are called within the codebase at src/strategy/actions/Fis
 - - [ ] Added logic complexity is justified and explained.
 - - [ ] Any new bot dialogue lines are translated.
 - - [ ] Any code ported/adapted from another project is attributed (project + author(s), `Co-authored-by:` trailer + in-file note).
-- - [ ] New source files use the GPLv2 header (see NOTICE.md).
+- - [ ] New source files use the GPLv2 header.
 - - [ ] Documentation updated if needed (Conf comments, WiKi commands).
 
 ## Notes for Reviewers
