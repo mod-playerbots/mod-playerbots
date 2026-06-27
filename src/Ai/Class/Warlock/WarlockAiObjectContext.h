@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_WARLOCKAIOBJECTCONTEXT_H
-#define _PLAYERBOT_WARLOCKAIOBJECTCONTEXT_H
+#ifndef PLAYERBOTS_WARLOCKAIOBJECTCONTEXT_H
+#define PLAYERBOTS_WARLOCKAIOBJECTCONTEXT_H
 
 #include "AiObjectContext.h"
 

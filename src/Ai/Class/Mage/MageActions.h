@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_MAGEACTIONS_H
-#define _PLAYERBOT_MAGEACTIONS_H
+#ifndef PLAYERBOTS_MAGEACTIONS_H
+#define PLAYERBOTS_MAGEACTIONS_H
 
 #include "GenericSpellActions.h"
 #include "SharedDefines.h"

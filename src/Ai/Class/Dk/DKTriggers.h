@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_DKTRIGGERS_H
-#define _PLAYERBOT_DKTRIGGERS_H
+#ifndef PLAYERBOTS_DKTRIGGERS_H
+#define PLAYERBOTS_DKTRIGGERS_H
 
 #include "GenericTriggers.h"
 

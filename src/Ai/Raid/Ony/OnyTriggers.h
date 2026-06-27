@@ -1,6 +1,6 @@
 // OnyxiaTriggers.h
-#ifndef _PLAYERBOT_ONYXIATRIGGERS_H_
-#define _PLAYERBOT_ONYXIATRIGGERS_H_
+#ifndef PLAYERBOTS_ONYTRIGGERS_H
+#define PLAYERBOTS_ONYTRIGGERS_H
 
 #include "PlayerbotAI.h"
 #include "Trigger.h"

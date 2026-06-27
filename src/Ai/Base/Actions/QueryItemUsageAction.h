@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_QUERYITEMUSAGEACTION_H
-#define _PLAYERBOT_QUERYITEMUSAGEACTION_H
+#ifndef PLAYERBOTS_QUERYITEMUSAGEACTION_H
+#define PLAYERBOTS_QUERYITEMUSAGEACTION_H
 
 #include "InventoryAction.h"
 

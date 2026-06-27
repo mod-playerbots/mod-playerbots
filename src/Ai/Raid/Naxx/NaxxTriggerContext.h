@@ -3,8 +3,8 @@
 //  and/or modify it under version 3 of the License, or (at your option), any later version.
 //  */
 
-#ifndef _PLAYERBOT_RAIDNAXXTRIGGERCONTEXT_H
-#define _PLAYERBOT_RAIDNAXXTRIGGERCONTEXT_H
+#ifndef PLAYERBOTS_NAXXTRIGGERCONTEXT_H
+#define PLAYERBOTS_NAXXTRIGGERCONTEXT_H
 
 #include "NamedObjectContext.h"
 #include "NaxxTriggers.h"

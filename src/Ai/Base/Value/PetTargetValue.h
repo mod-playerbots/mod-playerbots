@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PETTARGETVALUE_H
-#define _PLAYERBOT_PETTARGETVALUE_H
+#ifndef PLAYERBOTS_PETTARGETVALUE_H
+#define PLAYERBOTS_PETTARGETVALUE_H
 
 #include "Value.h"
 

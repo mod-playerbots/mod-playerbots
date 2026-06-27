@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PLAYERBOTAI_H
-#define _PLAYERBOT_PLAYERBOTAI_H
+#ifndef PLAYERBOTS_PLAYERBOTAI_H
+#define PLAYERBOTS_PLAYERBOTAI_H
 
 #include <stack>
 

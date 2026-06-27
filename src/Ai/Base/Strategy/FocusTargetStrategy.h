@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_FOCUSTARGETSTRATEGY_H
-#define _PLAYERBOT_FOCUSTARGETSTRATEGY_H
+#ifndef PLAYERBOTS_FOCUSTARGETSTRATEGY_H
+#define PLAYERBOTS_FOCUSTARGETSTRATEGY_H
 
 #include "Strategy.h"
 

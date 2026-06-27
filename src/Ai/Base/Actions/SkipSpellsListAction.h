@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_SKIPSPELLSLISTACTION_H
-#define _PLAYERBOT_SKIPSPELLSLISTACTION_H
+#ifndef PLAYERBOTS_SKIPSPELLSLISTACTION_H
+#define PLAYERBOTS_SKIPSPELLSLISTACTION_H
 
 #include "Action.h"
 #include "ChatHelper.h"

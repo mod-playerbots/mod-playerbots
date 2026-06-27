@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_BATTLEGROUNDTACTICSACTION_H
-#define _PLAYERBOT_BATTLEGROUNDTACTICSACTION_H
+#ifndef PLAYERBOTS_BATTLEGROUNDTACTICS_H
+#define PLAYERBOTS_BATTLEGROUNDTACTICS_H
 
 #include "BattlegroundAV.h"
 #include "MovementActions.h"

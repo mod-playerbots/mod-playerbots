@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_DKACTIONS_H
-#define _PLAYERBOT_DKACTIONS_H
+#ifndef PLAYERBOTS_DKACTIONS_H
+#define PLAYERBOTS_DKACTIONS_H
 
 #include "Event.h"
 #include "GenericSpellActions.h"

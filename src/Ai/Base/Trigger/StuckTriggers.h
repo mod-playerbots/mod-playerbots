@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_STUCKTRIGGERS_H
-#define _PLAYERBOT_STUCKTRIGGERS_H
+#ifndef PLAYERBOTS_STUCKTRIGGERS_H
+#define PLAYERBOTS_STUCKTRIGGERS_H
 
 #include "Trigger.h"
 

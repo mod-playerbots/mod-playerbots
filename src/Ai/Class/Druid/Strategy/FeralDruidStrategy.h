@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_FERALDRUIDSTRATEGY_H
-#define _PLAYERBOT_FERALDRUIDSTRATEGY_H
+#ifndef PLAYERBOTS_FERALDRUIDSTRATEGY_H
+#define PLAYERBOTS_FERALDRUIDSTRATEGY_H
 
 #include "GenericDruidStrategy.h"
 

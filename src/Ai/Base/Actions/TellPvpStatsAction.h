@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_TELLPVPSTATSACTION_H
-#define _PLAYERBOT_TELLPVPSTATSACTION_H
+#ifndef PLAYERBOTS_TELLPVPSTATSACTION_H
+#define PLAYERBOTS_TELLPVPSTATSACTION_H
 
 #include "Action.h"
 

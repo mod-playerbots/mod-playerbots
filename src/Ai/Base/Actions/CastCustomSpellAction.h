@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_CASTCUSTOMSPELLACTION_H
-#define _PLAYERBOT_CASTCUSTOMSPELLACTION_H
+#ifndef PLAYERBOTS_CASTCUSTOMSPELLACTION_H
+#define PLAYERBOTS_CASTCUSTOMSPELLACTION_H
 
 #include "ListSpellsAction.h"
 

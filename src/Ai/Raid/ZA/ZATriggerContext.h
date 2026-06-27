@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_RAIDZULAMANTRIGGERCONTEXT_H
-#define _PLAYERBOT_RAIDZULAMANTRIGGERCONTEXT_H
+#ifndef PLAYERBOTS_ZATRIGGERCONTEXT_H
+#define PLAYERBOTS_ZATRIGGERCONTEXT_H
 
 #include "ZATriggers.h"
 #include "NamedObjectContext.h"

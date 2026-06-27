@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_NEWRPGACTION_H
-#define _PLAYERBOT_NEWRPGACTION_H
+#ifndef PLAYERBOTS_NEWRPGACTION_H
+#define PLAYERBOTS_NEWRPGACTION_H
 
 #include "Duration.h"
 #include "MovementActions.h"

@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_SHAMANTRIGGERS_H
-#define _PLAYERBOT_SHAMANTRIGGERS_H
+#ifndef PLAYERBOTS_SHAMANTRIGGERS_H
+#define PLAYERBOTS_SHAMANTRIGGERS_H
 
 #include "CureTriggers.h"
 #include "GenericTriggers.h"

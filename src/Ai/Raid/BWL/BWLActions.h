@@ -1,7 +1,8 @@
-#ifndef _PLAYERBOT_RAIDBWLACTIONS_H
-#define _PLAYERBOT_RAIDBWLACTIONS_H
+#ifndef PLAYERBOTS_BWLACTIONS_H
+#define PLAYERBOTS_BWLACTIONS_H
 
 #include "Action.h"
+#include "MovementActions.h"
 
 // General
 
@@ -33,6 +34,25 @@ class BwlNefarianFearWardAction : public Action
 {
 public:
     BwlNefarianFearWardAction(PlayerbotAI* botAI) : Action(botAI, "bwl nefarian fear ward") {}
+    bool Execute(Event event) override;
+};
+
+// Trash
+
+class BwlDeathTalonWyrmguardTankMoveAwayAction : public MovementAction
+{
+public:
+    BwlDeathTalonWyrmguardTankMoveAwayAction(PlayerbotAI* botAI) : MovementAction(botAI, "bwl death talon wyrmguard tank move away") {}
+    Unit* GetTarget() override;
+    bool isUseful() override;
+    bool Execute(Event event) override;
+};
+
+class BwlDeathTalonWyrmguardRangedMoveAwayAction : public MovementAction
+{
+public:
+    BwlDeathTalonWyrmguardRangedMoveAwayAction(PlayerbotAI* botAI) : MovementAction(botAI, "bwl death talon wyrmguard ranged move away") {}
+    Unit* GetTarget() override;
     bool Execute(Event event) override;
 };
 

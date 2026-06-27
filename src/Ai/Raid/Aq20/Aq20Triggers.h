@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDAQ20TRIGGERS_H
-#define _PLAYERBOT_RAIDAQ20TRIGGERS_H
+#ifndef PLAYERBOTS_AQ20TRIGGERS_H
+#define PLAYERBOTS_AQ20TRIGGERS_H
 
 #include "PlayerbotAI.h"
 #include "Playerbots.h"

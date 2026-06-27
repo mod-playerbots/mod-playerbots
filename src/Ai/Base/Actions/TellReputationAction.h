@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_TELLREPUTATIONACTION_H
-#define _PLAYERBOT_TELLREPUTATIONACTION_H
+#ifndef PLAYERBOTS_TELLREPUTATIONACTION_H
+#define PLAYERBOTS_TELLREPUTATIONACTION_H
 
 #include <string>
 

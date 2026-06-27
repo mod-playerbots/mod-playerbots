@@ -22,7 +22,6 @@ public:
         creators["remove curse on party"] = &remove_curse_on_party;
         creators["abolish poison on party"] = &abolish_poison_on_party;
         creators["revive"] = &revive;
-        creators["prowl"] = &prowl;
         creators["aquatic form"] = &aquatic_form;
     }
 
@@ -90,14 +89,6 @@ private:
     {
         return new ActionNode("revive",
                               /*P*/ { NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
-    }
-
-    static ActionNode* prowl([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("prowl",
-                              /*P*/ { NextAction("cat form") },
                               /*A*/ {},
                               /*C*/ {});
     }
@@ -188,10 +179,7 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
     if (specTab == DRUID_TAB_BALANCE || specTab == DRUID_TAB_RESTORATION)
         triggers.push_back(new TriggerNode("often", { NextAction("apply oil", 1.0f) }));
     if (specTab == DRUID_TAB_FERAL)
-    {
         triggers.push_back(new TriggerNode("often", { NextAction("apply stone", 1.0f) }));
-        triggers.push_back(new TriggerNode("prowl", { NextAction("prowl", ACTION_INTERRUPT) }));
-    }
 
 }
 

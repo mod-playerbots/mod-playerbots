@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDBWLHELPERS_H
-#define _PLAYERBOT_RAIDBWLHELPERS_H
+#ifndef PLAYERBOTS_BWLHELPERS_H
+#define PLAYERBOTS_BWLHELPERS_H
 
 #include "Player.h"
 
@@ -22,6 +22,12 @@ namespace BlackwingLairHelpers
     {
         // General
         GO_SUPPRESSION_DEVICE = 179784
+    };
+
+    enum BlackwingLairNPCs
+    {
+        // Trash
+        NPC_DEATH_TALON_WYRMGUARD = 12460
     };
 
     bool IsActiveSuppressionDeviceInRange(const GameObject* go, const Player* bot);

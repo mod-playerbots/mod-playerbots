@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_ROGUETRIGGERS_H
-#define _PLAYERBOT_ROGUETRIGGERS_H
+#ifndef PLAYERBOTS_ROGUETRIGGERS_H
+#define PLAYERBOTS_ROGUETRIGGERS_H
 
 #include "GenericTriggers.h"
 

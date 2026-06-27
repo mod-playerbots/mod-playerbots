@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_RANGEVALUES_H
-#define _PLAYERBOT_RANGEVALUES_H
+#ifndef PLAYERBOTS_RANGEVALUES_H
+#define PLAYERBOTS_RANGEVALUES_H
 
 #include "NamedObjectContext.h"
 #include "Value.h"

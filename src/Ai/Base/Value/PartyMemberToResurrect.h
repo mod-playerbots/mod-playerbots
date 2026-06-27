@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PARTYMEMBERTORESURRECT_H
-#define _PLAYERBOT_PARTYMEMBERTORESURRECT_H
+#ifndef PLAYERBOTS_PARTYMEMBERTORESURRECT_H
+#define PLAYERBOTS_PARTYMEMBERTORESURRECT_H
 
 #include "PartyMemberValue.h"
 
