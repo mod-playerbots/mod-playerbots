@@ -146,6 +146,11 @@ PlayerbotAI::PlayerbotAI(Player* bot)
     }
 
     accountId = bot->GetSession()->GetAccountId();
+
+    // Temporary bot type so the engines below can query it while building the default strategies.
+    // RandomPlayerbotMgr or PlayerbotMgr (for alt/addclass) will set the correct type once the bot finishes logging in.
+    _botType = sPlayerbotAIConfig.IsInRandomAccountList(accountId) ? BotType::RANDOMBOT : BotType::ALTBOT;
+
     aiObjectContext = AiFactory::createAiObjectContext(bot, this);
 
     engines[BOT_STATE_COMBAT] = AiFactory::createCombatEngine(bot, this, aiObjectContext);

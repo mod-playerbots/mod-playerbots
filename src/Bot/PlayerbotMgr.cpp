@@ -1637,7 +1637,6 @@ void PlayerbotMgr::OnBotLoginInternal(Player* const bot)
         return;
     }
     botAI->SetMaster(master);
-    botAI->ResetStrategies();
 
     // Any bot summoned off a randombot account (random pool or addclass) is
     // treated as an addclass bot; only a player's own characters are alts.
@@ -1645,6 +1644,9 @@ void PlayerbotMgr::OnBotLoginInternal(Player* const bot)
     botAI->SetBotType(sPlayerbotAIConfig.IsInRandomAccountList(botAccountId)
                               ? BotType::ADDCLASSBOT
                               : BotType::ALTBOT);
+
+    // Must be after SetBotType since ResetStrategies has to read it.
+    botAI->ResetStrategies();
 
     LOG_INFO("playerbots", "Bot {} logged in", bot->GetName().c_str());
 }
