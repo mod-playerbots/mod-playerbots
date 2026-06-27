@@ -1,7 +1,5 @@
 #include "RaidAq40Actions.h"
 
-#include <cmath>
-
 #include "../RaidAq40BossHelper.h"
 #include "../RaidAq40SpellIds.h"
 #include "../Util/RaidAq40Helpers_Shared.h"

@@ -1,6 +1,5 @@
 #include "RaidAq40Actions.h"
 
-#include <cmath>
 #include <string>
 
 #include "../RaidAq40BossHelper.h"
@@ -17,8 +16,6 @@ Unit* FindViscidusTarget(PlayerbotAI* botAI, GuidVector const& attackers)
 
 namespace
 {
-// FindLowestHealthUnit now lives in Aq40BossHelper.
-
 Unit* FindViscidusGlobTarget(PlayerbotAI* botAI, GuidVector const& attackers)
 {
     std::vector<Unit*> globs = Aq40BossActions::FindUnitsByAnyName(botAI, attackers, { "glob of viscidus" });
@@ -66,16 +63,16 @@ bool Aq40ViscidusUseFrostAction::Execute(Event /*event*/)
         FindViscidusGlobTarget(botAI, encounterUnits))
         return false;
 
-    static std::initializer_list<char const*> frostSpells = { "frostbolt", "ice lance", "frost shock", "icy touch",
-                                                               "frostfire bolt" };
+    static constexpr char const* frostSpells[] = { "frostbolt", "ice lance", "frost shock", "icy touch",
+                                                   "frostfire bolt" };
     for (char const* spell : frostSpells)
     {
         if (botAI->CanCastSpell(spell, viscidus) && botAI->CastSpell(spell, viscidus))
         {
-                Aq40Helpers::LogAq40Info(bot, "frost_applied",
-                    "viscidus:" + Aq40Helpers::GetAq40LogUnit(viscidus),
-                    "boss=viscidus spell=" + Aq40Helpers::GetAq40LogToken(spell) +
-                    " target=" + Aq40Helpers::GetAq40LogUnit(viscidus));
+            Aq40Helpers::LogAq40Info(bot, "frost_applied",
+                "viscidus:" + Aq40Helpers::GetAq40LogUnit(viscidus),
+                "boss=viscidus spell=" + Aq40Helpers::GetAq40LogToken(spell) +
+                " target=" + Aq40Helpers::GetAq40LogUnit(viscidus));
             return true;
         }
     }
@@ -114,23 +111,11 @@ bool Aq40ViscidusShatterAction::Execute(Event /*event*/)
 
     if (bot->GetDistance2d(viscidus) > 6.0f)
     {
-        float dx = bot->GetPositionX() - viscidus->GetPositionX();
-        float dy = bot->GetPositionY() - viscidus->GetPositionY();
-        float len = std::sqrt(dx * dx + dy * dy);
-        if (len < 0.1f)
-        {
-            dx = std::cos(bot->GetOrientation());
-            dy = std::sin(bot->GetOrientation());
-            len = 1.0f;
-        }
-
-        float desired = 4.0f;
-        float moveX = viscidus->GetPositionX() + (dx / len) * desired;
-        float moveY = viscidus->GetPositionY() + (dy / len) * desired;
+        Aq40Helpers::RadialMovePosition const move = Aq40Helpers::GetRadialMovePosition(bot, viscidus, 4.0f);
         Aq40Helpers::LogAq40Info(bot, "shatter",
             "viscidus:melee:" + Aq40Helpers::GetAq40LogUnit(viscidus),
             "boss=viscidus phase=shatter target=" + Aq40Helpers::GetAq40LogUnit(viscidus));
-        return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+        return MoveTo(bot->GetMapId(), move.x, move.y, bot->GetPositionZ(), false, false, false, false,
                       MovementPriority::MOVEMENT_COMBAT);
     }
 

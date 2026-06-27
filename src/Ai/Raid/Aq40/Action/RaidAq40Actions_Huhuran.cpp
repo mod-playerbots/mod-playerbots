@@ -33,8 +33,8 @@ uint32 GetHuhuranSpreadOrdinal(Player* bot, PlayerbotAI* botAI, bool forMelee, u
         if (Aq40BossHelper::IsEncounterTank(member, member))
             continue;
 
-    // Human non-tanks count in the ranged cohort so bots spread around
-    // them rather than stacking on top.  See C'Thun spread for rationale.
+        // Human non-tanks count in the ranged cohort so bots spread around
+        // them rather than stacking on top.  See C'Thun spread for rationale.
         PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
         bool memberIsMelee;
         if (memberAI)

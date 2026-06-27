@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <mutex>
 #include <sstream>
 #include <unordered_map>
@@ -157,6 +158,27 @@ std::string GetAq40LogRole(Player* bot, PlayerbotAI* botAI)
     if (botAI->IsRanged(bot))
         return "ranged";
     return "melee";
+}
+
+RadialMovePosition GetRadialMovePosition(Player* bot, Unit* source, float desiredDistance)
+{
+    RadialMovePosition result;
+    if (!bot || !source)
+        return result;
+
+    float dx = bot->GetPositionX() - source->GetPositionX();
+    float dy = bot->GetPositionY() - source->GetPositionY();
+    float len = std::sqrt(dx * dx + dy * dy);
+    if (len < 0.1f)
+    {
+        dx = std::cos(bot->GetOrientation());
+        dy = std::sin(bot->GetOrientation());
+        len = 1.0f;
+    }
+
+    result.x = source->GetPositionX() + (dx / len) * desiredDistance;
+    result.y = source->GetPositionY() + (dy / len) * desiredDistance;
+    return result;
 }
 
 void LogAq40Info(Player* bot, std::string const& eventKey, std::string const& stateKey,

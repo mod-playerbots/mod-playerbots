@@ -205,11 +205,11 @@ uint32 GetSpreadOrdinal(Player* bot, PlayerbotAI* botAI, bool forMelee, uint32& 
         if (Aq40BossHelper::IsEncounterTank(member, member))
             continue;
 
-    // Human non-tanks count in the ranged cohort so bots spread around
-    // them rather than stacking on top of them.  We cannot reliably
-    // classify human hybrids, but counting them as ranged is the safest
-    // default (worst case: a melee human occupies a ranged slot, giving
-    // bots slightly wider ranged spread, which is harmless).
+        // Human non-tanks count in the ranged cohort so bots spread around
+        // them rather than stacking on top of them.  We cannot reliably
+        // classify human hybrids, but counting them as ranged is the safest
+        // default (worst case: a melee human occupies a ranged slot, giving
+        // bots slightly wider ranged spread, which is harmless).
         PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
         bool memberIsMelee;
         if (memberAI)
@@ -596,9 +596,9 @@ bool Aq40CthunInterruptEyeAction::Execute(Event /*event*/)
         if (!eye || !eye->GetCurrentSpell(CURRENT_GENERIC_SPELL))
             continue;
 
-    // Switch target this tick; interrupt will fire on the next cycle
-    // once the bot is facing/in range. Avoids failing interrupts from
-    // same-tick target switch (Naxxramas uses separate ticks too).
+        // Switch target this tick; interrupt will fire on the next cycle
+        // once the bot is facing/in range. Avoids failing interrupts from
+        // same-tick target switch (Naxxramas uses separate ticks too).
         if (AI_VALUE(Unit*, "current target") != eye || bot->GetVictim() != eye)
         {
             PinCthunTarget(botAI, context, eye);

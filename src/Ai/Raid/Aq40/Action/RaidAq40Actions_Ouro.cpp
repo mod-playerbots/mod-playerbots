@@ -21,8 +21,6 @@ Unit* FindOuroTarget(PlayerbotAI* botAI, GuidVector const& attackers)
 
 namespace
 {
-// FindLowestHealthUnit now lives in Aq40BossHelper.
-
 Unit* FindOuroScarabs(PlayerbotAI* botAI, GuidVector const& attackers)
 {
     std::vector<Unit*> scarabs =
@@ -50,8 +48,6 @@ Unit* FindNearestDirtMound(Player* bot, PlayerbotAI* botAI, GuidVector const& at
 
     return closest;
 }
-
-// FindBurrowedOuro now lives in Aq40BossHelper.
 }    // namespace
 
 bool Aq40OuroChooseTargetAction::Execute(Event /*event*/)
@@ -135,23 +131,11 @@ bool Aq40OuroHoldMeleeContactAction::Execute(Event /*event*/)
     if (d <= 8.0f)
         return false;
 
-    float dx = bot->GetPositionX() - ouro->GetPositionX();
-    float dy = bot->GetPositionY() - ouro->GetPositionY();
-    float len = std::sqrt(dx * dx + dy * dy);
-    if (len < 0.1f)
-    {
-        dx = std::cos(bot->GetOrientation());
-        dy = std::sin(bot->GetOrientation());
-        len = 1.0f;
-    }
-
-    float desired = 4.0f;
-    float moveX = ouro->GetPositionX() + (dx / len) * desired;
-    float moveY = ouro->GetPositionY() + (dy / len) * desired;
+    Aq40Helpers::RadialMovePosition const move = Aq40Helpers::GetRadialMovePosition(bot, ouro, 4.0f);
     Aq40Helpers::LogAq40Info(bot, "tank_position",
         "ouro:melee_contact:" + Aq40Helpers::GetAq40LogUnit(ouro),
         "boss=ouro reason=melee_contact target=" + Aq40Helpers::GetAq40LogUnit(ouro));
-    return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+    return MoveTo(bot->GetMapId(), move.x, move.y, bot->GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_COMBAT);
 }
 
@@ -168,23 +152,11 @@ bool Aq40OuroAvoidSweepAction::Execute(Event /*event*/)
     if (bot->GetDistance2d(ouro) > 10.0f)
         return false;
 
-    float dx = bot->GetPositionX() - ouro->GetPositionX();
-    float dy = bot->GetPositionY() - ouro->GetPositionY();
-    float len = std::sqrt(dx * dx + dy * dy);
-    if (len < 0.1f)
-    {
-        dx = std::cos(bot->GetOrientation());
-        dy = std::sin(bot->GetOrientation());
-        len = 1.0f;
-    }
-
-    float desired = 16.0f;
-    float moveX = ouro->GetPositionX() + (dx / len) * desired;
-    float moveY = ouro->GetPositionY() + (dy / len) * desired;
+    Aq40Helpers::RadialMovePosition const move = Aq40Helpers::GetRadialMovePosition(bot, ouro, 16.0f);
     Aq40Helpers::LogAq40Info(bot, "avoid_hazard",
         "ouro:sweep:" + Aq40Helpers::GetAq40LogUnit(ouro),
         "boss=ouro hazard=sweep source=" + Aq40Helpers::GetAq40LogUnit(ouro));
-    return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+    return MoveTo(bot->GetMapId(), move.x, move.y, bot->GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_COMBAT);
 }
 
@@ -226,22 +198,10 @@ bool Aq40OuroAvoidSubmergeAction::Execute(Event /*event*/)
     if (d > 16.0f)
         return false;
 
-    float dx = bot->GetPositionX() - hazard->GetPositionX();
-    float dy = bot->GetPositionY() - hazard->GetPositionY();
-    float len = std::sqrt(dx * dx + dy * dy);
-    if (len < 0.1f)
-    {
-        dx = std::cos(bot->GetOrientation());
-        dy = std::sin(bot->GetOrientation());
-        len = 1.0f;
-    }
-
-    float desired = 26.0f;
-    float moveX = hazard->GetPositionX() + (dx / len) * desired;
-    float moveY = hazard->GetPositionY() + (dy / len) * desired;
+    Aq40Helpers::RadialMovePosition const move = Aq40Helpers::GetRadialMovePosition(bot, hazard, 26.0f);
     Aq40Helpers::LogAq40Info(bot, "avoid_hazard",
         "ouro:submerge:" + Aq40Helpers::GetAq40LogUnit(hazard),
         "boss=ouro hazard=submerge source=" + Aq40Helpers::GetAq40LogUnit(hazard));
-    return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+    return MoveTo(bot->GetMapId(), move.x, move.y, bot->GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_COMBAT);
 }

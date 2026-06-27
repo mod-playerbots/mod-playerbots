@@ -9,6 +9,12 @@
 
 namespace Aq40Helpers
 {
+struct RadialMovePosition
+{
+    float x = 0.0f;
+    float y = 0.0f;
+};
+
 bool HasManagedResistanceState(Player* bot);
 bool HasManagedResistanceStrategy(Player* bot, PlayerbotAI* botAI);
 bool ClearManagedResistanceStrategies(Player* bot, PlayerbotAI* botAI);
@@ -22,6 +28,7 @@ bool TryRecoverAq40FollowState(Player* bot, PlayerbotAI* botAI, std::string cons
 std::string GetAq40LogToken(std::string value);
 std::string GetAq40LogUnit(Unit* unit);
 std::string GetAq40LogRole(Player* bot, PlayerbotAI* botAI);
+RadialMovePosition GetRadialMovePosition(Player* bot, Unit* source, float desiredDistance);
 void LogAq40Info(Player* bot, std::string const& eventKey, std::string const& stateKey,
                  std::string const& fields = "", uint32 throttleMs = 0);
 void LogAq40Warn(Player* bot, std::string const& eventKey, std::string const& stateKey,

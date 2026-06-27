@@ -1,6 +1,5 @@
 #include "RaidAq40Actions.h"
 
-#include "../RaidAq40SpellIds.h"
 #include "../Util/RaidAq40Helpers_Shared.h"
 
 namespace Aq40BossActions
@@ -31,25 +30,26 @@ bool Aq40FankrissTankSwapAction::Execute(Event /*event*/)
     if (!hasBossAggro)
         return false;
 
-    // Try to find a spawn to attack while we drop stacks.
     std::vector<Unit*> spawns = Aq40BossActions::FindFankrissSpawns(botAI, encounterUnits);
-    if (!spawns.empty())
+    Unit* spawnTarget = nullptr;
+    for (Unit* spawn : spawns)
     {
-        // Pick a spawn not already held by another tank if possible.
-        for (Unit* spawn : spawns)
+        if (!Aq40BossHelper::IsUnitHeldByEncounterTank(bot, spawn))
         {
-            if (!Aq40BossHelper::IsUnitHeldByEncounterTank(bot, spawn))
-            {
-                Aq40Helpers::LogAq40Info(bot, "tank_swap",
-                    "fankriss:spawn:" + Aq40Helpers::GetAq40LogUnit(spawn),
-                    "boss=fankriss reason=mortal_wound target=" + Aq40Helpers::GetAq40LogUnit(spawn));
-                return Attack(spawn);
-            }
+            spawnTarget = spawn;
+            break;
         }
+    }
+
+    if (!spawnTarget && !spawns.empty())
+        spawnTarget = spawns.front();
+
+    if (spawnTarget)
+    {
         Aq40Helpers::LogAq40Info(bot, "tank_swap",
-            "fankriss:spawn:" + Aq40Helpers::GetAq40LogUnit(spawns.front()),
-            "boss=fankriss reason=mortal_wound target=" + Aq40Helpers::GetAq40LogUnit(spawns.front()));
-        return Attack(spawns.front());
+            "fankriss:spawn:" + Aq40Helpers::GetAq40LogUnit(spawnTarget),
+            "boss=fankriss reason=mortal_wound target=" + Aq40Helpers::GetAq40LogUnit(spawnTarget));
+        return Attack(spawnTarget);
     }
 
     // No spawns available — stop attacking to let the other tank build threat.

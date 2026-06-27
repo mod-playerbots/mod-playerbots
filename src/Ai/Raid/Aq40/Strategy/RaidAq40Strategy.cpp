@@ -155,7 +155,7 @@ void RaidAq40Strategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("aq40 viscidus globs present",
         { NextAction("aq40 viscidus choose target", ACTION_RAID + 5) }));
 
-    // C'Thun pass 1 strategy:
+    // C'Thun baseline strategy:
     // - maintain spread and add kill priority
     // - react to Dark Glare with lateral movement
     // - stomach team kills Flesh Tentacle and exits on high acid stacks

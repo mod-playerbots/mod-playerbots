@@ -275,8 +275,6 @@ void LogAq40CleanupTransition(Player* bot, bool wasDirty)
     sAq40CleanupReportedDirtyByBot[botGuid] = false;
 }
 
-// IsSarturaMob / IsSarturaSpinning now live in Aq40BossHelper.
-
 }    // namespace
 
 namespace Aq40BossActions
@@ -294,8 +292,8 @@ std::vector<Unit*> FindUnitsByAnyName(PlayerbotAI* botAI, GuidVector const& atta
 
 Unit* FindTrashTarget(PlayerbotAI* botAI, GuidVector const& attackers)
 {
-    // Simplified: only Anubisath Defenders trigger the trash strategy now.
-    // Pick the lowest-health defender, falling back to closest attacker.
+    // Only Anubisath Defenders trigger the AQ40 trash strategy.
+    // Pick the lowest-health defender, falling back to the closest attacker.
     return Aq40BossHelper::FindLowestHealthUnitByAnyName(botAI, attackers, { "anubisath defender" });
 }
 }    // namespace Aq40BossActions

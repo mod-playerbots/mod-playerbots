@@ -30,8 +30,6 @@ bool Aq40EncounterEngaged(PlayerbotAI* botAI, Player* bot)
     return Aq40BossHelper::IsEncounterCombatActive(bot);
 }
 
-// FindBurrowedOuro now lives in Aq40BossHelper.
-
 Unit* FindSelectableCthunBody(PlayerbotAI* botAI, GuidVector const& attackers)
 {
     Unit* cthun = Aq40BossHelper::FindUnitByAnyName(botAI, attackers, { "c'thun" });
@@ -40,8 +38,6 @@ Unit* FindSelectableCthunBody(PlayerbotAI* botAI, GuidVector const& attackers)
 
     return cthun;
 }
-
-// IsSarturaMob / IsSarturaSpinning now live in Aq40BossHelper.
 
 Aq40TwinEncounter::TwinEncounterState const* GetTwinEncounterState(Player* bot)
 {

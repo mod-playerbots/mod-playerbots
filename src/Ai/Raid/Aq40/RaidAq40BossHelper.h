@@ -756,7 +756,7 @@ inline bool TryCrowdControlCharmedPlayer(Player* bot, PlayerbotAI* botAI, GuidVe
     if (!mcTarget)
         return false;
 
-    static std::initializer_list<char const*> ccSpells = {
+    static constexpr char const* ccSpells[] = {
         "polymorph", "fear", "hibernate", "freezing trap", "repentance", "blind"
     };
     for (char const* spell : ccSpells)

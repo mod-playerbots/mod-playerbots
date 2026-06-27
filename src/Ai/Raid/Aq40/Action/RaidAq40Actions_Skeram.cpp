@@ -6,7 +6,7 @@
 
 namespace
 {
-static constexpr uint32 kSkullIndex = 7;
+uint32 constexpr kSkullIndex = 7;
 
 bool IsAttackableSkeramTarget(Player* bot, Unit* target)
 {
