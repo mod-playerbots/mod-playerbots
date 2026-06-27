@@ -2339,7 +2339,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpSecondCorePasser(
 }
 
 bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(
-    Player* designatedLooter, Player* firstCorePasser,
+    Player*, Player* firstCorePasser,
     Player* secondCorePasser, Unit* closestTrigger)
 {
     bool needThirdPasser =
@@ -2404,7 +2404,7 @@ bool LadyVashjPassTheTaintedCoreAction::LineUpThirdCorePasser(
 }
 
 bool LadyVashjPassTheTaintedCoreAction::LineUpFourthCorePasser(
-    Player* firstCorePasser, Player* secondCorePasser,
+    Player*, Player* secondCorePasser,
     Player* thirdCorePasser, Unit* closestTrigger)
 {
     bool needFourthPasser =

@@ -192,6 +192,7 @@ public:
         creators["spell id"] = &ValueContext::spell_id;
         creators["vehicle spell id"] = &ValueContext::vehicle_spell_id;
         creators["item for spell"] = &ValueContext::item_for_spell;
+        creators["missing buff reagent notice"] = &ValueContext::missing_buff_reagent_notice;
         creators["spell cast useful"] = &ValueContext::spell_cast_useful;
         creators["last spell cast"] = &ValueContext::last_spell_cast;
         creators["last spell cast time"] = &ValueContext::last_spell_cast_time;
@@ -363,7 +364,7 @@ private:
     static UntypedValue* attackers(PlayerbotAI* botAI) { return new AttackersValue(botAI); }
 
     static UntypedValue* position(PlayerbotAI* botAI) { return new PositionValue(botAI); }
-    static UntypedValue* pos(PlayerbotAI* ai) { return new SinglePositionValue(ai); }
+    static UntypedValue* pos(PlayerbotAI* botAI) { return new SinglePositionValue(botAI); }
     static UntypedValue* current_position(PlayerbotAI* botAI) { return new CurrentPositionValue(botAI); }
     static UntypedValue* rti(PlayerbotAI* botAI) { return new RtiValue(botAI); }
     static UntypedValue* rti_cc(PlayerbotAI* botAI) { return new RtiCcValue(botAI); }
@@ -375,6 +376,7 @@ private:
     static UntypedValue* last_spell_cast_time(PlayerbotAI* botAI) { return new LastSpellCastTimeValue(botAI); }
     static UntypedValue* spell_cast_useful(PlayerbotAI* botAI) { return new SpellCastUsefulValue(botAI); }
     static UntypedValue* item_for_spell(PlayerbotAI* botAI) { return new ItemForSpellValue(botAI); }
+    static UntypedValue* missing_buff_reagent_notice(PlayerbotAI* botAI) { return new MissingBuffReagentNoticeValue(botAI); }
     static UntypedValue* spell_id(PlayerbotAI* botAI) { return new SpellIdValue(botAI); }
     static UntypedValue* vehicle_spell_id(PlayerbotAI* botAI) { return new VehicleSpellIdValue(botAI); }
     static UntypedValue* inventory_item(PlayerbotAI* botAI) { return new InventoryItemValue(botAI); }
@@ -567,31 +569,28 @@ private:
 
     static UntypedValue* has_area_debuff(PlayerbotAI* botAI) { return new HasAreaDebuffValue(botAI); }
 
-    static UntypedValue* main_tank(PlayerbotAI* ai) { return new PartyMemberMainTankValue(ai); }
-    static UntypedValue* find_target(PlayerbotAI* ai) { return new FindTargetValue(ai); }
-    static UntypedValue* boss_target(PlayerbotAI* ai) { return new BossTargetValue(ai); }
-    static UntypedValue* nearest_triggers(PlayerbotAI* ai) { return new NearestTriggersValue(ai); }
-    static UntypedValue* neglect_threat(PlayerbotAI* ai) { return new NeglectThreatResetValue(ai); }
-    static UntypedValue* expected_lifetime(PlayerbotAI* ai) { return new EstimatedLifetimeValue(ai); }
-    static UntypedValue* expected_group_dps(PlayerbotAI* ai) { return new EstimatedGroupDpsValue(ai); }
-    static UntypedValue* area_debuff(PlayerbotAI* ai) { return new AreaDebuffValue(ai); }
-    static UntypedValue* nearest_trap_with_damange(PlayerbotAI* ai) { return new NearestTrapWithDamageValue(ai); }
-    static UntypedValue* disperse_distance(PlayerbotAI* ai) { return new DisperseDistanceValue(ai); }
-    static UntypedValue* last_flee_angle(PlayerbotAI* ai) { return new LastFleeAngleValue(ai); }
-    static UntypedValue* last_flee_timestamp(PlayerbotAI* ai) { return new LastFleeTimestampValue(ai); }
-    static UntypedValue* recently_flee_info(PlayerbotAI* ai) { return new RecentlyFleeInfo(ai); }
-    static UntypedValue* can_fish(PlayerbotAI* ai) { return new CanFishValue(ai); }
-    static UntypedValue* can_use_fishing_bobber(PlayerbotAI* ai) { return new CanUseFishingBobberValue(ai); }
-    static UntypedValue* fishing_spot(PlayerbotAI* ai) { return new FishingSpotValue(ai); }
-    // -------------------------------------------------------
-    // Flag for cutom glyphs : true when /w bot glyph equip
-    // -------------------------------------------------------
-    static UntypedValue* custom_glyphs(PlayerbotAI* ai)
+    static UntypedValue* main_tank(PlayerbotAI* botAI) { return new PartyMemberMainTankValue(botAI); }
+    static UntypedValue* find_target(PlayerbotAI* botAI) { return new FindTargetValue(botAI); }
+    static UntypedValue* boss_target(PlayerbotAI* botAI) { return new BossTargetValue(botAI); }
+    static UntypedValue* nearest_triggers(PlayerbotAI* botAI) { return new NearestTriggersValue(botAI); }
+    static UntypedValue* neglect_threat(PlayerbotAI* botAI) { return new NeglectThreatResetValue(botAI); }
+    static UntypedValue* expected_lifetime(PlayerbotAI* botAI) { return new EstimatedLifetimeValue(botAI); }
+    static UntypedValue* expected_group_dps(PlayerbotAI* botAI) { return new EstimatedGroupDpsValue(botAI); }
+    static UntypedValue* area_debuff(PlayerbotAI* botAI) { return new AreaDebuffValue(botAI); }
+    static UntypedValue* nearest_trap_with_damange(PlayerbotAI* botAI) { return new NearestTrapWithDamageValue(botAI); }
+    static UntypedValue* disperse_distance(PlayerbotAI* botAI) { return new DisperseDistanceValue(botAI); }
+    static UntypedValue* last_flee_angle(PlayerbotAI* botAI) { return new LastFleeAngleValue(botAI); }
+    static UntypedValue* last_flee_timestamp(PlayerbotAI* botAI) { return new LastFleeTimestampValue(botAI); }
+    static UntypedValue* recently_flee_info(PlayerbotAI* botAI) { return new RecentlyFleeInfo(botAI); }
+    static UntypedValue* can_fish(PlayerbotAI* botAI) { return new CanFishValue(botAI); }
+    static UntypedValue* can_use_fishing_bobber(PlayerbotAI* botAI) { return new CanUseFishingBobberValue(botAI); }
+    static UntypedValue* fishing_spot(PlayerbotAI* botAI) { return new FishingSpotValue(botAI); }
+    static UntypedValue* custom_glyphs(PlayerbotAI* botAI)
     {
-        return new ManualSetValue<bool>(ai, false, "custom_glyphs");
+        return new ManualSetValue<bool>(botAI, false, "custom_glyphs");
     }
-    static UntypedValue* wait_for_attack_time(PlayerbotAI* ai) { return new WaitForAttackTimeValue(ai); }
-    static UntypedValue* combat_start_time(PlayerbotAI* ai) { return new CombatStartTimeValue(ai); }
+    static UntypedValue* wait_for_attack_time(PlayerbotAI* botAI) { return new WaitForAttackTimeValue(botAI); }
+    static UntypedValue* combat_start_time(PlayerbotAI* botAI) { return new CombatStartTimeValue(botAI); }
 };
 
 #endif

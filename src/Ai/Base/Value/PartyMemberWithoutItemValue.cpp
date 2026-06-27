@@ -11,7 +11,7 @@ class PlayerWithoutItemPredicate : public FindPlayerPredicate, public PlayerbotA
 {
 public:
     PlayerWithoutItemPredicate(PlayerbotAI* botAI, std::string const item)
-        : PlayerbotAIAware(botAI), FindPlayerPredicate(), item(item)
+        : FindPlayerPredicate(), PlayerbotAIAware(botAI), item(item)
     {
     }
 

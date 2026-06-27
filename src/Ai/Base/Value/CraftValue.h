@@ -16,11 +16,6 @@ class CraftData
 {
 public:
     CraftData() : itemId(0) {}
-    CraftData(CraftData const& other) : itemId(other.itemId)
-    {
-        required.insert(other.required.begin(), other.required.end());
-        obtained.insert(other.obtained.begin(), other.obtained.end());
-    }
 
     uint32 itemId;
     std::map<uint32, uint32> required, obtained;

@@ -527,6 +527,7 @@ void AddPlayerbotsSecureLoginScripts();
 
 void AddSC_TempestKeepBotScripts();
 void AddSC_IcecrownBotScripts();
+void AddSC_RubySanctumBotScripts();
 void AddSC_HyjalSummitBotScripts();
 
 void AddPlayerbotsScripts()
@@ -544,5 +545,6 @@ void AddPlayerbotsScripts()
     PlayerBotsGuildValidationScript();
     AddSC_TempestKeepBotScripts();
     AddSC_IcecrownBotScripts();
+    AddSC_RubySanctumBotScripts();
     AddSC_HyjalSummitBotScripts();
 }

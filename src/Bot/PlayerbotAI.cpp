@@ -1746,6 +1746,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         case 668:
             strategyName = "wotlk-hor";  // Halls of Reflection
             break;
+        case 724:
+            strategyName = "rs";  // Ruby Sanctum
+            break;
         default:
             break;
     }
@@ -2034,7 +2037,7 @@ bool PlayerbotAI::HasAggro(Unit* unit)
     if (!IsValidUnit(unit))
         return false;
 
-    bool isMT = IsMainTank(bot);
+    bool isMT = IsExplicitMainTank(bot);
     Unit* victim = unit->GetVictim();
     if (victim && (victim->GetGUID() == bot->GetGUID() || (!isMT && victim->ToPlayer() && IsTank(victim->ToPlayer()))))
     {
@@ -2374,7 +2377,6 @@ ObjectGuid PlayerbotAI::GetMainTankGuid(Group* group)
     if (!group)
         return ObjectGuid::Empty;
 
-    // Check for main tank flag
     Group::MemberSlotList const& slots = group->GetMemberSlots();
     for (Group::member_citerator itr = slots.begin(); itr != slots.end(); ++itr)
     {
@@ -2382,7 +2384,6 @@ ObjectGuid PlayerbotAI::GetMainTankGuid(Group* group)
             return itr->guid;
     }
 
-    // Fallback if no flag is set: return the first alive tank
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
@@ -2401,6 +2402,20 @@ bool PlayerbotAI::IsMainTank(Player* player)
 
     ObjectGuid const mainTankGuid = GetMainTankGuid(group);
     return !mainTankGuid.IsEmpty() && player->GetGUID() == mainTankGuid;
+}
+
+bool PlayerbotAI::IsExplicitMainTank(Player* player)
+{
+    Group* group = player->GetGroup();
+    if (!group)
+        return false;
+
+    for (Group::member_citerator itr = group->GetMemberSlots().begin(); itr != group->GetMemberSlots().end(); ++itr)
+    {
+        if (itr->flags & MEMBER_FLAG_MAINTANK)
+            return player->GetGUID() == itr->guid;
+    }
+    return false;
 }
 
 bool PlayerbotAI::IsBotMainTank(Player* player)
