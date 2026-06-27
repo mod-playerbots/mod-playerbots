@@ -1057,7 +1057,11 @@ static bool FindPendingAssignmentFromAssignments(
         if (IsGreaterVariant(castType))
         {
             uint32 spellId = aiContext->GetValue<uint32>("spell id", spellName)->Get();
-            if (!spellId || !ai::buff::HasRequiredReagents(bot, spellId))
+            if (spellId && ai::buff::HasRequiredReagents(bot, spellId))
+            {
+                ai::buff::ClearMissingBuffReagentNotice(botAI, spellName);
+            }
+            else
             {
                 castType = ToSingleVariant(castType);
                 spellName = BlessingSpellName(castType);
@@ -1145,10 +1149,29 @@ bool CastGreaterBlessingAssignmentAction::Execute(Event /*event*/)
     if (!FindPendingAssignment(assignment, spellName))
         return false;
 
+    AiObjectContext* aiContext = botAI->GetAiObjectContext();
+    if (!aiContext)
+        return false;
+
+    std::string missingReagentGroupName;
+    if (ai::gbless::IsGreaterVariant(assignment.blessing))
+    {
+        std::string const assignedSpellName = ai::gbless::BlessingSpellName(assignment.blessing);
+        uint32 const assignedSpellId = aiContext->GetValue<uint32>("spell id", assignedSpellName)->Get();
+        if (assignedSpellId && spellName != assignedSpellName && !ai::buff::HasRequiredReagents(bot, assignedSpellId))
+            missingReagentGroupName = assignedSpellName;
+    }
+
     if (!botAI->HasSpell(spellName))
         return false;
 
-    return botAI->CastSpell(spellName, assignment.player);
+    if (!botAI->CastSpell(spellName, assignment.player))
+        return false;
+
+    if (!missingReagentGroupName.empty())
+        ai::buff::TryAnnounceMissingBuffReagents(botAI, spellName, missingReagentGroupName);
+
+    return true;
 }
 
 bool CastGreaterBlessingAssignmentAction::FindPendingAssignment(

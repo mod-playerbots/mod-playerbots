@@ -140,6 +140,9 @@ bool PlayerbotAIConfig::Initialize()
             autoPartyBuffs = AutoPartyBuffMode::GROUP_OR_RAID;
             break;
     }
+    tellWhenMissingBuffReagents = sConfigMgr->GetOption<bool>("AiPlayerbot.TellWhenMissingBuffReagents", true);
+    missingBuffReagentMessageCooldown = sConfigMgr->GetOption<uint32>(
+        "AiPlayerbot.MissingBuffReagentMessageCooldown", 300);
     autoAvoidAoe = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoAvoidAoe", true);
     maxAoeAvoidRadius = sConfigMgr->GetOption<float>("AiPlayerbot.MaxAoeAvoidRadius", 15.0f);
     LoadSet<std::set<uint32>>(sConfigMgr->GetOption<std::string>("AiPlayerbot.AoeAvoidSpellWhitelist", "50759,57491,13810,29946"),

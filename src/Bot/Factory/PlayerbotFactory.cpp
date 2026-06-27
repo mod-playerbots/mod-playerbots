@@ -497,7 +497,7 @@ void PlayerbotFactory::Init()
             continue;
         }
 
-        if (sRandomItemMgr.IsTestItem(gemId))
+        if (sRandomItemMgr.IsInternalItem(proto))
         {
            continue;
         }
@@ -2232,7 +2232,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
             {
                 for (InventoryType inventoryType : GetPossibleInventoryTypeListBySlot((EquipmentSlots)slot))
                 {
-                    for (uint32 itemId : sRandomItemMgr.GetCachedEquipments(requiredLevel, inventoryType))
+                    for (uint32 itemId : sRandomItemMgr.GetEquipmentNew(requiredLevel, inventoryType))
                     {
                         uint32 skipProb = 25;
                         if (urand(1, 100) <= skipProb)
@@ -3618,15 +3618,20 @@ void PlayerbotFactory::ClearAllItems()
 
 void PlayerbotFactory::InitAmmo()
 {
-    if (bot->getClass() != CLASS_HUNTER && bot->getClass() != CLASS_ROGUE && bot->getClass() != CLASS_WARRIOR)
+    uint8 const botClass = bot->getClass();
+    if (botClass != CLASS_HUNTER && botClass != CLASS_ROGUE && botClass != CLASS_WARRIOR)
         return;
 
-    Item* const pItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED);
-    if (!pItem)
+    Item const* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED);
+    if (!item)
+        return;
+
+    ItemTemplate const* proto = item->GetTemplate();
+    if (!proto)
         return;
 
     uint32 subClass = 0;
-    switch (pItem->GetTemplate()->SubClass)
+    switch (proto->SubClass)
     {
         case ITEM_SUBCLASS_WEAPON_GUN:
             subClass = ITEM_SUBCLASS_BULLET;
@@ -3635,45 +3640,23 @@ void PlayerbotFactory::InitAmmo()
         case ITEM_SUBCLASS_WEAPON_CROSSBOW:
             subClass = ITEM_SUBCLASS_ARROW;
             break;
-        default:
-            break;
+        default: // invalid weapon type, nothing to do
+            return;
     }
 
-    if (!subClass)
-        return;
-
-    std::vector<uint32> ammoEntryList = sRandomItemMgr.GetAmmo(level, subClass);
-    uint32 entry = 0;
-    for (uint32 tEntry : ammoEntryList)
-    {
-        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(tEntry);
-        if (!proto)
-            continue;
-
-        // disable next expansion ammo
-        if (sPlayerbotAIConfig.limitGearExpansion && bot->GetLevel() <= 60 && tEntry >= 23728)
-            continue;
-
-        if (sPlayerbotAIConfig.limitGearExpansion && bot->GetLevel() <= 70 && tEntry >= 35570)
-            continue;
-
-        entry = tEntry;
-        break;
-    }
-
+    uint32 entry = sRandomItemMgr.GetAmmo(level, subClass);
     if (!entry)
         return;
 
     uint32 count = bot->GetItemCount(entry);
-    uint32 maxCount = bot->getClass() == CLASS_HUNTER ? 6000 : 1000;
+    uint32 maxCount = botClass == CLASS_HUNTER ? 6000 : 1000;
 
     if (count < maxCount)
     {
         if (Item* newItem = StoreNewItemInInventorySlot(bot, entry, maxCount - count))
-        {
             newItem->AddToUpdateQueueOf(bot);
-        }
     }
+
     bot->SetAmmo(entry);
 }
 

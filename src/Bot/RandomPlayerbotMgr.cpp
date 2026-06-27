@@ -2100,20 +2100,16 @@ void RandomPlayerbotMgr::Refresh(Player* bot)
 
 bool RandomPlayerbotMgr::IsRandomBot(Player* bot)
 {
-    if (bot && GET_PLAYERBOT_AI(bot))
-    {
-        if (GET_PLAYERBOT_AI(bot)->IsRealPlayer())
-            return false;
-    }
-    if (bot)
-    {
-        return IsRandomBot(bot->GetGUID().GetCounter());
-    }
+    if (!bot)
+        return false;
 
-    return false;
+    if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
+        return botAI->GetBotType() == BotType::RANDOMBOT;
+
+    return isRandomBot(bot->GetGUID().GetCounter());
 }
 
-bool RandomPlayerbotMgr::IsRandomBot(ObjectGuid::LowType bot)
+bool RandomPlayerbotMgr::isRandomBot(ObjectGuid::LowType bot)
 {
     ObjectGuid guid = ObjectGuid::Create<HighGuid::Player>(bot);
     if (!sPlayerbotAIConfig.IsInRandomAccountList(sCharacterCache->GetCharacterAccountIdByGuid(guid)))
@@ -2127,17 +2123,13 @@ bool RandomPlayerbotMgr::IsRandomBot(ObjectGuid::LowType bot)
 
 bool RandomPlayerbotMgr::IsAddclassBot(Player* bot)
 {
-    if (bot && GET_PLAYERBOT_AI(bot))
-    {
-        if (GET_PLAYERBOT_AI(bot)->IsRealPlayer())
-            return false;
-    }
-    if (bot)
-    {
-        return IsAddclassBot(bot->GetGUID().GetCounter());
-    }
+    if (!bot)
+        return false;
 
-    return false;
+    if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
+        return botAI->GetBotType() == BotType::ADDCLASSBOT;
+
+    return IsAddclassBot(bot->GetGUID().GetCounter());
 }
 
 bool RandomPlayerbotMgr::IsAddclassBot(ObjectGuid::LowType bot)
@@ -2163,9 +2155,7 @@ bool RandomPlayerbotMgr::IsAddclassBot(ObjectGuid::LowType bot)
     // If not in cache, check the account type
     uint32 accountId = sCharacterCache->GetCharacterAccountIdByGuid(guid);
     if (accountId && IsAccountType(accountId, 2)) // Type 2 = AddClass
-    {
         return true;
-    }
 
     return false;
 }
@@ -2440,10 +2430,9 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* /*handler*/,
 
                     uint32 botId = fields[0].Get<uint32>();
                     ObjectGuid guid = ObjectGuid::Create<HighGuid::Player>(botId);
-                    if (!sRandomPlayerbotMgr.IsRandomBot(guid.GetCounter()))
-                    {
+                    if (!sRandomPlayerbotMgr.isRandomBot(guid.GetCounter()))
                         continue;
-                    }
+
                     Player* bot = ObjectAccessor::FindPlayer(guid);
                     if (!bot)
                         continue;
@@ -2538,10 +2527,11 @@ void RandomPlayerbotMgr::OnBotLoginInternal(Player* const bot)
                  sRandomPlayerbotMgr.GetMaxAllowedBotCount(), bot->GetName().c_str());
 
         if (playerBots.size() == sRandomPlayerbotMgr.GetMaxAllowedBotCount())
-        {
             _isBotLogging = false;
-        }
     }
+
+    if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
+        botAI->SetBotType(BotType::RANDOMBOT);
 
     // Run guild recovery/assignment at login to handle empty guild tables after restart.
     if (sPlayerbotAIConfig.randomBotGuildCount > 0)
@@ -2551,13 +2541,9 @@ void RandomPlayerbotMgr::OnBotLoginInternal(Player* const bot)
     }
 
     if (sPlayerbotAIConfig.randomBotFixedLevel)
-    {
         bot->SetPlayerFlag(PLAYER_FLAGS_NO_XP_GAIN);
-    }
     else
-    {
         bot->RemovePlayerFlag(PLAYER_FLAGS_NO_XP_GAIN);
-    }
 }
 
 void RandomPlayerbotMgr::OnPlayerLogin(Player* player)

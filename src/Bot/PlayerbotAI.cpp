@@ -2034,7 +2034,7 @@ bool PlayerbotAI::HasAggro(Unit* unit)
     if (!IsValidUnit(unit))
         return false;
 
-    bool isMT = IsMainTank(bot);
+    bool isMT = IsExplicitMainTank(bot);
     Unit* victim = unit->GetVictim();
     if (victim && (victim->GetGUID() == bot->GetGUID() || (!isMT && victim->ToPlayer() && IsTank(victim->ToPlayer()))))
     {
@@ -2365,6 +2365,20 @@ bool PlayerbotAI::IsDps(Player* player, bool bySpec)
                 return true;
             }
             break;
+    }
+    return false;
+}
+
+bool PlayerbotAI::IsExplicitMainTank(Player* player)
+{
+    Group* group = player->GetGroup();
+    if (!group)
+        return false;
+
+    for (Group::member_citerator itr = group->GetMemberSlots().begin(); itr != group->GetMemberSlots().end(); ++itr)
+    {
+        if (itr->flags & MEMBER_FLAG_MAINTANK)
+            return player->GetGUID() == itr->guid;
     }
     return false;
 }
@@ -4395,6 +4409,16 @@ bool IsAlliance(uint8 race)
            race == RACE_DRAENEI;
 }
 
+BotType PlayerbotAI::GetBotType() const
+{
+    if (_botType == BotType::UNDEFINED)
+    {
+        LOG_ERROR("playerbots", "GetBotType() called before the bot type was initialized for bot {}",
+                  bot ? bot->GetName() : "<unknown>");
+    }
+    return _botType;
+}
+
 Player* PlayerbotAI::FindNewMaster()
 {
     // Ideally we want to have the leader as master.
@@ -4450,8 +4474,6 @@ bool PlayerbotAI::HasRealPlayerMaster()
 }
 
 bool PlayerbotAI::HasActivePlayerMaster() { return master && !GET_PLAYERBOT_AI(master); }
-
-bool PlayerbotAI::IsAlt() { return HasRealPlayerMaster() && !sRandomPlayerbotMgr.IsRandomBot(bot); }
 
 Player* PlayerbotAI::GetGroupLeader()
 {

@@ -230,6 +230,15 @@ enum class BotTypeNumber : uint8
     GUILDER_TYPE_NUMBER = 3,
 };
 
+enum class BotType : uint8
+{
+    UNDEFINED = 0,
+    ALTBOT,
+    RANDOMBOT,
+    ADDCLASSBOT,
+    REALPLAYER  // self-bot
+};
+
 enum class GrouperType : uint8
 {
     SOLO = 0,
@@ -426,6 +435,7 @@ public:
     static bool IsCombo(Player* player);
     static bool IsBotMainTank(Player* player);
     static bool IsMainTank(Player* player, bool ignoreMemberFlag = false);
+    static bool IsExplicitMainTank(Player* player);
     static uint32 GetGroupTankNum(Player* player);
     static bool IsAssistTank(Player* player);
     static bool IsAssistTankOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers = false);
@@ -533,15 +543,18 @@ public:
     Player* GetMaster() { return master; }
     Player* FindNewMaster();
 
-    // Checks if the bot is really a player. Players always have themselves as master.
-    bool IsRealPlayer() { return master ? (master == bot) : false; }
+    bool IsRealPlayer() { return GetBotType() == BotType::REALPLAYER; }
+    BotType GetBotType() const;
+    void SetBotType(BotType type) { _botType = type; }
+    bool IsRandomBot() { return GetBotType() == BotType::RANDOMBOT; }
+    bool IsAddclass() { return GetBotType() == BotType::ADDCLASSBOT; }
     // Bot has a master that is a player.
     bool HasRealPlayerMaster();
     // Bot has a master that is activly playing.
     bool HasActivePlayerMaster();
     // Get the group leader or the master of the bot.
     // Checks if the bot is summoned as alt of a player
-    bool IsAlt();
+    bool IsAlt() { return GetBotType() == BotType::ALTBOT; }
     Player* GetGroupLeader();
     uint32 GetFixedBotNumber(uint32 maxNum = 100);
     GrouperType GetGrouperType();
@@ -650,6 +663,7 @@ protected:
     Position jumpDestination = Position();
     uint32 nextTransportCheck = 0;
     bool spellInterruptRequested = false;
+    BotType _botType = BotType::UNDEFINED;
 };
 
 #endif

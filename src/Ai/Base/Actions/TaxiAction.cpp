@@ -43,6 +43,7 @@ bool TaxiAction::Execute(Event event)
         if (bot->GetDistance(npc) > sPlayerbotAIConfig.farDistance)
             continue;
 
+        bot->GetSession()->SendLearnNewTaxiNode(npc);
         uint32 curloc = sObjectMgr->GetNearestTaxiNode(npc->GetPositionX(), npc->GetPositionY(), npc->GetPositionZ(),
                                                        npc->GetMapId(), bot->GetTeamId());
 
