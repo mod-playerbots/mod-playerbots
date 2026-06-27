@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_MAGTRIGGERS_H
 #define PLAYERBOTS_MAGTRIGGERS_H
 
@@ -57,6 +63,13 @@ class MagtheridonBossEngagedByRangedTrigger : public Trigger
 {
 public:
     MagtheridonBossEngagedByRangedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon boss engaged by ranged") {};
+    bool IsActive() override;
+};
+
+class MagtheridonStandingInDebrisTrigger : public Trigger
+{
+public:
+    MagtheridonStandingInDebrisTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon standing in debris") {};
     bool IsActive() override;
 };
 
