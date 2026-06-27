@@ -16,7 +16,7 @@ namespace BlackTempleHelpers
     // Supremus
     std::unordered_map<uint32, time_t> supremusPhaseTimer;
 
-    bool HasSupremusVolcanoNearby(PlayerbotAI* botAI, Player* bot)
+    bool HasSupremusVolcanoNearby(PlayerbotAI*, Player* bot)
     {
         constexpr float searchRadius = 20.0f;
         std::list<Creature*> creatureList;
@@ -446,7 +446,7 @@ namespace BlackTempleHelpers
         return distToLine < area.width;
     }
 
-    GameObject* FindNearestTrap(PlayerbotAI* botAI, Player* bot)
+    GameObject* FindNearestTrap(PlayerbotAI* botAI, Player*)
     {
         GuidVector const& gos =
             botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest game objects")->Get();

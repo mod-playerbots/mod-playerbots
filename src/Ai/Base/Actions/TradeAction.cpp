@@ -69,7 +69,7 @@ bool TradeAction::Execute(Event event)
             continue;
 
         int8 slot = item->CanBeTraded() ? -1 : TRADE_SLOT_NONTRADED;
-        if (TradeItem(item, slot) && slot != TRADE_SLOT_NONTRADED && ++traded >= count)
+        if (TradeItem(item, slot) && slot != TRADE_SLOT_NONTRADED && ++traded >= uint32(count))
             break;
     }
 
