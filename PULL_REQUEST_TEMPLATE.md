@@ -77,6 +77,26 @@ If yes, please specify:
 
 
 
+## Code Provenance / Attribution
+<!--
+mod-playerbots is GPLv2 and is derived from the CMaNGOS playerbots (ike3). Code may be ported or
+adapted from other GPLv2 projects, but upstream attribution MUST be preserved (GPLv2 §1 and §2(a)).
+Never replace an upstream copyright notice with the project header.
+-->
+Was any code in this PR copied or adapted from a sister / upstream project (e.g. CMaNGOS playerbots,
+ MaNGOS, another module)?
+- - [ ] No, all code in this PR is original
+- - [ ] Yes (**name the project and the original author(s) below**)
+<!--
+If yes, please provide:
+- Source project + URL (and the specific file/commit if known).
+- Original author(s) — add a `Co-authored-by: Name <email>` trailer for each to your commit.
+- Attribution in code: an in-file "Ported/adapted from <project>" note on substantially-ported files,
+  or an inline "// Adapted from <project>" comment for small snippets.
+-->
+
+
+
 <!--
 TRANSLATIONS:
 Anything new that the bots say in chat must be in a translatable format. This is done using GetBotTextOrDefault,
@@ -93,6 +113,8 @@ update, whose content are called within the codebase at src/strategy/actions/Fis
 - - [ ] Performance impact is understood, tested, and acceptable.
 - - [ ] Added logic complexity is justified and explained.
 - - [ ] Any new bot dialogue lines are translated.
+- - [ ] Any code ported/adapted from another project is attributed (project + author(s), `Co-authored-by:` trailer + in-file note).
+- - [ ] New source files use the GPLv2 header.
 - - [ ] Documentation updated if needed (Conf comments, WiKi commands).
 
 ## Notes for Reviewers
