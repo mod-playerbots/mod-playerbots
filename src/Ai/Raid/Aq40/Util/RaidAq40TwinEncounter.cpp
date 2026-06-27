@@ -371,6 +371,19 @@ std::string BuildUnsupportedReason(char const* cohortToken, size_t requiredCount
     return out.str();
 }
 
+size_t GetTwinMinimumAssignmentMemberCount()
+{
+    return kTwinRequiredWarlockTanks + kTwinRequiredMeleeTanks + kTwinRequiredSideHealers +
+           kTwinRequiredRaidHealers + kTwinRequiredHunters + kTwinRequiredRangedDps +
+           kTwinRequiredMeleeDps;
+}
+
+bool IsTwinPartialRosterScan(TwinAssignmentBuildResult const& buildResult)
+{
+    return buildResult.assignments.empty() &&
+           buildResult.approachCount < GetTwinMinimumAssignmentMemberCount();
+}
+
 bool AreAssignmentsEqual(std::vector<TwinRoleAssignment> const& left, std::vector<TwinRoleAssignment> const& right)
 {
     if (left.size() != right.size())
@@ -1459,6 +1472,34 @@ void RefreshPrePullAssignments(Player* bot, TwinEncounterState& state)
 
     if (!buildResult.unsupportedReason.empty())
     {
+        if (IsTwinPartialRosterScan(buildResult))
+        {
+            bool const hadTrackedState = wasReady || !state.assignments.empty() || !state.unsupportedReason.empty();
+            ClearPrePullAssignments(state, now, false);
+            state.unsupportedReason.clear();
+            state.eligibleWarlockCount = static_cast<uint8>(
+                std::min(buildResult.eligibleWarlockCount, static_cast<size_t>(255u)));
+            state.approachWarlockCount = static_cast<uint8>(
+                std::min(buildResult.approachWarlockCount, static_cast<size_t>(255u)));
+
+            if ((reasonChanged || wasReady || countsChanged || hadTrackedState) && logBot)
+            {
+                std::ostringstream fields;
+                fields << "boss=twin state=partial_roster"
+                       << " reason=" << buildResult.unsupportedReason
+                       << " approach=" << buildResult.approachCount
+                       << " staged=" << buildResult.stagedCount
+                       << " minimum_required=" << GetTwinMinimumAssignmentMemberCount()
+                       << " warlock_pool=full_instance"
+                       << " eligible_warlocks=" << buildResult.eligibleWarlockCount
+                       << " approach_warlocks=" << buildResult.approachWarlockCount;
+                Aq40Helpers::LogAq40Info(logBot, "twin_prepull",
+                    "twin:partial_roster:" + buildResult.unsupportedReason, fields.str(), 1000);
+            }
+
+            return;
+        }
+
         ClearPrePullAssignments(state, now, false);
         state.unsupportedReason = buildResult.unsupportedReason;
         state.eligibleWarlockCount = static_cast<uint8>(std::min(buildResult.eligibleWarlockCount, static_cast<size_t>(255u)));

@@ -50,6 +50,8 @@ float constexpr kTwinHealerCenterReentryDistance = 12.0f;
 float constexpr kTwinRangedBugServiceRange = 32.0f;
 float constexpr kTwinRangedGenericBugServiceRange = 22.0f;
 float constexpr kTwinHunterMarkedBugServiceRange = 26.0f;
+float constexpr kTwinMeleeBugServiceRange = 10.0f;
+float constexpr kTwinMeleeMarkedBugServiceRange = 12.0f;
 float constexpr kTwinRangedBugArcaneSafeRadius = kTwinArcaneBurstDangerRadius + 2.0f;
 float constexpr kTwinHunterBugArcaneSafeRadius = kTwinArcaneBurstLooseRadius + 4.0f;
 float constexpr kTwinMeleeBugArcaneSafeRadius = kTwinArcaneBurstLooseRadius;
@@ -466,6 +468,17 @@ Unit* GetTwinObservedTarget(Player* bot, PlayerbotAI* botAI)
     return GetTwinSelectionTarget(bot, botAI);
 }
 
+Unit* GetTwinAttackTarget(Player* bot, PlayerbotAI* botAI)
+{
+    if (!bot || !botAI)
+        return nullptr;
+
+    if (Unit* currentTarget = GetTwinCurrentTarget(botAI))
+        return currentTarget;
+
+    return bot->GetVictim();
+}
+
 Player* GetTwinFollowLeader(PlayerbotAI* botAI)
 {
     if (!botAI)
@@ -503,6 +516,15 @@ bool AttackTwinTarget(PlayerbotAI* botAI, Unit* target)
 
     TwinAttackActionShim action(botAI);
     return action.Attack(target);
+}
+
+DynamicObject* GetDynamicObjectOwnerIfValid(Aura* aura)
+{
+    if (!aura || aura->IsRemoved() || aura->IsExpired() || aura->GetType() != DYNOBJ_AURA_TYPE)
+        return nullptr;
+
+    DynamicObject* dynObj = aura->GetDynobjOwner();
+    return dynObj && dynObj->IsInWorld() ? dynObj : nullptr;
 }
 
 bool IsTwinOpeningWarlockTankAssignment(Aq40TwinEncounter::TwinRoleAssignment const& assignment)
@@ -739,7 +761,8 @@ void AppendTwinReserveHoldFields(std::ostringstream& fields, Player* bot,
     }
 
     PlayerbotAI* reserveAI = GET_PLAYERBOT_AI(reserve);
-    Unit* const reserveTarget = reserveAI ? GetTwinObservedTarget(reserve, reserveAI) : reserve->GetVictim();
+    Unit* const reserveTarget = reserveAI ? GetTwinAttackTarget(reserve, reserveAI) : reserve->GetVictim();
+    Unit* const reserveSelectionTarget = reserveAI ? GetTwinSelectionTarget(reserve, reserveAI) : nullptr;
     Unit* const reservePetTarget = GetTwinPetTarget(reserve);
     TwinPrePullAnchorChoice const holdAnchorChoice = GetTwinStableAnchorChoice(state, *reserveAssignment);
     float const anchorError = reserve->GetExactDist2d(
@@ -781,6 +804,7 @@ void AppendTwinReserveHoldFields(std::ostringstream& fields, Player* bot,
            << " " << prefix << "_reserve_anchor=" << holdAnchorChoice.label
            << " " << prefix << "_reserve_anchor_error=" << anchorError
            << " " << prefix << "_reserve_target=" << Aq40Helpers::GetAq40LogUnit(reserveTarget)
+           << " " << prefix << "_reserve_selection_target=" << Aq40Helpers::GetAq40LogUnit(reserveSelectionTarget)
            << " " << prefix << "_reserve_pet_target=" << Aq40Helpers::GetAq40LogUnit(reservePetTarget);
 }
 
@@ -1462,6 +1486,7 @@ bool IsTwinBugServiceRole(Aq40TwinEncounter::TwinRoleAssignment const* assignmen
     {
         case Aq40TwinEncounter::TwinRoleCohort::RangedDps:
         case Aq40TwinEncounter::TwinRoleCohort::Hunter:
+        case Aq40TwinEncounter::TwinRoleCohort::MeleeDps:
             return true;
 
         default:
@@ -1491,6 +1516,10 @@ float GetTwinBugServiceRange(Player* bot, PlayerbotAI* botAI,
         case Aq40TwinEncounter::TwinRoleCohort::Hunter:
             return priority == TwinBugPriority::Hostile ? kTwinRangedGenericBugServiceRange
                                                         : kTwinHunterMarkedBugServiceRange;
+
+        case Aq40TwinEncounter::TwinRoleCohort::MeleeDps:
+            return priority == TwinBugPriority::Hostile ? kTwinMeleeBugServiceRange
+                                                        : kTwinMeleeMarkedBugServiceRange;
 
         default:
             return 0.0f;
@@ -1526,6 +1555,9 @@ bool DoesTwinRoleAllowBugPriority(Player* bot, PlayerbotAI* botAI,
             return priority != TwinBugPriority::None;
 
         case Aq40TwinEncounter::TwinRoleCohort::Hunter:
+            return priority != TwinBugPriority::None;
+
+        case Aq40TwinEncounter::TwinRoleCohort::MeleeDps:
             return priority != TwinBugPriority::None;
 
         default:
@@ -1640,6 +1672,13 @@ bool IsTwinBugSafeForService(Player* bot, PlayerbotAI* botAI,
     float const serviceDistance = origin.GetExactDist2d(bug->GetPositionX(), bug->GetPositionY());
     if (serviceDistance > maxServiceDistance)
         return false;
+
+    if (GetTwinEffectiveBugServiceCohort(assignment, bot, botAI) ==
+            Aq40TwinEncounter::TwinRoleCohort::MeleeDps &&
+        bot->GetDistance2d(bug) > maxServiceDistance + kTwinMeleeContactRange)
+    {
+        return false;
+    }
 
     Aq40TwinEncounter::TwinSide const bugSide =
         GetTwinSideForPosition(bug->GetPositionX(), bug->GetPositionY());
@@ -2775,6 +2814,12 @@ bool HoldTwinReserveTankAtAnchor(Player* bot, PlayerbotAI* botAI,
         }
 
         clearedIntent = Aq40TwinEncounter::ClearTwinLocalCombatState(bot, botAI, false) || clearedIntent;
+        if (bot->GetTarget())
+        {
+            bot->SetTarget(ObjectGuid::Empty);
+            clearedIntent = true;
+        }
+        bot->SetSelection(ObjectGuid());
     }
 
     TwinPrePullAnchorChoice const anchorChoice = GetTwinPrePullAnchorChoice(state, assignment);
@@ -2990,7 +3035,7 @@ TwinPrePullAnchorChoice GetTwinPrePullAnchorChoice(Aq40TwinEncounter::TwinEncoun
     {
         case Aq40TwinEncounter::TwinRoleCohort::WarlockTank:
             if (assignment.stableSide == Aq40TwinEncounter::GetInitialSideForBoss(Aq40TwinEncounter::TwinBoss::Veklor))
-                return { geometry.sidePrep[sideIndex], "side_prep" };
+                return { geometry.stableVeklorWarlock[sideIndex], "stable_veklor_warlock" };
             return seededDualPullOwnership ? TwinPrePullAnchorChoice{ geometry.reserveWarlockPrep[sideIndex],
                                                                       "reserve_warlock_prep" }
                                            : TwinPrePullAnchorChoice{ geometry.sidePrep[sideIndex], "side_prep" };
@@ -3326,17 +3371,28 @@ bool RefreshTwinBossPickupFromWorld(Player* logBot, PlayerbotAI* botAI,
     {
         if (logBot)
         {
+            uint32 const nowMs = getMSTime();
+            bool const openingGrace =
+                state.phase == Aq40TwinEncounter::TwinEncounterPhase::DualPullWindow &&
+                !Aq40TwinEncounter::IsPickupEstablished(state, boss) &&
+                Aq40TwinEncounter::GetPhaseElapsedMs(state, nowMs) <=
+                    kTwinStableControllerConfirmationWindowMs;
             std::ostringstream fields;
             fields << "boss=twin twin_boss=" << Aq40TwinEncounter::ToString(boss)
                    << " rejected_owner=" << Aq40Helpers::GetAq40LogUnit(owner)
                    << " source=" << Aq40Helpers::GetAq40LogUnit(bossUnit)
                    << " phase=" << Aq40TwinEncounter::ToString(state.phase)
                    << " reason=invalid_world_owner_cohort"
-                   << " refresh_reason=" << (reason ? reason : "world");
-            Aq40Helpers::LogAq40Warn(logBot, "twin_validation",
-                std::string("twin:pickup_world_reject:") + Aq40TwinEncounter::ToString(boss) + ":" +
-                    std::to_string(ownerGuid.GetCounter()),
-                fields.str(), 1000);
+                   << " refresh_reason=" << (reason ? reason : "world")
+                   << " opening_grace=" << (openingGrace ? 1 : 0);
+            std::string const eventKey =
+                std::string(openingGrace ? "twin:pickup_world_reject_grace:"
+                                         : "twin:pickup_world_reject:") +
+                Aq40TwinEncounter::ToString(boss) + ":" + std::to_string(ownerGuid.GetCounter());
+            if (openingGrace)
+                Aq40Helpers::LogAq40Info(logBot, "twin_validation", eventKey, fields.str(), 1000);
+            else
+                Aq40Helpers::LogAq40Warn(logBot, "twin_validation", eventKey, fields.str(), 1000);
         }
         return false;
     }
@@ -3459,7 +3515,7 @@ Aura* GetTwinBlizzardAura(Player* bot, PlayerbotAI* botAI)
     if (Aura* aura = Aq40SpellIds::GetAnyAura(bot, { Aq40SpellIds::TwinBlizzard }))
         return aura;
 
-    return botAI->GetAura("blizzard", bot);
+    return nullptr;
 }
 
 bool SyncTwinWarlockTankOverlay(Player* bot, PlayerbotAI* botAI)
@@ -4076,7 +4132,7 @@ bool Aq40TwinDualPullEngageAction::Execute(Event /*event*/)
     {
         Aq40TwinEncounter::TwinEncounterGeometry const& geometry = Aq40TwinEncounter::GetGeometry();
         size_t const sideIndex = ToSideIndex(assignment->stableSide);
-        Aq40TwinEncounter::TwinAnchor const& holdAnchor = geometry.sidePrep[sideIndex];
+        Aq40TwinEncounter::TwinAnchor const& holdAnchor = geometry.stableVeklorWarlock[sideIndex];
         Aq40TwinEncounter::TwinAnchor const& settleAnchor = geometry.stableVeklorWarlock[sideIndex];
         bool const hasThreatLead = HasTwinBossAggroLead(
             bot, botAI, *state, Aq40TwinEncounter::TwinBoss::Veklor, target);
@@ -4113,10 +4169,9 @@ bool Aq40TwinDualPullEngageAction::Execute(Event /*event*/)
             std::ostringstream fields;
             fields << "boss=twin phase=dual_pull_window side="
                    << Aq40TwinEncounter::ToString(assignment->stableSide);
-            AppendTwinAnchorLogFields(fields, bot, anchor,
-                shouldRotateInward ? "stable_veklor_warlock" : "side_prep");
+            AppendTwinAnchorLogFields(fields, bot, anchor, "stable_veklor_warlock");
             AppendTwinBotTraceFields(fields, bot, botAI,
-                shouldRotateInward ? "veklor_rotate_inward" : "veklor_hold_cast");
+                shouldRotateInward ? "veklor_rotate_inward" : "veklor_stable_hold");
             AppendTwinOpeningOwnershipFields(fields, bot, *state);
             Aq40Helpers::LogAq40Info(bot, "twin_position",
                 shouldRotateInward ? "twin:dual_pull:veklor_rotate_inward" : "twin:dual_pull:veklor_hold_cast",
@@ -4654,8 +4709,7 @@ bool Aq40TwinWarlockTankAction::Execute(Event /*event*/)
     }
 
     if (state->phase == Aq40TwinEncounter::TwinEncounterPhase::Stable && assignment &&
-        !Aq40TwinEncounter::HasActiveLockedPickupAnchor(bot) &&
-        HasTwinBossAggroLead(bot, botAI, *state, Aq40TwinEncounter::TwinBoss::Veklor, veklor))
+        !Aq40TwinEncounter::HasActiveLockedPickupAnchor(bot))
     {
         TwinPrePullAnchorChoice const anchorChoice = GetTwinStableAnchorChoice(*state, *assignment);
         if (MaintainTwinAssignedAnchor(bot, botAI, *state, *assignment, anchorChoice.anchor,
@@ -4709,9 +4763,9 @@ bool Aq40TwinDodgeBlizzardAction::Execute(Event /*event*/)
         return false;
 
     Aura* blizzardAura = GetTwinBlizzardAura(bot, botAI);
-    DynamicObject* blizzardDynObj = blizzardAura ? blizzardAura->GetDynobjOwner() : nullptr;
+    DynamicObject* blizzardDynObj = GetDynamicObjectOwnerIfValid(blizzardAura);
     bool const hasBlizzardAura = blizzardAura != nullptr;
-    bool const hasBlizzardDynObj = blizzardDynObj && blizzardDynObj->IsInWorld();
+    bool const hasBlizzardDynObj = blizzardDynObj != nullptr;
     if (!hasBlizzardAura && !hasBlizzardDynObj && !scriptedWindow)
         return false;
 

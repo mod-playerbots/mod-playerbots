@@ -556,7 +556,7 @@ bool Aq40TwinActiveTrigger::IsActive()
 
 bool Aq40TwinBlizzardTrigger::IsActive()
 {
-    if (Aq40SpellIds::HasAnyAura(botAI, bot, { Aq40SpellIds::TwinBlizzard }) || botAI->HasAura("blizzard", bot))
+    if (Aq40SpellIds::HasAnyAura(botAI, bot, { Aq40SpellIds::TwinBlizzard }))
         return true;
 
     Aq40TwinEncounter::TwinEncounterState const* state = GetTwinEncounterState(bot);
