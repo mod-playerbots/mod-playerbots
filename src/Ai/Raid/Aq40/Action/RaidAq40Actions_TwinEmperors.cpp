@@ -31,6 +31,7 @@ float constexpr kTwinWarlockMaxRange = 30.0f;
 float constexpr kTwinWarlockPreferredRange = 24.0f;
 float constexpr kTwinMeleeContactRange = 5.0f;
 float constexpr kTwinAnchorTolerance = 4.0f;
+float constexpr kTwinAnchorToleranceEpsilon = 0.25f;
 float constexpr kTwinStrictReadyAnchorTolerance = 6.0f;
 float constexpr kTwinFacingTolerance = 0.15f;
 float constexpr kPi = 3.14159265358979323846f;
@@ -100,6 +101,7 @@ enum class TwinTargetIntent : uint8
     Veklor,
     Veknilash,
     HoldReserve,
+    HoldPickup,
     HoldCaster,
     HoldVeknilash,
 };
@@ -1366,6 +1368,7 @@ Unit* FindTwinDualPullOpeningBossTarget(PlayerbotAI* botAI, Aq40TwinEncounter::T
 
         case TwinTargetIntent::HoldCaster:
         case TwinTargetIntent::HoldReserve:
+        case TwinTargetIntent::HoldPickup:
         case TwinTargetIntent::None:
             break;
     }
@@ -1381,6 +1384,31 @@ bool IsStrictTwinDualPullOpeningAssignment(Aq40TwinEncounter::TwinEncounterState
 
     return (IsTwinOpeningWarlockTankAssignment(*assignment) && IsTwinWarlockTankController(state, *assignment)) ||
            (IsTwinOpeningMeleeTankAssignment(*assignment) && IsTwinMeleeTankController(state, *assignment));
+}
+
+bool IsTwinDualPullPickupGateOpen(Aq40TwinEncounter::TwinEncounterState const& state)
+{
+    return state.phase != Aq40TwinEncounter::TwinEncounterPhase::DualPullWindow ||
+           (Aq40TwinEncounter::IsPickupEstablished(state, Aq40TwinEncounter::TwinBoss::Veklor) &&
+            Aq40TwinEncounter::IsPickupEstablished(state, Aq40TwinEncounter::TwinBoss::Veknilash));
+}
+
+bool ShouldHoldTwinNonTankBossTargetForPickupGate(Aq40TwinEncounter::TwinEncounterState const& state,
+                                                  Aq40TwinEncounter::TwinRoleAssignment const* assignment)
+{
+    if (IsTwinDualPullPickupGateOpen(state) || !assignment)
+        return false;
+
+    switch (assignment->cohort)
+    {
+        case Aq40TwinEncounter::TwinRoleCohort::Hunter:
+        case Aq40TwinEncounter::TwinRoleCohort::MeleeDps:
+        case Aq40TwinEncounter::TwinRoleCohort::RangedDps:
+            return true;
+
+        default:
+            return false;
+    }
 }
 
 TwinTargetIntent GetTwinTargetIntent(Player* bot, PlayerbotAI* botAI,
@@ -1415,9 +1443,15 @@ TwinTargetIntent GetTwinTargetIntent(Player* bot, PlayerbotAI* botAI,
 
             case Aq40TwinEncounter::TwinRoleCohort::Hunter:
             case Aq40TwinEncounter::TwinRoleCohort::MeleeDps:
+                if (ShouldHoldTwinNonTankBossTargetForPickupGate(state, assignment))
+                    return TwinTargetIntent::HoldPickup;
+
                 return TwinTargetIntent::Veknilash;
 
             case Aq40TwinEncounter::TwinRoleCohort::RangedDps:
+                if (ShouldHoldTwinNonTankBossTargetForPickupGate(state, assignment))
+                    return TwinTargetIntent::HoldPickup;
+
                 if (state.phase == Aq40TwinEncounter::TwinEncounterPhase::Stable &&
                     !Aq40TwinEncounter::IsSwapPrepActive(state) &&
                     !HasTwinCredibleStableController(state, Aq40TwinEncounter::TwinBoss::Veklor))
@@ -1469,6 +1503,8 @@ char const* GetTwinTargetReason(TwinTargetIntent intent)
             return "veknilash";
         case TwinTargetIntent::HoldReserve:
             return "hold_reserve";
+        case TwinTargetIntent::HoldPickup:
+            return "pickup_gate";
         case TwinTargetIntent::HoldCaster:
             return "hold_caster";
         case TwinTargetIntent::HoldVeknilash:
@@ -2361,18 +2397,27 @@ bool DoesTwinAssignmentAllowBossTarget(Aq40TwinEncounter::TwinEncounterState con
             return false;
 
         case Aq40TwinEncounter::TwinRoleCohort::Hunter:
+            if (ShouldHoldTwinNonTankBossTargetForPickupGate(state, assignment))
+                return false;
+
             if (state.phase == Aq40TwinEncounter::TwinEncounterPhase::DualPullWindow)
                 return IsTwinVeknilashTarget(target);
 
             return isStableSideOwnedVeknilashWindow();
 
         case Aq40TwinEncounter::TwinRoleCohort::MeleeDps:
+            if (ShouldHoldTwinNonTankBossTargetForPickupGate(state, assignment))
+                return false;
+
             if (state.phase == Aq40TwinEncounter::TwinEncounterPhase::DualPullWindow)
                 return IsTwinVeknilashTarget(target);
 
             return isExpectedMeleeVeknilashWindow();
 
         case Aq40TwinEncounter::TwinRoleCohort::RangedDps:
+            if (ShouldHoldTwinNonTankBossTargetForPickupGate(state, assignment))
+                return false;
+
             if (state.phase == Aq40TwinEncounter::TwinEncounterPhase::DualPullWindow)
                 return IsTwinVeklorTarget(target);
 
@@ -2788,6 +2833,7 @@ bool DoesTwinIntentAllowBossTarget(TwinTargetIntent intent, Unit const* target)
 
         case TwinTargetIntent::HoldCaster:
         case TwinTargetIntent::HoldReserve:
+        case TwinTargetIntent::HoldPickup:
         case TwinTargetIntent::None:
             return false;
     }
@@ -2901,7 +2947,8 @@ Unit* ResolveTwinTarget(Player* bot, PlayerbotAI* botAI, Aq40TwinEncounter::Twin
     if (IsStrictTwinDualPullOpeningAssignment(state, assignment))
         return nullptr;
 
-    if (intent != TwinTargetIntent::HoldReserve && intent != TwinTargetIntent::None)
+    if (intent != TwinTargetIntent::HoldReserve && intent != TwinTargetIntent::HoldPickup &&
+        intent != TwinTargetIntent::None)
     {
         if (Unit* bugTarget = FindTwinBugServiceTarget(
                 bot, botAI, state, assignment, units, currentTarget, currentVictim, outReason))
@@ -2924,6 +2971,7 @@ Unit* ResolveTwinTarget(Player* bot, PlayerbotAI* botAI, Aq40TwinEncounter::Twin
 
         case TwinTargetIntent::HoldCaster:
         case TwinTargetIntent::HoldReserve:
+        case TwinTargetIntent::HoldPickup:
         case TwinTargetIntent::None:
             break;
     }
@@ -3371,6 +3419,61 @@ bool IsTwinBossWorldOwnerValid(Aq40TwinEncounter::TwinEncounterState const& stat
     return assignment->cohort == expectedCohort;
 }
 
+void LogTwinHumanMeleeTankParkDiagnostic(Player* logBot,
+                                         Aq40TwinEncounter::TwinEncounterState const& state,
+                                         Player* owner, Unit* bossUnit,
+                                         char const* refreshReason, bool forceInfoLog)
+{
+    if (!logBot || !owner || !bossUnit || !IsTwinVeknilashTarget(bossUnit))
+        return;
+
+    PlayerbotAI* ownerAI = GET_PLAYERBOT_AI(owner);
+    if (ownerAI && !ownerAI->IsRealPlayer())
+        return;
+
+    Aq40TwinEncounter::TwinRoleAssignment const* assignment =
+        Aq40TwinEncounter::GetAssignmentForMember(state, owner->GetGUID());
+    if (!assignment || assignment->cohort != Aq40TwinEncounter::TwinRoleCohort::MeleeTank)
+        return;
+
+    TwinPrePullAnchorChoice const anchorChoice = GetTwinStableAnchorChoice(state, *assignment);
+    Aq40TwinEncounter::TwinAnchor const& bossPark = anchorChoice.anchor;
+    float const bossParkError =
+        bossUnit->GetExactDist2d(bossPark.position.GetPositionX(), bossPark.position.GetPositionY());
+    bool const parkWarning = bossParkError > kTwinBossParkWarningError;
+    if (!parkWarning && !forceInfoLog)
+        return;
+
+    std::ostringstream fields;
+    fields << "boss=twin twin_boss=veknilash"
+           << " owner=" << Aq40Helpers::GetAq40LogUnit(owner)
+           << " human_controlled=1"
+           << " source=" << Aq40Helpers::GetAq40LogUnit(bossUnit)
+           << " phase=" << Aq40TwinEncounter::ToString(state.phase)
+           << " mode=" << Aq40TwinEncounter::ToString(state.mode)
+           << " refresh_reason=" << (refreshReason ? refreshReason : "world")
+           << " side=" << Aq40TwinEncounter::ToString(assignment->stableSide)
+           << " anchor=" << anchorChoice.label
+           << " anchor_x=" << bossPark.position.GetPositionX()
+           << " anchor_y=" << bossPark.position.GetPositionY()
+           << " anchor_z=" << bossPark.position.GetPositionZ()
+           << " boss_park_error=" << bossParkError
+           << " warning_threshold=" << kTwinBossParkWarningError
+           << " veknilash_pickup="
+           << (Aq40TwinEncounter::IsPickupEstablished(state, Aq40TwinEncounter::TwinBoss::Veknilash) ? 1 : 0);
+    AppendTwinOpeningOwnershipFields(fields, logBot, state);
+
+    if (parkWarning)
+    {
+        Aq40Helpers::LogAq40Warn(logBot, "twin_validation",
+            "twin:human_tank:veknilash_park_warning", fields.str(), 1000);
+        return;
+    }
+
+    Aq40Helpers::LogAq40Info(logBot, "twin_validation",
+        "twin:human_tank:veknilash_pickup", fields.str(), 1000);
+}
+
 void PromoteTwinStablePhaseIfWorldPickupsReady(Aq40TwinEncounter::TwinEncounterState& state, uint32 nowMs)
 {
     if (!Aq40TwinEncounter::IsPickupEstablished(state, Aq40TwinEncounter::TwinBoss::Veklor) ||
@@ -3446,6 +3549,9 @@ bool RefreshTwinBossPickupFromWorld(Player* logBot, PlayerbotAI* botAI,
     bool const meaningfulChange = !pickupWasEstablished || previousPickupOwner != ownerGuid ||
                                   ownershipBefore.candidateOwner != ownerGuid ||
                                   ownershipBefore.stableOwner != ownerGuid;
+    if (boss == Aq40TwinEncounter::TwinBoss::Veknilash)
+        LogTwinHumanMeleeTankParkDiagnostic(logBot, state, owner, bossUnit, reason, meaningfulChange);
+
     if (!meaningfulChange || !logBot)
         return meaningfulChange;
 
@@ -3492,6 +3598,20 @@ bool HasTwinControllerTargetEvidence(Player* owner, PlayerbotAI* ownerAI,
            IsTwinBossTargetForBoss(GetTwinSelectionTarget(owner, ownerAI), boss);
 }
 
+uint32 GetTwinWarlockOpenerSpellAgeMs(uint32 spellAtMs)
+{
+    return spellAtMs ? getMSTimeDiff(spellAtMs, getMSTime()) : 0;
+}
+
+bool HasRecentTwinWarlockSearingPainEvidence(Aq40TwinEncounter::TwinEncounterState const& state,
+                                             ObjectGuid ownerGuid)
+{
+    return !ownerGuid.IsEmpty() && state.veklorWarlockSearingPainCaster == ownerGuid &&
+           state.veklorWarlockSearingPainAtMs &&
+           GetTwinWarlockOpenerSpellAgeMs(state.veklorWarlockSearingPainAtMs) <=
+               kTwinStableControllerConfirmationWindowMs;
+}
+
 bool HasTwinControllerPickupEvidence(Player* owner, PlayerbotAI* ownerAI,
                                      Aq40TwinEncounter::TwinEncounterState const& state,
                                      Aq40TwinEncounter::TwinBoss boss, Unit* bossUnit,
@@ -3526,16 +3646,19 @@ bool HasTwinControllerPickupEvidence(Player* owner, PlayerbotAI* ownerAI,
         if (owner->getClass() != CLASS_WARLOCK)
             return false;
 
+        bool const recentSearingPainEvidence =
+            HasRecentTwinWarlockSearingPainEvidence(state, ownerGuid);
         bool const openerEvidence =
-            state.veklorWarlockSearingPainCaster == ownerGuid ||
+            recentSearingPainEvidence ||
             state.veklorWarlockShadowWardCaster == ownerGuid;
+        bool const effectiveTargetEvidence = targetEvidence || recentSearingPainEvidence;
         bool const rangeEvidence = distance <= kTwinWarlockMaxRange + 6.0f;
         bool const activeThreatEvidence =
             openerEvidence || bossTargetsOwner || IsTwinVeklorTarget(owner->GetVictim()) ||
             state.phase == Aq40TwinEncounter::TwinEncounterPhase::TeleportWindow ||
             state.phase == Aq40TwinEncounter::TwinEncounterPhase::PickupRecovery;
 
-        return targetEvidence && rangeEvidence && activeThreatEvidence;
+        return effectiveTargetEvidence && rangeEvidence && activeThreatEvidence;
     }
 
     bool const rangeEvidence = distance <= 12.0f;
@@ -3547,21 +3670,59 @@ bool HasTwinControllerPickupEvidence(Player* owner, PlayerbotAI* ownerAI,
 
 void AppendTwinControllerEvidenceFields(std::ostringstream& fields, Player* owner, PlayerbotAI* ownerAI,
                                         Unit* bossUnit, Aq40TwinEncounter::TwinBoss boss,
+                                        Aq40TwinEncounter::TwinEncounterState const& state,
                                         bool evidenceAccepted)
 {
     Unit* currentTarget = ownerAI ? GetTwinCurrentTarget(ownerAI) : nullptr;
     Unit* selectionTarget = ownerAI ? GetTwinSelectionTarget(owner, ownerAI) : nullptr;
+    ObjectGuid const ownerGuid = owner ? owner->GetGUID() : ObjectGuid::Empty;
+    float const distance = owner && bossUnit ? owner->GetDistance2d(bossUnit) : 0.0f;
+    bool const targetEvidence = HasTwinControllerTargetEvidence(owner, ownerAI, boss);
+    bool const bossTargetsOwner = IsTwinBossTargetingOwner(bossUnit, owner, ownerAI);
 
     fields << " evidence_accepted=" << (evidenceAccepted ? 1 : 0)
            << " controller_current_target=" << Aq40Helpers::GetAq40LogUnit(currentTarget)
            << " controller_selection_target=" << Aq40Helpers::GetAq40LogUnit(selectionTarget)
            << " controller_victim=" << Aq40Helpers::GetAq40LogUnit(owner ? owner->GetVictim() : nullptr)
            << " boss_victim=" << Aq40Helpers::GetAq40LogUnit(bossUnit ? bossUnit->GetVictim() : nullptr)
-           << " boss_targets_controller="
-           << (IsTwinBossTargetingOwner(bossUnit, owner, ownerAI) ? 1 : 0)
-           << " controller_distance=" << (owner && bossUnit ? owner->GetDistance2d(bossUnit) : 0.0f)
-           << " target_evidence="
-           << (HasTwinControllerTargetEvidence(owner, ownerAI, boss) ? 1 : 0);
+           << " boss_targets_controller=" << (bossTargetsOwner ? 1 : 0)
+           << " controller_distance=" << distance
+           << " target_evidence=" << (targetEvidence ? 1 : 0);
+
+    if (boss == Aq40TwinEncounter::TwinBoss::Veklor)
+    {
+        bool const recentSearingPainEvidence =
+            HasRecentTwinWarlockSearingPainEvidence(state, ownerGuid);
+        bool const shadowWardEvidence =
+            !ownerGuid.IsEmpty() && state.veklorWarlockShadowWardCaster == ownerGuid &&
+            state.veklorWarlockShadowWardAtMs;
+        bool const rangeEvidence = distance <= kTwinWarlockMaxRange + 6.0f;
+        bool const activeThreatEvidence =
+            recentSearingPainEvidence || shadowWardEvidence || bossTargetsOwner ||
+            IsTwinVeklorTarget(owner ? owner->GetVictim() : nullptr) ||
+            state.phase == Aq40TwinEncounter::TwinEncounterPhase::TeleportWindow ||
+            state.phase == Aq40TwinEncounter::TwinEncounterPhase::PickupRecovery;
+
+        fields << " range_evidence=" << (rangeEvidence ? 1 : 0)
+               << " active_threat_evidence=" << (activeThreatEvidence ? 1 : 0)
+               << " opener_searing_pain=" << (state.veklorWarlockSearingPainAtMs ? 1 : 0)
+               << " opener_searing_pain_owner=" << (recentSearingPainEvidence ? 1 : 0)
+               << " opener_searing_pain_age_ms="
+               << GetTwinWarlockOpenerSpellAgeMs(state.veklorWarlockSearingPainAtMs)
+               << " opener_shadow_ward=" << (state.veklorWarlockShadowWardAtMs ? 1 : 0)
+               << " opener_shadow_ward_owner=" << (shadowWardEvidence ? 1 : 0)
+               << " effective_target_evidence="
+               << ((targetEvidence || recentSearingPainEvidence) ? 1 : 0);
+        return;
+    }
+
+    bool const rangeEvidence = distance <= 12.0f;
+    bool const activeThreatEvidence = bossTargetsOwner ||
+        IsTwinVeknilashTarget(owner ? owner->GetVictim() : nullptr) ||
+        state.phase == Aq40TwinEncounter::TwinEncounterPhase::TeleportWindow ||
+        state.phase == Aq40TwinEncounter::TwinEncounterPhase::PickupRecovery;
+    fields << " range_evidence=" << (rangeEvidence ? 1 : 0)
+           << " active_threat_evidence=" << (activeThreatEvidence ? 1 : 0);
 }
 
 void PushTwinControllerCandidate(std::vector<ObjectGuid>& candidates, ObjectGuid guid)
@@ -3612,7 +3773,8 @@ bool RefreshTwinBossPickupFromController(Player* logBot,
                          << " source=" << Aq40Helpers::GetAq40LogUnit(bossUnit)
                          << " phase=" << Aq40TwinEncounter::ToString(state.phase)
                          << " refresh_reason=" << (reason ? reason : "controller");
-            AppendTwinControllerEvidenceFields(healthFields, owner, ownerAI, bossUnit, boss, evidenceAccepted);
+            AppendTwinControllerEvidenceFields(healthFields, owner, ownerAI, bossUnit, boss, state,
+                evidenceAccepted);
             AppendTwinOpeningOwnershipFields(healthFields, logBot, state);
             Aq40Helpers::LogAq40Info(logBot, "twin_validation",
                 std::string("twin:pickup_controller_health:") + Aq40TwinEncounter::ToString(boss) + ":" +
@@ -3650,7 +3812,7 @@ bool RefreshTwinBossPickupFromController(Player* logBot,
                << " source=" << Aq40Helpers::GetAq40LogUnit(bossUnit)
                << " phase=" << Aq40TwinEncounter::ToString(state.phase)
                << " refresh_reason=" << (reason ? reason : "controller");
-        AppendTwinControllerEvidenceFields(fields, owner, ownerAI, bossUnit, boss, true);
+        AppendTwinControllerEvidenceFields(fields, owner, ownerAI, bossUnit, boss, state, true);
         AppendTwinOpeningOwnershipFields(fields, logBot, state);
         Aq40Helpers::LogAq40Info(logBot, "twin_pickup_confirm",
             std::string(Aq40TwinEncounter::ToString(boss)) + ":" + std::to_string(ownerGuid.GetCounter()) +
@@ -4404,6 +4566,14 @@ bool Aq40TwinDualPullEngageAction::Execute(Event /*event*/)
     Unit* target = ResolveTwinTarget(bot, botAI, *state, assignment, intent, encounterUnits, reason);
     if (!target)
     {
+        if (assignment && ShouldHoldTwinNonTankBossTargetForPickupGate(*state, assignment))
+        {
+            TwinPrePullAnchorChoice const anchorChoice = GetTwinStableAnchorChoice(*state, *assignment);
+            return MaintainTwinAssignedAnchor(bot, botAI, *state, *assignment, anchorChoice.anchor,
+                       "twin:dual_pull:pickup_gate_hold", anchorChoice.label) ||
+                   releasedPinnedBoss || overlayChanged || petChanged || worldPickupChanged;
+        }
+
         if (assignment && assignment->cohort == Aq40TwinEncounter::TwinRoleCohort::RangedDps &&
             intent == TwinTargetIntent::HoldCaster)
         {
@@ -4434,18 +4604,35 @@ bool Aq40TwinDualPullEngageAction::Execute(Event /*event*/)
         float const distance = bot->GetDistance2d(target);
         bool const inSearingPainRange =
             distance >= kTwinWarlockMinRange && distance <= kTwinWarlockMaxRange + 2.0f;
+        bool const veklorPickupEstablished =
+            Aq40TwinEncounter::IsPickupEstablished(*state, Aq40TwinEncounter::TwinBoss::Veklor);
+        float const anchorTolerance = kTwinAnchorTolerance + kTwinAnchorToleranceEpsilon;
 
-        if (AI_VALUE(Unit*, "current target") != target || bot->GetTarget() != target->GetGUID())
+        auto const logVeklorOpenerMovement = [&](char const* eventKey, char const* movementReason,
+                                                  Aq40TwinEncounter::TwinAnchor const& anchor)
+        {
+            std::ostringstream fields;
+            fields << "boss=twin phase=dual_pull_window side="
+                   << Aq40TwinEncounter::ToString(assignment->stableSide)
+                   << " reason=" << (movementReason ? movementReason : "veklor_opener")
+                   << " target=" << Aq40Helpers::GetAq40LogUnit(target)
+                   << " target_distance=" << distance
+                   << " in_searing_pain_range=" << (inSearingPainRange ? 1 : 0)
+                   << " veklor_pickup=" << (veklorPickupEstablished ? 1 : 0)
+                   << " has_threat_lead=" << (hasThreatLead ? 1 : 0);
+            AppendTwinAnchorLogFields(fields, bot, anchor, "stable_veklor_warlock");
+            AppendTwinBotTraceFields(fields, bot, botAI, movementReason ? movementReason : "veklor_opener");
+            AppendTwinOpeningOwnershipFields(fields, bot, *state);
+            Aq40Helpers::LogAq40Info(bot, "twin_position", eventKey, fields.str(), 1000);
+        };
+
+        bool const targetChanged = AI_VALUE(Unit*, "current target") != target ||
+                                   bot->GetTarget() != target->GetGUID();
+        bool attacked = false;
+        if (targetChanged)
         {
             Aq40Helpers::LogAq40Target(bot, "twin", "dual_pull_veklor", target, 1000);
-            bool const attacked = Attack(target);
-            if (inSearingPainRange &&
-                TryTwinWarlockSearingPain(bot, botAI, *state, target, "dual_pull_opener_asap"))
-            {
-                return true;
-            }
-
-            return attacked || releasedPinnedBoss || overlayChanged || petSyncChanged || worldPickupChanged;
+            attacked = Attack(target);
         }
 
         if (inSearingPainRange &&
@@ -4454,13 +4641,36 @@ bool Aq40TwinDualPullEngageAction::Execute(Event /*event*/)
             return true;
         }
 
+        if (!veklorPickupEstablished && distance > kTwinWarlockMaxRange + 2.0f)
+        {
+            Aq40TwinEncounter::RequestImmediateMovementInterrupt(bot);
+            logVeklorOpenerMovement("twin:dual_pull:veklor_pickup_stepin",
+                "initial_veklor_pickup_range", holdAnchor);
+            return MoveNear(target, kTwinWarlockPreferredRange, MovementPriority::MOVEMENT_COMBAT) ||
+                   attacked || releasedPinnedBoss || overlayChanged || petSyncChanged || worldPickupChanged;
+        }
+
+        if (!veklorPickupEstablished && distance < kTwinWarlockMinRange)
+        {
+            Aq40TwinEncounter::RequestImmediateMovementInterrupt(bot);
+            logVeklorOpenerMovement("twin:dual_pull:veklor_pickup_backstep",
+                "initial_veklor_pickup_range", holdAnchor);
+            return MoveAway(target, kTwinWarlockPreferredRange - distance) ||
+                   attacked || releasedPinnedBoss || overlayChanged || petSyncChanged || worldPickupChanged;
+        }
+
         Aq40TwinEncounter::TwinAnchor const& anchor = shouldRotateInward ? settleAnchor : holdAnchor;
-        if (bot->GetExactDist2d(anchor.position.GetPositionX(), anchor.position.GetPositionY()) > kTwinAnchorTolerance)
+        if (bot->GetExactDist2d(anchor.position.GetPositionX(), anchor.position.GetPositionY()) > anchorTolerance)
         {
             Aq40TwinEncounter::RequestImmediateMovementInterrupt(bot);
             std::ostringstream fields;
             fields << "boss=twin phase=dual_pull_window side="
-                   << Aq40TwinEncounter::ToString(assignment->stableSide);
+                   << Aq40TwinEncounter::ToString(assignment->stableSide)
+                   << " target=" << Aq40Helpers::GetAq40LogUnit(target)
+                   << " target_distance=" << distance
+                   << " in_searing_pain_range=" << (inSearingPainRange ? 1 : 0)
+                   << " veklor_pickup=" << (veklorPickupEstablished ? 1 : 0)
+                   << " anchor_tolerance=" << anchorTolerance;
             AppendTwinAnchorLogFields(fields, bot, anchor, "stable_veklor_warlock");
             AppendTwinBotTraceFields(fields, bot, botAI,
                 shouldRotateInward ? "veklor_rotate_inward" : "veklor_stable_hold");
@@ -4469,8 +4679,8 @@ bool Aq40TwinDualPullEngageAction::Execute(Event /*event*/)
                 shouldRotateInward ? "twin:dual_pull:veklor_rotate_inward" : "twin:dual_pull:veklor_hold_cast",
                 fields.str(), 1000);
             return MoveInside(bot->GetMapId(), anchor.position.GetPositionX(), anchor.position.GetPositionY(),
-                anchor.position.GetPositionZ(), kTwinAnchorTolerance, MovementPriority::MOVEMENT_COMBAT) ||
-                   petSyncChanged || worldPickupChanged;
+                anchor.position.GetPositionZ(), anchorTolerance, MovementPriority::MOVEMENT_COMBAT) ||
+                   attacked || releasedPinnedBoss || overlayChanged || petSyncChanged || worldPickupChanged;
         }
 
         if (FaceTwinAnchorIfNeeded(bot, anchor))
@@ -4484,7 +4694,7 @@ bool Aq40TwinDualPullEngageAction::Execute(Event /*event*/)
                 "boss=twin phase=dual_pull_window reason=searing_pain_pull_range",
                 1000);
             return MoveNear(target, kTwinWarlockPreferredRange, MovementPriority::MOVEMENT_COMBAT) ||
-                   petSyncChanged;
+                   attacked || releasedPinnedBoss || overlayChanged || petSyncChanged || worldPickupChanged;
         }
 
         if (shouldRotateInward && distance < kTwinWarlockMinRange)
@@ -4495,7 +4705,8 @@ bool Aq40TwinDualPullEngageAction::Execute(Event /*event*/)
                 "boss=twin phase=dual_pull_window reason=stable_veklor_warlock target=" +
                     Aq40Helpers::GetAq40LogUnit(target),
                 1000);
-            return MoveAway(target, kTwinWarlockPreferredRange - distance) || petSyncChanged;
+            return MoveAway(target, kTwinWarlockPreferredRange - distance) ||
+                   attacked || releasedPinnedBoss || overlayChanged || petSyncChanged || worldPickupChanged;
         }
 
         if (shouldRotateInward && distance > kTwinWarlockMaxRange)
@@ -4507,13 +4718,13 @@ bool Aq40TwinDualPullEngageAction::Execute(Event /*event*/)
                     Aq40Helpers::GetAq40LogUnit(target),
                 1000);
             return MoveNear(target, kTwinWarlockPreferredRange, MovementPriority::MOVEMENT_COMBAT) ||
-                   petSyncChanged;
+                   attacked || releasedPinnedBoss || overlayChanged || petSyncChanged || worldPickupChanged;
         }
 
         if (TryTwinWarlockThreatSpell(bot, botAI, *state, target, "dual_pull_opener"))
             return true;
 
-        return releasedPinnedBoss || overlayChanged || petSyncChanged;
+        return attacked || releasedPinnedBoss || overlayChanged || petSyncChanged || worldPickupChanged;
     }
 
     if (assignment && IsTwinOpeningMeleeTankAssignment(*assignment) &&
@@ -4797,15 +5008,24 @@ bool Aq40TwinChooseTargetAction::Execute(Event /*event*/)
                              releasedPinnedBoss;
     }
 
-    auto const holdStableAnchorWithoutTarget = [&]() -> bool
+    auto const holdAssignedAnchorWithoutTarget = [&]() -> bool
     {
-        if (state->phase != Aq40TwinEncounter::TwinEncounterPhase::Stable || !assignment ||
-            Aq40TwinEncounter::HasActiveLockedPickupAnchor(bot))
+        if (!assignment || Aq40TwinEncounter::HasActiveLockedPickupAnchor(bot))
         {
             return false;
         }
 
         TwinPrePullAnchorChoice const anchorChoice = GetTwinStableAnchorChoice(*state, *assignment);
+        if (state->phase == Aq40TwinEncounter::TwinEncounterPhase::DualPullWindow &&
+            ShouldHoldTwinNonTankBossTargetForPickupGate(*state, assignment))
+        {
+            return MaintainTwinAssignedAnchor(bot, botAI, *state, *assignment, anchorChoice.anchor,
+                "twin:dual_pull:pickup_gate_hold", anchorChoice.label);
+        }
+
+        if (state->phase != Aq40TwinEncounter::TwinEncounterPhase::Stable)
+            return false;
+
         switch (assignment->cohort)
         {
             case Aq40TwinEncounter::TwinRoleCohort::RangedDps:
@@ -4827,7 +5047,7 @@ bool Aq40TwinChooseTargetAction::Execute(Event /*event*/)
         return false;
     };
     if (!target)
-        return holdStableAnchorWithoutTarget() || releasedPinnedBoss || petChanged || pickupAnchorChanged;
+        return holdAssignedAnchorWithoutTarget() || releasedPinnedBoss || petChanged || pickupAnchorChanged;
 
     bool const targetPetChanged = SyncTwinEncounterPetPolicy(bot, botAI, *state, assignment, target, encounterUnits);
     bool const petSyncChanged = petChanged || targetPetChanged;

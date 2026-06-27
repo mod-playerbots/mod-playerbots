@@ -2863,6 +2863,17 @@ uint32 GetSplitBandAgeMs(TwinEncounterState const& state, uint32 nowMs)
 
 void EnterDualPullWindow(TwinEncounterState& state, uint32 nowMs)
 {
+    if (state.phase != TwinEncounterPhase::DualPullWindow)
+    {
+        if (!CanTransitionPhase(state.phase, TwinEncounterPhase::DualPullWindow))
+            return;
+
+        ResetAllStableOwnership(state, true);
+        state.recovery = TwinRecoveryState();
+        state.scriptedHazards = TwinScriptedHazardWindows();
+        ResetTeleportCadence(state);
+    }
+
     ArmTeleportCadence(state, nowMs);
     SetPhase(state, TwinEncounterPhase::DualPullWindow, nowMs);
 }
