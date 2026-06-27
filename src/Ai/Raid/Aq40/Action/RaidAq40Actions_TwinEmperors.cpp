@@ -1214,6 +1214,13 @@ bool ShouldHoldTwinReserveTankAssignmentNow(Aq40TwinEncounter::TwinEncounterStat
 
     if (assignment.cohort == Aq40TwinEncounter::TwinRoleCohort::WarlockTank)
     {
+        if (Aq40TwinEncounter::IsSwapPrepActive(state) &&
+            Aq40TwinEncounter::GetOwnership(state, Aq40TwinEncounter::TwinBoss::Veklor).reserveOwner ==
+                assignment.memberGuid)
+        {
+            return false;
+        }
+
         if (!IsTwinReserveTankLiveControllerWindow(state, Aq40TwinEncounter::TwinBoss::Veklor, assignment))
             return true;
 
@@ -1222,6 +1229,13 @@ bool ShouldHoldTwinReserveTankAssignmentNow(Aq40TwinEncounter::TwinEncounterStat
 
     if (assignment.cohort == Aq40TwinEncounter::TwinRoleCohort::MeleeTank)
     {
+        if (Aq40TwinEncounter::IsSwapPrepActive(state) &&
+            Aq40TwinEncounter::GetOwnership(state, Aq40TwinEncounter::TwinBoss::Veknilash).reserveOwner ==
+                assignment.memberGuid)
+        {
+            return false;
+        }
+
         if (!IsTwinReserveTankLiveControllerWindow(state, Aq40TwinEncounter::TwinBoss::Veknilash, assignment))
             return true;
 
@@ -2190,11 +2204,29 @@ Aq40TwinEncounter::TwinSide GetTwinExpectedOwnerSide(Aq40TwinEncounter::TwinEnco
     return GetTwinAssignedSide(state, Aq40TwinEncounter::GetOwnership(state, boss).expectedOwner);
 }
 
+ObjectGuid GetTwinPlannedOwnerGuid(Aq40TwinEncounter::TwinEncounterState const& state,
+                                   Aq40TwinEncounter::TwinBoss boss)
+{
+    Aq40TwinEncounter::TwinStableOwnership const& ownership = Aq40TwinEncounter::GetOwnership(state, boss);
+    if (Aq40TwinEncounter::IsSwapPrepActive(state) && !ownership.reserveOwner.IsEmpty())
+        return ownership.reserveOwner;
+
+    return ownership.expectedOwner;
+}
+
+Aq40TwinEncounter::TwinSide GetTwinPlannedOwnerSide(Aq40TwinEncounter::TwinEncounterState const& state,
+                                                    Aq40TwinEncounter::TwinBoss boss)
+{
+    return GetTwinAssignedSide(state, GetTwinPlannedOwnerGuid(state, boss));
+}
+
 Aq40TwinEncounter::TwinSide GetTwinMeleeDpsExpectedSide(Aq40TwinEncounter::TwinEncounterState const& state,
                                                         Aq40TwinEncounter::TwinRoleAssignment const& assignment)
 {
     Aq40TwinEncounter::TwinSide const expectedSide =
-        GetTwinExpectedOwnerSide(state, Aq40TwinEncounter::TwinBoss::Veknilash);
+        Aq40TwinEncounter::IsSwapPrepActive(state)
+            ? GetTwinPlannedOwnerSide(state, Aq40TwinEncounter::TwinBoss::Veknilash)
+            : GetTwinExpectedOwnerSide(state, Aq40TwinEncounter::TwinBoss::Veknilash);
     return Aq40TwinEncounter::IsKnownSide(expectedSide) ? expectedSide : assignment.stableSide;
 }
 
@@ -2367,7 +2399,7 @@ bool IsTwinPendingSwapPrepExpectedOwner(Aq40TwinEncounter::TwinEncounterState co
                                         Aq40TwinEncounter::TwinRoleAssignment const& assignment)
 {
     return Aq40TwinEncounter::IsSwapPrepActive(state) &&
-           Aq40TwinEncounter::GetOwnership(state, boss).expectedOwner == assignment.memberGuid;
+           GetTwinPlannedOwnerGuid(state, boss) == assignment.memberGuid;
 }
 
 bool IsTwinPostTeleportVeklorPickupWindow(Aq40TwinEncounter::TwinEncounterState const& state)
@@ -2392,7 +2424,7 @@ bool ShouldUseTwinVeklorProxyBridge(Aq40TwinEncounter::TwinEncounterState const&
         return false;
 
     Aq40TwinEncounter::TwinSide const veklorExpectedSide =
-        GetTwinExpectedOwnerSide(state, Aq40TwinEncounter::TwinBoss::Veklor);
+        GetTwinPlannedOwnerSide(state, Aq40TwinEncounter::TwinBoss::Veklor);
     if (assignment.stableSide != veklorExpectedSide)
         return false;
 
@@ -2525,7 +2557,7 @@ std::list<ObjectGuid> BuildTwinSideHealerFocusTargets(Aq40TwinEncounter::TwinEnc
             focusTargets.push_back(guid);
     };
 
-    if (side == GetTwinExpectedOwnerSide(state, Aq40TwinEncounter::TwinBoss::Veklor))
+    if (side == GetTwinPlannedOwnerSide(state, Aq40TwinEncounter::TwinBoss::Veklor))
     {
         pushTarget(warlockGuid);
         if (Aq40TwinEncounter::IsSwapPrepActive(state) && !warlockGuid.IsEmpty())
@@ -2590,7 +2622,7 @@ Player* GetTwinSwapPrepHealerPreloadTarget(PlayerbotAI* botAI,
                                            Aq40TwinEncounter::TwinRoleAssignment const& assignment)
 {
     if (!botAI || !Aq40TwinEncounter::IsSwapPrepActive(state) ||
-        assignment.stableSide != GetTwinExpectedOwnerSide(state, Aq40TwinEncounter::TwinBoss::Veklor))
+        assignment.stableSide != GetTwinPlannedOwnerSide(state, Aq40TwinEncounter::TwinBoss::Veklor))
     {
         return nullptr;
     }
@@ -3431,6 +3463,205 @@ bool RefreshTwinBossPickupFromWorld(Player* logBot, PlayerbotAI* botAI,
     return true;
 }
 
+bool IsTwinBossTargetForBoss(Unit const* target, Aq40TwinEncounter::TwinBoss boss)
+{
+    return boss == Aq40TwinEncounter::TwinBoss::Veklor ? IsTwinVeklorTarget(target)
+                                                       : IsTwinVeknilashTarget(target);
+}
+
+bool IsTwinBossTargetingOwner(Unit* bossUnit, Player* owner, PlayerbotAI* ownerAI)
+{
+    if (!bossUnit || !owner)
+        return false;
+
+    ObjectGuid const ownerGuid = owner->GetGUID();
+    if (bossUnit->GetVictim() == owner || bossUnit->GetTarget() == ownerGuid)
+        return true;
+
+    return ownerAI && ownerAI->HasAggro(bossUnit);
+}
+
+bool HasTwinControllerTargetEvidence(Player* owner, PlayerbotAI* ownerAI,
+                                     Aq40TwinEncounter::TwinBoss boss)
+{
+    if (!owner || !ownerAI)
+        return false;
+
+    return IsTwinBossTargetForBoss(GetTwinCurrentTarget(ownerAI), boss) ||
+           IsTwinBossTargetForBoss(owner->GetVictim(), boss) ||
+           IsTwinBossTargetForBoss(GetTwinSelectionTarget(owner, ownerAI), boss);
+}
+
+bool HasTwinControllerPickupEvidence(Player* owner, PlayerbotAI* ownerAI,
+                                     Aq40TwinEncounter::TwinEncounterState const& state,
+                                     Aq40TwinEncounter::TwinBoss boss, Unit* bossUnit,
+                                     Aq40TwinEncounter::TwinRoleAssignment const* assignment)
+{
+    if (!owner || !ownerAI || !bossUnit || !assignment || !owner->IsAlive())
+        return false;
+
+    ObjectGuid const ownerGuid = owner->GetGUID();
+    Aq40TwinEncounter::TwinRoleCohort const expectedCohort =
+        boss == Aq40TwinEncounter::TwinBoss::Veklor ? Aq40TwinEncounter::TwinRoleCohort::WarlockTank
+                                                    : Aq40TwinEncounter::TwinRoleCohort::MeleeTank;
+    if (assignment->cohort != expectedCohort)
+        return false;
+
+    Aq40TwinEncounter::TwinStableOwnership const& ownership = Aq40TwinEncounter::GetOwnership(state, boss);
+    bool const designatedOwner =
+        Aq40TwinEncounter::GetPickupOwner(state, boss) == ownerGuid ||
+        ownership.stableOwner == ownerGuid ||
+        ownership.candidateOwner == ownerGuid ||
+        ownership.expectedOwner == ownerGuid ||
+        Aq40TwinEncounter::IsPrimaryController(state, boss, ownerGuid);
+    if (!designatedOwner)
+        return false;
+
+    bool const targetEvidence = HasTwinControllerTargetEvidence(owner, ownerAI, boss);
+    bool const bossTargetsOwner = IsTwinBossTargetingOwner(bossUnit, owner, ownerAI);
+    float const distance = owner->GetDistance2d(bossUnit);
+
+    if (boss == Aq40TwinEncounter::TwinBoss::Veklor)
+    {
+        if (owner->getClass() != CLASS_WARLOCK)
+            return false;
+
+        bool const openerEvidence =
+            state.veklorWarlockSearingPainCaster == ownerGuid ||
+            state.veklorWarlockShadowWardCaster == ownerGuid;
+        bool const rangeEvidence = distance <= kTwinWarlockMaxRange + 6.0f;
+        bool const activeThreatEvidence =
+            openerEvidence || bossTargetsOwner || IsTwinVeklorTarget(owner->GetVictim()) ||
+            state.phase == Aq40TwinEncounter::TwinEncounterPhase::TeleportWindow ||
+            state.phase == Aq40TwinEncounter::TwinEncounterPhase::PickupRecovery;
+
+        return targetEvidence && rangeEvidence && activeThreatEvidence;
+    }
+
+    bool const rangeEvidence = distance <= 12.0f;
+    bool const activeThreatEvidence = bossTargetsOwner || IsTwinVeknilashTarget(owner->GetVictim()) ||
+        state.phase == Aq40TwinEncounter::TwinEncounterPhase::TeleportWindow ||
+        state.phase == Aq40TwinEncounter::TwinEncounterPhase::PickupRecovery;
+    return targetEvidence && (rangeEvidence || activeThreatEvidence);
+}
+
+void AppendTwinControllerEvidenceFields(std::ostringstream& fields, Player* owner, PlayerbotAI* ownerAI,
+                                        Unit* bossUnit, Aq40TwinEncounter::TwinBoss boss,
+                                        bool evidenceAccepted)
+{
+    Unit* currentTarget = ownerAI ? GetTwinCurrentTarget(ownerAI) : nullptr;
+    Unit* selectionTarget = ownerAI ? GetTwinSelectionTarget(owner, ownerAI) : nullptr;
+
+    fields << " evidence_accepted=" << (evidenceAccepted ? 1 : 0)
+           << " controller_current_target=" << Aq40Helpers::GetAq40LogUnit(currentTarget)
+           << " controller_selection_target=" << Aq40Helpers::GetAq40LogUnit(selectionTarget)
+           << " controller_victim=" << Aq40Helpers::GetAq40LogUnit(owner ? owner->GetVictim() : nullptr)
+           << " boss_victim=" << Aq40Helpers::GetAq40LogUnit(bossUnit ? bossUnit->GetVictim() : nullptr)
+           << " boss_targets_controller="
+           << (IsTwinBossTargetingOwner(bossUnit, owner, ownerAI) ? 1 : 0)
+           << " controller_distance=" << (owner && bossUnit ? owner->GetDistance2d(bossUnit) : 0.0f)
+           << " target_evidence="
+           << (HasTwinControllerTargetEvidence(owner, ownerAI, boss) ? 1 : 0);
+}
+
+void PushTwinControllerCandidate(std::vector<ObjectGuid>& candidates, ObjectGuid guid)
+{
+    if (guid.IsEmpty() || std::find(candidates.begin(), candidates.end(), guid) != candidates.end())
+        return;
+
+    candidates.push_back(guid);
+}
+
+std::vector<ObjectGuid> BuildTwinControllerEvidenceCandidates(
+    Aq40TwinEncounter::TwinEncounterState const& state, Aq40TwinEncounter::TwinBoss boss)
+{
+    std::vector<ObjectGuid> candidates;
+    Aq40TwinEncounter::TwinStableOwnership const& ownership = Aq40TwinEncounter::GetOwnership(state, boss);
+    PushTwinControllerCandidate(candidates, Aq40TwinEncounter::GetPickupOwner(state, boss));
+    PushTwinControllerCandidate(candidates, ownership.stableOwner);
+    PushTwinControllerCandidate(candidates, ownership.candidateOwner);
+    PushTwinControllerCandidate(candidates, ownership.expectedOwner);
+    return candidates;
+}
+
+bool RefreshTwinBossPickupFromController(Player* logBot,
+                                         Aq40TwinEncounter::TwinEncounterState& state,
+                                         Aq40TwinEncounter::TwinBoss boss, Unit* bossUnit,
+                                         char const* reason)
+{
+    if (!logBot || !bossUnit || !Aq40TwinEncounter::IsActivePhase(state.phase) ||
+        Aq40TwinEncounter::IsTerminalPhase(state.phase))
+    {
+        return false;
+    }
+
+    for (ObjectGuid const& ownerGuid : BuildTwinControllerEvidenceCandidates(state, boss))
+    {
+        Player* owner = FindTwinInstanceMember(logBot, ownerGuid);
+        PlayerbotAI* ownerAI = owner ? GET_PLAYERBOT_AI(owner) : nullptr;
+        Aq40TwinEncounter::TwinRoleAssignment const* assignment =
+            Aq40TwinEncounter::GetAssignmentForMember(state, ownerGuid);
+        bool const evidenceAccepted =
+            HasTwinControllerPickupEvidence(owner, ownerAI, state, boss, bossUnit, assignment);
+
+        if (owner)
+        {
+            std::ostringstream healthFields;
+            healthFields << "boss=twin twin_boss=" << Aq40TwinEncounter::ToString(boss)
+                         << " owner=" << Aq40Helpers::GetAq40LogUnit(owner)
+                         << " source=" << Aq40Helpers::GetAq40LogUnit(bossUnit)
+                         << " phase=" << Aq40TwinEncounter::ToString(state.phase)
+                         << " refresh_reason=" << (reason ? reason : "controller");
+            AppendTwinControllerEvidenceFields(healthFields, owner, ownerAI, bossUnit, boss, evidenceAccepted);
+            AppendTwinOpeningOwnershipFields(healthFields, logBot, state);
+            Aq40Helpers::LogAq40Info(logBot, "twin_validation",
+                std::string("twin:pickup_controller_health:") + Aq40TwinEncounter::ToString(boss) + ":" +
+                    std::to_string(ownerGuid.GetCounter()),
+                healthFields.str(), 1000);
+        }
+
+        if (!evidenceAccepted)
+            continue;
+
+        Aq40TwinEncounter::TwinStableOwnership const ownershipBefore =
+            Aq40TwinEncounter::GetOwnership(state, boss);
+        bool const pickupWasEstablished = Aq40TwinEncounter::IsPickupEstablished(state, boss);
+        ObjectGuid const previousPickupOwner = Aq40TwinEncounter::GetPickupOwner(state, boss);
+        uint32 const nowMs = getMSTime();
+
+        Aq40TwinEncounter::ConfirmOwner(state, boss, ownerGuid, nowMs);
+        Aq40TwinEncounter::SetStableOwner(state, boss, ownerGuid, nowMs);
+        Aq40TwinEncounter::MarkPickupEstablished(state, boss, ownerGuid, nowMs);
+
+        if (state.phase == Aq40TwinEncounter::TwinEncounterPhase::TeleportWindow)
+            Aq40TwinEncounter::EnterPickupRecovery(state, nowMs);
+
+        PromoteTwinStablePhaseIfWorldPickupsReady(state, nowMs);
+
+        bool const meaningfulChange = !pickupWasEstablished || previousPickupOwner != ownerGuid ||
+                                      ownershipBefore.candidateOwner != ownerGuid ||
+                                      ownershipBefore.stableOwner != ownerGuid;
+        if (!meaningfulChange)
+            return false;
+
+        std::ostringstream fields;
+        fields << "boss=twin twin_boss=" << Aq40TwinEncounter::ToString(boss)
+               << " owner=" << Aq40Helpers::GetAq40LogUnit(owner)
+               << " source=" << Aq40Helpers::GetAq40LogUnit(bossUnit)
+               << " phase=" << Aq40TwinEncounter::ToString(state.phase)
+               << " refresh_reason=" << (reason ? reason : "controller");
+        AppendTwinControllerEvidenceFields(fields, owner, ownerAI, bossUnit, boss, true);
+        AppendTwinOpeningOwnershipFields(fields, logBot, state);
+        Aq40Helpers::LogAq40Info(logBot, "twin_pickup_confirm",
+            std::string(Aq40TwinEncounter::ToString(boss)) + ":" + std::to_string(ownerGuid.GetCounter()) +
+                ":controller:" + Aq40TwinEncounter::ToString(state.phase),
+            fields.str(), 1000);
+        return true;
+    }
+
+    return false;
+}
+
 bool RefreshTwinPickupsFromWorld(Player* logBot, PlayerbotAI* botAI,
                                  Aq40TwinEncounter::TwinEncounterState& state,
                                  Unit* veklor, Unit* veknilash, char const* reason)
@@ -3440,6 +3671,10 @@ bool RefreshTwinPickupsFromWorld(Player* logBot, PlayerbotAI* botAI,
         logBot, botAI, state, Aq40TwinEncounter::TwinBoss::Veklor, veklor, reason);
     changed |= RefreshTwinBossPickupFromWorld(
         logBot, botAI, state, Aq40TwinEncounter::TwinBoss::Veknilash, veknilash, reason);
+    changed |= RefreshTwinBossPickupFromController(
+        logBot, state, Aq40TwinEncounter::TwinBoss::Veklor, veklor, reason);
+    changed |= RefreshTwinBossPickupFromController(
+        logBot, state, Aq40TwinEncounter::TwinBoss::Veknilash, veknilash, reason);
     return changed;
 }
 
@@ -3545,6 +3780,33 @@ bool SyncTwinWarlockTankOverlay(Player* bot, PlayerbotAI* botAI)
     return true;
 }
 
+void LogTwinWarlockOpenerAttempt(Player* bot,
+                                 Aq40TwinEncounter::TwinEncounterState const& state,
+                                 char const* spellName, char const* reason,
+                                 char const* result, Unit* target = nullptr)
+{
+    if (!bot)
+        return;
+
+    std::ostringstream fields;
+    fields << "boss=twin spell=" << (spellName ? spellName : "unknown")
+           << " result=" << (result ? result : "unknown")
+           << " reason=" << (reason ? reason : "warlock_tank")
+           << " phase=" << Aq40TwinEncounter::ToString(state.phase)
+           << " mode=" << Aq40TwinEncounter::ToString(state.mode)
+           << " caster=" << Aq40Helpers::GetAq40LogUnit(bot)
+           << " target=" << Aq40Helpers::GetAq40LogUnit(target)
+           << " distance=" << (target ? bot->GetDistance2d(target) : 0.0f)
+           << " current_generic_spell=" << (bot->GetCurrentSpell(CURRENT_GENERIC_SPELL) ? 1 : 0)
+           << " current_channeled_spell=" << (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL) ? 1 : 0)
+           << " opener_searing_pain=" << (state.veklorWarlockSearingPainAtMs ? 1 : 0)
+           << " opener_shadow_ward=" << (state.veklorWarlockShadowWardAtMs ? 1 : 0);
+    Aq40Helpers::LogAq40Info(bot, "twin_validation",
+        std::string("twin:warlock_opener:") + (spellName ? spellName : "unknown") + ":" +
+            (result ? result : "unknown"),
+        fields.str(), 1000);
+}
+
 bool TryTwinWarlockShadowWard(Player* bot, PlayerbotAI* botAI,
                               Aq40TwinEncounter::TwinEncounterState& state,
                               char const* reason)
@@ -3553,7 +3815,10 @@ bool TryTwinWarlockShadowWard(Player* bot, PlayerbotAI* botAI,
         return false;
 
     if (bot->GetCurrentSpell(CURRENT_GENERIC_SPELL) || bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+    {
+        LogTwinWarlockOpenerAttempt(bot, state, "shadow_ward", reason, "busy");
         return false;
+    }
 
     uint32 const nowMs = getMSTime();
     bool const alreadyActive = botAI->HasAura("shadow ward", bot);
@@ -3564,11 +3829,24 @@ bool TryTwinWarlockShadowWard(Player* bot, PlayerbotAI* botAI,
             state.veklorWarlockShadowWardAtMs = nowMs;
             state.veklorWarlockShadowWardCaster = bot->GetGUID();
         }
+        LogTwinWarlockOpenerAttempt(bot, state, "shadow_ward", reason, "already_active");
         return false;
     }
 
-    if (!botAI->CanCastSpell("shadow ward", bot) || !botAI->CastSpell("shadow ward", bot))
+    if (!botAI->CanCastSpell("shadow ward", bot))
     {
+        if (!state.veklorWarlockShadowWardAtMs)
+        {
+            state.veklorWarlockShadowWardAtMs = nowMs;
+            state.veklorWarlockShadowWardCaster = bot->GetGUID();
+        }
+        LogTwinWarlockOpenerAttempt(bot, state, "shadow_ward", reason, "unavailable_accepted");
+        return false;
+    }
+
+    if (!botAI->CastSpell("shadow ward", bot))
+    {
+        LogTwinWarlockOpenerAttempt(bot, state, "shadow_ward", reason, "cast_failed");
         return false;
     }
 
@@ -3583,6 +3861,7 @@ bool TryTwinWarlockShadowWard(Player* bot, PlayerbotAI* botAI,
            << " caster=" << Aq40Helpers::GetAq40LogUnit(bot);
     Aq40Helpers::LogAq40Info(bot, "twin_strategy", "twin:warlock_tank:shadow_ward",
         fields.str(), 1000);
+    LogTwinWarlockOpenerAttempt(bot, state, "shadow_ward", reason, "cast");
     return true;
 }
 
@@ -3594,10 +3873,22 @@ bool TryTwinWarlockSearingPain(Player* bot, PlayerbotAI* botAI,
         return false;
 
     if (bot->GetCurrentSpell(CURRENT_GENERIC_SPELL) || bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+    {
+        LogTwinWarlockOpenerAttempt(bot, state, "searing_pain", reason, "busy", veklor);
         return false;
+    }
 
-    if (!botAI->CanCastSpell("searing pain", veklor) || !botAI->CastSpell("searing pain", veklor))
+    if (!botAI->CanCastSpell("searing pain", veklor))
+    {
+        LogTwinWarlockOpenerAttempt(bot, state, "searing_pain", reason, "cannot_cast", veklor);
         return false;
+    }
+
+    if (!botAI->CastSpell("searing pain", veklor))
+    {
+        LogTwinWarlockOpenerAttempt(bot, state, "searing_pain", reason, "cast_failed", veklor);
+        return false;
+    }
 
     state.veklorWarlockSearingPainAtMs = getMSTime();
     state.veklorWarlockSearingPainCaster = bot->GetGUID();
@@ -3611,6 +3902,7 @@ bool TryTwinWarlockSearingPain(Player* bot, PlayerbotAI* botAI,
            << " target=" << Aq40Helpers::GetAq40LogUnit(veklor);
     Aq40Helpers::LogAq40Info(bot, "twin_strategy", "twin:warlock_tank:searing_pain",
         fields.str(), 1000);
+    LogTwinWarlockOpenerAttempt(bot, state, "searing_pain", reason, "cast", veklor);
     return true;
 }
 
@@ -4312,8 +4604,13 @@ bool Aq40TwinSwapPrepStageAction::Execute(Event /*event*/)
                << (state->nextTeleportLatestAtMs > nowMs ? state->nextTeleportLatestAtMs - nowMs : 0u)
                << " veklor_expected_side="
                << Aq40TwinEncounter::ToString(GetTwinExpectedOwnerSide(*state, Aq40TwinEncounter::TwinBoss::Veklor))
+               << " veklor_incoming_side="
+               << Aq40TwinEncounter::ToString(GetTwinPlannedOwnerSide(*state, Aq40TwinEncounter::TwinBoss::Veklor))
                << " veknilash_expected_side="
-               << Aq40TwinEncounter::ToString(GetTwinExpectedOwnerSide(*state, Aq40TwinEncounter::TwinBoss::Veknilash));
+               << Aq40TwinEncounter::ToString(GetTwinExpectedOwnerSide(*state, Aq40TwinEncounter::TwinBoss::Veknilash))
+               << " veknilash_incoming_side="
+               << Aq40TwinEncounter::ToString(
+                      GetTwinPlannedOwnerSide(*state, Aq40TwinEncounter::TwinBoss::Veknilash));
         AppendTwinBotTraceFields(fields, bot, botAI, "swap_prep_arm");
         AppendTwinOpeningOwnershipFields(fields, bot, *state, nowMs);
         Aq40Helpers::LogAq40Info(bot, "twin_swap_prep", "twin:swap_prep:arm", fields.str(), 1000);

@@ -209,6 +209,9 @@ uint32 GetTwinSwapPrepElapsedMs(Aq40TwinEncounter::TwinEncounterState const& sta
 		return 0;
 
 	uint32 const now = nowMs ? nowMs : getMSTime();
+	if (now < state.swapPrepStartAtMs)
+		return 0;
+
 	return getMSTimeDiff(state.swapPrepStartAtMs, now);
 }
 
@@ -311,12 +314,25 @@ std::string GetTwinFirstTeleportIncomingHoldState(Aq40TwinEncounter::TwinEncount
 	return anchorError <= kTwinReserveAuditAnchorTolerance ? "parked" : "off_anchor";
 }
 
+ObjectGuid GetTwinIncomingOwnerForAudit(Aq40TwinEncounter::TwinEncounterState const& state,
+										Aq40TwinEncounter::TwinBoss boss)
+{
+	Aq40TwinEncounter::TwinStableOwnership const& ownership = Aq40TwinEncounter::GetOwnership(state, boss);
+	if ((state.swapPrepArmedAtMs || Aq40TwinEncounter::IsSwapPrepActive(state)) &&
+		!ownership.reserveOwner.IsEmpty())
+	{
+		return ownership.reserveOwner;
+	}
+
+	return ownership.expectedOwner;
+}
+
 void AppendTwinFirstTeleportIncomingOwnerAudit(std::ostringstream& fields, Player* logBot,
 											   Aq40TwinEncounter::TwinEncounterState const& state,
 											   Aq40TwinEncounter::TwinBoss boss, char const* prefix)
 {
-	Aq40TwinEncounter::TwinStableOwnership const& ownership = Aq40TwinEncounter::GetOwnership(state, boss);
-	if (ownership.expectedOwner.IsEmpty())
+	ObjectGuid const incomingOwnerGuid = GetTwinIncomingOwnerForAudit(state, boss);
+	if (incomingOwnerGuid.IsEmpty())
 	{
 		fields << " " << prefix << "_incoming_member=none"
 			   << " " << prefix << "_incoming_assignment_status=none"
@@ -331,9 +347,9 @@ void AppendTwinFirstTeleportIncomingOwnerAudit(std::ostringstream& fields, Playe
 		return;
 	}
 
-	Player* incomingOwner = FindTwinInstanceMember(logBot, ownership.expectedOwner);
+	Player* incomingOwner = FindTwinInstanceMember(logBot, incomingOwnerGuid);
 	Aq40TwinEncounter::TwinRoleAssignment const* assignment =
-		Aq40TwinEncounter::GetAssignmentForMember(state, ownership.expectedOwner);
+		Aq40TwinEncounter::GetAssignmentForMember(state, incomingOwnerGuid);
 	std::string assignmentStatus = incomingOwner ? BuildTwinFirstTeleportIncomingAssignmentStatus(boss, assignment)
 												 : std::string("missing_member");
 
@@ -409,15 +425,16 @@ void LogTwinFirstTeleportReservePromotionAudit(Player* logBot,
 			Aq40TwinEncounter::GetOwnership(preTeleportState, boss);
 		Aq40TwinEncounter::TwinStableOwnership const& postOwnership =
 			Aq40TwinEncounter::GetOwnership(postTeleportState, boss);
+		ObjectGuid const incomingOwnerGuid = GetTwinIncomingOwnerForAudit(preTeleportState, boss);
 
-		fields << " " << prefix << "_promotion_expected="
-			   << Aq40Helpers::GetAq40LogUnit(FindTwinInstanceMember(logBot, preOwnership.expectedOwner))
+		fields << " " << prefix << "_promotion_incoming="
+			   << Aq40Helpers::GetAq40LogUnit(FindTwinInstanceMember(logBot, incomingOwnerGuid))
 			   << " " << prefix << "_promotion_outgoing="
-			   << Aq40Helpers::GetAq40LogUnit(FindTwinInstanceMember(logBot, preOwnership.reserveOwner))
+			   << Aq40Helpers::GetAq40LogUnit(FindTwinInstanceMember(logBot, preOwnership.expectedOwner))
 			   << " " << prefix << "_promotion_candidate="
 			   << Aq40Helpers::GetAq40LogUnit(FindTwinInstanceMember(logBot, postOwnership.candidateOwner))
-			   << " " << prefix << "_promotion_matches_expected="
-			   << (!preOwnership.expectedOwner.IsEmpty() && postOwnership.candidateOwner == preOwnership.expectedOwner);
+			   << " " << prefix << "_promotion_matches_incoming="
+			   << (!incomingOwnerGuid.IsEmpty() && postOwnership.candidateOwner == incomingOwnerGuid);
 		AppendTwinFirstTeleportIncomingOwnerAudit(fields, logBot, preTeleportState, boss, prefix);
 	}
 
@@ -1193,9 +1210,13 @@ std::string BuildTwinPreTeleportGateFailureReason(Aq40TwinEncounter::TwinEncount
 		addReason("stable_phase_missing");
 	if (!Aq40TwinEncounter::HasDeterministicAssignments(state))
 		addReason("assignments_missing");
-	if (!state.veklorWarlockSearingPainAtMs)
+	bool const veklorPickupEstablished =
+		Aq40TwinEncounter::IsPickupEstablished(state, Aq40TwinEncounter::TwinBoss::Veklor);
+	bool const veklorOwnershipStable =
+		IsTwinStableWindowOwnershipValid(state, Aq40TwinEncounter::TwinBoss::Veklor);
+	if (!state.veklorWarlockSearingPainAtMs && !veklorPickupEstablished)
 		addReason("searing_pain_missing");
-	if (!state.veklorWarlockShadowWardAtMs)
+	if (!state.veklorWarlockShadowWardAtMs && !veklorPickupEstablished)
 		addReason("shadow_ward_missing");
 	if (state.petEmperorViolationCount)
 		addReason("pet_emperor_violation");
@@ -1203,11 +1224,11 @@ std::string BuildTwinPreTeleportGateFailureReason(Aq40TwinEncounter::TwinEncount
 		addReason("heal_brother_seen");
 	if (state.scriptedHazards.arcaneBurstAtMs)
 		addReason("arcane_burst_before_first_teleport");
-	if (!Aq40TwinEncounter::IsPickupEstablished(state, Aq40TwinEncounter::TwinBoss::Veklor))
+	if (!veklorPickupEstablished)
 		addReason("veklor_pickup_missing");
 	if (!Aq40TwinEncounter::IsPickupEstablished(state, Aq40TwinEncounter::TwinBoss::Veknilash))
 		addReason("veknilash_pickup_missing");
-	if (!IsTwinStableWindowOwnershipValid(state, Aq40TwinEncounter::TwinBoss::Veklor))
+	if (!veklorOwnershipStable)
 		addReason("veklor_ownership_unstable");
 	if (!IsTwinStableWindowOwnershipValid(state, Aq40TwinEncounter::TwinBoss::Veknilash))
 		addReason("veknilash_ownership_unstable");

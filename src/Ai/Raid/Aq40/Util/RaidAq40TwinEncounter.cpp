@@ -2459,15 +2459,18 @@ bool ArmSwapPrep(TwinEncounterState& state, uint32 nowMs)
     if (!IsSwapPrepActive(state, now) || state.swapPrepArmedAtMs)
         return false;
 
+    state.swapPrepArmedAtMs = now;
+    return true;
+}
+
+void PromoteReserveOwnersForTeleport(TwinEncounterState& state)
+{
     for (TwinBoss boss : { TwinBoss::Veklor, TwinBoss::Veknilash })
     {
         TwinStableOwnership& ownership = GetOwnership(state, boss);
         if (!ownership.expectedOwner.IsEmpty() && !ownership.reserveOwner.IsEmpty())
             std::swap(ownership.expectedOwner, ownership.reserveOwner);
     }
-
-    state.swapPrepArmedAtMs = now;
-    return true;
 }
 
 uint32 GetScriptedEventAtMs(TwinEncounterState const& state, TwinScriptedEvent event)
@@ -2873,6 +2876,11 @@ void EnterStablePhase(TwinEncounterState& state, uint32 nowMs)
 void EnterTeleportWindow(TwinEncounterState& state, uint32 threatHoldDurationMs, uint32 nowMs)
 {
     uint32 const now = ResolveNow(nowMs);
+    bool const shouldPromoteReserveOwners = state.swapPrepArmedAtMs || IsSwapPrepActive(state, now);
+
+    if (shouldPromoteReserveOwners)
+        PromoteReserveOwnersForTeleport(state);
+
     state.lastTeleportAtMs = now;
     ++state.teleportCount;
     ScheduleNextTeleportCadence(state, now);
