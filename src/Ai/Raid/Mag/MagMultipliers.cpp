@@ -139,4 +139,3 @@ float MagtheridonDebrisDangerMultiplier::GetValue(Action* action)
 
     return 1.0f;
 }
-
