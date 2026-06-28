@@ -5,6 +5,7 @@
 
 #include "HRMultipliers.h"
 #include "HRActions.h"
+#include "HRTriggers.h"
 #include "MovementActions.h"
 #include "ReachTargetActions.h"
 #include "Playerbots.h"
