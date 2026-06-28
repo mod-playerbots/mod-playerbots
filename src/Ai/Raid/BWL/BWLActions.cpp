@@ -19,19 +19,19 @@ static constexpr float VAELASTRASZ_REPULSION_RANGE = 20.0f;
 static constexpr float VAELASTRASZ_TAIL_SWEEP_RECOVERY_RANGE = 30.0f;
 static constexpr float VAELASTRASZ_RANGED_BIAS_THRESHOLD = 25.0f;
 static constexpr float VAELASTRASZ_RANGED_BIAS_FLEE_WEIGHT = 0.7f;
-static constexpr float VAELASTRASZ_RANGED_BIAS_BOSS_WEIGHT = 1 - VAELASTRASZ_RANGED_BIAS_FLEE_WEIGHT;
+static constexpr float VAELASTRASZ_RANGED_BIAS_BOSS_WEIGHT = 1.0f - VAELASTRASZ_RANGED_BIAS_FLEE_WEIGHT;
 
 // General
 
 bool BwlOnyxiaScaleCloakAuraCheckAction::Execute(Event /*event*/)
 {
-    bot->AddAura(SPELL_ONYXIA_SCALE_CLOAK, bot);
+    bot->AddAura(static_cast<uint32>(BlackwingLairSpells::SPELL_ONYXIA_SCALE_CLOAK), bot);
     return true;
 }
 
 bool BwlOnyxiaScaleCloakAuraCheckAction::isUseful()
 {
-    return !bot->HasAura(SPELL_ONYXIA_SCALE_CLOAK);
+    return !bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_ONYXIA_SCALE_CLOAK));
 }
 
 bool BwlTurnOffSuppressionDeviceAction::Execute(Event /*event*/)
@@ -48,23 +48,17 @@ bool BwlTurnOffSuppressionDeviceAction::Execute(Event /*event*/)
     return true;
 }
 
-bool BwlTurnOffSuppressionDeviceAction::isUseful()
-{
-    // Originally, only rogues could disarm suppression devices.
-    // If raid cheats are enabled, any bot can disarm the devices.
-    return bot->IsClass(CLASS_ROGUE) || botAI->HasCheat(BotCheatMask::raid);
-}
-
 // Razorgore the Untamed
 
-bool BwlRazorgoreAvoidAoe::Execute(Event /*event*/)
+bool BwlRazorgoreAvoidAoeAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "razorgore the untamed");
     if (!boss)
         return false;
 
-    // The current tank should not move
-    if (PlayerbotAI::IsTank(bot) && boss->GetVictim() == bot)
+    // The current target should not move.
+    // Also prevents non-tanks from rotating the boss if they have aggro.
+    if (boss->GetVictim() == bot)
         return false;
 
     float distance = bot->GetDistance2d(boss);
@@ -91,7 +85,7 @@ bool BwlRazorgoreAvoidAoe::Execute(Event /*event*/)
         float moveY = bot->GetPositionY() + (dY / dist) * INCREMENTAL_MOVE_STEP_DISTANCE;
 
         return MoveTo(boss->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false,
-                      false, false, MovementPriority::MOVEMENT_COMBAT);
+                      false, false, MovementPriority::MOVEMENT_COMBAT, true);
     }
 
     // Ranged outside the cone but too close => back off to avoid War Stomp
@@ -167,7 +161,7 @@ bool BwlVaelastraszMoveAwayAction::CalculateFleeDirection(const Unit* boss, floa
                 continue;
 
             // Boss alive: ignore other Burning Adrenaline bots so they can group together
-            if (!bossDead && p->HasAura(SPELL_BURNING_ADRENALINE))
+            if (!bossDead && p->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_BURNING_ADRENALINE)))
                 continue;
 
             // Compute a flee direction via weighted repulsion from other bots.
@@ -254,7 +248,7 @@ bool BwlVaelastraszMoveAwayAction::MoveAlongFleeDirection(const Unit* boss, floa
                 continue;
 
             if (MoveTo(bot->GetMapId(), targetX, targetY, bot->GetPositionZ(), false, false,
-                       false, false, MovementPriority::MOVEMENT_FORCED))
+                       false, false, MovementPriority::MOVEMENT_FORCED, true))
                 return true;
         }
     }
@@ -266,7 +260,7 @@ bool BwlVaelastraszMoveAwayAction::MoveAlongFleeDirection(const Unit* boss, floa
 
 bool BwlUseHourglassSandAction::Execute(Event /*event*/)
 {
-    return botAI->CastSpell(SPELL_HOURGLASS_SAND, bot);
+    return botAI->CastSpell(static_cast<uint32>(BlackwingLairSpells::SPELL_HOURGLASS_SAND), bot);
 }
 
 bool BwlNefarianFearWardAction::Execute(Event /*event*/)
@@ -292,7 +286,7 @@ Unit* BwlDeathTalonWyrmguardTankMoveAwayAction::GetTarget()
     for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
     {
         Unit* unit = ref->GetOwner();
-        if (!unit || !unit->IsAlive() || unit->GetEntry() != NPC_DEATH_TALON_WYRMGUARD)
+        if (!unit || !unit->IsAlive() || unit->GetEntry() != static_cast<uint32>(BlackwingLairNPCs::NPC_DEATH_TALON_WYRMGUARD))
             continue;
         if (bot->GetDistance2d(unit) > WYRMGUARD_SAFE_DISTANCE)
             continue;
@@ -312,7 +306,8 @@ bool BwlDeathTalonWyrmguardTankMoveAwayAction::isUseful()
     for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
     {
         Unit* unit = ref->GetOwner();
-        if (unit && unit->IsAlive() && unit->GetEntry() == NPC_DEATH_TALON_WYRMGUARD && unit->GetVictim() == bot)
+        if (unit && unit->IsAlive() && unit->GetEntry() == static_cast<uint32>(BlackwingLairNPCs::NPC_DEATH_TALON_WYRMGUARD) &&
+            unit->GetVictim() == bot)
             return true;
     }
     return false;
@@ -339,7 +334,7 @@ Unit* BwlDeathTalonWyrmguardRangedMoveAwayAction::GetTarget()
     for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
     {
         Unit* unit = ref->GetOwner();
-        if (!unit || !unit->IsAlive() || unit->GetEntry() != NPC_DEATH_TALON_WYRMGUARD)
+        if (!unit || !unit->IsAlive() || unit->GetEntry() != static_cast<uint32>(BlackwingLairNPCs::NPC_DEATH_TALON_WYRMGUARD))
             continue;
         float dist = bot->GetDistance2d(unit);
         if (dist < closestDist)

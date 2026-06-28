@@ -9,7 +9,7 @@ namespace BlackwingLairHelpers
     {
         constexpr float suppressionDeviceInteractionDistance = 15.0f;
         return go &&
-               go->GetEntry() == GO_SUPPRESSION_DEVICE &&
+               go->GetEntry() == static_cast<uint32>(BlackwingLairGameObjects::GO_SUPPRESSION_DEVICE) &&
                go->GetDistance(bot) < suppressionDeviceInteractionDistance &&
                go->GetGoState() == GO_STATE_READY;
     }
@@ -20,7 +20,7 @@ namespace BlackwingLairHelpers
         for (auto const& guid : gos)
         {
             const GameObject* go = botAI->GetGameObject(guid);
-            if (go && go->GetEntry() == GO_BLACK_DRAGON_EGG)
+            if (go && go->GetEntry() == static_cast<uint32>(BlackwingLairGameObjects::GO_BLACK_DRAGON_EGG))
                 return true;
         }
         return false;
@@ -43,7 +43,7 @@ namespace BlackwingLairHelpers
             if (!p || p == bot || !p->IsAlive() || p->GetMapId() != bot->GetMapId())
                 continue;
 
-            if (p->HasAura(SPELL_BURNING_ADRENALINE))
+            if (p->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_BURNING_ADRENALINE)))
                 continue;
 
             if (p->GetDistance2d(position.GetPositionX(), position.GetPositionY()) < distance)

@@ -30,7 +30,7 @@ private:
     static Action* bwl_check_onyxia_scale_cloak(PlayerbotAI* ai) { return new BwlOnyxiaScaleCloakAuraCheckAction(ai); }
     static Action* bwl_turn_off_suppression_device(PlayerbotAI* ai) { return new BwlTurnOffSuppressionDeviceAction(ai); }
     static Action* bwl_razorgore_fire_resistance_action(PlayerbotAI* ai) { return new BossFireResistanceAction(ai, "razorgore the untamed"); }
-    static Action* bwl_razorgore_avoid_aoe(PlayerbotAI* ai) { return new BwlRazorgoreAvoidAoe(ai); }
+    static Action* bwl_razorgore_avoid_aoe(PlayerbotAI* ai) { return new BwlRazorgoreAvoidAoeAction(ai); }
     static Action* bwl_razorgore_mark_boss(PlayerbotAI* ai) { return new BwlRazorgoreMarkBossAction(ai); }
     static Action* bwl_vaelastrasz_fire_resistance_action(PlayerbotAI* ai) { return new BossFireResistanceAction(ai, "vaelastrasz the corrupt"); }
     static Action* bwl_vaelastrasz_move_away(PlayerbotAI* ai) { return new BwlVaelastraszMoveAwayAction(ai); }

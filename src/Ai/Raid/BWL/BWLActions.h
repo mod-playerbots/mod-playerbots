@@ -2,6 +2,7 @@
 #define PLAYERBOTS_BWLACTIONS_H
 
 #include "Action.h"
+#include "MovementActions.h"
 #include "AttackAction.h"
 
 // General
@@ -19,15 +20,14 @@ class BwlTurnOffSuppressionDeviceAction : public Action
 public:
     BwlTurnOffSuppressionDeviceAction(PlayerbotAI* botAI) : Action(botAI, "bwl turn off suppression device") {}
     bool Execute(Event event) override;
-    bool isUseful() override;
 };
 
 // Razorgore the Untamed
 
-class BwlRazorgoreAvoidAoe : public MovementAction
+class BwlRazorgoreAvoidAoeAction : public MovementAction
 {
 public:
-    BwlRazorgoreAvoidAoe(PlayerbotAI* botAI) : MovementAction(botAI, "bwl razorgore avoid aoe") {}
+    BwlRazorgoreAvoidAoeAction(PlayerbotAI* botAI) : MovementAction(botAI, "bwl razorgore avoid aoe") {}
     bool Execute(Event event) override;
 };
 

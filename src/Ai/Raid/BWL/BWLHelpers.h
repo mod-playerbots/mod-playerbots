@@ -6,7 +6,7 @@
 
 namespace BlackwingLairHelpers
 {
-    enum BlackwingLairSpells
+    enum class BlackwingLairSpells : uint32
     {
         // General
         SPELL_ONYXIA_SCALE_CLOAK = 22683,
@@ -25,7 +25,7 @@ namespace BlackwingLairHelpers
         SPELL_WILD_MAGIC = 23410
     };
 
-    enum BlackwingLairGameObjects
+    enum class BlackwingLairGameObjects : uint32
     {
         // General
         GO_SUPPRESSION_DEVICE = 179784,
@@ -34,7 +34,7 @@ namespace BlackwingLairHelpers
         GO_BLACK_DRAGON_EGG = 177807
     };
 
-    enum BlackwingLairNPCs
+    enum class BlackwingLairNPCs : uint32
     {
         // Trash
         NPC_DEATH_TALON_WYRMGUARD = 12460
@@ -46,4 +46,4 @@ namespace BlackwingLairHelpers
     bool IsNonBABotNearPosition(const Player* bot, Position const& position, float distance);
 }
 
-#endif //_PLAYERBOT_RAIDBWLHELPERS_H
+#endif

@@ -19,7 +19,7 @@ using namespace BlackwingLairHelpers;
 
 static constexpr float VAELASTRASZ_BA_SAFE_DISTANCE = 20.0f;
 static constexpr float VAELASTRASZ_BA_BOSS_DISTANCE = 30.0f;
-static constexpr float VAELASTRASZ_WARLOCK_DRAIN_SOUL_THRESHOLD = 3;
+static constexpr float VAELASTRASZ_WARLOCK_DRAIN_SOUL_THRESHOLD = 3.0f;
 
 float RazorgoreTankMultiplier::GetValue(Action* action)
 {
@@ -67,7 +67,7 @@ float VaelastraszTankMultiplier::GetValue(Action* action)
 
 float VaelastraszBurningAdrenalineMultiplier::GetValue(Action* action)
 {
-    if (bot->HasAura(SPELL_BURNING_ADRENALINE))
+    if (bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_BURNING_ADRENALINE)))
     {
         if (dynamic_cast<MovementAction*>(action))
         {

@@ -30,10 +30,10 @@ public:
     bool IsActive() override;
 };
 
-class BwlVaelastraszBurningAdrenaline : public Trigger
+class BwlVaelastraszBurningAdrenalineTrigger : public Trigger
 {
 public:
-    BwlVaelastraszBurningAdrenaline(PlayerbotAI* botAI) : Trigger(botAI, "bwl vaelastrasz burning adrenaline") {}
+    BwlVaelastraszBurningAdrenalineTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl vaelastrasz burning adrenaline") {}
     bool IsActive() override;
 };
 
