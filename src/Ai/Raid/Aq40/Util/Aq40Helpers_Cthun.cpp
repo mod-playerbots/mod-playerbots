@@ -1,4 +1,4 @@
-#include "RaidAq40Helpers_Cthun.h"
+#include "Aq40Helpers_Cthun.h"
 
 #include <algorithm>
 #include <cctype>
@@ -6,9 +6,9 @@
 #include <unordered_map>
 
 #include "GameObject.h"
-#include "../RaidAq40BossHelper.h"
-#include "../RaidAq40SpellIds.h"
-#include "RaidAq40Helpers_Shared.h"
+#include "../Aq40BossHelper.h"
+#include "../Aq40SpellIds.h"
+#include "Aq40Helpers_Shared.h"
 #include "Timer.h"
 
 namespace Aq40Helpers

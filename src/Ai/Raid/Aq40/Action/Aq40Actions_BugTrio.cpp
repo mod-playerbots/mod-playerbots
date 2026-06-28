@@ -1,9 +1,9 @@
-#include "RaidAq40Actions.h"
+#include "Aq40Actions.h"
 
-#include "../RaidAq40BossHelper.h"
-#include "../RaidAq40SpellIds.h"
-#include "../Util/RaidAq40Helpers_Shared.h"
-#include "../../RaidBossHelpers.h"
+#include "RtiTargetValue.h"
+#include "../Aq40BossHelper.h"
+#include "../Aq40SpellIds.h"
+#include "../Util/Aq40Helpers_Shared.h"
 
 namespace Aq40BossActions
 {
@@ -78,28 +78,20 @@ bool Aq40BugTrioChooseTargetAction::Execute(Event /*event*/)
     Unit* target = nullptr;
     if (Aq40BossHelper::IsEncounterTank(bot, bot))
     {
-        // Tank picks the highest kill-order target and marks it with skull.
-        // The base DpsAssist system will auto-focus skull for all DPS.
         target = Aq40BossActions::FindBugTrioTarget(botAI, encounterUnits);
 
         if (target)
-        {
-            MarkTargetWithSkull(bot, target);
-            Aq40Helpers::LogAq40Info(bot, "raid_marker",
-                "bug_trio:skull:" + Aq40Helpers::GetAq40LogUnit(target),
-                "boss=bug_trio marker=skull target=" + Aq40Helpers::GetAq40LogUnit(target));
-        }
+            Aq40Helpers::SetRaidTargetIcon(bot, target, RtiTargetValue::skullIndex, "bug_trio", "skull");
     }
     else
     {
-        // Non-tanks follow a tank-held target in kill order.
-        // Skull preference is already handled by the base DpsTargetValue,
-        // but we still need explicit targeting here for the wait-for-aggro gate.
         target = Aq40BossActions::FindBugTrioTankOwnedTarget(botAI, bot, encounterUnits);
     }
 
     if (!target)
         return false;
+
+    Aq40Helpers::SetRtiTarget(botAI, "skull", target);
 
     if (AI_VALUE(Unit*, "current target") == target && bot->GetVictim() == target)
         return false;

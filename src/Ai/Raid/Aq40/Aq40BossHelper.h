@@ -16,7 +16,7 @@
 #include "SharedDefines.h"
 #include "Spell.h"
 #include "Timer.h"
-#include "RaidAq40SpellIds.h"
+#include "Aq40SpellIds.h"
 
 namespace Aq40BossHelper
 {
@@ -233,8 +233,6 @@ inline EncounterMemberSnapshot const& GetEncounterMemberSnapshot(Player const* r
 }
 }    // namespace Detail
 
-    // Returns true if any group member near the caller (~100y, same instance) is currently in combat.
-    // Scoped by proximity so that unrelated trash combat elsewhere in AQ40 does not prevent per-encounter state cleanup on wipe.
 inline bool IsNearbyGroupMemberInCombat(Player const* player, float range = 100.0f)
 {
     if (!player)
@@ -267,11 +265,6 @@ inline bool IsNearbyGroupMemberInCombat(Player const* player, float range = 100.
 
     return false;
 }
-
-    // Returns true when an active encounter cluster exists near the caller.
-    // Requires two or more in-combat group members within |range| of the caller in the same instance.
-    // Caller-relative so that distant trash combat elsewhere in AQ40 does NOT preserve stale boss state after a wipe.
-    // Does NOT short-circuit on the caller's own combat (a single bot on trash cannot keep the flag active by itself).
 inline bool IsEncounterCombatActive(Player const* player, float range = 100.0f)
 {
     if (!player)
@@ -308,9 +301,6 @@ inline bool IsEncounterCombatActive(Player const* player, float range = 100.0f)
     return false;
 }
 
-    // Returns true when |member| is in the same instance copy as |reference|.
-    // Used for globally-stable role selection (tanks, warlocks) where every member
-    // in the instance must agree on the same assignment regardless of position.
 inline bool IsSameInstance(Player const* reference, Player const* member)
 {
     if (!reference || !member)
@@ -324,10 +314,6 @@ inline bool IsSameInstance(Player const* reference, Player const* member)
         return false;
     return true;
 }
-
-    // Returns true when |member| is near the same encounter as |reference|: same instance and within encounter range.
-    // Used for spread/cohort assignment so that distant players elsewhere in the same instance copy
-    // do not consume positioning slots.
 inline bool IsNearEncounter(Player const* reference, Player const* member, float range = 100.0f)
 {
     if (!IsSameInstance(reference, member))
@@ -337,11 +323,6 @@ inline bool IsNearEncounter(Player const* reference, Player const* member, float
     return const_cast<Player*>(reference)->GetDistance2d(const_cast<Player*>(member)) <= range;
 }
 
-    // Returns true when |member| is an active encounter participant: same
-    // instance copy as the caller.  Used for role resolution (tanks, warlocks)
-    // where every participant in the instance must agree on the same assignment regardless of position.
-    // Instance-global so that an isolated tank cannot promote itself to "primary" in a local view, and so that a tank that
-    // briefly moves far from the boss remains in the candidate set.
 inline bool IsEncounterParticipant(Player const* reference, Player const* member)
 {
     return IsSameInstance(reference, member);
@@ -678,11 +659,6 @@ inline bool IsTrashEncounterActive(PlayerbotAI* botAI, GuidVector const& attacke
     return HasAnyNamedUnit(botAI, attackers, { "anubisath defender" });
 }
 
-// -----------------------------------------------------------------------
-// Shared encounter helpers — centralised to avoid duplicate definitions
-// across Actions, Triggers, and Multipliers.
-// -----------------------------------------------------------------------
-
 inline bool IsSarturaMob(PlayerbotAI* botAI, Unit* unit)
 {
     return unit && (botAI->EqualLowercaseName(unit->GetName(), "battleguard sartura") ||
@@ -726,8 +702,120 @@ inline Unit* FindLowestHealthUnit(std::vector<Unit*> const& units)
     return chosen;
 }
 
-// Shared mind-control CC logic used by both Skeram and Trash encounters.
-// Returns true if a CC spell was successfully cast on a charmed player.
+namespace Twin
+{
+inline GuidVector GetEncounterUnits(PlayerbotAI* botAI)
+{
+    if (!botAI || !botAI->GetAiObjectContext())
+        return GuidVector();
+
+    return Aq40BossHelper::GetEncounterUnits(
+        botAI, botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get());
+}
+
+inline GuidVector GetActiveCombatUnits(PlayerbotAI* botAI)
+{
+    if (!botAI || !botAI->GetAiObjectContext())
+        return GuidVector();
+
+    return Aq40BossHelper::GetActiveCombatUnits(
+        botAI, botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get());
+}
+
+inline Unit* FindUnitByEntry(PlayerbotAI* botAI, GuidVector const& units, uint32 entry)
+{
+    if (!botAI)
+        return nullptr;
+
+    Player* bot = botAI->GetBot();
+    if (!bot)
+        return nullptr;
+
+    for (ObjectGuid const guid : units)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (!unit || !unit->IsAlive() || !unit->IsInWorld() || unit->IsFriendlyTo(bot) ||
+            unit->GetMapId() != bot->GetMapId())
+        {
+            continue;
+        }
+
+        if (unit->GetEntry() == entry)
+            return unit;
+    }
+
+    return nullptr;
+}
+
+inline Unit* FindVeklor(PlayerbotAI* botAI, GuidVector const& units)
+{
+    return FindUnitByEntry(botAI, units, Aq40SpellIds::TwinVeklorNpcEntry);
+}
+
+inline Unit* FindVeknilash(PlayerbotAI* botAI, GuidVector const& units)
+{
+    return FindUnitByEntry(botAI, units, Aq40SpellIds::TwinVeknilashNpcEntry);
+}
+
+inline bool IsExplodeBugCast(Unit* unit)
+{
+    if (!unit)
+        return false;
+
+    Spell* spell = unit->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    return spell && Aq40SpellIds::MatchesAnySpellId(spell->GetSpellInfo(), { Aq40SpellIds::TwinExplodeBug });
+}
+
+inline Unit* FindNearestBug(Player* bot, PlayerbotAI* botAI, GuidVector const& units, float maxDistance,
+                            bool explodingOnly = false)
+{
+    if (!bot || !botAI)
+        return nullptr;
+
+    Unit* nearestBug = nullptr;
+    float nearestDistance = std::numeric_limits<float>::max();
+    for (ObjectGuid const guid : units)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (!unit || !unit->IsAlive() || !Aq40SpellIds::IsTwinBugEntry(unit->GetEntry()))
+            continue;
+
+        if (explodingOnly && !IsExplodeBugCast(unit))
+            continue;
+
+        float const distance = bot->GetDistance2d(unit);
+        if (distance > maxDistance || distance >= nearestDistance)
+            continue;
+
+        nearestBug = unit;
+        nearestDistance = distance;
+    }
+
+    return nearestBug;
+}
+
+inline bool IsWarlockTankProfile(Player* bot, PlayerbotAI* botAI)
+{
+    return bot && botAI && bot->getClass() == CLASS_WARLOCK && !botAI->IsHeal(bot);
+}
+
+inline bool IsMeleeOrHunterProfile(Player* bot, PlayerbotAI* botAI, bool includeEncounterTank = true)
+{
+    if (!bot || !botAI)
+        return false;
+
+    if (includeEncounterTank && Aq40BossHelper::IsEncounterTank(bot, bot))
+        return true;
+
+    return bot->getClass() == CLASS_HUNTER || (!PlayerbotAI::IsRanged(bot) && !botAI->IsHeal(bot));
+}
+
+inline bool IsTrueCasterProfile(Player* bot, PlayerbotAI* botAI)
+{
+    return bot && botAI && !botAI->IsHeal(bot) && bot->getClass() != CLASS_HUNTER && PlayerbotAI::IsRanged(bot);
+}
+}    // namespace Twin
+
 inline bool TryCrowdControlCharmedPlayer(Player* bot, PlayerbotAI* botAI, GuidVector const& encounterUnits)
 {
     if (!bot || !botAI)

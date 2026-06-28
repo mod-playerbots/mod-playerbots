@@ -1,12 +1,12 @@
-#include "RaidAq40Actions.h"
+#include "Aq40Actions.h"
 
 #include <algorithm>
 #include <cmath>
 #include <string>
 
-#include "../RaidAq40BossHelper.h"
-#include "../Util/RaidAq40Helpers_Shared.h"
-#include "../../RaidBossHelpers.h"
+#include "RtiTargetValue.h"
+#include "../Aq40BossHelper.h"
+#include "../Util/Aq40Helpers_Shared.h"
 
 namespace
 {
@@ -33,8 +33,6 @@ uint32 GetHuhuranSpreadOrdinal(Player* bot, PlayerbotAI* botAI, bool forMelee, u
         if (Aq40BossHelper::IsEncounterTank(member, member))
             continue;
 
-        // Human non-tanks count in the ranged cohort so bots spread around
-        // them rather than stacking on top.  See C'Thun spread for rationale.
         PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
         bool memberIsMelee;
         if (memberAI)
@@ -77,16 +75,11 @@ bool Aq40HuhuranChooseTargetAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
-    // Tank marks Huhuran with skull so the base DpsAssist system auto-focuses her.
     if (Aq40BossHelper::IsEncounterTank(bot, bot))
-    {
-        MarkTargetWithSkull(bot, target);
-        Aq40Helpers::LogAq40Info(bot, "raid_marker",
-            "huhuran:skull:" + Aq40Helpers::GetAq40LogUnit(target),
-            "boss=huhuran marker=skull target=" + Aq40Helpers::GetAq40LogUnit(target));
-    }
+        Aq40Helpers::SetRaidTargetIcon(bot, target, RtiTargetValue::skullIndex, "huhuran", "skull");
 
-    // Startup ownership: primary tank establishes the boss before the raid commits.
+    Aq40Helpers::SetRtiTarget(botAI, "skull", target);
+
     if (Aq40BossHelper::ShouldWaitForEncounterTankAggro(bot, bot, target, true))
         return false;
 
@@ -99,8 +92,6 @@ bool Aq40HuhuranChooseTargetAction::Execute(Event /*event*/)
 
 bool Aq40HuhuranPoisonSpreadAction::Execute(Event /*event*/)
 {
-    // During poison/enrage windows, only the backline spreads angularly around
-    // the boss so fewer players soak Noxious Poison (hits 15 closest).
     if (Aq40BossHelper::IsEncounterTank(bot, bot))
         return false;
 

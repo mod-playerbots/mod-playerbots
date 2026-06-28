@@ -25,6 +25,12 @@ bool HasPersistentEncounterState(Player* bot);
 bool ResetEncounterState(Player* bot);
 bool TryRecoverAq40FollowState(Player* bot, PlayerbotAI* botAI, std::string const& eventKey,
                                std::string const& stateKey, bool executeFollowMovement = false);
+bool SetRaidTargetIcon(Player* bot, Unit* target, uint8 iconId, std::string const& boss,
+                       std::string const& marker);
+bool ClearRaidTargetIcon(Player* bot, uint8 iconId, std::string const& boss, std::string const& marker);
+Unit* ResolveRaidTargetIcon(Player* bot, PlayerbotAI* botAI, uint8 iconId);
+bool SetRti(PlayerbotAI* botAI, std::string const& rtiName);
+bool SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName, Unit* target);
 std::string GetAq40LogToken(std::string value);
 std::string GetAq40LogUnit(Unit* unit);
 std::string GetAq40LogRole(Player* bot, PlayerbotAI* botAI);

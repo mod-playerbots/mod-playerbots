@@ -2,7 +2,7 @@
 #define _PLAYERBOT_RAIDAQ40TRIGGERS_H
 
 #include "Playerbots.h"
-#include "../RaidAq40BossHelper.h"
+#include "Aq40BossHelper.h"
 #include "Trigger.h"
 
 class Aq40BotIsNotInCombatTrigger : public Trigger
@@ -12,8 +12,6 @@ public:
     bool IsActive() override;
 };
 
-// Low-priority AQ40 housekeeping trigger used to toggle encounter-specific
-// resistance strategies on and off as bosses change.
 class Aq40ResistanceStrategyTrigger : public Trigger
 {
 public:
@@ -148,34 +146,6 @@ public:
     bool IsActive() override;
 };
 
-class Aq40TwinApproachTrigger : public Trigger
-{
-public:
-    Aq40TwinApproachTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin approach") {}
-    bool IsActive() override;
-};
-
-class Aq40TwinPrePullReadyTrigger : public Trigger
-{
-public:
-    Aq40TwinPrePullReadyTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin prepull ready") {}
-    bool IsActive() override;
-};
-
-class Aq40TwinDualPullTrigger : public Trigger
-{
-public:
-    Aq40TwinDualPullTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin dual pull") {}
-    bool IsActive() override;
-};
-
-class Aq40TwinSwapPrepTrigger : public Trigger
-{
-public:
-    Aq40TwinSwapPrepTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin swap prep") {}
-    bool IsActive() override;
-};
-
 class Aq40TwinActiveTrigger : public Trigger
 {
 public:
@@ -183,38 +153,31 @@ public:
     bool IsActive() override;
 };
 
-class Aq40TwinBlizzardTrigger : public Trigger
+class Aq40TwinTeleportTrigger : public Trigger
 {
 public:
-    Aq40TwinBlizzardTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin blizzard") {}
+    Aq40TwinTeleportTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin teleport") {}
     bool IsActive() override;
 };
 
-class Aq40TwinExplodeBugTrigger : public Trigger
+class Aq40TwinHazardTrigger : public Trigger
 {
 public:
-    Aq40TwinExplodeBugTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin explode bug") {}
+    Aq40TwinHazardTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin hazard") {}
     bool IsActive() override;
 };
 
-class Aq40TwinArcaneBurstRiskTrigger : public Trigger
+class Aq40TwinVeklorRangeTrigger : public Trigger
 {
 public:
-    Aq40TwinArcaneBurstRiskTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin arcane burst risk") {}
+    Aq40TwinVeklorRangeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin veklor range") {}
     bool IsActive() override;
 };
 
-class Aq40TwinSplitRiskTrigger : public Trigger
+class Aq40TwinBugTrigger : public Trigger
 {
 public:
-    Aq40TwinSplitRiskTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin split risk") {}
-    bool IsActive() override;
-};
-
-class Aq40TwinPostSwapHoldTrigger : public Trigger
-{
-public:
-    Aq40TwinPostSwapHoldTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin post swap hold") {}
+    Aq40TwinBugTrigger(PlayerbotAI* botAI) : Trigger(botAI, "aq40 twin bug") {}
     bool IsActive() override;
 };
 

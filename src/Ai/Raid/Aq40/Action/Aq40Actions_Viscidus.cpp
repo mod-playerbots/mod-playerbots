@@ -1,10 +1,11 @@
-#include "RaidAq40Actions.h"
+#include "Aq40Actions.h"
 
 #include <string>
 
-#include "../RaidAq40BossHelper.h"
-#include "../RaidAq40SpellIds.h"
-#include "../Util/RaidAq40Helpers_Shared.h"
+#include "RtiTargetValue.h"
+#include "../Aq40BossHelper.h"
+#include "../Aq40SpellIds.h"
+#include "../Util/Aq40Helpers_Shared.h"
 
 namespace Aq40BossActions
 {
@@ -39,7 +40,16 @@ bool Aq40ViscidusChooseTargetAction::Execute(Event /*event*/)
         reason = "slime";
     }
 
-    if (!target || (AI_VALUE(Unit*, "current target") == target && bot->GetVictim() == target))
+    if (!target)
+        return false;
+
+    if (std::string(reason) == "glob" || std::string(reason) == "boss")
+    {
+        Aq40Helpers::SetRaidTargetIcon(bot, target, RtiTargetValue::skullIndex, "viscidus", "skull");
+        Aq40Helpers::SetRtiTarget(botAI, "skull", target);
+    }
+
+    if (AI_VALUE(Unit*, "current target") == target && bot->GetVictim() == target)
         return false;
 
     Aq40Helpers::LogAq40Target(bot, "viscidus", reason, target);
@@ -48,8 +58,6 @@ bool Aq40ViscidusChooseTargetAction::Execute(Event /*event*/)
 
 bool Aq40ViscidusUseFrostAction::Execute(Event /*event*/)
 {
-    // Allow any DPS (melee or ranged) to apply frost. Melee shamans
-    // (Frost Shock), DKs (Icy Touch), and others all contribute.
     if (Aq40BossHelper::IsEncounterTank(bot, bot) || botAI->IsHeal(bot))
         return false;
 
@@ -88,9 +96,6 @@ bool Aq40ViscidusUseFrostAction::Execute(Event /*event*/)
 
 bool Aq40ViscidusShatterAction::Execute(Event /*event*/)
 {
-    // All DPS (melee and ranged) converge during freeze window.
-    // Viscidus requires 75-150 melee hits to shatter; ranged-heavy raids
-    // need everyone in melee to meet the threshold.
     if (botAI->IsHeal(bot))
         return false;
 

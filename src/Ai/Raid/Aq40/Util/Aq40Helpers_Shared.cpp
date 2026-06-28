@@ -1,4 +1,4 @@
-#include "RaidAq40Helpers_Shared.h"
+#include "Aq40Helpers_Shared.h"
 
 #include <algorithm>
 #include <cctype>
@@ -9,14 +9,15 @@
 
 #include "Event.h"
 #include "FollowActions.h"
+#include "Group.h"
 #include "LastMovementValue.h"
 #include "MotionMaster.h"
 #include "Playerbots.h"
 #include "PositionValue.h"
-#include "../RaidAq40BossHelper.h"
-#include "RaidAq40Helpers_Cthun.h"
-#include "RaidAq40Helpers_Skeram.h"
-#include "RaidAq40TwinEncounter.h"
+#include "../Aq40BossHelper.h"
+#include "Aq40Helpers_Cthun.h"
+#include "Aq40Helpers_Skeram.h"
+#include "../Aq40Scripts.h"
 #include "Timer.h"
 
 namespace Aq40Helpers
@@ -204,6 +205,95 @@ void LogAq40Target(Player* bot, std::string const& boss, std::string const& reas
                 fields.str(), throttleMs);
 }
 
+bool SetRaidTargetIcon(Player* bot, Unit* target, uint8 iconId, std::string const& boss,
+                       std::string const& marker)
+{
+    if (!bot || !target)
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    ObjectGuid const targetGuid = target->GetGUID();
+    ObjectGuid const currentGuid = group->GetTargetIcon(iconId);
+    if (currentGuid == targetGuid)
+        return true;
+
+    group->SetTargetIcon(iconId, bot->GetGUID(), targetGuid);
+    if (group->GetTargetIcon(iconId) != targetGuid)
+        return false;
+
+    LogAq40Info(bot, "raid_marker", boss + ":" + marker + ":" + GetAq40LogUnit(target),
+        "boss=" + ToAq40LogToken(boss) + " marker=" + ToAq40LogToken(marker) +
+        " target=" + GetAq40LogUnit(target));
+    return true;
+}
+
+bool ClearRaidTargetIcon(Player* bot, uint8 iconId, std::string const& boss, std::string const& marker)
+{
+    if (!bot)
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    ObjectGuid const currentGuid = group->GetTargetIcon(iconId);
+    if (currentGuid.IsEmpty())
+        return false;
+
+    group->SetTargetIcon(iconId, bot->GetGUID(), ObjectGuid::Empty);
+    if (!group->GetTargetIcon(iconId).IsEmpty())
+        return false;
+
+    LogAq40Info(bot, "raid_marker", boss + ":" + marker + ":clear",
+        "boss=" + ToAq40LogToken(boss) + " marker=" + ToAq40LogToken(marker) + " target=none");
+    return true;
+}
+
+Unit* ResolveRaidTargetIcon(Player* bot, PlayerbotAI* botAI, uint8 iconId)
+{
+    if (!bot || !botAI)
+        return nullptr;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    ObjectGuid const iconGuid = group->GetTargetIcon(iconId);
+    return iconGuid.IsEmpty() ? nullptr : botAI->GetUnit(iconGuid);
+}
+
+bool SetRti(PlayerbotAI* botAI, std::string const& rtiName)
+{
+    if (!botAI || !botAI->GetAiObjectContext())
+        return false;
+
+    std::string const currentRti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
+    if (currentRti == rtiName)
+        return false;
+
+    botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Set(rtiName);
+    return true;
+}
+
+bool SetRtiTarget(PlayerbotAI* botAI, std::string const& rtiName, Unit* target)
+{
+    if (!botAI || !botAI->GetAiObjectContext() || !target)
+        return false;
+
+    bool changed = SetRti(botAI, rtiName);
+    Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Get();
+    if (currentTarget != target)
+    {
+        botAI->GetAiObjectContext()->GetValue<Unit*>("rti target")->Set(target);
+        changed = true;
+    }
+
+    return changed;
+}
+
 bool TryRecoverAq40FollowState(Player* bot, PlayerbotAI* botAI, std::string const& eventKey,
                                std::string const& stateKey, bool executeFollowMovement)
 {
@@ -357,16 +447,8 @@ bool IsResistanceManagementNeeded(Player* bot, PlayerbotAI* botAI, GuidVector co
     bool const needNatureResistance =
         Aq40BossHelper::HasAnyNamedUnit(botAI, activeUnits,
             { "princess huhuran", "viscidus", "glob of viscidus", "toxic slime" });
-    Aq40TwinEncounter::TwinEncounterState const* twinState = Aq40TwinEncounter::GetEncounterState(bot);
     bool const needTwinShadowResistance =
-        twinState &&
-        Aq40TwinEncounter::HasDeterministicAssignments(*twinState) &&
-        Aq40TwinEncounter::GetAssignmentForMember(*twinState, bot->GetGUID()) &&
-        !Aq40TwinEncounter::IsTerminalPhase(twinState->phase) &&
-        (((twinState->mode == Aq40TwinEncounter::TwinStrategyMode::StandardCompReady) &&
-          twinState->phase == Aq40TwinEncounter::TwinEncounterPhase::PrePull) ||
-         Aq40TwinEncounter::IsActivePhase(twinState->phase) ||
-         twinState->phase == Aq40TwinEncounter::TwinEncounterPhase::Degraded);
+        Aq40BossHelper::HasAnyNamedUnit(botAI, activeUnits, { "emperor vek'lor", "emperor vek'nilash" });
 
     switch (bot->getClass())
     {
@@ -385,7 +467,7 @@ bool ResetEncounterState(Player* bot)
 {
     bool const hadCthunState = ResetCthunEncounterState(bot);
     bool const hadSkeramState = ResetSkeramEncounterState(bot);
-    bool const hadTwinState = Aq40TwinEncounter::ResetState(bot);
+    bool const hadTwinState = Aq40Scripts::ResetTwinState(bot);
     bool const erased = hadCthunState || hadSkeramState || hadTwinState;
 
     if (erased && bot && bot->GetMap())
@@ -400,41 +482,15 @@ bool ResetEncounterState(Player* bot)
 
 bool HasPersistentEncounterState(Player* bot)
 {
-    return HasCthunEncounterState(bot) || HasSkeramEncounterState(bot) || Aq40TwinEncounter::HasPersistentState(bot);
+    return HasCthunEncounterState(bot) || HasSkeramEncounterState(bot) || Aq40Scripts::HasPersistentTwinState(bot);
 }
 
 bool ShouldSuppressTwinPrePullMaintenance(Player* bot, PlayerbotAI* botAI, char const* trigger)
 {
-    if (!bot || !botAI)
-        return false;
-
-    Aq40TwinEncounter::TwinEncounterState const* twinState = Aq40TwinEncounter::GetEncounterState(bot);
-    if (!twinState || !Aq40TwinEncounter::HasDeterministicAssignments(*twinState) ||
-        twinState->phase != Aq40TwinEncounter::TwinEncounterPhase::PrePull ||
-        Aq40TwinEncounter::IsTerminalPhase(twinState->phase))
-    {
-        return false;
-    }
-
-    bool const followRecoveryCandidate = IsAq40FollowRecoveryCandidate(bot, botAI);
-    bool const hasTwinLocalCleanupState = Aq40TwinEncounter::HasTwinLocalCleanupState(bot);
-    if (!followRecoveryCandidate && !hasTwinLocalCleanupState)
-        return false;
-
-    std::ostringstream fields;
-    fields << "boss=twin state=cleanup_suppressed"
-           << " trigger=" << GetAq40LogToken(trigger ? trigger : "maintenance")
-           << " phase=" << Aq40TwinEncounter::ToString(twinState->phase)
-           << " mode=" << Aq40TwinEncounter::ToString(twinState->mode)
-           << " approach=" << twinState->approachMemberCount
-           << " staged=" << twinState->stagedMemberCount
-           << " center_committed=" << twinState->centerCommittedMemberCount
-           << " strict_ready=" << twinState->strictReadyMemberCount
-           << " assigned=" << twinState->assignments.size()
-           << " follow_recovery_candidate=" << (followRecoveryCandidate ? 1 : 0)
-           << " local_cleanup_state=" << (hasTwinLocalCleanupState ? 1 : 0);
-    LogAq40Info(bot, "encounter_reset", "twin:cleanup_suppressed", fields.str(), 1000);
-    return true;
+    (void)bot;
+    (void)botAI;
+    (void)trigger;
+    return false;
 }
 
 bool ShouldRunOutOfCombatMaintenance(Player* bot, PlayerbotAI* botAI)
@@ -443,29 +499,14 @@ bool ShouldRunOutOfCombatMaintenance(Player* bot, PlayerbotAI* botAI)
         return false;
 
     bool const hasManagedResistanceStrategy = HasManagedResistanceStrategy(bot, botAI);
-    bool const hasTwinLocalCleanupState = Aq40TwinEncounter::HasTwinLocalCleanupState(bot);
-    Aq40TwinEncounter::TwinEncounterState const* twinState = Aq40TwinEncounter::GetEncounterState(bot);
-    bool const suppressTwinPrePullMaintenance =
-        ShouldSuppressTwinPrePullMaintenance(bot, botAI, "out_of_combat_maintenance");
 
     if (hasManagedResistanceStrategy)
         return true;
 
-    if (suppressTwinPrePullMaintenance)
-        return false;
-
     if (IsAq40FollowRecoveryCandidate(bot, botAI))
         return true;
 
-    bool const isTwinPrePullReady =
-        twinState &&
-        twinState->mode == Aq40TwinEncounter::TwinStrategyMode::StandardCompReady &&
-        twinState->phase == Aq40TwinEncounter::TwinEncounterPhase::PrePull &&
-        Aq40TwinEncounter::HasDeterministicAssignments(*twinState);
     bool const hasPersistentEncounterState = HasPersistentEncounterState(bot);
-
-    if (hasTwinLocalCleanupState && !isTwinPrePullReady)
-        return true;
 
     if (!hasPersistentEncounterState)
         return false;

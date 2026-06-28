@@ -1,9 +1,9 @@
-#include "RaidAq40Helpers_Skeram.h"
+#include "Aq40Helpers_Skeram.h"
 
 #include <unordered_map>
 #include <vector>
 
-#include "../RaidAq40BossHelper.h"
+#include "../Aq40BossHelper.h"
 #include "Timer.h"
 
 namespace Aq40Helpers

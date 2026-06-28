@@ -3,7 +3,7 @@
 #include "ChatTriggerContext.h"
 #include "WorldPacketTriggerContext.h"
 #include "Aq20TriggerContext.h"
-#include "RaidAq40TriggerContext.h"
+#include "Aq40TriggerContext.h"
 #include "MCTriggerContext.h"
 #include "BWLTriggerContext.h"
 #include "KaraTriggerContext.h"

@@ -59,7 +59,6 @@ public:
     float GetValue(Action* action) override;
 };
 
-
 class Aq40ViscidusMultiplier : public Multiplier
 {
 public:

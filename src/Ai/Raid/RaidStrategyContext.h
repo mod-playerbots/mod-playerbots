@@ -3,7 +3,7 @@
 
 #include "Strategy.h"
 #include "Aq20Strategy.h"
-#include "RaidAq40Strategy.h"
+#include "Aq40Strategy.h"
 #include "MCStrategy.h"
 #include "BWLStrategy.h"
 #include "KaraStrategy.h"
