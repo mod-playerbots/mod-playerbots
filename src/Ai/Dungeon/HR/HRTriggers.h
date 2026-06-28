@@ -4,8 +4,8 @@
 * or (at your option) any later version.
 */
 
-#ifndef _PLAYERBOT_TBCDUNGEONHELLFIRERAMPARTSTRIGGERS_H
-#define _PLAYERBOT_TBCDUNGEONHELLFIRERAMPARTSTRIGGERS_H
+#ifndef PLAYERBOTS_HRTRIGGERS_H
+#define PLAYERBOTS_HRTRIGGERS_H
 
 #include "Trigger.h"
 #include "GenericTriggers.h"
@@ -16,7 +16,6 @@ enum class HellfireRampartsIDs : uint32
     // Omor the Unscarred
     SPELL_TREACHEROUS_AURA                = 30695,
     SPELL_BANE_OF_TREACHERY               = 37566,
-
 };
 
 // Watchkeeper Gargolmar

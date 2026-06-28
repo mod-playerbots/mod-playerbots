@@ -1,16 +1,14 @@
 /*
 * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
-* information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
-* or (at your option) any later version.
+* information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License, or (at your option) any later version.
 */
 
-#ifndef _PLAYERBOT_TBCDUNGEONHELLFIRERAMPARTSACTIONS_H
-#define _PLAYERBOT_TBCDUNGEONHELLFIRERAMPARTSACTIONS_H
+#ifndef PLAYERBOTS_HRACTIONS_H
+#define PLAYERBOTS_HRACTIONS_H
 
 #include "AttackAction.h"
 #include "MovementActions.h"
 #include "Action.h"
-#include "HRTriggers.h"
 
 // Watchkeeper Gargolmar
 

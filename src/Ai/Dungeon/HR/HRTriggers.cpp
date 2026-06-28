@@ -1,7 +1,6 @@
 /*
 * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
-* information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
-* or (at your option) any later version.
+* information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License, or (at your option) any later version.
 */
 
 #include "Playerbots.h"
@@ -22,7 +21,7 @@ bool GargolmarHellfireWatchersAreActiveTrigger::IsActive()
 
 bool OmorTreacheryAuraTrigger::IsActive()
 {
-    return (botAI->IsHeal(bot) || botAI->IsDps(bot)) &&
+    return !botAI->IsTank(bot) &&
            (bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) ||
             bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA)));
 }
