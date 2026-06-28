@@ -13,13 +13,11 @@
 #include "HunterActions.h"
 #include "Playerbots.h"
 #include "ReachTargetActions.h"
-#include "WarlockActions.h"
 
 using namespace BlackwingLairHelpers;
 
 static constexpr float VAELASTRASZ_BA_SAFE_DISTANCE = 20.0f;
 static constexpr float VAELASTRASZ_BA_BOSS_DISTANCE = 30.0f;
-static constexpr float VAELASTRASZ_WARLOCK_DRAIN_SOUL_THRESHOLD = 3.0f;
 
 float RazorgoreTankMultiplier::GetValue(Action* action)
 {
@@ -88,24 +86,6 @@ float VaelastraszBurningAdrenalineMultiplier::GetValue(Action* action)
         if (dynamic_cast<CastReachTargetSpellAction*>(action))
             return 0.0f;
     }
-
-    return 1.0f;
-}
-
-float VaelastraszWarlockDrainSoulMultiplier::GetValue(Action* action)
-{
-    if (!bot->IsClass(CLASS_WARLOCK))
-        return 1.0f;
-
-    Unit* boss = AI_VALUE2(Unit*, "find target", "vaelastrasz the corrupt");
-    if (!boss)
-        return 1.0f;
-
-    // Vaelastrasz starts at 30% hp. Warlocks will try to use Drain Soul at 20% hp.
-    // Delay usage of Drain Soul until 3% hp because of low damage.
-    if (dynamic_cast<CastDrainSoulAction*>(action) && action->GetTarget() == boss &&
-        boss->GetHealthPct() > VAELASTRASZ_WARLOCK_DRAIN_SOUL_THRESHOLD)
-        return 0.0f;
 
     return 1.0f;
 }

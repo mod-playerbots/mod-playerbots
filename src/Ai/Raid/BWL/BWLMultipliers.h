@@ -33,12 +33,4 @@ public:
     float GetValue(Action* action) override;
 };
 
-class VaelastraszWarlockDrainSoulMultiplier : public Multiplier
-{
-public:
-    VaelastraszWarlockDrainSoulMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "vaelastrasz warlock drain soul multiplier") {}
-    float GetValue(Action* action) override;
-};
-
 #endif
