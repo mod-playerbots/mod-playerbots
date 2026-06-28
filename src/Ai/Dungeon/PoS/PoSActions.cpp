@@ -24,7 +24,7 @@ bool IckAndKrickAction::Execute(Event /*event*/)
 
     bool pursuit = bot->HasAura(SPELL_PURSUIT) || (!botAI->IsTank(bot) && boss->HasUnitState(UNIT_STATE_CASTING) && boss->FindCurrentSpellBySpellId(SPELL_PURSUIT));
     bool poisonNova = boss->HasUnitState(UNIT_STATE_CASTING) && (boss->FindCurrentSpellBySpellId(SPELL_POISON_NOVA_POS) || boss->FindCurrentSpellBySpellId(SPELL_POISON_NOVA_POS_HC));
-    bool explosiveBarrage = orb || boss->HasUnitState(UNIT_STATE_CASTING) && (boss->FindCurrentSpellBySpellId(SPELL_EXPLOSIVE_BARRAGE_ICK) || boss->FindCurrentSpellBySpellId(SPELL_EXPLOSIVE_BARRAGE_KRICK));
+    bool explosiveBarrage = orb || (boss->HasUnitState(UNIT_STATE_CASTING) && (boss->FindCurrentSpellBySpellId(SPELL_EXPLOSIVE_BARRAGE_ICK) || boss->FindCurrentSpellBySpellId(SPELL_EXPLOSIVE_BARRAGE_KRICK)));
     bool isTank = botAI->IsTank(bot);
 
     if (pursuit && Pursuit(pursuit, boss))

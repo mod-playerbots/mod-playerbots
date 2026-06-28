@@ -528,6 +528,7 @@ void AddPlayerbotsSecureLoginScripts();
 void AddSC_Aq40BotScripts();
 void AddSC_TempestKeepBotScripts();
 void AddSC_IcecrownBotScripts();
+void AddSC_RubySanctumBotScripts();
 void AddSC_HyjalSummitBotScripts();
 
 void AddPlayerbotsScripts()
@@ -546,5 +547,6 @@ void AddPlayerbotsScripts()
     AddSC_Aq40BotScripts();
     AddSC_TempestKeepBotScripts();
     AddSC_IcecrownBotScripts();
+    AddSC_RubySanctumBotScripts();
     AddSC_HyjalSummitBotScripts();
 }

@@ -19,8 +19,8 @@ WorldLocation ArrowFormation::GetLocationInternal()
     uint32 tankLines = 1 + tanks.Size() / 6;
     uint32 meleeLines = 1 + melee.Size() / 6;
     uint32 rangedLines = 1 + ranged.Size() / 6;
-    //TODO Implement Healer Lines
-    uint32 healerLines = 1 + healers.Size() / 6;
+    //@TODO Implement Healer Lines
+    //uint32 healerLines = 1 + healers.Size() / 6;
     float offset = 0.f;
 
     Player* master = botAI->GetMaster();

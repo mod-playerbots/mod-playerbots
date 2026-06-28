@@ -116,6 +116,7 @@ update, whose content are called within the codebase at src/strategy/actions/Fis
 - - [ ] Any code ported/adapted from another project is attributed (project + author(s), `Co-authored-by:` trailer + in-file note).
 - - [ ] New source files use the GPLv2 header.
 - - [ ] Documentation updated if needed (Conf comments, WiKi commands).
+- - [ ] New and modified files do not introduce new compiler warnings.
 
 ## Notes for Reviewers
 <!-- Anything else that's helpful to review or test your pull request. -->

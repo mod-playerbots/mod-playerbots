@@ -205,9 +205,70 @@ namespace ai::buff
         return false;
     }
 
-    std::string UpgradeToGroupIfAppropriate(
-        Player* bot, PlayerbotAI* botAI, std::string const& baseName)
+    void ClearMissingBuffReagentNotice(PlayerbotAI* botAI, std::string const& groupName)
     {
+        if (!botAI || groupName.empty())
+            return;
+
+        botAI->GetAiObjectContext()
+            ->GetValue<MissingBuffReagentNoticeMap&>("missing buff reagent notice")->Get()
+            .erase(groupName);
+    }
+
+    bool TryAnnounceMissingBuffReagents(
+        PlayerbotAI* botAI, std::string const& baseName, std::string const& groupName)
+    {
+        if (!sPlayerbotAIConfig.tellWhenMissingBuffReagents)
+            return false;
+
+        Player* bot = botAI->GetBot();
+        if (bot->InBattleground())
+            return false;
+
+        auto const cooldownMs = sPlayerbotAIConfig.missingBuffReagentMessageCooldown * IN_MILLISECONDS;
+        auto const now = GameTime::GetGameTimeMS().count();
+        auto& noticeTimes = botAI->GetAiObjectContext()
+            ->GetValue<MissingBuffReagentNoticeMap&>("missing buff reagent notice")->Get();
+        auto const noticeIt = noticeTimes.find(groupName);
+
+        if (cooldownMs && noticeIt != noticeTimes.end() &&
+            getMSTimeDiff(noticeIt->second, now) < cooldownMs)
+        {
+            return false;
+        }
+
+        std::map<std::string, std::string> placeholders = {
+            {"%base_spell", baseName},
+            {"%group_spell", groupName}
+        };
+
+        std::string const message = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "missing_group_buff_reagent",
+            "I am out of reagents for %group_spell and am casting %base_spell instead.",
+            placeholders);
+
+        Group* group = bot->GetGroup();
+        if (!group)
+            return false;
+
+        const bool announced =
+            group->isRaidGroup() ? botAI->SayToRaid(message) : botAI->SayToParty(message);
+
+        if (announced)
+            noticeTimes[groupName] = now;
+
+        return announced;
+    }
+
+    std::string UpgradeToGroupIfAppropriate(
+        Player* bot,
+        PlayerbotAI* botAI,
+        std::string const& baseName,
+        std::string* outMissingReagentGroupName)
+    {
+        if (outMissingReagentGroupName)
+            outMissingReagentGroupName->clear();
+
         if (!IsGroupVariantEnabled(bot, baseName))
             return baseName;
 
@@ -224,7 +285,13 @@ namespace ai::buff
             ->GetValue<uint32>("spell id", groupName)->Get();
 
         if (groupSpellId && HasRequiredReagents(bot, groupSpellId))
+        {
+            ClearMissingBuffReagentNotice(botAI, groupName);
             return groupName;
+        }
+
+        if (groupSpellId && outMissingReagentGroupName)
+            *outMissingReagentGroupName = groupName;
 
         return baseName;
     }

@@ -497,7 +497,7 @@ void PlayerbotFactory::Init()
             continue;
         }
 
-        if (sRandomItemMgr.IsTestItem(gemId))
+        if (sRandomItemMgr.IsInternalItem(proto))
         {
            continue;
         }
@@ -612,7 +612,7 @@ void PlayerbotFactory::Randomize(bool incremental)
     PerfMonitorOperation* pmo = sPerfMonitor.start(PERF_MON_RNDBOT, "PlayerbotFactory_Reset");
 
     if (!sPlayerbotAIConfig.equipAndSpecPersistence ||
-        level < sPlayerbotAIConfig.equipAndSpecPersistenceLevel)
+        level < uint32(sPlayerbotAIConfig.equipAndSpecPersistenceLevel))
     {
         bot->resetTalents(true);
     }
@@ -623,7 +623,7 @@ void PlayerbotFactory::Randomize(bool incremental)
         ClearSpells();
         ResetQuests();
         if (!sPlayerbotAIConfig.equipAndSpecPersistence ||
-            level < sPlayerbotAIConfig.equipAndSpecPersistenceLevel)
+            level < uint32(sPlayerbotAIConfig.equipAndSpecPersistenceLevel))
         {
             ClearAllItems();
         }
@@ -1189,7 +1189,7 @@ void PlayerbotFactory::InitPetTalents()
                 int index = urand(0, spells_row.size() - 1);
                 TalentEntry const* talentInfo = spells_row[index];
                 int maxRank = 0;
-                for (int rank = 0; rank < std::min((uint32)MAX_TALENT_RANK, (uint32)pet->GetFreeTalentPoints()); ++rank)
+                for (uint32 rank = 0; rank < std::min((uint32)MAX_TALENT_RANK, (uint32)pet->GetFreeTalentPoints()); ++rank)
                 {
                     uint32 spellId = talentInfo->RankID[rank];
                     if (!spellId)
@@ -2157,7 +2157,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
             ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
             if (!proto) continue;
             // Respect gear quality limit: trinket must not exceed itemQuality setting
-            if (static_cast<int32>(proto->Quality) > itemQuality) continue;
+            if (static_cast<int32>(proto->Quality) > static_cast<int32>(itemQuality)) continue;
             if (proto->RequiredLevel > level) continue;
             if (!CanEquipItem(proto)) continue;
             uint16 dest;
@@ -2227,12 +2227,12 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
 
         do
         {
-            for (uint32 requiredLevel = bot->GetLevel(); requiredLevel > std::max((int32)bot->GetLevel() - delta, 0);
+            for (uint32 requiredLevel = bot->GetLevel(); requiredLevel > uint32(std::max((int32)bot->GetLevel() - delta, 0));
                  requiredLevel--)
             {
                 for (InventoryType inventoryType : GetPossibleInventoryTypeListBySlot((EquipmentSlots)slot))
                 {
-                    for (uint32 itemId : sRandomItemMgr.GetCachedEquipments(requiredLevel, inventoryType))
+                    for (uint32 itemId : sRandomItemMgr.GetEquipmentNew(requiredLevel, inventoryType))
                     {
                         uint32 skipProb = 25;
                         if (urand(1, 100) <= skipProb)
@@ -2262,7 +2262,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                         if (proto->Class != ITEM_CLASS_WEAPON && proto->Class != ITEM_CLASS_ARMOR)
                             continue;
 
-                        if (proto->Quality != desiredQuality)
+                        if (proto->Quality != uint32(desiredQuality))
                             continue;
 
                         if (proto->Class == ITEM_CLASS_ARMOR &&
@@ -2298,7 +2298,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
         float bestScoreForSlot = -1;
         uint32 bestItemForSlot = 0;
         int32 bestRandomPropForSlot = 0;
-        for (int index = 0; index < ids.size(); index++)
+        for (size_t index = 0; index < ids.size(); index++)
         {
             uint32 newItemId = ids[index].first;
             int32 newItemProp = ids[index].second;
@@ -2419,7 +2419,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
             float bestScoreForSlot = -1;
             uint32 bestItemForSlot = 0;
             int32 bestRandomPropForSlot = 0;
-            for (int index = 0; index < ids.size(); index++)
+            for (size_t index = 0; index < ids.size(); index++)
             {
                 uint32 newItemId = ids[index].first;
                 int32 newItemProp = ids[index].second;
@@ -3391,7 +3391,7 @@ void PlayerbotFactory::InitTalents(uint32 specNo)
             int index = urand(0, spells_row.size() - 1);
             TalentEntry const* talentInfo = spells_row[index];
             int maxRank = 0;
-            for (int rank = 0; rank < std::min((uint32)MAX_TALENT_RANK, bot->GetFreeTalentPoints()); ++rank)
+            for (uint32 rank = 0; rank < std::min((uint32)MAX_TALENT_RANK, bot->GetFreeTalentPoints()); ++rank)
             {
                 uint32 spellId = talentInfo->RankID[rank];
                 if (!spellId)
@@ -3618,15 +3618,20 @@ void PlayerbotFactory::ClearAllItems()
 
 void PlayerbotFactory::InitAmmo()
 {
-    if (bot->getClass() != CLASS_HUNTER && bot->getClass() != CLASS_ROGUE && bot->getClass() != CLASS_WARRIOR)
+    uint8 const botClass = bot->getClass();
+    if (botClass != CLASS_HUNTER && botClass != CLASS_ROGUE && botClass != CLASS_WARRIOR)
         return;
 
-    Item* const pItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED);
-    if (!pItem)
+    Item const* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED);
+    if (!item)
+        return;
+
+    ItemTemplate const* proto = item->GetTemplate();
+    if (!proto)
         return;
 
     uint32 subClass = 0;
-    switch (pItem->GetTemplate()->SubClass)
+    switch (proto->SubClass)
     {
         case ITEM_SUBCLASS_WEAPON_GUN:
             subClass = ITEM_SUBCLASS_BULLET;
@@ -3635,45 +3640,23 @@ void PlayerbotFactory::InitAmmo()
         case ITEM_SUBCLASS_WEAPON_CROSSBOW:
             subClass = ITEM_SUBCLASS_ARROW;
             break;
-        default:
-            break;
+        default: // invalid weapon type, nothing to do
+            return;
     }
 
-    if (!subClass)
-        return;
-
-    std::vector<uint32> ammoEntryList = sRandomItemMgr.GetAmmo(level, subClass);
-    uint32 entry = 0;
-    for (uint32 tEntry : ammoEntryList)
-    {
-        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(tEntry);
-        if (!proto)
-            continue;
-
-        // disable next expansion ammo
-        if (sPlayerbotAIConfig.limitGearExpansion && bot->GetLevel() <= 60 && tEntry >= 23728)
-            continue;
-
-        if (sPlayerbotAIConfig.limitGearExpansion && bot->GetLevel() <= 70 && tEntry >= 35570)
-            continue;
-
-        entry = tEntry;
-        break;
-    }
-
+    uint32 entry = sRandomItemMgr.GetAmmo(level, subClass);
     if (!entry)
         return;
 
     uint32 count = bot->GetItemCount(entry);
-    uint32 maxCount = bot->getClass() == CLASS_HUNTER ? 6000 : 1000;
+    uint32 maxCount = botClass == CLASS_HUNTER ? 6000 : 1000;
 
     if (count < maxCount)
     {
         if (Item* newItem = StoreNewItemInInventorySlot(bot, entry, maxCount - count))
-        {
             newItem->AddToUpdateQueueOf(bot);
-        }
     }
+
     bot->SetAmmo(entry);
 }
 
@@ -3935,7 +3918,7 @@ void PlayerbotFactory::InitFood()
     }
 
     uint32 categories[] = {11, 59};
-    for (int i = 0; i < sizeof(categories) / sizeof(uint32); ++i)
+    for (size_t i = 0; i < sizeof(categories) / sizeof(uint32); ++i)
     {
         uint32 category = categories[i];
         std::vector<uint32>& ids = items[category];
@@ -5122,9 +5105,9 @@ void PlayerbotFactory::ApplyEnchantAndGemsNew(bool /*destroyOld*/)
                 if (curCount[0] != 0)
                 {
                     // Ensure meta gem activation
-                    for (int i = 1; i < curCount.size(); i++)
+                    for (size_t i = 1; i < curCount.size(); i++)
                     {
-                        if (curCount[i] < requiredActive && (gemProperties->color & (1 << i)))
+                        if (curCount[i] < (uint32)requiredActive && (gemProperties->color & (1 << i)))
                         {
                             score *= 2;
                             break;
