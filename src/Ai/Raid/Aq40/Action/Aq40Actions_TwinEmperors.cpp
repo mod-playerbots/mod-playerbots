@@ -18,8 +18,7 @@
 namespace
 {
 float constexpr kTwinExplodeBugDangerRadius = 17.0f;
-float constexpr kTwinArcaneBurstDangerRadius = 18.0f;
-float constexpr kTwinArcaneBurstLooseRadius = 24.0f;
+float constexpr kTwinArcaneBurstAvoidRadius = 10.0f;
 float constexpr kTwinWarlockMinRange = 19.0f;
 float constexpr kTwinWarlockMaxRange = 30.0f;
 float constexpr kTwinWarlockPreferredRange = 24.0f;
@@ -222,45 +221,6 @@ void LogTwinTankRole(Player* bot, std::string const& assignmentState, TwinMarker
         fields.str(), 5000);
 }
 
-Player* GetPlayerByGuid(PlayerbotAI* botAI, ObjectGuid guid)
-{
-    if (!botAI || guid.IsEmpty())
-        return nullptr;
-
-    Unit* unit = botAI->GetUnit(guid);
-    return unit ? unit->ToPlayer() : nullptr;
-}
-
-Player* GetAssignedWarlockForMarker(PlayerbotAI* botAI, TwinMarkerSwapState const& state,
-                                    TwinMarkerAssignment marker)
-{
-    if (!state.assignmentsComplete || marker == TwinMarkerAssignment::None)
-        return nullptr;
-
-    for (uint8 index = 0; index < 2; ++index)
-    {
-        if (GetAssignedMarkerForPair(state, index) == marker)
-            return GetPlayerByGuid(botAI, state.assignments.warlockTanks[index]);
-    }
-
-    return nullptr;
-}
-
-Player* GetAssignedMeleeTankForMarker(PlayerbotAI* botAI, TwinMarkerSwapState const& state,
-                                      TwinMarkerAssignment marker)
-{
-    if (!state.assignmentsComplete || marker == TwinMarkerAssignment::None)
-        return nullptr;
-
-    for (uint8 index = 0; index < 2; ++index)
-    {
-        if (GetAssignedMarkerForPair(state, index) == marker)
-            return GetPlayerByGuid(botAI, state.assignments.meleeTanks[index]);
-    }
-
-    return nullptr;
-}
-
 bool IsTwinBoss(Unit* unit)
 {
     return unit && Aq40SpellIds::IsTwinEmperorEntry(unit->GetEntry());
@@ -393,36 +353,6 @@ bool IsFallbackVeklorWarlock(Player* bot, PlayerbotAI* botAI, Unit* veklor)
     return GetNearestPlayerToUnit(GetFallbackWarlockCandidates(bot), veklor) == bot;
 }
 
-bool HasVeklorWarlockPickup(Player* bot, PlayerbotAI* botAI, TwinMarkerSwapState const& state, Unit* veklor)
-{
-    if (!veklor)
-        return false;
-
-    if (state.assignmentsComplete)
-        return Aq40BossHelper::IsUnitFocusedOnPlayer(
-            veklor, GetAssignedWarlockForMarker(botAI, state, TwinMarkerAssignment::Cross));
-
-    for (Player* warlock : GetFallbackWarlockCandidates(bot))
-    {
-        if (Aq40BossHelper::IsUnitFocusedOnPlayer(veklor, warlock))
-            return true;
-    }
-
-    return false;
-}
-
-bool HasVeknilashMeleePickup(Player* bot, PlayerbotAI* botAI, TwinMarkerSwapState const& state, Unit* veknilash)
-{
-    if (!veknilash)
-        return false;
-
-    if (state.assignmentsComplete)
-        return Aq40BossHelper::IsUnitFocusedOnPlayer(
-            veknilash, GetAssignedMeleeTankForMarker(botAI, state, TwinMarkerAssignment::Skull));
-
-    return Aq40BossHelper::IsUnitHeldByEncounterTank(bot, veknilash);
-}
-
 bool ShouldAttackTwinBug(Player* bot, PlayerbotAI* botAI)
 {
     return bot && botAI && !botAI->IsHeal(bot) && !Aq40BossHelper::Twin::IsTankPairMember(bot) &&
@@ -471,7 +401,6 @@ Unit* ResolveTwinTarget(Player* bot, PlayerbotAI* botAI, GuidVector const& encou
 
     Unit* veklor = Aq40BossHelper::Twin::FindVeklor(botAI, encounterUnits);
     Unit* veknilash = Aq40BossHelper::Twin::FindVeknilash(botAI, encounterUnits);
-    TwinMarkerSwapState const markerSwap = RefreshTwinMarkerSwapState(bot);
 
     if (Aq40BossHelper::Twin::IsTankPairMember(bot))
     {
@@ -508,24 +437,12 @@ Unit* ResolveTwinTarget(Player* bot, PlayerbotAI* botAI, GuidVector const& encou
     if (Aq40BossHelper::Twin::IsWarlockTankProfile(bot, botAI) ||
         Aq40BossHelper::Twin::IsTrueCasterProfile(bot, botAI))
     {
-        if (veklor && !HasVeklorWarlockPickup(bot, botAI, markerSwap, veklor))
-        {
-            reason = "wait_veklor_tank";
-            return nullptr;
-        }
-
         reason = "veklor";
         return veklor ? veklor : veknilash;
     }
 
     if (Aq40BossHelper::Twin::IsMeleeOrHunterProfile(bot, botAI))
     {
-        if (veknilash && !HasVeknilashMeleePickup(bot, botAI, markerSwap, veknilash))
-        {
-            reason = "wait_veknilash_tank";
-            return nullptr;
-        }
-
         reason = "veknilash";
         return veknilash ? veknilash : veklor;
     }
@@ -706,14 +623,17 @@ bool Aq40TwinTankAction::Execute(Event /*event*/)
             return true;
     }
 
-    if (veklor && Aq40BossHelper::IsUnitFocusedOnPlayer(veknilash, bot) &&
-        veknilash->GetDistance2d(veklor) < kTwinBossSeparationDistance)
+    bool const veknilashFocusedOnTank = Aq40BossHelper::IsUnitFocusedOnPlayer(veknilash, bot);
+    bool const needsSeparation = veklor && veknilashFocusedOnTank &&
+        veknilash->GetDistance2d(veklor) < kTwinBossSeparationDistance;
+    bool const castThreat = CastTwinMeleeThreat(botAI, veknilash);
+    if (needsSeparation)
     {
         float const separationGap = kTwinBossSeparationDistance - veknilash->GetDistance2d(veklor);
-        return MoveAway(veklor, std::min(12.0f, separationGap + 2.0f));
+        return MoveAway(veklor, std::min(12.0f, separationGap + 2.0f)) || castThreat;
     }
 
-    if (CastTwinMeleeThreat(botAI, veknilash))
+    if (castThreat)
         return true;
 
     if (AI_VALUE(Unit*, "current target") == veknilash && bot->GetVictim() == veknilash)
@@ -833,6 +753,7 @@ bool Aq40TwinAvoidHazardAction::Execute(Event /*event*/)
     if (Aq40SpellIds::HasAnyAura(botAI, bot, { Aq40SpellIds::TwinBlizzard }) ||
         Aq40Scripts::IsTwinBlizzardWindow(bot))
     {
+        Unit* veklor = Aq40BossHelper::Twin::FindVeklor(botAI, encounterUnits);
         bot->AttackStop();
         bot->InterruptNonMeleeSpells(true);
         if (botAI->DoSpecificAction("avoid aoe", Event(), true))
@@ -840,6 +761,17 @@ bool Aq40TwinAvoidHazardAction::Execute(Event /*event*/)
             Aq40Helpers::LogAq40Info(bot, "avoid_hazard", "twin:blizzard",
                 "boss=twin hazard=blizzard action=avoid_aoe", 1000);
             return true;
+        }
+
+        if (veklor)
+        {
+            float const distance = bot->GetDistance2d(veklor);
+            if (distance <= kTwinArcaneBurstAvoidRadius)
+            {
+                Aq40Helpers::LogAq40Info(bot, "avoid_hazard", "twin:blizzard:veklor_fallback",
+                    "boss=twin hazard=blizzard action=move_from_veklor", 1000);
+                return MoveAway(veklor, kTwinArcaneBurstAvoidRadius - distance + 2.0f);
+            }
         }
     }
 
@@ -871,8 +803,7 @@ bool Aq40TwinAvoidVeklorAction::Execute(Event /*event*/)
     StopPetFromVeklor(bot, veklor);
 
     float const distance = bot->GetDistance2d(veklor);
-    bool const arcaneWindow = Aq40Scripts::IsTwinArcaneBurstWindow(bot);
-    float const safeRadius = arcaneWindow ? kTwinArcaneBurstLooseRadius : kTwinArcaneBurstDangerRadius;
+    float const safeRadius = kTwinArcaneBurstAvoidRadius;
     if (distance > safeRadius)
         return false;
 
@@ -881,5 +812,6 @@ bool Aq40TwinAvoidVeklorAction::Execute(Event /*event*/)
     Aq40Helpers::LogAq40Info(bot, "avoid_hazard",
         "twin:veklor_range:" + Aq40Helpers::GetAq40LogUnit(veklor),
         "boss=twin hazard=arcane_burst source=" + Aq40Helpers::GetAq40LogUnit(veklor), 1000);
-    return MoveAway(veklor, safeRadius - distance + 2.0f);
+    return FleePosition(veklor->GetPosition(), safeRadius + 2.0f, 250U) ||
+           MoveAway(veklor, safeRadius - distance + 2.0f);
 }

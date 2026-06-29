@@ -450,11 +450,7 @@ bool Aq40TwinVeklorRangeTrigger::IsActive()
     if (!veklor)
         return false;
 
-    float const distance = bot->GetDistance2d(veklor);
-    if (distance <= 18.0f)
-        return true;
-
-    return distance <= 24.0f && Aq40Scripts::IsTwinArcaneBurstWindow(bot);
+    return bot->GetDistance2d(veklor) <= 10.0f;
 }
 
 bool Aq40TwinBugTrigger::IsActive()

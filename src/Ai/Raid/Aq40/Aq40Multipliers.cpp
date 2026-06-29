@@ -26,8 +26,7 @@
 
 namespace
 {
-float constexpr kTwinArcaneBurstDangerRadius = 18.0f;
-float constexpr kTwinArcaneBurstLooseRadius = 24.0f;
+float constexpr kTwinArcaneBurstAvoidRadius = 10.0f;
 
 bool StartsWith(std::string const& value, char const* prefix)
 {
@@ -377,10 +376,9 @@ float Aq40TwinMultiplier::GetValue(Action* action)
     bool const targetsVeklor = IsTargetingEntry(target, Aq40SpellIds::TwinVeklorNpcEntry);
     bool const targetsVeknilash = IsTargetingEntry(target, Aq40SpellIds::TwinVeknilashNpcEntry);
     bool const targetsTwinBug = target && Aq40SpellIds::IsTwinBugEntry(target->GetEntry());
-    bool const pickupWindow = Aq40Scripts::IsTwinTeleportPickupWindow(bot);
-    bool const nearVeklorDanger =
-        veklor && bot->GetDistance2d(veklor) <= (Aq40Scripts::IsTwinArcaneBurstWindow(bot) ?
-            kTwinArcaneBurstLooseRadius : kTwinArcaneBurstDangerRadius);
+    bool const nearVeklorDanger = veklor && bot->GetDistance2d(veklor) <= kTwinArcaneBurstAvoidRadius;
+    bool const isActiveVeklorTank =
+        isWarlockTank && veklor && Aq40BossHelper::IsUnitFocusedOnPlayer(veklor, bot);
 
     if (isTankPairMember && IsGenericPressureAction(action))
         return 0.0f;
@@ -393,13 +391,13 @@ float Aq40TwinMultiplier::GetValue(Action* action)
             return 0.0f;
     }
 
-    if (pickupWindow && targetsVeklor && !isWarlockTank && IsGenericPressureAction(action))
-        return 0.0f;
-
-    if (nearVeklorDanger && !isWarlockTank &&
-        (IsGenericPressureAction(action) || dynamic_cast<CastReachTargetSpellAction*>(action)))
+    if (nearVeklorDanger && !isActiveVeklorTank)
     {
-        return 0.0f;
+        if (IsGenericPressureAction(action) || dynamic_cast<CastReachTargetSpellAction*>(action))
+            return 0.0f;
+
+        if (IsGenericMovementAction(action) && !IsActionNamed(action, { "avoid aoe" }))
+            return 0.0f;
     }
 
     if (targetsVeklor && Aq40BossHelper::Twin::IsMeleeOrHunterProfile(bot, botAI, false) &&
