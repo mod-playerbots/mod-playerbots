@@ -147,13 +147,25 @@ inline void RebuildEncounterMemberSnapshot(Player const* reference, EncounterMem
 
     for (Player* member : snapshot.sameInstanceMembers)
     {
-        if (!PlayerbotAI::IsTank(member))
-            continue;
-
-        if (PlayerbotAI::IsMainTank(member))
+        if (PlayerbotAI::IsExplicitMainTank(member))
         {
             snapshot.primaryTank = member;
             break;
+        }
+    }
+
+    if (!snapshot.primaryTank)
+    {
+        for (Player* member : snapshot.sameInstanceMembers)
+        {
+            if (!PlayerbotAI::IsTank(member))
+                continue;
+
+            if (PlayerbotAI::IsMainTank(member))
+            {
+                snapshot.primaryTank = member;
+                break;
+            }
         }
     }
 
@@ -970,11 +982,20 @@ inline bool IsTwinKillBug(PlayerbotAI* botAI, Unit* unit)
     return unit->IsInCombat() || unit->GetVictim() || unit->GetTarget() || hasThreatVictim;
 }
 
+inline bool IsTwinPriorityKillBug(PlayerbotAI* botAI, Unit* unit)
+{
+    return IsTwinKillBug(botAI, unit) &&
+           Aq40SpellIds::HasAnyAura(botAI, unit,
+               { Aq40SpellIds::TwinMutateBug, Aq40SpellIds::TwinVirulentPoisonProc });
+}
+
 inline Unit* FindNearestKillBug(Player* bot, PlayerbotAI* botAI, GuidVector const& units, float maxDistance)
 {
     if (!bot || !botAI)
         return nullptr;
 
+    Unit* nearestPriorityBug = nullptr;
+    float nearestPriorityDistance = std::numeric_limits<float>::max();
     Unit* nearestBug = nullptr;
     float nearestDistance = std::numeric_limits<float>::max();
     for (ObjectGuid const guid : units)
@@ -984,14 +1005,28 @@ inline Unit* FindNearestKillBug(Player* bot, PlayerbotAI* botAI, GuidVector cons
             continue;
 
         float const distance = bot->GetDistance2d(unit);
-        if (distance > maxDistance || distance >= nearestDistance)
+        if (distance > maxDistance)
             continue;
 
-        nearestBug = unit;
-        nearestDistance = distance;
+        if (IsTwinPriorityKillBug(botAI, unit))
+        {
+            if (distance < nearestPriorityDistance)
+            {
+                nearestPriorityBug = unit;
+                nearestPriorityDistance = distance;
+            }
+        }
+        else
+        {
+            if (distance < nearestDistance)
+            {
+                nearestBug = unit;
+                nearestDistance = distance;
+            }
+        }
     }
 
-    return nearestBug;
+    return nearestPriorityBug ? nearestPriorityBug : nearestBug;
 }
 
 inline bool IsWarlockTankProfile(Player* bot, PlayerbotAI* botAI)
