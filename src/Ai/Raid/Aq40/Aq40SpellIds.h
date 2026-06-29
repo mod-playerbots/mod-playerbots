@@ -47,6 +47,7 @@ static constexpr uint32 TwinArcaneBurst = 568;
 static constexpr uint32 TwinHealBrother = 7393;
 static constexpr uint32 TwinExplodeBug = 804;
 static constexpr uint32 TwinMutateBug = 802;
+static constexpr uint32 TwinVirulentPoisonProc = 22413;
 static constexpr uint32 TwinUppercut = 26007;
 static constexpr uint32 TwinUnbalancingStrike = 26613;
 

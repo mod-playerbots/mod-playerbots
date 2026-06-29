@@ -373,12 +373,25 @@ float Aq40TwinMultiplier::GetValue(Action* action)
     Unit* veklor = Aq40BossHelper::Twin::FindVeklor(botAI, GetEncounterUnits(botAI));
     Unit* target = GetActionTarget(bot, botAI, action);
     bool const isWarlockTank = Aq40BossHelper::Twin::IsWarlockTankProfile(bot, botAI);
+    bool const isTankPairMember = Aq40BossHelper::Twin::IsTankPairMember(bot);
     bool const targetsVeklor = IsTargetingEntry(target, Aq40SpellIds::TwinVeklorNpcEntry);
     bool const targetsVeknilash = IsTargetingEntry(target, Aq40SpellIds::TwinVeknilashNpcEntry);
+    bool const targetsTwinBug = target && Aq40SpellIds::IsTwinBugEntry(target->GetEntry());
     bool const pickupWindow = Aq40Scripts::IsTwinTeleportPickupWindow(bot);
     bool const nearVeklorDanger =
         veklor && bot->GetDistance2d(veklor) <= (Aq40Scripts::IsTwinArcaneBurstWindow(bot) ?
             kTwinArcaneBurstLooseRadius : kTwinArcaneBurstDangerRadius);
+
+    if (isTankPairMember && IsGenericPressureAction(action))
+        return 0.0f;
+
+    if (targetsTwinBug && IsGenericPressureAction(action))
+    {
+        bool const canAttackBug = !botAI->IsHeal(bot) && !isTankPairMember &&
+                                  (bot->getClass() == CLASS_HUNTER || PlayerbotAI::IsRanged(bot));
+        if (!canAttackBug || !Aq40BossHelper::Twin::IsTwinKillBug(botAI, target))
+            return 0.0f;
+    }
 
     if (pickupWindow && targetsVeklor && !isWarlockTank && IsGenericPressureAction(action))
         return 0.0f;

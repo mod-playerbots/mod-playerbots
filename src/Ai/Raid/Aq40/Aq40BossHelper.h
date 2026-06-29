@@ -704,6 +704,56 @@ inline Unit* FindLowestHealthUnit(std::vector<Unit*> const& units)
 
 namespace Twin
 {
+struct TankPairAssignments
+{
+    std::array<ObjectGuid, 2> warlockTanks = { ObjectGuid::Empty, ObjectGuid::Empty };
+    std::array<ObjectGuid, 2> meleeTanks = { ObjectGuid::Empty, ObjectGuid::Empty };
+
+    bool IsComplete() const
+    {
+        return !warlockTanks[0].IsEmpty() && !warlockTanks[1].IsEmpty() &&
+               !meleeTanks[0].IsEmpty() && !meleeTanks[1].IsEmpty();
+    }
+
+    bool IsWarlockTank(Player const* player) const
+    {
+        if (!player)
+            return false;
+
+        ObjectGuid const guid = player->GetGUID();
+        return warlockTanks[0] == guid || warlockTanks[1] == guid;
+    }
+
+    bool IsMeleeTank(Player const* player) const
+    {
+        if (!player)
+            return false;
+
+        ObjectGuid const guid = player->GetGUID();
+        return meleeTanks[0] == guid || meleeTanks[1] == guid;
+    }
+
+    bool IsTankPairMember(Player const* player) const
+    {
+        return IsWarlockTank(player) || IsMeleeTank(player);
+    }
+
+    int8 GetPairIndex(Player const* player) const
+    {
+        if (!player)
+            return -1;
+
+        ObjectGuid const guid = player->GetGUID();
+        for (uint8 index = 0; index < 2; ++index)
+        {
+            if (warlockTanks[index] == guid || meleeTanks[index] == guid)
+                return static_cast<int8>(index);
+        }
+
+        return -1;
+    }
+};
+
 inline GuidVector GetEncounterUnits(PlayerbotAI* botAI)
 {
     if (!botAI || !botAI->GetAiObjectContext())
@@ -757,6 +807,104 @@ inline Unit* FindVeknilash(PlayerbotAI* botAI, GuidVector const& units)
     return FindUnitByEntry(botAI, units, Aq40SpellIds::TwinVeknilashNpcEntry);
 }
 
+inline bool AppendUniquePlayer(std::vector<Player*>& players, Player* candidate)
+{
+    if (!candidate)
+        return false;
+
+    if (std::find(players.begin(), players.end(), candidate) != players.end())
+        return false;
+
+    players.push_back(candidate);
+    return true;
+}
+
+inline TankPairAssignments GetTankPairAssignments(Player* referencePlayer)
+{
+    TankPairAssignments assignments;
+    if (!referencePlayer)
+        return assignments;
+
+    Group const* group = referencePlayer->GetGroup();
+    std::vector<Player*> assistantWarlocks;
+    std::vector<Player*> fallbackWarlocks;
+    for (Player* member : Aq40BossHelper::GetSameInstanceGroupMembers(referencePlayer))
+    {
+        if (!member || !member->IsAlive() || member->getClass() != CLASS_WARLOCK)
+            continue;
+
+        if (group && group->IsAssistant(member->GetGUID()))
+            AppendUniquePlayer(assistantWarlocks, member);
+        else if (GET_PLAYERBOT_AI(member))
+            AppendUniquePlayer(fallbackWarlocks, member);
+    }
+
+    auto sortByGuid = [](Player* left, Player* right)
+    {
+        if (!left || !right)
+            return left != nullptr;
+        return left->GetGUID().GetRawValue() < right->GetGUID().GetRawValue();
+    };
+    std::stable_sort(assistantWarlocks.begin(), assistantWarlocks.end(), sortByGuid);
+    std::stable_sort(fallbackWarlocks.begin(), fallbackWarlocks.end(), sortByGuid);
+
+    std::vector<Player*> selectedWarlocks;
+    selectedWarlocks.reserve(2);
+    for (Player* warlock : assistantWarlocks)
+    {
+        if (selectedWarlocks.size() >= 2)
+            break;
+        AppendUniquePlayer(selectedWarlocks, warlock);
+    }
+
+    for (Player* warlock : fallbackWarlocks)
+    {
+        if (selectedWarlocks.size() >= 2)
+            break;
+        AppendUniquePlayer(selectedWarlocks, warlock);
+    }
+
+    for (uint8 index = 0; index < selectedWarlocks.size() && index < assignments.warlockTanks.size(); ++index)
+        assignments.warlockTanks[index] = selectedWarlocks[index]->GetGUID();
+
+    std::vector<Player*> selectedMeleeTanks;
+    selectedMeleeTanks.reserve(2);
+    auto appendMeleeTank = [&selectedMeleeTanks, referencePlayer](Player* candidate)
+    {
+        if (!candidate || !candidate->IsAlive() || candidate->getClass() == CLASS_WARLOCK ||
+            !Aq40BossHelper::IsSameInstance(referencePlayer, candidate))
+        {
+            return;
+        }
+
+        AppendUniquePlayer(selectedMeleeTanks, candidate);
+    };
+
+    appendMeleeTank(Aq40BossHelper::GetEncounterPrimaryTank(referencePlayer));
+    appendMeleeTank(Aq40BossHelper::GetEncounterBackupTank(referencePlayer, 0));
+    appendMeleeTank(Aq40BossHelper::GetEncounterBackupTank(referencePlayer, 1));
+
+    for (uint8 index = 0; index < selectedMeleeTanks.size() && index < assignments.meleeTanks.size(); ++index)
+        assignments.meleeTanks[index] = selectedMeleeTanks[index]->GetGUID();
+
+    return assignments;
+}
+
+inline bool IsTankPairMember(Player* bot)
+{
+    return bot && GetTankPairAssignments(bot).IsTankPairMember(bot);
+}
+
+inline bool IsSelectedWarlockTank(Player* bot)
+{
+    return bot && GetTankPairAssignments(bot).IsWarlockTank(bot);
+}
+
+inline bool IsSelectedMeleeTank(Player* bot)
+{
+    return bot && GetTankPairAssignments(bot).IsMeleeTank(bot);
+}
+
 inline bool IsExplodeBugCast(Unit* unit)
 {
     if (!unit)
@@ -794,9 +942,62 @@ inline Unit* FindNearestBug(Player* bot, PlayerbotAI* botAI, GuidVector const& u
     return nearestBug;
 }
 
+inline bool IsTwinKillBug(PlayerbotAI* botAI, Unit* unit)
+{
+    if (!botAI || !unit || !unit->IsAlive() || !unit->IsInWorld() ||
+        !Aq40SpellIds::IsTwinBugEntry(unit->GetEntry()))
+    {
+        return false;
+    }
+
+    Player* bot = botAI->GetBot();
+    if (bot && (unit->IsFriendlyTo(bot) || unit->GetMapId() != bot->GetMapId()))
+        return false;
+
+    if (IsExplodeBugCast(unit) ||
+        Aq40SpellIds::HasAnyAura(botAI, unit, { Aq40SpellIds::TwinExplodeBug }))
+    {
+        return false;
+    }
+
+    if (Aq40SpellIds::HasAnyAura(botAI, unit,
+            { Aq40SpellIds::TwinMutateBug, Aq40SpellIds::TwinVirulentPoisonProc }))
+    {
+        return true;
+    }
+
+    bool const hasThreatVictim = unit->IsCreature() && unit->GetThreatMgr().GetCurrentVictim();
+    return unit->IsInCombat() || unit->GetVictim() || unit->GetTarget() || hasThreatVictim;
+}
+
+inline Unit* FindNearestKillBug(Player* bot, PlayerbotAI* botAI, GuidVector const& units, float maxDistance)
+{
+    if (!bot || !botAI)
+        return nullptr;
+
+    Unit* nearestBug = nullptr;
+    float nearestDistance = std::numeric_limits<float>::max();
+    for (ObjectGuid const guid : units)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (!IsTwinKillBug(botAI, unit))
+            continue;
+
+        float const distance = bot->GetDistance2d(unit);
+        if (distance > maxDistance || distance >= nearestDistance)
+            continue;
+
+        nearestBug = unit;
+        nearestDistance = distance;
+    }
+
+    return nearestBug;
+}
+
 inline bool IsWarlockTankProfile(Player* bot, PlayerbotAI* botAI)
 {
-    return bot && botAI && bot->getClass() == CLASS_WARLOCK && !botAI->IsHeal(bot);
+    return bot && botAI && bot->getClass() == CLASS_WARLOCK && !botAI->IsHeal(bot) &&
+           IsSelectedWarlockTank(bot);
 }
 
 inline bool IsMeleeOrHunterProfile(Player* bot, PlayerbotAI* botAI, bool includeEncounterTank = true)

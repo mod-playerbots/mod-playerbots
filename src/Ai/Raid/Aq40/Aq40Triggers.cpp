@@ -442,7 +442,7 @@ bool Aq40TwinHazardTrigger::IsActive()
 
 bool Aq40TwinVeklorRangeTrigger::IsActive()
 {
-    if (!IsTwinActive(botAI, bot) || Aq40BossHelper::Twin::IsWarlockTankProfile(bot, botAI))
+    if (!IsTwinActive(botAI, bot))
         return false;
 
     GuidVector const encounterUnits = Aq40BossHelper::GetEncounterUnits(botAI, AI_VALUE(GuidVector, "attackers"));
@@ -459,12 +459,15 @@ bool Aq40TwinVeklorRangeTrigger::IsActive()
 
 bool Aq40TwinBugTrigger::IsActive()
 {
-    if (!IsTwinActive(botAI, bot) || botAI->IsHeal(bot))
+    if (!IsTwinActive(botAI, bot) || botAI->IsHeal(bot) || Aq40BossHelper::Twin::IsTankPairMember(bot))
+        return false;
+
+    if (bot->getClass() != CLASS_HUNTER && !PlayerbotAI::IsRanged(bot))
         return false;
 
     GuidVector const encounterUnits = Aq40BossHelper::GetEncounterUnits(botAI, AI_VALUE(GuidVector, "attackers"));
-    return Aq40BossHelper::Twin::FindNearestBug(
-        bot, botAI, encounterUnits, bot->getClass() == CLASS_HUNTER ? 30.0f : 24.0f) != nullptr;
+    return Aq40BossHelper::Twin::FindNearestKillBug(
+        bot, botAI, encounterUnits, bot->getClass() == CLASS_HUNTER ? 30.0f : 26.0f) != nullptr;
 }
 
 bool Aq40OuroActiveTrigger::IsActive()
