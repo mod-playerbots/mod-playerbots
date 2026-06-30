@@ -13,6 +13,7 @@
 #include "Player.h"
 #include "Playerbots.h"
 #include "PlayerbotAI.h"
+#include "AiFactory.h"
 #include "SharedDefines.h"
 #include "Spell.h"
 #include "Timer.h"
@@ -716,15 +717,54 @@ inline Unit* FindLowestHealthUnit(std::vector<Unit*> const& units)
 
 namespace Twin
 {
+enum class TankAssignmentMode : uint8
+{
+    Incomplete,
+    SinglePairFallback,
+    FullPairs
+};
+
+inline char const* GetTankAssignmentModeToken(TankAssignmentMode mode)
+{
+    switch (mode)
+    {
+        case TankAssignmentMode::SinglePairFallback:
+            return "single_pair_fallback";
+        case TankAssignmentMode::FullPairs:
+            return "full_pairs";
+        case TankAssignmentMode::Incomplete:
+        default:
+            return "incomplete";
+    }
+}
+
 struct TankPairAssignments
 {
     std::array<ObjectGuid, 2> warlockTanks = { ObjectGuid::Empty, ObjectGuid::Empty };
     std::array<ObjectGuid, 2> meleeTanks = { ObjectGuid::Empty, ObjectGuid::Empty };
+    TankAssignmentMode mode = TankAssignmentMode::Incomplete;
 
     bool IsComplete() const
     {
-        return !warlockTanks[0].IsEmpty() && !warlockTanks[1].IsEmpty() &&
+        return mode == TankAssignmentMode::FullPairs &&
+               !warlockTanks[0].IsEmpty() && !warlockTanks[1].IsEmpty() &&
                !meleeTanks[0].IsEmpty() && !meleeTanks[1].IsEmpty();
+    }
+
+    bool HasUsableAssignment() const
+    {
+        return HasSinglePair() || HasFullPairs();
+    }
+
+    bool HasFullPairs() const
+    {
+        return IsComplete();
+    }
+
+    bool HasSinglePair() const
+    {
+        return mode == TankAssignmentMode::SinglePairFallback &&
+               !warlockTanks[0].IsEmpty() && !meleeTanks[0].IsEmpty();
     }
 
     bool IsWarlockTank(Player const* player) const
@@ -763,6 +803,38 @@ struct TankPairAssignments
         }
 
         return -1;
+    }
+
+    ObjectGuid GetActiveMeleeTankGuid(bool crossParity) const
+    {
+        if (HasSinglePair())
+            return meleeTanks[0];
+
+        if (!HasFullPairs())
+            return ObjectGuid::Empty;
+
+        return crossParity ? meleeTanks[1] : meleeTanks[0];
+    }
+
+    ObjectGuid GetActiveWarlockTankGuid(bool crossParity) const
+    {
+        if (HasSinglePair())
+            return warlockTanks[0];
+
+        if (!HasFullPairs())
+            return ObjectGuid::Empty;
+
+        return crossParity ? warlockTanks[0] : warlockTanks[1];
+    }
+
+    bool IsActiveMeleeTank(Player const* player, bool crossParity) const
+    {
+        return player && player->GetGUID() == GetActiveMeleeTankGuid(crossParity);
+    }
+
+    bool IsActiveWarlockTank(Player const* player, bool crossParity) const
+    {
+        return player && player->GetGUID() == GetActiveWarlockTankGuid(crossParity);
     }
 };
 
@@ -831,6 +903,52 @@ inline bool AppendUniquePlayer(std::vector<Player*>& players, Player* candidate)
     return true;
 }
 
+inline bool HasTwinMeleeTankRole(Player* player)
+{
+    return player && (AiFactory::GetPlayerRoles(player) & BOT_ROLE_TANK) != 0;
+}
+
+inline bool IsTwinMeleeTankCandidate(Player* referencePlayer, Player* candidate)
+{
+    if (!candidate || !candidate->IsAlive() || candidate->getClass() == CLASS_WARLOCK ||
+        !Aq40BossHelper::IsSameInstance(referencePlayer, candidate))
+    {
+        return false;
+    }
+
+    if (PlayerbotAI::IsExplicitMainTank(candidate) || PlayerbotAI::IsTank(candidate))
+        return true;
+
+    return HasTwinMeleeTankRole(candidate);
+}
+
+inline uint32 GetTwinMeleeTankCandidatePriority(Group const* group, Player* player)
+{
+    if (!player)
+        return 100;
+
+    if (PlayerbotAI::IsExplicitMainTank(player))
+        return 0;
+
+    bool const isRuntimeTank = PlayerbotAI::IsTank(player);
+    if (isRuntimeTank && PlayerbotAI::IsMainTank(player))
+        return 1;
+
+    if (isRuntimeTank && group && group->IsAssistant(player->GetGUID()))
+        return 2;
+
+    if (isRuntimeTank)
+        return 3;
+
+    if (HasTwinMeleeTankRole(player) && group && group->IsAssistant(player->GetGUID()))
+        return 4;
+
+    if (HasTwinMeleeTankRole(player))
+        return 5;
+
+    return 100;
+}
+
 inline TankPairAssignments GetTankPairAssignments(Player* referencePlayer)
 {
     TankPairAssignments assignments;
@@ -876,9 +994,6 @@ inline TankPairAssignments GetTankPairAssignments(Player* referencePlayer)
         AppendUniquePlayer(selectedWarlocks, warlock);
     }
 
-    for (uint8 index = 0; index < selectedWarlocks.size() && index < assignments.warlockTanks.size(); ++index)
-        assignments.warlockTanks[index] = selectedWarlocks[index]->GetGUID();
-
     std::vector<Player*> selectedMeleeTanks;
     selectedMeleeTanks.reserve(2);
     auto appendMeleeTank = [&selectedMeleeTanks, referencePlayer](Player* candidate)
@@ -896,8 +1011,57 @@ inline TankPairAssignments GetTankPairAssignments(Player* referencePlayer)
     appendMeleeTank(Aq40BossHelper::GetEncounterBackupTank(referencePlayer, 0));
     appendMeleeTank(Aq40BossHelper::GetEncounterBackupTank(referencePlayer, 1));
 
-    for (uint8 index = 0; index < selectedMeleeTanks.size() && index < assignments.meleeTanks.size(); ++index)
-        assignments.meleeTanks[index] = selectedMeleeTanks[index]->GetGUID();
+    std::vector<Player*> extraMeleeTanks;
+    extraMeleeTanks.reserve(Aq40BossHelper::GetSameInstanceGroupMembers(referencePlayer).size());
+    for (Player* member : Aq40BossHelper::GetSameInstanceGroupMembers(referencePlayer))
+    {
+        if (!IsTwinMeleeTankCandidate(referencePlayer, member))
+            continue;
+
+        AppendUniquePlayer(extraMeleeTanks, member);
+    }
+
+    std::stable_sort(extraMeleeTanks.begin(), extraMeleeTanks.end(), [group](Player* left, Player* right)
+    {
+        uint32 const leftPriority = GetTwinMeleeTankCandidatePriority(group, left);
+        uint32 const rightPriority = GetTwinMeleeTankCandidatePriority(group, right);
+        if (leftPriority != rightPriority)
+            return leftPriority < rightPriority;
+
+        if (!left || !right)
+            return left != nullptr;
+
+        return left->GetGUID().GetRawValue() < right->GetGUID().GetRawValue();
+    });
+    for (Player* tank : extraMeleeTanks)
+        appendMeleeTank(tank);
+
+    bool const hasFullPairs = selectedWarlocks.size() >= 2 && selectedMeleeTanks.size() >= 2;
+    bool const hasSinglePair = selectedWarlocks.size() >= 1 && selectedMeleeTanks.size() >= 1;
+
+    if (hasFullPairs)
+    {
+        assignments.mode = TankAssignmentMode::FullPairs;
+        for (uint8 index = 0; index < 2; ++index)
+        {
+            assignments.warlockTanks[index] = selectedWarlocks[index]->GetGUID();
+            assignments.meleeTanks[index] = selectedMeleeTanks[index]->GetGUID();
+        }
+    }
+    else if (hasSinglePair)
+    {
+        assignments.mode = TankAssignmentMode::SinglePairFallback;
+        assignments.warlockTanks[0] = selectedWarlocks[0]->GetGUID();
+        assignments.meleeTanks[0] = selectedMeleeTanks[0]->GetGUID();
+    }
+    else
+    {
+        assignments.mode = TankAssignmentMode::Incomplete;
+        for (uint8 index = 0; index < selectedWarlocks.size() && index < assignments.warlockTanks.size(); ++index)
+            assignments.warlockTanks[index] = selectedWarlocks[index]->GetGUID();
+        for (uint8 index = 0; index < selectedMeleeTanks.size() && index < assignments.meleeTanks.size(); ++index)
+            assignments.meleeTanks[index] = selectedMeleeTanks[index]->GetGUID();
+    }
 
     return assignments;
 }
