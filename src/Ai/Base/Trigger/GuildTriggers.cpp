@@ -27,7 +27,7 @@ bool LeaveLargeGuildTrigger::IsActive()
     if (botAI->IsRealPlayer())
         return false;
 
-    if (botAI->IsAlt())
+    if (botAI->IsAltBot())
         return false;
 
     if (botAI->IsInRealGuild())
