@@ -373,12 +373,22 @@ float Aq40TwinMultiplier::GetValue(Action* action)
     Unit* target = GetActionTarget(bot, botAI, action);
     bool const isWarlockTank = Aq40BossHelper::Twin::IsWarlockTankProfile(bot, botAI);
     bool const isTankPairMember = Aq40BossHelper::Twin::IsTankPairMember(bot);
+    bool const isSelectedMeleeTank = Aq40BossHelper::Twin::IsSelectedMeleeTank(bot);
     bool const targetsVeklor = IsTargetingEntry(target, Aq40SpellIds::TwinVeklorNpcEntry);
     bool const targetsVeknilash = IsTargetingEntry(target, Aq40SpellIds::TwinVeknilashNpcEntry);
     bool const targetsTwinBug = target && Aq40SpellIds::IsTwinBugEntry(target->GetEntry());
     bool const nearVeklorDanger = veklor && bot->GetDistance2d(veklor) <= kTwinArcaneBurstAvoidRadius;
     bool const isActiveVeklorTank =
         isWarlockTank && veklor && Aq40BossHelper::IsUnitFocusedOnPlayer(veklor, bot);
+
+    if (isSelectedMeleeTank)
+    {
+        if (dynamic_cast<CastHealingSpellAction*>(action) && bot->GetHealthPct() > 35.0f)
+            return 0.0f;
+
+        if (IsGenericMovementAction(action) && !IsActionNamed(action, { "avoid aoe" }))
+            return 0.0f;
+    }
 
     if (isTankPairMember && IsGenericPressureAction(action))
         return 0.0f;
