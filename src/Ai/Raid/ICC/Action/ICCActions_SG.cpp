@@ -159,7 +159,7 @@ bool IccSindragosaGroupPositionAction::HandleNonTankPositioning()
     bool const raidClear = (percentageWithoutAura >= 0.6f);
 
     static constexpr std::array<uint32, 4> TombEntries = {NPC_TOMB1, NPC_TOMB2, NPC_TOMB3, NPC_TOMB4};
-    static constexpr uint8 SKULL_ICON_INDEX = 7;
+    static constexpr uint8 SKULL_ICON_INDEX = RtiTargetValue::skullIndex;
 
     // Priority: if a tank is ice-tombed (ground phase), mark that tomb skull
     // immediately so the raid DPSes it and frees the tank. Any bot can issue
@@ -279,13 +279,11 @@ bool IccSindragosaGroupPositionAction::HandleNonTankPositioning()
 
 bool IccSindragosaGroupPositionAction::MoveIncrementallyToPosition(Position const& targetPos, float maxStep)
 {
-    float const dirX = targetPos.GetPositionX() - bot->GetPositionX();
-    float const dirY = targetPos.GetPositionY() - bot->GetPositionY();
-    float const length = std::hypot(dirX, dirY);
-
     float const stepSize = std::min(maxStep, bot->GetExactDist2d(targetPos));
-    float const moveX = bot->GetPositionX() + (dirX / length) * stepSize;
-    float const moveY = bot->GetPositionY() + (dirY / length) * stepSize;
+    float moveX;
+    float moveY;
+    if (!IccStepToward(bot, targetPos, stepSize, moveX, moveY))
+        return false;
 
     return MoveTo(bot->GetMapId(), moveX, moveY, targetPos.GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_COMBAT);
@@ -297,17 +295,7 @@ bool IccSindragosaFrostBeaconAction::TryDropTombFlares(Unit const* boss)
     if (!group)
         return false;
 
-    bool anyBeacon = false;
-    for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
-    {
-        Player* member = itr->GetSource();
-        if (member && member->IsAlive() && member->HasAura(SPELL_FROST_BEACON))
-        {
-            anyBeacon = true;
-            break;
-        }
-    }
-    if (!anyBeacon)
+    if (!IccAnyGroupMemberHasAura(bot, SPELL_FROST_BEACON))
         return false;
 
     // Phase tracking: clear flared sets on phase boundary so each phase gets fresh markers.
@@ -852,17 +840,7 @@ bool IccSindragosaMysticBuffetAction::Execute(Event /*event*/)
         }
     }
 
-    // Check if anyone in group has Frost Beacon (SPELL_FROST_BEACON)
-    bool anyoneHasFrostBeacon = false;
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (member && member->IsAlive() && member->HasAura(SPELL_FROST_BEACON))
-        {
-            anyoneHasFrostBeacon = true;
-            break;
-        }
-    }
+    bool anyoneHasFrostBeacon = IccAnyGroupMemberHasAura(bot, SPELL_FROST_BEACON);
 
     bool tombPresent = nearestTomb != nullptr;
     bool atLOS2 = bot->GetExactDist2d(ICC_SINDRAGOSA_LOS2_POSITION.GetPositionX(),
@@ -879,7 +857,7 @@ bool IccSindragosaMysticBuffetAction::Execute(Event /*event*/)
         // so every bot converges deterministically on the same target.
         if (atLOS2 && aura && !botAI->IsHeal(bot))
         {
-            constexpr uint8 SKULL_ICON = 7;
+            constexpr uint8 SKULL_ICON = RtiTargetValue::skullIndex;
             float MYSTIC_BUFFET_TOMB_STOP_HP_PCT = 50.0f;
             Difficulty const diff = bot->GetRaidDifficulty();
 
@@ -982,7 +960,8 @@ bool IccSindragosaFrostBombAction::Execute(Event /*event*/)
 
     bool myZoneAllProtected = false;
     {
-        static constexpr std::array<uint8, 3> raidIcons = {7, 6, 0};
+        static constexpr std::array<uint8, 3> raidIcons = {RtiTargetValue::skullIndex, RtiTargetValue::crossIndex,
+                                                           RtiTargetValue::starIndex};
         static constexpr float STRIP_HP_PCT = 30.0f;
         bool const is10Man =
             (diff == RAID_DIFFICULTY_10MAN_NORMAL || diff == RAID_DIFFICULTY_10MAN_HEROIC);
@@ -1446,9 +1425,9 @@ Unit* IccSindragosaFrostBombAction::ResolveStickyTomb(std::vector<Unit*> const& 
 
 bool IccSindragosaFrostBombAction::HandleRtiMarking(Group* group, int groupIndex, std::vector<Unit*> const& myTombs, Unit* losTomb)
 {
-    constexpr uint8 SKULL_ICON = 7;
-    constexpr uint8 CROSS_ICON = 6;
-    constexpr uint8 STAR_ICON = 0;
+    constexpr uint8 SKULL_ICON = RtiTargetValue::skullIndex;
+    constexpr uint8 CROSS_ICON = RtiTargetValue::crossIndex;
+    constexpr uint8 STAR_ICON = RtiTargetValue::starIndex;
     constexpr float TOMB_STOP_HP_PCT = 40.0f;
     constexpr float TOMB_STOP_HP_PCT_10_MAN = 60.0f;
 

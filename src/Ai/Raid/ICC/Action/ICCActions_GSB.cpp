@@ -10,51 +10,6 @@
 #include "RtiValue.h"
 #include "Vehicle.h"
 
-static bool CastClassTaunt(Player* bot, PlayerbotAI* botAI, Unit* target)
-{
-    if (!target || !target->IsAlive())
-        return false;
-
-    switch (bot->getClass())
-    {
-        case CLASS_PALADIN:
-        {
-            bot->RemoveSpellCooldown(SPELL_TAUNT_PALADIN, true);
-            if (botAI->CastSpell("hand of reckoning", target))
-                return true;
-            break;
-        }
-        case CLASS_DEATH_KNIGHT:
-        {
-            bot->RemoveSpellCooldown(SPELL_TAUNT_DK, true);
-            if (botAI->CastSpell("dark command", target))
-                return true;
-            break;
-        }
-        case CLASS_DRUID:
-        {
-            bot->RemoveSpellCooldown(SPELL_TAUNT_DRUID, true);
-            if (botAI->CastSpell("growl", target))
-                return true;
-            break;
-        }
-        case CLASS_WARRIOR:
-        {
-            bot->RemoveSpellCooldown(SPELL_TAUNT_WARRIOR, true);
-            if (botAI->CastSpell("taunt", target))
-                return true;
-            break;
-        }
-        default:
-            break;
-    }
-
-    if (botAI->CastSpell("shoot", target) || botAI->CastSpell("throw", target))
-        return true;
-
-    return false;
-}
-
 bool IccCannonFireAction::Execute(Event /*event*/)
 {
     Unit* vehicleBase = bot->GetVehicleBase();
@@ -254,7 +209,7 @@ bool IccGunshipRocketJumpAction::Execute(Event /*event*/)
     float const maxWaitingDistance = (side == GunshipSide::ALLY) ? 30.0f : 25.0f;
     static constexpr float MAX_ATTACK_DISTANCE = 20.0f;
     static constexpr float HOLD_RADIUS = 20.0f;
-    static constexpr uint8 SKULL_ICON_INDEX = 7;
+    static constexpr uint8 SKULL_ICON_INDEX = RtiTargetValue::skullIndex;
 
     uint32 const mageEntry = (side == GunshipSide::ALLY) ? NPC_KOR_KRON_BATTLE_MAGE : NPC_SKYBREAKER_SORCERER;
     Position const& waitPos = (side == GunshipSide::ALLY) ? ICC_GUNSHIP_ROCKET_JUMP_ALLY2 : ICC_GUNSHIP_ROCKET_JUMP_HORDE_FRIENDLY_POINT;
@@ -329,7 +284,7 @@ bool IccGunshipRocketJumpAction::Execute(Event /*event*/)
 
         if (targetAdd)
         {
-            CastClassTaunt(bot, botAI, targetAdd);
+            IccCastClassTaunt(bot, botAI, targetAdd);
             bot->SetTarget(targetAdd->GetGUID());
             bot->SetFacingToObject(targetAdd);
             Attack(targetAdd);
@@ -543,7 +498,7 @@ bool IccGunshipRocketJumpAction::Execute(Event /*event*/)
         // On enemy ship. If not captain's victim, force aggro.
         if (captain->GetVictim() != bot)
         {
-            CastClassTaunt(bot, botAI, captain);
+            IccCastClassTaunt(bot, botAI, captain);
             bot->SetTarget(captain->GetGUID());
             bot->SetFacingToObject(captain);
             Attack(captain);
@@ -749,7 +704,7 @@ bool IccGunshipRocketJumpAction::Execute(Event /*event*/)
         // doesn't jump to whichever add is closest to the picking bot.
         if (botAI->IsRangedDps(bot))
         {
-            static constexpr uint8 STAR_ICON_INDEX = 0;
+            static constexpr uint8 STAR_ICON_INDEX = RtiTargetValue::starIndex;
             static constexpr float ADD_SEARCH_RANGE = 200.0f;
             uint32 const addEntry = (side == GunshipSide::ALLY)
                 ? NPC_KOR_KRON_AXETHROWER : NPC_SKYBREAKER_RIFLEMAN;

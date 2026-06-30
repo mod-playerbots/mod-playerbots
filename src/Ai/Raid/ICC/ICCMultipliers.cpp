@@ -753,7 +753,7 @@ float IccValithriaDreamCloudMultiplier::GetValue(Action* action)
             bool rtiIsZombie = false;
             if (Group* group = bot->GetGroup())
             {
-                ObjectGuid rtiGuid = group->GetTargetIcon(7);
+                ObjectGuid rtiGuid = group->GetTargetIcon(RtiTargetValue::skullIndex);
                 if (!rtiGuid.IsEmpty())
                 {
                     Unit* rtiUnit = ObjectAccessor::GetUnit(*bot, rtiGuid);
@@ -822,9 +822,7 @@ float IccSindragosaMultiplier::GetValue(Action* action)
     }
 
     // Check if boss is casting blistering cold (using both normal and heroic spell IDs)
-    if (boss->HasUnitState(UNIT_STATE_CASTING) &&
-        (boss->FindCurrentSpellBySpellId(SPELL_BLISTERING_COLD1) || boss->FindCurrentSpellBySpellId(SPELL_BLISTERING_COLD2) ||
-         boss->FindCurrentSpellBySpellId(SPELL_BLISTERING_COLD3) || boss->FindCurrentSpellBySpellId(SPELL_BLISTERING_COLD4)))
+    if (boss->HasUnitState(UNIT_STATE_CASTING) && IccBossCastingBlisteringCold(boss))
     {
         // If this is the blistering cold action, give it highest priority
         if (dynamic_cast<IccSindragosaBlisteringColdAction*>(action) ||
@@ -856,22 +854,7 @@ float IccSindragosaMultiplier::GetValue(Action* action)
             return 0.0f;
     }
 
-    Group* group = bot->GetGroup();
-    // Check if anyone in group has Frost Beacon (SPELL_FROST_BEACON)
-    bool anyoneHasFrostBeacon = false;
-
-    if (group)
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (member && member->IsAlive() && member->HasAura(SPELL_FROST_BEACON))
-            {
-                anyoneHasFrostBeacon = true;
-                break;
-            }
-        }
-    }
+    bool anyoneHasFrostBeacon = IccAnyGroupMemberHasAura(bot, SPELL_FROST_BEACON);
 
     if (anyoneHasFrostBeacon && boss &&
         boss->GetExactDist2d(ICC_SINDRAGOSA_FLYING_POSITION.GetPositionX(),
@@ -1090,30 +1073,7 @@ float IccLichKingAddsMultiplier::GetValue(Action* action)
             return 0.0f;
     }
 
-    auto const hasWinterAura = [&]() -> bool
-    {
-        return boss->HasAura(SPELL_REMORSELESS_WINTER1) || boss->HasAura(SPELL_REMORSELESS_WINTER2) ||
-               boss->HasAura(SPELL_REMORSELESS_WINTER3) || boss->HasAura(SPELL_REMORSELESS_WINTER4) ||
-               boss->HasAura(SPELL_REMORSELESS_WINTER5) || boss->HasAura(SPELL_REMORSELESS_WINTER6) ||
-               boss->HasAura(SPELL_REMORSELESS_WINTER7) || boss->HasAura(SPELL_REMORSELESS_WINTER8);
-    };
-
-    auto const isCastingWinter = [&]() -> bool
-    {
-        if (!boss->HasUnitState(UNIT_STATE_CASTING))
-            return false;
-
-        return boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER1) ||
-               boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER2) ||
-               boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER3) ||
-               boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER4) ||
-               boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER5) ||
-               boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER6) ||
-               boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER7) ||
-               boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER8);
-    };
-
-    if (hasWinterAura() || isCastingWinter())
+    if (IccBossHasRemorselessWinter(boss))
     {
         // Winter action and facing take priority
         if (dynamic_cast<IccLichKingWinterAction*>(action) || dynamic_cast<SetFacingTargetAction*>(action))
@@ -1121,7 +1081,7 @@ float IccLichKingAddsMultiplier::GetValue(Action* action)
 
         // Staging window: while boss is casting Winter, non-tanks must commit
         // to the staging move. Only heals are allowed; everything else blocked.
-        if (isCastingWinter() && !botAI->IsTank(bot))
+        if (IccBossCastingRemorselessWinter(boss) && !botAI->IsTank(bot))
         {
             if (dynamic_cast<HealPartyMemberAction*>(action) ||
                 dynamic_cast<ReachPartyMemberToHealAction*>(action))

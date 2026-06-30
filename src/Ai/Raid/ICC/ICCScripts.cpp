@@ -14,6 +14,21 @@ namespace IcecrownHelpers
     std::unordered_map<uint32, DefileCastInfo> defileCast;
     std::unordered_map<uint32, VileGasVictim> rotfaceVileGas;
     std::map<ObjectGuid, uint32> rotfaceVileGasWaitUntil;
+
+    std::vector<Position> ActiveGooPositions(uint32 instanceId, uint32 lifetimeMs)
+    {
+        std::vector<Position> out;
+        auto it = malleableGooImpacts.find(instanceId);
+        if (it == malleableGooImpacts.end())
+            return out;
+
+        uint32 const now = getMSTime();
+        for (auto const& impact : it->second)
+            if (getMSTimeDiff(impact.castTime, now) <= lifetimeMs)
+                out.push_back(impact.position);
+
+        return out;
+    }
 }
 
 class IccPutricideListenerScript : public AllSpellScript

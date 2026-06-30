@@ -11,51 +11,6 @@
 
 static float const BPC_FLOOR_Z = 361.18222f;
 
-static bool CastClassTaunt(Player* bot, PlayerbotAI* botAI, Unit* target)
-{
-    if (!target || !target->IsAlive())
-        return false;
-
-    switch (bot->getClass())
-    {
-        case CLASS_PALADIN:
-        {
-            bot->RemoveSpellCooldown(SPELL_TAUNT_PALADIN, true);
-            if (botAI->CastSpell("hand of reckoning", target))
-                return true;
-            break;
-        }
-        case CLASS_DEATH_KNIGHT:
-        {
-            bot->RemoveSpellCooldown(SPELL_TAUNT_DK, true);
-            if (botAI->CastSpell("dark command", target))
-                return true;
-            break;
-        }
-        case CLASS_DRUID:
-        {
-            bot->RemoveSpellCooldown(SPELL_TAUNT_DRUID, true);
-            if (botAI->CastSpell("growl", target))
-                return true;
-            break;
-        }
-        case CLASS_WARRIOR:
-        {
-            bot->RemoveSpellCooldown(SPELL_TAUNT_WARRIOR, true);
-            if (botAI->CastSpell("taunt", target))
-                return true;
-            break;
-        }
-        default:
-            break;
-    }
-
-    if (botAI->CastSpell("shoot", target) || botAI->CastSpell("throw", target))
-        return true;
-
-    return false;
-}
-
 bool IccBpcKelesethTankAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "prince keleseth");
@@ -104,7 +59,7 @@ bool IccBpcKelesethTankAction::Execute(Event /*event*/)
 
     if (!isBossVictim)
     {
-        CastClassTaunt(bot, botAI, boss);
+        IccCastClassTaunt(bot, botAI, boss);
         bot->SetTarget(boss->GetGUID());
         bot->SetFacingToObject(boss);
     }
@@ -129,7 +84,7 @@ bool IccBpcKelesethTankAction::Execute(Event /*event*/)
         {
             float dist = bot->GetExactDist2d(strayNucleus);
             if (dist <= TAUNT_RANGE)
-                CastClassTaunt(bot, botAI, strayNucleus);
+                IccCastClassTaunt(bot, botAI, strayNucleus);
             else
             {
                 float dirX = strayNucleus->GetPositionX() - bot->GetPositionX();
@@ -196,7 +151,7 @@ bool IccBpcMainTankAction::Execute(Event /*event*/)
     // Taunt princes not targeting us
     if (valanar && !isVictimOfValanar)
     {
-        CastClassTaunt(bot, botAI, valanar);
+        IccCastClassTaunt(bot, botAI, valanar);
         bot->SetTarget(valanar->GetGUID());
         bot->SetFacingToObject(valanar);
         Attack(valanar);
@@ -204,7 +159,7 @@ bool IccBpcMainTankAction::Execute(Event /*event*/)
 
     if (taldaram && !isVictimOfTaldaram)
     {
-        CastClassTaunt(bot, botAI, taldaram);
+        IccCastClassTaunt(bot, botAI, taldaram);
         bot->SetTarget(taldaram->GetGUID());
         bot->SetFacingToObject(taldaram);
         Attack(taldaram);
@@ -230,7 +185,7 @@ bool IccBpcMainTankAction::Execute(Event /*event*/)
         Player* victimPlayer = victim ? victim->ToPlayer() : nullptr;
         if (!victimPlayer || !botAI->IsTank(victimPlayer))
         {
-            CastClassTaunt(bot, botAI, unit);
+            IccCastClassTaunt(bot, botAI, unit);
             break;
         }
     }
@@ -244,7 +199,7 @@ bool IccBpcMainTankAction::Execute(Event /*event*/)
 
 bool IccBpcMainTankAction::MarkEmpoweredPrince()
 {
-    static constexpr uint8 SKULL_RAID_ICON = 7;
+    static constexpr uint8 SKULL_RAID_ICON = RtiTargetValue::skullIndex;
 
     // Find empowered prince (Invocation of Blood)
     Unit* empoweredPrince = nullptr;

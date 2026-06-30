@@ -70,46 +70,6 @@ static bool IsHeroicLk(Difficulty diff)
     return diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC;
 }
 
-static bool HasAnyRemorselessWinter(Unit* boss)
-{
-    if (!boss)
-        return false;
-
-    if (boss->HasAura(SPELL_REMORSELESS_WINTER1) || boss->HasAura(SPELL_REMORSELESS_WINTER2) ||
-        boss->HasAura(SPELL_REMORSELESS_WINTER3) || boss->HasAura(SPELL_REMORSELESS_WINTER4) ||
-        boss->HasAura(SPELL_REMORSELESS_WINTER5) || boss->HasAura(SPELL_REMORSELESS_WINTER6) ||
-        boss->HasAura(SPELL_REMORSELESS_WINTER7) || boss->HasAura(SPELL_REMORSELESS_WINTER8))
-        return true;
-
-    if (!boss->HasUnitState(UNIT_STATE_CASTING))
-        return false;
-
-    return boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER1) ||
-           boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER2) ||
-           boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER3) ||
-           boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER4) ||
-           boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER5) ||
-           boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER6) ||
-           boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER7) ||
-           boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER8);
-}
-
-// Apply heroic cheat buffs to bots & players
-static void ApplyHeroicBuffToMember(PlayerbotAI* botAI, Player* member, bool applyNoThreat)
-{
-    if (!member->HasAura(SPELL_EXPERIENCED))
-        member->AddAura(SPELL_EXPERIENCED, member);
-
-    if (!member->HasAura(SPELL_AGEIS_OF_DALARAN))
-        member->AddAura(SPELL_AGEIS_OF_DALARAN, member);
-
-    if (!member->HasAura(SPELL_PAIN_SUPPRESION))
-        member->AddAura(SPELL_PAIN_SUPPRESION, member);
-
-    if (applyNoThreat && !botAI->IsTank(member) && !member->HasAura(SPELL_NO_THREAT))
-        member->AddAura(SPELL_NO_THREAT, member);
-}
-
 static float GetDefileEffectiveRadius(Unit const* defile, Difficulty diff)
 {
     static constexpr float BASE_RADIUS = 6.0f;
@@ -242,7 +202,7 @@ bool IccLichKingShadowTrapAction::Execute(Event /*event*/)
     Difficulty const diff = bot->GetRaidDifficulty();
 
     if (sPlayerbotAIConfig.EnableICCBuffs && IsHeroicLk(diff))
-        ApplyHeroicBuffToMember(botAI, bot, false);
+        IccApplyHeroicBuffToMember(botAI, bot, true, false);
 
     static constexpr float CIRCLE_RADIUS = 20.0f;
     static constexpr float SAFE_DISTANCE = 12.0f;
@@ -439,7 +399,7 @@ bool IccLichKingWinterAction::Execute(Event /*event*/)
     Difficulty const diff = bot->GetRaidDifficulty();
 
     if (sPlayerbotAIConfig.EnableICCBuffs && IsHeroicLk(diff))
-        ApplyHeroicBuffToMember(botAI, bot, true);
+        IccApplyHeroicBuffToMember(botAI, bot, true, true);
 
     // Speed boost to help escape the inward push
     if (bot->GetDistance2d(boss) < 35.0f && !bot->HasAura(SPELL_NITRO_BOOSTS))
@@ -477,7 +437,7 @@ bool IccLichKingWinterAction::Execute(Event /*event*/)
     {
         static constexpr float MARK_RANGE = 10.0f;
 
-        Unit* currentSkull = botAI->GetUnit(group->GetTargetIcon(7));
+        Unit* currentSkull = botAI->GetUnit(group->GetTargetIcon(RtiTargetValue::skullIndex));
         bool const currentValid = currentSkull && currentSkull->IsAlive() && (IsLkShambling(currentSkull->GetEntry()) || IsLkRagingSpirit(currentSkull->GetEntry()));
 
         if (!currentValid)
@@ -513,9 +473,9 @@ bool IccLichKingWinterAction::Execute(Event /*event*/)
             Unit* markTarget = bestShambling ? bestShambling : bestSpirit;
 
             if (markTarget)
-                group->SetTargetIcon(7, bot->GetGUID(), markTarget->GetGUID());
-            else if (!group->GetTargetIcon(7).IsEmpty())
-                group->SetTargetIcon(7, bot->GetGUID(), ObjectGuid::Empty);
+                group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), markTarget->GetGUID());
+            else if (!group->GetTargetIcon(RtiTargetValue::skullIndex).IsEmpty())
+                group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), ObjectGuid::Empty);
         }
     }
 
@@ -536,15 +496,7 @@ bool IccLichKingWinterAction::Execute(Event /*event*/)
     static std::map<std::pair<uint32, ObjectGuid>, WinterStageState> s_winterStage;
     auto const winterKey = std::make_pair(boss->GetInstanceId(), boss->GetGUID());
 
-    bool const bossCastingWinter = boss->HasUnitState(UNIT_STATE_CASTING) &&
-        (boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER1) ||
-         boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER2) ||
-         boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER3) ||
-         boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER4) ||
-         boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER5) ||
-         boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER6) ||
-         boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER7) ||
-         boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER8));
+    bool const bossCastingWinter = IccBossCastingRemorselessWinter(boss);
 
     static constexpr uint32 STAGE_DURATION_MS = 4000;
 
@@ -1135,7 +1087,7 @@ bool IccLichKingWinterAction::HandleMeleePositioning()
         // Priority: skull-marked target (only if near MT)
         if (Group* group = bot->GetGroup())
         {
-            Unit* skull = botAI->GetUnit(group->GetTargetIcon(7));
+            Unit* skull = botAI->GetUnit(group->GetTargetIcon(RtiTargetValue::skullIndex));
             if (skull && skull->IsAlive() && IsLkCollectibleAdd(skull) && addNearMT(skull))
                 newTarget = skull;
         }
@@ -1360,7 +1312,7 @@ bool IccLichKingWinterAction::HandleRangedPositioning()
     Unit* addTarget = nullptr;
     if (Group* group = bot->GetGroup())
     {
-        Unit* skull = botAI->GetUnit(group->GetTargetIcon(7));
+        Unit* skull = botAI->GetUnit(group->GetTargetIcon(RtiTargetValue::skullIndex));
         if (skull && skull->IsAlive() && IsLkCollectibleAdd(skull))
             addTarget = skull;
     }
@@ -1872,7 +1824,7 @@ bool IccLichKingAddsAction::Execute(Event /*event*/)
                 if (!member || !member->IsAlive() || !member->IsInWorld())
                     continue;
 
-                ApplyHeroicBuffToMember(botAI, member, true);
+                IccApplyHeroicBuffToMember(botAI, member, true, true);
 
                 if (boss && boss->HealthBelowPct(60) && boss->HealthAbovePct(40) &&
                     !member->HasAura(SPELL_EMPOWERED_BLOOD))
@@ -1907,11 +1859,11 @@ bool IccLichKingAddsAction::Execute(Event /*event*/)
             // During Vile Spirit windows, melee can't reach the spirits — mark boss on cross
             // and route melee DPS there.
             bool phase3 = false;
-            if (boss && boss->HealthBelowPct(40) && !HasAnyRemorselessWinter(boss))
+            if (boss && boss->HealthBelowPct(40) && !IccBossHasRemorselessWinter(boss))
             {
                 phase3 = true;
 
-                Unit* currentSkull = botAI->GetUnit(group->GetTargetIcon(7));
+                Unit* currentSkull = botAI->GetUnit(group->GetTargetIcon(RtiTargetValue::skullIndex));
                 bool const ragingMarked = currentSkull && currentSkull->IsAlive() &&
                                           IsLkRagingSpirit(currentSkull->GetEntry());
 
@@ -1937,19 +1889,19 @@ bool IccLichKingAddsAction::Execute(Event /*event*/)
                     }
                 }
 
-                static constexpr uint8 CROSS_ICON = 6;
+                static constexpr uint8 CROSS_ICON = RtiTargetValue::crossIndex;
 
                 // Priority: Raging Spirit > boss. Vile Spirits are not marked
                 // (handled positionally by HandleVileSpiritMechanics + AT chase
                 // + hunter frost trap).
                 if (nearestRaging)
                 {
-                    if (!ragingMarked && group->GetTargetIcon(7) != nearestRaging->GetGUID())
-                        group->SetTargetIcon(7, bot->GetGUID(), nearestRaging->GetGUID());
+                    if (!ragingMarked && group->GetTargetIcon(RtiTargetValue::skullIndex) != nearestRaging->GetGUID())
+                        group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), nearestRaging->GetGUID());
                 }
-                else if (group->GetTargetIcon(7) != boss->GetGUID())
+                else if (group->GetTargetIcon(RtiTargetValue::skullIndex) != boss->GetGUID())
                 {
-                    group->SetTargetIcon(7, bot->GetGUID(), boss->GetGUID());
+                    group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), boss->GetGUID());
                 }
 
                 // Cross marker is no longer used for vile windows — clear if set
@@ -1967,12 +1919,12 @@ bool IccLichKingAddsAction::Execute(Event /*event*/)
             }
             else if (boss && boss->HealthAbovePct(71))
             {
-                if (group->GetTargetIcon(7) != boss->GetGUID())
-                    group->SetTargetIcon(7, bot->GetGUID(), boss->GetGUID());
+                if (group->GetTargetIcon(RtiTargetValue::skullIndex) != boss->GetGUID())
+                    group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), boss->GetGUID());
             }
             else if (boss)
             {
-                Unit* currentSkull = botAI->GetUnit(group->GetTargetIcon(7));
+                Unit* currentSkull = botAI->GetUnit(group->GetTargetIcon(RtiTargetValue::skullIndex));
                 bool const spiritMarked = currentSkull && currentSkull->IsAlive() &&
                                           IsLkRagingSpirit(currentSkull->GetEntry());
 
@@ -2001,12 +1953,12 @@ bool IccLichKingAddsAction::Execute(Event /*event*/)
 
                     if (nearestSpirit)
                     {
-                        if (group->GetTargetIcon(7) != nearestSpirit->GetGUID())
-                            group->SetTargetIcon(7, bot->GetGUID(), nearestSpirit->GetGUID());
+                        if (group->GetTargetIcon(RtiTargetValue::skullIndex) != nearestSpirit->GetGUID())
+                            group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), nearestSpirit->GetGUID());
                     }
-                    else if (group->GetTargetIcon(7) != boss->GetGUID())
+                    else if (group->GetTargetIcon(RtiTargetValue::skullIndex) != boss->GetGUID())
                     {
-                        group->SetTargetIcon(7, bot->GetGUID(), boss->GetGUID());
+                        group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), boss->GetGUID());
                     }
                 }
             }
@@ -2025,7 +1977,7 @@ bool IccLichKingAddsAction::Execute(Event /*event*/)
 
     // Detect bots fallen off edge and initiate dive
     if (boss && boss->GetHealthPct() < 70.0f && boss->GetHealthPct() > 40.0f &&
-        !HasAnyRemorselessWinter(boss))
+        !IccBossHasRemorselessWinter(boss))
     {
         static constexpr float PLATFORM_CENTER_X = 503.0f;
         static constexpr float PLATFORM_CENTER_Y = -2124.0f;
@@ -2418,7 +2370,7 @@ bool IccLichKingAddsAction::HandleSpiritMarkingAndTargeting(Difficulty diff, Uni
     if (!group)
         return false;
 
-    static constexpr uint8 STAR_ICON = 0;
+    static constexpr uint8 STAR_ICON = RtiTargetValue::starIndex;
     static constexpr float MAX_Z_DIFF = 20.0f;
 
     auto const spiritTargetsGroup = [&](Unit* spirit) -> bool
@@ -2527,7 +2479,7 @@ bool IccLichKingAddsAction::HandleRagingSpiritFlanking(Unit* boss, bool hasPlagu
 {
     if (!boss || botAI->IsTank(bot) || hasPlague)
         return false;
-    if (HasAnyRemorselessWinter(boss))
+    if (IccBossHasRemorselessWinter(boss))
         return false;
     if (bot->GetVehicle())
         return false;
@@ -2772,7 +2724,7 @@ bool IccLichKingAddsAction::HandleAssistTankAddManagement(Unit* boss, Difficulty
     // shockwave the raid during the transition gap.
     if (boss->HealthBelowPct(72) && boss->HealthAbovePct(70))
     {
-        if (!HasAnyRemorselessWinter(boss))
+        if (!IccBossHasRemorselessWinter(boss))
         {
             GuidVector const& stunTargets = AI_VALUE(GuidVector, "possible targets");
             for (ObjectGuid const& guid : stunTargets)
@@ -2793,44 +2745,6 @@ bool IccLichKingAddsAction::HandleAssistTankAddManagement(Unit* boss, Difficulty
     Position const& holdPos = IsHeroicLk(diff)
         ? ICC_LICH_KING_ASSISTHC_POSITION
         : ICC_LICH_KING_ADDS_POSITION;
-
-    // Class-specific taunt with forced cooldown reset
-    auto CastClassTaunt = [&](Unit* target) -> bool
-    {
-        if (!target || !target->IsAlive())
-            return false;
-
-        switch (bot->getClass())
-        {
-            case CLASS_PALADIN:
-                bot->RemoveSpellCooldown(SPELL_TAUNT_PALADIN, true);
-                if (botAI->CastSpell("hand of reckoning", target))
-                    return true;
-                break;
-            case CLASS_DEATH_KNIGHT:
-                bot->RemoveSpellCooldown(SPELL_TAUNT_DK, true);
-                if (botAI->CastSpell("dark command", target))
-                    return true;
-                break;
-            case CLASS_DRUID:
-                bot->RemoveSpellCooldown(SPELL_TAUNT_DRUID, true);
-                if (botAI->CastSpell("growl", target))
-                    return true;
-                break;
-            case CLASS_WARRIOR:
-                bot->RemoveSpellCooldown(SPELL_TAUNT_WARRIOR, true);
-                if (botAI->CastSpell("taunt", target))
-                    return true;
-                break;
-            default:
-                break;
-        }
-
-        if (botAI->CastSpell("shoot", target) || botAI->CastSpell("throw", target))
-            return true;
-
-        return false;
-    };
 
     // Categorise visible adds
     GuidVector const& targets = AI_VALUE(GuidVector, "possible targets");
@@ -2853,7 +2767,7 @@ bool IccLichKingAddsAction::HandleAssistTankAddManagement(Unit* boss, Difficulty
     bool const isHeroic = IsHeroicLk(diff);
 
     // Non-winter Raging Spirit pickup: AT grabs ALL spirits before joining MT.
-    if (!HasAnyRemorselessWinter(boss))
+    if (!IccBossHasRemorselessWinter(boss))
     {
         std::vector<Unit*> looseSpirits;
         std::vector<Unit*> spiritsOnUs;
@@ -2880,7 +2794,7 @@ bool IccLichKingAddsAction::HandleAssistTankAddManagement(Unit* boss, Difficulty
             float nearestLooseDist = FLT_MAX;
             for (Unit* spirit : looseSpirits)
             {
-                CastClassTaunt(spirit);
+                IccCastClassTaunt(bot, botAI,spirit);
                 float const d = bot->GetExactDist2d(spirit);
                 if (d < nearestLooseDist)
                 {
@@ -3031,7 +2945,7 @@ bool IccLichKingAddsAction::HandleAssistTankAddManagement(Unit* boss, Difficulty
 
     Unit* tauntTarget = tauntTargetShambling ? tauntTargetShambling : tauntTargetOther;
     if (tauntTarget)
-        CastClassTaunt(tauntTarget);
+        IccCastClassTaunt(bot, botAI,tauntTarget);
 
     // No adds at all — stay at hold position
     if (addsOnUs.empty() && addsElsewhere.empty())
@@ -3269,7 +3183,7 @@ bool IccLichKingAddsAction::HandleMainTankTargeting(Unit* boss, Difficulty diff)
 
     // Non-winter Raging Spirit case: stay on boss only when an assist tank is alive
     // to take the spirit. If AT is dead, fall through so MT can swap.
-    if (!HasAnyRemorselessWinter(boss))
+    if (!IccBossHasRemorselessWinter(boss))
     {
         GuidVector const& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
         bool spiritAlive = false;
@@ -3394,7 +3308,7 @@ bool IccLichKingAddsAction::HandleRangedPositioning(Unit* boss, bool hasPlague, 
 
 bool IccLichKingAddsAction::HandleCenterStacking(Unit* boss, Difficulty diff)
 {
-    if (!boss || !boss->HealthBelowPct(67) || HasAnyRemorselessWinter(boss))
+    if (!boss || !boss->HealthBelowPct(67) || IccBossHasRemorselessWinter(boss))
         return false;
 
     // Defile target: let HandleDefileMechanics() handle movement
@@ -3415,7 +3329,8 @@ bool IccLichKingAddsAction::HandleCenterStacking(Unit* boss, Difficulty diff)
     // assigned to them must not be locked to the center stack.
     if (Group* group = bot->GetGroup())
     {
-        static constexpr std::array<uint8, 3> ValkyrIcons = {7, 6, 0};
+        static constexpr std::array<uint8, 3> ValkyrIcons = {RtiTargetValue::skullIndex, RtiTargetValue::crossIndex,
+                                                             RtiTargetValue::starIndex};
         for (uint8 const iconIdx : ValkyrIcons)
         {
             Unit* marked = botAI->GetUnit(group->GetTargetIcon(iconIdx));
@@ -3839,7 +3754,8 @@ bool IccLichKingAddsAction::HandleValkyrMarking(std::vector<Unit*> const& grabbi
     std::sort(sorted.begin(), sorted.end(),
               [](Unit* a, Unit* b) { return a->GetGUID() < b->GetGUID(); });
 
-    static constexpr std::array<uint8, 3> Icons = {7, 6, 0};  // Skull, Cross, Star
+    static constexpr std::array<uint8, 3> Icons = {RtiTargetValue::skullIndex, RtiTargetValue::crossIndex,
+                                                   RtiTargetValue::starIndex};
 
     // Heroic: clear stale markers for Val'kyrs no longer grabbing or at wrong Z
     if (IsHeroicLk(diff))
@@ -3872,7 +3788,7 @@ bool IccLichKingAddsAction::HandleValkyrMarking(std::vector<Unit*> const& grabbi
 
         if (iconIdx == 7)
         {
-            Unit* currentSkull = botAI->GetUnit(group->GetTargetIcon(7));
+            Unit* currentSkull = botAI->GetUnit(group->GetTargetIcon(RtiTargetValue::skullIndex));
             if (currentSkull && currentSkull->IsAlive() && IsLkRagingSpirit(currentSkull->GetEntry()))
                 continue;
         }
@@ -3928,14 +3844,14 @@ bool IccLichKingAddsAction::HandleValkyrAssignment(std::vector<Unit*> const& gra
         return false;
 
     size_t const myIndex = std::distance(assistMembers.begin(), it);
-    auto const groupSizes = CalculateBalancedGroupSizes(assistMembers.size(), valid.size());
-    size_t const valkyrIndex = GetAssignedValkyrIndex(myIndex, groupSizes);
+    auto const groupSizes = IccBalancedGroupSizes(assistMembers.size(), valid.size());
+    size_t const valkyrIndex = IccAssignedBucketIndex(myIndex, groupSizes);
 
     if (valkyrIndex >= valid.size())
         return false;
 
     Unit* myValkyr = valid[valkyrIndex];
-    context->GetValue<std::string>("rti")->Set(GetRTIValueForValkyr(valkyrIndex));
+    context->GetValue<std::string>("rti")->Set(IccRtiNameForBucket(valkyrIndex));
 
     Attack(myValkyr);
 
@@ -4359,7 +4275,7 @@ bool IccLichKingAddsAction::HandleIceSphereMechanics()
     if (!group)
         return false;
 
-    static constexpr uint8 SPHERE_ICON = 1;  // Diamond
+    static constexpr uint8 SPHERE_ICON = RtiTargetValue::circleIndex;
 
     GuidVector const& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
 
@@ -4412,55 +4328,6 @@ bool IccLichKingAddsAction::HandleIceSphereMechanics()
 bool IccLichKingAddsAction::IsValkyr(Unit* unit)
 {
     return IsLkValkyr(unit);
-}
-
-std::vector<size_t> IccLichKingAddsAction::CalculateBalancedGroupSizes(size_t totalAssist,
-                                                                       size_t numValkyrs)
-{
-    std::vector<size_t> groupSizes(numValkyrs, 0);
-    if (numValkyrs == 0)
-        return groupSizes;
-
-    size_t const baseSize = totalAssist / numValkyrs;
-    size_t const remainder = totalAssist % numValkyrs;
-
-    for (size_t i = 0; i < numValkyrs; ++i)
-    {
-        groupSizes[i] = baseSize;
-        if (i < remainder)
-            ++groupSizes[i];
-    }
-
-    return groupSizes;
-}
-
-size_t IccLichKingAddsAction::GetAssignedValkyrIndex(size_t assistIndex,
-                                                      std::vector<size_t> const& groupSizes)
-{
-    size_t cursor = 0;
-    for (size_t valkyrIndex = 0; valkyrIndex < groupSizes.size(); ++valkyrIndex)
-    {
-        if (assistIndex < cursor + groupSizes[valkyrIndex])
-            return valkyrIndex;
-        cursor += groupSizes[valkyrIndex];
-    }
-
-    return 0;  // fallback
-}
-
-std::string IccLichKingAddsAction::GetRTIValueForValkyr(size_t valkyrIndex)
-{
-    switch (valkyrIndex)
-    {
-        case 0:
-            return "skull";
-        case 1:
-            return "cross";
-        case 2:
-            return "star";
-        default:
-            return "skull";
-    }
 }
 
 bool IccLichKingAddsAction::ApplyCCToValkyr(Unit* valkyr)

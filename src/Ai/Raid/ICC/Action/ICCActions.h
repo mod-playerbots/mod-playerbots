@@ -20,6 +20,7 @@
 #include "GridNotifiersImpl.h"
 #include "Vehicle.h"
 #include "ICCTriggers.h"
+#include "ICCShared.h"
 
 inline const Position ICC_LM_TANK_POSITION = Position(-391.0f, 2259.0f, 42.0f);
 inline const Position ICC_LM_BONE_STORM_AT_POSITION = Position(-390.02332f, 2179.3481f, 41.96729f);
@@ -150,9 +151,6 @@ public:
     bool HandleNoSpikesMarking(Unit* boss);
     bool HandleSpikeAssignment(std::vector<Unit*> const& spikes, Unit* boss);
     bool MoveTowardPosition(Position const& position, float incrementSize);
-    static std::vector<size_t> CalculateBalancedGroupSizes(size_t totalMembers, size_t numSpikes);
-    static size_t GetAssignedSpikeIndex(size_t memberIndex, std::vector<size_t> const& groupSizes);
-    static std::string GetRTIValueForSpike(size_t spikeIndex);
     bool IsSpikeInColdFlame(Unit* spike);
     static Player* GetSpikeVictim(Unit* spike);
 };
@@ -184,7 +182,6 @@ public:
     bool Execute(Event event) override;
 
     bool IsTargetedByShade(uint32 shadeEntry);
-    bool MoveTowardPosition(Position const& position, float incrementSize);
     bool HandleAddTargeting(Unit* boss);
     bool UpdateRaidTargetIcon(Unit* target);
     bool HandleNonTankAddEvasion();
@@ -857,9 +854,6 @@ public:
     bool HandleIceSphereMechanics();
     bool ApplyCCToValkyr(Unit* valkyr);
     bool IsValkyr(Unit* unit);
-    std::vector<size_t> CalculateBalancedGroupSizes(size_t totalAssist, size_t numValkyrs);
-    size_t GetAssignedValkyrIndex(size_t assistIndex, std::vector<size_t> const& groupSizes);
-    std::string GetRTIValueForValkyr(size_t valkyrIndex);
     std::pair<float, float> DefileAwareStep(float tx, float ty,
                                            std::vector<Unit*> const& defiles,
                                            Difficulty diff);

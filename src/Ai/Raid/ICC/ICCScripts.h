@@ -22,6 +22,8 @@ namespace IcecrownHelpers
     };
     extern std::unordered_map<uint32, std::vector<MalleableGooImpact>> malleableGooImpacts;
 
+    std::vector<Position> ActiveGooPositions(uint32 instanceId, uint32 lifetimeMs);
+
     // Festergut avoid-malleable-goo wait state. When a bot dodges goo we stamp
     // a wait-until timestamp here so the trigger stays active and movement is
     // held for the full 8s impact window - otherwise the group-position action

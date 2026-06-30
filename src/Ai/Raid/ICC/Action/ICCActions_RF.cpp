@@ -60,15 +60,7 @@ bool IccRotfaceTankPositionAction::Execute(Event /*event*/)
 
 bool IccRotfaceTankPositionAction::MarkBossWithSkull(Unit* boss)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    constexpr uint8 skullIconId = 7;
-    ObjectGuid skullGuid = group->GetTargetIcon(skullIconId);
-    if (skullGuid != boss->GetGUID())
-        group->SetTargetIcon(skullIconId, bot->GetGUID(), boss->GetGUID());
-
+    IccEnsureIconOn(bot, botAI, RtiTargetValue::skullIndex, boss);
     return false;
 }
 
@@ -140,54 +132,6 @@ bool IccRotfaceTankPositionAction::HandleAssistTankPositioning(Unit*)
     if (activeBigOozes.empty())
         return false;
 
-    auto CastClassTaunt = [&](Unit* target) -> bool
-    {
-        if (!target || !target->IsAlive())
-            return false;
-
-        if (!bot->HasAura(SPELL_SPITEFULL_FURY))
-            bot->AddAura(SPELL_SPITEFULL_FURY, bot);
-
-        switch (bot->getClass())
-        {
-            case CLASS_PALADIN:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_PALADIN, true);
-                if (botAI->CastSpell("hand of reckoning", target))
-                    return true;
-                break;
-            }
-            case CLASS_DEATH_KNIGHT:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_DK, true);
-                if (botAI->CastSpell("dark command", target))
-                    return true;
-                break;
-            }
-            case CLASS_DRUID:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_DRUID, true);
-                if (botAI->CastSpell("growl", target))
-                    return true;
-                break;
-            }
-            case CLASS_WARRIOR:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_WARRIOR, true);
-                if (botAI->CastSpell("taunt", target))
-                    return true;
-                break;
-            }
-            default:
-                break;
-        }
-
-        if (botAI->CastSpell("shoot", target) || botAI->CastSpell("throw", target))
-            return true;
-
-        return false;
-    };
-
     Unit* uncollectedOoze = nullptr;
     float minUncollectedDist = FLT_MAX;
     for (Unit* ooze : activeBigOozes)
@@ -195,7 +139,9 @@ bool IccRotfaceTankPositionAction::HandleAssistTankPositioning(Unit*)
         if (ooze->GetVictim() == bot)
             continue;
 
-        CastClassTaunt(ooze);
+        if (!bot->HasAura(SPELL_SPITEFULL_FURY))
+            bot->AddAura(SPELL_SPITEFULL_FURY, bot);
+        IccCastClassTaunt(bot, botAI, ooze);
 
         float const dist = bot->GetExactDist2d(ooze);
         if (dist < minUncollectedDist)
@@ -278,56 +224,12 @@ Unit* IccRotfaceTankPositionAction::FindAssignedBigOoze(Unit* /*boss*/, std::vec
 
 bool IccRotfaceTankPositionAction::HandleBigOozeKiting(Unit* bigOoze)
 {
-    auto CastClassTaunt = [&](Unit* target) -> bool
+    if (bigOoze->GetVictim() != bot && bigOoze->IsAlive())
     {
-        if (!target || !target->IsAlive())
-            return false;
-
         if (!bot->HasAura(SPELL_SPITEFULL_FURY))
             bot->AddAura(SPELL_SPITEFULL_FURY, bot);
-
-        switch (bot->getClass())
-        {
-            case CLASS_PALADIN:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_PALADIN, true);
-                if (botAI->CastSpell("hand of reckoning", target))
-                    return true;
-                break;
-            }
-            case CLASS_DEATH_KNIGHT:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_DK, true);
-                if (botAI->CastSpell("dark command", target))
-                    return true;
-                break;
-            }
-            case CLASS_DRUID:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_DRUID, true);
-                if (botAI->CastSpell("growl", target))
-                    return true;
-                break;
-            }
-            case CLASS_WARRIOR:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_WARRIOR, true);
-                if (botAI->CastSpell("taunt", target))
-                    return true;
-                break;
-            }
-            default:
-                break;
-        }
-
-        if (botAI->CastSpell("shoot", target) || botAI->CastSpell("throw", target))
-            return true;
-
-        return false;
-    };
-
-    if (bigOoze->GetVictim() != bot && bigOoze->IsAlive())
-        CastClassTaunt(bigOoze);
+        IccCastClassTaunt(bot, botAI, bigOoze);
+    }
 
     float const oozeDistance = bot->GetExactDist2d(bigOoze);
 
@@ -336,7 +238,11 @@ bool IccRotfaceTankPositionAction::HandleBigOozeKiting(Unit* bigOoze)
         bot->SetTarget(bigOoze->GetGUID());
         bot->SetFacingToObject(bigOoze);
         if (bigOoze->GetVictim() != bot)
-            CastClassTaunt(bigOoze);
+        {
+            if (!bot->HasAura(SPELL_SPITEFULL_FURY))
+                bot->AddAura(SPELL_SPITEFULL_FURY, bot);
+            IccCastClassTaunt(bot, botAI, bigOoze);
+        }
         return false;
     }
 

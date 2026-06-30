@@ -496,55 +496,7 @@ bool IccAddsLadyDeathwhisperAction::ApplyNearbyAddCC()
 
 bool IccAddsLadyDeathwhisperAction::ApplyCCToAdd(Unit* add)
 {
-    if (!add || !add->IsAlive())
-        return false;
-
-    switch (bot->getClass())
-    {
-        case CLASS_MAGE:
-            if (!botAI->HasAura("Frost Nova", add))
-                botAI->CastSpell("Frost Nova", add);
-            break;
-        case CLASS_DRUID:
-            if (!botAI->HasAura("Entangling Roots", add))
-                botAI->CastSpell("Entangling Roots", add);
-            break;
-        case CLASS_PALADIN:
-            if (!botAI->HasAura("Hammer of Justice", add))
-                botAI->CastSpell("Hammer of Justice", add);
-            break;
-        case CLASS_WARRIOR:
-            if (!botAI->HasAura("Hamstring", add))
-                botAI->CastSpell("Hamstring", add);
-            break;
-        case CLASS_HUNTER:
-            if (!botAI->HasAura("Concussive Shot", add))
-                botAI->CastSpell("Concussive Shot", add);
-            break;
-        case CLASS_ROGUE:
-            if (!botAI->HasAura("Kidney Shot", add))
-                botAI->CastSpell("Kidney Shot", add);
-            break;
-        case CLASS_SHAMAN:
-            if (!botAI->HasAura("Frost Shock", add))
-                botAI->CastSpell("Frost Shock", add);
-            break;
-        case CLASS_DEATH_KNIGHT:
-            if (!botAI->HasAura("Chains of Ice", add))
-                botAI->CastSpell("Chains of Ice", add);
-            break;
-        case CLASS_PRIEST:
-            if (!botAI->HasAura("Psychic Scream", add))
-                botAI->CastSpell("Psychic Scream", add);
-            break;
-        case CLASS_WARLOCK:
-            if (!botAI->HasAura("Fear", add))
-                botAI->CastSpell("Fear", add);
-            break;
-        default:
-            break;
-    }
-
+    IccTryClassCC(bot, botAI, add);
     return false;
 }
 
@@ -671,25 +623,6 @@ bool IccAddsLadyDeathwhisperAction::IsTargetedByShade(uint32 shadeEntry)
     return false;
 }
 
-bool IccAddsLadyDeathwhisperAction::MoveTowardPosition(Position const& position, float incrementSize)
-{
-    float const dirX = position.GetPositionX() - bot->GetPositionX();
-    float const dirY = position.GetPositionY() - bot->GetPositionY();
-    float const length = std::sqrt(dirX * dirX + dirY * dirY);
-
-    if (length < 0.001f)
-        return false;
-
-    float const normalizedDirX = dirX / length;
-    float const normalizedDirY = dirY / length;
-
-    float const moveX = bot->GetPositionX() + normalizedDirX * incrementSize;
-    float const moveY = bot->GetPositionY() + normalizedDirY * incrementSize;
-
-    return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-                  MovementPriority::MOVEMENT_COMBAT);
-}
-
 bool IccAddsLadyDeathwhisperAction::HandleAddTargeting(Unit* boss)
 {
     GuidVector const targets = AI_VALUE(GuidVector, "possible targets no los");
@@ -725,7 +658,7 @@ bool IccAddsLadyDeathwhisperAction::HandleAddTargeting(Unit* boss)
 
 bool IccAddsLadyDeathwhisperAction::UpdateRaidTargetIcon(Unit* target)
 {
-    static constexpr uint8 SKULL_ICON_INDEX = 7;
+    static constexpr uint8 SKULL_ICON_INDEX = RtiTargetValue::skullIndex;
 
     if (!target || !target->IsAlive())
         return false;
