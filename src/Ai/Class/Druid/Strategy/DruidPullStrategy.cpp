@@ -31,5 +31,9 @@ std::string DruidPullStrategy::GetPreActionName() const
     if (GetPullActionName() == "faerie fire")
         return "";
 
+    // Fall back to Bear Form when Dire Bear Form isn't trained yet (< ~level 40).
+    if (!botAI->HasSpell("dire bear form"))
+        return "bear form";
+
     return PullStrategy::GetPreActionName();
 }
