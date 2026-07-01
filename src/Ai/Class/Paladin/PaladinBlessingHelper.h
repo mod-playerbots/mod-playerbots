@@ -35,8 +35,8 @@ namespace ai::blessing
         {
             Player* member = ref->GetSource();
             if (member && member->getClass() == CLASS_PRIEST &&
-                (member->HasSpell(SPELL_RENEWED_HOPE_R1) ||
-                 member->HasSpell(SPELL_RENEWED_HOPE_R2)))
+                (member->HasAura(SPELL_RENEWED_HOPE_R1) ||
+                 member->HasAura(SPELL_RENEWED_HOPE_R2)))
                 return true;
         }
 
