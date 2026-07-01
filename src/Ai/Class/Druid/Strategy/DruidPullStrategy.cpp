@@ -8,6 +8,8 @@
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 
+constexpr uint32 SPELL_DIRE_BEAR_FORM = 9634;
+
 std::string DruidPullStrategy::GetPullActionName() const
 {
     std::string const pullActionName = PullStrategy::GetPullActionName();
@@ -32,7 +34,7 @@ std::string DruidPullStrategy::GetPreActionName() const
         return "";
 
     // Fall back to Bear Form when Dire Bear Form isn't trained yet (< ~level 40).
-    if (!botAI->HasSpell("dire bear form"))
+    if (!botAI->GetBot()->HasSpell(SPELL_DIRE_BEAR_FORM))
         return "bear form";
 
     return PullStrategy::GetPreActionName();
