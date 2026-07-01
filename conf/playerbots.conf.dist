@@ -708,6 +708,14 @@ AiPlayerbot.RandomBotMaxLevel = 80
 # Default: 0 (disabled)
 AiPlayerbot.SyncLevelWithPlayers = 0
 
+# Concentrate random bots in the zone(s) where real players currently are, instead of spreading
+# them across the whole world. When enabled, a random bot about to random-teleport to a
+# level-appropriate location will prefer a location whose zone currently holds a real (non-GM)
+# player. It falls back to the normal world-wide behaviour when no real player is in a matching
+# zone. Best combined with AiPlayerbot.SyncLevelWithPlayers so bots share the players' zones.
+# Default: 0 (disabled)
+AiPlayerbot.RandomBotConcentrateInPlayerZone = 0
+
 # Mark many quests ≤ bot level as complete (slows down bot creation)
 # Default: 0 (disabled)
 AiPlayerbot.PreQuests = 0

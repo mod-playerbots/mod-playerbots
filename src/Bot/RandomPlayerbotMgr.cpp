@@ -14,6 +14,8 @@
 #include <ctime>
 #include <iomanip>
 #include <random>
+#include <set>
+#include <utility>
 
 #include "AiFactory.h"
 #include "Battleground.h"
@@ -1780,11 +1782,53 @@ void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
         }
     }
     std::vector<WorldLocation> locs = sTravelMgr.GetTeleportLocations(bot);
+
+    if (sPlayerbotAIConfig.randomBotConcentrateInPlayerZone && !locs.empty())
+    {
+        std::vector<WorldLocation> playerZoneLocs = GetPlayerZoneTeleportLocations(locs);
+        if (!playerZoneLocs.empty())
+            locs = std::move(playerZoneLocs);
+    }
+
     if (!locs.empty())
     {
         RandomTeleport(bot, locs, false);
         return;
     }
+}
+
+// Returns the subset of teleport locations that lie in a zone currently occupied by a real
+// (non-GM) player, so random bots can be gathered where players actually are. Returns an empty
+// vector when no player is online or none of the locations match, letting the caller fall back
+// to the default world-wide behaviour.
+std::vector<WorldLocation> RandomPlayerbotMgr::GetPlayerZoneTeleportLocations(std::vector<WorldLocation> const& locs)
+{
+    std::set<uint32> playerMaps;
+    std::set<std::pair<uint32, uint32>> playerMapZones;
+    for (Player* player : GetPlayers())
+    {
+        if (!player || !player->IsInWorld() || player->IsGameMaster())
+            continue;
+
+        playerMaps.insert(player->GetMapId());
+        playerMapZones.insert(std::make_pair(player->GetMapId(), player->GetZoneId()));
+    }
+
+    std::vector<WorldLocation> filtered;
+    if (playerMapZones.empty())
+        return filtered;
+
+    for (WorldLocation const& loc : locs)
+    {
+        if (playerMaps.find(loc.GetMapId()) == playerMaps.end())
+            continue;
+
+        uint32 zoneId = sMapMgr->GetZoneId(PHASEMASK_NORMAL, loc);
+        if (playerMapZones.find(std::make_pair(loc.GetMapId(), zoneId)) != playerMapZones.end())
+            filtered.push_back(loc);
+    }
+
+    return filtered;
 }
 
 void RandomPlayerbotMgr::RandomTeleportGrindForLevel(Player* bot)
