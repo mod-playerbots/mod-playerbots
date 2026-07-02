@@ -24,8 +24,11 @@ float constexpr kTwinArcaneBurstAvoidRadius = 10.0f;
 float constexpr kTwinWarlockMinRange = 19.0f;
 float constexpr kTwinWarlockMaxRange = 30.0f;
 float constexpr kTwinWarlockPreferredRange = 24.0f;
-float constexpr kTwinMeleeContactRange = 5.0f;
+float constexpr kTwinMeleeAnchorRange = 5.0f;
+float constexpr kTwinMeleeThreatContactRange = 0.75f;
 float constexpr kTwinMeleeControlMaxRange = 8.0f;
+float constexpr kTwinStandbyVeklorRange = kTwinArcaneBurstAvoidRadius + 2.0f;
+float constexpr kTwinStandbyVeklorRangeTolerance = 1.5f;
 float constexpr kTwinBossSeparationTargetDistance = 72.0f;
 float constexpr kTwinBossSeparationResumeDistance = 68.0f;
 
@@ -486,6 +489,65 @@ bool ShouldAttackTwinBug(Player* bot, PlayerbotAI* botAI)
            (bot->getClass() == CLASS_HUNTER || PlayerbotAI::IsRanged(bot));
 }
 
+bool IsTwinBugTargetValidForBot(Player* bot, PlayerbotAI* botAI, Unit* target, float range)
+{
+    return bot && Aq40BossHelper::Twin::IsTwinKillBug(botAI, target) && bot->GetDistance2d(target) <= range;
+}
+
+bool ClearTwinBugTargetIfInvalid(Player* bot, PlayerbotAI* botAI, Unit* target, float range)
+{
+    if (!bot || !botAI || !target || !Aq40SpellIds::IsTwinBugEntry(target->GetEntry()) ||
+        IsTwinBugTargetValidForBot(bot, botAI, target, range))
+    {
+        return false;
+    }
+
+    bool cleared = false;
+    if (bot->GetVictim() == target)
+    {
+        bot->AttackStop();
+        cleared = true;
+    }
+
+    if (bot->GetTarget() == target->GetGUID())
+    {
+        bot->SetTarget(ObjectGuid::Empty);
+        cleared = true;
+    }
+
+    if (botAI->GetAiObjectContext())
+    {
+        Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+        if (currentTarget == target)
+        {
+            botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Set(nullptr);
+            cleared = true;
+        }
+    }
+
+    return cleared;
+}
+
+bool ClearInvalidTwinBugTargets(Player* bot, PlayerbotAI* botAI, float range)
+{
+    if (!bot || !botAI)
+        return false;
+
+    bool cleared = false;
+    if (botAI->GetAiObjectContext())
+    {
+        Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+        cleared = ClearTwinBugTargetIfInvalid(bot, botAI, currentTarget, range) || cleared;
+    }
+
+    cleared = ClearTwinBugTargetIfInvalid(bot, botAI, bot->GetVictim(), range) || cleared;
+
+    if (!bot->GetTarget().IsEmpty())
+        cleared = ClearTwinBugTargetIfInvalid(bot, botAI, botAI->GetUnit(bot->GetTarget()), range) || cleared;
+
+    return cleared;
+}
+
 void ApplyTwinBossMarkers(Player* bot, Unit* veknilash, Unit* veklor)
 {
     if (!bot)
@@ -540,11 +602,16 @@ Unit* ResolveTwinTarget(Player* bot, PlayerbotAI* botAI, GuidVector const& encou
     if (shouldAttackBug)
     {
         float const bugRange = bot->getClass() == CLASS_HUNTER ? 30.0f : 26.0f;
-        if (Aq40BossHelper::Twin::IsTwinKillBug(botAI, currentStar) &&
-            bot->GetDistance2d(currentStar) <= bugRange)
+        if (IsTwinBugTargetValidForBot(bot, botAI, currentStar, bugRange))
         {
             reason = "bug";
             return currentStar;
+        }
+
+        if (currentStar && Aq40SpellIds::IsTwinBugEntry(currentStar->GetEntry()))
+        {
+            ClearTwinBugTargetIfInvalid(bot, botAI, currentStar, bugRange);
+            Aq40Helpers::ClearRaidTargetIcon(bot, RtiTargetValue::starIndex, "twin", "star");
         }
 
         Unit* nearbyBug = Aq40BossHelper::Twin::FindNearestKillBug(bot, botAI, encounterUnits, bugRange);
@@ -554,11 +621,7 @@ Unit* ResolveTwinTarget(Player* bot, PlayerbotAI* botAI, GuidVector const& encou
             return nearbyBug;
         }
 
-        if (currentStar && Aq40SpellIds::IsTwinBugEntry(currentStar->GetEntry()) &&
-            !Aq40BossHelper::Twin::IsTwinKillBug(botAI, currentStar))
-        {
-            Aq40Helpers::ClearRaidTargetIcon(bot, RtiTargetValue::starIndex, "twin", "star");
-        }
+        ClearInvalidTwinBugTargets(bot, botAI, bugRange);
     }
 
     if (Aq40BossHelper::Twin::IsWarlockTankProfile(bot, botAI) ||
@@ -570,7 +633,7 @@ Unit* ResolveTwinTarget(Player* bot, PlayerbotAI* botAI, GuidVector const& encou
 
     if (Aq40BossHelper::Twin::IsMeleeOrHunterProfile(bot, botAI))
     {
-        reason = "veknilash";
+        reason = shouldAttackBug ? "veknilash_no_bug" : "veknilash";
         return veknilash ? veknilash : veklor;
     }
 
@@ -739,6 +802,45 @@ bool BuildTwinFarSideAnchor(Player* bot, Unit* heldBoss, Unit* oppositeBoss, flo
     return outMove.needsSeparation;
 }
 
+bool BuildTwinStandbyVeklorAnchor(Player* bot, Unit* veklor, Unit* veknilash, TwinTankAnchorMove& outMove)
+{
+    if (!bot || !veklor)
+        return false;
+
+    float dx = veklor->GetPositionX() - (veknilash ? veknilash->GetPositionX() : bot->GetPositionX());
+    float dy = veklor->GetPositionY() - (veknilash ? veknilash->GetPositionY() : bot->GetPositionY());
+    float distance = std::sqrt(dx * dx + dy * dy);
+
+    if (distance < 0.1f)
+    {
+        dx = bot->GetPositionX() - veklor->GetPositionX();
+        dy = bot->GetPositionY() - veklor->GetPositionY();
+        distance = std::sqrt(dx * dx + dy * dy);
+    }
+
+    if (distance < 0.1f)
+    {
+        dx = std::cos(bot->GetOrientation());
+        dy = std::sin(bot->GetOrientation());
+        distance = 1.0f;
+    }
+
+    float const nx = dx / distance;
+    float const ny = dy / distance;
+    float x = veklor->GetPositionX() + nx * kTwinStandbyVeklorRange;
+    float y = veklor->GetPositionY() + ny * kTwinStandbyVeklorRange;
+    float z = veklor->GetPositionZ();
+    bot->UpdateAllowedPositionZ(x, y, z);
+
+    outMove.anchor.Relocate(x, y, z, bot->GetOrientation());
+    outMove.bossDistance = veknilash ? veklor->GetDistance2d(veknilash) : 0.0f;
+    outMove.tankRange = bot->GetDistance2d(veklor);
+    outMove.anchorDistance = bot->GetExactDist2d(x, y);
+    outMove.needsSeparation = outMove.tankRange < kTwinStandbyVeklorRange - kTwinStandbyVeklorRangeTolerance ||
+                              outMove.tankRange > kTwinStandbyVeklorRange + kTwinStandbyVeklorRangeTolerance;
+    return outMove.needsSeparation;
+}
+
 bool BuildTwinMeleeContactAnchor(Player* bot, Unit* heldBoss, Unit* oppositeBoss, TwinTankAnchorMove& outMove)
 {
     if (!bot || !heldBoss || !oppositeBoss)
@@ -764,8 +866,8 @@ bool BuildTwinMeleeContactAnchor(Player* bot, Unit* heldBoss, Unit* oppositeBoss
 
     float const nx = dx / distance;
     float const ny = dy / distance;
-    float x = heldBoss->GetPositionX() + nx * kTwinMeleeContactRange;
-    float y = heldBoss->GetPositionY() + ny * kTwinMeleeContactRange;
+    float x = heldBoss->GetPositionX() + nx * kTwinMeleeAnchorRange;
+    float y = heldBoss->GetPositionY() + ny * kTwinMeleeAnchorRange;
     float z = heldBoss->GetPositionZ();
     bot->UpdateAllowedPositionZ(x, y, z);
 
@@ -816,8 +918,8 @@ bool BuildTwinTankHazardContactAnchor(Player* bot, Unit* heldBoss, Position cons
 
     float const nx = dx / distance;
     float const ny = dy / distance;
-    float x = heldBoss->GetPositionX() + nx * kTwinMeleeContactRange;
-    float y = heldBoss->GetPositionY() + ny * kTwinMeleeContactRange;
+    float x = heldBoss->GetPositionX() + nx * kTwinMeleeAnchorRange;
+    float y = heldBoss->GetPositionY() + ny * kTwinMeleeAnchorRange;
     float z = heldBoss->GetPositionZ();
     bot->UpdateAllowedPositionZ(x, y, z);
 
@@ -928,25 +1030,24 @@ bool Aq40TwinTankAction::Execute(Event /*event*/)
             if (markerSwap.assignments.HasFullPairs() && markerSwap.assignments.IsMeleeTank(bot))
             {
                 TwinMarkerAssignment const assignedMarker = GetAssignedMarkerForBot(markerSwap, bot);
-                if (veknilash->GetVictim() == bot)
-                {
-                    LogTwinTankRole(bot, "standby_melee_holding_skull", assignedMarker, veknilash);
-                    return false;
-                }
-
                 LogTwinTankRole(bot, "standby_melee_tank", assignedMarker, veklor);
                 bool const stopped = HoldTwinStandby(bot, botAI);
                 if (!veklor)
                     return stopped;
 
-                float const distance = bot->GetDistance2d(veklor);
-                if (distance < kTwinWarlockMinRange)
-                    return MoveAway(veklor, kTwinWarlockPreferredRange - distance) || stopped;
+                TwinTankAnchorMove standbyMove;
+                bool moved = false;
+                if (BuildTwinStandbyVeklorAnchor(bot, veklor, veknilash, standbyMove))
+                {
+                    moved = MoveNear(bot->GetMapId(), standbyMove.anchor.GetPositionX(),
+                                     standbyMove.anchor.GetPositionY(), standbyMove.anchor.GetPositionZ(),
+                                     0.0f, MovementPriority::MOVEMENT_COMBAT);
+                }
 
-                if (distance > kTwinWarlockMaxRange)
-                    return MoveNear(veklor, kTwinWarlockPreferredRange, MovementPriority::MOVEMENT_COMBAT) || stopped;
+                LogTwinTankMovement(bot, "standby_follow_veklor", markerSwap, veklor, veknilash,
+                                    standbyMove, moved, veklor->GetVictim(), false);
 
-                return stopped;
+                return moved || stopped;
             }
 
             return false;
@@ -972,34 +1073,24 @@ bool Aq40TwinTankAction::Execute(Event /*event*/)
     Unit* currentVictim = veknilash->GetVictim();
     bool const hasControl = currentVictim == bot;
 
-    bool castTaunt = false;
-    if (!hasControl)
-    {
-        if (bot->getClass() == CLASS_DRUID)
-            castTaunt = CastFirstAvailable(botAI, veknilash, { "growl", "taunt" });
-        else
-            castTaunt = CastFirstAvailable(botAI, veknilash, { "hand of reckoning", "dark command", "taunt", "growl" });
-    }
-
     bool const castThreat = CastTwinMeleeThreat(botAI, veknilash);
     bool moved = false;
 
     if (!hasControl)
     {
         TwinTankAnchorMove controlMove = BuildTwinTankMoveSnapshot(bot, veknilash, veklor);
-        if (controlMove.tankRange > kTwinMeleeContactRange)
-            moved = MoveNear(veknilash, kTwinMeleeContactRange, MovementPriority::MOVEMENT_COMBAT);
+        if (!bot->IsWithinMeleeRange(veknilash))
+            moved = MoveNear(veknilash, kTwinMeleeThreatContactRange, MovementPriority::MOVEMENT_COMBAT);
 
         LogTwinTankMovement(bot, "aggro_recover", markerSwap, veknilash, veklor, controlMove, moved,
                             currentVictim, false);
-        return moved || castTaunt || castThreat || shiftedForm || attacked;
+        return moved || castThreat || shiftedForm || attacked;
     }
 
-    float const tankRange = bot->GetDistance2d(veknilash);
-    if (tankRange > kTwinMeleeControlMaxRange)
+    if (!bot->IsWithinMeleeRange(veknilash))
     {
         TwinTankAnchorMove controlMove = BuildTwinTankMoveSnapshot(bot, veknilash, veklor);
-        moved = MoveNear(veknilash, kTwinMeleeContactRange, MovementPriority::MOVEMENT_COMBAT);
+        moved = MoveNear(veknilash, kTwinMeleeThreatContactRange, MovementPriority::MOVEMENT_COMBAT);
         LogTwinTankMovement(bot, "contact_recover", markerSwap, veknilash, veklor, controlMove, moved,
                             currentVictim, true);
 
@@ -1018,10 +1109,10 @@ bool Aq40TwinTankAction::Execute(Event /*event*/)
         LogTwinTankMovement(bot, "melee_separate", markerSwap, veknilash, veklor, anchorMove, moved,
                             currentVictim, true);
     }
-    else if (bot->GetDistance2d(veknilash) > kTwinMeleeContactRange)
-        moved = MoveNear(veknilash, kTwinMeleeContactRange, MovementPriority::MOVEMENT_COMBAT);
+    else if (!bot->IsWithinMeleeRange(veknilash))
+        moved = MoveNear(veknilash, kTwinMeleeThreatContactRange, MovementPriority::MOVEMENT_COMBAT);
 
-    if (moved || castTaunt || castThreat || shiftedForm || attacked)
+    if (moved || castThreat || shiftedForm || attacked)
         return true;
 
     if (AI_VALUE(Unit*, "current target") == veknilash && bot->GetVictim() == veknilash)
