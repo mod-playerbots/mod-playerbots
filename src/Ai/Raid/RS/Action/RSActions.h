@@ -162,13 +162,7 @@ inline Unit* RsHalionFindBoss(PlayerbotAI* botAI, std::string const& name, uint3
 
 inline Unit* RsHalionTwilightBoss(PlayerbotAI* botAI)
 {
-    ObjectGuid guid;
-    {
-        std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
-        auto const it = RubySanctumHelpers::cutterTiming.find(botAI->GetBot()->GetInstanceId());
-        if (it != RubySanctumHelpers::cutterTiming.end())
-            guid = it->second.bossGuid;
-    }
+    ObjectGuid const guid = RubySanctumHelpers::RsState(botAI->GetBot()->GetInstanceId()).cutterTiming.bossGuid;
 
     if (!guid.IsEmpty())
         if (Unit* boss = botAI->GetUnit(guid); boss && boss->IsAlive() && boss->GetEntry() == NPC_TWILIGHT_HALION)
@@ -188,13 +182,8 @@ inline Unit* RsHalionPhase2Boss(PlayerbotAI* botAI)
 
 inline Unit* RsHalionAnyPhysicalBoss(PlayerbotAI* botAI)
 {
-    ObjectGuid guid;
-    {
-        std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
-        auto const it = RubySanctumHelpers::halionCorporeality.find(botAI->GetBot()->GetInstanceId());
-        if (it != RubySanctumHelpers::halionCorporeality.end())
-            guid = it->second.physicalGuid;
-    }
+    ObjectGuid const guid =
+        RubySanctumHelpers::RsState(botAI->GetBot()->GetInstanceId()).halionCorporeality.physicalGuid;
 
     if (!guid.IsEmpty())
         if (Unit* boss = botAI->GetUnit(guid); boss && boss->IsAlive() && boss->GetEntry() == NPC_HALION)
@@ -218,15 +207,11 @@ inline constexpr uint32 RS_HALION_CORP_FRESH_MS = 3000;
 
 inline bool RsHalionOwnCorpIndex(PlayerbotAI* botAI, Player* bot, uint8& outIndex)
 {
-    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
     if (!RsHalionIsPhase3(botAI))
         return false;
 
-    auto const it = RubySanctumHelpers::halionCorporeality.find(bot->GetInstanceId());
-    if (it == RubySanctumHelpers::halionCorporeality.end())
-        return false;
-
-    RubySanctumHelpers::HalionCorporeality const& corp = it->second;
+    RubySanctumHelpers::HalionCorporeality const& corp =
+        RubySanctumHelpers::RsState(bot->GetInstanceId()).halionCorporeality;
     bool const inTwilight = RsHalionInTwilight(bot);
     uint32 const ownStamp = inTwilight ? corp.twilightStamp : corp.physicalStamp;
     if (ownStamp == 0 || getMSTimeDiff(ownStamp, getMSTime()) > RS_HALION_CORP_FRESH_MS)
@@ -238,14 +223,11 @@ inline bool RsHalionOwnCorpIndex(PlayerbotAI* botAI, Player* bot, uint8& outInde
 
 inline bool RsHalionRealmThrottled(PlayerbotAI* botAI, Player* bot)
 {
-    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
     uint8 ownIndex = RS_HALION_CORP_BALANCED;
     if (!RsHalionOwnCorpIndex(botAI, bot, ownIndex))
         return false;
 
-    auto& throttled = RubySanctumHelpers::realmThrottled;
-    ObjectGuid const guid = bot->GetGUID();
-    bool& held = throttled[guid];
+    bool& held = RubySanctumHelpers::RsState(bot->GetInstanceId()).realmThrottled[bot->GetGUID()];
 
     if (ownIndex <= RS_HALION_CORP_STOP_AT)
         held = true;
@@ -298,23 +280,22 @@ inline bool RsHalionInThrottledHalf(PlayerbotAI* /*botAI*/, Player* bot)
 
 inline bool RsHalionP3TwilightAssigned(PlayerbotAI* /*botAI*/, Player* bot)
 {
-    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
     if (PlayerbotAI::IsMainTank(bot))
         return false;
     if (PlayerbotAI::IsTank(bot))
         return true;
 
-    uint32 const instanceId = bot->GetInstanceId();
-    auto const key = std::make_pair(instanceId, bot->GetGUID());
+    std::map<ObjectGuid, bool>& assignment = RubySanctumHelpers::RsState(bot->GetInstanceId()).p3TwilightAssignment;
+    ObjectGuid const selfGuid = bot->GetGUID();
 
-    auto it = RubySanctumHelpers::p3TwilightAssignment.find(key);
-    if (it != RubySanctumHelpers::p3TwilightAssignment.end())
+    auto it = assignment.find(selfGuid);
+    if (it != assignment.end())
         return it->second;
 
     Group* group = bot->GetGroup();
     if (!group)
     {
-        RubySanctumHelpers::p3TwilightAssignment[key] = false;
+        assignment[selfGuid] = false;
         return false;
     }
 
@@ -338,18 +319,18 @@ inline bool RsHalionP3TwilightAssigned(PlayerbotAI* /*botAI*/, Player* bot)
         std::sort(guids.begin(), guids.end());
         int const half = static_cast<int>(guids.size()) / 2;
         for (int i = 0; i < static_cast<int>(guids.size()); ++i)
-            RubySanctumHelpers::p3TwilightAssignment[{instanceId, guids[i]}] = (i >= half);
+            assignment[guids[i]] = (i >= half);
     };
 
     for (ObjectGuid const& guid : ranged)
-        RubySanctumHelpers::p3TwilightAssignment[{instanceId, guid}] = false;
+        assignment[guid] = false;
     for (ObjectGuid const& guid : melee)
-        RubySanctumHelpers::p3TwilightAssignment[{instanceId, guid}] = true;
+        assignment[guid] = true;
 
     assignHalf(heals);
 
-    it = RubySanctumHelpers::p3TwilightAssignment.find(key);
-    return it != RubySanctumHelpers::p3TwilightAssignment.end() && it->second;
+    it = assignment.find(selfGuid);
+    return it != assignment.end() && it->second;
 }
 
 inline GameObject* RsHalionFindPortal(PlayerbotAI* botAI)
@@ -600,9 +581,7 @@ inline bool RsHalionHasCombustion(Unit* u)
 
 inline Position const& RsHalionCombustionSpot(uint32 instanceId)
 {
-    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
-    auto const it = RubySanctumHelpers::meteorPingPong.find(instanceId);
-    uint32 const count = it != RubySanctumHelpers::meteorPingPong.end() ? it->second.count : 0;
+    uint32 const count = RubySanctumHelpers::RsState(instanceId).meteorPingPong.count;
     return (count % 2u) == 0u ? RS_HALION_COMBUSTION_SPOT_A : RS_HALION_COMBUSTION_SPOT_B;
 }
 
@@ -781,23 +760,21 @@ inline constexpr uint32 RS_HALION_PORTAL_ADD_CLEAR_MS = 5000;
 
 inline bool RsHalionPortalHeldForAdds(PlayerbotAI* botAI)
 {
-    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
     if (!RsHalionFindPortal(botAI))
         return false;
 
-    uint32 const instanceId = botAI->GetBot()->GetInstanceId();
+    RubySanctumHelpers::RsInstanceState& state = RubySanctumHelpers::RsState(botAI->GetBot()->GetInstanceId());
 
-    auto const hpIt = RubySanctumHelpers::bossHealth.find(instanceId);
-    bool const bossHigh = hpIt != RubySanctumHelpers::bossHealth.end() &&
-                          GetMSTimeDiffToNow(hpIt->second.stamp) <= RS_HALION_CORP_FRESH_MS &&
-                          hpIt->second.pct >= 65;
+    bool const bossHigh = state.bossHealth.stamp != 0 &&
+                          GetMSTimeDiffToNow(state.bossHealth.stamp) <= RS_HALION_CORP_FRESH_MS &&
+                          state.bossHealth.pct >= 65;
     if (!bossHigh)
         return false;
 
     if (RsHalionAnyAddAlive(botAI))
         return true;
 
-    RubySanctumHelpers::PortalAddGate& gate = RubySanctumHelpers::portalAddGate[instanceId];
+    RubySanctumHelpers::PortalAddGate& gate = state.portalAddGate;
     uint32 const now = getMSTime();
 
     if (gate.armTime == 0)
@@ -809,15 +786,15 @@ inline bool RsHalionPortalHeldForAdds(PlayerbotAI* botAI)
 
 inline uint32 RsHalionPortalAddHoldRemainingMs(PlayerbotAI* botAI)
 {
-    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
     if (RsHalionAnyAddAlive(botAI))
         return RS_HALION_PORTAL_ADD_CLEAR_MS;
 
-    auto const it = RubySanctumHelpers::portalAddGate.find(botAI->GetBot()->GetInstanceId());
-    if (it == RubySanctumHelpers::portalAddGate.end())
+    RubySanctumHelpers::PortalAddGate const& gate =
+        RubySanctumHelpers::RsState(botAI->GetBot()->GetInstanceId()).portalAddGate;
+    if (gate.armTime == 0 && gate.lastAddAliveTime == 0)
         return RS_HALION_PORTAL_ADD_CLEAR_MS;
 
-    uint32 const since = std::max(it->second.armTime, it->second.lastAddAliveTime);
+    uint32 const since = std::max(gate.armTime, gate.lastAddAliveTime);
     uint32 const elapsed = getMSTimeDiff(since, getMSTime());
     return elapsed >= RS_HALION_PORTAL_ADD_CLEAR_MS ? 0 : RS_HALION_PORTAL_ADD_CLEAR_MS - elapsed;
 }
@@ -891,8 +868,7 @@ inline Player* RsHalionTwilightTank(PlayerbotAI* botAI)
     if (!selfBot->GetGroup())
         return RsHalionTwilightTankUncached(botAI);
 
-    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
-    RubySanctumHelpers::TankCache& slot = RubySanctumHelpers::twilightTankCache[selfBot->GetInstanceId()];
+    RubySanctumHelpers::TankCache& slot = RubySanctumHelpers::RsState(selfBot->GetInstanceId()).twilightTankCache;
     uint32 const now = getMSTime();
     if (slot.stamp == now)
     {
@@ -968,8 +944,7 @@ inline Player* RsHalionBossTank(PlayerbotAI* botAI)
     if (!selfBot->GetGroup())
         return RsHalionBossTankUncached(botAI);
 
-    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
-    RubySanctumHelpers::TankCache& slot = RubySanctumHelpers::bossTankCache[selfBot->GetInstanceId()];
+    RubySanctumHelpers::TankCache& slot = RubySanctumHelpers::RsState(selfBot->GetInstanceId()).bossTankCache;
     uint32 const now = getMSTime();
     if (slot.stamp == now)
     {
@@ -1011,9 +986,7 @@ inline constexpr float RS_HALION_METEOR_REACH = 4.0f;
 
 inline Position const& RsHalionMeteorSpot(uint32 instanceId)
 {
-    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
-    auto const it = RubySanctumHelpers::meteorPingPong.find(instanceId);
-    uint32 const count = it != RubySanctumHelpers::meteorPingPong.end() ? it->second.count : 0;
+    uint32 const count = RubySanctumHelpers::RsState(instanceId).meteorPingPong.count;
     return (count % 2u) == 0u ? RS_HALION_METEOR_SPOT_A : RS_HALION_METEOR_SPOT_B;
 }
 
@@ -1021,32 +994,25 @@ inline constexpr uint32 RS_HALION_METEOR_RECENT_MS = 5000;
 
 inline bool RsHalionMeteorCastRecently(uint32 instanceId)
 {
-    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
-    auto const it = RubySanctumHelpers::meteorPingPong.find(instanceId);
-    uint32 const lastCast = it != RubySanctumHelpers::meteorPingPong.end() ? it->second.lastCastTime : 0;
+    uint32 const lastCast = RubySanctumHelpers::RsState(instanceId).meteorPingPong.lastCastTime;
     return lastCast != 0 && GetMSTimeDiffToNow(lastCast) <= RS_HALION_METEOR_RECENT_MS;
 }
 
 inline bool RsHalionMeteorTargetedBossTank(PlayerbotAI* botAI)
 {
-    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
     Player* bot = botAI->GetBot();
     if (RsHalionBossTank(botAI) != bot)
         return false;
 
-    auto const it = RubySanctumHelpers::meteorPingPong.find(bot->GetInstanceId());
-    if (it == RubySanctumHelpers::meteorPingPong.end())
-        return false;
-
-    uint32 const t = it->second.tankMeteorTime;
+    uint32 const t = RubySanctumHelpers::RsState(bot->GetInstanceId()).meteorPingPong.tankMeteorTime;
     return t != 0 && GetMSTimeDiffToNow(t) <= RS_HALION_METEOR_RECENT_MS;
 }
 
 inline bool RsHalionTankMeteorCommitted(PlayerbotAI* botAI)
 {
-    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
     Player* bot = botAI->GetBot();
-    auto& committed = RubySanctumHelpers::meteorCommitted;
+    RubySanctumHelpers::RsInstanceState& state = RubySanctumHelpers::RsState(bot->GetInstanceId());
+    auto& committed = state.meteorCommitted;
     ObjectGuid const guid = bot->GetGUID();
 
     if (RsHalionBossTank(botAI) != bot)
@@ -1055,9 +1021,8 @@ inline bool RsHalionTankMeteorCommitted(PlayerbotAI* botAI)
         return false;
     }
 
-    auto const it = RubySanctumHelpers::meteorPingPong.find(bot->GetInstanceId());
-    uint32 const homeTime = it != RubySanctumHelpers::meteorPingPong.end() ? it->second.tankMeteorTime : 0;
-    uint32 const returnTime = it != RubySanctumHelpers::meteorPingPong.end() ? it->second.tankReturnTime : 0;
+    uint32 const homeTime = state.meteorPingPong.tankMeteorTime;
+    uint32 const returnTime = state.meteorPingPong.tankReturnTime;
 
     bool const homeRecent = homeTime != 0 && GetMSTimeDiffToNow(homeTime) <= RS_HALION_METEOR_RECENT_MS;
     bool const returnRecent = returnTime != 0 && GetMSTimeDiffToNow(returnTime) <= RS_HALION_METEOR_RECENT_MS;
@@ -1076,8 +1041,7 @@ inline bool RsHalionTankMeteorCommitted(PlayerbotAI* botAI)
 
 inline bool RsHalionMeteorShouldRally(Player* bot)
 {
-    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
-    auto& committed = RubySanctumHelpers::rallyCommitted;
+    auto& committed = RubySanctumHelpers::RsState(bot->GetInstanceId()).rallyCommitted;
     ObjectGuid const guid = bot->GetGUID();
 
     if (RsHalionInTwilight(bot))
@@ -1102,8 +1066,7 @@ inline bool RsHalionMeteorShouldRally(Player* bot)
 
 inline bool RsHalionCombustionReturning(Player* bot)
 {
-    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
-    auto& returning = RubySanctumHelpers::combustionReturning;
+    auto& returning = RubySanctumHelpers::RsState(bot->GetInstanceId()).combustionReturning;
     ObjectGuid const guid = bot->GetGUID();
 
     if (RsHalionHasCombustion(bot))
@@ -1151,19 +1114,16 @@ inline constexpr uint32 RS_HALION_FIRST_SHOOT_MS = 21000;
 
 inline bool RsHalionCutterShouldMove(uint32 instanceId)
 {
-    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
-    auto const it = RubySanctumHelpers::cutterTiming.find(instanceId);
-    if (it == RubySanctumHelpers::cutterTiming.end())
-        return false;
+    RubySanctumHelpers::CutterTiming const& state = RubySanctumHelpers::RsState(instanceId).cutterTiming;
 
-    if (it->second.lastShootTime == 0)
+    if (state.lastShootTime == 0)
     {
-        if (it->second.active)
+        if (state.active)
             return true;
-        if (it->second.encounterStart == 0)
+        if (state.encounterStart == 0)
             return false;
 
-        uint32 const sinceStart = GetMSTimeDiffToNow(it->second.encounterStart);
+        uint32 const sinceStart = GetMSTimeDiffToNow(state.encounterStart);
         if (sinceStart < RS_HALION_FIRST_SHOOT_MS)
             return sinceStart >= RS_HALION_FIRST_SHOOT_MS - RS_HALION_CUTTER_LEAD_MS;
 
@@ -1171,7 +1131,6 @@ inline bool RsHalionCutterShouldMove(uint32 instanceId)
         return intoCycle >= RS_HALION_CUTTER_CYCLE_MS - RS_HALION_CUTTER_LEAD_MS;
     }
 
-    RubySanctumHelpers::CutterTiming const& state = it->second;
     uint32 const since = GetMSTimeDiffToNow(state.lastShootTime);
 
     if (state.active)
@@ -1183,19 +1142,12 @@ inline bool RsHalionCutterShouldMove(uint32 instanceId)
 
 inline bool RsHalionCutterActive(uint32 instanceId)
 {
-    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
-    auto const it = RubySanctumHelpers::cutterTiming.find(instanceId);
-    return it != RubySanctumHelpers::cutterTiming.end() && it->second.active;
+    return RubySanctumHelpers::RsState(instanceId).cutterTiming.active;
 }
 
 inline uint32 RsHalionCutterMsUntilShoot(uint32 instanceId)
 {
-    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
-    auto const it = RubySanctumHelpers::cutterTiming.find(instanceId);
-    if (it == RubySanctumHelpers::cutterTiming.end())
-        return RS_HALION_CUTTER_CYCLE_MS;
-
-    RubySanctumHelpers::CutterTiming const& state = it->second;
+    RubySanctumHelpers::CutterTiming const& state = RubySanctumHelpers::RsState(instanceId).cutterTiming;
     if (state.active)
         return 0;
 
@@ -1242,11 +1194,10 @@ inline constexpr float RS_HALION_CUTTER_DANGER = 7.0f;
 
 inline bool RsHalionCutterBeamDanger(PlayerbotAI* botAI, Player* bot)
 {
-    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
     if (!RsHalionInTwilight(bot) || !RsHalionCutterShouldMove(bot->GetInstanceId()))
         return false;
 
-    auto& cache = RubySanctumHelpers::cutterDangerCache;
+    auto& cache = RubySanctumHelpers::RsState(bot->GetInstanceId()).cutterDangerCache;
     uint32 const now = getMSTime();
     auto it = cache.find(bot->GetGUID());
     if (it != cache.end() && getMSTimeDiff(it->second.first, now) < 250)
