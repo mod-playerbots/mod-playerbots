@@ -163,14 +163,8 @@ void RaidIccStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("icc sindragosa mystic buffet",
         { NextAction("icc sindragosa mystic buffet", ACTION_RAID + 3) }));
 
-    triggers.push_back(new TriggerNode("icc sindragosa main tank mystic buffet",
-        { NextAction("taunt spell", ACTION_EMERGENCY + 3) }));
-
     triggers.push_back(new TriggerNode("icc sindragosa frost bomb",
         { NextAction("icc sindragosa frost bomb", ACTION_RAID + 7) }));
-
-    triggers.push_back(new TriggerNode("icc sindragosa tank swap position",
-        { NextAction("icc sindragosa tank swap position", ACTION_EMERGENCY + 2) }));
 
     //LICH KING
     triggers.push_back(new TriggerNode("icc lich king shadow trap",

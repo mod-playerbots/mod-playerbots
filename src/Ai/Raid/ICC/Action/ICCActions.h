@@ -760,14 +760,6 @@ private:
     bool HandleRtiMarking(Group* group, int groupIndex, std::vector<Unit*> const& myTombs, Unit* losTomb);
 };
 
-class IccSindragosaTankSwapPositionAction : public AttackAction
-{
-    public:
-        IccSindragosaTankSwapPositionAction(PlayerbotAI* botAI)
-            : AttackAction(botAI, "icc sindragosa tank swap position") {}
-        bool Execute(Event event) override;
-};
-
 //LK
 class IccLichKingShadowTrapAction : public MovementAction
 {

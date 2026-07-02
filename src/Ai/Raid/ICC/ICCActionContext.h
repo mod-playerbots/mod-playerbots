@@ -78,7 +78,6 @@ public:
         creators["icc sindragosa chilled to the bone"] = &RaidIccActionContext::icc_sindragosa_chilled_to_the_bone;
         creators["icc sindragosa mystic buffet"] = &RaidIccActionContext::icc_sindragosa_mystic_buffet;
         creators["icc sindragosa frost bomb"] = &RaidIccActionContext::icc_sindragosa_frost_bomb;
-        creators["icc sindragosa tank swap position"] = &RaidIccActionContext::icc_sindragosa_tank_swap_position;
 
         creators["icc lich king shadow trap"] = &RaidIccActionContext::icc_lich_king_shadow_trap;
         creators["icc lich king necrotic plague"] = &RaidIccActionContext::icc_lich_king_necrotic_plague;
@@ -150,7 +149,6 @@ private:
     static Action* icc_sindragosa_chilled_to_the_bone(PlayerbotAI* ai) { return new IccSindragosaChilledToTheBoneAction(ai); }
     static Action* icc_sindragosa_mystic_buffet(PlayerbotAI* ai) { return new IccSindragosaMysticBuffetAction(ai); }
     static Action* icc_sindragosa_frost_bomb(PlayerbotAI* ai) { return new IccSindragosaFrostBombAction(ai); }
-    static Action* icc_sindragosa_tank_swap_position(PlayerbotAI* ai) { return new IccSindragosaTankSwapPositionAction(ai); }
 
     static Action* icc_lich_king_shadow_trap(PlayerbotAI* ai) { return new IccLichKingShadowTrapAction(ai); }
     static Action* icc_lich_king_necrotic_plague(PlayerbotAI* ai) { return new IccLichKingNecroticPlagueAction(ai); }

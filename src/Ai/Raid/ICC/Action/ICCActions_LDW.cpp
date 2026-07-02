@@ -127,7 +127,7 @@ bool IccAddsLadyDeathwhisperAction::Execute(Event /*event*/)
 
     Difficulty diff = bot->GetRaidDifficulty();
 
-    if (sPlayerbotAIConfig.EnableICCBuffs && diff &&
+    if (sPlayerbotAIConfig.EnableICCBuffs && boss->IsInCombat() && diff &&
         (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
     {
         if (!bot->HasAura(SPELL_NO_THREAT) && botAI->HasAggro(boss) && !botAI->IsTank(bot))

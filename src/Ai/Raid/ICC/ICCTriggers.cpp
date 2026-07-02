@@ -390,7 +390,7 @@ bool IccPutricideMalleableGooTrigger::IsActive()
     Difficulty const diff = bot->GetRaidDifficulty();
 
     // Heroic cheat buffs — apply to all group members (bots + real players)
-    if (boss && sPlayerbotAIConfig.EnableICCBuffs &&
+    if (boss && boss->IsInCombat() && sPlayerbotAIConfig.EnableICCBuffs &&
         (diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC))
     {
         if (Group* buffGroup = bot->GetGroup())
@@ -808,6 +808,51 @@ bool IccSindragosaGroupPositionTrigger::IsActive()
         boss->GetExactDist2d(ICC_SINDRAGOSA_FLYING_POSITION.GetPositionX(), ICC_SINDRAGOSA_FLYING_POSITION.GetPositionY()) >= 30.0f)
         bot->RemoveAura(SPELL_FROST_BEACON);
 
+    // Strip Mystic Buffet from tanks: the cheat that makes single-tanking P3 survivable.
+    if (botAI->IsTank(bot))
+        if (Aura* aura = botAI->GetAura("mystic buffet", bot, false, false))
+            bot->RemoveAura(aura->GetId());
+
+    // Shield tanks while a tomb is up, Blistering Cold is casting, or a last
+    // phase beacon is out (tomb about to form, healers already scattering).
+    if (botAI->IsTank(bot))
+    {
+        bool const shield = (boss->HasUnitState(UNIT_STATE_CASTING) && IccBossCastingBlisteringCold(boss)) ||
+                            (boss->HealthBelowPct(35) && IccAnyGroupMemberHasAura(bot, SPELL_FROST_BEACON)) ||
+                            !IccGetCreaturesByEntries(bot, {NPC_TOMB1, NPC_TOMB2, NPC_TOMB3, NPC_TOMB4}, 150.0f).empty();
+        if (shield && !bot->HasAura(SPELL_MAGIC_BARRIER))
+            bot->AddAura(SPELL_MAGIC_BARRIER, bot);
+        else if (!shield && bot->HasAura(SPELL_MAGIC_BARRIER))
+            bot->RemoveAura(SPELL_MAGIC_BARRIER);
+    }
+
+    // Assist tanks generate no threat while another main tank is alive, so
+    // they can never win the threat race at the pull; dropped on promotion.
+    if (botAI->IsTank(bot))
+    {
+        bool mtAlive = false;
+        if (Group* group = bot->GetGroup())
+        {
+            for (GroupReference* itr = group->GetFirstMember(); itr; itr = itr->next())
+            {
+                Player* member = itr->GetSource();
+                if (member && member != bot && member->IsAlive() && botAI->IsMainTank(member))
+                {
+                    mtAlive = true;
+                    break;
+                }
+            }
+        }
+
+        if (mtAlive && !botAI->IsMainTank(bot))
+        {
+            if (!bot->HasAura(SPELL_NO_THREAT))
+                bot->AddAura(SPELL_NO_THREAT, bot);
+        }
+        else if (bot->HasAura(SPELL_NO_THREAT))
+            bot->RemoveAura(SPELL_NO_THREAT);
+    }
+
     if (!boss || bot->HasAura(SPELL_FROST_BEACON) || boss->GetExactDist2d(ICC_SINDRAGOSA_FLYING_POSITION.GetPositionX(), ICC_SINDRAGOSA_FLYING_POSITION.GetPositionY()) < 50.0f)
         return false;
 
@@ -826,6 +871,12 @@ bool IccSindragosaFrostBeaconTrigger::IsActive()
 
     if (bot->HasAura(SPELL_FROST_BEACON))
         return true;
+
+    // Last phase with a live tomb: non-beaconed bots ignore the beacon and
+    // stay on the tomb hide/burn; only the beaconed bot reacts.
+    if (boss->HealthBelowPct(35) &&
+        !IccGetCreaturesByEntries(bot, {NPC_TOMB1, NPC_TOMB2, NPC_TOMB3, NPC_TOMB4}, 150.0f).empty())
+        return false;
 
     Group::MemberSlotList const& groupSlot = group->GetMemberSlots();
     for (Group::member_citerator itr = groupSlot.begin(); itr != groupSlot.end(); ++itr)
@@ -862,7 +913,7 @@ bool IccSindragosaBlisteringColdTrigger::IsActive()
     if (!boss)
         return false;
 
-    if (botAI->IsMainTank(bot))
+    if (botAI->IsTank(bot))
         return false;
 
     // Don't move if any bot in group has ice tomb
@@ -926,11 +977,16 @@ bool IccSindragosaMysticBuffetTrigger::IsActive()
     if (!boss)
         return false;
 
+    if (botAI->IsTank(bot))
+        return false;
+
     if (boss->GetVictim() == bot)
         return false;
 
-    Aura* aura = botAI->GetAura("mystic buffet", bot, false, true);
-    if (!aura)
+    // Last phase only. Do not gate on the bot's own Mystic Buffet aura:
+    // hiding sheds it, so aura-less bots must still run the action or nobody
+    // is left to mark and kill the tomb once the raid has shed its stacks.
+    if (!boss->HealthBelowPct(35))
         return false;
 
     if (bot->HasAura(SPELL_FROST_BEACON))
@@ -941,97 +997,7 @@ bool IccSindragosaMysticBuffetTrigger::IsActive()
     if (boss->HasUnitState(UNIT_STATE_CASTING) && IccBossCastingBlisteringCold(boss))
         return false;
 
-    if (aura->GetStackAmount() >= 1)
-        return true;
-
-    return false;
-}
-
-bool IccSindragosaMainTankMysticBuffetTrigger::IsActive()
-{
-    Unit* boss = AI_VALUE2(Unit*, "find target", "sindragosa");
-    if (!boss)
-        return false;
-
-    Aura* aura = botAI->GetAura("mystic buffet", bot, false, false);
-    if (botAI->IsTank(bot) && aura) //main tank will delete mystic buffet until I find a better way to swap tanks, atm it is not great since while swapping they will wipe group 7/10 times.
-        bot->RemoveAura(aura->GetId());
-
-    if (botAI->IsTank(bot) && boss->GetVictim() == bot)
-        return false;
-
-    // Only for assist tank
-    if (!botAI->IsAssistTankOfIndex(bot, 0))
-        return false;
-
-    // Don't swap if we have frost beacon
-    if (bot->HasAura(SPELL_FROST_BEACON))   // Frost Beacon
-        return false;
-
-    Unit* mt = AI_VALUE(Unit*, "main tank");
-    if (!mt)
-        return false;
-
-    // Check main tank stacks
-    Aura* mtAura = botAI->GetAura("mystic buffet", mt, false, true);
-    if (!mtAura || mtAura->GetStackAmount() < 6)
-        return false;
-
-    // Check our own stacks - don't taunt if we have too many
-    Aura* selfAura = botAI->GetAura("mystic buffet", bot, false, true);
-    if (selfAura && selfAura->GetStackAmount() > 6)
-        return false;
-
-    // Only taunt if we're in position
-    float distToTankPos = bot->GetExactDist2d(ICC_SINDRAGOSA_TANK_POSITION);
-    if (distToTankPos > 3.0f)
-        return false;
-
     return true;
-}
-
-// TODO never triggers since mystic buffet is bypassed in action
-bool IccSindragosaTankSwapPositionTrigger::IsActive()
-{
-    Unit* boss = AI_VALUE2(Unit*, "find target", "sindragosa");
-    if (!boss)
-        return false;
-
-    if (boss && boss->GetVictim() == bot)
-        return false;
-
-    // Only for assist tank
-    if (!botAI->IsAssistTankOfIndex(bot, 0))
-        return false;
-
-    // Don't move to position if we have frost beacon
-    if (bot->HasAura(SPELL_FROST_BEACON))
-        return false;
-
-    // Check our own stacks - don't try to tank if we have too many
-    Aura* selfAura = botAI->GetAura("mystic buffet", bot, false, true);
-    if (selfAura && selfAura->GetStackAmount() > 6)
-        return false;
-
-    // Check if main tank has high stacks
-    Unit* mt = AI_VALUE(Unit*, "main tank");
-    if (!mt)
-        return false;
-
-    Aura* mtAura = botAI->GetAura("mystic buffet", mt, false, true);
-    if (!mtAura)
-        return false;
-
-    uint32 mtStacks = mtAura->GetStackAmount();
-    if (mtStacks < 6)  // Only start moving when MT has 5+ stacks
-        return false;
-
-    // Check if we're already in position
-    float distToTankPos = bot->GetExactDist2d(ICC_SINDRAGOSA_TANK_POSITION);
-    if (distToTankPos <= 3.0f)
-        return false;
-
-    return true;  // Move to position if all conditions are met
 }
 
 bool IccSindragosaFrostBombTrigger::IsActive()

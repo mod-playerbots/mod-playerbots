@@ -462,6 +462,20 @@ float IccBpcAssistMultiplier::GetValue(Action* action)
         dynamic_cast<CastArmyOfTheDeadAction*>(action)))
         return 0.0f;
 
+    if (botAI->IsTank(bot) &&
+        (dynamic_cast<AttackRtiTargetAction*>(action) || dynamic_cast<TankAssistAction*>(action)))
+    {
+        if (Group* group = bot->GetGroup())
+        {
+            for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+            {
+                Player* member = itr->GetSource();
+                if (member && member->IsAlive() && botAI->IsAssistTank(member))
+                    return 0.0f;
+            }
+        }
+    }
+
     Aura* aura = botAI->GetAura("Shadow Prison", bot, false, true);
 
     // Bomb assignment check (done early so it can override shadow prison stack limits)
@@ -629,7 +643,7 @@ float IccBpcAssistMultiplier::GetValue(Action* action)
         if (dynamic_cast<IccBpcKelesethTankAction*>(action))
             return 1.0f;
 
-        // Disable normal assist behavior (allow RTI targeting)
+        // Disable normal assist behavior
         if (dynamic_cast<TankAssistAction*>(action) ||
             dynamic_cast<FleeAction*>(action) ||
             dynamic_cast<CastConsecrationAction*>(action))
@@ -808,6 +822,10 @@ float IccSindragosaMultiplier::GetValue(Action* action)
     if (dynamic_cast<IccSindragosaHotAction*>(action))
         return 1.0f;
 
+    // Tanks never chase raid icons; they stay on the boss at the tank spot.
+    if (botAI->IsTank(bot) && dynamic_cast<AttackRtiTargetAction*>(action))
+        return 0.0f;
+
     Aura* aura = botAI->GetAura("Unchained Magic", bot, false, true);
 
     Difficulty diff = bot->GetRaidDifficulty();
@@ -834,8 +852,7 @@ float IccSindragosaMultiplier::GetValue(Action* action)
         // If this is the blistering cold action, give it highest priority
         if (dynamic_cast<IccSindragosaBlisteringColdAction*>(action) ||
             dynamic_cast<HealPartyMemberAction*>(action) ||
-            dynamic_cast<ReachPartyMemberToHealAction*>(action) ||
-            dynamic_cast<IccSindragosaTankSwapPositionAction*>(action))
+            dynamic_cast<ReachPartyMemberToHealAction*>(action))
             return 1.0f;
 
         // Ranged / healer already beyond the blast radius: keep DPSing or
@@ -874,23 +891,21 @@ float IccSindragosaMultiplier::GetValue(Action* action)
             return 0.0f;
     }
 
-    if (anyoneHasFrostBeacon && !botAI->IsMainTank(bot))
+    if (anyoneHasFrostBeacon && !botAI->IsTank(bot))
     {
         if (dynamic_cast<IccSindragosaGroupPositionAction*>(action))
             return 0.0f;
     }
 
-    if (botAI->IsMainTank(bot))
-    {
-        Aura* aura = botAI->GetAura("mystic buffet", bot, false, true);
-        if (aura && aura->GetStackAmount() >= 6)
-        {
-            if (dynamic_cast<MovementAction*>(action))
-                return 1.0f;
-            else
-                return 0.0f;
-        }
-    }
+    // Pin healers at the LOS2 hide spot while the hide is in effect (last
+    // phase, tomb up). Beacons do not release the pin: with a tomb alive,
+    // non-beaconed bots ignore the beacon entirely in the last phase.
+    if (botAI->IsHeal(bot) && dynamic_cast<MovementAction*>(action) &&
+        boss->HealthBelowPct(35) &&
+        bot->GetExactDist2d(ICC_SINDRAGOSA_LOS2_POSITION.GetPositionX(),
+                            ICC_SINDRAGOSA_LOS2_POSITION.GetPositionY()) <= 2.0f &&
+        !IccGetCreaturesByEntries(bot, {NPC_TOMB1, NPC_TOMB2, NPC_TOMB3, NPC_TOMB4}, 150.0f).empty())
+        return 0.0f;
 
     if (!botAI->IsTank(bot) && boss && boss->HealthBelowPct(35))
     {
@@ -902,7 +917,7 @@ float IccSindragosaMultiplier::GetValue(Action* action)
     {
         if (boss->HealthBelowPct(35))
         {
-            if (dynamic_cast<IccSindragosaTankSwapPositionAction*>(action) || dynamic_cast<TankFaceAction*>(action) ||
+            if (dynamic_cast<TankFaceAction*>(action) ||
                 dynamic_cast<AttackAction*>(action) || dynamic_cast<MovementAction*>(action))
                 return 1.0f;
             else
@@ -1096,6 +1111,26 @@ float IccLichKingAddsMultiplier::GetValue(Action* action)
             return 0.0f;
         }
 
+        // Sphere-targeted bot holds at the winter midpoint spot: block all other movement
+        if (!botAI->IsTank(bot) && dynamic_cast<MovementAction*>(action))
+        {
+            GuidVector const& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
+            for (ObjectGuid const& guid : npcs)
+            {
+                uint32 const entry = guid.GetEntry();
+                if (entry != NPC_ICE_SPHERE1 && entry != NPC_ICE_SPHERE2 &&
+                    entry != NPC_ICE_SPHERE3 && entry != NPC_ICE_SPHERE4)
+                    continue;
+
+                Unit* sphere = botAI->GetUnit(guid);
+                if (!sphere || !sphere->IsAlive())
+                    continue;
+
+                if (sphere->GetVictim() == bot)
+                    return 0.0f;
+            }
+        }
+
         // Adds action is suppressed during winter
         if (dynamic_cast<IccLichKingAddsAction*>(action))
             return 0.0f;
@@ -1105,6 +1140,13 @@ float IccLichKingAddsMultiplier::GetValue(Action* action)
 
         // Assist tank should not pick up adds independently during winter
         if (botAI->IsAssistTank(bot) && dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
+
+        // MT movement is owned by the winter hold logic; reach actions chase
+        // far taunt targets and tug him off the hold spot (adds come to him).
+        if (botAI->IsMainTank(bot) &&
+            (dynamic_cast<ReachMeleeAction*>(action) || dynamic_cast<ReachSpellAction*>(action) ||
+             dynamic_cast<ReachTargetAction*>(action)))
             return 0.0f;
 
         // Suppress movement/attack toward the boss if we are far away

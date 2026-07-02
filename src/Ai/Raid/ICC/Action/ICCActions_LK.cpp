@@ -207,7 +207,7 @@ bool IccLichKingShadowTrapAction::Execute(Event /*event*/)
 
     Difficulty const diff = bot->GetRaidDifficulty();
 
-    if (sPlayerbotAIConfig.EnableICCBuffs && IsHeroicLk(diff))
+    if (sPlayerbotAIConfig.EnableICCBuffs && boss->IsInCombat() && IsHeroicLk(diff))
         IccApplyHeroicBuffToMember(botAI, bot, true, false);
 
     static constexpr float CIRCLE_RADIUS = 20.0f;
@@ -404,7 +404,7 @@ bool IccLichKingWinterAction::Execute(Event /*event*/)
 
     Difficulty const diff = bot->GetRaidDifficulty();
 
-    if (sPlayerbotAIConfig.EnableICCBuffs && IsHeroicLk(diff))
+    if (sPlayerbotAIConfig.EnableICCBuffs && boss->IsInCombat() && IsHeroicLk(diff))
         IccApplyHeroicBuffToMember(botAI, bot, true, true);
 
     // Speed boost to help escape the inward push
@@ -616,7 +616,12 @@ bool IccLichKingWinterAction::Execute(Event /*event*/)
             Position const& rangedPos = *GetMainTankRangedPosition();
             float const midX = (meleePos.GetPositionX() + rangedPos.GetPositionX()) * 0.5f;
             float const midY = (meleePos.GetPositionY() + rangedPos.GetPositionY()) * 0.5f;
-            TryMoveToPosition(midX, midY, PLATFORM_Z, true);
+
+            static constexpr float SPHERE_HOLD_TOLERANCE = 2.0f;
+            if (bot->GetDistance2d(midX, midY) > SPHERE_HOLD_TOLERANCE)
+                TryMoveToPosition(midX, midY, PLATFORM_Z, true);
+            else
+                bot->StopMoving();
             return false;
         }
     }
@@ -629,16 +634,23 @@ bool IccLichKingWinterAction::Execute(Event /*event*/)
     else if (!botAI->IsRanged(bot))
     {
         // Non-tank melee:
-        //   - Add (shambling/spirit) within 5y of MT: flank it.
-        //   - No add near MT: wait at midpoint between melee and ranged
-        //     anchors — staying close enough to engage when an add lands on
-        //     MT, far enough not to eat shambling frontals on stragglers.
+        //   - MT at the frost anchor with an add (shambling/spirit) within
+        //     5y of him: adds are in place, flank them.
+        //   - Otherwise: wait at midpoint between melee and ranged anchors
+        //     (the ice sphere hold spot), close enough to engage once adds
+        //     settle, far enough not to eat frontals while MT drags them.
         // Never pulled to MT/melee anchor.
         Unit* mainTank = AI_VALUE(Unit*, "main tank");
         bool addNearTank = false;
+        bool tankInPlace = false;
 
         if (mainTank && mainTank->IsAlive())
         {
+            static constexpr float TANK_IN_PLACE_RANGE = 10.0f;
+            Position const& frostPos = *GetMainTankPosition();
+            tankInPlace = mainTank->GetDistance2d(frostPos.GetPositionX(),
+                                                  frostPos.GetPositionY()) <= TANK_IN_PLACE_RANGE;
+
             GuidVector const& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
             for (ObjectGuid const& guid : npcs)
             {
@@ -655,7 +667,7 @@ bool IccLichKingWinterAction::Execute(Event /*event*/)
             }
         }
 
-        if (addNearTank)
+        if (addNearTank && tankInPlace)
             HandleMeleePositioning();
         else
         {
@@ -987,7 +999,13 @@ bool IccLichKingWinterAction::HandleTankPositioning()
         auto& s_mtInbound = IcecrownHelpers::IccState(bot->GetInstanceId()).mtAddInbound;
         ObjectGuid const mtKey = bot->GetGUID();
 
-        if (dist > FROST_AT_POS_TOLERANCE)
+        // Hysteresis: converge to 3y once, then add management owns movement
+        // within a 12y leash. A single threshold flip-flops: orienting steps
+        // push past 3y and the walk-back (with its reset) yanks him straight
+        // back every other tick.
+        static constexpr float FROST_LEASH = 12.0f;
+
+        if (dist > (s_mtInbound[mtKey] ? FROST_AT_POS_TOLERANCE : FROST_LEASH))
         {
             if (!s_mtInbound[mtKey])
             {
@@ -1124,6 +1142,36 @@ bool IccLichKingWinterAction::HandleMeleePositioning()
         currentTarget = newTarget;
     }
 
+    // A flank slot must be out of the frontal cone of EVERY nearby shambling
+    // and spirit, not just the current target: their frontals hit whoever
+    // stands in them regardless of who the bot is attacking.
+    GuidVector const& coneNpcs = AI_VALUE(GuidVector, "nearest hostile npcs");
+    auto inAddFrontalCone = [&](float x, float y) -> bool
+    {
+        static constexpr float ADD_CONE_RANGE = 15.0f;
+        static constexpr float ADD_FRONTAL_ARC = 2.0f * float(M_PI) / 3.0f;
+        Position const slot(x, y);
+
+        for (ObjectGuid const& guid : coneNpcs)
+        {
+            Unit* add = botAI->GetUnit(guid);
+            if (!add || !add->IsAlive())
+                continue;
+
+            uint32 const entry = add->GetEntry();
+            if (!IsLkShambling(entry) && !IsLkRagingSpirit(entry))
+                continue;
+
+            if (add->GetExactDist2d(x, y) > ADD_CONE_RANGE)
+                continue;
+
+            if (add->HasInArc(ADD_FRONTAL_ARC, &slot))
+                return true;
+        }
+
+        return false;
+    };
+
     // Settle band: if a candidate flank slot is safe AND the bot is already
     // within FLANK_SETTLE_DIST of it, stay put and attack — no per-tick step
     // (prevents back-and-forth jitter near the slot).
@@ -1160,6 +1208,8 @@ bool IccLichKingWinterAction::HandleMeleePositioning()
                 if (!IsPositionSafeFromDefile(destX, destY, bot->GetPositionZ(), 2.0f))
                     continue;
                 if (!bot->IsWithinLOS(destX, destY, bot->GetPositionZ()))
+                    continue;
+                if (inAddFrontalCone(destX, destY))
                     continue;
 
                 if (bDist < FLANK_SETTLE_DIST)
@@ -1200,6 +1250,8 @@ bool IccLichKingWinterAction::HandleMeleePositioning()
         if (!IsPositionSafeFromDefile(destX, destY, bot->GetPositionZ(), 2.0f))
             continue;
         if (!bot->IsWithinLOS(destX, destY, bot->GetPositionZ()))
+            continue;
+        if (inAddFrontalCone(destX, destY))
             continue;
 
         if (bDist < FLANK_SETTLE_DIST)
@@ -1452,6 +1504,12 @@ bool IccLichKingWinterAction::HandleMainTankAddManagement(Unit*, Position const*
 
         Position const& rangedPos = *GetMainTankRangedPosition();
 
+        // Only step when some add on us is deeper (farther from the ranged
+        // anchor) than we are. Chasing centroid + away unconditionally is a
+        // treadmill: adds follow every step, dragging the centroid along.
+        float const botRadial = bot->GetDistance2d(rangedPos.GetPositionX(), rangedPos.GetPositionY());
+        bool behindAll = true;
+
         float sumX = 0.0f;
         float sumY = 0.0f;
         int count = 0;
@@ -1471,6 +1529,9 @@ bool IccLichKingWinterAction::HandleMainTankAddManagement(Unit*, Position const*
             sumX += add->GetPositionX();
             sumY += add->GetPositionY();
             ++count;
+
+            if (add->GetDistance2d(rangedPos.GetPositionX(), rangedPos.GetPositionY()) > botRadial + 1.0f)
+                behindAll = false;
         }
 
         float cx = count > 0 ? sumX / count : targetAdd->GetPositionX();
@@ -1497,7 +1558,7 @@ bool IccLichKingWinterAction::HandleMainTankAddManagement(Unit*, Position const*
         float const holdX = cx + awayNx * HOLD_REACH;
         float const holdY = cy + awayNy * HOLD_REACH;
 
-        if (bot->GetDistance2d(holdX, holdY) > HOLD_TOL)
+        if (!behindAll && bot->GetDistance2d(holdX, holdY) > HOLD_TOL)
             TryMoveToPosition(holdX, holdY, PLATFORM_Z, false);
     }
 
@@ -1789,7 +1850,8 @@ bool IccLichKingAddsAction::Execute(Event /*event*/)
     Unit* const terenas = bot->FindNearestCreature(NPC_TERENAS_MENETHIL_HC, 55.0f);
 
     // Heroic cheat buffs — apply to all group members
-    if (bot->FindNearestCreature(NPC_THE_LICH_KING, 100.0f) && sPlayerbotAIConfig.EnableICCBuffs && IsHeroicLk(diff))
+    Creature* lichKing = bot->FindNearestCreature(NPC_THE_LICH_KING, 100.0f);
+    if (lichKing && lichKing->IsInCombat() && sPlayerbotAIConfig.EnableICCBuffs && IsHeroicLk(diff))
     {
         Group* buffGroup = bot->GetGroup();
         if (buffGroup)
