@@ -360,6 +360,8 @@ float Aq40TwinMultiplier::GetValue(Action* action)
             return 3.5f;
         if (actionName == "aq40 twin tank" || actionName == "aq40 twin warlock tank")
             return 3.0f;
+        if (actionName == "aq40 twin healer anchor")
+            return 3.0f;
         if (actionName == "aq40 twin choose target")
             return 2.0f;
 
@@ -374,6 +376,7 @@ float Aq40TwinMultiplier::GetValue(Action* action)
     bool const isWarlockTank = Aq40BossHelper::Twin::IsWarlockTankProfile(bot, botAI);
     bool const isTankPairMember = Aq40BossHelper::Twin::IsTankPairMember(bot);
     bool const isSelectedMeleeTank = Aq40BossHelper::Twin::IsSelectedMeleeTank(bot);
+    bool const isAssignedHealer = botAI->IsHeal(bot) && Aq40BossHelper::Twin::IsAssignedHealer(bot);
     bool const targetsVeklor = IsTargetingEntry(target, Aq40SpellIds::TwinVeklorNpcEntry);
     bool const targetsVeknilash = IsTargetingEntry(target, Aq40SpellIds::TwinVeknilashNpcEntry);
     bool const targetsTwinBug = target && Aq40SpellIds::IsTwinBugEntry(target->GetEntry());
@@ -392,6 +395,13 @@ float Aq40TwinMultiplier::GetValue(Action* action)
 
     if (isTankPairMember && IsGenericPressureAction(action))
         return 0.0f;
+
+    if (isAssignedHealer && IsGenericMovementAction(action) &&
+        !IsActionNamed(action,
+            { "aq40 twin healer anchor", "aq40 twin avoid hazard", "aq40 twin avoid veklor", "avoid aoe" }))
+    {
+        return 0.0f;
+    }
 
     if (targetsTwinBug && IsGenericPressureAction(action))
     {

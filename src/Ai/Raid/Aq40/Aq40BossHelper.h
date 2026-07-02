@@ -838,6 +838,45 @@ struct TankPairAssignments
     }
 };
 
+struct HealerAssignments
+{
+    std::array<ObjectGuid, 4> healers = {
+        ObjectGuid::Empty, ObjectGuid::Empty, ObjectGuid::Empty, ObjectGuid::Empty
+    };
+
+    uint8 Count() const
+    {
+        uint8 count = 0;
+        for (ObjectGuid const& guid : healers)
+        {
+            if (!guid.IsEmpty())
+                ++count;
+        }
+
+        return count;
+    }
+
+    int8 GetSlot(Player const* player) const
+    {
+        if (!player)
+            return -1;
+
+        ObjectGuid const guid = player->GetGUID();
+        for (uint8 index = 0; index < healers.size(); ++index)
+        {
+            if (healers[index] == guid)
+                return static_cast<int8>(index);
+        }
+
+        return -1;
+    }
+
+    bool IsAssigned(Player const* player) const
+    {
+        return GetSlot(player) >= 0;
+    }
+};
+
 inline GuidVector GetEncounterUnits(PlayerbotAI* botAI)
 {
     if (!botAI || !botAI->GetAiObjectContext())
@@ -1066,9 +1105,65 @@ inline TankPairAssignments GetTankPairAssignments(Player* referencePlayer)
     return assignments;
 }
 
+inline HealerAssignments GetHealerAssignments(Player* referencePlayer)
+{
+    HealerAssignments assignments;
+    if (!referencePlayer)
+        return assignments;
+
+    Group const* group = referencePlayer->GetGroup();
+    TankPairAssignments const tankAssignments = GetTankPairAssignments(referencePlayer);
+    std::vector<Player*> assistantHealers;
+    std::vector<Player*> fallbackHealers;
+
+    for (Player* member : Aq40BossHelper::GetSameInstanceGroupMembers(referencePlayer))
+    {
+        if (!member || !member->IsAlive() || !PlayerbotAI::IsHeal(member) ||
+            Aq40BossHelper::IsEncounterTank(referencePlayer, member) || tankAssignments.IsTankPairMember(member))
+        {
+            continue;
+        }
+
+        if (group && group->IsAssistant(member->GetGUID()))
+            AppendUniquePlayer(assistantHealers, member);
+        else if (GET_PLAYERBOT_AI(member))
+            AppendUniquePlayer(fallbackHealers, member);
+    }
+
+    auto sortByGuid = [](Player* left, Player* right)
+    {
+        if (!left || !right)
+            return left != nullptr;
+        return left->GetGUID().GetRawValue() < right->GetGUID().GetRawValue();
+    };
+    std::stable_sort(assistantHealers.begin(), assistantHealers.end(), sortByGuid);
+    std::stable_sort(fallbackHealers.begin(), fallbackHealers.end(), sortByGuid);
+
+    uint8 slot = 0;
+    auto appendHealer = [&assignments, &slot](Player* healer)
+    {
+        if (!healer || slot >= assignments.healers.size())
+            return;
+
+        assignments.healers[slot++] = healer->GetGUID();
+    };
+
+    for (Player* healer : assistantHealers)
+        appendHealer(healer);
+    for (Player* healer : fallbackHealers)
+        appendHealer(healer);
+
+    return assignments;
+}
+
 inline bool IsTankPairMember(Player* bot)
 {
     return bot && GetTankPairAssignments(bot).IsTankPairMember(bot);
+}
+
+inline bool IsAssignedHealer(Player* bot)
+{
+    return bot && GetHealerAssignments(bot).IsAssigned(bot);
 }
 
 inline bool IsSelectedWarlockTank(Player* bot)

@@ -30,6 +30,7 @@ public:
         creators["aq40 twin choose target"] = &RaidAq40ActionContext::twin_choose_target;
         creators["aq40 twin tank"] = &RaidAq40ActionContext::twin_tank;
         creators["aq40 twin warlock tank"] = &RaidAq40ActionContext::twin_warlock_tank;
+        creators["aq40 twin healer anchor"] = &RaidAq40ActionContext::twin_healer_anchor;
         creators["aq40 twin avoid hazard"] = &RaidAq40ActionContext::twin_avoid_hazard;
         creators["aq40 twin avoid veklor"] = &RaidAq40ActionContext::twin_avoid_veklor;
         creators["aq40 ouro choose target"] = &RaidAq40ActionContext::ouro_choose_target;
@@ -95,6 +96,7 @@ private:
     static Action* twin_choose_target(PlayerbotAI* botAI) { return new Aq40TwinChooseTargetAction(botAI); }
     static Action* twin_tank(PlayerbotAI* botAI) { return new Aq40TwinTankAction(botAI); }
     static Action* twin_warlock_tank(PlayerbotAI* botAI) { return new Aq40TwinWarlockTankAction(botAI); }
+    static Action* twin_healer_anchor(PlayerbotAI* botAI) { return new Aq40TwinHealerAnchorAction(botAI); }
     static Action* twin_avoid_hazard(PlayerbotAI* botAI) { return new Aq40TwinAvoidHazardAction(botAI); }
     static Action* twin_avoid_veklor(PlayerbotAI* botAI) { return new Aq40TwinAvoidVeklorAction(botAI); }
     static Action* ouro_choose_target(PlayerbotAI* botAI) { return new Aq40OuroChooseTargetAction(botAI); }

@@ -31,6 +31,8 @@ float constexpr kTwinStandbyVeklorRange = kTwinArcaneBurstAvoidRadius + 2.0f;
 float constexpr kTwinStandbyVeklorRangeTolerance = 1.5f;
 float constexpr kTwinBossSeparationTargetDistance = 72.0f;
 float constexpr kTwinBossSeparationResumeDistance = 68.0f;
+float constexpr kTwinHealerAnchorRange = 24.0f;
+float constexpr kTwinHealerAnchorTolerance = 4.0f;
 
 enum class TwinMarkerAssignment : uint8
 {
@@ -330,6 +332,64 @@ char const* ToMarkerToken(TwinMarkerAssignment marker)
     }
 }
 
+char const* GetTwinHealerSideToken(uint8 slot)
+{
+    return slot < 2 ? "skull_side" : "cross_side";
+}
+
+TwinMarkerAssignment GetAssignedMarkerForHealerSlot(uint8 slot, bool crossParity)
+{
+    bool const skullSideGroup = slot < 2;
+    if (skullSideGroup)
+        return crossParity ? TwinMarkerAssignment::Cross : TwinMarkerAssignment::Skull;
+
+    return crossParity ? TwinMarkerAssignment::Skull : TwinMarkerAssignment::Cross;
+}
+
+Unit* GetTwinBossForMarker(TwinMarkerAssignment marker, Unit* veknilash, Unit* veklor)
+{
+    switch (marker)
+    {
+        case TwinMarkerAssignment::Skull:
+            return veknilash;
+        case TwinMarkerAssignment::Cross:
+            return veklor;
+        case TwinMarkerAssignment::None:
+        default:
+            return nullptr;
+    }
+}
+
+ObjectGuid GetActiveTankGuidForMarker(TwinMarkerAssignment marker, TwinMarkerSwapState const& markerSwap)
+{
+    switch (marker)
+    {
+        case TwinMarkerAssignment::Skull:
+            return markerSwap.assignments.GetActiveMeleeTankGuid(markerSwap.crossParity);
+        case TwinMarkerAssignment::Cross:
+            return markerSwap.assignments.GetActiveWarlockTankGuid(markerSwap.crossParity);
+        case TwinMarkerAssignment::None:
+        default:
+            return ObjectGuid::Empty;
+    }
+}
+
+uint8 CountHealersForMarker(Aq40BossHelper::Twin::HealerAssignments const& assignments,
+                            TwinMarkerAssignment marker, bool crossParity)
+{
+    uint8 count = 0;
+    for (uint8 slot = 0; slot < assignments.healers.size(); ++slot)
+    {
+        if (!assignments.healers[slot].IsEmpty() &&
+            GetAssignedMarkerForHealerSlot(slot, crossParity) == marker)
+        {
+            ++count;
+        }
+    }
+
+    return count;
+}
+
 void LogTwinTankRole(Player* bot, std::string const& assignmentState, TwinMarkerAssignment marker, Unit* target)
 {
     std::ostringstream fields;
@@ -339,6 +399,107 @@ void LogTwinTankRole(Player* bot, std::string const& assignmentState, TwinMarker
     Aq40Helpers::LogAq40Info(bot, "tank_assignment",
         "twin:role:" + Aq40Helpers::GetAq40LogToken(assignmentState) + ":" + ToMarkerToken(marker),
         fields.str(), 5000);
+}
+
+struct TwinHealerAnchorMove
+{
+    Position anchor;
+    float anchorDistance = 0.0f;
+    float targetRange = 0.0f;
+    float bossDistance = 0.0f;
+};
+
+bool BuildTwinHealerAnchor(Player* bot, Unit* assignedBoss, Unit* oppositeBoss, TwinHealerAnchorMove& outMove)
+{
+    if (!bot || !assignedBoss)
+        return false;
+
+    float dx = assignedBoss->GetPositionX() - (oppositeBoss ? oppositeBoss->GetPositionX() : bot->GetPositionX());
+    float dy = assignedBoss->GetPositionY() - (oppositeBoss ? oppositeBoss->GetPositionY() : bot->GetPositionY());
+    float distance = std::sqrt(dx * dx + dy * dy);
+
+    if (distance < 0.1f)
+    {
+        dx = bot->GetPositionX() - assignedBoss->GetPositionX();
+        dy = bot->GetPositionY() - assignedBoss->GetPositionY();
+        distance = std::sqrt(dx * dx + dy * dy);
+    }
+
+    if (distance < 0.1f)
+    {
+        dx = std::cos(bot->GetOrientation());
+        dy = std::sin(bot->GetOrientation());
+        distance = 1.0f;
+    }
+
+    float const nx = dx / distance;
+    float const ny = dy / distance;
+    float x = assignedBoss->GetPositionX() + nx * kTwinHealerAnchorRange;
+    float y = assignedBoss->GetPositionY() + ny * kTwinHealerAnchorRange;
+    float z = assignedBoss->GetPositionZ();
+    bot->UpdateAllowedPositionZ(x, y, z);
+
+    outMove.anchor.Relocate(x, y, z, bot->GetOrientation());
+    outMove.anchorDistance = bot->GetExactDist2d(x, y);
+    outMove.targetRange = bot->GetDistance2d(assignedBoss);
+    outMove.bossDistance = oppositeBoss ? assignedBoss->GetDistance2d(oppositeBoss) : 0.0f;
+    return true;
+}
+
+void LogTwinHealerAssignment(Player* bot, Aq40BossHelper::Twin::HealerAssignments const& healerAssignments,
+                             uint8 slot, TwinMarkerAssignment marker, Unit* target,
+                             TwinMarkerSwapState const& markerSwap, TwinHealerAnchorMove const& move,
+                             bool moved)
+{
+    if (!bot)
+        return;
+
+    uint8 const assignedCount = healerAssignments.Count();
+    uint8 const markerCoverage = CountHealersForMarker(healerAssignments, marker, markerSwap.crossParity);
+    uint8 const skullCoverage = CountHealersForMarker(healerAssignments, TwinMarkerAssignment::Skull,
+                                                       markerSwap.crossParity);
+    uint8 const crossCoverage = CountHealersForMarker(healerAssignments, TwinMarkerAssignment::Cross,
+                                                       markerSwap.crossParity);
+    std::ostringstream fields;
+    fields << "boss=twin assignment=healer_anchor"
+           << " healer=" << Aq40Helpers::GetAq40LogToken(bot->GetName())
+           << " side_group=" << GetTwinHealerSideToken(slot)
+           << " slot=" << static_cast<uint32>(slot)
+           << " current_marker_duty=" << ToMarkerToken(marker)
+           << " target_emperor=" << Aq40Helpers::GetAq40LogUnit(target)
+           << " teleport_sequence=" << markerSwap.lastTeleportSequence
+           << " cross_parity=" << (markerSwap.crossParity ? 1 : 0)
+           << " assigned_healers=" << static_cast<uint32>(assignedCount)
+           << " marker_healers=" << static_cast<uint32>(markerCoverage)
+           << " skull_healers=" << static_cast<uint32>(skullCoverage)
+           << " cross_healers=" << static_cast<uint32>(crossCoverage)
+           << " active_tank_guid=" << FormatAssignmentGuid(GetActiveTankGuidForMarker(marker, markerSwap))
+           << " boss_distance=" << move.bossDistance
+           << " target_range=" << move.targetRange
+           << " anchor_distance=" << move.anchorDistance
+           << " moved=" << (moved ? 1 : 0);
+
+    std::string const key = std::string("twin:healer_anchor:") + GetTwinHealerSideToken(slot) + ":" +
+                            ToMarkerToken(marker) + ":" + FormatAssignmentGuid(bot->GetGUID());
+    Aq40Helpers::LogAq40Info(bot, "healer_assignment", key, fields.str(), 1000);
+
+    if (assignedCount < 4 || skullCoverage < 2 || crossCoverage < 2)
+    {
+        std::ostringstream warnFields;
+        warnFields << "boss=twin reason=missing_healer_coverage"
+                   << " assigned_healers=" << static_cast<uint32>(assignedCount)
+                   << " current_marker_duty=" << ToMarkerToken(marker)
+                   << " current_marker_healers=" << static_cast<uint32>(markerCoverage)
+                   << " skull_healers=" << static_cast<uint32>(skullCoverage)
+                   << " cross_healers=" << static_cast<uint32>(crossCoverage)
+                   << " teleport_sequence=" << markerSwap.lastTeleportSequence
+                   << " cross_parity=" << (markerSwap.crossParity ? 1 : 0);
+
+        Aq40Helpers::LogAq40Warn(bot, "healer_assignment",
+            std::string("twin:healer_missing:") + ToMarkerToken(marker) + ":" +
+                std::to_string(markerSwap.lastTeleportSequence) + ":" + std::to_string(assignedCount),
+            warnFields.str(), 5000);
+    }
 }
 
 bool IsTwinBoss(Unit* unit)
@@ -1209,6 +1370,50 @@ bool Aq40TwinWarlockTankAction::Execute(Event /*event*/)
         return true;
 
     return bot->GetVictim() != veklor ? Attack(veklor) : false;
+}
+
+bool Aq40TwinHealerAnchorAction::Execute(Event /*event*/)
+{
+    if (!bot || !botAI->IsHeal(bot))
+        return false;
+
+    Aq40BossHelper::Twin::HealerAssignments const healerAssignments =
+        Aq40BossHelper::Twin::GetHealerAssignments(bot);
+    int8 const slot = healerAssignments.GetSlot(bot);
+    if (slot < 0)
+        return false;
+
+    GuidVector const encounterUnits = Aq40BossHelper::Twin::GetEncounterUnits(botAI);
+    Unit* veknilash = Aq40BossHelper::Twin::FindVeknilash(botAI, encounterUnits);
+    Unit* veklor = Aq40BossHelper::Twin::FindVeklor(botAI, encounterUnits);
+    if (!veknilash && !veklor)
+        return false;
+
+    ApplyTwinBossMarkers(bot, veknilash, veklor);
+
+    TwinMarkerSwapState const markerSwap = RefreshTwinMarkerSwapState(bot);
+    uint8 const healerSlot = static_cast<uint8>(slot);
+    TwinMarkerAssignment const marker = GetAssignedMarkerForHealerSlot(healerSlot, markerSwap.crossParity);
+    Unit* target = GetTwinBossForMarker(marker, veknilash, veklor);
+    Unit* opposite = marker == TwinMarkerAssignment::Skull ? veklor : veknilash;
+    if (!target)
+        return false;
+
+    Aq40Helpers::SetRtiTarget(botAI, ToMarkerToken(marker), target);
+
+    TwinHealerAnchorMove move;
+    if (!BuildTwinHealerAnchor(bot, target, opposite, move))
+        return false;
+
+    bool moved = false;
+    if (move.anchorDistance > kTwinHealerAnchorTolerance)
+    {
+        moved = MoveNear(bot->GetMapId(), move.anchor.GetPositionX(), move.anchor.GetPositionY(),
+                         move.anchor.GetPositionZ(), 0.0f, MovementPriority::MOVEMENT_COMBAT);
+    }
+
+    LogTwinHealerAssignment(bot, healerAssignments, healerSlot, marker, target, markerSwap, move, moved);
+    return moved;
 }
 
 bool Aq40TwinAvoidHazardAction::Execute(Event /*event*/)
