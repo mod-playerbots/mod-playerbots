@@ -6,6 +6,7 @@
 #include "HFRMultipliers.h"
 #include "HFRActions.h"
 #include "HFRTriggers.h"
+#include "ChooseTargetActions.h"
 #include "MovementActions.h"
 #include "ReachTargetActions.h"
 #include "Playerbots.h"
@@ -58,7 +59,7 @@ float OmorTreacheryAuraFleeFromTankMultiplier::GetValue(Action* action)
 float VazrudenDisableTankAssistMultiplier::GetValue(Action* action)
 {
     if (!botAI->IsTank(bot) ||
-        !AI_VALUE2(Unit*, "find target", "halazzi"))
+        !AI_VALUE2(Unit*, "find target", "vazruden"))
         return 1.0f;
 
     if (bot->GetVictim() != nullptr &&

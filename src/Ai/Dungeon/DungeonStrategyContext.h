@@ -2,7 +2,12 @@
 #define PLAYERBOTS_DUNGEONSTRATEGYCONTEXT_H
 
 #include "Strategy.h"
+<<<<<<< Updated upstream
 #include "HRStrategy.h"
+=======
+#include "HFRStrategy.h"
+#include "BFStrategy.h"
+>>>>>>> Stashed changes
 #include "ACStrategy.h"
 #include "UKStrategy.h"
 #include "NexStrategy.h"
