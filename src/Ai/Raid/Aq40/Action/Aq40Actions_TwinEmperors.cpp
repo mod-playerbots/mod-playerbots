@@ -228,6 +228,55 @@ bool SameAssignments(Aq40BossHelper::Twin::TankPairAssignments const& left,
     return left.mode == right.mode;
 }
 
+Player* FindSameInstanceMemberByGuid(Player* referencePlayer, ObjectGuid guid)
+{
+    if (!referencePlayer || guid.IsEmpty())
+        return nullptr;
+
+    for (Player* member : Aq40BossHelper::GetSameInstanceGroupMembers(referencePlayer))
+    {
+        if (member && member->GetGUID() == guid)
+            return member;
+    }
+
+    return nullptr;
+}
+
+bool IsAssignmentGuidAvailable(Player* referencePlayer, ObjectGuid guid)
+{
+    Player* player = FindSameInstanceMemberByGuid(referencePlayer, guid);
+    return player && player->IsAlive() && player->IsInWorld();
+}
+
+bool AreStoredAssignmentsAvailable(Player* referencePlayer,
+                                   Aq40BossHelper::Twin::TankPairAssignments const& assignments)
+{
+    if (!referencePlayer)
+        return false;
+
+    if (assignments.HasFullPairs())
+    {
+        for (uint8 index = 0; index < 2; ++index)
+        {
+            if (!IsAssignmentGuidAvailable(referencePlayer, assignments.warlockTanks[index]) ||
+                !IsAssignmentGuidAvailable(referencePlayer, assignments.meleeTanks[index]))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    if (assignments.HasSinglePair())
+    {
+        return IsAssignmentGuidAvailable(referencePlayer, assignments.warlockTanks[0]) &&
+               IsAssignmentGuidAvailable(referencePlayer, assignments.meleeTanks[0]);
+    }
+
+    return false;
+}
+
 TwinMarkerSwapState RefreshTwinMarkerSwapState(Player* bot)
 {
     TwinMarkerSwapState result;
@@ -247,9 +296,17 @@ TwinMarkerSwapState RefreshTwinMarkerSwapState(Player* bot)
     {
         std::lock_guard<std::mutex> guard(sTwinMarkerSwapMutex);
         TwinMarkerSwapState& stored = sTwinMarkerSwapStateByInstance[instanceKey];
-        bool const assignmentsChanged = !stored.initialized ||
-                                        !SameAssignments(stored.assignments, assignments) ||
-                                        stored.assignmentMode != assignmentMode;
+        bool const teleportReset = stored.initialized && stored.lastTeleportSequence && !teleportSequence;
+        bool const keepStoredFullPairs =
+            stored.initialized &&
+            !teleportReset &&
+            stored.assignmentMode == Aq40BossHelper::Twin::TankAssignmentMode::FullPairs &&
+            stored.assignments.HasFullPairs() &&
+            AreStoredAssignmentsAvailable(bot, stored.assignments);
+        bool const assignmentsChanged = !keepStoredFullPairs &&
+                                        (!stored.initialized ||
+                                         !SameAssignments(stored.assignments, assignments) ||
+                                         stored.assignmentMode != assignmentMode);
 
         if (assignmentsChanged)
         {
@@ -268,7 +325,8 @@ TwinMarkerSwapState RefreshTwinMarkerSwapState(Player* bot)
             logAssignmentState = true;
         }
 
-        if (assignmentMode == Aq40BossHelper::Twin::TankAssignmentMode::FullPairs &&
+        Aq40BossHelper::Twin::TankAssignmentMode const effectiveMode = stored.assignmentMode;
+        if (effectiveMode == Aq40BossHelper::Twin::TankAssignmentMode::FullPairs &&
             teleportSequence && teleportSequence != stored.lastTeleportSequence)
         {
             uint32 const sequenceDelta = teleportSequence - stored.lastTeleportSequence;
@@ -278,7 +336,7 @@ TwinMarkerSwapState RefreshTwinMarkerSwapState(Player* bot)
             stored.lastTeleportSequence = teleportSequence;
             logAssignmentState = true;
         }
-        else if (assignmentMode != Aq40BossHelper::Twin::TankAssignmentMode::FullPairs)
+        else if (effectiveMode != Aq40BossHelper::Twin::TankAssignmentMode::FullPairs)
         {
             stored.crossParity = false;
             stored.lastTeleportSequence = teleportSequence;
@@ -1259,7 +1317,7 @@ bool Aq40TwinTankAction::Execute(Event /*event*/)
     }
 
     TwinTankAnchorMove anchorMove;
-    if (BuildTwinMeleeContactAnchor(bot, veknilash, veklor, anchorMove))
+    if (BuildTwinFarSideAnchor(bot, veknilash, veklor, 0.0f, anchorMove))
     {
         if (anchorMove.anchorDistance > 2.0f)
         {
@@ -1268,6 +1326,17 @@ bool Aq40TwinTankAction::Execute(Event /*event*/)
         }
 
         LogTwinTankMovement(bot, "melee_separate", markerSwap, veknilash, veklor, anchorMove, moved,
+                            currentVictim, true);
+    }
+    else if (BuildTwinMeleeContactAnchor(bot, veknilash, veklor, anchorMove))
+    {
+        if (anchorMove.anchorDistance > 2.0f)
+        {
+            moved = MoveNear(bot->GetMapId(), anchorMove.anchor.GetPositionX(), anchorMove.anchor.GetPositionY(),
+                             anchorMove.anchor.GetPositionZ(), 0.0f, MovementPriority::MOVEMENT_COMBAT);
+        }
+
+        LogTwinTankMovement(bot, "melee_contact_hold", markerSwap, veknilash, veklor, anchorMove, moved,
                             currentVictim, true);
     }
     else if (!bot->IsWithinMeleeRange(veknilash))
@@ -1338,12 +1407,23 @@ bool Aq40TwinWarlockTankAction::Execute(Event /*event*/)
         attacked = Attack(veklor);
     }
 
+    bool moved = false;
+    float const currentVeklorDistance = bot->GetDistance2d(veklor);
+    if (currentVeklorDistance < kTwinWarlockMinRange)
+    {
+        TwinTankAnchorMove rangeMove = BuildTwinTankMoveSnapshot(bot, veklor, veknilash);
+        moved = MoveAway(veklor, kTwinWarlockPreferredRange - currentVeklorDistance);
+        LogTwinTankMovement(bot, "warlock_range_recover", markerSwap, veklor, veknilash, rangeMove, moved,
+                            veklor->GetVictim(), veklor->GetVictim() == bot);
+        if (moved)
+            return true;
+    }
+
     bool castWard = false;
     if (!botAI->HasAura("shadow ward", bot))
         castWard = CastFirstAvailableSelf(botAI, bot, { "shadow ward" });
 
     bool const castThreat = CastTwinWarlockThreat(bot, botAI, veklor);
-    bool moved = false;
 
     TwinTankAnchorMove anchorMove;
     if (BuildTwinFarSideAnchor(bot, veklor, veknilash, kTwinWarlockPreferredRange, anchorMove))
@@ -1356,6 +1436,13 @@ bool Aq40TwinWarlockTankAction::Execute(Event /*event*/)
 
         LogTwinTankMovement(bot, "warlock_separate", markerSwap, veklor, veknilash, anchorMove, moved,
                             veklor ? veklor->GetVictim() : nullptr, veklor && veklor->GetVictim() == bot);
+
+        if (!moved && bot->GetDistance2d(veklor) < kTwinWarlockMinRange)
+        {
+            moved = MoveAway(veklor, kTwinWarlockPreferredRange - bot->GetDistance2d(veklor));
+            LogTwinTankMovement(bot, "warlock_range_recover", markerSwap, veklor, veknilash, anchorMove, moved,
+                                veklor->GetVictim(), veklor->GetVictim() == bot);
+        }
     }
     else
     {
@@ -1400,6 +1487,20 @@ bool Aq40TwinHealerAnchorAction::Execute(Event /*event*/)
         return false;
 
     Aq40Helpers::SetRtiTarget(botAI, ToMarkerToken(marker), target);
+
+    if (veklor && bot->GetDistance2d(veklor) <= kTwinArcaneBurstAvoidRadius)
+    {
+        float const distance = bot->GetDistance2d(veklor);
+        bool const movedAway = MoveAway(veklor, kTwinArcaneBurstAvoidRadius - distance + 2.0f);
+        std::ostringstream fields;
+        fields << "boss=twin hazard=arcane_burst action=healer_range_recover"
+               << " source=" << Aq40Helpers::GetAq40LogUnit(veklor)
+               << " distance=" << distance
+               << " moved=" << (movedAway ? 1 : 0);
+        Aq40Helpers::LogAq40Info(bot, "avoid_hazard", "twin:healer:arcane_burst", fields.str(), 1000);
+        if (movedAway)
+            return true;
+    }
 
     TwinHealerAnchorMove move;
     if (!BuildTwinHealerAnchor(bot, target, opposite, move))

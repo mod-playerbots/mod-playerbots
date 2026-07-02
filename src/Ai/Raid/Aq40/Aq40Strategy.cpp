@@ -70,6 +70,7 @@ void RaidAq40Strategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             NextAction("aq40 twin tank", ACTION_RAID + 5),
             NextAction("aq40 twin warlock tank", ACTION_RAID + 5),
             NextAction("aq40 twin healer anchor", ACTION_RAID + 5),
+            NextAction("aq40 twin avoid veklor", ACTION_RAID + 5),
             NextAction("aq40 twin choose target", ACTION_RAID + 4),
         }));
     triggers.push_back(new TriggerNode("aq40 twin hazard",
