@@ -1625,7 +1625,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
     static const std::vector<std::string> allInstanceStrategies =
     {
         "aq20", "blacktemple", "bwl", "gruulslair", "hyjal", "icc", "karazhan",
-        "magtheridon", "moltencore", "naxx", "onyxia", "ssc", "tbc-ac", "tbc-hr", "tempestkeep",
+        "magtheridon", "moltencore", "naxx", "onyxia", "ssc", "tbc-ac", "tbc-hfr", "tempestkeep",
         "ulduar", "voa", "wotlk-an", "wotlk-cos", "wotlk-dtk", "wotlk-eoe", "wotlk-fos",
         "wotlk-gd", "wotlk-hol", "wotlk-hor", "wotlk-hos", "wotlk-nex", "wotlk-occ",
         "wotlk-ok", "wotlk-os", "wotlk-pos", "wotlk-toc", "wotlk-uk", "wotlk-up",
@@ -1663,7 +1663,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             strategyName = "hyjal";  // The Battle for Mount Hyjal (Hyjal Summit)
             break;
         case 543:
-            strategyName = "tbc-hr";  // Hellfire Citadel: Hellfire Ramparts
+            strategyName = "tbc-hfr";  // Hellfire Citadel: Hellfire Ramparts
             break;
         case 544:
             strategyName = "magtheridon";  // Magtheridon's Lair
