@@ -19,6 +19,7 @@ namespace
 struct TwinScriptState
 {
     uint32 lastTeleportAtMs = 0;
+    uint32 teleportSequence = 0;
     uint32 lastBlizzardAtMs = 0;
     uint32 lastArcaneBurstAtMs = 0;
     uint32 lastExplodeBugAtMs = 0;
@@ -28,6 +29,7 @@ struct TwinScriptState
 
 std::mutex sStateMutex;
 std::unordered_map<uint32, TwinScriptState> sTwinStateByInstance;
+uint32 constexpr kTwinTeleportDedupeMs = 5000;
 
 uint32 ResolveNow(uint32 nowMs)
 {
@@ -82,6 +84,9 @@ void StampTwinSpell(Unit* caster, SpellInfo const* spellInfo, uint32 nowMs)
 
     if (Aq40SpellIds::IsTwinTeleportSpellId(spellInfo->Id))
     {
+        if (!IsRecent(state.lastTeleportAtMs, kTwinTeleportDedupeMs, nowMs))
+            ++state.teleportSequence;
+
         state.lastTeleportAtMs = nowMs;
         return;
     }
@@ -110,6 +115,13 @@ bool IsTwinTeleportPickupWindow(Player const* bot, uint32 windowMs, uint32 nowMs
     std::lock_guard<std::mutex> guard(sStateMutex);
     TwinScriptState* state = GetState(bot);
     return state && IsRecent(state->lastTeleportAtMs, windowMs, ResolveNow(nowMs));
+}
+
+uint32 GetTwinTeleportSequence(Player const* bot)
+{
+    std::lock_guard<std::mutex> guard(sStateMutex);
+    TwinScriptState* state = GetState(bot);
+    return state ? state->teleportSequence : 0;
 }
 
 bool IsTwinBlizzardWindow(Player const* bot, uint32 windowMs, uint32 nowMs)

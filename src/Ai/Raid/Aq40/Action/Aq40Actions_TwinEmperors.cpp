@@ -40,8 +40,8 @@ struct TwinMarkerSwapState
 {
     Aq40BossHelper::Twin::TankPairAssignments assignments;
     Aq40BossHelper::Twin::TankAssignmentMode assignmentMode = Aq40BossHelper::Twin::TankAssignmentMode::Incomplete;
+    uint32 lastTeleportSequence = 0;
     bool crossParity = false;
-    bool inTeleportWindow = false;
     bool initialized = false;
 };
 
@@ -110,7 +110,8 @@ void AppendAssignmentFields(std::ostringstream& fields,
 }
 
 void LogTwinAssignmentState(Player* bot, Aq40BossHelper::Twin::TankPairAssignments const& assignments,
-                            Aq40BossHelper::Twin::TankAssignmentMode mode, bool crossParity)
+                            Aq40BossHelper::Twin::TankAssignmentMode mode, bool crossParity,
+                            uint32 teleportSequence = 0)
 {
     std::ostringstream fields;
     fields << "boss=twin reason=";
@@ -128,6 +129,7 @@ void LogTwinAssignmentState(Player* bot, Aq40BossHelper::Twin::TankPairAssignmen
             break;
     }
     AppendAssignmentFields(fields, assignments, mode, crossParity);
+    fields << " teleport_sequence=" << teleportSequence;
 
     std::string const stateKey = "twin:marker_swap:" + BuildAssignmentStateKey(assignments, mode, crossParity);
     if (mode == Aq40BossHelper::Twin::TankAssignmentMode::FullPairs)
@@ -234,7 +236,7 @@ TwinMarkerSwapState RefreshTwinMarkerSwapState(Player* bot)
     Aq40BossHelper::Twin::TankPairAssignments const assignments =
         Aq40BossHelper::Twin::GetTankPairAssignments(bot);
     Aq40BossHelper::Twin::TankAssignmentMode const assignmentMode = assignments.mode;
-    bool const teleportWindow = Aq40Scripts::IsTwinTeleportPickupWindow(bot);
+    uint32 const teleportSequence = Aq40Scripts::GetTwinTeleportSequence(bot);
     bool logAssignmentState = false;
 
     {
@@ -246,33 +248,45 @@ TwinMarkerSwapState RefreshTwinMarkerSwapState(Player* bot)
 
         if (assignmentsChanged)
         {
+            bool const preserveMeleeParity =
+                stored.initialized &&
+                stored.assignmentMode == Aq40BossHelper::Twin::TankAssignmentMode::FullPairs &&
+                assignmentMode == Aq40BossHelper::Twin::TankAssignmentMode::FullPairs &&
+                stored.assignments.meleeTanks == assignments.meleeTanks;
+
             stored.assignments = assignments;
             stored.assignmentMode = assignmentMode;
-            stored.crossParity = false;
-            stored.inTeleportWindow = false;
+            if (!preserveMeleeParity)
+                stored.crossParity = false;
+
             stored.initialized = true;
             logAssignmentState = true;
         }
 
         if (assignmentMode == Aq40BossHelper::Twin::TankAssignmentMode::FullPairs &&
-            teleportWindow && !stored.inTeleportWindow)
+            teleportSequence && teleportSequence != stored.lastTeleportSequence)
         {
-            stored.crossParity = !stored.crossParity;
+            uint32 const sequenceDelta = teleportSequence - stored.lastTeleportSequence;
+            if ((sequenceDelta % 2) != 0)
+                stored.crossParity = !stored.crossParity;
+
+            stored.lastTeleportSequence = teleportSequence;
             logAssignmentState = true;
         }
         else if (assignmentMode != Aq40BossHelper::Twin::TankAssignmentMode::FullPairs)
         {
             stored.crossParity = false;
+            stored.lastTeleportSequence = teleportSequence;
         }
 
-        stored.inTeleportWindow = teleportWindow;
         result = stored;
     }
 
     if (logAssignmentState)
     {
-        LogTwinAssignmentState(bot, assignments, assignmentMode, result.crossParity);
-        LogTwinTankCandidates(bot, assignments, assignmentMode);
+        LogTwinAssignmentState(bot, result.assignments, result.assignmentMode, result.crossParity,
+                               result.lastTeleportSequence);
+        LogTwinTankCandidates(bot, result.assignments, result.assignmentMode);
     }
 
     return result;
@@ -914,6 +928,12 @@ bool Aq40TwinTankAction::Execute(Event /*event*/)
             if (markerSwap.assignments.HasFullPairs() && markerSwap.assignments.IsMeleeTank(bot))
             {
                 TwinMarkerAssignment const assignedMarker = GetAssignedMarkerForBot(markerSwap, bot);
+                if (veknilash->GetVictim() == bot)
+                {
+                    LogTwinTankRole(bot, "standby_melee_holding_skull", assignedMarker, veknilash);
+                    return false;
+                }
+
                 LogTwinTankRole(bot, "standby_melee_tank", assignedMarker, veklor);
                 bool const stopped = HoldTwinStandby(bot, botAI);
                 if (!veklor)

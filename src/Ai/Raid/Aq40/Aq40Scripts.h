@@ -10,6 +10,7 @@ class Player;
 namespace Aq40Scripts
 {
 bool IsTwinTeleportPickupWindow(Player const* bot, uint32 windowMs = 8000, uint32 nowMs = 0);
+uint32 GetTwinTeleportSequence(Player const* bot);
 bool IsTwinBlizzardWindow(Player const* bot, uint32 windowMs = 5000, uint32 nowMs = 0);
 bool IsTwinArcaneBurstWindow(Player const* bot, uint32 windowMs = 2500, uint32 nowMs = 0);
 bool IsTwinExplodeBugWindow(Player const* bot, uint32 windowMs = 2500, uint32 nowMs = 0);
