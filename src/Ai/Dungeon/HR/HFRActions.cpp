@@ -4,14 +4,11 @@
 */
 
 #include "Playerbots.h"
-#include "PlayerbotAI.h"
-#include "AiFactory.h"
-#include "HRTriggers.h"
-#include "HRActions.h"
-#include "MovementActions.h"
+#include "HFRTriggers.h"
+#include "HFRActions.h"
 #include "RaidBossHelpers.h"
 
-constexpr uint32 HR_MAP_ID = 543;
+constexpr uint32 HFR_MAP_ID = 543;
 
 // Watchkeeper Gargolmar
 
@@ -23,7 +20,7 @@ bool GargolmarMarkHellfireWatchersAction::Execute(Event /*event*/)
     if (!watcher)
         return false;
 
-    if (IsMechanicTrackerBot(botAI, bot, HR_MAP_ID, nullptr))
+    if (IsMechanicTrackerBot(botAI, bot, HFR_MAP_ID, nullptr))
         MarkTargetWithSkull(bot, watcher);
 
     SetRtiTarget(botAI, "skull", watcher);
@@ -66,7 +63,7 @@ bool OmorMarkFiendishHoundAction::Execute(Event /*event*/)
     if (!hound)
         return false;
 
-    if (IsMechanicTrackerBot(botAI, bot, HR_MAP_ID, nullptr))
+    if (IsMechanicTrackerBot(botAI, bot, HFR_MAP_ID, nullptr))
         MarkTargetWithSkull(bot, hound);
 
     SetRtiTarget(botAI, "skull", hound);
@@ -121,10 +118,24 @@ bool VazrudenTankPositionBossAction::Execute(Event /*event*/)
             float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
             float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
-            return MoveTo(HR_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+            return MoveTo(HFR_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
                    false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
         }
     }
+
+    return false;
+}
+
+bool VazrudenMarkBossAction::Execute(Event /*event*/)
+{
+    Unit* vazruden = AI_VALUE2(Unit*, "find target", "vazruden");
+    if (!vazruden)
+        return false;
+
+    if (IsMechanicTrackerBot(botAI, bot, HFR_MAP_ID, nullptr))
+        MarkTargetWithSkull(bot, vazruden);
+
+    SetRtiTarget(botAI, "skull", vazruden);
 
     return false;
 }

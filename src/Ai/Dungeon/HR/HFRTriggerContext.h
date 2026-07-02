@@ -3,12 +3,12 @@
 * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License, or (at your option) any later version.
 */
 
-#ifndef PLAYERBOTS_HRTRIGGERCONTEXT_H
-#define PLAYERBOTS_HRTRIGGERCONTEXT_H
+#ifndef PLAYERBOTS_HFRTRIGGERCONTEXT_H
+#define PLAYERBOTS_HFRTRIGGERCONTEXT_H
 
 #include "AiObjectContext.h"
 #include "TriggerContext.h"
-#include "HRTriggers.h"
+#include "HFRTriggers.h"
 
 class TbcDungeonHellfireRampartsTriggerContext : public NamedObjectContext<Trigger>
 {
@@ -35,6 +35,9 @@ public:
         // Vazruden
         creators["vazruden tank position boss"] =
             &TbcDungeonHellfireRampartsTriggerContext::vazruden_tank_position_boss;
+
+        creators["vazruden boss is active"] =
+            &TbcDungeonHellfireRampartsTriggerContext::vazruden_boss_is_active;
     }
 private:
     // Watchkeeper Gargolmar
@@ -62,6 +65,10 @@ private:
     // Vazruden
     static Trigger* vazruden_tank_position_boss(PlayerbotAI* botAI) {
         return new VazrudenTankPositionBossTrigger(botAI);
+    }
+
+    static Trigger* vazruden_boss_is_active(PlayerbotAI* botAI) {
+        return new VazrudenBossIsActiveTrigger(botAI);
     }
 };
 

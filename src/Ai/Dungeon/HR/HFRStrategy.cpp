@@ -3,8 +3,8 @@
 * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License, or (at your option) any later version.
 */
 
-#include "HRStrategy.h"
-#include "HRMultipliers.h"
+#include "HFRStrategy.h"
+#include "HFRMultipliers.h"
 
 void TbcDungeonHellfireRampartsStrategy::InitTriggers(std::vector<TriggerNode*> &triggers)
 {
@@ -28,6 +28,9 @@ void TbcDungeonHellfireRampartsStrategy::InitTriggers(std::vector<TriggerNode*> 
     // Vazruden
     triggers.push_back(new TriggerNode("vazruden tank position boss", {
         NextAction("vazruden tank position boss", ACTION_RAID + 1)}));
+
+    triggers.push_back(new TriggerNode("vazruden mark boss", {
+        NextAction("vazruden mark boss", ACTION_RAID + 2)}));
 }
 
 void TbcDungeonHellfireRampartsStrategy::InitMultipliers(std::vector<Multiplier*> &multipliers)
@@ -35,4 +38,6 @@ void TbcDungeonHellfireRampartsStrategy::InitMultipliers(std::vector<Multiplier*
     multipliers.push_back(new OmorTreacheryAuraFleeFromPlayersMultiplier(botAI));
 
     multipliers.push_back(new OmorTreacheryAuraFleeFromTankMultiplier(botAI));
+
+    multipliers.push_back(new VazrudenDisableTankAssistMultiplier(botAI));
 }

@@ -3,8 +3,8 @@
 * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License, or (at your option) any later version.
 */
 
-#ifndef PLAYERBOTS_HRACTIONS_H
-#define PLAYERBOTS_HRACTIONS_H
+#ifndef PLAYERBOTS_HFRACTIONS_H
+#define PLAYERBOTS_HFRACTIONS_H
 
 #include "AttackAction.h"
 #include "MovementActions.h"
@@ -61,6 +61,14 @@ class VazrudenTankPositionBossAction : public AttackAction
 public:
     VazrudenTankPositionBossAction(
         PlayerbotAI* botAI, std::string const name = "vazruden tank position boss") : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class VazrudenMarkBossAction : public Action
+{
+public:
+    VazrudenMarkBossAction(
+        PlayerbotAI* botAI, std::string const name = "vazruden mark boss") : Action(botAI, name) {}
     bool Execute(Event event) override;
 };
 

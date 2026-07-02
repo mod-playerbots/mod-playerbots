@@ -3,12 +3,12 @@
 * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License, or (at your option) any later version.
 */
 
-#ifndef PLAYERBOTS_HRACTIONCONTEXT_H
+#ifndef PLAYERBOTS_HFRACTIONCONTEXT_H
 #define PLAYERBOTS_HRACTIONCONTEXT_H
 
 #include "AiObjectContext.h"
 #include "Action.h"
-#include "HRActions.h"
+#include "HFRActions.h"
 
 class TbcDungeonHellfireRampartsActionContext : public NamedObjectContext<Action>
 {
@@ -35,6 +35,9 @@ public:
         // Vazruden
         creators["vazruden tank position boss"] =
             &TbcDungeonHellfireRampartsActionContext::vazruden_tank_position_boss;
+
+        creators["vazruden mark boss"] =
+            &TbcDungeonHellfireRampartsActionContext::vazruden_mark_boss;
     }
 private:
     // Watchkeeper Gargolmar
@@ -62,6 +65,10 @@ private:
     // Vazruden
     static Action* vazruden_tank_position_boss(PlayerbotAI* botAI) {
         return new VazrudenTankPositionBossAction(botAI);
+    }
+
+    static Action* vazruden_mark_boss(PlayerbotAI* botAI) {
+        return new VazrudenMarkBossAction(botAI);
     }
 
 };

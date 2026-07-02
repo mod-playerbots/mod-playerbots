@@ -3,8 +3,8 @@
 * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License, or (at your option) any later version.
 */
 
-#ifndef PLAYERBOTS_HRMULTIPLIERS_H
-#define PLAYERBOTS_HRMULTIPLIERS_H
+#ifndef PLAYERBOTS_HFRMULTIPLIERS_H
+#define PLAYERBOTS_HFRMULTIPLIERS_H
 
 #include "Multiplier.h"
 
@@ -19,6 +19,13 @@ class OmorTreacheryAuraFleeFromTankMultiplier : public Multiplier
 {
 public:
     OmorTreacheryAuraFleeFromTankMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "omor treachery aura flee from tank") {}
+    float GetValue(Action* action) override;
+};
+
+class VazrudenDisableTankAssistMultiplier : public Multiplier
+{
+public:
+    VazrudenDisableTankAssistMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "vazruden disable tank assist") {}
     float GetValue(Action* action) override;
 };
 

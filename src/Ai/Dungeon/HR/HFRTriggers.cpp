@@ -4,7 +4,7 @@
 */
 
 #include "Playerbots.h"
-#include "HRTriggers.h"
+#include "HFRTriggers.h"
 #include "AiObject.h"
 #include "AiObjectContext.h"
 #include "RaidBossHelpers.h"
@@ -61,5 +61,11 @@ bool OmorTankHasTreacheryAuraTrigger::IsActive()
 bool VazrudenTankPositionBossTrigger::IsActive()
 {
     return botAI->IsTank(bot) &&
+           AI_VALUE2(Unit*, "find target", "vazruden");
+}
+
+bool VazrudenBossIsActiveTrigger::IsActive()
+{
+    return botAI->IsDps(bot) &&
            AI_VALUE2(Unit*, "find target", "vazruden");
 }
