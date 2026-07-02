@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include <array>
 #include <cmath>
 #include <map>
@@ -809,16 +815,15 @@ bool IccRotfaceMoveAwayFromExplosionAction::Execute(Event /*event*/)
                 anchor.GetPositionY() + ESCAPE_RADIUS * std::sin(angle)};
     };
 
-    static std::map<std::pair<uint32, ObjectGuid>, int32> sExplosionSlotMemory;
-
     uint32 const instanceId = bot->GetMap()->GetInstanceId();
-    auto const myKey = std::make_pair(instanceId, bot->GetGUID());
+    auto& sExplosionSlotMemory = IcecrownHelpers::IccState(instanceId).rfExplosionSlotMemory;
+    auto const myKey = bot->GetGUID();
 
     // count how many OTHER bots in this instance occupy each slot
     std::array<int32, TOTAL_SLOTS> otherCount{};
     for (auto const& [key, slot] : sExplosionSlotMemory)
     {
-        if (key.first == instanceId && key.second != bot->GetGUID())
+        if (key != bot->GetGUID())
             ++otherCount[slot];
     }
 
@@ -900,14 +905,13 @@ bool IccRotfaceAvoidVileGasAction::Execute(Event /*event*/)
 {
     uint32 const now = getMSTime();
 
-    auto vgIt = IcecrownHelpers::rotfaceVileGas.find(bot->GetMap()->GetInstanceId());
+    IcecrownHelpers::IccInstanceState& st = IcecrownHelpers::IccState(bot->GetMap()->GetInstanceId());
     bool const isVictim =
-        vgIt != IcecrownHelpers::rotfaceVileGas.end() &&
-        vgIt->second.victimGuid == bot->GetGUID() &&
-        getMSTimeDiff(vgIt->second.castTime, now) < 8000;
+        st.rotfaceVileGas.victimGuid == bot->GetGUID() &&
+        getMSTimeDiff(st.rotfaceVileGas.castTime, now) < 8000;
     bool const hasAura = botAI->HasAura("Vile Gas", bot);
 
-    auto& waitMap = IcecrownHelpers::rotfaceVileGasWaitUntil;
+    auto& waitMap = st.rotfaceVileGasWaitUntil;
     auto waitIt = waitMap.find(bot->GetGUID());
     bool const inWait = waitIt != waitMap.end() && now < waitIt->second;
 

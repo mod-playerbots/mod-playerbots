@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include <unordered_map>
 #include <unordered_set>
 
@@ -17,19 +23,6 @@ namespace
 // How long (ms) all bots stay at a cloud before advancing to the next one.
 // This window lets every portal bot teleport in and collect the cloud together.
 constexpr uint32 CLOUD_SYNC_WAIT_MS = 1000;
-
-struct ValithriaCloudSync
-{
-    ObjectGuid targetCloudGuid;
-    uint32 moveOnAfterMs = 0;
-};
-
-std::unordered_map<uint32, ValithriaCloudSync> VdwCloudSync;  // key: map instance ID
-
-// Per-instance per-healer remembered portal claim. Other healers in the same
-// instance see these claims and avoid taking the same portal. Outer key is the
-// map instance ID so concurrent ICC raids don't share or evict each other's claims.
-std::unordered_map<uint32, std::unordered_map<ObjectGuid, ObjectGuid>> VdwPortalClaim;
 }
 
 bool IccValithriaGroupAction::Execute(Event /*event*/)
@@ -195,9 +188,8 @@ bool IccValithriaGroupAction::Execute(Event /*event*/)
     bool hasPortalClaim = false;
     if (botAI->IsHeal(bot))
     {
-        auto instanceIt = VdwPortalClaim.find(bot->GetMap()->GetInstanceId());
-        if (instanceIt != VdwPortalClaim.end() &&
-            instanceIt->second.find(bot->GetGUID()) != instanceIt->second.end())
+        auto& claims = IcecrownHelpers::IccState(bot->GetMap()->GetInstanceId()).vtPortalClaim;
+        if (claims.find(bot->GetGUID()) != claims.end())
             hasPortalClaim = true;
     }
     bool const hasZombieThreat = nearbyZombie && nearbyZombie->GetVictim() == bot;
@@ -738,7 +730,7 @@ bool IccValithriaPortalAction::Execute(Event /*event*/)
     // Scope eviction to this instance only - other ICC instances have their
     // own portal GUID universes and we must not erase their claims.
     uint32 const instanceId = bot->GetMap()->GetInstanceId();
-    auto& claims = VdwPortalClaim[instanceId];
+    auto& claims = IcecrownHelpers::IccState(instanceId).vtPortalClaim;
 
     std::unordered_set<ObjectGuid> livePortalGuids;
     for (Creature* p : preEffectPortals)
@@ -757,11 +749,7 @@ bool IccValithriaPortalAction::Execute(Event /*event*/)
     }
 
     if (preEffectPortals.empty() && realPortals.empty())
-    {
-        if (claims.empty())
-            VdwPortalClaim.erase(instanceId);
         return false;
-    }
 
     // Collect OTHER healers' claims so we never pick a portal already taken.
     std::unordered_set<ObjectGuid> reservedPortals;
@@ -985,7 +973,7 @@ bool IccValithriaDreamCloudAction::Execute(Event /*event*/)
     uint32 const instanceId = bot->GetInstanceId();
     uint32 const nowMs = getMSTime();
 
-    ValithriaCloudSync& sync = VdwCloudSync[instanceId];
+    IcecrownHelpers::ValithriaCloudSync& sync = IcecrownHelpers::IccState(instanceId).vtCloudSync;
 
     std::vector<Creature*> dreamClouds = CollectClouds(NPC_DREAM_CLOUD, leader);
     std::vector<Creature*> nightmareClouds = CollectClouds(NPC_NIGHTMARE_CLOUD, leader);
@@ -996,7 +984,7 @@ bool IccValithriaDreamCloudAction::Execute(Event /*event*/)
 
     if (allClouds.empty())
     {
-        VdwCloudSync.erase(instanceId);
+        sync = IcecrownHelpers::ValithriaCloudSync{};
         return false;
     }
 

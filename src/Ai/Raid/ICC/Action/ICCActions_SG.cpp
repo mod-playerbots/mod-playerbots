@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "ICCActions.h"
 #include <limits>
 #include "NearestNpcsValue.h"
@@ -9,6 +15,33 @@
 #include "GenericActions.h"
 #include "ICCTriggers.h"
 #include "Multiplier.h"
+
+namespace
+{
+bool SgMajorityLostMysticBuffet(Player* bot, PlayerbotAI* botAI)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return true;
+
+    uint32 total = 0;
+    uint32 without = 0;
+    for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+    {
+        Player* member = itr->GetSource();
+        if (!member || !member->IsAlive())
+            continue;
+        ++total;
+        if (!botAI->GetAura("mystic buffet", member))
+            ++without;
+    }
+
+    if (total == 0)
+        return true;
+
+    return static_cast<float>(without) / static_cast<float>(total) >= 0.6f;
+}
+}  // namespace
 
 bool IccSindragosaGroupPositionAction::Execute(Event /*event*/)
 {
@@ -146,17 +179,7 @@ bool IccSindragosaGroupPositionAction::HandleNonTankPositioning()
     if (totalMembers == 0)
         return false;
 
-    // Count members currently free of Mystic Buffet
-    uint32 membersWithoutAura = 0;
-    for (Player* member : raidMembers)
-    {
-        if (!botAI->GetAura("mystic buffet", member))
-            ++membersWithoutAura;
-    }
-
-    // Raid is considered "clear" when 60 % or more lack the debuff stack
-    float const percentageWithoutAura = static_cast<float>(membersWithoutAura) / static_cast<float>(totalMembers);
-    bool const raidClear = (percentageWithoutAura >= 0.6f);
+    bool const raidClear = SgMajorityLostMysticBuffet(bot, botAI);
 
     static constexpr std::array<uint32, 4> TombEntries = {NPC_TOMB1, NPC_TOMB2, NPC_TOMB3, NPC_TOMB4};
     static constexpr uint8 SKULL_ICON_INDEX = RtiTargetValue::skullIndex;
@@ -206,56 +229,82 @@ bool IccSindragosaGroupPositionAction::HandleNonTankPositioning()
 
     if (tankTomb)
     {
-        ObjectGuid const currentSkull = group->GetTargetIcon(SKULL_ICON_INDEX);
-        if (currentSkull != tankTomb->GetGUID())
-            group->SetTargetIcon(SKULL_ICON_INDEX, bot->GetGUID(), tankTomb->GetGUID());
+        IccEnsureIconOn(bot, botAI, SKULL_ICON_INDEX, tankTomb);
+        context->GetValue<std::string>("rti")->Set("skull");
     }
-    else if (raidClear && botAI->IsTank(bot))
+    else
     {
         GuidVector const tombGuids = AI_VALUE(GuidVector, "possible targets no los");
 
-        Unit* nearestTomb = nullptr;
-        float minDist = 150.0f;
-
+        std::vector<Unit*> tombs;
         for (uint32 const entry : TombEntries)
         {
             for (auto const& guid : tombGuids)
             {
                 Unit* unit = botAI->GetUnit(guid);
-                if (!unit || unit->GetEntry() != entry || !unit->IsAlive())
+                if (!unit || !unit->IsAlive() || unit->GetEntry() != entry)
                     continue;
+                tombs.push_back(unit);
+            }
+        }
+        std::sort(tombs.begin(), tombs.end(), [](Unit* a, Unit* b) { return a->GetGUID() < b->GetGUID(); });
+        if (tombs.size() > 3)
+            tombs.resize(3);
 
-                float const dist = bot->GetDistance(unit);
-                if (dist < minDist)
-                {
-                    minDist = dist;
-                    nearestTomb = unit;
-                }
+        size_t const tombCount = tombs.size();
+
+        if (raidClear && botAI->IsTank(bot))
+        {
+            if (tombCount == 0)
+            {
+                Unit* boss = AI_VALUE2(Unit*, "find target", "sindragosa");
+                if (boss && boss->IsAlive())
+                    IccEnsureIconOn(bot, botAI, SKULL_ICON_INDEX, boss);
+            }
+            else
+            {
+                for (size_t i = 0; i < tombCount; ++i)
+                    IccEnsureIconOn(bot, botAI, ICC_BUCKET_MARKERS[i].icon, tombs[i]);
+            }
+
+            for (size_t i = std::max<size_t>(tombCount, 1); i < 3; ++i)
+            {
+                int8 const icon = ICC_BUCKET_MARKERS[i].icon;
+                if (!group->GetTargetIcon(icon).IsEmpty())
+                    group->SetTargetIcon(icon, bot->GetGUID(), ObjectGuid::Empty);
             }
         }
 
-        // Prefer the nearest tomb; fall back to marking the boss itself
-        Unit* targetToMark = nearestTomb;
-        if (!targetToMark)
+        std::string rtiValue = "skull";
+        if (tombCount > 1 && !botAI->IsTank(bot) && !botAI->IsHeal(bot))
         {
-            Unit* boss = AI_VALUE2(Unit*, "find target", "sindragosa");
-            if (boss && boss->IsAlive())
-                targetToMark = boss;
+            std::vector<Player*> dpsPool;
+            for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+            {
+                Player* member = itr->GetSource();
+                if (!member || !member->IsAlive())
+                    continue;
+                PlayerbotAI* memberAI = sPlayerbotsMgr.GetPlayerbotAI(member);
+                if (!memberAI)
+                    continue;
+                if (memberAI->IsTank(member) || memberAI->IsHeal(member))
+                    continue;
+                dpsPool.push_back(member);
+            }
+            std::sort(dpsPool.begin(), dpsPool.end(),
+                      [](Player* a, Player* b) { return a->GetGUID() < b->GetGUID(); });
+
+            auto const it = std::find(dpsPool.begin(), dpsPool.end(), bot);
+            if (it != dpsPool.end())
+            {
+                size_t const myIndex = std::distance(dpsPool.begin(), it);
+                size_t const bucket = IccAssignedBucketIndex(myIndex, IccBalancedGroupSizes(dpsPool.size(), tombCount));
+                rtiValue = IccRtiNameForBucket(bucket);
+            }
         }
 
-        if (targetToMark)
-        {
-            ObjectGuid const currentSkull = group->GetTargetIcon(SKULL_ICON_INDEX);
-            Unit* const currentSkullUnit = botAI->GetUnit(currentSkull);
-            bool const needsUpdate =
-                !currentSkullUnit || !currentSkullUnit->IsAlive() || currentSkullUnit != targetToMark;
-
-            if (needsUpdate)
-                group->SetTargetIcon(SKULL_ICON_INDEX, bot->GetGUID(), targetToMark->GetGUID());
-        }
+        context->GetValue<std::string>("rti")->Set(rtiValue);
     }
-
-    context->GetValue<std::string>("rti")->Set("skull");
 
     if (botAI->IsRanged(bot))
     {
@@ -301,12 +350,13 @@ bool IccSindragosaFrostBeaconAction::TryDropTombFlares(Unit const* boss)
     // Phase tracking: clear flared sets on phase boundary so each phase gets fresh markers.
     // Keyed per-instance so concurrent ICC raids don't share phase state.
     uint32 const instanceId = bot->GetInstanceId();
+    IcecrownHelpers::IccInstanceState& sgState = IcecrownHelpers::IccState(instanceId);
     bool const phase3 = boss->HealthBelowPct(35);
-    bool& lastPhase3 = s_lastPhase3[instanceId];
+    bool& lastPhase3 = sgState.sgLastPhase3;
     if (phase3 != lastPhase3)
     {
-        s_flaredRedThisPhase[instanceId].clear();
-        s_flaredBluePhase3[instanceId] = false;
+        sgState.sgFlaredRedThisPhase.clear();
+        sgState.sgFlaredBluePhase3 = false;
         lastPhase3 = phase3;
     }
 
@@ -382,9 +432,9 @@ bool IccSindragosaFrostBeaconAction::TryDropTombFlares(Unit const* boss)
     auto const& [chosenIdx, chosenPos] = targets[mySlot];
 
     // Already flared by some bot — don't duplicate.
-    if (phase3 && s_flaredBluePhase3[instanceId])
+    if (phase3 && sgState.sgFlaredBluePhase3)
         return false;
-    if (!phase3 && s_flaredRedThisPhase[instanceId].count(chosenIdx))
+    if (!phase3 && sgState.sgFlaredRedThisPhase.count(chosenIdx))
         return false;
 
     // Skip if a tomb is already standing on this position.
@@ -431,9 +481,9 @@ bool IccSindragosaFrostBeaconAction::TryDropTombFlares(Unit const* boss)
 
     bot->GetSession()->HandleUseItemOpcode(packet);
     if (phase3)
-        s_flaredBluePhase3[instanceId] = true;
+        sgState.sgFlaredBluePhase3 = true;
     else
-        s_flaredRedThisPhase[instanceId].insert(chosenIdx);
+        sgState.sgFlaredRedThisPhase.insert(chosenIdx);
     return false;
 }
 
@@ -457,11 +507,6 @@ bool IccSindragosaTankSwapPositionAction::Execute(Event /*event*/)
 
     return false;
 }
-
-std::map<uint32, std::set<int>> IccSindragosaFrostBeaconAction::s_flaredRedThisPhase;
-std::map<uint32, bool> IccSindragosaFrostBeaconAction::s_flaredBluePhase3;
-std::map<uint32, bool> IccSindragosaFrostBeaconAction::s_lastPhase3;
-uint32 IccSindragosaFrostBeaconAction::s_nextFlareMs = 0;  // deprecated, kept for ABI of header
 
 bool IccSindragosaFrostBeaconAction::Execute(Event /*event*/)
 {
@@ -851,18 +896,21 @@ bool IccSindragosaMysticBuffetAction::Execute(Event /*event*/)
 
     if (shouldMoveLOS2)
     {
-        // If already at LOS2: instead of idling while stacks drop, DPS the LOS
-        // tomb down to MYSTIC_BUFFET_TOMB_STOP_HP_PCT so the wait isn't wasted.
-        // Single skull icon for the whole raid — pick the tomb with lowest GUID
-        // so every bot converges deterministically on the same target.
+        // At LOS2: hold fire until the majority of the raid has shed Mystic
+        // Buffet, then finish the tomb. Single skull for the whole raid, pick
+        // the lowest-GUID tomb so every bot converges on the same target.
         if (atLOS2 && aura && !botAI->IsHeal(bot))
         {
             constexpr uint8 SKULL_ICON = RtiTargetValue::skullIndex;
-            float MYSTIC_BUFFET_TOMB_STOP_HP_PCT = 50.0f;
-            Difficulty const diff = bot->GetRaidDifficulty();
 
-            if (diff && (diff == RAID_DIFFICULTY_10MAN_HEROIC))
-                MYSTIC_BUFFET_TOMB_STOP_HP_PCT = 90.0f;
+            if (!SgMajorityLostMysticBuffet(bot, botAI))
+            {
+                ObjectGuid const currentIcon = group->GetTargetIcon(SKULL_ICON);
+                if (!currentIcon.IsEmpty())
+                    group->SetTargetIcon(SKULL_ICON, bot->GetGUID(), ObjectGuid::Empty);
+                bot->AttackStop();
+                return true;
+            }
 
             Unit* tombToMark = nullptr;
             ObjectGuid bestGuid;
@@ -872,8 +920,6 @@ bool IccSindragosaMysticBuffetAction::Execute(Event /*event*/)
                 {
                     Unit* unit = botAI->GetUnit(guid);
                     if (!unit || !unit->IsAlive() || unit->GetEntry() != entry)
-                        continue;
-                    if (unit->GetHealthPct() <= MYSTIC_BUFFET_TOMB_STOP_HP_PCT)
                         continue;
                     if (!tombToMark || unit->GetGUID() < bestGuid)
                     {
@@ -909,12 +955,6 @@ bool IccSindragosaMysticBuffetAction::Execute(Event /*event*/)
     return false;
 }
 
-std::map<std::pair<uint32, ObjectGuid>, int> IccSindragosaFrostBombAction::s_groupAssignments;
-std::map<std::pair<uint32, ObjectGuid>, ObjectGuid> IccSindragosaFrostBombAction::s_tombAssignments;
-std::set<std::pair<uint32, ObjectGuid>> IccSindragosaFrostBombAction::s_freedFallback;
-std::map<std::pair<uint32, ObjectGuid>, IccSindragosaFrostBombAction::LastLosMove>
-    IccSindragosaFrostBombAction::s_lastLosMove;
-
 bool IccSindragosaFrostBombAction::Execute(Event /*event*/)
 {
     if (!bot || !bot->IsAlive())
@@ -924,10 +964,12 @@ bool IccSindragosaFrostBombAction::Execute(Event /*event*/)
     if (!group)
         return false;
 
+    IcecrownHelpers::IccInstanceState& sgState = IcecrownHelpers::IccState(bot->GetInstanceId());
+
     if (bot->HasAura(SPELL_ICE_TOMB))
     {
         PinGroupToCurrentZone();
-        s_freedFallback.insert(std::make_pair(bot->GetInstanceId(), bot->GetGUID()));
+        sgState.sgFreedFallback.insert(bot->GetGUID());
         return false;
     }
 
@@ -1060,7 +1102,7 @@ bool IccSindragosaFrostBombAction::Execute(Event /*event*/)
     {
         // Freed-from-tomb fallback: hide behind the nearest alive tomb anywhere
         // in the arena rather than running across to our pinned zone anchor.
-        if (s_freedFallback.count(std::make_pair(bot->GetInstanceId(), bot->GetGUID())))
+        if (sgState.sgFreedFallback.count(bot->GetGUID()))
         {
             Unit* nearest = nullptr;
             float minDist = std::numeric_limits<float>::max();
@@ -1110,8 +1152,8 @@ bool IccSindragosaFrostBombAction::Execute(Event /*event*/)
     }
 
     // Pinned zone has tombs again — exit fallback mode
-    auto const losKey = std::make_pair(bot->GetInstanceId(), bot->GetGUID());
-    s_freedFallback.erase(losKey);
+    ObjectGuid const losKey = bot->GetGUID();
+    sgState.sgFreedFallback.erase(losKey);
 
     Unit* losTomb = ResolveStickyTomb(myTombs);
     if (!losTomb)
@@ -1119,8 +1161,8 @@ bool IccSindragosaFrostBombAction::Execute(Event /*event*/)
         // LOS tomb died / lost mark mid-walk. If we recently issued an LOS
         // move, replay it for up to 2 seconds so the bot finishes its path
         // instead of freezing in the open until the next valid sticky tomb.
-        auto it = s_lastLosMove.find(losKey);
-        if (it != s_lastLosMove.end())
+        auto it = sgState.sgLastLosMove.find(losKey);
+        if (it != sgState.sgLastLosMove.end())
         {
             uint32 const now = getMSTime();
             if (getMSTimeDiff(it->second.timestampMs, now) <= 2000 &&
@@ -1131,7 +1173,7 @@ bool IccSindragosaFrostBombAction::Execute(Event /*event*/)
                 return MoveTo(bot->GetMapId(), it->second.x, it->second.y, it->second.z,
                               false, false, false, true, MovementPriority::MOVEMENT_FORCED);
             }
-            s_lastLosMove.erase(it);
+            sgState.sgLastLosMove.erase(it);
         }
         return false;
     }
@@ -1153,7 +1195,7 @@ bool IccSindragosaFrostBombAction::Execute(Event /*event*/)
 
         // Stamp this LOS move so we can replay it for up to 2 seconds if the
         // tomb dies/loses mark before we arrive.
-        LastLosMove& stamp = s_lastLosMove[losKey];
+        IcecrownHelpers::LastLosMove& stamp = sgState.sgLastLosMove[losKey];
         stamp.timestampMs = getMSTime();
         stamp.x = posX;
         stamp.y = posY;
@@ -1163,7 +1205,7 @@ bool IccSindragosaFrostBombAction::Execute(Event /*event*/)
     }
 
     // Reached LOS spot — clear the replay stamp.
-    s_lastLosMove.erase(losKey);
+    sgState.sgLastLosMove.erase(losKey);
 
     // Bot is parked at LOS spot. Face away from the LOS tomb only when our
     // zone has no kill-candidates left (every remaining tomb is protected).
@@ -1216,6 +1258,7 @@ int IccSindragosaFrostBombAction::ResolveGroupIndex(Group* group) const
     // Real players are excluded so they are never assigned a group index and
     // never become the designated marker; only bots manage icons.
     uint32 const instanceId = bot->GetInstanceId();
+    auto& s_groupAssignments = IcecrownHelpers::IccState(instanceId).sgGroupAssignments;
     std::vector<ObjectGuid> currentGuids;
     for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
     {
@@ -1235,25 +1278,23 @@ int IccSindragosaFrostBombAction::ResolveGroupIndex(Group* group) const
     // and don't trigger a full reshuffle that migrates other bots.
     for (ObjectGuid const& guid : currentGuids)
     {
-        auto const key = std::make_pair(instanceId, guid);
-        if (s_groupAssignments.find(key) == s_groupAssignments.end())
+        if (s_groupAssignments.find(guid) == s_groupAssignments.end())
         {
-            // Assign to the group with the fewest members so far (this instance only)
             std::array<int, 3> counts = {};
-            for (auto const& [k, idx] : s_groupAssignments)
-                if (k.first == instanceId && idx < groupCount)
-                    ++counts[idx];
+            for (auto const& assign : s_groupAssignments)
+                if (assign.second < groupCount)
+                    ++counts[assign.second];
 
             int minGroup = 0;
             for (int g = 1; g < groupCount; ++g)
                 if (counts[g] < counts[minGroup])
                     minGroup = g;
 
-            s_groupAssignments[key] = minGroup;
+            s_groupAssignments[guid] = minGroup;
         }
     }
 
-    auto it = s_groupAssignments.find(std::make_pair(instanceId, bot->GetGUID()));
+    auto it = s_groupAssignments.find(bot->GetGUID());
     return it != s_groupAssignments.end() ? it->second : -1;
 }
 
@@ -1340,7 +1381,7 @@ void IccSindragosaFrostBombAction::PinGroupToCurrentZone()
         }
     }
 
-    s_groupAssignments[std::make_pair(bot->GetInstanceId(), bot->GetGUID())] = bestGroup;
+    IcecrownHelpers::IccState(bot->GetInstanceId()).sgGroupAssignments[bot->GetGUID()] = bestGroup;
 }
 
 std::vector<Unit*> IccSindragosaFrostBombAction::SelectTombs(std::vector<Unit*> const& tombs, int groupIndex, int groupCount) const
@@ -1388,7 +1429,8 @@ Unit* IccSindragosaFrostBombAction::ResolveStickyTomb(std::vector<Unit*> const& 
     // Keep the previously assigned tomb while it is still a valid member of
     // this group's zone. This avoids the cascading reassignment where a tomb's
     // HP fluctuation causes every bot to flip to a different LOS spot each tick.
-    auto const key = std::make_pair(bot->GetInstanceId(), bot->GetGUID());
+    auto& s_tombAssignments = IcecrownHelpers::IccState(bot->GetInstanceId()).sgTombAssignments;
+    ObjectGuid const key = bot->GetGUID();
     auto it = s_tombAssignments.find(key);
     if (it != s_tombAssignments.end())
     {

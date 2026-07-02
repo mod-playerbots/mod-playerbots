@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 
 #include "GenericActions.h"
 #include "GenericSpellActions.h"
@@ -184,8 +190,8 @@ bool IccDbsTankPositionAction::PositionInRangedFormation()
 
     // Persistent per-bot slot memory shared across all bots.
     // Keyed per-instance to avoid cross-instance pollution.
-    static std::map<std::pair<uint32, ObjectGuid>, int> botSlotMemory;
-    auto myKey = std::make_pair(dbsInstanceId, bot->GetGUID());
+    auto& botSlotMemory = IcecrownHelpers::IccState(dbsInstanceId).dbsBotSlotMemory;
+    ObjectGuid myKey = bot->GetGUID();
 
     // Single pass: collect natural index (alive ranged/healer non-tank order)
     // and other bots' reserved slots.
@@ -201,7 +207,7 @@ bool IccDbsTankPositionAction::PositionInRangedFormation()
 
         if (member != bot)
         {
-            auto it = botSlotMemory.find(std::make_pair(dbsInstanceId, member->GetGUID()));
+            auto it = botSlotMemory.find(member->GetGUID());
             if (it != botSlotMemory.end() && it->second >= 0 && it->second < totalSlots)
                 reservedSlots.push_back(it->second);
         }

@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "ICCTriggers.h"
 #include "ICCActions.h"
 #include "NearestNpcsValue.h"
@@ -211,34 +217,30 @@ bool IccFestergutAvoidMalleableGooTrigger::IsActive()
     float botY = bot->GetPositionY();
     ObjectGuid botGuid = bot->GetGUID();
 
-    auto impactIt = IcecrownHelpers::malleableGooImpacts.find(bot->GetMap()->GetInstanceId());
-    if (impactIt != IcecrownHelpers::malleableGooImpacts.end())
+    IcecrownHelpers::IccInstanceState& st = IcecrownHelpers::IccState(bot->GetMap()->GetInstanceId());
+
+    for (auto const& impact : st.malleableGoo)
     {
-        for (auto const& impact : impactIt->second)
+        if (getMSTimeDiff(impact.castTime, now) > impactLifetimeMs)
+            continue;
+        float dx = botX - impact.position.GetPositionX();
+        float dy = botY - impact.position.GetPositionY();
+        if (dx * dx + dy * dy < gooDangerRadius * gooDangerRadius)
         {
-            if (getMSTimeDiff(impact.castTime, now) > impactLifetimeMs)
-                continue;
-            float dx = botX - impact.position.GetPositionX();
-            float dy = botY - impact.position.GetPositionY();
-            if (dx * dx + dy * dy < gooDangerRadius * gooDangerRadius)
-            {
-                // Lock bot into wait mode until this impact expires - prevents
-                // group-position from yanking it back into the danger zone.
-                uint32 waitUntil = impact.castTime + impactLifetimeMs;
-                auto& slot = IcecrownHelpers::festergutGooWaitUntil[botGuid];
-                if (waitUntil > slot)
-                    slot = waitUntil;
-                return true;
-            }
+            uint32 waitUntil = impact.castTime + impactLifetimeMs;
+            auto& slot = st.festergutGooWaitUntil[botGuid];
+            if (waitUntil > slot)
+                slot = waitUntil;
+            return true;
         }
     }
 
-    auto it = IcecrownHelpers::festergutGooWaitUntil.find(botGuid);
-    if (it != IcecrownHelpers::festergutGooWaitUntil.end())
+    auto it = st.festergutGooWaitUntil.find(botGuid);
+    if (it != st.festergutGooWaitUntil.end())
     {
         if (now < it->second)
             return true;
-        IcecrownHelpers::festergutGooWaitUntil.erase(it);
+        st.festergutGooWaitUntil.erase(it);
     }
 
     return false;
@@ -302,18 +304,17 @@ bool IccRotfaceAvoidVileGasTrigger::IsActive()
 
     uint32 const now = getMSTime();
 
-    auto vgIt = IcecrownHelpers::rotfaceVileGas.find(bot->GetMap()->GetInstanceId());
+    IcecrownHelpers::IccInstanceState& st = IcecrownHelpers::IccState(bot->GetMap()->GetInstanceId());
     bool const isVictim =
-        vgIt != IcecrownHelpers::rotfaceVileGas.end() &&
-        vgIt->second.victimGuid == bot->GetGUID() &&
-        getMSTimeDiff(vgIt->second.castTime, now) < 8000;
+        st.rotfaceVileGas.victimGuid == bot->GetGUID() &&
+        getMSTimeDiff(st.rotfaceVileGas.castTime, now) < 8000;
     if (isVictim)
         return true;
 
     if (botAI->HasAura("Vile Gas", bot))
         return true;
 
-    auto const& waitMap = IcecrownHelpers::rotfaceVileGasWaitUntil;
+    auto const& waitMap = st.rotfaceVileGasWaitUntil;
     auto it = waitMap.find(bot->GetGUID());
     if (it != waitMap.end() && now < it->second)
         return true;
@@ -564,6 +565,9 @@ bool IccBpcKineticBombTrigger::IsActive()
 
 bool IccBpcBallOfFlameTrigger::IsActive()
 {
+    if (botAI->IsTank(bot))
+        return false;
+
     Unit* valanar = AI_VALUE2(Unit*, "find target", "prince valanar");
     Unit* taldaram = AI_VALUE2(Unit*, "find target", "prince taldaram");
     Unit* keleseth = AI_VALUE2(Unit*, "find target", "prince keleseth");
@@ -1128,8 +1132,7 @@ bool IccLichKingAddsTrigger::IsActive()
         bot->FindNearestCreature(NPC_TERENAS_MENETHIL, 55.0f))
         return true;
 
-    Unit* lk = AI_VALUE2(Unit*, "find target", "the lich king");
-    if (!lk)
+    if (!bot->FindNearestCreature(NPC_THE_LICH_KING, 100.0f))
         return false;
 
     return true;

@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "Multiplier.h"
@@ -12,17 +18,6 @@
 #include <fstream>
 #include <ctime>
 #include <limits>
-#include <unordered_map>
-
-namespace
-{
-    // Per-bot last flee direction during Gaseous Bloat. Used to prevent
-    // backtracking — once a bot commits to a direction, candidate angles
-    // pointing backward (negative dot product) are rejected so the cloud
-    // can't trap it in a back-and-forth loop. Cleared when the aura drops.
-    struct BloatDir { float x; float y; };
-    std::unordered_map<uint64, BloatDir> g_bloatLastDir;
-}
 
 // Professor Putricide
 bool IccPutricideMutatedPlagueAction::Execute(Event /*event*/)
@@ -700,15 +695,17 @@ bool IccPutricideGasCloudAction::Execute(Event /*event*/)
 
 bool IccPutricideGasCloudAction::HandleGaseousBloatMovement(Unit* gasCloud)
 {
+    auto& g_bloatLastDir = IcecrownHelpers::IccState(bot->GetMap()->GetInstanceId()).ppBloatLastDir;
+
     if (!botAI->HasAura("Gaseous Bloat", bot))
     {
-        g_bloatLastDir.erase(bot->GetGUID().GetRawValue());
+        g_bloatLastDir.erase(bot->GetGUID());
         return false;
     }
 
     // Lookup prior committed flee direction (if any) so we can reject
     // backtracking candidates this tick.
-    uint64 botKey = bot->GetGUID().GetRawValue();
+    ObjectGuid botKey = bot->GetGUID();
     auto lastDirIt = g_bloatLastDir.find(botKey);
     bool hasLastDir = lastDirIt != g_bloatLastDir.end();
     float lastDirX = hasLastDir ? lastDirIt->second.x : 0.0f;

@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "ICCActions.h"
 #include "NearestNpcsValue.h"
 #include "ObjectAccessor.h"
@@ -165,30 +171,9 @@ bool IccBpcMainTankAction::Execute(Event /*event*/)
         Attack(taldaram);
     }
 
-    // Taunt nearby hostile adds not targeting a tank
-    GuidVector const npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
-    for (auto const& npc : npcs)
-    {
-        Unit* unit = botAI->GetUnit(npc);
-        if (!unit || !unit->IsAlive())
-            continue;
-
-        if (unit->GetEntry() == NPC_PRINCE_KELESETH || unit->GetEntry() == NPC_PRINCE_VALANAR ||
-            unit->GetEntry() == NPC_PRINCE_TALDARAM || unit->GetEntry() == NPC_DARK_NUCLEUS)
-            continue;
-
-        static float const ADD_TAUNT_RANGE = 20.0f;
-        if (bot->GetDistance2d(unit) > ADD_TAUNT_RANGE)
-            continue;
-
-        Unit* victim = unit->GetVictim();
-        Player* victimPlayer = victim ? victim->ToPlayer() : nullptr;
-        if (!victimPlayer || !botAI->IsTank(victimPlayer))
-        {
-            IccCastClassTaunt(bot, botAI, unit);
-            break;
-        }
-    }
+    // Only the princes are tanked here (Dark Nuclei are handled by the Keleseth tank).
+    // Never taunt other hostile NPCs: threat/fixate bypasses taunt immunity and would
+    // lock a Ball of Flame / Kinetic Bomb onto the tank, breaking that mechanic.
 
     // Target marking for all tanks, called after main tank priority actions
     if (botAI->IsTank(bot))
@@ -231,12 +216,17 @@ bool IccBpcMainTankAction::MarkEmpoweredPrince()
             ObjectGuid const currentSkullGuid = group->GetTargetIcon(SKULL_RAID_ICON);
             Unit* markedUnit = botAI->GetUnit(currentSkullGuid);
 
-            // Clear dead marks or marks that are not on empowered prince
+            // Clear dead marks or marks that are not on empowered prince. Null out
+            // markedUnit here too - otherwise the check below still sees the stale
+            // guid/unit from before the clear and skips re-marking for a full tick.
             if (markedUnit && (!markedUnit->IsAlive() || markedUnit != empoweredPrince))
+            {
                 group->SetTargetIcon(SKULL_RAID_ICON, bot->GetGUID(), ObjectGuid::Empty);
+                markedUnit = nullptr;
+            }
 
             // Mark alive empowered prince if needed
-            if (!currentSkullGuid || !markedUnit)
+            if (!markedUnit)
                 group->SetTargetIcon(SKULL_RAID_ICON, bot->GetGUID(), empoweredPrince->GetGUID());
         }
     }
@@ -400,7 +390,7 @@ bool IccBpcEmpoweredVortexAction::MaintainRangedSpacing()
 
 bool IccBpcEmpoweredVortexAction::HandleEmpoweredVortexSpread()
 {
-    static std::map<std::pair<uint32, ObjectGuid>, uint32> spreadLockTimers;
+    auto& spreadLockTimers = IcecrownHelpers::IccState(bot->GetInstanceId()).bpcSpreadLockTimers;
     static uint32 const SPREAD_LOCK_DURATION_MS = 250;
     static float const MOVE_INCREMENT = 4.0f;
     static float const SLOT_TOLERANCE = 2.0f;
@@ -425,8 +415,7 @@ bool IccBpcEmpoweredVortexAction::HandleEmpoweredVortexSpread()
             ++it;
     }
 
-    uint32 const instanceId = bot->GetInstanceId();
-    auto it = spreadLockTimers.find({instanceId, bot->GetGUID()});
+    auto it = spreadLockTimers.find(bot->GetGUID());
     if (it != spreadLockTimers.end())
         return false;
 
@@ -532,7 +521,7 @@ bool IccBpcEmpoweredVortexAction::HandleEmpoweredVortexSpread()
     // Close enough to slot — lock position
     if (distToSlot <= SLOT_TOLERANCE)
     {
-        spreadLockTimers[{instanceId, bot->GetGUID()}] = now;
+        spreadLockTimers[bot->GetGUID()] = now;
         return false;
     }
 

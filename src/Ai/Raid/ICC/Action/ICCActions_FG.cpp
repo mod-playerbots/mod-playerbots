@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "Multiplier.h"
@@ -10,7 +16,6 @@
 #include "RtiValue.h"
 #include "Vehicle.h"
 #include <limits>
-#include <unordered_map>
 
 // Festergut
 bool IccFestergutGroupPositionAction::Execute(Event /*event*/)
@@ -243,9 +248,7 @@ Position IccFestergutSporeAction::CalculateSpreadPosition()
     // runs while the spore trigger is active, so a gap >2s between calls
     // means the cycle ended - reset to the primary slot for the next cycle.
     // State is keyed by instance ID so concurrent ICC raids don't share slots.
-    struct SpreadSlotState { uint32 lastCallMs = 0; int currentSlot = 1; };
-    static std::unordered_map<uint32, SpreadSlotState> s_slotState;
-    SpreadSlotState& state = s_slotState[bot->GetMap()->GetInstanceId()];
+    IcecrownHelpers::SpreadSlotState& state = IcecrownHelpers::IccState(bot->GetMap()->GetInstanceId()).fgSlotState;
 
     uint32 now = getMSTime();
     if (state.lastCallMs == 0 || now - state.lastCallMs > cycleIdleResetMs)

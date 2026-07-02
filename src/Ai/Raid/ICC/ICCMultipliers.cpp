@@ -1,5 +1,12 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "ICCMultipliers.h"
 
+#include "AttackAction.h"
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidActions.h"
@@ -21,13 +28,6 @@
 #include "PlayerbotAI.h"
 #include "ICCTriggers.h"
 #include "ICCScripts.h"
-
-// LK global variables
-namespace
-{
-std::map<ObjectGuid, uint32> g_plagueTimes;
-std::map<ObjectGuid, bool> g_allowCure;
-}
 
 // Lady Deathwhisper
 float IccLadyDeathwhisperMultiplier::GetValue(Action* action)
@@ -224,7 +224,7 @@ float IccFestergutMultiplier::GetValue(Action* action)
     // keep DPS/heal rotations running without drifting back into the impact.
     // Avoid action itself is whitelisted (may still need to dodge new goos).
     {
-        auto const& waitMap = IcecrownHelpers::festergutGooWaitUntil;
+        auto const& waitMap = IcecrownHelpers::IccState(bot->GetMap()->GetInstanceId()).festergutGooWaitUntil;
         auto it = waitMap.find(bot->GetGUID());
         if (it != waitMap.end() && getMSTime() < it->second)
         {
@@ -248,14 +248,13 @@ float IccRotfaceMultiplier::GetValue(Action* action)
 
     {
         uint32 const now = getMSTime();
-        auto const& waitMap = IcecrownHelpers::rotfaceVileGasWaitUntil;
+        IcecrownHelpers::IccInstanceState& st = IcecrownHelpers::IccState(bot->GetMap()->GetInstanceId());
+        auto const& waitMap = st.rotfaceVileGasWaitUntil;
         auto it = waitMap.find(bot->GetGUID());
         bool const inWait = it != waitMap.end() && now < it->second;
-        auto vgIt = IcecrownHelpers::rotfaceVileGas.find(bot->GetMap()->GetInstanceId());
         bool const isVictim =
-            vgIt != IcecrownHelpers::rotfaceVileGas.end() &&
-            vgIt->second.victimGuid == bot->GetGUID() &&
-            getMSTimeDiff(vgIt->second.castTime, now) < 8000;
+            st.rotfaceVileGas.victimGuid == bot->GetGUID() &&
+            getMSTimeDiff(st.rotfaceVileGas.castTime, now) < 8000;
 
         if (isVictim || inWait || botAI->HasAura("Vile Gas", bot))
         {
@@ -561,18 +560,26 @@ float IccBpcAssistMultiplier::GetValue(Action* action)
             return 0.0f;
     }
 
-    // Shadow prison movement block (non-bomb bots use normal 12 stack limit)
+    // Shadow prison movement block (non-bomb bots use normal 12 stack limit).
+    // AttackAction derives from MovementAction, so it must be excluded here or
+    // bots stop attacking entirely (not just repositioning) once stacked high.
+    // ReachTargetAction (and ReachMeleeAction, which derives from it) is what
+    // actually walks a ranged/caster bot into range of a new target - Attack()
+    // alone does not move them - so it must be excluded too or they can never
+    // close distance on a newly marked target while stacked.
     if (aura)
     {
         if (aura->GetStackAmount() > 18 && botAI->IsTank(bot))
         {
-            if (dynamic_cast<MovementAction*>(action))
+            if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
+                !dynamic_cast<ReachTargetAction*>(action))
                 return 0.0f;
         }
 
         if (aura->GetStackAmount() > 12 && !botAI->IsTank(bot))
         {
-            if (dynamic_cast<MovementAction*>(action))
+            if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
+                !dynamic_cast<ReachTargetAction*>(action))
                 return 0.0f;
         }
     }

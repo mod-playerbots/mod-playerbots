@@ -1,9 +1,16 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "ICCShared.h"
 
 #include <algorithm>
 #include <map>
 
 #include "ICCActions.h"
+#include "ICCScripts.h"
 #include "ICCTriggers.h"
 #include "Playerbots.h"
 #include "ThreatManager.h"
@@ -11,8 +18,6 @@
 
 namespace
 {
-    std::map<ObjectGuid, uint32> s_lastTauntMs;
-
     std::vector<Creature*> IccGetCreaturesByEntry(WorldObject* searcher, uint32 entry, float range)
     {
         std::list<Creature*> raw;
@@ -49,7 +54,7 @@ bool IccCastClassTaunt(Player* bot, PlayerbotAI* botAI, Unit* target)
         return false;
 
     uint32 const now = getMSTime();
-    uint32& last = s_lastTauntMs[bot->GetGUID()];
+    uint32& last = IcecrownHelpers::IccState(bot->GetInstanceId()).lastTauntMs[bot->GetGUID()];
     if (last != 0 && getMSTimeDiff(last, now) < 500)
         return false;
     last = now;
@@ -104,53 +109,32 @@ std::optional<bool> IccTryClassCC(Player* bot, PlayerbotAI* botAI, Unit* target)
     if (!target || !target->IsAlive())
         return std::nullopt;
 
+    char const* spell = nullptr;
     switch (bot->getClass())
     {
-        case CLASS_MAGE:
-            if (!botAI->HasAura("Frost Nova", target))
-                return botAI->CastSpell("Frost Nova", target);
-            break;
-        case CLASS_DRUID:
-            if (!botAI->HasAura("Entangling Roots", target))
-                return botAI->CastSpell("Entangling Roots", target);
-            break;
-        case CLASS_PALADIN:
-            if (!botAI->HasAura("Hammer of Justice", target))
-                return botAI->CastSpell("Hammer of Justice", target);
-            break;
-        case CLASS_WARRIOR:
-            if (!botAI->HasAura("Hamstring", target))
-                return botAI->CastSpell("Hamstring", target);
-            break;
-        case CLASS_HUNTER:
-            if (!botAI->HasAura("Concussive Shot", target))
-                return botAI->CastSpell("Concussive Shot", target);
-            break;
-        case CLASS_ROGUE:
-            if (!botAI->HasAura("Kidney Shot", target))
-                return botAI->CastSpell("Kidney Shot", target);
-            break;
-        case CLASS_SHAMAN:
-            if (!botAI->HasAura("Frost Shock", target))
-                return botAI->CastSpell("Frost Shock", target);
-            break;
-        case CLASS_DEATH_KNIGHT:
-            if (!botAI->HasAura("Chains of Ice", target))
-                return botAI->CastSpell("Chains of Ice", target);
-            break;
-        case CLASS_PRIEST:
-            if (!botAI->HasAura("Psychic Scream", target))
-                return botAI->CastSpell("Psychic Scream", target);
-            break;
-        case CLASS_WARLOCK:
-            if (!botAI->HasAura("Fear", target))
-                return botAI->CastSpell("Fear", target);
-            break;
-        default:
-            break;
+        case CLASS_MAGE:         spell = "Frost Nova"; break;
+        case CLASS_DRUID:        spell = "Entangling Roots"; break;
+        case CLASS_PALADIN:      spell = "Hammer of Justice"; break;
+        case CLASS_WARRIOR:      spell = "Hamstring"; break;
+        case CLASS_HUNTER:       spell = "Concussive Shot"; break;
+        case CLASS_ROGUE:        spell = "Kidney Shot"; break;
+        case CLASS_SHAMAN:       spell = "Frost Shock"; break;
+        case CLASS_DEATH_KNIGHT: spell = "Chains of Ice"; break;
+        case CLASS_PRIEST:       spell = "Psychic Scream"; break;
+        case CLASS_WARLOCK:      spell = "Fear"; break;
+        default:                 return std::nullopt;
     }
 
-    return std::nullopt;
+    if (botAI->HasAura(spell, target))
+        return std::nullopt;
+
+    uint32 const now = getMSTime();
+    uint32& last = IcecrownHelpers::IccState(bot->GetInstanceId()).lastCcMs[bot->GetGUID()];
+    if (last != 0 && getMSTimeDiff(last, now) < 500)
+        return std::nullopt;
+    last = now;
+
+    return botAI->CastSpell(spell, target);
 }
 
 void IccEnsureIconOn(Player* bot, PlayerbotAI* botAI, int8 icon, Unit* target)
@@ -169,6 +153,12 @@ void IccEnsureIconOn(Player* bot, PlayerbotAI* botAI, int8 icon, Unit* target)
 
 void IccApplyHeroicBuffToMember(PlayerbotAI* botAI, Player* member, bool applyPainSupp, bool applyNoThreat)
 {
+    uint32 const now = getMSTime();
+    uint32& last = IcecrownHelpers::IccState(member->GetInstanceId()).lastBuffMs[member->GetGUID()];
+    if (last != 0 && getMSTimeDiff(last, now) < 500)
+        return;
+    last = now;
+
     if (!member->HasAura(SPELL_EXPERIENCED))
         member->AddAura(SPELL_EXPERIENCED, member);
 

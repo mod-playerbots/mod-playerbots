@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "ICCActions.h"
 #include "NearestNpcsValue.h"
 #include "ObjectAccessor.h"
@@ -80,8 +86,8 @@ bool IccBqlGroupPositionAction::HandleShadowsMovement()
 
     // Track current curve to avoid unnecessary switching (keyed per-instance to avoid
     // cross-instance pollution when multiple ICCs run simultaneously)
-    static std::map<std::pair<uint32, ObjectGuid>, int> botCurrentCurve;
-    auto curveKey = std::make_pair(bot->GetInstanceId(), bot->GetGUID());
+    auto& botCurrentCurve = IcecrownHelpers::IccState(bot->GetInstanceId()).bqlBotCurrentCurve;
+    ObjectGuid curveKey = bot->GetGUID();
     int currentCurve = botCurrentCurve.count(curveKey) ? botCurrentCurve[curveKey] : 0;
 
     // Find closest wall path
@@ -497,17 +503,14 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
     // established). Prevents false-trigger at pull when boss comes near center.
     // Disarm when boss returns to tank pos (ground phase resumed after landing).
     // Keyed per-instance so concurrent ICC raids don't share the latch.
-    static std::map<uint32, bool> groundPhaseEstablishedByInstance;
-    // Tracks airborne state on the previous tick, so we can detect the air->ground edge.
-    static std::map<uint32, bool> bossWasAirborneByInstance;
     // Armed when boss lands from air, disarmed when boss returns to tank pos.
     // While armed, bots skip the pre-air center stack so they don't bunch up at center
     // during the post-air walk-back and die to lingering AoE.
-    static std::map<uint32, bool> postAirLandingByInstance;
     uint32 instanceId = bot->GetInstanceId();
-    bool& groundPhaseEstablished = groundPhaseEstablishedByInstance[instanceId];
-    bool& wasAirborne = bossWasAirborneByInstance[instanceId];
-    bool& postAirLanding = postAirLandingByInstance[instanceId];
+    IcecrownHelpers::IccInstanceState& bqlState = IcecrownHelpers::IccState(instanceId);
+    bool& groundPhaseEstablished = bqlState.bqlGroundPhaseEstablished;
+    bool& wasAirborne = bqlState.bqlBossWasAirborne;
+    bool& postAirLanding = bqlState.bqlPostAirLanding;
     float bossFromTank = boss->GetExactDist2d(ICC_BQL_TANK_POSITION);
     float bossFromCenter = boss->GetExactDist2d(ICC_BQL_CENTER_POSITION);
     bool bossAirborne = (boss->GetPositionZ() - ICC_BQL_CENTER_POSITION.GetPositionZ()) > 5.0f;
@@ -708,15 +711,15 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
 
         // Persistent memory separate from ground phase (different slot sets).
         // Keyed per-instance to avoid cross-instance pollution.
-        static std::map<std::pair<uint32, ObjectGuid>, int> airSlotMemory;
         uint32 const airInstanceId = bot->GetInstanceId();
+        auto& airSlotMemory = IcecrownHelpers::IccState(airInstanceId).bqlAirSlotMemory;
 
         std::vector<int> reservedSlots;
         for (Player* rp : roster)
         {
             if (rp == bot)
                 continue;
-            auto it = airSlotMemory.find(std::make_pair(airInstanceId, rp->GetGUID()));
+            auto it = airSlotMemory.find(rp->GetGUID());
             if (it != airSlotMemory.end() && it->second >= 0 && it->second < totalSlots)
                 reservedSlots.push_back(it->second);
         }
@@ -728,7 +731,7 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
         bool botInShadow = IsInShadow(bot->GetPositionX(), bot->GetPositionY());
 
         int myAssignedSlot = -1;
-        auto myAirKey = std::make_pair(airInstanceId, bot->GetGUID());
+        ObjectGuid myAirKey = bot->GetGUID();
 
         auto myMemIt = airSlotMemory.find(myAirKey);
         if (myMemIt != airSlotMemory.end())
@@ -938,8 +941,8 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
 
         // Persistent per-bot slot memory shared across all bots.
         // Keyed per-instance to avoid cross-instance pollution.
-        static std::map<std::pair<uint32, ObjectGuid>, int> botSlotMemory;
         uint32 const groundInstanceId = bot->GetInstanceId();
+        auto& botSlotMemory = IcecrownHelpers::IccState(groundInstanceId).bqlBotSlotMemory;
 
         // Collect every OTHER bot's remembered slot as "reserved" — each bot owns its own
         // memory and we must respect their claim, even if we can't see the same shadows.
@@ -949,7 +952,7 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
         {
             if (rp == bot)
                 continue;
-            auto it = botSlotMemory.find(std::make_pair(groundInstanceId, rp->GetGUID()));
+            auto it = botSlotMemory.find(rp->GetGUID());
             if (it != botSlotMemory.end() && it->second >= 0 && it->second < totalSlots)
                 reservedSlots.push_back(it->second);
         }
@@ -961,7 +964,7 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
 
         int myAssignedSlot = -1;
         bool myFellBack = false;
-        auto myGroundKey = std::make_pair(groundInstanceId, bot->GetGUID());
+        ObjectGuid myGroundKey = bot->GetGUID();
 
         // Step 1: keep my remembered slot if still safe and not reserved by someone else
         auto myMemIt = botSlotMemory.find(myGroundKey);

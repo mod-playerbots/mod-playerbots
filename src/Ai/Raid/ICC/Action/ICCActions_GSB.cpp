@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "EquipAction.h"
 #include "GenericActions.h"
 #include "GenericSpellActions.h"
@@ -709,8 +715,7 @@ bool IccGunshipRocketJumpAction::Execute(Event /*event*/)
             uint32 const addEntry = (side == GunshipSide::ALLY)
                 ? NPC_KOR_KRON_AXETHROWER : NPC_SKYBREAKER_RIFLEMAN;
 
-            static std::map<uint32, Position> s_lastStarPos;
-            uint32 const instId = bot->GetInstanceId();
+            Position& lastStarPos = IcecrownHelpers::IccState(bot->GetInstanceId()).gsbLastStarPos;
 
             if (Group* group = bot->GetGroup())
             {
@@ -720,19 +725,15 @@ bool IccGunshipRocketJumpAction::Execute(Event /*event*/)
 
                 if (validStar)
                 {
-                    s_lastStarPos[instId] = Position(starTarget->GetPositionX(),
-                                                     starTarget->GetPositionY(),
-                                                     starTarget->GetPositionZ());
+                    lastStarPos = Position(starTarget->GetPositionX(),
+                                           starTarget->GetPositionY(),
+                                           starTarget->GetPositionZ());
                 }
                 else
                 {
-                    Position refPos;
-                    auto const it = s_lastStarPos.find(instId);
-                    if (it != s_lastStarPos.end())
-                        refPos = it->second;
-                    else
-                        refPos = Position(bot->GetPositionX(), bot->GetPositionY(),
-                                          bot->GetPositionZ());
+                    Position const refPos = (lastStarPos.GetPositionX() != 0.0f || lastStarPos.GetPositionY() != 0.0f)
+                        ? lastStarPos
+                        : Position(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
 
                     std::list<Creature*> adds;
                     bot->GetCreatureListWithEntryInGrid(adds, addEntry, ADD_SEARCH_RANGE);
@@ -754,9 +755,9 @@ bool IccGunshipRocketJumpAction::Execute(Event /*event*/)
                     if (nextAdd)
                     {
                         group->SetTargetIcon(STAR_ICON_INDEX, bot->GetGUID(), nextAdd->GetGUID());
-                        s_lastStarPos[instId] = Position(nextAdd->GetPositionX(),
-                                                         nextAdd->GetPositionY(),
-                                                         nextAdd->GetPositionZ());
+                        lastStarPos = Position(nextAdd->GetPositionX(),
+                                               nextAdd->GetPositionY(),
+                                               nextAdd->GetPositionZ());
                         starTarget = nextAdd;
                     }
                     else
@@ -858,7 +859,7 @@ bool IccGunshipRocketJumpAction::UseRocketPack(Position const& destination, bool
 
     // Throttle rocket pack use to prevent mid-air re-jump spam
     static constexpr uint32 ROCKET_PACK_COOLDOWN_MS = 2500;
-    static std::map<ObjectGuid, uint32> lastRocketPackUse;
+    auto& lastRocketPackUse = IcecrownHelpers::IccState(bot->GetInstanceId()).gsbLastRocketPackUse;
     uint32 const now = getMSTime();
     auto const it = lastRocketPackUse.find(bot->GetGUID());
     bool const onCooldown = it != lastRocketPackUse.end() &&
