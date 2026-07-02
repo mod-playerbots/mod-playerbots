@@ -34,7 +34,7 @@ void StatsCollector::CollectItemStats(ItemTemplate const* proto)
     }
     stats[STATS_TYPE_ARMOR] += proto->Armor;
     stats[STATS_TYPE_BLOCK_VALUE] += proto->Block;
-    for (int i = 0; i < proto->StatsCount; i++)
+    for (uint32 i = 0; i < proto->StatsCount; i++)
     {
         const _ItemStat& stat = proto->ItemStat[i];
         const int32& val = stat.ItemStatValue;

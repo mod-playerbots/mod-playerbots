@@ -9,6 +9,7 @@
 #include "AttackersValue.h"
 #include "Group.h"
 #include "PlayerbotAI.h"
+#include "Playerbots.h"
 
 class FindTargetForTankStrategy : public FindNonCcTargetStrategy
 {
@@ -66,9 +67,9 @@ public:
     bool IsBetter(Unit* new_unit, Unit* old_unit)
     {
         Player* bot = botAI->GetBot();
-        // if group has multiple tanks, main tank just focus on the current target
+        // if group has multiple tanks, explicit main tank just focus on the current target
         Unit* currentTarget = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
-        if (currentTarget && botAI->IsMainTank(bot) && botAI->GetGroupTankNum(bot) > 1)
+        if (currentTarget && botAI->IsExplicitMainTank(bot) && botAI->GetGroupTankNum(bot) > 1)
         {
             if (old_unit == currentTarget)
                 return false;
@@ -104,6 +105,27 @@ public:
 
 Unit* TankTargetValue::Calculate()
 {
+    std::string const rti = botAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get();
+    Unit* rtiTarget = RtiTargetValue::Calculate();
+    if (rtiTarget)
+    {
+        Unit* victim = rtiTarget->GetVictim();
+
+        if (victim && victim != bot)
+        {
+            if (Player* victimPlayer = victim->ToPlayer())
+            {
+                // rti target is attacking a non-tank player
+                if (!PlayerbotAI::IsTank(victimPlayer))
+                    return rtiTarget;
+                // rti target is attacking a tank player, check if the tank is a bot and has the same rti setting
+                PlayerbotAI* victimBotAI = GET_PLAYERBOT_AI(victimPlayer);
+                if (!victimBotAI || victimBotAI->GetAiObjectContext()->GetValue<std::string>("rti")->Get() != rti)
+                    return rtiTarget;
+            }
+        }
+    }
+
     // FindTargetForTankStrategy strategy(botAI);
     FindTankTargetSmartStrategy strategy(botAI);
     return FindTarget(&strategy);

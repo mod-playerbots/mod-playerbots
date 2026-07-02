@@ -31,7 +31,7 @@ bool RpgTrigger::IsActive() { return true; }
 
 Event RpgTrigger::Check()
 {
-    if (!NoRpgTargetTrigger::IsActive() && (AI_VALUE(std::string, "next rpg action") == "choose rpg target") ||
+    if ((!NoRpgTargetTrigger::IsActive() && (AI_VALUE(std::string, "next rpg action") == "choose rpg target")) ||
         !FarFromRpgTargetTrigger::IsActive())
         return Trigger::Check();
 

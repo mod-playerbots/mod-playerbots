@@ -1440,9 +1440,9 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
 
     if (axe)
     {
-        bool hasAggroFromWeapon = mace && mace->GetVictim() == bot ||
-                                  dagger && dagger->GetVictim() == bot ||
-                                  sword && sword->GetVictim() == bot;
+        bool hasAggroFromWeapon = (mace && mace->GetVictim() == bot) ||
+                                  (dagger && dagger->GetVictim() == bot) ||
+                                  (sword && sword->GetVictim() == bot);
         if (!botAI->IsTank(bot) ||
             (botAI->IsAssistTank(bot) && hasAggroFromWeapon))
         {
@@ -1608,7 +1608,7 @@ bool KaelthasSunstriderLootLegendaryWeaponsAction::ShouldBotLootWeapon(uint32 we
                    (bot->getClass() == CLASS_WARRIOR && tab != WARRIOR_TAB_ARMS);
 
         case NPC_WARP_SLICER:
-            return bot->getClass() == CLASS_ROGUE && tab != ROGUE_TAB_ASSASSINATION ||
+            return (bot->getClass() == CLASS_ROGUE && tab != ROGUE_TAB_ASSASSINATION) ||
                    (botAI->IsTank(bot) &&
                     (bot->getClass() == CLASS_DEATH_KNIGHT ||
                      bot->getClass() == CLASS_PALADIN));

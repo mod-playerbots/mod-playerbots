@@ -296,7 +296,7 @@ bool CheckMountStateAction::TryForms(Player* master, int32 masterMountType, int3
     else if
         ((masterInShapeshiftForm == FORM_TRAVEL && botInShapeshiftForm == FORM_TRAVEL) ||
         ((masterInShapeshiftForm == FORM_FLIGHT || (masterMountType == 1 && masterSpeed == 149)) && botInShapeshiftForm == FORM_FLIGHT) ||
-        ((masterInShapeshiftForm == FORM_FLIGHT_EPIC || (masterMountType == 1 && masterSpeed == 279)) && botInShapeshiftForm == FORM_FLIGHT_EPIC))
+        ((masterInShapeshiftForm == FORM_FLIGHT_EPIC || (masterMountType == 1 && masterSpeed >= 279)) && botInShapeshiftForm == FORM_FLIGHT_EPIC))
         return true;
 
     // Check if master is in Travel Form and bot can do the same
@@ -322,7 +322,7 @@ bool CheckMountStateAction::TryForms(Player* master, int32 masterMountType, int3
     // Check if master is in Swift Flight Form or has an epic flying mount and bot can swift flight form
     if (botAI->CanCastSpell(SPELL_SWIFT_FLIGHT_FORM, bot, true) &&
         ((masterInShapeshiftForm == FORM_FLIGHT_EPIC && botInShapeshiftForm != FORM_FLIGHT_EPIC) ||
-        (masterMountType == 1 && masterSpeed == 279)))
+        (masterMountType == 1 && masterSpeed >= 279)))
     {
         botAI->CastSpell(SPELL_SWIFT_FLIGHT_FORM, bot);
 
@@ -427,18 +427,18 @@ bool CheckMountStateAction::TryPreferredMount(Player* master) const
 
 bool CheckMountStateAction::TryRandomMountFiltered(const std::map<int32, std::vector<uint32>>& spells, int32 masterSpeed) const
 {
-    for (auto const& pair : spells)
+    for (auto it = spells.rbegin(); it != spells.rend(); ++it)
     {
-        int32 currentSpeed = pair.first;
+        int32 currentSpeed = it->first;
 
         if ((masterSpeed > 59 && currentSpeed < 99) || (masterSpeed > 149 && currentSpeed < 279))
             continue;
 
         // Pick a random mount from the candidate group.
-        auto const& ids = pair.second;
+        auto const& ids = it->second;
         if (!ids.empty())
         {
-            // Required here as otherwise bots won't mount in BG's due to them constant moving
+            // Required here as otherwise bots won't mount in BGs due to them constant moving
             if (bot->isMoving())
                 bot->StopMoving();
 
@@ -479,15 +479,17 @@ bool CheckMountStateAction::ShouldFollowMasterMountState(Player* master, bool no
     bool isMasterMounted = master->IsMounted() || (masterInShapeshiftForm == FORM_FLIGHT ||
                                                     masterInShapeshiftForm == FORM_FLIGHT_EPIC ||
                                                     masterInShapeshiftForm == FORM_TRAVEL);
-    return isMasterMounted && !bot->IsMounted() && noAttackers &&
+    bool isBotMountedOrForm = bot->IsMounted() || botInShapeshiftForm == FORM_FLIGHT ||
+                              botInShapeshiftForm == FORM_FLIGHT_EPIC || botInShapeshiftForm == FORM_TRAVEL;
+    return isMasterMounted && !isBotMountedOrForm && noAttackers &&
         shouldMount && !bot->IsInCombat() && botAI->GetState() != BOT_STATE_COMBAT;
 }
 
 bool CheckMountStateAction::ShouldDismountForMaster(Player* master) const
 {
     bool isMasterMounted = master->IsMounted() || (masterInShapeshiftForm == FORM_FLIGHT ||
-                                                    masterInShapeshiftForm == FORM_FLIGHT_EPIC ||
-                                                    masterInShapeshiftForm == FORM_TRAVEL);
+                                                   masterInShapeshiftForm == FORM_FLIGHT_EPIC ||
+                                                   masterInShapeshiftForm == FORM_TRAVEL);
     return !isMasterMounted && bot->IsMounted();
 }
 

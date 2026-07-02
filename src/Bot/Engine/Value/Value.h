@@ -7,6 +7,7 @@
 #define PLAYERBOTS_VALUE_H
 
 #include <time.h>
+#include <unordered_map>
 
 #include "AiObject.h"
 #include "ObjectGuid.h"
@@ -414,6 +415,19 @@ public:
     }
 private:
     std::list<FleeInfo> data = {};
+};
+
+class MissingBuffReagentNoticeValue : public ManualSetValue<std::unordered_map<std::string, uint32>&>
+{
+public:
+    MissingBuffReagentNoticeValue(
+        PlayerbotAI* botAI, std::string const name = "missing buff reagent notice")
+        : ManualSetValue<std::unordered_map<std::string, uint32>&>(botAI, noticeTimes, name)
+    {
+    }
+
+private:
+    std::unordered_map<std::string, uint32> noticeTimes;
 };
 
 #endif

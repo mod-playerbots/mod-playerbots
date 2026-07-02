@@ -182,7 +182,7 @@ bool GrindTargetValue::needForQuest(Unit* target)
                     int required = questTemplate->RequiredNpcOrGoCount[j];
                     int available = questStatus->CreatureOrGOCount[j];
 
-                    if (required && available < required && target->GetEntry() == entry)
+                    if (required && available < required && target->GetEntry() == uint32(entry))
                         return true;
                 }
             }

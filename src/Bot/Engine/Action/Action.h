@@ -17,8 +17,7 @@ class NextAction
 {
 public:
     NextAction(std::string const name, float relevance = 0.0f)
-        : relevance(relevance), name(name) {}                                  // name after relevance - whipowill
-    NextAction(NextAction const& o) : relevance(o.relevance), name(o.name) {}  // name after relevance - whipowill
+        : relevance(relevance), name(name) {}  // name after relevance - whipowill
 
     std::string const getName() { return name; }
     float getRelevance() { return relevance; }

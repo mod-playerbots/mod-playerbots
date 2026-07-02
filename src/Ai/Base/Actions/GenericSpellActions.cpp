@@ -135,7 +135,7 @@ namespace
 }
 
 CastSpellAction::CastSpellAction(PlayerbotAI* botAI, std::string const spell)
-    : Action(botAI, spell), range(botAI->GetRange("spell")), spell(spell) {}
+    : Action(botAI, spell), spell(spell), range(botAI->GetRange("spell")) {}
 
 bool CastSpellAction::Execute(Event /*event*/)
 {
@@ -271,7 +271,7 @@ bool CastAuraSpellAction::isUseful()
         return false;
 
     Aura* aura = botAI->GetAura(spell, GetTarget(), isOwner, checkDuration);
-    if (!aura || (beforeDuration && aura->GetDuration() < beforeDuration))
+    if (!aura || (beforeDuration && uint32(aura->GetDuration()) < beforeDuration))
         return true;
 
     return false;
@@ -284,7 +284,7 @@ bool CastBuffSpellAction::isUseful()
         return false;
 
     Aura* aura = botAI->GetAura(spell, target, isOwner, checkDuration);
-    return !aura || (beforeDuration && aura->GetDuration() < beforeDuration);
+    return !aura || (beforeDuration && uint32(aura->GetDuration()) < beforeDuration);
 }
 
 bool CastBuffSpellAction::Execute(Event /*event*/)
@@ -306,7 +306,7 @@ bool GroupBuffSpellAction::isUseful()
     }
 
     Aura* aura = botAI->GetAura(spell, target, isOwner, checkDuration);
-    if (!aura || (beforeDuration && aura->GetDuration() < beforeDuration))
+    if (!aura || (beforeDuration && uint32(aura->GetDuration()) < beforeDuration))
         return true;
 
     return false;
@@ -314,8 +314,17 @@ bool GroupBuffSpellAction::isUseful()
 
 bool GroupBuffSpellAction::Execute(Event /*event*/)
 {
-    std::string const castName = ai::buff::UpgradeToGroupIfAppropriate(bot, botAI, spell);
-    return botAI->CastSpell(castName, GetTarget());
+    std::string missingReagentGroupName;
+    std::string const castName = ai::buff::UpgradeToGroupIfAppropriate(
+        bot, botAI, spell, &missingReagentGroupName);
+
+    if (!botAI->CastSpell(castName, GetTarget()))
+        return false;
+
+    if (!missingReagentGroupName.empty())
+        ai::buff::TryAnnounceMissingBuffReagents(botAI, spell, missingReagentGroupName);
+
+    return true;
 }
 
 CastEnchantItemMainHandAction::CastEnchantItemMainHandAction(
@@ -363,7 +372,7 @@ bool CastEnchantItemOffHandAction::isPossible()
 
 CastHealingSpellAction::CastHealingSpellAction(PlayerbotAI* botAI, std::string const spell, uint8 estAmount,
                                                HealingManaEfficiency manaEfficiency, bool isOwner)
-    : CastAuraSpellAction(botAI, spell, isOwner), estAmount(estAmount), manaEfficiency(manaEfficiency)
+    : CastAuraSpellAction(botAI, spell, isOwner), manaEfficiency(manaEfficiency), estAmount(estAmount)
 {
     range = botAI->GetRange("heal");
 }

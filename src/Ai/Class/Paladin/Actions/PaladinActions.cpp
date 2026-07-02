@@ -351,10 +351,6 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event /*event*/)
 
     Player* targetPlayer = target ? target->ToPlayer() : nullptr;
 
-    const auto HasKingsAura = [&](Unit* unit) -> bool {
-        return botAI->HasAura("blessing of kings", unit) ||
-               botAI->HasAura("greater blessing of kings", unit);
-    };
     const auto HasSanctAura = [&](Unit* unit) -> bool {
         return botAI->HasAura("blessing of sanctuary", unit) ||
                botAI->HasAura("greater blessing of sanctuary", unit);

@@ -1376,7 +1376,6 @@ std::vector<Unit*> IccSindragosaFrostBombAction::SelectTombs(std::vector<Unit*> 
         &ICC_SINDRAGOSA_THOMB3_POSITION
     };
     int const zoneIdx = (groupCount == 2) ? (groupIndex == 0 ? 0 : 2) : groupIndex;
-    Position const& zone = *tombZones[zoneIdx];
 
     static constexpr float MAX_ZONE_RADIUS = 3.0f;
     std::vector<Unit*> zoneTombs;

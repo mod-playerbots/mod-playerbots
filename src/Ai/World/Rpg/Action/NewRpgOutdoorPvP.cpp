@@ -2,7 +2,7 @@
 #include "OutdoorPvP.h"
 #include "OutdoorPvPMgr.h"
 
-bool NewRpgOutdoorPvpAction::Execute(Event event)
+bool NewRpgOutdoorPvpAction::Execute(Event)
 {
     if (!bot->IsPvP())
     {
