@@ -136,7 +136,11 @@ bool RsHalionAvoidConesAction::Execute(Event )
     if (!boss)
         return false;
 
-    if (!botAI->IsTank(bot) && RsHalionRealmThrottled(botAI, bot))
+    bool const melee = botAI->IsMelee(bot);
+    bool const addsUp = RsHalionAnyAddAlive(botAI);
+
+    if (!botAI->IsTank(bot) && !addsUp && RsHalionRealmThrottled(botAI, bot) &&
+        (RsHalionLeadingTooMuch(botAI, bot) || RsHalionInThrottledHalf(botAI, bot)))
     {
         if (bot->GetVictim())
             bot->AttackStop();
@@ -144,9 +148,6 @@ bool RsHalionAvoidConesAction::Execute(Event )
             if (pet->GetVictim())
                 pet->AttackStop();
     }
-
-    bool const melee = botAI->IsMelee(bot);
-    bool const addsUp = RsHalionAnyAddAlive(botAI);
 
     if (melee && addsUp)
         context->GetValue<std::string>("rti")->Set("star");
@@ -542,7 +543,8 @@ bool RsHalionP2AvoidConesAction::Execute(Event )
         }
     }
 
-    if (!PlayerbotAI::IsTank(bot) && RsHalionRealmThrottled(botAI, bot))
+    if (!PlayerbotAI::IsTank(bot) && RsHalionRealmThrottled(botAI, bot) &&
+        (RsHalionLeadingTooMuch(botAI, bot) || RsHalionInThrottledHalf(botAI, bot)))
     {
         if (bot->GetVictim())
             bot->AttackStop();
