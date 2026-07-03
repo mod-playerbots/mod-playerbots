@@ -598,7 +598,7 @@ void PlayerbotFactory::Prepare()
     {
         bot->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_HELM);
     }
-    
+
     if (sPlayerbotAIConfig.randomBotShowCloak == ShowHideCosmetic::ALWAYS_SHOW ||
         (sPlayerbotAIConfig.randomBotShowCloak == ShowHideCosmetic::RANDOMIZE && urand(0, 4)))
     {
