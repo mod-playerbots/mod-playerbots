@@ -24,8 +24,8 @@ public:
         creators["magtheridon second assist tank attack ne channeler"] =
             &RaidMagtheridonActionContext::magtheridon_second_assist_tank_attack_ne_channeler;
 
-        creators["magtheridon misdirect hellfire channelers"] =
-            &RaidMagtheridonActionContext::magtheridon_misdirect_hellfire_channelers;
+        creators["magtheridon misdirect hellfire channelers to main tank"] =
+            &RaidMagtheridonActionContext::magtheridon_misdirect_hellfire_channelers_to_main_tank;
 
         creators["magtheridon assign dps priority"] =
             &RaidMagtheridonActionContext::magtheridon_assign_dps_priority;
@@ -47,6 +47,9 @@ public:
 
         creators["magtheridon manage timers and assignments"] =
             &RaidMagtheridonActionContext::magtheridon_manage_timers_and_assignments;
+
+        creators["magtheridon erase timers and trackers"] =
+            &RaidMagtheridonActionContext::magtheridon_erase_timers_and_trackers;
     }
 
 private:
@@ -59,7 +62,7 @@ private:
     static Action* magtheridon_second_assist_tank_attack_ne_channeler(PlayerbotAI* botAI) {
         return new MagtheridonSecondAssistTankAttackNEChannelerAction(botAI);
     }
-    static Action* magtheridon_misdirect_hellfire_channelers(PlayerbotAI* botAI) {
+    static Action* magtheridon_misdirect_hellfire_channelers_to_main_tank(PlayerbotAI* botAI) {
         return new MagtheridonMisdirectHellfireChannelersToMainTankAction(botAI);
     }
     static Action* magtheridon_assign_dps_priority(PlayerbotAI* botAI) {
@@ -82,6 +85,9 @@ private:
     }
     static Action* magtheridon_manage_timers_and_assignments(PlayerbotAI* botAI) {
         return new MagtheridonManageTimersAndAssignmentsAction(botAI);
+    }
+    static Action* magtheridon_erase_timers_and_trackers(PlayerbotAI* botAI) {
+        return new MagtheridonEraseTimersAndTrackersAction(botAI);
     }
 };
 

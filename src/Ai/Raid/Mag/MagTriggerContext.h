@@ -47,6 +47,9 @@ public:
 
         creators["magtheridon need to manage timers and assignments"] =
             &RaidMagtheridonTriggerContext::magtheridon_need_to_manage_timers_and_assignments;
+
+        creators["magtheridon bot is not in combat"] =
+            &RaidMagtheridonTriggerContext::magtheridon_bot_is_not_in_combat;
     }
 
 private:
@@ -82,6 +85,9 @@ private:
     }
     static Trigger* magtheridon_need_to_manage_timers_and_assignments(PlayerbotAI* botAI) {
         return new MagtheridonNeedToManageTimersAndAssignmentsTrigger(botAI);
+    }
+    static Trigger* magtheridon_bot_is_not_in_combat(PlayerbotAI* botAI) {
+        return new MagtheridonBotIsNotInCombatTrigger(botAI);
     }
 };
 

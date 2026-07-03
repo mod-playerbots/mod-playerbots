@@ -114,4 +114,12 @@ private:
     bool NeedsCubeReassignment(uint32 instanceId);
 };
 
+class MagtheridonEraseTimersAndTrackersAction : public Action
+{
+public:
+    MagtheridonEraseTimersAndTrackersAction(
+        PlayerbotAI* botAI, std::string const name = "magtheridon erase timers and trackers") : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 #endif

@@ -98,4 +98,11 @@ public:
     bool IsActive() override;
 };
 
+class MagtheridonBotIsNotInCombatTrigger : public Trigger
+{
+public:
+    MagtheridonBotIsNotInCombatTrigger(PlayerbotAI* botAI) : Trigger(botAI, "magtheridon bot is not in combat") {};
+    bool IsActive() override;
+};
+
 #endif

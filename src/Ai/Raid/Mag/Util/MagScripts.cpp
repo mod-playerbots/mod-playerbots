@@ -23,12 +23,11 @@ public:
     void OnSpellCast(
         Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
     {
-        const uint32 instanceId = caster->GetMap()->GetInstanceId();
-
         if (spellInfo->Id == static_cast<uint32>(MagtheridonSpells::SPELL_DEBRIS_SPAWN))
         {
             // Debris is a one-shot that has no prior warning other than a visual effect,
             // which necessitates this spell hook to track debris spawn positions
+            const uint32 instanceId = caster->GetMap()->GetInstanceId();
             const uint32 now = getMSTime();
 
             activeDebrisPositions[instanceId].push_back({ caster->GetPosition(), now });
@@ -63,7 +62,7 @@ public:
         else if (spellInfo->Id == static_cast<uint32>(MagtheridonSpells::SPELL_QUAKE))
         {
             // To account for Blast Nova delay caused by Quake's DelayAll(6999ms)
-            auto it = blastNovaTimer.find(instanceId);
+            auto it = blastNovaTimer.find(caster->GetMap()->GetInstanceId());
             if (it != blastNovaTimer.end())
                 it->second += 7;
         }

@@ -41,6 +41,9 @@ void RaidMagtheridonStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("magtheridon need to manage timers and assignments", {
         NextAction("magtheridon manage timers and assignments", ACTION_EMERGENCY + 11) }));
+
+    triggers.push_back(new TriggerNode("magtheridon bot is not in combat", {
+        NextAction("magtheridon erase timers and trackers", ACTION_EMERGENCY + 12) }));
 }
 
 void RaidMagtheridonStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)

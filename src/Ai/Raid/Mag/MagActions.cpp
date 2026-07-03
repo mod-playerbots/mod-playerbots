@@ -712,3 +712,24 @@ bool MagtheridonManageTimersAndAssignmentsAction::NeedsCubeReassignment(const ui
 
     return false;
 }
+
+bool MagtheridonEraseTimersAndTrackersAction::Execute(Event /*event*/)
+{
+    const uint32 instanceId = bot->GetMap()->GetInstanceId();
+    bool erased = false;
+
+    if (blastNovaTimer.erase(instanceId) > 0)
+        erased = true;
+    if (dpsWaitTimer.erase(instanceId) > 0)
+        erased = true;
+    if (ceilingCollapseApplied.erase(instanceId) > 0)
+        erased = true;
+    if (lastBlastNovaState.erase(instanceId) > 0)
+        erased = true;
+    if (botToCubeAssignments.erase(instanceId) > 0)
+        erased = true;
+    if (activeDebrisPositions.erase(instanceId) > 0)
+        erased = true;
+
+    return erased;
+}
