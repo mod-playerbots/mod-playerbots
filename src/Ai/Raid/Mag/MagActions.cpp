@@ -349,7 +349,7 @@ bool MagtheridonSpreadRangedAction::Execute(Event /*event*/)
         }
     }
 
-    constexpr float safeDistFromBoss = 13.0f; // 25y clearance; main concern is frontal cleave
+    constexpr float safeDistFromBoss = 10.0f;
     const float currentDistance = bot->GetDistance2d(magtheridon);
     if (currentDistance < safeDistFromBoss)
         return MoveAway(magtheridon, safeDistFromBoss - currentDistance);
