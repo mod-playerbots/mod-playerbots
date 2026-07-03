@@ -16,7 +16,7 @@ class MagtheridonMainTankAttackFirstThreeChannelersAction : public AttackAction
 {
 public:
     MagtheridonMainTankAttackFirstThreeChannelersAction(
-        PlayerbotAI* botAI, std::string const name = "magtheridon main tank attack first three channelers") : AttackAction(botAI, name) {};
+        PlayerbotAI* botAI) : AttackAction(botAI, "magtheridon main tank attack first three channelers") {}
     bool Execute(Event event) override;
 };
 
@@ -24,7 +24,7 @@ class MagtheridonFirstAssistTankAttackNWChannelerAction : public AttackAction
 {
 public:
     MagtheridonFirstAssistTankAttackNWChannelerAction(
-        PlayerbotAI* botAI, std::string const name = "magtheridon first assist tank attack nw channeler") : AttackAction(botAI, name) {};
+        PlayerbotAI* botAI) : AttackAction(botAI, "magtheridon first assist tank attack nw channeler") {}
     bool Execute(Event event) override;
 };
 
@@ -32,7 +32,7 @@ class MagtheridonSecondAssistTankAttackNEChannelerAction : public AttackAction
 {
 public:
     MagtheridonSecondAssistTankAttackNEChannelerAction(
-        PlayerbotAI* botAI, std::string const name = "magtheridon second assist tank attack ne channeler") : AttackAction(botAI, name) {};
+        PlayerbotAI* botAI) : AttackAction(botAI, "magtheridon second assist tank attack ne channeler") {}
     bool Execute(Event event) override;
 };
 
@@ -40,7 +40,7 @@ class MagtheridonMisdirectHellfireChannelersToMainTankAction : public AttackActi
 {
 public:
     MagtheridonMisdirectHellfireChannelersToMainTankAction(
-        PlayerbotAI* botAI, std::string const name = "magtheridon misdirect hellfire channelers to main tank") : AttackAction(botAI, name) {};
+        PlayerbotAI* botAI) : AttackAction(botAI, "magtheridon misdirect hellfire channelers to main tank") {}
     bool Execute(Event event) override;
 };
 
@@ -48,7 +48,7 @@ class MagtheridonAssignDpsPriorityAction : public AttackAction
 {
 public:
     MagtheridonAssignDpsPriorityAction(
-        PlayerbotAI* botAI, std::string const name = "magtheridon assign dps priority") : AttackAction(botAI, name) {};
+        PlayerbotAI* botAI) : AttackAction(botAI, "magtheridon assign dps priority") {}
     bool Execute(Event event) override;
 };
 
@@ -56,7 +56,7 @@ class MagtheridonWarlockCcBurningAbyssalAction : public AttackAction
 {
 public:
     MagtheridonWarlockCcBurningAbyssalAction(
-        PlayerbotAI* botAI, std::string const name = "magtheridon warlock cc burning abyssal") : AttackAction(botAI, name) {};
+        PlayerbotAI* botAI) : AttackAction(botAI, "magtheridon warlock cc burning abyssal") {}
     bool Execute(Event event) override;
 };
 
@@ -64,7 +64,7 @@ class MagtheridonMainTankPositionBossAction : public AttackAction
 {
 public:
     MagtheridonMainTankPositionBossAction(
-        PlayerbotAI* botAI, std::string const name = "magtheridon main tank position boss") : AttackAction(botAI, name) {};
+        PlayerbotAI* botAI) : AttackAction(botAI, "magtheridon main tank position boss") {}
     bool Execute(Event event) override;
 };
 
@@ -72,7 +72,7 @@ class MagtheridonSpreadRangedAction : public MovementAction
 {
 public:
     MagtheridonSpreadRangedAction(
-        PlayerbotAI* botAI, std::string const name = "magtheridon spread ranged") : MovementAction(botAI, name) {};
+        PlayerbotAI* botAI) : MovementAction(botAI, "magtheridon spread ranged") {}
     bool Execute(Event event) override;
 };
 
@@ -80,7 +80,7 @@ class MagtheridonMoveOutOfDebrisAction : public MovementAction
 {
 public:
     MagtheridonMoveOutOfDebrisAction(
-        PlayerbotAI* botAI, std::string const name = "magtheridon move out of debris") : MovementAction(botAI, name) {};
+        PlayerbotAI* botAI) : MovementAction(botAI, "magtheridon move out of debris") {}
     bool Execute(Event event) override;
 
 private:
@@ -91,7 +91,7 @@ class MagtheridonUseManticronCubeAction : public MovementAction
 {
 public:
     MagtheridonUseManticronCubeAction(
-        PlayerbotAI* botAI, std::string const name = "magtheridon use manticron cube") : MovementAction(botAI, name) {};
+        PlayerbotAI* botAI) : MovementAction(botAI, "magtheridon use manticron cube") {}
     bool Execute(Event event) override;
 
 private:
@@ -106,7 +106,7 @@ class MagtheridonManageTimersAndAssignmentsAction : public Action
 {
 public:
     MagtheridonManageTimersAndAssignmentsAction(
-        PlayerbotAI* botAI, std::string const name = "magtheridon manage timers and assignments") : Action(botAI, name) {};
+        PlayerbotAI* botAI) : Action(botAI, "magtheridon manage timers and assignments") {}
     bool Execute(Event event) override;
 
 private:

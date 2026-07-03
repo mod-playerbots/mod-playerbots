@@ -53,43 +53,33 @@ private:
     static Action* magtheridon_main_tank_attack_first_three_channelers(PlayerbotAI* botAI) {
         return new MagtheridonMainTankAttackFirstThreeChannelersAction(botAI);
     }
-
     static Action* magtheridon_first_assist_tank_attack_nw_channeler(PlayerbotAI* botAI) {
         return new MagtheridonFirstAssistTankAttackNWChannelerAction(botAI);
     }
-
     static Action* magtheridon_second_assist_tank_attack_ne_channeler(PlayerbotAI* botAI) {
         return new MagtheridonSecondAssistTankAttackNEChannelerAction(botAI);
     }
-
     static Action* magtheridon_misdirect_hellfire_channelers(PlayerbotAI* botAI) {
         return new MagtheridonMisdirectHellfireChannelersToMainTankAction(botAI);
     }
-
     static Action* magtheridon_assign_dps_priority(PlayerbotAI* botAI) {
         return new MagtheridonAssignDpsPriorityAction(botAI);
     }
-
     static Action* magtheridon_warlock_cc_burning_abyssal(PlayerbotAI* botAI) {
         return new MagtheridonWarlockCcBurningAbyssalAction(botAI);
     }
-
     static Action* magtheridon_main_tank_position_boss(PlayerbotAI* botAI) {
         return new MagtheridonMainTankPositionBossAction(botAI);
     }
-
     static Action* magtheridon_spread_ranged(PlayerbotAI* botAI) {
         return new MagtheridonSpreadRangedAction(botAI);
     }
-
     static Action* magtheridon_move_out_of_debris(PlayerbotAI* botAI) {
         return new MagtheridonMoveOutOfDebrisAction(botAI);
     }
-
     static Action* magtheridon_use_manticron_cube(PlayerbotAI* botAI) {
         return new MagtheridonUseManticronCubeAction(botAI);
     }
-
     static Action* magtheridon_manage_timers_and_assignments(PlayerbotAI* botAI) {
         return new MagtheridonManageTimersAndAssignmentsAction(botAI);
     }

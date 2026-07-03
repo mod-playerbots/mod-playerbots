@@ -12,28 +12,32 @@
 class MagtheridonUseManticronCubeMultiplier : public Multiplier
 {
 public:
-    MagtheridonUseManticronCubeMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "magtheridon use manticron cube multiplier") {}
+    MagtheridonUseManticronCubeMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "magtheridon use manticron cube multiplier") {}
     float GetValue(Action* action) override;
 };
 
 class MagtheridonWaitToAttackMultiplier : public Multiplier
 {
 public:
-    MagtheridonWaitToAttackMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "magtheridon wait to attack multiplier") {}
+    MagtheridonWaitToAttackMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "magtheridon wait to attack multiplier") {}
     float GetValue(Action* action) override;
 };
 
 class MagtheridonControlTankActionsMultiplier : public Multiplier
 {
 public:
-    MagtheridonControlTankActionsMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "magtheridon control tank actions multiplier") {}
+    MagtheridonControlTankActionsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "magtheridon control tank actions multiplier") {}
     float GetValue(Action* action) override;
 };
 
 class MagtheridonDebrisDangerMultiplier : public Multiplier
 {
 public:
-    MagtheridonDebrisDangerMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "magtheridon debris danger multiplier") {}
+    MagtheridonDebrisDangerMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "magtheridon debris danger multiplier") {}
     float GetValue(Action* action) override;
 };
 
