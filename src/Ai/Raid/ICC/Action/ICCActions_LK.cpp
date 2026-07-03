@@ -146,40 +146,6 @@ static Position const& SelectClosestOf3(Position const& ref, Position const& p1,
     return p1;
 }
 
-// Single-target taunt with class-specific fallbacks
-static bool CastSingleTargetTaunt(PlayerbotAI* botAI, Player* bot, Unit* target)
-{
-    if (!target || !target->IsAlive())
-        return false;
-
-    if (botAI->CastSpell("taunt", target))
-        return true;
-
-    switch (bot->getClass())
-    {
-        case CLASS_PALADIN:
-            if (botAI->CastSpell("hand of reckoning", target))
-                return true;
-            break;
-        case CLASS_DEATH_KNIGHT:
-            if (botAI->CastSpell("dark command", target))
-                return true;
-            break;
-        case CLASS_DRUID:
-            if (botAI->CastSpell("growl", target))
-                return true;
-            break;
-        default:
-            break;
-    }
-
-    // Ranged poke generates threat without moving
-    if (botAI->CastSpell("shoot", target) || botAI->CastSpell("throw", target))
-        return true;
-
-    return false;
-}
-
 // AoE taunt — returns true if a spell was cast
 static bool CastAoeTaunt(PlayerbotAI* botAI, Player* bot)
 {
@@ -1473,12 +1439,12 @@ bool IccLichKingWinterAction::HandleMainTankAddManagement(Unit*, Position const*
         // Taunt pass: all adds in range that are NOT already on MT
         bool const onMT = victim && victim->IsPlayer() && botAI->IsMainTank(victim->ToPlayer());
         if (!onMT && addDist <= TAUNT_RADIUS)
-            CastSingleTargetTaunt(botAI, bot, add);
+            IccCastClassTaunt(bot, botAI, add);
 
         // Priority taunt: adds on the assist tank within 10 yd
         bool const onAT = victim && victim->IsPlayer() && botAI->IsAssistTank(victim->ToPlayer());
         if (onAT && addDist <= 10.0f)
-            CastSingleTargetTaunt(botAI, bot, add);
+            IccCastClassTaunt(bot, botAI, add);
 
         if (nearbyCount >= AOE_TAUNT_MIN)
             CastAoeTaunt(botAI, bot);
@@ -1602,12 +1568,6 @@ bool IccLichKingWinterAction::HandleAssistTankAddManagement(Unit*, Position cons
     // adds are on us — walk back to frost position
     if (!addsOnUs.empty())
     {
-        for (Unit* add : addsOnUs)
-            CastSingleTargetTaunt(botAI, bot, add);
-
-        if (addsOnUs.size() >= 2)
-            CastAoeTaunt(botAI, bot);
-
         float const distToFrost = bot->GetExactDist2d(frostPos->GetPositionX(),
                                                        frostPos->GetPositionY());
         if (distToFrost > FROST_TOL)
@@ -1714,7 +1674,7 @@ bool IccLichKingWinterAction::HandleAssistTankAddManagement(Unit*, Position cons
         return false;
     }
 
-    CastSingleTargetTaunt(botAI, bot, targetAdd);
+    IccCastClassTaunt(bot, botAI, targetAdd);
 
     // Also taunt other loose adds in range
     for (Unit* add : addsLoose)
@@ -1722,7 +1682,7 @@ bool IccLichKingWinterAction::HandleAssistTankAddManagement(Unit*, Position cons
         if (add == targetAdd)
             continue;
         if (bot->GetExactDist2d(add) <= TAUNT_RADIUS)
-            CastSingleTargetTaunt(botAI, bot, add);
+            IccCastClassTaunt(bot, botAI, add);
     }
 
     // AoE taunt if 2+ loose adds are close enough
