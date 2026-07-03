@@ -248,7 +248,7 @@ float RsHalionHpBalanceMultiplier::GetValue(Action* action)
     if (!RsHalionInTwilight(bot) && RsHalionAnyAddAlive(botAI))
         return 1.0f;
 
-    if (!RsHalionLeadingTooMuch(botAI, bot) && !RsHalionInThrottledHalf(botAI, bot))
+    if (!RsHalionLeadingTooMuch(botAI, bot) && !RsHalionInThrottledHalf(bot))
         return 1.0f;
 
     if (dynamic_cast<RsHalionAvoidConesAction*>(action) ||

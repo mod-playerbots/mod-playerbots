@@ -246,7 +246,7 @@ inline bool RsHalionLeadingTooMuch(PlayerbotAI* botAI, Player* bot)
     return ownIndex <= RS_HALION_CORP_STOP_ALL_AT;
 }
 
-inline bool RsHalionInThrottledHalf(PlayerbotAI* /*botAI*/, Player* bot)
+inline bool RsHalionInThrottledHalf(Player* bot)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -278,7 +278,7 @@ inline bool RsHalionInThrottledHalf(PlayerbotAI* /*botAI*/, Player* bot)
     return rank < total / 2;
 }
 
-inline bool RsHalionP3TwilightAssigned(PlayerbotAI* /*botAI*/, Player* bot)
+inline bool RsHalionP3TwilightAssigned(Player* bot)
 {
     if (PlayerbotAI::IsMainTank(bot))
         return false;
@@ -808,7 +808,7 @@ inline bool RsHalionEnteringTwilight(PlayerbotAI* botAI, Player* bot)
 
     Unit* physBoss = RsHalionAnyPhysicalBoss(botAI);
     bool const phase3 = physBoss != nullptr && !physBoss->HealthAbovePct(50);
-    if (phase3 && !RsHalionP3TwilightAssigned(botAI, bot))
+    if (phase3 && !RsHalionP3TwilightAssigned(bot))
         return false;
 
     if (RsHalionPortalHeldForAdds(botAI))
@@ -1236,7 +1236,7 @@ inline bool RsHalionPortalCommit(PlayerbotAI* botAI, Player* bot)
     Unit* twilightBoss = RsHalionTwilightBoss(botAI);
     if (!twilightBoss || twilightBoss->HealthAbovePct(50))
         return false;
-    if (RsHalionP3TwilightAssigned(botAI, bot))
+    if (RsHalionP3TwilightAssigned(bot))
         return false;
     if (RsHalionHasConsumption(bot))
         return false;

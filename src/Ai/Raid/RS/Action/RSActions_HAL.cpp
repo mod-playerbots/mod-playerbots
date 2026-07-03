@@ -140,7 +140,7 @@ bool RsHalionAvoidConesAction::Execute(Event )
     bool const addsUp = RsHalionAnyAddAlive(botAI);
 
     if (!botAI->IsTank(bot) && !addsUp && RsHalionRealmThrottled(botAI, bot) &&
-        (RsHalionLeadingTooMuch(botAI, bot) || RsHalionInThrottledHalf(botAI, bot)))
+        (RsHalionLeadingTooMuch(botAI, bot) || RsHalionInThrottledHalf(bot)))
     {
         if (bot->GetVictim())
             bot->AttackStop();
@@ -323,7 +323,7 @@ bool RsHalionEnterPortalAction::Execute(Event )
     {
         Unit* twilightBoss = RsHalionTwilightBoss(botAI);
         bool const tBossLow = twilightBoss != nullptr && !twilightBoss->HealthAbovePct(50);
-        if (!tBossLow || RsHalionP3TwilightAssigned(botAI, bot))
+        if (!tBossLow || RsHalionP3TwilightAssigned(bot))
             return false;
 
         if (RsHalionHasConsumption(bot))
@@ -544,7 +544,7 @@ bool RsHalionP2AvoidConesAction::Execute(Event )
     }
 
     if (!PlayerbotAI::IsTank(bot) && RsHalionRealmThrottled(botAI, bot) &&
-        (RsHalionLeadingTooMuch(botAI, bot) || RsHalionInThrottledHalf(botAI, bot)))
+        (RsHalionLeadingTooMuch(botAI, bot) || RsHalionInThrottledHalf(bot)))
     {
         if (bot->GetVictim())
             bot->AttackStop();
