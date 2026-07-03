@@ -79,7 +79,7 @@ bool MagtheridonFirstAssistTankAttackNWChannelerAction::Execute(Event /*event*/)
         {
             const float dX = position.GetPositionX() - bot->GetPositionX();
             const float dY = position.GetPositionY() - bot->GetPositionY();
-            const float moveDist = std::min(distanceToPosition, 10.0f);
+            const float moveDist = std::min(distanceToPosition, 3.5f);
             const float moveX = bot->GetPositionX() + (dX / distanceToPosition) * moveDist;
             const float moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
 
@@ -113,7 +113,7 @@ bool MagtheridonSecondAssistTankAttackNEChannelerAction::Execute(Event /*event*/
         {
             const float dX = position.GetPositionX() - bot->GetPositionX();
             const float dY = position.GetPositionY() - bot->GetPositionY();
-            const float moveDist = std::min(distanceToPosition, 10.0f);
+            const float moveDist = std::min(distanceToPosition, 3.5f);
             const float moveX = bot->GetPositionX() + (dX / distanceToPosition) * moveDist;
             const float moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
 
@@ -319,7 +319,7 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event /*event*/)
         {
             const float dX = position.GetPositionX() - bot->GetPositionX();
             const float dY = position.GetPositionY() - bot->GetPositionY();
-            const float moveDist = std::min(4.0f, distanceToPosition);
+            const float moveDist = std::min(2.25f, distanceToPosition);
             const float moveX = bot->GetPositionX() + (dX / distanceToPosition) * moveDist;
             const float moveY = bot->GetPositionY() + (dY / distanceToPosition) * moveDist;
 
