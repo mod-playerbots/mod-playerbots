@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_GATHERNODEMGR_H
-#define _PLAYERBOT_GATHERNODEMGR_H
+#ifndef PLAYERBOT_GATHERNODEMGR_H
+#define PLAYERBOT_GATHERNODEMGR_H
 
 #include <unordered_map>
 #include <unordered_set>

@@ -103,6 +103,15 @@ bool NewRpgDoGatherAction::Execute(Event /*event*/)
         return true;
     }
 
+    // Teleported/summoned away mid-route: drop the target and reselect.
+    // Checked before anything that uses data.nodePos, which holds
+    // coordinates from the old map.
+    if (data.nodeSpawnId && bot->GetMapId() != data.nodePos.GetMapId())
+    {
+        AbandonNode(data);
+        return true;
+    }
+
     bool runPeriodicChecks =
         !data.lastPassiveCheck || GetMSTimeDiffToNow(data.lastPassiveCheck) > passiveCheckInterval;
     if (runPeriodicChecks)
@@ -169,13 +178,6 @@ bool NewRpgDoGatherAction::Execute(Event /*event*/)
         data.nodeSpawnId = node->spawnId;
         data.nodePos = node->pos;
         data.lastReach = 0;
-        return true;
-    }
-
-    if (bot->GetMapId() != data.nodePos.GetMapId())
-    {
-        // teleported/summoned away mid-route - drop the target and reselect
-        AbandonNode(data);
         return true;
     }
 
