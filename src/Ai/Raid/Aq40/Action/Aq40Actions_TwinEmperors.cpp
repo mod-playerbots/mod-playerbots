@@ -13,6 +13,7 @@
 #include "Pet.h"
 #include "RtiTargetValue.h"
 #include "Spell.h"
+#include "Timer.h"
 #include "../Aq40SpellIds.h"
 #include "../Util/Aq40Helpers_Shared.h"
 #include "../Aq40Scripts.h"
@@ -33,6 +34,8 @@ float constexpr kTwinBossSeparationTargetDistance = 72.0f;
 float constexpr kTwinBossSeparationResumeDistance = 68.0f;
 float constexpr kTwinHealerAnchorRange = 24.0f;
 float constexpr kTwinHealerAnchorTolerance = 4.0f;
+float constexpr kTwinHealerAnchorLateralOffset = 3.0f;
+uint32 constexpr kTwinStarMarkerRefreshMs = 2000;
 
 enum class TwinMarkerAssignment : uint8
 {
@@ -52,6 +55,16 @@ struct TwinMarkerSwapState
 
 std::mutex sTwinMarkerSwapMutex;
 std::unordered_map<uint32, TwinMarkerSwapState> sTwinMarkerSwapStateByInstance;
+
+struct TwinBugMarkerState
+{
+    ObjectGuid ownerGuid = ObjectGuid::Empty;
+    ObjectGuid targetGuid = ObjectGuid::Empty;
+    uint32 lastUpdatedAtMs = 0;
+};
+
+std::mutex sTwinBugMarkerMutex;
+std::unordered_map<uint32, TwinBugMarkerState> sTwinBugMarkerStateByInstance;
 
 uint32 GetTwinInstanceKey(Player* bot)
 {
@@ -465,9 +478,11 @@ struct TwinHealerAnchorMove
     float anchorDistance = 0.0f;
     float targetRange = 0.0f;
     float bossDistance = 0.0f;
+    char const* anchorReason = "none";
 };
 
-bool BuildTwinHealerAnchor(Player* bot, Unit* assignedBoss, Unit* oppositeBoss, TwinHealerAnchorMove& outMove)
+bool BuildTwinHealerAnchor(Player* bot, Unit* assignedBoss, Unit* oppositeBoss, TwinMarkerAssignment marker,
+                           uint8 slot, TwinHealerAnchorMove& outMove)
 {
     if (!bot || !assignedBoss)
         return false;
@@ -494,6 +509,16 @@ bool BuildTwinHealerAnchor(Player* bot, Unit* assignedBoss, Unit* oppositeBoss, 
     float const ny = dy / distance;
     float x = assignedBoss->GetPositionX() + nx * kTwinHealerAnchorRange;
     float y = assignedBoss->GetPositionY() + ny * kTwinHealerAnchorRange;
+    outMove.anchorReason = "healer_anchor";
+
+    if (marker == TwinMarkerAssignment::Cross && oppositeBoss)
+    {
+        float const lateral = (slot % 2 == 0 ? -kTwinHealerAnchorLateralOffset : kTwinHealerAnchorLateralOffset);
+        x = assignedBoss->GetPositionX() + nx * kTwinWarlockPreferredRange - ny * lateral;
+        y = assignedBoss->GetPositionY() + ny * kTwinWarlockPreferredRange + nx * lateral;
+        outMove.anchorReason = "warlock_anchor";
+    }
+
     float z = assignedBoss->GetPositionZ();
     bot->UpdateAllowedPositionZ(x, y, z);
 
@@ -535,6 +560,7 @@ void LogTwinHealerAssignment(Player* bot, Aq40BossHelper::Twin::HealerAssignment
            << " boss_distance=" << move.bossDistance
            << " target_range=" << move.targetRange
            << " anchor_distance=" << move.anchorDistance
+           << " anchor_reason=" << move.anchorReason
            << " moved=" << (moved ? 1 : 0);
 
     std::string const key = std::string("twin:healer_anchor:") + GetTwinHealerSideToken(slot) + ":" +
@@ -713,6 +739,119 @@ bool IsTwinBugTargetValidForBot(Player* bot, PlayerbotAI* botAI, Unit* target, f
     return bot && Aq40BossHelper::Twin::IsTwinKillBug(botAI, target) && bot->GetDistance2d(target) <= range;
 }
 
+bool IsTwinBugTargetValidForRaid(Player* bot, PlayerbotAI* botAI, Unit* target)
+{
+    if (!bot || !Aq40BossHelper::Twin::IsTwinKillBug(botAI, target))
+        return false;
+
+    bool foundEligibleBot = false;
+    for (Player* member : Aq40BossHelper::GetSameInstanceGroupMembers(bot))
+    {
+        if (!member || !member->IsAlive())
+            continue;
+
+        PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+        if (!memberAI || !ShouldAttackTwinBug(member, memberAI))
+            continue;
+
+        foundEligibleBot = true;
+        float const range = member->getClass() == CLASS_HUNTER ? 30.0f : 26.0f;
+        if (member->GetDistance2d(target) <= range)
+            return true;
+    }
+
+    return !foundEligibleBot;
+}
+
+ObjectGuid SelectTwinBugMarkerOwner(Player* bot)
+{
+    if (!bot)
+        return ObjectGuid::Empty;
+
+    Player* owner = nullptr;
+    for (Player* member : Aq40BossHelper::GetSameInstanceGroupMembers(bot))
+    {
+        if (!member || !member->IsAlive())
+            continue;
+
+        PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+        if (!memberAI || !ShouldAttackTwinBug(member, memberAI))
+            continue;
+
+        if (!owner || member->GetGUID().GetRawValue() < owner->GetGUID().GetRawValue())
+            owner = member;
+    }
+
+    return owner ? owner->GetGUID() : bot->GetGUID();
+}
+
+bool IsTwinBugMarkerOwner(Player* bot)
+{
+    return bot && bot->GetGUID() == SelectTwinBugMarkerOwner(bot);
+}
+
+bool ShouldSetTwinBugMarker(Player* bot, Unit* currentStar, Unit* target)
+{
+    if (!bot || !target || !IsTwinBugMarkerOwner(bot))
+        return false;
+
+    uint32 const instanceKey = GetTwinInstanceKey(bot);
+    if (!instanceKey)
+        return false;
+
+    uint32 const now = getMSTime();
+    std::lock_guard<std::mutex> guard(sTwinBugMarkerMutex);
+    TwinBugMarkerState& state = sTwinBugMarkerStateByInstance[instanceKey];
+    ObjectGuid const ownerGuid = SelectTwinBugMarkerOwner(bot);
+    if (state.ownerGuid != ownerGuid)
+    {
+        state.ownerGuid = ownerGuid;
+        state.targetGuid = ObjectGuid::Empty;
+        state.lastUpdatedAtMs = 0;
+    }
+
+    if (currentStar == target && state.targetGuid == target->GetGUID())
+        return false;
+
+    if (state.targetGuid == target->GetGUID() &&
+        getMSTimeDiff(state.lastUpdatedAtMs, now) < kTwinStarMarkerRefreshMs)
+    {
+        return false;
+    }
+
+    state.targetGuid = target->GetGUID();
+    state.lastUpdatedAtMs = now;
+    return true;
+}
+
+bool ShouldClearTwinBugMarker(Player* bot, Unit* currentStar)
+{
+    if (!bot || !currentStar || !IsTwinBugMarkerOwner(bot))
+        return false;
+
+    uint32 const instanceKey = GetTwinInstanceKey(bot);
+    if (!instanceKey)
+        return false;
+
+    uint32 const now = getMSTime();
+    std::lock_guard<std::mutex> guard(sTwinBugMarkerMutex);
+    TwinBugMarkerState& state = sTwinBugMarkerStateByInstance[instanceKey];
+    ObjectGuid const ownerGuid = SelectTwinBugMarkerOwner(bot);
+    if (state.ownerGuid != ownerGuid)
+    {
+        state.ownerGuid = ownerGuid;
+        state.targetGuid = ObjectGuid::Empty;
+        state.lastUpdatedAtMs = 0;
+    }
+
+    if (state.targetGuid.IsEmpty() && getMSTimeDiff(state.lastUpdatedAtMs, now) < kTwinStarMarkerRefreshMs)
+        return false;
+
+    state.targetGuid = ObjectGuid::Empty;
+    state.lastUpdatedAtMs = now;
+    return true;
+}
+
 bool ClearTwinBugTargetIfInvalid(Player* bot, PlayerbotAI* botAI, Unit* target, float range)
 {
     if (!bot || !botAI || !target || !Aq40SpellIds::IsTwinBugEntry(target->GetEntry()) ||
@@ -794,7 +933,9 @@ void ApplyTwinTargetMarker(Player* bot, PlayerbotAI* botAI, Unit* target)
         default:
             if (Aq40BossHelper::Twin::IsTwinKillBug(botAI, target))
             {
-                Aq40Helpers::SetRaidTargetIcon(bot, target, RtiTargetValue::starIndex, "twin", "star");
+                Unit* currentStar = Aq40Helpers::ResolveRaidTargetIcon(bot, botAI, RtiTargetValue::starIndex);
+                if (ShouldSetTwinBugMarker(bot, currentStar, target))
+                    Aq40Helpers::SetRaidTargetIcon(bot, target, RtiTargetValue::starIndex, "twin", "star");
                 Aq40Helpers::SetRtiTarget(botAI, "star", target);
             }
             break;
@@ -830,7 +971,8 @@ Unit* ResolveTwinTarget(Player* bot, PlayerbotAI* botAI, GuidVector const& encou
         if (currentStar && Aq40SpellIds::IsTwinBugEntry(currentStar->GetEntry()))
         {
             ClearTwinBugTargetIfInvalid(bot, botAI, currentStar, bugRange);
-            Aq40Helpers::ClearRaidTargetIcon(bot, RtiTargetValue::starIndex, "twin", "star");
+            if (!IsTwinBugTargetValidForRaid(bot, botAI, currentStar) && ShouldClearTwinBugMarker(bot, currentStar))
+                Aq40Helpers::ClearRaidTargetIcon(bot, RtiTargetValue::starIndex, "twin", "star");
         }
 
         Unit* nearbyBug = Aq40BossHelper::Twin::FindNearestKillBug(bot, botAI, encounterUnits, bugRange);
@@ -940,13 +1082,17 @@ bool CastTwinWarlockThreat(Player* bot, PlayerbotAI* botAI, Unit* target)
     return true;
 }
 
-void StopPetFromVeklor(Player* bot, Unit* veklor)
+void StopPetFromTwinBosses(Player* bot, Unit* veknilash, Unit* veklor)
 {
-    if (!bot || !veklor)
+    if (!bot)
         return;
 
     Pet* pet = bot->GetPet();
-    if (pet && pet->GetVictim() == veklor)
+    if (!pet)
+        return;
+
+    Unit* victim = pet->GetVictim();
+    if (victim && (victim == veknilash || victim == veklor || IsTwinBoss(victim)))
         pet->AttackStop();
 }
 
@@ -980,6 +1126,7 @@ struct TwinTankAnchorMove
     float tankRange = 0.0f;
     float anchorDistance = 0.0f;
     bool needsSeparation = false;
+    char const* anchorReason = "none";
 };
 
 bool BuildTwinFarSideAnchor(Player* bot, Unit* heldBoss, Unit* oppositeBoss, float tankOffset,
@@ -1018,6 +1165,7 @@ bool BuildTwinFarSideAnchor(Player* bot, Unit* heldBoss, Unit* oppositeBoss, flo
     outMove.tankRange = bot->GetDistance2d(heldBoss);
     outMove.anchorDistance = bot->GetExactDist2d(x, y);
     outMove.needsSeparation = outMove.bossDistance < kTwinBossSeparationResumeDistance;
+    outMove.anchorReason = "far_side";
     return outMove.needsSeparation;
 }
 
@@ -1057,7 +1205,50 @@ bool BuildTwinStandbyVeklorAnchor(Player* bot, Unit* veklor, Unit* veknilash, Tw
     outMove.anchorDistance = bot->GetExactDist2d(x, y);
     outMove.needsSeparation = outMove.tankRange < kTwinStandbyVeklorRange - kTwinStandbyVeklorRangeTolerance ||
                               outMove.tankRange > kTwinStandbyVeklorRange + kTwinStandbyVeklorRangeTolerance;
+    outMove.anchorReason = "standby_veklor";
     return outMove.needsSeparation;
+}
+
+bool BuildTwinWarlockAnchor(Player* bot, Unit* veklor, Unit* veknilash, TwinTankAnchorMove& outMove)
+{
+    if (!bot || !veklor)
+        return false;
+
+    float dx = veklor->GetPositionX() - (veknilash ? veknilash->GetPositionX() : bot->GetPositionX());
+    float dy = veklor->GetPositionY() - (veknilash ? veknilash->GetPositionY() : bot->GetPositionY());
+    float distance = std::sqrt(dx * dx + dy * dy);
+
+    if (distance < 0.1f)
+    {
+        dx = bot->GetPositionX() - veklor->GetPositionX();
+        dy = bot->GetPositionY() - veklor->GetPositionY();
+        distance = std::sqrt(dx * dx + dy * dy);
+    }
+
+    if (distance < 0.1f)
+    {
+        dx = std::cos(bot->GetOrientation());
+        dy = std::sin(bot->GetOrientation());
+        distance = 1.0f;
+    }
+
+    float const nx = dx / distance;
+    float const ny = dy / distance;
+    float x = veklor->GetPositionX() + nx * kTwinWarlockPreferredRange;
+    float y = veklor->GetPositionY() + ny * kTwinWarlockPreferredRange;
+    float z = veklor->GetPositionZ();
+    bot->UpdateAllowedPositionZ(x, y, z);
+
+    outMove.anchor.Relocate(x, y, z, bot->GetOrientation());
+    outMove.bossDistance = veknilash ? veklor->GetDistance2d(veknilash) : 0.0f;
+    outMove.tankRange = bot->GetDistance2d(veklor);
+    outMove.anchorDistance = bot->GetExactDist2d(x, y);
+    outMove.needsSeparation = veknilash && outMove.bossDistance < kTwinBossSeparationResumeDistance;
+    outMove.anchorReason = "warlock_anchor";
+    return outMove.anchorDistance > 2.0f ||
+           outMove.tankRange < kTwinWarlockMinRange ||
+           outMove.tankRange > kTwinWarlockMaxRange ||
+           outMove.needsSeparation;
 }
 
 bool BuildTwinMeleeContactAnchor(Player* bot, Unit* heldBoss, Unit* oppositeBoss, TwinTankAnchorMove& outMove)
@@ -1095,7 +1286,8 @@ bool BuildTwinMeleeContactAnchor(Player* bot, Unit* heldBoss, Unit* oppositeBoss
     outMove.tankRange = bot->GetDistance2d(heldBoss);
     outMove.anchorDistance = bot->GetExactDist2d(x, y);
     outMove.needsSeparation = outMove.bossDistance < kTwinBossSeparationResumeDistance;
-    return outMove.needsSeparation;
+    outMove.anchorReason = "melee_contact";
+    return true;
 }
 
 TwinTankAnchorMove BuildTwinTankMoveSnapshot(Player* bot, Unit* heldBoss, Unit* oppositeBoss)
@@ -1108,6 +1300,7 @@ TwinTankAnchorMove BuildTwinTankMoveSnapshot(Player* bot, Unit* heldBoss, Unit* 
     move.tankRange = bot->GetDistance2d(heldBoss);
     move.anchorDistance = 0.0f;
     move.needsSeparation = oppositeBoss && move.bossDistance < kTwinBossSeparationResumeDistance;
+    move.anchorReason = "snapshot";
     return move;
 }
 
@@ -1147,6 +1340,7 @@ bool BuildTwinTankHazardContactAnchor(Player* bot, Unit* heldBoss, Position cons
     outMove.tankRange = bot->GetDistance2d(heldBoss);
     outMove.anchorDistance = bot->GetExactDist2d(x, y);
     outMove.needsSeparation = true;
+    outMove.anchorReason = "hazard_contact";
     return heldBoss->GetExactDist2d(x, y) <= kTwinMeleeControlMaxRange;
 }
 
@@ -1165,6 +1359,9 @@ void LogTwinTankMovement(Player* bot, char const* action, TwinMarkerSwapState co
            << " boss_distance=" << move.bossDistance
            << " tank_range=" << move.tankRange
            << " anchor_distance=" << move.anchorDistance
+           << " heal_brother_window=" << (Aq40Scripts::IsTwinHealBrotherWindow(bot) ? 1 : 0)
+           << " needs_separation=" << (move.needsSeparation ? 1 : 0)
+           << " anchor_reason=" << move.anchorReason
            << " current_victim=" << Aq40Helpers::GetAq40LogUnit(currentVictim)
            << " has_control=" << (hasControl ? 1 : 0)
            << " form=" << static_cast<uint32>(bot->GetShapeshiftForm())
@@ -1204,8 +1401,10 @@ bool Aq40TwinChooseTargetAction::Execute(Event /*event*/)
         return false;
 
     GuidVector const encounterUnits = Aq40BossHelper::Twin::GetEncounterUnits(botAI);
-    ApplyTwinBossMarkers(bot, Aq40BossHelper::Twin::FindVeknilash(botAI, encounterUnits),
-                         Aq40BossHelper::Twin::FindVeklor(botAI, encounterUnits));
+    Unit* veknilash = Aq40BossHelper::Twin::FindVeknilash(botAI, encounterUnits);
+    Unit* veklor = Aq40BossHelper::Twin::FindVeklor(botAI, encounterUnits);
+    ApplyTwinBossMarkers(bot, veknilash, veklor);
+    StopPetFromTwinBosses(bot, veknilash, veklor);
 
     char const* reason = "none";
     Unit* target = ResolveTwinTarget(bot, botAI, encounterUnits, reason);
@@ -1240,6 +1439,7 @@ bool Aq40TwinTankAction::Execute(Event /*event*/)
 
     Unit* veklor = Aq40BossHelper::Twin::FindVeklor(botAI, encounterUnits);
     ApplyTwinBossMarkers(bot, veknilash, veklor);
+    StopPetFromTwinBosses(bot, veknilash, veklor);
 
     TwinMarkerSwapState const markerSwap = RefreshTwinMarkerSwapState(bot);
     if (markerSwap.assignments.HasUsableAssignment())
@@ -1291,6 +1491,7 @@ bool Aq40TwinTankAction::Execute(Event /*event*/)
     bool const shiftedForm = EnsureTwinMeleeTankForm(bot, botAI);
     Unit* currentVictim = veknilash->GetVictim();
     bool const hasControl = currentVictim == bot;
+    bool const healBrotherWindow = Aq40Scripts::IsTwinHealBrotherWindow(bot);
 
     bool const castThreat = CastTwinMeleeThreat(botAI, veknilash);
     bool moved = false;
@@ -1298,6 +1499,24 @@ bool Aq40TwinTankAction::Execute(Event /*event*/)
     if (!hasControl)
     {
         TwinTankAnchorMove controlMove = BuildTwinTankMoveSnapshot(bot, veknilash, veklor);
+        if (healBrotherWindow || controlMove.needsSeparation)
+        {
+            TwinTankAnchorMove separateMove;
+            if (BuildTwinMeleeContactAnchor(bot, veknilash, veklor, separateMove))
+            {
+                if (separateMove.anchorDistance > 1.0f)
+                {
+                    moved = MoveNear(bot->GetMapId(), separateMove.anchor.GetPositionX(),
+                                     separateMove.anchor.GetPositionY(), separateMove.anchor.GetPositionZ(),
+                                     0.0f, MovementPriority::MOVEMENT_COMBAT);
+                }
+
+                LogTwinTankMovement(bot, "melee_separate_recover", markerSwap, veknilash, veklor,
+                                    separateMove, moved, currentVictim, false);
+                return moved || castThreat || shiftedForm || attacked;
+            }
+        }
+
         if (!bot->IsWithinMeleeRange(veknilash))
             moved = MoveNear(veknilash, kTwinMeleeThreatContactRange, MovementPriority::MOVEMENT_COMBAT);
 
@@ -1309,6 +1528,20 @@ bool Aq40TwinTankAction::Execute(Event /*event*/)
     if (!bot->IsWithinMeleeRange(veknilash))
     {
         TwinTankAnchorMove controlMove = BuildTwinTankMoveSnapshot(bot, veknilash, veklor);
+        if (healBrotherWindow || controlMove.needsSeparation)
+        {
+            TwinTankAnchorMove separateMove;
+            if (BuildTwinMeleeContactAnchor(bot, veknilash, veklor, separateMove))
+            {
+                moved = MoveNear(bot->GetMapId(), separateMove.anchor.GetPositionX(),
+                                 separateMove.anchor.GetPositionY(), separateMove.anchor.GetPositionZ(),
+                                 0.0f, MovementPriority::MOVEMENT_COMBAT);
+                LogTwinTankMovement(bot, "melee_separate_recover", markerSwap, veknilash, veklor,
+                                    separateMove, moved, currentVictim, true);
+                return moved || castThreat || shiftedForm || attacked;
+            }
+        }
+
         moved = MoveNear(veknilash, kTwinMeleeThreatContactRange, MovementPriority::MOVEMENT_COMBAT);
         LogTwinTankMovement(bot, "contact_recover", markerSwap, veknilash, veklor, controlMove, moved,
                             currentVictim, true);
@@ -1328,7 +1561,7 @@ bool Aq40TwinTankAction::Execute(Event /*event*/)
         LogTwinTankMovement(bot, "melee_separate", markerSwap, veknilash, veklor, anchorMove, moved,
                             currentVictim, true);
     }
-    else if (BuildTwinMeleeContactAnchor(bot, veknilash, veklor, anchorMove))
+    else if (BuildTwinMeleeContactAnchor(bot, veknilash, veklor, anchorMove) && anchorMove.needsSeparation)
     {
         if (anchorMove.anchorDistance > 2.0f)
         {
@@ -1364,6 +1597,7 @@ bool Aq40TwinWarlockTankAction::Execute(Event /*event*/)
 
     Unit* veknilash = Aq40BossHelper::Twin::FindVeknilash(botAI, encounterUnits);
     ApplyTwinBossMarkers(bot, veknilash, veklor);
+    StopPetFromTwinBosses(bot, veknilash, veklor);
 
     TwinMarkerSwapState const markerSwap = RefreshTwinMarkerSwapState(bot);
     if (markerSwap.assignments.HasUsableAssignment())
@@ -1426,7 +1660,7 @@ bool Aq40TwinWarlockTankAction::Execute(Event /*event*/)
     bool const castThreat = CastTwinWarlockThreat(bot, botAI, veklor);
 
     TwinTankAnchorMove anchorMove;
-    if (BuildTwinFarSideAnchor(bot, veklor, veknilash, kTwinWarlockPreferredRange, anchorMove))
+    if (BuildTwinWarlockAnchor(bot, veklor, veknilash, anchorMove))
     {
         if (anchorMove.anchorDistance > 2.0f)
         {
@@ -1434,7 +1668,7 @@ bool Aq40TwinWarlockTankAction::Execute(Event /*event*/)
                              anchorMove.anchor.GetPositionZ(), 0.0f, MovementPriority::MOVEMENT_COMBAT);
         }
 
-        LogTwinTankMovement(bot, "warlock_separate", markerSwap, veklor, veknilash, anchorMove, moved,
+        LogTwinTankMovement(bot, "warlock_anchor_recover", markerSwap, veklor, veknilash, anchorMove, moved,
                             veklor ? veklor->GetVictim() : nullptr, veklor && veklor->GetVictim() == bot);
 
         if (!moved && bot->GetDistance2d(veklor) < kTwinWarlockMinRange)
@@ -1477,6 +1711,7 @@ bool Aq40TwinHealerAnchorAction::Execute(Event /*event*/)
         return false;
 
     ApplyTwinBossMarkers(bot, veknilash, veklor);
+    StopPetFromTwinBosses(bot, veknilash, veklor);
 
     TwinMarkerSwapState const markerSwap = RefreshTwinMarkerSwapState(bot);
     uint8 const healerSlot = static_cast<uint8>(slot);
@@ -1488,6 +1723,10 @@ bool Aq40TwinHealerAnchorAction::Execute(Event /*event*/)
 
     Aq40Helpers::SetRtiTarget(botAI, ToMarkerToken(marker), target);
 
+    TwinHealerAnchorMove move;
+    if (!BuildTwinHealerAnchor(bot, target, opposite, marker, healerSlot, move))
+        return false;
+
     if (veklor && bot->GetDistance2d(veklor) <= kTwinArcaneBurstAvoidRadius)
     {
         float const distance = bot->GetDistance2d(veklor);
@@ -1496,15 +1735,29 @@ bool Aq40TwinHealerAnchorAction::Execute(Event /*event*/)
         fields << "boss=twin hazard=arcane_burst action=healer_range_recover"
                << " source=" << Aq40Helpers::GetAq40LogUnit(veklor)
                << " distance=" << distance
+               << " anchor_distance=" << move.anchorDistance
+               << " anchor_reason=" << move.anchorReason
                << " moved=" << (movedAway ? 1 : 0);
         Aq40Helpers::LogAq40Info(bot, "avoid_hazard", "twin:healer:arcane_burst", fields.str(), 1000);
         if (movedAway)
             return true;
-    }
 
-    TwinHealerAnchorMove move;
-    if (!BuildTwinHealerAnchor(bot, target, opposite, move))
-        return false;
+        bool const movedToAnchor = move.anchorDistance > 1.0f &&
+            MoveNear(bot->GetMapId(), move.anchor.GetPositionX(), move.anchor.GetPositionY(),
+                     move.anchor.GetPositionZ(), 0.0f, MovementPriority::MOVEMENT_COMBAT);
+        std::ostringstream anchorFields;
+        anchorFields << "boss=twin hazard=arcane_burst action=healer_arcane_anchor_recover"
+                     << " source=" << Aq40Helpers::GetAq40LogUnit(veklor)
+                     << " distance=" << distance
+                     << " target_emperor=" << Aq40Helpers::GetAq40LogUnit(target)
+                     << " anchor_distance=" << move.anchorDistance
+                     << " anchor_reason=" << move.anchorReason
+                     << " moved=" << (movedToAnchor ? 1 : 0);
+        Aq40Helpers::LogAq40Info(bot, "avoid_hazard", "twin:healer:arcane_anchor",
+                                 anchorFields.str(), 1000);
+        if (movedToAnchor)
+            return true;
+    }
 
     bool moved = false;
     if (move.anchorDistance > kTwinHealerAnchorTolerance)
@@ -1629,6 +1882,9 @@ bool Aq40TwinAvoidVeklorAction::Execute(Event /*event*/)
     if (!veklor)
         return false;
 
+    Unit* veknilash = Aq40BossHelper::Twin::FindVeknilash(botAI, encounterUnits);
+    StopPetFromTwinBosses(bot, veknilash, veklor);
+
     TwinMarkerSwapState const markerSwap = RefreshTwinMarkerSwapState(bot);
     if (markerSwap.assignments.HasUsableAssignment())
     {
@@ -1638,14 +1894,11 @@ bool Aq40TwinAvoidVeklorAction::Execute(Event /*event*/)
     else if (IsFallbackVeklorWarlock(bot, botAI, veklor))
         return false;
 
-    StopPetFromVeklor(bot, veklor);
-
     float const distance = bot->GetDistance2d(veklor);
     float const safeRadius = kTwinArcaneBurstAvoidRadius;
     if (distance > safeRadius)
         return false;
 
-    Unit* veknilash = Aq40BossHelper::Twin::FindVeknilash(botAI, encounterUnits);
     if (IsActiveTwinMeleeTank(bot, markerSwap, veknilash))
     {
         TwinTankAnchorMove move;

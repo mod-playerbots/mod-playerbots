@@ -22,6 +22,7 @@ struct TwinScriptState
     uint32 teleportSequence = 0;
     uint32 lastBlizzardAtMs = 0;
     uint32 lastArcaneBurstAtMs = 0;
+    uint32 lastHealBrotherAtMs = 0;
     uint32 lastExplodeBugAtMs = 0;
     ObjectGuid explodeBugSourceGuid = ObjectGuid::Empty;
     Position explodeBugSourcePosition;
@@ -99,6 +100,9 @@ void StampTwinSpell(Unit* caster, SpellInfo const* spellInfo, uint32 nowMs)
         case Aq40SpellIds::TwinArcaneBurst:
             state.lastArcaneBurstAtMs = nowMs;
             break;
+        case Aq40SpellIds::TwinHealBrother:
+            state.lastHealBrotherAtMs = nowMs;
+            break;
         case Aq40SpellIds::TwinExplodeBug:
             state.lastExplodeBugAtMs = nowMs;
             state.explodeBugSourceGuid = caster->GetGUID();
@@ -136,6 +140,13 @@ bool IsTwinArcaneBurstWindow(Player const* bot, uint32 windowMs, uint32 nowMs)
     std::lock_guard<std::mutex> guard(sStateMutex);
     TwinScriptState* state = GetState(bot);
     return state && IsRecent(state->lastArcaneBurstAtMs, windowMs, ResolveNow(nowMs));
+}
+
+bool IsTwinHealBrotherWindow(Player const* bot, uint32 windowMs, uint32 nowMs)
+{
+    std::lock_guard<std::mutex> guard(sStateMutex);
+    TwinScriptState* state = GetState(bot);
+    return state && IsRecent(state->lastHealBrotherAtMs, windowMs, ResolveNow(nowMs));
 }
 
 bool IsTwinExplodeBugWindow(Player const* bot, uint32 windowMs, uint32 nowMs)
