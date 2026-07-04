@@ -15,41 +15,11 @@ bool RsZarithrianAddsAction::Execute(Event )
 {
     context->GetValue<std::string>("rti")->Set("skull");
 
-    if (!IsDesignatedMarker())
+    if (!RsIsDesignatedMarker(bot))
         return false;
 
-    UpdateSkullMarker(FindPriorityAdd());
+    RsUpdateSkullMarker(bot, FindPriorityAdd());
     return false;
-}
-
-bool RsZarithrianAddsAction::IsDesignatedMarker()
-{
-    Group* group = bot->GetGroup();
-    if (!group)
-        return true;
-
-    ObjectGuid lowest = bot->GetGUID();
-    for (GroupReference* itr = group->GetFirstMember(); itr; itr = itr->next())
-    {
-        Player* member = itr->GetSource();
-        if (!member || !member->IsAlive())
-            continue;
-
-        PlayerbotAI* memberAI = sPlayerbotsMgr.GetPlayerbotAI(member);
-        if (!memberAI)
-            continue;
-
-        if (memberAI->IsTank(member) || memberAI->IsHeal(member))
-            continue;
-
-        if (member->GetMapId() != bot->GetMapId() || member->GetInstanceId() != bot->GetInstanceId())
-            continue;
-
-        if (member->GetGUID() < lowest)
-            lowest = member->GetGUID();
-    }
-
-    return bot->GetGUID() == lowest;
 }
 
 Unit* RsZarithrianAddsAction::FindPriorityAdd()
@@ -83,19 +53,6 @@ Unit* RsZarithrianAddsAction::FindPriorityAdd()
     return best ? best : boss;
 }
 
-void RsZarithrianAddsAction::UpdateSkullMarker(Unit* priorityAdd)
-{
-    if (!priorityAdd)
-        return;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return;
-
-    if (group->GetTargetIcon(RtiTargetValue::skullIndex) != priorityAdd->GetGUID())
-        group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), priorityAdd->GetGUID());
-}
-
 uint32 RsZarithrianTankAction::GetCleaveStacks(Unit* unit)
 {
     if (!unit)
@@ -107,25 +64,12 @@ uint32 RsZarithrianTankAction::GetCleaveStacks(Unit* unit)
 
 Unit* RsZarithrianTankAction::FindBoss()
 {
-    GuidVector const targets = AI_VALUE(GuidVector, "possible targets no los");
-    for (ObjectGuid const& guid : targets)
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->IsAlive() && unit->GetEntry() == NPC_GENERAL_ZARITHRIAN)
-            return unit;
-    }
-    return nullptr;
+    return RsFindTarget(botAI, [](Unit* unit) { return unit->GetEntry() == NPC_GENERAL_ZARITHRIAN; });
 }
 
 void RsZarithrianTankAction::CollectAdds(std::vector<Unit*>& adds)
 {
-    GuidVector const targets = AI_VALUE(GuidVector, "possible targets no los");
-    for (ObjectGuid const& guid : targets)
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->IsAlive() && unit->GetEntry() == NPC_ONYX_FLAMECALLER)
-            adds.push_back(unit);
-    }
+    RsCollectTargets(botAI, adds, [](Unit* unit) { return unit->GetEntry() == NPC_ONYX_FLAMECALLER; });
 }
 
 bool RsZarithrianTankAction::HoldBoss(Unit* boss)
@@ -202,14 +146,8 @@ bool RsZarithrianTankAction::Execute(Event )
     if (!boss)
         return false;
 
-    if (bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == FOLLOW_MOTION_TYPE)
-    {
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
-        if (bot->GetTarget())
-            bot->SetTarget(ObjectGuid::Empty);
+    if (RsReleaseIfFollowing(bot))
         return false;
-    }
 
     Player* mainTankPlayer = nullptr;
     Player* assistTankPlayer = nullptr;

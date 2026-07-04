@@ -556,15 +556,14 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
         Group* mgroup = master->GetGroup();
         if (mgroup->GetMembersCount() >= 5)
         {
-            if (!mgroup->isRaidGroup() && !mgroup->isLFGGroup() && !mgroup->isBGGroup() && !mgroup->isBFGroup())
+            // A 5-member party is full, so only a raid can take a 6th member. GroupInviteOperation::
+            // Execute() self-converts a non-raid group with >= 5 members to a raid before adding, so a
+            // separate ConvertToRaid is unnecessary here. Queue the invite for a raid OR a plain
+            // (non-LFG/BG/battlefield) party; we deliberately skip LFG/BG/BFG groups so a bot login
+            // never force-converts a live dungeon-finder or battleground group into a raid.
+            if (mgroup->isRaidGroup() || (!mgroup->isLFGGroup() && !mgroup->isBGGroup() && !mgroup->isBFGroup()))
             {
-                // Queue ConvertToRaid operation
-                auto convertOp = std::make_unique<GroupConvertToRaidOperation>(master->GetGUID());
-                PlayerbotWorldThreadProcessor::instance().QueueOperation(std::move(convertOp));
-            }
-            if (mgroup->isRaidGroup())
-            {
-                // Queue AddMember operation
+                // Queue AddMember operation; Execute() converts the party to a raid before adding.
                 auto addOp = std::make_unique<GroupInviteOperation>(master->GetGUID(), bot->GetGUID());
                 PlayerbotWorldThreadProcessor::instance().QueueOperation(std::move(addOp));
             }

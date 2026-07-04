@@ -3,6 +3,7 @@
 
 #include "Action.h"
 #include "MovementActions.h"
+#include "AttackAction.h"
 
 // General
 
@@ -19,6 +20,36 @@ class BwlTurnOffSuppressionDeviceAction : public Action
 public:
     BwlTurnOffSuppressionDeviceAction(PlayerbotAI* botAI) : Action(botAI, "bwl turn off suppression device") {}
     bool Execute(Event event) override;
+};
+
+// Razorgore the Untamed
+
+class BwlRazorgoreAvoidAoeAction : public MovementAction
+{
+public:
+    BwlRazorgoreAvoidAoeAction(PlayerbotAI* botAI) : MovementAction(botAI, "bwl razorgore avoid aoe") {}
+    bool Execute(Event event) override;
+};
+
+class BwlRazorgoreMarkBossAction : public AttackAction
+{
+public:
+    BwlRazorgoreMarkBossAction(PlayerbotAI* botAI) : AttackAction(botAI, "bwl razorgore mark boss") {}
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
+// Vaelastrasz the Corrupt
+
+class BwlVaelastraszMoveAwayAction : public MovementAction
+{
+public:
+    BwlVaelastraszMoveAwayAction(PlayerbotAI* botAI) : MovementAction(botAI, "bwl vaelastrasz move away") {}
+    bool Execute(Event event) override;
+
+private:
+    bool CalculateFleeDirection(const Unit* boss, float& fleeX, float& fleeY) const;
+    bool MoveAlongFleeDirection(const Unit* boss, float fleeX, float fleeY);
 };
 
 // Chromaggus
