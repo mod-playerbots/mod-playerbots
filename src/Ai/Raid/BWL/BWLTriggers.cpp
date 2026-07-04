@@ -9,30 +9,59 @@ using namespace BlackwingLairHelpers;
 
 bool BwlSuppressionDeviceTrigger::IsActive()
 {
-    GuidVector gos = AI_VALUE(GuidVector, "nearest game objects");
-    for (auto i = gos.begin(); i != gos.end(); ++i)
+    // Until MoP, only rogues could disarm suppression devices.
+    // If raid cheats are enabled, any bot can disarm the devices.
+    if (botAI->HasCheat(BotCheatMask::raid) || bot->IsClass(CLASS_ROGUE))
     {
-        const GameObject* go = botAI->GetGameObject(*i);
-        if (IsActiveSuppressionDeviceInRange(go, bot))
+        GuidVector gos = AI_VALUE(GuidVector, "nearest game objects");
+        for (auto i = gos.begin(); i != gos.end(); ++i)
         {
-            return true;
+            const GameObject* go = botAI->GetGameObject(*i);
+            if (IsActiveSuppressionDeviceInRange(go, bot))
+                return true;
         }
     }
     return false;
+}
+
+// Razorgore the Untamed
+
+bool BwlRazorgoreNotMindControlledTrigger::IsActive()
+{
+    if (Unit* boss = AI_VALUE2(Unit*, "find target", "razorgore the untamed"))
+        return !boss->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_MINDCONTROL));
+    return false;
+}
+
+// Vaelastrasz the Corrupt
+
+bool BwlVaelastraszPositioningTrigger::IsActive()
+{
+    // Prevent non-tanks from rotating the boss while the tanks gain thread.
+    if (Unit* boss = AI_VALUE2(Unit*, "find target", "vaelastrasz the corrupt"))
+        return boss->GetVictim() != bot;
+    return false;
+}
+
+bool BwlVaelastraszBurningAdrenalineTrigger::IsActive()
+{
+    // No check for Vaelastrasz, because bots may still have burning adrenaline even after Vaelastrasz died.
+    return bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_BURNING_ADRENALINE));
 }
 
 // Chromaggus
 
 bool BwlAfflictionBronzeTrigger::IsActive()
 {
-    return bot->HasAura(SPELL_BROOD_AFFLICTION_BRONZE);
+    return bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_BROOD_AFFLICTION_BRONZE));
 }
 
 // Nefarian
 
 bool BwlWildMagicTrigger::IsActive()
 {
-    return bot->getClass() == CLASS_MAGE && bot->HasAura(SPELL_WILD_MAGIC);
+    return bot->getClass() == CLASS_MAGE &&
+        bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_WILD_MAGIC));
 }
 
 bool BwlNefarianFearWardTrigger::IsActive()

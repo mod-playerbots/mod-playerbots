@@ -11,6 +11,9 @@
 
 bool LootAvailableTrigger::IsActive()
 {
+    if (!AI_VALUE(bool, "has available loot"))
+        return false;
+
     bool distanceCheck = false;
     if (botAI->HasStrategy("stay", BOT_STATE_NON_COMBAT))
     {
@@ -23,9 +26,16 @@ bool LootAvailableTrigger::IsActive()
                                                                  INTERACTION_DISTANCE - 2.0f);
     }
 
-    // if loot target if empty, always pass distance check
-    return AI_VALUE(bool, "has available loot") &&
-        (distanceCheck || AI_VALUE(GuidVector, "all targets").empty());
+    // Loot target in range, or no hostile targets to deal with first.
+    if (distanceCheck || AI_VALUE(GuidVector, "all targets").empty())
+        return true;
+
+    // A target that became not loot-possible after being selected - the bot
+    // was pulled into combat while approaching it, or it despawned - never
+    // returns to range, so without this it stays selected forever and the
+    // loot action never gets to pick another. Report active so it can.
+    LootObject lootTarget = AI_VALUE(LootObject, "loot target");
+    return !lootTarget.IsEmpty() && !lootTarget.IsLootPossible(bot);
 }
 
 bool FarFromCurrentLootTrigger::IsActive()

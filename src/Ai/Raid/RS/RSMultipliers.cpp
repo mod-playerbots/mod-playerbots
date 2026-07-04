@@ -33,6 +33,18 @@
 #include "RSScripts.h"
 #include "Timer.h"
 
+namespace
+{
+    bool RsIsAoeDamageAction(Action* action)
+    {
+        return dynamic_cast<DpsAoeAction*>(action) || dynamic_cast<CastHurricaneAction*>(action) ||
+               dynamic_cast<CastVolleyAction*>(action) || dynamic_cast<CastBlizzardAction*>(action) ||
+               dynamic_cast<CastStarfallAction*>(action) || dynamic_cast<FanOfKnivesAction*>(action) ||
+               dynamic_cast<CastWhirlwindAction*>(action) || dynamic_cast<CastMindSearAction*>(action) ||
+               dynamic_cast<CastArmyOfTheDeadAction*>(action);
+    }
+}
+
 float RsSavianaBeaconMultiplier::GetValue(Action* action)
 {
     if (!bot->HasAura(SPELL_FLAME_BEACON))
@@ -53,11 +65,7 @@ float RsBaltharusBrandSafeMultiplier::GetValue(Action* action)
     if (!group)
         return 1.0f;
 
-    if (dynamic_cast<DpsAoeAction*>(action) || dynamic_cast<CastHurricaneAction*>(action) ||
-        dynamic_cast<CastVolleyAction*>(action) || dynamic_cast<CastBlizzardAction*>(action) ||
-        dynamic_cast<CastStarfallAction*>(action) || dynamic_cast<FanOfKnivesAction*>(action) ||
-        dynamic_cast<CastWhirlwindAction*>(action) || dynamic_cast<CastMindSearAction*>(action) ||
-        dynamic_cast<CastArmyOfTheDeadAction*>(action))
+    if (RsIsAoeDamageAction(action))
         return 0.0f;
 
     for (GroupReference* itr = group->GetFirstMember(); itr; itr = itr->next())
@@ -101,19 +109,7 @@ float RsZarithrianAddsMultiplier::GetValue(Action* action)
     if (!boss)
         return 1.0f;
 
-    bool addAlive = false;
-    GuidVector const targets = AI_VALUE(GuidVector, "possible targets no los");
-    for (ObjectGuid const& guid : targets)
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->IsAlive() && unit->GetEntry() == NPC_ONYX_FLAMECALLER)
-        {
-            addAlive = true;
-            break;
-        }
-    }
-
-    if (!addAlive)
+    if (!RsFindTarget(botAI, [](Unit* unit) { return unit->GetEntry() == NPC_ONYX_FLAMECALLER; }))
         return 1.0f;
 
     if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FollowAction*>(action))
@@ -161,11 +157,7 @@ float RsHalionCombustionMultiplier::GetValue(Action* action)
     if (!RsHalionHasCombustion(bot))
         return 1.0f;
 
-    if (dynamic_cast<DpsAoeAction*>(action) || dynamic_cast<CastHurricaneAction*>(action) ||
-        dynamic_cast<CastVolleyAction*>(action) || dynamic_cast<CastBlizzardAction*>(action) ||
-        dynamic_cast<CastStarfallAction*>(action) || dynamic_cast<FanOfKnivesAction*>(action) ||
-        dynamic_cast<CastWhirlwindAction*>(action) || dynamic_cast<CastMindSearAction*>(action) ||
-        dynamic_cast<CastArmyOfTheDeadAction*>(action))
+    if (RsIsAoeDamageAction(action))
         return 0.0f;
 
     if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<RsHalionCombustionAction*>(action))
@@ -225,16 +217,20 @@ float RsHalionMeleeFlankMultiplier::GetValue(Action* action)
     if (RsHalionHasCombustion(bot) || RsHalionIsCombustionDispeller(botAI) || RsHalionCombustionReturning(bot))
         return 1.0f;
 
+    Player* const bossTank = RsHalionBossTank(botAI);
+
     if (Unit* boss = RsHalionPhase1Boss(botAI))
-        if (boss->HealthAbovePct(99) && RsHalionBossTank(botAI) != bot && dynamic_cast<ReachMeleeAction*>(action))
+        if (boss->HealthAbovePct(99) && bossTank != bot && dynamic_cast<ReachMeleeAction*>(action))
             return 0.0f;
 
-    if (RsHalionAnyPhysicalBoss(botAI) && RsHalionBossTank(botAI) == bot && dynamic_cast<ReachMeleeAction*>(action))
+    Unit* const physBoss = RsHalionAnyPhysicalBoss(botAI);
+
+    if (physBoss && bossTank == bot && dynamic_cast<ReachMeleeAction*>(action))
         return 0.0f;
 
-    if (Unit* boss = RsHalionAnyPhysicalBoss(botAI))
+    if (physBoss)
         if ((!botAI->IsTank(bot) || RsHalionAssistTankAsMelee(botAI)) && botAI->IsMelee(bot) &&
-            bot->GetExactDist2d(boss->GetPositionX(), boss->GetPositionY()) <= RS_HALION_LINE_MELEE_MAX &&
+            bot->GetExactDist2d(physBoss->GetPositionX(), physBoss->GetPositionY()) <= RS_HALION_LINE_MELEE_MAX &&
             dynamic_cast<ReachMeleeAction*>(action))
             return 0.0f;
 
@@ -252,7 +248,7 @@ float RsHalionHpBalanceMultiplier::GetValue(Action* action)
     if (!RsHalionInTwilight(bot) && RsHalionAnyAddAlive(botAI))
         return 1.0f;
 
-    if (!RsHalionLeadingTooMuch(botAI, bot) && !RsHalionInThrottledHalf(botAI, bot))
+    if (!RsHalionLeadingTooMuch(botAI, bot) && !RsHalionInThrottledHalf(bot))
         return 1.0f;
 
     if (dynamic_cast<RsHalionAvoidConesAction*>(action) ||
@@ -354,7 +350,9 @@ float RsHalionP2Multiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (RsHalionTwilightTank(botAI) != bot && RsHalionCutterShouldMove(bot->GetInstanceId()))
+    Player* const twilightTank = RsHalionTwilightTank(botAI);
+
+    if (twilightTank != bot && RsHalionCutterShouldMove(bot->GetInstanceId()))
     {
         if ((bot->getClass() == CLASS_ROGUE || bot->getClass() == CLASS_WARRIOR) &&
             !dynamic_cast<MeleeAction*>(action) &&
@@ -370,7 +368,7 @@ float RsHalionP2Multiplier::GetValue(Action* action)
             return 0.0f;
     }
 
-    if (RsHalionTwilightTank(botAI) != bot && dynamic_cast<ReachMeleeAction*>(action))
+    if (twilightTank != bot && dynamic_cast<ReachMeleeAction*>(action))
         return 0.0f;
 
     if (dynamic_cast<CombatFormationMoveAction*>(action) || dynamic_cast<FollowAction*>(action))

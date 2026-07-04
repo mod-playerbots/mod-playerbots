@@ -10,6 +10,7 @@
 #include "Group.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
+#include "Strategy.h"
 
 class FindTargetForTankStrategy : public FindNonCcTargetStrategy
 {
@@ -50,6 +51,8 @@ class FindTankTargetSmartStrategy : public FindTargetStrategy
 public:
     FindTankTargetSmartStrategy(PlayerbotAI* botAI) : FindTargetStrategy(botAI) {}
 
+    TargetValueExclusionType GetExclusionType() override { return TargetValueExclusionType::Tank; }
+
     void CheckAttacker(Unit* attacker, ThreatManager* /*threatMgr*/) override
     {
         if (Group* group = botAI->GetBot()->GetGroup())
@@ -58,6 +61,7 @@ public:
             if (guid && attacker->GetGUID() == guid)
                 return;
         }
+
         if (!attacker->IsAlive())
             return;
 

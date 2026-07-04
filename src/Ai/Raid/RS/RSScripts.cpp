@@ -15,82 +15,24 @@
 #include "Vehicle.h"
 #include <algorithm>
 #include <cmath>
+#include <mutex>
 #include <set>
 
 namespace RubySanctumHelpers
 {
-    std::recursive_mutex stateMutex;
-    std::unordered_map<uint32, MeteorPingPong> meteorPingPong;
-    std::unordered_map<uint32, CutterTiming> cutterTiming;
-    std::unordered_map<uint32, PortalAddGate> portalAddGate;
-    std::map<std::pair<uint32, ObjectGuid>, bool> p3TwilightAssignment;
-    std::unordered_map<uint32, HalionCorporeality> halionCorporeality;
-    std::unordered_map<uint32, BossHealth> bossHealth;
+    static std::mutex stateMutex;
+    static std::unordered_map<uint32, RsInstanceState> instanceStates;
 
-    std::unordered_map<uint32, uint32> tankAuraLastApply;
-    std::unordered_map<uint32, uint32> addBuffLastApply;
-    std::unordered_map<uint32, uint32> halionRootLastScan;
-    std::unordered_map<uint32, uint32> portalCountdownLastShown;
-    std::unordered_map<uint32, std::map<ObjectGuid, uint32>> portalSeen;
-
-    std::unordered_map<ObjectGuid, uint32> breathTwilightGrant;
-    std::unordered_map<ObjectGuid, uint32> breathPhysicalGrant;
-    std::unordered_map<ObjectGuid, uint32> p3RescueGrant;
-    std::unordered_map<ObjectGuid, uint32> consumptionGrant;
-    std::set<ObjectGuid> meteorCommitted;
-    std::set<ObjectGuid> rallyCommitted;
-    std::set<ObjectGuid> combustionReturning;
-    std::map<ObjectGuid, std::pair<uint32, bool>> cutterDangerCache;
-    std::map<ObjectGuid, bool> realmThrottled;
-    std::map<ObjectGuid, bool> meteorSpotUsesA;
-    std::map<ObjectGuid, ObjectGuid> botPortalTarget;
-    std::set<ObjectGuid> clearedForConsumption;
-
-    void ResetInstance(uint32 instanceId, Map* map)
+    RsInstanceState& RsState(uint32 instanceId)
     {
-        meteorPingPong.erase(instanceId);
-        cutterTiming.erase(instanceId);
-        portalAddGate.erase(instanceId);
-        halionCorporeality.erase(instanceId);
-        tankAuraLastApply.erase(instanceId);
-        addBuffLastApply.erase(instanceId);
-        halionRootLastScan.erase(instanceId);
-        portalCountdownLastShown.erase(instanceId);
-        portalSeen.erase(instanceId);
-        bossHealth.erase(instanceId);
+        std::lock_guard<std::mutex> lock(stateMutex);
+        return instanceStates[instanceId];
+    }
 
-        for (auto it = p3TwilightAssignment.begin(); it != p3TwilightAssignment.end(); )
-        {
-            if (it->first.first == instanceId)
-                it = p3TwilightAssignment.erase(it);
-            else
-                ++it;
-        }
-
-        if (!map)
-            return;
-
-        Map::PlayerList const& players = map->GetPlayers();
-        for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
-        {
-            Player* player = it->GetSource();
-            if (!player)
-                continue;
-
-            ObjectGuid const guid = player->GetGUID();
-            breathTwilightGrant.erase(guid);
-            breathPhysicalGrant.erase(guid);
-            p3RescueGrant.erase(guid);
-            consumptionGrant.erase(guid);
-            meteorCommitted.erase(guid);
-            rallyCommitted.erase(guid);
-            combustionReturning.erase(guid);
-            cutterDangerCache.erase(guid);
-            realmThrottled.erase(guid);
-            meteorSpotUsesA.erase(guid);
-            botPortalTarget.erase(guid);
-            clearedForConsumption.erase(guid);
-        }
+    void ResetInstance(uint32 instanceId)
+    {
+        std::lock_guard<std::mutex> lock(stateMutex);
+        instanceStates.erase(instanceId);
     }
 }
 
@@ -115,8 +57,6 @@ public:
         if (!creature || creature->GetMapId() != RS_MAP_RUBY_SANCTUM)
             return;
 
-        std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
-
         if (creature->GetEntry() == NPC_METEOR_STRIKE_MARK)
         {
             HandleMeteorMark(creature);
@@ -134,14 +74,15 @@ public:
 
         if ((creature->GetEntry() == NPC_LIVING_INFERNO || creature->GetEntry() == NPC_LIVING_EMBER) &&
             creature->IsAlive())
-            RubySanctumHelpers::portalAddGate[creature->GetMap()->GetInstanceId()].lastAddAliveTime = getMSTime();
+            RubySanctumHelpers::RsState(creature->GetMap()->GetInstanceId())
+                .portalAddGate.lastAddAliveTime = getMSTime();
     }
 
 private:
     void HandleCutterTiming(Creature* carrier)
     {
         uint32 const instanceId = carrier->GetMap()->GetInstanceId();
-        RubySanctumHelpers::CutterTiming& state = RubySanctumHelpers::cutterTiming[instanceId];
+        RubySanctumHelpers::CutterTiming& state = RubySanctumHelpers::RsState(instanceId).cutterTiming;
 
         bool firing = false;
         Unit* tracked = nullptr;
@@ -187,8 +128,7 @@ private:
         uint32 const instanceId = creature->GetMap()->GetInstanceId();
         uint32 const now = getMSTime();
 
-        auto& lastApply = RubySanctumHelpers::tankAuraLastApply;
-        uint32& last = lastApply[instanceId];
+        uint32& last = RubySanctumHelpers::RsState(instanceId).tankAuraLastApply;
         if (last != 0 && getMSTimeDiff(last, now) < 2000)
             return;
         last = now;
@@ -209,8 +149,7 @@ private:
         uint32 const instanceId = creature->GetMap()->GetInstanceId();
         uint32 const now = getMSTime();
 
-        auto& lastApply = RubySanctumHelpers::addBuffLastApply;
-        uint32& last = lastApply[instanceId];
+        uint32& last = RubySanctumHelpers::RsState(instanceId).addBuffLastApply;
         if (last != 0 && getMSTimeDiff(last, now) < 2000)
             return;
         last = now;
@@ -253,7 +192,7 @@ private:
         uint32 const rescueMs = 5000;
         float const bossHp = creature->GetHealthPct();
 
-        auto& grantStart = RubySanctumHelpers::p3RescueGrant;
+        auto& grantStart = RubySanctumHelpers::RsState(creature->GetMap()->GetInstanceId()).p3RescueGrant;
 
         Map::PlayerList const& players = creature->GetMap()->GetPlayers();
 
@@ -328,9 +267,9 @@ private:
             }
         }
 
-        auto& twilightGrantStart = RubySanctumHelpers::breathTwilightGrant;
-        auto& physicalGrantStart = RubySanctumHelpers::breathPhysicalGrant;
-        std::unordered_map<ObjectGuid, uint32>& grantStart = twilight ? twilightGrantStart : physicalGrantStart;
+        RubySanctumHelpers::RsInstanceState& state = RubySanctumHelpers::RsState(boss->GetMap()->GetInstanceId());
+        std::unordered_map<ObjectGuid, uint32>& grantStart =
+            twilight ? state.breathTwilightGrant : state.breathPhysicalGrant;
 
         Map::PlayerList const& players = boss->GetMap()->GetPlayers();
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
@@ -385,7 +324,7 @@ private:
         uint32 const now = getMSTime();
         uint32 const holdMs = 2000;
 
-        auto& grantStart = RubySanctumHelpers::consumptionGrant;
+        auto& grantStart = RubySanctumHelpers::RsState(twilight->GetMap()->GetInstanceId()).consumptionGrant;
 
         Map::PlayerList const& players = twilight->GetMap()->GetPlayers();
         for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
@@ -441,17 +380,18 @@ private:
 
     void HandleTwilightHalionRoot(Creature* creature)
     {
-        uint32 const instanceId = creature->GetMap()->GetInstanceId();
+        RubySanctumHelpers::RsInstanceState& instState =
+            RubySanctumHelpers::RsState(creature->GetMap()->GetInstanceId());
 
         if (creature->IsAlive() && creature->IsInCombat())
         {
-            RubySanctumHelpers::HalionCorporeality& corp = RubySanctumHelpers::halionCorporeality[instanceId];
+            RubySanctumHelpers::HalionCorporeality& corp = instState.halionCorporeality;
             corp.twilightIndex = RsHalionReadCorporealityIndex(creature);
             corp.twilightStamp = getMSTime();
-            RubySanctumHelpers::bossHealth[instanceId] = { uint8(creature->GetHealthPct()), getMSTime() };
+            instState.bossHealth = { uint8(creature->GetHealthPct()), getMSTime() };
         }
 
-        RubySanctumHelpers::CutterTiming& state = RubySanctumHelpers::cutterTiming[instanceId];
+        RubySanctumHelpers::CutterTiming& state = instState.cutterTiming;
         if (state.bossGuid != creature->GetGUID())
         {
             state = RubySanctumHelpers::CutterTiming{};
@@ -505,16 +445,12 @@ private:
         if (!mark->IsAlive())
             return;
 
-        uint32 const instanceId = mark->GetMap()->GetInstanceId();
+        RubySanctumHelpers::RsInstanceState& instState = RubySanctumHelpers::RsState(mark->GetMap()->GetInstanceId());
 
-        static std::set<ObjectGuid> seenMarks;
-        if (!seenMarks.insert(mark->GetGUID()).second)
+        if (!instState.seenMeteorMarks.insert(mark->GetGUID()).second)
             return;
 
-        if (seenMarks.size() > 256)
-            seenMarks.clear();
-
-        RubySanctumHelpers::MeteorPingPong& state = RubySanctumHelpers::meteorPingPong[instanceId];
+        RubySanctumHelpers::MeteorPingPong& state = instState.meteorPingPong;
         state.lastCastTime = getMSTime();
 
         bool const tankMeteor = mark->GetExactDist2d(RS_HALION_TANK_POSITION.GetPositionX(), RS_HALION_TANK_POSITION.GetPositionY()) <= 10.0f;
@@ -531,26 +467,23 @@ private:
     {
         uint32 const instanceId = creature->GetMap()->GetInstanceId();
 
-        auto& lastScan = RubySanctumHelpers::halionRootLastScan;
-
         bool const fightActive = creature->IsAlive() && creature->IsInCombat();
-
-        if (fightActive)
-        {
-            RubySanctumHelpers::HalionCorporeality& corp = RubySanctumHelpers::halionCorporeality[instanceId];
-            corp.physicalIndex = RsHalionReadCorporealityIndex(creature);
-            corp.physicalStamp = getMSTime();
-            corp.physicalGuid = creature->GetGUID();
-            RubySanctumHelpers::bossHealth[instanceId] = { uint8(creature->GetHealthPct()), getMSTime() };
-        }
 
         if (!fightActive)
         {
             if (creature->HasUnitState(UNIT_STATE_ROOT))
                 creature->SetControlled(false, UNIT_STATE_ROOT);
-            RubySanctumHelpers::ResetInstance(instanceId, creature->GetMap());
+            RubySanctumHelpers::ResetInstance(instanceId);
             return;
         }
+
+        RubySanctumHelpers::RsInstanceState& instState = RubySanctumHelpers::RsState(instanceId);
+
+        RubySanctumHelpers::HalionCorporeality& corp = instState.halionCorporeality;
+        corp.physicalIndex = RsHalionReadCorporealityIndex(creature);
+        corp.physicalStamp = getMSTime();
+        corp.physicalGuid = creature->GetGUID();
+        instState.bossHealth = { uint8(creature->GetHealthPct()), getMSTime() };
 
         HandleTankAuras(creature);
         HandleAddBuff(creature);
@@ -575,7 +508,7 @@ private:
             HandleP3TankRescue(creature);
 
         uint32 const now = getMSTime();
-        uint32& last = lastScan[instanceId];
+        uint32& last = instState.halionRootLastScan;
         if (last != 0 && getMSTimeDiff(last, now) < 1000)
             return;
         last = now;

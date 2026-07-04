@@ -4,8 +4,8 @@
  * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_RSS_H
-#define _PLAYERBOT_RSS_H
+#ifndef PLAYERBOTS_RSS_H
+#define PLAYERBOTS_RSS_H
 
 #include "Strategy.h"
 

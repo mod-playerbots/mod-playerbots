@@ -118,10 +118,12 @@ void Engine::Init()
 {
     Reset();
 
+    hasTargetExclusions = false;
     for (std::map<std::string, Strategy*>::iterator i = strategies.begin(); i != strategies.end(); i++)
     {
         Strategy* strategy = i->second;
         strategyTypeMask |= strategy->GetType();
+        hasTargetExclusions |= strategy->HasTargetExclusions();
         strategy->InitMultipliers(multipliers);
         strategy->InitTriggers(triggers);
         for (auto &iter : strategy->actionNodeFactories.creators)

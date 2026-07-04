@@ -86,6 +86,7 @@ public:
 
     void removeActionExecutionListener(ActionExecutionListener* listener) { actionExecutionListeners.Remove(listener); }
     bool HasStrategyType(StrategyType type) { return strategyTypeMask & type; }
+    bool HasTargetExclusions() const { return hasTargetExclusions; }
     virtual ~Engine(void);
 
     bool testMode;
@@ -115,6 +116,7 @@ protected:
     float lastRelevance;
     std::string lastAction;
     uint32 strategyTypeMask;
+    bool hasTargetExclusions = false;
     NamedObjectFactoryList<ActionNode> actionNodeFactories;
 };
 

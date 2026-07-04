@@ -4,8 +4,8 @@
  * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_RST_H
-#define _PLAYERBOT_RST_H
+#ifndef PLAYERBOTS_RST_H
+#define PLAYERBOTS_RST_H
 
 #include "PlayerbotAI.h"
 #include "Playerbots.h"

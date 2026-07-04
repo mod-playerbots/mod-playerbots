@@ -4,8 +4,8 @@
  * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_RSACTIONCONTEXT_H
-#define _PLAYERBOT_RSACTIONCONTEXT_H
+#ifndef PLAYERBOTS_RSACTIONCONTEXT_H
+#define PLAYERBOTS_RSACTIONCONTEXT_H
 
 #include "Action.h"
 #include "NamedObjectContext.h"

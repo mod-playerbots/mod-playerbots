@@ -158,41 +158,11 @@ bool RsTrashAddsAction::Execute(Event )
 {
     context->GetValue<std::string>("rti")->Set("skull");
 
-    if (!IsDesignatedMarker())
+    if (!RsIsDesignatedMarker(bot))
         return false;
 
-    UpdateSkullMarker(FindPriorityAdd());
+    RsUpdateSkullMarker(bot, FindPriorityAdd());
     return false;
-}
-
-bool RsTrashAddsAction::IsDesignatedMarker()
-{
-    Group* group = bot->GetGroup();
-    if (!group)
-        return true;
-
-    ObjectGuid lowest = bot->GetGUID();
-    for (GroupReference* itr = group->GetFirstMember(); itr; itr = itr->next())
-    {
-        Player* member = itr->GetSource();
-        if (!member || !member->IsAlive())
-            continue;
-
-        PlayerbotAI* memberAI = sPlayerbotsMgr.GetPlayerbotAI(member);
-        if (!memberAI)
-            continue;
-
-        if (memberAI->IsTank(member) || memberAI->IsHeal(member))
-            continue;
-
-        if (member->GetMapId() != bot->GetMapId() || member->GetInstanceId() != bot->GetInstanceId())
-            continue;
-
-        if (member->GetGUID() < lowest)
-            lowest = member->GetGUID();
-    }
-
-    return bot->GetGUID() == lowest;
 }
 
 Unit* RsTrashAddsAction::FindPriorityAdd()
@@ -234,19 +204,6 @@ Unit* RsTrashAddsAction::FindPriorityAdd()
     return best;
 }
 
-void RsTrashAddsAction::UpdateSkullMarker(Unit* priorityAdd)
-{
-    if (!priorityAdd)
-        return;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return;
-
-    if (group->GetTargetIcon(RtiTargetValue::skullIndex) != priorityAdd->GetGUID())
-        group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), priorityAdd->GetGUID());
-}
-
 bool RsTrashTankAction::HoldAt(std::vector<Unit*> const& assigned, float spotX, float spotY, float spotZ,
                                bool moveToSpot, bool hasAway, float awayOri)
 {
@@ -257,12 +214,8 @@ bool RsTrashTankAction::HoldAt(std::vector<Unit*> const& assigned, float spotX, 
         if (!mob || !mob->IsAlive())
             continue;
 
-        if (botAI->HasCheat(BotCheatMask::raid) && mob->IsInCombat() && mob->GetVictim() != bot)
-        {
-            ThreatManager& mgr = mob->GetThreatMgr();
-            mgr.AddThreat(bot, 1000000.0f, nullptr, true, true);
-            mgr.FixateTarget(bot);
-        }
+        if (botAI->HasCheat(BotCheatMask::raid) && mob->IsInCombat())
+            RsForceThreat(mob, bot);
 
         if (hasAway)
             mob->SetFacingTo(awayOri);
@@ -293,14 +246,8 @@ bool RsTrashMainTankAction::Execute(Event )
     if (!botAI->IsTank(bot))
         return false;
 
-    if (bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == FOLLOW_MOTION_TYPE)
-    {
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
-        if (bot->GetTarget())
-            bot->SetTarget(ObjectGuid::Empty);
+    if (RsReleaseIfFollowing(bot))
         return false;
-    }
 
     std::vector<Unit*> mobs;
     CollectTrashForTank(bot, mobs);
@@ -377,14 +324,8 @@ bool RsTrashAssistTankAction::Execute(Event )
     if (!botAI->IsTank(bot))
         return false;
 
-    if (bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == FOLLOW_MOTION_TYPE)
-    {
-        bot->AttackStop();
-        bot->InterruptNonMeleeSpells(true);
-        if (bot->GetTarget())
-            bot->SetTarget(ObjectGuid::Empty);
+    if (RsReleaseIfFollowing(bot))
         return false;
-    }
 
     std::vector<Unit*> mobs;
     CollectTrashForTank(bot, mobs);

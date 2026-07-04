@@ -40,13 +40,7 @@ bool RsHalionTankPositionAction::Execute(Event )
     if (botAI->HasCheat(BotCheatMask::raid))
     {
         for (Unit* add : adds)
-        {
-            if (add->GetVictim() == bot)
-                continue;
-            ThreatManager& mgr = add->GetThreatMgr();
-            mgr.AddThreat(bot, 1000000.0f, nullptr, true, true);
-            mgr.FixateTarget(bot);
-        }
+            RsForceThreat(add, bot);
     }
 
     if (Group* group = bot->GetGroup())
@@ -132,7 +126,6 @@ bool RsHalionTankPositionAction::Execute(Event )
 
 bool RsHalionAvoidConesAction::Execute(Event )
 {
-    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
     if (PlayerbotAI::IsMainTank(bot))
         return false;
 
@@ -143,7 +136,11 @@ bool RsHalionAvoidConesAction::Execute(Event )
     if (!boss)
         return false;
 
-    if (!botAI->IsTank(bot) && RsHalionRealmThrottled(botAI, bot))
+    bool const melee = botAI->IsMelee(bot);
+    bool const addsUp = RsHalionAnyAddAlive(botAI);
+
+    if (!botAI->IsTank(bot) && !addsUp && RsHalionRealmThrottled(botAI, bot) &&
+        (RsHalionLeadingTooMuch(botAI, bot) || RsHalionInThrottledHalf(bot)))
     {
         if (bot->GetVictim())
             bot->AttackStop();
@@ -151,9 +148,6 @@ bool RsHalionAvoidConesAction::Execute(Event )
             if (pet->GetVictim())
                 pet->AttackStop();
     }
-
-    bool const melee = botAI->IsMelee(bot);
-    bool const addsUp = RsHalionAnyAddAlive(botAI);
 
     if (melee && addsUp)
         context->GetValue<std::string>("rti")->Set("star");
@@ -169,7 +163,7 @@ bool RsHalionAvoidConesAction::Execute(Event )
     float const dA = bot->GetExactDist2d(RS_HALION_METEOR_SPOT_A.GetPositionX(), RS_HALION_METEOR_SPOT_A.GetPositionY());
     float const dB = bot->GetExactDist2d(RS_HALION_METEOR_SPOT_B.GetPositionX(), RS_HALION_METEOR_SPOT_B.GetPositionY());
 
-    auto& botUsesSpotA = RubySanctumHelpers::meteorSpotUsesA;
+    auto& botUsesSpotA = RubySanctumHelpers::RsState(bot->GetInstanceId()).meteorSpotUsesA;
     ObjectGuid const botGuid = bot->GetGUID();
     auto memIt = botUsesSpotA.find(botGuid);
     bool usesA = memIt != botUsesSpotA.end() ? memIt->second : dA <= dB;
@@ -318,7 +312,6 @@ bool RsHalionAddTankAction::Execute(Event )
 
 bool RsHalionEnterPortalAction::Execute(Event )
 {
-    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
     if (PlayerbotAI::IsMainTank(bot))
         return false;
 
@@ -330,7 +323,7 @@ bool RsHalionEnterPortalAction::Execute(Event )
     {
         Unit* twilightBoss = RsHalionTwilightBoss(botAI);
         bool const tBossLow = twilightBoss != nullptr && !twilightBoss->HealthAbovePct(50);
-        if (!tBossLow || RsHalionP3TwilightAssigned(botAI, bot))
+        if (!tBossLow || RsHalionP3TwilightAssigned(bot))
             return false;
 
         if (RsHalionHasConsumption(bot))
@@ -348,8 +341,7 @@ bool RsHalionEnterPortalAction::Execute(Event )
             uint32 const remaining = RsHalionPortalAddHoldRemainingMs(botAI);
             uint32 const shown = (remaining + 999) / 1000 + 2;
 
-            auto& lastShown = RubySanctumHelpers::portalCountdownLastShown;
-            uint32& last = lastShown[bot->GetInstanceId()];
+            uint32& last = RubySanctumHelpers::RsState(bot->GetInstanceId()).portalCountdownLastShown;
             if (last != shown)
             {
                 last = shown;
@@ -359,7 +351,7 @@ bool RsHalionEnterPortalAction::Execute(Event )
         return false;
     }
 
-    auto& botPortalTarget = RubySanctumHelpers::botPortalTarget;
+    auto& botPortalTarget = RubySanctumHelpers::RsState(bot->GetInstanceId()).botPortalTarget;
     ObjectGuid const botGuid = bot->GetGUID();
 
     GameObject* portal = nullptr;
@@ -386,8 +378,7 @@ bool RsHalionEnterPortalAction::Execute(Event )
         if (!firstCrosser || !RsHalionInTwilight(firstCrosser))
             return false;
 
-        auto& portalSeen = RubySanctumHelpers::portalSeen;
-        uint32& seen = portalSeen[bot->GetInstanceId()][bot->GetGUID()];
+        uint32& seen = RubySanctumHelpers::RsState(bot->GetInstanceId()).portalSeen[bot->GetGUID()];
         if (seen == 0)
             seen = getMSTime();
 
@@ -527,7 +518,6 @@ bool RsHalionP2TankPositionAction::Execute(Event )
 
 bool RsHalionP2AvoidConesAction::Execute(Event )
 {
-    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
     if (RsHalionTwilightTank(botAI) == bot)
         return false;
 
@@ -540,7 +530,7 @@ bool RsHalionP2AvoidConesAction::Execute(Event )
 
     if (RsHalionCutterShouldMove(bot->GetInstanceId()))
     {
-        auto& botPortalTarget = RubySanctumHelpers::botPortalTarget;
+        auto& botPortalTarget = RubySanctumHelpers::RsState(bot->GetInstanceId()).botPortalTarget;
         auto portalIt = botPortalTarget.find(bot->GetGUID());
         if (portalIt != botPortalTarget.end())
         {
@@ -553,7 +543,8 @@ bool RsHalionP2AvoidConesAction::Execute(Event )
         }
     }
 
-    if (!PlayerbotAI::IsTank(bot) && RsHalionRealmThrottled(botAI, bot))
+    if (!PlayerbotAI::IsTank(bot) && RsHalionRealmThrottled(botAI, bot) &&
+        (RsHalionLeadingTooMuch(botAI, bot) || RsHalionInThrottledHalf(bot)))
     {
         if (bot->GetVictim())
             bot->AttackStop();
@@ -699,8 +690,7 @@ bool RsHalionP2AvoidConesAction::Execute(Event )
 
 bool RsHalionConsumptionAction::Execute(Event )
 {
-    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
-    auto& clearedForConsumption = RubySanctumHelpers::clearedForConsumption;
+    auto& clearedForConsumption = RubySanctumHelpers::RsState(bot->GetInstanceId()).clearedForConsumption;
     ObjectGuid const botGuid = bot->GetGUID();
 
     if (!bot->HasAura(SPELL_MARK_OF_CONSUMPTION) && !bot->HasAura(SPELL_SOUL_CONSUMPTION))
@@ -848,7 +838,6 @@ bool RsHalionHealConsumptionAction::Execute(Event )
 
 bool RsHalionCutterAction::Execute(Event )
 {
-    std::lock_guard<std::recursive_mutex> lock(RubySanctumHelpers::stateMutex);
     if (bot->HasAura(SPELL_MARK_OF_CONSUMPTION) || bot->HasAura(SPELL_SOUL_CONSUMPTION))
         return false;
 
@@ -879,7 +868,7 @@ bool RsHalionCutterAction::Execute(Event )
 
     Player* twilightTank = RsHalionTwilightTank(botAI);
 
-    RubySanctumHelpers::CutterTiming& timing = RubySanctumHelpers::cutterTiming[bot->GetInstanceId()];
+    RubySanctumHelpers::CutterTiming& timing = RubySanctumHelpers::RsState(bot->GetInstanceId()).cutterTiming;
     float const spinSign = timing.spinSign != 0.0f ? timing.spinSign : 1.0f;
 
     if (twilightTank == bot)
