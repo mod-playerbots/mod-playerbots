@@ -2172,6 +2172,15 @@ AiPlayerbot.CommandServerPort = 8888
 AiPlayerbot.SpellDump = 0
 AiPlayerbot.LogInGroupOnly = 1
 AiPlayerbot.LogValuesPerTick = 0
+##################################################################################
+# Remove this whole box once AQ40 strat is complete
+# Enable structured AQ40-only raid strategy logging without enabling generic
+# per-tick playerbot value dumps.
+AiPlayerbot.Aq40StrategyLog = 0
+# AQ40 throttling is applied per bot + event + state. Increase this to reduce
+# repeated raid spam, or lower it for more detail while debugging.
+AiPlayerbot.Aq40StrategyLogThrottleMs = 5000
+###################################################################################
 AiPlayerbot.RandomChangeMultiplier = 1
 
 # Tell which spell is avoiding (experimental)

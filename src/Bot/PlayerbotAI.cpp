@@ -1653,6 +1653,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         case 509:
             strategyName = "aq20";  // Ruins of Ahn'Qiraj
             break;
+        case 531:
+            strategyName = "aq40";  // Temple of Ahn'Qiraj
+            break;
         case 532:
             strategyName = "karazhan";  // Karazhan
             break;

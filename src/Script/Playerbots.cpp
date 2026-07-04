@@ -525,6 +525,7 @@ public:
 
 void AddPlayerbotsSecureLoginScripts();
 
+void AddSC_Aq40BotScripts();
 void AddSC_TempestKeepBotScripts();
 void AddSC_IcecrownBotScripts();
 void AddSC_RubySanctumBotScripts();
@@ -543,6 +544,7 @@ void AddPlayerbotsScripts()
     AddPlayerbotsSecureLoginScripts();
     AddPlayerbotsCommandscripts();
     PlayerBotsGuildValidationScript();
+    AddSC_Aq40BotScripts();
     AddSC_TempestKeepBotScripts();
     AddSC_IcecrownBotScripts();
     AddSC_RubySanctumBotScripts();

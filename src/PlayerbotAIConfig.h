@@ -251,7 +251,10 @@ public:
 
     uint32 randomBotTeleLowerLevel, randomBotTeleHigherLevel;
     std::map<uint32, std::pair<uint32, uint32>> zoneBrackets;
-    bool logInGroupOnly, logValuesPerTick;
+    // remove once AQ40 startegy is complete. Revert back to: bool logInGroupOnly, logValuesPerTick;
+    bool logInGroupOnly, logValuesPerTick, aq40StrategyLog;
+    // remove this line as well
+    uint32 aq40StrategyLogThrottleMs;
     bool fleeingEnabled;
     bool summonAtInnkeepersEnabled;
     std::string combatStrategies, nonCombatStrategies;
