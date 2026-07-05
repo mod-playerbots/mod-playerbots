@@ -362,8 +362,8 @@ std::string const ChatHelper::FormatQuest(Quest const* quest)
     QuestLocale const* locale = sObjectMgr->GetQuestLocale(quest->GetQuestId());
     std::string questTitle;
 
-    if (locale && locale->Title.size() > sPlayerbotAIConfig->textLocale)
-        questTitle = locale->Title[sPlayerbotAIConfig->textLocale];
+    if (locale && locale->Title.size() > sPlayerbotAIConfig.textLocale)
+        questTitle = locale->Title[sPlayerbotAIConfig.textLocale];
 
     if (questTitle.empty())
         questTitle = quest->GetTitle();
@@ -376,7 +376,7 @@ std::string const ChatHelper::FormatGameobject(GameObject* go)
 {
     std::ostringstream out;
     out << "|cFFFFFF00|Hfound:" << go->GetGUID().GetRawValue() << ":" << go->GetEntry() << ":"
-        << "|h[" << go->GetNameForLocaleIdx(sPlayerbotAIConfig->textLocale) << "]|h|r";
+        << "|h[" << go->GetNameForLocaleIdx(static_cast<LocaleConstant>(sPlayerbotAIConfig.textLocale)) << "]|h|r";
     return out.str();
 }
 
@@ -385,8 +385,8 @@ std::string const ChatHelper::FormatWorldobject(WorldObject* wo)
     std::ostringstream out;
     out << "|cFFFFFF00|Hfound:" << wo->GetGUID().GetRawValue() << ":" << wo->GetEntry() << ":"
         << "|h[";
-    out << (wo->ToGameObject() ? ((GameObject*)wo)->GetNameForLocaleIdx(sPlayerbotAIConfig->textLocale)
-                               : wo->GetNameForLocaleIdx(sPlayerbotAIConfig->textLocale))
+    out << (wo->ToGameObject() ? ((GameObject*)wo)->GetNameForLocaleIdx(static_cast<LocaleConstant>(sPlayerbotAIConfig.textLocale))
+                               : wo->GetNameForLocaleIdx(static_cast<LocaleConstant>(sPlayerbotAIConfig.textLocale)))
         << "]|h|r";
     return out.str();
 }
@@ -419,7 +419,7 @@ std::string const ChatHelper::FormatWorldEntry(int32 entry)
 std::string const ChatHelper::FormatSpell(SpellInfo const* spellInfo)
 {
     std::ostringstream out;
-    uint8 dbLocale = sWorld->GetDefaultDbLocale();
+    uint8 dbLocale = sPlayerbotAIConfig.textLocale;
     std::string spellName = spellInfo->SpellName[dbLocale] ?
         spellInfo->SpellName[dbLocale] : spellInfo->SpellName[LOCALE_enUS];
 
@@ -450,8 +450,8 @@ std::string const ChatHelper::FormatItem(ItemTemplate const* proto, uint32 count
     std::string itemName;
     const ItemLocale* locale = sObjectMgr->GetItemLocale(proto->ItemId);
 
-    if (locale && locale->Name.size() > sPlayerbotAIConfig->textLocale)
-        itemName = locale->Name[sPlayerbotAIConfig->textLocale];
+    if (locale && locale->Name.size() > sPlayerbotAIConfig.textLocale)
+        itemName = locale->Name[static_cast<LocaleConstant>(sPlayerbotAIConfig.textLocale)];
 
     if (itemName.empty())
         itemName = proto->Name1;

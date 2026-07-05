@@ -9,7 +9,7 @@ BroadcastHelper::BroadcastHelper() {}
 
 uint8 BroadcastHelper::GetLocale()
 {
-    uint8 locale = sPlayerbotAIConfig->textLocale;
+    uint8 locale = sPlayerbotAIConfig.textLocale;
     // -- In case we're using auto detect on config file^M
     if (locale >= MAX_LOCALES)
         locale = LocaleConstant::LOCALE_enUS;
