@@ -164,6 +164,7 @@ public:
     bool enableBroadcasts;
     bool enableGreet;
     bool randomBotSayWithoutMaster;
+    uint32 textLocale;
 
     uint32 broadcastChanceMaxValue;
 
