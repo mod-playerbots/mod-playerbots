@@ -61,7 +61,10 @@ bool InviteNearbyToGroupAction::Execute(Event /*event*/)
         if (player->GetGroup())
             continue;
 
-        if (!PlayerbotAIConfig::instance().randomBotInvitePlayer && GET_PLAYERBOT_AI(player)->IsRealPlayer())
+        PlayerbotAI* playerAI = GET_PLAYERBOT_AI(player);
+
+        // Real players have no playerbot AI - never dereference it blindly.
+        if (!PlayerbotAIConfig::instance().randomBotInvitePlayer && (!playerAI || playerAI->IsRealPlayer()))
             continue;
 
         Group* group = bot->GetGroup();
@@ -72,15 +75,13 @@ bool InviteNearbyToGroupAction::Execute(Event /*event*/)
         if (player->IsBeingTeleported())
             continue;
 
-        PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-
-        if (botAI)
+        if (playerAI)
         {
-            if (botAI->GetGrouperType() == GrouperType::SOLO &&
-                !botAI->HasRealPlayerMaster())  // Do not invite solo players.
+            if (playerAI->GetGrouperType() == GrouperType::SOLO &&
+                !playerAI->HasRealPlayerMaster())  // Do not invite solo players.
                 continue;
 
-            if (botAI->HasActivePlayerMaster())  // Do not invite alts of active players.
+            if (playerAI->HasActivePlayerMaster())  // Do not invite alts of active players.
                 continue;
         }
 
@@ -183,7 +184,10 @@ bool InviteGuildToGroupAction::Execute(Event /*event*/)
         if (player->isDND())
             continue;
 
-        if (!PlayerbotAIConfig::instance().randomBotInvitePlayer && GET_PLAYERBOT_AI(player)->IsRealPlayer())
+        PlayerbotAI* memberAI = GET_PLAYERBOT_AI(player);
+
+        // Real players have no playerbot AI - never dereference it blindly.
+        if (!PlayerbotAIConfig::instance().randomBotInvitePlayer && (!memberAI || memberAI->IsRealPlayer()))
             continue;
 
         if (player->IsBeingTeleported())

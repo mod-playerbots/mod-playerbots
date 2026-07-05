@@ -970,7 +970,8 @@ AiPlayerbot.botActiveAloneSmartScaleWhenMaxLevel = 80
 AiPlayerbot.RandomBotQuestIds = "3802,5505,6502,7761,7848,10277,10285,11492,13188,13189,24499,24511,24710,24712"
 
 # Randombots will group with nearby randombots to do shared quests
-# Note: Currently not functioning properly
+# Group composition follows each bot's grouper type:
+# ~20% of bots stay solo, ~60% only join, ~20% lead groups of 2-5.
 AiPlayerbot.RandomBotGroupNearby = 0
 
 # Randombots will pick quests on their own and try to complete them

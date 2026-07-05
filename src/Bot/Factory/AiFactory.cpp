@@ -607,7 +607,8 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
 
             // nonCombatEngine->addStrategy("pvp", false);
             // nonCombatEngine->addStrategy("collision");
-            // nonCombatEngine->addStrategy("group");
+            if (sPlayerbotAIConfig.randomBotGroupNearby)
+                nonCombatEngine->addStrategy("group", false);
             // nonCombatEngine->addStrategy("guild");
             nonCombatEngine->addStrategy("grind", false);
 

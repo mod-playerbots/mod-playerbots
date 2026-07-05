@@ -4480,19 +4480,31 @@ Player* PlayerbotAI::GetGroupLeader()
     return master;
 }
 
-uint32 PlayerbotAI::GetFixedBotNumber(uint32 maxNum)
+uint32 PlayerbotAI::GetFixedBotNumber(uint32 maxNum, BotTypeNumber typeNumber)
 {
     if (maxNum == 0)
         return 0;
 
-    // Deterministic pseudo-random hash based on the bot GUID evenly distributed across active slots
+    // Deterministic pseudo-random hash based on the bot GUID, salted per trait type so
+    // grouper/guilder/activity numbers are decorrelated. Stable for the bot's lifetime —
+    // personality traits (GrouperType/GuilderType) must never change between checks.
     uint32 id = bot->GetGUID().GetCounter();
-    uint32 h = id;
+    uint32 h = id + uint32(typeNumber) * 0x9e3779b9;
     h ^= h >> 16;
     h *= 0x7feb352d;
     h ^= h >> 15;
     h *= 0x846ca68b;
     h ^= h >> 16;
+
+    return h % maxNum;
+}
+
+uint32 PlayerbotAI::GetRotatingBotNumber(uint32 maxNum)
+{
+    if (maxNum == 0)
+        return 0;
+
+    uint32 h = GetFixedBotNumber(0xFFFFFFFF, BotTypeNumber::ACTIVITY_TYPE_NUMBER);
 
     // Current time slot
     uint32 timeSlot = (getMSTime() / 1000) / sPlayerbotAIConfig.BotActiveAloneDurationSeconds;
@@ -4517,7 +4529,7 @@ enum GrouperType
 
 GrouperType PlayerbotAI::GetGrouperType()
 {
-    uint32 grouperNumber = GetFixedBotNumber(100);
+    uint32 grouperNumber = GetFixedBotNumber(100, BotTypeNumber::GROUPER_TYPE_NUMBER);
 
     if (grouperNumber < 20 && !HasRealPlayerMaster())
         return GrouperType::SOLO;
@@ -4539,7 +4551,7 @@ GrouperType PlayerbotAI::GetGrouperType()
 
 GuilderType PlayerbotAI::GetGuilderType()
 {
-    uint32 grouperNumber = GetFixedBotNumber(100);
+    uint32 grouperNumber = GetFixedBotNumber(100, BotTypeNumber::GUILDER_TYPE_NUMBER);
 
     if (grouperNumber < 20 && !HasRealPlayerMaster())
         return GuilderType::SOLO;
@@ -4767,7 +4779,7 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
     }
 
     // deterministic rotation — bot is active if its hash falls below the threshold
-    uint32 ActivityNumber = GetFixedBotNumber(100);
+    uint32 ActivityNumber = GetRotatingBotNumber(100);
     return ActivityNumber < mod;
 }
 
