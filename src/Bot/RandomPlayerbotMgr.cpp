@@ -1484,6 +1484,13 @@ bool RandomPlayerbotMgr::ProcessBot(Player* bot)
     Group* group = bot->GetGroup();
     if (group && !group->isLFGGroup() && IsRandomBot(group->GetLeader()))
     {
+        // With RandomBotGroupNearby enabled these groups are a feature: skip
+        // lifecycle processing (randomize/teleport would pull members away
+        // from their group), matching the GetGroup() early-out in
+        // ProcessBot(uint32).
+        if (sPlayerbotAIConfig.randomBotGroupNearby)
+            return false;
+
         botAI->LeaveOrDisbandGroup();
         LOG_INFO("playerbots", "Bot {} remove from group since leader is random bot.", bot->GetName().c_str());
     }
