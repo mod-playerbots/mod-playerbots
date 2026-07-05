@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_REVIVEFROMCORPSEACTION_H
-#define _PLAYERBOT_REVIVEFROMCORPSEACTION_H
+#ifndef PLAYERBOTS_REVIVEFROMCORPSEACTION_H
+#define PLAYERBOTS_REVIVEFROMCORPSEACTION_H
 
 #include "MovementActions.h"
 

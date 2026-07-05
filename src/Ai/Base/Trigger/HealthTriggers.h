@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_HEALTHTRIGGERS_H
-#define _PLAYERBOT_HEALTHTRIGGERS_H
+#ifndef PLAYERBOTS_HEALTHTRIGGERS_H
+#define PLAYERBOTS_HEALTHTRIGGERS_H
 
 #include <stdexcept>
 
@@ -141,6 +141,15 @@ class TargetCriticalHealthTrigger : public TargetLowHealthTrigger
 {
 public:
     TargetCriticalHealthTrigger(PlayerbotAI* botAI) : TargetLowHealthTrigger(botAI, 20) {}
+};
+
+class HealerLowManaTrigger : public Trigger
+{
+public:
+    HealerLowManaTrigger(PlayerbotAI* botAI) : Trigger(botAI, "healer low mana") {}
+
+    std::string const GetTargetName() override { return "healer low mana"; }
+    bool IsActive() override;
 };
 
 class PartyMemberDeadTrigger : public Trigger

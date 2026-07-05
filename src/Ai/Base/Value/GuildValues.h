@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_GUILDVALUES_H
-#define _PLAYERBOT_GUILDVALUES_H
+#ifndef PLAYERBOTS_GUILDVALUES_H
+#define PLAYERBOTS_GUILDVALUES_H
 
 #include "Value.h"
 

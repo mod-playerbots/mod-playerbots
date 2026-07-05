@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_GUILDTASKMGR_H
-#define _PLAYERBOT_GUILDTASKMGR_H
+#ifndef PLAYERBOTS_GUILDTASKMGR_H
+#define PLAYERBOTS_GUILDTASKMGR_H
 
 #include <map>
 #include <vector>

@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_ENGINE_H
-#define _PLAYERBOT_ENGINE_H
+#ifndef PLAYERBOTS_ENGINE_H
+#define PLAYERBOTS_ENGINE_H
 
 #include <map>
 
@@ -70,6 +70,7 @@ public:
     void addStrategiesNoInit(std::string first, ...);
     bool removeStrategy(std::string const name, bool init = true);
     bool HasStrategy(std::string const name);
+    Strategy* GetStrategy(std::string const name);
     void removeAllStrategies();
     void toggleStrategy(std::string const name);
     std::string const ListStrategies();
@@ -85,6 +86,7 @@ public:
 
     void removeActionExecutionListener(ActionExecutionListener* listener) { actionExecutionListeners.Remove(listener); }
     bool HasStrategyType(StrategyType type) { return strategyTypeMask & type; }
+    bool HasTargetExclusions() const { return hasTargetExclusions; }
     virtual ~Engine(void);
 
     bool testMode;
@@ -114,6 +116,7 @@ protected:
     float lastRelevance;
     std::string lastAction;
     uint32 strategyTypeMask;
+    bool hasTargetExclusions = false;
     NamedObjectFactoryList<ActionNode> actionNodeFactories;
 };
 

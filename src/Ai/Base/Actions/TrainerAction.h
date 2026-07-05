@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_TRAINERACTION_H
-#define _PLAYERBOT_TRAINERACTION_H
+#ifndef PLAYERBOTS_TRAINERACTION_H
+#define PLAYERBOTS_TRAINERACTION_H
 
 #include "Action.h"
 #include "ChatHelper.h"
@@ -51,6 +51,16 @@ class AutoGearAction : public Action
 public:
     AutoGearAction(PlayerbotAI* botAI) : Action(botAI, "autogear") {}
     bool Execute(Event event) override;
+};
+
+class BisGearAction : public Action
+{
+public:
+    BisGearAction(PlayerbotAI* botAI) : Action(botAI, "autogear bis") {}
+    bool Execute(Event event) override;
+
+private:
+    bool RunAutogearFallback(uint16 effectiveIlvl);
 };
 
 #endif

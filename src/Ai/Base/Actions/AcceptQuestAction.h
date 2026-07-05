@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_ACCEPTQUESTACTION_H
-#define _PLAYERBOT_ACCEPTQUESTACTION_H
+#ifndef PLAYERBOTS_ACCEPTQUESTACTION_H
+#define PLAYERBOTS_ACCEPTQUESTACTION_H
 
 #include "QuestAction.h"
 

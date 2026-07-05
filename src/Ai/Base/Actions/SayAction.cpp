@@ -154,7 +154,7 @@ bool SayAction::isUseful()
     return (time(nullptr) - lastSaid) > 30;
 }
 
-void ChatReplyAction::ChatReplyDo(Player* bot, uint32& type, uint32& guid1, uint32& guid2, std::string& msg, std::string& chanName, std::string& name)
+void ChatReplyAction::ChatReplyDo(Player* bot, uint32& type, uint32& guid1, std::string& msg, std::string& chanName, std::string& name)
 {
     std::string respondsText = "";
 
@@ -205,14 +205,14 @@ void ChatReplyAction::ChatReplyDo(Player* bot, uint32& type, uint32& guid1, uint
     if (msg.starts_with(sPlayerbotAIConfig.toxicLinksPrefix)
         && (GET_PLAYERBOT_AI(bot)->GetChatHelper()->ExtractAllItemIds(msg).size() > 0 || GET_PLAYERBOT_AI(bot)->GetChatHelper()->ExtractAllQuestIds(msg).size() > 0))
     {
-        HandleToxicLinksReply(bot, chatChannelSource, msg, name);
+        HandleToxicLinksReply(bot, chatChannelSource);
         return;
     }
 
     //thunderfury
     if (GET_PLAYERBOT_AI(bot)->GetChatHelper()->ExtractAllItemIds(msg).count(19019))
     {
-        HandleThunderfuryReply(bot, chatChannelSource, msg, name);
+        HandleThunderfuryReply(bot, chatChannelSource);
         return;
     }
 
@@ -220,7 +220,7 @@ void ChatReplyAction::ChatReplyDo(Player* bot, uint32& type, uint32& guid1, uint
     SendGeneralResponse(bot, chatChannelSource, messageRepy, name);
 }
 
-bool ChatReplyAction::HandleThunderfuryReply(Player* bot, ChatChannelSource chatChannelSource, std::string& msg, std::string& name)
+bool ChatReplyAction::HandleThunderfuryReply(Player* bot, ChatChannelSource chatChannelSource)
 {
     std::map<std::string, std::string> placeholders;
     const auto thunderfury = sObjectMgr->GetItemTemplate(19019);
@@ -248,7 +248,7 @@ bool ChatReplyAction::HandleThunderfuryReply(Player* bot, ChatChannelSource chat
     return true;
 }
 
-bool ChatReplyAction::HandleToxicLinksReply(Player* bot, ChatChannelSource chatChannelSource, std::string& msg, std::string& name)
+bool ChatReplyAction::HandleToxicLinksReply(Player* bot, ChatChannelSource chatChannelSource)
 {
     //quests
     std::vector<uint32> incompleteQuests;

@@ -1,0 +1,316 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
+#include "RSTriggers.h"
+#include "RSActions.h"
+#include "RSScripts.h"
+#include "Playerbots.h"
+#include "Trigger.h"
+#include "Timer.h"
+#include <set>
+
+bool RsBaltharusBrandTrigger::IsActive()
+{
+    if (!bot->HasAura(SPELL_ENERVATING_BRAND))
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "baltharus the warborn");
+    return boss != nullptr;
+}
+
+bool RsBaltharusTankPositionTrigger::IsActive()
+{
+    if (!botAI->IsTank(bot))
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "baltharus the warborn");
+    return boss != nullptr;
+}
+
+bool RsBaltharusHealerPositionTrigger::IsActive()
+{
+    if (!botAI->IsHeal(bot) || botAI->IsTank(bot))
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "baltharus the warborn");
+    return boss != nullptr;
+}
+
+bool RsBaltharusAvoidFrontTrigger::IsActive()
+{
+    if (botAI->IsTank(bot))
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "baltharus the warborn");
+    return boss != nullptr;
+}
+
+bool RsSavianaConflagrationTrigger::IsActive()
+{
+    if (!bot->HasAura(SPELL_FLAME_BEACON))
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "saviana ragefire");
+    return boss != nullptr;
+}
+
+bool RsSavianaTankPositionTrigger::IsActive()
+{
+    if (!botAI->IsMainTank(bot))
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "saviana ragefire");
+    return boss != nullptr;
+}
+
+bool RsSavianaAvoidFrontTrigger::IsActive()
+{
+    if (botAI->IsTank(bot))
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "saviana ragefire");
+    if (!boss)
+        return false;
+
+    return !boss->IsLevitating();
+}
+
+bool RsSavianaMeleeSpreadTrigger::IsActive()
+{
+    if (botAI->IsTank(bot) || (!botAI->IsMelee(bot) && !botAI->IsHeal(bot)))
+        return false;
+
+    if (bot->HasAura(SPELL_FLAME_BEACON))
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "saviana ragefire");
+    if (!boss)
+        return false;
+
+    return boss->IsLevitating();
+}
+
+bool RsZarithrianAddsTrigger::IsActive()
+{
+    if (botAI->IsTank(bot) || botAI->IsHeal(bot))
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "general zarithrian");
+    if (!boss || !boss->IsAlive())
+        return false;
+
+    return true;
+}
+
+bool RsZarithrianTankTrigger::IsActive()
+{
+    if (!botAI->IsTank(bot))
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "general zarithrian");
+    return boss != nullptr;
+}
+
+bool RsHalionTankPositionTrigger::IsActive()
+{
+    if (RsHalionInTwilight(bot))
+        return false;
+
+    Unit* boss = RsHalionAnyPhysicalBoss(botAI);
+    if (!boss || !boss->IsInCombat())
+        return false;
+
+    return RsHalionBossTank(botAI) == bot;
+}
+
+bool RsHalionAvoidConesTrigger::IsActive()
+{
+    if (RsHalionInTwilight(bot))
+        return false;
+
+    if (botAI->IsTank(bot) && !RsHalionAssistTankAsMelee(botAI))
+        return false;
+
+    Unit* boss = RsHalionAnyPhysicalBoss(botAI);
+    return boss != nullptr && boss->IsInCombat();
+}
+
+bool RsHalionCombustionTrigger::IsActive()
+{
+    if (RsHalionInTwilight(bot))
+        return false;
+
+    Unit* boss = RsHalionAnyPhysicalBoss(botAI);
+    if (!boss || !boss->IsInCombat())
+        return false;
+
+    if (RsHalionBossTank(botAI) == bot)
+        return false;
+
+    bool const returning = RsHalionCombustionReturning(bot);
+    return RsHalionHasCombustion(bot) || returning;
+}
+
+bool RsHalionMeteorTrigger::IsActive()
+{
+    if (RsHalionInTwilight(bot))
+        return false;
+
+    if (botAI->IsTank(bot) && !RsHalionAssistTankAsMelee(botAI))
+        return false;
+
+    Unit* boss = RsHalionAnyPhysicalBoss(botAI);
+    if (!boss || !boss->IsInCombat())
+        return false;
+
+    if (RsHalionHasCombustion(bot))
+        return false;
+
+    return RsHalionMeteorShouldRally(bot);
+}
+
+bool RsHalionAddsTrigger::IsActive()
+{
+    if (RsHalionInTwilight(bot))
+        return false;
+
+    if (botAI->IsTank(bot) || botAI->IsHeal(bot) || botAI->IsMelee(bot))
+        return false;
+
+    if (RsHalionHasCombustion(bot))
+        return false;
+
+    if (!RsHalionEngaged(botAI))
+        return false;
+
+    return RsHalionAnyAddAlive(botAI);
+}
+
+bool RsHalionAddTankTrigger::IsActive()
+{
+    if (!RsHalionEngaged(botAI))
+        return false;
+
+    return RsHalionTanksAdds(botAI, bot);
+}
+
+bool RsHalionStartPositionTrigger::IsActive()
+{
+    Unit* boss = RsHalionPhase1Boss(botAI);
+    if (!boss || !boss->HealthAbovePct(98) || !boss->IsInCombat())
+        return false;
+
+    return RsHalionBossTank(botAI) != bot;
+}
+
+bool RsHalionEnterPortalTrigger::IsActive()
+{
+    bool const inTwilight = RsHalionInTwilight(bot);
+
+    if (inTwilight)
+        return RsHalionPortalCommit(botAI, bot);
+
+    if (RsHalionEnteringTwilight(botAI, bot))
+        return true;
+
+    return !PlayerbotAI::IsMainTank(bot) && RsHalionPortalHeldForAdds(botAI);
+}
+
+bool RsHalionP2TankPositionTrigger::IsActive()
+{
+    if (RsHalionTwilightTank(botAI) != bot || !RsHalionInTwilight(bot))
+        return false;
+
+    return RsHalionTwilightBoss(botAI) != nullptr;
+}
+
+bool RsHalionP2AvoidConesTrigger::IsActive()
+{
+    if (!RsHalionInTwilight(bot))
+        return false;
+
+    if (RsHalionTwilightTank(botAI) == bot)
+        return false;
+
+    return RsHalionTwilightBoss(botAI) != nullptr;
+}
+
+bool RsHalionConsumptionTrigger::IsActive()
+{
+    if (!RsHalionInTwilight(bot))
+        return false;
+
+    if (!bot->HasAura(SPELL_MARK_OF_CONSUMPTION) && !bot->HasAura(SPELL_SOUL_CONSUMPTION))
+        return false;
+
+    return RsHalionTwilightBoss(botAI) != nullptr;
+}
+
+bool RsHalionCutterTrigger::IsActive()
+{
+    if (!RsHalionInTwilight(bot))
+        return false;
+
+    Unit* boss = RsHalionTwilightBoss(botAI);
+    if (!boss)
+        return false;
+
+    return boss->FindNearestCreature(NPC_ORB_CARRIER, 200.0f) != nullptr;
+}
+
+bool RsHalionHealConsumptionTrigger::IsActive()
+{
+    if (!botAI->IsHeal(bot) || !RsHalionInTwilight(bot))
+        return false;
+
+    if (!RsHalionIsPhase3(botAI))
+        return false;
+
+    return RsHalionConsumptionHealTarget(botAI) != nullptr;
+}
+
+bool RsTrashAddsTrigger::IsActive()
+{
+    if (botAI->IsTank(bot) || botAI->IsHeal(bot))
+        return false;
+
+    return RsTrashActive(botAI, bot);
+}
+
+bool RsTrashMainTankTrigger::IsActive()
+{
+    if (!botAI->IsMainTank(bot))
+        return false;
+
+    return RsTrashActive(botAI, bot);
+}
+
+bool RsTrashAssistTankTrigger::IsActive()
+{
+    if (!botAI->IsAssistTank(bot))
+        return false;
+
+    return RsTrashActive(botAI, bot);
+}
+
+bool RsTrashRangedTrigger::IsActive()
+{
+    if (botAI->IsTank(bot))
+        return false;
+
+    if (!botAI->IsRanged(bot) && !botAI->IsHeal(bot))
+        return false;
+
+    return RsTrashActive(botAI, bot);
+}
+
+bool RsTrashMeleeFlankTrigger::IsActive()
+{
+    if (botAI->IsTank(bot) || botAI->IsHeal(bot) || !botAI->IsMelee(bot))
+        return false;
+
+    return RsTrashActive(botAI, bot);
+}

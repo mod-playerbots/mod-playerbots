@@ -24,11 +24,11 @@ Unit* FlagCarrierValue::Calculate()
             if (!bg)
                 return nullptr;
 
-            if ((!sameTeam && bot->GetTeamId() == TEAM_HORDE || (sameTeam && bot->GetTeamId() == TEAM_ALLIANCE)) &&
+            if (((!sameTeam && bot->GetTeamId() == TEAM_HORDE) || (sameTeam && bot->GetTeamId() == TEAM_ALLIANCE)) &&
                 !bg->GetFlagPickerGUID(TEAM_HORDE).IsEmpty())
                 carrier = ObjectAccessor::GetPlayer(bg->GetBgMap(), bg->GetFlagPickerGUID(TEAM_HORDE));
 
-            if ((!sameTeam && bot->GetTeamId() == TEAM_ALLIANCE || (sameTeam && bot->GetTeamId() == TEAM_HORDE)) &&
+            if (((!sameTeam && bot->GetTeamId() == TEAM_ALLIANCE) || (sameTeam && bot->GetTeamId() == TEAM_HORDE)) &&
                 !bg->GetFlagPickerGUID(TEAM_ALLIANCE).IsEmpty())
                 carrier = ObjectAccessor::GetPlayer(bg->GetBgMap(), bg->GetFlagPickerGUID(TEAM_ALLIANCE));
 
@@ -136,7 +136,7 @@ CreatureData const* BgMasterValue::NearestBm(bool allowDead)
         if (rbmPair && rDist <= dist)
             continue;
 
-        CreatureTemplate const* bmTemplate = sObjectMgr->GetCreatureTemplate(bmPair->id1);
+        CreatureTemplate const* bmTemplate = sObjectMgr->GetCreatureTemplate(bmPair->id);
         if (!bmTemplate)
             continue;
 

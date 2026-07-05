@@ -64,7 +64,7 @@ void FindQuestObjectData::GetObjectiveEntries()
 // quest map.
 void FindQuestObjectData::operator()(CreatureData const& creData)
 {
-    uint32 entry = creData.id1;
+    uint32 entry = creData.id;
 
     for (auto& relation : relationMap[entry])
     {

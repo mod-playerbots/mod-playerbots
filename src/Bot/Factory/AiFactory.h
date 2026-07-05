@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_AIFACTORY_H
-#define _PLAYERBOT_AIFACTORY_H
+#ifndef PLAYERBOTS_AIFACTORY_H
+#define PLAYERBOTS_AIFACTORY_H
 
 #include <map>
 #include "Common.h"

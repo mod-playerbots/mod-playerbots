@@ -7,11 +7,11 @@
 
 #include "Playerbots.h"
 
-QuestStrategy::QuestStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI) { supported.push_back("accept quest"); }
+QuestStrategy::QuestStrategy(PlayerbotAI* botAI) : PassThroughStrategy(botAI) { supported.push_back("accept quest"); }
 
 void QuestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    PassTroughStrategy::InitTriggers(triggers);
+    PassThroughStrategy::InitTriggers(triggers);
 
     triggers.push_back(
         new TriggerNode("quest share", {  NextAction("accept quest share", relevance) }));

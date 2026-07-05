@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_FLEEMANAGER_H
-#define _PLAYERBOT_FLEEMANAGER_H
+#ifndef PLAYERBOTS_FLEEMANAGER_H
+#define PLAYERBOTS_FLEEMANAGER_H
 
 #include <vector>
 

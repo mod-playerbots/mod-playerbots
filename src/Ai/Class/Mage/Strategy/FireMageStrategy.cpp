@@ -7,35 +7,9 @@
 #include "Playerbots.h"
 #include "Strategy.h"
 
-// ===== Action Node Factory =====
-class FireMageStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
-{
-public:
-    FireMageStrategyActionNodeFactory()
-    {
-        creators["fireball"] = &fireball;
-        creators["frostbolt"] = &frostbolt;
-        creators["fire blast"] = &fire_blast;
-        creators["pyroblast"] = &pyroblast;
-        creators["scorch"] = &scorch;
-        creators["living bomb"] = &living_bomb;
-        creators["combustion"] = &combustion;
-    }
-
-private:
-    static ActionNode* fireball(PlayerbotAI*) { return new ActionNode("fireball", {}, {}, {}); }
-    static ActionNode* frostbolt(PlayerbotAI*) { return new ActionNode("frostbolt", {}, {}, {}); }
-    static ActionNode* fire_blast(PlayerbotAI*) { return new ActionNode("fire blast", {}, {}, {}); }
-    static ActionNode* pyroblast(PlayerbotAI*) { return new ActionNode("pyroblast", {}, {}, {}); }
-    static ActionNode* scorch(PlayerbotAI*) { return new ActionNode("scorch", {}, {}, {}); }
-    static ActionNode* living_bomb(PlayerbotAI*) { return new ActionNode("living bomb", {}, {}, {}); }
-    static ActionNode* combustion(PlayerbotAI*) { return new ActionNode("combustion", {}, {}, {}); }
-};
-
-// ===== Single Target Strategy =====
 FireMageStrategy::FireMageStrategy(PlayerbotAI* botAI) : GenericMageStrategy(botAI)
 {
-    actionNodeFactories.Add(new FireMageStrategyActionNodeFactory());
+    // No custom ActionNodeFactory needed
 }
 
 // ===== Default Actions =====

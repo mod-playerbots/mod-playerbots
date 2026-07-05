@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_GENERICSHAMANSTRATEGY_H
-#define _PLAYERBOT_GENERICSHAMANSTRATEGY_H
+#ifndef PLAYERBOTS_GENERICSHAMANSTRATEGY_H
+#define PLAYERBOTS_GENERICSHAMANSTRATEGY_H
 
 #include "CombatStrategy.h"
 

@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_RAIDBOSSHELPERS_H_
-#define _PLAYERBOT_RAIDBOSSHELPERS_H_
+#ifndef PLAYERBOTS_RAIDBOSSHELPERS_H
+#define PLAYERBOTS_RAIDBOSSHELPERS_H
 
 #include "AiObject.h"
 #include "Unit.h"
@@ -13,6 +13,7 @@ void MarkTargetWithDiamond(Player* bot, Unit* target);
 void MarkTargetWithTriangle(Player* bot, Unit* target);
 void MarkTargetWithCross(Player* bot, Unit* target);
 void MarkTargetWithMoon(Player* bot, Unit* target);
+void ClearTargetIcon(Player* bot, uint8 iconId);
 void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target);
 bool IsMechanicTrackerBot(PlayerbotAI* botAI, Player* bot, uint32 mapId, Player* exclude = nullptr);
 Player* GetGroupMainTank(PlayerbotAI* botAI, Player* bot);

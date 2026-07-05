@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_ACCEPTDUELACTION_H
-#define _PLAYERBOT_ACCEPTDUELACTION_H
+#ifndef PLAYERBOTS_ACCEPTDUELACTION_H
+#define PLAYERBOTS_ACCEPTDUELACTION_H
 
 #include "Action.h"
 

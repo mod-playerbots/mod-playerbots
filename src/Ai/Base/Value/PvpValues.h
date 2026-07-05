@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PVPVALUES_H
-#define _PLAYERBOT_PVPVALUES_H
+#ifndef PLAYERBOTS_PVPVALUES_H
+#define PLAYERBOTS_PVPVALUES_H
 
 #include "NamedObjectContext.h"
 #include "SharedDefines.h"

@@ -3,14 +3,14 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_CHATCOMMANDHANDLERSTRATEGY_H
-#define _PLAYERBOT_CHATCOMMANDHANDLERSTRATEGY_H
+#ifndef PLAYERBOTS_CHATCOMMANDHANDLERSTRATEGY_H
+#define PLAYERBOTS_CHATCOMMANDHANDLERSTRATEGY_H
 
-#include "PassTroughStrategy.h"
+#include "PassThroughStrategy.h"
 
 class PlayerbotAI;
 
-class ChatCommandHandlerStrategy : public PassTroughStrategy
+class ChatCommandHandlerStrategy : public PassThroughStrategy
 {
 public:
     ChatCommandHandlerStrategy(PlayerbotAI* botAI);

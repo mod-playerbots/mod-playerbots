@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_SENDMAILACTION_H
-#define _PLAYERBOT_SENDMAILACTION_H
+#ifndef PLAYERBOTS_SENDMAILACTION_H
+#define PLAYERBOTS_SENDMAILACTION_H
 
 #include "InventoryAction.h"
 

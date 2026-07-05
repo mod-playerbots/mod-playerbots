@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_SURVIVALHUNTERSTRATEGY_H
-#define _PLAYERBOT_SURVIVALHUNTERSTRATEGY_H
+#ifndef PLAYERBOTS_SURVIVALHUNTERSTRATEGY_H
+#define PLAYERBOTS_SURVIVALHUNTERSTRATEGY_H
 
 #include "GenericHunterStrategy.h"
 #include "CombatStrategy.h"

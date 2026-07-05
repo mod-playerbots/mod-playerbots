@@ -9,6 +9,7 @@
 #include "ObjectAccessor.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotSecurity.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "WorldPacket.h"
 
@@ -55,7 +56,7 @@ bool AcceptInvitationAction::Execute(Event event)
     botAI->ChangeStrategy("+follow,-lfg,-bg", BOT_STATE_NON_COMBAT);
     botAI->Reset();
 
-    botAI->TellMaster("Hello");
+    botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault("hello", "Hello", {}));
 
     if (sPlayerbotAIConfig.summonWhenGroup && bot->GetDistance(inviter) > sPlayerbotAIConfig.sightDistance)
     {

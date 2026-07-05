@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_DESTROYITEMACTION_H
-#define _PLAYERBOT_DESTROYITEMACTION_H
+#ifndef PLAYERBOTS_DESTROYITEMACTION_H
+#define PLAYERBOTS_DESTROYITEMACTION_H
 
 #include "InventoryAction.h"
 

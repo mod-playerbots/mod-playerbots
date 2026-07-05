@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_HOLYPRIESTSTRATEGY_H
-#define _PLAYERBOT_HOLYPRIESTSTRATEGY_H
+#ifndef PLAYERBOTS_HOLYPRIESTSTRATEGY_H
+#define PLAYERBOTS_HOLYPRIESTSTRATEGY_H
 
 #include "GenericPriestStrategyActionNodeFactory.h"
 #include "HealPriestStrategy.h"

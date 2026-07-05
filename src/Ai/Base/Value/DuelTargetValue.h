@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_DUELTARGETVALUE_H
-#define _PLAYERBOT_DUELTARGETVALUE_H
+#ifndef PLAYERBOTS_DUELTARGETVALUE_H
+#define PLAYERBOTS_DUELTARGETVALUE_H
 
 #include "TargetValue.h"
 

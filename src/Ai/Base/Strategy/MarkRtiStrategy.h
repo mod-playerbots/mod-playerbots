@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_MARKRTISTRATEGY_H
-#define _PLAYERBOT_MARKRTISTRATEGY_H
+#ifndef PLAYERBOTS_MARKRTISTRATEGY_H
+#define PLAYERBOTS_MARKRTISTRATEGY_H
 
 #include "Strategy.h"
 

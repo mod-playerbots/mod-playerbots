@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_THREATSTRATEGY_H
-#define _PLAYERBOT_THREATSTRATEGY_H
+#ifndef PLAYERBOTS_THREATSTRATEGY_H
+#define PLAYERBOTS_THREATSTRATEGY_H
 
 #include "Strategy.h"
 

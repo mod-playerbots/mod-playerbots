@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PASSIVESTRATEGY_H
-#define _PLAYERBOT_PASSIVESTRATEGY_H
+#ifndef PLAYERBOTS_PASSIVESTRATEGY_H
+#define PLAYERBOTS_PASSIVESTRATEGY_H
 
 #include "Strategy.h"
 

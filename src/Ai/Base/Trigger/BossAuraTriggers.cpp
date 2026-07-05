@@ -23,9 +23,7 @@ bool BossFireResistanceTrigger::IsActive()
         return false;
 
     // Check if bot have fire resistance aura
-    if (bot->HasAura(SPELL_FIRE_RESISTANCE_AURA_RANK_5) || bot->HasAura(SPELL_FIRE_RESISTANCE_AURA_RANK_4) ||
-        bot->HasAura(SPELL_FIRE_RESISTANCE_AURA_RANK_3) || bot->HasAura(SPELL_FIRE_RESISTANCE_AURA_RANK_2) ||
-        bot->HasAura(SPELL_FIRE_RESISTANCE_AURA_RANK_1))
+    if (botAI->HasAura("fire resistance aura", bot))
         return false;
 
     // Check if bot dont have already have fire resistance strategy
@@ -76,9 +74,7 @@ bool BossFrostResistanceTrigger::IsActive()
         return false;
 
     // Check if bot have frost resistance aura
-    if (bot->HasAura(SPELL_FROST_RESISTANCE_AURA_RANK_5) || bot->HasAura(SPELL_FROST_RESISTANCE_AURA_RANK_4) ||
-        bot->HasAura(SPELL_FROST_RESISTANCE_AURA_RANK_3) || bot->HasAura(SPELL_FROST_RESISTANCE_AURA_RANK_2) ||
-        bot->HasAura(SPELL_FROST_RESISTANCE_AURA_RANK_1))
+    if (botAI->HasAura("frost resistance aura", bot))
         return false;
 
     // Check if bot dont have already have frost resistance strategy
@@ -133,8 +129,7 @@ bool BossNatureResistanceTrigger::IsActive()
         return false;
 
     // Check if bot have nature resistance aura
-    if (bot->HasAura(SPELL_ASPECT_OF_THE_WILD_RANK_4) || bot->HasAura(SPELL_ASPECT_OF_THE_WILD_RANK_3) ||
-        bot->HasAura(SPELL_ASPECT_OF_THE_WILD_RANK_2) || bot->HasAura(SPELL_ASPECT_OF_THE_WILD_RANK_1))
+    if (botAI->HasAura("aspect of the wild", bot))
         return false;
 
     // Check if bot dont have already setted nature resistance aura
@@ -184,11 +179,7 @@ bool BossShadowResistanceTrigger::IsActive()
         return false;
 
     // Check if bot have shadow resistance aura
-    if (bot->HasAura(SPELL_SHADOW_RESISTANCE_AURA_RANK_5) ||
-        bot->HasAura(SPELL_SHADOW_RESISTANCE_AURA_RANK_4) ||
-        bot->HasAura(SPELL_SHADOW_RESISTANCE_AURA_RANK_3) ||
-        bot->HasAura(SPELL_SHADOW_RESISTANCE_AURA_RANK_2) ||
-        bot->HasAura(SPELL_SHADOW_RESISTANCE_AURA_RANK_1))
+    if (botAI->HasAura("shadow resistance aura", bot))
         return false;
 
     // Check if bot dont have already have shadow resistance strategy

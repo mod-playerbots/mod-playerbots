@@ -10,6 +10,7 @@
 #include "NearestNpcsValue.h"
 #include "ObjectDefines.h"
 #include "ObjectGuid.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "Corpse.h"
@@ -22,7 +23,8 @@ bool ReleaseSpiritAction::Execute(Event event)
     {
         if (!bot->InBattleground())
         {
-            botAI->TellMasterNoFacing("I am not dead, will wait here");
+            botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                "release_spirit_not_dead_wait", "I am not dead, will wait here", {}));
             // -follow in bg is overwriten each tick with +follow
             // +stay in bg causes stuttering effect as bot is cycled between +stay and +follow each tick
             botAI->ChangeStrategy("-follow,+stay", BOT_STATE_NON_COMBAT);
@@ -33,14 +35,15 @@ bool ReleaseSpiritAction::Execute(Event event)
 
     if (bot->GetCorpse() && bot->HasPlayerFlag(PLAYER_FLAGS_GHOST))
     {
-        botAI->TellMasterNoFacing("I am already a spirit");
+        botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "release_spirit_already_spirit", "I am already a spirit", {}));
         return false;
     }
 
     const WorldPacket& packet = event.getPacket();
     const std::string message = !packet.empty() && packet.GetOpcode() == CMSG_REPOP_REQUEST
-                                ? "Releasing..."
-                                : "Meet me at the graveyard";
+        ? PlayerbotTextMgr::instance().GetBotTextOrDefault("release_spirit_releasing", "Releasing...", {})
+        : PlayerbotTextMgr::instance().GetBotTextOrDefault("release_spirit_meet_graveyard", "Meet me at the graveyard", {});
     botAI->TellMasterNoFacing(message);
 
     IncrementDeathCount();
@@ -65,7 +68,7 @@ void ReleaseSpiritAction::IncrementDeathCount() const
     }
 }
 
-void ReleaseSpiritAction::LogRelease(const std::string& releaseMsg, bool isAutoRelease) const
+void ReleaseSpiritAction::LogRelease(const std::string& releaseMsg) const
 {
     const std::string teamPrefix = bot->GetTeamId() == TEAM_ALLIANCE ? "A" : "H";
 
@@ -82,13 +85,13 @@ bool AutoReleaseSpiritAction::Execute(Event /*event*/)
 {
     IncrementDeathCount();
     bot->DurabilityRepairAll(false, 1.0f, false);
-    LogRelease("auto released", true);
+    LogRelease("auto released");
 
     WorldPacket packet(CMSG_REPOP_REQUEST);
     packet << uint8(0);
     bot->GetSession()->HandleRepopRequestOpcode(packet);
 
-    LogRelease("releases spirit", true);
+    LogRelease("releases spirit");
 
     if (bot->InBattleground())
     {

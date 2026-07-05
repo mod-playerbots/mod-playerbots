@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PLAYERBOTCOMMANDSERVER_H
-#define _PLAYERBOT_PLAYERBOTCOMMANDSERVER_H
+#ifndef PLAYERBOTS_PLAYERBOTCOMMANDSERVER_H
+#define PLAYERBOTS_PLAYERBOTCOMMANDSERVER_H
 
 class PlayerbotCommandServer
 {

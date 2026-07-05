@@ -25,7 +25,7 @@ uint32 MaxGearRepairCostValue::Calculate()
 
         uint32 curDurability = item->GetUInt32Value(ITEM_FIELD_DURABILITY);
 
-        if (i >= EQUIPMENT_SLOT_END && curDurability >= maxDurability)  // Only count items equiped or already damanged.
+        if (uint32(i) >= EQUIPMENT_SLOT_END && curDurability >= maxDurability)  // Only count items equiped or already damanged.
             continue;
 
         ItemTemplate const* ditemProto = item->GetTemplate();

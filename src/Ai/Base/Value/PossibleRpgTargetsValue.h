@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_POSSIBLERPGTARGETSVALUE_H
-#define _PLAYERBOT_POSSIBLERPGTARGETSVALUE_H
+#ifndef PLAYERBOTS_POSSIBLERPGTARGETSVALUE_H
+#define PLAYERBOTS_POSSIBLERPGTARGETSVALUE_H
 
 #include "NearestGameObjects.h"
 #include "NearestUnitsValue.h"
@@ -35,6 +35,8 @@ public:
 protected:
     void FindUnits(std::list<Unit*>& targets) override;
     bool AcceptUnit(Unit* unit) override;
+private:
+    float defaultRange;
 };
 
 class PossibleNewRpgGameObjectsValue : public ObjectGuidListCalculatedValue

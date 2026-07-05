@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_SHADOWPRIESTSTRATEGYACTIONNODEFACTORY_H
-#define _PLAYERBOT_SHADOWPRIESTSTRATEGYACTIONNODEFACTORY_H
+#ifndef PLAYERBOTS_SHADOWPRIESTSTRATEGYACTIONNODEFACTORY_H
+#define PLAYERBOTS_SHADOWPRIESTSTRATEGYACTIONNODEFACTORY_H
 
 #include "Action.h"
 #include "NamedObjectContext.h"
@@ -17,7 +17,6 @@ public:
     ShadowPriestStrategyActionNodeFactory()
     {
         creators["mind blast"] = &mind_blast;
-        creators["dispersion"] = &dispersion;
         creators["mind flay"] = &mind_flay;
         creators["smite"] = &smite;
     }
@@ -47,13 +46,6 @@ private:
                               /*C*/ {});
     }
 
-    static ActionNode* dispersion([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("dispersion",
-                              /*P*/ {},
-                              /*A*/ { NextAction("mana potion") },
-                              /*C*/ {});
-    }
 };
 
 #endif

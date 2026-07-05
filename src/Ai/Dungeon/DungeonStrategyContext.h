@@ -1,22 +1,23 @@
-#ifndef _PLAYERBOT_DUNGEONSTRATEGYCONTEXT_H
-#define _PLAYERBOT_DUNGEONSTRATEGYCONTEXT_H
+#ifndef PLAYERBOTS_DUNGEONSTRATEGYCONTEXT_H
+#define PLAYERBOTS_DUNGEONSTRATEGYCONTEXT_H
 
 #include "Strategy.h"
-#include "UtgardeKeep/Strategy/UtgardeKeepStrategy.h"
-#include "Nexus/Strategy/NexusStrategy.h"
-#include "AzjolNerub/Strategy/AzjolNerubStrategy.h"
-#include "OldKingdom/Strategy/OldKingdomStrategy.h"
-#include "DraktharonKeep/Strategy/DrakTharonKeepStrategy.h"
-#include "VioletHold/Strategy/VioletHoldStrategy.h"
-#include "Gundrak/Strategy/GundrakStrategy.h"
-#include "HallsOfStone/Strategy/HallsOfStoneStrategy.h"
-#include "HallsOfLightning/Strategy/HallsOfLightningStrategy.h"
-#include "Oculus/Strategy/OculusStrategy.h"
-#include "UtgardePinnacle/Strategy/UtgardePinnacleStrategy.h"
-#include "CullingOfStratholme/Strategy/CullingOfStratholmeStrategy.h"
-#include "ForgeOfSouls/Strategy/ForgeOfSoulsStrategy.h"
-#include "PitOfSaron/Strategy/PitOfSaronStrategy.h"
-#include "TrialOfTheChampion/Strategy/TrialOfTheChampionStrategy.h"
+#include "ACStrategy.h"
+#include "UKStrategy.h"
+#include "NexStrategy.h"
+#include "ANStrategy.h"
+#include "AKStrategy.h"
+#include "DTKStrategy.h"
+#include "VHStrategy.h"
+#include "GDStrategy.h"
+#include "HoSStrategy.h"
+#include "HoLStrategy.h"
+#include "OCStrategy.h"
+#include "UPStrategy.h"
+#include "CoSStrategy.h"
+#include "FoSStrategy.h"
+#include "PoSStrategy.h"
+#include "TOCStrategy.h"
 
 /*
 Full list/TODO:
@@ -44,7 +45,7 @@ class DungeonStrategyContext : public NamedObjectContext<Strategy>
             // ...
 
             // Burning Crusade
-            // ...
+            creators["tbc-ac"] = &DungeonStrategyContext::tbc_ac;           // Auchindoun: Auchenai Crypts
 
             // Wrath of the Lich King
             creators["wotlk-uk"] = &DungeonStrategyContext::wotlk_uk;       // Utgarde Keep
@@ -65,6 +66,7 @@ class DungeonStrategyContext : public NamedObjectContext<Strategy>
             creators["wotlk-fos"] = &DungeonStrategyContext::wotlk_fos;     // The Forge of Souls
         }
     private:
+        static Strategy* tbc_ac(PlayerbotAI* botAI) { return new TbcDungeonAuchenaiCryptsStrategy(botAI); }
         static Strategy* wotlk_uk(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
         static Strategy* wotlk_nex(PlayerbotAI* botAI) { return new WotlkDungeonNexStrategy(botAI); }
         static Strategy* wotlk_an(PlayerbotAI* botAI) { return new WotlkDungeonANStrategy(botAI); }

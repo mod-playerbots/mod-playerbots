@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_STANCES_H
-#define _PLAYERBOT_STANCES_H
+#ifndef PLAYERBOTS_STANCES_H
+#define PLAYERBOTS_STANCES_H
 
 #include "Action.h"
 #include "Formations.h"

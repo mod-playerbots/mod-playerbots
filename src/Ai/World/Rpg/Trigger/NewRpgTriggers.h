@@ -1,5 +1,5 @@
-#ifndef _PLAYERBOT_NEWRPGTRIGGERS_H
-#define _PLAYERBOT_NEWRPGTRIGGERS_H
+#ifndef PLAYERBOTS_NEWRPGTRIGGERS_H
+#define PLAYERBOTS_NEWRPGTRIGGERS_H
 
 #include "NewRpgStrategy.h"
 #include "Trigger.h"

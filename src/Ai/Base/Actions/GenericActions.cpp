@@ -8,6 +8,7 @@
 #include "Player.h"
 #include "Pet.h"
 #include "PlayerbotAIConfig.h"
+#include "PlayerbotTextMgr.h"
 #include "CreatureAI.h"
 #include "Playerbots.h"
 #include "CharmInfo.h"
@@ -49,7 +50,10 @@ bool MeleeAction::isUseful()
     if (botAI->IsInVehicle() && !botAI->IsInVehicle(false, false, true))
         return false;
 
-    return true;
+    // Do not start autoattack while prowled — let opener spells break stealth intentionally.
+    // Future rogue stealth implementation should use this instead:
+    // return !(botAI->HasAura("stealth", bot) || botAI->HasAura("prowl", bot));
+    return !botAI->HasAura("prowl", bot);
 }
 
 bool TogglePetSpellAutoCastAction::Execute(Event /*event*/)
@@ -82,7 +86,7 @@ bool TogglePetSpellAutoCastAction::Execute(Event /*event*/)
 
         uint32 spellId = itr->first;
         const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-        if (!spellInfo->IsAutocastable())
+        if (!spellInfo || !spellInfo->IsAutocastable())
             continue;
 
         bool shouldApply = true;
@@ -178,7 +182,8 @@ bool SetPetStanceAction::Execute(Event /*event*/)
     // If there are no controlled pets or guardians, notify the player and exit
     if (targets.empty())
     {
-        botAI->TellError("You have no pet or guardian pet.");
+        botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "pet_no_pet_error", "You have no pet or guardian pet.", {}));
         return false;
     }
 

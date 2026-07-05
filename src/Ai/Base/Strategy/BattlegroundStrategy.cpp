@@ -14,7 +14,7 @@ void BGStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("timer", { NextAction("bg strategy check", relevance)}));
 }
 
-BGStrategy::BGStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI) {}
+BGStrategy::BGStrategy(PlayerbotAI* botAI) : PassThroughStrategy(botAI) {}
 
 void BattlegroundStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {

@@ -14,11 +14,10 @@ public:
         creators["intercept"] = &intercept;
         creators["piercing howl"] = &piercing_howl;
         creators["pummel"] = &pummel;
-        creators["enraged regeneration"] = &enraged_regeneration;
     }
 
 private:
-    static ActionNode* charge(PlayerbotAI* botAI)
+    static ActionNode* charge(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "charge",
@@ -28,7 +27,7 @@ private:
         );
     }
 
-    static ActionNode* intercept(PlayerbotAI* botAI)
+    static ActionNode* intercept(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "intercept",
@@ -38,7 +37,7 @@ private:
         );
     }
 
-    static ActionNode* piercing_howl(PlayerbotAI* botAI)
+    static ActionNode* piercing_howl(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "piercing howl",
@@ -48,22 +47,12 @@ private:
         );
     }
 
-    static ActionNode* pummel(PlayerbotAI* botAI)
+    static ActionNode* pummel(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "pummel",
             /*P*/ {},
             /*A*/ { NextAction("intercept" )},
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* enraged_regeneration(PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "enraged regeneration",
-            /*P*/ {},
-            /*A*/ {},
             /*C*/ {}
         );
     }

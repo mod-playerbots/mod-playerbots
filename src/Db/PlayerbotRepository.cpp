@@ -39,6 +39,8 @@ void PlayerbotRepository::Load(PlayerbotAI* botAI)
                 botAI->ChangeStrategy(value, BOT_STATE_DEAD);
         } while (result->NextRow());
 
+        botAI->GetAiObjectContext()->GetUntypedValue("outfit list");
+
         botAI->GetAiObjectContext()->Load(values);
     }
 }
@@ -65,7 +67,7 @@ void PlayerbotRepository::Save(PlayerbotAI* botAI)
     SaveValue(guid, "dead", FormatStrategies("dead", botAI->GetStrategies(BOT_STATE_DEAD)));
 }
 
-std::string const PlayerbotRepository::FormatStrategies(std::string const type, std::vector<std::string> strategies)
+std::string const PlayerbotRepository::FormatStrategies(std::string const /*type*/, std::vector<std::string> strategies)
 {
     std::ostringstream out;
     for (std::vector<std::string>::iterator i = strategies.begin(); i != strategies.end(); ++i)

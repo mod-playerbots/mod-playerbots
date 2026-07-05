@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_BUFFACTION_H
-#define _PLAYERBOT_BUFFACTION_H
+#ifndef PLAYERBOTS_BUFFACTION_H
+#define PLAYERBOTS_BUFFACTION_H
 
 #include "InventoryAction.h"
 

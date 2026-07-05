@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_ITEMCOUNTVALUE_H
-#define _PLAYERBOT_ITEMCOUNTVALUE_H
+#ifndef PLAYERBOTS_ITEMCOUNTVALUE_H
+#define PLAYERBOTS_ITEMCOUNTVALUE_H
 
 #include "InventoryAction.h"
 #include "Item.h"
@@ -17,7 +17,7 @@ class InventoryItemValueBase : public InventoryAction
 public:
     InventoryItemValueBase(PlayerbotAI* botAI) : InventoryAction(botAI, "empty") {}
 
-    bool Execute(Event event) override { return false; }
+    bool Execute(Event /*event*/) override { return false; }
 
 protected:
     std::vector<Item*> Find(std::string const qualifier);

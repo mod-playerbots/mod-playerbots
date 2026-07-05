@@ -161,9 +161,7 @@ void ShamanAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     }
     else if (tab == SHAMAN_TAB_ENHANCEMENT)
     {
-        triggers.push_back(new TriggerNode("medium aoe",{ NextAction("magma totem", 24.0f),
-                                                          NextAction("fire nova", 23.0f), }));
-
+        triggers.push_back(new TriggerNode("medium aoe",{ NextAction("fire nova", 23.0f), }));
         triggers.push_back(new TriggerNode("maelstrom weapon 5 and medium aoe", { NextAction("chain lightning", 22.0f), }));
         triggers.push_back(new TriggerNode("maelstrom weapon 4 and medium aoe", { NextAction("chain lightning", 21.0f), }));
         triggers.push_back(new TriggerNode("enemy within melee", { NextAction("fire nova", 5.1f), }));

@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_MOVEFROMGROUPSTRATEGY_H
-#define _PLAYERBOT_MOVEFROMGROUPSTRATEGY_H
+#ifndef PLAYERBOTS_MOVEFROMGROUPSTRATEGY_H
+#define PLAYERBOTS_MOVEFROMGROUPSTRATEGY_H
 
 #include "Strategy.h"
 

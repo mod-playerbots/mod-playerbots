@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_LFGVALUES_H
-#define _PLAYERBOT_LFGVALUES_H
+#ifndef PLAYERBOTS_LFGVALUES_H
+#define PLAYERBOTS_LFGVALUES_H
 
 #include "Value.h"
 

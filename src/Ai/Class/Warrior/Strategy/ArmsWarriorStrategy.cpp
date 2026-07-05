@@ -15,13 +15,10 @@ public:
         creators["piercing howl"] = &piercing_howl;
         creators["mocking blow"] = &mocking_blow;
         creators["heroic strike"] = &heroic_strike;
-        creators["enraged regeneration"] = &enraged_regeneration;
-        creators["retaliation"] = &retaliation;
-        creators["shattering throw"] = &shattering_throw;
     }
 
 private:
-    static ActionNode* charge(PlayerbotAI* botAI)
+    static ActionNode* charge(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "charge",
@@ -31,7 +28,7 @@ private:
         );
     }
 
-    static ActionNode* death_wish(PlayerbotAI* botAI)
+    static ActionNode* death_wish(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "death wish",
@@ -41,7 +38,7 @@ private:
         );
     }
 
-    static ActionNode* piercing_howl(PlayerbotAI* botAI)
+    static ActionNode* piercing_howl(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "piercing howl",
@@ -51,7 +48,7 @@ private:
         );
     }
 
-    static ActionNode* mocking_blow(PlayerbotAI* botAI)
+    static ActionNode* mocking_blow(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "mocking blow",
@@ -61,42 +58,12 @@ private:
         );
     }
 
-    static ActionNode* heroic_strike(PlayerbotAI* botAI)
+    static ActionNode* heroic_strike(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "heroic strike",
             /*P*/ {},
             /*A*/ { NextAction("melee") },
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* enraged_regeneration(PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "enraged regeneration",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* retaliation(PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "retaliation",
-            /*P*/ {},
-            /*A*/ {},
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* shattering_throw(PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "shattering throw",
-            /*P*/ {},
-            /*A*/ {},
             /*C*/ {}
         );
     }
@@ -112,6 +79,7 @@ std::vector<NextAction> ArmsWarriorStrategy::getDefaultActions()
     return {
         NextAction("bladestorm", ACTION_DEFAULT + 0.2f),
         NextAction("mortal strike", ACTION_DEFAULT + 0.1f),
+        NextAction("sunder armor", ACTION_DEFAULT + 0.05f),
         NextAction("melee", ACTION_DEFAULT)
     };
 }

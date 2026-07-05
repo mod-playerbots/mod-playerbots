@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_CANCELCHANNELACTION_H
-#define _PLAYERBOT_CANCELCHANNELACTION_H
+#ifndef PLAYERBOTS_CANCELCHANNELACTION_H
+#define PLAYERBOTS_CANCELCHANNELACTION_H
 
 #include "Action.h"
 

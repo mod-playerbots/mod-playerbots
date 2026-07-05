@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_STATSVALUE_H
-#define _PLAYERBOT_STATSVALUE_H
+#ifndef PLAYERBOTS_STATSVALUES_H
+#define PLAYERBOTS_STATSVALUES_H
 
 #include "NamedObjectContext.h"
 #include "Value.h"

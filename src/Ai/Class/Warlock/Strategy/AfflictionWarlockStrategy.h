@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_AFFLICTIONWARLOCKSTRATEGY_H
-#define _PLAYERBOT_AFFLICTIONWARLOCKSTRATEGY_H
+#ifndef PLAYERBOTS_AFFLICTIONWARLOCKSTRATEGY_H
+#define PLAYERBOTS_AFFLICTIONWARLOCKSTRATEGY_H
 
 #include "GenericWarlockStrategy.h"
 #include "CombatStrategy.h"

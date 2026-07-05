@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_ARROW_H
-#define _PLAYERBOT_ARROW_H
+#ifndef PLAYERBOTS_ARROW_H
+#define PLAYERBOTS_ARROW_H
 
 #include "Formations.h"
 #include "TravelMgr.h"
@@ -16,11 +16,6 @@ class UnitPosition
 {
 public:
     UnitPosition(float x, float y) : x(x), y(y) {}
-    UnitPosition(UnitPosition const& other)
-    {
-        x = other.x;
-        y = other.y;
-    }
 
     float x, y;
 };
@@ -102,7 +97,7 @@ class ArrowFormation : public MoveAheadFormation
 {
 public:
     ArrowFormation(PlayerbotAI* botAI)
-        : MoveAheadFormation(botAI, "arrow"), built(false), masterUnit(nullptr), botUnit(nullptr)
+        : MoveAheadFormation(botAI, "arrow"), masterUnit(nullptr), botUnit(nullptr), built(false)
     {
     }
 

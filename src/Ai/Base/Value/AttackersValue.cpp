@@ -154,6 +154,11 @@ bool AttackersValue::IsPossibleTarget(Unit* attacker, Player* bot, float /*range
     if (attacker->HasUnitFlag(UNIT_FLAG_IMMUNE_TO_PC) || attacker->HasUnitFlag(UNIT_FLAG_NOT_SELECTABLE))
         return false;
 
+    // Skip targets that are immune to all damage (e.g., Ice Block, Divine Shield)
+    if (attacker->IsImmunedToDamage(SPELL_SCHOOL_MASK_NORMAL) &&
+        attacker->IsImmunedToDamage(SPELL_SCHOOL_MASK_MAGIC))
+        return false;
+
     // Relationship checks
     if (attacker->IsFriendlyTo(bot))
         return false;

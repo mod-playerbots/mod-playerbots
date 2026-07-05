@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_SNARETARGETVALUE_H
-#define _PLAYERBOT_SNARETARGETVALUE_H
+#ifndef PLAYERBOTS_SNARETARGETVALUE_H
+#define PLAYERBOTS_SNARETARGETVALUE_H
 
 #include "NamedObjectContext.h"
 #include "Value.h"

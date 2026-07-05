@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PLAYERBOTREPOSITORY_H
-#define _PLAYERBOT_PLAYERBOTREPOSITORY_H
+#ifndef PLAYERBOTS_PLAYERBOTREPOSITORY_H
+#define PLAYERBOTS_PLAYERBOTREPOSITORY_H
 
 #include <cstdint>
 #include <string>

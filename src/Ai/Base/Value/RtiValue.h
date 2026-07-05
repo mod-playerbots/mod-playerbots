@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_RTIVALUE_H
-#define _PLAYERBOT_RTIVALUE_H
+#ifndef PLAYERBOTS_RTIVALUE_H
+#define PLAYERBOTS_RTIVALUE_H
 
 #include "Value.h"
 

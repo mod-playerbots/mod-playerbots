@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PARTYMEMBERTOHEAL_H
-#define _PLAYERBOT_PARTYMEMBERTOHEAL_H
+#ifndef PLAYERBOTS_PARTYMEMBERTOHEAL_H
+#define PLAYERBOTS_PARTYMEMBERTOHEAL_H
 
 #include "PartyMemberValue.h"
 
@@ -32,6 +32,15 @@ public:
         : PartyMemberValue(botAI, name)
     {
     }
+
+protected:
+    Unit* Calculate() override;
+};
+
+class HealerLowMana : public PartyMemberValue
+{
+public:
+    HealerLowMana(PlayerbotAI* botAI) : PartyMemberValue(botAI, "healer low mana") {}
 
 protected:
     Unit* Calculate() override;

@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_BOSSAURAACTION_H
-#define _PLAYERBOT_BOSSAURAACTION_H
+#ifndef PLAYERBOTS_BOSSAURAACTIONS_H
+#define PLAYERBOTS_BOSSAURAACTIONS_H
 
 #include <string>
 

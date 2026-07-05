@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_WORLDPACKETTRIGGERCONTEXT_H
-#define _PLAYERBOT_WORLDPACKETTRIGGERCONTEXT_H
+#ifndef PLAYERBOTS_WORLDPACKETTRIGGERCONTEXT_H
+#define PLAYERBOTS_WORLDPACKETTRIGGERCONTEXT_H
 
 #include "NamedObjectContext.h"
 #include "WithinAreaTrigger.h"

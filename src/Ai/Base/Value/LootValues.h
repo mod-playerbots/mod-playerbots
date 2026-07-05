@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_LOOTVALUES_H
-#define _PLAYERBOT_LOOTVALUES_H
+#ifndef PLAYERBOTS_LOOTVALUES_H
+#define PLAYERBOTS_LOOTVALUES_H
 
 #include "ItemUsageValue.h"
 #include "LootMgr.h"

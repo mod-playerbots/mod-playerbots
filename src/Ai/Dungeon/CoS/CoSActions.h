@@ -1,0 +1,26 @@
+#ifndef PLAYERBOTS_COSACTIONS_H
+#define PLAYERBOTS_COSACTIONS_H
+
+#include "Action.h"
+#include "AttackAction.h"
+#include "GenericSpellActions.h"
+#include "PlayerbotAI.h"
+#include "Playerbots.h"
+#include "CoSTriggers.h"
+
+class ExplodeGhoulSpreadAction : public MovementAction
+{
+public:
+    ExplodeGhoulSpreadAction(PlayerbotAI* ai) : MovementAction(ai, "explode ghoul spread") {}
+    bool Execute(Event event) override;
+};
+
+class EpochStackAction : public MovementAction
+{
+public:
+    EpochStackAction(PlayerbotAI* ai) : MovementAction(ai, "epoch stack") {}
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
+#endif

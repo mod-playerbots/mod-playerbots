@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PALADINAIOBJECTCONTEXT_H
-#define _PLAYERBOT_PALADINAIOBJECTCONTEXT_H
+#ifndef PLAYERBOTS_PALADINAIOBJECTCONTEXT_H
+#define PLAYERBOTS_PALADINAIOBJECTCONTEXT_H
 
 #include "AiObjectContext.h"
 

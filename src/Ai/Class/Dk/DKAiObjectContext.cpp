@@ -8,11 +8,11 @@
 #include "BloodDKStrategy.h"
 #include "DKActions.h"
 #include "DKTriggers.h"
+#include "DeathKnightPullStrategy.h"
 #include "FrostDKStrategy.h"
 #include "GenericDKNonCombatStrategy.h"
 #include "GenericTriggers.h"
 #include "Playerbots.h"
-#include "PullStrategy.h"
 #include "UnholyDKStrategy.h"
 
 class DeathKnightStrategyFactoryInternal : public NamedObjectContext<Strategy>
@@ -28,7 +28,7 @@ public:
 
 private:
     static Strategy* nc(PlayerbotAI* botAI) { return new GenericDKNonCombatStrategy(botAI); }
-    static Strategy* pull(PlayerbotAI* botAI) { return new PullStrategy(botAI, "icy touch"); }
+    static Strategy* pull(PlayerbotAI* botAI) { return new DeathKnightPullStrategy(botAI); }
     static Strategy* frost_aoe(PlayerbotAI* botAI) { return new FrostDKAoeStrategy(botAI); }
     static Strategy* unholy_aoe(PlayerbotAI* botAI) { return new UnholyDKAoeStrategy(botAI); }
 };
@@ -49,18 +49,6 @@ private:
     static Strategy* unholy_dps(PlayerbotAI* botAI) { return new UnholyDKStrategy(botAI); }
     static Strategy* tank(PlayerbotAI* botAI) { return new BloodDKStrategy(botAI); }
     static Strategy* blood(PlayerbotAI* botAI) { return new BloodDKStrategy(botAI); }
-};
-
-class DeathKnightDKBuffStrategyFactoryInternal : public NamedObjectContext<Strategy>
-{
-public:
-    DeathKnightDKBuffStrategyFactoryInternal() : NamedObjectContext<Strategy>(false, true)
-    {
-        creators["bdps"] = &DeathKnightDKBuffStrategyFactoryInternal::bdps;
-    }
-
-private:
-    static Strategy* bdps(PlayerbotAI* botAI) { return new DKBuffDpsStrategy(botAI); }
 };
 
 class DeathKnightTriggerFactoryInternal : public NamedObjectContext<Trigger>
@@ -299,7 +287,6 @@ void DKAiObjectContext::BuildSharedStrategyContexts(SharedNamedObjectContextList
     AiObjectContext::BuildSharedStrategyContexts(strategyContexts);
     strategyContexts.Add(new DeathKnightStrategyFactoryInternal());
     strategyContexts.Add(new DeathKnightCombatStrategyFactoryInternal());
-    strategyContexts.Add(new DeathKnightDKBuffStrategyFactoryInternal());
 }
 
 void DKAiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)

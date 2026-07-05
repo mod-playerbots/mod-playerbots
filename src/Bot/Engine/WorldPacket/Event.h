@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_EVENT_H
-#define _PLAYERBOT_EVENT_H
+#ifndef PLAYERBOTS_EVENT_H
+#define PLAYERBOTS_EVENT_H
 
 #include "WorldPacket.h"
 

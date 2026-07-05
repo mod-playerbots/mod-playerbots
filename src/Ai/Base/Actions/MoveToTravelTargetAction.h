@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_MOVETOTRAVELTARGETACTION_H
-#define _PLAYERBOT_MOVETOTRAVELTARGETACTION_H
+#ifndef PLAYERBOTS_MOVETOTRAVELTARGETACTION_H
+#define PLAYERBOTS_MOVETOTRAVELTARGETACTION_H
 
 #include "MovementActions.h"
 

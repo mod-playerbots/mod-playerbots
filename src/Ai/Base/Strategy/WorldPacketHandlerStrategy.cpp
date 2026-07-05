@@ -7,7 +7,7 @@
 
 void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    PassTroughStrategy::InitTriggers(triggers);
+    PassThroughStrategy::InitTriggers(triggers);
 
     triggers.push_back(
         new TriggerNode("group invite", { NextAction("accept invitation", relevance) }));
@@ -16,7 +16,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     triggers.push_back(
         new TriggerNode("uninvite guid", { NextAction("uninvite", relevance) }));
     triggers.push_back(
-        new TriggerNode("group set leader", { /*NextAction("leader", relevance),*/ }));
+        new TriggerNode("group set leader", { NextAction("reset botAI", relevance) }));
     triggers.push_back(new TriggerNode(
         "not enough money", { NextAction("tell not enough money", relevance) }));
     triggers.push_back(
@@ -71,7 +71,7 @@ void WorldPacketHandlerStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     triggers.push_back(new TriggerNode("very often", { NextAction("loot roll", relevance) }));
 }
 
-WorldPacketHandlerStrategy::WorldPacketHandlerStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI)
+WorldPacketHandlerStrategy::WorldPacketHandlerStrategy(PlayerbotAI* botAI) : PassThroughStrategy(botAI)
 {
     supported.push_back("loot roll");
     supported.push_back("check mount state");

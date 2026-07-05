@@ -3,6 +3,9 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#ifndef PLAYERBOTS_CHEATACTION_H
+#define PLAYERBOTS_CHEATACTION_H
+
 #include "Action.h"
 
 class PlayerbotAI;
@@ -21,3 +24,5 @@ private:
     static std::string const GetCheatName(BotCheatMask cheatMask);
     void ListCheats();
 };
+
+#endif

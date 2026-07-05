@@ -8,6 +8,31 @@
 #include "Event.h"
 #include "Playerbots.h"
 
+namespace
+{
+constexpr uint32 BG_WS_SPELL_WARSONG_FLAG = 23333;
+constexpr uint32 BG_WS_SPELL_SILVERWING_FLAG = 23335;
+constexpr uint32 BG_EY_NETHERSTORM_FLAG_SPELL = 34976;
+
+bool IsDisallowedShapeshiftForm(Player* bot)
+{
+    if (bot->getClass() == CLASS_DRUID)
+    {
+        ShapeshiftForm form = bot->GetShapeshiftForm();
+        return form == FORM_TRAVEL || form == FORM_AQUA ||
+               form == FORM_FLIGHT || form == FORM_FLIGHT_EPIC ||
+               form == FORM_BEAR || form == FORM_DIREBEAR ||
+               form == FORM_CAT;
+    }
+    else if (bot->getClass() == CLASS_PRIEST)
+    {
+        return bot->GetShapeshiftForm() == FORM_SPIRITOFREDEMPTION;
+    }
+
+    return false;
+}
+}
+
 bool DrinkAction::Execute(Event event)
 {
     if (botAI->HasCheat(BotCheatMask::food))
@@ -55,10 +80,16 @@ bool DrinkAction::isUseful()
 
 bool DrinkAction::isPossible()
 {
-    return !bot->IsInCombat() && !bot->IsMounted() &&
-           !botAI->HasAnyAuraOf(GetTarget(), "dire bear form", "bear form", "cat form", "travel form", "aquatic form",
-                                "flight form", "swift flight form", nullptr) &&
-           (botAI->HasCheat(BotCheatMask::food) || UseItemAction::isPossible());
+    if (bot->IsInCombat() || bot->IsMounted() || IsDisallowedShapeshiftForm(bot))
+        return false;
+
+    if (bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG) ||
+        bot->HasAura(BG_EY_NETHERSTORM_FLAG_SPELL))
+    {
+        return false;
+    }
+
+    return botAI->HasCheat(BotCheatMask::food) || UseItemAction::isPossible();
 }
 
 bool EatAction::Execute(Event event)
@@ -104,8 +135,14 @@ bool EatAction::isUseful() { return UseItemAction::isUseful() && AI_VALUE2(uint8
 
 bool EatAction::isPossible()
 {
-    return !bot->IsInCombat() && !bot->IsMounted() &&
-           !botAI->HasAnyAuraOf(GetTarget(), "dire bear form", "bear form", "cat form", "travel form", "aquatic form",
-                                "flight form", "swift flight form", nullptr) &&
-           (botAI->HasCheat(BotCheatMask::food) || UseItemAction::isPossible());
+    if (bot->IsInCombat() || bot->IsMounted() || IsDisallowedShapeshiftForm(bot))
+        return false;
+
+    if (bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG) ||
+        bot->HasAura(BG_EY_NETHERSTORM_FLAG_SPELL))
+    {
+        return false;
+    }
+
+    return botAI->HasCheat(BotCheatMask::food) || UseItemAction::isPossible();
 }

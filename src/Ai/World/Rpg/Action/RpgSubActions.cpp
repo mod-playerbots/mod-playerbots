@@ -13,6 +13,7 @@
 #include "GuildCreateActions.h"
 #include "LastMovementValue.h"
 #include "MovementActions.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "PossibleRpgTargetsValue.h"
 #include "SocialMgr.h"
@@ -430,12 +431,15 @@ bool RpgTradeUsefulAction::Execute(Event /*event*/)
         if (bot->GetTradeData() && bot->GetTradeData()->HasItem(item->GetGUID()))
         {
             if (bot->GetGroup() && bot->GetGroup()->IsMember(guidP) && botAI->HasRealPlayerMaster())
-                botAI->TellMasterNoFacing(
-                    "You can use this " + chat->FormatItem(item->GetTemplate()) + " better than me, " +
-                    guidP.GetPlayer()->GetName() /*chat->FormatWorldobject(guidP.GetPlayer())*/ + ".");
+                botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "rpg_item_better_for_player",
+                    "You can use this %item better than me, %player.",
+                    {{"%item", chat->FormatItem(item->GetTemplate())}, {"%player", guidP.GetPlayer()->GetName()}}));
             else
-                bot->Say("You can use this " + chat->FormatItem(item->GetTemplate()) + " better than me, " +
-                             player->GetName() /*chat->FormatWorldobject(player)*/ + ".",
+                bot->Say(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                             "rpg_item_better_for_player",
+                             "You can use this %item better than me, %player.",
+                             {{"%item", chat->FormatItem(item->GetTemplate())}, {"%player", player->GetName()}}),
                          (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));
 
             if (!urand(0, 4) || items.size() < 2)
@@ -449,7 +453,10 @@ bool RpgTradeUsefulAction::Execute(Event /*event*/)
             }
         }
         else
-            bot->Say("Start trade with" + chat->FormatWorldobject(player),
+            bot->Say(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                         "rpg_start_trade_with_player",
+                         "Start trade with %player",
+                         {{"%player", chat->FormatWorldobject(player)}}),
                      (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));
 
         botAI->SetNextCheckDelay(sPlayerbotAIConfig.rpgDelay);

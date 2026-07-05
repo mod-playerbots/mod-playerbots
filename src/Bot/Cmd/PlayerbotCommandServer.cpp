@@ -26,7 +26,7 @@ bool ReadLine(socket_ptr sock, std::string* buffer, std::string* line)
         char buf[1025];
         boost::system::error_code error;
         size_t n = sock->read_some(boost::asio::buffer(buf), error);
-        if (n == -1 || error == boost::asio::error::eof)
+        if (n == static_cast<size_t>(-1) || error == boost::asio::error::eof)
             return false;
         else if (error)
             throw boost::system::system_error(error);  // Some other error.

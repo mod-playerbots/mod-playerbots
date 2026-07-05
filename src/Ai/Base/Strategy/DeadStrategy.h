@@ -3,14 +3,14 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_DEADSTRATEGY_H
-#define _PLAYERBOT_DEADSTRATEGY_H
+#ifndef PLAYERBOTS_DEADSTRATEGY_H
+#define PLAYERBOTS_DEADSTRATEGY_H
 
-#include "PassTroughStrategy.h"
+#include "PassThroughStrategy.h"
 
 class PlayerbotAI;
 
-class DeadStrategy : public PassTroughStrategy
+class DeadStrategy : public PassThroughStrategy
 {
 public:
     DeadStrategy(PlayerbotAI* botAI);

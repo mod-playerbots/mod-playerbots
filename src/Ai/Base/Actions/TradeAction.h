@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_TRADEACTION_H
-#define _PLAYERBOT_TRADEACTION_H
+#ifndef PLAYERBOTS_TRADEACTION_H
+#define PLAYERBOTS_TRADEACTION_H
 
 #include "InventoryAction.h"
 

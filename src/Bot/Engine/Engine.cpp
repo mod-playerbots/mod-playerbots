@@ -118,10 +118,12 @@ void Engine::Init()
 {
     Reset();
 
+    hasTargetExclusions = false;
     for (std::map<std::string, Strategy*>::iterator i = strategies.begin(); i != strategies.end(); i++)
     {
         Strategy* strategy = i->second;
         strategyTypeMask |= strategy->GetType();
+        hasTargetExclusions |= strategy->HasTargetExclusions();
         strategy->InitMultipliers(multipliers);
         strategy->InitTriggers(triggers);
         for (auto &iter : strategy->actionNodeFactories.creators)
@@ -138,7 +140,7 @@ void Engine::Init()
     }
 }
 
-bool Engine::DoNextAction(Unit* unit, uint32 depth, bool minimal)
+bool Engine::DoNextAction(Unit* /*unit*/, uint32 /*depth*/, bool minimal)
 {
     LogAction("--- AI Tick ---");
 
@@ -427,6 +429,12 @@ void Engine::toggleStrategy(std::string const name)
 }
 
 bool Engine::HasStrategy(std::string const name) { return strategies.find(name) != strategies.end(); }
+
+Strategy* Engine::GetStrategy(std::string const name)
+{
+    std::map<std::string, Strategy*>::iterator i = strategies.find(name);
+    return i != strategies.end() ? i->second : nullptr;
+}
 
 void Engine::ProcessTriggers(bool minimal)
 {

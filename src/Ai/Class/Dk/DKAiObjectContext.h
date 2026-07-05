@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_DKAIOBJECTCONTEXT_H
-#define _PLAYERBOT_DKAIOBJECTCONTEXT_H
+#ifndef PLAYERBOTS_DKAIOBJECTCONTEXT_H
+#define PLAYERBOTS_DKAIOBJECTCONTEXT_H
 
 #include "AiObjectContext.h"
 

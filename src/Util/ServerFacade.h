@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_SERVERFACADE_H
-#define _PLAYERBOT_SERVERFACADE_H
+#ifndef PLAYERBOTS_SERVERFACADE_H
+#define PLAYERBOTS_SERVERFACADE_H
 
 class Player;
 class Unit;

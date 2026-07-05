@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_POSITIONVALUE_H
-#define _PLAYERBOT_POSITIONVALUE_H
+#ifndef PLAYERBOTS_POSITIONVALUE_H
+#define PLAYERBOTS_POSITIONVALUE_H
 
 #include "NamedObjectContext.h"
 #include "TravelMgr.h"
@@ -18,10 +18,6 @@ public:
     PositionInfo() : x(0), y(0), z(0), mapId(0), valueSet(false) {}
     PositionInfo(float x, float y, float z, uint32 mapId, bool valueSet = true)
         : x(x), y(y), z(z), mapId(mapId), valueSet(valueSet)
-    {
-    }
-    PositionInfo(PositionInfo const& other)
-        : x(other.x), y(other.y), z(other.z), mapId(other.mapId), valueSet(other.valueSet)
     {
     }
 

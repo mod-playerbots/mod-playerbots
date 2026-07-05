@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_CHECKMAILACTION_H
-#define _PLAYERBOT_CHECKMAILACTION_H
+#ifndef PLAYERBOTS_CHECKMAILACTION_H
+#define PLAYERBOTS_CHECKMAILACTION_H
 
 #include "Action.h"
 #include "DatabaseEnvFwd.h"

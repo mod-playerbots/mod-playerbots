@@ -27,7 +27,7 @@ PlayerbotSecurityLevel PlayerbotSecurity::LevelFor(Player* from, DenyReason* rea
     }
 
     // GMs always have full access
-    if (from->GetSession()->GetSecurity() >= SEC_GAMEMASTER)
+    if (from->CanBeGameMaster())
         return PLAYERBOT_SECURITY_ALLOW_ALL;
 
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
@@ -188,9 +188,8 @@ bool PlayerbotSecurity::CheckLevelFor(PlayerbotSecurityLevel level, bool silent,
 
     Player* master = botAI->GetMaster();
     if (master && botAI->IsOpposing(master))
-        if (WorldSession* session = master->GetSession())
-            if (session->GetSecurity() < SEC_GAMEMASTER)
-                return false;
+        if (master->GetSession() && !master->CanBeGameMaster())
+            return false;
 
     std::ostringstream out;
 

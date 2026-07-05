@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_LASTSPELLCASTVALUE_H
-#define _PLAYERBOT_LASTSPELLCASTVALUE_H
+#ifndef PLAYERBOTS_LASTSPELLCASTVALUE_H
+#define PLAYERBOTS_LASTSPELLCASTVALUE_H
 
 #include "Value.h"
 

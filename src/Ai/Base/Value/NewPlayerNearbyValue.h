@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_NEWPLAYERNEARBYVALUE_H
-#define _PLAYERBOT_NEWPLAYERNEARBYVALUE_H
+#ifndef PLAYERBOTS_NEWPLAYERNEARBYVALUE_H
+#define PLAYERBOTS_NEWPLAYERNEARBYVALUE_H
 
 #include "ObjectGuid.h"
 #include "Value.h"

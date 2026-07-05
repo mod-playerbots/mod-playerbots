@@ -9,7 +9,7 @@
 
 void DeadStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    PassTroughStrategy::InitTriggers(triggers);
+    PassThroughStrategy::InitTriggers(triggers);
 
     triggers.push_back(
         new TriggerNode("often", { NextAction("auto release", relevance) }));
@@ -29,4 +29,4 @@ void DeadStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         "can self resurrect", { NextAction("self resurrect", relevance + 2.0f) }));
 }
 
-DeadStrategy::DeadStrategy(PlayerbotAI* botAI) : PassTroughStrategy(botAI) {}
+DeadStrategy::DeadStrategy(PlayerbotAI* botAI) : PassThroughStrategy(botAI) {}

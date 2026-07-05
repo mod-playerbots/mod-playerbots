@@ -9,6 +9,7 @@
 #include "FleeManager.h"
 #include "GameGraveyard.h"
 #include "MapMgr.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "RandomPlayerbotMgr.h"
 #include "ServerFacade.h"
@@ -251,9 +252,9 @@ GraveyardStruct const* SpiritHealerAction::GetGrave(bool startZone)
     std::vector<uint32> races;
 
     if (bot->GetTeamId() == TEAM_ALLIANCE)
-        races = {RACE_HUMAN, RACE_DWARF, RACE_GNOME, RACE_NIGHTELF};
+        races = {RACE_HUMAN, RACE_DWARF, RACE_GNOME, RACE_NIGHTELF, RACE_DRAENEI};
     else
-        races = {RACE_ORC, RACE_TROLL, RACE_TAUREN, RACE_UNDEAD_PLAYER};
+        races = {RACE_ORC, RACE_TROLL, RACE_TAUREN, RACE_UNDEAD_PLAYER, RACE_BLOODELF};
 
     float graveDistance = -1;
 
@@ -322,7 +323,7 @@ bool SpiritHealerAction::Execute(Event /*event*/)
                 bot->SpawnCorpseBones();
                 context->GetValue<Unit*>("current target")->Set(nullptr);
                 bot->SetTarget();
-                botAI->TellMaster("Hello");
+                botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault("hello", "Hello", {}));
 
                 if (dCount > 20)
                     context->GetValue<uint32>("death count")->Set(0);

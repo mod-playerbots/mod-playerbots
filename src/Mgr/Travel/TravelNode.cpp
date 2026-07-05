@@ -56,7 +56,7 @@ void TravelNodePath::calculateCost(bool distanceOnly)
         {
             for (CreatureData const* cData : point.getCreaturesNear(50))  // Agro radius + 5
             {
-                CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(cData->id1);
+                CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(cData->id);
                 if (cInfo)
                 {
                     FactionTemplateEntry const* factionEntry = sFactionTemplateStore.LookupEntry(cInfo->faction);
@@ -1597,7 +1597,7 @@ void TravelNodeMap::generateNpcNodes()
         WorldPosition guidP(creatureData->mapid, creatureData->posX, creatureData->posY, creatureData->posZ,
                             creatureData->orientation);
 
-        CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(creatureData->id1);
+        CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(creatureData->id);
         if (!cInfo)
             continue;
 
@@ -2467,7 +2467,7 @@ std::vector<uint32> TravelNodeMap::FindTaxiPath(uint32 fromNode, uint32 toNode)
     TaxiNodesEntry const* startNode = sTaxiNodesStore.LookupEntry(fromNode);
     TaxiNodesEntry const* endNode = sTaxiNodesStore.LookupEntry(toNode);
 
-    if (!startNode || !endNode || startNode->map_id != endNode->map_id)
+    if (!startNode || !endNode)
         return {};
 
     auto cacheItr = taxiPathCache.find(fromNode);

@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_CRAFTVALUE_H
-#define _PLAYERBOT_CRAFTVALUE_H
+#ifndef PLAYERBOTS_CRAFTVALUE_H
+#define PLAYERBOTS_CRAFTVALUE_H
 
 #include <map>
 
@@ -16,11 +16,6 @@ class CraftData
 {
 public:
     CraftData() : itemId(0) {}
-    CraftData(CraftData const& other) : itemId(other.itemId)
-    {
-        required.insert(other.required.begin(), other.required.end());
-        obtained.insert(other.obtained.begin(), other.obtained.end());
-    }
 
     uint32 itemId;
     std::map<uint32, uint32> required, obtained;

@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PRIESTNONCOMBATSTRATEGYACTIONNODEFACTORY_H
-#define _PLAYERBOT_PRIESTNONCOMBATSTRATEGYACTIONNODEFACTORY_H
+#ifndef PLAYERBOTS_PRIESTNONCOMBATSTRATEGYACTIONNODEFACTORY_H
+#define PLAYERBOTS_PRIESTNONCOMBATSTRATEGYACTIONNODEFACTORY_H
 
 #include "Action.h"
 #include "NamedObjectContext.h"
@@ -30,8 +30,6 @@ public:
         creators["flash heal"] = &flash_heal;
         creators["flash heal on party"] = &flash_heal_on_party;
         creators["circle of healing on party"] = &circle_of_healing;
-        creators["prayer of fortitude on party"] = &prayer_of_fortitude_on_party;
-        creators["prayer of spirit on party"] = &prayer_of_spirit_on_party;
     }
 
 private:
@@ -132,20 +130,6 @@ private:
                               /*P*/ { NextAction("remove shadowform") },
                               // /*A*/ { NextAction("flash heal on party") },
                               /*A*/ {},
-                              /*C*/ {});
-    }
-    static ActionNode* prayer_of_fortitude_on_party([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("prayer of fortitude on party",
-                              /*P*/ { NextAction("remove shadowform") },
-                              /*A*/ { NextAction("power word: fortitude on party") },
-                              /*C*/ {});
-    }
-    static ActionNode* prayer_of_spirit_on_party([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("prayer of spirit on party",
-                              /*P*/ { NextAction("remove shadowform") },
-                              /*A*/ { NextAction("divine spirit on party") },
                               /*C*/ {});
     }
 };

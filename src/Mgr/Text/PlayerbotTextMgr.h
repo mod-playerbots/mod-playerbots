@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PLAYERBOTTEXTMGR_H
-#define _PLAYERBOT_PLAYERBOTTEXTMGR_H
+#ifndef PLAYERBOTS_PLAYERBOTTEXTMGR_H
+#define PLAYERBOTS_PLAYERBOTTEXTMGR_H
 
 #include <map>
 #include <vector>
@@ -87,7 +87,7 @@ public:
 private:
     PlayerbotTextMgr()
     {
-        for (uint8 i = 0; i < MAX_LOCALES; ++i)
+        for (uint8 i = 0; i < TOTAL_LOCALES; ++i)
         {
             botTextLocalePriority[i] = 0;
         }
@@ -102,7 +102,7 @@ private:
 
     std::map<std::string, std::vector<BotTextEntry>> botTexts;
     std::map<std::string, uint32> botTextChance;
-    uint32 botTextLocalePriority[MAX_LOCALES];
+    uint32 botTextLocalePriority[TOTAL_LOCALES];
 };
 
 #endif

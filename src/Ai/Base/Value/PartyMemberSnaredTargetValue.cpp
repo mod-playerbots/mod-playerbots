@@ -29,7 +29,7 @@ public:
         if (!botAI->GetBot()->IsWithinLOSInMap(unit))
             return false;
 
-        return botAI->IsMovementImpaired(unit);
+        return botAI->IsMovementImpaired(unit) && !botAI->HasAnyAuraOf(unit, "stealth", "prowl", nullptr);
     }
 };
 

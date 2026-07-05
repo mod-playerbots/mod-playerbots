@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_QUESTCONFIRMACCEPTACTION_H
-#define _PLAYERBOT_QUESTCONFIRMACCEPTACTION_H
+#ifndef PLAYERBOTS_QUESTCONFIRMACCEPTACTION_H
+#define PLAYERBOTS_QUESTCONFIRMACCEPTACTION_H
 
 #include "AiObjectContext.h"
 #include "Player.h"

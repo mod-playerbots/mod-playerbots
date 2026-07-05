@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_THREATVALUES_H
-#define _PLAYERBOT_THREATVALUES_H
+#ifndef PLAYERBOTS_THREATVALUES_H
+#define PLAYERBOTS_THREATVALUES_H
 
 #include "NamedObjectContext.h"
 #include "Value.h"

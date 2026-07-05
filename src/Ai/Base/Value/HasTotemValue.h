@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_HASTOTEMVALUE_H
-#define _PLAYERBOT_HASTOTEMVALUE_H
+#ifndef PLAYERBOTS_HASTOTEMVALUE_H
+#define PLAYERBOTS_HASTOTEMVALUE_H
 
 #include "NamedObjectContext.h"
 #include "Value.h"

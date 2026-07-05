@@ -3,8 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
-#ifndef _PLAYERBOT_PLAYERBOTSECURITY_H
-#define _PLAYERBOT_PLAYERBOTSECURITY_H
+#ifndef PLAYERBOTS_PLAYERBOTSECURITY_H
+#define PLAYERBOTS_PLAYERBOTSECURITY_H
 
 #include <map>
 
