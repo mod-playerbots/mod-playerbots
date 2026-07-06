@@ -13,6 +13,7 @@
 #include <ctime>
 #include <iomanip>
 #include <random>
+#include <unordered_set>
 
 #include "AiFactory.h"
 #include "Battleground.h"
@@ -375,6 +376,12 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 /*elapsed*/, bool /*minimal*/)
     {
         if (time(nullptr) > (PlayersCheckTimer + 60))
             sRandomPlayerbotMgr.CheckPlayers();
+    }
+
+    if (sPlayerbotAIConfig.syncBotsWithPlayer && !players.empty())
+    {
+        if (time(nullptr) > (SyncBotsCheckTimer + sPlayerbotAIConfig.syncBotsWithPlayerInterval))
+            sRandomPlayerbotMgr.CheckPlayerZonePopulation();
     }
 
     if (sPlayerbotAIConfig.randomBotJoinBG /* && !players.empty()*/)
@@ -1313,6 +1320,183 @@ void RandomPlayerbotMgr::CheckPlayers()
     LOG_INFO("playerbots", "Max player level is {}, max bot level set to {}", playersLevel - 3, playersLevel);
 }
 
+std::vector<WorldLocation> RandomPlayerbotMgr::GetLocationsAroundPlayer(Player* player, uint32 count, float minDist,
+                                                                        float maxDist)
+{
+    std::vector<WorldLocation> locs;
+    for (uint32 i = 0; i < count; i++)
+    {
+        float angle = frand(0.0f, 2 * static_cast<float>(M_PI));
+        float dist = frand(minDist, maxDist);
+        float x = player->GetPositionX() + cos(angle) * dist;
+        float y = player->GetPositionY() + sin(angle) * dist;
+        locs.emplace_back(player->GetMapId(), x, y, player->GetPositionZ(), 0.0f);
+    }
+
+    return locs;
+}
+
+void RandomPlayerbotMgr::CheckPlayerZonePopulation()
+{
+    SyncBotsCheckTimer = time(nullptr);
+
+    LOG_DEBUG("playerbots", "Checking player zone population...");
+
+    std::unordered_set<uint32> claimedThisTick;
+
+    // Bound total work done by this pass to the same order of magnitude as the rest of the random-bot
+    // system's per-tick throttle, so a busy server with many online players can't trigger an unbounded
+    // burst of full respecs/DB saves independent of AiPlayerbot.RandomBotsPerInterval.
+    uint32 globalMoveBudget = sPlayerbotAIConfig.randomBotsPerInterval;
+    uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+
+    for (Player* player : players)
+    {
+        if (!globalMoveBudget)
+            break;
+
+        // Deliberately do NOT skip on IsGameMaster(): that reflects the runtime ".gm on" admin-mode
+        // toggle (PLAYER_EXTRA_GM_ON), not account security level - a solo server owner playing on a
+        // GM-security account (with GM login-state off, the default) already has IsGameMaster()==false,
+        // and even one who runs ".gm on" for convenience (fly/invuln) is still physically present and
+        // should still get world population around them. Only exclude a GM who is actually invisible or
+        // spectating, since populating bots around someone who isn't really "there" is pointless.
+        if (!player->IsInWorld() || !player->isGMVisible() || player->IsGMSpectator())
+            continue;
+
+        // Only open-world continents make sense here (matches the allowed-map filter already applied
+        // inside RandomTeleport).
+        if (std::find(sPlayerbotAIConfig.randomBotMaps.begin(), sPlayerbotAIConfig.randomBotMaps.end(),
+                      player->GetMapId()) == sPlayerbotAIConfig.randomBotMaps.end())
+            continue;
+
+        uint32 zoneId = player->GetZoneId();
+        uint32 pLevel = player->GetLevel();
+        uint32 variance = sPlayerbotAIConfig.syncBotsWithPlayerLevelVariance;
+
+        uint32 allianceRatio = sPlayerbotAIConfig.randomBotAllianceRatio;
+        uint32 hordeRatio = sPlayerbotAIConfig.randomBotHordeRatio;
+        uint32 totalRatio = allianceRatio + hordeRatio;
+        if (!totalRatio)
+            continue;
+
+        // Split the zone target across factions the same way AddRandomBots() splits the global bot
+        // count: give the remainder to one faction at random instead of letting integer division
+        // silently undershoot the configured target every single time.
+        uint32 zoneTarget = sPlayerbotAIConfig.syncBotsWithPlayerZoneTargetCount;
+        uint32 allianceTarget = zoneTarget * allianceRatio / totalRatio;
+        uint32 remainder = zoneTarget * allianceRatio % totalRatio;
+        if (remainder && urand(1, totalRatio) <= remainder)
+            allianceTarget++;
+        uint32 hordeTarget = zoneTarget - allianceTarget;
+
+        for (TeamId team : { TEAM_ALLIANCE, TEAM_HORDE })
+        {
+            if (!globalMoveBudget)
+                break;
+
+            uint32 target = (team == TEAM_ALLIANCE) ? allianceTarget : hordeTarget;
+            if (!target)
+                continue;
+
+            uint32 satisfied = 0;
+            std::vector<uint32> eligible;
+
+            for (uint32 guid : currentBots)
+            {
+                if (claimedThisTick.count(guid))
+                    continue;
+
+                Player* bot = GetPlayerBot(ObjectGuid::Create<HighGuid::Player>(guid));
+                if (!bot || !bot->IsInWorld() || !IsRandomBot(bot) || bot->GetTeamId() != team)
+                    continue;
+
+                bool inZone = bot->GetZoneId() == zoneId;
+                bool inBand = std::abs(static_cast<int32>(bot->GetLevel()) - static_cast<int32>(pLevel)) <=
+                              static_cast<int32>(variance);
+
+                if (inZone && inBand && bot->IsAlive())
+                {
+                    satisfied++;
+                    continue;
+                }
+
+                // Only pull in bots that are actually free to move (dead bots need Revive()'s
+                // resurrect-then-teleport handling, not a raw relevel/teleport).
+                if (!bot->IsAlive() || bot->GetGroup() || bot->IsInCombat() || bot->InBattleground() ||
+                    bot->InBattlegroundQueue() || bot->InArena() || bot->IsBeingTeleported())
+                    continue;
+
+                eligible.push_back(guid);
+            }
+
+            if (satisfied >= target || eligible.empty())
+                continue;
+
+            uint32 need = std::min({ target - satisfied, sPlayerbotAIConfig.syncBotsWithPlayerMaxPerInterval,
+                                     static_cast<uint32>(eligible.size()), globalMoveBudget });
+
+            std::shuffle(eligible.begin(), eligible.end(), RandomEngine::Instance());
+
+            for (uint32 i = 0; i < need; i++)
+            {
+                uint32 guid = eligible[i];
+                Player* bot = GetPlayerBot(ObjectGuid::Create<HighGuid::Player>(guid));
+                if (!bot)
+                    continue;
+
+                // Attempt the move FIRST, using the bot's current (pre-relevel) level and gear. This
+                // way a bot that can't actually reach the player's zone (contested/faction-exclusive
+                // territory, unreachable terrain, or a real player nearby making the teleport visible)
+                // is left completely untouched instead of paying for an expensive respec that
+                // wouldn't have accomplished anything. It also means StarterLevelDistanceCheck (which
+                // only restricts bots that are ALREADY level <=16) is evaluated against the bot's real
+                // current level, not a not-yet-applied target level.
+                std::vector<WorldLocation> locs = GetLocationsAroundPlayer(
+                    player, 12, sPlayerbotAIConfig.syncBotsWithPlayerMinDistance,
+                    sPlayerbotAIConfig.syncBotsWithPlayerMaxDistance);
+                if (!RandomTeleport(bot, locs))
+                    continue;
+
+                // Mirror RandomizeFirst()'s Death Knight floor: raise both bounds together so the
+                // clamp below can never see minLevel > levelCeiling.
+                int32 minLevel = 1;
+                int32 levelCeiling = static_cast<int32>(maxLevel);
+                if (bot->getClass() == CLASS_DEATH_KNIGHT)
+                {
+                    int32 dkFloor = static_cast<int32>(sWorld->getIntConfig(CONFIG_START_HEROIC_PLAYER_LEVEL));
+                    minLevel = std::max(minLevel, dkFloor);
+                    levelCeiling = std::max(levelCeiling, dkFloor);
+                }
+
+                int32 targetLevel = std::clamp<int32>(
+                    static_cast<int32>(pLevel) + irand(-static_cast<int32>(variance), static_cast<int32>(variance)),
+                    minLevel, levelCeiling);
+
+                if (static_cast<uint32>(targetLevel) != bot->GetLevel())
+                {
+                    bool leveledUp = targetLevel > static_cast<int32>(bot->GetLevel());
+                    PlayerbotFactory factory(bot, static_cast<uint32>(targetLevel));
+                    // Down-leveling needs a full respec (clears spells/skills/items above the new level),
+                    // matching the project's own downgradeMaxLevelBot precedent in RandomizeFirst().
+                    factory.Randomize(leveledUp);
+                }
+
+                claimedThisTick.insert(guid);
+                --globalMoveBudget;
+                // Reset the bot's normal random-teleport cycle (same bounds ProcessBot() uses) so it
+                // isn't immediately yanked elsewhere again right after being synced to the player.
+                uint32 nextTeleport = urand(sPlayerbotAIConfig.minRandomBotTeleportInterval,
+                                            sPlayerbotAIConfig.maxRandomBotTeleportInterval);
+                ScheduleTeleport(guid, nextTeleport);
+
+                if (!globalMoveBudget)
+                    break;
+            }
+        }
+    }
+}
+
 void RandomPlayerbotMgr::ScheduleRandomize(uint32 bot, uint32 time) { SetEventValue(bot, "randomize", 1, time); }
 
 void RandomPlayerbotMgr::ScheduleTeleport(uint32 bot, uint32 time)
@@ -1574,27 +1758,27 @@ void RandomPlayerbotMgr::Revive(Player* player)
     RandomTeleportGrindForLevel(player);
 }
 
-void RandomPlayerbotMgr::RandomTeleport(Player* bot, std::vector<WorldLocation>& locs, bool hearth)
+bool RandomPlayerbotMgr::RandomTeleport(Player* bot, std::vector<WorldLocation>& locs, bool hearth)
 {
     // ignore when alrdy teleported or not in the world yet.
     if (bot->IsBeingTeleported() || !bot->IsInWorld())
-        return;
+        return false;
 
     // no teleport / movement update when rooted.
     if (bot->IsRooted())
-        return;
+        return false;
 
     // ignore when in queue for battle grounds.
     if (bot->InBattlegroundQueue())
-        return;
+        return false;
 
     // ignore when in battle grounds or arena.
     if (bot->InBattleground() || bot->InArena())
-        return;
+        return false;
 
     // ignore when in group (e.g. world, dungeons, raids) and leader is not a player.
     if (bot->GetGroup() && !bot->GetGroup()->IsLeader(bot->GetGUID()))
-        return;
+        return false;
 
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     if (botAI)
@@ -1602,7 +1786,7 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot, std::vector<WorldLocation>&
         // ignore when in when taxi with boat/zeppelin and has players nearby
         if (bot->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT) && bot->HasUnitState(UNIT_STATE_IGNORE_PATHFINDING) &&
             botAI->HasPlayerNearby())
-            return;
+            return false;
     }
 
     // if (sPlayerbotAIConfig.randomBotRpgChance < 0)
@@ -1611,7 +1795,7 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot, std::vector<WorldLocation>&
     if (locs.empty())
     {
         LOG_DEBUG("playerbots", "Cannot teleport bot {} - no locations available", bot->GetName().c_str());
-        return;
+        return false;
     }
 
     std::vector<WorldPosition> tlocs;
@@ -1630,7 +1814,7 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot, std::vector<WorldLocation>&
     if (tlocs.empty())
     {
         LOG_DEBUG("playerbots", "Cannot teleport bot {} - all locations removed by filter", bot->GetName().c_str());
-        return;
+        return false;
     }
 
     PerfMonitorOperation* pmo = sPerfMonitor.start(PERF_MON_RNDBOT, "RandomTeleportByLocations");
@@ -1708,7 +1892,7 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot, std::vector<WorldLocation>&
         if (pmo)
             pmo->finish();
 
-        return;
+        return true;
     }
 
     if (pmo)
@@ -1716,6 +1900,7 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot, std::vector<WorldLocation>&
 
     // LOG_ERROR("playerbots", "Cannot teleport bot {} - no locations available ({} locations)", bot->GetName().c_str(),
     //           tlocs.size());
+    return false;
 }
 
 void RandomPlayerbotMgr::PrepareAddclassCache()

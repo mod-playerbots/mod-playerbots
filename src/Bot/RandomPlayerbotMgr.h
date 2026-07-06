@@ -152,6 +152,7 @@ public:
     void CheckBgQueue();
     void CheckLfgQueue();
     void CheckPlayers();
+    void CheckPlayerZonePopulation();
     void LogBattlegroundInfo();
 
     std::map<TeamId, std::map<BattlegroundTypeId, std::vector<uint32>>> getBattleMastersCache()
@@ -203,6 +204,7 @@ private:
         this->BgCheckTimer = 0;
         this->LfgCheckTimer = 0;
         this->PlayersCheckTimer = 0;
+        this->SyncBotsCheckTimer = 0;
     }
 
     ~RandomPlayerbotMgr() = default;
@@ -229,6 +231,7 @@ private:
     time_t BgCheckTimer;
     time_t LfgCheckTimer;
     time_t PlayersCheckTimer;
+    time_t SyncBotsCheckTimer;
     time_t RealPlayerLastTimeSeen = 0;
     time_t DelayLoginBotsTimer;
     time_t printStatsTimer;
@@ -236,7 +239,8 @@ private:
     bool ProcessBot(uint32 bot);
     void ScheduleRandomize(uint32 bot, uint32 time);
     void RandomTeleport(Player* bot);
-    void RandomTeleport(Player* bot, std::vector<WorldLocation>& locs, bool hearth = false);
+    bool RandomTeleport(Player* bot, std::vector<WorldLocation>& locs, bool hearth = false);
+    std::vector<WorldLocation> GetLocationsAroundPlayer(Player* player, uint32 count, float minDist, float maxDist);
     uint32 GetZoneLevel(uint16 mapId, float teleX, float teleY, float teleZ);
     typedef void (RandomPlayerbotMgr::*ConsoleCommandHandler)(Player*);
     std::vector<Player*> players;

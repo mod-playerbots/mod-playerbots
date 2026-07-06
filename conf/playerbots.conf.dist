@@ -1256,6 +1256,46 @@ AiPlayerbot.AutoTeleportForLevel = 1
 ####################################################################################################
 
 ####################################################################################################
+# SYNC BOTS WITH PLAYER (WORLD PVP POPULATION)
+#
+# Periodically pulls idle randombots of both factions into each online real player's current zone,
+# re-leveling them close to that player's level so the zone feels populated for world PvP. This is
+# independent of AiPlayerbot.SyncLevelWithPlayers (which only raises the global max randombot level)
+# and ignores the normal zone level brackets by design - bots are leveled to match the player, not
+# the zone, even if the player is over/under-leveled for where they currently are.
+#
+
+# Enable syncing randombot population/level to online real players' current zone
+# Default: 0 (disabled)
+AiPlayerbot.SyncBotsWithPlayer = 0
+
+# Combined Alliance+Horde randombot population target for the player's current zone,
+# split across factions using AiPlayerbot.RandomBotAllianceRatio / RandomBotHordeRatio
+# Default: 80
+AiPlayerbot.SyncBotsWithPlayerZoneTargetCount = 80
+
+# Synced bots are leveled to (player level +/- this variance)
+# Default: 5
+AiPlayerbot.SyncBotsWithPlayerLevelVariance = 5
+
+# Max bots moved into a player's zone per faction, per check
+# Default: 5
+AiPlayerbot.SyncBotsWithPlayerMaxPerInterval = 5
+
+# Seconds between population checks
+# Default: 30
+AiPlayerbot.SyncBotsWithPlayerInterval = 30
+
+# Yard range around the player used to place synced bots (min/max)
+# Default: 40 / 250
+AiPlayerbot.SyncBotsWithPlayerMinDistance = 40
+AiPlayerbot.SyncBotsWithPlayerMaxDistance = 250
+
+#
+#
+####################################################################################################
+
+####################################################################################################
 # BATTLEGROUNDS & ARENAS & PVP
 #
 
