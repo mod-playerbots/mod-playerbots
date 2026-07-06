@@ -4728,7 +4728,6 @@ void PlayerbotFactory::InitImmersive()
 
 void PlayerbotFactory::InitArenaTeam()
 {
-
     if (!sPlayerbotAIConfig.IsInRandomAccountList(bot->GetSession()->GetAccountId()))
         return;
 
@@ -4770,83 +4769,94 @@ void PlayerbotFactory::InitArenaTeam()
     std::vector<uint32> arenateams;
     for (std::vector<uint32>::iterator i = sPlayerbotAIConfig.randomBotArenaTeams.begin();
          i != sPlayerbotAIConfig.randomBotArenaTeams.end(); ++i)
-        arenateams.push_back(*i);
+         {
+             arenateams.push_back(*i);
+         }
 
-    if (arenateams.empty())
-    {
-        LOG_ERROR("playerbots", "No random arena team available");
-        return;
-    }
+         if (arenateams.empty())
+         {
+             LOG_ERROR("playerbots", "No random arena team available");
+             return;
+         }
 
-    while (!arenateams.empty())
-    {
-        int index = urand(0, arenateams.size() - 1);
-        uint32 arenateamID = arenateams[index];
-        ArenaTeam* arenateam = sArenaTeamMgr->GetArenaTeamById(arenateamID);
-        if (!arenateam)
-        {
-            LOG_ERROR("playerbots", "Invalid arena team {}", arenateamID);
-            arenateams.erase(arenateams.begin() + index);
-            continue;
-        }
+         while (!arenateams.empty())
+         {
+             int index = urand(0, arenateams.size() - 1);
+             uint32 arenateamID = arenateams[index];
+             ArenaTeam* arenateam = sArenaTeamMgr->GetArenaTeamById(arenateamID);
+             if (!arenateam)
+             {
+                 LOG_ERROR("playerbots", "Invalid arena team {}", arenateamID);
+                 arenateams.erase(arenateams.begin() + index);
+                 continue;
+             }
 
-        if (arenateam->GetMembersSize() < ((uint32)arenateam->GetType()) && bot->GetLevel() >= 70)
-        {
-            ObjectGuid capt = arenateam->GetCaptain();
-            Player* botcaptain = ObjectAccessor::FindPlayer(capt);
+             if (arenateam->GetMembersSize() < ((uint32)arenateam->GetType()) && bot->GetLevel() >= 70)
+             {
+                 ObjectGuid capt = arenateam->GetCaptain();
+                 Player* botcaptain = ObjectAccessor::FindPlayer(capt);
 
-            // To avoid bots removing each other from groups when queueing, force them to only be in one team
-            for (uint32 arena_slot = 0; arena_slot < MAX_ARENA_SLOT; ++arena_slot)
-            {
-                uint32 arenaTeamId = bot->GetArenaTeamId(arena_slot);
-                if (!arenaTeamId)
-                    continue;
+                 // To avoid bots removing each other from groups when queueing, force them to only be in one team
+                 for (uint32 arena_slot = 0; arena_slot < MAX_ARENA_SLOT; ++arena_slot)
+                 {
+                     uint32 arenaTeamId = bot->GetArenaTeamId(arena_slot);
+                     if (!arenaTeamId)
+                         continue;
 
-                ArenaTeam* team = sArenaTeamMgr->GetArenaTeamById(arenaTeamId);
-                if (team)
-                {
-                    if (sCharacterCache->GetCharacterArenaTeamIdByGuid(bot->GetGUID(), team->GetSlot()) != 0)
-                    {
-                        return;
-                    }
-                    return;
-                }
-            }
+                     ArenaTeam* team = sArenaTeamMgr->GetArenaTeamById(arenaTeamId);
+                     if (team)
+                     {
+                         if (sCharacterCache->GetCharacterArenaTeamIdByGuid(bot->GetGUID(), team->GetSlot()) != 0)
+                         {
+                             return;
+                         }
+                         return;
+                     }
+                 }
 
-            if (botcaptain && botcaptain->GetTeamId() == bot->GetTeamId())  // need?
-            {
-                // Add bot to arena team
-                arenateam->AddMember(bot->GetGUID());
+                 if (botcaptain && botcaptain->GetTeamId() == bot->GetTeamId())  // need?
+                 {
+                     // Skip if already a member
+                     for (ArenaTeamMember const& member : arenateam->GetMembers())
+                     {
+                         if (member.Guid == bot->GetGUID())
+                         {
+                             return;
+                         }
+                     }
 
-                // Only synchronize ratings once the team is full (avoid redundant work)
-                // The captain was added with incorrect ratings when the team was created,
-                // so we fix everyone's ratings once the roster is complete
-                if (arenateam->GetMembersSize() >= (uint32)arenateam->GetType())
-                {
-                    uint32 teamRating = arenateam->GetRating();
+                     // Add bot to arena team
+                     arenateam->AddMember(bot->GetGUID());
 
-                    // Use SetRatingForAll to align all members with team rating
-                    arenateam->SetRatingForAll(teamRating);
+                     // Only synchronize ratings once the team is full (avoid redundant work)
+                     // The captain was added with incorrect ratings when the team was created,
+                     // so we fix everyone's ratings once the roster is complete
+                     if (arenateam->GetMembersSize() >= (uint32)arenateam->GetType())
+                     {
+                         uint32 teamRating = arenateam->GetRating();
 
-                    // For bot-only teams, keep MMR synchronized with team rating
-                    // This ensures matchmaking reflects the artificial team strength (1000-2000 range)
-                    // instead of being influenced by the global CONFIG_ARENA_START_MATCHMAKER_RATING
-                    for (auto& member : arenateam->GetMembers())
-                    {
-                        // Set MMR to match personal rating (which already matches team rating)
-                        member.MatchMakerRating = member.PersonalRating;
-                        member.MaxMMR = std::max(member.MaxMMR, member.PersonalRating);
-                    }
-                    // Force save all member data to database
-                    arenateam->SaveToDB(true);
-                }
-            }
-        }
+                         // Use SetRatingForAll to align all members with team rating
+                         arenateam->SetRatingForAll(teamRating);
 
-        arenateams.erase(arenateams.begin() + index);
-    }
+                         // For bot-only teams, keep MMR synchronized with team rating
+                         // This ensures matchmaking reflects the artificial team strength (1000-2000 range)
+                         // instead of being influenced by the global CONFIG_ARENA_START_MATCHMAKER_RATING
+                         for (auto& member : arenateam->GetMembers())
+                         {
+                             // Set MMR to match personal rating (which already matches team rating)
+                             member.MatchMakerRating = member.PersonalRating;
+                             member.MaxMMR = std::max(member.MaxMMR, member.PersonalRating);
+                         }
+                         // Force save all member data to database
+                         arenateam->SaveToDB(true);
+                     }
+                 }
+             }
 
-    // bot->SaveToDB(false, false);
+             arenateams.erase(arenateams.begin() + index);
+         }
+
+         // bot->SaveToDB(false, false);
 }
 
 void PlayerbotFactory::ApplyEnchantTemplate()
