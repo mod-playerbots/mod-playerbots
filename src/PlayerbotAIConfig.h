@@ -40,6 +40,13 @@ enum class HealingManaEfficiency : uint8
     SUPERIOR = 32
 };
 
+enum class ShowHideCosmetic : uint8
+{
+    ALWAYS_HIDE = 0,
+    ALWAYS_SHOW = 1,
+    RANDOMIZE = 2
+};
+
 enum class AutoPartyBuffMode : uint8
 {
     DISABLED = 0,
@@ -329,8 +336,8 @@ public:
     uint32 commandServerPort;
     bool perfMonEnabled;
     bool summonWhenGroup;
-    bool randomBotShowHelmet;
-    bool randomBotShowCloak;
+    ShowHideCosmetic randomBotShowHelmet;
+    ShowHideCosmetic randomBotShowCloak;
     bool randomBotFixedLevel;
     bool disableRandomLevels;
     float randomBotXPRate;
