@@ -1514,6 +1514,14 @@ void RandomPlayerbotMgr::CheckPlayerZonePopulation()
                     bot->InBattlegroundQueue() || bot->InArena() || bot->IsBeingTeleported())
                     continue;
 
+                // Death Knights can never go below CONFIG_START_HEROIC_PLAYER_LEVEL (55 by default) -
+                // if the player's own variance band can't reach that floor, recruiting one here would
+                // force it far outside the intended level-sync range instead of respecting it.
+                if (bot->getClass() == CLASS_DEATH_KNIGHT &&
+                    static_cast<int32>(pLevel) + static_cast<int32>(variance) <
+                        static_cast<int32>(sWorld->getIntConfig(CONFIG_START_HEROIC_PLAYER_LEVEL)))
+                    continue;
+
                 eligible.push_back(guid);
             }
 
