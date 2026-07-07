@@ -36,16 +36,24 @@ public:
 Unit* PartyMemberSnaredTargetValue::Calculate()
 {
     Group* group = bot->GetGroup();
-    if (!group)
+    std::vector<Player*> members;
+    if (group)
+        for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
+            members.push_back(gref->GetSource());
+    else
+        // No real group to draw on, but this bot is marked for world PvP - fall back to nearby
+        // same-faction players instead of never cleansing anyone.
+        members = GetWorldPvpAllies();
+
+    if (members.empty())
         return nullptr;
 
     PartyMemberSnaredTargetPredicate predicate(botAI);
     Player* bestTarget = nullptr;
     float closestDistanceSq = std::numeric_limits<float>::max();
 
-    for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
+    for (Player* member : members)
     {
-        Player* member = gref->GetSource();
         if (!member)
             continue;
 

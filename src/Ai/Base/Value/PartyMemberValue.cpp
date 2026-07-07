@@ -8,9 +8,27 @@
 
 #include "Group.h"
 #include "PlayerbotAI.h"
+#include "Playerbots.h"
 #include "ServerFacade.h"
 #include "Pet.h"
 #include "Spell.h"
+
+std::vector<Player*> PartyMemberValue::GetWorldPvpAllies()
+{
+    std::vector<Player*> allies;
+
+    if (!sRandomPlayerbotMgr.IsWorldPvpBot(bot->GetGUID().GetCounter()))
+        return allies;
+
+    for (ObjectGuid const guid : AI_VALUE(GuidVector, "world pvp allies"))
+    {
+        Player* ally = botAI->GetPlayer(guid);
+        if (ally && ally->IsAlive() && ally->GetMapId() == bot->GetMapId())
+            allies.push_back(ally);
+    }
+
+    return allies;
+}
 
 Unit* PartyMemberValue::FindPartyMember(std::vector<Player*>* party, FindPlayerPredicate& predicate)
 {
@@ -48,6 +66,14 @@ Unit* PartyMemberValue::FindPartyMember(FindPlayerPredicate& predicate, bool /*i
                 nearestGroupPlayers.push_front(ref->GetSource()->GetGUID());
             }
         }
+    }
+    else if (std::vector<Player*> allies = GetWorldPvpAllies(); !allies.empty())
+    {
+        // No real group to draw on, but this bot is marked for world PvP - treat nearby same-faction
+        // players as an ad-hoc team instead of only ever considering itself.
+        nearestGroupPlayers.push_back(bot->GetGUID());
+        for (Player* ally : allies)
+            nearestGroupPlayers.push_back(ally->GetGUID());
     }
     else
     {

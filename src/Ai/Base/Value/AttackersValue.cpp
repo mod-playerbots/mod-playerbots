@@ -49,8 +49,10 @@ GuidVector AttackersValue::Calculate()
     if (bot->duel && bot->duel->Opponent)
         result.push_back(bot->duel->Opponent->GetGUID());
 
-    // workaround for bots of same faction not fighting in arena
-    if (bot->InArena())
+    // workaround for bots of same faction not fighting in arena - also applied to marked world-PvP
+    // bots so they proactively pile onto nearby enemies instead of only reacting to their own
+    // personal threat list (they have no group to share threat with).
+    if (bot->InArena() || sRandomPlayerbotMgr.IsWorldPvpBot(bot->GetGUID().GetCounter()))
     {
         GuidVector possibleTargets = AI_VALUE(GuidVector, "possible targets");
         for (ObjectGuid const guid : possibleTargets)

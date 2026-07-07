@@ -115,6 +115,7 @@ public:
         creators["nearest vehicles far"] = &ValueContext::nearest_vehicles_far;
         creators["nearest friendly players"] = &ValueContext::nearest_friendly_players;
         creators["closest friendly players"] = &ValueContext::closest_friendly_players;
+        creators["world pvp allies"] = &ValueContext::world_pvp_allies;
         creators["nearest enemy players"] = &ValueContext::nearest_enemy_players;
         creators["possible targets"] = &ValueContext::possible_targets;
         creators["possible targets no los"] = &ValueContext::possible_targets_no_los;
@@ -428,6 +429,13 @@ private:
     static UntypedValue* closest_friendly_players(PlayerbotAI* botAI)
     {
         return new NearestFriendlyPlayersValue(botAI, INTERACTION_DISTANCE);
+    }
+    static UntypedValue* world_pvp_allies(PlayerbotAI* botAI)
+    {
+        // Throttled separately from "nearest friendly players" (checkInterval 1, recomputed on every
+        // Get()) - world PvP zones can have dozens of marked bots consulting this at once, so an
+        // uncached grid scan per call would be a hotspot.
+        return new NearestFriendlyPlayersValue(botAI, sPlayerbotAIConfig.sightDistance, 1000);
     }
     static UntypedValue* nearest_enemy_players(PlayerbotAI* botAI) { return new NearestEnemyPlayersValue(botAI); }
     static UntypedValue* nearest_corpses(PlayerbotAI* botAI) { return new NearestCorpsesValue(botAI); }

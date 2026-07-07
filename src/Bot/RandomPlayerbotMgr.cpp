@@ -2413,6 +2413,11 @@ bool RandomPlayerbotMgr::IsRandomBot(ObjectGuid::LowType bot)
     return false;
 }
 
+bool RandomPlayerbotMgr::IsWorldPvpBot(ObjectGuid::LowType bot)
+{
+    return worldPvpBots.count(bot) != 0;
+}
+
 bool RandomPlayerbotMgr::IsAddclassBot(Player* bot)
 {
     if (bot && GET_PLAYERBOT_AI(bot))

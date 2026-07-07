@@ -32,10 +32,19 @@ Unit* PartyMemberToHeal::Calculate()
     IsTargetOfHealingSpell predicate;
 
     Group* group = bot->GetGroup();
+    std::vector<Player*> allies;
     if (!group)
-        return bot;
+    {
+        // No real group to draw on, but this bot is marked for world PvP - fall back to healing
+        // nearby same-faction players instead of only ever considering itself.
+        allies = GetWorldPvpAllies();
+        if (allies.empty())
+            return bot;
 
-    bool isRaid = bot->GetGroup()->isRaidGroup();
+        allies.push_back(bot);
+    }
+
+    bool isRaid = group && group->isRaidGroup();
     MinValueCalculator calc(100);
 
     // If focus heal targets strategy is active, only heal those targets
@@ -68,9 +77,15 @@ Unit* PartyMemberToHeal::Calculate()
         return (Unit*)calc.param;
     }
 
-    for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
+    std::vector<Player*> members;
+    if (group)
+        for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
+            members.push_back(gref->GetSource());
+    else
+        members = allies;
+
+    for (Player* player : members)
     {
-        Player* player = gref->GetSource();
         if (player->IsGameMaster())
             continue;
         if (player && player->IsAlive())

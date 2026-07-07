@@ -38,6 +38,11 @@ protected:
     Unit* FindPartyMember(FindPlayerPredicate& predicate, bool ignoreOutOfGroup = false);
     Unit* FindPartyMember(std::vector<Player*>* party, FindPlayerPredicate& predicate);
     virtual bool Check(Unit* player);
+
+    // Nearby same-faction players an ungrouped world-PvP-marked bot treats as its ad-hoc team, standing
+    // in for real group members so heal/buff/dispel/resurrect/cleanse targeting still works for bots
+    // that are deliberately never grouped. Empty for anything else.
+    std::vector<Player*> GetWorldPvpAllies();
 };
 
 class PartyMemberMainTankValue : public PartyMemberValue

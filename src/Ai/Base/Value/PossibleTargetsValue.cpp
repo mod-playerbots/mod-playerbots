@@ -64,8 +64,10 @@ bool PossibleTargetsValue::AcceptUnit(Unit* unit)
             }
         }
 
-        // Skip restrictions in BG/Arena
-        if (bot->InBattleground() || bot->InArena())
+        // Skip restrictions in BG/Arena - marked world-PvP bots get the same treatment so they commit
+        // to fights decisively instead of being subject to the gank-hesitation heuristic below, which
+        // is meant for casually-roaming, unmarked randombots.
+        if (bot->InBattleground() || bot->InArena() || sRandomPlayerbotMgr.IsWorldPvpBot(bot->GetGUID().GetCounter()))
             return true;
 
         // Skip restrictions if in duel with this player
