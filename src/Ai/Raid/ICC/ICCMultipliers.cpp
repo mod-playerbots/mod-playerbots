@@ -898,13 +898,19 @@ float IccSindragosaMultiplier::GetValue(Action* action)
     }
 
     // Pin healers at the LOS2 hide spot while the hide is in effect (last
-    // phase, tomb up). Beacons do not release the pin: with a tomb alive,
-    // non-beaconed bots ignore the beacon entirely in the last phase.
-    if (botAI->IsHeal(bot) && dynamic_cast<MovementAction*>(action) &&
+    // phase, tomb up, no beacon). A beacon releases the pin so healers can
+    // reposition with the raid.
+    if (botAI->IsHeal(bot) && dynamic_cast<MovementAction*>(action) && !anyoneHasFrostBeacon &&
         boss->HealthBelowPct(35) &&
         bot->GetExactDist2d(ICC_SINDRAGOSA_LOS2_POSITION.GetPositionX(),
                             ICC_SINDRAGOSA_LOS2_POSITION.GetPositionY()) <= 2.0f &&
         !IccGetCreaturesByEntries(bot, {NPC_TOMB1, NPC_TOMB2, NPC_TOMB3, NPC_TOMB4}, 150.0f).empty())
+        return 0.0f;
+
+    // Last phase with a beacon out: only ranged DPS burn the tomb. Melee and
+    // healers reposition (via FrostBeaconAction) instead of chasing the skull.
+    if (anyoneHasFrostBeacon && boss->HealthBelowPct(35) && !botAI->IsTank(bot) &&
+        !(botAI->IsRanged(bot) && !botAI->IsHeal(bot)) && dynamic_cast<AttackAction*>(action))
         return 0.0f;
 
     if (!botAI->IsTank(bot) && boss && boss->HealthBelowPct(35))
@@ -917,6 +923,17 @@ float IccSindragosaMultiplier::GetValue(Action* action)
     {
         if (boss->HealthBelowPct(35))
         {
+            // Assist tank: hold the tank position and face the boss only, never
+            // chase the marked tomb. A beaconed assist tank returns at the Frost
+            // Beacon branch above and moves to its beacon spot instead.
+            if (!botAI->IsMainTank(bot))
+            {
+                if (dynamic_cast<IccSindragosaGroupPositionAction*>(action) ||
+                    dynamic_cast<TankFaceAction*>(action))
+                    return 1.0f;
+                return 0.0f;
+            }
+
             if (dynamic_cast<TankFaceAction*>(action) ||
                 dynamic_cast<AttackAction*>(action) || dynamic_cast<MovementAction*>(action))
                 return 1.0f;

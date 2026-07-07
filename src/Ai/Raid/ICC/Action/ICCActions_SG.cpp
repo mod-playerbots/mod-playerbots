@@ -869,11 +869,51 @@ bool IccSindragosaMysticBuffetAction::Execute(Event /*event*/)
             group->SetTargetIcon(icon, bot->GetGUID(), ObjectGuid::Empty);
     }
 
+    constexpr uint8 SKULL_ICON = RtiTargetValue::skullIndex;
+
     // No tomb: single skull on the boss.
     if (tombs.empty())
     {
         if (boss->IsAlive())
-            IccEnsureIconOn(bot, botAI, RtiTargetValue::skullIndex, boss);
+            IccEnsureIconOn(bot, botAI, SKULL_ICON, boss);
+
+        // Between tombs, keep non-tanks out at their DPS spot instead of
+        // clustering at LOS2 (~6y from the tomb drop) where the next beacon
+        // would catch them. Only move to LOS2 once the tomb has actually
+        // formed (the branches below). During a beacon FrostBeaconAction
+        // owns positioning, so leave that to it.
+        if (!botAI->IsHeal(bot) && !IccAnyGroupMemberHasAura(bot, SPELL_FROST_BEACON))
+        {
+            Position const& spread =
+                botAI->IsRanged(bot) ? ICC_SINDRAGOSA_RANGED_POSITION : ICC_SINDRAGOSA_MELEE_POSITION;
+            if (bot->GetExactDist2d(spread) > 3.0f)
+                return MoveTo(bot->GetMapId(), spread.GetPositionX(), spread.GetPositionY(), spread.GetPositionZ(),
+                              false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
+        }
+
+        return false;
+    }
+
+    // Beacon out: FrostBeaconAction owns positioning (bots spread to their
+    // spots). Keep the tomb marked when the raid is clear so ranged DPS burn
+    // it from range; the multiplier stops melee and healers from chasing it.
+    // No LOS2 move here — it would fight the beacon repositioning.
+    if (IccAnyGroupMemberHasAura(bot, SPELL_FROST_BEACON))
+    {
+        if (!botAI->IsHeal(bot))
+        {
+            if (SgMajorityLostMysticBuffet(bot, botAI))
+            {
+                context->GetValue<std::string>("rti")->Set("skull");
+                IccEnsureIconOn(bot, botAI, SKULL_ICON, tombs.front());
+            }
+            else
+            {
+                ObjectGuid const currentIcon = group->GetTargetIcon(SKULL_ICON);
+                if (!currentIcon.IsEmpty())
+                    group->SetTargetIcon(SKULL_ICON, bot->GetGUID(), ObjectGuid::Empty);
+            }
+        }
         return false;
     }
 
@@ -892,8 +932,6 @@ bool IccSindragosaMysticBuffetAction::Execute(Event /*event*/)
     // by the multiplier.
     if (botAI->IsHeal(bot))
         return false;
-
-    constexpr uint8 SKULL_ICON = RtiTargetValue::skullIndex;
 
     // Waiting for the raid to shed Mystic Buffet: no mark on boss nor tomb.
     if (!SgMajorityLostMysticBuffet(bot, botAI))

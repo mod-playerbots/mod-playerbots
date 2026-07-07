@@ -802,9 +802,10 @@ bool IccSindragosaGroupPositionTrigger::IsActive()
             bot->AddAura(SPELL_NITRO_BOOSTS, bot);
     }
 
-    // Last phase: tanks must keep tanking, never run to a tomb spot. Strip
-    // Frost Beacon so the tomb-positioning logic doesn't apply to them.
-    if (botAI->IsTank(bot) && bot->HasAura(SPELL_FROST_BEACON) && boss->HealthBelowPct(35) &&
+    // Last phase: the main tank must keep tanking, never run to a tomb spot.
+    // Strip its Frost Beacon so the tomb-positioning logic doesn't apply. The
+    // assist tank keeps its beacon and is allowed to move to the beacon spot.
+    if (botAI->IsMainTank(bot) && bot->HasAura(SPELL_FROST_BEACON) && boss->HealthBelowPct(35) &&
         boss->GetExactDist2d(ICC_SINDRAGOSA_FLYING_POSITION.GetPositionX(), ICC_SINDRAGOSA_FLYING_POSITION.GetPositionY()) >= 30.0f)
         bot->RemoveAura(SPELL_FROST_BEACON);
 
@@ -871,12 +872,6 @@ bool IccSindragosaFrostBeaconTrigger::IsActive()
 
     if (bot->HasAura(SPELL_FROST_BEACON))
         return true;
-
-    // Last phase with a live tomb: non-beaconed bots ignore the beacon and
-    // stay on the tomb hide/burn; only the beaconed bot reacts.
-    if (boss->HealthBelowPct(35) &&
-        !IccGetCreaturesByEntries(bot, {NPC_TOMB1, NPC_TOMB2, NPC_TOMB3, NPC_TOMB4}, 150.0f).empty())
-        return false;
 
     Group::MemberSlotList const& groupSlot = group->GetMemberSlots();
     for (Group::member_citerator itr = groupSlot.begin(); itr != groupSlot.end(); ++itr)
