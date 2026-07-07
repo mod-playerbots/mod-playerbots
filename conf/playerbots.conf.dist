@@ -1276,7 +1276,7 @@ AiPlayerbot.SyncBotsWithPlayerZoneTargetCount = 80
 
 # Synced bots are leveled to (player level +/- this variance)
 # Default: 5
-AiPlayerbot.SyncBotsWithPlayerLevelVariance = 5
+AiPlayerbot.SyncBotsWithPlayerLevelVariance = 3
 
 # Max bots moved into a player's zone per faction, per check
 # Default: 5
@@ -1284,12 +1284,12 @@ AiPlayerbot.SyncBotsWithPlayerMaxPerInterval = 5
 
 # Seconds between population checks
 # Default: 30
-AiPlayerbot.SyncBotsWithPlayerInterval = 30
+AiPlayerbot.SyncBotsWithPlayerInterval = 120
 
 # Yard range around the player used to place synced bots (min/max)
 # Default: 40 / 250
-AiPlayerbot.SyncBotsWithPlayerMinDistance = 40
-AiPlayerbot.SyncBotsWithPlayerMaxDistance = 250
+AiPlayerbot.SyncBotsWithPlayerMinDistance = 250
+AiPlayerbot.SyncBotsWithPlayerMaxDistance = 500
 
 #
 #
