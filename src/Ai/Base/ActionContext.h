@@ -39,6 +39,7 @@
 #include "LeaveGroupAction.h"
 #include "LootAction.h"
 #include "LootRollAction.h"
+#include "MoveToNearestRealPlayerAction.h"
 #include "MoveToRpgTargetAction.h"
 #include "MoveToTravelTargetAction.h"
 #include "MovementActions.h"
@@ -81,6 +82,7 @@ public:
         creators["rpg"] = &ActionContext::rpg;
         creators["crpg"] = &ActionContext::crpg;
         creators["choose rpg target"] = &ActionContext::choose_rpg_target;
+        creators["move to nearest real player"] = &ActionContext::move_to_nearest_real_player;
         creators["move to rpg target"] = &ActionContext::move_to_rpg_target;
         creators["travel"] = &ActionContext::travel;
         creators["choose travel target"] = &ActionContext::choose_travel_target;
@@ -289,6 +291,10 @@ private:
     static Action* rpg(PlayerbotAI* botAI) { return new RpgAction(botAI); }
     static Action* crpg(PlayerbotAI* botAI) { return new CRpgAction(botAI); }
     static Action* choose_rpg_target(PlayerbotAI* botAI) { return new ChooseRpgTargetAction(botAI); }
+    static Action* move_to_nearest_real_player(PlayerbotAI* botAI)
+    {
+        return new MoveToNearestRealPlayerAction(botAI);
+    }
     static Action* move_to_rpg_target(PlayerbotAI* botAI) { return new MoveToRpgTargetAction(botAI); }
     static Action* travel(PlayerbotAI* botAI) { return new TravelAction(botAI); }
     static Action* choose_travel_target(PlayerbotAI* botAI) { return new ChooseTravelTargetAction(botAI); }

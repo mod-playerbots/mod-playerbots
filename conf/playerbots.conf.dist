@@ -1301,9 +1301,11 @@ AiPlayerbot.SyncBotsWithPlayerMaxDistance = 1500
 AiPlayerbot.SyncBotsWithPlayerOverleveledEnemyChance = 2
 
 # A synced bot must come within this many yards of a matching real player to count as "reached" and
-# refresh its world PvP activity timer (see SyncBotsWithPlayerReachTimeout below)
-# Default: 100
-AiPlayerbot.SyncBotsWithPlayerReachDistance = 100
+# refresh its world PvP activity timer (see SyncBotsWithPlayerReachTimeout below). Also the distance
+# at which a bot stops actively pursuing the nearest real player and lets normal combat/idle
+# behavior take over.
+# Default: 200
+AiPlayerbot.SyncBotsWithPlayerReachDistance = 200
 
 # Seconds a synced bot can go without being reached by a matching real player before it's released
 # back to normal random-bot behavior (it's also released immediately if killed)

@@ -114,6 +114,7 @@ public:
     bool IsRandomBot(Player* bot);
     bool IsRandomBot(ObjectGuid::LowType bot);
     bool IsWorldPvpBot(ObjectGuid::LowType bot);
+    uint32 GetWorldPvpBotZoneId(ObjectGuid::LowType bot);
     bool IsAddclassBot(Player* bot);
     bool IsAddclassBot(ObjectGuid::LowType bot);
     void Randomize(Player* bot);

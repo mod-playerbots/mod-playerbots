@@ -61,6 +61,7 @@
 #include "NearestGameObjects.h"
 #include "NearestNonBotPlayersValue.h"
 #include "NearestNpcsValue.h"
+#include "NearestRealPlayerInZoneValue.h"
 #include "NewPlayerNearbyValue.h"
 #include "OutfitListValue.h"
 #include "PartyMemberToDispel.h"
@@ -236,6 +237,7 @@ public:
 
         creators["random bot update"] = &ValueContext::random_bot_update_value;
         creators["nearest non bot players"] = &ValueContext::nearest_non_bot_players;
+        creators["nearest real player in zone"] = &ValueContext::nearest_real_player_in_zone;
         creators["new player nearby"] = &ValueContext::new_player_nearby;
         creators["already seen players"] = &ValueContext::already_seen_players;
         creators["rpg target"] = &ValueContext::rpg_target;
@@ -504,6 +506,10 @@ private:
     static UntypedValue* outfit_list_value(PlayerbotAI* botAI) { return new OutfitListValue(botAI); }
     static UntypedValue* random_bot_update_value(PlayerbotAI* botAI) { return new RandomBotUpdateValue(botAI); }
     static UntypedValue* nearest_non_bot_players(PlayerbotAI* botAI) { return new NearestNonBotPlayersValue(botAI); }
+    static UntypedValue* nearest_real_player_in_zone(PlayerbotAI* botAI)
+    {
+        return new NearestRealPlayerInZoneValue(botAI);
+    }
     static UntypedValue* skip_spells_list_value(PlayerbotAI* botAI) { return new SkipSpellsListValue(botAI); }
     static UntypedValue* rpg_target(PlayerbotAI* botAI) { return new RpgTargetValue(botAI); }
     static UntypedValue* ignore_rpg_target(PlayerbotAI* botAI) { return new IgnoreRpgTargetValue(botAI); }

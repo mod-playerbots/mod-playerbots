@@ -701,7 +701,7 @@ bool PlayerbotAIConfig::Initialize()
     syncBotsWithPlayerOverleveledEnemyChance =
         sConfigMgr->GetOption<float>("AiPlayerbot.SyncBotsWithPlayerOverleveledEnemyChance", 2.0f);
     syncBotsWithPlayerReachDistance =
-        sConfigMgr->GetOption<float>("AiPlayerbot.SyncBotsWithPlayerReachDistance", 100.0f);
+        sConfigMgr->GetOption<float>("AiPlayerbot.SyncBotsWithPlayerReachDistance", 200.0f);
     syncBotsWithPlayerReachTimeout = sConfigMgr->GetOption<int32>("AiPlayerbot.SyncBotsWithPlayerReachTimeout", 360);
 
     // arena

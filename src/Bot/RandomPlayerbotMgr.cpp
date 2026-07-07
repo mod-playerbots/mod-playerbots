@@ -1361,6 +1361,11 @@ void RandomPlayerbotMgr::MaintainWorldPvpBots()
         // Killed (or otherwise gone) ends the marking outright, per spec.
         if (!bot || !bot->IsInWorld() || !bot->IsAlive())
         {
+            if (bot)
+            {
+                if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
+                    botAI->ChangeStrategy("-world pvp pursue", BOT_STATE_NON_COMBAT);
+            }
             it = worldPvpBots.erase(it);
             continue;
         }
@@ -1387,7 +1392,11 @@ void RandomPlayerbotMgr::MaintainWorldPvpBots()
         // a player leveling past the variance band or leaving the zone entirely: the cached bot can no
         // longer refresh lastReachTime against anyone, so it naturally times out.
         if (now - entry.lastReachTime > sPlayerbotAIConfig.syncBotsWithPlayerReachTimeout)
+        {
+            if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
+                botAI->ChangeStrategy("-world pvp pursue", BOT_STATE_NON_COMBAT);
             it = worldPvpBots.erase(it);
+        }
         else
             ++it;
     }
@@ -1628,6 +1637,11 @@ void RandomPlayerbotMgr::CheckPlayerZonePopulation()
                 // normal per-level teleport cycle until it reaches a matching player (MaintainWorldPvpBots
                 // refreshes this), times out, or is killed.
                 worldPvpBots[guid] = WorldPvpBotEntry{ zoneId, static_cast<uint32>(targetLevel), NowSeconds() };
+
+                // Give the bot an active goal to close the distance to the real player it was
+                // recruited for, instead of just wandering randomly until it happens upon one.
+                if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
+                    botAI->ChangeStrategy("+world pvp pursue", BOT_STATE_NON_COMBAT);
 
                 // Reset the bot's normal random-teleport cycle (same bounds ProcessBot() uses) so it
                 // isn't immediately yanked elsewhere again right after being synced to the player.
@@ -2496,6 +2510,12 @@ bool RandomPlayerbotMgr::IsRandomBot(ObjectGuid::LowType bot)
 bool RandomPlayerbotMgr::IsWorldPvpBot(ObjectGuid::LowType bot)
 {
     return worldPvpBots.count(bot) != 0;
+}
+
+uint32 RandomPlayerbotMgr::GetWorldPvpBotZoneId(ObjectGuid::LowType bot)
+{
+    auto it = worldPvpBots.find(bot);
+    return it != worldPvpBots.end() ? it->second.zoneId : 0;
 }
 
 bool RandomPlayerbotMgr::IsAddclassBot(Player* bot)
