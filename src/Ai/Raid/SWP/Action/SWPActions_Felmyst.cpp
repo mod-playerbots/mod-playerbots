@@ -409,33 +409,5 @@ bool FelmystKillCharmedPlayerAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != charmedPlayer)
         return Attack(charmedPlayer);
 
-    /* if (AI_VALUE(Unit*, "current target") != charmedPlayer)
-        context->GetValue<Unit*>("current target")->Set(charmedPlayer);
-
-    std::string spellName;
-    switch (bot->getClass())
-    {
-        case CLASS_ROGUE:         spellName = "sinister strike"; break;
-        case CLASS_HUNTER:        spellName = "steady shot";      break;
-        case CLASS_WARLOCK:       spellName = "shadow bolt";      break;
-        case CLASS_MAGE:          spellName = "fireball";         break;
-        case CLASS_PRIEST:        spellName = "mind flay";        break;
-        case CLASS_SHAMAN:        spellName = "lightning bolt";   break;
-        case CLASS_PALADIN:       spellName = "crusader strike";  break;
-        case CLASS_DRUID:
-            if (botAI->IsRanged(bot))
-                spellName = "wrath";
-            else if (bot->GetShapeshiftForm() == FORM_CAT)
-                spellName = "mangle (cat)";
-            else
-                spellName = "mangle (bear)";
-            break;
-        case CLASS_WARRIOR:       spellName = "heroic strike";    break;
-        case CLASS_DEATH_KNIGHT:  spellName = "icy touch";        break;
-    }
-
-    if (!spellName.empty() && botAI->CanCastSpell(spellName, charmedPlayer))
-        return botAI->CastSpell(spellName, charmedPlayer); */
-
     return false;
 }
