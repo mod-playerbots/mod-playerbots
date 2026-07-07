@@ -63,6 +63,16 @@ struct BotEventCache
     std::unordered_map<std::string, CachedEvent> events;
 };
 
+// Tracks a randombot recruited by RandomPlayerbotMgr::CheckPlayerZonePopulation() for world PvP so it
+// can be reused across checks (instead of being replaced every interval) and kept in its assigned zone
+// until it engages a real player, is released for going too long without doing so, or is killed.
+struct WorldPvpBotEntry
+{
+    uint32 zoneId = 0;
+    uint32 centerLevel = 0;
+    uint32 lastReachTime = 0;
+};
+
 // https://gist.github.com/bradley219/5373998
 
 class botPIDImpl;
@@ -242,6 +252,7 @@ private:
     bool RandomTeleport(Player* bot, std::vector<WorldLocation>& locs, bool hearth = false);
     std::vector<WorldLocation> GetLocationsAroundPlayer(Player* player, uint32 count, float minDist, float maxDist);
     uint32 GetZoneLevel(uint16 mapId, float teleX, float teleY, float teleZ);
+    void MaintainWorldPvpBots();
     typedef void (RandomPlayerbotMgr::*ConsoleCommandHandler)(Player*);
     std::vector<Player*> players;
     uint32 processTicks;
@@ -251,6 +262,7 @@ private:
     std::map<TeamId, std::map<BattlegroundTypeId, std::vector<uint32>>> BattleMastersCache;
     std::unordered_map<uint32, BotEventCache> eventCache;
     std::list<uint32> currentBots;
+    std::unordered_map<uint32, WorldPvpBotEntry> worldPvpBots;
     uint32 bgBotsCount;
     uint32 playersLevel;
 

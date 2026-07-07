@@ -381,6 +381,9 @@ public:
     uint32 syncBotsWithPlayerInterval;
     float syncBotsWithPlayerMinDistance;
     float syncBotsWithPlayerMaxDistance;
+    float syncBotsWithPlayerOverleveledEnemyChance;
+    float syncBotsWithPlayerReachDistance;
+    uint32 syncBotsWithPlayerReachTimeout;
     bool autoLearnQuestSpells;
     bool autoTeleportForLevel;
     bool randomBotGroupNearby;

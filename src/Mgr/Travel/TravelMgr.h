@@ -882,6 +882,8 @@ public:
     std::vector<uint32> GetFlightNodesInZone(uint32 zoneId, TeamId team, uint32 excludeNode = 0) const;
     bool SelectAuctioneerByMap(Player* bot, NpcLocation& outAuctioneer);
     const std::vector<WorldLocation>& GetLocsPerLevelCache(uint8 level) { return locsPerLevelCache[level]; }
+    bool IsCapitalZone(uint32 zoneId) const;
+    bool GetZoneLevelBracket(uint32 zoneId, uint32& minLevel, uint32& maxLevel) const;
 
     template <class D, class W, class URBG>
     void weighted_shuffle(D first, D last, W first_weight, W last_weight, URBG&& g)

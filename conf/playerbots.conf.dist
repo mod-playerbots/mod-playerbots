@@ -1291,6 +1291,23 @@ AiPlayerbot.SyncBotsWithPlayerInterval = 120
 AiPlayerbot.SyncBotsWithPlayerMinDistance = 250
 AiPlayerbot.SyncBotsWithPlayerMaxDistance = 500
 
+# Chance (percent) that a bot from the faction opposing the player will still be recruited into a
+# zone the player is overleveled for (i.e. above that zone's AiPlayerbot.ZoneBracket max level, or its
+# built-in default bracket). Same-faction population is never affected - this only makes an
+# overleveled player camping a low-level zone see enemy world PvP as a rare event instead of the norm.
+# Default: 2
+AiPlayerbot.SyncBotsWithPlayerOverleveledEnemyChance = 2
+
+# A synced bot must come within this many yards of a matching real player to count as "reached" and
+# refresh its world PvP activity timer (see SyncBotsWithPlayerReachTimeout below)
+# Default: 100
+AiPlayerbot.SyncBotsWithPlayerReachDistance = 100
+
+# Seconds a synced bot can go without being reached by a matching real player before it's released
+# back to normal random-bot behavior (it's also released immediately if killed)
+# Default: 360
+AiPlayerbot.SyncBotsWithPlayerReachTimeout = 360
+
 #
 #
 ####################################################################################################

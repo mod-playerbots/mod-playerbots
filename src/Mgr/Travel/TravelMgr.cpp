@@ -67,6 +67,11 @@ static Capital const* FindCapitalByBanker(uint16 bankerEntry)
     return nullptr;
 }
 
+bool TravelMgr::IsCapitalZone(uint32 zoneId) const
+{
+    return FindCapitalByZone(zoneId) != nullptr;
+}
+
 static int GetCityWeight(uint32 zoneId)
 {
     switch (zoneId)
@@ -4633,6 +4638,17 @@ void TravelMgr::PrepareZone2LevelBracket()
     // Override with values from config
     for (auto const& [zoneId, bracketPair] : sPlayerbotAIConfig.zoneBrackets)
         zone2LevelBracket[zoneId] = {bracketPair.first, bracketPair.second};
+}
+
+bool TravelMgr::GetZoneLevelBracket(uint32 zoneId, uint32& minLevel, uint32& maxLevel) const
+{
+    auto it = zone2LevelBracket.find(zoneId);
+    if (it == zone2LevelBracket.end())
+        return false;
+
+    minLevel = it->second.low;
+    maxLevel = it->second.high;
+    return true;
 }
 
 void TravelMgr::PrepareDestinationCache()

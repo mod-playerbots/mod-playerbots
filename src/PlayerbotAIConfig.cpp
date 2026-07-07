@@ -698,6 +698,11 @@ bool PlayerbotAIConfig::Initialize()
     syncBotsWithPlayerInterval = sConfigMgr->GetOption<int32>("AiPlayerbot.SyncBotsWithPlayerInterval", 30);
     syncBotsWithPlayerMinDistance = sConfigMgr->GetOption<float>("AiPlayerbot.SyncBotsWithPlayerMinDistance", 40.0f);
     syncBotsWithPlayerMaxDistance = sConfigMgr->GetOption<float>("AiPlayerbot.SyncBotsWithPlayerMaxDistance", 250.0f);
+    syncBotsWithPlayerOverleveledEnemyChance =
+        sConfigMgr->GetOption<float>("AiPlayerbot.SyncBotsWithPlayerOverleveledEnemyChance", 2.0f);
+    syncBotsWithPlayerReachDistance =
+        sConfigMgr->GetOption<float>("AiPlayerbot.SyncBotsWithPlayerReachDistance", 100.0f);
+    syncBotsWithPlayerReachTimeout = sConfigMgr->GetOption<int32>("AiPlayerbot.SyncBotsWithPlayerReachTimeout", 360);
 
     // arena
     randomBotArenaTeam2v2Count = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotArenaTeam2v2Count", 10);
