@@ -1272,7 +1272,7 @@ AiPlayerbot.SyncBotsWithPlayer = 0
 # Combined Alliance+Horde randombot population target for the player's current zone,
 # split across factions using AiPlayerbot.RandomBotAllianceRatio / RandomBotHordeRatio
 # Default: 80
-AiPlayerbot.SyncBotsWithPlayerZoneTargetCount = 80
+AiPlayerbot.SyncBotsWithPlayerZoneTargetCount = 40
 
 # Synced bots are leveled to (player level +/- this variance)
 # Default: 5
