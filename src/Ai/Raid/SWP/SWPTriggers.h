@@ -488,7 +488,6 @@ public:
     bool IsActive() override;
 };
 
-
 class KiljaedenSaysChaosDestructionOblivionTrigger : public Trigger
 {
 public:
