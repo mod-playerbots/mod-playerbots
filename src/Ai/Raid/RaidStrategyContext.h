@@ -14,6 +14,7 @@
 #include "HyjalStrategy.h"
 #include "BTStrategy.h"
 #include "ZAStrategy.h"
+#include "SWPStrategy.h"
 #include "OSStrategy.h"
 #include "EoEStrategy.h"
 #include "VoAStrategy.h"
