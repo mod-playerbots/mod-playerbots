@@ -1502,8 +1502,27 @@ void RandomPlayerbotMgr::CheckPlayerZonePopulation()
                 !roll_chance_f(sPlayerbotAIConfig.syncBotsWithPlayerOverleveledEnemyChance))
                 continue;
 
+            // The target is a cap on already-recruited worldPvpBots for this zone, not on ambient
+            // random-bot traffic passing through - a big leveling zone like Stranglethorn Vale always
+            // has same-level bots wandering somewhere in it regardless of world PvP, and counting those
+            // toward the target let it look "satisfied" while nothing was actually near the player.
             uint32 satisfied = 0;
-            std::vector<uint32> eligible;
+            for (auto const& [guid, entry] : worldPvpBots)
+            {
+                if (entry.zoneId != zoneId)
+                    continue;
+
+                Player* bot = GetPlayerBot(ObjectGuid::Create<HighGuid::Player>(guid));
+                if (bot && bot->GetTeamId() == team)
+                    satisfied++;
+            }
+
+            // Bots already standing in the zone are preferred over ones pulled in from elsewhere on the
+            // continent - they still get teleported to the player's side (and re-leveled) per config
+            // like any other recruit, but there's no reason to yank in a distant bot when an unmarked
+            // one is already right there.
+            std::vector<uint32> eligibleInZone;
+            std::vector<uint32> eligibleElsewhere;
 
             for (uint32 guid : currentBots)
             {
@@ -1513,18 +1532,6 @@ void RandomPlayerbotMgr::CheckPlayerZonePopulation()
                 Player* bot = GetPlayerBot(ObjectGuid::Create<HighGuid::Player>(guid));
                 if (!bot || !bot->IsInWorld() || !IsRandomBot(bot) || bot->GetTeamId() != team)
                     continue;
-
-                bool inZone = bot->GetZoneId() == zoneId;
-                bool inBand = std::any_of(playersInZone.begin(), playersInZone.end(), [bot, variance](Player* p) {
-                    return std::abs(static_cast<int32>(bot->GetLevel()) - static_cast<int32>(p->GetLevel())) <=
-                           static_cast<int32>(variance);
-                });
-
-                if (inZone && inBand && bot->IsAlive())
-                {
-                    satisfied++;
-                    continue;
-                }
 
                 // A bot already marked for world PvP elsewhere isn't up for grabs - it shouldn't be
                 // poached into a different player's zone before it gets its chance to engage.
@@ -1546,16 +1553,24 @@ void RandomPlayerbotMgr::CheckPlayerZonePopulation()
                     }))
                     continue;
 
-                eligible.push_back(guid);
+                if (bot->GetZoneId() == zoneId)
+                    eligibleInZone.push_back(guid);
+                else
+                    eligibleElsewhere.push_back(guid);
             }
 
-            if (satisfied >= target || eligible.empty())
+            if (satisfied >= target || (eligibleInZone.empty() && eligibleElsewhere.empty()))
                 continue;
 
             uint32 need = std::min({ target - satisfied, sPlayerbotAIConfig.syncBotsWithPlayerMaxPerInterval,
-                                     static_cast<uint32>(eligible.size()), globalMoveBudget });
+                                     static_cast<uint32>(eligibleInZone.size() + eligibleElsewhere.size()),
+                                     globalMoveBudget });
 
-            std::shuffle(eligible.begin(), eligible.end(), RandomEngine::Instance());
+            std::shuffle(eligibleInZone.begin(), eligibleInZone.end(), RandomEngine::Instance());
+            std::shuffle(eligibleElsewhere.begin(), eligibleElsewhere.end(), RandomEngine::Instance());
+
+            std::vector<uint32> eligible = std::move(eligibleInZone);
+            eligible.insert(eligible.end(), eligibleElsewhere.begin(), eligibleElsewhere.end());
 
             for (uint32 i = 0; i < need; i++)
             {
