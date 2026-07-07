@@ -568,9 +568,33 @@ bool PlayerbotAIConfig::Initialize()
     guildTaskKillTaskDistance = sConfigMgr->GetOption<int32>("AiPlayerbot.GuildTaskKillTaskDistance", 2000);
     targetPosRecalcDistance = sConfigMgr->GetOption<float>("AiPlayerbot.TargetPosRecalcDistance", 0.1f);
 
-    // cosmetics (by lidocain)
-    randomBotShowCloak = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotShowCloak", true);
-    randomBotShowHelmet = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotShowHelmet", true);
+    //cosmetics
+    switch (sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotShowHelmet", 1))
+    {
+        case 0:
+            randomBotShowHelmet = ShowHideCosmetic::ALWAYS_HIDE;
+            break;
+        case 2:
+            randomBotShowHelmet = ShowHideCosmetic::RANDOMIZE;
+            break;
+        case 1:
+        default:
+            randomBotShowHelmet = ShowHideCosmetic::ALWAYS_SHOW;
+            break;
+    }
+    switch (sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotShowCloak", 1))
+    {
+        case 0:
+            randomBotShowCloak = ShowHideCosmetic::ALWAYS_HIDE;
+            break;
+        case 2:
+            randomBotShowCloak = ShowHideCosmetic::RANDOMIZE;
+            break;
+        case 1:
+        default:
+            randomBotShowCloak = ShowHideCosmetic::ALWAYS_SHOW;
+            break;
+    }
 
     // SPP switches
     enableGreet = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableGreet", true);
