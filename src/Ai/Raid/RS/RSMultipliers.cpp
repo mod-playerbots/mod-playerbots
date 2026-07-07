@@ -31,7 +31,6 @@
 #include "RSActions.h"
 #include "RSTriggers.h"
 #include "RSScripts.h"
-#include "Timer.h"
 
 namespace
 {

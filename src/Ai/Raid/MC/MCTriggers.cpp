@@ -1,6 +1,5 @@
 #include "MCTriggers.h"
 
-#include "SharedDefines.h"
 #include "MCHelpers.h"
 
 using namespace MoltenCoreHelpers;

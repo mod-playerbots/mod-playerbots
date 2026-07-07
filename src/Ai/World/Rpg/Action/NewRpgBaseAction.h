@@ -1,7 +1,6 @@
 #ifndef PLAYERBOTS_NEWRPGBASEACTION_H
 #define PLAYERBOTS_NEWRPGBASEACTION_H
 
-#include "Duration.h"
 #include "LastMovementValue.h"
 #include "MovementActions.h"
 #include "NewRpgInfo.h"

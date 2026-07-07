@@ -10,7 +10,6 @@
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "PlayerbotAIConfig.h"
-#include "Config.h"
 
 bool TaxiAction::Execute(Event event)
 {

@@ -9,7 +9,6 @@
 #include <boost/bind.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/thread/thread.hpp>
-#include <cstdlib>
 #include "RandomPlayerbotMgr.h"
 
 #include "IoContext.h"

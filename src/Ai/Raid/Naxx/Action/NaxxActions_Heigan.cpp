@@ -1,8 +1,3 @@
-#include "Playerbots.h"
-#include "NaxxActions.h"
-#include "NaxxSpellIds.h"
-#include "Spell.h"
-#include "Timer.h"
 
 //bool HeiganDanceAction::CalculateSafe()
 //{

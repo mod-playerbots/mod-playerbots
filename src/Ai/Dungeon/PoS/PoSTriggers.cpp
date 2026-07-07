@@ -1,6 +1,5 @@
 #include "Playerbots.h"
 #include "PoSTriggers.h"
-#include "AiObject.h"
 #include "AiObjectContext.h"
 
 bool IckAndKrickTrigger::IsActive()

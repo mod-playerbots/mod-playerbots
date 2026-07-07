@@ -8,7 +8,6 @@
 
 #include <vector>
 
-#include "Common.h"
 #include "TravelMgr.h"
 
 class Player;

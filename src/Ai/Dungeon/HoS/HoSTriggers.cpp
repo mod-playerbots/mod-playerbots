@@ -1,6 +1,5 @@
 #include "Playerbots.h"
 #include "HoSTriggers.h"
-#include "AiObject.h"
 #include "AiObjectContext.h"
 
 bool KrystallusGroundSlamTrigger::IsActive()

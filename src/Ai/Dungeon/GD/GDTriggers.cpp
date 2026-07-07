@@ -1,6 +1,5 @@
 #include "Playerbots.h"
 #include "GDTriggers.h"
-#include "AiObject.h"
 #include "AiObjectContext.h"
 
 bool SladranPoisonNovaTrigger::IsActive()

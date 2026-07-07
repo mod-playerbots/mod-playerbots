@@ -1,6 +1,5 @@
 #include "Playerbots.h"
 #include "FoSTriggers.h"
-#include "AiObject.h"
 #include "AiObjectContext.h"
 
 bool MoveFromBronjahmTrigger::IsActive()

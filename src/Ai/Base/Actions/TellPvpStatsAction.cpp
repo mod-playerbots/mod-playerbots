@@ -15,7 +15,6 @@
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
-#include "Language.h"
 
 namespace
 {

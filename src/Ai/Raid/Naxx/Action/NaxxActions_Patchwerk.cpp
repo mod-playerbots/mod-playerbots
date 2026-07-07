@@ -1,7 +1,5 @@
-#include "NaxxActions.h"
 
 #include <algorithm>
-#include <cmath>
 
 //bool PatchwerkRangedPositionAction::Execute(Event event)
 //{

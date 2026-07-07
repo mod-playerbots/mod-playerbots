@@ -1,6 +1,5 @@
 #include "Playerbots.h"
 #include "DTKTriggers.h"
-#include "AiObject.h"
 #include "AiObjectContext.h"
 
 bool CorpseExplodeTrigger::IsActive()

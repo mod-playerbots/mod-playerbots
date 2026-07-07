@@ -12,8 +12,6 @@
 #include "Playerbots.h"
 #include "SpellInfo.h"
 
-#include <regex>
-
 std::map<std::string, uint32> ChatHelper::consumableSubClasses;
 std::map<std::string, uint32> ChatHelper::tradeSubClasses;
 std::map<std::string, uint32> ChatHelper::itemQualities;

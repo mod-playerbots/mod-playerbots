@@ -11,7 +11,6 @@
 #include "Pet.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
-#include "SharedDefines.h"
 
 bool PetsAction::Execute(Event event)
 {

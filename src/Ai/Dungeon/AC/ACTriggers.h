@@ -3,7 +3,6 @@
 
 #include "Trigger.h"
 #include "GenericTriggers.h"
-#include "DungeonStrategyUtils.h"
 
 enum class AuchenaiCryptsIDs : uint32
 {

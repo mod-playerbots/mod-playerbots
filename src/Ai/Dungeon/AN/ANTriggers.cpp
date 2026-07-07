@@ -1,6 +1,5 @@
 #include "Playerbots.h"
 #include "ANTriggers.h"
-#include "AiObject.h"
 #include "AiObjectContext.h"
 
 bool KrikthirWebWrapTrigger::IsActive()

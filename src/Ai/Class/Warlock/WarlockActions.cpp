@@ -5,7 +5,6 @@
 
 #include "WarlockActions.h"
 
-#include <string>
 #include <vector>
 #include "Event.h"
 #include "Item.h"
