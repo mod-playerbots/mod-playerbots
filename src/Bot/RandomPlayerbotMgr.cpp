@@ -1409,11 +1409,14 @@ void RandomPlayerbotMgr::CheckPlayerZonePopulation()
     uint32 globalMoveBudget = sPlayerbotAIConfig.randomBotsPerInterval;
     uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
 
+    // Group eligible real players by zone first, so AiPlayerbot.SyncBotsWithPlayerZoneTargetCount is a
+    // budget for the ZONE, not a per-player allowance - two real players sharing a zone must still only
+    // pull in one target-count's worth of bots between them, while players in different zones each get
+    // their own independent target.
+    std::unordered_map<uint32, std::vector<Player*>> zonePlayers;
+
     for (Player* player : players)
     {
-        if (!globalMoveBudget)
-            break;
-
         // Deliberately do NOT skip on IsGameMaster(): that reflects the runtime ".gm on" admin-mode
         // toggle (PLAYER_EXTRA_GM_ON), not account security level - a solo server owner playing on a
         // GM-security account (with GM login-state off, the default) already has IsGameMaster()==false,
@@ -1430,8 +1433,6 @@ void RandomPlayerbotMgr::CheckPlayerZonePopulation()
             continue;
 
         uint32 zoneId = player->GetZoneId();
-        uint32 pLevel = player->GetLevel();
-        uint32 variance = sPlayerbotAIConfig.syncBotsWithPlayerLevelVariance;
 
         // No world PvP population in capitals or other sanctuaries - it makes no sense there, and PvP
         // is off in a sanctuary anyway. sTravelMgr.IsCapitalZone() is the same curated capital list the
@@ -1444,13 +1445,27 @@ void RandomPlayerbotMgr::CheckPlayerZonePopulation()
         if (inSafeZone)
             continue;
 
+        zonePlayers[zoneId].push_back(player);
+    }
+
+    for (auto& [zoneId, playersInZone] : zonePlayers)
+    {
+        if (!globalMoveBudget)
+            break;
+
+        uint32 variance = sPlayerbotAIConfig.syncBotsWithPlayerLevelVariance;
+
         // A player above the zone's own intended level range (its AiPlayerbot.ZoneBracket, or the
         // built-in default) is "overleveled" for it - e.g. a level 60 camping Westfall. Enemy-faction
         // recruitment there should be a rare event, not the norm; same-faction population is untouched
-        // since it carries no PvP risk.
+        // since it carries no PvP risk. If at least one player sharing the zone is still within its
+        // level range, treat the zone as legitimately played rather than overleveled, even if another
+        // visitor has outgrown it.
         uint32 zoneMinLevel = 0, zoneMaxLevel = 0;
+        bool hasZoneBracket = sTravelMgr.GetZoneLevelBracket(zoneId, zoneMinLevel, zoneMaxLevel);
         bool overleveledForZone =
-            sTravelMgr.GetZoneLevelBracket(zoneId, zoneMinLevel, zoneMaxLevel) && pLevel > zoneMaxLevel;
+            hasZoneBracket && std::all_of(playersInZone.begin(), playersInZone.end(),
+                                           [zoneMaxLevel](Player* p) { return p->GetLevel() > zoneMaxLevel; });
 
         uint32 allianceRatio = sPlayerbotAIConfig.randomBotAllianceRatio;
         uint32 hordeRatio = sPlayerbotAIConfig.randomBotHordeRatio;
@@ -1460,7 +1475,8 @@ void RandomPlayerbotMgr::CheckPlayerZonePopulation()
 
         // Split the zone target across factions the same way AddRandomBots() splits the global bot
         // count: give the remainder to one faction at random instead of letting integer division
-        // silently undershoot the configured target every single time.
+        // silently undershoot the configured target every single time. Computed once per zone (not
+        // per player), so the target is a shared budget for everyone in it.
         uint32 zoneTarget = sPlayerbotAIConfig.syncBotsWithPlayerZoneTargetCount;
         uint32 allianceTarget = zoneTarget * allianceRatio / totalRatio;
         uint32 remainder = zoneTarget * allianceRatio % totalRatio;
@@ -1477,7 +1493,12 @@ void RandomPlayerbotMgr::CheckPlayerZonePopulation()
             if (!target)
                 continue;
 
-            if (overleveledForZone && team != player->GetTeamId() &&
+            // Only throttle enemy-faction recruitment when every player of the opposing team present is
+            // overleveled for the zone; if even one of them is at-level, the zone is contested and enemy
+            // recruitment proceeds normally.
+            if (overleveledForZone &&
+                std::none_of(playersInZone.begin(), playersInZone.end(),
+                             [team](Player* p) { return p->GetTeamId() == team; }) &&
                 !roll_chance_f(sPlayerbotAIConfig.syncBotsWithPlayerOverleveledEnemyChance))
                 continue;
 
@@ -1494,8 +1515,10 @@ void RandomPlayerbotMgr::CheckPlayerZonePopulation()
                     continue;
 
                 bool inZone = bot->GetZoneId() == zoneId;
-                bool inBand = std::abs(static_cast<int32>(bot->GetLevel()) - static_cast<int32>(pLevel)) <=
-                              static_cast<int32>(variance);
+                bool inBand = std::any_of(playersInZone.begin(), playersInZone.end(), [bot, variance](Player* p) {
+                    return std::abs(static_cast<int32>(bot->GetLevel()) - static_cast<int32>(p->GetLevel())) <=
+                           static_cast<int32>(variance);
+                });
 
                 if (inZone && inBand && bot->IsAlive())
                 {
@@ -1515,11 +1538,12 @@ void RandomPlayerbotMgr::CheckPlayerZonePopulation()
                     continue;
 
                 // Death Knights can never go below CONFIG_START_HEROIC_PLAYER_LEVEL (55 by default) -
-                // if the player's own variance band can't reach that floor, recruiting one here would
-                // force it far outside the intended level-sync range instead of respecting it.
+                // skip one only if it can't reach that floor for any player sharing this zone.
                 if (bot->getClass() == CLASS_DEATH_KNIGHT &&
-                    static_cast<int32>(pLevel) + static_cast<int32>(variance) <
-                        static_cast<int32>(sWorld->getIntConfig(CONFIG_START_HEROIC_PLAYER_LEVEL)))
+                    std::none_of(playersInZone.begin(), playersInZone.end(), [variance](Player* p) {
+                        return static_cast<int32>(p->GetLevel()) + static_cast<int32>(variance) >=
+                               static_cast<int32>(sWorld->getIntConfig(CONFIG_START_HEROIC_PLAYER_LEVEL));
+                    }))
                     continue;
 
                 eligible.push_back(guid);
@@ -1540,6 +1564,11 @@ void RandomPlayerbotMgr::CheckPlayerZonePopulation()
                 if (!bot)
                     continue;
 
+                // Spread recruits across every real player sharing the zone instead of clustering them
+                // all around whichever player happens to be first in the list.
+                Player* anchor = playersInZone[i % playersInZone.size()];
+                uint32 pLevel = anchor->GetLevel();
+
                 // Attempt the move FIRST, using the bot's current (pre-relevel) level and gear. This
                 // way a bot that can't actually reach the player's zone (contested/faction-exclusive
                 // territory, unreachable terrain, or a real player nearby making the teleport visible)
@@ -1548,7 +1577,7 @@ void RandomPlayerbotMgr::CheckPlayerZonePopulation()
                 // only restricts bots that are ALREADY level <=16) is evaluated against the bot's real
                 // current level, not a not-yet-applied target level.
                 std::vector<WorldLocation> locs = GetLocationsAroundPlayer(
-                    player, 12, sPlayerbotAIConfig.syncBotsWithPlayerMinDistance,
+                    anchor, 12, sPlayerbotAIConfig.syncBotsWithPlayerMinDistance,
                     sPlayerbotAIConfig.syncBotsWithPlayerMaxDistance);
                 if (!RandomTeleport(bot, locs))
                     continue;
@@ -1595,6 +1624,34 @@ void RandomPlayerbotMgr::CheckPlayerZonePopulation()
                     break;
             }
         }
+    }
+
+    // Periodic (once per sync interval, not per server tick) visibility into world PvP bot population,
+    // broken down by zone and faction.
+    std::map<uint32, std::pair<uint32, uint32>> countsByZone;  // zoneId -> [allianceCount, hordeCount]
+    for (auto const& [guid, entry] : worldPvpBots)
+    {
+        Player* bot = GetPlayerBot(ObjectGuid::Create<HighGuid::Player>(guid));
+        if (!bot || !bot->IsInWorld())
+            continue;
+
+        std::pair<uint32, uint32>& counts = countsByZone[entry.zoneId];
+        if (bot->GetTeamId() == TEAM_ALLIANCE)
+            counts.first++;
+        else
+            counts.second++;
+    }
+
+    for (auto const& [zoneId, counts] : countsByZone)
+    {
+        AreaTableEntry const* zone = sAreaTableStore.LookupEntry(zoneId);
+        std::string zoneName = zone ? zone->area_name[sWorld->GetDefaultDbcLocale()] : std::to_string(zoneId);
+
+        if (counts.first)
+            LOG_INFO("playerbots", "World pvp random bots - Alliance - {} - {}", zoneName, counts.first);
+
+        if (counts.second)
+            LOG_INFO("playerbots", "World pvp random bots - Horde - {} - {}", zoneName, counts.second);
     }
 }
 

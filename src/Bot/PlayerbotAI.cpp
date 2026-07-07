@@ -4601,6 +4601,10 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
     if (activityType == PACKET_ACTIVITY)
         return true;
 
+    // bot was recruited/teleported by the world PvP system — always active regardless of BotActiveAlone settings
+    if (sRandomPlayerbotMgr.IsWorldPvpBot(bot->GetGUID().GetCounter()))
+        return true;
+
     // all bots forced active, no rotation or scaling needed
     if (sPlayerbotAIConfig.botActiveAlone >= 100 && !sPlayerbotAIConfig.botActiveAloneSmartScale)
         return true;
