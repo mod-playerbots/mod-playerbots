@@ -26,9 +26,9 @@ constexpr uint8 ALYTHESS_TANK_POSITION_COUNT = 5;
 
 struct EredarTwinsIncomingConflagrationState
 {
-	ObjectGuid targetGuid = ObjectGuid::Empty;
-	uint32 delayMs = 0;
-	uint32 expireMs = 0;
+    ObjectGuid targetGuid = ObjectGuid::Empty;
+    uint32 delayMs = 0;
+    uint32 expireMs = 0;
 };
 
 constexpr uint32 EREDAR_TWINS_INCOMING_CONFLAGRATION_DELAY_MS = 500;
@@ -39,7 +39,7 @@ extern const Position EREDAR_TWINS_RANGED_CONFLAG_POSITION;
 extern const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION;
 
 extern std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
-	eredarTwinsIncomingConflagrationStates;
+    eredarTwinsIncomingConflagrationStates;
 extern std::unordered_map<uint32, time_t> eredarTwinsDpsHoldTimer;
 
 Position GetAlythessTankPosition(Unit* alythess, uint8 index);
