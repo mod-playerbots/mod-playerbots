@@ -1271,11 +1271,11 @@ AiPlayerbot.SyncBotsWithPlayer = 0
 
 # Combined Alliance+Horde randombot population target for the player's current zone,
 # split across factions using AiPlayerbot.RandomBotAllianceRatio / RandomBotHordeRatio
-# Default: 80
+# Default: 40
 AiPlayerbot.SyncBotsWithPlayerZoneTargetCount = 40
 
 # Synced bots are leveled to (player level +/- this variance)
-# Default: 5
+# Default: 3
 AiPlayerbot.SyncBotsWithPlayerLevelVariance = 3
 
 # Max bots moved into a player's zone per faction, per check
@@ -1283,13 +1283,13 @@ AiPlayerbot.SyncBotsWithPlayerLevelVariance = 3
 AiPlayerbot.SyncBotsWithPlayerMaxPerInterval = 5
 
 # Seconds between population checks
-# Default: 30
+# Default: 120
 AiPlayerbot.SyncBotsWithPlayerInterval = 120
 
 # Yard range around the player used to place synced bots (min/max)
-# Default: 40 / 250
-AiPlayerbot.SyncBotsWithPlayerMinDistance = 250
-AiPlayerbot.SyncBotsWithPlayerMaxDistance = 500
+# Default: 1000 / 1500
+AiPlayerbot.SyncBotsWithPlayerMinDistance = 1000
+AiPlayerbot.SyncBotsWithPlayerMaxDistance = 1500
 
 # Chance (percent) that a bot from the faction opposing the player will still be recruited into a
 # zone the player is overleveled for (i.e. above that zone's AiPlayerbot.ZoneBracket max level, or its
