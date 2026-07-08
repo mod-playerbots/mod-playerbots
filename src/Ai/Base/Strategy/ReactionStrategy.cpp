@@ -9,10 +9,16 @@
 
 void ReactionStrategy::InitReactionTriggers(std::vector<TriggerNode*>& triggers)
 {
-    // Intentionally empty. In upstream cmangos this strategy wires bot state-transition
-    // triggers (combat start/end, death, resurrect) so they fire through the reaction engine.
-    // This port keeps all state transitions inline in PlayerbotAI::UpdateAIInternal, so there
-    // is nothing to wire here. ReactionStrategy's purpose is to contribute STRATEGY_TYPE_REACTION
-    // to the engine's type mask and give server operators a "react" toggle handle for the
-    // reaction engine as a whole (e.g. ChangeStrategy("-react", BOT_STATE_REACTION)).
+    // Upstream cmangos also routes combat end, death and resurrect through here; this port
+    // keeps those transitions inline in PlayerbotAI and only promotes combat start, so bots
+    // enter the combat engine within reactDelay even while the main AI is delayed
+    // (eating, drinking, casting, long action durations).
+    triggers.push_back(
+        new TriggerNode(
+            "combat start",
+            {
+                NextAction("set combat state", ACTION_PASSTROUGH + 10)
+            }
+        )
+    );
 }
