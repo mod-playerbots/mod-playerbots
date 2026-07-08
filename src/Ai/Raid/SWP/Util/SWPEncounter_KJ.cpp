@@ -356,7 +356,7 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
     }
 
     Group* group = bot->GetGroup();
-    if (!group || !botAI->IsRanged(bot))
+    if (!group)
     {
         kiljaedenEncounterStates[instanceId].rangedArmageddonAssignments.clear();
         return;
