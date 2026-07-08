@@ -41,6 +41,28 @@ bool SgMajorityLostMysticBuffet(Player* bot, PlayerbotAI* botAI)
 
     return static_cast<float>(without) / static_cast<float>(total) >= 0.6f;
 }
+
+// Safe stand spot for melee and healers: 15y from the boss toward the
+// melee/ranged zone, clear of the tail (too close) and of the beacon drop
+// (to the north). Tracks the live boss so her drift never pulls the raid
+// into tail range the way a fixed point does.
+Position SgSafeMeleeSpot(Unit const* boss)
+{
+    float const midX =
+        (ICC_SINDRAGOSA_MELEE_POSITION.GetPositionX() + ICC_SINDRAGOSA_RANGED_POSITION.GetPositionX()) * 0.5f;
+    float const midY =
+        (ICC_SINDRAGOSA_MELEE_POSITION.GetPositionY() + ICC_SINDRAGOSA_RANGED_POSITION.GetPositionY()) * 0.5f;
+
+    float const dx = midX - boss->GetPositionX();
+    float const dy = midY - boss->GetPositionY();
+    float const len = std::sqrt(dx * dx + dy * dy);
+    if (len < 0.001f)
+        return Position(midX, midY, ICC_SINDRAGOSA_MELEE_POSITION.GetPositionZ());
+
+    float const scale = 15.0f / len;
+    return Position(boss->GetPositionX() + dx * scale, boss->GetPositionY() + dy * scale,
+                    ICC_SINDRAGOSA_MELEE_POSITION.GetPositionZ());
+}
 }  // namespace
 
 bool IccSindragosaGroupPositionAction::Execute(Event /*event*/)
@@ -695,7 +717,9 @@ bool IccSindragosaFrostBeaconAction::HandleNonBeaconedPlayer(const Unit* boss)
     bool const isRanged = botAI->IsRanged(bot) && !botAI->IsHeal(bot) /*(bot->GetExactDist2d(ICC_SINDRAGOSA_RANGED_POSITION.GetPositionX(),ICC_SINDRAGOSA_RANGED_POSITION.GetPositionY()) <
                           bot->GetExactDist2d(ICC_SINDRAGOSA_MELEE_POSITION.GetPositionX(),ICC_SINDRAGOSA_MELEE_POSITION.GetPositionY()))*/;
 
-    const Position& targetPosition = isRanged ? ICC_SINDRAGOSA_RANGED_POSITION : ICC_SINDRAGOSA_MELEE_POSITION;
+    // Melee and healers stand 15y from the boss (out of tail range) instead of
+    // the fixed melee stack; ranged keep their far spot.
+    Position const targetPosition = isRanged ? ICC_SINDRAGOSA_RANGED_POSITION : SgSafeMeleeSpot(boss);
 
     float const deltaX = std::abs(targetPosition.GetPositionX() - bot->GetPositionX());
     float const deltaY = std::abs(targetPosition.GetPositionY() - bot->GetPositionY());
@@ -884,8 +908,8 @@ bool IccSindragosaMysticBuffetAction::Execute(Event /*event*/)
         // owns positioning, so leave that to it.
         if (!botAI->IsHeal(bot) && !IccAnyGroupMemberHasAura(bot, SPELL_FROST_BEACON))
         {
-            Position const& spread =
-                botAI->IsRanged(bot) ? ICC_SINDRAGOSA_RANGED_POSITION : ICC_SINDRAGOSA_MELEE_POSITION;
+            Position const spread =
+                botAI->IsRanged(bot) ? ICC_SINDRAGOSA_RANGED_POSITION : SgSafeMeleeSpot(boss);
             if (bot->GetExactDist2d(spread) > 3.0f)
                 return MoveTo(bot->GetMapId(), spread.GetPositionX(), spread.GetPositionY(), spread.GetPositionZ(),
                               false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
@@ -933,12 +957,27 @@ bool IccSindragosaMysticBuffetAction::Execute(Event /*event*/)
     if (botAI->IsHeal(bot))
         return false;
 
-    // Waiting for the raid to shed Mystic Buffet: no mark on boss nor tomb.
+    // Waiting for the raid to shed Mystic Buffet. Bots are already parked at
+    // LOS2, so pre-burn a single tomb down to 50% to make the eventual kill
+    // fast; below 50% park it there (unmark + strip its auras so lingering
+    // DoTs don't push it under) and wait for the debuff to clear, exactly as
+    // the air-phase frost bomb holds a tomb at its stop HP. No extra LOS move.
     if (!SgMajorityLostMysticBuffet(bot, botAI))
     {
+        Creature* const tomb = tombs.front();
+
+        if (tombs.size() == 1 && tomb->GetHealthPct() > 50.0f)
+        {
+            context->GetValue<std::string>("rti")->Set("skull");
+            IccEnsureIconOn(bot, botAI, SKULL_ICON, tomb);
+            return false;
+        }
+
         ObjectGuid const currentIcon = group->GetTargetIcon(SKULL_ICON);
         if (!currentIcon.IsEmpty())
             group->SetTargetIcon(SKULL_ICON, bot->GetGUID(), ObjectGuid::Empty);
+        if (tombs.size() == 1)
+            tomb->RemoveAllAuras();
         bot->AttackStop();
         return true;
     }
