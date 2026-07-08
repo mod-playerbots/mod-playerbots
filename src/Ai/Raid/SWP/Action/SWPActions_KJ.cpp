@@ -215,10 +215,6 @@ bool KiljaedenPositionRangedAction::Execute(Event /*event*/)
 
 bool KiljaedenPositionRangedAction::TryGetPosition(Position& position) const
 {
-    Group* group = bot->GetGroup();
-    if (!group || !botAI->IsRanged(bot))
-        return false;
-
     EnsureKiljaedenRangedAssignments(botAI, bot);
 
     auto const instanceItr = kiljaedenEncounterStates.find(bot->GetInstanceId());

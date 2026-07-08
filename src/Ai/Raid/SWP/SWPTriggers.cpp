@@ -85,8 +85,9 @@ bool KalecgosSpectralRiftIsOpenTrigger::IsActive()
     if (!ShouldEnterKalecgosSpectralRift(botAI, bot))
         return false;
 
+    constexpr float searchRadius = 75.0f;
     return bot->FindNearestGameObject(
-        static_cast<uint32>(SunwellObjects::GO_SPECTRAL_RIFT), 50.0f, true);
+        static_cast<uint32>(SunwellObjects::GO_SPECTRAL_RIFT), searchRadius, true);
 }
 
 bool KalecgosBotsTakeSplashDamageTrigger::IsActive()

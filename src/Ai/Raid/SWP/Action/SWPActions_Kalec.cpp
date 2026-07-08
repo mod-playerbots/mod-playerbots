@@ -90,8 +90,14 @@ bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
         return true;
     }
 
+    float const targetDist = rift->GetInteractionDistance() - 0.5f;
+    float const angle = rift->GetAngle(bot);
+    float const destX = rift->GetPositionX() + std::cos(angle) * targetDist;
+    float const destY = rift->GetPositionY() + std::sin(angle) * targetDist;
+
     return MoveTo(
-        rift, rift->GetInteractionDistance() - 0.5f, MovementPriority::MOVEMENT_FORCED);
+        SUNWELL_MAP_ID, destX, destY, rift->GetPositionZ(),
+        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
