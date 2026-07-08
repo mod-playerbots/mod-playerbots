@@ -266,7 +266,8 @@ enum ActivityType
     PACKET_ACTIVITY = 5,
     DETAILED_MOVE_ACTIVITY = 6,
     PARTY_ACTIVITY = 7,
-    ALL_ACTIVITY = 8,
+    REACT_ACTIVITY = 8,
+    ALL_ACTIVITY = 9,
 
     MAX_ACTIVITY_TYPE
 };
@@ -397,6 +398,7 @@ public:
     void UpdateAIInternal(uint32 elapsed, bool minimal = false) override;
     bool UpdateAIReaction(uint32 elapsed, bool minimal, bool isStunned);
     void SetActionDuration(Action const* action);
+    using PlayerbotAIBase::SetActionDuration;
     ReactionEngine* GetReactionEngine() { return reactionEngine; }
 
     std::string const HandleRemoteCommand(std::string const command);

@@ -567,6 +567,14 @@ Action* Engine::InitializeAction(ActionNode* actionNode)
         actionNode->setAction(action);
     }
 
+    if (action)
+    {
+        action->SetReaction(false);
+        // Not all actions set a duration; clear leftovers from earlier runs so
+        // ListenAndExecute doesn't re-apply a stale delay from a previous execution.
+        action->ResetDuration();
+    }
+
     return action;
 }
 
@@ -607,6 +615,10 @@ bool Engine::ListenAndExecute(Action* action, Event event)
 
     actionExecuted = actionExecutionListeners.OverrideResult(action, actionExecuted, event);
     actionExecutionListeners.After(action, actionExecuted, event);
+
+    if (actionExecuted && action->GetDuration() > 0)
+        botAI->SetActionDuration(action);
+
     return actionExecuted;
 }
 

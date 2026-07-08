@@ -68,6 +68,18 @@ void AvoidAoeStrategy::InitTriggers(std::vector<TriggerNode*>& /*triggers*/)
 {
 }
 
+void AvoidAoeStrategy::InitReactionTriggers(std::vector<TriggerNode*>& triggers)
+{
+    triggers.push_back(
+        new TriggerNode(
+            "has area debuff",
+            {
+                NextAction("avoid aoe", ACTION_EMERGENCY + 5)
+            }
+        )
+    );
+}
+
 void AvoidAoeStrategy::InitMultipliers(std::vector<Multiplier*>& /*multipliers*/)
 {
 }

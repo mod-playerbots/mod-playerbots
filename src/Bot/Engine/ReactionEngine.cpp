@@ -219,7 +219,12 @@ Action* ReactionEngine::InitializeAction(ActionNode* actionNode)
     }
 
     if (action)
+    {
         action->SetReaction(true);
+        // Clear any duration left over from a previous execution; the real duration is
+        // applied after Execute via SetActionDuration -> SetReactionDuration.
+        action->ResetDuration();
+    }
 
     return action;
 }

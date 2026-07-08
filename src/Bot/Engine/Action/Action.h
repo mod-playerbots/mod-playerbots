@@ -99,6 +99,7 @@ public:
     bool IsReaction() const { return reaction; }
     void SetReaction(bool inReaction) { reaction = inReaction; }
     uint32 GetDuration() const { return duration; }
+    void ResetDuration() { duration = 0; }
     virtual bool ShouldReactionInterruptCast() const { return false; }
     virtual bool ShouldReactionInterruptMovement() const { return false; }
 

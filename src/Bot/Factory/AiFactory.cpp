@@ -743,7 +743,12 @@ Engine* AiFactory::createDeadEngine(Player* player, PlayerbotAI* const facade, A
 
 void AiFactory::AddDefaultReactionStrategies(Player* player, PlayerbotAI* const facade, ReactionEngine* reactionEngine)
 {
-    reactionEngine->addStrategies("react", "potions", nullptr);
+    reactionEngine->addStrategies("react", "chat", "avoid aoe", "potions", nullptr);
+
+    if (facade->IsRealPlayer() || facade->HasRealPlayerMaster())
+        reactionEngine->ChangeStrategy(sPlayerbotAIConfig.reactStrategies);
+    else
+        reactionEngine->ChangeStrategy(sPlayerbotAIConfig.randomBotReactStrategies);
 }
 
 ReactionEngine* AiFactory::createReactionEngine(Player* player, PlayerbotAI* const facade, AiObjectContext* aiObjectContext)

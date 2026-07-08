@@ -28,6 +28,7 @@ public:
     std::vector<NextAction> getDefaultActions() override;
     void InitMultipliers(std::vector<Multiplier*>& multipliers) override;
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
+    void InitReactionTriggers(std::vector<TriggerNode*>& triggers) override;
 };
 
 class TankFaceStrategy : public Strategy

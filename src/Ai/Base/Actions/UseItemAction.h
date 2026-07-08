@@ -24,6 +24,8 @@ public:
 
     bool Execute(Event event) override;
     bool isPossible() override;
+    bool ShouldReactionInterruptCast() const override { return true; }
+    bool ShouldReactionInterruptMovement() const override { return true; }
 
 protected:
     bool UseItemAuto(Item* item);

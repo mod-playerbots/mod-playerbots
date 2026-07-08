@@ -17,6 +17,7 @@ public:
     ChangeChatAction(PlayerbotAI* botAI) : Action(botAI, "chat") {}
 
     bool Execute(Event event) override;
+    bool isUsefulWhenStunned() override { return true; }
 };
 
 #endif
