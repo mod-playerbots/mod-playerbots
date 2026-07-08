@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <string>
 
+#include "Common.h"
 #include "DBCEnums.h"
 #include "SharedDefines.h"
 
@@ -463,7 +464,7 @@ public:
     std::vector<uint32> excludedHunterPetFamilies;
 
     // Chat
-    uint32 GetLocalePriority() const;
+    LocaleConstant GetLocalePriority() const;
 
 private:
     PlayerbotAIConfig() = default;
@@ -474,8 +475,6 @@ private:
 
     PlayerbotAIConfig(PlayerbotAIConfig&&) = delete;
     PlayerbotAIConfig& operator=(PlayerbotAIConfig&&) = delete;
-
-    uint32 textLocale;
 };
 
 #define sPlayerbotAIConfig PlayerbotAIConfig::instance()

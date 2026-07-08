@@ -2258,11 +2258,6 @@ AIPlayerbot.GuildFeedback = 1
 AiPlayerbot.GuildRepliesRate = 100
 # Bots without a master will say their lines
 AiPlayerbot.RandomBotSayWithoutMaster = 0
-#
-# Locale used for bot chat text (quest names, item names, spell names, etc.)
-# Uses LocaleConstant values: 0=enUS, 4=zhCN, 5=zhTW, etc.
-# Default: 0 (enUS) - set to your DB locale (e.g. 4 for zhCN) for localized chat nouns
-AiPlayerbot.TextLocale = 0
 
 #
 #
