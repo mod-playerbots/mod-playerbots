@@ -18,6 +18,8 @@ jobs:
           - macos-14
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }}
+    env:
+      CXXFLAGS: "-Wall -Wextra -Winit-self -Wfatal-errors -Woverloaded-virtual -Werror -Wno-error=deprecated-declarations"
     steps:
       - name: Checkout AzerothCore
         uses: actions/checkout@v4
