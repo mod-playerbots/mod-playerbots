@@ -164,7 +164,6 @@ public:
     bool enableBroadcasts;
     bool enableGreet;
     bool randomBotSayWithoutMaster;
-    uint32 textLocale;
 
     uint32 broadcastChanceMaxValue;
 
@@ -463,6 +462,9 @@ public:
 
     std::vector<uint32> excludedHunterPetFamilies;
 
+    // Chat
+    uint32 GetLocalePriority() const;
+
 private:
     PlayerbotAIConfig() = default;
     ~PlayerbotAIConfig() = default;
@@ -472,6 +474,8 @@ private:
 
     PlayerbotAIConfig(PlayerbotAIConfig&&) = delete;
     PlayerbotAIConfig& operator=(PlayerbotAIConfig&&) = delete;
+
+    uint32 textLocale;
 };
 
 #define sPlayerbotAIConfig PlayerbotAIConfig::instance()

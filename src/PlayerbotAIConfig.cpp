@@ -995,3 +995,11 @@ std::vector<std::vector<uint32>> PlayerbotAIConfig::ParseTempPetTalentsOrder(uin
 
     return orders;
 }
+
+#include "World.h"
+uint32 PlayerbotAIConfig::GetLocalePriority() const
+{
+    if (textLocale != LOCALE_enUS)
+        return textLocale;
+    return sWorld->GetDefaultDbcLocale();
+}
