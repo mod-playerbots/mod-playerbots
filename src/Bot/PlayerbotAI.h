@@ -379,6 +379,15 @@ private:
     time_t time;
 };
 
+class Player;
+
+enum class PublicChannelDispatchMode : uint8
+{
+    Blocked,        // Do not fan out on General/Trade (use whisper/party/guild instead)
+    SingleNearest,  // One nearby bot responds (info queries)
+    Nearby          // All nearby bots may respond (invite/lfg/@role)
+};
+
 class PlayerbotAI : public PlayerbotAIBase
 {
 public:
@@ -528,6 +537,11 @@ public:
     static uint32 GetMixedGearScore(Player* player, bool withBags, bool withBank, uint32 topN = 0);
     bool HasSkill(SkillType skill);
     bool IsAllowedCommand(std::string const text);
+    static bool LooksLikeChatCommand(std::string const& text);
+    static bool CommandTextEqualsOrStartsWith(std::string const& text, std::string const& cmd);
+    static std::string NormalizeChatCommandText(std::string const& text);
+    static bool IsPublicChannelChat(uint32 type);
+    static PublicChannelDispatchMode GetPublicChannelDispatchMode(std::string const& text);
     float GetRange(std::string const type);
 
     Player* GetBot() { return bot; }
@@ -644,6 +658,7 @@ protected:
     std::map<std::string, time_t> whispers;
     std::pair<ChatMsg, time_t> currentChat;
     static std::set<std::string> unsecuredCommands;
+    static void EnsureUnsecuredCommands();
     bool allowActive[MAX_ACTIVITY_TYPE];
     time_t allowActiveCheckTimer[MAX_ACTIVITY_TYPE];
     bool inCombat = false;

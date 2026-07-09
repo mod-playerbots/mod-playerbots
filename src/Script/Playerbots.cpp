@@ -197,10 +197,9 @@ public:
 
         botAI->HandleCommand(type, msg, player);
 
-        // hotfix; otherwise the server will crash when whispering logout
-        // https://github.com/mod-playerbots/mod-playerbots/pull/1838
-        // TODO: find the root cause and solve it. (does not happen in party chat)
-        if (msg == "logout")
+        // Block core chat handling for bot logout whispers — prevents re-entrant crash (#1838).
+        std::string const logoutCmd = PlayerbotAI::NormalizeChatCommandText(msg);
+        if (logoutCmd == "logout" || logoutCmd == "logout cancel")
             return false;
 
         return true;
@@ -231,6 +230,9 @@ public:
         if (type != CHAT_MSG_GUILD)
             return true;
 
+        if (!PlayerbotAI::LooksLikeChatCommand(msg))
+            return true;
+
         PlayerbotMgr* playerbotMgr = PlayerbotsMgr::instance().GetPlayerbotMgr(player);
 
         if (playerbotMgr == nullptr)
@@ -246,7 +248,11 @@ public:
             if (bot->GetGuildId() != player->GetGuildId())
                 continue;
 
-            PlayerbotsMgr::instance().GetPlayerbotAI(bot)->HandleCommand(type, msg, player);
+            PlayerbotAI* botAI = PlayerbotsMgr::instance().GetPlayerbotAI(bot);
+            if (!botAI)
+                continue;
+
+            botAI->HandleCommand(type, msg, player);
         }
 
         return true;
@@ -254,12 +260,19 @@ public:
 
     bool OnPlayerCanUseChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Channel* channel) override
     {
+        if (!channel)
+            return true;
+
         PlayerbotMgr* const playerbotMgr = PlayerbotsMgr::instance().GetPlayerbotMgr(player);
+
+        // Normal general/trade chat must not iterate every bot; only whitelisted commands.
+        if (PlayerbotAI::GetPublicChannelDispatchMode(msg) == PublicChannelDispatchMode::Blocked)
+            return true;
 
         if (playerbotMgr != nullptr && channel->GetFlags() & 0x18)
             playerbotMgr->HandleCommand(type, msg);
 
-        sRandomPlayerbotMgr.HandleCommand(type, msg, player);
+        sRandomPlayerbotMgr.HandleCommand(type, msg, player, channel->GetName());
 
         return true;
     }
