@@ -448,11 +448,11 @@ public:
     bool IsActive() override;
 };
 
-class KiljaedenHandsSummonFelfirePortalsTrigger : public Trigger
+class KiljaedenHandsOfTheDeceiverAreActiveTrigger : public Trigger
 {
 public:
-    KiljaedenHandsSummonFelfirePortalsTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden hands summon felfire portals") {}
+    KiljaedenHandsOfTheDeceiverAreActiveTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kil'jaeden hands of the deceiver are active") {}
     bool IsActive() override;
 };
 

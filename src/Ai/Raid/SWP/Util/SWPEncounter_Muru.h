@@ -50,8 +50,7 @@ extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
 bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru);
 bool TryGetMuruDarknessEarlyState(Player* bot, Unit* muru, uint32 earlyWindowMs = 10000);
 void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets);
-Creature* FindAvailableVoidSpawnForEnslave(
-    PlayerbotAI* botAI, Player* bot, Unit* muru, Unit* entropius);
+Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI, Player* bot);
 Creature* GetNearestMuruSingularity(Player* bot, float searchRadius = 30.0f);
 
 }

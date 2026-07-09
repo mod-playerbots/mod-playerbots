@@ -153,6 +153,8 @@ std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
 
 std::unordered_map<uint32, KiljaedenEncounterState> kiljaedenEncounterStates;
 
+std::unordered_map<uint32, std::array<ObjectGuid, 3>> kiljaedenHandTankAssignments;
+
 std::unordered_map<ObjectGuid::LowType, uint32> kiljaedenDragonOrbUseTimes;
 
 void AddKiljaedenArmageddon(
@@ -211,9 +213,6 @@ void PruneExpiredKiljaedenArmageddons(uint32 instanceId)
         [now](KiljaedenArmageddon const& armageddon) {
             return !armageddon.expireMs || armageddon.expireMs <= now;
         }), armageddons.end());
-
-    if (armageddons.empty())
-        kiljaedenEncounterStates.erase(stateItr);
 }
 
 bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position)
@@ -252,7 +251,6 @@ void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot)
         return;
 
     auto& assignments = kiljaedenEncounterStates[bot->GetInstanceId()].rangedAssignments;
-    const bool isRanged = botAI->IsRanged(bot);
 
     std::vector<ObjectGuid> invalidAssignments;
     for (auto const& assignment : assignments)
@@ -264,7 +262,8 @@ void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot)
             if (!member || member->GetGUID() != assignment.first)
                 continue;
 
-            found = member->GetMapId() == SUNWELL_MAP_ID && GET_PLAYERBOT_AI(member) && isRanged;
+            found = member->GetMapId() == SUNWELL_MAP_ID &&
+                GET_PLAYERBOT_AI(member) && botAI->IsRanged(member);
 
             break;
         }
@@ -303,7 +302,7 @@ void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SUNWELL_MAP_ID || !isRanged ||
+        if (!member || member->GetMapId() != SUNWELL_MAP_ID || !botAI->IsRanged(member) ||
             !GET_PLAYERBOT_AI(member))
         {
             continue;
@@ -349,7 +348,8 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
     PruneExpiredKiljaedenArmageddons(instanceId);
 
     auto const armageddonItr = kiljaedenEncounterStates.find(instanceId);
-    if (armageddonItr == kiljaedenEncounterStates.end() || armageddonItr->second.armageddons.empty())
+    if (armageddonItr == kiljaedenEncounterStates.end() ||
+        armageddonItr->second.armageddons.empty())
     {
         kiljaedenEncounterStates[instanceId].rangedArmageddonAssignments.clear();
         return;
@@ -540,8 +540,11 @@ bool ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId)
         return false;
 
     constexpr uint32 announcementResetDelayMs = 10000;
-    if (getMSTimeDiff(stateItr->second.dragonOrbAnnouncementMs, getMSTime()) < announcementResetDelayMs)
+    if (getMSTimeDiff(stateItr->second.dragonOrbAnnouncementMs, getMSTime()) <
+        announcementResetDelayMs)
+    {
         return false;
+    }
 
     stateItr->second.dragonOrbAnnouncementMs = 0;
     return true;
@@ -564,8 +567,11 @@ bool HasKiljaedenDragonAura(Player* bot)
 Unit* GetKiljaedenControlledDragon(Player* bot)
 {
     Unit* dragon = bot->GetCharm();
-    if (!dragon || !dragon->IsAlive() || dragon->GetCharmerGUID() != bot->GetGUID())
+    if (!dragon || !dragon->IsAlive() ||
+        dragon->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_POWER_OF_THE_BLUE_FLIGHT))
+    {
         return nullptr;
+    }
 
     return dragon;
 }
@@ -628,12 +634,21 @@ Player* FindBestKiljaedenDragonClusterTarget(
             continue;
 
         const float distanceToDragon = dragon->GetExactDist2d(candidate);
-        if (!bestTarget || clusterSize > bestClusterSize ||
-            (clusterSize == bestClusterSize && totalClusterSize > bestTotalClusterSize) ||
-            (clusterSize == bestClusterSize && totalClusterSize == bestTotalClusterSize &&
-             distanceToDragon < bestDistanceToDragon) ||
-            (clusterSize == bestClusterSize && totalClusterSize == bestTotalClusterSize &&
-             distanceToDragon == bestDistanceToDragon && candidate->GetGUID() < bestTarget->GetGUID()))
+
+        auto const isBetter = [&]() -> bool
+        {
+            if (!bestTarget)
+                return true;
+            if (clusterSize != bestClusterSize)
+                return clusterSize > bestClusterSize;
+            if (totalClusterSize != bestTotalClusterSize)
+                return totalClusterSize > bestTotalClusterSize;
+            if (distanceToDragon != bestDistanceToDragon)
+                return distanceToDragon < bestDistanceToDragon;
+            return candidate->GetGUID() < bestTarget->GetGUID();
+        };
+
+        if (isBetter())
         {
             bestTarget = candidate;
             bestClusterSize = clusterSize;

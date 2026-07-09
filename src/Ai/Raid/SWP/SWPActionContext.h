@@ -181,8 +181,11 @@ public:
         creators["kil'jaeden announce dragon orb user"] =
             &RaidSunwellActionContext::kiljaeden_announce_dragon_orb_user;
 
-        creators["kil'jaeden move away from felfire portal"] =
-            &RaidSunwellActionContext::kiljaeden_move_away_from_felfire_portal;
+        creators["kil'jaeden mark and prioritize hands of the deceiver"] =
+            &RaidSunwellActionContext::kiljaeden_mark_and_prioritize_hands_of_the_deceiver;
+
+        creators["kil'jaeden stun hands of the deceiver"] =
+            &RaidSunwellActionContext::kiljaeden_stun_hands_of_the_deceiver;
 
         creators["kil'jaeden position tanks"] =
             &RaidSunwellActionContext::kiljaeden_position_tanks;
@@ -384,8 +387,11 @@ private:
     static Action* kiljaeden_announce_dragon_orb_user(PlayerbotAI* botAI) {
         return new KiljaedenAnnounceDragonOrbUserAction(botAI);
     }
-    static Action* kiljaeden_move_away_from_felfire_portal(PlayerbotAI* botAI) {
-        return new KiljaedenMoveAwayFromFelfirePortalAction(botAI);
+    static Action* kiljaeden_mark_and_prioritize_hands_of_the_deceiver(PlayerbotAI* botAI) {
+        return new KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction(botAI);
+    }
+    static Action* kiljaeden_stun_hands_of_the_deceiver(PlayerbotAI* botAI) {
+        return new KiljaedenStunHandsOfTheDeceiverAction(botAI);
     }
     static Action* kiljaeden_position_tanks(PlayerbotAI* botAI) {
         return new KiljaedenPositionTanksAction(botAI);

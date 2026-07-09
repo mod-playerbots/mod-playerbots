@@ -108,9 +108,6 @@ bool EredarTwinsMainAndSecondAssistTanksPositionSacrolashAction::Execute(Event /
     if (!sacrolash)
         return false;
 
-    MarkTargetWithStar(bot, sacrolash);
-    SetRtiTarget(botAI, "star", sacrolash);
-
     if (AI_VALUE(Unit*, "current target") != sacrolash)
         return Attack(sacrolash);
 
@@ -146,9 +143,6 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
     uint8 index = _alythessTankStep;
     if (index >= ALYTHESS_TANK_POSITION_COUNT || bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
         index = 0;
-
-    MarkTargetWithCircle(bot, alythess);
-    SetRtiTarget(botAI, "circle", alythess);
 
     if (AI_VALUE(Unit*, "current target") != alythess)
         return Attack(alythess);
@@ -294,9 +288,6 @@ bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
             MovementPriority::MOVEMENT_FORCED, true, false);
     }
 
-    if (alythess && botAI->IsTank(bot) && AI_VALUE(Unit*, "current target") != alythess)
-        return Attack(alythess);
-
     return false;
 }
 
@@ -323,51 +314,38 @@ bool EredarTwinsRemoveFlameSearAction::Execute(Event /*event*/)
 
 bool EredarTwinsDpsPrioritizeLadySacrolashAction::Execute(Event /*event*/)
 {
-    Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     if (Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash"))
     {
-        if (ShouldHoldSacrolashThreat(botAI, bot, alythess, sacrolash))
+        constexpr float threatRatio = 0.8f;
+        if (ShouldHoldTwinThreat(botAI, bot, sacrolash, threatRatio, IsAnySacrolashTank))
         {
-            if (AI_VALUE(Unit*, "current target") == sacrolash)
-            {
-                bot->AttackStop();
-                bot->InterruptNonMeleeSpells(true);
-                bot->SetTarget(ObjectGuid::Empty);
-                bot->SetSelection(ObjectGuid());
-                return true;
-            }
-
-            return false;
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            bot->SetTarget(ObjectGuid::Empty);
+            bot->SetSelection(ObjectGuid());
+            return true;
         }
-        else
+        else if (AI_VALUE(Unit*, "current target") != sacrolash)
         {
-            SetRtiTarget(botAI, "star", sacrolash);
-
-            if (AI_VALUE(Unit*, "current target") != sacrolash)
-                return Attack(sacrolash);
+            return Attack(sacrolash);
         }
+
+        return false;
     }
-    else if (alythess)
+    else if (Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
     {
-        if (ShouldHoldAlythessThreat(botAI, bot, alythess))
+        constexpr float threatRatio = 0.9f;
+        if (ShouldHoldTwinThreat(botAI, bot, alythess, threatRatio, IsAlythessTank))
         {
-            if (AI_VALUE(Unit*, "current target") == alythess)
-            {
-                bot->AttackStop();
-                bot->InterruptNonMeleeSpells(true);
-                bot->SetTarget(ObjectGuid::Empty);
-                bot->SetSelection(ObjectGuid());
-                return true;
-            }
-
-            return false;
+            bot->AttackStop();
+            bot->InterruptNonMeleeSpells(true);
+            bot->SetTarget(ObjectGuid::Empty);
+            bot->SetSelection(ObjectGuid());
+            return true;
         }
-        else
+        else if (AI_VALUE(Unit*, "current target") != alythess)
         {
-            SetRtiTarget(botAI, "circle", alythess);
-
-            if (AI_VALUE(Unit*, "current target") != alythess)
-                return Attack(alythess);
+            return Attack(alythess);
         }
     }
 

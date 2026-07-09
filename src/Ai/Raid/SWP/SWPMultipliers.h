@@ -160,11 +160,11 @@ public:
 
 // Eredar Twins
 
-class EredarTwinsMeleeJumpDownFromBalconyMultiplier : public Multiplier
+class EredarTwinsDisableAutomaticTargetingMultiplier : public Multiplier
 {
 public:
-    EredarTwinsMeleeJumpDownFromBalconyMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "eredar twins melee jump down from balcony") {}
+    EredarTwinsDisableAutomaticTargetingMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "eredar twins disable automatic targeting") {}
     virtual float GetValue(Action* action);
 };
 
@@ -189,14 +189,6 @@ class EredarTwinsControlThreatMultiplier : public Multiplier
 public:
     EredarTwinsControlThreatMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "eredar twins control threat") {}
-    virtual float GetValue(Action* action);
-};
-
-class EredarTwinsDisableTankActionsMultiplier : public Multiplier
-{
-public:
-    EredarTwinsDisableTankActionsMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "eredar twins disable tank actions") {}
     virtual float GetValue(Action* action);
 };
 
@@ -260,19 +252,27 @@ public:
 
 // Kil'jaeden <The Deceiver>
 
-class KiljaedenControlMovementAndTargetingMultiplier : public Multiplier
-{
-public:
-    KiljaedenControlMovementAndTargetingMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "kil'jaeden control movement and targeting") {}
-    virtual float GetValue(Action* action);
-};
-
 class KiljaedenDelayCooldownsMultiplier : public Multiplier
 {
 public:
     KiljaedenDelayCooldownsMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "kil'jaeden delay cooldowns") {}
+    virtual float GetValue(Action* action);
+};
+
+class KiljaedenTanksFocusAssignedHandOnlyMultiplier : public Multiplier
+{
+public:
+    KiljaedenTanksFocusAssignedHandOnlyMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kil'jaeden tanks focus assigned hand only") {}
+    virtual float GetValue(Action* action);
+};
+
+class KiljaedenControlMovementAndTargetingMultiplier : public Multiplier
+{
+public:
+    KiljaedenControlMovementAndTargetingMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "kil'jaeden control movement and targeting") {}
     virtual float GetValue(Action* action);
 };
 

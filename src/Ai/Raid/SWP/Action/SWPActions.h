@@ -303,11 +303,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class EredarTwinsStackInRoomCenterAction : public AttackAction
+class EredarTwinsStackInRoomCenterAction : public MovementAction
 {
 public:
     EredarTwinsStackInRoomCenterAction(
-        PlayerbotAI* botAI) : AttackAction(botAI, "eredar twins stack in room center") {}
+        PlayerbotAI* botAI) : MovementAction(botAI, "eredar twins stack in room center") {}
     bool Execute(Event event) override;
 };
 
@@ -381,8 +381,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    Unit* ResolveMuruDpsTarget(
-        Unit* muru, Unit* entropius, Unit*& currentTarget);
+    Unit* ResolveMuruDpsTarget(Unit*& currentTarget);
     Unit* SelectMuruEncounterTarget(
         Unit* currentTarget, uint32 entry,
         std::vector<Unit*> const& candidates) const;
@@ -481,7 +480,7 @@ public:
 protected:
     Unit* GetControlledVoidSpawn() const;
     bool CommandControlledCreatureToAttack(Unit* controlled, Unit* target) const;
-    Unit* GetVoidSpawnVolleyPriorityTarget(Unit* muru, Unit* entropius) const;
+    Unit* GetVoidSpawnVolleyPriorityTarget() const;
 };
 
 class MuruEnslavedVoidSpawnCastShadowBoltVolleyAction : public MuruEnslavedVoidSpawnAttackAction
@@ -503,12 +502,28 @@ public:
     bool Execute(Event event) override;
 };
 
-class KiljaedenMoveAwayFromFelfirePortalAction : public MovementAction
+class KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction : public AttackAction
 {
 public:
-    KiljaedenMoveAwayFromFelfirePortalAction(
-        PlayerbotAI* botAI) : MovementAction(botAI, "kil'jaeden move away from felfire portal") {}
+    KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction(
+        PlayerbotAI* botAI) : AttackAction(botAI, "kil'jaeden mark and prioritize hands of the deceiver") {}
     bool Execute(Event event) override;
+
+private:
+    void AssignHandsToTanks(std::vector<Unit*> const& hands, size_t myIndex);
+    bool DpsAttackPriorityTargets();
+};
+
+class KiljaedenStunHandsOfTheDeceiverAction : public Action
+{
+public:
+    KiljaedenStunHandsOfTheDeceiverAction(
+        PlayerbotAI* botAI) : Action(botAI, "kil'jaeden stun hands of the deceiver") {}
+    bool Execute(Event event) override;
+
+private:
+    bool CastStunOnHand(Unit* hand);
+    bool CastSilenceOnHand(Unit* hand);
 };
 
 class KiljaedenPositionTanksAction : public AttackAction
@@ -583,12 +598,8 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool _inDarkness = false;
-    bool _shieldCastThisDarkness = false;
-    uint32 _darknessStartMs = 0;
-    uint32 _lastDarknessCastMsLeft = 0;
-    bool ExecuteDuringDarknessOfAThousandSouls(Unit* kiljaeden);
-    bool ExecuteOutsideDarknessOfAThousandSouls();
+    bool ExecuteDuringDarknessOfAThousandSouls(Unit* kiljaeden, Unit* dragon);
+    bool ExecuteOutsideDarknessOfAThousandSouls(Unit* dragon);
 };
 
 #endif

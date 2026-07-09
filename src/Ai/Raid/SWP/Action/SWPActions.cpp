@@ -89,10 +89,13 @@ bool SunwellPlateauEraseEncounterStatesAction::Execute(Event /*event*/)
         erased = true;
     }
 
-    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "hand of the deceiver") &&
-        ResetKiljaedenDragonOrbUserAnnouncement(instanceId))
+    if (isMechanicTracker && !AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
     {
-        erased = true;
+        if (ResetKiljaedenDragonOrbUserAnnouncement(instanceId))
+            erased = true;
+
+        if (kiljaedenHandTankAssignments.erase(instanceId) > 0)
+            erased = true;
     }
 
     return erased;

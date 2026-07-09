@@ -327,7 +327,8 @@ public:
             {
                 bool hasSunwellStrategy = false;
                 Map::PlayerList const& players = caster->GetMap()->GetPlayers();
-                for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+                for (Map::PlayerList::const_iterator it = players.begin();
+                     it != players.end(); ++it)
                 {
                     Player* player = it->GetSource();
                     if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
@@ -396,6 +397,66 @@ public:
     }
 };
 
+class KiljaedenSpellListenerScript : public AllSpellScript
+{
+public:
+    KiljaedenSpellListenerScript() : AllSpellScript("KiljaedenSpellListenerScript") {}
+
+    void OnSpellCast(
+        Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
+    {
+        if (spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS))
+        {
+            Map::PlayerList const& players = caster->GetMap()->GetPlayers();
+            for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+            {
+                Player* player = it->GetSource();
+                if (!player || !player->IsAlive() || HasKiljaedenDragonAura(player))
+                    continue;
+
+                PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+                if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
+                    continue;
+
+                if (PAI_VALUE2(Unit*, "find target", "kil'jaeden") != caster)
+                    continue;
+
+                botAI->RequestSpellInterrupt();
+            }
+
+            return;
+        }
+    }
+};
+
+class SunwellDelayedInterruptScript : public AllCreatureScript
+{
+public:
+    SunwellDelayedInterruptScript() : AllCreatureScript("SunwellDelayedInterruptScript") {}
+
+    void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
+    {
+        if (!creature)
+            return;
+
+        switch (creature->GetEntry())
+        {
+            case static_cast<uint32>(SunwellNpcs::NPC_FELMYST):
+                RequestInterruptForBotsNeedingFelmystFogMovement(creature, nullptr);
+                RequestInterruptForBotsWithDelayedFelmystEncapsulate(creature);
+                break;
+
+            case static_cast<uint32>(SunwellNpcs::NPC_GRAND_WARLOCK_ALYTHESS):
+                TrackIncomingEredarTwinsConflagration(creature);
+                RequestInterruptForBotsWithDelayedEredarTwinsConflagration(creature);
+                break;
+
+            default:
+                break;
+        }
+    }
+};
+
 class KiljaedenArmageddonTargetTrackerScript : public AllCreatureScript
 {
 public:
@@ -457,72 +518,12 @@ public:
     }
 };
 
-class SunwellDelayedInterruptScript : public AllCreatureScript
-{
-public:
-    SunwellDelayedInterruptScript() : AllCreatureScript("SunwellDelayedInterruptScript") {}
-
-    void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
-    {
-        if (!creature)
-            return;
-
-        switch (creature->GetEntry())
-        {
-            case static_cast<uint32>(SunwellNpcs::NPC_FELMYST):
-                RequestInterruptForBotsNeedingFelmystFogMovement(creature, nullptr);
-                RequestInterruptForBotsWithDelayedFelmystEncapsulate(creature);
-                break;
-
-            case static_cast<uint32>(SunwellNpcs::NPC_GRAND_WARLOCK_ALYTHESS):
-                TrackIncomingEredarTwinsConflagration(creature);
-                RequestInterruptForBotsWithDelayedEredarTwinsConflagration(creature);
-                break;
-
-            default:
-                break;
-        }
-    }
-};
-
-class KiljaedenSpellListenerScript : public AllSpellScript
-{
-public:
-    KiljaedenSpellListenerScript() : AllSpellScript("KiljaedenSpellListenerScript") {}
-
-    void OnSpellCast(
-        Spell* /*spell*/, Unit* caster, SpellInfo const* spellInfo, bool /*skipCheck*/) override
-    {
-        if (spellInfo->Id == static_cast<uint32>(SunwellSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS))
-        {
-            Map::PlayerList const& players = caster->GetMap()->GetPlayers();
-            for (Map::PlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
-            {
-                Player* player = it->GetSource();
-                if (!player || !player->IsAlive() || HasKiljaedenDragonAura(player))
-                    continue;
-
-                PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
-                if (!botAI || !botAI->HasStrategy("sunwell", BOT_STATE_COMBAT))
-                    continue;
-
-                if (PAI_VALUE2(Unit*, "find target", "kil'jaeden") != caster)
-                    continue;
-
-                botAI->RequestSpellInterrupt();
-            }
-
-            return;
-        }
-    }
-};
-
 void AddSC_SunwellPlateauBotScripts()
 {
     new KalecgosSpellListenerScript();
     new FelmystSpellListenerScript();
     new EredarTwinsSpellListenerScript();
+    new KiljaedenSpellListenerScript();
     new SunwellDelayedInterruptScript();
     new KiljaedenArmageddonTargetTrackerScript();
-    new KiljaedenSpellListenerScript();
 }
