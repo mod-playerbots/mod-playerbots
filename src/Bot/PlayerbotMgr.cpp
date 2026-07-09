@@ -1516,6 +1516,47 @@ void PlayerbotMgr::HandleCommand(uint32 type, std::string const text)
         return;
     }
 
+    if (PlayerbotAI::IsPublicChannelChat(type) || type == CHAT_MSG_GUILD)
+    {
+        switch (PlayerbotAI::GetPublicChannelDispatchMode(text))
+        {
+            case PublicChannelDispatchMode::Blocked:
+                return;
+            case PublicChannelDispatchMode::SingleNearest:
+                for (PlayerBotMap::const_iterator it = GetPlayerBotsBegin(); it != GetPlayerBotsEnd(); ++it)
+                {
+                    Player* const bot = it->second;
+                    if (!bot || !bot->IsInWorld())
+                        continue;
+
+                    if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
+                    {
+                        botAI->HandleCommand(type, text, master);
+                        return;
+                    }
+                }
+
+                for (PlayerBotMap::const_iterator it = sRandomPlayerbotMgr.GetPlayerBotsBegin();
+                     it != sRandomPlayerbotMgr.GetPlayerBotsEnd(); ++it)
+                {
+                    Player* const bot = it->second;
+                    if (!bot || !bot->IsInWorld())
+                        continue;
+
+                    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+                    if (botAI && botAI->GetMaster() == master)
+                    {
+                        botAI->HandleCommand(type, text, master);
+                        return;
+                    }
+                }
+
+                return;
+            case PublicChannelDispatchMode::Nearby:
+                break;
+        }
+    }
+
     for (PlayerBotMap::const_iterator it = GetPlayerBotsBegin(); it != GetPlayerBotsEnd(); ++it)
     {
         Player* const bot = it->second;

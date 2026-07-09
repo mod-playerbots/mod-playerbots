@@ -379,6 +379,15 @@ private:
     time_t time;
 };
 
+class Player;
+
+enum class PublicChannelDispatchMode : uint8
+{
+    Blocked,        // Do not fan out on General/Trade (use whisper/party/guild instead)
+    SingleNearest,  // One nearby bot responds (info queries)
+    Nearby          // All nearby bots may respond (invite/lfg/@role)
+};
+
 class PlayerbotAI : public PlayerbotAIBase
 {
 public:
@@ -529,6 +538,10 @@ public:
     bool HasSkill(SkillType skill);
     bool IsAllowedCommand(std::string const text);
     static bool LooksLikeChatCommand(std::string const& text);
+    static bool CommandTextEqualsOrStartsWith(std::string const& text, std::string const& cmd);
+    static std::string NormalizeChatCommandText(std::string const& text);
+    static bool IsPublicChannelChat(uint32 type);
+    static PublicChannelDispatchMode GetPublicChannelDispatchMode(std::string const& text);
     float GetRange(std::string const type);
 
     Player* GetBot() { return bot; }
