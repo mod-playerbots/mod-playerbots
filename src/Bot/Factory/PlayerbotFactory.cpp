@@ -611,7 +611,7 @@ void PlayerbotFactory::Randomize(bool incremental)
     LOG_DEBUG("playerbots", "Resetting player...");
     PerfMonitorOperation* pmo = sPerfMonitor.start(PERF_MON_RNDBOT, "PlayerbotFactory_Reset");
 
-    if (!sPlayerbotAIConfig.equipAndSpecPersistence ||
+    if (!incremental || !sPlayerbotAIConfig.equipAndSpecPersistence ||
         level < uint32(sPlayerbotAIConfig.equipAndSpecPersistenceLevel))
     {
         bot->resetTalents(true);
@@ -3352,6 +3352,30 @@ void PlayerbotFactory::InitSpecialSpells()
     if (bot->getClass() == CLASS_DEATH_KNIGHT)
     {
         bot->learnSpell(50977, false);
+    }
+    // Force-learn spells from allocated talents.
+    // Some DBC versions cause sSpellMgr->GetSpellInfo() to return null
+    // for talent spell IDs, making LearnTalent() skip learnSpell().
+    {
+        uint32 classMask = bot->getClassMask();
+        for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
+        {
+            TalentEntry const* talentInfo = sTalentStore.LookupEntry(i);
+            if (!talentInfo) continue;
+            TalentTabEntry const* tabInfo = sTalentTabStore.LookupEntry(talentInfo->TalentTab);
+            if (!tabInfo || !(classMask & tabInfo->ClassMask)) continue;
+
+            for (uint8 rank = 0; rank < MAX_TALENT_RANK; ++rank)
+            {
+                uint32 spellId = talentInfo->RankID[rank];
+                if (!spellId) continue;
+                if (bot->HasTalent(spellId, bot->GetActiveSpec()))
+                {
+                    if (!bot->HasSpell(spellId))
+                        bot->learnSpell(spellId, false);
+                }
+            }
+        }
     }
 }
 
