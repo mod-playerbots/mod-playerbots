@@ -246,7 +246,11 @@ public:
             if (bot->GetGuildId() != player->GetGuildId())
                 continue;
 
-            PlayerbotsMgr::instance().GetPlayerbotAI(bot)->HandleCommand(type, msg, player);
+            PlayerbotAI* botAI = PlayerbotsMgr::instance().GetPlayerbotAI(bot);
+            if (!botAI)
+                continue;
+
+            botAI->HandleCommand(type, msg, player);
         }
 
         return true;
@@ -254,12 +258,17 @@ public:
 
     bool OnPlayerCanUseChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Channel* channel) override
     {
+        if (!channel)
+            return true;
+
         PlayerbotMgr* const playerbotMgr = PlayerbotsMgr::instance().GetPlayerbotMgr(player);
 
         if (playerbotMgr != nullptr && channel->GetFlags() & 0x18)
             playerbotMgr->HandleCommand(type, msg);
 
-        sRandomPlayerbotMgr.HandleCommand(type, msg, player);
+        // Normal general/trade chat must not iterate every random bot; only explicit bot commands.
+        if (PlayerbotAI::LooksLikeChatCommand(msg))
+            sRandomPlayerbotMgr.HandleCommand(type, msg, player);
 
         return true;
     }

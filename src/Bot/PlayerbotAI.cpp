@@ -73,6 +73,28 @@ std::string& trim(std::string& s);
 
 std::set<std::string> PlayerbotAI::unsecuredCommands;
 
+namespace
+{
+    std::mutex s_channelSayMutex;
+}
+
+void PlayerbotAI::EnsureUnsecuredCommands()
+{
+    if (!unsecuredCommands.empty())
+        return;
+
+    unsecuredCommands.insert("who");
+    unsecuredCommands.insert("wts");
+    unsecuredCommands.insert("sendmail");
+    unsecuredCommands.insert("invite");
+    unsecuredCommands.insert("leave");
+    unsecuredCommands.insert("ready for invite");
+    unsecuredCommands.insert("drop group");
+    unsecuredCommands.insert("lfg");
+    unsecuredCommands.insert("pvp stats");
+    unsecuredCommands.insert("rpg status");
+}
+
 PlayerbotChatHandler::PlayerbotChatHandler(Player* pMasterPlayer) : ChatHandler(pMasterPlayer->GetSession()) {}
 
 uint32 PlayerbotChatHandler::extractQuestId(std::string const str)
@@ -574,6 +596,13 @@ void PlayerbotAI::HandleCommands()
             continue;
         }
 
+        owner = ObjectAccessor::FindPlayer(owner->GetGUID());
+        if (!owner)
+        {
+            it = chatCommands.erase(it);
+            continue;
+        }
+
         const std::string& command = it->GetCommand();
         if (command.empty())
         {
@@ -921,6 +950,7 @@ void PlayerbotAI::LeaveOrDisbandGroup()
 
 bool PlayerbotAI::IsAllowedCommand(std::string const text)
 {
+<<<<<<< HEAD
     if (unsecuredCommands.empty())
     {
         unsecuredCommands.insert("who");
@@ -932,6 +962,9 @@ bool PlayerbotAI::IsAllowedCommand(std::string const text)
         unsecuredCommands.insert("pvp stats");
         unsecuredCommands.insert("rpg status");
     }
+=======
+    EnsureUnsecuredCommands();
+>>>>>>> 44ee58cf (player crash fix talk?)
 
     for (std::set<std::string>::iterator i = unsecuredCommands.begin(); i != unsecuredCommands.end(); ++i)
     {
@@ -939,6 +972,28 @@ bool PlayerbotAI::IsAllowedCommand(std::string const text)
         {
             return true;
         }
+    }
+
+    return false;
+}
+
+bool PlayerbotAI::LooksLikeChatCommand(std::string const& text)
+{
+    if (text.empty())
+        return false;
+
+    if (!sPlayerbotAIConfig.commandPrefix.empty())
+        return text.find(sPlayerbotAIConfig.commandPrefix) == 0;
+
+    if (text[0] == '@')
+        return true;
+
+    EnsureUnsecuredCommands();
+
+    for (std::string const& cmd : unsecuredCommands)
+    {
+        if (text.find(cmd) == 0)
+            return true;
     }
 
     return false;
@@ -1237,8 +1292,12 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                     if (bot->InBattleground() && !(isMentioned || (msgtype != CHAT_MSG_CHANNEL && !isFromFreeBot)))
                         return;
 
-                    if (HasRealPlayerMaster() && guid1 != GetMaster()->GetGUID())
-                        return;
+                    if (HasRealPlayerMaster())
+                    {
+                        Player* const botMaster = GetMaster();
+                        if (!botMaster || !botMaster->IsInWorld() || guid1 != botMaster->GetGUID())
+                            return;
+                    }
 
                     auto itemIds = GetChatHelper()->ExtractAllItemIds(message);
                     if (message.starts_with(sPlayerbotAIConfig.toxicLinksPrefix) &&
@@ -2841,8 +2900,7 @@ bool PlayerbotAI::SayToChannel(const std::string& msg, const ChatChannelId& chan
 
     const auto current_str_zone = GetLocalizedAreaName(current_zone);
 
-    std::mutex socialMutex;
-    std::lock_guard<std::mutex> lock(socialMutex);  // Blocking for thread safety when accessing SocialMgr
+    std::lock_guard<std::mutex> lock(s_channelSayMutex);
 
     for (auto const& [key, channel] : cMgr->GetChannels())
     {
