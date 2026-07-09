@@ -23,7 +23,6 @@ bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event /*event*/)
         "hammer of justice",
         "kidney shot",
         "maim",
-        "revenge stun",
         "shadowfury",
         "shockwave"
     };
@@ -45,8 +44,11 @@ bool AttumenTheHuntsmanMarkTargetAction::Execute(Event /*event*/)
     Unit* attumenMounted = GetFirstAliveUnitByEntry(botAI, NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED);
     if (attumenMounted)
     {
-        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
-            MarkTargetWithStar(bot, attumenMounted);
+        if (IsMechanicTrackerBot(bot, KARAZHAN_MAP_ID) &&
+            MarkTargetWithStar(bot, attumenMounted))
+        {
+            return true;
+        }
 
         SetRtiTarget(botAI, "star", attumenMounted);
 
@@ -56,8 +58,11 @@ bool AttumenTheHuntsmanMarkTargetAction::Execute(Event /*event*/)
     }
     else if (Unit* midnight = AI_VALUE2(Unit*, "find target", "midnight"))
     {
-        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
-            MarkTargetWithStar(bot, midnight);
+        if (IsMechanicTrackerBot(bot, KARAZHAN_MAP_ID) &&
+            MarkTargetWithStar(bot, midnight))
+        {
+            return true;
+        }
 
         if (!botAI->IsAssistTankOfIndex(bot, 0))
         {
@@ -82,7 +87,9 @@ bool AttumenTheHuntsmanSplitBossesAction::Execute(Event /*event*/)
     if (!attumen)
         return false;
 
-    MarkTargetWithSquare(bot, attumen);
+    if (MarkTargetWithSquare(bot, attumen))
+        return true;
+
     SetRtiTarget(botAI, "square", attumen);
 
     if (AI_VALUE(Unit*, "current target") != attumen)
@@ -154,7 +161,9 @@ bool MoroesMainTankAttackBossAction::Execute(Event /*event*/)
     if (!moroes)
         return false;
 
-    MarkTargetWithCircle(bot, moroes);
+    if (MarkTargetWithCircle(bot, moroes))
+        return true;
+
     SetRtiTarget(botAI, "circle", moroes);
 
     if (AI_VALUE(Unit*, "current target") != moroes)
@@ -166,20 +175,20 @@ bool MoroesMainTankAttackBossAction::Execute(Event /*event*/)
 // Mark targets with skull in the recommended kill order
 bool MoroesMarkTargetAction::Execute(Event /*event*/)
 {
-    Unit* dorothea = AI_VALUE2(Unit*, "find target", "baroness dorothea millstipe");
-    Unit* catriona = AI_VALUE2(Unit*, "find target", "lady catriona von'indi");
-    Unit* keira = AI_VALUE2(Unit*, "find target", "lady keira berrybuck");
-    Unit* rafe = AI_VALUE2(Unit*, "find target", "baron rafe dreuger");
-    Unit* robin = AI_VALUE2(Unit*, "find target", "lord robin daris");
-    Unit* crispin = AI_VALUE2(Unit*, "find target", "lord crispin ference");
-    Unit* target = GetFirstAliveUnit({dorothea, catriona, keira, rafe, robin, crispin});
-
-    if (target)
+    static const std::array<const char*, 6> moroesGuests =
     {
-        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
-            MarkTargetWithSkull(bot, target);
+        "baroness dorothea millstipe",
+        "lady catriona von'indi",
+        "lady keira berrybuck",
+        "baron rafe dreuger",
+        "lord robin daris",
+        "lord crispin ference"
+    };
 
-        SetRtiTarget(botAI, "skull", target);
+    for (const char* name : moroesGuests)
+    {
+        if (Unit* guest = AI_VALUE2(Unit*, "find target", name))
+            return MarkTargetWithSkull(bot, guest);
     }
 
     return false;
@@ -358,7 +367,7 @@ bool RomuloAndJulianneMarkTargetAction::Execute(Event /*event*/)
         target = (romulo->GetHealthPct() >= julianne->GetHealthPct()) ? romulo : julianne;
 
     if (target)
-        MarkTargetWithSkull(bot, target);
+        return MarkTargetWithSkull(bot, target);
 
     return false;
 }
@@ -368,16 +377,21 @@ bool RomuloAndJulianneMarkTargetAction::Execute(Event /*event*/)
 // Mark targets with skull in the recommended kill order
 bool WizardOfOzMarkTargetAction::Execute(Event /*event*/)
 {
-    Unit* dorothee = AI_VALUE2(Unit*, "find target", "dorothee");
-    Unit* tito = AI_VALUE2(Unit*, "find target", "tito");
-    Unit* roar = AI_VALUE2(Unit*, "find target", "roar");
-    Unit* strawman = AI_VALUE2(Unit*, "find target", "strawman");
-    Unit* tinhead = AI_VALUE2(Unit*, "find target", "tinhead");
-    Unit* crone = AI_VALUE2(Unit*, "find target", "the crone");
-    Unit* target = GetFirstAliveUnit({dorothee, tito, roar, strawman, tinhead, crone});
+    static const std::array<const char*, 6> ozTargets =
+    {
+        "dorothee",
+        "tito",
+        "roar",
+        "strawman",
+        "tinhead",
+        "the crone"
+    };
 
-    if (target)
-        MarkTargetWithSkull(bot, target);
+    for (const char* name : ozTargets)
+    {
+        if (Unit* target = AI_VALUE2(Unit*, "find target", name))
+            return MarkTargetWithSkull(bot, target);
+    }
 
     return false;
 }
@@ -394,17 +408,10 @@ bool WizardOfOzScorchStrawmanAction::Execute(Event /*event*/)
 
 // The Curator
 
-// Prioritize destroying Astral Flares
 bool TheCuratorMarkAstralFlareAction::Execute(Event /*event*/)
 {
-    Unit* flare = AI_VALUE2(Unit*, "find target", "astral flare");
-    if (!flare)
-        return false;
-
-    if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
-        MarkTargetWithSkull(bot, flare);
-
-    SetRtiTarget(botAI, "skull", flare);
+    if (Unit* flare = AI_VALUE2(Unit*, "find target", "astral flare"))
+        return MarkTargetWithSkull(bot, flare);
 
     return false;
 }
@@ -417,7 +424,9 @@ bool TheCuratorPositionBossAction::Execute(Event /*event*/)
     if (!curator)
         return false;
 
-    MarkTargetWithCircle(bot, curator);
+    if (MarkTargetWithCircle(bot, curator))
+        return true;
+
     SetRtiTarget(botAI, "circle", curator);
 
     if (AI_VALUE(Unit*, "current target") != curator)
@@ -465,13 +474,18 @@ bool TheCuratorSpreadRangedAction::Execute(Event /*event*/)
 // Prioritize (1) Demon Chains, (2) Kil'rek, (3) Illhoof
 bool TerestianIllhoofMarkTargetAction::Execute(Event /*event*/)
 {
-    Unit* demonChains = GetFirstAliveUnitByEntry(botAI, NPC_DEMON_CHAINS);
-    Unit* kilrek = GetFirstAliveUnitByEntry(botAI, NPC_KILREK);
-    Unit* illhoof = AI_VALUE2(Unit*, "find target", "terestian illhoof");
+    static const std::array<const char*, 3> illhoofTargets =
+    {
+        "demon chains",
+        "kil'rek",
+        "terestian illhoof"
+    };
 
-    Unit* target = GetFirstAliveUnit({demonChains, kilrek, illhoof});
-    if (target)
-        MarkTargetWithSkull(bot, target);
+    for (const char* name : illhoofTargets)
+    {
+        if (Unit* target = AI_VALUE2(Unit*, "find target", name))
+            return MarkTargetWithSkull(bot, target);
+    }
 
     return false;
 }
@@ -515,10 +529,8 @@ bool ShadeOfAranStopMovingDuringFlameWreathAction::Execute(Event /*event*/)
 // Mark Conjured Elementals with skull so DPS can burn them down
 bool ShadeOfAranMarkConjuredElementalAction::Execute(Event /*event*/)
 {
-    Unit* elemental = GetFirstAliveUnitByEntry(botAI, NPC_CONJURED_ELEMENTAL);
-
-    if (elemental)
-        MarkTargetWithSkull(bot, elemental);
+    if (Unit* elemental = GetFirstAliveUnitByEntry(botAI, NPC_CONJURED_ELEMENTAL))
+        return MarkTargetWithSkull(bot, elemental);
 
     return false;
 }
@@ -1002,7 +1014,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
     if (netherspite->GetHealth() == netherspite->GetMaxHealth() &&
         !netherspite->HasAura(SPELL_GREEN_BEAM_HEAL))
     {
-        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
+        if (IsMechanicTrackerBot(bot, KARAZHAN_MAP_ID))
             netherspiteDpsWaitTimer.insert_or_assign(instanceId, now);
 
         if (botAI->IsTank(bot) && !bot->HasAura(SPELL_RED_BEAM_DEBUFF))
@@ -1013,7 +1025,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
     }
     else if (netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
     {
-        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
+        if (IsMechanicTrackerBot(bot, KARAZHAN_MAP_ID))
             netherspiteDpsWaitTimer.erase(instanceId);
 
         if (botAI->IsTank(bot))
@@ -1024,7 +1036,7 @@ bool NetherspiteManageTimersAndTrackersAction::Execute(Event /*event*/)
     }
     else if (!netherspite->HasAura(SPELL_NETHERSPITE_BANISHED))
     {
-        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
+        if (IsMechanicTrackerBot(bot, KARAZHAN_MAP_ID))
             netherspiteDpsWaitTimer.try_emplace(instanceId, now);
 
         if (botAI->IsTank(bot) && bot->HasAura(SPELL_RED_BEAM_DEBUFF))
@@ -1254,7 +1266,8 @@ bool NightbaneGroundPhasePositionBossAction::Execute(Event /*event*/)
     if (!nightbane)
         return false;
 
-    MarkTargetWithSkull(bot, nightbane);
+    if (MarkTargetWithSkull(bot, nightbane))
+        return true;
 
     if (AI_VALUE(Unit*, "current target") != nightbane)
         return Attack(nightbane);
@@ -1393,7 +1406,8 @@ bool NightbaneFlightPhaseMovementAction::Execute(Event /*event*/)
     if (!nightbane || nightbane->GetPositionZ() <= NIGHTBANE_FLIGHT_Z)
         return false;
 
-    MarkTargetWithMoon(bot, nightbane);
+    if (MarkTargetWithMoon(bot, nightbane))
+        return true;
 
     if (AI_VALUE(Unit*, "current target") == nightbane)
     {
@@ -1451,7 +1465,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
         if (botAI->IsRanged(bot))
             nightbaneRangedStep.erase(botGuid);
 
-        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
+        if (IsMechanicTrackerBot(bot, KARAZHAN_MAP_ID))
             nightbaneDpsWaitTimer.erase(instanceId);
     }
     // Erase flight phase timer and Rain of Bones tracker on ground phase and start DPS wait timer
@@ -1459,7 +1473,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
     {
         nightbaneRainOfBonesHit.erase(botGuid);
 
-        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
+        if (IsMechanicTrackerBot(bot, KARAZHAN_MAP_ID))
         {
             nightbaneFlightPhaseStartTimer.erase(instanceId);
             nightbaneDpsWaitTimer.try_emplace(instanceId, now);
@@ -1475,7 +1489,7 @@ bool NightbaneManageTimersAndTrackersAction::Execute(Event /*event*/)
         if (botAI->IsRanged(bot))
             nightbaneRangedStep.erase(botGuid);
 
-        if (IsMechanicTrackerBot(botAI, bot, KARAZHAN_MAP_ID, nullptr))
+        if (IsMechanicTrackerBot(bot, KARAZHAN_MAP_ID))
         {
             nightbaneDpsWaitTimer.erase(instanceId);
             nightbaneFlightPhaseStartTimer.try_emplace(instanceId, now);

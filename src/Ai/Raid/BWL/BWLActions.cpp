@@ -109,7 +109,9 @@ bool BwlRazorgoreMarkBossAction::Execute(Event /*event*/)
     {
         if (IsRazorgoreOffTank(bot))
         {
-            MarkTargetWithMoon(bot, boss);
+            if (MarkTargetWithMoon(bot, boss))
+                return true;
+
             SetRtiTarget(botAI, "moon", boss);
 
             if (AI_VALUE(Unit*, "current target") != boss)
