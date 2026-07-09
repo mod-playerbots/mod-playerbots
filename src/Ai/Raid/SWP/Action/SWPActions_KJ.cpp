@@ -239,7 +239,7 @@ bool KiljaedenStunHandsOfTheDeceiverAction::CastStunOnHand(Unit* hand)
     switch (bot->getClass())
     {
         case CLASS_DRUID:
-            return castSpell("bash");
+            return castSpell("bash") || castSpell("maim");
 
         case CLASS_PALADIN:
             return castSpell("hammer of justice");
