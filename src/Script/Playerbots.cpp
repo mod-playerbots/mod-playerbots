@@ -265,8 +265,8 @@ public:
 
         PlayerbotMgr* const playerbotMgr = PlayerbotsMgr::instance().GetPlayerbotMgr(player);
 
-        // Normal general/trade chat must not iterate every bot; only explicit bot commands.
-        if (!PlayerbotAI::LooksLikeChatCommand(msg))
+        // Normal general/trade chat must not iterate every bot; only whitelisted commands.
+        if (PlayerbotAI::GetPublicChannelDispatchMode(msg) == PublicChannelDispatchMode::Blocked)
             return true;
 
         if (playerbotMgr != nullptr && channel->GetFlags() & 0x18)

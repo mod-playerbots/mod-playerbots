@@ -1026,18 +1026,15 @@ PublicChannelDispatchMode PlayerbotAI::GetPublicChannelDispatchMode(std::string 
         }))
         return PublicChannelDispatchMode::Blocked;
 
-    // Recruiting commands — nearby bots only, not server-wide.
+    // Recruiting commands — one nearby responder on public channels to avoid mass-invite spam.
     if (MatchesAnyPublicChannelCommand(filtered, { "invite", "lfg" }))
-        return PublicChannelDispatchMode::Nearby;
+        return PublicChannelDispatchMode::SingleNearest;
 
     // Info / query commands — one nearby responder.
     if (MatchesAnyPublicChannelCommand(filtered, {
             "who", "wts", "help", "stats", "pvp stats", "rpg status", "sendmail", "position",
             "quests", "reputation", "attackers", "target", "range", "spells", "talents", "outfit"
         }))
-        return PublicChannelDispatchMode::SingleNearest;
-
-    if (LooksLikeChatCommand(text))
         return PublicChannelDispatchMode::SingleNearest;
 
     return PublicChannelDispatchMode::Blocked;
@@ -1061,17 +1058,22 @@ bool PlayerbotAI::LooksLikeChatCommand(std::string const& text)
     if (text.empty())
         return false;
 
-    if (!sPlayerbotAIConfig.commandPrefix.empty())
-        return text.find(sPlayerbotAIConfig.commandPrefix) == 0;
+    if (!sPlayerbotAIConfig.commandPrefix.empty() &&
+        trim(text).find(sPlayerbotAIConfig.commandPrefix) == 0)
+        return true;
 
-    if (text[0] == '@')
+    std::string const filtered = NormalizeChatCommandText(text);
+    if (filtered.empty())
+        return false;
+
+    if (filtered[0] == '@')
         return true;
 
     EnsureUnsecuredCommands();
 
     for (std::string const& cmd : unsecuredCommands)
     {
-        if (CommandTextEqualsOrStartsWith(text, cmd))
+        if (CommandTextEqualsOrStartsWith(filtered, cmd))
             return true;
     }
 
