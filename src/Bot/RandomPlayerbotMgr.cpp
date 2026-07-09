@@ -2743,7 +2743,7 @@ void RandomPlayerbotMgr::PrintStats()
             continue;
         }
 
-        if (botAI->AllowActivity())
+        if (botAI->IsActivityAllowedCached())
             ++active;
         /* TODO: Review statistics on rpg merge
         if (botAI->GetAiObjectContext()->GetValue<bool>("random bot update")->Get())
@@ -2792,10 +2792,10 @@ void RandomPlayerbotMgr::PrintStats()
         else
             ++engine_dead;
 
-        if (botAI->IsHeal(bot, true))
+        if (botAI->IsHeal(bot, false))
             ++heal;
 
-        else if (botAI->IsTank(bot, true))
+        else if (botAI->IsTank(bot, false))
             ++tank;
 
         else
