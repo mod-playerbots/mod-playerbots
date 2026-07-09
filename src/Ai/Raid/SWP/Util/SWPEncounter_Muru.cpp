@@ -11,6 +11,8 @@
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
+// M'uru goes invisible during the Entropius phase but remains on player threat lists
+
 namespace SunwellHelpers
 {
 
@@ -135,12 +137,8 @@ void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& target
     }
 }
 
-Creature* FindAvailableVoidSpawnForEnslave(
-    PlayerbotAI* botAI, Player* bot, Unit* muru, Unit* entropius)
+Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI, Player* bot)
 {
-    if (!muru && !entropius)
-        return nullptr;
-
     Creature* bestSpawn = nullptr;
     float closestDistance = std::numeric_limits<float>::max();
     auto const& units =

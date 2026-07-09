@@ -68,6 +68,7 @@ extern const Position KILJAEDEN_DARKNESS_POSITION;
 
 extern std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
 extern std::unordered_map<uint32, KiljaedenEncounterState> kiljaedenEncounterStates;
+extern std::unordered_map<uint32, std::array<ObjectGuid, 3>> kiljaedenHandTankAssignments;
 extern std::unordered_map<ObjectGuid::LowType, uint32> kiljaedenDragonOrbUseTimes;
 
 void AddKiljaedenArmageddon(

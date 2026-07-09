@@ -29,10 +29,10 @@ void AppendFelmystVaporPhaseMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusi
 
 void AppendEredarTwinsAlythessExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
-    Unit* sacrolash =
-        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "lady sacrolash")->Get();
-    Unit* alythess =
-        botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "grand warlock alythess")->Get();
+    Unit* sacrolash = botAI->GetAiObjectContext()->GetValue<Unit*>(
+        "find target", "lady sacrolash")->Get();
+    Unit* alythess = botAI->GetAiObjectContext()->GetValue<Unit*>(
+        "find target", "grand warlock alythess")->Get();
 
     if (sacrolash && alythess)
         exclusions.insert(alythess->GetGUID());
@@ -46,7 +46,8 @@ void AppendMuruDarkFiendExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
         return;
     }
 
-    for (ObjectGuid const guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
+    for (ObjectGuid const guid :
+         botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
     {
         Unit* attacker = botAI->GetUnit(guid);
         if (attacker && attacker->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_DARK_FIEND))
@@ -62,11 +63,15 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 
     constexpr float maxTankTargetDistanceFromStack = 25.0f;
 
-    for (ObjectGuid const guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
+    for (ObjectGuid const guid :
+         botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
     {
         Unit* attacker = botAI->GetUnit(guid);
-        if (!attacker || attacker->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL))
+        if (!attacker || attacker->GetEntry() ==
+                static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL))
+        {
             continue;
+        }
 
         if (guid == muru->GetGUID())
         {
@@ -78,7 +83,8 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
         if (botAI->IsAssistTankOfIndex(bot, 0, true) && TryGetMuruDarknessActiveState(bot, muru))
             continue;
 
-        if (attacker->GetExactDist2d(MURU_STACK_POSITION.GetPositionX(), MURU_STACK_POSITION.GetPositionY()) >
+        if (attacker->GetExactDist2d(
+                MURU_STACK_POSITION.GetPositionX(), MURU_STACK_POSITION.GetPositionY()) >
             maxTankTargetDistanceFromStack)
         {
             exclusions.insert(guid);
@@ -94,7 +100,8 @@ void AppendKiljaedenShieldOrbExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
         return;
     }
 
-    for (ObjectGuid const guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
+    for (ObjectGuid const guid :
+         botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
     {
         Unit* attacker = botAI->GetUnit(guid);
         if (attacker && attacker->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_SHIELD_ORB))
@@ -107,7 +114,8 @@ void AppendKiljaedenSinisterReflectionExclusions(PlayerbotAI* botAI, GuidSet& ex
     if (!botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kil'jaeden")->Get())
         return;
 
-    for (ObjectGuid const guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
+    for (ObjectGuid const guid :
+         botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
     {
         Unit* attacker = botAI->GetUnit(guid);
         if (!attacker ||
@@ -124,7 +132,8 @@ void AppendKiljaedenSinisterReflectionExclusions(PlayerbotAI* botAI, GuidSet& ex
 
 }
 
-void RaidSunwellStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type)
+void RaidSunwellStrategy::AppendTargetExclusions(
+    GuidSet& exclusions, TargetValueExclusionType type)
 {
     AppendFelmystVaporPhaseMeleeExclusions(botAI, exclusions);
     AppendMuruDarkFiendExclusions(botAI, exclusions);
@@ -317,8 +326,9 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("kil'jaeden encounter has begun", {
         NextAction("kil'jaeden announce dragon orb user", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("kil'jaeden hands summon felfire portals", {
-        NextAction("kil'jaeden move away from felfire portals", ACTION_EMERGENCY + 1) }));
+    triggers.push_back(new TriggerNode("kil'jaeden hands of the deceiver are active", {
+        NextAction("kil'jaeden stun hands of the deceiver", ACTION_EMERGENCY),
+        NextAction("kil'jaeden mark and prioritize hands of the deceiver", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kil'jaeden boss engaged by tanks", {
         NextAction("kil'jaeden position tanks", ACTION_RAID) }));
@@ -372,11 +382,10 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FelmystDelayCooldownsMultiplier(botAI));
 
     // Eredar Twins
-    multipliers.push_back(new EredarTwinsMeleeJumpDownFromBalconyMultiplier(botAI));
+    multipliers.push_back(new EredarTwinsDisableAutomaticTargetingMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMisdirectionMultiplier(botAI));
     multipliers.push_back(new EredarTwinsHoldDpsAtStartMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlThreatMultiplier(botAI));
-    multipliers.push_back(new EredarTwinsDisableTankActionsMultiplier(botAI));
     multipliers.push_back(new EredarTwinsControlMovementMultiplier(botAI));
     multipliers.push_back(new EredarTwinsNoMovingIntoConflagrationMultiplier(botAI));
     multipliers.push_back(new EredarTwinsDelayCooldownsMultiplier(botAI));
@@ -388,8 +397,9 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new MuruDelayCooldownsMultiplier(botAI));
 
     // Kil'jaeden <The Deceiver>
+    multipliers.push_back(new KiljaedenDelayCooldownsMultiplier(botAI));
+    multipliers.push_back(new KiljaedenTanksFocusAssignedHandOnlyMultiplier(botAI));
     multipliers.push_back(new KiljaedenControlMovementAndTargetingMultiplier(botAI));
     multipliers.push_back(new KiljaedenPrioritizeDarknessProtectionMultiplier(botAI));
-    multipliers.push_back(new KiljaedenDelayCooldownsMultiplier(botAI));
     multipliers.push_back(new KiljaedenControlDragonMultiplier(botAI));
 }

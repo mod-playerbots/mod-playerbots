@@ -25,6 +25,7 @@
 #include "PaladinActions.h"
 #include "PartyMemberToDispel.h"
 #include "PriestActions.h"
+#include "RaidBossHelpers.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
@@ -418,12 +419,14 @@ float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
     FelmystFogLane thirdPassLane = FelmystFogLane::None;
     const bool shouldRepositionAfterThirdPass =
         TryGetFelmystPostThirdPassWindow(felmyst, thirdPassLane);
+
     if (!TryGetFelmystFogOfCorruptionStageState(felmyst, fogState) &&
         !shouldRepositionAfterThirdPass)
     {
         return 1.0f;
     }
 
+    // Bots switch to non-combat engine and try to drink during the Fog phase
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
         dynamic_cast<DrinkAction*>(action))
     {
@@ -530,16 +533,16 @@ float FelmystDelayCooldownsMultiplier::GetValue(Action* action)
 
 // Eredar Twins
 
-float EredarTwinsMeleeJumpDownFromBalconyMultiplier::GetValue(Action* action)
+float EredarTwinsDisableAutomaticTargetingMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsMelee(bot) || bot->GetPositionZ() < EREDAR_TWINS_BALCONY_Z)
-        return 1.0f;
-
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return 1.0f;
 
-    if (dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<EredarTwinsMeleeJumpDownFromBalconyAction*>(action))
+    if (dynamic_cast<DpsAssistAction*>(action))
+        return 0.0f;
+
+    if (botAI->GetState() == BOT_STATE_COMBAT &&
+        dynamic_cast<TankAssistAction*>(action))
     {
         return 0.0f;
     }
@@ -563,11 +566,16 @@ float EredarTwinsControlMisdirectionMultiplier::GetValue(Action* action)
 
 float EredarTwinsHoldDpsAtStartMultiplier::GetValue(Action* action)
 {
-    if (!botAI->IsRanged(bot))
+    if (botAI->IsTank(bot))
         return 1.0f;
 
-    Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-    if (!sacrolash)
+    if (botAI->IsMelee(bot) &&
+        bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
+    {
+        return 1.0f;
+    }
+
+    if (!AI_VALUE2(Unit*, "find target", "lady sacrolash"))
         return 1.0f;
 
     const uint32 instanceId = bot->GetInstanceId();
@@ -592,10 +600,14 @@ float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
 {
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
+
+    constexpr float alythessThreatRatio = 0.9f;
+    constexpr float sacrolashThreatRatio = 0.8f;
+
     bool const shouldHoldSacrolashThreat = sacrolash &&
-        ShouldHoldSacrolashThreat(botAI, bot, alythess, sacrolash);
+        ShouldHoldTwinThreat(botAI, bot, sacrolash, sacrolashThreatRatio, IsAnySacrolashTank);
     bool const shouldHoldAlythessThreat = alythess &&
-        ShouldHoldAlythessThreat(botAI, bot, alythess);
+        ShouldHoldTwinThreat(botAI, bot, alythess, alythessThreatRatio, IsAlythessTank);
 
     if (!shouldHoldSacrolashThreat && !shouldHoldAlythessThreat)
         return 1.0f;
@@ -606,34 +618,13 @@ float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
     bool const suppressAlythessAttack = shouldHoldAlythessThreat &&
         (actionTarget == alythess || AI_VALUE(Unit*, "current target") == alythess);
 
-    if (dynamic_cast<AttackAction*>(action) &&
-        !dynamic_cast<EredarTwinsDpsPrioritizeLadySacrolashAction*>(action) &&
-        (suppressSacrolashAttack || suppressAlythessAttack))
-    {
-        return 0.0f;
-    }
-
-    if (dynamic_cast<CastSpellAction*>(action) &&
-        ((shouldHoldSacrolashThreat && actionTarget == sacrolash) ||
-         (shouldHoldAlythessThreat && actionTarget == alythess)))
-    {
-        return 0.0f;
-    }
-
-    return 1.0f;
-}
-
-float EredarTwinsDisableTankActionsMultiplier::GetValue(Action* action)
-{
-    if (!botAI->IsTank(bot))
+    if (!suppressSacrolashAttack && !suppressAlythessAttack)
         return 1.0f;
 
-    if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
-        return 1.0f;
-
-    if (dynamic_cast<AvoidAoeAction*>(action) ||
-        (botAI->GetState() == BOT_STATE_COMBAT &&
-         dynamic_cast<TankAssistAction*>(action)))
+    if ((dynamic_cast<AttackAction*>(action) &&
+         !dynamic_cast<EredarTwinsDpsPrioritizeLadySacrolashAction*>(action)) ||
+        (dynamic_cast<CastSpellAction*>(action) &&
+         !dynamic_cast<CastHealingSpellAction*>(action)))
     {
         return 0.0f;
     }
@@ -655,6 +646,9 @@ float EredarTwinsControlMovementMultiplier::GetValue(Action* action)
     {
         return 0.0f;
     }
+
+    if (botAI->IsTank(bot) && dynamic_cast<AvoidAoeAction*>(action))
+        return 0.0f;
 
     if (!botAI->IsRanged(bot) && !IsAlythessTank(botAI, bot))
         return 1.0f;
@@ -730,7 +724,7 @@ float EredarTwinsDelayCooldownsMultiplier::GetValue(Action* action)
 float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    if (!muru && !AI_VALUE2(Unit*, "find target", "entropius"))
+    if (!muru)
         return 1.0f;
 
     if (botAI->GetState() == BOT_STATE_COMBAT &&
@@ -748,7 +742,7 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
-    if (muru && AI_VALUE(Unit*, "current target") == muru)
+    if (AI_VALUE(Unit*, "current target") == muru)
         context->GetValue<bool>("neglect threat")->Set(true);
 
     if (botAI->IsAssistTankOfIndex(bot, 0, true) &&
@@ -778,7 +772,7 @@ float MuruControlMisdirectionMultiplier::GetValue(Action* action)
 float MuruControlMovementMultiplier::GetValue(Action* action)
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    if (!muru && !AI_VALUE2(Unit*, "find target", "entropius"))
+    if (!muru)
         return 1.0f;
 
     if (dynamic_cast<CastDisengageAction*>(action) ||
@@ -795,40 +789,54 @@ float MuruControlMovementMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
+    // Remainder is checking only for validity of reach target actions
+    if (!dynamic_cast<CastReachTargetSpellAction*>(action) &&
+        !dynamic_cast<ReachTargetAction*>(action))
+    {
+        return 1.0f;
+    }
+
     if (botAI->IsAssistTankOfIndex(bot, 0, true) &&
         AI_VALUE2(Unit*, "find target", "void sentinel"))
     {
         return 1.0f;
     }
 
-    if (botAI->IsTank(bot))
-    {
-        if (muru && TryGetMuruDarknessEarlyState(bot, muru) &&
-            (dynamic_cast<CastReachTargetSpellAction*>(action) ||
-             dynamic_cast<ReachTargetAction*>(action)))
-        {
-            return 0.0f;
-        }
-
+    if (!TryGetMuruDarknessActiveState(bot, muru))
         return 1.0f;
-    }
-    else if (muru && TryGetMuruDarknessActiveState(bot, muru) &&
-             (dynamic_cast<CastReachTargetSpellAction*>(action) ||
-              dynamic_cast<ReachTargetAction*>(action)))
-    {
-        return 0.0f;
-    }
 
-    return 1.0f;
+    auto const isReachTargetSafeFromDarkness = [&](Action* action) -> bool
+    {
+        Unit* actionTarget = action->GetTarget();
+        if (!actionTarget)
+            return false;
+
+        const float targetDistFromMuru = muru->GetExactDist2d(actionTarget);
+        const Position& refPosition = botAI->IsAssistTankOfIndex(bot, 1, true) ?
+            MURU_ENTRANCE_POSITION : MURU_STACK_POSITION;
+        const float targetDistFromRef = actionTarget->GetExactDist2d(
+            refPosition.GetPositionX(), refPosition.GetPositionY());
+        constexpr float targetDistThreshold = 20.0f;
+        return targetDistFromMuru > targetDistThreshold &&
+            targetDistFromRef < targetDistThreshold;
+    };
+
+    if (isReachTargetSafeFromDarkness(action))
+        return 1.0f;
+
+    if (botAI->IsTank(bot) && !TryGetMuruDarknessEarlyState(bot, muru))
+        return 1.0f;
+    else
+        return 0.0f;
 }
 
 float MuruDelayCooldownsMultiplier::GetValue(Action* action)
 {
     Unit* muru = AI_VALUE2(Unit*, "find target", "m'uru");
-    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
-    if (!muru && !entropius)
+    if (!muru)
         return 1.0f;
 
+    Unit* entropius = AI_VALUE2(Unit*, "find target", "entropius");
     if (entropius && entropius->GetHealthPct() < 95.0f)
         return 1.0f;
 
@@ -881,6 +889,53 @@ float KiljaedenDelayCooldownsMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float KiljaedenTanksFocusAssignedHandOnlyMultiplier::GetValue(Action* action)
+{
+    if (!AI_VALUE2(Unit*, "find target", "hand of the deceiver"))
+        return 1.0f;
+
+    if (dynamic_cast<CombatFormationMoveAction*>(action) &&
+        !dynamic_cast<SetBehindTargetAction*>(action))
+    {
+        return 0.0f;
+    }
+
+    if (botAI->IsHeal(bot))
+        return 1.0f;
+
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
+
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
+    Player* secondAssistTank = GetGroupAssistTank(botAI, bot, 1);
+    if (!mainTank || !firstAssistTank || !secondAssistTank)
+        return 1.0f;
+
+    if (botAI->IsDps(bot) && dynamic_cast<DpsAssistAction*>(action))
+        return 0.0f;
+
+    if (botAI->IsTank(bot) &&
+        (dynamic_cast<TankAssistAction*>(action) ||
+         dynamic_cast<CastTauntAction*>(action) ||
+         dynamic_cast<CastChallengingShoutAction*>(action) ||
+         dynamic_cast<CastShockwaveAction*>(action) ||
+         dynamic_cast<CastCleaveAction*>(action) ||
+         dynamic_cast<CastGrowlAction*>(action) ||
+         dynamic_cast<CastSwipeBearAction*>(action) ||
+         dynamic_cast<CastChallengingRoarAction*>(action) ||
+         dynamic_cast<CastHandOfReckoningAction*>(action) ||
+         dynamic_cast<CastRighteousDefenseAction*>(action) ||
+         dynamic_cast<CastDarkCommandAction*>(action) ||
+         dynamic_cast<CastDeathAndDecayAction*>(action) ||
+         dynamic_cast<CastBloodBoilAction*>(action)))
+    {
+        return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 float KiljaedenControlMovementAndTargetingMultiplier::GetValue(Action* action)
 {
     if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
@@ -903,6 +958,10 @@ float KiljaedenControlMovementAndTargetingMultiplier::GetValue(Action* action)
         return 0.0f;
     }
 
+    // Bots switch to non-combat engine and try to drink before KJ is attackable
+    if (dynamic_cast<DrinkAction*>(action))
+        return 0.0f;
+
     return 1.0f;
 }
 
@@ -912,7 +971,7 @@ float KiljaedenPrioritizeDarknessProtectionMultiplier::GetValue(Action* action)
     if (!kiljaeden)
         return 1.0f;
 
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    if (HasKiljaedenDragonAura(bot))
         return 1.0f;
 
     if (IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) &&
@@ -931,7 +990,7 @@ float KiljaedenControlDragonMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
         return 1.0f;
 
-    if (!bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT)))
+    if (!HasKiljaedenDragonAura(bot))
         return 1.0f;
 
     if (dynamic_cast<WipeAction*>(action))

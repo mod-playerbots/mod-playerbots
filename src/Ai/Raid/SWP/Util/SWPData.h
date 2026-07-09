@@ -83,37 +83,39 @@ enum class SunwellSpells : uint32
 enum class SunwellNpcs : uint32
 {
     // Trash
-    NPC_APOCALYPSE_GUARD        = 25593,
-    NPC_VOLATILE_FIEND          = 25851,
+    NPC_APOCALYPSE_GUARD         = 25593,
+    NPC_VOLATILE_FIEND           = 25851,
 
     // Kalecgos
-    NPC_KALECGOS_HUMANOID       = 24891,
+    NPC_KALECGOS_HUMANOID        = 24891,
 
     // Felmyst
-    NPC_FELMYST                 = 25038,
-    NPC_DEMONIC_VAPOR           = 25265,
-    NPC_DEMONIC_VAPOR_TRAIL     = 25267,
+    NPC_FELMYST                  = 25038,
+    NPC_DEMONIC_VAPOR            = 25265,
+    NPC_DEMONIC_VAPOR_TRAIL      = 25267,
 
     // Eredar Twins
-    NPC_GRAND_WARLOCK_ALYTHESS  = 25166,
+    NPC_GRAND_WARLOCK_ALYTHESS   = 25166,
 
     // M'uru
-    NPC_MURU                    = 25741,
-    NPC_VOID_SENTINEL           = 25772,
-    NPC_DARK_FIEND              = 25744,
-    NPC_DARKNESS                = 25879,
-    NPC_SHADOWSWORD_BERSERKER   = 25798,
-    NPC_SHADOWSWORD_FURY_MAGE   = 25799,
-    NPC_VOID_SPAWN              = 25824,
-    NPC_ENTROPIUS               = 25840,
-    NPC_SINGULARITY             = 25855,
+    NPC_MURU                     = 25741,
+    NPC_VOID_SENTINEL            = 25772,
+    NPC_DARK_FIEND               = 25744,
+    NPC_DARKNESS                 = 25879,
+    NPC_SHADOWSWORD_BERSERKER    = 25798,
+    NPC_SHADOWSWORD_FURY_MAGE    = 25799,
+    NPC_VOID_SPAWN               = 25824,
+    NPC_ENTROPIUS                = 25840,
+    NPC_SINGULARITY              = 25855,
 
     // Kil'jaeden <The Deceiver>
-    NPC_SHIELD_ORB              = 25502,
-    NPC_HAND_OF_THE_DECEIVER    = 25588,
-    NPC_FELFIRE_PORTAL          = 25603,
-    NPC_SINISTER_REFLECTION     = 25708,
-    NPC_ARMAGEDDON_TARGET       = 25735,
+    NPC_SHIELD_ORB               = 25502,
+    NPC_HAND_OF_THE_DECEIVER     = 25588,
+    NPC_VOLATILE_FELFIRE_FIEND   = 25598,
+    NPC_FELFIRE_PORTAL           = 25603,
+    NPC_POWER_OF_THE_BLUE_FLIGHT = 25653,
+    NPC_SINISTER_REFLECTION      = 25708,
+    NPC_ARMAGEDDON_TARGET        = 25735,
 };
 
 enum class SunwellObjects : uint32
