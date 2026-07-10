@@ -17,7 +17,7 @@ public:
         creators["dire bear form"] = &dire_bear_form;
         creators["maul"] = &maul;
         creators["bash"] = &bash;
-        creators["swipe"] = &swipe;
+        creators["swipe (bear)"] = &swipe_bear;
         creators["lacerate"] = &lacerate;
     }
 
@@ -62,10 +62,10 @@ private:
         );
     }
 
-    static ActionNode* swipe([[maybe_unused]] PlayerbotAI* botAI)
+    static ActionNode* swipe_bear([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
-            "swipe",
+            "swipe (bear)",
             /*P*/ {},
             /*A*/ { NextAction("melee") },
             /*C*/ {}
