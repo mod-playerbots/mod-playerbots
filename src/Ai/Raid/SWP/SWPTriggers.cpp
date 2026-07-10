@@ -282,9 +282,9 @@ bool FelmystBotNearEncapsulatedPlayerTrigger::IsActive()
     if (botAI->IsMainTank(bot))
         return false;
 
-    const FelmystGroundStack botStack =
+    FelmystGroundStack const botStack =
         GetClosestFelmystGroundStack(botAI, bot, felmyst, bot);
-    const FelmystGroundStack targetStack =
+    FelmystGroundStack const targetStack =
         GetClosestFelmystGroundStack(botAI, bot, felmyst, encapsulateTarget);
 
     return botStack != FelmystGroundStack::None && botStack == targetStack;
@@ -800,7 +800,7 @@ bool KiljaedenDragonOrbIsActiveTrigger::IsActive()
     bool orbInUse = false;
     bool result = false;
 
-    for (const uint32 orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
+    for (uint32 const orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
     {
         GameObject* orb = bot->FindNearestGameObject(orbEntry, 200.0f, true);
         if (!orb)

@@ -26,13 +26,13 @@ float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcW
     if (slotCount <= 1)
         return 0.0f;
 
-    const float angleStep = arcWidth / static_cast<float>(slotCount - 1);
+    float const angleStep = arcWidth / static_cast<float>(slotCount - 1);
     if (slotCount % 2 == 1)
     {
         if (slotIndex == 0)
             return 0.0f;
 
-        const uint8 stepIndex = (slotIndex + 1) / 2;
+        uint8 const stepIndex = (slotIndex + 1) / 2;
         float angleOffset = angleStep * stepIndex;
         if (slotIndex % 2 == 0)
             angleOffset = -angleOffset;
@@ -40,8 +40,8 @@ float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcW
         return angleOffset;
     }
 
-    const float halfStep = angleStep / 2.0f;
-    const uint8 pairIndex = slotIndex / 2;
+    float const halfStep = angleStep / 2.0f;
+    uint8 const pairIndex = slotIndex / 2;
     float angleOffset = halfStep + angleStep * pairIndex;
     if (slotIndex % 2 == 1)
         angleOffset = -angleOffset;
@@ -135,11 +135,11 @@ float GetKiljaedenNearestArmageddonDistance(
 
 } // end anonymous namespace
 
-const Position KILJAEDEN_TANK_POSITION =     { 1704.729f, 634.891f, 27.787f };
-const Position KILJAEDEN_S_MELEE_POSITION =  { 1689.487f, 632.119f, 27.823f };
-const Position KILJAEDEN_E_MELEE_POSITION =  { 1700.542f, 619.589f, 27.786f };
-const Position KILJAEDEN_DARKNESS_POSITION = { 1709.768f, 642.241f, 27.706f };
-const Position KILJAEDEN_CENTER_POSITION =   { 1698.450f, 628.030f, 28.199f };
+Position const KILJAEDEN_TANK_POSITION =     { 1704.729f, 634.891f, 27.787f };
+Position const KILJAEDEN_S_MELEE_POSITION =  { 1689.487f, 632.119f, 27.823f };
+Position const KILJAEDEN_E_MELEE_POSITION =  { 1700.542f, 619.589f, 27.786f };
+Position const KILJAEDEN_DARKNESS_POSITION = { 1709.768f, 642.241f, 27.706f };
+Position const KILJAEDEN_CENTER_POSITION =   { 1698.450f, 628.030f, 28.199f };
 
 uint32 const KILJAEDEN_DRAGON_ORB_ENTRIES[4] =
 {
@@ -163,7 +163,7 @@ void AddKiljaedenArmageddon(
     if (!durationMs || safeDistance <= 0.0f)
         return;
 
-    const uint32 now = getMSTime();
+    uint32 const now = getMSTime();
     PruneExpiredKiljaedenArmageddons(instanceId);
 
     KiljaedenArmageddon armageddon;
@@ -185,7 +185,7 @@ bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armagedd
 
     for (KiljaedenArmageddon const& candidate : stateItr->second.armageddons)
     {
-        const float distance = bot->GetExactDist2d(
+        float const distance = bot->GetExactDist2d(
             candidate.destination.GetPositionX(), candidate.destination.GetPositionY());
         if (distance >= candidate.safeDistance)
             continue;
@@ -207,7 +207,7 @@ void PruneExpiredKiljaedenArmageddons(uint32 instanceId)
     if (stateItr == kiljaedenEncounterStates.end())
         return;
 
-    const uint32 now = getMSTime();
+    uint32 const now = getMSTime();
     std::vector<KiljaedenArmageddon>& armageddons = stateItr->second.armageddons;
     armageddons.erase(std::remove_if(armageddons.begin(), armageddons.end(),
         [now](KiljaedenArmageddon const& armageddon) {
@@ -234,11 +234,11 @@ bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position)
         localSlotIndex -= KILJAEDEN_INNER_RANGED_SLOT_COUNT;
     }
 
-    const float angleOffset = GetCenteredArcSlotAngleOffset(localSlotIndex, slotCount, M_PI);
-    const float angle =
+    float const angleOffset = GetCenteredArcSlotAngleOffset(localSlotIndex, slotCount, M_PI);
+    float const angle =
         Position::NormalizeOrientation(KILJAEDEN_RANGED_ARC_ORIENTATION + angleOffset);
-    const float positionX = KILJAEDEN_CENTER_POSITION.GetPositionX() + std::cos(angle) * radius;
-    const float positionY = KILJAEDEN_CENTER_POSITION.GetPositionY() + std::sin(angle) * radius;
+    float const positionX = KILJAEDEN_CENTER_POSITION.GetPositionX() + std::cos(angle) * radius;
+    float const positionY = KILJAEDEN_CENTER_POSITION.GetPositionY() + std::sin(angle) * radius;
 
     position = Position{ positionX, positionY, KILJAEDEN_CENTER_POSITION.GetPositionZ() };
     return true;
@@ -272,7 +272,7 @@ void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot)
             invalidAssignments.push_back(assignment.first);
     }
 
-    for (const ObjectGuid& guid : invalidAssignments)
+    for (ObjectGuid const& guid : invalidAssignments)
         assignments.erase(guid);
 
     std::array<bool, KILJAEDEN_TOTAL_RANGED_SLOT_COUNT> usedSlots = {};
@@ -344,7 +344,7 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
         float armageddonDistance = 0.0f;
     };
 
-    const uint32 instanceId = bot->GetInstanceId();
+    uint32 const instanceId = bot->GetInstanceId();
     PruneExpiredKiljaedenArmageddons(instanceId);
 
     auto const armageddonItr = kiljaedenEncounterStates.find(instanceId);
@@ -633,7 +633,7 @@ Player* FindBestKiljaedenDragonClusterTarget(
         if (clusterSize < minClusterSize)
             continue;
 
-        const float distanceToDragon = dragon->GetExactDist2d(candidate);
+        float const distanceToDragon = dragon->GetExactDist2d(candidate);
 
         auto const isBetter = [&]() -> bool
         {
@@ -682,7 +682,7 @@ Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon, uint32 spell
             continue;
         }
 
-        const float distance = dragon->GetExactDist2d(member);
+        float const distance = dragon->GetExactDist2d(member);
         if (!closestTarget || distance < closestDistance)
         {
             closestTarget = member;

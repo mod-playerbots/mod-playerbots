@@ -21,9 +21,9 @@ using namespace SunwellHelpers;
 
 bool SunwellPlateauEraseEncounterStatesAction::Execute(Event /*event*/)
 {
-    const ObjectGuid guid = bot->GetGUID();
-    const uint32 instanceId = bot->GetInstanceId();
-    const bool isMechanicTracker = IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID);
+    ObjectGuid const guid = bot->GetGUID();
+    uint32 const instanceId = bot->GetInstanceId();
+    bool const isMechanicTracker = IsMechanicTrackerBot(botAI, bot, SUNWELL_MAP_ID);
 
     bool erased = false;
 
@@ -133,7 +133,7 @@ bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
     else
     {
         constexpr float safeDistance = 20.0f;
-        const float currentDistance = bot->GetDistance(volatileFiend);
+        float const currentDistance = bot->GetDistance(volatileFiend);
         if (currentDistance < safeDistance)
         {
             botAI->InterruptSpell();

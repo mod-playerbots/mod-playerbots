@@ -49,17 +49,17 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
 
     if (felmyst->GetVictim() == bot && bot->GetHealthPct() > 50.0f)
     {
-        Position const& position = GetFelmystMainTankGroundPosition(bot);
-        const float distToPosition = bot->GetExactDist2d(
+        Position const position = GetFelmystMainTankGroundPosition(bot);
+        float const distToPosition = bot->GetExactDist2d(
             position.GetPositionX(), position.GetPositionY());
 
         if (distToPosition > 2.0f)
         {
-            const float dX = position.GetPositionX() - bot->GetPositionX();
-            const float dY = position.GetPositionY() - bot->GetPositionY();
-            const float moveDist = std::min(2.25f, distToPosition);
-            const float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-            const float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+            float const dX = position.GetPositionX() - bot->GetPositionX();
+            float const dY = position.GetPositionY() - bot->GetPositionY();
+            float const moveDist = std::min(2.25f, distToPosition);
+            float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(
                 SUNWELL_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
@@ -131,8 +131,8 @@ bool FelmystRunAwayFromEncapsulatedPlayerAction::Execute(Event /*event*/)
     if (!felmyst)
         return false;
 
-    const FelmystGroundStack botStack = GetClosestFelmystGroundStack(botAI, bot, felmyst, bot);
-    const FelmystGroundStack targetStack = GetClosestFelmystGroundStack(
+    FelmystGroundStack const botStack = GetClosestFelmystGroundStack(botAI, bot, felmyst, bot);
+    FelmystGroundStack const targetStack = GetClosestFelmystGroundStack(
         botAI, bot, felmyst, encapsulateTarget);
 
     if (botStack == FelmystGroundStack::None || targetStack == FelmystGroundStack::None ||
@@ -210,7 +210,7 @@ bool FelmystAvoidDemonicVaporAction::Execute(Event /*event*/)
     if (hazard)
     {
         constexpr float safeDistFromVapor = 15.0f;
-        const float currentDistance = bot->GetDistance2d(hazard);
+        float const currentDistance = bot->GetDistance2d(hazard);
         if (currentDistance < safeDistFromVapor)
         {
             botAI->InterruptSpell();
@@ -227,14 +227,14 @@ bool FelmystKiteDemonicVaporAction::Execute(Event /*event*/)
     if (!TryGetFelmystDemonicVaporKiteDestination(bot, destination))
         return false;
 
-    const float distToDestination = bot->GetExactDist2d(
+    float const distToDestination = bot->GetExactDist2d(
         destination.GetPositionX(), destination.GetPositionY());
 
-    const float dX = destination.GetPositionX() - bot->GetPositionX();
-    const float dY = destination.GetPositionY() - bot->GetPositionY();
-    const float moveDist = std::min(3.5f, distToDestination);
-    const float moveX = bot->GetPositionX() + (dX / distToDestination) * moveDist;
-    const float moveY = bot->GetPositionY() + (dY / distToDestination) * moveDist;
+    float const dX = destination.GetPositionX() - bot->GetPositionX();
+    float const dY = destination.GetPositionY() - bot->GetPositionY();
+    float const moveDist = std::min(3.5f, distToDestination);
+    float const moveX = bot->GetPositionX() + (dX / distToDestination) * moveDist;
+    float const moveY = bot->GetPositionY() + (dY / distToDestination) * moveDist;
 
     return MoveTo(
         SUNWELL_MAP_ID, moveX, moveY, destination.GetPositionZ(), false, false,
@@ -251,10 +251,10 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
     }
 
     FelmystFogOfCorruptionState fogState;
-    const bool hasActiveFog =
+    bool const hasActiveFog =
         TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState);
     FelmystFogLane thirdPassLane = FelmystFogLane::None;
-    const bool shouldRepositionAfterThirdPass = !hasActiveFog &&
+    bool const shouldRepositionAfterThirdPass = !hasActiveFog &&
         TryGetFelmystPostThirdPassWindow(felmyst, thirdPassLane);
 
     if (!hasActiveFog && !shouldRepositionAfterThirdPass)
@@ -277,7 +277,7 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
     bool trackedDestinationFound = false;
     for (uint8 index = 0; index < destinationCount; ++index)
     {
-        Position const& destination = destinations[index];
+        Position const destination = destinations[index];
         if (lastMove.priority != MovementPriority::MOVEMENT_FORCED ||
             lastMove.lastMoveToMapId != SUNWELL_MAP_ID ||
             Position(
@@ -304,8 +304,8 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
         float bestDistance = std::numeric_limits<float>::max();
         for (uint8 index = 0; index < destinationCount; ++index)
         {
-            Position const& destination = destinations[index];
-            const float distanceToFelmyst = felmyst->GetExactDist2d(
+            Position const destination = destinations[index];
+            float const distanceToFelmyst = felmyst->GetExactDist2d(
                 destination.GetPositionX(), destination.GetPositionY());
 
             if (distanceToFelmyst < bestDistance)
@@ -315,7 +315,7 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
             }
         }
 
-        Position const& destination = destinations[bestIndex];
+        Position const destination = destinations[bestIndex];
         return MoveTo(
             SUNWELL_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
             destination.GetPositionZ(), false, false, false, false,
@@ -324,7 +324,7 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
 
     for (uint8 index = 0; index < destinationCount; ++index)
     {
-        Position const& destination = destinations[index];
+        Position const destination = destinations[index];
         if (MoveTo(
                 SUNWELL_MAP_ID, destination.GetPositionX(), destination.GetPositionY(),
                 destination.GetPositionZ(), false, false, false, false,
@@ -344,8 +344,8 @@ bool FelmystMoveToSafeFogLaneAction::TryTeleportStuckBotOntoCrate(
     constexpr float progressResetDistance = 1.0f;
     constexpr uint32 stuckTimeoutMs = 1500;
 
-    const Position FELMYST_STUCK_CRATE_POSITION = { 1484.443f, 591.337f, 23.391f };
-    const Position FELMYST_ON_CRATE_POSITION = { 1482.181f, 591.253f, 24.545f };
+    Position const FELMYST_STUCK_CRATE_POSITION = { 1484.443f, 591.337f, 23.391f };
+    Position const FELMYST_ON_CRATE_POSITION = { 1482.181f, 591.253f, 24.545f };
 
     if (bot->GetExactDist2d(
             FELMYST_STUCK_CRATE_POSITION.GetPositionX(),
@@ -356,8 +356,8 @@ bool FelmystMoveToSafeFogLaneAction::TryTeleportStuckBotOntoCrate(
         return false;
     }
 
-    const uint32 now = getMSTime();
-    const float distanceToDestination = bot->GetExactDist(
+    uint32 const now = getMSTime();
+    float const distanceToDestination = bot->GetExactDist(
         destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
 
     if (!_fogCrateStuckSampleMs || _fogCrateStuckDestination.GetExactDist(destination) >

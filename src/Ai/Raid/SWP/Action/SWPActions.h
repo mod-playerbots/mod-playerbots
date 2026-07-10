@@ -411,7 +411,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    const Position* GetAssignedVoidSentinelTankPosition(Unit* voidSentinel) const;
+    Position const* GetAssignedVoidSentinelTankPosition(Unit* voidSentinel) const;
 };
 
 class MuruSecondAssistTankGuardRangedAction : public MovementAction

@@ -37,7 +37,7 @@ enum class BrutallusRangedBurnState : uint8
     ReturningToNormalPosition
 };
 
-extern const Position BRUTALLUS_MAIN_TANK_POSITION;
+extern Position const BRUTALLUS_MAIN_TANK_POSITION;
 constexpr float BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET = -(2.0f * M_PI / 3.0f);
 constexpr float BRUTALLUS_TANK_POSITION_RADIUS = 15.0f;
 constexpr float BRUTALLUS_RANGED_TANK_OFFSET = 10.0f;
