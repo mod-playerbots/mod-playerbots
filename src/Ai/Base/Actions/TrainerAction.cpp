@@ -289,13 +289,7 @@ bool BisGearAction::RunAutogearFallback(uint16 effectiveIlvl)
 
     // Wipe all equipped slots so autogear gears from scratch at the requested ilvl
     // (avoids old high-tier items surviving the incremental 1.2x threshold).
-    for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
-    {
-        if (slot == EQUIPMENT_SLOT_TABARD || slot == EQUIPMENT_SLOT_BODY)
-            continue;
-        if (bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
-            bot->DestroyItem(INVENTORY_SLOT_BAG_0, slot, true);
-    }
+    PlayerbotFactory::DestroyEquippedGear(bot);
 
     PlayerbotFactory::AutoGear(bot, sPlayerbotAIConfig.autoGearQualityLimit, effectiveIlvl, /*incremental*/ false,
                                sPlayerbotAIConfig.twoRoundsGearInit);
@@ -416,13 +410,7 @@ bool BisGearAction::Execute(Event event)
 
     // 1. Wipe everything currently equipped so autogear starts from a clean slate.
     //    Old items linger in inventory otherwise and autogear leaves slots empty on bag conflicts.
-    for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
-    {
-        if (slot == EQUIPMENT_SLOT_TABARD || slot == EQUIPMENT_SLOT_BODY)
-            continue;
-        if (bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
-            bot->DestroyItem(INVENTORY_SLOT_BAG_0, slot, true);
-    }
+    PlayerbotFactory::DestroyEquippedGear(bot);
 
     // Wipe equippable items from bags too. Autogear can shove old equipped items into bags
     // (HandleAutoStoreBagItemOpcode), and a unique-equipped duplicate stuck in a bag blocks
@@ -561,7 +549,6 @@ bool AutoGearAction::Execute(Event event)
         return false;
     }
 
-
     uint32 const qualityCap = static_cast<uint32>(sPlayerbotAIConfig.autoGearQualityLimit);
     uint32 const ilvlCap = static_cast<uint32>(sPlayerbotAIConfig.autoGearScoreLimit);  // 0 == no limit
 
@@ -576,6 +563,17 @@ bool AutoGearAction::Execute(Event event)
         param.clear();
     else
         param = param.substr(first, param.find_last_not_of(" \t") - first + 1);
+
+    // 'reset' erases all equipped gear and regears from scratch instead of upgrading incrementally.
+    // It can be combined with a quality/ilvl argument: 'autogear reset green', 'autogear reset 200'.
+    bool reset = false;
+    if (param == "reset" || param.rfind("reset ", 0) == 0)
+    {
+        reset = true;
+        param = param.size() > 5 ? param.substr(6) : "";
+        size_t const start = param.find_first_not_of(" \t");
+        param = start == std::string::npos ? "" : param.substr(start);
+    }
 
     if (!param.empty())
     {
@@ -622,7 +620,7 @@ bool AutoGearAction::Execute(Event event)
             if (!valid)
             {
                 botAI->TellError("Unknown autogear option '" + param +
-                                 "'. Use match, green, blue, purple, or an item level number.");
+                                 "'. Use reset, match, green, blue, purple, or an item level number.");
                 return false;
             }
 
@@ -642,12 +640,23 @@ bool AutoGearAction::Execute(Event event)
     }
 
     std::ostringstream announce;
-    announce << "I'm auto gearing (" << ChatHelper::FormatItemQuality(quality);
+    announce << (reset ? "I'm erasing my gear and regearing from scratch ("
+                       : "I'm auto gearing (")
+             << ChatHelper::FormatItemQuality(quality);
     if (ilvl != 0)
         announce << ", up to item level " << ilvl;
     announce << ").";
     botAI->TellMaster(announce.str());
 
-    PlayerbotFactory::AutoGear(bot, quality, ilvl, /*incremental*/ true);
+    if (reset)
+    {
+        // Wipe everything equipped first so old high-tier items can't survive; then gear every
+        // slot from scratch instead of only upgrading past the incremental threshold.
+        PlayerbotFactory::DestroyEquippedGear(bot);
+        PlayerbotFactory::AutoGear(bot, quality, ilvl, /*incremental*/ false, sPlayerbotAIConfig.twoRoundsGearInit);
+    }
+    else
+        PlayerbotFactory::AutoGear(bot, quality, ilvl, /*incremental*/ true);
+
     return true;
 }

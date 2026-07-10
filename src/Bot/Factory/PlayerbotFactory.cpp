@@ -3682,6 +3682,17 @@ uint32 PlayerbotFactory::CalcMixedGearScore(uint32 gs, uint32 quality)
     return gs * PlayerbotAI::GetItemScoreMultiplier(ItemQualities(quality));
 }
 
+void PlayerbotFactory::DestroyEquippedGear(Player* bot)
+{
+    for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+    {
+        if (slot == EQUIPMENT_SLOT_TABARD || slot == EQUIPMENT_SLOT_BODY)
+            continue;
+        if (bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+            bot->DestroyItem(INVENTORY_SLOT_BAG_0, slot, true);
+    }
+}
+
 void PlayerbotFactory::AutoGear(Player* bot, uint32 itemQuality, uint32 ilvl, bool incremental, bool secondChance,
                                 bool applyFinishers)
 {

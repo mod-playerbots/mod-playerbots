@@ -540,6 +540,8 @@ AiPlayerbot.AltMaintenanceKeyring = 1
 #   autogear green      - cap quality to uncommon (also: white, blue/rare, purple/epic, orange/legendary)
 #   autogear match      - match the commanding player's average item level
 #   autogear 200        - target a specific item level (clamped to AutoGearScoreLimit when that is non-zero)
+#   autogear reset      - erase all equipped gear and regear from scratch (combinable: autogear reset green,
+#                         autogear reset 200, autogear reset match)
 # Default: 1 (enabled)
 AiPlayerbot.AutoGearCommand = 1
 
