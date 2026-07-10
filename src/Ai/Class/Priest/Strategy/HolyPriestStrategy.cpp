@@ -33,6 +33,7 @@ HolyPriestStrategy::HolyPriestStrategy(PlayerbotAI* botAI) : HealPriestStrategy(
 std::vector<NextAction> HolyPriestStrategy::getDefaultActions()
 {
     return {
+        NextAction("shadow word: pain", ACTION_DEFAULT + 0.5f),
         NextAction("smite", ACTION_DEFAULT + 0.2f),
         NextAction("mana burn", ACTION_DEFAULT + 0.1f),
         NextAction("starshards", ACTION_DEFAULT)

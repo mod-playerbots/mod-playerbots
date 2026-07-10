@@ -189,76 +189,44 @@ bool TotemicRecallTrigger::IsActive()
     if (!bot->HasSpell(SPELL_TOTEMIC_RECALL))
         return false;
 
-    Map* map = bot->GetMap();
-    if (map && map->IsDungeon())
-    {
-        InstanceScript* instance = ((InstanceMap*)map)->GetInstanceScript();
-        if (instance)
-        {
-            for (uint32 i = 0; i < instance->GetEncounterCount(); ++i)
-            {
-                if (instance->GetBossState(i) == IN_PROGRESS)
-                    return false;
-            }
-        }
-    }
-
-    Group* group = bot->GetGroup();
-    if (group)
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member)
-                continue;
-
-            if (member->IsInCombat())
-                return false;
-
-            Pet* pet = member->GetPet();
-            if (pet && pet->IsInCombat())
-                return false;
-        }
-    }
-
+    // Mana Tide Totem protection: if active and within 30 yards, don't recall.
     ObjectGuid guid = bot->m_SummonSlot[SUMMON_SLOT_TOTEM_WATER];
     if (!guid.IsEmpty())
     {
         Creature* totem = bot->GetMap()->GetCreature(guid);
-        uint32 currentSpell = 0;
-        if (totem)
-        {
-            currentSpell = totem->GetUInt32Value(UNIT_CREATED_BY_SPELL);
-        }
-
+        uint32 currentSpell = totem ? totem->GetUInt32Value(UNIT_CREATED_BY_SPELL) : 0;
         for (size_t i = 0; i < MANA_TIDE_TOTEM_COUNT; ++i)
-        {
             if (currentSpell == MANA_TIDE_TOTEM[i] && totem && totem->GetDistance(bot) <= 30.0f)
                 return false;
-        }
     }
 
+    // Fire Elemental Totem protection: if active and within 30 yards, don't recall.
     guid = bot->m_SummonSlot[SUMMON_SLOT_TOTEM_FIRE];
     if (!guid.IsEmpty())
     {
         Creature* totem = bot->GetMap()->GetCreature(guid);
-        uint32 currentSpell = 0;
-        if (totem)
-        {
-            currentSpell = totem->GetUInt32Value(UNIT_CREATED_BY_SPELL);
-        }
-
+        uint32 currentSpell = totem ? totem->GetUInt32Value(UNIT_CREATED_BY_SPELL) : 0;
         for (size_t i = 0; i < FIRE_ELEMENTAL_TOTEM_COUNT; ++i)
-        {
             if (currentSpell == FIRE_ELEMENTAL_TOTEM[i] && totem && totem->GetDistance(bot) <= 30.0f)
                 return false;
-        }
     }
 
-    return !bot->m_SummonSlot[SUMMON_SLOT_TOTEM_EARTH].IsEmpty() ||
-           !bot->m_SummonSlot[SUMMON_SLOT_TOTEM_FIRE].IsEmpty() ||
-           !bot->m_SummonSlot[SUMMON_SLOT_TOTEM_WATER].IsEmpty() ||
-           !bot->m_SummonSlot[SUMMON_SLOT_TOTEM_AIR].IsEmpty();
+    // Any totem more than 40 yards away → recall (lost buffs, might pull patrols).
+    uint8 const slots[] = { SUMMON_SLOT_TOTEM_EARTH, SUMMON_SLOT_TOTEM_FIRE,
+                            SUMMON_SLOT_TOTEM_WATER, SUMMON_SLOT_TOTEM_AIR };
+    for (uint8 slot : slots)
+    {
+        guid = bot->m_SummonSlot[slot];
+        if (guid.IsEmpty())
+            continue;
+
+        Creature* totem = bot->GetMap()->GetCreature(guid);
+        // Creature not in active grid → bot has moved far away → recall.
+        if (!totem || totem->GetDistance(bot) > 40.0f)
+            return true;
+    }
+
+    return false;
 }
 
 // Find the active totem strategy for this slot, and return the highest-rank spellId the bot knows for it

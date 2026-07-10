@@ -413,6 +413,9 @@ class CastTotemicRecallAction : public CastSpellAction
 public:
     CastTotemicRecallAction(PlayerbotAI* botAI) :
         CastSpellAction(botAI, "totemic recall") {}
+
+    // Self-only spell — no combat target required.
+    Unit* GetTarget() override { return bot; }
 };
 
 class CastStrengthOfEarthTotemAction : public CastTotemAction
