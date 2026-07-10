@@ -150,7 +150,7 @@ float KalecgosRestrictTauntMultiplier::GetValue(Action* action)
     if (!botAI->IsTank(bot))
         return 1.0f;
 
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)))
+    if (IsInSpectralRealm(bot))
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
@@ -199,7 +199,7 @@ float KalecgosSuppressAssistTankPullThreatMultiplier::GetValue(Action* action)
 
 float KalecgosDelayCooldownsForSathrovarrMultiplier::GetValue(Action* action)
 {
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)))
+    if (IsInSpectralRealm(bot))
         return 1.0f;
 
     Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
