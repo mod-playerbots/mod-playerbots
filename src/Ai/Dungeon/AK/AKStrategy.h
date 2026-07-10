@@ -2,7 +2,6 @@
 #define PLAYERBOTS_AKSTRATEGY_H
 
 #include "Multiplier.h"
-#include "AiObjectContext.h"
 #include "Strategy.h"
 
 class WotlkDungeonOKStrategy : public Strategy
