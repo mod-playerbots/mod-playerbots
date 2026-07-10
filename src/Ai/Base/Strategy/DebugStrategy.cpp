@@ -4,4 +4,3 @@
  */
 
 #include "DebugStrategy.h"
-
