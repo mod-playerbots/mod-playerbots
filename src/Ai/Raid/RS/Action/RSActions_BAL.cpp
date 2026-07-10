@@ -27,13 +27,8 @@ namespace
         if (Unit* boss = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "baltharus the warborn")->Get())
             casters.push_back(boss);
 
-        GuidVector const targets = botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
-        for (ObjectGuid const& guid : targets)
-        {
-            Unit* unit = botAI->GetUnit(guid);
-            if (unit && unit->IsAlive() && unit->GetEntry() == NPC_BALTHARUS_THE_WARBORN_CLONE)
-                casters.push_back(unit);
-        }
+        RsCollectTargets(botAI, casters,
+                         [](Unit* unit) { return unit->GetEntry() == NPC_BALTHARUS_THE_WARBORN_CLONE; });
 
         return casters;
     }
@@ -468,17 +463,7 @@ bool RsBaltharusTankPositionAction::Execute(Event )
     if (!(bot->HasAura(RS_SPELL_PAIN_SUPPRESION)))
         bot->AddAura(RS_SPELL_PAIN_SUPPRESION, bot);
 
-    Unit* boss = nullptr;
-    GuidVector const targets = AI_VALUE(GuidVector, "possible targets no los");
-    for (ObjectGuid const& guid : targets)
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->IsAlive() && unit->GetEntry() == NPC_BALTHARUS_THE_WARBORN)
-        {
-            boss = unit;
-            break;
-        }
-    }
+    Unit* boss = RsFindTarget(botAI, [](Unit* unit) { return unit->GetEntry() == NPC_BALTHARUS_THE_WARBORN; });
     if (!boss)
         return false;
 
@@ -528,12 +513,7 @@ bool RsBaltharusTankPositionAction::Execute(Event )
     };
 
     std::vector<Unit*> clones;
-    for (ObjectGuid const& guid : targets)
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->IsAlive() && unit->GetEntry() == NPC_BALTHARUS_THE_WARBORN_CLONE)
-            clones.push_back(unit);
-    }
+    RsCollectTargets(botAI, clones, [](Unit* unit) { return unit->GetEntry() == NPC_BALTHARUS_THE_WARBORN_CLONE; });
 
     if (isMainTank)
     {

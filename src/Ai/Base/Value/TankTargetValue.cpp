@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "TankTargetValue.h"
@@ -10,6 +11,7 @@
 #include "Group.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
+#include "Strategy.h"
 
 class FindTargetForTankStrategy : public FindNonCcTargetStrategy
 {
@@ -50,6 +52,8 @@ class FindTankTargetSmartStrategy : public FindTargetStrategy
 public:
     FindTankTargetSmartStrategy(PlayerbotAI* botAI) : FindTargetStrategy(botAI) {}
 
+    TargetValueExclusionType GetExclusionType() override { return TargetValueExclusionType::Tank; }
+
     void CheckAttacker(Unit* attacker, ThreatManager* /*threatMgr*/) override
     {
         if (Group* group = botAI->GetBot()->GetGroup())
@@ -58,6 +62,7 @@ public:
             if (guid && attacker->GetGUID() == guid)
                 return;
         }
+
         if (!attacker->IsAlive())
             return;
 

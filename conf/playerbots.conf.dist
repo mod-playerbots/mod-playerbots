@@ -272,6 +272,10 @@ AiPlayerbot.UseFastFlyMountAtMinLevel = 70
 #
 
 # Show helmet and cloak on randombots (reset required)
+# 0 - Helmet or cloak will be visually hidden on all randombots
+# 1 - Helmet or cloak will be visually visible on all randombots
+# 2 - Helmet or cloak visibility is random when a randombot is randomized
+# Default: 1 (helm/cloak visible on all randombots)
 AiPlayerbot.RandomBotShowHelmet = 1
 AiPlayerbot.RandomBotShowCloak = 1
 

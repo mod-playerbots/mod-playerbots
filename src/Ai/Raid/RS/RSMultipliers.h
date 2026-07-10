@@ -4,8 +4,8 @@
  * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_RSM_H
-#define _PLAYERBOT_RSM_H
+#ifndef PLAYERBOTS_RSM_H
+#define PLAYERBOTS_RSM_H
 
 #include "Multiplier.h"
 

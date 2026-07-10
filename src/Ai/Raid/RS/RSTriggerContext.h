@@ -4,8 +4,8 @@
  * or (at your option) any later version.
  */
 
-#ifndef _PLAYERBOT_RSTRIGGERCONTEXT_H
-#define _PLAYERBOT_RSTRIGGERCONTEXT_H
+#ifndef PLAYERBOTS_RSTRIGGERCONTEXT_H
+#define PLAYERBOTS_RSTRIGGERCONTEXT_H
 
 #include "NamedObjectContext.h"
 #include "RSTriggers.h"

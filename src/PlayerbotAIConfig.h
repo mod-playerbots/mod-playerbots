@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_PLAYERBOTAICONFIG_H
@@ -38,6 +39,13 @@ enum class HealingManaEfficiency : uint8
     HIGH = 8,
     VERY_HIGH = 16,
     SUPERIOR = 32
+};
+
+enum class ShowHideCosmetic : uint8
+{
+    ALWAYS_HIDE = 0,
+    ALWAYS_SHOW = 1,
+    RANDOMIZE = 2
 };
 
 enum class AutoPartyBuffMode : uint8
@@ -329,8 +337,8 @@ public:
     uint32 commandServerPort;
     bool perfMonEnabled;
     bool summonWhenGroup;
-    bool randomBotShowHelmet;
-    bool randomBotShowCloak;
+    ShowHideCosmetic randomBotShowHelmet;
+    ShowHideCosmetic randomBotShowCloak;
     bool randomBotFixedLevel;
     bool disableRandomLevels;
     float randomBotXPRate;
