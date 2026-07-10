@@ -70,7 +70,7 @@ bool KalecgosBossEngagedByTankTrigger::IsActive()
     if (!kalecgos || kalecgos->IsFriendlyTo(bot))
         return false;
 
-    if (bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_SPECTRAL_REALM)))
+    if (IsInSpectralRealm(bot))
         return false;
 
     return GetKalecgosCurrentTank(botAI, bot) == bot;
