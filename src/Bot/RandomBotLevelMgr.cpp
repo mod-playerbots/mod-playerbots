@@ -3,10 +3,9 @@
  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
  * or (at your option) any later version.
  *
- * Based on the mod-player-bot-level-brackets and mod-player-bot-reset modules by Dustin Hendrickson
- * (original author), integrated into mod-playerbots with his permission. Notable contributors to
- * the original modules: NoxMax (level reset), jimm0thy (friend-list exclusion), Jered Little
- * (arena-team exclusion).
+ * Ported with permission from Dustin HendricksonBased from mod-player-bot-level-brackets
+ * and mod-player-bot-reset modules with contributors NoxMax (level reset), jimm0thy (friend-list exclusion),
+ * Jered Little (arena-team exclusion).
  */
 
 #include "RandomBotLevelMgr.h"
