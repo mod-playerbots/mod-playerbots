@@ -60,13 +60,13 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
 
     if (mainTank == bot)
     {
-        const Position position = {
+        Position const position = {
             BRUTALLUS_MAIN_TANK_POSITION.GetPositionX(),
             BRUTALLUS_MAIN_TANK_POSITION.GetPositionY(),
             bot->GetPositionZ()
         };
 
-        const float distToPosition = bot->GetExactDist2d(
+        float const distToPosition = bot->GetExactDist2d(
             position.GetPositionX(), position.GetPositionY());
 
         if (_mainTankInitialPositionReached == false && distToPosition <= 2.0f)
@@ -75,11 +75,11 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
         }
         else if (_mainTankInitialPositionReached == false)
         {
-            const float dX = position.GetPositionX() - bot->GetPositionX();
-            const float dY = position.GetPositionY() - bot->GetPositionY();
-            const float moveDist = std::min(2.25f, distToPosition);
-            const float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-            const float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+            float const dX = position.GetPositionX() - bot->GetPositionX();
+            float const dY = position.GetPositionY() - bot->GetPositionY();
+            float const moveDist = std::min(2.25f, distToPosition);
+            float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(
                 SUNWELL_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
@@ -97,14 +97,14 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
         if (brutallus->GetVictim() == bot)
             return false;
 
-        const float mainTankAngle = Position::NormalizeOrientation(std::atan2(
+        float const mainTankAngle = Position::NormalizeOrientation(std::atan2(
             mainTank->GetPositionY() - brutallus->GetPositionY(),
             mainTank->GetPositionX() - brutallus->GetPositionX()));
 
-        const float assistTankAngle = Position::NormalizeOrientation(
+        float const assistTankAngle = Position::NormalizeOrientation(
             mainTankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET);
 
-        const Position position = GetBrutallusPositionAtAngle(
+        Position const position = GetBrutallusPositionAtAngle(
             bot, brutallus, assistTankAngle, BRUTALLUS_TANK_POSITION_RADIUS);
 
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
@@ -202,7 +202,7 @@ bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
             tank->GetPositionX() - brutallus->GetPositionX()));
     };
 
-    const float mainTankAngle =
+    float const mainTankAngle =
         getTankAngle(brutallus, mainTank, GetBrutallusMainTankAngle(brutallus));
 
     float midpointAngle;
@@ -213,13 +213,13 @@ bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
     }
     else
     {
-        const float assistTankAngle = getTankAngle(
+        float const assistTankAngle = getTankAngle(
             brutallus, assistTank, Position::NormalizeOrientation(
                 mainTankAngle + BRUTALLUS_ASSIST_TANK_ANGLE_OFFSET));
 
-        const float midpointX =
+        float const midpointX =
             (mainTank->GetPositionX() + assistTank->GetPositionX()) / 2.0f;
-        const float midpointY =
+        float const midpointY =
             (mainTank->GetPositionY() + assistTank->GetPositionY()) / 2.0f;
 
         if (brutallus->GetExactDist2d(midpointX, midpointY) < 0.1f)
@@ -240,11 +240,11 @@ bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
         }
     }
 
-    const float baseAngle = Position::NormalizeOrientation(midpointAngle + M_PI);
-    const float angleOffset = GetCenteredArcSlotAngleOffset(
+    float const baseAngle = Position::NormalizeOrientation(midpointAngle + M_PI);
+    float const angleOffset = GetCenteredArcSlotAngleOffset(
         localMeleeIndex, maxMeleeSlots, BRUTALLUS_SHARED_SAFE_MELEE_ARC_WIDTH);
 
-    const float angle = Position::NormalizeOrientation(baseAngle + angleOffset);
+    float const angle = Position::NormalizeOrientation(baseAngle + angleOffset);
     position = GetBrutallusPositionAtAngle(bot, brutallus, angle, meleeRadius);
     return true;
 }
@@ -258,7 +258,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
     Player* mainTank = GetGroupMainTank(botAI, bot);
     Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
 
-    const ObjectGuid guid = bot->GetGUID();
+    ObjectGuid const guid = bot->GetGUID();
     uint8 rangedIndex = 0;
     if (!TryGetBrutallusAssignedPositionIndex(botAI, bot, true, rangedIndex))
         return false;
@@ -284,10 +284,10 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
 
     if (burnState == BrutallusRangedBurnState::MovingToOuterLane)
     {
-        const float currentAngle = Position::NormalizeOrientation(std::atan2(
+        float const currentAngle = Position::NormalizeOrientation(std::atan2(
             bot->GetPositionY() - brutallus->GetPositionY(),
             bot->GetPositionX() - brutallus->GetPositionX()));
-        const Position position = GetBrutallusPositionAtAngle(
+        Position const position = GetBrutallusPositionAtAngle(
             bot, brutallus, currentAngle, BRUTALLUS_OUTER_LANE_RADIUS);
 
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
@@ -394,7 +394,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     if (botAI->IsMelee(bot) || !bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)))
         return false;
 
-    const ObjectGuid guid = bot->GetGUID();
+    ObjectGuid const guid = bot->GetGUID();
     Player* mainTank = GetGroupMainTank(botAI, bot);
     Player* assistTank = GetGroupAssistTank(botAI, bot, 0);
     uint8 rangedIndex = 0;

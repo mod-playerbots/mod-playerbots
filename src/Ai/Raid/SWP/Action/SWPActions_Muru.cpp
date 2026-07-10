@@ -67,7 +67,7 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
     {
         _entropiusInitialRangedPositionReached = false;
 
-        const Position& position = MURU_STACK_POSITION;
+        Position const position = MURU_STACK_POSITION;
         constexpr float rangedGroupRadius = 2.0f;
         return MoveInside(
             SUNWELL_MAP_ID, position.GetPositionX(), position.GetPositionY(),
@@ -80,7 +80,7 @@ bool MuruPositionRangedAction::Execute(Event /*event*/)
     targets.entropius = entropius;
     GatherMuruEncounterTargets(botAI, targets);
 
-    const bool hasActiveAdds =
+    bool const hasActiveAdds =
         !targets.voidSentinels.empty() ||
         !targets.furyMages.empty() || !targets.berserkers.empty();
 
@@ -151,12 +151,12 @@ bool MuruPositionRangedAction::TryGetEntropiusInitialRangedPosition(
         return false;
 
     constexpr float spreadRadius = 25.0f;
-    const float anchorAngle = std::atan2(
+    float const anchorAngle = std::atan2(
         MURU_STACK_POSITION.GetPositionY() - MURU_CENTER_POSITION.GetPositionY(),
         MURU_STACK_POSITION.GetPositionX() - MURU_CENTER_POSITION.GetPositionX());
-    const float angleStep =
+    float const angleStep =
         2.0f * static_cast<float>(M_PI) / static_cast<float>(rangedMembers.size());
-    const float angle = Position::NormalizeOrientation(anchorAngle + angleStep * slotIndex);
+    float const angle = Position::NormalizeOrientation(anchorAngle + angleStep * slotIndex);
 
     float destinationX = MURU_CENTER_POSITION.GetPositionX() + std::cos(angle) * spreadRadius;
     float destinationY = MURU_CENTER_POSITION.GetPositionY() + std::sin(angle) * spreadRadius;
@@ -212,9 +212,9 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
 
 Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
 {
-    const bool isShadowPriest =
+    bool const isShadowPriest =
         bot->getClass() == CLASS_PRIEST && botAI->HasStrategy("shadow", BOT_STATE_COMBAT);
-    const bool isOtherRanged = botAI->IsRanged(bot) && !isShadowPriest;
+    bool const isOtherRanged = botAI->IsRanged(bot) && !isShadowPriest;
 
     MuruEncounterTargets targets;
     GatherMuruEncounterTargets(botAI, targets);
@@ -224,8 +224,8 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
     if (!muru && !entropius)
         return nullptr;
 
-    const bool isMuruPhase = muru && muru->GetHealth() > 1;
-    const bool darknessActive = isMuruPhase && TryGetMuruDarknessActiveState(bot, muru);
+    bool const isMuruPhase = muru && muru->GetHealth() > 1;
+    bool const darknessActive = isMuruPhase && TryGetMuruDarknessActiveState(bot, muru);
 
     Unit* voidSentinel = SelectMuruEncounterTarget(currentTarget, static_cast<uint32>(
         SunwellNpcs::NPC_VOID_SENTINEL), targets.voidSentinels);
@@ -244,7 +244,7 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
             voidSentinelVictim = victim->ToPlayer();
     }
 
-    const bool voidSentinelHasTankAggro = voidSentinelVictim && botAI->IsTank(voidSentinelVictim);
+    bool const voidSentinelHasTankAggro = voidSentinelVictim && botAI->IsTank(voidSentinelVictim);
 
     auto const isAllowedPriorityTarget = [&](Unit* unit) -> bool
     {
@@ -345,8 +345,8 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
 
     if (stickyTarget)
     {
-        const size_t currentPriority = getPriorityIndex(stickyTarget);
-        const size_t desiredPriority = getPriorityIndex(target);
+        size_t const currentPriority = getPriorityIndex(stickyTarget);
+        size_t const desiredPriority = getPriorityIndex(target);
         if (currentPriority <= desiredPriority)
             target = stickyTarget;
     }
@@ -385,8 +385,8 @@ Unit* MuruSetDpsPriorityAction::SelectMuruEncounterTarget(
         if (selected == candidate)
             continue;
 
-        const float currentDistance = getDistanceFromStack(selected);
-        const float candidateDistance = getDistanceFromStack(candidate);
+        float const currentDistance = getDistanceFromStack(selected);
+        float const candidateDistance = getDistanceFromStack(candidate);
         if (candidateDistance + targetSwitchDistance < currentDistance)
             selected = candidate;
     }
@@ -401,7 +401,7 @@ bool MuruKillDarkFiendsWithDispelAction::Execute(Event /*event*/)
     if (!muru && !entropius)
         return false;
 
-    const bool isMuruPhase = muru && muru->GetHealth() > 1;
+    bool const isMuruPhase = muru && muru->GetHealth() > 1;
 
     Creature* darkFiendNearMuru = nullptr;
     constexpr float searchRadius = 50.0f;
@@ -472,18 +472,18 @@ bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
         return false;
 
     constexpr float safeDistance = 10.0f;
-    const float distFromHazard = bot->GetDistance2d(hazard);
+    float const distFromHazard = bot->GetDistance2d(hazard);
     if (distFromHazard < safeDistance && MoveAway(hazard, safeDistance - distFromHazard))
         return true;
 
-    const float randomAngle = static_cast<float>(urand(0, 7)) * ANGLE_45_DEG;
+    float const randomAngle = static_cast<float>(urand(0, 7)) * ANGLE_45_DEG;
     return Move(randomAngle, safeDistance - distFromHazard);
 }
 
 bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
 {
     Unit* voidSentinel = AI_VALUE2(Unit*, "find target", "void sentinel");
-    const Position& waitPosition = MURU_STACK_POSITION;
+    Position const waitPosition = MURU_STACK_POSITION;
     if (!voidSentinel &&
         bot->GetExactDist2d(waitPosition.GetPositionX(), waitPosition.GetPositionY()) > 3.0f)
     {
@@ -496,22 +496,22 @@ bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
     if (!voidSentinel)
         return false;
 
-    const Position* tankPosition = GetAssignedVoidSentinelTankPosition(voidSentinel);
+    Position const* tankPosition = GetAssignedVoidSentinelTankPosition(voidSentinel);
     if (!tankPosition)
         return false;
 
     if (voidSentinel->GetVictim() == bot)
     {
-        const float distToPosition = bot->GetExactDist2d(
+        float const distToPosition = bot->GetExactDist2d(
             tankPosition->GetPositionX(), tankPosition->GetPositionY());
 
         if (distToPosition > 2.0f)
         {
-            const float dX = tankPosition->GetPositionX() - bot->GetPositionX();
-            const float dY = tankPosition->GetPositionY() - bot->GetPositionY();
-            const float moveDist = std::min(2.25f, distToPosition);
-            const float moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-            const float moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+            float const dX = tankPosition->GetPositionX() - bot->GetPositionX();
+            float const dY = tankPosition->GetPositionY() - bot->GetPositionY();
+            float const moveDist = std::min(2.25f, distToPosition);
+            float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+            float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
 
             return MoveTo(
                 SUNWELL_MAP_ID, moveX, moveY, tankPosition->GetPositionZ(), false, false,
@@ -528,7 +528,7 @@ bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
     return false;
 }
 
-const Position* MuruTanksMoveSentinelToSafePositionAction::GetAssignedVoidSentinelTankPosition(
+Position const* MuruTanksMoveSentinelToSafePositionAction::GetAssignedVoidSentinelTankPosition(
     Unit* voidSentinel) const
 {
     if (!voidSentinel)
@@ -538,26 +538,26 @@ const Position* MuruTanksMoveSentinelToSafePositionAction::GetAssignedVoidSentin
     auto assignmentItr = assignments.find(voidSentinel->GetGUID());
     if (assignmentItr == assignments.end())
     {
-        const float northDistance = voidSentinel->GetExactDist2d(
+        float const northDistance = voidSentinel->GetExactDist2d(
             MURU_VOID_SENTINEL_N_TANK_POSITION.GetPositionX(),
             MURU_VOID_SENTINEL_N_TANK_POSITION.GetPositionY());
 
-        const float eastDistance = voidSentinel->GetExactDist2d(
+        float const eastDistance = voidSentinel->GetExactDist2d(
             MURU_VOID_SENTINEL_E_TANK_POSITION.GetPositionX(),
             MURU_VOID_SENTINEL_E_TANK_POSITION.GetPositionY());
 
-        const uint8 assignedIndex = northDistance <= eastDistance ? 0 : 1;
+        uint8 const assignedIndex = northDistance <= eastDistance ? 0 : 1;
         assignmentItr = assignments.emplace(voidSentinel->GetGUID(), assignedIndex).first;
     }
 
-    const Position& north = MURU_VOID_SENTINEL_N_TANK_POSITION;
-    const Position& east = MURU_VOID_SENTINEL_E_TANK_POSITION;
+    Position const north = MURU_VOID_SENTINEL_N_TANK_POSITION;
+    Position const east = MURU_VOID_SENTINEL_E_TANK_POSITION;
     return assignmentItr->second == 0 ? &north : &east;
 }
 
 bool MuruSecondAssistTankGuardRangedAction::Execute(Event /*event*/)
 {
-    const Position& position = MURU_ENTRANCE_POSITION;
+    Position const position = MURU_ENTRANCE_POSITION;
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
     {
         return MoveTo(
@@ -579,7 +579,7 @@ bool MuruFleeTheDarknessAction::Execute(Event /*event*/)
     Unit* currentTarget = AI_VALUE(Unit*, "current target");
     if (currentTarget && muru->GetExactDist2d(currentTarget) > targetDistThreshold)
     {
-        const Position& refPosition = botAI->IsAssistTankOfIndex(bot, 1, true) ?
+        Position const refPosition = botAI->IsAssistTankOfIndex(bot, 1, true) ?
             MURU_ENTRANCE_POSITION : MURU_STACK_POSITION;
         if (currentTarget->GetExactDist2d(
                 refPosition.GetPositionX(), refPosition.GetPositionY()) < targetDistThreshold)
@@ -590,7 +590,7 @@ bool MuruFleeTheDarknessAction::Execute(Event /*event*/)
 
     MuruEncounterTargets targets;
     GatherMuruEncounterTargets(botAI, targets);
-    const bool isTankingVoidSentinel = std::any_of(
+    bool const isTankingVoidSentinel = std::any_of(
         targets.voidSentinels.begin(), targets.voidSentinels.end(),
         [this](Unit* voidSentinel) {
             return voidSentinel && voidSentinel->GetVictim() == bot;
@@ -604,7 +604,7 @@ bool MuruFleeTheDarknessAction::Execute(Event /*event*/)
         if (!botAI->IsAssistTankOfIndex(bot, 0, true) &&
             TryGetMuruDarknessEarlyState(bot, muru))
         {
-            const Position& holdingPosition = botAI->IsAssistTankOfIndex(bot, 1, true) ?
+            Position const holdingPosition = botAI->IsAssistTankOfIndex(bot, 1, true) ?
                 MURU_ENTRANCE_POSITION : MURU_STACK_POSITION;
             constexpr float arrivalDistance = 1.0f;
 
@@ -640,8 +640,8 @@ bool MuruFleeFromSingularityAction::Execute(Event /*event*/)
     if (!singularity)
         return false;
 
-    const float safeDistance = entropius->GetVictim() == bot ? 15.0f : 10.0f;
-    const float currentDistance = bot->GetExactDist2d(singularity);
+    float const safeDistance = entropius->GetVictim() == bot ? 15.0f : 10.0f;
+    float const currentDistance = bot->GetExactDist2d(singularity);
     if (currentDistance >= safeDistance)
         return false;
 
@@ -801,7 +801,7 @@ bool MuruEnslavedVoidSpawnCastShadowBoltVolleyAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
-    const bool commandedAttack = CommandControlledCreatureToAttack(voidSpawn, target);
+    bool const commandedAttack = CommandControlledCreatureToAttack(voidSpawn, target);
 
     if (voidSpawn->GetExactDist2d(target) > sPlayerbotAIConfig.spellDistance)
         return commandedAttack;
@@ -837,8 +837,8 @@ Unit* MuruEnslavedVoidSpawnAttackAction::GetVoidSpawnVolleyPriorityTarget() cons
         if (current == candidate)
             return;
 
-        const float currentDistance = bot->GetExactDist2d(current);
-        const float candidateDistance = bot->GetExactDist2d(candidate);
+        float const currentDistance = bot->GetExactDist2d(current);
+        float const candidateDistance = bot->GetExactDist2d(candidate);
         if (candidateDistance + targetSwitchDistance < currentDistance)
             current = candidate;
     };

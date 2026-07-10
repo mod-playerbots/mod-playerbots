@@ -18,7 +18,7 @@ using namespace SunwellHelpers;
 
 bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
 {
-    const uint32 instanceId = bot->GetInstanceId();
+    uint32 const instanceId = bot->GetInstanceId();
     auto const stateItr = kiljaedenEncounterStates.find(instanceId);
 
     if (stateItr == kiljaedenEncounterStates.end() || !stateItr->second.dragonOrbAnnouncementMs)
@@ -287,7 +287,7 @@ bool KiljaedenStunHandsOfTheDeceiverAction::CastSilenceOnHand(Unit* hand)
 
 bool KiljaedenPositionTanksAction::Execute(Event /*event*/)
 {
-    const Position& position = KILJAEDEN_TANK_POSITION;
+    Position const position = KILJAEDEN_TANK_POSITION;
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
     {
         return MoveTo(
@@ -355,8 +355,11 @@ bool KiljaedenPositionMeleeAction::TryAdjustForArmageddon(Position& position)
 {
     PruneExpiredKiljaedenArmageddons(bot->GetInstanceId());
     auto armageddonItr = kiljaedenEncounterStates.find(bot->GetInstanceId());
-    if (armageddonItr == kiljaedenEncounterStates.end() || armageddonItr->second.armageddons.empty())
+    if (armageddonItr == kiljaedenEncounterStates.end() ||
+        armageddonItr->second.armageddons.empty())
+    {
         return true;
+    }
 
     Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
     if (!kiljaeden || IsKiljaedenCastingDarknessOfAThousandSouls(kiljaeden) ||
@@ -365,10 +368,10 @@ bool KiljaedenPositionMeleeAction::TryAdjustForArmageddon(Position& position)
         return true;
     }
 
-    Position const& assignedPosition = position;
+    Position const assignedPosition = position;
     bool const isSouthPosition =
         assignedPosition.GetExactDist2d(KILJAEDEN_S_MELEE_POSITION) < 1.0f;
-    Position const& swapPosition =
+    Position const swapPosition =
         isSouthPosition ? KILJAEDEN_E_MELEE_POSITION : KILJAEDEN_S_MELEE_POSITION;
 
     auto const isSafePosition = [&](Position const& pos)
@@ -446,7 +449,8 @@ bool KiljaedenPositionRangedAction::TryAdjustForArmageddon(Position& position)
     if (armageddonAssignmentItr == kiljaedenEncounterStates.end())
         return true;
 
-    auto const tempAssignmentItr = armageddonAssignmentItr->second.rangedArmageddonAssignments.find(bot->GetGUID());
+    auto const tempAssignmentItr =
+        armageddonAssignmentItr->second.rangedArmageddonAssignments.find(bot->GetGUID());
     if (tempAssignmentItr == armageddonAssignmentItr->second.rangedArmageddonAssignments.end())
         return true;
 
@@ -476,7 +480,7 @@ bool KiljaedenRemoveFireBloomAction::Execute(Event /*event*/)
 
 bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
 {
-    const Position& position = KILJAEDEN_DARKNESS_POSITION;
+    Position const position = KILJAEDEN_DARKNESS_POSITION;
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
     {
         return MoveTo(
@@ -498,13 +502,13 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
 
     constexpr float orbInUsePendingDistance = 15.0f;
 
-    for (const uint32 orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
+    for (uint32 const orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
     {
         GameObject* orb = bot->FindNearestGameObject(orbEntry, 200.0f, true);
         if (!orb)
             continue;
 
-        const float distance = bot->GetExactDist2d(orb);
+        float const distance = bot->GetExactDist2d(orb);
         if (orb->HasGameObjectFlag(GO_FLAG_IN_USE))
         {
             orbInUse = true;
@@ -614,8 +618,8 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(
 
     constexpr float desiredDistanceFromStack = 2.0f;
     constexpr float castReadyDistanceFromStack = 3.0f;
-    const Position& stackPosition = KILJAEDEN_DARKNESS_POSITION;
-    const float distanceToStack = dragon->GetExactDist2d(
+    Position const stackPosition = KILJAEDEN_DARKNESS_POSITION;
+    float const distanceToStack = dragon->GetExactDist2d(
         stackPosition.GetPositionX(), stackPosition.GetPositionY());
     if (distanceToStack > castReadyDistanceFromStack)
     {
@@ -625,11 +629,11 @@ bool KiljaedenControlDragonAction::ExecuteDuringDarknessOfAThousandSouls(
             return true;
         }
 
-        const float deltaX = stackPosition.GetPositionX() - dragon->GetPositionX();
-        const float deltaY = stackPosition.GetPositionY() - dragon->GetPositionY();
-        const float moveRatio = (distanceToStack - desiredDistanceFromStack) / distanceToStack;
-        const float moveX = dragon->GetPositionX() + deltaX * moveRatio;
-        const float moveY = dragon->GetPositionY() + deltaY * moveRatio;
+        float const deltaX = stackPosition.GetPositionX() - dragon->GetPositionX();
+        float const deltaY = stackPosition.GetPositionY() - dragon->GetPositionY();
+        float const moveRatio = (distanceToStack - desiredDistanceFromStack) / distanceToStack;
+        float const moveX = dragon->GetPositionX() + deltaX * moveRatio;
+        float const moveY = dragon->GetPositionY() + deltaY * moveRatio;
 
         dragon->GetMotionMaster()->MovePoint(0, moveX, moveY, stackPosition.GetPositionZ());
         return true;
@@ -710,16 +714,16 @@ bool KiljaedenControlDragonAction::ExecuteOutsideDarknessOfAThousandSouls(Unit* 
 
     constexpr float desiredDistance = 6.0f;
     constexpr float distanceTolerance = 1.0f;
-    const float distanceToTarget = dragon->GetExactDist2d(target);
+    float const distanceToTarget = dragon->GetExactDist2d(target);
     if (distanceToTarget > desiredDistance + distanceTolerance ||
         (distanceToTarget > std::numeric_limits<float>::min() &&
          distanceToTarget < desiredDistance - distanceTolerance))
     {
-        const float deltaX = target->GetPositionX() - dragon->GetPositionX();
-        const float deltaY = target->GetPositionY() - dragon->GetPositionY();
-        const float moveRatio = (distanceToTarget - desiredDistance) / distanceToTarget;
-        const float moveX = dragon->GetPositionX() + deltaX * moveRatio;
-        const float moveY = dragon->GetPositionY() + deltaY * moveRatio;
+        float const deltaX = target->GetPositionX() - dragon->GetPositionX();
+        float const deltaY = target->GetPositionY() - dragon->GetPositionY();
+        float const moveRatio = (distanceToTarget - desiredDistance) / distanceToTarget;
+        float const moveX = dragon->GetPositionX() + deltaX * moveRatio;
+        float const moveY = dragon->GetPositionY() + deltaY * moveRatio;
 
         dragon->GetMotionMaster()->MovePoint(0, moveX, moveY, target->GetPositionZ());
         return true;

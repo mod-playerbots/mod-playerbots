@@ -23,8 +23,8 @@ namespace SunwellHelpers
 namespace
 {
 
-const Position ALYTHESS_START_POSITION = { 1819.180f, 625.539f, 33.4038f };
-const std::array<Position, ALYTHESS_TANK_POSITION_COUNT> alythessTankPositions =
+Position const ALYTHESS_START_POSITION = { 1819.180f, 625.539f, 33.4038f };
+std::array<Position, ALYTHESS_TANK_POSITION_COUNT> const alythessTankPositions =
 {{
     { 1816.830f, 620.792f, 33.404f },
     { 1824.211f, 625.169f, 33.404f },
@@ -36,14 +36,14 @@ const std::array<Position, ALYTHESS_TANK_POSITION_COUNT> alythessTankPositions =
 std::unordered_map<ObjectGuid, ObjectGuid> alythessTankLastBlazeGuid;
 
 // Adjusted positions are to address the occasional bug (?) where Alythess moves
-Position GetAlythessAdjustedPosition(Unit* alythess, const Position& basePosition)
+Position GetAlythessAdjustedPosition(Unit* alythess, Position const& basePosition)
 {
     if (!alythess)
         return basePosition;
 
-    const float offsetX = alythess->GetPositionX() - ALYTHESS_START_POSITION.GetPositionX();
-    const float offsetY = alythess->GetPositionY() - ALYTHESS_START_POSITION.GetPositionY();
-    const float offsetZ = alythess->GetPositionZ() - ALYTHESS_START_POSITION.GetPositionZ();
+    float const offsetX = alythess->GetPositionX() - ALYTHESS_START_POSITION.GetPositionX();
+    float const offsetY = alythess->GetPositionY() - ALYTHESS_START_POSITION.GetPositionY();
+    float const offsetZ = alythess->GetPositionZ() - ALYTHESS_START_POSITION.GetPositionZ();
 
     return {
         basePosition.GetPositionX() + offsetX,
@@ -54,10 +54,10 @@ Position GetAlythessAdjustedPosition(Unit* alythess, const Position& basePositio
 
 } // end anonymous namespace
 
-const Position SACROLASH_TANK_POSITION  =             { 1804.255f, 630.193f, 33.404f };
-const Position EREDAR_TWINS_P1_RANGED_POSITION =      { 1808.076f, 603.460f, 51.684f };
-const Position EREDAR_TWINS_RANGED_CONFLAG_POSITION = { 1801.133f, 584.456f, 50.696f };
-const Position EREDAR_TWINS_MELEE_CONFLAG_POSITION =  { 1812.842f, 611.147f, 33.404f };
+Position const SACROLASH_TANK_POSITION  =             { 1804.255f, 630.193f, 33.404f };
+Position const EREDAR_TWINS_P1_RANGED_POSITION =      { 1808.076f, 603.460f, 51.684f };
+Position const EREDAR_TWINS_RANGED_CONFLAG_POSITION = { 1801.133f, 584.456f, 50.696f };
+Position const EREDAR_TWINS_MELEE_CONFLAG_POSITION =  { 1812.842f, 611.147f, 33.404f };
 
 std::unordered_map<uint32, EredarTwinsIncomingConflagrationState>
     eredarTwinsIncomingConflagrationStates;
@@ -74,13 +74,13 @@ Position GetAlythessTankPosition(Unit* alythess, uint8 index)
 
 Position GetEredarTwinsP2MeleeStackPosition(Unit* alythess)
 {
-    const Position basePosition = { 1814.327f, 625.645f, 33.404f };
+    Position const basePosition = { 1814.327f, 625.645f, 33.404f };
     return GetAlythessAdjustedPosition(alythess, basePosition);
 }
 
 Position GetEredarTwinsP2RangedStackPosition(Unit* alythess)
 {
-    const Position basePosition = { 1805.587f, 625.653f, 33.404f };
+    Position const basePosition = { 1805.587f, 625.653f, 33.404f };
     return GetAlythessAdjustedPosition(alythess, basePosition);
 }
 
@@ -139,7 +139,7 @@ bool ShouldHoldTwinThreat(
     return botThreat >= twinTankThreat * threatHoldRatio;
 }
 
-bool IsAlythessTankPositionSafe(Player* bot, const Position& position)
+bool IsAlythessTankPositionSafe(Player* bot, Position const& position)
 {
     constexpr float blazeDangerRadius = 4.5f;
     constexpr float blazeSearchRadius = 30.0f;
@@ -169,7 +169,7 @@ bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot)
     if (!alythess)
         return false;
 
-    const ObjectGuid botGuid = bot->GetGUID();
+    ObjectGuid const botGuid = bot->GetGUID();
     constexpr float blazeObjectRadius = 5.0f;
 
     GameObject* blazeObject = bot->FindNearestGameObject(
@@ -181,7 +181,7 @@ bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot)
         return false;
     }
 
-    const ObjectGuid blazeGuid = blazeObject->GetGUID();
+    ObjectGuid const blazeGuid = blazeObject->GetGUID();
     auto const lastBlaze = alythessTankLastBlazeGuid.find(botGuid);
     if (lastBlaze != alythessTankLastBlazeGuid.end() && lastBlaze->second == blazeGuid)
         return false;
@@ -195,7 +195,7 @@ void RecordEredarTwinsIncomingConflagrationTarget(Player* target, uint32 duratio
     if (!target || !durationMs)
         return;
 
-    const uint32 now = getMSTime();
+    uint32 const now = getMSTime();
     EredarTwinsIncomingConflagrationState& state =
         eredarTwinsIncomingConflagrationStates[target->GetInstanceId()];
 
@@ -214,7 +214,7 @@ Player* GetEredarTwinsConflagrationTarget(Player* bot)
         return nullptr;
 
     EredarTwinsIncomingConflagrationState const& state = incomingItr->second;
-    const uint32 now = getMSTime();
+    uint32 const now = getMSTime();
 
     if (state.expireMs <= now)
     {

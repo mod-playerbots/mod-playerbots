@@ -338,9 +338,9 @@ float FelmystWaitForLandingDpsMultiplier::GetValue(Action* action)
     if (!felmyst)
         return 1.0f;
 
-    const uint32 instanceId = bot->GetInstanceId();
+    uint32 const instanceId = bot->GetInstanceId();
     Position landingDestination;
-    const bool isGoingToLand =
+    bool const isGoingToLand =
         felmyst->IsFlying() && TryGetFelmystLandingDestination(felmyst, landingDestination);
 
     if (isGoingToLand)
@@ -359,7 +359,7 @@ float FelmystWaitForLandingDpsMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    const time_t now = std::time(nullptr);
+    time_t const now = std::time(nullptr);
     constexpr uint8 groundedDpsWaitSeconds = 3;
     auto& state = felmystEncounterStates[instanceId];
     if (!state.landingDpsWaitTimer)
@@ -417,7 +417,7 @@ float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
 
     FelmystFogOfCorruptionState fogState; // Fog phase active
     FelmystFogLane thirdPassLane = FelmystFogLane::None;
-    const bool shouldRepositionAfterThirdPass =
+    bool const shouldRepositionAfterThirdPass =
         TryGetFelmystPostThirdPassWindow(felmyst, thirdPassLane);
 
     if (!TryGetFelmystFogOfCorruptionStageState(felmyst, fogState) &&
@@ -578,8 +578,8 @@ float EredarTwinsHoldDpsAtStartMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "lady sacrolash"))
         return 1.0f;
 
-    const uint32 instanceId = bot->GetInstanceId();
-    const time_t now = std::time(nullptr);
+    uint32 const instanceId = bot->GetInstanceId();
+    time_t const now = std::time(nullptr);
     auto const it = eredarTwinsDpsHoldTimer.try_emplace(instanceId, now).first;
     constexpr uint8 dpsHoldSeconds = 8;
 
@@ -811,10 +811,10 @@ float MuruControlMovementMultiplier::GetValue(Action* action)
         if (!actionTarget)
             return false;
 
-        const float targetDistFromMuru = muru->GetExactDist2d(actionTarget);
-        const Position& refPosition = botAI->IsAssistTankOfIndex(bot, 1, true) ?
+        float const targetDistFromMuru = muru->GetExactDist2d(actionTarget);
+        Position const refPosition = botAI->IsAssistTankOfIndex(bot, 1, true) ?
             MURU_ENTRANCE_POSITION : MURU_STACK_POSITION;
-        const float targetDistFromRef = actionTarget->GetExactDist2d(
+        float const targetDistFromRef = actionTarget->GetExactDist2d(
             refPosition.GetPositionX(), refPosition.GetPositionY());
         constexpr float targetDistThreshold = 20.0f;
         return targetDistFromMuru > targetDistThreshold &&

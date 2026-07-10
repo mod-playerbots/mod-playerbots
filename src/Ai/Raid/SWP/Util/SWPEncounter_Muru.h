@@ -37,11 +37,11 @@ struct MuruDarknessState
     uint32 expireMs = 0;
 };
 
-extern const Position MURU_STACK_POSITION;
-extern const Position MURU_VOID_SENTINEL_N_TANK_POSITION;
-extern const Position MURU_VOID_SENTINEL_E_TANK_POSITION;
-extern const Position MURU_CENTER_POSITION;
-extern const Position MURU_ENTRANCE_POSITION;
+extern Position const MURU_STACK_POSITION;
+extern Position const MURU_VOID_SENTINEL_N_TANK_POSITION;
+extern Position const MURU_VOID_SENTINEL_E_TANK_POSITION;
+extern Position const MURU_CENTER_POSITION;
+extern Position const MURU_ENTRANCE_POSITION;
 
 extern std::unordered_map<uint32, MuruDarknessState> muruDarknessStates;
 extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>

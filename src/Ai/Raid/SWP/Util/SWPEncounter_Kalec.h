@@ -50,8 +50,8 @@ struct KalecgosEncounterState
     std::unordered_map<ObjectGuid, uint8> playerToGroup;
 };
 
-extern const Position KALECGOS_TANK_POSITION;
-extern const Position KALECGOS_INITIAL_RANGED_POSITION;
+extern Position const KALECGOS_TANK_POSITION;
+extern Position const KALECGOS_INITIAL_RANGED_POSITION;
 
 extern std::unordered_map<uint32, KalecgosEncounterState> kalecgosEncounterStates;
 extern std::unordered_map<ObjectGuid, KalecgosRealmState> kalecgosRealmStates;
