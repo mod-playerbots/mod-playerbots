@@ -292,7 +292,7 @@ bool MagtheridonWarlockCcBurningAbyssalAction::Execute(Event /*event*/)
         }
     }
 
-    if (warlockIndex >= 0 && warlockIndex < abyssals.size())
+    if (warlockIndex >= 0 && warlockIndex < static_cast<int>(abyssals.size()))
     {
         Unit* assignedAbyssal = abyssals[warlockIndex];
         if (!botAI->HasAura("banish", assignedAbyssal) &&
