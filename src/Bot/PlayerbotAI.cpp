@@ -1623,7 +1623,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
     static const std::vector<std::string> allInstanceStrategies =
     {
         "aq20", "blacktemple", "bwl", "gruulslair", "hyjal", "icc", "karazhan",
-        "magtheridon", "moltencore", "naxx", "onyxia", "rs", "ssc", "tbc-ac", "tempestkeep",
+        "magtheridon", "mechanar", "moltencore", "naxx", "onyxia", "rs", "ssc", "tbc-ac", "tempestkeep",
         "ulduar", "voa", "wotlk-an", "wotlk-cos", "wotlk-dtk", "wotlk-eoe", "wotlk-fos",
         "wotlk-gd", "wotlk-hol", "wotlk-hor", "wotlk-hos", "wotlk-nex", "wotlk-occ",
         "wotlk-ok", "wotlk-os", "wotlk-pos", "wotlk-toc", "wotlk-uk", "wotlk-up",
@@ -1668,6 +1668,9 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             break;
         case 550:
             strategyName = "tempestkeep";  // Tempest Keep: The Eye
+            break;
+        case 554:
+            strategyName = "mechanar";  // Tempest Keep: The Mechanar
             break;
         case 558:
             strategyName = "tbc-ac";  // Auchindoun: Auchenai Crypts

@@ -2,5 +2,6 @@
 #define PLAYERBOTS_TBCDUNGEONTRIGGERCONTEXT_H
 
 #include "ACTriggerContext.h"
+#include "MechanarTriggerContext.h"
 
 #endif

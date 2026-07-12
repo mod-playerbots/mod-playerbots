@@ -2,5 +2,6 @@
 #define PLAYERBOTS_TBCDUNGEONACTIONCONTEXT_H
 
 #include "ACActionContext.h"
+#include "MechanarActionContext.h"
 
 #endif
