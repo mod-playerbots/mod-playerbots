@@ -1,1775 +1,1737 @@
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET NAMES utf8 */;
-/*!50503 SET NAMES utf8mb4 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+-- Korean (koKR) localization for ai_playerbot_texts (locale index 1 -> text_loc1).
+-- Translations contributed by Hobbyist and summersnowmen (PR #2547).
 
-CREATE DATABASE IF NOT EXISTS `acore_playerbots` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `acore_playerbots`;
+UPDATE `ai_playerbot_texts` SET `text_loc1` = '';
 
-CREATE TABLE IF NOT EXISTS `ai_playerbot_texts` (
-  `id` smallint NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL COMMENT 'name - used in strategies/code as filter',
-  `text` varchar(1024) NOT NULL COMMENT 'text',
-  `say_type` tinyint NOT NULL DEFAULT '0' COMMENT '0 - say, 1 - yell',
-  `reply_type` tinyint NOT NULL DEFAULT '0' COMMENT 'if > 0 then can be filtered as a response to chat',
-  `text_loc1` varchar(1024) NOT NULL DEFAULT '',
-  `text_loc2` varchar(1024) NOT NULL DEFAULT '',
-  `text_loc3` varchar(1024) NOT NULL DEFAULT '',
-  `text_loc4` varchar(1024) NOT NULL DEFAULT '',
-  `text_loc5` varchar(1024) NOT NULL DEFAULT '',
-  `text_loc6` varchar(1024) NOT NULL DEFAULT '',
-  `text_loc7` varchar(1024) NOT NULL DEFAULT '',
-  `text_loc8` varchar(1024) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1740 DEFAULT CHARSET=utf8mb3 ROW_FORMAT=DYNAMIC;
-
-INSERT INTO `ai_playerbot_texts` (`id`, `name`, `text`, `say_type`, `reply_type`, `text_loc1`, `text_loc2`, `text_loc3`, `text_loc4`, `text_loc5`, `text_loc6`, `text_loc7`, `text_loc8`) VALUES
-	(1, 'string_unknown_area', '아무도 없는 오지', 0, 0, '', 'au milieu de nulle part', 'am Arsch der Welt', '아무도 없는 오지', '', '', '', 'посреди нигде'),
-	(2, 'string_unknown_area', '알려지지 않은 장소', 0, 0, '', 'un lieu non divulgué', 'an einem geheimen Ort', '알려지지 않은 장소', '', '', '', 'в неопределенном месте'),
-	(3, 'string_unknown_area', '어딘가', 0, 0, '', 'Quelque part.', 'irgendwo', '어딘가', '', '', '', 'где-то'),
-	(4, 'string_empty_link', '어떤 것', 0, 0, '', 'quelque chose', 'irgendwas', '어떤 것', '', '', '', 'что-то'),
-	(5, 'broadcast_looting_item_normal', '이 %item_link은 무슨 맛일까 궁금하네', 0, 0, '', 'Je me demande à quoi %item_link peut bien goûter.', 'frag mich, wie %item_link wohl schmeckt', '이 %item_link은 무슨 맛일까 궁금하네', '', '', '', 'интересно, какой на вкус %item_link'),
-	(6, 'broadcast_looting_item_poor', '아 망함; %item_link 이딴 걸 줍다니', 0, 0, '', 'Oh non, j’ai reçu %item_link', 'neeein, ich hab %item_link bekommen', '아 망함; %item_link 이딴 걸 줍다니', '', '', '', 'нет, мне выпал %item_link'),
-	(7, 'broadcast_looting_item_poor', '아 진짜... 또 똥템임.. %item_link ', 0, 0, '', 'Encore cette poubelle %item_link.', 'ah nee, nicht schon wieder dieser Müll: %item_link', '아 진짜... 또 이딴 쓰레기 %item_link 냐?', '', '', '', 'опять этот хлам %item_link'),
-	(8, 'broadcast_looting_item_poor', '아무래도 쓰레기 아이템 %item_link 만 줍는 병에 걸린 듯', 0, 0, '', 'Il semble que je fouille dans les ordures %item_link.', 'scheint so, als würde ich nur Müll looten: %item_link', '아무래도 쓰레기 %item_link 만 줍는 병에 걸린 듯', '', '', '', 'похоже, я лутаю мусор %item_link'),
-	(9, 'broadcast_looting_item_poor', '뭐, %item_link이라도 있는 게 없는 것보단 낫겠지', 0, 0, '', 'Eh bien, c’est toujours mieux que rien, je suppose %item_link', 'naja, besser als nix, schätze ich: %item_link', '뭐, %item_link이라도 있는 게 없는 것보단 낫겠지', '', '', '', ''),
-	(10, 'broadcast_looting_item_poor', '이 %item_link 어디다 쓰는지 아는 분?', 0, 0, '', 'Je ne suis pas certain de ce qu’il faut faire avec %item_link.', 'keine Ahnung, was ich mit %item_link anfangen soll', '이 %item_link 어디다 쓰는지 아는 분?', '', '', '', 'не знаю, что делать с %item_link'),
-	(11, 'broadcast_looting_item_normal', '이 정도면 하루 종일 %item_link 루팅도 가능하셈', 0, 0, '', 'Eh bien, je peux passer la journée à looter %item_link!', 'naja, ich kann den ganzen Tag %item_link looten', '이 정도면 하루 종일 %item_link 루팅도 가능함', '', '', '', 'могу лутать %item_link весь день'),
-	(12, 'broadcast_looting_item_normal', '오늘도 여유롭게 줍줍 ㅋ 근데.. 또 %item_link 이거네', 0, 0, '', 'Encore une journée, encore un %item_link', 'neuer Tag, neuer %item_link', '오늘도 평화로운 루팅, 또 %item_link 이네', '', '', '', 'еще один день, еще один %item_link'),
-	(13, 'broadcast_looting_item_normal', '%item_link 이거 쓸 때는 있나요?', 0, 0, '', 'J’ai pillé quelques %item_link.', 'hab %item_link gelootet', '%item_link 좀 주웠음', '', '', '', 'получил немного %item_link'),
-	(14, 'broadcast_looting_item_normal', '%item_link 정도면 나쁘지 않지않음?', 0, 0, '', 'Certains %item_link passent bien', 'ein %item_link ist okay', '%item_link 정도면 나쁘지 않지', '', '', '', 'немного %item_link — это нормально'),
-	(15, 'broadcast_looting_item_uncommon', '오 나이스, 방금 %item_link 득템함', 0, 0, '', 'Pas mal du tout, je viens juste de recevoir %item_link', 'nicht schlecht, hab grad %item_link bekommen.', '오 나이스, 방금 %item_link 득템함', '', '', '', 'неплохо, только что получил %item_link'),
-	(16, 'broadcast_looting_item_uncommon', '방금 %zone_name 에서 %item_link 겟!', 0, 0, '', 'Je viens de piller %item_link dans %zone_name.', 'gerade %item_link in %zone_name gelootet', '방금 %zone_name 에서 %item_link 겟!', '', '', '', 'только что залутал %item_link в %zone_name'),
-	(17, 'broadcast_looting_item_uncommon', '이 %item_link 은 요긴하게 쓸 수 있겠는데?', 0, 0, '', 'Je pourrais bien utiliser ça %item_link', 'kann ich gut gebrauchen, %item_link', '이 %item_link 은 요긴하게 쓸 수 있겠는데?', '', '', '', 'могу найти применение %item_link'),
-	(18, 'broadcast_looting_item_uncommon', '골드다 골드! %item_link 팔아서 부자 되자!', 0, 0, '', 'L’argent, l’argent, l’argent! %item_link', 'Gold, Gold, Gold: %item_link', '골드다 골드! %item_link 팔아서 부자 되자!', '', '', '', 'деньги, деньги, деньги %item_link'),
-	(19, 'broadcast_looting_item_uncommon', '%item_link 먹었삼 ㅋ', 0, 0, '', 'J’ai eu %item_link.', 'hab %item_link bekommen', '%item_link 획득함', '', '', '', 'получил %item_link'),
-	(20, 'broadcast_looting_item_rare', '%item_link 이거 냥꾼님들 졸업템 아닌가요?', 0, 0, '', 'Ah, %item_link c’est le meilleur équipement pour les chasseurs.', '%item_link ist BiS für Jäger', '%item_link 이거 냥꾼님들 졸업템(BiS) 아닌가요?', '', '', '', '%item_link — лучший для охотника'),
-	(21, 'broadcast_looting_item_rare', '%item_link 와... 이건 %my_class 필수 졸업템임', 0, 0, '', '%item_link est %my_class bis.', '%item_link ist BiS für %my_class', '%item_link 와... 이건 %my_class 필수 졸업템임', '', '', '', '%item_link — лучший для %my_class'),
-	(22, 'broadcast_looting_item_rare', '오늘 주사위빨 장난 아니네, %item_link 득!', 0, 0, '', 'La RNG n’est pas mauvaise aujourd’hui %item_link.', 'RNG meint es heute gut: %item_link', '오늘 주사위운 장난 아니네, %item_link 득!', '', '', '', 'сегодня удача на моей стороне %item_link'),
-	(23, 'broadcast_looting_item_rare', '달달한 %item_link, 방금 막 루팅함', 0, 0, '', 'Doux %item_link, fraîchement looté', 'nice, %item_link frisch gelootet', '달달한 %item_link, 방금 막 루팅함', '', '', '', 'классный %item_link, только что залутал'),
-	(24, 'broadcast_looting_item_rare', '오 대박, 방금 %item_link 먹었음!', 0, 0, '', 'wow, je viens de recevoir %item_link', 'wow, hab gerade %item_link bekommen', '와 대박, 방금 %item_link 먹었음!', '', '', '', 'вау, только что получил %item_link'),
-	(25, 'broadcast_looting_item_rare', '%item_link 냥꾼 졸업급 템이네 ㄷㄷ', 0, 0, '', 'Ah, %item_link, c’est le meilleur équipement pour les chasseurs.', '%item_link ist BiS für Jäger', '%item_link 냥꾼 졸업급 템이네 ㄷㄷ', '', '', '', '%item_link — лучший для охотника'),
-	(26, 'broadcast_looting_item_rare', '%item_link 이건 %my_class 한테 명품이지', 0, 0, '', '%item_link est %my_class bis.', '%item_link ist BiS für %my_class', '%item_link 이건 %my_class 한테 명품이지', '', '', '', '%item_link — лучший для %my_class'),
-	(27, 'broadcast_looting_item_rare', '오!? 오늘 운빨 좀 받는듯 ㅎㅎ, %item_link 요게 나오다니', 0, 0, '', 'Aujourd’hui, la RNG n’est pas mauvaise %item_link.', 'RNG meint es heute gut: %item_link', '오늘 운빨 좀 받네, %item_link 이 나오다니', '', '', '', 'сегодня удача на моей стороне %item_link'),
-	(28, 'broadcast_looting_item_rare', '따끈따끈한 %item_link 드랍!', 0, 0, '', 'Oh, %item_link, fraîchement pillé', 'nice, %item_link frisch gelootet', '따끈따끈한 %item_link 드랍!', '', '', '', 'классный %item_link, только что залутал'),
-	(29, 'broadcast_looting_item_epic', '와 미쳤다!! 방금 %item_link 먹은 것 좀 보세요!!!', 0, 0, '', 'OMG, regardez ce que je viens d’obtenir %item_link !!!', 'OMG, guckt mal, was ich gerade bekommen hab: %item_link!!!', '와 미쳤다!! 방금 %item_link 먹은 것 좀 보세요!!!', '', '', '', 'ОГО, посмотрите, что я только что получил %item_link!!!'),
-	(30, 'broadcast_looting_item_legendary', '말도 안 돼! 내가 %item_link 을 먹다니, 실화냐?', 0, 0, '', 'Pas moyen! Ça ne peut pas être vrai, j’ai obtenu %item_link, c’est fou!', 'Keine @#$@% Chance! Ich hab %item_link bekommen, Wahnsinn.', '말도 안 돼! 내가 %item_link 을 먹다니, 실화냐?', '', '', '', 'Нет @#$@%! Не может быть, я получил %item_link, это безумие'),
-	(31, 'broadcast_looting_item_artifact', '세상에! 말도 안 돼! %item_link 유물을 손에 넣다니!', 0, 0, '', 'Pas possible! Ça ne peut pas être vrai, j’ai eu %item_link, c’est fou', 'Keine @#$@% Chance! Das kann nicht sein - ich hab %item_link bekommen, völlig irre.', '세상에! 말도 안 돼! %item_link 유물을 손에 넣다니!', '', '', '', 'Нет @#$@%! Не может быть, я получил %item_link, это безумие'),
-	(32, 'broadcast_looting_item_poor', '아놔 실화임? 또 %item_link 냐고... 운 다 썼나 봄', 0, 0, '', 'Sérieusement? Encore un %item_link? La poisse me suit, c’est pas possible.', 'Im Ernst? Noch ein %item_link? Mein Glück ist kaputt.', '실화임? 또 %item_link 냐고... 운 다 썼나 봄', '', '', '', ''),
-	(33, 'broadcast_looting_item_poor', '이 %item_link 은 모니터 픽셀 아까운 수준이네', 0, 0, '', 'Cet %item_link ne vaut même pas les pixels sur lesquels il est imprimé.', 'Dieser %item_link ist nicht mal die Pixel wert, auf denen er angezeigt wird.', '이 %item_link 은 모니터 픽셀 아까운 수준이네', '', '', '', ''),
-	(34, 'broadcast_looting_item_poor', '%item_link 또 이딴것만 나오는건가..', 0, 0, '', 'J’ai de nouveau %item_link... Oh là là, c’est reparti.', 'Ich hab %item_link... ugh, schon wieder.', '%item_link 획득... 어휴, 또 시작이군', '', '', '', ''),
-	(35, 'broadcast_looting_item_poor', '이 쓸모없는 %item_link 을 내가 왜 줍고 있는지 나도 모르겠다', 0, 0, '', 'Je me demande pourquoi je prends %item_link, c’est inutile.', 'Keine 아hnung, warum ich %item_link überhaupt aufhebe, es ist nutzlos.', '이 쓸모없는 %item_link 을 내가 왜 줍고 있는지 나도 모르겠다', '', '', '', ''),
-	(36, 'broadcast_looting_item_poor', '번쩍이는 %item_link 좀 봐... 그래봤자 쓰레기템이지만', 0, 0, '', 'Regarde ce magnifique %item_link... dommage que ce soit de la camelote.', 'Schaut euch diesen glänzenden %item_link an... schade, ist trotzdem Müll.', '번쩍이는 %item_link 좀 봐... 그래봤자 쓰레기템이지만', '', '', '', ''),
-	(37, 'broadcast_looting_item_poor', '이 %item_link 은 툴팁 텍스트 공간이 아깝다', 0, 0, '', '%item_link ne vaut même pas le papier sur lequel il est écrit.', 'Dieser %item_link ist nicht mal das Papier wert, auf dem er stehen würde.', '이 %item_link 은 툴팁 텍스트 공간이 아깝다', '', '', '', ''),
-	(38, 'broadcast_looting_item_poor', '뭐, %item_link이라도 줍는 게 아예 빈손보다는 낫...나?', 0, 0, '', 'Je suppose que %item_link vaut mieux que rien ? À peine.', 'Ich schätze, %item_link ist besser als gar nix? Gerade so.', '뭐, %item_link이라도 줍는 게 아예 빈손보다는 낫...나?', '', '', '', ''),
-	(39, 'broadcast_looting_item_poor', '이 %item_link 어디다 씀? 걍 상점에나 팔어야지 뭐..', 0, 0, '', 'Je ne suis pas sûr de ce que faire avec %item_link, peut-être que je vais juste le vendre pour 1 pièce d’argent.', 'Kein Plan, was ich mit %item_link machen soll, vielleicht verkauf ich es für 1 Silber.', '이 %item_link 어디다 씀? 걍 상점에 1실버에 던져야지', '', '', '', ''),
-	(40, 'broadcast_looting_item_poor', '또 %item_link... 뭐, 공치는 것보다는 낫네', 0, 0, '', 'Encore un %item_link... eh bien, au moins je reçois quelque chose.', 'Noch ein %item_link... naja, immerhin krieg ich was.', '또 %item_link... 뭐, 공치는 것보다는 낫네', '', '', '', ''),
-	(41, 'broadcast_looting_item_poor', '생긴 건 진짜 구린데, 이 %item_link 혹시 돈은 좀 되나?', 0, 0, '', 'J’espère que %item_link vaut en fait quelque chose parce que ça a l’air affreux.', 'Hoffentlich ist %item_link was wert, es sieht nämlich furchtbar aus.', '생긴 건 진짜 구린데, 이 %item_link 혹시 돈은 좀 되나?', '', '', '', ''),
-	(42, 'broadcast_looting_item_poor', '이 %item_link 실화냐? 누가 나 놀리는 거 아님?', 0, 0, '', '%item_link c’est une blague ? Quelqu’un se moque de moi.', 'Ist %item_link ein Witz? Irgendwer lacht mich aus.', '이 %item_link 실화냐? 누가 나 놀리는 거 아님?', '', '', '', ''),
-	(43, 'broadcast_looting_item_poor', '왜 자꾸 %item_link 만 나오지... 주사위의 신님 제가 뭐 잘못했나요?', 0, 0, '', 'Pourquoi est-ce que je continue à obtenir %item_link... est-ce que j’ai fâché le RNG?', 'Warum krieg ich ständig %item_link... hab ich RNG verärgert?', '왜 자꾸 %item_link 만 나오지... 주사위의 신님 제가 뭐 잘못했나요?', '', '', '', ''),
-	(44, 'broadcast_looting_item_poor', '아니, %item_link 이 자꾸 따라오네. 필요 없다고!', 0, 0, '', 'C’est comme si %item_link me suivait partout. Je ne veux pas de ça !', 'Als würde %item_link mir nachlaufen. Ich will das nicht!', '아니, %item_link 이 자꾸 따라오네. 필요 없다고!', '', '', '', ''),
-	(45, 'broadcast_looting_item_poor', '또 %item_link이야. 참나, 놀랍지도 않네', 0, 0, '', 'Encore %item_link. Quelle surprise.', 'Da ist %item_link schon wieder. Was für eine Überraschung.', '또 %item_link이야. 참나, 놀랍지도 않네', '', '', '', ''),
-	(46, 'broadcast_looting_item_poor', '이 %item_link 은 그냥 상점행 잡동사니인가?', 0, 0, '', 'I présume qu’ %item_link est bon pour vendre à un marchand ?', 'Ich schätze, %item_link taugt als Händler-Müll?', '이 %item_link 은 그냥 상점행 잡동사니인가?', '', '', '', ''),
-	(47, 'broadcast_looting_item_poor', '안 돼! 제발 또 %item_link 은 아니지! 운빨 좀 살려줘!', 0, 0, '', 'Oh non, pas encore %item_link! RNG s’il te plaît!', 'Neeeein, nicht schon wieder %item_link! RNG, bitte!', '안 돼! 제발 또 %item_link 은 아니지! 운빨 좀 살려줘!', '', '', '', ''),
-	(48, 'broadcast_looting_item_poor', '음, 그래도 %item_link 이 아예 쓸모없지는 않겠지, 그치?', 0, 0, '', 'Eh bien, au moins %item_link n’est pas complètement inutile, n’est-ce pas?', 'Naja, ganz nutzlos ist %item_link immerhin nicht, oder?', '음, 그래도 %item_link 이 아예 쓸모없지는 않겠지, 그치?', '', '', '', ''),
-	(49, 'broadcast_looting_item_poor', '또 %item_link? 주사위 신님, 저한테 관심 좀 주세요', 0, 0, '', 'Encore %item_link ? La RNG est-ce que ça te dit quelque chose au moins?', 'Noch ein %item_link? RNG, kümmert dich das überhaupt?', '또 %item_link? 주사위 신님, 저한테 관심 좀 주세요', '', '', '', ''),
-	(50, 'broadcast_looting_item_poor', '이 %item_link 도 한 10년 묵히면 비싸지려나', 0, 0, '', 'Peut-être que %item_link vaudra quelque chose dans 10 ans.', 'Vielleicht ist %item_link in 10 Jahren was wert.', '이 %item_link 도 한 10년 묵히면 비싸지려나', '', '', '', ''),
-	(51, 'broadcast_looting_item_poor', '오, %item_link 생긴 것만 좀 구경하다가... 버려야지', 0, 0, '', 'Je suppose que je vais juste admirer %item_link ... et le jeter.', 'Ich bewundere einfach mal, wie %item_link aussieht... und schmeiß es weg.', '오, %item_link 생긴 것만 좀 구경하다가... 버려야지', '', '', '', ''),
-	(52, 'broadcast_looting_item_poor', '이딴 %item_link 누구 필요함? 전 쓰잘때기 없어서요.', 0, 0, '', 'Qui a besoin de %item_link ? Pas moi en tout cas, ça c’est sûr.', 'Wer braucht %item_link? Ich sicher nicht.', '이딴 %item_link 누가 필요함? 암튼 난 아님', '', '', '', ''),
-	(53, 'broadcast_looting_item_poor', '혹시 %item_link 쓸만한가? ...는 개뿔, 걍 쓰레기네', 0, 0, '', 'Peut-être que %item_link sera utile... non, je plaisante, c’est nul.', 'Vielleicht ist %item_link nützlich... haha, doch nur Müll.', '혹시 %item_link 쓸만한가? ...는 개뿔, 걍 쓰레기네', '', '', '', ''),
-	(54, 'broadcast_looting_item_poor', '우주가 나에게 %item_link 을 점지해줬네. 참 고맙기도 해라', 0, 0, '', 'L’univers m’a donné %item_link. Génial.', 'Das Universum schenkt mir %item_link. Toll.', '우주가 나에게 %item_link 을 점지해줬네. 참 고맙기도 해라', '', '', '', ''),
-	(55, 'broadcast_looting_item_poor', '자, %item_link 획득. 기분이 참 묘하네(안 좋다는 뜻)', 0, 0, '', 'Eh bien, j’ai %item_link. Franchement, je ne suis pas super emballé.', 'Gut, ich hab %item_link. Begeistert bin ich nicht.', '자, %item_link 획득. 기분이 참 묘하네(안 좋다는 뜻)', '', '', '', ''),
-	(56, 'broadcast_looting_item_poor', '이 %item_link 가지고 뭐함? 팔리지도 않네', 0, 0, '', 'Qu’est-ce que je vais bien pouvoir faire avec %item_link ? Je ne peux même pas le vendre.', 'Was soll ich überhaupt mit %item_link anfangen? Nicht mal verkaufbar.', '이 %item_link 가지고 뭐함? 팔리지도 않네', '', '', '', ''),
-	(57, 'broadcast_looting_item_poor', '실망 리스트에 %item_link 하나 더 추가요', 0, 0, '', 'Ajoutons %item_link à ma pile croissante de déceptions.', 'Packen wir %item_link zu meinem wachsenden Enttäuschungsstapel.', '실망 리스트에 %item_link 하나 더 추가요', '', '', '', ''),
-	(58, 'broadcast_looting_item_poor', '%item_link 아따.. 정확히 나한테 필요 없는 것만 주네', 0, 0, '', 'Merci pour %item_link... c’est exactement ce qu’il me fallait pas.', 'Danke für %item_link... genau das, was ich nicht gebraucht hab.', '%item_link 고오맙다... 정확히 나한테 필요 없는 것만 주네', '', '', '', ''),
-	(59, 'broadcast_looting_item_poor', '또 %item_link... 주사위의 신님, 우리 면담 좀 합시다', 0, 0, '', 'Encore un %item_link... RNG, on doit avoir une discussion.', 'Noch ein %item_link... RNG, wir müssen reden.', '또 %item_link... 주사위의 신님, 우리 면담 좀 합시다', '', '', '', ''),
-	(60, 'broadcast_looting_item_poor', '이 %item_link 너무 많이 주워서 잡화점 하나 차려도 될 듯', 0, 0, '', 'J’ai récupéré tellement de %item_link, je pourrais ouvrir un magasin avec.', 'Ich hab so viele %item_link gelootet, ich könnte damit einen Laden aufmachen.', '이 %item_link 너무 많이 주워서 잡화점 하나 차려도 될 듯', '', '', '', ''),
-	(61, 'broadcast_looting_item_poor', '오 반짝이는 %item_link... 쓰레기통에서 참 잘 빛나겠어', 0, 0, '', 'Un brillant %item_link... peut-être destiné à la poubelle.', 'Ein glänzender %item_link... kommt wohl auf den Müllhaufen.', '오 반짝이는 %item_link... 쓰레기통에서 참 잘 빛나겠어', '', '', '', ''),
-	(62, 'broadcast_looting_item_poor', '형들 %item_link 이거 쓸만 한가용?', 0, 0, '', 'C’est %item_link, tout le monde. Pas de quoi s’affoler.', 'Es ist %item_link, Leute. Nicht zu früh freuen.', '여러분, %item_link 입니다. 실망들 하지 마시고요', '', '', '', ''),
-	(63, 'broadcast_looting_item_poor', '음, 그래도 %item_link 이니까... 더 최악일 수도 있었어', 0, 0, '', 'Eh bien, au moins c’est %item_link... ça pourrait être pire.', 'Naja, wenigstens ist es %item_link... könnte schlimmer sein.', '음, 그래도 %item_link 이니까... 더 최악일 수도 있었어', '', '', '', ''),
-	(64, 'broadcast_looting_item_poor', '빈손보다는 %item_link 이라도 챙기는 게 낫지', 0, 0, '', 'Je préfère %item_link à rien du tout.', 'Lieber %item_link als gar nix.', '빈손보다는 %item_link 이라도 챙기는 게 낫지', '', '', '', ''),
-	(65, 'broadcast_looting_item_poor', '또 %item_link 이네. 뭐 아주 최악은 아님', 0, 0, '', 'Encore un %item_link. Pas le pire.', 'Noch ein %item_link. Nicht das Schlimmste.', '또 %item_link 이네. 뭐 아주 최악은 아님', '', '', '', ''),
-	(66, 'broadcast_looting_item_poor', '오, %item_link... 뭐, 괜찮네', 0, 0, '', 'Salut, %item_link... c’est correct, je suppose.', 'Hey, %item_link... ist schon okay, denk ich.', '오, %item_link... 뭐, 괜찮네', '', '', '', ''),
-	(67, 'broadcast_looting_item_normal', '오 %item_link 이네. 대박은 아니지만 챙겨둬야지', 0, 0, '', 'Salut, %item_link. Pas mal, pas super, mais je vais le prendre.', 'Hey, %item_link. Nicht schlecht, nicht gut, aber ich nehme es.', '오 %item_link 이네. 대박은 아니지만 챙겨둬야지', '', '', '', ''),
-	(68, 'broadcast_looting_item_normal', ' %item_link 방금 먹었는데 나쁘..진? 않은듯요? ', 0, 0, '', 'Ça aurait pu être pire... Je viens juste de mettre la main sur %item_link.', 'Könnte schlimmer sein... hab gerade %item_link gelootet.', '나쁘지 않아... 방금 %item_link 획득함', '', '', '', ''),
-	(69, 'broadcast_looting_item_normal', '이 %item_link 도 언젠가 쓸 데가 있겠지', 0, 0, '', 'Je suppose que %item_link va être utile pour quelque chose.', '%item_link wird für irgendwas nützlich sein, denke ich.', '이 %item_link 도 언젠가 쓸 데가 있겠지', '', '', '', ''),
-	(70, 'broadcast_looting_item_normal', '오늘도 어김없이 %item_link. 이 정도면 만족함', 0, 0, '', 'Encore une journée, encore un %item_link. Je ne vais pas me plaindre.', 'Neuer Tag, neuer %item_link. Kann mich nicht beschweren.', '오늘도 어김없이 %item_link. 이 정도면 만족함', '', '', '', ''),
-	(71, 'broadcast_looting_item_normal', '음, %item_link 정도면 준수하네', 0, 0, '', 'Hmm, %item_link, c’est pas mal, je suppose.', 'Naja, %item_link geht klar, würd ich sagen.', '음, %item_link 정도면 준수하네', '', '', '', ''),
-	(72, 'broadcast_looting_item_normal', '방금 %item_link 먹었음. 최고는 아니지만 이게 어디야', 0, 0, '', 'Je viens de récupérer %item_link. Ce n’est pas le meilleur, mais c’est mieux que rien.', 'Gerade %item_link bekommen. Nicht das Beste, aber etwas.', '방금 %item_link 먹었음. 최고는 아니지만 이게 어디야', '', '', '', ''),
-	(73, 'broadcast_looting_item_normal', '더 나쁠 수도 있었는데, %item_link 이라 다행임', 0, 0, '', 'Ça pourrait être pire, au moins c’est %item_link.', 'Könnte schlimmer sein, immerhin ist es %item_link.', '더 나쁠 수도 있었는데, %item_link 이라 다행임', '', '', '', ''),
-	(74, 'broadcast_looting_item_normal', '%item_link 이정도면 충분함. 불만 없음 ㅋ', 0, 0, '', '%item_link est assez bon, je ne suis pas fâché.', '%item_link ist gut genug, ich bin nicht sauer.', '%item_link 이면 충분함. 불만 없음', '', '', '', ''),
-	(75, 'broadcast_looting_item_normal', '전설템은 아니지만 %item_link 이정도면 감지덕지지', 0, 0, '', 'Ce n’est pas légendaire, mais %item_link fera l’affaire.', 'Kein Legendary, aber %item_link reicht.', '전설템은 아니지만 %item_link 이면 감지덕지지', '', '', '', ''),
-	(76, 'broadcast_looting_item_normal', '드랍 나쁘지 않네... %item_link 이정도면 합격!', 0, 0, '', 'Pas mal du tout cette trouvaille... %item_link est pas mal du tout.', 'Kein schlechter Drop... %item_link ist okay.', '드랍 나쁘지 않네... %item_link 이면 합격!', '', '', '', ''),
-	(77, 'broadcast_looting_item_normal', '공치느니 %item_link 이라도 챙기는 게 국룰', 0, 0, '', 'Je préfère %item_link à rien du tout.', 'Lieber %item_link als gar nix.', '공치느니 %item_link 이라도 챙기는 게 국룰', '', '', '', ''),
-	(78, 'broadcast_looting_item_normal', '베스트는 아니지만 %item_link 도 꽤 쏠쏠하네', 0, 0, '', 'Ce n’est pas le meilleur, mais %item_link est une belle addition.', 'Nicht das Beste, aber %item_link ist eine nette Ergänzung.', '베스트는 아니지만 %item_link 도 꽤 쏠쏠하네', '', '', '', ''),
-	(79, 'broadcast_looting_item_normal', '또 %item_link 획득. 뭐라도 나오는 게 어디임', 0, 0, '', 'Encore en train de récupérer %item_link. Je suppose que c’est mieux que rien.', 'Schon wieder %item_link. Besser als nix, denke ich.', '또 %item_link 획득. 뭐라도 나오는 게 어디임', '', '', '', ''),
-	(80, 'broadcast_looting_item_normal', '또 %item_link 이냐? 막 신나진 않지만 일단 챙김', 0, 0, '', 'Encore %item_link, hein? Je ne suis pas super enthousiaste, mais bon, je vais m’en sortir.', '%item_link schon wieder, hm? Nicht begeistert, aber ich überlebe.', '또 %item_link 이냐? 막 신나진 않지만 일단 챙김', '', '', '', ''),
-	(81, 'broadcast_looting_item_normal', '또 %item_link? 오케이, 좋았어', 0, 0, '', 'Encore un %item_link? Ça me va.', 'Noch ein %item_link? Passt schon.', '또 %item_link? 오케이, 좋았어', '', '', '', ''),
-	(82, 'broadcast_looting_item_normal', '%item_link 이정도면 쓸만한가요??', 0, 0, '', 'Ça aurait pu être pire, mais %item_link n’est pas si mal.', 'Hätte schlimmer kommen können, %item_link ist gar nicht so schlecht.', '더 구린 거 나올 수도 있었는데 %item_link 이면 선방했지', '', '', '', ''),
-	(83, 'broadcast_looting_item_normal', '겨우 %item_link 이지만... 그래도 빈손은 아니니까', 0, 0, '', 'C’est %item_link... mais au moins c’est quelque chose.', 'Es ist %item_link... aber immerhin etwas.', '겨우 %item_link 이지만... 그래도 빈손은 아니니까', '', '', '', ''),
-	(84, 'broadcast_looting_item_normal', '%item_link이라도 챙기겠음. 더 나쁜 상황보단 나으니', 0, 0, '', 'Je vais prendre %item_link, ça aurait pu être pire.', 'Ich nehm %item_link, könnte schlimmer sein.', '%item_link이라도 챙기겠음. 더 나쁜 상황보단 나으니', '', '', '', ''),
-	(85, 'broadcast_looting_item_normal', '%item_link 획득. 그냥 그렇지만 그래도 뭐...', 0, 0, '', 'J’ai pillé %item_link, rien de spécial mais bon.', '%item_link gelootet, nix Besonderes, aber okay.', '%item_link 획득. 별건 아니지만 낫배드', '', '', '', ''),
-	(86, 'broadcast_looting_item_normal', '원하던 건 아니지만, 일단 %item_link 이라도 써야겠다', 0, 0, '', 'Ce n’est pas exactement ce que je voulais, mais %item_link fera l’affaire pour l’instant.', 'Nicht das, was ich wollte, aber %item_link reicht fürs Erste.', '원하던 건 아니지만, 일단 %item_link 이라도 써야겠다', '', '', '', ''),
-	(87, 'broadcast_looting_item_normal', '또 %item_link. 대단하진 않아도 쓸만함', 0, 0, '', 'Encore un %item_link. Pas extraordinaire, mais ça fera l’affaire.', 'Noch ein %item_link. Nicht der Wahnsinn, aber geht klar.', '또 %item_link. 대단하진 않아도 쓸만함', '', '', '', ''),
-	(88, 'broadcast_looting_item_normal', '%item_link 주웠음. 뭐 이 정도면 됐지', 0, 0, '', 'J’ai pillé %item_link, ça aurait pu être pire.', '%item_link gelootet, könnte schlimmer sein.', '%item_link 주웠음. 뭐 이 정도면 됐지', '', '', '', ''),
-	(89, 'broadcast_looting_item_normal', '뭐, %item_link 이라도 있는 게 맹독에 당하는 것보다야 낫지', 0, 0, '', 'Eh bien, %item_link vaut mieux que de se faire poke dans l’œil.', 'Naja, %item_link ist besser als ein Stich ins Auge.', '뭐, %item_link 이라도 있는 게 맹독에 당하는 것보다야 낫지', '', '', '', ''),
-	(90, 'broadcast_looting_item_normal', '%item_link 챙겼고, 다음 ㄱㄱ', 0, 0, '', 'Je vais prendre %item_link et continuer.', 'Ich nehm %item_link und zieh weiter.', '%item_link 챙겼고, 다음 ㄱㄱ', '', '', '', ''),
-	(91, 'broadcast_looting_item_uncommon', '나이스! 수집품 목록에 넣을만한 %item_link 이네!', 0, 0, '', 'Super! Un bel %item_link pour la collection.', 'Nice! Ein solider %item_link für die Sammlung.', '나이스! 수집품 목록에 넣을만한 %item_link 이네!', '', '', '', ''),
-	(92, 'broadcast_looting_item_uncommon', '이런 %item_link 이라면 언제든 환영이삼', 0, 0, '', 'Je prendrais bien ce lien de %item_link n’importe quel jour.', 'Den %item_link nehm ich jederzeit.', '이런 %item_link 이라면 언제든 환영이지', '', '', '', ''),
-	(93, 'broadcast_looting_item_uncommon', '오 좋았어, %item_link 이정도면 꽤 쓸모 있겠는데?', 0, 0, '', 'Pas mal, %item_link pourrait s’avérer utile.', 'Nicht schlecht, %item_link könnte nützlich werden.', '오 좋았어, %item_link 이면 꽤 쓸모 있겠는데?', '', '', '', ''),
-	(94, 'broadcast_looting_item_uncommon', '%item_link 하나 장만했쥬. 이제 좀 할만하겠네!', 0, 0, '', 'Je me suis procuré %item_link, ça va être la folie maintenant !', 'Hab mir %item_link geholt, jetzt gehts los.', '%item_link 하나 장만했음. 이제 좀 할만하겠네!', '', '', '', ''),
-	(95, 'broadcast_looting_item_uncommon', '이 %item_link 정도면 상위권이지, 당연히 챙김!', 0, 0, '', 'Ce %item_link est meilleur que la plupart, je vais le prendre.', 'Dieser %item_link ist besser als die meisten, nehm ich.', '이 %item_link 정도면 상위권이지, 당연히 챙김!', '', '', '', ''),
-	(96, 'broadcast_looting_item_uncommon', '이 %item_link 이정도면 꽤 괜찮은 걸 할 수 있겠어', 0, 0, '', 'Je pourrais utiliser %item_link pour quelque chose de bien.', 'Mit %item_link kann ich was Gutes anfangen.', '이 %item_link 이면 꽤 괜찮은 걸 할 수 있겠어', '', '', '', ''),
-	(97, 'broadcast_looting_item_uncommon', '나쁘지 않군, %item_link 정도면 딱이야', 0, 0, '', 'Pas mal, %item_link va parfaitement convenir.', 'Nicht schlecht, %item_link passt schon.', '나쁘지 않군, %item_link 정도면 딱이야', '', '', '', ''),
-	(98, 'broadcast_looting_item_uncommon', '또 %item_link 획득. 최소한 잉여템은 아니네', 0, 0, '', 'Encore un %item_link, au moins ce n’est pas inutile.', 'Noch ein %item_link, immerhin nicht nutzlos.', '또 %item_link 획득. 최소한 잉여템은 아니네', '', '', '', ''),
-	(99, 'broadcast_looting_item_uncommon', '이 %item_link 은 경매장에 올리면 골드 좀 만지겠는데?', 0, 0, '', 'Ce  %item_link pourrait me rapporter un joli profit.', 'Mit %item_link lässt sich vielleicht gut verdienen.', '이 %item_link 은 경매장에 올리면 골드 좀 만지겠는데?', '', '', '', ''),
-	(100, 'broadcast_looting_item_uncommon', '오 굿굿 %item_link  오늘 게임 잘 풀리는듯 ㅋ', 0, 0, '', 'Un bon %item_link, ça rend la journée plus belle maintenant.', 'Ein solider %item_link, der Tag sieht gleich besser aus.', '든든한 %item_link 하나 생기니 오늘 게임 잘 풀리네', '', '', '', ''),
-	(101, 'broadcast_looting_item_uncommon', '오호, %item_link 은 예상 못 했는데? 땡큐!', 0, 0, '', 'Eh bien, je ne m’attendais pas à %item_link, mais je vais le prendre.', 'Hab %item_link nicht erwartet, aber ich nehm es.', '오호, %item_link 은 예상 못 했는데? 땡큐!', '', '', '', ''),
-	(102, 'broadcast_looting_item_uncommon', '이 %item_link 어디다 쓸지 고민 좀 해봐야겠지만, 일단 기분은 좋음!', 0, 0, '', 'Je ne suis pas sûr de ce qu’il faut faire avec %item_link, mais je suis content de l’avoir.', 'Kein Plan, was ich mit %item_link machen soll aber ich freue mich drüber.', '이 %item_link 어디다 쓸지 고민 좀 해봐야겠지만, 일단 기분은 좋음!', '', '', '', ''),
-	(103, 'broadcast_looting_item_uncommon', '최우선 순위는 아니었지만, %item_link 이거라면 기쁘게 받지!', 0, 0, '', 'Ce n’était pas mon premier choix, mais je vais volontiers accepter %item_link.', 'Nicht meine erste Wahl, aber %item_link nehm ich gern.', '최우선 순위는 아니었지만, %item_link 이라면 기쁘게 받지!', '', '', '', ''),
-	(104, 'broadcast_looting_item_uncommon', '캬, 오늘 딱 필요했던 게  %item_link 이거였음!', 0, 0, '', 'Ce %item_link est exactement ce dont j’avais besoin aujourd’hui.', 'Genau das hab ich heute gebraucht: %item_link.', '캬, 오늘 딱 필요했던 게 이 %item_link 이거였음!', '', '', '', ''),
-	(105, 'broadcast_looting_item_uncommon', '이런 고퀄 %item_link 아이템 이라면 거절할 이유가 없지', 0, 0, '', 'Je ne dis jamais non à une belle %item_link.', 'Zu einem schönen %item_link sag ich nie nein.', '이런 고퀄 %item_link 아이템 이라면 거절할 이유가 없지', '', '', '', ''),
-	(106, 'broadcast_looting_item_uncommon', '또 %item_link 겟. 이 정도면 만족, 불만 제로', 0, 0, '', 'Encore un %item_link. Je le prends, pas de soucis ici.', 'Noch ein %item_link. Nehm ich, keine Beschwerden.', '또 %item_link 겟. 이 정도면 만족, 불만 제로', '', '', '', ''),
-	(107, 'broadcast_looting_item_uncommon', '%item_link 이거 쓸만 한가요? 괜찮아 보이긴 하는데..', 0, 0, '', 'Au moins %item_link a une certaine utilité. Ce n’est pas le pire butin.', 'Immerhin hat %item_link irgendeinen Nutzen. Nicht der schlimmste Loot.', '최소한 %item_link 은 쓸모라도 있지. 이 정도면 준수한 파밍임', '', '', '', ''),
-	(108, 'broadcast_looting_item_uncommon', '이 %item_link 하나면 오늘 할 일 다 한 듯?', 0, 0, '', 'Hmm, le lien %item_link pourrait bien être exactement ce dont j’ai besoin pour la journée.', '%item_link ist vielleicht genau das, was ich heute brauche.', '이 %item_link 하나면 오늘 할 일 다 한 듯?', '', '', '', ''),
-	(109, 'broadcast_quest_accepted_generic', '%quest_link 퀘스트 받음. 달려보삼!', 0, 0, '', 'Je viens de commencer %quest_link.', 'Ich hab gerade %quest_link angenommen', '%quest_link 퀘스트 받음. 달려보자!', '', '', '', 'Я только что взял %quest_link'),
-	(110, 'broadcast_quest_accepted_generic', '%quest_link 퀘스트 수락 완료!', 0, 0, '', 'Je viens d’accepter %quest_link', 'gerade %quest_link angenommen', '%quest_link 퀘스트 수락 완료!', '', '', '', 'только что принял %quest_link'),
-	(111, 'broadcast_quest_accepted_generic', '%quest_link 이거 한번 깨보겠음. ㄱㄱ', 0, 0, '', '%quest_link Je vais essayer de terminer celle-ci.', '%quest_link - versuch das mal abzuschließen', '%quest_link 이거 한번 깨보겠음. ㄱㄱ', '', '', '', '%quest_link попробую выполнить это задание'),
-	(112, 'broadcast_quest_accepted_generic', '%zone_name 에서 %quest_link 퀘스트 받음!', 0, 0, '', 'J’ai pris %quest_link dans %zone_name.', '%quest_link in %zone_name angenommen', '%zone_name 에서 %quest_link 퀘스트 받음!', '', '', '', 'взял %quest_link в %zone_name'),
-	(113, 'broadcast_quest_accepted_generic', '방금 %quest_link 수락함. 이제 노가다 타임인가!', 0, 0, '', 'Je viens de prendre %quest_link, c’est parti pour se mettre au travail !', 'Gerade %quest_link abgeholt, Zeit ranzuklotzen!', '방금 %quest_link 수락함. 이제 노가다 타임인가!', '', '', '', ''),
-	(114, 'broadcast_quest_accepted_generic', '%quest_link 퀘스트 받았는데, 무슨 내용인지 한번 봐야겠네.', 0, 0, '', 'J’가 ottenuto %quest_link, voyons de quoi il s’agit.', '%quest_link eingesackt, mal sehen, worum es geht.', '%quest_link 퀘스트 받았는데, 무슨 내용인지 한번 보자고', '', '', '', ''),
-	(115, 'broadcast_quest_accepted_generic', '%quest_link 퀘스트 받았음. 가즈아!', 0, 0, '', 'Je viens de prendre %quest_link, allons-y!', '%quest_link geschnappt, Los gehts!', '%quest_link 퀘스트 잡았음. 가즈아!', '', '', '', ''),
-	(116, 'broadcast_quest_accepted_generic', '자 다음 퀘스트, 이번엔 %quest_link 이네. 출발!', 0, 0, '', 'Encore une autre quête, encore %quest_link. Allons-y!', 'Neue Quest, %quest_link. Los!', '자 다음 퀘스트, 이번엔 %quest_link 이네. 출발!', '', '', '', ''),
-	(117, 'broadcast_quest_accepted_generic', '드디어 %quest_link 할 차례네 이번엔 좀 쉽게좀 가자..', 0, 0, '', 'Il semblerait que c’est l’heure de faire %quest_link, souhaitez-moi bonne chance.', 'Sieht so aus, als wäre jetzt %quest_link dran, wünscht mir Glück.', '드디어 %quest_link 할 차례네. 주사위 신의 가호가 있기를', '', '', '', ''),
-	(118, 'broadcast_quest_accepted_generic', '%quest_link 수락. 난이도 얼마나 빡셀지 기대되네', 0, 0, '', 'Accepté %quest_link, eh bien, voyons à quel point celle-ci est difficile.', '%quest_link angenommen, mal sehen, wie hart die ist.', '%quest_link 수락. 난이도 얼마나 빡셀지 기대되네', '', '', '', ''),
-	(119, 'broadcast_quest_accepted_generic', '%quest_link 받았슈 빨랑 퀘하고 렙업 해야지!', 0, 0, '', 'J’ai récupéré %quest_link, il est temps d’avancer et de progresser.', '%quest_link mitgenommen, Zeit für Fortschritt.', '%quest_link 받음. 렙업 좀 하러 가볼까!', '', '', '', ''),
-	(120, 'broadcast_quest_accepted_generic', '방금 %quest_link 수락. 빡세려나?', 0, 0, '', 'Je viens de commencer %quest_link. Voyons à quel point elle est difficile.', 'Gerade %quest_link genommen. Mal sehen, wie schwer die ist.', '방금 %quest_link 수락. 빡세려나?', '', '', '', ''),
-	(121, 'broadcast_quest_accepted_generic', '%quest_link 수락함. 제발 마지막에 정예 몹 같은 거 튀어나오지 마라...', 0, 0, '', 'Accepté %quest_link, espérons qu’il n’y ait pas de boss surprise à la fin.', '%quest_link angenommen, hoffentlich kein Überraschungsboss am Ende.', '%quest_link 수락함. 제발 마지막에 정예 몹 같은 거 튀어나오지 마라...', '', '', '', ''),
-	(122, 'broadcast_quest_accepted_generic', '%quest_link 깨러 가는 중. 고고고!', 0, 0, '', 'En route pour terminer ma quête %quest_link! C’est parti!', 'Unterwegs, %quest_link abzuschließen. Auf gehts!', '%quest_link 깨러 가는 중. 고고고!', '', '', '', ''),
-	(123, 'broadcast_quest_accepted_generic', '드디어 %quest_link 여기까지 왔네 ㅋ 보상 진짜 개꿀인듯', 0, 0, '', 'Je suppose que je me lance dans %quest_link maintenant. Espérons que cela en vaille la peine.', 'Dann mach ich jetzt wohl %quest_link. Hoffentlich lohnt es sich.', '결국 %quest_link 하게 됐네. 보상 혜자길 빈다!', '0', '0', '', ''),
-	(124, 'broadcast_quest_accepted_generic', ' %quest_link 수락 완료! 자, 이동합시다!', 0, 0, '', 'J’ai récupéré %quest_link. Allez, on se bouge !', '%quest_link eingesackt. Weiter gehts!', ' %quest_link 수락 완료! 자, 이동합시다!', '', '', '', ''),
-	(125, 'broadcast_quest_accepted_generic', '방금 %quest_link를 받았습니다. 이건 식은 죽 먹기겠네요.', 0, 0, '', 'Je viens juste de prendre %quest_link. Ça devrait être facile comme tout.', 'Hab gerade %quest_link angenommen. Sollte Kinderkram sein.', '방금 %quest_link를 받았습니다. 이건 식은 죽 먹기겠네요.', '', '', '', ''),
-	(126, 'broadcast_quest_accepted_generic', '%quest_link를 수락했습니다. 완벽하게 처리해 보죠.', 0, 0, '', 'J’ai accepté %quest_link, maintenant il va falloir assurer comme jamais.', '%quest_link angenommen, jetzt rock ich das.', '%quest_link를 수락했습니다. 완벽하게 처리해 보죠.', '', '', '', ''),
-	(127, 'broadcast_quest_accepted_generic', '%zone_name에서 %quest_link를 받았습니다. 시작합시다!', 0, 0, '', 'J’ai pris %quest_link dans %zone_name. Allons-y!', '%quest_link in %zone_name angenommen. Los gehts!', '%zone_name에서 %quest_link를 받았습니다. 시작합시다!', '', '', '', ''),
-	(128, 'broadcast_quest_accepted_generic', '%quest_link를 완료하러 가는 중입니다. 빨리 끝내자고요!', 0, 0, '', 'En route pour terminer %quest_link. Allez, on se dépêche !', 'Auf dem Weg, %quest_link zu beenden. Machen wirs schnell!', '%quest_link를 완료하러 가는 중입니다. 빨리 끝내자고요!', '', '', '', ''),
-	(129, 'broadcast_quest_accepted_generic', '%quest_link를 수락했습니다. %zone_name에서 어떤 일이 기다릴지 궁금하네요.', 0, 0, '', 'Quête %quest_link acceptée. Je me demande ce qui m’attend dans la zone %zone_name.', '%quest_link angenommen. Mal sehen, was in %zone_name auf mich wartet.', '%quest_link를 수락했습니다. %zone_name에서 어떤 일이 기다릴지 궁금하네요.', '', '', '', ''),
-	(130, 'broadcast_quest_accepted_generic', '%quest_link를 받았습니다. 너무 오래 걸리지 않았으면 좋겠네요.', 0, 0, '', 'J’ai attrapé %quest_link, j’espère que ça ne prendra pas une éternité.', '%quest_link bekommen, hoffentlich dauert das nicht ewig.', '%quest_link를 받았습니다. 너무 오래 걸리지 않았으면 좋겠네요.', '', '', '', ''),
-	(131, 'broadcast_quest_accepted_generic', '방금 %quest_link를 챙겼습니다. 자, 다시 시작해 볼까요.', 0, 0, '', 'Je viens de récupérer %quest_link. C’est reparti pour une nouvelle aventure.', '%quest_link geschnappt. Schon wieder von vorn.', '방금 %quest_link를 챙겼습니다. 자, 다시 시작해 볼까요.', '', '', '', ''),
-	(132, 'broadcast_quest_accepted_generic', '다음 할 일은 %quest_link인 것 같네요.', 0, 0, '', 'Il semblerait que %quest_link soit le prochain sur ma liste.', 'Es sieht so aus, als ob %quest_link als nächstes dran ist.', '다음 할 일은 %quest_link인 것 같네요.', '', '', '', ''),
-	(133, 'broadcast_quest_accepted_generic', '%quest_link를 완료하러 갑니다. 이번 건 재미있으면 좋겠네요.', 0, 0, '', 'En route pour accomplir %quest_link. J’espère que celle-ci est amusante.', 'Unterwegs, %quest_link abzuschließen. Hoffe, die macht Spaß.', '%quest_link를 완료하러 갑니다. 이번 건 재미있으면 좋겠네요.', '', '', '', ''),
-	(134, 'broadcast_quest_accepted_generic', '%quest_link에 뛰어듭니다. 이건 모험이 될 거예요!', 0, 0, '', 'Je plonge dans %quest_link. Ça s’annonce comme une aventure passionnante !', 'Ich stürze mich in %quest_link. Das wird ein Abenteuer!', '%quest_link에 뛰어듭니다. 이건 모험이 될 거예요!', '', '', '', ''),
-	(135, 'broadcast_quest_accepted_generic', '%zone_name에서 %quest_link를 수락했습니다. 어떤 결과가 나올지 보죠!', 0, 0, '', '%Quête acceptée dans %zone_name. Voyons ce que cela nous réserve !', '%quest_link in %zone_name angenommen. Mal sehen, was das bringt!', '%zone_name에서 %quest_link를 수락했습니다. 어떤 결과가 나올지 보죠!', '', '', '', ''),
-	(136, 'broadcast_quest_accepted_generic', '방금 %quest_link를 받았습니다. 어떤 적을 상대하게 될지 확인해 볼 시간이군요.', 0, 0, '', 'Je viens de prendre %quest_link. C’est l’heure de voir à quoi je dois faire face.', 'Gerade %quest_link genommen. Zeit nachzuschauen, was mich erwartet.', '방금 %quest_link를 받았습니다. 어떤 적을 상대하게 될지 확인해 볼 시간이군요.', '', '', '', ''),
-	(137, 'broadcast_quest_accepted_generic', '또 다른 %quest_link네요. 빨리 끝내버립시다!', 0, 0, '', 'Encore une %quest_link. On va régler ça rapidement!', 'Nochmal %quest_link. Ziehen wirs schnell durch!', '또 다른 %quest_link네요. 빨리 끝내버립시다!', '', '', '', ''),
-	(138, 'broadcast_quest_accepted_generic', '방금 %quest_link를 받았습니다. 이번 건 꽤 재미있겠는데요!', 0, 0, '', 'Je viens de prendre %quest_link. Ça promet d’être amusant !', 'Ich hab gerade %quest_link genommen. Das wird spaßig!', '방금 %quest_link를 받았습니다. 이번 건 꽤 재미있겠는데요!', '', '', '', ''),
-	(139, 'broadcast_quest_accepted_generic', '%zone_name에서 %quest_link 도전! 가즈아~', 0, 0, '', 'Je me lance dans %quest_link dans la région de %zone_name. C’est parti !', '%quest_link in %zone_name angenommen. Los!', '%zone_name에서 %quest_link에 도전합니다. 가자!', '', '', '', ''),
-	(140, 'broadcast_quest_accepted_generic', '%quest_link를 받았습니다. 다음에 무슨 일이 일어날지 정말 기대되네요.', 0, 0, '', 'Attrapé %quest_link. Hâte de voir ce qui se passe ensuite.', '%quest_link geschnappt. Kann es kaum erwarten, was als Nächstes kommt.', '%quest_link를 받았습니다. 다음에 무슨 일이 일어날지 정말 기대되네요.', '', '', '', ''),
-	(141, 'broadcast_quest_accepted_generic', '%quest_link 수락. 이제 집중해서 마무리할 시간입니다.', 0, 0, '', 'J’ai pris %quest_link. Il est temps de s’y mettre et de le réaliser.', '%quest_link genommen. Abtauchen und durchziehen.', '%quest_link 수락. 이제 집중해서 마무리할 시간입니다.', '', '', '', ''),
-	(142, 'broadcast_quest_accepted_generic', '좋았어, %quest_link 시작!. 힘차게 가보죠!', 0, 0, '', 'D’accord, %quest_link est en marche. Au travail !', 'Alles klar, %quest_link ist aktiv. An die Arbeit!', '좋아요, %quest_link가 시작되었습니다. 일하러 가보죠!', '', '', '', ''),
-	(143, 'broadcast_quest_accepted_generic', '%quest_link를 하러 갑니다. 너무 어렵지 않기를 바랄뿐.', 0, 0, '', 'En route vers %quest_link. Espérons que ce ne soit pas trop difficile.', 'Weiter zu %quest_link. Hoffentlich nicht zu hart.', '%quest_link를 하러 갑니다. 너무 어렵지 않기를 바라요.', '', '', '', ''),
-	(144, 'broadcast_quest_accepted_generic', '방금 %quest_link를 받았습니다. 쉬운 임무가 되겠네요!', 0, 0, '', 'Je viens de saisir %quest_link. Ça devrait être une mission facile !', 'Gerade %quest_link geschnappt. Sollte easy sein!', '방금 %quest_link를 받았습니다. 쉬운 임무가 되겠네요!', '', '', '', ''),
-	(145, 'broadcast_quest_accepted_generic', '%quest_link를 수락했습니다. 빨리 끝내버리자고요!', 0, 0, '', 'J’ai accepté %quest_link. Allons-y rapidement!', 'Ich hab %quest_link angenommen. Machen wirs fix!', '%quest_link를 수락했습니다. 빨리 끝내버리자고요!', '', '', '', ''),
-	(146, 'broadcast_quest_accepted_generic', '%quest_link 수락 완료, 이제 어떤 내용인지 확인해 볼까요.', 0, 0, '', 'J’ai pris %quest_link, maintenant je vais voir de quoi il s’agit.', '%quest_link genommen, mal schauen, worum es geht.', '%quest_link 수락 완료, 이제 어떤 내용인지 확인해 볼까요.', '', '', '', ''),
-	(147, 'broadcast_quest_accepted_generic', '방금 %quest_link를 수락했습니다. 자, 움직입시다!', 0, 0, '', 'Je viens d’accepter la %quest_link, allons-y !', 'Gerade %quest_link angenommen, weiter gehts!', '방금 %quest_link를 수락했습니다. 자, 움직입시다!', '', '', '', ''),
-	(148, 'broadcast_quest_update_add_kill_objective_completed', '드디어 %quest_link의 %quest_obj_name 목표를 끝냈습니다!', 0, 0, '', 'Enfin terminé avec la quête %quest_obj_name pour %quest_link.', 'Endlich fertig mit %quest_obj_name für %quest_link', '드디어 %quest_link의 %quest_obj_name 목표를 끝냈습니다!', '', '', '', 'Наконец-то закончил %quest_obj_name для %quest_link'),
-	(149, 'broadcast_quest_update_add_kill_objective_completed', '드디어 %quest_link에 필요한 %quest_obj_name을 %quest_obj_available/%quest_obj_required만큼 모았습니다!', 0, 0, '', 'J’ai enfin obtenu %quest_obj_available/%quest_obj_required de %quest_obj_name pour %quest_link.', 'endlich %quest_obj_available/%quest_obj_required von %quest_obj_name für %quest_link bekommen', '드디어 %quest_link에 필요한 %quest_obj_name을 %quest_obj_available/%quest_obj_required만큼 모았습니다!', '', '', '', 'наконец-то получил %quest_obj_available/%quest_obj_required %quest_obj_name для %quest_link'),
-	(150, 'broadcast_quest_update_add_kill_objective_completed', '마침내 %quest_link의 %quest_obj_full_formatted를 완료했습니다!', 0, 0, '', 'Enfin, j’ai terminé la %quest_obj_full_formatted pour %quest_link.', '%quest_obj_full_formatted für %quest_link, endlich', '마침내 %quest_link의 %quest_obj_full_formatted를 완료했습니다!', '', '', '', '%quest_obj_full_formatted для %quest_link, наконец-то'),
-	(151, 'broadcast_quest_update_add_kill_objective_progress', '휴, %quest_link를 위한 %quest_obj_name을 %quest_obj_available/%quest_obj_required개 처치했습니다.', 0, 0, '', 'Oof, j’ai obtenu %quest_obj_available/%quest_obj_required %quest_obj_name pour %quest_link.', 'Uff, %quest_obj_available/%quest_obj_required %quest_obj_name für %quest_link bekommen', '휴, %quest_link를 위한 %quest_obj_name을 %quest_obj_available/%quest_obj_required개 처치했습니다.', '', '', '', 'Ох, получил %quest_obj_available/%quest_obj_required %quest_obj_name для %quest_link'),
-	(152, 'broadcast_quest_update_add_kill_objective_progress', '%quest_link를 완료하려면 %quest_obj_name이 %quest_obj_missing개 더 필요합니다.', 0, 0, '', 'Il me manque encore %quest_obj_missing de %quest_obj_name pour %quest_link.', 'brauche noch %quest_obj_missing von %quest_obj_name für %quest_link', '%quest_link를 완료하려면 %quest_obj_name이 %quest_obj_missing개 더 필요합니다.', '', '', '', 'еще нужно %quest_obj_missing %quest_obj_name для %quest_link'),
-	(153, 'broadcast_quest_update_add_kill_objective_progress', '%quest_obj_full_formatted 완료, 아직 %quest_link 진행 중입니다.', 0, 0, '', 'Je suis toujours en train de travailler sur %quest_obj_full_formatted, ça prend un peu de temps mais je vais y arriver.', '%quest_obj_full_formatted, arbeite noch an %quest_link', '%quest_obj_full_formatted 완료, 아직 %quest_link 진행 중입니다.', '', '', '', '%quest_obj_full_formatted, все еще работаю над %quest_link'),
-	(154, 'broadcast_quest_update_add_kill_objective_completed', '%quest_link의 %quest_obj_name 완료! 정말 힘든 싸움이었네요!', 0, 0, '', '%quest_obj_name complété pour %quest_link, quelle corvée !', '%quest_obj_name für %quest_link fertig, was für ein Grind!', '%quest_link의 %quest_obj_name 완료! 정말 힘든 싸움이었네요!', '', '', '', ''),
-	(155, 'broadcast_quest_update_add_kill_objective_progress', '%quest_link의 %quest_obj_name 완료가 머지않았습니다. %quest_obj_missing개만 더 있으면 돼요.', 0, 0, '', 'Je suis sur le point de terminer %quest_obj_name pour %quest_link, il me manque juste %quest_obj_missing.', 'Kurz vor Abschluss von %quest_obj_name für %quest_link, fehlen nur noch %quest_obj_missing.', '%quest_link의 %quest_obj_name 완료가 머지않았습니다. %quest_obj_missing개만 더 있으면 돼요.', '', '', '', ''),
-	(156, 'broadcast_quest_update_add_kill_objective_progress', '%quest_obj_name이 거의 다 됐습니다. %quest_link를 위해 %quest_obj_missing개만 더 채우면 됩니다.', 0, 0, '', 'Il ne manque presque rien à %quest_obj_name, j’ai juste besoin de %quest_obj_missing de plus pour %quest_link.', '%quest_obj_name fast durch, brauche nur noch %quest_obj_missing für %quest_link.', '%quest_obj_name이 거의 다 됐습니다. %quest_link를 위해 %quest_obj_missing개만 더 채우면 됩니다.', '', '', '', ''),
-	(157, 'broadcast_quest_update_add_kill_objective_progress', '지금까지 %quest_link의 %quest_obj_name을 %quest_obj_available/%quest_obj_required만큼 완료했습니다.', 0, 0, '', 'Jusqu’à présent, %quest_obj_available/%quest_obj_required %quest_obj_name ont été complétés pour %quest_link.', 'Bisher %quest_obj_available/%quest_obj_required %quest_obj_name für %quest_link erledigt.', '지금까지 %quest_link의 %quest_obj_name을 %quest_obj_available/%quest_obj_required만큼 완료했습니다.', '', '', '', ''),
-	(158, 'broadcast_quest_update_add_kill_objective_completed', '드디어 %quest_link의 %quest_obj_name을 끝냈습니다! 꽤 오래 걸렸네요!', 0, 0, '', 'J’ai enfin terminé %quest_obj_name pour %quest_link! Ça m’a pris un moment!', 'Endlich %quest_obj_name für %quest_link fertig! Das hat gedauert!', '드디어 %quest_link의 %quest_obj_name을 끝냈습니다! 꽤 오래 걸렸네요!', '', '', '', ''),
-	(159, 'broadcast_quest_update_add_kill_objective_progress', '순조롭게 진행 중입니다. %quest_link의 %quest_obj_name을 %quest_obj_available/%quest_obj_required만큼 해치웠어요.', 0, 0, '', 'Toujours en pleine forme, j’ai réussi à obtenir %quest_obj_available/%quest_obj_required de %quest_obj_name pour %quest_link.', 'Läuft, hab %quest_obj_available/%quest_obj_required von %quest_obj_name für %quest_link.', '순조롭게 진행 중입니다. %quest_link의 %quest_obj_name을 %quest_obj_available/%quest_obj_required만큼 해치웠어요.', '', '', '', ''),
-	(160, 'broadcast_quest_update_add_kill_objective_completed', '좋아요! %quest_link의 %quest_obj_name을 완료했습니다. 다음으로 가죠!', 0, 0, '', 'Oui! J’ai fini %quest_obj_name pour %quest_link. Passons à la prochaine!', 'Yes! %quest_obj_name für %quest_link abgeschlossen. Weiter gehts!', '좋아요! %quest_link의 %quest_obj_name을 완료했습니다. 다음으로 가죠!', '', '', '', ''),
-	(161, 'broadcast_quest_update_add_kill_objective_progress', '%quest_obj_name의 진척이 있습니다. %quest_link의 %quest_obj_available/%quest_obj_required만큼 완료되었습니다.', 0, 0, '', 'J’ai fait des progrès sur l’objectif de quête, j’ai terminé %quest_obj_available/%quest_obj_required pour %quest_link.', 'Fortschritt bei %quest_obj_name, %quest_obj_available/%quest_obj_required erledigt für %quest_link.', '%quest_obj_name의 진척이 있습니다. %quest_link의 %quest_obj_available/%quest_obj_required만큼 완료되었습니다.', '', '', '', ''),
-	(162, 'broadcast_quest_update_add_kill_objective_progress', '%quest_obj_full_formatted... %quest_link가 거의 다 끝나가요!', 0, 0, '', '%quest_obj_full_formatted... presque arrivé pour %quest_link!', '%quest_obj_full_formatted... fast geschafft für %quest_link!', '%quest_obj_full_formatted... %quest_link가 거의 다 끝나가요!', '', '', '', ''),
-	(163, 'broadcast_quest_update_add_kill_objective_progress', '%quest_link를 위해 %quest_obj_name %quest_obj_missing개만 더 있으면 됩니다. 거의 다 됐어요!', 0, 0, '', 'J’ai juste besoin de quelques %quest_obj_missing supplémentaires de %quest_obj_name pour %quest_link, presque terminé !', 'Brauche nur noch %quest_obj_missing %quest_obj_name für %quest_link, fast fertig!', '%quest_link를 위해 %quest_obj_name %quest_obj_missing개만 더 있으면 됩니다. 거의 다 됐어요!', '', '', '', ''),
-	(164, 'broadcast_quest_update_add_kill_objective_completed', '드디어 %quest_link의 %quest_obj_name을 끝냈습니다. 속이 다 시원하네요!', 0, 0, '', 'Enfin terminé avec %quest_obj_name pour %quest_link, quel soulagement !', 'Endlich %quest_obj_name für %quest_link geschafft, was für eine Erleichterung!', '드디어 %quest_link의 %quest_obj_name을 끝냈습니다. 속이 다 시원하네요!', '', '', '', ''),
-	(165, 'broadcast_quest_update_add_kill_objective_progress', '%quest_link의 %quest_obj_name을 %quest_obj_available/%quest_obj_required만큼 처치하며 나아가는 중입니다!', 0, 0, '', 'J’ai obtenu %quest_obj_available/%quest_obj_required de %quest_obj_name pour %quest_link, je progresse !', 'Hab %quest_obj_available/%quest_obj_required von %quest_obj_name für %quest_link, geht voran!', '%quest_link의 %quest_obj_name을 %quest_obj_available/%quest_obj_required만큼 처치하며 나아가는 중입니다!', '', '', '', ''),
-	(166, 'broadcast_quest_update_add_kill_objective_completed', '%quest_link의 %quest_obj_name을 완료했습니다! 이제 다음 작업으로 넘어가죠.', 0, 0, '', 'La %quest_obj_name pour %quest_link est terminée ! Maintenant, passons à la tâche suivante.', '%quest_obj_name für %quest_link ist komplett! Weiter zur nächsten Aufgabe.', '%quest_link의 %quest_obj_name을 완료했습니다! 이제 다음 작업으로 넘어가죠.', '', '', '', ''),
-	(167, 'broadcast_quest_update_add_kill_objective_completed', '%quest_link의 %quest_obj_name 진행도 100%! 이제 보상을 받으러 가볼까요!', 0, 0, '', 'J’ai terminé 100% de %quest_obj_name pour %quest_link, passons maintenant aux récompenses!', '100% von %quest_obj_name für %quest_link erledigt, ab zu den Belohnungen!', '%quest_link의 %quest_obj_name 진행도 100%! 이제 보상을 받으러 가볼까요!', '', '', '', ''),
-	(168, 'broadcast_quest_update_add_kill_objective_progress', '%quest_link를 위해 %quest_obj_name이 %quest_obj_missing개 더 필요합니다. 거의 다 왔어요!', 0, 0, '', 'J’ai encore besoin de %quest_obj_missing de %quest_obj_name pour %quest_link, presque terminé !', 'Es fehlen noch %quest_obj_missing von %quest_obj_name für %quest_link, fast fertig!', '%quest_link를 위해 %quest_obj_name이 %quest_obj_missing개 더 필요합니다. 거의 다 왔어요!', '', '', '', ''),
-	(169, 'broadcast_quest_update_add_kill_objective_progress', '%quest_link를 위해 %quest_obj_name 진행 중입니다. 현재 %quest_obj_available/%quest_obj_required 완료되었습니다.', 0, 0, '', 'Je travaille sur la quête %quest_obj_name pour %quest_link, j’ai actuellement accompli %quest_obj_available sur %quest_obj_required étapes.', 'Arbeite an %quest_obj_name für %quest_link, aktuell %quest_obj_available/%quest_obj_required erledigt.', '%quest_link를 위해 %quest_obj_name 진행 중입니다. 현재 %quest_obj_available/%quest_obj_required 완료되었습니다.', '', '', '', ''),
-	(170, 'broadcast_quest_update_add_kill_objective_completed', '%quest_link의 %quest_obj_full_formatted를 마쳤습니다. 정말 길었네요!', 0, 0, '', '%quest_obj_full_formatted pour %quest_link. Quelle aventure épique!', '%quest_obj_full_formatted für %quest_link. Das war ein langer Brocken!', '%quest_link의 %quest_obj_full_formatted를 마쳤습니다. 정말 길었네요!', '', '', '', ''),
-	(171, 'broadcast_quest_update_add_kill_objective_progress', '%quest_link를 위해 %quest_obj_name 몇 개만 더 있으면 끝납니다!', 0, 0, '', 'J’ai juste besoin de quelques %quest_obj_name de plus pour %quest_link, et j’ai fini!', 'Brauche nur noch ein paar %quest_obj_name für %quest_link, dann bin ich durch!', '%quest_link를 위해 %quest_obj_name 몇 개만 더 있으면 끝납니다!', '', '', '', ''),
-	(172, 'broadcast_quest_update_add_kill_objective_completed', '또 하나의 목표 달성! %quest_link의 %quest_obj_full_formatted입니다.', 0, 0, '', 'Encore un objectif accompli! %quest_obj_full_formatted pour %quest_link', 'Noch ein Ziel erledigt! %quest_obj_full_formatted für %quest_link', '또 하나의 목표 달성! %quest_link의 %quest_obj_full_formatted입니다.', '', '', '', ''),
-	(173, 'broadcast_quest_update_add_kill_objective_progress', '%quest_link를 위해 %quest_obj_name을 계속 처리 중입니다. 현재 %quest_obj_available/%quest_obj_required이고 거의 다 왔어요.', 0, 0, '', 'Je continue de travailler sur %quest_obj_name pour %quest_link, j’y suis presque avec %quest_obj_available/%quest_obj_required.', 'Grinde weiter %quest_obj_name für %quest_link, mit %quest_obj_available/%quest_obj_required fast da.', '%quest_link를 위해 %quest_obj_name을 계속 처리 중입니다. 현재 %quest_obj_available/%quest_obj_required이고 거의 다 왔어요.', '', '', '', ''),
-	(174, 'broadcast_quest_update_add_kill_objective_completed', '목표 달성! %quest_link의 %quest_obj_full_formatted입니다. 다음으로 가시죠!', 0, 0, '', 'Objectif accompli ! J’ai rempli l’objectif pour la quête « %quest_link ». Passons à la suivante !', 'Ziel erledigt! %quest_obj_full_formatted für %quest_link. Weiter zum nächsten!', '목표 달성! %quest_link의 %quest_obj_full_formatted입니다. 다음으로 가시죠!', '', '', '', ''),
-	(175, 'broadcast_quest_update_add_item_objective_completed', '마침내 %quest_link에 필요한 %item_link 수집을 끝냈습니다!', 0, 0, '', 'Enfin fini avec l’%item_link pour %quest_link.', 'Endlich fertig mit %item_link für %quest_link', '마침내 %quest_link에 필요한 %item_link 수집을 끝냈습니다!', '', '', '', 'Наконец-то закончил с %item_link для %quest_link'),
-	(176, 'broadcast_quest_update_add_item_objective_completed', '드디어 %quest_link에 필요한 %item_link를 %quest_obj_available/%quest_obj_required만큼 획득했습니다!', 0, 0, '', 'J’ai enfin obtenu %quest_obj_available/%quest_obj_required de %item_link pour la %quest_link.', 'endlich %quest_obj_available/%quest_obj_required von %item_link für %quest_link bekommen', '드디어 %quest_link에 필요한 %item_link를 %quest_obj_available/%quest_obj_required만큼 획득했습니다!', '', '', '', 'наконец-то получил %quest_obj_available/%quest_obj_required %item_link для %quest_link'),
-	(177, 'broadcast_quest_update_add_item_objective_completed', '마침내 %quest_link를 위한 %quest_obj_full_formatted가 완료되었습니다!', 0, 0, '', 'La quête est enfin terminée pour %quest_link.', '%quest_obj_full_formatted für %quest_link, endlich', '마침내 %quest_link를 위한 %quest_obj_full_formatted가 완료되었습니다!', '', '', '', '%quest_obj_full_formatted для %quest_link, наконец-то'),
-	(178, 'broadcast_quest_update_add_item_objective_progress', '오, %quest_link에 필요한 %item_link를 %quest_obj_available/%quest_obj_required만큼 모았습니다.', 0, 0, '', 'Ouf, j’ai obtenu %quest_obj_available sur %quest_obj_required %item_link pour la quête %quest_link.', 'Uff, %quest_obj_available/%quest_obj_required %item_link für %quest_link bekommen', '오, %quest_link에 필요한 %item_link를 %quest_obj_available/%quest_obj_required만큼 모았습니다.', '', '', '', 'Ох, получил %quest_obj_available/%quest_obj_required %item_link для %quest_link'),
-	(179, 'broadcast_quest_update_add_item_objective_progress', '%quest_link 완료를 위해 %item_link가 %quest_obj_missing개 더 필요합니다.', 0, 0, '', 'Il me faut %quest_obj_missing encore plus de %item_link pour la quête %quest_link.', 'brauche noch %quest_obj_missing %item_link für %quest_link', '%quest_link 완료를 위해 %item_link가 %quest_obj_missing개 더 필요합니다.', '', '', '', 'еще нужно %quest_obj_missing %item_link для %quest_link'),
-	(180, 'broadcast_quest_update_add_item_objective_progress', '%quest_obj_full_formatted 완료, 아직 %quest_link 진행 중입니다.', 0, 0, '', 'Désolé, je suis toujours en train de travailler sur %quest_link.', '%quest_obj_full_formatted, arbeite noch an %quest_link', '%quest_obj_full_formatted 완료, 아직 %quest_link 진행 중입니다.', '', '', '', '%quest_obj_full_formatted, все еще работаю над %quest_link'),
-	(181, 'broadcast_quest_update_add_item_objective_completed', '%quest_link를 위한 %item_link 수집 완료! 드디어 끝냈네요!', 0, 0, '', 'J’ai terminé l’objectif %item_link de la quête %quest_link. Enfin!', 'Das Ziel mit %item_link für %quest_link abgeschlossen. Endlich!', '%quest_link를 위한 %item_link 수집 완료! 드디어 끝냈네요!', '', '', '', ''),
-	(182, 'broadcast_quest_update_add_item_objective_progress', '진전이 있네요! %quest_link를 위해 %item_link를 %quest_obj_available/%quest_obj_required만큼 모았습니다.', 0, 0, '', 'Je progresse! J’ai actuellement %quest_obj_available sur les %quest_obj_required %item_link requis pour la quête %quest_link.', 'Es geht voran! %quest_obj_available/%quest_obj_required %item_link für %quest_link.', '진전이 있네요! %quest_link를 위해 %item_link를 %quest_obj_available/%quest_obj_required만큼 모았습니다.', '', '', '', ''),
-	(183, 'broadcast_quest_update_add_item_objective_progress', '%quest_obj_name을 절반 정도 끝냈습니다. %quest_link를 위해 %item_link %quest_obj_missing개만 더 찾으면 돼요.', 0, 0, '', '%quest_obj_name est à moitié terminée, il me manque %quest_obj_missing %item_link pour %quest_link.', '%quest_obj_name ist zur Hälfte durch, brauche noch %quest_obj_missing %item_link für %quest_link.', '%quest_obj_name을 절반 정도 끝냈습니다. %quest_link를 위해 %item_link %quest_obj_missing개만 더 찾으면 돼요.', '', '', '', ''),
-	(184, 'broadcast_quest_update_add_item_objective_progress', '%quest_link를 위해 %item_link %quest_obj_missing개가 더 필요하지만, 점점 가까워지고 있습니다!', 0, 0, '', 'Il me manque encore %quest_obj_missing de %item_link pour %quest_link, mais je me rapproche !', 'Es fehlen noch %quest_obj_missing von %item_link für %quest_link, aber ich komme näher!', '%quest_link를 위해 %item_link %quest_obj_missing개가 더 필요하지만, 점점 가까워지고 있습니다!', '', '', '', ''),
-	(185, 'broadcast_quest_update_add_item_objective_completed', '드디어 %quest_link의 %item_link를 다 모았습니다. 이제 다음 업무 시간이에요!', 0, 0, '', 'J’ai enfin terminé %item_link pour la quête %quest_link, il est temps de passer à la prochaine tâche !', 'Endlich %item_link für %quest_link fertig, weiter mit der nächsten Aufgabe!', '드디어 %quest_link의 %item_link를 다 모았습니다. 이제 다음 업무 시간이에요!', '', '', '', ''),
-	(186, 'broadcast_quest_update_add_item_objective_progress', '거의 다 됐어요! %quest_link를 위해 %item_link %quest_obj_available/%quest_obj_required개를 확보했습니다.', 0, 0, '', 'On y est presque! J’ai obtenu %quest_obj_available/%quest_obj_required %item_link pour %quest_link.', 'Fast da! %quest_obj_available/%quest_obj_required %item_link für %quest_link geholt.', '거의 다 됐어요! %quest_link를 위해 %item_link %quest_obj_available/%quest_obj_required개를 확보했습니다.', '', '', '', ''),
-	(187, 'broadcast_quest_update_add_item_objective_completed', '좋아! %quest_link의 %item_link를 완료했습니다. 이제 다음 목표로 가죠.', 0, 0, '', 'Oui ! J’ai terminé %item_link pour %quest_link. Je passe maintenant à l’objectif suivant.', 'Yes! %item_link für %quest_link abgeschlossen. Weiter zum nächsten Ziel.', '좋아! %quest_link의 %item_link를 완료했습니다. 이제 다음 목표로 가죠.', '', '', '', ''),
-	(188, 'broadcast_quest_update_add_item_objective_progress', '%quest_link를 위해 %item_link가 %quest_obj_missing개 더 필요하지만, 차근차근 진행 중입니다!', 0, 0, '', 'Il me manque encore %quest_obj_missing %item_link pour la quête %quest_link, mais je progresse!', 'Brauche noch %quest_obj_missing %item_link für %quest_link, aber es geht voran!', '%quest_link를 위해 %item_link가 %quest_obj_missing개 더 필요하지만, 차근차근 진행 중입니다!', '', '', '', ''),
-	(189, 'broadcast_quest_update_add_item_objective_progress', '%quest_link의 %item_link 수집에 진척이 있네요. %quest_obj_missing개 더 필요합니다.', 0, 0, '', 'J’ai bien avancé sur %item_link pour %quest_link, mais il me manque encore %quest_obj_missing.', 'Guter Fortschritt bei %item_link für %quest_link, brauche noch %quest_obj_missing.', '%quest_link의 %item_link 수집에 진척이 있네요. %quest_obj_missing개 더 필요합니다.', '', '', '', ''),
-	(190, 'broadcast_quest_update_add_item_objective_completed', '%quest_link의 %item_link 100% 완료! 이제 앞으로 나아갈 시간입니다.', 0, 0, '', 'J’ai complété 100% de %item_link pour %quest_link! Il est temps de passer à la suite.', '100% von %item_link für %quest_link erledigt! Weiter gehts.', '%quest_link의 %item_link 100% 완료! 이제 앞으로 나아갈 시간입니다.', '', '', '', ''),
-	(191, 'broadcast_quest_update_add_item_objective_progress', '%quest_link를 위해 %item_link를 %quest_obj_available/%quest_obj_required만큼 모았습니다. 끝이 보이네요!', 0, 0, '', 'J’ai obtenu %quest_obj_available/%quest_obj_required %item_link pour %quest_link. Je sens que je touche au but!', 'Hab %quest_obj_available/%quest_obj_required %item_link für %quest_link. Das Ziel ist in Sicht!', '%quest_link를 위해 %item_link를 %quest_obj_available/%quest_obj_required만큼 모았습니다. 끝이 보이네요!', '', '', '', ''),
-	(192, 'broadcast_quest_update_add_item_objective_completed', '됐습니다. %quest_link의 %item_link 완료! 정말 다행이네요.', 0, 0, '', 'C’est bon, %item_link complet pour %quest_link. Quel soulagement !', 'Geschafft, %item_link für %quest_link komplett. Was für eine Erleichterung!', '됐습니다. %quest_link의 %item_link 완료! 정말 다행이네요.', '', '', '', ''),
-	(193, 'broadcast_quest_update_add_item_objective_progress', '%quest_link를 위해 %item_link 수집에 매진하고 있습니다. %quest_obj_missing개 더 모아야 해요.', 0, 0, '', 'Je travaille dur sur %item_link pour %quest_link, mais j’ai encore besoin de %quest_obj_missing de plus.', 'Arbeite hart an %item_link für %quest_link, brauche noch %quest_obj_missing.', '%quest_link를 위해 %item_link 수집에 매진하고 있습니다. %quest_obj_missing개 더 모아야 해요.', '', '', '', ''),
-	(194, 'broadcast_quest_update_add_item_objective_progress', '%quest_link를 위한 %item_link가 거의 끝나갑니다. %quest_obj_missing개만 남았어요.', 0, 0, '', 'Presque terminé avec %item_link pour %quest_link, il ne reste plus que %quest_obj_missing.', 'Fast fertig mit %item_link für %quest_link, es fehlen nur noch %quest_obj_missing.', '%quest_link를 위한 %item_link가 거의 끝나갑니다. %quest_obj_missing개만 남았어요.', '', '', '', ''),
-	(195, 'broadcast_quest_update_add_item_objective_completed', '%quest_link의 %item_link 완료! 노가다가 장난이 아니었네요!', 0, 0, '', 'J’ai terminé %item_link pour %quest_link, la galère!', '%item_link für %quest_link abgeschlossen, der Grind ist real!', '%quest_link의 %item_link 완료! 노가다가 장난이 아니었네요!', '', '', '', ''),
-	(196, 'broadcast_quest_update_add_item_objective_progress', '여전히 %quest_link의 %item_link를 조금씩 모으는 중입니다. 현재 %quest_obj_available/%quest_obj_required 완료했습니다.', 0, 0, '', 'Je suis toujours en train de travailler sur %item_link pour %quest_link, j’ai accompli %quest_obj_available/%quest_obj_required jusqu’à présent.', 'Arbeite weiter an %item_link für %quest_link, bisher %quest_obj_available/%quest_obj_required erledigt.', '여전히 %quest_link의 %item_link를 조금씩 모으는 중입니다. 현재 %quest_obj_available/%quest_obj_required 완료했습니다.', '', '', '', ''),
-	(197, 'broadcast_quest_update_add_item_objective_progress', '%quest_link의 %item_link가 완료에 가까워지고 있습니다. 현재 %quest_obj_available/%quest_obj_required입니다.', 0, 0, '', '%item_link pour la quête %quest_link approche de la fin, j’ai accompli %quest_obj_available/%quest_obj_required objectifs.', '%item_link für %quest_link kommt der Fertigstellung näher, %quest_obj_available/%quest_obj_required erledigt.', '%quest_link의 %item_link가 완료에 가까워지고 있습니다. 현재 %quest_obj_available/%quest_obj_required입니다.', '', '', '', ''),
-	(198, 'broadcast_quest_update_add_item_objective_completed', '나이스! %quest_link의 %item_link를 끝냈습니다! 이건 시간이 좀 더 걸렸네요.', 0, 0, '', 'Oui! %item_link terminé pour %quest_link! Celui-là a pris un peu plus de temps.', 'Yes! %item_link für %quest_link fertig! Das hat etwas länger gedauert.', '나이스! %quest_link의 %item_link를 끝냈습니다! 이건 시간이 좀 더 걸렸네요.', '', '', '', ''),
-	(199, 'broadcast_quest_update_add_item_objective_progress', '%quest_link에 필요한 %item_link를 %quest_obj_available/%quest_obj_required만큼 확보했습니다. 힘내자고요!', 0, 0, '', 'J’ai %quest_obj_available/%quest_obj_required de %item_link pour %quest_link, et je continue sur ma lancée!', 'Ich habe %quest_obj_available/%quest_obj_required %item_link für %quest_link, läuft!', '%quest_link에 필요한 %item_link를 %quest_obj_available/%quest_obj_required만큼 확보했습니다. 힘내자고요!', '', '', '', ''),
-	(200, 'broadcast_quest_update_add_item_objective_completed', '%quest_link의 %item_link를 완료했습니다. 다음으로 갑시다!', 0, 0, '', 'Terminé avec %item_link pour %quest_link. Passons à la suite !', 'Durch mit %item_link für %quest_link. Weiter zum nächsten!', '%quest_link의 %item_link를 완료했습니다. 다음으로 갑시다!', '', '', '', ''),
-	(201, 'broadcast_quest_update_add_item_objective_completed', '또 하나 해결! %quest_link에 필요한 %item_link를 다 모았어요!', 0, 0, '', 'Encore un de fait! %item_link est complet pour %quest_link!', 'Noch eins abgehakt! %item_link für %quest_link ist durch!', '또 하나 해결! %quest_link에 필요한 %item_link를 다 모았어요!', '', '', '', ''),
-	(202, 'broadcast_quest_update_add_item_objective_progress', '아직 %quest_link의 %item_link 수집 중입니다. 현재 %quest_obj_available/%quest_obj_required 완료!', 0, 0, '', 'Je continue à travailler sur %item_link pour la quête %quest_link, j’ai accompli %quest_obj_available/%quest_obj_required objectifs jusqu’à présent.', 'Grinde weiter %item_link für %quest_link, habe %quest_obj_available/%quest_obj_required geschafft.', '아직 %quest_link의 %item_link 수집 중입니다. 현재 %quest_obj_available/%quest_obj_required 완료!', '', '', '', ''),
-	(203, 'broadcast_quest_update_add_item_objective_progress', '거의 다 됐어요! %quest_link 완료까지 %item_link %quest_obj_missing개 남았습니다.', 0, 0, '', 'On y est presque! Il me manque %quest_obj_missing %item_link pour %quest_link.', 'Bin fast durch! Brauche noch %quest_obj_missing %item_link für %quest_link.', '거의 다 됐어요! %quest_link 완료까지 %item_link %quest_obj_missing개 남았습니다.', '', '', '', ''),
-	(204, 'broadcast_quest_update_failed_timer', '제한 시간 내에 %quest_link를 완료하지 못했습니다...', 0, 0, '', 'J’ai échoué à terminer %quest_link à temps...', 'Nicht rechtzeitig %quest_link geschafft...', '제한 시간 내에 %quest_link를 완료하지 못했습니다...', '', '', '', 'Не успел завершить %quest_link вовремя...'),
-	(205, 'broadcast_quest_update_failed_timer', '시간이 부족해서 %quest_link에 실패했어요. :(', 0, 0, '', 'J’ai manqué de temps pour %quest_link :(', 'Zeit für %quest_link abgelaufen :(', '시간이 부족해서 %quest_link에 실패했어요. :(', '', '', '', 'Время для %quest_link вышло :('),
-	(206, 'broadcast_quest_update_complete', '%quest_link의 모든 목표를 달성했습니다!', 0, 0, '', 'J’ai terminé tous les objectifs pour %quest_link.', 'Alle Ziele für %quest_link abgeschlossen', '%quest_link의 모든 목표를 달성했습니다!', '', '', '', 'Я выполнил все задачи для %quest_link'),
-	(207, 'broadcast_quest_update_complete', '%quest_link의 모든 목표 완료!', 0, 0, '', 'J’ai rempli tous les objectifs pour %quest_link.', 'Alle Ziele für %quest_link erledigt', '%quest_link의 모든 목표 완료!', '', '', '', 'Выполнил все задачи для %quest_link'),
-	(208, 'broadcast_quest_update_complete', '모든 목표를 마쳤으니 곧 %quest_link를 완료하러 갈 겁니다!', 0, 0, '', 'Je vais bientôt remettre la %quest_link, je viens de finir tous les objectifs.', 'Ich gebe %quest_link gleich ab, habe gerade alle Ziele erledigt', '모든 목표를 마쳤으니 곧 %quest_link를 완료하러 갈 겁니다!', '', '', '', 'Скоро сдам %quest_link, только что закончил все задачи'),
-	(209, 'broadcast_quest_turned_in', '아싸! 드디어 %quest_link 퀘스트를 완료하고 보고했습니다!', 0, 0, '', 'Oh ouiii, j’ai enfin remis la %quest_link', 'Jaaa, endlich %quest_link abgegeben', '아싸! 드디어 %quest_link 퀘스트를 완료하고 보고했습니다!', '', '', '', 'Да, наконец-то сдал %quest_link'),
-	(210, 'broadcast_quest_turned_in', '%quest_link 퀘스트 완료 보고 완료!', 0, 0, '', 'J’ai soumis %quest_link.', 'hab %quest_link abgegeben', '%quest_link 퀘스트 완료 보고 완료!', '', '', '', 'сдал %quest_link'),
-	(211, 'broadcast_quest_turned_in', '겨우 %quest_link를 끝내고 방금 보고했습니다!', 0, 0, '', 'J’ai réussi à terminer %quest_link, je viens tout juste de le remettre.', 'Hab %quest_link geschafft, gerade abgegeben', '겨우 %quest_link를 끝내고 방금 보고했습니다!', '', '', '', 'смог завершить %quest_link, только что сдал'),
-	(212, 'broadcast_quest_turned_in', '방금 %quest_link를 완료하고 보고했습니다!', 0, 0, '', 'Je viens de remettre %quest_link.', 'gerade %quest_link abgegeben', '방금 %quest_link를 완료하고 보고했습니다!', '', '', '', 'только что сдал %quest_link'),
-	(213, 'broadcast_quest_turned_in', '방금 %zone_name에서 %quest_link를 완료했습니다!', 0, 0, '', 'Je viens de terminer la quête %quest_link dans la zone %zone_name.', 'gerade %quest_link in %zone_name abgegeben', '방금 %zone_name에서 %quest_link를 완료했습니다!', '', '', '', 'только что сдал %quest_link в %zone_name'),
-	(214, 'broadcast_quest_turned_in', '또 하나 해결! %quest_link 퀘스트를 보고했습니다.', 0, 0, '', 'Encore une quête terminée! %quest_link remise', 'Noch eine Quest abgeschlossen! %quest_link abgegeben', '또 하나 해결! %quest_link 퀘스트를 보고했습니다.', '', '', '', ''),
-	(215, 'broadcast_quest_turned_in', '임무 완수! %quest_link 보고 완료.', 0, 0, '', 'Mission accomplie ! J’ai remis %quest_link.', 'Mission erfüllt! %quest_link ist abgegeben', '임무 완수! %quest_link 보고 완료.', '', '', '', ''),
-	(216, 'broadcast_quest_turned_in', '드디어 %quest_link 보고 완료! 정말 긴 여정이었네요!', 0, 0, '', 'Enfin, j’ai remis la %quest_link ! Quelle aventure !', 'Endlich, %quest_link abgegeben! Was für ein Ritt!', '드디어 %quest_link 보고 완료! 정말 긴 여정이었네요!', '', '', '', ''),
-	(217, 'broadcast_quest_turned_in', '방금 %quest_link를 끝내고 보고했습니다. 기분이 좋네요!', 0, 0, '', 'Je viens de terminer %quest_link et de le rendre, je me sens bien !', 'Grade %quest_link abgeschlossen und abgegeben, fühlt sich gut an!', '방금 %quest_link를 끝내고 보고했습니다. 기분이 좋네요!', '', '', '', ''),
-	(218, 'broadcast_quest_turned_in', '%zone_name에서 %quest_link를 완료했습니다. 자, 다음 도전으로 가볼까요!', 0, 0, '', 'J’ai remis la %quest_link dans %zone_name. Maintenant, je passe au défi suivant !', '%quest_link in %zone_name abgegeben. Weiter zur nächsten Herausforderung!', '%zone_name에서 %quest_link를 완료했습니다. 자, 다음 도전으로 가볼까요!', '', '', '', ''),
-	(219, 'broadcast_quest_turned_in', '%quest_link를 완료했습니다. 하나 더 해결했네요!', 0, 0, '', 'J’ai remis %quest_link. Un de moins à faire !', 'Hab %quest_link abgegeben. Wieder eine weniger!', '%quest_link를 완료했습니다. 하나 더 해결했네요!', '', '', '', ''),
-	(220, 'broadcast_quest_turned_in', '무사히 %quest_link를 보고했습니다. 시간이 꽤 걸렸네요!', 0, 0, '', 'J’ai enfin réussi à remettre la %quest_link, ça m’a pris du temps !', '%quest_link erfolgreich abgegeben, das hat gedauert!', '무사히 %quest_link를 보고했습니다. 시간이 꽤 걸렸네요!', '', '', '', ''),
-	(221, 'broadcast_quest_turned_in', '%zone_name에서 %quest_link를 끝내고 보고했습니다. 끝내주네요!', 0, 0, '', 'J’ai terminé et remis la %quest_link dans la zone %zone_name. Je me sens génial!', '%quest_link in %zone_name abgeschlossen und abgegeben. Fühlt sich gut an!', '%zone_name에서 %quest_link를 끝내고 보고했습니다. 끝내주네요!', '', '', '', ''),
-	(222, 'broadcast_quest_turned_in', '퀘스트 완료! %quest_link 보고를 마쳤으니 다음 걸 준비하죠!', 0, 0, '', 'Quête terminée! J’ai remis %quest_link et je suis prêt pour la prochaine!', 'Quest fertig! %quest_link abgegeben und bereit für die nächste!', '퀘스트 완료! %quest_link 보고를 마쳤으니 다음 걸 준비하죠!', '', '', '', ''),
-	(223, 'broadcast_quest_turned_in', '드디어 %zone_name에서 %quest_link를 완료했습니다. 정말 힘들었어요!', 0, 0, '', 'Je viens enfin de rendre la %quest_link dans la zone de %zone_name. Celle-là était vraiment coriace !', 'Endlich %quest_link in %zone_name abgegeben. Die war knackig!', '드디어 %zone_name에서 %quest_link를 완료했습니다. 정말 힘들었어요!', '', '', '', ''),
-	(224, 'broadcast_quest_turned_in', '좋아, %quest_link 보고 완료! 이제 보상을 챙길 시간입니다!', 0, 0, '', 'C’est bon, la %quest_link est terminée ! Maintenant, je vais chercher ma récompense !', 'Das wars, %quest_link abgegeben! Jetzt Belohnung einsacken!', '좋아, %quest_link 보고 완료! 이제 보상을 챙길 시간입니다!', '', '', '', ''),
-	(225, 'broadcast_quest_turned_in', '%quest_link 완료! 이제 보고하고 다음으로 넘어가죠.', 0, 0, '', 'J’ai fini la %quest_link ! Maintenant, il est temps de la remettre et de passer à la suite.', '%quest_link fertig! Jetzt abgeben und weiter.', '%quest_link 완료! 이제 보고하고 다음으로 넘어가죠.', '', '', '', ''),
-	(226, 'broadcast_quest_turned_in', '방금 %quest_link를 완료했습니다. 성취감이 느껴지네요!', 0, 0, '', 'Je viens juste de terminer %quest_link, je me sens tellement accompli !', 'Gerade %quest_link abgegeben, fühlt sich gut an!', '방금 %quest_link를 완료했습니다. 성취감이 느껴지네요!', '', '', '', ''),
-	(227, 'broadcast_quest_turned_in', '%quest_link 보고 완료. 다음엔 어떤 퀘를 해야할까용!?', 0, 0, '', 'J’ai remis %quest_link. Voyons ce qui nous attend ensuite!', 'Hab %quest_link abgegeben. Mal sehen, was als Nächstes kommt!', '%quest_link 보고 완료. 다음엔 어떤 일이 있을까요!', '', '', '', ''),
-	(228, 'broadcast_quest_turned_in', '방금 %quest_link를 마무리하고 보고했습니다. 다음 도전으로 고!', 0, 0, '', 'Je viens de terminer %quest_link et de la rendre. En route pour la suite !', '%quest_link eben abgeschlossen und abgegeben. Weiter gehts!', '방금 %quest_link를 마무리하고 보고했습니다. 다음 도전으로 고!', '', '', '', ''),
-	(229, 'broadcast_quest_turned_in', '하나 더 장부에 기록! %quest_link 완료 보고 완료.', 0, 0, '', 'Encore une de faite, %quest_link remise.', 'Wieder eine im Kasten, %quest_link abgegeben', '하나 더 장부에 기록! %quest_link 완료 보고 완료.', '', '', '', ''),
-	(230, 'broadcast_quest_turned_in', '%quest_link 보고 완료! 보상을 고를 시간이군 후후.', 0, 0, '', 'J’ai rendu la %quest_link! Il est temps de récupérer mes récompenses.', '%quest_link abgegeben! Zeit, die Belohnung abzuholen.', '%quest_link 보고 완료! 보상을 수령할 시간이군요.', '', '', '', ''),
-	(231, 'broadcast_quest_turned_in', '%quest_link를 끝내고 보고했습니다. 후련하네요!', 0, 0, '', 'J’ai terminé et remis %quest_link, quel soulagement !', '%quest_link abgeschlossen und abgegeben, was für eine Erleichterung!', '%quest_link를 끝내고 보고했습니다. 후련하네요!', '', '', '', ''),
-	(232, 'broadcast_quest_turned_in', '정말 빠르네요! 벌써 %quest_link 보고를 마쳤습니다!', 0, 0, '', 'Déjà?! %quest_link a été rendu si rapidement!', 'Das ging fix! %quest_link schon abgegeben!', '정말 빠르네요! 벌써 %quest_link 보고를 마쳤습니다!', '', '', '', ''),
-	(233, 'broadcast_quest_turned_in', '방금 %zone_name에서 %quest_link를 보고했습니다. 다음 모험을 떠날 준비 끝!', 0, 0, '', 'Je viens de rendre %quest_link dans %zone_name. Je suis prêt pour la prochaine aventure !', 'Gerade %quest_link in %zone_name abgegeben. Bereit fürs nächste Abenteuer!', '방금 %zone_name에서 %quest_link를 보고했습니다. 다음 모험을 떠날 준비 끝!', '', '', '', ''),
-	(234, 'broadcast_quest_turned_in', '%quest_link 퀘완! 하나 하나 완료하는 성취감이 좀 생깁니다만 ㅎㅎ', 0, 0, '', 'J’ai réussi à rendre %quest_link. On dirait que j’avance!', '%quest_link erfolgreich abgegeben. Fühlt sich nach Fortschritt an!', '%quest_link 보고 성공. 한걸음 더 나아가는 기분이네요!', '', '', '', ''),
-	(235, 'broadcast_quest_turned_in', '임무 완료! %quest_link 보고했습니다!', 0, 0, '', 'Mission accomplie! %quest_link a été rendue!', 'Mission komplett! %quest_link ist abgegeben!', '임무 완료! %quest_link 보고했습니다!', '', '', '', ''),
-	(236, 'broadcast_quest_turned_in', '방금 %quest_link를 마무리하고 보고했습니다. 다음 퀘스트로 넘어가죠!', 0, 0, '', 'Je viens de terminer %quest_link et de le remettre, passons à la suite!', 'Hab gerade %quest_link beendet und abgegeben, weiter zur nächsten!', '방금 %quest_link를 마무리하고 보고했습니다. 다음 퀘스트로 넘어가죠!', '', '', '', ''),
-	(237, 'broadcast_killed_normal', '또 다른 %victim_name을 처치했습니다!', 0, 0, '', 'Encore une %victim_name tombée.', 'wieder %victim_name gelegt', '또 다른 %victim_name을 처치했습니다!', '', '', '', 'еще одна жертва — %victim_name'),
-	(238, 'broadcast_killed_normal', '계속 %victim_name을 잡고 있는데, 특별할 건 없네요.', 0, 0, '', 'Je continue de tuer %victim_name, il n’y a rien à dire à ce sujet.', 'Ich leg ständig %victim_name um, nix Besonderes', '계속 %victim_name을 잡고 있는데, 특별할 건 없네요.', '', '', '', 'Я продолжаю убивать %victim_name, нечего рассказывать'),
-	(239, 'broadcast_killed_normal', '또 한 마리의 %victim_name이 쓰러졌습니다!', 0, 0, '', 'Encore une fois, %victim_name mord la poussière.', 'noch ein %victim_name beißt ins Gras', '또 한 마리의 %victim_name이 쓰러졌습니다!', '', '', '', 'еще один %victim_name пал'),
-	(240, 'broadcast_killed_normal', '%zone_name의 %victim_name이 한 마리 줄었군요!', 0, 0, '', 'Une victime en moins dans la zone.', 'ein %victim_name weniger in %zone_name', '%zone_name의 %victim_name이 한 마리 줄었군요!', '', '', '', 'минус один %victim_name в %zone_name'),
-	(241, 'broadcast_killed_elite', '이 엘리트 녀석, %victim_name을 쓰러뜨렸습니다!', 0, 0, '', 'J’ai descendu cet enfoiré d’élite %victim_name !', 'Hab diesen Elite-Bastard %victim_name umgehauen!', '이 엘리트 녀석, %victim_name을 쓰러뜨렸습니다!', '', '', '', 'Убил этого элитного ублюдка %victim_name!'),
-	(242, 'broadcast_killed_player', '%zone_name에서 엘리트 %victim_name을 처치했습니다!', 0, 0, '', 'J’ai tué l’élite %victim_name dans la zone %zone_name', 'Elite %victim_name in %zone_name gekillt', '%zone_name에서 엘리트 %victim_name을 처치했습니다!', '', '', '', 'убил элиту %victim_name в %zone_name'),
-	(243, 'broadcast_killed_rareelite', '후... 드디어 %victim_name을 잡는 데 성공했습니다!', 0, 0, '', 'Oh là là, j’ai réussi à abattre %victim_name !', 'Puh, %victim_name doch noch gelegt!', '후... 드디어 %victim_name을 잡는 데 성공했습니다!', '', '', '', 'Фух, удалось завалить %victim_name!'),
-	(244, 'broadcast_killed_worldboss', '대박! 방금 %victim_name을 잡았어요! 이제 무용담을 늘어놓을 수 있겠네요!', 0, 0, '', 'C’était fou! Je viens juste de tuer %victim_name! Je pourrais raconter des histoires maintenant.', 'Gefällt dir das %victim_name?! Willst du, dass ich drei Wochen zurückspule, als du noch gelebt hast?!', '대박! 방금 %victim_name을 잡았어요! 이제 무용담을 늘어놓을 수 있겠네요!', '', '', '', 'Это было кру토! Только что убил %victim_name! Теперь есть что рассказать'),
-	(245, 'broadcast_killed_rare', '오! 방금 %victim_name을 처치했습니다!', 0, 0, '', 'Eh, je viens juste de tuer %victim_name!', 'Yo, hab gerade %victim_name gekillt!', '오! 방금 %victim_name을 처치했습니다!', '', '', '', 'Йо, я только что убил %victim_name!'),
-	(246, 'broadcast_killed_player', '%zone_name에서 희귀 몬스터 %victim_name을 처치했습니다!', 0, 0, '', 'J’ai tué un rare %victim_name dans %zone_name', 'Rare %victim_name in %zone_name gekillt', '%zone_name에서 희귀 몬스터 %victim_name을 처치했습니다!', '', '', '', 'убил редкого %victim_name в %zone_name'),
-	(247, 'broadcast_killed_unknown', '세상에, 내가 방금 뭘 잡은 거지? %victim_name?', 0, 0, '', 'Qu’est-ce que je viens de tuer ? %victim_name', 'WTF hab ich da gerade umgehauen? %victim_name', '세상에, 내가 방금 뭘 잡은 거지? %victim_name?', '', '', '', 'Что я только что убил? %victim_name'),
-	(248, 'broadcast_killed_pet', '방금 소환수 %victim_name을 처치했습니다.', 0, 0, '', 'Je viens de tuer l’animal de compagnie, %victim_name.', 'Gerade das Pet %victim_name gekillt', '방금 소환수 %victim_name을 처치했습니다.', '', '', '', 'Только что убил этого пета %victim_name'),
-	(249, 'broadcast_killed_player', '좋아! 방금 %victim_name을 처치했습니다!', 0, 0, '', 'Oh ouais, je viens juste de tuer %victim_name', 'Oh ja, hab gerade %victim_name gekillt', '좋아! 방금 %victim_name을 처치했습니다!', '', '', '', 'О да, только что убил %victim_name'),
-	(250, 'broadcast_killed_player', '%zone_name에서 %victim_name을 처치했습니다!', 0, 0, '', 'J’ai tué %victim_name dans %zone_name.', '%victim_name in %zone_name gekillt', '%zone_name에서 %victim_name을 처치했습니다!', '', '', '', 'убил %victim_name в %zone_name'),
-	(251, 'broadcast_killed_normal', '또 다른 %victim_name을 쓰러뜨렸습니다!', 0, 0, '', 'Encore une %victim_name de moins.', 'Wieder %victim_name erlegt', '또 다른 %victim_name을 쓰러뜨렸습니다!', '', '', '', 'еще одна жертва — %victim_name'),
-	(252, 'broadcast_killed_normal', '계속해서 %victim_name을 처치 중입니다. 별다를 건 없어요.', 0, 0, '', 'Je continue de tuer %victim_name, rien à dire à ce sujet.', 'Ich leg ständig %victim_name um, nix Besonderes', '계속해서 %victim_name을 처치 중입니다. 별다를 건 없어요.', '', '', '', 'Я продолжаю убивать %victim_name, нечего рассказывать'),
-	(253, 'broadcast_killed_normal', '또 한 명의 %victim_name이 패배했습니다!', 0, 0, '', 'Encore une victime %victim_name qui mord la poussière.', 'noch ein %victim_name beißt ins Gras', '또 한 명의 %victim_name이 패배했습니다!', '', '', '', 'еще один %victim_name пал'),
-	(254, 'broadcast_killed_normal', '%zone_name에 %victim_name이 한 마리 줄었군요.', 0, 0, '', 'Il y a une victime %victim_name de moins dans la zone.', 'ein %victim_name weniger in %zone_name', '%zone_name에 %victim_name이 한 마리 줄었군요.', '', '', '', 'минус один %victim_name в %zone_name'),
-	(255, 'broadcast_killed_normal', '아무 일도 아니라는 듯 %victim_name을 쓰러뜨렸습니다!', 0, 0, '', 'Je viens de neutraliser %victim_name comme si c’était rien.', '%victim_name so nebenbei umgehauen', '아무 일도 아니라는 듯 %victim_name을 쓰러뜨렸습니다!', '', '', '', ''),
-	(256, 'broadcast_killed_normal', '%victim_name은 상대조차 되지 않았습니다!', 0, 0, '', '%victim_name n’avait aucune chance.', '%victim_name hatte keine Chance', '%victim_name은 상대조차 되지 않았습니다!', '', '', '', ''),
-	(257, 'broadcast_killed_normal', '길을 가로막던 %victim_name을 또 하나 처리했습니다!', 0, 0, '', 'Encore une victime %victim_name de moins sur notre chemin', 'Schon wieder %victim_name aus dem Weg geräumt', '길을 가로막던 %victim_name을 또 하나 처리했습니다!', '', '', '', ''),
-	(258, 'broadcast_killed_normal', '%victim_name은 너무 쉬웠네요. 다음으로 가죠!', 0, 0, '', '%victim_name était trop facile, passons au suivant.', '%victim_name war zu easy, weiter gehts', '%victim_name은 너무 쉬웠네요. 다음으로 가죠!', '', '', '', ''),
-	(259, 'broadcast_killed_normal', '또 한 명의 %victim_name을 처치했습니다. 식은 죽 먹기죠!', 0, 0, '', 'Encore une autre victime vaincue %victim_name. C’était du gâteau.', 'Und wieder %victim_name plattgemacht. Kinderkram', '또 한 명의 %victim_name을 처치했습니다. 식은 죽 먹기죠!', '', '', '', ''),
-	(260, 'broadcast_killed_normal', '%victim_name은 전혀 상대하기 어렵지 않았습니다!', 0, 0, '', '%victim_name n’était vraiment pas du tout résistant.', '%victim_name war gar nicht so tough', '%victim_name은 전혀 상대하기 어렵지 않았습니다!', '', '', '', ''),
-	(261, 'broadcast_killed_normal', '%victim_name이 쓰러졌습니다. 특별한 건 없네요.', 0, 0, '', '%victim_name tombe, rien de spécial', '%victim_name liegt, nix Besonderes', '%victim_name이 쓰러졌습니다. 특별한 건 없네요.', '', '', '', ''),
-	(262, 'broadcast_killed_normal', '너무 쉬웠어요. %victim_name 처치!', 0, 0, '', 'C’était trop facile, %victim_name est hors jeu.', 'Das war zu easy, %victim_name liegt', '너무 쉬웠어요. %victim_name 처치!', '', '', '', ''),
-	(263, 'broadcast_killed_normal', '%victim_name이 순식간에 쓰러졌습니다. 눈 깜빡할 새였네요!', 0, 0, '', '%victim_name a chuté si vite, cligne des yeux et c’est déjà terminé.', '%victim_name ist so schnell umgekippt, einmal blinzeln und vorbei', '%victim_name이 순식간에 쓰러졌습니다. 눈 깜빡할 새였네요!', '', '', '', ''),
-	(264, 'broadcast_killed_elite', '정예 %victim_name을 처치했습니다!', 0, 0, '', 'J’ai vaincu cet élite %victim_name !', 'Diesen Elite %victim_name umgehauen!', '정예 %victim_name을 처치했습니다!', '', '', '', ''),
-	(265, 'broadcast_killed_elite', '정예 %victim_name은 이제 없습니다!', 0, 0, '', 'Elite %victim_name n’est plus.', 'Elite %victim_name existiert nicht mehr', '정예 %victim_name은 이제 없습니다!', '', '', '', ''),
-	(266, 'broadcast_killed_elite', '정예 %victim_name을 깔끔하게 처리했습니다!', 0, 0, '', 'J’ai descendu l’élite %victim_name comme un champion.', 'Den Elite %victim_name weggemacht wie ein Boss', '정예 %victim_name을 깔끔하게 처리했습니다!', '', '', '', ''),
-	(267, 'broadcast_killed_elite', '정예 몬스터 %victim_name도 저에겐 상대가 안 되는군요!', 0, 0, '', 'Monstre d’élite %victim_name, pas de taille pour moi !', 'Elite-Mob %victim_name, hat keine Chance gegen mich!', '정예 몬스터 %victim_name도 저에겐 상대가 안 되는군요!', '', '', '', ''),
-	(268, 'broadcast_killed_elite', '드디어 강력한 %victim_name을 쓰러뜨렸습니다!', 0, 0, '', 'J’ai enfin vaincu le redoutable %victim_name.', 'Endlich den mächtigen %victim_name gelegt', '드디어 강력한 %victim_name을 쓰러뜨렸습니다!', '', '', '', ''),
-	(269, 'broadcast_killed_player', '%zone_name에서 정예 %victim_name을 처치했습니다!', 0, 0, '', 'J’ai tué l’élite %victim_name dans la zone %zone_name.', 'Elite %victim_name in %zone_name gekillt', '%zone_name에서 정예 %victim_name을 처치했습니다!', '', '', '', 'убил элиту %victim_name в %zone_name'),
-	(270, 'broadcast_killed_player', '방금 %zone_name에서 정예 %victim_name을 잡았습니다!', 0, 0, '', 'Je viens tout juste d’obtenir l’élite %victim_name dans la région de %zone_name.', 'Hab gerade Elite %victim_name in %zone_name erwischt', '방금 %zone_name에서 정예 %victim_name을 잡았습니다!', '', '', '', ''),
-	(271, 'broadcast_killed_player', '정예 %victim_name 처치. 너무 쉬운데요?', 0, 0, '', 'J’ai tué l’élite %victim_name. Trop facile.', 'Elite %victim_name gekillt. Viel zu easy', '정예 %victim_name 처치. 너무 쉬운데요?', '', '', '', ''),
-	(272, 'broadcast_killed_player', '%zone_name에서 %victim_name을 쓰러뜨렸습니다. 정말 치열한 싸움이었어요!', 0, 0, '', 'J’ai abattu %victim_name dans %zone_name, quel combat!', '%victim_name in %zone_name umgehauen, was ein Kampf', '%zone_name에서 %victim_name을 쓰러뜨렸습니다. 정말 치열한 싸움이었어요!', '', '', '', ''),
-	(273, 'broadcast_killed_player', '정예 %victim_name 처치. 이제 저를 막을 수 있는 건 없나 보네요!', 0, 0, '', 'J’ai tué l’élite %victim_name. Je suis imbattable, je crois.', 'Elite %victim_name gekillt. Ich scheine unaufhaltbar zu sein', '정예 %victim_name 처치. 이제 저를 막을 수 있는 건 없나 보네요!', '', '', '', ''),
-	(274, 'broadcast_killed_rareelite', '후... 겨우 %victim_name을 쓰러뜨리는 데 성공했습니다!', 0, 0, '', 'Whouaa, j’ai réussi à éliminer %victim_name !', 'Puh, %victim_name doch noch gelegt!', '후... 겨우 %victim_name을 쓰러뜨리는 데 성공했습니다!', '', '', '', 'Фух, удалось завалить %victim_name!'),
-	(275, 'broadcast_killed_rareelite', '희귀 정예 %victim_name이 쓰러졌습니다!', 0, 0, '', 'Un rare élite nommé %victim_name est tombé', 'Seltener Elite %victim_name liegt', '희귀 정예 %victim_name이 쓰러졌습니다!', '', '', '', ''),
-	(276, 'broadcast_killed_rareelite', '%victim_name은 이제 없습니다. 또 한 명의 희귀 정예를 처치했네요!', 0, 0, '', '%victim_name n’est plus. Encore un rare élite abattu.', '%victim_name gibt es nicht mehr. Noch ein seltener Elite gelegt', '%victim_name은 이제 없습니다. 또 한 명의 희귀 정예를 처치했네요!', '', '', '', ''),
-	(277, 'broadcast_killed_rareelite', '희귀 정예 %victim_name 처치! 지금 제 상태가 아주 좋네요!', 0, 0, '', 'Rare elite %victim_name abattu. Je suis en feu!', 'Seltener Elite %victim_name down. Ich bin aus Feuer!', '희귀 정예 %victim_name 처치! 지금 제 상태가 아주 좋네요!', '', '', '', ''),
-	(278, 'broadcast_killed_rareelite', '방금 희귀 정예 %victim_name을 처치했습니다!', 0, 0, '', 'Je viens de vaincre l’élite rare %%victim_name.', 'Hab gerade den seltenen Elite %victim_name gekillt', '방금 희귀 정예 %victim_name을 처치했습니다!', '', '', '', ''),
-	(279, 'broadcast_killed_worldboss', '최고였어요! 방금 %victim_name을 잡았습니다! 정말 대단한 전투였어요!', 0, 0, '', 'C’était incroyable! Je viens juste de tuer %victim_name! Quelle bataille!', 'Das war geil! %victim_name gerade gekillt! Was ein Kampf', '최고였어요! 방금 %victim_name을 잡았습니다! 정말 대단한 전투였어요!', '', '', '', ''),
-	(280, 'broadcast_killed_worldboss', '월드 보스 %victim_name이 쓰러졌습니다! 정말 전설적인 싸움이었네요!', 0, 0, '', 'Le boss mondial %victim_name est tombé ! C’était épique.', 'Weltenboss %victim_name ist down! Das war episch', '월드 보스 %victim_name이 쓰러졌습니다! 정말 전설적인 싸움이었네요!', '', '', '', ''),
-	(281, 'broadcast_killed_worldboss', '월드 보스 %victim_name을 정벌했습니다. 다 함께 축하하죠!', 0, 0, '', 'J’ai abattu le boss mondial %victim_name. On va fêter ça !', 'Hab den Weltenboss %victim_name gelegt. Zeit zum Feiern!', '월드 보스 %victim_name을 정벌했습니다. 다 함께 축하하죠!', '', '', '', ''),
-	(282, 'broadcast_killed_worldboss', '%victim_name 처치! 이 월드 보스는 정말 장난이 아니었네요!', 0, 0, '', 'J’ai tué %victim_name! Ce world boss était vraiment costaud!', '%victim_name gekillt! Der Weltenboss war kein Spaß!', '%victim_name 처치! 이 월드 보스는 정말 장난이 아니었네요!', '', '', '', ''),
-	(283, 'broadcast_killed_worldboss', '방금 %victim_name을 잡았습니다. 전설적인 순간이네요!', 0, 0, '', 'Je viens juste de tuer %victim_name, c’était légendaire!', 'Gerade %victim_name gekillt, das war legendär', '방금 %victim_name을 잡았습니다. 전설적인 순간이네요!', '', '', '', ''),
-	(284, 'broadcast_killed_rare', '오! 방금 %victim_name을 처치했습니다!', 0, 0, '', 'Eh, je viens juste de tuer %victim_name!', 'Yo, hab gerade %victim_name gekillt!', '오! 방금 %victim_name을 처치했습니다!', '', '', '', 'Йо, я только что убил %victim_name!'),
-	(285, 'broadcast_killed_rare', '희귀 몬스터 %victim_name 처치. 꽤 즐거운 싸움이었습니다!', 0, 0, '', 'Rare %victim_name down. C’était un combat amusant.', 'Seltener %victim_name down. War ein geiler Fight', '희귀 몬스터 %victim_name 처치. 꽤 즐거운 싸움이었습니다!', '', '', '', ''),
-	(286, 'broadcast_killed_rare', '방금 희귀 몬스터 %victim_name을 잡았습니다!', 0, 0, '', 'Je viens de tuer le rare %victim_name.', 'Hab gerade den seltenen %victim_name gekillt', '방금 희귀 몬스터 %victim_name을 잡았습니다!', '', '', '', ''),
-	(287, 'broadcast_killed_rare', '%zone_name에서 희귀 몬스터 %victim_name을 물리쳤습니다!', 0, 0, '', 'Rare %victim_name vaincu dans %zone_name', 'Seltener %victim_name in %zone_name besiegt', '%zone_name에서 희귀 몬스터 %victim_name을 물리쳤습니다!', '', '', '', ''),
-	(288, 'broadcast_killed_rare', '방금 %zone_name에서 희귀 몬스터 %victim_name을 잡았습니다. 금방이었네요!', 0, 0, '', 'Je viens de tuer le rare %victim_name dans %zone_name. Ça a été rapide!', 'Gerade seltenen %victim_name in %zone_name gekillt. Das ging fix!', '방금 %zone_name에서 희귀 몬스터 %victim_name을 잡았습니다. 금방이었네요!', '', '', '', ''),
-	(289, 'broadcast_killed_player', '%zone_name에서 희귀 몬스터 %victim_name을 처치했습니다!', 0, 0, '', 'J’ai tué un %victim_name rare dans la zone de %zone_name.', 'Seltenen %victim_name in %zone_name gekillt', '%zone_name에서 희귀 몬스터 %victim_name을 처치했습니다!', '', '', '', 'убил редкого %victim_name в %zone_name'),
-	(290, 'broadcast_killed_player', '%zone_name에서 희귀 몬스터 %victim_name을 잡아냈습니다!', 0, 0, '', 'J’ai trouvé le rare %victim_name dans %zone_name', 'Den seltenen %victim_name in %zone_name erwischt', '%zone_name에서 희귀 몬스터 %victim_name을 잡아냈습니다!', '', '', '', ''),
-	(291, 'broadcast_killed_player', '%zone_name에서 %victim_name을 처치했습니다. 기분 좋네요!', 0, 0, '', 'J’ai tué %victim_name dans %zone_name. Ça m’a fait du bien.', 'Hab %victim_name in %zone_name gekillt. Das tat gut', '%zone_name에서 %victim_name을 처치했습니다. 기분 좋네요!', '', '', '', ''),
-	(292, 'broadcast_killed_player', '%zone_name에서 %victim_name을 쓰러뜨렸습니다. 상대도 안 되더군요!', 0, 0, '', 'J’ai vaincu %victim_name dans %zone_name. Ils n’avaient aucune chance.', '%victim_name in %zone_name umgehauen. Keine Chance gehabt', '%zone_name에서 %victim_name을 쓰러뜨렸습니다. 상대도 안 되더군요!', '', '', '', ''),
-	(293, 'broadcast_killed_player', '방금 %zone_name에서 %victim_name을 처치했습니다. 식은 죽 먹기죠!', 0, 0, '', 'Je viens de tuer %victim_name à %zone_name, c’était facile', 'Gerade %victim_name in %zone_name gekillt, easy', '방금 %zone_name에서 %victim_name을 처치했습니다. 식은 죽 먹기죠!', '', '', '', ''),
-	(294, 'broadcast_killed_unknown', '내가 방금 뭘 잡은 거지? %victim_name?', 0, 0, '', 'Qui est-ce que je viens de tuer? %victim_name', 'Was hab ich da gerade gekillt? %victim_name', '내가 방금 뭘 잡은 거지? %victim_name?', '', '', '', ''),
-	(295, 'broadcast_killed_unknown', '이게 대체 무슨 %victim_name인가요? 이런 건 처음 봅니다!', 0, 0, '', 'Quel genre de %victim_name est-ce ça ? Je n’ai jamais rien vu de tel auparavant.', 'Was ist das für ein %victim_name? Sowas hab ich noch nie gesehen', '이게 대체 무슨 %victim_name인가요? 이런 건 처음 봅니다!', '', '', '', ''),
-	(296, 'broadcast_killed_unknown', '방금 이상한 걸 잡았어요, %victim_name!', 0, 0, '', 'Je viens de tuer quelque chose d’étrange, %victim_name', 'Hab gerade was Seltsames gekillt, %victim_name', '방금 이상한 걸 잡았어요, %victim_name!', '', '', '', ''),
-	(297, 'broadcast_killed_unknown', '%victim_name은 참 기묘했지만, 결국 쓰러뜨렸습니다!', 0, 0, '', '%victim_name était bizarre, mais au sol ils vont', '%victim_name war seltsam, aber liegt trotzdem', '%victim_name은 참 기묘했지만, 결국 쓰러뜨렸습니다!', '', '', '', ''),
-	(298, 'broadcast_killed_pet', '방금 %victim_name을 물리쳤습니다!', 0, 0, '', 'Je viens juste de vaincre %victim_name.', 'Gerade %victim_name besiegt', '방금 %victim_name을 물리쳤습니다!', '', '', '', ''),
-	(299, 'broadcast_killed_pet', '잘 가라, %victim_name. 넌 그냥 소환수일 뿐이었어.', 0, 0, '', 'Au revoir, %victim_name. Tu étais qu’un animal de compagnie.', 'Machs gut, %victim_name. Warst nur ein Pet', '잘 가라, %victim_name. 넌 그냥 소환수일 뿐이었어.', '', '', '', ''),
-	(300, 'broadcast_killed_pet', '방금 소환수 %victim_name을 처치했습니다. 뜻밖이었네요!', 0, 0, '', 'Je viens de m’occuper de l’animal de compagnie %victim_name. Ça c’était inattendu.', 'Hab gerade das Pet %victim_name umgehauen. Das kam unerwartet.', '방금 소환수 %victim_name을 처치했습니다. 뜻밖이었네요!', '', '', '', ''),
-	(301, 'broadcast_killed_pet', '%victim_name 처치. 다음엔 운이 좋길 바란다, 꼬마야!', 0, 0, '', '%victim_name mord la poussière. Meilleure chance la prochaine fois, mon pote.', '%victim_name liegt. Vielleicht nächstes Mal, Pet', '%victim_name 처치. 다음엔 운이 좋길 바란다, 꼬마야!', '', '', '', ''),
-	(302, 'broadcast_levelup_generic', '%my_level 레벨 달성! 렙업!', 0, 0, '', '%my_level Ding !', 'Ding! %my_level', '%my_level 레벨 달성! 렙업!', '', '', '', ''),
-	(303, 'broadcast_levelup_generic', '아싸, 드디어 %my_level 레벨이 됐어요!', 0, 0, '', 'Oui, je suis au niveau %my_level !', 'Jaaa, ich bin Level %my_level!', '아싸, 드디어 %my_level 레벨이 됐어요!', '', '', '', 'Да, я теперь %my_level уровень!'),
-	(304, 'broadcast_levelup_generic', '님들 또 레벨 업 했습니다!', 0, 0, '', 'Je viens de monter de niveau', 'Gerade aufgelevelt', '방금 레벨 업 했습니다!', '', '', '', 'Я только что повысил уровень'),
-	(305, 'broadcast_levelup_10x', '%my_level 레벨을 달성했습니다!!!', 0, 0, '', 'Je suis au niveau %my_level !!!', 'Ich bin Level %my_level!!!', '%my_level 레벨을 달성했습니다!!!', '', '', '', 'Я %my_level уровень!!!'),
-	(306, 'broadcast_levelup_10x', '점점 강해지고 있네요, 벌써 %my_level 레벨이라니!!!', 0, 0, '', 'Je deviens de plus en plus fort, je suis déjà au niveau %my_level !!!', 'Werde stärker, schon Level %my_level!!!', '점점 강해지고 있네요, 벌써 %my_level 레벨이라니!!!', '', '', '', 'Становлюсь сильнее, уже %my_level уровень!!!'),
-	(307, 'broadcast_levelup_10x', '방금 %my_level 레벨에 도달했습니다!!!', 0, 0, '', 'Je viens d’atteindre le niveau %my_level !!!', 'Gerade Level %my_level erreicht!!!', '방금 %my_level 레벨에 도달했습니다!!!', '', '', '', 'Только что достиг %my_level уровня!!!'),
-	(308, 'broadcast_levelup_max_level', '세상에, 드디어 %my_level 레벨이에요!!!', 0, 0, '', 'OMG, enfin le niveau %my_level!!!', 'OMG, endlich Level %my_level!!!', '세상에, 드디어 %my_level 레벨이에요!!!', '', '', '', 'ОГО, наконец-то %my_level уровень!!!'),
-	(309, 'broadcast_levelup_max_level', '%my_level 달성!!! 이제 최종 콘텐츠를 즐길 수 있겠네요!', 0, 0, '', '%my_level!!! je peux me permettre de faire du contenu de fin de jeu maintenant.', 'Stufe %my_level!!! Jetzt kann ich Endgame-Content machen', '%my_level 달성!!! 이제 최종 콘텐츠를 즐길 수 있겠네요!', '', '', '', '%my_level!!! теперь могу заниматься эндгейм-контентом'),
-	(310, 'broadcast_levelup_max_level', '따끈따끈한 %my_level 레벨 %my_class 탄생!!!', 0, 0, '', 'Nouveau niveau %my_level %my_class!!!', 'Frisch auf Level %my_level, %my_class!!!', '따끈따끈한 %my_level 레벨 %my_class 탄생!!!', '', '', '', 'свежий новый уровень %my_level %my_class!!!'),
-	(311, 'broadcast_levelup_max_level', '한 레벨 더! %my_level 레벨 %my_race %my_class입니다!', 0, 0, '', 'Encore un niveau de plus %my_level pour ma race %my_race et ma classe %my_class!', 'Noch ein Level: %my_level, %my_race %my_class!', '한 레벨 더! %my_level 레벨 %my_race %my_class입니다!', '', '', '', 'еще один уровень %my_level %my_race %my_class!'),
-	(312, 'broadcast_levelup_generic', '아쌰르 또 렙업 ㅋ!', 0, 0, '', 'Ding! Encore un niveau de gagné!', 'Ding! Wieder ein Level up!', '딩! 또 레벨 업 했어요!', '', '', '', ''),
-	(313, 'broadcast_levelup_generic', '이제 공식적으로 %my_level 레벨이 되었습니다!', 0, 0, '', 'Je suis maintenant officiellement au niveau %my_level !', 'Jetzt offiziell Level %my_level!', '이제 공식적으로 %my_level 레벨이 되었습니다!', '', '', '', ''),
-	(314, 'broadcast_levelup_generic', '%my_level 레벨 달성, 존나 쎄진 기분이네!', 0, 0, '', 'Niveau %my_level, je me sens déjà plus fort!', 'Level %my_level, fühl mich jetzt schon stärker!', '%my_level 레벨 달성, 벌써 강해진 기분이에요!', '', '', '', ''),
-	(315, 'broadcast_levelup_generic', '쭉쭉 올라가네요! %my_level 레벨 도달!', 0, 0, '', 'Je monte ! Niveau %my_level atteint', 'Aufwärts! Level %my_level erreicht', '쭉쭉 올라가네요! %my_level 레벨 도달!', '', '', '', ''),
-	(316, 'broadcast_levelup_generic', '정말 빠르네요, 벌써 %my_level 레벨이라니!', 0, 0, '', 'Déjà niveau %my_level ! Ça se passe bien !', 'Das ging fix, schon Level %my_level!', '정말 빠르네요, 벌써 %my_level 레벨이라니!', '', '', '', ''),
-	(317, 'broadcast_levelup_generic', '방금 %my_level 레벨을 찍었습니다, 계속 가보자고요!', 0, 0, '', 'Je viens d’atteindre le niveau %my_level, allons-y !', 'Gerade Level %my_level erreicht, auf gehts!', '방금 %my_level 레벨을 찍었습니다, 계속 가보자고요!', '', '', '', ''),
-	(318, 'broadcast_levelup_generic', '%my_level 레벨 달성, 더 큰 목표를 향해 고고!', 0, 0, '', 'Niveau %my_level, passons à des choses plus grandes !', 'Level %my_level, jetzt kommen die großen Sachen!', '%my_level 레벨 달성, 더 큰 목표를 향해 가야죠!', '', '', '', ''),
-	(319, 'broadcast_levelup_generic', '%my_level 레벨 달성, 요즘 폼 너무 좋고!', 0, 0, '', 'Niveau %my_level, je suis en feu maintenant !', 'Level %my_level, ich bin jetzt on fire!', '%my_level 레벨 달성, 지금 기세가 아주 좋아요!', '', '', '', ''),
-	(320, 'broadcast_levelup_generic', '%my_level 레벨 완료, 계속 달린다!', 0, 0, '', 'Niveau %my_level terminé, en avant !', 'Level %my_level voll und weiter!', '%my_level 레벨 완료, 계속 전진합니다!', '', '', '', ''),
-	(321, 'broadcast_levelup_generic', '이제 %my_level 레벨입니다. 다음엔 뭘 해야됨?', 0, 0, '', 'Je suis maintenant niveau %my_level, qu’est-ce qui suit?', 'Bin jetzt Level %my_level, was kommt als Nächstes?', '이제 %my_level 레벨입니다. 다음엔 뭘 할까요?', '', '', '', ''),
-	(322, 'broadcast_levelup_10x', '%my_level 레벨!!! 드디어 해냈음 ㅋㅋ', 0, 0, '', 'Niveau %my_level!!! C’est en train de se passer!', 'Level %my_level!!! Es passiert!', '%my_level 레벨!!! 드디어 해냈어요!', '', '', '', ''),
-	(323, 'broadcast_levelup_10x', '방금 %my_level 레벨이 됐습니다. 기분이 최고네요!', 0, 0, '', 'Je viens d’atteindre le niveau %my_level, c’est incroyable !', 'Gerade Level %my_level erreicht, fühlt sich mega an!', '방금 %my_level 레벨이 됐습니다. 기분이 최고네요!', '', '', '', ''),
-	(324, 'broadcast_levelup_10x', '%my_level 레벨 달성, 이건 시작일 뿐!', 0, 0, '', 'Niveau %my_level et je ne fais que commencer!', 'Level %my_level und ich fange erst an!', '%my_level 레벨 달성, 이건 시작일 뿐입니다!', '', '', '', ''),
-	(325, 'broadcast_levelup_10x', '와, 벌써 %my_level 레벨이네요. 전 이제 거침없습니다!', 0, 0, '', 'Wow, niveau %my_level déjà, je suis imbattable!', 'Wow, schon Level %my_level, unaufhaltbar!', '와, 벌써 %my_level 레벨이네요. 전 이제 거침없습니다!', '', '', '', ''),
-	(326, 'broadcast_levelup_10x', '%my_level 레벨에서 새로운 경지에 도달했습니다!!!', 0, 0, '', 'Atteignant de nouveaux sommets au niveau %my_level !!!', 'Neue Höhen mit Level %my_level!!!', '%my_level 레벨에서 새로운 경지에 도달했습니다!!!', '', '', '', ''),
-	(327, 'broadcast_levelup_10x', '%my_level 레벨 달성, 아직 멈추지 않고 나아가는중!', 0, 0, '', 'Niveau %my_level et je continue d’avancer à fond !', 'Level %my_level und weiter Vollgas!', '%my_level 레벨 달성, 아직 멈추지 않고 나아갑니다!', '', '', '', ''),
-	(328, 'broadcast_levelup_10x', '%my_level 레벨 달성, 시발 너무 쎄진건가!', 0, 0, '', 'Niveau %my_level, je suis trop fort maintenant!', 'Level %my_level, jetzt bin ich zu stark!', '%my_level 레벨 달성, 전 이제 너무 강력해졌군요!', '', '', '', ''),
-	(329, 'broadcast_levelup_10x', '%my_level 레벨 달성, 기분 정말 끝내주네요!', 0, 0, '', 'Atteindre %my_level, ça fait tellement du bien !', 'Level %my_level erreicht, fühls sich so gut an!', '%my_level 레벨 달성, 기분 정말 끝내주네요!', '', '', '', ''),
-	(330, 'broadcast_levelup_10x', '이제 %my_level 레벨입니다! 가자고요!', 0, 0, '', 'Je suis au niveau %my_level maintenant ! Allez, c’est parti !', 'Bin jetzt Level %my_level! Los gehts!', '이제 %my_level 레벨입니다! 가자고요!', '', '', '', ''),
-	(331, 'broadcast_levelup_10x', '%my_level 레벨 달성, 아직 갈 길이 멀구만!', 0, 0, '', 'Niveau %my_level, il me reste encore beaucoup de chemin à parcourir !', 'Level %my_level, noch viel vor mir!', '%my_level 레벨 달성, 아직 갈 길이 멉니다!', '', '', '', ''),
-	(332, 'broadcast_levelup_max_level', '드디어 %my_level 레벨 달성! 이제 뭐든지 다 해보겠네 ㅋㅋ', 0, 0, '', 'J’ai enfin atteint le niveau %my_level, je peux tout faire !', 'Endlich Level %my_level erreicht, ich kann alles!', '드디어 %my_level 레벨 달성! 이제 무엇이든 할 수 있습니다!', '', '', '', ''),
-	(333, 'broadcast_levelup_max_level', '만렙 %my_level 달성, 최종 콘텐츠여 내가 간다!', 0, 0, '', 'Niveau maximum %my_level atteint, je me rapproche de la fin du jeu !', 'Maxlevel %my_level, Endgame ich komme!', '만렙 %my_level 달성, 최종 콘텐츠여 내가 간다!', '', '', '', ''),
-	(334, 'broadcast_levelup_max_level', '%my_level 레벨 달성! 최종 콘텐츠를 맞이할 준비가 됐습니다!', 0, 0, '', 'Niveau %my_level ! Prêt pour la phase finale !', 'Level %my_level! Bereit fürs Endgame!', '%my_level 레벨 달성! 최종 콘텐츠를 맞이할 준비가 됐습니다!', '', '', '', ''),
-	(335, 'broadcast_levelup_max_level', '%my_level 레벨에서 최종 콘텐츠가 열렸습니다. 덤벼라!', 0, 0, '', 'Fin du jeu débloquée au niveau %my_level, ça va déménager !', 'Endgame freigeschaltet auf Level %my_level, her damit!', '%my_level 레벨에서 최종 콘텐츠가 열렸습니다. 덤벼라!', '', '', '', ''),
-	(336, 'broadcast_levelup_max_level', '%my_level 레벨에 도달했습니다. 이제 다 죠져버릴 시간임!', 0, 0, '', 'J’ai atteint le niveau %my_level, c’est le moment de briller!', 'Hab Level %my_level erreicht, Zeit zu glänzen!', '%my_level 레벨에 도달했습니다. 이제 활약할 시간이죠!', '', '', '', ''),
-	(337, 'broadcast_levelup_max_level', '%my_level 레벨이네요. 이제 최종 레이드를 뛰러 갑시다!', 0, 0, '', 'Niveau %my_level, allons faire un raid de fin de jeu!', 'Level %my_level, lasst uns Endgame-Raids machen!', '%my_level 레벨이네요. 이제 최종 레이드를 뛰러 갑시다!', '', '', '', ''),
-	(338, 'broadcast_levelup_max_level', '%my_level 레벨인 누구도 이제 이몸을 막을 수 없습니다!', 0, 0, '', 'Au niveau %my_level, rien ne peut m’arrêter maintenant !', 'Mit Level %my_level hält mich nix mehr auf!', '%my_level 레벨인 절 이제 아무도 막을 수 없습니다!', '', '', '', ''),
-	(339, 'broadcast_levelup_max_level', '%my_level 레벨 달성, 고난이도 콘텐츠를 위한 모든 준비가 끝났쥬!', 0, 0, '', 'Niveau %my_level, toutes les systèmes sont prêts pour du contenu de haut niveau !', 'Level %my_level, bereit für High-Level-Content!', '%my_level 레벨 달성, 고난도 콘텐츠를 위한 모든 준비가 끝났습니다!', '', '', '', ''),
-	(340, 'broadcast_levelup_max_level', '좋았어! %my_level 레벨 %my_class, 무엇이든 상대할 준비 완료!', 0, 0, '', 'Oui! Niveau %my_level, %my_class prêt pour tout!', 'Yes! Level %my_level, %my_class für alles bereit!', '좋았어! %my_level 레벨 %my_class, 무엇이든 상대할 준비 완료!', '', '', '', ''),
-	(341, 'broadcast_levelup_max_level', '%my_level 레벨 달성, 세상아 내가 간다 와다다다!', 0, 0, '', 'Niveau %my_level, c’est le moment de conquérir le monde!', 'Level %my_level, Zeit die Welt herauszufordern!', '%my_level 레벨 달성, 이제 세계에 도전할 차례입니다!', '', '', '', ''),
-	(342, 'broadcast_levelup_max_level', '%my_level 레벨에 도달했습니다. 엘리트 보스들을 잡아보자고요!', 0, 0, '', 'J’ai atteint le niveau %my_level, allons affronter ces boss d’élite!', 'Level %my_level erreicht, schnappen wir uns die Elitebosse!', '%my_level 레벨에 도달했습니다. 엘리트 보스들을 잡아보자고요!', '', '', '', ''),
-	(343, 'broadcast_levelup_max_level', '이제 %my_level 레벨입니다. 진짜 모험은 이제부터 시작이죠!', 0, 0, '', 'Maintenant que je suis %my_level, la vraie aventure commence!', 'Jetzt bin ich Level %my_level, das echte Abenteuer beginnt!', '이제 %my_level 레벨입니다. 진짜 모험은 이제부터 시작이죠!', '', '', '', ''),
-	(344, 'broadcast_levelup_max_level', '%my_level 레벨! 이제 본격적으로 달려보겠삼!', 0, 0, '', 'Niveau %my_level ! Il est temps d’entrer en action sérieusement !', 'Level %my_level! Zeit für ernsthafte Action!', '%my_level 레벨! 이제 본격적으로 움직여볼 시간입니다!', '', '', '', ''),
-	(345, 'broadcast_levelup_max_level', '%my_level 만렙까지 겁나게 달리는 중!', 0, 0, '', 'Niveau %my_level et je continue de devenir de plus en plus fort !', 'Level %my_level und werde immer stärker!', '%my_level 레벨이지만 전 여전히 더 강해지고 있습니다!', '', '', '', ''),
-	(346, 'broadcast_levelup_max_level', '드디어 %my_level 레벨이네요! 드디어 이몸의  실력을 보여줄 때가 됐군요!', 0, 0, '', 'Enfin, je suis au niveau %my_level ! Il est temps de montrer de quoi je suis capable !', 'Endlich auf Level %my_level! Jetzt zeige ich, was ich kann!', '드디어 %my_level 레벨이네요! 제 실력을 보여줄 때가 됐군요!', '', '', '', ''),
-	(347, 'broadcast_levelup_max_level', '%my_level 레벨 달성! 이제 큰 무대에서 뛸 준비가 됐습니다!', 0, 0, '', 'Le niveau %my_level est arrivé! Je suis prêt pour les grands matchs!', 'Level %my_level ist da! Bereit für die große Liga!', '%my_level 레벨 달성! 이제 큰 무대에서 뛸 준비가 됐습니다!', '', '', '', ''),
-	(348, 'broadcast_levelup_max_level', '방금 %my_level 레벨을 찍었습니다. 진정한 도전을 준비하세요!', 0, 0, '', 'Je viens d’atteindre mon niveau %my_level, je suis prêt pour affronter de vrais défis !', 'Gerade Level %my_level erreicht, macht euch bereit für echte Herausforderungen!', '방금 %my_level 레벨을 찍었습니다. 진정한 도전을 준비하세요!', '', '', '', ''),
-	(349, 'broadcast_levelup_max_level', '%my_level 레벨 달성, 이제 메인 콘텐츠를 즐길 시간인듯!', 0, 0, '', 'Niveau %my_level complet, il est temps pour le contenu épique !', 'Level %my_level voll, Zeit für epischen Content!', '%my_level 레벨 달성, 이제 대서사시 같은 콘텐츠를 즐길 시간입니다!', '', '', '', ''),
-	(350, 'broadcast_levelup_max_level', '방금 %my_level 레벨이 됐습니다! 최종 던전에 도전할 준비 완료!', 0, 0, '', 'Je viens enfin d’atteindre %my_level ! Prêt pour les donjons de fin de jeu !', 'Frisch auf Level %my_level! Bereit für Endgame-Inis!', '방금 %my_level 레벨이 됐습니다! 최종 던전에 도전할 준비 완료!', '', '', '', ''),
-	(351, 'broadcast_levelup_max_level', '이제 %my_level 레벨이니, 제 손이 닿지 않는 곳은 없습니다!', 0, 0, '', 'Maintenant que je suis au niveau %my_level, rien ne peut m’arrêter !', 'Jetzt, wo ich Level %my_level bin, ist nichts mehr außerhalb meiner Reichweite!', '이제 %my_level 레벨이니, 제 손이 닿지 않는 곳은 없습니다!', '', '', '', ''),
-	(352, 'broadcast_levelup_max_level', '공식입니다! %my_level 레벨, 이제 이 동네를 평정할 시간입니다!', 0, 0, '', 'C’est officiel ! Niveau %my_level, c’est le moment de tout déchirer !', 'Jetzt ist es offiziell! Level %my_level, Zeit zu dominieren!', '공식입니다! %my_level 레벨, 이제 평정할 시간입니다!', '', '', '', ''),
-	(353, 'broadcast_levelup_max_level', '%my_level 레벨을 달성했습니다! 와우에서 제 이름을 남길 때군요!', 0, 0, '', 'J’ai atteint le niveau %my_level! Le moment de laisser ma trace dans le monde est enfin arrivé!', 'Level %my_level geschafft! Zeit, der Welt meinen Stempel aufzudrücken!', '%my_level 레벨을 달성했습니다! 이 세계에 제 이름을 남길 때군요!', '', '', '', ''),
-	(354, 'broadcast_levelup_max_level', '%my_level 레벨이 열렸습니다! 진짜 재미는 이제부터 시작이죠!', 0, 0, '', 'Niveau %my_level débloqué! Maintenant, les choses sérieuses commencent!', 'Level %my_level freigeschaltet! Jetzt beginnt der echte Spaß!', '%my_level 레벨이 열렸습니다! 진짜 재미는 이제부터 시작이죠!', '', '', '', ''),
-	(355, 'broadcast_levelup_max_level', '%my_level 레벨 달성, 이제 이 세상은 내 나와바리다 ㅋ!', 0, 0, '', 'Niveau %my_level, et le monde est mon terrain de jeu!', 'Level %my_level, und die Welt ist mein Spielplatz!', '%my_level 레벨 달성, 이제 이 세상은 제 놀이터입니다!', '', '', '', ''),
-	(356, 'broadcast_levelup_max_level', '%my_level 레벨 달성, 세상에 제 힘을 보여줄 준비가 됐습니다!', 0, 0, '', 'Niveau %my_level, prêt à montrer au monde ma puissance !', 'Level %my_level, bereit, der Welt meine Power zu zeigen!', '%my_level 레벨 달성, 세상에 제 힘을 보여줄 준비가 됐습니다!', '', '', '', ''),
-	(357, 'broadcast_levelup_max_level', '방금 %my_level 레벨이 됐습니다. 이제 올인할게요!', 0, 0, '', 'Je viens d’atteindre %my_level, je me lance à fond maintenant !', 'Gerade %my_level erreicht, jetzt geh ich all in!', '방금 %my_level 레벨이 됐습니다. 이제 올인할게요!', '', '', '', ''),
-	(358, 'broadcast_levelup_max_level', '%my_level 레벨 달성, 이제 모든 것에 맞설 수 있을듯!', 0, 0, '', 'Niveau %my_level, je peux enfin tout affronter !', 'Level %my_level, endlich kann ich alles angehen!', '%my_level 레벨 달성, 이제 모든 것에 맞설 수 있습니다!', '', '', '', ''),
-	(359, 'broadcast_levelup_max_level', '%my_level 레벨 달성, 거칠 것이 없는 기분이네요!', 0, 0, '', 'Niveau %my_level, je me sens imbattable!', 'Level %my_level, fühl mich unaufhaltbar!', '%my_level 레벨 달성, 거칠 것이 없는 기분이네요!', '', '', '', ''),
-	(360, 'broadcast_levelup_max_level', '방금 %my_level 레벨에 도달했습니다. 최종 콘텐츠를 빨리 해보고 싶네요!', 0, 0, '', 'Je viens d’atteindre le niveau %my_level, j’ai hâte de me plonger dans le contenu de fin de jeu!', 'Gerade Level %my_level erreicht, kanns kaum erwarten ins Endgame zu springen!', '방금 %my_level 레벨에 도달했습니다. 최종 콘텐츠를 빨리 해보고 싶네요!', '', '', '', ''),
-	(361, 'broadcast_guild_promotion', '잘했습니다 %other_name님. 그럴 만한 자격이 충분해요.', 0, 0, '', 'Bien joué %other_name. Tu l’as bien mérité.', 'Gute Arbeit, %other_name. Das hast du dir verdient.', '잘했습니다 %other_name님. 그럴 만한 자격이 충분해요.', '', '', '', 'Молодец %other_name. Ты это заслужил.'),
-	(362, 'broadcast_guild_demotion', '정말 안타까운 상황이네요 %other_name님. 이런 결정을 내리긴 싫지만...', 0, 0, '', 'Désolé %other_name, mais ça a été horrible. Je déteste devoir faire ça, mais...', 'Das war mies, %other_name. Ich mags nicht, aber...', '정말 안타까운 상황이네요 %other_name님. 이런 결정을 내리긴 싫지만...', '', '', '', 'Это было ужасно %other_name. Не хотел этого делать, но...'),
-	(363, 'broadcast_guild_promotion', '축하합니다 %other_name님, 이 승급은 당신의 노력에 대한 보상입니다!', 0, 0, '', 'Félicitations %other_name, tu as mérité cette promotion !', 'Glückwunsch, %other_name, du hast den Aufstieg verdient!', '축하합니다 %other_name님, 이 승급은 당신의 노력에 대한 보상입니다!', '', '', '', ''),
-	(364, 'broadcast_guild_promotion', '자격이 충분해요 %other_name님, 다음 단계로 오신 걸 환영합니다!', 0, 0, '', 'Bien mérité %other_name, bienvenue au niveau suivant !', 'Verdient, %other_name - willkommen im nächsten Level!', '자격이 충분해요 %other_name님, 다음 단계로 오신 걸 환영합니다!', '', '', '', ''),
-	(365, 'broadcast_guild_promotion', '%other_name님이 한 단계 올라섭니다! 승급을 축하드려요!', 0, 0, '', '%other_name progresse dans sa carrière ! Félicitations pour la promotion !', '%other_name steigt auf! Glückwunsch zur Beförderung!', '%other_name님이 한 단계 올라섭니다! 승급을 축하드려요!', '', '', '', ''),
-	(366, 'broadcast_guild_promotion', '승급할 시간입니다! %other_name님, 당신은 그럴 자격이 있어요!', 0, 0, '', 'Promotion time! %other_name, tu l’as bien mérité !', 'Beförderungszeit! %other_name, die hast du dir verdient!', '승급할 시간입니다! %other_name님, 당신은 그럴 자격이 있어요!', '', '', '', ''),
-	(367, 'broadcast_guild_promotion', '%other_name님에게 새로운 직책이 주어졌습니다! 잘하셨어요, 계속 힘내주세요!', 0, 0, '', 'Une nouvelle fonction pour %other_name ! Bravo, continue comme ça !', 'Neue Rolle für %other_name! Gut gemacht, weiter so!', '%other_name님에게 새로운 직책이 주어졌습니다! 잘하셨어요, 계속 힘내주세요!', '', '', '', ''),
-	(368, 'broadcast_guild_promotion', '%other_name님에게 큰 축하를 보냅니다. 자격이 충분한 승급이에요!', 0, 0, '', '%other_name, félicitations pour ta super promotion, tu la mérites amplement!', 'Dickes Gratz an %other_name, wohlverdiente Beförderung!', '%other_name님에게 큰 축하를 보냅니다. 자격이 충분한 승급이에요!', '', '', '', ''),
-	(369, 'broadcast_guild_promotion', '승급하신 %other_name님께 모두 큰 박수를 보내주세요!', 0, 0, '', 'Donnons tous un grand round d’applaudissements à %other_name pour sa promotion!', 'Applaus für %other_name zur Beförderung!', '승급하신 %other_name님께 모두 큰 박수를 보내주세요!', '', '', '', ''),
-	(370, 'broadcast_guild_promotion', '승급하신 %other_name님을 축하합니다! 앞으로도 계속 빛나주세요!', 0, 0, '', 'Salut à %other_name pour sa promotion! Continue de briller!', 'Gratulation an %other_name zur Beförderung! Weiter so!', '승급하신 %other_name님을 축하합니다! 앞으로도 계속 빛나주세요!', '', '', '', ''),
-	(371, 'broadcast_guild_promotion', '축하합니다 %other_name님, 더 높이 올라가시네요! 잘하셨어요!', 0, 0, '', 'Félicitations %other_name, tu progresses dans ton parcours ! Bravo !', 'Gratz, %other_name, du steigst auf! Gut gemacht!', '축하합니다 %other_name님, 더 높이 올라가시네요! 잘하셨어요!', '', '', '', ''),
-	(372, 'broadcast_guild_promotion', '%other_name님이 한 단계 더 올라섭니다! 축하해요!', 0, 0, '', 'Encore une promotion pour %other_name ! Félicitations !', 'Noch ein Schritt nach oben für %other_name! Glückwunsch!', '%other_name님이 한 단계 더 올라섭니다! 축하해요!', '', '', '', ''),
-	(373, 'broadcast_guild_demotion', '힘든 결정이었지만, %other_name님은 강등되었습니다. 분발해야 할 때입니다!', 0, 0, '', 'Décision difficile, mais %other_name, tu as été rétrogradé. C’est le moment de te ressaisir!', 'Harte Entscheidung, aber %other_name, du wurdest degradiert. Zeit, dich zu beweisen!', '힘든 결정이었지만, %other_name님은 강등되었습니다. 분발해야 할 때입니다!', '', '', '', ''),
-	(374, 'broadcast_guild_demotion', '죄송합니다 %other_name님, 강등될 시간입니다. 더 강해져서 돌아오길 바랍니다!', 0, 0, '', 'Désolé %other_name, mais c’est l’heure d’une rétrogradation. J’espère que tu reviendras plus fort !', 'Sorry, %other_name, aber es gibt eine Degradierung. Komm stärker zurück!', '죄송합니다 %other_name님, 강등될 시간입니다. 더 강해져서 돌아오길 바랍니다!', '', '', '', ''),
-	(375, 'broadcast_guild_demotion', '안타깝게도 %other_name님, 이번엔 강등입니다. 다음엔 잘 되길 빌게요!', 0, 0, '', '', 'Leider, %other_name, diesmal eine Degradierung. Beim nächsten Mal packst du es!', '안타깝게도 %other_name님, 이번엔 강등입니다. 다음엔 잘 되길 빌게요!', '', '', '', ''),
-	(376, 'broadcast_guild_demotion', '어려운 결정이었으나 %other_name님은 강등되었습니다. 다시 노력해서 올라오세요!', 0, 0, '', 'Une décision difficile, mais %other_name, tu as été rétrogradé. Il est temps de remonter la pente !', 'Schwere Entscheidung, aber %other_name, du wurdest degradiert. Zeit, dich wieder hochzugrinden!', '어려운 결정이었으나 %other_name님은 강등되었습니다. 다시 노력해서 올라오세요!', '', '', '', ''),
-	(377, 'broadcast_guild_demotion', '이런 모습을 보긴 싫지만, %other_name님은 일단 강등되었습니다.', 0, 0, '', 'C’est toujours difficile à accepter, %other_name, mais pour le moment, c’est une rétrogradation.', 'Unschön, aber %other_name, vorerst eine Degradierung.', '이런 모습을 보긴 싫지만, %other_name님은 일단 강등되었습니다.', '', '', '', ''),
-	(378, 'broadcast_guild_demotion', '죄송해요 %other_name님, 계급이 낮아졌습니다. 우리 같이 더 열심히 해봐요!', 0, 0, '', 'Désolé %other_name, ton rang a été abaissé. On va devoir redoubler d’efforts ensemble !', 'Sorry, %other_name, dein Rang wurde gesenkt. Lass uns zusammen härter arbeiten!', '죄송해요 %other_name님, 계급이 낮아졌습니다. 우리 같이 더 열심히 해봐요!', '', '', '', ''),
-	(379, 'broadcast_guild_demotion', '%other_name님이 강등되었습니다... 집중해서 다시 올라갈 시간입니다!', 0, 0, '', 'Une rétrogradation pour %other_name... Il est temps de se concentrer et de remonter la pente!', 'Eine Degradierung für %other_name... Zeit, sich zu fokussieren und wieder hochzukommen!', '%other_name님이 강등되었습니다... 집중해서 다시 올라갈 시간입니다!', '', '', '', ''),
-	(380, 'broadcast_guild_demotion', '원하던 결과는 아니지만 %other_name님은 강등되었습니다. 경험 삼아 더 강해지세요!', 0, 0, '', 'Pas ce que nous voulions, mais %other_name, tu as été rétrogradé. Apprends et reviens plus fort !', 'Nicht das, was wir wollten, aber %other_name, du wurdest degradiert. Lern draus und komm stärker zurück!', '원하던 결과는 아니지만 %other_name님은 강등되었습니다. 경험 삼아 더 강해지세요!', '', '', '', ''),
-	(381, 'broadcast_guild_demotion', '%other_name님에겐 힘든 시간이겠지만, 이번 강등을 딛고 일어설 수 있을 거예요!', 0, 0, '', 'Un moment difficile pour %other_name, mais on sait que tu peux rebondir après cette rétrogradation!', 'Harter Moment für %other_name, aber wir wissen, du kommst von der Degradierung zurück!', '%other_name님에겐 힘든 시간이겠지만, 이번 강등을 딛고 일어설 수 있을 거예요!', '', '', '', ''),
-	(382, 'broadcast_guild_demotion', '죄송합니다 %other_name님, 강등 처리가 되었습니다. 이제 개선이 필요할 때예요!', 0, 0, '', 'Désolé %other_name, mais une rétrogradation a été appliquée. Il est temps de s’améliorer !', 'Sorry, %other_name, aber du wurdest degradiert. Zeit für Verbesserungen!', '죄송합니다 %other_name님, 강등 처리가 되었습니다. 이제 개선이 필요할 때예요!', '', '', '', ''),
-	(383, 'broadcast_guild_demotion', '%other_name님께 이런 일을 바라진 않았지만 강등되었습니다. 더 실력을 키워봅시다!', 0, 0, '', 'On n’a pas voulu cela pour %other_name, mais une rétrogradation a eu lieu. Il est temps de s’améliorer !', 'Wir wollten das nicht für %other_name, aber es gab eine Degradierung. Zeit, besser zu werden!', '%other_name님께 이런 일을 바라진 않았지만 강등되었습니다. 더 실력을 키워봅시다!', '', '', '', ''),
-	(384, 'broadcast_guild_recruitment', '[길드원 모집] 가족같은 길드원 모집합니다~ 혼자 겜하기 적적하신분 ~ 저희 길드로 오세요^^', 0, 0, '', 'À la recherche de sang neuf ! Rejoins la guilde, fais partie de quelque chose de grandiose !', 'Frisches Blut gesucht! Tritt der Gilde bei, sei Teil von was Großem!', '신규 회원을 모집합니다! 공회에 가입하여 위대한 여정에 동참하세요!', '', '', '', ''),
-	(385, 'broadcast_guild_recruitment', '가족같은 길원 모집 중입니다! 가입하실분 바로 귓말주세요!', 0, 0, '', 'Recrutement de membres ! Si tu es prêt à nous rejoindre, la porte de la guilde est ouverte!', 'Wir rekrutieren neue Mitglieder! Wenn du bereit bist, schließ dich an - die Gildentür steht offen!', '부원을 모집 중입니다! 가입할 준비가 됐다면 길드의 문은 열려 있습니다!', '', '', '', ''),
-	(386, 'broadcast_guild_recruitment', '신생 길드에서 길원모집 합니다! 추후 레이드도 운영예정! 가입하셔서 함께 성장해요!', 0, 0, '', 'La guilde recherche des aventuriers compétents. Rejoins-nous et prospère!', 'Die Gilde sucht fähige Abenteurer. Schließ dich an und geh mit uns ab!', '우리 길드에서 유능한 모험가를 찾고 있습니다. 가입해서 함께 성장해요!', '', '', '', ''),
-	(387, 'broadcast_guild_recruitment', '가족같은 길드에 가입하고 찾으신다면?! 저희길드 신입 모십니다! 뉴비 대환영! 버스 항시 대기!', 0, 0, '', 'Envie de rejoindre une super guilde ? Nous cherchons de nouveaux membres ! Viens nous rejoindre !', 'Bock auf eine starke Gilde? Wir suchen neue Member! Komm rein!', '멋진 길드에 가입하고 싶으신가요? 새 멤버를 찾고 있습니다! 들어오세요!', '', '', '', ''),
-	(388, 'broadcast_guild_recruitment', '성장하고 있는 신생길드 입니다! 함께 즐기면서 겜하실분 찾습니다! 버스도 돌아줍니다!', 0, 0, '', 'La guilde grandit! Rejoignez-nous pour vivre des aventures palpitantes et obtenir des récompenses!', 'Die Gilde wächst! Join uns für fette Abenteuer und Loot!', '길드가 성장하고 있습니다! 흥미진진한 모험과 보상을 위해 함께해요!', '', '', '', ''),
-	(389, 'suggest_instance', '%instance_name 가실 분 계신가요?', 0, 0, '', 'Qui veut %instance_name?', 'Wer hat Bock auf %instance_name?', '%instance_name 가실 분 계신가요?', '', '¿Alguien quiere ir a %instance_name?', '', 'Кому нужен %instance_name?'),
-	(390, 'suggest_instance', '%instance_name 가는 파티 있나요?', 0, 0, '', 'Des groupes pour %instance_name?', 'Gibts Gruppen für %instance_name?', '%instance_name 가는 파티 있나요?', '', '¿Algún grupo para %instance_name?', '', 'Есть группы в %instance_name?'),
-	(391, 'suggest_instance', '%instance_name 공략에 도움 필요하신 분?', 0, 0, '', 'Besoin d’aide pour %instance_name ?', 'Brauch jemand Hilfe für %instance_name?', '%instance_name 공략에 도움 필요하신 분?', '', '¿Alguien necesita ayuda con %instance_name?', '', 'Нужна помощь в %instance_name?'),
-	(392, 'suggest_instance', '파티 모집 중: %instance_name.', 0, 0, '', 'LFG: %instance_name.', 'Suche Gruppe: %instance_name.', '파티 모집 중: %instance_name.', '', 'Busco grupo para %instance_name.', '', 'ЛФД: %instance_name.'),
-	(393, 'suggest_instance', '%instance_name에 %my_role 필요하신 파티 있나요?', 0, 0, '', 'Besoin de %my_role pour %instance_name?', 'Braucht wer %my_role für %instance_name?', '%instance_name에 %my_role 필요하신 파티 있나요?', '', '¿Alguien necesita un %my_role para %instance_name?', '', 'Кому нужен %my_role для %instance_name?'),
-	(394, 'suggest_instance', '%instance_name 가는데 %my_role 자리 비나요?', 0, 0, '', 'Il manque %my_role pour %instance_name ?', 'Fehlt %my_role für %instance_name?', '%instance_name 가는데 %my_role 자리 비나요?', '', '¿Buscando un %my_role para %instance_name?', '', 'Не хватает %my_role для %instance_name?'),
-	(395, 'suggest_instance', '%instance_name에서 %my_role 맡을 수 있습니다.', 0, 0, '', 'Je peux être %my_role pour %instance_name.', 'Ich kann %my_role für %instance_name sein.', '%instance_name에서 %my_role 맡을 수 있습니다.', '', 'Puedo ser un %my_role para %instance_name.', '', 'Могу быть %my_role для %instance_name.'),
-	(396, 'suggest_instance', '%instance_name 도와드릴까요?', 0, 0, '', 'Besoin d’aide avec %instance_name?', 'Braucht jemand Hilfe bei %instance_name?', '%instance_name 도와드릴까요?', '', '¿Alguien necesita ayuda con %instance_name?', '', 'Нужна помощь с %instance_name?'),
-	(397, 'suggest_instance', '%instance_name 가는데 %my_role의 도움이 필요하신가요?', 0, 0, '', 'Besoin d’aide avec %instance_name? Je peux t’aider avec ça?', 'Braucht ihr %my_role für %instance_name?', '%instance_name 가는데 %my_role의 도움이 필요하신가요?', '', '¿Necesitas ayuda de %my_role con %instance_name?', '', 'Нужна помощь %my_role с %instance_name?'),
-	(398, 'suggest_instance', '%instance_name 장비 맞추실 분 계신가요?', 0, 0, '', 'Besoin d’équipement de %instance_name?', 'Braucht wer Gear aus %instance_name?', '%instance_name 장비 맞추실 분 계신가요?', '', '¿Alguien necesita equipo de %instance_name?', '', 'Кому нужен шмот из %instance_name?'),
-	(399, 'suggest_instance', '%instance_name에서 노가다 좀 하실 분?', 0, 0, '', 'Un petit farming dans %instance_name ?', 'Kleiner Grind in %instance_name?', '%instance_name에서 노가다 좀 하실 분?', '', '¿Un poco de farmeo en %instance_name?', '', 'Немного пофармить в %instance_name?'),
-	(400, 'suggest_instance', '%instance_name 가고 싶어요 ㅠㅠ', 0, 0, '', 'WTR %instance_name', 'Lust auf %instance_name', '%instance_name 가고 싶네요', '', 'WTR %instance_name', '', 'Ищу %instance_name'),
-	(401, 'suggest_instance', '%instance_name 공략에 도움이 필요해요.', 0, 0, '', 'Besoin d’aide pour %instance_name.', 'Brauche Hilfe für %instance_name.', '%instance_name 공략에 도움이 필요해요.', '', 'Necesito ayuda para %instance_name.', '', 'Нужна помощь в %instance_name.'),
-	(402, 'suggest_instance', '%instance_name 한 바퀴 돌고 싶네요.', 0, 0, '', 'Tu veux lancer %instance_name.', 'Bock auf %instance_name.', '%instance_name 한 바퀴 돌고 싶네요.', '', 'Quiero hacer %instance_name.', '', 'Хочу пройти %instance_name.'),
-	(403, 'suggest_instance', '%my_role 직업으로 %instance_name 파티 구합니다.', 0, 0, '', 'Je recherche %instance_name dans le rôle de %my_role.', '%my_role sucht Gruppe für %instance_name.', '%my_role 직업으로 %instance_name 파티 구합니다.', '', '%my_role busca %instance_name.', '', '%my_role ищет %instance_name.'),
-	(404, 'suggest_instance', '%instance_name 가는 건 어때요?', 0, 0, '', 'Et %instance_name, qu’en est-il?', 'Was ist mit %instance_name?', '%instance_name 가는 건 어때요?', '', '¿Qué pasa con %instance_name?', '', 'Как насчет %instance_name?'),
-	(405, 'suggest_instance', '%instance_name 파밍하러 가실 분?', 0, 0, '', 'Qui veut farm %instance_name ?', 'Wer will %instance_name farmen?', '%instance_name 파밍하러 가실 분?', '', '¿Quién quiere farmear %instance_name?', '', 'Кто хочет пофармить %instance_name?'),
-	(406, 'suggest_instance', '%instance_name 가실래요?', 0, 0, '', 'On va dans %instance_name ?', 'Rein in %instance_name?', '%instance_name 가실래요?', '', '¿Vamos a %instance_name?', '', 'Пойдем в %instance_name?'),
-	(407, 'suggest_instance', '%instance_name 파티 찾습니다.', 0, 0, '', 'Je recherche %instance_name.', 'Suche Gruppe für %instance_name.', '%instance_name 파티 찾습니다.', '', 'Buscando gente para %instance_name.', '', 'Ищу %instance_name.'),
-	(408, 'suggest_instance', '%instance_name 퀘스트 도와주실 분 계신가요?', 0, 0, '', 'Besoin d’aide avec les quêtes de %instance_name ?', 'Braucht wer Hilfe bei Quests in %instance_name?', '%instance_name 퀘스트 도와주실 분 계신가요?', '', '¿Necesitas ayuda con las misiones en %instance_name?', '', 'Нужна помощь с квестами в %instance_name?'),
-	(409, 'suggest_instance', '%instance_name에서 퀘스트 하고 싶어요.', 0, 0, '', 'Tu veux partir en quête dans %instance_name?', 'Bock auf Quests in %instance_name.', '%instance_name에서 퀘스트 하고 싶어요.', '', 'Quiero hacer una vuelta rapida en %instance_name.', '', 'Хочу квестить в %instance_name.'),
-	(410, 'suggest_instance', '%instance_name 퀘스트 같이 하실 분?', 0, 0, '', 'Quelqu’un a des quêtes dans %instance_name?', 'Wer hat Quests in %instance_name?', '%instance_name 퀘스트 같이 하실 분?', '', '¿Alguien con misiones en %instance_name?', '', 'Кто-то с квестами в %instance_name?'),
-	(411, 'suggest_instance', '%instance_name 퀘스트 도와드릴 수 있어요.', 0, 0, '', '%instance_name, vous pouvez m’aider avec les quêtes ?', 'Kann bei Quests in %instance_name helfen.', '%instance_name 퀘스트 도와드릴 수 있어요.', '', 'Podría ayudar con las misiones en %instance_name.', '', 'Могу помочь с квестами в %instance_name.'),
-	(412, 'suggest_instance', '%my_role인데 %instance_name 파티에 자리 있나요?', 0, 0, '', '%my_role: Est-ce qu’il y a une place dans le groupe pour %instance_name?', '%my_role: Platz in Gruppe für %instance_name?', '%my_role인데 %instance_name 파티에 자리 있나요?', '', '%my_role: ¿algún lugar en el grupo para %instance_name?', '', '%my_role: есть место в группе для %instance_name?'),
-	(413, 'suggest_instance', '요즘도 %instance_name 가시는 분 있나요?', 0, 0, '', 'Est-ce que quelqu’un utilise encore %instance_name de nos jours?', 'Läuft überhaupt noch jemand %instance_name?', '요즘도 %instance_name 가시는 분 있나요?', '', '¿Alguien todavía hace %instance_name estos días?', '', 'Кто-нибудь еще ходит в %instance_name в наши дни?'),
-	(414, 'suggest_instance', '%instance_name 가는데 %my_role 데려가실 분?', 0, 0, '', '%instance_name: Est-ce que quelqu’un veut prendre un %my_role?', '%instance_name: nimmt wer einen %my_role mit?', '%instance_name 가는데 %my_role 데려가실 분?', '', '¿Alguien quiere un %my_role para %instance_name?', '', '%instance_name: кто хочет взять %my_role?'),
-	(415, 'suggest_instance', '%instance_name에서 %my_role이 쓸모가 있을까요?', 0, 0, '', 'Est-ce que ça vaut la peine d’être %my_role dans %instance_name?', 'Lohnt es sich als %my_role in %instance_name?', '%instance_name에서 %my_role이 쓸모가 있을까요?', '', '¿Tiene algún sentido ser %my_role en %instance_name?', '', 'Есть ли смысл быть %my_role в %instance_name?'),
-	(416, 'suggest_instance', '%instance_name 갈만한 가치가 있나요?', 0, 0, '', 'Est-ce que ça vaut vraiment la peine d’aller à %instance_name?', 'Lohnt es sich echt, nach %instance_name zu gehen?', '%instance_name 갈만한 가치가 있나요?', '', '¿Realmente vale la pena ir a %instance_name?', '', 'Стоит ли идти в %instance_name?'),
-	(417, 'suggest_instance', '%instance_name 초대좀 해주실분?', 0, 0, '', 'Est-ce que quelqu’un a besoin de plus de personnes pour %instance_name?', 'Braucht jemand noch Leute für %instance_name?', '%instance_name 인원 더 필요하신 분?', '', '¿Alguien necesita más personas para %instance_name?', '', 'Кому нужны еще люди для %instance_name?'),
-	(418, 'suggest_instance', '%instance_name 보스들이 좋은 템 주는데, 가실래요?', 0, 0, '', '%instance_name Les boss laissent tomber du bon équipement. Tu veux qu’on y aille?', 'Die Bosse in %instance_name droppen gutes Gear. Bock zu grinden?', '%instance_name 보스들이 좋은 템 주는데, 가실래요?', '', 'Los jefes en %instance_name sueltan buen equipo. ¿Quieres ir?', '', 'В %instance_name боссы дропают хороший шмот. Пойдем?'),
-	(419, 'suggest_instance', '%instance_name 혹시 같이 가실 분?', 0, 0, '', 'Que dire de %instance_name ?', 'Was ist mit %instance_name?', '%instance_name 어때요? 갈까요?', '', '¿Qué pasa con %instance_name?', '', 'Как насчет %instance_name?'),
-	(420, 'suggest_instance', '%my_role 필요하신 분?', 0, 0, '', 'Est-ce que quelqu’un a besoin de %my_role?', 'Braucht jemand %my_role?', '%my_role 필요하신 분?', '', '¿Alguien necesita un %my_role?', '', 'Кому нужен %my_role?'),
-	(421, 'suggest_instance', '%my_role 구하는 파티 없나요?', 0, 0, '', 'Besoin de %my_role?', 'Braucht wer %my_role?', '%my_role 구하는 파티 없나요?', '', '¿Alguien hacer un grupo con un %my_role?', '', 'Кому нужен %my_role?'),
-	(422, 'suggest_instance', '%instance_name 가고 싶은 분?', 0, 0, '', 'Qui veut %instance_name ?', 'Wer hat Bock auf %instance_name?', '%instance_name 가고 싶은 분?', '', '¿Quién quiere %instance_name?', '', 'Кто хочет %instance_name?'),
-	(423, 'suggest_instance', '%instance_name으로 소환해주실 수 있는 분?', 0, 0, '', 'Est-ce que quelqu’un peut m’invoquer à %instance_name?', 'Kann mich jemand bei %instance_name beschwören?', '%instance_name으로 소환해주실 수 있는 분?', '', '¿Alguien puede invocarme en %instance_name?', '', 'Кто может призвать меня в %instance_name?'),
-	(424, 'suggest_instance', '%instance_name에서 봐요.', 0, 0, '', 'Rencontre-moi dans %instance_name', 'Trefft mich in %instance_name', '%instance_name에서 봐요.', '', 'Encuéntrame en %instance_name', '', 'Встретимся в %instance_name'),
-	(425, 'suggest_instance', '%instance_name 빠르게 한 판 도실 분?', 0, 0, '', 'Tu veux lancer rapidement %instance_name ?', 'Bock auf schnellen %instance_name Run', '%instance_name 빠르게 한 판 도실 분?', '', 'Quiero ir a %instance_name rápido', '', 'Хочу быструю пробежку %instance_name'),
-	(426, 'suggest_instance', '%instance_name 풀코스로 도실 분?', 0, 0, '', 'Bien sûr, je veux que l’instance %instance_name fonctionne.', 'Bock auf kompletten %instance_name Run', '%instance_name 풀코스로 도실 분?', '', 'Quiero hacer %instance_name completa', '', 'Хочу полный забег %instance_name'),
-	(427, 'suggest_instance', '%instance_name 몇 번이나 가보셨어요?', 0, 0, '', 'Combien de fois ai-je été dans %instance_name?', 'Wie oft wart ihr schon in %instance_name?', '%instance_name 몇 번이나 가보셨어요?', '', '¿Cuántas veces estuviste en %instance_name?', '', 'Сколько раз ты был в %instance_name?'),
-	(428, 'suggest_instance', '%instance_name 한 판 더 가실래요?', 0, 0, '', 'Une autre éxpédition dans %instance_name ?', 'Noch ein %instance_name Run?', '%instance_name 한 판 더 가실래요?', '', '¿Otra vuelta en %instance_name ?', '', 'Еще один забег в %instance_name?'),
-	(429, 'suggest_instance', '%instance_name에서 전멸했나요? 저를 데려가세요!', 0, 0, '', 'Wipe dans %instance_name ? Prends-moi à la place !', 'In %instance_name gewiped? Nehmt lieber mich!', '%instance_name에서 전멸했나요? 저를 데려가세요!', '', '¿Borrado en %instance_name? ¡Tómame a mí en su lugar!', '', 'Вайпнулись в %instance_name? Возьмите меня!'),
-	(430, 'suggest_instance', '%instance_name에 저 좀 데려가주세요.', 0, 0, '', 'Prenez-moi dans %instance_name s’il vous plaît.', 'Nehmt mich bitte mit nach %instance_name.', '%instance_name에 저 좀 데려가주세요.', '', 'Tómame en %instance_name por favor.', '', 'Возьмите меня в %instance_name, пожалуйста.'),
-	(431, 'suggest_instance', '%instance_name 스피드팟 가실 분?', 0, 0, '', 'Rapidement, %instance_name, on y va ?', 'Schneller %instance_name Run?', '%instance_name 퀵팟 가실 분?', '', '¿Partida rápida de %instance_name?', '', 'Быстрый забег в %instance_name?'),
-	(432, 'suggest_instance', '%instance_name 풀코스팟 가실 분?', 0, 0, '', 'Complet %instance_name ?', 'Kompletter %instance_name Run?', '%instance_name 완숙팟 가실 분?', '', '¿Partida completa de %instance_name?', '', 'Полный забег в %instance_name?'),
-	(433, 'suggest_instance', '%my_role인데 %instance_name 데려가 주실 분?', 0, 0, '', 'Qui peut prendre %my_role à %instance_name?', 'Wer nimmt %my_role mit nach %instance_name?', '%my_role인데 %instance_name 데려가 주실 분?', '', '¿Quién puede ir de %my_role para %instance_name?', '', 'Кто может взять %my_role в %instance_name?'),
-	(434, 'suggest_instance', '%instance_name 파티 구해요, 저 %my_role입니다.', 0, 0, '', 'LFG %instance_name, je suis %my_role.', 'LFG %instance_name, bin %my_role', '%instance_name 파티 구해요, 저 %my_role입니다.', '', '', '', 'ЛФГ %instance_name, я %my_role'),
-	(435, 'suggest_instance', '%my_role %instance_name 파티 구함', 0, 0, '', '%my_role LFG %instance_name.', '%my_role LFG %instance_name', '%my_role %instance_name 파티 구함', '', '', '', '%my_role ЛФГ %instance_name'),
-	(436, 'suggest_instance', '%instance_name 같이 파티 하실분?', 0, 0, '', 'Quelqu’un cherche un groupe pour %instance_name?', 'Sucht jemand eine Gruppe für %instance_name?', '%instance_name 파티 찾으시는 분 있나요?', '', '¿Alguien busca grupo para %instance_name?', '', ''),
-	(437, 'suggest_instance', '%instance_name 딜러 한 분 모십니다.', 0, 0, '', 'Besoin d’un DPS pour %instance_name.', 'Brauche einen DD für %instance_name', '%instance_name 딜러 한 분 모십니다.', '', 'Necesito un DPS para %instance_name', '', ''),
-	(438, 'suggest_instance', '%instance_name 귀족 힐러 한 분 찾아요.', 0, 0, '', 'Je suis à la recherche d’un guérisseur pour %instance_name.', 'Suche einen Heiler für %instance_name', '%instance_name 힐러 한 분 찾아요.', '', 'Busco un sanador para %instance_name', '', ''),
-	(439, 'suggest_instance', '%instance_name 탱커 필요하신 분?', 0, 0, '', 'Besoin d’un tank pour %instance_name ?', 'Braucht jemand einen Tank für %instance_name?', '%instance_name 탱커 필요하신 분?', '', '¿Alguien necesita un tanque para %instance_name?', '', ''),
-	(440, 'suggest_instance', '%instance_name 가려고 하는데 파티가 필요해요!', 0, 0, '', 'J’essaie de faire %instance_name. Il me faut un groupe !', 'Will %instance_name machen. Brauche eine Gruppe!', '%instance_name 가려고 하는데 파티가 필요해요!', '', 'Intentando hacer %instance_name. ¡Necesito un grupo!', '', ''),
-	(441, 'suggest_instance', '%instance_name 가실 힐러한분 모십니다.', 0, 0, '', 'Qui est partant pour %instance_name?', 'Wer hat Lust auf %instance_name?', '%instance_name 가실 분 계신가요?', '', '¿Alguien se apunta para %instance_name?', '', ''),
-	(442, 'suggest_instance', '%instance_name 1명 더 모셔요.', 0, 0, '', 'Il nous manque 1 personne pour %instance_name.', 'Suche noch einen für %instance_name', '%instance_name 1명 더 모셔요.', '', 'Busco 1 más para %instance_name', '', ''),
-	(443, 'suggest_instance', '%instance_name 같이 가실 분?', 0, 0, '', 'Quelqu’un veut se joindre pour %instance_name?', 'Will jemand mit nach %instance_name?', '%instance_name 같이 가실 분?', '', '¿Alguien quiere unirse para %instance_name?', '', ''),
-	(444, 'suggest_instance', '%instance_name 관심 있으신 분?', 0, 0, '', 'Quelqu’un intéressé par %instance_name ?', 'Interesse an %instance_name?', '%instance_name 관심 있으신 분?', '', '¿Alguien interesado en %instance_name?', '', ''),
-	(445, 'suggest_instance', '%instance_name 빠르게 돌 파티 찾아요.', 0, 0, '', 'À la recherche d’un rapide survol de %instance_name', 'Suche einen schnellen Run durch %instance_name', '%instance_name 빠르게 돌 파티 찾아요.', '', 'Buscando una corrida rápida en %instance_name', '', ''),
-	(446, 'suggest_instance', '%instance_name 가실 분 누구 없나요?', 0, 0, '', 'Qui est partant pour %instance_name?', 'Wer ist dabei für %instance_name?', '%instance_name 가실 분 누구 없나요?', '', '¿Quién está listo para %instance_name?', '', ''),
-	(447, 'suggest_instance', '%instance_name 퀘 클리어 도와주실 분.', 0, 0, '', 'Besoin d’aide pour vider %instance_name', 'Brauche Hilfe, um %instance_name zu clearen', '%instance_name 클리어 도와주실 분.', '', 'Necesito ayuda para limpiar %instance_name', '', ''),
-	(448, 'suggest_instance', '%instance_name 노가다 뛰실 분?', 0, 0, '', 'Envie de farmer %instance_name?', 'Wollt ihr %instance_name farmen?', '%instance_name 노가다 뛰실 분?', '', '¿Quieres farmear %instance_name?', '', ''),
-	(449, 'suggest_instance', '%instance_name 완료하고 싶어요ㅠㅠ.', 0, 0, '', 'Je cherche à terminer %instance_name.', 'Will %instance_name abschließen', '%instance_name 완료하고 싶어요.', '', 'Buscando completar %instance_name', '', ''),
-	(450, 'suggest_instance', '%instance_name 아이템 필요하신 분?', 0, 0, '', 'Besoin d’objets %instance_name ?', 'Braucht jemand Items aus %instance_name?', '%instance_name 아이템 필요하신 분?', '', '¿Alguien necesita objetos de %instance_name?', '', ''),
-	(451, 'suggest_instance', '%instance_name 버스 태워주실 분.', 0, 0, '', 'Je recherche un portage à travers %instance_name.', 'Suche Carry durch %instance_name', '%instance_name 버스 태워주실 분.', '', 'Buscando un carry para %instance_name', '', ''),
-	(452, 'suggest_instance', '%instance_name 가실 분 있나요?', 0, 0, '', 'Quelqu’un veut faire tourner %instance_name?', 'Will jemand %instance_name laufen?', '%instance_name 가실 분 있나요?', '', '¿Alguien quiere hacer %instance_name?', '', ''),
-	(453, 'suggest_instance', '%instance_name 가는 중, 인원 더 모아요.', 0, 0, '', 'En cours d’exécution de %instance_name, je suis à la recherche de plus d’informations.', 'Laufe %instance_name, suche andere', '%instance_name 가는 중, 인원 더 모아요.', '', 'Haciendo %instance_name, buscando más personas', '', ''),
-	(454, 'suggest_instance', '지금 %instance_name 가능하신 분?', 0, 0, '', 'Quelqu’un disponible pour %instance_name ?', 'Hat jemand Zeit für %instance_name?', '지금 %instance_name 가능하신 분?', '', '¿Alguien disponible para %instance_name?', '', ''),
-	(455, 'suggest_instance', '%instance_name 도와주실 분 찾습니다.', 0, 0, '', 'Besoin d’aide pour %instance_name', 'Suche jemanden, der bei %instance_name hilft', '%instance_name 도와주실 분 찾습니다.', '', 'Buscando a alguien para ayudar con %instance_name', '', ''),
-	(456, 'suggest_instance', '%instance_name 갈 %my_role 구함!', 0, 0, '', 'J’ai besoin de %my_role pour %nom_de_l’instance!', 'Brauche %my_role für %instance_name!', '%instance_name 갈 %my_role 구함!', '', '¡Necesito un %my_role para %instance_name!', '', ''),
-	(457, 'suggest_instance', '%instance_name 한 바퀴 도실래요?', 0, 0, '', 'Tu veux faire une séance de %instance_name ?', 'Bock auf einen %instance_name Run?', '%instance_name 한 바퀴 도실래요?', '', '¿Quieres hacer una corrida de %instance_name?', '', ''),
-	(458, 'suggest_instance', '%instance_name 가는데 %my_role이 필요해요.', 0, 0, '', 'J’ai besoin de %my_role pour exécuter %instance_name.', 'Brauche %my_role für %instance_name Run', '%instance_name 가는데 %my_role이 필요해요.', '', 'Necesito %my_role para la corrida de %instance_name', '', ''),
-	(459, 'suggest_instance', '%instance_name 템작 하실 분 있나요?', 0, 0, '', 'Ça vous dit de farmer les équipements de %instance_name ?', 'Will jemand Gear aus %instance_name farmen?', '%instance_name 템작 하실 분 있나요?', '', '¿Alguien quiere farmear equipo de %instance_name?', '', ''),
-	(460, 'suggest_instance', '%instance_name 스피드런 파티 구합니다.', 0, 0, '', 'Je recherche un groupe pour faire une speedrun de %instance_name.', 'Suche Gruppe für %instance_name Speedrun', '%instance_name 스피드런 파티 구합니다.', '', 'Buscando un grupo para speedrun de %instance_name', '', ''),
-	(461, 'suggest_instance', '%instance_name 올 클리어할 파티 구해요.', 0, 0, '', 'Besoin d’un groupe pour nettoyer %instance_name', 'Brauche Gruppe, um %instance_name zu clearen', '%instance_name 클리어할 파티 구해요.', '', 'Necesito un grupo para limpiar %instance_name', '', ''),
-	(462, 'suggest_instance', '%instance_name 파밍 하실 분?', 0, 0, '', 'Quelqu’un intéressé par cultiver %instance_name?', 'Interesse, %instance_name zu farmen?', '%instance_name 파밍에 관심 있으신 분?', '', '¿Alguien interesado en farmear %instance_name?', '', ''),
-	(463, 'suggest_instance', '%instance_name에서 템 좀 맞추려고요.', 0, 0, '', 'Je cherche des équipements de %instance_name.', 'Suche etwas Gear aus %instance_name', '%instance_name에서 템 좀 맞추려고요.', '', 'Buscando equipo de %instance_name', '', ''),
-	(464, 'suggest_instance', '%instance_name 빠르게 도실 분?', 0, 0, '', 'Qui est partant pour une petite instance rapide de %instance_name ?', 'Wer hat Lust auf einen schnellen %instance_name Run?', '%instance_name 퀵하게 도실 분?', '', '¿Alguien para una corrida rápida de %instance_name?', '', ''),
-	(465, 'suggest_instance', '같이 %instance_name 가보실 분?', 0, 0, '', 'Qui veut essayer %instance_name ensemble ?', 'Will jemand %instance_name zusammen angehen?', '같이 %instance_name 가보실 분?', '', '¿Alguien quiere intentar %instance_name juntos?', '', ''),
-	(466, 'suggest_instance', '%instance_name 완료하실 분 구합니다.', 0, 0, '', 'Je recherche des personnes pour compléter %instance_name.', 'Suche Leute, um %instance_name abzuschließen', '%instance_name 완료할 사람 구합니다.', '', 'Buscando personas para completar %instance_name', '', ''),
-	(467, 'suggest_instance', '%instance_name 파티 짤 수 있을까요?', 0, 0, '', 'Peut-on former un groupe pour %instance_name?', 'Kriegen wir eine Gruppe für %instance_name zusammen?', '%instance_name 파티 짤 수 있을까요?', '', '¿Podemos formar un grupo para %instance_name?', '', ''),
-	(468, 'suggest_instance', '%instance_name 빠르게 뺄 파티 구함.', 0, 0, '', 'Besoin d’une exécution rapide pour %instance_name', 'Brauche einen schnellen Run für %instance_name', '%instance_name 빠르게 뺄 파티 구함.', '', 'Necesito una corrida rápida para %instance_name', '', ''),
-	(469, 'suggest_instance', '%instance_name 같이 노가다 하실 분?', 0, 0, '', 'Qui est partant pour farmer %instance_name ensemble ?', 'Wer hat Lust, %instance_name zusammen zu farmen?', '%instance_name 같이 노가다 하실 분?', '', '¿Alguien quiere farmear %instance_name juntos?', '', ''),
-	(470, 'suggest_instance', '%instance_name 가실 딜러분 모십니다.', 0, 0, '', 'Je cherche encore quelques personnes pour %instance_name.', 'Suche noch ein paar Leute für %instance_name', '%instance_name 가실 분 몇 명 더 모셔요.', '', 'Buscando algunos más para %instance_name', '', ''),
-	(471, 'suggest_instance', '%instance_name 공략 패턴 도움이 필요하신 분?', 0, 0, '', 'Besoin d’aide avec les mécanismes de %instance_name ?', 'Braucht jemand Hilfe bei den Mechaniken in %instance_name?', '%instance_name 공략 패턴 도움이 필요하신 분?', '', '¿Alguien necesita ayuda con las mecánicas de %instance_name?', '', ''),
-	(472, 'suggest_instance', '%instance_name 급하게 갈 파티 구해요.', 0, 0, '', 'J’ai besoin d’un groupe pour %instance_name rapidement', 'Brauche schnell eine Gruppe für %instance_name', '%instance_name 급하게 갈 파티 구해요.', '', 'Necesito un grupo rápido para %instance_name', '', ''),
-	(473, 'suggest_instance', '%instance_name 스피드런 하실 분?', 0, 0, '', 'Quelqu’un veut speedrunner %instance_name?', 'Will jemand %instance_name als Speedrun laufen?', '%instance_name 스피드런 하실 분?', '', '¿Alguien quiere hacer %instance_name en speedrun?', '', ''),
-	(474, 'suggest_instance', '%instance_name 빠른 클리어 원합니다.', 0, 0, '', 'Je cherche une %instance_name complétion rapide.', 'Suche einen schnellen Abschluss von %instance_name', '%instance_name 빠른 클리어 원합니다.', '', 'Buscando completar %instance_name rápido', '', ''),
-	(475, 'suggest_instance', '%instance_name 딜러 한분만 오심 바로 ㄱㄱ.', 0, 0, '', 'Je recherche des personnes pour rejoindre %instance_name.', 'Suche jemanden, der bei %instance_name mitkommt', '%instance_name 같이 가실 분 아무나.', '', 'Buscando a alguien para unirse a %instance_name', '', ''),
-	(476, 'suggest_instance', '%instance_name 스피드로 밀어버리실 분?', 0, 0, '', 'Quelqu’un est partant pour nettoyer %instance_name?', 'Wer hat Lust, %instance_name zu clearen?', '%instance_name 밀어버리실 분?', '', '¿Alguien para limpiar %instance_name?', '', ''),
-	(477, 'suggest_instance', '%instance_name 막보 잡는 것 좀 도와주세요.', 0, 0, '', 'Besoin d’aide avec le boss final de %instance_name?', 'Brauche Hilfe beim Endboss von %instance_name', '%instance_name 막보 잡는 것 좀 도와주세요.', '', 'Necesito ayuda con el último jefe de %instance_name', '', ''),
-	(478, 'suggest_instance', ' %instance_name 가실 분 계신가요?', 0, 0, '', 'Quelqu’un intéressé pour lancer %instance_name aujourd’hui?', 'Wer hat heute Lust, %instance_name zu laufen?', '오늘 %instance_name 가실 분 계신가요?', '', '¿Alguien interesado en hacer %instance_name hoy?', '', ''),
-	(479, 'suggest_instance', '템 파밍용 %instance_name 퀵런 파티 찾아요.', 0, 0, '', 'Je cherche à faire rapidement %instance_name pour récupérer un peu d’équipement.', 'Suche schnellen Run in %instance_name, um etwas Gear zu farmen', '템 파밍용 %instance_name 퀵런 파티 찾아요.', '', 'Buscando una corrida rápida de %instance_name para farmear equipo', '', ''),
-	(480, 'suggest_instance', '%instance_name에서 재료 파밍하실 분?', 0, 0, '', 'Qui veut farmer des matériaux dans %instance_name ?', 'Will jemand Mats aus %instance_name farmen?', '%instance_name에서 재료 파밍하실 분?', '', '¿Alguien quiere farmear materiales de %instance_name?', '', ''),
-	(481, 'suggest_instance', '%instance_name 파티좀 누가 만들어 주셈.', 0, 0, '', 'Formons un groupe pour %instance_name.', 'Lass uns eine Gruppe für %instance_name machen', '%instance_name 파티 한 번 짜보죠.', '', 'Formemos un grupo para %instance_name', '', ''),
-	(482, 'suggest_quest', '%quest_link 퀘스트 도와주실 분?', 0, 0, '', 'Besoin d’aide avec %quest_link?', 'Braucht wer Hilfe bei %quest_link?', '%quest_link 퀘스트 도와주실 분?', '', '¿Alguien necesita ayuda con %quest_link?', '', 'Нужна помощь с %quest_link?'),
-	(483, 'suggest_quest', '%quest_link 퀘스트 공유해주실 분?', 0, 0, '', 'Est-ce que quelqu’un veut partager %quest_link ?', 'Will jemand %quest_link teilen?', '%quest_link 퀘스트 공유해주실 분?', '', '¿Alguien quiere hacer %quest_link?', '', 'Кто хочет поделиться %quest_link?'),
-	(484, 'suggest_quest', '지금 %quest_link 하시는 분 계신가요?', 0, 0, '', 'Quelqu’un fait la %quest_link?', 'Macht jemand %quest_link?', '지금 %quest_link 하시는 분 계신가요?', '', '¿Alguien está haciendo %quest_link?', '', 'Кто делает %quest_link?'),
-	(485, 'suggest_quest', '%quest_link 퀘스트 하고 싶어요.', 0, 0, '', 'Tu veux faire la %quest_link ?', 'Bock auf %quest_link.', '%quest_link 퀘스트 하고 싶어요.', '', '¿Una ayudita con %quest_link?', '', 'Хочу сделать %quest_link.'),
-	(486, 'suggest_quest', '%quest_link 같이 할 파티 구함.', 0, 0, '', 'À la recherche de personnes pour %quest_link.', 'Suche Gruppe für %quest_link.', '%quest_link 같이 할 파티 구함.', '', 'Buscando un grupo para %quest_link.', '', ''),
-	(487, 'suggest_quest', '%quest_link 도와주실 분 누구 없나요?', 0, 0, '', 'Qui veut aider avec %quest_link?', 'Wer hilft bei %quest_link?', '%quest_link 도와주실 분 누구 없나요?', '', '¿Quién quiere ayudar con %quest_link?', '', ''),
-	(488, 'suggest_quest', '%quest_link 퀘스트에 도움이 필요하신 분?', 0, 0, '', 'Besoin d’aide avec %quest_link?', 'Braucht jemand Unterstützung bei %quest_link?', '%quest_link 퀘스트에 도움이 필요하신 분?', '', '¿Alguien necesita ayuda con %quest_link?', '', ''),
-	(489, 'suggest_quest', '%quest_link 관심 있으신 분?', 0, 0, '', 'Quelqu’un intéressé par %quest_link?', 'Interesse an %quest_link?', '%quest_link 관심 있으신 분?', '', '¿Alguien interesado en %quest_link?', '', ''),
-	(490, 'suggest_quest', '%quest_link 마무리하실 분?', 0, 0, '', 'Qui veut terminer la %quest_link ?', 'Will jemand %quest_link abschließen?', '%quest_link 마무리하실 분?', '', '¿Alguien quiere terminar %quest_link?', '', ''),
-	(491, 'suggest_quest', '%quest_link 같이 할 팀 구해요.', 0, 0, '', 'Besoin d’une équipe pour %quest_link?', 'Braucht wer ein Team für %quest_link?', '%quest_link 같이 할 팀 구해요.', '', '¿Necesito un equipo para %quest_link?', '', ''),
-	(492, 'suggest_quest', '%quest_link 하실 분 계신가요?', 0, 0, '', 'Des volontaires pour %quest_link ?', 'Wer hat Bock auf %quest_link?', '%quest_link 하실 분 계신가요?', '', '¿Alguien se apunta a %quest_link?', '', ''),
-	(493, 'suggest_quest', '%quest_link 같이 해요.', 0, 0, '', 'Faisons cette %quest_link ensemble.', 'Lass uns %quest_link zusammen machen.', '%quest_link 같이 해요.', '', 'Vamos a hacer %quest_link juntos.', '', ''),
-	(494, 'suggest_quest', '%quest_link 같이 할 사람 찾아요.', 0, 0, '', 'Besoin de quelqu’un pour %quest_link.', 'Brauche jemanden für %quest_link.', '%quest_link 같이 할 사람 찾아요.', '', '¿Necesito a alguien para %quest_link?', '', ''),
-	(495, 'suggest_quest', '%quest_link 퀘스트 도움이 필요한 분 있나요?', 0, 0, '', 'Besoin d’aide avec %quest_link?', 'Braucht jemand Hilfe bei %quest_link?', '%quest_link 퀘스트 도움이 필요한 분 있나요?', '', '¿Alguien necesita ayuda con %quest_link?', '', ''),
-	(496, 'suggest_quest', '%quest_link 도움이 필요한가요? 제가 도와드릴게요.', 0, 0, '', 'Besoin d’aide avec %quest_link? Pas de souci, je suis là pour t’épauler.', 'Brauchst du Hilfe bei %quest_link? Ich helfe dir.', '%quest_link 도움이 필요한가요? 제가 도와드릴게요.', '', '¿Necesitas ayuda con %quest_link? Yo te ayudo.', '', ''),
-	(497, 'suggest_quest', '%quest_link 퀘스트 하려는데 같이 하실 분?', 0, 0, '', 'Je veux faire %quest_link. Qui veut se joindre à moi ?', 'Will %quest_link machen. Wer ist dabei?', '%quest_link 퀘스트 하려는데 같이 하실 분?', '', 'Busco hacer %quest_link. ¿Alguien se une?', '', ''),
-	(498, 'suggest_quest', '%quest_link 퀘스트 도와주실 분 구합니다ㅠㅠ', 0, 0, '', 'Besoin d’aide pour %quest_link.', 'Hilfe gesucht für %quest_link.', '%quest_link 퀘스트 도와주실 분 구합니다.', '', 'Se busca ayuda para %quest_link.', '', ''),
-	(499, 'suggest_quest', '%quest_link 하실 분 누구 없나요?', 0, 0, '', 'Qui est partant pour %quest_link ?', 'Wer ist bereit für %quest_link?', '%quest_link 하실 분 누구 없나요?', '', '¿Quién se apunta a %quest_link?', '', ''),
-	(500, 'suggest_quest', '%quest_link 함께 하실 분 모셔요.', 0, 0, '', 'Qui veut se joindre à moi pour %quest_link ?', 'Wer will bei %quest_link mitmachen?', '%quest_link 함께 하실 분 모셔요.', '', '¿Quién quiere unirse a %quest_link?', '', ''),
-	(501, 'suggest_quest', '%quest_link 같이 하실 분 계신가요?', 0, 0, '', 'Qui est partant pour %quest_link ?', 'Wer ist bei %quest_link dabei?', '%quest_link 하실 분 계신가요?', '', '¿Alguien quiere hacer %quest_link?', '', ''),
-	(502, 'suggest_quest', '여기 %quest_link 도와주실 분 구해요.', 0, 0, '', 'Besoin d’aide avec %quest_link ici.', 'Brauche hier etwas Hilfe bei %quest_link.', '여기 %quest_link 도와주실 분 구해요.', '', 'Necesito ayuda con %quest_link.', '', ''),
-	(503, 'suggest_quest', '%quest_link 같이 하실 분?', 0, 0, '', 'Quelqu’un pour %quest_link ?', 'Jemand für %quest_link?', '%quest_link 같이 하실 분?', '', '¿Alguien para %quest_link?', '', ''),
-	(504, 'suggest_quest', '%quest_link 하실 준비 된 분!', 0, 0, '', 'Qui est prêt à faire %quest_link ?', 'Wer ist bereit, %quest_link zu machen?', '%quest_link 하실 준비 된 분!', '', '¿Quién está listo para %quest_link?', '', ''),
-	(505, 'suggest_quest', '%quest_link 도와주실 분 찾습니다.', 0, 0, '', 'Je cherche de l’aide pour %quest_link.', 'Suche etwas Hilfe für %quest_link.', '%quest_link 도와주실 분 찾습니다.', '', 'Buscando ayuda para %quest_link.', '', ''),
-	(506, 'suggest_quest', '%quest_link 도움이 필요하신 분 있나요?', 0, 0, '', 'Besoin d’aide pour la quête %quest_link?', 'Braucht jemand Hilfe bei %quest_link?', '%quest_link 도움이 필요하신 분 있나요?', '', '¿Alguien necesita ayuda con %quest_link?', '', ''),
-	(507, 'suggest_quest', '%quest_link 끝까지 같이 하실 분?', 0, 0, '', 'Qui est partant pour compléter la %quest_link?', 'Wer hat Lust, %quest_link abzuschließen?', '%quest_link 끝까지 같이 하실 분?', '', '¿Quién se apunta a completar %quest_link?', '', ''),
-	(508, 'suggest_quest', '%quest_link 혼자하기 빡세면 연락주삼 얼른 도와줄테니.', 0, 0, '', 'Besoin d’aide pour %quest_link ?', 'Braucht jemand Unterstützung bei %quest_link?', '%quest_link 진행하는 데 도움이 필요하신가요?', '', '¿Alguien necesita asistencia con %quest_link?', '', ''),
-	(509, 'suggest_quest', '%quest_link 도와주실 분 있나요?', 0, 0, '', 'Qui peut m’aider avec %quest_link?', 'Wer kann bei %quest_link helfen?', '%quest_link 도와주실 분 있나요?', '', '¿Quién puede ayudar con %quest_link?', '', ''),
-	(510, 'suggest_quest', '%quest_link 좀 도와주세요.', 0, 0, '', 'Recherchde l aide pour %quest_link.', 'Suche eine helfende Hand bei %quest_link.', '%quest_link 좀 도와주세요.', '', 'Buscando ayuda con %quest_link.', '', ''),
-	(511, 'suggest_quest', '%quest_link 가실 분 다 모였나요?', 0, 0, '', 'Qui est prêt pour %quest_link?', 'Ist jemand bereit für %quest_link?', '%quest_link 가실 분 다 모였나요?', '', '¿Alguien listo para %quest_link?', '', ''),
-	(512, 'suggest_quest', '%quest_link 같이 하실 분 있나요?', 0, 0, '', 'Est-ce que quelqu’un peut se joindre à moi pour %quest_link?', 'Kann jemand bei %quest_link dazukommen?', '%quest_link 같이 하실 분 있나요?', '', '¿Alguien puede unirse para %quest_link?', '', ''),
-	(513, 'suggest_quest', '%quest_link 파티원 구합니다.', 0, 0, '', 'Je recherche des partenaires pour %quest_link.', 'Suche ein paar Mitstreiter für %quest_link.', '%quest_link 파티원 구합니다.', '', 'Buscando compañeros para %quest_link.', '', ''),
-	(514, 'suggest_quest', '%quest_link 파티 맺고 하실 분?', 0, 0, '', 'Quelqu’un veut faire équipe pour %quest_link?', 'Will jemand sich für %quest_link zusammentun?', '%quest_link 파티 맺고 하실 분?', '', '¿Alguien quiere formar un equipo para %quest_link?', '', ''),
-	(515, 'suggest_quest', '%quest_link 빠르게 깨실 분 계신가요?', 0, 0, '', 'Qui est prêt à faire %quest_link ?', 'Wer ist bereit, %quest_link zu machen?', '%quest_link 하실 분 계신가요?', '', '¿Quién está dispuesto a hacer %quest_link?', '', ''),
-	(516, 'suggest_quest', '%quest_link 아직 안 깨신 분?', 0, 0, '', 'Qui a besoin que %quest_link soit complété ?', 'Wer muss %quest_link noch abschließen?', '%quest_link 아직 안 깨신 분?', '', '¿Quién necesita completar %quest_link?', '', ''),
-	(517, 'suggest_quest', '%quest_link 같이 하실 분?', 0, 0, '', 'Je cherche à accomplir la %quest_link.', 'Will %quest_link abschließen.', '%quest_link 완료하고 싶은데 같이 하실 분?', '', 'Buscando completar %quest_link.', '', ''),
-	(518, 'suggest_quest', '%quest_link 저랑 같이 하실 분?', 0, 0, '', 'Qui peut se joindre à moi pour %quest_link ?', 'Wer kann bei %quest_link mitkommen?', '%quest_link 저랑 같이 하실 분?', '', '¿Quién puede unirse a %quest_link?', '', ''),
-	(519, 'suggest_quest', '%quest_link 같이 깨실 분 있나요?', 0, 0, '', 'Qui est intéressé pour compléter la %quest_link ?', 'Interesse, %quest_link abzuschließen?', '%quest_link 같이 깨실 분 있나요?', '', '¿Alguien interesado en completar %quest_link?', '', ''),
-	(520, 'suggest_quest', '%quest_link 깨는 거 도와주실 분?', 0, 0, '', 'Tu veux de l’aide avec %quest_link?', 'Bock, bei %quest_link zu helfen?', '%quest_link 깨는 거 도와주실 분?', '', '¿Quieres ayudar con %quest_link?', '', ''),
-	(521, 'suggest_quest', '%quest_link 도와주실 수 있는 분 계신가요?', 0, 0, '', '%quest_link ? Oh, vous avez besoin d’aide pour cette quête ? Je suis là pour vous aider !', 'Ist jemand bereit, bei %quest_link zu helfen?', '%quest_link 도와주실 수 있는 분 계신가요?', '', '¿Alguien dispuesto a ayudar con %quest_link?', '', ''),
-	(522, 'suggest_quest', '%quest_link 같이 마무리하실 분 구해요.', 0, 0, '', 'Besoin que quelqu’un termine %quest_link.', 'Brauche jemanden, um %quest_link zu beenden.', '%quest_link 같이 마무리하실 분 구해요.', '', 'Necesito a alguien para terminar %quest_link.', '', ''),
-	(523, 'suggest_quest', '%quest_link 완료하실 분 계신가요?', 0, 0, '', 'Quelqu’un veut finir %quest_link ?', 'Will jemand %quest_link beenden?', '%quest_link 완료하실 분 계신가요?', '', '¿Alguien quiere terminar %quest_link?', '', ''),
-	(524, 'suggest_quest', '%quest_link 도와주실 분?', 0, 0, '', 'Besoin d’aide avec %quest_link?', 'Gibt’s Hilfe für %quest_link?', '%quest_link 도와주실 분?', '', '¿Necesito ayuda con %quest_link?', '', ''),
-	(525, 'suggest_quest', '%quest_link 가실 분 계신가요?', 0, 0, '', 'Qui est partant pour %quest_link ?', 'Wer ist dabei für %quest_link?', '%quest_link 가실 분 계신가요?', '', '¿Alguien se apunta a %quest_link?', '', ''),
-	(526, 'suggest_quest', '%quest_link 같이 깨실 분 찾아요.', 0, 0, '', 'Je recherche un partenaire pour compléter %quest_link.', 'Suche Partner zum Abschließen von %quest_link.', '%quest_link 같이 깨실 분 찾아요.', '', 'Buscando compañero para completar %quest_link.', '', ''),
-	(527, 'suggest_quest', '%quest_link 같이 마무리하실 분?', 0, 0, '', 'Qui est partant pour finir la %quest_link?', 'Wer hat Lust, %quest_link zu beenden?', '%quest_link 같이 마무리하실 분?', '', '¿Quién se apunta a terminar %quest_link?', '', ''),
-	(528, 'suggest_quest', '%quest_link 도움이 필요합니다.', 0, 0, '', 'Besoin d’aide pour %quest_link.', 'Hilfe gesucht für %quest_link.', '%quest_link 도움이 필요합니다.', '', 'Se busca ayuda para %quest_link.', '', ''),
-	(529, 'suggest_quest', ' %quest_link 하실 분 있나요?', 0, 0, '', 'Quelqu’un intéressé par %quest_link aujourd’hui?', 'Heute jemand Interesse an %quest_link?', '오늘 %quest_link 하실 분 있나요?', '', '¿Alguien interesado en %quest_link hoy?', '', ''),
-	(530, 'suggest_quest', '지금 %quest_link 하고 계신 분?', 0, 0, '', 'Est-ce que quelqu’un est en train de faire %quest_link maintenant?', 'Macht gerade jemand %quest_link?', '지금 %quest_link 하고 계신 분?', '', '¿Alguien haciendo %quest_link ahora?', '', ''),
-	(531, 'suggest_quest', '지금 %quest_link 하실 분 있나요?', 0, 0, '', 'Des preneurs pour %quest_link maintenant?', 'Wer hat jetzt Bock auf %quest_link?', '지금 %quest_link 하실 분 있나요?', '', '¿Alguien se apunta a %quest_link ahora?', '', ''),
-	(532, 'suggest_quest', '%quest_link 시작하실 분?', 0, 0, '', 'Qui veut commencer %quest_link?', 'Will jemand %quest_link starten?', '%quest_link 시작하실 분?', '', '¿Alguien quiere empezar %quest_link?', '', ''),
-	(533, 'suggest_quest', '%quest_link 좀 도와주세요. 부탁드립니다ㅠㅠ', 0, 0, '', 'Besoin d’aide avec %quest_link s’il vous plaît.', 'Bitte um Hilfe bei %quest_link.', '%quest_link 좀 도와주세요. 부탁드립니다.', '', 'Necesito ayuda con %quest_link, por favor.', '', ''),
-	(534, 'suggest_quest', '%quest_link 도와주실 분 계신가요?', 0, 0, '', 'Qui peut m’aider avec %quest_link?', 'Wer kann mir bei %quest_link helfen?', '%quest_link 도와주실 분 계신가요?', '', '¿Quién puede ayudarme con %quest_link?', '', ''),
-	(535, 'suggest_quest', '%quest_link 파티 구합니다.', 0, 0, '', 'Je cherche des compagnons pour %quest_link.', 'Suche Gruppe für %quest_link.', '%quest_link 파티 구합니다.', '', 'Buscando un grupo para %quest_link.', '', ''),
-	(536, 'suggest_trade', '%category 파밍하실 분?', 0, 0, '', 'Quelqu’un pour farmer %category?', 'Jemand bereit zum %category farmen?', '%category 파밍하실 분?', '', '¿Alguien para farmear %category?', '', 'Кто хочет пофармить %category?'),
-	(537, 'suggest_trade', '%category 파밍 도와주실 분 찾아요.', 0, 0, '', 'Je cherche de l’aide pour farm %category.', 'Suche Hilfe beim %category farmen.', '%category 파밍 도와주실 분 찾아요.', '', 'Buscando ayuda para farmear %category.', '', 'Ищу помощь для фарма %category.'),
-	(538, 'suggest_trade', '와, %category 너무 비싸네요!', 0, 0, '', 'Ah mince, les %category sont tellement chers !', '%category sind verdammt teuer!', '와, %category 너무 비싸네요!', '', '¡Malditas %category son tan caras!', '', 'Черт, %category такие дорогие!'),
-	(539, 'suggest_trade', '%category 구합니다.', 0, 0, '', 'Envie de %category.', 'Will %category.', '%category 구합니다.', '', 'Quiero %category.', '', 'Хочу %category.'),
-	(540, 'suggest_trade', '%category 관련해서 누가좀 도와주실 분?', 0, 0, '', 'Besoin d’aide avec %category.', 'Brauche Hilfe mit %category.', '%category 관련해서 도움이 필요해요.', '', 'Necesito ayuda con %category.', '', 'Нужна помощь с %category.'),
-	(541, 'suggest_trade', '%category 삽니다.', 0, 0, '', 'Je cherche à acheter %category.', 'Kaufe: %category.', '%category 삽니다.', '', 'Quiero comprar %category.', '', 'Куплю %category.'),
-	(542, 'suggest_trade', '%category 필요하시거나 관심 있는 분?', 0, 0, '', 'Quelqu’un intéressé par %category ?', 'Interesse an %category?', '%category 필요하시거나 관심 있는 분?', '', '¿Alguien interesado en %category?', '', 'Кому интересно %category?'),
-	(543, 'suggest_trade', '%category 팝니다.', 0, 0, '', 'Je vends %category.', 'Verkaufe: %category.', '%category 팝니다.', '', 'Quiero vender %category.', '', 'Продам %category.'),
-	(544, 'suggest_trade', '%category 경매장보다 싸게 팔아요.', 0, 0, '', 'Je vends %category moins cher que chez AH.', 'Verkaufe %category günstiger als im AH.', '%category 거래소보다 싸게 팔아요.', '', 'Estoy vendiendo %category más barato que en las subastas.', '', 'Продаю %category дешевле, чем на Аукционе.'),
-	(545, 'suggest_trade', '%category 노가다 뛰실 분?', 0, 0, '', 'Qui veut farm %category?', 'Wer will %category farmen?', '%category 노가다 뛰실 분?', '', '¿Quién quiere farmear %category?', '', 'Кто хочет пофармить %category?'),
-	(546, 'suggest_trade', '%category 파밍하고 싶네요.', 0, 0, '', 'Envie de farmer %category.', 'Will %category farmen.', '%category 파밍하고 싶네요.', '', 'Quiero farmear %category.', '', 'Хочу пофармить %category.'),
-	(547, 'suggest_trade', '%category 파밍 파티 구합니다.', 0, 0, '', 'Je cherche un group pour farm %category.', 'Suche Gruppe fürs %category farmen.', '%category 파밍 파티 구합니다.', '', 'Buscando grupo después de %category.', '', 'Ищу пати после %category.'),
-	(548, 'suggest_trade', '어떤 %category든 환영합니다.', 0, 0, '', 'Toute %category est appréciée.', '%category sind willkommen.', '어떤 %category든 환영합니다.', '', 'Cualquier %category es apreciada.', '', 'Любые %category приветствуются.'),
-	(549, 'suggest_trade', '%category 종류는 뭐든 다 삽니다.', 0, 0, '', 'Acheter toute votre %category.', 'Kaufe alles von %category.', '%category 종류는 뭐든 다 삽니다.', '', 'Comprando algo de %category.', '', 'Куплю что угодно из %category.'),
-	(550, 'suggest_trade', '와, 다들 %category 파밍 중인가 보네요!', 0, 0, '', 'Oh là là, tout le monde farm le %category !', 'Wow, alle farmen %category!', '와, 다들 %category 파밍 중인가 보네요!', '', '¡Guau, alguien está farmeando %category!', '', 'Вау, кто-то фармит %category!'),
-	(551, 'suggest_trade', '거래소에서 %category가 엄청 잘 팔리네요.', 0, 0, '', 'Les %category se vendent comme des petits pains à l’HDV.', '%category gehen im AH weg wie warme Semmeln.', '거래소에서 %category가 엄청 잘 팔리네요.', '', '%category están vendiendo locos en las subastas.', '', '%category отлично продаются на аукционе.'),
-	(552, 'suggest_trade', '지금 거래소는 %category가 대세예요.', 0, 0, '', 'AH c’est fan de %category.', 'AH ist heiß auf %category.', '지금 거래소는 %category가 대세예요.', '', 'Las subastas estan caliente para %category.', '', 'Аукцион горячий по %category.'),
-	(553, 'suggest_trade', '거래소에 %category 매물이 올라왔어요.', 0, 0, '', 'Des %category sont disponibles sur le marché.', '%category sind auf dem Markt.', '거래소에 %category 매물이 올라왔어요.', '', '%category están en el mercado.', '', '%category на рынке.'),
-	(554, 'suggest_trade', '%category 거래(교환)하실 분.', 0, 0, '', 'Tu veux échanger des %category ?', 'Will etwas %category tauschen.', '%category 거래(교환)하실 분.', '', 'Quiero intercambiar alguna %category.', '', 'Хочу обменять немного %category.'),
-	(555, 'suggest_trade', '%category 많이 필요함..', 0, 0, '', 'J’ai besoin de plus de %category.', 'Brauche mehr %category.', '%category가 더 필요해요.', '', 'Necesito más %category.', '', 'Нужно больше %category.'),
-	(556, 'suggest_trade', '%category 좀 나눔하실분?', 0, 0, '', 'Est-ce que quelqu’un pourrait me passer un peu de %category?', 'Kann jemand etwas %category entbehren?', '%category 좀 나눠주실 분 있나요?', '', '¿Alguien puede ahorrar algo de %category?', '', 'Кто-нибудь может поделиться %category?'),
-	(557, 'suggest_trade', '%category 필요하신 분?', 0, 0, '', 'Qui veut la %category ?', 'Wer will %category?', '%category 필요하신 분?', '', '¿Quién quiere %category?', '', 'Кто хочет %category?'),
-	(558, 'suggest_trade', '%category 누가 좀 나눔하실분?', 0, 0, '', 'Une %category s’il vous plaît ?', 'Etwas %category bitte?', '%category 좀 주실 수 있나요?', '', '¿Alguna %category, por favor?', '', 'Немного %category, пожалуйста?'),
-	(559, 'suggest_trade', '%category 관련 기술을 배웠어야 했는데.', 0, 0, '', 'J’aurais dû avoir des compétences pour cette %category.', 'Hätte wohl den Skill für %category lernen sollen.', '%category 관련 기술을 배웠어야 했는데.', '', 'Debería haber adquirido habilidad para %category.', '', 'Надо было прокачать навык для %category.'),
-	(560, 'suggest_trade', '%category 누가 좀 나눔좀 ㅠㅠ.', 0, 0, '', 'Je meurs d’envie de %category.', 'Ich geiere auf %category.', '%category가 간절히 필요해요.', '', 'Me muero por %category.', '', 'Очень хочу %category.'),
-	(561, 'suggest_trade', '다들 %category 구하려고 난리네요.', 0, 0, '', 'Les gens se tuent pour cette %category.', 'Für %category würden die Leute töten.', '다들 %category 구하려고 난리네요.', '', 'La gente está matando por %category.', '', 'Люди убивают ради %category.'),
-	(562, 'suggest_trade', '%category 이거 완전 혜자인듯!', 0, 0, '', 'La catégorie est une super affaire !', '%category ist ein Top-Deal!', '%category 이거 완전 혜자네요!', '', '%category es una gran ganga!', '', '%category — отличная сделка!'),
-	(563, 'suggest_trade', '다들 %category에 미쳐 있네요!', 0, 0, '', 'Tout le monde est fou de %category !', 'Alle sind verrückt nach %category!', '다들 %category에 미쳐 있네요!', '', '¡Todo el mundo está loco por %category!', '', 'Все сходят с ума по %category!'),
-	(564, 'suggest_trade', '%category 파밍하기 제일 좋은 곳이 어디인가요?', 0, 0, '', 'Quel est le meilleur endroit pour farm des %category?', 'Wo farmt man am besten %category?', '%category 파밍하기 제일 좋은 곳이 어디인가요?', '', '¿Dónde está el mejor lugar para farmear para %category?', '', 'Где лучше всего фармить %category?'),
-	(565, 'suggest_trade', '%category 준비 끝났어요.', 0, 0, '', 'Je suis prêt(e) pour la %category.', 'Bin ready für %category.', '%category 준비 끝났어요.', '', 'Estoy listo para %category.', '', 'Я полностью готов к %category.'),
-	(566, 'suggest_trade', '%category 지금 팔까요 말까요?', 0, 0, '', 'Est-ce une bonne idée de vendre %category?', 'Lohnt es sich, %category zu verkaufen?', '%category 지금 파는 게 좋을까요?', '', '¿Es bueno vender %category?', '', 'Выгодно ли продавать %category?'),
-	(567, 'suggest_trade', '제 %category는 그냥 다 쟁여두려고요.', 0, 0, '', 'Je garderais probablement toutes mes %category avec moi.', 'Ich behalte meine ganzen %category wohl lieber.', '제 %category는 그냥 다 쟁여두려고요.', '', 'Probablemente mantendría toda mi %category conmigo', '', ''),
-	(568, 'suggest_trade', '파티 필요하세요? %category 같이 파밍하실래요?', 0, 0, '', 'Besoin d’un groupe ? Peut-être pour farmer un peu de %category ?', 'Brauchst du eine Gruppe? Vielleicht zum %category farmen?', '파티 필요하세요? %category 같이 파밍하실래요?', '', '¿Necesitas un grupo? ¿Tal vez para farmear alguna %category?', '', 'Нужна группа? Может, пофар미ть %category?'),
-	(569, 'suggest_trade', '아직 %category 고민 중이에요.', 0, 0, '', 'Je suis toujours en train de réfléchir à farm %category.', 'Denke immer noch über %category nach.', '아직 %category 고민 중이에요.', '', 'Todavía estoy pensando en %category.', '', 'Все еще думаю о %category.'),
-	(570, 'suggest_trade', '%category 풍문으로 들었지만은 전 개털이라 뭐 ㅋ.', 0, 0, '', 'J’ai déjà entendu parler de %category, but mes poches sont vides.', 'Hab schon von %category gehört, aber meine Taschen sind leer.', '%category 소식은 들었는데 지갑이 텅 비었네요.', '', 'Ya escuché sobre %category, pero mis bolsillos están vacíos.', '', 'Я уже слышал о %category, но карманы пусты.'),
-	(571, 'suggest_trade', '%category 파티 구합니다.', 0, 0, '', 'Je cherche un groupe pour %category.', 'LFG für %category', '%category 파티 구합니다.', '', 'Busco grupo para %category', '', 'ЛФГ для %category'),
-	(572, 'suggest_trade', '%category 팔면 부자 될 수 있을까요?', 0, 0, '', 'Est-ce que vendre %category me rendrait riche?', 'Würde mich der Verkauf von %category reich machen?', '%category 팔면 부자 될 수 있을까요?', '', '¿Vender %category me haría rico?', '', 'Сделает ли продажа %category меня богатым?'),
-	(573, 'suggest_trade', '알겠어요. 내일은 %category 파밍할 거예요.', 0, 0, '', 'D’accord. Demain, je vais grind %category.', 'Okay. Ich farme %category morgen.', '알겠어요. 내일은 %category 파밍할 거예요.', '', 'OK. Tengo una sesion de farmeo de %category mañana.', '', 'ОК. Завтра фармлю %category.'),
-	(574, 'suggest_trade', '다들 %category 이야기뿐이네요.', 0, 0, '', 'Tout le monde parle de %category.', 'Alle reden über %category.', '다들 %category 이야기뿐이네요.', '', 'Todos hablan de %category', '', 'Все говорят о %category.'),
-	(575, 'suggest_trade', '%category 파밍하는 사람을 최소 열 명은 봤어요.', 0, 0, '', 'J’ai vu au moins dix personnes qui farm %category.', 'Hab mindestens zehn Leute gesehen, die %category farmen.', '%category 파밍하는 사람을 최소 열 명은 봤어요.', '', 'Vi al menos diez personas farmeando para %category.', '', 'Видел как минимум десять человек, фармящих %category.'),
-	(576, 'suggest_trade', '어제 %category를 다 팔아버려서 지금 완전 거지에요!', 0, 0, '', 'J’ai vendu toutes mes %category hier. Je suis complètement fauché !', 'Hab gestern all meine %category verkauft. Bin komplett pleite!', '어제 %category를 다 팔아버려서 지금 완전 거지에요!', '', 'Ayer vendí todo mi %category. ¡Estoy completamente arruinado!', '', 'Вчера продал все свои %category. Теперь я полностью на мели!'),
-	(577, 'suggest_trade', '%category 아템파밍 전문 길드 찾습니다.', 0, 0, '', 'Tu veux rejoindre une guilde qui farme %category.', 'Will einer Gilde joinen, die %category farmt.', '%category 파밍하는 길드에 들어가고 싶어요.', '', 'Quiero unirme a una hermandad de farmeo para %category.', '', 'Хочу вступить в гильдию, фармящую %category.'),
-	(578, 'suggest_trade', '%category 경매장보다 싸게 팔고 있어요.', 0, 0, '', 'Je vends %category moins cher qu’à l’AH.', 'Verkaufe %category günstiger als im AH.', '%category 거래소보다 싸게 팔고 있어요.', '', 'Estoy vendiendo %category más barato que en las subastas.', '', 'Продаю %category дешевле, чем на Аукционе.'),
-	(579, 'suggest_trade', '%category 파밍하실 분 구함!', 0, 0, '', 'Qui veut faire du farming pour %category?', 'Wer will %category farmen?', '%category 파밍하실 분 구함!', '', '¿Quién quiere farmear %category?', '', 'Кто хочет пофармить %category?'),
-	(580, 'suggest_trade', '%category 판매 중인데 관심 있으신 분?', 0, 0, '', 'Vente %category, des intéressés ?', 'Verkaufe %category, wer hat Interesse?', '%category 판매 중인데 관심 있으신 분?', '', 'Vendo %category, ¿alguien interesado?', '', ''),
-	(581, 'suggest_trade', '%category 필요하신 분?', 0, 0, '', 'Besoin de %category?', 'Braucht jemand %category?', '%category 필요하신 분?', '', '¿Alguien necesita %category?', '', ''),
-	(582, 'suggest_trade', '%category 판매합니다. 귓 주세요.', 0, 0, '', 'Vente de %category, wisp me.', 'Verkaufe %category, flüster mir.', '%category 판매합니다. 귓 주세요.', '', 'Vendo %category, susúrrame.', '', ''),
-	(583, 'suggest_trade', '%category를 %category로 교환 원합니다.', 0, 0, '', 'Je cherche à échanger %category contre %category.', 'Suche Tausch %category gegen %category.', '%category를 %category로 교환 원합니다.', '', 'Busco intercambiar %category por %category.', '', ''),
-	(584, 'suggest_trade', '%category 구해요. 파시는 분?', 0, 0, '', 'Besoin de %category, est-ce que quelqu’un en vend?', 'Brauche %category, verkauft das jemand?', '%category 구해요. 파시는 분?', '', 'Necesito %category, ¿alguien vende?', '', ''),
-	(585, 'suggest_trade', '%category 팝니다. 연락 주세요!', 0, 0, '', 'J’ai %category à vendre, fais-moi signe!', 'Hab %category zu verkaufen, meldet euch!', '%category 팝니다. 연락 주세요!', '', '¡Tengo %category en venta, contáctame!', '', ''),
-	(586, 'suggest_trade', '%category 같이 노가다 하실 분?', 0, 0, '', '"Quelqu’un prêt à faire du farming %category?"', 'Ist jemand bereit, %category zu farmen?', '%category 같이 노가다 하실 분?', '', '¿Alguien dispuesto a farmear %category?', '', ''),
-	(587, 'suggest_trade', '%category를 %category로 바꾸고 싶어요.', 0, 0, '', 'Je veux échanger %category contre %category.', 'Will %category gegen %category tauschen.', '%category를 %category로 바꾸고 싶어요.', '', 'Quiero intercambiar %category por %category.', '', ''),
-	(588, 'suggest_trade', '%category 판매합니다. 시장 최저가 보장!', 0, 0, '', 'Je vends %category, au meilleur prix du marché.', 'Verkaufe %category, bester Preis am Markt.', '%category 판매합니다. 시장 최저가 보장!', '', 'Vendo %category, el mejor precio del mercado.', '', ''),
-	(589, 'suggest_trade', '%category 구해요. %category로 드릴게요.', 0, 0, '', 'Je recherche %category en échange de %category.', 'Suche %category im Tausch gegen %category.', '%category 구해요. %category로 드릴게요.', '', 'Busco %category a cambio de %category.', '', ''),
-	(590, 'suggest_trade', '%category 교환하실 분 계신가요?', 0, 0, '', 'Quelqu’un a %category à échanger ?', 'Hat jemand %category zum Tauschen?', '%category 교환하실 분 계신가요?', '', '¿Alguien tiene %category para intercambiar?', '', ''),
-	(591, 'suggest_trade', '%category 필요하신 분? 남아돌아서 누구 좀 드릴께요!', 0, 0, '', 'Qui a besoin de %category? J’en ai à vendre!', 'Wer braucht %category? Hab was zu verkaufen!', '%category 필요하신 분? 저한테 좀 있어요!', '', '¿Quién necesita %category? ¡Tengo algo para vender!', '', ''),
-	(592, 'suggest_trade', '%category 판매합니다. 가격 귓 주세요.', 0, 0, '', 'J’ai %category à vendre, chuchotez-moi pour le prix.', 'Habe %category zu verkaufen, flüster mir für den Preis.', '%category 판매합니다. 가격 귓 주세요.', '', 'Tengo %category en venta, susúrrame para el precio.', '', ''),
-	(593, 'suggest_trade', '%category 팔아요. 자세한 건 귓말 주세요.', 0, 0, '', 'Je cherche à vendre des %category, envoyez-moi un message pour plus de détails.', 'Will %category verkaufen, flüster mir für Details.', '%category 팔아요. 자세한 건 귓말 주세요.', '', 'Busco vender %category, susúrrame para detalles.', '', ''),
-	(594, 'suggest_trade', '%category 삽니다. 파실 분?', 0, 0, '', 'Je recherche %category. Est-ce que quelqu’un en vend?', 'Kaufe: %category. Verkauft das jemand?', '%category 삽니다. 파실 분?', '', 'Busco comprar %category. ¿Alguien vende?', '', ''),
-	(595, 'suggest_trade', '%category 찾고 있어요. 연락 부탁드려요.', 0, 0, '', 'Je recherche %category, n’hésitez pas à me contacter.', 'Suche %category, bitte melden.', '%category 찾고 있어요. 연락 부탁드려요.', '', 'Estoy buscando %category, por favor contáctame.', '', ''),
-	(596, 'suggest_trade', '%category 가져가실 분?', 0, 0, '', 'Des intéressés pour %category ?', 'Wer hat Interesse an %category?', '%category 가져가실 분?', '', '¿Alguien interesado en %category?', '', ''),
-	(597, 'suggest_trade', '%category 파밍 좀 도와주실 분 있나요?', 0, 0, '', 'Est-ce que quelqu’un peut aider à farmer %category?', 'Kann jemand beim %category farmen helfen?', '%category 파밍 좀 도와주실 분 있나요?', '', '¿Alguien puede ayudar a farmear %category?', '', ''),
-	(598, 'suggest_trade', '%category 파실 분 계신가요?', 0, 0, '', 'Est-ce que quelqu’un a %category à vendre?', 'Hat jemand %category zu verkaufen?', '%category 파실 분 계신가요?', '', '¿Alguien tiene %category para vender?', '', ''),
-	(599, 'suggest_trade', '%category 삽니다. 귓 주세요.', 0, 0, '', 'Je cherche à acheter %category, n’hésitez pas à me contacter.', 'Will %category kaufen, flüster mir einfach.', '%category 구매 원합니다. 귓 주세요.', '', 'Busco comprar %category, por favor mándame un mensaje.', '', ''),
-	(600, 'suggest_trade', '%category 찾아요. 누구 가지고 계신 분?', 0, 0, '', 'Je cherche %category. Qui l’a en stock?', 'Suche %category. Wer hat was?', '%category 찾아요. 누구 가지고 계신 분?', '', 'Estoy buscando %category. ¿Quién lo tiene?', '', ''),
-	(601, 'suggest_trade', '%category 사고 싶어요. 적당한 가격이면 좋겠습니다.', 0, 0, '', 'Je recherche %category à un prix raisonnable.', 'Kaufe: %category zum fairen Preis.', '%category 사고 싶어요. 적당한 가격이면 좋겠습니다.', '', 'Busco comprar %category a un precio justo.', '', ''),
-	(602, 'suggest_trade', '%category 급하게 구합니다! 파실 분 계신가요?', 0, 0, '', 'Besoin de %category de toute urgence, est-ce que quelqu’un en a ?', 'Brauche dringend %category, hat wer was?', '%category 급하게 구합니다! 파실 분 계신가요?', '', 'Necesito %category urgente, ¿alguien lo tiene?', '', ''),
-	(603, 'suggest_trade', '%category 판매합니다. 저렴하게 넘겨요!', 0, 0, '', 'J’ai trouvé %category, vendu à petit prix.', 'Hab %category, verkaufe günstig.', '%category 판매합니다. 저렴하게 넘겨요!', '', 'Tengo %category, vendo a un precio bajo.', '', ''),
-	(604, 'suggest_trade', '%category 판매합니다. 가격 착함 ㅎㅎ.', 0, 0, '', 'Je vends des %category à bon prix.', 'Verkaufe %category zum guten Kurs.', '%category 판매합니다. 가격 착해요.', '', 'Vendo %category a buen precio.', '', ''),
-	(605, 'suggest_trade', '%category 사고 싶은데, 싸게 파실 분 없음?', 0, 0, '', 'Je suis à la recherche de %category, est-ce que quelqu’un en vendrait à bon prix ?', 'Suche %category, verkauft wer günstig?', '%category 사고 싶은데, 싸게 파실 분 없나요?', '', 'Busco comprar %category, ¿alguien lo vende barato?', '', ''),
-	(606, 'suggest_trade', '%category 파는 분 계세요? 제가 사고 싶어서요.', 0, 0, '', 'Quelqu’un vend de %category ? Ça m’intéresse.', 'Verkauft jemand %category? Hätte Interesse.', '%category 파는 분 계세요? 제가 사고 싶어서요.', '', '¿Alguien vende %category? Estoy interesado.', '', ''),
-	(607, 'suggest_trade', '%category 필요합니다. 파시는 분 계시면 귓속말 주세요.', 0, 0, '', 'Besoin de la %category, s’il vous plaît wisp me si vous vendez.', 'Brauche %category, flüstert mir wenn ihr verkauft.', '%category가 필요합니다. 파시는 분 귓속말 주세요.', '', 'Necesito %category, susúrrame si lo vendes.', '', ''),
-	(608, 'suggest_trade', '혹시 남는 %category 있으신 분? 교환 가능합니다.', 0, 0, '', 'Quelqu’un aurait un %category supplémentaire à échanger?', 'Hat wer %category übrig zum Tauschen?', '혹시 남는 %category 있으신 분? 교환 가능합니다.', '', '¿Alguien tiene %category extra para intercambiar?', '', ''),
-	(609, 'suggest_trade', '%category 구합니다. 파실 분?', 0, 0, '', 'À la recherche de %category. Quelqu’un vend-il ?', 'Suche %category. Verkauft jemand?', '%category 구합니다. 파실 분?', '', 'Busco %category. ¿Alguien lo vende?', '', ''),
-	(610, 'suggest_trade', '%category 거래하실 분 계신가요?', 0, 0, '', '%category trading, ça vous tente?', 'Hat wer Interesse, %category zu tauschen?', '%category 거래하실 분 계신가요?', '', '¿Alguien interesado en intercambiar %category?', '', ''),
-	(611, 'suggest_trade', '%category 팔아봅니다 아니면 교환도 ok.', 0, 0, '', 'Je vends des %category, n’hésitez pas à me contacter pour faire un échange.', 'Verkaufe %category, meldet euch für Tausch.', '%category 팝니다. 교환 원하시면 말씀해 주세요.', '', 'Vendo %category, contáctame para un intercambio.', '', ''),
-	(612, 'suggest_trade', '%category 매입합니다. 적당한 가격에 구해요.', 0, 0, '', 'Je recherche des %category à acheter, je souhaite trouver de bonnes affaires.', 'Kaufe: %category, suche guten Kurs.', '%category 매입합니다. 적당한 가격에 구해요.', '', 'Busco comprar %category, buscando buenas ofertas.', '', ''),
-	(613, 'suggest_trade', '%category 필요하신 분? 남아 도는데 좀 드릴라고요.', 0, 0, '', 'Qui a besoin de %category? J’ai des extras.', 'Wer braucht %category? Hab was übrig.', '%category 필요하신 분? 저한테 좀 남는 게 있네요.', '', '¿Quién necesita %category? Tengo extras.', '', ''),
-	(614, 'suggest_trade', '%category 필요하신 분 계세요? 싸게 드릴게요.', 0, 0, '', 'Qui veut de la %category? Je vends à bas prix.', 'Will wer %category? Verkaufe billig.', '%category 필요하신 분 계세요? 싸게 드릴게요.', '', '¿Alguien quiere %category? Lo vendo barato.', '', ''),
-	(615, 'suggest_trade', '%category 찾는 중인데, 혹시 파시는 분?', 0, 0, '', 'Je recherche des %category, est-ce que quelqu’un en vend?', 'Suche %category, verkauft wer was?', '%category 찾는 중인데, 혹시 파시는 분?', '', 'Busco %category, ¿alguien lo vende?', '', ''),
-	(616, 'suggest_trade', '%category 필요하신 분? 교환할 수 있는 게 좀 있어요.', 0, 0, '', 'Besoin de %category? J’en ai quelques-uns à échanger.', 'Braucht jemand %category? Hab was zum Tauschen.', '%category 필요하신 분? 교환할 수 있는 게 좀 있어요.', '', '¿Alguien necesita %category? Tengo algunos para intercambiar.', '', ''),
-	(617, 'suggest_trade', '%category 매입합니다. 경매장보다 싸게 파실 분?', 0, 0, '', 'Je recherche %category. Est-ce que quelqu’un vend moins cher que à l’HV?', 'Kaufe: %category. Ist jemand günstiger als AH?', '%category 매입합니다. 경매장보다 싸게 파실 분?', '', 'Busco comprar %category. ¿Alguien lo vende más barato que en la subasta?', '', ''),
-	(618, 'suggest_trade', '%category 헐값에 처분합니다. 자세한 건 귓속말 주세요.', 0, 0, '', 'Vente de %category à petit prix, chuchotez pour plus de détails.', 'Verkaufe %category billig, flüster mir für Details.', '%category 헐값에 처분합니다. 자세한 건 귓속말 주세요.', '', 'Vendo %category barato, susúrrame para detalles.', '', ''),
-	(619, 'suggest_trade', '%category 필요하신 분? 누가 사가시면 저렴하게 드림.', 0, 0, '', 'Besoin de %category ? J’en ai en vente.', 'Braucht wer %category? Hab was zu verkaufen.', '%category 필요하신 분? 팔 게 좀 있습니다.', '', '¿Alguien necesita %category? Tengo algunos para vender.', '', ''),
-	(620, 'suggest_trade', '%category를 다른 걸로 교환하고 싶어요.', 0, 0, '', 'Je cherche à échanger %category contre autre chose.', 'Tausche %category gegen was anderes.', '%category를 다른 걸로 교환하고 싶어요.', '', 'Busco intercambiar %category por algo más.', '', ''),
-	(621, 'suggest_trade', '%category 있는데, 다른 %category랑 교환하실 분?', 0, 0, '', 'J’Safe %category, je serais prêt à l’échanger contre %category.', 'Hab %category, tausche gegen %category.', '%category 있는데, 다른 %category랑 교환하실 분?', '', 'Tengo %category, dispuesto a intercambiarlo por %category.', '', ''),
-	(622, 'suggest_trade', '%category 구합니다. 남는 거 있으신 분?', 0, 0, '', 'Je recherche %category, est-ce que quelqu’un en a en plus ?', 'Kaufe: %category, hat wer was übrig?', '%category 구합니다. 남는 거 있으신 분?', '', 'Busco comprar %category, ¿alguien tiene extras?', '', ''),
-	(623, 'suggest_faction', '혹시 %faction 평판 작업하시는 분 계신가요?', 0, 0, '', 'Qui ici farm la réputation de la faction %faction ?', 'Farmt wer Ruf bei %faction?', '혹시 %faction 평판 작업하시는 분 계신가요?', '', '¿Alguien farmea reputación con %faction?', '', 'Кто фармит репутацию %faction?'),
-	(624, 'suggest_faction', '%faction 평판 올리는 것 좀 도와주실 분?', 0, 0, '', 'Besoin d’aide avec la réputation %faction?', 'Kann wer bei %faction helfen?', '%faction 평판 올리는 것 좀 도와주실 분?', '', '¿Alguien me ayuda con %faction?', '', 'Кто поможет с %faction?'),
-	(625, 'suggest_faction', '%faction 퀘스트를 좀 하고 싶습니다만.', 0, 0, '', 'Tu veux partir en quête pour la faction %faction?', 'Hab Bock auf Quests für %faction.', '%faction 퀘스트를 좀 하고 싶네요.', '', 'Quiero buscar a %faction.', '', 'Хочу квестить ради %faction.'),
-	(626, 'suggest_faction', '%faction이곳이 최고죠.', 0, 0, '', '%faction est la meilleure.', '%faction ist die beste Fraktion.', '%faction이 최고죠.', '', '%faction es el mejor.', '', '%faction — лучшая.'),
-	(627, 'suggest_faction', '%faction 평판 %rep_level까지 정말 얼마 안 남았어요.', 0, 0, '', 'J’ai juste besoin d’un peu pour être %rep_level avec %faction.', 'Fehlt nur noch ein bisschen bis %rep_level bei %faction.', '%faction 평판 %rep_level까지 정말 얼마 안 남았어요.', '', 'Solo necesito un poco para estar %rep_level con %faction.', '', 'Нужно чуть-чуть, чтобы стать %rep_level у %faction.'),
-	(628, 'suggest_faction', '혹시 %faction 평판 %rep_level 찍으신 분?', 0, 0, '', 'Est-ce que quelqu’un a le niveau de réputation %rep_level avec %faction ?', 'Hat jemand %rep_level bei %faction?', '혹시 %faction 평판 %rep_level 찍으신 분?', '', '¿Alguien tiene %rep_level con %faction?', '', 'Кто-нибудь уже %rep_level у %faction?'),
-	(629, 'suggest_faction', '%faction 평판 %rep_level 찍으실 분 누구 없나요?', 0, 0, '', 'Qui veut être %rep_level avec %faction?', 'Wer will %rep_level bei %faction sein?', '%faction 평판 %rep_level 찍으실 분 누구 없나요?', '', '¿Quién quiere estar en %rep_level con %faction?', '', 'Кто хочет стать %rep_level у %faction?'),
-	(630, 'suggest_faction', '%faction 평판 %rep_level은 절대 못 찍을 것 같아요.', 0, 0, '', 'Je ne serai jamais %rep_level souhaité avec %faction.', 'Ich werde nie %rep_level bei %faction sein.', '%faction 평판 %rep_level은 절대 못 찍을 것 같아요.', '', 'Nunca estaré %rep_level con %faction.', '', ''),
-	(631, 'suggest_faction', '혹시 %faction 평판 부족하신 분?', 0, 0, '', 'Quelqu’un manque de réputation auprès de %faction ?', 'Fehlt jemandem Ruf bei %faction?', '혹시 %faction 평판 부족하신 분?', '', '¿Alguien falta reputación con %faction?', '', 'Кто-то не хватает репы у %faction?'),
-	(632, 'suggest_faction', '%faction 평판 작업 도와드릴 수 있습니다.', 0, 0, '', 'Je peux t’aider à augmenter ta réputation avec %faction.', 'Kann beim Ruf farmen für %faction helfen.', '%faction 평판 작업 도와드릴 수 있습니다.', '', 'Podría ayudar a farmear %faction rep.', '', 'Могу помочь с фармом репы %faction.'),
-	(633, 'suggest_faction', '평판은 높을수록 좋죠, 특히 %faction은요.', 0, 0, '', 'Plus il y a de réput, mieux c’est. Surtout avec %faction', 'Je mehr Ruf, desto besser. Besonders bei %faction.', '평판은 높을수록 좋죠, 특히 %faction은요.', '', 'Cuantas más repeticiones, mejor. Especialmente con %faction.', '', 'Чем больше репы, тем лучше. Особенно у %faction.'),
-	(634, 'suggest_faction', '%faction: %rep_level까지 앞으로 %rndK 남았습니다.', 0, 0, '', '%faction: J’ai besoin de %rndK pour %rep_level.', '%faction: brauche %rndK bis %rep_level.', '%faction: %rep_level까지 앞으로 %rndK 남았습니다.', '', '%faction: necesita %rndK para %rep_level.', '', '%faction: нужно %rndK для %rep_level.'),
-	(635, 'suggest_faction', '%faction 퀘스트 공유해 주실 분 계신가요?', 0, 0, '', 'Qui peut partager les quêtes de %faction?', 'Wer kann Quests von %faction teilen?', '%faction 퀘스트 공유해 주실 분 계신가요?', '', '¿Quién puede compartir misiones de %faction?', '', 'Кто может поделиться квестами %faction?'),
-	(636, 'suggest_faction', '%faction 평판 주는 던전 있나요?', 0, 0, '', 'Des donjons pour %faction ?', 'Gibts Inis für %faction?', '%faction 평판 주는 던전 있나요?', '', '¿Alguna mazmorra para %faction?', '', 'Есть подземелья для %faction?'),
-	(637, 'suggest_faction', '%faction 평판 노가다 좀 하고 싶네요.', 0, 0, '', 'Je veux monter ma réputation avec la %faction.', 'Hab Bock, Ruf bei %faction zu grinden.', '%faction 평판 노가다 좀 하고 싶네요.', '', 'Quiero hacer %faction rep grind.', '', 'Хочу фармить репу %faction.'),
-	(638, 'suggest_faction', '우리 같이 %faction 평판이나 올려봐요!', 0, 0, '', 'On va monter la réputation de la %faction !', 'Lasst uns Ruf bei %faction farmen!', '우리 같이 %faction 평판이나 올려봐요!', '', '¡Vamos a farmear reputación con %faction!', '', ''),
-	(639, 'suggest_faction', '지금 %faction 평판 작업 중입니다.', 0, 0, '', 'Je fais du farm pour gagner de la réputation auprès de %faction.', 'Farme Ruf bei %faction.', '지금 %faction 평판 작업 중입니다.', '', 'Farming for %faction rep.', '', 'Фармлю репу %faction.'),
-	(640, 'suggest_faction', '%faction 평판 노가다 하실 분?', 0, 0, '', 'Envie de farmer pour %faction ?', 'Bock, für %faction zu farmen.', '%faction 평판 노가다 하실 분?', '', 'Quiero farmear para %faction.', '', 'Хочу пофармить %faction.'),
-	(641, 'suggest_faction', '%faction 평판 관련해서 도움이 좀 필요해요ㅠㅠ', 0, 0, '', 'Besoin d’aide avec %faction.', 'Brauche Hilfe bei %faction.', '%faction 평판 관련해서 도움이 좀 필요해요.', '', 'Necesito ayuda con %faction.', '', 'Нужна помощь с %faction.'),
-	(642, 'suggest_faction', '%faction 병참장교가 파는 거 쓸만한가요?', 0, 0, '', 'Est-ce que %faction vend quelque chose d’utile ?', 'Verkauft %faction was Nützliches?', '%faction 병참장교가 파는 거 쓸만한가요?', '', '¿%faction vende algo útil?', '', '%faction что-то полезное продает?'),
-	(643, 'suggest_faction', '%faction 상인 어디 있는지 아시는 분?', 0, 0, '', 'Y a-t-il des vendeurs de %faction ?', 'Gibt es Händler für %faction?', '%faction 상인 어디 있는지 아시는 분?', '', '¿Hay %proveedores de facciones?', '', 'Есть ли у %faction торговцы?'),
-	(644, 'suggest_faction', '지금 %faction 평판 올리는 사람 누구죠?', 0, 0, '', 'Ah, qui farm %faction?', 'Wer farmt für %faction?', '지금 %faction 평판 올리는 사람 누구죠?', '', '¿Quién farmea %faction?', '', 'Кто фармит %faction?'),
-	(645, 'suggest_faction', '%faction 평판 가장 빨리 올리는 법이 뭔가요?', 0, 0, '', 'Quelle est la meilleurs façon de farmer %faction ?', 'Wie farmt man %faction am besten?', '%faction 평판 가장 빨리 올리는 법이 뭔가요?', '', '¿Cuál es la mejor manera de farmear %faction?', '', 'Как лучше всего фармить %faction?'),
-	(646, 'suggest_faction', '%faction 평판 노가다 정말 징글징글허네..', 0, 0, '', 'Je déteste ce fichu grind de réputation pour %faction.', 'Ich hasse den Rufgrind für %faction.', '%faction 평판 노가다 정말 지긋지긋하네요.', '', 'Odio %repetir de facción', '', 'Ненавижу фарм репы %faction.'),
-	(647, 'suggest_faction', '%faction 평판 노가다 때문에 진짜 죽겠음 ㅠ', 0, 0, '', 'Je suis tellement fatigué de cette %faction.', 'Ich hab %faction so satt.', '%faction 평판 때문에 진짜 죽겠어요.', '', 'Estoy tan cansado de %faction.', '', 'Я так устал от %faction.'),
-	(648, 'suggest_faction', '%faction 평판 작업 가실 분?', 0, 0, '', 'Allez pour la %faction!', 'Gehen wir %faction an?', '%faction 평판 하러 가실 분?', '', '¿Quereis ir a por %faction?', '', 'Пойдем за %faction?'),
-	(649, 'suggest_faction', '다들 %faction 평판 %rep_level 찍은 것 같은데 저만 한참 뒤처진 것 같네요.', 0, 0, '', 'Il semble que tout le monde soit au niveau %rep_level avec la faction %faction. Et bien sûr, je suis en retard comme d’habitude.', 'Scheint, als wenn alle %rep_level bei %faction sind. Nur ich hänge wie immer hinterher.', '다들 %faction 평판 %rep_level 찍은 것 같은데 저만 한참 뒤처진 것 같네요.', '', 'Parece que todo el mundo está %rep_level con %faction. Solo yo lle고 tarde como siempre.', '', 'Кажется, все уже %rep_level у %faction. Только я, как обычно, опаздываю.'),
-	(650, 'suggest_faction', '%faction 평판 작업 파티 있나요?', 0, 0, '', 'Je recherche un groupe pour %faction rep grind !', 'LFG für Rufgrind bei %faction?', '%faction 평판 작업 파티 있나요?', '', 'Busco grupo para subir reputación con %faction', '', 'ЛФГ для фарма репы %faction?'),
-	(651, 'suggest_faction', '%faction 평판 올리기 좋은 곳 추천 부탁드려요.', 0, 0, '', 'Est-ce que quelqu’un peut me recommander un bon endroit pour gagner de la réputation avec %faction?', 'Kann jemand einen guten Spot für Rufgrind bei %faction empfehlen?', '%faction 평판 올리기 좋은 곳 추천 부탁드려요.', '', '¿Alguien puede sugerir un buen lugar farmear reputacion con %faction?', '', 'Кто-нибудь подскажет хорошее место для фарма репы %faction?'),
-	(652, 'suggest_faction', '%faction 평판 올리면 뭐가 좋나요?', 0, 0, '', 'Est-ce que la réputation de %faction me sera bénéfique ?', 'Bringt mir Ruf bei %faction überhaupt was?', '%faction 평판 올리면 뭐가 좋죠?', '', '¿Me beneficiaría subir reputación con %faction?', '', 'Будет ли польза от репы %faction?'),
-	(653, 'suggest_faction', '%faction 평판이 나중에 이렇게 쓸모 있을 줄이야...', 0, 0, '', 'Qui aurait pensé que cette réputation %faction serait finalement utile...', 'Wer hätte gedacht, dass Ruf bei %faction doch noch nützlich ist...', '%faction 평판이 나중에 이렇게 쓸모 있을 줄이야...', '', 'Quién hubiera pensado que subir reputacion con %faction sería útil después de todo...', '', ''),
-	(654, 'suggest_faction', '모든 진영 확고 찍는 게 목표입니다. 일단 %faction부터 시작하죠.', 0, 0, '', 'Je veux être honoré par toutes les factions, commençant par %faction.', 'Ich will bei allen Fraktionen ehrfürchtig sein, angefangen mit %faction.', '모든 진영 확고 찍는 게 목표입니다. 일단 %faction부터 시작하죠.', '', 'Quiero ser exaltado con todas las facciones, comenzando con %faction.', '', 'Хочу быть превознесенным у всех фракций, начну с %faction.'),
-	(655, 'suggest_faction', '%faction 평판 올릴 가치가 있습니까?', 0, 0, '', 'Est-ce que ça vaut la peine d’améliorer ma réputation avec la faction %faction ?', 'Lohnt es sich, meinen Ruf bei %faction zu pushen?', '%faction 평판 올릴 가치가 있을까요?', '', '¿Hay algún punto para mejorar mi reputación con %faction?', '', 'Есть ли смысл повышать репу с %faction?'),
-	(656, 'suggest_faction', '%faction 평판은 퀘스트가 빠른가요, 몹 잡는 게 빠른가요?', 0, 0, '', 'Pour %faction, il vaut mieux grind des mobs ou faire des quêtes ?', 'Was ist besser für %faction? Quests oder Mobs grinden?', '%faction 평판은 퀘스트가 빠른가요, 몹 잡는 게 빠른가요?', '', '¿Qué es mejor para %faction? ¿Misiones o mafiosos?', '', 'Что лучше для %faction? Квесты или фарм мобов?'),
-	(657, 'suggest_faction', '%faction 평판 대리 작업 해드립니다. 골드만 좀 주세요.', 0, 0, '', 'Je vais augmenter la réputation de %faction pour toi. Il me suffit de me donner un peu d’or.', 'Grinde euren Ruf bei %faction, gebt mir nur etwas Gold.', '%faction 평판 대리 작업 해드립니다. 골드만 좀 주세요.', '', 'Ganare reputacion con %faction por ti. Sólo dame un poco de oro.', '', 'Пофармлю репу %faction для тебя. Только дай немного золота.'),
-	(658, 'suggest_faction', '%faction 평작 진짜 존나 개 노가다네;;', 0, 0, '', 'Je pense que monter ma réputation avec %faction prendrait une éternité.', 'Ich glaube, Ruf bei %faction zu grinden dauert ewig.', '%faction 평판은 진짜 백만 년 걸릴 것 같네요.', '', 'Creo que subir la reputación con %faction tomaría una eternidad.', '', 'Думаю, фармить репу %faction — это навсегда.'),
-	(659, 'suggest_faction', '요즘 매일 %faction 평판 올리느라 고생 중인데 아직 %rep_level까지 멀었네요.', 0, 0, '', 'Je fais des missions pour la %faction tous les jours, mais je suis encore loin du niveau de réputation %rep_level.', 'Ich kill jeden Tag für %faction, bin aber noch weit weg von %rep_level.', '요즘 매일 %faction 평판 올리느라 고생 중인데 아직 %rep_level까지 멀었네요.', '', 'Estoy matando por %faction todos los días ahora, pero aún estoy lejos del %rep_level.', '', 'Я убиваю ради %faction каждый день, но все еще далеко до %rep_level.'),
-	(660, 'suggest_faction', '%my_level 정도 되면 경매장 수수료 좀 줄어드나요?', 0, 0, '', 'À mon niveau %my_level, les dépôts AH vont diminuer, n’est-ce pas ?', 'Sinken die AH-Gebühren auf %my_level?', '%my_level 정도 되면 경매장 수수료 좀 줄어들겠죠?', '', 'Al %rep_level, los depósitos subastas disminuirán, ¿verdad?', '', 'На %my_level депозиты на аукционе уменьшатся, да?'),
-	(661, 'suggest_faction', '다들 확고 찍은 평판 몇 개나 있으심?', 0, 0, '', 'Combien de représentants exaltés avez-vous?', 'Wie viele Fraktionen hast du auf ehrfürchtig?', '확고 찍은 평판 몇 개나 있으세요?', '', '¿Cuántas reputaciones exaltadas tienes?', '', 'Сколько у тебя превознесенных реп?'),
-	(662, 'suggest_faction', '%faction 평판 %my_level 달성하고 싶으신 분?', 0, 0, '', 'Qui veut être %my_level avec %faction?', 'Wer will %my_level bei %faction erreichen?', '%faction 평판 %my_level 달성하고 싶으신 분?', '', '¿Quién quiere estar en %rep_level con %faction?', '', 'Кто хочет быть %my_level у %faction?'),
-	(663, 'suggest_faction', '아놔, 우리 길드원들이 어제 나 빼고 %faction 평판 작업을 다 했다네요.', 0, 0, '', 'Mince. Mon groupe a bien grindé la réputation %faction hier sans moi.', 'Verdammt. Meine Gilde hat gestern ohne mich gut Ruf bei %faction gegrindet.', '이런, 우리 길드원들이 어제 나 빼고 %faction 평판 작업을 다 했네요.', '', 'Maldición. Mi hermandad hizo un buen farmeo de %faction ayer sin mí.', '', 'Черт. Моя гильдия вчера хорошо пофармила %faction без меня.'),
-	(664, 'suggest_faction', '%faction 평판이 %rep_level밖에 안 된다고 아무도 안 도와주네요.', 0, 0, '', 'Personne ne veut m’aider parce que je suis %rep_level avec %faction.', 'Keiner will mir helfen, weil ich schon %rep_level bei %faction bin.', '%faction 평판이 %rep_level밖에 안 된다고 아무도 안 도와주네요.', '', 'Nadie quiere ayudarme porque estoy %rep_level con %faction.', '', 'Никто не хочет мне помогать, потому что я %rep_level у %faction.'),
-	(665, 'suggest_faction', '%faction 근처에는 가지 마삼.', 0, 0, '', 'S’il te plaît, garde tes distances avec %faction.', 'Bleib bitte weg von %faction.', '%faction 근처에는 가지 마세요.', '', 'Por favor manténgase alejado de %faction.', '', 'Пожалуйста, держись подальше от %faction.'),
-	(666, 'suggest_faction', ' %faction 평판 작업하실 분 계신가요?', 0, 0, '', 'Vous êtes en train de farmer la réputation de %faction aujourd’hui ?', 'Farmt heute jemand Ruf bei %faction?', '오늘 %faction 평판 작업하실 분 계신가요?', '', '¿Alguien farmea reputación de %faction hoy?', '', ''),
-	(667, 'suggest_faction', '%faction 평판 올리는 것 좀 도와주세요!', 0, 0, '', 'Aide-moi à augmenter ma réputation avec la faction %faction!', 'Helft mir, Ruf bei %faction zu grinden!', '%faction 평판 올리는 것 좀 도와주세요!', '', '¡Ayúdame a subir mi reputación con %faction!', '', ''),
-	(668, 'suggest_faction', '%faction 평판 %rep_level이 너무 절실해요!', 0, 0, '', 'J’ai tellement besoin d’atteindre le niveau %rep_level avec la faction %faction !', 'Ich brauch so dringend %rep_level bei %faction!', '%faction 평판 %rep_level이 너무 절실해요!', '', '¡Necesito %rep_level con %faction con urgencia!', '', ''),
-	(669, 'suggest_faction', '%faction 평판 노가다 할 만한 가치가 있나요?', 0, 0, '', 'Est-ce que le farm de %faction vaut vraiment la peine?', 'Lohnt sich der Grind für %faction?', '%faction 평판 노가다 할 만한 가치가 있을까요?', '', '¿Vale la pena el farmeo de %faction?', '', ''),
-	(670, 'suggest_faction', '누구 %faction 평판 올리기 좋은 곳 아시는 분?', 0, 0, '', 'Je connais des endroits pour %faction pour augmenter ma réputation.', 'Kennt jemand gute Spots für Ruf bei %faction?', '누구 %faction 평판 올리기 좋은 곳 아세요?', '', '¿Alguien conoce lugares para farmear reputación con %faction?', '', ''),
-	(671, 'suggest_faction', '저는 %faction 평판 올리는 게 제일 재미있네요!', 0, 0, '', 'J’adore augmenter ma réputation auprès de la faction %!', 'Ich liebe es, Ruf bei %faction zu grinden!', '저는 %faction 평판 올리는 게 제일 재밌어요!', '', '¡Me encanta hacer grind de reputación con %faction!', '', ''),
-	(672, 'suggest_faction', '%faction 평판 작업 마무리하는 것 좀 도와주실 분!', 0, 0, '', 'Besoin d’aide pour finir ma montée de réputation avec %faction!', 'Brauche Hilfe, um den Rufgrind bei %faction abzuschließen!', '%faction 평판 작업 마무리하는 것 좀 도와주실 분!', '', '¡Necesito ayuda para terminar el grind de reputación de %faction!', '', ''),
-	(673, 'suggest_faction', '%faction 평판 %rep_level까지 진짜 한 끗 차이!', 0, 0, '', 'Il ne me reste que quelques niveaux de réputation à faire avec %faction !', 'Nur noch ein paar Stufen bis %rep_level bei %faction!', '%faction 평판 %rep_level까지 진짜 한 끗 차이예요!', '', '¡Solo me faltan unos %rep_level para llegar a %faction!', '', ''),
-	(674, 'suggest_faction', ' %faction 평판 달리실 분 누구 없나요?', 0, 0, '', 'Quelqu’un est motivé pour farmer la réputation de la %faction aujourd’hui?', 'Wer hat heute Bock auf Grind für %faction?', '오늘 %faction 평판 달리실 분 누구 없나요?', '', '¿Alguien se anima al farmeo de %faction hoy?', '', ''),
-	(675, 'suggest_faction', '%faction 평판 같이 올릴 분 구합니다!', 0, 0, '', 'À la recherche de compagnons de réputation de %faction! Qui est partant pour monter les réputations ensemble?', 'Suche Mitstreiter für Rufgrind bei %faction!', '%faction 평판 같이 올릴 동료 구합니다!', '', 'Busco compañeros para farmear %faction.', '', ''),
-	(676, 'suggest_faction', '%faction 평판 노가다 하다가 지쳤삼요...', 0, 0, '', 'J’en ai marre de faire monter ma réputation auprès de la faction %faction !', 'Ich bin das Rufgrinden für %faction leid!', '%faction 평판 노가다 하다가 지쳤어요...', '', '¡Estoy cansado de hacer grind de %faction!', '', ''),
-	(677, 'suggest_faction', '혹시 또 %faction 평판 올리시는 분 계세요?', 0, 0, '', 'Oh, quelqu’un d’autre qui est en train de monter sa réputation avec %faction ?', 'Noch wer auf Rufgrind bei %faction?', '혹시 또 %faction 평판 올리시는 분 계세요?', '', '¿Alguien más está haciendo el grind de %faction?', '', ''),
-	(678, 'suggest_faction', '드디어 %faction 평판을 제대로 올릴 때가 왔군요!', 0, 0, '', 'C’est le moment de faire le grind %faction sérieusement !', 'Zeit, den Rufgrind bei %faction richtig anzugehen!', '드디어 %faction 평판을 제대로 올릴 때가 왔군요!', '', '¡Es hora de darle duro al grind de %faction!', '', ''),
-	(679, 'suggest_faction', '%faction 평판 마무리하는 것 좀 도와주세요!', 0, 0, '', 'Aide-moi à terminer ma réputation de faction !', 'Helft mir, den Ruf bei %faction fertig zu machen!', '%faction 평판 마무리하는 것 좀 도와주세요!', '', '¡Ayúdame a completar la reputación de %faction!', '', ''),
-	(680, 'suggest_faction', '%faction 평판 확고까지 이제 %rndK 남았어요!', 0, 0, '', 'Il ne me manque plus que %rndK pour augmenter ma réputation auprès de la faction!', 'Mir fehlen nur noch %rndK für den %faction Ruf!', '%faction 평판 확고까지 이제 %rndK 남았어요!', '', '¡Solo me faltan %rndK para la reputación de %faction!', '', ''),
-	(681, 'suggest_faction', '하루 종일 %faction 평판만 올리고 있네요!', 0, 0, '', 'À farmer la réputation de la faction toute la journée !', 'Den ganzen Tag Ruf bei %faction am farmen!', '하루 종일 %faction 평판만 올리고 있네요!', '', '¡Farmearé la reputación de %faction todo el día!', '', ''),
-	(682, 'suggest_faction', '곧 %faction 평판 %rep_level 찍습니다!', 0, 0, '', 'Je suis presque au niveau %rep_level avec la faction %faction !', 'Fast %rep_level bei %faction erreicht!', '곧 %faction 평판 %rep_level 찍습니다!', '', '¡Casi al %rep_level con %faction!', '', ''),
-	(683, 'suggest_faction', '%faction 평판 작업이 끝이 없슈!', 0, 0, '', 'La réputation de faction, c’est jamais fini !', 'Rufgrind bei %faction endet nie!', '%faction 평판 작업은 끝이 없네요!', '', '¡El grind de reputación de %faction nunca termina!', '', ''),
-	(684, 'suggest_faction', '%faction 일일 퀘스트 하는 것 좀 도와주실 분?', 0, 0, '', 'Besoin d’aide avec les quêtes journalières de %faction ?', 'Hilfe bei den Daily-Quests von %faction?', '%faction 일일 퀘스트 하는 것 좀 도와주실 분?', '', '¿Ayuda con las misiones diarias de %faction?', '', ''),
-	(685, 'suggest_faction', '지금 %faction 평판 올리는 분 누구 없나요?', 0, 0, '', 'Qui est en train de faire du %faction en ce moment ?', 'Wer ist grad beim Grind für %faction?', '지금 %faction 평판 올리는 분 누구 없나요?', '', '¿Quién está farmeando %faction ahora?', '', ''),
-	(686, 'suggest_faction', '우리 %faction 퀘스트 같이 해요!', 0, 0, '', 'Faisons des quêtes de faction ensemble!', 'Lasst uns Quests von %faction zusammen machen!', '우리 %faction 퀘스트 같이 해요!', '', '¡Hagamos las misiones de %faction juntos!', '', ''),
-	(687, 'suggest_faction', ' %faction 평작 달리시는 분?', 0, 0, '', 'Quelqu’un farme la réputation de la faction %faction aujourd’hui?', 'Farmt heute jemand Ruf bei %faction?', '오늘 %faction 평판 달리시는 분?', '', '¿Alguien está farmeando reputación con %faction hoy?', '', ''),
-	(688, 'suggest_faction', '%faction 평판 %rep_level 찍는 것 좀 도와주세요!', 0, 0, '', 'Besoin d’aide pour la réputation de %faction %rep_level %rep_level !', 'Brauche Hilfe beim Ruf bei %faction für %rep_level!', '%faction 평판 %rep_level 찍는 것 좀 도와주세요!', '', '¡Necesito ayuda con la reputación de %faction para %rep_level!', '', ''),
-	(689, 'suggest_faction', '저랑 같이 %faction 평판 노가다 하실 분?', 0, 0, '', 'Qui veut faire monter notre réputation auprès de %faction avec moi?', 'Wer will mit mir Ruf bei %faction grinden?', '저랑 같이 %faction 평판 노가다 하실 분?', '', '¿Quién quiere farmeo de %faction conmigo?', '', ''),
-	(690, 'suggest_faction', '%faction 평판 작업 파티에 합류하세요!', 0, 0, '', 'Viens me rejoindre pour %faction rep grind!', 'Kommt mit zum Rufgrind bei %faction!', '%faction 평판 작업 파티에 합류하세요!', '', '¡Ven a unirte a mí para el grind de reputación de %faction!', '', ''),
-	(691, 'suggest_faction', '%faction 평판 작업이 아주 순조롭네 ㅋ!', 0, 0, '', 'En plein dans la montée de réputation de la %faction !', 'Läuft bei mir beim Rufgrind für %faction!', '%faction 평판 작업이 아주 순조롭네요!', '', '¡Estoy avanzando mucho con el grind de %faction!', '', ''),
-	(692, 'suggest_faction', '%faction 평판 지원/버스 필요하신 분 계신가요?', 0, 0, '', 'Qui est intéressé par des boosts pour monter sa réputation auprès de la faction ?', 'Will jemand Boosts für den Rufgrind bei %faction?', '%faction 평판 지원/버스 필요하신 분 계신가요?', '', '¿Alguien quiere ayudas para el grind de %faction?', '', ''),
-	(693, 'suggest_faction', '방금 %faction 평판 %rep_level 달성했어요!', 0, 0, '', 'Je viens d’atteindre le niveau de réputation %rep_level avec la faction %faction !', 'Gerade %rep_level bei %faction erreicht!', '방금 %faction 평판 %rep_level 달성했어요!', '', '¡Ac보 de alcanzar %rep_level con %faction!', '', ''),
-	(694, 'suggest_faction', '%faction 평판 %rep_level까지 진짜 코앞입니다. 좀만 도와주세요!', 0, 0, '', 'La faction est tellement proche du niveau de réputation, aidez-moi !', 'Bei %faction fehlt nicht mehr viel bis %rep_level, helft mir doch mal!', '%faction 평판 %rep_level까지 진짜 코앞입니다. 좀만 도와주세요!', '', '¡%faction está tan cerca de %rep_level, ayúdame!', '', ''),
-	(695, 'suggest_faction', '%faction 평판 작업 같이 하실래요?', 0, 0, '', 'Tu veux m’aider à monter ma réputation %faction ?', 'Bock, mir beim Rufgrind für %faction zu helfen?', '%faction 평판 작업 같이 하실래요?', '', '¿Quieres ayudarme a farmear reputación de %faction?', '', ''),
-	(696, 'suggest_faction', '오늘도 %faction 평판의 굴레에 갇혔네요!', 0, 0, '', 'Encore en train de gagner de la réputation avec %faction grâce à l’agriculture !', 'Farme wieder Ruf bei %faction!', '오늘도 %faction 평판의 굴레에 갇혔네요!', '', '¡Farmear reputación de %faction otra vez!', '', ''),
-	(697, 'suggest_faction', '누구 %faction 평판 올리기 좋은 꿀팁 아시는 분?', 0, 0, '', 'Est-ce que quelqu’un sait un bon endroit pour augmenter ma réputation avec %faction?', 'Kennt jemand einen guten Spot für Ruf bei %faction?', '누구 %faction 평판 올리기 좋은 꿀팁 아시는 분?', '', '¿Alguien conoce un buen lugar para farmear %faction?', '', ''),
-	(698, 'suggest_faction', '%faction 평판 작업 끝내려면 얼마나 더 해야 하죠?', 0, 0, '', 'Combien de plus pour monter ma réputation avec la faction %faction ?', 'Wie viel fehlt noch beim Rufgrind für %faction?', '%faction 평판 작업 끝내려면 얼마나 더 해야 하죠?', '', '¿Cuánto más para terminar el grind de %faction?', '', ''),
-	(699, 'suggest_faction', '저랑 같이 %faction 퀘스트 하실 분 계신가요?', 0, 0, '', '%Quelqu’un pour faire des quêtes de faction avec moi ?', 'Macht jemand Quests von %faction mit mir?', '저랑 같이 %faction 퀘스트 하실 분 계신가요?', '', '¿Alguien haciendo misiones de %faction conmigo?', '', ''),
-	(700, 'suggest_faction', '%faction 평판 %rep_level 찍으실 분 모집합니다!', 0, 0, '', 'Je recherche un moyen d’augmenter ma réputation avec la faction %faction de niveau %rep_level !', 'Suche jemand für Rufgrind bis %rep_level bei %faction!', '%faction 평판 %rep_level 찍으실 분 모집합니다!', '', 'Busco %rep_level para el grind de %faction!', '', ''),
-	(701, 'suggest_faction', '%faction 평판 %rndK만 더 올리면 끝이다!', 0, 0, '', 'J’ai seulement besoin de %rndK de plus de réputation avec %faction!', 'Mir fehlen nur noch %rndK Ruf bei %faction!', '%faction 평판 %rndK만 더 올리면 끝이다!', '', '¡Solo necesito %rndK más de reputación con %faction!', '', ''),
-	(702, 'suggest_faction', '%faction 평판 노가다 진짜 빡씨네!', 0, 0, '', 'La course à la réputation est intense!', 'Der Grind für %faction ist brutal!', '%faction 평판 노가다 진짜 빡세네요!', '', '¡El grind de %faction es real!', '', ''),
-	(703, 'suggest_faction', '%faction 평판 %rep_level 찍으려고 작업하시는 분?', 0, 0, '', '%Est-ce que quelqu’un fait de l’agriculture de réputation de faction pour atteindre le niveau de réputation %rep_level?', 'Farmt jemand Ruf bei %faction für %rep_level?', '%faction 평판 %rep_level 찍으려고 작업하시는 분?', '', '¿Alguien farmeando %faction para %rep_level?', '', ''),
-	(704, 'suggest_faction', '%faction 평판 노가다 같이 하실 분!', 0, 0, '', 'Hey, on va augmenter notre réputation avec la %faction ensemble !', 'Lasst uns den Rufgrind bei %faction zusammen machen!', '%faction 평판 노가다 같이 하실 분!', '', '¡Hagamos juntos el grind de reputación de %faction!', '', ''),
-	(705, 'suggest_faction', '%faction 평판 올릴수록 보상이 좋구먼유!?', 0, 0, '', 'Plus de réputation auprès de la faction, plus de récompenses !', 'Mehr Ruf bei %faction, mehr Belohnungen!', '%faction 평판 올릴수록 보상이 쏟아지네요!', '', '¡Más reputación de %faction, más recompensas!', '', ''),
-	(706, 'suggest_faction', '%my_class(으)로 %faction 평판 작업 중!', 0, 0, '', 'Je monte ma réputation avec la faction agricole en jouant avec ma classe.', 'Farme Ruf bei %faction als %my_class', '%my_class(으)로 %faction 평판 작업 중!', '', 'Farmeando reputación con %faction con %my_class', '', ''),
-	(707, 'suggest_faction', '혹시 %faction 평판 %rep_level에서 막히신 분 또 있나요?', 0, 0, '', 'Je suis coincé au niveau %rep_level avec la faction %faction. Vous aussi?', 'Hängt noch jemand bei %faction auf %rep_level fest?', '혹시 %faction 평판 %rep_level에서 막히신 분 또 있나요?', '', '¿Alguien más atascado en %rep_level con %faction?', '', ''),
-	(708, 'suggest_faction', '밤새도록 %faction 평판만 올리는 중!', 0, 0, '', 'À enchaîner les quêtes pour ma réputation auprès de la faction toute la nuit !', 'Die ganze Nacht Rufgrind bei %faction!', '밤새도록 %faction 평판만 올리는 중!', '', '¡Voy a farmear reputación de %faction toda la noche!', '', ''),
-	(709, 'suggest_faction', '%faction 평판 작업 저랑 같이 마무리하실 분?', 0, 0, '', 'Qui veut finir la réputation de %faction avec moi ?', 'Wer will den Rufgrind bei %faction mit mir abschließen?', '%faction 평판 작업 저랑 같이 마무리하실 분?', '', '¿Quién quiere terminar el grind de %faction conmigo?', '', ''),
-	(710, 'suggest_faction', '%faction 평판 작업 도와드릴 수 있어요!', 0, 0, '', 'Je peux t’aider avec la montée de réputation de %faction!', 'Ich kann beim Rufgrind für %faction helfen!', '%faction 평판 작업 도와드릴 수 있어요!', '', '¡Pued고 ayudar con el grind de reputación de %faction!', '', ''),
-	(711, 'suggest_faction', '%faction 평판 노가다 더 뛸 준비 됐습니다!', 0, 0, '', 'Je suis prêt à gagner davantage de réputation auprès de la %faction !', 'Bereit für mehr Rufgrind bei %faction!', '%faction 평판 노가다 더 뛸 준비 됐습니다!', '', '¡Estoy listo para más grind de reputación de %faction!', '', ''),
-	(712, 'suggest_faction', '%faction 평판 올리는 것 좀 도와주세요. 급해요!', 0, 0, '', 'Tu veux de l’aide pour %faction rep? J’en ai vraiment besoin!', 'Bock zu helfen beim Ruf für %faction? Ich brauch das dringend!', '%faction 평판 올리는 것 좀 도와주세요. 급해요!', '', '¿Quieres ayudarme con %faction rep? ¡Lo necesito mucho!', '', ''),
-	(713, 'suggest_faction', '%faction 평판 %rndK만 더 모으면 돼요!', 0, 0, '', 'Il me manque %rndK de plus pour augmenter ma réputation avec %faction !', 'Ich brauche noch %rndK für den Ruf bei %faction!', '%faction 평판 %rndK만 더 모으면 돼요!', '', '¡Me faltan %rndK para la reputación de %faction!', '', ''),
-	(714, 'suggest_faction', '%faction 평판 노가다 같이 하실분!', 0, 0, '', 'Viens faire de l’agriculture avec moi pour gagner de la réputation auprès de ma faction!', 'Farmt mit mir für Ruf bei %faction!', '%faction 평판 작업 같이 합시다!', '', '¡Farmea conmigo para reputación de %faction!', '', ''),
-	(715, 'suggest_faction', '딱 %rndK만 더 있으면 %faction 평판 목표 달성이에요!', 0, 0, '', 'Il ne me manque plus que %rndK de réputation avec %faction!', 'Mir fehlen nur noch %rndK Ruf bei %faction!', '딱 %rndK만 더 있으면 %faction 평판 목표 달성이에요!', '', '¡Solo necesito %rndK más de %faction!', '', ''),
-	(716, 'suggest_faction', '%faction 평판 개노가다는 끝이 없네요...', 0, 0, '', 'Faire le farming de réputation pour la %faction n’en finit jamais...', 'Der Rufgrind bei %faction nimmt kein Ende...', '%faction 평판 노가다는 끝이 없네요...', '', 'El grind de %faction nunca termina...', '', ''),
-	(717, 'suggest_faction', '%faction 평판 부스터 아이템 가진 분 계신가요?', 0, 0, '', 'Est-ce que quelqu’un a des objets de boost de réputation de %faction ?', 'Hat jemand Items für Rufboost bei %faction?', '%faction 평판 부스터 아이템 가진 분 계신가요?', '', '¿Alguien tiene objetos para boostear reputación de %faction?', '', ''),
-	(718, 'suggest_faction', '멋진 보상을 받으려면 %faction 평판 %rep_level이 필요해요!', 0, 0, '', 'J’ai besoin d’atteindre le niveau %rep_level auprès de la faction %faction pour débloquer des récompenses géniales!', 'Ich brauche %rep_level bei %faction, um coole Belohnungen freizuschalten!', '멋진 보상을 받으려면 %faction 평판 %rep_level이 필요해요!', '', '¡Necesito %rep_level de %faction para desbloquear buenas recompensas!', '', ''),
-	(719, 'suggest_faction', '탈것 때문에 %faction 평판 올리시는 분?', 0, 0, '', 'Qui est en train de monter sa réputation avec %faction pour les montures?', 'Farmt jemand Ruf bei %faction für Mounts?', '탈것 때문에 %faction 평판 올리시는 분?', '', '¿Alguien farmeando reputación de %faction para monturas?', '', ''),
-	(720, 'suggest_faction', '저랑 %faction 평판 작업 같이 하실 분 계신가요?', 0, 0, '', 'Tu veux farmer ta réputation avec la faction %faction avec moi?', 'Chance, mit mir Ruf bei %faction zu farmen?', '저랑 %faction 평판 작업 같이 하실 분 계신가요?', '', '¿Algún chance de farmear reputación de %faction conmigo?', '', ''),
-	(721, 'suggest_faction', '%faction 평판 %rep_level 찍기 직전입니다!', 0, 0, '', 'Je suis tellement proche du niveau %rep_level avec la faction %faction !', 'Ich bin so kurz vor %rep_level bei %faction!', '%faction 평판 %rep_level 찍기 직전입니다!', '', '¡Estoy tan cerca de %rep_level con %faction!', '', ''),
-	(722, 'suggest_faction', '%faction 평판 %rep_level 찍게 도와주세요!', 0, 0, '', 'Aide-moi à atteindre le niveau de réputation %rep_level avec %faction !', 'Helft mir, %rep_level bei %faction zu erreichen!', '%faction 평판 %rep_level 찍게 도와주세요!', '', '¡Ayúdame a conseguir %rep_level con %faction!', '', ''),
-	(723, 'suggest_faction', '%faction 평판 노가다 완료하는 중!', 0, 0, '', 'Je suis en train de grinder ma réputation avec la faction %faction !', 'Ich bin dabei, den %faction Rufgrind abzuschließen!', '%faction 평판 노가다 완료하는 중!', '', '¡Estoy terminando el grind de reputación de %faction!', '', ''),
-	(724, 'suggest_faction', '%faction 평판 노가다 도와주실 분 구해요!', 0, 0, '', 'J’ai besoin d’aide pour augmenter ma réputation avec %faction !', 'Brauche Hilfe beim Rufgrind für %faction!', '%faction 평판 노가다 도와주실 분 구해요!', '', '¡Necesito ayuda con el grind de %faction!', '', ''),
-	(725, 'suggest_faction', '다음 보상을 받으려면 %faction 평판 %rep_level을 찍어야 해요!', 0, 0, '', 'J’ai besoin d’atteindre le niveau %rep_level pour %faction afin de débloquer les prochaines récompenses !', 'Brauche %rep_level bei %faction für die nächsten Belohnungen!', '다음 보상을 받으려면 %faction 평판 %rep_level을 찍어야 해요!', '', '¡Necesito %rep_level de %faction para las siguientes recompensas!', '', ''),
-	(726, 'suggest_faction', '누가 저랑 %faction 평판 작업 같이 할까요?', 0, 0, '', 'Qui peut farmer la réputation de %faction avec moi ?', 'Wer kann mit mir Ruf bei %faction farmen?', '누가 저랑 %faction 평판 작업 같이 할까요?', '', '¿Quién puede farmear la reputación de %faction conmigo?', '', ''),
-	(727, 'suggest_faction', '쉬지 않고 %faction 평판 올리는 중!', 0, 0, '', 'En train de farmer la réputation de %faction sans arrêt !', 'Rufgrind bei %faction non-stop!', '쉬지 않고 %faction 평판 올리는 중!', '', '¡Grind de %faction sin parar!', '', ''),
-	(728, 'suggest_faction', '지금 %faction 평판 작업 중인 분 또 누구 있나요?', 0, 0, '', 'Je suis en train de bosser le rang de réputation de %faction en ce moment. Qui d’autre est dans le même cas ?', 'Wer grindet gerade noch Ruf bei %faction?', '지금 %faction 평판 작업 중인 분 또 누구 있나요?', '', '¿Quién más está farmeando %faction ahora?', '', ''),
-	(729, 'suggest_faction', '심심한데 %faction 평판이나 같이 올리실 분?', 0, 0, '', 'Qui est partant pour monter la réputation de la faction %faction pour le plaisir ?', 'Will jemand zum Spaß Ruf bei %faction farmen?', '심심한데 %faction 평판이나 같이 올리실 분?', '', '¿Alguien quiere farmear %faction por diversión?', '', ''),
-	(730, 'suggest_faction', '새 퀘스트 열려면 %faction 평판 작업이 필요해요!', 0, 0, '', 'Il me faut améliorer ma réputation auprès de %faction pour débloquer de nouvelles quêtes!', 'Ich muss noch Ruf bei %faction farmen, um neue Quests freizuschalten!', '새 퀘스트 열려면 %faction 평판 작업이 필요해요!', '', '¡Necesito hacer grind de %faction para desbloquear nuevas misiones!', '', ''),
-	(731, 'suggest_faction', '보상 받으려고 %faction 평판 노가다 중입니다!', 0, 0, '', 'Je veux faire monter ma réputation auprès de %faction pour obtenir des récompenses !', 'Bock, Ruf bei %faction für Belohnungen zu grinden!', '보상 받으려고 %faction 평판 노가다 중입니다!', '', '¡Vamos a grindear reputación de %faction por recompensas!', '', ''),
-	(732, 'suggest_faction', '하루하루 꾸준히 %faction 평판 올리는 중이에요!', 0, 0, '', 'À faire ma réputation avec %faction, un jour à la fois !', 'Tag für Tag, Rufgrind bei %faction!', '하루하루 꾸준히 %faction 평판 올리는 중이에요!', '', '¡Farmeando reputación de %faction, un día a la vez!', '', ''),
-	(733, 'suggest_faction', '%faction 평판 작업 도와주실 분 계신가요?', 0, 0, '', 'Est-ce que quelqu’un veut m’aider à augmenter ma réputation auprès de %faction ?', 'Will jemand beim Rufgrind für %faction helfen?', '%faction 평판 작업 도와주실 분 계신가요?', '', '¿Alguien quiere ayudar con el grind de %faction?', '', ''),
-	(734, 'suggest_faction', '%faction 평판 보상 좀 받게 도와주세요!', 0, 0, '', 'Aide-moi à débloquer des récompenses avec ma réputation auprès de la faction %faction !', 'Helft mir, mit Ruf bei %faction Belohnungen freizuschalten!', '%faction 평판 보상 좀 받게 도와주세요!', '', '¡Ayúdame a desbloquear recompensas con la reputación de %faction!', '', ''),
-	(735, 'suggest_faction', '탈것 얻으려고 %faction 평판 작업 중이에요!', 0, 0, '', 'Je suis en train de farmer la réputation de %faction pour les montures !', 'Ich grinde Ruf bei %faction für Mounts!', '탈것 얻으려고 %faction 평판 작업 중이에요!', '', '¡Estoy farmeando %faction para las monturas!', '', ''),
-	(736, 'suggest_faction', '저랑 같이 %faction 평판 작업하러 가요!', 0, 0, '', 'Viens faire du farm de réputation %faction avec moi!', 'Kommt mit, Ruf bei %faction farmen!', '저랑 같이 %faction 평판 작업하러 가요!', '', '¡Ven a farmear %faction conmigo!', '', ''),
-	(737, 'suggest_faction', '%faction 평판 작업이 거의 끝나갑니다!', 0, 0, '', 'Je suis presque arrivé à la réputation de %faction !', 'Beim Rufgrind für %faction bin ich fast da!', '%faction 평판 작업이 거의 끝나갑니다!', '', '¡Casi lle고 con %faction!', '', ''),
-	(738, 'suggest_faction', '친구들과 함께 %faction 평판 작업 중!', 0, 0, '', 'En train de monter la réputation de %faction avec mes potes !', 'Grinde Ruf bei %faction mit meinen Leuten!', '친구들과 함께 %faction 평판 작업 중!', '', '¡Estoy farmeando %faction con mis amigos!', '', ''),
-	(739, 'suggest_something', '%zone_name에서 파티 하실 분.', 0, 0, '', 'Envie de faire un groupe dans %zone_name.', 'Hab Bock auf Party in %zone_name.', '%zone_name에서 파티 하실 분.', '', '¡Vamos a perrear a %zone_name!', '', 'Хочу в пати в %zone_name.'),
-	(740, 'suggest_something', '%my_role 구하시는 분 있나요?', 0, 0, '', 'Est-ce que quelqu’un recherche %my_role ?', 'Sucht jemand %my_role?', '%my_role 구하시는 분 있나요?', '', '¿Alguien está buscando %my_role?', '', 'Кто ищет %my_role?'),
-	(741, 'suggest_something', '%my_role 길드 구합니다ㅠㅠ 와린이 친절하게 알려주실분', 0, 0, '', '%my_role Je suis à la recherche d’une guilde.', '%my_role sucht Gilde.', '%my_role 길드 구합니다.', '', '%my_role está buscando hermandad.', '', '%my_role ищет гильдию.'),
-	(742, 'suggest_something', '골드 벌 곳 찾는 중.', 0, 0, '', 'À la recherche d’or.', 'Suche Gold.', '골드 벌 곳 찾는 중.', '', 'Buscando oro.', '', 'Ищу золото.'),
-	(743, 'suggest_something', '%my_role 초보자 키워주실 길드 구합니다 ㅠ', 0, 0, '', 'Je veux rejoindre une bonne guilde.', '%my_role will einer guten Gilde beitreten.', '%my_role 괜찮은 길드 가입하고 싶어요.', '', '%my_role quiere unirse a una buen hermandad.', '', '%my_role хочет вступить в хорошую гильдию.'),
-	(744, 'suggest_something', '친구처럼 지내실분?', 0, 0, '', 'Besoin d’un ami.', 'Brauche einen Freund.', '친구 구함.', '', 'Necesito un amigo...', '', 'Нужен друг.'),
-	(745, 'suggest_something', '님들 심심하지 않으심?', 0, 0, '', 'Vous vous sentez seul ?', 'Fühlt sich noch wer einsam?', '다들 심심하신가요?', '', '¿Alguien se siente solo?', '', 'Кто-нибудь чувствует себя одиноко?'),
-	(746, 'suggest_something', '지루하네...', 0, 0, '', 'Je m’ennui', 'Langweilig...', '지루하네요...', '', 'Aburrido...', '', 'Скучно...'),
-	(747, 'suggest_something', '한 판 붙으실 분?', 0, 0, '', 'Qui en veut?', 'Wer will was abhaben?', '한 판 붙으실 분?', '', '¿Quién quiere hacer grupo para levear?', '', 'Кто хочет немного?'),
-	(748, 'suggest_something', '나 잡아봐라!', 0, 0, '', 'Viens me chercher!', 'Kommt her und holt mich!', '나 잡아봐라!', '', '¡Ven a buscarme!', '', 'Давай, поймай меня!'),
-	(749, 'suggest_something', '%zone_name에서 1:1 깃발 꽂으실 분?', 0, 0, '', 'Peut-être un duel dans %zone_name?', 'Vielleicht ein Duell in %zone_name?', '%zone_name에서 깃발 꽂으실 분?', '', '¿Quizás un duelo en %zone_name?', '', 'Может, дуэль в %zone_name?'),
-	(750, 'suggest_something', '다들 뭐 하고 계시나요?', 0, 0, '', 'Est-ce que quelqu’un fait quelque chose?', 'Macht hier grade jemand etwas?', '다들 뭐 하시나요?', '', '¿Alguien está haciendo algo?', '', 'Кто-нибудь что-то делает?'),
-	(751, 'suggest_something', '%zone_name에 누구 계십니까..?', 0, 0, '', '%zone_name: Est-ce qu’il y a quelqu’un ici ?', '%zone_name: ist hier jemand?', '%zone_name에 누구 없나요?', '', '%zone_name: ¿hay alguien aquí?', '', '%zone_name: кто-нибудь здесь есть?'),
-	(752, 'suggest_something', '%zone_name에 사람이 왜 이렇게 없나요?', 0, 0, '', '%zone_name: Où est tout le monde ?', '%zone_name: Wo sind alle?', '%zone_name에 사람 왜 이렇게 없어요?', '', '¿Hay alguien en %zone_name?', '', '%zone_name: где все?'),
-	(753, 'suggest_something', '%zone_name에 나밖에 없는 듯.', 0, 0, '', 'Il semble que je sois seul dans %zone_name.', 'Scheint als wäre ich allein in %zone_name.', '%zone_name에 나밖에 없는 듯.', '', 'Parece que estoy solo en %zone_name.', '', 'Похоже, я один в %zone_name.'),
-	(754, 'suggest_something', '%zone_name에서 만나용~', 0, 0, '', 'Retrouve-moi dans %zone_name.', 'Trefft mich in %zone_name.', '%zone_name에서 만나요.', '', 'Encuéntrame en %zone_name.', '', 'Встретимся в %zone_name.'),
-	(755, 'suggest_something', '%zone_name에서 퀘스트 열나게 달리는중!', 0, 0, '', 'Partons à l’aventure dans %zone_name!', 'Lasst uns in %zone_name questen!', '%zone_name에서 퀘스트 밀어요!', '', '¡Vamos a hacer un grupo para levear en %zone_name!', '', 'Давайте квестить в %zone_name!'),
-	(756, 'suggest_something', '%zone_name 여기가 명당일세!', 0, 0, '', '%zone_name est l’endroit idéal où se trouver !', '%zone_name ist der beste Spot!', '%zone_name 여기가 명당이네!', '', '%zone_name es el mejor lugar para estar!', '', '%zone_name — лучшее место!'),
-	(757, 'suggest_something', '%zone_name 가실 분? 저랑 같이 가요.', 0, 0, '', 'Qui veut aller à la %zone_name? Qui est partant avec moi?', 'Will nach %zone_name. Kommt wer mit?', '%zone_name 가실 분? 저랑 같이 가요.', '', 'Quiero ir a %zone_name. ¿Alguien se apunta?', '', 'Хочу в %zone_name. Кто со мной?'),
-	(758, 'suggest_something', '%zone_name 가고 싶으신 분?', 0, 0, '', 'Qui veut aller à %zone_name?', 'Wer will nach %zone_name?', '%zone_name 가고 싶으신 분?', '', '¿Quién quiere ir a %zone_name?', '', 'Кто хочет пойти в %zone_name?'),
-	(759, 'suggest_something', '%zone_name 별론데 어디로 가야 좋을까요?', 0, 0, '', 'Je n’aime pas %zone_name. Je devrais aller où ?', 'Ich mag %zone_name nicht, aber wohin sonst?', '%zone_name 별론데 어디로 갈까요?', '', 'No me gusta %zone_name. ¿Dónde podria ir?', '', 'Не нравится %zone_name. Куда идти?'),
-	(760, 'suggest_something', '%zone_name 여기 할만한 퀘스트 있나요?', 0, 0, '', 'Y a-t-il de bonnes quêtes dans %zone_name ?', 'Gibt’s gute Quests in %zone_name?', '%zone_name 여기 할만한 퀘스트 있나요?', '', '¿Hay buenas misiones en %zone_name?', '', 'Есть хорошие квесты в %zone_name?'),
-	(761, 'suggest_something', '%zone_name 다음은 어디로 가야 하죠?', 0, 0, '', 'Où devrais-je aller après %zone_name ?', 'Wohin soll ich nach %zone_name gehen?', '%zone_name 다음은 어디로 가야 하죠?', '', '¿Adónde puedo ir después de %zone_name?', '', 'Куда идти после %zone_name?'),
-	(762, 'suggest_something', '%zone_name에 아무도 안계심?', 0, 0, '', 'Qui est dans %zone_name ?', 'Wer ist in %zone_name?', '%zone_name에 누구 있나요?', '', '¿Quién está en %zone_name?', '', 'Кто в %zone_name?'),
-	(763, 'suggest_something', '%zone_name 파티 구합니다.', 0, 0, '', 'LFG dans %zone_name.', 'LFG in %zone_name.', '%zone_name 파티 구합니다.', '', 'Busco grupo en %zone_name.', '', 'ЛФГ в %zone_name.'),
-	(764, 'suggest_something', '%zone_name 여기 최악이네요.', 0, 0, '', '%zone_name est le pire endroit où se trouver.', '%zone_name ist der übelste Spot.', '%zone_name 여기 최악이네요.', '', '%zone_name es el peor lugar para estar', '', '%zone_name — худшее место.'),
-	(765, 'suggest_something', '%zone_name에서 절 찾아보세요!', 0, 0, '', 'Retrouve-moi dans %zone_name !', 'Schnappt mich in %zone_name!', '%zone_name에서 절 찾아보세요!', '', '¡Atrápame en %zone_name!', '', 'Лови меня в %zone_name!'),
-	(766, 'suggest_something', '%zone_name 함 ㄱㄱ 해봅시다.', 0, 0, '', 'Allons-y pour %zone_name!', 'Ab nach %zone_name!', '%zone_name 가자!', '', 'Me voy a %zone_name!', '', 'Пойдем в %zone_name!'),
-	(767, 'suggest_something', '%zone_name에서 퀘스트 하실 분?', 0, 0, '', 'Tu veux partir en quête dans %zone_name?', 'Bock zu questen in %zone_name', '%zone_name에서 퀘스트 하실 분?', '', 'Quiero hacer una búsqueda en %zone_name', '', 'Хочу квестить в %zone_name'),
-	(768, 'suggest_something', '%zone_name 퀘스트 가지고 계신 분?', 0, 0, '', 'Est-ce que quelqu’un a des quêtes dans %zone_name?', 'Hat wer Quests in %zone_name?', '%zone_name 퀘스트 가지고 계신 분?', '', '¿Alguien tiene misiones en %zone_name?', '', 'У кого есть квесты в %zone_name?'),
-	(769, 'suggest_something', '%zone_name 여기로 오세요!', 0, 0, '', 'Viens ici dans %zone_name!', 'Kommt her nach %zone_name!', '%zone_name 여기로 오세요!', '', '¡Ven aquí a %zone_name!', '', 'Приходите сюда, в %zone_name!'),
-	(770, 'suggest_something', '%zone_name에 호드가 하나도 없나요??', 0, 0, '', 'Il semblerait qu’il n’y ait pas de Hordeux dans %zone_name.', 'Sieht so aus, als wär keine Horde in %zone_name', '%zone_name에 호드가 하나도 없네요.', '', 'Parece que no hay Horda en %zone_name', '', 'Похоже, в %zone_name нет Орды'),
-	(771, 'suggest_something', '%zone_name에 얼라가 하나도 없네요.', 0, 0, '', 'Il semble qu’il n’y ait pas d’Allianceux dans %zone_name.', 'Sieht so aus, als wär keine Allianz in %zone_name', '%zone_name에 얼라이언스가 하나도 없네요.', '', 'Parece que no hay Alianza en %zone_name', '', 'Похоже, в %zone_name нет Альянса'),
-	(772, 'suggest_something', '%zone_name 퀘 질리네. 확마 딴대로 가버려?', 0, 0, '', 'Je suis vraiment fatigué de %zone_name. Pourquoi n’irions-nous pas ailleurs ?', 'Ich bin echt müde von %zone_name. Vielleicht sollte ich woanders hin?', '%zone_name 질리네요. 다른 데로 갈까요?', '', 'Estoy realmente cansado de %zone_name. Quizás ire a otro lugar', '', 'Я очень устал от %zone_name. Может, пойти куда-нибудь еще?'),
-	(773, 'suggest_something', '즐겜하세요!', 0, 0, '', 'Bonne chance', 'Viel Glück', '즐겜하세요!', '', '', '', 'Удачи'),
-	(774, 'suggest_something', '집에 가서 좀 쉬고 싶다.', 0, 0, '', 'Je veux rentrer chez moi, puis me détendre.', 'Ich will nach Hause und dann in die Kiste.', '집에 가서 좀 쉬고 싶다.', '', '', '', 'Хочу домой, а потом на край'),
-	(775, 'suggest_something', '쌍수 끼려면 뭐 필요한지 아시는 분?', 0, 0, '', 'Est-ce que quelqu’un peux m’aider avec la double spé ?', 'Weiß wer, was man fürs Beidhändig-Kämpfen braucht?', '쌍수 끼려면 뭐 필요한지 아시는 분?', '', '', '', 'Кто-нибудь знает, что нужно для двуручного боя?'),
-	(776, 'suggest_something', '형님들 안녕하십니까!', 0, 0, '', 'Salut tout le monde!', 'hi zusammen!', '안녕하세요 여러분!', '', '', '', 'Всем привет!'),
-	(777, 'suggest_something', '%zone_name 여기 좋네요.', 0, 0, '', '%zone_name est vraiment agréable.', '%zone_name ist gemütlich', '%zone_name 여기 좋네요.', '', '', '', '%zone_name уютно'),
-	(778, 'suggest_something', '오늘 운빨 짱인듯 ㅋ', 0, 0, '', 'Je me sens super bien.', 'Ich fühl mich super', '기분 최고네요!', '', '', '', 'Я отлично себя чувствую'),
-	(779, 'suggest_something', '전 무시 안 합니다. 상대가 절 무시할 때까지 괴롭힐 뿐.', 0, 0, '', 'Je n’ignore pas les gens, je les trolle jusqu’à ce qu’ils m’ignorent.', 'Ich ignoriere Leute nicht, ich trolle sie, bis sie mich ignorieren', '전 무시 안 합니다. 상대가 절 무시할 때까지 괴롭힐 뿐.', '', '', '', ''),
-	(780, 'suggest_something', '제 %my_role 트리 어떤가요?', 0, 0, '', 'Qu’est-ce que vous pensez de mon build? %mon_rolôle', 'Was haltet ihr von meinem Build? %my_role', '제 %my_role 트리 어떤가요?', '', '', '', 'Что думаете о моей сборке? %my_role'),
-	(781, 'suggest_something', '채팅창 활발한게 보기 좋네요.', 0, 0, '', 'Content de voir que le chat se souvient toujours', 'schön zu sehen, dass der Chat sich noch erinnert', '채팅창 화력이 여전해서 보기 좋네요.', '', '', '', 'Рад видеть, что чат еще помнит'),
-	(782, 'suggest_something', '%item_link 이거 냥꾼이 쓰기에 좋음?', 0, 0, '', 'Comme toutes les armes, c’est le meilleur équipement pour les chasseurs.', 'Wie jede Waffe ist es Jäger-BiS', '이거 냥꾼 비스(BiS)템 맞죠?', '', '', '', 'Как и все оружие — это лучший для охотника'),
-	(783, 'suggest_something', '저는 온니 솔플입니다. 제 게임 철학이죠.', 0, 0, '', 'Pour moi, le cœur du jeu réside dans le fait d’évoluer en solo et de découvrir de nouvelles façons de vaincre mes adversaires en solo.', 'für mich geht es im Spiel nur ums Solo-Spielen und darum, neue Wege zu finden, Dinge solo zu machen', '제 게임 모토는 솔플입니다. 새로운 솔플법 찾는 재미죠.', '', '', '', 'Вся суть игры для меня — соло и поиск новых способов соло'),
-	(784, 'suggest_something', '전 누구 뒤통수 친 적 없습니다!', 0, 0, '', 'Je n’ai JAMAIS ar나qué qui que ce soit.', 'ich habe NIEMANDEN jemals abgezockt', '전 누구 뒤통수 친 적 없습니다!', '', '', '', ''),
-	(785, 'suggest_something', '아 맞다, 와우 채팅방이 고민 상담소였지.', 0, 0, '', 'Ah yes, le monde de Warcraft, là où je viens chercher des conseils de vie.', 'Ah ja, die Welt von Warcraft, wo ich Ratschläge fürs Lebensrat herbekomme.', '아 맞다, 와우 채팅방이 고민 상담소였지.', '', '', '', 'Ах да, мир варкрафта, где я ищу жизненные советы'),
-	(786, 'suggest_something', '여보세요? 거기누구 계십니까?', 0, 0, '', 'Salut! Comment ça va?', 'HALLO?', '여보세요?', '', '', '', 'АЛЛО?'),
-	(787, 'suggest_something', '이제 %zone_name 뚫으러 갈 시간!', 0, 0, '', 'Il est temps que je me batte pour rentrer dans %zone_name.', 'Zeit, mir den Weg nach %zone_name freizukämpfen', '이제 %zone_name 뚫으러 갈 시간!', '', '', '', 'Пора пробиваться в %zone_name'),
-	(788, 'suggest_something', '%zone_name', 0, 0, '', '%zone_name', '%zone_name', '%zone_name', '', '', '', '%zone_name'),
-	(789, 'suggest_something', '급해서 화장실 좀!', 0, 0, '', 'je dois aller aux toilettes.', 'ich muss kacken', '급해서 화장실 좀!', '', '', '', 'надо в туалет'),
-	(790, 'suggest_something', '무두질 몹 잡고선 무두질 안 하면 완전 손해임 꼭 무두질 하셈.', 0, 0, '', 'Si vous ne pillez pas les ennemis que je peux dépecer, ton zgegue perd 1mm de façon permanente.', 'Wenn du deine häutbaren Kills nicht lootest, schrumpft dein Schniedel jedes mal dauerhaft um 1mm', '무두질 몹 잡고 루팅 안 하면 영구적으로 손해 봅니다.', '', '', '', ''),
-	(791, 'suggest_something', '안 돼애애애애애!', 0, 0, '', 'Oh nonnnnnnnnnn!', 'NEEEEEEEEEEEEIN', '안 돼애애애애애!', '', '', '', 'НЕТТТТТТТТТТ'),
-	(792, 'suggest_something', '오늘도 즐겜^^!', 0, 0, '', 'J’AIME LA POMME DE TERRE.', 'ICH MAG ZÜGE', '난 감자가 좋아!', '', '', '', 'Я ЛЮБЛЮ КАРТОШКУ'),
-	(793, 'suggest_something', '채팅창 오늘 활발하네 ㅋ', 0, 0, '', 'w chat', '/w mir im chat', '채팅창 굿!', '', '', '', 'w ча트'),
-	(794, 'suggest_something', '안녕들 하세요!', 0, 0, '', 'Salut, comment vous allez ?', 'hi, wie geht es euch', '안녕들 하세요!', '', '', '', 'привет, как дела'),
-	(795, 'suggest_something', '재접속 했습니다.', 0, 0, '', 'Je viens de me déconnecter et de me reconnecter.', 'hab mich grad ausgeloggt und wieder eingeloggt', '재접속 했습니다.', '', '', '', 'только что вышел и снова зашел'),
-	(796, 'suggest_something', '하.. %zone_name길을 못찾겠네 진짜..\r\n', 0, 0, '', 'Est-ce que vous pouvez baisser un peu le volume, je suis perdu dans %zone_name.', 'könnt ihr mal leiser sein, ich hab mich in %zone_name verlaufen', '좀 조용히 해봐요, %zone_name에서 길 잃었단 말이에요.', '', '', '', 'можете потише, я заблудился в %zone_name'),
-	(797, 'suggest_something', '%zone_name에서 술 한잔하실 분?', 0, 0, '', 'Quelqu’un veut boire un verre avec moi à %zone_name ...hic!', 'wer will mit mir was trinken in %zone_name ...hicks!', '%zone_name에서 술 한잔하실 분... 딸꾹!', '', '', '', 'кто хочет выпить со мной в %zone_name ... ик!'),
-	(798, 'suggest_something', '하하하하히이이이이이 딩동딩동 하하하하히이이이이!', 0, 0, '', 'hahahahaheeeeeeeeee dirin diring ingggggg hahahahaheeeeeeeeeeeeee', 'hahahahaheeeeeeee dirin diring ingggggg hahahahaheeeeeeeeeeeeee', '하하하하히이이이이이 딩동딩동 하하하하히이이이이!', '', '', '', 'хахахахахииииииии дирин диринг инггггг хахахахахииииииииииииии'),
-	(799, 'suggest_something', '낚시도 적당히 해야 믿어주지.', 0, 0, '', 'Le leurre était autrefois crédible.', 'Früher war der Bait glaubwürdiger.', '낚시도 적당히 해야 믿어주지.', '', '', '', 'раньше приманка была правдоподобной'),
-	(800, 'suggest_something', '이분들 초심을 잃으신 것 같네.', 0, 0, '', 'Peut-être que tu viens juste de perdre ton innocence.', 'vielleicht hast du einfach deine Unschuld verloren', '그냥 순수함을 잃으신 것 같네요.', '', '', '', 'может, ты просто потерял невинность'),
-	(801, 'suggest_something', '%my_role 버스 태워주는 길드 있나요?', 0, 0, '', 'Y a-t-il des guildes prêtes à me prendre %my_role?', 'Gibts hier Gilden, die %my_role mitziehen?', '%my_role 업어주실 길드 있나요?', '', '', '', 'есть гильдии, готовые тащить %my_role?'),
-	(802, 'suggest_something', '확실히 렙이 좀 오르면 골드가 쫙쫙 벌리긴 함 ㅋㅋ', 0, 0, '', 'Une fois que tu commences à monter en niveau, l’or devient si facile à obtenir.', 'Sobald man höher kommt, ist Gold easy zu machen', '레벨 좀 오르고 나면 골드 벌기는 진짜 쉬워요.', '', '', '', 'чем выше уровень, тем легче золото'),
-	(803, 'suggest_something', '오늘도 좋은 하루!', 0, 0, '', 'Bonjour, comment ça va ce matin ?', 'moin', '다들 좋은 아침!', '', '', '', 'утро'),
-	(804, 'suggest_something', '아마존에는 누가 살까?...아마...존? ㅋ', 0, 0, '', 'Pourquoi j’ai mal aux fesses?', 'Warum tut mir der Arsch weh?', '아니, 왜 이렇게 엉덩이가 아프지?', '', '', '', 'почему у меня болит задница?'),
-	(805, 'suggest_something', '렙업할 때는 정신력 스탯이 짱인 것 같아요.', 0, 0, '', 'Je pense que l’esprit est bis pour monter de niveau.', 'Ich hab das Gefühl, Willenskraft ist BiS zum Leveln', '렙업할 때는 정신력 스탯이 짱인 것 같아요.', '', '', '', 'Мне кажется, дух — лучший для прокачки'),
-	(806, 'suggest_something', '오리가 얼면?.....언덕 ㅋ', 0, 0, '', 'Encore plus pour les trolls', 'bei Trollen erst recht', '트롤이라면 더더욱 그렇고요.', '', '', '', 'Особенно для тролля'),
-	(807, 'suggest_something', '누가 저 좀 초대해 주세요!', 0, 0, '', 'ON PEUT M INVITER', 'KANN MICH JEMAND INVITEN', '누구 저 좀 초대해 주세요!', '', '', '', 'КТО-НИБУДЬ ПРИГЛАСИТЕ МЕНЯ'),
-	(808, 'suggest_something', '물빵 좀 많이 챙길껄 ㅠㅠ', 0, 0, '', 'J’ai besoin de beaucoup de boissons.', 'brauche viele Drinks', '마실 것 좀 많이 챙겨야겠네!', '', '', '', 'нужно много выпивки'),
-	(809, 'suggest_something', '너네 엄마는 너무 뚱뚱해서 소환하려면 흑마법사 두 명이 있어야 할 듯 ㅋㅋ', 0, 0, '', 'Ces satanés gnomes!', 'verdammte Gnome', '망할 노움 놈들!', '', '', '', 'чертовы гномы'),
-	(810, 'suggest_something', '솔직히 여기서 연애 해본사람 없지요?', 0, 0, '', 'Personne n’aime les gnomes.', 'niemand mag Gnome', '노움은 아무도 안 좋아함.', '', '', '', 'никто не любит гномов'),
-	(811, 'suggest_something', '우리 아빠는 제게 늘 이런 식이셨죠. "입 닥치고 얼른 나가!', 0, 0, '', 'Les gnomes ne sont bons que pour une seule chose', 'Gnome taugen nur für eins', '노움은 딱 한 군데 빼고는 쓸 데가 없어요.', '', '', '', 'гномы годятся только для одного'),
-	(812, 'suggest_something', '뭐...', 0, 0, '', 'Bien', 'nun ja', '뭐...', '', '', '', 'Ну'),
-	(813, 'suggest_something', '대머리가 총을 한발만 쏘는 이유는?...두발이 없어서ㅋ ', 0, 0, '', 'champignons', 'Pilze', '버섯', '', '', '', 'грибы'),
-	(814, 'suggest_something', '갑자기 드는 생각들이 가끔 무서울 때가 있어요.', 0, 0, '', 'Les pensées automatiques sont effrayantes, elles surgissent sans prévenir et peuvent vraiment perturber ma tranquillité d’esprit.', 'selbstständige Gedanken sind schon gruselig', '갑자기 드는 생각들이 가끔 무서울 때가 있어요.', '', '', '', 'автоматические мысли — страшная вещь'),
-	(815, 'suggest_something', '사람 마음이 생각보다 쉽게 휘둘리더라고요.', 0, 0, '', '', 'der Geist ist formbarer, als man glaubt', '사람 마음이 생각보다 쉽게 휘둘리더라고요.', '', '', '', ''),
-	(816, 'suggest_something', '친목/렙업 길드 있나요?', 0, 0, '', 'Des guildes de leveling par ici ?', 'gibts hier Levelgilden?', '친목/렙업 길드 있나요?', '', '', '', 'есть гильдии для прокачки?'),
-	(817, 'suggest_something', '잠시만요(곧 옴)!', 0, 0, '', 'brb.', 'brb', '잠시만요(곧 옴)!', '', '', '', 'брб'),
-	(818, 'suggest_something', '작은배를 다른말로하면?...쉽새끼', 0, 0, '', 'Oh, la neige est blanche parce que ses cristaux reflètent la lumière du soleil, ce qui donne cette couleur. Tandis que la glace est claire car elle compacte les cristaux de glace, ce qui la rend transparente. C’est fou de penser que ce sont tous les deux faits de la même chose, n’est-ce pas ?', 'warum ist Schnee weiß, aber Eis klar? ist doch das Gleiche', '눈은 하얀데 얼음은 왜 투명할까요? 같은 성분인데.', '', '', '', 'Почему снег белый, а лед прозрачный? Ведь это одно и то же'),
-	(819, 'suggest_something', '아몬드가 죽으면?....다이아몬드ㅋ', 0, 0, '', 'Oh, whipped cream is all light and airy because we are beating some heavy cream until it traps air in. Regular cream just sits there all heavy and dense because it hasn’t been whipped yet. ', 'warum ist Schlagsahne fluffig und normale nicht', '휘핑크림은 푹신한데 생크림은 왜 안 그럴까요?', '', '', '', 'почему вз비тые сливки пышные, а обычные нет'),
-	(820, 'suggest_something', '추장보다 더 높은 사람은?...고추장 ', 0, 0, '', 'Pourquoi les pieds sentent alors qu’ils n’ont pas de nez !?', 'warum riechen Füße, wenn sie keine Nase haben', '발에는 코도 없는데 왜 냄새가 날까요?', '', '', '', 'почему ноги пахнут, если у них нет носа'),
-	(821, 'suggest_something', '뉴비들이 한 트럭 들어온 것 같네요.', 0, 0, '', 'Il semble qu’une brochette de noob soit arrivée.', 'scheint als hätte jemand ne Dose Neulinge aufgemacht', '뉴비들이 한 트럭 들어온 것 같네요.', '', '', '', 'похоже, прибыла банка новичков'),
-	(822, 'suggest_something', '뉴비들한테 거짓말로 좀 가르쳐주지 마세요!', 0, 0, '', 'Arrête de troll les nouveaux joueurs avec des réponses bidon.', 'hört auf, Neulinge mit Bullshit-Antworten zu trollen', '뉴비들한테 거짓말 가르쳐주지 마세요!', '', '', '', 'хватит троллить новичков бредовыми ответами'),
-	(823, 'suggest_something', '이 서버 PVP 되나요?', 0, 0, '', 'Il y’a du pvp sur ce serveur ?', 'gibts hier auf dem Server PvP?', '이 서버 PVP 되나요?', '', '', '', 'На этом сервере есть PvP?'),
-	(824, 'suggest_something', '기름을 만드는데 걸리는 시간은?...오일 ㅎ', 0, 0, '', 'duh', 'eh klar', '당연하죠!', '', '', '', 'угу'),
-	(825, 'suggest_something', '휴... 다행이다 :)', 0, 0, '', 'Phew... :)', 'puh... :)', '휴... 다행이다 :)', '', '', '', 'фух... :)'),
-	(826, 'suggest_something', '피자가 놀라면?...피자 헛!', 0, 0, '', 'Savez-vous que...', 'wusstet ihr schon, dass...', '님들 그거 알아요?', '', '', '', 'вы знали что'),
-	(827, 'suggest_something', '전 몹들이 무슨 기분일지 따위는 궁금하지 않아요.', 0, 0, '', 'Je ne cherche pas à imaginer ce que d’autres créatures peuvent ressentir.', 'Ich stell mir lieber nicht vor, wie sich die Viecher fühlen, während ich sie umboxe.', '전 몹들이 무슨 기분일지 따위는 궁금하지 않아요.', '', '', '', ''),
-	(828, 'suggest_something', '앗, 오타요(잘못 침).', 0, 0, '', 'Oh mince, mauvais chat', 'ups, falscher Chat', '앗, 오타요(잘못 침).', '', '', '', 'ой, не тот чат'),
-	(829, 'suggest_something', '와, 오늘 다들 텐션 장난 아니시네.', 0, 0, '', 'Oh là là, vous les gars, vous déconnez aujourd’hui!', 'bruh, ihr dreht heute völlig durch', '와, 오늘 다들 텐션 장난 아니시네.', '', '', '', 'бро, вы сегодня отжигаете'),
-	(830, 'suggest_something', '그냥 여기 왔다갔다는 흔적이나 남겨야지!', 0, 0, '', 'Je vais juste faire en sorte que mon texte soit là.', 'Nett hier. Aber waren Sie schon mal in Darnassus?', '그냥 여기 다녀갔다는 흔적이나 남길게요!', '', '', '', 'пусть все знают, что мой текст был здесь'),
-	(831, 'suggest_something', '조낸 빡친다!', 0, 0, '', 'Grrrrrr colère.', 'grrr wütend', '으으 화난다!', '', '', '', 'гррр злой'),
-	(832, 'suggest_something', '노가다도 나름 재미있네요.', 0, 0, '', 'Le grind est amusant', 'der Grind macht Spaß', '노가다도 나름 재미있네요.', '', '', '', 'гринд — это весело'),
-	(833, 'suggest_something', '와우를 하니까 정신이 바짝 드네!', 0, 0, '', 'Wow me garde alerte', 'WoW hält mich wachsam', '와우를 하니까 정신이 바짝 드네요!', '', '', '', 'Wow держит меня в то누се'),
-	(834, 'suggest_something', '질문 하나 할게요. 추가 경험치 버프 어디서 받나요? 지금 %zone_name입니다.', 0, 0, '', 'Hey, j’ai une question. Où est-ce que je peux trouver le rouleau pour gagner plus d’XP? Je suis dans %zone_name.', 'kurze Frage: wo krieg ich den Buff für mehr XP? bin in %zone_name', '질문 하나 할게요. 추가 경험치 버프 어디서 받나요? 지금 %zone_name입니다.', '', '', '', 'у меня вопрос: где можно взять бросок на больше опыта? я в %zone_name'),
-	(835, 'suggest_something', '부엉이가 물에 빠지면?...첨부엉 첨부엉', 0, 0, '', 'Hmm, est-ce que vous aimez les saucisses?', 'mögt ihr Würstchen?', '님들 소시지 좋아해요?', '', '', '', 'вы любите сосиски?'),
-	(836, 'suggest_something', '초대주세요. 도와드릴게요.', 0, 0, '', 'Invite-moi. Je vais t’aider.', 'inv mich. ich helfe', '초대해주세요. 도와드릴게요.', '', '', '', ''),
-	(837, 'suggest_something', 'PVP는 어떤 클래스가 더 좋나요?', 0, 0, '', 'Quelle classe est la meilleurs pour PvP !?', 'welche Klasse ist gut für PvP?', 'PVP는 어떤 클래스가 더 좋나요?', '', '', '', 'какой класс лучше для пвп?'),
-	(838, 'suggest_something', '%zone_name 요리 거장은 도대체 어디 쳐박혀 있는 거야?', 0, 0, '', '%zone_name? Ah, putain, c’est toujours la galère pour trouver les PNJ dans cette zone-là. Attends, laisse-moi voir sur ma carte... Ah, je crois que le formateur en cuisine est près de la taverne, à droite de l’aubergiste. Tu devrais le trouver là-bas!', 'wo zum Teufel ist der Kochlehrer in %zone_name', '%zone_name 요리 거장은 도대체 어디 쳐박혀 있는 거야?', '', '', '', 'где, черт возьми, тренер кулинарии в %zone_name'),
-	(839, 'suggest_something', '%zone_name에서 뭔일 있었는지 아시는 분?', 0, 0, '', 'Tu sais ce qu’il se passe dans la %zone_name ?', 'wisst ihr, was in %zone_name abgeht?', '%zone_name에서 무슨 일 있는지 아세요?', '', '', '', 'знаете, что происходит в %zone_name?'),
-	(840, 'suggest_something', '템이 후져서 템 좀 제작해야겠네요.', 0, 0, '', 'Je dois fabriquer quelque chose.', 'muss was craften', '아이템 좀 제작해야겠네요.', '', '', '', 'Мне нужно что-то скрафтить'),
-	(841, 'suggest_something', '%zone_name에서 뭐 재밌는 거(뻘짓) 하실 분?', 0, 0, '', 'Quelqu’un pour un peu de folie dans la %zone_name?', 'Bock auf Blödsinn in %zone_name?', '%zone_name에서 뭐 재밌는 거(뻘짓) 하실 분?', '', '¿Alguien para tonterías en %zone_name?', '', 'Кто-нибудь для глупости в %zone_name?'),
-	(842, 'suggest_something', '%zone_name을 우리 나와바리로 만들자고요!', 0, 0, '', 'Faisons de %zone_name notre terrain de jeu.', 'machen wir %zone_name zu unserem Spielplatz', '%zone_name을 우리 놀이터로 만들자고요!', '', 'Hagamos de %zone_name nuestro patio de recreo.', '', 'Давайте сделаем %zone_name нашей игровой площадкой.'),
-	(843, 'suggest_something', '%zone_name에서 또 길을 잃었음..아 길이 어디냐 진짜...', 0, 0, '', 'Je vais me perdre dans %zone_name encore une fois.', 'ich verirr mich gleich wieder in %zone_name', '%zone_name에서 또 길 잃겠네.', '', 'Voy a perderme otra vez en %zone_name.', '', 'Снова потеряюсь в %zone_name.'),
-	(844, 'suggest_something', '아직도 %zone_name이라니 믿기지가 않네.', 0, 0, '', 'Je n’arrive pas à croire que je suis toujours dans %zone_name.', 'kaum zu glauben, dass ich immer noch in %zone_name hocke', '아직도 %zone_name이라니 믿기지가 않네.', '', 'No puedo creer que todavía esté aquí en %zone_name.', '', 'Не верю, что я до сих пор здесь в %zone_name.'),
-	(845, 'suggest_something', '%zone_name에서 깽판 칠 파티원 구함!', 0, 0, '', 'Tu veux faire équipe pour une folie dans la zone %zone_name?', 'Willst du dich für Chaos in %zone_name zusammentun?', '%zone_name에서 깽판 칠 파티원 구함!', '', '¿Quieres unirte para la locura en %zone_name?', '', 'Хочешь составить команду для сумасшествия в %zone_name?'),
-	(846, 'suggest_something', '%zone_name 우체통 근처에서 노가리 까실분?!', 0, 0, '', 'Allons piller la boîte aux lettres dans %zone_name!', 'lasst uns die Mailbox in %zone_name raiden!', '%zone_name 우체통 앞에서 모입시다!', '', '¡Vamos a asaltar el buzón en %zone_name!', '', 'Давайте захватим почтовый ящик в %zone_name!'),
-	(847, 'suggest_something', '진심 %zone_name에는 트롤짓하는 애덜 천지네.', 0, 0, '', 'Je te jure, %zone_name est rempli de trolls.', 'ich schwöre, in %zone_name wimmelt es von Trollen', '진심 %zone_name에는 트롤 천지네요.', '', 'Juro que %zone_name está lleno de trolls.', '', 'Клянусь, %zone_name полно троллей.'),
-	(848, 'suggest_something', '우리 같이 %zone_name을 쑥대밭으로 만들어요!', 0, 0, '', 'Créons le chaos dans %zone_name ensemble.', 'lasst uns zusammen Chaos in %zone_name anrichten', '우리 같이 %zone_name을 쑥대밭으로 만들어요!', '', 'Creamos caos juntos en %zone_name.', '', 'Давайте устроим хаос в %zone_name вместе.'),
-	(849, 'suggest_something', '%zone_name에선 그냥 아무것도 안 하고 싶다.', 0, 0, '', 'J’ai juste envie de ne rien faire du tout dans %zone_name.', 'hab Bock, in %zone_name absolut gar nix zu machen', '%zone_name에선 그냥 아무것도 안 하고 싶네.', '', 'Tengo ganas de no hacer nada en %zone_name.', '', 'Хочу просто ничего не делать в %zone_name.'),
-	(850, 'suggest_something', '%zone_name에선 모두 쌩까네요.', 0, 0, '', 'Personne n’écoute jamais dans %zone_name.', 'in %zone_name hört eh keiner zu', '%zone_name에선 아무도 말을 안 듣네요.', '', 'Nadie escucha nunca en %zone_name.', '', 'В %zone_name никто никогда не слушает.'),
-	(851, 'suggest_something', '%zone_name 같은 곳이 진짜 있긴 한가요?', 0, 0, '', '%zone_name est vraiment réel?', 'ist %zone_name überhaupt real oder wie Bielefeld?', '%zone_name 같은 곳이 진짜 있긴 한가요?', '', '¿Es %zone_name siquiera real?', '', 'Существует ли вообще %zone_name?'),
-	(852, 'suggest_something', '%zone_name에 지원 좀 오실분?! 짐 난리 났음!', 0, 0, '', 'Envoyez de l’aide dans %zone_name ! C’est la folie !', 'schickt mal wer Hilfe nach %zone_name! ist wild hier!', '%zone_name에 지원군 좀 보내주세요! 난리 났음!', '', '¡Alguien envíe ayuda a %zone_name! ¡Es una locura!', '', 'Кто-нибудь, отправьте помощь в %zone_name! Тут творится безумие!'),
-	(853, 'suggest_something', '%zone_name 여기 완전 정신 나간 듯.', 0, 0, '', 'Je suis persuadé que %zone_name est hanté.', 'ich bin sicher, in %zone_name spukt es', '%zone_name 여기 귀신 들린 듯.', '', 'Estoy seguro de que %zone_name está embrujado.', '', 'Уверен, что в %zone_name есть призраки.'),
-	(854, 'suggest_something', '%zone_name이 말을 할 수 있었다면 소리를 질렀을 걸요.', 0, 0, '', 'Si %zone_name pouvait parler, je pense qu’il crierait à s’en briser la voix.', 'wenn %zone_name reden könnte, würde es wahrscheinlich schreien', '%zone_name이 말을 할 수 있었다면 소리를 질렀을 걸요.', '', 'Si %zone_name pudiera hablar, probablemente gritaría.', '', 'Если бы %zone_name мог говорить, он, наверное, кричал бы.'),
-	(855, 'suggest_something', '%zone_name 여기 뭔가 구린데.', 0, 0, '', 'Il y a quelque chose de louche avec %zone_name.', 'irgendwas ist faul an %zone_name', '%zone_name 여기 뭔가 구린데.', '', 'Hay algo sospechoso acerca de %zone_name.', '', 'В %zone_name что-то подозрительное.'),
-	(856, 'suggest_something', '나의 위대함으로 %zone_name을 평정하겠노라.', 0, 0, '', 'Je m’apprête à conquérir %zone_name avec ma grandeur.', 'gleich zerleg ich %zone_name mit meiner Awesomeness', '나의 위대함으로 %zone_name을 평정하겠노라.', '', 'Estoy a punto de romper %zone_name con mi grandeza.', '', 'Я собираюсь разрушить %zone_name своей крутостью.'),
-	(857, 'suggest_something', '내가 여기 있다고 %zone_name 전체에 전해라!', 0, 0, '', 'Quelqu’un dit à %zone_name que je suis ici.', 'sagt %zone_name, dass ich da bin', '내가 여기 있다고 %zone_name 전체에 전해라!', '', 'Alguien dígale a %zone_name que estoy aquí.', '', 'Кто-нибудь скажите %zone_name, что я здесь.'),
-	(858, 'suggest_something', '%zone_name에서 미아 됐어요. 헬프!', 0, 0, '', 'Je suis perdu dans %zone_name, envoyez de l’aide.', 'ich hab mich in %zone_name verlaufen, sendet Hilfe', '%zone_name에서 미아 됐어요. 헬프!', '', 'Estoy perdido en %zone_name, envíen ayuda.', '', 'Я заблудился в %zone_name, отправьте помощь.'),
-	(859, 'suggest_something', '%zone_name에서 혁명을 시작해볼까요?', 0, 0, '', 'Je lance une révolution dans %zone_name.', 'ich starte ne Revolution in %zone_name', '%zone_name에서 혁명을 시작합니다.', '', 'Estoy comenzando una revolución en %zone_name.', '', 'Я начинаю революцию в %zone_name.'),
-	(860, 'suggest_something', '%zone_name 여기 너무 조용하지 않음?', 0, 0, '', 'Est-ce que vous trouvez que %zone_name est étrangement calme, non?', 'findet noch wer %zone_name verdächtig ruhig?', '%zone_name 여기 너무 조용하지 않아요?', '', '¿Alguien más encuentra %zone_name sospechosamente tranquila?', '', 'Кто-нибудь еще находит %zone_name подозрительно тихой?'),
-	(861, 'suggest_something', '%zone_name에는 우리가 모르는 비밀이 있을 게 분명해요.', 0, 0, '', 'Je parie que %zone_name a des secrets que nous ne connaissons pas.', 'ich wette, %zone_name hat Geheimnisse, von denen wir nix wissen', '%zone_name에는 우리가 모르는 비밀이 있을 게 분명해요.', '', 'Apuesto a que %zone_name tiene secretos que no conocemos.', '', 'Держу пари, что в %zone_name есть секреты, о которых мы не знаем.'),
-	(862, 'suggest_something', '%zone_name에는 %my_race(이)가 아무리 많아도 부족하죠.', 0, 0, '', 'On ne peut jamais avoir assez de %my_race dans %zone_name.', '%my_race kann man in %zone_name nie genug haben', '%zone_name에는 %my_race(이)가 아무리 많아도 부족하죠.', '', 'Nunca se tiene suficiente %my_race en %zone_name.', '', 'Никогда не бывает слишком много %my_race в %zone_name.'),
-	(863, 'suggest_something', '%zone_name은 그냥 소설 속 장소 같지 않습니까?', 0, 0, '', 'Je commence à penser que %zone_name n’est qu’un mythe.', 'langsam glaube ich, %zone_name ist nur ein Mythos', '%zone_name은 그냥 소설 속 장소 같아요.', '', 'Empiezo a pensar que %zone_name es solo un mito.', '', 'Я начинаю думать, что %zone_name — это миф.'),
-	(864, 'suggest_something', '%zone_name 이곳이 이렇게 빡셀 줄 누가 알았겠어요?', 0, 0, '', 'Qui aurait pensé que la %zone_name serait aussi folle ?', 'wer hätte gedacht, dass %zone_name so abgeht?', '%zone_name이 이렇게 빡셀 줄 누가 알았겠어요?', '', '¿Quién sabía que %zone_name sería tan loco?', '', 'Кто знал, что %zone_name будет таким безумным?'),
-	(865, 'suggest_something', '%zone_name 오니까 게임이 터진 것 같네요.', 0, 0, '', 'C’est comme si le jeu avait buggé dans %zone_name.', 'als wäre das Spiel in %zone_name kaputt', '%zone_name 오니까 게임이 터진 것 같네요.', '', 'Es como si le juego se rompiera en %zone_name.', '', 'Похоже, игра сломалась в %zone_name.'),
-	(866, 'suggest_something', '%zone_name 원래 길이 이렇게 복잡하나요 아니면 제가 길을 잃은 건가요?', 0, 0, '', 'Est-ce que %zone_name est vraiment un désert ou suis-je simplement perdu(e) ?', 'ist %zone_name eigentlich ne Wüste, oder bin ich einfach nur lost?', '%zone_name이 원래 사막인가요 아니면 제가 길을 잃은 건가요?', '', '¿%zone_name es realmente un desierto o simplemente estoy perdido?', '', '%zone_name реально пустыня или я просто заблудился?'),
-	(867, 'suggest_something', '여긴 무슨 %zone_name을 믹서기에 갈아 넣은 것 같네.', 0, 0, '', 'Cet endroit commence à ressembler à une véritable tornade de %zone_name.', 'fühlt sich langsam an wie %zone_name im Mixer', '여긴 무슨 %zone_name을 믹서기에 갈아 넣은 것 같네.', '', 'Este lugar empieza a sentirse como %zone_name en una licuadora.', '', 'Это место начинает напоминать %zone_name в блендере.'),
-	(868, 'suggest_something', '%zone_name 지도 있으신 분?', 0, 0, '', 'Est-ce que quelqu’un a une carte pour %zone_name?', 'hat jemand ne Karte für %zone_name?', '%zone_name 지도 있으신 분?', '', '¿Alguien tiene un mapa para %zone_name?', '', 'Кто-нибудь имеет карту для %zone_name?'),
-	(869, 'suggest_something', '%zone_name 이곳이 우리를 죽이려 한다고 생각하는 분 또 없나요?', 0, 0, '', 'Qui d’autre pense que %zone_name essaie de nous tuer ?', 'Noch wer, der denkt das %zone_name uns umbringen will?', '%zone_name이 우리를 죽이려 한다고 생각하는 분 또 없나요?', '', '¿Quién más cree que %zone_name está tratando de matarnos?', '', 'Кто еще думает, что %zone_name пытается нас убить?'),
-	(870, 'suggest_something', '지금 %zone_name에서 정신없는 모험 중입니다!', 0, 0, '', 'Je suis en train de vivre une aventure folle à travers %zone_name !', 'Ich bin auf wilder Fahrt durch %zone_name!', '지금 %zone_name에서 정신없는 모험 중입니다!', '', '¡Estoy en una aventura salvaje a través de %zone_name!', '', 'Я на дикой поездке через %zone_name!'),
-	(871, 'suggest_something', '기분 탓인가요, %zone_name 점점 이상해지는 것 같아요.', 0, 0, '', 'Est-ce que c’est moi ou %zone_name devient de plus en plus étrange ?', 'Bin das nur ich, oder wird %zone_name immer weirder?', '기분 탓인가요, %zone_name이 점점 이상해지는 것 같아요.', '', '¿Soy solo yo o %zone_name se está volviendo más raro?', '', 'Только мне кажется, что %zone_name становится все страннее?'),
-	(872, 'suggest_something', '%zone_name은 분명 비밀 놀이공원일 거예요.', 0, 0, '', 'Je suis convaincu que %zone_name est secrètement un parc d’attractions.', 'Ich bin davon überzeugt, das %zone_name heimlich ein Freizeitpark ist.', '%zone_name은 분명 비밀 놀이공원일 거예요.', '', 'Estoy convencido de que %zone_name es secretamente un parque de atracciones.', '', 'Я убежден, что %zone_name — это тайный парк аттракционов.'),
-	(873, 'suggest_something_toxic', '키보드가 안 되는데... 친구가 없어서 그런가?', 0, 0, '', 'Pourquoi mon clavier ne fonctionne pas ? Ce doit être parceque je n’ai pas d’amis ....', 'Tastatur kaputt... wahrscheinlich wieder zu wenig Freunde.', '키보드가 안 되는데... 친구가 없어서 그런가?', '', '', '', ''),
-	(874, 'suggest_something_toxic', '이 게임 나무들도 감정이 있을까요?', 0, 0, '', 'Vous pensez que les arbres ont des sentiments ?', 'Glaubt ihr, die Bäume in dem Spiel haben Gefühle?', '이 게임 나무들도 감정이 있을까요?', '', '', '', ''),
-	(875, 'suggest_something_toxic', '똑같은 버튼만 누르는데 왜 안 이겨지죠?', 0, 0, '', 'Je continue d’appuyer sur le même bouton, mais je ne gagne toujours pas.', 'Ich drücke immer dieselbe Taste, aber ich gewinne trotzdem nicht', '똑같은 버튼만 누르는데 왜 안 이겨지죠?', '', '', '', ''),
-	(876, 'suggest_something_toxic', '레이드에서 "득템!"이라고 외치기만 해도 이길 수 있을 것 같은데.', 0, 0, '', 'Je parie que je pourrais gagner un raid si je hurlais LOOT !', 'ich wette, ich könnte nen Raid gewinnen, in dem ich einfach nur LOOT schreie', '레이드에서 "득템!"이라고 외치기만 해도 이길 수 있을 것 같은데.', '', '', '', ''),
-	(877, 'suggest_something_toxic', '한 시간째 탈것 타려고 하는데 왜 안 타져요?', 0, 0, '', 'Ça fait une heure que j’essaie de monterma monture, mais rien ne se passe.', 'versuche seit einer Stunde, auf mein Mount zu steigen, nix passiert', '한 시간째 탈것 타려고 하는데 왜 안 타져요?', '', '', '', ''),
-	(878, 'suggest_something_toxic', '게임 안 하고 무적 되는 법 아시는 분?', 0, 0, '', 'Il y’a un moyen de devenir invincible sans même jouer au jeu ?', 'gibt es nen Weg, unverwundbar zu werden, ohne wirklich zu spielen?', '게임 안 하고 무적 되는 법 아시는 분?', '', '', '', ''),
-	(879, 'suggest_something_toxic', '키보드 아무거나 막 눌러도 이길 수 있나요? 친구가 물어봐서요.', 0, 0, '', 'Est-ce que je peux juste appuyer sur des touches au hasard et quand même gagner, c’est pour un ami.', 'kann ich einfach random Tasten smashen und trotzdem gewinnen? frage für nen Freund', '키보드 아무거나 막 눌러도 이길 수 있나요? 친구가 물어봐서요.', '', '', '', ''),
-	(880, 'suggest_something_toxic', '내가 가만히 서 있으면 너보다 고수라는 뜻인건가?', 0, 0, '', 'Si je reste immobile, est-ce que cela signifie que je suis un meilleur joueur que toi ?', 'Wenn ich einfach stehen bleibe, dann bin ich immer noch besser als du!', '내가 가만히 서 있으면 너보다 고수라는 뜻인가?', '', '', '', ''),
-	(881, 'suggest_something_toxic', '불바닥 위에 있는데 펫이 왜 힐 안줌?', 0, 0, '', 'Pourquoi mon pet ne me soigne pas quand je reste dans le feu ?', 'warum heilt mich mein Pet nicht wenn ich im Feuer stehe', '불바닥 위에 있는데 펫이 왜 힐 안 해주지?', '', '', '', ''),
-	(882, 'suggest_something_toxic', '영웅이 되려면 장비가 꼭 필요한가요 아니면 선택인가요?', 0, 0, '', 'Alors, attends, est-ce que j’ai besoin d’une armure pour être un vrai héros ou est-ce facultatif ?', 'brauch ich Rüstung, um ein echter wahrer Held zu sein, oder ist das optional?', '영웅이 되려면 장비가 꼭 필요한가요 아니면 선택인가요?', '', '', '', ''),
-	(883, 'suggest_something_toxic', '렙업하려면 행운의 부적 만 개쯤 모아야 하나요?', 0, 0, '', 'Pour monter de niveau, j’ai besoin de collecter 10000 Lucky Charm’s, c’est ça ?', 'Muss ich erst 10.000 Koboldkerzen klauen, um zu leveln, oder was?', '렙업하려면 행운의 부적 만 개쯤 모아야 하나요?', '', '', '', ''),
-	(884, 'suggest_something_toxic', '무기가 망가졌는데 그냥 주먹으로 때려잡아야 하나?', 0, 0, '', 'Oh non, mon arme est cassée, mais je peux toujours juste gifler les ennemis avec mon énorme Bi.. euh poing, non?', 'meine Waffe ist kaputt, kann ich Gegner noch mit meinem riesigen Schw... äh, meiner Faust klatschen?', '무기가 망가졌는데 그냥 주먹으로 때려잡아도 되죠?', '', '', '', ''),
-	(885, 'suggest_something_toxic', '게임 이름을 "월드오브 맨날 뒤지는 세계"로 바꿔야 할 듯. 시발놈들 허구언날 죽이네.', 0, 0, '', 'Pouvons-nous simplement renommer le jeu en “World of DieCraft, un Joueur me farm la gueule“ ?', 'können wir das Spiel bitte in World of DieCraft umbenennen, ein Spieler killt mich dauernd', '게임 이름을 "맨날 뒤지는 세계"로 바꿔야 할 듯. 누가 계속 죽여요.', '', '', '', ''),
-	(886, 'suggest_something_toxic', '내 말은 왜 못 날지? 그냥 위로 가면 될것을..', 0, 0, '', 'Pourquoi mon cheval ne vol pas ? Pourquoi il ne peut juste pas aller vers le ciel ?', 'Warum fliegt mein Pferd nicht? kann es nicht einfach nach oben gehen?', '내 말은 왜 못 날지? 그냥 위로 가면 되잖아.', '', '', '', ''),
-	(887, 'suggest_something_toxic', '그래픽 낮추는 옵션 없나요? 고전 게임 느낌 나게.', 0, 0, '', 'Il n’y a pas une option pour désactiver les graphismes calculette ? Le jeu est vraiment moche.', 'Gibts ne Option, die Grafik auszumachen, damit es aussieht wie mein alter Taschenrechner?', '그래픽 낮추는 옵션 없나요? 고전 게임 느낌 나게.', '', '', '', ''),
-	(888, 'suggest_something_toxic', '몹 잡다가 졸았는데 이거 정상인가요?', 0, 0, '', 'Je devais tuer un truc mais je me suis endormi, c’est normal ?', 'ich sollte was killen, bin aber eingepennt, ist das normal?', '몹 잡다가 졸았는데 이거 정상인가요?', '', '', '', ''),
-	(889, 'suggest_something_toxic', '재미로 NPC 죽이는 사람 저밖에 없나요?', 0, 0, '', 'Est-ce que je suis le seul à tuer des PNJ au hasard juste pour le plaisir, ou est-ce qu’il y a d’autres dans le coin?', 'killt noch wer random NPCs zum Spaß, oder bin das nur ich?', '재미로 NPC 죽이는 사람 저밖에 없나요?', '', '', '', ''),
-	(890, 'suggest_something_toxic', '전 레벨 %my_level인데 이미 이 게임 통달함.', 0, 0, '', 'Je suis %my_level et je connais déjà tous les secrets du jeu.', 'ich bin %my_level und kenn schon alle Geheimnisse des Spiels', '전 레벨 %my_level인데 이미 이 게임 통달함.', '', '', '', ''),
-	(891, 'suggest_something_toxic', 'NPC랑 계속 대화하면 템 주나요?', 0, 0, '', 'Je peux juste parler aux PNJ jusqu’à ce qu’ils me donnent tout le but인?', 'kann ich einfach so lange mit NPCs reden, bis sie mir ihren ganzen Loot einfach geben?', 'NPC랑 계속 대화하면 템 주나요?', '', '', '', ''),
-	(892, 'suggest_something_toxic', '아놘ㄴㄴㄴㄴㄴㄴㄴㄴㄴ 개ㅅㅅㅅㅅㅅㅅㅅㅅ스ㅂㄹㅇㅇㅇㅇㅇㅇ', 0, 0, '', 'WWWWWWwwwwwwwww ssssSSsssss dDDddddd aaaAA', 'WWWWWWwwwwwwwww ssssSSsssss dDDddddd aaaAA', 'WWWWWWwwwwwwwww ssssSSsssss dDDddddd aaaAA', '', '', '', ''),
-	(893, 'suggest_something_toxic', '15분이나 했는데 왜 지는 거야?', 0, 0, '', 'Pourquoi est-ce que je perds, je joue depuis 15 minutes.', 'warum verliere ich, ich spiel doch schon 15 Minuten', '15분이나 했는데 왜 지는 거야?', '', '', '', ''),
-	(894, 'suggest_something_toxic', '전략 따위 필요 없음. 그냥 이 스킬만 난사하면 됨.', 0, 0, '', 'Je n’ai pas besoin d’une stratégie, je vais juste spammer cette compétence et espérer le meilleur.', 'Ich brauch keine Strategie, ich spam einfach diese Fähigkeit und hoffe aufs Beste', '전략 따위 필요 없음. 그냥 이 스킬만 난사하면 됨.', '', '', '', ''),
-	(895, 'suggest_something_toxic', '행운의 부적 도배하면 템 잘 나오나요?', 0, 0, '', 'Équiper plusieurs Lucky Charm’s ne me donne pas un avantage supplémentaire pour obtenir plus de butin. Ces amulettes n’affectent pas directement la quantité de butin que je reçois.', 'wenn ich haufenweise Glücksbringer anlege, krieg ich dann mehr Loot?', '행운의 부적 도배하면 템 잘 나오나요?', '', '', '', ''),
-	(896, 'suggest_something_toxic', '겜하다 화면에 소리 지르는 거 나만이럼?', 0, 0, '', 'Le secret du jeu est juste d’hurler sur l’écran', 'Ist das Geheimnis dieses Spiels einfach, den Bildschirm anzuschreien?', '화면에 소리 지르는 게 이 게임 비결인가요?', '', '', '', ''),
-	(897, 'suggest_something_toxic', '그냥 줍는 대로 다 입으면 고수 됩니까?', 0, 0, '', 'Est-ce que je peux juste equipper n’importe quel loot et yolo ?', 'Kann ich einfach jedes Item anziehen, das ich finde, und aufs Beste hoffen?', '그냥 줍는 대로 다 입으면 고수 되나요?', '', '', '', ''),
-	(898, 'suggest_something_toxic', '퀘스트 꼭 해야 해요? 그냥 돌아다니면서 사람들한테 시비 걸면 안 됨?', 0, 0, '', 'Ah, est-ce que je dois vraiment faire des quêtes ou est-ce que je peux juste explorer et crier sur les gens?', 'Muss ich echt Quests machen oder kann ich einfach erkunden und Leute anbrüllen?', '퀘스트 꼭 해야 해요? 그냥 돌아다니면서 사람들한테 시비 걸면 안 됨?', '', '', '', ''),
-	(899, 'suggest_something_toxic', '월급 루팡 하면서 와우 하는 중! 일하라고 하지만 와우는 못 참지!', 0, 0, '', 'Je suis au travail en train de jouer à ce jeu, ils disent que je devrais travailler >.> mais c’est WOW!', 'ich zocke auf Arbeit, die sagen ich soll arbeiten >.> aber es ist WoW!', '월급 루팡 하면서 와우 하는 중! 일하라고 하지만 와우는 못 참지!', '', '', '', ''),
-	(900, 'suggest_something_toxic', '게임에 나오는 음식 다 먹으면 무적 되나요?', 0, 0, '', 'Si je mange toute la nourriture dans le jeu, est-ce que cela va me rendre invincible ?', 'wenn ich alles Essen im Spiel esse, werd ich dann unbesiegbar', '게임에 나오는 음식 다 먹으면 무적 되나요?', '', '', '', ''),
-	(901, 'suggest_something_toxic', '인던에서 펫 뽑아놓고 무지성으로 주사위 굴리는 게 냥꾼들 국룰 아님?', 0, 0, '', 'Donc je balance mon pet sur tout les boss du jeu et je clique sur need, c’est la règle de base des chasseurs."', 'Also, ich werfe mein Pet einfach in jeden Bosskampf und drücke beim würfeln immer auf Gier, das sind die Hunter-Regeln.', '보스전마다 펫 뽑아놓고 무지성으로 주사위 굴리는 게 냥꾼 국룰 아님?', '', '', '', ''),
-	(902, 'suggest_something_toxic', '이미 죽었는데 또 죽을 수도 있나요? 유령이 궁금해해서 물어봄.', 0, 0, '', 'On peut mourir si on est déjà mort ? Je demande pour un fantome...', 'kann man sterben, wenn man schon tot ist? Ich frage für nen Geist...', '이미 죽었는데 또 죽을 수도 있나요? 유령이 궁금해해서 물어봄.', '', '', '', ''),
-	(903, 'suggest_something_toxic', '전설의 검 어딨는지 아시는 분? 한 5분 찾아봤는데 안 보임.', 0, 0, '', 'Est-ce que quelqu’un sait où se trouve l’épée légendaire? Je n’ai cherché que pendant 5 minutes.', 'weiß jemand, wo das legendäre Schwert ist? hab schon 5 Minuten gesucht', '전설의 검 어딨는지 아시는 분? 한 5분 찾아봤는데 안 보임.', '', '', '', ''),
-	(904, 'suggest_something_toxic', '여기 오면 10만 골드 준다던데 어디로 가야 돼요?', 0, 0, '', 'On m’a dit que si je viens ici, je reçois 100 000 pièces d’or. Où dois-je aller?', 'Man sagte mir, hier gibts 100.000 Gold, wo muss ich hin?', '여기 오면 10만 골드 준다던데 어디로 가야 돼요?', '', '', '', ''),
-	(905, 'suggest_something_toxic', '니 애미 쉬펄 어머니 잘 계시냐 임마!', 0, 0, '', 'Je joue à ce jeu comme si j’avais ta mère la nuit dernière, dans un vacarme triomphant!', 'ich spiel das hier wie ich deine Mom letzte Nacht genommen hab - mit Geschrei und einem ruhmreichem Ende!', '너네 엄마랑 어젯밤에 보낸 시간만큼이나 이 게임도 아주 열정적으로 즐기는 중이다!', '', '', '', ''),
-	(906, 'suggest_something_toxic', '이 게임 언제부터 재밌어짐? 아니면 평생 노가다만 해야 됨?', 0, 0, '', 'Il devient fun quand le jeu ? Ou c’est juste du grind pour toujours ?', 'ab wann wirds Spaß, oder ist alles nur für immer Grind', '이 게임 언제부터 재밌어짐? 아니면 평생 노가다만 해야 됨?', '', '', '', ''),
-	(907, 'suggest_something_toxic', '길 좀 물어봤더니 자꾸 이상한 데로 알려주는데 이거 원래 이럼?', 0, 0, '', 'J’arrête pas de demander mon chemin mais ils m’envoient constament à des endroits aléatoires, c’est normal ?', 'ich frage ständig nach dem Weg, aber sie schicken mich immer irgendwo hin, ist das normal?', '길 좀 물어봤더니 자꾸 이상한 데로 알려주는데 이거 원래 이럼?', '', '', '', ''),
-	(908, 'suggest_something_toxic', 'ALT+F4 누르면 10만 골드 들어오는 거 알아냄. 선공몹 먼저 치고 나서 눌러야 됨!', 0, 0, '', 'WOOOW Si tu presses ALF + F4, tu te fais 100,000 Gold. Le truc c’est que tu dois attaquer un mob rouge juste avant !!!', 'hab gehört, wenn du ALT+F4 드르륵, kriegst du 100.000 Gold - Der Trick ist, vorher nen roten NPC anzugreifen', 'ALT+F4 누르면 10만 골드 들어오는 거 알아냄. 선공몹 먼저 치고 나서 눌러야 됨!', '', '', '', ''),
-	(909, 'suggest_something_toxic', '내 캐릭터는 왜 맨날 멍청해 보이지? 내 탓임?;;', 0, 0, '', 'Pourquoi mon personnage a l’air complètement con ? C’est de ma faute ?', 'warum sieht mein Char immer so verwirrt aus, bin ich schuld?', '내 캐릭터는 왜 맨날 멍청해 보이지? 내 탓임?', '', '', '', ''),
-	(910, 'suggest_something_toxic', '야, 너네 엄마가 이제 그만 자러 가란다 ㅋ', 0, 0, '', 'Hey, ta mère a dit d’aller te coucher!', 'hey, deine Mom meinte, du sollst jetzt ins Bett!', '야, 너네 엄마가 이제 자러 가래!', '', '', '', ''),
-	(911, 'suggest_something_toxic', '와우는 네 엄마처럼 매달 돈 내고 굴리는 노가다 게임이지!', 0, 0, '', 'Warcraft, c’est une vraie corvée, tout comme ta mère l’était l’autre jour, elle a même un abonnement mensuel!', 'Warcraft ist ein Grind - genau wie deine Mom neulich, hat sogar Abo!', '와우는 네 엄마처럼 매달 돈 내고 굴리는 노가다 게임이지!', '', '', '', ''),
-	(912, 'suggest_something_toxic', '척 노리스는 버튼 하나 안 누르고 만렙 찍었다는데 이거 실화임?', 0, 0, '', 'Oh là là! Il parait que Chuck Norris a déjà monté de niveau sans même appuyer sur un bouton! C’est ça la légende de Chuck Norris, incroyable non?', 'stimmt es, dass Chuck Norris mal gelevelt hat, ohne nen Knopf zu drücken', '척 노리스는 버튼 하나 안 누르고 만렙 찍었다는데 이거 실화임?', '', '', '', ''),
-	(913, 'suggest_something_toxic', '척 노리스는 탈것이 필요 없음. 땅이 알아서 비켜줌.', 0, 0, '', 'Chuck Norris n’a pas besoin d’une monture, le sol se déplace juste sous lui', 'Chuck Norris braucht kein Mount, der Boden bewegt freiwillig sich unter ihm', '척 노리스는 탈것이 필요 없음. 땅이 알아서 비켜줌.', '', '', '', ''),
-	(914, 'suggest_something_toxic', '척 노리스가 공대에 참여하면 보스가 알아서 템 바치고 자살함.', 0, 0, '', 'Quand Chuck Norris entre dans un raid, le boss se rend simplement', 'wenn Chuck Norris nen Raid betritt, gibt der Boss einfach auf', '척 노리스가 공대에 참여하면 보스가 알아서 템 바치고 자살함.', '', '', '', ''),
-	(915, 'suggest_something_toxic', '척 노리스는 스킬을 안 씀. 쳐다만 봐도 몹이 죽거든.', 0, 0, '', 'Chuck Norris ne se sert pas de ses capacités, il regarde juste les ennemis et ils meurent.', 'Chuck Norris nutzt keine Fähigkeiten, er guckt nur - und die Gegner sterben', '척 노리스는 스킬을 안 씀. 쳐다만 봐도 몹이 죽거든.', '', '', '', ''),
-	(916, 'suggest_something_toxic', '척 노리스는 힐이 필요 없음. 몹들이 존경의 의미로 힐해줌.', 0, 0, '', 'Chuck Norris n’a pas besoin de guérison, ses ennemis le soignent juste par respect.', 'Chuck Norris braucht keine Heilung, seine Feinde heilen ihn aus Respekt', '척 노리스는 힐이 필요 없음. 몹들이 존경의 의미로 힐해줌.', '', '', '', ''),
-	(917, 'suggest_something_toxic', '척 노리스는 노장비 자리비움 상태로 레이드 솔플 가능.', 0, 0, '', 'Chuck Norris peut faire une raid tout seul... sans équipement... et en étant AFK', 'Chuck Norris kann nen Raid solo... ohne Gear... und AFK', '척 노리스는 노장비 자리비움 상태로 레이드 솔플 가능.', '', '', '', ''),
-	(918, 'suggest_something_toxic', '척 노리스는 회피할 필요가 없음. 게임이 그를 피해 가니까.', 0, 0, '', 'Chuck Norris n’a pas besoin d’esquiver, c’est le jeu qui l’évite', 'Chuck Norris weicht nicht aus, das Spiel weicht ihm aus', '척 노리스는 회피할 필요가 없음. 게임이 그를 피해 가니까.', '', '', '', ''),
-	(919, 'suggest_something_toxic', '척 노리스가 쪼렙 무기를 들면 게임이 알아서 졸업템을 떨궈줌.', 0, 0, '', 'Chuck Norris a déjà utilisé une arme de bas niveau, et le jeu lui a donné le meilleur butin', 'Chuck Norris nutzte mal ne Lowlevel-Waffe - das Spiel gab ihm den besten Loot', '척 노리스가 쪼렙 무기를 들면 게임이 알아서 졸업템을 떨궈줌.', '', '', '', ''),
-	(920, 'suggest_something_toxic', '척 노리스가 인던에 입장하면 모든 드랍템이 인벤토리로 자동 지급됨.', 0, 0, '', 'Quand Chuck Norris entre dans l’instance, le butin tombe automatiquement dans son inventaire.', 'wenn Chuck Norris eine Ini betritt, landet der Loot automatisch in seinem Inventar', '척 노리스가 인던에 입장하면 모든 드랍템이 인벤토리로 자동 지급됨.', '', '', '', ''),
-	(921, 'suggest_something_toxic', 'ligma가 뭐임?', 0, 0, '', 'C’est quoi ligma', 'was ist Wilma', 'ligma가 뭐임?', '', '', '', 'что такое лигма'),
-	(922, 'suggest_something_toxic', 'sugma가 뭐임?', 0, 0, '', 'C’est quoi sugma', 'Bist du aus Bayern?', 'sugma가 뭐임?', '', '', '', 'что такое сугма'),
-	(923, 'suggest_something_toxic', '내 불알이나 핥으시지(ligma balls)', 0, 0, '', 'ligma balls', 'Wilma lecken', '내 불알이나 핥으시지(ligma balls)', '', '', '', 'лима болс'),
-	(924, 'suggest_something_toxic', '내 불알이나 빨아라(sugma balls)', 0, 0, '', 'sugma balls', 'Dann leck mir an den Eiern.', '내 불알이나 빨아라(sugma balls)', '', '', '', 'сугма бол스'),
-	(925, 'suggest_something_toxic', '니 일이나 똑바로 하시지!', 0, 0, '', 'JE MANGE DES CULS', 'ICH FRESS NEN ARSCH', '난 엉덩이를 먹지!', '', '', '', 'Я ЕМ ЗАДНИЦУ'),
-	(926, 'suggest_something_toxic', '내 항문에 %random_inventory_item_link(을)를 박아넣고 싶어!', 0, 0, '', 'Je veux enfoncer %random_inventory_item_link dans mon cul.', 'ich will mir %random_inventory_item_link in den Arsch schieben', '내 항문에 %random_inventory_item_link(을)를 박아넣고 싶어!', '', '', '', 'Я хочу засунуть %random_inventory_item_link себе в задницу'),
-	(927, 'suggest_something_toxic', '네 항문에 %random_inventory_item_link(을)를 꽂아버리고 싶다!', 0, 0, '', 'Je veux te fourrer %random_inventory_item_link dans le cul.', 'ich will dir %random_inventory_item_link in den Arsch schieben', '네 항문에 %random_inventory_item_link(을)를 꽂아버리고 싶다!', '', '', '', 'Я хочу засунуть %random_inventory_item_link тебе в задницу'),
-	(928, 'suggest_something_toxic', '다르나서스 찌질이들', 0, 0, '', 'Darnasses', 'Darnarschloch', '다르나서스 찌질이들', '', '', '', 'Дарнасс'),
-	(929, 'suggest_something_toxic', '너 혹시 좆 병 걸렸냐?', 0, 0, '', 'Il semble que tu souffres de sugma.', 'Du leidest an mehr Bugs als das Spiel selbst!', '너 혹시 sugma 병에 걸렸냐?', '', '', '', 'похоже, у тебя сугма'),
-	(930, 'suggest_something_toxic', '좆이나 까 잡숴', 0, 0, '', 'deez nutz dans ta bouche', 'Du hast Chefkochs salzige Schokobällchen im Mund!', '네 입에 내 거나 물어라', '', '', '', '디이즈 나츠 인 유어 마우스'),
-	(931, 'suggest_something_toxic', '이야, 형씨 발기 찬 거 보소', 0, 0, '', 'Belle bite bro', 'cooler Ständer, Bro', '이야, 형씨 발기 찬 거 보소', '', '', '', 'крутой стояк, бро'),
-	(932, 'suggest_something_toxic', '섹드립 역할극 하실 분?', 0, 0, '', 'ERP?', 'ERP?', '섹드립 역할극 하실 분?', '', '', '', 'ERP?'),
-	(933, 'suggest_something_toxic', '별짓 다 해봤는데 역시 마지막엔 섹드립 역할극이 최고네.', 0, 0, '', 'J’ai tout essayé, mais finalement l’ERP a fait l’affaire.', 'hab alles probiert, am Ende hats ERP gerichtet', '별짓 다 해봤는데 역시 마지막엔 섹드립 역할극이 최고네.', '', '', '', '야한 역할극이 최고야'),
-	(934, 'suggest_something_toxic', '%zone_name에서 같이 수다나 떠실분?', 0, 0, '', 'Je veux ken dans %zone_name.', 'ich will in %zone_name bumsen', '%zone_name에서 한 판 하고 싶네.', '', '', '', 'Хочу заняться этим в %zone_name'),
-	(935, 'suggest_something_toxic', '%zone_name에서 나랑 연애하실분?', 0, 0, '', 'Je recherche une gnome femelle avec un gorille de compagnie pour du jeu de rôle érotique dans %zone_name.', 'suche weiblichen Gnom mit Gorilla-Pet für ERP in %zone_name', '%zone_name에서 고릴라 펫 데리고 있는 여노움 구함. 역할극 하게.', '', '', '', 'ищу гнома-девушку с го릴로й для ERP в %zone_name'),
-	(936, 'suggest_something_toxic', '개새끼는 이해해도 변태 새끼는 좀 아니지 않냐?', 0, 0, '', 'Je peux comprendre un imbécile, mais un pervers ?', 'ein Arschloch versteh ich, aber nen Perversen?', '개새끼는 이해해도 변태 새끼는 좀 아니지 않냐?', '', '', '', '자스란짜는 이해해도 변태는 좀'),
-	(937, 'suggest_something_toxic', '%zone_name에는 섹시한 애가 하나도 없네.', 0, 0, '', 'Il n’y a pas de gyat dans %zone_name.', 'Kein Gyat in %zone_name, nur Gesichtseintopf so weit das Auge reicht.', '%zone_name에는 섹시한 애가 하나도 없네.', '', '', '', 'в %zone_name нет гят'),
-	(938, 'suggest_something_toxic', '%zone_name에 있는 짐승들 다 죽이는 중이다. 동물 사랑 ㅈ까!!!', 0, 0, '', 'Je tue tous les animaux dans %zone_name. NIQUE les animaux enculé de vegan !!!', 'ich kill alle Tiere in %zone_name. Scheiß auf Tiere und die PETA!!!', '%zone_name에 있는 짐승들 다 죽이는 중이다. 동물 따위 ㅈ까!!!', '', '', '', ''),
-	(939, 'suggest_something_toxic', '내가 다리가 세 개라 참 다행이지.', 0, 0, '', 'Je suis doté de 3 jambes', 'Nur gut, dass ich 3 Beine hab', '내가 다리가 세 개라 참 다행이지.', '', '', '', 'хорошо, что у меня три ноги'),
-	(940, 'suggest_something_toxic', '화내지 마라, 지금 상남자(시그마) 포스로 몰입 중이니까.', 0, 0, '', 'Hey, ne sois pas fâché, je vais y aller comme un sigma.', 'Chill, ich bin einfach grad komplett in meinem Film.', '화내지 마라, 지금 상남자(시그마) 포스로 몰입 중이니까.', '', '', '', '네 즈리시 마라'),
-	(941, 'suggest_something_toxic', '게이섹히 진짜.', 0, 0, '', 'Essai ton doigt mais dans le cul ?', 'Finger im Po Mexiko', '손가락을 써봐, 항문에다가 말이야.', '', '', '', '듸르쿠에 손가락을'),
-	(942, 'suggest_something_toxic', '어떻게 그걸 망칠 수가 있냐? 어떤 의미로 참 대단하다.', 0, 0, '', 'Tu as réussi à tout gâcher, c’est impressionnant.', 'Das hast du irgendwie vergeigt, beeindruckend', '어떻게 그걸 망칠 수가 있냐? 어떤 의미로 참 대단하다.', '', '', '', ''),
-	(943, 'suggest_something_toxic', '눈 감고도 하겠다만 굳이 그럴 필요까진 없지.', 0, 0, '', 'Je pourrait le faire les yeux bandés, mais ce n’est pas nécessaire.', 'das könnte ich blind machen, muss ich aber nicht', '눈 감고도 하겠다만 굳이 그럴 필요까진 없지.', '', '', '', ''),
-	(944, 'suggest_something_toxic', '님 이 게임 할 줄 아는 거 맞음?', 0, 0, '', 'Est-ce que tu es sûr de savoir comment jouer à ce jeu?', 'sicher, dass du weißt, wie man das Spiel spielt?', '님 이 게임 할 줄 아는 거 맞음?', '', '', '', ''),
-	(945, 'suggest_something_toxic', '이건 뭐 거의 일부러 지려고 작정한 수준인데?', 0, 0, '', 'Tu sembles vouloir perdre délibérément.', 'als würdest du absichtlich verlieren', '이건 뭐 거의 일부러 지려고 작정한 수준인데?', '', '', '', ''),
-	(946, 'suggest_something_toxic', '1레벨 캐릭터도 이것보단 잘하겠다.', 0, 0, '', 'J’ai vu des meilleures performances de la part de personnages de niveau 1.', 'hab schon bessere Plays von Level-1-Chars gesehen', '1레벨 캐릭터도 이것보단 잘하겠다.', '', '', '', ''),
-	(947, 'suggest_something_toxic', '넌 이 게임에서 그냥 방해물(과속방지턱)일 뿐이야.', 0, 0, '', 'Tu es comme un dos d’âne dans ce jeu.', 'du bist hier wie ein Speedbump', '넌 이 게임에서 그냥 방해물(과속방지턱)일 뿐이야.', '', '', '', ''),
-	(948, 'suggest_something_toxic', '게임 말고 다른 취미를 좀 찾아보는 게 어때?', 0, 0, '', 'Peut-être que tu devrais essayer une autre passion.', 'vielleicht suchst du dir lieber ein anderes Hobby', '게임 말고 다른 취미를 좀 찾아보는 게 어때?', '', '', '', ''),
-	(949, 'suggest_something_toxic', '와, 네 플레이는 페인트 마르는 거 구경하는 것만큼이나 지루하다.', 0, 0, '', 'Wow, ton gameplay c’est comme regarder de la peinture sécher', 'dein Gameplay ist wie Farbe beim Trocknen zusehen', '와, 네 플레이는 페인트 마르는 거 구경하는 것만큼이나 지루하다.', '', '', '', ''),
-	(950, 'suggest_something_toxic', '내 부캐로도 너 정도는 캐리할 수 있을 것 같은데.', 0, 0, '', 'Je pense que mon ALT pourrait te carry', 'mein Twink könnte dich da durch carrien', '내 부캐로도 너 정도는 캐리할 수 있을 것 같은데.', '', '', '', ''),
-	(951, 'suggest_something_toxic', '너 지금 우리 엿 먹이려고 일부러 그러는 거지?', 0, 0, '', 'T’est sure que tu nous troll pas ?', 'trollst du uns, oder bist du ernsthaft so?', '너 지금 우리 엿 먹이려고 일부러 그러는 거지?', '', '', '', ''),
-	(952, 'suggest_something_toxic', '네가 우리 팀이라 상대 팀이 훨씬 유리해진 것 같다.', 0, 0, '', 'Je crois que l’équipe adverse se débrouille mieux avec toi dans notre équipe.', 'Ich glaub, das Gegnerteam läuft besser, wenn du bei uns bist', '네가 우리 팀이라 상대 팀이 훨씬 유리해진 것 같다.', '', '', '', ''),
-	(953, 'suggest_something_toxic', '경치 구경 그만하고 게임이나 좀 하지 그래?', 0, 0, '', 'Peut-être vaut-il mieux jouer au jeu au lieu de regarder le paysage.', 'spiel vielleicht mal das Spiel statt nur die Landschaft zu bestaunen', '경치 구경 그만하고 게임이나 좀 하지 그래?', '', '', '', ''),
-	(954, 'suggest_something_toxic', '방금 스킬 하나도 못 맞춘 거 실화냐?', 0, 0, '', 'Je pense que vous avez manqué chaque capacité là.', 'ich glaube, du hast da jede einzelne Fähigkeit verfehlt', '방금 스킬 하나도 못 맞춘 거 실화냐?', '', '', '', ''),
-	(955, 'suggest_something_toxic', '길을 잃은 거냐, 아니면 못하는 척 코스프레 중이냐?', 0, 0, '', 'T’es perdu ou tu fais simplement semblant d’être mauvais?', 'bist du lost oder stellst du dich nur dumm?', '길을 잃은 거냐, 아니면 못하는 척 코스프레 중이냐?', '', '', '', ''),
-	(956, 'suggest_something_toxic', '1레벨짜리도 너보단 딜 덜 박히겠다.', 0, 0, '', 'J’ai vu des personnages de niveau 1 prendre moins de dégâts que ça.', 'Level-1-Chars nehmen weniger Schaden als das', '1레벨짜리도 너보단 딜 덜 박히겠다.', '', '', '', ''),
-	(957, 'suggest_something_toxic', '진심 우리 둘 다한테 쪽팔린 상황이었다.', 0, 0, '', 'C’était gênant pour nous deux.', 'das war für uns beide peinlich', '진심 우리 둘 다한테 쪽팔린 상황이었다.', '', '', '', ''),
-	(958, 'suggest_something_toxic', '솔플 게임도 이것보단 팀워크가 좋겠네ㅋㅋ', 0, 0, '', 'J’ai déjà vu une meilleure coopération dans un jeu solo.', 'Hab schon besseres Teamplay in nem Solo-Game gesehen', '솔플 게임도 이것보단 팀워크가 좋겠네.', '', '', '', ''),
-	(959, 'suggest_something_toxic', '그냥 뒤에서 네가 망하는 거나 구경할게.', 0, 0, '', 'Je vais juste reculer et te regarder creuver.', 'ich stell mich mal hinten hin und schau dir beim Failen zu', '그냥 뒤에서 네가 망하는 거나 구경할게.', '', '', '', ''),
-	(960, 'suggest_something_toxic', '진짜 그게 좋은 생각이라고 믿었던 거냐?', 0, 0, '', 'Penses-tu vraiment que c’était une bonne idée?', 'dachtest du wirklich, das wäre ne gute Idee?', '진짜 그게 좋은 생각이라고 믿었던 거냐?', '', '', '', ''),
-	(961, 'suggest_something_toxic', '그 단순한 걸 못해서 망치네. 진짜 믿기지가 않는다.', 0, 0, '', 'Je n’arrive pas à croire que tu aies échoué à cette tâche si simple.', 'kaum zu glauben, dass du diese simple Aufgabe verkackt hast', '그 단순한 걸 못해서 망치네. 진짜 믿기지가 않는다.', '', '', '', ''),
-	(962, 'suggest_something_toxic', '도와주러 온 거야, 아니면 시간 낭비하러 온 거야?', 0, 0, '', 'Êtes-vous là pour aider, ou simplement perdre du temps ?', 'bist du hier, um zu helfen, oder nur um Zeit zu verschwenden?', '도와주러 온 거야, 아니면 시간 낭비하러 온 거야?', '', '', '', ''),
-	(963, 'suggest_something_toxic', '내가 캐리해주니까 그나마 팀 꼴이 돌아가는 줄 알아라.', 0, 0, '', 'Heureusement que je suis là pour porter cette équipe', 'gut, dass ich da bin, um das Team zu schützen', '내가 캐리해주니까 그나마 팀 꼴이 돌아가는 줄 알아라.', '', '', '', ''),
-	(964, 'suggest_something_toxic', '넌 진짜 안 힘들어도 될 일을 힘들게 만든다.', 0, 0, '', 'Tu sais, parfois tu rends ça plus difficile que nécessaire.', 'ich schwöre, du mach스 es schwerer als nötig', '넌 진짜 안 힘들어도 될 일을 힘들게 만든다.', '', '', '', ''),
-	(965, 'suggest_something_toxic', '어떻게 맨날 쉬운 것만 골라서 망치냐?', 0, 0, '', 'Comment est-ce que je continue à échouer dans les tâches les plus simples?', 'wie schaffst du es, die simpelsten Sachen zu failen?', '어떻게 맨날 쉬운 것만 골라서 망치냐?', '', '', '', ''),
-	(966, 'suggest_something_toxic', '직접 하지 말고 그냥 남이 하는 거 구경이나 하는 게 어때?', 0, 0, '', 'Peut-être que tu devrais essayer de regarder le match, au lieu de simplement y jouer.', 'vielleicht mal lieber nur zuschauen, statt das zu tun was du spielen nennst', '직접 하지 말고 그냥 남이 하는 거 구경이나 하는 게 어때?', '', '', '', ''),
-	(967, 'suggest_something_toxic', '잘하는 척 흉내라도 좀 내봐라, 좀.', 0, 0, '', 'Tu pourrais au moins essayer de faire semblant d’être compétent.', 'du könntest dich wenigstens bemühen, so zu tun, als wärst du gut', '잘하는 척 흉내라도 좀 내봐라, 좀.', '', '', '', ''),
-	(968, 'suggest_something_toxic', '계속 그따위로 하면 우리 오늘 하루 종일 여기 있어야 돼.', 0, 0, '', 'Si tu continues comme ça, on va y passer la journée entière.', 'mach so weiter und wir sitzen hier den ganzen Tag', '계속 그따위로 하면 우리 오늘 하루 종일 여기 있어야 돼.', '', '', '', ''),
-	(969, 'suggest_something_toxic', '진심 여태껏 본 것 중에 최악의 판단이었다.', 0, 0, '', 'Franchement, c’était la pire décision que j’aie jamais prise.', 'ehrlich, das war die schlechteste Entscheidung ever', '진심 여태껏 본 것 중에 최악의 판단이었다.', '', '', '', ''),
-	(970, 'suggest_something_toxic', '너 이 게임 소질 없는 것 같은데 접는 게 어떠냐 붕딱아?', 0, 0, '', 'Je ne pense pas que tu sois fait pour ce jeu.', 'ich glaub, dieses Spiel ist nix für dich', '너 이 게임 소질 없는 것 같은데 접는 게 어떠냐?', '', '', '', ''),
-	(971, 'suggest_something_toxic', '방금 그 무빙은 도대체 뭐 하려고 한 거냐?', 0, 0, '', 'Quel était l’intérêt de ce coup ?', 'was sollte dieser Move?', '방금 그 무빙은 도대체 뭐 하려고 한 거냐?', '', '', '', ''),
-	(972, 'suggest_something_toxic', '넌 우리 팀의 구멍이삼.', 0, 0, '', 'Tu es comme un fardeau pour cette équipe.', 'du bist ne Last fürs Team', '넌 우리 팀의 짐 덩어리야.', '', '', '', ''),
-	(973, 'suggest_something_toxic', '네가 뭐라도 되는 것 같지? 응 아니야~', 0, 0, '', 'Tu te prends vraiment pour un pro, hein ?', 'du denkst echt, du bist ein Pro, was?', '네가 뭐라도 되는 것 같지? 응 아니야~', '', '', '', ''),
-	(974, 'suggest_something_toxic', '그냥 나가서 우리 수고 좀 덜어주면 안 되겠냐?', 0, 0, '', 'Il serait temps de déco et nous épargner tes problèmes.', 'vielleicht einfach quitten und uns allen den Stress sparen', '그냥 나가서 우리 수고 좀 덜어주면 안 되겠냐?', '', '', '', ''),
-	(975, 'suggest_toxic_links', '%prefix %random_taken_quest_or_item_link', 0, 0, '', '.', '%prefix %random_taken_quest_or_item_link', '', '', '', '', '%prefix %random_taken_quest_or_item_link'),
-	(976, 'suggest_toxic_links', '%prefix %random_inventory_item_link', 0, 0, '', '', '%prefix %random_inventory_item_link', '', '', '', '', '%prefix %random_inventory_item_link'),
-	(977, 'thunderfury_spam', '%thunderfury_link', 0, 0, '', '.', '%thunderfury_link', '', '', '', '', '%thunderfury_link'),
-	(978, 'thunderfury_spam', '%thunderfury_link%thunderfury_link', 0, 0, '', '', '%thunderfury_link%thunderfury_link', '', '', '', '', '%thunderfury_link%thunderfury_link'),
-	(979, 'thunderfury_spam', '%thunderfury_link%thunderfury_link%thunderfury_link', 0, 0, '', '', '%thunderfury_link%thunderfury_link%thunderfury_link', '', '', '', '', '%thunderfury_link%thunderfury_link%thunderfury_link'),
-	(980, 'thunderfury_spam', '방금 %thunderfury_link(이)라고 들은 거 같은데?', 0, 0, '', 'J’ai entendu %thunderfury_link', 'ich glaube, ich hab gerade %thunderfury_link gehört', '방금 %thunderfury_link(이)라고 들은 거 같은데?', '', '', '', 'Кажется, я только что услышал %thunderfury_link'),
-	(981, 'thunderfury_spam', '%thunderfury_link 소리가 들린 것 같아요.', 0, 0, '', 'Je viens juste d’entendre %thunderfury_link', 'ich glaub, ich habe %thunderfury_link gehört', '%thunderfury_link 소리가 들린 것 같아요.', '', '', '', 'Кажется, я слышал %thunderfury_link'),
-	(982, 'thunderfury_spam', '분명히 %thunderfury_link(이)라고 들었습니다.', 0, 0, '', 'Je suis sûr d’avoir entendu parler de %thunderfury_link.', 'ich hab definitiv %thunderfury_link gehört', '분명히 %thunderfury_link(이)라고 들었습니다.', '', '', '', 'Я точно слышал %thunderfury_link'),
-	(983, 'thunderfury_spam', '잘은 모르겠는데 %thunderfury_link 소리는 확실히 들린 듯.', 0, 0, '', 'Je ne sais pas, mais je suis presque certain d’avoir entendu %thunderfury_link.', 'kein Plan, aber ich bin ziemlich sicher, das ich %thunderfury_link gehört habe', '잘은 모르겠는데 %thunderfury_link 소리는 확실히 들린 듯.', '', '', '', ''),
-	(984, 'thunderfury_spam', '방금 %thunderfury_link(이)라고 하셨나요?', 0, 0, '', 'Qui vient de parler de %thunderfury_link?', 'hast du gerade %thunderfury_link gesagt', '방금 %thunderfury_link(이)라고 하셨나요?', '', '', '', 'Ты только что сказал %thunderfury_link'),
-	(985, 'thunderfury_spam', '누가 %thunderfury_link(이)라고 했나요?', 0, 0, '', 'Oh, vous avez mentionné %thunderfury_link ?', 'hat jemand %thunderfury_link gesagt', '누가 %thunderfury_link(이)라고 했나요?', '', '', '', 'кто-то сказал %thunderfury_link'),
-	(986, 'thunderfury_spam', '방금 누가 %thunderfury_link 언급했음?', 0, 0, '', 'Qui a mentionné %thunderfury_link ?', 'hat jemand %thunderfury_link gesagt?', '방금 누가 %thunderfury_link 언급했음?', '', '', '', 'Кто-то сказал %thunderfury_link?'),
-	(987, 'thunderfury_spam', '누가 %thunderfury_link(이)라고 하던데.', 0, 0, '', 'Quelqu’un a mentionné %thunderfury_link.', 'jemand hat %thunderfury_link gesagt', '누가 %thunderfury_link(이)라고 하던데.', '', '', '', 'Кто-то сказал %thunderfury_link'),
-	(988, 'thunderfury_spam', '%thunderfury_link(이)가 드디어 모습을 드러내네요.', 0, 0, '', '%thunderfury_link sort du placard', '%thunderfury_link kommt aus dem Schrank', '%thunderfury_link(이)가 드디어 모습을 드러내네요.', '', '', '', '%thunderfury_link выходит из шкафа'),
-	(989, 'thunderfury_spam', '분명 %thunderfury_link(이)었는데, %thunderfury_link(이)었나?', 0, 0, '', 'Je pourrais jurer que c’était un %thunderfury_link, mais ça aurait aussi pu être %thunderfury_link en fait.', 'ich schwöre, es war %thunderfury_link, könnte aber auch %thunderfury_link gewesen sein', '분명 %thunderfury_link(이)었는데, %thunderfury_link(이)었나?', '', '', '', '모글 수 있을 것 같아'),
-	(990, 'thunderfury_spam', '%thunderfury_link(이)가 훨씬 사기인데 왜 %thunderfury_link(을)를 써요?', 0, 0, '', 'Pourquoi utiliser %thunderfury_link quand %thunderfury_link est clairement beaucoup plus puissant.', 'warum %thunderfury_link nutzen, wenn %thunderfury_link offensichtlich viel stärker ist', '%thunderfury_link(이)가 훨씬 사기인데 왜 %thunderfury_link(을)를 써요?', '', '', '', 'Зачем использовать %thunderfury_link, если %thunderfury_link явно круче'),
-	(991, 'thunderfury_spam', '방금 %thunderfury_link 소리 들린 거 맞죠?', 0, 0, '', 'Ai-je juste entendu %thunderfury_link?', 'hab ich gerade %thunderfury_link gehört?', '방금 %thunderfury_link 소리 들린 거 맞죠?', '', '', '', ''),
-	(992, 'thunderfury_spam', '말도 안 돼... 진짜 %thunderfury_link 소리가 들린다고?', 0, 0, '', 'Pas possible... Est-ce que j’entends %thunderfury_link ?', 'niemals... hör ich da echt %thunderfury_link?', '말도 안 돼... 진짜 %thunderfury_link 소리가 들린다고?', '', '', '', ''),
-	(993, 'thunderfury_spam', '%thunderfury_link? 전설들만 쓸 수 있다는 그거 아냐?', 0, 0, '', '%thunderfury_link? Ça a l’air d’être quelque chose que seuls les légendes manient!', '%thunderfury_link? klingt nach was, das nur Legenden führen!', '%thunderfury_link? 전설들만 쓸 수 있다는 그거 아냐?', '', '', '', ''),
-	(994, 'thunderfury_spam', '공기 중에서 %thunderfury_link의 기운이 느껴진다!', 0, 0, '', 'Je peux sentir la puissance de %thunderfury_link dans l’air !', 'ich spüre die Macht von %thunderfury_link in der Luft!', '공기 중에서 %thunderfury_link의 기운이 느껴진다!', '', '', '', ''),
-	(995, 'thunderfury_spam', '%thunderfury_link(이)야말로 진정한 MVP지.', 0, 0, '', '%thunderfury_link est le *vrai* MVP.', '%thunderfury_link ist der *echte* MVP', '%thunderfury_link(이)야말로 진정한 MVP지.', '', '', '', ''),
-	(996, 'thunderfury_spam', '누구 나 %thunderfury_link 좀 구해줄 사람? 친구 줄 건데... 두 명일 수도 있고!', 0, 0, '', 'Est-ce que quelqu’un peut me trouver un %thunderfury_link ? Je demande pour un ami... peut-être même deux !', 'kann mir jemand ne %thunderfury_link besorgen? frage für einen Freund... vielleicht zwei!', '누구 나 %thunderfury_link 좀 구해줄 사람? 친구 줄 건데... 두 명일 수도 있고!', '', '', '', ''),
-	(997, 'thunderfury_spam', '방금 %thunderfury_link(이)가 뭘 내리친 거야? 땅 흔들리는 거 다 느꼈음.', 0, 0, '', 'Hey, est-ce que %thunderfury_link vient de *foudroyer* quelque chose ? Je te jure que j’ai senti la terre trembler.', 'hat %thunderfury_link da gerade was *gesmitet*? ich schwöre, der Boden hat gewackelt', '방금 %thunderfury_link(이)가 뭘 내리친 거야? 땅 흔들리는 거 다 느꼈음.', '', '', '', ''),
-	(998, 'thunderfury_spam', '전장에 %thunderfury_link(이)가 떴네... 포스 장난 아니다.', 0, 0, '', '%thunderfury_link sur le champ de bataille... C’est comme montrer sa puissance instantanément.', '%thunderfury_link auf dem Schlachtfeld... Das ist purer Flex', '전장에 %thunderfury_link(이)가 떴네... 포스 장난 아니다.', '', '', '', ''),
-	(999, 'thunderfury_spam', '방금 %thunderfury_link 소리가 들린 것 같은데... 그냥 헛소문인가?', 0, 0, '', '*Je crois* avoir entendu %thunderfury_link... Ou peut-être que c’était juste un mythe?', 'ich *glaube*, ich hab %thunderfury_link gehört... oder war das nur ein Mythos?', '방금 %thunderfury_link 소리가 들린 것 같은데... 그냥 헛소문인가?', '', '', '', ''),
-	(1000, 'thunderfury_spam', '잠깐, 방금 누가 %thunderfury_link 들고 있는 거 본 사람?!', 0, 0, '', 'Attends, est-ce que je viens de voir quelqu’un manier %thunderfury_link ?!', 'hab ich gerade jemanden mit %thunderfury_link gesehen?!', '잠깐, 방금 누가 %thunderfury_link 들고 있는 거 본 사람?!', '', '', '', ''),
-	(1001, 'thunderfury_spam', '%thunderfury_link의 위력은 *부정할 수 없지*!', 0, 0, '', 'Le pouvoir de %thunderfury_link est *indéniable*', 'Die Macht von %thunderfury_link ist *unbestreitbar*', '%thunderfury_link의 위력은 *부정할 수 없지*!', '', '', '', ''),
-	(1002, 'thunderfury_spam', '방금 그거 99% 확률로 %thunderfury_link였다. 나머지 1%는 지나가던 NPC였을 수도 있고.', 0, 0, '', 'Je suis à 99% certain que c’était %thunderfury_link. Le 1% restant aurait pu être un PNJ aléatoire, cependant.', 'Bin zu 99% sicher, das war %thunderfury_link. Zu 1% wars vielleicht nur ein random NPC.', '방금 그거 99% 확률로 %thunderfury_link였다. 나머지 1%는 지나가던 NPC였을 수도 있고.', '', '', '', ''),
-	(1003, 'thunderfury_spam', '%thunderfury_link 출동! 이런 힘이 있으면 군대가 왜 필요함?', 0, 0, '', '%thunderfury_link en action ! Qui a besoin d’une armée lorsqu’on a ce genre de puissance ?', '%thunderfury_link in Aktion! Wer braucht ne Armee, mit so einer Power?', '%thunderfury_link 출동! 이런 힘이 있으면 군대가 왜 필요함?', '', '', '', ''),
-	(1004, 'thunderfury_spam', '듣자 하니 %thunderfury_link(이)가 그렇게 사람들 관심을 한 몸에 받는다면서요?', 0, 0, '', 'J’ai entendu dire que %thunderfury_link, c’est ce qui attire vraiment tous les garçons dans la cour.', 'Hab gehört, %thunderfury_link lockt alle Jungs an.', '듣자 하니 %thunderfury_link(이)가 그렇게 사람들 관심을 한 몸에 받는다면서요?', '', '', '', ''),
-	(1005, 'thunderfury_spam', '누가 봐도 %thunderfury_link(이)가 훨씬 좋은데 왜 굳이 %thunderfury_link(을)를 씀?', 0, 0, '', 'Pourquoi même utiliser %thunderfury_link quand %thunderfury_link est clairement l’option supérieure ?', 'Warum überhaupt %thunderfury_link nutzen, wenn %thunderfury_link klar die bessere Option ist?', '누가 봐도 %thunderfury_link(이)가 훨씬 좋은데 왜 굳이 %thunderfury_link(을)를 씀?', '', '', '', ''),
-	(1006, 'thunderfury_spam', '기분 탓인가, %thunderfury_link(은)는 기본적으로 어그로 끄는 패시브라도 달려 있음?', 0, 0, '', 'Est-ce moi ou est-ce que %thunderfury_link a un effet passif de provocation ?', 'Bin das nur ich, oder hat %thunderfury_link nen passiven „Trash-Talk“-Effekt?', '기분 탓인가, %thunderfury_link(은)는 기본적으로 어그로 끄는 패시브라도 달려 있음?', '', '', '', ''),
-	(1007, 'thunderfury_spam', '%thunderfury_link 소린 줄 알았는데, 그냥 간지 터지는 소리였네.', 0, 0, '', 'J’ai cru entendre %thunderfury_link, mais en fait c’était juste le son de la pure puissance.', 'Dachte, ich hätte %thunderfury_link gehört, war aber nur der Klang reiner Awesomeness.', '%thunderfury_link 소린 줄 알았는데, 그냥 간지 터지는 소리였네.', '', '', '', ''),
-	(1008, 'thunderfury_spam', '오, %thunderfury_link... 내 인생에서 이제야 나타난 거니?', 0, 0, '', 'Oh, %thunderfury_link ... Où as-tu été tout ce temps, ma belle épée ?', 'Oh, %thunderfury_link... Wo *warst* du mein ganzes Leben?', '오, %thunderfury_link... 내 인생에서 이제야 나타난 거니?', '', '', '', ''),
-	(1009, 'thunderfury_spam', '방금 누가 %thunderfury_link(이)라고 했음? 나도 내 거 좀 챙겨와야겠네.', 0, 0, '', '%thunderfury_link? Oh là là, j’entends toujours parler de cet incroyable objet! Je crois bien qu’il est temps pour moi d’aller le chercher.', 'Hat jemand %thunderfury_link gesagt? Ich glaub, ich hol mir mal meine.', '방금 누가 %thunderfury_link(이)라고 했음? 나도 내 거 좀 챙겨와야겠네.', '', '', '', ''),
-	(1010, 'thunderfury_spam', '이건 확실히 %thunderfury_link 소리다! 전설의 기운이 느껴짐.', 0, 0, '', 'C’était certainement le son de %thunderfury_link ! Je peux sentir toute son épopée.', 'Das war definitiv der Sound von %thunderfury_link! Ich spür die Epicness.', '이건 확실히 %thunderfury_link 소리다! 전설의 기운이 느껴짐.', '', '', '', ''),
-	(1011, 'thunderfury_spam', '나만 그렇게 느껴? %thunderfury_link 옆에 있으면 딴 사람들은 다 *약해 보여*.', 0, 0, '', 'C’est moi ou bien %thunderfury_link a tendance à faire paraître les autres faibles?', 'Geht das nur mir so, oder lässt %thunderfury_link alle anderen *schwach aussehen*?', '나만 그렇게 느껴? %thunderfury_link 옆에 있으면 딴 사람들은 다 *약해 보여*.', '', '', '', ''),
-	(1012, 'thunderfury_spam', '원래 %thunderfury_link 소리가 클수록 부심 부릴 맛도 나는 법이지!', 0, 0, '', 'Tu sais ce qu’on dit... plus le %thunderfury_link rugit, plus grand sont les droits de vantardise!', 'Wie man so sagt... je lauter %thunderfury_link, desto größer das Recht zu prahlen!', '원래 %thunderfury_link 소리가 클수록 부심 부릴 맛도 나는 법이지!', '', '', '', ''),
-	(1013, 'suggest_sell', '팝니다: %item_formatted_link / 가격: %cost_gold', 0, 0, '', 'Je vends %item_formatted_link pour %cost_gold.', 'VK: %item_formatted_link für %cost_gold.', '팝니다: %item_formatted_link / 가격: %cost_gold', '', 'Quiero vender %item_formatted_link por %cost_gold.', '', 'Продаю %item_formatted_link за %cost_gold.'),
-	(1014, 'suggest_sell', '%item_formatted_link(을)를 %cost_gold에 가져가실 분?', 0, 0, '', 'Qui veut %item_formatted_link pour %cost_gold?', 'Wer will %item_formatted_link für %cost_gold?', '%item_formatted_link(을)를 %cost_gold에 가져가실 분?', '', '¿Quién quiere %item_formatted_link por %cost_gold?', '', 'Кто хочет %item_formatted_link за %cost_gold?'),
-	(1015, 'suggest_sell', '%item_formatted_link 필요하신 분? 단돈 %cost_gold.', 0, 0, '', 'Est-ce que quelqu’un veut %item_formatted_link ? Seulement %cost_gold.', 'Will wer %item_formatted_link? Nur %cost_gold.', '%item_formatted_link 필요하신 분? 단돈 %cost_gold.', '', '¿Alguien quiere %item_formatted_link? Solo %cost_gold.', '', 'Кому нужен %item_formatted_link? Всего %cost_gold.'),
-	(1016, 'suggest_sell', '겨우 %cost_gold에 %item_formatted_link(을)를 드립니다!', 0, 0, '', 'Juste %cost_gold pour %item_formatted_link!', 'Nur %cost_gold für %item_formatted_link!', '겨우 %cost_gold에 %item_formatted_link(을)를 드립니다!', '', '¡Solo %cost_gold para %item_formatted_link!', '', 'Всего %cost_gold за %item_formatted_link!'),
-	(1017, 'suggest_sell', '%item_formatted_link 판매합니다. 가격은 %cost_gold.', 0, 0, '', 'Je vends %item_formatted_link pour %cost_gold.', 'Verkaufe %item_formatted_link für %cost_gold.', '%item_formatted_link 판매합니다. 가격은 %cost_gold.', '', 'Vendo %item_formatted_link por %cost_gold.', '', 'Продаю %item_formatted_link за %cost_gold.'),
-	(1018, 'suggest_sell', '단 %cost_gold만 내면 %item_formatted_link(이)가 당신 거!', 0, 0, '', '%item_formatted_link est à toi pour seulement %cost_gold !', '%item_formatted_link gehört dir für nur %cost_gold!', '단 %cost_gold만 내면 %item_formatted_link(이)가 당신 거!', '', '%item_formatted_link es tuyo solo por %cost_gold!', '', '%item_formatted_link твой всего за %cost_gold!'),
-	(1019, 'suggest_sell', '%item_formatted_link(이)가 말도 안 되는 가격 %cost_gold!', 0, 0, '', 'Le prix ridicule de %cost_gold pour %item_formatted_link !', 'Lächerlicher Preis: %cost_gold für %item_formatted_link!', '%item_formatted_link(이)가 말도 안 되는 가격 %cost_gold!', '', '¡Precio ridículo de %cost_gold para %item_formatted_link_link!', '', 'Смешная цена %cost_gold за %item_formatted_link!'),
-	(1020, 'suggest_sell', '%item_formatted_link(을)를 %cost_gold에 팔아도 될까용?', 0, 0, '', 'Je veux vendre %item_formatted_link pour %cost_gold.', 'Will %item_formatted_link für %cost_gold verkaufen.', '%item_formatted_link(을)를 %cost_gold에 팔고 싶어요.', '', 'Quiero vender %item_formatted_link por %cost_gold.', '', 'Хочу продать %item_formatted_link за %cost_gold.'),
-	(1021, 'suggest_sell', '%item_formatted_link 필요하신 분? 딱 %cost_gold만 받음.', 0, 0, '', 'Qui a besoin de %item_formatted_link? Seulement %cost_gold.', 'Wer braucht %item_formatted_link? Nur %cost_gold.', '%item_formatted_link 필요하신 분? 딱 %cost_gold만 받음.', '', '¿Quién necesita %item_formatted_link? Solo %cost_gold.', '', 'Кому нужен %item_formatted_link? Всего %cost_gold.'),
-	(1022, 'suggest_sell', '%item_formatted_link 필요하신 분? 가격은 %cost_gold입니다.', 0, 0, '', 'Besoin du %item_formatted_link pour %cost_gold?', 'Braucht jemand %item_formatted_link für %cost_gold?', '%item_formatted_link 필요하신 분? 가격은 %cost_gold입니다.', '', '¿Alguien necesita %item_formatted_link_link por %cost_gold?', '', 'Кому нужен %item_formatted_link за %cost_gold?'),
-	(1023, 'suggest_sell', '%item_formatted_link 단돈 %cost_gold. 경매장보다 쌈!', 0, 0, '', '%cost_gold pour %item_formatted_link. Moins cher que l’HD !', '%cost_gold für %item_formatted_link. Günstiger als im AH!', '%item_formatted_link 단돈 %cost_gold. 경매장보다 쌈!', '', '%cost_gold para %item_formatted_link. ¡Menos que en las subastas!', '', '%cost_gold за %item_formatted_link. Дешевле, чем на аукционе!'),
-	(1024, 'suggest_sell', '%item_formatted_link(이)가 좀 비싸긴 한데, 전 %cost_gold에 팔게요.', 0, 0, '', '%item_formatted_link est cher, mais je le vendrais pour %cost_gold.', '%item_formatted_link ist Wertvoll, aber ich würd es für %cost_gold verkaufen.', '%item_formatted_link(이)가 좀 비싸긴 한데, 전 %cost_gold에 팔게요.', '', '%item_formatted_link es caro, pero lo vendería por %cost_gold.', '', ''),
-	(1025, 'suggest_sell', '%item_formatted_link(을)를 %cost_gold 서버에서 제일 싸게 팜팜!', 0, 0, '', 'Tu ne trouveras jamais %item_formatted_link moins cher que %cost_gold !', 'Billiger als %cost_gold kriegst du %item_formatted_link nicht!', '%item_formatted_link(을)를 %cost_gold보다 싸게 살 수 있는 곳은 없음!', '', '¡Nunca encontrarás %item_formatted_link más barato que %cost_gold!', '', ''),
-	(1026, 'suggest_sell', '%item_formatted_link삽니다~귓주세여 다 삽니다~', 0, 0, '', 'J’ai besoin de plus de %item_formatted_link !', 'Brauche mehr als %item_formatted_link!', '%item_formatted_link보다 더 많이 필요해요!', '', '¡Necesito más %item_formatted_link!', '', 'Нужно больше, чем %item_formatted_link!'),
-	(1027, 'suggest_sell', '%item_formatted_link필요한데 가지고 계신분?? 싸게 삽니다 ㅠ', 0, 0, '', 'J’ai %item_formatted_link et j’en ai besoin de plus.', 'Habe %item_formatted_link und brauche mehr.', '%item_formatted_link(은)는 있는데 더 필요합니다.', '', 'Tengo %item_formatted_link y necesito más. ¿Alguien me vende alguno?', '', 'У меня есть %item_formatted_link и нужно еще.'),
-	(1028, 'suggest_sell', '%item_formatted_link 보유 중. %cost_gold에 사실 분?', 0, 0, '', 'J’ai %item_formatted_link. Qui veut acheter pour %cost_gold?', 'Habe %item_formatted_link. Wer kauft für %cost_gold?', '%item_formatted_link 보유 중. %cost_gold에 사실 분?', '', 'Tengo %item_formatted_link. ¿Quién quiere comprarlo por %cost_gold?', '', 'Есть %item_formatted_link. Кто хочет купить за %cost_gold?'),
-	(1029, 'suggest_sell', '%item_formatted_link(을)를 %cost_gold에 사실 분 있나요?', 0, 0, '', 'Quelqu’un veut acheter %item_formatted_link pour %cost_gold?', 'Will jemand %item_formatted_link für %cost_gold kaufen?', '%item_formatted_link(을)를 %cost_gold에 사실 분 있나요?', '', '¿Alguien compra %item_formatted_link por %cost_gold?', '', 'Кто хочет купить %item_formatted_link за %cost_gold?'),
-	(1030, 'suggest_sell', '%item_formatted_link(은)는 어때요? %cost_gold에 드림.', 0, 0, '', 'Qu’en est-il de %item_formatted_link ? Pour %cost_gold.', 'Wie wärs mit %item_formatted_link? Für %cost_gold.', '%item_formatted_link(은)는 어때요? %cost_gold에 드림.', '', '¿Qué pasa con %item_formatted_link? Por el oro.', '', 'Как насчет %item_formatted_link? За %cost_gold.'),
-	(1031, 'suggest_sell', '누가 나보고 사기꾼이래? %item_formatted_link(을)를 %cost_gold에 파는 거면 혜자지.', 0, 0, '', 'Qui a dit que je suis un bâtard ? %item_formatted_link pour %cost_gold, c’est un bon prix.', 'Wer meinte, ich bin ein Bastard? %item_formatted_link für %cost_gold ist ein guter Preis!', '누가 나보고 사기꾼이래? %item_formatted_link(을)를 %cost_gold에 파는 거면 혜자지.', '', '¿Quién ha dicho que soy un rata? %item_formatted_link por %cost_gold es una ganga.', '', 'Кто сказал, что я ублюдок? %item_formatted_link за %cost_gold — хорошая цена.'),
-	(1032, 'suggest_sell', '%item_formatted_link 팝니다. 단돈 %cost_gold.', 0, 0, '', 'Je vends %item_formatted_link à seulement %cost_gold.', 'Verkaufe %item_formatted_link? Nur %cost_gold.', '%item_formatted_link 팝니다. 단돈 %cost_gold.', '', '¿Vendo %item_formatted_link? Solo %cost_gold.', '', 'Продаю %item_formatted_link? Всего %cost_gold.'),
-	(1033, 'suggest_sell', '파밍 파티 구해요. 그 와중에 제 %item_formatted_link(을)를 %cost_gold에 살 수도 있음.', 0, 0, '', 'Je cherche des gens pour farmer. Tu peux toujours acheter %item_formatted_link que j’ai pour %cost_gold.', 'LFG zum Farmen. %item_formatted_link gibts von mir noch für %cost_gold.', '파밍 파티 구해요. 그 와중에 제 %item_formatted_link(을)를 %cost_gold에 살 수도 있음.', '', 'LFG para farmear. Todavía puedes comprar %item_formatted_link que tengo por %cost_gold.', '', 'ЛФГ для фарма. Все еще можешь купить %item_formatted_link у меня за %cost_gold.'),
-	(1034, 'suggest_sell', '오늘 거의 다 팔았네요. 아직 %item_formatted_link 남았는데 %cost_gold에 드림.', 0, 0, '', 'J’ai presque tout vendu aujourd’hui. Il me reste seulement %item_formatted_link pour %cost_gold.', 'Heute fast alles verkauft. %item_formatted_link hab ich noch für %cost_gold.', '오늘 거의 다 팔았네요. 아직 %item_formatted_link 남았는데 %cost_gold에 드림.', '', 'Se vendió casi todo hoy. Todavía tengo %item_formatted_link por %cost_gold.', '', 'Сегодня почти все продал. Еще есть %item_formatted_link за %cost_gold.'),
-	(1035, 'suggest_sell', '거래 채널을 왜 쓰냐고요? 당연히 제 %item_formatted_link(을)를 %cost_gold에 팔려고죠!', 0, 0, '', 'Pourquoi utiliser le chat de commerce ? Eh bien, évidemment pour vendre mon %item_formatted_link au prix de %cost_gold.', 'Wozu Handelschat? Klar, um %item_formatted_link für %cost_gold zu verkaufen.', '거래 채널을 왜 쓰냐고요? 당연히 제 %item_formatted_link(을)를 %cost_gold에 팔려고죠!', '', '¿De qué sirve el chat comercial? Por supuesto, para vender %item_formatted_link por %cost_gold.', '', 'Для чего нужен торговый чат? Конечно, чтобы продавать %item_formatted_link за %cost_gold.'),
-	(1036, 'suggest_sell', '%item_formatted_link(을)를 %cost_gold 싸게 삽니다ㅠ 와린이라 골드도 읍어영 ㅠ', 0, 0, '', 'Est-ce que quelqu’un peut battre le prix de %cost_gold pour %item_formatted_link ?', 'Kann jemand den Preis %cost_gold für %item_formatted_link unterbieten?', '%item_formatted_link(을)를 %cost_gold보다 더 싸게 줄 수 있는 사람 있음?', '', '¿Alguien puede superar el precio de %cost_gold por %item_formatted_link?', '', 'Кто перебьет цену %cost_gold за %item_formatted_link?'),
-	(1037, 'suggest_sell', '거래 채널 시끄러운 거 멈추고 싶어요? 그럼 제 %item_formatted_link(을)를 %cost_gold에 사면 됨!', 0, 0, '', 'Tu veux arrêter le chat commercial ? Il suffit d’acheter %item_formatted_link ! Pour seulement %cost_gold !', 'Wollt ihr den Handelschat stoppen? Kauft einfach %item_formatted_link! Für %cost_gold!', '거래 채널 시끄러운 거 멈추고 싶어요? 그럼 제 %item_formatted_link(을)를 %cost_gold에 사면 됨!', '', '¿Quieres detener el chat comercial? ¿Solo compra %item_formatted_link? ¡Por el oro!', '', 'Хочешь прекратить торговый чат? Просто купи %item_formatted_link за %cost_gold!'),
-	(1038, 'suggest_sell', '다들 거래 채널에서 도배하네요. 저도 동참함 - %item_formatted_link 단돈 %cost_gold!', 0, 0, '', 'Tout le monde spamme dans le chat commercial. Moi aussi - %cost_gold pour %item_formatted_link !', 'Alle spammen im Handelschat. Ich auch - %cost_gold für %item_formatted_link!', '다들 거래 채널에서 도배하네요. 저도 동참함 - %item_formatted_link 단돈 %cost_gold!', '', 'Todo el mundo envía spam en el chat y yo también! ¡%item_formatted_link por %cost_gold!', '', 'Все спамят в торговом чате. Я тоже — %cost_gold за %item_formatted_link!'),
-	(1039, 'suggest_sell', '%item_formatted_link(이)가 쓸모가 있긴 한가? 일단 %cost_gold에 팔아봅니다.', 0, 0, '', 'Est-ce que %item_formatted_link est utile ? Je le vends juste pour %cost_gold.', 'Taugt %item_formatted_link was? Verkaufe es für %cost_gold.', '%item_formatted_link(이)가 쓸모가 있긴 한가? 일단 %cost_gold에 팔아봅니다.', '', '¿Es %item_formatted_link útil? Solo lo vendo por %cost_gold.', '', 'Есть ли польза от %item_formatted_link? Просто продаю за %cost_gold.'),
-	(1040, 'suggest_sell', '%item_formatted_link 준비됐습니다. %cost_gold에 바로 넘겨드림.', 0, 0, '', 'J’ai %item_formatted_link prêt à te vendre pour %cost_gold.', 'Hab %item_formatted_link, verkaufe an dich für %cost_gold.', '%item_formatted_link 준비됐습니다. %cost_gold에 바로 넘겨드림.', '', 'Tengo %item_formatted_link listo a la venta por %cost_gold.', '', 'У меня есть %item_formatted_link, готов продать за %cost_gold.'),
-	(1041, 'suggest_sell', '어제 멍 때리기만 했는데 %item_formatted_link(이)가 생겼네요. %cost_gold에 팝니다.', 0, 0, '', 'Je n’ai rien fait hier mais j’ai %item_formatted_link Je le vends pour %cost_gold', 'Gestern nix geschafft, aber %item_formatted_link bekommen. Verkaufe für %cost_gold.', '어제 멍 때리기만 했는데 %item_formatted_link(이)가 생겼네요. %cost_gold에 팝니다.', '', 'No hice nada ayer pero consegu’i %item_formatted_link. Lo vendo por %cost_gold.', '', 'Вчера ничего не делал, но получил %item_formatted_link. Продаю за %cost_gold.'),
-	(1042, 'suggest_sell', '어제 노가다해서 %item_formatted_link 득템함. %cost_gold에 사실 분?', 0, 0, '', 'J’ai farmé hier et j’ai obtenu %item_formatted_link. Quelqu’un est intéressé pour %cost_gold ?', 'Gestern gefarmt und %item_formatted_link gezogen. Will jemand für %cost_gold kaufen?', '어제 노가다해서 %item_formatted_link 득템함. %cost_gold에 사실 분?', '', 'Ayer farmee y conseguí mucho %item_formatted_link. ¿Alguien lo quiere comprar por %cost_gold?', '', 'Вчера фармил и получил %item_formatted_link. Кто купит за %cost_gold?'),
-	(1043, 'suggest_sell', '어제 %item_formatted_link(을)를 샀는데, 혹시 %cost_gold에 필요한 분?', 0, 0, '', 'J’ai acheté %item_formatted_link hier. Est-ce que quelqu’un en a besoin pour %cost_gold?', 'Gestern %item_formatted_link gekauft. Brauchts wer für %cost_gold?', '어제 %item_formatted_link(을)를 샀는데, 혹시 %cost_gold에 필요한 분?', '', 'Ayer compré %item_formatted_link. ¿Alguien lo quiere por %cost_gold?', '', 'Вчера купил %item_formatted_link. Кому нужно за %cost_gold?'),
-	(1044, 'suggest_sell', '%item_formatted_link 찾으신 분? 가격은 똑같이 %cost_gold입니다.', 0, 0, '', 'Qui a demandé %item_formatted_link? Le prix est le même - %cost_gold.', 'Wer hatte %item_formatted_link gesucht? Preis bleibt - %cost_gold.', '%item_formatted_link 찾으신 분? 가격은 똑같이 %cost_gold입니다.', '', '¿Quién pidió %item_formatted_link? El precio es el mismo: %cost_gold.', '', 'Кто спрашивал про %item_formatted_link? Цена та же — %cost_gold.'),
-	(1045, 'suggest_sell', '아직 %item_formatted_link 재고 남았어요. %cost_gold에 사실 분?', 0, 0, '', 'J’ai toujours %item_formatted_link. Je cherche à l’acheter pour %cost_gold.', 'Hab immer noch %item_formatted_link. Kauft wer für %cost_gold?', '아직 %item_formatted_link 재고 남았어요. %cost_gold에 사실 분?', '', 'Todavía tengo %item_formatted_link. ¿Alguien lo compra por %cost_gold?', '', 'У меня еще есть %item_formatted_link. Купишь за %cost_gold?'),
-	(1046, 'suggest_sell', '전에는 %item_formatted_link보다 많이 가졌었는데... 지금은 %cost_gold에 팔아야겠네요.', 0, 0, '', 'J’avais plus de %item_formatted_link avant. Maintenant, je dois le vendre pour %cost_gold.', 'Früher war ich besser bei Kasse. Jetzt verkauf ich %item_formatted_link für %cost_gold.', '전에는 %item_formatted_link보다 많이 가졌었는데... 지금은 %cost_gold에 팔아야겠네요.', '', 'Solía tener más de %item_formatted_link. Ahora necesito venderlo por %cost_gold.', '', 'Раньше было больше, чем %item_formatted_link. Теперь нужно продать за %cost_gold.'),
-	(1047, 'suggest_sell', '%item_formatted_link삽니다  %cost_gold에 삽니다~', 0, 0, '', 'J’aimerais avoir plus que %item_formatted_link. De toute façon, tu pourrais l’acheter pour %cost_gold.', 'Ich Wünschte, ich hätte mehr als %item_formatted_link. Kaufen könnt ihrs trotzdem für %cost_gold.', '%item_formatted_link보다 더 많이 갖고 싶네요. 어쨌든 %cost_gold면 살 수 있습니다.', '', 'Desearía tener más de %item_formatted_link. Podrías comprarlo por %cost_gold de todos modos.', '', 'Хотел бы иметь больше, чем %item_formatted_link. Но можешь купить за %cost_gold.'),
-	(1048, 'suggest_sell', '가진 골드를 어디 쓰냐고요? 제 %item_formatted_link(을)를 %cost_gold에 사는 데 써보세요.', 0, 0, '', 'Que vais-je faire de ton or ? Acheter mon %item_formatted_link pour %cost_gold.', 'Wozu ist euer Gold gut? Um mein %item_formatted_link für %cost_gold zu kaufen.', '가진 골드를 어디 쓰냐고요? 제 %item_formatted_link(을)를 %cost_gold에 사는 데 써보세요.', '', '¿De qué sirve tu oro? Para comprar mi %item_formatted_link por %cost_gold.', '', 'Для чего твое золото? Чтобы купить мой %item_formatted_link за %cost_gold.'),
-	(1049, 'suggest_sell', '골드 좀 보태주세요. 대신 %item_formatted_link(을)를 %cost_gold에 드리겠습니다.', 0, 0, '', 'S’il vous plaît, épargnez-moi de l’or. Vous pouvez acheter %item_formatted_link pour %cost_gold', 'Gönnt mir etwas Gold. Kauft %item_formatted_link für %cost_gold.', '골드 좀 보태주세요. 대신 %item_formatted_link(을)를 %cost_gold에 드리겠습니다.', '', 'Por favor, dame algo de oro. Puedes comprar %item_formatted_link por %cost_gold.', '', 'Пожалуйста, подкинь немного золота. Можешь купить %item_formatted_link за %cost_gold.'),
-	(1050, 'suggest_sell', '%item_formatted_link(이)가 %cost_gold면 꽤 괜찮은 가격 아님?', 0, 0, '', 'Est-ce que %cost_gold, c’est un bon prix pour %item_formatted_link?', 'Sind %cost_gold ein guter Preis für %item_formatted_link?', '%item_formatted_link(이)가 %cost_gold면 꽤 괜찮은 가격 아님?', '', '¿%cost_gold es un buen precio para %item_formatted_link?', '', '%cost_gold — хорошая цена за %item_formatted_link?'),
-	(1051, 'suggest_sell', '어제 %item_formatted_links(을)를 샀는데 이제 필요 없네요. %cost_gold에 가져가실 분?', 0, 0, '', 'Hier, j’ai acheté %item_formatted_links, mais je n’en ai plus besoin. Est-ce que quelqu’un le veut pour %cost_gold?', 'Hab gestern erst %item_formatted_link gekauft, brauch es aber nicht mehr. Will wer für %cost_gold?', '어제 %item_formatted_links(을)를 샀는데 이제 필요 없네요. %cost_gold에 가져가실 분?', '', 'Ayer compré %item_formatted_link, pero ya no los necesito. ¿Alguien lo quiere por %cost_gold?', '', 'Вчера купил %item_formatted_links, но больше не нужно. Ко무 за %cost_gold?'),
-	(1052, 'suggest_sell', '%item_formatted_link(을)를 경매장에 올리기전에 필요하 신분에게 팝니다 %cost_gold에 드림.', 0, 0, '', 'Je vais mettre en vente %item_formatted_link sur l’HV, mais tu peux l’acheter maintenant à un prix réduit, pour seulement %cost_gold.', 'Stell %item_formatted_link gleich ins AH, aber ihr könnts jetzt günstiger haben: nur %cost_gold.', '%item_formatted_link(을)를 경매장에 올릴 건데, 지금 바로 사면 더 싸게 %cost_gold에 드림.', '', 'Voy a poner %item_formatted_link en la casa de subastas pero puedes comprarlo ahora más barato solo por %cost_gold.', '', 'Собирался выставить %item_formatted_link на аукцион, но можешь купить дешевле сейчас за %cost_gold.'),
-	(1053, 'suggest_sell', '아니 도대체 왜 %item_formatted_link(을)를 샀지? #!@... %cost_gold에 필요하신 분?', 0, 0, '', 'Pourquoi diable ai-je acheté %item_formatted_link? Est-ce que quelqu’un en a besoin pour %cost_gold?', 'Warum zum #!@ hab ich %item_formatted_link gekauft? Brauchts wer für %cost_gold?', '아니 도대체 왜 %item_formatted_link(을)를 샀지? #!@... %cost_gold에 필요하신 분?', '', '¿Por qué #!@ he comprado %item_formatted_link? ¿Alguien lo necesita por %cost_gold?', '', 'Зачем, черт возьми, я купил %item_formatted_link? Кому нужно за %cost_gold?'),
-	(1054, 'suggest_sell', '판매중: %item_formatted_link / 가격: %cost_gold', 0, 0, '', 'Je vends %item_formatted_link pour %cost_gold.', 'VK: %item_formatted_link für %cost_gold.', '판매중: %item_formatted_link / 가격: %cost_gold', '', 'Quiero vender %item_formatted_link por %cost_gold.', '', 'Продаю %item_formatted_link за %cost_gold.'),
-	(1055, 'suggest_sell', '%item_formatted_link(을)를 %cost_gold에 가져가실분?', 0, 0, '', 'Qui veut %item_formatted_link pour %cost_gold ?', 'Wer will %item_formatted_link für %cost_gold?', '%item_formatted_link(을)를 %cost_gold에 사고 싶으신 분?', '', '¿Quién quiere %item_formatted_link por %cost_gold?', '', 'Кто хочет %item_formatted_link за %cost_gold?'),
-	(1056, 'suggest_sell', '%item_formatted_link 사실 분? 딱 %cost_gold만 받을게요.', 0, 0, '', 'Qui veut %item_formatted_link ? Seulement %cost_gold.', 'Will wer %item_formatted_link? Nur %cost_gold.', '%item_formatted_link 사실 분? 딱 %cost_gold만 받을게요.', '', '¿Alguien quiere %item_formatted_link? Solo %cost_gold.', '', 'Кому нужен %item_formatted_link? Всего %cost_gold.'),
-	(1057, 'suggest_sell', '%item_formatted_link(이)가 단돈 %cost_gold!', 0, 0, '', 'Juste %cost_gold pour %item_formatted_link !', 'Nur %cost_gold für %item_formatted_link!', '%item_formatted_link(이)가 단돈 %cost_gold!', '', '¡Solo %cost_gold para %item_formatted_link!', '', 'Всего %cost_gold за %item_formatted_link!'),
-	(1058, 'suggest_sell', '%item_formatted_link %cost_gold에 팝니다 ~빨랑 귓', 0, 0, '', 'Je vends cet %item_formatted_link pour %cost_gold.', 'Verkaufe %item_formatted_link für %cost_gold.', '%item_formatted_link %cost_gold에 판매합니다.', '', 'Vendo %item_formatted_link por %cost_gold.', '', 'Продаю %item_formatted_link за %cost_gold.'),
-	(1059, 'suggest_sell', '딱 %cost_gold면 %item_formatted_link(이)가 당신 것!', 0, 0, '', '%item_formatted_link est à toi pour seulement %cost_gold!', '%item_formatted_link gehört dir für nur %cost_gold!', '딱 %cost_gold면 %item_formatted_link(이)가 당신 것!', '', '%item_formatted_link es tuyo solo por %cost_gold!', '', '%item_formatted_link твой всего за %cost_gold!'),
-	(1060, 'suggest_sell', '%item_formatted_link 판매가 %cost_gold. 관심 있으면 귓말!', 0, 0, '', 'Je vends %item_formatted_link pour %cost_gold en or. Envoyez-moi un message si vous êtes intéressé(e).', 'VK: %item_formatted_link für %cost_gold. flüster mir bei Interesse.', '%item_formatted_link 판매가 %cost_gold. 관심 있으면 귓말!', '', 'Quiero vender %item_formatted_link por %cost_gold. Envíame un mensaje si te interesa.', '', ''),
-	(1061, 'suggest_sell', '%item_formatted_link 팔아야 합니다. %cost_gold나 가격 제안 주세요.', 0, 0, '', 'Je dois vendre %item_formatted_link, pour %cost_gold ou meilleure offre.', 'Muss %item_formatted_link loswerden, %cost_gold oder bestes Angebot.', '%item_formatted_link 팔아야 합니다. %cost_gold나 가격 제안 주세요.', '', 'Necesito vender %item_formatted_link, %cost_gold o la mejor oferta.', '', ''),
-	(1062, 'suggest_sell', '%item_formatted_link 재고 있음, 가격은 %cost_gold. 지금 바로 가져가세요!', 0, 0, '', '%item_formatted_link disponible pour %cost_gold. Tu devrais le prendre maintenant!', '%item_formatted_link für %cost_gold verfügbar. Schlagt zu!', '%item_formatted_link 재고 있음, 가격은 %cost_gold. 지금 바로 가져가세요!', '', '%item_formatted_link disponible por %cost_gold. ¡Consíguelo ahora!', '', ''),
-	(1063, 'suggest_sell', '%item_formatted_link 팝니다  %cost_gold 만 주삼.', 0, 0, '', 'J’ai trouvé %item_formatted_link, et on me demande %cost_gold.', 'Habe %item_formatted_link, will %cost_gold.', '%item_formatted_link 구했습니다. 가격은 %cost_gold 부를게요.', '', 'Tengo %item_formatted_link, pido %cost_gold.', '', ''),
-	(1064, 'suggest_sell', '%item_formatted_link 판매 중. 이제 %cost_gold만 남았어요.', 0, 0, '', 'Je vends %item_formatted_link, il ne reste que %cost_gold.', 'Verkaufe %item_formatted_link, nur %cost_gold.', '%item_formatted_link 판매 중. 이제 %cost_gold만 남았어요.', '', 'Vendo %item_formatted_link, solo queda %cost_gold.', '', ''),
-	(1065, 'suggest_sell', '%item_formatted_link(을)를 %cost_gold에 원하시는 분? 귓말 주세요!', 0, 0, '', '%Item_formatted_link à %cost_gold, ça vous tente ? Envoyez-moi un message en privé !', 'Will jemand %item_formatted_link für %cost_gold? flüster mir!', '%item_formatted_link(을)를 %cost_gold에 원하시는 분? 귓말 주세요!', '', '¿Alguien quiere %item_formatted_link por %cost_gold? ¡Envíame un mensaje!', '', ''),
-	(1066, 'suggest_sell', '%item_formatted_link %cost_gold 선착순 빨랑 손!', 0, 0, '', 'Je vends %item_formatted_link à %cost_gold, dépêchez-vous de le saisir avant qu’il ne soit trop tard!', 'Verkaufe %item_formatted_link für %cost_gold, greift zu solange es geht!', '%item_formatted_link %cost_gold에 판매. 선착순이니 빨리 잡으세요!', '', 'Vendo %item_formatted_link a %cost_gold, ¡agárralo mientras puedas!', '', ''),
-	(1067, 'suggest_sell', '%item_formatted_link(이)가 %cost_gold! 품절되기 전에 서두르세요!', 0, 0, '', '%item_formatted_link pour %cost_gold, dépêchez-vous avant qu’il ne soit trop tard!', '%item_formatted_link für %cost_gold, schnell sein bevor es weg ist!', '%item_formatted_link(이)가 %cost_gold! 품절되기 전에 서두르세요!', '', '%item_formatted_link por %cost_gold, ¡apúrate antes de que se vaya!', '', ''),
-	(1068, 'suggest_sell', '%item_formatted_link %cost_gold에 파는데, 사실분 계심?', 0, 0, '', 'Qui veut acheter %item_formatted_link pour %cost_gold ?', 'Verkaufe %item_formatted_link für %cost_gold, wer ist dabei?', '%item_formatted_link %cost_gold에 파는데, 살 사람?', '', 'Vendo %item_formatted_link por %cost_gold, ¿quién está dentro?', '', ''),
-	(1069, 'suggest_sell', '%item_formatted_link %cost_gold 선착순 드립니다!', 0, 0, '', 'Je vends %item_formatted_link pour %cost_gold, premier arrivé, premier servi !', 'Verkaufe %item_formatted_link für %cost_gold, wer zuerst kommt wird auch zuerst bedient!', '%item_formatted_link %cost_gold에 판매. 선착순 판매합니다!', '', 'Vendo %item_formatted_link por %cost_gold, ¡el primero que llega se lo lleva!', '', ''),
-	(1070, 'suggest_sell', '%item_formatted_link(이)가 단돈 %cost_gold. 한정 시간 특가!', 0, 0, '', 'Seulement %cost_gold pour %item_formatted_link, une offre à durée limitée!', 'Nur %cost_gold für %item_formatted_link, nur für kurze Zeit!', '%item_formatted_link(이)가 단돈 %cost_gold. 한정 시간 특가!', '', 'Solo %cost_gold para %item_formatted_link, ¡oferta por tiempo limitado!', '', ''),
-	(1071, 'suggest_sell', '%item_formatted_link 판매 중(%cost_gold). 필요하면 말씀하세요!', 0, 0, '', 'Lien pour %item_formatted_link disponible pour %cost_gold en or, n’hésite pas à me contacter si tu en as besoin ! ', '%item_formatted_link für %cost_gold verfügbar, meldet euch wenn ihrs braucht!', '%item_formatted_link 판매 중(%cost_gold). 필요하면 말씀하세요!', '', '%item_formatted_link disponible por %cost_gold, ¡contáctame si lo necesitas!', '', ''),
-	(1072, 'suggest_sell', '%item_formatted_link %cost_gold에급매함', 0, 0, '', 'Quelqu’un est intéressé par %item_formatted_link à %cost_gold ?', 'Interesse an %item_formatted_link für %cost_gold?', '%item_formatted_link %cost_gold에 관심 있으신 분?', '', '¿Alguien interesado en %item_formatted_link por %cost_gold?', '', ''),
-	(1073, 'suggest_sell', '%item_formatted_link %cost_gold급매로 팝니다 인벤 꽉 차부렀네 ㅎㅎ', 0, 0, '', 'Je vends %item_formatted_link pour %cost_gold, je dois vider mon inventaire.', 'Verkaufe %item_formatted_link für %cost_gold, muss meine Taschen leeren.', '%item_formatted_link %cost_gold에 팝니다. 가방 자리 비워야 해서 급매해요.', '', 'Vendo %item_formatted_link por %cost_gold, necesito vaciar mi inventario.', '', ''),
-	(1074, 'suggest_sell', '%item_formatted_link 팝니다  %cost_gold에 떨이처리!', 0, 0, '', 'Procurez-vous %item_formatted_link pour %cost_gold, c’est une bonne affaire !', 'Hol dir %item_formatted_link für %cost_gold, Top-Deal!', '%item_formatted_link(을)를 %cost_gold에 가져가세요. 개이득임!', '', 'Consigue %item_formatted_link por %cost_gold, ¡es una gran oferta!', '', ''),
-	(1075, 'suggest_sell', '%item_formatted_link %cost_gold! 마지막 떨이임~빨랑 가져가셈~', 0, 0, '', 'Fais-toi plaisir avec %item_formatted_link pour %cost_gold, c’est le moment ou jamais!', '%item_formatted_link für %cost_gold, greift zu solange der Vorrat reicht!', '%item_formatted_link %cost_gold! 아직 남아 있을 때 가져가세요!', '', '%item_formatted_link por %cost_gold, ¡cómpralo mientras esté caliente!', '', ''),
-	(1076, 'suggest_sell', '%item_formatted_link %cost_gold 자자 떨이 합니다 걍 가져가세요', 0, 0, '', 'Je vends %item_formatted_link pour %cost_gold, ne ratez pas cette occasion!', 'Verkaufe %item_formatted_link für %cost_gold, nicht verpassen!', '%item_formatted_link %cost_gold에 판매. 기회 놓치지 마세요!', '', 'Vendo %item_formatted_link por %cost_gold, ¡no te lo pierdas!', '', ''),
-	(1077, 'suggest_sell', '%item_formatted_link 단돈 %cost_gold. 자세한 건 귓말 주세요!', 0, 0, '', 'Seulement %cost_gold pour %item_formatted_link, n’hésitez pas à me contacter pour plus de détails !', 'Nur %cost_gold für %item_formatted_link, flüster mir für Details!', '%item_formatted_link 단돈 %cost_gold. 자세한 건 귓말 주세요!', '', 'Solo %cost_gold para %item_formatted_link, ¡contáctame para más detalles!', '', ''),
-	(1078, 'suggest_sell', '%item_formatted_link %cost_gold에 바로 거래 ㄱㄱㄱ', 0, 0, '', '%item_formatted_link est disponible pour %cost_gold, ça te dirait de faire un échange?', '%item_formatted_link gibts für %cost_gold, lasst uns handeln!', '%item_formatted_link %cost_gold에 드림. 거래합시다!', '', '%item_formatted_link está disponible por %cost_gold, ¡hagamos un intercambio!', '', ''),
-	(1079, 'suggest_sell', '%item_formatted_link %cost_gold에 판매 중. 문의는 귓말로!', 0, 0, '', 'Je vends %item_formatted_link pour %cost_gold, n’hésitez pas à me contacter pour plus d’informations.', 'Verkaufe %item_formatted_link für %cost_gold, flüster mir für Infos.', '%item_formatted_link %cost_gold에 판매 중. 문의는 귓말로!', '', 'Vendo %item_formatted_link por %cost_gold, envíame un mensaje para más información.', '', ''),
-	(1080, 'suggest_sell', '판매합니다! %item_formatted_link，%cost_gold 에 가져가세요！', 0, 0, '', 'Je cherche à vendre %item_formatted_link, et je le laisse pour seulement %cost_gold !', 'Will %item_formatted_link verkaufen, für %cost_gold gehört es dir!', '판매합니다! %item_formatted_link，%cost_gold 에 가져가세요！', '', 'Busco vender %item_formatted_link, ¡%cost_gold lo consigue!', '', ''),
-	(1081, 'suggest_sell', '판매 중: %item_formatted_link, 가격은 단돈 %cost_gold.', 0, 0, '', 'Je vends %item_formatted_link, seulement %cost_gold.', 'Verkaufe %item_formatted_link, nur %cost_gold.', '판매 중: %item_formatted_link, 가격은 단돈 %cost_gold.', '', 'Estoy vendiendo %item_formatted_link, solo %cost_gold.', '', ''),
-	(1082, 'suggest_sell', '%item_formatted_link 있습니다. %cost_gold에 거래하시죠!', 0, 0, '', 'J’ai mis la main sur %item_formatted_link pour %cost_gold pièces d’or, ça t’intéresse de conclure un marché avec moi ?', 'Hab %item_formatted_link für %cost_gold, machen wir nen Deal!', '%item_formatted_link 있습니다. %cost_gold에 거래하시죠!', '', 'Tengo %item_formatted_link por %cost_gold, ¡hagamos un trato!', '', ''),
-	(1083, 'suggest_sell', '%item_formatted_link 판매합니다. %cost_gold면 바로 가져가실 수 있어요!', 0, 0, '', 'Je vends %item_formatted_link, %cost_gold et c’est à toi de le ramener chez toi !', 'Verkaufe %item_formatted_link, für %cost_gold nimmst du es mit!', '%item_formatted_link 판매합니다. %cost_gold면 바로 가져가실 수 있어요!', '', 'Vendo %item_formatted_link, ¡%cost_gold lo lleva a casa!', '', ''),
-	(1084, 'suggest_sell', '%item_formatted_link 판매합니다. 가격은 %cost_gold, 관심 있으신 분?', 0, 0, '', 'Je vends %item_formatted_link pour %cost_gold, ça intéresse quelqu’un ?', 'VK: %item_formatted_link für %cost_gold, Interesse?', '%item_formatted_link 판매합니다. 가격은 %cost_gold, 관심 있으신 분?', '', 'Vendo %item_formatted_link por %cost_gold, ¿alguien interesado?', '', ''),
-	(1085, 'suggest_sell', '%item_formatted_link 급매합니다. 딱 %cost_gold에 드려요!', 0, 0, '', 'Besoin de vendre %item_formatted_link rapidement, %cost_gold.', 'Muss %item_formatted_link schnell loswerden, %cost_gold.', '%item_formatted_link 급매합니다. 딱 %cost_gold에 드려요!', '', 'Necesito vender %item_formatted_link rápido, %cost_gold.', '', ''),
-	(1086, 'suggest_sell', '%item_formatted_link 판매합니다. 가격 %cost_gold, 어디보다 저렴합니다!', 0, 0, '', 'Je vends %item_formatted_link pour %cost_gold, c’est le meilleur prix du coin !', 'Verkaufe %item_formatted_link für %cost_gold, bester Preis weit und breit!', '%item_formatted_link 판매합니다. 가격 %cost_gold, 어디보다 저렴합니다!', '', 'Vendo %item_formatted_link por %cost_gold, ¡el mejor precio!', '', ''),
-	(1087, 'suggest_sell', '%item_formatted_link을 %cost_gold에 팝니다. 사실 분?', 0, 0, '', '%item_formatted_link pour %cost_gold, qui est intéressé(e) ?', '%item_formatted_link für %cost_gold, wer kauft?', '%item_formatted_link을 %cost_gold에 팝니다. 사실 분?', '', '%item_formatted_link por %cost_gold, ¿quién compra?', '', ''),
-	(1088, 'suggest_sell', '%item_formatted_link 단돈 %cost_gold, 귓 바로 주세요!', 0, 0, '', '%item_formatted_link à %cost_gold, on se lance !', '%item_formatted_link für %cost_gold, machen wirs fix!', '%item_formatted_link 단돈 %cost_gold, 지금 바로 거래하시죠!', '', '%item_formatted_link por %cost_gold, ¡hagámoslo realidad!', '', ''),
-	(1089, 'suggest_sell', '%item_formatted_link 판매 중(가격 %cost_gold). 품절되기 전에 서두르세요!', 0, 0, '', 'Je vends %item_formatted_link pour %cost_gold, dépêchez-vous avant qu’il ne soit trop tard !', 'Verkaufe %item_formatted_link für %cost_gold, schnappt zu bevor alles weg ist!', '%item_formatted_link 판매 중(가격 %cost_gold). 품절되기 전에 서두르세요!', '', 'Vendo %item_formatted_link por %cost_gold, ¡agárralo antes de que se vaya!', '', ''),
-	(1090, 'suggest_sell', '%item_formatted_link 필요하신가요? %cost_gold에 드립니다!', 0, 0, '', 'Tu veux %item_formatted_link? Ça te coûte %cost_gold pour en obtenir un !', 'Willst %item_formatted_link? Für %cost_gold kriegst du eins!', '%item_formatted_link 필요하신가요? %cost_gold에 드립니다!', '', '¿Quieres %item_formatted_link? ¡%cost_gold te consigue uno!', '', ''),
-	(1091, 'suggest_sell', '%item_formatted_link 판매 가격 %cost_gold, 급처분합니다!', 0, 0, '', '%item_formatted_link en vente à %cost_gold, une super affaire à saisir rapidement !', '%item_formatted_link für %cost_gold, schneller Verkauf!', '%item_formatted_link 판매 가격 %cost_gold, 급처분합니다!', '', '%item_formatted_link por %cost_gold, ¡venta rápida!', '', ''),
-	(1092, 'response_lfg_quests_channel', '저 %quest_links 퀘스트 있어요.', 0, 0, '', 'J’ai %quest_links', 'Ich habe %quest_links', '저 %quest_links 퀘스트 있어요.', '', '', '', 'У меня есть %quest_links'),
-	(1093, 'response_lfg_quests_channel', '저도 %quest_links 퀘스트 있습니다.', 0, 0, '', 'J’ai aussi des %quest_links.', 'Ich habe auch %quest_links', '저도 %quest_links 퀘스트 있습니다.', '', '', '', 'У меня тоже есть %quest_links'),
-	(1094, 'response_lfg_quests_channel', '저도 %quest_links 있고, 지금 %zone_name에 있어요.', 0, 0, '', 'J’ai aussi des %quest_links, je suis actuellement dans la zone %zone_name', 'Ich habe auch %quest_links, bin gerade in %zone_name', '저도 %quest_links 있고, 지금 %zone_name에 있어요.', '', '', '', 'У меня тоже есть %quest_links, сейчас я в %zone_name'),
-	(1095, 'response_lfg_quests_channel', '%other_name님, 저도 %quest_links 가지고 있어요.', 0, 0, '', 'Oh, j’ai aussi %quest_links', '%other_name, ich habe auch %quest_links', '%other_name님, 저도 %quest_links 가지고 있어요.', '', '', '', '%other_name, у меня тоже есть %quest_links'),
-	(1096, 'response_lfg_quests_channel', '%other_name님, 저도 %quest_links 있고 지금 %zone_name입니다.', 0, 0, '', '%other_name, je possède également %quest_links, je me trouve actuellement dans la zone %zone_name.', '%other_name, ich habe auch %quest_links, bin gerade in %zone_name', '%other_name님, 저도 %quest_links 있고 지금 %zone_name입니다.', '', '', '', '%other_name, у меня тоже есть %quest_links, сейчас я в %zone_name'),
-	(1097, 'response_lfg_quests_channel', '%quest_links 가능합니다. 지금 %zone_name에 있어요.', 0, 0, '', 'Je suis partant pour %quest_links, je suis actuellement dans la zone de %zone_name.', 'Bin bereit für %quest_links, bin gerade in %zone_name', '%quest_links 가능합니다. 지금 %zone_name에 있어요.', '', '', '', 'Я готов к %quest_links, сейчас я в %zone_name'),
-	(1098, 'response_lfg_quests_channel', '%quest_links 가능합니다. 제 역할은 %my_role입니다.', 0, 0, '', 'Je suis prêt pour %quest_links, je suis un %my_role.', 'Bin bereit für %quest_links, bin %my_role', '%quest_links 가능합니다. 제 역할은 %my_role입니다.', '', '', '', 'Я готов к %quest_links, я %my_role'),
-	(1099, 'response_lfg_quests_channel', '%other_name님, %quest_links 같이 해요. 지금 %zone_name에 있습니다.', 0, 0, '', '%other_name, je suis prêt pour %liens_quête, je suis actuellement à %nom_zone', '%other_name, bin bereit für %quest_links, bin gerade in %zone_name', '%other_name님, %quest_links 같이 해요. 지금 %zone_name에 있습니다.', '', '', '', '%other_name, я готов к %quest_links, сейчас я в %zone_name'),
-	(1100, 'response_lfg_quests_channel', '%other_name님, %quest_links 할 수 있어요. %my_role입니다.', 0, 0, '', '%other_name, je suis partant pour  %quest_links, je suis %mon rôle', '%other_name, bin bereit für %quest_links, bin %my_role', '%other_name님, %quest_links 할 수 있어요. %my_role입니다.', '', '', '', '%other_name, я готов к %quest_links, я %my_role'),
-	(1101, 'response_lfg_quests_channel', '%quest_links 필요하신 분 계신가요? 저 %zone_name에 있어요.', 0, 0, '', 'Besoin de %quest_links? Je me trouve dans %zone_name.', 'Braucht wer %quest_links? Bin in %zone_name.', '%quest_links 필요하신 분 계신가요? 저 %zone_name에 있어요.', '', '', '', ''),
-	(1102, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 함께 하실 분 더 찾습니다.', 0, 0, '', 'À la recherche de plus de lieux pour %quest_links dans %zone_name.', 'Suche mehr %quest_links in %zone_name.', '%zone_name에서 %quest_links 함께 하실 분 더 찾습니다.', '', '', '', ''),
-	(1103, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 퀘스트 도와주실 분 구해요.', 0, 0, '', 'Besoin d’aide avec les %quest_links dans %zone_name.', 'Brauche Hilfe bei %quest_links in %zone_name.', '%zone_name에서 %quest_links 퀘스트 도와주실 분 구해요.', '', '', '', ''),
-	(1104, 'response_lfg_quests_channel', '%zone_name에서 저랑 같이 %quest_links 하실 분 계신가요?', 0, 0, '', 'Qui veut faire des %quest_links avec moi dans la zone %zone_name?', 'Will jemand %quest_links mit mir in %zone_name machen?', '%zone_name에서 저랑 같이 %quest_links 하실 분 계신가요?', '', '', '', ''),
-	(1105, 'response_lfg_quests_channel', '%quest_links 퀘스트 있고, %zone_name에서 파티 찾습니다.', 0, 0, '', 'J’ai %quest_links, je cherche un groupe dans la zone %zone_name.', 'Habe %quest_links, suche Gruppe in %zone_name.', '%quest_links 퀘스트 있고, %zone_name에서 파티 찾습니다.', '', '', '', ''),
-	(1106, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 퀘스트 필요하신 분?', 0, 0, '', 'Qui a besoin de %quest_links dans %zone_name ?', 'Wer braucht %quest_links in %zone_name?', '%zone_name에서 %quest_links 퀘스트 필요하신 분?', '', '', '', ''),
-	(1107, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 하실 분? 누구 없나요?', 0, 0, '', 'Qui est partant pour des %quest_links à %zone_name ?', 'Bereit für %quest_links in %zone_name, wer ist dabei?', '%zone_name에서 %quest_links 하실 분? 누구 없나요?', '', '', '', ''),
-	(1108, 'response_lfg_quests_channel', '%my_role입니다. %zone_name에서 %quest_links 완료할 파티 구해요.', 0, 0, '', 'Je cherche un groupe pour terminer  %quest_links dans la zone %zone_name. Qui est partant?', '%my_role sucht Gruppe, um %quest_links in %zone_name zu erledigen.', '%my_role입니다. %zone_name에서 %quest_links 완료할 파티 구해요.', '', '', '', ''),
-	(1109, 'response_lfg_quests_channel', '%quest_links 해야 하는데, %zone_name에 계신 분 중에 가능하신 분?', 0, 0, '', 'J’ai besoin de %quest_links, est-ce qu’il y a quelqu’un disponible dans la région de %zone_name?', 'Ich brauche %quest_links, ist jemand in %zone_name frei?', '%quest_links 해야 하는데, %zone_name에 계신 분 중에 가능하신 분?', '', '', '', ''),
-	(1110, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 같이 하실 분들 더 구해요.', 0, 0, '', 'Je recherche plus de personnes pour %quest_links dans la région de %zone_name.', 'Suche mehr Leute für %quest_links in %zone_name.', '%zone_name에서 %quest_links 같이 하실 분들 더 구해요.', '', '', '', ''),
-	(1111, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 하는 중인데 도움이 더 필요합니다.', 0, 0, '', 'Je suis en train de faire des %quest_links dans %zone_name, j’aurais besoin de davantage d’aide.', 'Mach %quest_links in %zone_name, brauche mehr Hilfe.', '%zone_name에서 %quest_links 하는 중인데 도움이 더 필요합니다.', '', '', '', ''),
-	(1112, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 하실 %my_role 계신가요?', 0, 0, '', 'Des %my_role intéressés par des %quest_links dans la zone %zone_name?', 'Gibt’s %my_role mit Interesse an %quest_links in %zone_name?', '%zone_name에서 %quest_links 하실 %my_role 계신가요?', '', '', '', ''),
-	(1113, 'response_lfg_quests_channel', '%zone_name %quest_links 도움 구합니다. 인원 더 구해요!', 0, 0, '', 'J’ai besoin d’aide pour %quest_links dans %zone_name, j’en cherche davantage.', 'Hilfe benötigt für %quest_links in %zone_name, mir ist langweilig.', '%zone_name %quest_links 도움 구합니다. 인원 더 구해요!', '', '', '', ''),
-	(1114, 'response_lfg_quests_channel', '%quest_links 있고 %zone_name입니다. %my_role인데 같이 하실 분?', 0, 0, '', 'J’ai %quest_links, en tant que %my_role dans %zone_name, qui est partant?', 'Habe %quest_links, %my_role in %zone_name, wer ist dabei?', '%quest_links 있고 %zone_name입니다. %my_role인데 같이 하실 분?', '', '', '', ''),
-	(1115, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 하실 분? 저는 %my_role입니다.', 0, 0, '', 'Qui veut faire des %quest_links dans la zone %zone_name? Je suis %my_role.', 'Wer will %quest_links in %zone_name machen? Ich bin %my_role.', '%zone_name에서 %quest_links 하실 분? 저는 %my_role입니다.', '', '', '', ''),
-	(1116, 'response_lfg_quests_channel', '지금 %quest_links 하시는 분? 저 %zone_name에 있어요.', 0, 0, '', 'Est-ce que quelqu’un est en train de faire des %quest_links en ce moment ? Je suis dans la zone %zone_name.', 'Macht grad jemand %quest_links? Bin in %zone_name.', '지금 %quest_links 하시는 분? 저 %zone_name에 있어요.', '', '', '', ''),
-	(1117, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 가실 분 계신가요?', 0, 0, '', ' %quest_links est nécessaire dans la zone %zone_name, des volontaires ?', '%quest_links offen in %zone_name, wer möchte?', '%zone_name에서 %quest_links 가실 분 계신가요?', '', '', '', ''),
-	(1118, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 하실 파티 구합니다.', 0, 0, '', 'À la recherche de %quest_links dans %zone_name, je suis à la recherche d’un groupe.', 'Bereit für %quest_links in %zone_name, suche Gruppe.', '%zone_name에서 %quest_links 하실 파티 구합니다.', '', '', '', ''),
-	(1119, 'response_lfg_quests_channel', '%quest_links 해야 하는데 혼자선 힘드네요. %zone_name 계신 분?', 0, 0, '', 'J’ai besoin de %quest_links et de compagnie, %zone_name quelqu’un ?', 'Brauche %quest_links und Gesellschaft, jemand in %zone_name?', '%quest_links 해야 하는데 혼자선 힘드네요. %zone_name 계신 분?', '', '', '', ''),
-	(1120, 'response_lfg_quests_channel', '%zone_name에서 저랑 %quest_links 하실 분?', 0, 0, '', 'Qui veut me rejoindre dans la %zone_name pour %quest_links ?', 'Wer kommt mit mir nach %zone_name für %quest_links?', '%zone_name에서 저랑 %quest_links 하실 분?', '', '', '', ''),
-	(1121, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 도와주실 %my_role 있나요?', 0, 0, '', 'Il y a des postes de %my_role disponibles pour les %quest_links dans la zone %zone_name?', 'Irgend ein %my_role frei für %quest_links in %zone_name?', '%zone_name에서 %quest_links 도와주실 %my_role 있나요?', '', '', '', ''),
-	(1122, 'response_lfg_quests_channel', '%quest_links 있고 %my_role입니다. %zone_name에서 인원 더 구해요.', 0, 0, '', 'J’ai %quest_links et je suis %my_role, j’ai besoin de plus de monde dans la zone %zone_name.', 'Habe %quest_links und bin %my_role, brauche mehr Leute in %zone_name.', '%quest_links 있고 %my_role입니다. %zone_name에서 인원 더 구해요.', '', '', '', ''),
-	(1123, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 같이 하실 분 찾습니다.', 0, 0, '', 'Je recherche des personnes pour faire des %quest_links dans la zone %zone_name.', 'Suche Leute für %quest_links in %zone_name.', '%zone_name에서 %quest_links 같이 하실 분 찾습니다.', '', '', '', ''),
-	(1124, 'response_lfg_quests_channel', '%my_role이고 %quest_links 있습니다. %zone_name에서 파티 구해요.', 0, 0, '', 'Je suis %my_role et j’ai %quest_links, je cherche un groupe dans la zone %zone_name.', 'Bin %my_role und habe %quest_links, suche Gruppe in %zone_name.', '%my_role이고 %quest_links 있습니다. %zone_name에서 파티 구해요.', '', '', '', ''),
-	(1125, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 도움이 필요해요. %my_role 계신가요?', 0, 0, '', 'Besoin d’aide avec les %quest_links dans la zone de %zone_name, est-ce qu’il y a un %my_role disponible pour m’aider?', 'Brauche Hilfe bei %quest_links in %zone_name, ist ein %my_role frei?', '%zone_name에서 %quest_links 도움이 필요해요. %my_role 계신가요?', '', '', '', ''),
-	(1126, 'response_lfg_quests_channel', '%zone_name에서 저랑 %quest_links 완료하실 %my_role 있나요?', 0, 0, '', 'Des %my_role intéressées pour compléter des %quest_links avec moi dans la zone %zone_name?', 'Hat ein %my_role Lust, %quest_links mit mir in %zone_name zu machen?', '%zone_name에서 저랑 %quest_links 완료하실 %my_role 있나요?', '', '', '', ''),
-	(1127, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 같이 깨요!', 0, 0, '', 'Complétons ensemble les %quest_links dans %zone_name.', 'Lasst uns %quest_links zusammen in %zone_name abschließen.', '%zone_name에서 %quest_links 같이 깨요!', '', '', '', ''),
-	(1128, 'response_lfg_quests_channel', '지금 %zone_name이고 %quest_links 있는데 같이 하실 분?', 0, 0, '', 'Je suis actuellement dans %zone_name et j’ai %quest_links. Qui vient se joindre à moi ?', 'Bin in %zone_name und habe %quest_links, wer will mit?', '지금 %zone_name이고 %quest_links 있는데 같이 하실 분?', '', '', '', ''),
-	(1129, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 완료해 주실 %my_role 더 구합니다.', 0, 0, '', 'Je recherche plus de personnes pour compléter les %my_role nécessaires dans les %quest_links de la zone %zone_name.', 'Suche mehr %my_role, um %quest_links in %zone_name abzuschließen.', '%zone_name에서 %quest_links 완료해 주실 %my_role 더 구합니다.', '', '', '', ''),
-	(1130, 'response_lfg_quests_channel', '%quest_links 있고 %zone_name에서 %my_role 구합니다.', 0, 0, '', 'J’ai %quest_links et j’ai besoin de %my_role dans %zone_name.', 'Habe %quest_links und brauche %my_role in %zone_name.', '%quest_links 있고 %zone_name에서 %my_role 구합니다.', '', '', '', ''),
-	(1131, 'response_lfg_quests_channel', '%quest_links 가실 분? 전 %zone_name에 있는 %my_role입니다.', 0, 0, '', 'Qui est partant pour %quest_links? Je suis %my_role dans %zone_name.', 'Wer hat Bock auf %quest_links? Ich bin %my_role in %zone_name.', '%quest_links 가실 분? 전 %zone_name에 있는 %my_role입니다.', '', '', '', ''),
-	(1132, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 할 파티 찾아요. %my_role 필요합니다.', 0, 0, '', 'Je recherche un groupe pour faire des %quest_links dans la région de %zone_name, j’ai besoin de jouer en tant que %my_role.', 'Suche Gruppe für %quest_links in %zone_name, %my_role gebraucht.', '%zone_name에서 %quest_links 할 파티 찾아요. %my_role 필요합니다.', '', '', '', ''),
-	(1133, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 도움 필요하신 분? 저 %my_role이에요.', 0, 0, '', 'Besoin d’aide avec les %quest_links dans la %zone_name? Je suis là pour aider en tant que %my_role.', 'Braucht wer Hilfe bei %quest_links in %zone_name? Ich bin %my_role.', '%zone_name에서 %quest_links 도움 필요하신 분? 저 %my_role이에요.', '', '', '', ''),
-	(1134, 'response_lfg_quests_channel', '%quest_links 깨야 하는데 %zone_name에서 %my_role 구해요.', 0, 0, '', 'J’ai %quest_links à terminer, j’ai besoin de %my_role dans la zone %zone_name.', 'Habe %quest_links offen, brauche %my_role in %zone_name.', '%quest_links 깨야 하는데 %zone_name에서 %my_role 구해요.', '', '', '', ''),
-	(1135, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 도움 주실 분? 누구 없나요?', 0, 0, '', 'Je suis dans %zone_name à la recherche d’aide pour %quest_links, qui est partant?', 'Bin in %zone_name und suche Hilfe für %quest_links, wer ist dabei?', '%zone_name에서 %quest_links 도움 주실 분? 누구 없나요?', '', '', '', ''),
-	(1136, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 마무리할 파티 찾습니다.', 0, 0, '', 'Je cherche un groupe pour terminer les %quest_links dans la zone %zone_name.', 'Suche Gruppe, um %quest_links in %zone_name fertig zu machen.', '%zone_name에서 %quest_links 마무리할 파티 찾습니다.', '', '', '', ''),
-	(1137, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 하실 분? 저 %my_role입니다.', 0, 0, '', 'Quelqu’un recherche %quest_links dans la zone de %zone_name? Je suis %my_role.', 'Sucht jemand %quest_links in %zone_name? Ich bin %my_role.', '%zone_name에서 %quest_links 하실 분? 저 %my_role입니다.', '', '', '', ''),
-	(1138, 'response_lfg_quests_channel', '같이 %quest_links 해요! %zone_name로 갑시다.', 0, 0, '', 'Allons-y ensemble pour %quest_links ! %zone_name nous attend.', 'Machen wir %quest_links zusammen! %zone_name wartet.', '같이 %quest_links 해요! %zone_name로 갑시다.', '', '', '', ''),
-	(1139, 'response_lfg_quests_channel', '%zone_name %quest_links 파티 구해요. 관심 있으신 분?', 0, 0, '', 'Besoin d’un groupe pour %quest_links dans la zone %zone_name, des intéressés ?', 'Brauche Gruppe für %quest_links, %zone_name - wer hat Interesse?', '%zone_name %quest_links 파티 구해요. 관심 있으신 분?', '', '', '', ''),
-	(1140, 'response_lfg_quests_channel', '%quest_links 같이 하실 분? 지금 %zone_name입니다.', 0, 0, '', 'Qui veut se joindre pour %quest_links? Je suis actuellement dans la zone %zone_name.', 'Wer will für %quest_links dazukommen? Bin in %zone_name.', '%quest_links 같이 하실 분? 지금 %zone_name입니다.', '', '', '', ''),
-	(1141, 'response_lfg_quests_channel', '%zone_name인데 %quest_links 같이 완료하실 분들 찾아요.', 0, 0, '', 'Je suis dans %zone_name, à la recherche de joueurs pour compléter les missions %quest_links avec moi.', 'Bin in %zone_name, suche Leute zum Abschließen von %quest_links.', '%zone_name인데 %quest_links 같이 완료하실 분들 찾아요.', '', '', '', ''),
-	(1142, 'response_lfg_quests_channel', '%zone_name %quest_links 도와주실 %my_role 계신가요?', 0, 0, '', 'Besoin d’aide avec %quest_links dans %zone_name, quelqu’un de mon rôle?', 'Brauche Hilfe bei %quest_links in %zone_name, ein %my_role da?', '%zone_name %quest_links 도와주실 %my_role 계신가요?', '', '', '', ''),
-	(1143, 'response_lfg_quests_channel', '%quest_links 끝낼 파티 구합니다. 장소는 %zone_name이에요.', 0, 0, '', 'Je cherche un groupe pour finir %quest_links, %zone_name est l’endroit où il faut être.', 'Suche Gruppe, um %quest_links zu beenden, %zone_name da steppt der Bär.', '%quest_links 끝낼 파티 구합니다. 장소는 %zone_name이에요.', '', '', '', ''),
-	(1144, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 도와주실 분? 저 %my_role입니다.', 0, 0, '', 'Est-ce que quelqu’un veut aider avec les %quest_links dans la région de %zone_name? Je suis %my_role.', 'Will jemand bei %quest_links in %zone_name helfen? Ich bin %my_role.', '%zone_name에서 %quest_links 도와주실 분? 저 %my_role입니다.', '', '', '', ''),
-	(1145, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 함께 하실 %my_role 찾습니다.', 0, 0, '', 'Je recherche %my_role pour me rejoindre pour des %quest_links dans la %zone_name.', 'Suche %my_role, um %quest_links in %zone_name mitzumachen.', '%zone_name에서 %quest_links 함께 하실 %my_role 찾습니다.', '', '', '', ''),
-	(1146, 'response_lfg_quests_channel', '%quest_links 있고, %zone_name에서 %my_role 구합니다.', 0, 0, '', 'J’ai %quest_links, %my_role requis pour %zone_name.', 'Hab %quest_links, %my_role für %zone_name gesucht.', '%quest_links 있고, %zone_name에서 %my_role 구합니다.', '', '', '', ''),
-	(1147, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 끝내고 싶어요. 사람 더 구합니다.', 0, 0, '', 'Je cherche à finir les %quest_links dans %zone_name, j’ai besoin de plus de personnes.', 'Will %quest_links in %zone_name fertig bekommen, brauche mehr Leute.', '%zone_name에서 %quest_links 끝내고 싶어요. 사람 더 구합니다.', '', '', '', ''),
-	(1148, 'response_lfg_quests_channel', '%quest_links 도움이 필요해요. %zone_name 근처에 누구 없나요?', 0, 0, '', 'J’ai besoin d’aide avec %quest_links, qui est autour dans %zone_name?', 'Brauche Hilfe bei %quest_links, wer ist in %zone_name unterwegs?', '%quest_links 도움이 필요해요. %zone_name 근처에 누구 없나요?', '', '', '', ''),
-	(1149, 'response_lfg_quests_channel', '%zone_name %quest_links 완료할 사람 더 구해요.', 0, 0, '', 'J’ai besoin de plus de personnes pour compléter %quest_links dans la zone %zone_name.', 'Brauche mehr Leute für %quest_links, %zone_name.', '%zone_name %quest_links 완료할 사람 더 구해요.', '', '', '', ''),
-	(1150, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 마무리할 파티 구합니다.', 0, 0, '', 'Je cherche un groupe dans la %zone_name pour terminer les %quest_links.', 'Suche Gruppe in %zone_name, um %quest_links abzuschließen.', '%zone_name에서 %quest_links 마무리할 파티 구합니다.', '', '', '', ''),
-	(1151, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 하실 분? 바로 출발 가능합니다.', 0, 0, '', 'Qui veut faire des %quest_links dans la zone de %zone_name? Je suis prêt à y aller.', 'Wer will %quest_links in %zone_name machen? Bin startklar.', '%zone_name에서 %quest_links 하실 분? 바로 출발 가능합니다.', '', '', '', ''),
-	(1152, 'response_lfg_quests_channel', '%quest_links 같이 하실 분? %zone_name에 있는 %my_role입니다.', 0, 0, '', 'Qui veut se joindre à moi pour %quest_links? Je suis %my_role dans la zone %zone_name.', 'Will wer für %quest_links dazustoßen? Ich bin %my_role in %zone_name.', '%quest_links 같이 하실 분? %zone_name에 있는 %my_role입니다.', '', '', '', ''),
-	(1153, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 같이 할 %my_role 구해요.', 0, 0, '', 'Je recherche %my_role pour faire %quest_links avec dans la zone %zone_name.', 'Suche %my_role für %quest_links in %zone_name.', '%zone_name에서 %quest_links 같이 할 %my_role 구해요.', '', '', '', ''),
-	(1154, 'response_lfg_quests_channel', '저 %zone_name인데 %quest_links 도움 필요하신 분 계신가요?', 0, 0, '', 'Je suis dans %zone_name, est-ce que quelqu’un a besoin d’aide avec %quest_links?', 'Bin in %zone_name, braucht wer Hilfe bei %quest_links?', '저 %zone_name인데 %quest_links 도움 필요하신 분 계신가요?', '', '', '', ''),
-	(1155, 'response_lfg_quests_channel', '%zone_name %quest_links 인원 더 구해요. 가실 분?', 0, 0, '', 'Besoin de renfort pour les %quest_links dans %zone_name, des volontaires ?', 'Brauche mehr für %quest_links in %zone_name, bin allein nicht stark genug?', '%zone_name %quest_links 인원 더 구해요. 가실 분?', '', '', '', ''),
-	(1156, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 도와주실 분? 같이 가요!', 0, 0, '', 'J’ai besoin d’aide avec les %quest_links dans la zone %zone_name, qui est partant pour m’accompagner?', 'Brauche Hilfe bei %quest_links in %zone_name, wer hat Bock?', '%zone_name에서 %quest_links 도와주실 분? 같이 가요!', '', '', '', ''),
-	(1157, 'response_lfg_quests_channel', '%zone_name에서 %quest_links 끝내실 분 더 찾습니다.', 0, 0, '', 'Recherche compagnions pour %quest_links dans la zone %zone_name.', 'Suche mehr Leute, um %quest_links zu beenden, %zone_name.', '%zone_name에서 %quest_links 끝내실 분 더 찾습니다.', '', '', '', ''),
-	(1158, 'response_lfg_quests_whisper', '안녕하세요, 저 %quest_links 가능합니다.', 0, 0, '', 'Salut, je suis partant pour %quest_links', 'Hey, bin bei %quest_links dabei', '안녕하세요, 저 %quest_links 가능합니다.', '', '', '', ''),
-	(1159, 'response_lfg_quests_whisper', '안녕하세요, 저랑 같이 %quest_links 하실래요?', 0, 0, '', 'Salut, je pourrais faire %quest_links avec toi', 'Hey, ich könnte %quest_links mit dir machen', '안녕하세요, 저랑 같이 %quest_links 하실래요?', '', '', '', 'Привет, могу сделать %quest_links с тобой'),
-	(1160, 'response_lfg_quests_whisper', '안녕하세요, 저도 %quest_links 가지고 있어요.', 0, 0, '', 'Salut, j’ai aussi %quest_links.', 'Hey, ich habe auch %quest_links', '안녕하세요, 저도 %quest_links 가지고 있어요.', '', '', '', 'Привет, у меня тоже есть %quest_links'),
-	(1161, 'response_lfg_quests_whisper', '안녕하세요 %other_name님, 저 %quest_links 가능해요.', 0, 0, '', 'Salut %other_name, je suis prêt pour %quest_links', 'Hey %other_name, bin bei %quest_links dabei', '안녕하세요 %other_name님, 저 %quest_links 가능해요.', '', '', '', ''),
-	(1162, 'response_lfg_quests_whisper', '안녕하세요 %other_name님, 저랑 같이 %quest_links 하실래요?', 0, 0, '', 'Salut %other_name, je pourrais faire %quest_links avec toi.', 'Hey %other_name, ich könnte %quest_links mit dir machen', '안녕하세요 %other_name님, 저랑 같이 %quest_links 하실래요?', '', '', '', 'Привет %other_name, могу сделать %quest_links с тобой'),
-	(1163, 'response_lfg_quests_whisper', '안녕하세요 %other_name님, 저도 %quest_links 있어요.', 0, 0, '', 'Salut %other_name, j’ai aussi des %quest_links', 'Hey %other_name, ich habe auch %quest_links', '안녕하세요 %other_name님, 저도 %quest_links 있어요.', '', '', '', 'Привет %other_name, у меня тоже есть %quest_links'),
-	(1164, 'response_lfg_quests_whisper', '%quest_links 같이 파티 하실래요?', 0, 0, '', 'Tu veux qu’on se groupe pour faire les %quest_links ensemble ?', 'Bock, für %quest_links eine Gruppe zu bilden?', '%quest_links 같이 파티 하실래요?', '', '', '', 'Хочешь сгруппироваться для %quest_links?'),
-	(1165, 'response_lfg_quests_whisper', '%quest_links 할 수 있어요. 지금 %zone_name에 있습니다.', 0, 0, '', 'Je suis partant pour des %quest_links, je me trouve en ce moment dans %zone_name.', 'Bin bereit für %quest_links, bin gerade in %zone_name', '%quest_links 할 수 있어요. 지금 %zone_name에 있습니다.', '', '', '', 'Я готов к %quest_links, сейчас я в %zone_name'),
-	(1166, 'response_lfg_quests_whisper', '%quest_links 할 수 있습니다. 제 역할은 %my_role이에요.', 0, 0, '', 'Je suis prêt pour des %quest_links, je suis %my_role.', 'Bin bereit für %quest_links, bin %my_role', '%quest_links 할 수 있습니다. 제 역할은 %my_role이에요.', '', '', '', 'Я готов к %quest_links, я %my_role'),
-	(1167, 'response_lfg_quests_whisper', '저 %quest_links 하고 싶어요.', 0, 0, '', 'Hey, je suis partant pour %quest_links', 'Hey, ich hab Bock auf %quest_links', '저 %quest_links 하고 싶어요.', '', '', '', ''),
-	(1168, 'response_lfg_quests_whisper', '필요하시면 %quest_links 도와드릴 수 있습니다.', 0, 0, '', 'Je peux t’aider avec les %quest_links si tu en as besoin.', 'Ich kann bei %quest_links helfen, wenn ihr wollt', '필요하시면 %quest_links 도와드릴 수 있습니다.', '', '', '', ''),
-	(1169, 'response_lfg_quests_whisper', '우리 같이 %quest_links 해요!', 0, 0, '', 'Faisons %quest_links ensemble!', 'Lasst uns %quest_links zusammen machen!', '우리 같이 %quest_links 해요!', '', '', '', ''),
-	(1170, 'response_lfg_quests_whisper', '저도 %quest_links 해야 돼요.', 0, 0, '', 'J’ai aussi %quest_links à faire.', 'Ich hab auch %quest_links offen', '저도 %quest_links 해야 돼요.', '', '', '', ''),
-	(1171, 'response_lfg_quests_whisper', '원하시면 %quest_links 같이 할 수 있습니다.', 0, 0, '', 'Je suis disponible pour %quest_links si tu veux', 'Bin für %quest_links verfügbar, wenn ihr wollt', '원하시면 %quest_links 같이 할 수 있습니다.', '', '', '', ''),
-	(1172, 'response_lfg_quests_whisper', '%quest_links 할 수 있으니 말씀만 하세요.', 0, 0, '', 'Je suis partant pour %quest_links, il me suffit de me dire', 'Bin bei %quest_links dabei, sagt Bescheid', '%quest_links 할 수 있으니 말씀만 하세요.', '', '', '', ''),
-	(1173, 'response_lfg_quests_whisper', '%quest_links 찾으시나요? 저 %zone_name에 있어요.', 0, 0, '', 'À la recherche de %quest_links? Je me trouve à %zone_name.', 'Sucht wer %quest_links? Bin in %zone_name', '%quest_links 찾으시나요? 저 %zone_name에 있어요.', '', '', '', ''),
-	(1174, 'response_lfg_quests_whisper', '안녕하세요, 저도 %quest_links 필요해요. 같이 가요!', 0, 0, '', 'Salut, j’ai besoin de %quest_links aussi, allons-y', 'Hey, ich brauche auch %quest_links, lets go', '안녕하세요, 저도 %quest_links 필요해요. 같이 가요!', '', '', '', ''),
-	(1175, 'response_lfg_quests_whisper', '저 %quest_links 있는데 같이 하실래요?', 0, 0, '', 'J’ai %quest_links, tu veux te joindre à moi?', 'Hab %quest_links, will wer mit?', '저 %quest_links 있는데 같이 하실래요?', '', '', '', ''),
-	(1176, 'response_lfg_quests_whisper', '저도 %quest_links 필요했는데 잘됐네요. 같이 해요!', 0, 0, '', 'Je peux faire %quest_links, allons-y', 'Könnte %quest_links brauchen, machen wirs', '저도 %quest_links 필요했는데 잘됐네요. 같이 해요!', '', '', '', ''),
-	(1177, 'response_lfg_quests_whisper', '안녕하세요, %quest_links 같이 하실래요?', 0, 0, '', 'Salut, tu veux te joindre à moi pour %quest_links?', 'Hey, willst du für %quest_links dazukommen?', '안녕하세요, %quest_links 같이 하실래요?', '', '', '', ''),
-	(1178, 'response_lfg_quests_whisper', '필요하시면 %quest_links 돕겠습니다!', 0, 0, '', 'Je peux t’aider avec %quest_links si besoin', 'Ich kann bei %quest_links helfen, wenn ihr wollt', '필요하시면 %quest_links 돕겠습니다!', '', '', '', ''),
-	(1179, 'response_lfg_quests_whisper', '안녕하세요 %other_name님, %quest_links 하실래요?', 0, 0, '', 'Salut %other_name, partant pour %quest_links?', 'Hey %other_name, Bock auf %quest_links?', '안녕하세요 %other_name님, %quest_links 하실래요?', '', '', '', ''),
-	(1180, 'response_lfg_quests_whisper', '%other_name님, %quest_links 파티 맺고 같이 하실래요?', 0, 0, '', 'Tu veux faire équipe pour %quest_links %other_name?', 'Willst du für %quest_links gruppen, %other_name?', '%other_name님, %quest_links 파티 맺고 같이 하실래요?', '', '', '', ''),
-	(1181, 'response_lfg_quests_whisper', '%other_name님, 우리 같이 %quest_links 완료해요!', 0, 0, '', 'Faisons les %quest_links ensemble, %other_name.', 'Lass %quest_links zusammen machen, %other_name', '%other_name님, 우리 같이 %quest_links 완료해요!', '', '', '', ''),
-	(1182, 'response_lfg_quests_whisper', '저 %my_role이고 %quest_links 준비됐습니다.', 0, 0, '', 'Je suis %my_role, prêt pour %quest_links.', 'Ich bin %my_role und ready für %quest_links', '저 %my_role이고 %quest_links 준비됐습니다.', '', '', '', ''),
-	(1183, 'response_lfg_quests_whisper', '%quest_links 참가할 수 있어요. %my_role입니다.', 0, 0, '', 'Je peux vous rejoindre pour %quest_links, %my_role ici.', 'Kann für %quest_links joinen, %my_role hier', '%quest_links 참가할 수 있어요. %my_role입니다.', '', '', '', ''),
-	(1184, 'response_lfg_quests_whisper', '%quest_links 가능합니다. 역할은 %my_role이에요!', 0, 0, '', 'Je suis prêt pour %quest_links, %my_role!', 'Bin bereit für %quest_links, %my_role!', '%quest_links 가능합니다. 역할은 %my_role이에요!', '', '', '', ''),
-	(1185, 'response_lfg_quests_whisper', '%my_role로서 %quest_links 같이 할 파티 구합니다.', 0, 0, '', 'Je cherche à faire des %quest_links avec mon rôle.', 'Suche %my_role für %quest_links', '%my_role로서 %quest_links 같이 할 파티 구합니다.', '', '', '', ''),
-	(1186, 'response_lfg_quests_whisper', '%quest_links 도움 필요하신 분 계신가요?', 0, 0, '', 'Besoin d’aide avec %quest_links?', 'Braucht wer Hilfe bei %quest_links?', '%quest_links 도움 필요하신 분 계신가요?', '', '', '', ''),
-	(1187, 'response_lfg_quests_whisper', '또 %quest_links 하실 분 계신가요?', 0, 0, '', 'Qui d’autre est partant pour %quest_links?', 'Wer ist noch bei %quest_links dabei?', '또 %quest_links 하실 분 계신가요?', '', '', '', ''),
-	(1188, 'response_lfg_quests_whisper', '%zone_name에서 %quest_links 하실 분 계신가요?', 0, 0, '', 'Qui est partant pour des %quest_links dans la région %zone_name ?', 'Jemand bereit für %quest_links in %zone_name?', '%zone_name에서 %quest_links 하실 분 계신가요?', '', '', '', ''),
-	(1189, 'response_lfg_quests_whisper', '저 %quest_links 가지고 있어요, %my_role 가는 중입니다!', 0, 0, '', 'J’ai %quest_links, %my_role en route.', 'Hab %quest_links, %my_role unterwegs', '저 %quest_links 가지고 있어요, %my_role 가는 중입니다!', '', '', '', ''),
-	(1190, 'response_lfg_quests_whisper', '저도 %quest_links 필요한데, 같이 하실 분?', 0, 0, '', 'J’ai besoin de %quest_links aussi, qui est partant?', 'Ich brauch %quest_links auch, wer ist dabei?', '저도 %quest_links 필요한데, 같이 하실 분?', '', '', '', ''),
-	(1191, 'response_lfg_quests_whisper', '계속 %quest_links 진행 중인데, 도움이 필요하신가요?', 0, 0, '', 'J’ai bossé dur sur %quest_links, tu as besoin d’aide ?', 'Grinde %quest_links, wer hilft?', '계속 %quest_links 진행 중인데, 도움이 필요하신가요?', '', '', '', ''),
-	(1192, 'response_lfg_quests_whisper', '%quest_links 준비됐습니다, 더 계신가요?', 0, 0, '', 'Je suis prêt pour les %quest_links, quelqu’un d’autre est prêt aussi ?', 'Bin bereit für %quest_links, noch wer?', '%quest_links 준비됐습니다, 더 계신가요?', '', '', '', ''),
-	(1193, 'response_lfg_quests_whisper', '%quest_links 같이 해주실 분 계신가요?', 0, 0, '', 'Est-ce que quelqu’un veut se joindre à moi pour %quest_links?', 'Kann jemand für %quest_links dazukommen?', '%quest_links 같이 해주실 분 계신가요?', '', '', '', ''),
-	(1194, 'response_lfg_quests_whisper', '%quest_links 도와주실 분 찾아요, 전 %my_role입니다!', 0, 0, '', 'Je recherche de l’aide avec %quest_links, je suis %my_role ici. En quoi puis-je vous aider?', 'Suche Hilfe bei %quest_links, %my_role hier', '%quest_links 도와주실 분 찾아요, 전 %my_role입니다!', '', '', '', ''),
-	(1195, 'response_lfg_quests_whisper', '%quest_links 도와드릴 수 있어요, 필요하신 분?', 0, 0, '', 'Je peux aider avec %quest_links, quelqu’un a besoin de moi ?', 'Ich kann bei %quest_links aushelfen, braucht mich wer?', '%quest_links 도와드릴 수 있어요, 필요하신 분?', '', '', '', ''),
-	(1196, 'response_lfg_quests_whisper', '%quest_links 하시는 분 또 없나요? 가시죠!', 0, 0, '', 'Quelqu’un d’autre fait des %quest_links? Allons-y', 'Macht noch wer %quest_links? Los gehts', '%quest_links 하시는 분 또 없나요? 가시죠!', '', '', '', ''),
-	(1197, 'response_lfg_quests_whisper', '%quest_links 도움이 필요하신가요? 여기 %my_role 대기 중입니다!', 0, 0, '', 'Besoin d’aide pour %quest_links? C’est %my_role qui s’en charge par ici.', 'Braucht wer Hilfe bei %quest_links? %my_role hier', '%quest_links 도움이 필요하신가요? 여기 %my_role 대기 중입니다!', '', '', '', ''),
-	(1198, 'response_lfg_quests_whisper', '%zone_name에서 %quest_links 같이 하실 분?', 0, 0, '', 'Qui est partant pour quelques %quest_links dans la %zone_name ?', 'Wer hat Bock auf %quest_links in %zone_name?', '%zone_name에서 %quest_links 같이 하실 분?', '', '', '', ''),
-	(1199, 'response_lfg_quests_whisper', '원하신다면 %quest_links 하러 합류할 수 있어요.', 0, 0, '', 'Je peux me joindre pour %quest_links si tu veux.', 'Kann für %quest_links joinen, wenn ihr wollt', '원하신다면 %quest_links 하러 합류할 수 있어요.', '', '', '', ''),
-	(1200, 'response_lfg_quests_whisper', '%quest_links 같이 할 %my_role 찾습니다.', 0, 0, '', 'Je suis à la recherche d’un %my_role pour réaliser les %quest_links.', 'Suche einen %my_role für %quest_links', '%quest_links 같이 할 %my_role 찾습니다.', '', '', '', ''),
-	(1201, 'response_lfg_quests_whisper', '%quest_links 하실 %my_role 계신가요?', 0, 0, '', 'Des volontaires pour %my_role pour les %quest_links?', 'Ist ein %my_role für %quest_links am Start?', '%quest_links 하실 %my_role 계신가요?', '', '', '', ''),
-	(1202, 'response_lfg_quests_whisper', '저 %quest_links 있어요, 같이 하실 분?', 0, 0, '', 'J’ai %quest_links, quelqu’un veut se joindre à moi?', 'Ich habe %quest_links, will wer mit?', '저 %quest_links 있어요, 같이 하실 분?', '', '', '', ''),
-	(1203, 'response_lfg_quests_whisper', '이봐요 %other_name님, %quest_links 좀 해보실래요?', 0, 0, '', 'Salut %other_name, partant pour quelques %quest_links?', 'Hey %other_name, Bock auf %quest_links?', '이봐요 %other_name님, %quest_links 좀 해보실래요?', '', '', '', ''),
-	(1204, 'response_lfg_quests_whisper', '%other_name님, 우리 같이 파티 맺고 %quest_links 해요!', 0, 0, '', 'Partons à l’aventure pour %quest_links, %other_name!', 'Lass uns für %quest_links gruppen, %other_name', '%other_name님, 우리 같이 파티 맺고 %quest_links 해요!', '', '', '', ''),
-	(1205, 'response_lfg_quests_whisper', '저 %quest_links 필요한데, 또 같이 하실 분 계신가요?', 0, 0, '', 'J’ai besoin de %quest_links, est-ce que quelqu’un d’autre veut le faire avec moi ?', 'Ich brauche %quest_links, wer macht mit?', '저 %quest_links 필요한데, 또 같이 하실 분 계신가요?', '', '', '', ''),
-	(1206, 'response_lfg_quests_whisper', '저도 %quest_links 필요한데, 근처에 계신 분 있나요?', 0, 0, '', 'J’ai besoin de %quest_links aussi, est-ce qu’il y a d’autres personnes ici?', 'Ich brauche auch %quest_links, ist noch jemand da?', '저도 %quest_links 필요한데, 근처에 계신 분 있나요?', '', '', '', ''),
-	(1207, 'response_lfg_quests_whisper', '%zone_name에서 %quest_links 하시는 분, 누구 저랑 같이 하실래요?', 0, 0, '', 'À la recherche de %quest_links dans %zone_name, qui est partant avec moi ?', 'Suche %quest_links in %zone_name, wer ist dabei?', '%zone_name에서 %quest_links 하시는 분, 누구 저랑 같이 하실래요?', '', '', '', ''),
-	(1208, 'response_lfg_quests_whisper', '%quest_links 하실 수 있는 분 계신가요?', 0, 0, '', 'Quelqu’un de disponible pour %quest_links ?', 'Ist jemand frei für %quest_links?', '%quest_links 하실 수 있는 분 계신가요?', '', '', '', ''),
-	(1209, 'response_lfg_quests_whisper', '저기요, %quest_links 하러 합류할 수 있어요!', 0, 0, '', 'Hey, je pourrais me joindre à vous pour les %quest_links!', 'Hey, ich könnte bei %quest_links dazustoßen!', '저기요, %quest_links 하러 합류할 수 있어요!', '', '', '', ''),
-	(1210, 'response_lfg_quests_whisper', '저도 %quest_links 있어요, 우리 파티 해요!', 0, 0, '', 'J’ai aussi %quest_links, unissons nos forces!', 'Ich habe auch %quest_links, lass uns gruppen', '저도 %quest_links 있어요, 우리 파티 해요!', '', '', '', ''),
-	(1211, 'response_lfg_quests_whisper', '저 %quest_links 할 게 있는데, 같이 하실래요?', 0, 0, '', 'J’ai %quest_links à accomplir, ça te dit de m’accompagner ?', 'Ich habe %quest_links zu erledigen, willst du mit?', '저 %quest_links 할 게 있는데, 같이 하실래요?', '', '', '', ''),
-	(1212, 'response_lfg_quests_whisper', '%zone_name에서 %quest_links 하실 %my_role 계신가요?', 0, 0, '', 'Y a-t-il des %my_role partants pour des %quest_links dans %zone_name?', 'Ist ein %my_role für %quest_links in %zone_name frei?', '%zone_name에서 %quest_links 하실 %my_role 계신가요?', '', '', '', ''),
-	(1213, 'response_lfg_quests_whisper', '%other_name님, %quest_links 같이 끝내버려요!', 0, 0, '', 'Terminons ensemble %quest_links, %other_name.', 'Lass uns %quest_links zusammen abschließen, %other_name', '%other_name님, %quest_links 같이 끝내버려요!', '', '', '', ''),
-	(1214, 'response_lfg_quests_whisper', '저 %quest_links 할 준비 됐는데, 더 합류하실 분?', 0, 0, '', 'Je suis partant pour %quest_links, est-ce qu’il y a d’autres personnes qui veulent se joindre ?', 'Ich bin bei %quest_links dabei, will noch wer mit?', '저 %quest_links 할 준비 됐는데, 더 합류하실 분?', '', '', '', ''),
-	(1215, 'response_lfg_quests_whisper', '또 %quest_links 하시는 분 있나요? 저도 할게요!', 0, 0, '', 'Qui d’autre fait les %quest_links ? J’y participe également!', 'Wer macht noch %quest_links? Ich bin dabei', '또 %quest_links 하시는 분 있나요? 저도 할게요!', '', '', '', ''),
-	(1216, 'response_lfg_quests_whisper', '%zone_name에서 %quest_links 하고 있어요, 도움이 필요하신가요?', 0, 0, '', 'J’ai %quest_links dans %zone_name, besoin d’aide ?', 'Ich habe %quest_links in %zone_name, braucht jemand Hilfe?', '%zone_name에서 %quest_links 하고 있어요, 도움이 필요하신가요?', '', '', '', ''),
-	(1217, 'response_wtb_items_channel', '%other_name님, 제가 %formatted_item_links를 팔 수 있어요.', 0, 0, '', 'Ah, %formatted_item_links, je pourrais vous les vendre.', '%other_name, könnte dir %formatted_item_links verkaufen', '%other_name님, 제가 %formatted_item_links를 팔 수 있어요.', '', '', '', '%other_name, могу продать тебе %formatted_item_links'),
-	(1218, 'response_wtb_items_channel', '%formatted_item_links이거 정리 합니다 얼른 귓 주세여', 0, 0, '', 'Je pourrais potentiellement vendre %formatted_item_links.', 'Könnte eventuell %formatted_item_links verkaufen', '%formatted_item_links를 팔 수도 있을 것 같아요.', '', '', '', 'Могу, возможно, продать %formatted_item_links'),
-	(1219, 'response_wtb_items_channel', '제가 %formatted_item_links를 팔 수 있을 것 같네요.', 0, 0, '', 'Penses-tu que je pourrais vendre les %formatted_item_links ?', 'Denke, ich könnte %formatted_item_links verkaufen', '제가 %formatted_item_links를 팔 수 있을 것 같네요.', '', '', '', 'Думаю, могу продать %formatted_item_links'),
-	(1220, 'response_wtb_items_channel', '저기, %other_name님, 제가 어쩌면 %formatted_item_links를 팔 수도 있을 것 같아요.', 0, 0, '', 'Hé toi, je pourrais potentiellement te vendre %formatted_item_links', '%other_name, könnte eventuell %formatted_item_links verkaufen', '저기, %other_name님, 제가 어쩌면 %formatted_item_links를 팔 수도 있을 것 같아요.', '', '', '', '%other_name, возможно, могу продать %formatted_item_links'),
-	(1221, 'response_wtb_items_channel', '%other_name님, 제가 %formatted_item_links를 팔 수 있을 것 같은데 어떠신가요?', 0, 0, '', '%other_name, tu crois que je pourrais vendre %formatted_item_links?', '%other_name, ich denke, ich könnte %formatted_item_links verkaufen', '%other_name님, 제가 %formatted_item_links를 팔 수 있을 것 같은데 어떠신가요?', '', '', '', '%other_name, думаю, могу продать %formatted_item_links'),
-	(1222, 'response_wtb_items_whisper', '제가 %formatted_item_links를 팔 수 있어요.', 0, 0, '', 'Je pourrais te vendre des %formatted_item_links.', 'Ich könnte dir %formatted_item_links verkaufen', '제가 %formatted_item_links를 팔 수 있어요.', '', '', '', 'Могу продать тебе %formatted_item_links'),
-	(1223, 'response_wtb_items_whisper', '저기요, %formatted_item_links 팔아요!', 0, 0, '', 'Salut, j’ai %formatted_item_links à vendre.', 'Hey, habe %formatted_item_links zu verkaufen', '저기요, %formatted_item_links 팔아요!', '', '', '', 'Привет, у меня есть %formatted_item_links на продажу'),
-	(1224, 'response_wtb_items_whisper', '저기, 제가 %formatted_item_links를 팔 수 있을지도 몰라요.', 0, 0, '', 'Salut, je pourrais potentiellement vendre %formatted_item_links', 'Hey, könnte eventuell %formatted_item_links verkaufen', '저기, 제가 %formatted_item_links를 팔 수 있을지도 몰라요.', '', '', '', 'Привет, возможно, могу продать %formatted_item_links'),
-	(1225, 'response_wtb_items_whisper', '제가 %formatted_item_links를 팔 수 있어요.', 0, 0, '', 'Je pourrais te vendre %formatted_item_links.', 'Ich könnte dir %formatted_item_links verkaufen', '제가 %formatted_item_links를 팔 수 있어요.', '', '', '', 'Могу продать тебе %formatted_item_links'),
-	(1226, 'response_wtb_items_whisper', '저기요, %formatted_item_links 팔아요!', 0, 0, '', 'Salut, j’ai %formatted_item_links à vendre.', 'Hey, habe %formatted_item_links zu verkaufen', '저기요, %formatted_item_links 팔아요!', '', '', '', 'Привет, у меня есть %formatted_item_links на продажу'),
-	(1227, 'response_wtb_items_whisper', '저기, 제가 아마 %formatted_item_links를 팔 수 있을 거예요.', 0, 0, '', 'Hey, je pourrais potentiellement vendre ces %formatted_item_links.', 'Hey, ich könnte eventuell %formatted_item_links verkaufen', '저기, 제가 아마 %formatted_item_links를 팔 수 있을 거예요.', '', '', '', 'Привет, возможно, могу продать %formatted_item_links'),
-	(1228, 'response_wtb_items_whisper', '%formatted_item_links 상점에 팔아 버리야하나?;;', 0, 0, '', 'J’ai des %formatted_item_links, ça t’intéresse ?', 'Ich habe %formatted_item_links, Interesse?', '%formatted_item_links가 있는데, 관심 있으신가요?', '', '', '', ''),
-	(1229, 'response_wtb_items_whisper', '%formatted_item_links 님들 이거 얼마 받아야 될까용??', 0, 0, '', 'Je cherche à vendre %formatted_item_links, quelle est votre offre ?', 'Will %formatted_item_links verkaufen, was bietest du?', '%formatted_item_links 팔고 싶은데, 얼마에 사시겠어요?', '', '', '', ''),
-	(1230, 'response_wtb_items_whisper', '적당한 가격에 %formatted_item_links를 팔 수 있어요.', 0, 0, '', 'Je peux vous vendre des %formatted_item_links à un prix raisonnable.', 'Ich kann dir %formatted_item_links zu einem fairem Preis verkaufen', '적당한 가격에 %formatted_item_links를 팔 수 있어요.', '', '', '', ''),
-	(1231, 'response_wtb_items_whisper', '%formatted_item_links 님들 이거 알마에 팔아야 됨?', 0, 0, '', 'J’ai %formatted_item_links en stock, combien proposez-vous ?', 'Ich habe %formatted_item_links auf Lager, was zahlst du?', '%formatted_item_links 재고가 있습니다, 얼마를 생각하시나요?', '', '', '', ''),
-	(1232, 'response_wtb_items_whisper', '%formatted_item_links를 %cost_gold에 처분합니다~~~싸게 가져 가이소~~', 0, 0, '', 'Je vends des %formatted_item_links pour %cost_gold, dis-moi si ça t’intéresse.', 'Verkaufe %formatted_item_links für %cost_gold, sag Bescheid bei Interesse', '%formatted_item_links를 %cost_gold에 팔고 있어요. 관심 있으면 알려주세요.', '', '', '', ''),
-	(1233, 'response_wtb_items_whisper', '%formatted_item_links 아 진짜 쉣이네..', 0, 0, '', 'J’ai %formatted_item_links à vendre, combien es-tu prêt à payer?', 'Habe %formatted_item_links zu verkaufen, was zahlst du?', '%formatted_item_links 팔아요, 얼마에 사시겠어요?', '', '', '', ''),
-	(1234, 'response_wtb_items_whisper', '%formatted_item_links 팝니다, %cost_gold 요정도만 받겠습니다', 0, 0, '', 'J’ai %formatted_item_links, est-ce que %cost_gold te semble raisonnable ?', 'Ich habe %formatted_item_links, wie klingt %cost_gold für dich?', '%formatted_item_links 있습니다, %cost_gold 정도면 괜찮으신가요?', '', '', '', ''),
-	(1235, 'response_wtb_items_whisper', '%formatted_item_links를 %cost_gold에 처분합니다~', 0, 0, '', 'Je vends des %formatted_item_links pour %cost_gold, contactez-moi si vous êtes intéressé.', 'Verkaufe %formatted_item_links für %cost_gold, flüster mir bei Interesse', '%formatted_item_links를 %cost_gold에 팔고 있습니다. 원하시면 귓속말 주세요.', '', '', '', ''),
-	(1236, 'response_wtb_items_whisper', '%formatted_item_links 있어요, 관심 있으면 귓 주세여.', 0, 0, '', 'J’ai des %formatted_item_links, contactez-moi si ça vous intéresse', 'Ich habe %formatted_item_links, meld dich bei Interesse', '%formatted_item_links 있어요, 관심 있으면 연락 주세요.', '', '', '', ''),
-	(1237, 'response_wtb_items_whisper', '적당한 가격을 제시하시면 %formatted_item_links를 팔 의향이 있습니다.', 0, 0, '', 'Je peux me séparer de %formatted_item_links si ton offre est intéressante.', 'Gebe %formatted_item_links ab, wenn das Angebot passt', '적당한 가격을 제시하시면 %formatted_item_links를 팔 의향이 있습니다.', '', '', '', ''),
-	(1238, 'response_wtb_items_whisper', '%formatted_item_links 상점행??', 0, 0, '', 'Je cherche à me débarrasser de %formatted_item_links, contactez-moi', 'Will %formatted_item_links loswerden, flüster mir', '%formatted_item_links를 처분하고 싶어요, 연락 주세요.', '', '', '', ''),
-	(1239, 'response_wtb_items_whisper', '%formatted_item_links를 %cost_gold에 드립니다~', 0, 0, '', 'J’ai %formatted_item_links pour %cost_gold, tu veux acheter?', 'Habe %formatted_item_links für %cost_gold, kaufst du?', '%formatted_item_links를 %cost_gold에 가지고 있어요, 사시겠어요?', '', '', '', ''),
-	(1240, 'response_wtb_items_whisper', '%formatted_item_links 가져 가실부운~~', 0, 0, '', 'Je vends %formatted_item_links, on peut discuter du prix ensemble.', 'Verkaufe %formatted_item_links, lass uns handeln', '%formatted_item_links 팝니다, 가격 협상해 봐요.', '', '', '', ''),
-	(1241, 'response_wtb_items_whisper', '저기요, %formatted_item_links가 %cost_gold에 있습니다.', 0, 0, '', 'Salut, j’ai des %formatted_item_links pour un coût en or de %cost_gold.', 'Hey, habe %formatted_item_links für %cost_gold', '저기요, %formatted_item_links가 %cost_gold에 있습니다.', '', '', '', ''),
-	(1242, 'response_wtb_items_whisper', '%formatted_item_links를 아무나 가져가셈', 0, 0, '', 'Je peux vous procurer des liens d’articles %formatted_item_links, vous n’avez qu’à me dire votre prix.', 'Kann dich mit %formatted_item_links versorgen, nenn deinen Preis', '%formatted_item_links를 구해드릴 수 있어요, 가격만 말씀하세요.', '', '', '', ''),
-	(1243, 'response_wtb_items_whisper', '%formatted_item_links 필요하신분?', 0, 0, '', 'J’ai des %formatted_item_links disponibles, fais-moi savoir si cela t’intéresse.', 'Ich habe %formatted_item_links verfügbar, sag Bescheid bei Interesse', '%formatted_item_links 드릴 수 있어요, 관심 있으면 알려주세요.', '', '', '', ''),
-	(1244, 'response_wtb_items_whisper', '%formatted_item_links 나눔합니다 빨랑 귓!', 0, 0, '', 'Je vends %formatted_item_links, on pourrait faire affaire ensemble.', 'Verkaufe %formatted_item_links, machen wir Business', '%formatted_item_links 팝니다, 거래합시다.', '', '', '', ''),
-	(1245, 'response_wtb_items_whisper', '%formatted_item_links 가격제시 부탁 합니다.', 0, 0, '', 'J’ai %formatted_item_links, n’hésitez pas à faire une offre.', 'Ich habe %formatted_item_links, macht mir ein Angebot', '%formatted_item_links 있으니 편하게 가격 제시해 주세요.', '', '', '', ''),
-	(1246, 'response_wtb_items_whisper', '%formatted_item_links 팝니니다, 사실분  귓말 주세요.', 0, 0, '', 'J’ai des %formatted_item_links, envoie-moi un message si tu veux acheter.', 'Ich habe %formatted_item_links, schreib mir, wenn du kaufen willst', '%formatted_item_links 있습니다, 구매하시려면 메시지 주세요.', '', '', '', ''),
-	(1247, 'response_wtb_items_whisper', '%formatted_item_links를 %cost_gold에 드림', 0, 0, '', 'Je peux vous proposer des %formatted_item_links pour %cost_gold.', 'Kann dir %formatted_item_links für %cost_gold anbieten', '%formatted_item_links를 %cost_gold에 드릴 수 있습니다.', '', '', '', ''),
-	(1248, 'response_wtb_items_whisper', '%formatted_item_links 이거 쓸때나 있을까요?', 0, 0, '', 'J’ai %formatted_item_links à vendre, envoyez-moi un message pour connaître le prix.', 'Ich habe %formatted_item_links zu verkaufen, schreib mir für den Preis', '%formatted_item_links 팔아요, 가격은 메시지 주세요.', '', '', '', ''),
-	(1249, 'response_wtb_items_whisper', '%formatted_item_links 떨이로 팝니다 얼른 귓!', 0, 0, '', 'Je vends %formatted_item_links, profitez-en pendant que c’est chaud !', 'Verkaufe %formatted_item_links, greif zu solange es heiß ist', '%formatted_item_links 판매 중입니다, 빨리 가져가세요!', '', '', '', ''),
-	(1250, 'response_wtb_items_whisper', '%formatted_item_links 님들 이거 어따씀?', 0, 0, '', 'Je vends des %formatted_item_links, tu ne trouveras pas meilleure affaire que celle-ci.', 'Verkaufe %formatted_item_links, nen besseren Deal findet ihr nicht', '%formatted_item_links 팝니다, 이보다 더 좋은 가격은 없을 거예요!', '', '', '', ''),
-	(1251, 'response_wtb_items_whisper', '%formatted_item_links 싸게 팔아요 귓주세여!', 0, 0, '', 'J’ai des %formatted_item_links à vendre, combien es-tu prêt à payer?', 'Ich habe %formatted_item_links zu verkaufen, was zahlst du?', '%formatted_item_links 판매합니다, 얼마까지 생각하시나요?', '', '', '', ''),
-	(1252, 'response_wtb_items_whisper', '%formatted_item_links 적당한 가격에 팝니다 귓말 주세요.', 0, 0, '', 'Je vends des %formatted_item_links, n’hésitez pas à me contacter pour connaître les prix.', 'Verkaufe %formatted_item_links, Preis auf Anfrage per flüstern', '%formatted_item_links 판매 중입니다, 가격 문의는 편하게 메시지 주세요.', '', '', '', ''),
-	(1253, 'response_wtb_items_whisper', '%formatted_item_links에 관심 있으면 귓 주세여~', 0, 0, '', 'Intéressé par %formatted_item_links? J’en ai en vente.', 'Interesse an %formatted_item_links? Ich verkaufe welche', '%formatted_item_links에 관심 있으신가요? 판매 가능합니다.', '', '', '', ''),
-	(1254, 'response_wtb_items_whisper', '%formatted_item_links 있습니다 필요하신분 귓말 주세요', 0, 0, '', 'J’ai %formatted_item_links, envoie-moi un message si tu les veux.', 'Ich habe %formatted_item_links, PN für Preis', '%formatted_item_links 있어요, 필요하시면 메시지 주세요.', '', '', '', ''),
-	(1255, 'response_wtb_items_whisper', '%formatted_item_links 요고요고  %cost_gold에 떨이처리중', 0, 0, '', 'Je vends des %formatted_item_links à %cost_gold, n’hésitez pas à me contacter', 'Verkaufe %formatted_item_links für %cost_gold, meldet euch', '%formatted_item_links를 %cost_gold에 팔고 있습니다, 연락 주세요.', '', '', '', ''),
-	(1256, 'response_wtb_items_whisper', '%formatted_item_links 걍 떨이로 가져가셈', 0, 0, '', 'Je vends des %formatted_item_links, faites-moi une offre.', 'Verkaufe %formatted_item_links, macht mir ein Angebot', '%formatted_item_links 판매합니다, 가격 제시해 주세요.', '', '', '', ''),
-	(1257, 'response_wtb_items_whisper', '%formatted_item_links 있습니다, 자세한 내용은 귓\\ 주세요.', 0, 0, '', 'J’ai des %formatted_item_links, envoie-moi un message pour obtenir les détails', 'Habe %formatted_item_links, schreib mir für Details', '%formatted_item_links 있습니다, 자세한 내용은 메시지 주세요.', '', '', '', ''),
-	(1258, 'response_wtb_items_whisper', '저기, %formatted_item_links가 있는데 관심 있으시면 연락 주세요.', 0, 0, '', 'Salut, j’ai des %formatted_item_links, fais-moi signe si cela t’intéresse.', 'Hey, habe %formatted_item_links, meldet euch bei Interesse', '저기, %formatted_item_links가 있는데 관심 있으시면 연락 주세요.', '', '', '', ''),
-	(1259, 'response_wtb_items_whisper', '%formatted_item_links 급매합니다 얼른 귓!', 0, 0, '', 'Je vends des %formatted_item_links, on peut s’arranger sur le prix.', 'Verkaufe %formatted_item_links, machen wir nen Deal?', '%formatted_item_links 판매합니다, 거래해 봐요.', '', '', '', ''),
-	(1260, 'response_wtb_items_whisper', '%formatted_item_links 필요하신분 계심?', 0, 0, '', 'Je vends des %formatted_item_links, fais-moi savoir si tu en veux.', 'Verkaufe %formatted_item_links, sag Bescheid wenn du willst', '%formatted_item_links 팝니다, 필요하시면 말씀하세요.', '', '', '', ''),
-	(1261, 'response_wtb_items_whisper', '%formatted_item_links 싸게 드립니다.', 0, 0, '', 'J’ai des %formatted_item_links, je vais te faire une bonne affaire', 'Ich habe %formatted_item_links, ich mach dir nen guten Preis', '%formatted_item_links 있습니다, 좋은 가격에 드릴게요.', '', '', '', ''),
-	(1262, 'response_wtb_items_whisper', '%formatted_item_links 적당한 가격에 팝니다', 0, 0, '', 'J’ai %formatted_item_links, fais-moi une offre et il est à toi.', 'Ich habe %formatted_item_links, mit gutem Angebot gehörts dir', '%formatted_item_links 있어요, 적당히 가격 부르시면 바로 드릴게요.', '', '', '', ''),
-	(1263, 'response_wtb_items_whisper', '%formatted_item_links 판매중 가격 제안 환영!', 0, 0, '', 'Je vends des %formatted_item_links, je suis ouvert aux offres.', 'Verkaufe %formatted_item_links, bin offen für Angebote', '%formatted_item_links 판매 중입니다, 가격 제안 환영해요.', '', '', '', ''),
-	(1264, 'response_wtb_items_whisper', '%formatted_item_links 필요하심 귓 주세요.', 0, 0, '', 'J’ai %formatted_item_links, n’hésitez pas à me contacter si vous êtes intéressé(e).', 'Ich habe %formatted_item_links, melde dich bei Interesse', '%formatted_item_links 있습니다, 관심 있으면 메시지 주세요.', '', '', '', ''),
-	(1265, 'response_wtb_items_whisper', '%formatted_item_links음..이거 돈이 될까요??', 0, 0, '', 'Je peux te vendre des %formatted_item_links à un bon prix.', 'Ich kann dir %formatted_item_links zu einem guten Preis verkaufen', '%formatted_item_links를 좋은 가격에 팔 수 있습니다.', '', '', '', ''),
-	(1266, 'response_wtb_items_whisper', '%formatted_item_links 나눔 합니다~ 귓말 주세여', 0, 0, '', 'J’ai des %formatted_item_links à vendre, je considérerai toutes les offres.', 'Ich habe %formatted_item_links zu verkaufen, nehme alle Angebote an', '%formatted_item_links 판매 중입니다, 어떤 제안이든 고려해 볼게요.', '', '', '', ''),
-	(1267, 'response_wtb_items_whisper', '%formatted_item_links 필요하신 분 계십니까?', 0, 0, '', 'J’ai %formatted_item_links à vendre, envoyez-moi un message pour plus de détails.', 'Habe %formatted_item_links im Verkauf, flüster mir für Details', '%formatted_item_links 판매합니다, 자세한 건 메시지 주세요.', '', '', '', ''),
-	(1268, 'response_wtb_items_whisper', '%formatted_item_links 아무나 가져가세요~', 0, 0, '', 'J’ai des %formatted_item_links à vendre, faites-moi une offre.', 'Habe %formatted_item_links im Verkauf, macht mir ein Angebot', '%formatted_item_links 팔아요, 가격 제안해 주세요.', '', '', '', ''),
-	(1269, 'response_wtb_items_whisper', '%formatted_item_links 팝니다 가격 귓 주세요', 0, 0, '', 'J’ai des %formatted_item_links, combien es-tu prêt à payer?', 'Ich habe %formatted_item_links, was zahlt ihr?', '%formatted_item_links 있습니다, 얼마에 사시겠어요?', '', '', '', ''),
-	(1270, 'response_wtb_items_whisper', '%formatted_item_links 나눔 합니다.', 0, 0, '', 'Je vends %formatted_item_links, n’hésitez pas à me contacter pour plus d’informations.', 'Verkaufe %formatted_item_links, schreib mir für mehr Infos', '%formatted_item_links 판매 중입니다, 정보가 더 필요하시면 메시지 주세요.', '', '', '', ''),
-	(1271, 'response_wtb_items_whisper', '%formatted_item_links 필요하신분 귓 주세요.', 0, 0, '', 'J’ai %formatted_item_links, fais-moi savoir si cela t’intéresse.', 'Ich habe %formatted_item_links, sagt Bescheid bei Interesse', '%formatted_item_links 가지고 있어요, 관심 있으면 알려주세요.', '', '', '', ''),
-	(1272, 'response_wtb_items_whisper', '%formatted_item_links 아따 이거 어따 쓰는겨?;;', 0, 0, '', 'Je vends des %formatted_item_links, parlons chiffres.', 'Verkaufe %formatted_item_links, lass uns über Zahlen reden', '%formatted_item_links 팝니다, 구체적인 가격을 얘기해 보죠.', '', '', '', ''),
-	(1273, 'response_wtb_items_whisper', '%formatted_item_links 팜팜! 싸게 떨이 처분!', 0, 0, '', 'Je peux vous vendre %formatted_item_links, il suffit de me dire ce que vous proposez.', 'Ich kann dir %formatted_item_links verkaufen, was bietest du?', '%formatted_item_links 팔 수 있어요, 얼마를 제안하실지 알려주세요.', '', '', '', ''),
-	(1274, 'response_wtb_items_whisper', '저기, %formatted_item_links 팔고 있는데 관심 있으면 연락 주세요.', 0, 0, '', 'Salut, j’ai des %formatted_item_links à vendre, fais-moi signe si ça t’intéresse', 'Hey, habe %formatted_item_links zu verkaufen, meldet euch bei Interesse', '저기, %formatted_item_links 팔고 있는데 관심 있으면 연락 주세요.', '', '', '', ''),
-	(1275, 'response_wtb_items_whisper', '%formatted_item_links 가격만 귓말로 주세요', 0, 0, '', 'J’ai %formatted_item_links, contactez-moi en privé pour connaître le prix.', 'Ich habe %formatted_item_links, PN für den Preis', '%formatted_item_links 있어요, 가격은 개인 메시지(귓속말) 주세요.', '', '', '', ''),
-	(1276, 'response_wtb_items_whisper', '%formatted_item_links 정리합니다 가져가세유', 0, 0, '', 'Je vends %formatted_item_links, je suis ouvert aux offres.', 'Verkaufe %formatted_item_links, bin offen für Angebote', '%formatted_item_links 팝니다, 가격 제안 받아요.', '', '', '', ''),
-	(1277, 'response_wtb_items_whisper', '%formatted_item_links 떨이 합니다 편하게 귓 주세여.', 0, 0, '', 'J’ai des %formatted_item_links, n’hésite pas à me contacter.', 'Ich habe %formatted_item_links, schreibt mir einfach', '%formatted_item_links 있어요, 편하게 메시지 주세요.', '', '', '', ''),
-	(1278, 'response_wtb_items_whisper', '%formatted_item_links 필요하시면 드립니다 귓말 주세여', 0, 0, '', 'Je peux vous proposer %formatted_item_links, dites-moi si cela vous inté레스.', 'Kann %formatted_item_links anbieten, sagt Bescheid bei Interesse', '%formatted_item_links 드릴 수 있어요, 관심 있으면 말씀하세요.', '', '', '', ''),
-	(1279, 'response_wtb_items_whisper', '%formatted_item_links 적당한 가격에 팝니다~~', 0, 0, '', 'Je vends des %formatted_item_links, je peux m’adapter à toute offre raisonnable.', 'Verkaufe %formatted_item_links, bitte vernünftige Angebote', '%formatted_item_links 판매합니다, 합리적인 가격이면 다 맞춰드릴 수 있어요.', '', '', '', ''),
-	(1280, 'response_wtb_items_whisper', '%formatted_item_links 있습니다, 필요하시면 연락 주세요.', 0, 0, '', 'J’ai des %formatted_item_links, n’hésitez pas à me contacter pour plus d’informations.', 'Ich habe %formatted_item_links, meldet euch für mehr Infos', '%formatted_item_links 있습니다, 정보 더 필요하시면 연락 주세요.', '', '', '', ''),
-	(1281, 'response_wtb_items_whisper', '%formatted_item_links 첨 보는데 싸게 팝니당', 0, 0, '', 'J’ai %formatted_item_links, proposez-moi quelque chose.', 'Ich habe %formatted_item_links, macht mir ein Angebot', '%formatted_item_links 있어요, 가격 제안해 주세요.', '', '', '', ''),
-	(1282, 'response_wtb_items_whisper', '%formatted_item_links 판매 중, 관심있으면 귓', 0, 0, '', 'Je vends des %formatted_item_links, envoie-moi un message si ça t’intéresse', 'Verkaufe %formatted_item_links, schreibt mir bei Interesse', '%formatted_item_links 판매 중입니다, 관심 있으면 메시지 한 통 주세요.', '', '', '', ''),
-	(1283, 'response_wtb_items_whisper', '%formatted_item_links 싸게 팝니다', 0, 0, '', 'J’ai des %formatted_item_links à vendre, parlons affaires.', 'Habe %formatted_item_links zu verkaufen, lass uns handeln', '%formatted_item_links 판매합니다, 비즈니스 얘기 좀 해보죠.', '', '', '', ''),
-	(1284, 'response_wtb_items_whisper', '%formatted_item_links 필요하신분 계십니까?', 0, 0, '', 'J’ai des %formatted_item_links, tu veux que je te les envoie ?', 'Ich habe %formatted_item_links, sag Bescheid wenn du willst', '%formatted_item_links 있습니다, 원하시면 말씀하세요.', '', '', '', ''),
-	(1285, 'quest_accept', '퀘스트를 수락했습니다.', 0, 0, '', 'Quête accepté!', 'Quest angenommen', '퀘스트를 수락했습니다.', '', 'Misión aceptada', '', 'Квест приня트'),
-	(1286, 'quest_remove', '퀘스트가 삭제되었습니다.', 0, 0, '', 'Quête supprimée', 'Quest entfernt', '퀘스트가 삭제되었습니다.', '', 'Misión eliminada', '', 'Квест удален'),
-	(1287, 'quest_cant_take', '이 퀘스트를 왜 수락이 안됨?.', 0, 0, '', 'Je ne peux pas prendre cette quête.', 'Ich kann diese Quest nicht annehmen', '이 퀘스트를 수락할 수 없어요.', '', 'No puedo tomar esta búsqueda', '', 'Я не могу взять этот квест'),
-	(1288, 'quest_error_talk', '퀘스트를 주는 NPC와 대화할 수 없어요.', 0, 0, '', 'Je ne peux pas parler à ce donneur de quête', 'Ich kann nicht mit dem Questgeber sprechen', '퀘스트를 주는 NPC와 대화할 수 없어요.', '', 'No puedo hablar con el propietario de la mision', '', ''),
-	(1289, 'quest_error_completed', '이미 %quest 퀘스트를 완료했습니다.', 0, 0, '', 'J’ai déjà accompli %quête', 'Ich habe %quest bereits abgeschlossen', '이미 %quest 퀘스트를 완료했습니다.', '', 'Ya he completado la mision %quest', '', 'Я уже выполнил %quest'),
-	(1290, 'quest_error_have_quest', '이미 %quest 퀘스트를 가지고 있어요.', 0, 0, '', 'Je possède déjà %quest', 'Ich habe %quest bereits', '이미 %quest 퀘스트를 가지고 있어요.', '', 'Ya tengo la mision %quest', '', 'У меня уже есть %quest'),
-	(1291, 'quest_error_cant_take', '%quest 이퀘스트 왜 수락 안되는겨??;;', 0, 0, '', 'Je ne peux pas accomplir cette %quest.', 'Ich kann %quest nicht annehmen', '%quest 퀘스트를 수락할 수 없습니다.', '', 'No puedo aceptar la mision %quest', '', ''),
-	(1292, 'quest_error_log_full', '퀘스트 목록이 꽉 차서 %quest 퀘스트를 받을 수 없어요!', 0, 0, '', 'Je ne peux pas prendre %quest, car mon journal de quêtes est plein.', 'Ich kann %quest nicht annehmen, mein Questlog ist voll', '퀘스트 목록이 꽉 차서 %quest 퀘스트를 받을 수 없어요!', '', 'No puedo aceptar la mision %quest porque mi registro de misiones esta completo', '', ''),
-	(1293, 'quest_error_bag_full', '가방이 가득 차서 %quest 퀘스트를 받을 수 없어요!', 0, 0, '', 'Je ne peux pas prendre %quest car mon sac est plein.', 'Ich kann %quest nicht annehmen, meine Tasche ist voll', '가방이 가득 차서 %quest 퀘스트를 받을 수 없어요!', '', 'No puedo aceptar la mision %quest porque mi inventario esta lleno', '', ''),
-	(1294, 'quest_accepted', '%quest 퀘스트 바로시작!', 0, 0, '', 'J’ai accepté la %quête.', 'Ich habe %quest angenommen', '%quest 퀘스트를 수락했습니다!', '', 'He aceptado la mision %quest', '', 'Я принял %quest'),
-	(1295, 'quest_status_incomplete', '아직 %quest 퀘스트를 완료하지 못했어요.', 0, 0, '', 'Je n’ai pas encore terminé la quête %quest.', 'Ich habe die Quest %quest nicht abgeschlossen', '아직 %quest 퀘스트를 완료하지 못했어요.', '', 'No he completado la mision %quest', '', 'Я не выполнил квест %quest'),
-	(1296, 'quest_status_available', '%quest 이제 렙되니까 받아지네 ㅋㅋ', 0, 0, '', 'Il y a une %quête disponible.', 'Quest %quest verfügbar', '%quest 퀘스트를 받을 수 있어요!', '', 'Mision %quest disponible', '', 'Квест %quest доступен'),
-	(1297, 'quest_status_failed', '%quest 퀘스트에 실패했습니다.', 0, 0, '', 'J’ai échoué à la quête %quest.', 'Ich habe die Quest %quest vergeigt', '%quest 퀘스트에 실패했습니다.', '', 'He fallado la mision %quest', '', 'Я провалил квест %quest'),
-	(1298, 'quest_status_unable_to_complete', '%quest 이 퀘스트 왜 완료가 안되냐..', 0, 0, '', 'Je ne peux pas terminer la quête %quest.', 'Ich kann die Quest %quest nicht abgeben', '%quest 퀘스트를 완료(제출)할 수 없습니다.', '', 'No puedo entregar la mision %quest', '', 'Я не могу сдать квест %quest'),
-	(1299, 'quest_status_completed', '%quest 퀘스트를 성공적으로 클리어!', 0, 0, '', 'J’ai terminé la quête %quest', 'Ich habe die Quest %quest abgeschlossen', '%quest 퀘스트를 성공적으로 완료했습니다!', '', 'He completado la mision %quest', '', 'Я выполнил квест %quest'),
-	(1300, 'quest_status_complete_single_reward', '%quest 퀘스트를 완료하고 %item을(를) 획득했습니다!', 0, 0, '', 'J’ai terminé la quête %quest et j’ai reçu %item.', 'Ich habe die Quest %quest abgeschlossen und %item erhalten', '%quest 퀘스트를 완료하고 %item을(를) 획득했습니다!', '', 'He completado la mision %quest y he recibido %item', '', 'Я выполнил квест %quest и получил %item'),
-	(1301, 'quest_status_complete_pick_reward', '%quest 퀘스트 완료 보상으로 어떤 걸 선택하는 게 좋을까요? %rewards', 0, 0, '', 'Quelle récompense devrais-je choisir pour avoir complété la quête %quest? %rewards', 'Welche Belohnung soll ich für die Quest %quest nehmen? %rewards', '%quest 퀘스트 완료 보상으로 어떤 걸 선택하는 게 좋을까요? %rewards', '', '¿Que recompensa deberia escoger por completar la mision %quest?%rewards', '', 'Какую награду выбрать за выполнение квеста %quest?%rewards'),
-	(1302, 'quest_choose_reward', '좋아요, 보상으로 %item을(를) 선택할게요.', 0, 0, '', 'D’accord, je vais choisir %item comme récompense.', 'Okay, ich nehme %item als Belohnung', '좋아요, 보상으로 %item을(를) 선택할게요.', '', 'De acuerdo, voy a escoger %item de recompensa', '', 'Хорошо, выберу %item в качестве награды'),
-	(1303, 'hello', '안녕하세요!', 0, 0, '', 'Salut!', 'Hallo', '안녕하세요!', '', 'Hola', '', 'Привет'),
-	(1304, 'hello', '하이!', 0, 0, '', 'Salut!', 'Hallo!', '안녕하세요!', '', '¡Hola!', '', 'Привет!'),
-	(1305, 'hello', '안녕!', 0, 0, '', 'Salut! Comment ça va?', 'Hi', '안녕!', '', 'Hola', '', 'Здравствуй'),
-	(1306, 'hello', '안녕하셔유!', 0, 0, '', 'Salut!', 'Hi!', '안녕!', '', '¡Hola!', '', 'Здравствуй!'),
-	(1307, 'hello', '안녕하세요!', 0, 0, '', 'Salut toi!', 'Hallo zusammen!', '안녕하세요!', '', '¡Hola!', '', 'Приветствую!'),
-	(1308, 'hello_follow', '안녕하세요, 따라가겠습니다!', 0, 0, '', 'Bonjour, je te suis !', 'Hallo, ich folge dir!', '안녕하세요, 따라가겠습니다!', '', '¡Hola, te sigo!', '', 'Привет, я следую за тобой!'),
-	(1309, 'hello_follow', '안녕하셔유 누가 길안내좀 해주실분~', 0, 0, '', 'Bonjour, je vais vous montrer le chemin !', 'Hallo, geh vor!', '안녕하세요, 길을 안내해 주세요!', '', '¡Hola, guía el camino!', '', 'Привет, веди меня!'),
-	(1310, 'hello_follow', '하이~누가 길 안내좀 해주실분 ㅋ', 0, 0, '', 'Salut, montre le chemin!', 'Hi, geh vor!', '안녕, 길을 안내해 줘!', '', '¡Hola, guía el camino!', '', 'Привет, веди меня!'),
-	(1311, 'join_group', '저기 %player님, 제 파티에 가입하시겠어요?', 0, 0, '', 'Salut %player, est-ce que tu veux rejoindre mon groupe ?', 'Hey %player, willst du in meine Gruppe?', '저기 %player님, 제 파티에 가입하시겠어요?', '', 'Oye %player, ¿Quieres unirte a mi grupo?', '', 'Эй %player, хочешь в мою группу?'),
-	(1312, 'join_raid', '저기 %player님, 제 공격대에 가입하시겠어요?', 0, 0, '', 'Salut %player, est-ce que tu veux rejoindre mon groupe?', 'Hey %player, kommst du in meine Gruppe?', '저기 %player님, 제 공격대에 가입하시겠어요?', '', 'Oye %player, ¿Quieres unirte a mi banda?', '', 'Эй %player, хочешь в мою группу?'),
-	(1313, 'logout_cancel', '뭐여 왜 로그아웃 안되!?', 0, 0, '', 'Annulation de la déconnexion !', 'Logout abgebrochen!', '로그아웃이 취소되었습니다!', '', 'Cerrar sesión cancelado!', '', 'Выход отменен!'),
-	(1314, 'logout_start', '오늘은 여까지만 해야겠네!', 0, 0, '', 'Je me déconnecte !', 'Ich logge mich aus!', '로그아웃하겠습니다!', '', '¡Me estoy desconectando!', '', 'Я выхожу из игры!'),
-	(1315, 'goodbye', '잘 가세요!', 0, 0, '', 'Au revoir!', 'Auf Wiedersehen!', '잘 가세요!', '', '¡Adiós!', '', 'До свидания!'),
-	(1316, 'goodbye', '잘 가요!', 0, 0, '', 'Au revoir!', 'Tschüss!', '잘 가요!', '', '¡Adiós!', '', 'Пока!'),
-	(1317, 'goodbye', '님들 나중에 봐요!', 0, 0, '', 'À plus tard !', 'Bis später!', '나중에 봐요!', '', '¡Hasta luego!', '', 'Увидимся!'),
-	(1318, 'reply', '%s님,쫌전에 그거 뭔소리임?\r\n', 0, 0, '', 'c’était quoi ce %s?', 'Was war das, %s?', '%s님, 방금 그건 뭐였죠?', '', '¿qué has dicho %s?', '', 'что это было, %s?'),
-	(1319, 'reply', '%s님, 무슨 뜻인지 잘 모르겠어요.', 0, 0, '', 'Je ne suis pas sûre de comprendre %s.', 'Bin nicht sicher, ob ich dich verstehe, %s?', '%s님, 무슨 뜻인지 잘 모르겠어요.', '', '¿no estoy seguro de entenderte %s?', '', 'не уверен, что понял %s?'),
-	(1320, 'reply', '어... 무슨 말씀을 하시는 건지 전혀 모르겠네요.', 0, 0, '', 'Oh, je ne sais vraiment pas de quoi vous parlez.', 'äh... keine Ahnung, wovon du redest', '어... 무슨 말씀을 하시는 건지 전혀 모르겠네요.', '', 'uh... ni idea de lo que estás hablando', '', 'эээ... не понимаю, о чем ты'),
-	(1321, 'reply', '%s님, 지금 저한테 얘기하는거?', 0, 0, '', 'Tu me parles, %s ?', 'Redest du mit mir, %s?', '%s님, 지금 저한테 말씀하시는 건가요?', '', '¿Me hablas a mí %s?', '', 'ты ко мне обращаешься, %s?'),
-	(1322, 'reply', '아 쫌 모르면 인벤가서 좀 찾아봐요 일일이 다 채팅창에 물어보면 어케 합니까 진짜..하 증말', 0, 0, '', 'Oh là là, qu’est-ce qui se passe?', 'whaaaa?', '뭐라구요??', '', '¿quéaaa?', '', 'чт-что?'),
-	(1323, 'reply', '네?', 0, 0, '', 'heein ?', 'hä?', '네?', '', '¿eh?', '', 'а?'),
-	(1324, 'reply', '뭐라구요?', 0, 0, '', 'Quoi ?', 'was?', '뭐라구요?', '', '¿qué?', '', 'что?'),
-	(1325, 'reply', '지금 뭐라고 말하고 계시는거?', 0, 0, '', 'Tu es en train de parler ?', 'redest du grade?', '지금 말하고 계신 건가요?', '', '¿estás hablando?', '', 'ты говоришь?'),
-	(1326, 'reply', '뭐 그러시든가요.', 0, 0, '', 'on s’en fou mec', 'mir egal, Digga', '뭐 그러시든가요.', '', 'Menudo tio...', '', 'как хочешь'),
-	(1327, 'reply', '무슨 말인지 하나도 모르겠네.', 0, 0, '', 'tu m’as perdu', 'da bin ich raus', '무슨 말인지 하나도 모르겠네요.', '', 'No entiendo ni papa', '', 'ты меня запутал'),
-	(1328, 'reply', '어쩌고 저쩌고...', 0, 0, '', 'bla bla bla ...', 'Bla bla bla...', '어쩌고 저쩌고...', '', 'Bla bla bla...', '', 'Бла бла бла...'),
-	(1329, 'reply', '%s님, 뭐라고 하셨어요?', 0, 0, '', 'Qu’est-ce que tu as dit, %s?', 'Was hast du gesagt, %s?', '%s님, 뭐라고 하셨어요?', '', '¿Qué me estas contando %s?', '', 'Что ты сказал, %s?'),
-	(1330, 'reply', '%s님, 게임에 집중하세요!', 0, 0, '', 'Concentre-toi sur le jeu, %s!', 'Konzentrier dich aufs Spiel, %s!', '%s님, 게임에 집중하세요!', '', '¡Concéntrate en el juego, %s!', '', 'Сконцентрируйся на игре, %s!'),
-	(1331, 'reply', '%s님과 대화해서 정말 즐거워요! 꼭 한번 만나보고 싶었어요.', 0, 0, '', 'Discuter avec toi %s est tellement génial! J’ai toujours voulu te rencontrer.', 'Mit dir zu chatten, %s, ist so großartig! Wollte dich immer schon treffen', '%s님과 대화해서 정말 즐거워요! 꼭 한번 만나보고 싶었어요.', '', '¡%s, chatear contigo es genial! Siempre quise conocerte', '', 'Общаться с тобой, %s, так здорово! Всегда хотел встретиться'),
-	(1332, 'reply', '오우 님들 대화 수준 장난아닌듯? ㅋ', 0, 0, '', 'Ces messages de chat me rendent dingue! J’ai l’impression de tous vous connaître!', 'Diese Chatnachrichten machen mich fertig! Fühlt sich an, als würde ich euch alle kennen!', '이 대화 내용들이 정말 놀라워요! 여러분을 다 알고 있는 것 같은 기분이에요!', '', '¡Estos mensajes de chat me están asustando! ¿De que cojones estais hablando?', '', 'Эти сообщения в чате сводят меня с ума! Такое чувство, что я всех вас знаю!'),
-	(1333, 'reply', '아, 네! 하하, 그럼요!!!', 0, 0, '', 'Bien sûr! Haha, ouais, bien sûr!', 'JA SICHER! HAHA KLAR!!!', '아, 네! 하하, 그럼요!!!', '', '¡SÍ, CORRECTO! ¡¡¡JAJA SEGURO!!!', '', 'ДА ЛАДНО! ХАХА КОНЕЧНО!!!'),
-	(1334, 'reply', '믿어 드릴께!!!', 0, 0, '', 'Je te crois !!!', 'Ich glaub dir!!!', '믿어 드릴게요!!!', '', '¡Si, claro!', '', 'Я тебе верю!!!'),
-	(1335, 'reply', '오 간만에보는듯 잘지냈음? ㅋㅋㅋ', 0, 0, '', 'D’accord, euhuh MDR', 'Okay, ähm, lol', '알았어요, 어련하시겠어요 ㅋㅋㅋ', '', 'OK, uhuh LOL', '', 'ОК, ага, ЛОЛ'),
-	(1336, 'reply', '왜 다들 항상 똑같은 말만 하는 거죠???', 0, 0, '', 'Pourquoi est-ce que tout le monde répète toujours les mêmes choses ???', 'Warum sagt eigentlich jeder immer dasselbe???', '왜 다들 항상 똑같은 말만 하는 거죠???', '', '¿Por qué todo el mundo siempre dice lo mismo?', '', 'Почему все всегда говорят одно и то же???'),
-	(1337, 'reply', '저기 %s님... 아, 아녜요!', 0, 0, '', 'Hey %s....oh, laisse tomber!', 'Hey %s... ach egal!', '저기 %s님... 아, 아녜요!', '', 'Oye %s... ¡oh, no importa!', '', 'Эй %s... а, неважно!'),
-	(1338, 'reply', '%s님, 무슨 말씀을 하시는 거임?', 0, 0, '', 'De quoi parles-tu %s', 'Wovon redest du, %s', '%s님, 무슨 말씀을 하시는 거예요?', '', 'De qué estás hablando %s', '', 'О чем ты, %s'),
-	(1339, 'reply', '누가 그딴 소리했음?? 지금 내 얘기 하는거삼?.', 0, 0, '', 'Qui a dit ça ? Je ressemble à ce commentaire', 'Wer hat das gesagt? Ich fühl mich angesprochen', '누가 그런 말을 했죠? 저를 두고 하는 말 같네요.', '', '¿Quién ha dicho eso? ¿Estais hablando de mi?', '', 'Кто это сказал? Я похож на это замечание'),
-	(1340, 'reply', '님들 도대체 뭔 소릴 하는거임?', 0, 0, '', 'Qu’est-ce que vous racontez tous en fait?', 'wtf, worüber redet ihr alle', '다들 도대체 뭔 소릴 하는 거야?', '', '', '', 'чего вы все несете'),
-	(1341, 'reply', '진짜로, 구라 안 치고 진짜 리얼!', 0, 0, '', '', 'ehrlich jetzt, kein Witz', '진짜로, 구라 안 치고 진짜임!', '', '', '', 'фр фр, без шуток'),
-	(1342, 'reply', '너 님은 얄짤없삼!', 0, 0, '', 'Tu ne comprends que dalle.', 'du bekommst gar nix', '너한텐 국물도 없어!', '', '', '', 'ты ничего не получишь'),
-	(1343, 'reply', '왔섭 맨.', 0, 0, '', '', 'Plus Aura!!!', '간지 나네.', '', '', '', 'сваг'),
-	(1344, 'reply', '베리 감사!', 0, 0, '', 'De rien !', 'thx!', '감사!', '', '', '', 'спасибо!'),
-	(1345, 'reply', '아니', 0, 0, '', 'non', 'nein', '아니', '', '', '', 'нет'),
-	(1346, 'reply', '어', 0, 0, '', 'ouai', 'jup', '어', '', '', '', 'Да'),
-	(1347, 'reply', '애도를 표합니다.', 0, 0, '', '', 'f', '애도를 표합니다.', '', '', '', 'ф'),
-	(1348, 'reply', '%s, 말도 안 돼 xD', 0, 0, '', '%s sans déconner xD', '%s, kein Scheiß xD', '%s, 말도 안 돼 xD', '', '', '', '%s, без шуток xD'),
-	(1349, 'reply', '왜 그런 거야?', 0, 0, '', 'Pourquoi cela?', 'warum ist das so', '왜 그런 거야?', '', '', '', 'почему так'),
-	(1350, 'reply', 'ㅋㅋㅋㅋㅋ', 0, 0, '', 'Je me marre à en pleurer.', 'ROFL', 'ㅋㅋㅋㅋㅋ', '', '', '', 'лмао'),
-	(1351, 'reply', '채팅창에서 알려준대로 하니까 더 햇갈리네...', 0, 0, '', 'Je pensais que je devrais rester silencieux, je commençais à me perdre dans la conversation encore une fois.', 'dachte, ich halt besser die Klappe, der Chat hat mich wieder verwirrt', '그냥 가만히 있어야겠어요. 채팅 때문에 또 헷갈리네요.', '', '', '', 'решил помолчать, снова запутался в чате'),
-	(1352, 'reply', '나 진짜 질투할지도 몰라.', 0, 0, '', 'Je peux devenir vraiment jaloux.', 'ich kann richtig eifersüchtig werden', '나 진짜 질투할지도 몰라.', '', '', '', 'я могу по-настоящему завидовать'),
-	(1353, 'reply', '%s님, 제 말에 섞인 비꼬는 투가 안 느껴지세요?', 0, 0, '', '%s, tu ne peux pas entendre le sarcasme qui goutte de mon texte?', '%s, du hörst den triefenden Sarkasmus in meinem text nicht', '%s님, 제 말에 섞인 비꼬는 투가 안 느껴지세요?', '', '', '', ''),
-	(1354, 'reply', '오해할 만한 의도는 없다고 했으니 괜찮아.', 0, 0, '', 'Il a dit no homo, tout va bien.', 'er meinte „kein Ding“, passt schon', '오해할 만한 의도는 없다고 했으니 괜찮아.', '', '', '', ''),
-	(1355, 'reply', '저기 퀘스트 같이좀 했으면 좋겠습니다.', 0, 0, '', '', 'Zwergen-Moment', '딱 드워프스럽네.', '', '', '', 'момент дворфа'),
-	(1356, 'reply', '네, %s님.', 0, 0, '', 'Oui %s', 'Ja, %s', '네, %s님.', '', '', '', 'Да, %s'),
-	(1357, 'reply', '흥미롭군요...', 0, 0, '', 'Intéressant...', 'interessant...', '흥미롭군요...', '', '', '', 'интересно...'),
-	(1358, 'reply', 'ㅎㅎ', 0, 0, '', 'Ah ah!', 'lol', 'ㅎㅎ', '', '', '', 'лол'),
-	(1359, 'reply', '%s, 에라이 나쁜 놈아 :D', 0, 0, '', '%s va te faire enculer :D', '%s, fick dich, Mann :D', '%s, 에라이 나쁜 놈아 :D', '', '', '', '%s, иди ты :D'),
-	(1360, 'reply', '흠..', 0, 0, '', '', ':^)', ':^)', '', '', '', ':^)'),
-	(1361, 'reply', '감사', 0, 0, '', 'Merci à toi!', 'thx', '감사', '', '', '', 'спс'),
-	(1362, 'reply', '%s님, 맞는 말씀입니다.', 0, 0, '', '%s Bien dit.', '%s, gut gesagt', '%s님, 맞는 말씀입니다.', '', '', '', '%s, хорошо сказано'),
-	(1363, 'reply', '야호!', 0, 0, '', '', 'yay', '야호!', '', '', '', 'ура'),
-	(1364, 'reply', '그래', 0, 0, '', '', 'ja', '그래', '', '', '', 'да'),
-	(1365, 'reply', '오오오오', 0, 0, '', '', 'ooooooh', '오오오오', '', '', '', 'ооооо'),
-	(1366, 'reply', '흠', 0, 0, '', '', 'hmm', '흠', '', '', '', 'хмм'),
-	(1367, 'reply', '오 오랜만임 잘지냈슈?', 0, 0, '', 'Oui, c’est ça.', 'ja klar', '어련하시겠어요.', '', '', '', 'ага, конечно'),
-	(1368, 'reply', '아 진짜 극혐이다.', 0, 0, '', 'Tu m’as vraiment dégouté, c’est quoi ce délire ?', 'mir wird schlecht, wtf', '아 진짜 극혐이다.', '', '', '', 'ты заставил меня блевануть, что за'),
-	(1369, 'reply', '뜨겁네!', 0, 0, '', ' !', 'heiß', '뜨겁네!', '', '', '', 'жарко'),
-	(1370, 'reply', '화났나 보네.', 0, 0, '', 'Les pétasses sont folles', 'die Weiber sind sauer', '화났나 보네.', '', '', '', 'злятся'),
-	(1371, 'reply', '%s님, 도대체 뭘 드신 거예요?', 0, 0, '', 'Qu’est-ce que tu as mangé %s', 'was hast du gegessen, %s', '%s님, 도대체 뭘 드신 거예요?', '', '', '', 'что ты ел, %s'),
-	(1372, 'reply', '헐', 0, 0, '', '', 'wtf', '헐', '', '', '', 'что за'),
-	(1373, 'reply', '그 코멘트를 이해해 보도록 노력해 볼게요.', 0, 0, '', 'Je vais essayer de comprendre ce commentaire', 'ich versuche, diesen Kommentar zu verstehen', '그 코멘트를 이해해 보도록 노력해 볼게요.', '', '', '', 'попробую понять этот комментарий'),
-	(1374, 'reply', '*혼란스러움*', 0, 0, '', '*Je suis un peu perdu.*', '*verwirrt*', '*혼란스러움*', '', '', '', '*в замешательстве*'),
-	(1375, 'reply', '당연하지!', 0, 0, '', 'D’accord !', 'fuck ja', '당연하지!', '', '', '', 'да, черт возьми'),
-	(1376, 'reply', '아 눈뜨고 못 봐주겠네, 진짜', 0, 0, '', 'Hennetement, 0/10 je ne te relirais pas.', '0/10 würde ich nicht wieder lesen', '0/10점, 다신 안 볼 내용이네요.', '', '', '', '0/10 не стал бы читать снова'),
-	(1377, 'reply', '오우 당신 의견에 저는 찬성!', 0, 0, '', '10/10 Absolument, je te relirais sans hésiter!', '10/10 würde ich wieder lesen', '10/10점, 명문이네요!', '', '', '', '10/10 прочитал бы снова'),
-	(1378, 'reply', '음, 뭐, 그다지…. 읽어 줄 만은 하달까.', 0, 0, '', 'Je dirais que c’est un 6/10 en termes de lecture.', '6/10 würde es lesen', '6/10점, 읽을만하네요.', '', '', '', '6/10 прочитал бы'),
-	(1379, 'reply', '뭐 나쁘진 않네요.', 0, 0, '', '7/10 serait mon verdict.', '7/10 vielleicht', '7/10점 정도?', '', '', '', '7/10 прочитал бы'),
-	(1380, 'reply', '근본 있네.', 0, 0, '', '', 'Respekt!', '근본 있네.', '', '', '', 'бейсд'),
-	(1381, 'reply', '오, 아마도요.', 0, 0, '', 'Oh oui, peut-être que oui.', 'oh ja, vielleicht', '오, 아마도요.', '', '', '', 'о да, может быть'),
-	(1382, 'reply', '그래, 근데 뭐?', 0, 0, '', 'Ouais, donc quoi ?', 'ja und?', '그래, 근데 뭐?', '', '', '', 'да, и что'),
-	(1383, 'reply', '헤이 %s님, 당신을 잊지 않았어요.', 0, 1, '', 'salut %s je ne t’ai pas oublié', 'hey %s, ich habe dich nicht vergessen', '헤이 %s님, 당신을 잊지 않았어요.', '', 'hey %s no te he olvidado', '', 'эй %s, я тебя не забыл'),
-	(1384, 'reply', '%s님, 당신 때문에 정말 화나네요.', 0, 1, '', 'Tu me saoules %s', 'du gehst mir hart auf den Sack, %s', '%s님, 당신 때문에 정말 화나네요.', '', 'me cabreas %s', '', 'ты меня бесишь, %s'),
-	(1385, 'reply', '%s님, 이번엔 반드시 당신을 잡겠어요.', 0, 1, '', 'je vais t’avoir cette fois %s', 'diesmal krieg ich dich, %s', '%s님, 이번엔 반드시 당신을 잡겠어요.', '', 'voy a atraparte esta vez %s', '', 'я достану тебя в этот раз, %s'),
-	(1386, 'reply', '%s님, 등 뒤를 조심하는 게 좋을 거예요.', 0, 1, '', 'Fais mieux de surveiller tes arrières %s', 'Pass besser auf, %s', '%s님, 등 뒤를 조심하는 게 좋을 거예요.', '', 'mejor cuida tu espalda %s', '', 'лучше берегись, %s'),
-	(1387, 'reply', '지난 라운드는 별로 마음에 안 들었어.', 0, 1, '', 'Je n’ai pas aimé notre dernier round.', 'Die letzte Runde mochte ich nicht so', '지난 라운드는 별로 마음에 안 들었어.', '', 'no me gustó tanto la última ronda', '', 'мне не понравился прошлый раунд'),
-	(1388, 'reply', '지난 라운드는 %s 때문에 완전히 망쳤어!', 0, 1, '', 'J’ai été nul lors de la dernière manche à cause de %s.', 'Letzte Runde war ich mies, danke, %s', '지난 라운드는 %s 때문에 완전히 망쳤어!', '', 'chupé la última ronda gracias a %s', '', 'я был плох в прошлом раунде из-за %s'),
-	(1389, 'reply', '죽을 준비해라, %s!', 0, 1, '', 'Prépare-toi à mourir %s', 'Mach dich bereit zu sterben, %s', '죽을 준비해라, %s!', '', 'prepárate para morir %s', '', 'готовься умереть, %s'),
-	(1390, 'reply', '%s, 날 죽이다니 정말 기분 별로네!', 0, 1, '', 'Je n’apprécie pas que tu me tues %s.', 'Fands nicht geil, dass du mich gekillt hast, %s', '%s, 날 죽이다니 정말 기분 별로네!', '', 'no aprecio que me mates %s', '', 'не нравится, что ты меня убил, %s'),
-	(1391, 'reply', '%s, 네가 정말 싫어!', 0, 1, '', 'Oh, %s je te déteste.', '%s, ich hasse dich', '%s, 네가 정말 싫어!', '', '%s, te odio', '', '%s, я тебя ненавижу'),
-	(1392, 'reply', '으으으, 이번에는 꼭 널 잡아내겠다, %s!', 0, 1, '', 'grrrrrr, je vais t’avoir cette fois %s', 'grrrrrr, diesmal krieg ich dich, %s', '으으으, 이번에는 꼭 널 잡아내겠다, %s!', '', 'grrrrrr, te libraste esta vez %s', '', 'грррр, в этот раз я тебя достану, %s'),
-	(1393, 'reply', '가서 너나 잘하슈!', 0, 1, '', 'Eh bien va te faire mettre', 'FICK DICH! NEIN, FICK MICH!', '가서 너나 잘해!', '', 'vamos a la mierda', '', 'ну и пошел ты'),
-	(1394, 'reply', '%s, 네 입에다 확 토해버리고 싶네!', 0, 1, '', '%s je vais te gerber dans la bouche', '%s, ich kotze dir in dein verficktes Maul', '%s, 네 입에다 확 토해버리고 싶네!', '', '', '', ''),
-	(1395, 'reply', '함부로 판단하지 마!', 0, 1, '', 'Ne me juge pas putain.', 'verurteil mich nicht, verdammt nochmal', '함부로 판단하지 마!', '', '', '', 'не суди меня'),
-	(1396, 'reply', '너희 엄마는 너무 뚱뚱해서 어둠의 문도 못 지나가실 거야!', 0, 1, '', 'Ta mère est tellement grosse qu’elle ne peut même pas passer à travers le Portail des Ténèbres.', 'Deine Mom ist so fett, sie passt nicht mal durchs Dunkle Portal', '너희 엄마는 너무 뚱뚱해서 어둠의 문도 못 지나가실 거야!', '', '', '', ''),
-	(1397, 'reply', '뭐야?!', 0, 2, '', 'wtf', 'wtf', '뭐야?!', '', 'wtf', '', 'что за'),
-	(1398, 'reply', '뭐라고??', 0, 2, '', 'wtf??', 'wtf??', '뭐라고??', '', 'wtf??', '', 'что за??'),
-	(1399, 'reply', '한심한 닝겐!', 0, 2, '', 'low life', 'armselige Gestalt', '한심한 녀석!', '', 'low life', '', 'ничтожество'),
-	(1400, 'reply', '뭐야 이게?', 0, 2, '', 'wth', 'was zum Teufel', '뭐야 이게?', '', 'wth', '', 'что за'),
-	(1401, 'reply', '형편없네!', 0, 2, '', 'nul à chier', 'das war scheiße', '형편없네!', '', 'chupate esa', '', 'отстой'),
-	(1402, 'reply', '재대결해!!! 내가 저놈을 쓰러뜨리겠어!', 0, 2, '', 'REVANCHE!!! Je vais le terrasser', 'REMATCH!!! Ich mach ihn platt', '재대결해!!! 내가 저놈을 쓰러뜨리겠어!', '', '¡¡REVANCHA!!! lo estoy derribando', '', 'РЕВАНШ!!! я его уделаю'),
-	(1403, 'reply', '한심하게도 %s한테 죽다니!', 0, 2, '', 'Pathétique, je me suis fait tuer par %s.', 'peinlich, ich wurde von %s gekillt', '한심하게도 %s한테 죽다니!', '', 'patético, me mató %s', '', 'жалко, меня убил %s'),
-	(1404, 'reply', '됐어, 이제 그만할래!', 0, 2, '', 'Ok j’en fini.', 'ok, ich bin raus', '됐어, 이제 그만할래!', '', '', '', ''),
-	(1405, 'reply', '헤헤, 내가 %s를 해치운 건가?', 0, 3, '', 'Héhé, j’ai cloué %s?', 'hehe, hab %s weggeklatscht?', '헤헤, 내가 %s를 해치운 건가?', '', 'jeje, ¿acerté a %s?', '', 'хе-хе, я уделал %s?'),
-	(1406, 'reply', '%s를 죽이는 건 식은 죽 먹기지!', 0, 3, '', 'c’était trop facile, de tuer %s', 'viel zu easy, %s zu killen', '%s를 죽이는 건 식은 죽 먹기지!', '', 'fue demasiado fácil matar a %s', '', 'это было слишком просто, убил %s'),
-	(1407, 'reply', '잡았다, 요 자식아!', 0, 3, '', 'je t’ai eu enfoiré', 'hab dich, du Bastard', '잡았다, 이 자식아!', '', 'te pille hijo de perra', '', 'попался, дружок'),
-	(1408, 'reply', '하하!', 0, 3, '', 'Ha ha', 'haha', '하하!', '', 'ja, ja', '', 'ха-ха'),
-	(1409, 'reply', '루저섹히 ㅋ!', 0, 3, '', 'loser', 'Loser', '패배자!', '', 'loser', '', 'лузер'),
-	(1410, 'reply', '내가 %s를 죽였으니, 다음은 너 님들 차례!', 0, 3, '', 'J’ai éliminé %s et vous êtes tous les prochains, les gars.', 'ich hab %s gekillt und ihr seid als nächste dran, Jungs', '내가 %s를 죽였으니, 다음은 너희들 차례다!', '', 'yo maté a %s y a todos los siguientes tipos', '', 'я убил %s, вы все следующие'),
-	(1411, 'reply', '오야르, 내가 완벽하게 발라버렸네 ㅎ!', 0, 3, '', 'Oh ouais, je l’ai complètement battu', 'oh ja, hab ihn geownt', '오 예, 내가 완벽하게 발라버렸어!', '', 'oh, sí, lo tenía', '', 'о да, я его уделал'),
-	(1412, 'reply', '난 살인 머신이라고 ㅋ!', 0, 3, '', 'Je suis une machine à tuer.', 'ich bin ne Killmaschine', '난 살인 기계라고!', '', 'soy una máquina de matar', '', 'я машина для убийств'),
-	(1413, 'reply', '%s, 이 선혈이 낭자한 모습... 슬레이어의 노래가 떠오르네!', 0, 3, '', 'Oh ça, ça me rappelle une chanson de Slayer... tout ce carnage', '%s, erinnert mich an einen Slayer-Song... dieses ganze Gemetzel', '%s, 이 선혈이 낭자한 모습... 슬레이어의 노래가 떠오르네!', '', '%s, esto me recuerda a una canción de Slayer... todo este derramamiento de sangre', '', '%s, это напоминает мне песню Slayer... столько крови'),
-	(1414, 'reply', '미안 %s. 이 장면 다시 찍으면 안 될까?', 0, 3, '', 'Désolé, %s. On peut refaire la scène?', 'sorry, %s. Können wir die Szene nochmal machen?', '미안 %s. 이 장면 다시 찍으면 안 될까?', '', 'lo siento, %s. ¿Podemos hacer la escena de nuevo?', '', 'извини, %s. можем повторить сцену?'),
-	(1415, 'reply', '자... %s, 벌레 먹이가 된 기분이 어때???', 0, 3, '', 'Alors, comment aimes-tu être de la bouffe pour vers de terre %s ??', 'na, wie gefällt es dir Wurmfutter zu sein, %s???', '자... %s, 벌레 먹이가 된 기분이 어때???', '', 'así que... ¿cómo te gusta ser comida de gusanos %s???', '', 'ну как тебе быть кормом для червей, %s???'),
-	(1416, 'reply', '넌 죽은 거나 다름없어, %s 그게 게임의 규칙이니까!!!!', 0, 3, '', 'Je suis mort, %s, c’est une partie du jeu !!!!', 'du solltest tot sein, %s, das gehört zum Spiel!!!!!', '넌 죽은 거나 다름없어, %s 그게 게임의 규칙이니까!!!!', '', '¡¡Se supone que estás muerto, %s es parte del juego!!!!!', '', 'ты должен быть мёртв, %s, это часть игры!!!!!'),
-	(1417, 'reply', '미안, %s. 마치 앤디 워홀의 그림처럼 멋진 장면이었어!', 0, 3, '', 'Désolé, %s. Cela ressemblait aussi bien qu’une peinture d’Andy Warhol!', 'sorry, %s. das sah so gut aus wie ein Kunstwerk von der Kirmes!', '미안, %s. 마치 앤디 워홀의 그림처럼 멋진 장면이었어!', '', 'lo siento, %s. ¡Eso se veía tan bien como una pintura de Andy Worhol!', '', 'извини, %s. выглядело так же хорошо, как картина Энди Уорхола!'),
-	(1418, 'reply', '미안 %s. 다음에는 고무 탄환을 써줄게!', 0, 3, '', 'D’accord, %s la prochaine fois j’utiliserai les balles en caoutchouc !', '%s, ich nehme nächstes Mal Gummigeschosse!', '미안 %s. 다음에는 고무 탄환을 써줄게!', '', '%s, ¡usaré las balas de goma la próxima vez!', '', '%s, в следующий раз использую резиновые пули!'),
-	(1419, 'reply', '왜 그래, %s?? 머리가 어떻게 됐어? 하하하 침착해야지!!', 0, 3, '', 'Qu’est-ce qu’il se passe, %s ? Tu perds la tête ? Haha, faut garder son calme !', 'was ist los, %s?? Kopf verloren? hahaha, ruhig bleiben!!', '왜 그래, %s?? 머리가 어떻게 됐어? 하하하 침착해야지!!', '', '¿qué pasa, %s?? ¿has perdido la cabeza? jajaja tengo que mantener la calma!!', '', 'что случилось, %s?? голову потерял? хахаха, надо сохранять хладнокровие!!'),
-	(1420, 'reply', '어쩔 수 없었어, %s. 이해하지? 감독님이 시켰거든!!', 0, 3, '', 'Il fallait que je le fasse, %s. Tu comprends. Le Directeur l’a dit !!', 'musste das tun, %s. Du verstehst schon. Der Regisseur hat es so gesagt!!', '어쩔 수 없었어, %s. 이해하지? 감독님이 시켰거든!!', '', 'Tenía que hacerlo, %s. Entiendelo... ¡¡Dios me lo ordenó!!', '', 'я должен был это сделать, %s. Ты понимаешь. Режиссёр так сказал!!'),
-	(1421, 'reply', '야 %s.......으하하하하하하하하하하하', 0, 3, '', 'Hey %s.......MUAHAHAHAHAHAHAHAHAHAHA', 'hey %s.......MUAHAHAHAHAHAHAHAHAHAHA', '야 %s.......으하하하하하하하하하하하', '', 'hey %s.......MUAHAHAHAHAHAHAHAHAHAHA', '', 'эй, %s.......МУАХАХАХАХАХАХА'),
-	(1422, 'reply', '%s, 아주 즐거웠어!! 우리 다시 한번 해보자고, 샘.', 0, 3, '', '%s, j’ai adoré celui-là!! On rejoue Sam', '%s, das hab ich genossen!! Wiederholung bitte!', '%s, 아주 즐거웠어!! 우리 다시 한번 해보자고, 샘.', '', '%s, ¡disfruté ese! Juguemos de nuevo Sam', '', '%s, мне это понравилось!! Давай сыграем ещё раз, Сэм'),
-	(1423, 'reply', '야, %s! 이제부터 날 스카페이스라고 불러라.. 이 쓰레기 같은 녀석아!!!!', 0, 3, '', 'Hé, %s ! tu peux commencer à m’appeler Scarface .. sac à merde !!!!', 'hey, %s! Kannst mich ab jetzt "Scarface" nennen.. du Stück SCHEI**!!!!', '야, %s! 이제부터 날 스카페이스라고 불러라.. 이 쓰레기 같은 녀석아!!!!', '', '¡oye, %s! ¡Puedes empezar a llamarme caracortada... ¡¡¡un trozo de CHIT!!!', '', 'эй, %s! можешь звать меня ликом... ты кусок ЧЕРТА!!!!'),
-	(1424, 'reply', '지금 나한테 말하는 거임, %s??', 0, 3, '', 'Tu me parles, %s?', 'redest du mit mir, %s??', '지금 나한테 말하는 거야, %s??', '', '¿me estás hablando a mí %s?', '', 'ты со мной разговариваешь, %s??'),
-	(1425, 'reply', '%s, 이번에는 똑바로 해, 내 총알 앞에 서 있지 말고.', 0, 3, '', 'Désolé %s, ne te mets pas devant mes balles cette fois-ci.', '%s, mach es diesmal richtig, stell dich nicht vor meine Kugeln.', '%s, 이번에는 똑바로 해, 내 총알 앞에 서 있지 말고.', '', '%s hazlo bien esta vez, no te pares frente a mis balas.', '', '%s, в этот раз не стой перед моими пулями.'),
-	(1426, 'reply', '%s, 왜 거기 누워 있어??? 헤헤', 0, 3, '', 'Oups, %s qu’est-ce que tu fais à trainer là??? hihi', '%s, warum liegst du da rum??? hehe', '%s, 왜 거기 누워 있어??? 헤헤', '', '%s, ¿para qué estás tirado? jeje', '', '%s, чего ты валяешься??? хехе'),
-	(1427, 'reply', '진짜 존나 웃었네 ㅎㅎ.', 0, 3, '', 'J ai vraiment bien rigoler.', 'hab mich totgelacht', '진짜 배꼽 빠지게 웃었네.', '', '', '', 'сильно смеялся'),
-	(1428, 'reply', '안녕 %s', 0, 4, '', 'Salut %s', 'hi %s', '안녕 %s', '', 'hola %s', '', 'привет %s'),
-	(1429, 'reply', '오, 안녕 %s', 0, 4, '', 'oh, salut %s', 'oh, hi %s', '오, 안녕 %s', '', 'oh, hola %s', '', 'о, привет %s'),
-	(1430, 'reply', '여어 %s!!!', 0, 4, '', 'Salut %s, ça roule !!!', 'was geht, %s!!!', '여어 %s!!!', '', 'wazzup %s!!!', '', 'как дела, %s!!!'),
-	(1431, 'reply', '안녕', 0, 4, '', 'Salut! Comment ça va?', 'hi', '안녕', '', 'hi', '', 'Здравствуй'),
-	(1432, 'reply', '잘 지냈삼?', 0, 4, '', 'Salut! Comment ça va?', 'was geht', '잘 지내?', '', 'wazzup', '', 'как дела'),
-	(1433, 'reply', '안녕하세요~ %s', 0, 4, '', 'Salut %s', 'hallo %s', '안녕하세요 %s', '', 'hola %s', '', 'здравствуй %s'),
-	(1434, 'reply', '안녕 %s, 우리 어디서 봤었나요?', 0, 4, '', 'Salut %s, est-ce qu’on se connait ?', 'hi %s, kennen wir uns?', '안녕 %s, 우리 아는 사이인가?', '', 'hola %s, ¿te conozco?', '', 'привет %s, мы знакомы?'),
-	(1435, 'reply', '헤이 %s', 0, 4, '', 'Salut %s', 'hey %s', '헤이 %s', '', 'hey %s', '', 'эй %s'),
-	(1436, 'reply', '하이 %s', 0, 4, '', 'Salut %s', 'hai %s', '하이 %s', '', 'hai %s', '', 'хай %s'),
-	(1437, 'reply', '뭐야 대체?', 0, 6, '', 'wth', 'was zur Hölle', '뭐야 대체?', '', 'wth', '', 'что за'),
-	(1438, 'reply', '이게 뭐야?!', 0, 6, '', 'wtf', 'WTF', '이게 뭐야?!', '', 'que cojones!', '', 'что за'),
-	(1439, 'reply', '이건 완전 헛소리야.', 0, 6, '', 'c’est vraiment de la merde', 'das ist Bullshit', '이건 완전 헛소리야.', '', 'esto es una mierda', '', 'это бред'),
-	(1440, 'reply', '영자야 뭐하냐', 0, 6, '', 'admin', 'admin', '관리자', '', 'admin', '', 'админ'),
-	(1441, 'reply', '아놔 %s, 운영자가 겜에 왜 간섭하냐??', 0, 6, '', 'Hey %s, arrête d’abuser de tes droits d’admin.', 'hey %s, hör auf, deine Admin-Rechte zu missbrauchen', '이봐 %s, 관리자 권한 남용하지 마.', '', 'hey %s deja de abusar de tu poder de administrador', '', 'эй %s, хватит злоупотреблять своими правами админа'),
-	(1442, 'reply', '아 운영자가 겜하는디 왤케 간섭이여 진짜 ', 0, 6, '', 'Laisse-moi tranquille, admin !', 'lass mich in Ruhe, Admin!', '나 좀 내버려 둬요, 관리자님!', '', '¡déjame en paz administrador!', '', 'оставь меня в покое, админ!'),
-	(1443, 'reply', '아 패치 좆같이 했네 진짜..', 0, 6, '', 't’es une merde l’admin.', 'du bist scheisse, Admin', '관리자 완전 별로네.', '', 'apestas administrador', '', 'ты отстой, админ'),
-	(1444, 'reply', '내 이름 불러서 뭐 하려고, %s?', 0, 5, '', 'c’est mon nom, qu’est-ce que tu veux %s', 'das ist mein Name, was willst du, %s', '내 이름 불러서 뭐 하려고, %s?', '', 'ese es mi nombre, ¿que quieres %s?', '', 'это моё имя, что тебе нужно %s'),
-	(1445, 'reply', '네???', 0, 5, '', 'Oui???', 'ja???', '네???', '', 'sí???', '', 'да???'),
-	(1446, 'reply', '어... 뭐라고요?', 0, 5, '', 'Heein ... quoi ???', 'äh... was', '어... 뭐?', '', 'uh... qué', '', 'эээ... что'),
-	(1447, 'reply', '지금 나 부르는거임, %s?', 0, 5, '', 'Tu me parles, %s?', 'redest du mit mir, %s?', '지금 나한테 말하는 거야, %s?', '', '¿Me hablas a mí %s?', '', 'ты ко мне обращаешься, %s?'),
-	(1448, 'taunt', '내 갑옷 안에 애완동물들 있다!', 0, 0, '', 'J’ai des chiots sous mon armure!', 'Ich habe Welpen unter meiner Rüstung!', '내 갑옷 안에는 강아지들이 있다고!', '', '¡Tengo cachorros bajo mi armadura!', '', 'У меня под бронёй щенки!'),
-	(1449, 'taunt', '한번 물어보시지, <target>!', 0, 0, '', 'Va te faire voir, <target> !', 'Beiß mich, <target>!', '한번 물어보시지, <target>!', '', '¡Muérdeme, <target>!', '', 'Укуси меня, <target>!'),
-	(1450, 'taunt', '이봐 <target>! 너희 어머니가 어젯밤에 뭐라고 하셨는지 알아?', 0, 0, '', 'Hey <target>! Devine ce que ta mère a dit hier soir!', 'Hey <target>! Rate mal, was deine Mom letzte Nacht gesagt hat!', '이봐 <target>! 너희 어머니가 어젯밤에 뭐라고 하셨는지 알아?', '', '¡Oye, <target>! ¡Adivina lo que me dijo tu madre anoche!', '', 'Эй, <target>! Угадай, что твоя мама сказала прошлой ночью!'),
-	(1451, 'taunt', '<target>, 넌 바나나 한 자루를 들고 원숭이 사창가에 가도 환영받지 못할 만큼 못생겼어!', 0, 0, '', '<target>, tu es tellement moche que tu n’arriverais même pas à marquer dans une maison close pour singes avec un sac de bananes!', '<target>, du bist so hässlich, du würdest nicht mal im Affenbordell mit einem Sack Bananen landen!', '<target>, 넌 바나나 한 자루를 들고 원숭이 사창가에 가도 환영받지 못할 만큼 못생겼어!', '', '<target>, ¡eres tan feo que no podrías anotar en un burdel de monos con una bolsa de plátanos!', '', ''),
-	(1452, 'taunt', '입 닥쳐 <target>, 넌 절대 네 어머니만큼 남자답지 못할 거다!!', 0, 0, '', '<target>, tais-toi, tu ne seras jamais l’homme que ta mère est !!', 'Halt die Klappe, <target>, du wirst so ein Mann sein, wie deine Mutter!!', '입 닥쳐 <target>, 넌 절대 네 어머니만큼 남자답지 못할 거다!!', '', 'Cállate <target>, ¡nunca serás el hombre que es tu madre!', '', ''),
-	(1453, 'taunt', '니엄마는 뚱띠에 애비는 해골 좀비라메?!', 0, 0, '', 'Ta mère était un hamster et ton père sentait la myrtille!!!!', 'Deine Mutter ist so fett, dass man eine Pokéflöte braucht, um sie aufzuwecken und dein Vater ist der Trainer!!!!', '네 어미는 햄스터였고, 네 아비에선 딱총나무 열매 냄새가 나!!!!', '', 'Tu madre era un hámster y tu padre olía a bayas de saúco!!!!', '', 'Твоя мать была хомяком, а отец пах одуванчиками!!!!'),
-	(1454, 'taunt', '너랑은 더 이상 말 섞기도 싫어, 이 머릿속이 텅 빈 섹햐!!!', 0, 0, '', 'Je ne veux plus te parler, espèce de chiffon mangeur de nourriture pour animaux!!!', 'Dich als dumm zu bezeichnen, wäre eine Beleidigung für dumme Leute!', '너랑은 더 이상 말 섞기도 싫어, 이 머릿속이 텅 빈 짐승 먹이통 닦개 녀석아!!!', '', '¡¡No quiero hablar más contigo, limpiaparabrisas de cabeza vacía!', '', ''),
-	(1455, 'taunt', '이섹히 면상에는 침이나 뱉어야되!!!', 0, 0, '', 'Je te pète à la figure !!!', 'Ich furze in deine allgemeine Richtung!!!', '네 면상에다 방귀를 뀌어주마!!!', '', '¡¡Me tiro un pedo en tu dirección general!!!', '', 'Я пускаю в твою сторону газы!!!'),
-	(1456, 'taunt', '가서 네 엉덩이나 삶아라, 이 멍청한 놈의 자식아!!!', 0, 0, '', 'Va faire bouillir ton derrière, espèce de fils d’une personne stupide !!!', 'Jeder Atemzug, den ich ohne deine Erlaubnis mache, steigert mein Selbstwertgefühl!', '가서 네 엉덩이나 삶아라, 이 멍청한 놈의 자식아!!!', '', '¡Ve y hierve tu trasero, hijo de una persona tonta!', '', 'Иди и вскипяти свою задницу, сын смешного человека!!!'),
-	(1457, 'taunt', '어쩔 건데 <target>, 나한테 피라도 흘릴 거냐? 자, 덤벼라!', 0, 0, '', 'Que comptes-tu faire, <target>, me saigner dessus ? VIENS TE BATTRE !', 'Was willst du tun <target>, mich vollbluten? NIMM DAS!', '어쩔 건데 <target>, 나한테 피라도 흘릴 거냐? 자, 덤벼라!', '', '¿Qué vas a hacer <target>, llorar?', '', 'Что ты собираешься делать, <target>, заставить меня кровоточить? ВПЕРЁД!'),
-	(1458, 'taunt', 'M-O-O-N! 그건 바로 어그로라는 뜻이지!', 0, 0, '', 'M-O-O-N! Ça, ça annonce des ennuis!', 'A-G-G-R-O! Das heißt Bosszeit!', 'M-O-O-N! 그건 바로 어그로라는 뜻이지!', '', '¡LUNA! ¡Eso deletrea agresividad!', '', 'М-О-О-Н! Это значит агр!'),
-	(1459, 'taunt', '섹히 존나 쓸모없는 놈이네 진짜.', 0, 0, '', 'You know, tu es aussi utile qu’un homme à une jambe dans un concours de coups de pied aux fesses.', 'Wir hatten grausame und hatten irre Begleiter, aber mit dir sind wir mit einem grausamen Irren gestraft!', '너는 엉덩이 걷어차기 대회에 나간 외다리 인간만큼이나 쓸모가 없군.', '', 'Eres tan útil como un hombre con una sola pierna en un concurso de patadas en el culo.', '', ''),
-	(1460, 'taunt', '이봐 <target>! 수작 부리지 마, 네 타입 아니야. 바람 넣는 인형이 아니라고.', 0, 0, '', 'Hé <target>! Arrête d’essayer de les draguer, Elles ne sont pas de ton style. Elles ne sont pas gonflables.', 'Hey <target>! Hör auf, sie anzubaggern, sie ist nicht dein Typ. Die sind nicht aufblasbar.', '이봐 <target>! 수작 부리지 마, 네 타입 아니야. 바람 넣는 인형이 아니라고.', '', '¡Oye, <target>! Deja de coquetear con ellos, no son tu tipo. No son inflables.', '', ''),
-	(1461, 'taunt', '<target>, 넌 격이 너무 떨어져서 아예 다른 종목을 뛰고 있는 수준이야.', 0, 0, '', '<target> tu es tellement dépassé, tu joues à un autre sport.', '<target>, du bist so weit außerhalb deiner Liga, du spielst schon eine andere Sportart.', '<target>, 넌 격이 너무 떨어져서 아예 다른 종목을 뛰고 있는 수준이야.', '', '<target> estás tan lejos de tu liga, estás jugando un deporte diferente.', '', ''),
-	(1462, 'taunt', '<target>, 넌 오늘 큰 실수를 했어. 바로 침대에서 일어난 거지.', 0, 0, '', '<target>, tu as commis une grosse erreur aujourd’hui en sortant du lit.', 'Großer Fehler heute Morgen, <target>: Du bist aufgestanden!', '<target>, 넌 오늘 큰 실수를 했어. 바로 침대에서 일어난 거지.', '', 'Cometiste un gran error hoy <target>, te levantaste de la cama.', '', 'Ты сегодня совершил большую ошибку, <target>, ты встал с кровати.'),
-	(1463, 'taunt', '말로 변신해보고 싶은데 도움이 필요해. 내가 앞부분을 할 테니, 넌 그냥 너 자신(뒷부분)을 해.', 0, 0, '', 'Je veux essayer de me transformer en cheval, mais j’ai besoin d’aide. Tu seras à l’avant, et je serai juste moi-même.', 'Ich will mal versuchen, mich in ein Pferd zu verwandeln, brauche aber Hilfe. Ich mach die Vorderseite, du bleibst du.', '말로 변신해보고 싶은데 도움이 필요해. 내가 앞부분을 할 테니, 넌 그냥 너 자신(뒷부분)을 해.', '', 'Quiero intentar convertirme en un caballo, pero necesito ayuda. Yo seré el frente, tú mismo.', '', ''),
-	(1464, 'taunt', '며칠 동안 네 얼굴 좀 빌려줄래? 내 엉덩이가 휴가를 가야 해서 말이야....', 0, 0, '', 'Je peux emprunter ton visage pendant quelques jours ? Mon derrière part en vacances...', 'Du kommst mir vor, als wäre das Beste von dir damals am Arsch deiner Mutter runtergelaufen und als braune Soße auf der Matratze geblieben!', '며칠 동안 네 얼굴 좀 빌려줄래? 내 엉덩이가 휴가를 가야 해서 말이야....', '', '¿Me prestas tu cara por unos días? Mi culo se va de vacaciones...', '', 'Можно я одолжу твоё лицо на пару дней? Моя задница уходит в отпуск....'),
-	(1465, 'taunt', '이별 선물을 주고 싶은데... 우선 네 역할(사라지는 것)부터 수행해 봐.', 0, 0, '', 'Je voudrais te donner un cadeau d’au revoir... Tout d’abord, toi tu fais ta part.', 'Ich würd dir gern ein Abschiedsgeschenk machen... Aber zuerst mach스 du deinen Teil.', '이별 선물을 주고 싶은데... 우선 네 역할(사라지는 것)부터 수행해 봐.', '', 'Me gustaría darte un regalo de despedida... Primero haz tu parte.', '', ''),
-	(1466, 'taunt', '네가 오기 전엔 배가 고팠는데, 이젠 네가 지긋지긋해서 배가 부르네.', 0, 0, '', 'Avant ton arrivée, on avait faim. Maintenant, on en a juste assez.', 'Bevor du kamst, waren wir motiviert, jetzt sind wir einfach nur noch genervt.', '네가 오기 전엔 배가 고팠는데, 이젠 네가 지긋지긋해서 배가 부르네.', '', 'Antes de que llegaras teníamos hambre, ahora estamos hartos', '', ''),
-	(1467, 'taunt', '난 네가 좋아. 사람들이 나보고 안목이 없다고 하지만, 그래도 난 네가 좋아.', 0, 0, '', 'Je t’aime bien. Les gens disent que je n’ai pas de goût, mais je t’aime bien.', 'Ich mag dich. Man sagt, ich hätte keinen Geschmack, aber ich mag dich.', '난 네가 좋아. 사람들이 나보고 안목이 없다고 하지만, 그래도 난 네가 좋아.', '', 'Me gustas. La gente dice que no tengo gusto, pero me gustas.', '', 'Ты мне нравишься. Говорят, у меня нет вкуса, но ты мне нравишься.'),
-	(1468, 'taunt', '너이섹히 열등감이 좀 쩌네, 괜찮다. 못난놈아 이해한다.', 0, 0, '', 'Je pense que tu as un complexe d’infériorité, mais il n’y a pas de problème, c’est justifié.', 'Ich glaube, du hast Minderwertigkeitskomplexe, aber ist okay, ist gerechtfertigt.', '너한테 열등감이 좀 있는 것 같은데, 괜찮아. 그럴 만하니까.', '', 'Creo que tienes complejo de inferioridad, pero está bien, está justificado', '', ''),
-	(1469, 'taunt', '당장 사라져라, 이 썩은 것아! 아니면 네 뼈마디를 옷 밖으로 다 털어버리겠다.', 0, 0, '', 'Miserable vermine! Sinon, je vais te secouer jusqu’à ce que tes os sortent de tes vêtements.', 'Verschwinde, sonst passiert was.', '당장 사라져라, 이 썩은 것아! 아니면 네 뼈마디를 옷 밖으로 다 털어버리겠다.', '', '¡Por lo tanto, cosa podrida! o te sacudiré los huesos de las vestiduras.', '', 'Прочь, гнилое создание! Или я вытрясу твои кости из одежды.'),
-	(1470, 'taunt', '너 같은 놈이랑 시간을 낭비하고 있다니 믿기지가 않는군!', 0, 0, '', 'Je n’arrive pas à croire que je perds mon temps avec toi!', 'Kaum zu fassen, dass ich meine Zeit mit dir verschwende!', '너 같은 놈이랑 시간을 낭비하고 있다니 믿기지가 않는군!', '', '¡No puedo creer que estoy perdiendo el tiempo contigo!', '', ''),
-	(1471, 'taunt', '누가 날 모욕하는 게 참 좋아. 이제 더 이상 친절하게 대해줄 필요가 없다는 뜻이거든.', 0, 0, '', 'j’adore quand quelqu’un m’insulte, ça veut dire que je n’ai plus besoin d’être gentil.', 'Ich liebe es, wenn mich jemand beleidigt, dann muss ich nicht mehr nett sein.', '누가 날 모욕하는 게 참 좋아. 이제 더 이상 친절하게 대해줄 필요가 없다는 뜻이거든.', '', 'Me encanta cuando alguien me insulta, significa que ya no tengo que ser amable', '', ''),
-	(1472, 'taunt', '이 가죽 저고리, 유리 단추, 멍청이, 아게이트 반지, 구토물 양말, 싸구려 가터, 기름 바른 휫바닥, 스페인 주머니 같은 놈아!', 0, 0, '', 'Whoo, ça va swinguer, toi en ta peau de cuir, tes boutons de cristal, ton crâne noueux, tes chausses de vomi, tes jarretières en galon, ta langue de miel, et ta bourse espagnole !', 'Ich werde dich auch auslöschen, du Mistkerl! Ich werde dir die Eingeweide rausreißen und dir ins Gesicht schmieren!', '이 가죽 저고리, 유리 단추, 멍청이, 아게이트 반지, 구토물 양말, 싸구려 가터, 기름 바른 휫바닥, 스페인 주머니 같은 놈아!', '', '¡Tú, jubón de cuero, botón de cristal, anudado, ágata, medias de vómito, liga de caddis, lengua suave, bolsa española!', '', 'Ты кожаный-жилет, хрустальная пуговица, узловатый, агатовый, рвотный чулок, ленточный подвязочник, гладкоязычный, испанский кошелёк!'),
-	(1473, 'taunt', '하 이 존만한 섹히 진짜', 0, 0, '', 'Espèce de vermine chauve-souris qui infeste l’orge maltée!', 'Du abscheuliche Bestie, nicht mal ein Hund würde dich fressen.', '이 비겁한 박쥐 사냥꾼 같은 맥주 벌레 녀석!', '', '¡Tú, gusano de malta cazador de murciélagos!', '', 'Ты дрожащий ловец летучих мышей, пивной червь!'),
-	(1474, 'taunt', '님 진짜 킹인듯요..병신중에 킹!', 0, 0, '', 'Tu es vraiment l’idole des adorateurs d’idiots!', 'Du schlägst wie ein Vegetarier.', '넌 정말 바보 숭배자들의 우상이로구나!', '', '¡Eres verdaderamente un ídolo de los adoradores de idiotas!', '', 'Ты действительно идол поклонников идиотов!'),
-	(1475, 'taunt', '존나 모지리 찐따 같은 녀석!', 0, 0, '', 'Espèce de galopin au cerveau embrouillé!', 'Wer hat dich ausgebuddelt, du wandelnde Seuche?', '이 천박하고 머리 나쁜 할미새 같은 녀석!', '', '¡Maldito lavandero nudoso!', '', 'Ты ублюдочный узловатый хвостун!'),
-	(1476, 'taunt', '이 천하의 만드레이크 같은 놈, 내 뒤를 따르느니 내 모자 장식으로나 쓰이는 게 낫겠다!', 0, 0, '', '', 'Ich schau dir nicht in die Augen, ich will heute noch schlafen können.', '이 천하의 만드레이크 같은 놈, 내 뒤를 따르느니 내 모자 장식으로나 쓰이는 게 낫겠다!', '', '¡Hijo de puta mandrágora, eres mejor para que te lleve en mi gorra que para que me pise los talones!', '', 'Ты, ублюдочный мандрагор, тебе больше подходит быть у меня на шапке, чем ждать у моих пяток!'),
-	(1477, 'taunt', '개 존나 쓰레기 같은섹히 오늘 아주 뒤졌다 진짜 아오!', 0, 0, '', 'Toi! Toi l’écuyer! Toi le gredin! Toi le vaurien! Je vais titiller ta catastrophe!', 'Boah, bei dir quillt ja noch das Mittagessen raus! Ich hab dich gerochen, bevor ich dich gesehen hab.', '너! 이 하찮은 부엌데기! 건달! 쓰레기 같은 놈! 내가 아주 박살을 내주마!', '', '¡Tú! ¡Scullion! ¡Ramaliano! ¡Fustilarista! ¡Te haré cosquillas en tu catástrofe!', '', ''),
-	(1478, 'taunt', '오 <target>! 이 전염병같이 못 배워먹은 계집 같으니!', 0, 0, '', 'Oh <target>! Toi, vilaine lavandière malveillante et infecte!', 'Oh <target> du bist so hässlich, selbst der Respawn will dich nicht!', '오 <target>! 이 전염병같이 못 배워먹은 계집 같으니!', '', '¡Oh, <target>! ¡Tú, contagiosa moza del lino mal educada!', '', 'О, <target>! Ты заразная, плохо воспитанная льняная девка!'),
-	(1479, 'taunt', '우리가 네 굴뚝에 오줌을 갈겨주마, <target>!', 0, 0, '', 'On fuit dans ta cheminée, <target>!', 'Ich muss mal einen riesigen <target> machen. <target> ist mein neues Wort für Scheiße.', '우리가 네 굴뚝에 오줌을 갈겨주마, <target>!', '', '¡Tenemos una fuga en tu chimenea, <target>!', '', 'Мы протекаем в твоей трубе, <target>!'),
-	(1480, 'taunt', '오, 이 무익하고 늪에 처박힌 괴저병 꽃 같은 놈아!', 0, 0, '', 'Oh mon impuissant aspiré par les marais, fleur de chancre!', 'Oh du nutzlose, moorsaufende Krebsgeschwulst!', '오, 이 무익하고 늪에 처박힌 괴저병 꽃 같은 놈아!', '', '¡Oh tú, flor de cancro chupada por el pantano sin botas!', '', 'О, ты бесполезный болотный цветок!'),
-	(1481, 'taunt', '내가 만약 너 였다면 나가 뒤졌을꺼다!', 0, 0, '', 'Si j’étais comme toi, je me jetterais en l’air !', 'Wäre ich wie du, würd ich mich selbst löschen!', '내가 만약 너 같았다면 나 자신을 갖다 버렸을 거다!', '', '¡Si yo fuera como tú, me tiraría a la basura!', '', ''),
-	(1482, 'taunt', '오 <target>, 어떻게 하면 너처럼 아무 생각 없이 살 수 있는지 좀 가르쳐줘!', 0, 0, '', 'Oh, enseigne-moi, <target>, comment oublier de trop réfléchir!', 'Oh <target> lehre mich, wie ich das Denken vergesse!', '오 <target>, 어떻게 하면 너처럼 아무 생각 없이 살 수 있는지 좀 가르쳐줘!', '', '¡Oh, enséñame <target>, cómo debo olvidarme de pensar!', '', 'Нау치 меня, <target>, как забыть думать!'),
-	(1483, 'taunt', '이섹히 진짜 답이없는 잉여놈이네, 모지리놈 진짜.', 0, 0, '', 'Franchement, tu es foutu, comme un œuf mal cuit, tout d’un côté!', 'Ich hab schon Toiletten gesehen, die sauberer kämpfen als du.', '넌 정말 답이 없구나, 마치 한쪽만 덜 익은 달걀처럼 말이야!', '', '¡Verdaderamente estás condenado, como un huevo mal asado, todo de un lado!', '', 'Истинно, ты проклят, как плохо прожаренное яйцо, с одной стороны!'),
-	(1484, 'taunt', '이 굶주린 놈, 뱀장어 가죽, 말린 소 혓바닥, 황소 거시기, 말린 생선... 아, 너 같은 놈을 형용할 숨조차 아깝구나!! 이裁縫 자, 칼집, 활통, 천박한 놈아!', 0, 0, '', '', 'Du verdammter Scheißkerl. Wo hast du dein Handwerk gelernt? Du dumme, verdammte Schlampe. Du Idiot. Wer hat dir gesagt, dass du mit Männern arbeiten kannst?', '이 굶주린 놈, 뱀장어 가죽, 말린 소 혓바닥, 황소 거시기, 말린 생선... 아, 너 같은 놈을 형용할 숨조차 아깝구나!! 이裁縫 자, 칼집, 활통, 천박한 놈아!', '', 'Estás muerto de hambre, piel de anguila, te secaste la lengua limpiamente, toro-pizzle, pescado-O para respirar pronunciar lo que es como tú !! ¡Tú, sastrería, vaina, estuche de arco, vil flaco de pie!', '', ''),
-	(1485, 'taunt', '쳇! 죽음의 구덩이로 떨어져 버려임마!', 0, 0, '', 'Que le diable t’emporte dans la gueule pourrie de la Mort!', 'Wenn Unfähigkeit ’ne Klasse wäre, hättest du sie gemaxt.', '쳇! 죽음의 썩은 입속으로나 떨어져 버려라!', '', '¡Fie! ¡Déjate caer en la podrida boca de la Muerte!', '', 'Фу! Брось себя в гнилую пасть Смерти!'),
-	(1486, 'taunt', '<target>, 넌 그냥 생선 장수일 뿐이야!', 0, 0, '', '<target>, tu es poissonnier!', '<target> du dummes Arschfurz-Teppichladen-Arschloch', '<target>, 넌 그냥 생선 장수일 뿐이야!', '', '<target>, ¡eres un pescadero!', '', '<target>, ты торговец рыбой!'),
-	(1487, 'taunt', '살아남아서 네 놈의 뇌를 한 대 후려쳐주마!', 0, 0, '', 'Je vivrai pour te cogner le cerveau!', 'Ich lebe lang genug und dann nehm ich dir das Hirn raus!', '살아남아서 네 놈의 뇌를 한 대 후려쳐주마!', '', '¡Viviré para romperte los sesos!', '', 'Я доживу, чтобы выбить тебе мозги!'),
-	(1488, 'taunt', '정말 천박하구나, <target>!! 좋은 고기에 비하면 넌 그저 벌레 먹은 고기일 뿐이다!!', 0, 0, '', 'Comme tu es superficiel <target>!! Tu n’es que de la chair à vers comparé à un bon morceau de viande, en effet!!', 'Wenn <target> einen intelligenten Gedanken im Kopf hätte, würde er an Einsamkeit sterben.', '정말 천박하구나, <target>!! 좋은 고기에 비하면 넌 그저 벌레 먹은 고기일 뿐이다!!', '', '¡¡Eres el más superficial, <target>!! ¡Eres carne de gusano con respecto a un buen trozo de carne, de hecho!', '', 'Ты очень поверхностен, <target>!! Ты корм для червей по сравнению с хорошим куском мяса!!'),
-	(1489, 'taunt', '비열한 놈! 오 <target>, 이 지옥에서도 싫어할 냄새 나는 돼지 코 같은 놈아!', 0, 0, '', 'Misérable vermine! Ô <target>, toi l’infâme pignouf puant des enfers!', 'Hör auf zu weinen, du winselnder Arsch, hör auf mit deinem Unsinn. Du bist nur die Nachgeburt, <target>.', '비열한 놈! 오 <target>, 이 지옥에서도 싫어할 냄새 나는 돼지 코 같은 놈아!', '', '¡Miserable vil! ¡Oh, <target>, fétido cerdo odiado por el infierno!', '', 'Подлый негодяй! О, <target>, ты зловонный, ненавистный к свиньям орех!'),
-	(1490, 'taunt', '<target>! 네 입맞춤은 굶주린 뱀에게 얼음물을 주는 것만큼이나 아무런 위안도 안 돼!', 0, 0, '', '<target>! Ton baiser est aussi réconfortant que de l’eau gelée pour un serpent affamé!', '<target>! Wenn Gehirn Vogelkacke wäre, hättest du einen sauberen Käfig', '<target>! 네 입맞춤은 굶주린 뱀에게 얼음물을 주는 것만큼이나 아무런 위안도 안 돼!', '', '<target>! ¡Tu beso es tan desconsolador como el agua helada para una serpiente hambrienta!', '', '<target>! Твой поцелуй так же утешителен, как замёрзшая вода для голодной змеи!'),
-	(1491, 'taunt', '난 널 경멸해, 이 천한 녀석아. 뭐, 이 가난하고 상스럽고 무뢰한 사기꾼 같은 놈! 저리 가라, 곰팡내 나는 악당아, 당장 꺼져!', 0, 0, '', 'Je vous méprise, misérable compagnon. Quoi, toi, pauvre, vil, scélérat, tricheur, compagnon usé de toile! Déguerpisse, espèce de coquin moisissure, déguerpisse!', 'Hör mal zu, du Vokuhila... warum zündest du nicht einfach dein Tampon an und sprengst deine Box in die Luft? Denn das ist der einzige Knall, den du kriegen wirst.', '난 널 경멸해, 이 천한 녀석아. 뭐, 이 가난하고 상스럽고 무뢰한 사기꾼 같은 놈! 저리 가라, 곰팡내 나는 악당아, 당장 꺼져!', '', 'Te desprecio, compañero escorbuto. ¡Qué, pobre, vil, pícaro, tramposo, compañero falto de lino! ¡Fuera, mohoso granuja, fuera!', '', 'Я презираю тебя, паршивый спутник. Что, ты бедный, низкий, мошеннический, безрубашечный приятель! Прочь, ты плесневелый негодяй, прочь!'),
-	(1492, 'taunt', '눈앞에서 사라져! 너 때문에 내 눈이 오염되는 것 같구나, <target>!', 0, 0, '', 'Hors de ma vue! Tu infectes mes yeux <target>!', 'Verschwinde aus meiner Sicht <target>! Du verseuchst meine Augen!', '눈앞에서 사라져! 너 때문에 내 눈이 오염되는 것 같구나, <target>!', '', '¡Fuera de mi vista! ¡Me infectas los ojos <target>!', '', 'Прочь с глаз моих! Ты заражаешь мои глаза, <target>!'),
-	(1493, 'taunt', '전쟁 시작이다!!!!', 0, 0, '', 'L’HEURE DE LA MORT !', 'SPIELZEIT!!!!', '전투 시작이다!!!!', '', '¡¡¡HORA DE JUGAR!!!!', '', 'ВРЕМЯ ИГРЫ!!!!'),
-	(1494, 'taunt', '아무도 지나갈 수 없다!', 0, 0, '', 'Vous ne passerez pas !', 'Niemand kommt vorbei!', '아무도 지나갈 수 없다!', '', '¡Ninguno pasará!', '', 'Никто не пройдёт!'),
-	(1495, 'taunt', '공격을 받고 있다! 전원 위치로! 침입자들을 물리쳐라!', 0, 0, '', 'Nous sommes attaqués! Visez bien, bande de moussaillons! Repoussez les envahisseurs!', 'Wir werden angegriffen! Klar zum Gefecht, ihr Deckschrubber! Wehrt die Eindringlinge ab!', '공격을 받고 있다! 전원 위치로! 침입자들을 물리쳐라!', '', '¡Estamos bajo ataque! ¡Un vasto, hisopos! ¡Repeler a los invasores!', '', ''),
-	(1496, 'taunt', '누구도 브라더후드에 도전할 수 없다!', 0, 0, '', 'Personne ne peut défier la Confrérie!', 'Niemand darf die Bruderschaft herausfordern!', '누구도 브라더후드에 도전할 수 없다!', '', '¡Nadie puede desafiar a la Hermandad!', '', 'Никто не может бросить вызов Братству!'),
-	(1497, 'taunt', '멍청한 것들... 천 쪼가리 입은 놈부터 죽이라고!', 0, 0, '', 'Imbéciles... Tuez celui en robe!', 'Narren... Tötet den im Kleid!', '멍청한 것들... 드레스 입은 놈부터 죽여라!', '', 'Tontosss... ¡Matad al del vestido!', '', 'Дураки... Убейте того, кто в платье!'),
-	(1498, 'taunt', '네 영혼을 학카르님께 바치겠다!', 0, 0, '', 'Je vais nourrir ton âme à Hakkar lui-même!', 'Ich werde deine Seele Hakkar selbst zum Fraß vorwerfen!', '네 영혼을 학카님께 바치겠다!', '', '¡Le daré de comer con tu alma al mismísimo Hakkar! ', '', ''),
-	(1499, 'taunt', '오만이 너희 세계의 종말을 예고하리라! 오라, 필멸자들이여! <randomfaction>의 분노를 마주하라!', 0, 0, '', '<randomfaction> m’apporte une grande fierté! Venez, mortels ! Affrontez la colère de <randomfaction>!', 'Stolz kündigt das Ende eurer Welt an! Kommt, Sterbliche! Stellt euch dem Zorn der <randomfaction>!', '오만이 너희 세계의 종말을 예고하리라! 오라, 필멸자들이여! <randomfaction>의 분노를 마주하라!', '', '¡El orgullo anuncia el fin de tu mundo! ¡Venid, mortales! ¡Enfréntate a la ira de la <facción aleatoria>!', '', 'Гордость предвещает конец вашего мира! Идите, смертные! Столкнитесь с гневом !'),
-	(1500, 'taunt', '나의 모든 계획이 바로 이 순간을 위한 것이었다!', 0, 0, '', 'Tous mes projets ont mené à cela!', 'All meine Pläne haben zu diesem Moment geführt!', '나의 모든 계획이 바로 이 순간을 위한 것이었다!', '', '¡Todos mis planes me han llevado a esto!', '', 'Все мои планы привели к этому!'),
-	(1501, 'taunt', '아하! 도살장에 끌려온 양들이 또 늘었구나!', 0, 0, '', 'Oh non! Encore des agneaux pour l’abattoir!', 'Ahh! Noch mehr Lämmer zur Schlachtbank!', '아하! 도살장에 끌려온 양들이 또 늘었구나!', '', '¡Ahh! ¡Más corderos al matadero!', '', 'Ах! Еще ягнята на заклание!'),
-	(1502, 'taunt', '또 다른 날, 또 다른 영광스러운 전투로다!', 0, 0, '', 'Une autre journée, une autre bataille glorieuse !', 'Neuer Tag, neue glorreiche Schlacht!', '또 다른 날, 또 다른 영광스러운 전투로다!', '', '¡Otro día, otra batalla gloriosa!', '', 'Еще один день, еще одна славная битва!'),
-	(1503, 'taunt', '그래, 공무인가... 아니면 유흥인가?', 0, 0, '', 'Alors, affaires... ou plaisir ?', 'Also, Geschäft... oder Vergnügen?', '그래, 공무인가... 아니면 유흥인가?', '', 'Entonces, ¿negocios... o placer?', '', 'Итак, дело... или удовольствие?'),
-	(1504, 'taunt', '너희는 아직 준비가 안 됐다!', 0, 0, '', 'Tu n’es pas prêt!', 'Ihr seid nicht vorbereitet!', '너희는 아직 준비가 안 됐다!', '', '¡No estás preparado!', '', 'Вы не готовы!'),
-	(1505, 'taunt', '<randomfaction>의 마지막 정복이 시작되었다! 다시 한번 이 세계를 지배할 기회가 왔다. 아무도 살려두지 마라!', 0, 0, '', 'La dernière conquête de <randomfaction> a commencé! Encore une fois, la soumission de ce monde est à portée de main. Que personne ne survive!', 'Die letzte Eroberung der <randomfaction> hat begonnen! Wieder liegt die Unterwerfung dieser Welt in unseren Händen. Lasst keinen überleben!', '<randomfaction>의 마지막 정복이 시작되었다! 다시 한번 이 세계를 지배할 기회가 왔다. 아무도 살려두지 마라!', '', '¡La conquista final de <randomfaction> ha comenzado! Una vez más, la subyugación de este mundo está a nuestro alcance. ¡Que nadie sobreviva! ', '', ''),
-	(1506, 'taunt', '고통스러운 죽음을 맞이하게 될 것이다.', 0, 0, '', 'Ta mort sera une douloureuse.', 'Euer Tod wird ein schmerzhafter sein.', '고통스러운 죽음을 맞이하게 될 것이다.', '', 'Tu muerte será dolorosa. ', '', 'Ваша смерть будет болезненной.'),
-	(1507, 'taunt', '자비를 구하며 울부짖어라! 너희의 하찮은 목숨도 곧 끝날 테니.', 0, 0, '', 'Pleurez miséricorde! Vos vies insignifiantes seront bientôt perdues.', 'Fleht um Gnade! Eure bedeutungslosen Leben sind bald verwirkt.', '자비를 구하며 울부짖어라! 너희의 하찮은 목숨도 곧 끝날 테니.', '', '¡Llora por piedad! Sus vidas sin sentido pronto se perderán. ', '', 'Просите о милости! Ваши бессмысленные жизни скоро будут потеряны.'),
-	(1508, 'taunt', '모든 희망을 버려라! <randomfaction>가 수년 전에 시작된 일을 끝내기 위해 돌아왔다. 이번엔 도망칠 수 없을 것이다!', 0, 0, '', 'Abandonne tout espoir! La <randomfaction> est de retour pour finir ce qui a été commencé il y a tant d’années. Cette fois, il n’y aura pas d’échappatoire!', 'Gebt alle Hoffnung auf! Die <randomfaction> ist zurückgekehrt, um zu beenden, was vor so vielen Jahren begann. Diesmal gibt es kein Entkommen!', '모든 희망을 버려라! <randomfaction>가 수년 전에 시작된 일을 끝내기 위해 돌아왔다. 이번엔 도망칠 수 없을 것이다!', '', '¡Abandona toda esperanza! La <randomfaction> ha regresado para terminar lo que comenzó hace tantos años. ¡Esta vez no habrá escapatoria! ', '', 'Оставьте все надежды!  вернулся, чтобы завершить то, что было начато много лет назад. На этот раз не будет побега!'),
-	(1509, 'taunt', '경보! 너희는 말살 대상으로 지정되었다!', 0, 0, '', 'Alerte ! Vous êtes désigné pour extermination !', 'Alarm! Ihr seid zur Auslöschung markiert!', '경보! 너희는 말살 대상으로 지정되었다!', '', '¡Alerta! ¡Estás marcado para el exterminio! ', '', 'Внимание! Вы помечены для уничтожения!'),
-	(1510, 'taunt', '<subzone> 구역은 손님만 들어올 수 있다...', 0, 0, '', 'Le <subzone> est réservé aux invités uniquement...', 'Die <subzone> ist nur für Gäste...', '<subzone> 구역은 손님만 들어올 수 있다...', '', 'La <subzone> es solo para invitados...', '', ' предназначена только для гостей...'),
-	(1511, 'taunt', '하하하! 너희는 도저히 상대가 안 된다!', 0, 0, '', 'Ha ha ha! Tu es totalement dépassé!', 'Hahaha! Ihr seid hoffnungslos unterlegen!', '하하하! 너희는 도저히 상대가 안 된다!', '', '¡Ja, ja, ja! ¡Estás irremediablemente superado!', '', 'Ха-ха-ха! Вы безнадежно не на уровне!'),
-	(1512, 'taunt', '니섹히 오늘 아주 지대로 미쳤고만!', 0, 0, '', 'Je vais briser tes illusions de grandeur!', 'Ich werde euren Größenwahn zerschmettern!', '너의 그 거창한 망상을 가루로 만들어주마!', '', '¡Aplastaré tus delirios de grandeza! ', '', 'Я сокрушу ваши иллюзии величия!'),
-	(1513, 'taunt', '미안하군, 곧 게임에서 지게 될 테니.', 0, 0, '', 'Pardonnez-moi, mais vous êtes sur le point de perdre la partie.', 'Verzeiht mir, denn ihr werdet gleich das Spiel verlieren.', '미안하군, 곧 게임에서 지게 될 테니.', '', 'Perdóname, porque estás a punto de perder el juego.', '', 'Простите меня, ведь вы собираетесь проиграть игру.'),
-	(1514, 'taunt', '발버둥 쳐봐야 상황만 나빠질 뿐일껀데.', 0, 0, '', 'Se battre ne fait qu’empirer les choses.', 'Wehren macht es nur schlimmer.', '발버둥 쳐봐야 상황만 나빠질 뿐이다.', '', 'La lucha solo lo empeora.', '', 'Борьба только усугубляет ситуацию.'),
-	(1515, 'taunt', '해충들! 거머리 같은 놈들! 내 피를 마시고 목이나 막혀버려라!', 0, 0, '', 'Créatures immondes ! Sangsues ! Prenez mon sang et étouffez-y !', 'Ungeziefer! Blutegel! Saugt mein Blut und erstickt daran!', '해충들! 거머리 같은 놈들! 내 피를 마시고 목이나 막혀버려라!', '', '¡Alimañas! ¡Sanguijuelas! ¡Toma mi sangre y atragantate con ella!', '', 'Паразиты! Пиявки! Берите мою кровь и подавитесь ею!'),
-	(1516, 'taunt', '또야... 또 이렇단 말인거냐!', 0, 0, '', 'Pas encore... PAS ENCORE !', 'Nicht schon wieder... NICHT SCHON WIEDER!', '또야... 또 이렇단 말이냐!', '', 'No otra vez... ¡NO OTRA VEZ!', '', 'Опять... ЕЩЕ РАЗ!'),
-	(1517, 'taunt', '나의 피가 너의 종말이 되리라!', 0, 0, '', 'Mon sang sera ta fin!', 'Mein Blut wird euer Ende sein!', '나의 피가 너의 종말이 되리라!', '', '¡Mi sangre será tu fin!', '', 'Моя кровь станет вашим концом!'),
-	(1518, 'taunt', '좋다, 이제 나와 겨뤄보자!', 0, 0, '', 'Bien, maintenant combat moi !', 'Gut, jetzt kämpfst du gegen mich!', '좋다, 이제 나와 겨뤄보자!', '', 'Bien, ¡ahora pelea conmigo!', '', 'Хорошо, теперь ты сразишься со мной!'),
-	(1519, 'taunt', '경비병들, 어서 움직여! 사냥할 시간이다!', 0, 0, '', 'Allez, les gardes, on se presse! C’est l’heure de tuer!', 'Macht hinne, Wachen! Es ist Zeit zum Töten!', '경비병들, 어서 움직여! 사냥할 시간이다!', '', '¡Muévanse, guardias! ¡Será para matar el tiempo!', '', ''),
-	(1520, 'taunt', '운명을 늦추지 마라. 지금 내게 오너라. 단숨에 제물로 만들어주마.', 0, 0, '', 'Ne retarde pas ton destin. Viens à moi maintenant. Je rends ton sacrifice rapide.', 'Zögert euer Schicksal nicht hinaus. Kommt jetzt zu mir. Ich mache euer Opfer kurz.', '운명을 늦추지 마라. 지금 내게 오너라. 단숨에 제물로 만들어주마.', '', 'No demores tu destino. Ven a mí ahora. Hago que tu sacrificio sea rápido.', '', ''),
-	(1521, 'taunt', '니 시발 오늘 뒤졌다 진짜!', 0, 0, '', 'Tu seras bientôt mort !', 'Bald seid ihr tot!', '너도 곧 죽은 목숨이다!', '', '¡Estarás muerto lo suficientemente pronto!', '', 'Ты скоро будешь мертв!'),
-	(1522, 'taunt', '으하하하!', 0, 0, '', 'Mua-ha-ha!', 'Mu-ha-ha!', '으하하하!', '', '¡Mua-ja-ja!', '', 'Муа-ха-ха!'),
-	(1523, 'taunt', '나는 사냥꾼, 너는 사냥감이다...', 0, 0, '', 'Je suis le prédateur! Tu es la proie...', 'Ich bin der Jäger! Ihr seid die Beute...', '내가 바로 포식자, 너는 먹잇감이다...', '', '¡Soy un depredador! Eres presa...', '', 'Я хищник! Ты жертва...'),
-	(1524, 'taunt', '조각조각 난 채로 이곳을 떠나게 될 것이다!', 0, 0, '', 'Tu vas finir en morceaux !', 'Ihr werdet diesen Ort in Stücken verlassen!', '조각조각 난 채로 이곳을 떠나게 될 것이다!', '', '¡Te vas a ir en pedazos!', '', 'Ты уйдешь в кусках!'),
-	(1525, 'taunt', '죽음이 다가온다. 너의 양심은 떳떳하냐?', 0, 0, '', 'La mort arrive. Est-ce que ta conscience sera claire ?', 'Der Tod naht. Wird euer Gewissen rein sein?', '죽음이 다가온다. 너의 양심은 떳떳하냐?', '', 'La muerte llega. ¿Tu conciencia estará limpia? ', '', 'Смерть приходит. Будет ли твоя совесть чиста?'),
-	(1526, 'taunt', '네 행동은 용납될 수 없다 뒤졌어 진짜.', 0, 0, '', 'Votre comportement ne sera pas toléré.', 'Euer Verhalten wird nicht toleriert.', '네 행동은 용납될 수 없다.', '', 'Tu comportamiento no será tolerado', '', 'Ваше поведение не будет терпимо.'),
-	(1527, 'taunt', '전시관은 초대받은 손님 전용이다.', 0, 0, '', 'La Ménagerie est réservée aux invités seulement.', 'Die Menagerie ist nur für Gäste.', '전시관은 초대받은 손님 전용이다.', '', 'The Menagerie es solo para invitados', '', 'Менажерия предназначена только для гостей.'),
-	(1528, 'taunt', '음, 예고 없는 방문객이라니, 준비를 해야겠군...', 0, 0, '', 'Des visiteurs non annoncés, il me faut faire des préparatifs...', 'Hmm, unangekündigte Besucher. Vorbereitungen müssen getroffen werden...', '음, 예고 없는 방문객이라니, 준비를 해야겠군...', '', 'Hmm, visitantes inesperados, se deben hacer preparativos... ', '', 'Хмм, незваные гости, нужно подготовиться...'),
-	(1529, 'taunt', '적대적 개체 감지. 위협 평가 프로토콜 활성화. 주 목표 교전 중. 재평가까지 30초 남음.', 0, 0, '', 'Entités hostiles détectées. Protocole d’évaluation des menaces activé. Cible principale engagée. Temps moins trente secondes avant réévaluation.', 'Feindliche Einheiten entdeckt. Bedrohungsanalyse-Protokoll aktiv. Primärziel erfasst. Zeit minus dreißig Sekunden bis zur Neubewertung.', '적대적 개체 감지. 위협 평가 프로토콜 활성화. 주 목표 교전 중. 재평가까지 30초 남음.', '', 'Entidades hostiles detectadas. Protocolo de evaluación de amenazas activo. Objetivo principal comprometido. Tiempo menos treinta segundos para la reevaluación.', '', 'Обнаружены враждебные сущности. Протокол оценки угрозы активирован. Основная цель захвачена. Время до повторной оценки - тридцать секунд.'),
-	(1530, 'taunt', '새 장난감? 내 꺼야? 이번엔 안 부술게, 진짜야!', 0, 0, '', 'De nouveaux jouets ? Pour moi ? Je te promets que cette fois, je ne les casserai pas !', 'Neue Spielzeuge? Für mich? Ich verspreche, ich mach sie diesmal nicht kaputt!', '새 장난감? 내 꺼야? 이번엔 안 부술게, 진짜야!', '', '¿Juguetes nuevos? ¿Para mi? ¡Te prometo que no los romperé esta vez!', '', ''),
-	(1531, 'taunt', '놀 준비 됐어!', 0, 0, '', 'Je suis prêt à jouer !', 'Ich bin bereit zu spielen!', '놀 준비 됐어!', '', '¡Estoy listo para jugar!', '', ''),
-	(1532, 'taunt', '쉿... 곧 다 끝날 거야.', 0, 0, '', 'Chut... tout sera bientôt fini.', 'Pssst... gleich ist alles vorbei.', '쉿... 곧 다 끝날 거야.', '', 'Shhh... todo terminará pronto.', '', 'Шшш... скоро все закончится.'),
-	(1533, 'taunt', '아아아아으어거거거어거어!', 0, 0, '', 'Aaaaaughibbrgubugbugrguburgle!', 'Aaaaaughibbrgubugbugrguburgle!', '아아아아으어거거거어거어!', '', '¡Aaaaaughibbrgubugbugrguburgle!', '', 'Ааааагхиббргубугбугрубгл!'),
-	(1534, 'taunt', '아옳아옳아옳아옳!', 0, 0, '', 'RwlRwlRwlRwl!', 'RwlRwlRwlRwl!', '아옳아옳아옳아옳!', '', 'RwlRwlRwlRwl!', '', 'РвлРвлРвлРвл!'),
-	(1535, 'taunt', '너 또한 복종하게 되리라!', 0, 0, '', 'Toi aussi, tu serviras !', 'Auch du wirst dienen!', '너 또한 복종하게 되리라!', '', '¡Tú también, debes servir!', '', 'Ты тоже будешь служить!'),
-	(1536, 'taunt', '말해... 전부 다 말해! 발칙한 비밀들 말이야! 네 살점을 찢어서라도 비밀을 알아내주마!', 0, 0, '', 'Dis-moi... dis-moi tout ! Les petits secrets coquins ! Je vais arracher les secrets de ta chair !', 'Sag es mir... sag mir alles, Geheimnisse und Privatsachen! Ich reiße dir die Infos aus dem Fleisch!', '말해... 전부 다 말해! 발칙한 비밀들 말이야! 네 살점을 찢어서라도 비밀을 알아내주마!', '', 'Cuéntame... ¡cuéntame todo! ¡Secretos traviesos! ¡Arrancaré los secretos de tu carne!', '', ''),
-	(1537, 'taunt', '각오해라, 종이 울렸다! 약한 자, 어린 자, 늙은 자들을 숨겨라! 너희 모두 대가를 치르게 될 것이다! 자비를 구하며 울부짖어라, 심판의 때가 왔다!', 0, 0, '', 'Préparez-vous, les cloches ont sonné ! Protégez vos faibles, vos jeunes et vos anciens ! Chacun d’entre vous paiera le prix final ! Pleurez miséricorde, l’heure du jugement est arrivée!', 'Macht euch bereit, die Glocken haben geläutet! Bringt die Schwachen, die Jungen und die Alten in Sicherheit! Jeder von euch zahlt den letzten Preis! Fleht um Gnade, die Abrechnung ist gekommen!', '각오해라, 종이 울렸다! 약한 자, 어린 자, 늙은 자들을 숨겨라! 너희 모두 대가를 치르게 될 것이다! 자비를 구하며 울부짖어라, 심판의 때가 왔다!', '', '¡Prepárense, las campanas han doblado! ¡Abriga a tus débiles, a tus jóvenes ya tus viejos! ¡Cada uno de ustedes pagará la suma final! Clama por misericordia, el ajuste de cuentas ha llegado!', '', 'Приготовьтесь, колокола прозвучали! Укройте своих слабых, молодых и старых! Каждый из вас заплатит окончательную цену! Просите о милости, расплата пришла!'),
-	(1538, 'taunt', '대체 내가 어디에 와 있는 거지?', 0, 0, '', 'Où diable suis-je?', 'Wo, bei Bonzos Messingknöpfen, bin ich?', '대체 내가 어디에 와 있는 거지?', '', '¿Dónde estoy en los botones de latón de Bonzo?', '', ''),
-	(1539, 'taunt', '더 이상은 못 참겠다! 고블린 왕이여! 어디 계시든 이 <target>을(를) 내게서 멀리 치워주오!', 0, 0, '', 'Je n’en peux plus! Roi des Gobelins! Roi des Gobelins! Où que tu sois! Emmène cette %cible% loin de moi!', 'Ich ertrage es nicht länger! Goblinkönig! Goblinkönig! Wo immer du bist! Nimm diesen <target> weit weg von mir!', '더 이상은 못 참겠다! 고블린 왕이여! 어디 계시든 이 <target>을(를) 내게서 멀리 치워주오!', '', '¡No puedo soportarlo más! ¡Rey de los duendes! ¡Rey de los duendes! ¡WHERE quiera que estés! ¡Lleva a este <target> lejos de mí!', '', 'Я больше не могу это терпеть! Король гоблинов! Король гоблинов! Где бы ты ни был! Унеси этого  далеко от меня!'),
-	(1540, 'taunt', '네 동생이 영원히 우리의 일원이 되기 전까지, 미로를 풀 수 있는 시간은 단 13시간뿐이다.', 0, 0, '', 'Tu as treize heures pour résoudre le labyrinthe, avant que ton petit frère ne devienne l’un d’entre nous... pour toujours.', 'Ihr habt dreizehn Stunden, um das Labyrinth zu lösen, bevor euer kleiner Bruder einer von uns wird... für immer.', '네 동생이 영원히 우리의 일원이 되기 전까지, 미로를 풀 수 있는 시간은 단 13시간뿐이다.', '', 'Tienes trece horas para resolver el laberinto, antes de que tu hermanito se convierta en uno de nosotros... para siempre', '', 'У вас есть тринадцать часов, чтобы решить лабиринт, прежде чем ваш младший брат станет одним из нас... навсегда.'),
-	(1541, 'taunt', '그래, <subzone>이 식은 죽 먹기라고? 그럼 이 작은 조각은 어떻게 감당하는지 한번 보자고...', 0, 0, '', 'Alors, la <subzone> est du gâteau, vous dites? Hmm, voyons comment vous vous en sortez avec cette petite portion...', 'Also, die <subzone> ist Kinderkram, ja? Dann sehen wir mal, wie ihr dieses kleine Stückchen verdaut...', '그래, <subzone>이 식은 죽 먹기라고? 그럼 이 작은 조각은 어떻게 감당하는지 한번 보자고...', '', 'Entonces, la <subzone> es pan comido, ¿verdad? Bueno, veamos cómo lidias con esta pequeña porción... ', '', ''),
-	(1542, 'taunt', '물러나, 내가 상대해주마. 누구든 맞설 자신이 있다. 네가 틀렸고 여긴 네 자리가 아니란 걸 알게 해주지.', 0, 0, '', 'Alors, recule, je vais m’occuper de toi, déterminé à affronter n’importe qui, je sais que tu as tort, et ce n’est pas là que tu appartiens', 'Weiche! Ich stelle mich jedem Kampf. Du irrst dich, dies ist nicht dein Revier.', '물러나, 내가 상대해주마. 누구든 맞설 자신이 있다. 네가 틀렸고 여긴 네 자리가 아니란 걸 알게 해주지.', '', 'Atrás, te enfrentaré, testarudo para enfrentar a cualquiera, sé que estás equivocado, y este no es el lugar al que perteneces', '', ''),
-	(1543, 'taunt', '너님 실력을 보여주든가!', 0, 0, '', 'Montre-moi ce que t’as dans le ventre!', 'Zeig, was du drauf hast!', '네 실력을 보여봐!', '', '¡Muéstrame lo que tienes!', '', 'Покажи, что у тебя есть!'),
-	(1544, 'taunt', '죽을 때까지 싸우자!', 0, 0, '', '% Sorry, I can’t translate that.', 'Bis zum Tod!', '죽을 때까지 싸우자!', '', '¡Hasta la muerte!', '', 'До смерти!'),
-	(1545, 'taunt', '쌍검의 위력을 봐라, 언제나 깔끔하게 끝내주지.', 0, 0, '', 'Lame jumelle, pour un rasage de près impeccable à chaque fois.', 'Zweiklingen-Action für eine glatte und saubere Rasur jedes mal.', '쌍검의 위력을 봐라, 언제나 깔끔하게 끝내주지.', '', 'Acción de cuchilla doble, para un afeitado limpio y apurado en todo momento.', '', 'Двойное лезвие, для чистого бритья каждый раз.'),
-	(1546, 'taunt', '덤벼라!', 0, 0, '', 'Allez, viens ici !', 'Los, komm schon!', '덤벼라!', '', '¡Adelante!', '', 'Давай!'),
-	(1547, 'taunt', '넌 이제 끝장이다!', 0, 0, '', 'Tu vas tomber !', 'Du gehst drauf!', '넌 이제 끝장이다!', '', '¡Vas a caer!', '', ''),
-	(1548, 'taunt', '푹푹 찔러주마!', 0, 0, '', 'Stabby stab stab!', 'Stich, stich, stich!', '푹푹 찔러주마!', '', '¡Puñalada puñalada puñalada!', '', 'Ударь, ударь, ударь!'),
-	(1549, 'taunt', '빨리 끝내자고, 시간은 곧 마나니까.', 0, 0, '', 'Finissons-en vite , le temps c’est du mana.', 'Machen wir das schnell, Zeit ist Mana.', '빨리 끝내자고, 시간은 곧 마나니까.', '', 'Terminemos con esto rápido, el tiempo es maná.', '', ''),
-	(1550, 'taunt', '너님 지금 상황이 얼마나 심각한지 모르는 것 같구만.', 0, 0, '', 'Tu ne réalise pas encore la gravité de ta situation.', 'Ich glaube nicht, dass ihr die Schwere eurer Lage begreift.', '너는 네 상황이 얼마나 심각한지 모르는 것 같구나.', '', 'No creo que te des cuenta de la gravedad de tu situación.', '', 'Я не думаю, что вы осознаете серьезность вашей ситуации.'),
-	(1551, 'taunt', '가문과 왕국에 영광을 돌리겠다!', 0, 0, '', 'Je vais apporter honneur à ma famille et à mon royaume!', 'Ich bringe meiner Familie und meinem Königreich Ehre!', '가문과 왕국에 영광을 돌리겠다!', '', '¡Llevaré honor a mi familia y mi reino!', '', 'Я принесу честь своей семье и своему королевству!'),
-	(1552, 'taunt', '빛이여, 힘을 주소서!', 0, 0, '', 'Lumière, donne-moi de la force!', 'Licht, gib mir Stärke!', '빛이여, 힘을 주소서!', '', '¡Luz, dame fuerza!', '', 'Свет, дай мне силу!'),
-	(1553, 'taunt', '전장이 곧 나의 교회다. 예배를 시작할 시간이지...', 0, 0, '', 'Mon terrain de bataille, c’est mon église - il est temps de rendre hommage...', 'Meine Kirche ist das Schlachtfeld, Zeit zum Gottesdienst...', '전장이 곧 나의 교회다. 예배를 시작할 시간이지...', '', 'Mi iglesia es el campo de batalla - hora de adorar...', '', 'Моя церковь - это поле битвы - время поклоняться...'),
-	(1554, 'taunt', '아휴 빙신 존나 짜증나네...', 0, 0, '', 'Je te méprise...', 'Ich verachte euch...', '널 경멸한다...', '', 'Te tengo en desacato...', '', 'Я держу тебя в презрении...'),
-	(1555, 'taunt', '정의의 망치를 받아라!', 0, 0, '', 'Affronte le marteau de la justice!', 'Stellt euch dem Hammer der Gerechtigkeit!', '정의의 망치를 받아라!', '', '¡Enfréntate al martillo de la justicia!', '', 'Столкнись с молотом справедливости!'),
-	(1556, 'taunt', '빛 아래서 네 무용을 증명해봐라!', 0, 0, '', 'Prouve ta valeur dans le test des armes sous la Lumière!', 'Beweist euren Wert in der Prüfung der Waffen im Lichte!', '빛 아래서 네 무용을 증명해봐라!', '', '¡Demuestra tu valía en la prueba de las armas bajo la Luz!', '', 'Докажи свою ценность в испытании оружием под Светом!'),
-	(1557, 'taunt', '나의 대의와 힘 앞에 모두가 굴복하리라. 다음은 바로 너다!', 0, 0, '', 'Tous doivent tomber devant la puissance et la justesse de ma cause, tu seras le prochain!', 'Alles wird vor der Macht und der Gerechtigkeit meiner Sache fallen. Ihr werdet der Nächste sein!', '나의 대의와 힘 앞에 모두가 굴복하리라. 다음은 바로 너다!', '', 'Todo debe caer ante el poder y el derecho de mi causa, ¡tú serás el próximo!', '', 'Все должны пасть перед могуществом и правом моего дела, ты будешь следующим!'),
-	(1558, 'taunt', '뒤질 준비 해라!', 0, 0, '', 'Prépare-toi à mourir!', 'Bereitet euch aufs Sterben vor!', '죽을 준비 해라!', '', '¡Prepárate para morir!', '', 'Приготовься умереть!'),
-	(1559, 'taunt', '함께 있는 야수는 내 안의 야수에 비하면 아무것도 아니지...', 0, 0, '', 'La bête qui est avec moi n’est rien comparée à la bête qui est en moi...', 'Die Bestie an meiner Seite ist nichts gegen die Bestie in mir...', '함께 있는 야수는 내 안의 야수에 비하면 아무것도 아니지...', '', 'La bestia conmigo no es nada comparada con la bestia interior...', '', 'Зверь со мной ничто по сравнению с зверем внутри...'),
-	(1560, 'taunt', '완전 무장한 사냥꾼의 화력을 목격하라!', 0, 0, '', 'Découvrez la puissance de feu de ce chasseur entièrement armé!', 'Erlebt die Feuerkraft dieses voll bewaffneten Jägers!', '완전 무장한 사냥꾼의 화력을 목격하라!', '', '¡Sea testigo de la potencia de fuego de este cazador completamente armado!', '', 'Стань свидетелем огневой мощи этого полностью вооруженного охотника!'),
-	(1561, 'critical health', '아 힐좀! 빨리!', 0, 0, '', 'Je vais te soigner tout de suite !', 'Heilt mich! Schnell!', '치료해줘! 빨리!', '', '¡Cúrame! ¡Rápido!', '', 'Исцели меня! Быстро!'),
-	(1562, 'critical health', '죽기 일보 직전이야! 치료해줘!', 0, 0, '', 'Presque mort ! Soignez-moi !', 'Fast tot! Heilt mich!', '죽기 일보 직전이야! 치료해줘!', '', '¡Estoy casi muerto! ¡Cúrame!', '', 'Почти мертв! Исцели меня!'),
-	(1563, 'critical health', '도와줘! 치료해줘!', 0, 0, '', 'S’il te plaît, aide-moi! Soigne-moi!', 'Hilfe! Heilt mich!', '도와줘! 치료해줘!', '', '¡Ayuda! ¡Cúrame!', '', 'Помогите! Исцели меня!'),
-	(1564, 'critical health', '누구든 좋으니 날 좀 치유해줘!', 0, 0, '', 'Quelqu’un ! Soigne-moi !', 'Irgendwer! Heilt mich!', '누구든 좋으니 날 좀 고쳐줘!', '', '¡Alguien! ¡Cúrame!', '', 'Кто-нибудь! Исцели меня!'),
-	(1565, 'critical health', '힐! 힐! 힐!', 0, 0, '', 'Guérir! Guérir! Guérir!', 'Heal! Heal! Heal!', '힐! 힐! 힐!', '', '¡Curame! ¡Saname! ¡Socorro!', '', 'Исцели! Исцели! Исцели!'),
-	(1566, 'critical health', '뒤질 것 같아! 치료해! 으아아아악!', 0, 0, '', 'Je meurs! Au secours! Aaaaarhg!', 'Ich sterbe! Heal! Aaaaarhg!', '죽을 것 같아! 치료해! 으아아아악!', '', '¡Me estoy muriendo! ¡Saname! ¡Aaaaarhg!', '', 'Я умираю! Исцели! Ааааргх!'),
-	(1567, 'critical health', '치료해줘!', 0, 0, '', 'Soigne moi !', 'Heal mich!', '치료해줘!', '', '¡Cúrame!', '', 'Исцели меня!'),
-	(1568, 'critical health', '죽겠어. 진짜 죽는다고. 힐해줘!', 0, 0, '', 'Je vais mourir. Je vais mourir. Je vais mourir. Soigne-moi !', 'Ich sterbe. Ich sterbe. Ich sterbe. Heal!', '죽겠어. 진짜 죽는다고. 힐해줘!', '', 'Voy a morir. Voy a morir. Voy a morir. ¡Saname!', '', 'Я умру. Я умру. Я умру. Исцели!'),
-	(1569, 'critical health', '힐러들 뭐하냐 진짜? 나 뒤진다고!', 0, 0, '', 'Healers, où êtes-vous? Je suis en train de mourir!', 'Heiler, wo seid ihr? Ich sterbe!', '힐러들 어디 있어? 나 죽는다고!', '', 'Sanadores, ¿dónde estais? ¡Me estoy muriendo!', '', 'Целители, где вы? Я умираю!'),
-	(1570, 'critical health', '아, 너무 아파. 빨리 치료해줘!', 0, 0, '', 'Oh la douleur. Guérissez-moi vite!', 'Oh, der Schmerz. Heilt mich schnell!', '아, 너무 아파. 빨리 치료해줘!', '', 'Ouch, qué dolor. ¡Cúrame rápido!', '', 'О, боль. Исцели меня быстро!'),
-	(1571, 'low health', '힐 필요함', 0, 0, '', 'Besoin de soins', 'Brauche Heal', '힐 필요함', '', 'Necesito una cura', '', 'Нужна исцеление'),
-	(1572, 'low health', '체력 없음', 0, 0, '', 'Faible santé', 'HP low', '체력 없음', '', 'Salud baja', '', 'Низкое здоровье'),
-	(1573, 'low health', '힐 좀 주세요. 제발.', 0, 0, '', 'HEAL. S’il te plaît.', 'Gebt mal nen Heal. Bitte.', '힐 좀 주세요. 제발.', '', 'Una sanación por favor.', '', 'Сделай исцеление. Пожалуйста.'),
-	(1574, 'low health', '누구 힐 좀 써줄 사람?', 0, 0, '', 'Est-ce que quelqu’un pourrait me soigner?', 'Kann mir jemand nen Heal geben?', '누구 힐 좀 써줄 사람?', '', '¿Alguien podría curarme?', '', 'Может кто-нибудь исцелить меня?'),
-	(1575, 'low health', '님! 나중에 부활시키는 것보다 지금 힐하는 게 나을껄!', 0, 0, '', 'Salut! Mieux vaut me soigner maintenant que me ressusciter plus tard.', 'Hey! Lieber jetzt heilen als später zu rezzen', '야! 나중에 부활시키는 것보다 지금 힐하는 게 나을걸', '', '¡Oye! Mejor curarme ahora que resucitarme después', '', 'Эй! Лучше исцели меня сейчас, чем воскрешать позже.'),
-	(1576, 'low health', '지송한데, 힐 한 번 더 부탁해유', 0, 0, '', 'Je suis désolé. J’ai besoin d’une autre guérison.', 'Sorry. Brauche noch einen Heal', '미안, 힐 한 번 더 부탁해', '', 'Lo siento. Necesito otra curación', '', 'Извини. Нужна еще одна исцеление.'),
-	(1577, 'low health', '몬스터들 진짜 존나쎔... 힐 좀 부탁해요', 0, 0, '', 'Maudits mobs. Guéris moi s’il te plait', 'Verdammte Mobs. Heal mich bitte', '몬스터들 진짜... 힐 좀 부탁해요', '', '¡Malditos bichos! ¡Una curita por favor!', '', 'Черт возьми, мобы. Исцели меня, пожалуйста.'),
-	(1578, 'low health', '한 대만 더 맞으면 끝장이야. 제발 힐 좀 플리즈 ㅠㅠ', 0, 0, '', 'Un coup de plus et c’est fini. Guéris moi s’il te plait', 'Noch ein Treffer und ich bin hinüber. Heal bitte', '한 대만 더 맞으면 끝장이야. 제발 힐 좀', '', 'Un golpe más y estoy acabado. Cura por favor', '', 'Еще один удар, и я пропал. Исцели, пожалуйста.'),
-	(1579, 'low health', '힐러 없삼?', 0, 0, '', 'Y a-t-il des guérisseurs?', 'Heiler da?', '힐러 없어?', '', '¿Hay sanadores?', '', 'Есть ли целители?'),
-	(1580, 'low health', '왜 맨날 나만 줘 때리는 거야? 힐 좀!', 0, 0, '', 'Pourquoi est-ce qu’ils me frappent toujours au visage? J’ai besoin de guérison', 'Warum hauen die mir immer ins Gesicht? Brauche Heal', '왜 맨날 내 얼굴만 때리는 거야? 힐 좀', '', '¿Por qué siempre me golpean en la cara? Necesito sanacion', '', 'Почему они всегда бьют меня в лицо? Нужна исцеление.'),
-	(1581, 'low health', '누구 힐 조금만 해줄 수 있어?', 0, 0, '', 'Soignez moi, même juste un peu ?', 'Kann mich wer ein bisschen heilen?', '누구 힐 조금만 해줄 수 있어?', '', '¿Alguien puede curarme un poco?', '', 'Может кто-нибудь немного исцелить меня?'),
-	(1582, 'low mana', '마나 없음', 0, 0, '', 'Plus de mana !', 'OOM', '마나 없음', '', 'No tengo mana!', '', 'OOM'),
-	(1583, 'low mana', '마나 오링', 0, 0, '', 'Je n’ai plus de mana', 'Kein Mana mehr', '마나 다 썼어', '', 'No tengo maná', '', 'У меня закончилась ма나'),
-	(1584, 'low mana', '이런, 여기에 마나를 다 써버렸네', 0, 0, '', 'Damn j’ai gaspillé toute ma mana sur ça.', 'Verdammt, dafür hab ich mein ganzes Mana verballert', '이런, 여기에 마나를 다 써버렸네', '', 'Me cago en todo! Malgasté todo mi maná enseguida', '', 'Черт, я потратил всю свою ману на это'),
-	(1585, 'low mana', '마나좀 다 찰 때까지 기달려주셈.', 0, 0, '', 'Tu devrais attendre que je boive ou régénère ma mana.', 'Wartet bis ich trinke oder mein Mana wieder da ist', '나 물 마시거나 마나 채울 때까지 좀 기다려줘', '', 'Deberías esperar hasta que beba o regenere mi maná', '', 'Тебе стоит подождать, пока я выпью или восстановлю свою ману'),
-	(1586, 'low mana', '마나 없네', 0, 0, '', 'Bas niveau de mana.', 'Mana low', '마나 낮음', '', 'Maná bajo', '', 'Низкая мана'),
-	(1587, 'low mana', '마나 맨날 부족', 0, 0, '', 'Pas de mana. Encore ?', 'Kein Mana. Schon wieder?', '마나 없어. 또?', '', 'Sin maná. ¿Otra vez?', '', 'Нет маны. Снова?'),
-	(1588, 'low mana', '마나 부족. 물빵좀 먹어야됨', 0, 0, '', 'Plus de mana, je prendrai bien un peu d eau', 'Mana low. Muss trinken', '마나 부족. 물 좀 마실게', '', 'Maná bajo. Quiero beber', '', 'Низкая мана. Хочу выпить.'),
-	(1589, 'low mana', '자판기 없어? 또 마나 다 썼네', 0, 0, '', 'Nous avons une machine distributrice ? Encore à court de mana.', 'Haben wir nen Getränkeautomaten? Wieder OOM', '자판기 없어? 또 마나 다 썼네', '', '¿Tenemos una máquina expendedora? Sin maná otra vez', '', 'У нас есть торговый автомат? Снова нет маны.'),
-	(1590, 'low mana', '내 마나는 이미 과거의 일이야(오링남)', 0, 0, '', 'Mon mana est à sec.', 'Mein Mana ist Geschichte', '내 마나는 이미 과거의 일이야(오링남)', '', 'Mi maná es historia', '', 'Моя мана в истории.'),
-	(1591, 'low mana', '다음엔 음료를 좀 챙겨야겠음. 마나 자꾸 딸리네;;', 0, 0, '', 'Je prendrai des verres la prochaine fois. Plus de mana.', 'Ich besorge mir nächstes mal Drinks. OOM', '다음엔 마실 것 좀 챙겨야겠어. 마나 부족', '', '¡No tengo maná! Tengo que comprar bebidas la próxima vez...', '', ''),
-	(1592, 'low mana', '내 마나 다 어디 갔어?', 0, 0, '', '...', 'Wo ist mein Man...', '내 마나 다 어디 갔어?', '', '', '', ''),
-	(1593, 'low ammo', '나 <ammo>가 얼마 안 남았어!', 0, 0, '', 'Il ne me reste que quelques <ammo> !', 'Ich habe nur noch wenig <ammo>!', '나 <ammo>가 얼마 안 남았어!', '', '¡Me quedan pocas <ammo>!', '', 'У меня осталось немного !'),
-	(1594, 'low ammo', '<ammo>가 더 필요해!', 0, 0, '', 'J’ai besoin de plus de <ammo>!', 'Ich brauche mehr <ammo>!', '<ammo>가 더 필요해!', '', '¡Necesito más <ammo>!', '', 'Мне нужно больше !'),
-	(1595, 'low ammo', '<ammo>가 100개 남았어!', 0, 0, '', 'Il me reste 100 <ammo> !', 'Noch 100 <ammo>!', '<ammo>가 100개 남았어!', '', '¡Quedan 100 <ammo>!', '', '100  осталось!'),
-	(1596, 'no ammo', '이럴 수가! <ammo>가 없어!', 0, 0, '', 'C’est ça! Pas de <ammo>!', 'Das war es! Keine <ammo> mehr!', '이럴 수가! <ammo>가 없어!', '', '¡Eso es todo! ¡Sin <ammo>!', '', ''),
-	(1597, 'no ammo', '네겐 내 활이 있... 앗, <ammo>가 없네!', 0, 0, '', 'Et vous avez mon arc... Oops, pas de <munitions> !', 'Und ihr habt meinen Bogen... ups, keine <ammo>!', '네겐 내 활이 있... 앗, <ammo>가 없네!', '', 'Y tú tienes mi arco... ¡Uy, sin <ammo>!', '', 'И у тебя есть мой лук... Ой, нет !'),
-	(1598, 'no ammo', '탄약이 필요해!', 0, 0, '', 'Besoin de munitions !', 'Brauche <ammo>!', '탄약이 필요해!', '', '¡Necesito munición!', '', 'Нужна патроны!'),
-	(1599, 'aoe', '세상에!', 0, 0, '', 'Oh mon Dieu!', 'Oh Gott!', '세상에!', '', '¡Oh, Dios!', '', 'О боже!'),
-	(1600, 'aoe', '나 떨고있니..', 0, 0, '', 'Je suis effrayé.', 'Ich habe Angst', '나 무서워', '', 'Tengo miedo', '', 'Мне страшно'),
-	(1601, 'aoe', '우린 이제 끝났어', 0, 0, '', 'Nous sommes foutus.', 'Wir sind am Arsch.', '우린 이제 끝났어', '', 'Hemos terminado', '', 'Мы пропали'),
-	(1602, 'aoe', '이제 다 끝이야', 0, 0, '', 'C’est terminé', 'Das wars.', '이제 다 끝이야', '', 'Esto se acabó', '', 'Это закончено'),
-	(1603, 'aoe', '여기서 끝이다', 0, 0, '', 'Cela se termine maintenant.', 'Hier ist jetzt Schluss.', '여기서 끝이다', '', 'Esto termina ahora', '', 'Это заканчивается сейчас'),
-	(1604, 'aoe', '누가 눈보라라도 좀 써줄래?', 0, 0, '', 'Est-ce que quelqu’un pourrait lancer une tempête de neige ou quelque chose du genre, s’il vous plaît?', 'Kann mal wer Blizzard anrufen?', '누가 눈보라라도 좀 써줄래?', '', '¿Alguien podría lanzar ventisca o algo así?', '', 'Может кто-нибудь вызвать метель или что-то подобное?'),
-	(1605, 'aoe', '염병, 탱커섹히 주변 몹 애드를 다 냈어!', 0, 0, '', 'Maudit tank a attiré tous les ennemis autour.', 'Verdammt. Der Tank hat alle Mobs gepullt.', '젠장, 탱커가 주변 몹 애드를 다 냈어!', '', '¡Me cago en todo! El tanque atrajo a todos los mobs...', '', 'Черт. Танку агрировал всех мобов вокруг.'),
-	(1606, 'aoe', '우린 죽을 거야. 죽을 거라고. 죽을 거야!', 0, 0, '', 'On va mourir. On va mourir. On va mourir.', 'Wir sterben. Wir sterben. Wir sterben.', '우린 죽을 거야. 죽을 거라고. 죽을 거야!', '', 'Vamos a morir. Vamos a morir. Vamos a morir.', '', 'Мы умрем. Мы умрем. Мы умрем.'),
-	(1607, 'aoe', '와! 놀아줄 장난감이 아주 많네!', 0, 0, '', 'Oh là là ! Tellement de jouets avec lesquels jouer !', 'Whoa! So viel Spielzeug zum Austoben.', '와! 놀아줄 장난감이 아주 많네!', '', '¡Vaya! Tantos juguetes con los que jugar', '', 'Ух ты! Так много игрушек, с которыми можно играть.'),
-	(1608, 'aoe', '내가 싹 다 쓸어버리겠삼!', 0, 0, '', 'Je vais les tuer tous !', 'Ich kill sie alle!', '내가 싹 다 쓸어버리겠어!', '', '¡Voy a matarlos a todos!', '', 'Я убью их всех!'),
-	(1609, 'aoe', '탱커 죽으면 우린 다 뒤지는거지.', 0, 0, '', 'Si le tank meurt, c’est la fin pour nous.', 'Wenn der Tank stirbt, sind wir Geschichte.', '탱커 죽으면 우린 그냥 끝이야', '', 'Si el tanque muere somos historia', '', 'Если танк умрет, мы в истории.'),
-	(1610, 'aoe', '으아아아아악!', 0, 0, '', 'Aaaaaaah!', 'Aaaaaargh!', '으아아아아악!', '', '¡Aaaaaargh!', '', 'Аааааргх!'),
-	(1611, 'aoe', '리이이이이이이이이로이 젠키인스으으으으!!!!!!!', 0, 0, '', 'LEEROOOOOOOYYYYYYYYYYY JENNKINNNSSSSSSS!!!!!!!', 'LEEEEERROOOYYYYYYYYYYYY JENNKINNNSSSSSS!!!!!!!', '리이이이이이이이이로이 젠키인스으으으으!!!!!!!', '', 'LEEEEERROOOYYYYYYYYYYYY JENNKINNNSSSSSS!!!!!!!', '', 'ЛЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЕЙ ДЖЕНКИНС!!!!!!!'),
-	(1612, 'aoe', '좋아, 광역기 뭐 쓸까?', 0, 0, '', 'Alors, qu’est-ce qu’on a dans AOE?', 'Okay. Was haben wir an AoE?', '좋아, 광역기 뭐 쓸까?', '', 'Claro. ¿Qué tenemos en AOE?', '', 'Правильно. Что у нас есть в AOE?'),
-	(1613, 'aoe', '이거 흥미진진해지는데', 0, 0, '', 'Cela devient intéressant', 'Jetzt wirds interessant.', '이거 흥미진진해지는데', '', 'Esto se pone interesante', '', 'Это становится интересным.'),
-	(1614, 'aoe', '좋아! 몹 모아봐, 불기둥 시원하게 깔아줄게', 0, 0, '', 'Cool. Rassemble-les au même endroit pour un bon Coup de Flamme.', 'Cool. Zieht sie zusammen für nen schönen Flammenstoß.', '좋아! 몹 모아봐, 불기둥 시원하게 깔아줄게', '', 'Genial! Ponlos todos juntos para un buen ataque en area', '', 'Круто. Соберите их в одном месте для хорошего огненного удара.'),
-	(1615, 'aoe', '죽여! 죽여! 죽여!', 0, 0, '', 'TUER! TUER! TUER!.', 'Kill! Kill! Kill!', '죽여! 죽여! 죽여!', '', '¡Matar! ¡Matar! ¡Matar!', '', 'Убей! Убей! Убей!'),
-	(1616, 'aoe', '나 바지에 지린 것 같아...', 0, 0, '', 'Je crois que mon pantalon est mouillé.', 'Ich glaub, meine Hose ist nass.', '나 바지에 지린 것 같아...', '', 'Creo que mis pantalones están mojados', '', 'Я думаю, что мои штаны мокрые.'),
-	(1617, 'aoe', '우린 이제 역사 속으로 사라질 거임', 0, 0, '', 'Nous sommes l’histoire.', 'Wir sind Geschichte.', '우린 이제 역사 속으로 사라질 거야', '', 'Somos historia', '', 'Мы в истории.'),
-	(1618, 'aoe', '힐러분들 준비 되셨삼??', 0, 0, '', 'J’espère que les heal sont prêt. Leeeeroy!', 'Hoffentlich sind die Heiler ready. Leeeeroy!', '힐러들이 준비됐길 바라지. 리로오오이!', '', 'Espero que los sanadores estén listos. ¡Leeeroy!', '', 'Надеюсь, целители готовы. Лееерой!'),
-	(1619, 'aoe', '제발 나한테 안 왔으면 좋겠어!', 0, 0, '', 'J’espère qu’ils ne viendront pas me chercher.', 'Hoffentlich kommen die nicht zu mir.', '제발 나한테 안 왔으면 좋겠어!', '', 'Espero que no vengan por mí', '', ''),
-	(1620, 'aoe', '아 싹다 쥑이삐려서 눈뜨고는 못보겠구만.', 0, 0, '', 'Oh non. Je ne peux pas regarder ce massacre.', 'Oh nein. Ich kann bei dem Gemetzel nicht hinsehen.', '세상에, 이 학살극을 차마 못 보겠어', '', 'Oh, no. No puedo ver esta matanza', '', ''),
-	(1621, 'loot', '돈 좀 있으면 좋겠다!', 0, 0, '', 'J’espère qu’il y aura de l’argent.', 'Hoffentlich gibts Gold.', '돈 좀 있으면 좋겠다!', '', 'Espero que haya algo de dinero...', '', 'Надеюсь, там будет немного денег.'),
-	(1622, 'loot', '전리품이다! 루팅!', 0, 0, '', 'Butin! Butin!', 'Loot! Loot!', '전리품이다! 루팅!', '', '¡Botín! ¡Botín!', '', 'Лут! Лут!'),
-	(1623, 'loot', '내 보물...', 0, 0, '', 'Mon précieux', 'Mein Schatz.', '내 보물...', '', 'Mi tesoro...', '', 'Мое драгоценное.'),
-	(1624, 'loot', '거기에 날 기다리는 반짝이는 에픽 템이 있길!', 0, 0, '', 'j’espère qu’il y a un objet épique brillant qui m’attend ici', 'Hoffentlich wartet da ein schickes episches Item auf mich.', '거기에 날 기다리는 반짝이는 에픽 템이 있길!', '', 'Espero que haya un objeto épico brillante esperándome allí', '', 'Надеюсь, там ждет меня блестящий эпический предмет.'),
-	(1625, 'loot', '내 주머니와 가방은 아주 넉넉하다고!', 0, 0, '', 'J’ai de grandes poches et des sacs profonds.', 'Ich hab tiefe Taschen und Beutel.', '내 주머니와 가방은 아주 넉넉하다고!', '', 'Tengo bolsillos profundos y infinitos', '', 'У меня глубокие карманы и сумки.'),
-	(1626, 'loot', '전부 다 내 거야!', 0, 0, '', 'Tout m’appartient!', 'Alles meins!', '전부 다 내 거야!', '', '¡Todo es mío!', '', 'Все мое!'),
-	(1627, 'loot', '오늘은 제발 똥템 좀 안 나왔으면!', 0, 0, '', 'J’espère qu’il n’y aura pas de merde grise aujourd’hui.', 'Hoffentlich heute kein grauer Müll.', '오늘은 제발 잡템 좀 안 나왔으면!', '', 'Espero que hoy no haya mierda gris', '', 'Надеюсь, сегодня не будет серой ерунды.'),
-	(1628, 'loot', '이 전리품은 내 꺼내?ㅋ', 0, 0, '', 'Ce butin est MIEN !', 'Dieser Loot ist MEINER!', '이 전리품은 내 거야!', '', '¡Este botín es MÍO!', '', 'Этот лут - МОЙ!'),
-	(1629, 'loot', '루팅하는 건 좀 귀찮지만, 돈은 맨날 모잘람 ㅠ', 0, 0, '', 'Le pillage est répugnant mais j’ai besoin d’argent', 'Looten ist eklig, aber ich brauch Gold.', '루팅하는 건 좀 그렇지만, 돈이 필요한걸', '', 'El saqueo es repugnante pero necesito dinero...', '', 'Лутать отвратительно, но мне нужны деньги.'),
-	(1630, 'loot', '골드다!', 0, 0, '', 'ARGENT !', 'Gold!', '골드다!', '', '¡Oro!', '', 'Золото!'),
-	(1631, 'loot', '좋아, 뭘 가지고 있는지 볼까?', 0, 0, '', 'D’accord. Voyons ce qu’ils ont.', 'Okay. Mal sehen, was sie droppen.', '좋아, 뭘 가지고 있는지 볼까?', '', 'OK. Veamos qué tienen', '', ''),
-	(1632, 'loot', '걱정 마, 내가 싹 다 훑어줄게', 0, 0, '', 'Ne t’inquiète pas. je vais tout piller', 'Keine Sorge. Ich loote alles.', '걱정 마, 내가 싹 다 훑어줄게', '', 'No te preocupes. Saquearé todo', '', 'Не волнуйтесь. Я все залутаю.'),
-	(1633, 'loot', '내가 바로 루팅 닌자다!', 0, 0, '', 'Je suis un ninja du but인', 'Ich bin ein Ninja-Looter.', '내가 바로 루팅 닌자다!', '', 'Soy un ladron de tesoros', '', 'Я ниндзя лута.'),
-	(1634, 'loot', '주사위 굴릴까유?', 0, 0, '', 'Est-ce que je dois lancer les dés?', 'Muss ich würfeln?', '주사위 굴려야 돼?', '', '¿Necesito lanzar dados?', '', 'Мне нужно бросить кубик?'),
-	(1635, 'loot', '아니, 얘네는 이 많은 걸 다 어디다 넣고 다녔대?', 0, 0, '', 'Quelqu’un m’explique, où ils ont mis tout ça?', 'Kann mir mal wer erklären, wo die das ganze Zeug versteckt haben?', '아니, 얘네는 이 많은 걸 다 어디다 넣고 다녔대?', '', 'Alguien me explica, ¿dónde pusieron todas estas cosas?', '', 'Кто-нибудь объясните мне, куда они положили все эти вещи?'),
-	(1636, 'loot', '아니, 잡템은 안 주울 거야', 0, 0, '', 'No way, je ne vais pas voler de la merde grise.', 'Nein, ich loote keinen grauen Müll.', '아니, 잡템은 안 주울 거야', '', 'No, no saquearé mierda gris', '', ''),
-	(1637, 'loot', '내가 1등! 내가 1등! 내가 1등!', 0, 0, '', 'Je suis le premier. Je suis le premier. Je suis le premier.', 'Ich bin zuerst. Ich bin zuerst. Ich bin zuerst.', '내가 1등! 내가 1등! 내가 1등!', '', '¡Es mio! ¡Es mio! ¡Es mio!', '', ''),
-	(1638, 'loot', '가진 돈 다 내놔!', 0, 0, '', 'Désolé, je ne peux pas faire ça.', 'Gebt mir euer Gold!', '가진 돈 다 내놔!', '', '¡Dame todo tu dinero!', '', 'Отдай мне свои деньги!'),
-	(1639, 'loot', '주머니가 비었어, 채워야겠지', 0, 0, '', 'Mes poches sont vides, il faut que je les remplisse.', 'Meine Taschen sind leer, müssen aber voll werden.', '주머니가 비었어, 채워야겠어', '', 'Mis bolsillos están vacíos y necesitan llenarse!', '', 'Мои карманы пусты, мне нужно их заполнить.'),
-	(1640, 'loot', '이걸 위해서 새 가방도 장만했지', 0, 0, '', 'J’ai un nouveau sac pour cela.', 'Hab dafür ne neue Tasche.', '이걸 위해서 새 가방도 장만했지', '', 'Tengo una nueva bolsa para esto', '', ''),
-	(1641, 'loot', '루팅하는 동안 몹이 안 몰렸으면 좋겠는데', 0, 0, '', 'J’espère ne pas aggro, je vais loot !', 'Hoffentlich zieh ich beim Looten keine Aggro.', '루팅하는 동안 몹이 안 몰렸으면 좋겠는데', '', 'Espero no ofender a nadie mientras saqueo', '', ''),
-	(1642, 'loot', '보지 마, 나 루팅 중이란 말이야', 0, 0, '', 'S’il vous plaît, ne regardez pas. je loot', 'Ich kann nicht looten wenn jemand zusieht.', '보지 마, 나 루팅 중이란 말이야', '', 'Por favor, no mires. Estoy saqueando', '', ''),
-	(1643, 'loot', '하! 너님한텐 국물도 없을 거다!', 0, 0, '', 'Ha! Tu ne verras rien de cela !', 'Ha! Ihr kriegt davon keinen Krümel!', '하! 너한텐 국물도 없을 거다!', '', '¡Ja! ¡No obtendrás nada de eso!', '', ''),
-	(1644, 'loot', '루팅은 정말 즐거워', 0, 0, '', 'Le pillage c’est cool', 'Looten ist cool.', '루팅은 정말 즐거워', '', 'Saquear es genial', '', 'Лутать круто.'),
-	(1645, 'loot', '새 장비가 좋아!', 0, 0, '', 'J’aime les nouveaux équipements.', 'Ich mag neues Gear.', '새 장비가 좋아!', '', 'Me gusta el equipo nuevo', '', 'Мне нравится новая экипировка.'),
-	(1646, 'loot', '또 쓸모없는 것만 나오면 나 나갈 거야', 0, 0, '', 'j’arrêterai s’il n’y a plus rien de précieux', 'Ich höre auf, wenn schon wieder nichts Wertvolles droppt.', '또 쓸모없는 것만 나오면 나 나갈 거야', '', 'Me doy por vencido si no hay nada util', '', ''),
-	(1647, 'loot', '예쁜 반지였으면 좋겠다', 0, 0, '', 'j’espère que c’est une jolie bague', 'Hoffentlich ist es ein hübscher Ring.', '예쁜 반지였으면 좋겠다', '', 'Espero que sea un anillo bonito', '', 'Надеюсь, это будет красивое кольцо.'),
-	(1648, 'loot', '그 전리품 내가 뺏어올 거삼', 0, 0, '', 'Je t’arracherai le butin', 'Ich reiß dir den Loot aus den Händen.', '그 전리품 내가 뺏어올 거야', '', 'Te arrancaré el botín', '', ''),
-	(1649, 'loot', '다들 비켜봐, 내가 루팅할 거야', 0, 0, '', 'Tout le monde, restez loin. Je vais piller.', 'Alle weg da. Ich loote jetzt.', '다들 비켜봐, 내가 루팅할 거야', '', '¡Alejaos todos! Voy a lootear', '', ''),
-	(1650, 'loot', '전리품 달달하네', 0, 0, '', 'Je me suis procuré un butin incroyable !', 'Geiler Loot.', '달달한 전리품이네', '', 'Dulce botín', '', 'Сладкий лут.'),
-	(1651, 'loot', '오 신이시여..오늘 레어템 하나만 내려 주시옵소서..', 0, 0, '', 'Le Dieu des Lancés! Fais-moi vivre une épopée aujourd’hui', 'Oh ihr RNG-Götter! Gewährt mir heute einen Epic beim würfeln.', '주사위의 신이시여! 오늘 제게 에픽 하나만 점지해 주세요!', '', '¡El Dios de los dados! Dame un epico hoy', '', 'Бог Ролла! Дай мне эпик сегодня.'),
-	(1652, 'loot', '제발 새 장난감 좀 주세요!', 0, 0, '', 'S’il te plaît, donne-moi de nouveaux jouets', 'Bitte gib mir neues Spielzeug.', '제발 새 장난감 좀 주세요!', '', 'Por favor, dame nuevos juguetes', '', 'Пожалуйста, дай мне новые игрушки.'),
-	(1653, 'loot', '좋은 것 좀 들고 있었으면 좋겠다!', 0, 0, '', 'J’espère qu’ils auront des délices.', 'Hoffe, die haben was Leckeres dabei.', '맛있는 것 좀 들고 있었으면 좋겠다!', '', 'Espero que caiga algo sabrosos', '', 'Надеюсь, они принесут вкусняшки.'),
-	(1654, 'loot', '골드는 내 거야. 나머지는 다 양보할게, 약속해!', 0, 0, '', 'L’or m’appartient. Je laisserai tout, je te le promets.', 'Das Gold gehört mir. Ich las세 euch den Rest, versprochen.', '골드는 내 거야. 나머지는 다 양보할게, 약속해!', '', 'El oro es mío. Dejaré todo lo demas, lo prometo!', '', ''),
-	(1655, 'loot', '아니, 참을 수가 없어!', 0, 0, '', 'Non, je ne peux pas résister.', 'Ne인, ich kann nicht widerstehen.', '아니, 참을 수가 없어!', '', 'No, no puedo resistir', '', ''),
-	(1656, 'loot', '더 갖고 싶어!', 0, 0, '', 'Oh, vous en voulez plus!', 'Ich will mehr!', '더 갖고 싶어!', '', '¡Quiero más!', '', 'Я хочу больше!'),
-	(1657, 'wait_travel_close', '다 왔어, 기다려줘!', 0, 0, '', 'Je suis presque là, attends-moi !', 'Bin gleich da, wartet auf mich!', '다 왔어, 기다려줘!', '', '¡Estoy cerca, espérame!', '', 'Я близко, подожди меня!'),
-	(1658, 'wait_travel_close', '멀지 않아, 제발 기다려줘!', 0, 0, '', 'Je ne suis pas loin, s’il vous plaît patientez !', 'Bin nicht mehr weit, bitte wartet!', '멀지 않아, 제발 기다려줘!', '', 'No estoy lejos, ¡esperame por favor!', '', 'Я недалеко, погодите!'),
-	(1659, 'wait_travel_medium', '네가 있는 곳으로 가고 있어', 0, 0, '', 'Je me dirige vers votre emplacement.', 'Bin auf dem Weg zu euch.', '네가 있는 곳으로 가고 있어', '', 'Me dirijo a tu ubicación', '', 'Двигаюсь к тебе'),
-	(1660, 'wait_travel_medium', '지금 가고 있어', 0, 0, '', 'Je viens vers vous.', 'Ich komme zu euch.', '지금 가고 있어', '', 'Voy hacia ti', '', 'Иду к тебе'),
-	(1661, 'wait_travel_far', '님 위치로 이동 중이삼', 0, 0, '', 'Je voyage vers votre destination.', 'Ich reise zu euch.', '네 위치로 이동 중이야', '', 'Voy a viajar a tu ubicación', '', 'Направляюсь к тебе'),
-	(1662, 'wait_travel_far', '너 님한테 가려고 노력 중이삼', 0, 0, '', 'Je suis en train de l’atteindre', 'Ich versuche zu euch zu kommen.', '너한테 가려고 노력 중이야', '', 'Estoy tratando de llegar a ti', '', 'Пытаюсь до тебя добраться'),
-	(1663, 'equip_command', '%item 장착 중', 0, 0, '', 'Équipement %item.', 'Rüste %item aus', '%item 장착 중', '', 'Me he equipado %item', '', 'Экипирую %item.'),
-	(1664, 'unequip_command', '%item 해제됨', 0, 0, '', '%item Déséquipé', '%item abgelegt.', '%item 해제됨', '', 'Me he quitado %item', '', '%item снят.'),
-	(1665, 'auto_learn_spell', '다음 주문을 배웠어: %spells', 0, 0, '', 'Je viens d’apprendre: %spells', 'Ich habe die Zauber gelernt: %spells', '다음 주문을 배웠어: %spells', '', 'He aprendido los hechizos: %spells', '', 'Я выучил заклинания: %spells.'),
-	(1666, 'use_command_item_cooldown', '%item 재사용 대기 중이야', 0, 0, '', 'L’objet %item est en temps de recharge.', '%item hat Abklingzeit.', '%item 재사용 대기 중이야', '', '%item esta recargandose', '', '%item в перезарядке.'),
-	(1667, 'use_command_item_not_owned', '가방에 %item가 없어', 0, 0, '', 'Je n’ai pas %item dans mon inventaire.', 'Ich habe %item nicht im Inventar.', '가방에 %item가 없어', '', 'No tengo %item en mi inventario', '', ''),
-	(1668, 'use_command_invalid_item', 'ID %item인 아이템은 존재하지 않아', 0, 0, '', 'L’article avec l’identifiant %item n’existe pas.', 'Das Item mit der ID %item existiert nicht.', 'ID %item인 아이템은 존재하지 않아', '', 'El objeto con el id %item no existe', '', 'Предмет с ID %item не существует.'),
-	(1669, 'use_command_socket', '%item에 %gem 장착 중', 0, 0, '', 'J’encastre le %gem dans %item.', 'Setze %gem in %item ein.', '%item에 %gem 장착 중', '', 'Insertando %gem en %item', '', 'Вставляю %gem в %item.'),
-	(1670, 'use_command_item_error', '%item를 사용할 수 없구만?', 0, 0, '', 'Je ne peux pas utiliser %item.', 'Ich kann %item nicht benutzen.', '%item를 사용할 수 없어', '', 'No puedo usar %item', '', ''),
-	(1671, 'following', '따라가는 중', 0, 0, '', 'Je suis', 'Folge.', '따라가는 중', '', 'Te sigo', '', 'Следую.'),
-	(1672, 'staying', '대기 중', 0, 0, '', 'Je reste ici', 'Bleibe hier.', '대기 중', '', 'Me quedo aqui', '', 'Остаюсь.'),
-	(1673, 'fleeing', '도망치는 중', 0, 0, '', 'Je m’enfui', 'Fliehe.', '도망치는 중', '', 'Huyendo', '', 'Убегаю.'),
-	(1674, 'fleeing_far', '너랑 같이 안 도망갈 거야, 너무 멀리 있잖아!', 0, 0, '', 'Je ne vais pas partir avec toi, tu es trop loin.', 'Ich fliehe nicht mit dir, du bist zu weit weg.', '너랑 같이 안 도망갈 거야, 너무 멀리 있잖아!', '', 'No huiré contigo, estás demasiado lejos', '', 'Я с тобой не побегу, ты слишком далеко'),
-	(1675, 'grinding', '닥공 중', 0, 0, '', 'Grinding', 'Grinde.', '닥공 중', '', 'Farmeando', '', 'Фармлю.'),
-	(1676, 'attacking', '공격 중', 0, 0, '', 'Attaque en cours !', 'Greife an.', '공격 중', '', 'Atacando', '', 'Атакую.'),
-	(1677, 'error_far', '너무 멀어', 0, 0, '', 'C’est trop loin.', 'Das ist zu weit weg.', '너무 멀어', '', 'Estas demasiado lejos', '', 'Это слишком далеко.'),
-	(1678, 'error_water', '물속에 있습니다만.', 0, 0, '', 'Cela se trouve sous l’eau', 'Das ist unter Wasser.', '물속에 있어', '', 'Estas debajo del agua', '', 'Это под водой.'),
-	(1679, 'error_cant_go', '거긴 못 가', 0, 0, '', 'Je ne peux pas y aller.', 'Da kann ich nicht hin.', '거긴 못 가', '', 'No puedo ir allí', '', 'Я не могу туда пройти'),
-	(1680, 'error_guild', '나는 그쪽 길드원이 아니걸랑!', 0, 0, '', 'Je ne fais pas partie de votre guilde!', 'Ich bin nicht in deiner Gilde!', '난 네 길드원이 아니야!', '', '¡No estoy en tu hermandad!', '', 'Я не в твоей гильдии'),
-	(1681, 'error_gbank_found', '근처에 길드 창고가 없네', 0, 0, '', 'Je ne trouve pas de banque de guilde à proximité.', 'Keine Gildenbank in der Nähe gefunden.', '근처에 길드 창고가 없어', '', 'No se puede encontrar un banco de hermandad cercano', '', 'Не могу найти гильдейский банк поблизости.'),
-	(1682, 'error_cant_put', '넣을 수 없어 ', 0, 0, '', 'Je ne peux pas déposer ', 'Ich kann nicht ', '넣을 수 없어 ', '', 'No puedo depositar ', '', 'Я не могу положить'),
-	(1683, 'error_gbank_rights', '길드 창고 첫 번째 탭에 아이템을 넣을 권한이 없다네요?', 0, 0, '', 'Je n’ai pas le droit de mettre des objets dans le premier onglet de la banque de guilde.', 'Ich habe keine Rechte, Items in den ersten Gildenbank-Reiter zu legen.', '길드 창고 첫 번째 탭에 아이템을 넣을 권한이 없어', '', 'No tengo derechos para depositar objetos en la primera pestaña del banco de hermandad', '', 'У меня нет прав на размещение предметов в первой вкладке гильдейского банка.'),
-	(1684, 'gbank_put', ' 길드 창고에 보관됨', 0, 0, '', ' déposé dans la banque de guilde.', ' in die Gildenbank gelegt', ' 길드 창고에 보관됨', '', ' depositado en el banco de hermandad', '', ' положено в гильдейский банк.'),
-	(1685, 'free_moving', '자유 이동 중', 0, 0, '', 'Déplacement libre', 'Freies Bewegen.', '자유 이동 중', '', 'Moviendome libremente', '', 'Свободное движение.'),
-	(1686, 'guarding', '경계 중', 0, 0, '', 'Je garle la position.', 'Bewache.', '경계 중', '', 'Protegiendo la posición', '', 'Охраняю.'),
-	(1687, 'use_command', '<target> 사용 중', 0, 0, '', 'Utilisation de <target>', 'Benutze <target>', '<target> 사용 중', '', 'Usando <target>', '', ''),
-	(1688, 'command_target_unit', '%unit에게', 0, 0, '', 'sur %unit', 'auf %unit', '%unit에게', '', 'en %unit', '', 'на %unit.'),
-	(1689, 'use_command_remaining', '(%amount개 남음)', 0, 0, '', '(%amount restant)', '(%amount verfügbar)', '(%amount개 남음)', '', '(%amount restante)', '', '(%amount доступно)'),
-	(1690, 'use_command_last', '(마지막 한 개!)', 0, 0, '', '(La dernière fois)', '(das letzte)', '(마지막 한 개!)', '', '(el último)', '', '(последний)'),
-	(1691, 'use_command_socket_error', '소켓이 맞지 않는데 이거 어케해야죠?', 0, 0, '', 'Le socket ne s’adapte pas.', 'Der Sockel passt nicht.', '소켓이 맞지 않아', '', 'La ranura no sirve', '', 'Сокет не подходит.'),
-	(1692, 'command_target_trade', '거래 아이템에', 0, 0, '', 'Sur le commerce de l’article', 'auf Handelsgegenstand', '거래 아이템에', '', 'en objeto comerciado', '', 'на торговом предмете.'),
-	(1693, 'command_target_self', '자신에게', 0, 0, '', 'sur moi-même', 'auf mich selbst', '자신에게', '', 'en mi', '', 'на себе.'),
-	(1694, 'command_target_item', '%item이거 어따씀?', 0, 0, '', 'sur %item', 'auf %item', '%item에', '', 'en %item', '', 'на %item.'),
-	(1695, 'command_target_go', '%gameobject에', 0, 0, '', 'sur %gameobject', 'auf %gameobject', '%gameobject에', '', 'en %gameobject', '', 'на %gameobject.'),
-	(1696, 'loot_command', '%item 획득 중', 0, 0, '', 'Ramassage de %item', 'Loote %item', '%item 획득 중', '', 'Despojando %item', '', 'Лутаю %item.'),
-	(1697, 'cast_spell_command_summon', '<target> 소환 중', 0, 0, '', 'Invocation de <target>', 'Beschwöre <target>', '<target> 소환 중', '', 'Invocando a <target>', '', ''),
-	(1698, 'cast_spell_command_summon_error_members', '소환을 하기에 파티원이 부족한데..', 0, 0, '', 'Je n’ai pas assez de membres de groupe autour de moi pour lancer une invocation.', 'Ich habe nicht genug Gruppenmitglieder in der Nähe, um beschwören zu können.', '소환을 하기에 파티원이 부족해', '', 'No tengo suficientes miembros de grupo alrededor para invocar', '', ''),
-	(1699, 'cast_spell_command_summon_error_target', '소환 대상을 찾지 못했습니다만.', 0, 0, '', 'Je n’ai pas réussi à trouver la cible à invoquer.', 'Beschwörungsziel nicht gefunden.', '소환 대상을 찾지 못했어', '', 'No he podido encontrar al objetivo de la invocación', '', 'Не удалось найти цель для призыва.'),
-	(1700, 'cast_spell_command_summon_error_combat', '전투 중에는 소환할 수 없슈', 0, 0, '', 'Je ne peux pas invoquer pendant que je suis en combat', 'Ich kann im Kampf nicht beschwören.', '전투 중에는 소환할 수 없어', '', 'No puedo invocar durante un combate', '', ''),
-	(1701, 'cast_spell_command_error_unknown_spell', '%spell 주문을 몰라', 0, 0, '', 'Je ne connais pas le sort %spell.', 'Ich kenne den Zauber %spell nicht.', '%spell 주문을 몰라', '', 'No conozco el hechizo %spell', '', ''),
-	(1702, 'cast_spell_command_spell', '%spell 시전 중', 0, 0, '', 'Lancement du sort %spell', 'Wirke %spell', '%spell 시전 중', '', 'Lanzando %spell', '', 'Кастую %spell.'),
-	(1703, 'cast_spell_command_craft', '%spell 제작 중', 0, 0, '', 'Je suis en train de fabriquer le sort %spell.', 'Stelle %spell her', '%spell 제작 중', '', 'Creando %spell', '', 'Создаю %spell.'),
-	(1704, 'cast_spell_command_error', '%spell를 시전할 수 없어', 0, 0, '', 'Je ne peux pas lancer le sort %spell.', 'Kann %spell nicht wirken.', '%spell를 시전할 수 없어', '', 'No puedo lanzar %spell', '', 'Не могу кастовать %spell.'),
-	(1705, 'cast_spell_command_error_failed', '%spell 시전 실패', 0, 0, '', 'J’ai échoué à lancer %spell.', 'Konnte %spell nicht wirken.', '%spell 시전 실패', '', 'Fallo al lanzar %spell', '', 'Не удалось кастовать %spell.'),
-	(1706, 'cast_spell_command_amount', ' |cffffff00(x%amount 남음)|r', 0, 0, '', ' |cffffff00(x%amount restant)|r.', ' |cffffff00(x%amount übrig)|r', ' |cffffff00(x%amount 남음)|r', '', ' |cffffff00(x%amount restante)|r', '', ' |cffffff00(x%amount осталось)|r'),
-	(1707, 'dummy_end', 'dummy', 0, 0, '', 'dummy', 'Dummy', '', '', '', '', 'dummy'),
-	(1708, 'rp_missing_reagent_greater_blessing', '빛이시여... 왕의 징표를 깜빡했네요. 대신 %base_spell로 하죠!', 0, 0, '', 'Par la Lumière... J\'ai oublié mes Symboles du roi. On se contentera de %base_spell !', 'Beim Licht… Ich hab meine Königssymbole vergessen. Na gut, dann nehmen wir eben %base_spell!', '성광이시여... 왕의 징표를 깜빡했네요. 대신 %base_spell로 하죠!', '', '', '', ''),
-	(1709, 'rp_missing_reagent_gift_of_the_wild', '자연은 너그럽지만 제 가방은 아니군요... %group_spell용 약초가 다 떨어졌어요. 일단 %base_spell이라도 받으세요!', 0, 0, '', 'La nature est généreuse, pas mes sacs... plus d\'herbes pour %group_spell. Prenez %base_spell pour l\'instant !', 'Die Natur ist großzügig, meine Taschen nicht... keine Kräuter für %group_spell mehr. Nehmt fürs Erste %base_spell!', '자연은 너그럽지만 제 가방은 아니군요... %group_spell용 약초가 다 떨어졌어요. 일단 %base_spell이라도 받으세요!', '', '', '', ''),
-	(1710, 'rp_missing_reagent_arcane_brilliance', '마력의 가루가 다 떨어졌어요... %group_spell은 나중에 하죠. 대신 %base_spell 시전합니다!', 0, 0, '', 'Plus de poudre des arcanes... %group_spell attendra. Je lance %base_spell !', 'Arkanes Pulver alle... %group_spell muss warten. Wirke %base_spell!', '마력의 가루가 다 떨어졌어요... %group_spell은 나중에 하죠. 대신 %base_spell 시전합니다!', '', '', '', ''),
-	(1711, 'rp_missing_reagent_generic', '앗, %group_spell용 재료가 없네요. %base_spell로 대신할게요!', 0, 0, '', 'Oups, je n\'ai plus de composants pour %group_spell. On fera avec %base_spell !', 'Ups, mir fehlen die Komponenten für %group_spell. Wir nehmen %base_spell!', '앗, %group_spell용 재료가 없네요. %base_spell로 대신할게요!', '', '', '', ''),
-	(1712, 'netherspite_beam_blocking_red', '%player가 빨간색 광선을 막으러 이동합니다!', 0, 0, '', '', '%player bewegt sich, um den roten Strahl zu blocken!', '%player가 빨간색 광선을 막으러 이동합니다!', '', '', '', ''),
-	(1713, 'netherspite_beam_blocking_blue', '%player가 파란색 광선을 막으러 이동합니다!', 0, 0, '', '', '%player bewegt sich, um den blauen Strahl zu blocken!', '%player가 파란색 광선을 막으러 이동합니다!', '', '', '', ''),
-	(1714, 'netherspite_beam_blocking_green', '%player가 초록색 광선을 막으러 이동합니다!', 0, 0, '', '', '%player bewegt sich, um den grünen Strahl zu blocken!', '%player가 초록색 광선을 막으러 이동합니다!', '', '', '', ''),
-	(1715, 'netherspite_beam_leaving_blue', '%player가 파란색 광선에서 벗어납니다. 다음 사람 준비!', 0, 0, '', '', '%player verlässt den blauen Strahl--nächster Blocker los!', '%player가 파란색 광선에서 벗어납니다. 다음 사람 준비!', '', '', '', ''),
-	(1716, 'netherspite_beam_leaving_green', '%player가 초록색 광선에서 벗어납니다. 다음 사람 준비!', 0, 0, '', '', '%player verlässt den grünen Strahl--nächster Blocker los!', '%player가 초록색 광선에서 벗어납니다. 다음 사람 준비!', '', '', '', ''),
-	(1717, 'pet_usage_error', 'Usage: pet <aggressive|defensive|passive|stance|attack|follow|stay>', 0, 0, '사용법: pet <aggressive|defensive|passive|stance|attack|follow|stay>', 'Utilisation: pet <aggressive|defensive|passive|stance|attack|follow|stay>', 'Verwendung: pet <aggressive|defensive|passive|stance|attack|follow|stay>', '用法: pet <aggressive|defensive|passive|stance|attack|follow|stay>', '用法: pet <aggressive|defensive|passive|stance|attack|follow|stay>', 'Uso: pet <aggressive|defensive|passive|stance|attack|follow|stay>', 'Uso: pet <aggressive|defensive|passive|stance|attack|follow|stay>', 'Использование: pet <aggressive|defensive|passive|stance|attack|follow|stay>'),
-	(1718, 'pet_no_pet_error', 'You have no pet or guardian pet.', 0, 0, '펫이나 수호자 펫이 없습니다.', 'Vous n\'avez pas de familier ou gardien.', 'Du hast kein Tier oder Wächter.', '你没有宠物或守护者宠物。', '你沒有寵物或守護者寵物。', 'No tienes mascota o mascota guardián.', 'No tienes mascota o mascota guardián.', 'У вас нет питомца или защитника.'),
-	(1719, 'pet_stance_report', 'Current stance of %type "%name": %stance.', 0, 0, '%type "%name"의 현재 태세: %stance.', 'Position actuelle du %type "%name": %stance.', 'Aktuelle Haltung des %type "%name": %stance.', '%type "%name" 的当前姿态: %stance。', '%type "%name" 的當前姿態: %stance。', 'Postura actual del %type "%name": %stance.', 'Postura actual del %type "%name": %stance.', 'Текущая позиция %type "%name": %stance.'),
-	(1720, 'pet_no_target_error', 'No valid target selected by master.', 0, 0, '주인이 유효한 대상을 선택하지 않았습니다.', 'Aucune cible valide sélectionnée par le maître.', 'Kein gültiges Ziel vom Meister ausgewählt.', '主人未选择有效目标。', '主人未選擇有效目標。', 'No hay objetivo válido seleccionado por el maestro.', 'No hay objetivo válido seleccionado por el maestro.', 'Хозяин не выбрал действительную цель.'),
-	(1721, 'pet_target_dead_error', 'Target is not alive.', 0, 0, '대상이 살아있지 않습니다.', 'La cible n\'est pas vivante.', 'Das Ziel ist nicht am Leben.', '目标未存活。', '目標未存活。', 'El objetivo no está vivo.', 'El objetivo no está vivo.', 'Цель не жива.'),
-	(1722, 'pet_invalid_target_error', 'Target is not a valid attack target for the bot.', 0, 0, '대상이 봇에게 유효한 공격 대상이 아닙니다.', 'La cible n\'est pas une cible d\'attaque valide pour le bot.', 'Das Ziel ist kein gültiges Angriffsziel für den Bot.', '目标不是机器人的有效攻击目标。', '目標不是機器人的有效攻擊目標。', 'El objetivo no es un objetivo de ataque válido para el bot.', 'El objetivo no es un objetivo de ataque válido para el bot.', 'Цель не является допустимой целью атаки для бота.'),
-	(1723, 'pet_pvp_prohibited_error', 'I cannot command my pet to attack players in PvP prohibited areas.', 0, 0, 'PvP 금지 지역에서는 펫에게 플레이어 공격 명령을 내릴 수 없습니다.', 'Je ne peux pas commander à mon familier d\'attaquer des joueurs dans les zones où le PvP est interdit.', 'Ich kann meinem Tier nicht befehlen, Spieler in PvP-verbotenen Gebieten anzugreifen.', '我不能命令我的宠物在禁止PvP的区域攻击玩家。', '我不能命令我的寵物在禁止PvP的區域攻擊玩家。', 'No puedo ordenar a mi mascota atacar jugadores en áreas donde el PvP está prohibido.', 'No puedo ordenar a mi mascota atacar jugadores en áreas donde el PvP está prohibido.', 'Я не могу приказать своему питомцу атаковать игроков в зонах, где PvP запрещено.'),
-	(1724, 'pet_attack_success', 'Pet commanded to attack your target.', 0, 0, '펫이 당신의 대상을 공격하도록 명령했습니다.', 'Le familier a reçu l\'ordre d\'attaquer votre cible.', 'Tier wurde befohlen, dein Ziel anzugreifen.', '宠物已命令攻击你的目标。', '寵物已命令攻擊你的目標。', 'Mascota ordenada a atacar tu objetivo.', 'Mascota ordenada a atacar tu objetivo.', 'Питомцу приказано атаковать вашу цель.'),
-	(1725, 'pet_attack_failed', 'Pet did not attack. (Already attacking or unable to attack target)', 0, 0, '펫이 공격하지 않았습니다. (이미 공격 중이거나 대상 공격 불가)', 'Le familier n\'a pas attaqué. (Attaque déjà en cours ou impossible d\'attaquer la cible)', 'Tier hat nicht angegriffen. (Greift bereits an oder kann Ziel nicht angreifen)', '宠物未攻击。（已在攻击或无法攻击目标）', '寵物未攻擊。（已在攻擊或無法攻擊目標）', 'La mascota no atacó. (Ya está atacando o no puede atacar al objetivo)', 'La mascota no atacó. (Ya está atacando o no puede atacar al objetivo)', 'Питомец не атаковал. (Уже атакует или не может атаковать цель)'),
-	(1726, 'pet_follow_success', 'Pet commanded to follow.', 0, 0, '펫이 따라오도록 명령했습니다.', 'Le familier a reçu l\'ordre de suivre.', 'Tier wurde befohlen zu folgen.', '宠物已命令跟随。', '寵物已命令跟隨。', 'Mascota ordenada a seguir.', 'Mascota ordenada a seguir.', 'Питомцу приказано следовать.'),
-	(1727, 'pet_stay_success', 'Pet commanded to stay.', 0, 0, '펫이 머물도록 명령했습니다.', 'Le familier a reçu l\'ordre de rester.', 'Tier wurde befohlen zu bleiben.', '宠物已命令停留。', '寵物已命令停留。', 'Mascota ordenada a quedarse.', 'Mascota ordenada a quedarse.', 'Питомцу приказано остаться.'),
-	(1728, 'pet_unknown_command_error', 'Unknown pet command: %param. Use: pet <aggressive|defensive|passive|stance|attack|follow|stay>', 0, 0, '알 수 없는 펫 명령: %param. 사용법: pet <aggressive|defensive|passive|stance|attack|follow|stay>', 'Commande de familier inconnue: %param. Utilisation: pet <aggressive|defensive|passive|stance|attack|follow|stay>', 'Unbekannter Tierbefehl: %param. Verwendung: pet <aggressive|defensive|passive|stance|attack|follow|stay>', '未知宠物命令: %param。用法: pet <aggressive|defensive|passive|stance|attack|follow|stay>', '未知寵物命令: %param。用法: pet <aggressive|defensive|passive|stance|attack|follow|stay>', 'Comando de mascota desconocido: %param. Uso: pet <aggressive|defensive|passive|stance|attack|follow|stay>', 'Comando de mascota desconocido: %param. Uso: pet <aggressive|defensive|passive|stance|attack|follow|stay>', 'Неизвестная команда питомца: %param. Использование: pet <aggressive|defensive|passive|stance|attack|follow|stay>'),
-	(1729, 'pet_stance_set_success', 'Pet stance set to %stance.', 0, 0, '펫 태세가 %stance(으)로 설정되었습니다.', 'Position du familier définie sur %stance.', 'Tierhaltung auf %stance gesetzt.', '宠物姿态设置为 %stance。', '寵物姿態設置為 %stance。', 'Postura de mascota establecida en %stance.', 'Postura de mascota establecida en %stance.', 'Позиция питомца установлена на %stance.'),
-	(1730, 'pet_type_pet', 'pet', 0, 0, '펫', 'familier', 'Tier', '宠物', '寵物', 'mascota', 'mascota', 'питомец'),
-	(1731, 'pet_type_guardian', 'guardian', 0, 0, '수호자', 'gardien', 'Wächter', '守护者', '守護者', 'guardián', 'guardián', 'защитник'),
-	(1732, 'pet_stance_aggressive', 'aggressive', 0, 0, '공격적', 'agressif', 'aggressiv', '进攻', '進攻', 'agresivo', 'agresivo', 'агрессивная'),
-	(1733, 'pet_stance_defensive', 'defensive', 0, 0, '방어적', 'défensif', 'defensiv', '防御', '防禦', 'defensivo', 'defensivo', 'защитная'),
-	(1734, 'pet_stance_passive', 'passive', 0, 0, '수동적', 'passif', 'passiv', '被动', '被動', 'pasivo', 'pasivo', 'пассивная'),
-	(1735, 'pet_stance_unknown', 'unknown', 0, 0, '알 수 없음', 'inconnu', 'unbekannt', '未知', '未知', 'desconocido', 'desconocido', 'неизвестная'),
-	(1736, 'no_fishing_pole_error', 'I don\'t have a Fishing Pole', 0, 0, '낚싯대가 없습니다', 'Je n’ai pas de canne à pêche', 'Ich habe keine Angelrute', '我沒有釣魚竿', '我没有钓鱼竿', 'No tengo una caña de pescar', 'No tengo una caña de pescar', 'У меня нет удочки'),
-	(1737, 'pvp_currency', '[PVP] Arena points: %arena_points | Honor Points: %honor_points', 0, 0, '[PVP] 투기장 점수: %arena_points | 명예 점수: %honor_points', '[PVP] Points d\'arène : %arena_points | Points d\'honneur : %honor_points', '[PVP] Arenapunkte: %arena_points | Ehrenpunkte: %honor_points', '[PVP] 竞技场点数：%arena_points | 荣誉点数：%honor_points', '[PVP] 競技場點數：%arena_points | 榮譽點數：%honor_points', '[PVP] Puntos de arena: %arena_points | Puntos de honor: %honor_points', '[PVP] Puntos de arena: %arena_points | Puntos de honor: %honor_points', '[PVP] Очки арены: %arena_points | Очки чести: %honor_points'),
-	(1738, 'pvp_arena_team', '[PVP] %bracket: <%team_name> (rating %team_rating)', 0, 0, '[PVP] %bracket: <%team_name> (평점 %team_rating)', '[PVP] %bracket : <%team_name> (cote %team_rating)', '[PVP] %bracket: <%team_name> (Wertung %team_rating)', '[PVP] %bracket: <%team_name> (评分 %team_rating)', '[PVP] %bracket: <%team_name> (評分 %team_rating)', '[PVP] %bracket: <%team_name> (índice %team_rating)', '[PVP] %bracket: <%team_name> (índice %team_rating)', '[PVP] %bracket: <%team_name> (рейтинг %team_rating)'),
-	(1739, 'pvp_no_arena_team', '[PVP] I have no Arena Team.', 0, 0, '[PVP] 투기장 팀이 없습니다.', '[PVP] Je n\'ai aucune équipe d\'arène.', '[PVP] Ich habe kein Arenateam.', '[PVP] 我没有竞技场战队。', '[PVP] 我沒有競技場隊伍。', '[PVP] No tengo equipo de arena.', '[PVP] No tengo equipo de arena.', '[PVP] У меня нет команды арены.');
-
-/*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
-/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
-/*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아무도 없는 오지' WHERE `id`=1;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='알려지지 않은 장소' WHERE `id`=2;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='어딘가' WHERE `id`=3;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='어떤 것' WHERE `id`=4;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 %item_link은 무슨 맛일까 궁금하네' WHERE `id`=5;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아 망함; %item_link 이딴 걸 줍다니' WHERE `id`=6;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아 진짜... 또 똥템임.. %item_link' WHERE `id`=7;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아무래도 쓰레기 아이템 %item_link 만 줍는 병에 걸린 듯' WHERE `id`=8;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='뭐, %item_link이라도 있는 게 없는 것보단 낫겠지' WHERE `id`=9;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 %item_link 어디다 쓰는지 아는 분?' WHERE `id`=10;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 정도면 하루 종일 %item_link 루팅도 가능하셈' WHERE `id`=11;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오늘도 여유롭게 줍줍 ㅋ 근데.. 또 %item_link 이거네' WHERE `id`=12;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_link 이거 쓸 때는 있나요?' WHERE `id`=13;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_link 정도면 나쁘지 않지않음?' WHERE `id`=14;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오 나이스, 방금 %item_link 득템함' WHERE `id`=15;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %zone_name 에서 %item_link 겟!' WHERE `id`=16;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 %item_link 은 요긴하게 쓸 수 있겠는데?' WHERE `id`=17;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='골드다 골드! %item_link 팔아서 부자 되자!' WHERE `id`=18;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_link 먹었삼 ㅋ' WHERE `id`=19;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_link 이거 냥꾼님들 졸업템 아닌가요?' WHERE `id`=20;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_link 와... 이건 %my_class 필수 졸업템임' WHERE `id`=21;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오늘 주사위빨 장난 아니네, %item_link 득!' WHERE `id`=22;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='달달한 %item_link, 방금 막 루팅함' WHERE `id`=23;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오 대박, 방금 %item_link 먹었음!' WHERE `id`=24;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_link 냥꾼 졸업급 템이네 ㄷㄷ' WHERE `id`=25;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_link 이건 %my_class 한테 명품이지' WHERE `id`=26;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오!? 오늘 운빨 좀 받는듯 ㅎㅎ, %item_link 요게 나오다니' WHERE `id`=27;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='따끈따끈한 %item_link 드랍!' WHERE `id`=28;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='와 미쳤다!! 방금 %item_link 먹은 것 좀 보세요!!!' WHERE `id`=29;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='말도 안 돼! 내가 %item_link 을 먹다니, 실화냐?' WHERE `id`=30;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='세상에! 말도 안 돼! %item_link 유물을 손에 넣다니!' WHERE `id`=31;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아놔 실화임? 또 %item_link 냐고... 운 다 썼나 봄' WHERE `id`=32;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 %item_link 은 모니터 픽셀 아까운 수준이네' WHERE `id`=33;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_link 또 이딴것만 나오는건가..' WHERE `id`=34;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 쓸모없는 %item_link 을 내가 왜 줍고 있는지 나도 모르겠다' WHERE `id`=35;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='번쩍이는 %item_link 좀 봐... 그래봤자 쓰레기템이지만' WHERE `id`=36;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 %item_link 은 툴팁 텍스트 공간이 아깝다' WHERE `id`=37;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='뭐, %item_link이라도 줍는 게 아예 빈손보다는 낫...나?' WHERE `id`=38;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 %item_link 어디다 씀? 걍 상점에나 팔어야지 뭐..' WHERE `id`=39;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 %item_link... 뭐, 공치는 것보다는 낫네' WHERE `id`=40;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='생긴 건 진짜 구린데, 이 %item_link 혹시 돈은 좀 되나?' WHERE `id`=41;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 %item_link 실화냐? 누가 나 놀리는 거 아님?' WHERE `id`=42;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='왜 자꾸 %item_link 만 나오지... 주사위의 신님 제가 뭐 잘못했나요?' WHERE `id`=43;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아니, %item_link 이 자꾸 따라오네. 필요 없다고!' WHERE `id`=44;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 %item_link이야. 참나, 놀랍지도 않네' WHERE `id`=45;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 %item_link 은 그냥 상점행 잡동사니인가?' WHERE `id`=46;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='안 돼! 제발 또 %item_link 은 아니지! 운빨 좀 살려줘!' WHERE `id`=47;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='음, 그래도 %item_link 이 아예 쓸모없지는 않겠지, 그치?' WHERE `id`=48;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 %item_link? 주사위 신님, 저한테 관심 좀 주세요' WHERE `id`=49;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 %item_link 도 한 10년 묵히면 비싸지려나' WHERE `id`=50;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오, %item_link 생긴 것만 좀 구경하다가... 버려야지' WHERE `id`=51;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이딴 %item_link 누구 필요함? 전 쓰잘때기 없어서요.' WHERE `id`=52;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='혹시 %item_link 쓸만한가? ...는 개뿔, 걍 쓰레기네' WHERE `id`=53;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='우주가 나에게 %item_link 을 점지해줬네. 참 고맙기도 해라' WHERE `id`=54;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='자, %item_link 획득. 기분이 참 묘하네(안 좋다는 뜻)' WHERE `id`=55;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 %item_link 가지고 뭐함? 팔리지도 않네' WHERE `id`=56;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='실망 리스트에 %item_link 하나 더 추가요' WHERE `id`=57;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_link 아따.. 정확히 나한테 필요 없는 것만 주네' WHERE `id`=58;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 %item_link... 주사위의 신님, 우리 면담 좀 합시다' WHERE `id`=59;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 %item_link 너무 많이 주워서 잡화점 하나 차려도 될 듯' WHERE `id`=60;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오 반짝이는 %item_link... 쓰레기통에서 참 잘 빛나겠어' WHERE `id`=61;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='형들 %item_link 이거 쓸만 한가용?' WHERE `id`=62;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='음, 그래도 %item_link 이니까... 더 최악일 수도 있었어' WHERE `id`=63;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='빈손보다는 %item_link 이라도 챙기는 게 낫지' WHERE `id`=64;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 %item_link 이네. 뭐 아주 최악은 아님' WHERE `id`=65;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오, %item_link... 뭐, 괜찮네' WHERE `id`=66;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오 %item_link 이네. 대박은 아니지만 챙겨둬야지' WHERE `id`=67;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_link 방금 먹었는데 나쁘..진? 않은듯요?' WHERE `id`=68;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 %item_link 도 언젠가 쓸 데가 있겠지' WHERE `id`=69;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오늘도 어김없이 %item_link. 이 정도면 만족함' WHERE `id`=70;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='음, %item_link 정도면 준수하네' WHERE `id`=71;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %item_link 먹었음. 최고는 아니지만 이게 어디야' WHERE `id`=72;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='더 나쁠 수도 있었는데, %item_link 이라 다행임' WHERE `id`=73;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_link 이정도면 충분함. 불만 없음 ㅋ' WHERE `id`=74;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='전설템은 아니지만 %item_link 이정도면 감지덕지지' WHERE `id`=75;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='드랍 나쁘지 않네... %item_link 이정도면 합격!' WHERE `id`=76;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='공치느니 %item_link 이라도 챙기는 게 국룰' WHERE `id`=77;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='베스트는 아니지만 %item_link 도 꽤 쏠쏠하네' WHERE `id`=78;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 %item_link 획득. 뭐라도 나오는 게 어디임' WHERE `id`=79;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 %item_link 이냐? 막 신나진 않지만 일단 챙김' WHERE `id`=80;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 %item_link? 오케이, 좋았어' WHERE `id`=81;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_link 이정도면 쓸만한가요??' WHERE `id`=82;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='겨우 %item_link 이지만... 그래도 빈손은 아니니까' WHERE `id`=83;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_link이라도 챙기겠음. 더 나쁜 상황보단 나으니' WHERE `id`=84;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_link 획득. 그냥 그렇지만 그래도 뭐...' WHERE `id`=85;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='원하던 건 아니지만, 일단 %item_link 이라도 써야겠다' WHERE `id`=86;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 %item_link. 대단하진 않아도 쓸만함' WHERE `id`=87;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_link 주웠음. 뭐 이 정도면 됐지' WHERE `id`=88;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='뭐, %item_link 이라도 있는 게 맹독에 당하는 것보다야 낫지' WHERE `id`=89;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_link 챙겼고, 다음 ㄱㄱ' WHERE `id`=90;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='나이스! 수집품 목록에 넣을만한 %item_link 이네!' WHERE `id`=91;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이런 %item_link 이라면 언제든 환영이삼' WHERE `id`=92;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오 좋았어, %item_link 이정도면 꽤 쓸모 있겠는데?' WHERE `id`=93;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_link 하나 장만했쥬. 이제 좀 할만하겠네!' WHERE `id`=94;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 %item_link 정도면 상위권이지, 당연히 챙김!' WHERE `id`=95;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 %item_link 이정도면 꽤 괜찮은 걸 할 수 있겠어' WHERE `id`=96;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='나쁘지 않군, %item_link 정도면 딱이야' WHERE `id`=97;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 %item_link 획득. 최소한 잉여템은 아니네' WHERE `id`=98;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 %item_link 은 경매장에 올리면 골드 좀 만지겠는데?' WHERE `id`=99;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오 굿굿 %item_link  오늘 게임 잘 풀리는듯 ㅋ' WHERE `id`=100;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오호, %item_link 은 예상 못 했는데? 땡큐!' WHERE `id`=101;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 %item_link 어디다 쓸지 고민 좀 해봐야겠지만, 일단 기분은 좋음!' WHERE `id`=102;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='최우선 순위는 아니었지만, %item_link 이거라면 기쁘게 받지!' WHERE `id`=103;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='캬, 오늘 딱 필요했던 게  %item_link 이거였음!' WHERE `id`=104;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이런 고퀄 %item_link 아이템 이라면 거절할 이유가 없지' WHERE `id`=105;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 %item_link 겟. 이 정도면 만족, 불만 제로' WHERE `id`=106;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_link 이거 쓸만 한가요? 괜찮아 보이긴 하는데..' WHERE `id`=107;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 %item_link 하나면 오늘 할 일 다 한 듯?' WHERE `id`=108;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 퀘스트 받음. 달려보삼!' WHERE `id`=109;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 퀘스트 수락 완료!' WHERE `id`=110;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 이거 한번 깨보겠음. ㄱㄱ' WHERE `id`=111;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 에서 %quest_link 퀘스트 받음!' WHERE `id`=112;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %quest_link 수락함. 이제 노가다 타임인가!' WHERE `id`=113;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 퀘스트 받았는데, 무슨 내용인지 한번 봐야겠네.' WHERE `id`=114;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 퀘스트 받았음. 가즈아!' WHERE `id`=115;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='자 다음 퀘스트, 이번엔 %quest_link 이네. 출발!' WHERE `id`=116;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='드디어 %quest_link 할 차례네 이번엔 좀 쉽게좀 가자..' WHERE `id`=117;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 수락. 난이도 얼마나 빡셀지 기대되네' WHERE `id`=118;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 받았슈 빨랑 퀘하고 렙업 해야지!' WHERE `id`=119;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %quest_link 수락. 빡세려나?' WHERE `id`=120;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 수락함. 제발 마지막에 정예 몹 같은 거 튀어나오지 마라...' WHERE `id`=121;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 깨러 가는 중. 고고고!' WHERE `id`=122;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='드디어 %quest_link 여기까지 왔네 ㅋ 보상 진짜 개꿀인듯' WHERE `id`=123;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 수락 완료! 자, 이동합시다!' WHERE `id`=124;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %quest_link를 받았습니다. 이건 식은 죽 먹기겠네요.' WHERE `id`=125;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link를 수락했습니다. 완벽하게 처리해 보죠.' WHERE `id`=126;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_link를 받았습니다. 시작합시다!' WHERE `id`=127;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link를 완료하러 가는 중입니다. 빨리 끝내자고요!' WHERE `id`=128;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link를 수락했습니다. %zone_name에서 어떤 일이 기다릴지 궁금하네요.' WHERE `id`=129;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link를 받았습니다. 너무 오래 걸리지 않았으면 좋겠네요.' WHERE `id`=130;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %quest_link를 챙겼습니다. 자, 다시 시작해 볼까요.' WHERE `id`=131;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='다음 할 일은 %quest_link인 것 같네요.' WHERE `id`=132;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link를 완료하러 갑니다. 이번 건 재미있으면 좋겠네요.' WHERE `id`=133;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link에 뛰어듭니다. 이건 모험이 될 거예요!' WHERE `id`=134;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_link를 수락했습니다. 어떤 결과가 나올지 보죠!' WHERE `id`=135;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %quest_link를 받았습니다. 어떤 적을 상대하게 될지 확인해 볼 시간이군요.' WHERE `id`=136;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 다른 %quest_link네요. 빨리 끝내버립시다!' WHERE `id`=137;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %quest_link를 받았습니다. 이번 건 꽤 재미있겠는데요!' WHERE `id`=138;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_link 도전! 가즈아~' WHERE `id`=139;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link를 받았습니다. 다음에 무슨 일이 일어날지 정말 기대되네요.' WHERE `id`=140;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 수락. 이제 집중해서 마무리할 시간입니다.' WHERE `id`=141;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='좋았어, %quest_link 시작!. 힘차게 가보죠!' WHERE `id`=142;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link를 하러 갑니다. 너무 어렵지 않기를 바랄뿐.' WHERE `id`=143;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %quest_link를 받았습니다. 쉬운 임무가 되겠네요!' WHERE `id`=144;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link를 수락했습니다. 빨리 끝내버리자고요!' WHERE `id`=145;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 수락 완료, 이제 어떤 내용인지 확인해 볼까요.' WHERE `id`=146;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %quest_link를 수락했습니다. 자, 움직입시다!' WHERE `id`=147;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='드디어 %quest_link의 %quest_obj_name 목표를 끝냈습니다!' WHERE `id`=148;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='드디어 %quest_link에 필요한 %quest_obj_name을 %quest_obj_available/%quest_obj_required만큼 모았습니다!' WHERE `id`=149;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='마침내 %quest_link의 %quest_obj_full_formatted를 완료했습니다!' WHERE `id`=150;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='휴, %quest_link를 위한 %quest_obj_name을 %quest_obj_available/%quest_obj_required개 처치했습니다.' WHERE `id`=151;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link를 완료하려면 %quest_obj_name이 %quest_obj_missing개 더 필요합니다.' WHERE `id`=152;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_obj_full_formatted 완료, 아직 %quest_link 진행 중입니다.' WHERE `id`=153;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link의 %quest_obj_name 완료! 정말 힘든 싸움이었네요!' WHERE `id`=154;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link의 %quest_obj_name 완료가 머지않았습니다. %quest_obj_missing개만 더 있으면 돼요.' WHERE `id`=155;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_obj_name이 거의 다 됐습니다. %quest_link를 위해 %quest_obj_missing개만 더 채우면 됩니다.' WHERE `id`=156;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='지금까지 %quest_link의 %quest_obj_name을 %quest_obj_available/%quest_obj_required만큼 완료했습니다.' WHERE `id`=157;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='드디어 %quest_link의 %quest_obj_name을 끝냈습니다! 꽤 오래 걸렸네요!' WHERE `id`=158;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='순조롭게 진행 중입니다. %quest_link의 %quest_obj_name을 %quest_obj_available/%quest_obj_required만큼 해치웠어요.' WHERE `id`=159;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='좋아요! %quest_link의 %quest_obj_name을 완료했습니다. 다음으로 가죠!' WHERE `id`=160;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_obj_name의 진척이 있습니다. %quest_link의 %quest_obj_available/%quest_obj_required만큼 완료되었습니다.' WHERE `id`=161;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_obj_full_formatted... %quest_link가 거의 다 끝나가요!' WHERE `id`=162;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link를 위해 %quest_obj_name %quest_obj_missing개만 더 있으면 됩니다. 거의 다 됐어요!' WHERE `id`=163;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='드디어 %quest_link의 %quest_obj_name을 끝냈습니다. 속이 다 시원하네요!' WHERE `id`=164;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link의 %quest_obj_name을 %quest_obj_available/%quest_obj_required만큼 처치하며 나아가는 중입니다!' WHERE `id`=165;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link의 %quest_obj_name을 완료했습니다! 이제 다음 작업으로 넘어가죠.' WHERE `id`=166;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link의 %quest_obj_name 진행도 100%! 이제 보상을 받으러 가볼까요!' WHERE `id`=167;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link를 위해 %quest_obj_name이 %quest_obj_missing개 더 필요합니다. 거의 다 왔어요!' WHERE `id`=168;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link를 위해 %quest_obj_name 진행 중입니다. 현재 %quest_obj_available/%quest_obj_required 완료되었습니다.' WHERE `id`=169;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link의 %quest_obj_full_formatted를 마쳤습니다. 정말 길었네요!' WHERE `id`=170;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link를 위해 %quest_obj_name 몇 개만 더 있으면 끝납니다!' WHERE `id`=171;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 하나의 목표 달성! %quest_link의 %quest_obj_full_formatted입니다.' WHERE `id`=172;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link를 위해 %quest_obj_name을 계속 처리 중입니다. 현재 %quest_obj_available/%quest_obj_required이고 거의 다 왔어요.' WHERE `id`=173;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='목표 달성! %quest_link의 %quest_obj_full_formatted입니다. 다음으로 가시죠!' WHERE `id`=174;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='마침내 %quest_link에 필요한 %item_link 수집을 끝냈습니다!' WHERE `id`=175;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='드디어 %quest_link에 필요한 %item_link를 %quest_obj_available/%quest_obj_required만큼 획득했습니다!' WHERE `id`=176;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='마침내 %quest_link를 위한 %quest_obj_full_formatted가 완료되었습니다!' WHERE `id`=177;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오, %quest_link에 필요한 %item_link를 %quest_obj_available/%quest_obj_required만큼 모았습니다.' WHERE `id`=178;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 완료를 위해 %item_link가 %quest_obj_missing개 더 필요합니다.' WHERE `id`=179;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_obj_full_formatted 완료, 아직 %quest_link 진행 중입니다.' WHERE `id`=180;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link를 위한 %item_link 수집 완료! 드디어 끝냈네요!' WHERE `id`=181;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='진전이 있네요! %quest_link를 위해 %item_link를 %quest_obj_available/%quest_obj_required만큼 모았습니다.' WHERE `id`=182;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_obj_name을 절반 정도 끝냈습니다. %quest_link를 위해 %item_link %quest_obj_missing개만 더 찾으면 돼요.' WHERE `id`=183;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link를 위해 %item_link %quest_obj_missing개가 더 필요하지만, 점점 가까워지고 있습니다!' WHERE `id`=184;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='드디어 %quest_link의 %item_link를 다 모았습니다. 이제 다음 업무 시간이에요!' WHERE `id`=185;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='거의 다 됐어요! %quest_link를 위해 %item_link %quest_obj_available/%quest_obj_required개를 확보했습니다.' WHERE `id`=186;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='좋아! %quest_link의 %item_link를 완료했습니다. 이제 다음 목표로 가죠.' WHERE `id`=187;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link를 위해 %item_link가 %quest_obj_missing개 더 필요하지만, 차근차근 진행 중입니다!' WHERE `id`=188;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link의 %item_link 수집에 진척이 있네요. %quest_obj_missing개 더 필요합니다.' WHERE `id`=189;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link의 %item_link 100% 완료! 이제 앞으로 나아갈 시간입니다.' WHERE `id`=190;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link를 위해 %item_link를 %quest_obj_available/%quest_obj_required만큼 모았습니다. 끝이 보이네요!' WHERE `id`=191;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='됐습니다. %quest_link의 %item_link 완료! 정말 다행이네요.' WHERE `id`=192;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link를 위해 %item_link 수집에 매진하고 있습니다. %quest_obj_missing개 더 모아야 해요.' WHERE `id`=193;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link를 위한 %item_link가 거의 끝나갑니다. %quest_obj_missing개만 남았어요.' WHERE `id`=194;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link의 %item_link 완료! 노가다가 장난이 아니었네요!' WHERE `id`=195;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='여전히 %quest_link의 %item_link를 조금씩 모으는 중입니다. 현재 %quest_obj_available/%quest_obj_required 완료했습니다.' WHERE `id`=196;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link의 %item_link가 완료에 가까워지고 있습니다. 현재 %quest_obj_available/%quest_obj_required입니다.' WHERE `id`=197;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='나이스! %quest_link의 %item_link를 끝냈습니다! 이건 시간이 좀 더 걸렸네요.' WHERE `id`=198;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link에 필요한 %item_link를 %quest_obj_available/%quest_obj_required만큼 확보했습니다. 힘내자고요!' WHERE `id`=199;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link의 %item_link를 완료했습니다. 다음으로 갑시다!' WHERE `id`=200;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 하나 해결! %quest_link에 필요한 %item_link를 다 모았어요!' WHERE `id`=201;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아직 %quest_link의 %item_link 수집 중입니다. 현재 %quest_obj_available/%quest_obj_required 완료!' WHERE `id`=202;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='거의 다 됐어요! %quest_link 완료까지 %item_link %quest_obj_missing개 남았습니다.' WHERE `id`=203;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='제한 시간 내에 %quest_link를 완료하지 못했습니다...' WHERE `id`=204;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='시간이 부족해서 %quest_link에 실패했어요. :(' WHERE `id`=205;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link의 모든 목표를 달성했습니다!' WHERE `id`=206;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link의 모든 목표 완료!' WHERE `id`=207;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='모든 목표를 마쳤으니 곧 %quest_link를 완료하러 갈 겁니다!' WHERE `id`=208;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아싸! 드디어 %quest_link 퀘스트를 완료하고 보고했습니다!' WHERE `id`=209;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 퀘스트 완료 보고 완료!' WHERE `id`=210;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='겨우 %quest_link를 끝내고 방금 보고했습니다!' WHERE `id`=211;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %quest_link를 완료하고 보고했습니다!' WHERE `id`=212;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %zone_name에서 %quest_link를 완료했습니다!' WHERE `id`=213;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 하나 해결! %quest_link 퀘스트를 보고했습니다.' WHERE `id`=214;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='임무 완수! %quest_link 보고 완료.' WHERE `id`=215;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='드디어 %quest_link 보고 완료! 정말 긴 여정이었네요!' WHERE `id`=216;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %quest_link를 끝내고 보고했습니다. 기분이 좋네요!' WHERE `id`=217;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_link를 완료했습니다. 자, 다음 도전으로 가볼까요!' WHERE `id`=218;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link를 완료했습니다. 하나 더 해결했네요!' WHERE `id`=219;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='무사히 %quest_link를 보고했습니다. 시간이 꽤 걸렸네요!' WHERE `id`=220;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_link를 끝내고 보고했습니다. 끝내주네요!' WHERE `id`=221;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='퀘스트 완료! %quest_link 보고를 마쳤으니 다음 걸 준비하죠!' WHERE `id`=222;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='드디어 %zone_name에서 %quest_link를 완료했습니다. 정말 힘들었어요!' WHERE `id`=223;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='좋아, %quest_link 보고 완료! 이제 보상을 챙길 시간입니다!' WHERE `id`=224;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 완료! 이제 보고하고 다음으로 넘어가죠.' WHERE `id`=225;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %quest_link를 완료했습니다. 성취감이 느껴지네요!' WHERE `id`=226;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 보고 완료. 다음엔 어떤 퀘를 해야할까용!?' WHERE `id`=227;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %quest_link를 마무리하고 보고했습니다. 다음 도전으로 고!' WHERE `id`=228;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='하나 더 장부에 기록! %quest_link 완료 보고 완료.' WHERE `id`=229;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 보고 완료! 보상을 고를 시간이군 후후.' WHERE `id`=230;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link를 끝내고 보고했습니다. 후련하네요!' WHERE `id`=231;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='정말 빠르네요! 벌써 %quest_link 보고를 마쳤습니다!' WHERE `id`=232;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %zone_name에서 %quest_link를 보고했습니다. 다음 모험을 떠날 준비 끝!' WHERE `id`=233;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 퀘완! 하나 하나 완료하는 성취감이 좀 생깁니다만 ㅎㅎ' WHERE `id`=234;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='임무 완료! %quest_link 보고했습니다!' WHERE `id`=235;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %quest_link를 마무리하고 보고했습니다. 다음 퀘스트로 넘어가죠!' WHERE `id`=236;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 다른 %victim_name을 처치했습니다!' WHERE `id`=237;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='계속 %victim_name을 잡고 있는데, 특별할 건 없네요.' WHERE `id`=238;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 한 마리의 %victim_name이 쓰러졌습니다!' WHERE `id`=239;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name의 %victim_name이 한 마리 줄었군요!' WHERE `id`=240;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 엘리트 녀석, %victim_name을 쓰러뜨렸습니다!' WHERE `id`=241;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 엘리트 %victim_name을 처치했습니다!' WHERE `id`=242;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='후... 드디어 %victim_name을 잡는 데 성공했습니다!' WHERE `id`=243;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='대박! 방금 %victim_name을 잡았어요! 이제 무용담을 늘어놓을 수 있겠네요!' WHERE `id`=244;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오! 방금 %victim_name을 처치했습니다!' WHERE `id`=245;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 희귀 몬스터 %victim_name을 처치했습니다!' WHERE `id`=246;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='세상에, 내가 방금 뭘 잡은 거지? %victim_name?' WHERE `id`=247;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 소환수 %victim_name을 처치했습니다.' WHERE `id`=248;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='좋아! 방금 %victim_name을 처치했습니다!' WHERE `id`=249;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %victim_name을 처치했습니다!' WHERE `id`=250;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 다른 %victim_name을 쓰러뜨렸습니다!' WHERE `id`=251;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='계속해서 %victim_name을 처치 중입니다. 별다를 건 없어요.' WHERE `id`=252;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 한 명의 %victim_name이 패배했습니다!' WHERE `id`=253;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에 %victim_name이 한 마리 줄었군요.' WHERE `id`=254;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아무 일도 아니라는 듯 %victim_name을 쓰러뜨렸습니다!' WHERE `id`=255;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%victim_name은 상대조차 되지 않았습니다!' WHERE `id`=256;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='길을 가로막던 %victim_name을 또 하나 처리했습니다!' WHERE `id`=257;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%victim_name은 너무 쉬웠네요. 다음으로 가죠!' WHERE `id`=258;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 한 명의 %victim_name을 처치했습니다. 식은 죽 먹기죠!' WHERE `id`=259;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%victim_name은 전혀 상대하기 어렵지 않았습니다!' WHERE `id`=260;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%victim_name이 쓰러졌습니다. 특별한 건 없네요.' WHERE `id`=261;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='너무 쉬웠어요. %victim_name 처치!' WHERE `id`=262;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%victim_name이 순식간에 쓰러졌습니다. 눈 깜빡할 새였네요!' WHERE `id`=263;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='정예 %victim_name을 처치했습니다!' WHERE `id`=264;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='정예 %victim_name은 이제 없습니다!' WHERE `id`=265;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='정예 %victim_name을 깔끔하게 처리했습니다!' WHERE `id`=266;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='정예 몬스터 %victim_name도 저에겐 상대가 안 되는군요!' WHERE `id`=267;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='드디어 강력한 %victim_name을 쓰러뜨렸습니다!' WHERE `id`=268;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 정예 %victim_name을 처치했습니다!' WHERE `id`=269;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %zone_name에서 정예 %victim_name을 잡았습니다!' WHERE `id`=270;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='정예 %victim_name 처치. 너무 쉬운데요?' WHERE `id`=271;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %victim_name을 쓰러뜨렸습니다. 정말 치열한 싸움이었어요!' WHERE `id`=272;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='정예 %victim_name 처치. 이제 저를 막을 수 있는 건 없나 보네요!' WHERE `id`=273;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='후... 겨우 %victim_name을 쓰러뜨리는 데 성공했습니다!' WHERE `id`=274;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='희귀 정예 %victim_name이 쓰러졌습니다!' WHERE `id`=275;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%victim_name은 이제 없습니다. 또 한 명의 희귀 정예를 처치했네요!' WHERE `id`=276;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='희귀 정예 %victim_name 처치! 지금 제 상태가 아주 좋네요!' WHERE `id`=277;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 희귀 정예 %victim_name을 처치했습니다!' WHERE `id`=278;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='최고였어요! 방금 %victim_name을 잡았습니다! 정말 대단한 전투였어요!' WHERE `id`=279;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='월드 보스 %victim_name이 쓰러졌습니다! 정말 전설적인 싸움이었네요!' WHERE `id`=280;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='월드 보스 %victim_name을 정벌했습니다. 다 함께 축하하죠!' WHERE `id`=281;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%victim_name 처치! 이 월드 보스는 정말 장난이 아니었네요!' WHERE `id`=282;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %victim_name을 잡았습니다. 전설적인 순간이네요!' WHERE `id`=283;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오! 방금 %victim_name을 처치했습니다!' WHERE `id`=284;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='희귀 몬스터 %victim_name 처치. 꽤 즐거운 싸움이었습니다!' WHERE `id`=285;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 희귀 몬스터 %victim_name을 잡았습니다!' WHERE `id`=286;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 희귀 몬스터 %victim_name을 물리쳤습니다!' WHERE `id`=287;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %zone_name에서 희귀 몬스터 %victim_name을 잡았습니다. 금방이었네요!' WHERE `id`=288;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 희귀 몬스터 %victim_name을 처치했습니다!' WHERE `id`=289;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 희귀 몬스터 %victim_name을 잡아냈습니다!' WHERE `id`=290;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %victim_name을 처치했습니다. 기분 좋네요!' WHERE `id`=291;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %victim_name을 쓰러뜨렸습니다. 상대도 안 되더군요!' WHERE `id`=292;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %zone_name에서 %victim_name을 처치했습니다. 식은 죽 먹기죠!' WHERE `id`=293;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='내가 방금 뭘 잡은 거지? %victim_name?' WHERE `id`=294;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이게 대체 무슨 %victim_name인가요? 이런 건 처음 봅니다!' WHERE `id`=295;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 이상한 걸 잡았어요, %victim_name!' WHERE `id`=296;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%victim_name은 참 기묘했지만, 결국 쓰러뜨렸습니다!' WHERE `id`=297;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %victim_name을 물리쳤습니다!' WHERE `id`=298;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='잘 가라, %victim_name. 넌 그냥 소환수일 뿐이었어.' WHERE `id`=299;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 소환수 %victim_name을 처치했습니다. 뜻밖이었네요!' WHERE `id`=300;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%victim_name 처치. 다음엔 운이 좋길 바란다, 꼬마야!' WHERE `id`=301;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨 달성! 렙업!' WHERE `id`=302;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아싸, 드디어 %my_level 레벨이 됐어요!' WHERE `id`=303;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='님들 또 레벨 업 했습니다!' WHERE `id`=304;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨을 달성했습니다!!!' WHERE `id`=305;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='점점 강해지고 있네요, 벌써 %my_level 레벨이라니!!!' WHERE `id`=306;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %my_level 레벨에 도달했습니다!!!' WHERE `id`=307;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='세상에, 드디어 %my_level 레벨이에요!!!' WHERE `id`=308;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 달성!!! 이제 최종 콘텐츠를 즐길 수 있겠네요!' WHERE `id`=309;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='따끈따끈한 %my_level 레벨 %my_class 탄생!!!' WHERE `id`=310;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='한 레벨 더! %my_level 레벨 %my_race %my_class입니다!' WHERE `id`=311;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아쌰르 또 렙업 ㅋ!' WHERE `id`=312;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이제 공식적으로 %my_level 레벨이 되었습니다!' WHERE `id`=313;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨 달성, 존나 쎄진 기분이네!' WHERE `id`=314;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='쭉쭉 올라가네요! %my_level 레벨 도달!' WHERE `id`=315;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='정말 빠르네요, 벌써 %my_level 레벨이라니!' WHERE `id`=316;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %my_level 레벨을 찍었습니다, 계속 가보자고요!' WHERE `id`=317;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨 달성, 더 큰 목표를 향해 고고!' WHERE `id`=318;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨 달성, 요즘 폼 너무 좋고!' WHERE `id`=319;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨 완료, 계속 달린다!' WHERE `id`=320;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이제 %my_level 레벨입니다. 다음엔 뭘 해야됨?' WHERE `id`=321;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨!!! 드디어 해냈음 ㅋㅋ' WHERE `id`=322;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %my_level 레벨이 됐습니다. 기분이 최고네요!' WHERE `id`=323;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨 달성, 이건 시작일 뿐!' WHERE `id`=324;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='와, 벌써 %my_level 레벨이네요. 전 이제 거침없습니다!' WHERE `id`=325;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨에서 새로운 경지에 도달했습니다!!!' WHERE `id`=326;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨 달성, 아직 멈추지 않고 나아가는중!' WHERE `id`=327;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨 달성, 시발 너무 쎄진건가!' WHERE `id`=328;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨 달성, 기분 정말 끝내주네요!' WHERE `id`=329;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이제 %my_level 레벨입니다! 가자고요!' WHERE `id`=330;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨 달성, 아직 갈 길이 멀구만!' WHERE `id`=331;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='드디어 %my_level 레벨 달성! 이제 뭐든지 다 해보겠네 ㅋㅋ' WHERE `id`=332;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='만렙 %my_level 달성, 최종 콘텐츠여 내가 간다!' WHERE `id`=333;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨 달성! 최종 콘텐츠를 맞이할 준비가 됐습니다!' WHERE `id`=334;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨에서 최종 콘텐츠가 열렸습니다. 덤벼라!' WHERE `id`=335;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨에 도달했습니다. 이제 다 죠져버릴 시간임!' WHERE `id`=336;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨이네요. 이제 최종 레이드를 뛰러 갑시다!' WHERE `id`=337;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨인 누구도 이제 이몸을 막을 수 없습니다!' WHERE `id`=338;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨 달성, 고난이도 콘텐츠를 위한 모든 준비가 끝났쥬!' WHERE `id`=339;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='좋았어! %my_level 레벨 %my_class, 무엇이든 상대할 준비 완료!' WHERE `id`=340;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨 달성, 세상아 내가 간다 와다다다!' WHERE `id`=341;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨에 도달했습니다. 엘리트 보스들을 잡아보자고요!' WHERE `id`=342;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이제 %my_level 레벨입니다. 진짜 모험은 이제부터 시작이죠!' WHERE `id`=343;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨! 이제 본격적으로 달려보겠삼!' WHERE `id`=344;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 만렙까지 겁나게 달리는 중!' WHERE `id`=345;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='드디어 %my_level 레벨이네요! 드디어 이몸의  실력을 보여줄 때가 됐군요!' WHERE `id`=346;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨 달성! 이제 큰 무대에서 뛸 준비가 됐습니다!' WHERE `id`=347;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %my_level 레벨을 찍었습니다. 진정한 도전을 준비하세요!' WHERE `id`=348;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨 달성, 이제 메인 콘텐츠를 즐길 시간인듯!' WHERE `id`=349;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %my_level 레벨이 됐습니다! 최종 던전에 도전할 준비 완료!' WHERE `id`=350;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이제 %my_level 레벨이니, 제 손이 닿지 않는 곳은 없습니다!' WHERE `id`=351;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='공식입니다! %my_level 레벨, 이제 이 동네를 평정할 시간입니다!' WHERE `id`=352;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨을 달성했습니다! 와우에서 제 이름을 남길 때군요!' WHERE `id`=353;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨이 열렸습니다! 진짜 재미는 이제부터 시작이죠!' WHERE `id`=354;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨 달성, 이제 이 세상은 내 나와바리다 ㅋ!' WHERE `id`=355;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨 달성, 세상에 제 힘을 보여줄 준비가 됐습니다!' WHERE `id`=356;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %my_level 레벨이 됐습니다. 이제 올인할게요!' WHERE `id`=357;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨 달성, 이제 모든 것에 맞설 수 있을듯!' WHERE `id`=358;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 레벨 달성, 거칠 것이 없는 기분이네요!' WHERE `id`=359;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %my_level 레벨에 도달했습니다. 최종 콘텐츠를 빨리 해보고 싶네요!' WHERE `id`=360;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='잘했습니다 %other_name님. 그럴 만한 자격이 충분해요.' WHERE `id`=361;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='정말 안타까운 상황이네요 %other_name님. 이런 결정을 내리긴 싫지만...' WHERE `id`=362;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='축하합니다 %other_name님, 이 승급은 당신의 노력에 대한 보상입니다!' WHERE `id`=363;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='자격이 충분해요 %other_name님, 다음 단계로 오신 걸 환영합니다!' WHERE `id`=364;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%other_name님이 한 단계 올라섭니다! 승급을 축하드려요!' WHERE `id`=365;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='승급할 시간입니다! %other_name님, 당신은 그럴 자격이 있어요!' WHERE `id`=366;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%other_name님에게 새로운 직책이 주어졌습니다! 잘하셨어요, 계속 힘내주세요!' WHERE `id`=367;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%other_name님에게 큰 축하를 보냅니다. 자격이 충분한 승급이에요!' WHERE `id`=368;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='승급하신 %other_name님께 모두 큰 박수를 보내주세요!' WHERE `id`=369;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='승급하신 %other_name님을 축하합니다! 앞으로도 계속 빛나주세요!' WHERE `id`=370;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='축하합니다 %other_name님, 더 높이 올라가시네요! 잘하셨어요!' WHERE `id`=371;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%other_name님이 한 단계 더 올라섭니다! 축하해요!' WHERE `id`=372;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='힘든 결정이었지만, %other_name님은 강등되었습니다. 분발해야 할 때입니다!' WHERE `id`=373;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='죄송합니다 %other_name님, 강등될 시간입니다. 더 강해져서 돌아오길 바랍니다!' WHERE `id`=374;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='안타깝게도 %other_name님, 이번엔 강등입니다. 다음엔 잘 되길 빌게요!' WHERE `id`=375;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='어려운 결정이었으나 %other_name님은 강등되었습니다. 다시 노력해서 올라오세요!' WHERE `id`=376;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이런 모습을 보긴 싫지만, %other_name님은 일단 강등되었습니다.' WHERE `id`=377;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='죄송해요 %other_name님, 계급이 낮아졌습니다. 우리 같이 더 열심히 해봐요!' WHERE `id`=378;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%other_name님이 강등되었습니다... 집중해서 다시 올라갈 시간입니다!' WHERE `id`=379;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='원하던 결과는 아니지만 %other_name님은 강등되었습니다. 경험 삼아 더 강해지세요!' WHERE `id`=380;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%other_name님에겐 힘든 시간이겠지만, 이번 강등을 딛고 일어설 수 있을 거예요!' WHERE `id`=381;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='죄송합니다 %other_name님, 강등 처리가 되었습니다. 이제 개선이 필요할 때예요!' WHERE `id`=382;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%other_name님께 이런 일을 바라진 않았지만 강등되었습니다. 더 실력을 키워봅시다!' WHERE `id`=383;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='[길드원 모집] 가족같은 길드원 모집합니다~ 혼자 겜하기 적적하신분 ~ 저희 길드로 오세요^^' WHERE `id`=384;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='가족같은 길원 모집 중입니다! 가입하실분 바로 귓말주세요!' WHERE `id`=385;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='신생 길드에서 길원모집 합니다! 추후 레이드도 운영예정! 가입하셔서 함께 성장해요!' WHERE `id`=386;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='가족같은 길드에 가입하고 찾으신다면?! 저희길드 신입 모십니다! 뉴비 대환영! 버스 항시 대기!' WHERE `id`=387;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='성장하고 있는 신생길드 입니다! 함께 즐기면서 겜하실분 찾습니다! 버스도 돌아줍니다!' WHERE `id`=388;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 가실 분 계신가요?' WHERE `id`=389;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 가는 파티 있나요?' WHERE `id`=390;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 공략에 도움 필요하신 분?' WHERE `id`=391;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='파티 모집 중: %instance_name.' WHERE `id`=392;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name에 %my_role 필요하신 파티 있나요?' WHERE `id`=393;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 가는데 %my_role 자리 비나요?' WHERE `id`=394;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name에서 %my_role 맡을 수 있습니다.' WHERE `id`=395;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 도와드릴까요?' WHERE `id`=396;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 가는데 %my_role의 도움이 필요하신가요?' WHERE `id`=397;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 장비 맞추실 분 계신가요?' WHERE `id`=398;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name에서 노가다 좀 하실 분?' WHERE `id`=399;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 가고 싶어요 ㅠㅠ' WHERE `id`=400;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 공략에 도움이 필요해요.' WHERE `id`=401;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 한 바퀴 돌고 싶네요.' WHERE `id`=402;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_role 직업으로 %instance_name 파티 구합니다.' WHERE `id`=403;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 가는 건 어때요?' WHERE `id`=404;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 파밍하러 가실 분?' WHERE `id`=405;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 가실래요?' WHERE `id`=406;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 파티 찾습니다.' WHERE `id`=407;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 퀘스트 도와주실 분 계신가요?' WHERE `id`=408;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name에서 퀘스트 하고 싶어요.' WHERE `id`=409;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 퀘스트 같이 하실 분?' WHERE `id`=410;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 퀘스트 도와드릴 수 있어요.' WHERE `id`=411;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_role인데 %instance_name 파티에 자리 있나요?' WHERE `id`=412;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='요즘도 %instance_name 가시는 분 있나요?' WHERE `id`=413;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 가는데 %my_role 데려가실 분?' WHERE `id`=414;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name에서 %my_role이 쓸모가 있을까요?' WHERE `id`=415;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 갈만한 가치가 있나요?' WHERE `id`=416;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 초대좀 해주실분?' WHERE `id`=417;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 보스들이 좋은 템 주는데, 가실래요?' WHERE `id`=418;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 혹시 같이 가실 분?' WHERE `id`=419;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_role 필요하신 분?' WHERE `id`=420;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_role 구하는 파티 없나요?' WHERE `id`=421;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 가고 싶은 분?' WHERE `id`=422;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name으로 소환해주실 수 있는 분?' WHERE `id`=423;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name에서 봐요.' WHERE `id`=424;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 빠르게 한 판 도실 분?' WHERE `id`=425;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 풀코스로 도실 분?' WHERE `id`=426;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 몇 번이나 가보셨어요?' WHERE `id`=427;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 한 판 더 가실래요?' WHERE `id`=428;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name에서 전멸했나요? 저를 데려가세요!' WHERE `id`=429;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name에 저 좀 데려가주세요.' WHERE `id`=430;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 스피드팟 가실 분?' WHERE `id`=431;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 풀코스팟 가실 분?' WHERE `id`=432;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_role인데 %instance_name 데려가 주실 분?' WHERE `id`=433;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 파티 구해요, 저 %my_role입니다.' WHERE `id`=434;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_role %instance_name 파티 구함' WHERE `id`=435;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 같이 파티 하실분?' WHERE `id`=436;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 딜러 한 분 모십니다.' WHERE `id`=437;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 귀족 힐러 한 분 찾아요.' WHERE `id`=438;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 탱커 필요하신 분?' WHERE `id`=439;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 가려고 하는데 파티가 필요해요!' WHERE `id`=440;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 가실 힐러한분 모십니다.' WHERE `id`=441;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 1명 더 모셔요.' WHERE `id`=442;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 같이 가실 분?' WHERE `id`=443;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 관심 있으신 분?' WHERE `id`=444;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 빠르게 돌 파티 찾아요.' WHERE `id`=445;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 가실 분 누구 없나요?' WHERE `id`=446;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 퀘 클리어 도와주실 분.' WHERE `id`=447;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 노가다 뛰실 분?' WHERE `id`=448;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 완료하고 싶어요ㅠㅠ.' WHERE `id`=449;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 아이템 필요하신 분?' WHERE `id`=450;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 버스 태워주실 분.' WHERE `id`=451;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 가실 분 있나요?' WHERE `id`=452;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 가는 중, 인원 더 모아요.' WHERE `id`=453;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='지금 %instance_name 가능하신 분?' WHERE `id`=454;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 도와주실 분 찾습니다.' WHERE `id`=455;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 갈 %my_role 구함!' WHERE `id`=456;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 한 바퀴 도실래요?' WHERE `id`=457;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 가는데 %my_role이 필요해요.' WHERE `id`=458;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 템작 하실 분 있나요?' WHERE `id`=459;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 스피드런 파티 구합니다.' WHERE `id`=460;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 올 클리어할 파티 구해요.' WHERE `id`=461;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 파밍 하실 분?' WHERE `id`=462;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name에서 템 좀 맞추려고요.' WHERE `id`=463;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 빠르게 도실 분?' WHERE `id`=464;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='같이 %instance_name 가보실 분?' WHERE `id`=465;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 완료하실 분 구합니다.' WHERE `id`=466;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 파티 짤 수 있을까요?' WHERE `id`=467;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 빠르게 뺄 파티 구함.' WHERE `id`=468;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 같이 노가다 하실 분?' WHERE `id`=469;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 가실 딜러분 모십니다.' WHERE `id`=470;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 공략 패턴 도움이 필요하신 분?' WHERE `id`=471;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 급하게 갈 파티 구해요.' WHERE `id`=472;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 스피드런 하실 분?' WHERE `id`=473;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 빠른 클리어 원합니다.' WHERE `id`=474;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 딜러 한분만 오심 바로 ㄱㄱ.' WHERE `id`=475;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 스피드로 밀어버리실 분?' WHERE `id`=476;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 막보 잡는 것 좀 도와주세요.' WHERE `id`=477;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 가실 분 계신가요?' WHERE `id`=478;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='템 파밍용 %instance_name 퀵런 파티 찾아요.' WHERE `id`=479;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name에서 재료 파밍하실 분?' WHERE `id`=480;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%instance_name 파티좀 누가 만들어 주셈.' WHERE `id`=481;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 퀘스트 도와주실 분?' WHERE `id`=482;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 퀘스트 공유해주실 분?' WHERE `id`=483;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='지금 %quest_link 하시는 분 계신가요?' WHERE `id`=484;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 퀘스트 하고 싶어요.' WHERE `id`=485;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 같이 할 파티 구함.' WHERE `id`=486;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 도와주실 분 누구 없나요?' WHERE `id`=487;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 퀘스트에 도움이 필요하신 분?' WHERE `id`=488;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 관심 있으신 분?' WHERE `id`=489;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 마무리하실 분?' WHERE `id`=490;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 같이 할 팀 구해요.' WHERE `id`=491;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 하실 분 계신가요?' WHERE `id`=492;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 같이 해요.' WHERE `id`=493;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 같이 할 사람 찾아요.' WHERE `id`=494;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 퀘스트 도움이 필요한 분 있나요?' WHERE `id`=495;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 도움이 필요한가요? 제가 도와드릴게요.' WHERE `id`=496;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 퀘스트 하려는데 같이 하실 분?' WHERE `id`=497;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 퀘스트 도와주실 분 구합니다ㅠㅠ' WHERE `id`=498;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 하실 분 누구 없나요?' WHERE `id`=499;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 함께 하실 분 모셔요.' WHERE `id`=500;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 같이 하실 분 계신가요?' WHERE `id`=501;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='여기 %quest_link 도와주실 분 구해요.' WHERE `id`=502;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 같이 하실 분?' WHERE `id`=503;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 하실 준비 된 분!' WHERE `id`=504;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 도와주실 분 찾습니다.' WHERE `id`=505;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 도움이 필요하신 분 있나요?' WHERE `id`=506;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 끝까지 같이 하실 분?' WHERE `id`=507;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 혼자하기 빡세면 연락주삼 얼른 도와줄테니.' WHERE `id`=508;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 도와주실 분 있나요?' WHERE `id`=509;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 좀 도와주세요.' WHERE `id`=510;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 가실 분 다 모였나요?' WHERE `id`=511;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 같이 하실 분 있나요?' WHERE `id`=512;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 파티원 구합니다.' WHERE `id`=513;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 파티 맺고 하실 분?' WHERE `id`=514;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 빠르게 깨실 분 계신가요?' WHERE `id`=515;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 아직 안 깨신 분?' WHERE `id`=516;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 같이 하실 분?' WHERE `id`=517;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 저랑 같이 하실 분?' WHERE `id`=518;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 같이 깨실 분 있나요?' WHERE `id`=519;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 깨는 거 도와주실 분?' WHERE `id`=520;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 도와주실 수 있는 분 계신가요?' WHERE `id`=521;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 같이 마무리하실 분 구해요.' WHERE `id`=522;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 완료하실 분 계신가요?' WHERE `id`=523;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 도와주실 분?' WHERE `id`=524;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 가실 분 계신가요?' WHERE `id`=525;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 같이 깨실 분 찾아요.' WHERE `id`=526;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 같이 마무리하실 분?' WHERE `id`=527;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 도움이 필요합니다.' WHERE `id`=528;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 하실 분 있나요?' WHERE `id`=529;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='지금 %quest_link 하고 계신 분?' WHERE `id`=530;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='지금 %quest_link 하실 분 있나요?' WHERE `id`=531;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 시작하실 분?' WHERE `id`=532;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 좀 도와주세요. 부탁드립니다ㅠㅠ' WHERE `id`=533;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 도와주실 분 계신가요?' WHERE `id`=534;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_link 파티 구합니다.' WHERE `id`=535;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 파밍하실 분?' WHERE `id`=536;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 파밍 도와주실 분 찾아요.' WHERE `id`=537;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='와, %category 너무 비싸네요!' WHERE `id`=538;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 구합니다.' WHERE `id`=539;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 관련해서 누가좀 도와주실 분?' WHERE `id`=540;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 삽니다.' WHERE `id`=541;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 필요하시거나 관심 있는 분?' WHERE `id`=542;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 팝니다.' WHERE `id`=543;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 경매장보다 싸게 팔아요.' WHERE `id`=544;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 노가다 뛰실 분?' WHERE `id`=545;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 파밍하고 싶네요.' WHERE `id`=546;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 파밍 파티 구합니다.' WHERE `id`=547;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='어떤 %category든 환영합니다.' WHERE `id`=548;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 종류는 뭐든 다 삽니다.' WHERE `id`=549;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='와, 다들 %category 파밍 중인가 보네요!' WHERE `id`=550;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='거래소에서 %category가 엄청 잘 팔리네요.' WHERE `id`=551;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='지금 거래소는 %category가 대세예요.' WHERE `id`=552;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='거래소에 %category 매물이 올라왔어요.' WHERE `id`=553;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 거래(교환)하실 분.' WHERE `id`=554;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 많이 필요함..' WHERE `id`=555;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 좀 나눔하실분?' WHERE `id`=556;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 필요하신 분?' WHERE `id`=557;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 누가 좀 나눔하실분?' WHERE `id`=558;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 관련 기술을 배웠어야 했는데.' WHERE `id`=559;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 누가 좀 나눔좀 ㅠㅠ.' WHERE `id`=560;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='다들 %category 구하려고 난리네요.' WHERE `id`=561;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 이거 완전 혜자인듯!' WHERE `id`=562;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='다들 %category에 미쳐 있네요!' WHERE `id`=563;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 파밍하기 제일 좋은 곳이 어디인가요?' WHERE `id`=564;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 준비 끝났어요.' WHERE `id`=565;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 지금 팔까요 말까요?' WHERE `id`=566;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='제 %category는 그냥 다 쟁여두려고요.' WHERE `id`=567;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='파티 필요하세요? %category 같이 파밍하실래요?' WHERE `id`=568;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아직 %category 고민 중이에요.' WHERE `id`=569;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 풍문으로 들었지만은 전 개털이라 뭐 ㅋ.' WHERE `id`=570;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 파티 구합니다.' WHERE `id`=571;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 팔면 부자 될 수 있을까요?' WHERE `id`=572;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='알겠어요. 내일은 %category 파밍할 거예요.' WHERE `id`=573;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='다들 %category 이야기뿐이네요.' WHERE `id`=574;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 파밍하는 사람을 최소 열 명은 봤어요.' WHERE `id`=575;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='어제 %category를 다 팔아버려서 지금 완전 거지에요!' WHERE `id`=576;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 아템파밍 전문 길드 찾습니다.' WHERE `id`=577;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 경매장보다 싸게 팔고 있어요.' WHERE `id`=578;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 파밍하실 분 구함!' WHERE `id`=579;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 판매 중인데 관심 있으신 분?' WHERE `id`=580;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 필요하신 분?' WHERE `id`=581;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 판매합니다. 귓 주세요.' WHERE `id`=582;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category를 %category로 교환 원합니다.' WHERE `id`=583;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 구해요. 파시는 분?' WHERE `id`=584;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 팝니다. 연락 주세요!' WHERE `id`=585;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 같이 노가다 하실 분?' WHERE `id`=586;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category를 %category로 바꾸고 싶어요.' WHERE `id`=587;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 판매합니다. 시장 최저가 보장!' WHERE `id`=588;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 구해요. %category로 드릴게요.' WHERE `id`=589;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 교환하실 분 계신가요?' WHERE `id`=590;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 필요하신 분? 남아돌아서 누구 좀 드릴께요!' WHERE `id`=591;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 판매합니다. 가격 귓 주세요.' WHERE `id`=592;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 팔아요. 자세한 건 귓말 주세요.' WHERE `id`=593;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 삽니다. 파실 분?' WHERE `id`=594;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 찾고 있어요. 연락 부탁드려요.' WHERE `id`=595;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 가져가실 분?' WHERE `id`=596;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 파밍 좀 도와주실 분 있나요?' WHERE `id`=597;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 파실 분 계신가요?' WHERE `id`=598;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 삽니다. 귓 주세요.' WHERE `id`=599;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 찾아요. 누구 가지고 계신 분?' WHERE `id`=600;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 사고 싶어요. 적당한 가격이면 좋겠습니다.' WHERE `id`=601;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 급하게 구합니다! 파실 분 계신가요?' WHERE `id`=602;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 판매합니다. 저렴하게 넘겨요!' WHERE `id`=603;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 판매합니다. 가격 착함 ㅎㅎ.' WHERE `id`=604;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 사고 싶은데, 싸게 파실 분 없음?' WHERE `id`=605;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 파는 분 계세요? 제가 사고 싶어서요.' WHERE `id`=606;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 필요합니다. 파시는 분 계시면 귓속말 주세요.' WHERE `id`=607;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='혹시 남는 %category 있으신 분? 교환 가능합니다.' WHERE `id`=608;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 구합니다. 파실 분?' WHERE `id`=609;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 거래하실 분 계신가요?' WHERE `id`=610;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 팔아봅니다 아니면 교환도 ok.' WHERE `id`=611;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 매입합니다. 적당한 가격에 구해요.' WHERE `id`=612;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 필요하신 분? 남아 도는데 좀 드릴라고요.' WHERE `id`=613;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 필요하신 분 계세요? 싸게 드릴게요.' WHERE `id`=614;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 찾는 중인데, 혹시 파시는 분?' WHERE `id`=615;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 필요하신 분? 교환할 수 있는 게 좀 있어요.' WHERE `id`=616;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 매입합니다. 경매장보다 싸게 파실 분?' WHERE `id`=617;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 헐값에 처분합니다. 자세한 건 귓속말 주세요.' WHERE `id`=618;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 필요하신 분? 누가 사가시면 저렴하게 드림.' WHERE `id`=619;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category를 다른 걸로 교환하고 싶어요.' WHERE `id`=620;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 있는데, 다른 %category랑 교환하실 분?' WHERE `id`=621;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%category 구합니다. 남는 거 있으신 분?' WHERE `id`=622;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='혹시 %faction 평판 작업하시는 분 계신가요?' WHERE `id`=623;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 올리는 것 좀 도와주실 분?' WHERE `id`=624;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 퀘스트를 좀 하고 싶습니다만.' WHERE `id`=625;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction이곳이 최고죠.' WHERE `id`=626;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 %rep_level까지 정말 얼마 안 남았어요.' WHERE `id`=627;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='혹시 %faction 평판 %rep_level 찍으신 분?' WHERE `id`=628;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 %rep_level 찍으실 분 누구 없나요?' WHERE `id`=629;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 %rep_level은 절대 못 찍을 것 같아요.' WHERE `id`=630;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='혹시 %faction 평판 부족하신 분?' WHERE `id`=631;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 작업 도와드릴 수 있습니다.' WHERE `id`=632;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='평판은 높을수록 좋죠, 특히 %faction은요.' WHERE `id`=633;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction: %rep_level까지 앞으로 %rndK 남았습니다.' WHERE `id`=634;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 퀘스트 공유해 주실 분 계신가요?' WHERE `id`=635;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 주는 던전 있나요?' WHERE `id`=636;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 노가다 좀 하고 싶네요.' WHERE `id`=637;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='우리 같이 %faction 평판이나 올려봐요!' WHERE `id`=638;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='지금 %faction 평판 작업 중입니다.' WHERE `id`=639;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 노가다 하실 분?' WHERE `id`=640;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 관련해서 도움이 좀 필요해요ㅠㅠ' WHERE `id`=641;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 병참장교가 파는 거 쓸만한가요?' WHERE `id`=642;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 상인 어디 있는지 아시는 분?' WHERE `id`=643;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='지금 %faction 평판 올리는 사람 누구죠?' WHERE `id`=644;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 가장 빨리 올리는 법이 뭔가요?' WHERE `id`=645;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 노가다 정말 징글징글허네..' WHERE `id`=646;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 노가다 때문에 진짜 죽겠음 ㅠ' WHERE `id`=647;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 작업 가실 분?' WHERE `id`=648;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='다들 %faction 평판 %rep_level 찍은 것 같은데 저만 한참 뒤처진 것 같네요.' WHERE `id`=649;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 작업 파티 있나요?' WHERE `id`=650;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 올리기 좋은 곳 추천 부탁드려요.' WHERE `id`=651;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 올리면 뭐가 좋나요?' WHERE `id`=652;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판이 나중에 이렇게 쓸모 있을 줄이야...' WHERE `id`=653;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='모든 진영 확고 찍는 게 목표입니다. 일단 %faction부터 시작하죠.' WHERE `id`=654;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 올릴 가치가 있습니까?' WHERE `id`=655;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판은 퀘스트가 빠른가요, 몹 잡는 게 빠른가요?' WHERE `id`=656;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 대리 작업 해드립니다. 골드만 좀 주세요.' WHERE `id`=657;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평작 진짜 존나 개 노가다네;;' WHERE `id`=658;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='요즘 매일 %faction 평판 올리느라 고생 중인데 아직 %rep_level까지 멀었네요.' WHERE `id`=659;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_level 정도 되면 경매장 수수료 좀 줄어드나요?' WHERE `id`=660;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='다들 확고 찍은 평판 몇 개나 있으심?' WHERE `id`=661;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 %my_level 달성하고 싶으신 분?' WHERE `id`=662;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아놔, 우리 길드원들이 어제 나 빼고 %faction 평판 작업을 다 했다네요.' WHERE `id`=663;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판이 %rep_level밖에 안 된다고 아무도 안 도와주네요.' WHERE `id`=664;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 근처에는 가지 마삼.' WHERE `id`=665;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 작업하실 분 계신가요?' WHERE `id`=666;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 올리는 것 좀 도와주세요!' WHERE `id`=667;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 %rep_level이 너무 절실해요!' WHERE `id`=668;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 노가다 할 만한 가치가 있나요?' WHERE `id`=669;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='누구 %faction 평판 올리기 좋은 곳 아시는 분?' WHERE `id`=670;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저는 %faction 평판 올리는 게 제일 재미있네요!' WHERE `id`=671;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 작업 마무리하는 것 좀 도와주실 분!' WHERE `id`=672;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 %rep_level까지 진짜 한 끗 차이!' WHERE `id`=673;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 달리실 분 누구 없나요?' WHERE `id`=674;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 같이 올릴 분 구합니다!' WHERE `id`=675;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 노가다 하다가 지쳤삼요...' WHERE `id`=676;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='혹시 또 %faction 평판 올리시는 분 계세요?' WHERE `id`=677;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='드디어 %faction 평판을 제대로 올릴 때가 왔군요!' WHERE `id`=678;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 마무리하는 것 좀 도와주세요!' WHERE `id`=679;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 확고까지 이제 %rndK 남았어요!' WHERE `id`=680;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='하루 종일 %faction 평판만 올리고 있네요!' WHERE `id`=681;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='곧 %faction 평판 %rep_level 찍습니다!' WHERE `id`=682;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 작업이 끝이 없슈!' WHERE `id`=683;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 일일 퀘스트 하는 것 좀 도와주실 분?' WHERE `id`=684;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='지금 %faction 평판 올리는 분 누구 없나요?' WHERE `id`=685;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='우리 %faction 퀘스트 같이 해요!' WHERE `id`=686;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평작 달리시는 분?' WHERE `id`=687;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 %rep_level 찍는 것 좀 도와주세요!' WHERE `id`=688;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저랑 같이 %faction 평판 노가다 하실 분?' WHERE `id`=689;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 작업 파티에 합류하세요!' WHERE `id`=690;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 작업이 아주 순조롭네 ㅋ!' WHERE `id`=691;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 지원/버스 필요하신 분 계신가요?' WHERE `id`=692;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %faction 평판 %rep_level 달성했어요!' WHERE `id`=693;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 %rep_level까지 진짜 코앞입니다. 좀만 도와주세요!' WHERE `id`=694;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 작업 같이 하실래요?' WHERE `id`=695;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오늘도 %faction 평판의 굴레에 갇혔네요!' WHERE `id`=696;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='누구 %faction 평판 올리기 좋은 꿀팁 아시는 분?' WHERE `id`=697;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 작업 끝내려면 얼마나 더 해야 하죠?' WHERE `id`=698;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저랑 같이 %faction 퀘스트 하실 분 계신가요?' WHERE `id`=699;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 %rep_level 찍으실 분 모집합니다!' WHERE `id`=700;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 %rndK만 더 올리면 끝이다!' WHERE `id`=701;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 노가다 진짜 빡씨네!' WHERE `id`=702;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 %rep_level 찍으려고 작업하시는 분?' WHERE `id`=703;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 노가다 같이 하실 분!' WHERE `id`=704;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 올릴수록 보상이 좋구먼유!?' WHERE `id`=705;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_class(으)로 %faction 평판 작업 중!' WHERE `id`=706;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='혹시 %faction 평판 %rep_level에서 막히신 분 또 있나요?' WHERE `id`=707;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='밤새도록 %faction 평판만 올리는 중!' WHERE `id`=708;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 작업 저랑 같이 마무리하실 분?' WHERE `id`=709;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 작업 도와드릴 수 있어요!' WHERE `id`=710;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 노가다 더 뛸 준비 됐습니다!' WHERE `id`=711;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 올리는 것 좀 도와주세요. 급해요!' WHERE `id`=712;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 %rndK만 더 모으면 돼요!' WHERE `id`=713;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 노가다 같이 하실분!' WHERE `id`=714;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='딱 %rndK만 더 있으면 %faction 평판 목표 달성이에요!' WHERE `id`=715;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 개노가다는 끝이 없네요...' WHERE `id`=716;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 부스터 아이템 가진 분 계신가요?' WHERE `id`=717;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='멋진 보상을 받으려면 %faction 평판 %rep_level이 필요해요!' WHERE `id`=718;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='탈것 때문에 %faction 평판 올리시는 분?' WHERE `id`=719;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저랑 %faction 평판 작업 같이 하실 분 계신가요?' WHERE `id`=720;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 %rep_level 찍기 직전입니다!' WHERE `id`=721;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 %rep_level 찍게 도와주세요!' WHERE `id`=722;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 노가다 완료하는 중!' WHERE `id`=723;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 노가다 도와주실 분 구해요!' WHERE `id`=724;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='다음 보상을 받으려면 %faction 평판 %rep_level을 찍어야 해요!' WHERE `id`=725;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='누가 저랑 %faction 평판 작업 같이 할까요?' WHERE `id`=726;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='쉬지 않고 %faction 평판 올리는 중!' WHERE `id`=727;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='지금 %faction 평판 작업 중인 분 또 누구 있나요?' WHERE `id`=728;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='심심한데 %faction 평판이나 같이 올리실 분?' WHERE `id`=729;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='새 퀘스트 열려면 %faction 평판 작업이 필요해요!' WHERE `id`=730;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='보상 받으려고 %faction 평판 노가다 중입니다!' WHERE `id`=731;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='하루하루 꾸준히 %faction 평판 올리는 중이에요!' WHERE `id`=732;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 작업 도와주실 분 계신가요?' WHERE `id`=733;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 보상 좀 받게 도와주세요!' WHERE `id`=734;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='탈것 얻으려고 %faction 평판 작업 중이에요!' WHERE `id`=735;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저랑 같이 %faction 평판 작업하러 가요!' WHERE `id`=736;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%faction 평판 작업이 거의 끝나갑니다!' WHERE `id`=737;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='친구들과 함께 %faction 평판 작업 중!' WHERE `id`=738;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 파티 하실 분.' WHERE `id`=739;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_role 구하시는 분 있나요?' WHERE `id`=740;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_role 길드 구합니다ㅠㅠ 와린이 친절하게 알려주실분' WHERE `id`=741;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='골드 벌 곳 찾는 중.' WHERE `id`=742;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_role 초보자 키워주실 길드 구합니다 ㅠ' WHERE `id`=743;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='친구처럼 지내실분?' WHERE `id`=744;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='님들 심심하지 않으심?' WHERE `id`=745;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='지루하네...' WHERE `id`=746;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='한 판 붙으실 분?' WHERE `id`=747;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='나 잡아봐라!' WHERE `id`=748;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 1:1 깃발 꽂으실 분?' WHERE `id`=749;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='다들 뭐 하고 계시나요?' WHERE `id`=750;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에 누구 계십니까..?' WHERE `id`=751;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에 사람이 왜 이렇게 없나요?' WHERE `id`=752;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에 나밖에 없는 듯.' WHERE `id`=753;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 만나용~' WHERE `id`=754;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 퀘스트 열나게 달리는중!' WHERE `id`=755;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 여기가 명당일세!' WHERE `id`=756;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 가실 분? 저랑 같이 가요.' WHERE `id`=757;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 가고 싶으신 분?' WHERE `id`=758;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 별론데 어디로 가야 좋을까요?' WHERE `id`=759;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 여기 할만한 퀘스트 있나요?' WHERE `id`=760;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 다음은 어디로 가야 하죠?' WHERE `id`=761;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에 아무도 안계심?' WHERE `id`=762;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 파티 구합니다.' WHERE `id`=763;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 여기 최악이네요.' WHERE `id`=764;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 절 찾아보세요!' WHERE `id`=765;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 함 ㄱㄱ 해봅시다.' WHERE `id`=766;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 퀘스트 하실 분?' WHERE `id`=767;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 퀘스트 가지고 계신 분?' WHERE `id`=768;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 여기로 오세요!' WHERE `id`=769;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에 호드가 하나도 없나요??' WHERE `id`=770;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에 얼라가 하나도 없네요.' WHERE `id`=771;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 퀘 질리네. 확마 딴대로 가버려?' WHERE `id`=772;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='즐겜하세요!' WHERE `id`=773;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='집에 가서 좀 쉬고 싶다.' WHERE `id`=774;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='쌍수 끼려면 뭐 필요한지 아시는 분?' WHERE `id`=775;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='형님들 안녕하십니까!' WHERE `id`=776;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 여기 좋네요.' WHERE `id`=777;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오늘 운빨 짱인듯 ㅋ' WHERE `id`=778;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='전 무시 안 합니다. 상대가 절 무시할 때까지 괴롭힐 뿐.' WHERE `id`=779;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='제 %my_role 트리 어떤가요?' WHERE `id`=780;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='채팅창 활발한게 보기 좋네요.' WHERE `id`=781;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_link 이거 냥꾼이 쓰기에 좋음?' WHERE `id`=782;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저는 온니 솔플입니다. 제 게임 철학이죠.' WHERE `id`=783;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='전 누구 뒤통수 친 적 없습니다!' WHERE `id`=784;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아 맞다, 와우 채팅방이 고민 상담소였지.' WHERE `id`=785;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='여보세요? 거기누구 계십니까?' WHERE `id`=786;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이제 %zone_name 뚫으러 갈 시간!' WHERE `id`=787;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='급해서 화장실 좀!' WHERE `id`=789;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='무두질 몹 잡고선 무두질 안 하면 완전 손해임 꼭 무두질 하셈.' WHERE `id`=790;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='안 돼애애애애애!' WHERE `id`=791;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오늘도 즐겜^^!' WHERE `id`=792;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='채팅창 오늘 활발하네 ㅋ' WHERE `id`=793;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='안녕들 하세요!' WHERE `id`=794;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='재접속 했습니다.' WHERE `id`=795;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='하.. %zone_name길을 못찾겠네 진짜..' WHERE `id`=796;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 술 한잔하실 분?' WHERE `id`=797;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='하하하하히이이이이이 딩동딩동 하하하하히이이이이!' WHERE `id`=798;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='낚시도 적당히 해야 믿어주지.' WHERE `id`=799;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이분들 초심을 잃으신 것 같네.' WHERE `id`=800;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_role 버스 태워주는 길드 있나요?' WHERE `id`=801;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='확실히 렙이 좀 오르면 골드가 쫙쫙 벌리긴 함 ㅋㅋ' WHERE `id`=802;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오늘도 좋은 하루!' WHERE `id`=803;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아마존에는 누가 살까?...아마...존? ㅋ' WHERE `id`=804;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='렙업할 때는 정신력 스탯이 짱인 것 같아요.' WHERE `id`=805;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오리가 얼면?.....언덕 ㅋ' WHERE `id`=806;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='누가 저 좀 초대해 주세요!' WHERE `id`=807;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='물빵 좀 많이 챙길껄 ㅠㅠ' WHERE `id`=808;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='너네 엄마는 너무 뚱뚱해서 소환하려면 흑마법사 두 명이 있어야 할 듯 ㅋㅋ' WHERE `id`=809;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='솔직히 여기서 연애 해본사람 없지요?' WHERE `id`=810;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='우리 아빠는 제게 늘 이런 식이셨죠. "입 닥치고 얼른 나가!' WHERE `id`=811;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='뭐...' WHERE `id`=812;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='대머리가 총을 한발만 쏘는 이유는?...두발이 없어서ㅋ' WHERE `id`=813;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='갑자기 드는 생각들이 가끔 무서울 때가 있어요.' WHERE `id`=814;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='사람 마음이 생각보다 쉽게 휘둘리더라고요.' WHERE `id`=815;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='친목/렙업 길드 있나요?' WHERE `id`=816;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='잠시만요(곧 옴)!' WHERE `id`=817;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='작은배를 다른말로하면?...쉽새끼' WHERE `id`=818;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아몬드가 죽으면?....다이아몬드ㅋ' WHERE `id`=819;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='추장보다 더 높은 사람은?...고추장' WHERE `id`=820;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='뉴비들이 한 트럭 들어온 것 같네요.' WHERE `id`=821;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='뉴비들한테 거짓말로 좀 가르쳐주지 마세요!' WHERE `id`=822;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 서버 PVP 되나요?' WHERE `id`=823;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='기름을 만드는데 걸리는 시간은?...오일 ㅎ' WHERE `id`=824;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='휴... 다행이다 :)' WHERE `id`=825;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='피자가 놀라면?...피자 헛!' WHERE `id`=826;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='전 몹들이 무슨 기분일지 따위는 궁금하지 않아요.' WHERE `id`=827;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='앗, 오타요(잘못 침).' WHERE `id`=828;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='와, 오늘 다들 텐션 장난 아니시네.' WHERE `id`=829;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='그냥 여기 왔다갔다는 흔적이나 남겨야지!' WHERE `id`=830;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='조낸 빡친다!' WHERE `id`=831;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='노가다도 나름 재미있네요.' WHERE `id`=832;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='와우를 하니까 정신이 바짝 드네!' WHERE `id`=833;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='질문 하나 할게요. 추가 경험치 버프 어디서 받나요? 지금 %zone_name입니다.' WHERE `id`=834;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='부엉이가 물에 빠지면?...첨부엉 첨부엉' WHERE `id`=835;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='초대주세요. 도와드릴게요.' WHERE `id`=836;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='PVP는 어떤 클래스가 더 좋나요?' WHERE `id`=837;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 요리 거장은 도대체 어디 쳐박혀 있는 거야?' WHERE `id`=838;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 뭔일 있었는지 아시는 분?' WHERE `id`=839;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='템이 후져서 템 좀 제작해야겠네요.' WHERE `id`=840;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 뭐 재밌는 거(뻘짓) 하실 분?' WHERE `id`=841;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name을 우리 나와바리로 만들자고요!' WHERE `id`=842;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 또 길을 잃었음..아 길이 어디냐 진짜...' WHERE `id`=843;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아직도 %zone_name이라니 믿기지가 않네.' WHERE `id`=844;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 깽판 칠 파티원 구함!' WHERE `id`=845;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 우체통 근처에서 노가리 까실분?!' WHERE `id`=846;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='진심 %zone_name에는 트롤짓하는 애덜 천지네.' WHERE `id`=847;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='우리 같이 %zone_name을 쑥대밭으로 만들어요!' WHERE `id`=848;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에선 그냥 아무것도 안 하고 싶다.' WHERE `id`=849;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에선 모두 쌩까네요.' WHERE `id`=850;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 같은 곳이 진짜 있긴 한가요?' WHERE `id`=851;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에 지원 좀 오실분?! 짐 난리 났음!' WHERE `id`=852;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 여기 완전 정신 나간 듯.' WHERE `id`=853;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name이 말을 할 수 있었다면 소리를 질렀을 걸요.' WHERE `id`=854;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 여기 뭔가 구린데.' WHERE `id`=855;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='나의 위대함으로 %zone_name을 평정하겠노라.' WHERE `id`=856;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='내가 여기 있다고 %zone_name 전체에 전해라!' WHERE `id`=857;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 미아 됐어요. 헬프!' WHERE `id`=858;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 혁명을 시작해볼까요?' WHERE `id`=859;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 여기 너무 조용하지 않음?' WHERE `id`=860;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에는 우리가 모르는 비밀이 있을 게 분명해요.' WHERE `id`=861;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에는 %my_race(이)가 아무리 많아도 부족하죠.' WHERE `id`=862;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name은 그냥 소설 속 장소 같지 않습니까?' WHERE `id`=863;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 이곳이 이렇게 빡셀 줄 누가 알았겠어요?' WHERE `id`=864;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 오니까 게임이 터진 것 같네요.' WHERE `id`=865;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 원래 길이 이렇게 복잡하나요 아니면 제가 길을 잃은 건가요?' WHERE `id`=866;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='여긴 무슨 %zone_name을 믹서기에 갈아 넣은 것 같네.' WHERE `id`=867;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 지도 있으신 분?' WHERE `id`=868;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name 이곳이 우리를 죽이려 한다고 생각하는 분 또 없나요?' WHERE `id`=869;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='지금 %zone_name에서 정신없는 모험 중입니다!' WHERE `id`=870;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='기분 탓인가요, %zone_name 점점 이상해지는 것 같아요.' WHERE `id`=871;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name은 분명 비밀 놀이공원일 거예요.' WHERE `id`=872;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='키보드가 안 되는데... 친구가 없어서 그런가?' WHERE `id`=873;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 게임 나무들도 감정이 있을까요?' WHERE `id`=874;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='똑같은 버튼만 누르는데 왜 안 이겨지죠?' WHERE `id`=875;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='레이드에서 "득템!"이라고 외치기만 해도 이길 수 있을 것 같은데.' WHERE `id`=876;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='한 시간째 탈것 타려고 하는데 왜 안 타져요?' WHERE `id`=877;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='게임 안 하고 무적 되는 법 아시는 분?' WHERE `id`=878;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='키보드 아무거나 막 눌러도 이길 수 있나요? 친구가 물어봐서요.' WHERE `id`=879;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='내가 가만히 서 있으면 너보다 고수라는 뜻인건가?' WHERE `id`=880;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='불바닥 위에 있는데 펫이 왜 힐 안줌?' WHERE `id`=881;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='영웅이 되려면 장비가 꼭 필요한가요 아니면 선택인가요?' WHERE `id`=882;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='렙업하려면 행운의 부적 만 개쯤 모아야 하나요?' WHERE `id`=883;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='무기가 망가졌는데 그냥 주먹으로 때려잡아야 하나?' WHERE `id`=884;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='게임 이름을 "월드오브 맨날 뒤지는 세계"로 바꿔야 할 듯. 시발놈들 허구언날 죽이네.' WHERE `id`=885;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='내 말은 왜 못 날지? 그냥 위로 가면 될것을..' WHERE `id`=886;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='그래픽 낮추는 옵션 없나요? 고전 게임 느낌 나게.' WHERE `id`=887;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='몹 잡다가 졸았는데 이거 정상인가요?' WHERE `id`=888;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='재미로 NPC 죽이는 사람 저밖에 없나요?' WHERE `id`=889;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='전 레벨 %my_level인데 이미 이 게임 통달함.' WHERE `id`=890;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='NPC랑 계속 대화하면 템 주나요?' WHERE `id`=891;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아놘ㄴㄴㄴㄴㄴㄴㄴㄴㄴ 개ㅅㅅㅅㅅㅅㅅㅅㅅ스ㅂㄹㅇㅇㅇㅇㅇㅇ' WHERE `id`=892;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='15분이나 했는데 왜 지는 거야?' WHERE `id`=893;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='전략 따위 필요 없음. 그냥 이 스킬만 난사하면 됨.' WHERE `id`=894;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='행운의 부적 도배하면 템 잘 나오나요?' WHERE `id`=895;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='겜하다 화면에 소리 지르는 거 나만이럼?' WHERE `id`=896;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='그냥 줍는 대로 다 입으면 고수 됩니까?' WHERE `id`=897;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='퀘스트 꼭 해야 해요? 그냥 돌아다니면서 사람들한테 시비 걸면 안 됨?' WHERE `id`=898;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='월급 루팡 하면서 와우 하는 중! 일하라고 하지만 와우는 못 참지!' WHERE `id`=899;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='게임에 나오는 음식 다 먹으면 무적 되나요?' WHERE `id`=900;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='인던에서 펫 뽑아놓고 무지성으로 주사위 굴리는 게 냥꾼들 국룰 아님?' WHERE `id`=901;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이미 죽었는데 또 죽을 수도 있나요? 유령이 궁금해해서 물어봄.' WHERE `id`=902;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='전설의 검 어딨는지 아시는 분? 한 5분 찾아봤는데 안 보임.' WHERE `id`=903;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='여기 오면 10만 골드 준다던데 어디로 가야 돼요?' WHERE `id`=904;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='니 애미 쉬펄 어머니 잘 계시냐 임마!' WHERE `id`=905;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 게임 언제부터 재밌어짐? 아니면 평생 노가다만 해야 됨?' WHERE `id`=906;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='길 좀 물어봤더니 자꾸 이상한 데로 알려주는데 이거 원래 이럼?' WHERE `id`=907;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='ALT+F4 누르면 10만 골드 들어오는 거 알아냄. 선공몹 먼저 치고 나서 눌러야 됨!' WHERE `id`=908;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='내 캐릭터는 왜 맨날 멍청해 보이지? 내 탓임?;;' WHERE `id`=909;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='야, 너네 엄마가 이제 그만 자러 가란다 ㅋ' WHERE `id`=910;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='와우는 네 엄마처럼 매달 돈 내고 굴리는 노가다 게임이지!' WHERE `id`=911;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='척 노리스는 버튼 하나 안 누르고 만렙 찍었다는데 이거 실화임?' WHERE `id`=912;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='척 노리스는 탈것이 필요 없음. 땅이 알아서 비켜줌.' WHERE `id`=913;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='척 노리스가 공대에 참여하면 보스가 알아서 템 바치고 자살함.' WHERE `id`=914;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='척 노리스는 스킬을 안 씀. 쳐다만 봐도 몹이 죽거든.' WHERE `id`=915;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='척 노리스는 힐이 필요 없음. 몹들이 존경의 의미로 힐해줌.' WHERE `id`=916;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='척 노리스는 노장비 자리비움 상태로 레이드 솔플 가능.' WHERE `id`=917;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='척 노리스는 회피할 필요가 없음. 게임이 그를 피해 가니까.' WHERE `id`=918;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='척 노리스가 쪼렙 무기를 들면 게임이 알아서 졸업템을 떨궈줌.' WHERE `id`=919;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='척 노리스가 인던에 입장하면 모든 드랍템이 인벤토리로 자동 지급됨.' WHERE `id`=920;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='ligma가 뭐임?' WHERE `id`=921;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='sugma가 뭐임?' WHERE `id`=922;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='내 불알이나 핥으시지(ligma balls)' WHERE `id`=923;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='내 불알이나 빨아라(sugma balls)' WHERE `id`=924;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='니 일이나 똑바로 하시지!' WHERE `id`=925;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='내 항문에 %random_inventory_item_link(을)를 박아넣고 싶어!' WHERE `id`=926;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='네 항문에 %random_inventory_item_link(을)를 꽂아버리고 싶다!' WHERE `id`=927;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='다르나서스 찌질이들' WHERE `id`=928;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='너 혹시 좆 병 걸렸냐?' WHERE `id`=929;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='좆이나 까 잡숴' WHERE `id`=930;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이야, 형씨 발기 찬 거 보소' WHERE `id`=931;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='섹드립 역할극 하실 분?' WHERE `id`=932;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='별짓 다 해봤는데 역시 마지막엔 섹드립 역할극이 최고네.' WHERE `id`=933;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 같이 수다나 떠실분?' WHERE `id`=934;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 나랑 연애하실분?' WHERE `id`=935;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='개새끼는 이해해도 변태 새끼는 좀 아니지 않냐?' WHERE `id`=936;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에는 섹시한 애가 하나도 없네.' WHERE `id`=937;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에 있는 짐승들 다 죽이는 중이다. 동물 사랑 ㅈ까!!!' WHERE `id`=938;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='내가 다리가 세 개라 참 다행이지.' WHERE `id`=939;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='화내지 마라, 지금 상남자(시그마) 포스로 몰입 중이니까.' WHERE `id`=940;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='게이섹히 진짜.' WHERE `id`=941;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='어떻게 그걸 망칠 수가 있냐? 어떤 의미로 참 대단하다.' WHERE `id`=942;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='눈 감고도 하겠다만 굳이 그럴 필요까진 없지.' WHERE `id`=943;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='님 이 게임 할 줄 아는 거 맞음?' WHERE `id`=944;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이건 뭐 거의 일부러 지려고 작정한 수준인데?' WHERE `id`=945;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='1레벨 캐릭터도 이것보단 잘하겠다.' WHERE `id`=946;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='넌 이 게임에서 그냥 방해물(과속방지턱)일 뿐이야.' WHERE `id`=947;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='게임 말고 다른 취미를 좀 찾아보는 게 어때?' WHERE `id`=948;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='와, 네 플레이는 페인트 마르는 거 구경하는 것만큼이나 지루하다.' WHERE `id`=949;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='내 부캐로도 너 정도는 캐리할 수 있을 것 같은데.' WHERE `id`=950;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='너 지금 우리 엿 먹이려고 일부러 그러는 거지?' WHERE `id`=951;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='네가 우리 팀이라 상대 팀이 훨씬 유리해진 것 같다.' WHERE `id`=952;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='경치 구경 그만하고 게임이나 좀 하지 그래?' WHERE `id`=953;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 스킬 하나도 못 맞춘 거 실화냐?' WHERE `id`=954;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='길을 잃은 거냐, 아니면 못하는 척 코스프레 중이냐?' WHERE `id`=955;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='1레벨짜리도 너보단 딜 덜 박히겠다.' WHERE `id`=956;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='진심 우리 둘 다한테 쪽팔린 상황이었다.' WHERE `id`=957;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='솔플 게임도 이것보단 팀워크가 좋겠네ㅋㅋ' WHERE `id`=958;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='그냥 뒤에서 네가 망하는 거나 구경할게.' WHERE `id`=959;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='진짜 그게 좋은 생각이라고 믿었던 거냐?' WHERE `id`=960;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='그 단순한 걸 못해서 망치네. 진짜 믿기지가 않는다.' WHERE `id`=961;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='도와주러 온 거야, 아니면 시간 낭비하러 온 거야?' WHERE `id`=962;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='내가 캐리해주니까 그나마 팀 꼴이 돌아가는 줄 알아라.' WHERE `id`=963;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='넌 진짜 안 힘들어도 될 일을 힘들게 만든다.' WHERE `id`=964;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='어떻게 맨날 쉬운 것만 골라서 망치냐?' WHERE `id`=965;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='직접 하지 말고 그냥 남이 하는 거 구경이나 하는 게 어때?' WHERE `id`=966;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='잘하는 척 흉내라도 좀 내봐라, 좀.' WHERE `id`=967;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='계속 그따위로 하면 우리 오늘 하루 종일 여기 있어야 돼.' WHERE `id`=968;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='진심 여태껏 본 것 중에 최악의 판단이었다.' WHERE `id`=969;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='너 이 게임 소질 없는 것 같은데 접는 게 어떠냐 붕딱아?' WHERE `id`=970;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 그 무빙은 도대체 뭐 하려고 한 거냐?' WHERE `id`=971;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='넌 우리 팀의 구멍이삼.' WHERE `id`=972;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='네가 뭐라도 되는 것 같지? 응 아니야~' WHERE `id`=973;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='그냥 나가서 우리 수고 좀 덜어주면 안 되겠냐?' WHERE `id`=974;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %thunderfury_link(이)라고 들은 거 같은데?' WHERE `id`=980;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%thunderfury_link 소리가 들린 것 같아요.' WHERE `id`=981;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='분명히 %thunderfury_link(이)라고 들었습니다.' WHERE `id`=982;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='잘은 모르겠는데 %thunderfury_link 소리는 확실히 들린 듯.' WHERE `id`=983;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %thunderfury_link(이)라고 하셨나요?' WHERE `id`=984;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='누가 %thunderfury_link(이)라고 했나요?' WHERE `id`=985;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 누가 %thunderfury_link 언급했음?' WHERE `id`=986;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='누가 %thunderfury_link(이)라고 하던데.' WHERE `id`=987;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%thunderfury_link(이)가 드디어 모습을 드러내네요.' WHERE `id`=988;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='분명 %thunderfury_link(이)었는데, %thunderfury_link(이)었나?' WHERE `id`=989;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%thunderfury_link(이)가 훨씬 사기인데 왜 %thunderfury_link(을)를 써요?' WHERE `id`=990;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %thunderfury_link 소리 들린 거 맞죠?' WHERE `id`=991;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='말도 안 돼... 진짜 %thunderfury_link 소리가 들린다고?' WHERE `id`=992;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%thunderfury_link? 전설들만 쓸 수 있다는 그거 아냐?' WHERE `id`=993;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='공기 중에서 %thunderfury_link의 기운이 느껴진다!' WHERE `id`=994;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%thunderfury_link(이)야말로 진정한 MVP지.' WHERE `id`=995;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='누구 나 %thunderfury_link 좀 구해줄 사람? 친구 줄 건데... 두 명일 수도 있고!' WHERE `id`=996;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %thunderfury_link(이)가 뭘 내리친 거야? 땅 흔들리는 거 다 느꼈음.' WHERE `id`=997;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='전장에 %thunderfury_link(이)가 떴네... 포스 장난 아니다.' WHERE `id`=998;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 %thunderfury_link 소리가 들린 것 같은데... 그냥 헛소문인가?' WHERE `id`=999;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='잠깐, 방금 누가 %thunderfury_link 들고 있는 거 본 사람?!' WHERE `id`=1000;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%thunderfury_link의 위력은 *부정할 수 없지*!' WHERE `id`=1001;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 그거 99% 확률로 %thunderfury_link였다. 나머지 1%는 지나가던 NPC였을 수도 있고.' WHERE `id`=1002;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%thunderfury_link 출동! 이런 힘이 있으면 군대가 왜 필요함?' WHERE `id`=1003;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='듣자 하니 %thunderfury_link(이)가 그렇게 사람들 관심을 한 몸에 받는다면서요?' WHERE `id`=1004;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='누가 봐도 %thunderfury_link(이)가 훨씬 좋은데 왜 굳이 %thunderfury_link(을)를 씀?' WHERE `id`=1005;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='기분 탓인가, %thunderfury_link(은)는 기본적으로 어그로 끄는 패시브라도 달려 있음?' WHERE `id`=1006;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%thunderfury_link 소린 줄 알았는데, 그냥 간지 터지는 소리였네.' WHERE `id`=1007;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오, %thunderfury_link... 내 인생에서 이제야 나타난 거니?' WHERE `id`=1008;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방금 누가 %thunderfury_link(이)라고 했음? 나도 내 거 좀 챙겨와야겠네.' WHERE `id`=1009;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이건 확실히 %thunderfury_link 소리다! 전설의 기운이 느껴짐.' WHERE `id`=1010;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='나만 그렇게 느껴? %thunderfury_link 옆에 있으면 딴 사람들은 다 *약해 보여*.' WHERE `id`=1011;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='원래 %thunderfury_link 소리가 클수록 부심 부릴 맛도 나는 법이지!' WHERE `id`=1012;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='팝니다: %item_formatted_link / 가격: %cost_gold' WHERE `id`=1013;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link(을)를 %cost_gold에 가져가실 분?' WHERE `id`=1014;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 필요하신 분? 단돈 %cost_gold.' WHERE `id`=1015;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='겨우 %cost_gold에 %item_formatted_link(을)를 드립니다!' WHERE `id`=1016;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 판매합니다. 가격은 %cost_gold.' WHERE `id`=1017;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='단 %cost_gold만 내면 %item_formatted_link(이)가 당신 거!' WHERE `id`=1018;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link(이)가 말도 안 되는 가격 %cost_gold!' WHERE `id`=1019;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link(을)를 %cost_gold에 팔아도 될까용?' WHERE `id`=1020;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 필요하신 분? 딱 %cost_gold만 받음.' WHERE `id`=1021;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 필요하신 분? 가격은 %cost_gold입니다.' WHERE `id`=1022;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 단돈 %cost_gold. 경매장보다 쌈!' WHERE `id`=1023;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link(이)가 좀 비싸긴 한데, 전 %cost_gold에 팔게요.' WHERE `id`=1024;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link(을)를 %cost_gold 서버에서 제일 싸게 팜팜!' WHERE `id`=1025;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link삽니다~귓주세여 다 삽니다~' WHERE `id`=1026;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link필요한데 가지고 계신분?? 싸게 삽니다 ㅠ' WHERE `id`=1027;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 보유 중. %cost_gold에 사실 분?' WHERE `id`=1028;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link(을)를 %cost_gold에 사실 분 있나요?' WHERE `id`=1029;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link(은)는 어때요? %cost_gold에 드림.' WHERE `id`=1030;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='누가 나보고 사기꾼이래? %item_formatted_link(을)를 %cost_gold에 파는 거면 혜자지.' WHERE `id`=1031;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 팝니다. 단돈 %cost_gold.' WHERE `id`=1032;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='파밍 파티 구해요. 그 와중에 제 %item_formatted_link(을)를 %cost_gold에 살 수도 있음.' WHERE `id`=1033;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오늘 거의 다 팔았네요. 아직 %item_formatted_link 남았는데 %cost_gold에 드림.' WHERE `id`=1034;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='거래 채널을 왜 쓰냐고요? 당연히 제 %item_formatted_link(을)를 %cost_gold에 팔려고죠!' WHERE `id`=1035;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link(을)를 %cost_gold 싸게 삽니다ㅠ 와린이라 골드도 읍어영 ㅠ' WHERE `id`=1036;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='거래 채널 시끄러운 거 멈추고 싶어요? 그럼 제 %item_formatted_link(을)를 %cost_gold에 사면 됨!' WHERE `id`=1037;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='다들 거래 채널에서 도배하네요. 저도 동참함 - %item_formatted_link 단돈 %cost_gold!' WHERE `id`=1038;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link(이)가 쓸모가 있긴 한가? 일단 %cost_gold에 팔아봅니다.' WHERE `id`=1039;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 준비됐습니다. %cost_gold에 바로 넘겨드림.' WHERE `id`=1040;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='어제 멍 때리기만 했는데 %item_formatted_link(이)가 생겼네요. %cost_gold에 팝니다.' WHERE `id`=1041;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='어제 노가다해서 %item_formatted_link 득템함. %cost_gold에 사실 분?' WHERE `id`=1042;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='어제 %item_formatted_link(을)를 샀는데, 혹시 %cost_gold에 필요한 분?' WHERE `id`=1043;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 찾으신 분? 가격은 똑같이 %cost_gold입니다.' WHERE `id`=1044;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아직 %item_formatted_link 재고 남았어요. %cost_gold에 사실 분?' WHERE `id`=1045;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='전에는 %item_formatted_link보다 많이 가졌었는데... 지금은 %cost_gold에 팔아야겠네요.' WHERE `id`=1046;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link삽니다  %cost_gold에 삽니다~' WHERE `id`=1047;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='가진 골드를 어디 쓰냐고요? 제 %item_formatted_link(을)를 %cost_gold에 사는 데 써보세요.' WHERE `id`=1048;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='골드 좀 보태주세요. 대신 %item_formatted_link(을)를 %cost_gold에 드리겠습니다.' WHERE `id`=1049;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link(이)가 %cost_gold면 꽤 괜찮은 가격 아님?' WHERE `id`=1050;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='어제 %item_formatted_links(을)를 샀는데 이제 필요 없네요. %cost_gold에 가져가실 분?' WHERE `id`=1051;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link(을)를 경매장에 올리기전에 필요하 신분에게 팝니다 %cost_gold에 드림.' WHERE `id`=1052;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아니 도대체 왜 %item_formatted_link(을)를 샀지? #!@... %cost_gold에 필요하신 분?' WHERE `id`=1053;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='판매중: %item_formatted_link / 가격: %cost_gold' WHERE `id`=1054;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link(을)를 %cost_gold에 가져가실분?' WHERE `id`=1055;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 사실 분? 딱 %cost_gold만 받을게요.' WHERE `id`=1056;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link(이)가 단돈 %cost_gold!' WHERE `id`=1057;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link %cost_gold에 팝니다 ~빨랑 귓' WHERE `id`=1058;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='딱 %cost_gold면 %item_formatted_link(이)가 당신 것!' WHERE `id`=1059;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 판매가 %cost_gold. 관심 있으면 귓말!' WHERE `id`=1060;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 팔아야 합니다. %cost_gold나 가격 제안 주세요.' WHERE `id`=1061;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 재고 있음, 가격은 %cost_gold. 지금 바로 가져가세요!' WHERE `id`=1062;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 팝니다  %cost_gold 만 주삼.' WHERE `id`=1063;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 판매 중. 이제 %cost_gold만 남았어요.' WHERE `id`=1064;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link(을)를 %cost_gold에 원하시는 분? 귓말 주세요!' WHERE `id`=1065;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link %cost_gold 선착순 빨랑 손!' WHERE `id`=1066;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link(이)가 %cost_gold! 품절되기 전에 서두르세요!' WHERE `id`=1067;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link %cost_gold에 파는데, 사실분 계심?' WHERE `id`=1068;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link %cost_gold 선착순 드립니다!' WHERE `id`=1069;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link(이)가 단돈 %cost_gold. 한정 시간 특가!' WHERE `id`=1070;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 판매 중(%cost_gold). 필요하면 말씀하세요!' WHERE `id`=1071;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link %cost_gold에급매함' WHERE `id`=1072;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link %cost_gold급매로 팝니다 인벤 꽉 차부렀네 ㅎㅎ' WHERE `id`=1073;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 팝니다  %cost_gold에 떨이처리!' WHERE `id`=1074;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link %cost_gold! 마지막 떨이임~빨랑 가져가셈~' WHERE `id`=1075;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link %cost_gold 자자 떨이 합니다 걍 가져가세요' WHERE `id`=1076;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 단돈 %cost_gold. 자세한 건 귓말 주세요!' WHERE `id`=1077;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link %cost_gold에 바로 거래 ㄱㄱㄱ' WHERE `id`=1078;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link %cost_gold에 판매 중. 문의는 귓말로!' WHERE `id`=1079;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='판매합니다! %item_formatted_link，%cost_gold 에 가져가세요！' WHERE `id`=1080;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='판매 중: %item_formatted_link, 가격은 단돈 %cost_gold.' WHERE `id`=1081;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 있습니다. %cost_gold에 거래하시죠!' WHERE `id`=1082;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 판매합니다. %cost_gold면 바로 가져가실 수 있어요!' WHERE `id`=1083;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 판매합니다. 가격은 %cost_gold, 관심 있으신 분?' WHERE `id`=1084;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 급매합니다. 딱 %cost_gold에 드려요!' WHERE `id`=1085;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 판매합니다. 가격 %cost_gold, 어디보다 저렴합니다!' WHERE `id`=1086;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link을 %cost_gold에 팝니다. 사실 분?' WHERE `id`=1087;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 단돈 %cost_gold, 귓 바로 주세요!' WHERE `id`=1088;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 판매 중(가격 %cost_gold). 품절되기 전에 서두르세요!' WHERE `id`=1089;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 필요하신가요? %cost_gold에 드립니다!' WHERE `id`=1090;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item_formatted_link 판매 가격 %cost_gold, 급처분합니다!' WHERE `id`=1091;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저 %quest_links 퀘스트 있어요.' WHERE `id`=1092;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저도 %quest_links 퀘스트 있습니다.' WHERE `id`=1093;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저도 %quest_links 있고, 지금 %zone_name에 있어요.' WHERE `id`=1094;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%other_name님, 저도 %quest_links 가지고 있어요.' WHERE `id`=1095;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%other_name님, 저도 %quest_links 있고 지금 %zone_name입니다.' WHERE `id`=1096;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 가능합니다. 지금 %zone_name에 있어요.' WHERE `id`=1097;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 가능합니다. 제 역할은 %my_role입니다.' WHERE `id`=1098;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%other_name님, %quest_links 같이 해요. 지금 %zone_name에 있습니다.' WHERE `id`=1099;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%other_name님, %quest_links 할 수 있어요. %my_role입니다.' WHERE `id`=1100;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 필요하신 분 계신가요? 저 %zone_name에 있어요.' WHERE `id`=1101;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 함께 하실 분 더 찾습니다.' WHERE `id`=1102;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 퀘스트 도와주실 분 구해요.' WHERE `id`=1103;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 저랑 같이 %quest_links 하실 분 계신가요?' WHERE `id`=1104;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 퀘스트 있고, %zone_name에서 파티 찾습니다.' WHERE `id`=1105;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 퀘스트 필요하신 분?' WHERE `id`=1106;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 하실 분? 누구 없나요?' WHERE `id`=1107;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_role입니다. %zone_name에서 %quest_links 완료할 파티 구해요.' WHERE `id`=1108;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 해야 하는데, %zone_name에 계신 분 중에 가능하신 분?' WHERE `id`=1109;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 같이 하실 분들 더 구해요.' WHERE `id`=1110;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 하는 중인데 도움이 더 필요합니다.' WHERE `id`=1111;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 하실 %my_role 계신가요?' WHERE `id`=1112;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name %quest_links 도움 구합니다. 인원 더 구해요!' WHERE `id`=1113;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 있고 %zone_name입니다. %my_role인데 같이 하실 분?' WHERE `id`=1114;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 하실 분? 저는 %my_role입니다.' WHERE `id`=1115;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='지금 %quest_links 하시는 분? 저 %zone_name에 있어요.' WHERE `id`=1116;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 가실 분 계신가요?' WHERE `id`=1117;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 하실 파티 구합니다.' WHERE `id`=1118;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 해야 하는데 혼자선 힘드네요. %zone_name 계신 분?' WHERE `id`=1119;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 저랑 %quest_links 하실 분?' WHERE `id`=1120;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 도와주실 %my_role 있나요?' WHERE `id`=1121;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 있고 %my_role입니다. %zone_name에서 인원 더 구해요.' WHERE `id`=1122;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 같이 하실 분 찾습니다.' WHERE `id`=1123;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_role이고 %quest_links 있습니다. %zone_name에서 파티 구해요.' WHERE `id`=1124;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 도움이 필요해요. %my_role 계신가요?' WHERE `id`=1125;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 저랑 %quest_links 완료하실 %my_role 있나요?' WHERE `id`=1126;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 같이 깨요!' WHERE `id`=1127;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='지금 %zone_name이고 %quest_links 있는데 같이 하실 분?' WHERE `id`=1128;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 완료해 주실 %my_role 더 구합니다.' WHERE `id`=1129;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 있고 %zone_name에서 %my_role 구합니다.' WHERE `id`=1130;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 가실 분? 전 %zone_name에 있는 %my_role입니다.' WHERE `id`=1131;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 할 파티 찾아요. %my_role 필요합니다.' WHERE `id`=1132;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 도움 필요하신 분? 저 %my_role이에요.' WHERE `id`=1133;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 깨야 하는데 %zone_name에서 %my_role 구해요.' WHERE `id`=1134;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 도움 주실 분? 누구 없나요?' WHERE `id`=1135;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 마무리할 파티 찾습니다.' WHERE `id`=1136;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 하실 분? 저 %my_role입니다.' WHERE `id`=1137;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='같이 %quest_links 해요! %zone_name로 갑시다.' WHERE `id`=1138;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name %quest_links 파티 구해요. 관심 있으신 분?' WHERE `id`=1139;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 같이 하실 분? 지금 %zone_name입니다.' WHERE `id`=1140;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name인데 %quest_links 같이 완료하실 분들 찾아요.' WHERE `id`=1141;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name %quest_links 도와주실 %my_role 계신가요?' WHERE `id`=1142;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 끝낼 파티 구합니다. 장소는 %zone_name이에요.' WHERE `id`=1143;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 도와주실 분? 저 %my_role입니다.' WHERE `id`=1144;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 함께 하실 %my_role 찾습니다.' WHERE `id`=1145;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 있고, %zone_name에서 %my_role 구합니다.' WHERE `id`=1146;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 끝내고 싶어요. 사람 더 구합니다.' WHERE `id`=1147;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 도움이 필요해요. %zone_name 근처에 누구 없나요?' WHERE `id`=1148;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name %quest_links 완료할 사람 더 구해요.' WHERE `id`=1149;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 마무리할 파티 구합니다.' WHERE `id`=1150;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 하실 분? 바로 출발 가능합니다.' WHERE `id`=1151;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 같이 하실 분? %zone_name에 있는 %my_role입니다.' WHERE `id`=1152;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 같이 할 %my_role 구해요.' WHERE `id`=1153;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저 %zone_name인데 %quest_links 도움 필요하신 분 계신가요?' WHERE `id`=1154;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name %quest_links 인원 더 구해요. 가실 분?' WHERE `id`=1155;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 도와주실 분? 같이 가요!' WHERE `id`=1156;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 끝내실 분 더 찾습니다.' WHERE `id`=1157;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='안녕하세요, 저 %quest_links 가능합니다.' WHERE `id`=1158;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='안녕하세요, 저랑 같이 %quest_links 하실래요?' WHERE `id`=1159;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='안녕하세요, 저도 %quest_links 가지고 있어요.' WHERE `id`=1160;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='안녕하세요 %other_name님, 저 %quest_links 가능해요.' WHERE `id`=1161;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='안녕하세요 %other_name님, 저랑 같이 %quest_links 하실래요?' WHERE `id`=1162;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='안녕하세요 %other_name님, 저도 %quest_links 있어요.' WHERE `id`=1163;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 같이 파티 하실래요?' WHERE `id`=1164;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 할 수 있어요. 지금 %zone_name에 있습니다.' WHERE `id`=1165;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 할 수 있습니다. 제 역할은 %my_role이에요.' WHERE `id`=1166;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저 %quest_links 하고 싶어요.' WHERE `id`=1167;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='필요하시면 %quest_links 도와드릴 수 있습니다.' WHERE `id`=1168;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='우리 같이 %quest_links 해요!' WHERE `id`=1169;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저도 %quest_links 해야 돼요.' WHERE `id`=1170;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='원하시면 %quest_links 같이 할 수 있습니다.' WHERE `id`=1171;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 할 수 있으니 말씀만 하세요.' WHERE `id`=1172;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 찾으시나요? 저 %zone_name에 있어요.' WHERE `id`=1173;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='안녕하세요, 저도 %quest_links 필요해요. 같이 가요!' WHERE `id`=1174;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저 %quest_links 있는데 같이 하실래요?' WHERE `id`=1175;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저도 %quest_links 필요했는데 잘됐네요. 같이 해요!' WHERE `id`=1176;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='안녕하세요, %quest_links 같이 하실래요?' WHERE `id`=1177;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='필요하시면 %quest_links 돕겠습니다!' WHERE `id`=1178;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='안녕하세요 %other_name님, %quest_links 하실래요?' WHERE `id`=1179;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%other_name님, %quest_links 파티 맺고 같이 하실래요?' WHERE `id`=1180;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%other_name님, 우리 같이 %quest_links 완료해요!' WHERE `id`=1181;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저 %my_role이고 %quest_links 준비됐습니다.' WHERE `id`=1182;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 참가할 수 있어요. %my_role입니다.' WHERE `id`=1183;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 가능합니다. 역할은 %my_role이에요!' WHERE `id`=1184;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%my_role로서 %quest_links 같이 할 파티 구합니다.' WHERE `id`=1185;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 도움 필요하신 분 계신가요?' WHERE `id`=1186;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 %quest_links 하실 분 계신가요?' WHERE `id`=1187;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 하실 분 계신가요?' WHERE `id`=1188;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저 %quest_links 가지고 있어요, %my_role 가는 중입니다!' WHERE `id`=1189;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저도 %quest_links 필요한데, 같이 하실 분?' WHERE `id`=1190;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='계속 %quest_links 진행 중인데, 도움이 필요하신가요?' WHERE `id`=1191;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 준비됐습니다, 더 계신가요?' WHERE `id`=1192;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 같이 해주실 분 계신가요?' WHERE `id`=1193;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 도와주실 분 찾아요, 전 %my_role입니다!' WHERE `id`=1194;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 도와드릴 수 있어요, 필요하신 분?' WHERE `id`=1195;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 하시는 분 또 없나요? 가시죠!' WHERE `id`=1196;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 도움이 필요하신가요? 여기 %my_role 대기 중입니다!' WHERE `id`=1197;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 같이 하실 분?' WHERE `id`=1198;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='원하신다면 %quest_links 하러 합류할 수 있어요.' WHERE `id`=1199;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 같이 할 %my_role 찾습니다.' WHERE `id`=1200;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 하실 %my_role 계신가요?' WHERE `id`=1201;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저 %quest_links 있어요, 같이 하실 분?' WHERE `id`=1202;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이봐요 %other_name님, %quest_links 좀 해보실래요?' WHERE `id`=1203;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%other_name님, 우리 같이 파티 맺고 %quest_links 해요!' WHERE `id`=1204;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저 %quest_links 필요한데, 또 같이 하실 분 계신가요?' WHERE `id`=1205;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저도 %quest_links 필요한데, 근처에 계신 분 있나요?' WHERE `id`=1206;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 하시는 분, 누구 저랑 같이 하실래요?' WHERE `id`=1207;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest_links 하실 수 있는 분 계신가요?' WHERE `id`=1208;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저기요, %quest_links 하러 합류할 수 있어요!' WHERE `id`=1209;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저도 %quest_links 있어요, 우리 파티 해요!' WHERE `id`=1210;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저 %quest_links 할 게 있는데, 같이 하실래요?' WHERE `id`=1211;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 하실 %my_role 계신가요?' WHERE `id`=1212;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%other_name님, %quest_links 같이 끝내버려요!' WHERE `id`=1213;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저 %quest_links 할 준비 됐는데, 더 합류하실 분?' WHERE `id`=1214;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 %quest_links 하시는 분 있나요? 저도 할게요!' WHERE `id`=1215;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%zone_name에서 %quest_links 하고 있어요, 도움이 필요하신가요?' WHERE `id`=1216;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%other_name님, 제가 %formatted_item_links를 팔 수 있어요.' WHERE `id`=1217;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links이거 정리 합니다 얼른 귓 주세여' WHERE `id`=1218;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='제가 %formatted_item_links를 팔 수 있을 것 같네요.' WHERE `id`=1219;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저기, %other_name님, 제가 어쩌면 %formatted_item_links를 팔 수도 있을 것 같아요.' WHERE `id`=1220;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%other_name님, 제가 %formatted_item_links를 팔 수 있을 것 같은데 어떠신가요?' WHERE `id`=1221;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='제가 %formatted_item_links를 팔 수 있어요.' WHERE `id`=1222;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저기요, %formatted_item_links 팔아요!' WHERE `id`=1223;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저기, 제가 %formatted_item_links를 팔 수 있을지도 몰라요.' WHERE `id`=1224;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='제가 %formatted_item_links를 팔 수 있어요.' WHERE `id`=1225;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저기요, %formatted_item_links 팔아요!' WHERE `id`=1226;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저기, 제가 아마 %formatted_item_links를 팔 수 있을 거예요.' WHERE `id`=1227;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 상점에 팔아 버리야하나?;;' WHERE `id`=1228;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 님들 이거 얼마 받아야 될까용??' WHERE `id`=1229;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='적당한 가격에 %formatted_item_links를 팔 수 있어요.' WHERE `id`=1230;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 님들 이거 알마에 팔아야 됨?' WHERE `id`=1231;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links를 %cost_gold에 처분합니다~~~싸게 가져 가이소~~' WHERE `id`=1232;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 아 진짜 쉣이네..' WHERE `id`=1233;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 팝니다, %cost_gold 요정도만 받겠습니다' WHERE `id`=1234;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links를 %cost_gold에 처분합니다~' WHERE `id`=1235;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 있어요, 관심 있으면 귓 주세여.' WHERE `id`=1236;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='적당한 가격을 제시하시면 %formatted_item_links를 팔 의향이 있습니다.' WHERE `id`=1237;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 상점행??' WHERE `id`=1238;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links를 %cost_gold에 드립니다~' WHERE `id`=1239;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 가져 가실부운~~' WHERE `id`=1240;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저기요, %formatted_item_links가 %cost_gold에 있습니다.' WHERE `id`=1241;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links를 아무나 가져가셈' WHERE `id`=1242;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 필요하신분?' WHERE `id`=1243;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 나눔합니다 빨랑 귓!' WHERE `id`=1244;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 가격제시 부탁 합니다.' WHERE `id`=1245;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 팝니니다, 사실분  귓말 주세요.' WHERE `id`=1246;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links를 %cost_gold에 드림' WHERE `id`=1247;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 이거 쓸때나 있을까요?' WHERE `id`=1248;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 떨이로 팝니다 얼른 귓!' WHERE `id`=1249;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 님들 이거 어따씀?' WHERE `id`=1250;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 싸게 팔아요 귓주세여!' WHERE `id`=1251;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 적당한 가격에 팝니다 귓말 주세요.' WHERE `id`=1252;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links에 관심 있으면 귓 주세여~' WHERE `id`=1253;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 있습니다 필요하신분 귓말 주세요' WHERE `id`=1254;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 요고요고  %cost_gold에 떨이처리중' WHERE `id`=1255;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 걍 떨이로 가져가셈' WHERE `id`=1256;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 있습니다, 자세한 내용은 귓\\ 주세요.' WHERE `id`=1257;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저기, %formatted_item_links가 있는데 관심 있으시면 연락 주세요.' WHERE `id`=1258;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 급매합니다 얼른 귓!' WHERE `id`=1259;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 필요하신분 계심?' WHERE `id`=1260;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 싸게 드립니다.' WHERE `id`=1261;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 적당한 가격에 팝니다' WHERE `id`=1262;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 판매중 가격 제안 환영!' WHERE `id`=1263;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 필요하심 귓 주세요.' WHERE `id`=1264;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links음..이거 돈이 될까요??' WHERE `id`=1265;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 나눔 합니다~ 귓말 주세여' WHERE `id`=1266;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 필요하신 분 계십니까?' WHERE `id`=1267;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 아무나 가져가세요~' WHERE `id`=1268;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 팝니다 가격 귓 주세요' WHERE `id`=1269;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 나눔 합니다.' WHERE `id`=1270;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 필요하신분 귓 주세요.' WHERE `id`=1271;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 아따 이거 어따 쓰는겨?;;' WHERE `id`=1272;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 팜팜! 싸게 떨이 처분!' WHERE `id`=1273;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저기, %formatted_item_links 팔고 있는데 관심 있으면 연락 주세요.' WHERE `id`=1274;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 가격만 귓말로 주세요' WHERE `id`=1275;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 정리합니다 가져가세유' WHERE `id`=1276;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 떨이 합니다 편하게 귓 주세여.' WHERE `id`=1277;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 필요하시면 드립니다 귓말 주세여' WHERE `id`=1278;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 적당한 가격에 팝니다~~' WHERE `id`=1279;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 있습니다, 필요하시면 연락 주세요.' WHERE `id`=1280;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 첨 보는데 싸게 팝니당' WHERE `id`=1281;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 판매 중, 관심있으면 귓' WHERE `id`=1282;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 싸게 팝니다' WHERE `id`=1283;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%formatted_item_links 필요하신분 계십니까?' WHERE `id`=1284;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='퀘스트를 수락했습니다.' WHERE `id`=1285;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='퀘스트가 삭제되었습니다.' WHERE `id`=1286;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 퀘스트를 왜 수락이 안됨?.' WHERE `id`=1287;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='퀘스트를 주는 NPC와 대화할 수 없어요.' WHERE `id`=1288;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이미 %quest 퀘스트를 완료했습니다.' WHERE `id`=1289;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이미 %quest 퀘스트를 가지고 있어요.' WHERE `id`=1290;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest 이퀘스트 왜 수락 안되는겨??;;' WHERE `id`=1291;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='퀘스트 목록이 꽉 차서 %quest 퀘스트를 받을 수 없어요!' WHERE `id`=1292;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='가방이 가득 차서 %quest 퀘스트를 받을 수 없어요!' WHERE `id`=1293;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest 퀘스트 바로시작!' WHERE `id`=1294;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아직 %quest 퀘스트를 완료하지 못했어요.' WHERE `id`=1295;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest 이제 렙되니까 받아지네 ㅋㅋ' WHERE `id`=1296;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest 퀘스트에 실패했습니다.' WHERE `id`=1297;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest 이 퀘스트 왜 완료가 안되냐..' WHERE `id`=1298;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest 퀘스트를 성공적으로 클리어!' WHERE `id`=1299;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest 퀘스트를 완료하고 %item을(를) 획득했습니다!' WHERE `id`=1300;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%quest 퀘스트 완료 보상으로 어떤 걸 선택하는 게 좋을까요? %rewards' WHERE `id`=1301;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='좋아요, 보상으로 %item을(를) 선택할게요.' WHERE `id`=1302;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='안녕하세요!' WHERE `id`=1303;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='하이!' WHERE `id`=1304;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='안녕!' WHERE `id`=1305;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='안녕하셔유!' WHERE `id`=1306;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='안녕하세요!' WHERE `id`=1307;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='안녕하세요, 따라가겠습니다!' WHERE `id`=1308;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='안녕하셔유 누가 길안내좀 해주실분~' WHERE `id`=1309;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='하이~누가 길 안내좀 해주실분 ㅋ' WHERE `id`=1310;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저기 %player님, 제 파티에 가입하시겠어요?' WHERE `id`=1311;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저기 %player님, 제 공격대에 가입하시겠어요?' WHERE `id`=1312;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='뭐여 왜 로그아웃 안되!?' WHERE `id`=1313;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오늘은 여까지만 해야겠네!' WHERE `id`=1314;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='잘 가세요!' WHERE `id`=1315;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='잘 가요!' WHERE `id`=1316;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='님들 나중에 봐요!' WHERE `id`=1317;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s님,쫌전에 그거 뭔소리임?' WHERE `id`=1318;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s님, 무슨 뜻인지 잘 모르겠어요.' WHERE `id`=1319;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='어... 무슨 말씀을 하시는 건지 전혀 모르겠네요.' WHERE `id`=1320;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s님, 지금 저한테 얘기하는거?' WHERE `id`=1321;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아 쫌 모르면 인벤가서 좀 찾아봐요 일일이 다 채팅창에 물어보면 어케 합니까 진짜..하 증말' WHERE `id`=1322;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='네?' WHERE `id`=1323;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='뭐라구요?' WHERE `id`=1324;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='지금 뭐라고 말하고 계시는거?' WHERE `id`=1325;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='뭐 그러시든가요.' WHERE `id`=1326;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='무슨 말인지 하나도 모르겠네.' WHERE `id`=1327;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='어쩌고 저쩌고...' WHERE `id`=1328;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s님, 뭐라고 하셨어요?' WHERE `id`=1329;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s님, 게임에 집중하세요!' WHERE `id`=1330;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s님과 대화해서 정말 즐거워요! 꼭 한번 만나보고 싶었어요.' WHERE `id`=1331;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오우 님들 대화 수준 장난아닌듯? ㅋ' WHERE `id`=1332;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아, 네! 하하, 그럼요!!!' WHERE `id`=1333;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='믿어 드릴께!!!' WHERE `id`=1334;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오 간만에보는듯 잘지냈음? ㅋㅋㅋ' WHERE `id`=1335;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='왜 다들 항상 똑같은 말만 하는 거죠???' WHERE `id`=1336;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저기 %s님... 아, 아녜요!' WHERE `id`=1337;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s님, 무슨 말씀을 하시는 거임?' WHERE `id`=1338;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='누가 그딴 소리했음?? 지금 내 얘기 하는거삼?.' WHERE `id`=1339;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='님들 도대체 뭔 소릴 하는거임?' WHERE `id`=1340;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='진짜로, 구라 안 치고 진짜 리얼!' WHERE `id`=1341;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='너 님은 얄짤없삼!' WHERE `id`=1342;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='왔섭 맨.' WHERE `id`=1343;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='베리 감사!' WHERE `id`=1344;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아니' WHERE `id`=1345;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='어' WHERE `id`=1346;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='애도를 표합니다.' WHERE `id`=1347;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s, 말도 안 돼 xD' WHERE `id`=1348;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='왜 그런 거야?' WHERE `id`=1349;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='ㅋㅋㅋㅋㅋ' WHERE `id`=1350;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='채팅창에서 알려준대로 하니까 더 햇갈리네...' WHERE `id`=1351;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='나 진짜 질투할지도 몰라.' WHERE `id`=1352;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s님, 제 말에 섞인 비꼬는 투가 안 느껴지세요?' WHERE `id`=1353;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오해할 만한 의도는 없다고 했으니 괜찮아.' WHERE `id`=1354;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='저기 퀘스트 같이좀 했으면 좋겠습니다.' WHERE `id`=1355;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='네, %s님.' WHERE `id`=1356;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='흥미롭군요...' WHERE `id`=1357;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='ㅎㅎ' WHERE `id`=1358;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s, 에라이 나쁜 놈아 :D' WHERE `id`=1359;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='흠..' WHERE `id`=1360;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='감사' WHERE `id`=1361;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s님, 맞는 말씀입니다.' WHERE `id`=1362;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='야호!' WHERE `id`=1363;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='그래' WHERE `id`=1364;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오오오오' WHERE `id`=1365;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='흠' WHERE `id`=1366;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오 오랜만임 잘지냈슈?' WHERE `id`=1367;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아 진짜 극혐이다.' WHERE `id`=1368;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='뜨겁네!' WHERE `id`=1369;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='화났나 보네.' WHERE `id`=1370;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s님, 도대체 뭘 드신 거예요?' WHERE `id`=1371;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='헐' WHERE `id`=1372;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='그 코멘트를 이해해 보도록 노력해 볼게요.' WHERE `id`=1373;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='*혼란스러움*' WHERE `id`=1374;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='당연하지!' WHERE `id`=1375;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아 눈뜨고 못 봐주겠네, 진짜' WHERE `id`=1376;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오우 당신 의견에 저는 찬성!' WHERE `id`=1377;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='음, 뭐, 그다지…. 읽어 줄 만은 하달까.' WHERE `id`=1378;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='뭐 나쁘진 않네요.' WHERE `id`=1379;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='근본 있네.' WHERE `id`=1380;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오, 아마도요.' WHERE `id`=1381;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='그래, 근데 뭐?' WHERE `id`=1382;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='헤이 %s님, 당신을 잊지 않았어요.' WHERE `id`=1383;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s님, 당신 때문에 정말 화나네요.' WHERE `id`=1384;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s님, 이번엔 반드시 당신을 잡겠어요.' WHERE `id`=1385;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s님, 등 뒤를 조심하는 게 좋을 거예요.' WHERE `id`=1386;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='지난 라운드는 별로 마음에 안 들었어.' WHERE `id`=1387;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='지난 라운드는 %s 때문에 완전히 망쳤어!' WHERE `id`=1388;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='죽을 준비해라, %s!' WHERE `id`=1389;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s, 날 죽이다니 정말 기분 별로네!' WHERE `id`=1390;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s, 네가 정말 싫어!' WHERE `id`=1391;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='으으으, 이번에는 꼭 널 잡아내겠다, %s!' WHERE `id`=1392;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='가서 너나 잘하슈!' WHERE `id`=1393;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s, 네 입에다 확 토해버리고 싶네!' WHERE `id`=1394;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='함부로 판단하지 마!' WHERE `id`=1395;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='너희 엄마는 너무 뚱뚱해서 어둠의 문도 못 지나가실 거야!' WHERE `id`=1396;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='뭐야?!' WHERE `id`=1397;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='뭐라고??' WHERE `id`=1398;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='한심한 닝겐!' WHERE `id`=1399;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='뭐야 이게?' WHERE `id`=1400;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='형편없네!' WHERE `id`=1401;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='재대결해!!! 내가 저놈을 쓰러뜨리겠어!' WHERE `id`=1402;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='한심하게도 %s한테 죽다니!' WHERE `id`=1403;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='됐어, 이제 그만할래!' WHERE `id`=1404;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='헤헤, 내가 %s를 해치운 건가?' WHERE `id`=1405;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s를 죽이는 건 식은 죽 먹기지!' WHERE `id`=1406;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='잡았다, 요 자식아!' WHERE `id`=1407;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='하하!' WHERE `id`=1408;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='루저섹히 ㅋ!' WHERE `id`=1409;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='내가 %s를 죽였으니, 다음은 너 님들 차례!' WHERE `id`=1410;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오야르, 내가 완벽하게 발라버렸네 ㅎ!' WHERE `id`=1411;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='난 살인 머신이라고 ㅋ!' WHERE `id`=1412;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s, 이 선혈이 낭자한 모습... 슬레이어의 노래가 떠오르네!' WHERE `id`=1413;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='미안 %s. 이 장면 다시 찍으면 안 될까?' WHERE `id`=1414;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='자... %s, 벌레 먹이가 된 기분이 어때???' WHERE `id`=1415;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='넌 죽은 거나 다름없어, %s 그게 게임의 규칙이니까!!!!' WHERE `id`=1416;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='미안, %s. 마치 앤디 워홀의 그림처럼 멋진 장면이었어!' WHERE `id`=1417;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='미안 %s. 다음에는 고무 탄환을 써줄게!' WHERE `id`=1418;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='왜 그래, %s?? 머리가 어떻게 됐어? 하하하 침착해야지!!' WHERE `id`=1419;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='어쩔 수 없었어, %s. 이해하지? 감독님이 시켰거든!!' WHERE `id`=1420;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='야 %s.......으하하하하하하하하하하하' WHERE `id`=1421;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s, 아주 즐거웠어!! 우리 다시 한번 해보자고, 샘.' WHERE `id`=1422;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='야, %s! 이제부터 날 스카페이스라고 불러라.. 이 쓰레기 같은 녀석아!!!!' WHERE `id`=1423;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='지금 나한테 말하는 거임, %s??' WHERE `id`=1424;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s, 이번에는 똑바로 해, 내 총알 앞에 서 있지 말고.' WHERE `id`=1425;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%s, 왜 거기 누워 있어??? 헤헤' WHERE `id`=1426;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='진짜 존나 웃었네 ㅎㅎ.' WHERE `id`=1427;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='안녕 %s' WHERE `id`=1428;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오, 안녕 %s' WHERE `id`=1429;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='여어 %s!!!' WHERE `id`=1430;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='안녕' WHERE `id`=1431;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='잘 지냈삼?' WHERE `id`=1432;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='안녕하세요~ %s' WHERE `id`=1433;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='안녕 %s, 우리 어디서 봤었나요?' WHERE `id`=1434;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='헤이 %s' WHERE `id`=1435;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='하이 %s' WHERE `id`=1436;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='뭐야 대체?' WHERE `id`=1437;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이게 뭐야?!' WHERE `id`=1438;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이건 완전 헛소리야.' WHERE `id`=1439;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='영자야 뭐하냐' WHERE `id`=1440;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아놔 %s, 운영자가 겜에 왜 간섭하냐??' WHERE `id`=1441;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아 운영자가 겜하는디 왤케 간섭이여 진짜' WHERE `id`=1442;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아 패치 좆같이 했네 진짜..' WHERE `id`=1443;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='내 이름 불러서 뭐 하려고, %s?' WHERE `id`=1444;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='네???' WHERE `id`=1445;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='어... 뭐라고요?' WHERE `id`=1446;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='지금 나 부르는거임, %s?' WHERE `id`=1447;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='내 갑옷 안에 애완동물들 있다!' WHERE `id`=1448;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='한번 물어보시지, <target>!' WHERE `id`=1449;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이봐 <target>! 너희 어머니가 어젯밤에 뭐라고 하셨는지 알아?' WHERE `id`=1450;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='<target>, 넌 바나나 한 자루를 들고 원숭이 사창가에 가도 환영받지 못할 만큼 못생겼어!' WHERE `id`=1451;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='입 닥쳐 <target>, 넌 절대 네 어머니만큼 남자답지 못할 거다!!' WHERE `id`=1452;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='니엄마는 뚱띠에 애비는 해골 좀비라메?!' WHERE `id`=1453;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='너랑은 더 이상 말 섞기도 싫어, 이 머릿속이 텅 빈 섹햐!!!' WHERE `id`=1454;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이섹히 면상에는 침이나 뱉어야되!!!' WHERE `id`=1455;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='가서 네 엉덩이나 삶아라, 이 멍청한 놈의 자식아!!!' WHERE `id`=1456;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='어쩔 건데 <target>, 나한테 피라도 흘릴 거냐? 자, 덤벼라!' WHERE `id`=1457;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='M-O-O-N! 그건 바로 어그로라는 뜻이지!' WHERE `id`=1458;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='섹히 존나 쓸모없는 놈이네 진짜.' WHERE `id`=1459;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이봐 <target>! 수작 부리지 마, 네 타입 아니야. 바람 넣는 인형이 아니라고.' WHERE `id`=1460;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='<target>, 넌 격이 너무 떨어져서 아예 다른 종목을 뛰고 있는 수준이야.' WHERE `id`=1461;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='<target>, 넌 오늘 큰 실수를 했어. 바로 침대에서 일어난 거지.' WHERE `id`=1462;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='말로 변신해보고 싶은데 도움이 필요해. 내가 앞부분을 할 테니, 넌 그냥 너 자신(뒷부분)을 해.' WHERE `id`=1463;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='며칠 동안 네 얼굴 좀 빌려줄래? 내 엉덩이가 휴가를 가야 해서 말이야....' WHERE `id`=1464;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이별 선물을 주고 싶은데... 우선 네 역할(사라지는 것)부터 수행해 봐.' WHERE `id`=1465;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='네가 오기 전엔 배가 고팠는데, 이젠 네가 지긋지긋해서 배가 부르네.' WHERE `id`=1466;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='난 네가 좋아. 사람들이 나보고 안목이 없다고 하지만, 그래도 난 네가 좋아.' WHERE `id`=1467;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='너이섹히 열등감이 좀 쩌네, 괜찮다. 못난놈아 이해한다.' WHERE `id`=1468;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='당장 사라져라, 이 썩은 것아! 아니면 네 뼈마디를 옷 밖으로 다 털어버리겠다.' WHERE `id`=1469;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='너 같은 놈이랑 시간을 낭비하고 있다니 믿기지가 않는군!' WHERE `id`=1470;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='누가 날 모욕하는 게 참 좋아. 이제 더 이상 친절하게 대해줄 필요가 없다는 뜻이거든.' WHERE `id`=1471;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 가죽 저고리, 유리 단추, 멍청이, 아게이트 반지, 구토물 양말, 싸구려 가터, 기름 바른 휫바닥, 스페인 주머니 같은 놈아!' WHERE `id`=1472;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='하 이 존만한 섹히 진짜' WHERE `id`=1473;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='님 진짜 킹인듯요..병신중에 킹!' WHERE `id`=1474;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='존나 모지리 찐따 같은 녀석!' WHERE `id`=1475;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 천하의 만드레이크 같은 놈, 내 뒤를 따르느니 내 모자 장식으로나 쓰이는 게 낫겠다!' WHERE `id`=1476;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='개 존나 쓰레기 같은섹히 오늘 아주 뒤졌다 진짜 아오!' WHERE `id`=1477;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오 <target>! 이 전염병같이 못 배워먹은 계집 같으니!' WHERE `id`=1478;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='우리가 네 굴뚝에 오줌을 갈겨주마, <target>!' WHERE `id`=1479;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오, 이 무익하고 늪에 처박힌 괴저병 꽃 같은 놈아!' WHERE `id`=1480;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='내가 만약 너 였다면 나가 뒤졌을꺼다!' WHERE `id`=1481;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오 <target>, 어떻게 하면 너처럼 아무 생각 없이 살 수 있는지 좀 가르쳐줘!' WHERE `id`=1482;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이섹히 진짜 답이없는 잉여놈이네, 모지리놈 진짜.' WHERE `id`=1483;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 굶주린 놈, 뱀장어 가죽, 말린 소 혓바닥, 황소 거시기, 말린 생선... 아, 너 같은 놈을 형용할 숨조차 아깝구나!! 이裁縫 자, 칼집, 활통, 천박한 놈아!' WHERE `id`=1484;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='쳇! 죽음의 구덩이로 떨어져 버려임마!' WHERE `id`=1485;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='<target>, 넌 그냥 생선 장수일 뿐이야!' WHERE `id`=1486;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='살아남아서 네 놈의 뇌를 한 대 후려쳐주마!' WHERE `id`=1487;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='정말 천박하구나, <target>!! 좋은 고기에 비하면 넌 그저 벌레 먹은 고기일 뿐이다!!' WHERE `id`=1488;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='비열한 놈! 오 <target>, 이 지옥에서도 싫어할 냄새 나는 돼지 코 같은 놈아!' WHERE `id`=1489;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='<target>! 네 입맞춤은 굶주린 뱀에게 얼음물을 주는 것만큼이나 아무런 위안도 안 돼!' WHERE `id`=1490;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='난 널 경멸해, 이 천한 녀석아. 뭐, 이 가난하고 상스럽고 무뢰한 사기꾼 같은 놈! 저리 가라, 곰팡내 나는 악당아, 당장 꺼져!' WHERE `id`=1491;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='눈앞에서 사라져! 너 때문에 내 눈이 오염되는 것 같구나, <target>!' WHERE `id`=1492;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='전쟁 시작이다!!!!' WHERE `id`=1493;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아무도 지나갈 수 없다!' WHERE `id`=1494;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='공격을 받고 있다! 전원 위치로! 침입자들을 물리쳐라!' WHERE `id`=1495;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='누구도 브라더후드에 도전할 수 없다!' WHERE `id`=1496;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='멍청한 것들... 천 쪼가리 입은 놈부터 죽이라고!' WHERE `id`=1497;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='네 영혼을 학카르님께 바치겠다!' WHERE `id`=1498;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오만이 너희 세계의 종말을 예고하리라! 오라, 필멸자들이여! <randomfaction>의 분노를 마주하라!' WHERE `id`=1499;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='나의 모든 계획이 바로 이 순간을 위한 것이었다!' WHERE `id`=1500;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아하! 도살장에 끌려온 양들이 또 늘었구나!' WHERE `id`=1501;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 다른 날, 또 다른 영광스러운 전투로다!' WHERE `id`=1502;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='그래, 공무인가... 아니면 유흥인가?' WHERE `id`=1503;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='너희는 아직 준비가 안 됐다!' WHERE `id`=1504;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='<randomfaction>의 마지막 정복이 시작되었다! 다시 한번 이 세계를 지배할 기회가 왔다. 아무도 살려두지 마라!' WHERE `id`=1505;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='고통스러운 죽음을 맞이하게 될 것이다.' WHERE `id`=1506;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='자비를 구하며 울부짖어라! 너희의 하찮은 목숨도 곧 끝날 테니.' WHERE `id`=1507;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='모든 희망을 버려라! <randomfaction>가 수년 전에 시작된 일을 끝내기 위해 돌아왔다. 이번엔 도망칠 수 없을 것이다!' WHERE `id`=1508;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='경보! 너희는 말살 대상으로 지정되었다!' WHERE `id`=1509;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='<subzone> 구역은 손님만 들어올 수 있다...' WHERE `id`=1510;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='하하하! 너희는 도저히 상대가 안 된다!' WHERE `id`=1511;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='니섹히 오늘 아주 지대로 미쳤고만!' WHERE `id`=1512;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='미안하군, 곧 게임에서 지게 될 테니.' WHERE `id`=1513;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='발버둥 쳐봐야 상황만 나빠질 뿐일껀데.' WHERE `id`=1514;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='해충들! 거머리 같은 놈들! 내 피를 마시고 목이나 막혀버려라!' WHERE `id`=1515;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또야... 또 이렇단 말인거냐!' WHERE `id`=1516;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='나의 피가 너의 종말이 되리라!' WHERE `id`=1517;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='좋다, 이제 나와 겨뤄보자!' WHERE `id`=1518;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='경비병들, 어서 움직여! 사냥할 시간이다!' WHERE `id`=1519;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='운명을 늦추지 마라. 지금 내게 오너라. 단숨에 제물로 만들어주마.' WHERE `id`=1520;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='니 시발 오늘 뒤졌다 진짜!' WHERE `id`=1521;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='으하하하!' WHERE `id`=1522;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='나는 사냥꾼, 너는 사냥감이다...' WHERE `id`=1523;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='조각조각 난 채로 이곳을 떠나게 될 것이다!' WHERE `id`=1524;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='죽음이 다가온다. 너의 양심은 떳떳하냐?' WHERE `id`=1525;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='네 행동은 용납될 수 없다 뒤졌어 진짜.' WHERE `id`=1526;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='전시관은 초대받은 손님 전용이다.' WHERE `id`=1527;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='음, 예고 없는 방문객이라니, 준비를 해야겠군...' WHERE `id`=1528;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='적대적 개체 감지. 위협 평가 프로토콜 활성화. 주 목표 교전 중. 재평가까지 30초 남음.' WHERE `id`=1529;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='새 장난감? 내 꺼야? 이번엔 안 부술게, 진짜야!' WHERE `id`=1530;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='놀 준비 됐어!' WHERE `id`=1531;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='쉿... 곧 다 끝날 거야.' WHERE `id`=1532;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아아아아으어거거거어거어!' WHERE `id`=1533;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아옳아옳아옳아옳!' WHERE `id`=1534;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='너 또한 복종하게 되리라!' WHERE `id`=1535;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='말해... 전부 다 말해! 발칙한 비밀들 말이야! 네 살점을 찢어서라도 비밀을 알아내주마!' WHERE `id`=1536;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='각오해라, 종이 울렸다! 약한 자, 어린 자, 늙은 자들을 숨겨라! 너희 모두 대가를 치르게 될 것이다! 자비를 구하며 울부짖어라, 심판의 때가 왔다!' WHERE `id`=1537;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='대체 내가 어디에 와 있는 거지?' WHERE `id`=1538;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='더 이상은 못 참겠다! 고블린 왕이여! 어디 계시든 이 <target>을(를) 내게서 멀리 치워주오!' WHERE `id`=1539;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='네 동생이 영원히 우리의 일원이 되기 전까지, 미로를 풀 수 있는 시간은 단 13시간뿐이다.' WHERE `id`=1540;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='그래, <subzone>이 식은 죽 먹기라고? 그럼 이 작은 조각은 어떻게 감당하는지 한번 보자고...' WHERE `id`=1541;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='물러나, 내가 상대해주마. 누구든 맞설 자신이 있다. 네가 틀렸고 여긴 네 자리가 아니란 걸 알게 해주지.' WHERE `id`=1542;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='너님 실력을 보여주든가!' WHERE `id`=1543;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='죽을 때까지 싸우자!' WHERE `id`=1544;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='쌍검의 위력을 봐라, 언제나 깔끔하게 끝내주지.' WHERE `id`=1545;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='덤벼라!' WHERE `id`=1546;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='넌 이제 끝장이다!' WHERE `id`=1547;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='푹푹 찔러주마!' WHERE `id`=1548;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='빨리 끝내자고, 시간은 곧 마나니까.' WHERE `id`=1549;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='너님 지금 상황이 얼마나 심각한지 모르는 것 같구만.' WHERE `id`=1550;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='가문과 왕국에 영광을 돌리겠다!' WHERE `id`=1551;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='빛이여, 힘을 주소서!' WHERE `id`=1552;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='전장이 곧 나의 교회다. 예배를 시작할 시간이지...' WHERE `id`=1553;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아휴 빙신 존나 짜증나네...' WHERE `id`=1554;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='정의의 망치를 받아라!' WHERE `id`=1555;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='빛 아래서 네 무용을 증명해봐라!' WHERE `id`=1556;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='나의 대의와 힘 앞에 모두가 굴복하리라. 다음은 바로 너다!' WHERE `id`=1557;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='뒤질 준비 해라!' WHERE `id`=1558;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='함께 있는 야수는 내 안의 야수에 비하면 아무것도 아니지...' WHERE `id`=1559;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='완전 무장한 사냥꾼의 화력을 목격하라!' WHERE `id`=1560;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아 힐좀! 빨리!' WHERE `id`=1561;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='죽기 일보 직전이야! 치료해줘!' WHERE `id`=1562;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='도와줘! 치료해줘!' WHERE `id`=1563;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='누구든 좋으니 날 좀 치유해줘!' WHERE `id`=1564;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='힐! 힐! 힐!' WHERE `id`=1565;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='뒤질 것 같아! 치료해! 으아아아악!' WHERE `id`=1566;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='치료해줘!' WHERE `id`=1567;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='죽겠어. 진짜 죽는다고. 힐해줘!' WHERE `id`=1568;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='힐러들 뭐하냐 진짜? 나 뒤진다고!' WHERE `id`=1569;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아, 너무 아파. 빨리 치료해줘!' WHERE `id`=1570;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='힐 필요함' WHERE `id`=1571;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='체력 없음' WHERE `id`=1572;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='힐 좀 주세요. 제발.' WHERE `id`=1573;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='누구 힐 좀 써줄 사람?' WHERE `id`=1574;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='님! 나중에 부활시키는 것보다 지금 힐하는 게 나을껄!' WHERE `id`=1575;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='지송한데, 힐 한 번 더 부탁해유' WHERE `id`=1576;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='몬스터들 진짜 존나쎔... 힐 좀 부탁해요' WHERE `id`=1577;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='한 대만 더 맞으면 끝장이야. 제발 힐 좀 플리즈 ㅠㅠ' WHERE `id`=1578;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='힐러 없삼?' WHERE `id`=1579;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='왜 맨날 나만 줘 때리는 거야? 힐 좀!' WHERE `id`=1580;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='누구 힐 조금만 해줄 수 있어?' WHERE `id`=1581;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='마나 없음' WHERE `id`=1582;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='마나 오링' WHERE `id`=1583;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이런, 여기에 마나를 다 써버렸네' WHERE `id`=1584;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='마나좀 다 찰 때까지 기달려주셈.' WHERE `id`=1585;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='마나 없네' WHERE `id`=1586;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='마나 맨날 부족' WHERE `id`=1587;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='마나 부족. 물빵좀 먹어야됨' WHERE `id`=1588;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='자판기 없어? 또 마나 다 썼네' WHERE `id`=1589;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='내 마나는 이미 과거의 일이야(오링남)' WHERE `id`=1590;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='다음엔 음료를 좀 챙겨야겠음. 마나 자꾸 딸리네;;' WHERE `id`=1591;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='내 마나 다 어디 갔어?' WHERE `id`=1592;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='나 <ammo>가 얼마 안 남았어!' WHERE `id`=1593;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='<ammo>가 더 필요해!' WHERE `id`=1594;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='<ammo>가 100개 남았어!' WHERE `id`=1595;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이럴 수가! <ammo>가 없어!' WHERE `id`=1596;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='네겐 내 활이 있... 앗, <ammo>가 없네!' WHERE `id`=1597;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='탄약이 필요해!' WHERE `id`=1598;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='세상에!' WHERE `id`=1599;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='나 떨고있니..' WHERE `id`=1600;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='우린 이제 끝났어' WHERE `id`=1601;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이제 다 끝이야' WHERE `id`=1602;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='여기서 끝이다' WHERE `id`=1603;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='누가 눈보라라도 좀 써줄래?' WHERE `id`=1604;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='염병, 탱커섹히 주변 몹 애드를 다 냈어!' WHERE `id`=1605;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='우린 죽을 거야. 죽을 거라고. 죽을 거야!' WHERE `id`=1606;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='와! 놀아줄 장난감이 아주 많네!' WHERE `id`=1607;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='내가 싹 다 쓸어버리겠삼!' WHERE `id`=1608;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='탱커 죽으면 우린 다 뒤지는거지.' WHERE `id`=1609;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='으아아아아악!' WHERE `id`=1610;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='리이이이이이이이이로이 젠키인스으으으으!!!!!!!' WHERE `id`=1611;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='좋아, 광역기 뭐 쓸까?' WHERE `id`=1612;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이거 흥미진진해지는데' WHERE `id`=1613;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='좋아! 몹 모아봐, 불기둥 시원하게 깔아줄게' WHERE `id`=1614;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='죽여! 죽여! 죽여!' WHERE `id`=1615;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='나 바지에 지린 것 같아...' WHERE `id`=1616;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='우린 이제 역사 속으로 사라질 거임' WHERE `id`=1617;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='힐러분들 준비 되셨삼??' WHERE `id`=1618;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='제발 나한테 안 왔으면 좋겠어!' WHERE `id`=1619;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아 싹다 쥑이삐려서 눈뜨고는 못보겠구만.' WHERE `id`=1620;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='돈 좀 있으면 좋겠다!' WHERE `id`=1621;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='전리품이다! 루팅!' WHERE `id`=1622;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='내 보물...' WHERE `id`=1623;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='거기에 날 기다리는 반짝이는 에픽 템이 있길!' WHERE `id`=1624;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='내 주머니와 가방은 아주 넉넉하다고!' WHERE `id`=1625;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='전부 다 내 거야!' WHERE `id`=1626;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오늘은 제발 똥템 좀 안 나왔으면!' WHERE `id`=1627;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이 전리품은 내 꺼내?ㅋ' WHERE `id`=1628;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='루팅하는 건 좀 귀찮지만, 돈은 맨날 모잘람 ㅠ' WHERE `id`=1629;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='골드다!' WHERE `id`=1630;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='좋아, 뭘 가지고 있는지 볼까?' WHERE `id`=1631;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='걱정 마, 내가 싹 다 훑어줄게' WHERE `id`=1632;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='내가 바로 루팅 닌자다!' WHERE `id`=1633;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='주사위 굴릴까유?' WHERE `id`=1634;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아니, 얘네는 이 많은 걸 다 어디다 넣고 다녔대?' WHERE `id`=1635;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아니, 잡템은 안 주울 거야' WHERE `id`=1636;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='내가 1등! 내가 1등! 내가 1등!' WHERE `id`=1637;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='가진 돈 다 내놔!' WHERE `id`=1638;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='주머니가 비었어, 채워야겠지' WHERE `id`=1639;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='이걸 위해서 새 가방도 장만했지' WHERE `id`=1640;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='루팅하는 동안 몹이 안 몰렸으면 좋겠는데' WHERE `id`=1641;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='보지 마, 나 루팅 중이란 말이야' WHERE `id`=1642;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='하! 너님한텐 국물도 없을 거다!' WHERE `id`=1643;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='루팅은 정말 즐거워' WHERE `id`=1644;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='새 장비가 좋아!' WHERE `id`=1645;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='또 쓸모없는 것만 나오면 나 나갈 거야' WHERE `id`=1646;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='예쁜 반지였으면 좋겠다' WHERE `id`=1647;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='그 전리품 내가 뺏어올 거삼' WHERE `id`=1648;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='다들 비켜봐, 내가 루팅할 거야' WHERE `id`=1649;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='전리품 달달하네' WHERE `id`=1650;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='오 신이시여..오늘 레어템 하나만 내려 주시옵소서..' WHERE `id`=1651;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='제발 새 장난감 좀 주세요!' WHERE `id`=1652;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='좋은 것 좀 들고 있었으면 좋겠다!' WHERE `id`=1653;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='골드는 내 거야. 나머지는 다 양보할게, 약속해!' WHERE `id`=1654;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='아니, 참을 수가 없어!' WHERE `id`=1655;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='더 갖고 싶어!' WHERE `id`=1656;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='다 왔어, 기다려줘!' WHERE `id`=1657;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='멀지 않아, 제발 기다려줘!' WHERE `id`=1658;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='네가 있는 곳으로 가고 있어' WHERE `id`=1659;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='지금 가고 있어' WHERE `id`=1660;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='님 위치로 이동 중이삼' WHERE `id`=1661;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='너 님한테 가려고 노력 중이삼' WHERE `id`=1662;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item 장착 중' WHERE `id`=1663;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item 해제됨' WHERE `id`=1664;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='다음 주문을 배웠어: %spells' WHERE `id`=1665;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item 재사용 대기 중이야' WHERE `id`=1666;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='가방에 %item가 없어' WHERE `id`=1667;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='ID %item인 아이템은 존재하지 않아' WHERE `id`=1668;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item에 %gem 장착 중' WHERE `id`=1669;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item를 사용할 수 없구만?' WHERE `id`=1670;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='따라가는 중' WHERE `id`=1671;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='대기 중' WHERE `id`=1672;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='도망치는 중' WHERE `id`=1673;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='너랑 같이 안 도망갈 거야, 너무 멀리 있잖아!' WHERE `id`=1674;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='닥공 중' WHERE `id`=1675;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='공격 중' WHERE `id`=1676;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='너무 멀어' WHERE `id`=1677;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='물속에 있습니다만.' WHERE `id`=1678;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='거긴 못 가' WHERE `id`=1679;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='나는 그쪽 길드원이 아니걸랑!' WHERE `id`=1680;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='근처에 길드 창고가 없네' WHERE `id`=1681;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='넣을 수 없어' WHERE `id`=1682;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='길드 창고 첫 번째 탭에 아이템을 넣을 권한이 없다네요?' WHERE `id`=1683;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='길드 창고에 보관됨' WHERE `id`=1684;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='자유 이동 중' WHERE `id`=1685;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='경계 중' WHERE `id`=1686;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='<target> 사용 중' WHERE `id`=1687;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%unit에게' WHERE `id`=1688;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='(%amount개 남음)' WHERE `id`=1689;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='(마지막 한 개!)' WHERE `id`=1690;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='소켓이 맞지 않는데 이거 어케해야죠?' WHERE `id`=1691;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='거래 아이템에' WHERE `id`=1692;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='자신에게' WHERE `id`=1693;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item이거 어따씀?' WHERE `id`=1694;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%gameobject에' WHERE `id`=1695;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%item 획득 중' WHERE `id`=1696;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='<target> 소환 중' WHERE `id`=1697;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='소환을 하기에 파티원이 부족한데..' WHERE `id`=1698;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='소환 대상을 찾지 못했습니다만.' WHERE `id`=1699;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='전투 중에는 소환할 수 없슈' WHERE `id`=1700;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%spell 주문을 몰라' WHERE `id`=1701;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%spell 시전 중' WHERE `id`=1702;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%spell 제작 중' WHERE `id`=1703;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%spell를 시전할 수 없어' WHERE `id`=1704;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%spell 시전 실패' WHERE `id`=1705;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='|cffffff00(x%amount 남음)|r' WHERE `id`=1706;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='빛이시여... 왕의 징표를 깜빡했네요. 대신 %base_spell로 하죠!' WHERE `id`=1708;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='자연은 너그럽지만 제 가방은 아니군요... %group_spell용 약초가 다 떨어졌어요. 일단 %base_spell이라도 받으세요!' WHERE `id`=1709;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='마력의 가루가 다 떨어졌어요... %group_spell은 나중에 하죠. 대신 %base_spell 시전합니다!' WHERE `id`=1710;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='앗, %group_spell용 재료가 없네요. %base_spell로 대신할게요!' WHERE `id`=1711;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%player가 빨간색 광선을 막으러 이동합니다!' WHERE `id`=1712;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%player가 파란색 광선을 막으러 이동합니다!' WHERE `id`=1713;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%player가 초록색 광선을 막으러 이동합니다!' WHERE `id`=1714;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%player가 파란색 광선에서 벗어납니다. 다음 사람 준비!' WHERE `id`=1715;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%player가 초록색 광선에서 벗어납니다. 다음 사람 준비!' WHERE `id`=1716;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='사용법: pet <aggressive|defensive|passive|stance|attack|follow|stay>' WHERE `id`=1717;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='펫이나 수호자 펫이 없습니다.' WHERE `id`=1718;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='%type "%name"의 현재 태세: %stance.' WHERE `id`=1719;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='주인이 유효한 대상을 선택하지 않았습니다.' WHERE `id`=1720;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='대상이 살아있지 않습니다.' WHERE `id`=1721;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='대상이 봇에게 유효한 공격 대상이 아닙니다.' WHERE `id`=1722;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='PvP 금지 지역에서는 펫에게 플레이어 공격 명령을 내릴 수 없습니다.' WHERE `id`=1723;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='펫이 당신의 대상을 공격하도록 명령했습니다.' WHERE `id`=1724;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='펫이 공격하지 않았습니다. (이미 공격 중이거나 대상 공격 불가)' WHERE `id`=1725;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='펫이 따라오도록 명령했습니다.' WHERE `id`=1726;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='펫이 머물도록 명령했습니다.' WHERE `id`=1727;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='알 수 없는 펫 명령: %param. 사용법: pet <aggressive|defensive|passive|stance|attack|follow|stay>' WHERE `id`=1728;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='펫 태세가 %stance(으)로 설정되었습니다.' WHERE `id`=1729;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='펫' WHERE `id`=1730;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='수호자' WHERE `id`=1731;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='공격적' WHERE `id`=1732;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='방어적' WHERE `id`=1733;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='수동적' WHERE `id`=1734;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='알 수 없음' WHERE `id`=1735;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='낚싯대가 없습니다' WHERE `id`=1736;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='[PVP] 투기장 점수: %arena_points | 명예 점수: %honor_points' WHERE `id`=1737;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='[PVP] %bracket: <%team_name> (평점 %team_rating)' WHERE `id`=1738;
+UPDATE `ai_playerbot_texts` SET `text_loc1`='[PVP] 투기장 팀이 없습니다.' WHERE `id`=1739;
