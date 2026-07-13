@@ -77,7 +77,7 @@ bool DebugAction::Execute(Event event)
                 return false;
 
             std::vector<WorldPosition> beginPath, endPath;
-            TravelNodeRoute route = TravelNodeMap::instance().getRoute(botPos, *points.front(), beginPath, bot);
+            TravelNodeRoute route = TravelNodeMap::instance().FindRouteNearestNodes(botPos, *points.front(), beginPath, bot);
 
             std::ostringstream out;
             out << "Traveling to " << dest->getTitle() << ": ";
@@ -197,18 +197,18 @@ bool DebugAction::Execute(Event event)
     {
         WorldPosition pos(bot);
 
-        std::string const name = "USER:" + text.substr(9);
+        std::string suffix = text.size() > 9 ? text.substr(9) : pos.getAreaName();
+        std::string const name = "USER:" + suffix;
 
-        /* TravelNode* startNode  = */ TravelNodeMap::instance().addNode(pos, name, false, false); // startNode not used, but addNode as side effect, fragment marked for removal.
-
-        for (auto& endNode : TravelNodeMap::instance().getNodes(pos, 2000))
         {
-            endNode->setLinked(false);
+            std::lock_guard<std::shared_timed_mutex> lock(TravelNodeMap::instance().m_nMapMtx);
+            TravelNodeMap::instance().addNode(pos, name, false, true);
+
+            for (auto& endNode : TravelNodeMap::instance().getNodes(pos, 2000))
+                endNode->setLinked(false);
         }
 
-        botAI->TellMasterNoFacing("Node " + name + " created.");
-
-        TravelNodeMap::instance().setHasToGen();
+        botAI->TellMasterNoFacing("Node " + name + " created. Use console command '.playerbots travel generatenode' to connect nodes.");
 
         return true;
     }
@@ -224,14 +224,15 @@ bool DebugAction::Execute(Event event)
         if (startNode->isImportant())
         {
             botAI->TellMasterNoFacing("Node can not be removed.");
+            return true;
         }
 
-        TravelNodeMap::instance().m_nMapMtx.lock();
-        TravelNodeMap::instance().removeNode(startNode);
-        botAI->TellMasterNoFacing("Node removed.");
-        TravelNodeMap::instance().m_nMapMtx.unlock();
+        {
+            std::lock_guard<std::shared_timed_mutex> lock(TravelNodeMap::instance().m_nMapMtx);
+            TravelNodeMap::instance().removeNode(startNode);
+        }
 
-        TravelNodeMap::instance().setHasToGen();
+        botAI->TellMasterNoFacing("Node removed. Use console command '.playerbots travel generatenode' to finalize nodes.");
 
         return true;
     }
@@ -248,15 +249,17 @@ bool DebugAction::Execute(Event event)
                 node->removeLinkTo(path.first, true);
         return true;
     }
-    else if (text.find("gen node") != std::string::npos)
+    else if (text.find("gen node") != std::string::npos ||
+             text.find("gen path") != std::string::npos)
     {
-        // Pathfinder
-        TravelNodeMap::instance().generateNodes();
-        return true;
-    }
-    else if (text.find("gen path") != std::string::npos)
-    {
-        TravelNodeMap::instance().generatePaths();
+        // Disabled: generateAll() touches Map / grid / mmap state that is only
+        // safe to mutate on the world thread. Running it from a detached worker
+        // (or from a bot tick on a MapUpdater thread) races with world updates
+        // and freezes the server. Use the console command instead, which runs
+        // synchronously on the world thread:
+        //   .playerbots travel generatenode
+        botAI->TellMasterNoFacing(
+            "Disabled in chat. Run '.playerbots travel generatenode' from the server console.");
         return true;
     }
     else if (text.find("crop path") != std::string::npos)
@@ -276,7 +279,7 @@ bool DebugAction::Execute(Event event)
             []
             {
                 TravelNodeMap::instance().removeNodes();
-                TravelNodeMap::instance().loadNodeStore();
+                TravelNodeMap::instance().LoadNodeStore();
             });
 
         t.detach();
@@ -298,7 +301,7 @@ bool DebugAction::Execute(Event event)
 
                 // uint32 time = 60 * IN_MILLISECONDS; //not used, line marked for removal.
 
-                std::vector<WorldPosition> ppath = l.second->getPath();
+                std::vector<WorldPosition> ppath = l.second->GetPath();
 
                 for (auto p : ppath)
                 {

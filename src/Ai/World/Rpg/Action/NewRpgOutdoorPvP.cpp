@@ -9,7 +9,7 @@ bool NewRpgOutdoorPvpAction::Execute(Event)
         botAI->rpgInfo.ChangeToIdle();
         return false;
     }
-    if (IsWaitingForLastMove(MovementPriority::MOVEMENT_NORMAL) || !bot->IsOutdoorPvPActive())
+    if (!bot->IsOutdoorPvPActive())
         return false;
 
     uint32 zoneId = bot->GetZoneId();
@@ -113,9 +113,6 @@ OPvPCapturePoint* NewRpgOutdoorPvpAction::SelectNewObjective(OutdoorPvP::OPvPCap
 
 bool NewRpgOutdoorPvpAction::PatrolCapturePoint(GameObject* objectiveGO, float radius)
 {
-    if (IsWaitingForLastMove(MovementPriority::MOVEMENT_NORMAL))
-        return false;
-
     // Randomly pause at the current spot before picking a new patrol point
     if (urand(0, 2) == 0)
         return ForceToWait(urand(3000, 6000));

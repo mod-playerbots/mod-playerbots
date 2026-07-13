@@ -174,7 +174,7 @@ std::vector<uint32> const vFlagsIC = {GO_HORDE_BANNER,
                                       GO_HORDE_BANNER_GRAVEYARD_H,
                                       GO_HORDE_BANNER_GRAVEYARD_H_CONT};
 
-// BG Waypoints (vmangos)
+// BG Waypoints
 
 // Horde Flag Room to Horde Graveyard
 BattleBotPath vPath_WSG_HordeFlagRoom_to_HordeGraveyard = {
@@ -4293,6 +4293,8 @@ bool ArenaTactics::Execute(Event /*event*/)
         if (losBlocked)
         {
             PathGenerator path(bot);
+            path.SetNavTerrainCost(NAV_GROUND_STEEP, 5.0f);
+            path.SetNavTerrainCost(NAV_WATER, 10.0f);
             path.CalculatePath(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), false);
 
             if (path.GetPathType() != PATHFIND_NOPATH)

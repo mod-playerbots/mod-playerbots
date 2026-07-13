@@ -355,10 +355,6 @@ AiPlayerbot.MaxWaitForMove = 5000
 #          2 - MoveSplinePath disabled everywhere
 AiPlayerbot.DisableMoveSplinePath = 0
 
-# Max search time for movement (higher for better movement on slopes)
-# Default: 3
-AiPlayerbot.MaxMovementSearchTime = 3
-
 # Action expiration time
 AiPlayerbot.ExpireActionTime = 5000
 
@@ -1052,6 +1048,22 @@ AiPlayerbot.RestrictedHealerDPSMaps = "33,34,36,43,47,48,70,90,109,129,209,229,2
 # This option will override AiPlayerbot.AutoDoQuests, RandomBotTeleLowerLevel, and RandomBotTeleHigherLevel
 # Default: 1 (enabled)
 AiPlayerbot.EnableNewRpgStrategy = 1
+
+# Use pre-computed travel node paths for long-distance movement (>300 yards).
+# When enabled, bots use the travel node graph (A*, flight paths, transports)
+# instead of repeated mmap hops. Experimental.
+# Default: 0 (disabled)
+AiPlayerbot.EnableTravelNodes = 0
+
+# Transport ride mode (travel node graph only):
+#   0 = bot walks to dock, teleport-snaps onto transport, rides, teleport-snaps off
+#   1 = bot teleports directly across the transport route, skipping the ride
+# Default 0 is the visible behavior. Set to 1 for invisible/random-bot mass
+# travel performance — the bot never actually boards anything.
+# (AC has no transport-surface mmap, so an on-deck walking mode can't be
+# faithfully implemented; the on-board phase always teleport-snaps.)
+# Default: 0
+AiPlayerbot.TransportSkipRide = 0
 
 # Control probability weights for RPG status of bots. Takes effect only when the status meets its premise.​
 # Sum of weights need not be 100. Set to 0 to disable the status.

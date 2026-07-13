@@ -7,7 +7,9 @@
 #include "TravelMgr.h"
 
 #include <iomanip>
+#include <mutex>
 #include <numeric>
+#include <unordered_set>
 
 #include "AreaDefines.h"
 #include "Creature.h"
@@ -18,6 +20,7 @@
 #include "ChatHelper.h"
 #include "MapCollisionData.h"
 #include "MapMgr.h"
+#include "ModelIgnoreFlags.h"
 #include "PathGenerator.h"
 #include "Playerbots.h"
 #include "RaceMgr.h"
@@ -273,6 +276,27 @@ bool WorldPosition::isUnderWater()
                                              DEFAULT_COLLISION_HEIGHT)
                     : false;
 };
+
+bool WorldPosition::setAtWaterSurface()
+{
+    if (!isInWater() && !isUnderWater())
+        return false;
+    Map* map = getMap();
+    if (!map)
+        return false;
+    // Returns the water level when liquid is present; falls back to
+    // ground level otherwise. Our isInWater/isUnderWater preconditions
+    // ensure liquid exists, so the +0.5y nudge lands the point on top
+    // of the surface (matches the reference's surface snap).
+    float const level = map->GetWaterOrGroundLevel(PHASEMASK_NORMAL,
+                                                   GetPositionX(),
+                                                   GetPositionY(),
+                                                   GetPositionZ());
+    if (level <= INVALID_HEIGHT)
+        return false;
+    setZ(level + 0.5f);
+    return true;
+}
 
 bool WorldPosition::IsValid()
 {
@@ -682,93 +706,6 @@ std::vector<WorldPosition> WorldPosition::frommGridCoord(mGridCoord GridCoord)
     return retVec;
 }
 
-// TODO: Cleanup — make this actually work.
-void WorldPosition::loadMapAndVMap(uint32 mapId, uint8 x, uint8 y)
-{
-    std::string const fileName = "load_map_grid.csv";
-/*
-    if (isOverworld() && false || false)
-    {
-        if (!MMAP::MMapFactory::createOrGetMMapMgr()->loadMap(mapId, x, y))
-            if (sPlayerbotAIConfig.hasLog(fileName))
-            {
-                std::ostringstream out;
-                out << sPlayerbotAIConfig.GetTimestampStr();
-                out << "+00,\"mmap\", " << x << "," << y << "," << (TravelMgr::instance().isBadMmap(mapId, x, y) ? "0" : "1")
-                    << ",";
-                printWKT(fromGridCoord(GridCoord(x, y)), out, 1, true);
-                sPlayerbotAIConfig.log(fileName, out.str().c_str());
-            }
-    }
-    else
-    {
-        // This needs to be disabled or maps will not load.
-        // Needs more testing to check for impact on movement.
-        if (false)
-            if (!TravelMgr::instance().isBadVmap(mapId, x, y))
-            {
-                // load VMAPs for current map/grid...
-                const MapEntry* i_mapEntry = sMapStore.LookupEntry(mapId);
-                //const char* mapName = i_mapEntry ? i_mapEntry->name[sWorld->GetDefaultDbcLocale()] : "UNNAMEDMAP\x0"; //not used, (usage are commented out below), line marked for removal.
-
-                int vmapLoadResult = VMAP::VMapFactory::createOrGetVMapMgr()->loadMap(
-                    (sWorld->GetDataPath() + "vmaps").c_str(), mapId, x, y);
-                switch (vmapLoadResult)
-                {
-                    case VMAP::VMAP_LOAD_RESULT_OK:
-                        // LOG_ERROR("playerbots", "VMAP loaded name:{}, id:{}, x:{}, y:{} (vmap rep.: x:{}, y:{})",
-                        // mapName, mapId, x, y, x, y);
-                        break;
-                    case VMAP::VMAP_LOAD_RESULT_ERROR:
-                        // LOG_ERROR("playerbots", "Could not load VMAP name:{}, id:{}, x:{}, y:{} (vmap rep.: x:{},
-                        // y:{})", mapName, mapId, x, y, x, y);
-                        TravelMgr::instance().addBadVmap(mapId, x, y);
-                        break;
-                    case VMAP::VMAP_LOAD_RESULT_IGNORED:
-                        TravelMgr::instance().addBadVmap(mapId, x, y);
-                        // LOG_INFO("playerbots", "Ignored VMAP name:{}, id:{}, x:{}, y:{} (vmap rep.: x:{}, y:{})",
-                        // mapName, mapId, x, y, x, y);
-                        break;
-                }
-
-                if (sPlayerbotAIConfig.hasLog(fileName))
-                {
-                    std::ostringstream out;
-                    out << sPlayerbotAIConfig.GetTimestampStr();
-                    out << "+00,\"vmap\", " << x << "," << y << ", " << (TravelMgr::instance().isBadVmap(mapId, x, y) ? "0" : "1")
-                        << ",";
-                    printWKT(frommGridCoord(mGridCoord(x, y)), out, 1, true);
-                    sPlayerbotAIConfig.log(fileName, out.str().c_str());
-                }
-            }
-*/
-    if (!TravelMgr::instance().isBadMmap(mapId, x, y))
-    {
-        // load navmesh
-        Map* map = getMap();
-        if (map && map->GetMapCollisionData().LoadMMapTile(x, y) == MMAP::MMAP_LOAD_RESULT_ERROR)
-            TravelMgr::instance().addBadMmap(mapId, x, y);
-
-        if (sPlayerbotAIConfig.hasLog(fileName))
-        {
-            std::ostringstream out;
-            out << sPlayerbotAIConfig.GetTimestampStr();
-            out << "+00,\"mmap\", " << x << "," << y << "," << (TravelMgr::instance().isBadMmap(mapId, x, y) ? "0" : "1")
-                << ",";
-            printWKT(fromGridCoord(GridCoord(x, y)), out, 1, true);
-            sPlayerbotAIConfig.log(fileName, out.str().c_str());
-        }
-    }
-}
-
-void WorldPosition::loadMapAndVMaps(WorldPosition secondPos)
-{
-    for (auto& grid : getmGridCoords(secondPos))
-    {
-        loadMapAndVMap(GetMapId(), grid.first, grid.second);
-    }
-}
-
 std::vector<WorldPosition> WorldPosition::fromPointsArray(std::vector<G3D::Vector3> path)
 {
     std::vector<WorldPosition> retVec;
@@ -778,42 +715,149 @@ std::vector<WorldPosition> WorldPosition::fromPointsArray(std::vector<G3D::Vecto
     return retVec;
 }
 
+namespace
+{
+    // Travel-node generation only (temp-Creature pathing). Detour can only
+    // search loaded mmap tiles and nobody is on the map to load them during
+    // generation, so create every grid once per map -- same effect as a
+    // player zoning in (Map::OnCreateMap -> LoadAllGrids), minus object
+    // spawns. On preloaded continents the sweep is a no-op.
+    void ensureNavTilesForGeneration(Map* map)
+    {
+        static std::mutex ensuredLock;
+        static std::unordered_set<uint32> ensuredMaps;
+        {
+            std::lock_guard<std::mutex> lock(ensuredLock);
+            if (!ensuredMaps.insert(map->GetId()).second)
+                return;
+        }
+
+        for (uint32 x = 0; x < MAX_NUMBER_OF_GRIDS; ++x)
+            for (uint32 y = 0; y < MAX_NUMBER_OF_GRIDS; ++y)
+                map->EnsureGridCreated(GridCoord(x, y));
+    }
+}
+
 // A single pathfinding attempt from one position to another. Returns pathfinding status and path.
 std::vector<WorldPosition> WorldPosition::getPathStepFrom(WorldPosition startPos, Unit* bot)
 {
-    if (!bot)
-        return {};
+    Unit* pathUnit = bot;
+    Creature* tempCreature = nullptr;
 
-    // Load mmaps and vmaps between the two points.
-    loadMapAndVMaps(startPos);
+    if (!pathUnit)
+    {
+        // CreateBaseMap, not FindBaseMap: generation must path on instance
+        // maps nobody has entered since boot. The fresh map's navmesh is
+        // empty; ensureNavTilesForGeneration below loads the tiles.
+        Map* map = sMapMgr->CreateBaseMap(startPos.GetMapId());
+        if (!map)
+            return {};
 
-    PathGenerator path(bot);
-    path.CalculatePath(startPos.GetPositionX(), startPos.GetPositionY(), startPos.GetPositionZ());
+        tempCreature = new Creature();
+        if (!tempCreature->Create(map->GenerateLowGuid<HighGuid::Unit>(), map,
+                                   PHASEMASK_NORMAL, 1 /*entry*/, 0,
+                                   startPos.GetPositionX(), startPos.GetPositionY(),
+                                   startPos.GetPositionZ(), 0))
+        {
+            delete tempCreature;
+            return {};
+        }
+        pathUnit = tempCreature;
+
+        ensureNavTilesForGeneration(map);
+    }
+
+    PathGenerator path(pathUnit);
+    // Runtime bots get these cost biases automatically via CreateFilter's
+    // bot block. A temp-Creature source (travel-node GENERATION) does not,
+    // and we intentionally leave generation UNBIASED: biasing it makes the
+    // pathfinder route around steep/water and drops reachable-but-steep
+    // structure approaches from the graph. The graph must encode
+    // reachability; the steep/water preference belongs to runtime
+    // path-selection only.
+    //
+    // (Reference also applies setAreaCost(12, 5) + setAreaCost(13, 20) here.
+    // Not ported: reference and AC use different mmap generators and Detour
+    // area-id assignments diverge. If we ever regenerate mmaps to match the
+    // reference dataset, revisit.)
+    if (!tempCreature)
+    {
+        path.SetNavTerrainCost(NAV_GROUND_STEEP, 5.0f);
+        path.SetNavTerrainCost(NAV_WATER, 10.0f);
+    }
+    auto result = getPathStepFrom(startPos, path);
+
+    if (tempCreature)
+        delete tempCreature;
+
+    return result;
+}
+
+// A single pathfinding attempt from one position to another. Returns pathfinding status and path.
+std::vector<WorldPosition> WorldPosition::getPathStepFrom(WorldPosition startPos, PathGenerator& path)
+{
+    // Explicit-start overload. Without this, the chain begins from the
+    // unit's current position every step and never advances.
+    path.CalculatePath(startPos.GetPositionX(), startPos.GetPositionY(), startPos.GetPositionZ(),
+                       GetPositionX(), GetPositionY(), GetPositionZ(), false);
 
     Movement::PointsArray points = path.GetPath();
     PathType type = path.GetPathType();
 
-    if (sPlayerbotAIConfig.hasLog("pathfind_attempt_point.csv"))
+    // PathType is a bitmask. AC's PathGenerator returns
+    // NORMAL | NOT_USING_PATH when start/end poly is INVALID_POLYREF
+    // (BuildShortcut produces a 2-point straight line through whatever's
+    // in the way). Reject those to avoid silently dispatching a
+    // geometry-ignoring shortcut.
+    //
+    // AC also ORs NOPATH/SHORT onto the still-set NORMAL bit after
+    // replacing the geometry with a 2-point BuildShortcut straight line
+    // (PathGenerator.cpp point-cap overrun -> NORMAL|NOPATH, point-limit
+    // hit -> NORMAL|SHORT). Reject those composite results too, otherwise
+    // we accept a poisoned shortcut that ignores geometry.
+    if (!(type & (PATHFIND_NORMAL | PATHFIND_INCOMPLETE)) ||
+        (type & (PATHFIND_NOT_USING_PATH | PATHFIND_NOPATH | PATHFIND_SHORT)))
+        return {};
+
+    std::vector<WorldPosition> retvec = fromPointsArray(points);
+
+    // Underwater path-extension. When PATHFIND_INCOMPLETE ends within
+    // 50y of dest and both endpoints are underwater with LOS, extend
+    // by one 5y step (or straight to dest if <5y). Lets bots traverse
+    // navmesh-poor water volumes.
+    if (type & PATHFIND_INCOMPLETE)
     {
-        std::ostringstream out;
-        out << std::fixed << std::setprecision(1);
-        printWKT({startPos, *this}, out);
-        sPlayerbotAIConfig.log("pathfind_attempt_point.csv", out.str().c_str());
+        WorldPosition end = *this;
+        WorldPosition lastPoint = retvec.back();
+        float dist = lastPoint.distance(&end);
+
+        if (dist < 50.0f && lastPoint.isUnderWater() && end.isUnderWater())
+        {
+            Map* m = end.getMap();
+            bool inLos = m && m->isInLineOfSight(
+                lastPoint.GetPositionX(), lastPoint.GetPositionY(), lastPoint.GetPositionZ() + 1.0f,
+                end.GetPositionX(), end.GetPositionY(), end.GetPositionZ() + 1.0f,
+                PHASEMASK_NORMAL, LINEOFSIGHT_ALL_CHECKS, VMAP::ModelIgnoreFlags::Nothing);
+            if (inLos)
+            {
+                if (dist < 5.0f)
+                    retvec.push_back(end);
+                else
+                {
+                    float dx = end.GetPositionX() - lastPoint.GetPositionX();
+                    float dy = end.GetPositionY() - lastPoint.GetPositionY();
+                    float dz = end.GetPositionZ() - lastPoint.GetPositionZ();
+                    float scale = 5.0f / dist;
+                    retvec.emplace_back(end.GetMapId(),
+                                        lastPoint.GetPositionX() + dx * scale,
+                                        lastPoint.GetPositionY() + dy * scale,
+                                        lastPoint.GetPositionZ() + dz * scale);
+                }
+            }
+        }
     }
 
-    if (sPlayerbotAIConfig.hasLog("pathfind_attempt.csv") && (type == PATHFIND_INCOMPLETE || type == PATHFIND_NORMAL))
-    {
-        std::ostringstream out;
-        out << sPlayerbotAIConfig.GetTimestampStr() << "+00,";
-        out << std::fixed << std::setprecision(1) << type << ",";
-        printWKT(fromPointsArray(points), out, 1);
-        sPlayerbotAIConfig.log("pathfind_attempt.csv", out.str().c_str());
-    }
-
-    if (type == PATHFIND_INCOMPLETE || type == PATHFIND_NORMAL)
-        return fromPointsArray(points);
-
-    return {};
+    return retvec;
 }
 
 bool WorldPosition::cropPathTo(std::vector<WorldPosition>& path, float maxDistance)
@@ -849,26 +893,66 @@ std::vector<WorldPosition> WorldPosition::getPathFromPath(std::vector<WorldPosit
 
     std::vector<WorldPosition> subPath, fullPath = startPath;
 
+    // Construct ONE PathGenerator and thread it through every step
+    // to avoid the per-step alloc cost. AC's BuildPolyPath has a
+    // subpath-prefix optimization that can bend chained probes, so
+    // call Clear() before each step to reset the poly cache.
+    Unit* pathUnit = bot;
+    Creature* tempCreature = nullptr;
+    if (!pathUnit)
+    {
+        // Same as getPathStepFrom: create the map, then load its navmesh tiles.
+        Map* map = sMapMgr->CreateBaseMap(GetMapId());
+        if (!map)
+            return fullPath;
+
+        tempCreature = new Creature();
+        if (!tempCreature->Create(map->GenerateLowGuid<HighGuid::Unit>(), map,
+                                   PHASEMASK_NORMAL, 1 /*entry*/, 0,
+                                   currentPos.GetPositionX(), currentPos.GetPositionY(),
+                                   currentPos.GetPositionZ(), 0))
+        {
+            delete tempCreature;
+            return fullPath;
+        }
+        pathUnit = tempCreature;
+        ensureNavTilesForGeneration(map);
+    }
+
+    PathGenerator path(pathUnit);
+    // See getPathStepFrom: generation (temp-Creature source) is left
+    // UNBIASED so reachable-but-steep links still form. Runtime bots keep
+    // the steep/water preference via CreateFilter's bot block.
+    if (!tempCreature)
+    {
+        path.SetNavTerrainCost(NAV_GROUND_STEEP, 5.0f);
+        path.SetNavTerrainCost(NAV_WATER, 10.0f);
+    }
+
     // Limit the pathfinding attempts
     for (uint32 i = 0; i < maxAttempt; i++)
     {
-        // Try to pathfind to this position.
-        subPath = getPathStepFrom(currentPos, bot);
+        // Reset cached poly state from the previous step so each call
+        // is a fresh A* (otherwise the prefix-recycling at
+        // PathGenerator.cpp BuildPolyPath snaps the start to the
+        // cached corridor, bending the chain).
+        path.Clear();
 
-        // If we could not find a path return what we have now.
+        subPath = getPathStepFrom(currentPos, path);
+
         if (subPath.empty() || currentPos.distance(&subPath.back()) < sPlayerbotAIConfig.targetPosRecalcDistance)
             break;
 
-        // Append the path excluding the start (this should be the same as the end of the startPath)
         fullPath.insert(fullPath.end(), std::next(subPath.begin(), 1), subPath.end());
 
-        // Are we there yet?
         if (isPathTo(subPath))
             break;
 
-        // Continue pathfinding.
         currentPos = subPath.back();
     }
+
+    if (tempCreature)
+        delete tempCreature;
 
     return fullPath;
 }
@@ -1072,6 +1156,14 @@ GuidPosition::GuidPosition(GameObjectData const& goData)
       WorldPosition(goData.mapid, goData.posX, goData.posY, goData.posZ, goData.orientation)
 {
     loadedFromDB = true;
+}
+
+TravelDestination::~TravelDestination()
+{
+    for (WorldPosition* point : points)
+        delete point;
+
+    points.clear();
 }
 
 std::vector<WorldPosition*> TravelDestination::getPoints(bool ignoreFull)
@@ -1918,94 +2010,6 @@ void TravelMgr::LoadQuestTravelTable()
         units.push_back(t_unit);
     }
 
-    /*
-    //                          0    1  2   3          4          5          6           7     8
-    std::string const query = "SELECT 0,guid,id,map,position_x,position_y,position_z,orientation, (SELECT COUNT(*) FROM
-    creature k WHERE c.id = k.id) FROM creature c UNION ALL SELECT
-    1,guid,id,map,position_x,position_y,position_z,orientation, (SELECT COUNT(*) FROM gameobject h WHERE h.id = g.id)
-    FROM gameobject g";
-
-    QueryResult result = WorldDatabase.Query(query.c_str());
-    if (result)
-    {
-        do
-        {
-            Field* fields = result->Fetch();
-
-            t_unit.type = fields[0].Get<uint32>();
-            t_unit.guid = fields[1].Get<uint32>();
-            t_unit.entry = fields[2].Get<uint32>();
-            t_unit.map = fields[3].Get<uint32>();
-            t_unit.x = fields[4].Get<float>();
-            t_unit.y = fields[5].Get<float>();
-            t_unit.z = fields[6].Get<float>();
-            t_unit.o = fields[7].Get<float>();
-            t_unit.c = uint32(fields[8].Get<uint64>());
-
-            units.push_back(t_unit);
-
-        } while (result->NextRow());
-
-        LOG_INFO("playerbots", ">> Loaded {} units locations.", units.size());
-    }
-    else
-    {
-        LOG_ERROR("playerbots", ">> Error loading units locations.");
-    }
-
-    query = "SELECT 0, 0, id, quest FROM creature_queststarter UNION ALL SELECT 0, 1, id, quest FROM creature_questender
-    UNION ALL SELECT 1, 0, id, quest FROM gameobject_queststarter UNION ALL SELECT 1, 1, id, quest FROM
-    gameobject_questender"; result = WorldDatabase.Query(query.c_str());
-
-    if (result)
-    {
-        do
-        {
-            Field* fields = result->Fetch();
-
-            t_rel.type = fields[0].Get<uint32>();
-            t_rel.role = fields[1].Get<uint32>();
-            t_rel.entry = fields[2].Get<uint32>();
-            t_rel.questId = fields[3].Get<uint32>();
-
-            relations.push_back(t_rel);
-
-        } while (result->NextRow());
-
-        LOG_INFO("playerbots", ">> Loaded {} relations.", relations.size());
-    }
-    else
-    {
-        LOG_ERROR("playerbots", ">> Error loading relations.");
-    }
-
-    query = "SELECT 0, ct.entry, item FROM creature_template ct JOIN creature_loot_template clt ON (ct.lootid =
-    clt.entry) UNION ALL SELECT 0, entry, item FROM npc_vendor UNION ALL SELECT 1, gt.entry, item FROM
-    gameobject_template gt JOIN gameobject_loot_template glt ON (gt.TYPE = 3 AND gt.DATA1 = glt.entry)"; result =
-    WorldDatabase.Query(query.c_str());
-
-    if (result)
-    {
-        do
-        {
-            Field* fields = result->Fetch();
-
-            t_loot.type = fields[0].Get<uint32>();
-            t_loot.entry = fields[1].Get<uint32>();
-            t_loot.item = fields[2].Get<uint32>();
-
-            loots.push_back(t_loot);
-
-        } while (result->NextRow());
-
-        LOG_INFO("playerbots", ">> Loaded {} loot lists.", loots.size());
-    }
-    else
-    {
-        LOG_ERROR("playerbots", ">> Error loading loot lists.");
-    }
-    */
-
     LOG_INFO("playerbots", "Loading quest data.");
 
     bool loadQuestData = true;
@@ -2089,165 +2093,6 @@ void TravelMgr::LoadQuestTravelTable()
             }
         }
     }
-
-    /*
-    if (loadQuestData && false)
-    {
-        for (auto& questId : questIds)
-        {
-            Quest* quest = questMap.find(questId)->second;
-
-            QuestContainer* container = new QuestContainer;
-            QuestTravelDestination* loc = nullptr;
-            WorldPosition point;
-
-            bool hasError = false;
-
-            //Relations
-            for (auto& r : relations)
-            {
-                if (questId != r.questId)
-                    continue;
-
-                int32 entry = r.type == 0 ? r.entry : r.entry * -1;
-
-                loc = new QuestRelationTravelDestination(r.questId, entry, r.role, sPlayerbotAIConfig.tooCloseDistance,
-    sPlayerbotAIConfig.sightDistance); loc->setExpireDelay(5 * 60 * 1000); loc->setMaxVisitors(15, 0);
-
-                for (auto& u : units)
-                {
-                    if (r.type != u.type || r.entry != u.entry)
-                        continue;
-
-                    int32 guid = u.type == 0 ? u.guid : u.guid * -1;
-
-                    point = WorldPosition(u.map, u.x, u.y, u.z, u.o);
-                    loc->addPoint(&point);
-                }
-
-                if (loc->getPoints(0).empty())
-                {
-                    logQuestError(1, quest, r.role, entry);
-                    delete loc;
-                    continue;
-                }
-
-                if (r.role == 0)
-                {
-                    container->questGivers.push_back(loc);
-                }
-                else
-                    container->questTakers.push_back(loc);
-
-            }
-
-            //Mobs
-            for (uint32 i = 0; i < 4; i++)
-            {
-                if (quest->RequiredNpcOrGoCount[i] == 0)
-                    continue;
-
-                uint32 reqEntry = quest->RequiredNpcOrGo[i];
-
-                loc = new QuestObjectiveTravelDestination(questId, reqEntry, i, sPlayerbotAIConfig.tooCloseDistance,
-    sPlayerbotAIConfig.sightDistance); loc->setExpireDelay(1 * 60 * 1000); loc->setMaxVisitors(100, 1);
-
-                for (auto& u : units)
-                {
-                    int32 entry = u.type == 0 ? u.entry : u.entry * -1;
-
-                    if (entry != reqEntry)
-                        continue;
-
-                    int32 guid = u.type == 0 ? u.guid : u.guid * -1;
-
-                    point = WorldPosition(u.map, u.x, u.y, u.z, u.o);
-                    loc->addPoint(&point);
-                }
-
-                if (loc->getPoints(0).empty())
-                {
-                    logQuestError(2, quest, i, reqEntry);
-
-                    delete loc;
-                    hasError = true;
-                    continue;
-                }
-
-                container->questObjectives.push_back(loc);
-            }
-
-            //Loot
-            for (uint32 i = 0; i < 4; i++)
-            {
-                if (quest->RequiredItemCount[i] == 0)
-                    continue;
-
-                ItemTemplate const* proto = sObjectMgr->GetItemTemplate(quest->RequiredItemId[i]);
-                if (!proto)
-                {
-                    logQuestError(3, quest, i, 0, quest->RequiredItemId[i]);
-                    hasError = true;
-                    continue;
-                }
-
-                uint32 foundLoot = 0;
-
-                for (auto& l : loots)
-                {
-                    if (l.item != quest->RequiredItemId[i])
-                        continue;
-
-                    int32 entry = l.type == 0 ? l.entry : l.entry * -1;
-
-                    loc = new QuestObjectiveTravelDestination(questId, entry, i, sPlayerbotAIConfig.tooCloseDistance,
-    sPlayerbotAIConfig.sightDistance, l.item); loc->setExpireDelay(1 * 60 * 1000); loc->setMaxVisitors(100, 1);
-
-                    for (auto& u : units)
-                    {
-                        if (l.type != u.type || l.entry != u.entry)
-                            continue;
-
-                        int32 guid = u.type == 0 ? u.guid : u.guid * -1;
-
-                        point = WorldPosition(u.map, u.x, u.y, u.z, u.o);
-                        loc->addPoint(&point);
-                    }
-
-                    if (loc->getPoints(0).empty())
-                    {
-                        logQuestError(4, quest, i, entry, quest->RequiredItemId[i]);
-                        delete loc;
-                        continue;
-                    }
-
-                    container->questObjectives.push_back(loc);
-
-                    foundLoot++;
-                }
-
-                if (foundLoot == 0)
-                {
-                    hasError = true;
-                    logQuestError(5, quest, i, 0, quest->RequiredItemId[i]);
-                }
-            }
-
-            if (container->questTakers.empty())
-                logQuestError(7, quest);
-
-            if (!container->questGivers.empty() || !container->questTakers.empty() || hasError)
-            {
-                quests.insert(std::make_pair(questId, container));
-
-                for (auto loc : container->questGivers)
-                    questGivers.push_back(loc);
-            }
-        }
-
-        LOG_INFO("playerbots", ">> Loaded {} quest details.", questIds.size());
-    }
-    */
 
     WorldPosition point;
 
@@ -2380,535 +2225,7 @@ void TravelMgr::LoadQuestTravelTable()
     sPlayerbotAIConfig.openLog("unload_grid.csv", "w");
     sPlayerbotAIConfig.openLog("unload_obj.csv", "w");
 
-    TravelNodeMap::instance().loadNodeStore();
-
-    TravelNodeMap::instance().generateAll();
-
-    /*
-    bool fullNavPointReload = false;
-    bool storeNavPointReload = true;
-
-   if (!fullNavPointReload && true)
-        TravelNodeStore::loadNodes();
-
-    //TravelNodeMap::instance().loadNodeStore();
-
-    for (auto node : TravelNodeMap::instance().getNodes())
-    {
-        node->setLinked(true);
-    }
-
-    bool reloadNavigationPoints = false || fullNavPointReload || storeNavPointReload;
-
-    if (reloadNavigationPoints)
-    {
-        LOG_INFO("playerbots", "Loading navigation points");
-
-        //Npc nodes
-
-        WorldPosition pos;
-
-        for (auto& u : units)
-        {
-            if (u.type != 0)
-                continue;
-
-            CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(u.entry);
-            if (!cInfo)
-                continue;
-
-            std::vector<uint32> allowedNpcFlags;
-
-            allowedNpcFlags.push_back(UNIT_NPC_FLAG_INNKEEPER);
-            allowedNpcFlags.push_back(UNIT_NPC_FLAG_FLIGHTMASTER);
-            //allowedNpcFlags.push_back(UNIT_NPC_FLAG_QUESTGIVER);
-
-            for (std::vector<uint32>::iterator i = allowedNpcFlags.begin(); i != allowedNpcFlags.end(); ++i)
-            {
-                if ((cInfo->npcflag & *i) != 0)
-                {
-                    pos = WorldPosition(u.map, u.x, u.y, u.z, u.o);
-
-                    std::string const nodeName = pos.getAreaName(false);
-                    if ((cInfo->npcflag & UNIT_NPC_FLAG_INNKEEPER) != 0)
-                        nodeName += " innkeeper";
-                    else
-                        nodeName += " flightMaster";
-
-                    TravelNodeMap::instance().addNode(&pos, nodeName, true, true);
-
-                    break;
-                }
-            }
-        }
-
-        //Build flight paths
-        for (uint32 i = 0; i < sTaxiPathStore.GetNumRows(); ++i)
-        {
-            TaxiPathEntry const* taxiPath = sTaxiPathStore.LookupEntry(i);
-
-            if (!taxiPath)
-                continue;
-
-            TaxiNodesEntry const* startTaxiNode = sTaxiNodesStore.LookupEntry(taxiPath->from);
-            if (!startTaxiNode)
-                continue;
-
-            TaxiNodesEntry const* endTaxiNode = sTaxiNodesStore.LookupEntry(taxiPath->to);
-            if (!endTaxiNode)
-                continue;
-
-            TaxiPathNodeList const& nodes = sTaxiPathNodesByPath[taxiPath->ID];
-            if (nodes.empty())
-                continue;
-
-            WorldPosition startPos(startTaxiNode->map_id, startTaxiNode->x, startTaxiNode->y, startTaxiNode->z);
-            WorldPosition endPos(endTaxiNode->map_id, endTaxiNode->x, endTaxiNode->y, endTaxiNode->z);
-
-            TravelNode* startNode = TravelNodeMap::instance().getNode(&startPos, nullptr, 15.0f);
-            TravelNode* endNode = TravelNodeMap::instance().getNode(&endPos, nullptr, 15.0f);
-
-            if (!startNode || !endNode)
-                continue;
-
-            std::vector<WorldPosition> ppath;
-
-            for (auto& n : nodes)
-                ppath.push_back(WorldPosition(n->mapid, n->x, n->y, n->z, 0.0));
-
-            float totalTime = startPos.getPathLength(ppath) / (450 * 8.0f);
-
-            TravelNodePath travelPath(0.1f, totalTime, (uint8) TravelNodePathType::flightPath, i, true);
-            travelPath.setPath(ppath);
-
-            startNode->setPathTo(endNode, travelPath);
-        }
-
-        //Unique bosses
-        for (auto& u : units)
-        {
-            if (u.type != 0)
-                continue;
-
-            CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(u.entry);
-            if (!cInfo)
-                continue;
-
-            pos = WorldPosition(u.map, u.x, u.y, u.z, u.o);
-
-            if (cInfo->rank == 3 || (cInfo->rank == 1 && !pos.isOverworld() && u.c == 1))
-            {
-                std::string const nodeName = cInfo->Name;
-                TravelNodeMap::instance().addNode(&pos, nodeName, true, true);
-            }
-        }
-
-        std::map<uint8, std::string> startNames;
-        startNames[RACE_HUMAN] = "Human";
-        startNames[RACE_ORC] = "Orc and Troll";
-        startNames[RACE_DWARF] = "Dwarf and Gnome";
-        startNames[RACE_NIGHTELF] = "Night Elf";
-        startNames[RACE_UNDEAD_PLAYER] = "Undead";
-        startNames[RACE_TAUREN] = "Tauren";
-        startNames[RACE_GNOME] = "Dwarf and Gnome";
-        startNames[RACE_TROLL] = "Orc and Troll";
-        startNames[RACE_DRAENEI] = "Draenei";
-        startNames[RACE_BLOODELF] = "Blood Elf";
-
-        for (uint32 i = 0; i < MAX_RACES; i++)
-        {
-            for (uint32 j = 0; j < MAX_CLASSES; j++)
-            {
-                PlayerInfo const* info = sObjectMgr->GetPlayerInfo(i, j);
-                if (!info)
-                    continue;
-
-                pos = WorldPosition(info->mapId, info->positionX, info->positionY, info->positionZ, info->orientation);
-
-                std::string const nodeName = startNames[i] + " start";
-                TravelNodeMap::instance().addNode(&pos, nodeName, true, true);
-            }
-        }
-
-        //Transports
-        GameObjectTemplateContainer const* goTemplates = sObjectMgr->GetGameObjectTemplates();
-        for (auto const& iter : *goTemplates)
-        {
-            GameObjectTemplate const* data = &iter.second;
-            if (data && (data->type == GAMEOBJECT_TYPE_TRANSPORT || data->type == GAMEOBJECT_TYPE_MO_TRANSPORT))
-            {
-                TransportAnimation const* animation = sTransportMgr->GetTransportAnimInfo(iter.first);
-
-                uint32 pathId = data->moTransport.taxiPathId;
-                float moveSpeed = data->moTransport.moveSpeed;
-                if (pathId >= sTaxiPathNodesByPath.size())
-                    continue;
-
-                TaxiPathNodeList const& path = sTaxiPathNodesByPath[pathId];
-
-                std::vector<WorldPosition> ppath;
-                TravelNode* prevNode = nullptr;
-
-                //Elevators/Trams
-                if (path.empty())
-                {
-                    if (animation)
-                    {
-                        TransportPathContainer aPath = animation->Path;
-                        float timeStart;
-
-                        for (auto& u : units)
-                        {
-                            if (u.type != 1)
-                                continue;
-
-                            if (u.entry != iter.first)
-                                continue;
-
-                            prevNode = nullptr;
-                            WorldPosition lPos = WorldPosition(u.map, 0, 0, 0, 0);
-
-                            for (auto& p : aPath)
-                            {
-                                float dx = cos(u.o) * p.second->X - sin(u.o) * p.second->Y;
-                                float dy = sin(u.o) * p.second->X + cos(u.o) * p.second->Y;
-                                WorldPosition pos = WorldPosition(u.map, u.x + dx, u.y + dy, u.z + p.second->Z, u.o);
-
-                                if (prevNode)
-                                {
-                                    ppath.push_back(pos);
-                                }
-
-                                if (pos.distance(&lPos) == 0)
-                                {
-                                    TravelNode* node = TravelNodeMap::instance().addNode(&pos, data->name, true, true, true,
-   iter.first);
-
-                                    if (!prevNode)
-                                    {
-                                        ppath.push_back(pos);
-                                        timeStart = p.second->TimeSeg;
-                                    }
-                                    else
-                                    {
-                                        float totalTime = (p.second->TimeSeg - timeStart) / 1000.0f;
-                                        TravelNodePath travelPath(0.1f, totalTime, (uint8)
-   TravelNodePathType::transport, entry, true); node->setPathTo(prevNode, travelPath); ppath.clear();
-                                        ppath.push_back(pos);
-                                        timeStart = p.second->TimeSeg;
-                                    }
-
-                                    prevNode = node;
-                                }
-
-                                lPos = pos;
-                            }
-
-                            if (prevNode)
-                            {
-                                for (auto& p : aPath)
-                                {
-                                    float dx = cos(u.o) * p.second->X - sin(u.o) * p.second->Y;
-                                    float dy = sin(u.o) * p.second->X + cos(u.o) * p.second->Y;
-                                    WorldPosition pos = WorldPosition(u.map, u.x + dx, u.y + dy, u.z + p.second->Z,
-   u.o);
-
-                                    ppath.push_back(pos);
-
-                                    if (pos.distance(&lPos) == 0)
-                                    {
-                                        TravelNode* node = TravelNodeMap::instance().addNode(&pos, data->name, true, true, true,
-   iter.first); if (node != prevNode)
-                                        {
-                                            float totalTime = (p.second->TimeSeg - timeStart) / 1000.0f;
-                                            TravelNodePath travelPath(0.1f, totalTime, (uint8)
-   TravelNodePathType::transport, entry, true); travelPath.setPath(ppath); node->setPathTo(prevNode, travelPath);
-                                            ppath.clear();
-                                            ppath.push_back(pos);
-                                            timeStart = p.second->TimeSeg;
-                                        }
-                                    }
-
-                                    lPos = pos;
-                                }
-                            }
-
-                            ppath.clear();
-                        }
-                    }
-                }
-                else //Boats/Zepelins
-                {
-                    //Loop over the path and connect stop locations.
-                    for (auto& p : path)
-                    {
-                        WorldPosition pos = WorldPosition(p->mapid, p->x, p->y, p->z, 0);
-
-                        //if (data->displayId == 3015)
-                        //    pos.setZ(pos.getZ() + 6.0f);
-                        //else if (data->displayId == 3031)
-                       //     pos.setZ(pos.getZ() - 17.0f);
-
-                        if (prevNode)
-                        {
-                            ppath.push_back(pos);
-                        }
-
-                        if (p->delay > 0)
-                        {
-                            TravelNode* node = TravelNodeMap::instance().addNode(&pos, data->name, true, true, true, iter.first);
-
-                            if (!prevNode)
-                            {
-                                ppath.push_back(pos);
-                            }
-                            else
-                            {
-                                TravelNodePath travelPath(0.1f, 0.0, (uint8) TravelNodePathType::transport, entry,
-   true); travelPath.setPathAndCost(ppath, moveSpeed); node->setPathTo(prevNode, travelPath); ppath.clear();
-                                ppath.push_back(pos);
-                            }
-
-                            prevNode = node;
-                        }
-                    }
-
-                    if (prevNode)
-                    {
-                        //Continue from start until first stop and connect to end.
-                        for (auto& p : path)
-                        {
-                            WorldPosition pos = WorldPosition(p->mapid, p->x, p->y, p->z, 0);
-
-                            //if (data->displayId == 3015)
-                            //    pos.setZ(pos.getZ() + 6.0f);
-                            //else if (data->displayId == 3031)
-                            //    pos.setZ(pos.getZ() - 17.0f);
-
-                            ppath.push_back(pos);
-
-                            if (p->delay > 0)
-                            {
-                                TravelNode* node = TravelNodeMap::instance().getNode(&pos, nullptr, 5.0f);
-                                if (node != prevNode)
-                                {
-                                    TravelNodePath travelPath(0.1f, 0.0, (uint8) TravelNodePathType::transport, entry,
-   true); travelPath.setPathAndCost(ppath, moveSpeed); node->setPathTo(prevNode, travelPath);
-                                }
-                            }
-                        }
-                    }
-
-                    ppath.clear();
-                }
-            }
-        }
-
-        //Zone means
-        for (auto& loc : exploreLocs)
-        {
-            std::vector<WorldPosition*> points;
-
-            for (auto p : loc.second->getPoints(true))
-                if (!p->isUnderWater())
-                    points.push_back(p);
-
-            if (points.empty())
-                points = loc.second->getPoints(true);
-
-            WorldPosition  pos = WorldPosition(points, WP_MEAN_CENTROID);
-
-            TravelNode* node = TravelNodeMap::instance().addNode(&pos, pos.getAreaName(), true, true, false);
-        }
-
-        LOG_INFO("playerbots", ">> Loaded {} navigation points.", TravelNodeMap::instance().getNodes().size());
-    }
-
-    TravelNodeMap::instance().calcMapOffset();
-    loadMapTransfers();
-    */
-
-    /*
-    bool preloadNodePaths = false || fullNavPointReload || storeNavPointReload;             //Calculate paths using
-    PathGenerator. bool preloadReLinkFullyLinked = false || fullNavPointReload || storeNavPointReload;      //Retry
-    nodes that are fully linked. bool preloadUnlinkedPaths = false || fullNavPointReload;        //Try to connect points
-    currently unlinked. bool preloadWorldPaths = true;            //Try to load paths in overworld. bool
-    preloadInstancePaths = true;         //Try to load paths in instances. bool preloadSubPrint = false; //Print output
-    every 2%.
-
-    if (preloadNodePaths)
-    {
-        std::unordered_map<uint32, Map*> instances;
-
-        //PathGenerator
-        std::vector<WorldPosition> ppath;
-
-        uint32 cur = 0, max = TravelNodeMap::instance().getNodes().size();
-
-        for (auto& startNode : TravelNodeMap::instance().getNodes())
-        {
-            if (!preloadReLinkFullyLinked && startNode->isLinked())
-                continue;
-
-            for (auto& endNode : TravelNodeMap::instance().getNodes())
-            {
-                if (startNode == endNode)
-                    continue;
-
-                if (startNode->getPosition()->isOverworld() && !preloadWorldPaths)
-                    continue;
-
-                if (!startNode->getPosition()->isOverworld() && !preloadInstancePaths)
-                    continue;
-
-                if (startNode->hasCompletePathTo(endNode))
-                    continue;
-
-                if (!preloadUnlinkedPaths && !startNode->hasLinkTo(endNode))
-                    continue;
-
-                if (startNode->getMapId() != endNode->getMapId())
-                    continue;
-
-                //if (preloadUnlinkedPaths && !startNode->hasLinkTo(endNode) && startNode->isUselessLink(endNode))
-                //    continue;
-
-                startNode->buildPath(endNode, nullptr, false);
-
-                //if (startNode->hasLinkTo(endNode) && !startNode->getPathTo(endNode)->getComplete())
-                    //startNode->removeLinkTo(endNode);
-            }
-
-            startNode->setLinked(true);
-
-            cur++;
-
-            if (preloadSubPrint && (cur * 50) / max > ((cur - 1) * 50) / max)
-            {
-                TravelNodeMap::instance().printMap();
-                TravelNodeMap::instance().printNodeStore();
-            }
-        }
-
-        if (!preloadSubPrint)
-        {
-            TravelNodeMap::instance().printNodeStore();
-            TravelNodeMap::instance().printMap();
-        }
-
-        LOG_INFO("playerbots", ">> Loaded paths for {} nodes.", TravelNodeMap::instance().getNodes().size());
-    }
-
-    bool removeLowLinkNodes = false || fullNavPointReload || storeNavPointReload;
-
-    if (removeLowLinkNodes)
-    {
-        std::vector<TravelNode*> goodNodes;
-        std::vector<TravelNode*> remNodes;
-        for (auto& node : TravelNodeMap::instance().getNodes())
-        {
-            if (!node->getPosition()->isOverworld())
-                continue;
-
-            if (std::find(goodNodes.begin(), goodNodes.end(), node) != goodNodes.end())
-                continue;
-
-            if (std::find(remNodes.begin(), remNodes.end(), node) != remNodes.end())
-                continue;
-
-            std::vector<TravelNode*> nodes = node->getNodeMap(true);
-
-            if (nodes.size() < 5)
-                remNodes.insert(remNodes.end(), nodes.begin(), nodes.end());
-            else
-                goodNodes.insert(goodNodes.end(), nodes.begin(), nodes.end());
-        }
-
-        for (auto& node : remNodes)
-            TravelNodeMap::instance().removeNode(node);
-
-        LOG_INFO("playerbots", ">> Checked {} nodes.", TravelNodeMap::instance().getNodes().size());
-    }
-
-    bool cleanUpNodeLinks = false || fullNavPointReload || storeNavPointReload;
-    bool cleanUpSubPrint = false;             //Print output every 2%.
-
-    if (cleanUpNodeLinks)
-    {
-        //Routes
-        uint32 cur = 0;
-        uint32 max = TravelNodeMap::instance().getNodes().size();
-
-        //Clean up node links
-        for (auto& startNode : TravelNodeMap::instance().getNodes())
-        {
-             startNode->cropUselessLinks();
-
-             cur++;
-             if (cleanUpSubPrint && (cur * 10) / max > ((cur - 1) * 10) / max)
-             {
-                 TravelNodeMap::instance().printMap();
-                 TravelNodeMap::instance().printNodeStore();
-             }
-        }
-
-        LOG_INFO("playerbots", ">> Cleaned paths for {} nodes.", TravelNodeMap::instance().getNodes().size());
-    }
-
-    bool reCalculateCost = false || fullNavPointReload || storeNavPointReload;
-    bool forceReCalculate = false;
-
-    if (reCalculateCost)
-    {
-        for (auto& startNode : TravelNodeMap::instance().getNodes())
-        {
-            for (auto& path : *startNode->getLinks())
-            {
-                TravelNodePath* nodePath = path.second;
-
-                if (path.second->getPathType() != TravelNodePathType::walk)
-                    continue;
-
-                if (nodePath->getCalculated() && !forceReCalculate)
-                    continue;
-
-                nodePath->calculateCost();
-            }
-        }
-
-        LOG_INFO("playerbots", ">> Calculated pathcost for {} nodes.", TravelNodeMap::instance().getNodes().size());
-    }
-
-    bool mirrorMissingPaths = true || fullNavPointReload || storeNavPointReload;
-
-    if (mirrorMissingPaths)
-    {
-        for (auto& startNode : TravelNodeMap::instance().getNodes())
-        {
-            for (auto& path : *startNode->getLinks())
-            {
-                TravelNode* endNode = path.first;
-
-                if (endNode->hasLinkTo(startNode))
-                    continue;
-
-                if (path.second->getPathType() != TravelNodePathType::walk)
-                    continue;
-
-                TravelNodePath nodePath = *path.second;
-
-                std::vector<WorldPosition> pPath = nodePath.getPath();
-                std::reverse(pPath.begin(), pPath.end());
-
-                nodePath.setPath(pPath);
-
-                endNode->setPathTo(startNode, nodePath, true);
-            }
-        }
-
-        LOG_INFO("playerbots", ">> Reversed missing paths for {} nodes.", TravelNodeMap::instance().getNodes().size());
-    }
-    */
+    // Node loading/generation is handled by TravelNodeMap::Init() called from TravelMgr::Init().
 
     TravelNodeMap::instance().printMap();
     TravelNodeMap::instance().printNodeStore();
@@ -3663,65 +2980,6 @@ void TravelMgr::LoadQuestTravelTable()
         }
     }
 
-    /*
-
-    sPlayerbotAIConfig.openLog(7, "w");
-
-    //Zone area map REMOVE!
-    uint32 k = 0;
-    for (auto& node : TravelNodeMap::instance().getNodes())
-    {
-        WorldPosition* pos = node->getPosition();
-        //map area
-        for (uint32 x = 0; x < 2000; x++)
-        {
-            for (uint32 y = 0; y < 2000; y++)
-            {
-                if (!pos->getMap())
-                    continue;
-
-                float nx = pos->GetPositionX() + (x * 5) - 5000.0f;
-                float ny = pos->GetPositionY() + (y * 5) - 5000.0f;
-                float nz = pos->GetPositionZ() + 100.0f;
-
-                //pos->getMap()->GetHitPosition(nx, ny, nz + 200.0f, nx, ny, nz, -0.5f);
-
-                if (!pos->getMap()->GetHeightInRange(nx, ny, nz, 5000.0f)) // GetHeight can fail
-                    continue;
-
-                WorldPosition npos = WorldPosition(pos->GetMapId(), nx, ny, nz, 0.0);
-                uint32 area = path.getArea(npos.GetMapId(), npos.GetPositionX(), npos.GetPositionY(),
-                                           npos.GetPositionZ());
-
-                std::ostringstream out;
-                out << std::fixed << area << "," << npos.getDisplayX() << "," << npos.getDisplayY();
-                sPlayerbotAIConfig.log(7, out.str().c_str());
-            }
-        }
-        k++;
-
-        if (k > 0)
-            break;
-    }
-
-    //Explore map output (REMOVE!)
-
-    sPlayerbotAIConfig.openLog(5, "w");
-    for (auto i : exploreLocs)
-    {
-        for (auto j : i.second->getPoints())
-        {
-            std::ostringstream out;
-            std::string const name = i.second->getTitle();
-            name.erase(remove(name.begin(), name.end(), '\"'), name.end());
-            out << std::fixed << std::setprecision(2) << name.c_str() << "," << i.first << "," << j->getDisplayX() <<
-    "," << j->getDisplayY() << "," << j->GetPositionX() << "," << j->GetPositionY() << "," << j->GetPositionZ();
-    sPlayerbotAIConfig.log(5,
-    out.str().c_str());
-        }
-    }
-
-    */
 }
 
 uint32 TravelMgr::getDialogStatus(Player* pPlayer, int32 questgiver, Quest const* pQuest)
@@ -4360,8 +3618,7 @@ void TravelMgr::Init()
         PrepareZone2LevelBracket();
         PrepareDestinationCache();
     }
-    sTravelNodeMap.InitTaxiGraph();
-    LOG_INFO("playerbots", "Playerbots Taxi graph and destination cache built.");
+    sTravelNodeMap.Init();
 }
 
 TravelMgr::FlightMasterInfo const* TravelMgr::GetNearestFlightMasterInfo(Player* bot) const
@@ -4408,7 +3665,7 @@ std::vector<std::vector<uint32>> TravelMgr::GetOptimalFlightDestinations(Player*
     std::vector<std::vector<uint32>> validDestinations;
 
     FlightMasterInfo const* nearestFlightMaster = GetNearestFlightMasterInfo(bot);
-    if (!nearestFlightMaster || bot->GetDistance(nearestFlightMaster->pos) > 500.0f)
+    if (!nearestFlightMaster)
         return validDestinations;
 
     uint32 fromNode = nearestFlightMaster->taxiNodeId;
@@ -4427,9 +3684,9 @@ std::vector<std::vector<uint32>> TravelMgr::GetOptimalFlightDestinations(Player*
     if (AreaTableEntry const* area = sAreaTableStore.LookupEntry(bot->GetZoneId()))
         botInCapital = (area->flags & AREA_FLAG_CAPITAL) != 0;
 
-    //Simplify destination delection. Its either target cities (Based on config value) or target world.
     std::vector<uint32> candidateZones;
-    if (botLevel >= 10 && !botInCapital && urand(0, 100) < sPlayerbotAIConfig.probTeleToBankers * 100)
+    if (botLevel >= 10 && !botInCapital &&
+        urand(0, 100) < sPlayerbotAIConfig.probTeleToBankers * 100)
     {
         TeamId botTeam = bot->GetTeamId();
         for (Capital const& capital : capitals)
@@ -4556,6 +3813,34 @@ std::vector<WorldLocation> TravelMgr::GetCityLocations(Player* bot)
     return fallbackLocations;
 }
 
+bool TravelMgr::SelectAuctioneerByMap(Player* bot, NpcLocation& outAuctioneer)
+{
+    uint16 botMapId = bot->GetMapId();
+    auto const& cache = (bot->GetTeamId() == TEAM_HORDE) ? hordeAuctioneerCache : allianceAuctioneerCache;
+
+    auto mapIt = cache.find(botMapId);
+    if (mapIt == cache.end() || mapIt->second.empty())
+        return false;
+
+    // Collect all areas on this map that have auctioneers
+    std::vector<uint32> areaIds;
+    areaIds.reserve(mapIt->second.size());
+    for (auto const& [areaId, npcs] : mapIt->second)
+    {
+        if (!npcs.empty())
+            areaIds.push_back(areaId);
+    }
+
+    if (areaIds.empty())
+        return false;
+
+    // Pick a random area, then a random auctioneer in that area
+    uint32 selectedArea = areaIds[urand(0, areaIds.size() - 1)];
+    auto const& auctioneers = mapIt->second.at(selectedArea);
+    outAuctioneer = auctioneers[urand(0, auctioneers.size() - 1)];
+    return true;
+}
+
 void TravelMgr::PrepareZone2LevelBracket()
 {
     // Classic WoW - starter zones
@@ -4642,6 +3927,7 @@ void TravelMgr::PrepareDestinationCache()
     uint32 flightMastersCount = 0;
     uint32 innkeepersCount = 0;
     uint32 bankerCount = 0;
+    uint32 auctioneerCount = 0;
 
     LOG_INFO("playerbots", "Preparing destination caches for {} levels...", maxLevel);
     // Temporary map to group creatures by entry and area
@@ -4695,11 +3981,11 @@ void TravelMgr::PrepareDestinationCache()
             tempCreatureCache[templateEntry][areaId].push_back(WorldLocation(mapId, x, y, z));
         }
         // FLIGHT MASTERS
-        // Entry 29480 is Grimwing (Storm Peaks)
-        // Entry 3838 is Vesprystus in Rut'Theran. Need Travel Node system to resolve this one.
+        // Entry 29480 is Grimwing (Storm Peaks) — has FLIGHTMASTER flag but
+        // isn't a real usable flight master; skip it.
         else if ((creatureTemplate->npcflag & UNIT_NPC_FLAG_FLIGHTMASTER ||
                   creatureTemplate->npcflag & UNIT_NPC_FLAG_INNKEEPER) &&
-                creatureTemplate->Entry != 3838 && creatureTemplate->Entry != 29480)
+                creatureTemplate->Entry != 29480)
         {
             FactionTemplateEntry const* factionEntry = sFactionTemplateStore.LookupEntry(creatureTemplate->faction);
             bool forHorde = !(factionEntry->hostileMask & 4);
@@ -4784,7 +4070,7 @@ void TravelMgr::PrepareDestinationCache()
                  creatureTemplate->Entry != 30606 && creatureTemplate->Entry != 30608 &&
                  creatureTemplate->Entry != 29282)
         {
-            BankerLocation bLoc;
+            NpcLocation bLoc;
             bLoc.loc = WorldLocation(mapId, x + cos(orient) * 6.0f, y + sin(orient) * 6.0f, z + 2.0f, orient + M_PI);
             bLoc.entry = templateEntry;
             uint32 level = (creatureTemplate->minlevel + creatureTemplate->maxlevel + 1) / 2;
@@ -4807,6 +4093,31 @@ void TravelMgr::PrepareDestinationCache()
             }
             bankerCount++;
         }
+        // === AUCTIONEERS ===
+        else if (creatureTemplate->npcflag & UNIT_NPC_FLAG_AUCTIONEER)
+        {
+            FactionTemplateEntry const* factionEntry = sFactionTemplateStore.LookupEntry(creatureTemplate->faction);
+            if (!factionEntry)
+                continue;
+
+            bool forHorde = !(factionEntry->hostileMask & 4);
+            bool forAlliance = !(factionEntry->hostileMask & 2);
+
+            if (!forHorde && !forAlliance)
+                continue;
+
+            NpcLocation aLoc;
+            aLoc.loc = WorldLocation(mapId, x + cos(orient) * 3.0f, y + sin(orient) * 3.0f, z + 0.5f, orient + M_PI);
+            aLoc.entry = templateEntry;
+
+            if (forHorde)
+                hordeAuctioneerCache[mapId][areaId].push_back(aLoc);
+
+            if (forAlliance)
+                allianceAuctioneerCache[mapId][areaId].push_back(aLoc);
+
+            auctioneerCount++;
+        }
     }
 
     // Process temporary caches
@@ -4816,16 +4127,29 @@ void TravelMgr::PrepareDestinationCache()
         {
             CreatureTemplate const* creatureTemplate = sObjectMgr->GetCreatureTemplate(creatureDataList[0].id);
             uint32 level = (creatureTemplate->minlevel + creatureTemplate->maxlevel + 1) / 2;
+
+            float totalX = 0.0f;
+            float totalY = 0.0f;
+            float totalZ = 0.0f;
+            for (CreatureData const& creatureData : creatureDataList)
+            {
+                totalX += creatureData.posX;
+                totalY += creatureData.posY;
+                totalZ += creatureData.posZ;
+            }
+
+            float avgX = totalX / creatureDataList.size();
+            float avgY = totalY / creatureDataList.size();
+            float avgZ = totalZ / creatureDataList.size();
+            uint32 mapId = std::get<0>(gridTuple);
+
             for (int32 l = (int32)level - (int32)sPlayerbotAIConfig.randomBotTeleLowerLevel;
                  l <= (int32)level + (int32)sPlayerbotAIConfig.randomBotTeleHigherLevel; l++)
             {
                 if (l < 1 || l > int32(maxLevel))
                     continue;
 
-                locsPerLevelCache[(uint8)l].push_back(WorldLocation(std::get<0>(gridTuple),
-                    static_cast<float>(std::get<1>(gridTuple)) * 50.0f,
-                    static_cast<float>(std::get<2>(gridTuple)) * 50.0f,
-                    static_cast<float>(std::get<3>(gridTuple)) * 50.0f));
+                locsPerLevelCache[(uint8)l].push_back(WorldLocation(mapId, avgX, avgY, avgZ, 0.0f));
             }
         }
     }
@@ -4871,5 +4195,5 @@ void TravelMgr::PrepareDestinationCache()
             break;
         }
     }
-    LOG_INFO("playerbots", ">> {} flight masters and {} innkeepers and {} banker locations for level collected.", flightMastersCount, innkeepersCount, bankerCount);
+    LOG_INFO("playerbots", ">> {} flight masters, {} innkeepers, {} bankers, {} auctioneers collected.", flightMastersCount, innkeepersCount, bankerCount, auctioneerCount);
 }

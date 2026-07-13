@@ -11,6 +11,7 @@
 
 #include "Action.h"
 #include "LastMovementValue.h"
+#include "PathGenerator.h"
 #include "PlayerbotAIConfig.h"
 
 class Player;
@@ -19,9 +20,21 @@ class Unit;
 class WorldObject;
 class Position;
 
-#define ANGLE_45_DEG (static_cast<float>(M_PI) / 4.f)
 #define ANGLE_90_DEG M_PI_2
 #define ANGLE_120_DEG (2.f * static_cast<float>(M_PI) / 3.f)
+
+// Default acceptable path types for GeneratePath
+constexpr uint32 DEFAULT_PATH_ACCEPT_MASK = PATHFIND_NORMAL | PATHFIND_INCOMPLETE;
+constexpr uint32 RELAXED_PATH_ACCEPT_MASK = PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_FARFROMPOLY;
+
+struct PathResult
+{
+    Movement::PointsArray points;
+    G3D::Vector3 actualEnd;
+    G3D::Vector3 end;
+    PathType pathType;
+    bool reachable;
+};
 
 class MovementAction : public Action
 {
@@ -29,6 +42,14 @@ public:
     MovementAction(PlayerbotAI* botAI, std::string const name);
 
 protected:
+    // Emit a one-line trace describing the imminent movement. No-op
+    // unless the bot has the "debug move" non-combat strategy.
+    // Subclasses (e.g. NewRpgBaseAction) may override to append richer
+    // context such as RPG status and target name. Optional `extra`
+    // is appended verbatim (use it to attach hop labels like
+    // "node:Stormwind innkeeper" or fallback reasons).
+    virtual void EmitDebugMove(char const* method, char const* generator, float x, float y, float z, char const* extra = nullptr);
+
     bool JumpTo(uint32 mapId, float x, float y, float z, MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
     bool MoveNear(uint32 mapId, float x, float y, float z, float distance = sPlayerbotAIConfig.contactDistance,
                   MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
@@ -36,7 +57,54 @@ protected:
     bool MoveTo(uint32 mapId, float x, float y, float z, bool idle = false, bool react = false,
                 bool normal_only = false, bool exact_waypoint = false,
                 MovementPriority priority = MovementPriority::MOVEMENT_NORMAL, bool lessDelay = false,
-                bool backwards = false);
+                bool backwards = false, bool ignoreEnemyTargets = false);
+
+    // Path-aware funnel mirroring the reference movement implementation.
+    // Runs UpdateMovementState + IsMovingAllowed + WaitForTransport gates,
+    // applies the targetPosRecalcDistance short-stop, resolves a TravelPath
+    // via ResolveMovePath (which gates graph A* by sightDistance), trims
+    // with makeShortCut, handles special head segments
+    // (portal/area-trigger/transport/flight) via HandleSpecialMovement,
+    // clips at hostile creatures via ClipPath (unless ignoreEnemyTargets),
+    // and dispatches the resulting walk via DispatchMovement.
+    // MoveTo(mapId,...) delegates here unless an intentional bypass
+    // (exact_waypoint / disableMoveSplinePath / flying / swimming /
+    // backwards) routes the move straight to DoMovePoint.
+    // `react=true` opts the move out of the end-of-dispatch
+    // WaitForReach AI-loop block — combat callers should set this so the
+    // bot can keep re-evaluating mid-chase. Default false matches the
+    // reference's MoveTo2 default.
+    bool MoveTo2(WorldPosition endPos,
+                 bool idle = false, bool react = false,
+                 bool noPath = false, bool ignoreEnemyTargets = false,
+                 MovementPriority priority = MovementPriority::MOVEMENT_NORMAL,
+                 bool lessDelay = false);
+
+    // Centralized walk dispatch. Mirrors the reference's DispatchMovement
+    // shape: takes a TravelPath, builds the PointsArray internally,
+    // applies inactive-bot teleport carve-out, masterWalking mode,
+    // pre-dispatch state cleanup (clear emote, stand, interrupt cast),
+    // transport-passenger coordinate sandwich
+    // (CalculatePassengerPosition → UpdateAllowedPositionZ → Offset)
+    // around the per-point Z snap, mm.Clear → MovePoint(last) →
+    // MoveSplinePath. Caches the destination + duration on lastMove.
+    //
+    // Divergence from reference: reference ends with WaitForReach(size)
+    // which blocks the AI loop until the move completes. AC's combat
+    // callers (ReachCombatTo) currently funnel through MoveTo → MoveTo2
+    // → DispatchMovement; blocking the AI loop here would suspend combat
+    // re-evaluation for the full move duration. Until combat dispatch is
+    // restructured to bypass MoveTo2, the WaitForReach is deliberately
+    // omitted.
+    // `react=true` skips the end-of-dispatch WaitForReach so the AI
+    // loop isn't blocked while the spline plays — combat callers use
+    // this to keep re-evaluating mid-chase.
+    bool DispatchMovement(TravelPath path,
+                          WorldPosition dest,
+                          char const* label,
+                          MovementPriority priority = MovementPriority::MOVEMENT_NORMAL,
+                          bool lessDelay = false,
+                          bool react = false);
     bool MoveTo(WorldObject* target, float distance = 0.0f,
                 MovementPriority priority = MovementPriority::MOVEMENT_NORMAL);
     bool MoveNear(WorldObject* target, float distance = sPlayerbotAIConfig.contactDistance,
@@ -44,14 +112,25 @@ protected:
     float GetFollowAngle();
     bool Follow(Unit* target, float distance = sPlayerbotAIConfig.followDistance);
     bool Follow(Unit* target, float distance, float angle);
+    // Handles the cross-transport follow case: when bot and target are
+    // on different transports (or one is off-transport) and within
+    // sight, this disembarks the bot from its current transport (if
+    // any), teleports it to the target's position, and boards the
+    // target's transport (if any). Returns true if the transport
+    // transition was performed this tick (caller should skip the
+    // engine-level follow for this tick).
+    bool FollowOnTransport(Unit* target);
     bool ChaseTo(WorldObject* obj, float distance = 0.0f);
     bool ReachCombatTo(Unit* target, float distance = 0.0f);
     float MoveDelay(float distance, bool backwards = false);
     void WaitForReach(float distance);
+    // PointsArray overload: sums segment distances and calls the float
+    // version. Matches the reference's WaitForReach(PointsArray) used at
+    // the end of DispatchMovement.
+    void WaitForReach(Movement::PointsArray const& path);
     void SetNextMovementDelay(float delayMillis);
     bool IsMovingAllowed(WorldObject* target);
     bool IsDuplicateMove(float x, float y, float z);
-    bool IsWaitingForLastMove(MovementPriority priority);
     bool IsMovingAllowed();
     bool Flee(Unit* target);
     void ClearIdleState();
@@ -67,6 +146,42 @@ protected:
     bool FleePosition(Position pos, float radius, uint32 minInterval = 1000);
     bool CheckLastFlee(float curAngle, std::list<FleeInfo>& infoList);
 
+    PathResult GeneratePath(float x, float y, float z, uint32 acceptMask = DEFAULT_PATH_ACCEPT_MASK, bool forceDestination = false);
+
+    // Returns a unified TravelPath for the move. Mirror of the reference
+    // ResolveMovePath shape: 10% lastPath reuse short-circuit, choose
+    // graph (cross-map / >sightDistance) or live mmap probe, regression
+    // guard preferring cached path when no better, fall back to a
+    // single-point path on dest. Stateless — does not dispatch.
+    TravelPath ResolveMovePath(WorldPosition startPos,
+                               WorldPosition endPos,
+                               LastMovement& lastMove);
+
+    // Dispatches the head-of-path special segment (portal interact /
+    // area-trigger marker / transport boarding / flight master taxi).
+    // Caller is expected to first call TravelPath::UpcommingSpecialMovement
+    // which cuts the path so the head is the special segment. Returns
+    // true if a movement-consuming action was dispatched this tick.
+    // Returns false for AREA_TRIGGER-with-entry (caller still dispatches
+    // the walk into the trigger volume).
+    bool HandleSpecialMovement(TravelPath& path);
+
+    // Top-of-MoveFarTo gate that keeps a bot riding a transport across
+    // ticks. Returns true if the bot is still on the transport we last
+    // boarded (caller should skip the rest of MoveFarTo this tick).
+    // Clears lastTransportEntry and returns false if the bot has
+    // disembarked or is no longer on the expected transport.
+    bool WaitForTransport();
+
+    // Transport boarding helpers (shared by FollowAction and travel plan)
+    static Transport* GetTransportForPosTolerant(Map* map, WorldObject* ref,
+        uint32 phaseMask, float x, float y, float z);
+    static bool FindBoardingPointOnTransport(Map* map, Transport* transport,
+        WorldObject* ref, float refX, float refY, float refZ,
+        float botX, float botY, float botZ,
+        float& outX, float& outY, float& outZ);
+    bool BoardTransport(Transport* transport);
+
 protected:
     struct CheckAngle
     {
@@ -75,10 +190,6 @@ protected:
     };
 
 private:
-    // float SearchBestGroundZForPath(float x, float y, float z, bool generatePath, float range = 20.0f, bool
-    // normal_only = false, float step = 8.0f);
-    const Movement::PointsArray SearchForBestPath(float x, float y, float z, float& modified_z, int maxSearchCount = 5,
-                                                  bool normal_only = false, float step = 8.0f);
     bool wasMovementRestricted = false;
     void DoMovePoint(Unit* unit, float x, float y, float z, bool generatePath, bool backwards);
 };
