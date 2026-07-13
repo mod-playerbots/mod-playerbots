@@ -1,6 +1,6 @@
 #include "Playerbots.h"
 #include "MechanarShared.h"
-#include "MechanarTriggers.h"  // MechanarIDs
+#include "MechanarTriggers.h"
 #include "Creature.h"
 #include "DynamicObject.h"
 #include "Cell.h"
@@ -16,10 +16,6 @@
 
 namespace
 {
-    // Kite containment polygon (map-554 x,y), CCW. See MechanarShared.h for the shape and
-    // the navmesh verification. The fight hall is long (Y axis, ~80yd) and narrow (X axis,
-    // ~23yd); this rectangle spans the full length and caps the low-X side short of the
-    // elevator/bridge corridor (mouth ~x274) so the kite can never head for the NW opening.
     struct V2
     {
         float x;
@@ -47,7 +43,6 @@ namespace
         return inside;
     }
 
-    // Nearest point to (px,py) on segment a->b.
     void ClosestOnSegment(float px, float py, float ax, float ay, float bx, float by, float& cx, float& cy)
     {
         float const dx = bx - ax, dy = by - ay;
@@ -93,8 +88,6 @@ namespace MechanarFlames
             j = i;
         }
 
-        // Nudge a hair toward the fight core so the result is strictly INSIDE the
-        // polygon (the projection lands exactly on the boundary edge).
         float tx = ROOM_ANCHOR_X - resX, ty = ROOM_ANCHOR_Y - resY;
         float const len = std::sqrt(tx * tx + ty * ty);
         if (len > 1e-3f)
@@ -114,7 +107,7 @@ namespace MechanarFlames
         if (!botAI || !botAI->IsHeal(bot))
             return false;
         if (bot->GetHealthPct() <= HEALER_FIRE_BAIL_PCT)
-            return false;  // disengage to survive; a dead healer heals no one
+            return false;
         return botAI->GetAiObjectContext()->GetValue<Unit*>("party member to heal")->Get() != nullptr;
     }
 
