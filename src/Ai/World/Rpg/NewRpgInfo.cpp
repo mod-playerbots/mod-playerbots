@@ -104,6 +104,23 @@ NewRpgStatus NewRpgInfo::GetStatus()
     }, data);
 }
 
+char const* NewRpgInfo::StatusName(NewRpgStatus status)
+{
+    switch (status)
+    {
+        case RPG_IDLE:          return "idle";
+        case RPG_GO_GRIND:      return "go-grind";
+        case RPG_GO_CAMP:       return "go-camp";
+        case RPG_WANDER_NPC:    return "wander-npc";
+        case RPG_WANDER_RANDOM: return "wander-random";
+        case RPG_REST:          return "rest";
+        case RPG_DO_QUEST:      return "do-quest";
+        case RPG_TRAVEL_FLIGHT: return "travel-flight";
+        case RPG_OUTDOOR_PVP:   return "outdoor-pvp";
+        default:                return "?";
+    }
+}
+
 std::string NewRpgInfo::ToString()
 {
     std::stringstream out;

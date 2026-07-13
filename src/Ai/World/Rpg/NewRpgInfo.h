@@ -91,6 +91,8 @@ struct NewRpgInfo
     RpgData data;
 
     NewRpgStatus GetStatus();
+    // Short, hyphenated name for a status, used by movement/debug logging.
+    static char const* StatusName(NewRpgStatus status);
     bool HasStatusPersisted(uint32 maxDuration) { return GetMSTimeDiffToNow(startT) > maxDuration; }
     void ChangeToGoGrind(WorldPosition pos);
     void ChangeToGoCamp(WorldPosition pos);

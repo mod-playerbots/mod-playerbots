@@ -64,17 +64,7 @@ void MovementAction::EmitDebugMove(char const* method, char const* generator, fl
     NewRpgInfo& info = botAI->rpgInfo;
     NewRpgStatus status = info.GetStatus();
     bool const inCombat = botAI->GetState() == BOT_STATE_COMBAT;
-    char const* statusName =
-        inCombat ? "combat" :
-        status == RPG_IDLE ? "idle" :
-        status == RPG_GO_GRIND ? "go-grind" :
-        status == RPG_GO_CAMP ? "go-camp" :
-        status == RPG_WANDER_NPC ? "wander-npc" :
-        status == RPG_WANDER_RANDOM ? "wander-random" :
-        status == RPG_REST ? "rest" :
-        status == RPG_DO_QUEST ? "do-quest" :
-        status == RPG_TRAVEL_FLIGHT ? "travel-flight" :
-        status == RPG_OUTDOOR_PVP ? "outdoor-pvp" : "?";
+    char const* statusName = inCombat ? "combat" : NewRpgInfo::StatusName(status);
 
     // Resolve a human-readable target name. In combat, the bot is
     // actively engaging an enemy that is unrelated to the RPG state's
@@ -3078,9 +3068,7 @@ bool MovementAction::MoveTo2(WorldPosition endPos,
         }
     }
     else
-    {
         lastMove.nextTeleport = 0;
-    }
 
     // Short-stop: at destination — stop and clear the cached path.
     float const totalDistance = botPos.distance(endPos);
