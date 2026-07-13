@@ -490,7 +490,7 @@ bool MagtheridonUseManticronCubeAction::FindSafePositionNearCube(
         if (IsPositionInActiveDebris(bot->GetMap()->GetInstanceId(), x, y))
             continue;
 
-        if (IsPositionInActiveConflagration(botAI, bot, x, y))
+        if (IsPositionInActiveConflagration(botAI, x, y))
             continue;
 
         const float moveDistance = bot->GetExactDist2d(x, y);
@@ -562,7 +562,7 @@ bool MagtheridonMoveOutOfDebrisAction::FindSafePosition(Position& outPos)
             if (IsPositionInActiveDebris(instanceId, x, y))
                 continue;
 
-            if (IsPositionInActiveConflagration(botAI, bot, x, y))
+            if (IsPositionInActiveConflagration(botAI, x, y))
                 continue;
 
             float const moveDistance = bot->GetExactDist2d(x, y);
