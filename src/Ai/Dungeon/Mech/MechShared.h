@@ -2,6 +2,7 @@
 #define PLAYERBOTS_MECHSHARED_H
 
 #include "Define.h"
+#include "ObjectGuid.h"
 
 #include <utility>
 #include <vector>
@@ -73,6 +74,8 @@ namespace MechanarFlames
     Creature* GetNearestFlame(Player* bot, float radius);
 
     void CollectAvoidFlames(Player* bot, Unit* ignoreFlame, std::vector<std::pair<float, float>>& out);
+
+    ObjectGuid FindFixatingFlameGuid(Player* bot);
 
     Unit* GetFixatingFlame(Player* bot);
 

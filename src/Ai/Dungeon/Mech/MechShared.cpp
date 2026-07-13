@@ -3,6 +3,7 @@
 #include "MechTriggers.h"
 #include "Creature.h"
 #include "DynamicObject.h"
+#include "ObjectAccessor.h"
 #include "Cell.h"
 #include "CellImpl.h"
 #include "GridNotifiers.h"
@@ -171,14 +172,28 @@ namespace MechanarFlames
         return best;
     }
 
-    Unit* GetFixatingFlame(Player* bot)
+    ObjectGuid FindFixatingFlameGuid(Player* bot)
     {
         std::list<Creature*> flames;
         CollectFlames(bot, 100.0f, flames);
         for (Creature* flame : flames)
             if (flame && flame->IsAlive() && flame->GetVictim() == bot)
-                return flame;
-        return nullptr;
+                return flame->GetGUID();
+        return ObjectGuid::Empty;
+    }
+
+    Unit* GetFixatingFlame(Player* bot)
+    {
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+        ObjectGuid guid =
+            botAI->GetAiObjectContext()->GetValue<ObjectGuid>("sepethrea fixating flame")->Get();
+        if (guid.IsEmpty())
+            return nullptr;
+
+        Unit* flame = ObjectAccessor::GetUnit(*bot, guid);
+        if (!flame || !flame->IsAlive() || flame->GetVictim() != bot)
+            return nullptr;
+        return flame;
     }
 
     void CollectTrailPatches(Player* bot, float scanRadius, std::vector<TrailPatch>& out)
