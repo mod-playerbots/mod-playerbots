@@ -255,9 +255,7 @@ bool DebugAction::Execute(Event event)
         // Disabled: generateAll() touches Map / grid / mmap state that is only
         // safe to mutate on the world thread. Running it from a detached worker
         // (or from a bot tick on a MapUpdater thread) races with world updates
-        // and freezes the server. Use the console command instead, which runs
-        // synchronously on the world thread:
-        //   .playerbots travel generatenode
+        // and freezes the server.
         botAI->TellMasterNoFacing(
             "Disabled in chat. Run '.playerbots travel generatenode' from the server console.");
         return true;
