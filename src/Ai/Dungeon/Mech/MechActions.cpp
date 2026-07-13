@@ -1,7 +1,7 @@
 #include "Playerbots.h"
 #include "AiFactory.h"
-#include "MechanarActions.h"
-#include "MechanarShared.h"
+#include "MechActions.h"
+#include "MechShared.h"
 #include "Group.h"
 #include "Timer.h"
 
@@ -166,13 +166,11 @@ bool SepethreaKiteFlameAction::Execute(Event)
 
     float px, py;
     bool const haveParty = PartyCentroid(bot, px, py);
-    float const groupDist =
-        haveParty ? Dist2d(bot->GetPositionX(), bot->GetPositionY(), px, py) : 1000.0f;
+    float const groupDist = haveParty ? bot->GetExactDist2d(px, py) : 1000.0f;
 
     float tankX = 0.0f, tankY = 0.0f;
     bool const leashed = botAI->IsHeal(bot) && TankPosition(bot, tankX, tankY);
-    float const tankDist =
-        leashed ? Dist2d(bot->GetPositionX(), bot->GetPositionY(), tankX, tankY) : 0.0f;
+    float const tankDist = leashed ? bot->GetExactDist2d(tankX, tankY) : 0.0f;
 
     uint32 const nowMs = getMSTime();
     bool turning = _turnUntilMs != 0 && nowMs < _turnUntilMs;
@@ -321,7 +319,7 @@ bool SepethreaKiteFlameAction::Execute(Event)
                 destTankDist >= tankDist)
                 continue;
 
-            float const fd = Dist2d(destX, destY, flame->GetPositionX(), flame->GetPositionY());
+            float const fd = flame->GetExactDist2d(destX, destY);
             float const longAxis = leashed ? 0.0f : MechanarFlames::KITE_LONG_AXIS_WEIGHT;
             float score = fd + longAxis * std::fabs(std::sin(ang)) + len * 0.1f;
             if (leashed)
@@ -472,17 +470,8 @@ bool SepethreaFocusBossAction::Execute(Event)
     if (!boss)
         return false;
 
-    GuidVector const forced = { boss->GetGUID() };
-    botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Set(forced);
-
-    if (!MechanarFlames::GetFixatingFlame(bot) || MechanarFlames::TankMustGrabBoss(bot))
-    {
-        Unit* const current = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
-        bool const onFlame = MechanarFlames::IsFlame(current);
-        bool const tankOffBoss = PlayerbotAI::IsTank(bot) && current != boss;
-        if (onFlame || tankOffBoss)
-            return Attack(boss);
-    }
+    if (AI_VALUE(Unit*, "current target") != boss)
+        return Attack(boss);
 
     return false;
 }

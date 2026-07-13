@@ -1,5 +1,5 @@
-#ifndef PLAYERBOTS_MECHANARSHARED_H
-#define PLAYERBOTS_MECHANARSHARED_H
+#ifndef PLAYERBOTS_MECHSHARED_H
+#define PLAYERBOTS_MECHSHARED_H
 
 #include "Define.h"
 
@@ -52,12 +52,10 @@ namespace MechanarFlames
 
     constexpr float ROOM_ANCHOR_X = 300.0f;
     constexpr float ROOM_ANCHOR_Y = 6.0f;
-
     constexpr float ROOM_X_MIN = 285.0f;
     constexpr float ROOM_X_MAX = 308.0f;
     constexpr float ROOM_Y_MIN = -26.0f;
     constexpr float ROOM_Y_MAX = 54.0f;
-
     constexpr float KITE_LONG_AXIS_WEIGHT = 7.0f;
 
     bool InRoom(float x, float y);

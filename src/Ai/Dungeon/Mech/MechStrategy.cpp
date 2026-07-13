@@ -1,10 +1,9 @@
-#include "MechanarTriggers.h"
-#include "MechanarStrategy.h"
-#include "MechanarMultipliers.h"
+#include "MechTriggers.h"
+#include "MechStrategy.h"
+#include "MechMultipliers.h"
 
 void TbcDungeonMechanarStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-
     triggers.push_back(new TriggerNode("sepethrea kite flame", {
         NextAction("sepethrea kite flame", ACTION_EMERGENCY + 6) }));
 
@@ -21,5 +20,5 @@ void TbcDungeonMechanarStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
 void TbcDungeonMechanarStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new SepethreaKiteFlameMultiplier(botAI));
-    multipliers.push_back(new SepethreaTankFocusMultiplier(botAI));
+    multipliers.push_back(new SepethreaFocusBossMultiplier(botAI));
 }

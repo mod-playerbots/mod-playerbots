@@ -1,9 +1,9 @@
-#ifndef PLAYERBOTS_MECHANARTRIGGERCONTEXT_H
-#define PLAYERBOTS_MECHANARTRIGGERCONTEXT_H
+#ifndef PLAYERBOTS_MECHTRIGGERCONTEXT_H
+#define PLAYERBOTS_MECHTRIGGERCONTEXT_H
 
 #include "AiObjectContext.h"
 #include "TriggerContext.h"
-#include "MechanarTriggers.h"
+#include "MechTriggers.h"
 
 class TbcDungeonMechanarTriggerContext : public NamedObjectContext<Trigger>
 {

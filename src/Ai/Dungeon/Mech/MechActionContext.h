@@ -1,14 +1,14 @@
-#ifndef PLAYERBOTS_MECHANARACTIONCONTEXT_H
-#define PLAYERBOTS_MECHANARACTIONCONTEXT_H
+#ifndef PLAYERBOTS_MECHACTIONCONTEXT_H
+#define PLAYERBOTS_MECHACTIONCONTEXT_H
 
 #include "AiObjectContext.h"
 #include "Action.h"
-#include "MechanarActions.h"
+#include "MechActions.h"
 
 class TbcDungeonMechanarActionContext : public NamedObjectContext<Action>
 {
 public:
-    TbcDungeonMechanarActionContext() : NamedObjectContext<Action>(false, true)
+    TbcDungeonMechanarActionContext()
     {
         creators["sepethrea kite flame"] =
             &TbcDungeonMechanarActionContext::sepethrea_kite_flame;

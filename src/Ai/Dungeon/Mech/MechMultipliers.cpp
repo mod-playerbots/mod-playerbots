@@ -1,9 +1,10 @@
-#include "MechanarMultipliers.h"
-#include "MechanarActions.h"
-#include "MechanarShared.h"
+#include "MechMultipliers.h"
+#include "MechActions.h"
+#include "MechShared.h"
 #include "MovementActions.h"
 #include "ReachTargetActions.h"
 #include "ChooseTargetActions.h"
+#include "GenericSpellActions.h"
 #include "FollowActions.h"
 #include "AiObjectContext.h"
 #include "Playerbots.h"
@@ -31,18 +32,14 @@ float SepethreaKiteFlameMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
-float SepethreaTankFocusMultiplier::GetValue(Action* action)
+float SepethreaFocusBossMultiplier::GetValue(Action* action)
 {
-    if (!PlayerbotAI::IsTank(bot))
+    if (!dynamic_cast<DpsAssistAction*>(action) &&
+        !dynamic_cast<TankAssistAction*>(action) &&
+        !dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
         return 1.0f;
 
-    if (!dynamic_cast<TankAssistAction*>(action) &&
-        !dynamic_cast<AggressiveTargetAction*>(action) &&
-        !dynamic_cast<AttackAnythingAction*>(action))
-        return 1.0f;
-
-    Unit* boss = MechanarFlames::GetSepethrea(bot);
-    if (!boss || !boss->IsInCombat())
+    if (!MechanarFlames::GetSepethrea(bot))
         return 1.0f;
 
     return 0.0f;

@@ -1,6 +1,6 @@
 #include "Playerbots.h"
-#include "MechanarShared.h"
-#include "MechanarTriggers.h"
+#include "MechShared.h"
+#include "MechTriggers.h"
 #include "Creature.h"
 #include "DynamicObject.h"
 #include "Cell.h"
@@ -28,21 +28,6 @@ namespace
         { MechanarFlames::ROOM_X_MIN, MechanarFlames::ROOM_Y_MAX } };
     constexpr int ROOM_POLY_N = 4;
 
-    bool PointInPoly(float x, float y)
-    {
-        bool inside = false;
-        int j = ROOM_POLY_N - 1;
-        for (int i = 0; i < ROOM_POLY_N; ++i)
-        {
-            float const xi = ROOM_POLY[i].x, yi = ROOM_POLY[i].y;
-            float const xj = ROOM_POLY[j].x, yj = ROOM_POLY[j].y;
-            if (((yi > y) != (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi + 1e-6f) + xi))
-                inside = !inside;
-            j = i;
-        }
-        return inside;
-    }
-
     void ClosestOnSegment(float px, float py, float ax, float ay, float bx, float by, float& cx, float& cy)
     {
         float const dx = bx - ax, dy = by - ay;
@@ -58,18 +43,27 @@ namespace MechanarFlames
 {
     bool InRoom(float x, float y)
     {
-        return PointInPoly(x, y);
+        bool inside = false;
+        int j = ROOM_POLY_N - 1;
+        for (int i = 0; i < ROOM_POLY_N; ++i)
+        {
+            float const xi = ROOM_POLY[i].x, yi = ROOM_POLY[i].y;
+            float const xj = ROOM_POLY[j].x, yj = ROOM_POLY[j].y;
+            if (((yi > y) != (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi + 1e-6f) + xi))
+                inside = !inside;
+            j = i;
+        }
+        return inside;
     }
 
     bool SegmentInRoom(float ax, float ay, float bx, float by)
     {
-        return PointInPoly(ax, ay) && PointInPoly(bx, by) &&
-               PointInPoly((ax + bx) * 0.5f, (ay + by) * 0.5f);
+        return InRoom(ax, ay) && InRoom(bx, by) && InRoom((ax + bx) * 0.5f, (ay + by) * 0.5f);
     }
 
     void ClampIntoRoom(float& x, float& y)
     {
-        if (PointInPoly(x, y))
+        if (InRoom(x, y))
             return;
 
         float best = 1e18f, resX = x, resY = y;
@@ -101,10 +95,8 @@ namespace MechanarFlames
 
     bool HealerHoldsFire(Player* bot)
     {
-        if (!bot)
-            return false;
         PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-        if (!botAI || !botAI->IsHeal(bot))
+        if (!botAI->IsHeal(bot))
             return false;
         if (bot->GetHealthPct() <= HEALER_FIRE_BAIL_PCT)
             return false;
@@ -113,11 +105,11 @@ namespace MechanarFlames
 
     bool TankMustGrabBoss(Player* bot)
     {
-        if (!bot || !PlayerbotAI::IsTank(bot))
+        if (!PlayerbotAI::IsTank(bot))
             return false;
 
         Unit* boss = GetSepethrea(bot);
-        if (!boss || !boss->IsInCombat())
+        if (!boss)
             return false;
 
         Unit* victim = boss->GetVictim();
@@ -146,9 +138,6 @@ namespace MechanarFlames
 
     void CollectAvoidFlames(Player* bot, Unit* ignoreFlame, std::vector<std::pair<float, float>>& out)
     {
-        if (!bot)
-            return;
-
         std::list<Creature*> flames;
         CollectFlames(bot, 100.0f, flames);
         for (Creature* flame : flames)
@@ -163,9 +152,6 @@ namespace MechanarFlames
 
     Creature* GetNearestFlame(Player* bot, float radius)
     {
-        if (!bot)
-            return nullptr;
-
         std::list<Creature*> flames;
         CollectFlames(bot, radius, flames);
 
@@ -187,9 +173,6 @@ namespace MechanarFlames
 
     Unit* GetFixatingFlame(Player* bot)
     {
-        if (!bot)
-            return nullptr;
-
         std::list<Creature*> flames;
         CollectFlames(bot, 100.0f, flames);
         for (Creature* flame : flames)
@@ -200,9 +183,6 @@ namespace MechanarFlames
 
     void CollectTrailPatches(Player* bot, float scanRadius, std::vector<TrailPatch>& out)
     {
-        if (!bot)
-            return;
-
         std::vector<WorldObject*> objs;
         Acore::AllWorldObjectsInRange check(bot, scanRadius);
         Acore::WorldObjectListSearcher<Acore::AllWorldObjectsInRange> searcher(
@@ -223,9 +203,6 @@ namespace MechanarFlames
 
     bool InTrailDanger(Player* bot)
     {
-        if (!bot)
-            return false;
-
         std::vector<TrailPatch> patches;
         CollectTrailPatches(bot, TRAIL_SCAN, patches);
         for (TrailPatch const& p : patches)
@@ -240,15 +217,7 @@ namespace MechanarFlames
 
     Unit* GetSepethrea(Player* bot)
     {
-        if (!bot)
-            return nullptr;
-
-        std::list<Creature*> bosses;
-        bot->GetCreatureListWithEntryInGrid(
-            bosses, static_cast<uint32>(MechanarIDs::NPC_NETHERMANCER_SEPETHREA), 200.0f);
-        for (Creature* boss : bosses)
-            if (boss && boss->IsAlive())
-                return boss;
-        return nullptr;
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+        return botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "nethermancer sepethrea")->Get();
     }
 }

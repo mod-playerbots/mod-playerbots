@@ -1,5 +1,5 @@
-#ifndef PLAYERBOTS_MECHANARMULTIPLIERS_H
-#define PLAYERBOTS_MECHANARMULTIPLIERS_H
+#ifndef PLAYERBOTS_MECHMULTIPLIERS_H
+#define PLAYERBOTS_MECHMULTIPLIERS_H
 
 #include "Multiplier.h"
 
@@ -10,10 +10,10 @@ public:
     float GetValue(Action* action) override;
 };
 
-class SepethreaTankFocusMultiplier : public Multiplier
+class SepethreaFocusBossMultiplier : public Multiplier
 {
 public:
-    SepethreaTankFocusMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "sepethrea tank focus") {}
+    SepethreaFocusBossMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "sepethrea focus boss") {}
     float GetValue(Action* action) override;
 };
 

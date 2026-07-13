@@ -1,9 +1,9 @@
-#ifndef PLAYERBOTS_MECHANARACTIONS_H
-#define PLAYERBOTS_MECHANARACTIONS_H
+#ifndef PLAYERBOTS_MECHACTIONS_H
+#define PLAYERBOTS_MECHACTIONS_H
 
 #include "AttackAction.h"
 #include "MovementActions.h"
-#include "MechanarTriggers.h"
+#include "MechTriggers.h"
 
 class SepethreaKiteFlameAction : public MovementAction
 {
