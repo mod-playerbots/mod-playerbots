@@ -163,10 +163,7 @@ bool BuffTrigger::IsActive()
         return false;
 
     Aura* aura = botAI->GetAura(spell, target, checkIsOwner, checkDuration);
-    if (!aura || (beforeDuration && uint32(aura->GetDuration()) < beforeDuration))
-        return true;
-
-    return false;
+    return ai::buff::BuffBelowRefreshTarget(botAI, aura, beforeDuration);
 }
 
 Value<Unit*>* BuffOnPartyTrigger::GetTargetValue()
@@ -749,4 +746,9 @@ bool NewPetTrigger::IsActive()
     }
 
     return false;
+}
+
+bool ForceRebuffPendingTrigger::IsActive()
+{
+    return botAI->forceRebuff.IsPending();
 }

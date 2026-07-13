@@ -128,6 +128,7 @@ PlayerbotAI::PlayerbotAI()
 
 PlayerbotAI::PlayerbotAI(Player* bot)
     : PlayerbotAIBase(true),
+      forceRebuff(bot),
       bot(bot),
       master(nullptr),
       chatHelper(this),
@@ -3814,6 +3815,8 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
         out << "Casting " << ChatHelper::FormatSpell(spellInfo);
         TellMasterNoFacing(out);
     }
+
+    forceRebuff.NoteCast(spellInfo);
 
     return true;
 }
