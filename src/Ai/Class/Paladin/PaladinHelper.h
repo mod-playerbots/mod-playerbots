@@ -7,8 +7,8 @@
 #ifndef PLAYERBOTS_PALADINHELPER_H
 #define PLAYERBOTS_PALADINHELPER_H
 
-#include <initializer_list>
 #include "Unit.h"
+#include <initializer_list>
 
 class Player;
 

@@ -1,7 +1,6 @@
 #ifndef PLAYERBOTS_ICCACTIONS_H
 #define PLAYERBOTS_ICCACTIONS_H
 
-#include <set>
 #include "Action.h"
 #include "MovementActions.h"
 #include "PlayerbotAI.h"
@@ -19,6 +18,7 @@
 #include "GridNotifiersImpl.h"
 #include "Vehicle.h"
 #include "ICCTriggers.h"
+#include <set>
 
 inline const Position ICC_LM_TANK_POSITION = Position(-391.0f, 2259.0f, 42.0f);
 inline const Position ICC_LM_BONE_STORM_AT_POSITION = Position(-390.02332f, 2179.3481f, 41.96729f);

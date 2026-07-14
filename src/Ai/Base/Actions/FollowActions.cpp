@@ -4,9 +4,6 @@
  */
 
 #include "FollowActions.h"
-#include <algorithm>
-#include <cmath>
-#include <array>
 #include "Event.h"
 #include "Formations.h"
 #include "LastMovementValue.h"
@@ -16,6 +13,9 @@
 #include "ServerFacade.h"
 #include "Transport.h"
 #include "Map.h"
+#include <algorithm>
+#include <array>
+#include <cmath>
 
 namespace
 {

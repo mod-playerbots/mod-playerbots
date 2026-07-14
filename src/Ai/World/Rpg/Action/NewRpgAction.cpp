@@ -1,6 +1,4 @@
 #include "NewRpgAction.h"
-#include <cmath>
-#include <cstdlib>
 #include "AreaDefines.h"
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
@@ -22,6 +20,8 @@
 #include "SharedDefines.h"
 #include "Timer.h"
 #include "TravelMgr.h"
+#include <cmath>
+#include <cstdlib>
 
 bool TellRpgStatusAction::Execute(Event event)
 {

@@ -15,8 +15,8 @@
 #include "CharmInfo.h"
 #include "SpellMgr.h"
 #include "SpellInfo.h"
-#include <vector>
 #include <algorithm>
+#include <vector>
 
 enum PetSpells
 {

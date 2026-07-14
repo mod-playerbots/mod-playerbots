@@ -5,8 +5,6 @@
  */
 
 #include "WaitForAttackAction.h"
-#include <algorithm>
-#include <cctype>
 #include "ObjectAccessor.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotTextMgr.h"
@@ -14,6 +12,8 @@
 #include "ServerFacade.h"
 #include "TravelMgr.h"
 #include "WaitForAttackStrategy.h"
+#include <algorithm>
+#include <cctype>
 
 namespace
 {

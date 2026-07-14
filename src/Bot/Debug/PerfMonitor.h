@@ -8,11 +8,11 @@
 #define PLAYERBOTS_PERFMONITOR_H
 
 #include <chrono>
+#include <cstdint>
 #include <ctime>
 #include <map>
 #include <mutex>
 #include <vector>
-#include <cstdint>
 
 typedef std::vector<std::string> PerformanceStack;
 

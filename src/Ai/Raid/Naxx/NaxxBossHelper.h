@@ -1,7 +1,6 @@
 #ifndef PLAYERBOTS_NAXXBOSSHELPER_H
 #define PLAYERBOTS_NAXXBOSSHELPER_H
 
-#include <string>
 #include "AiObject.h"
 #include "AiObjectContext.h"
 #include "EventMap.h"
@@ -16,6 +15,7 @@
 #include "Spell.h"
 #include "Timer.h"
 #include "NaxxSpellIds.h"
+#include <string>
 
 const uint32 NAXX_MAP_ID = 533;
 

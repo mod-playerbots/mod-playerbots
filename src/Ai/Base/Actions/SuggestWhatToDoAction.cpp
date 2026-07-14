@@ -4,7 +4,6 @@
  * or (at your option) any later version.
  */
 
-#include <functional>
 #include "SuggestWhatToDoAction.h"
 #include "ServerFacade.h"
 #include "Event.h"
@@ -20,6 +19,7 @@
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "Channel.h"
+#include <functional>
 
 enum eTalkType
 {

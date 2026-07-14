@@ -5,7 +5,6 @@
  */
 
 #include "TellLosAction.h"
-#include <sstream>
 #include "ChatHelper.h"
 #include "Event.h"
 #include "ItemTemplate.h"
@@ -13,6 +12,7 @@
 #include "Playerbots.h"
 #include "StatsWeightCalculator.h"
 #include "World.h"
+#include <sstream>
 
 bool TellLosAction::Execute(Event event)
 {

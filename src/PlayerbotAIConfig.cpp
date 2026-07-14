@@ -5,7 +5,6 @@
  */
 
 #include "PlayerbotAIConfig.h"
-#include <iostream>
 #include "BisListMgr.h"
 #include "Config.h"
 #include "NewRpgInfo.h"
@@ -18,6 +17,7 @@
 #include "RandomPlayerbotMgr.h"
 #include "Talentspec.h"
 #include "TravelMgr.h"
+#include <iostream>
 
 template <class T>
 void LoadList(std::string const value, T& list)

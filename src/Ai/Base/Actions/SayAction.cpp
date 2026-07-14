@@ -6,11 +6,11 @@
 
 #include "AiFactory.h"
 #include "SayAction.h"
-#include <regex>
-#include <string>
 #include "Event.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
+#include <regex>
+#include <string>
 
 static const std::unordered_set<std::string> noReplyMsgs = {
     "join",

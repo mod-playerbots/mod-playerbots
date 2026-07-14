@@ -5,7 +5,6 @@
  */
 
 #include "EquipAction.h"
-#include <utility>
 #include "Event.h"
 #include "ItemCountValue.h"
 #include "ItemUsageValue.h"
@@ -13,6 +12,7 @@
 #include "Playerbots.h"
 #include "StatsWeightCalculator.h"
 #include "ItemPackets.h"
+#include <utility>
 
 bool EquipAction::Execute(Event event)
 {

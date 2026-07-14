@@ -7,13 +7,13 @@
 #ifndef PLAYERBOTS_GUILDTASKMGR_H
 #define PLAYERBOTS_GUILDTASKMGR_H
 
-#include <map>
-#include <vector>
-#include <cstdint>
 #include "DatabaseEnvFwd.h"
 #include "Unit.h"
 #include "Player.h"
 #include "Chat.h"
+#include <cstdint>
+#include <map>
+#include <vector>
 
 class GuildTaskMgr
 {

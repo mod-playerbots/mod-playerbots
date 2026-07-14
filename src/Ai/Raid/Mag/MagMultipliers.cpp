@@ -4,8 +4,6 @@
  * or (at your option) any later version.
  */
 
-#include <unordered_map>
-#include <ctime>
 #include "MagMultipliers.h"
 #include "MagActions.h"
 #include "MagHelpers.h"
@@ -22,6 +20,8 @@
 #include "ReachTargetActions.h"
 #include "WarriorActions.h"
 #include "WipeAction.h"
+#include <ctime>
+#include <unordered_map>
 
 using namespace MagtheridonHelpers;
 

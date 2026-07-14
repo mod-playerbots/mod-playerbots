@@ -1,5 +1,3 @@
-#include <unordered_map>
-#include <unordered_set>
 #include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "Multiplier.h"
@@ -10,6 +8,8 @@
 #include "ICCTriggers.h"
 #include "RtiValue.h"
 #include "Vehicle.h"
+#include <unordered_map>
+#include <unordered_set>
 
 namespace
 {

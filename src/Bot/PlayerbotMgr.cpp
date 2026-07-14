@@ -4,13 +4,6 @@
  */
 
 #include "PlayerbotMgr.h"
-#include <cstdio>
-#include <cstring>
-#include <string>
-#include <unordered_set>
-#include <openssl/sha.h>
-#include <iomanip>
-#include <algorithm>
 #include "ChannelMgr.h"
 #include "CharacterCache.h"
 #include "CharacterPackets.h"
@@ -36,6 +29,13 @@
 #include "BroadcastHelper.h"
 #include "WorldSessionMgr.h"
 #include "DatabaseEnv.h"
+#include <algorithm>
+#include <cstdio>
+#include <cstring>
+#include <iomanip>
+#include <openssl/sha.h>
+#include <string>
+#include <unordered_set>
 
 class BotInitGuard
 {

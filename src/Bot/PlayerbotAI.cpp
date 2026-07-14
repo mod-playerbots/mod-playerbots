@@ -4,10 +4,6 @@
  */
 
 #include "PlayerbotAI.h"
-#include <cmath>
-#include <mutex>
-#include <sstream>
-#include <string>
 #include "AiFactory.h"
 #include "BudgetValues.h"
 #include "ChannelMgr.h"
@@ -55,6 +51,10 @@
 #include "Unit.h"
 #include "UpdateTime.h"
 #include "Vehicle.h"
+#include <cmath>
+#include <mutex>
+#include <sstream>
+#include <string>
 
 constexpr uint32 SPELL_TITAN_GRIP = 49152;
 constexpr uint32 SPELL_DK_FROST_PRESENCE = 48263;

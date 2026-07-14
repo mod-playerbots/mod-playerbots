@@ -5,7 +5,6 @@
  */
 
 #include "GenericTriggers.h"
-#include <string>
 #include "GenericBuffUtils.h"
 #include "CreatureAI.h"
 #include "ItemVisitors.h"
@@ -21,6 +20,7 @@
 #include "PlayerbotAI.h"
 #include "Player.h"
 #include "Corpse.h"
+#include <string>
 
 bool LowManaTrigger::IsActive()
 {

@@ -7,11 +7,11 @@
 #ifndef PLAYERBOTS_GENERICTRIGGERS_H
 #define PLAYERBOTS_GENERICTRIGGERS_H
 
-#include <utility>
 #include "HealthTriggers.h"
 #include "RangeTriggers.h"
 #include "Trigger.h"
 #include "Player.h"
+#include <utility>
 
 class PlayerbotAI;
 class Unit;

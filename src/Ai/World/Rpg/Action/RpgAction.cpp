@@ -5,7 +5,6 @@
  */
 
 #include "RpgAction.h"
-#include <random>
 #include "ChatHelper.h"
 #include "EmoteAction.h"
 #include "Event.h"
@@ -13,6 +12,7 @@
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "RpgSubActions.h"
+#include <random>
 
 bool RpgAction::Execute(Event /*event*/)
 {

@@ -1,6 +1,3 @@
-#include <array>
-#include <cmath>
-#include <map>
 #include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "Multiplier.h"
@@ -13,6 +10,9 @@
 #include "RtiValue.h"
 #include "Timer.h"
 #include "Vehicle.h"
+#include <array>
+#include <cmath>
+#include <map>
 
 // Rotface
 bool IccRotfaceTankPositionAction::Execute(Event /*event*/)

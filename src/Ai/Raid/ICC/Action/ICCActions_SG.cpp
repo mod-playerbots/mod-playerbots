@@ -1,5 +1,4 @@
 #include "ICCActions.h"
-#include <limits>
 #include "NearestNpcsValue.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
@@ -9,6 +8,7 @@
 #include "GenericActions.h"
 #include "ICCTriggers.h"
 #include "Multiplier.h"
+#include <limits>
 
 bool IccSindragosaGroupPositionAction::Execute(Event /*event*/)
 {

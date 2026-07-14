@@ -2,7 +2,6 @@
 #include "UldActions.h"
 #include "CombatStrategy.h"
 #include "FollowMasterStrategy.h"
-#include <cmath>
 #include "AiObjectContext.h"
 #include "DBCEnums.h"
 #include "GameObject.h"
@@ -22,6 +21,7 @@
 #include "Vehicle.h"
 #include "RtiTargetValue.h"
 #include "TankAssistStrategy.h"
+#include <cmath>
 
 const std::string ADD_STRATEGY_CHAR = "+";
 const std::string REMOVE_STRATEGY_CHAR = "-";

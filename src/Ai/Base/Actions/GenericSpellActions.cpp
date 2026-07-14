@@ -5,8 +5,6 @@
  */
 
 #include "GenericSpellActions.h"
-#include <ctime>
-#include <unordered_set>
 #include "Event.h"
 #include "ItemTemplate.h"
 #include "ObjectDefines.h"
@@ -19,6 +17,8 @@
 #include "Chat.h"
 #include "GenericBuffUtils.h"
 #include "PlayerbotAI.h"
+#include <ctime>
+#include <unordered_set>
 
 using ai::buff::MakeAuraQualifierForBuff;
 using ai::spell::HasSpellOrCategoryCooldown;

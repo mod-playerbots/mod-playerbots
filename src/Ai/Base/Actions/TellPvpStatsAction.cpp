@@ -5,7 +5,6 @@
  */
 
 #include "TellPvpStatsAction.h"
-#include <map>
 #include "ArenaTeam.h"
 #include "ArenaTeamMgr.h"
 #include "Event.h"
@@ -15,6 +14,7 @@
 #include "Playerbots.h"
 #include "SharedDefines.h"
 #include "Language.h"
+#include <map>
 
 namespace
 {

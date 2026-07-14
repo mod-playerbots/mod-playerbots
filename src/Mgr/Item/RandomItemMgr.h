@@ -7,15 +7,15 @@
 #ifndef PLAYERBOTS_RANDOMITEMMGR_H
 #define PLAYERBOTS_RANDOMITEMMGR_H
 
+#include "Player.h"
+#include "AiFactory.h"
+#include "ItemTemplate.h"
 #include <array>
 #include <atomic>
 #include <map>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include "Player.h"
-#include "AiFactory.h"
-#include "ItemTemplate.h"
 
 class ChatHandler;
 

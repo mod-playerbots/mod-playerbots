@@ -7,13 +7,13 @@
 #ifndef PLAYERBOTS_VALUE_H
 #define PLAYERBOTS_VALUE_H
 
-#include <time.h>
-#include <unordered_map>
 #include "AiObject.h"
 #include "ObjectGuid.h"
 #include "PerfMonitor.h"
 #include "Timer.h"
 #include "Unit.h"
+#include <time.h>
+#include <unordered_map>
 
 class PlayerbotAI;
 class Unit;

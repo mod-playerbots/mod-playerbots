@@ -10,8 +10,8 @@
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
 #include "World.h"
-#include <unordered_map>
 #include <sstream>
+#include <unordered_map>
 
 namespace
 {

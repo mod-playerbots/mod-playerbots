@@ -5,8 +5,6 @@
  */
 
 #include "TravelMgr.h"
-#include <iomanip>
-#include <numeric>
 #include "AreaDefines.h"
 #include "Creature.h"
 #include "Log.h"
@@ -25,6 +23,8 @@
 #include "Map.h"
 #include "Corpse.h"
 #include "CellImpl.h"
+#include <iomanip>
+#include <numeric>
 
 // Navigation data
 
