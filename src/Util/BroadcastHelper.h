@@ -7,6 +7,13 @@
 #ifndef PLAYERBOTS_BROADCASTHELPER_H
 #define PLAYERBOTS_BROADCASTHELPER_H
 
+#include "Define.h"
+#include <cstdint>
+#include <list>
+#include <string>
+#include <utility>
+#include <vector>
+
 class PlayerbotAI;
 class Player;
 class ItemTemplate;
