@@ -5,7 +5,7 @@
  */
 
 #include "RandomPlayerbotMgr.h"
-#include <WorldSessionMgr.h>
+#include "WorldSessionMgr.h"
 #include <algorithm>
 #include <boost/thread/thread.hpp>
 #include <cstdlib>
