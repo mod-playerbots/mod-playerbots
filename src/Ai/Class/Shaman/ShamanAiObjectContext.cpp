@@ -64,14 +64,14 @@ public:
     ShamanEarthTotemStrategyFactoryInternal() : NamedObjectContext<Strategy>(false, true)
     {
         creators["strength of earth"] = &ShamanEarthTotemStrategyFactoryInternal::strength_of_earth_totem;
-        creators["stoneskin"] = &ShamanEarthTotemStrategyFactoryInternal::stoneclaw_totem;
+        creators["stoneskin"] = &ShamanEarthTotemStrategyFactoryInternal::stoneskin_totem;
         creators["tremor"] = &ShamanEarthTotemStrategyFactoryInternal::earth_totem;
         creators["earthbind"] = &ShamanEarthTotemStrategyFactoryInternal::earthbind_totem;
     }
 
 private:
     static Strategy* strength_of_earth_totem(PlayerbotAI* botAI) { return new StrengthOfEarthTotemStrategy(botAI); }
-    static Strategy* stoneclaw_totem(PlayerbotAI* botAI) { return new StoneclawTotemStrategy(botAI); }
+    static Strategy* stoneskin_totem(PlayerbotAI* botAI) { return new StoneskinTotemStrategy(botAI); }
     static Strategy* earth_totem(PlayerbotAI* botAI) { return new EarthTotemStrategy(botAI); }
     static Strategy* earthbind_totem(PlayerbotAI* botAI) { return new EarthbindTotemStrategy(botAI); }
 };
