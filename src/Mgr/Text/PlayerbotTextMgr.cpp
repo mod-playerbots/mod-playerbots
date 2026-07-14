@@ -3,6 +3,7 @@
  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
  * or (at your option) any later version.
  */
+
 #include "DatabaseEnv.h"
 #include "WorldSessionMgr.h"
 #include "Random.h"
