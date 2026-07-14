@@ -1,5 +1,5 @@
-#include "Playerbots.h"
 #include "GDActions.h"
+#include "Playerbots.h"
 
 bool AvoidPoisonNovaAction::Execute(Event /*event*/)
 {

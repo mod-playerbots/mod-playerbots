@@ -1,5 +1,5 @@
-#include "Playerbots.h"
 #include "CoSActions.h"
+#include "Playerbots.h"
 
 bool ExplodeGhoulSpreadAction::Execute(Event /*event*/)
 {

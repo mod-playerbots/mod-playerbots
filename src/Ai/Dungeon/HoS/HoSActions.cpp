@@ -1,5 +1,5 @@
-#include "Playerbots.h"
 #include "HoSActions.h"
+#include "Playerbots.h"
 
 bool ShatterSpreadAction::Execute(Event /*event*/)
 {

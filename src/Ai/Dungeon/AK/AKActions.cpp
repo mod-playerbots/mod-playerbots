@@ -1,5 +1,5 @@
-#include "Playerbots.h"
 #include "AKActions.h"
+#include "Playerbots.h"
 
 bool AttackNadoxGuardianAction::Execute(Event /*event*/)
 {

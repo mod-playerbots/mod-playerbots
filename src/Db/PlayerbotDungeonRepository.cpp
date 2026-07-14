@@ -4,13 +4,13 @@
  * or (at your option) any later version.
  */
 
+#include "PlayerbotDungeonRepository.h"
 #include "Log.h"
 #include "Timer.h"
 #include "DatabaseEnv.h"
 #include "Field.h"
 #include "World.h"
 #include "QueryResult.h"    // Required due to a poor implementation by AC
-#include "PlayerbotDungeonRepository.h"
 
 std::vector<DungeonSuggestion> const PlayerbotDungeonRepository::GetDungeonSuggestions()
 {

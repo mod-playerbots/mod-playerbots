@@ -1,5 +1,5 @@
-#include "Playerbots.h"
 #include "NexActions.h"
+#include "Playerbots.h"
 
 bool MoveFromWhirlwindAction::Execute(Event /*event*/)
 {

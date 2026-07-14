@@ -1,5 +1,5 @@
-#include "Playerbots.h"
 #include "TOCTriggers.h"
+#include "Playerbots.h"
 #include "AiObject.h"
 #include "AiObjectContext.h"
 

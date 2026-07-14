@@ -1,5 +1,5 @@
-#include "Playerbots.h"
 #include "ANActions.h"
+#include "Playerbots.h"
 
 bool AttackWebWrapAction::isUseful() { return !botAI->IsHeal(bot); }
 bool AttackWebWrapAction::Execute(Event /*event*/)

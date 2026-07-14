@@ -1,7 +1,7 @@
+#include "ACActions.h"
 #include "Playerbots.h"
 #include "AiFactory.h"
 #include "ACTriggers.h"
-#include "ACActions.h"
 
 // Shirrak the Dead Watcher
 

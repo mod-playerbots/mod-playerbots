@@ -3,11 +3,11 @@
  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
  * or (at your option) any later version.
  */
+#include "PlayerbotTextMgr.h"
 #include "DatabaseEnv.h"
 #include "WorldSessionMgr.h"
 #include "Random.h"
 #include "QueryResult.h"    // Required due to a poor implementation by AC
-#include "PlayerbotTextMgr.h"
 
 void PlayerbotTextMgr::replaceAll(std::string& str, const std::string& from, const std::string& to)
 {

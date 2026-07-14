@@ -1,5 +1,5 @@
-#include "Playerbots.h"
 #include "HoLActions.h"
+#include "Playerbots.h"
 
 bool BjarngrimTargetAction::Execute(Event /*event*/)
 {

@@ -1,5 +1,5 @@
-#include "ACTriggers.h"
 #include "ACStrategy.h"
+#include "ACTriggers.h"
 #include "ACMultipliers.h"
 
 void TbcDungeonAuchenaiCryptsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

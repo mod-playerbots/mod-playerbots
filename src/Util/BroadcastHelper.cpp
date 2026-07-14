@@ -1,6 +1,6 @@
 
-#include "Playerbots.h"
 #include "BroadcastHelper.h"
+#include "Playerbots.h"
 #include "ServerFacade.h"
 #include "Channel.h"
 #include "AiFactory.h"

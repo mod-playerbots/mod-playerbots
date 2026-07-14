@@ -1,5 +1,5 @@
-#include "Playerbots.h"
 #include "TOCActions.h"
+#include "Playerbots.h"
 #include "NearestNpcsValue.h"
 #include "ObjectAccessor.h"
 #include "Vehicle.h"

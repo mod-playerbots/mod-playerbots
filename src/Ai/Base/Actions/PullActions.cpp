@@ -4,12 +4,12 @@
  * or (at your option) any later version.
  */
 
+#include "PullActions.h"
 #include "AttackersValue.h"
 #include "CreatureAI.h"
 #include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
 #include "PositionValue.h"
-#include "PullActions.h"
 #include "PullStrategy.h"
 #include "RtiTargetValue.h"
 #include <algorithm>

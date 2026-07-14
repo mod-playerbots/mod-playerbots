@@ -4,8 +4,8 @@
  * or (at your option) any later version.
  */
 
-#include "AiFactory.h"
 #include "SayAction.h"
+#include "AiFactory.h"
 #include "Event.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
