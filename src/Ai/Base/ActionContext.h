@@ -65,6 +65,7 @@
 #include "StayActions.h"
 #include "SuggestWhatToDoAction.h"
 #include "TravelAction.h"
+#include "UseItemAction.h"
 #include "VehicleActions.h"
 #include "WaitForAttackAction.h"
 #include "WorldBuffAction.h"

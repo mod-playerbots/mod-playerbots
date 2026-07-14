@@ -3,6 +3,7 @@
 
 #include "Action.h"
 #include "BWLActions.h"
+#include "BossAuraActions.h"
 #include "NamedObjectContext.h"
 
 class RaidBwlActionContext : public NamedObjectContext<Action>

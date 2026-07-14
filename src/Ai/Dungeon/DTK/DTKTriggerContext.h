@@ -3,6 +3,7 @@
 
 #include "AiObjectContext.h"
 #include "DTKTriggers.h"
+#include "GenericTriggers.h"
 #include "NamedObjectContext.h"
 
 class WotlkDungeonDTKTriggerContext : public NamedObjectContext<Trigger>
