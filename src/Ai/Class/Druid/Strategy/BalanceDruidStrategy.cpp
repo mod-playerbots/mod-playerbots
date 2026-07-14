@@ -5,7 +5,6 @@
  */
 
 #include "BalanceDruidStrategy.h"
-
 #include "AiObjectContext.h"
 #include "FeralDruidStrategy.h"
 

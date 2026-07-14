@@ -10,7 +10,6 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-
 #include "PlayerbotAI.h"
 
 class PlayerbotRepository

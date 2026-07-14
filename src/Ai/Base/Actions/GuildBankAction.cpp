@@ -5,7 +5,6 @@
  */
 
 #include "GuildBankAction.h"
-
 #include "GuildMgr.h"
 #include "PlayerbotAI.h"
 #include "AiObjectContext.h"

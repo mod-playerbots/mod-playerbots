@@ -5,11 +5,9 @@
  */
 
 #include "TravelNode.h"
-
 #include <iomanip>
 #include <regex>
 #include <unordered_set>
-
 #include "BudgetValues.h"
 #include "PathGenerator.h"
 #include "Playerbots.h"

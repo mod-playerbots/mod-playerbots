@@ -5,9 +5,7 @@
  */
 
 #include "BattleGroundTactics.h"
-
 #include <algorithm>
-
 #include "ArenaTeam.h"
 #include "ArenaTeamMgr.h"
 #include "BattleGroundJoinAction.h"

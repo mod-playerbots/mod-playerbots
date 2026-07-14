@@ -2,7 +2,6 @@
 #define PLAYERBOTS_NAXXSPELLIDS_H
 
 #include <initializer_list>
-
 #include "PlayerbotAI.h"
 
 // use src/server/scripts/Northrend/Naxxramas/naxxramas.h for CreatureId, NaxxramasSay, NaxxramasEvent, NaxxramasMisc

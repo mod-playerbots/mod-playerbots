@@ -10,7 +10,6 @@
 #include <array>
 #include <string>
 #include <vector>
-
 #include "Action.h"
 #include "AiFactory.h"
 #include "Playerbots.h"

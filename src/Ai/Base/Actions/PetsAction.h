@@ -8,7 +8,6 @@
 #define PLAYERBOTS_PETSACTION_H
 
 #include <string>
-
 #include "Action.h"
 
 class PlayerbotAI;

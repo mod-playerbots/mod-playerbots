@@ -1,5 +1,4 @@
 #include "EstimatedLifetimeValue.h"
-
 #include "AiFactory.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"

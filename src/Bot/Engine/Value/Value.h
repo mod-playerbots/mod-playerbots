@@ -9,7 +9,6 @@
 
 #include <time.h>
 #include <unordered_map>
-
 #include "AiObject.h"
 #include "ObjectGuid.h"
 #include "PerfMonitor.h"

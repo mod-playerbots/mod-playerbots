@@ -5,7 +5,6 @@
  */
 
 #include "SeeSpellAction.h"
-
 #include "Event.h"
 #include "Formations.h"
 #include "Playerbots.h"

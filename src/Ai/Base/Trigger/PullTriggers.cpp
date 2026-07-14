@@ -5,7 +5,6 @@
  */
 
 #include "PullTriggers.h"
-
 #include "PositionValue.h"
 #include "Player.h"
 #include "PlayerbotAI.h"

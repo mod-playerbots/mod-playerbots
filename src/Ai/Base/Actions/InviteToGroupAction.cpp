@@ -5,7 +5,6 @@
  */
 
 #include "InviteToGroupAction.h"
-
 #include "BroadcastHelper.h"
 #include "Event.h"
 #include "GuildMgr.h"

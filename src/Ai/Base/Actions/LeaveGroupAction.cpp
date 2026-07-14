@@ -5,7 +5,6 @@
  */
 
 #include "LeaveGroupAction.h"
-
 #include "Event.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotTextMgr.h"

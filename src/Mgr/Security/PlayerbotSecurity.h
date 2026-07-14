@@ -8,7 +8,6 @@
 #define PLAYERBOTS_PLAYERBOTSECURITY_H
 
 #include <map>
-
 #include "Common.h"
 #include "ObjectGuid.h"
 

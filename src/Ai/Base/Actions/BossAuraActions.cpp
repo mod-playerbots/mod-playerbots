@@ -7,7 +7,6 @@
 #include <HunterBuffStrategies.h>
 #include <PaladinBuffStrategies.h>
 #include <PlayerbotAI.h>
-
 #include "BossAuraActions.h"
 #include "BossAuraTriggers.h"
 

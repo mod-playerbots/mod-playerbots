@@ -6,7 +6,6 @@
 
 #include "PartyMemberValue.h"
 #include "Corpse.h"
-
 #include "Group.h"
 #include "PlayerbotAI.h"
 #include "ServerFacade.h"

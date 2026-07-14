@@ -1,5 +1,4 @@
 #include "OnyTriggers.h"
-
 #include "GenericTriggers.h"
 #include "ObjectAccessor.h"
 #include "PlayerbotAI.h"

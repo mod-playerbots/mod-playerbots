@@ -8,7 +8,6 @@
 #define PLAYERBOTS_CHATFILTER_H
 
 #include <vector>
-
 #include "Common.h"
 #include "PlayerbotAIAware.h"
 

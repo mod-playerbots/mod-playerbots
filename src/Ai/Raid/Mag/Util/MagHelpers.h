@@ -10,7 +10,6 @@
 #include <ctime>
 #include <unordered_map>
 #include <vector>
-
 #include "Group.h"
 #include "ObjectGuid.h"
 #include "PlayerbotAI.h"

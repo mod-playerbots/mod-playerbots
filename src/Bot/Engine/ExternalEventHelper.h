@@ -8,7 +8,6 @@
 #define PLAYERBOTS_EXTERNALEVENTHELPER_H
 
 #include <map>
-
 #include "Common.h"
 
 class AiObjectContext;

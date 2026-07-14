@@ -5,7 +5,6 @@
  */
 
 #include "Action.h"
-
 #include "Playerbots.h"
 #include "Timer.h"
 

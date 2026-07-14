@@ -5,7 +5,6 @@
  */
 
 #include <random>
-
 #include "ChooseRpgTargetAction.h"
 #include "BudgetValues.h"
 #include "ChatHelper.h"

@@ -8,7 +8,6 @@
 #define PLAYERBOTS_TRAVELNODE_H
 
 #include <shared_mutex>
-
 #include "TravelMgr.h"
 
 // THEORY

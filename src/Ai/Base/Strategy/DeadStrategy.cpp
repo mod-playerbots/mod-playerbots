@@ -5,7 +5,6 @@
  */
 
 #include "DeadStrategy.h"
-
 #include "Playerbots.h"
 
 void DeadStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

@@ -1,5 +1,4 @@
 #include "MCMultipliers.h"
-
 #include "Playerbots.h"
 #include "ChooseTargetActions.h"
 #include "GenericSpellActions.h"

@@ -5,7 +5,6 @@
  */
 
 #include "ThreatValues.h"
-
 #include "Playerbots.h"
 #include "ThreatManager.h"
 

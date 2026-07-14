@@ -5,7 +5,6 @@
  */
 
 #include "ReviveFromCorpseAction.h"
-
 #include "Event.h"
 #include "FleeManager.h"
 #include "GameGraveyard.h"

@@ -5,7 +5,6 @@
  */
 
 #include "PriestAiObjectContext.h"
-
 #include "GenericPriestStrategy.h"
 #include "HolyPriestStrategy.h"
 #include "NamedObjectContext.h"

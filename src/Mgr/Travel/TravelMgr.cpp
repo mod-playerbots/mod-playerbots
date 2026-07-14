@@ -5,10 +5,8 @@
  */
 
 #include "TravelMgr.h"
-
 #include <iomanip>
 #include <numeric>
-
 #include "AreaDefines.h"
 #include "Creature.h"
 #include "Log.h"

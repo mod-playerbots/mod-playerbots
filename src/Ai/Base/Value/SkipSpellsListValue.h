@@ -8,7 +8,6 @@
 #define PLAYERBOTS_SKIPSPELLSLISTVALUE_H
 
 #include <set>
-
 #include "Value.h"
 
 class PlayerbotAI;

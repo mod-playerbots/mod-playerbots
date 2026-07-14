@@ -1,5 +1,4 @@
 #include "NaxxActions.h"
-
 #include "Playerbots.h"
 
 bool GrobbulusGoBehindAction::Execute(Event /*event*/)

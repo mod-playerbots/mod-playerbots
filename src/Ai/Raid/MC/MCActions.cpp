@@ -1,5 +1,4 @@
 #include "MCActions.h"
-
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 #include "MCHelpers.h"

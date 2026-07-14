@@ -8,7 +8,6 @@
 #define PLAYERBOTS_MOVEMENTACTIONS_H
 
 #include <cmath>
-
 #include "Action.h"
 #include "LastMovementValue.h"
 #include "PlayerbotAIConfig.h"

@@ -5,7 +5,6 @@
  */
 
 #include <functional>
-
 #include "SuggestWhatToDoAction.h"
 #include "ServerFacade.h"
 #include "Event.h"

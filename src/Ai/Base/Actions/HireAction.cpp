@@ -5,7 +5,6 @@
  */
 
 #include "HireAction.h"
-
 #include "Event.h"
 #include "RandomPlayerbotMgr.h"
 #include "PlayerbotAI.h"

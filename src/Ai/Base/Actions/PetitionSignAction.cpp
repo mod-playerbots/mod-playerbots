@@ -5,7 +5,6 @@
  */
 
 #include "PetitionSignAction.h"
-
 #include "ArenaTeam.h"
 #include "Event.h"
 #include "Playerbots.h"

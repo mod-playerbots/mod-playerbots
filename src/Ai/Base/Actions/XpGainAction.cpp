@@ -5,7 +5,6 @@
  */
 
 #include "XpGainAction.h"
-
 #include "Event.h"
 #include "GuildMgr.h"
 #include "PlayerbotAIConfig.h"

@@ -4,7 +4,6 @@
  */
 
 #include "PlayerbotMgr.h"
-
 #include <cstdio>
 #include <cstring>
 #include <string>
@@ -12,7 +11,6 @@
 #include <openssl/sha.h>
 #include <iomanip>
 #include <algorithm>
-
 #include "ChannelMgr.h"
 #include "CharacterCache.h"
 #include "CharacterPackets.h"

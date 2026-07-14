@@ -5,7 +5,6 @@
  */
 
 #include "GenericPaladinNonCombatStrategy.h"
-
 #include "GenericPaladinStrategyActionNodeFactory.h"
 #include "Playerbots.h"
 #include "AiFactory.h"

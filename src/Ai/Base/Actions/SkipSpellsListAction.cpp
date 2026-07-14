@@ -5,7 +5,6 @@
  */
 
 #include "SkipSpellsListAction.h"
-
 #include "Event.h"
 #include "LootAction.h"
 #include "Playerbots.h"

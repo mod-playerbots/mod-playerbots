@@ -5,10 +5,8 @@
  */
 
 #include "CheckValuesAction.h"
-
 #include "Event.h"
 #include "ServerFacade.h"
-
 #include "PlayerbotAI.h"
 #include "TravelNode.h"
 #include "AiObjectContext.h"

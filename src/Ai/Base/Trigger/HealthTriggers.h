@@ -8,7 +8,6 @@
 #define PLAYERBOTS_HEALTHTRIGGERS_H
 
 #include <stdexcept>
-
 #include "PlayerbotAIConfig.h"
 #include "Trigger.h"
 

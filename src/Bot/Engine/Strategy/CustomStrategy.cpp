@@ -5,10 +5,8 @@
  */
 
 #include "CustomStrategy.h"
-
 #include <regex>
 #include <stdexcept>
-
 #include "Playerbots.h"
 
 std::map<std::string, std::string> CustomStrategy::actionLinesCache;

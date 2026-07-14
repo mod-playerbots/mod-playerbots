@@ -5,7 +5,6 @@
  */
 
 #include "DruidAiObjectContext.h"
-
 #include "BalanceDruidStrategy.h"
 #include "BearDruidStrategy.h"
 #include "CatDruidStrategy.h"

@@ -6,7 +6,6 @@
 
 #include "IsBehindValue.h"
 #include <cmath>
-
 #include "Playerbots.h"
 
 bool IsBehindValue::Calculate()

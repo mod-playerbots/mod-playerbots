@@ -1,5 +1,4 @@
 #include "ICCStrategy.h"
-
 #include "ICCMultipliers.h"
 
 void RaidIccStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

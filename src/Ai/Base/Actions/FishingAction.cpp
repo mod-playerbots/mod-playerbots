@@ -7,7 +7,6 @@
 #include "FishingAction.h"
 #include "FishValues.h"
 #include "Event.h"
-
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "ItemPackets.h"

@@ -5,7 +5,6 @@
  */
 
 #include "WarriorAiObjectContext.h"
-
 #include "ArmsWarriorStrategy.h"
 #include "FuryWarriorStrategy.h"
 #include "GenericWarriorNonCombatStrategy.h"

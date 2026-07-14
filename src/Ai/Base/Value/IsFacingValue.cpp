@@ -6,7 +6,6 @@
 
 #include "IsFacingValue.h"
 #include <cmath>
-
 #include "Playerbots.h"
 
 bool IsFacingValue::Calculate()

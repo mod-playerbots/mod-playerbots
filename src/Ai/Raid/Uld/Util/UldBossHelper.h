@@ -4,7 +4,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-
 #include "AiObject.h"
 #include "AiObjectContext.h"
 #include "EventMap.h"

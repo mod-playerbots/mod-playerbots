@@ -5,7 +5,6 @@
  */
 
 #include "TeleportAction.h"
-
 #include "Event.h"
 #include "LastMovementValue.h"
 #include "AiObjectContext.h"

@@ -5,7 +5,6 @@
  */
 
 #include "ListSpellsAction.h"
-
 #include "Event.h"
 #include "Playerbots.h"
 #include "PlayerbotSpellRepository.h"

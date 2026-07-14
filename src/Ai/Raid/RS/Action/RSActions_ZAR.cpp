@@ -6,7 +6,6 @@
 
 #include <limits>
 #include <vector>
-
 #include "NearestNpcsValue.h"
 #include "Playerbots.h"
 #include "RSActions.h"

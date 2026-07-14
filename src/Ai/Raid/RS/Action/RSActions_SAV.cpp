@@ -11,7 +11,6 @@
 #include <set>
 #include <utility>
 #include <vector>
-
 #include "Playerbots.h"
 #include "RSActions.h"
 

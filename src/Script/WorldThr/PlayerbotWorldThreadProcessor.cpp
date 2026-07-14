@@ -5,9 +5,7 @@
  */
 
 #include <algorithm>
-
 #include "PlayerbotWorldThreadProcessor.h"
-
 #include "Timer.h"
 #include "Log.h"
 

@@ -5,9 +5,7 @@
  */
 
 #include "PartyMemberSnaredTargetValue.h"
-
 #include <limits>
-
 #include "PlayerbotAIAware.h"
 #include "Playerbots.h"
 

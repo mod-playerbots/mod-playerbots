@@ -1,5 +1,4 @@
 #include "BWLActions.h"
-
 #include "RtiTargetValue.h"
 #include "Playerbots.h"
 #include "BWLHelpers.h"

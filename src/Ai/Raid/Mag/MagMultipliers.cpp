@@ -6,7 +6,6 @@
 
 #include <unordered_map>
 #include <ctime>
-
 #include "MagMultipliers.h"
 #include "MagActions.h"
 #include "MagHelpers.h"

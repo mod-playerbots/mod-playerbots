@@ -5,9 +5,7 @@
  */
 
 #include "HyjalHelpers.h"
-
 #include <algorithm>
-
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 #include "Timer.h"

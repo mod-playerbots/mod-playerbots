@@ -10,7 +10,6 @@
 #include <map>
 #include <vector>
 #include <cstdint>
-
 #include "DatabaseEnvFwd.h"
 #include "Unit.h"
 #include "Player.h"

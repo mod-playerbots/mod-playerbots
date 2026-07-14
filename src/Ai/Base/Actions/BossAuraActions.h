@@ -8,7 +8,6 @@
 #define PLAYERBOTS_BOSSAURAACTIONS_H
 
 #include <string>
-
 #include "Action.h"
 
 class PlayerbotAI;

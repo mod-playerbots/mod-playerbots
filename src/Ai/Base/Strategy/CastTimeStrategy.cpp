@@ -5,7 +5,6 @@
  */
 
 #include "CastTimeStrategy.h"
-
 #include "GenericSpellActions.h"
 #include "Playerbots.h"
 

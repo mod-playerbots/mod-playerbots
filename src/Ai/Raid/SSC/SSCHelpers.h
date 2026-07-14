@@ -9,7 +9,6 @@
 
 #include <ctime>
 #include <unordered_map>
-
 #include "AiObject.h"
 #include "Position.h"
 #include "Unit.h"

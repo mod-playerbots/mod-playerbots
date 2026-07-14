@@ -5,7 +5,6 @@
  */
 
 #include "Stances.h"
-
 #include "Arrow.h"
 #include "Event.h"
 #include "Playerbots.h"

@@ -1,5 +1,4 @@
 #include "NewRpgBaseAction.h"
-
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
 #include "Creature.h"

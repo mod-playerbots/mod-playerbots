@@ -5,9 +5,7 @@
  */
 
 #include "GenericTriggers.h"
-
 #include <string>
-
 #include "GenericBuffUtils.h"
 #include "CreatureAI.h"
 #include "ItemVisitors.h"

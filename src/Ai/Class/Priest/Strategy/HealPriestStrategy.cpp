@@ -5,7 +5,6 @@
  */
 
 #include "HealPriestStrategy.h"
-
 #include "GenericPriestStrategyActionNodeFactory.h"
 #include "Playerbots.h"
 

@@ -5,7 +5,6 @@
  */
 
 #include "UseMeetingStoneAction.h"
-
 #include "CellImpl.h"
 #include "Event.h"
 #include "GridNotifiers.h"

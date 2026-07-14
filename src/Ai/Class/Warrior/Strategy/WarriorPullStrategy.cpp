@@ -5,7 +5,6 @@
  */
 
 #include "WarriorPullStrategy.h"
-
 #include "PlayerbotAI.h"
 
 std::string WarriorPullStrategy::GetPullActionName() const

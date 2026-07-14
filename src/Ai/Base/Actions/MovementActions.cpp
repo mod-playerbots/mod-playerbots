@@ -5,12 +5,10 @@
  */
 
 #include "MovementActions.h"
-
 #include <cmath>
 #include <cstdlib>
 #include <iomanip>
 #include <string>
-
 #include "Corpse.h"
 #include "Event.h"
 #include "FleeManager.h"

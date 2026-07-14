@@ -8,7 +8,6 @@
 #include "Random.h"
 // Required due to a poor implementation by AC
 #include "QueryResult.h"
-
 #include "PlayerbotTextMgr.h"
 
 void PlayerbotTextMgr::replaceAll(std::string& str, const std::string& from, const std::string& to)

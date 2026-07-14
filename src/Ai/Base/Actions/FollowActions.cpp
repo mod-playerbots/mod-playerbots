@@ -4,11 +4,9 @@
  */
 
 #include "FollowActions.h"
-
 #include <algorithm>
 #include <cmath>
 #include <array>
-
 #include "Event.h"
 #include "Formations.h"
 #include "LastMovementValue.h"

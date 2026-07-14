@@ -1,5 +1,4 @@
 #include "NaxxActions.h"
-
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "NaxxSpellIds.h"

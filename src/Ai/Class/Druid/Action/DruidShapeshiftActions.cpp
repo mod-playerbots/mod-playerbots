@@ -5,7 +5,6 @@
  */
 
 #include "DruidShapeshiftActions.h"
-
 #include "Playerbots.h"
 
 bool CastBearFormAction::isUseful()

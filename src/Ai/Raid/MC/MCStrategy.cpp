@@ -1,5 +1,4 @@
 #include "MCStrategy.h"
-
 #include "MCMultipliers.h"
 #include "Strategy.h"
 

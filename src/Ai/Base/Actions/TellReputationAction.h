@@ -8,7 +8,6 @@
 #define PLAYERBOTS_TELLREPUTATIONACTION_H
 
 #include <string>
-
 #include "Action.h"
 
 struct FactionEntry;

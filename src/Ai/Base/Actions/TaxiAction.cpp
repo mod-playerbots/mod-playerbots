@@ -4,7 +4,6 @@
  */
 
 #include "TaxiAction.h"
-
 #include "Event.h"
 #include "LastMovementValue.h"
 #include "PlayerbotTextMgr.h"

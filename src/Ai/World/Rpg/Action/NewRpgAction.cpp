@@ -1,8 +1,6 @@
 #include "NewRpgAction.h"
-
 #include <cmath>
 #include <cstdlib>
-
 #include "AreaDefines.h"
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"

@@ -5,7 +5,6 @@
  */
 
 #include "SellAction.h"
-
 #include "Event.h"
 #include "ItemUsageValue.h"
 #include "ItemVisitors.h"

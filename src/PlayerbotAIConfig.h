@@ -14,7 +14,6 @@
 #include <map>
 #include <algorithm>
 #include <string>
-
 #include "DBCEnums.h"
 #include "SharedDefines.h"
 

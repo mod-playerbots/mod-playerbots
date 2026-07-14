@@ -8,7 +8,6 @@
 #define PLAYERBOTS_GENERICTRIGGERS_H
 
 #include <utility>
-
 #include "HealthTriggers.h"
 #include "RangeTriggers.h"
 #include "Trigger.h"

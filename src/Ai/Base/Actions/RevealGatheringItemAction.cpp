@@ -5,7 +5,6 @@
  */
 
 #include "RevealGatheringItemAction.h"
-
 #include "CellImpl.h"
 #include "ChatHelper.h"
 #include "Event.h"

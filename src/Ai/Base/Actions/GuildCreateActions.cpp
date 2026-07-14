@@ -5,7 +5,6 @@
  */
 
 #include "GuildCreateActions.h"
-
 #include "ArenaTeam.h"
 #include "BudgetValues.h"
 #include "Event.h"

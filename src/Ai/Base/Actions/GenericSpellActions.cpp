@@ -5,10 +5,8 @@
  */
 
 #include "GenericSpellActions.h"
-
 #include <ctime>
 #include <unordered_set>
-
 #include "Event.h"
 #include "ItemTemplate.h"
 #include "ObjectDefines.h"

@@ -1,5 +1,4 @@
 #include "NaxxActions.h"
-
 #include "Playerbots.h"
 
 bool FourHorsemenAttractAlternativelyAction::Execute(Event /*event*/)

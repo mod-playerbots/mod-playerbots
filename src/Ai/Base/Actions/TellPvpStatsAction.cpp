@@ -5,9 +5,7 @@
  */
 
 #include "TellPvpStatsAction.h"
-
 #include <map>
-
 #include "ArenaTeam.h"
 #include "ArenaTeamMgr.h"
 #include "Event.h"

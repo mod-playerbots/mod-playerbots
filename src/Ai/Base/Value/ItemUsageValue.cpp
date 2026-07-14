@@ -5,7 +5,6 @@
  */
 
 #include "ItemUsageValue.h"
-
 #include "AiFactory.h"
 #include "ChatHelper.h"
 #include "GuildTaskMgr.h"

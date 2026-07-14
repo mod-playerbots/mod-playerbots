@@ -1,5 +1,4 @@
 #include "Aq20Strategy.h"
-
 #include "Strategy.h"
 
 void RaidAq20Strategy::InitTriggers(std::vector<TriggerNode*>& triggers)

@@ -13,7 +13,6 @@
 #include <unordered_set>
 #include <vector>
 #include <functional>
-
 #include "Common.h"
 
 class PlayerbotAI;

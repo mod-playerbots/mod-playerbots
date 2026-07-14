@@ -5,7 +5,6 @@
  */
 
 #include "HelpAction.h"
-
 #include "ChatActionContext.h"
 #include "Event.h"
 #include "AiObjectContext.h"

@@ -4,7 +4,6 @@
  */
 
 #include "LootAction.h"
-
 #include "ChatHelper.h"
 #include "Event.h"
 #include "GuildMgr.h"

@@ -1,7 +1,5 @@
 #include "AutoMaintenanceOnLevelupAction.h"
-
 #include "SpellMgr.h"
-
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotFactory.h"
 #include "RandomPlayerbotMgr.h"

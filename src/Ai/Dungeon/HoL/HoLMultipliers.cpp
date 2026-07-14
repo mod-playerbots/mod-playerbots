@@ -5,7 +5,6 @@
 #include "MovementActions.h"
 #include "HoLTriggers.h"
 #include "Action.h"
-
 #include "WarriorActions.h"
 
 float BjarngrimMultiplier::GetValue(Action* action)

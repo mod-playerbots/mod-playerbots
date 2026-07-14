@@ -8,7 +8,6 @@
 #define PLAYERBOTS_FLEEMANAGER_H
 
 #include <vector>
-
 #include "Common.h"
 #include "TravelMgr.h"
 

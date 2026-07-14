@@ -5,7 +5,6 @@
  */
 
 #include "ShamanAiObjectContext.h"
-
 #include "ElementalShamanStrategy.h"
 #include "GenericShamanStrategy.h"
 #include "RestoShamanStrategy.h"

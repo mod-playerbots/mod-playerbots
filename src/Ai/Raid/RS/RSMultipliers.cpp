@@ -5,7 +5,6 @@
  */
 
 #include "RSMultipliers.h"
-
 #include "FollowActions.h"
 #include "ChooseTargetActions.h"
 #include "MovementActions.h"

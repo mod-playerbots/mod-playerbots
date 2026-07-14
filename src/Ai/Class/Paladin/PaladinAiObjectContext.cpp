@@ -5,7 +5,6 @@
  */
 
 #include "PaladinAiObjectContext.h"
-
 #include "DpsPaladinStrategy.h"
 #include "GenericPaladinNonCombatStrategy.h"
 #include "PaladinGreaterBlessingAction.h"

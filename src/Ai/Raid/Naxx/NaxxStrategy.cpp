@@ -1,5 +1,4 @@
 #include "NaxxStrategy.h"
-
 #include "NaxxMultipliers.h"
 
 void RaidNaxxStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

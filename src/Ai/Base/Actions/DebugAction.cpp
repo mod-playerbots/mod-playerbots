@@ -5,7 +5,6 @@
  */
 
 #include "DebugAction.h"
-
 #include "ChooseTravelTargetAction.h"
 #include "MapMgr.h"
 #include "TravelMgr.h"

@@ -10,7 +10,6 @@
 #include <boost/functional/hash.hpp>
 #include <map>
 #include <random>
-
 #include "AiObject.h"
 #include "CreatureData.h"
 #include "GameObject.h"

@@ -7,7 +7,6 @@
 #define PLAYERBOTS_PLAYERBOTAI_H
 
 #include <stack>
-
 #include "Chat.h"
 #include "ChatFilter.h"
 #include "ChatHelper.h"

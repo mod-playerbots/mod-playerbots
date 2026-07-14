@@ -5,7 +5,6 @@
  */
 
 #include "RandomPlayerbotFactory.h"
-
 #include "AccountMgr.h"
 #include "ArenaTeamMgr.h"
 #include "DatabaseEnv.h"

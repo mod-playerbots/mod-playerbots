@@ -5,7 +5,6 @@
  */
 
 #include "GenericDruidNonCombatStrategy.h"
-
 #include "Playerbots.h"
 #include "AiFactory.h"
 

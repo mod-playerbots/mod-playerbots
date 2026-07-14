@@ -1,6 +1,5 @@
 
 #include "AssassinationRogueStrategy.h"
-
 #include "Playerbots.h"
 
 class AssassinationRogueStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>

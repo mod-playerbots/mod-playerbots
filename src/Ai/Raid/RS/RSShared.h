@@ -8,7 +8,6 @@
 #define PLAYERBOTS_RSSHARED_H
 
 #include <vector>
-
 #include "Group.h"
 #include "MotionMaster.h"
 #include "PlayerbotAI.h"

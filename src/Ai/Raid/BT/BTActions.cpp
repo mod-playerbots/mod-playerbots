@@ -5,9 +5,7 @@
  */
 
 #include "BTActions.h"
-
 #include <vector>
-
 #include "CreatureAI.h"
 #include "Playerbots.h"
 #include "BTHelpers.h"

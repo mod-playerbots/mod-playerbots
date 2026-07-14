@@ -9,7 +9,6 @@
 
 #include <map>
 #include <vector>
-
 #include "Common.h"
 
 struct BotTextEntry

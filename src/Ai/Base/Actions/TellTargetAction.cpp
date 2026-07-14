@@ -5,7 +5,6 @@
  */
 
 #include "TellTargetAction.h"
-
 #include "Event.h"
 #include "CombatManager.h"
 #include "ThreatManager.h"

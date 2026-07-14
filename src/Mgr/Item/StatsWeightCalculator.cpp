@@ -4,9 +4,7 @@
  */
 
 #include "StatsWeightCalculator.h"
-
 #include <memory>
-
 #include "AiFactory.h"
 #include "DBCStores.h"
 #include "ItemEnchantmentMgr.h"

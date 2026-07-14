@@ -16,7 +16,6 @@
  */
 
 #include "Playerbots.h"
-
 #include "BattlefieldScript.h"
 #include "Channel.h"
 #include "Config.h"

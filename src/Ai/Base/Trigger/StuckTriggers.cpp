@@ -5,7 +5,6 @@
  */
 
 #include "StuckTriggers.h"
-
 #include "CellImpl.h"
 #include "PathGenerator.h"
 #include "Playerbots.h"

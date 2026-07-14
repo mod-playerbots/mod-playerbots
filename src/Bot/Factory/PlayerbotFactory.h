@@ -9,7 +9,6 @@
 
 #include <string>
 #include <utility>
-
 #include "InventoryAction.h"
 #include "Player.h"
 #include "PlayerbotAI.h"

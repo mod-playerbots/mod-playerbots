@@ -7,7 +7,6 @@
 #include <memory>
 #include <mutex>
 #include <vector>
-
 #include "ReadyCheckAction.h"
 #include "Event.h"
 #include "Playerbots.h"

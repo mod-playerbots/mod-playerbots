@@ -9,7 +9,6 @@
 
 #include <vector>
 #include <string>
-
 #include "DBCEnums.h"
 
 struct DungeonSuggestion

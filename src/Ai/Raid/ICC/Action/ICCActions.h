@@ -2,7 +2,6 @@
 #define PLAYERBOTS_ICCACTIONS_H
 
 #include <set>
-
 #include "Action.h"
 #include "MovementActions.h"
 #include "PlayerbotAI.h"

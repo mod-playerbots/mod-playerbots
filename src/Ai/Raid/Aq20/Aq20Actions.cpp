@@ -1,5 +1,4 @@
 #include "Aq20Actions.h"
-
 #include "Aq20Utils.h"
 
 bool Aq20UseCrystalAction::Execute(Event /*event*/)

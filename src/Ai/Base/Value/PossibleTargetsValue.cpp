@@ -5,7 +5,6 @@
  */
 
 #include "PossibleTargetsValue.h"
-
 #include "AttackersValue.h"
 #include "CellImpl.h"
 #include "DBCStructure.h"

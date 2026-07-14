@@ -1,5 +1,4 @@
 #include "BWLStrategy.h"
-
 #include "BWLMultipliers.h"
 
 void RaidBwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

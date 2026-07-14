@@ -5,7 +5,6 @@
  */
 
 #include "ChooseTravelTargetAction.h"
-
 #include "ChatHelper.h"
 #include "LootObjectStack.h"
 #include "Playerbots.h"

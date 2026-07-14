@@ -4,7 +4,6 @@
 #include <ctime>
 #include <unordered_map>
 #include <vector>
-
 #include "AiObject.h"
 #include "Position.h"
 #include "Unit.h"

@@ -1,5 +1,4 @@
 #include "MCTriggers.h"
-
 #include "SharedDefines.h"
 #include "MCHelpers.h"
 

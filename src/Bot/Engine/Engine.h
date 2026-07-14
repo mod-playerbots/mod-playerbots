@@ -8,7 +8,6 @@
 #define PLAYERBOTS_ENGINE_H
 
 #include <map>
-
 #include "Multiplier.h"
 #include "PlayerbotAIAware.h"
 #include "Queue.h"

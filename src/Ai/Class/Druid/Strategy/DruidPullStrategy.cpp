@@ -5,7 +5,6 @@
  */
 
 #include "DruidPullStrategy.h"
-
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 

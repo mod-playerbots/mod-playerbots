@@ -8,7 +8,6 @@
 #define PLAYERBOTS_PLAYERBOTSPELLREPOSITORY_H
 
 #include <cstdint>
-
 #include "DBCStructure.h"
 
 class PlayerbotSpellRepository

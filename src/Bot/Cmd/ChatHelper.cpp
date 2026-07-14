@@ -5,14 +5,12 @@
  */
 
 #include "ChatHelper.h"
-
 #include "AiFactory.h"
 #include "Common.h"
 #include "ItemTemplate.h"
 #include "ObjectMgr.h"
 #include "Playerbots.h"
 #include "SpellInfo.h"
-
 #include <regex>
 
 std::map<std::string, uint32> ChatHelper::consumableSubClasses;

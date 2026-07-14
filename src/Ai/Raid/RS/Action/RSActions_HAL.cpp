@@ -10,7 +10,6 @@
 #include <map>
 #include <utility>
 #include <vector>
-
 #include "ObjectAccessor.h"
 #include "Pet.h"
 #include "Playerbots.h"

@@ -4,12 +4,10 @@
  */
 
 #include "PlayerbotAI.h"
-
 #include <cmath>
 #include <mutex>
 #include <sstream>
 #include <string>
-
 #include "AiFactory.h"
 #include "BudgetValues.h"
 #include "ChannelMgr.h"

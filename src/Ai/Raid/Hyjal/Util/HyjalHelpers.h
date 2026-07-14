@@ -10,7 +10,6 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-
 #include "AiObject.h"
 #include "Position.h"
 #include "Unit.h"

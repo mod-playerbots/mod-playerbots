@@ -5,7 +5,6 @@
  */
 
 #include "CheckMailAction.h"
-
 #include "Event.h"
 #include "GuildTaskMgr.h"
 #include "PlayerbotAIConfig.h"

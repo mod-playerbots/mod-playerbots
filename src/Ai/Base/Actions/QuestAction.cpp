@@ -7,7 +7,6 @@
 #include "QuestAction.h"
 #include <sstream>
 #include <algorithm>
-
 #include "Chat.h"
 #include "ChatHelper.h"
 #include "Event.h"

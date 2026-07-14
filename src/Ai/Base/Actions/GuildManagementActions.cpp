@@ -5,7 +5,6 @@
  */
 
 #include "GuildManagementActions.h"
-
 #include "GuildMgr.h"
 #include "GuildPackets.h"
 #include "Playerbots.h"

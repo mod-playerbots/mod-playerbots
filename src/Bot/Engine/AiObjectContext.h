@@ -9,7 +9,6 @@
 
 #include <sstream>
 #include <string>
-
 #include "Common.h"
 #include "DynamicObject.h"
 #include "NamedObjectContext.h"

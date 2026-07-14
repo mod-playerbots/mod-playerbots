@@ -8,7 +8,6 @@
 #define PLAYERBOTS_CUSTOMSTRATEGY_H
 
 #include <map>
-
 #include "Strategy.h"
 
 class PlayerbotAI;

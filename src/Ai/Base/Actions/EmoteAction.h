@@ -8,7 +8,6 @@
 #define PLAYERBOTS_EMOTEACTION_H
 
 #include <map>
-
 #include "Action.h"
 #include "NamedObjectContext.h"
 

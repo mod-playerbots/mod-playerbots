@@ -1,5 +1,4 @@
 #include "NaxxActions.h"
-
 #include <algorithm>
 #include <cmath>
 

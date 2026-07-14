@@ -8,7 +8,6 @@
 #define PLAYERBOTS_PALADINHELPER_H
 
 #include <initializer_list>
-
 #include "Unit.h"
 
 class Player;

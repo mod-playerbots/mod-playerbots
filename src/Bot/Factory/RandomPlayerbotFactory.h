@@ -10,7 +10,6 @@
 #include <map>
 #include <unordered_map>
 #include <vector>
-
 #include "Common.h"
 #include "DBCEnums.h"
 

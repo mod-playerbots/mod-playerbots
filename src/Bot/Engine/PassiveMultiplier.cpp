@@ -5,7 +5,6 @@
  */
 
 #include "PassiveMultiplier.h"
-
 #include "Action.h"
 #include "AiObjectContext.h"
 

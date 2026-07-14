@@ -13,7 +13,6 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-
 #include "Player.h"
 #include "AiFactory.h"
 #include "ItemTemplate.h"

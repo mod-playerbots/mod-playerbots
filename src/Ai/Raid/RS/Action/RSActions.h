@@ -14,7 +14,6 @@
 #include <set>
 #include <utility>
 #include <vector>
-
 #include "AttackAction.h"
 #include "MovementActions.h"
 #include "PlayerbotAI.h"

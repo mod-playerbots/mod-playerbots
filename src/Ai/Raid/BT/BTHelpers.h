@@ -12,7 +12,6 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
-
 #include "Common.h"
 #include "ObjectGuid.h"
 #include "Position.h"

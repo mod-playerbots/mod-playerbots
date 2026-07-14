@@ -5,9 +5,7 @@
  */
 
 #include "RpgAction.h"
-
 #include <random>
-
 #include "ChatHelper.h"
 #include "EmoteAction.h"
 #include "Event.h"

@@ -6,7 +6,6 @@
 
 #include "TellLosAction.h"
 #include <sstream>
-
 #include "ChatHelper.h"
 #include "Event.h"
 #include "ItemTemplate.h"

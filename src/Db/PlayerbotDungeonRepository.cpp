@@ -11,7 +11,6 @@
 #include "World.h"
 // Required import due to poor implementation by AC
 #include "QueryResult.h"
-
 #include "PlayerbotDungeonRepository.h"
 
 std::vector<DungeonSuggestion> const PlayerbotDungeonRepository::GetDungeonSuggestions()

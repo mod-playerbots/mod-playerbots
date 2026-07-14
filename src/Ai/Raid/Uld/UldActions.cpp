@@ -1,11 +1,8 @@
 
 #include "UldActions.h"
-
 #include <CombatStrategy.h>
 #include <FollowMasterStrategy.h>
-
 #include <cmath>
-
 #include "AiObjectContext.h"
 #include "DBCEnums.h"
 #include "GameObject.h"

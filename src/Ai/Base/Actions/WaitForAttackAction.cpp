@@ -5,10 +5,8 @@
  */
 
 #include "WaitForAttackAction.h"
-
 #include <algorithm>
 #include <cctype>
-
 #include "ObjectAccessor.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotTextMgr.h"

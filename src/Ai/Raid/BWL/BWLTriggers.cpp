@@ -1,5 +1,4 @@
 #include "BWLTriggers.h"
-
 #include "Playerbots.h"
 #include "BWLHelpers.h"
 

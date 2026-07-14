@@ -8,7 +8,6 @@
 #define PLAYERBOTS_PASSIVEMULTIPLIER_H
 
 #include <vector>
-
 #include "Multiplier.h"
 
 class Action;

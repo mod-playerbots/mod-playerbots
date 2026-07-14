@@ -8,7 +8,6 @@
 #define PLAYERBOTS_CHATHELPER_H
 
 #include <map>
-
 #include "Common.h"
 #include "ObjectGuid.h"
 #include "PlayerbotAIAware.h"

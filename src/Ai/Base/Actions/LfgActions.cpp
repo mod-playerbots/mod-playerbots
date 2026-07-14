@@ -5,7 +5,6 @@
  */
 
 #include "LfgActions.h"
-
 #include "AiFactory.h"
 #include "ItemVisitors.h"
 #include "LFGMgr.h"

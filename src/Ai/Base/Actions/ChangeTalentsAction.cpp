@@ -5,7 +5,6 @@
  */
 
 #include "ChangeTalentsAction.h"
-
 #include "AiFactory.h"
 #include "ChatHelper.h"
 #include "Event.h"

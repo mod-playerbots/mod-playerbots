@@ -5,9 +5,7 @@
  */
 
 #include "TellEmblemsAction.h"
-
 #include <array>
-
 #include "Event.h"
 #include "Playerbots.h"
 

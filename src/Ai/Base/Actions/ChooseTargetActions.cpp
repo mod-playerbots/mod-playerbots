@@ -5,7 +5,6 @@
  */
 
 #include "ChooseTargetActions.h"
-
 #include "ChooseRpgTargetAction.h"
 #include "Event.h"
 #include "LootObjectStack.h"

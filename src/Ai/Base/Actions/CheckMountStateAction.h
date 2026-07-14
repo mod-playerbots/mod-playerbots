@@ -9,7 +9,6 @@
 
 #include <unordered_map>
 #include <vector>
-
 #include "UseItemAction.h"
 
 const uint16 SPELL_TRAVEL_FORM = 783;

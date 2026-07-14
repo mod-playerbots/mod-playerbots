@@ -5,7 +5,6 @@
  */
 
 #include "PaladinTriggers.h"
-
 #include "GenericBuffUtils.h"
 #include "PaladinGreaterBlessingAction.h"
 #include "PaladinActions.h"

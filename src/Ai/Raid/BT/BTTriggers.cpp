@@ -5,7 +5,6 @@
  */
 
 #include "BTTriggers.h"
-
 #include "AiFactory.h"
 #include "Playerbots.h"
 #include "BTActions.h"

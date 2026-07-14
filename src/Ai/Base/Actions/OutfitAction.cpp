@@ -5,7 +5,6 @@
  */
 
 #include "OutfitAction.h"
-
 #include "Event.h"
 #include "ItemVisitors.h"
 #include "PlayerbotTextMgr.h"

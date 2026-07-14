@@ -1,5 +1,4 @@
 #include "NaxxTriggers.h"
-
 #include "Playerbots.h"
 #include "NaxxSpellIds.h"
 #include "Timer.h"

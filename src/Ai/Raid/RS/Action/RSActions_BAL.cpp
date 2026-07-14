@@ -10,7 +10,6 @@
 #include <map>
 #include <utility>
 #include <vector>
-
 #include "NearestNpcsValue.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"

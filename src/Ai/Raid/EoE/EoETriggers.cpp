@@ -1,5 +1,4 @@
 #include "EoETriggers.h"
-
 #include "SharedDefines.h"
 
 uint8 MalygosTrigger::getPhase(Player* bot, Unit* boss)
