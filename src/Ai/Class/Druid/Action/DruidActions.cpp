@@ -5,10 +5,10 @@
  */
 
 #include "DruidActions.h"
+#include "AoeValues.h"
 #include "Event.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
-#include "AoeValues.h"
 #include "TargetValue.h"
 
 constexpr uint32 SPELL_ECLIPSE_SOLAR = 48517;

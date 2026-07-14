@@ -1,8 +1,8 @@
 #ifndef PLAYERBOTS_UPTRIGGERCONTEXT_H
 #define PLAYERBOTS_UPTRIGGERCONTEXT_H
 
-#include "NamedObjectContext.h"
 #include "AiObjectContext.h"
+#include "NamedObjectContext.h"
 #include "UPTriggers.h"
 
 class WotlkDungeonUPTriggerContext : public NamedObjectContext<Trigger>

@@ -2,8 +2,8 @@
 #define PLAYERBOTS_HOLACTIONCONTEXT_H
 
 #include "Action.h"
-#include "NamedObjectContext.h"
 #include "HoLActions.h"
+#include "NamedObjectContext.h"
 
 class WotlkDungeonHoLActionContext : public NamedObjectContext<Action>
 {

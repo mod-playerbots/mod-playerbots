@@ -5,10 +5,10 @@
  */
 
 #include "PullTriggers.h"
-#include "PositionValue.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
+#include "PositionValue.h"
 #include "PullStrategy.h"
 
 bool PullStartTrigger::IsActive()

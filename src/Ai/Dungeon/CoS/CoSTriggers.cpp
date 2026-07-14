@@ -1,7 +1,7 @@
 #include "CoSTriggers.h"
-#include "Playerbots.h"
 #include "AiObject.h"
 #include "AiObjectContext.h"
+#include "Playerbots.h"
 
 bool ExplodeGhoulTrigger::IsActive()
 {

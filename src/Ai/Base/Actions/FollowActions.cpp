@@ -7,12 +7,12 @@
 #include "Event.h"
 #include "Formations.h"
 #include "LastMovementValue.h"
+#include "Map.h"
 #include "MotionMaster.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "Transport.h"
-#include "Map.h"
 #include <algorithm>
 #include <array>
 #include <cmath>

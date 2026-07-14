@@ -1,6 +1,6 @@
 #include "ObjectGuid.h"
-#include "Playerbots.h"
 #include "NaxxActions.h"
+#include "Playerbots.h"
 
 bool AnubrekhanChooseTargetAction::Execute(Event /*event*/)
 {

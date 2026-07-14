@@ -12,8 +12,8 @@
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
-#include "Unit.h"
 #include "Timer.h"
+#include "Unit.h"
 #include <mutex>
 #include <string>
 #include <unordered_map>

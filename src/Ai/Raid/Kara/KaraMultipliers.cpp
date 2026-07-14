@@ -5,14 +5,14 @@
  */
 
 #include "KaraMultipliers.h"
-#include "KaraActions.h"
-#include "KaraHelpers.h"
 #include "AttackAction.h"
 #include "ChooseTargetActions.h"
 #include "DruidActions.h"
 #include "FollowActions.h"
 #include "GenericActions.h"
 #include "HunterActions.h"
+#include "KaraActions.h"
+#include "KaraHelpers.h"
 #include "MageActions.h"
 #include "Playerbots.h"
 #include "PriestActions.h"

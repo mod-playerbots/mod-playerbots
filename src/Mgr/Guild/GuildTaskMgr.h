@@ -7,10 +7,10 @@
 #ifndef PLAYERBOTS_GUILDTASKMGR_H
 #define PLAYERBOTS_GUILDTASKMGR_H
 
-#include "DatabaseEnvFwd.h"
-#include "Unit.h"
-#include "Player.h"
 #include "Chat.h"
+#include "DatabaseEnvFwd.h"
+#include "Player.h"
+#include "Unit.h"
 #include <cstdint>
 #include <map>
 #include <vector>

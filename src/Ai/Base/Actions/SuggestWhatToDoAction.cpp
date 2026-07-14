@@ -5,20 +5,20 @@
  */
 
 #include "SuggestWhatToDoAction.h"
-#include "ServerFacade.h"
-#include "Event.h"
-#include "ItemVisitors.h"
 #include "AiFactory.h"
-#include "ChatHelper.h"
-#include "Playerbots.h"
+#include "AiFactory.h"
 #include "BroadcastHelper.h"
-#include "AiFactory.h"
+#include "Channel.h"
+#include "ChatHelper.h"
 #include "ChatHelper.h"
 #include "Event.h"
+#include "Event.h"
+#include "ItemVisitors.h"
 #include "ItemVisitors.h"
 #include "Playerbots.h"
+#include "Playerbots.h"
 #include "ServerFacade.h"
-#include "Channel.h"
+#include "ServerFacade.h"
 #include <functional>
 
 enum eTalkType

@@ -11,9 +11,9 @@
 #include "Formations.h"
 #include "GuildCreateActions.h"
 #include "Playerbots.h"
+#include "PossibleRpgTargetsValue.h"
 #include "RpgSubActions.h"
 #include "ServerFacade.h"
-#include "PossibleRpgTargetsValue.h"
 #include <random>
 
 bool ChooseRpgTargetAction::HasSameTarget(ObjectGuid guid, uint32 max, GuidVector const& nearGuids)

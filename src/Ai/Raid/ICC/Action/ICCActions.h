@@ -2,22 +2,22 @@
 #define PLAYERBOTS_ICCACTIONS_H
 
 #include "Action.h"
-#include "MovementActions.h"
-#include "PlayerbotAI.h"
-#include "Playerbots.h"
 #include "AttackAction.h"
-#include "LastMovementValue.h"
-#include "ObjectGuid.h"
-#include "PlayerbotAIConfig.h"
-#include "ICCStrategy.h"
-#include "ScriptedCreature.h"
-#include "SharedDefines.h"
-#include "Trigger.h"
 #include "CellImpl.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
-#include "Vehicle.h"
+#include "ICCStrategy.h"
 #include "ICCTriggers.h"
+#include "LastMovementValue.h"
+#include "MovementActions.h"
+#include "ObjectGuid.h"
+#include "PlayerbotAI.h"
+#include "PlayerbotAIConfig.h"
+#include "Playerbots.h"
+#include "ScriptedCreature.h"
+#include "SharedDefines.h"
+#include "Trigger.h"
+#include "Vehicle.h"
 #include <set>
 
 inline const Position ICC_LM_TANK_POSITION = Position(-391.0f, 2259.0f, 42.0f);

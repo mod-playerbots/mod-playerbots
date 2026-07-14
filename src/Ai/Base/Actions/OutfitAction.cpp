@@ -6,11 +6,11 @@
 
 #include "OutfitAction.h"
 #include "Event.h"
-#include "ItemVisitors.h"
-#include "PlayerbotTextMgr.h"
-#include "PlayerbotRepository.h"
-#include "Playerbots.h"
 #include "ItemPackets.h"
+#include "ItemVisitors.h"
+#include "PlayerbotRepository.h"
+#include "PlayerbotTextMgr.h"
+#include "Playerbots.h"
 
 bool OutfitAction::Execute(Event event)
 {

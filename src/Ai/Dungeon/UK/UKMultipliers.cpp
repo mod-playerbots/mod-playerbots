@@ -1,7 +1,7 @@
 #include "UKMultipliers.h"
-#include "UKActions.h"
-#include "GenericSpellActions.h"
 #include "ChooseTargetActions.h"
+#include "GenericSpellActions.h"
+#include "UKActions.h"
 #include "UKTriggers.h"
 
 float PrinceKelesethMultiplier::GetValue(Action* action)

@@ -1,6 +1,6 @@
 #include "EoEActions.h"
-#include "Playerbots.h"
 #include "EoETriggers.h"
+#include "Playerbots.h"
 
 bool MalygosPositionAction::Execute(Event /*event*/)
 {

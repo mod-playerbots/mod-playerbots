@@ -5,8 +5,6 @@
  */
 
 #include "TKActions.h"
-#include "TKHelpers.h"
-#include "TKKaelthasBossAI.h"
 #include "AiFactory.h"
 #include "EquipAction.h"
 #include "LootAction.h"
@@ -14,6 +12,8 @@
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include "TKHelpers.h"
+#include "TKKaelthasBossAI.h"
 
 using namespace TempestKeepHelpers;
 

@@ -2,8 +2,8 @@
 #define PLAYERBOTS_DTKACTIONCONTEXT_H
 
 #include "Action.h"
-#include "NamedObjectContext.h"
 #include "DTKActions.h"
+#include "NamedObjectContext.h"
 
 class WotlkDungeonDTKActionContext : public NamedObjectContext<Action>
 {

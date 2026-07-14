@@ -1,13 +1,13 @@
 #include "ICCActions.h"
+#include "GenericActions.h"
+#include "GenericSpellActions.h"
+#include "ICCTriggers.h"
+#include "Multiplier.h"
 #include "NearestNpcsValue.h"
 #include "ObjectAccessor.h"
 #include "Playerbots.h"
-#include "Vehicle.h"
 #include "RtiValue.h"
-#include "GenericSpellActions.h"
-#include "GenericActions.h"
-#include "ICCTriggers.h"
-#include "Multiplier.h"
+#include "Vehicle.h"
 
 static float const BPC_FLOOR_Z = 361.18222f;
 

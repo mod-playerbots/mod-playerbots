@@ -6,8 +6,8 @@
 
 #include "KaraActions.h"
 #include "KaraHelpers.h"
-#include "Playerbots.h"
 #include "PlayerbotTextMgr.h"
+#include "Playerbots.h"
 #include "RaidBossHelpers.h"
 
 using namespace KarazhanHelpers;

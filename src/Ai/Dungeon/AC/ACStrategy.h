@@ -2,8 +2,8 @@
 #define PLAYERBOTS_ACSTRATEGY_H
 
 #include "AiObjectContext.h"
-#include "Strategy.h"
 #include "Multiplier.h"
+#include "Strategy.h"
 
 class TbcDungeonAuchenaiCryptsStrategy : public Strategy
 {

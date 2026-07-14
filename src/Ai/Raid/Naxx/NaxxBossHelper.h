@@ -6,6 +6,7 @@
 #include "EventMap.h"
 #include "Log.h"
 #include "NamedObjectContext.h"
+#include "NaxxSpellIds.h"
 #include "ObjectGuid.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
@@ -14,7 +15,6 @@
 #include "SharedDefines.h"
 #include "Spell.h"
 #include "Timer.h"
-#include "NaxxSpellIds.h"
 #include <string>
 
 const uint32 NAXX_MAP_ID = 533;

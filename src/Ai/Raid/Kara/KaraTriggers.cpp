@@ -5,8 +5,8 @@
  */
 
 #include "KaraTriggers.h"
-#include "KaraHelpers.h"
 #include "KaraActions.h"
+#include "KaraHelpers.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 

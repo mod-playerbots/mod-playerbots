@@ -24,11 +24,14 @@
 #include "LootAction.h"
 #include "LootRollAction.h"
 #include "NamedObjectContext.h"
+#include "NamedObjectContext.h"
 #include "PassLeadershipToMasterAction.h"
 #include "PetitionSignAction.h"
+#include "PetsAction.h"
 #include "QuestAction.h"
 #include "QuestConfirmAcceptAction.h"
 #include "ReadyCheckAction.h"
+#include "ReleaseSpiritAction.h"
 #include "RememberTaxiAction.h"
 #include "ReviveFromCorpseAction.h"
 #include "RewardAction.h"
@@ -40,9 +43,6 @@
 #include "TradeStatusAction.h"
 #include "TradeStatusExtendedAction.h"
 #include "UseMeetingStoneAction.h"
-#include "NamedObjectContext.h"
-#include "ReleaseSpiritAction.h"
-#include "PetsAction.h"
 
 class PlayerbotAI;
 

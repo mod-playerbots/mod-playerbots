@@ -7,11 +7,11 @@
 #include "DebugAction.h"
 #include "ChooseTravelTargetAction.h"
 #include "MapMgr.h"
-#include "TravelMgr.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
-#include "SpellMgr.h"
 #include "Spell.h"
+#include "SpellMgr.h"
+#include "TravelMgr.h"
 
 bool DebugAction::Execute(Event event)
 {

@@ -1,8 +1,8 @@
 #ifndef PLAYERBOTS_TOCTRIGGERCONTEXT_H
 #define PLAYERBOTS_TOCTRIGGERCONTEXT_H
 
-#include "NamedObjectContext.h"
 #include "AiObjectContext.h"
+#include "NamedObjectContext.h"
 #include "TOCTriggers.h"
 
 class WotlkDungeonToCTriggerContext : public NamedObjectContext<Trigger>

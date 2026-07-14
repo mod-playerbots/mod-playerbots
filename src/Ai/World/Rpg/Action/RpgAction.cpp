@@ -10,8 +10,8 @@
 #include "Event.h"
 #include "Formations.h"
 #include "Playerbots.h"
-#include "ServerFacade.h"
 #include "RpgSubActions.h"
+#include "ServerFacade.h"
 #include <random>
 
 bool RpgAction::Execute(Event /*event*/)

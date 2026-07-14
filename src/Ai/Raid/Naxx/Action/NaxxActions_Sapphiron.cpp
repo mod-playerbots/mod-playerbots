@@ -1,8 +1,8 @@
 #include "NaxxActions.h"
-#include "PlayerbotAIConfig.h"
-#include "Playerbots.h"
 #include "NaxxBossHelper.h"
 #include "NaxxSpellIds.h"
+#include "PlayerbotAIConfig.h"
+#include "Playerbots.h"
 
 bool SapphironGroundPositionAction::Execute(Event /*event*/)
 {

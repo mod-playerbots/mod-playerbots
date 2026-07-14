@@ -9,8 +9,8 @@
 #include "Event.h"
 #include "GuildMgr.h"
 #include "PlayerbotOperations.h"
-#include "Playerbots.h"
 #include "PlayerbotWorldThreadProcessor.h"
+#include "Playerbots.h"
 #include "ServerFacade.h"
 
 bool InviteToGroupAction::Invite(Player* inviter, Player* player)

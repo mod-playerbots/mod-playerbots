@@ -1,8 +1,8 @@
 #ifndef PLAYERBOTS_UKTRIGGERCONTEXT_H
 #define PLAYERBOTS_UKTRIGGERCONTEXT_H
 
-#include "NamedObjectContext.h"
 #include "AiObjectContext.h"
+#include "NamedObjectContext.h"
 #include "UKTriggers.h"
 
 class WotlkDungeonUKTriggerContext : public NamedObjectContext<Trigger>

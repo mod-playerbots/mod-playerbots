@@ -2,8 +2,8 @@
 #define PLAYERBOTS_EOEACTIONCONTEXT_H
 
 #include "Action.h"
-#include "NamedObjectContext.h"
 #include "EoEActions.h"
+#include "NamedObjectContext.h"
 
 class RaidEoEActionContext : public NamedObjectContext<Action>
 {

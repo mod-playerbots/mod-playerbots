@@ -2,8 +2,8 @@
 #define PLAYERBOTS_GDACTIONCONTEXT_H
 
 #include "Action.h"
-#include "NamedObjectContext.h"
 #include "GDActions.h"
+#include "NamedObjectContext.h"
 
 class WotlkDungeonGDActionContext : public NamedObjectContext<Action>
 {

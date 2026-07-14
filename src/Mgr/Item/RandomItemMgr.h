@@ -7,9 +7,9 @@
 #ifndef PLAYERBOTS_RANDOMITEMMGR_H
 #define PLAYERBOTS_RANDOMITEMMGR_H
 
-#include "Player.h"
 #include "AiFactory.h"
 #include "ItemTemplate.h"
+#include "Player.h"
 #include <array>
 #include <atomic>
 #include <map>

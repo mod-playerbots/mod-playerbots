@@ -4,10 +4,12 @@
  */
 
 #include "PlayerbotMgr.h"
+#include "BroadcastHelper.h"
 #include "ChannelMgr.h"
 #include "CharacterCache.h"
 #include "CharacterPackets.h"
 #include "Common.h"
+#include "DatabaseEnv.h"
 #include "Define.h"
 #include "Group.h"
 #include "GuildMgr.h"
@@ -15,20 +17,18 @@
 #include "ObjectGuid.h"
 #include "ObjectMgr.h"
 #include "PlayerbotAIConfig.h"
-#include "PlayerbotRepository.h"
 #include "PlayerbotFactory.h"
+#include "PlayerbotGuildMgr.h"
 #include "PlayerbotOperations.h"
+#include "PlayerbotRepository.h"
 #include "PlayerbotSecurity.h"
 #include "PlayerbotTextMgr.h"
 #include "PlayerbotWorldThreadProcessor.h"
 #include "Playerbots.h"
-#include "PlayerbotGuildMgr.h"
 #include "RandomPlayerbotMgr.h"
 #include "SharedDefines.h"
 #include "WorldSession.h"
-#include "BroadcastHelper.h"
 #include "WorldSessionMgr.h"
-#include "DatabaseEnv.h"
 #include <algorithm>
 #include <cstdio>
 #include <cstring>

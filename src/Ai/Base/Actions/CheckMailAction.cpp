@@ -7,8 +7,8 @@
 #include "CheckMailAction.h"
 #include "Event.h"
 #include "GuildTaskMgr.h"
-#include "PlayerbotAIConfig.h"
 #include "PlayerbotAI.h"
+#include "PlayerbotAIConfig.h"
 
 bool CheckMailAction::Execute(Event /*event*/)
 {

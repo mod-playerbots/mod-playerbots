@@ -1,8 +1,8 @@
 #ifndef PLAYERBOTS_AQ20TRIGGERCONTEXT_H
 #define PLAYERBOTS_AQ20TRIGGERCONTEXT_H
 
-#include "NamedObjectContext.h"
 #include "Aq20Triggers.h"
+#include "NamedObjectContext.h"
 
 class RaidAq20TriggerContext : public NamedObjectContext<Trigger>
 {

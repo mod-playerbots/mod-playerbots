@@ -5,11 +5,11 @@
  */
 
 #include "MageActions.h"
-#include "UseItemAction.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "SharedDefines.h"
+#include "UseItemAction.h"
 #include <cmath>
 
 std::vector<NextAction> CastMoltenArmorAction::getAlternatives()

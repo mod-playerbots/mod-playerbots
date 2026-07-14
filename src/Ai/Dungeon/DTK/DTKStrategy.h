@@ -1,8 +1,8 @@
 #ifndef PLAYERBOTS_DTKSTRATEGY_H
 #define PLAYERBOTS_DTKSTRATEGY_H
 
-#include "Multiplier.h"
 #include "AiObjectContext.h"
+#include "Multiplier.h"
 #include "Strategy.h"
 
 class WotlkDungeonDTKStrategy : public Strategy

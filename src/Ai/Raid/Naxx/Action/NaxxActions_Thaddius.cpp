@@ -1,7 +1,7 @@
 #include "NaxxActions.h"
+#include "NaxxSpellIds.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
-#include "NaxxSpellIds.h"
 
 bool ThaddiusAttackNearestPetAction::isUseful()
 {

@@ -1,8 +1,8 @@
 #ifndef PLAYERBOTS_OCTRIGGERCONTEXT_H
 #define PLAYERBOTS_OCTRIGGERCONTEXT_H
 
-#include "NamedObjectContext.h"
 #include "AiObjectContext.h"
+#include "NamedObjectContext.h"
 #include "OCTriggers.h"
 
 class WotlkDungeonOccTriggerContext : public NamedObjectContext<Trigger>

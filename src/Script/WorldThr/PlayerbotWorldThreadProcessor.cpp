@@ -5,8 +5,8 @@
  */
 
 #include "PlayerbotWorldThreadProcessor.h"
-#include "Timer.h"
 #include "Log.h"
+#include "Timer.h"
 #include <algorithm>
 
 void PlayerbotWorldThreadProcessor::Update(uint32 diff)

@@ -1,8 +1,8 @@
 #include "TKHelpers.h"
-#include "TKActions.h"
 #include "LootObjectStack.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include "TKActions.h"
 
 namespace TempestKeepHelpers
 {

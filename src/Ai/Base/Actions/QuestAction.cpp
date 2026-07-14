@@ -5,6 +5,7 @@
  */
 
 #include "QuestAction.h"
+#include "BroadcastHelper.h"
 #include "Chat.h"
 #include "ChatHelper.h"
 #include "Event.h"
@@ -14,7 +15,6 @@
 #include "Playerbots.h"
 #include "ReputationMgr.h"
 #include "ServerFacade.h"
-#include "BroadcastHelper.h"
 #include <algorithm>
 #include <sstream>
 

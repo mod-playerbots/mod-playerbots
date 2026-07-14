@@ -11,8 +11,8 @@
 #include "NamedObjectContext.h"
 #include "Playerbots.h"
 #include "TankWarriorStrategy.h"
-#include "WarriorPullStrategy.h"
 #include "WarriorActions.h"
+#include "WarriorPullStrategy.h"
 #include "WarriorTriggers.h"
 
 class WarriorStrategyFactoryInternal : public NamedObjectContext<Strategy>

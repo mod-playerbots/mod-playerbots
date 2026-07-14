@@ -6,11 +6,11 @@
 
 #include "HyjalHelpers.h"
 #include "AllCreatureScript.h"
+#include "DynamicObjectScript.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
-#include "RaidBossHelpers.h"
-#include "DynamicObjectScript.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
 #include "Timer.h"

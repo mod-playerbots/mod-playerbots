@@ -5,12 +5,12 @@
  */
 
 #include "PlayerbotDungeonRepository.h"
-#include "Log.h"
-#include "Timer.h"
 #include "DatabaseEnv.h"
 #include "Field.h"
-#include "World.h"
+#include "Log.h"
 #include "QueryResult.h"    // Required due to a poor implementation by AC
+#include "Timer.h"
+#include "World.h"
 
 std::vector<DungeonSuggestion> const PlayerbotDungeonRepository::GetDungeonSuggestions()
 {

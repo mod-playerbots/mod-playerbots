@@ -1,9 +1,9 @@
 #ifndef PLAYERBOTS_GDTRIGGERCONTEXT_H
 #define PLAYERBOTS_GDTRIGGERCONTEXT_H
 
-#include "NamedObjectContext.h"
 #include "AiObjectContext.h"
 #include "GDTriggers.h"
+#include "NamedObjectContext.h"
 
 class WotlkDungeonGDTriggerContext : public NamedObjectContext<Trigger>
 {

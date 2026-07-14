@@ -8,9 +8,9 @@
 #define PLAYERBOTS_GENERICTRIGGERS_H
 
 #include "HealthTriggers.h"
+#include "Player.h"
 #include "RangeTriggers.h"
 #include "Trigger.h"
-#include "Player.h"
 #include <utility>
 
 class PlayerbotAI;

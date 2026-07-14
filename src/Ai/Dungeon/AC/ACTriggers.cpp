@@ -1,7 +1,7 @@
 #include "ACTriggers.h"
-#include "Playerbots.h"
 #include "AiObject.h"
 #include "AiObjectContext.h"
+#include "Playerbots.h"
 
 // Shirrak the Dead Watcher
 

@@ -1,10 +1,10 @@
 #include "ANMultipliers.h"
 #include "ANActions.h"
-#include "GenericSpellActions.h"
-#include "ChooseTargetActions.h"
-#include "MovementActions.h"
 #include "ANTriggers.h"
 #include "Action.h"
+#include "ChooseTargetActions.h"
+#include "GenericSpellActions.h"
+#include "MovementActions.h"
 
 float KrikthirMultiplier::GetValue(Action* action)
 {

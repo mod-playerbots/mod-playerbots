@@ -7,19 +7,19 @@
 #include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
+#include "ICCActions.h"
+#include "ICCScripts.h"
+#include "ICCTriggers.h"
 #include "MageActions.h"
 #include "MovementActions.h"
 #include "PaladinActions.h"
+#include "PlayerbotAI.h"
 #include "PriestActions.h"
-#include "ICCActions.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
 #include "UseMeetingStoneAction.h"
 #include "WarriorActions.h"
-#include "PlayerbotAI.h"
-#include "ICCTriggers.h"
-#include "ICCScripts.h"
 
 // LK global variables
 namespace

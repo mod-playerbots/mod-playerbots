@@ -4,8 +4,10 @@
  */
 
 #include "LootAction.h"
+#include "BroadcastHelper.h"
 #include "ChatHelper.h"
 #include "Event.h"
+#include "GuildMgr.h"
 #include "GuildMgr.h"
 #include "GuildTaskMgr.h"
 #include "ItemUsageValue.h"
@@ -14,8 +16,6 @@
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
-#include "GuildMgr.h"
-#include "BroadcastHelper.h"
 
 bool LootAction::Execute(Event /*event*/)
 {

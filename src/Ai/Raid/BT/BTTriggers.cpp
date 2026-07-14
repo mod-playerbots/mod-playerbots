@@ -6,9 +6,9 @@
 
 #include "BTTriggers.h"
 #include "AiFactory.h"
-#include "Playerbots.h"
 #include "BTActions.h"
 #include "BTHelpers.h"
+#include "Playerbots.h"
 #include "RaidBossHelpers.h"
 #include "SharedDefines.h"
 

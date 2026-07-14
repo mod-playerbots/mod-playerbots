@@ -2,8 +2,8 @@
 #define PLAYERBOTS_FOSACTIONCONTEXT_H
 
 #include "Action.h"
-#include "NamedObjectContext.h"
 #include "FoSActions.h"
+#include "NamedObjectContext.h"
 
 class WotlkDungeonFoSActionContext : public NamedObjectContext<Action>
 {

@@ -1,9 +1,9 @@
 #ifndef PLAYERBOTS_ANTRIGGERCONTEXT_H
 #define PLAYERBOTS_ANTRIGGERCONTEXT_H
 
-#include "NamedObjectContext.h"
-#include "AiObjectContext.h"
 #include "ANTriggers.h"
+#include "AiObjectContext.h"
+#include "NamedObjectContext.h"
 
 class WotlkDungeonANTriggerContext : public NamedObjectContext<Trigger>
 {

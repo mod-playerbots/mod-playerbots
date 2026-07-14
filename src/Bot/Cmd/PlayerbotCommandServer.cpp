@@ -5,8 +5,8 @@
  */
 
 #include "PlayerbotCommandServer.h"
-#include "RandomPlayerbotMgr.h"
 #include "IoContext.h"
+#include "RandomPlayerbotMgr.h"
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/smart_ptr.hpp>

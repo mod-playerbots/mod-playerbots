@@ -1,8 +1,8 @@
 #ifndef PLAYERBOTS_NEXSTRATEGY_H
 #define PLAYERBOTS_NEXSTRATEGY_H
 
-#include "Multiplier.h"
 #include "AiObjectContext.h"
+#include "Multiplier.h"
 #include "Strategy.h"
 
 class WotlkDungeonNexStrategy : public Strategy

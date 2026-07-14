@@ -6,9 +6,9 @@
 
 #include "StuckTriggers.h"
 #include "CellImpl.h"
+#include "MapCollisionData.h"
 #include "PathGenerator.h"
 #include "Playerbots.h"
-#include "MapCollisionData.h"
 
 bool MoveStuckTrigger::IsActive()
 {

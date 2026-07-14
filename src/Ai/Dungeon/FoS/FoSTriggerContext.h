@@ -1,9 +1,9 @@
 #ifndef PLAYERBOTS_FOSTRIGGERCONTEXT_H
 #define PLAYERBOTS_FOSTRIGGERCONTEXT_H
 
-#include "NamedObjectContext.h"
 #include "AiObjectContext.h"
 #include "FoSTriggers.h"
+#include "NamedObjectContext.h"
 
 class WotlkDungeonFoSTriggerContext : public NamedObjectContext<Trigger>
 {

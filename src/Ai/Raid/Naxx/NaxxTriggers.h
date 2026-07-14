@@ -4,8 +4,8 @@
 
 #include "EventMap.h"
 #include "GenericTriggers.h"
-#include "PlayerbotAIConfig.h"
 #include "NaxxBossHelper.h"
+#include "PlayerbotAIConfig.h"
 #include "Trigger.h"
 
 class MutatingInjectionTrigger : public HasAuraTrigger

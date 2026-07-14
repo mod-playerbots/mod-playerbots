@@ -1,10 +1,10 @@
 #include "AutoMaintenanceOnLevelupAction.h"
-#include "SpellMgr.h"
+#include "BroadcastHelper.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotFactory.h"
 #include "RandomPlayerbotMgr.h"
 #include "SharedDefines.h"
-#include "BroadcastHelper.h"
+#include "SpellMgr.h"
 
 bool AutoMaintenanceOnLevelupAction::Execute(Event /*event*/)
 {

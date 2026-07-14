@@ -1,6 +1,6 @@
 #include "ICCScripts.h"
-#include "Player.h"
 #include "ICCTriggers.h"
+#include "Player.h"
 #include "ScriptMgr.h"
 #include "Spell.h"
 #include "SpellInfo.h"

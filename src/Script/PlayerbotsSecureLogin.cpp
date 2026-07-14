@@ -1,7 +1,7 @@
 #include "ScriptMgr.h"
+#include "ObjectAccessor.h"
 #include "Opcodes.h"
 #include "Player.h"
-#include "ObjectAccessor.h"
 #include "Playerbots.h"
 
 namespace

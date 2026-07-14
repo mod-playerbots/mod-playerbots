@@ -5,6 +5,8 @@
  */
 
 #include "BTMultipliers.h"
+#include "BTActions.h"
+#include "BTHelpers.h"
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidActions.h"
@@ -15,8 +17,6 @@
 #include "MageActions.h"
 #include "PaladinActions.h"
 #include "PriestActions.h"
-#include "BTActions.h"
-#include "BTHelpers.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"

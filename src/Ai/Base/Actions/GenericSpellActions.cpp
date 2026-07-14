@@ -5,18 +5,18 @@
  */
 
 #include "GenericSpellActions.h"
+#include "Chat.h"
 #include "Event.h"
+#include "GenericBuffUtils.h"
+#include "Group.h"
 #include "ItemTemplate.h"
 #include "ObjectDefines.h"
 #include "Opcodes.h"
 #include "Player.h"
+#include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "WorldPacket.h"
-#include "Group.h"
-#include "Chat.h"
-#include "GenericBuffUtils.h"
-#include "PlayerbotAI.h"
 #include <ctime>
 #include <unordered_set>
 

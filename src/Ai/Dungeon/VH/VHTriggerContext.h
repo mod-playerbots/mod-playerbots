@@ -1,8 +1,8 @@
 #ifndef PLAYERBOTS_VHTRIGGERCONTEXT_H
 #define PLAYERBOTS_VHTRIGGERCONTEXT_H
 
-#include "NamedObjectContext.h"
 #include "AiObjectContext.h"
+#include "NamedObjectContext.h"
 #include "VHTriggers.h"
 
 class WotlkDungeonVHTriggerContext : public NamedObjectContext<Trigger>

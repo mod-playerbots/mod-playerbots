@@ -1,7 +1,7 @@
 #include "OCActions.h"
+#include "LastSpellCastValue.h"
 #include "OCTriggers.h"
 #include "Playerbots.h"
-#include "LastSpellCastValue.h"
 
 bool AvoidUnstableSphereAction::Execute(Event /*event*/)
 {

@@ -2,8 +2,8 @@
 #define PLAYERBOTS_BWLACTIONS_H
 
 #include "Action.h"
-#include "MovementActions.h"
 #include "AttackAction.h"
+#include "MovementActions.h"
 
 // General
 

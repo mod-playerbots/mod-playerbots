@@ -6,8 +6,8 @@
 
 #include "ListSpellsAction.h"
 #include "Event.h"
-#include "Playerbots.h"
 #include "PlayerbotSpellRepository.h"
+#include "Playerbots.h"
 
 using SpellListEntry = std::pair<uint32, std::string>;
 

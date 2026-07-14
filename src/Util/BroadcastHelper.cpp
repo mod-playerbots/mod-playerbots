@@ -1,9 +1,9 @@
 
 #include "BroadcastHelper.h"
+#include "AiFactory.h"
+#include "Channel.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
-#include "Channel.h"
-#include "AiFactory.h"
 
 BroadcastHelper::BroadcastHelper() {}
 
