@@ -16,7 +16,7 @@ bool ManaWarpStunCreatureBeforeWarpBreachAction::Execute(Event /*event*/)
     if (!manaWarp)
         return false;
 
-    static const std::array<const char*, 8> spells =
+    static const std::array<const char*, 7> spells =
     {
         "bash",
         "concussion blow",
