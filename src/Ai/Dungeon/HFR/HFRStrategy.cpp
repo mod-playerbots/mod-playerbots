@@ -29,7 +29,7 @@ void TbcDungeonHellfireRampartsStrategy::InitTriggers(std::vector<TriggerNode*> 
     triggers.push_back(new TriggerNode("vazruden tank position boss", {
         NextAction("vazruden tank position boss", ACTION_RAID + 1)}));
 
-    triggers.push_back(new TriggerNode("vazruden mark boss", {
+    triggers.push_back(new TriggerNode("vazruden boss is active", {
         NextAction("vazruden mark boss", ACTION_RAID + 2)}));
 }
 
