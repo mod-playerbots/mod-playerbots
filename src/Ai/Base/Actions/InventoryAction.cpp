@@ -304,6 +304,15 @@ std::vector<Item*> InventoryAction::parseItems(std::string const text, IterateIt
         found.insert(visitor.GetResult().begin(), visitor.GetResult().end());
     }
 
+    // "recipe" keeps the usable-only filter (used by the bot's own recipe-learning);
+    // "recipe all" matches every recipe in the bags, for moving/trading them in bulk.
+    if (text == "recipe all")
+    {
+        FindAnyRecipeVisitor visitor;
+        IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);
+        found.insert(visitor.GetResult().begin(), visitor.GetResult().end());
+    }
+
     if (text == "quest")
     {
         FindQuestItemVisitor visitor(bot);

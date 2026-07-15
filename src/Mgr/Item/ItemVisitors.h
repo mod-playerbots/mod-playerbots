@@ -427,6 +427,18 @@ private:
     SkillType skill;
 };
 
+// Matches any recipe in the bags regardless of whether the bot can learn it.
+// FindRecipeVisitor filters through CanUseItem (FindUsableItemVisitor), so it only
+// returns recipes for the bot's own professions/skill level. This variant matches
+// every recipe, which is what "recipe" trades/deposits are expected to move.
+class FindAnyRecipeVisitor : public FindItemVisitor
+{
+public:
+    FindAnyRecipeVisitor() : FindItemVisitor() {}
+
+    bool Accept(ItemTemplate const* proto) override { return proto->Class == ITEM_CLASS_RECIPE; }
+};
+
 class FindItemUsageVisitor : public FindUsableItemVisitor
 {
 public:
