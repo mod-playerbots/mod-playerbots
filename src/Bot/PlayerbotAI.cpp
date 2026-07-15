@@ -6720,7 +6720,7 @@ float PlayerbotAI::GetItemScoreMultiplier(ItemQualities quality)
     return 1.0f;
 }
 
-bool PlayerbotAI::IsHealingSpell(uint32 spellFamilyName, flag96 spellFalimyFlags)
+bool PlayerbotAI::IsHealingSpell(uint32 spellFamilyName, flag96 spellFamilyFlags)
 {
     if (!spellFamilyName)
         return false;
@@ -6765,7 +6765,7 @@ bool PlayerbotAI::IsHealingSpell(uint32 spellFamilyName, flag96 spellFalimyFlags
         default:
             break;
     }
-    return spellFalimyFlags & healingFlags;
+    return spellFamilyFlags & healingFlags;
 }
 
 SpellFamilyNames PlayerbotAI::Class2SpellFamilyName(uint8 cls)
