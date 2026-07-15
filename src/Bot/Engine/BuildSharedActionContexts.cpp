@@ -1,7 +1,5 @@
 #include "AiObjectContext.h"
 #include "ActionContext.h"
-#include "Ai/Dungeon/TbcDungeonActionContext.h"
-#include "Ai/Dungeon/WotlkDungeonActionContext.h"
 #include "Aq20ActionContext.h"
 #include "BTActionContext.h"
 #include "BWLActionContext.h"
@@ -19,9 +17,11 @@
 #include "RSActionContext.h"
 #include "SSCActionContext.h"
 #include "TKActionContext.h"
+#include "TbcDungeonActionContext.h"
 #include "UldActionContext.h"
 #include "VoAActionContext.h"
 #include "WorldPacketActionContext.h"
+#include "WotlkDungeonActionContext.h"
 #include "ZAActionContext.h"
 
 void AiObjectContext::BuildSharedActionContexts(SharedNamedObjectContextList<Action>& actionContexts)

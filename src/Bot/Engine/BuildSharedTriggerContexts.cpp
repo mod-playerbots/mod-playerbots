@@ -1,6 +1,4 @@
 #include "AiObjectContext.h"
-#include "Ai/Dungeon/TbcDungeonTriggerContext.h"
-#include "Ai/Dungeon/WotlkDungeonTriggerContext.h"
 #include "Aq20TriggerContext.h"
 #include "BTTriggerContext.h"
 #include "BWLTriggerContext.h"
@@ -18,10 +16,12 @@
 #include "RSTriggerContext.h"
 #include "SSCTriggerContext.h"
 #include "TKTriggerContext.h"
+#include "TbcDungeonTriggerContext.h"
 #include "TriggerContext.h"
 #include "UldTriggerContext.h"
 #include "VoATriggerContext.h"
 #include "WorldPacketTriggerContext.h"
+#include "WotlkDungeonTriggerContext.h"
 #include "ZATriggerContext.h"
 
 void AiObjectContext::BuildSharedTriggerContexts(SharedNamedObjectContextList<Trigger>& triggerContexts)
