@@ -65,19 +65,18 @@ ChatHelper::ChatHelper(PlayerbotAI* botAI) : PlayerbotAIAware(botAI)
     projectileSubClasses["arrows"] = ITEM_SUBCLASS_ARROW;
     projectileSubClasses["bullets"] = ITEM_SUBCLASS_BULLET;
 
-    // tradeSubClasses["cloth"] = ITEM_SUBCLASS_CLOTH;
-    // tradeSubClasses["leather"] = ITEM_SUBCLASS_LEATHER;
-    // tradeSubClasses["metal"] = ITEM_SUBCLASS_METAL_STONE;
-    // tradeSubClasses["stone"] = ITEM_SUBCLASS_METAL_STONE;
-    // tradeSubClasses["ore"] = ITEM_SUBCLASS_METAL_STONE;
-    // tradeSubClasses["meat"] = ITEM_SUBCLASS_MEAT;
-    // tradeSubClasses["herb"] = ITEM_SUBCLASS_HERB;
-    // tradeSubClasses["elemental"] = ITEM_SUBCLASS_ELEMENTAL;
-    // tradeSubClasses["disenchants"] = ITEM_SUBCLASS_ENCHANTING;
-    // tradeSubClasses["enchanting"] = ITEM_SUBCLASS_ENCHANTING;
-    // tradeSubClasses["gems"] = ITEM_SUBCLASS_JEWELCRAFTING;
-    // tradeSubClasses["jewels"] = ITEM_SUBCLASS_JEWELCRAFTING;
-    // tradeSubClasses["jewelcrafting"] = ITEM_SUBCLASS_JEWELCRAFTING;
+    tradeSubClasses["cloth"] = ITEM_SUBCLASS_CLOTH;
+    tradeSubClasses["leather"] = ITEM_SUBCLASS_LEATHER;
+    tradeSubClasses["metal"] = ITEM_SUBCLASS_METAL_STONE;
+    tradeSubClasses["stone"] = ITEM_SUBCLASS_METAL_STONE;
+    tradeSubClasses["ore"] = ITEM_SUBCLASS_METAL_STONE;
+    tradeSubClasses["meat"] = ITEM_SUBCLASS_MEAT;
+    tradeSubClasses["herb"] = ITEM_SUBCLASS_HERB;
+    tradeSubClasses["elemental"] = ITEM_SUBCLASS_ELEMENTAL;
+    tradeSubClasses["disenchants"] = ITEM_SUBCLASS_ENCHANTING;
+    tradeSubClasses["enchanting"] = ITEM_SUBCLASS_ENCHANTING;
+    // Note: gems/jewels are ITEM_CLASS_GEM, not a trade-goods subclass, so they are not
+    // mapped here (a JEWELCRAFTING trade-goods match would miss actual gems).
 
     slots["head"] = EQUIPMENT_SLOT_HEAD;
     slots["neck"] = EQUIPMENT_SLOT_NECK;

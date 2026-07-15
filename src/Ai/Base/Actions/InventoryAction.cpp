@@ -15,7 +15,7 @@ namespace
 {
 bool isReservedQualifier(std::string const& text)
 {
-    static std::array<std::string_view, 13> const exactQualifiers = {
+    static std::array<std::string_view, 14> const exactQualifiers = {
         "ammo",
         "conjured drink",
         "conjured food",
@@ -23,6 +23,7 @@ bool isReservedQualifier(std::string const& text)
         "drink",
         "food",
         "healing potion",
+        "materials",
         "mount",
         "mana potion",
         "pet",
@@ -308,6 +309,13 @@ std::vector<Item*> InventoryAction::parseItems(std::string const text, IterateIt
     {
         FindQuestItemVisitor visitor(bot);
         IterateItems(&visitor, ITERATE_ITEMS_IN_BAGS);
+        found.insert(visitor.GetResult().begin(), visitor.GetResult().end());
+    }
+
+    if (text == "materials")
+    {
+        FindTradeMaterialsVisitor visitor(count);
+        IterateItems(&visitor, mask);
         found.insert(visitor.GetResult().begin(), visitor.GetResult().end());
     }
 
