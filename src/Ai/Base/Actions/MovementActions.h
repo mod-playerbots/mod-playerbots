@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_MOVEMENTACTIONS_H
@@ -275,7 +276,7 @@ public:
         this->intervals = intervals;
         this->clockwise = clockwise;
         this->call_counters = 0;
-        for (int i = 0; i < intervals; i++)
+        for (uint32 i = 0; i < intervals; i++)
         {
             float angle = start_angle + 2 * M_PI * i / intervals;
             waypoints.push_back(std::make_pair(center_x + cos(angle) * radius, center_y + sin(angle) * radius));

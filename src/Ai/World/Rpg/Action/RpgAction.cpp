@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "RpgAction.h"
@@ -107,7 +108,7 @@ bool RpgAction::SetNextRpgAction()
     {
         std::vector<std::pair<Action*, uint32>> sortedActions;
 
-        for (int i = 0; i < actions.size(); i++)
+        for (uint32 i = 0; i < actions.size(); i++)
             sortedActions.push_back(std::make_pair(actions[i], relevances[i]));
 
         std::sort(sortedActions.begin(), sortedActions.end(), [](std::pair<Action*, uint32>i, std::pair<Action*, uint32> j) {return i.second > j.second; });

@@ -72,7 +72,7 @@ bool IccRotfaceTankPositionAction::MarkBossWithSkull(Unit* boss)
     return false;
 }
 
-bool IccRotfaceTankPositionAction::PositionMainTankAndMelee(Unit* boss, Unit* smallOoze)
+bool IccRotfaceTankPositionAction::PositionMainTankAndMelee(Unit* boss, Unit*)
 {
     bool isBossCasting = false;
     if (boss && boss->HasUnitState(UNIT_STATE_CASTING))
@@ -125,7 +125,7 @@ bool IccRotfaceTankPositionAction::PositionMainTankAndMelee(Unit* boss, Unit* sm
     return false;
 }
 
-bool IccRotfaceTankPositionAction::HandleAssistTankPositioning(Unit* boss)
+bool IccRotfaceTankPositionAction::HandleAssistTankPositioning(Unit*)
 {
     GuidVector bigOozes = AI_VALUE(GuidVector, "nearest hostile npcs");
     std::vector<Unit*> activeBigOozes;

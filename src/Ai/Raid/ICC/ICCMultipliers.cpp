@@ -27,7 +27,6 @@ namespace
 {
 std::map<ObjectGuid, uint32> g_plagueTimes;
 std::map<ObjectGuid, bool> g_allowCure;
-std::mutex g_plagueMutex; // Lock before accessing shared variables
 }
 
 // Lady Deathwhisper
@@ -126,7 +125,8 @@ float IccGunshipMultiplier::GetValue(Action* action)
     // Bot in transit between ships: lock to rocket-jump action only so combat/movement
     // actions don't interfere with jump packet timing.
     bool const isHordeSide = muradin && muradin->IsAlive() && muradin->IsHostileTo(bot);
-    bool const isAllySide = saurfang && saurfang->IsAlive() && saurfang->IsHostileTo(bot);
+    //@TODO use isAllySide or remove.
+    //bool const isAllySide = saurfang && saurfang->IsAlive() && saurfang->IsHostileTo(bot);
     Position const friendlyPoint = isHordeSide ? ICC_GUNSHIP_ROCKET_JUMP_HORDE_FRIENDLY_POINT
                                                : ICC_GUNSHIP_ROCKET_JUMP_ALLY_FRIENDLY_POINT;
     Position const middlePoint = isHordeSide ? ICC_GUNSHIP_ROCKET_JUMP_HORDE_MIDDLE_POINT

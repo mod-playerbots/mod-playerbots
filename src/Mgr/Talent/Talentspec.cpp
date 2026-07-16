@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "Talentspec.h"
@@ -316,7 +317,7 @@ std::vector<TalentSpec::TalentListEntry> TalentSpec::GetTalentTree(uint32 tabpag
     std::vector<TalentListEntry> retList;
 
     for (auto& entry : talents)
-        if (entry.tabPage() == tabpage)
+        if (entry.tabPage() == uint32(tabpage))
             retList.push_back(entry);
 
     return retList;
@@ -332,7 +333,7 @@ uint32 TalentSpec::GetTalentPoints(std::vector<TalentListEntry>& talents, int32 
 
     uint32 tPoints = 0;
     for (auto& entry : talents)
-        if (entry.tabPage() == tabpage)
+        if (entry.tabPage() == uint32(tabpage))
             tPoints = tPoints + entry.rank;
 
     return tPoints;
@@ -448,7 +449,7 @@ std::vector<TalentSpec::TalentListEntry> TalentSpec::SubTalentList(std::vector<T
             {
                 if (reverse == ABSOLUTE_DIST)
                     newentry.rank = std::abs(int32(newentry.rank - oldentry.rank));
-                else if (reverse == ADDED_POINTS || reverse == REMOVED_POINTS)
+                else if (reverse == ADDED_POINTS || reverse == uint32(REMOVED_POINTS))
                     newentry.rank = std::max(0u, (newentry.rank - oldentry.rank) * (reverse / 2));
                 else
                     newentry.rank = (newentry.rank - oldentry.rank) * reverse;

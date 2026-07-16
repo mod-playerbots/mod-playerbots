@@ -1,7 +1,8 @@
 /*
-* Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
-* and/or modify it under version 3 of the License, or (at your option), any later version.
-*/
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
 
 #include "RandomPlayerbotFactory.h"
 
@@ -240,7 +241,7 @@ std::string const RandomPlayerbotFactory::CreateRandomBotName(NameRaceAndGender 
         botName += (botName.size() < 2) ? groupFormEnd[gender][rand() % 4] : "";
 
         // Replace Catagory value with random Letter from that Catagory's Letter string for a given bot gender
-        for (int i = 0; i < botName.size(); i++)
+        for (size_t i = 0; i < botName.size(); i++)
         {
             botName[i] = groupLetter[gender][groupCategory.find(botName[i])]
                                     [rand() % groupLetter[gender][groupCategory.find(botName[i])].size()];

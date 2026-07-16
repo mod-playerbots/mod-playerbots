@@ -315,7 +315,6 @@ bool IccBpcEmpoweredVortexAction::MaintainRangedSpacing()
     static float const IDEAL_RADIUS = 25.0f;
     static float const RADIUS_TOLERANCE = 3.0f;
     static float const MOVE_INCREMENT = 3.0f;
-    static float const MIN_SPACING = 13.0f;
 
     bool const isRanged = botAI->IsRanged(bot) || botAI->IsHeal(bot);
     if (!isRanged)

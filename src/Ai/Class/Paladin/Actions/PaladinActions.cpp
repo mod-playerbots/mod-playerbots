@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "PaladinActions.h"
@@ -351,10 +352,6 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event /*event*/)
 
     Player* targetPlayer = target ? target->ToPlayer() : nullptr;
 
-    const auto HasKingsAura = [&](Unit* unit) -> bool {
-        return botAI->HasAura("blessing of kings", unit) ||
-               botAI->HasAura("greater blessing of kings", unit);
-    };
     const auto HasSanctAura = [&](Unit* unit) -> bool {
         return botAI->HasAura("blessing of sanctuary", unit) ||
                botAI->HasAura("greater blessing of sanctuary", unit);

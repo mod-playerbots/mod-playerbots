@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "PlayerbotAIConfig.h"
@@ -140,6 +141,9 @@ bool PlayerbotAIConfig::Initialize()
             autoPartyBuffs = AutoPartyBuffMode::GROUP_OR_RAID;
             break;
     }
+    tellWhenMissingBuffReagents = sConfigMgr->GetOption<bool>("AiPlayerbot.TellWhenMissingBuffReagents", true);
+    missingBuffReagentMessageCooldown = sConfigMgr->GetOption<uint32>(
+        "AiPlayerbot.MissingBuffReagentMessageCooldown", 300);
     autoAvoidAoe = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoAvoidAoe", true);
     maxAoeAvoidRadius = sConfigMgr->GetOption<float>("AiPlayerbot.MaxAoeAvoidRadius", 15.0f);
     LoadSet<std::set<uint32>>(sConfigMgr->GetOption<std::string>("AiPlayerbot.AoeAvoidSpellWhitelist", "50759,57491,13810,29946"),
@@ -565,9 +569,33 @@ bool PlayerbotAIConfig::Initialize()
     guildTaskKillTaskDistance = sConfigMgr->GetOption<int32>("AiPlayerbot.GuildTaskKillTaskDistance", 2000);
     targetPosRecalcDistance = sConfigMgr->GetOption<float>("AiPlayerbot.TargetPosRecalcDistance", 0.1f);
 
-    // cosmetics (by lidocain)
-    randomBotShowCloak = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotShowCloak", true);
-    randomBotShowHelmet = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotShowHelmet", true);
+    //cosmetics
+    switch (sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotShowHelmet", 1))
+    {
+        case 0:
+            randomBotShowHelmet = ShowHideCosmetic::ALWAYS_HIDE;
+            break;
+        case 2:
+            randomBotShowHelmet = ShowHideCosmetic::RANDOMIZE;
+            break;
+        case 1:
+        default:
+            randomBotShowHelmet = ShowHideCosmetic::ALWAYS_SHOW;
+            break;
+    }
+    switch (sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotShowCloak", 1))
+    {
+        case 0:
+            randomBotShowCloak = ShowHideCosmetic::ALWAYS_HIDE;
+            break;
+        case 2:
+            randomBotShowCloak = ShowHideCosmetic::RANDOMIZE;
+            break;
+        case 1:
+        default:
+            randomBotShowCloak = ShowHideCosmetic::ALWAYS_SHOW;
+            break;
+    }
 
     // SPP switches
     enableGreet = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableGreet", true);
@@ -946,14 +974,14 @@ std::vector<std::vector<uint32>> PlayerbotAIConfig::ParseTempTalentsOrder(uint32
     }
     for (int tab = 0; tab < 3; tab++)
     {
-        if (tab_links.size() <= tab)
+        if (tab_links.size() <= (size_t)tab)
         {
             break;
         }
         std::sort(spells[tab].begin(), spells[tab].end(),
                   [&](TalentEntry const* lhs, TalentEntry const* rhs)
                   { return lhs->Row != rhs->Row ? lhs->Row < rhs->Row : lhs->Col < rhs->Col; });
-        for (int i = 0; i < tab_links[tab].size(); i++)
+        for (uint32 i = 0; i < tab_links[tab].size(); i++)
         {
             if (i >= spells[tab].size())
             {
@@ -1002,7 +1030,7 @@ std::vector<std::vector<uint32>> PlayerbotAIConfig::ParseTempPetTalentsOrder(uin
     std::sort(spells.begin(), spells.end(),
               [&](TalentEntry const* lhs, TalentEntry const* rhs)
               { return lhs->Row != rhs->Row ? lhs->Row < rhs->Row : lhs->Col < rhs->Col; });
-    for (int i = 0; i < tab_link.size(); i++)
+    for (uint32 i = 0; i < tab_link.size(); i++)
     {
         if (i >= spells.size())
         {

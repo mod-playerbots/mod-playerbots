@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_ACTION_H
@@ -17,8 +18,7 @@ class NextAction
 {
 public:
     NextAction(std::string const name, float relevance = 0.0f)
-        : relevance(relevance), name(name) {}                                  // name after relevance - whipowill
-    NextAction(NextAction const& o) : relevance(o.relevance), name(o.name) {}  // name after relevance - whipowill
+        : relevance(relevance), name(name) {}  // name after relevance - whipowill
 
     std::string const getName() { return name; }
     float getRelevance() { return relevance; }

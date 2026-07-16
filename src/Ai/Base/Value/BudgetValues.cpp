@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "BudgetValues.h"
@@ -25,7 +26,7 @@ uint32 MaxGearRepairCostValue::Calculate()
 
         uint32 curDurability = item->GetUInt32Value(ITEM_FIELD_DURABILITY);
 
-        if (i >= EQUIPMENT_SLOT_END && curDurability >= maxDurability)  // Only count items equiped or already damanged.
+        if (uint32(i) >= EQUIPMENT_SLOT_END && curDurability >= maxDurability)  // Only count items equiped or already damanged.
             continue;
 
         ItemTemplate const* ditemProto = item->GetTemplate();

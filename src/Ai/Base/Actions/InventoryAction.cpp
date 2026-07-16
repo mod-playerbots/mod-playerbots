@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "InventoryAction.h"
@@ -400,7 +401,7 @@ ItemIds InventoryAction::FindOutfitItems(std::string const name)
 std::string const InventoryAction::parseOutfitName(std::string const outfit)
 {
     uint32 pos = outfit.find("=");
-    if (pos == -1)
+    if (pos == uint32(-1))
         return "";
 
     return outfit.substr(0, pos);
@@ -414,7 +415,7 @@ ItemIds InventoryAction::parseOutfitItems(std::string const text)
     while (pos < text.size())
     {
         uint32 endPos = text.find(',', pos);
-        if (endPos == -1)
+        if (endPos == uint32(-1))
             endPos = text.size();
 
         std::string const idC = text.substr(pos, endPos - pos);

@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "TargetValue.h"
@@ -11,17 +12,39 @@
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 #include "ScriptedCreature.h"
+#include "Strategy.h"
 #include "ThreatManager.h"
 
+GuidSet GatherStrategyTargetExclusions(PlayerbotAI* botAI, TargetValueExclusionType type)
+{
+    GuidSet exclusions;
+    if (!botAI || type == TargetValueExclusionType::None || !botAI->HasTargetExclusions())
+        return exclusions;
+
+    for (auto const& strategyName : botAI->GetStrategies(BOT_STATE_COMBAT))
+    {
+        Strategy* strategy = botAI->GetStrategy(strategyName, BOT_STATE_COMBAT);
+        if (!strategy)
+            continue;
+
+        strategy->AppendTargetExclusions(exclusions, type);
+    }
+
+    return exclusions;
+}
+
 Unit* FindTargetStrategy::GetResult() { return result; }
+
+TargetValueExclusionType FindTargetStrategy::GetExclusionType() { return TargetValueExclusionType::None; }
 
 Unit* TargetValue::FindTarget(FindTargetStrategy* strategy)
 {
     GuidVector attackers = botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get();
+    GuidSet const dynamicExclusions = GatherStrategyTargetExclusions(botAI, strategy->GetExclusionType());
     for (ObjectGuid const guid : attackers)
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (!unit)
+        if (!unit || dynamicExclusions.find(guid) != dynamicExclusions.end())
             continue;
 
         ThreatManager& threatMgr = unit->GetThreatMgr();

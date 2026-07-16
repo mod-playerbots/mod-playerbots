@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "BTHelpers.h"
@@ -16,7 +17,7 @@ namespace BlackTempleHelpers
     // Supremus
     std::unordered_map<uint32, time_t> supremusPhaseTimer;
 
-    bool HasSupremusVolcanoNearby(PlayerbotAI* botAI, Player* bot)
+    bool HasSupremusVolcanoNearby(PlayerbotAI*, Player* bot)
     {
         constexpr float searchRadius = 20.0f;
         std::list<Creature*> creatureList;
@@ -446,7 +447,7 @@ namespace BlackTempleHelpers
         return distToLine < area.width;
     }
 
-    GameObject* FindNearestTrap(PlayerbotAI* botAI, Player* bot)
+    GameObject* FindNearestTrap(PlayerbotAI* botAI, Player*)
     {
         GuidVector const& gos =
             botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest game objects")->Get();

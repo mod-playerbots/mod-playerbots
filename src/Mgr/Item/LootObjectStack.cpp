@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "LootObjectStack.h"
@@ -85,6 +86,7 @@ void LootObject::Refresh(Player* bot, ObjectGuid lootGUID)
     {
         bool onlyHasQuestItems = true;
         bool hasAnyQuestItems = false;
+        bool neededQuestItem = false;
 
         GameObjectQuestItemList const* items = sObjectMgr->GetGameObjectQuestItemList(go->GetEntry());
         for (size_t i = 0; i < MAX_GAMEOBJECT_QUEST_ITEMS; i++)
@@ -100,8 +102,12 @@ void LootObject::Refresh(Player* bot, ObjectGuid lootGUID)
 
             if (IsNeededForQuest(bot, itemId))
             {
+                // A gathering node can also drop a needed quest item (e.g.
+                // Root Sample off Barrens herbs); gathering yields both, so
+                // keep reading the lock below to set skillId rather than
+                // bailing here.
                 this->guid = lootGUID;
-                return;
+                neededQuestItem = true;
             }
 
             const ItemTemplate* proto = sObjectMgr->GetItemTemplate(itemId);
@@ -168,7 +174,7 @@ void LootObject::Refresh(Player* bot, ObjectGuid lootGUID)
         }
 
         // If gameobject has only quest items that bot doesn’t need, skip it.
-        if (hasAnyQuestItems && onlyHasQuestItems)
+        if (!neededQuestItem && hasAnyQuestItems && onlyHasQuestItems)
             return;
 
         // Otherwise, loot it.
