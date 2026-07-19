@@ -1,4 +1,7 @@
 #include "RaidBossHelpers.h"
+#include "CellImpl.h"
+#include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 
@@ -225,4 +228,30 @@ Unit* GetNearestPlayerInRadius(Player* bot, float radius)
     }
 
     return nearestPlayer;
+}
+
+// Grid search for dynamic objects for methods to avoid dynobj-based AoE hazards
+std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius, uint32 spellId)
+{
+    std::list<WorldObject*> objs;
+    Acore::AllWorldObjectsInRange check(bot, searchRadius);
+    Acore::WorldObjectListSearcher<Acore::AllWorldObjectsInRange> searcher(
+        bot, objs, check, GRID_MAP_TYPE_MASK_DYNAMICOBJECT);
+    Cell::VisitObjects(bot, searcher, searchRadius);
+
+    std::vector<Position> dynObjs;
+    for (WorldObject* obj : objs)
+    {
+        if (obj->GetTypeId() != TYPEID_DYNAMICOBJECT)
+            continue;
+
+        DynamicObject* dynObj = static_cast<DynamicObject*>(obj);
+        if (dynObj->GetSpellId() == spellId)
+        {
+            dynObjs.emplace_back(
+                dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ());
+        }
+    }
+
+    return dynObjs;
 }
