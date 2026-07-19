@@ -50,7 +50,8 @@ bool LootAction::Execute(Event /*event*/)
 
 bool LootAction::isUseful()
 {
-    return sPlayerbotAIConfig.freeMethodLoot || !bot->GetGroup() || bot->GetGroup()->GetLootMethod() != FREE_FOR_ALL;
+    return sPlayerbotAIConfig.freeMethodLoot || !bot->GetGroup() ||
+    bot->GetGroup()->GetLootMethod() != FREE_FOR_ALL || botAI->IsRealPlayer();
 }
 
 enum ProfessionSpells
