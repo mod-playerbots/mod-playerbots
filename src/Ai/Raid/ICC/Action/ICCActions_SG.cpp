@@ -106,28 +106,50 @@ bool IccSindragosaGroupPositionAction::HandleTankPositioning(Unit* boss)
     else if (orientationDiff < -float(M_PI))
         orientationDiff += 2.0f * float(M_PI);
 
-    bool const isMainTank = botAI->IsMainTank(bot);
-
-    // Main tank taunts the boss back whenever anyone else has her
-    Unit* const victim = boss->GetVictim();
-    if (isMainTank && victim && victim != bot)
-        IccCastClassTaunt(bot, botAI, boss);
-
-    // Stage 1: Drag boss toward the arena centre when it has drifted too far
-    if (isMainTank && distBossToCenter > 16.0f && distToTankPos <= 20.0f)
+    if (botAI->IsMainTank(bot))
     {
-        float const dirX = ICC_SINDRAGOSA_CENTER_POSITION.GetPositionX() - boss->GetPositionX();
-        float const dirY = ICC_SINDRAGOSA_CENTER_POSITION.GetPositionY() - boss->GetPositionY();
+        // Taunt the boss back whenever anyone else has her
+        Unit* const victim = boss->GetVictim();
+        if (victim && victim != bot)
+            IccCastClassTaunt(bot, botAI, boss);
 
-        // Step 4 yards past centre to keep the boss moving through it
-        float const moveX = ICC_SINDRAGOSA_CENTER_POSITION.GetPositionX() + (dirX / distBossToCenter) * 8.0f;
-        float const moveY = ICC_SINDRAGOSA_CENTER_POSITION.GetPositionY() + (dirY / distBossToCenter) * 8.0f;
+        // Drag boss toward the arena centre when it has drifted too far
+        if (distBossToCenter > 16.0f && distToTankPos <= 20.0f)
+        {
+            float const dirX = ICC_SINDRAGOSA_CENTER_POSITION.GetPositionX() - boss->GetPositionX();
+            float const dirY = ICC_SINDRAGOSA_CENTER_POSITION.GetPositionY() - boss->GetPositionY();
 
-        return MoveTo(bot->GetMapId(), moveX, moveY, boss->GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_FORCED, true, false);
+            // Step 4 yards past centre to keep the boss moving through it
+            float const moveX = ICC_SINDRAGOSA_CENTER_POSITION.GetPositionX() + (dirX / distBossToCenter) * 8.0f;
+            float const moveY = ICC_SINDRAGOSA_CENTER_POSITION.GetPositionY() + (dirY / distBossToCenter) * 8.0f;
+
+            return MoveTo(bot->GetMapId(), moveX, moveY, boss->GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_FORCED, true, false);
+        }
+
+        // Arc around the boss to correct its facing toward east, but only once
+        // in position; further out the walk-to-tank-position step below wins.
+        if (distToTankPos <= 10.0f && std::abs(orientationDiff) > 0.15f)
+        {
+            float const centerX = boss->GetPositionX();
+            float const centerY = boss->GetPositionY();
+            float const radius = std::max(2.0f, bot->GetExactDist2d(centerX, centerY));
+
+            float angle = atan2(bot->GetPositionY() - centerY, bot->GetPositionX() - centerX);
+
+            // Negative diff: step counterclockwise (north); positive: clockwise (south)
+            static constexpr float ARC_STEP = 0.125f;
+            angle += (orientationDiff < 0) ? ARC_STEP : -ARC_STEP;
+
+            float const moveX = centerX + radius * cos(angle);
+            float const moveY = centerY + radius * sin(angle);
+
+            return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
+                          MovementPriority::MOVEMENT_FORCED, true, false);
+        }
     }
 
-    // Stage 2: Walk toward the designated tank position
+    // Walk toward the designated tank position
     if (distToTankPos > 10.0f)
     {
         Position const& botPos = bot->GetPosition();
@@ -146,27 +168,7 @@ bool IccSindragosaGroupPositionAction::HandleTankPositioning(Unit* boss)
                       MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
-    // Stage 3: Arc around the boss to correct its facing toward east
-    if (isMainTank && std::abs(orientationDiff) > 0.15f)
-    {
-        float const centerX = boss->GetPositionX();
-        float const centerY = boss->GetPositionY();
-        float const radius = std::max(2.0f, bot->GetExactDist2d(centerX, centerY));
-
-        float angle = atan2(bot->GetPositionY() - centerY, bot->GetPositionX() - centerX);
-
-        // Negative diff → step counterclockwise (north); positive → clockwise (south)
-        static constexpr float ARC_STEP = 0.125f;
-        angle += (orientationDiff < 0) ? ARC_STEP : -ARC_STEP;
-
-        float const moveX = centerX + radius * cos(angle);
-        float const moveY = centerY + radius * sin(angle);
-
-        return MoveTo(bot->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_FORCED, true, false);
-    }
-
-    // Stage 4: Fine-tune Y-axis alignment with the tank position
+    // Fine-tune Y-axis alignment with the tank position
     float const yDiff = std::abs(bot->GetPositionY() - ICC_SINDRAGOSA_TANK_POSITION.GetPositionY());
     if (yDiff > 2.0f)
     {

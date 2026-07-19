@@ -284,24 +284,18 @@ std::optional<bool> IccValithriaShouldHealRaid(Player* bot, PlayerbotAI* botAI)
             int raidHealersNeeded = healerCount > 3 ? 2 : 1;
             int druidIndex =
                 std::distance(druidGuids.begin(), std::find(druidGuids.begin(), druidGuids.end(), bot->GetGUID()));
-            if (druidIndex < raidHealersNeeded)
-                shouldHealRaid = true;
-            else
-                shouldHealRaid = false;
+            shouldHealRaid = (druidIndex < raidHealersNeeded);
         }
         else if (healerCount > 3 && druidCount == 1)
         {
-            if (healerIndex == (healerCount - 1) && !isDruid)
+            if (healerIndex == (healerCount - 1))
                 shouldHealRaid = true;
         }
     }
+    else if (healerCount > 3)
+        shouldHealRaid = (healerIndex >= (healerCount - 2));
     else
-    {
-        if (healerCount > 3)
-            shouldHealRaid = (healerIndex >= (healerCount - 2));
-        else
-            shouldHealRaid = (healerIndex == (healerCount - 1));
-    }
+        shouldHealRaid = (healerIndex == (healerCount - 1));
 
     return shouldHealRaid;
 }

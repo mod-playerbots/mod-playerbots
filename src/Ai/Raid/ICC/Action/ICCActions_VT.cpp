@@ -194,10 +194,9 @@ bool IccValithriaGroupAction::Execute(Event /*event*/)
     }
     bool const hasZombieThreat = nearbyZombie && nearbyZombie->GetVictim() == bot;
 
-    bool engagedDps = false;
-    if (!botAI->IsTank(bot) && !botAI->IsHeal(bot))
-        if (Unit* v = bot->GetVictim())
-            engagedDps = v->GetExactDist2d(ICC_VDW_HEAL_POSITION) <= 50.0f;
+    Unit* const victim = bot->GetVictim();
+    bool const engagedDps = victim && !botAI->IsTank(bot) && !botAI->IsHeal(bot) &&
+                            victim->GetExactDist2d(ICC_VDW_HEAL_POSITION) <= 50.0f;
 
     if (!inDreamState && !hasPortalClaim && !hasZombieThreat && !engagedDps)
     {

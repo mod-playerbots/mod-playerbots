@@ -809,15 +809,14 @@ bool IccSindragosaGroupPositionTrigger::IsActive()
         boss->GetExactDist2d(ICC_SINDRAGOSA_FLYING_POSITION.GetPositionX(), ICC_SINDRAGOSA_FLYING_POSITION.GetPositionY()) >= 30.0f)
         bot->RemoveAura(SPELL_FROST_BEACON);
 
-    // Strip Mystic Buffet from tanks: the cheat that makes single-tanking P3 survivable.
     if (botAI->IsTank(bot))
+    {
+        // Strip Mystic Buffet: the cheat that makes single-tanking P3 survivable.
         if (Aura* aura = botAI->GetAura("mystic buffet", bot, false, false))
             bot->RemoveAura(aura->GetId());
 
-    // Shield tanks while a tomb is up, Blistering Cold is casting, or a last
-    // phase beacon is out (tomb about to form, healers already scattering).
-    if (botAI->IsTank(bot))
-    {
+        // Shield tanks while a tomb is up, Blistering Cold is casting, or a last
+        // phase beacon is out (tomb about to form, healers already scattering).
         bool const shield = (boss->HasUnitState(UNIT_STATE_CASTING) && IccBossCastingBlisteringCold(boss)) ||
                             (boss->HealthBelowPct(35) && IccAnyGroupMemberHasAura(bot, SPELL_FROST_BEACON)) ||
                             !IccGetCreaturesByEntries(bot, {NPC_TOMB1, NPC_TOMB2, NPC_TOMB3, NPC_TOMB4}, 150.0f).empty();
@@ -825,12 +824,9 @@ bool IccSindragosaGroupPositionTrigger::IsActive()
             bot->AddAura(SPELL_MAGIC_BARRIER, bot);
         else if (!shield && bot->HasAura(SPELL_MAGIC_BARRIER))
             bot->RemoveAura(SPELL_MAGIC_BARRIER);
-    }
 
-    // Assist tanks generate no threat while another main tank is alive, so
-    // they can never win the threat race at the pull; dropped on promotion.
-    if (botAI->IsTank(bot))
-    {
+        // Assist tanks generate no threat while another main tank is alive, so
+        // they can never win the threat race at the pull; dropped on promotion.
         bool mtAlive = false;
         if (Group* group = bot->GetGroup())
         {

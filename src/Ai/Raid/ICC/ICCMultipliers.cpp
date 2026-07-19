@@ -581,22 +581,10 @@ float IccBpcAssistMultiplier::GetValue(Action* action)
     // actually walks a ranged/caster bot into range of a new target - Attack()
     // alone does not move them - so it must be excluded too or they can never
     // close distance on a newly marked target while stacked.
-    if (aura)
-    {
-        if (aura->GetStackAmount() > 18 && botAI->IsTank(bot))
-        {
-            if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
-                !dynamic_cast<ReachTargetAction*>(action))
-                return 0.0f;
-        }
-
-        if (aura->GetStackAmount() > 12 && !botAI->IsTank(bot))
-        {
-            if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
-                !dynamic_cast<ReachTargetAction*>(action))
-                return 0.0f;
-        }
-    }
+    if (aura && aura->GetStackAmount() > (botAI->IsTank(bot) ? 18 : 12) &&
+        dynamic_cast<MovementAction*>(action) && !dynamic_cast<AttackAction*>(action) &&
+        !dynamic_cast<ReachTargetAction*>(action))
+        return 0.0f;
 
     Unit* valanar = AI_VALUE2(Unit*, "find target", "prince valanar");
     if (!valanar)
