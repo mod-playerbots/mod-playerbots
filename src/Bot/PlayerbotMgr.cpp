@@ -547,8 +547,11 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
     // set delay on login
     botAI->SetNextCheckDelay(urand(2000, 4000));
 
-    botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-        "hello", "Hello!", {}), PLAYERBOT_SECURITY_TALK);
+    if (sPlayerbotAIConfig.enableGreet)
+    {
+        botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "hello", "Hello!", {}), PLAYERBOT_SECURITY_TALK);
+    }
 
     // Queue group operations for world thread
     if (master && master->GetGroup() && !group)

@@ -2591,8 +2591,11 @@ void RandomPlayerbotMgr::OnPlayerLogin(Player* player)
                 {
                     botAI->SetMaster(player);
                     botAI->ResetStrategies();
-                    botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-                        "hello", "Hello", {}));
+                    if (sPlayerbotAIConfig.enableGreet)
+                    {
+                        botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                            "hello", "Hello", {}));
+                    }
                 }
 
                 break;

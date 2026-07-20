@@ -449,12 +449,15 @@ void PlayerbotAI::UpdateAIGroupMaster()
             {
                 botAI->ChangeStrategy("+follow", BOT_STATE_NON_COMBAT);
 
-                if (botAI->GetMaster() == botAI->GetGroupLeader())
-                    botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-                        "hello_follow", "Hello, I follow you!", {}));
-                else
-                    botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-                        "hello", "Hello!", {}));
+                if (sPlayerbotAIConfig.enableGreet)
+                {
+                    if (botAI->GetMaster() == botAI->GetGroupLeader())
+                        botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                            "hello_follow", "Hello, I follow you!", {}));
+                    else
+                        botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                            "hello", "Hello!", {}));
+                }
             }
             else
             {
