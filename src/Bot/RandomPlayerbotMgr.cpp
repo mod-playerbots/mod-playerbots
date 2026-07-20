@@ -1805,13 +1805,28 @@ std::vector<WorldLocation> RandomPlayerbotMgr::GetPlayerZoneTeleportLocations(st
 {
     std::set<uint32> playerMaps;
     std::set<std::pair<uint32, uint32>> playerMapZones;
-    for (Player* player : GetPlayers())
+
+    // players only ever holds real (non random bot) players and is maintained on login/logout, so
+    // this is a pass over the online player list, not a world-wide scan.
+    for (Player* player : players)
     {
         if (!player || !player->IsInWorld() || player->IsGameMaster())
             continue;
 
-        playerMaps.insert(player->GetMapId());
-        playerMapZones.insert(std::make_pair(player->GetMapId(), player->GetZoneId()));
+        Map* map = player->GetMap();
+
+        // Instanceable maps (dungeons, raids, battlegrounds, arenas) are never valid targets: a
+        // WorldLocation carries no instance id, so a bot would be sent to another instance of the
+        // same map rather than to the player.
+        if (map->Instanceable())
+            continue;
+
+        // Resolve the player zone the same way as the candidate locations below (unphased terrain),
+        // so a player standing in a phased area still matches its underlying zone.
+        uint32 zoneId = map->GetZoneId(PHASEMASK_NORMAL, player->GetPositionX(), player->GetPositionY(),
+                                       player->GetPositionZ());
+        playerMaps.insert(map->GetId());
+        playerMapZones.insert(std::make_pair(map->GetId(), zoneId));
     }
 
     std::vector<WorldLocation> filtered;
