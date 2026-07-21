@@ -110,8 +110,25 @@ bool RomuloAndJulianneBothBossesRevivedTrigger::IsActive()
 
 bool WizardOfOzNeedTargetPriorityTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(bot, KARAZHAN_MAP_ID) &&
-           AI_VALUE2(Unit*, "find target", "moroes");
+    if (!IsMechanicTrackerBot(bot, KARAZHAN_MAP_ID))
+        return false;
+
+    static const std::array<const char*, 5> ozTargets =
+    {
+        "dorothee",
+        "tito",
+        "roar",
+        "strawman",
+        "tinhead",
+    };
+
+    for (const char* name : ozTargets)
+    {
+        if (AI_VALUE2(Unit*, "find target", name))
+            return true;
+    }
+
+    return false;
 }
 
 bool WizardOfOzStrawmanIsVulnerableToFireTrigger::IsActive()

@@ -377,14 +377,13 @@ bool RomuloAndJulianneMarkTargetAction::Execute(Event /*event*/)
 // Mark targets with skull in the recommended kill order
 bool WizardOfOzMarkTargetAction::Execute(Event /*event*/)
 {
-    static const std::array<const char*, 6> ozTargets =
+    static const std::array<const char*, 5> ozTargets =
     {
         "dorothee",
         "tito",
         "roar",
         "strawman",
         "tinhead",
-        "the crone"
     };
 
     for (const char* name : ozTargets)
