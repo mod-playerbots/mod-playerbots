@@ -30,7 +30,7 @@ ItemUsage ItemUsageValue::Calculate()
     if (!proto)
         return ITEM_USAGE_NONE;
 
-    if (botAI->HasActivePlayerMaster())
+    if (IsRealPlayer(botAI->GetMaster()))
     {
         if (IsItemUsefulForSkill(proto) || IsItemNeededForSkill(proto))
             return ITEM_USAGE_SKILL;

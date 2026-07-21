@@ -178,7 +178,7 @@ bool PetitionOfferNearbyAction::Execute(Event /*event*/)
                 continue;
 
             */
-            if (botAI->HasActivePlayerMaster())  // Do not invite alts of active players.
+            if (IsRealPlayer(botAI->GetMaster()))  // Do not invite bots that belong to an active player.
                 continue;
         }
         else

@@ -38,7 +38,7 @@ void DestroyItemAction::DestroyItem(FindItemVisitor* visitor)
     }
 }
 
-bool SmartDestroyItemAction::isUseful() { return !botAI->HasActivePlayerMaster(); }
+bool SmartDestroyItemAction::isUseful() { return !IsRealPlayer(botAI->GetMaster()); }
 
 bool SmartDestroyItemAction::Execute(Event /*event*/)
 {

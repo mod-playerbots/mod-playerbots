@@ -86,11 +86,11 @@ bool InviteNearbyToGroupAction::Execute(Event /*event*/)
 
         if (botAI)
         {
-            if (botAI->GetGrouperType() == GrouperType::SOLO &&
-                !botAI->HasRealPlayerMaster())  // Do not invite solo players.
+            // A solo-grouper bot with no real master (regular player or selfbot master) does not invite.
+            if (botAI->GetGrouperType() == GrouperType::SOLO && !botAI->HasRealPlayerMaster())
                 continue;
 
-            if (botAI->HasActivePlayerMaster())  // Do not invite alts of active players.
+            if (IsRealPlayer(botAI->GetMaster()))  // An active player's altbot does not auto-invite.
                 continue;
         }
 
@@ -159,7 +159,7 @@ bool InviteNearbyToGroupAction::isUseful()
             return false;
     }
 
-    if (botAI->HasActivePlayerMaster())  // Alts do not invite randomly
+    if (IsRealPlayer(botAI->GetMaster()))  // An active player's altbot does not auto-invite.
         return false;
 
     return true;
@@ -209,11 +209,11 @@ bool InviteGuildToGroupAction::Execute(Event /*event*/)
 
         if (playerAi)
         {
-            if (playerAi->GetGrouperType() == GrouperType::SOLO &&
-                !playerAi->HasRealPlayerMaster())  // Do not invite solo players.
+            // Do not invite solo players.
+            if (playerAi->GetGrouperType() == GrouperType::SOLO && !playerAi->HasRealPlayerMaster())
                 continue;
 
-            if (playerAi->HasActivePlayerMaster())  // Do not invite alts of active players.
+            if (IsRealPlayer(playerAi->GetMaster()))  // Do not invite bots that belong to an active player.
                 continue;
 
             if (player->GetLevel() >
@@ -241,7 +241,7 @@ bool InviteGuildToGroupAction::Execute(Event /*event*/)
         }
 
         if (PlayerbotAIConfig::instance().inviteChat &&
-            (RandomPlayerbotMgr::instance().IsRandomBot(bot) || !botAI->HasActivePlayerMaster()))
+            (RandomPlayerbotMgr::instance().IsRandomBot(bot) || !IsRealPlayer(botAI->GetMaster())))
         {
             BroadcastHelper::BroadcastGuildGroupOrRaidInvite(botAI, bot, player, group);
         }

@@ -175,10 +175,10 @@ bool AutoReleaseSpiritAction::ShouldAutoRelease() const
     if (!groupLeader || groupLeader == bot)
         return true;
 
-    if (!botAI->HasActivePlayerMaster())
+    if (!IsRealPlayer(botAI->GetMaster()))
         return true;
 
-    if (botAI->HasActivePlayerMaster() &&
+    if (IsRealPlayer(botAI->GetMaster()) &&
         groupLeader->GetMapId() == bot->GetMapId() &&
         bot->GetMap() &&
         (bot->GetMap()->IsRaid() || bot->GetMap()->IsDungeon()))

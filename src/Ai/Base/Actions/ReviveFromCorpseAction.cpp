@@ -349,7 +349,7 @@ bool SpiritHealerAction::Execute(Event /*event*/)
     if (moved)
         return true;
 
-    // if (!botAI->HasActivePlayerMaster())
+    // if (!IsRealPlayer(botAI->GetMaster()))
     // {
     context->GetValue<uint32>("death count")->Set(dCount + 1);
     bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);

@@ -542,8 +542,6 @@ public:
     bool IsSelfBot() { return master ? (master == bot) : false; }
     // Bot has a master that is a player.
     bool HasRealPlayerMaster();
-    // Bot has a master that is activly playing.
-    bool HasActivePlayerMaster();
     // Get the group leader or the master of the bot.
     // Checks if the bot is summoned as alt of a player
     bool IsAltBot();

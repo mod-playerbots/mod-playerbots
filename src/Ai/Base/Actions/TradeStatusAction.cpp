@@ -163,7 +163,7 @@ bool TradeStatusAction::CheckTrade()
     if (!bot->GetTradeData() || !trader || !trader->GetTradeData())
         return false;
 
-    if (!botAI->HasActivePlayerMaster() && GET_PLAYERBOT_AI(bot->GetTrader()))
+    if (!IsRealPlayer(botAI->GetMaster()) && GET_PLAYERBOT_AI(bot->GetTrader()))
     {
         for (uint32 slot = 0; slot < TRADE_SLOT_TRADED_COUNT; ++slot)
         {

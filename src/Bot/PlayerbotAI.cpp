@@ -1483,7 +1483,7 @@ void PlayerbotAI::DoNextAction(bool min)
     {
         // Death Count to prevent skeleton piles
         // Player* master = GetMaster();  // warning here - whipowill
-        if (!HasActivePlayerMaster() && !bot->InBattleground())
+        if (!IsRealPlayer(master) && !bot->InBattleground())
         {
             uint32 dCount = aiObjectContext->GetValue<uint32>("death count")->Get();
             aiObjectContext->GetValue<uint32>("death count")->Set(++dCount);
@@ -4477,8 +4477,6 @@ bool PlayerbotAI::HasRealPlayerMaster()
 
     return false;
 }
-
-bool PlayerbotAI::HasActivePlayerMaster() { return IsRealPlayer(master); }
 
 bool PlayerbotAI::IsAltBot() { return HasRealPlayerMaster() && !sRandomPlayerbotMgr.IsRandomBot(bot); }
 

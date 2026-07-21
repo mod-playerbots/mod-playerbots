@@ -425,7 +425,7 @@ void PlayerbotHolder::DisablePlayerBot(ObjectGuid guid)
         bot->GetMotionMaster()->Clear();
 
         Group* group = bot->GetGroup();
-        if (group && !bot->InBattleground() && !bot->InBattlegroundQueue() && botAI->HasActivePlayerMaster())
+        if (group && !bot->InBattleground() && !bot->InBattlegroundQueue() && IsRealPlayer(botAI->GetMaster()))
         {
             PlayerbotRepository::instance().Save(botAI);
         }

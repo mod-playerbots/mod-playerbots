@@ -36,7 +36,7 @@ bool TrainerAction::Execute(Event event)
     bool learnSpells = param.find("learn") != std::string::npos || sRandomPlayerbotMgr.IsRandomBot(bot) ||
                        (sPlayerbotAIConfig.allowLearnTrainerSpells &&
                         // TODO: Rewrite to only exclude start primary profession skills and make config dependent.
-                        (trainer->GetTrainerType() != Trainer::Type::Tradeskill || !botAI->HasActivePlayerMaster()));
+                        (trainer->GetTrainerType() != Trainer::Type::Tradeskill || !IsRealPlayer(botAI->GetMaster())));
 
     Iterate(target, learnSpells, spellId);
 
