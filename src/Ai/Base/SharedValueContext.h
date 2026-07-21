@@ -26,14 +26,11 @@ public:
     template <class T>
     Value<T>* getGlobalValue(std::string const name)
     {
-        // should never reach here
         SharedNamedObjectContextList<UntypedValue> sValueContexts;
         sValueContexts.Add(this);
         NamedObjectContextList<UntypedValue> valueContexts(sValueContexts);
-        PlayerbotAI* botAI = new PlayerbotAI();
 
-        UntypedValue* value = valueContexts.GetContextObject(name, botAI);
-        delete botAI;
+        UntypedValue* value = valueContexts.GetContextObject(name, globalAI());
         return dynamic_cast<Value<T>*>(value);
     }
 
@@ -52,6 +49,13 @@ public:
     }
 
 private:
+    // Cached values hold this pointer after the call returns, so it must not be a local temporary.
+    static PlayerbotAI* globalAI()
+    {
+        static PlayerbotAI* ai = new PlayerbotAI();
+        return ai;
+    }
+
     SharedValueContext() : NamedObjectContext(true)
     {
         creators["bg masters"] = &SharedValueContext::bg_masters;
