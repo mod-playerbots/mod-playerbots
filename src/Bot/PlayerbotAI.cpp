@@ -4447,7 +4447,7 @@ Player* PlayerbotAI::FindNewMaster()
     return nullptr;
 }
 
-bool PlayerbotAI::IsAltBot() { return (IsRealPlayer(master) || IsSelfBot(master)) && !sRandomPlayerbotMgr.IsRandomBot(bot); }
+bool PlayerbotAI::IsAltBot() { return (IsRealPlayer(master) || IsSelfBot(master)) && !sRandomPlayerbotMgr.IsRandomBot(bot) && !IsSelfBot(bot); }
 
 Player* PlayerbotAI::GetGroupLeader()
 {
