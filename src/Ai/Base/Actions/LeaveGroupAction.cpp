@@ -139,7 +139,7 @@ bool LeaveFarAwayAction::isUseful()
     if (dCount > 9)
         return true;
 
-    if (dCount > 4 && !botAI->HasRealPlayerMaster())
+    if (dCount > 4 && !(IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster())))
         return true;
 
     if (bot->GetGuildId() == groupLeader->GetGuildId())

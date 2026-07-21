@@ -19,7 +19,7 @@
 
 bool ChooseRpgTargetAction::HasSameTarget(ObjectGuid guid, uint32 max, GuidVector const& nearGuids)
 {
-    if (botAI->HasRealPlayerMaster())
+    if (IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster()))
         return false;
 
     uint32 num = 0;

@@ -21,7 +21,7 @@
 
 void RpgHelper::OnExecute(std::string nextAction)
 {
-    if (botAI->HasRealPlayerMaster() && nextAction == "rpg")
+    if ((IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster())) && nextAction == "rpg")
         nextAction = "rpg cancel";
 
     SET_AI_VALUE(std::string, "next rpg action", nextAction);
@@ -84,7 +84,7 @@ void RpgHelper::setFacing(GuidPosition guidPosition)
 
 void RpgHelper::setDelay(bool waitForGroup)
 {
-    if (!botAI->HasRealPlayerMaster() || (waitForGroup && botAI->GetGroupLeader() == bot && bot->GetGroup()))
+    if (!(IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster())) || (waitForGroup && botAI->GetGroupLeader() == bot && bot->GetGroup()))
         botAI->SetNextCheckDelay(sPlayerbotAIConfig.rpgDelay);
     else
         botAI->SetNextCheckDelay(sPlayerbotAIConfig.rpgDelay / 5);
@@ -105,7 +105,7 @@ std::string const RpgSubAction::ActionName() { return "none"; }
 
 Event RpgSubAction::ActionEvent(Event event) { return event; }
 
-bool RpgStayAction::isUseful() { return rpg->InRange() && !botAI->HasRealPlayerMaster(); }
+bool RpgStayAction::isUseful() { return rpg->InRange() && !(IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster())); }
 
 bool RpgStayAction::Execute(Event /*event*/)
 {
@@ -115,7 +115,7 @@ bool RpgStayAction::Execute(Event /*event*/)
     return true;
 }
 
-bool RpgWorkAction::isUseful() { return rpg->InRange() && !botAI->HasRealPlayerMaster(); }
+bool RpgWorkAction::isUseful() { return rpg->InRange() && !(IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster())); }
 
 bool RpgWorkAction::Execute(Event /*event*/)
 {
@@ -124,7 +124,7 @@ bool RpgWorkAction::Execute(Event /*event*/)
     return true;
 }
 
-bool RpgEmoteAction::isUseful() { return rpg->InRange() && !botAI->HasRealPlayerMaster(); }
+bool RpgEmoteAction::isUseful() { return rpg->InRange() && !(IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster())); }
 
 bool RpgEmoteAction::Execute(Event /*event*/)
 {
@@ -148,7 +148,7 @@ bool RpgCancelAction::Execute(Event /*event*/)
     return true;
 }
 
-bool RpgTaxiAction::isUseful() { return rpg->InRange() && !botAI->HasRealPlayerMaster(); }
+bool RpgTaxiAction::isUseful() { return rpg->InRange() && !(IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster())); }
 
 bool RpgTaxiAction::Execute(Event /*event*/)
 {
@@ -431,7 +431,7 @@ bool RpgTradeUsefulAction::Execute(Event /*event*/)
     {
         if (bot->GetTradeData() && bot->GetTradeData()->HasItem(item->GetGUID()))
         {
-            if (bot->GetGroup() && bot->GetGroup()->IsMember(guidP) && botAI->HasRealPlayerMaster())
+            if (bot->GetGroup() && bot->GetGroup()->IsMember(guidP) && (IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster())))
                 botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
                     "rpg_item_better_for_player",
                     "You can use this %item better than me, %player.",

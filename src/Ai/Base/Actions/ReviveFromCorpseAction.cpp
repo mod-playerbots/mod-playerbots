@@ -52,14 +52,12 @@ bool ReviveFromCorpseAction::Execute(Event event)
             return false;
     }
 
-    if (!botAI->HasRealPlayerMaster())
+    if (!(IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster())))
     {
         uint32 dCount = AI_VALUE(uint32, "death count");
 
         if (dCount >= 5)
-        {
             return botAI->DoSpecificAction("spirit healer");
-        }
     }
 
     LOG_DEBUG("playerbots", "Bot {} {}:{} <{}> revives at body", bot->GetGUID().ToString().c_str(),
@@ -94,7 +92,7 @@ bool FindCorpseAction::Execute(Event /*event*/)
 
     uint32 dCount = AI_VALUE(uint32, "death count");
 
-    if (!botAI->HasRealPlayerMaster())
+    if (!(IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster())))
     {
         if (dCount >= 5)
         {

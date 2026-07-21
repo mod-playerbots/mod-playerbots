@@ -1022,14 +1022,11 @@ void MovementAction::UpdateMovementState()
     wasMovementRestricted = isCurrentlyRestricted;
 
     // Temporary speed increase in group
-    // if (botAI->HasRealPlayerMaster())
-    // {
+    // if (IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster()))
     //     bot->SetSpeedRate(MOVE_RUN, 1.1f);
-    // }
     // else
-    // {
     //     bot->SetSpeedRate(MOVE_RUN, 1.0f);
-    // }
+
     // check if target is not reachable (from Vmangos)
     // if (bot->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE && bot->CanNotReachTarget() &&
     // !bot->InBattleground())
@@ -1117,7 +1114,7 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
         && ServerFacade::instance().IsDistanceLessOrEqualThan(ServerFacade::instance().GetDistance2d(bot, target->GetPositionX(),
     target->GetPositionY()), sPlayerbotAIConfig.sightDistance)
         && abs(bot->GetPositionZ() - target->GetPositionZ()) >= sPlayerbotAIConfig.spellDistance &&
-    botAI->HasRealPlayerMaster()
+    (IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster()))
         && (target->GetMapId() && bot->GetMapId() != target->GetMapId()))
     {
         bot->StopMoving();
@@ -1144,7 +1141,7 @@ bool MovementAction::Follow(Unit* target, float distance, float angle)
         return true;
     }
 
-    if (!IsMovingAllowed(target) && botAI->HasRealPlayerMaster())
+    if (!IsMovingAllowed(target) && (IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster())))
     {
         if ((target->GetMap() && target->GetMap()->IsBattlegroundOrArena()) || (bot->GetMap() &&
     bot->GetMap()->IsBattlegroundOrArena())) return false;

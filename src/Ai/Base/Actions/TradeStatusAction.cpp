@@ -185,7 +185,7 @@ bool TradeStatusAction::CheckTrade()
         if (isGettingItem)
         {
             if (bot->GetGroup() && bot->GetGroup()->IsMember(bot->GetTrader()->GetGUID()) &&
-                botAI->HasRealPlayerMaster())
+                (IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster())))
                 botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
                     "trade_thank_you_player",
                     "Thank you %player",

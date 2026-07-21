@@ -91,7 +91,7 @@ bool BGJoinAction::gatherArenaTeam(ArenaType type)
             if (!memberBotAI)
                 continue;
 
-            if (member->GetGroup() && memberBotAI->HasRealPlayerMaster())
+            if (member->GetGroup() && (IsRealPlayer(memberBotAI->GetMaster()) || IsSelfBot(memberBotAI->GetMaster())))
                 continue;
 
             if (!sPlayerbotAIConfig.IsInRandomAccountList(member->GetSession()->GetAccountId()))

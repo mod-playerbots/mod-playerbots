@@ -1235,7 +1235,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                     if (bot->InBattleground() && !(isMentioned || (msgtype != CHAT_MSG_CHANNEL && !isFromFreeBot)))
                         return;
 
-                    if (HasRealPlayerMaster() && guid1 != GetMaster()->GetGUID())
+                    if ((IsRealPlayer(master) || IsSelfBot(master)) && guid1 != GetMaster()->GetGUID())
                         return;
 
                     auto itemIds = GetChatHelper()->ExtractAllItemIds(message);
@@ -1524,7 +1524,7 @@ void PlayerbotAI::DoNextAction(bool min)
 
     if (minimal)
     {
-        if (!bot->isAFK() && !bot->InBattleground() && !HasRealPlayerMaster())
+        if (!bot->isAFK() && !bot->InBattleground() && !(IsRealPlayer(master) || IsSelfBot(master)))
             bot->ToggleAFK();
 
         SetNextCheckDelay(sPlayerbotAIConfig.passiveDelay);
@@ -3261,21 +3261,17 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
 {
     if (!spellid)
     {
-        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
-        {
-            LOG_DEBUG("playerbots", "Can cast spell failed. No spellid. - spellid: {}, bot name: {}", spellid,
-                      bot->GetName());
-        }
+        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && (IsRealPlayer(master) || IsSelfBot(master))))
+            LOG_DEBUG("playerbots", "Can cast spell failed. No spellid. - spellid: {}, bot name: {}", spellid, bot->GetName());
+
         return false;
     }
 
     if (bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
     {
-        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
-        {
-            LOG_DEBUG("playerbots", "Can cast spell failed. Unit state lost control. - spellid: {}, bot name: {}",
-                      spellid, bot->GetName());
-        }
+        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && (IsRealPlayer(master) || IsSelfBot(master))))
+            LOG_DEBUG("playerbots", "Can cast spell failed. Unit state lost control. - spellid: {}, bot name: {}", spellid, bot->GetName());
+
         return false;
     }
 
@@ -3291,58 +3287,47 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
 
     if (checkHasSpell && !bot->HasSpell(spellid))
     {
-        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
-        {
-            LOG_DEBUG("playerbots",
-                      "Can cast spell failed. Bot not has spell. - target name: {}, spellid: {}, bot name: {}",
-                      target->GetName(), spellid, bot->GetName());
-        }
+        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && (IsRealPlayer(master) || IsSelfBot(master))))
+            LOG_DEBUG("playerbots", "Can cast spell failed. Bot not has spell. - target name: {}, spellid: {}, bot name: {}",
+                target->GetName(), spellid, bot->GetName());
+
         return false;
     }
 
     if (bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL) != nullptr)
     {
-        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
-        {
-            LOG_DEBUG(
-                "playerbots",
-                "CanCastSpell() target name: {}, spellid: {}, bot name: {}, failed because has current channeled spell",
+        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && (IsRealPlayer(master) || IsSelfBot(master))))
+            LOG_DEBUG("playerbots", "CanCastSpell() target name: {}, spellid: {}, bot name: {}, failed because has current channeled spell",
                 target->GetName(), spellid, bot->GetName());
-        }
+
         return false;
     }
 
     if (bot->HasSpellCooldown(spellid))
     {
-        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
-        {
-            LOG_DEBUG("playerbots",
-                      "Can cast spell failed. Spell not has cooldown. - target name: {}, spellid: {}, bot name: {}",
-                      target->GetName(), spellid, bot->GetName());
-        }
+        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && (IsRealPlayer(master) || IsSelfBot(master))))
+            LOG_DEBUG("playerbots", "Can cast spell failed. Spell not has cooldown. - target name: {}, spellid: {}, bot name: {}",
+                target->GetName(), spellid, bot->GetName());
+
         return false;
     }
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellid);
     if (!spellInfo)
     {
-        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
-        {
+        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && (IsRealPlayer(master) || IsSelfBot(master))))
             LOG_DEBUG("playerbots", "Can cast spell failed. No spellInfo. - target name: {}, spellid: {}, bot name: {}",
-                      target->GetName(), spellid, bot->GetName());
-        }
+                target->GetName(), spellid, bot->GetName());
+
         return false;
     }
 
     if ((bot->GetShapeshiftForm() == FORM_FLIGHT || bot->GetShapeshiftForm() == FORM_FLIGHT_EPIC) && !bot->IsInCombat())
     {
-        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
-        {
-            LOG_DEBUG(
-                "playerbots",
-                "Can cast spell failed. In flight form (not in combat). - target name: {}, spellid: {}, bot name: {}",
+        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && (IsRealPlayer(master) || IsSelfBot(master))))
+            LOG_DEBUG("playerbots", "Can cast spell failed. In flight form (not in combat). - target name: {}, spellid: {}, bot name: {}",
                 target->GetName(), spellid, bot->GetName());
-        }
+
         return false;
     }
 
@@ -3350,11 +3335,10 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
     // bool interruptOnMove = spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT;
     if ((CastingTime || spellInfo->IsAutoRepeatRangedSpell()) && bot->isMoving())
     {
-        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
-        {
+        if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && (IsRealPlayer(master) || IsSelfBot(master))))
             LOG_DEBUG("playerbots", "Casting time and bot is moving - target name: {}, spellid: {}, bot name: {}",
-                      target->GetName(), spellid, bot->GetName());
-        }
+                target->GetName(), spellid, bot->GetName());
+
         return false;
     }
 
@@ -3365,11 +3349,10 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
         {
             if (spellid != 44572)  // Deep Freeze
             {
-                if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
-                {
+                if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && (IsRealPlayer(master) || IsSelfBot(master))))
                     LOG_DEBUG("playerbots", "target is immuned to spell - target name: {}, spellid: {}, bot name: {}",
-                              target->GetName(), spellid, bot->GetName());
-                }
+                        target->GetName(), spellid, bot->GetName());
+
                 return false;
             }
             // Otherwise, allow Deep Freeze even if immune
@@ -3377,11 +3360,10 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
 
         if (bot != target && ServerFacade::instance().GetDistance2d(bot, target) > sPlayerbotAIConfig.sightDistance)
         {
-            if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
-            {
+            if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && (IsRealPlayer(master) || IsSelfBot(master))))
                 LOG_DEBUG("playerbots", "target is out of sight distance - target name: {}, spellid: {}, bot name: {}",
-                          target->GetName(), spellid, bot->GetName());
-            }
+                    target->GetName(), spellid, bot->GetName());
+
             return false;
         }
     }
@@ -3403,13 +3385,11 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
     SpellCastResult result = spell->CheckCast(true);
     delete spell;
 
-    // if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
+    // if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && (IsRealPlayer(master) || IsSelfBot(master))))
     // {
     //     if (result != SPELL_FAILED_NOT_READY && result != SPELL_CAST_OK)
-    //     {
     //         LOG_DEBUG("playerbots", "CanCastSpell - target name: {}, spellid: {}, bot name: {}, result: {}",
     //             target->GetName(), spellid, bot->GetName(), result);
-    //     }
     // }
 
     if (oldSel)
@@ -3427,12 +3407,10 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
         case SPELL_FAILED_OUT_OF_RANGE:
             return true;
         default:
-            if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
-            {
-                LOG_DEBUG("playerbots",
-                          "CanCastSpell Check Failed. - target name: {}, spellid: {}, bot name: {}, result: {}",
-                          target->GetName(), spellid, bot->GetName(), result);
-            }
+            if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && (IsRealPlayer(master) || IsSelfBot(master))))
+                LOG_DEBUG("playerbots", "CanCastSpell Check Failed. - target name: {}, spellid: {}, bot name: {}, result: {}",
+                    target->GetName(), spellid, bot->GetName(), result);
+
             return false;
     }
 }
@@ -3618,11 +3596,10 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
 
     if (bot->IsFlying() || bot->HasUnitState(UNIT_STATE_IN_FLIGHT))
     {
-        // if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
-        // {
+        // if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && (IsRealPlayer(master) || IsSelfBot(master))))
         //     LOG_DEBUG("playerbots", "Spell cast is flying - target name: {}, spellid: {}, bot name: {}}",
         //         target->GetName(), spellId, bot->GetName());
-        // }
+
         return false;
     }
 
@@ -3664,11 +3641,10 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
         {
             bot->GetTradeData()->SetSpell(spellId);
             delete spell;
-            // if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
-            // {
+            // if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && (IsRealPlayer(master) || IsSelfBot(master))))
             //     LOG_DEBUG("playerbots", "Spell cast no item - target name: {}, spellid: {}, bot name: {}",
             //         target->GetName(), spellId, bot->GetName());
-            // }
+
             return true;
         }
     }
@@ -3734,11 +3710,10 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
 
     // spell->m_targets.SetUnitTarget(target);
     // SpellCastResult spellSuccess = spell->CheckCast(true);
-    // if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
-    // {
+    // if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && (IsRealPlayer(master) || IsSelfBot(master))))
     //     LOG_DEBUG("playerbots", "Spell cast result - target name: {}, spellid: {}, bot name: {}, result: {}",
     //         target->GetName(), spellId, bot->GetName(), spellSuccess);
-    // }
+
     // if (spellSuccess != SPELL_CAST_OK)
     //     return false;
 
@@ -3746,11 +3721,10 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
 
     if (result != SPELL_CAST_OK)
     {
-        // if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
-        // {
+        // if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && (IsRealPlayer(master) || IsSelfBot(master))))
         //     LOG_DEBUG("playerbots", "Spell cast failed. - target name: {}, spellid: {}, bot name: {}, result: {}",
         //         target->GetName(), spellId, bot->GetName(), result);
-        // }
+
         if (HasStrategy("debug spell", BOT_STATE_NON_COMBAT))
         {
             std::ostringstream out;
@@ -3814,11 +3788,10 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target, Item* itemTarget)
     //     {
     //         spell->cancel();
     //         delete spell;
-    //         if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasRealPlayerMaster()))
-    //         {
+    //         if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && (IsRealPlayer(master) || IsSelfBot(master))))
     //             LOG_DEBUG("playerbots", "Spell cast loot - target name: {}, spellid: {}, bot name: {}",
     //                 target->GetName(), spellId, bot->GetName());
-    //         }
+
     //         return false;
     //     }
     // }
@@ -4474,18 +4447,7 @@ Player* PlayerbotAI::FindNewMaster()
     return nullptr;
 }
 
-bool PlayerbotAI::HasRealPlayerMaster()
-{
-    if (master)
-    {
-        PlayerbotAI* masterBotAI = GET_PLAYERBOT_AI(master);
-        return !masterBotAI || IsSelfBot(master);
-    }
-
-    return false;
-}
-
-bool PlayerbotAI::IsAltBot() { return HasRealPlayerMaster() && !sRandomPlayerbotMgr.IsRandomBot(bot); }
+bool PlayerbotAI::IsAltBot() { return (IsRealPlayer(master) || IsSelfBot(master)) && !sRandomPlayerbotMgr.IsRandomBot(bot); }
 
 Player* PlayerbotAI::GetGroupLeader()
 {
@@ -4536,7 +4498,7 @@ GrouperType PlayerbotAI::GetGrouperType()
 {
     uint32 grouperNumber = GetFixedBotNumber(100);
 
-    if (grouperNumber < 20 && !HasRealPlayerMaster())
+    if (grouperNumber < 20 && !(IsRealPlayer(master) || IsSelfBot(master)))
         return GrouperType::SOLO;
 
     if (grouperNumber < 80)
@@ -4558,7 +4520,7 @@ GuilderType PlayerbotAI::GetGuilderType()
 {
     uint32 grouperNumber = GetFixedBotNumber(100);
 
-    if (grouperNumber < 20 && !HasRealPlayerMaster())
+    if (grouperNumber < 20 && !(IsRealPlayer(master) || IsSelfBot(master)))
         return GuilderType::SOLO;
 
     if (grouperNumber < 30)
@@ -4713,7 +4675,7 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
             PlayerbotAI* memberBotAI = GET_PLAYERBOT_AI(member);
 
             // group member is a real player or owned by one — stay active
-            if (!memberBotAI || memberBotAI->HasRealPlayerMaster())
+            if (!memberBotAI || (IsRealPlayer(memberBotAI->GetMaster()) || IsSelfBot(memberBotAI->GetMaster())))
                 return true;
 
             // if group leader (bot) is inactive, follow suit
@@ -6623,7 +6585,7 @@ uint32 PlayerbotAI::GetReactDelay()
     // If dynamic react delay is disabled, use a static calculation
     if (!sPlayerbotAIConfig.dynamicReactDelay)
     {
-        if (HasRealPlayerMaster())
+        if (IsRealPlayer(master) || IsSelfBot(master))
             return base;
 
         bool inBG = bot->InBattleground() || bot->InArena();
@@ -6644,7 +6606,7 @@ uint32 PlayerbotAI::GetReactDelay()
 
     // Dynamic react delay calculation:
 
-    if (HasRealPlayerMaster())
+    if (IsRealPlayer(master) || IsSelfBot(master))
         return base;
 
     bool inBG = bot->InBattleground() || bot->InArena();
