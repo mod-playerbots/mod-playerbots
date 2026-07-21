@@ -124,7 +124,7 @@ public:
 
         // If real player do nothing
         PlayerbotAI* ai = GET_PLAYERBOT_AI(player);
-        if (!ai || ai->IsRealPlayer())
+        if (!ai || ai->IsSelfBot())
             return true;
 
         // Cross-map bot teleport: defer visibility reference cleanup.
@@ -416,7 +416,7 @@ public:
         if (botAI == nullptr)
             return true;
 
-        return botAI->IsRealPlayer();
+        return botAI->IsSelfBot();
     }
 
     void OnPlayerbotPacketSent(Player* player, WorldPacket const* packet) override
@@ -451,10 +451,8 @@ public:
         {
             PlayerbotAI* botAI = PlayerbotsMgr::instance().GetPlayerbotAI(player);
 
-            if (botAI == nullptr || botAI->IsRealPlayer())
-            {
+            if (botAI == nullptr || botAI->IsSelfBot())
                 playerbotMgr->LogoutAllBots();
-            }
         }
 
         sRandomPlayerbotMgr.OnPlayerLogout(player);

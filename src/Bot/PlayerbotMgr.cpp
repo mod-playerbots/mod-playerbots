@@ -285,7 +285,7 @@ void PlayerbotHolder::LogoutAllBots()
             break;
 
         Player* bot= itr->second;
-        if (!GET_PLAYERBOT_AI(bot)->IsRealPlayer())
+        if (!GET_PLAYERBOT_AI(bot)->IsSelfBot())
             LogoutPlayerBot(bot->GetGUID());
     }
     */
@@ -298,7 +298,7 @@ void PlayerbotHolder::LogoutAllBots()
             continue;
 
         PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-        if (!botAI || botAI->IsRealPlayer())
+        if (!botAI || botAI->IsSelfBot())
             continue;
 
         LogoutPlayerBot(bot->GetGUID());
@@ -315,7 +315,7 @@ void PlayerbotMgr::CancelLogout()
     {
         Player* const bot = it->second;
         PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-        if (!botAI || botAI->IsRealPlayer())
+        if (!botAI || botAI->IsSelfBot())
             continue;
 
         if (bot->GetSession()->isLogingOut())
@@ -332,7 +332,7 @@ void PlayerbotMgr::CancelLogout()
     {
         Player* const bot = it->second;
         PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
-        if (!botAI || botAI->IsRealPlayer())
+        if (!botAI || botAI->IsSelfBot())
             continue;
 
         if (botAI->GetMaster() != master)

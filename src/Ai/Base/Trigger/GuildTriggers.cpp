@@ -25,7 +25,7 @@ bool LeaveLargeGuildTrigger::IsActive()
     if (!bot->GetGuildId())
         return false;
 
-    if (botAI->IsRealPlayer())
+    if (botAI->IsSelfBot())
         return false;
 
     if (botAI->IsAltBot())
@@ -42,7 +42,7 @@ bool LeaveLargeGuildTrigger::IsActive()
 
     // Only leave the guild if the leader is an online bot (not a real player).
     PlayerbotAI* leaderBotAI = leader ? GET_PLAYERBOT_AI(leader) : nullptr;
-    if (!leaderBotAI || leaderBotAI->IsRealPlayer())
+    if (!leaderBotAI || leaderBotAI->IsSelfBot())
         return false;
 
     if (type == GuilderType::SOLO && guild->GetLeaderGUID() != bot->GetGUID())

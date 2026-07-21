@@ -134,7 +134,7 @@ ItemUsage ItemUsageValue::Calculate()
         return ITEM_USAGE_QUEST;
 
     // If this is not a self-bot acting alone and the master needs this quest item, defer to the master
-    if (!botAI->IsRealPlayer() && masterNeedsItemForQuest)
+    if (!botAI->IsSelfBot() && masterNeedsItemForQuest)
         return ITEM_USAGE_NONE;
 
     // If the bot itself needs the item for a quest, allow looting

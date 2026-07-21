@@ -538,7 +538,7 @@ public:
     Player* FindNewMaster();
 
     // Checks if the bot is really a player. Players always have themselves as master.
-    bool IsRealPlayer() { return master ? (master == bot) : false; }
+    bool IsSelfBot() { return master ? (master == bot) : false; }
     // Bot has a master that is a player.
     bool HasRealPlayerMaster();
     // Bot has a master that is activly playing.

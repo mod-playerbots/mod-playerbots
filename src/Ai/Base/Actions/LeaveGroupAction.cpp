@@ -115,7 +115,7 @@ bool LeaveFarAwayAction::isUseful()
 
     Player* groupLeader = botAI->GetGroupLeader();
     Player* trueMaster = botAI->GetMaster();
-    if (!groupLeader || (bot == groupLeader && !botAI->IsRealPlayer()))
+    if (!groupLeader || (bot == groupLeader && !botAI->IsSelfBot()))
         return false;
 
     PlayerbotAI* groupLeaderBotAI = nullptr;
@@ -128,7 +128,7 @@ bool LeaveFarAwayAction::isUseful()
         return false;
 
     if (botAI->IsAltBot() &&
-        (!groupLeaderBotAI || groupLeaderBotAI->IsRealPlayer()))  // Don't leave group when alt grouped with player groupLeader.
+        (!groupLeaderBotAI || groupLeaderBotAI->IsSelfBot()))  // Don't leave group when alt grouped with player groupLeader.
         return false;
 
     if (botAI->GetGrouperType() == GrouperType::SOLO)

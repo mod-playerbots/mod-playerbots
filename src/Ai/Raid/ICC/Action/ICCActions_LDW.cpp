@@ -151,7 +151,7 @@ bool IccAddsLadyDeathwhisperAction::Execute(Event /*event*/)
                 continue;
 
             PlayerbotAI* memberBotAI = GET_PLAYERBOT_AI(member);
-            if (memberBotAI && !memberBotAI->IsRealPlayer())
+            if (memberBotAI && !memberBotAI->IsSelfBot())
                 continue;
 
             if (botAI->HasAura("Dominate Mind", member, false, false) && !member->HasAura(SPELL_CYCLONE))

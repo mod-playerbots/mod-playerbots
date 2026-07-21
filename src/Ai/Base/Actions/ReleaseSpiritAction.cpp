@@ -155,7 +155,7 @@ bool AutoReleaseSpiritAction::HandleBattlegroundSpiritHealer()
         RESET_AI_VALUE(bool, "combat::self target");
         RESET_AI_VALUE(WorldPosition, "current position");
     }
-    else if (!botAI->IsRealPlayer())
+    else if (!botAI->IsSelfBot())
     {
         m_bgGossipTime = now;
         WorldPacket packet(CMSG_GOSSIP_HELLO);

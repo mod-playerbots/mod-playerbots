@@ -411,7 +411,7 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
             engine->addStrategy("healer dps", false);
     }
 
-    if (facade->IsRealPlayer() || sRandomPlayerbotMgr.IsRandomBot(player))
+    if (facade->IsSelfBot() || sRandomPlayerbotMgr.IsRandomBot(player))
     {
         if (!player->GetGroup())
         {

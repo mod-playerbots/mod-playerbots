@@ -36,7 +36,7 @@ bool InviteToGroupAction::Invite(Player* inviter, Player* player)
 
     if (Group* group = inviter->GetGroup())
     {
-        if (GET_PLAYERBOT_AI(player) && !GET_PLAYERBOT_AI(player)->IsRealPlayer())
+        if (GET_PLAYERBOT_AI(player) && !GET_PLAYERBOT_AI(player)->IsSelfBot())
             if (!group->isRaidGroup() && group->GetMembersCount() > 4)
             {
                 auto convertOp = std::make_unique<GroupConvertToRaidOperation>(inviter->GetGUID());
@@ -71,7 +71,7 @@ bool InviteNearbyToGroupAction::Execute(Event /*event*/)
         if (player->GetGroup())
             continue;
 
-        if (!PlayerbotAIConfig::instance().randomBotInvitePlayer && GET_PLAYERBOT_AI(player)->IsRealPlayer())
+        if (!PlayerbotAIConfig::instance().randomBotInvitePlayer && GET_PLAYERBOT_AI(player)->IsSelfBot())
             continue;
 
         Group* group = bot->GetGroup();
@@ -193,7 +193,7 @@ bool InviteGuildToGroupAction::Execute(Event /*event*/)
         if (player->isDND())
             continue;
 
-        if (!PlayerbotAIConfig::instance().randomBotInvitePlayer && GET_PLAYERBOT_AI(player)->IsRealPlayer())
+        if (!PlayerbotAIConfig::instance().randomBotInvitePlayer && GET_PLAYERBOT_AI(player)->IsSelfBot())
             continue;
 
         if (player->IsBeingTeleported())
