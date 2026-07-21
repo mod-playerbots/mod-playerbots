@@ -51,6 +51,33 @@ struct NewRpgInfo
         int32 objectiveIdx{0};
         WorldPosition pos{};
         uint32 lastReachPOI{0};
+        uint32 spawnSince{0};
+        ObjectGuid targetGuid{};
+        WorldPosition targetPos{};
+        uint32 lastScan{0};
+        uint32 targetSince{0};
+        // Last tick EngageTarget actually ran. Combat pauses the non-combat engine, so a
+        // large gap means the targetSince window overlapped a fight - restart it rather
+        // than write off a still-valid target.
+        uint32 lastEngage{0};
+        // Targets written off, and when.
+        std::unordered_map<ObjectGuid, uint32> visited;
+        // When the quest loop started yielding to the loot pipeline; 0 = not holding.
+        uint32 lootHoldSince{0};
+        // Spawn point currently headed for (GuidPosition raw value); 0 = none picked.
+        uint64 spawnGuid{0};
+        // Spawn points found empty, or that ran a full poiStayTime without progress.
+        // Cleared on progress, or once every spawn has been tried.
+        std::unordered_set<uint64> triedSpawns;
+        // When the quest item was last used. Shared by every path that uses one, so a use
+        // is never re-issued while the previous cast is still in flight.
+        uint32 lastItemUse{0};
+        // Which creature anchor it was used at - a kill-anchor gets the item once and is
+        // then fought, rather than topped up every grace window.
+        ObjectGuid lastSummonAnchor{};
+        // Walking a quest POI instead of a spawn point, because no objective of this quest
+        // has one. The grind strategy stays on while it is set - that is what kills there.
+        bool poiFallback{false};
     };
     // RPG_TRAVEL_FLIGHT
     struct TravelFlight
@@ -75,6 +102,8 @@ struct NewRpgInfo
     };
 
     uint32 startT{0};  // start timestamp of the current status
+
+    bool grindSuppressed{false};
 
     // MOVE_FAR
     float nearestMoveFarDis{FLT_MAX};
