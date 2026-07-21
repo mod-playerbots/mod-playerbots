@@ -4447,6 +4447,9 @@ Player* PlayerbotAI::FindNewMaster()
     return nullptr;
 }
 
+// An altbot is a bot whose master is client-based (a regular player or a selfbot), and is not a randombot, and is not a selfbot.
+// For the purpose of this bool, all addclassbots return true for IsAltBot, but not all altbots return true for IsAddClassBot, since
+// IsAddClassBot requires the bot to come from a type 2 account in playerbots_account_type.
 bool PlayerbotAI::IsAltBot() { return (IsRealPlayer(master) || IsSelfBot(master)) && !sRandomPlayerbotMgr.IsRandomBot(bot) && !IsSelfBot(bot); }
 
 Player* PlayerbotAI::GetGroupLeader()
