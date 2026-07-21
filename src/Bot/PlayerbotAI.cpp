@@ -4410,6 +4410,14 @@ bool PlayerbotAI::canDispel(SpellInfo const* spellInfo, uint32 dispelType)
                                         strcmpi((const char*)spellInfo->SpellName[0], "ice armor"));
 }
 
+bool IsRealPlayer(Player* player)
+{
+    // No PlayerbotAI attached means this is not a bot of any kind, including selfbots. This is an actual person
+    // controlling their character manually through the client.
+    // "player" check needed, otherwise GET_PLAYERBOT_AI(nullptr) reads as a "real player".
+    return player && !GET_PLAYERBOT_AI(player);
+}
+
 bool IsAlliance(uint8 race)
 {
     return race == RACE_HUMAN || race == RACE_DWARF || race == RACE_NIGHTELF || race == RACE_GNOME ||
@@ -4470,7 +4478,7 @@ bool PlayerbotAI::HasRealPlayerMaster()
     return false;
 }
 
-bool PlayerbotAI::HasActivePlayerMaster() { return master && !GET_PLAYERBOT_AI(master); }
+bool PlayerbotAI::HasActivePlayerMaster() { return IsRealPlayer(master); }
 
 bool PlayerbotAI::IsAltBot() { return HasRealPlayerMaster() && !sRandomPlayerbotMgr.IsRandomBot(bot); }
 

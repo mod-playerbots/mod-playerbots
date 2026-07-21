@@ -77,6 +77,7 @@ enum BotState
     BOT_STATE_MAX
 };
 
+bool IsRealPlayer(Player* player);
 bool IsAlliance(uint8 race);
 
 class PlayerbotChatHandler : protected ChatHandler
