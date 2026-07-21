@@ -390,7 +390,8 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 /*elapsed*/, bool /*minimal*/)
             sRandomPlayerbotMgr.CheckLfgQueue();
     }
 
-    if (sPlayerbotAIConfig.randomBotAutologin && time(nullptr) > (printStatsTimer + 300))
+    if (sPlayerbotAIConfig.randomBotAutologin && sPlayerbotAIConfig.randomBotPrintStatsInterval &&
+        time(nullptr) > (printStatsTimer + sPlayerbotAIConfig.randomBotPrintStatsInterval))
     {
         if (!printStatsTimer)
         {

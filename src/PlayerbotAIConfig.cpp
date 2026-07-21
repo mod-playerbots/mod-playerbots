@@ -246,6 +246,7 @@ bool PlayerbotAIConfig::Initialize()
         sConfigMgr->GetOption<int32>("AiPlayerbot.PermanentlyInWorldTime", 1 * YEAR);
     randomBotTeleportDistance = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotTeleportDistance", 100);
     randomBotsPerInterval = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotsPerInterval", 60);
+    randomBotPrintStatsInterval = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotPrintStatsInterval", 300);
     minRandomBotsPriceChangeInterval =
         sConfigMgr->GetOption<int32>("AiPlayerbot.MinRandomBotsPriceChangeInterval", 2 * HOUR);
     maxRandomBotsPriceChangeInterval =

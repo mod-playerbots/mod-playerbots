@@ -1382,6 +1382,11 @@ AiPlayerbot.MaxRandomBotRandomizeTime = 1209600
 # Default: 60
 AiPlayerbot.RandomBotsPerInterval = 60
 
+# Interval (in seconds) between periodic random bot statistics dumps in the log
+# (online count, level/race/class distribution, roles, status). Set to 0 to disable.
+# Default: 300
+AiPlayerbot.RandomBotPrintStatsInterval = 300
+
 # Minimum and maximum seconds after death before a bot revives
 # Defaults: 60 (min), 300 (max)
 AiPlayerbot.MinRandomBotReviveTime = 60
