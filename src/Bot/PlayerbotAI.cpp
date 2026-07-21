@@ -436,7 +436,7 @@ void PlayerbotAI::UpdateAIGroupMaster()
     if (master)
         masterBotAI = GET_PLAYERBOT_AI(master);
 
-    if (!master || (masterBotAI && !masterBotAI->IsSelfBot()))
+    if (!master || (masterBotAI && !IsSelfBot(master)))
     {
         Player* newMaster = FindNewMaster();
         if (newMaster)
@@ -770,8 +770,8 @@ void PlayerbotAI::HandleTeleportAck()
     if (!bot || !bot->GetSession())
         return;
 
-    // only for bots
-    if (IsSelfBot())
+    // Skip acknowledgment for selfbots. The player's client handles that.
+    if (IsSelfBot(bot))
         return;
 
     /*
@@ -910,7 +910,7 @@ void PlayerbotAI::Reset(bool full)
 
 void PlayerbotAI::LeaveOrDisbandGroup()
 {
-    if (!bot || !bot->GetGroup() || IsSelfBot())
+    if (!bot || !bot->GetGroup() || IsSelfBot(bot))
         return;
 
     WorldPacket* packet = new WorldPacket(CMSG_GROUP_DISBAND);
@@ -2752,7 +2752,7 @@ std::vector<Player*> PlayerbotAI::GetRealPlayersInGroup()
             continue;
         }
 
-        if (GET_PLAYERBOT_AI(member) && !GET_PLAYERBOT_AI(member)->IsSelfBot())
+        if (GET_PLAYERBOT_AI(member) && !IsSelfBot(member))
             continue;
 
         members.push_back(ref->GetSource());
@@ -2978,7 +2978,7 @@ bool PlayerbotAI::TellMasterNoFacing(std::string const text, PlayerbotSecurityLe
     if (master)
         masterBotAI = GET_PLAYERBOT_AI(master);
 
-    if ((!master || (masterBotAI && !masterBotAI->IsSelfBot())) &&
+    if ((!master || (masterBotAI && !IsSelfBot(master))) &&
         (sPlayerbotAIConfig.randomBotSayWithoutMaster || HasStrategy("debug", BOT_STATE_NON_COMBAT)))
     {
         bot->Say(text, (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));
@@ -4418,6 +4418,13 @@ bool IsRealPlayer(Player* player)
     return player && !GET_PLAYERBOT_AI(player);
 }
 
+bool IsSelfBot(Player* player)
+{
+    // Selfbot: "player" has PlayerbotAI attached, and it has a master who is itself (player).
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+    return botAI && botAI->GetMaster() == player;
+}
+
 bool IsAlliance(uint8 race)
 {
     return race == RACE_HUMAN || race == RACE_DWARF || race == RACE_NIGHTELF || race == RACE_GNOME ||
@@ -4434,7 +4441,7 @@ Player* PlayerbotAI::FindNewMaster()
 
     Player* groupLeader = GetGroupLeader();
     PlayerbotAI* leaderBotAI = GET_PLAYERBOT_AI(groupLeader);
-    if (!leaderBotAI || leaderBotAI->IsSelfBot())
+    if (!leaderBotAI || IsSelfBot(groupLeader))
         return groupLeader;
 
     // Find the real player in group
@@ -4445,7 +4452,7 @@ Player* PlayerbotAI::FindNewMaster()
             continue;
 
         PlayerbotAI* memberBotAI = GET_PLAYERBOT_AI(member);
-        if ((!memberBotAI || memberBotAI->IsSelfBot()) && !bot->InBattleground())
+        if ((!memberBotAI || IsSelfBot(member)) && !bot->InBattleground())
             return member;
 
         if (bot->InBattleground() && bot->GetBattleground() &&
@@ -4472,7 +4479,7 @@ bool PlayerbotAI::HasRealPlayerMaster()
     if (master)
     {
         PlayerbotAI* masterBotAI = GET_PLAYERBOT_AI(master);
-        return !masterBotAI || masterBotAI->IsSelfBot();
+        return !masterBotAI || IsSelfBot(master);
     }
 
     return false;
@@ -4686,7 +4693,7 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
     if (GetMaster())
     {
         PlayerbotAI* masterBotAI = GET_PLAYERBOT_AI(GetMaster());
-        if (!masterBotAI || masterBotAI->IsSelfBot())
+        if (!masterBotAI || IsSelfBot(GetMaster()))
             return true;
     }
 
@@ -4745,7 +4752,7 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
                 continue;
 
             PlayerbotAI* playerAI = GET_PLAYERBOT_AI(player);
-            if (!playerAI || !playerAI->IsSelfBot())
+            if (!playerAI || !IsSelfBot(player))
                 continue;
 
             PlayerSocial* social = player->GetSocial();

@@ -252,10 +252,10 @@ std::optional<bool> IccValithriaShouldHealRaid(Player* bot, PlayerbotAI* botAI)
     for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
     {
         Player* member = itr->GetSource();
-        if (!member || !member->IsAlive() || botAI->IsSelfBot())
+        if (!member || !member->IsAlive() || IsSelfBot(bot))
             continue;
 
-        if (botAI->IsHeal(member) && !botAI->IsSelfBot())
+        if (botAI->IsHeal(member) && !IsSelfBot(bot))
         {
             healerCount++;
             healerGuids.push_back(member->GetGUID());

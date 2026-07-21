@@ -78,6 +78,7 @@ enum BotState
 };
 
 bool IsRealPlayer(Player* player);
+bool IsSelfBot(Player* player);
 bool IsAlliance(uint8 race);
 
 class PlayerbotChatHandler : protected ChatHandler
@@ -538,12 +539,10 @@ public:
     Player* GetMaster() { return master; }
     Player* FindNewMaster();
 
-    // Checks if the bot is really a player. Players always have themselves as master.
-    bool IsSelfBot() { return master ? (master == bot) : false; }
     // Bot has a master that is a player.
     bool HasRealPlayerMaster();
     // Get the group leader or the master of the bot.
-    // Checks if the bot is summoned as alt of a player
+    // Checks if the bot is summoned an altbot of a player
     bool IsAltBot();
     Player* GetGroupLeader();
     uint32 GetFixedBotNumber(uint32 maxNum = 100);

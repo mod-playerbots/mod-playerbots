@@ -185,7 +185,7 @@ bool GuildManageNearbyAction::Execute(Event /*event*/)
 
         PlayerbotAI* botAi = GET_PLAYERBOT_AI(player);
 
-        if (!sPlayerbotAIConfig.randomBotInvitePlayer && botAi && botAi->IsSelfBot())
+        if (!sPlayerbotAIConfig.randomBotInvitePlayer && botAi && IsSelfBot(player))
             continue;
 
         if (botAi)
