@@ -34,10 +34,11 @@ bool GargolmarMarkHellfireWatchersAction::Execute(Event /*event*/)
 bool OmorTreacheryAuraFleeFromPlayersAction::Execute(Event /*event*/)
 {
     constexpr float safeDistance = 15.0f;
+    constexpr float buffer = 3.0f;
     if (GetNearestPlayerInRadius(bot, safeDistance))
     {
         botAI->Reset();
-        return MoveFromGroup(safeDistance);
+        return MoveFromGroup(safeDistance + buffer);
     }
 
     return false;
@@ -79,7 +80,7 @@ bool OmorTreacheryAuraFleeFromTankAction::Execute(Event /*event*/)
         return false;
 
     constexpr float safeDistance = 15.0f;
-    constexpr float buffer = 1.0f;
+    constexpr float buffer = 3.0f;
 
     if (bot->GetDistance2d(tank) < safeDistance)
     {
