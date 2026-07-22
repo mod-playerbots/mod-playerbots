@@ -117,7 +117,6 @@ ItemUsage ItemUsageValue::Calculate()
     }
 
     Player* master = botAI->GetMaster();
-    bool isSelfBot = (master == bot);
     bool botNeedsItemForQuest = IsItemUsefulForQuest(bot, proto);
     bool masterNeedsItemForQuest = master && sPlayerbotAIConfig.syncQuestWithPlayer && IsItemUsefulForQuest(master, proto);
 
@@ -134,8 +133,8 @@ ItemUsage ItemUsageValue::Calculate()
     if (isLootFromItem && botNeedsItemForQuest)
         return ITEM_USAGE_QUEST;
 
-    // If the bot is NOT acting alone and the master needs this quest item, defer to the master
-    if (!isSelfBot && masterNeedsItemForQuest)
+    // If this is not a self-bot acting alone and the master needs this quest item, defer to the master
+    if (!botAI->IsRealPlayer() && masterNeedsItemForQuest)
         return ITEM_USAGE_NONE;
 
     // If the bot itself needs the item for a quest, allow looting

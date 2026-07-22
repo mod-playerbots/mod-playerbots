@@ -117,103 +117,109 @@ public:
 
 private:
     // General
-    static Action* hyjal_summit_erase_trackers(
-        PlayerbotAI* botAI) { return new HyjalSummitEraseTrackersAction(botAI); }
+    static Action* hyjal_summit_erase_trackers(PlayerbotAI* botAI) {
+        return new HyjalSummitEraseTrackersAction(botAI);
+    }
 
     // Rage Winterchill
-    static Action* rage_winterchill_misdirect_boss_to_main_tank(
-        PlayerbotAI* botAI) { return new RageWinterchillMisdirectBossToMainTankAction(botAI); }
-
-    static Action* rage_winterchill_main_tank_position_boss(
-        PlayerbotAI* botAI) { return new RageWinterchillMainTankPositionBossAction(botAI); }
-
-    static Action* rage_winterchill_spread_ranged_in_circle(
-        PlayerbotAI* botAI) { return new RageWinterchillSpreadRangedInCircleAction(botAI); }
-
-    static Action* rage_winterchill_melee_get_out_of_death_and_decay(
-        PlayerbotAI* botAI) { return new RageWinterchillMeleeGetOutOfDeathAndDecayAction(botAI); }
+    static Action* rage_winterchill_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
+        return new RageWinterchillMisdirectBossToMainTankAction(botAI);
+    }
+    static Action* rage_winterchill_main_tank_position_boss(PlayerbotAI* botAI) {
+        return new RageWinterchillMainTankPositionBossAction(botAI);
+    }
+    static Action* rage_winterchill_spread_ranged_in_circle(PlayerbotAI* botAI) {
+        return new RageWinterchillSpreadRangedInCircleAction(botAI);
+    }
+    static Action* rage_winterchill_melee_get_out_of_death_and_decay(PlayerbotAI* botAI) {
+        return new RageWinterchillMeleeGetOutOfDeathAndDecayAction(botAI);
+    }
 
     // Anetheron
-    static Action* anetheron_misdirect_boss_and_infernals_to_tanks(
-        PlayerbotAI* botAI) { return new AnetheronMisdirectBossAndInfernalsToTanksAction(botAI); }
-
-    static Action* anetheron_main_tank_position_boss(
-        PlayerbotAI* botAI) { return new AnetheronMainTankPositionBossAction(botAI); }
-
-    static Action* anetheron_spread_ranged_in_circle(
-        PlayerbotAI* botAI) { return new AnetheronSpreadRangedInCircleAction(botAI); }
-
-    static Action* anetheron_bring_infernal_to_infernal_tank(
-        PlayerbotAI* botAI) { return new AnetheronBringInfernalToInfernalTankAction(botAI); }
-
-    static Action* anetheron_first_assist_tank_pick_up_infernals(
-        PlayerbotAI* botAI) { return new AnetheronFirstAssistTankPickUpInfernalsAction(botAI); }
-
-    static Action* anetheron_assign_dps_priority(
-        PlayerbotAI* botAI) { return new AnetheronAssignDpsPriorityAction(botAI); }
+    static Action* anetheron_misdirect_boss_and_infernals_to_tanks(PlayerbotAI* botAI) {
+        return new AnetheronMisdirectBossAndInfernalsToTanksAction(botAI);
+    }
+    static Action* anetheron_main_tank_position_boss(PlayerbotAI* botAI) {
+        return new AnetheronMainTankPositionBossAction(botAI);
+    }
+    static Action* anetheron_spread_ranged_in_circle(PlayerbotAI* botAI) {
+        return new AnetheronSpreadRangedInCircleAction(botAI);
+    }
+    static Action* anetheron_bring_infernal_to_infernal_tank(PlayerbotAI* botAI) {
+        return new AnetheronBringInfernalToInfernalTankAction(botAI);
+    }
+    static Action* anetheron_first_assist_tank_pick_up_infernals(PlayerbotAI* botAI) {
+        return new AnetheronFirstAssistTankPickUpInfernalsAction(botAI);
+    }
+    static Action* anetheron_assign_dps_priority(PlayerbotAI* botAI) {
+        return new AnetheronAssignDpsPriorityAction(botAI);
+    }
 
     // Kaz'rogal
-    static Action* kazrogal_misdirect_boss_to_main_tank(
-        PlayerbotAI* botAI) { return new KazrogalMisdirectBossToMainTankAction(botAI); }
-
-    static Action* kazrogal_main_tank_position_boss(
-        PlayerbotAI* botAI) { return new KazrogalMainTankPositionBossAction(botAI); }
-
-    static Action* kazrogal_assist_tanks_move_in_front_of_boss(
-        PlayerbotAI* botAI) { return new KazrogalAssistTanksMoveInFrontOfBossAction(botAI); }
-
-    static Action* kazrogal_spread_ranged_in_arc(
-        PlayerbotAI* botAI) { return new KazrogalSpreadRangedInArcAction(botAI); }
-
-    static Action* kazrogal_low_mana_bot_take_defensive_measures(
-        PlayerbotAI* botAI) { return new KazrogalLowManaBotTakeDefensiveMeasuresAction(botAI); }
-
-    static Action* kazrogal_cast_shadow_protection_spell(
-        PlayerbotAI* botAI) { return new KazrogalCastShadowProtectionSpellAction(botAI); }
+    static Action* kazrogal_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
+        return new KazrogalMisdirectBossToMainTankAction(botAI);
+    }
+    static Action* kazrogal_main_tank_position_boss(PlayerbotAI* botAI) {
+        return new KazrogalMainTankPositionBossAction(botAI);
+    }
+    static Action* kazrogal_assist_tanks_move_in_front_of_boss(PlayerbotAI* botAI) {
+        return new KazrogalAssistTanksMoveInFrontOfBossAction(botAI);
+    }
+    static Action* kazrogal_spread_ranged_in_arc(PlayerbotAI* botAI) {
+        return new KazrogalSpreadRangedInArcAction(botAI);
+    }
+    static Action* kazrogal_low_mana_bot_take_defensive_measures(PlayerbotAI* botAI) {
+        return new KazrogalLowManaBotTakeDefensiveMeasuresAction(botAI);
+    }
+    static Action* kazrogal_cast_shadow_protection_spell(PlayerbotAI* botAI) {
+        return new KazrogalCastShadowProtectionSpellAction(botAI);
+    }
 
     // Azgalor
-    static Action* azgalor_misdirect_boss_to_main_tank(
-        PlayerbotAI* botAI) { return new AzgalorMisdirectBossToMainTankAction(botAI); }
-
-    static Action* azgalor_main_tank_position_boss(
-        PlayerbotAI* botAI) { return new AzgalorMainTankPositionBossAction(botAI); }
-
-    static Action* azgalor_wait_at_safe_position(
-        PlayerbotAI* botAI) { return new AzgalorWaitAtSafePositionAction(botAI); }
-
-    static Action* azgalor_disperse_ranged(
-        PlayerbotAI* botAI) { return new AzgalorDisperseRangedAction(botAI); }
-
-    static Action* azgalor_melee_get_out_of_fire_and_swap_targets(
-        PlayerbotAI* botAI) { return new AzgalorMeleeGetOutOfFireAndSwapTargetsAction(botAI); }
-
-    static Action* azgalor_move_to_doomguard_tank(
-        PlayerbotAI* botAI) { return new AzgalorMoveToDoomguardTankAction(botAI); }
-
-    static Action* azgalor_first_assist_tank_position_doomguard(
-        PlayerbotAI* botAI) { return new AzgalorFirstAssistTankPositionDoomguardAction(botAI); }
-
-    static Action* azgalor_ranged_dps_prioritize_doomguards(
-        PlayerbotAI* botAI) { return new AzgalorRangedDpsPrioritizeDoomguardsAction(botAI); }
+    static Action* azgalor_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
+        return new AzgalorMisdirectBossToMainTankAction(botAI);
+    }
+    static Action* azgalor_main_tank_position_boss(PlayerbotAI* botAI) {
+        return new AzgalorMainTankPositionBossAction(botAI);
+    }
+    static Action* azgalor_wait_at_safe_position(PlayerbotAI* botAI) {
+        return new AzgalorWaitAtSafePositionAction(botAI);
+    }
+    static Action* azgalor_disperse_ranged(PlayerbotAI* botAI) {
+        return new AzgalorDisperseRangedAction(botAI);
+    }
+    static Action* azgalor_melee_get_out_of_fire_and_swap_targets(PlayerbotAI* botAI) {
+        return new AzgalorMeleeGetOutOfFireAndSwapTargetsAction(botAI);
+    }
+    static Action* azgalor_move_to_doomguard_tank(PlayerbotAI* botAI) {
+        return new AzgalorMoveToDoomguardTankAction(botAI);
+    }
+    static Action* azgalor_first_assist_tank_position_doomguard(PlayerbotAI* botAI) {
+        return new AzgalorFirstAssistTankPositionDoomguardAction(botAI);
+    }
+    static Action* azgalor_ranged_dps_prioritize_doomguards(PlayerbotAI* botAI) {
+        return new AzgalorRangedDpsPrioritizeDoomguardsAction(botAI);
+    }
 
     // Archimonde
-    static Action* archimonde_misdirect_boss_to_main_tank(
-        PlayerbotAI* botAI) { return new ArchimondeMisdirectBossToMainTankAction(botAI); }
-
-    static Action* archimonde_move_boss_to_initial_position(
-        PlayerbotAI* botAI) { return new ArchimondeMoveBossToInitialPositionAction(botAI); }
-
-    static Action* archimonde_cast_fear_immunity_spell(
-        PlayerbotAI* botAI) { return new ArchimondeCastFearImmunitySpellAction(botAI); }
-
-    static Action* archimonde_spread_to_avoid_air_burst(
-        PlayerbotAI* botAI) { return new ArchimondeSpreadToAvoidAirBurstAction(botAI); }
-
-    static Action* archimonde_avoid_doomfire(
-        PlayerbotAI* botAI) { return new ArchimondeAvoidDoomfireAction(botAI); }
-
-    static Action* archimonde_remove_doomfire_dot(
-        PlayerbotAI* botAI) { return new ArchimondeRemoveDoomfireDotAction(botAI); }
+    static Action* archimonde_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
+        return new ArchimondeMisdirectBossToMainTankAction(botAI);
+    }
+    static Action* archimonde_move_boss_to_initial_position(PlayerbotAI* botAI) {
+        return new ArchimondeMoveBossToInitialPositionAction(botAI);
+    }
+    static Action* archimonde_cast_fear_immunity_spell(PlayerbotAI* botAI) {
+        return new ArchimondeCastFearImmunitySpellAction(botAI);
+    }
+    static Action* archimonde_spread_to_avoid_air_burst(PlayerbotAI* botAI) {
+        return new ArchimondeSpreadToAvoidAirBurstAction(botAI);
+    }
+    static Action* archimonde_avoid_doomfire(PlayerbotAI* botAI) {
+        return new ArchimondeAvoidDoomfireAction(botAI);
+    }
+    static Action* archimonde_remove_doomfire_dot(PlayerbotAI* botAI) {
+        return new ArchimondeRemoveDoomfireDotAction(botAI);
+    }
 };
 
 #endif
