@@ -4,7 +4,7 @@
 */
 
 #ifndef PLAYERBOTS_HFRACTIONCONTEXT_H
-#define PLAYERBOTS_HRACTIONCONTEXT_H
+#define PLAYERBOTS_HFRACTIONCONTEXT_H
 
 #include "AiObjectContext.h"
 #include "Action.h"
