@@ -16,10 +16,6 @@
 
 float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
 {
-    Unit* omor = AI_VALUE2(Unit*, "find target", "omor the unscarred");
-    if (!omor)
-        return 1.0f;
-
     if (!bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_BANE_OF_TREACHERY)) &&
         !bot->HasAura(static_cast<uint32>(HellfireRampartsIDs::SPELL_TREACHEROUS_AURA)))
         return 1.0f;
@@ -34,10 +30,6 @@ float OmorTreacheryAuraFleeFromPlayersMultiplier::GetValue(Action* action)
 
 float OmorTreacheryAuraFleeFromTankMultiplier::GetValue(Action* action)
 {
-    Unit* omor = AI_VALUE2(Unit*, "find target", "omor the unscarred");
-    if (!omor)
-        return 1.0f;
-
     Player* tank = GetGroupMainTank(botAI, bot);
     if (!tank)
         return 1.0f;
