@@ -23,8 +23,6 @@ bool GargolmarMarkHellfireWatchersAction::Execute(Event /*event*/)
     if (IsMechanicTrackerBot(botAI, bot, HFR_MAP_ID, nullptr))
         MarkTargetWithSkull(bot, watcher);
 
-    SetRtiTarget(botAI, "skull", watcher);
-
     return false;
 }
 
@@ -37,7 +35,7 @@ bool OmorTreacheryAuraFleeFromPlayersAction::Execute(Event /*event*/)
     constexpr float buffer = 3.0f;
     if (GetNearestPlayerInRadius(bot, safeDistance))
     {
-        botAI->Reset();
+        botAI->InterruptSpell();
         return MoveFromGroup(safeDistance + buffer);
     }
 
@@ -47,12 +45,11 @@ bool OmorTreacheryAuraFleeFromPlayersAction::Execute(Event /*event*/)
 // ranged spread out 15 yards from each other
 bool OmorRangedSpreadAction::Execute(Event /*event*/)
 {
-    const float minDistance = 15.0f;
+    constexpr float minDistance = 15.0f;
 
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
-    {
+        
         return FleePosition(nearestPlayer->GetPosition(), minDistance);
-    }
 
     return false;
 }
@@ -84,7 +81,7 @@ bool OmorTreacheryAuraFleeFromTankAction::Execute(Event /*event*/)
 
     if (bot->GetDistance2d(tank) < safeDistance)
     {
-        botAI->Reset();
+        botAI->InterruptSpell();
         return MoveAway(tank, safeDistance + buffer);
     }
 
@@ -93,7 +90,7 @@ bool OmorTreacheryAuraFleeFromTankAction::Execute(Event /*event*/)
 
 // Vazruden
 
-static const Position VAZRUDEN_TANK_POSITION = { -1407.405, 1744.521, 81.075 };
+static const Position VAZRUDEN_TANK_POSITION = { -1407.405f, 1744.521f, 81.075f };
 
 // Tank positions Vazruden on the middle of the platform (for some reason bots try to grab the dragon flying around the platform. This is to help prevent that.)
 bool VazrudenTankPositionBossAction::Execute(Event /*event*/)
@@ -135,8 +132,6 @@ bool VazrudenMarkBossAction::Execute(Event /*event*/)
 
     if (IsMechanicTrackerBot(botAI, bot, HFR_MAP_ID, nullptr))
         MarkTargetWithSkull(bot, vaz);
-
-    SetRtiTarget(botAI, "skull", vaz);
 
     return false;
 }
