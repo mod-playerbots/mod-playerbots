@@ -48,7 +48,6 @@ bool OmorRangedSpreadAction::Execute(Event /*event*/)
     constexpr float minDistance = 15.0f;
 
     if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
-        
         return FleePosition(nearestPlayer->GetPosition(), minDistance);
 
     return false;
