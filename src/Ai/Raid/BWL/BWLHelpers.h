@@ -17,6 +17,9 @@ namespace BlackwingLairHelpers
         // Vaelastrasz the Corrupt
         SPELL_BURNING_ADRENALINE = 18173,
 
+        // Ebonroc
+        SPELL_SHADOW_OF_EBONROC = 23340,
+
         // Chromaggus
         SPELL_BROOD_AFFLICTION_BRONZE = 23170,
         SPELL_HOURGLASS_SAND = 23645,

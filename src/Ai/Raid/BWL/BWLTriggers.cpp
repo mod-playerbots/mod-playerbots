@@ -49,6 +49,24 @@ bool BwlVaelastraszBurningAdrenalineTrigger::IsActive()
     return bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_BURNING_ADRENALINE));
 }
 
+// Ebonroc
+
+bool BwlEbonrocShadowTrigger::IsActive()
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    Unit* ebonroc = AI_VALUE2(Unit*, "find target", "ebonroc");
+    if (!ebonroc || !ebonroc->IsInCombat())
+        return false;
+
+    Unit* victim = ebonroc->GetVictim();
+    if (!victim || victim == bot)
+        return false;
+
+    return victim->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_SHADOW_OF_EBONROC));
+}
+
 // Chromaggus
 
 bool BwlAfflictionBronzeTrigger::IsActive()
@@ -82,9 +100,25 @@ bool BwlNefarianFearWardTrigger::IsActive()
 
 // Trash
 
-bool BwlDeathTalonWyrmguardTankTrigger::IsActive()
+bool BwlDeathTalonWyrmguardActiveTankTrigger::IsActive()
 {
-    return PlayerbotAI::IsTank(bot) && AI_VALUE2(Unit*, "find target", "death talon wyrmguard");
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
+    {
+        Unit* unit = ref->GetOwner();
+        if (!unit || !unit->IsAlive())
+            continue;
+
+        if (unit->GetEntry() != static_cast<uint32>(BlackwingLairNPCs::NPC_DEATH_TALON_WYRMGUARD))
+            continue;
+
+        if (unit->GetVictim() == bot)
+            return true;
+    }
+
+    return false;
 }
 
 bool BwlDeathTalonWyrmguardRangedTrigger::IsActive()

@@ -23,6 +23,9 @@ void RaidBwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("bwl vaelastrasz burning adrenaline", {
         NextAction("bwl vaelastrasz move away", ACTION_RAID + 5) }));
 
+    triggers.push_back(new TriggerNode("bwl ebonroc shadow", {
+        NextAction("taunt", ACTION_RAID) }));
+
     triggers.push_back(new TriggerNode("bwl affliction bronze", {
         NextAction("bwl use hourglass sand", ACTION_RAID) }));
 
@@ -31,8 +34,10 @@ void RaidBwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("bwl nefarian fear ward", {
         NextAction("bwl nefarian fear ward", ACTION_RAID) }));
 
-    triggers.push_back(new TriggerNode("bwl death talon wyrmguard tank", {
+    triggers.push_back(new TriggerNode("bwl death talon wyrmguard active tank", {
         NextAction("bwl death talon wyrmguard tank move away", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("bwl death talon wyrmguard active tank", {
+        NextAction("bwl death talon wyrmguard tank fap", ACTION_RAID + 1) }));
     triggers.push_back(new TriggerNode("bwl death talon wyrmguard ranged", {
         NextAction("bwl death talon wyrmguard ranged move away", ACTION_RAID) }));
 }

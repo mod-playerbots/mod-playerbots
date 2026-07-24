@@ -3,6 +3,7 @@
 
 #include "Action.h"
 #include "NamedObjectContext.h"
+#include "UseItemAction.h"
 #include "BWLActions.h"
 
 class RaidBwlActionContext : public NamedObjectContext<Action>
@@ -23,6 +24,7 @@ public:
         creators["bwl use hourglass sand"] = &RaidBwlActionContext::bwl_use_hourglass_sand;
         creators["bwl nefarian fear ward"] = &RaidBwlActionContext::bwl_nefarian_fear_ward;
         creators["bwl death talon wyrmguard tank move away"] = &RaidBwlActionContext::bwl_death_talon_wyrmguard_tank_move_away;
+        creators["bwl death talon wyrmguard tank fap"] = &RaidBwlActionContext::bwl_death_talon_wyrmguard_tank_fap;
         creators["bwl death talon wyrmguard ranged move away"] = &RaidBwlActionContext::bwl_death_talon_wyrmguard_ranged_move_away;
     }
 
@@ -37,6 +39,7 @@ private:
     static Action* bwl_use_hourglass_sand(PlayerbotAI* ai) { return new BwlUseHourglassSandAction(ai); }
     static Action* bwl_nefarian_fear_ward(PlayerbotAI* ai) { return new BwlNefarianFearWardAction(ai); }
     static Action* bwl_death_talon_wyrmguard_tank_move_away(PlayerbotAI* ai) { return new BwlDeathTalonWyrmguardTankMoveAwayAction(ai); }
+    static Action* bwl_death_talon_wyrmguard_tank_fap(PlayerbotAI* ai) { return new UseItemAction(ai, "free action potion", true); }
     static Action* bwl_death_talon_wyrmguard_ranged_move_away(PlayerbotAI* ai) { return new BwlDeathTalonWyrmguardRangedMoveAwayAction(ai); }
 };
 

@@ -297,22 +297,6 @@ Unit* BwlDeathTalonWyrmguardTankMoveAwayAction::GetTarget()
     return nullptr;
 }
 
-bool BwlDeathTalonWyrmguardTankMoveAwayAction::isUseful()
-{
-    if (!GetTarget())
-        return false;
-
-    // Must be actively tanking a wyrmguard before moving away from another tank's
-    for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
-    {
-        Unit* unit = ref->GetOwner();
-        if (unit && unit->IsAlive() && unit->GetEntry() == static_cast<uint32>(BlackwingLairNPCs::NPC_DEATH_TALON_WYRMGUARD) &&
-            unit->GetVictim() == bot)
-            return true;
-    }
-    return false;
-}
-
 bool BwlDeathTalonWyrmguardTankMoveAwayAction::Execute(Event /*event*/)
 {
     Unit* target = GetTarget();

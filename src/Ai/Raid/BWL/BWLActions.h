@@ -75,7 +75,6 @@ class BwlDeathTalonWyrmguardTankMoveAwayAction : public MovementAction
 public:
     BwlDeathTalonWyrmguardTankMoveAwayAction(PlayerbotAI* botAI) : MovementAction(botAI, "bwl death talon wyrmguard tank move away") {}
     Unit* GetTarget() override;
-    bool isUseful() override;
     bool Execute(Event event) override;
 };
 
