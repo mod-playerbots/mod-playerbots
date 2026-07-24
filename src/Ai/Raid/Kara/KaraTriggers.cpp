@@ -113,16 +113,7 @@ bool WizardOfOzNeedTargetPriorityTrigger::IsActive()
     if (!IsMechanicTrackerBot(bot, KARAZHAN_MAP_ID))
         return false;
 
-    static const std::array<const char*, 5> ozTargets =
-    {
-        "dorothee",
-        "tito",
-        "roar",
-        "strawman",
-        "tinhead",
-    };
-
-    for (const char* name : ozTargets)
+    for (const char* name : GetOzTargets())
     {
         if (AI_VALUE2(Unit*, "find target", name))
             return true;

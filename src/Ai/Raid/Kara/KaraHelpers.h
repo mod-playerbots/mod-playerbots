@@ -1,6 +1,7 @@
 #ifndef PLAYERBOTS_KARAHELPERS_H
 #define PLAYERBOTS_KARAHELPERS_H
 
+#include <array>
 #include <ctime>
 #include <unordered_map>
 
@@ -110,6 +111,7 @@ namespace KarazhanHelpers
     extern const Position NIGHTBANE_FLIGHT_STACK_POSITION;
     extern const Position NIGHTBANE_RAIN_OF_BONES_POSITION;
 
+    std::array<const char*, 5> const& GetOzTargets();
     bool IsFlameWreathActive(PlayerbotAI* botAI, Player* bot);
     std::vector<Player*> GetRedBlockers(PlayerbotAI* botAI, Player* bot);
     std::vector<Player*> GetBlueBlockers(PlayerbotAI* botAI, Player* bot);

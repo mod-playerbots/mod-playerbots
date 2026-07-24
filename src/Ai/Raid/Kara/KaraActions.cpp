@@ -377,16 +377,7 @@ bool RomuloAndJulianneMarkTargetAction::Execute(Event /*event*/)
 // Mark targets with skull in the recommended kill order
 bool WizardOfOzMarkTargetAction::Execute(Event /*event*/)
 {
-    static const std::array<const char*, 5> ozTargets =
-    {
-        "dorothee",
-        "tito",
-        "roar",
-        "strawman",
-        "tinhead",
-    };
-
-    for (const char* name : ozTargets)
+    for (const char* name : GetOzTargets())
     {
         if (Unit* target = AI_VALUE2(Unit*, "find target", name))
             return MarkTargetWithSkull(bot, target);
