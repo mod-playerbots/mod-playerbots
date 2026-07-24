@@ -50,6 +50,7 @@
 #include "GridNotifiers.h"
 #include "CellImpl.h"
 #include "GridNotifiersImpl.h"
+#include "GameGraveyard.h"
 
 struct GuidClassRaceInfo
 {
@@ -172,6 +173,78 @@ double botPIDImpl::calculate(double setpoint, double pv)
 botPIDImpl::~botPIDImpl() {}
 
 uint32 RandomPlayerbotMgr::GetMaxAllowedBotCount() { return GetEventValue(0, "bot_count"); }
+
+// RyanWoW fix for GH mod-playerbots#893 ("Out-of-Bounds Bot Spawning"): bots occasionally
+// end up at invalid coordinates after a restart (Twisting Nether, ocean edges, underground).
+// We validate a small rotating batch of online bots each tick and teleport any bot whose
+// current position has no valid ground beneath it (or sits far below/above the terrain,
+// which VMAP/MMAP height queries can't otherwise catch for a bot standing still) to the
+// nearest graveyard for their team - the same remedy the bug reporter suggested upstream.
+void RandomPlayerbotMgr::ValidateBotPositions(uint32 maxChecksThisTick)
+{
+    static std::vector<ObjectGuid> pendingGuids;
+    static size_t cursor = 0;
+
+    PlayerBotMap const& bots = GetAllBots();
+    if (bots.empty())
+        return;
+
+    // Refill the rotation list once we've cycled through everyone
+    if (pendingGuids.empty() || cursor >= pendingGuids.size())
+    {
+        pendingGuids.clear();
+        pendingGuids.reserve(bots.size());
+        for (auto const& entry : bots)
+            pendingGuids.push_back(entry.first);
+        cursor = 0;
+    }
+
+    uint32 checked = 0;
+    while (checked < maxChecksThisTick && cursor < pendingGuids.size())
+    {
+        ObjectGuid guid = pendingGuids[cursor++];
+        checked++;
+
+        auto it = bots.find(guid);
+        if (it == bots.end())
+            continue;
+
+        Player* bot = it->second;
+        if (!bot || !bot->IsInWorld() || bot->IsBeingTeleported() || bot->IsInCombat())
+            continue;
+
+        // Instances/battlegrounds have plenty of legitimate non-outdoor geometry - only
+        // police bots that are out in the persistent open world.
+        Map* map = bot->GetMap();
+        if (!map || map->Instanceable())
+            continue;
+
+        float x = bot->GetPositionX();
+        float y = bot->GetPositionY();
+        float z = bot->GetPositionZ();
+
+        AreaTableEntry const* zone = sAreaTableStore.LookupEntry(map->GetZoneId(bot->GetPhaseMask(), x, y, z));
+        AreaTableEntry const* area = sAreaTableStore.LookupEntry(map->GetAreaId(bot->GetPhaseMask(), x, y, z));
+
+        float ground = map->GetHeight(bot->GetPhaseMask(), x, y, z + 2.0f, true, 50.0f);
+        bool noValidGround = (ground <= INVALID_HEIGHT);
+        bool driftedFromGround = !noValidGround && std::fabs(z - ground) > 40.0f && !bot->IsFlying() && !bot->GetTransport();
+
+        if (!zone || !area || noValidGround || driftedFromGround)
+        {
+            GraveyardStruct const* grave = sGraveyard->GetClosestGraveyard(bot, bot->GetTeamId());
+            if (!grave)
+                continue;
+
+            LOG_INFO("playerbots",
+                      "[RyanWoWFix-893] Rescuing bot {} from invalid position (map {}, {:.1f} {:.1f} {:.1f}, "
+                      "zone={}, area={}, ground={:.1f}) -> nearest graveyard.",
+                      bot->GetName(), map->GetId(), x, y, z, zone ? zone->ID : 0, area ? area->ID : 0, ground);
+
+            bot->TeleportTo(grave->Map, grave->x, grave->y, grave->z, bot->GetOrientation());
+        }
+    }
+}
 
 void RandomPlayerbotMgr::LogPlayerLocation()
 {
@@ -313,6 +386,8 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 /*elapsed*/, bool /*minimal*/)
     std::list<uint32> availableBots = currentBots;
     uint32 availableBotCount = availableBots.size();
     uint32 onlineBotCount = playerBots.size();
+
+    ValidateBotPositions();
 
     uint32 onlineBotFocus = 75;
     if (onlineBotCount < (uint32)(sPlayerbotAIConfig.minRandomBots * 90 / 100))
