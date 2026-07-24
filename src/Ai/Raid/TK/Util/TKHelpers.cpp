@@ -10,7 +10,7 @@ namespace TempestKeepHelpers
 
     Unit* GetNearestNonTankPlayerInRadius(PlayerbotAI* botAI, Player* bot, float radius)
     {
-        Unit* nearestPlayer = nullptr;
+        Player* nearestPlayer = nullptr;
         float nearestDistance = radius;
 
         Group* group = bot->GetGroup();

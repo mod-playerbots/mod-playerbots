@@ -340,7 +340,7 @@ bool AnetheronSpreadRangedInCircleAction::Execute(Event /*event*/)
     {
         constexpr float safeDistFromPlayer = 6.0f;
         constexpr uint32 minInterval = 2000;
-        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
+        if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
             return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
     }
 
@@ -671,7 +671,7 @@ bool KazrogalLowManaBotTakeDefensiveMeasuresAction::Execute(Event /*event*/)
 
     constexpr float safeDistance = 16.0f;
 
-    Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
     if (!nearestPlayer)
         return false;
 
@@ -810,7 +810,7 @@ bool AzgalorDisperseRangedAction::Execute(Event /*event*/)
     }
     else if (!doomguard || AI_VALUE(Unit*, "current target") != doomguard)
     {
-        Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer);
+        Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer);
         if (nearestPlayer)
             return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer);
     }
@@ -1118,7 +1118,7 @@ bool ArchimondeSpreadToAvoidAirBurstAction::Execute(Event /*event*/)
 
     if (botAI->IsRanged(bot))
     {
-        Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer);
+        Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer);
         if (nearestPlayer &&
             FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval))
         {

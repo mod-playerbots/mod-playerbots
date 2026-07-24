@@ -596,7 +596,7 @@ bool GruulTheDragonkillerShatterSpreadAction::Execute(Event /*event*/)
 {
     constexpr float safeDistance = 10.0f;
     constexpr uint32 minInterval = 0;
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
+    if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
         return FleePosition(nearestPlayer->GetPosition(), safeDistance, minInterval);
 
     return false;

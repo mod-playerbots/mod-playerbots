@@ -378,7 +378,7 @@ bool MagtheridonSpreadRangedAction::Execute(Event /*event*/)
 
     constexpr float safeDistFromPlayer = 6.0f;
     constexpr uint32 minInterval = 1000;
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
+    if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
         return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
 
     return false;

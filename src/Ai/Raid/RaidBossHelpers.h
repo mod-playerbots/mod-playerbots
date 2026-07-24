@@ -19,7 +19,7 @@ bool IsMechanicTrackerBot(Player* bot, uint32 mapId);
 Player* GetGroupMainTank(PlayerbotAI* botAI, Player* bot);
 Player* GetGroupAssistTank(PlayerbotAI* botAI, Player* bot, uint8 index);
 Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry);
-Unit* GetNearestPlayerInRadius(Player* bot, float radius);
+Player* GetNearestPlayerInRadius(Player* bot, float radius);
 std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius, uint32 spellId);
 
 #endif

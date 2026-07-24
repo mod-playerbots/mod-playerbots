@@ -87,7 +87,7 @@ bool AkilzonSpreadRangedAction::Execute(Event /*event*/)
 {
     constexpr float minDistance = 13.0f;
     constexpr uint32 minInterval = 1000;
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
+    if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
         return FleePosition(nearestPlayer->GetPosition(), minDistance, minInterval);
 
     return false;
@@ -230,7 +230,7 @@ bool NalorakkSpreadRangedAction::Execute(Event /*event*/)
 {
     constexpr float minDistance = 11.0f;
     constexpr uint32 minInterval = 1000;
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
+    if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
         return FleePosition(nearestPlayer->GetPosition(), minDistance, minInterval);
 
     return false;
@@ -747,7 +747,7 @@ bool ZuljinSpreadRangedAction::Execute(Event /*event*/)
 {
     constexpr float minDistance = 6.0f;
     constexpr uint32 minInterval = 1000;
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
+    if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
         return FleePosition(nearestPlayer->GetPosition(), minDistance, minInterval);
 
     return false;

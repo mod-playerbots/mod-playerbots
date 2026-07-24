@@ -158,7 +158,7 @@ bool HighWarlordNajentusDisperseRangedAction::Execute(Event /*event*/)
     }
 
     constexpr float safeDistFromPlayer = 7.0f;
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
+    if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
         return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
 
     return false;
@@ -325,7 +325,7 @@ bool SupremusDisperseRangedAction::Execute(Event /*event*/)
 {
     constexpr float safeDistance = 8.0f;
     constexpr uint32 minInterval = 1000;
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
+    if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
         return FleePosition(nearestPlayer->GetPosition(), safeDistance, minInterval);
 
     return false;
@@ -1652,7 +1652,7 @@ bool IllidariCouncilDisperseRangedAction::Execute(Event /*event*/)
 {
     constexpr float safeDistance = 4.0f;
     constexpr uint32 minInterval = 1000;
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
+    if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
         return FleePosition(nearestPlayer->GetPosition(), safeDistance, minInterval);
 
     return false;
@@ -2089,7 +2089,7 @@ bool IllidanStormrageIsolateBotWithParasiteAction::Execute(Event /*event*/)
     if (phase == 1)
     {
         constexpr float safeDistance = 15.0f;
-        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
+        if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
         {
             const float currentDistance = bot->GetExactDist2d(nearestPlayer);
             if (currentDistance < safeDistance)
@@ -2622,7 +2622,7 @@ bool IllidanStormrageDisperseRangedAction::SpreadInCircleInDemonPhase(
 
         constexpr float safeDistFromPlayer = 6.0f;
         constexpr uint32 minInterval = 1000;
-        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
+        if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
             return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
 
         return false;
@@ -2733,7 +2733,7 @@ bool IllidanStormrageMeleeGoSomewhereToNotDieAction::Execute(Event /*event*/)
     }
 
     constexpr float safeDistFromPlayer = 6.0f;
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
+    if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
         MoveAway(nearestPlayer, safeDistFromPlayer - bot->GetDistance2d(nearestPlayer));
 
     return true;

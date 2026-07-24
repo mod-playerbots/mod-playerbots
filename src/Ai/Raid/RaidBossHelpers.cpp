@@ -201,29 +201,28 @@ Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
     return nullptr;
 }
 
-// Return the nearest alive player (human or bot) within the specified radius
-// Distance is measured by GetExactDist2d(), which does not take into account
-// player hitboxes (1.5y). Exact measurement is required due to this function
-// often being used to gate FleePosition(), which uses exact distances.
-Unit* GetNearestPlayerInRadius(Player* bot, float radius)
+// Return the nearest alive player (human or bot) within the specified radius. Distance is
+// measured by GetExactDist2d(), which does not take into account player hitboxes (1.5y).
+Player* GetNearestPlayerInRadius(Player* bot, float radius)
 {
-    Unit* nearestPlayer = nullptr;
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    Player* nearestPlayer = nullptr;
     float nearestDistance = radius;
 
-    if (Group* group = bot->GetGroup())
+    for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
     {
-        for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || member == bot)
-                continue;
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || member == bot)
+            continue;
 
-            float distance = bot->GetExactDist2d(member);
-            if (distance < nearestDistance)
-            {
-                nearestDistance = distance;
-                nearestPlayer = member;
-            }
+        float distance = bot->GetExactDist2d(member);
+        if (distance < nearestDistance)
+        {
+            nearestDistance = distance;
+            nearestPlayer = member;
         }
     }
 

@@ -98,7 +98,7 @@ bool AttumenTheHuntsmanSplitBossesAction::Execute(Event /*event*/)
     if (attumen->GetVictim() == bot && midnight->GetVictim() != bot)
     {
         const float safeDistance = 6.0f;
-        Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
+        Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance);
         if (nearestPlayer && attumen->GetExactDist2d(nearestPlayer) < safeDistance)
             return MoveFromGroup(safeDistance + 2.0f);
     }
@@ -456,7 +456,7 @@ bool TheCuratorPositionBossAction::Execute(Event /*event*/)
 bool TheCuratorSpreadRangedAction::Execute(Event /*event*/)
 {
     const float minDistance = 5.0f;
-    Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance);
+    Player* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance);
 
     if (nearestPlayer)
     {
