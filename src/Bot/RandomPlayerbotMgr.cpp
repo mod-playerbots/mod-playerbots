@@ -1785,7 +1785,7 @@ void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
 
     if (sPlayerbotAIConfig.randomBotConcentrateInPlayerZone && !locs.empty())
     {
-        std::vector<WorldLocation> playerZoneLocs = GetPlayerZoneTeleportLocations(locs);
+        std::vector<WorldLocation> playerZoneLocs = GetPlayerZoneTeleportLocations(locs, bot);
         if (!playerZoneLocs.empty())
             locs = std::move(playerZoneLocs);
     }
@@ -1801,7 +1801,8 @@ void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
 // (non-GM) player, so random bots can be gathered where players actually are. Returns an empty
 // vector when no player is online or none of the locations match, letting the caller fall back
 // to the default world-wide behaviour.
-std::vector<WorldLocation> RandomPlayerbotMgr::GetPlayerZoneTeleportLocations(std::vector<WorldLocation> const& locs)
+std::vector<WorldLocation> RandomPlayerbotMgr::GetPlayerZoneTeleportLocations(std::vector<WorldLocation> const& locs,
+                                                                              Player* bot)
 {
     std::set<uint32> playerMaps;
     std::set<std::pair<uint32, uint32>> playerMapZones;
@@ -1839,8 +1840,22 @@ std::vector<WorldLocation> RandomPlayerbotMgr::GetPlayerZoneTeleportLocations(st
             continue;
 
         uint32 zoneId = sMapMgr->GetZoneId(PHASEMASK_NORMAL, loc);
-        if (playerMapZones.find(std::make_pair(loc.GetMapId(), zoneId)) != playerMapZones.end())
-            filtered.push_back(loc);
+        if (playerMapZones.find(std::make_pair(loc.GetMapId(), zoneId)) == playerMapZones.end())
+            continue;
+
+        // Skip enemy-faction zones, matching the check in RandomTeleport. This has to be done here:
+        // the caller only falls back to normal teleporting when the filtered set is empty, so keeping
+        // a hostile location would let the downstream team check drain the set and strand the bot.
+        if (AreaTableEntry const* zone = sAreaTableStore.LookupEntry(zoneId))
+        {
+            if (zone->team == 4 && bot->GetTeamId() == TEAM_ALLIANCE)
+                continue;
+
+            if (zone->team == 2 && bot->GetTeamId() == TEAM_HORDE)
+                continue;
+        }
+
+        filtered.push_back(loc);
     }
 
     return filtered;
