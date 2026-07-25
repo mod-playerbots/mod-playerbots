@@ -56,15 +56,20 @@ namespace KarazhanHelpers
     const Position NIGHTBANE_FLIGHT_STACK_POSITION = { -11159.555f, -1893.526f, 91.473f }; // Broken Barrel
     const Position NIGHTBANE_RAIN_OF_BONES_POSITION = { -11165.233f, -1911.123f, 91.473f };
 
-    Unit* GetFirstAliveUnit(const std::vector<Unit*>& units)
-    {
-        for (Unit* unit : units)
-        {
-            if (unit && unit->IsAlive())
-                return unit;
-        }
+    // Wizard of Oz
 
-        return nullptr;
+    std::array<const char*, 5> const& GetOzTargets()
+    {
+        static std::array<const char*, 5> const targets =
+        {
+            "dorothee",
+            "tito",
+            "roar",
+            "strawman",
+            "tinhead",
+        };
+
+        return targets;
     }
 
     bool IsFlameWreathActive(PlayerbotAI* botAI, Player* bot)

@@ -18,7 +18,8 @@ using namespace BlackTempleHelpers;
 
 bool BlackTempleBotIsNotInCombatTrigger::IsActive()
 {
-    return !bot->IsInCombat() && bot->GetMapId() == BLACK_TEMPLE_MAP_ID;
+    return bot->GetMapId() == BLACK_TEMPLE_MAP_ID &&
+           !AI_VALUE2(bool, "combat", "self target");
 }
 
 // High Warlord Naj'entus
@@ -159,13 +160,8 @@ bool SupremusVolcanoIsNearbyTrigger::IsActive()
 
 bool SupremusNeedToManagePhaseTimerTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot))
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "supremus"))
-        return false;
-
-    return IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID);
+    return IsMechanicTrackerBot(bot, BLACK_TEMPLE_MAP_ID) &&
+           AI_VALUE2(Unit*, "find target", "supremus");
 }
 
 // Shade of Akama
@@ -332,8 +328,8 @@ bool GurtoggBloodboilBotHasFelRageTrigger::IsActive()
 
 bool GurtoggBloodboilNeedToManagePhaseTimerTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "find target", "gurtogg bloodboil") &&
-           IsMechanicTrackerBot(botAI, bot, BLACK_TEMPLE_MAP_ID);
+    return IsMechanicTrackerBot(bot, BLACK_TEMPLE_MAP_ID) &&
+           AI_VALUE2(Unit*, "find target", "gurtogg bloodboil");
 }
 
 // Reliquary of Souls
@@ -567,14 +563,8 @@ bool IllidariCouncilDeterminingDpsAssignmentsTrigger::IsActive()
 
 bool IllidariCouncilNeedToManageDpsTimerTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot))
-        return false;
-
-    if (!AI_VALUE2(Unit*, "find target", "gathios the shatterer"))
-        return false;
-
-    return IsMechanicTrackerBot(
-        botAI, bot, BLACK_TEMPLE_MAP_ID, GetZerevorMageTank(bot));
+    return IsMechanicTrackerBot(bot, BLACK_TEMPLE_MAP_ID) &&
+           AI_VALUE2(Unit*, "find target", "gathios the shatterer");
 }
 
 // Illidan Stormrage <The Betrayer>
@@ -819,22 +809,18 @@ bool IllidanStormrageMaievPlacedShadowTrapTrigger::IsActive()
 
 bool IllidanStormrageNeedToManageDpsTimerAndRtiTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot))
+    if (!IsMechanicTrackerBot(bot, BLACK_TEMPLE_MAP_ID))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
-    if (!illidan || illidan->GetHealth() == 1)
-        return false;
-
-    return IsMechanicTrackerBot(
-        botAI, bot, BLACK_TEMPLE_MAP_ID, GetIllidanWarlockTank(bot));
+    return illidan && illidan->GetHealth() > 1;
 }
 
 // Destroying hazards behind phases is not gated behind CheatMask
 // The strategy simply cannot work without doing this
 bool IllidanStormrageNeedToClearHazardsBetweenPhasesTrigger::IsActive()
 {
-    if (!botAI->IsDps(bot))
+    if (!IsMechanicTrackerBot(bot, BLACK_TEMPLE_MAP_ID))
         return false;
 
     Unit* illidan = AI_VALUE2(Unit*, "find target", "illidan stormrage");
@@ -842,11 +828,7 @@ bool IllidanStormrageNeedToClearHazardsBetweenPhasesTrigger::IsActive()
         return false;
 
     int phase = GetIllidanPhase(illidan);
-    if (phase != 0 && phase != 2 && phase != 4)
-        return false;
-
-    return IsMechanicTrackerBot(
-        botAI, bot, BLACK_TEMPLE_MAP_ID, GetIllidanWarlockTank(bot));
+    return phase == 0 || phase == 2 || phase == 4;
 }
 
 bool IllidanStormrageCheatTrigger::IsActive()

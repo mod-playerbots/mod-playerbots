@@ -20,19 +20,25 @@ bool MagtheridonMainTankAttackFirstThreeChannelersAction::Execute(Event /*event*
     if (Creature* channelerSquare = GetChanneler(bot, SOUTH_CHANNELER))
     {
         channelerTarget = channelerSquare;
-        MarkTargetWithSquare(bot, channelerSquare);
+        if (MarkTargetWithSquare(bot, channelerSquare))
+            return true;
+
         SetRtiTarget(botAI, "square", channelerSquare);
     }
     else if (Creature* channelerStar = GetChanneler(bot, WEST_CHANNELER))
     {
         channelerTarget = channelerStar;
-        MarkTargetWithStar(bot, channelerStar);
+        if (MarkTargetWithStar(bot, channelerStar))
+            return true;
+
         SetRtiTarget(botAI, "star", channelerStar);
     }
     else if (Creature* channelerCircle = GetChanneler(bot, EAST_CHANNELER))
     {
         channelerTarget = channelerCircle;
-        MarkTargetWithCircle(bot, channelerCircle);
+        if (MarkTargetWithCircle(bot, channelerCircle))
+            return true;
+
         SetRtiTarget(botAI, "circle", channelerCircle);
     }
 
@@ -63,7 +69,9 @@ bool MagtheridonFirstAssistTankAttackNWChannelerAction::Execute(Event /*event*/)
     if (!channelerDiamond)
         return false;
 
-    MarkTargetWithDiamond(bot, channelerDiamond);
+    if (MarkTargetWithDiamond(bot, channelerDiamond))
+        return true;
+
     SetRtiTarget(botAI, "diamond", channelerDiamond);
 
     if (AI_VALUE(Unit*, "current target") != channelerDiamond)
@@ -97,7 +105,9 @@ bool MagtheridonSecondAssistTankAttackNEChannelerAction::Execute(Event /*event*/
     if (!channelerTriangle)
         return false;
 
-    MarkTargetWithTriangle(bot, channelerTriangle);
+    if (MarkTargetWithTriangle(bot, channelerTriangle))
+        return true;
+
     SetRtiTarget(botAI, "triangle", channelerTriangle);
 
     if (AI_VALUE(Unit*, "current target") != channelerTriangle)
@@ -181,7 +191,9 @@ bool MagtheridonAssignDpsPriorityAction::Execute(Event /*event*/)
     // Listed in order of priority
     if (Creature* channelerSquare   = GetChanneler(bot, SOUTH_CHANNELER))
     {
-        MarkTargetWithSquare(bot, channelerSquare);
+        if (MarkTargetWithSquare(bot, channelerSquare))
+            return true;
+
         SetRtiTarget(botAI, "square", channelerSquare);
 
         if (AI_VALUE(Unit*, "current target") != channelerSquare)
@@ -189,7 +201,9 @@ bool MagtheridonAssignDpsPriorityAction::Execute(Event /*event*/)
     }
     else if (Creature* channelerStar = GetChanneler(bot, WEST_CHANNELER))
     {
-        MarkTargetWithStar(bot, channelerStar);
+        if (MarkTargetWithStar(bot, channelerStar))
+            return true;
+
         SetRtiTarget(botAI, "star", channelerStar);
 
         if (AI_VALUE(Unit*, "current target") != channelerStar)
@@ -197,7 +211,9 @@ bool MagtheridonAssignDpsPriorityAction::Execute(Event /*event*/)
     }
     else if (Creature* channelerCircle = GetChanneler(bot, EAST_CHANNELER))
     {
-        MarkTargetWithCircle(bot, channelerCircle);
+        if (MarkTargetWithCircle(bot, channelerCircle))
+            return true;
+
         SetRtiTarget(botAI, "circle", channelerCircle);
 
         if (AI_VALUE(Unit*, "current target") != channelerCircle)
@@ -205,7 +221,9 @@ bool MagtheridonAssignDpsPriorityAction::Execute(Event /*event*/)
     }
     else if (Creature* channelerDiamond = GetChanneler(bot, NORTHWEST_CHANNELER))
     {
-        MarkTargetWithDiamond(bot, channelerDiamond);
+        if (MarkTargetWithDiamond(bot, channelerDiamond))
+            return true;
+
         SetRtiTarget(botAI, "diamond", channelerDiamond);
 
         if (AI_VALUE(Unit*, "current target") != channelerDiamond)
@@ -213,7 +231,9 @@ bool MagtheridonAssignDpsPriorityAction::Execute(Event /*event*/)
     }
     else if (Creature* channelerTriangle = GetChanneler(bot, NORTHEAST_CHANNELER))
     {
-        MarkTargetWithTriangle(bot, channelerTriangle);
+        if (MarkTargetWithTriangle(bot, channelerTriangle))
+            return true;
+
         SetRtiTarget(botAI, "triangle", channelerTriangle);
 
         if (AI_VALUE(Unit*, "current target") != channelerTriangle)
@@ -303,7 +323,9 @@ bool MagtheridonMainTankPositionBossAction::Execute(Event /*event*/)
     if (!magtheridon)
         return false;
 
-    MarkTargetWithCross(bot, magtheridon);
+    if (MarkTargetWithCross(bot, magtheridon))
+        return true;
+
     SetRtiTarget(botAI, "cross", magtheridon);
 
     if (AI_VALUE(Unit*, "current target") != magtheridon)
@@ -356,7 +378,7 @@ bool MagtheridonSpreadRangedAction::Execute(Event /*event*/)
 
     constexpr float safeDistFromPlayer = 6.0f;
     constexpr uint32 minInterval = 1000;
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
+    if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistFromPlayer))
         return FleePosition(nearestPlayer->GetPosition(), safeDistFromPlayer, minInterval);
 
     return false;

@@ -31,8 +31,8 @@ void StrengthOfEarthTotemStrategy::InitTriggers(std::vector<TriggerNode*>& trigg
     triggers.push_back(new TriggerNode("no earth totem", { NextAction("strength of earth totem", 55.0f) }));
 }
 
-StoneclawTotemStrategy::StoneclawTotemStrategy(PlayerbotAI* botAI) : GenericShamanStrategy(botAI) {}
-void StoneclawTotemStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+StoneskinTotemStrategy::StoneskinTotemStrategy(PlayerbotAI* botAI) : GenericShamanStrategy(botAI) {}
+void StoneskinTotemStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericShamanStrategy::InitTriggers(triggers);
     triggers.push_back(new TriggerNode("set stoneskin totem", { NextAction("set stoneskin totem", 60.0f) }));

@@ -3,6 +3,7 @@
  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
  * or (at your option) any later version.
  */
+
 #include "PlayerbotTextMgr.h"
 #include "DatabaseEnv.h"
 #include "QueryResult.h"    // Required due to a poor implementation by AC
