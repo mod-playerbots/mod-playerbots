@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_PRIESTACTIONS_H
@@ -117,8 +118,8 @@ public:
 SPELL_ACTION(CastShadowWordDeathAction, "shadow word: death");
 
 // shadow
-DEBUFF_CHECKISOWNER_ACTION(CastPowerWordPainAction, "shadow word: pain");
-DEBUFF_ENEMY_ACTION(CastPowerWordPainOnAttackerAction, "shadow word: pain");
+DEBUFF_CHECKISOWNER_ACTION(CastShadowWordPainAction, "shadow word: pain");
+DEBUFF_ENEMY_ACTION(CastShadowWordPainOnAttackerAction, "shadow word: pain");
 SPELL_ACTION(CastMindBlastAction, "mind blast");
 SPELL_ACTION(CastPsychicScreamAction, "psychic scream");
 DEBUFF_ACTION(CastMindSootheAction, "mind soothe");

@@ -1,3 +1,8 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
 
 #include "GenericActions.h"
 #include "GenericSpellActions.h"
@@ -15,52 +20,6 @@ bool IccDbsTankPositionAction::Execute(Event /*event*/)
     Unit* boss = AI_VALUE2(Unit*, "find target", "deathbringer saurfang");
     if (!boss)
         return false;
-
-    // Class-specific taunt with forced cooldown reset
-    auto CastClassTaunt = [&](Unit* target) -> bool
-    {
-        if (!target || !target->IsAlive())
-            return false;
-
-        switch (bot->getClass())
-        {
-            case CLASS_PALADIN:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_PALADIN, true);
-                if (botAI->CastSpell("hand of reckoning", target))
-                    return true;
-                break;
-            }
-            case CLASS_DEATH_KNIGHT:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_DK, true);
-                if (botAI->CastSpell("dark command", target))
-                    return true;
-                break;
-            }
-            case CLASS_DRUID:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_DRUID, true);
-                if (botAI->CastSpell("growl", target))
-                    return true;
-                break;
-            }
-            case CLASS_WARRIOR:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_WARRIOR, true);
-                if (botAI->CastSpell("taunt", target))
-                    return true;
-                break;
-            }
-            default:
-                break;
-        }
-
-        if (botAI->CastSpell("shoot", target) || botAI->CastSpell("throw", target))
-            return true;
-
-        return false;
-    };
 
     if (botAI->IsTank(bot))
     {
@@ -90,7 +49,7 @@ bool IccDbsTankPositionAction::Execute(Event /*event*/)
                 Player* victimPlayer = victim ? victim->ToPlayer() : nullptr;
                 if (!victimPlayer || !botAI->IsTank(victimPlayer))
                 {
-                    CastClassTaunt(unit);
+                    IccCastClassTaunt(bot, botAI,unit);
                     break;
                 }
             }
@@ -105,7 +64,7 @@ bool IccDbsTankPositionAction::Execute(Event /*event*/)
         // Tank without Rune of Blood: taunt boss if current tank has the debuff
         Unit* currentTarget = boss->GetVictim();
         if (currentTarget && currentTarget != bot && botAI->GetAura("Rune of Blood", currentTarget))
-            CastClassTaunt(boss);
+            IccCastClassTaunt(bot, botAI,boss);
 
         // Taunt any blood beasts not targeting a tank
         std::array<uint32, 4> const bloodBeastEntries = {NPC_BLOOD_BEAST1, NPC_BLOOD_BEAST2, NPC_BLOOD_BEAST3,
@@ -126,7 +85,7 @@ bool IccDbsTankPositionAction::Execute(Event /*event*/)
             Player* victimPlayer = victim ? victim->ToPlayer() : nullptr;
             if (!victimPlayer || !botAI->IsTank(victimPlayer))
             {
-                CastClassTaunt(unit);
+                IccCastClassTaunt(bot, botAI,unit);
                 break;
             }
         }
@@ -178,71 +137,8 @@ bool IccDbsTankPositionAction::CrowdControlBloodBeasts()
         if (!isBloodBeast)
             continue;
 
-        switch (bot->getClass())
-        {
-            case CLASS_MAGE:
-            {
-                if (!botAI->HasAura("Frost Nova", unit))
-                    return botAI->CastSpell("Frost Nova", unit);
-                break;
-            }
-            case CLASS_DRUID:
-            {
-                if (!botAI->HasAura("Entangling Roots", unit))
-                    return botAI->CastSpell("Entangling Roots", unit);
-                break;
-            }
-            case CLASS_PALADIN:
-            {
-                if (!botAI->HasAura("Hammer of Justice", unit))
-                    return botAI->CastSpell("Hammer of Justice", unit);
-                break;
-            }
-            case CLASS_WARRIOR:
-            {
-                if (!botAI->HasAura("Hamstring", unit))
-                    return botAI->CastSpell("Hamstring", unit);
-                break;
-            }
-            case CLASS_HUNTER:
-            {
-                if (!botAI->HasAura("Concussive Shot", unit))
-                    return botAI->CastSpell("Concussive Shot", unit);
-                break;
-            }
-            case CLASS_ROGUE:
-            {
-                if (!botAI->HasAura("Kidney Shot", unit))
-                    return botAI->CastSpell("Kidney Shot", unit);
-                break;
-            }
-            case CLASS_SHAMAN:
-            {
-                if (!botAI->HasAura("Frost Shock", unit))
-                    return botAI->CastSpell("Frost Shock", unit);
-                break;
-            }
-            case CLASS_DEATH_KNIGHT:
-            {
-                if (!botAI->HasAura("Chains of Ice", unit))
-                    return botAI->CastSpell("Chains of Ice", unit);
-                break;
-            }
-            case CLASS_PRIEST:
-            {
-                if (!botAI->HasAura("Psychic Scream", unit))
-                    return botAI->CastSpell("Psychic Scream", unit);
-                break;
-            }
-            case CLASS_WARLOCK:
-            {
-                if (!botAI->HasAura("Fear", unit))
-                    return botAI->CastSpell("Fear", unit);
-                break;
-            }
-            default:
-                break;
-        }
+        if (auto cast = IccTryClassCC(bot, botAI, unit))
+            return *cast;
     }
 
     return false;
@@ -293,8 +189,8 @@ bool IccDbsTankPositionAction::PositionInRangedFormation()
 
     // Persistent per-bot slot memory shared across all bots.
     // Keyed per-instance to avoid cross-instance pollution.
-    static std::map<std::pair<uint32, ObjectGuid>, int> botSlotMemory;
-    auto myKey = std::make_pair(dbsInstanceId, bot->GetGUID());
+    auto& botSlotMemory = IcecrownHelpers::IccState(dbsInstanceId).dbsBotSlotMemory;
+    ObjectGuid myKey = bot->GetGUID();
 
     // Single pass: collect natural index (alive ranged/healer non-tank order)
     // and other bots' reserved slots.
@@ -310,7 +206,7 @@ bool IccDbsTankPositionAction::PositionInRangedFormation()
 
         if (member != bot)
         {
-            auto it = botSlotMemory.find(std::make_pair(dbsInstanceId, member->GetGUID()));
+            auto it = botSlotMemory.find(member->GetGUID());
             if (it != botSlotMemory.end() && it->second >= 0 && it->second < totalSlots)
                 reservedSlots.push_back(it->second);
         }
@@ -480,25 +376,6 @@ Unit* IccAddsDbsAction::FindPriorityTarget(Unit* boss)
 
 bool IccAddsDbsAction::UpdateSkullMarker(Unit* priorityTarget)
 {
-    if (!priorityTarget)
-        return false;
-
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    uint8 const skullIconId = 7;
-
-    // Get current skull target
-    ObjectGuid const currentSkull = group->GetTargetIcon(skullIconId);
-    Unit* currentSkullUnit = botAI->GetUnit(currentSkull);
-
-    // Determine if skull marker needs updating
-    bool const needsUpdate = !currentSkullUnit || !currentSkullUnit->IsAlive() || currentSkullUnit != priorityTarget;
-
-    // Update if needed
-    if (needsUpdate)
-        group->SetTargetIcon(skullIconId, bot->GetGUID(), priorityTarget->GetGUID());
-
+    IccEnsureIconOn(bot, botAI, RtiTargetValue::skullIndex, priorityTarget);
     return false;
 }

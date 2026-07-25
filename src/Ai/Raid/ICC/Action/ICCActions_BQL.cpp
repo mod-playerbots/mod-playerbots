@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "ICCActions.h"
 #include "NearestNpcsValue.h"
 #include "ObjectAccessor.h"
@@ -18,6 +24,12 @@ bool IccBqlGroupPositionAction::Execute(Event /*event*/)
     Aura* frenzyAura = botAI->GetAura("Frenzied Bloodthirst", bot);
     Aura* shadowAura = botAI->GetAura("Swarming Shadows", bot);
     bool isTank = botAI->IsTank(bot);
+    if (isTank && shadowAura)
+    {
+        bot->RemoveAurasDueToSpell(shadowAura->GetId());
+        return true;
+    }
+
     // Handle tank positioning
     if (isTank && HandleTankPosition(boss, frenzyAura, shadowAura))
         return true;
@@ -69,20 +81,21 @@ bool IccBqlGroupPositionAction::HandleShadowsMovement()
 {
     float const SAFE_SHADOW_DIST = 4.0f;
     float const ARC_STEP = 0.05f;
-    float const CURVE_SPACING = 15.0f;
+    float const LANE_STEP = 0.15f;
     int const MAX_CURVES = 3;
     float const maxClosestDist = botAI->IsMelee(bot) ? 25.0f : 20.0f;
     Position const& center = ICC_BQL_CENTER_POSITION;
     float const OUTER_CURVE_PREFERENCE = 200.0f;   // Strong preference for outer curves
     float const CURVE_SWITCH_PENALTY = 50.0f;      // Penalty for switching curves
     float const DISTANCE_PENALTY_FACTOR = 100.0f;  // Penalty per yard moved from current position
-    float const MAX_CURVE_JUMP_DIST = 5.0f;        // Maximum distance for jumping between curves
+    float const MAX_CURVE_JUMP_DIST = 12.0f;       // Maximum distance for jumping between curves
 
     // Track current curve to avoid unnecessary switching (keyed per-instance to avoid
     // cross-instance pollution when multiple ICCs run simultaneously)
-    static std::map<std::pair<uint32, ObjectGuid>, int> botCurrentCurve;
-    auto curveKey = std::make_pair(bot->GetInstanceId(), bot->GetGUID());
-    int currentCurve = botCurrentCurve.count(curveKey) ? botCurrentCurve[curveKey] : 0;
+    auto& botCurrentCurve = IcecrownHelpers::IccState(bot->GetInstanceId()).bqlBotCurrentCurve;
+    ObjectGuid curveKey = bot->GetGUID();
+    bool hasLane = botCurrentCurve.count(curveKey) != 0;
+    int currentCurve = hasLane ? botCurrentCurve[curveKey] : 0;
 
     // Find closest wall path
     Position lwall[4] = {ICC_BQL_LWALL1_POSITION, AdjustControlPoint(ICC_BQL_LWALL2_POSITION, center, 1.30f),
@@ -114,43 +127,6 @@ bool IccBqlGroupPositionAction::HandleShadowsMovement()
         return false;
     };
 
-    // If bot is at the 4th position (end of the wall), move towards 3rd position or center to avoid getting stuck
-    float distToL4 = bot->GetExactDist2d(lwall[3]);
-    float distToR4 = bot->GetExactDist2d(rwall[3]);
-    float const STUCK_DIST = 2.0f;  // within 2 yards is considered stuck at the end
-
-    if (distToL4 < STUCK_DIST || distToR4 < STUCK_DIST)
-    {
-        // Move towards 3rd position of the same wall, or towards center if blocked
-        Position target;
-        if (distToL4 < distToR4)
-        {
-            target = lwall[2];
-        }
-        else
-        {
-            target = rwall[2];
-        }
-
-        float tx = target.GetPositionX();
-        float ty = target.GetPositionY();
-        float tz = target.GetPositionZ();
-        bot->UpdateAllowedPositionZ(tx, ty, tz);
-        if (!bot->IsWithinLOS(tx, ty, tz) || IsPositionInShadow(Position(tx, ty, tz)))
-        {
-            tx = center.GetPositionX();
-            ty = center.GetPositionY();
-            tz = center.GetPositionZ();
-        }
-
-        if (bot->GetExactDist2d(tx, ty) > 1.0f)
-        {
-            MoveTo(bot->GetMapId(), tx, ty, tz, false, false, false, true, MovementPriority::MOVEMENT_FORCED,
-                   true, false);
-        }
-        return false;
-    }
-
     CurveInfo bestCurve;
     bestCurve.foundSafe = false;
     bestCurve.score = FLT_MAX;
@@ -167,13 +143,11 @@ bool IccBqlGroupPositionAction::HandleShadowsMovement()
     // Evaluate all curves starting from outermost (lowest index)
     for (int curveIdx = 0; curveIdx < MAX_CURVES; curveIdx++)
     {
-        float curveShrink = float(curveIdx) * CURVE_SPACING;
-        float shrinkFactor = 1.30f - (curveShrink / 30.0f);
-        if (shrinkFactor < 1.0f)
-            shrinkFactor = 1.0f;
-
-        Position path[4] = {basePath[0], AdjustControlPoint(basePath[1], center, shrinkFactor / 1.30f),
-                            AdjustControlPoint(basePath[2], center, shrinkFactor / 1.30f), basePath[3]};
+        float laneScale = 1.0f - float(curveIdx) * LANE_STEP;
+        Position path[4] = {AdjustControlPoint(basePath[0], center, laneScale),
+                            AdjustControlPoint(basePath[1], center, laneScale),
+                            AdjustControlPoint(basePath[2], center, laneScale),
+                            AdjustControlPoint(basePath[3], center, laneScale)};
 
         // Find closest point on curve
         float minDist = 9999.0f;
@@ -292,7 +266,7 @@ bool IccBqlGroupPositionAction::HandleShadowsMovement()
         score += curveIdx * OUTER_CURVE_PREFERENCE;
 
         // Apply curve switching penalty
-        if (curveIdx != currentCurve && currentCurve != 0)
+        if (hasLane && curveIdx != currentCurve)
             score += CURVE_SWITCH_PENALTY;
 
         // MORE IMPORTANT: Apply additional curve switching penalty if the bot is far away
@@ -347,20 +321,25 @@ bool IccBqlGroupPositionAction::HandleShadowsMovement()
         botCurrentCurve[curveKey] = bestCurve.curveIdx;
     }
 
+    // Every lane blocked and standing in a shadow - escape to room center
+    if (foundCurve && !bestCurve.foundSafe && IsPositionInShadow(bot->GetPosition()))
+    {
+        MoveTo(bot->GetMapId(), center.GetPositionX(), center.GetPositionY(), center.GetPositionZ(),
+               false, false, false, true, MovementPriority::MOVEMENT_FORCED, true, false);
+        return false;
+    }
+
     // Create a move plan to guide the bot along the curve if necessary
     if (foundCurve && bot->GetExactDist2d(bestCurve.moveTarget) > 1.0f)
     {
         // Final check: ensure we're not moving into a shadow
         if (!IsPositionInShadow(bestCurve.moveTarget))
         {
-            // Get the curve
-            float curveShrink = float(bestCurve.curveIdx) * CURVE_SPACING;
-            float shrinkFactor = 1.30f - (curveShrink / 30.0f);
-            if (shrinkFactor < 1.0f)
-                shrinkFactor = 1.0f;
-
-            Position path[4] = {basePath[0], AdjustControlPoint(basePath[1], center, shrinkFactor / 1.30f),
-                                AdjustControlPoint(basePath[2], center, shrinkFactor / 1.30f), basePath[3]};
+            float laneScale = 1.0f - float(bestCurve.curveIdx) * LANE_STEP;
+            Position path[4] = {AdjustControlPoint(basePath[0], center, laneScale),
+                                AdjustControlPoint(basePath[1], center, laneScale),
+                                AdjustControlPoint(basePath[2], center, laneScale),
+                                AdjustControlPoint(basePath[3], center, laneScale)};
 
             // CRITICAL CHANGE: First check if we need to move to the curve
             float distToClosestPoint = bot->GetExactDist2d(bestCurve.closestPoint);
@@ -442,12 +421,14 @@ bool IccBqlGroupPositionAction::HandleShadowsMovement()
                        intermediateTarget.GetPositionZ(), false, false, false, true,
                        MovementPriority::MOVEMENT_FORCED, true, false);
             }
-
-            botAI->Reset();
-            // Fallback to direct movement to the target point on the curve
-            MoveTo(bot->GetMapId(), bestCurve.moveTarget.GetPositionX(), bestCurve.moveTarget.GetPositionY(),
-                   bestCurve.moveTarget.GetPositionZ(), false, false, false, true,
-                   MovementPriority::MOVEMENT_FORCED, true, false);
+            else
+            {
+                botAI->Reset();
+                // Fallback to direct movement to the target point on the curve
+                MoveTo(bot->GetMapId(), bestCurve.moveTarget.GetPositionX(), bestCurve.moveTarget.GetPositionY(),
+                       bestCurve.moveTarget.GetPositionZ(), false, false, false, true,
+                       MovementPriority::MOVEMENT_FORCED, true, false);
+            }
         }
     }
 
@@ -497,17 +478,14 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
     // established). Prevents false-trigger at pull when boss comes near center.
     // Disarm when boss returns to tank pos (ground phase resumed after landing).
     // Keyed per-instance so concurrent ICC raids don't share the latch.
-    static std::map<uint32, bool> groundPhaseEstablishedByInstance;
-    // Tracks airborne state on the previous tick, so we can detect the air->ground edge.
-    static std::map<uint32, bool> bossWasAirborneByInstance;
     // Armed when boss lands from air, disarmed when boss returns to tank pos.
     // While armed, bots skip the pre-air center stack so they don't bunch up at center
     // during the post-air walk-back and die to lingering AoE.
-    static std::map<uint32, bool> postAirLandingByInstance;
     uint32 instanceId = bot->GetInstanceId();
-    bool& groundPhaseEstablished = groundPhaseEstablishedByInstance[instanceId];
-    bool& wasAirborne = bossWasAirborneByInstance[instanceId];
-    bool& postAirLanding = postAirLandingByInstance[instanceId];
+    IcecrownHelpers::IccInstanceState& bqlState = IcecrownHelpers::IccState(instanceId);
+    bool& groundPhaseEstablished = bqlState.bqlGroundPhaseEstablished;
+    bool& wasAirborne = bqlState.bqlBossWasAirborne;
+    bool& postAirLanding = bqlState.bqlPostAirLanding;
     float bossFromTank = boss->GetExactDist2d(ICC_BQL_TANK_POSITION);
     float bossFromCenter = boss->GetExactDist2d(ICC_BQL_CENTER_POSITION);
     bool bossAirborne = (boss->GetPositionZ() - ICC_BQL_CENTER_POSITION.GetPositionZ()) > 5.0f;
@@ -708,15 +686,15 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
 
         // Persistent memory separate from ground phase (different slot sets).
         // Keyed per-instance to avoid cross-instance pollution.
-        static std::map<std::pair<uint32, ObjectGuid>, int> airSlotMemory;
         uint32 const airInstanceId = bot->GetInstanceId();
+        auto& airSlotMemory = IcecrownHelpers::IccState(airInstanceId).bqlAirSlotMemory;
 
         std::vector<int> reservedSlots;
         for (Player* rp : roster)
         {
             if (rp == bot)
                 continue;
-            auto it = airSlotMemory.find(std::make_pair(airInstanceId, rp->GetGUID()));
+            auto it = airSlotMemory.find(rp->GetGUID());
             if (it != airSlotMemory.end() && it->second >= 0 && it->second < totalSlots)
                 reservedSlots.push_back(it->second);
         }
@@ -728,7 +706,7 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
         bool botInShadow = IsInShadow(bot->GetPositionX(), bot->GetPositionY());
 
         int myAssignedSlot = -1;
-        auto myAirKey = std::make_pair(airInstanceId, bot->GetGUID());
+        ObjectGuid myAirKey = bot->GetGUID();
 
         auto myMemIt = airSlotMemory.find(myAirKey);
         if (myMemIt != airSlotMemory.end())
@@ -938,8 +916,8 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
 
         // Persistent per-bot slot memory shared across all bots.
         // Keyed per-instance to avoid cross-instance pollution.
-        static std::map<std::pair<uint32, ObjectGuid>, int> botSlotMemory;
         uint32 const groundInstanceId = bot->GetInstanceId();
+        auto& botSlotMemory = IcecrownHelpers::IccState(groundInstanceId).bqlBotSlotMemory;
 
         // Collect every OTHER bot's remembered slot as "reserved" — each bot owns its own
         // memory and we must respect their claim, even if we can't see the same shadows.
@@ -949,7 +927,7 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
         {
             if (rp == bot)
                 continue;
-            auto it = botSlotMemory.find(std::make_pair(groundInstanceId, rp->GetGUID()));
+            auto it = botSlotMemory.find(rp->GetGUID());
             if (it != botSlotMemory.end() && it->second >= 0 && it->second < totalSlots)
                 reservedSlots.push_back(it->second);
         }
@@ -961,7 +939,7 @@ bool IccBqlGroupPositionAction::HandleGroupPosition(Unit* boss, Aura* frenzyAura
 
         int myAssignedSlot = -1;
         bool myFellBack = false;
-        auto myGroundKey = std::make_pair(groundInstanceId, bot->GetGUID());
+        ObjectGuid myGroundKey = bot->GetGUID();
 
         // Step 1: keep my remembered slot if still safe and not reserved by someone else
         auto myMemIt = botSlotMemory.find(myGroundKey);

@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include <unordered_map>
 #include <unordered_set>
 
@@ -17,98 +23,11 @@ namespace
 // How long (ms) all bots stay at a cloud before advancing to the next one.
 // This window lets every portal bot teleport in and collect the cloud together.
 constexpr uint32 CLOUD_SYNC_WAIT_MS = 1000;
-
-struct ValithriaCloudSync
-{
-    ObjectGuid targetCloudGuid;
-    uint32 moveOnAfterMs = 0;
-};
-
-std::unordered_map<uint32, ValithriaCloudSync> VdwCloudSync;  // key: map instance ID
-
-// Per-instance per-healer remembered portal claim. Other healers in the same
-// instance see these claims and avoid taking the same portal. Outer key is the
-// map instance ID so concurrent ICC raids don't share or evict each other's claims.
-std::unordered_map<uint32, std::unordered_map<ObjectGuid, ObjectGuid>> VdwPortalClaim;
-}
-
-static bool CastClassTaunt(Player* bot, PlayerbotAI* botAI, Unit* target)
-{
-    if (!target || !target->IsAlive())
-        return false;
-
-    switch (bot->getClass())
-    {
-        case CLASS_PALADIN:
-        {
-            bot->RemoveSpellCooldown(SPELL_TAUNT_PALADIN, true);
-            if (botAI->CastSpell("hand of reckoning", target))
-                return true;
-            break;
-        }
-        case CLASS_DEATH_KNIGHT:
-        {
-            bot->RemoveSpellCooldown(SPELL_TAUNT_DK, true);
-            if (botAI->CastSpell("dark command", target))
-                return true;
-            break;
-        }
-        case CLASS_DRUID:
-        {
-            bot->RemoveSpellCooldown(SPELL_TAUNT_DRUID, true);
-            if (botAI->CastSpell("growl", target))
-                return true;
-            break;
-        }
-        case CLASS_WARRIOR:
-        {
-            bot->RemoveSpellCooldown(SPELL_TAUNT_WARRIOR, true);
-            if (botAI->CastSpell("taunt", target))
-                return true;
-            break;
-        }
-        default:
-            break;
-    }
-
-    if (botAI->CastSpell("shoot", target) || botAI->CastSpell("throw", target))
-        return true;
-
-    return false;
-}
-
-static std::vector<Creature*> GetCreaturesByEntry(WorldObject* searcher, uint32 entry, float range)
-{
-    std::list<Creature*> raw;
-    searcher->GetCreatureListWithEntryInGrid(raw, entry, range);
-
-    std::vector<Creature*> out;
-    out.reserve(raw.size());
-    for (Creature* c : raw)
-        if (c && c->IsAlive())
-            out.push_back(c);
-
-    return out;
-}
-
-static std::vector<Creature*> GetCreaturesByEntries(WorldObject* searcher, std::initializer_list<uint32> entries,
-                                                    float range)
-{
-    std::vector<Creature*> out;
-    for (uint32 entry : entries)
-    {
-        auto part = GetCreaturesByEntry(searcher, entry, range);
-        out.insert(out.end(), part.begin(), part.end());
-    }
-    std::sort(out.begin(), out.end(), [](Creature const* a, Creature const* b) { return a->GetGUID() < b->GetGUID(); });
-    out.erase(std::unique(out.begin(), out.end()), out.end());
-
-    return out;
 }
 
 bool IccValithriaGroupAction::Execute(Event /*event*/)
 {
-    std::vector<Creature*> const portalList = GetCreaturesByEntries(
+    std::vector<Creature*> const portalList = IccGetCreaturesByEntries(
         bot, {NPC_DREAM_PORTAL, NPC_DREAM_PORTAL_PRE_EFFECT, NPC_NIGHTMARE_PORTAL, NPC_NIGHTMARE_PORTAL_PRE_EFFECT},
         100.0f);
     Creature* portal = portalList.empty() ? nullptr : portalList.front();
@@ -161,7 +80,7 @@ bool IccValithriaGroupAction::Execute(Event /*event*/)
         {
             if (bestDist <= ADD_TAUNT_RANGE)
             {
-                CastClassTaunt(bot, botAI, strayAdd);
+                IccCastClassTaunt(bot, botAI, strayAdd);
             }
             else
             {
@@ -269,13 +188,17 @@ bool IccValithriaGroupAction::Execute(Event /*event*/)
     bool hasPortalClaim = false;
     if (botAI->IsHeal(bot))
     {
-        auto instanceIt = VdwPortalClaim.find(bot->GetMap()->GetInstanceId());
-        if (instanceIt != VdwPortalClaim.end() &&
-            instanceIt->second.find(bot->GetGUID()) != instanceIt->second.end())
+        auto& claims = IcecrownHelpers::IccState(bot->GetMap()->GetInstanceId()).vtPortalClaim;
+        if (claims.find(bot->GetGUID()) != claims.end())
             hasPortalClaim = true;
     }
     bool const hasZombieThreat = nearbyZombie && nearbyZombie->GetVictim() == bot;
-    if (!inDreamState && !hasPortalClaim && !hasZombieThreat)
+
+    Unit* const victim = bot->GetVictim();
+    bool const engagedDps = victim && !botAI->IsTank(bot) && !botAI->IsHeal(bot) &&
+                            victim->GetExactDist2d(ICC_VDW_HEAL_POSITION) <= 50.0f;
+
+    if (!inDreamState && !hasPortalClaim && !hasZombieThreat && !engagedDps)
     {
         float const distToAnchor = bot->GetExactDist2d(ICC_VDW_HEAL_POSITION);
         if (distToAnchor > LEASH_RADIUS)
@@ -317,53 +240,7 @@ bool IccValithriaGroupAction::Execute(Event /*event*/)
 
 bool IccValithriaGroupAction::ApplyCrowdControl(Unit* zombie)
 {
-    switch (bot->getClass())
-    {
-        case CLASS_MAGE:
-            if (!botAI->HasAura("Frost Nova", zombie))
-                return botAI->CastSpell("Frost Nova", zombie);
-            break;
-        case CLASS_DRUID:
-            if (!botAI->HasAura("Entangling Roots", zombie))
-                return botAI->CastSpell("Entangling Roots", zombie);
-            break;
-        case CLASS_PALADIN:
-            if (!botAI->HasAura("Hammer of Justice", zombie))
-                return botAI->CastSpell("Hammer of Justice", zombie);
-            break;
-        case CLASS_WARRIOR:
-            if (!botAI->HasAura("Hamstring", zombie))
-                return botAI->CastSpell("Hamstring", zombie);
-            break;
-        case CLASS_HUNTER:
-            if (!botAI->HasAura("Concussive Shot", zombie))
-                return botAI->CastSpell("Concussive Shot", zombie);
-            break;
-        case CLASS_ROGUE:
-            if (!botAI->HasAura("Kidney Shot", zombie))
-                return botAI->CastSpell("Kidney Shot", zombie);
-            break;
-        case CLASS_SHAMAN:
-            if (!botAI->HasAura("Frost Shock", zombie))
-                return botAI->CastSpell("Frost Shock", zombie);
-            break;
-        case CLASS_DEATH_KNIGHT:
-            if (!botAI->HasAura("Chains of Ice", zombie))
-                return botAI->CastSpell("Chains of Ice", zombie);
-            break;
-        case CLASS_PRIEST:
-            if (!botAI->HasAura("Psychic Scream", zombie))
-                return botAI->CastSpell("Psychic Scream", zombie);
-            break;
-        case CLASS_WARLOCK:
-            if (!botAI->HasAura("Fear", zombie))
-                return botAI->CastSpell("Fear", zombie);
-            break;
-        default:
-            break;
-    }
-
-    return false;
+    return IccTryClassCC(bot, botAI, zombie).value_or(false);
 }
 
 bool IccValithriaGroupAction::Handle25ManGroupLogic()
@@ -499,8 +376,8 @@ bool IccValithriaGroupAction::Handle25ManGroupLogic()
 
 bool IccValithriaGroupAction::HandleMarkingLogic(bool inGroup1, bool inGroup2, bool singleMarkMode)
 {
-    static constexpr uint8 SKULL_ICON = 7;
-    static constexpr uint8 CROSS_ICON = 6;
+    static constexpr uint8 SKULL_ICON = RtiTargetValue::skullIndex;
+    static constexpr uint8 CROSS_ICON = RtiTargetValue::crossIndex;
     // Kill priority per Wowhead/Icy-Veins: Lay Waste skeletons first, then
     // heal-debuff suppressers, then archmages, then zombies (ranged only -
     // melee flee at 15f), then abominations (tank-faced), then rot worm cleanup.
@@ -699,7 +576,7 @@ bool IccValithriaGroupAction::HandleMarkingLogic(bool inGroup1, bool inGroup2, b
 
 bool IccValithriaGroupAction::Handle10ManGroupLogic()
 {
-    static constexpr uint8 DEFAULT_ICON = 7;
+    static constexpr uint8 DEFAULT_ICON = RtiTargetValue::skullIndex;
     // Kill priority per Wowhead/Icy-Veins: skeleton > suppresser > archmage >
     // zombie (ranged) > abomination (tank) > rot worm (cleanup).
     static constexpr std::array<uint32, 6> ADD_PRIORITY = {NPC_BLAZING_SKELETON,       NPC_SUPPRESSER,
@@ -843,16 +720,16 @@ bool IccValithriaPortalAction::Execute(Event /*event*/)
     constexpr float SEARCH_RANGE = 200.0f;
 
     std::vector<Creature*> preEffectPortals =
-        GetCreaturesByEntries(bot, {NPC_DREAM_PORTAL_PRE_EFFECT, NPC_NIGHTMARE_PORTAL_PRE_EFFECT}, SEARCH_RANGE);
+        IccGetCreaturesByEntries(bot, {NPC_DREAM_PORTAL_PRE_EFFECT, NPC_NIGHTMARE_PORTAL_PRE_EFFECT}, SEARCH_RANGE);
 
     std::vector<Creature*> realPortals =
-        GetCreaturesByEntries(bot, {NPC_DREAM_PORTAL, NPC_NIGHTMARE_PORTAL}, SEARCH_RANGE);
+        IccGetCreaturesByEntries(bot, {NPC_DREAM_PORTAL, NPC_NIGHTMARE_PORTAL}, SEARCH_RANGE);
 
     // Evict stale claims BEFORE early-return so claims don't leak after fight.
     // Scope eviction to this instance only - other ICC instances have their
     // own portal GUID universes and we must not erase their claims.
     uint32 const instanceId = bot->GetMap()->GetInstanceId();
-    auto& claims = VdwPortalClaim[instanceId];
+    auto& claims = IcecrownHelpers::IccState(instanceId).vtPortalClaim;
 
     std::unordered_set<ObjectGuid> livePortalGuids;
     for (Creature* p : preEffectPortals)
@@ -871,11 +748,7 @@ bool IccValithriaPortalAction::Execute(Event /*event*/)
     }
 
     if (preEffectPortals.empty() && realPortals.empty())
-    {
-        if (claims.empty())
-            VdwPortalClaim.erase(instanceId);
         return false;
-    }
 
     // Collect OTHER healers' claims so we never pick a portal already taken.
     std::unordered_set<ObjectGuid> reservedPortals;
@@ -1099,7 +972,7 @@ bool IccValithriaDreamCloudAction::Execute(Event /*event*/)
     uint32 const instanceId = bot->GetInstanceId();
     uint32 const nowMs = getMSTime();
 
-    ValithriaCloudSync& sync = VdwCloudSync[instanceId];
+    IcecrownHelpers::ValithriaCloudSync& sync = IcecrownHelpers::IccState(instanceId).vtCloudSync;
 
     std::vector<Creature*> dreamClouds = CollectClouds(NPC_DREAM_CLOUD, leader);
     std::vector<Creature*> nightmareClouds = CollectClouds(NPC_NIGHTMARE_CLOUD, leader);
@@ -1110,7 +983,7 @@ bool IccValithriaDreamCloudAction::Execute(Event /*event*/)
 
     if (allClouds.empty())
     {
-        VdwCloudSync.erase(instanceId);
+        sync = IcecrownHelpers::ValithriaCloudSync{};
         return false;
     }
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "ZAActions.h"
@@ -17,12 +18,13 @@ bool AmanishiMedicineManMarkWardAction::Execute(Event /*event*/)
     if (Unit* protectiveWard = GetFirstAliveUnitByEntry(
             botAI, static_cast<uint32>(ZulAmanNPCs::NPC_AMANI_PROTECTIVE_WARD)))
     {
-        MarkTargetWithSkull(bot, protectiveWard);
+        return MarkTargetWithSkull(bot, protectiveWard);
     }
-    else if (Unit* healingWard = GetFirstAliveUnitByEntry(
-                botAI, static_cast<uint32>(ZulAmanNPCs::NPC_AMANI_HEALING_WARD)))
+
+    if (Unit* healingWard = GetFirstAliveUnitByEntry(
+            botAI, static_cast<uint32>(ZulAmanNPCs::NPC_AMANI_HEALING_WARD)))
     {
-        MarkTargetWithSkull(bot, healingWard);
+        return MarkTargetWithSkull(bot, healingWard);
     }
 
     return false;
@@ -85,7 +87,7 @@ bool AkilzonSpreadRangedAction::Execute(Event /*event*/)
 {
     constexpr float minDistance = 13.0f;
     constexpr uint32 minInterval = 1000;
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
+    if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
         return FleePosition(nearestPlayer->GetPosition(), minDistance, minInterval);
 
     return false;
@@ -228,7 +230,7 @@ bool NalorakkSpreadRangedAction::Execute(Event /*event*/)
 {
     constexpr float minDistance = 11.0f;
     constexpr uint32 minInterval = 1000;
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
+    if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
         return FleePosition(nearestPlayer->GetPosition(), minDistance, minInterval);
 
     return false;
@@ -370,9 +372,8 @@ bool JanalaiMarkAmanishiHatchersAction::Execute(Event /*event*/)
 
     if (hatcherLow && hatcherHigh && hatcherHigh != hatcherLow)
     {
-        MarkTargetWithSkull(bot, hatcherLow);
-        MarkTargetWithMoon(bot, hatcherHigh);
-        SetRtiTarget(botAI, "skull", hatcherLow);
+        return MarkTargetWithMoon(bot, hatcherHigh) ||
+               MarkTargetWithSkull(bot, hatcherLow);
     }
 
     return false;
@@ -406,7 +407,9 @@ bool HalazziMainTankPositionBossAction::Execute(Event /*event*/)
     if (!halazzi)
         return false;
 
-    MarkTargetWithStar(bot, halazzi);
+    if (MarkTargetWithStar(bot, halazzi))
+        return true;
+
     SetRtiTarget(botAI, "star", halazzi);
 
     if (AI_VALUE(Unit*, "current target") != halazzi)
@@ -440,7 +443,9 @@ bool HalazziFirstAssistTankAttackSpiritLynxAction::Execute(Event /*event*/)
 
     if (Unit* lynx = AI_VALUE2(Unit*, "find target", "spirit of the lynx"))
     {
-        MarkTargetWithCircle(bot, lynx);
+        if (MarkTargetWithCircle(bot, lynx))
+            return true;
+
         SetRtiTarget(botAI, "circle", lynx);
 
         if (AI_VALUE(Unit*, "current target") != lynx)
@@ -489,7 +494,9 @@ bool HalazziAssignDpsPriorityAction::Execute(Event /*event*/)
     if (Unit* totem = GetFirstAliveUnitByEntry(
             botAI, static_cast<uint32>(ZulAmanNPCs::NPC_CORRUPTED_LIGHTNING_TOTEM)))
     {
-        MarkTargetWithSkull(bot, totem);
+        if (MarkTargetWithSkull(bot, totem))
+            return true;
+
         SetRtiTarget(botAI, "skull", totem);
 
         if (AI_VALUE(Unit*, "current target") != totem)
@@ -571,7 +578,9 @@ bool HexLordMalacrassAssignDpsPriorityAction::Execute(Event /*event*/)
 
     if (priorityTarget)
     {
-        MarkTargetWithSkull(bot, priorityTarget);
+        if (MarkTargetWithSkull(bot, priorityTarget))
+            return true;
+
         SetRtiTarget(botAI, "skull", priorityTarget);
     }
 
@@ -738,7 +747,7 @@ bool ZuljinSpreadRangedAction::Execute(Event /*event*/)
 {
     constexpr float minDistance = 6.0f;
     constexpr uint32 minInterval = 1000;
-    if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
+    if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, minDistance))
         return FleePosition(nearestPlayer->GetPosition(), minDistance, minInterval);
 
     return false;

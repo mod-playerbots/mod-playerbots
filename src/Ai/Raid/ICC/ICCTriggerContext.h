@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_ICCTRIGGERCONTEXT_H
 #define PLAYERBOTS_ICCTRIGGERCONTEXT_H
 
@@ -67,9 +73,7 @@ public:
         creators["icc sindragosa unchained magic"] = &RaidIccTriggerContext::icc_sindragosa_unchained_magic;
         creators["icc sindragosa chilled to the bone"] = &RaidIccTriggerContext::icc_sindragosa_chilled_to_the_bone;
         creators["icc sindragosa mystic buffet"] = &RaidIccTriggerContext::icc_sindragosa_mystic_buffet;
-        creators["icc sindragosa main tank mystic buffet"] = &RaidIccTriggerContext::icc_sindragosa_main_tank_mystic_buffet;
         creators["icc sindragosa frost bomb"] = &RaidIccTriggerContext::icc_sindragosa_frost_bomb;
-        creators["icc sindragosa tank swap position"] = &RaidIccTriggerContext::icc_sindragosa_tank_swap_position;
 
         creators["icc lich king shadow trap"] = &RaidIccTriggerContext::icc_lich_king_shadow_trap;
         creators["icc lich king necrotic plague"] = &RaidIccTriggerContext::icc_lich_king_necrotic_plague;
@@ -137,9 +141,7 @@ private:
     static Trigger* icc_sindragosa_unchained_magic(PlayerbotAI* ai) { return new IccSindragosaUnchainedMagicTrigger(ai); }
     static Trigger* icc_sindragosa_chilled_to_the_bone(PlayerbotAI* ai) { return new IccSindragosaChilledToTheBoneTrigger(ai); }
     static Trigger* icc_sindragosa_mystic_buffet(PlayerbotAI* ai) { return new IccSindragosaMysticBuffetTrigger(ai); }
-    static Trigger* icc_sindragosa_main_tank_mystic_buffet(PlayerbotAI* ai) { return new IccSindragosaMainTankMysticBuffetTrigger(ai); }
     static Trigger* icc_sindragosa_frost_bomb(PlayerbotAI* ai) { return new IccSindragosaFrostBombTrigger(ai); }
-    static Trigger* icc_sindragosa_tank_swap_position(PlayerbotAI* ai) { return new IccSindragosaTankSwapPositionTrigger(ai); }
 
     static Trigger* icc_lich_king_shadow_trap(PlayerbotAI* ai) { return new IccLichKingShadowTrapTrigger(ai); }
     static Trigger* icc_lich_king_necrotic_plague(PlayerbotAI* ai) { return new IccLichKingNecroticPlagueTrigger(ai); }

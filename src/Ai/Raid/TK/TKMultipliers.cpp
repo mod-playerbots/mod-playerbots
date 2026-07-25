@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "TKMultipliers.h"
 #include "TKActions.h"
 #include "TKHelpers.h"
@@ -316,7 +322,8 @@ float KaelthasSunstriderManageWeaponTankingMultiplier::GetValue(Action* action)
          dynamic_cast<CastShockwaveAction*>(action) ||
          dynamic_cast<CastCleaveAction*>(action) ||
          dynamic_cast<CastGrowlAction*>(action) ||
-         dynamic_cast<CastSwipeAction*>(action) ||
+         dynamic_cast<CastSwipeBearAction*>(action) ||
+         dynamic_cast<CastChallengingRoarAction*>(action) ||
          dynamic_cast<CastHandOfReckoningAction*>(action) ||
          dynamic_cast<CastAvengersShieldAction*>(action) ||
          dynamic_cast<CastConsecrationAction*>(action) ||
