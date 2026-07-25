@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_ZATRIGGERCONTEXT_H
@@ -110,97 +111,102 @@ public:
 
 private:
     // Trash
-    static Trigger* amanishi_medicine_man_summoned_ward(
-        PlayerbotAI* botAI) { return new AmanishiMedicineManSummonedWardTrigger(botAI); }
+    static Trigger* amanishi_medicine_man_summoned_ward(PlayerbotAI* botAI) {
+        return new AmanishiMedicineManSummonedWardTrigger(botAI);
+    }
 
     // Akil'zon <Eagle Avatar>
-    static Trigger* akilzon_pulling_boss(
-        PlayerbotAI* botAI) { return new AkilzonPullingBossTrigger(botAI); }
-
-    static Trigger* akilzon_boss_engaged_by_tanks(
-        PlayerbotAI* botAI) { return new AkilzonBossEngagedByTanksTrigger(botAI); }
-
-    static Trigger* akilzon_boss_casts_static_disruption(
-        PlayerbotAI* botAI) { return new AkilzonBossCastsStaticDisruptionTrigger(botAI); }
-
-    static Trigger* akilzon_electrical_storm_incoming(
-        PlayerbotAI* botAI) { return new AkilzonElectricalStormIncomingTrigger(botAI); }
-
-    static Trigger* akilzon_bots_need_to_prepare_for_electrical_storm(
-        PlayerbotAI* botAI) { return new AkilzonBotsNeedToPrepareForElectricalStormTrigger(botAI); }
+    static Trigger* akilzon_pulling_boss(PlayerbotAI* botAI) {
+        return new AkilzonPullingBossTrigger(botAI);
+    }
+    static Trigger* akilzon_boss_engaged_by_tanks(PlayerbotAI* botAI) {
+        return new AkilzonBossEngagedByTanksTrigger(botAI);
+    }
+    static Trigger* akilzon_boss_casts_static_disruption(PlayerbotAI* botAI) {
+        return new AkilzonBossCastsStaticDisruptionTrigger(botAI);
+    }
+    static Trigger* akilzon_electrical_storm_incoming(PlayerbotAI* botAI) {
+        return new AkilzonElectricalStormIncomingTrigger(botAI);
+    }
+    static Trigger* akilzon_bots_need_to_prepare_for_electrical_storm(PlayerbotAI* botAI) {
+        return new AkilzonBotsNeedToPrepareForElectricalStormTrigger(botAI);
+    }
 
     // Nalorakk <Bear Avatar>
-    static Trigger* nalorakk_pulling_boss(
-        PlayerbotAI* botAI) { return new NalorakkPullingBossTrigger(botAI); }
-
-    static Trigger* nalorakk_boss_casts_surge(
-        PlayerbotAI* botAI) { return new NalorakkBossCastsSurgeTrigger(botAI); }
-
-    static Trigger* nalorakk_boss_switches_forms(
-        PlayerbotAI* botAI) { return new NalorakkBossSwitchesFormsTrigger(botAI); }
+    static Trigger* nalorakk_pulling_boss(PlayerbotAI* botAI) {
+        return new NalorakkPullingBossTrigger(botAI);
+    }
+    static Trigger* nalorakk_boss_casts_surge(PlayerbotAI* botAI) {
+        return new NalorakkBossCastsSurgeTrigger(botAI);
+    }
+    static Trigger* nalorakk_boss_switches_forms(PlayerbotAI* botAI) {
+        return new NalorakkBossSwitchesFormsTrigger(botAI);
+    }
 
     // Jan'alai <Dragonhawk Avatar>
-    static Trigger* janalai_pulling_boss(
-        PlayerbotAI* botAI) { return new JanalaiPullingBossTrigger(botAI); }
-
-    static Trigger* janalai_boss_engaged_by_tanks(
-        PlayerbotAI* botAI) { return new JanalaiBossEngagedByTanksTrigger(botAI); }
-
-    static Trigger* janalai_boss_casts_flame_breath(
-        PlayerbotAI* botAI) { return new JanalaiBossCastsFlameBreathTrigger(botAI); }
-
-    static Trigger* janalai_boss_summoning_fire_bombs(
-        PlayerbotAI* botAI) { return new JanalaiBossSummoningFireBombsTrigger(botAI); }
-
-    static Trigger* janalai_amanishi_hatchers_spawned(
-        PlayerbotAI* botAI) { return new JanalaiAmanishiHatchersSpawnedTrigger(botAI); }
+    static Trigger* janalai_pulling_boss(PlayerbotAI* botAI) {
+        return new JanalaiPullingBossTrigger(botAI);
+    }
+    static Trigger* janalai_boss_engaged_by_tanks(PlayerbotAI* botAI) {
+        return new JanalaiBossEngagedByTanksTrigger(botAI);
+    }
+    static Trigger* janalai_boss_casts_flame_breath(PlayerbotAI* botAI) {
+        return new JanalaiBossCastsFlameBreathTrigger(botAI);
+    }
+    static Trigger* janalai_boss_summoning_fire_bombs(PlayerbotAI* botAI) {
+        return new JanalaiBossSummoningFireBombsTrigger(botAI);
+    }
+    static Trigger* janalai_amanishi_hatchers_spawned(PlayerbotAI* botAI) {
+        return new JanalaiAmanishiHatchersSpawnedTrigger(botAI);
+    }
 
     // Halazzi <Lynx Avatar>
-    static Trigger* halazzi_pulling_boss(
-        PlayerbotAI* botAI) { return new HalazziPullingBossTrigger(botAI); }
-
-    static Trigger* halazzi_boss_engaged_by_main_tank(
-        PlayerbotAI* botAI) { return new HalazziBossEngagedByMainTankTrigger(botAI); }
-
-    static Trigger* halazzi_boss_summons_spirit_lynx(
-        PlayerbotAI* botAI) { return new HalazziBossSummonsSpiritLynxTrigger(botAI); }
-
-    static Trigger* halazzi_determining_dps_target(
-        PlayerbotAI* botAI) { return new HalazziDeterminingDpsTargetTrigger(botAI); }
+    static Trigger* halazzi_pulling_boss(PlayerbotAI* botAI) {
+        return new HalazziPullingBossTrigger(botAI);
+    }
+    static Trigger* halazzi_boss_engaged_by_main_tank(PlayerbotAI* botAI) {
+        return new HalazziBossEngagedByMainTankTrigger(botAI);
+    }
+    static Trigger* halazzi_boss_summons_spirit_lynx(PlayerbotAI* botAI) {
+        return new HalazziBossSummonsSpiritLynxTrigger(botAI);
+    }
+    static Trigger* halazzi_determining_dps_target(PlayerbotAI* botAI) {
+        return new HalazziDeterminingDpsTargetTrigger(botAI);
+    }
 
     // Hex Lord Malacrass
-
-    static Trigger* hex_lord_malacrass_pulling_boss(
-        PlayerbotAI* botAI) { return new HexLordMalacrassPullingBossTrigger(botAI); }
-
-    static Trigger* hex_lord_malacrass_determining_kill_order(
-        PlayerbotAI* botAI) { return new HexLordMalacrassDeterminingKillOrderTrigger(botAI); }
-
-    static Trigger* hex_lord_malacrass_boss_is_channeling_whirlwind(
-        PlayerbotAI* botAI) { return new HexLordMalacrassBossIsChannelingWhirlwindTrigger(botAI); }
-
-    static Trigger* hex_lord_malacrass_boss_has_spell_reflection(
-        PlayerbotAI* botAI) { return new HexLordMalacrassBossHasSpellReflectionTrigger(botAI); }
-
-    static Trigger* hex_lord_malacrass_boss_placed_freezing_trap(
-        PlayerbotAI* botAI) { return new HexLordMalacrassBossPlacedFreezingTrapTrigger(botAI); }
+    static Trigger* hex_lord_malacrass_pulling_boss(PlayerbotAI* botAI) {
+        return new HexLordMalacrassPullingBossTrigger(botAI);
+    }
+    static Trigger* hex_lord_malacrass_determining_kill_order(PlayerbotAI* botAI) {
+        return new HexLordMalacrassDeterminingKillOrderTrigger(botAI);
+    }
+    static Trigger* hex_lord_malacrass_boss_is_channeling_whirlwind(PlayerbotAI* botAI) {
+        return new HexLordMalacrassBossIsChannelingWhirlwindTrigger(botAI);
+    }
+    static Trigger* hex_lord_malacrass_boss_has_spell_reflection(PlayerbotAI* botAI) {
+        return new HexLordMalacrassBossHasSpellReflectionTrigger(botAI);
+    }
+    static Trigger* hex_lord_malacrass_boss_placed_freezing_trap(PlayerbotAI* botAI) {
+        return new HexLordMalacrassBossPlacedFreezingTrapTrigger(botAI);
+    }
 
     // Zul'jin
-
-    static Trigger* zuljin_boss_engaged_by_tanks(
-        PlayerbotAI* botAI) { return new ZuljinBossEngagedByTanksTrigger(botAI); }
-
-    static Trigger* zuljin_main_tank_needs_aggro_upon_pull_or_phase_change(
-        PlayerbotAI* botAI) { return new ZuljinMainTankNeedsAggroUponPullOrPhaseChangeTrigger(botAI); }
-
-    static Trigger* zuljin_boss_is_channeling_whirlwind_in_troll_form(
-        PlayerbotAI* botAI) { return new ZuljinBossIsChannelingWhirlwindInTrollFormTrigger(botAI); }
-
-    static Trigger* zuljin_boss_is_summoning_cyclones_in_eagle_form(
-        PlayerbotAI* botAI) { return new ZuljinBossIsSummoningCyclonesInEagleFormTrigger(botAI); }
-
-    static Trigger* zuljin_boss_casts_aoe_abilities_in_dragonhawk_form(
-        PlayerbotAI* botAI) { return new ZuljinBossCastsAoeAbilitiesInDragonhawkFormTrigger(botAI); }
+    static Trigger* zuljin_boss_engaged_by_tanks(PlayerbotAI* botAI) {
+        return new ZuljinBossEngagedByTanksTrigger(botAI);
+    }
+    static Trigger* zuljin_main_tank_needs_aggro_upon_pull_or_phase_change(PlayerbotAI* botAI) {
+        return new ZuljinMainTankNeedsAggroUponPullOrPhaseChangeTrigger(botAI);
+    }
+    static Trigger* zuljin_boss_is_channeling_whirlwind_in_troll_form(PlayerbotAI* botAI) {
+        return new ZuljinBossIsChannelingWhirlwindInTrollFormTrigger(botAI);
+    }
+    static Trigger* zuljin_boss_is_summoning_cyclones_in_eagle_form(PlayerbotAI* botAI) {
+        return new ZuljinBossIsSummoningCyclonesInEagleFormTrigger(botAI);
+    }
+    static Trigger* zuljin_boss_casts_aoe_abilities_in_dragonhawk_form(PlayerbotAI* botAI) {
+        return new ZuljinBossCastsAoeAbilitiesInDragonhawkFormTrigger(botAI);
+    }
 };
 
 #endif

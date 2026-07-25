@@ -1,70 +1,91 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "RaidBossHelpers.h"
+#include "CellImpl.h"
+#include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 
 // Functions to mark targets with raid target icons
 // Note that these functions do not allow the player to change the icon during the encounter
-void MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
+bool MarkTargetWithIcon(Player* bot, Unit* target, uint8 iconId)
 {
     if (!target)
-        return;
+        return false;
 
-    if (Group* group = bot->GetGroup())
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    ObjectGuid currentGuid = group->GetTargetIcon(iconId);
+    if (currentGuid != target->GetGUID())
     {
-        ObjectGuid currentGuid = group->GetTargetIcon(iconId);
-        if (currentGuid != target->GetGUID())
-            group->SetTargetIcon(iconId, bot->GetGUID(), target->GetGUID());
+        group->SetTargetIcon(iconId, bot->GetGUID(), target->GetGUID());
+        return true;
     }
+
+    return false;
 }
 
-void MarkTargetWithSkull(Player* bot, Unit* target)
+bool MarkTargetWithSkull(Player* bot, Unit* target)
 {
-    MarkTargetWithIcon(bot, target, RtiTargetValue::skullIndex);
+    return MarkTargetWithIcon(bot, target, RtiTargetValue::skullIndex);
 }
 
-void MarkTargetWithSquare(Player* bot, Unit* target)
+bool MarkTargetWithSquare(Player* bot, Unit* target)
 {
-    MarkTargetWithIcon(bot, target, RtiTargetValue::squareIndex);
+    return MarkTargetWithIcon(bot, target, RtiTargetValue::squareIndex);
 }
 
-void MarkTargetWithStar(Player* bot, Unit* target)
+bool MarkTargetWithStar(Player* bot, Unit* target)
 {
-    MarkTargetWithIcon(bot, target, RtiTargetValue::starIndex);
+    return MarkTargetWithIcon(bot, target, RtiTargetValue::starIndex);
 }
 
-void MarkTargetWithCircle(Player* bot, Unit* target)
+bool MarkTargetWithCircle(Player* bot, Unit* target)
 {
-    MarkTargetWithIcon(bot, target, RtiTargetValue::circleIndex);
+    return MarkTargetWithIcon(bot, target, RtiTargetValue::circleIndex);
 }
 
-void MarkTargetWithDiamond(Player* bot, Unit* target)
+bool MarkTargetWithDiamond(Player* bot, Unit* target)
 {
-    MarkTargetWithIcon(bot, target, RtiTargetValue::diamondIndex);
+    return MarkTargetWithIcon(bot, target, RtiTargetValue::diamondIndex);
 }
 
-void MarkTargetWithTriangle(Player* bot, Unit* target)
+bool MarkTargetWithTriangle(Player* bot, Unit* target)
 {
-    MarkTargetWithIcon(bot, target, RtiTargetValue::triangleIndex);
+    return MarkTargetWithIcon(bot, target, RtiTargetValue::triangleIndex);
 }
 
-void MarkTargetWithCross(Player* bot, Unit* target)
+bool MarkTargetWithCross(Player* bot, Unit* target)
 {
-    MarkTargetWithIcon(bot, target, RtiTargetValue::crossIndex);
+    return MarkTargetWithIcon(bot, target, RtiTargetValue::crossIndex);
 }
 
-void MarkTargetWithMoon(Player* bot, Unit* target)
+bool MarkTargetWithMoon(Player* bot, Unit* target)
 {
-    MarkTargetWithIcon(bot, target, RtiTargetValue::moonIndex);
+    return MarkTargetWithIcon(bot, target, RtiTargetValue::moonIndex);
 }
 
-void ClearTargetIcon(Player* bot, uint8 iconId)
+bool ClearTargetIcon(Player* bot, uint8 iconId)
 {
-    if (Group* group = bot->GetGroup())
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    ObjectGuid currentGuid = group->GetTargetIcon(iconId);
+    if (currentGuid != ObjectGuid::Empty)
     {
-        ObjectGuid currentGuid = group->GetTargetIcon(iconId);
-        if (currentGuid != ObjectGuid::Empty)
-            group->SetTargetIcon(iconId, bot->GetGUID(), ObjectGuid::Empty);
+        group->SetTargetIcon(iconId, bot->GetGUID(), ObjectGuid::Empty);
+        return true;
     }
+
+    return false;
 }
 
 // For bots to set their raid target icon to the specified icon on the specified target
@@ -83,13 +104,10 @@ void SetRtiTarget(PlayerbotAI* botAI, const std::string& rtiName, Unit* target)
     }
 }
 
-// Return the first alive DPS bot in the specified instance map, excluding any specified bot
-// Intended for purposes of storing and erasing timers and trackers in associative containers
-bool IsMechanicTrackerBot(PlayerbotAI* botAI, Player* bot, uint32 mapId, Player* exclude)
+// Return the first alive bot in the specified instance map for purposes of assigning
+// a single bot to manage associative containers, mark targets, etc.
+bool IsMechanicTrackerBot(Player* bot, uint32 mapId)
 {
-    if (!botAI->IsDps(bot) || !bot->IsAlive() || bot->GetMapId() != mapId)
-        return false;
-
     Group* group = bot->GetGroup();
     if (!group)
         return false;
@@ -97,12 +115,11 @@ bool IsMechanicTrackerBot(PlayerbotAI* botAI, Player* bot, uint32 mapId, Player*
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member->GetMapId() != mapId || member == exclude)
+        if (!member || !member->IsAlive() || member->GetMapId() != mapId ||
+            !GET_PLAYERBOT_AI(member))
+        {
             continue;
-
-        PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-        if (!memberAI || !memberAI->IsDps(member))
-            continue;
+        }
 
         return member == bot;
     }
@@ -111,7 +128,6 @@ bool IsMechanicTrackerBot(PlayerbotAI* botAI, Player* bot, uint32 mapId, Player*
 }
 
 // Requires the main tank to be alive
-// Note that IsMainTank() will return the player with the main tank flag, even if dead
 Player* GetGroupMainTank(PlayerbotAI* botAI, Player* bot)
 {
     Group* group = bot->GetGroup();
@@ -133,7 +149,6 @@ Player* GetGroupMainTank(PlayerbotAI* botAI, Player* bot)
 }
 
 // Returns the alive assist tank of the specified index (0 = first, 1 = second, etc.)
-// Priority: Assistants first, then Non-Assistants.
 Player* GetGroupAssistTank(PlayerbotAI* botAI, Player* bot, uint8 index)
 {
     Group* group = bot->GetGroup();
@@ -169,7 +184,6 @@ Player* GetGroupAssistTank(PlayerbotAI* botAI, Player* bot, uint8 index)
         }
     }
 
-    // If the index wasn't found among assistants, check the non-assistants that were saved
     uint8 nonAssistantIndex = index - assistantCount;
     if (nonAssistantIndex < nonAssistantTanks.size())
         return nonAssistantTanks[nonAssistantIndex];
@@ -178,13 +192,14 @@ Player* GetGroupAssistTank(PlayerbotAI* botAI, Player* bot, uint8 index)
 }
 
 // Return the first matching alive unit from PossibleTargetsValue within sightDistance from config
+// Note that PossibleTargetsValue picks up only hostile units
 Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
 {
-    auto const& npcs =
+    auto const& units =
         botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
-    for (auto const& npcGuid : npcs)
+    for (auto const& unitGuid : units)
     {
-        Unit* unit = botAI->GetUnit(npcGuid);
+        Unit* unit = botAI->GetUnit(unitGuid);
         if (unit && unit->IsAlive() && unit->GetEntry() == entry)
             return unit;
     }
@@ -192,28 +207,56 @@ Unit* GetFirstAliveUnitByEntry(PlayerbotAI* botAI, uint32 entry)
     return nullptr;
 }
 
-// Return the nearest alive player (human or bot) within the specified radius
-Unit* GetNearestPlayerInRadius(Player* bot, float radius)
+// Return the nearest alive player (human or bot) within the specified radius. Distance is
+// measured by GetExactDist2d(), which does not take into account player hitboxes (1.5y).
+Player* GetNearestPlayerInRadius(Player* bot, float radius)
 {
-    Unit* nearestPlayer = nullptr;
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    Player* nearestPlayer = nullptr;
     float nearestDistance = radius;
 
-    if (Group* group = bot->GetGroup())
+    for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
     {
-        for (GroupReference* ref = group->GetFirstMember(); ref != nullptr; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || member == bot)
-                continue;
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || member == bot)
+            continue;
 
-            float distance = bot->GetExactDist2d(member);
-            if (distance < nearestDistance)
-            {
-                nearestDistance = distance;
-                nearestPlayer = member;
-            }
+        float distance = bot->GetExactDist2d(member);
+        if (distance < nearestDistance)
+        {
+            nearestDistance = distance;
+            nearestPlayer = member;
         }
     }
 
     return nearestPlayer;
+}
+
+// Grid search for dynamic objects for methods to avoid dynobj-based AoE hazards
+std::vector<Position> GetDynamicObjectPositions(Player* bot, float searchRadius, uint32 spellId)
+{
+    std::list<WorldObject*> objs;
+    Acore::AllWorldObjectsInRange check(bot, searchRadius);
+    Acore::WorldObjectListSearcher<Acore::AllWorldObjectsInRange> searcher(
+        bot, objs, check, GRID_MAP_TYPE_MASK_DYNAMICOBJECT);
+    Cell::VisitObjects(bot, searcher, searchRadius);
+
+    std::vector<Position> dynObjs;
+    for (WorldObject* obj : objs)
+    {
+        if (obj->GetTypeId() != TYPEID_DYNAMICOBJECT)
+            continue;
+
+        DynamicObject* dynObj = static_cast<DynamicObject*>(obj);
+        if (dynObj->GetSpellId() == spellId)
+        {
+            dynObjs.emplace_back(
+                dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ());
+        }
+    }
+
+    return dynObjs;
 }

@@ -115,13 +115,14 @@ bool MagtheridonIncomingBlastNovaTrigger::IsActive()
 
 bool MagtheridonNeedToManageTimersAndAssignmentsTrigger::IsActive()
 {
-    return IsMechanicTrackerBot(botAI, bot, MAGTHERIDON_MAP_ID, nullptr) &&
+    return IsMechanicTrackerBot(bot, MAGTHERIDON_MAP_ID) &&
            AI_VALUE2(Unit*, "find target", "magtheridon");
 }
 
 bool MagtheridonBotIsNotInCombatTrigger::IsActive()
 {
-    return !bot->IsInCombat() && bot->GetMapId() == MAGTHERIDON_MAP_ID &&
+    return bot->GetMapId() == MAGTHERIDON_MAP_ID &&
+           !AI_VALUE2(bool, "combat", "self target") &&
            !AI_VALUE2(Unit*, "find target", "magtheridon") &&
            !AI_VALUE2(Unit*, "find target", "hellfire channeler");
 }

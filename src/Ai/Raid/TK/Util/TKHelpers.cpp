@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "TKHelpers.h"
 #include "TKActions.h"
 #include "LootObjectStack.h"
@@ -10,7 +16,7 @@ namespace TempestKeepHelpers
 
     Unit* GetNearestNonTankPlayerInRadius(PlayerbotAI* botAI, Player* bot, float radius)
     {
-        Unit* nearestPlayer = nullptr;
+        Player* nearestPlayer = nullptr;
         float nearestDistance = radius;
 
         Group* group = bot->GetGroup();

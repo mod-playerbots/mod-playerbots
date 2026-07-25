@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include <array>
 #include <cmath>
 #include <map>
@@ -60,15 +66,7 @@ bool IccRotfaceTankPositionAction::Execute(Event /*event*/)
 
 bool IccRotfaceTankPositionAction::MarkBossWithSkull(Unit* boss)
 {
-    Group* group = bot->GetGroup();
-    if (!group)
-        return false;
-
-    constexpr uint8 skullIconId = 7;
-    ObjectGuid skullGuid = group->GetTargetIcon(skullIconId);
-    if (skullGuid != boss->GetGUID())
-        group->SetTargetIcon(skullIconId, bot->GetGUID(), boss->GetGUID());
-
+    IccEnsureIconOn(bot, botAI, RtiTargetValue::skullIndex, boss);
     return false;
 }
 
@@ -140,54 +138,6 @@ bool IccRotfaceTankPositionAction::HandleAssistTankPositioning(Unit*)
     if (activeBigOozes.empty())
         return false;
 
-    auto CastClassTaunt = [&](Unit* target) -> bool
-    {
-        if (!target || !target->IsAlive())
-            return false;
-
-        if (!bot->HasAura(SPELL_SPITEFULL_FURY))
-            bot->AddAura(SPELL_SPITEFULL_FURY, bot);
-
-        switch (bot->getClass())
-        {
-            case CLASS_PALADIN:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_PALADIN, true);
-                if (botAI->CastSpell("hand of reckoning", target))
-                    return true;
-                break;
-            }
-            case CLASS_DEATH_KNIGHT:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_DK, true);
-                if (botAI->CastSpell("dark command", target))
-                    return true;
-                break;
-            }
-            case CLASS_DRUID:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_DRUID, true);
-                if (botAI->CastSpell("growl", target))
-                    return true;
-                break;
-            }
-            case CLASS_WARRIOR:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_WARRIOR, true);
-                if (botAI->CastSpell("taunt", target))
-                    return true;
-                break;
-            }
-            default:
-                break;
-        }
-
-        if (botAI->CastSpell("shoot", target) || botAI->CastSpell("throw", target))
-            return true;
-
-        return false;
-    };
-
     Unit* uncollectedOoze = nullptr;
     float minUncollectedDist = FLT_MAX;
     for (Unit* ooze : activeBigOozes)
@@ -195,7 +145,9 @@ bool IccRotfaceTankPositionAction::HandleAssistTankPositioning(Unit*)
         if (ooze->GetVictim() == bot)
             continue;
 
-        CastClassTaunt(ooze);
+        if (!bot->HasAura(SPELL_SPITEFULL_FURY))
+            bot->AddAura(SPELL_SPITEFULL_FURY, bot);
+        IccCastClassTaunt(bot, botAI, ooze);
 
         float const dist = bot->GetExactDist2d(ooze);
         if (dist < minUncollectedDist)
@@ -278,56 +230,12 @@ Unit* IccRotfaceTankPositionAction::FindAssignedBigOoze(Unit* /*boss*/, std::vec
 
 bool IccRotfaceTankPositionAction::HandleBigOozeKiting(Unit* bigOoze)
 {
-    auto CastClassTaunt = [&](Unit* target) -> bool
+    if (bigOoze->GetVictim() != bot && bigOoze->IsAlive())
     {
-        if (!target || !target->IsAlive())
-            return false;
-
         if (!bot->HasAura(SPELL_SPITEFULL_FURY))
             bot->AddAura(SPELL_SPITEFULL_FURY, bot);
-
-        switch (bot->getClass())
-        {
-            case CLASS_PALADIN:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_PALADIN, true);
-                if (botAI->CastSpell("hand of reckoning", target))
-                    return true;
-                break;
-            }
-            case CLASS_DEATH_KNIGHT:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_DK, true);
-                if (botAI->CastSpell("dark command", target))
-                    return true;
-                break;
-            }
-            case CLASS_DRUID:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_DRUID, true);
-                if (botAI->CastSpell("growl", target))
-                    return true;
-                break;
-            }
-            case CLASS_WARRIOR:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_WARRIOR, true);
-                if (botAI->CastSpell("taunt", target))
-                    return true;
-                break;
-            }
-            default:
-                break;
-        }
-
-        if (botAI->CastSpell("shoot", target) || botAI->CastSpell("throw", target))
-            return true;
-
-        return false;
-    };
-
-    if (bigOoze->GetVictim() != bot && bigOoze->IsAlive())
-        CastClassTaunt(bigOoze);
+        IccCastClassTaunt(bot, botAI, bigOoze);
+    }
 
     float const oozeDistance = bot->GetExactDist2d(bigOoze);
 
@@ -336,7 +244,11 @@ bool IccRotfaceTankPositionAction::HandleBigOozeKiting(Unit* bigOoze)
         bot->SetTarget(bigOoze->GetGUID());
         bot->SetFacingToObject(bigOoze);
         if (bigOoze->GetVictim() != bot)
-            CastClassTaunt(bigOoze);
+        {
+            if (!bot->HasAura(SPELL_SPITEFULL_FURY))
+                bot->AddAura(SPELL_SPITEFULL_FURY, bot);
+            IccCastClassTaunt(bot, botAI, bigOoze);
+        }
         return false;
     }
 
@@ -903,16 +815,15 @@ bool IccRotfaceMoveAwayFromExplosionAction::Execute(Event /*event*/)
                 anchor.GetPositionY() + ESCAPE_RADIUS * std::sin(angle)};
     };
 
-    static std::map<std::pair<uint32, ObjectGuid>, int32> sExplosionSlotMemory;
-
     uint32 const instanceId = bot->GetMap()->GetInstanceId();
-    auto const myKey = std::make_pair(instanceId, bot->GetGUID());
+    auto& sExplosionSlotMemory = IcecrownHelpers::IccState(instanceId).rfExplosionSlotMemory;
+    auto const myKey = bot->GetGUID();
 
     // count how many OTHER bots in this instance occupy each slot
     std::array<int32, TOTAL_SLOTS> otherCount{};
     for (auto const& [key, slot] : sExplosionSlotMemory)
     {
-        if (key.first == instanceId && key.second != bot->GetGUID())
+        if (key != bot->GetGUID())
             ++otherCount[slot];
     }
 
@@ -994,14 +905,13 @@ bool IccRotfaceAvoidVileGasAction::Execute(Event /*event*/)
 {
     uint32 const now = getMSTime();
 
-    auto vgIt = IcecrownHelpers::rotfaceVileGas.find(bot->GetMap()->GetInstanceId());
+    IcecrownHelpers::IccInstanceState& st = IcecrownHelpers::IccState(bot->GetMap()->GetInstanceId());
     bool const isVictim =
-        vgIt != IcecrownHelpers::rotfaceVileGas.end() &&
-        vgIt->second.victimGuid == bot->GetGUID() &&
-        getMSTimeDiff(vgIt->second.castTime, now) < 8000;
+        st.rotfaceVileGas.victimGuid == bot->GetGUID() &&
+        getMSTimeDiff(st.rotfaceVileGas.castTime, now) < 8000;
     bool const hasAura = botAI->HasAura("Vile Gas", bot);
 
-    auto& waitMap = IcecrownHelpers::rotfaceVileGasWaitUntil;
+    auto& waitMap = st.rotfaceVileGasWaitUntil;
     auto waitIt = waitMap.find(bot->GetGUID());
     bool const inWait = waitIt != waitMap.end() && now < waitIt->second;
 

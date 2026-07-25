@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "ICCActions.h"
 #include "NearestNpcsValue.h"
 #include "ObjectAccessor.h"
@@ -70,46 +76,6 @@ static bool IsHeroicLk(Difficulty diff)
     return diff == RAID_DIFFICULTY_10MAN_HEROIC || diff == RAID_DIFFICULTY_25MAN_HEROIC;
 }
 
-static bool HasAnyRemorselessWinter(Unit* boss)
-{
-    if (!boss)
-        return false;
-
-    if (boss->HasAura(SPELL_REMORSELESS_WINTER1) || boss->HasAura(SPELL_REMORSELESS_WINTER2) ||
-        boss->HasAura(SPELL_REMORSELESS_WINTER3) || boss->HasAura(SPELL_REMORSELESS_WINTER4) ||
-        boss->HasAura(SPELL_REMORSELESS_WINTER5) || boss->HasAura(SPELL_REMORSELESS_WINTER6) ||
-        boss->HasAura(SPELL_REMORSELESS_WINTER7) || boss->HasAura(SPELL_REMORSELESS_WINTER8))
-        return true;
-
-    if (!boss->HasUnitState(UNIT_STATE_CASTING))
-        return false;
-
-    return boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER1) ||
-           boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER2) ||
-           boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER3) ||
-           boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER4) ||
-           boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER5) ||
-           boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER6) ||
-           boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER7) ||
-           boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER8);
-}
-
-// Apply heroic cheat buffs to bots & players
-static void ApplyHeroicBuffToMember(PlayerbotAI* botAI, Player* member, bool applyNoThreat)
-{
-    if (!member->HasAura(SPELL_EXPERIENCED))
-        member->AddAura(SPELL_EXPERIENCED, member);
-
-    if (!member->HasAura(SPELL_AGEIS_OF_DALARAN))
-        member->AddAura(SPELL_AGEIS_OF_DALARAN, member);
-
-    if (!member->HasAura(SPELL_PAIN_SUPPRESION))
-        member->AddAura(SPELL_PAIN_SUPPRESION, member);
-
-    if (applyNoThreat && !botAI->IsTank(member) && !member->HasAura(SPELL_NO_THREAT))
-        member->AddAura(SPELL_NO_THREAT, member);
-}
-
 static float GetDefileEffectiveRadius(Unit const* defile, Difficulty diff)
 {
     static constexpr float BASE_RADIUS = 6.0f;
@@ -180,40 +146,6 @@ static Position const& SelectClosestOf3(Position const& ref, Position const& p1,
     return p1;
 }
 
-// Single-target taunt with class-specific fallbacks
-static bool CastSingleTargetTaunt(PlayerbotAI* botAI, Player* bot, Unit* target)
-{
-    if (!target || !target->IsAlive())
-        return false;
-
-    if (botAI->CastSpell("taunt", target))
-        return true;
-
-    switch (bot->getClass())
-    {
-        case CLASS_PALADIN:
-            if (botAI->CastSpell("hand of reckoning", target))
-                return true;
-            break;
-        case CLASS_DEATH_KNIGHT:
-            if (botAI->CastSpell("dark command", target))
-                return true;
-            break;
-        case CLASS_DRUID:
-            if (botAI->CastSpell("growl", target))
-                return true;
-            break;
-        default:
-            break;
-    }
-
-    // Ranged poke generates threat without moving
-    if (botAI->CastSpell("shoot", target) || botAI->CastSpell("throw", target))
-        return true;
-
-    return false;
-}
-
 // AoE taunt — returns true if a spell was cast
 static bool CastAoeTaunt(PlayerbotAI* botAI, Player* bot)
 {
@@ -241,8 +173,8 @@ bool IccLichKingShadowTrapAction::Execute(Event /*event*/)
 
     Difficulty const diff = bot->GetRaidDifficulty();
 
-    if (sPlayerbotAIConfig.EnableICCBuffs && IsHeroicLk(diff))
-        ApplyHeroicBuffToMember(botAI, bot, false);
+    if (sPlayerbotAIConfig.EnableICCBuffs && boss->IsInCombat() && IsHeroicLk(diff))
+        IccApplyHeroicBuffToMember(botAI, bot, true, false);
 
     static constexpr float CIRCLE_RADIUS = 20.0f;
     static constexpr float SAFE_DISTANCE = 12.0f;
@@ -438,8 +370,8 @@ bool IccLichKingWinterAction::Execute(Event /*event*/)
 
     Difficulty const diff = bot->GetRaidDifficulty();
 
-    if (sPlayerbotAIConfig.EnableICCBuffs && IsHeroicLk(diff))
-        ApplyHeroicBuffToMember(botAI, bot, true);
+    if (sPlayerbotAIConfig.EnableICCBuffs && boss->IsInCombat() && IsHeroicLk(diff))
+        IccApplyHeroicBuffToMember(botAI, bot, true, true);
 
     // Speed boost to help escape the inward push
     if (bot->GetDistance2d(boss) < 35.0f && !bot->HasAura(SPELL_NITRO_BOOSTS))
@@ -477,7 +409,7 @@ bool IccLichKingWinterAction::Execute(Event /*event*/)
     {
         static constexpr float MARK_RANGE = 10.0f;
 
-        Unit* currentSkull = botAI->GetUnit(group->GetTargetIcon(7));
+        Unit* currentSkull = botAI->GetUnit(group->GetTargetIcon(RtiTargetValue::skullIndex));
         bool const currentValid = currentSkull && currentSkull->IsAlive() && (IsLkShambling(currentSkull->GetEntry()) || IsLkRagingSpirit(currentSkull->GetEntry()));
 
         if (!currentValid)
@@ -513,9 +445,9 @@ bool IccLichKingWinterAction::Execute(Event /*event*/)
             Unit* markTarget = bestShambling ? bestShambling : bestSpirit;
 
             if (markTarget)
-                group->SetTargetIcon(7, bot->GetGUID(), markTarget->GetGUID());
-            else if (!group->GetTargetIcon(7).IsEmpty())
-                group->SetTargetIcon(7, bot->GetGUID(), ObjectGuid::Empty);
+                group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), markTarget->GetGUID());
+            else if (!group->GetTargetIcon(RtiTargetValue::skullIndex).IsEmpty())
+                group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), ObjectGuid::Empty);
         }
     }
 
@@ -528,23 +460,10 @@ bool IccLichKingWinterAction::Execute(Event /*event*/)
     // the cast so all bots agree even if defile state shifts mid-cast.
     // Among safe slots VILE_SPIRIT1 and VILE_SPIRIT3, picks
     // the one closest to the group centroid; VILE_SPIRIT2 is fallback only.
-    struct WinterStageState
-    {
-        uint32 startMs;
-        Position const* pos;
-    };
-    static std::map<std::pair<uint32, ObjectGuid>, WinterStageState> s_winterStage;
-    auto const winterKey = std::make_pair(boss->GetInstanceId(), boss->GetGUID());
+    auto& s_winterStage = IcecrownHelpers::IccState(boss->GetInstanceId()).winterStage;
+    ObjectGuid const winterKey = boss->GetGUID();
 
-    bool const bossCastingWinter = boss->HasUnitState(UNIT_STATE_CASTING) &&
-        (boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER1) ||
-         boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER2) ||
-         boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER3) ||
-         boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER4) ||
-         boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER5) ||
-         boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER6) ||
-         boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER7) ||
-         boss->FindCurrentSpellBySpellId(SPELL_REMORSELESS_WINTER8));
+    bool const bossCastingWinter = IccBossCastingRemorselessWinter(boss);
 
     static constexpr uint32 STAGE_DURATION_MS = 4000;
 
@@ -592,7 +511,7 @@ bool IccLichKingWinterAction::Execute(Event /*event*/)
                                               ICC_LK_VILE_SPIRIT2_POSITION.GetPositionY()))
                 chosen = &ICC_LK_VILE_SPIRIT2_POSITION;
 
-            winterIt = s_winterStage.emplace(winterKey, WinterStageState{now, chosen}).first;
+            winterIt = s_winterStage.emplace(winterKey, IcecrownHelpers::WinterStageState{now, chosen}).first;
         }
 
         uint32 const elapsed = getMSTimeDiff(winterIt->second.startMs, now);
@@ -601,8 +520,8 @@ bool IccLichKingWinterAction::Execute(Event /*event*/)
         if (stagePos && elapsed < STAGE_DURATION_MS)
         {
             static constexpr float STAGE_TOLERANCE = 3.0f;
-            static std::map<std::pair<uint32, ObjectGuid>, bool> s_stageInbound;
-            auto const stageKey = std::make_pair(bot->GetInstanceId(), bot->GetGUID());
+            auto& s_stageInbound = IcecrownHelpers::IccState(bot->GetInstanceId()).winterStageInbound;
+            ObjectGuid const stageKey = bot->GetGUID();
             float const dist = bot->GetDistance2d(stagePos->GetPositionX(), stagePos->GetPositionY());
             if (dist > STAGE_TOLERANCE)
             {
@@ -663,7 +582,12 @@ bool IccLichKingWinterAction::Execute(Event /*event*/)
             Position const& rangedPos = *GetMainTankRangedPosition();
             float const midX = (meleePos.GetPositionX() + rangedPos.GetPositionX()) * 0.5f;
             float const midY = (meleePos.GetPositionY() + rangedPos.GetPositionY()) * 0.5f;
-            TryMoveToPosition(midX, midY, PLATFORM_Z, true);
+
+            static constexpr float SPHERE_HOLD_TOLERANCE = 2.0f;
+            if (bot->GetDistance2d(midX, midY) > SPHERE_HOLD_TOLERANCE)
+                TryMoveToPosition(midX, midY, PLATFORM_Z, true);
+            else
+                bot->StopMoving();
             return false;
         }
     }
@@ -676,16 +600,23 @@ bool IccLichKingWinterAction::Execute(Event /*event*/)
     else if (!botAI->IsRanged(bot))
     {
         // Non-tank melee:
-        //   - Add (shambling/spirit) within 5y of MT: flank it.
-        //   - No add near MT: wait at midpoint between melee and ranged
-        //     anchors — staying close enough to engage when an add lands on
-        //     MT, far enough not to eat shambling frontals on stragglers.
+        //   - MT at the frost anchor with an add (shambling/spirit) within
+        //     5y of him: adds are in place, flank them.
+        //   - Otherwise: wait at midpoint between melee and ranged anchors
+        //     (the ice sphere hold spot), close enough to engage once adds
+        //     settle, far enough not to eat frontals while MT drags them.
         // Never pulled to MT/melee anchor.
         Unit* mainTank = AI_VALUE(Unit*, "main tank");
         bool addNearTank = false;
+        bool tankInPlace = false;
 
         if (mainTank && mainTank->IsAlive())
         {
+            static constexpr float TANK_IN_PLACE_RANGE = 10.0f;
+            Position const& frostPos = *GetMainTankPosition();
+            tankInPlace = mainTank->GetDistance2d(frostPos.GetPositionX(),
+                                                  frostPos.GetPositionY()) <= TANK_IN_PLACE_RANGE;
+
             GuidVector const& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
             for (ObjectGuid const& guid : npcs)
             {
@@ -702,7 +633,7 @@ bool IccLichKingWinterAction::Execute(Event /*event*/)
             }
         }
 
-        if (addNearTank)
+        if (addNearTank && tankInPlace)
             HandleMeleePositioning();
         else
         {
@@ -1031,10 +962,16 @@ bool IccLichKingWinterAction::HandleTankPositioning()
     if (botAI->IsMainTank(bot))
     {
         float const dist = bot->GetDistance2d(frostPos.GetPositionX(), frostPos.GetPositionY());
-        static std::map<std::pair<uint32, ObjectGuid>, bool> s_mtInbound;
-        auto const mtKey = std::make_pair(bot->GetInstanceId(), bot->GetGUID());
+        auto& s_mtInbound = IcecrownHelpers::IccState(bot->GetInstanceId()).mtAddInbound;
+        ObjectGuid const mtKey = bot->GetGUID();
 
-        if (dist > FROST_AT_POS_TOLERANCE)
+        // Hysteresis: converge to 3y once, then add management owns movement
+        // within a 12y leash. A single threshold flip-flops: orienting steps
+        // push past 3y and the walk-back (with its reset) yanks him straight
+        // back every other tick.
+        static constexpr float FROST_LEASH = 12.0f;
+
+        if (dist > (s_mtInbound[mtKey] ? FROST_AT_POS_TOLERANCE : FROST_LEASH))
         {
             if (!s_mtInbound[mtKey])
             {
@@ -1135,7 +1072,7 @@ bool IccLichKingWinterAction::HandleMeleePositioning()
         // Priority: skull-marked target (only if near MT)
         if (Group* group = bot->GetGroup())
         {
-            Unit* skull = botAI->GetUnit(group->GetTargetIcon(7));
+            Unit* skull = botAI->GetUnit(group->GetTargetIcon(RtiTargetValue::skullIndex));
             if (skull && skull->IsAlive() && IsLkCollectibleAdd(skull) && addNearMT(skull))
                 newTarget = skull;
         }
@@ -1170,6 +1107,36 @@ bool IccLichKingWinterAction::HandleMeleePositioning()
         bot->SetTarget(newTarget->GetGUID());
         currentTarget = newTarget;
     }
+
+    // A flank slot must be out of the frontal cone of EVERY nearby shambling
+    // and spirit, not just the current target: their frontals hit whoever
+    // stands in them regardless of who the bot is attacking.
+    GuidVector const& coneNpcs = AI_VALUE(GuidVector, "nearest hostile npcs");
+    auto inAddFrontalCone = [&](float x, float y) -> bool
+    {
+        static constexpr float ADD_CONE_RANGE = 15.0f;
+        static constexpr float ADD_FRONTAL_ARC = 2.0f * float(M_PI) / 3.0f;
+        Position const slot(x, y);
+
+        for (ObjectGuid const& guid : coneNpcs)
+        {
+            Unit* add = botAI->GetUnit(guid);
+            if (!add || !add->IsAlive())
+                continue;
+
+            uint32 const entry = add->GetEntry();
+            if (!IsLkShambling(entry) && !IsLkRagingSpirit(entry))
+                continue;
+
+            if (add->GetExactDist2d(x, y) > ADD_CONE_RANGE)
+                continue;
+
+            if (add->HasInArc(ADD_FRONTAL_ARC, &slot))
+                return true;
+        }
+
+        return false;
+    };
 
     // Settle band: if a candidate flank slot is safe AND the bot is already
     // within FLANK_SETTLE_DIST of it, stay put and attack — no per-tick step
@@ -1207,6 +1174,8 @@ bool IccLichKingWinterAction::HandleMeleePositioning()
                 if (!IsPositionSafeFromDefile(destX, destY, bot->GetPositionZ(), 2.0f))
                     continue;
                 if (!bot->IsWithinLOS(destX, destY, bot->GetPositionZ()))
+                    continue;
+                if (inAddFrontalCone(destX, destY))
                     continue;
 
                 if (bDist < FLANK_SETTLE_DIST)
@@ -1248,6 +1217,8 @@ bool IccLichKingWinterAction::HandleMeleePositioning()
             continue;
         if (!bot->IsWithinLOS(destX, destY, bot->GetPositionZ()))
             continue;
+        if (inAddFrontalCone(destX, destY))
+            continue;
 
         if (bDist < FLANK_SETTLE_DIST)
         {
@@ -1283,8 +1254,8 @@ bool IccLichKingWinterAction::HandleRangedPositioning()
     // Move to ranged frost position. Clear target + reset only on the FIRST
     // tick of the inbound phase — otherwise we cancel the bot's own movement
     // every tick and it ends up walking 1y per cycle.
-    static std::map<std::pair<uint32, ObjectGuid>, bool> s_rangedInbound;
-    auto const rangedKey = std::make_pair(bot->GetInstanceId(), bot->GetGUID());
+    auto& s_rangedInbound = IcecrownHelpers::IccState(bot->GetInstanceId()).rangedInbound;
+    ObjectGuid const rangedKey = bot->GetGUID();
     bool const farFromAnchor =
         bot->GetDistance2d(targetPos.GetPositionX(), targetPos.GetPositionY()) > 2.0f;
 
@@ -1360,7 +1331,7 @@ bool IccLichKingWinterAction::HandleRangedPositioning()
     Unit* addTarget = nullptr;
     if (Group* group = bot->GetGroup())
     {
-        Unit* skull = botAI->GetUnit(group->GetTargetIcon(7));
+        Unit* skull = botAI->GetUnit(group->GetTargetIcon(RtiTargetValue::skullIndex));
         if (skull && skull->IsAlive() && IsLkCollectibleAdd(skull))
             addTarget = skull;
     }
@@ -1417,10 +1388,39 @@ bool IccLichKingWinterAction::HandleMainTankAddManagement(Unit*, Position const*
 
     GuidVector const& targets = AI_VALUE(GuidVector, "possible targets");
 
-    Unit* priorityAdd = nullptr;   // attacking non-tank
-    Unit* secondaryAdd = nullptr;  // not yet on MT
-    Unit* fallbackAdd = nullptr;   // already on MT
+    Unit* targetAdd = nullptr;
     int nearbyCount = 0;
+
+    auto typeRank = [](Unit* u) -> int
+    {
+        uint32 const e = u->GetEntry();
+        if (IsLkShambling(e))
+            return 2;
+        if (IsLkRagingSpirit(e))
+            return 1;
+        return 0;
+    };
+
+    auto rescueRank = [&](Unit* u) -> int
+    {
+        Unit* v = u->GetVictim();
+        return v && v->IsPlayer() && !botAI->IsTank(v->ToPlayer()) ? 1 : 0;
+    };
+
+    auto better = [&](Unit* cand, Unit* cur) -> bool
+    {
+        if (!cur)
+            return true;
+        int const tc = typeRank(cand);
+        int const tr = typeRank(cur);
+        if (tc != tr)
+            return tc > tr;
+        int const rc = rescueRank(cand);
+        int const rr = rescueRank(cur);
+        if (rc != rr)
+            return rc > rr;
+        return bot->GetDistance(cand) < bot->GetDistance(cur);
+    };
 
     for (ObjectGuid const& guid : targets)
     {
@@ -1439,12 +1439,12 @@ bool IccLichKingWinterAction::HandleMainTankAddManagement(Unit*, Position const*
         // Taunt pass: all adds in range that are NOT already on MT
         bool const onMT = victim && victim->IsPlayer() && botAI->IsMainTank(victim->ToPlayer());
         if (!onMT && addDist <= TAUNT_RADIUS)
-            CastSingleTargetTaunt(botAI, bot, add);
+            IccCastClassTaunt(bot, botAI, add);
 
         // Priority taunt: adds on the assist tank within 10 yd
         bool const onAT = victim && victim->IsPlayer() && botAI->IsAssistTank(victim->ToPlayer());
         if (onAT && addDist <= 10.0f)
-            CastSingleTargetTaunt(botAI, bot, add);
+            IccCastClassTaunt(bot, botAI, add);
 
         if (nearbyCount >= AOE_TAUNT_MIN)
             CastAoeTaunt(botAI, bot);
@@ -1452,24 +1452,9 @@ bool IccLichKingWinterAction::HandleMainTankAddManagement(Unit*, Position const*
         if (addDist > maxEngage)
             continue;
 
-        if (victim && victim->IsPlayer() && !botAI->IsTank(victim->ToPlayer()))
-        {
-            if (!priorityAdd || addDist < bot->GetDistance(priorityAdd))
-                priorityAdd = add;
-        }
-        else if (victim != bot)
-        {
-            if (!secondaryAdd || addDist < bot->GetDistance(secondaryAdd))
-                secondaryAdd = add;
-        }
-        else
-        {
-            if (!fallbackAdd || addDist < bot->GetDistance(fallbackAdd))
-                fallbackAdd = add;
-        }
+        if (better(add, targetAdd))
+            targetAdd = add;
     }
-
-    Unit* targetAdd = priorityAdd ? priorityAdd : secondaryAdd ? secondaryAdd : fallbackAdd;
 
     if (!targetAdd)
     {
@@ -1479,103 +1464,73 @@ bool IccLichKingWinterAction::HandleMainTankAddManagement(Unit*, Position const*
         return false;
     }
 
-    // Stack-consolidation and orientation nudge.
-    // Move away from the ranged position when either:
-    //   (a) any two Shamblings/Spirits on the MT are more than 1 yd apart, or
-    //   (b) any add is facing toward the ranged position.
     {
-        static constexpr float STACK_THRESHOLD = 1.0f;
-        static constexpr float NUDGE_DIST      = 2.0f;
+        static constexpr float HOLD_REACH = 3.0f;
+        static constexpr float HOLD_TOL   = 1.5f;
 
         Position const& rangedPos = *GetMainTankRangedPosition();
-        float const awayDx = frostPos->GetPositionX() - rangedPos.GetPositionX();
-        float const awayDy = frostPos->GetPositionY() - rangedPos.GetPositionY();
-        float const awayLen = std::hypot(awayDx, awayDy);
 
-        if (awayLen > 0.01f)
+        // Only step when some add on us is deeper (farther from the ranged
+        // anchor) than we are. Chasing centroid + away unconditionally is a
+        // treadmill: adds follow every step, dragging the centroid along.
+        float const botRadial = bot->GetDistance2d(rangedPos.GetPositionX(), rangedPos.GetPositionY());
+        bool behindAll = true;
+
+        float sumX = 0.0f;
+        float sumY = 0.0f;
+        int count = 0;
+        for (ObjectGuid const& guid : targets)
         {
-            float const awayNx = awayDx / awayLen;
-            float const awayNy = awayDy / awayLen;
+            Unit* add = botAI->GetUnit(guid);
+            if (!add || !add->IsAlive())
+                continue;
 
-            std::vector<Unit*> stackAdds;
-            for (ObjectGuid const& guid : targets)
-            {
-                Unit* add = botAI->GetUnit(guid);
-                if (!add || !add->IsAlive())
-                    continue;
+            uint32 const entry = add->GetEntry();
+            if (!IsLkShambling(entry) && !IsLkRagingSpirit(entry))
+                continue;
 
-                uint32 const entry = add->GetEntry();
-                if (!IsLkShambling(entry) && !IsLkRagingSpirit(entry))
-                    continue;
+            if (add->GetVictim() != bot)
+                continue;
 
-                Unit* v = add->GetVictim();
-                if (!v || !v->IsPlayer() || !botAI->IsMainTank(v->ToPlayer()))
-                    continue;
+            sumX += add->GetPositionX();
+            sumY += add->GetPositionY();
+            ++count;
 
-                stackAdds.push_back(add);
-            }
-
-            bool needNudge = false;
-
-            // (a) spread check
-            for (size_t i = 0; !needNudge && i < stackAdds.size(); ++i)
-            {
-                for (size_t j = i + 1; !needNudge && j < stackAdds.size(); ++j)
-                {
-                    if (stackAdds[i]->GetDistance2d(stackAdds[j]) > STACK_THRESHOLD)
-                        needNudge = true;
-                }
-            }
-
-            // (b) orientation check — add facing toward rangedPos
-            for (size_t i = 0; !needNudge && i < stackAdds.size(); ++i)
-            {
-                Unit* add = stackAdds[i];
-                float const toRangedX = rangedPos.GetPositionX() - add->GetPositionX();
-                float const toRangedY = rangedPos.GetPositionY() - add->GetPositionY();
-                float const dot = std::cos(add->GetOrientation()) * toRangedX +
-                                  std::sin(add->GetOrientation()) * toRangedY;
-                if (dot > 0.0f)
-                    needNudge = true;
-            }
-
-            if (needNudge)
-            {
-                float const nudgeX = bot->GetPositionX() + awayNx * NUDGE_DIST;
-                float const nudgeY = bot->GetPositionY() + awayNy * NUDGE_DIST;
-                TryMoveToPosition(nudgeX, nudgeY, PLATFORM_Z, false);
-            }
-        }
-    }
-
-    float const addDist = bot->GetDistance(targetAdd);
-
-    if (addDist <= ENGAGE_RADIUS || !hasAliveAssistTank)
-    {
-        // Pull toward frostPos if solo-tanking and add is far
-        if (addDist > ENGAGE_RADIUS && !hasAliveAssistTank)
-        {
-            float const pullDx = targetAdd->GetPositionX() - frostPos->GetPositionX();
-            float const pullDy = targetAdd->GetPositionY() - frostPos->GetPositionY();
-            float const pullLen = std::hypot(pullDx, pullDy);
-            float const pullRatio = std::min(1.0f, 15.0f / (pullLen > 0.1f ? pullLen : 0.1f));
-            TryMoveToPosition(frostPos->GetPositionX() + pullDx * pullRatio,
-                              frostPos->GetPositionY() + pullDy * pullRatio,
-                              PLATFORM_Z, false);
+            if (add->GetDistance2d(rangedPos.GetPositionX(), rangedPos.GetPositionY()) > botRadial + 1.0f)
+                behindAll = false;
         }
 
-        bot->SetTarget(targetAdd->GetGUID());
-        bot->SetFacingToObject(targetAdd);
-        Attack(targetAdd);
-    }
-    else
-    {
-        // Add is still being herded by assist tank
-        bot->SetTarget(targetAdd->GetGUID());
-        bot->SetFacingToObject(targetAdd);
-        Attack(targetAdd);
+        float cx = count > 0 ? sumX / count : targetAdd->GetPositionX();
+        float cy = count > 0 ? sumY / count : targetAdd->GetPositionY();
+
+        float awayNx = cx - rangedPos.GetPositionX();
+        float awayNy = cy - rangedPos.GetPositionY();
+        float const awayLen = std::hypot(awayNx, awayNy);
+
+        if (awayLen > 0.5f)
+        {
+            awayNx /= awayLen;
+            awayNy /= awayLen;
+        }
+        else
+        {
+            float const fdx = frostPos->GetPositionX() - rangedPos.GetPositionX();
+            float const fdy = frostPos->GetPositionY() - rangedPos.GetPositionY();
+            float const flen = std::hypot(fdx, fdy);
+            awayNx = flen > 0.01f ? fdx / flen : 1.0f;
+            awayNy = flen > 0.01f ? fdy / flen : 0.0f;
+        }
+
+        float const holdX = cx + awayNx * HOLD_REACH;
+        float const holdY = cy + awayNy * HOLD_REACH;
+
+        if (!behindAll && bot->GetDistance2d(holdX, holdY) > HOLD_TOL)
+            TryMoveToPosition(holdX, holdY, PLATFORM_Z, false);
     }
 
+    bot->SetTarget(targetAdd->GetGUID());
+    bot->SetFacingToObject(targetAdd);
+    Attack(targetAdd);
     return false;
 }
 
@@ -1613,12 +1568,6 @@ bool IccLichKingWinterAction::HandleAssistTankAddManagement(Unit*, Position cons
     // adds are on us — walk back to frost position
     if (!addsOnUs.empty())
     {
-        for (Unit* add : addsOnUs)
-            CastSingleTargetTaunt(botAI, bot, add);
-
-        if (addsOnUs.size() >= 2)
-            CastAoeTaunt(botAI, bot);
-
         float const distToFrost = bot->GetExactDist2d(frostPos->GetPositionX(),
                                                        frostPos->GetPositionY());
         if (distToFrost > FROST_TOL)
@@ -1725,7 +1674,7 @@ bool IccLichKingWinterAction::HandleAssistTankAddManagement(Unit*, Position cons
         return false;
     }
 
-    CastSingleTargetTaunt(botAI, bot, targetAdd);
+    IccCastClassTaunt(bot, botAI, targetAdd);
 
     // Also taunt other loose adds in range
     for (Unit* add : addsLoose)
@@ -1733,7 +1682,7 @@ bool IccLichKingWinterAction::HandleAssistTankAddManagement(Unit*, Position cons
         if (add == targetAdd)
             continue;
         if (bot->GetExactDist2d(add) <= TAUNT_RADIUS)
-            CastSingleTargetTaunt(botAI, bot, add);
+            IccCastClassTaunt(bot, botAI, add);
     }
 
     // AoE taunt if 2+ loose adds are close enough
@@ -1861,7 +1810,8 @@ bool IccLichKingAddsAction::Execute(Event /*event*/)
     Unit* const terenas = bot->FindNearestCreature(NPC_TERENAS_MENETHIL_HC, 55.0f);
 
     // Heroic cheat buffs — apply to all group members
-    if (sPlayerbotAIConfig.EnableICCBuffs && IsHeroicLk(diff))
+    Creature* lichKing = bot->FindNearestCreature(NPC_THE_LICH_KING, 100.0f);
+    if (lichKing && lichKing->IsInCombat() && sPlayerbotAIConfig.EnableICCBuffs && IsHeroicLk(diff))
     {
         Group* buffGroup = bot->GetGroup();
         if (buffGroup)
@@ -1872,7 +1822,7 @@ bool IccLichKingAddsAction::Execute(Event /*event*/)
                 if (!member || !member->IsAlive() || !member->IsInWorld())
                     continue;
 
-                ApplyHeroicBuffToMember(botAI, member, true);
+                IccApplyHeroicBuffToMember(botAI, member, true, true);
 
                 if (boss && boss->HealthBelowPct(60) && boss->HealthAbovePct(40) &&
                     !member->HasAura(SPELL_EMPOWERED_BLOOD))
@@ -1907,11 +1857,11 @@ bool IccLichKingAddsAction::Execute(Event /*event*/)
             // During Vile Spirit windows, melee can't reach the spirits — mark boss on cross
             // and route melee DPS there.
             bool phase3 = false;
-            if (boss && boss->HealthBelowPct(40) && !HasAnyRemorselessWinter(boss))
+            if (boss && boss->HealthBelowPct(40) && !IccBossHasRemorselessWinter(boss))
             {
                 phase3 = true;
 
-                Unit* currentSkull = botAI->GetUnit(group->GetTargetIcon(7));
+                Unit* currentSkull = botAI->GetUnit(group->GetTargetIcon(RtiTargetValue::skullIndex));
                 bool const ragingMarked = currentSkull && currentSkull->IsAlive() &&
                                           IsLkRagingSpirit(currentSkull->GetEntry());
 
@@ -1937,19 +1887,19 @@ bool IccLichKingAddsAction::Execute(Event /*event*/)
                     }
                 }
 
-                static constexpr uint8 CROSS_ICON = 6;
+                static constexpr uint8 CROSS_ICON = RtiTargetValue::crossIndex;
 
                 // Priority: Raging Spirit > boss. Vile Spirits are not marked
                 // (handled positionally by HandleVileSpiritMechanics + AT chase
                 // + hunter frost trap).
                 if (nearestRaging)
                 {
-                    if (!ragingMarked && group->GetTargetIcon(7) != nearestRaging->GetGUID())
-                        group->SetTargetIcon(7, bot->GetGUID(), nearestRaging->GetGUID());
+                    if (!ragingMarked && group->GetTargetIcon(RtiTargetValue::skullIndex) != nearestRaging->GetGUID())
+                        group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), nearestRaging->GetGUID());
                 }
-                else if (group->GetTargetIcon(7) != boss->GetGUID())
+                else if (group->GetTargetIcon(RtiTargetValue::skullIndex) != boss->GetGUID())
                 {
-                    group->SetTargetIcon(7, bot->GetGUID(), boss->GetGUID());
+                    group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), boss->GetGUID());
                 }
 
                 // Cross marker is no longer used for vile windows — clear if set
@@ -1967,12 +1917,12 @@ bool IccLichKingAddsAction::Execute(Event /*event*/)
             }
             else if (boss && boss->HealthAbovePct(71))
             {
-                if (group->GetTargetIcon(7) != boss->GetGUID())
-                    group->SetTargetIcon(7, bot->GetGUID(), boss->GetGUID());
+                if (group->GetTargetIcon(RtiTargetValue::skullIndex) != boss->GetGUID())
+                    group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), boss->GetGUID());
             }
             else if (boss)
             {
-                Unit* currentSkull = botAI->GetUnit(group->GetTargetIcon(7));
+                Unit* currentSkull = botAI->GetUnit(group->GetTargetIcon(RtiTargetValue::skullIndex));
                 bool const spiritMarked = currentSkull && currentSkull->IsAlive() &&
                                           IsLkRagingSpirit(currentSkull->GetEntry());
 
@@ -2001,12 +1951,12 @@ bool IccLichKingAddsAction::Execute(Event /*event*/)
 
                     if (nearestSpirit)
                     {
-                        if (group->GetTargetIcon(7) != nearestSpirit->GetGUID())
-                            group->SetTargetIcon(7, bot->GetGUID(), nearestSpirit->GetGUID());
+                        if (group->GetTargetIcon(RtiTargetValue::skullIndex) != nearestSpirit->GetGUID())
+                            group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), nearestSpirit->GetGUID());
                     }
-                    else if (group->GetTargetIcon(7) != boss->GetGUID())
+                    else if (group->GetTargetIcon(RtiTargetValue::skullIndex) != boss->GetGUID())
                     {
-                        group->SetTargetIcon(7, bot->GetGUID(), boss->GetGUID());
+                        group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), boss->GetGUID());
                     }
                 }
             }
@@ -2025,7 +1975,7 @@ bool IccLichKingAddsAction::Execute(Event /*event*/)
 
     // Detect bots fallen off edge and initiate dive
     if (boss && boss->GetHealthPct() < 70.0f && boss->GetHealthPct() > 40.0f &&
-        !HasAnyRemorselessWinter(boss))
+        !IccBossHasRemorselessWinter(boss))
     {
         static constexpr float PLATFORM_CENTER_X = 503.0f;
         static constexpr float PLATFORM_CENTER_Y = -2124.0f;
@@ -2211,13 +2161,10 @@ bool IccLichKingSpiritBombAction::Execute(Event)
     static constexpr float MAX_HEIGHT_DIFF = 8.0f;
     static constexpr uint32 UNSAFE_MEM_MS = 15000;
 
-    static std::map<uint32, float> s_lastUnsafeX;
-    static std::map<uint32, float> s_lastUnsafeY;
-    static std::map<uint32, uint32> s_lastUnsafeTime;
-    uint32 const instId = bot->GetInstanceId();
-    float& lastUnsafeX = s_lastUnsafeX[instId];
-    float& lastUnsafeY = s_lastUnsafeY[instId];
-    uint32& lastUnsafeTime = s_lastUnsafeTime[instId];
+    IcecrownHelpers::IccInstanceState& st = IcecrownHelpers::IccState(bot->GetInstanceId());
+    float& lastUnsafeX = st.defileLastUnsafeX;
+    float& lastUnsafeY = st.defileLastUnsafeY;
+    uint32& lastUnsafeTime = st.defileLastUnsafeTime;
 
     GuidVector const& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
 
@@ -2418,7 +2365,7 @@ bool IccLichKingAddsAction::HandleSpiritMarkingAndTargeting(Difficulty diff, Uni
     if (!group)
         return false;
 
-    static constexpr uint8 STAR_ICON = 0;
+    static constexpr uint8 STAR_ICON = RtiTargetValue::starIndex;
     static constexpr float MAX_Z_DIFF = 20.0f;
 
     auto const spiritTargetsGroup = [&](Unit* spirit) -> bool
@@ -2527,7 +2474,7 @@ bool IccLichKingAddsAction::HandleRagingSpiritFlanking(Unit* boss, bool hasPlagu
 {
     if (!boss || botAI->IsTank(bot) || hasPlague)
         return false;
-    if (HasAnyRemorselessWinter(boss))
+    if (IccBossHasRemorselessWinter(boss))
         return false;
     if (bot->GetVehicle())
         return false;
@@ -2772,7 +2719,7 @@ bool IccLichKingAddsAction::HandleAssistTankAddManagement(Unit* boss, Difficulty
     // shockwave the raid during the transition gap.
     if (boss->HealthBelowPct(72) && boss->HealthAbovePct(70))
     {
-        if (!HasAnyRemorselessWinter(boss))
+        if (!IccBossHasRemorselessWinter(boss))
         {
             GuidVector const& stunTargets = AI_VALUE(GuidVector, "possible targets");
             for (ObjectGuid const& guid : stunTargets)
@@ -2793,44 +2740,6 @@ bool IccLichKingAddsAction::HandleAssistTankAddManagement(Unit* boss, Difficulty
     Position const& holdPos = IsHeroicLk(diff)
         ? ICC_LICH_KING_ASSISTHC_POSITION
         : ICC_LICH_KING_ADDS_POSITION;
-
-    // Class-specific taunt with forced cooldown reset
-    auto CastClassTaunt = [&](Unit* target) -> bool
-    {
-        if (!target || !target->IsAlive())
-            return false;
-
-        switch (bot->getClass())
-        {
-            case CLASS_PALADIN:
-                bot->RemoveSpellCooldown(SPELL_TAUNT_PALADIN, true);
-                if (botAI->CastSpell("hand of reckoning", target))
-                    return true;
-                break;
-            case CLASS_DEATH_KNIGHT:
-                bot->RemoveSpellCooldown(SPELL_TAUNT_DK, true);
-                if (botAI->CastSpell("dark command", target))
-                    return true;
-                break;
-            case CLASS_DRUID:
-                bot->RemoveSpellCooldown(SPELL_TAUNT_DRUID, true);
-                if (botAI->CastSpell("growl", target))
-                    return true;
-                break;
-            case CLASS_WARRIOR:
-                bot->RemoveSpellCooldown(SPELL_TAUNT_WARRIOR, true);
-                if (botAI->CastSpell("taunt", target))
-                    return true;
-                break;
-            default:
-                break;
-        }
-
-        if (botAI->CastSpell("shoot", target) || botAI->CastSpell("throw", target))
-            return true;
-
-        return false;
-    };
 
     // Categorise visible adds
     GuidVector const& targets = AI_VALUE(GuidVector, "possible targets");
@@ -2853,7 +2762,7 @@ bool IccLichKingAddsAction::HandleAssistTankAddManagement(Unit* boss, Difficulty
     bool const isHeroic = IsHeroicLk(diff);
 
     // Non-winter Raging Spirit pickup: AT grabs ALL spirits before joining MT.
-    if (!HasAnyRemorselessWinter(boss))
+    if (!IccBossHasRemorselessWinter(boss))
     {
         std::vector<Unit*> looseSpirits;
         std::vector<Unit*> spiritsOnUs;
@@ -2880,7 +2789,7 @@ bool IccLichKingAddsAction::HandleAssistTankAddManagement(Unit* boss, Difficulty
             float nearestLooseDist = FLT_MAX;
             for (Unit* spirit : looseSpirits)
             {
-                CastClassTaunt(spirit);
+                IccCastClassTaunt(bot, botAI,spirit);
                 float const d = bot->GetExactDist2d(spirit);
                 if (d < nearestLooseDist)
                 {
@@ -3031,7 +2940,7 @@ bool IccLichKingAddsAction::HandleAssistTankAddManagement(Unit* boss, Difficulty
 
     Unit* tauntTarget = tauntTargetShambling ? tauntTargetShambling : tauntTargetOther;
     if (tauntTarget)
-        CastClassTaunt(tauntTarget);
+        IccCastClassTaunt(bot, botAI,tauntTarget);
 
     // No adds at all — stay at hold position
     if (addsOnUs.empty() && addsElsewhere.empty())
@@ -3269,7 +3178,7 @@ bool IccLichKingAddsAction::HandleMainTankTargeting(Unit* boss, Difficulty diff)
 
     // Non-winter Raging Spirit case: stay on boss only when an assist tank is alive
     // to take the spirit. If AT is dead, fall through so MT can swap.
-    if (!HasAnyRemorselessWinter(boss))
+    if (!IccBossHasRemorselessWinter(boss))
     {
         GuidVector const& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
         bool spiritAlive = false;
@@ -3394,28 +3303,25 @@ bool IccLichKingAddsAction::HandleRangedPositioning(Unit* boss, bool hasPlague, 
 
 bool IccLichKingAddsAction::HandleCenterStacking(Unit* boss, Difficulty diff)
 {
-    if (!boss || !boss->HealthBelowPct(67) || HasAnyRemorselessWinter(boss))
+    if (!boss || !boss->HealthBelowPct(67) || IccBossHasRemorselessWinter(boss))
         return false;
 
     // Defile target: let HandleDefileMechanics() handle movement
     // (perpendicular run). Don't override with slot/center movement.
-    auto const defileIt = IcecrownHelpers::defileCast.find(bot->GetInstanceId());
-    if (defileIt != IcecrownHelpers::defileCast.end())
+    auto const& defileInfo = IcecrownHelpers::IccState(bot->GetInstanceId()).defileCast;
+    if (!defileInfo.targetGuid.IsEmpty() &&
+        getMSTimeDiff(defileInfo.castTime, getMSTime()) <= 3000 &&
+        defileInfo.targetGuid == bot->GetGUID())
     {
-        auto const& defileInfo = defileIt->second;
-        if (!defileInfo.targetGuid.IsEmpty() &&
-            getMSTimeDiff(defileInfo.castTime, getMSTime()) <= 3000 &&
-            defileInfo.targetGuid == bot->GetGUID())
-        {
-            return false;
-        }
+        return false;
     }
 
     // Marked Val'kyrs (Skull/Cross/Star) are being kited by assist - bots
     // assigned to them must not be locked to the center stack.
     if (Group* group = bot->GetGroup())
     {
-        static constexpr std::array<uint8, 3> ValkyrIcons = {7, 6, 0};
+        static constexpr std::array<uint8, 3> ValkyrIcons = {RtiTargetValue::skullIndex, RtiTargetValue::crossIndex,
+                                                             RtiTargetValue::starIndex};
         for (uint8 const iconIdx : ValkyrIcons)
         {
             Unit* marked = botAI->GetUnit(group->GetTargetIcon(iconIdx));
@@ -3477,10 +3383,9 @@ bool IccLichKingAddsAction::HandleCenterStacking(Unit* boss, Difficulty diff)
         // centroid. Centroid is identical for every bot in the raid so all
         // bots converge on the same anchor. Cached per boss GUID for 2s to
         // dampen flicker if defile state shifts between ticks.
-        struct StackChoice { uint32 evaluatedMs; int slotIdx; };
-        static std::map<std::pair<uint32, ObjectGuid>, StackChoice> s_stackChoice;
+        auto& s_stackChoice = IcecrownHelpers::IccState(boss->GetInstanceId()).mtStackChoice;
         static constexpr uint32 STACK_CHOICE_TTL_MS = 2000;
-        auto const stackKey = std::make_pair(boss->GetInstanceId(), boss->GetGUID());
+        ObjectGuid const stackKey = boss->GetGUID();
 
         uint32 const now = getMSTime();
         int chosen = -1;
@@ -3648,10 +3553,7 @@ bool IccLichKingAddsAction::HandleDefileMechanics(Unit* boss, Difficulty diff)
 
     // Boss casting Defile — only the targeted player runs out. Target is
     // stamped by IccLichKingListenerScript at OnSpellPrepare time (cast start).
-    auto const defileIt = IcecrownHelpers::defileCast.find(bot->GetInstanceId());
-    if (defileIt == IcecrownHelpers::defileCast.end())
-        return false;
-    auto const& info = defileIt->second;
+    auto const& info = IcecrownHelpers::IccState(bot->GetInstanceId()).defileCast;
     if (info.targetGuid.IsEmpty() || getMSTimeDiff(info.castTime, getMSTime()) > 3000)
         return false;
 
@@ -3660,8 +3562,7 @@ bool IccLichKingAddsAction::HandleDefileMechanics(Unit* boss, Difficulty diff)
         return false;
 
     // Main tank yells once per cast.
-    static std::map<uint32, uint32> s_lastYellMs;
-    uint32& lastYellMs = s_lastYellMs[bot->GetInstanceId()];
+    uint32& lastYellMs = IcecrownHelpers::IccState(bot->GetInstanceId()).lkLastYellMs;
     if (botAI->IsMainTank(bot) && info.castTime != lastYellMs)
     {
         botAI->Yell("Defile on " + target->GetName() + " - move to the edge!");
@@ -3814,13 +3715,10 @@ bool IccLichKingAddsAction::HandleValkyrMechanics(Difficulty diff)
 
     // Defile target: let HandleDefileMechanics() handle movement
     // (perpendicular run). Don't override with Val'kyr chase.
-    auto const defileIt = IcecrownHelpers::defileCast.find(bot->GetInstanceId());
-    if (defileIt != IcecrownHelpers::defileCast.end())
-    {
-        auto const& defileInfo = defileIt->second;
-        if (!defileInfo.targetGuid.IsEmpty() && getMSTimeDiff(defileInfo.castTime, getMSTime()) <= 3000 && defileInfo.targetGuid == bot->GetGUID())
-            return false;
-    }
+    auto const& defileInfo = IcecrownHelpers::IccState(bot->GetInstanceId()).defileCast;
+    if (!defileInfo.targetGuid.IsEmpty() && getMSTimeDiff(defileInfo.castTime, getMSTime()) <= 3000 &&
+        defileInfo.targetGuid == bot->GetGUID())
+        return false;
 
     HandleValkyrMarking(grabbingValkyrs, diff);
     HandleValkyrAssignment(grabbingValkyrs);
@@ -3839,7 +3737,8 @@ bool IccLichKingAddsAction::HandleValkyrMarking(std::vector<Unit*> const& grabbi
     std::sort(sorted.begin(), sorted.end(),
               [](Unit* a, Unit* b) { return a->GetGUID() < b->GetGUID(); });
 
-    static constexpr std::array<uint8, 3> Icons = {7, 6, 0};  // Skull, Cross, Star
+    static constexpr std::array<uint8, 3> Icons = {RtiTargetValue::skullIndex, RtiTargetValue::crossIndex,
+                                                   RtiTargetValue::starIndex};
 
     // Heroic: clear stale markers for Val'kyrs no longer grabbing or at wrong Z
     if (IsHeroicLk(diff))
@@ -3872,7 +3771,7 @@ bool IccLichKingAddsAction::HandleValkyrMarking(std::vector<Unit*> const& grabbi
 
         if (iconIdx == 7)
         {
-            Unit* currentSkull = botAI->GetUnit(group->GetTargetIcon(7));
+            Unit* currentSkull = botAI->GetUnit(group->GetTargetIcon(RtiTargetValue::skullIndex));
             if (currentSkull && currentSkull->IsAlive() && IsLkRagingSpirit(currentSkull->GetEntry()))
                 continue;
         }
@@ -3928,14 +3827,14 @@ bool IccLichKingAddsAction::HandleValkyrAssignment(std::vector<Unit*> const& gra
         return false;
 
     size_t const myIndex = std::distance(assistMembers.begin(), it);
-    auto const groupSizes = CalculateBalancedGroupSizes(assistMembers.size(), valid.size());
-    size_t const valkyrIndex = GetAssignedValkyrIndex(myIndex, groupSizes);
+    auto const groupSizes = IccBalancedGroupSizes(assistMembers.size(), valid.size());
+    size_t const valkyrIndex = IccAssignedBucketIndex(myIndex, groupSizes);
 
     if (valkyrIndex >= valid.size())
         return false;
 
     Unit* myValkyr = valid[valkyrIndex];
-    context->GetValue<std::string>("rti")->Set(GetRTIValueForValkyr(valkyrIndex));
+    context->GetValue<std::string>("rti")->Set(IccRtiNameForBucket(valkyrIndex));
 
     Attack(myValkyr);
 
@@ -4010,13 +3909,10 @@ bool IccLichKingAddsAction::HandleVileSpiritMechanics()
     // Defile target: let HandleDefileMechanics() handle movement
     // (perpendicular run). Don't override with spirit chase or slot
     // movement.
-    auto const defileIt = IcecrownHelpers::defileCast.find(bot->GetInstanceId());
-    if (defileIt != IcecrownHelpers::defileCast.end())
-    {
-        auto const& defileInfo = defileIt->second;
-        if (!defileInfo.targetGuid.IsEmpty() && getMSTimeDiff(defileInfo.castTime, getMSTime()) <= 3000 && defileInfo.targetGuid == bot->GetGUID())
-            return false;
-    }
+    auto const& defileInfo = IcecrownHelpers::IccState(bot->GetInstanceId()).defileCast;
+    if (!defileInfo.targetGuid.IsEmpty() && getMSTimeDiff(defileInfo.castTime, getMSTime()) <= 3000 &&
+        defileInfo.targetGuid == bot->GetGUID())
+        return false;
 
     GuidVector const& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
 
@@ -4044,11 +3940,7 @@ bool IccLichKingAddsAction::HandleVileSpiritMechanics()
     // Shared raid-wide slot choice. All bots converge on the same position so
     // they stay stacked. Reset when no spirits are alive. Keyed per-instance to
     // avoid cross-instance pollution when multiple ICCs run simultaneously.
-    static std::map<uint32, int> s_sharedSlotByInstance;
-    auto sharedSlotIt = s_sharedSlotByInstance.find(bot->GetInstanceId());
-    if (sharedSlotIt == s_sharedSlotByInstance.end())
-        sharedSlotIt = s_sharedSlotByInstance.emplace(bot->GetInstanceId(), -1).first;
-    int& sharedSlot = sharedSlotIt->second;
+    int& sharedSlot = IcecrownHelpers::IccState(bot->GetInstanceId()).lkSharedSlot;
 
     if (spiritCount == 0)
     {
@@ -4359,7 +4251,7 @@ bool IccLichKingAddsAction::HandleIceSphereMechanics()
     if (!group)
         return false;
 
-    static constexpr uint8 SPHERE_ICON = 1;  // Diamond
+    static constexpr uint8 SPHERE_ICON = RtiTargetValue::circleIndex;
 
     GuidVector const& npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
 
@@ -4412,55 +4304,6 @@ bool IccLichKingAddsAction::HandleIceSphereMechanics()
 bool IccLichKingAddsAction::IsValkyr(Unit* unit)
 {
     return IsLkValkyr(unit);
-}
-
-std::vector<size_t> IccLichKingAddsAction::CalculateBalancedGroupSizes(size_t totalAssist,
-                                                                       size_t numValkyrs)
-{
-    std::vector<size_t> groupSizes(numValkyrs, 0);
-    if (numValkyrs == 0)
-        return groupSizes;
-
-    size_t const baseSize = totalAssist / numValkyrs;
-    size_t const remainder = totalAssist % numValkyrs;
-
-    for (size_t i = 0; i < numValkyrs; ++i)
-    {
-        groupSizes[i] = baseSize;
-        if (i < remainder)
-            ++groupSizes[i];
-    }
-
-    return groupSizes;
-}
-
-size_t IccLichKingAddsAction::GetAssignedValkyrIndex(size_t assistIndex,
-                                                      std::vector<size_t> const& groupSizes)
-{
-    size_t cursor = 0;
-    for (size_t valkyrIndex = 0; valkyrIndex < groupSizes.size(); ++valkyrIndex)
-    {
-        if (assistIndex < cursor + groupSizes[valkyrIndex])
-            return valkyrIndex;
-        cursor += groupSizes[valkyrIndex];
-    }
-
-    return 0;  // fallback
-}
-
-std::string IccLichKingAddsAction::GetRTIValueForValkyr(size_t valkyrIndex)
-{
-    switch (valkyrIndex)
-    {
-        case 0:
-            return "skull";
-        case 1:
-            return "cross";
-        case 2:
-            return "star";
-        default:
-            return "skull";
-    }
 }
 
 bool IccLichKingAddsAction::ApplyCCToValkyr(Unit* valkyr)

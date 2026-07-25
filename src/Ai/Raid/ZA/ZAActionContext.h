@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_ZAACTIONCONTEXT_H
@@ -108,95 +109,102 @@ public:
 
 private:
     // Trash
-    static Action* amanishi_medicine_man_mark_ward(
-        PlayerbotAI* botAI) { return new AmanishiMedicineManMarkWardAction(botAI); }
+    static Action* amanishi_medicine_man_mark_ward(PlayerbotAI* botAI) {
+        return new AmanishiMedicineManMarkWardAction(botAI);
+    }
 
     // Akil'zon <Eagle Avatar>
-    static Action* akilzon_misdirect_boss_to_main_tank(
-        PlayerbotAI* botAI) { return new AkilzonMisdirectBossToMainTankAction(botAI); }
-
-    static Action* akilzon_tanks_position_boss(
-        PlayerbotAI* botAI) { return new AkilzonTanksPositionBossAction(botAI); }
-
-    static Action* akilzon_spread_ranged(
-        PlayerbotAI* botAI) { return new AkilzonSpreadRangedAction(botAI); }
-
-    static Action* akilzon_move_to_eye_of_the_storm(
-        PlayerbotAI* botAI) { return new AkilzonMoveToEyeOfTheStormAction(botAI); }
-
-    static Action* akilzon_manage_electrical_storm_timer(
-        PlayerbotAI* botAI) { return new AkilzonManageElectricalStormTimerAction(botAI); }
+    static Action* akilzon_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
+        return new AkilzonMisdirectBossToMainTankAction(botAI);
+    }
+    static Action* akilzon_tanks_position_boss(PlayerbotAI* botAI) {
+        return new AkilzonTanksPositionBossAction(botAI);
+    }
+    static Action* akilzon_spread_ranged(PlayerbotAI* botAI) {
+        return new AkilzonSpreadRangedAction(botAI);
+    }
+    static Action* akilzon_move_to_eye_of_the_storm(PlayerbotAI* botAI) {
+        return new AkilzonMoveToEyeOfTheStormAction(botAI);
+    }
+    static Action* akilzon_manage_electrical_storm_timer(PlayerbotAI* botAI) {
+        return new AkilzonManageElectricalStormTimerAction(botAI);
+    }
 
     // Nalorakk <Bear Avatar>
-    static Action* nalorakk_misdirect_boss_to_main_tank(
-        PlayerbotAI* botAI) { return new NalorakkMisdirectBossToMainTankAction(botAI); }
-
-    static Action* nalorakk_tanks_position_boss(
-        PlayerbotAI* botAI) { return new NalorakkTanksPositionBossAction(botAI); }
-
-    static Action* nalorakk_spread_ranged(
-        PlayerbotAI* botAI) { return new NalorakkSpreadRangedAction(botAI); }
+    static Action* nalorakk_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
+        return new NalorakkMisdirectBossToMainTankAction(botAI);
+    }
+    static Action* nalorakk_tanks_position_boss(PlayerbotAI* botAI) {
+        return new NalorakkTanksPositionBossAction(botAI);
+    }
+    static Action* nalorakk_spread_ranged(PlayerbotAI* botAI) {
+        return new NalorakkSpreadRangedAction(botAI);
+    }
 
     // Jan'alai <Dragonhawk Avatar>
-    static Action* janalai_misdirect_boss_to_main_tank(
-        PlayerbotAI* botAI) { return new JanalaiMisdirectBossToMainTankAction(botAI); }
-
-    static Action* janalai_tanks_position_boss(
-        PlayerbotAI* botAI) { return new JanalaiTanksPositionBossAction(botAI); }
-
-    static Action* janalai_spread_ranged_in_circle(
-        PlayerbotAI* botAI) { return new JanalaiSpreadRangedInCircleAction(botAI); }
-
-    static Action* janalai_avoid_fire_bombs(
-        PlayerbotAI* botAI) { return new JanalaiAvoidFireBombsAction(botAI); }
-
-    static Action* janalai_mark_amanishi_hatchers(
-        PlayerbotAI* botAI) { return new JanalaiMarkAmanishiHatchersAction(botAI); }
+    static Action* janalai_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
+        return new JanalaiMisdirectBossToMainTankAction(botAI);
+    }
+    static Action* janalai_tanks_position_boss(PlayerbotAI* botAI) {
+        return new JanalaiTanksPositionBossAction(botAI);
+    }
+    static Action* janalai_spread_ranged_in_circle(PlayerbotAI* botAI) {
+        return new JanalaiSpreadRangedInCircleAction(botAI);
+    }
+    static Action* janalai_avoid_fire_bombs(PlayerbotAI* botAI) {
+        return new JanalaiAvoidFireBombsAction(botAI);
+    }
+    static Action* janalai_mark_amanishi_hatchers(PlayerbotAI* botAI) {
+        return new JanalaiMarkAmanishiHatchersAction(botAI);
+    }
 
     // Halazzi <Lynx Avatar>
-    static Action* halazzi_misdirect_boss_to_main_tank(
-        PlayerbotAI* botAI) { return new HalazziMisdirectBossToMainTankAction(botAI); }
-
-    static Action* halazzi_main_tank_position_boss(
-        PlayerbotAI* botAI) { return new HalazziMainTankPositionBossAction(botAI); }
-
-    static Action* halazzi_first_assist_tank_attack_spirit_lynx(
-        PlayerbotAI* botAI) { return new HalazziFirstAssistTankAttackSpiritLynxAction(botAI); }
-
-    static Action* halazzi_assign_dps_priority(
-        PlayerbotAI* botAI) { return new HalazziAssignDpsPriorityAction(botAI); }
+    static Action* halazzi_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
+        return new HalazziMisdirectBossToMainTankAction(botAI);
+    }
+    static Action* halazzi_main_tank_position_boss(PlayerbotAI* botAI) {
+        return new HalazziMainTankPositionBossAction(botAI);
+    }
+    static Action* halazzi_first_assist_tank_attack_spirit_lynx(PlayerbotAI* botAI) {
+        return new HalazziFirstAssistTankAttackSpiritLynxAction(botAI);
+    }
+    static Action* halazzi_assign_dps_priority(PlayerbotAI* botAI) {
+        return new HalazziAssignDpsPriorityAction(botAI);
+    }
 
     // Hex Lord Malacrass
-    static Action* hex_lord_malacrass_misdirect_boss_to_main_tank(
-        PlayerbotAI* botAI) { return new HexLordMalacrassMisdirectBossToMainTankAction(botAI); }
-
-    static Action* hex_lord_malacrass_assign_dps_priority(
-        PlayerbotAI* botAI) { return new HexLordMalacrassAssignDpsPriorityAction(botAI); }
-
-    static Action* hex_lord_malacrass_run_away_from_whirlwind(
-        PlayerbotAI* botAI) { return new HexLordMalacrassRunAwayFromWhirlwindAction(botAI); }
-
-    static Action* hex_lord_malacrass_casters_stop_attacking(
-        PlayerbotAI* botAI) { return new HexLordMalacrassCastersStopAttackingAction(botAI); }
-
-    static Action* hex_lord_malacrass_move_away_from_freezing_trap(
-        PlayerbotAI* botAI) { return new HexLordMalacrassMoveAwayFromFreezingTrapAction(botAI); }
+    static Action* hex_lord_malacrass_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
+        return new HexLordMalacrassMisdirectBossToMainTankAction(botAI);
+    }
+    static Action* hex_lord_malacrass_assign_dps_priority(PlayerbotAI* botAI) {
+        return new HexLordMalacrassAssignDpsPriorityAction(botAI);
+    }
+    static Action* hex_lord_malacrass_run_away_from_whirlwind(PlayerbotAI* botAI) {
+        return new HexLordMalacrassRunAwayFromWhirlwindAction(botAI);
+    }
+    static Action* hex_lord_malacrass_casters_stop_attacking(PlayerbotAI* botAI) {
+        return new HexLordMalacrassCastersStopAttackingAction(botAI);
+    }
+    static Action* hex_lord_malacrass_move_away_from_freezing_trap(PlayerbotAI* botAI) {
+        return new HexLordMalacrassMoveAwayFromFreezingTrapAction(botAI);
+    }
 
     // Zul'jin
-    static Action* zuljin_misdirect_boss_to_main_tank(
-        PlayerbotAI* botAI) { return new ZuljinMisdirectBossToMainTankAction(botAI); }
-
-    static Action* zuljin_tanks_position_boss(
-        PlayerbotAI* botAI) { return new ZuljinTanksPositionBossAction(botAI); }
-
-    static Action* zuljin_run_away_from_whirlwind(
-        PlayerbotAI* botAI) { return new ZuljinRunAwayFromWhirlwindAction(botAI); }
-
-    static Action* zuljin_avoid_cyclones(
-        PlayerbotAI* botAI) { return new ZuljinAvoidCyclonesAction(botAI); }
-
-    static Action* zuljin_spread_ranged(
-        PlayerbotAI* botAI) { return new ZuljinSpreadRangedAction(botAI); }
+    static Action* zuljin_misdirect_boss_to_main_tank(PlayerbotAI* botAI) {
+        return new ZuljinMisdirectBossToMainTankAction(botAI);
+    }
+    static Action* zuljin_tanks_position_boss(PlayerbotAI* botAI) {
+        return new ZuljinTanksPositionBossAction(botAI);
+    }
+    static Action* zuljin_run_away_from_whirlwind(PlayerbotAI* botAI) {
+        return new ZuljinRunAwayFromWhirlwindAction(botAI);
+    }
+    static Action* zuljin_avoid_cyclones(PlayerbotAI* botAI) {
+        return new ZuljinAvoidCyclonesAction(botAI);
+    }
+    static Action* zuljin_spread_ranged(PlayerbotAI* botAI) {
+        return new ZuljinSpreadRangedAction(botAI);
+    }
 };
 
 #endif

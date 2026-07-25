@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "Multiplier.h"
@@ -12,17 +18,6 @@
 #include <fstream>
 #include <ctime>
 #include <limits>
-#include <unordered_map>
-
-namespace
-{
-    // Per-bot last flee direction during Gaseous Bloat. Used to prevent
-    // backtracking — once a bot commits to a direction, candidate angles
-    // pointing backward (negative dot product) are rejected so the cloud
-    // can't trap it in a back-and-forth loop. Cleared when the aura drops.
-    struct BloatDir { float x; float y; };
-    std::unordered_map<uint64, BloatDir> g_bloatLastDir;
-}
 
 // Professor Putricide
 bool IccPutricideMutatedPlagueAction::Execute(Event /*event*/)
@@ -42,51 +37,6 @@ bool IccPutricideMutatedPlagueAction::Execute(Event /*event*/)
             bot->SetTarget(ObjectGuid::Empty);
         return false;
     }
-
-    auto CastClassTaunt = [&](Unit* target) -> bool
-    {
-        if (!target || !target->IsAlive())
-            return false;
-
-        switch (bot->getClass())
-        {
-            case CLASS_PALADIN:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_PALADIN, true);
-                if (botAI->CastSpell("hand of reckoning", target))
-                    return true;
-                break;
-            }
-            case CLASS_DEATH_KNIGHT:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_DK, true);
-                if (botAI->CastSpell("dark command", target))
-                    return true;
-                break;
-            }
-            case CLASS_DRUID:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_DRUID, true);
-                if (botAI->CastSpell("growl", target))
-                    return true;
-                break;
-            }
-            case CLASS_WARRIOR:
-            {
-                bot->RemoveSpellCooldown(SPELL_TAUNT_WARRIOR, true);
-                if (botAI->CastSpell("taunt", target))
-                    return true;
-                break;
-            }
-            default:
-                break;
-        }
-
-        if (botAI->CastSpell("shoot", target) || botAI->CastSpell("throw", target))
-            return true;
-
-        return false;
-    };
 
     auto GetPlagueStacks = [&](Unit* unit) -> uint32
     {
@@ -120,7 +70,7 @@ bool IccPutricideMutatedPlagueAction::Execute(Event /*event*/)
     }
 
     if (shouldTaunt && boss->GetVictim() != bot)
-        CastClassTaunt(boss);
+        IccCastClassTaunt(bot, botAI, boss);
 
     return false;
 }
@@ -663,7 +613,7 @@ bool IccPutricideVolatileOozeAction::MarkOozeWithSkull(Unit* ooze)
     if (!group)
         return false;
 
-    constexpr uint8 skullIconId = 7;
+    constexpr uint8 skullIconId = RtiTargetValue::skullIndex;
     ObjectGuid skullGuid = group->GetTargetIcon(skullIconId);
     Unit* markedUnit = botAI->GetUnit(skullGuid);
 
@@ -745,15 +695,17 @@ bool IccPutricideGasCloudAction::Execute(Event /*event*/)
 
 bool IccPutricideGasCloudAction::HandleGaseousBloatMovement(Unit* gasCloud)
 {
+    auto& g_bloatLastDir = IcecrownHelpers::IccState(bot->GetMap()->GetInstanceId()).ppBloatLastDir;
+
     if (!botAI->HasAura("Gaseous Bloat", bot))
     {
-        g_bloatLastDir.erase(bot->GetGUID().GetRawValue());
+        g_bloatLastDir.erase(bot->GetGUID());
         return false;
     }
 
     // Lookup prior committed flee direction (if any) so we can reject
     // backtracking candidates this tick.
-    uint64 botKey = bot->GetGUID().GetRawValue();
+    ObjectGuid botKey = bot->GetGUID();
     auto lastDirIt = g_bloatLastDir.find(botKey);
     bool hasLastDir = lastDirIt != g_bloatLastDir.end();
     float lastDirX = hasLastDir ? lastDirIt->second.x : 0.0f;
@@ -1110,7 +1062,7 @@ bool IccPutricideGasCloudAction::HandleGroupAuraSituation(Unit* gasCloud)
         return false;
 
     constexpr float rangeMinSafeDistance = 15.0f;
-    constexpr uint8 skullIconId = 7;
+    constexpr uint8 skullIconId = RtiTargetValue::skullIndex;
 
     Unit* volatileOoze = AI_VALUE2(Unit*, "find target", "volatile ooze");
     if ((!volatileOoze || !volatileOoze->IsAlive()) && gasCloud && gasCloud->IsAlive())
@@ -1178,33 +1130,21 @@ bool IccPutricideAvoidMalleableGooAction::Execute(Event /*event*/)
     // boss for Mutated Plague healing.
     if (!boss->HealthBelowPct(35))
     {
-        constexpr uint32 impactLifetimeMs = 6000;
         constexpr float gooDangerRadius = 8.0f;   // 5yd AoE + 3yd safety
         constexpr float puddleAvoidRadius = 6.0f;
 
-        uint32 now = getMSTime();
         float botX = bot->GetPositionX();
         float botY = bot->GetPositionY();
         float botZ = bot->GetPositionZ();
 
-        // Collect active goo impacts
-        std::vector<Position> goos;
-        goos.reserve(4);
+        std::vector<Position> goos = IcecrownHelpers::ActiveGooPositions(bot->GetMap()->GetInstanceId(), 6000);
         bool botInDanger = false;
-        auto impactIt = IcecrownHelpers::malleableGooImpacts.find(bot->GetMap()->GetInstanceId());
-        if (impactIt != IcecrownHelpers::malleableGooImpacts.end())
+        for (Position const& goo : goos)
         {
-            for (auto const& impact : impactIt->second)
-            {
-                if (getMSTimeDiff(impact.castTime, now) > impactLifetimeMs)
-                    continue;
-                goos.push_back(impact.position);
-
-                float dx = botX - impact.position.GetPositionX();
-                float dy = botY - impact.position.GetPositionY();
-                if (dx * dx + dy * dy < gooDangerRadius * gooDangerRadius)
-                    botInDanger = true;
-            }
+            float dx = botX - goo.GetPositionX();
+            float dy = botY - goo.GetPositionY();
+            if (dx * dx + dy * dy < gooDangerRadius * gooDangerRadius)
+                botInDanger = true;
         }
 
         if (botInDanger)
@@ -1331,7 +1271,7 @@ bool IccPutricideAvoidMalleableGooAction::HandleTankPositioning(Unit* boss)
     {
         if (Group* group = bot->GetGroup())
         {
-            constexpr uint8 skullIconId = 7;
+            constexpr uint8 skullIconId = RtiTargetValue::skullIndex;
             ObjectGuid skullGuid = group->GetTargetIcon(skullIconId);
             Unit* markedUnit = botAI->GetUnit(skullGuid);
             if (!skullGuid || !markedUnit || !markedUnit->IsAlive())

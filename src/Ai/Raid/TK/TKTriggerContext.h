@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_TKTRIGGERCONTEXT_H
 #define PLAYERBOTS_TKTRIGGERCONTEXT_H
 
@@ -137,129 +143,134 @@ public:
 
 private:
     // Trash
-    static Trigger* crimson_hand_centurion_casts_arcane_volley(
-        PlayerbotAI* botAI) { return new CrimsonHandCenturionCastsArcaneVolleyTrigger(botAI); }
+    static Trigger* crimson_hand_centurion_casts_arcane_volley(PlayerbotAI* botAI) {
+        return new CrimsonHandCenturionCastsArcaneVolleyTrigger(botAI);
+    }
 
     // Al'ar <Phoenix God>
-    static Trigger* alar_pulling_boss(
-        PlayerbotAI* botAI) { return new AlarPullingBossTrigger(botAI); }
-
-    static Trigger* alar_boss_is_flying_between_platforms(
-        PlayerbotAI* botAI) { return new AlarBossIsFlyingBetweenPlatformsTrigger(botAI); }
-
-    static Trigger* alar_embers_of_alar_explode_upon_death(
-        PlayerbotAI* botAI) { return new AlarEmbersOfAlarExplodeUponDeathTrigger(botAI); }
-
-    static Trigger* alar_killing_embers_of_alar_damages_boss(
-        PlayerbotAI* botAI) { return new AlarKillingEmbersOfAlarDamagesBossTrigger(botAI); }
-
-    static Trigger* alar_incoming_flame_quills(
-        PlayerbotAI* botAI) { return new AlarIncomingFlameQuillsTrigger(botAI); }
-
-    static Trigger* alar_rising_from_the_ashes(
-        PlayerbotAI* botAI) { return new AlarRisingFromTheAshesTrigger(botAI); }
-
-    static Trigger* alar_everything_is_on_fire_in_phase_2(
-        PlayerbotAI* botAI) { return new AlarEverythingIsOnFireInPhase2Trigger(botAI); }
-
-    static Trigger* alar_phase_2_encounter_is_at_room_center(
-        PlayerbotAI* botAI) { return new AlarPhase2EncounterIsAtRoomCenterTrigger(botAI); }
-
-    static Trigger* alar_strategy_changes_between_phases(
-        PlayerbotAI* botAI) { return new AlarStrategyChangesBetweenPhasesTrigger(botAI); }
+    static Trigger* alar_pulling_boss(PlayerbotAI* botAI) {
+        return new AlarPullingBossTrigger(botAI);
+    }
+    static Trigger* alar_boss_is_flying_between_platforms(PlayerbotAI* botAI) {
+        return new AlarBossIsFlyingBetweenPlatformsTrigger(botAI);
+    }
+    static Trigger* alar_embers_of_alar_explode_upon_death(PlayerbotAI* botAI) {
+        return new AlarEmbersOfAlarExplodeUponDeathTrigger(botAI);
+    }
+    static Trigger* alar_killing_embers_of_alar_damages_boss(PlayerbotAI* botAI) {
+        return new AlarKillingEmbersOfAlarDamagesBossTrigger(botAI);
+    }
+    static Trigger* alar_incoming_flame_quills(PlayerbotAI* botAI) {
+        return new AlarIncomingFlameQuillsTrigger(botAI);
+    }
+    static Trigger* alar_rising_from_the_ashes(PlayerbotAI* botAI) {
+        return new AlarRisingFromTheAshesTrigger(botAI);
+    }
+    static Trigger* alar_everything_is_on_fire_in_phase_2(PlayerbotAI* botAI) {
+        return new AlarEverythingIsOnFireInPhase2Trigger(botAI);
+    }
+    static Trigger* alar_phase_2_encounter_is_at_room_center(PlayerbotAI* botAI) {
+        return new AlarPhase2EncounterIsAtRoomCenterTrigger(botAI);
+    }
+    static Trigger* alar_strategy_changes_between_phases(PlayerbotAI* botAI) {
+        return new AlarStrategyChangesBetweenPhasesTrigger(botAI);
+    }
 
     // Void Reaver
-    static Trigger* void_reaver_boss_casts_pounding(
-        PlayerbotAI* botAI) { return new VoidReaverBossCastsPoundingTrigger(botAI); }
-
-    static Trigger* void_reaver_knock_away_reduces_tank_aggro(
-        PlayerbotAI* botAI) { return new VoidReaverKnockAwayReducesTankAggroTrigger(botAI); }
-
-    static Trigger* void_reaver_boss_launches_arcane_orbs(
-        PlayerbotAI* botAI) { return new VoidReaverBossLaunchesArcaneOrbsTrigger(botAI); }
-
-    static Trigger* void_reaver_arcane_orb_is_incoming(
-        PlayerbotAI* botAI) { return new VoidReaverArcaneOrbIsIncomingTrigger(botAI); }
-
-    static Trigger* void_reaver_bot_is_not_in_combat(
-        PlayerbotAI* botAI) { return new VoidReaverBotIsNotInCombatTrigger(botAI); }
+    static Trigger* void_reaver_boss_casts_pounding(PlayerbotAI* botAI) {
+        return new VoidReaverBossCastsPoundingTrigger(botAI);
+    }
+    static Trigger* void_reaver_knock_away_reduces_tank_aggro(PlayerbotAI* botAI) {
+        return new VoidReaverKnockAwayReducesTankAggroTrigger(botAI);
+    }
+    static Trigger* void_reaver_boss_launches_arcane_orbs(PlayerbotAI* botAI) {
+        return new VoidReaverBossLaunchesArcaneOrbsTrigger(botAI);
+    }
+    static Trigger* void_reaver_arcane_orb_is_incoming(PlayerbotAI* botAI) {
+        return new VoidReaverArcaneOrbIsIncomingTrigger(botAI);
+    }
+    static Trigger* void_reaver_bot_is_not_in_combat(PlayerbotAI* botAI) {
+        return new VoidReaverBotIsNotInCombatTrigger(botAI);
+    }
 
     // High Astromancer Solarian
-    static Trigger* high_astromancer_solarian_boss_casts_wrath_of_the_astromancer(
-        PlayerbotAI* botAI) { return new HighAstromancerSolarianBossCastsWrathOfTheAstromancerTrigger(botAI); }
-
-    static Trigger* high_astromancer_solarian_bot_has_wrath_of_the_astromancer(
-        PlayerbotAI* botAI) { return new HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger(botAI); }
-
-    static Trigger* high_astromancer_solarian_boss_has_vanished(
-        PlayerbotAI* botAI) { return new HighAstromancerSolarianBossHasVanishedTrigger(botAI); }
-
-    static Trigger* high_astromancer_solarian_solarium_priests_spawned(
-        PlayerbotAI* botAI) { return new HighAstromancerSolarianSolariumPriestsSpawnedTrigger(botAI); }
-
-    static Trigger* high_astromancer_solarian_boss_casts_psychic_scream(
-        PlayerbotAI* botAI) { return new HighAstromancerSolarianBossCastsPsychicScreamTrigger(botAI); }
+    static Trigger* high_astromancer_solarian_boss_casts_wrath_of_the_astromancer(PlayerbotAI* botAI) {
+        return new HighAstromancerSolarianBossCastsWrathOfTheAstromancerTrigger(botAI);
+    }
+    static Trigger* high_astromancer_solarian_bot_has_wrath_of_the_astromancer(PlayerbotAI* botAI) {
+        return new HighAstromancerSolarianBotHasWrathOfTheAstromancerTrigger(botAI);
+    }
+    static Trigger* high_astromancer_solarian_boss_has_vanished(PlayerbotAI* botAI) {
+        return new HighAstromancerSolarianBossHasVanishedTrigger(botAI);
+    }
+    static Trigger* high_astromancer_solarian_solarium_priests_spawned(PlayerbotAI* botAI) {
+        return new HighAstromancerSolarianSolariumPriestsSpawnedTrigger(botAI);
+    }
+    static Trigger* high_astromancer_solarian_boss_casts_psychic_scream(PlayerbotAI* botAI) {
+        return new HighAstromancerSolarianBossCastsPsychicScreamTrigger(botAI);
+    }
 
     // Kael'thas Sunstrider <Lord of the Blood Elves>
-    static Trigger* kaelthas_sunstrider_thaladred_is_fixated_on_bot(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderThaladredIsFixatedOnBotTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_pulling_tankable_advisors(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderPullingTankableAdvisorsTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_sanguinar_engaged_by_main_tank(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderSanguinarEngagedByMainTankTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_sanguinar_casts_bellowing_roar(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderSanguinarCastsBellowingRoarTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_capernian_should_be_tanked_by_a_warlock(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderCapernianShouldBeTankedByAWarlockTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_capernian_casts_arcane_burst_and_conflagration(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderCapernianCastsArcaneBurstAndConflagrationTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_telonicus_engaged_by_first_assist_tank(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_bots_have_specific_roles_in_phase_3(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderBotsHaveSpecificRolesInPhase3Trigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_determining_advisor_kill_order(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderDeterminingAdvisorKillOrderTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_waiting_for_tanks_to_get_aggro_on_advisors(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_legendary_weapons_are_alive(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderLegendaryWeaponsAreAliveTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_legendary_axe_casts_whirlwind(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_legendary_weapons_are_dead_and_lootable(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_legendary_weapons_are_equipped(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_legendary_weapons_were_lost(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderLegendaryWeaponsWereLostTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_boss_has_entered_the_fight(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderBossHasEnteredTheFightTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_raid_member_is_mind_controlled(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderRaidMemberIsMindControlledTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_phoenixes_and_eggs_are_spawning(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderPhoenixesAndEggsAreSpawningTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_boss_is_casting_pyroblast(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderBossIsCastingPyroblastTrigger(botAI); }
-
-    static Trigger* kaelthas_sunstrider_boss_is_manipulating_gravity(
-        PlayerbotAI* botAI) { return new KaelthasSunstriderBossIsManipulatingGravityTrigger(botAI); }
+    static Trigger* kaelthas_sunstrider_thaladred_is_fixated_on_bot(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderThaladredIsFixatedOnBotTrigger(botAI);
+    }
+    static Trigger* kaelthas_sunstrider_pulling_tankable_advisors(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderPullingTankableAdvisorsTrigger(botAI);
+    }
+    static Trigger* kaelthas_sunstrider_sanguinar_engaged_by_main_tank(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderSanguinarEngagedByMainTankTrigger(botAI);
+    }
+    static Trigger* kaelthas_sunstrider_sanguinar_casts_bellowing_roar(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderSanguinarCastsBellowingRoarTrigger(botAI);
+    }
+    static Trigger* kaelthas_sunstrider_capernian_should_be_tanked_by_a_warlock(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderCapernianShouldBeTankedByAWarlockTrigger(botAI);
+    }
+    static Trigger* kaelthas_sunstrider_capernian_casts_arcane_burst_and_conflagration(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderCapernianCastsArcaneBurstAndConflagrationTrigger(botAI);
+    }
+    static Trigger* kaelthas_sunstrider_telonicus_engaged_by_first_assist_tank(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderTelonicusEngagedByFirstAssistTankTrigger(botAI);
+    }
+    static Trigger* kaelthas_sunstrider_bots_have_specific_roles_in_phase_3(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderBotsHaveSpecificRolesInPhase3Trigger(botAI);
+    }
+    static Trigger* kaelthas_sunstrider_determining_advisor_kill_order(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderDeterminingAdvisorKillOrderTrigger(botAI);
+    }
+    static Trigger* kaelthas_sunstrider_waiting_for_tanks_to_get_aggro_on_advisors(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderWaitingForTanksToGetAggroOnAdvisorsTrigger(botAI);
+    }
+    static Trigger* kaelthas_sunstrider_legendary_weapons_are_alive(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderLegendaryWeaponsAreAliveTrigger(botAI);
+    }
+    static Trigger* kaelthas_sunstrider_legendary_axe_casts_whirlwind(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderLegendaryAxeCastsWhirlwindTrigger(botAI);
+    }
+    static Trigger* kaelthas_sunstrider_legendary_weapons_are_dead_and_lootable(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderLegendaryWeaponsAreDeadAndLootableTrigger(botAI);
+    }
+    static Trigger* kaelthas_sunstrider_legendary_weapons_are_equipped(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderLegendaryWeaponsAreEquippedTrigger(botAI);
+    }
+    static Trigger* kaelthas_sunstrider_legendary_weapons_were_lost(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderLegendaryWeaponsWereLostTrigger(botAI);
+    }
+    static Trigger* kaelthas_sunstrider_boss_has_entered_the_fight(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderBossHasEnteredTheFightTrigger(botAI);
+    }
+    static Trigger* kaelthas_sunstrider_raid_member_is_mind_controlled(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderRaidMemberIsMindControlledTrigger(botAI);
+    }
+    static Trigger* kaelthas_sunstrider_phoenixes_and_eggs_are_spawning(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderPhoenixesAndEggsAreSpawningTrigger(botAI);
+    }
+    static Trigger* kaelthas_sunstrider_boss_is_casting_pyroblast(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderBossIsCastingPyroblastTrigger(botAI);
+    }
+    static Trigger* kaelthas_sunstrider_boss_is_manipulating_gravity(PlayerbotAI* botAI) {
+        return new KaelthasSunstriderBossIsManipulatingGravityTrigger(botAI);
+    }
 };
 
 #endif

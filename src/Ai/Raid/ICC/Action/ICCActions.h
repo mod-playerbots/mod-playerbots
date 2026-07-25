@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #ifndef PLAYERBOTS_ICCACTIONS_H
 #define PLAYERBOTS_ICCACTIONS_H
 
@@ -20,6 +26,8 @@
 #include "GridNotifiersImpl.h"
 #include "Vehicle.h"
 #include "ICCTriggers.h"
+#include "ICCScripts.h"
+#include "ICCShared.h"
 
 inline const Position ICC_LM_TANK_POSITION = Position(-391.0f, 2259.0f, 42.0f);
 inline const Position ICC_LM_BONE_STORM_AT_POSITION = Position(-390.02332f, 2179.3481f, 41.96729f);
@@ -110,8 +118,8 @@ inline const Position ICC_SINDRAGOSA_UNCHAINEDMAGIC4_POSITION = Position(4459.93
 inline const Position ICC_SINDRAGOSA_UNCHAINEDMAGIC5_POSITION = Position(4442.3096f, 2512.4688f, 203.38647f);
 inline const Position ICC_SINDRAGOSA_CENTER_POSITION = Position(4408.0464f, 2484.478f, 203.37529f);
 inline const Position ICC_SINDRAGOSA_THOMBMB2_POSITION = Position(4436.895f, 2498.1401f, 203.38133f);
-inline const Position ICC_SINDRAGOSA_FBOMB_POSITION = Position(4449.3647f, 2486.4524f, 203.379f);
-inline const Position ICC_SINDRAGOSA_FBOMB10_POSITION = Position(4449.3647f, 2486.4524f, 203.379f);
+inline const Position ICC_SINDRAGOSA_FBOMB_POSITION = Position(4453.861f, 2485.524f, 203.3787f);
+inline const Position ICC_SINDRAGOSA_FBOMB10_POSITION = Position(4453.861f, 2485.524f, 203.3787f);
 inline const Position ICC_SINDRAGOSA_LOS2_POSITION = Position(4441.8286f, 2501.946f, 203.38435f);
 inline const Position ICC_LICH_KING_ADDS_POSITION = Position(476.7332f, -2095.3894f, 840.857f);  // old 486.63647f, -2095.7915f, 840.857f
 inline const Position ICC_LICH_KING_MELEE_POSITION = Position(503.5546f, -2106.8213f, 840.857f);
@@ -150,9 +158,6 @@ public:
     bool HandleNoSpikesMarking(Unit* boss);
     bool HandleSpikeAssignment(std::vector<Unit*> const& spikes, Unit* boss);
     bool MoveTowardPosition(Position const& position, float incrementSize);
-    static std::vector<size_t> CalculateBalancedGroupSizes(size_t totalMembers, size_t numSpikes);
-    static size_t GetAssignedSpikeIndex(size_t memberIndex, std::vector<size_t> const& groupSizes);
-    static std::string GetRTIValueForSpike(size_t spikeIndex);
     bool IsSpikeInColdFlame(Unit* spike);
     static Player* GetSpikeVictim(Unit* spike);
 };
@@ -184,7 +189,6 @@ public:
     bool Execute(Event event) override;
 
     bool IsTargetedByShade(uint32 shadeEntry);
-    bool MoveTowardPosition(Position const& position, float incrementSize);
     bool HandleAddTargeting(Unit* boss);
     bool UpdateRaidTargetIcon(Unit* target);
     bool HandleNonTankAddEvasion();
@@ -693,11 +697,6 @@ public:
     static constexpr float TOMB_POSITION_TOLERANCE = 0.5f;
     static constexpr float MIN_SAFE_DISTANCE = 13.0f;
     static constexpr float MOVE_TOLERANCE = 2.0f;
-    // Keyed per-instance to avoid cross-instance pollution when multiple ICCs run simultaneously
-    static std::map<uint32, std::set<int>> s_flaredRedThisPhase;
-    static std::map<uint32, bool> s_flaredBluePhase3;
-    static std::map<uint32, bool> s_lastPhase3;
-    static uint32 s_nextFlareMs;
     static constexpr uint32 FLARE_ITEM_COOLDOWN_MS = 1000;
 };
 
@@ -759,31 +758,6 @@ private:
     std::vector<Unit*> SelectTombs(std::vector<Unit*> const& tombs, int groupIndex, int groupCount) const;
     Unit* ResolveStickyTomb(std::vector<Unit*> const& myTombs);
     bool HandleRtiMarking(Group* group, int groupIndex, std::vector<Unit*> const& myTombs, Unit* losTomb);
-    // Keyed per-instance to avoid cross-instance pollution when multiple ICCs run simultaneously
-    static std::map<std::pair<uint32, ObjectGuid>, int> s_groupAssignments;
-    static std::map<std::pair<uint32, ObjectGuid>, ObjectGuid> s_tombAssignments;
-    static std::set<std::pair<uint32, ObjectGuid>> s_freedFallback;
-
-    // Per-bot last LOS move stamp. When the LOS tomb dies/loses mark mid-walk
-    // the bot would otherwise freeze in the open. Replaying the last move for
-    // up to 2 seconds keeps it on its path until a new LOS target is chosen.
-    struct LastLosMove
-    {
-        uint32 timestampMs = 0;
-        float x = 0.0f;
-        float y = 0.0f;
-        float z = 0.0f;
-    };
-    // Keyed per-instance to avoid cross-instance pollution
-    static std::map<std::pair<uint32, ObjectGuid>, LastLosMove> s_lastLosMove;
-};
-
-class IccSindragosaTankSwapPositionAction : public AttackAction
-{
-    public:
-        IccSindragosaTankSwapPositionAction(PlayerbotAI* botAI)
-            : AttackAction(botAI, "icc sindragosa tank swap position") {}
-        bool Execute(Event event) override;
 };
 
 //LK
@@ -857,9 +831,6 @@ public:
     bool HandleIceSphereMechanics();
     bool ApplyCCToValkyr(Unit* valkyr);
     bool IsValkyr(Unit* unit);
-    std::vector<size_t> CalculateBalancedGroupSizes(size_t totalAssist, size_t numValkyrs);
-    size_t GetAssignedValkyrIndex(size_t assistIndex, std::vector<size_t> const& groupSizes);
-    std::string GetRTIValueForValkyr(size_t valkyrIndex);
     std::pair<float, float> DefileAwareStep(float tx, float ty,
                                            std::vector<Unit*> const& defiles,
                                            Difficulty diff);
