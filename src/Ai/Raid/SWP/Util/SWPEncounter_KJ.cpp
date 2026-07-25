@@ -1,19 +1,18 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
-
-#include <algorithm>
-#include <cmath>
-#include <unordered_set>
-#include <unordered_map>
 
 #include "SWPEncounter_KJ.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
 #include "Timer.h"
+#include <algorithm>
+#include <cmath>
+#include <unordered_set>
 
-namespace SunwellHelpers
+namespace SwpHelpers
 {
 
 // Note: Kil'jaeden's CombatReach is 15.0f
@@ -64,21 +63,21 @@ uint32 GetKiljaedenDragonManualCooldown(uint32 spellId)
     return cooldownMs ? cooldownMs : 1000;
 }
 
-bool IsKiljaedenDragonGroupTarget(PlayerbotAI* botAI, Player* bot, Player* member)
+bool IsKiljaedenDragonGroupTarget(Player* bot, Player* member)
 {
-    return member && member->IsAlive() && member != bot && !botAI->IsTank(member) &&
-        member->GetMapId() == SUNWELL_MAP_ID;
+    return member && member->IsAlive() && member != bot &&
+        member->GetMapId() == SWP_MAP_ID && !PlayerbotAI::IsTank(member);
 }
 
 uint32 GetKiljaedenDragonAppliedAuraSpell(uint32 spellId)
 {
     switch (spellId)
     {
-        case static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_HASTE):
-            return static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_HASTE);
+        case static_cast<uint32>(SwpSpells::SPELL_DRAGON_BREATH_HASTE):
+            return static_cast<uint32>(SwpSpells::SPELL_DRAGON_BREATH_HASTE);
 
-        case static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_REVITALIZE):
-            return static_cast<uint32>(SunwellSpells::SPELL_DRAGON_BREATH_REVITALIZE);
+        case static_cast<uint32>(SwpSpells::SPELL_DRAGON_BREATH_REVITALIZE):
+            return static_cast<uint32>(SwpSpells::SPELL_DRAGON_BREATH_REVITALIZE);
 
         default:
             return 0;
@@ -143,10 +142,10 @@ Position const KILJAEDEN_CENTER_POSITION =   { 1698.450f, 628.030f, 28.199f };
 
 uint32 const KILJAEDEN_DRAGON_ORB_ENTRIES[4] =
 {
-    static_cast<uint32>(SunwellObjects::GO_DRAGON_ORB_1),
-    static_cast<uint32>(SunwellObjects::GO_DRAGON_ORB_2),
-    static_cast<uint32>(SunwellObjects::GO_DRAGON_ORB_3),
-    static_cast<uint32>(SunwellObjects::GO_DRAGON_ORB_4)
+    static_cast<uint32>(SwpObjects::GO_DRAGON_ORB_1),
+    static_cast<uint32>(SwpObjects::GO_DRAGON_ORB_2),
+    static_cast<uint32>(SwpObjects::GO_DRAGON_ORB_3),
+    static_cast<uint32>(SwpObjects::GO_DRAGON_ORB_4),
 };
 
 std::unordered_set<ObjectGuid> kiljaedenTrackedArmageddonTargets;
@@ -235,22 +234,25 @@ bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position)
     }
 
     float const angleOffset = GetCenteredArcSlotAngleOffset(localSlotIndex, slotCount, M_PI);
-    float const angle =
-        Position::NormalizeOrientation(KILJAEDEN_RANGED_ARC_ORIENTATION + angleOffset);
-    float const positionX = KILJAEDEN_CENTER_POSITION.GetPositionX() + std::cos(angle) * radius;
-    float const positionY = KILJAEDEN_CENTER_POSITION.GetPositionY() + std::sin(angle) * radius;
+    float const angle = Position::NormalizeOrientation(
+        KILJAEDEN_RANGED_ARC_ORIENTATION + angleOffset);
 
-    position = Position{ positionX, positionY, KILJAEDEN_CENTER_POSITION.GetPositionZ() };
+    Position const& center = KILJAEDEN_CENTER_POSITION;
+    float const positionX = center.GetPositionX() + std::cos(angle) * radius;
+    float const positionY = center.GetPositionY() + std::sin(angle) * radius;
+
+    position = Position{ positionX, positionY, center.GetPositionZ() };
     return true;
 }
 
-void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot)
+void EnsureKiljaedenRangedAssignments(Player* bot)
 {
     Group* group = bot->GetGroup();
-    if (!group || bot->GetMapId() != SUNWELL_MAP_ID)
+    if (!group || bot->GetMapId() != SWP_MAP_ID)
         return;
 
     auto& assignments = kiljaedenEncounterStates[bot->GetInstanceId()].rangedAssignments;
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
 
     std::vector<ObjectGuid> invalidAssignments;
     for (auto const& assignment : assignments)
@@ -262,8 +264,8 @@ void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot)
             if (!member || member->GetGUID() != assignment.first)
                 continue;
 
-            found = member->GetMapId() == SUNWELL_MAP_ID &&
-                GET_PLAYERBOT_AI(member) && botAI->IsRanged(member);
+            found = member->GetMapId() == SWP_MAP_ID &&
+                botAI->IsRanged(member) && GET_PLAYERBOT_AI(member);
 
             break;
         }
@@ -302,7 +304,7 @@ void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SUNWELL_MAP_ID || !botAI->IsRanged(member) ||
+        if (!member || member->GetMapId() != SWP_MAP_ID || !botAI->IsRanged(member) ||
             !GET_PLAYERBOT_AI(member))
         {
             continue;
@@ -333,7 +335,7 @@ void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot)
         assignNextOpenSlot(member);
 }
 
-void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
+void EnsureKiljaedenRangedArmageddonAssignments(Player* bot)
 {
     struct CandidateSlotScore
     {
@@ -372,12 +374,13 @@ void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot)
     auto const& armageddons = armageddonItr->second.armageddons;
     auto const& canonicalAssignments = canonicalItr->second.rangedAssignments;
 
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     std::vector<KiljaedenRangedBotAssignment> rangedBots;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SUNWELL_MAP_ID ||
-            !GET_PLAYERBOT_AI(member) || !botAI->IsRanged(member))
+        if (!member || member->GetMapId() != SWP_MAP_ID || !botAI->IsRanged(member) ||
+            !GET_PLAYERBOT_AI(member))
         {
             continue;
         }
@@ -508,7 +511,7 @@ bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden)
 {
     return kiljaeden && kiljaeden->HasUnitState(UNIT_STATE_CASTING) &&
         kiljaeden->FindCurrentSpellBySpellId(
-            static_cast<uint32>(SunwellSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
+            static_cast<uint32>(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
 }
 
 Player* GetKiljaedenDragonOrbUser(Player* bot)
@@ -520,8 +523,8 @@ Player* GetKiljaedenDragonOrbUser(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
-            member->GetMapId() != SUNWELL_MAP_ID)
+        if (!member || !member->IsAlive() || member->GetMapId() != SWP_MAP_ID ||
+            !GET_PLAYERBOT_AI(member))
         {
             continue;
         }
@@ -561,14 +564,14 @@ bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs)
 
 bool HasKiljaedenDragonAura(Player* bot)
 {
-    return bot->HasAura(static_cast<uint32>(SunwellSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
+    return bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT));
 }
 
 Unit* GetKiljaedenControlledDragon(Player* bot)
 {
     Unit* dragon = bot->GetCharm();
     if (!dragon || !dragon->IsAlive() ||
-        dragon->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_POWER_OF_THE_BLUE_FLIGHT))
+        dragon->GetEntry() != static_cast<uint32>(SwpNpcs::NPC_POWER_OF_THE_BLUE_FLIGHT))
     {
         return nullptr;
     }
@@ -586,8 +589,7 @@ bool CastKiljaedenDragonSpell(Unit* dragon, uint32 spellId)
     return true;
 }
 
-Player* FindBestKiljaedenDragonClusterTarget(
-    PlayerbotAI* botAI, Player* bot, Unit* dragon, uint32 spellId)
+Player* FindBestKiljaedenDragonClusterTarget(Player* bot, Unit* dragon, uint32 spellId)
 {
     if (!dragon)
         return nullptr;
@@ -607,7 +609,7 @@ Player* FindBestKiljaedenDragonClusterTarget(
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* candidate = ref->GetSource();
-        if (!IsKiljaedenDragonGroupTarget(botAI, bot, candidate) ||
+        if (!IsKiljaedenDragonGroupTarget(bot, candidate) ||
             HasKiljaedenDragonApplicableAura(candidate, spellId))
         {
             continue;
@@ -619,7 +621,7 @@ Player* FindBestKiljaedenDragonClusterTarget(
              otherRef; otherRef = otherRef->next())
         {
             Player* other = otherRef->GetSource();
-            if (!IsKiljaedenDragonGroupTarget(botAI, bot, other) ||
+            if (!IsKiljaedenDragonGroupTarget(bot, other) ||
                 candidate->GetExactDist2d(other) > clusterRadius)
             {
                 continue;
@@ -675,8 +677,7 @@ Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon, uint32 spell
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->IsAlive() || member == bot ||
-            member->GetMapId() != SUNWELL_MAP_ID ||
+        if (!member || !member->IsAlive() || member == bot || member->GetMapId() != SWP_MAP_ID ||
             HasKiljaedenDragonApplicableAura(member, spellId))
         {
             continue;

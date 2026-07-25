@@ -1,17 +1,17 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
+#include "SWPEncounter_Brut.h"
+#include "Playerbots.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
 #include <vector>
 
-#include "SWPEncounter_Brut.h"
-#include "Playerbots.h"
-
-namespace SunwellHelpers
+namespace SwpHelpers
 {
 
 // Note: Brutallus's CombatReach is 18.0f
@@ -153,8 +153,7 @@ float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcW
     return angleOffset;
 }
 
-bool TryGetBrutallusAssignedPositionIndex(
-    PlayerbotAI* botAI, Player* bot, bool wantRanged, uint8& positionIndex)
+bool TryGetBrutallusAssignedPositionIndex(Player* bot, bool wantRanged, uint8& positionIndex)
 {
     Group* group = bot->GetGroup();
     if (!group)
@@ -162,7 +161,7 @@ bool TryGetBrutallusAssignedPositionIndex(
 
     if (wantRanged)
     {
-        EnsureBrutallusRangedAssignments(botAI, bot);
+        EnsureBrutallusRangedAssignments(bot);
 
         auto const instanceItr = brutallusRangedAssignments.find(bot->GetInstanceId());
         if (instanceItr == brutallusRangedAssignments.end())
@@ -177,15 +176,16 @@ bool TryGetBrutallusAssignedPositionIndex(
     }
 
     positionIndex = 0;
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SUNWELL_MAP_ID)
+        if (!member || member->GetMapId() != SWP_MAP_ID)
             continue;
 
-        if (!botAI->IsMelee(member) ||
-            botAI->IsMainTank(member) || botAI->IsAssistTankOfIndex(member, 0, true))
+        if (!botAI->IsMelee(member) || botAI->IsMainTank(member) ||
+            botAI->IsAssistTankOfIndex(member, 0, true))
         {
             continue;
         }
@@ -199,10 +199,10 @@ bool TryGetBrutallusAssignedPositionIndex(
     return false;
 }
 
-void EnsureBrutallusRangedAssignments(PlayerbotAI* botAI, Player* bot)
+void EnsureBrutallusRangedAssignments(Player* bot)
 {
     Group* group = bot->GetGroup();
-    if (!group || bot->GetMapId() != SUNWELL_MAP_ID)
+    if (!group || bot->GetMapId() != SWP_MAP_ID)
         return;
 
     auto& assignments = brutallusRangedAssignments[bot->GetInstanceId()];
@@ -232,13 +232,14 @@ void EnsureBrutallusRangedAssignments(PlayerbotAI* botAI, Player* bot)
         return true;
     };
 
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     std::vector<Player*> healers;
     std::vector<Player*> rangedDamage;
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SUNWELL_MAP_ID || !botAI->IsRanged(member))
+        if (!member || member->GetMapId() != SWP_MAP_ID || !botAI->IsRanged(member))
             continue;
 
         if (assignments.find(member->GetGUID()) != assignments.end())
@@ -270,7 +271,8 @@ bool TryGetBrutallusRangedPosition(
     if (!brutallus || rangedIndex >= BRUTALLUS_TOTAL_RANGED_POSITIONS)
         return false;
 
-    const BrutallusRangedSlotInfo slotInfo = {
+    const BrutallusRangedSlotInfo slotInfo =
+    {
         rangedIndex % 2 == 0,
         static_cast<uint8>((rangedIndex / 2) % BRUTALLUS_RANGED_POSITIONS_PER_GROUP)
     };
@@ -304,22 +306,22 @@ bool TryGetBrutallusBurnPadPosition(
         return false;
 
     static constexpr float degreeToRadian = M_PI / 180.0f;
-    static constexpr std::array<float, BRUTALLUS_TOTAL_BURN_PADS>
-        burnPadAngleOffsets = {
-            70.0f * degreeToRadian,
-            83.3f * degreeToRadian,
-            96.7f * degreeToRadian,
-            110.0f * degreeToRadian,
-            130.0f * degreeToRadian,
-            143.3f * degreeToRadian,
-            156.7f * degreeToRadian,
-            170.0f * degreeToRadian
-        };
+    static constexpr std::array<float, BRUTALLUS_TOTAL_BURN_PADS> burnPadAngleOffsets =
+    {
+        70.0f * degreeToRadian,
+        83.3f * degreeToRadian,
+        96.7f * degreeToRadian,
+        110.0f * degreeToRadian,
+        130.0f * degreeToRadian,
+        143.3f * degreeToRadian,
+        156.7f * degreeToRadian,
+        170.0f * degreeToRadian
+    };
 
-    float const mainTankAngle =
-        GetBrutallusTankAngle(brutallus, mainTank, GetBrutallusMainTankAngle(brutallus));
-    float const angle =
-        Position::NormalizeOrientation(mainTankAngle + burnPadAngleOffsets[padIndex]);
+    float const mainTankAngle = GetBrutallusTankAngle(
+        brutallus, mainTank, GetBrutallusMainTankAngle(brutallus));
+    float const angle = Position::NormalizeOrientation(
+        mainTankAngle + burnPadAngleOffsets[padIndex]);
 
     position = GetBrutallusPositionAtAngle(bot, brutallus, angle, radius);
     return true;

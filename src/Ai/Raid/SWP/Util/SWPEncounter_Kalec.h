@@ -1,23 +1,23 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_SWPENCOUNTERKALEC_H
 #define PLAYERBOTS_SWPENCOUNTERKALEC_H
 
+#include "ObjectGuid.h"
+#include "Position.h"
+#include "SWPData.h"
 #include <array>
 #include <limits>
 #include <unordered_map>
 
-#include "ObjectGuid.h"
-#include "Position.h"
-#include "SWPData.h"
-
 class Player;
 class PlayerbotAI;
 
-namespace SunwellHelpers
+namespace SwpHelpers
 {
 
 constexpr uint8 KALECGOS_TANK_COUNT = 3;
@@ -41,10 +41,12 @@ struct KalecgosEncounterState
     ObjectGuid firstEntrantGuid = ObjectGuid::Empty;
     ObjectGuid currentTankGuid = ObjectGuid::Empty;
     ObjectGuid activeRiftOutgoingTankGuid = ObjectGuid::Empty;
-    std::array<ObjectGuid, KALECGOS_TANK_COUNT> tankAssignmentGuids = {
+    std::array<ObjectGuid, KALECGOS_TANK_COUNT> tankAssignmentGuids =
+    {
         ObjectGuid::Empty, ObjectGuid::Empty, ObjectGuid::Empty
     };
-    std::array<ObjectGuid, KALECGOS_TANK_COUNT> tankPortalRotationGuids = {
+    std::array<ObjectGuid, KALECGOS_TANK_COUNT> tankPortalRotationGuids =
+    {
         ObjectGuid::Empty, ObjectGuid::Empty, ObjectGuid::Empty
     };
     std::unordered_map<ObjectGuid, uint8> playerToGroup;
@@ -58,13 +60,13 @@ extern std::unordered_map<ObjectGuid, KalecgosRealmState> kalecgosRealmStates;
 
 bool IsExhausted(Player* bot);
 bool IsInSpectralRealm(Player* bot);
-bool IsKalecgosDecurser(PlayerbotAI* botAI, Player* bot);
-void EnsureKalecgosGroupAssignments(PlayerbotAI* botAI, Player* bot);
-Player* GetKalecgosCurrentTank(PlayerbotAI* botAI, Player* bot);
-Player* GetKalecgosReplacementTank(PlayerbotAI* botAI, Player* bot);
-bool ShouldEnterKalecgosSpectralRift(PlayerbotAI* botAI, Player* bot);
-void RecordKalecgosSpectralBlastTarget(PlayerbotAI* botAI, Player* bot);
-void RecordKalecgosSpectralRealmEnter(PlayerbotAI* botAI, Player* bot);
+bool IsKalecgosDecurser(Player* bot);
+void EnsureKalecgosGroupAssignments(Player* bot);
+Player* GetKalecgosCurrentTank(Player* bot);
+Player* GetKalecgosReplacementTank(Player* bot);
+bool ShouldEnterKalecgosSpectralRift(Player* bot);
+void RecordKalecgosSpectralBlastTarget(Player* bot);
+void RecordKalecgosSpectralRealmEnter(Player* bot);
 void UpdateKalecgosRealmState(Player* bot, bool inSpectralRealm, uint32 timestamp);
 
 }

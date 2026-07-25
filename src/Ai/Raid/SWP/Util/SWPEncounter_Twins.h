@@ -1,24 +1,24 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_SWPENCOUNTERTWINS_H
 #define PLAYERBOTS_SWPENCOUNTERTWINS_H
 
-#include <array>
-#include <ctime>
-#include <unordered_map>
-
 #include "ObjectGuid.h"
 #include "Position.h"
 #include "SWPData.h"
+#include <array>
+#include <ctime>
+#include <unordered_map>
 
 class Player;
 class PlayerbotAI;
 class Unit;
 
-namespace SunwellHelpers
+namespace SwpHelpers
 {
 
 constexpr float EREDAR_TWINS_BALCONY_Z = 50.0f;
@@ -45,11 +45,10 @@ extern std::unordered_map<uint32, time_t> eredarTwinsDpsHoldTimer;
 Position GetAlythessTankPosition(Unit* alythess, uint8 index);
 Position GetEredarTwinsP2MeleeStackPosition(Unit* alythess);
 Position GetEredarTwinsP2RangedStackPosition(Unit* alythess);
-bool IsAnySacrolashTank(PlayerbotAI* botAI, Player* bot);
-bool IsAlythessTank(PlayerbotAI* botAI, Player* bot);
+bool IsAnySacrolashTank(Player* bot);
+bool IsAlythessTank(Player* bot);
 bool ShouldHoldTwinThreat(
-    PlayerbotAI* botAI, Player* bot, Unit* boss, float threatHoldRatio,
-    bool (*isTwinTank)(PlayerbotAI*, Player*));
+    Player* bot, Unit* boss, float threatHoldRatio, bool (*isTwinTank)(Player*));
 bool IsAlythessTankPositionSafe(Player* bot, Position const& position);
 bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot);
 void RecordEredarTwinsIncomingConflagrationTarget(Player* target, uint32 durationMs = 2000);

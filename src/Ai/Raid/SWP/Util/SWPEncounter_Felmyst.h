@@ -1,26 +1,26 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_SWPENCOUNTERFELMYST_H
 #define PLAYERBOTS_SWPENCOUNTERFELMYST_H
 
+#include "ObjectGuid.h"
+#include "Position.h"
+#include "SWPData.h"
 #include <array>
 #include <ctime>
 #include <limits>
 #include <unordered_map>
-
-#include "ObjectGuid.h"
-#include "Position.h"
-#include "SWPData.h"
 
 class Creature;
 class Player;
 class PlayerbotAI;
 class Unit;
 
-namespace SunwellHelpers
+namespace SwpHelpers
 {
 
 enum class FelmystFogLane : uint8
@@ -118,13 +118,11 @@ extern std::unordered_map<uint32, FelmystEncounterState> felmystEncounterStates;
 
 Position const& GetFelmystMainTankGroundPosition(Player* bot);
 bool TryGetFelmystGroundStackPosition(
-    PlayerbotAI* botAI, Player* bot, Unit* felmyst, FelmystGroundStack stack, Position& position);
-FelmystGroundStack GetClosestFelmystGroundStack(
-    PlayerbotAI* botAI, Player* bot, Unit* felmyst, Unit* unit);
-float GetFelmystFrontAngle(PlayerbotAI* botAI, Player* bot, Unit* felmyst);
-void EnsureFelmystRangedAssignments(PlayerbotAI* botAI, Player* bot);
-bool TryGetFelmystRangedPosition(
-    PlayerbotAI* botAI, Player* bot, Unit* felmyst, Position& position);
+    Player* bot, Unit* felmyst, FelmystGroundStack stack, Position& position);
+FelmystGroundStack GetClosestFelmystGroundStack(Player* bot, Unit* felmyst, Unit* unit);
+float GetFelmystFrontAngle(Player* bot, Unit* felmyst);
+void EnsureFelmystRangedAssignments(Player* bot);
+bool TryGetFelmystRangedPosition(Player* bot, Unit* felmyst, Position& position);
 Creature* GetFelmystDemonicVaporSummonedByBot(Player* bot);
 bool IsFelmystDemonicVaporHeadNearBot(Player* bot);
 void ClearFelmystDemonicVaporKiteState(Player* bot);
@@ -142,7 +140,7 @@ void RecordFelmystIncomingEncapsulateTarget(Player* target, uint32 durationMs = 
 Player* GetFelmystEncapsulateTarget(Player* bot);
 bool DidFelmystEncapsulateOccurThisGroundPhase(Player* bot);
 Player* GetFelmystGasNovaDispelTarget(Player* bot);
-Player* GetFelmystCharmedTarget(PlayerbotAI* botAI, Player* bot, Unit* felmyst);
+Player* GetFelmystCharmedTarget(Player* bot, Unit* felmyst);
 
 }
 

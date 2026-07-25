@@ -1,9 +1,8 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
-
-#include <list>
 
 #include "SWPEncounter_Twins.h"
 #include "AiObjectContext.h"
@@ -14,8 +13,9 @@
 #include "Playerbots.h"
 #include "Spell.h"
 #include "ThreatManager.h"
+#include <list>
 
-namespace SunwellHelpers
+namespace SwpHelpers
 {
 
 // Note: Alythess and Sacrolash each have a CombatReach of 2.5f
@@ -84,21 +84,21 @@ Position GetEredarTwinsP2RangedStackPosition(Unit* alythess)
     return GetAlythessAdjustedPosition(alythess, basePosition);
 }
 
-bool IsAnySacrolashTank(PlayerbotAI* botAI, Player* bot)
+bool IsAnySacrolashTank(Player* bot)
 {
-    return botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 1, true);
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+    return botAI->IsMainTank(bot) || botAI->IsAssistTankOfIndex(bot, 1, false);
 }
 
-bool IsAlythessTank(PlayerbotAI* botAI, Player* bot)
+bool IsAlythessTank(Player* bot)
 {
-    return botAI->IsAssistTankOfIndex(bot, 0, false);
+    return PlayerbotAI::IsAssistTankOfIndex(bot, 0, false);
 }
 
 bool ShouldHoldTwinThreat(
-    PlayerbotAI* botAI, Player* bot, Unit* boss, float threatHoldRatio,
-    bool (*isTwinTank)(PlayerbotAI*, Player*))
+    Player* bot, Unit* boss, float threatHoldRatio, bool (*isTwinTank)(Player*))
 {
-    if (!boss || isTwinTank(botAI, bot))
+    if (!boss || isTwinTank(bot))
         return false;
 
     float twinTankThreat = 0.0f;
@@ -119,7 +119,7 @@ bool ShouldHoldTwinThreat(
 
         float const threat = threatRef->GetThreat();
 
-        if (isTwinTank(botAI, threatPlayer) &&
+        if (isTwinTank(threatPlayer) &&
             (!foundTwinTankThreat || threat < twinTankThreat))
         {
             twinTankThreat = threat;
@@ -151,7 +151,7 @@ bool IsAlythessTankPositionSafe(Player* bot, Position const& position)
 
     for (GameObject* go : targets)
     {
-        if (!go || go->GetEntry() != static_cast<uint32>(SunwellObjects::GO_BLAZE))
+        if (!go || go->GetEntry() != static_cast<uint32>(SwpObjects::GO_BLAZE))
             continue;
 
         if (go->GetExactDist2d(
@@ -173,7 +173,7 @@ bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot)
     constexpr float blazeObjectRadius = 5.0f;
 
     GameObject* blazeObject = bot->FindNearestGameObject(
-        static_cast<uint32>(SunwellObjects::GO_BLAZE), blazeObjectRadius);
+        static_cast<uint32>(SwpObjects::GO_BLAZE), blazeObjectRadius);
 
     if (!blazeObject)
     {

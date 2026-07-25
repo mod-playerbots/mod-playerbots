@@ -1,20 +1,21 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "SWPStrategy.h"
+#include "AiObjectContext.h"
+#include "PlayerbotAI.h"
 #include "SWPEncounter_Felmyst.h"
 #include "SWPEncounter_Muru.h"
 #include "SWPEncounter_Twins.h"
-#include "AiObjectContext.h"
-#include "PlayerbotAI.h"
 #include "SWPMultipliers.h"
 
 namespace
 {
 
-using namespace SunwellHelpers;
+using namespace SwpHelpers;
 
 void AppendFelmystVaporPhaseMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
@@ -25,17 +26,6 @@ void AppendFelmystVaporPhaseMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusi
     Unit* felmyst = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "felmyst")->Get();
     if (IsFelmystAirPhaseTargetSuppressed(felmyst))
         exclusions.insert(felmyst->GetGUID());
-}
-
-void AppendEredarTwinsAlythessExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
-{
-    Unit* sacrolash = botAI->GetAiObjectContext()->GetValue<Unit*>(
-        "find target", "lady sacrolash")->Get();
-    Unit* alythess = botAI->GetAiObjectContext()->GetValue<Unit*>(
-        "find target", "grand warlock alythess")->Get();
-
-    if (sacrolash && alythess)
-        exclusions.insert(alythess->GetGUID());
 }
 
 void AppendMuruDarkFiendExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
@@ -50,7 +40,7 @@ void AppendMuruDarkFiendExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
          botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
     {
         Unit* attacker = botAI->GetUnit(guid);
-        if (attacker && attacker->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_DARK_FIEND))
+        if (attacker && attacker->GetEntry() == static_cast<uint32>(SwpNpcs::NPC_DARK_FIEND))
             exclusions.insert(guid);
     }
 }
@@ -67,11 +57,8 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
          botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
     {
         Unit* attacker = botAI->GetUnit(guid);
-        if (!attacker || attacker->GetEntry() ==
-                static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL))
-        {
+        if (!attacker || attacker->GetEntry() == static_cast<uint32>(SwpNpcs::NPC_VOID_SENTINEL))
             continue;
-        }
 
         if (guid == muru->GetGUID())
         {
@@ -94,17 +81,17 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 
 void AppendKiljaedenShieldOrbExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
-    if (!botAI->IsMelee(botAI->GetBot()) ||
-        !botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kil'jaeden")->Get())
-    {
+    if (!botAI->IsMelee(botAI->GetBot()))
         return;
-    }
+
+    if (!botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "kil'jaeden")->Get())
+        return;
 
     for (ObjectGuid const guid :
          botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get())
     {
         Unit* attacker = botAI->GetUnit(guid);
-        if (attacker && attacker->GetEntry() == static_cast<uint32>(SunwellNpcs::NPC_SHIELD_ORB))
+        if (attacker && attacker->GetEntry() == static_cast<uint32>(SwpNpcs::NPC_SHIELD_ORB))
             exclusions.insert(guid);
     }
 }
@@ -119,7 +106,7 @@ void AppendKiljaedenSinisterReflectionExclusions(PlayerbotAI* botAI, GuidSet& ex
     {
         Unit* attacker = botAI->GetUnit(guid);
         if (!attacker ||
-            attacker->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_SINISTER_REFLECTION))
+            attacker->GetEntry() != static_cast<uint32>(SwpNpcs::NPC_SINISTER_REFLECTION))
         {
             continue;
         }
@@ -145,11 +132,9 @@ void RaidSunwellStrategy::AppendTargetExclusions(
             AppendMuruTankExclusions(botAI, exclusions);
             break;
         case TargetValueExclusionType::Dps:
-            AppendEredarTwinsAlythessExclusions(botAI, exclusions);
             AppendKiljaedenSinisterReflectionExclusions(botAI, exclusions);
             break;
         case TargetValueExclusionType::Attacker:
-            AppendEredarTwinsAlythessExclusions(botAI, exclusions);
             AppendKiljaedenSinisterReflectionExclusions(botAI, exclusions);
             break;
         case TargetValueExclusionType::None:
@@ -161,7 +146,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // General
     triggers.push_back(new TriggerNode("sunwell plateau bot is not in combat", {
-        NextAction("sunwell plateau erase encounter states", ACTION_EMERGENCY + 11) }));
+        NextAction("sunwell plateau reset encounter states", ACTION_EMERGENCY + 10) }));
 
     triggers.push_back(new TriggerNode("sunwell plateau bot has protective aura", {
         NextAction("sunwell plateau remove protective aura", ACTION_EMERGENCY) }));

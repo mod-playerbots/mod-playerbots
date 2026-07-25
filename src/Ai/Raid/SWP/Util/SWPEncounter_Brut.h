@@ -1,22 +1,22 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_SWPENCOUNTERBRUT_H
 #define PLAYERBOTS_SWPENCOUNTERBRUT_H
 
-#include <unordered_map>
-
 #include "ObjectGuid.h"
 #include "Position.h"
 #include "SWPData.h"
+#include <unordered_map>
 
 class Player;
 class PlayerbotAI;
 class Unit;
 
-namespace SunwellHelpers
+namespace SwpHelpers
 {
 
 struct BrutallusRangedSlotInfo
@@ -73,9 +73,8 @@ extern std::unordered_map<ObjectGuid, BrutallusRangedBurnState> brutallusRangedB
 float GetBrutallusMainTankAngle(Unit* brutallus);
 Position GetBrutallusPositionAtAngle(Player* bot, Unit* brutallus, float angle, float radius);
 float GetCenteredArcSlotAngleOffset(uint8 slotIndex, uint8 slotCount, float arcWidth);
-bool TryGetBrutallusAssignedPositionIndex(
-    PlayerbotAI* botAI, Player* bot, bool wantRanged, uint8& positionIndex);
-void EnsureBrutallusRangedAssignments(PlayerbotAI* botAI, Player* bot);
+bool TryGetBrutallusAssignedPositionIndex(Player* bot, bool wantRanged, uint8& positionIndex);
+void EnsureBrutallusRangedAssignments(Player* bot);
 bool TryGetBrutallusRangedPosition(
     Player* bot, Unit* brutallus, Player* mainTank, Player* assistTank,
     uint8 rangedIndex, float radius, Position& position);

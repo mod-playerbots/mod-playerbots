@@ -1,25 +1,25 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_SWPACTIONS_H
 #define PLAYERBOTS_SWPACTIONS_H
 
-#include <limits>
-#include <vector>
-
 #include "Action.h"
 #include "AttackAction.h"
 #include "MovementActions.h"
+#include <limits>
+#include <vector>
 
 // General
 
-class SunwellPlateauEraseEncounterStatesAction : public Action
+class SunwellPlateauResetEncounterStatesAction : public Action
 {
 public:
-    SunwellPlateauEraseEncounterStatesAction(
-        PlayerbotAI* botAI) : Action(botAI, "sunwell plateau erase encounter states") {}
+    SunwellPlateauResetEncounterStatesAction(
+        PlayerbotAI* botAI) : Action(botAI, "sunwell plateau reset encounter states") {}
     bool Execute(Event event) override;
 };
 
@@ -73,6 +73,13 @@ public:
     KalecgosDisperseRangedAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "kalecgos disperse ranged") {}
     bool Execute(Event event) override;
+    bool ResetInitialRangedPositionReached()
+    {
+        if (!_initialRangedPositionReached)
+            return false;
+        _initialRangedPositionReached = false;
+        return true;
+    }
 
 private:
     bool _initialRangedPositionReached = false;
@@ -118,6 +125,13 @@ public:
     BrutallusTanksHandleBossAction(
         PlayerbotAI* botAI) : AttackAction(botAI, "brutallus tanks handle boss") {}
     bool Execute(Event event) override;
+    bool ResetInitialPositionReached()
+    {
+        if (!_mainTankInitialPositionReached)
+            return false;
+        _mainTankInitialPositionReached = false;
+        return true;
+    }
 
 private:
     bool _mainTankInitialPositionReached = false;
@@ -152,7 +166,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool RemoveBurnWithCooldown(Player* bot);
+    bool RemoveBurnWithCooldown();
 };
 
 // Felmyst
@@ -290,6 +304,13 @@ public:
     EredarTwinsFirstAssistTankMoveOutOfBlazeAction(
         PlayerbotAI* botAI) : AttackAction(botAI, "eredar twins first assist tank move out of blaze") {}
     bool Execute(Event event) override;
+    bool ResetAlythessTankStep()
+    {
+        if (!_alythessTankStep)
+            return false;
+        _alythessTankStep = 0;
+        return true;
+    }
 
 private:
     uint8 _alythessTankStep = 0;
@@ -383,8 +404,7 @@ public:
 private:
     Unit* ResolveMuruDpsTarget(Unit*& currentTarget);
     Unit* SelectMuruEncounterTarget(
-        Unit* currentTarget, uint32 entry,
-        std::vector<Unit*> const& candidates) const;
+        Unit* currentTarget, uint32 entry, std::vector<Unit*> const& candidates) const;
 };
 
 class MuruKillDarkFiendsWithDispelAction : public Action
@@ -411,7 +431,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    Position const* GetAssignedVoidSentinelTankPosition(Unit* voidSentinel) const;
+    Position const& GetAssignedVoidSentinelTankPosition(Unit* voidSentinel);
 };
 
 class MuruSecondAssistTankGuardRangedAction : public MovementAction
@@ -508,10 +528,6 @@ public:
     KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction(
         PlayerbotAI* botAI) : AttackAction(botAI, "kil'jaeden mark and prioritize hands of the deceiver") {}
     bool Execute(Event event) override;
-
-private:
-    void AssignHandsToTanks(std::vector<Unit*> const& hands, size_t myIndex);
-    bool DpsAttackPriorityTargets();
 };
 
 class KiljaedenStunHandsOfTheDeceiverAction : public Action
