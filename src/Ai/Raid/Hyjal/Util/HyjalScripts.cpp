@@ -4,9 +4,9 @@
  * or (at your option) any later version.
  */
 
-#include "HyjalHelpers.h"
 #include "AllCreatureScript.h"
 #include "DynamicObjectScript.h"
+#include "HyjalHelpers.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
 #include "Playerbots.h"

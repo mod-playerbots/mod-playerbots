@@ -4,9 +4,9 @@
  * or (at your option) any later version.
  */
 
-#include "Playerbots.h"
 #include "NaxxActions.h"
 #include "NaxxSpellIds.h"
+#include "Playerbots.h"
 #include "Spell.h"
 #include "Timer.h"
 

@@ -4,9 +4,9 @@
  * or (at your option) any later version.
  */
 
-#include "ICCActions.h"
 #include "GenericActions.h"
 #include "GenericSpellActions.h"
+#include "ICCActions.h"
 #include "ICCTriggers.h"
 #include "Multiplier.h"
 #include "NearestNpcsValue.h"

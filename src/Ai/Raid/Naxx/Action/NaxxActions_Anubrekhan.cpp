@@ -4,8 +4,8 @@
  * or (at your option) any later version.
  */
 
-#include "ObjectGuid.h"
 #include "NaxxActions.h"
+#include "ObjectGuid.h"
 #include "Playerbots.h"
 
 bool AnubrekhanChooseTargetAction::Execute(Event /*event*/)
