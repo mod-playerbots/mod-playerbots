@@ -24,7 +24,7 @@ void RaidBwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("bwl vaelastrasz move away", ACTION_RAID + 5) }));
 
     triggers.push_back(new TriggerNode("bwl ebonroc shadow", {
-        NextAction("taunt", ACTION_RAID) }));
+        NextAction("bwl ebonroc taunt", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("bwl affliction bronze", {
         NextAction("bwl use hourglass sand", ACTION_RAID) }));

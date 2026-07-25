@@ -52,6 +52,15 @@ private:
     bool MoveAlongFleeDirection(const Unit* boss, float fleeX, float fleeY);
 };
 
+// Ebonroc
+
+class BwlEbonrocTauntAction : public AttackAction
+{
+public:
+    BwlEbonrocTauntAction(PlayerbotAI* botAI) : AttackAction(botAI, "bwl ebonroc taunt") {}
+    bool Execute(Event event) override;
+};
+
 // Chromaggus
 
 class BwlUseHourglassSandAction : public Action

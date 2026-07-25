@@ -256,6 +256,20 @@ bool BwlVaelastraszMoveAwayAction::MoveAlongFleeDirection(const Unit* boss, floa
     return false;
 }
 
+// Ebonroc
+
+bool BwlEbonrocTauntAction::Execute(Event event)
+{
+    Unit* ebonroc = AI_VALUE2(Unit*, "find target", "ebonroc");
+    if (!ebonroc || !ebonroc->IsInCombat())
+        return false;
+
+    if (AI_VALUE(Unit*, "current target") != ebonroc && !Attack(ebonroc))
+        return false;
+
+    return botAI->DoSpecificAction("taunt spell", event, true);
+}
+
 // Chromaggus
 
 bool BwlUseHourglassSandAction::Execute(Event /*event*/)
