@@ -13,7 +13,8 @@ float SepethreaKiteFlameMultiplier::GetValue(Action* action)
 {
     if (dynamic_cast<SepethreaKiteFlameAction*>(action) ||
         dynamic_cast<SepethreaAvoidTrailAction*>(action) ||
-        dynamic_cast<SepethreaAvoidFlameAction*>(action))
+        dynamic_cast<SepethreaAvoidFlameAction*>(action) ||
+        dynamic_cast<SepethreaFocusBossAction*>(action))
         return 1.0f;
 
     bool const isMover =
@@ -25,8 +26,7 @@ float SepethreaKiteFlameMultiplier::GetValue(Action* action)
         return 0.0f;
 
     if (!MechanarFlames::HealerHoldsFire(bot) &&
-        (MechanarFlames::InTrailDanger(bot) ||
-         MechanarFlames::GetNearestFlame(bot, MechanarFlames::INFERNO_AVOID_RANGE) != nullptr))
+        (MechanarFlames::InTrailDangerCached(bot) || MechanarFlames::IsFlameNearCached(bot)))
         return 0.0f;
 
     return 1.0f;
@@ -34,9 +34,13 @@ float SepethreaKiteFlameMultiplier::GetValue(Action* action)
 
 float SepethreaFocusBossMultiplier::GetValue(Action* action)
 {
-    if (!dynamic_cast<DpsAssistAction*>(action) &&
-        !dynamic_cast<TankAssistAction*>(action) &&
-        !dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+    bool const suppressed =
+        dynamic_cast<DpsAssistAction*>(action) ||
+        dynamic_cast<TankAssistAction*>(action) ||
+        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action) ||
+        (action->getThreatType() == Action::ActionThreatType::Aoe && botAI->IsDps(bot) &&
+         !dynamic_cast<CastHealingSpellAction*>(action));
+    if (!suppressed)
         return 1.0f;
 
     if (!MechanarFlames::GetSepethrea(bot))

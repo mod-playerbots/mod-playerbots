@@ -23,7 +23,7 @@ bool SepethreaAvoidFlameTrigger::IsActive()
     if (MechanarFlames::GetFixatingFlame(bot))
         return false;
 
-    if (!MechanarFlames::GetNearestFlame(bot, MechanarFlames::INFERNO_AVOID_RANGE))
+    if (!MechanarFlames::IsFlameNearCached(bot))
         return false;
 
     return !MechanarFlames::HealerHoldsFire(bot);
@@ -34,7 +34,7 @@ bool SepethreaTrailTrigger::IsActive()
     if (!MechanarFlames::GetSepethrea(bot))
         return false;
 
-    if (!MechanarFlames::InTrailDanger(bot))
+    if (!MechanarFlames::InTrailDangerCached(bot))
         return false;
 
     return !MechanarFlames::HealerHoldsFire(bot);

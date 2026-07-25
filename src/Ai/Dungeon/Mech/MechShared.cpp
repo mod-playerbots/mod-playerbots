@@ -116,6 +116,8 @@ namespace MechanarFlames
         Unit* victim = boss->GetVictim();
         if (!victim)
             return true;
+        if (victim == bot)
+            return true;
         Player* victimPlayer = victim->ToPlayer();
         return !victimPlayer || !PlayerbotAI::IsTank(victimPlayer);
     }
@@ -137,7 +139,7 @@ namespace MechanarFlames
             out, static_cast<uint32>(MechanarIDs::NPC_RAGING_FLAMES_HEROIC), radius);
     }
 
-    void CollectAvoidFlames(Player* bot, Unit* ignoreFlame, std::vector<std::pair<float, float>>& out)
+    void CollectAvoidFlames(Player* bot, std::vector<std::pair<float, float>>& out)
     {
         std::list<Creature*> flames;
         CollectFlames(bot, 100.0f, flames);
@@ -145,10 +147,19 @@ namespace MechanarFlames
         {
             if (!flame || !flame->IsAlive())
                 continue;
-            if (ignoreFlame && flame == ignoreFlame)
+            if (flame->GetVictim() == bot)
                 continue;
             out.emplace_back(flame->GetPositionX(), flame->GetPositionY());
         }
+    }
+
+    void CollectChasingFlames(Player* bot, std::vector<Creature*>& out)
+    {
+        std::list<Creature*> flames;
+        CollectFlames(bot, 100.0f, flames);
+        for (Creature* flame : flames)
+            if (flame && flame->IsAlive() && flame->GetVictim() == bot)
+                out.push_back(flame);
     }
 
     Creature* GetNearestFlame(Player* bot, float radius)
@@ -228,6 +239,18 @@ namespace MechanarFlames
                 return true;
         }
         return false;
+    }
+
+    bool InTrailDangerCached(Player* bot)
+    {
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+        return botAI->GetAiObjectContext()->GetValue<bool>("sepethrea trail danger")->Get();
+    }
+
+    bool IsFlameNearCached(Player* bot)
+    {
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+        return botAI->GetAiObjectContext()->GetValue<bool>("sepethrea flame near")->Get();
     }
 
     Unit* GetSepethrea(Player* bot)

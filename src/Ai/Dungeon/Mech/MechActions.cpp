@@ -2,6 +2,7 @@
 #include "AiFactory.h"
 #include "MechActions.h"
 #include "MechShared.h"
+#include "Creature.h"
 #include "Group.h"
 #include "Timer.h"
 
@@ -97,12 +98,13 @@ namespace
         1.75f, -1.75f, 2.10f, -2.10f, 2.45f, -2.45f, 2.80f, -2.80f, 3.14f };
 
     bool SpotSafe(std::vector<std::pair<float, float>> const& flames,
-                  std::vector<MechanarFlames::TrailPatch> const& patches, float x, float y)
+                  std::vector<MechanarFlames::TrailPatch> const& patches, float x, float y,
+                  float flameClear = MechanarFlames::INFERNO_SAFE_DIST)
     {
         for (auto const& f : flames)
         {
             float const dx = x - f.first, dy = y - f.second;
-            if (dx * dx + dy * dy < MechanarFlames::INFERNO_SAFE_DIST * MechanarFlames::INFERNO_SAFE_DIST)
+            if (dx * dx + dy * dy < flameClear * flameClear)
                 return false;
         }
         for (MechanarFlames::TrailPatch const& p : patches)
@@ -115,14 +117,19 @@ namespace
         return true;
     }
 
+    int SegSamples(float ax, float ay, float bx, float by)
+    {
+        return std::max(5, static_cast<int>(Dist2d(ax, ay, bx, by) / 3.0f) + 1);
+    }
+
     bool SegSafe(std::vector<std::pair<float, float>> const& flames,
                  std::vector<MechanarFlames::TrailPatch> const& patches,
                  float ax, float ay, float bx, float by)
     {
-        constexpr int N = 5;
-        for (int k = 1; k <= N; ++k)
+        int const n = SegSamples(ax, ay, bx, by);
+        for (int k = 1; k <= n; ++k)
         {
-            float const t = static_cast<float>(k) / N;
+            float const t = static_cast<float>(k) / n;
             if (!SpotSafe(flames, patches, ax + (bx - ax) * t, ay + (by - ay) * t))
                 return false;
         }
@@ -130,26 +137,58 @@ namespace
     }
 
     float HazardClearance(std::vector<std::pair<float, float>> const& flames,
-                          std::vector<MechanarFlames::TrailPatch> const& patches, float x, float y)
+                          std::vector<MechanarFlames::TrailPatch> const& patches, float x, float y,
+                          float flameClear = MechanarFlames::INFERNO_SAFE_DIST)
     {
         float clear = 1e9f;
         for (auto const& f : flames)
-            clear = std::min(clear, Dist2d(x, y, f.first, f.second) - MechanarFlames::INFERNO_SAFE_DIST);
+            clear = std::min(clear, Dist2d(x, y, f.first, f.second) - flameClear);
         for (MechanarFlames::TrailPatch const& p : patches)
             clear = std::min(clear, Dist2d(x, y, p.x, p.y) - (p.radius + MechanarFlames::TRAIL_DANGER_MARGIN));
+        return clear;
+    }
+
+    float SegClearance(std::vector<std::pair<float, float>> const& flames,
+                       std::vector<MechanarFlames::TrailPatch> const& patches,
+                       float ax, float ay, float bx, float by)
+    {
+        int const n = SegSamples(ax, ay, bx, by);
+        float clear = 1e9f;
+        for (int k = 0; k <= n; ++k)
+        {
+            float const t = static_cast<float>(k) / n;
+            clear = std::min(clear, HazardClearance(flames, patches, ax + (bx - ax) * t, ay + (by - ay) * t));
+        }
         return clear;
     }
 }
 
 bool SepethreaKiteFlameAction::Execute(Event)
 {
-    Unit* flame = MechanarFlames::GetFixatingFlame(bot);
-    if (!flame)
+    std::vector<Creature*> chasers;
+    MechanarFlames::CollectChasingFlames(bot, chasers);
+    if (chasers.empty())
         return false;
 
-    float const dist = bot->GetDistance2d(flame);
     float const bx = bot->GetPositionX();
     float const by = bot->GetPositionY();
+
+    Creature* flame = chasers.front();
+    float dist = bot->GetDistance2d(flame);
+    for (size_t i = 1; i < chasers.size(); ++i)
+    {
+        float const d = bot->GetDistance2d(chasers[i]);
+        if (d < dist)
+        {
+            dist = d;
+            flame = chasers[i];
+        }
+    }
+
+    std::vector<std::pair<float, float>> chaserPos;
+    chaserPos.reserve(chasers.size());
+    for (Creature* chaser : chasers)
+        chaserPos.emplace_back(chaser->GetPositionX(), chaser->GetPositionY());
 
     float fx = bx - flame->GetPositionX();
     float fy = by - flame->GetPositionY();
@@ -164,13 +203,19 @@ bool SepethreaKiteFlameAction::Execute(Event)
         }
     }
 
-    float px, py;
-    bool const haveParty = PartyCentroid(bot, px, py);
-    float const groupDist = haveParty ? bot->GetExactDist2d(px, py) : 1000.0f;
+    std::vector<std::pair<float, float>> avoidFlames;
+    MechanarFlames::CollectAvoidFlames(bot, avoidFlames);
+    std::vector<MechanarFlames::TrailPatch> patches;
+    MechanarFlames::CollectTrailPatches(bot, 60.0f, patches);
 
     float tankX = 0.0f, tankY = 0.0f;
-    bool const leashed = botAI->IsHeal(bot) && TankPosition(bot, tankX, tankY);
+    bool const haveTank = TankPosition(bot, tankX, tankY);
+    bool const leashed = botAI->IsHeal(bot) && haveTank;
     float const tankDist = leashed ? bot->GetExactDist2d(tankX, tankY) : 0.0f;
+
+    float px = tankX, py = tankY;
+    bool const haveParty = haveTank || PartyCentroid(bot, px, py);
+    float const groupDist = haveParty ? bot->GetExactDist2d(px, py) : 1000.0f;
 
     uint32 const nowMs = getMSTime();
     bool turning = _turnUntilMs != 0 && nowMs < _turnUntilMs;
@@ -192,12 +237,7 @@ bool SepethreaKiteFlameAction::Execute(Event)
                                         : by - MechanarFlames::ROOM_Y_MIN;
         if (endDist < MechanarFlames::KITE_TURN_RUNWAY)
         {
-            std::vector<std::pair<float, float>> avoidFlames;
-            MechanarFlames::CollectAvoidFlames(bot, flame, avoidFlames);
-            std::vector<MechanarFlames::TrailPatch> patches;
-            MechanarFlames::CollectTrailPatches(bot, 60.0f, patches);
-
-            float bestKey = -1e18f;
+            float bestKey = -1e18f, bestLaneClear = -1e18f;
             for (float side : { 1.0f, -1.0f })
             {
                 float const sideX = side > 0.0f
@@ -206,21 +246,26 @@ bool SepethreaKiteFlameAction::Execute(Event)
                 float laneEndY = flame->GetPositionY() - endSign * MechanarFlames::KITE_TURN_PASS_BEHIND;
                 laneEndY = std::min(std::max(laneEndY, MechanarFlames::ROOM_Y_MIN + 3.0f),
                                     MechanarFlames::ROOM_Y_MAX - 3.0f);
-                bool const laneSafe = SegSafe(avoidFlames, patches, bx, by, sideX, by) &&
-                                      SegSafe(avoidFlames, patches, sideX, by, sideX, laneEndY);
-                float const key = (laneSafe ? 1000.0f : 0.0f) +
+                float const laneClear =
+                    std::min(SegClearance(avoidFlames, patches, bx, by, sideX, by),
+                             SegClearance(avoidFlames, patches, sideX, by, sideX, laneEndY));
+                float const key = laneClear * MechanarFlames::KITE_TURN_CLEAR_WEIGHT +
                                   std::fabs(sideX - flame->GetPositionX());
                 if (key > bestKey)
                 {
                     bestKey = key;
+                    bestLaneClear = laneClear;
                     _turnSide = side;
                 }
             }
-            _turnEnd = endSign;
-            _turnFlame = flame->GetGUID();
-            _turnLateral = true;
-            _turnUntilMs = nowMs + MechanarFlames::KITE_TURN_FAILSAFE_MS;
-            turning = true;
+            if (bestLaneClear > 0.0f)
+            {
+                _turnEnd = endSign;
+                _turnFlame = flame->GetGUID();
+                _turnLateral = true;
+                _turnUntilMs = nowMs + MechanarFlames::KITE_TURN_FAILSAFE_MS;
+                turning = true;
+            }
         }
     }
     if (turning)
@@ -231,21 +276,30 @@ bool SepethreaKiteFlameAction::Execute(Event)
         if (_turnLateral && std::fabs(bx - sideX) <= 2.0f)
             _turnLateral = false;
 
-        float destY;
+        float laneEndY = flame->GetPositionY() - _turnEnd * MechanarFlames::KITE_TURN_PASS_BEHIND;
+        laneEndY = std::min(std::max(laneEndY, MechanarFlames::ROOM_Y_MIN + 3.0f),
+                            MechanarFlames::ROOM_Y_MAX - 3.0f);
+
+        float laneClear;
         if (_turnLateral)
-            destY = by;
+            laneClear = std::min(SegClearance(avoidFlames, patches, bx, by, sideX, by),
+                                 SegClearance(avoidFlames, patches, sideX, by, sideX, laneEndY));
         else
+            laneClear = SegClearance(avoidFlames, patches, bx, by, sideX, laneEndY);
+
+        if (laneClear < MechanarFlames::KITE_TURN_ABORT_CLEAR)
         {
-            destY = flame->GetPositionY() - _turnEnd * MechanarFlames::KITE_TURN_PASS_BEHIND;
-            destY = std::min(std::max(destY, MechanarFlames::ROOM_Y_MIN + 3.0f),
-                             MechanarFlames::ROOM_Y_MAX - 3.0f);
+            _turnUntilMs = 0;
+            turning = false;
         }
-        return MoveTo(bot->GetMapId(), sideX, destY, bot->GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_COMBAT, true, false);
+        else
+            return MoveTo(bot->GetMapId(), sideX, _turnLateral ? by : laneEndY, bot->GetPositionZ(),
+                          false, false, false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     if (dist >= MechanarFlames::KITE_THRESHOLD && groupDist >= MechanarFlames::KITE_GROUP_CLEARANCE &&
-        (!leashed || tankDist <= MechanarFlames::HEALER_KITE_LEASH))
+        (!leashed || tankDist <= MechanarFlames::HEALER_KITE_LEASH) &&
+        SpotSafe(avoidFlames, patches, bx, by))
         return false;
 
     if (haveParty)
@@ -281,11 +335,6 @@ bool SepethreaKiteFlameAction::Execute(Event)
         }
     }
 
-    std::vector<std::pair<float, float>> avoidFlames;
-    MechanarFlames::CollectAvoidFlames(bot, flame, avoidFlames);
-    std::vector<MechanarFlames::TrailPatch> patches;
-    MechanarFlames::CollectTrailPatches(bot, MechanarFlames::TRAIL_SCAN + step, patches);
-
     float const stepLens[] = { step, 10.0f, 7.0f };
     float const baseAng = std::atan2(fy, fx);
     float bestX = 0.0f, bestY = 0.0f, bestScore = -1e18f;
@@ -319,7 +368,9 @@ bool SepethreaKiteFlameAction::Execute(Event)
                 destTankDist >= tankDist)
                 continue;
 
-            float const fd = flame->GetExactDist2d(destX, destY);
+            float fd = 1e9f;
+            for (auto const& chaser : chaserPos)
+                fd = std::min(fd, Dist2d(destX, destY, chaser.first, chaser.second));
             float const longAxis = leashed ? 0.0f : MechanarFlames::KITE_LONG_AXIS_WEIGHT;
             float score = fd + longAxis * std::fabs(std::sin(ang)) + len * 0.1f;
             if (leashed)
@@ -327,8 +378,10 @@ bool SepethreaKiteFlameAction::Execute(Event)
                 if (destTankDist > MechanarFlames::HEALER_KITE_LEASH)
                     score -= MechanarFlames::HEALER_KITE_LEASH_WEIGHT *
                              (destTankDist - MechanarFlames::HEALER_KITE_LEASH);
-                float const passDist = MinSegDist(bx, by, destX, destY,
-                                                  flame->GetPositionX(), flame->GetPositionY());
+                float passDist = 1e9f;
+                for (auto const& chaser : chaserPos)
+                    passDist = std::min(passDist, MinSegDist(bx, by, destX, destY,
+                                                             chaser.first, chaser.second));
                 if (passDist < MechanarFlames::INFERNO_RADIUS)
                     score -= MechanarFlames::HEALER_KITE_FLAME_PATH_WEIGHT *
                              (MechanarFlames::INFERNO_RADIUS - passDist);
@@ -358,17 +411,18 @@ bool SepethreaKiteFlameAction::Execute(Event)
 bool SepethreaAvoidFlameAction::Execute(Event)
 {
     std::vector<std::pair<float, float>> avoidFlames;
-    MechanarFlames::CollectAvoidFlames(bot, nullptr, avoidFlames);
+    MechanarFlames::CollectAvoidFlames(bot, avoidFlames);
     std::vector<MechanarFlames::TrailPatch> patches;
     MechanarFlames::CollectTrailPatches(bot, MechanarFlames::TRAIL_SCAN + MechanarFlames::INFERNO_AVOID_CLEAR, patches);
 
+    float const clearDist = MechanarFlames::MELEE_FLAME_CLEAR;
     float const bx = bot->GetPositionX();
     float const by = bot->GetPositionY();
-    if (SpotSafe(avoidFlames, patches, bx, by))
+    if (SpotSafe(avoidFlames, patches, bx, by, clearDist))
         return false;
 
     constexpr int DIRS = 16;
-    float bestX = bx, bestY = by, bestClear = HazardClearance(avoidFlames, patches, bx, by);
+    float bestX = bx, bestY = by, bestClear = HazardClearance(avoidFlames, patches, bx, by, clearDist);
     bool found = false;
     for (float radius = 4.0f; radius <= MechanarFlames::INFERNO_AVOID_CLEAR + 8.0f && !found; radius += 3.0f)
     {
@@ -379,14 +433,14 @@ bool SepethreaAvoidFlameAction::Execute(Event)
             float const y = by + std::sin(ang) * radius;
             if (!MechanarFlames::InRoom(x, y))
                 continue;
-            if (SpotSafe(avoidFlames, patches, x, y))
+            if (SpotSafe(avoidFlames, patches, x, y, clearDist))
             {
                 bestX = x;
                 bestY = y;
                 found = true;
                 break;
             }
-            float const clear = HazardClearance(avoidFlames, patches, x, y);
+            float const clear = HazardClearance(avoidFlames, patches, x, y, clearDist);
             if (clear > bestClear)
             {
                 bestClear = clear;

@@ -14,9 +14,15 @@ class Creature;
 namespace MechanarFlames
 {
     constexpr float INFERNO_RADIUS = 10.0f;
-    constexpr float INFERNO_AVOID_RANGE = 14.0f;
+    // Fixated kiter keeps a wide running berth (INFERNO_SAFE_DIST). A non-fixated bot only
+    // needs to clear the flame's actual fire footprint: its self-cast area aura (spell 35281,
+    // radius 0 = self) drops trail patches (spell 35278, ~5yd) under it, so it is fine to fight
+    // the boss from the front and only sidestep the patches (handled by the trail avoidance) plus
+    // a small buffer for the instant a fresh patch lands.
+    constexpr float INFERNO_AVOID_RANGE = 10.0f;
     constexpr float INFERNO_AVOID_CLEAR = 19.0f;
     constexpr float INFERNO_SAFE_DIST = 14.0f;
+    constexpr float MELEE_FLAME_CLEAR = 12.0f;
     constexpr float KITE_THRESHOLD = 16.0f;
     constexpr float KITE_STEP = 14.0f;
 
@@ -25,6 +31,8 @@ namespace MechanarFlames
     constexpr float KITE_TURN_PASS_BEHIND = 20.0f;
     constexpr float KITE_TURN_WALL_INSET = 4.0f;
     constexpr float KITE_TURN_EXIT_PAST = 3.0f;
+    constexpr float KITE_TURN_CLEAR_WEIGHT = 8.0f;
+    constexpr float KITE_TURN_ABORT_CLEAR = -2.0f;
     constexpr uint32 KITE_TURN_FAILSAFE_MS = 12000;
     constexpr float KITE_GROUP_CLEARANCE = 16.0f;
     constexpr float HEALER_FIRE_BAIL_PCT = 50.0f;
@@ -51,6 +59,10 @@ namespace MechanarFlames
 
     bool InTrailDanger(Player* bot);
 
+    bool InTrailDangerCached(Player* bot);
+
+    bool IsFlameNearCached(Player* bot);
+
     constexpr float ROOM_ANCHOR_X = 300.0f;
     constexpr float ROOM_ANCHOR_Y = 6.0f;
     constexpr float ROOM_X_MIN = 285.0f;
@@ -73,7 +85,9 @@ namespace MechanarFlames
 
     Creature* GetNearestFlame(Player* bot, float radius);
 
-    void CollectAvoidFlames(Player* bot, Unit* ignoreFlame, std::vector<std::pair<float, float>>& out);
+    void CollectAvoidFlames(Player* bot, std::vector<std::pair<float, float>>& out);
+
+    void CollectChasingFlames(Player* bot, std::vector<Creature*>& out);
 
     ObjectGuid FindFixatingFlameGuid(Player* bot);
 
