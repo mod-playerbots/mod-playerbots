@@ -1,9 +1,8 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
-
-#include <ctime>
 
 #include "SWPMultipliers.h"
 #include "SWPActions.h"
@@ -34,8 +33,9 @@
 #include "WarlockActions.h"
 #include "WarriorActions.h"
 #include "WipeAction.h"
+#include <ctime>
 
-using namespace SunwellHelpers;
+using namespace SwpHelpers;
 
 namespace
 {
@@ -102,13 +102,9 @@ float KalecgosWaitToDecurseMultiplier::GetValue(Action* action)
     if (!target)
         return 1.0f;
 
-    Aura* aura = target->GetAura(
-        static_cast<uint32>(SunwellSpells::SPELL_CURSE_OF_BOUNDLESS_AGONY));
+    Aura* aura = target->GetAura(static_cast<uint32>(SwpSpells::SPELL_CURSE_OF_BOUNDLESS_AGONY));
     if (!aura)
-    {
-        aura = target->GetAura(
-            static_cast<uint32>(SunwellSpells::SPELL_CURSE_OF_BOUNDLESS_AGONY_SEC));
-    }
+        aura = target->GetAura(static_cast<uint32>(SwpSpells::SPELL_CURSE_OF_BOUNDLESS_AGONY_SEC));
 
     if (!aura || aura->GetDuration() < 15000) // 15 seconds remaining
         return 1.0f;
@@ -156,7 +152,7 @@ float KalecgosRestrictTauntMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
         return 1.0f;
 
-    if (GetKalecgosCurrentTank(botAI, bot) == bot)
+    if (GetKalecgosCurrentTank(bot) == bot)
         return 1.0f;
 
     if (dynamic_cast<CastTauntAction*>(action) ||
@@ -268,7 +264,7 @@ float BrutallusNoKillingSpreeWhenNearbyBurnMultiplier::GetValue(Action* action)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (member && member->HasAura(static_cast<uint32>(SunwellSpells::SPELL_BURN)) &&
+        if (member && member->HasAura(static_cast<uint32>(SwpSpells::SPELL_BURN)) &&
             botAI->IsMelee(member) && !botAI->IsMainTank(member) &&
             !botAI->IsAssistTankOfIndex(member, 0, true))
         {
@@ -353,6 +349,10 @@ float FelmystWaitForLandingDpsMultiplier::GetValue(Action* action)
     }
     else if (felmyst->IsFlying())
     {
+        Unit* actionTarget = action->GetTarget();
+        if (actionTarget && dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
+            return 0.0f;
+
         auto& state = felmystEncounterStates[instanceId];
         state.landingDpsWaitTimer = 0;
         state.landingTouchdownTimer = 0;
@@ -368,7 +368,10 @@ float FelmystWaitForLandingDpsMultiplier::GetValue(Action* action)
     if (!state.landingTouchdownTimer)
         state.landingTouchdownTimer = now;
 
-    if (botAI->IsMainTank(bot) || dynamic_cast<FelmystMisdirectBossToMainTankAction*>(action))
+    if (botAI->IsMainTank(bot))
+        return 1.0f;
+
+    if (dynamic_cast<FelmystMisdirectBossToMainTankAction*>(action))
         return 1.0f;
 
     if ((now - state.landingTouchdownTimer) >= groundedDpsWaitSeconds)
@@ -495,7 +498,7 @@ float FelmystFocusAttacksOnCharmedPlayerMultiplier::GetValue(Action* action)
     if (!felmyst)
         return 1.0f;
 
-    Player* charmedTarget = GetFelmystCharmedTarget(botAI, bot, felmyst);
+    Player* charmedTarget = GetFelmystCharmedTarget(bot, felmyst);
     if (!charmedTarget)
         return 1.0f;
 
@@ -538,11 +541,12 @@ float EredarTwinsDisableAutomaticTargetingMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return 1.0f;
 
-    if (dynamic_cast<DpsAssistAction*>(action))
-        return 0.0f;
+    if (botAI->GetState() == BOT_STATE_NON_COMBAT)
+        return 1.0f;
 
-    if (botAI->GetState() == BOT_STATE_COMBAT &&
-        dynamic_cast<TankAssistAction*>(action))
+    if (dynamic_cast<DpsAssistAction*>(action) ||
+        dynamic_cast<TankAssistAction*>(action) ||
+        dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
     {
         return 0.0f;
     }
@@ -558,8 +562,8 @@ float EredarTwinsControlMisdirectionMultiplier::GetValue(Action* action)
     if (!AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
         return 1.0f;
 
-     if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
-         return 0.0f;
+    if (dynamic_cast<CastMisdirectionOnMainTankAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -605,9 +609,9 @@ float EredarTwinsControlThreatMultiplier::GetValue(Action* action)
     constexpr float sacrolashThreatRatio = 0.8f;
 
     bool const shouldHoldSacrolashThreat = sacrolash &&
-        ShouldHoldTwinThreat(botAI, bot, sacrolash, sacrolashThreatRatio, IsAnySacrolashTank);
+        ShouldHoldTwinThreat(bot, sacrolash, sacrolashThreatRatio, IsAnySacrolashTank);
     bool const shouldHoldAlythessThreat = alythess &&
-        ShouldHoldTwinThreat(botAI, bot, alythess, alythessThreatRatio, IsAlythessTank);
+        ShouldHoldTwinThreat(bot, alythess, alythessThreatRatio, IsAlythessTank);
 
     if (!shouldHoldSacrolashThreat && !shouldHoldAlythessThreat)
         return 1.0f;
@@ -650,7 +654,7 @@ float EredarTwinsControlMovementMultiplier::GetValue(Action* action)
     if (botAI->IsTank(bot) && dynamic_cast<AvoidAoeAction*>(action))
         return 0.0f;
 
-    if (!botAI->IsRanged(bot) && !IsAlythessTank(botAI, bot))
+    if (!botAI->IsRanged(bot) && !IsAlythessTank(bot))
         return 1.0f;
 
     if (dynamic_cast<CastReachTargetSpellAction*>(action) ||
@@ -727,6 +731,9 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
     if (!muru)
         return 1.0f;
 
+    if (AI_VALUE(Unit*, "current target") == muru)
+        context->GetValue<bool>("neglect threat")->Set(true);
+
     if (botAI->GetState() == BOT_STATE_COMBAT &&
         dynamic_cast<DpsAssistAction*>(action))
     {
@@ -735,15 +742,12 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
 
     constexpr float searchRadius = 40.0f;
     Unit* voidSpawn = bot->FindNearestCreature(
-        static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN), searchRadius);
+        static_cast<uint32>(SwpNpcs::NPC_VOID_SPAWN), searchRadius);
     if (voidSpawn && AI_VALUE(Unit*, "current target") == voidSpawn &&
         dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
     {
         return 0.0f;
     }
-
-    if (AI_VALUE(Unit*, "current target") == muru)
-        context->GetValue<bool>("neglect threat")->Set(true);
 
     if (botAI->IsAssistTankOfIndex(bot, 0, true) &&
         AI_VALUE2(Unit*, "find target", "void sentinel") &&
@@ -909,8 +913,12 @@ float KiljaedenTanksFocusAssignedHandOnlyMultiplier::GetValue(Action* action)
     Player* mainTank = GetGroupMainTank(botAI, bot);
     Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
     Player* secondAssistTank = GetGroupAssistTank(botAI, bot, 1);
-    if (!mainTank || !firstAssistTank || !secondAssistTank)
+    if (!mainTank || !GET_PLAYERBOT_AI(mainTank) ||
+        !firstAssistTank || !GET_PLAYERBOT_AI(firstAssistTank) ||
+        !secondAssistTank || !GET_PLAYERBOT_AI(secondAssistTank))
+    {
         return 1.0f;
+    }
 
     if (botAI->IsDps(bot) && dynamic_cast<DpsAssistAction*>(action))
         return 0.0f;

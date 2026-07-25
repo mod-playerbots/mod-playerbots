@@ -1,23 +1,23 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_SWPENCOUNTERKJ_H
 #define PLAYERBOTS_SWPENCOUNTERKJ_H
 
-#include <unordered_map>
-#include <vector>
-
 #include "ObjectGuid.h"
 #include "Position.h"
 #include "SWPData.h"
+#include <unordered_map>
+#include <vector>
 
 class Player;
 class PlayerbotAI;
 class Unit;
 
-namespace SunwellHelpers
+namespace SwpHelpers
 {
 
 struct KiljaedenRangedBotAssignment
@@ -76,8 +76,8 @@ void AddKiljaedenArmageddon(
 bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armageddon);
 void PruneExpiredKiljaedenArmageddons(uint32 instanceId);
 bool TryGetKiljaedenRangedSlotPosition(uint8 slotIndex, Position& position);
-void EnsureKiljaedenRangedAssignments(PlayerbotAI* botAI, Player* bot);
-void EnsureKiljaedenRangedArmageddonAssignments(PlayerbotAI* botAI, Player* bot);
+void EnsureKiljaedenRangedAssignments(Player* bot);
+void EnsureKiljaedenRangedArmageddonAssignments(Player* bot);
 bool IsKiljaedenCastingDarknessOfAThousandSouls(Unit* kiljaeden);
 Player* GetKiljaedenDragonOrbUser(Player* bot);
 bool ResetKiljaedenDragonOrbUserAnnouncement(uint32 instanceId);
@@ -85,8 +85,7 @@ bool HasRecentKiljaedenDragonOrbUse(Player* bot, uint32 recentMs);
 bool HasKiljaedenDragonAura(Player* bot);
 Unit* GetKiljaedenControlledDragon(Player* bot);
 bool CastKiljaedenDragonSpell(Unit* dragon, uint32 spellId);
-Player* FindBestKiljaedenDragonClusterTarget(
-    PlayerbotAI* botAI, Player* bot, Unit* dragon, uint32 spellId);
+Player* FindBestKiljaedenDragonClusterTarget(Player* bot, Unit* dragon, uint32 spellId);
 Player* FindClosestKiljaedenDragonTarget(Player* bot, Unit* dragon, uint32 spellId = 0);
 
 }

@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_SWPSTRATEGY_H
@@ -12,10 +13,8 @@ class RaidSunwellStrategy : public Strategy
 {
 public:
     RaidSunwellStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
-
-    bool HasTargetExclusions() const override { return true; }
     std::string const getName() override { return "sunwell"; }
-
+    bool HasTargetExclusions() const override { return true; }
     void AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type) override;
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
     void InitMultipliers(std::vector<Multiplier*>& multipliers) override;

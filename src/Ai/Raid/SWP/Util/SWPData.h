@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_SWPDATA_H
@@ -8,10 +9,10 @@
 
 #include "Common.h"
 
-namespace SunwellHelpers
+namespace SwpHelpers
 {
 
-enum class SunwellSpells : uint32
+enum class SwpSpells : uint32
 {
     // Trash - Apocalypse Guard
     SPELL_INFERNAL_DEFENSE             = 46287,
@@ -80,7 +81,7 @@ enum class SunwellSpells : uint32
     SPELL_METAMORPHOSIS                = 47241,
 };
 
-enum class SunwellNpcs : uint32
+enum class SwpNpcs : uint32
 {
     // Trash
     NPC_APOCALYPSE_GUARD         = 25593,
@@ -116,7 +117,7 @@ enum class SunwellNpcs : uint32
     NPC_ARMAGEDDON_TARGET        = 25735,
 };
 
-enum class SunwellObjects : uint32
+enum class SwpObjects : uint32
 {
     // Kalecgos
     GO_SPECTRAL_RIFT = 187055,
@@ -131,7 +132,7 @@ enum class SunwellObjects : uint32
     GO_DRAGON_ORB_4  = 188116,
 };
 
-constexpr uint32 SUNWELL_MAP_ID = 580;
+constexpr uint32 SWP_MAP_ID = 580;
 
 }
 

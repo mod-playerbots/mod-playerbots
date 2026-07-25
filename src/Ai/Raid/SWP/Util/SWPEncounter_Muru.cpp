@@ -1,19 +1,19 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
-
-#include <algorithm>
-#include <list>
 
 #include "SWPEncounter_Muru.h"
 #include "CharmInfo.h"
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
+#include <algorithm>
+#include <list>
 
 // M'uru goes invisible during the Entropius phase but remains on player threat lists
 
-namespace SunwellHelpers
+namespace SwpHelpers
 {
 
 Position const MURU_STACK_POSITION =                { 1836.532f, 608.957f, 71.222f };
@@ -40,7 +40,7 @@ bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
     MuruDarknessState& state = muruDarknessStates[instanceId];
 
     if (Aura* darknessPreEffect = muru->GetAura(
-            static_cast<uint32>(SunwellSpells::SPELL_DARKNESS_PRE_EFFECT)))
+            static_cast<uint32>(SwpSpells::SPELL_DARKNESS_PRE_EFFECT)))
     {
         int32 remainingPreEffectMs = darknessPreEffect->GetDuration();
         if (remainingPreEffectMs < 0)
@@ -59,7 +59,7 @@ bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru)
     }
 
     if (muru->HasUnitState(UNIT_STATE_CASTING) &&
-        muru->FindCurrentSpellBySpellId(static_cast<uint32>(SunwellSpells::SPELL_DARKNESS)))
+        muru->FindCurrentSpellBySpellId(static_cast<uint32>(SwpSpells::SPELL_DARKNESS)))
     {
         uint32 const startMs = now > darknessPreEffectMs ? now - darknessPreEffectMs : 0;
         if (!state.startMs || state.expireMs <= now || startMs < state.startMs)
@@ -96,32 +96,32 @@ void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& target
 
     auto const considerTarget = [&](Unit* unit)
     {
-        if (!unit || !unit->IsAlive())
+        if (!unit)
             return;
 
         switch (unit->GetEntry())
         {
-            case static_cast<uint32>(SunwellNpcs::NPC_MURU):
+            case static_cast<uint32>(SwpNpcs::NPC_MURU):
                 targets.muru = unit;
                 break;
 
-            case static_cast<uint32>(SunwellNpcs::NPC_ENTROPIUS):
+            case static_cast<uint32>(SwpNpcs::NPC_ENTROPIUS):
                 targets.entropius = unit;
                 break;
 
-            case static_cast<uint32>(SunwellNpcs::NPC_VOID_SENTINEL):
+            case static_cast<uint32>(SwpNpcs::NPC_VOID_SENTINEL):
                 targets.voidSentinels.push_back(unit);
                 break;
 
-            case static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN):
+            case static_cast<uint32>(SwpNpcs::NPC_VOID_SPAWN):
                 targets.voidSpawns.push_back(unit);
                 break;
 
-            case static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_FURY_MAGE):
+            case static_cast<uint32>(SwpNpcs::NPC_SHADOWSWORD_FURY_MAGE):
                 targets.furyMages.push_back(unit);
                 break;
 
-            case static_cast<uint32>(SunwellNpcs::NPC_SHADOWSWORD_BERSERKER):
+            case static_cast<uint32>(SwpNpcs::NPC_SHADOWSWORD_BERSERKER):
                 targets.berserkers.push_back(unit);
                 break;
 
@@ -137,8 +137,9 @@ void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& target
     }
 }
 
-Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI, Player* bot)
+Creature* FindAvailableVoidSpawnForEnslave(Player* bot)
 {
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
     Creature* bestSpawn = nullptr;
     float closestDistance = std::numeric_limits<float>::max();
     auto const& units =
@@ -147,8 +148,7 @@ Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI, Player* bot)
     for (ObjectGuid const& guid : units)
     {
         Unit* unit = botAI->GetUnit(guid);
-        if (!unit || !unit->IsAlive() ||
-            unit->GetEntry() != static_cast<uint32>(SunwellNpcs::NPC_VOID_SPAWN) ||
+        if (!unit || unit->GetEntry() != static_cast<uint32>(SwpNpcs::NPC_VOID_SPAWN) ||
             unit->IsCharmed() || unit->GetCharmer())
         {
             continue;
@@ -175,7 +175,7 @@ Creature* GetNearestMuruSingularity(Player* bot, float searchRadius)
     float nearestDistance = std::numeric_limits<float>::max();
     std::list<Creature*> singularities;
     bot->GetCreatureListWithEntryInGrid(
-        singularities, static_cast<uint32>(SunwellNpcs::NPC_SINGULARITY), searchRadius);
+        singularities, static_cast<uint32>(SwpNpcs::NPC_SINGULARITY), searchRadius);
 
     for (Creature* singularity : singularities)
     {

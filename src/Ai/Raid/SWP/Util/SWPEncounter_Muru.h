@@ -1,24 +1,24 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #ifndef PLAYERBOTS_SWPENCOUNTERMURU_H
 #define PLAYERBOTS_SWPENCOUNTERMURU_H
 
-#include <unordered_map>
-#include <vector>
-
 #include "ObjectGuid.h"
 #include "Position.h"
 #include "SWPData.h"
+#include <unordered_map>
+#include <vector>
 
 class Creature;
 class Player;
 class PlayerbotAI;
 class Unit;
 
-namespace SunwellHelpers
+namespace SwpHelpers
 {
 
 struct MuruEncounterTargets
@@ -50,7 +50,7 @@ extern std::unordered_map<uint32, std::unordered_map<ObjectGuid, uint8>>
 bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru);
 bool TryGetMuruDarknessEarlyState(Player* bot, Unit* muru, uint32 earlyWindowMs = 10000);
 void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets);
-Creature* FindAvailableVoidSpawnForEnslave(PlayerbotAI* botAI, Player* bot);
+Creature* FindAvailableVoidSpawnForEnslave(Player* bot);
 Creature* GetNearestMuruSingularity(Player* bot, float searchRadius = 30.0f);
 
 }
