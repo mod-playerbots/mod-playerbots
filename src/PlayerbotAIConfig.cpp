@@ -800,8 +800,6 @@ void PlayerbotAIConfig::LoadRandomBotLevelConfig()
     levelBracketsIgnoreArenaTeamBots =
         sConfigMgr->GetOption<bool>("AiPlayerbot.LevelBrackets.IgnoreArenaTeamBots", true);
 
-    levelBracketsFullDebug = sConfigMgr->GetOption<bool>("AiPlayerbot.LevelBrackets.FullDebugMode", false);
-    levelBracketsLiteDebug = sConfigMgr->GetOption<bool>("AiPlayerbot.LevelBrackets.LiteDebugMode", false);
     levelBracketsCheckFrequency = sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.CheckFrequency", 300);
     levelBracketsFlaggedCheckFrequency =
         sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.CheckFlaggedFrequency", 15);
@@ -922,7 +920,6 @@ void PlayerbotAIConfig::LoadRandomBotLevelConfig()
         resetBotLevelChance = 100;
     }
 
-    resetBotLevelDebug = sConfigMgr->GetOption<bool>("AiPlayerbot.ResetBotLevel.DebugMode", false);
     resetBotLevelScaledChance = sConfigMgr->GetOption<bool>("AiPlayerbot.ResetBotLevel.ScaledChance", false);
 
     resetBotLevelRestrictTimePlayed =

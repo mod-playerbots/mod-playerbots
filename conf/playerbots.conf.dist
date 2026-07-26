@@ -824,14 +824,6 @@ AiPlayerbot.RandomBotXPRate = 1.0
 # Default: 0 (disabled)
 AiPlayerbot.LevelBrackets.Enabled = 0
 
-# Enables full debug logging for the level brackets feature.
-# Default: 0 (disabled)
-AiPlayerbot.LevelBrackets.FullDebugMode = 0
-
-# Enables lite debug logging for the level brackets feature.
-# Default: 0 (disabled)
-AiPlayerbot.LevelBrackets.LiteDebugMode = 0
-
 # The frequency (in seconds) at which the bot level distribution check is performed.
 # Default: 300
 AiPlayerbot.LevelBrackets.CheckFrequency = 300
@@ -1110,10 +1102,6 @@ AiPlayerbot.ResetBotLevel.IgnoreGuildBotsWithRealPlayers = 0
 # character name exactly (character names are stored capitalized, e.g. "Thrall").
 # Default: "" (empty)
 AiPlayerbot.ResetBotLevel.ExcludeNames =
-
-# Enables debug logging for the level reset feature.
-# Default: 0 (disabled)
-AiPlayerbot.ResetBotLevel.DebugMode = 0
 
 #
 #

@@ -485,8 +485,6 @@ public:
     // Random bot level brackets (periodic redistribution across per-faction level ranges). See
     // RandomBotLevelMgr; percentages here are the as-configured values, not the runtime working copy.
     bool levelBracketsEnabled;
-    bool levelBracketsFullDebug;
-    bool levelBracketsLiteDebug;
     uint32 levelBracketsCheckFrequency;
     uint32 levelBracketsFlaggedCheckFrequency;
     uint32 levelBracketsFlaggedProcessLimit;
@@ -514,7 +512,6 @@ public:
     uint32 resetBotLevelPlayedTimeCheckFrequency;
     bool resetBotLevelIgnoreGuildWithRealPlayers;
     std::vector<std::string> resetBotLevelExcludeNames;
-    bool resetBotLevelDebug;
 
 private:
     PlayerbotAIConfig() = default;
