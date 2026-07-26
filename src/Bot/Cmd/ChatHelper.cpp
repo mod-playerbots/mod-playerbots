@@ -56,6 +56,8 @@ ChatHelper::ChatHelper(PlayerbotAI* botAI) : PlayerbotAIAware(botAI)
     itemQualities["legendary"] = ITEM_QUALITY_LEGENDARY;
     itemQualities["yellow"] = ITEM_QUALITY_LEGENDARY;
     itemQualities["orange"] = ITEM_QUALITY_LEGENDARY;
+    itemQualities["artifact"] = ITEM_QUALITY_ARTIFACT;
+    itemQualities["heirloom"] = ITEM_QUALITY_HEIRLOOM;
 
     consumableSubClasses["potion"] = ITEM_SUBCLASS_POTION;
     consumableSubClasses["elixir"] = ITEM_SUBCLASS_ELIXIR;
@@ -565,13 +567,24 @@ std::string const ChatHelper::FormatItemQuality(uint32 quality)
 {
     switch (quality)
     {
-        case ITEM_QUALITY_POOR:      return "grey";
-        case ITEM_QUALITY_NORMAL:    return "white";
-        case ITEM_QUALITY_UNCOMMON:  return "green";
-        case ITEM_QUALITY_RARE:      return "blue";
-        case ITEM_QUALITY_EPIC:      return "purple";
-        case ITEM_QUALITY_LEGENDARY: return "orange";
-        default:                     return "unknown";
+        case ITEM_QUALITY_POOR:
+            return "grey";
+        case ITEM_QUALITY_NORMAL:
+            return "white";
+        case ITEM_QUALITY_UNCOMMON:
+            return "green";
+        case ITEM_QUALITY_RARE:
+            return "blue";
+        case ITEM_QUALITY_EPIC:
+            return "purple";
+        case ITEM_QUALITY_LEGENDARY:
+            return "orange";
+        case ITEM_QUALITY_ARTIFACT:
+            return "artifact";
+        case ITEM_QUALITY_HEIRLOOM:
+            return "heirloom";
+        default:
+            return "unknown";
     }
 }
 

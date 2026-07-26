@@ -534,18 +534,39 @@ bool RemoveGlyphAction::Execute(Event /*event*/)
     return true;
 }
 
+static uint32 GetWornItemLevelAverage(Player* player)
+{
+    uint32 sumLevel = 0;
+    uint32 count = 0;
+    for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+    {
+        if (slot == EQUIPMENT_SLOT_BODY || slot == EQUIPMENT_SLOT_TABARD)
+            continue;
+
+        if (Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+        {
+            sumLevel += item->GetTemplate()->ItemLevel;
+            ++count;
+        }
+    }
+
+    return count ? sumLevel / count : 0;
+}
+
 bool AutoGearAction::Execute(Event event)
 {
     if (!sPlayerbotAIConfig.autoGearCommand)
     {
-        botAI->TellError("autogear command is not allowed, please check the configuration.");
+        botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "autogear_command_disabled_error", "autogear command is not allowed, please check the configuration.", {}));
         return false;
     }
 
     if (!sPlayerbotAIConfig.autoGearCommandAltBots &&
         !sPlayerbotAIConfig.IsInRandomAccountList(bot->GetSession()->GetAccountId()))
     {
-        botAI->TellError("You cannot use autogear on alt bots.");
+        botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault("autogear_altbot_refused_error",
+                                                                          "You cannot use autogear on alt bots.", {}));
         return false;
     }
 
@@ -577,76 +598,112 @@ bool AutoGearAction::Execute(Event event)
 
     if (!param.empty())
     {
-        uint32 requestedQuality = ChatHelper::parseItemQuality(param);
-        if (requestedQuality != MAX_ITEM_QUALITY)
-        {
-            if (requestedQuality < ITEM_QUALITY_NORMAL)
-                requestedQuality = ITEM_QUALITY_NORMAL;
-            quality = std::min(requestedQuality, qualityCap);
-            if (requestedQuality > qualityCap)
-                botAI->TellMaster("Config limits me to " + ChatHelper::FormatItemQuality(qualityCap) +
-                                  " quality, gearing to that.");
-        }
-        else if (param == "match")
+        if (param == "match")
         {
             Player* master = GetMaster();
             if (!master)
             {
-                botAI->TellError("I have no master to match gear with.");
+                botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "autogear_no_master_error", "I have no master to match gear with.", {}));
                 return false;
             }
-            uint32 const requestedIlvl = botAI->GetEquipGearScore(master);
+
+            uint32 const requestedIlvl = GetWornItemLevelAverage(master);
+            if (requestedIlvl == 0)
+            {
+                botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "autogear_master_no_gear_error", "You have no gear equipped for me to match.", {}));
+                return false;
+            }
+
             ilvl = (ilvlCap == 0) ? requestedIlvl : std::min(requestedIlvl, ilvlCap);
             if (ilvlCap != 0 && requestedIlvl > ilvlCap)
-                botAI->TellMaster("Config caps item level at " + std::to_string(ilvlCap) +
-                                  ", gearing to that instead of your " + std::to_string(requestedIlvl) + ".");
+            {
+                std::map<std::string, std::string> phs;
+                phs["%limit"] = std::to_string(ilvlCap);
+                phs["%requested"] = std::to_string(requestedIlvl);
+                botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "autogear_ilvl_capped_msg",
+                    "Config caps item level at %limit, gearing to that instead of %requested.", phs));
+            }
+        }
+        else if (ChatHelper::parseItemQuality(param) != MAX_ITEM_QUALITY)
+        {
+
+            uint32 const requestedQuality = std::max<uint32>(ChatHelper::parseItemQuality(param), ITEM_QUALITY_NORMAL);
+
+            quality = std::min(requestedQuality, qualityCap);
+            if (requestedQuality > qualityCap)
+            {
+                std::map<std::string, std::string> phs;
+                phs["%quality"] = ChatHelper::FormatItemQuality(qualityCap);
+                botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "autogear_quality_capped_msg", "Config limits me to %quality quality, gearing to that.", phs));
+            }
         }
         else
         {
-            uint32 requestedIlvl = 0;
-            bool valid = false;
-            try
-            {
-                size_t pos = 0;
-                unsigned long const parsed = std::stoul(param, &pos);
-                valid = (pos == param.size() && parsed > 0 && parsed <= 0xFFFFu);
-                requestedIlvl = static_cast<uint32>(parsed);
-            }
-            catch (...)
-            {
-                valid = false;
-            }
+            // Handle negative numbers, garbage, and numbers that are too large to fit in a uint32.
+            constexpr size_t MAX_ILVL_DIGITS = 5;
+            bool const digitsOnly = !param.empty() && param.size() <= MAX_ILVL_DIGITS &&
+                                    param.find_first_not_of("0123456789") == std::string::npos;
+            uint32 const requestedIlvl = digitsOnly ? static_cast<uint32>(std::stoul(param)) : 0;
 
-            if (!valid)
+            if (!requestedIlvl)
             {
-                botAI->TellError("Unknown autogear option '" + param +
-                                 "'. Use reset, match, green, blue, purple, or an item level number.");
+                std::map<std::string, std::string> phs;
+                phs["%param"] = param;
+                botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "autogear_invalid_arg_error",
+                    "Unknown autogear option '%param'. Use bis, reset, match, a quality "
+                    "(white, green, blue, purple, orange) or a positive item level number.",
+                    phs));
                 return false;
             }
 
             if (requestedIlvl <= ITEM_QUALITY_LEGENDARY)
             {
-                botAI->TellError("'" + param +
-                                 "' looks like a quality. Numbers are item levels (e.g. 200); "
-                                 "use a colour word for quality: white, green, blue, purple, orange.");
+                std::map<std::string, std::string> phs;
+                phs["%param"] = param;
+                botAI->TellError(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "autogear_quality_as_number_error",
+                    "'%param' looks like a quality. Numbers are item levels (e.g. 200); use a colour word "
+                    "for quality: white, green, blue, purple, orange.",
+                    phs));
                 return false;
             }
 
             ilvl = (ilvlCap == 0) ? requestedIlvl : std::min(requestedIlvl, ilvlCap);
             if (ilvlCap != 0 && requestedIlvl > ilvlCap)
-                botAI->TellMaster("Config caps item level at " + std::to_string(ilvlCap) +
-                                  ", gearing to that instead of " + std::to_string(requestedIlvl) + ".");
+            {
+                std::map<std::string, std::string> phs;
+                phs["%limit"] = std::to_string(ilvlCap);
+                phs["%requested"] = std::to_string(requestedIlvl);
+                botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                    "autogear_ilvl_capped_msg",
+                    "Config caps item level at %limit, gearing to that instead of %requested.", phs));
+            }
         }
     }
 
-    std::ostringstream announce;
-    announce << (reset ? "I'm erasing my gear and regearing from scratch ("
-                       : "I'm auto gearing (")
-             << ChatHelper::FormatItemQuality(quality);
-    if (ilvl != 0)
-        announce << ", up to item level " << ilvl;
-    announce << ").";
-    botAI->TellMaster(announce.str());
+    std::map<std::string, std::string> announcePhs;
+    announcePhs["%quality"] = ChatHelper::FormatItemQuality(quality);
+    announcePhs["%ilvl"] = std::to_string(ilvl);
+    if (reset)
+        botAI->TellMaster(
+            ilvl != 0
+                ? PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                      "autogear_reset_start_msg",
+                      "I'm erasing my gear and regearing from scratch (%quality, up to item level %ilvl).", announcePhs)
+                : PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                      "autogear_reset_start_any_ilvl_msg", "I'm erasing my gear and regearing from scratch (%quality).",
+                      announcePhs));
+    else
+        botAI->TellMaster(
+            ilvl != 0 ? PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                            "autogear_start_msg", "I'm auto gearing (%quality, up to item level %ilvl).", announcePhs)
+                      : PlayerbotTextMgr::instance().GetBotTextOrDefault("autogear_start_any_ilvl_msg",
+                                                                         "I'm auto gearing (%quality).", announcePhs));
 
     if (reset)
     {
