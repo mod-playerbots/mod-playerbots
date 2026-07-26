@@ -267,11 +267,11 @@ public:
         {
             case static_cast<uint32>(SwpSpells::SPELL_SPECTRAL_BLAST_PORTAL):
                 if (PlayerbotAI* botAI = FindFirstSunwellSurfaceCombatBotInGroup(player))
-                    RecordKalecgosSpectralBlastTarget(player);
+                    RecordKalecgosSpectralBlastTarget(player, botAI);
                 break;
 
             case static_cast<uint32>(SwpSpells::SPELL_TELEPORT_SPECTRAL):
-                if (PlayerbotAI* botAI = FindFirstSunwellCombatBotInGroup(player))
+                if (FindFirstSunwellCombatBotInGroup(player))
                     RecordKalecgosSpectralRealmEnter(player);
                 break;
 

@@ -221,6 +221,8 @@ bool FelmystKiteDemonicVaporAction::Execute(Event /*event*/)
 
     float const distToDestination = bot->GetExactDist2d(
         destination.GetPositionX(), destination.GetPositionY());
+    if (distToDestination < 0.5f)
+        return false;
 
     float const dX = destination.GetPositionX() - bot->GetPositionX();
     float const dY = destination.GetPositionY() - bot->GetPositionY();

@@ -381,8 +381,6 @@ void RaidSunwellStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValu
             AppendMuruTankExclusions(botAI, context, exclusions);
             break;
         case TargetValueExclusionType::Dps:
-            AppendKiljaedenSinisterReflectionExclusions(botAI, context, exclusions);
-            break;
         case TargetValueExclusionType::Attacker:
             AppendKiljaedenSinisterReflectionExclusions(botAI, context, exclusions);
             break;
