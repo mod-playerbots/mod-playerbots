@@ -59,12 +59,21 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
         float const distToPosition = bot->GetExactDist2d(
             position.GetPositionX(), position.GetPositionY());
 
+        if (brutallus->GetVictim() != bot && !mainTankAura &&
+            ((assistTankAura && assistTankAura->GetStackAmount() >= 3) || !assistTankAura))
+        {
+            return botAI->DoSpecificAction("taunt spell", event, true);
+        }
+
         if (_mainTankInitialPositionReached == false && distToPosition <= 2.0f)
         {
             _mainTankInitialPositionReached = true;
         }
         else if (_mainTankInitialPositionReached == false)
         {
+            if (!bot->IsWithinMeleeRange(brutallus))
+                return false;
+
             float const dX = position.GetPositionX() - bot->GetPositionX();
             float const dY = position.GetPositionY() - bot->GetPositionY();
             float const moveDist = std::min(2.25f, distToPosition);
@@ -75,17 +84,14 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
                 SWP_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
                 false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
         }
-
-        if (brutallus->GetVictim() != bot && !mainTankAura &&
-            ((assistTankAura && assistTankAura->GetStackAmount() >= 3) || !assistTankAura))
-        {
-            return botAI->DoSpecificAction("taunt spell", event, true);
-        }
     }
     else if (assistTank == bot)
     {
-        if (brutallus->GetVictim() == bot)
-            return false;
+        if (brutallus->GetVictim() != bot && !assistTankAura &&
+            mainTankAura && mainTankAura->GetStackAmount() >= 3)
+        {
+            return botAI->DoSpecificAction("taunt spell", event, true);
+        }
 
         float const mainTankAngle = Position::NormalizeOrientation(std::atan2(
             mainTank->GetPositionY() - brutallus->GetPositionY(),
@@ -97,16 +103,13 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
         Position const position = GetBrutallusPositionAtAngle(
             bot, brutallus, assistTankAngle, BRUTALLUS_TANK_POSITION_RADIUS);
 
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 2.0f)
-        {
-            return MoveTo(
-                SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                position.GetPositionZ(), false, false, false, false,
-                MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
+        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) < 2.0f)
+            return false;
 
-        if (!assistTankAura && mainTankAura && mainTankAura->GetStackAmount() >= 3)
-            return botAI->DoSpecificAction("taunt spell", event, true);
+        return MoveTo(
+            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
+            position.GetPositionZ(), false, false, false, false,
+            MovementPriority::MOVEMENT_COMBAT, true, false);
     }
 
     return false;

@@ -151,6 +151,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
+class FelmystDontDotAddsMultiplier : public Multiplier
+{
+public:
+    FelmystDontDotAddsMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "felmyst don't dot adds") {}
+    virtual float GetValue(Action* action);
+};
+
 class FelmystDelayCooldownsMultiplier : public Multiplier
 {
 public:

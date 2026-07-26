@@ -215,8 +215,11 @@ bool FelmystPullingBossTrigger::IsActive()
 
 bool FelmystBossEngagedByMainTankOnGroundTrigger::IsActive()
 {
+    if (!botAI->IsMainTank(bot))
+        return false;
+
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    return felmyst && !felmyst->IsFlying() && botAI->IsMainTank(bot);
+    return felmyst && !felmyst->IsFlying();
 }
 
 bool FelmystBossEngagedByRangedOnGroundTrigger::IsActive()
@@ -370,6 +373,11 @@ bool FelmystPlayerIsCharmedByFogTrigger::IsActive()
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
     return felmyst && GetFelmystCharmedTarget(bot, felmyst);
+}
+
+bool FelmystShouldHoldDpsWhileLandingTrigger::IsActive()
+{
+    return IsMechanicTrackerBot(bot, SWP_MAP_ID) && AI_VALUE2(Unit*, "find target", "felmyst");
 }
 
 // Eredar Twins

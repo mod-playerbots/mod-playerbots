@@ -272,6 +272,15 @@ public:
         PlayerbotAI* botAI) : AttackAction(botAI, "felmyst kill charmed player") {}
     bool Execute(Event event) override;
 };
+
+class FelmystManageLandingDpsTimerAction : public Action
+{
+public:
+    FelmystManageLandingDpsTimerAction(
+        PlayerbotAI* botAI) : Action(botAI, "felmyst manage landing dps timer") {}
+    bool Execute(Event event) override;
+};
+
 // Eredar Twins
 
 class EredarTwinsMeleeJumpDownFromBalconyAction : public MovementAction

@@ -101,6 +101,9 @@ public:
         creators["felmyst kill charmed player"] =
             &RaidSunwellActionContext::felmyst_kill_charmed_player;
 
+        creators["felmyst manage landing dps timer"] =
+            &RaidSunwellActionContext::felmyst_manage_landing_dps_timer;
+
         // Eredar Twins
         creators["eredar twins melee jump down from balcony"] =
             &RaidSunwellActionContext::eredar_twins_melee_jump_down_from_balcony;
@@ -303,6 +306,9 @@ private:
     }
     static Action* felmyst_kill_charmed_player(PlayerbotAI* botAI) {
         return new FelmystKillCharmedPlayerAction(botAI);
+    }
+    static Action* felmyst_manage_landing_dps_timer(PlayerbotAI* botAI) {
+        return new FelmystManageLandingDpsTimerAction(botAI);
     }
 
     // Eredar Twins

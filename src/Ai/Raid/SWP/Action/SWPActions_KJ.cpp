@@ -50,7 +50,6 @@ bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
     return botAI->SayToRaid(text);
 }
 
-
 bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/)
 {
     Player* mainTank = GetGroupMainTank(botAI, bot);
@@ -125,7 +124,8 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/
         if (AI_VALUE(Unit*, "current target") != assignedHand)
             return Attack(assignedHand);
 
-        if (assignedHand->GetVictim() == bot && !assignedHand->HasUnitState(UNIT_STATE_STUNNED))
+        if (assignedHand->GetVictim() == bot && bot->IsWithinMeleeRange(assignedHand) &&
+            !assignedHand->HasUnitState(UNIT_STATE_STUNNED))
         {
             constexpr float minTankDistance = 15.0f;
 
