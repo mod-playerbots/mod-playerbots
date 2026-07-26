@@ -35,7 +35,7 @@ public:
     void LogStartupSummary() const;
     void Update(uint32 diff);
     void OnBotLogin(Player* player);
-    void OnBotLevelChanged(Player* player);
+    void OnBotLevelChanged(Player* player, uint8 oldLevel);
     void OnPlayerLogout(Player* player);
 
 private:
@@ -86,7 +86,7 @@ private:
     uint8 _randomBotMinLevel = 1;
     uint8 _randomBotMaxLevel = 80;
     std::vector<PendingResetEntry> _pendingLevelResets;
-    std::vector<uint64> _socialFriendsList;
+    std::vector<uint32> _socialFriendsList;
 
     uint32 _bracketsTimer = 0; // Level brackets: distribution adjustments
     uint32 _flaggedTimer = 0;  // Level brackets: pending reset checks

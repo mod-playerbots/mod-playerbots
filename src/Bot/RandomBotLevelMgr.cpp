@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "DatabaseEnv.h"
+#include "LFGMgr.h"
 #include "Log.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
@@ -38,13 +39,13 @@ static bool IsNameInExcludeList(Player* bot, std::vector<std::string> const& exc
 }
 
 // Checks if the given bot is present in any real player's friends list.
-static bool BotInFriendList(Player* bot, std::vector<uint64> const& socialFriendsList)
+static bool BotInFriendList(Player* bot, std::vector<uint32> const& socialFriendsList)
 {
     if (!bot || !bot->IsInWorld() || !bot->GetSession() || bot->GetSession()->isLogingOut() ||
         bot->IsDuringRemoveFromWorld())
         return false;
 
-    return std::find(socialFriendsList.begin(), socialFriendsList.end(), bot->GetGUID().GetRawValue()) !=
+    return std::find(socialFriendsList.begin(), socialFriendsList.end(), bot->GetGUID().GetCounter()) !=
         socialFriendsList.end();
 }
 
@@ -79,6 +80,15 @@ static bool IsBotSafeForLevelReset(Player* bot)
 
     if (bot->InBattleground() || bot->InArena() || bot->inRandomLfgDungeon() || bot->InBattlegroundQueue())
         return false;
+
+    if (sLFGMgr->GetState(bot->GetGUID()) != lfg::LFG_STATE_NONE)
+        return false;
+
+    if (Group* group = bot->GetGroup())
+    {
+        if (sLFGMgr->GetState(group->GetGUID()) != lfg::LFG_STATE_NONE)
+            return false;
+    }
 
     if (bot->IsInFlight())
         return false;
@@ -363,7 +373,7 @@ void RandomBotLevelMgr::AdjustBotToRange(Player* bot, int targetRangeIndex, Team
     }
 }
 
-// Loads the list of social friend GUIDs (character_social, flags = 1) into _socialFriendsList.
+// Loads the list of social friend low GUIDs (character_social, flags = 1) into _socialFriendsList.
 void RandomBotLevelMgr::LoadSocialFriendList()
 {
     _socialFriendsList.clear();
@@ -374,8 +384,7 @@ void RandomBotLevelMgr::LoadSocialFriendList()
 
     do
     {
-        uint32 socialFriendGUID = result->Fetch()->Get<uint32>();
-        _socialFriendsList.push_back(static_cast<uint64>(socialFriendGUID));
+        _socialFriendsList.push_back(result->Fetch()->Get<uint32>());
     } while (result->NextRow());
 }
 
@@ -1025,9 +1034,13 @@ void RandomBotLevelMgr::OnBotLogin(Player* player)
     }
 }
 
-void RandomBotLevelMgr::OnBotLevelChanged(Player* player)
+void RandomBotLevelMgr::OnBotLevelChanged(Player* player, uint8 oldLevel)
 {
     if (!sRandomPlayerbotMgr.IsRandomBot(player))
+        return;
+
+    // Only react to a natural level up.
+    if (player->GetLevel() != oldLevel + 1)
         return;
 
     if (IsNameInExcludeList(player, sPlayerbotAIConfig.resetBotLevelExcludeNames))
@@ -1038,13 +1051,6 @@ void RandomBotLevelMgr::OnBotLevelChanged(Player* player)
         return;
 
     uint8 newLevel = player->GetLevel();
-    if (newLevel == 1)
-        return;
-
-    // Death Knights start at the heroic starting level; never treat that as a reset trigger.
-    uint8 dkMinLevel = static_cast<uint8>(sWorld->getIntConfig(CONFIG_START_HEROIC_PLAYER_LEVEL));
-    if (newLevel == dkMinLevel && player->getClass() == CLASS_DEATH_KNIGHT)
-        return;
 
     // SkipFromLevel takes priority and is not affected by ScaledChance or RestrictTimePlayed.
     if (sPlayerbotAIConfig.resetBotLevelSkipFrom > 0 && newLevel == sPlayerbotAIConfig.resetBotLevelSkipFrom)
@@ -1162,11 +1168,11 @@ public:
         RandomBotLevelMgr::instance().OnBotLogin(player);
     }
 
-    void OnPlayerLevelChanged(Player* player, uint8 /*oldLevel*/) override
+    void OnPlayerLevelChanged(Player* player, uint8 oldLevel) override
     {
         if (!sPlayerbotAIConfig.resetBotLevelEnabled)
             return;
-        RandomBotLevelMgr::instance().OnBotLevelChanged(player);
+        RandomBotLevelMgr::instance().OnBotLevelChanged(player, oldLevel);
     }
 
     void OnPlayerLogout(Player* player) override
