@@ -1065,6 +1065,17 @@ AiPlayerbot.EnableTravelNodes = 0
 # Default: 0
 AiPlayerbot.TransportSkipRide = 0
 
+# Travel-node router tiering (same-map journeys):
+#   dist <= TravelNodeDirectDistance : direct mmap path preferred (cheap)
+#   dist >  TravelNodeDirectDistance : node graph routes first; direct path
+#                                      only as fallback when no graph route
+# TravelNodeProbeSteps caps the chained mmap steps of either direct probe
+# (each step is a Detour query at plan time). 0 disables both direct probes:
+# pure graph-or-nothing, useful when testing node coverage.
+# Defaults: 10 steps, 300 yards
+AiPlayerbot.TravelNodeProbeSteps = 10
+AiPlayerbot.TravelNodeDirectDistance = 300
+
 # Control probability weights for RPG status of bots. Takes effect only when the status meets its premise.​
 # Sum of weights need not be 100. Set to 0 to disable the status.
 #

@@ -8,7 +8,6 @@
 #define PLAYERBOTS_TRAVELMGR_H
 
 #include <boost/functional/hash.hpp>
-#include <cmath>
 #include <map>
 #include <random>
 
@@ -17,6 +16,11 @@
 #include "GameObject.h"
 #include "GridDefines.h"
 #include "PlayerbotAIConfig.h"
+
+// Must come after the core headers: on MSVC <math.h> only exposes M_PI when
+// _USE_MATH_DEFINES is set beforehand, and Define.h (reached via AiObject.h) is
+// what sets it.
+#include <cmath>
 
 class Creature;
 class GuidPosition;

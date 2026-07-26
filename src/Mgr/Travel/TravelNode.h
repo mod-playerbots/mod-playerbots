@@ -9,8 +9,11 @@
 
 #include <shared_mutex>
 
-#include "G3D/Vector3.h"
+// TravelMgr.h first: G3D/Vector3.h pulls in <math.h> (via g3dmath.h), which on
+// MSVC must not be reached before Define.h sets _USE_MATH_DEFINES.
 #include "TravelMgr.h"
+
+#include "G3D/Vector3.h"
 
 // THEORY
 //

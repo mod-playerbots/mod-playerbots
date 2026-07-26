@@ -59,6 +59,7 @@
 #include "RtiAction.h"
 #include "SayAction.h"
 #include "StayActions.h"
+#include "TravelOrderActions.h"
 #include "SuggestWhatToDoAction.h"
 #include "TravelAction.h"
 #include "VehicleActions.h"
@@ -135,6 +136,7 @@ public:
         creators["flee to group leader"] = &ActionContext::flee_to_group_leader;
         creators["runaway"] = &ActionContext::runaway;
         creators["stay"] = &ActionContext::stay;
+        creators["drive travel order"] = &ActionContext::drive_travel_order;
         creators["sit"] = &ActionContext::sit;
         creators["aggressive target"] = &ActionContext::aggressive_target;
         creators["attack anything"] = &ActionContext::attack_anything;
@@ -345,6 +347,7 @@ private:
     static Action* attack_least_hp_target(PlayerbotAI* botAI) { return new AttackLeastHpTargetAction(botAI); }
     static Action* attack_enemy_player(PlayerbotAI* botAI) { return new AttackEnemyPlayerAction(botAI); }
     static Action* stay(PlayerbotAI* botAI) { return new StayAction(botAI); }
+    static Action* drive_travel_order(PlayerbotAI* botAI) { return new DriveTravelOrderAction(botAI); }
     static Action* sit(PlayerbotAI* botAI) { return new SitAction(botAI); }
     static Action* runaway(PlayerbotAI* botAI) { return new RunAwayAction(botAI); }
     static Action* follow(PlayerbotAI* botAI) { return new FollowAction(botAI); }

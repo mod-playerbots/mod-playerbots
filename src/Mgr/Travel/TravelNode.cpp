@@ -1005,12 +1005,23 @@ bool TravelPath::UpcommingSpecialMovement(WorldPosition startPos,
         return true;
     }
 
-    // Flight path: interact with flight master when in range.
-    if (startP->type == PathNodeType::NODE_FLIGHTPATH &&
-        startPos.distance(startP->point) < INTERACTION_DISTANCE)
+    // Flight path: hand over to the taxi handler when near the node.
+    // Wider than INTERACTION_DISTANCE (5.5y): stored node points can sit
+    // on unreachable spots (platform z-offsets), parking the bot ~11y
+    // out (observed at the Booty Bay flight master). The handler's
+    // ActivateTaxiPathTo does its own proximity validation.
+    if (startP->type == PathNodeType::NODE_FLIGHTPATH)
     {
-        cutTo(*startP, false);
-        return true;
+        float const fmDist = startPos.distance(startP->point);
+        if (fmDist < 20.0f)
+        {
+            cutTo(*startP, false);
+            return true;
+        }
+        // TEMP DIAG: flight node on the path but still out of reach.
+        LOG_DEBUG("playerbots",
+                  "[FlightDiag] flight node at {:.1f}y from ({:.1f},{:.1f},{:.1f}) — outside 20y gate",
+                  fmDist, startPos.GetPositionX(), startPos.GetPositionY(), startPos.GetPositionZ());
     }
 
     // Board-and-ride mode (transportSkipRide == false). Cut to dock if
@@ -1294,10 +1305,20 @@ TravelPath TravelNodeRoute::BuildPath(std::vector<WorldPosition> pathToStart, st
             if (prevNode->hasPathTo(node))  // Get the path to the next node if it exists.
                 nodePath = prevNode->getPathTo(node);
 
+            // Runtime live path-building (TravelNode::BuildPath -> getPathFromPath)
+            // issues a Detour query on the segment's map AND mutates shared node
+            // state (setPathTo/setComplete) under only a shared lock. Restrict it to
+            // segments whose BOTH endpoints are on the bot's CURRENT map: a
+            // foreign-map segment (e.g. beyond a not-yet-crossed transition) must
+            // never be pathfound from this thread. Foreign / incomplete segments fall
+            // through to the node-point hop below and are resolved locally on arrival.
+            bool const canBuildHere = bot &&
+                prevNode->getPosition()->GetMapId() == bot->GetMapId() &&
+                node->getPosition()->GetMapId() == bot->GetMapId();
+
             if (!nodePath || !nodePath->getComplete())  // Build the path to the next node if it doesn't exist.
             {
-                // Only attempt runtime path building when we have a bot entity.
-                if (bot)
+                if (canBuildHere)
                 {
                     if (!prevNode->isTransport())
                         nodePath = prevNode->BuildPath(node, bot);
@@ -1313,7 +1334,7 @@ TravelPath TravelNodeRoute::BuildPath(std::vector<WorldPosition> pathToStart, st
 
             if (!nodePath || !nodePath->getComplete())
             {
-                if (bot)
+                if (canBuildHere)
                 {
                     returnNodePath =
                         *node->BuildPath(prevNode, bot);
@@ -1742,15 +1763,22 @@ TravelPath TravelNodeMap::GetFullPath(WorldPosition botPos,
 {
     TravelPath path;
 
-    // Probe-first short-circuit (matches reference exactly): if a 40-step
-    // mmap probe from bot to destination reaches within spellDistance of
-    // dest, use the probe directly and skip graph routing. Otherwise
-    // the probe waypoints are kept as `beginPath` and fed into per-
-    // candidate startPath cropping below.
+    // Tiered routing. Short same-map moves (<= travelNodeDirectDistance,
+    // default 300y) prefer a DIRECT mmap path — natural and cheap (a
+    // couple of chained steps). Beyond that the GRAPH routes first, so the
+    // node system actually drives long travel (the reference's ungated
+    // probe-first made every navmesh-reachable same-map journey bypass the
+    // nodes entirely, burning up to 40 plan-time Detour queries to do it).
+    // The direct probe then reappears only as a no-route FALLBACK at the
+    // bottom of this function. A failed short probe leaves its partial
+    // waypoints in beginPath for the per-candidate start-glue cropping.
     std::vector<WorldPosition> beginPath;
-    if (botPos.GetMapId() == destination.GetMapId())
+    if (sPlayerbotAIConfig.travelNodeProbeSteps > 0 &&
+        botPos.GetMapId() == destination.GetMapId() &&
+        botPos.distance(destination) <= sPlayerbotAIConfig.travelNodeDirectDistance)
     {
-        beginPath = destination.getPathFromPath({botPos}, bot, 40);
+        beginPath = destination.getPathFromPath({botPos}, bot,
+                                                sPlayerbotAIConfig.travelNodeProbeSteps);
         if (destination.isPathTo(beginPath, sPlayerbotAIConfig.spellDistance))
             return TravelPath(beginPath);
     }
@@ -1764,20 +1792,12 @@ TravelPath TravelNodeMap::GetFullPath(WorldPosition botPos,
     if (bot && bot->GetTransport())
         transportEntry = bot->GetTransport()->GetEntry();
 
-    // K-nearest start + end node candidates. Map-wide scan to mirror
+    // K-nearest start + end node candidates (K=5). Map-wide scan to mirror
     // reference `getNodes(pos, -1)` — restricting to bot's zone misses
     // nodes that sit just across a zone boundary (e.g. a cave whose
     // interior node is in a different zone than its entrance).
-    //
-    // Rank by full 3D distance, NOT fDist (which is 2D / GetExactDist2d).
-    // Several maps stack walkable geometry vertically over the same X/Y:
-    // floating Dalaran (z~650) sits ~480y directly above Crystalsong
-    // Forest (z~170), each with its own nodes. A 2D ranking hands a bot
-    // in the city the ground nodes below it (and vice-versa) as its
-    // "nearest" candidates; all of them fail bot->node validation because
-    // there is no walkable path across the vertical gap. 3D distance keeps
-    // candidates on the bot's own level.
-    constexpr uint32 K = 8;
+    // Rank by full 3D distance
+    constexpr uint32 K = 5;
     auto pickKNearest = [&](WorldPosition pos) -> std::vector<TravelNode*>
     {
         std::vector<TravelNode*> candidates;
@@ -1798,7 +1818,13 @@ TravelPath TravelNodeMap::GetFullPath(WorldPosition botPos,
     std::vector<TravelNode*> endCandidates = pickKNearest(destination);
 
     if (startCandidates.empty() || endCandidates.empty())
+    {
+        LOG_DEBUG("playerbots",
+                  "[TravelFail] no node candidates: startMap {} ({}) endMap {} ({})",
+                  botPos.GetMapId(), startCandidates.size(),
+                  destination.GetMapId(), endCandidates.size());
         return path;  // empty
+    }
 
     // Iterate combinations with per-candidate path validation. Skip
     // nodes that failed a prior pass (bad*Nodes), reject endNodes whose
@@ -1827,15 +1853,25 @@ TravelPath TravelNodeMap::GetFullPath(WorldPosition botPos,
         constexpr float endMaxZ = 25.0f;
         std::vector<WorldPosition> endProbe;
         bool endPathOk = false;
-        if (endNodePos.GetMapId() == destination.GetMapId())
+        // Only run a live final-leg probe when the bot is ACTUALLY standing on the
+        // destination map. Otherwise getPathTo(destination, nullptr) spins up a temp
+        // creature and pathfinds the DESTINATION map's navmesh from this (start) map
+        // thread, racing that map's own update thread on the shared dtNavMeshQuery
+        // node pool -> world-thread freeze. For a cross-map route the final leg is
+        // DEFERRED: stub the endNode->destination segment and let the funnel resolve
+        // it locally (ResolveMovePath's in-sight probe) once the bot has crossed onto
+        // the destination map. The endNode is then selected by position + hasRouteTo
+        // rather than by this probe.
+        if (endNodePos.GetMapId() == destination.GetMapId() &&
+            bot && bot->GetMapId() == destination.GetMapId())
         {
-            Unit* pathBot = (bot && bot->GetMapId() == destination.GetMapId()) ? bot : nullptr;
-            endProbe = endNodePos.getPathTo(destination, pathBot);
+            endProbe = endNodePos.getPathTo(destination, bot);
             endPathOk = destination.isPathTo(endProbe, sPlayerbotAIConfig.spellDistance, endMaxZ);
         }
         else
         {
-            // Cross-map endNode is its own teleport destination.
+            // Deferred / cross-map: the endNode is the approach target; the exact
+            // final leg is computed locally on arrival.
             endProbe = {endNodePos, destination};
             endPathOk = true;
         }
@@ -1903,6 +1939,46 @@ TravelPath TravelNodeMap::GetFullPath(WorldPosition botPos,
             return path;
         }
     }
+
+    // Fallback: no usable graph route (no candidates, no A* route, or every
+    // candidate failed validation). Try a direct chained mmap probe on the
+    // bot's own map so same-map journeys still work where the graph is
+    // sparse or disconnected. Step budget is configurable
+    // (AiPlayerbot.TravelNodeProbeSteps, 0 = no fallback) — each step is a
+    // plan-time Detour query, so keep it small.
+    if (sPlayerbotAIConfig.travelNodeProbeSteps > 0 &&
+        botPos.GetMapId() == destination.GetMapId())
+    {
+        std::vector<WorldPosition> direct =
+            destination.getPathFromPath({botPos}, bot, sPlayerbotAIConfig.travelNodeProbeSteps);
+        if (destination.isPathTo(direct, sPlayerbotAIConfig.spellDistance))
+            return TravelPath(direct);
+
+        // Partial progress still beats nothing. On long journeys the
+        // capped probe can't reach the destination in one plan, but the
+        // funnel re-resolves as the bot advances, so returning the
+        // partial leg chains probes across the whole journey (this is
+        // the graph-off behavior). Discarding it left ResolveMovePath
+        // with a 1-point beeline that makeShortCut wipes — the observed
+        // Hellfire freeze/1-point crawl.
+        float const remaining = direct.empty() ? -1.0f : destination.distance(direct.back());
+        if (direct.size() > 1 &&
+            remaining + 10.0f < destination.distance(botPos))
+        {
+            LOG_DEBUG("playerbots",
+                      "[TravelFail] no graph route map {} — partial probe: {} pts, {:.0f}y remaining of {:.0f}y",
+                      botPos.GetMapId(), direct.size(), remaining, destination.distance(botPos));
+            return TravelPath(direct);
+        }
+
+        LOG_DEBUG("playerbots",
+                  "[TravelFail] no graph route map {} and probe made no progress ({} pts, {:.0f}y to dest)",
+                  botPos.GetMapId(), direct.size(), destination.distance(botPos));
+    }
+    else if (botPos.GetMapId() == destination.GetMapId())
+        LOG_DEBUG("playerbots",
+                  "[TravelFail] no graph route map {} (probe fallback disabled), {:.0f}y to dest",
+                  botPos.GetMapId(), destination.distance(botPos));
 
     return path;  // empty
 }
@@ -2066,6 +2142,32 @@ void TravelNodeMap::generateAreaTriggerNodes()
 
 void TravelNodeMap::makeDockNode(TravelNode* node, WorldPosition exitPos, std::string const dockName)
 {
+    // Manual curation hook: a hand-placed node named exactly
+    // "<ship node name><dockName>" within 75y of the stop is authoritative —
+    // adopt it as the dock instead of computing a position. Wire the board
+    // links here; its WALK linking happens via the standard unlinked-node
+    // pass (insert it with linked = 0).
+    std::string const curatedName = node->getName() + dockName;
+    for (TravelNode* n : nodes)
+    {
+        if (!n || n == node || n->getName() != curatedName)
+            continue;
+        if (n->getPosition()->GetMapId() != node->getPosition()->GetMapId() ||
+            n->getPosition()->distance(*node->getPosition()) > 75.0f)
+            continue;
+
+        WorldPosition const dockPos = *n->getPosition();
+        WorldPosition const nodePos = *node->getPosition();
+        TravelNodePath travelPath(dockPos.distance(nodePos), 0.1f, (uint8)TravelNodePathType::transport, 0, true);
+        travelPath.setComplete(true);
+        travelPath.setPath({dockPos, nodePos});
+        n->setPathTo(node, travelPath, true);
+        travelPath.setPath({nodePos, dockPos});
+        node->setPathTo(n, travelPath, true);
+        node->setLinked(true);
+        return;
+    }
+
     // cmangos snaps exitPos to the closest correct navmesh point via
     // ClosestCorrectPoint(20,1,0). AC's WorldPosition has no such helper, so
     // we settle the Z onto the sampled ground height at the (already
@@ -2073,10 +2175,45 @@ void TravelNodeMap::makeDockNode(TravelNode* node, WorldPosition exitPos, std::s
     // be sampled we fall back to the offset position verbatim.
     if (Map* map = exitPos.getMap())
     {
+        // Boot-time generation runs before anyone loads these grids;
+        // without terrain the height sample fails and isInWater lies,
+        // silently skipping the dry relocation below.
+        map->EnsureGridCreated(Acore::ComputeGridCoord(exitPos.GetPositionX(), exitPos.GetPositionY()));
+
         float const gh = map->GetHeight(exitPos.GetPositionX(), exitPos.GetPositionY(),
                                         exitPos.GetPositionZ() + 5.0f, true, 50.0f);
         if (gh > INVALID_HEIGHT)
             exitPos.setZ(gh);
+
+        // The z-settle is vertical only: ship stops sit mid-harbor, so the
+        // settled point can still be IN THE WATER (observed at Menethil —
+        // the "dock" landed at the ship stop and every walk link swam to
+        // it). Ring-search outward for the nearest dry ground point and
+        // put the dock there; if nothing dry is found within 40y, keep
+        // the settled position (better than no dock at all).
+        if (exitPos.isInWater())
+        {
+            bool found = false;
+            for (float radius = 5.0f; radius <= 40.0f && !found; radius += 5.0f)
+            {
+                for (uint32 step = 0; step < 12 && !found; ++step)
+                {
+                    float const angle = step * 2.0f * float(M_PI) / 12.0f;
+                    float const cx = exitPos.GetPositionX() + radius * std::cos(angle);
+                    float const cy = exitPos.GetPositionY() + radius * std::sin(angle);
+                    float const cz = map->GetHeight(cx, cy, exitPos.GetPositionZ() + 10.0f, true, 50.0f);
+                    if (cz <= INVALID_HEIGHT)
+                        continue;
+
+                    WorldPosition candidate(exitPos.GetMapId(), cx, cy, cz);
+                    if (candidate.isInWater())
+                        continue;
+
+                    exitPos = candidate;
+                    found = true;
+                }
+            }
+        }
     }
 
     // Only add paths if we are adding a new node (reuse an existing dock).

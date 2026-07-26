@@ -21,6 +21,7 @@ LastMovement::LastMovement(LastMovement& other)
     lastPath = other.lastPath;
     priority = other.priority;
     lastTransportEntry = other.lastTransportEntry;
+    lastCompletedTransportEntry = other.lastCompletedTransportEntry;
 }
 
 void LastMovement::clear()

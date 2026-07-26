@@ -40,6 +40,7 @@ public:
         nextTeleport = other.nextTeleport;
         priority = other.priority;
         lastTransportEntry = other.lastTransportEntry;
+        lastCompletedTransportEntry = other.lastCompletedTransportEntry;
         return *this;
     };
 
@@ -64,6 +65,12 @@ public:
     // used by WaitForTransport to resume a transport segment if the
     // bot is still on it next tick (e.g. boat in motion). 0 = none.
     uint32 lastTransportEntry{0};
+    // Entry of the last transport whose ride ENDED (disembark, exit-scan
+    // hop, or ride-gate reset). The proactive board-wait skips this entry
+    // so the bot doesn't re-board the ship it just left when arrival-side
+    // route points come into range. Sticky until the next ride completes
+    // (a same-ship round trip within one order is the accepted blind spot).
+    uint32 lastCompletedTransportEntry{0};
 };
 
 class LastMovementValue : public ManualSetValue<LastMovement&>
