@@ -101,6 +101,9 @@ public:
         creators["felmyst player is charmed by fog"] =
             &RaidSunwellTriggerContext::felmyst_player_is_charmed_by_fog;
 
+        creators["felmyst should hold dps while landing"] =
+            &RaidSunwellTriggerContext::felmyst_should_hold_dps_while_landing;
+
         // Eredar Twins
         creators["eredar twins melee is at balcony"] =
             &RaidSunwellTriggerContext::eredar_twins_melee_is_at_balcony;
@@ -300,6 +303,9 @@ private:
     }
     static Trigger* felmyst_player_is_charmed_by_fog(PlayerbotAI* botAI) {
         return new FelmystPlayerIsCharmedByFogTrigger(botAI);
+    }
+    static Trigger* felmyst_should_hold_dps_while_landing(PlayerbotAI* botAI) {
+        return new FelmystShouldHoldDpsWhileLandingTrigger(botAI);
     }
 
     // Eredar Twins

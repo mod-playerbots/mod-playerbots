@@ -22,16 +22,15 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
     if (AI_VALUE(Unit*, "current target") != kalecgos)
         return Attack(kalecgos);
 
-    // If the fight just started, taunt (if needed) before moving
-    if (kalecgos->GetVictim() != bot && kalecgos->GetHealthPct() > 90.0f)
-        return botAI->DoSpecificAction("taunt spell", event, true);
-
     Position const& position = KALECGOS_TANK_POSITION;
     float const distToPosition = bot->GetExactDist2d(
         position.GetPositionX(), position.GetPositionY());
 
-    if (distToPosition > 3.0f)
+    if (distToPosition > 3.0f && bot->IsWithinMeleeRange(kalecgos))
     {
+        if (kalecgos->GetVictim() != bot)
+            return false;
+
         float maxMoveDist = kalecgos->GetVictim() == bot ? 2.25f : 3.5f;
         float const moveDist = std::min(maxMoveDist, distToPosition);
         bool backwards = kalecgos->GetVictim() == bot;
@@ -46,8 +45,7 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
             false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
     }
 
-    // Once the fight is in progress, move to the tank position before taunting
-    // during tank swaps to avoid turning the boss
+    // Move to the tank position before taunting during tank swaps to avoid turning the boss
     if (kalecgos->GetVictim() != bot)
         return botAI->DoSpecificAction("taunt spell", event, true);
 

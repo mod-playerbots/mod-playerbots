@@ -235,6 +235,14 @@ public:
     bool IsActive() override;
 };
 
+class FelmystShouldHoldDpsWhileLandingTrigger : public Trigger
+{
+public:
+    FelmystShouldHoldDpsWhileLandingTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "felmyst should hold dps while landing") {}
+    bool IsActive() override;
+};
+
 // Eredar Twins
 
 class EredarTwinsMeleeIsAtBalconyTrigger : public Trigger

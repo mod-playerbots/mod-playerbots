@@ -47,8 +47,11 @@ bool FelmystMainTankPositionBossOnGroundAction::Execute(Event /*event*/)
     if (AI_VALUE(Unit*, "current target") != felmyst)
         return Attack(felmyst);
 
-    if (felmyst->GetVictim() != bot || bot->GetHealthPct() < 50.0f)
+    if (felmyst->GetVictim() != bot || bot->GetHealthPct() < 50.0f ||
+        !bot->IsWithinMeleeRange(felmyst))
+    {
         return false;
+    }
 
     Position const position = GetFelmystMainTankGroundPosition(bot);
     float const distToPosition = bot->GetExactDist2d(
@@ -394,4 +397,51 @@ bool FelmystKillCharmedPlayerAction::Execute(Event /*event*/)
         return false;
 
     return Attack(charmedPlayer);
+}
+
+bool FelmystManageLandingDpsTimerAction::Execute(Event /*event*/)
+{
+    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    if (!felmyst)
+        return false;
+
+    uint32 const instanceId = felmyst->GetMap()->GetInstanceId();
+    auto& state = felmystEncounterStates[instanceId];
+
+    Position landingDestination;
+    if (felmyst->IsFlying() && TryGetFelmystLandingDestination(felmyst, landingDestination))
+    {
+        if (state.landingDpsWaitTimer)
+            return false;
+
+        state.landingDpsWaitTimer = std::time(nullptr);
+        state.landingTouchdownTimer = 0;
+        return true;
+    }
+
+    if (felmyst->IsFlying())
+    {
+        state.landingDpsWaitTimer = 0;
+        state.landingTouchdownTimer = 0;
+        return true;
+    }
+
+    // Grounded
+    if (!state.landingDpsWaitTimer)
+        return false;
+
+    if (!state.landingTouchdownTimer)
+    {
+        state.landingTouchdownTimer = std::time(nullptr);
+        return true;
+    }
+
+    time_t const now = std::time(nullptr);
+    constexpr uint8 groundedDpsWaitSeconds = 3;
+    if ((now - state.landingTouchdownTimer) < groundedDpsWaitSeconds)
+        return false;
+
+    state.landingDpsWaitTimer = 0;
+    state.landingTouchdownTimer = 0;
+    return true;
 }

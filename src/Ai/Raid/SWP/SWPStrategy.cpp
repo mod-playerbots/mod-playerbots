@@ -19,8 +19,7 @@ using namespace SwpHelpers;
 
 void AppendFelmystVaporPhaseMeleeExclusions(PlayerbotAI* botAI, GuidSet& exclusions)
 {
-    Player* bot = botAI->GetBot();
-    if (!botAI->IsMelee(bot))
+    if (!botAI->IsMelee(botAI->GetBot()))
         return;
 
     Unit* felmyst = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "felmyst")->Get();
@@ -207,13 +206,13 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("felmyst position melee on ground", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("felmyst bot is encapsulated", {
-        NextAction("felmyst remove encapsulate", ACTION_EMERGENCY + 9) }));
+        NextAction("felmyst remove encapsulate", ACTION_EMERGENCY + 7) }));
 
     triggers.push_back(new TriggerNode("felmyst bot near encapsulated player", {
-        NextAction("felmyst run away from encapsulated player", ACTION_EMERGENCY + 9) }));
+        NextAction("felmyst run away from encapsulated player", ACTION_EMERGENCY + 7) }));
 
     triggers.push_back(new TriggerNode("felmyst player has gas nova", {
-        NextAction("felmyst mass dispel gas nova", ACTION_EMERGENCY + 8) }));
+        NextAction("felmyst mass dispel gas nova", ACTION_EMERGENCY + 6) }));
 
     triggers.push_back(new TriggerNode("felmyst demonic vapor trails are active", {
         NextAction("felmyst avoid demonic vapor", ACTION_EMERGENCY + 1) }));
@@ -228,7 +227,10 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("felmyst melee clear target", ACTION_RAID + 1) }));
 
     triggers.push_back(new TriggerNode("felmyst player is charmed by fog", {
-        NextAction("felmyst kill charmed player", ACTION_EMERGENCY + 10) }));
+        NextAction("felmyst kill charmed player", ACTION_EMERGENCY + 9) }));
+
+    triggers.push_back(new TriggerNode("felmyst manage landing dps timer", {
+        NextAction("felmyst should hold dps while landing", ACTION_EMERGENCY + 8) }));
 
     // Eredar Twins
     triggers.push_back(new TriggerNode("eredar twins melee is at balcony", {
@@ -364,6 +366,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FelmystPrioritizeDemonicVaporKiteMultiplier(botAI));
     multipliers.push_back(new FelmystPrioritizeFogAvoidanceMultiplier(botAI));
     multipliers.push_back(new FelmystFocusAttacksOnCharmedPlayerMultiplier(botAI));
+    multipliers.push_back(new FelmystDontDotAddsMultiplier(botAI));
     multipliers.push_back(new FelmystDelayCooldownsMultiplier(botAI));
 
     // Eredar Twins

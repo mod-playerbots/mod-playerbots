@@ -223,6 +223,9 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
     if (!muru && !entropius)
         return nullptr;
 
+    if (muru && currentTarget == muru)
+        context->GetValue<bool>("neglect threat")->Set(true);
+
     bool const isMuruPhase = muru && muru->GetHealth() > 1;
     bool const darknessActive = isMuruPhase && TryGetMuruDarknessActiveState(bot, muru);
 
@@ -497,7 +500,7 @@ bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
         return Attack(voidSentinel);
     }
 
-    if (voidSentinel->GetVictim() != bot)
+    if (voidSentinel->GetVictim() != bot || !bot->IsWithinMeleeRange(voidSentinel))
         return false;
 
     Position const& tankPosition = GetAssignedVoidSentinelTankPosition(voidSentinel);
