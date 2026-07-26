@@ -43,6 +43,12 @@ public:
     BladeFuryTrigger(PlayerbotAI* botAI) : BoostTrigger(botAI, "blade fury") {}
 };
 
+class RiposteAvailableTrigger : public SpellCanBeCastTrigger
+{
+public:
+    RiposteAvailableTrigger(PlayerbotAI* botAI) : SpellCanBeCastTrigger(botAI, "riposte") {}
+};
+
 class RuptureTrigger : public DebuffTrigger
 {
 public:
