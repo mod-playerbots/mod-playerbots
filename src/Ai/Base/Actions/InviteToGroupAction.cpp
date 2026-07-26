@@ -87,7 +87,7 @@ bool InviteNearbyToGroupAction::Execute(Event /*event*/)
         if (botAI)
         {
             // A solo-grouper bot with no real master (regular player or selfbot master) does not invite.
-            if (botAI->GetGrouperType() == GrouperType::SOLO && !(IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster())))
+            if (botAI->GetGrouperType() == GrouperType::SOLO && !botAI->HasGameClientMaster())
                 continue;
 
             if (IsRealPlayer(botAI->GetMaster()))  // An active player's altbot does not auto-invite.
@@ -210,7 +210,7 @@ bool InviteGuildToGroupAction::Execute(Event /*event*/)
         if (playerAi)
         {
             // Do not invite solo players.
-            if (playerAi->GetGrouperType() == GrouperType::SOLO && !(IsRealPlayer(playerAi->GetMaster()) || IsSelfBot(playerAi->GetMaster())))
+            if (playerAi->GetGrouperType() == GrouperType::SOLO && !playerAi->HasGameClientMaster())
                 continue;
 
             if (IsRealPlayer(playerAi->GetMaster()))  // Do not invite bots that belong to an active player.
@@ -275,7 +275,7 @@ bool JoinGroupAction::Execute(Event event)
 
     if (bot->GetGroup())
     {
-        if (IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster()))
+        if (botAI->HasGameClientMaster())
             return false;
 
         if (!botAI->DoSpecificAction("leave", event, true))
@@ -423,7 +423,7 @@ bool LfgAction::Execute(Event event)
 
     if (bot->GetGroup())
     {
-        if (IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster()))
+        if (botAI->HasGameClientMaster())
             return false;
 
         if (!botAI->DoSpecificAction("leave", event, true))

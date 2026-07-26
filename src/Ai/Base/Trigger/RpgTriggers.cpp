@@ -356,7 +356,7 @@ bool RpgDuelTrigger::IsActive()
     if (bot->GetLevel() < 3)
         return false;
 
-    if (IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster()))
+    if (botAI->HasGameClientMaster())
     {
         // do not auto duel if master is not afk
         if (botAI->GetMaster() && !botAI->GetMaster()->isAFK())

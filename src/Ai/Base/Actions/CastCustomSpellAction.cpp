@@ -347,7 +347,7 @@ bool DisEnchantRandomItemAction::Execute(Event /*event*/)
     for (auto& item : items)
     {
         // Don't touch rare+ items if with real player/guild
-        if (((IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster())) || botAI->IsInRealGuild()) &&
+        if ((botAI->HasGameClientMaster() || botAI->IsInRealGuild()) &&
             item->GetTemplate()->Quality > ITEM_QUALITY_UNCOMMON)
             return false;
 

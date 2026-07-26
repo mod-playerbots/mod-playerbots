@@ -52,7 +52,7 @@ bool ReviveFromCorpseAction::Execute(Event event)
             return false;
     }
 
-    if (!(IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster())))
+    if (!botAI->HasGameClientMaster())
     {
         uint32 dCount = AI_VALUE(uint32, "death count");
 
@@ -92,7 +92,7 @@ bool FindCorpseAction::Execute(Event /*event*/)
 
     uint32 dCount = AI_VALUE(uint32, "death count");
 
-    if (!(IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster())))
+    if (!botAI->HasGameClientMaster())
     {
         if (dCount >= 5)
         {

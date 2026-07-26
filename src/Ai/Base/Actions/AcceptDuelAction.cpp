@@ -19,7 +19,7 @@ bool AcceptDuelAction::Execute(Event event)
     p >> playerGuid;
 
     // Do not auto duel with low health
-    if ((!(IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster())) ||
+    if ((!botAI->HasGameClientMaster() ||
         (botAI->GetMaster() && botAI->GetMaster()->GetGUID() != playerGuid)) &&
         AI_VALUE2(uint8, "health", "self target") < 90)
     {

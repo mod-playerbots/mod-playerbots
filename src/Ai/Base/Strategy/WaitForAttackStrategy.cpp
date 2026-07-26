@@ -32,7 +32,7 @@ bool WaitForAttackStrategy::ShouldWait(PlayerbotAI* botAI)
     if (botAI->HasStrategy("wait for attack", BOT_STATE_COMBAT))
     {
         Player* bot = botAI->GetBot();
-        if (bot->GetGroup() && (IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster())))
+        if (bot->GetGroup() && botAI->HasGameClientMaster())
         {
             // Don't wait if the current target is an enemy player
             Unit* target = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();

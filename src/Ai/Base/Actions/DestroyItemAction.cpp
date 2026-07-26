@@ -48,7 +48,7 @@ bool SmartDestroyItemAction::Execute(Event /*event*/)
         return false;
 
     // Only destroy grey items when the master is a real player or selfbot, and the bot is in a real guild.
-    if ((IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster())) && botAI->IsInRealGuild())
+    if (botAI->HasGameClientMaster() && botAI->IsInRealGuild())
     {
         std::set<Item*> items;
         FindItemsToTradeByQualityVisitor visitor(ITEM_QUALITY_POOR, 5);

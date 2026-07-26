@@ -60,7 +60,7 @@ bool TaxiAction::Execute(Event event)
         }
 
         // Only for follower bots
-        if (IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster()))
+        if (botAI->HasGameClientMaster())
         {
             uint32 index = botAI->GetGroupSlotIndex(bot);
             uint32 delay = sPlayerbotAIConfig.botTaxiDelayMin +

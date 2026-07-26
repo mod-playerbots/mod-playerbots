@@ -174,11 +174,11 @@ bool PetitionOfferNearbyAction::Execute(Event /*event*/)
         if (botAI)
         {
             /*
-            if (botAI->GetGrouperType() == SOLO && !(IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster()))) //Do not invite solo players.
+            if (botAI->GetGrouperType() == SOLO && !botAI->HasGameClientMaster())   // Do not invite solo players.
                 continue;
 
             */
-            if (IsRealPlayer(botAI->GetMaster()))  // Do not invite bots that belong to an active player.
+            if (IsRealPlayer(botAI->GetMaster()))   // Do not invite bots that belong to an active player.
                 continue;
         }
         else

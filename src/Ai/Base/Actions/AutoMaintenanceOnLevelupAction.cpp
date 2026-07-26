@@ -29,7 +29,7 @@ void AutoMaintenanceOnLevelupAction::AutoTeleportForLevel()
     if (!sPlayerbotAIConfig.autoTeleportForLevel || !sRandomPlayerbotMgr.IsRandomBot(bot))
         return;
 
-    if (IsRealPlayer(botAI->GetMaster()) || IsSelfBot(botAI->GetMaster()))
+    if (botAI->HasGameClientMaster())
         return;
 
     sRandomPlayerbotMgr.RandomTeleportForLevel(bot);
