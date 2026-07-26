@@ -116,18 +116,18 @@ bool TalonKingIkissTankMoveBossToPillarPositionAction::Execute(Event /*event*/)
 
     if (distToPosition > 2.0f)
     {
-        if (bot->IsWithinMeleeRange(ikiss))
-        {
-            float const dX = position.GetPositionX() - bot->GetPositionX();
-            float const dY = position.GetPositionY() - bot->GetPositionY();
-            float const moveDist = std::min(2.0f, distToPosition);
-            float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-            float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+        if (!bot->IsWithinMeleeRange(ikiss))
+            return false;
 
-            return MoveTo(
-                SETHEKK_HALLS_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
-                false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
-        }
+        float const dX = position.GetPositionX() - bot->GetPositionX();
+        float const dY = position.GetPositionY() - bot->GetPositionY();
+        float const moveDist = std::min(2.0f, distToPosition);
+        float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
+        float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+
+        return MoveTo(
+            SETHEKK_HALLS_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+            false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
     }
     else
     {
