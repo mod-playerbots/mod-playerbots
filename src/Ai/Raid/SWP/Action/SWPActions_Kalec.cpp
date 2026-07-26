@@ -28,9 +28,6 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
 
     if (distToPosition > 3.0f && bot->IsWithinMeleeRange(kalecgos))
     {
-        if (kalecgos->GetVictim() != bot)
-            return false;
-
         float maxMoveDist = kalecgos->GetVictim() == bot ? 2.25f : 3.5f;
         float const moveDist = std::min(maxMoveDist, distToPosition);
         bool backwards = kalecgos->GetVictim() == bot;

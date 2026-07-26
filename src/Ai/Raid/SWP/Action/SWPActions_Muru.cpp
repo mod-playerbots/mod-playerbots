@@ -471,11 +471,10 @@ bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
 
     constexpr float safeDistance = 10.0f;
     float const distFromHazard = bot->GetDistance2d(hazard);
-    if (distFromHazard < safeDistance && MoveAway(hazard, safeDistance - distFromHazard))
-        return true;
+    if (distFromHazard > safeDistance)
+        return false;
 
-    float const randomAngle = static_cast<float>(urand(0, 7)) * ANGLE_45_DEG;
-    return Move(randomAngle, safeDistance - distFromHazard);
+    return MoveAway(hazard, safeDistance - distFromHazard);
 }
 
 bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
@@ -561,7 +560,7 @@ bool MuruFleeTheDarknessAction::Execute(Event /*event*/)
     if (!muru)
         return false;
 
-    constexpr uint32 targetDistThreshold = 20.0f;
+    constexpr float targetDistThreshold = 20.0f;
     Unit* currentTarget = AI_VALUE(Unit*, "current target");
     if (currentTarget && muru->GetExactDist2d(currentTarget) > targetDistThreshold)
     {
