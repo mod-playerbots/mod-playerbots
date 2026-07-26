@@ -633,12 +633,6 @@ void PlayerbotFactory::Randomize(bool incremental)
         ClearSkills();
         ClearSpells();
         ResetQuests();
-        // Equipment persistence applies to leveling up only. When a bot is taken down a level
-        // (level brackets, level reset, skip) its gear does not belong at the new level, so it is
-        // always cleared: InitEquipment() below hands out nothing but the starting outfit under
-        // level 5 and never strips what is already worn, which would otherwise leave a level 1 bot
-        // running around in level 80 epics. This runs before GiveLevel(), so bot->GetLevel() is
-        // still the level the bot is coming from.
         if (!sPlayerbotAIConfig.equipAndSpecPersistence ||
             level < uint32(sPlayerbotAIConfig.equipAndSpecPersistenceLevel) || level < bot->GetLevel())
         {
