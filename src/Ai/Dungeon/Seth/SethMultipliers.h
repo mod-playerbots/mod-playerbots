@@ -14,7 +14,7 @@ class SethekkProphetSetTremorTotemMultiplier : public Multiplier
 public:
     SethekkProphetSetTremorTotemMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "sethekk prophet set tremor totem") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class AnzuControlSpellCastingWithSpellBombMultiplier : public Multiplier
@@ -22,7 +22,7 @@ class AnzuControlSpellCastingWithSpellBombMultiplier : public Multiplier
 public:
     AnzuControlSpellCastingWithSpellBombMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "anzu control spell casting with spell bomb") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class TalonKingIkissDelayBloodlustAndHeroismMultiplier : public Multiplier
@@ -30,7 +30,7 @@ class TalonKingIkissDelayBloodlustAndHeroismMultiplier : public Multiplier
 public:
     TalonKingIkissDelayBloodlustAndHeroismMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "talon king ikiss delay bloodlust and heroism") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 class TalonKingIkissControlMovementMultiplier : public Multiplier
@@ -38,7 +38,7 @@ class TalonKingIkissControlMovementMultiplier : public Multiplier
 public:
     TalonKingIkissControlMovementMultiplier(
         PlayerbotAI* botAI) : Multiplier(botAI, "talon king ikiss control movement") {}
-    virtual float GetValue(Action* action);
+    float GetValue(Action* action) override;
 };
 
 #endif
