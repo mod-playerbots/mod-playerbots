@@ -36,7 +36,7 @@ std::array<Position, ALYTHESS_TANK_POSITION_COUNT> const alythessTankPositions =
 std::unordered_map<ObjectGuid, ObjectGuid> alythessTankLastBlazeGuid;
 
 // Adjusted positions are to address the occasional bug (?) where Alythess moves
-Position GetAlythessAdjustedPosition(Unit* alythess, Position const& basePosition)
+Position GetAdjustedPosition(Unit* alythess, Position const& basePosition)
 {
     if (!alythess)
         return basePosition;
@@ -69,19 +69,19 @@ Position GetAlythessTankPosition(Unit* alythess, uint8 index)
     if (index >= alythessTankPositions.size())
         index = 0;
 
-    return GetAlythessAdjustedPosition(alythess, alythessTankPositions[index]);
+    return GetAdjustedPosition(alythess, alythessTankPositions[index]);
 }
 
 Position GetEredarTwinsP2MeleeStackPosition(Unit* alythess)
 {
     Position const basePosition = { 1814.327f, 625.645f, 33.404f };
-    return GetAlythessAdjustedPosition(alythess, basePosition);
+    return GetAdjustedPosition(alythess, basePosition);
 }
 
 Position GetEredarTwinsP2RangedStackPosition(Unit* alythess)
 {
     Position const basePosition = { 1805.587f, 625.653f, 33.404f };
-    return GetAlythessAdjustedPosition(alythess, basePosition);
+    return GetAdjustedPosition(alythess, basePosition);
 }
 
 bool IsAnySacrolashTank(Player* bot)
@@ -193,7 +193,7 @@ bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot)
     return true;
 }
 
-void RecordEredarTwinsIncomingConflagrationTarget(Player* target, uint32 durationMs)
+void RecordIncomingEredarTwinsConflagrationTarget(Player* target, uint32 durationMs)
 {
     if (!target || !durationMs)
         return;

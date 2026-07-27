@@ -95,7 +95,7 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
             didSomething = true;
     }
 
-    if (PlayerbotAI::IsTank && !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
+    if (PlayerbotAI::IsTank(bot) && !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
     {
         Action* twinsAction = botAI->GetAiObjectContext()->GetAction(
             "eredar twins first assist tank move out of blaze");

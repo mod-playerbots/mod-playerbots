@@ -83,7 +83,7 @@ bool KalecgosSpectralRiftIsOpenTrigger::IsActive()
     if (!kalecgos || kalecgos->IsFriendlyTo(bot))
         return false;
 
-    if (!ShouldEnterKalecgosSpectralRift(bot))
+    if (!ShouldEnterKalecgosPortal(bot))
         return false;
 
     constexpr float searchRadius = 75.0f;
@@ -100,7 +100,7 @@ bool KalecgosBotsTakeSplashDamageTrigger::IsActive()
     if (!kalecgos || kalecgos->IsFriendlyTo(bot) || kalecgos->GetVictim() == bot)
         return false;
 
-    return !ShouldEnterKalecgosSpectralRift(bot);
+    return !ShouldEnterKalecgosPortal(bot);
 }
 
 bool KalecgosBotHasTooManyArcaneBuffetStacksTrigger::IsActive()
@@ -243,7 +243,7 @@ bool FelmystBossEngagedByRangedOnGroundTrigger::IsActive()
     if (felmyst->GetVictim() == bot)
         return false;
 
-    return !GetFelmystEncapsulateTarget(bot) && !DidFelmystEncapsulateOccurThisGroundPhase(bot);
+    return !GetFelmystEncapsulateTarget(bot) && !DidEncapsulateOccurThisGroundPhase(bot);
 }
 
 bool FelmystBossEngagedByMeleeOnGroundTrigger::IsActive()
@@ -267,7 +267,7 @@ bool FelmystBossEngagedByMeleeOnGroundTrigger::IsActive()
     if (felmyst->GetVictim() == bot || PlayerbotAI::IsMainTank(bot))
         return false;
 
-    return !GetFelmystEncapsulateTarget(bot) && !DidFelmystEncapsulateOccurThisGroundPhase(bot);
+    return !GetFelmystEncapsulateTarget(bot) && !DidEncapsulateOccurThisGroundPhase(bot);
 }
 
 bool FelmystBotIsEncapsulatedTrigger::IsActive()
@@ -323,8 +323,8 @@ bool FelmystDemonicVaporTrailsAreActiveTrigger::IsActive()
     if (GetFelmystDemonicVaporSummonedByBot(bot))
         return false;
 
-    FelmystFogOfCorruptionState fogState;
-    return !TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState);
+    FogOfCorruptionState fogState;
+    return !TryGetActiveFogOfCorruptionState(bot, felmyst, fogState);
 }
 
 bool FelmystBotIsDemonicVaporTargetTrigger::IsActive()
@@ -333,8 +333,8 @@ bool FelmystBotIsDemonicVaporTargetTrigger::IsActive()
     if (!felmyst || !felmyst->IsFlying())
         return false;
 
-    FelmystFogOfCorruptionState fogState;
-    if (TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState))
+    FogOfCorruptionState fogState;
+    if (TryGetActiveFogOfCorruptionState(bot, felmyst, fogState))
         return false;
 
     return IsFelmystDemonicVaporHeadNearBot(bot);
@@ -346,11 +346,11 @@ bool FelmystFogOfCorruptionIsActiveTrigger::IsActive()
     if (!felmyst || !felmyst->IsFlying())
         return false;
 
-    FelmystFogOfCorruptionState fogState;
-    if (TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState))
+    FogOfCorruptionState fogState;
+    if (TryGetActiveFogOfCorruptionState(bot, felmyst, fogState))
         return true;
 
-    FelmystFogLane thirdPassLane = FelmystFogLane::None;
+    FogLane thirdPassLane = FogLane::None;
     return TryGetFelmystPostThirdPassWindow(felmyst, thirdPassLane);
 }
 

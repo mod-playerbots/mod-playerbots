@@ -244,10 +244,10 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
         return false;
     }
 
-    FelmystFogOfCorruptionState fogState;
+    FogOfCorruptionState fogState;
     bool const hasActiveFog =
-        TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState);
-    FelmystFogLane thirdPassLane = FelmystFogLane::None;
+        TryGetActiveFogOfCorruptionState(bot, felmyst, fogState);
+    FogLane thirdPassLane = FogLane::None;
     bool const shouldRepositionAfterThirdPass = !hasActiveFog &&
         TryGetFelmystPostThirdPassWindow(felmyst, thirdPassLane);
 
@@ -275,7 +275,7 @@ bool FelmystMoveToSafeFogLaneAction::Execute(Event /*event*/)
         if (Position(
                 lastMove.lastMoveToX, lastMove.lastMoveToY,
                 lastMove.lastMoveToZ).GetExactDist(destination) >
-            FELMYST_FOG_DESTINATION_MATCH_DISTANCE)
+            FELMYST_FOG_LOCATION_MATCH_DISTANCE)
         {
             continue;
         }
@@ -348,7 +348,7 @@ bool FelmystMoveToSafeFogLaneAction::TryTeleportStuckBotOntoCrate(
         destination.GetPositionX(), destination.GetPositionY(), destination.GetPositionZ());
 
     if (!_fogCrateStuckSampleMs || _fogCrateStuckDestination.GetExactDist(destination) >
-        FELMYST_FOG_DESTINATION_MATCH_DISTANCE)
+        FELMYST_FOG_LOCATION_MATCH_DISTANCE)
     {
         _fogCrateStuckDestination = destination;
         _fogCrateStuckNearestDistance = distanceToDestination;

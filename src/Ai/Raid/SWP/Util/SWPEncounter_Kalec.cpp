@@ -30,7 +30,7 @@ std::unordered_map<ObjectGuid, KalecgosRealmState> kalecgosRealmStates;
 namespace
 {
 
-void ClearExpiredKalecgosActiveRift(KalecgosEncounterState& state, uint32 now)
+void ClearExpiredActiveRift(KalecgosEncounterState& state, uint32 now)
 {
     if (!state.activeRiftOpenedMs)
         return;
@@ -46,45 +46,25 @@ void ClearExpiredKalecgosActiveRift(KalecgosEncounterState& state, uint32 now)
     state.activeRiftOutgoingTankGuid = ObjectGuid::Empty;
 }
 
-uint8 GetKalecgosAssignedGroup(const KalecgosEncounterState& state, ObjectGuid playerGuid)
+uint8 GetAssignedGroup(const KalecgosEncounterState& state, ObjectGuid playerGuid)
 {
     auto const assignment = state.playerToGroup.find(playerGuid);
     return assignment != state.playerToGroup.end() ?
         assignment->second : KALECGOS_INVALID_GROUP;
 }
 
-Player* FindKalecgosGroupMember(Group* group, ObjectGuid playerGuid)
-{
-    if (playerGuid == ObjectGuid::Empty || !group)
-        return nullptr;
-
-    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-    {
-        Player* member = ref->GetSource();
-        if (!member || member->GetGUID() != playerGuid)
-            continue;
-
-        if (member->GetMapId() != SWP_MAP_ID)
-            return nullptr;
-
-        return member;
-    }
-
-    return nullptr;
-}
-
-KalecgosEncounterState& GetPreparedKalecgosEncounterState(Player* player)
+KalecgosEncounterState& GetPreparedEncounterState(Player* player)
 {
     KalecgosEncounterState& state = kalecgosEncounterStates[player->GetInstanceId()];
     if (!state.encounterStartMs)
         state.encounterStartMs = getMSTime();
 
-    ClearExpiredKalecgosActiveRift(state, getMSTime());
+    ClearExpiredActiveRift(state, getMSTime());
     EnsureKalecgosGroupAssignments(player);
     return state;
 }
 
-bool IsKalecgosActiveRiftCandidate(Player* candidate, const KalecgosEncounterState& state)
+bool IsActivePortalCandidate(Player* candidate, const KalecgosEncounterState& state)
 {
     if (!candidate || !candidate->IsAlive() || candidate->GetMapId() != SWP_MAP_ID ||
         !state.activeRiftOpenedMs || state.activeRiftGroup == KALECGOS_INVALID_GROUP)
@@ -95,17 +75,17 @@ bool IsKalecgosActiveRiftCandidate(Player* candidate, const KalecgosEncounterSta
     if (state.blastedPlayerGuid == candidate->GetGUID())
         return true;
 
-    return GetKalecgosAssignedGroup(state, candidate->GetGUID()) == state.activeRiftGroup;
+    return GetAssignedGroup(state, candidate->GetGUID()) == state.activeRiftGroup;
 }
 
-bool IsKalecgosPortalEligibleCandidate(Player* candidate)
+bool IsPortalEligibleCandidate(Player* candidate)
 {
     return candidate && candidate->IsAlive() && GET_PLAYERBOT_AI(candidate) &&
         candidate->GetMapId() == SWP_MAP_ID && !IsExhausted(candidate) &&
         !IsInSpectralRealm(candidate);
 }
 
-void AnnounceKalecgosTankTransition(
+void AnnounceTankTransition(
     PlayerbotAI* botAI, std::string const& textId, std::string const& defaultText,
     std::map<std::string, std::string> const& placeholders)
 {
@@ -116,8 +96,7 @@ void AnnounceKalecgosTankTransition(
         botAI->SayToRaid(text);
 }
 
-std::array<ObjectGuid, KALECGOS_TANK_COUNT> GetExpectedKalecgosTankAssignmentGuids(
-    Player* player)
+std::array<ObjectGuid, KALECGOS_TANK_COUNT> GetExpectedTankAssignmentGuids(Player* player)
 {
     std::array<ObjectGuid, KALECGOS_TANK_COUNT> tankGuids =
     {
@@ -145,7 +124,7 @@ std::array<ObjectGuid, KALECGOS_TANK_COUNT> GetExpectedKalecgosTankAssignmentGui
     return tankGuids;
 }
 
-std::array<ObjectGuid, KALECGOS_TANK_COUNT> BuildInitialKalecgosTankPortalRotationGuids(
+std::array<ObjectGuid, KALECGOS_TANK_COUNT> BuildInitialTankPortalRotationGuids(
     std::array<ObjectGuid, KALECGOS_TANK_COUNT> const& tankAssignmentGuids)
 {
     std::array<ObjectGuid, KALECGOS_TANK_COUNT> rotationGuids =
@@ -180,7 +159,7 @@ bool HasKalecgosTankAssignment(
         tankAssignmentGuids.end();
 }
 
-std::array<ObjectGuid, KALECGOS_TANK_COUNT> RebuildKalecgosTankPortalRotationGuids(
+std::array<ObjectGuid, KALECGOS_TANK_COUNT> RebuildTankPortalRotationGuids(
     std::array<ObjectGuid, KALECGOS_TANK_COUNT> const& existingRotationGuids,
     std::array<ObjectGuid, KALECGOS_TANK_COUNT> const& tankAssignmentGuids)
 {
@@ -205,22 +184,36 @@ std::array<ObjectGuid, KALECGOS_TANK_COUNT> RebuildKalecgosTankPortalRotationGui
     for (ObjectGuid guid : existingRotationGuids)
         appendGuid(guid);
 
-    for (ObjectGuid guid : BuildInitialKalecgosTankPortalRotationGuids(tankAssignmentGuids))
+    for (ObjectGuid guid : BuildInitialTankPortalRotationGuids(tankAssignmentGuids))
         appendGuid(guid);
 
     return rotationGuids;
 }
 
-Player* GetKalecgosSurfaceAssignedTank(Group* group, ObjectGuid guid)
+Player* GetAssignedSurfaceTank(Group* group, ObjectGuid guid)
 {
-    Player* tank = FindKalecgosGroupMember(group, guid);
-    if (!tank || !tank->IsAlive() || tank->GetMapId() != SWP_MAP_ID || IsInSpectralRealm(tank))
+    if (guid == ObjectGuid::Empty || !group)
         return nullptr;
 
-    return tank;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || member->GetGUID() != guid)
+            continue;
+
+        if (member->GetMapId() != SWP_MAP_ID || !member->IsAlive() ||
+            IsInSpectralRealm(member))
+        {
+            return nullptr;
+        }
+
+        return member;
+    }
+
+    return nullptr;
 }
 
-Player* GetFirstKalecgosSurfaceTankInOrder(
+Player* GetFirstSurfaceTankInOrder(
     Group* group, std::array<ObjectGuid, KALECGOS_TANK_COUNT> const& orderedGuids,
     ObjectGuid firstExcludedGuid = ObjectGuid::Empty,
     ObjectGuid secondExcludedGuid = ObjectGuid::Empty)
@@ -230,14 +223,14 @@ Player* GetFirstKalecgosSurfaceTankInOrder(
         if (guid == firstExcludedGuid || guid == secondExcludedGuid)
             continue;
 
-        if (Player* tank = GetKalecgosSurfaceAssignedTank(group, guid))
+        if (Player* tank = GetAssignedSurfaceTank(group, guid))
             return tank;
     }
 
     return nullptr;
 }
 
-Player* GetNextKalecgosSurfaceTankInOrder(
+Player* GetNextSurfaceTankInOrder(
     Group* group, std::array<ObjectGuid, KALECGOS_TANK_COUNT> const& orderedGuids,
     ObjectGuid afterGuid, ObjectGuid excludedGuid = ObjectGuid::Empty, bool fallbackToFirst = false)
 {
@@ -257,7 +250,7 @@ Player* GetNextKalecgosSurfaceTankInOrder(
     if (!foundAfterGuid)
     {
         if (fallbackToFirst)
-            return GetFirstKalecgosSurfaceTankInOrder(group, orderedGuids, excludedGuid);
+            return GetFirstSurfaceTankInOrder(group, orderedGuids, excludedGuid);
 
         return nullptr;
     }
@@ -268,25 +261,25 @@ Player* GetNextKalecgosSurfaceTankInOrder(
         if (guid == ObjectGuid::Empty || guid == afterGuid || guid == excludedGuid)
             continue;
 
-        if (Player* tank = GetKalecgosSurfaceAssignedTank(group, guid))
+        if (Player* tank = GetAssignedSurfaceTank(group, guid))
             return tank;
     }
 
     return nullptr;
 }
 
-Player* GetFirstKalecgosSurfaceTankInPortalRotation(
+Player* GetFirstSurfaceTankInPortalRotation(
     Group* group, const KalecgosEncounterState& state,
     ObjectGuid firstExcludedGuid = ObjectGuid::Empty,
     ObjectGuid secondExcludedGuid = ObjectGuid::Empty)
 {
-    if (Player* tank = GetFirstKalecgosSurfaceTankInOrder(
+    if (Player* tank = GetFirstSurfaceTankInOrder(
             group, state.tankPortalRotationGuids, firstExcludedGuid, secondExcludedGuid))
     {
         return tank;
     }
 
-    return GetFirstKalecgosSurfaceTankInOrder(
+    return GetFirstSurfaceTankInOrder(
         group, state.tankAssignmentGuids, firstExcludedGuid, secondExcludedGuid);
 }
 
@@ -303,31 +296,31 @@ bool ShouldKalecgosCurrentTankHandOff(KalecgosEncounterState const& state)
         HasKalecgosTankAssignment(state.tankAssignmentGuids, state.blastedPlayerGuid);
 }
 
-Player* GetKalecgosSurfaceTankAfterCurrentHandOff(
+Player* GetSurfaceTankAfterCurrentHandOff(
     Group* group, KalecgosEncounterState const& state)
 {
     if (!ShouldKalecgosCurrentTankHandOff(state))
         return nullptr;
 
-    return GetNextKalecgosSurfaceTankInOrder(
+    return GetNextSurfaceTankInOrder(
         group, state.tankAssignmentGuids, state.currentTankGuid, ObjectGuid::Empty, true);
 }
 
-Player* GetKalecgosBlastAnnouncementCurrentTank(
+Player* GetBlastAnnouncementCurrentTank(
     Group* group, const KalecgosEncounterState& state)
 {
-    if (Player* replacementTank = GetKalecgosSurfaceTankAfterCurrentHandOff(group, state))
+    if (Player* replacementTank = GetSurfaceTankAfterCurrentHandOff(group, state))
         return replacementTank;
 
-    return GetKalecgosSurfaceAssignedTank(group, state.currentTankGuid);
+    return GetAssignedSurfaceTank(group, state.currentTankGuid);
 }
 
-uint8 CountKalecgosSurfaceAssignedTanks(Group* group, const KalecgosEncounterState& state)
+uint8 CountAssignedSurfaceTanks(Group* group, const KalecgosEncounterState& state)
 {
     uint8 count = 0;
     for (ObjectGuid guid : state.tankAssignmentGuids)
     {
-        if (GetKalecgosSurfaceAssignedTank(group, guid))
+        if (GetAssignedSurfaceTank(group, guid))
             ++count;
     }
 
@@ -359,20 +352,20 @@ Player* GetKalecgosCurrentVictimTank(
         }
     }
 
-    return GetFirstKalecgosSurfaceTankInOrder(group, state.tankAssignmentGuids);
+    return GetFirstSurfaceTankInOrder(group, state.tankAssignmentGuids);
 }
 
-Player* SelectKalecgosOutgoingTankForRift(
+Player* SelectOutgoingTankForRift(
     Group* group, const KalecgosEncounterState& state)
 {
     if (!state.activeRiftOpenedMs ||
         HasKalecgosTankAssignment(state.tankAssignmentGuids, state.blastedPlayerGuid) ||
-        CountKalecgosSurfaceAssignedTanks(group, state) <= 2)
+        CountAssignedSurfaceTanks(group, state) <= 2)
     {
         return nullptr;
     }
 
-    if (Player* nextTank = GetFirstKalecgosSurfaceTankInPortalRotation(group, state);
+    if (Player* nextTank = GetFirstSurfaceTankInPortalRotation(group, state);
         nextTank && !IsExhausted(nextTank))
     {
         return nextTank;
@@ -385,14 +378,14 @@ void AssignKalecgosTankTargetsForActiveRift(
     Player* player, Group* group, KalecgosEncounterState& state)
 {
     Player* currentTank = GetKalecgosCurrentVictimTank(player, group, state);
-    Player* outgoingTank = SelectKalecgosOutgoingTankForRift(group, state);
+    Player* outgoingTank = SelectOutgoingTankForRift(group, state);
 
     state.activeRiftOutgoingTankGuid = outgoingTank ?
         outgoingTank->GetGUID() : ObjectGuid::Empty;
 
     if (!currentTank)
     {
-        currentTank = GetFirstKalecgosSurfaceTankInPortalRotation(
+        currentTank = GetFirstSurfaceTankInPortalRotation(
             group, state, state.activeRiftOutgoingTankGuid);
     }
 
@@ -421,7 +414,7 @@ void AdvanceKalecgosTankPortalRotation(KalecgosEncounterState& state, ObjectGuid
     if (nextIndex < KALECGOS_TANK_COUNT)
         rotationGuids[nextIndex] = tankGuid;
 
-    state.tankPortalRotationGuids = RebuildKalecgosTankPortalRotationGuids(
+    state.tankPortalRotationGuids = RebuildTankPortalRotationGuids(
         rotationGuids, state.tankAssignmentGuids);
 }
 
@@ -430,10 +423,10 @@ Player* GetKalecgosOutgoingTank(Group* group, const KalecgosEncounterState& stat
     if (!state.activeRiftOpenedMs || state.activeRiftOutgoingTankGuid == ObjectGuid::Empty)
         return nullptr;
 
-    return GetKalecgosSurfaceAssignedTank(group, state.activeRiftOutgoingTankGuid);
+    return GetAssignedSurfaceTank(group, state.activeRiftOutgoingTankGuid);
 }
 
-uint8 GetNextAvailableKalecgosGroup(Group* group, const KalecgosEncounterState& state)
+uint8 GetNextAvailablePortalGroup(Group* group, const KalecgosEncounterState& state)
 {
     if (!group)
         return KALECGOS_INVALID_GROUP;
@@ -443,10 +436,10 @@ uint8 GetNextAvailableKalecgosGroup(Group* group, const KalecgosEncounterState& 
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
-            if (!member || GetKalecgosAssignedGroup(state, member->GetGUID()) != groupIndex)
+            if (!member || GetAssignedGroup(state, member->GetGUID()) != groupIndex)
                 continue;
 
-            if (IsKalecgosPortalEligibleCandidate(member) &&
+            if (IsPortalEligibleCandidate(member) &&
                 state.blastedPlayerGuid != member->GetGUID())
             {
                 return groupIndex;
@@ -457,24 +450,24 @@ uint8 GetNextAvailableKalecgosGroup(Group* group, const KalecgosEncounterState& 
     return KALECGOS_INVALID_GROUP;
 }
 
-uint8 ResolveKalecgosActiveRiftGroup(Group* group, const KalecgosEncounterState& state)
+uint8 ResolveActivePortalGroup(Group* group, const KalecgosEncounterState& state)
 {
     if (state.blastedPlayerGuid != ObjectGuid::Empty)
     {
-        uint8 const blastedGroup = GetKalecgosAssignedGroup(state, state.blastedPlayerGuid);
+        uint8 const blastedGroup = GetAssignedGroup(state, state.blastedPlayerGuid);
         if (blastedGroup != KALECGOS_INVALID_GROUP)
             return blastedGroup;
 
-        return GetNextAvailableKalecgosGroup(group, state);
+        return GetNextAvailablePortalGroup(group, state);
     }
 
     if (state.firstEntrantGuid != ObjectGuid::Empty)
     {
-        uint8 const entrantGroup = GetKalecgosAssignedGroup(state, state.firstEntrantGuid);
+        uint8 const entrantGroup = GetAssignedGroup(state, state.firstEntrantGuid);
         if (entrantGroup != KALECGOS_INVALID_GROUP)
             return entrantGroup;
 
-        return GetNextAvailableKalecgosGroup(group, state);
+        return GetNextAvailablePortalGroup(group, state);
     }
 
     return KALECGOS_INVALID_GROUP;
@@ -565,7 +558,7 @@ void EnsureKalecgosGroupAssignments(Player* player)
     KalecgosEncounterState& state = kalecgosEncounterStates[player->GetInstanceId()];
     std::vector<Player*> botMembers;
     std::array<ObjectGuid, KALECGOS_TANK_COUNT> const expectedTankAssignmentGuids =
-        GetExpectedKalecgosTankAssignmentGuids(player);
+        GetExpectedTankAssignmentGuids(player);
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
@@ -596,7 +589,7 @@ void EnsureKalecgosGroupAssignments(Player* player)
 
     state.playerToGroup.clear();
     state.tankAssignmentGuids = expectedTankAssignmentGuids;
-    state.tankPortalRotationGuids = RebuildKalecgosTankPortalRotationGuids(
+    state.tankPortalRotationGuids = RebuildTankPortalRotationGuids(
         state.tankPortalRotationGuids, state.tankAssignmentGuids);
 
     if (!HasKalecgosTankAssignment(state.tankAssignmentGuids, state.currentTankGuid))
@@ -665,7 +658,7 @@ void EnsureKalecgosGroupAssignments(Player* player)
             other, GetLeastFilledGroup(groupSizes));
 
     if (state.activeRiftGroup == KALECGOS_INVALID_GROUP)
-        state.activeRiftGroup = ResolveKalecgosActiveRiftGroup(group, state);
+        state.activeRiftGroup = ResolveActivePortalGroup(group, state);
 }
 
 Player* GetKalecgosCurrentTank(Player* bot)
@@ -674,11 +667,11 @@ Player* GetKalecgosCurrentTank(Player* bot)
     if (!group)
         return nullptr;
 
-    KalecgosEncounterState& state = GetPreparedKalecgosEncounterState(bot);
+    KalecgosEncounterState& state = GetPreparedEncounterState(bot);
 
-    if (Player* tank = GetKalecgosSurfaceAssignedTank(group, state.currentTankGuid))
+    if (Player* tank = GetAssignedSurfaceTank(group, state.currentTankGuid))
     {
-        if (Player* replacementTank = GetKalecgosSurfaceTankAfterCurrentHandOff(group, state))
+        if (Player* replacementTank = GetSurfaceTankAfterCurrentHandOff(group, state))
             return replacementTank;
 
         return tank;
@@ -700,28 +693,28 @@ Player* GetKalecgosReplacementTank(Player* bot)
     if (!group)
         return nullptr;
 
-    KalecgosEncounterState& state = GetPreparedKalecgosEncounterState(bot);
-    Player* currentTank = GetKalecgosSurfaceAssignedTank(group, state.currentTankGuid);
+    KalecgosEncounterState& state = GetPreparedEncounterState(bot);
+    Player* currentTank = GetAssignedSurfaceTank(group, state.currentTankGuid);
     if (!currentTank)
         currentTank = GetKalecgosCurrentVictimTank(bot, group, state);
 
     if (!currentTank)
         return nullptr;
 
-    return GetNextKalecgosSurfaceTankInOrder(
+    return GetNextSurfaceTankInOrder(
         group, state.tankAssignmentGuids, currentTank->GetGUID(), ObjectGuid::Empty, true);
 }
 
-bool ShouldEnterKalecgosSpectralRift(Player* bot)
+bool ShouldEnterKalecgosPortal(Player* bot)
 {
-    if (!IsKalecgosPortalEligibleCandidate(bot))
+    if (!IsPortalEligibleCandidate(bot))
         return false;
 
     Group* group = bot->GetGroup();
     if (!group)
         return false;
 
-    KalecgosEncounterState& state = GetPreparedKalecgosEncounterState(bot);
+    KalecgosEncounterState& state = GetPreparedEncounterState(bot);
     if (!state.activeRiftOpenedMs)
         return false;
 
@@ -731,35 +724,35 @@ bool ShouldEnterKalecgosSpectralRift(Player* bot)
             state.blastedPlayerGuid != bot->GetGUID();
     }
 
-    if (!IsKalecgosActiveRiftCandidate(bot, state))
+    if (!IsActivePortalCandidate(bot, state))
         return false;
 
     return state.blastedPlayerGuid != bot->GetGUID();
 }
 
-void RecordKalecgosSpectralBlastTarget(Player* player, PlayerbotAI* announcerAI)
+void RecordSpectralBlastTarget(Player* player, PlayerbotAI* announcerAI)
 {
     Group* group = player->GetGroup();
     if (!group || player->GetMapId() != SWP_MAP_ID)
         return;
 
-    KalecgosEncounterState& state = GetPreparedKalecgosEncounterState(player);
+    KalecgosEncounterState& state = GetPreparedEncounterState(player);
     uint32 const now = getMSTime();
 
     state.activeRiftOpenedMs = now;
     state.blastedPlayerGuid = player->GetGUID();
     state.firstEntrantGuid = ObjectGuid::Empty;
-    state.activeRiftGroup = ResolveKalecgosActiveRiftGroup(group, state);
+    state.activeRiftGroup = ResolveActivePortalGroup(group, state);
     AssignKalecgosTankTargetsForActiveRift(player, group, state);
 
-    Player* currentTank = GetKalecgosBlastAnnouncementCurrentTank(group, state);
+    Player* currentTank = GetBlastAnnouncementCurrentTank(group, state);
 
     if (HasKalecgosTankAssignment(state.tankAssignmentGuids, player->GetGUID()))
     {
         if (!currentTank)
             return;
 
-        AnnounceKalecgosTankTransition(
+        AnnounceTankTransition(
             announcerAI, "kalecgos_tank_sent_to_spectral_realm",
             "Tank %tank has been sent to the Spectral Realm. The active Kalecgos tank is %current.",
             {
@@ -773,7 +766,7 @@ void RecordKalecgosSpectralBlastTarget(Player* player, PlayerbotAI* announcerAI)
     if (Player* outgoingTank = GetKalecgosOutgoingTank(group, state);
         outgoingTank && currentTank)
     {
-        AnnounceKalecgosTankTransition(
+        AnnounceTankTransition(
             announcerAI, "kalecgos_tank_should_enter_spectral_realm",
             "Tank %tank should enter the Spectral Realm. The active Kalecgos tank is %current.",
             {
@@ -783,13 +776,13 @@ void RecordKalecgosSpectralBlastTarget(Player* player, PlayerbotAI* announcerAI)
     }
 }
 
-void RecordKalecgosSpectralRealmEnter(Player* player)
+void RecordSpectralRealmEnter(Player* player)
 {
     Group* group = player->GetGroup();
     if (!group || player->GetMapId() != SWP_MAP_ID)
         return;
 
-    KalecgosEncounterState& state = GetPreparedKalecgosEncounterState(player);
+    KalecgosEncounterState& state = GetPreparedEncounterState(player);
     ObjectGuid const guid = player->GetGUID();
     uint32 const now = getMSTime();
     Player* replacementTank = nullptr;
@@ -797,7 +790,7 @@ void RecordKalecgosSpectralRealmEnter(Player* player)
 
     if (wasCurrentTank)
     {
-        replacementTank = GetNextKalecgosSurfaceTankInOrder(
+        replacementTank = GetNextSurfaceTankInOrder(
             group, state.tankAssignmentGuids, guid, state.activeRiftOutgoingTankGuid, true);
     }
 
@@ -809,7 +802,7 @@ void RecordKalecgosSpectralRealmEnter(Player* player)
             state.firstEntrantGuid = guid;
 
         if (state.activeRiftGroup == KALECGOS_INVALID_GROUP)
-            state.activeRiftGroup = ResolveKalecgosActiveRiftGroup(group, state);
+            state.activeRiftGroup = ResolveActivePortalGroup(group, state);
     }
 
     if (HasKalecgosTankAssignment(state.tankAssignmentGuids, player->GetGUID()))

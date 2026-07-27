@@ -537,6 +537,11 @@ public:
     KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction(
         PlayerbotAI* botAI) : AttackAction(botAI, "kil'jaeden mark and prioritize hands of the deceiver") {}
     bool Execute(Event event) override;
+
+private:
+    bool ExecuteTankHandAssignment(
+        std::vector<Unit*> const& hands,
+        Player* mainTank, Player* firstAssistTank, Player* secondAssistTank);
 };
 
 class KiljaedenStunHandsOfTheDeceiverAction : public Action

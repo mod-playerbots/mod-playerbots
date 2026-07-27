@@ -76,85 +76,7 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/
     if (hands.empty())
         return false;
 
-    if (PlayerbotAI::IsTank(bot))
-    {
-        std::vector<Player*> const tanks = { mainTank, firstAssistTank, secondAssistTank };
-
-        size_t myIndex = tanks.size();
-        for (size_t i = 0; i < tanks.size(); ++i)
-        {
-            if (bot == tanks[i])
-            {
-                myIndex = i;
-                break;
-            }
-        }
-
-        if (myIndex >= tanks.size())
-            return false;
-
-        auto& assignments = kiljaedenHandTankAssignments[bot->GetInstanceId()];
-        ObjectGuid& assignedGuid = assignments[myIndex];
-
-        if (!assignedGuid.IsEmpty())
-        {
-            bool alive = false;
-            for (Unit* hand : hands)
-            {
-                if (hand->GetGUID() == assignedGuid)
-                {
-                    alive = true;
-                    break;
-                }
-            }
-            if (!alive)
-                assignedGuid = ObjectGuid::Empty;
-        }
-
-        if (assignedGuid.IsEmpty() && myIndex < hands.size())
-            assignedGuid = hands[myIndex]->GetGUID();
-
-        if (assignedGuid.IsEmpty())
-            return false;
-
-        Unit* assignedHand = botAI->GetUnit(assignedGuid);
-        if (!assignedHand || !assignedHand->IsAlive())
-            return false;
-
-        if (AI_VALUE(Unit*, "current target") != assignedHand)
-            return Attack(assignedHand);
-
-        if (assignedHand->GetVictim() != bot || !bot->IsWithinMeleeRange(assignedHand) ||
-            assignedHand->HasUnitState(UNIT_STATE_STUNNED))
-        {
-            return false;
-        }
-
-        constexpr float minTankDistance = 15.0f;
-
-        for (size_t i = 0; i < tanks.size(); ++i)
-        {
-            if (i == myIndex)
-                continue;
-
-            Player* otherTank = tanks[i];
-            if (!otherTank || !otherTank->IsAlive())
-                continue;
-
-            ObjectGuid const otherGuid = assignments[i];
-            if (otherGuid.IsEmpty())
-                continue;
-
-            Unit* otherHand = botAI->GetUnit(otherGuid);
-            if (!otherHand || !otherHand->IsAlive())
-                continue;
-
-            float const distFromTank = bot->GetExactDist2d(otherTank);
-            if (distFromTank < minTankDistance)
-                return MoveAway(otherTank, minTankDistance - distFromTank, true);
-        }
-    }
-    else
+    if (IsMechanicTrackerBot(bot, SWP_MAP_ID))
     {
         Unit* focusHand = hands[0];
         for (Unit* hand : hands)
@@ -163,11 +85,104 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/
                 focusHand = hand;
         }
 
-        if (IsMechanicTrackerBot(bot, SWP_MAP_ID) && MarkTargetWithSkull(bot, focusHand))
+        if (MarkTargetWithSkull(bot, focusHand))
             return true;
+    }
 
-        if (AI_VALUE(Unit*, "current target") != focusHand)
-            return Attack(focusHand);
+    if (PlayerbotAI::IsTank(bot))
+        return ExecuteTankHandAssignment(hands, mainTank, firstAssistTank, secondAssistTank);
+
+    Unit* focusHand = hands[0];
+    for (Unit* hand : hands)
+    {
+        if (hand->GetGUID() < focusHand->GetGUID())
+            focusHand = hand;
+    }
+
+    if (AI_VALUE(Unit*, "current target") != focusHand)
+        return Attack(focusHand);
+
+    return false;
+}
+
+bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::ExecuteTankHandAssignment(
+    std::vector<Unit*> const& hands,
+    Player* mainTank, Player* firstAssistTank, Player* secondAssistTank)
+{
+    std::vector<Player*> const tanks = { mainTank, firstAssistTank, secondAssistTank };
+
+    size_t myIndex = tanks.size();
+    for (size_t i = 0; i < tanks.size(); ++i)
+    {
+        if (bot == tanks[i])
+        {
+            myIndex = i;
+            break;
+        }
+    }
+
+    if (myIndex >= tanks.size())
+        return false;
+
+    auto& assignments = kiljaedenHandTankAssignments[bot->GetInstanceId()];
+    ObjectGuid& assignedGuid = assignments[myIndex];
+
+    if (!assignedGuid.IsEmpty())
+    {
+        bool alive = false;
+        for (Unit* hand : hands)
+        {
+            if (hand->GetGUID() == assignedGuid)
+            {
+                alive = true;
+                break;
+            }
+        }
+        if (!alive)
+            assignedGuid = ObjectGuid::Empty;
+    }
+
+    if (assignedGuid.IsEmpty() && myIndex < hands.size())
+        assignedGuid = hands[myIndex]->GetGUID();
+
+    if (assignedGuid.IsEmpty())
+        return false;
+
+    Unit* assignedHand = botAI->GetUnit(assignedGuid);
+    if (!assignedHand || !assignedHand->IsAlive())
+        return false;
+
+    if (AI_VALUE(Unit*, "current target") != assignedHand)
+        return Attack(assignedHand);
+
+    if (assignedHand->GetVictim() != bot || !bot->IsWithinMeleeRange(assignedHand) ||
+        assignedHand->HasUnitState(UNIT_STATE_STUNNED))
+    {
+        return false;
+    }
+
+    constexpr float minTankDistance = 15.0f;
+
+    for (size_t i = 0; i < tanks.size(); ++i)
+    {
+        if (i == myIndex)
+            continue;
+
+        Player* otherTank = tanks[i];
+        if (!otherTank || !otherTank->IsAlive())
+            continue;
+
+        ObjectGuid const otherGuid = assignments[i];
+        if (otherGuid.IsEmpty())
+            continue;
+
+        Unit* otherHand = botAI->GetUnit(otherGuid);
+        if (!otherHand || !otherHand->IsAlive())
+            continue;
+
+        float const distFromTank = bot->GetExactDist2d(otherTank);
+        if (distFromTank < minTankDistance)
+            return MoveAway(otherTank, minTankDistance - distFromTank, true);
     }
 
     return false;

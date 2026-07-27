@@ -37,19 +37,19 @@ float GetBrutallusTankAngle(Unit* brutallus, Player* tank, float fallbackAngle)
         tank->GetPositionX() - brutallus->GetPositionX()));
 }
 
-bool IsBrutallusBurnPadActive(ObjectGuid ownerGuid)
+bool IsBurnPadActive(ObjectGuid ownerGuid)
 {
     auto const burnStateItr = brutallusRangedBurnStates.find(ownerGuid);
     return burnStateItr != brutallusRangedBurnStates.end() &&
         burnStateItr->second != BrutallusRangedBurnState::None;
 }
 
-bool TryGetBrutallusBurnPadIndex(Player* bot, uint8 rangedIndex, uint8& padIndex)
+bool TryGetBurnPadIndex(Player* bot, uint8 rangedIndex, uint8& padIndex)
 {
     auto& assignments = brutallusRangedBurnPadAssignments[bot->GetInstanceId()];
     for (auto itr = assignments.begin(); itr != assignments.end();)
     {
-        if (itr->first != bot->GetGUID() && !IsBrutallusBurnPadActive(itr->first))
+        if (itr->first != bot->GetGUID() && !IsBurnPadActive(itr->first))
         {
             itr = assignments.erase(itr);
             continue;
@@ -301,7 +301,7 @@ bool TryGetBrutallusBurnPadPosition(
         return false;
 
     uint8 padIndex = 0;
-    if (!TryGetBrutallusBurnPadIndex(bot, rangedIndex, padIndex))
+    if (!TryGetBurnPadIndex(bot, rangedIndex, padIndex))
         return false;
 
     static constexpr float degreeToRadian = M_PI / 180.0f;

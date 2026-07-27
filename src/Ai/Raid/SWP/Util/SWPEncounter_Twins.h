@@ -51,7 +51,7 @@ bool ShouldHoldTwinThreat(
     Player* bot, Unit* boss, float threatHoldRatio, bool (*isTwinTank)(Player*));
 bool IsAlythessTankPositionSafe(Player* bot, Position const& position);
 bool ShouldAdvanceAlythessTankPosition(Unit* alythess, Player* bot);
-void RecordEredarTwinsIncomingConflagrationTarget(Player* target, uint32 durationMs = 2000);
+void RecordIncomingEredarTwinsConflagrationTarget(Player* target, uint32 durationMs = 2000);
 Player* GetEredarTwinsConflagrationTarget(Player* bot);
 
 }
