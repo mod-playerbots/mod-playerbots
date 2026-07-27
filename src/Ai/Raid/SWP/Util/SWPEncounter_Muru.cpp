@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <list>
 
-// M'uru goes invisible during the Entropius phase but remains on player threat lists
+// Note: M'uru goes invisible during the Entropius phase but remains on player threat lists
 
 namespace SwpHelpers
 {

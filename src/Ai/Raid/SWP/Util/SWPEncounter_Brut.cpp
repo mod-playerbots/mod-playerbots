@@ -238,13 +238,13 @@ void EnsureBrutallusRangedAssignments(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SWP_MAP_ID || !botAI->IsRanged(member))
+        if (!member || member->GetMapId() != SWP_MAP_ID || !PlayerbotAI::IsRanged(member))
             continue;
 
         if (assignments.find(member->GetGUID()) != assignments.end())
             continue;
 
-        if (botAI->IsHeal(member))
+        if (PlayerbotAI::IsHeal(member))
             healers.push_back(member);
         else
             rangedDamage.push_back(member);

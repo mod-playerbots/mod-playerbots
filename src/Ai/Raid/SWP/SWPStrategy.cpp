@@ -272,7 +272,7 @@ using namespace SwpHelpers;
 void AppendFelmystVaporPhaseMeleeExclusions(
     PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
 {
-    if (!botAI->IsMelee(botAI->GetBot()))
+    if (!PlayerbotAI::IsMelee(botAI->GetBot()))
         return;
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
@@ -315,7 +315,7 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, AiObjectContext* context, Guid
         }
 
         Player* bot = botAI->GetBot();
-        if (botAI->IsAssistTankOfIndex(bot, 0, true) && TryGetMuruDarknessActiveState(bot, muru))
+        if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) && TryGetMuruDarknessActiveState(bot, muru))
             continue;
 
         if (attacker->GetExactDist2d(
@@ -330,7 +330,7 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, AiObjectContext* context, Guid
 void AppendKiljaedenShieldOrbExclusions(
     PlayerbotAI* botAI, AiObjectContext* context, GuidSet& exclusions)
 {
-    if (!botAI->IsMelee(botAI->GetBot()))
+    if (!PlayerbotAI::IsMelee(botAI->GetBot()))
         return;
 
     if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
@@ -361,7 +361,7 @@ void AppendKiljaedenSinisterReflectionExclusions(
         }
 
         Unit* victim = attacker->GetVictim();
-        if (!victim || !victim->IsPlayer() || !botAI->IsTank(victim->ToPlayer()))
+        if (!victim || !victim->IsPlayer() || !PlayerbotAI::IsTank(victim->ToPlayer()))
             exclusions.insert(guid);
     }
 }

@@ -64,7 +64,7 @@ bool IsDpsCooldownAction(Action* action, PlayerbotAI* botAI)
         dynamic_cast<CastSummonGargoyleAction*>(action) ||
         dynamic_cast<CastBerserkingAction*>(action) ||
         dynamic_cast<CastBloodFuryAction*>(action) ||
-        (dynamic_cast<UseTrinketAction*>(action) && botAI->IsDps(botAI->GetBot()));
+        (dynamic_cast<UseTrinketAction*>(action) && PlayerbotAI::IsDps(botAI->GetBot()));
 }
 
 bool IsTauntAction(Action* action)
@@ -175,7 +175,7 @@ float KalecgosSuppressAssistTankPullThreatMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (!botAI->IsAssistTank(bot))
+    if (!PlayerbotAI::IsAssistTank(bot))
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "kalecgos"))
@@ -258,8 +258,8 @@ float BrutallusNoKillingSpreeWhenNearbyBurnMultiplier::GetValue(Action* action)
     {
         Player* member = ref->GetSource();
         if (member && member->HasAura(static_cast<uint32>(SwpSpells::SPELL_BURN)) &&
-            botAI->IsMelee(member) && !botAI->IsMainTank(member) &&
-            !botAI->IsAssistTankOfIndex(member, 0, true))
+            PlayerbotAI::IsMelee(member) && !PlayerbotAI::IsMainTank(member) &&
+            !PlayerbotAI::IsAssistTankOfIndex(member, 0, true))
         {
             return 0.0f;
         }
@@ -323,7 +323,7 @@ float FelmystWaitForLandingDpsMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (botAI->IsMainTank(bot))
+    if (PlayerbotAI::IsMainTank(bot))
         return 1.0f;
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
@@ -463,7 +463,7 @@ float FelmystFocusAttacksOnCharmedPlayerMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (!botAI->IsDps(bot))
+    if (!PlayerbotAI::IsDps(bot))
         return 1.0f;
 
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
@@ -474,12 +474,10 @@ float FelmystFocusAttacksOnCharmedPlayerMultiplier::GetValue(Action* action)
     if (!charmedTarget)
         return 1.0f;
 
-    bool const isMelee = botAI->IsMelee(bot);
-
-    if (isMelee &&!felmyst->IsFlying() && bot->IsWithinMeleeRange(charmedTarget))
+    if (PlayerbotAI::IsMelee(bot) && !felmyst->IsFlying() && bot->IsWithinMeleeRange(charmedTarget))
         return 0.0f;
 
-    if (!isMelee && bot->GetDistance2d(charmedTarget) > 30.0f)
+    if (!PlayerbotAI::IsMelee(bot) && bot->GetDistance2d(charmedTarget) > 30.0f)
         return 0.0f;
 
     return 1.0f;
@@ -560,10 +558,10 @@ float EredarTwinsHoldDpsAtStartMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (botAI->IsTank(bot))
+    if (PlayerbotAI::IsTank(bot))
         return 1.0f;
 
-    if (botAI->IsMelee(bot) && bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
+    if (PlayerbotAI::IsMelee(bot) && bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
         return 1.0f;
 
     if (!AI_VALUE2(Unit*, "find target", "lady sacrolash"))
@@ -630,7 +628,7 @@ float EredarTwinsControlMovementMultiplier::GetValue(Action* action)
         dynamic_cast<CastKillingSpreeAction*>(action);
 
     bool const isTankAvoidAoe =
-        botAI->IsTank(bot) && dynamic_cast<AvoidAoeAction*>(action);
+        PlayerbotAI::IsTank(bot) && dynamic_cast<AvoidAoeAction*>(action);
 
     bool const isReachAction =
         dynamic_cast<ReachTargetAction*>(action) ||
@@ -645,7 +643,7 @@ float EredarTwinsControlMovementMultiplier::GetValue(Action* action)
     if (isAlwaysBlocked || isTankAvoidAoe)
         return 0.0f;
 
-    if (isReachAction && (botAI->IsRanged(bot) || IsAlythessTank(bot)))
+    if (isReachAction && (PlayerbotAI::IsRanged(bot) || IsAlythessTank(bot)))
         return 0.0f;
 
     return 1.0f;
@@ -728,7 +726,7 @@ float MuruDisableDefaultTargetingMultiplier::GetValue(Action* action)
     if (isDpsAssist)
         return 0.0f;
 
-    if (isTankAssist && botAI->IsAssistTankOfIndex(bot, 0, true) &&
+    if (isTankAssist && PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) &&
         AI_VALUE2(Unit*, "find target", "void sentinel"))
     {
         return 0.0f;
@@ -788,7 +786,7 @@ float MuruControlMovementMultiplier::GetValue(Action* action)
 
     // Remainder is checking only for validity of reach actions
 
-    if (botAI->IsAssistTankOfIndex(bot, 0, true) &&
+    if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) &&
         AI_VALUE2(Unit*, "find target", "void sentinel"))
     {
         return 1.0f;
@@ -804,7 +802,7 @@ float MuruControlMovementMultiplier::GetValue(Action* action)
             return false;
 
         float const targetDistFromMuru = muru->GetExactDist2d(actionTarget);
-        Position const& refPosition = botAI->IsAssistTankOfIndex(bot, 1, true) ?
+        Position const& refPosition = PlayerbotAI::IsAssistTankOfIndex(bot, 1, true) ?
             MURU_ENTRANCE_POSITION : MURU_STACK_POSITION;
         float const targetDistFromRef = actionTarget->GetExactDist2d(
             refPosition.GetPositionX(), refPosition.GetPositionY());
@@ -817,7 +815,7 @@ float MuruControlMovementMultiplier::GetValue(Action* action)
     if (isReachTargetSafeFromDarkness(action))
         return 1.0f;
 
-    if (botAI->IsTank(bot) && !TryGetMuruDarknessEarlyState(bot, muru))
+    if (PlayerbotAI::IsTank(bot) && !TryGetMuruDarknessEarlyState(bot, muru))
         return 1.0f;
     else
         return 0.0f;
@@ -930,7 +928,7 @@ float KiljaedenTanksFocusAssignedHandOnlyMultiplier::GetValue(Action* action)
 float KiljaedenControlMovementAndTargetingMultiplier::GetValue(Action* action)
 {
     bool const isMainTankAssist =
-        botAI->GetState() == BOT_STATE_COMBAT && botAI->IsMainTank(bot) &&
+        botAI->GetState() == BOT_STATE_COMBAT && PlayerbotAI::IsMainTank(bot) &&
         dynamic_cast<TankAssistAction*>(action);
 
     if (!isMainTankAssist &&
