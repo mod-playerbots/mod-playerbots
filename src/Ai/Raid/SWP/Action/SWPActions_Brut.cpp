@@ -380,7 +380,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
     if (RemoveBurnWithCooldown())
         return true;
 
-    if (botAI->IsMelee(bot))
+    if (PlayerbotAI::IsMelee(bot))
         return false;
 
     ObjectGuid const guid = bot->GetGUID();

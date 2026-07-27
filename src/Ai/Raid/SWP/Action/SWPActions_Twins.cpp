@@ -256,7 +256,7 @@ bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
     if (!alythess)
         return false;
 
-    Position const position = botAI->IsRanged(bot) ?
+    Position const position = PlayerbotAI::IsRanged(bot) ?
         GetEredarTwinsP2RangedStackPosition(alythess) :
         GetEredarTwinsP2MeleeStackPosition(alythess);
 
@@ -339,7 +339,7 @@ bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)
 
     if (AI_VALUE2(Unit*, "find target", "lady sacrolash"))
     {
-        Position const& position = botAI->IsRanged(bot) ?
+        Position const& position = PlayerbotAI::IsRanged(bot) ?
             EREDAR_TWINS_RANGED_CONFLAG_POSITION : EREDAR_TWINS_MELEE_CONFLAG_POSITION;
 
         if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) < 1.0f)

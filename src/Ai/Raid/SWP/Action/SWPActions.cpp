@@ -24,8 +24,6 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
     ObjectGuid const guid = bot->GetGUID();
     uint32 const instanceId = bot->GetInstanceId();
     bool const isMechanicTracker = IsMechanicTrackerBot(bot, SWP_MAP_ID);
-    bool const isRanged = botAI->IsRanged(bot);
-    bool const isTank = botAI->IsTank(bot);
 
     bool didSomething = false;
 
@@ -38,7 +36,7 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
         if (kalecgosRealmStates.erase(guid) > 0)
             didSomething = true;
 
-        if (isRanged)
+        if (PlayerbotAI::IsTank(bot))
         {
             Action* kalecAction = botAI->GetAiObjectContext()->GetAction(
                 "kalecgos disperse ranged");
@@ -58,10 +56,10 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
             didSomething = true;
         }
 
-        if (botAI->IsRanged(bot) && brutallusRangedBurnStates.erase(guid) > 0)
+        if (PlayerbotAI::IsRanged(bot) && brutallusRangedBurnStates.erase(guid) > 0)
             didSomething = true;
 
-        if (botAI->IsRanged(bot) && ReleaseBrutallusBurnPad(bot))
+        if (PlayerbotAI::IsRanged(bot) && ReleaseBrutallusBurnPad(bot))
             didSomething = true;
 
         if (isMechanicTracker && brutallusRangedAssignments.erase(instanceId) > 0)
@@ -70,7 +68,7 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
         if (isMechanicTracker && brutallusRangedBurnPadAssignments.erase(instanceId) > 0)
             didSomething = true;
 
-        if (isTank)
+        if (PlayerbotAI::IsTank(bot))
         {
             Action* brutallusAction = botAI->GetAiObjectContext()->GetAction(
                 "brutallus tanks handle boss");
@@ -97,7 +95,7 @@ bool SunwellPlateauResetEncounterStatesAction::Execute(Event /*event*/)
             didSomething = true;
     }
 
-    if (isTank && !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
+    if (PlayerbotAI::IsTank && !AI_VALUE2(Unit*, "find target", "grand warlock alythess"))
     {
         Action* twinsAction = botAI->GetAiObjectContext()->GetAction(
             "eredar twins first assist tank move out of blaze");
@@ -159,7 +157,7 @@ bool VolatileFiendKeepEnemyAwayFromGroupAction::Execute(Event /*event*/)
     if (!volatileFiend)
         return false;
 
-    if (botAI->IsTank(bot))
+    if (PlayerbotAI::IsTank(bot))
     {
         if (AI_VALUE(Unit*, "current target") != volatileFiend)
             return Attack(volatileFiend);

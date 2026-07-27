@@ -546,7 +546,7 @@ bool IsKalecgosDecurser(Player* bot)
         case CLASS_SHAMAN:
             break;
         case CLASS_DRUID:
-            if (!botAI->IsRanged(bot))
+            if (!PlayerbotAI::IsRanged(bot))
                 return false;
             break;
         default:

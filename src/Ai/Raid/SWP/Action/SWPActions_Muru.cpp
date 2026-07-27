@@ -126,7 +126,7 @@ bool MuruPositionRangedAction::TryGetEntropiusInitialRangedPosition(
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SWP_MAP_ID || !botAI->IsRanged(member))
+        if (!member || member->GetMapId() != SWP_MAP_ID || !PlayerbotAI::IsRanged(member))
             continue;
 
         rangedMembers.push_back(member);
@@ -198,7 +198,7 @@ bool MuruSetDpsPriorityAction::Execute(Event /*event*/)
     }
 
     bool needsAttack = false;
-    if (botAI->IsMelee(bot))
+    if (PlayerbotAI::IsMelee(bot))
         needsAttack = currentTarget != target || !bot->HasUnitState(UNIT_STATE_MELEE_ATTACKING);
     else
         needsAttack = currentTarget != target;
@@ -213,7 +213,7 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
 {
     bool const isShadowPriest =
         bot->getClass() == CLASS_PRIEST && botAI->HasStrategy("shadow", BOT_STATE_COMBAT);
-    bool const isOtherRanged = botAI->IsRanged(bot) && !isShadowPriest;
+    bool const isOtherRanged = PlayerbotAI::IsRanged(bot) && !isShadowPriest;
 
     MuruEncounterTargets targets;
     GatherMuruEncounterTargets(botAI, targets);
@@ -246,7 +246,7 @@ Unit* MuruSetDpsPriorityAction::ResolveMuruDpsTarget(Unit*& currentTarget)
             voidSentinelVictim = victim->ToPlayer();
     }
 
-    bool const voidSentinelHasTankAggro = voidSentinelVictim && botAI->IsTank(voidSentinelVictim);
+    bool const voidSentinelHasTankAggro = voidSentinelVictim && PlayerbotAI::IsTank(voidSentinelVictim);
 
     auto const isAllowedPriorityTarget = [&](Unit* unit) -> bool
     {
@@ -493,7 +493,7 @@ bool MuruTanksMoveSentinelToSafePositionAction::Execute(Event /*event*/)
     if (!voidSentinel)
         return false;
 
-    if (botAI->IsAssistTankOfIndex(bot, 0, true) &&
+    if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) &&
         AI_VALUE(Unit*, "current target") != voidSentinel)
     {
         return Attack(voidSentinel);
@@ -545,7 +545,7 @@ Position const& MuruTanksMoveSentinelToSafePositionAction::GetAssignedVoidSentin
 
 bool MuruSecondAssistTankGuardRangedAction::Execute(Event /*event*/)
 {
-    Position const position = MURU_ENTRANCE_POSITION;
+    Position const& position = MURU_ENTRANCE_POSITION;
     if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) <= 1.0f)
         return false;
 
@@ -564,7 +564,7 @@ bool MuruFleeTheDarknessAction::Execute(Event /*event*/)
     Unit* currentTarget = AI_VALUE(Unit*, "current target");
     if (currentTarget && muru->GetExactDist2d(currentTarget) > targetDistThreshold)
     {
-        Position const refPosition = botAI->IsAssistTankOfIndex(bot, 1, true) ?
+        Position const& refPosition = PlayerbotAI::IsAssistTankOfIndex(bot, 1, true) ?
             MURU_ENTRANCE_POSITION : MURU_STACK_POSITION;
         if (currentTarget->GetExactDist2d(
                 refPosition.GetPositionX(), refPosition.GetPositionY()) < targetDistThreshold)
@@ -581,15 +581,15 @@ bool MuruFleeTheDarknessAction::Execute(Event /*event*/)
             return voidSentinel && voidSentinel->GetVictim() == bot;
         });
 
-    if (botAI->IsTank(bot))
+    if (PlayerbotAI::IsTank(bot))
     {
         if (isTankingVoidSentinel)
             return false;
 
-        if (!botAI->IsAssistTankOfIndex(bot, 0, true) &&
+        if (!PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) &&
             TryGetMuruDarknessEarlyState(bot, muru))
         {
-            Position const holdingPosition = botAI->IsAssistTankOfIndex(bot, 1, true) ?
+            Position const& holdingPosition = PlayerbotAI::IsAssistTankOfIndex(bot, 1, true) ?
                 MURU_ENTRANCE_POSITION : MURU_STACK_POSITION;
             constexpr float arrivalDistance = 1.0f;
 

@@ -52,7 +52,7 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
 bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
 {
     if (Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
-        kalecgos && botAI->IsTank(bot))
+        kalecgos && PlayerbotAI::IsTank(bot))
     {
         Player* surfaceTank = GetKalecgosCurrentTank(bot);
         if (!surfaceTank)
