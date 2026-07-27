@@ -35,9 +35,8 @@ bool LootAction::Execute(Event /*event*/)
         // bot->GetSession()->HandleLootReleaseOpcode(packet);
     }
 
-    // Provide a system to check if the game object id is disallowed in the user configurable list or not.
-    // Check if the game object id is disallowed in the user configurable list or not.
-    if (sPlayerbotAIConfig.disallowedGameObjects.find(lootObject.guid.GetEntry()) != sPlayerbotAIConfig.disallowedGameObjects.end())
+    if (lootObject.guid.IsGameObject() &&
+        sPlayerbotAIConfig.disallowedGameObjects.contains(lootObject.guid.GetEntry()))
     {
         return false;  // Game object ID is disallowed, so do not proceed
     }
