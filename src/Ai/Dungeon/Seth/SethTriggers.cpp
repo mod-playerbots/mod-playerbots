@@ -42,13 +42,13 @@ bool AnzuEncounterHasTwoPhasesTrigger::IsActive()
 
 bool AnzuBirdSpiritsProvideBuffsTrigger::IsActive()
 {
-    return bot->getClass() == CLASS_DRUID && botAI->IsHeal(bot) &&
+    return bot->getClass() == CLASS_DRUID && PlayerbotAI::IsHeal(bot) &&
         AI_VALUE2(Unit*, "find target", "anzu");
 }
 
 bool TalonKingIkissBossEngagedByTankTrigger::IsActive()
 {
-    if (!botAI->IsTank(bot))
+    if (!PlayerbotAI::IsTank(bot))
         return false;
 
     Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
@@ -57,7 +57,7 @@ bool TalonKingIkissBossEngagedByTankTrigger::IsActive()
 
 bool TalonKingIkissRangedPrepareForArcaneExplosionTrigger::IsActive()
 {
-    if (!botAI->IsRanged(bot))
+    if (!PlayerbotAI::IsRanged(bot))
         return false;
 
     Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
