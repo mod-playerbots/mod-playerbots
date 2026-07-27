@@ -64,9 +64,9 @@ bool IsKalecgosDecurser(Player* bot);
 void EnsureKalecgosGroupAssignments(Player* bot);
 Player* GetKalecgosCurrentTank(Player* bot);
 Player* GetKalecgosReplacementTank(Player* bot);
-bool ShouldEnterKalecgosSpectralRift(Player* bot);
-void RecordKalecgosSpectralBlastTarget(Player* player, PlayerbotAI* announcerAI);
-void RecordKalecgosSpectralRealmEnter(Player* player);
+bool ShouldEnterKalecgosPortal(Player* bot);
+void RecordSpectralBlastTarget(Player* player, PlayerbotAI* announcerAI);
+void RecordSpectralRealmEnter(Player* player);
 void UpdateKalecgosRealmState(Player* bot, bool inSpectralRealm, uint32 timestamp);
 
 }

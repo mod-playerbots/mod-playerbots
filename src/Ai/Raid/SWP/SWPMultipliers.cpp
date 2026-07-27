@@ -383,8 +383,8 @@ float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
     if (!felmyst || !felmyst->IsFlying())
         return 1.0f;
 
-    FelmystFogOfCorruptionState fogState;
-    FelmystFogLane thirdPassLane = FelmystFogLane::None;
+    FogOfCorruptionState fogState;
+    FogLane thirdPassLane = FogLane::None;
     bool const shouldRepositionAfterThirdPass =
         TryGetFelmystPostThirdPassWindow(felmyst, thirdPassLane);
 
@@ -399,11 +399,11 @@ float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
         return 0.0f;
 
     // Remaining: fog lane move or DPS spell — these need danger state
-    FelmystFogOfCorruptionState dangerousFogState;
-    bool needsFogAvoidance = TryGetActiveFelmystFogOfCorruptionState(
+    FogOfCorruptionState dangerousFogState;
+    bool needsFogAvoidance = TryGetActiveFogOfCorruptionState(
         bot, felmyst, dangerousFogState);
 
-    FelmystFogLane const activeLane = needsFogAvoidance ? dangerousFogState.lane :
+    FogLane const activeLane = needsFogAvoidance ? dangerousFogState.lane :
         shouldRepositionAfterThirdPass ? thirdPassLane :
         fogState.lane;
 
@@ -445,8 +445,8 @@ float FelmystPrioritizeDemonicVaporKiteMultiplier::GetValue(Action* action)
     if (!felmyst || !felmyst->IsFlying())
         return 1.0f;
 
-    FelmystFogOfCorruptionState fogState;
-    if (TryGetActiveFelmystFogOfCorruptionState(bot, felmyst, fogState))
+    FogOfCorruptionState fogState;
+    if (TryGetActiveFogOfCorruptionState(bot, felmyst, fogState))
         return 1.0f;
 
     if (IsFelmystDemonicVaporHeadNearBot(bot))
