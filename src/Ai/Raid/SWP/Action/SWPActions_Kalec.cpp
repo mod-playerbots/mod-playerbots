@@ -42,8 +42,7 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
             false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
     }
 
-    // Move to the tank position before taunting during tank swaps to avoid turning the boss
-    if (kalecgos->GetVictim() != bot)
+    if (GetKalecgosDesignatedTank(bot) == bot && kalecgos->GetVictim() != bot)
         return botAI->DoSpecificAction("taunt spell", event, true);
 
     return false;
@@ -51,27 +50,9 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
 
 bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
 {
-    if (Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
-        kalecgos && PlayerbotAI::IsTank(bot))
-    {
-        Player* surfaceTank = GetKalecgosCurrentTank(bot);
-        if (!surfaceTank)
-            return false;
-
-        if (surfaceTank == bot)
-        {
-            surfaceTank = GetKalecgosReplacementTank(bot);
-            if (!surfaceTank)
-                return false;
-        }
-
-        Position const& position = KALECGOS_TANK_POSITION;
-        if (surfaceTank->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 3.0f ||
-            kalecgos->GetVictim() != surfaceTank)
-        {
-            return false;
-        }
-    }
+    // Special conditions for tanks only
+    if (PlayerbotAI::IsTank(bot) && !ShouldTankEnter())
+        return false;
 
     constexpr float searchRadius = 75.0f;
     GameObject* rift = bot->FindNearestGameObject(
@@ -93,6 +74,38 @@ bool KalecgosEnterSpectralRiftAction::Execute(Event /*event*/)
     return MoveTo(
         SWP_MAP_ID, destX, destY, rift->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+}
+
+bool KalecgosEnterSpectralRiftAction::ShouldTankEnter()
+{
+    Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
+    if (!kalecgos)
+        return false;
+
+    Player* surfaceTank = GetKalecgosDesignatedTank(bot);
+    if (!surfaceTank)
+        return false;
+
+    if (surfaceTank == bot)
+    {
+        KalecgosEncounterState& state = kalecgosEncounterStates[kalecgos->GetInstanceId()];
+        surfaceTank = GetNextSurfaceTankInOrder(
+            bot->GetGroup(), state.tankAssignmentGuids,
+            state.currentTankGuid, ObjectGuid::Empty, true);
+
+        if (!surfaceTank)
+            return false;
+    }
+
+    // The current tank cannot enter a portal until the next tank takes over
+    Position const& position = KALECGOS_TANK_POSITION;
+    if (surfaceTank->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 3.0f ||
+        kalecgos->GetVictim() != surfaceTank)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 bool KalecgosDisperseRangedAction::Execute(Event /*event*/)

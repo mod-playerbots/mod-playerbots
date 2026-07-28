@@ -71,10 +71,7 @@ bool KalecgosBossEngagedByTankTrigger::IsActive()
     if (!kalecgos || kalecgos->IsFriendlyTo(bot))
         return false;
 
-    if (IsInSpectralRealm(bot))
-        return false;
-
-    return GetKalecgosCurrentTank(bot) == bot;
+    return !IsInSpectralRealm(bot);
 }
 
 bool KalecgosSpectralRiftIsOpenTrigger::IsActive()

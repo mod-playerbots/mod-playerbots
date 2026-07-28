@@ -65,6 +65,9 @@ public:
     KalecgosEnterSpectralRiftAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "kalecgos enter spectral rift") {}
     bool Execute(Event event) override;
+
+private:
+    bool ShouldTankEnter();
 };
 
 class KalecgosDisperseRangedAction : public MovementAction

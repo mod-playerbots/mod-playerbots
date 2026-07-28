@@ -14,6 +14,7 @@
 #include <limits>
 #include <unordered_map>
 
+class Group;
 class Player;
 class PlayerbotAI;
 
@@ -61,9 +62,12 @@ extern std::unordered_map<ObjectGuid, KalecgosRealmState> kalecgosRealmStates;
 bool IsExhausted(Player* bot);
 bool IsInSpectralRealm(Player* bot);
 bool IsKalecgosDecurser(Player* bot);
-void EnsureKalecgosGroupAssignments(Player* bot);
-Player* GetKalecgosCurrentTank(Player* bot);
-Player* GetKalecgosReplacementTank(Player* bot);
+void EnsureKalecgosRaidAssignments(Player* bot);
+Player* GetKalecgosDesignatedTank(Player* player);
+Player* GetNextSurfaceTankInOrder(
+    Group* group, std::array<ObjectGuid, KALECGOS_TANK_COUNT> const& orderedGuids,
+    ObjectGuid afterGuid, ObjectGuid excludedGuid = ObjectGuid::Empty,
+    bool fallbackToFirst = false);
 bool ShouldEnterKalecgosPortal(Player* bot);
 void RecordSpectralBlastTarget(Player* player, PlayerbotAI* announcerAI);
 void RecordSpectralRealmEnter(Player* player);

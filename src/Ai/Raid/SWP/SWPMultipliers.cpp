@@ -161,7 +161,7 @@ float KalecgosRestrictTauntMultiplier::GetValue(Action* action)
     if (IsInSpectralRealm(bot))
         return 1.0f;
 
-    if (GetKalecgosCurrentTank(bot) != bot)
+    if (GetKalecgosDesignatedTank(bot) != bot)
         return 0.0f;
 
     return 1.0f;
