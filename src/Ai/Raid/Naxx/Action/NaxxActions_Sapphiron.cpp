@@ -105,8 +105,8 @@ bool SapphironFlightPositionAction::MoveToNearestIcebolt()
             float angle = boss->GetAngle(playerWithIcebolt);
             float posX = playerWithIcebolt->GetPositionX() + cos(angle) * 3.0f;
             float posY = playerWithIcebolt->GetPositionY() + sin(angle) * 3.0f;
-            float distToIcebolt = bot->GetDistance2d(posX, posY);
-            if (distToIcebolt < 0.9f)
+            float distToSafePoint = bot->GetExactDist2d(posX, posY);
+            if (distToSafePoint < 1.0f)
             {
                 if (botAI->IsRanged(bot))
                 {
