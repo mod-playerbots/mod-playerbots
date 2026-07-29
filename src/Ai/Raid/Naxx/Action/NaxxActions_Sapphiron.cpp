@@ -75,9 +75,8 @@ bool SapphironFlightPositionAction::MoveToNearestIcebolt()
     Group* group = bot->GetGroup();
     if (!group)
         return false;
-    //raid25: 3 icebolts, raid10: 2 icebolts
     uint8 requiredIceboltCount = (bot->GetRaidDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL) ? 3 : 2;
-    uint8 iceboltCount = 0; //calculate 
+    uint8 iceboltCount = 0;
     Player* playerWithIcebolt = nullptr;
     float minDistance;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
@@ -106,15 +105,14 @@ bool SapphironFlightPositionAction::MoveToNearestIcebolt()
             float angle = boss->GetAngle(playerWithIcebolt);
             float posX = playerWithIcebolt->GetPositionX() + cos(angle) * 3.0f;
             float posY = playerWithIcebolt->GetPositionY() + sin(angle) * 3.0f;
-            //distance check
             float distToIcebolt = bot->GetDistance2d(posX, posY);
-            if (distToIcebolt < 0.9f) //i think it will be a safe distance, less than half length of safe area which cause by icebolt.
+            if (distToIcebolt < 0.9f)
             {
                 if (botAI->IsRanged(bot))
                 {
-                    return false;//rangebot can still cast spells behind icebolt
+                    return false;
                 }
-                return true; //prevent melee to move
+                return true;
             }
             if (MoveTo(NAXX_MAP_ID, posX, posY, helper.GENERIC_HEIGHT, false, false, false, false, MovementPriority::MOVEMENT_COMBAT))
                 return true;
