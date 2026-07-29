@@ -78,7 +78,6 @@ bool SapphironFlightPositionAction::MoveToNearestIcebolt()
     //raid25: 3 icebolts, raid10: 2 icebolts
     uint8 requiredIceboltCount = (bot->GetRaidDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL) ? 3 : 2;
     uint8 iceboltCount = 0; //calculate 
-
     Player* playerWithIcebolt = nullptr;
     float minDistance;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
