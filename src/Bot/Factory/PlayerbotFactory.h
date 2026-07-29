@@ -16,6 +16,12 @@
 
 class Item;
 
+namespace Trainer
+{
+    class Trainer;
+    struct Spell;
+}
+
 struct ItemTemplate;
 
 struct EnchantTemplate
@@ -68,6 +74,8 @@ public:
     static void InitTalentsBySpecNo(Player* bot, int specNo, bool reset);
     static void InitTalentsByParsedSpecLink(Player* bot, std::vector<std::vector<uint32>> parsedSpecLink, bool reset);
     void InitAvailableSpells();
+    static bool IsTrainerSpellAllowedForBot(Player* bot, Trainer::Trainer const* trainer,
+                                             Trainer::Spell const* trainerSpell);
     void InitClassSpells();
     void InitSpecialSpells();
     void InitEquipment(bool incremental, bool second_chance = false);
@@ -156,6 +164,8 @@ private:
     bool CanEquipItem(ItemTemplate const* proto);
     bool CanEquipUnseenItem(uint8 slot, uint16& dest, uint32 item);
     static bool IsPrimaryTradeSkill(uint16 skillId);
+    static bool IsSecondaryTradeSkill(uint16 skillId);
+    static uint16 GetTrainerSpellTradeSkill(Trainer::Spell const* trainerSpell);
     static bool IsGatheringTradeSkill(uint16 skillId);
     static bool IsCraftingTradeSkill(uint16 skillId);
     static uint32 GetProfessionStarterSpell(uint16 skillId);
@@ -164,6 +174,8 @@ private:
     static std::pair<uint16, uint16> ChooseProfessionPair(std::vector<WeightedProfessionPair> const& professionPairs);
     static bool HasProfessionPair(std::vector<WeightedProfessionPair> const& professionPairs,
                                   uint16 firstSkill, uint16 secondSkill);
+    static uint16 ChooseComplementaryProfession(
+        std::vector<WeightedProfessionPair> const& professionPairs, uint16 existingSkill);
     static uint16 ChooseSingleProfession(std::vector<WeightedProfessionPair> const& professionPairs);
     static uint32 GetStoredOrRandomValue(Player* bot, std::string const& key, uint32 minValue, uint32 maxValue);
     static bool HasAnySpell(Player* bot, std::vector<uint32> const& spells);
