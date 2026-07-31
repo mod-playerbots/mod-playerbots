@@ -8,7 +8,6 @@
 #include "BattleGroundTactics.h"
 #include "BattlegroundAV.h"
 #include "BattlegroundEY.h"
-#include "BattlegroundEY.h"
 #include "BattlegroundMgr.h"
 #include "BattlegroundWS.h"
 #include "Playerbots.h"

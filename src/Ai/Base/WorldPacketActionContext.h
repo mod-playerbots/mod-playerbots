@@ -26,7 +26,6 @@
 #include "LootAction.h"
 #include "LootRollAction.h"
 #include "NamedObjectContext.h"
-#include "NamedObjectContext.h"
 #include "PassLeadershipToMasterAction.h"
 #include "PetitionSignAction.h"
 #include "PetsAction.h"

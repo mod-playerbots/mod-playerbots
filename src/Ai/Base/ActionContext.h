@@ -12,7 +12,6 @@
 #include "AutoMaintenanceOnLevelupAction.h"
 #include "BattleGroundJoinAction.h"
 #include "BattleGroundTactics.h"
-#include "BattleGroundTactics.h"
 #include "BuyAction.h"
 #include "CancelChannelAction.h"
 #include "CastCustomSpellAction.h"

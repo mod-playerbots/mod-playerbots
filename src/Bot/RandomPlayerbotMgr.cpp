@@ -17,7 +17,6 @@
 #include "Define.h"
 #include "FleeManager.h"
 #include "GridNotifiers.h"
-#include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "LFGMgr.h"
 #include "MapMgr.h"
