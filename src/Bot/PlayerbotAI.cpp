@@ -4331,6 +4331,26 @@ bool PlayerbotAI::IsInterruptableSpellCasting(Unit* target, std::string const sp
     return false;
 }
 
+#ifndef WIN32
+inline int strcmpi(char const* s1, char const* s2)
+{
+    for (; *s1 && *s2 && (toupper(*s1) == toupper(*s2)); ++s1, ++s2)
+    {
+    }
+    return *s1 - *s2;
+}
+#endif
+
+static constexpr uint32 PVP_DISPEL_HESITATION_SKIP_CHANCE = 75;   // % chance to skip an otherwise-valid dispel this poll cycle
+static constexpr uint32 PVP_DANGEROUS_DISPEL_ANYWAY_CHANCE = 1;   // % chance to dispel a target with a "dangerous" debuff anyway
+
+// Debuffs that punish the dispeller/target when removed
+static bool IsPvpDangerousDispel(SpellInfo const* spellInfo)
+{
+    return !strcmpi((const char*)spellInfo->SpellName[0], "unstable affliction") ||
+           !strcmpi((const char*)spellInfo->SpellName[0], "vampiric touch");
+}
+
 bool PlayerbotAI::HasAuraToDispel(Unit* target, uint32 dispelType)
 {
     if (!IsValidUnit(target) || !target->IsAlive())
@@ -4344,6 +4364,10 @@ bool PlayerbotAI::HasAuraToDispel(Unit* target, uint32 dispelType)
     Unit::VisibleAuraMap const* visibleAuras = target->GetVisibleAuras();
     if (!visibleAuras)
         return false;
+
+    bool inPvp = bot->InBattleground() || bot->InArena();
+    bool foundDangerousDispel = false;
+    bool foundSafeDispel = false;
 
     for (Unit::VisibleAuraMap::const_iterator itr = visibleAuras->begin(); itr != visibleAuras->end(); ++itr)
     {
@@ -4369,22 +4393,26 @@ bool PlayerbotAI::HasAuraToDispel(Unit* target, uint32 dispelType)
         if (!isPositiveSpell && !isFriend)
             continue;
 
-        if (canDispel(spellInfo, dispelType))
-            return true;
+        if (!canDispel(spellInfo, dispelType))
+            continue;
+
+        if (inPvp && IsPvpDangerousDispel(spellInfo))
+            foundDangerousDispel = true;
+        else
+            foundSafeDispel = true;
     }
 
-    return false;
-}
+    if (inPvp && foundDangerousDispel)
+        return urand(0, 99) < PVP_DANGEROUS_DISPEL_ANYWAY_CHANCE;
 
-#ifndef WIN32
-inline int strcmpi(char const* s1, char const* s2)
-{
-    for (; *s1 && *s2 && (toupper(*s1) == toupper(*s2)); ++s1, ++s2)
-    {
-    }
-    return *s1 - *s2;
+    if (!foundSafeDispel)
+        return false;
+
+    if (inPvp && urand(0, 99) < PVP_DISPEL_HESITATION_SKIP_CHANCE)
+        return false;
+
+    return true;
 }
-#endif
 
 bool PlayerbotAI::canDispel(SpellInfo const* spellInfo, uint32 dispelType)
 {
