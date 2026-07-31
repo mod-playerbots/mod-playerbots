@@ -62,6 +62,41 @@ bool ApocalypseGuardProtectedByInfernalDefenseTrigger::IsActive()
 
 // Kalecgos
 
+bool KalecgosShouldCommunicateBossHealthTrigger::IsActive()
+{
+    Unit* kalecgos = AI_VALUE2(Unit*, "find target", "kalecgos");
+    if (!kalecgos || kalecgos->GetHealthPct() >= 20.0f)
+        return false;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Player* spectralBot = nullptr;
+    Player* surfaceBot = nullptr;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || member->GetMapId() != SWP_MAP_ID ||
+            !GET_PLAYERBOT_AI(member))
+        {
+            continue;
+        }
+
+        if (!spectralBot && IsInSpectralRealm(member))
+            spectralBot = member;
+
+        if (!surfaceBot && !IsInSpectralRealm(member))
+            surfaceBot = member;
+
+        if (spectralBot && surfaceBot)
+            break;
+    }
+
+    return bot == spectralBot || bot == surfaceBot;
+}
+
 bool KalecgosBossEngagedByTankTrigger::IsActive()
 {
     if (!PlayerbotAI::IsTank(bot))
@@ -240,6 +275,11 @@ bool FelmystBossEngagedByRangedOnGroundTrigger::IsActive()
     if (felmyst->GetVictim() == bot)
         return false;
 
+    // On initial landing, let MT get aggro before trying to line up
+    Player* mainTank = GetGroupMainTank(botAI, bot);
+    if (mainTank && felmyst->GetVictim() != mainTank && felmyst->GetHealthPct() > 90.0f)
+        return false;
+
     return !GetFelmystEncapsulateTarget(bot) && !DidEncapsulateOccurThisGroundPhase(bot);
 }
 
@@ -311,7 +351,7 @@ bool FelmystPlayerHasGasNovaTrigger::IsActive()
     return GetFelmystGasNovaDispelTarget(bot);
 }
 
-bool FelmystDemonicVaporTrailsAreActiveTrigger::IsActive()
+bool FelmystShouldAvoidDemonicVaporTrailsTrigger::IsActive()
 {
     Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
     if (!felmyst || !felmyst->IsFlying())
@@ -577,9 +617,9 @@ bool MuruEntropiusSpawnsDarknessPoolsTrigger::IsActive()
     if (AI_VALUE2(Unit*, "find target", "dark fiend"))
         return true;
 
-    constexpr float searchDistance = 15.0f;
+    constexpr float searchRadius = 20.0f;
     return bot->FindNearestCreature(
-        static_cast<uint32>(SwpNpcs::NPC_DARKNESS), searchDistance, true);
+        static_cast<uint32>(SwpNpcs::NPC_DARKNESS), searchRadius, true);
 }
 
 bool MuruDarknessIsComingTrigger::IsActive()
@@ -600,12 +640,9 @@ bool MuruTheSingularityIsNearTrigger::IsActive()
     if (!entropius)
         return false;
 
-    Creature* singularity = GetNearestMuruSingularity(bot);
-    if (!singularity)
-        return false;
-
-    float safeDistance = entropius->GetVictim() == bot ? 15.0f : 10.0f;
-    return bot->GetExactDist2d(singularity) < safeDistance;
+    constexpr float searchRadius = 30.0f;
+    return bot->FindNearestCreature(
+        static_cast<uint32>(SwpNpcs::NPC_SINGULARITY), searchRadius, true);
 }
 
 bool MuruBerserkerIsBuffedWithFlurryTrigger::IsActive()

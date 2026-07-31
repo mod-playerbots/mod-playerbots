@@ -30,6 +30,9 @@ public:
             &RaidSunwellActionContext::apocalypse_guard_attack_with_holy_magic;
 
         // Kalecgos
+        creators["kalecgos announce boss health"] =
+            &RaidSunwellActionContext::kalecgos_announce_boss_health;
+
         creators["kalecgos tank position boss"] =
             &RaidSunwellActionContext::kalecgos_tank_position_boss;
 
@@ -234,6 +237,9 @@ private:
     }
 
     // Kalecgos
+    static Action* kalecgos_announce_boss_health(PlayerbotAI* botAI) {
+        return new KalecgosAnnounceBossHealthAction(botAI);
+    }
     static Action* kalecgos_tank_position_boss(PlayerbotAI* botAI) {
         return new KalecgosTankPositionBossAction(botAI);
     }

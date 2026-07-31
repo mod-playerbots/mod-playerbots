@@ -360,80 +360,11 @@ float FelmystPrioritizeEncapsulateAvoidanceMultiplier::GetValue(Action* action)
 
 float FelmystPrioritizeFogAvoidanceMultiplier::GetValue(Action* action)
 {
-    bool const isReachOrDrink =
-        dynamic_cast<CastReachTargetSpellAction*>(action) ||
-        dynamic_cast<DrinkAction*>(action);
-
-    bool const isBlockedMovement =
-        dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<AttackAction*>(action) &&
-        !dynamic_cast<FelmystMoveToSafeFogLaneAction*>(action);
-
-    bool const isFogLaneMove =
-        dynamic_cast<FelmystMoveToSafeFogLaneAction*>(action);
-
-    bool const isDpsSpell =
-        dynamic_cast<CastSpellAction*>(action) &&
-        !dynamic_cast<CastHealingSpellAction*>(action);
-
-    if (!isReachOrDrink && !isBlockedMovement && !isFogLaneMove && !isDpsSpell)
-        return 1.0f;
-
-    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
-    if (!felmyst || !felmyst->IsFlying())
-        return 1.0f;
-
-    FogOfCorruptionState fogState;
-    FogLane thirdPassLane = FogLane::None;
-    bool const shouldRepositionAfterThirdPass =
-        TryGetFelmystPostThirdPassWindow(felmyst, thirdPassLane);
-
-    if (!TryGetFelmystFogOfCorruptionStageState(felmyst, fogState) &&
-        !shouldRepositionAfterThirdPass)
+    if (dynamic_cast<AttackAction*>(action) ||
+        dynamic_cast<FelmystMoveToSafeFogLaneAction*>(action))
     {
         return 1.0f;
     }
-
-    // Fog is active — always-blocked action types
-    if (isReachOrDrink || isBlockedMovement)
-        return 0.0f;
-
-    // Remaining: fog lane move or DPS spell — these need danger state
-    FogOfCorruptionState dangerousFogState;
-    bool needsFogAvoidance = TryGetActiveFogOfCorruptionState(
-        bot, felmyst, dangerousFogState);
-
-    FogLane const activeLane = needsFogAvoidance ? dangerousFogState.lane :
-        shouldRepositionAfterThirdPass ? thirdPassLane :
-        fogState.lane;
-
-    if (isFogLaneMove)
-    {
-        std::array<Position, 3> destinations;
-        uint8 destinationCount = 0;
-        bool canRelocate = TryGetFelmystFogSafeDestinations(
-            bot, activeLane, destinations, destinationCount);
-        return canRelocate ? 1.0f : 0.0f;
-    }
-
-    // DPS spell — blocked when in active danger and can relocate
-    if (needsFogAvoidance)
-    {
-        std::array<Position, 3> destinations;
-        uint8 destinationCount = 0;
-        bool canRelocate = TryGetFelmystFogSafeDestinations(
-            bot, dangerousFogState.lane, destinations, destinationCount);
-        if (canRelocate)
-            return 0.0f;
-    }
-
-    return 1.0f;
-}
-
-float FelmystPrioritizeDemonicVaporKiteMultiplier::GetValue(Action* action)
-{
-    if (dynamic_cast<FelmystKiteDemonicVaporAction*>(action))
-        return 1.0f;
 
     if (!dynamic_cast<MovementAction*>(action) &&
         !dynamic_cast<CastReachTargetSpellAction*>(action))
@@ -446,13 +377,38 @@ float FelmystPrioritizeDemonicVaporKiteMultiplier::GetValue(Action* action)
         return 1.0f;
 
     FogOfCorruptionState fogState;
+    FogLane thirdPassLane = FogLane::None;
+
+    if (TryGetFelmystFogOfCorruptionStageState(felmyst, fogState) ||
+        TryGetFelmystPostThirdPassWindow(felmyst, thirdPassLane))
+    {
+        return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float FelmystPrioritizeDemonicVaporAvoidanceMultiplier::GetValue(Action* action)
+{
+    if (!dynamic_cast<ReachTargetAction*>(action) &&
+        !dynamic_cast<CastReachTargetSpellAction*>(action) &&
+        !dynamic_cast<FollowAction*>(action))
+    {
+        return 1.0f;
+    }
+
+    Unit* felmyst = AI_VALUE2(Unit*, "find target", "felmyst");
+    if (!felmyst || !felmyst->IsFlying())
+        return 1.0f;
+
+    FogOfCorruptionState fogState;
     if (TryGetActiveFogOfCorruptionState(bot, felmyst, fogState))
         return 1.0f;
 
-    if (IsFelmystDemonicVaporHeadNearBot(bot))
-        return 0.0f;
+    if (IsFelmystLanding(felmyst))
+        return 1.0f;
 
-    return 1.0f;
+    return 0.0f;
 }
 
 float FelmystFocusAttacksOnCharmedPlayerMultiplier::GetValue(Action* action)

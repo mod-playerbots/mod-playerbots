@@ -169,28 +169,4 @@ Creature* FindAvailableVoidSpawnForEnslave(Player* bot)
     return bestSpawn;
 }
 
-Creature* GetNearestMuruSingularity(Player* bot, float searchRadius)
-{
-    Creature* nearestSingularity = nullptr;
-    float nearestDistance = std::numeric_limits<float>::max();
-    std::list<Creature*> singularities;
-    bot->GetCreatureListWithEntryInGrid(
-        singularities, static_cast<uint32>(SwpNpcs::NPC_SINGULARITY), searchRadius);
-
-    for (Creature* singularity : singularities)
-    {
-        if (!singularity || !singularity->IsAlive())
-            continue;
-
-        float distance = bot->GetExactDist2d(singularity);
-        if (distance < nearestDistance)
-        {
-            nearestDistance = distance;
-            nearestSingularity = singularity;
-        }
-    }
-
-    return nearestSingularity;
-}
-
 }

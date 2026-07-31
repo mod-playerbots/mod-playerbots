@@ -47,6 +47,14 @@ public:
 
 // Kalecgos
 
+class KalecgosShouldCommunicateBossHealthTrigger : public Trigger
+{
+public:
+    KalecgosShouldCommunicateBossHealthTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "kalecgos should communicate boss health") {}
+    bool IsActive() override;
+};
+
 class KalecgosBossEngagedByTankTrigger : public Trigger
 {
 public:
@@ -195,11 +203,11 @@ public:
     bool IsActive() override;
 };
 
-class FelmystDemonicVaporTrailsAreActiveTrigger : public Trigger
+class FelmystShouldAvoidDemonicVaporTrailsTrigger : public Trigger
 {
 public:
-    FelmystDemonicVaporTrailsAreActiveTrigger(
-        PlayerbotAI* botAI) : Trigger(botAI, "felmyst demonic vapor trails are active") {}
+    FelmystShouldAvoidDemonicVaporTrailsTrigger(
+        PlayerbotAI* botAI) : Trigger(botAI, "felmyst should avoid demonic vapor trails") {}
     bool IsActive() override;
 };
 

@@ -43,8 +43,7 @@ bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
             "and therefore a player must control the dragons. "
             "If you would like a bot to use the dragon orbs, "
             "please set the assistant flag for a bot.",
-            {}
-        );
+            {});
     }
 
     return botAI->SayToRaid(text);
@@ -466,14 +465,36 @@ bool KiljaedenRemoveFireBloomAction::Execute(Event /*event*/)
 
 bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
 {
-    Position const& position = KILJAEDEN_DARKNESS_POSITION;
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) <= 2.0f)
+    Position const& darknessPosition = KILJAEDEN_DARKNESS_POSITION;
+    float destX = darknessPosition.GetPositionX();
+    float destY = darknessPosition.GetPositionY();
+
+    // Bots with Fire Bloom wait away from the darkness stack spot until the darkness cast is
+    // about to finish (4500ms, same threshold for the bot dragon to cast Shield of the Blue).
+    if (bot->HasAura(static_cast<uint32>(SwpSpells::SPELL_FIRE_BLOOM)))
+    {
+        Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
+        if (!kiljaeden)
+            return false;
+
+        if (Spell* darknessSpell = kiljaeden->FindCurrentSpellBySpellId(
+                static_cast<uint32>(SwpSpells::SPELL_DARKNESS_OF_A_THOUSAND_SOULS));
+            darknessSpell && darknessSpell->GetCastTimeRemaining() >= 4500)
+        {
+            constexpr float targetDistance = 15.0f;
+            float const angle = darknessPosition.GetAngle(bot);
+            destX = darknessPosition.GetPositionX() + std::cos(angle) * targetDistance;
+            destY = darknessPosition.GetPositionY() + std::sin(angle) * targetDistance;
+        }
+    }
+
+    if (bot->GetExactDist2d(destX, destY) < 1.0f)
         return false;
 
     botAI->InterruptSpell();
     return MoveTo(
-        SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
-        false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+        SWP_MAP_ID, destX, destY, bot->GetPositionZ(), false, false, false, false,
+        MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
 bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
@@ -567,7 +588,7 @@ bool KiljaedenControlDragonAction::Execute(Event /*event*/)
     if (!kiljaeden)
         return false;
 
-    // Design choice: End drake control after phase changes
+    // End remaining drake control after phase changes
     if (kiljaeden->HasUnitState(UNIT_STATE_CASTING) &&
         kiljaeden->FindCurrentSpellBySpellId(static_cast<uint32>(SwpSpells::SPELL_SHADOW_SPIKE)))
     {

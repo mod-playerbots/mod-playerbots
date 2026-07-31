@@ -11,7 +11,6 @@
 #include "Playerbots.h"
 #include "RaidBossHelpers.h"
 #include "TargetValue.h"
-#include <algorithm>
 #include <array>
 #include <cmath>
 #include <list>
@@ -126,30 +125,18 @@ bool MuruPositionRangedAction::TryGetEntropiusInitialRangedPosition(
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || member->GetMapId() != SWP_MAP_ID || !PlayerbotAI::IsRanged(member))
-            continue;
-
-        rangedMembers.push_back(member);
+        if (member && member->GetMapId() == SWP_MAP_ID && PlayerbotAI::IsRanged(member))
+            rangedMembers.push_back(member);
     }
 
     if (rangedMembers.empty())
         return false;
 
-    std::sort(rangedMembers.begin(), rangedMembers.end(),
-        [](Player* left, Player* right) { return left->GetGUID() < right->GetGUID(); });
-
-    size_t slotIndex = rangedMembers.size();
-    for (size_t index = 0; index < rangedMembers.size(); ++index)
-    {
-        if (rangedMembers[index] == bot)
-        {
-            slotIndex = index;
-            break;
-        }
-    }
-
-    if (slotIndex >= rangedMembers.size())
+    auto const it = std::find(rangedMembers.begin(), rangedMembers.end(), bot);
+    if (it == rangedMembers.end())
         return false;
+
+    size_t const slotIndex = std::distance(rangedMembers.begin(), it);
 
     constexpr float spreadRadius = 25.0f;
     float const anchorAngle = std::atan2(
@@ -159,19 +146,10 @@ bool MuruPositionRangedAction::TryGetEntropiusInitialRangedPosition(
         2.0f * static_cast<float>(M_PI) / static_cast<float>(rangedMembers.size());
     float const angle = Position::NormalizeOrientation(anchorAngle + angleStep * slotIndex);
 
-    float destinationX = MURU_CENTER_POSITION.GetPositionX() + std::cos(angle) * spreadRadius;
-    float destinationY = MURU_CENTER_POSITION.GetPositionY() + std::sin(angle) * spreadRadius;
+    float const destinationX = MURU_CENTER_POSITION.GetPositionX() + std::cos(angle) * spreadRadius;
+    float const destinationY = MURU_CENTER_POSITION.GetPositionY() + std::sin(angle) * spreadRadius;
 
-    float destinationZ = bot->GetMapWaterOrGroundLevel(
-        destinationX, destinationY, MURU_CENTER_POSITION.GetPositionZ());
-    if (destinationZ <= INVALID_HEIGHT)
-        destinationZ = MURU_CENTER_POSITION.GetPositionZ();
-
-    bot->GetMap()->CheckCollisionAndGetValidCoords(
-        bot, bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(),
-        destinationX, destinationY, destinationZ, false);
-
-    position = Position{ destinationX, destinationY, destinationZ };
+    position = Position{ destinationX, destinationY, MURU_CENTER_POSITION.GetPositionZ() };
     return true;
 }
 
@@ -458,9 +436,9 @@ bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
 {
     Unit* hazard = nullptr;
     Unit* darkFiend = AI_VALUE2(Unit*, "find target", "dark fiend");
-    constexpr float searchDistance = 15.0f;
+    constexpr float searchRadius = 20.0f;
     Creature* darkness = bot->FindNearestCreature(
-        static_cast<uint32>(SwpNpcs::NPC_DARKNESS), searchDistance, true);
+        static_cast<uint32>(SwpNpcs::NPC_DARKNESS), searchRadius, true);
 
     if (darkFiend)
         hazard = darkFiend;
@@ -469,7 +447,7 @@ bool MuruDontTouchTheDarkFiendAction::Execute(Event /*event*/)
     else
         return false;
 
-    constexpr float safeDistance = 10.0f;
+    constexpr float safeDistance = 15.0f;
     float const distFromHazard = bot->GetDistance2d(hazard);
     if (distFromHazard > safeDistance)
         return false;
@@ -621,11 +599,13 @@ bool MuruFleeFromSingularityAction::Execute(Event /*event*/)
     if (!entropius)
         return false;
 
-    Creature* singularity = GetNearestMuruSingularity(bot);
+    constexpr float searchRadius = 30.0f;
+    Creature* singularity = bot->FindNearestCreature(
+        static_cast<uint32>(SwpNpcs::NPC_SINGULARITY), searchRadius, true);
     if (!singularity)
         return false;
 
-    float const safeDistance = entropius->GetVictim() == bot ? 15.0f : 10.0f;
+    float const safeDistance = entropius->GetVictim() == bot ? 20.0f : 15.0f;
     float const currentDistance = bot->GetExactDist2d(singularity);
     if (currentDistance >= safeDistance)
         return false;
