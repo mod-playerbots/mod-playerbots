@@ -51,7 +51,6 @@ bool TryGetMuruDarknessActiveState(Player* bot, Unit* muru);
 bool TryGetMuruDarknessEarlyState(Player* bot, Unit* muru, uint32 earlyWindowMs = 10000);
 void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets);
 Creature* FindAvailableVoidSpawnForEnslave(Player* bot);
-Creature* GetNearestMuruSingularity(Player* bot, float searchRadius = 30.0f);
 
 }
 

@@ -208,7 +208,8 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
 bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
 {
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-    if (sacrolash && sacrolash->GetVictim() != bot)
+    if (sacrolash && sacrolash->GetVictim() != bot &&
+        GetEredarTwinsBlazeTarget(bot) != bot)
     {
         Position const& position = EREDAR_TWINS_P1_RANGED_POSITION;
 

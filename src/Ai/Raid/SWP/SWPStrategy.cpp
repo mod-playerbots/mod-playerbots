@@ -30,6 +30,9 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("apocalypse guard attack with holy magic", ACTION_RAID) }));
 
     // Kalecgos
+    triggers.push_back(new TriggerNode("kalecgos should communicate boss health", {
+        NextAction("kalecgos announce boss health", ACTION_RAID + 1) }));
+
     triggers.push_back(new TriggerNode("kalecgos boss engaged by tank", {
         NextAction("kalecgos tank position boss", ACTION_RAID) }));
 
@@ -40,7 +43,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("kalecgos disperse ranged", ACTION_RAID) }));
 
     triggers.push_back(new TriggerNode("kalecgos bot has too many arcane buffet stacks", {
-        NextAction("kalecgos remove arcane buffet", ACTION_RAID + 1) }));
+        NextAction("kalecgos remove arcane buffet", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("kalecgos humanoid kalec tanks sathrovarr", {
         NextAction("kalecgos sathrovarr tank stand with kalec", ACTION_RAID) }));
@@ -86,7 +89,7 @@ void RaidSunwellStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("felmyst player has gas nova", {
         NextAction("felmyst mass dispel gas nova", ACTION_EMERGENCY + 6) }));
 
-    triggers.push_back(new TriggerNode("felmyst demonic vapor trails are active", {
+    triggers.push_back(new TriggerNode("felmyst should avoid demonic vapor trails", {
         NextAction("felmyst avoid demonic vapor", ACTION_EMERGENCY + 1) }));
 
     triggers.push_back(new TriggerNode("felmyst bot is demonic vapor target", {
@@ -235,7 +238,7 @@ void RaidSunwellStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new FelmystControlMovementMultiplier(botAI));
     multipliers.push_back(new FelmystWaitForLandingDpsMultiplier(botAI));
     multipliers.push_back(new FelmystPrioritizeEncapsulateAvoidanceMultiplier(botAI));
-    multipliers.push_back(new FelmystPrioritizeDemonicVaporKiteMultiplier(botAI));
+    multipliers.push_back(new FelmystPrioritizeDemonicVaporAvoidanceMultiplier(botAI));
     multipliers.push_back(new FelmystPrioritizeFogAvoidanceMultiplier(botAI));
     multipliers.push_back(new FelmystFocusAttacksOnCharmedPlayerMultiplier(botAI));
     multipliers.push_back(new FelmystDontDotAddsMultiplier(botAI));

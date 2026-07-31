@@ -135,11 +135,11 @@ public:
     float GetValue(Action* action) override;
 };
 
-class FelmystPrioritizeDemonicVaporKiteMultiplier : public Multiplier
+class FelmystPrioritizeDemonicVaporAvoidanceMultiplier : public Multiplier
 {
 public:
-    FelmystPrioritizeDemonicVaporKiteMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "felmyst prioritize demonic vapor kite") {}
+    FelmystPrioritizeDemonicVaporAvoidanceMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "felmyst prioritize demonic vapor avoidance") {}
     float GetValue(Action* action) override;
 };
 

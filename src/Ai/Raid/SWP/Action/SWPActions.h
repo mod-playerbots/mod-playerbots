@@ -51,6 +51,14 @@ public:
 
 // Kalecgos
 
+class KalecgosAnnounceBossHealthAction : public Action
+{
+public:
+    KalecgosAnnounceBossHealthAction(
+        PlayerbotAI* botAI) : Action(botAI, "kalecgos announce boss health") {}
+    bool Execute(Event event) override;
+};
+
 class KalecgosTankPositionBossAction : public AttackAction
 {
 public:
@@ -236,6 +244,13 @@ public:
     FelmystAvoidDemonicVaporAction(
         PlayerbotAI* botAI) : MovementAction(botAI, "felmyst avoid demonic vapor") {}
     bool Execute(Event event) override;
+
+private:
+    void AnnounceFlightLeader(Player* leader);
+    bool MoveAwayFromVapor(bool unrestricted = false);
+    bool MoveToFlightLeader(Player* leader);
+
+    ObjectGuid _announcedFlightLeaderGuid;
 };
 
 class FelmystKiteDemonicVaporAction : public MovementAction

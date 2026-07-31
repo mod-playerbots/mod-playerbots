@@ -42,6 +42,8 @@ struct KalecgosEncounterState
     ObjectGuid firstEntrantGuid = ObjectGuid::Empty;
     ObjectGuid currentTankGuid = ObjectGuid::Empty;
     ObjectGuid activeRiftOutgoingTankGuid = ObjectGuid::Empty;
+    bool surfaceHealthAnnounced = false;
+    bool spectralHealthAnnounced = false;
     std::array<ObjectGuid, KALECGOS_TANK_COUNT> tankAssignmentGuids =
     {
         ObjectGuid::Empty, ObjectGuid::Empty, ObjectGuid::Empty
