@@ -69,7 +69,7 @@ public:
     {
         this->last_eruption_ms = 0;
         this->platform_phase = false;
-        resetsafe();
+        ResetSafe();
         waypoints.push_back(std::make_pair(2794.88f, -3668.12f));
         waypoints.push_back(std::make_pair(2775.49f, -3674.43f));
         waypoints.push_back(std::make_pair(2762.30f, -3684.59f));
@@ -78,13 +78,13 @@ public:
     }
 
 protected:
-    bool calculatesafe();
-    void resetsafe()
+    bool CalculateSafe();
+    void ResetSafe()
     {
         curr_safe = 0;
         curr_dir = 1;
     }
-    void nextsafe()
+    void NextSafe()
     {
         curr_safe += curr_dir;
         if (curr_safe == 3 || curr_safe == 0)
@@ -96,7 +96,8 @@ protected:
     uint32 combat_start_ms = 0;
     bool platform_phase;
     bool last_platform_phase = true;
-    uint32 curr_safe, curr_dir;
+    int32 curr_safe;
+    int32 curr_dir;
     std::vector<std::pair<float, float>> waypoints;
     std::pair<float, float> platform;
 };

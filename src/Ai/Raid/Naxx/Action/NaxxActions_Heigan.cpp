@@ -4,12 +4,11 @@
  * or (at your option) any later version.
  */
 
-
 #include "NaxxActions.h"
 #include "Playerbots.h"
 #include "Timer.h"
 
-bool HeiganDanceAction::calculatesafe()
+bool HeiganDanceAction::CalculateSafe()
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "heigan the unclean");
     if (!boss)
@@ -25,7 +24,7 @@ bool HeiganDanceAction::calculatesafe()
 
     if ((current_platform_phase != last_platform_phase))
     {
-        resetsafe();
+        ResetSafe();
     }
     platform_phase = current_platform_phase;
     last_platform_phase = current_platform_phase;
@@ -52,7 +51,7 @@ bool HeiganDanceAction::calculatesafe()
 
         if (foundEruption)
         {
-            nextsafe();
+            NextSafe();
             last_eruption_ms = now;
         }
     }
@@ -60,9 +59,9 @@ bool HeiganDanceAction::calculatesafe()
     return true;
 }
 
-bool HeiganDanceMeleeAction::Execute(Event event)
+bool HeiganDanceMeleeAction::Execute(Event /*event*/)
 {
-    calculatesafe();
+    CalculateSafe();
     if (!platform_phase && botAI->IsMainTank(bot) && !AI_VALUE2(bool, "has aggro", "boss target"))
     {
         return false;
@@ -77,20 +76,19 @@ bool HeiganDanceMeleeAction::Execute(Event event)
         return false;
     }
 
-    return MoveInside(bot->GetMapId(), waypoints[curr_safe].first, waypoints[curr_safe].second, bot->GetPositionZ(),
-                      botAI->IsMainTank(bot) ? 0 : 0, MovementPriority::MOVEMENT_COMBAT);
+    return MoveInside(bot->GetMapId(), waypoints[curr_safe].first, waypoints[curr_safe].second, bot->GetPositionZ(), 0,
+                      MovementPriority::MOVEMENT_COMBAT);
 }
 
-bool HeiganDanceRangedAction::Execute(Event event)
+bool HeiganDanceRangedAction::Execute(Event /*event*/)
 {
-    calculatesafe();
+    CalculateSafe();
     if (!platform_phase)
     {
         if (bot->IsWithinDist2d(platform.first, platform.second, 1.5f))
         {
-            return false;  
+            return false;
         }
-
         if (MoveTo(bot->GetMapId(), platform.first, platform.second, 276.54f, false, false, false, false,
                    MovementPriority::MOVEMENT_COMBAT))
         {
