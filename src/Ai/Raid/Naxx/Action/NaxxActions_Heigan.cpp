@@ -87,7 +87,7 @@ bool HeiganDanceRangedAction::Execute(Event event)
     {
         if (bot->IsWithinDist2d(platform.first, platform.second, 1.5f))
         {
-            return false;  
+            return false;
         }
         if (MoveTo(bot->GetMapId(), platform.first, platform.second, 276.54f, false, false, false, false,
                    MovementPriority::MOVEMENT_COMBAT))
