@@ -102,4 +102,4 @@ bool HeiganDanceRangedAction::Execute(Event event)
     botAI->InterruptSpell();
     return MoveInside(bot->GetMapId(), waypoints[curr_safe].first, waypoints[curr_safe].second, bot->GetPositionZ(), 0,
                       MovementPriority::MOVEMENT_COMBAT);
-};
+}
