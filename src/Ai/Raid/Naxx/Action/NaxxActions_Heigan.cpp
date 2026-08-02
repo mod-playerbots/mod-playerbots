@@ -3,9 +3,10 @@
  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
  * or (at your option) any later version.
  */
- 
-#include "Playerbots.h"
+
+
 #include "NaxxActions.h"
+#include "Playerbots.h"
 #include "Timer.h"
 
 bool HeiganDanceAction::calculatesafe()

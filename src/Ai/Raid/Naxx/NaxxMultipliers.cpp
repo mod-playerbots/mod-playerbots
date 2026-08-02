@@ -3,7 +3,7 @@
  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
  * or (at your option) any later version.
  */
- 
+
 #include "NaxxMultipliers.h"
 
 #include "ChooseTargetActions.h"
@@ -160,7 +160,6 @@ float ThaddiusGenericMultiplier::GetValue(Action* action)
         if (dynamic_cast<CastSpellAction*>(action) && !dynamic_cast<CastHealingSpellAction*>(action))
             return 0.0f;
     }
-
     if (dynamic_cast<CastDisengageAction*>(action) || (dynamic_cast<CastBlinkBackAction*>(action)))
         return 0.0f;
     // magnetic pull

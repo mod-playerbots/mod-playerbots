@@ -3,7 +3,7 @@
  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
  * or (at your option) any later version.
  */
- 
+
 #include "NaxxActions.h"
 
 #include "PlayerbotAIConfig.h"
@@ -19,8 +19,7 @@ bool SapphironGroundPositionAction::Execute(Event /*event*/)
     if (botAI->IsMainTank(bot))
     {
         if (AI_VALUE2(bool, "has aggro", "current target"))
-            return MoveTo(NAXX_MAP_ID, helper.mainTankPos.first, helper.mainTankPos.second, helper.GENERIC_HEIGHT,
-                          false, false, false,
+            return MoveTo(NAXX_MAP_ID, helper.mainTankPos.first, helper.mainTankPos.second, helper.GENERIC_HEIGHT, false, false, false,
                           false, MovementPriority::MOVEMENT_COMBAT);
 
         return false;
@@ -76,20 +75,15 @@ bool SapphironFlightPositionAction::MoveToNearestIcebolt()
     Group* group = bot->GetGroup();
     if (!group)
         return false;
-    // raid25: 3 icebolts, raid10: 2 icebolts
-    uint8 requiredIceboltCount = (bot->GetRaidDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL) ? 3 : 2;
-    uint8 iceboltCount = 0;  // calculate
 
     Player* playerWithIcebolt = nullptr;
     float minDistance;
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-
         if (NaxxSpellIds::HasAnyAura(member, {NaxxSpellIds::Icebolt10, NaxxSpellIds::Icebolt25}) ||
             botAI->HasAura("icebolt", member, false, false, -1, true))
         {
-            ++iceboltCount;
             if (!playerWithIcebolt || minDistance > bot->GetDistance(member))
             {
                 playerWithIcebolt = member;
@@ -97,10 +91,6 @@ bool SapphironFlightPositionAction::MoveToNearestIcebolt()
             }
         }
     }
-
-    if (iceboltCount < requiredIceboltCount)
-        return false;
-
     if (playerWithIcebolt)
     {
         Unit* boss = AI_VALUE2(Unit*, "find target", "sapphiron");
@@ -109,19 +99,7 @@ bool SapphironFlightPositionAction::MoveToNearestIcebolt()
             float angle = boss->GetAngle(playerWithIcebolt);
             float posX = playerWithIcebolt->GetPositionX() + cos(angle) * 3.0f;
             float posY = playerWithIcebolt->GetPositionY() + sin(angle) * 3.0f;
-            // distance check
-            float distToIcebolt = bot->GetExactDist2d(posX, posY);
-            if (distToIcebolt <
-                1.0f)  // i think it is a safe distance, less than half length of safe area which cause by icebolt.
-            {
-                if (botAI->IsRanged(bot))
-                {
-                    return false;  // rangebot can still cast spells behind icebolt
-                }
-                return true;  // prevent melee to move
-            }
-            if (MoveTo(NAXX_MAP_ID, posX, posY, helper.GENERIC_HEIGHT, false, false, false, false,
-                       MovementPriority::MOVEMENT_COMBAT))
+            if (MoveTo(NAXX_MAP_ID, posX, posY, helper.GENERIC_HEIGHT, false, false, false, false, MovementPriority::MOVEMENT_COMBAT))
                 return true;
 
             return MoveNear(playerWithIcebolt, 3.0f, MovementPriority::MOVEMENT_COMBAT);

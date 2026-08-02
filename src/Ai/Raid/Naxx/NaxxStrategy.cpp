@@ -3,7 +3,7 @@
  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
  * or (at your option) any later version.
  */
- 
+
 #include "NaxxStrategy.h"
 
 #include "NaxxMultipliers.h"
@@ -27,7 +27,7 @@ void RaidNaxxStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         { NextAction("rotate grobbulus", ACTION_RAID + 1) }
     ));
 
-     // Heigan the Unclean
+    // Heigan the Unclean
     triggers.push_back(new TriggerNode("heigan melee",
         { NextAction("heigan dance melee", ACTION_RAID + 1) }
     ));

@@ -3,7 +3,7 @@
  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
  * or (at your option) any later version.
  */
- 
+
 #ifndef PLAYERBOTS_NAXXBOSSHELPER_H
 #define PLAYERBOTS_NAXXBOSSHELPER_H
 
@@ -151,7 +151,7 @@ private:
 class SapphironBossHelper : public AiObject
 {
 public:
-    const std::pair<float, float> mainTankPos = {3510.07f, -5267.06f};
+    const std::pair<float, float> mainTankPos = {3512.07f, -5274.06f};
     const std::pair<float, float> center = {3517.31f, -5253.74f};
     const float GENERIC_HEIGHT = 137.29f;
     SapphironBossHelper(PlayerbotAI* botAI) : AiObject(botAI) {}

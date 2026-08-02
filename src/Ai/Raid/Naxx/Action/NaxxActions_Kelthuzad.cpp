@@ -3,8 +3,9 @@
  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
  * or (at your option) any later version.
  */
- 
+
 #include "NaxxActions.h"
+
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 
@@ -15,8 +16,8 @@ bool KelthuzadChooseTargetAction::Execute(Event /*event*/)
 
     GuidVector attackers = context->GetValue<GuidVector>("attackers")->Get();
     Unit* target = nullptr;
-    Unit *target_soldier = nullptr, *target_weaver = nullptr, *target_abomination = nullptr,
-         *target_kelthuzad = nullptr, *target_guardian = nullptr;
+    Unit *target_soldier = nullptr, *target_weaver = nullptr, *target_abomination = nullptr, *target_kelthuzad = nullptr,
+         *target_guardian = nullptr;
     for (auto i = attackers.begin(); i != attackers.end(); ++i)
     {
         Unit* unit = botAI->GetUnit(*i);
@@ -60,8 +61,9 @@ bool KelthuzadChooseTargetAction::Execute(Event /*event*/)
         }
         if (botAI->EqualLowercaseName(unit->GetName(), "soldier of the frozen wastes"))
         {
-            if (target_soldier == nullptr || target_soldier->GetDistance2d(helper.center.first, helper.center.second) >
-                                                 unit->GetDistance2d(helper.center.first, helper.center.second))
+            if (target_soldier == nullptr ||
+                target_soldier->GetDistance2d(helper.center.first, helper.center.second) >
+                    unit->GetDistance2d(helper.center.first, helper.center.second))
             {
                 target_soldier = unit;
             }
@@ -126,8 +128,8 @@ bool KelthuzadPositionAction::Execute(Event /*event*/)
             if (botAI->IsMainTank(bot))
             {
                 if (AI_VALUE2(bool, "has aggro", "current target"))
-                    return MoveTo(NAXX_MAP_ID, helper.tank_pos.first, helper.tank_pos.second, bot->GetPositionZ(),
-                                  false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
+                    return MoveTo(NAXX_MAP_ID, helper.tank_pos.first, helper.tank_pos.second, bot->GetPositionZ(), false, false, false,
+                                  false, MovementPriority::MOVEMENT_COMBAT);
                 else
                     return false;
             }
@@ -147,8 +149,7 @@ bool KelthuzadPositionAction::Execute(Event /*event*/)
                 float dx, dy;
                 dx = helper.center.first + cos(angle) * distance;
                 dy = helper.center.second + sin(angle) * distance;
-                return MoveTo(NAXX_MAP_ID, dx, dy, bot->GetPositionZ(), false, false, false, false,
-                              MovementPriority::MOVEMENT_COMBAT);
+                return MoveTo(NAXX_MAP_ID, dx, dy, bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
             }
             else if (botAI->IsTank(bot))
             {
@@ -157,8 +158,8 @@ bool KelthuzadPositionAction::Execute(Event /*event*/)
                     botAI->EqualLowercaseName(cur_tar->GetName(), "guardian of icecrown") &&
                     botAI->IsAssistTank(cur_tar->GetVictim()->ToPlayer()))
                 {
-                    return MoveTo(NAXX_MAP_ID, helper.assist_tank_pos.first, helper.assist_tank_pos.second,
-                                  bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
+                    return MoveTo(NAXX_MAP_ID, helper.assist_tank_pos.first, helper.assist_tank_pos.second, bot->GetPositionZ(),
+                                  false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
                 }
                 else
                     return false;
@@ -173,10 +174,9 @@ bool KelthuzadPositionAction::Execute(Event /*event*/)
             else
                 angle = bot->GetAngle(shadow_fissure) + M_PI;
 
-            dx = shadow_fissure->GetPositionX() + cos(angle) * 12.0f;
-            dy = shadow_fissure->GetPositionY() + sin(angle) * 12.0f;
-            return MoveTo(NAXX_MAP_ID, dx, dy, bot->GetPositionZ(), false, false, false, false,
-                          MovementPriority::MOVEMENT_COMBAT);
+            dx = shadow_fissure->GetPositionX() + cos(angle) * 10.0f;
+            dy = shadow_fissure->GetPositionY() + sin(angle) * 10.0f;
+            return MoveTo(NAXX_MAP_ID, dx, dy, bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
         }
     }
     return false;

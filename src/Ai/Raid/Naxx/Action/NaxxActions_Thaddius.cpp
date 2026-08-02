@@ -3,7 +3,7 @@
  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
  * or (at your option) any later version.
  */
- 
+
 #include "NaxxActions.h"
 
 #include "PlayerbotAIConfig.h"
@@ -134,17 +134,5 @@ bool ThaddiusMovePolarityAction::Execute(Event /*event*/)
         idx = 2;
     }
     idx = idx * 2 + botAI->IsRanged(bot);
-
-    float dx = position[idx].first - bot->GetPositionX();
-    float dy = position[idx].second - bot->GetPositionY();
-    if ((dx * dx + dy * dy) > (sPlayerbotAIConfig.contactDistance * sPlayerbotAIConfig.contactDistance))
-    {
-        if (bot->IsNonMeleeSpellCast(true))
-        {
-            bot->CastStop();
-            botAI->InterruptSpell();
-        }
-    }
-
     return MoveTo(bot->GetMapId(), position[idx].first, position[idx].second, bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
 }
