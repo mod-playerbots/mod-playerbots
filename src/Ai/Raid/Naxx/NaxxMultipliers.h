@@ -3,7 +3,7 @@
  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
  * or (at your option) any later version.
  */
-
+ 
 #ifndef PLAYERBOTS_NAXXMULTIPLIERS_H
 #define PLAYERBOTS_NAXXMULTIPLIERS_H
 
@@ -19,14 +19,14 @@ public:
     virtual float GetValue(Action* action);
 };
 
-//class HeiganDanceMultiplier : public Multiplier
-//{
-//public:
-//    HeiganDanceMultiplier(PlayerbotAI* ai) : Multiplier(ai, "helgan dance") {}
-//
-//public:
-//    virtual float GetValue(Action* action);
-//};
+class HeiganDanceMultiplier : public Multiplier
+{
+public:
+    HeiganDanceMultiplier(PlayerbotAI* ai) : Multiplier(ai, "helgan dance") {}
+
+public:
+    virtual float GetValue(Action* action);
+};
 
 class LoathebGenericMultiplier : public Multiplier
 {

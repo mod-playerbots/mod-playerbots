@@ -1,9 +1,3 @@
-/*
- * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
- * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
- * or (at your option) any later version.
- */
-
 #ifndef PLAYERBOTS_NAXXACTIONS_H
 #define PLAYERBOTS_NAXXACTIONS_H
 
@@ -62,56 +56,58 @@ private:
     float distance;
 };
 
-//class HeiganDanceAction : public MovementAction
-//{
-//public:
-//    HeiganDanceAction(PlayerbotAI* ai) : MovementAction(ai, "heigan dance")
-//    {
-//        this->last_eruption_ms = 0;
-//        this->platform_phase = false;
-//        ResetSafe();
-//        waypoints.push_back(std::make_pair(2794.88f, -3668.12f));
-//        waypoints.push_back(std::make_pair(2775.49f, -3674.43f));
-//        waypoints.push_back(std::make_pair(2762.30f, -3684.59f));
-//        waypoints.push_back(std::make_pair(2755.99f, -3703.96f));
-//        platform = std::make_pair(2794.26f, -3706.67f);
-//    }
-//
-//protected:
-//    bool CalculateSafe();
-//    void ResetSafe()
-//    {
-//        curr_safe = 0;
-//        curr_dir = 1;
-//    }
-//    void NextSafe()
-//    {
-//        curr_safe += curr_dir;
-//        if (curr_safe == 3 || curr_safe == 0)
-//        {
-//            curr_dir = -curr_dir;
-//        }
-//    }
-//    uint32 last_eruption_ms;
-//    bool platform_phase;
-//    uint32 curr_safe, curr_dir;
-//    std::vector<std::pair<float, float>> waypoints;
-//    std::pair<float, float> platform;
-//};
-//
-//class HeiganDanceMeleeAction : public HeiganDanceAction
-//{
-//public:
-//    HeiganDanceMeleeAction(PlayerbotAI* ai) : HeiganDanceAction(ai) {}
-//    virtual bool Execute(Event event);
-//};
-//
-//class HeiganDanceRangedAction : public HeiganDanceAction
-//{
-//public:
-//    HeiganDanceRangedAction(PlayerbotAI* ai) : HeiganDanceAction(ai) {}
-//    virtual bool Execute(Event event);
-//};
+class HeiganDanceAction : public MovementAction
+{
+public:
+    HeiganDanceAction(PlayerbotAI* ai) : MovementAction(ai, "heigan dance")
+    {
+        this->last_eruption_ms = 0;
+        this->platform_phase = false;
+        resetsafe();
+        waypoints.push_back(std::make_pair(2794.88f, -3668.12f));
+        waypoints.push_back(std::make_pair(2775.49f, -3674.43f));
+        waypoints.push_back(std::make_pair(2762.30f, -3684.59f));
+        waypoints.push_back(std::make_pair(2755.99f, -3703.96f));
+        platform = std::make_pair(2794.26f, -3706.67f);
+    }
+
+protected:
+    bool calculatesafe();
+    void resetsafe()
+    {
+        curr_safe = 0;
+        curr_dir = 1;
+    }
+    void nextsafe()
+    {
+        curr_safe += curr_dir;
+        if (curr_safe == 3 || curr_safe == 0)
+        {
+            curr_dir = -curr_dir;
+        }
+    }
+    uint32 last_eruption_ms;
+    uint32 combat_start_ms = 0;
+    bool platform_phase;
+    bool last_platform_phase = true;
+    uint32 curr_safe, curr_dir;
+    std::vector<std::pair<float, float>> waypoints;
+    std::pair<float, float> platform;
+};
+
+class HeiganDanceMeleeAction : public HeiganDanceAction
+{
+public:
+    HeiganDanceMeleeAction(PlayerbotAI* ai) : HeiganDanceAction(ai) {}
+    virtual bool Execute(Event event);
+};
+
+class HeiganDanceRangedAction : public HeiganDanceAction
+{
+public:
+    HeiganDanceRangedAction(PlayerbotAI* ai) : HeiganDanceAction(ai) {}
+    virtual bool Execute(Event event);
+};
 
 class ThaddiusAttackNearestPetAction : public AttackAction
 {

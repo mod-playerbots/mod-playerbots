@@ -3,7 +3,7 @@
  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
  * or (at your option) any later version.
  */
-
+ 
 #ifndef PLAYERBOTS_NAXXTRIGGERS_H
 #define PLAYERBOTS_NAXXTRIGGERS_H
 
@@ -64,19 +64,19 @@ private:
     static constexpr uint32 CloudRotationDelayMs = 15000;
 };
 
-//class HeiganMeleeTrigger : public Trigger
-//{
-//public:
-//    HeiganMeleeTrigger(PlayerbotAI* ai) : Trigger(ai, "heigan melee") {}
-//    virtual bool IsActive();
-//};
-//
-//class HeiganRangedTrigger : public Trigger
-//{
-//public:
-//    HeiganRangedTrigger(PlayerbotAI* ai) : Trigger(ai, "heigan ranged") {}
-//    bool IsActive() override;
-//};
+class HeiganMeleeTrigger : public Trigger
+{
+public:
+    HeiganMeleeTrigger(PlayerbotAI* ai) : Trigger(ai, "heigan melee") {}
+    bool IsActive() override;
+};
+
+class HeiganRangedTrigger : public Trigger
+{
+public:
+    HeiganRangedTrigger(PlayerbotAI* ai) : Trigger(ai, "heigan ranged") {}
+    bool IsActive() override;
+};
 
 class RazuviousTankTrigger : public Trigger
 {

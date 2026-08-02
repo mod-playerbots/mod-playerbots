@@ -3,7 +3,7 @@
  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
  * or (at your option) any later version.
  */
-
+ 
 #include "NaxxActions.h"
 
 #include "Playerbots.h"
@@ -13,7 +13,7 @@ bool LoathebPositionAction::Execute(Event /*event*/)
     if (!helper.UpdateBossAI())
         return false;
 
-    if (botAI->IsTank(bot))
+    if (botAI->IsMainTank(bot))
     {
         if (AI_VALUE2(bool, "has aggro", "boss target"))
             return MoveTo(533, helper.mainTankPos.first, helper.mainTankPos.second, bot->GetPositionZ(), false, false, false, false,

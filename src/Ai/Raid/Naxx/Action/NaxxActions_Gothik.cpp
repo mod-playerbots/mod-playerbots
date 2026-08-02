@@ -3,7 +3,7 @@
  * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
  * or (at your option) any later version.
  */
-
+ 
 #include "NaxxActions.h"
 
 // Reserved for Gothik-specific actions.
