@@ -370,6 +370,12 @@ bool NewRpgWanderRandomAction::Execute(Event /*event*/)
 
 bool NewRpgWanderNpcAction::Execute(Event /*event*/)
 {
+    // WANDER_NPC was the only status that never looked for a quest giver: the bot locked
+    // onto the one NPC it had chosen and walked past every quest it could have taken on the
+    // way, including the one it was standing next to. The four other statuses all start here.
+    if (SearchQuestGiverAndAcceptOrReward())
+        return true;
+
     NewRpgInfo& info = botAI->rpgInfo;
     auto* dataPtr = std::get_if<NewRpgInfo::WanderNpc>(&info.data);
     if (!dataPtr)
