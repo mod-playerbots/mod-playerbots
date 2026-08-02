@@ -84,7 +84,8 @@ float HeiganDanceMultiplier::GetValue(Action* action)
     {
         return 1.0f;
     }
-    if (dynamic_cast<HeiganDanceAction*>(action) || dynamic_cast<CurePartyMemberAction*>(action))
+    if (dynamic_cast<HeiganDanceMeleeAction*>(action) || dynamic_cast<HeiganDanceRangedAction*>(action) ||
+        dynamic_cast<CurePartyMemberAction*>(action))
     {
         return 1.0f;
     }

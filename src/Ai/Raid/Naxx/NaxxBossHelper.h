@@ -537,4 +537,105 @@ protected:
     Unit* stalagg = nullptr;
 };
 
+class HeiganBossHelper : public AiObject
+{
+public:
+    const std::pair<float, float> platform = {2794.26f, -3706.67f};
+    const std::pair<float, float> waypoints[4] = {
+        {2794.88f, -3668.12f}, {2775.49f, -3674.43f}, {2762.30f, -3684.59f}, {2755.99f, -3703.96f}};
+
+    HeiganBossHelper(PlayerbotAI* botAI) : AiObject(botAI) {}
+
+    bool UpdateBossAI()
+    {
+        if (!bot->IsInCombat())
+            Reset();
+
+        if (_unit && (!_unit->IsInWorld() || !_unit->IsAlive()))
+            Reset();
+
+        if (!_unit)
+        {
+            _unit = AI_VALUE2(Unit*, "find target", "heigan the unclean");
+            if (!_unit)
+                return false;
+        }
+
+        uint32 now = getMSTime();
+        if (_combat_start_ms == 0)
+            _combat_start_ms = now;
+
+        bool current_platform_phase = _unit->IsWithinDist2d(platform.first, platform.second, 10.0f);
+        if (current_platform_phase != _last_platform_phase)
+            ResetSafe();
+
+        _platform_phase = current_platform_phase;
+        _last_platform_phase = current_platform_phase;
+
+        if ((_last_eruption_ms == 0 || now - _last_eruption_ms > ERUPTION_COOLDOWN_MS) &&
+            (now - _combat_start_ms > COMBAT_GRACE_MS))
+        {
+            if (HasEruptionNearby())
+            {
+                NextSafe();
+                _last_eruption_ms = now;
+            }
+        }
+
+        return true;
+    }
+
+    bool IsPlatformPhase() const { return _platform_phase; }
+    std::pair<float, float> const& GetSafeWaypoint() const { return waypoints[_curr_safe]; }
+
+private:
+    const uint32 ERUPTION_NPC_ENTRY = 12999;
+    const uint32 ERUPTION_COOLDOWN_MS = 3000;
+    const uint32 COMBAT_GRACE_MS = 12000;
+
+    void Reset()
+    {
+        _unit = nullptr;
+        _combat_start_ms = 0;
+        _last_eruption_ms = 0;
+        _platform_phase = false;
+        _last_platform_phase = true;
+        ResetSafe();
+    }
+
+    void ResetSafe()
+    {
+        _curr_safe = 0;
+        _curr_dir = 1;
+    }
+
+    void NextSafe()
+    {
+        _curr_safe += _curr_dir;
+        if (_curr_safe == 3 || _curr_safe == 0)
+            _curr_dir = -_curr_dir;
+    }
+
+    bool HasEruptionNearby()
+    {
+        GuidVector npcs = *context->GetValue<GuidVector>("nearest hostile npcs");
+        for (auto& npc : npcs)
+        {
+            Unit* unit = botAI->GetUnit(npc);
+            if (!unit)
+                continue;
+            if (unit->GetEntry() == ERUPTION_NPC_ENTRY)
+                return true;
+        }
+        return false;
+    }
+
+    Unit* _unit = nullptr;
+    uint32 _combat_start_ms = 0;
+    uint32 _last_eruption_ms = 0;
+    bool _platform_phase = false;
+    bool _last_platform_phase = true;
+    int32 _curr_safe = 0;
+    int32 _curr_dir = 1;
+};
 #endif

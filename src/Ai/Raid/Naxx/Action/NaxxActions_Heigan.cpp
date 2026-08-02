@@ -6,85 +6,37 @@
 
 #include "NaxxActions.h"
 #include "Playerbots.h"
-#include "Timer.h"
-
-bool HeiganDanceAction::CalculateSafe()
-{
-    Unit* boss = AI_VALUE2(Unit*, "find target", "heigan the unclean");
-    if (!boss)
-    {
-        return false;
-    }
-    uint32 now = getMSTime();
-    bool current_platform_phase = boss->IsWithinDist2d(platform.first, platform.second, 10.0f);
-    if (combat_start_ms == 0)
-    {
-        combat_start_ms = now;
-    }
-
-    if ((current_platform_phase != last_platform_phase))
-    {
-        ResetSafe();
-    }
-    platform_phase = current_platform_phase;
-    last_platform_phase = current_platform_phase;
-
-    if ((last_eruption_ms == 0 || now - last_eruption_ms > 3000) && (now - combat_start_ms > 12000))
-    {
-        bool foundEruption = false;
-
-        GuidVector npcs = AI_VALUE(GuidVector, "nearest hostile npcs");
-        for (auto& npc : npcs)
-        {
-            Unit* unit = botAI->GetUnit(npc);
-            if (!unit)
-            {
-                continue;
-            }
-            if (unit->GetEntry() != 12999)
-            {
-                continue;
-            }
-            foundEruption = true;
-            break;
-        }
-
-        if (foundEruption)
-        {
-            NextSafe();
-            last_eruption_ms = now;
-        }
-    }
-
-    return true;
-}
 
 bool HeiganDanceMeleeAction::Execute(Event /*event*/)
 {
-    CalculateSafe();
-    if (!platform_phase && botAI->IsMainTank(bot) && !AI_VALUE2(bool, "has aggro", "boss target"))
-    {
+    if (!helper.UpdateBossAI())
         return false;
-    }
-    assert(curr_safe >= 0 && curr_safe <= 3);
-    float safeX = waypoints[curr_safe].first;
-    float safeY = waypoints[curr_safe].second;
-    float safeRadius = botAI->IsMainTank(bot) ? 0.5f : 6.0f;
 
-    if (!platform_phase && bot->IsWithinDist2d(safeX, safeY, safeRadius))
+    if (!helper.IsPlatformPhase() && PlayerbotAI::IsMainTank(bot) && !AI_VALUE2(bool, "has aggro", "boss target"))
     {
         return false;
     }
 
-    return MoveInside(bot->GetMapId(), waypoints[curr_safe].first, waypoints[curr_safe].second, bot->GetPositionZ(), 0,
+    std::pair<float, float> const& safeSpot = helper.GetSafeWaypoint();
+    float safeRadius = PlayerbotAI::IsMainTank(bot) ? 0.5f : 6.0f;
+
+    if (!helper.IsPlatformPhase() && bot->IsWithinDist2d(safeSpot.first, safeSpot.second, safeRadius))
+    {
+        return false;
+    }
+
+    return MoveInside(bot->GetMapId(), safeSpot.first, safeSpot.second, bot->GetPositionZ(), 0,
                       MovementPriority::MOVEMENT_COMBAT);
 }
 
 bool HeiganDanceRangedAction::Execute(Event /*event*/)
 {
-    CalculateSafe();
-    if (!platform_phase)
+    if (!helper.UpdateBossAI())
+        return false;
+
+    if (!helper.IsPlatformPhase())
     {
+        std::pair<float, float> const& platform = helper.platform;
         if (bot->IsWithinDist2d(platform.first, platform.second, 1.5f))
         {
             return false;
@@ -98,6 +50,7 @@ bool HeiganDanceRangedAction::Execute(Event /*event*/)
                           MovementPriority::MOVEMENT_COMBAT);
     }
     botAI->InterruptSpell();
-    return MoveInside(bot->GetMapId(), waypoints[curr_safe].first, waypoints[curr_safe].second, bot->GetPositionZ(), 0,
+    std::pair<float, float> const& safeSpot = helper.GetSafeWaypoint();
+    return MoveInside(bot->GetMapId(), safeSpot.first, safeSpot.second, bot->GetPositionZ(), 0,
                       MovementPriority::MOVEMENT_COMBAT);
 }
