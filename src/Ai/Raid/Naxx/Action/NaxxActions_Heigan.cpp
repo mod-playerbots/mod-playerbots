@@ -4,7 +4,6 @@
  * or (at your option) any later version.
  */
 
-
 #include "NaxxActions.h"
 #include "Playerbots.h"
 #include "Timer.h"
@@ -90,7 +89,6 @@ bool HeiganDanceRangedAction::Execute(Event event)
         {
             return false;  
         }
-
         if (MoveTo(bot->GetMapId(), platform.first, platform.second, 276.54f, false, false, false, false,
                    MovementPriority::MOVEMENT_COMBAT))
         {
