@@ -204,13 +204,14 @@ float TheCuratorDelayBloodlustAndHeroismMultiplier::GetValue(Action* action)
     }
 
     Unit* curator = AI_VALUE2(Unit*, "find target", "the curator");
-    if (curator && !curator->HasAura(static_cast<uint32>(KaraSpells::SPELL_CURATOR_EVOCATION)))
+    if (curator && !curator->HasAura(Id(KaraSpells::SPELL_CURATOR_EVOCATION)))
         return 0.0f;
 
     return 1.0f;
 }
 
 // Terestian Illhoof
+
 float TerestianIllhoofDontDotFiendishImpsMultiplier::GetValue(Action* action)
 {
     if (!dynamic_cast<CastDebuffSpellOnAttackerAction*>(action))
@@ -225,7 +226,6 @@ float TerestianIllhoofDontDotFiendishImpsMultiplier::GetValue(Action* action)
 
 // Shade of Aran
 
-// Don't charge back in or move in any other way when running from Arcane Explosion
 float ShadeOfAranArcaneExplosionRunAwayMultiplier::GetValue(Action* action)
 {
     if (dynamic_cast<AttackAction*>(action) ||
@@ -344,7 +344,6 @@ float NetherspiteWaitForDpsMultiplier::GetValue(Action* action)
 
 // Prince Malchezaar
 
-// Don't run back into Shadow Nova when Enfeebled
 float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
 {
     if (dynamic_cast<AttackAction*>(action) ||
@@ -359,7 +358,7 @@ float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (bot->HasAura(static_cast<uint32>(KaraSpells::SPELL_ENFEEBLE)))
+    if (bot->HasAura(Id(KaraSpells::SPELL_ENFEEBLE)))
         return 0.0f;
 
     return 1.0f;
@@ -498,6 +497,7 @@ float NightbaneDisableMovementMultiplier::GetValue(Action* action)
     if (isReachAction)
         return 0.0f;
 
+    // After 35s, Nightbane goes to land, and bots freely follow their master
     time_t const now = std::time(nullptr);
     constexpr uint8 flightPhaseDurationSeconds = 35;
 
