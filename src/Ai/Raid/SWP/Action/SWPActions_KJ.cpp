@@ -279,7 +279,7 @@ bool KiljaedenStunHandsOfTheDeceiverAction::CastSilenceOnHand(Unit* hand)
 bool KiljaedenPositionTanksAction::Execute(Event /*event*/)
 {
     Position const& position = KILJAEDEN_TANK_POSITION;
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) <= 2.0f)
+    if (bot->GetExactDist2d(position) <= 2.0f)
         return false;
 
     return MoveTo(
@@ -296,7 +296,7 @@ bool KiljaedenPositionMeleeAction::Execute(Event /*event*/)
     if (!TryAdjustForArmageddon(position))
         return false;
 
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) <= 2.0f)
+    if (bot->GetExactDist2d(position) <= 2.0f)
         return false;
 
     return MoveTo(
@@ -402,7 +402,7 @@ bool KiljaedenPositionRangedAction::Execute(Event /*event*/)
     if (!TryAdjustForArmageddon(position))
         return false;
 
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) <= 2.0f)
+    if (bot->GetExactDist2d(position) <= 2.0f)
         return false;
 
     return MoveTo(

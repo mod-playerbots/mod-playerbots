@@ -41,15 +41,18 @@ Position GetAdjustedPosition(Unit* alythess, Position const& basePosition)
     if (!alythess)
         return basePosition;
 
-    float const offsetX = alythess->GetPositionX() - ALYTHESS_START_POSITION.GetPositionX();
-    float const offsetY = alythess->GetPositionY() - ALYTHESS_START_POSITION.GetPositionY();
-    float const offsetZ = alythess->GetPositionZ() - ALYTHESS_START_POSITION.GetPositionZ();
+    Position const& alythessPosition = alythess->GetPosition();
+    Position const& startPosition = ALYTHESS_START_POSITION;
 
-    return {
-        basePosition.GetPositionX() + offsetX,
-        basePosition.GetPositionY() + offsetY,
-        basePosition.GetPositionZ() + offsetZ,
-    };
+    float const offsetX = alythessPosition.GetPositionX() - startPosition.GetPositionX();
+    float const offsetY = alythessPosition.GetPositionY() - startPosition.GetPositionY();
+    float const offsetZ = alythessPosition.GetPositionZ() - startPosition.GetPositionZ();
+
+    float const baseX = basePosition.GetPositionX();
+    float const baseY = basePosition.GetPositionY();
+    float const baseZ = basePosition.GetPositionZ();
+
+    return { baseX + offsetX, baseY + offsetY, baseZ + offsetZ };
 }
 
 } // end anonymous namespace
@@ -160,11 +163,8 @@ bool IsAlythessTankPositionSafe(Player* bot, Position const& position)
         if (!go || go->GetEntry() != static_cast<uint32>(SwpObjects::GO_BLAZE))
             continue;
 
-        if (go->GetExactDist2d(
-                position.GetPositionX(), position.GetPositionY()) <= blazeDangerRadius)
-        {
+        if (go->GetExactDist2d(position) <= blazeDangerRadius)
             return false;
-        }
     }
 
     return true;

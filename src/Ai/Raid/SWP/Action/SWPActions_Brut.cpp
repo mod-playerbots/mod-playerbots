@@ -55,15 +55,14 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
 
     if (mainTank == bot)
     {
-        Position const& position = BRUTALLUS_MAIN_TANK_POSITION;
-        float const distToPosition = bot->GetExactDist2d(
-            position.GetPositionX(), position.GetPositionY());
-
         if (brutallus->GetVictim() != bot && !mainTankAura &&
             ((assistTankAura && assistTankAura->GetStackAmount() >= 3) || !assistTankAura))
         {
             return botAI->DoSpecificAction("taunt spell", event, true);
         }
+
+        Position const& position = BRUTALLUS_MAIN_TANK_POSITION;
+        float const distToPosition = bot->GetExactDist2d(position);
 
         if (_mainTankInitialPositionReached == false && distToPosition <= 2.0f)
         {
@@ -74,11 +73,16 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
             if (!bot->IsWithinMeleeRange(brutallus))
                 return false;
 
-            float const dX = position.GetPositionX() - bot->GetPositionX();
-            float const dY = position.GetPositionY() - bot->GetPositionY();
+            float const posX = position.GetPositionX();
+            float const posY = position.GetPositionY();
+            float const botX = bot->GetPositionX();
+            float const botY = bot->GetPositionY();
+            float const toPosX = posX - botX;
+            float const toPosY = posY - botY;
+
             float const moveDist = std::min(2.25f, distToPosition);
-            float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-            float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+            float const moveX = botX + (toPosX / distToPosition) * moveDist;
+            float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
             return MoveTo(
                 SWP_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
@@ -102,8 +106,7 @@ bool BrutallusTanksHandleBossAction::Execute(Event event)
 
         Position const position = GetBrutallusPositionAtAngle(
             bot, brutallus, assistTankAngle, BRUTALLUS_TANK_POSITION_RADIUS);
-
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) < 2.0f)
+        if (bot->GetExactDist2d(position) < 2.0f)
             return false;
 
         return MoveTo(
@@ -132,7 +135,7 @@ bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
     if (!TryGetBrutallusMeleePosition(brutallus, mainTank, assistTank, meleeIndex, position))
         return false;
 
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) < 0.5f)
+    if (bot->GetExactDist2d(position) < 0.5f)
         return false;
 
     return MoveTo(
@@ -141,8 +144,7 @@ bool BrutallusPositionMeleeAction::Execute(Event /*event*/)
 }
 
 bool BrutallusPositionMeleeAction::TryGetBrutallusMeleePosition(
-    Unit* brutallus, Player* mainTank, Player* assistTank,
-    uint8 meleeIndex, Position& position)
+    Unit* brutallus, Player* mainTank, Player* assistTank, uint8 meleeIndex, Position& position)
 {
     struct BrutallusMeleeRingLayout
     {
@@ -282,7 +284,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
         Position const position = GetBrutallusPositionAtAngle(
             bot, brutallus, currentAngle, BRUTALLUS_OUTER_LANE_RADIUS);
 
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
+        if (bot->GetExactDist2d(position) > 1.0f)
         {
             return MoveTo(
                 SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
@@ -313,7 +315,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
             return false;
         }
 
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
+        if (bot->GetExactDist2d(position) > 1.0f)
         {
             return MoveTo(
                 SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
@@ -321,9 +323,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
                 MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
-        if (bot->GetExactDist2d(
-                returnTargetPosition.GetPositionX(),
-                returnTargetPosition.GetPositionY()) <= 1.0f)
+        if (bot->GetExactDist2d(returnTargetPosition) <= 1.0f)
         {
             brutallusRangedBurnStates[guid] =
                 BrutallusRangedBurnState::ReturningToNormalPosition;
@@ -342,7 +342,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
             return false;
         }
 
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
+        if (bot->GetExactDist2d(position) > 1.0f)
         {
             return MoveTo(
                 SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
@@ -363,7 +363,7 @@ bool BrutallusPositionRangedAction::Execute(Event /*event*/)
         return false;
     }
 
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) < 0.5f)
+    if (bot->GetExactDist2d(position) < 0.5f)
         return false;
 
     return MoveTo(
@@ -420,7 +420,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
             return false;
         }
 
-        if (bot->GetExactDist2d(stepPosition.GetPositionX(), stepPosition.GetPositionY()) > 1.0f)
+        if (bot->GetExactDist2d(stepPosition) > 1.0f)
         {
             return MoveTo(
                 SWP_MAP_ID, stepPosition.GetPositionX(), stepPosition.GetPositionY(),
@@ -451,7 +451,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
             return false;
         }
 
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
+        if (bot->GetExactDist2d(position) > 1.0f)
         {
             return MoveTo(
                 SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
@@ -459,8 +459,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
                 MovementPriority::MOVEMENT_COMBAT, true, false);
         }
 
-        if (bot->GetExactDist2d(
-                padIngressPosition.GetPositionX(), padIngressPosition.GetPositionY()) <= 1.0f)
+        if (bot->GetExactDist2d(padIngressPosition) <= 1.0f)
         {
             brutallusRangedBurnStates[guid] = BrutallusRangedBurnState::MovingToBurnPosition;
         }
@@ -475,7 +474,7 @@ bool BrutallusHandleBurnAction::Execute(Event /*event*/)
         return false;
     }
 
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
+    if (bot->GetExactDist2d(position) > 1.0f)
     {
         return MoveTo(
             SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),

@@ -72,19 +72,26 @@ bool KalecgosTankPositionBossAction::Execute(Event event)
         return Attack(kalecgos);
 
     Position const& position = KALECGOS_TANK_POSITION;
-    float const distToPosition = bot->GetExactDist2d(
-        position.GetPositionX(), position.GetPositionY());
+    float const distToPosition = bot->GetExactDist2d(position);
 
     if (distToPosition > 3.0f && bot->IsWithinMeleeRange(kalecgos))
     {
-        bool const backwards = kalecgos->GetVictim() == bot;
+        float const posX = position.GetPositionX();
+        float const posY = position.GetPositionY();
+        float const botX = bot->GetPositionX();
+        float const botY = bot->GetPositionY();
+
+        float const toPosX = posX - botX;
+        float const toPosY = posY - botY;
+        float const toBossX = kalecgos->GetPositionX() - botX;
+        float const toBossY = kalecgos->GetPositionY() - botY;
+        bool const backwards = kalecgos->GetVictim() == bot &&
+            (toPosX * toBossX + toPosY * toBossY) < 0.0f;
+
         float const maxMoveDist = backwards ? 2.25f : 3.5f;
         float const moveDist = std::min(maxMoveDist, distToPosition);
-
-        float const dX = position.GetPositionX() - bot->GetPositionX();
-        float const dY = position.GetPositionY() - bot->GetPositionY();
-        float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-        float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+        float const moveX = botX + (toPosX / distToPosition) * moveDist;
+        float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
         return MoveTo(
             SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
@@ -148,11 +155,8 @@ bool KalecgosEnterSpectralRiftAction::ShouldTankEnter()
 
     // The current tank cannot enter a portal until the next tank takes over
     Position const& position = KALECGOS_TANK_POSITION;
-    if (surfaceTank->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 3.0f ||
-        kalecgos->GetVictim() != surfaceTank)
-    {
+    if (surfaceTank->GetExactDist2d(position) > 3.0f || kalecgos->GetVictim() != surfaceTank)
         return false;
-    }
 
     return true;
 }
@@ -164,8 +168,7 @@ bool KalecgosDisperseRangedAction::Execute(Event /*event*/)
         Position const& initialPos = KALECGOS_INITIAL_RANGED_POSITION;
         constexpr float initialRangedRadius = 10.0f;
 
-        if (bot->GetExactDist2d(initialPos.GetPositionX(), initialPos.GetPositionY()) <=
-            initialRangedRadius)
+        if (bot->GetExactDist2d(initialPos) <= initialRangedRadius)
         {
             _initialRangedPositionReached = true;
             return false;
@@ -229,7 +232,7 @@ bool KalecgosSathrovarrTankStandWithKalecAction::Execute(Event /*event*/)
         return false;
 
     Position const position = kalec->GetPosition();
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) < 3.0f)
+    if (bot->GetExactDist2d(position) <= 3.0f)
         return false;
 
     return MoveTo(

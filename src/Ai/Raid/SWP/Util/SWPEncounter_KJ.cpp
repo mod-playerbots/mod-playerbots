@@ -105,12 +105,8 @@ bool IsRangedSlotSafeFromArmageddons(
 {
     for (KiljaedenArmageddon const& armageddon : armageddons)
     {
-        if (position.GetExactDist2d(
-                armageddon.destination.GetPositionX(),
-                armageddon.destination.GetPositionY()) < armageddon.safeDistance)
-        {
+        if (position.GetExactDist2d(armageddon.destination) < armageddon.safeDistance)
             return false;
-        }
     }
 
     return true;
@@ -123,9 +119,8 @@ float GetNearestArmageddonDistance(
 
     for (KiljaedenArmageddon const& armageddon : armageddons)
     {
-        nearestDistance = std::min(nearestDistance, position.GetExactDist2d(
-            armageddon.destination.GetPositionX(),
-            armageddon.destination.GetPositionY()));
+        nearestDistance = std::min(
+            nearestDistance, position.GetExactDist2d(armageddon.destination));
     }
 
     return nearestDistance;
@@ -183,8 +178,7 @@ bool TryGetKiljaedenNearestArmageddon(Player* bot, KiljaedenArmageddon& armagedd
 
     for (KiljaedenArmageddon const& candidate : stateItr->second.armageddons)
     {
-        float const distance = bot->GetExactDist2d(
-            candidate.destination.GetPositionX(), candidate.destination.GetPositionY());
+        float const distance = bot->GetExactDist2d(candidate.destination);
         if (distance >= candidate.safeDistance)
             continue;
 

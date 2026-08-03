@@ -15,24 +15,24 @@ using namespace SwpHelpers;
 bool EredarTwinsMeleeJumpDownFromBalconyAction::Execute(Event /*event*/)
 {
     Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-    Position const& jumpPos = EREDAR_TWINS_P1_RANGED_POSITION;
-    Position const landingPos = GetEredarTwinsP2MeleeStackPosition(alythess);
+    Position const& jumpPosition = EREDAR_TWINS_P1_RANGED_POSITION;
+    Position const landingPosition = GetEredarTwinsP2MeleeStackPosition(alythess);
 
     constexpr float arrivalDistance = 2.0f;
-    float const distanceToJumpPos = bot->GetExactDist2d(
-        jumpPos.GetPositionX(), jumpPos.GetPositionY());
+    float const distanceToJumpPos = bot->GetExactDist2d(jumpPosition);
 
     if (distanceToJumpPos > arrivalDistance)
     {
         return MoveTo(
-            SWP_MAP_ID, jumpPos.GetPositionX(), jumpPos.GetPositionY(), jumpPos.GetPositionZ(),
-            false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+            SWP_MAP_ID, jumpPosition.GetPositionX(), jumpPosition.GetPositionY(),
+            jumpPosition.GetPositionZ(), false, false, false, false,
+            MovementPriority::MOVEMENT_FORCED, true, false);
     }
     else
     {
         return JumpTo(
-            SWP_MAP_ID, landingPos.GetPositionX(), landingPos.GetPositionY(),
-            landingPos.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
+            SWP_MAP_ID, landingPosition.GetPositionX(), landingPosition.GetPositionY(),
+            landingPosition.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
     }
 }
 
@@ -114,21 +114,29 @@ bool EredarTwinsMainAndSecondAssistTanksPositionSacrolashAction::Execute(Event /
         return false;
 
     Position const& position = SACROLASH_TANK_POSITION;
-    float const distToPosition = bot->GetExactDist2d(
-        position.GetPositionX(), position.GetPositionY());
-
-    if (distToPosition < 2.0f)
+    float const distToPosition = bot->GetExactDist2d(position);
+    if (distToPosition <= 2.0f)
         return false;
 
-    float const dX = position.GetPositionX() - bot->GetPositionX();
-    float const dY = position.GetPositionY() - bot->GetPositionY();
-    float const moveDist = std::min(2.25f, distToPosition);
-    float const moveX = bot->GetPositionX() + (dX / distToPosition) * moveDist;
-    float const moveY = bot->GetPositionY() + (dY / distToPosition) * moveDist;
+    float const posX = position.GetPositionX();
+    float const posY = position.GetPositionY();
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+
+    float const toPosX = posX - botX;
+    float const toPosY = posY - botY;
+    float const toBossX = sacrolash->GetPositionX() - botX;
+    float const toBossY = sacrolash->GetPositionY() - botY;
+    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
+
+    float const maxMoveDist = backwards ? 2.25f : 3.5f;
+    float const moveDist = std::min(maxMoveDist, distToPosition);
+    float const moveX = botX + (toPosX / distToPosition) * moveDist;
+    float const moveY = botY + (toPosY / distToPosition) * moveDist;
 
     return MoveTo(
-        SWP_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
-        false, false, MovementPriority::MOVEMENT_COMBAT, true, true);
+        SWP_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
@@ -208,43 +216,38 @@ bool EredarTwinsFirstAssistTankMoveOutOfBlazeAction::Execute(Event /*event*/)
 bool EredarTwinsPositionRangedAction::Execute(Event /*event*/)
 {
     Unit* sacrolash = AI_VALUE2(Unit*, "find target", "lady sacrolash");
-    if (sacrolash && sacrolash->GetVictim() != bot &&
-        GetEredarTwinsBlazeTarget(bot) != bot)
+    if (sacrolash && sacrolash->GetVictim() != bot && GetEredarTwinsBlazeTarget(bot) != bot)
     {
         Position const& position = EREDAR_TWINS_P1_RANGED_POSITION;
+        if (bot->GetExactDist2d(position) <= 1.0f)
+            return false;
 
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) > 1.0f)
-        {
-            return MoveTo(
-                SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(),
-                position.GetPositionZ(), false, false, false, false,
-                MovementPriority::MOVEMENT_FORCED, true, false);
-        }
-
-        return false;
+        return MoveTo(
+            SWP_MAP_ID, position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(),
+            false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
     }
     // Jump down during Phase 2 or if the bot pulls aggro on Sacrolash
     else if (bot->GetPositionZ() > EREDAR_TWINS_BALCONY_Z)
     {
         Unit* alythess = AI_VALUE2(Unit*, "find target", "grand warlock alythess");
-        Position const& jumpPos = EREDAR_TWINS_P1_RANGED_POSITION;
-        Position const landingPos = GetEredarTwinsP2RangedStackPosition(alythess);
+        Position const& jumpPosition = EREDAR_TWINS_P1_RANGED_POSITION;
+        Position const landingPosition = GetEredarTwinsP2RangedStackPosition(alythess);
 
         constexpr float arrivalDistance = 2.0f;
-        float const distanceToJumpPos = bot->GetExactDist2d(
-            jumpPos.GetPositionX(), jumpPos.GetPositionY());
+        float const distanceToJumpPos = bot->GetExactDist2d(jumpPosition);
 
         if (distanceToJumpPos > arrivalDistance)
         {
             return MoveTo(
-                SWP_MAP_ID, jumpPos.GetPositionX(), jumpPos.GetPositionY(), jumpPos.GetPositionZ(),
-                false, false, false, false, MovementPriority::MOVEMENT_FORCED, true, false);
+                SWP_MAP_ID, jumpPosition.GetPositionX(), jumpPosition.GetPositionY(),
+                jumpPosition.GetPositionZ(), false, false, false, false,
+                MovementPriority::MOVEMENT_FORCED, true, false);
         }
         else
         {
             return JumpTo(
-                SWP_MAP_ID, landingPos.GetPositionX(), landingPos.GetPositionY(),
-                landingPos.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
+                SWP_MAP_ID, landingPosition.GetPositionX(), landingPosition.GetPositionY(),
+                landingPosition.GetPositionZ(), MovementPriority::MOVEMENT_FORCED);
         }
     }
 
@@ -261,7 +264,7 @@ bool EredarTwinsStackInRoomCenterAction::Execute(Event /*event*/)
         GetEredarTwinsP2RangedStackPosition(alythess) :
         GetEredarTwinsP2MeleeStackPosition(alythess);
 
-    if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) <= 0.5f)
+    if (bot->GetExactDist2d(position) <= 0.5f)
         return false;
 
     return MoveTo(
@@ -343,7 +346,7 @@ bool EredarTwinsConflagratedBotMoveFromGroupAction::Execute(Event /*event*/)
         Position const& position = PlayerbotAI::IsRanged(bot) ?
             EREDAR_TWINS_RANGED_CONFLAG_POSITION : EREDAR_TWINS_MELEE_CONFLAG_POSITION;
 
-        if (bot->GetExactDist2d(position.GetPositionX(), position.GetPositionY()) < 1.0f)
+        if (bot->GetExactDist2d(position) <= 1.0f)
             return false;
 
         return MoveTo(

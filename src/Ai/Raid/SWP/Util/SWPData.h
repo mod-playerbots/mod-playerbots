@@ -69,13 +69,19 @@ enum class SwpSpells : uint32
     SPELL_MISDIRECTION                 = 35079,
 
     // Mage
+    SPELL_SPELLSTEAL                   = 30449,
     SPELL_ICE_BLOCK                    = 45438,
 
     // Paladin
     SPELL_DIVINE_SHIELD                = 642,
 
     // Priest
+    SPELL_DISPEL_MAGIC_RANK_1          = 527,
     SPELL_SHADOWFORM                   = 15473,
+    SPELL_MASS_DISPEL                  = 32375,
+
+    // Shaman
+    SPELL_PURGE_RANK_1                 = 370,
 
     // Warlock
     SPELL_METAMORPHOSIS                = 47241,
