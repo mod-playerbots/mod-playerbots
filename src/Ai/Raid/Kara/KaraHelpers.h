@@ -7,132 +7,144 @@
 #ifndef PLAYERBOTS_KARAHELPERS_H
 #define PLAYERBOTS_KARAHELPERS_H
 
+#include "AiObject.h"
+#include "Position.h"
+#include "Unit.h"
 #include <array>
 #include <ctime>
 #include <unordered_map>
 
-#include "AiObject.h"
-#include "Position.h"
-#include "Unit.h"
-
-namespace KarazhanHelpers
+namespace KaraHelpers
 {
-    enum KarazhanSpells
-    {
-        // Maiden of Virtue
-        SPELL_REPENTANCE                 = 29511,
 
-        // Opera Event
-        SPELL_LITTLE_RED_RIDING_HOOD     = 30756,
+enum class KaraSpells : uint32
+{
+    // Maiden of Virtue
+    SPELL_REPENTANCE              = 29511,
 
-        // The Curator
-        SPELL_CURATOR_EVOCATION          = 30254,
+    // Opera Event
+    SPELL_LITTLE_RED_RIDING_HOOD  = 30756,
 
-        // Shade of Aran
-        SPELL_FLAME_WREATH_CAST          = 30004,
-        SPELL_FLAME_WREATH_AURA          = 29946,
-        SPELL_ARCANE_EXPLOSION           = 29973,
+    // The Curator
+    SPELL_CURATOR_EVOCATION       = 30254,
 
-        // Netherspite
-        SPELL_RED_BEAM_DEBUFF            = 30421, // "Nether Portal - Perseverance" (player aura)
-        SPELL_GREEN_BEAM_DEBUFF          = 30422, // "Nether Portal - Serenity" (player aura)
-        SPELL_BLUE_BEAM_DEBUFF           = 30423, // "Nether Portal - Dominance" (player aura)
-        SPELL_GREEN_BEAM_HEAL            = 30467, // "Nether Portal - Serenity" (Netherspite aura)
-        SPELL_NETHER_EXHAUSTION_RED      = 38637,
-        SPELL_NETHER_EXHAUSTION_GREEN    = 38638,
-        SPELL_NETHER_EXHAUSTION_BLUE     = 38639,
-        SPELL_NETHERSPITE_BANISHED       = 39833, // "Vortex Shade Black"
+    // Shade of Aran
+    SPELL_FLAME_WREATH_CAST       = 30004,
+    SPELL_FLAME_WREATH_AURA       = 29946,
+    SPELL_BLIZZARD                = 29951,
+    SPELL_ARCANE_EXPLOSION        = 29973,
 
-        // Prince Malchezaar
-        SPELL_ENFEEBLE                   = 30843,
+    // Netherspite
+    SPELL_RED_BEAM_DEBUFF         = 30421, // "Nether Portal - Perseverance" (player aura)
+    SPELL_GREEN_BEAM_DEBUFF       = 30422, // "Nether Portal - Serenity" (player aura)
+    SPELL_BLUE_BEAM_DEBUFF        = 30423, // "Nether Portal - Dominance" (player aura)
+    SPELL_NETHER_EXHAUSTION_RED   = 38637,
+    SPELL_NETHER_EXHAUSTION_GREEN = 38638,
+    SPELL_NETHER_EXHAUSTION_BLUE  = 38639,
+    SPELL_NETHERSPITE_BANISHED    = 39833, // "Vortex Shade Black"
 
-        // Nightbane
-        SPELL_CHARRED_EARTH              = 30129,
-        SPELL_BELLOWING_ROAR             = 36922,
-        SPELL_RAIN_OF_BONES              = 37091,
+    // Prince Malchezaar
+    SPELL_ENFEEBLE                = 30843,
 
-        // Warlock
-        SPELL_WARLOCK_BANISH             = 18647,
+    // Nightbane
+    SPELL_CHARRED_EARTH           = 30129,
+    SPELL_RAIN_OF_BONES           = 37091,
 
-        // Priest
-        SPELL_FEAR_WARD                  =  6346,
-    };
+    // Priest
+    SPELL_FEAR_WARD               = 6346,
 
-    enum KarazhanNPCs
-    {
-        // Trash
-        NPC_SPECTRAL_RETAINER            = 16410,
-        NPC_MANA_WARP                    = 16530,
+    // Shaman
+    SPELL_TREMOR_TOTEM            = 8143,
+    SPELL_GROUNDING_TOTEM         = 8177,
+};
 
-        // Attumen the Huntsman
-        NPC_ATTUMEN_THE_HUNTSMAN         = 15550,
-        NPC_ATTUMEN_THE_HUNTSMAN_MOUNTED = 16152,
-
-        // Terestian Illhoof
-        NPC_TERESTIAN_ILLHOOF            = 15688,
-        NPC_DEMON_CHAINS                 = 17248,
-        NPC_KILREK                       = 17229,
-
-        // Shade of Aran
-        NPC_CONJURED_ELEMENTAL           = 17167,
-
-        // Netherspite
-        NPC_VOID_ZONE                    = 16697,
-        NPC_GREEN_PORTAL                 = 17367, // "Nether Portal - Serenity <Healing Portal>"
-        NPC_BLUE_PORTAL                  = 17368, // "Nether Portal - Dominance <Damage Portal>"
-        NPC_RED_PORTAL                   = 17369, // "Nether Portal - Perseverance <Tanking Portal>"
-
-        // Prince Malchezaar
-        NPC_NETHERSPITE_INFERNAL         = 17646,
-    };
-
-    constexpr uint32 KARAZHAN_MAP_ID = 532;
-    constexpr float NIGHTBANE_FLIGHT_Z = 95.0f;
+enum class KaraNpcs : uint32
+{
+    // Trash
+    NPC_MANA_WARP                 = 16530,
 
     // Attumen the Huntsman
-    extern std::unordered_map<uint32, time_t> attumenDpsWaitTimer;
-    // Big Bad Wolf
-    extern std::unordered_map<ObjectGuid, uint8> bigBadWolfRunIndex;
+    NPC_ATTUMEN_THE_HUNTSMAN      = 16152, // ID for mounted version
+
+    // Terestian Illhoof
+    NPC_TERESTIAN_ILLHOOF         = 15688,
+    NPC_DEMON_CHAINS              = 17248,
+    NPC_KILREK                    = 17229,
+
+    // Shade of Aran
+    NPC_CONJURED_ELEMENTAL        = 17167,
+
     // Netherspite
-    extern std::unordered_map<uint32, time_t> netherspiteDpsWaitTimer;
-    extern std::unordered_map<ObjectGuid, time_t> redBeamMoveTimer;
-    extern std::unordered_map<ObjectGuid, bool> lastBeamMoveSideways;
-    // Nightbane
-    extern std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
-    extern std::unordered_map<ObjectGuid, uint8> nightbaneTankStep;
-    extern std::unordered_map<ObjectGuid, uint8> nightbaneRangedStep;
-    extern std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
-    extern std::unordered_map<ObjectGuid, bool> nightbaneRainOfBonesHit;
+    NPC_VOID_ZONE                 = 16697,
+    NPC_GREEN_PORTAL              = 17367, // "Nether Portal - Serenity <Healing Portal>"
+    NPC_BLUE_PORTAL               = 17368, // "Nether Portal - Dominance <Damage Portal>"
+    NPC_RED_PORTAL                = 17369, // "Nether Portal - Perseverance <Tanking Portal>"
 
-    extern const Position MAIDEN_OF_VIRTUE_BOSS_POSITION;
-    extern const Position MAIDEN_OF_VIRTUE_RANGED_POSITION[8];
-    extern const Position BIG_BAD_WOLF_BOSS_POSITION;
-    extern const Position BIG_BAD_WOLF_RUN_POSITION[4];
-    extern const Position THE_CURATOR_BOSS_POSITION;
-    extern const Position NIGHTBANE_TRANSITION_BOSS_POSITION;
-    extern const Position NIGHTBANE_FINAL_BOSS_POSITION;
-    extern const Position NIGHTBANE_RANGED_POSITION1;
-    extern const Position NIGHTBANE_RANGED_POSITION2;
-    extern const Position NIGHTBANE_RANGED_POSITION3;
-    extern const Position NIGHTBANE_FLIGHT_STACK_POSITION;
-    extern const Position NIGHTBANE_RAIN_OF_BONES_POSITION;
+    // Prince Malchezaar
+    NPC_NETHERSPITE_INFERNAL      = 17646,
+};
 
-    std::array<const char*, 5> const& GetOzTargets();
-    bool IsFlameWreathActive(PlayerbotAI* botAI, Player* bot);
-    std::vector<Player*> GetRedBlockers(PlayerbotAI* botAI, Player* bot);
-    std::vector<Player*> GetBlueBlockers(PlayerbotAI* botAI, Player* bot);
-    std::vector<Player*> GetGreenBlockers(PlayerbotAI* botAI, Player* bot);
-    std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(PlayerbotAI* botAI, Player* bot);
-    std::vector<Unit*> GetAllVoidZones(PlayerbotAI *botAI, Player* bot);
-    bool IsSafePosition (float x, float y, const std::vector<Unit*>& hazards, float hazardRadius);
-    std::vector<Unit*> GetSpawnedInfernals(PlayerbotAI* botAI);
-    bool IsStraightPathSafe(
-        const Position& start, const Position& target,
-        const std::vector<Unit*>& hazards, float hazardRadius, float stepSize);
-    bool TryFindSafePositionWithSafePath(
-        Player* bot, float originX, float originY, float originZ, float centerX, float centerY, float centerZ,
-        const std::vector<Unit*>& hazards, float safeDistance, float stepSize, uint8 numAngles,
-        float maxSampleDist, bool requireSafePath, float& bestDestX, float& bestDestY, float& bestDestZ);
+// General
+constexpr uint32 KARA_MAP_ID = 532;
+bool IsSafePosition (float x, float y, const std::vector<Unit*>& hazards, float hazardRadius);
+
+// Attumen the Huntsman
+extern Position const ATTUMEN_TANK_POSITION;
+extern std::unordered_map<uint32, time_t> attumenDpsWaitTimer;
+Unit* GetAttumenMounted(Player* bot);
+
+// Maiden of Virtue
+extern Position const MAIDEN_OF_VIRTUE_TANK_POSITION;
+extern std::array<Position, 8> const MAIDEN_OF_VIRTUE_RANGED_POSITIONS;
+
+// The Big Bad Wolf
+extern Position const BIG_BAD_WOLF_TANK_POSITION;
+extern std::array<Position, 4> const BIG_BAD_WOLF_RUN_POSITIONS;
+
+// Wizard of Oz
+std::array<const char*, 5> const& GetOzTargets();
+
+// The Curator
+extern Position const THE_CURATOR_TANK_POSITION;
+
+// Shade of Aran
+bool IsAranCastingArcaneExplosion(Unit* aran);
+bool IsFlameWreathActive(Player* bot);
+
+// Netherspite
+extern std::unordered_map<uint32, time_t> netherspiteDpsWaitTimer;
+bool IsBanishPhase(Unit* netherspite);
+std::vector<Player*> GetRedBlockers(Player* bot);
+std::vector<Player*> GetBlueBlockers(Player* bot);
+std::vector<Player*> GetGreenBlockers(Player* bot);
+std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(Player* bot);
+std::vector<Unit*> GetAllVoidZones(Player* bot);
+bool FindBeamPosition(
+    Unit* netherspite, Unit* portal, std::vector<Unit*> const& voidZones,
+    float idealDistance, Position& outPos);
+
+// Prince Malchezaar
+std::vector<Unit*> GetSpawnedInfernals(Player* bot);
+bool IsStraightPathSafe(
+    float startX, float startY, float targetX, float targetY,
+    std::vector<Unit*> const& hazards, float hazardRadius);
+bool TryFindSafePositionWithSafePath(
+    Player* bot, float originX, float originY, float centerX, float centerY,
+    std::vector<Unit*> const& hazards, float safeDistance, float maxSampleDist,
+    float& outX, float& outY);
+
+// Nightbane
+constexpr float NIGHTBANE_FLIGHT_Z = 95.000f;
+constexpr float NIGHTBANE_GROUND_Z = 91.473f;
+extern Position const TERRACE_DOME_CENTER;
+extern Position const TERRACE_EAST_END;
+extern Position const TERRACE_WEST_END;
+extern std::array<Position, 2> const NIGHTBANE_FLIGHT_STACK_POSITIONS;
+extern std::array<Position, 2> const NIGHTBANE_RAIN_OF_BONES_POSITIONS;
+extern Position const NIGHTBANE_TELEPORT_POSITION;
+extern std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
+extern std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
+
 }
 
 #endif

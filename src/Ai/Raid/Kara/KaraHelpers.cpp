@@ -7,343 +7,434 @@
 #include "KaraHelpers.h"
 #include "Playerbots.h"
 
-namespace KarazhanHelpers
+namespace KaraHelpers
 {
-    // Attumen the Huntsman
-    std::unordered_map<uint32, time_t> attumenDpsWaitTimer;
-    // Big Bad Wolf
-    std::unordered_map<ObjectGuid, uint8> bigBadWolfRunIndex;
-    // Netherspite
-    std::unordered_map<uint32, time_t> netherspiteDpsWaitTimer;
-    std::unordered_map<ObjectGuid, time_t> redBeamMoveTimer;
-    std::unordered_map<ObjectGuid, bool> lastBeamMoveSideways;
-    // Nightbane
-    std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
-    std::unordered_map<ObjectGuid, uint8> nightbaneTankStep;
-    std::unordered_map<ObjectGuid, uint8> nightbaneRangedStep;
-    std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
-    std::unordered_map<ObjectGuid, bool> nightbaneRainOfBonesHit;
 
-    const Position MAIDEN_OF_VIRTUE_BOSS_POSITION = { -10945.881f, -2103.782f, 92.712f };
-    const Position MAIDEN_OF_VIRTUE_RANGED_POSITION[8] =
+// General
+
+bool IsSafePosition(float x, float y, const std::vector<Unit*>& hazards, float hazardRadius)
+{
+    for (Unit* hazard : hazards)
     {
-        { -10931.178f, -2116.580f, 92.179f },
-        { -10925.828f, -2102.425f, 92.180f },
-        { -10933.089f, -2088.502f, 92.180f },
-        { -10947.590f, -2082.815f, 92.180f },
-        { -10960.912f, -2090.437f, 92.179f },
-        { -10966.017f, -2105.288f, 92.175f },
-        { -10959.242f, -2119.617f, 92.180f },
-        { -10944.495f, -2123.857f, 92.180f },
-    };
-
-    const Position BIG_BAD_WOLF_BOSS_POSITION = { -10913.391f, -1773.508f, 90.477f };
-    const Position BIG_BAD_WOLF_RUN_POSITION[4] =
-    {
-        { -10875.456f, -1779.036f, 90.477f },
-        { -10872.281f, -1751.638f, 90.477f },
-        { -10910.492f, -1747.401f, 90.477f },
-        { -10913.391f, -1773.508f, 90.477f },
-    };
-
-    const Position THE_CURATOR_BOSS_POSITION = { -11139.463f, -1884.645f, 165.765f };
-
-    const Position NIGHTBANE_TRANSITION_BOSS_POSITION = { -11160.646f, -1932.773f, 91.473f }; // near some ribs
-    const Position NIGHTBANE_FINAL_BOSS_POSITION = { -11173.530f, -1940.707f, 91.473f };
-    const Position NIGHTBANE_RANGED_POSITION1 = { -11145.949f, -1970.927f, 91.473f };
-    const Position NIGHTBANE_RANGED_POSITION2 = { -11143.594f, -1954.981f, 91.473f };
-    const Position NIGHTBANE_RANGED_POSITION3 = { -11159.778f, -1961.031f, 91.473f };
-    const Position NIGHTBANE_FLIGHT_STACK_POSITION = { -11159.555f, -1893.526f, 91.473f }; // Broken Barrel
-    const Position NIGHTBANE_RAIN_OF_BONES_POSITION = { -11165.233f, -1911.123f, 91.473f };
-
-    // Wizard of Oz
-
-    std::array<const char*, 5> const& GetOzTargets()
-    {
-        static std::array<const char*, 5> const targets =
-        {
-            "dorothee",
-            "tito",
-            "roar",
-            "strawman",
-            "tinhead",
-        };
-
-        return targets;
+        float dist = hazard->GetDistance2d(x, y);
+        if (dist < hazardRadius)
+            return false;
     }
 
-    bool IsFlameWreathActive(PlayerbotAI* botAI, Player* bot)
+    return true;
+}
+
+// Attumen the Huntsman
+
+Position const ATTUMEN_TANK_POSITION = { -11123.762f, -1926.619f, 49.215f };
+std::unordered_map<uint32, time_t> attumenDpsWaitTimer;
+
+Unit* GetAttumenMounted(Player* bot)
+{
+    constexpr uint32 searchRadius = 50.0f;
+    return bot->FindNearestCreature(
+        static_cast<uint32>(KaraNpcs::NPC_ATTUMEN_THE_HUNTSMAN), searchRadius, true);
+}
+
+// Maiden of Virtue
+
+Position const MAIDEN_OF_VIRTUE_TANK_POSITION = { -10945.881f, -2103.782f, 92.712f };
+std::array<Position, 8> const MAIDEN_OF_VIRTUE_RANGED_POSITIONS =
+{{
+    { -10959.242f, -2119.617f, 92.180f }, // SE (opposite entrance)
+    { -10944.495f, -2123.857f, 92.180f }, // E
+    { -10966.017f, -2105.288f, 92.175f }, // S
+    { -10931.178f, -2116.580f, 92.179f }, // NE
+    { -10960.912f, -2090.437f, 92.179f }, // SW
+    { -10925.828f, -2102.425f, 92.180f }, // N
+    { -10947.590f, -2082.815f, 92.180f }, // W
+    { -10933.089f, -2088.502f, 92.180f }, // NW (entrance)
+}};
+
+// The Big Bad Wolf
+
+Position const BIG_BAD_WOLF_TANK_POSITION = { -10913.391f, -1773.508f, 90.477f };
+std::array<Position, 4> const BIG_BAD_WOLF_RUN_POSITIONS =
+{{
+    { -10875.456f, -1779.036f, 90.477f },
+    { -10872.281f, -1751.638f, 90.477f },
+    { -10910.492f, -1747.401f, 90.477f },
+    { -10913.391f, -1773.508f, 90.477f },
+}};
+
+// Wizard of Oz
+
+std::array<const char*, 5> const& GetOzTargets()
+{
+    static std::array<const char*, 5> const targets =
     {
-        Unit* aran = botAI->GetAiObjectContext()->GetValue<Unit*>("find target", "shade of aran")->Get();
-        Spell* currentSpell = aran ? aran->GetCurrentSpell(CURRENT_GENERIC_SPELL) : nullptr;
+        "dorothee",
+        "tito",
+        "roar",
+        "strawman",
+        "tinhead",
+    };
 
-        if (currentSpell && currentSpell->m_spellInfo &&
-            currentSpell->m_spellInfo->Id == SPELL_FLAME_WREATH_CAST)
-            return true;
+    return targets;
+}
 
-        if (Group* group = bot->GetGroup())
-        {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (!member || !member->IsAlive())
-                    continue;
+// The Curator
 
-                if (member->HasAura(SPELL_FLAME_WREATH_AURA))
-                    return true;
-            }
-        }
+Position const THE_CURATOR_TANK_POSITION = { -11139.463f, -1884.645f, 165.765f };
 
+// Shade of Aran
+
+bool IsAranCastingArcaneExplosion(Unit* aran)
+{
+    return aran && aran->HasUnitState(UNIT_STATE_CASTING) && aran->FindCurrentSpellBySpellId(
+        static_cast<uint32>(KaraSpells::SPELL_ARCANE_EXPLOSION));
+}
+
+bool IsFlameWreathActive(Player* bot)
+{
+    PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+    AiObjectContext* context = botAI->GetAiObjectContext();
+
+    Unit* aran = AI_VALUE2(Unit*, "find target", "shade of aran");
+    if (!aran)
         return false;
+
+    Spell* currentSpell = aran->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    if (currentSpell && currentSpell->m_spellInfo && currentSpell->m_spellInfo->Id ==
+            static_cast<uint32>(KaraSpells::SPELL_FLAME_WREATH_CAST))
+    {
+        return true;
     }
 
-    // Red beam blockers: tank bots, no Nether Exhaustion Red
-    std::vector<Player*> GetRedBlockers(PlayerbotAI* botAI, Player* bot)
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        std::vector<Player*> redBlockers;
-        if (Group* group = bot->GetGroup())
-        {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (!member || !member->IsAlive() || !botAI->IsTank(member) || !GET_PLAYERBOT_AI(member) ||
-                    member->HasAura(SPELL_NETHER_EXHAUSTION_RED))
-                    continue;
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive())
+            continue;
 
-                redBlockers.push_back(member);
-            }
-        }
-
-        return redBlockers;
+        if (member->HasAura(static_cast<uint32>(KaraSpells::SPELL_FLAME_WREATH_AURA)))
+            return true;
     }
 
-    // Blue beam blockers: non-Rogue/Warrior DPS bots, no Nether Exhaustion Blue and <24 stacks of Blue Beam debuff
-    std::vector<Player*> GetBlueBlockers(PlayerbotAI* botAI, Player* bot)
+    return false;
+}
+
+// Netherspite
+
+std::unordered_map<uint32, time_t> netherspiteDpsWaitTimer;
+
+bool IsBanishPhase(Unit* netherspite)
+{
+    return netherspite && netherspite->HasAura(
+        static_cast<uint32>(KaraSpells::SPELL_NETHERSPITE_BANISHED));
+}
+
+// Red beam blockers: tank bots, no Nether Exhaustion Red
+std::vector<Player*> GetRedBlockers(Player* bot)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return {};
+
+    std::vector<Player*> redBlockers;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        std::vector<Player*> blueBlockers;
-        if (Group* group = bot->GetGroup())
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || !PlayerbotAI::IsTank(member) ||
+            !GET_PLAYERBOT_AI(member))
         {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
-                    continue;
-
-                bool hasExhaustion = member->HasAura(SPELL_NETHER_EXHAUSTION_BLUE);
-                Aura* blueBuff = member->GetAura(SPELL_BLUE_BEAM_DEBUFF);
-                bool overStack = blueBuff && blueBuff->GetStackAmount() >= 24;
-
-                bool isDps = botAI->IsDps(member);
-                bool isWarrior = member->getClass() == CLASS_WARRIOR;
-                bool isRogue = member->getClass() == CLASS_ROGUE;
-
-                if (isDps && !isWarrior && !isRogue && !hasExhaustion && !overStack)
-                    blueBlockers.push_back(member);
-            }
+            continue;
         }
 
-        return blueBlockers;
+        if (!member->HasAura(static_cast<uint32>(KaraSpells::SPELL_NETHER_EXHAUSTION_RED)))
+            redBlockers.push_back(member);
     }
 
-    // Green beam blockers:
-    // (1) Prioritize Rogues and non-tank Warrior bots, no Nether Exhaustion Green
-    // (2) Then assign Healer bots, no Nether Exhaustion Green and <24 stacks of Green Beam debuff
-    std::vector<Player*> GetGreenBlockers(PlayerbotAI* botAI, Player* bot)
+    return redBlockers;
+}
+
+// Blue beam blockers: DPS bots, excluding Warrior/Rogue/DK
+// no Nether Exhaustion Blue and <25 stacks of Blue Beam debuff
+std::vector<Player*> GetBlueBlockers(Player* bot)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return {};
+
+    std::vector<Player*> blueBlockers;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        std::vector<Player*> greenBlockers;
-        if (Group* group = bot->GetGroup())
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
+            !PlayerbotAI::IsDps(member) || member->getPowerType() != POWER_MANA)
         {
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
-                    continue;
-
-                bool hasExhaustion = member->HasAura(SPELL_NETHER_EXHAUSTION_GREEN);
-                bool isRogue = member->getClass() == CLASS_ROGUE;
-                bool isDpsWarrior = member->getClass() == CLASS_WARRIOR && botAI->IsDps(member);
-                bool eligibleRogueWarrior = (isRogue || isDpsWarrior) && !hasExhaustion;
-
-                if (eligibleRogueWarrior)
-                    greenBlockers.push_back(member);
-            }
-
-            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-            {
-                Player* member = ref->GetSource();
-                if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member))
-                    continue;
-
-                bool hasExhaustion = member->HasAura(SPELL_NETHER_EXHAUSTION_GREEN);
-                Aura* greenBuff = member->GetAura(SPELL_GREEN_BEAM_DEBUFF);
-                bool overStack = greenBuff && greenBuff->GetStackAmount() >= 24;
-                bool isHealer = botAI->IsHeal(member);
-                bool eligibleHealer = isHealer && !hasExhaustion && !overStack;
-
-                if (eligibleHealer)
-                    greenBlockers.push_back(member);
-            }
+            continue;
         }
 
-        return greenBlockers;
+        if (member->HasAura(static_cast<uint32>(KaraSpells::SPELL_NETHER_EXHAUSTION_BLUE)))
+            continue;
+
+        Aura* blueBuff = member->GetAura(
+            static_cast<uint32>(KaraSpells::SPELL_BLUE_BEAM_DEBUFF));
+        if (!blueBuff || blueBuff->GetStackAmount() < 25)
+            blueBlockers.push_back(member);
     }
 
-    std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(PlayerbotAI* botAI, Player* bot)
+    return blueBlockers;
+}
+
+// Green beam blockers:
+// (1) Prioritize Rogues and non-tank Warrior and DK bots, no Nether Exhaustion Green
+// (2) Then assign Healer bots, no Nether Exhaustion Green and <25 stacks of Green Beam debuff
+std::vector<Player*> GetGreenBlockers(Player* bot)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return {};
+
+    std::vector<Player*> greenBlockers;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
-        static ObjectGuid currentRedBlocker;
-        static ObjectGuid currentGreenBlocker;
-        static ObjectGuid currentBlueBlocker;
-
-        Player* redBlocker = nullptr;
-        Player* greenBlocker = nullptr;
-        Player* blueBlocker = nullptr;
-
-        std::vector<Player*> redBlockers = GetRedBlockers(botAI, bot);
-        if (!redBlockers.empty())
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
+            !PlayerbotAI::IsDps(member) || member->getPowerType() == POWER_MANA)
         {
-            auto it = std::find_if(redBlockers.begin(), redBlockers.end(), [](Player* player)
-            {
-                return player && player->GetGUID() == currentRedBlocker;
-            });
-
-            if (it != redBlockers.end())
-                redBlocker = *it;
-            else
-                redBlocker = redBlockers.front();
-
-            currentRedBlocker = redBlocker ? redBlocker->GetGUID() : ObjectGuid::Empty;
+            continue;
         }
+
+        if (!member->HasAura(static_cast<uint32>(KaraSpells::SPELL_NETHER_EXHAUSTION_GREEN)))
+            greenBlockers.push_back(member);
+    }
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || !GET_PLAYERBOT_AI(member) ||
+            !PlayerbotAI::IsHeal(member))
+        {
+            continue;
+        }
+
+        Aura* greenBuff = member->GetAura(
+            static_cast<uint32>(KaraSpells::SPELL_GREEN_BEAM_DEBUFF));
+        if (!member->HasAura(static_cast<uint32>(KaraSpells::SPELL_NETHER_EXHAUSTION_GREEN)) &&
+            (!greenBuff || greenBuff->GetStackAmount() < 25))
+        {
+            greenBlockers.push_back(member);
+        }
+    }
+
+    return greenBlockers;
+}
+
+std::tuple<Player*, Player*, Player*> GetCurrentBeamBlockers(Player* bot)
+{
+    static ObjectGuid currentRedBlocker;
+    static ObjectGuid currentGreenBlocker;
+    static ObjectGuid currentBlueBlocker;
+
+    Player* redBlocker = nullptr;
+    auto redBlockers = GetRedBlockers(bot);
+    if (!redBlockers.empty())
+    {
+        auto it = std::find_if(redBlockers.begin(), redBlockers.end(), [](Player* player)
+        {
+            return player && player->GetGUID() == currentRedBlocker;
+        });
+
+        if (it != redBlockers.end())
+            redBlocker = *it;
         else
-        {
-            currentRedBlocker = ObjectGuid::Empty;
-            redBlocker = nullptr;
-        }
+            redBlocker = redBlockers.front();
 
-        std::vector<Player*> greenBlockers = GetGreenBlockers(botAI, bot);
-        if (!greenBlockers.empty())
-        {
-            auto it = std::find_if(greenBlockers.begin(), greenBlockers.end(), [](Player* player)
-            {
-                return player && player->GetGUID() == currentGreenBlocker;
-            });
-
-            if (it != greenBlockers.end())
-                greenBlocker = *it;
-            else
-                greenBlocker = greenBlockers.front();
-
-            currentGreenBlocker = greenBlocker ? greenBlocker->GetGUID() : ObjectGuid::Empty;
-        }
-        else
-        {
-            currentGreenBlocker = ObjectGuid::Empty;
-            greenBlocker = nullptr;
-        }
-
-        std::vector<Player*> blueBlockers = GetBlueBlockers(botAI, bot);
-        if (!blueBlockers.empty())
-        {
-            auto it = std::find_if(blueBlockers.begin(), blueBlockers.end(), [](Player* player)
-            {
-                return player && player->GetGUID() == currentBlueBlocker;
-            });
-
-            if (it != blueBlockers.end())
-                blueBlocker = *it;
-            else
-                blueBlocker = blueBlockers.front();
-
-            currentBlueBlocker = blueBlocker ? blueBlocker->GetGUID() : ObjectGuid::Empty;
-        }
-        else
-        {
-            currentBlueBlocker = ObjectGuid::Empty;
-            blueBlocker = nullptr;
-        }
-
-        return std::make_tuple(redBlocker, greenBlocker, blueBlocker);
+        currentRedBlocker = redBlocker ? redBlocker->GetGUID() : ObjectGuid::Empty;
+    }
+    else
+    {
+        currentRedBlocker = ObjectGuid::Empty;
+        redBlocker = nullptr;
     }
 
-    std::vector<Unit*> GetAllVoidZones(PlayerbotAI* botAI, Player* bot)
+    Player* greenBlocker = nullptr;
+    auto greenBlockers = GetGreenBlockers(bot);
+    if (!greenBlockers.empty())
     {
-        std::vector<Unit*> voidZones;
-        const float radius = 30.0f;
-        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        for (auto const& npcGuid : npcs)
+        auto it = std::find_if(greenBlockers.begin(), greenBlockers.end(), [](Player* player)
         {
-            Unit* unit = botAI->GetUnit(npcGuid);
-            if (!unit || unit->GetEntry() != NPC_VOID_ZONE)
-                continue;
+            return player && player->GetGUID() == currentGreenBlocker;
+        });
 
-            float dist = bot->GetExactDist2d(unit);
-            if (dist < radius)
-                voidZones.push_back(unit);
-        }
+        if (it != greenBlockers.end())
+            greenBlocker = *it;
+        else
+            greenBlocker = greenBlockers.front();
 
-        return voidZones;
+        currentGreenBlocker = greenBlocker ? greenBlocker->GetGUID() : ObjectGuid::Empty;
+    }
+    else
+    {
+        currentGreenBlocker = ObjectGuid::Empty;
+        greenBlocker = nullptr;
     }
 
-    bool IsSafePosition(float x, float y, const std::vector<Unit*>& hazards, float hazardRadius)
+    Player* blueBlocker = nullptr;
+    auto blueBlockers = GetBlueBlockers(bot);
+    if (!blueBlockers.empty())
     {
+        auto it = std::find_if(blueBlockers.begin(), blueBlockers.end(), [](Player* player)
+        {
+            return player && player->GetGUID() == currentBlueBlocker;
+        });
+
+        if (it != blueBlockers.end())
+            blueBlocker = *it;
+        else
+            blueBlocker = blueBlockers.front();
+
+        currentBlueBlocker = blueBlocker ? blueBlocker->GetGUID() : ObjectGuid::Empty;
+    }
+    else
+    {
+        currentBlueBlocker = ObjectGuid::Empty;
+        blueBlocker = nullptr;
+    }
+
+    return std::make_tuple(redBlocker, greenBlocker, blueBlocker);
+}
+
+std::vector<Unit*> GetAllVoidZones(Player* bot)
+{
+    std::vector<Unit*> voidZones;
+    std::list<Creature*> creatureList;
+    constexpr float searchRadius = 30.0f;
+
+    bot->GetCreatureListWithEntryInGrid(
+        creatureList, static_cast<uint32>(KaraNpcs::NPC_VOID_ZONE), searchRadius);
+
+    for (Creature* creature : creatureList)
+    {
+        if (creature && creature->IsAlive())
+            voidZones.push_back(creature);
+    }
+
+    return voidZones;
+}
+
+bool FindBeamPosition(
+    Unit* netherspite, Unit* portal, std::vector<Unit*> const& voidZones,
+    float idealDistance, Position& outPos)
+{
+    float bossX = netherspite->GetPositionX();
+    float bossY = netherspite->GetPositionY();
+    float portalX = portal->GetPositionX();
+    float portalY = portal->GetPositionY();
+
+    float dx = portalX - bossX;
+    float dy = portalY - bossY;
+    float length = netherspite->GetExactDist2d(portalX, portalY);
+    if (length == 0.0f)
+        return false;
+
+    constexpr float voidZoneRadius = 4.0f;
+    constexpr float searchMinDist = 18.0f;
+    constexpr float searchStep = 0.5f;
+    constexpr uint8 numSteps = 24;
+
+    dx /= length;
+    dy /= length;
+
+    float bestDist = std::numeric_limits<float>::max();
+    bool found = false;
+
+    for (uint8 i = 0; i <= numSteps; ++i)
+    {
+        float const dist = searchMinDist + i * searchStep;
+        float candidateX = bossX + dx * dist;
+        float candidateY = bossY + dy * dist;
+        float candidateZ = netherspite->GetPositionZ();
+        if (!IsSafePosition(candidateX, candidateY, voidZones, voidZoneRadius))
+            continue;
+
+        float distToIdeal = fabs(dist - idealDistance);
+        if (!found || distToIdeal < bestDist)
+        {
+            bestDist = distToIdeal;
+            outPos = Position(candidateX, candidateY, candidateZ);
+            found = true;
+        }
+    }
+
+    return found;
+}
+
+// Prince Malchezaar
+
+std::vector<Unit*> GetSpawnedInfernals(Player* bot)
+{
+    std::vector<Unit*> infernals;
+    std::list<Creature*> creatureList;
+    constexpr float searchRadius = 100.0f;
+
+    bot->GetCreatureListWithEntryInGrid(
+        creatureList, static_cast<uint32>(KaraNpcs::NPC_NETHERSPITE_INFERNAL), searchRadius);
+
+    for (Creature* creature : creatureList)
+    {
+        if (creature && creature->IsAlive())
+            infernals.push_back(creature);
+    }
+
+    return infernals;
+}
+
+bool IsStraightPathSafe(
+    float sx, float sy, float tx, float ty, std::vector<Unit*> const& hazards, float hazardRadius)
+{
+    float const totalDistX = tx - sx;
+    float const totalDistY = ty - sy;
+    float const totalDist = sqrt(totalDistX * totalDistX + totalDistY * totalDistY);
+    if (totalDist == 0.0f)
+        return true;
+
+    constexpr float stepSize = 0.5f;
+    int const numSteps = static_cast<int>(totalDist / stepSize);
+    for (int i = 0; i <= numSteps; ++i)
+    {
+        float const checkDist = i * stepSize;
+        float const t = (totalDist > 0.0f) ? checkDist / totalDist : 0.0f;
+        float checkX = sx + totalDistX * t;
+        float checkY = sy + totalDistY * t;
         for (Unit* hazard : hazards)
         {
-            float dist = hazard->GetExactDist2d(x, y);
-            if (dist < hazardRadius)
+            float const hx = checkX - hazard->GetPositionX();
+            float const hy = checkY - hazard->GetPositionY();
+            if ((hx*hx + hy*hy) < hazardRadius * hazardRadius)
                 return false;
         }
-
-        return true;
     }
 
-    std::vector<Unit*> GetSpawnedInfernals(PlayerbotAI* botAI)
+    return true;
+}
+
+bool TryFindSafePositionWithSafePath(
+    Player* bot, float originX, float originY, float centerX, float centerY,
+    std::vector<Unit*> const& hazards, float safeDistance, float maxSampleDist,
+    float& outX, float& outY)
+{
+    constexpr uint8 numAngles = 64;
+    constexpr float stepSize = 0.5f;
+
+    // Attempt to find a safe path, but take any path to a safe position if no safe path is found
+    for (bool requireSafePath : { true, false })
     {
-        std::vector<Unit*> infernals;
-        const GuidVector npcs = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest npcs")->Get();
-        for (auto const& npcGuid : npcs)
-        {
-            Unit* unit = botAI->GetUnit(npcGuid);
-            if (unit && unit->GetEntry() == NPC_NETHERSPITE_INFERNAL)
-                infernals.push_back(unit);
-        }
-
-        return infernals;
-    }
-
-    bool IsStraightPathSafe(const Position& start, const Position& target, const std::vector<Unit*>& hazards,
-                            float hazardRadius, float stepSize)
-    {
-        float sx = start.GetPositionX();
-        float sy = start.GetPositionY();
-        float tx = target.GetPositionX();
-        float ty = target.GetPositionY();
-
-        const float totalDist = start.GetExactDist2d(target.GetPositionX(), target.GetPositionY());
-        if (totalDist == 0.0f)
-            return true;
-
-        for (float checkDist = 0.0f; checkDist <= totalDist; checkDist += stepSize)
-        {
-            float t = checkDist / totalDist;
-            float checkX = sx + (tx - sx) * t;
-            float checkY = sy + (ty - sy) * t;
-            for (Unit* hazard : hazards)
-            {
-                const float hx = checkX - hazard->GetPositionX();
-                const float hy = checkY - hazard->GetPositionY();
-                if ((hx*hx + hy*hy) < hazardRadius * hazardRadius)
-                    return false;
-            }
-        }
-
-        return true;
-    }
-
-    bool TryFindSafePositionWithSafePath(
-        Player* bot, float originX, float originY, float originZ, float centerX, float centerY, float centerZ,
-        const std::vector<Unit*>& hazards, float safeDistance, float stepSize, uint8 numAngles,
-        float maxSampleDist, bool requireSafePath, float& bestDestX, float& bestDestY, float& bestDestZ)
-    {
-        float bestMoveDist = std::numeric_limits<float>::max();
+        float bestMoveDistSq = std::numeric_limits<float>::max();
         bool found = false;
 
         for (int i = 0; i < numAngles; ++i)
@@ -352,38 +443,65 @@ namespace KarazhanHelpers
             float dx = cos(angle);
             float dy = sin(angle);
 
-            for (float dist = stepSize; dist <= maxSampleDist; dist += stepSize)
+            int const numSteps = static_cast<int>(maxSampleDist / stepSize);
+            for (int j = 1; j <= numSteps; ++j)
             {
-                float x = centerX + dx * dist;
-                float y = centerY + dy * dist;
-                float z = centerZ;
-                float destX = x, destY = y, destZ = z;
-                if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, centerX, centerY, centerZ,
-                                                                    destX, destY, destZ, true))
+                float const dist = j * stepSize;
+                float destX = centerX + dx * dist;
+                float destY = centerY + dy * dist;
+                float destZ = bot->GetPositionZ();
+                if (!bot->GetMap()->CheckCollisionAndGetValidCoords(
+                        bot, centerX, centerY, destZ, destX, destY, destZ, true))
+                {
                     continue;
+                }
 
                 if (!IsSafePosition(destX, destY, hazards, safeDistance))
                     continue;
 
                 if (requireSafePath)
                 {
-                    if (!IsStraightPathSafe(Position(originX, originY, originZ), Position(destX, destY, destZ),
-                                            hazards, safeDistance, stepSize))
+                    if (!IsStraightPathSafe(originX, originY, destX, destY, hazards, safeDistance))
                         continue;
                 }
 
-                const float moveDist = Position(originX, originY, originZ).GetExactDist2d(destX, destY);
-                if (moveDist < bestMoveDist)
+                float const toDestX = destX - originX;
+                float const toDestY = destY - originY;
+                float const moveDistSq = toDestX*toDestX + toDestY*toDestY;
+                if (moveDistSq < bestMoveDistSq)
                 {
-                    bestMoveDist = moveDist;
-                    bestDestX = destX;
-                    bestDestY = destY;
-                    bestDestZ = destZ;
+                    bestMoveDistSq = moveDistSq;
+                    outX = destX;
+                    outY = destY;
                     found = true;
                 }
             }
         }
 
-        return found;
+        if (found)
+            return true;
     }
+
+    return false;
+}
+
+// Nightbane
+
+Position const TERRACE_DOME_CENTER = { -11126.015f, -1925.271f, 91.473f };
+Position const TERRACE_EAST_END    = { -11115.958f, -1972.058f, 91.457f };
+Position const TERRACE_WEST_END    = { -11077.521f, -1913.315f, 91.471f };
+std::array<Position, 2> const NIGHTBANE_FLIGHT_STACK_POSITIONS =
+{{
+    { -11156.233f, -1888.353f, 91.473f },  // primary
+    { -11149.115f, -1897.154f, 91.473f },  // backup in case of charred earth
+}};
+std::array<Position, 2> const NIGHTBANE_RAIN_OF_BONES_POSITIONS =
+{{
+    { -11166.516f, -1901.405f, 91.473f },  // primary
+    { -11158.752f, -1909.394f, 91.473f },  // backup in case of charred earth
+}};
+Position const NIGHTBANE_TELEPORT_POSITION = { -11159.555f, -1893.526f, 91.473f };
+std::unordered_map<uint32, time_t> nightbaneDpsWaitTimer;
+std::unordered_map<uint32, time_t> nightbaneFlightPhaseStartTimer;
+
 }
