@@ -27,8 +27,7 @@ bool SethekkProphetSetTremorTotemAction::Execute(Event /*event*/)
 
 bool DarkweaverSythMarkElementalsWithSkullAction::Execute(Event /*event*/)
 {
-    static constexpr std::array elementals =
-    {
+    static constexpr std::array elementals = {
         "syth frost elemental",
         "syth shadow elemental",
         "syth arcane elemental",
@@ -62,8 +61,7 @@ bool AnzuCastHealOverTimeSpellOnBirdSpiritAction::Execute(Event /*event*/)
     constexpr float searchRadius = 60.0f;
     Creature* targetSpirit = nullptr;
 
-    static constexpr std::array spiritEntries =
-    {
+    static constexpr std::array spiritEntries = {
         Id(SethNpcs::NPC_FALCON_SPIRIT),
         Id(SethNpcs::NPC_HAWK_SPIRIT),
         Id(SethNpcs::NPC_EAGLE_SPIRIT),
