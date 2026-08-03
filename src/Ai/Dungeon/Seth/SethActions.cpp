@@ -15,20 +15,19 @@ using namespace SethData;
 bool TimeLostControllerMarkCharmingTotemWithSkullAction::Execute(Event /*event*/)
 {
     constexpr uint32 searchRadius = 40.0f;
-    Unit* totem = bot->FindNearestCreature(
-        static_cast<uint32>(SethNpcs::NPC_CHARMING_TOTEM), searchRadius, true);
+    Unit* totem = bot->FindNearestCreature(Id(SethNpcs::NPC_CHARMING_TOTEM), searchRadius, true);
     return totem && MarkTargetWithSkull(bot, totem);
 }
 
 bool SethekkProphetSetTremorTotemAction::Execute(Event /*event*/)
 {
-    return botAI->CanCastSpell(static_cast<uint32>(SethSpells::SPELL_TREMOR_TOTEM), bot) &&
-        botAI->CastSpell(static_cast<uint32>(SethSpells::SPELL_TREMOR_TOTEM), bot);
+    return botAI->CanCastSpell(Id(SethSpells::SPELL_TREMOR_TOTEM), bot) &&
+        botAI->CastSpell(Id(SethSpells::SPELL_TREMOR_TOTEM), bot);
 }
 
 bool DarkweaverSythMarkElementalsWithSkullAction::Execute(Event /*event*/)
 {
-    std::array<const char*, 4> const elementals =
+    static constexpr std::array elementals =
     {
         "syth frost elemental",
         "syth shadow elemental",
@@ -51,7 +50,7 @@ bool AnzuAlternateMarksOnBossAction::Execute(Event /*event*/)
     if (!anzu)
         return false;
 
-    if (anzu->HasAura(static_cast<uint32>(SethSpells::SPELL_BANISH_ANZU)))
+    if (anzu->HasAura(Id(SethSpells::SPELL_BANISH_ANZU)))
         return MarkTargetWithMoon(bot, anzu);
 
     return MarkTargetWithSkull(bot, anzu);
@@ -63,11 +62,11 @@ bool AnzuCastHealOverTimeSpellOnBirdSpiritAction::Execute(Event /*event*/)
     constexpr float searchRadius = 60.0f;
     Creature* targetSpirit = nullptr;
 
-    std::array<uint32, 3> const spiritEntries =
+    static constexpr std::array spiritEntries =
     {
-        static_cast<uint32>(SethNpcs::NPC_FALCON_SPIRIT),
-        static_cast<uint32>(SethNpcs::NPC_HAWK_SPIRIT),
-        static_cast<uint32>(SethNpcs::NPC_EAGLE_SPIRIT),
+        Id(SethNpcs::NPC_FALCON_SPIRIT),
+        Id(SethNpcs::NPC_HAWK_SPIRIT),
+        Id(SethNpcs::NPC_EAGLE_SPIRIT),
     };
 
     for (uint32 entry : spiritEntries)
@@ -84,14 +83,10 @@ bool AnzuCastHealOverTimeSpellOnBirdSpiritAction::Execute(Event /*event*/)
     if (!targetSpirit)
         return false;
 
-    if (!botAI->CanCastSpell(
-            static_cast<uint32>(SethSpells::SPELL_REJUVENATION_RANK_1), targetSpirit))
-    {
+    if (!botAI->CanCastSpell(Id(SethSpells::SPELL_REJUVENATION_RANK_1), targetSpirit))
         return false;
-    }
 
-    return botAI->CastSpell(
-        static_cast<uint32>(SethSpells::SPELL_REJUVENATION_RANK_1), targetSpirit);
+    return botAI->CastSpell(Id(SethSpells::SPELL_REJUVENATION_RANK_1), targetSpirit);
 }
 
 bool TalonKingIkissTankMoveBossToPillarPositionAction::Execute(Event /*event*/)
@@ -109,34 +104,31 @@ bool TalonKingIkissTankMoveBossToPillarPositionAction::Execute(Event /*event*/)
     Position const& position = PILLAR_POSITION;
     float const distToPosition = bot->GetExactDist2d(position);
 
-    if (distToPosition > 2.0f)
-    {
-        float const posX = position.GetPositionX();
-        float const posY = position.GetPositionY();
-        float const botX = bot->GetPositionX();
-        float const botY = bot->GetPositionY();
-        float const toPosX = posX - botX;
-        float const toPosY = posY - botY;
-
-        float const toBossX = ikiss->GetPositionX() - botX;
-        float const toBossY = ikiss->GetPositionY() - botY;
-        bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
-
-        float const maxMoveDist = backwards ? 2.25f : 3.5f;
-        float const moveDist = std::min(maxMoveDist, distToPosition);
-        float const moveX = botX + (toPosX / distToPosition) * moveDist;
-        float const moveY = botY + (toPosY / distToPosition) * moveDist;
-
-        return MoveTo(
-            SETHEKK_HALLS_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
-            false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
-    }
-    else
+    if (distToPosition <= 2.0f)
     {
         _hasReachedPillarPosition = true;
+        return false;
     }
 
-    return false;
+    float const posX = position.GetPositionX();
+    float const posY = position.GetPositionY();
+    float const botX = bot->GetPositionX();
+    float const botY = bot->GetPositionY();
+    float const toPosX = posX - botX;
+    float const toPosY = posY - botY;
+
+    float const toBossX = ikiss->GetPositionX() - botX;
+    float const toBossY = ikiss->GetPositionY() - botY;
+    bool const backwards = (toPosX * toBossX + toPosY * toBossY) < 0.0f;
+
+    float const maxMoveDist = backwards ? 2.25f : 3.5f;
+    float const moveDist = std::min(maxMoveDist, distToPosition);
+    float const moveX = botX + (toPosX / distToPosition) * moveDist;
+    float const moveY = botY + (toPosY / distToPosition) * moveDist;
+
+    return MoveTo(
+        SETH_MAP_ID, moveX, moveY, position.GetPositionZ(), false, false,
+        false, false, MovementPriority::MOVEMENT_COMBAT, true, backwards);
 }
 
 bool TalonKingIkissRangedStayNearVictimOfBossAction::Execute(Event /*event*/)
@@ -160,7 +152,7 @@ bool TalonKingIkissRangedStayNearVictimOfBossAction::Execute(Event /*event*/)
     float const destY = victim->GetPositionY() + std::sin(angle) * targetDist;
 
     return MoveTo(
-        SETHEKK_HALLS_MAP_ID, destX, destY, victim->GetPositionZ(), false, false,
+        SETH_MAP_ID, destX, destY, victim->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }
 
@@ -189,7 +181,7 @@ bool TalonKingIkissLosArcaneExplosionAction::MoveToPillar(
 
     botAI->InterruptSpell();
     return MoveTo(
-        SETHEKK_HALLS_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+        SETH_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -220,7 +212,7 @@ bool TalonKingIkissLosArcaneExplosionAction::MoveAroundPillar(
 
     botAI->InterruptSpell();
     return MoveTo(
-        SETHEKK_HALLS_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+        SETH_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
@@ -251,6 +243,6 @@ bool TalonKingIkissMoveToWithinLosAction::Execute(Event /*event*/)
     float const moveY = pillarCenter.GetPositionY() + radius * sin(stepAngle);
 
     return MoveTo(
-        SETHEKK_HALLS_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
+        SETH_MAP_ID, moveX, moveY, bot->GetPositionZ(), false, false,
         false, false, MovementPriority::MOVEMENT_COMBAT, true, false);
 }

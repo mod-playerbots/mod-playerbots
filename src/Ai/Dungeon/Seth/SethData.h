@@ -29,11 +29,11 @@ enum class SethNpcs : uint32
     NPC_EAGLE_SPIRIT          = 23136,
 };
 
-constexpr uint32 SETHEKK_HALLS_MAP_ID       = 556;
-constexpr uint32 REJUVENATION_SPELL_ICON_ID = 64;
+inline constexpr uint32 SETH_MAP_ID = 556;
+inline constexpr uint32 REJUVENATION_SPELL_ICON_ID = 64;
 
-Position const PILLAR_CENTER   = { 23.730f, 309.230f };
-Position const PILLAR_POSITION = { 35.538f, 309.573f, 25.086f };
+inline Position const PILLAR_CENTER   = { 23.730f, 309.230f };
+inline Position const PILLAR_POSITION = { 35.538f, 309.573f, 25.086f };
 
 }
 
