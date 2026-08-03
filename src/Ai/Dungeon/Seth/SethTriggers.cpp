@@ -52,7 +52,7 @@ bool TalonKingIkissBossEngagedByTankTrigger::IsActive()
         return false;
 
     Unit* ikiss = AI_VALUE2(Unit*, "find target", "talon king ikiss");
-    return ikiss && ikiss->GetVictim() == bot;
+    return ikiss && ikiss->GetVictim() == bot && bot->IsWithinMeleeRange(ikiss);
 }
 
 bool TalonKingIkissRangedPrepareForArcaneExplosionTrigger::IsActive()
