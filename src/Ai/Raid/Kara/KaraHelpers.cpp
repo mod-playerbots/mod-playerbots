@@ -6,6 +6,7 @@
 
 #include "KaraHelpers.h"
 #include "Playerbots.h"
+#include "RaidBossHelpers.h"
 
 namespace KaraHelpers
 {
