@@ -760,12 +760,10 @@ float MuruControlMovementMultiplier::GetValue(Action* action)
         float const targetDistFromMuru = muru->GetExactDist2d(actionTarget);
         Position const& refPosition = PlayerbotAI::IsAssistTankOfIndex(bot, 1, true) ?
             MURU_ENTRANCE_POSITION : MURU_STACK_POSITION;
-        float const targetDistFromRef = actionTarget->GetExactDist2d(
-            refPosition.GetPositionX(), refPosition.GetPositionY());
+        float const targetDistFromRef = actionTarget->GetExactDist2d(refPosition);
         constexpr float targetDistThreshold = 20.0f;
 
-        return targetDistFromMuru > targetDistThreshold &&
-            targetDistFromRef < targetDistThreshold;
+        return targetDistFromMuru > targetDistThreshold && targetDistFromRef < targetDistThreshold;
     };
 
     if (isReachTargetSafeFromDarkness(action))

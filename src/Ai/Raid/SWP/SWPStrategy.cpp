@@ -303,7 +303,7 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, AiObjectContext* context, Guid
     if (!muru || muru->GetHealth() <= 1)
         return;
 
-    constexpr float maxTankTargetDistanceFromStack = 25.0f;
+    constexpr float maxTargetDistFromStack = 25.0f;
 
     for (auto const& guid : AI_VALUE(GuidVector, "attackers"))
     {
@@ -318,15 +318,14 @@ void AppendMuruTankExclusions(PlayerbotAI* botAI, AiObjectContext* context, Guid
         }
 
         Player* bot = botAI->GetBot();
-        if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) && TryGetMuruDarknessActiveState(bot, muru))
-            continue;
-
-        if (attacker->GetExactDist2d(
-                MURU_STACK_POSITION.GetPositionX(), MURU_STACK_POSITION.GetPositionY()) >
-            maxTankTargetDistanceFromStack)
+        if (PlayerbotAI::IsAssistTankOfIndex(bot, 0, true) &&
+            TryGetMuruDarknessActiveState(bot, muru))
         {
-            exclusions.insert(guid);
+            continue;
         }
+
+        if (attacker->GetExactDist2d(MURU_STACK_POSITION) > maxTargetDistFromStack)
+            exclusions.insert(guid);
     }
 }
 
@@ -339,8 +338,7 @@ void AppendKiljaedenShieldOrbExclusions(
     if (!AI_VALUE2(Unit*, "find target", "kil'jaeden"))
         return;
 
-    for (auto const& guid :
-         AI_VALUE(GuidVector, "attackers"))
+    for (auto const& guid : AI_VALUE(GuidVector, "attackers"))
     {
         Unit* attacker = botAI->GetUnit(guid);
         if (attacker && attacker->GetEntry() == static_cast<uint32>(SwpNpcs::NPC_SHIELD_ORB))

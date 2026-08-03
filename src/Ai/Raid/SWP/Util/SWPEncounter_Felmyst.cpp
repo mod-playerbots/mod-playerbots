@@ -323,12 +323,10 @@ FogLocation GetFelmystDestinationFogLocation(Unit* felmyst)
 
 bool IsNearFelmystLandingPosition(Position const& destination)
 {
-    bool const nearRight = destination.GetExactDist2d(
-        RIGHT_LANDING_POSITION.GetPositionX(),
-        RIGHT_LANDING_POSITION.GetPositionY()) <= FELMYST_LOCATION_MATCH_DISTANCE;
-    bool const nearLeft = destination.GetExactDist2d(
-        LEFT_LANDING_POSITION.GetPositionX(),
-        LEFT_LANDING_POSITION.GetPositionY()) <= FELMYST_LOCATION_MATCH_DISTANCE;
+    bool const nearRight =
+        destination.GetExactDist2d(RIGHT_LANDING_POSITION) <= FELMYST_LOCATION_MATCH_DISTANCE;
+    bool const nearLeft =
+        destination.GetExactDist2d(LEFT_LANDING_POSITION) <= FELMYST_LOCATION_MATCH_DISTANCE;
 
     return nearRight || nearLeft;
 }
@@ -341,8 +339,7 @@ FogLane GetNearestDemonicVaporLane(Player* bot)
     for (uint8 laneIndex = 0; laneIndex < DEMONIC_VAPOR_LANE_REFERENCES.size(); ++laneIndex)
     {
         Position const& reference = DEMONIC_VAPOR_LANE_REFERENCES[laneIndex];
-        float const distance = bot->GetExactDist2d(
-            reference.GetPositionX(), reference.GetPositionY());
+        float const distance = bot->GetExactDist2d(reference);
         if (distance < bestDistance)
         {
             bestDistance = distance;
@@ -355,12 +352,9 @@ FogLane GetNearestDemonicVaporLane(Player* bot)
 
 uint8 GetDemonicVaporAllowedSides(Player* bot)
 {
-    float const centerDistance = bot->GetExactDist2d(
-        CENTER_GROUND_REFERENCE.GetPositionX(), CENTER_GROUND_REFERENCE.GetPositionY());
-    float const rightDistance = bot->GetExactDist2d(
-        RIGHT_LANDING_POSITION.GetPositionX(), RIGHT_LANDING_POSITION.GetPositionY());
-    float const leftDistance = bot->GetExactDist2d(
-        LEFT_LANDING_POSITION.GetPositionX(), LEFT_LANDING_POSITION.GetPositionY());
+    float const centerDistance = bot->GetExactDist2d(CENTER_GROUND_REFERENCE);
+    float const rightDistance = bot->GetExactDist2d(RIGHT_LANDING_POSITION);
+    float const leftDistance = bot->GetExactDist2d(LEFT_LANDING_POSITION);
 
     if (centerDistance <= rightDistance && centerDistance <= leftDistance)
         return DEMONIC_VAPOR_LEFT_SIDE | DEMONIC_VAPOR_RIGHT_SIDE;
@@ -399,9 +393,8 @@ uint8 SelectPreferredDemonicVaporSide(Player* bot, FogLane lane, uint8 allowedSi
         if (anchor.lane != lane)
             continue;
 
-        Position const& anchorPos = DEMONIC_VAPOR_KITE_ANCHORS[anchorIndex].position;
-        float const distance = bot->GetExactDist2d(
-            anchorPos.GetPositionX(), anchorPos.GetPositionY());
+        Position const& anchorPosition = DEMONIC_VAPOR_KITE_ANCHORS[anchorIndex].position;
+        float const distance = bot->GetExactDist2d(anchorPosition);
 
         if (anchor.sideMask == DEMONIC_VAPOR_LEFT_SIDE)
             bestLeftDistance = distance;
@@ -489,7 +482,7 @@ bool IsDemonicVaporPathSafe(
     constexpr float pathStepSize = 2.0f;
     constexpr float playerPathClearance = 7.0f;
     constexpr float hazardPathClearance = 10.0f;
-    float const totalDistance = start.GetExactDist2d(target.GetPositionX(), target.GetPositionY());
+    float const totalDistance = start.GetExactDist2d(target);
     if (totalDistance <= 0.0f)
         return true;
 
@@ -578,8 +571,7 @@ bool TryGetFelmystDemonicVaporStepDestination(
     Player* bot, Position const& anchorDestination, Position& destination)
 {
     constexpr float stepDistance = 10.0f;
-    float const distanceToAnchor = bot->GetExactDist2d(
-        anchorDestination.GetPositionX(), anchorDestination.GetPositionY());
+    float const distanceToAnchor = bot->GetExactDist2d(anchorDestination);
     if (distanceToAnchor <= stepDistance)
     {
         destination = anchorDestination;
@@ -606,7 +598,7 @@ bool TryGetFelmystDemonicVaporStepDestination(
         return false;
     }
 
-    if (bot->GetExactDist2d(destinationX, destinationY) <= 0.01f)
+    if (bot->GetExactDist2d(destination) <= 0.01f)
         return false;
 
     destination = Position(destinationX, destinationY, destinationZ, bot->GetOrientation());
@@ -762,8 +754,7 @@ Position const& GetFelmystMainTankGroundPosition(Player* bot)
 
     for (Position const& position : TANK_POSITIONS)
     {
-        float const distance = bot->GetExactDist2d(
-            position.GetPositionX(), position.GetPositionY());
+        float const distance = bot->GetExactDist2d(position);
         if (distance < bestDistance)
         {
             bestDistance = distance;

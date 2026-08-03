@@ -270,7 +270,7 @@ public:
 
 private:
     Position _fogCrateStuckDestination;
-    float _fogCrateStuckNearestDistance = std::numeric_limits<float>::max();
+    float _fogCrateStuckNearestDist = std::numeric_limits<float>::max();
     uint32 _fogCrateStuckSampleMs = 0;
     bool TryTeleportStuckBotOntoCrate(Position const& destination);
 };
@@ -417,7 +417,7 @@ public:
     bool Execute(Event event) override;
 
 private:
-    bool _entropiusInitialRangedPositionReached = false;
+    bool _entropiusRangedPositionReached = false;
     bool TryGetEntropiusInitialRangedPosition(Position& position) const;
 };
 
