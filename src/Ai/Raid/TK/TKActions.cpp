@@ -1,3 +1,9 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "TKActions.h"
 #include "TKHelpers.h"
 #include "TKKaelthasBossAI.h"
@@ -61,7 +67,9 @@ bool AlarBossTanksMoveBetweenPlatformsAction::Execute(Event /*event*/)
     if (!alar)
         return false;
 
-    MarkTargetWithStar(bot, alar);
+    if (MarkTargetWithStar(bot, alar))
+        return true;
+
     SetRtiTarget(botAI, "star", alar);
 
     int8 locationIndex = GetAlarCurrentLocationIndex(alar);
@@ -224,7 +232,9 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase1Embers(Unit* alar)
 
     if (Unit* ember = AI_VALUE2(Unit*, "find target", "ember of al'ar"))
     {
-        MarkTargetWithSquare(bot, ember);
+        if (MarkTargetWithSquare(bot, ember))
+            return true;
+
         SetRtiTarget(botAI, "square", ember);
 
         if (AI_VALUE(Unit*, "current target") != ember)
@@ -281,7 +291,9 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers()
 
     if (botAI->IsAssistTankOfIndex(bot, 1, true) && firstEmber)
     {
-        MarkTargetWithSquare(bot, firstEmber);
+        if (MarkTargetWithSquare(bot, firstEmber))
+            return true;
+
         SetRtiTarget(botAI, "square", firstEmber);
 
         if (firstEmber->GetVictim() != bot)
@@ -300,7 +312,9 @@ bool AlarAssistTanksPickUpEmbersAction::HandlePhase2Embers()
     }
     else if (GetSecondEmberTank(botAI) == bot && secondEmber)
     {
-        MarkTargetWithCircle(bot, secondEmber);
+        if (MarkTargetWithCircle(bot, secondEmber))
+            return true;
+
         SetRtiTarget(botAI, "circle", secondEmber);
 
         if (secondEmber->GetVictim() != bot)
@@ -542,7 +556,7 @@ bool AlarAvoidFlamePatchesAndDiveBombsAction::HandleDiveBomb(Unit* alar)
         {
             constexpr float safeDistance = 10.0f;
             constexpr uint32 minInterval = 0;
-            if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
+            if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
                 return FleePosition(nearestPlayer->GetPosition(), safeDistance, minInterval);
         }
     }
@@ -878,12 +892,16 @@ bool HighAstromancerSolarianTargetSolariumPriestsAction::Execute(Event /*event*/
 
     if (targetPriest == priestsPair.first)
     {
-        MarkTargetWithSquare(bot, targetPriest);
+        if (MarkTargetWithSquare(bot, targetPriest))
+            return true;
+
         SetRtiTarget(botAI, "square", targetPriest);
     }
     else
     {
-        MarkTargetWithStar(bot, targetPriest);
+        if (MarkTargetWithStar(bot, targetPriest))
+            return true;
+
         SetRtiTarget(botAI, "star", targetPriest);
     }
 
@@ -1044,7 +1062,9 @@ bool KaelthasSunstriderMainTankPositionSanguinarAction::Execute(Event /*event*/)
     if (!sanguinar)
         return false;
 
-    MarkTargetWithStar(bot, sanguinar);
+    if (MarkTargetWithStar(bot, sanguinar))
+        return true;
+
     SetRtiTarget(botAI, "star", sanguinar);
 
     if (AI_VALUE(Unit*, "current target") != sanguinar)
@@ -1087,7 +1107,9 @@ bool KaelthasSunstriderWarlockTankPositionCapernianAction::Execute(Event /*event
     if (!capernian)
         return false;
 
-    MarkTargetWithCircle(bot, capernian);
+    if (MarkTargetWithCircle(bot, capernian))
+        return true;
+
     SetRtiTarget(botAI, "circle", capernian);
 
     if (AI_VALUE(Unit*, "current target") != capernian &&
@@ -1209,7 +1231,7 @@ bool KaelthasSunstriderSpreadAndMoveAwayFromCapernianAction::RangedBotsDisperse(
 
         const float safeDistance = 6.0f;
         constexpr uint32 minInterval = 1000;
-        if (Unit* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
+        if (Player* nearestPlayer = GetNearestPlayerInRadius(bot, safeDistance))
             return FleePosition(nearestPlayer->GetPosition(), safeDistance, minInterval);
     }
 
@@ -1248,7 +1270,9 @@ bool KaelthasSunstriderFirstAssistTankPositionTelonicusAction::Execute(Event /*e
     if (!telonicus)
         return false;
 
-    MarkTargetWithTriangle(bot, telonicus);
+    if (MarkTargetWithTriangle(bot, telonicus))
+        return true;
+
     SetRtiTarget(botAI, "triangle", telonicus);
 
     if (AI_VALUE(Unit*, "current target") != telonicus)
@@ -1328,7 +1352,9 @@ bool KaelthasSunstriderAssignAdvisorDpsPriorityAction::Execute(Event /*event*/)
         thaladred && !thaladred->HasUnitFlag(UNIT_FLAG_NON_ATTACKABLE) &&
         !thaladred->HasAura(SPELL_PERMANENT_FEIGN_DEATH))
     {
-        MarkTargetWithSquare(bot, thaladred);
+        if (MarkTargetWithSquare(bot, thaladred))
+            return true;
+
         SetRtiTarget(botAI, "square", thaladred);
 
         if (AI_VALUE(Unit*, "current target") != thaladred)
@@ -1458,7 +1484,9 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
         // Priority 1: Staff of Disintegration (Skull)
         if (Unit* staff = AI_VALUE2(Unit*, "find target", "staff of disintegration"))
         {
-            MarkTargetWithSkull(bot, staff);
+            if (MarkTargetWithSkull(bot, staff))
+                return true;
+
             SetRtiTarget(botAI, "skull", staff);
 
             if (AI_VALUE(Unit*, "current target") != staff)
@@ -1467,7 +1495,9 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
         // Priority 2: Cosmic Infuser (Skull)
         else if (mace)
         {
-            MarkTargetWithSkull(bot, mace);
+            if (MarkTargetWithSkull(bot, mace))
+                return true;
+
             SetRtiTarget(botAI, "skull", mace);
 
             if (AI_VALUE(Unit*, "current target") != mace)
@@ -1476,7 +1506,9 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
         // Priority 3: Warp Slicer (Skull)
         else if (sword)
         {
-            MarkTargetWithSkull(bot, sword);
+            if (MarkTargetWithSkull(bot, sword))
+                return true;
+
             SetRtiTarget(botAI, "skull", sword);
 
             if (AI_VALUE(Unit*, "current target") != sword)
@@ -1485,7 +1517,9 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
         // Priority 4: Infinity Blades (Skull)
         else if (dagger)
         {
-            MarkTargetWithSkull(bot, dagger);
+            if (MarkTargetWithSkull(bot, dagger))
+                return true;
+
             SetRtiTarget(botAI, "skull", dagger);
 
             if (AI_VALUE(Unit*, "current target") != dagger)
@@ -1502,7 +1536,9 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
         // Priority 6: Netherstrand Longbow (Skull)
         else if (Unit* longbow = AI_VALUE2(Unit*, "find target", "netherstrand longbow"))
         {
-            MarkTargetWithSkull(bot, longbow);
+            if (MarkTargetWithSkull(bot, longbow))
+                return true;
+
             SetRtiTarget(botAI, "skull", longbow);
 
             if (AI_VALUE(Unit*, "current target") != longbow)
@@ -1511,7 +1547,9 @@ bool KaelthasSunstriderAssignLegendaryWeaponDpsPriorityAction::Execute(Event /*e
         // Priority 7: Phaseshift Bulwark (Skull)
         else if (Unit* shield = AI_VALUE2(Unit*, "find target", "phaseshift bulwark"))
         {
-            MarkTargetWithSkull(bot, shield);
+            if (MarkTargetWithSkull(bot, shield))
+                return true;
+
             SetRtiTarget(botAI, "skull", shield);
 
             if (AI_VALUE(Unit*, "current target") != shield)
@@ -1528,7 +1566,9 @@ bool KaelthasSunstriderMoveDevastationAwayAction::Execute(Event /*event*/)
     if (!axe)
         return false;
 
-    MarkTargetWithDiamond(bot, axe);
+    if (MarkTargetWithDiamond(bot, axe))
+        return true;
+
     SetRtiTarget(botAI, "diamond", axe);
 
     if (AI_VALUE(Unit*, "current target") != axe)
@@ -1761,7 +1801,9 @@ bool KaelthasSunstriderMainTankPositionBossAction::Execute(Event /*event*/)
     if (!kaelthas)
         return false;
 
-    MarkTargetWithStar(bot, kaelthas);
+    if (MarkTargetWithStar(bot, kaelthas))
+        return true;
+
     SetRtiTarget(botAI, "star", kaelthas);
 
     if (AI_VALUE(Unit*, "current target") != kaelthas)
@@ -1849,13 +1891,19 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::AssistTanksPickUpPhoenixes(
     if (botAI->IsAssistTankOfIndex(bot, 0, true))
     {
         targetPhoenix = phoenixes[0];
-        MarkTargetWithSquare(bot, targetPhoenix);
+
+        if (MarkTargetWithSquare(bot, targetPhoenix))
+            return true;
+
         SetRtiTarget(botAI, "square", targetPhoenix);
     }
     else if (botAI->IsAssistTankOfIndex(bot, 1, true) && phoenixes.size() >= 2)
     {
         targetPhoenix = phoenixes[1];
-        MarkTargetWithCircle(bot, targetPhoenix);
+
+        if (MarkTargetWithCircle(bot, targetPhoenix))
+            return true;
+
         SetRtiTarget(botAI, "circle", targetPhoenix);
     }
 
@@ -1883,7 +1931,9 @@ bool KaelthasSunstriderHandlePhoenixesAndEggsAction::NonTanksDestroyEggsAndAvoid
     {
         if (Unit* phoenixEgg = GetFirstAliveUnitByEntry(botAI, NPC_PHOENIX_EGG))
         {
-            MarkTargetWithDiamond(bot, phoenixEgg);
+            if (MarkTargetWithDiamond(bot, phoenixEgg))
+                return true;
+
             SetRtiTarget(botAI, "diamond", phoenixEgg);
 
             if (AI_VALUE(Unit*, "current target") != phoenixEgg)

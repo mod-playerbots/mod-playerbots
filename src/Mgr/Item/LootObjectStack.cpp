@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2016+ AzerothCore <www.azerothcore.org>, released under GNU AGPL v3 license, you may redistribute it
- * and/or modify it under version 3 of the License, or (at your option), any later version.
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
  */
 
 #include "LootObjectStack.h"
@@ -307,7 +308,12 @@ bool LootObject::IsLootPossible(Player* bot)
     // Prevent bot from running to chests that are unlootable (e.g. Gunship Armory before completing the event) or on
     // respawn time
     GameObject* go = botAI->GetGameObject(guid);
-    if (go && (go->HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND | GO_FLAG_NOT_SELECTABLE) || !go->isSpawned()))
+    if (go && (go->HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE) || !go->isSpawned()))
+        return false;
+
+    // Conditional objects (quest chests, goobers, ...) are gated client-side on quest state.
+    // A bot has no client, so make the same call the server makes for one.
+    if (go && go->HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND) && !go->ActivateToQuest(bot))
         return false;
 
     if (skillId == SKILL_NONE)

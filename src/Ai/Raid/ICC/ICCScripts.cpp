@@ -1,4 +1,11 @@
+/*
+ * This file is part of the mod-playerbots module for AzerothCore. See AUTHORS file for Copyright
+ * information; released under GNU GPL v2 license, redistribute/modify under version 2 of the License,
+ * or (at your option) any later version.
+ */
+
 #include "ICCScripts.h"
+#include "Creature.h"
 #include "Player.h"
 #include "ICCTriggers.h"
 #include "ScriptMgr.h"
@@ -6,14 +13,40 @@
 #include "SpellInfo.h"
 #include "Timer.h"
 #include <algorithm>
+#include <mutex>
+
+namespace
+{
+    std::unordered_map<uint32, IcecrownHelpers::IccInstanceState> g_state;
+    std::mutex g_stateMutex;
+}
 
 namespace IcecrownHelpers
 {
-    std::unordered_map<uint32, std::vector<MalleableGooImpact>> malleableGooImpacts;
-    std::map<ObjectGuid, uint32> festergutGooWaitUntil;
-    std::unordered_map<uint32, DefileCastInfo> defileCast;
-    std::unordered_map<uint32, VileGasVictim> rotfaceVileGas;
-    std::map<ObjectGuid, uint32> rotfaceVileGasWaitUntil;
+    IccInstanceState& IccState(uint32 instanceId)
+    {
+        std::lock_guard lock(g_stateMutex);
+        return g_state[instanceId];
+    }
+
+    void IccResetInstance(uint32 instanceId)
+    {
+        std::lock_guard lock(g_stateMutex);
+        g_state.erase(instanceId);
+    }
+
+    std::vector<Position> ActiveGooPositions(uint32 instanceId, uint32 lifetimeMs)
+    {
+        std::vector<Position> out;
+        IccInstanceState& st = IccState(instanceId);
+
+        uint32 const now = getMSTime();
+        for (auto const& impact : st.malleableGoo)
+            if (getMSTimeDiff(impact.castTime, now) <= lifetimeMs)
+                out.push_back(impact.position);
+
+        return out;
+    }
 }
 
 class IccPutricideListenerScript : public AllSpellScript
@@ -45,7 +78,7 @@ public:
         impact.position = target->GetPosition();
         impact.castTime = now;
 
-        auto& impacts = IcecrownHelpers::malleableGooImpacts[caster->GetMap()->GetInstanceId()];
+        auto& impacts = IcecrownHelpers::IccState(caster->GetMap()->GetInstanceId()).malleableGoo;
         impacts.push_back(impact);
 
         // Evict stale entries to keep the list bounded. Retention covers the
@@ -82,7 +115,8 @@ public:
         if (!target || !target->IsPlayer())
             return;
 
-        IcecrownHelpers::VileGasVictim& entry = IcecrownHelpers::rotfaceVileGas[caster->GetMap()->GetInstanceId()];
+        IcecrownHelpers::VileGasVictim& entry =
+            IcecrownHelpers::IccState(caster->GetMap()->GetInstanceId()).rotfaceVileGas;
         entry.victimGuid = target->GetGUID();
         entry.castTime = getMSTime();
     }
@@ -109,9 +143,46 @@ public:
             return;
 
         IcecrownHelpers::DefileCastInfo& entry =
-            IcecrownHelpers::defileCast[caster->GetMap()->GetInstanceId()];
+            IcecrownHelpers::IccState(caster->GetMap()->GetInstanceId()).defileCast;
         entry.targetGuid = target->GetGUID();
         entry.castTime = getMSTime();
+    }
+};
+
+class IccBossStateResetScript : public AllCreatureScript
+{
+public:
+    IccBossStateResetScript() : AllCreatureScript("IccBossStateResetScript") { }
+
+    void OnAllCreatureUpdate(Creature* creature, uint32 /*diff*/) override
+    {
+        if (!creature || creature->GetMapId() != ICC_MAP_ID || !creature->IsDungeonBoss())
+            return;
+
+        uint32 const instanceId = creature->GetInstanceId();
+        uint32 const now = getMSTime();
+        IcecrownHelpers::IccInstanceState& st = IcecrownHelpers::IccState(instanceId);
+
+        if (creature->IsInCombat())
+        {
+            st.lastBossCombatMs = now;
+            return;
+        }
+
+        if (st.lastBossCombatMs != 0 && getMSTimeDiff(st.lastBossCombatMs, now) > ICC_RESET_GRACE_MS)
+            IcecrownHelpers::IccResetInstance(instanceId);
+    }
+};
+
+class IccMapCleanupScript : public AllMapScript
+{
+public:
+    IccMapCleanupScript() : AllMapScript("IccMapCleanupScript") { }
+
+    void OnDestroyMap(Map* map) override
+    {
+        if (map->GetId() == ICC_MAP_ID)
+            IcecrownHelpers::IccResetInstance(map->GetInstanceId());
     }
 };
 
@@ -120,4 +191,6 @@ void AddSC_IcecrownBotScripts()
     new IccPutricideListenerScript();
     new IccRotfaceListenerScript();
     new IccLichKingListenerScript();
+    new IccBossStateResetScript();
+    new IccMapCleanupScript();
 }
