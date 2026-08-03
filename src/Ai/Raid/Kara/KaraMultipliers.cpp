@@ -7,6 +7,7 @@
 #include "KaraMultipliers.h"
 #include "AttackAction.h"
 #include "ChooseTargetActions.h"
+#include "DKActions.h"
 #include "DruidActions.h"
 #include "FollowActions.h"
 #include "GenericActions.h"
@@ -14,12 +15,14 @@
 #include "KaraActions.h"
 #include "KaraHelpers.h"
 #include "MageActions.h"
+#include "PaladinActions.h"
 #include "Playerbots.h"
 #include "PriestActions.h"
 #include "RaidBossHelpers.h"
 #include "ReachTargetActions.h"
 #include "RogueActions.h"
 #include "ShamanActions.h"
+#include "WarriorActions.h"
 
 using namespace KaraHelpers;
 
@@ -344,7 +347,7 @@ float NetherspiteWaitForDpsMultiplier::GetValue(Action* action)
 
 // Prince Malchezaar
 
-float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
+float PrinceMalchezaarEnfeebleMultiplier::GetValue(Action* action)
 {
     if (dynamic_cast<AttackAction*>(action) ||
         dynamic_cast<PrinceMalchezaarEnfeebledBotAvoidHazardAction*>(action))
@@ -352,14 +355,42 @@ float PrinceMalchezaarEnfeebleKeepDistanceMultiplier::GetValue(Action* action)
         return 1.0f;
     }
 
-    if (!dynamic_cast<MovementAction*>(action) &&
-        !dynamic_cast<CastReachTargetSpellAction*>(action))
-    {
+    if (!bot->HasAura(Id(KaraSpells::SPELL_ENFEEBLE)))
         return 1.0f;
+
+    // Disable movement other than escaping Shadow Nova range
+    if (dynamic_cast<MovementAction*>(action) ||
+        dynamic_cast<CastReachTargetSpellAction*>(action))
+    {
+        return 0.0f;
     }
 
-    if (bot->HasAura(Id(KaraSpells::SPELL_ENFEEBLE)))
+    // Disable some cooldowns that are used upon low/critical health
+    if (dynamic_cast<CastIceBlockAction*>(action) ||
+        dynamic_cast<CastManaShieldAction*>(action) ||
+        dynamic_cast<CastDivineShieldAction*>(action) ||
+        dynamic_cast<CastLayOnHandsAction*>(action) ||
+        dynamic_cast<CastCloakOfShadowsAction*>(action) ||
+        dynamic_cast<CastEvasionAction*>(action) ||
+        dynamic_cast<CastShamanisticRageAction*>(action) ||
+        dynamic_cast<CastBindingHealAction*>(action) ||
+        dynamic_cast<CastDesperatePrayerAction*>(action) ||
+        dynamic_cast<CastPainSuppressionAction*>(action) ||
+        dynamic_cast<CastDispersionAction*>(action) ||
+        dynamic_cast<CastEnragedRegenerationAction*>(action) ||
+        dynamic_cast<CastLastStandAction*>(action) ||
+        dynamic_cast<CastShieldWallAction*>(action) ||
+        dynamic_cast<CastSurvivalInstinctsAction*>(action) ||
+        dynamic_cast<CastDeterrenceAction*>(action) ||
+        dynamic_cast<CastIceboundFortitudeAction*>(action) ||
+        dynamic_cast<CastRuneTapAction*>(action) ||
+        dynamic_cast<CastVampiricBloodAction*>(action) ||
+        dynamic_cast<CastDeathStrikeAction*>(action) ||
+        dynamic_cast<CastDeathPactAction*>(action) ||
+        dynamic_cast<UseItemAction*>(action))
+    {
         return 0.0f;
+    }
 
     return 1.0f;
 }

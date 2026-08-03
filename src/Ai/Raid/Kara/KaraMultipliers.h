@@ -121,11 +121,11 @@ public:
     float GetValue(Action* action) override;
 };
 
-class PrinceMalchezaarEnfeebleKeepDistanceMultiplier : public Multiplier
+class PrinceMalchezaarEnfeebleMultiplier : public Multiplier
 {
 public:
-    PrinceMalchezaarEnfeebleKeepDistanceMultiplier(
-        PlayerbotAI* botAI) : Multiplier(botAI, "prince malchezaar enfeeble keep distance") {}
+    PrinceMalchezaarEnfeebleMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "prince malchezaar enfeeble") {}
     float GetValue(Action* action) override;
 };
 
