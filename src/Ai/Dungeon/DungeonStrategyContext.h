@@ -25,23 +25,6 @@
 #include "PoSStrategy.h"
 #include "TOCStrategy.h"
 
-/*
-Full list/TODO:
-
-Trial of the Champion - ToC
-Alliance Champions: Deathstalker Visceri, Eressea Dawnsinger, Mokra the Skullcrusher, Runok Wildmane, Zul'tore
-Horde Champions: Ambrose Boltspark, Colosos, Jacob Alerius, Jaelyne Evensong, Lana Stouthammer
-Argent Champion: Argent Confessor Paletress/Eadric the Pure
-The Black Knight
-Halls of Reflection - HoR
-Falric, Marwyn, The Lich King
-Pit of Saron - PoS
-Forgemaster Garfrost, Krick & Ick, Scourgelord Tyrannus
-The Forge of Souls - FoS
-Bronjahm, Devourer of Souls
-
-*/
-
 class DungeonStrategyContext : public NamedObjectContext<Strategy>
 {
     public:
@@ -67,7 +50,6 @@ class DungeonStrategyContext : public NamedObjectContext<Strategy>
             creators["wotlk-up"] = &DungeonStrategyContext::wotlk_up;       // Utgarde Pinnacle
             creators["wotlk-cos"] = &DungeonStrategyContext::wotlk_cos;     // The Culling of Stratholme
             creators["wotlk-toc"] = &DungeonStrategyContext::wotlk_toc;     // Trial of the Champion
-            creators["wotlk-hor"] = &DungeonStrategyContext::wotlk_hor;     // Halls of Reflection
             creators["wotlk-pos"] = &DungeonStrategyContext::wotlk_pos;     // Pit of Saron
             creators["wotlk-fos"] = &DungeonStrategyContext::wotlk_fos;     // The Forge of Souls
         }
@@ -88,8 +70,6 @@ class DungeonStrategyContext : public NamedObjectContext<Strategy>
         static Strategy* wotlk_fos(PlayerbotAI* botAI) { return new WotlkDungeonFoSStrategy(botAI); }
         static Strategy* wotlk_pos(PlayerbotAI* botAI) { return new WotlkDungeonPoSStrategy(botAI); }
         static Strategy* wotlk_toc(PlayerbotAI* botAI) { return new WotlkDungeonToCStrategy(botAI); }
-        // NYI from here down
-        static Strategy* wotlk_hor(PlayerbotAI* botAI) { return new WotlkDungeonUKStrategy(botAI); }
 };
 
 #endif

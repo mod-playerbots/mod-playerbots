@@ -4,6 +4,13 @@
  * or (at your option) any later version.
  */
 
+/*
+ * Ported from the CMaNGOS playerbots project (https://github.com/cmangos/playerbots), GPL v2,
+ * with modifications for AzerothCore.
+ * Original authors:
+ *   David Parra Ausina (davidonete/Flekz) <davidparraausina@gmail.com> - original author
+ */
+
 #ifndef PLAYERBOTS_WAITFORATTACKTIMEVALUE_H
 #define PLAYERBOTS_WAITFORATTACKTIMEVALUE_H
 

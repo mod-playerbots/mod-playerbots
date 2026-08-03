@@ -22,6 +22,5 @@
 #include "FoSTriggerContext.h"
 #include "PoSTriggerContext.h"
 #include "TOCTriggerContext.h"
-// #include "HallsOfReflection/HallsOfReflectionTriggerContext.h"
 
 #endif

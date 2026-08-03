@@ -140,8 +140,9 @@ bool OpenLootAction::DoLoot(LootObject& lootObject)
     if (go && (go->GetGoState() != GO_STATE_READY))
         return false;
 
-    // This prevents dungeon chests like Tribunal Chest (Halls of Stone) from being ninja'd by the bots
-    if (go && go->HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND))
+    // This prevents dungeon chests like Tribunal Chest (Halls of Stone) from being ninja'd by the bots.
+    // Quest objects carry the same flag but are gated on quest state, which ActivateToQuest answers.
+    if (go && go->HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND) && !go->ActivateToQuest(bot))
         return false;
 
     // This prevents raid chests like Gunship Armory (ICC) from being ninja'd by the bots

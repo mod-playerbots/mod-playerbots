@@ -62,8 +62,8 @@ bool WithinAreaTrigger::IsPointInAreaTriggerZone(AreaTrigger const* atEntry, uin
         float dz = z - atEntry->z;
         float dx = rotPlayerX - atEntry->x;
         float dy = rotPlayerY - atEntry->y;
-        if ((fabs(dx) > atEntry->x / 2 + delta) || (fabs(dy) > atEntry->y / 2 + delta) ||
-            (fabs(dz) > atEntry->z / 2 + delta))
+        if ((fabs(dx) > atEntry->length / 2 + delta) || (fabs(dy) > atEntry->width / 2 + delta) ||
+            (fabs(dz) > atEntry->height / 2 + delta))
         {
             return false;
         }

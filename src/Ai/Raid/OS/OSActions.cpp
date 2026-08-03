@@ -124,7 +124,7 @@ bool AvoidFlameTsunamiAction::Execute(Event /*event*/)
             // I always saw these accurate to around 6 decimal places, but if there are issues,
             // can switch this to abs comparison of floats which would technically be more robust.
             int posY = (int) unit->GetPositionY();
-            if (posY == 505 || posY == 555)     // RIGHT WAVE
+            if (posY == 500 || posY == 564)     // RIGHT WAVE
             {
                 bool wavePassed = currentPos.GetPositionX() > unit->GetPositionX();
                 if (wavePassed)

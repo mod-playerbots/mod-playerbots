@@ -4,6 +4,15 @@
  * or (at your option) any later version.
  */
 
+/*
+ * Ported from the CMaNGOS playerbots project (https://github.com/cmangos/playerbots), GPL v2,
+ * with modifications for AzerothCore.
+ * Original authors:
+ *   ike3 <ike@email.org> - original author
+ *   Sebastiaan Keek (mostlikely4r) <sebastiaan.keek@gmail.com>
+ *   David Parra Ausina (Flekz) <davidparraausina@gmail.com>
+ */
+
 #ifndef PLAYERBOTS_PULLSTRATEGY_H
 #define PLAYERBOTS_PULLSTRATEGY_H
 
