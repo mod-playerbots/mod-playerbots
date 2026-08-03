@@ -33,4 +33,12 @@ public:
     float GetValue(Action* action) override;
 };
 
+class ChromaggusTankMultiplier : public Multiplier
+{
+public:
+    ChromaggusTankMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "chromaggus tank multiplier") {}
+    float GetValue(Action* action) override;
+};
+
 #endif

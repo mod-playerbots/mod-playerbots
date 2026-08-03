@@ -266,6 +266,54 @@ bool BwlVaelastraszMoveAwayAction::MoveAlongFleeDirection(const Unit* boss, floa
 
 // Chromaggus
 
+// Both breaths are frontal cones aimed at the current victim, so the fight is
+// safe as long as nobody else stands in front. 270 degrees forbidden leaves a
+// 90 degree rear window for everyone but the victim.
+static constexpr float CHROMAGGUS_FORBIDDEN_ARC = 1.5f * M_PI;
+static constexpr float CHROMAGGUS_BACK_FUZZ_ARC = M_PI / 6.0f;
+static constexpr float CHROMAGGUS_RANGED_DISTANCE = 25.0f;
+static constexpr float CHROMAGGUS_MELEE_DISTANCE = 3.0f;
+static constexpr float CHROMAGGUS_MAX_HEAL_RANGE = 28.0f;
+
+bool BwlChromaggusPositionAction::Execute(Event /*event*/)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "chromaggus");
+    if (!boss)
+        return false;
+
+    // The current victim should not move: it aims the cone.
+    if (boss->GetVictim() == bot)
+        return false;
+
+    float distance = bot->GetDistance2d(boss);
+    bool inForbiddenArc = boss->HasInArc(CHROMAGGUS_FORBIDDEN_ARC, bot);
+
+    // Already in the rear window; ranged/healers additionally stay in heal range.
+    if (!inForbiddenArc && (!PlayerbotAI::IsRanged(bot) || distance <= CHROMAGGUS_MAX_HEAL_RANGE))
+        return false;
+
+    // Target position: directly behind the boss with a small random fuzz
+    // to prevent all bots stacking on the same spot
+    float moveAngle = boss->GetOrientation() + M_PI + frand(-CHROMAGGUS_BACK_FUZZ_ARC, CHROMAGGUS_BACK_FUZZ_ARC);
+    float radius = PlayerbotAI::IsRanged(bot) ? CHROMAGGUS_RANGED_DISTANCE : CHROMAGGUS_MELEE_DISTANCE;
+
+    float targetMoveX = boss->GetPositionX() + radius * cos(moveAngle);
+    float targetMoveY = boss->GetPositionY() + radius * sin(moveAngle);
+
+    // Move incrementally toward the target. Allows course correction.
+    float dX = targetMoveX - bot->GetPositionX();
+    float dY = targetMoveY - bot->GetPositionY();
+    float dist = sqrt(dX * dX + dY * dY);
+    if (dist == 0.0f)
+        dist = 0.1f;
+
+    float moveX = bot->GetPositionX() + (dX / dist) * INCREMENTAL_MOVE_STEP_DISTANCE;
+    float moveY = bot->GetPositionY() + (dY / dist) * INCREMENTAL_MOVE_STEP_DISTANCE;
+
+    return MoveTo(boss->GetMapId(), moveX, moveY, bot->GetPositionZ(), false, false,
+                  false, false, MovementPriority::MOVEMENT_COMBAT, true);
+}
+
 bool BwlUseHourglassSandAction::Execute(Event /*event*/)
 {
     return botAI->CastSpell(static_cast<uint32>(BlackwingLairSpells::SPELL_HOURGLASS_SAND), bot);

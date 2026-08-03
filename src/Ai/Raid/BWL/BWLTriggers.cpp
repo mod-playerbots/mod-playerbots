@@ -57,6 +57,14 @@ bool BwlVaelastraszBurningAdrenalineTrigger::IsActive()
 
 // Chromaggus
 
+bool BwlChromaggusPositioningTrigger::IsActive()
+{
+    // The current victim must not move: the breath cones are aimed at them.
+    if (Unit* boss = AI_VALUE2(Unit*, "find target", "chromaggus"))
+        return boss->GetVictim() != bot;
+    return false;
+}
+
 bool BwlAfflictionBronzeTrigger::IsActive()
 {
     return bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_BROOD_AFFLICTION_BRONZE));

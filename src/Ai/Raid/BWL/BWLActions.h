@@ -60,6 +60,13 @@ private:
 
 // Chromaggus
 
+class BwlChromaggusPositionAction : public MovementAction
+{
+public:
+    BwlChromaggusPositionAction(PlayerbotAI* botAI) : MovementAction(botAI, "bwl chromaggus position") {}
+    bool Execute(Event event) override;
+};
+
 class BwlUseHourglassSandAction : public Action
 {
 public:

@@ -89,3 +89,25 @@ float VaelastraszBurningAdrenalineMultiplier::GetValue(Action* action)
 
     return 1.0f;
 }
+
+float ChromaggusTankMultiplier::GetValue(Action* action)
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return 1.0f;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "chromaggus");
+    if (!boss)
+        return 1.0f;
+
+    // Off-tanks stack beside the current victim and must not move in front
+    // of the boss to face it.
+    if (dynamic_cast<TankFaceAction*>(action))
+    {
+        Unit* victim = boss->GetVictim();
+        Player* victimPlayer = victim ? victim->ToPlayer() : nullptr;
+        if (victim != bot && victimPlayer && PlayerbotAI::IsTank(victimPlayer))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}

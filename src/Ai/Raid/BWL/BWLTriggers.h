@@ -45,6 +45,13 @@ public:
 
 // Chromaggus
 
+class BwlChromaggusPositioningTrigger : public Trigger
+{
+public:
+    BwlChromaggusPositioningTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl chromaggus positioning") {}
+    bool IsActive() override;
+};
+
 class BwlAfflictionBronzeTrigger : public Trigger
 {
 public:
