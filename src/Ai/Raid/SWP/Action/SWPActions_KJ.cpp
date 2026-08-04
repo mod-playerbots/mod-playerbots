@@ -51,6 +51,7 @@ bool KiljaedenAnnounceDragonOrbUserAction::Execute(Event /*event*/)
 
 bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/)
 {
+    // Don't run this method at all without at least 3 bot tanks
     Player* mainTank = GetGroupMainTank(botAI, bot);
     Player* firstAssistTank = GetGroupAssistTank(botAI, bot, 0);
     Player* secondAssistTank = GetGroupAssistTank(botAI, bot, 1);
@@ -62,10 +63,9 @@ bool KiljaedenMarkAndPrioritizeHandsOfTheDeceiverAction::Execute(Event /*event*/
     }
 
     std::vector<Unit*> hands;
-    auto const& targets =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+    auto const& targets = AI_VALUE(GuidVector, "possible targets no los");
 
-    for (ObjectGuid const targetGuid : targets)
+    for (ObjectGuid const& targetGuid : targets)
     {
         Unit* target = botAI->GetUnit(targetGuid);
         if (target && target->GetEntry() == Id(SwpNpcs::NPC_HAND_OF_THE_DECEIVER))
@@ -192,10 +192,9 @@ bool KiljaedenStunHandsOfTheDeceiverAction::Execute(Event /*event*/)
     if (bot->getClass() == CLASS_SHAMAN || bot->getClass() == CLASS_MAGE)
         return false;
 
-    auto const& targets =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+    auto const& targets = AI_VALUE(GuidVector, "possible targets no los");
 
-    for (ObjectGuid const targetGuid : targets)
+    for (ObjectGuid const& targetGuid : targets)
     {
         Unit* target = botAI->GetUnit(targetGuid);
         if (!target || target->GetHealthPct() <= 20.0f ||
@@ -219,6 +218,7 @@ bool KiljaedenStunHandsOfTheDeceiverAction::Execute(Event /*event*/)
 
 bool KiljaedenStunHandsOfTheDeceiverAction::CastStunOnHand(Unit* hand)
 {
+    // 80% HP is arbitrary; it's to try to let tanks get some spread before stunning
     if (hand->GetHealthPct() > 80.0f)
         return false;
 
@@ -469,8 +469,8 @@ bool KiljaedenStackForShieldOfTheBlueAction::Execute(Event /*event*/)
     float destX = darknessPosition.GetPositionX();
     float destY = darknessPosition.GetPositionY();
 
-    // Bots with Fire Bloom wait away from the darkness stack spot until the darkness cast is
-    // about to finish (4500ms, same threshold for the bot dragon to cast Shield of the Blue).
+    // Bots with Fire Bloom wait 15y away from the Darkness stack spot until the Darkness cast
+    // is about to finish (4.5s, same threshold for the bot dragon to cast Shield of the Blue).
     if (bot->HasAura(Id(SwpSpells::SPELL_FIRE_BLOOM)))
     {
         Unit* kiljaeden = AI_VALUE2(Unit*, "find target", "kil'jaeden");
@@ -505,8 +505,6 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
     float closestInUseOrbDistance = 0.0f;
     bool orbInUse = false;
 
-    constexpr float orbInUsePendingDistance = 15.0f;
-
     for (uint32 const orbEntry : KILJAEDEN_DRAGON_ORB_ENTRIES)
     {
         GameObject* orb = bot->FindNearestGameObject(orbEntry, 200.0f, true);
@@ -540,6 +538,7 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
     {
         if (closestInUseOrb)
         {
+            constexpr float orbInUsePendingDistance = 15.0f;
             if (closestInUseOrbDistance <= orbInUsePendingDistance)
                 return true;
 
@@ -572,9 +571,8 @@ bool KiljaedenUseDragonOrbAction::Execute(Event /*event*/)
         false, false, MovementPriority::MOVEMENT_FORCED, true, false);
 }
 
-// There is an issue with the root packets that causes bots to get stuck with
-// the root movement flag after using a dragon orb; this action is a workaround
-// to remove the stale root flag in those cases
+// There is an issue (maybe with the root packets) that causes bots to get stuck with the root
+// movement flag after using a dragon orb; this action is a workaround to remove the stale flag.
 bool KiljaedenReleaseStaleRootAction::Execute(Event /*event*/)
 {
     bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_ROOT);
@@ -588,7 +586,8 @@ bool KiljaedenControlDragonAction::Execute(Event /*event*/)
     if (!kiljaeden)
         return false;
 
-    // End remaining drake control after phase changes
+    // End remaining bot drake control after phase changes, which may not be ideal but
+    // is the safer approach without knowing the player's composition or raid knowledge.
     if (kiljaeden->HasUnitState(UNIT_STATE_CASTING) &&
         kiljaeden->FindCurrentSpellBySpellId(Id(SwpSpells::SPELL_SHADOW_SPIKE)))
     {

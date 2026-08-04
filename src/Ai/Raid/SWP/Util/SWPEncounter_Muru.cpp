@@ -84,8 +84,8 @@ bool TryGetMuruDarknessEarlyState(Player* bot, Unit* muru, uint32 earlyWindowMs)
 
 void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& targets)
 {
-    auto const& units =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    auto const& units = AI_VALUE(GuidVector, "possible targets no los");
 
     auto const considerTarget = [&](Unit* unit)
     {
@@ -133,10 +133,11 @@ void GatherMuruEncounterTargets(PlayerbotAI* botAI, MuruEncounterTargets& target
 Creature* FindAvailableVoidSpawnForEnslave(Player* bot)
 {
     PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+    AiObjectContext* context = botAI->GetAiObjectContext();
+    auto const& units = AI_VALUE(GuidVector, "possible targets no los");
+
     Creature* bestSpawn = nullptr;
     float closestDistance = std::numeric_limits<float>::max();
-    auto const& units =
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get();
 
     for (ObjectGuid const& guid : units)
     {
