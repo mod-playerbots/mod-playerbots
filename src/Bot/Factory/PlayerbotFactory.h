@@ -7,7 +7,9 @@
 #ifndef PLAYERBOTS_PLAYERBOTFACTORY_H
 #define PLAYERBOTS_PLAYERBOTFACTORY_H
 
-#include "Battleground.h"
+#include <string>
+#include <utility>
+
 #include "InventoryAction.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
